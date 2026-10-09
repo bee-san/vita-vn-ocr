@@ -21,7 +21,9 @@
  *
  * Results are bit-identical across the scalar and NEON paths and across platforms
  * when the compiler does not contract a*b+c into fused multiply-adds (build with
- * -ffp-contract=off, which ISO -std=c99 already implies on GCC).
+ * -ffp-contract=off, which ISO -std=c99 already implies on GCC). The one exception:
+ * ARMv7 NEON flushes denormals to zero, so a model producing denormal activations
+ * could differ in those values on the NEON path.
  */
 #ifndef VOCR_H
 #define VOCR_H
@@ -51,7 +53,9 @@ enum {
 
 /* Arithmetic. F32: float weights. W8F: int8 weights, float activations and
  * accumulation. W8I: int8 weights, activations quantised per position to int16,
- * int32 accumulation. Stem, depthwise layers and biases are float in every mode. */
+ * int32 accumulation (needs every reduction length K <= 516, so the sums cannot
+ * overflow; else VOCR_E_MODE). Stem, depthwise layers and biases are float in every
+ * mode. */
 enum { VOCR_MODE_AUTO = 0, VOCR_MODE_F32 = 1, VOCR_MODE_W8F = 2, VOCR_MODE_W8I = 3 };
 
 enum { VOCR_GREY8 = 1, VOCR_RGBA8 = 4 };   /* pixel formats (RGBA: R, G, B, A bytes) */
@@ -130,7 +134,8 @@ int vocr_init(vocr_ctx *c, const vocr_model *m, const vocr_opts *o, void *arena,
 int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vocr_extra *extra);
 /* Resized width (before padding) the runtime uses for a w x h crop. */
 unsigned vocr_resized_width(const vocr_model *m, unsigned w, unsigned h);
-/* The preprocessed grey line, height x padded width bytes, row-major. */
+/* The preprocessed grey line, height x padded width bytes, row-major, exactly as
+ * vocr_run() sees it. With out == NULL only *width and *padded_width are set. */
 int vocr_preprocess(const vocr_model *m, const vocr_image *img, unsigned char *out,
                     size_t cap, unsigned *width, unsigned *padded_width);
 /* UTF-8 bytes of class c, *len of them (not NUL-terminated; "" for the blank, class 0). */

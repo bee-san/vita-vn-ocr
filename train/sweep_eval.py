@@ -12,20 +12,27 @@ the runtime's W8I activation rounding as described in runtime/vocr.h (inputs of 
 int8 convs quantised per position to int16, symmetric max-abs over the channels),
 simulated in float.
 
+Every set is predicted in batches of crops with the same padded width only, so each
+crop sees exactly the input of a one-line forward pass (eval/run.py, the C runtime):
+in a mixed-width batch the replicate padding of the shorter crops changes the frames
+near their right edge, and so the text.
+
 Sets from eval's shared benchmark (needs eval/ in this checkout, or $VOCR_EVAL_CODE
 pointing at an eval checkout, and $VOCR_EVAL_DATA at its screenshots):
   vita-test, psp-test   eval's hand-checked lines, cropped and scored exactly as
                eval/run.py does (eval/sets.py + eval/metrics.py), crops fed as they
-               are; one forward pass per padded width, so the text is identical to
-               run.py's one-line-at-a-time inference
+               are; the text is identical to run.py's
   vita-test-inv, psp-test-inv   the same lines with the dark-on-light ones inverted by
                their style tag (an oracle): the v1 recipe renders only light text, so
                this separates recognizer capacity from that data gap
   vita-test-con, psp-test-con   the same lines inverted where the console's own rule
                (synth/common.line_dark, C vocr_line_dark, on the crop) calls the text
                dark, as the deployed pipeline and realdata's training crops do
-  real-hand-x  real-hand (below) minus the lines from vita-test's games: 17 more games,
-               a check that is independent of vita-test
+  real-hand-x  real-hand (below) minus the lines from vita-test's set games: 46 lines
+               from 17 more games. 2 of them are from v3, which eval's test_games.json
+               reserves as family of vita-test's v7721, so it is not strictly independent
+               of vita-test; and the research cut v17287_1_2 as a 99 x 380 scene crop with
+               ~20 px of text at the bottom, which no model reads at height 32
 Provisional sets (from before eval/ existed; real-pseudo is all from vita-test games):
   synth-val    the held-out synthetic shard (data/synth, last shard), all lines
   real-hand    hand-transcribed real Vita lines from the research campaign
@@ -38,9 +45,12 @@ Dark-text crops are inverted before recognition, since the v1 recipe only render
 light text: --polarity tag (default) inverts the lines the research tagged dark text
 on a light background (an oracle; a deployed pipeline needs the line finder to
 report polarity), auto guesses from the crop, none feeds every crop as it is.
-Scoring: CER = Levenshtein / GT length after label_real.canon, full-width ASCII
-folded to ASCII, dash-like glyphs folded to ―, whitespace removed. A reduced
-vocab's <unk> (〓) is always an error. Writes <run>/eval_<ckpt stem>.json. --save-int8-ckpt also writes
+Scoring: eval's sets use eval/metrics.py (norm, lev). The other sets: CER =
+Levenshtein / GT length after label_real.canon, full-width ASCII folded to ASCII,
+dash-like glyphs folded to ―, whitespace removed. A reduced vocab's <unk> (〓) is
+always an error. Writes <run>/eval_<ckpt stem>.json, with every real line's prediction
+and its errors / reference characters under that set's scorer (lines_detail), which
+sweep_table.py's paired bootstrap uses. --save-int8-ckpt also writes
 <run>/<ckpt stem>_int8w.pt, the same checkpoint with every int8 conv's weights
 replaced by their quantise-dequantise values: evaluated in fp32 by any tool (e.g.
 eval/run.py) it gives exactly the runtime's W8F output.
@@ -244,9 +254,11 @@ def prep(g, height):
 
 
 @torch.no_grad()
-def predict(model, crops, height, vocab, batch=64, exact=False):
-    """Greedy CTC text per crop. exact=True batches only crops of the same padded width,
-    so every crop sees exactly the input of a one-line forward pass (eval/run.py)."""
+def predict(model, crops, height, vocab, batch=64, exact=True):
+    """Greedy CTC text per crop. exact=True (the default, used for every set) batches only
+    crops of the same padded width, so every crop sees exactly the input of a one-line
+    forward pass (eval/run.py, the C runtime). exact=False packs mixed widths into a
+    batch, where the shorter crops' replicate padding can change their last frames."""
     gs = [prep(g, height) for g in crops]
     pw = [(g.shape[1] + STRIDE - 1) // STRIDE * STRIDE for g in gs]
     order = np.argsort(pw, kind="stable")
@@ -279,7 +291,8 @@ def eval_score(preds, items, unk_vocab=None):
     a = res["all"]
     out = {"cer": a["cer"], "line_acc": a["exact"], "lines": a["lines"], "chars": a["chars"],
            "errors": a["errors"], "styles": {k: v["cer"] for k, v in res["styles"].items()},
-           "game_macro_cer": res["game_macro_cer"]}
+           "game_macro_cer": res["game_macro_cer"],
+           "per_line": [[r["errors"], r["n"]] for r in rows]}   # score_lines fills these
     if unk_vocab is not None:
         errs = 0
         for (_, t, _), p in zip(items, preds):
@@ -295,17 +308,19 @@ def score(preds, refs, unk_vocab=None):
     outside that vocab counts as read correctly if the model printed 〓 there, i.e.
     the errors that remain once the vocab's own coverage limit is set aside."""
     errs = chars = exact = errs_unk = 0
+    per_line = []
     for p, r in zip(preds, refs):
         p, r = score_norm(p), score_norm(r)
         e = edit_distance(list(p), list(r))
         errs, chars, exact = errs + e, chars + len(r), exact + (e == 0)
+        per_line.append([e, len(r)])
         if unk_vocab is not None:
             # score_norm folds full-width ASCII, so test membership on both spellings
             ok = lambda c: c in unk_vocab or (0x21 <= ord(c) <= 0x7E  # noqa: E731
                                               and chr(ord(c) + 0xFEE0) in unk_vocab)
             errs_unk += edit_distance(list(p), [c if ok(c) else "〓" for c in r])
     out = {"cer": errs / max(chars, 1), "line_acc": exact / max(len(refs), 1),
-           "lines": len(refs), "chars": chars, "errors": errs}
+           "lines": len(refs), "chars": chars, "errors": errs, "per_line": per_line}
     if unk_vocab is not None:
         out["cer_unk_ok"] = errs_unk / max(chars, 1)
     return out
@@ -359,15 +374,15 @@ def main():
         for name, items in sets.items():
             t0 = time.time()
             harness = name.startswith(("vita-test", "psp-test"))
-            preds = predict(model, [g for g, _, _ in items], meta["height"], meta["vocab"],
-                            exact=harness)
+            preds = predict(model, [g for g, _, _ in items], meta["height"], meta["vocab"])
             refs = [t for _, t, _ in items]
             unk_vocab = set(meta["vocab"][:-1]) if meta["unk"] else None
             r = eval_score(preds, items, unk_vocab) if harness else score(preds, refs, unk_vocab)
+            per_line = r.pop("per_line")
             r["seconds"] = round(time.time() - t0, 1)
             if name != "synth-val":
-                r["lines_detail"] = [{"id": str(m["id"]), "ref": t, "pred": p}
-                                     for (_, t, m), p in zip(items, preds)]
+                r["lines_detail"] = [{"id": str(m["id"]), "ref": t, "pred": p, "errors": e, "n": n}
+                                     for (_, t, m), p, (e, n) in zip(items, preds, per_line)]
             else:
                 by = {}
                 for (_, t, m), p in zip(items, preds):

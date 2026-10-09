@@ -1,5 +1,5 @@
 # Lint settings for CI (.github/workflows/ci.yml). ruff is pinned in requirements-ci.in.
-# Run locally: .venv/bin/ruff check .   (or: uvx ruff@0.16.10 check .)
+# Run locally: .venv-ci/bin/ruff check .   (the CI env, ci/README.md; or: uvx ruff@0.16.10 check .)
 target-version = "py311"
 line-length = 120
 # Script directories that import each other through sys.path (first-party for isort).

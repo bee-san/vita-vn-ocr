@@ -10,7 +10,7 @@
 #   EVAL_PY    eval/run.py                                     [eval/run.py]
 #   PY         python                                          [$HERD/shared/venv/bin/python]
 #   AB_DIR     runs, shard lists and results                   [$HERD/shared/artifacts/nvsynth/ab]
-#   NV_DIR     nvsynth shards (fetch.py run + merge-val)       [$HERD/shared/artifacts/nvsynth/shards]
+#   NV_DIR     nvsynth shards (nv_fetch.py run + merge-val)    [$HERD/shared/artifacts/nvsynth/shards]
 #   SYNTH_DIR  v1 synthetic shards synth_00000..00039          [$HERD/shared/data/synth]
 #   NV_SHARDS  NVIDIA train shards per arm (about 20k lines each)              [20]
 #   STEPS      [5000]   EVAL_SETS  [vita-test,synth-val]

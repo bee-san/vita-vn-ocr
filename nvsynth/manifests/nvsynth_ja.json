@@ -3,7 +3,7 @@
  "revision": "69696a1cc543ef3a0f8e9892a89c17293e915263",
  "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), (c) NVIDIA Corporation",
  "subset": "ja (Japanese) only: train, validation",
- "made_by": "nvsynth/fetch.py (see its docstring for the exact commands)",
+ "made_by": "nvsynth/nv_fetch.py (see its docstring for the exact commands)",
  "format": "train.py shards: data (uint8, flat), offsets, shapes (32 x W), labels (JSON list), meta (JSON list: src, sample, line, crop [x, y, w, h] on the page, ink_h, clean, contrast, grey_ratio, polarity)",
  "per_page": [
   1
@@ -58,6 +58,7 @@
   "h_oov_lines": 539988,
   "h_oov_chars": 748301,
   "bad_dims": 0,
+  "errors": 0,
   "rotated": 0,
   "vertical": 1679045,
   "words": 1506252,
@@ -1577,6 +1578,7 @@
    ]
   ]
  },
+ "skipped_sources": [],
  "sources": [
   {
    "source": "ja/train/train_000.h5",

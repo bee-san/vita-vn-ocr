@@ -6,14 +6,26 @@
                            (vita_dev, psp_dev; see DET_SETS), for review on sheets
   build_gt.py sheets MANIFEST [--out DIR]
                         -> contact sheets with every GT line box drawn, for checking
-  build_gt.py finalize  -> SET.jsonl from SET.candidates.jsonl and the hand review in
+  build_gt.py finalize  -> SET.jsonl from SET.candidates.jsonl, the hand review in
                            manifests/review.json (dropped regions, ignored watermark lines)
+                           and the data rules below; also filters psp_pool.jsonl
   build_gt.py fetch [--dest DIR]
                         -> download the screenshots the manifests name (VNDB URL + sha256)
 
-manifests/psp_pool.jsonl lists the 264 PSP screenshots behind psp_*.jsonl: VNDB
-screenshots at 480x272 of 90 Japanese-only PSP VNs (every k-th VN by id, up to 3 shots each)
-with sexual < 0.3 and violence < 0.5, none from eval's test games.
+Data rules (finalize applies them to the reviewed candidates; rerun it whenever eval's
+test-game list changes, tests/test_linefind.py checks the result):
+  - no region from one of eval's test games: synth/common.py is_test_vn, plus the "all"
+    list of eval/manifests/test_games.json (or, until eval merges, its shared copy in
+    $HERD/shared/artifacts/eval). The list grows, so `det` run today gives different
+    candidates from the reviewed snapshot in SET.candidates.jsonl; finalize filters that
+    snapshot instead of rebuilding it.
+  - no holdout region from a VN of research_a/b: those are the sets the finder's
+    constants were tuned on.
+
+manifests/psp_pool.jsonl lists the PSP screenshots behind psp_*.jsonl: VNDB screenshots
+at 480x272 of Japanese-only PSP VNs (every k-th VN by id, up to 3 shots each) with
+sexual < 0.3 and violence < 0.5, none from eval's test games (252 shots of 86 VNs at the
+last finalize; 264 of 90 were downloaded and detected, before eval's list grew).
 
 One JSON row per region:
   id, set, vn, shot (local file name), url, sha256, platform ("psv" or "psp"),
@@ -24,13 +36,19 @@ One JSON row per region:
   tags [...]
 
 Set A is the research campaign's 16 tight regions (bf653e98, cycle 005) and set B
-its independent 19-screenshot replication (q5_run_a), both hand-transcribed by
-the research agents. Line boxes for A come from B where the screenshot is the same,
-otherwise from PP-OCRv5 server detection, and were checked on contact sheets.
+its 19-screenshot replication (q5_run_a), both hand-transcribed by the research
+agents; 7 screenshots are in both. They are the finder's tuning sets, not test sets.
+Line boxes for A come from B where the screenshot is the same, otherwise from PP-OCRv5
+server detection, and were checked on contact sheets.
+
+Shared inputs (detector output, the research campaign's files, eval's provisional
+test-game list) are found under $HERD (default /local/home/skerraut/herd-vita-ocr).
 """
 import argparse
 import hashlib
 import json
+import os
+import re
 import sys
 from pathlib import Path
 
@@ -40,7 +58,9 @@ from PIL import Image, ImageDraw
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 MAN = HERE / "manifests"
-RESEARCH = Path("/local/home/skerraut/herd-vita-ocr/shared/research/scratch/real")
+HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
+ART = HERD / "shared" / "artifacts"
+RESEARCH = HERD / "shared" / "research" / "scratch" / "real"
 # Where screenshots are looked up: the repo's VNDB download (data/fetch_assets.py vndb) and
 # the destination of `build_gt.py fetch`. Both are gitignored; screenshots are never committed.
 SHOT_DIRS = [ROOT / "data" / "vndb" / "shots", ROOT / "data" / "linefind_shots"]
@@ -130,7 +150,7 @@ def research():
     """Sets A and B from the research campaign's hand-transcribed real regions."""
     shots_dir = ROOT / "data" / "vndb" / "shots"
     by_hash = {sha(p): p.name for p in shots_dir.glob("*.jpg")}
-    det = det_index([Path("/local/home/skerraut/herd-vita-ocr/shared/artifacts/linefind/det/vita_shots_det.jsonl")])
+    det = det_index([ART / "linefind" / "det" / "vita_shots_det.jsonl"])
     b_rows = []
     for it in json.loads((RESEARCH / "q5_run_a" / "gt.json").read_text(encoding="utf-8")):
         shot = by_hash[sha(it["file"])]
@@ -173,22 +193,39 @@ def research():
         print("A regions still without line boxes:", todo)
 
 
-ART = Path("/local/home/skerraut/herd-vita-ocr/shared/artifacts")
 DET_SETS = {
     "vita": dict(det=ART / "linefind/det/vita_shots_det.jsonl", shots=ROOT / "data/vndb/shots",
                  platform="psv", size=(960, 544)),
     "psp": dict(det=ART / "linefind/det/psp_dev_det.jsonl", shots=ART / "linefind/psp_dev/shots",
                 platform="psp", size=(480, 272)),
 }
+TEST_GAME_LISTS = [ROOT / "eval" / "manifests" / "test_games.json", ART / "eval" / "test_games.json"]
 
 
-def test_games():
-    """Every VN reserved for eval's test sets (provisional list) plus the hash rule."""
+def test_games(required=True):
+    """Predicate for eval's test games: is_test_vn plus the "all" list of the first file in
+    TEST_GAME_LISTS that exists (the repo copy once eval has merged, else the shared one).
+    With required, a missing list is an error rather than a silent hash-rule-only check."""
     sys.path.insert(0, str(ROOT / "synth"))
     from common import is_test_vn
-    p = ART / "eval" / "test_games.json"
-    listed = set(json.loads(p.read_text())["all"]) if p.exists() else set()
+    path = next((p for p in TEST_GAME_LISTS if p.exists()), None)
+    if path is None and required:
+        sys.exit(f"no test-game list at {' or '.join(map(str, TEST_GAME_LISTS))}")
+    listed = set(json.loads(path.read_text())["all"]) if path else set()
+    if path:
+        print(f"test games: {len(listed)} listed in {path}, plus is_test_vn")
     return lambda vn: vn in listed or is_test_vn(vn)
+
+
+def tuning_vns():
+    """VNs of research_a/b, the sets the finder's constants were tuned on."""
+    return {r["vn"] for name in ("research_a.jsonl", "research_b.jsonl") for r in read(MAN / name)}
+
+
+def region_vn(region_id):
+    """VN of a detector-built region id such as psp_tight_v10606_57075."""
+    m = re.search(r"_(v\d+)_\d+$", region_id)
+    return m.group(1) if m else None
 
 
 def holdout_vn(vn):
@@ -327,14 +364,24 @@ def fetch(dest, shots_dirs):
 
 
 def finalize():
-    """Apply the hand review (manifests/review.json) to every SET.candidates.jsonl."""
+    """Apply the hand review (manifests/review.json) and the data rules (module docstring)
+    to every SET.candidates.jsonl, and drop test games from psp_pool.jsonl."""
     review = json.loads((MAN / "review.json").read_text())
     drop, ignore = review["drop"], review["ignore"]
+    is_test = test_games(required=True)
+    tuning = tuning_vns()
     seen = set()
     for cand in sorted(MAN.glob("*.candidates.jsonl")):
-        rows = []
+        holdout = cand.name.endswith("_holdout.candidates.jsonl")
+        rows, n_test, n_tuning = [], 0, 0
         for r in read(cand):
             seen.add(r["id"])
+            if is_test(r["vn"]):
+                n_test += 1
+                continue
+            if holdout and r["vn"] in tuning:
+                n_tuning += 1
+                continue
             if r["id"] in drop:
                 continue
             boxes = ignore.get(r["id"], [])
@@ -343,7 +390,17 @@ def finalize():
                     ln["ignore"] = True
             rows.append(r)
         write(MAN / cand.name.replace(".candidates", ""), rows)
-    stale = sorted((set(drop) | set(ignore)) - seen)
+        print(f"  left out before review: {n_test} regions of test games, "
+              f"{n_tuning} holdout regions of research_a/b VNs")
+    pool = read(MAN / "psp_pool.jsonl")
+    kept = [r for r in pool if not is_test(r["vn"])]
+    (MAN / "psp_pool.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in kept),
+                                        encoding="utf-8")
+    print(f"{MAN / 'psp_pool.jsonl'}: {len(kept)} screenshots of {len({r['vn'] for r in kept})} VNs "
+          f"({len(pool) - len(kept)} of test games left out)")
+    # Review entries for regions `det` no longer proposes because their VN became a test
+    # game are expected; any other unknown id is a typo or a lost candidate.
+    stale = sorted(i for i in (set(drop) | set(ignore)) - seen if region_vn(i) is None or not is_test(region_vn(i)))
     if stale:
         sys.exit(f"review.json names regions that no candidate set has: {stale}")
 

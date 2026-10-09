@@ -1,8 +1,10 @@
-"""Tests for the dialogue line finder: runtime/vocr_lines.c and its Python twin.
+"""Tests for the dialogue line finder: runtime/vocr_lines.c, its Python twin and the
+ground-truth manifests in eval/linefind/manifests.
 
 The C parts compile runtime/vocr_lines.c with the system compiler (cc, or $CC) and
 are skipped when no compiler is available.
 """
+import json
 import shutil
 import subprocess
 import sys
@@ -14,6 +16,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "synth"))
 sys.path.insert(0, str(ROOT / "tests"))
+sys.path.insert(0, str(ROOT / "eval" / "linefind"))
+import build_gt  # noqa: E402  (as a module: its test_games() must not be collected here)
+
 import common  # noqa: E402
 import linefind_parity  # noqa: E402
 
@@ -187,3 +192,32 @@ def test_find_lines_needs_a_finder():
     # so old code fails here instead of silently switching to grad.
     with pytest.raises(TypeError):
         common.find_lines(lines_image(240, 30))
+
+
+def manifests():
+    return {p.stem: build_gt.read(p) for p in sorted(build_gt.MAN.glob("*.jsonl"))
+            if not p.name.endswith(".candidates.jsonl")}
+
+
+def test_manifests_hold_no_test_games():
+    """No detector-built region and no PSP pool screenshot is from one of eval's test games:
+    is_test_vn, plus eval/manifests/test_games.json once eval has merged (the shared copy
+    is not in CI). research_a/b are the tuning sets and hold test games by design
+    (docs/linefind.md). When eval's list grows, rerun eval/linefind/build_gt.py finalize."""
+    path = ROOT / "eval" / "manifests" / "test_games.json"
+    listed = set(json.loads(path.read_text())["all"]) if path.exists() else set()
+    for name, rows in manifests().items():
+        if name.startswith("research_"):
+            continue
+        bad = sorted({r["vn"] for r in rows if r["vn"] in listed or common.is_test_vn(r["vn"])})
+        assert not bad, f"{name} has test games {bad}: rerun eval/linefind/build_gt.py finalize"
+
+
+def test_holdouts_are_held_out():
+    """dev and holdout share no VN, and no holdout VN is in research_a/b (the tuning sets)."""
+    sets, tuning = manifests(), build_gt.tuning_vns()
+    for plat in ("vita", "psp"):
+        dev = {r["vn"] for r in sets[f"{plat}_dev"]}
+        hold = {r["vn"] for r in sets[f"{plat}_holdout"]}
+        assert hold and not dev & hold, plat
+        assert not hold & tuning, (plat, sorted(hold & tuning))

@@ -4,7 +4,7 @@
 
 What is known so far:
 - The Vita build of `runtime/vocr.c` and `vocr_lines.c` compiles warning-free with the runtime's own `-Werror` flags.
-- Inside Vita3K, every case of the full test bundle gives the host build's text, logits (CRC-32 of every float) and line boxes, bit for bit: 390 of 390 cases in w8i, and 40 of 40 in each of w8i, w8f and f32 on the quick bundle.
+- Inside Vita3K, every case of the test bundles gives the host build's text, logits (CRC-32 of every float) and line boxes, bit for bit: 728 of 728 cases of the full bundle in w8i, and 52 of 52 in each of w8i, w8f and f32 on the quick bundle.
 - From the Vita build's instruction mix, a 640-px dialogue line (80 CTC frames) of the v1 model should take **117-285 ms in w8i** on one Cortex-A9 core at 444 MHz (149-341 ms in f32). This is an estimate, not a measurement.
 - Nothing has run on a PCH-1000 yet. The test app is ready for that; see "On a PCH-1000".
 
@@ -70,7 +70,7 @@ You need a PS Vita that runs homebrew (HENkaku, h-encore or Ensō) and VitaShell
 4. **Run it.** Close other apps first, then start it from the LiveArea.
    - The app asks for 444 MHz with `scePowerSetArmClockFrequency`, as homebrew emulators do, and logs the clock it got (`# clock arm_mhz=` in `results.tsv`). No overclocking plugin is needed, and 500 MHz is never used.
    - Each case runs once to check the logits, then three timed runs.
-   - Going by the estimate below, the quick bundle takes 1-2 minutes and the full one 9-16. With `models=w8i` in `config.txt`, the full bundle takes 2-6 minutes.
+   - Going by the estimate below, the quick bundle takes 1-2 minutes and the full one 15-30. With `models=w8i` in `config.txt`, the full bundle takes 4-10 minutes.
    - The screen shows one line per case: the status per model, the median ms and the decoded text. CIRCLE stops early; START exits once it is done.
 5. **Read the results.** Copy `ux0:data/vocr/results.tsv` back, then run:
 
@@ -104,20 +104,29 @@ vita/scripts/run_vita3k.sh vocr-bundle build/vita/vocr_test.vpk out models=w8i r
 
 - **Pin.** Vita3K only publishes a rolling "continuous" release. The pin is build 4154 (v0.2.1, commit b75d5e62, 2026-10-09), by the AppImage's sha256.
 - **Running it here.** The binary needs glibc 2.43, so the script unpacks Debian's libc6 2.43-7 and libwayland-client0 1.26.0-1 beside it and starts Vita3K through that loader. It runs in a throwaway sandbox (config, `ux0:` and logs under `$TMPDIR`, never `$HOME`), with the SDL frontend and OpenGL on Mesa llvmpipe under Xvfb. No PS Vita firmware is needed: the app uses only HLE'd system calls.
-- **Results.** Vita3K runs the Vita's own ARM machine code (`eboot.bin`) through a JIT. Its runs reproduced the host exactly:
+- **Results.** Vita3K runs the Vita's own ARM machine code (`eboot.bin`) through a JIT. Every run reproduced the host exactly:
 
-| bundle | modes | cases | MATCH | other |
-|---|---|---|---|---|
-| quick | w8i, w8f, f32 | 40 each | 40 each | 0 |
-| full | w8i | 390 | 390 | 0 |
+| bundle | modes | code | cases | MATCH | other |
+|---|---|---|---|---|---|
+| full | w8i | this branch | 728 | 728 | 0 |
+| quick | w8i, w8f, f32 | this branch | 52 each | 52 each | 0 |
+| full, before psp-test was on `main` | w8i | before and after the `mm_i16` change below | 390 | 390 each time | 0 |
+| quick, before psp-test | w8i, w8f, f32 | before and after the `mm_i16` change | 40 each | 40 each time | 0 |
 
-Both rows were rerun after the `mm_i16` change below, with the same result: the last full run used the app at 7926436, the last quick run the app at 401ba2e.
+- **Emulator timing is not console timing.** Under Vita3K, w8i took 6.6-8.0 ms per CTC frame and f32 and w8f 74-100 ms, varying with the load on the shared host. That is a property of the x86 JIT, not of a Cortex-A9.
 
-- **Emulator timing is not console timing.** Under Vita3K, w8i took 7-8 ms per CTC frame and f32 and w8f 74-100 ms, varying with the load on the shared host. That is a property of the x86 JIT, not of a Cortex-A9.
+On the 728-case run, `compare.py` also scores the console's own pipeline against the hand-checked text (v1, w8i):
 
-On that full run, `compare.py` also scores the console's own pipeline against the hand-checked text (v1, w8i):
-- GT-box line crops with the polarity rule: 9.05% CER on vita-test's 206 lines, the same figure `runtime/README.md` reports for that rule on the host, and 0.39% on 100 synth-val lines.
-- Dialogue regions through `vocr_find_lines` and `VOCR_INVERT`: 95.1% line recall and 20.16% pipeline CER on vita-test's 84 regions.
+| | lines | CER | exact |
+|---|---|---|---|
+| vita-test GT-box crops, polarity rule | 206 | 9.05% (the figure `runtime/README.md` reports for that rule on the host) | 64.6% |
+| psp-test GT-box crops, polarity rule | 245 | 10.80% | 60.8% |
+| synth-val crops | 100 | 0.39% | 98.0% |
+
+| dialogue regions (`vocr_find_lines`, `VOCR_INVERT` on dark lines) | regions | line recall | pipeline CER |
+|---|---|---|---|
+| vita-test | 84 | 95.1% | 20.16% |
+| psp-test | 93 | 90.2% | 30.96% |
 
 These numbers come from `eval/metrics.py`'s normalisation and eval's region matching. They are not eval's benchmark numbers, which feed crops without inversion (`docs/results.md`).
 
@@ -129,7 +138,7 @@ Reported by the app, Vita build (so far in Vita3K; a console run reports the sam
 |---|---|---|---|
 | weights blob | 859,904 B | 859,904 B | 3,067,840 B |
 | arena (`vocr_arena_bytes`, any line up to 1024 px) | 124,832 B | 118,432 B | 116,384 B |
-| line finder arena (`vocr_lines_arena_bytes`) | 83,323 B for a whole 960x544 screen; 41,395 B for vita-test's largest region | same | same |
+| line finder arena (`vocr_lines_arena_bytes`) | 83,323 B for a whole 960x544 screen; 41,395 B for the largest test region | same | same |
 | `vocr_model` + `vocr_ctx` | 1,772 + 1,984 B | same | same |
 | stack, measured | 4,100 B | same | same |
 | code (`vocr.o` + `vocr_lines.o`) | 17,779 B | same | same |
@@ -183,7 +192,7 @@ What the numbers say:
 **The `mm_i16` change in this branch.**
 - The estimate found that gcc 14.2 and 15.2 stored all eight w8i accumulators to the stack on every pass of the inner loop: 16 `VSTR` per 32 `VMLAL`, 179K VLDR/VSTR per frame.
 - `mm_i16` now holds them in named variables. That cuts w8i from 1.02M to 0.89M instructions per frame, and the 640-px estimate from 136-324 ms to 117-285 ms.
-- The output is bit-identical: parity-arm (NEON and scalar) on the fixture, NEON parity on all of vita-test in all three modes, and the 390-case Vita3K run.
+- The output is bit-identical: parity-arm (NEON and scalar) on the fixture, NEON parity on all of vita-test in all three modes, and every Vita3K run above.
 - What is left in w8i:
   - `mm_i16`'s plain-C path for leftover positions, which runs when a call's position count is not a multiple of 4 (head batches of 17-19 frames, the ends of a line). gcc vectorises it but keeps its accumulators in memory: 62K of the 80K VLDR/VSTR left per frame;
   - `run_head`'s per-class VFP argmax.

@@ -93,7 +93,7 @@ def score(cases, rows_by_id):
     finders, metrics = eval_module("finders"), eval_module("metrics")
     line = {"errs": 0, "chars": 0, "exact": 0, "lines": 0}
     by_set = {}
-    reg = {"errors": 0, "chars": 0, "concat_errors": 0, "concat_chars": 0, "gt_lines": 0, "found": 0}
+    reg_by_set = {}
     for c in cases:
         r = rows_by_id.get(c["id"])
         if not r or r["status"] == "ERR":
@@ -110,6 +110,8 @@ def score(cases, rows_by_id):
         boxes = c["expected"][r["model"]]["boxes"]
         if r["status"] != "MATCH" or len(boxes) != len(preds):
             continue                          # boxes are only known when they equal the host's
+        reg = reg_by_set.setdefault(c.get("set", "?"), {"errors": 0, "chars": 0, "concat_errors": 0,
+                                                      "concat_chars": 0, "gt_lines": 0, "found": 0})
         dets = [tuple(b[:4]) for b in boxes]
         gts = [dict(g, box_r=tuple(g["box"])) for g in c["rows"]]
         pairs, unmatched = finders.match(dets, gts)
@@ -136,10 +138,11 @@ def score(cases, rows_by_id):
                             exact=line["exact"] / line["lines"])
         out["lines_by_set"] = {k: dict(n=t["lines"], cer=t["errs"] / max(1, t["chars"]), exact=t["exact"] / t["lines"])
                                for k, t in sorted(by_set.items())}
-    if reg["gt_lines"]:
-        out["regions"] = dict(gt_lines=reg["gt_lines"], line_recall=reg["found"] / reg["gt_lines"],
-                              pipeline_cer=reg["errors"] / max(1, reg["chars"]),
-                              concat_cer=reg["concat_errors"] / max(1, reg["concat_chars"]))
+    out["regions_by_set"] = {
+        k: dict(gt_lines=r["gt_lines"], line_recall=r["found"] / r["gt_lines"],
+                pipeline_cer=r["errors"] / max(1, r["chars"]),
+                concat_cer=r["concat_errors"] / max(1, r["concat_chars"]))
+        for k, r in sorted(reg_by_set.items()) if r["gt_lines"]}
     return out
 
 
@@ -219,9 +222,8 @@ def print_report(rep):
         for name_set, a in acc.get("lines_by_set", {}).items():
             print(f"  {name_set} GT-box lines (console polarity rule): CER {100 * a['cer']:.2f}%, "
                   f"exact {100 * a['exact']:.1f}% ({a['n']} lines)")
-        if "regions" in acc:
-            a = acc["regions"]
-            print(f"  regions, console pipeline: line recall {100 * a['line_recall']:.1f}%, pipeline CER "
+        for name_set, a in acc.get("regions_by_set", {}).items():
+            print(f"  {name_set}, console pipeline: line recall {100 * a['line_recall']:.1f}%, pipeline CER "
                   f"{100 * a['pipeline_cer']:.2f}%, concat CER {100 * a['concat_cer']:.2f}% ({a['gt_lines']} GT lines)")
         tag = " [emulator time, not console time]" if rep["emulator"] else ""
         print(f"  time per line: {fmt_q(m['line_ms'], 'ms')}{tag}")

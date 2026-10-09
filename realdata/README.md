@@ -41,12 +41,14 @@ crops are copyrighted: they stay there and are never committed.
    the target resolution with the console's conventions: padded so that the grad line
    finder (`runtime/vocr_lines.c`) gives the same boxes, and inverted when `common.line_dark()`
    calls the text dark (docs/linefind.md's polarity contract; `--keep-polarity` skips it).
-   `check_finder.py` (400 random accepted lines, each in a region 2 line heights wider on
-   either side and 0.6 taller, as a loose selection would be): the finder finds 299 at
-   IoU ≥ 0.5, and on those the median edge difference is 0 px on every side, but the spread
-   is wide. Only 46.5% / 69.6% / 42.1% / 66.9% of the x0 / y0 / x1 / y1 edges are within
-   1 px, and the 10th–90th percentile range is −24…+17 px at x0, −5…+1 at y0, −17…+2 at x1
-   and −2…+3 at y1.
+   `check_finder.py` (random accepted lines, each in a region 2 line heights wider on
+   either side and 0.6 taller, as a loose selection would be; 2 × 2,000 lines, seeds 1 and
+   2): the finder finds 74.9% at IoU ≥ 0.5. On those, the median edge difference is 0 px on
+   every side, except +1 px at x0 with seed 2, but the spread is wide. Only 42–44% /
+   70–72% / 39–40% / 62–63% of the x0 / y0 / x1 / y1 edges are within 1 px, and the
+   10th–90th percentile range is about −25…+18 px at x0, −4…+2 at y0, −18…+5 at x1 and
+   −3…+5 at y1. `line_dark()` on the training box agrees with the finder's dark flag on
+   98.2% of the found lines.
 
 Test games are excluded at every step: `synth/common.is_test_vn()` and the eval set's
 reserved VNs (`eval/manifests/test_games.json` once merged, `eval_exclude.json` until then),

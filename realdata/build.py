@@ -279,8 +279,8 @@ and every screenshot of eval's test capture sessions (its "sessions", VNDB relea
 
 Labels: PP-OCRv5 mobile det finds the text rows; each row's ink box is refined by gradient
 energy (either polarity); crops are padded so the console's grad finder gives the same
-boxes (median edge difference 0 px on every side, but only 42-70% of edges within 1 px and
-p10-p90 -24..+17 px at x0, -17..+2 px at x1; realdata/check_finder.py on 400 lines).
+boxes (median edge difference 0-1 px, but only 39-72% of edges within 1 px and p10-p90
+about -25..+18 px at x0, -18..+5 px at x1; realdata/check_finder.py on 2 x 2,000 lines).
 Four readers vote: PP-OCRv5 server, PP-OCRv6 small, manga-ocr, meiki. Rule
 {stats['rule']}: at least three readers support one PP-OCR reading (manga-ocr/meiki may
 differ by invented edge brackets, and from v6s by ellipsis cell counts); a fourth reader

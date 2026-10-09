@@ -78,10 +78,19 @@ def test_accept_veto_on_confusable_dissent():
     assert vote.accept(ln, {"votes": 2, "veto": True}) == (None, "confusable-dissent")
 
 
-def test_undecided_never_skips_a_voter_that_could_change_the_result():
+def test_accept_trunc_on_longer_dissent():
+    ln = line("ちょっと、あんた", v6s="ちょっと、あんた", manga="ちょっと、あんた", screenai="「ちょっと、あんた")
+    assert vote.accept(ln, {"votes": 2})[0] == "ちょっと、あんた"
+    assert vote.accept(ln, {"votes": 2, "trunc": True}) == (None, "truncated")
+    ln = line("ちょっと、あんた", v6s="ちょっと、あんた", manga="ちょっと、あんた", screenai="ちよっと、あんた")
+    assert vote.accept(ln, {"votes": 2, "trunc": True})[0] == "ちょっと、あんた"     # not a truncation
+
+
+@pytest.mark.parametrize("extra", [{"veto": True}, {"trunc": True}, {"veto": True, "trunc": True}, {}])
+def test_undecided_never_skips_a_voter_that_could_change_the_result(extra):
     import itertools
-    rule = {"voters": ("v6s", "manga", "screenai", "v5s"), "votes": 2, "veto": True}
-    texts = ["まあね", "まぁね", "ちがう", None]
+    rule = {"voters": ("v6s", "manga", "screenai", "v5s"), "votes": 2, **extra}
+    texts = ["まあね", "まぁね", "「まあね", None]
     for combo in itertools.product(texts, repeat=4):
         reads = {v: t for v, t in zip(rule["voters"], combo) if t is not None}
         ln = line("まあね", **reads)
@@ -123,6 +132,38 @@ def test_furigana_attaches_to_the_line_below():
     assert len(keep) == 2
     host = keep[0]
     assert host["furi"] == [[120, 88, 160, 98]] and host["crop"] == [100, 88, 400, 130]
+
+
+def test_furigana_inside_the_hosts_box_and_names_are_not_furigana():
+    # the host's ink box already took the ruby in (its top is the ruby's top)
+    rows = [{"ink": [100, 86, 400, 130], "text": "お父さんが最期の"}, {"ink": [130, 86, 150, 96], "text": "とう"}]
+    keep = G.attach_furigana(rows)
+    assert [r["text"] for r in keep] == ["お父さんが最期の"] and keep[0]["furi"] == [[130, 86, 150, 96]]
+    # a small name plate above the dialogue is a line of its own, not furigana
+    rows = [{"ink": [100, 100, 400, 130], "text": "「行こう」"}, {"ink": [110, 84, 150, 98], "text": "倫也"}]
+    assert len(G.attach_furigana(rows)) == 2
+
+
+def test_furigana_overlapping_the_hosts_top():
+    # v10856: rubies at y 434-445 over a line whose ink starts at 442 (overlap of 3 px)
+    host = {"ink": [53, 442, 875, 475], "det": [49, 445, 874, 475], "text": "お父さんが最期のときを"}
+    rubies = [{"ink": [83, 434, 107, 445], "det": [79, 432, 107, 445], "text": "とう"},
+              {"ink": [207, 434, 250, 445], "det": [201, 432, 251, 444], "text": "さいご"}]
+    # v3820: the ruby's ink box ran into the host's glyph tops (20 px), its detector box is 14 px
+    host2 = {"ink": [214, 417, 584, 446], "det": [214, 420, 583, 446], "text": "あはは、杏紅ったら怖い顔」"}
+    ruby2 = {"ink": [341, 403, 404, 423], "det": [337, 406, 401, 420], "text": "キョウコウ"}
+    keep = G.attach_furigana([host, *rubies, host2, ruby2])
+    assert [r["text"] for r in keep] == ["お父さんが最期のときを", "あはは、杏紅ったら怖い顔」"]
+    assert keep[0]["crop"] == [53, 434, 875, 475] and keep[1]["crop"] == [214, 403, 584, 446]
+
+
+def test_refurigana_on_stored_reads():
+    host = line("お父さんが最期の")
+    host.update(ink=[100, 86, 400, 130], crop=[100, 86, 400, 130])
+    ruby = line("とう")
+    ruby.update(ink=[130, 86, 150, 96], crop=[130, 86, 150, 96])
+    out = G.refurigana([host, ruby])
+    assert len(out) == 1 and out[0]["furi"] == [[130, 86, 150, 96]] and out[0]["crop"] == [100, 86, 400, 130]
 
 
 def test_voter_view_stops_short_of_neighbours():
@@ -218,20 +259,21 @@ def test_match_and_score():
                     {"id": "b", "vn": "v1", "xyxy": [320, 100, 600, 130], "text": "「こんにちは」"},
                     {"id": "c", "vn": "v1", "xyxy": [100, 200, 600, 230], "text": "読めない", "uncertain": True}]}
     good = line("【名前】「こんにちは」", v6s="【名前】「こんにちは」", screenai="【名前】「こんにちは」")
-    good["crop"] = [98, 99, 602, 131]
+    good["crop"] = good["ink"] = [98, 99, 602, 131]
     wrong = line("ありがとう", v6s="ありがとう", screenai="ありがとう")
-    wrong["crop"] = [100, 200, 600, 230]
+    wrong["crop"] = wrong["ink"] = [100, 200, 600, 230]
     menu = line("セーブ", v6s="セーブ", screenai="セーブ")
-    menu["crop"] = [800, 500, 900, 520]
+    menu["crop"] = menu["ink"] = [800, 500, 900, 520]
     shots = {"v1_1": {"vn": "v1", "lines": [good, wrong, menu]}}
     items, scored = measure.match(shots, gts, "vita-test")
-    assert [(x[3], x[5]) for x in items] == [("【名前】「こんにちは」", "scored"), (None, "uncertain"),
-                                             (None, "unmatched")]       # joined row; uncertain and menu unscored
+    got = [(measure._m(x, None)[0], measure._m(x, None)[2]) for x in items]
+    assert got == [("【名前】「こんにちは」", "scored"), (None, "uncertain"), (None, "unmatched")]
     s = measure.score(items, scored, {"votes": 2})
     assert s["accepted"] == 3 and s["accepted_scored"] == 1 and s["precision"] == 1.0 and s["recall"] == 1.0
     whole = line("「こんにちは」", v6s="「こんにちは」", screenai="「こんにちは」")
-    whole["crop"] = [318, 99, 602, 131]                            # exactly the second gt line: scored
+    whole["crop"] = whole["ink"] = [318, 99, 602, 131]                            # exactly the second gt line: scored
     half = line("「こんに", v6s="「こんに", screenai="「こんに")
-    half["crop"] = [318, 99, 450, 131]                             # half of it: not scorable by boxes
+    half["crop"] = half["ink"] = [318, 99, 450, 131]                             # half of it: not scorable by boxes
     items, _ = measure.match({"v1_1": {"vn": "v1", "lines": [whole, half]}}, gts, "vita-test")
-    assert [(x[3], x[5]) for x in items] == [("「こんにちは」", "scored"), (None, "partial")]
+    assert [(measure._m(x, None)[0], measure._m(x, None)[2]) for x in items] == [("「こんにちは」", "scored"),
+                                                                               (None, "partial")]

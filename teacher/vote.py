@@ -16,6 +16,8 @@ Rule (see accept()): MeikiOCR reads the line first. Its reading becomes the labe
   * at least `votes` of the voters (PP-OCRv6 small, manga-ocr, Chrome Screen AI, PP-OCRv5
     server: whichever the rule lists in `voters`) read the same key, and no listed voter
     that disagrees differs from it only in a confusable glyph (`veto`, optional),
+  * no voter that disagrees reads the label plus extra characters at one end (`trunc`,
+    optional: the line probably runs on past MeikiOCR's box),
   * the line is Japanese (kana or kanji, at most half ASCII), at least `min_len` characters.
 Thresholds are chosen by measurement on eval's hand-checked sets (teacher/measure.py).
 """
@@ -128,6 +130,7 @@ DEFAULT = {
     "min_conf": 0.0,                         # primary: lowest character confidence
     "det_conf": 0.0,                         # MeikiOCR detector box score
     "veto": False,                           # a confusable dissent (small kana, ー/一) rejects
+    "trunc": False,                          # a dissent that reads the label plus more at an edge rejects
     "min_len": 2,                            # characters in the label
 }
 
@@ -163,9 +166,9 @@ def undecided(line, rule):
     left = len(voters) - len(read)
     if agree + left < r["votes"]:
         return False
-    if not r["veto"]:
+    if not r["veto"] and not r.get("trunc"):
         return agree < r["votes"]
-    return accept(line, r)[1] != "confusable-dissent" and left > 0
+    return accept(line, r)[1] not in ("confusable-dissent", "truncated") and left > 0
 
 
 def accept(line, rule=None):
@@ -208,4 +211,13 @@ def accept(line, rule=None):
             t = reading(line, v)[0]
             if key(t) and loose(t) == lk:
                 return None, "confusable-dissent"
+    if r.get("trunc"):
+        # a voter that reads the same text plus extra characters at an edge suggests the
+        # line runs on past the crop (a bracket or a word the detector box left out)
+        for v in r["trunc"] if isinstance(r["trunc"], (list, tuple)) else dissent:
+            if v not in dissent:
+                continue
+            kv = key(reading(line, v)[0])
+            if len(kv) > len(k) and (kv.endswith(k) or kv.startswith(k)):
+                return None, "truncated"
     return canon(text), f"{r['primary']}+" + "+".join(agree)

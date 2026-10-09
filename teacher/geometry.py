@@ -128,38 +128,71 @@ def refine(rgb, bbox):
     return ib, hint
 
 
-def attach_furigana(lines):
-    """Small lines directly above a bigger one become its furigana (eval's rule): they are
-    not labelled, and their box joins the host's crop box ("crop")."""
+def kana_only(s):
+    """Furigana is a reading: hiragana/katakana (and ー) only."""
+    s = "".join(c for c in (s or "") if not c.isspace())
+    return bool(s) and all(0x3041 <= ord(c) <= 0x30FF for c in s)
+
+
+def is_furigana(b, o, text, det=None):
+    """Is line box b (reading `text`) furigana of the bigger line box o? Kana only, at most
+    0.65x o's height (b's height from its detector box `det` when that is smaller: the ink
+    refinement can run into the host's glyph tops), inside o's horizontal extent, its centre
+    above the top third of o, and its bottom at most half of o's height above o's top. That
+    covers rubies above the line, touching or overlapping its top, and inside its box (when
+    o's ink box already took them in)."""
+    x0, y0, x1, y1 = b
+    ox0, oy0, ox1, oy1 = o
+    h, oh = y1 - y0, oy1 - oy0
+    if det is not None:
+        h = min(h, det[3] - det[1])
+    if not kana_only(text) or h > 0.65 * oh or x0 < ox0 - 4 or x1 > ox1 + 4:
+        return False
+    return (y0 + y1) / 2 <= oy0 + 0.35 * oh and y1 >= oy0 - 0.5 * oh and y0 < oy0 + 0.35 * oh
+
+
+def attach_furigana(lines, text=lambda ln: ln.get("text", "")):
+    """Small kana lines directly above (or in the top of) a bigger line become its furigana:
+    they are not labelled, and their box joins the host's crop box ("crop")."""
     if not lines:
         return lines
-    hs = sorted(ln["ink"][3] - ln["ink"][1] for ln in lines)
-    med = hs[len(hs) // 2]
     keep = []
     for b in lines:
-        x0, y0, x1, y1 = b["ink"]
-        h = y1 - y0
         host = None
-        if h <= 0.65 * med:
-            for o in lines:
-                if o is b:
-                    continue
-                ox0, oy0, ox1, oy1 = o["ink"]
-                oh = oy1 - oy0
-                if h <= 0.65 * oh and 0 <= oy0 - y1 <= 0.5 * oh and x0 >= ox0 - 4 and x1 <= ox1 + 4:
-                    host = o
-                    break
+        for o in lines:
+            if o is not b and is_furigana(b["ink"], o["ink"], text(b), b.get("det")):
+                host = o
+                break
         if host is None:
             keep.append(b)
         else:
             host.setdefault("furi", []).append(b["ink"])
-            host.setdefault("furi_text", []).append(b.get("text", ""))
+            host.setdefault("furi_text", []).append(text(b))
     for b in keep:
         c = list(b["ink"])
         for f in b.get("furi", []):
             c = [min(c[0], f[0]), min(c[1], f[1]), max(c[2], f[2]), max(c[3], f[3])]
         b["crop"] = c
     return keep
+
+
+def refurigana(records):
+    """Re-apply the furigana rule to lines label.py already read (records with ink, crop,
+    meiki text, furi, furi_text): attached rubies that aren't kana go back out of their host's
+    crop (a name plate is not furigana; the line itself was never read, so it is lost), and
+    kana lines that are furigana of another line are removed and join its crop."""
+    for r in records:
+        furi = [(f, t) for f, t in zip(r.get("furi", []), r.get("furi_text", [])) if kana_only(t)]
+        if furi or r.get("furi"):
+            r["furi"], r["furi_text"] = [f for f, _ in furi], [t for _, t in furi]
+            if not furi:
+                r.pop("furi"), r.pop("furi_text")
+    out = attach_furigana([dict(r, furi=list(r.get("furi", [])), furi_text=list(r.get("furi_text", [])))
+                           for r in records], text=lambda ln: (ln.get("meiki") or {}).get("text", ""))
+    for r in out:
+        if not r["furi"]:
+            r.pop("furi"), r.pop("furi_text")
+    return out
 
 
 def voter_view(ink, others, W, H):

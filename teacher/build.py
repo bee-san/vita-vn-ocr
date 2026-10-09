@@ -144,7 +144,7 @@ def decide(args):
             why["test-game"] += len(r["lines"])
             continue
         shot_rows[sk] = r
-        for ln in r["lines"]:
+        for ln in G.refurigana(r["lines"]):
             lab, how = vote.accept(ln, rule)
             if lab is None:
                 why[how] += 1

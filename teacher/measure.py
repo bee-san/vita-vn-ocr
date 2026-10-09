@@ -70,46 +70,56 @@ def vov(a, b):
 COVER = 0.9          # a teacher crop must span this share of the truth's width to be scored
 
 
+def _status(box, rows):
+    hits = [g for g in rows if vov(box, g["xyxy"]) >= 0.5
+            and min(box[2], g["xyxy"][2]) - max(box[0], g["xyxy"][0]) > 0]
+    truth, status = None, "unmatched"
+    if hits and any(g.get("uncertain") for g in hits):
+        status = "uncertain"
+    elif hits:
+        gx0, gx1 = min(g["xyxy"][0] for g in hits), max(g["xyxy"][2] for g in hits)
+        cover = (min(box[2], gx1) - max(box[0], gx0)) / max(1, gx1 - gx0)
+        if cover < COVER:
+            status = "partial"
+        else:
+            status = "scored"
+            truth = "".join(g["text"] for g in sorted(hits, key=lambda g: g["xyxy"][0]))
+    return truth, [g["id"] for g in hits], status
+
+
 def match(shots, gts, name):
-    """[(set, vn, teacher line, truth text or None, [gt ids], status)], and the scored gt ids.
-    status: scored | partial (the crop covers < COVER of the truth's width, so box matching
-    can't tell whether a shorter label is right for it) | uncertain | unmatched (UI, menus
-    and other text eval leaves out)."""
+    """[(set, vn, teacher line, {primary: (truth or None, [gt ids], status)})], and the scored
+    gt ids. Lines are first passed through geometry.refurigana (as build.py does), and each
+    line is matched with the crop build.py would cut for it (build.crop_of, which depends on
+    the rule's primary reading). status: scored | partial (the crop covers < COVER of the
+    truth's width, so box matching can't tell whether a shorter label is right for it) |
+    uncertain | unmatched (UI, menus and other text eval leaves out)."""
+    import build
+    import geometry as G
     items, scored_gt = [], {}
     for key, rows in gts.items():
         for g in rows:
             if not g.get("uncertain"):
-                scored_gt[g["id"]] = g
+                scored_gt[g["id"]] = dict(g, set=name)
     for key, r in shots.items():
         rows = gts.get(key, [])
-        for ln in r["lines"]:
-            box = ln.get("crop") or ln["ink"]
-            hits = [g for g in rows if vov(box, g["xyxy"]) >= 0.5
-                    and min(box[2], g["xyxy"][2]) - max(box[0], g["xyxy"][0]) > 0]
-            truth, status = None, "unmatched"
-            if hits and any(g.get("uncertain") for g in hits):
-                status = "uncertain"
-            elif hits:
-                gx0, gx1 = min(g["xyxy"][0] for g in hits), max(g["xyxy"][2] for g in hits)
-                cover = (min(box[2], gx1) - max(box[0], gx0)) / max(1, gx1 - gx0)
-                if cover < COVER:
-                    status = "partial"
-                else:
-                    status = "scored"
-                    truth = "".join(g["text"] for g in sorted(hits, key=lambda g: g["xyxy"][0]))
-            items.append((name, r["vn"], ln, truth, [g["id"] for g in hits], status))
+        for ln in G.refurigana(r["lines"]):
+            m = {p: _status(build.crop_of(ln, {"primary": p}), rows) for p in ("meiki", "meikiv")}
+            items.append((name, r["vn"], ln, m))
     return items, scored_gt
 
 
-def score(items, scored_gt, rule, vns=None):
+def _m(item, rule):
+    return item[3][(rule or {}).get("primary", vote.DEFAULT["primary"])]
+
+
+def _aggregate(items, decisions, scored_gt, rule, keep):
     acc = acc_scored = correct = errs = chars = partial = 0
     recalled = set()
-    for _, vn, ln, truth, ids, status in items:
-        if vns is not None and vn not in vns:
+    for it, lab in zip(items, decisions):
+        if lab is None or not keep(it):
             continue
-        lab, _ = vote.accept(ln, rule)
-        if lab is None:
-            continue
+        truth, ids, status = _m(it, rule)
         acc += 1
         partial += status == "partial"
         if truth is None:
@@ -121,11 +131,25 @@ def score(items, scored_gt, rule, vns=None):
         if e == 0:
             correct += 1
             recalled.update(i for i in ids if i in scored_gt)
-    n_gt = sum(1 for g in scored_gt.values() if vns is None or g["vn"] in vns)
+    n_gt = sum(1 for g in scored_gt.values() if keep((g["set"], g["vn"])))
     return {"accepted": acc, "accepted_scored": acc_scored, "accepted_partial": partial, "correct": correct,
             "precision": correct / acc_scored if acc_scored else None,
             "recall": len(recalled) / n_gt if n_gt else None, "gt_lines": n_gt,
             "label_cer": errs / chars if chars else None}
+
+
+def score_all(items, scored_gt, rule, vns=None):
+    """{"pooled": stats, <set>: stats, ...} for one rule (restricted to the VNs in vns)."""
+    decisions = [vote.accept(it[2], rule)[0] for it in items]
+    ok_vn = (lambda vn: True) if vns is None else (lambda vn: vn in vns)
+    out = {"pooled": _aggregate(items, decisions, scored_gt, rule, lambda it: ok_vn(it[1]))}
+    for name in sorted({it[0] for it in items}):
+        out[name] = _aggregate(items, decisions, scored_gt, rule, lambda it, n=name: it[0] == n and ok_vn(it[1]))
+    return out
+
+
+def score(items, scored_gt, rule, vns=None):
+    return score_all(items, scored_gt, rule, vns)["pooled"]
 
 
 def wilson(k, n, z=1.96):
@@ -155,17 +179,27 @@ def grid():
                     for min_conf in (0.0, 0.3, 0.5, 0.7, 0.8, 0.9):
                         for det_conf in (0.0, 0.7, 0.8):
                             for veto in (False, True):
-                                yield {"primary": primary, "voters": voters, "votes": votes,
-                                       "min_conf": min_conf, "det_conf": det_conf, "veto": veto}
+                                # trunc: any dissenting voter, or only Screen AI (it reads the whole
+                                # screenshot, so it sees glyphs the line's own box left out)
+                                for trunc in (False, True, ("screenai",)):
+                                    yield {"primary": primary, "voters": voters, "votes": votes,
+                                           "min_conf": min_conf, "det_conf": det_conf, "veto": veto,
+                                           "trunc": trunc}
 
 
-def choose(items, scored_gt, target, vns=None):
+def choose(items, scored_gt, target, vns=None, cache=None):
+    """The rule with the highest pooled recall whose precision reaches `target` on the
+    pooled lines and on every set separately (so a rule must hold on Vita and PSP text
+    alike); ties go to more required votes, then fewer voters (cheaper relabel)."""
     best = None
     for rule in grid():
-        s = score(items, scored_gt, rule, vns)
-        if s["precision"] is None or s["precision"] < target:
+        ss = score_all(items, scored_gt, rule, vns)
+        if cache is not None:
+            cache.append((rule, ss))
+        if any(v["precision"] is None or v["precision"] < target for v in ss.values()):
             continue
-        k = (s["recall"], s["precision"], -len(rule["voters"]))
+        s = ss["pooled"]
+        k = (round(s["recall"], 6), rule["votes"], s["precision"], -len(rule["voters"]))
         if best is None or k > best[0]:
             best = (k, rule, s)
     return best
@@ -177,7 +211,8 @@ def pipeline_engines(items):
     out = {}
     for e in ENGINES:
         n = exact = errs = chars = 0
-        for _, _, ln, truth, _, _ in items:
+        for it in items:
+            ln, truth = it[2], _m(it, {"primary": "meiki"})[0]
             if truth is None:
                 continue
             t = vote.reading(ln, e)
@@ -206,8 +241,11 @@ def fmt(s):
 def dump(items, scored_gt, rule, path):
     """Per-line diagnostics for one rule: every scored or partial teacher line with all
     readings, the decision and the truth, plus truth lines no teacher line covers."""
+    import build
     rows, covered = [], set()
-    for name, vn, ln, truth, ids, status in items:
+    for it in items:
+        name, vn, ln, _ = it
+        truth, ids, status = _m(it, rule)
         lab, how = vote.accept(ln, rule)
         covered.update(ids)
         if status == "unmatched" and lab is None:
@@ -215,7 +253,7 @@ def dump(items, scored_gt, rule, path):
         reads = {e: vote.reading(ln, e)[0] for e in ENGINES if vote.reading(ln, e) is not None}
         rows.append({"set": name, "vn": vn, "status": status, "gt": ids, "truth": truth, "label": lab,
                      "how": how, "ok": None if truth is None or lab is None else
-                     vote.eval_norm(lab) == vote.eval_norm(truth), "crop": ln.get("crop"),
+                     vote.eval_norm(lab) == vote.eval_norm(truth), "crop": build.crop_of(ln, rule),
                      "det_conf": ln.get("det_conf"),
                      "conf": vote.low_conf(vote.reading(ln, rule.get("primary", "meikiv"))[1])
                      if vote.reading(ln, rule.get("primary", "meikiv")) else None, "reads": reads})
@@ -238,8 +276,8 @@ def cmd_rules(args):
         per_set[name] = (it, sg)
         items += it
         scored.update(sg)
-        n_det = len({i for *_, ids, _ in it for i in ids if i in sg})
-        st = Counter(x[5] for x in it)
+        n_det = len({i for x in it for i in _m(x, None)[1] if i in sg})
+        st = Counter(_m(x, None)[2] for x in it)
         print(f"{name}: {len(shots)} screenshots, {len(it)} teacher lines ({dict(st)}); {len(sg)} scored truth "
               f"lines, {n_det} overlapped by a teacher line ({100 * n_det / max(1, len(sg)):.1f}%)", flush=True)
     report = {"sets": sets, "engines": {n: pipeline_engines(it) for n, (it, _) in per_set.items()}}
@@ -247,13 +285,18 @@ def cmd_rules(args):
     for name, eng in report["engines"].items():
         for e, s in eng.items():
             print(f"  {name:9s} {e:9s} lines {s['lines']:4d}  CER {s['cer']}  exact {s['exact']}")
-    best = choose(items, scored, args.precision)
+    cache = []
+    best = choose(items, scored, args.precision, cache=cache)
     if best is None:
         sys.exit(f"no rule reaches precision {args.precision}")
-    _, rule, s = best
-    report["chosen"] = {"rule": rule, "pooled": s,
+    _, chosen, s = best
+    rule = chosen
+    all_sets = score_all(items, scored, rule)
+    report["chosen"] = {"rule": rule, "pooled": s, "target_precision": args.precision,
                         "precision_ci95": wilson(s["correct"], s["accepted_scored"]),
-                        "per_set": {n: score(it, sg, rule) for n, (it, sg) in per_set.items()}}
+                        "per_set": {n: all_sets[n] for n in sets if n in all_sets},
+                        "per_set_ci95": {n: wilson(all_sets[n]["correct"], all_sets[n]["accepted_scored"])
+                                         for n in sets if n in all_sets}}
     print(f"\nchosen (recall-max at precision >= {args.precision}): {json.dumps(rule)}")
     print(f"  pooled: {fmt(s)}  95% CI of precision {report['chosen']['precision_ci95']}")
     for n, ss in report["chosen"]["per_set"].items():
@@ -278,17 +321,22 @@ def cmd_rules(args):
             "meikiv + 2 of v6s/manga/screenai": {"votes": 2},
             "meikiv + 3 of v6s/manga/screenai": {"votes": 3},
             "meikiv + v6s + manga (no Screen AI)": {"voters": ("v6s", "manga"), "votes": 2},
-            "meikiv + v5s + manga (label_real.py's engines)": {"voters": ("v5s", "manga"), "votes": 2}}
+            "meikiv + v5s + manga (label_real.py's engines)": {"voters": ("v5s", "manga"), "votes": 2},
+            "meiki + 1 of v6s/screenai": {"primary": "meiki", "voters": ("v6s", "screenai"), "votes": 1},
+            "meiki + v6s + screenai (both)": {"primary": "meiki", "voters": ("v6s", "screenai"), "votes": 2},
+            "meiki + 2 of v6s/manga/screenai/v5s, veto, trunc": {
+                "primary": "meiki", "voters": ("v6s", "manga", "screenai", "v5s"), "votes": 2, "veto": True,
+                "trunc": True}}
     report["reference"] = {}
     print("\nreference rules:")
     for name, rule in refs.items():
         s = score(items, scored, rule)
         report["reference"][name] = {"rule": rule, **s}
         print(f"  {name:48s} {fmt(s)}")
-    # the precision/recall frontier of the grid (pooled)
+    # the precision/recall frontier of the grid (pooled), from the scores choose() computed
     pts = []
-    for rule in grid():
-        s = score(items, scored, rule)
+    for rule, ss in cache:
+        s = ss["pooled"]
         if s["precision"] is not None:
             pts.append((s["recall"], s["precision"], rule, s))
     pts.sort(key=lambda t: (-t[0], -t[1]))
@@ -304,7 +352,7 @@ def cmd_rules(args):
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        dump(items, scored, rule, Path(args.out).with_suffix(".lines.json"))
+        dump(items, scored, chosen, Path(args.out).with_suffix(".lines.json"))
         print(f"\nwrote {args.out} and {Path(args.out).with_suffix('.lines.json')}")
 
 

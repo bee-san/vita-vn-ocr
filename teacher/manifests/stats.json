@@ -1,0 +1,84 @@
+{
+ "rule": {
+  "primary": "meiki",
+  "voters": [
+   "v6s",
+   "manga",
+   "screenai",
+   "meikiv"
+  ],
+  "votes": 2,
+  "min_conf": 0.0,
+  "det_conf": 0.0,
+  "veto": true,
+  "trunc": [
+   "screenai"
+  ]
+ },
+ "screenshots_read": 6932,
+ "lines_read": 38240,
+ "accepted": 11783,
+ "rejected": {
+  "not-japanese": 9879,
+  "size": 7412,
+  "disagree": 6999,
+  "screen-edge": 662,
+  "repeat-cap": 492,
+  "short": 380,
+  "confusable-dissent": 327,
+  "truncated": 170,
+  "oov": 2
+ },
+ "by_kind": {
+  "hires": 7519,
+  "vita": 1214,
+  "psp": 3050
+ },
+ "by_split": {
+  "train": 10269,
+  "val": 1514
+ },
+ "crops_by_split_target": {
+  "train/vita": 7678,
+  "train/psp": 4973,
+  "val/vita": 1052,
+  "val/psp": 734
+ },
+ "by_how": {
+  "meiki+v6s+manga+screenai+meikiv": 4546,
+  "meiki+v6s+screenai": 2127,
+  "meiki+v6s+screenai+meikiv": 2036,
+  "meiki+v6s+manga+screenai": 2022,
+  "meiki+v6s+meikiv": 309,
+  "meiki+v6s+manga+meikiv": 209,
+  "meiki+screenai+meikiv": 171,
+  "meiki+manga+screenai+meikiv": 132,
+  "meiki+v6s+manga": 92,
+  "meiki+manga+screenai": 80,
+  "meiki+manga+meikiv": 59
+ },
+ "by_polarity": {
+  "bright-on-dark": 7553,
+  "dark-on-light": 4227,
+  "null": 3
+ },
+ "vns": {
+  "train": 1268,
+  "val": 186
+ },
+ "sessions": 1785,
+ "screenshots": 5033,
+ "unique_labels": 10291,
+ "chars": 120659,
+ "distill_pool": {
+  "train/vita": 4781,
+  "train/psp": 3574,
+  "val/vita": 655,
+  "val/psp": 574
+ },
+ "distill_why": {
+  "disagree": 6999,
+  "short": 380,
+  "confusable-dissent": 327
+ }
+}

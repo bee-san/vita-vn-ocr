@@ -1,6 +1,6 @@
 # runtime: the recognizer in plain C
 
-`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob.
+`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob. The dialogue line finder that feeds it lives next to it (`vocr_lines.c`, `docs/linefind.md`); the two share nothing but naming. `make check` runs the checks of both.
 
 - C99. The runtime uses no `malloc` and nothing from libc except `memcpy`, `memset` and `<math.h>`.
 - The blob is read in place. All working memory comes from one arena that the caller provides, sized exactly by `vocr_arena_bytes()`.
@@ -172,8 +172,8 @@ The full layout is in the docstring of `train/export.py`. `vocr_load()` rejects 
 
 ```sh
 make -C runtime                  # build/vocr_cli, build/libvocr.so
-make -C runtime check            # C unit tests + PyTorch parity on a random-init fixture,
-                                 # both built with ASan + UBSan (CI runs this via ci/runtime.sh)
+make -C runtime check            # line finder checks, then C unit tests + PyTorch parity on a
+                                 # random-init fixture, built with ASan + UBSan (CI: ci/runtime.sh)
 python runtime/tests/parity.py --ckpt models/v1/ckpt_best.pt               # synth val shard
 python runtime/tests/parity.py --ckpt models/v1/ckpt_best.pt --set real    # RGBA crops
 ```

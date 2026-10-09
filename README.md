@@ -23,7 +23,7 @@ realdata/                      real training lines from Vita, PSP and scaled PC 
 data/vocab.txt                 output character set
 synth/                         synthetic dialogue-box renderer and corpus builder
 train/                         model, CTC training, export.py (weights blob for the C runtime)
-runtime/                       on-console recognizer in C99 (vocr.h/vocr.c), tests, ctypes binding
+runtime/                       on-console C99: recognizer (vocr.h/vocr.c), line finder (vocr_lines.c), tests
 docs/                          research notes and results
 .github/, ci/, tests/          CI: lint, unit tests, training smoke, C runtime checks (ci/README.md)
 ```

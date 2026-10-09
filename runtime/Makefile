@@ -1,8 +1,9 @@
 # runtime/Makefile - host builds, tests and ARM cross builds of the vocr runtime.
 #
 #   make                  build/vocr_cli and build/libvocr.so (release flags)
-#   make check            C unit tests, then the PyTorch parity test through a vocr_cli
-#                         built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan)
+#   make check            the line finder's checks (check-lines, vocr_lines.mk), then the
+#                         recognizer's: C unit tests and the PyTorch parity test through a
+#                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan)
 #   make check-all        check with gcc and clang, plus strict release builds of both
 #   make arm              static Cortex-A9 CLIs for qemu-arm: NEON and scalar
 #   make size             ARM code size of vocr.o (NEON and scalar)
@@ -30,7 +31,6 @@ endif
 ifeq ($(origin LDFLAGS),undefined)
 LDFLAGS = $(SAN)
 endif
-override CFLAGS += $(WARN)
 LDLIBS = -lm
 SAN_ENV ?=
 VOCR_CKPT ?=
@@ -45,7 +45,7 @@ QEMU ?= $(TOOLS)/bin/qemu-arm
 SRC = vocr.c vocr.h
 CLI = tools/vocr_cli.c
 
-.PHONY: all check check-all arm size parity-arm clean
+.PHONY: all check check-vocr check-all arm size parity-arm clean
 
 all: $(OUT)/vocr_cli $(OUT)/libvocr.so
 
@@ -60,17 +60,22 @@ $(OUT)/libvocr.so: $(SRC) | $(OUT)
 	$(CC) $(WARN) $(OPT) -fPIC -shared -o $@ vocr.c $(LDLIBS)
 
 # ---- check programs: $(CC) $(CFLAGS) ... $(LDFLAGS); rebuilt whenever CC or the flags change
+#      (CFLAGS are kept and extended with $(WARN), which must come last: -ffp-contract=off)
 FLAGS_STAMP = $(OUT)/.check-flags
 $(shell mkdir -p $(OUT)/arm; echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)' | cmp -s - $(FLAGS_STAMP) || \
         echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)' > $(FLAGS_STAMP))
 
 $(OUT)/test_vocr_check: $(SRC) tests/test_vocr.c $(FLAGS_STAMP) | $(OUT)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ vocr.c tests/test_vocr.c $(LDFLAGS) $(LDLIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ vocr.c tests/test_vocr.c $(LDFLAGS) $(LDLIBS)
 
 $(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ vocr.c $(CLI) $(LDFLAGS) $(LDLIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ vocr.c $(CLI) $(LDFLAGS) $(LDLIBS)
 
-check: $(OUT)/test_vocr_check $(OUT)/vocr_cli_check
+check: check-lines check-vocr
+
+include vocr_lines.mk
+
+check-vocr: $(OUT)/test_vocr_check $(OUT)/vocr_cli_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_check
 	$(PYTHON) tests/parity.py $(if $(VOCR_CKPT),--ckpt "$(VOCR_CKPT)",--fixture) \
 	    $(if $(VOCR_SHARD),--shard "$(VOCR_SHARD)") $(PARITY_ARGS) \

@@ -61,7 +61,9 @@ PROFILES = {   # per set: number of cases (None = all)
     "quick": {"synth-val": 8, "vita-test": 24, "psp-test": 8, "regions": 8},
     "full": {"synth-val": 100, "vita-test": None, "psp-test": None, "regions": None},
 }
-DEFAULT_CKPT = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr")) / "shared/models/v1/ckpt_best.pt"
+# the v1 checkpoint (release v0.1.0-baseline): models/v1/ like runtime/README.md, or the fleet's copy
+DEFAULT_CKPT = (Path(os.environ["HERD"]) / "shared/models/v1/ckpt_best.pt" if os.environ.get("HERD")
+                else ROOT / "models/v1/ckpt_best.pt")
 
 
 def pad4(b):
@@ -227,6 +229,24 @@ def encode_case(case, exps, model_names):
     return struct.pack("<I", 4 + len(body)) + body
 
 
+def write_cases_bin(path, models, cases, exps, n_classes):
+    """cases.bin from the models (dicts with name, file, mode, bytes, crc, arena), the cases
+    and their expectations (one {model name: expect()} per case). Returns the header sizes."""
+    names = [m["name"] for m in models]
+    records = [encode_case(c, e, names) for c, e in zip(cases, exps)]
+    max_frames = max([1] + [x["max_line_frames"] for e in exps for x in e.values()])  # longest single line
+    max_lines = max([0] + [len(x["boxes"]) for e in exps for x in e.values()])
+    regions = [c["px"].shape for c in cases if c["kind"] == KIND_REGION]
+    max_rh, max_rw = max([0] + [h for h, _, _ in regions]), max([0] + [w for _, w, _ in regions])
+    header = MAGIC + struct.pack("<11I", 1, len(models), len(records), max(len(r) for r in records), max_lines,
+                                 max_frames, n_classes, max_rw, max_rh, 0, 0)
+    header += b"\0" * (64 - len(header))
+    mrec = b"".join(m["name"].encode().ljust(16, b"\0") + m["file"].encode().ljust(64, b"\0")
+                    + struct.pack("<4I", m["mode"], m["bytes"], m["crc"], m["arena"]) for m in models)
+    Path(path).write_bytes(header + mrec + b"".join(records))
+    return dict(max_frames=max_frames, max_lines=max_lines, max_region=(max_rw, max_rh))
+
+
 # ---------------------------------------------------------------- the screen font
 
 def write_font(out, texts, vocab):
@@ -308,7 +328,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--profile", choices=sorted(PROFILES), default="quick")
-    ap.add_argument("--ckpt", type=Path, default=DEFAULT_CKPT, help="train.py checkpoint (default: models/v1)")
+    ap.add_argument("--ckpt", type=Path, default=DEFAULT_CKPT,
+                    help="train.py checkpoint (default: $HERD/shared/models/v1 or models/v1)")
     ap.add_argument("--stem", default="v1", help="blob file names: STEM_f32.vocr, STEM_w8.vocr")
     ap.add_argument("--modes", default="w8i,w8f,f32")
     ap.add_argument("--sets", default="synth-val,vita-test,psp-test,regions")
@@ -342,30 +363,15 @@ def main():
         models.append(dict(name=m, file=f, mode=MODES[m], bytes=len(blob), crc=zlib.crc32(blob) & 0xFFFFFFFF,
                            arena=v.arena_bytes, sha256=hashlib.sha256(blob).hexdigest(), vocr=v))
     n_classes = models[0]["vocr"].n_classes
-    records, meta_cases = [], []
-    max_frames = max_lines = max_rw = max_rh = 0
-    for i, case in enumerate(cases):
-        exps = {m["name"]: expect(case, m["vocr"], lines_lib, n_classes) for m in models}
-        rec = encode_case(case, exps, [m["name"] for m in models])
-        records.append(rec)
-        for e in exps.values():   # the app's logits buffer holds the longest single line
-            max_frames = max(max_frames, e["max_line_frames"])
-            max_lines = max(max_lines, len(e["boxes"]))
-        if case["kind"] == KIND_REGION:
-            max_rh, max_rw = max(max_rh, case["px"].shape[0]), max(max_rw, case["px"].shape[1])
+    exps = [{m["name"]: expect(case, m["vocr"], lines_lib, n_classes) for m in models} for case in cases]
+    sizes = write_cases_bin(out / "cases.bin", models, cases, exps, n_classes)
+    meta_cases = []
+    for i, (case, e) in enumerate(zip(cases, exps)):
         meta = {k: v for k, v in case.items() if k != "px"}
         meta.update(index=i, width=int(case["px"].shape[1]), height=int(case["px"].shape[0]),
-                    channels=1 if case["px"].ndim == 2 else int(case["px"].shape[2]), expected=exps)
+                    channels=1 if case["px"].ndim == 2 else int(case["px"].shape[2]), expected=e)
         meta_cases.append(meta)
-    max_frames = max(max_frames, 1)
-    header = MAGIC + struct.pack("<11I", 1, len(models), len(records), max(len(r) for r in records), max_lines,
-                                 max_frames, n_classes, max_rw, max_rh, 0, 0)
-    header += b"\0" * (64 - len(header))
-    mrec = b""
-    for m in models:
-        mrec += m["name"].encode().ljust(16, b"\0") + m["file"].encode().ljust(64, b"\0")
-        mrec += struct.pack("<4I", m["mode"], m["bytes"], m["crc"], m["arena"])
-    (out / "cases.bin").write_bytes(header + mrec + b"".join(records))
+    max_frames = sizes["max_frames"]
     font = None
     if not args.no_font:
         n_glyphs, font_path = write_font(out, [c["gt"] for c in cases] +

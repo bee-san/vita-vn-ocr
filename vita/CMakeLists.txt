@@ -48,7 +48,7 @@ else()
   endif()
 endif()
 
-add_executable(vocr_test app/main.c app/screen.c)
+add_executable(vocr_test app/main.c app/screen.c app/cases.c)
 target_include_directories(vocr_test PRIVATE ${RT})
 target_compile_options(vocr_test PRIVATE ${VOCR_ARCH} -O2 -std=gnu99 -Wall -Wextra -Werror)
 target_compile_definitions(vocr_test PRIVATE VOCR_GIT="${VOCR_GIT}")

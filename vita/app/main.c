@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cases.h"
 #include "screen.h"
 #include "vocr.h"
 #include "vocr_lines.h"
@@ -42,17 +43,13 @@
 #endif
 #define APP_VERSION "1"
 #define DIR "ux0:data/vocr/"
-#define MAX_MODELS 4
+#define MAX_MODELS VC_MAX_MODELS
 #define MAX_REPEAT 15
-#define TEXT_CAP 4096
-#define CASE_MAGIC "VOCRCASE"
-#define HEADER_BYTES 64u
-#define MODEL_BYTES 96u
+#define TEXT_CAP VC_TEXT_CAP
 #define N_PMU 6
 #define PROBE_STACK (32 * 1024)
 
-enum { KIND_LINE = 0, KIND_REGION = 1 };
-enum { FLAG_DARK = 1, FLAG_AUTO_POLARITY = 2 };
+typedef char lines_max_matches[VC_MAX_LINES == VOCR_LINES_MAX ? 1 : -1];
 
 /* ---------------------------------------------------------------- config */
 
@@ -207,11 +204,6 @@ static void *read_file(const char *path, size_t *n)
     return buf;
 }
 
-static uint32_t rd32(const unsigned char *p)
-{
-    return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24;
-}
-
 static uint32_t crc_table[256];
 
 static void crc_init(void)
@@ -304,16 +296,7 @@ typedef struct {
     Stats st;
 } Model;
 
-typedef struct {
-    uint32_t kind, flags, w, h, ch;
-    const char *id, *gt;            /* NUL-terminated copies in case_strings */
-    const unsigned char *px;
-    struct {
-        const char *text;
-        uint32_t crc, frames, n_lines;
-        uint32_t box[VOCR_LINES_MAX][5];
-    } exp[MAX_MODELS];
-} Case;
+typedef VcCase Case;
 
 static Model models[MAX_MODELS];
 static unsigned n_models, n_cases, n_classes, max_frames, max_lines, max_case_bytes, max_rw, max_rh;
@@ -336,35 +319,33 @@ static int model_wanted(const char *name)
 
 static int load_models(SceUID fd)
 {
-    unsigned char hdr[HEADER_BYTES], rec[MODEL_BYTES];
+    unsigned char hdr[VC_HEADER_BYTES], rec[VC_MODEL_BYTES];
+    VcHeader h;
     unsigned i, j;
-    if (read_full(fd, hdr, sizeof hdr) || memcmp(hdr, CASE_MAGIC, 8) || rd32(hdr + 8) != 1) {
+    if (read_full(fd, hdr, sizeof hdr) || vc_header(hdr, &h)) {
         say(SCR_RED, "cases.bin: not a version-1 bundle");
         return -1;
     }
-    n_models = rd32(hdr + 12);
-    n_cases = rd32(hdr + 16);
-    max_case_bytes = rd32(hdr + 20);
-    max_lines = rd32(hdr + 24);
-    max_frames = rd32(hdr + 28);
-    n_classes = rd32(hdr + 32);
-    max_rw = rd32(hdr + 36);
-    max_rh = rd32(hdr + 40);
-    if (!n_models || n_models > MAX_MODELS || !n_cases || !max_case_bytes || max_lines > VOCR_LINES_MAX ||
-        !max_frames || !n_classes) {
-        say(SCR_RED, "cases.bin: bad header");
-        return -1;
-    }
+    n_models = h.n_models;
+    n_cases = h.n_cases;
+    max_case_bytes = h.max_case_bytes;
+    max_lines = h.max_lines;
+    max_frames = h.max_frames;
+    n_classes = h.n_classes;
+    max_rw = h.max_rw;
+    max_rh = h.max_rh;
     for (i = 0; i < n_models; i++) {
         Model *md = &models[i];
+        VcModel vm;
         char path[128];
         if (read_full(fd, rec, sizeof rec)) return -1;
-        memcpy(md->name, rec, 16);
-        memcpy(md->file, rec + 16, 64);
-        md->mode = (int)rd32(rec + 80);
-        md->blob_bytes = rd32(rec + 84);
-        md->blob_crc = rd32(rec + 88);
-        md->host_arena = rd32(rec + 92);
+        vc_model(rec, &vm);
+        memcpy(md->name, vm.name, sizeof md->name);
+        memcpy(md->file, vm.file, sizeof md->file);
+        md->mode = (int)vm.mode;
+        md->blob_bytes = vm.blob_bytes;
+        md->blob_crc = vm.blob_crc;
+        md->host_arena = vm.host_arena;
         md->active = model_wanted(md->name);
         for (j = 0; j < i; j++) /* models that share a blob file load it once */
             if (!strcmp(models[j].file, md->file) && models[j].blob) {
@@ -428,63 +409,6 @@ static int plan_models(void)
     return any ? 0 : -1;
 }
 
-/* Parses one record (without its leading length) into *cs. */
-static int parse_case(const unsigned char *p, size_t n, Case *cs)
-{
-    const unsigned char *end = p + n;
-    uint32_t id_len, gt_len, i, j, pixels;
-    char *s = case_strings;
-    if (n < 28) return -1;
-    cs->kind = rd32(p);
-    cs->flags = rd32(p + 4);
-    cs->w = rd32(p + 8);
-    cs->h = rd32(p + 12);
-    cs->ch = rd32(p + 16);
-    id_len = rd32(p + 20);
-    gt_len = rd32(p + 24);
-    p += 28;
-    if ((cs->ch != 1 && cs->ch != 4) || (cs->kind == KIND_REGION && cs->ch != 4) || !cs->w || !cs->h ||
-        id_len > 255 || gt_len > TEXT_CAP || (size_t)(end - p) < ((id_len + gt_len + 3u) & ~3u))
-        return -1;
-    memcpy(s, p, id_len);
-    s[id_len] = 0;
-    cs->id = s;
-    s += id_len + 1;
-    memcpy(s, p + id_len, gt_len);
-    s[gt_len] = 0;
-    cs->gt = s;
-    s += gt_len + 1;
-    p += (id_len + gt_len + 3u) & ~3u;
-    for (i = 0; i < n_models; i++) {
-        uint32_t tl;
-        if (end - p < 16) return -1;
-        tl = rd32(p);
-        cs->exp[i].crc = rd32(p + 4);
-        cs->exp[i].frames = rd32(p + 8);
-        cs->exp[i].n_lines = rd32(p + 12);
-        p += 16;
-        if (tl > TEXT_CAP || cs->exp[i].n_lines > VOCR_LINES_MAX ||
-            (size_t)(end - p) < 20u * cs->exp[i].n_lines + ((tl + 3u) & ~3u))
-            return -1;
-        for (j = 0; j < cs->exp[i].n_lines; j++, p += 20) {
-            cs->exp[i].box[j][0] = rd32(p);
-            cs->exp[i].box[j][1] = rd32(p + 4);
-            cs->exp[i].box[j][2] = rd32(p + 8);
-            cs->exp[i].box[j][3] = rd32(p + 12);
-            cs->exp[i].box[j][4] = rd32(p + 16);
-        }
-        memcpy(s, p, tl);
-        s[tl] = 0;
-        cs->exp[i].text = s;
-        s += tl + 1;
-        p += (tl + 3u) & ~3u;
-    }
-    pixels = cs->w * cs->h * cs->ch;
-    if ((size_t)(end - p) < pixels) return -1;
-    cs->px = p;
-    return 0;
-}
-
 /* ---------------------------------------------------------------- running */
 
 typedef struct {
@@ -517,7 +441,7 @@ static int run_case(Model *md, const Case *cs, Result *r, int check)
     r->crc = 0;
     r->frames = 0;
     r->text[0] = 0;
-    if (cs->kind == KIND_LINE) {
+    if (cs->kind == VC_KIND_LINE) {
         vocr_image im;
         im.pixels = cs->px;
         im.width = cs->w;
@@ -574,7 +498,7 @@ static float median(float *v, unsigned n)
 static int boxes_equal(const Case *cs, unsigned mi, const Result *r)
 {
     unsigned i;
-    if (cs->kind != KIND_REGION) return 1;
+    if (cs->kind != VC_KIND_REGION) return 1;
     if (r->set.count != cs->exp[mi].n_lines) return 0;
     for (i = 0; i < r->set.count; i++) {
         const VocrLine *l = &r->set.lines[i];
@@ -594,7 +518,7 @@ static uint32_t do_case(const Case *cs, unsigned index)
     size_t sl = 0;
     uint32_t color = SCR_GREEN;
     unsigned dark = 0;
-    if (cs->kind == KIND_LINE && (cs->flags & FLAG_AUTO_POLARITY)) {
+    if (cs->kind == VC_KIND_LINE && (cs->flags & VC_FLAG_AUTO_POLARITY)) {
         VocrLinesImage li;
         int d;
         li.pixels = cs->px;
@@ -604,8 +528,8 @@ static uint32_t do_case(const Case *cs, unsigned index)
         li.bpp = cs->ch;
         d = vocr_line_dark(&li, 0, 0, cs->w, cs->h);
         dark = d > 0;
-    } else if (cs->kind == KIND_LINE) {
-        dark = (cs->flags & FLAG_DARK) != 0;
+    } else if (cs->kind == VC_KIND_LINE) {
+        dark = (cs->flags & VC_FLAG_DARK) != 0;
     }
     summary[0] = 0;
     for (mi = 0; mi < n_models; mi++) {
@@ -659,7 +583,7 @@ static uint32_t do_case(const Case *cs, unsigned index)
                 t_med = median(sorted, (unsigned)cfg.repeat);
                 t_min = sorted[0];
                 usf = frames ? 1000.0f * t_med / (float)frames : 0.0f;
-                if (cs->kind == KIND_LINE) {
+                if (cs->kind == VC_KIND_LINE) {
                     st->ms[st->n_line] = t_med;
                     st->us_frame[st->n_line++] = usf;
                 } else {
@@ -673,8 +597,8 @@ static uint32_t do_case(const Case *cs, unsigned index)
             }
             emit("%s\t%s\t%s\t%s\t%d\t%u\t%u\t%u\t%u\t%u\t%.3f\t%.3f\t%.2f\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu"
                  "\t%08lx\t%08lx\t%s\t%s",
-                 cs->id, cs->kind == KIND_LINE ? "line" : "region", md->name, status, rc, dark, cs->w, cs->h,
-                 frames, cs->kind == KIND_REGION ? res.set.count : 1u, t_min, t_med, usf,
+                 cs->id, cs->kind == VC_KIND_LINE ? "line" : "region", md->name, status, rc, dark, cs->w, cs->h,
+                 frames, cs->kind == VC_KIND_REGION ? res.set.count : 1u, t_min, t_med, usf,
                  pmu[0] / (unsigned)cfg.repeat, pmu[1] / (unsigned)cfg.repeat, pmu[2] / (unsigned)cfg.repeat,
                  pmu[3] / (unsigned)cfg.repeat, pmu[4] / (unsigned)cfg.repeat, pmu[5] / (unsigned)cfg.repeat,
                  (unsigned long)cs->exp[mi].crc, (unsigned long)res.crc, esc(cs->exp[mi].text, e1, sizeof e1),
@@ -851,7 +775,7 @@ static int worker_main(SceSize args, void *argp)
     lines_arena = mb_alloc("vocr_lines", lines_arena_bytes, NULL);
     logits = (float *)mb_alloc("vocr_logits", (size_t)max_frames * n_classes * sizeof(float), NULL);
     case_buf = (unsigned char *)mb_alloc("vocr_case", max_case_bytes, NULL);
-    case_strings = (char *)malloc(256 + (TEXT_CAP + 1) * (MAX_MODELS + 1));
+    case_strings = (char *)malloc(VC_STRINGS_BYTES);
     if (!lines_arena || !logits || !case_buf || !case_strings) {
         say(SCR_RED, "out of memory");
         emit("# error out-of-memory");
@@ -873,8 +797,8 @@ static int worker_main(SceSize args, void *argp)
     for (i = 0; i < n_cases && !stop_requested; i++) {
         uint32_t len;
         unsigned char lb[4];
-        if (read_full(fd, lb, 4) || (len = rd32(lb)) < 4 || len > max_case_bytes || read_full(fd, case_buf, len - 4) ||
-            parse_case(case_buf, len - 4, &cs)) {
+        if (read_full(fd, lb, 4) || (len = vc_rd32(lb)) < 4 || len > max_case_bytes || read_full(fd, case_buf, len - 4) ||
+            vc_case(case_buf, len - 4, n_models, case_strings, &cs)) {
             say(SCR_RED, "cases.bin: bad record %u", i);
             emit("# error bad-record %u", i);
             break;

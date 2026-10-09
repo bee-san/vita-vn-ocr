@@ -67,6 +67,25 @@ def test_tiny_prep_shape():
     assert x.shape[:3] == (1, 1, 32) and x.shape[3] % 8 == 0
     assert t == -(-round(300 * 32 / 40) // 8)
     assert float(x.min()) == -1.0
+    x, t = backends.TinyTorch.prep(np.zeros((40, 300, 3), np.uint8), 24)
+    assert x.shape[:3] == (1, 1, 24) and t == -(-round(300 * 24 / 40) // 8)
+
+
+def test_tiny_checkpoint_fields(tmp_path):
+    """The checkpoint's height and bottleneck are honoured; a multi-character class such as
+    "<unk>" decodes to one placeholder character."""
+    import torch
+
+    from model import TinyVNOCR
+    vocab = ["あ", "い", "<unk>"]
+    torch.manual_seed(0)
+    m = TinyVNOCR(len(vocab) + 1, width=0.25, bottleneck=48)
+    path = tmp_path / "ck.pt"
+    torch.save({"model": m.state_dict(), "vocab": vocab, "width": 0.25, "bottleneck": 48, "step": 1}, path)
+    rec = backends.TinyTorch(path)
+    assert rec.H == 32 and rec.info["bottleneck"] == 48 and rec.vocab[-1] == backends.UNK
+    assert len(rec.read([np.full((30, 90, 3), 128, np.uint8)])) == 1
+    assert backends.ctc_greedy([3, 1], rec.vocab) == backends.UNK + "あ"
 
 
 def test_finder_precision_ignores_uncertain_lines():

@@ -54,6 +54,7 @@ PPOCR = {
     "ppocr-v5-server": "ch_PP-OCRv5_rec_server.onnx",
     "ppocr-v6-small": "PP-OCRv6_rec_small.onnx",
 }
+UNK = "\ufffd"  # what a multi-character class such as "<unk>" decodes to: one wrong character
 
 
 def threads():
@@ -117,36 +118,45 @@ class Recognizer:
 
 
 class TinyTorch(Recognizer):
-    """train/model.py checkpoint; preprocessing = train/train.py (grey, height 32
-    bilinear, width <= 1024, padded to a multiple of 8 by repeating the last column),
-    one line per forward pass, greedy CTC."""
+    """train/model.py checkpoint; preprocessing = train/train.py (grey, bilinear resize to
+    the checkpoint's input height, 32 unless it records "height", width <= 1024, padded to
+    a multiple of 8 by repeating the last column), one line per forward pass, greedy CTC.
+    The model is built with the checkpoint's "width" and "bottleneck" when it records
+    them. A vocab entry longer than one character (e.g. "<unk>") decodes to U+FFFD, so
+    it counts as one wrong character."""
 
     H, MAX_W, STRIDE = 32, 1024, 8
 
     def __init__(self, path):
+        import inspect
+
         import torch
 
         from model import TinyVNOCR
         torch.set_num_threads(threads())
         ck = torch.load(path, map_location="cpu", weights_only=False)
-        self.vocab = ck["vocab"]
-        self.model = TinyVNOCR(len(self.vocab) + 1, width=ck.get("width", 1.0))
+        self.vocab = [c if len(c) == 1 else UNK for c in ck["vocab"]]
+        self.H = int(ck.get("height") or TinyTorch.H)
+        accepted = inspect.signature(TinyVNOCR).parameters
+        kw = {k: ck[k] for k in ("width", "bottleneck") if ck.get(k) is not None and k in accepted}
+        self.model = TinyVNOCR(len(self.vocab) + 1, **kw)
         self.model.load_state_dict(ck["model"])
         self.model.eval()
         self.torch = torch
         n = sum(p.numel() for p in self.model.parameters())
         self.name = f"tiny:{Path(path).name}"
         self.info = {"params": n, "fp32_weight_bytes": 4 * n, "classes": len(self.vocab) + 1,
-                     "step": ck.get("step"), "vocab_set": set(self.vocab)}
+                     "height": self.H, **kw, "step": ck.get("step"), "vocab_set": set(self.vocab)}
 
     @classmethod
-    def prep(cls, rgb):
+    def prep(cls, rgb, H=None):
+        H = H or cls.H
         g = to_gray(rgb) if rgb.ndim == 3 else rgb
         h, w = g.shape
-        nw = max(8, min(cls.MAX_W, int(round(w * cls.H / h))))
-        g = cv2.resize(g, (nw, cls.H), interpolation=cv2.INTER_LINEAR).astype(np.float32)
+        nw = max(8, min(cls.MAX_W, int(round(w * H / h))))
+        g = cv2.resize(g, (nw, H), interpolation=cv2.INTER_LINEAR).astype(np.float32)
         W = (nw + cls.STRIDE - 1) // cls.STRIDE * cls.STRIDE
-        x = np.empty((1, 1, cls.H, W), np.float32)
+        x = np.empty((1, 1, H, W), np.float32)
         x[0, 0, :, :nw] = g
         x[0, 0, :, nw:] = g[:, -1:]
         return x / 127.5 - 1.0, (nw + cls.STRIDE - 1) // cls.STRIDE
@@ -155,7 +165,7 @@ class TinyTorch(Recognizer):
         out = []
         with self.torch.no_grad():
             for c in crops:
-                x, t = self.prep(c)
+                x, t = self.prep(c, self.H)
                 logits = self.model(self.torch.from_numpy(x))[:t, 0]
                 out.append(ctc_greedy(logits.argmax(1).numpy(), self.vocab))
         return out
@@ -168,14 +178,16 @@ class TinyOnnx(Recognizer):
         so.intra_op_num_threads = threads()
         self.s = ort.InferenceSession(str(path), so, providers=["CPUExecutionProvider"])
         self.inp = self.s.get_inputs()[0].name
+        h = self.s.get_inputs()[0].shape[2]
+        self.H = h if isinstance(h, int) else TinyTorch.H
         self.vocab = [c for c in Path(vocab_path).read_text(encoding="utf-8").split("\n") if c]
         self.name = f"tiny-onnx:{Path(path).name}"
-        self.info = {"vocab_set": set(self.vocab)}
+        self.info = {"height": self.H, "vocab_set": set(self.vocab)}
 
     def read(self, crops):
         out = []
         for c in crops:
-            x, t = TinyTorch.prep(c)
+            x, t = TinyTorch.prep(c, self.H)
             y = self.s.run(None, {self.inp: x})[0]
             y = y[:t, 0] if y.ndim == 3 and y.shape[1] == 1 else y.reshape(-1, y.shape[-1])[:t]
             out.append(ctc_greedy(y.argmax(1), self.vocab))

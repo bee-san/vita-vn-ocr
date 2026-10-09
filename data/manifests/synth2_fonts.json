@@ -1,0 +1,18 @@
+[
+ {
+  "family": "fusionpixel10",
+  "zip_url": "https://github.com/TakWolf/fusion-pixel-font/releases/download/2026.09.25/fusion-pixel-font-10px-proportional-ttf-v2026.09.25.zip",
+  "zip_sha256": "ea3e9c6cfffa4d42edc78e4b8d5d3032f5601908261628fee2d8df906af75aec",
+  "file": "fusionpixel10/fusion-pixel-10px-proportional-ja.ttf",
+  "sha256": "7db8ba41d0d51ee4a8495ba894e3730e837fb42b0cae8489f924597a660bb0ba",
+  "license": "OFL-1.1"
+ },
+ {
+  "family": "fusionpixel12",
+  "zip_url": "https://github.com/TakWolf/fusion-pixel-font/releases/download/2026.09.25/fusion-pixel-font-12px-proportional-ttf-v2026.09.25.zip",
+  "zip_sha256": "47585b9c4b6d8d57380e9dec75bc7e8043fdbfa77d1843c3aaa19a1e7bd15d50",
+  "file": "fusionpixel12/fusion-pixel-12px-proportional-ja.ttf",
+  "sha256": "cb54245a786df7fe302e20a63d3771cecbd9feb6f91bec439d030c218f24a808",
+  "license": "OFL-1.1"
+ }
+]

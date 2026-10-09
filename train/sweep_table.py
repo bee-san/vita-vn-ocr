@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 """Collect sweep runs into a Pareto table (Markdown + JSON).
 
-  sweep_table.py [--runs runs] [--eval eval_ckpt_last.json] [--json docs/arch-sweep.json]
+  sweep_table.py [--runs runs] [--eval eval_ckpt_last.json] [--ref base_s1]
+                 [--export path/to/runtime/train/export.py] [--json docs/arch-sweep.json]
 
-For every runs/<name>/ with an eval JSON (sweep_eval.py) this reads the config
-from the checkpoint, measures its cost with cost.report and prints one row:
-parameters, int8 weight bytes, estimated arena at the longest line (1024 px at
-height 32, i.e. 768 px at height 24 for the same physical text), MACs at that
-width, synth-val CER and real CER (fp32 and int8 weights). A row is on the
-Pareto front when no other row has both a smaller (int8 weights + arena) and a
-lower pooled real CER.
+For every runs/<name>/ with an eval JSON (sweep_eval.py) this reads the config from
+the checkpoint, measures its cost with cost.report and prints one row: parameters,
+int8 blob bytes and the runtime's exact arena (cost.runtime_sizes, when runtime's
+exporter is importable; otherwise cost.py's estimates, marked "est."), MACs at the
+longest line (1024 px at height 32, i.e. 768 px at height 24 for the same physical
+text), synth-val CER and real CER (fp32 and int8 weights).
+
+Real CER is pooled over real-hand and real-pseudo (errors / reference characters).
+"Δ vs ref" is the pooled int8 real CER minus the reference run's, with a 95% paired
+bootstrap interval over lines (10,000 resamples, seed 0). A row is on the Pareto
+front when no other row has both a smaller on-console footprint (int8 blob + W8F
+arena) and a lower pooled int8 real CER.
 """
 import argparse
 import json
@@ -17,12 +23,15 @@ import re
 import sys
 from pathlib import Path
 
+import numpy as np
 import torch
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import cost  # noqa: E402
 from model import from_checkpoint  # noqa: E402
+from sweep_eval import score_norm  # noqa: E402
+from train import edit_distance  # noqa: E402
 
 REAL = ("real-hand", "real-pseudo")
 
@@ -33,51 +42,89 @@ def pooled(res, variant, sets=REAL):
     return e / n if n else None
 
 
-def train_hours(log):
-    """Wall hours of the training loop from the step-rate log lines (approximate)."""
+def line_errors(res, variant="int8", sets=REAL):
+    """{(set, line id): (errors, reference chars)} of one eval JSON."""
+    out = {}
+    for s in sets:
+        for d in res["results"].get(f"{variant}/{s}", {}).get("lines_detail", []):
+            p, r = score_norm(d["pred"]), score_norm(d["ref"])
+            out[(s, d["id"])] = (edit_distance(list(p), list(r)), len(r))
+    return out
+
+
+def paired_delta(a, b, n_boot=10_000, seed=0):
+    """Pooled CER(a) - CER(b) over their common lines, with a 95% bootstrap interval."""
+    keys = sorted(set(a) & set(b))
+    ea = np.array([a[k][0] for k in keys], np.float64)
+    eb = np.array([b[k][0] for k in keys], np.float64)
+    n = np.array([a[k][1] for k in keys], np.float64)
+    delta = (ea.sum() - eb.sum()) / n.sum()
+    idx = np.random.default_rng(seed).integers(0, len(keys), (n_boot, len(keys)))
+    boot = ((ea[idx] - eb[idx]).sum(1)) / n[idx].sum(1)
+    return delta, float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))
+
+
+def train_minutes(log, batch=96):
+    """Approximate wall minutes of the training loop: steps x batch / mean logged lines/s
+    (the shared box's load varies, so this is only a rough cost indication)."""
     if not log.exists():
         return None
-    rates = [float(m) for m in re.findall(r"(\d+) lines/s", log.read_text())]
-    steps = re.findall(r"step (\d+)/(\d+)", log.read_text())
+    text = log.read_text()
+    rates = [float(m) for m in re.findall(r"(\d+) lines/s", text)]
+    steps = re.findall(r"step (\d+)/(\d+)", text)
     if not rates or not steps:
         return None
-    batch = 96
-    return int(steps[-1][0]) * batch / (sum(rates) / len(rates)) / 3600
+    return int(steps[-1][0]) * batch / (sum(rates) / len(rates)) / 60
 
 
-def rows(runs_dir, eval_name):
-    out = []
+def rows(runs_dir, eval_name, exporter, ref):
+    out, errs = [], {}
     for ev in sorted(runs_dir.glob(f"*/{eval_name}")):
         res = json.loads(ev.read_text(encoding="utf-8"))
         ck = torch.load(ev.parent / res["ckpt"], map_location="cpu", weights_only=False)
         model, meta = from_checkpoint(ck)
         n_cls = len(meta["vocab"]) + 1
         w_max = 1024 * meta["height"] // 32
-        c = cost.report(model, n_cls, meta["height"], meta["vocab"])
-        streamed, _ = cost.arena(model, meta["height"], w_max, n_cls)
+        c = cost.report(model, n_cls, meta["height"], meta["vocab"], exporter)
+        est_arena, _ = cost.arena(model, meta["height"], w_max, n_cls)
         r = res["results"]
-        out.append({
+        row = {
             "run": ev.parent.name, "width": meta["width"], "classes": n_cls,
             "bottleneck": meta["bottleneck"], "height": meta["height"],
-            "qat": bool(res.get("qat")), "step": res["step"],
-            "params": c["params"], "weights_int8": c["weights_int8"],
-            "weights_fp32": c["weights_fp32"], "vocab_bytes": c["vocab_bytes"],
-            "arena_max": streamed, "w_max": w_max, "macs_max": cost.macs(model, meta["height"], w_max),
-            **{f"arena_{w}": c[f"arena_{w}"] for w in cost.WIDTHS},
+            "qat": bool(res.get("qat")), "step": res["step"], "params": c["params"],
+            "weights_int8_est": c["weights_int8"], "weights_fp32_est": c["weights_fp32"],
+            "arena_est_max": est_arena, "w_max": w_max,
+            "macs_max": cost.macs(model, meta["height"], w_max),
             "synth_fp32": r["fp32/synth-val"]["cer"], "synth_int8": r["int8/synth-val"]["cer"],
             "synth_line_fp32": r["fp32/synth-val"]["line_acc"],
-            **{f"{s}_{v}": r[f"{v}/{s}"]["cer"] for s in REAL for v in ("fp32", "int8")
-               if f"{v}/{s}" in r},
+            "synth_by_cat_fp32": r["fp32/synth-val"].get("by_cat"),
             "real_fp32": pooled(r, "fp32"), "real_int8": pooled(r, "int8"),
+            "real_w8i": pooled(r, "w8i"),
             "real_chars": sum(r[f"fp32/{s}"]["chars"] for s in REAL if f"fp32/{s}" in r),
-            "train_hours": train_hours(ev.parent / "train.log"),
-        })
+            "train_minutes": train_minutes(ev.parent / "train.log",
+                                           int((ck.get("args") or {}).get("batch", 96))),
+        }
+        for s in REAL:
+            for v in ("fp32", "int8"):
+                if f"{v}/{s}" in r:
+                    row[f"{s}_{v}"] = r[f"{v}/{s}"]["cer"]
+                    row[f"{s}_line_{v}"] = r[f"{v}/{s}"]["line_acc"]
+        if exporter is not None:
+            row.update({k: v for k, v in c.items() if k.startswith(("blob_", "rt_arena_"))})
+            row["footprint"] = row["blob_int8"] + row[f"rt_arena_w8f_{cost.WIDTHS[-1]}"]
+        else:
+            row["footprint"] = row["weights_int8_est"] + row["arena_est_max"]
+        errs[row["run"]] = line_errors(res)
+        out.append(row)
+    if ref in errs:
+        for row in out:
+            if row["run"] != ref:
+                row["delta_vs_ref"] = paired_delta(errs[row["run"]], errs[ref])
     for a in out:
-        size = a["weights_int8"] + a["arena_max"]
         a["pareto"] = a["real_int8"] is not None and not any(
             b is not a and b["real_int8"] is not None
-            and b["weights_int8"] + b["arena_max"] <= size and b["real_int8"] <= a["real_int8"]
-            and (b["weights_int8"] + b["arena_max"] < size or b["real_int8"] < a["real_int8"])
+            and b["footprint"] <= a["footprint"] and b["real_int8"] <= a["real_int8"]
+            and (b["footprint"] < a["footprint"] or b["real_int8"] < a["real_int8"])
             for b in out)
     return out
 
@@ -86,24 +133,32 @@ def pct(x):
     return "–" if x is None else f"{100 * x:.2f}%"
 
 
-def kb(x):
+def kib(x):
     return f"{x / 1024:,.0f}"
 
 
-def markdown(rs):
-    head = ("| run | width | classes | bneck | H | QAT | params | int8 weights KiB | "
-            "est. arena KiB (max line) | weights+arena KiB | MMAC (max line) | "
-            "synth-val CER fp32 / int8 | real-hand CER int8 | real-pseudo CER int8 | "
-            "real pooled CER fp32 / int8 | Pareto |")
+def markdown(rs, exact, ref):
+    size_cols = ("int8 blob KiB | W8F arena KiB | footprint KiB" if exact else
+                 "int8 weights KiB (est.) | non-streaming arena KiB (est.) | footprint KiB (est.)")
+    head = (f"| run | width | classes | bneck | H | QAT | params | {size_cols} | MMAC (longest line) | "
+            f"synth-val CER fp32 / int8 | real-hand CER int8 | real-pseudo CER int8 | "
+            f"real pooled CER fp32 / int8 | Δ vs {ref} (95% CI) | Pareto |")
     lines = [head, "|" + "---|" * (head.count("|") - 1)]
-    for a in sorted(rs, key=lambda a: a["weights_int8"] + a["arena_max"]):
+    for a in sorted(rs, key=lambda a: (a["footprint"], a["run"])):
+        if exact:
+            sizes = f"{kib(a['blob_int8'])} | {kib(a[f'rt_arena_w8f_{cost.WIDTHS[-1]}'])}"
+        else:
+            sizes = f"{kib(a['weights_int8_est'])} | {kib(a['arena_est_max'])}"
+        d = a.get("delta_vs_ref")
+        delta = "ref" if a["run"] == ref else ("–" if d is None else
+                                               f"{100 * d[0]:+.2f} ({100 * d[1]:+.2f}, {100 * d[2]:+.2f})")
         lines.append(
             f"| {a['run']} | {a['width']} | {a['classes']} | {a['bottleneck']} | {a['height']} | "
-            f"{'yes' if a['qat'] else ''} | {a['params']:,} | {kb(a['weights_int8'])} | "
-            f"{kb(a['arena_max'])} | {kb(a['weights_int8'] + a['arena_max'])} | "
+            f"{'yes' if a['qat'] else ''} | {a['params']:,} | {sizes} | {kib(a['footprint'])} | "
             f"{a['macs_max'] / 1e6:.0f} | {pct(a['synth_fp32'])} / {pct(a['synth_int8'])} | "
             f"{pct(a.get('real-hand_int8'))} | {pct(a.get('real-pseudo_int8'))} | "
-            f"{pct(a['real_fp32'])} / {pct(a['real_int8'])} | {'**yes**' if a['pareto'] else ''} |")
+            f"{pct(a['real_fp32'])} / {pct(a['real_int8'])} | {delta} | "
+            f"{'**yes**' if a['pareto'] else ''} |")
     return "\n".join(lines)
 
 
@@ -111,11 +166,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", type=Path, default=HERE.parent / "runs")
     ap.add_argument("--eval", default="eval_ckpt_last.json")
+    ap.add_argument("--ref", default="base_s1")
+    ap.add_argument("--export", help="runtime's train/export.py (default: next to this file)")
     ap.add_argument("--json", type=Path)
     args = ap.parse_args()
     torch.set_num_threads(1)
-    rs = rows(args.runs, args.eval)
-    print(markdown(rs))
+    exporter = cost.runtime_exporter(args.export)
+    rs = rows(args.runs, args.eval, exporter, args.ref)
+    print(markdown(rs, exporter is not None, args.ref))
     if args.json:
         args.json.write_text(json.dumps(rs, indent=1), encoding="utf-8")
 

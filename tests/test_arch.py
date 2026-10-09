@@ -85,6 +85,20 @@ def test_unk_encoder():
     assert unk("あうい") == [1, 3, 2]
 
 
+@pytest.mark.parametrize("size", [2500, 3500])
+def test_reduced_vocabs(size):
+    """data/vocab_N.txt: N entries, a code-point-sorted subset of data/vocab.txt plus the
+    trailing <unk>, with every kana of the full vocab kept."""
+    from common import DATA, load_vocab
+    from vocab import is_kana
+    full = load_vocab()
+    v = load_vocab(DATA / f"vocab_{size}.txt")
+    assert len(v) == size and v[-1] == UNK and UNK not in full
+    assert v[:-1] == sorted(v[:-1]) and set(v[:-1]) <= set(full)
+    assert {c for c in full if is_kana(c)} <= set(v)
+    assert set("、。「」『』！？…ー") <= set(v)
+
+
 def test_checkpoint_round_trip(tmp_path):
     torch.manual_seed(0)
     m = TinyVNOCR(4, width=0.25, bottleneck=48).to(memory_format=torch.channels_last)

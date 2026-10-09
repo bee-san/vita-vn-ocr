@@ -39,7 +39,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "synth"))
-from build_corpus import PUNCT  # noqa: E402
 from common import DATA, load_vocab  # noqa: E402
 
 UNK = "〓"
@@ -80,6 +79,7 @@ def vn_freq(corpus=DATA / "corpus", names=NAMES):
 
 def build(size, freq, full):
     """size - 1 characters (forced set first, then by frequency) plus UNK, code-point sorted."""
+    from build_corpus import PUNCT  # lazy: build_corpus imports pyarrow
     keep = {c for c in full if is_kana(c) or c in PUNCT or c in DIGITS}
     for c, _ in sorted(((c, freq.get(c, 0.0)) for c in full if c not in keep),
                        key=lambda t: (-t[1], t[0])):

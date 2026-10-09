@@ -16,8 +16,15 @@ Weights, after BatchNorm folding (every conv + BN becomes a conv with a bias):
          weights and every bias stay 4 B. Vocab text is counted separately (UTF-8 +
          NUL). Blob headers and channel padding are not counted.
 
-Arena (ESTIMATE; replaced by runtime/'s exact formula once it merges): fp32
-activations, executed layer by layer at full line width W, with
+Exact sizes from runtime/ (when its train/export.py is importable: after it merges,
+or via --export / $VOCR_EXPORT pointing at a checkout's export.py): the blob bytes
+build_blob() writes (fp32 and int8; header, channel padding and vocab included) and
+plan_arena(), the exact bytes vocr_arena_bytes() asks for, per arithmetic mode (f32,
+w8f, w8i) at its default tiling (4-frame tiles, 16-frame head batches). The runtime
+streams the line in tiles, so its arena barely grows with the line width.
+
+Non-streaming arena ESTIMATE (always reported, for a runtime that does not tile the
+width): fp32 activations, executed layer by layer at full line width W, with
   - a plain conv / non-residual block holding its input and output;
   - a residual block holding its input x and the depthwise output d, the pointwise
     result being accumulated into x in place (x + pw(d));
@@ -28,7 +35,9 @@ caller's RGBA crop is not. "head_full" adds the cost of materialising all T x C
 logits instead, for a runtime that does not stream the head.
 """
 import argparse
+import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -108,7 +117,46 @@ def vocab_bytes(vocab):
     return sum(len(c.encode("utf-8")) + 1 for c in vocab)
 
 
-def report(model, n_classes, height, vocab=None):
+def runtime_exporter(path=None):
+    """runtime's export module (exact blob and arena sizes), or None if unavailable."""
+    cands = [Path(p) for p in (path, os.environ.get("VOCR_EXPORT")) if p] + [HERE / "export.py"]
+    for p in cands:
+        if not p.exists():
+            continue
+        spec = importlib.util.spec_from_file_location("vocr_export", p)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        if all(hasattr(mod, n) for n in ("build_blob", "model_ops", "read_blob", "plan_arena",
+                                         "MODE_F32", "MODE_W8F", "MODE_W8I")):
+            return mod
+    return None
+
+
+def runtime_sizes(E, model, vocab, height, widths=WIDTHS):
+    """Blob bytes and exact arena bytes per mode and width from runtime's exporter."""
+    out = {}
+    for int8 in (False, True):
+        blob, _ = E.build_blob(E.model_ops(model.eval(), height), vocab, height, int8, 1024, b"")
+        parsed = E.read_blob(blob)
+        out["blob_int8" if int8 else "blob_f32"] = len(blob)
+        modes = (("w8f", E.MODE_W8F), ("w8i", E.MODE_W8I)) if int8 else (("f32", E.MODE_F32),)
+        for name, mode in modes:
+            for w in widths:
+                out[f"rt_arena_{name}_{w}"] = E.plan_arena(parsed, w, 0, 0, mode)
+    return out
+
+
+def default_vocab(n_classes):
+    """The repo vocab with n_classes - 1 entries, or placeholders of 3 UTF-8 bytes."""
+    data = HERE.parent / "data"
+    for p in [data / "vocab.txt", *sorted(data.glob("vocab_*.txt"))]:
+        v = [c for c in p.read_text(encoding="utf-8").split("\n") if c] if p.exists() else []
+        if len(v) == n_classes - 1:
+            return v
+    return [chr(0x4E00 + i) for i in range(n_classes - 1)]
+
+
+def report(model, n_classes, height, vocab=None, exporter=None):
     fp32, int8, folded = weight_bytes(model)
     r = {"params": sum(p.numel() for p in model.parameters()), "params_folded": folded,
          "weights_fp32": fp32, "weights_int8": int8,
@@ -120,6 +168,8 @@ def report(model, n_classes, height, vocab=None):
         r[f"macs_{w}"] = macs(model, height, w)
         r[f"arena_{w}"] = streamed
         r[f"arena_head_full_{w}"] = full
+    if exporter is not None:
+        r.update(runtime_sizes(exporter, model, vocab or default_vocab(n_classes), height))
     return r
 
 
@@ -131,8 +181,10 @@ def main():
     ap.add_argument("--classes", type=int, default=5355)
     ap.add_argument("--height", type=int, default=32)
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--export", help="runtime's train/export.py (default: next to this file)")
     args = ap.parse_args()
     torch.set_num_threads(1)
+    exporter = runtime_exporter(args.export)
     vocab = None
     if args.ckpt:
         model, meta = from_checkpoint(args.ckpt)
@@ -140,7 +192,7 @@ def main():
     else:
         model = TinyVNOCR(args.classes, width=args.width, bottleneck=args.bottleneck)
         height, classes = args.height, args.classes
-    r = report(model, classes, height, vocab)
+    r = report(model, classes, height, vocab, exporter)
     if args.json:
         print(json.dumps(r))
         return
@@ -148,8 +200,15 @@ def main():
           f"{r['head_params']:,}); weights fp32 {r['weights_fp32']:,} B, int8 "
           f"{r['weights_int8']:,} B")
     for w in WIDTHS:
-        print(f"  W={w:4d}: {r[f'macs_{w}'] / 1e6:7.1f} MMAC, est. arena {r[f'arena_{w}']:,} B "
-              f"({r[f'arena_head_full_{w}']:,} B with all logits materialised)")
+        print(f"  W={w:4d}: {r[f'macs_{w}'] / 1e6:7.1f} MMAC, non-streaming est. arena "
+              f"{r[f'arena_{w}']:,} B ({r[f'arena_head_full_{w}']:,} B with all logits materialised)")
+    if exporter is None:
+        print("  runtime exporter not found: no exact blob / arena sizes")
+        return
+    print(f"  runtime blob: fp32 {r['blob_f32']:,} B, int8 {r['blob_int8']:,} B")
+    for mode in ("f32", "w8f", "w8i"):
+        print(f"  runtime arena {mode}: " + ", ".join(f"W={w} {r[f'rt_arena_{mode}_{w}']:,} B"
+                                                   for w in WIDTHS))
 
 
 if __name__ == "__main__":

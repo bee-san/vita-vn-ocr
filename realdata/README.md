@@ -60,6 +60,7 @@ Models (labelling only, none ships): rapidocr 3.10.0's `ch_PP-OCRv5_det_mobile.o
 | accepted | 8,318 lines (89,675 characters, 7,609 distinct labels) from 1,405 VNs; 2,748 dark-on-light |
 | crops | real_train 9,815 (Vita 5,454, PSP 4,361), real_val 1,499 (Vita 808, PSP 691) |
 | split | train 1,221 VNs / 1,478 sessions, val 184 VNs / 209 sessions |
+| unlabelled pool | 7,935 lines (11,172 crops) of 1,223 training-split VNs, for distillation |
 
 Label quality, all by eye on the crop the label goes with:
 
@@ -86,6 +87,7 @@ like the rest. The eval test sets come from other games.
 | `manifests/handcheck.jsonl` | lines checked by eye: `truth` (null = unreadable), the `ink` box checked, `set` (dev / spot) |
 | `manifests/stats.json` | counts from the last `build.py decide` |
 | `$REALDATA/real_train.npz`, `real_val.npz` | grey crops in render.py's shard format, dark text inverted; meta per crop: `id, vn, session, kind, target, pol, dark, inverted, how` |
+| `$REALDATA/real_unlabelled.npz` | the same crops for every other Japanese line of a training-split game (the readers disagreed): empty labels, the four readings in meta. For soft / logit distillation from a teacher; `train.py --real` drops them all |
 
 The split is by game: a VN is validation when `15 <= md5(vn) % 100 < 25` (`build.split_of`),
 otherwise training. A capture session (`<vn>/<release>/<n>`, screenshots of one release

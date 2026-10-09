@@ -14,6 +14,12 @@ eight times overall (UI strings like セーブ repeat on every screenshot). Test
 changed after selection. Split by VN: 15 <= md5(vn) % 100 < 25 is validation (about 10%
 of VNs; < 15 is the test hash), everything else train.
 
+`decide` also lists every other line with Japanese text from a training-split game (the
+readers disagreed, so it has no label) in $REALDATA/unlabelled.jsonl, and `render` cuts
+those into real_unlabelled.npz: crops for soft / logit distillation from a teacher, with
+empty labels (train.py --real drops them, so they can't be trained on by mistake) and the
+four readings in meta as hints.
+
 `render` is deterministic and needs no OCR: it rescales each screenshot to the line's
 target (vita 960x544 / psp 480x272; native Vita and PSP shots stay as they are, PC shots
 give one crop per target where the glyphs are legible), crops the padded line box, and
@@ -140,7 +146,7 @@ def decide(args):
     shots = {r["url"]: r for r in load_shots()}
     recs = load_reads()
     hand = match_hand(load_hand(), recs)
-    why, kept = Counter(), []
+    why, kept, pool = Counter(), [], []
     for r in recs.values():
         if is_test_vn(r["vn"]) or r["vn"] in extra:
             why["test-game"] += 1
@@ -152,6 +158,11 @@ def decide(args):
             lab, how = rule({k: v[0] for k, v in r["r"].items()})
         if lab is None:
             why[how] += 1
+            if how in ("disagree", "confusable-dissent") and split_of(r["vn"]) == "train":
+                tg = targets_of(r["kind"], r["dims"], r["ink"])
+                if tg:
+                    pool.append({"id": r["id"], "ink": r["ink"], "targets": tg, "pol": r["pol"],
+                                 "reads": {k: v[0] for k, v in r["r"].items()}})
             continue
         if not vote.japanese(lab):
             why["not-japanese"] += 1
@@ -185,6 +196,9 @@ def decide(args):
         LINES[kind].write_text("".join(json.dumps({x: k[x] for x in FIELDS}, ensure_ascii=False) + "\n"
                                        for k in out if k["kind"] == kind), encoding="utf-8")
     write_games(out, shots)
+    unl = realdata_dir() / "unlabelled.jsonl"
+    unl.write_text("".join(json.dumps(u, ensure_ascii=False) + "\n" for u in sorted(pool, key=lambda u: u["id"])),
+                   encoding="utf-8")
     stats = {"rule": args.rule, "lines_read": len(recs), "accepted": len(out), "rejected": dict(why),
              "sessions": {sp: len({shots[k["url"]]["session"] for k in out if k["split"] == sp})
                           for sp in ("train", "val")},
@@ -193,7 +207,8 @@ def decide(args):
              "by_how": Counter(k["how"] for k in out), "by_polarity": Counter(k["pol"] for k in out),
              "vns": {sp: len({k["vn"] for k in out if k["split"] == sp}) for sp in ("train", "val")},
              "unique_labels": len({k["label"] for k in out}),
-             "chars": sum(len(k["label"]) for k in out)}
+             "chars": sum(len(k["label"]) for k in out),
+             "unlabelled_train_lines": len(pool)}
     (MAN / "stats.json").write_text(json.dumps(stats, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(stats, ensure_ascii=False, indent=1), flush=True)
     missing = {k["url"] for k in out} - set(shots)
@@ -296,7 +311,12 @@ def render(args):
     by_shot = defaultdict(list)
     for r in load_lines():
         by_shot[r["id"].rsplit("_", 1)[0]].append(r)
-    out = {"train": ([], [], []), "val": ([], [], [])}
+    unl = realdata_dir() / "unlabelled.jsonl"
+    if unl.exists():
+        for line in unl.read_text(encoding="utf-8").splitlines():
+            u = json.loads(line)
+            by_shot[u["id"].rsplit("_", 1)[0]].append({**u, "label": "", "split": "unlabelled", "how": "none"})
+    out = {"train": ([], [], []), "val": ([], [], []), "unlabelled": ([], [], [])}
     for sk in sorted(by_shot):
         s = shots[sk]
         bgr = cv2.imread(str(shot_path(s)), cv2.IMREAD_COLOR)
@@ -319,6 +339,8 @@ def render(args):
                 metas.append({"real": True, "id": r["id"], "vn": s["vn"], "session": s["session"],
                               "kind": s["kind"], "target": t, "pol": r["pol"], "dark": dark,
                               "inverted": bool(dark and not args.keep_polarity), "how": r["how"]})
+                if "reads" in r:
+                    metas[-1]["reads"] = r["reads"]
     dest = realdata_dir()
     for split, (crops, labels, metas) in out.items():
         if not crops:
@@ -334,7 +356,10 @@ def render(args):
         tmp.replace(path)
         print(f"{path}: {len(crops)} crops ({Counter(m['target'] for m in metas)})", flush=True)
     counts = "; ".join(f"{split}: {len(out[split][0])} crops "
-                       f"({dict(Counter(m['target'] for m in out[split][2]))})" for split in out)
+                       f"({dict(Counter(m['target'] for m in out[split][2]))})" for split in ("train", "val"))
+    counts += (f"\n    real_unlabelled.npz: {len(out['unlabelled'][0])} crops of lines from training-split games "
+               "that the readers disagreed on;\n    labels are empty, the four readings are in meta (for logit "
+               "distillation from a teacher)")
     stats_path = MAN / "stats.json"
     write_readme(json.loads(stats_path.read_text(encoding="utf-8")) if stats_path.exists() else {"rule": "?"},
                  counts)

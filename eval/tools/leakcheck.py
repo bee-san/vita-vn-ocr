@@ -6,9 +6,11 @@
 Every screenshot in the test manifests (or every image under the --test dirs) is
 compared with every *.jpg / *.png under the pool dirs, recursively, by the
 correlation of 32x18 grey thumbnails (each normalised to zero mean and unit
-variance). Frames of one scene differ only in their text and correlate above
-0.95; unrelated frames rarely pass 0.8. Each pair at or above --min-corr is
-printed, tagged "same-vn" when both file names start with the same VNDB id
+variance). Measured on the 74 vita-test screenshots: the same scene with its
+dialogue painted out, re-saved as JPEG q60 and scaled to 480x272 and back still
+correlates at least 0.958 with the original, while 3,000 random pairs from
+different VNs peak at 0.78 (Vita) and 0.74 (PSP). Each pair at or above
+--min-corr is printed, tagged "same-vn" when both file names start with the same VNDB id
 (v123_...), "cross-vn" when they differ, then the spread of each test
 screenshot's best match. A same-vn pair means the pool holds a test game; a
 cross-vn pair is one capture filed under two ids (or a shared stock image) and

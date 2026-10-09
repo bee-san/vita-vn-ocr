@@ -90,11 +90,13 @@ from hand-drawn boxes.
   originals, fandiscs, sequels, prequels). Those 10 VNs are in `all` (`family`):
   v3, v10606, v18160, v18717, v19338, v20226, v24312, v25914, v26075 and v40027.
   v1's `real_train.npz` has 12 lines from two of them (v3, v18717, both relations
-  of v7721), and v1 reads v7721 at 68.6% CER, so there is no sign this helped it.
+  of v7721), and v1 reads v7721 at 68.55% CER, so there is no sign this helped it.
 - **Near-duplicate audit.** `eval/tools/leakcheck.py` compared the 74 vita-test
   screenshots with 7,675 non-reserved pool images (v1's background pool plus
   realdata's vita, psp and hires shots). No pair reached 0.95 thumbnail
-  correlation; the best was between 0.90 and 0.95, for one screenshot.
+  correlation; the best was between 0.90 and 0.95, for one screenshot. A test
+  screenshot with its text painted out, recompressed and rescaled still scores at
+  least 0.958 against itself, and random pairs from different games peak at 0.78.
 - **Known leak into v1.** v16566 and v19850 are not `is_test_vn` games, so
   `synth/render.py` could use 9 of these 74 screenshots as unlabelled backgrounds
   for v1's shards. v1's CER on those 28 lines is 79.3%, against 15.7% on the other

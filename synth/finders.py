@@ -23,7 +23,8 @@ find_lines_grad(rgb)
 """
 import numpy as np
 
-MAX_LINES, MAX_LINE_H = 8, 88
+MAX_LINES = 8
+TOO_TALL = 88      # common.find_lines rejects a line run taller than MAX_LINE_H - 8 = 88 rows
 
 
 def _runs(on, gap=3):
@@ -61,7 +62,7 @@ def find_lines_mask(ink):
     h_img, w_img = ink.shape
     counts = ink.sum(axis=1)
     runs = [(a, b) for a, b in _runs(counts >= 2) if b - a + 1 >= 8]
-    if any(b - a + 1 > MAX_LINE_H for a, b in runs):
+    if any(b - a + 1 > TOO_TALL for a, b in runs):
         return None
     runs = _median_filter(runs)
     if len(runs) > MAX_LINES:
@@ -91,7 +92,7 @@ def find_lines_grad(rgb, col_frac=0.12):
         return []
     runs = [(a, b) for a, b in _runs(prof > 0.25 * prof.max()) if b - a + 1 >= 8]
     runs = _median_filter(runs)
-    if len(runs) > MAX_LINES or any(b - a + 1 > MAX_LINE_H for a, b in runs):
+    if len(runs) > MAX_LINES or any(b - a + 1 > TOO_TALL for a, b in runs):
         return None
     out = []
     for a, b in runs:

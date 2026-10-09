@@ -90,8 +90,8 @@ python psp/pack.py bundle --eboot psp/EBOOT.PBP --name VOCRV --blob v1_w8.vocr -
 Environment: the shared 16-core x86 host (Amazon Linux 2023), PPSSPPHeadless 1.20.4 (JIT
 core), the v1 checkpoint (`models/v1/ckpt_best.pt`) exported at this head. The crops are
 eval's GT-box crops (RGBA). psp-test was taken from eval's PR #5 at 9ea9710, before it merged;
-the manifest on main is byte-identical (sha256 2b8db084…). The model is the
-EBOOT's (`MEMSIZE=0`: the 24 MB user partition of a PSP-1000). PPSSPP's emulated time is
+the manifest on main is byte-identical (sha256 2b8db084…). The EBOOT is built with
+`MEMSIZE=0`, so it gets a PSP-1000's 24 MB user partition. PPSSPP's emulated time is
 deterministic, so one run per row. Command: `psp/run_all.sh OUT models/v1/ckpt_best.pt`.
 Raw outputs are in `$HERD/shared/artifacts/psp/results`.
 

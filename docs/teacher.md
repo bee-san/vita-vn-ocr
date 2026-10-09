@@ -23,27 +23,29 @@ network namespace with no interfaces. None of owocr's cloud engines is ever load
 
 `eval/run.py --model 'cmd:… teacher/engine_cli.py ENGINE'` (`teacher/measure_engines.sh`)
 reads eval's own crops: box plus 4 px on Vita, 2 px on PSP. The sets are vita-test as
-merged in #2 (206 scored lines, 16 VNs) and psp-test from PR #5 (245 lines, 14 VNs; the
-file measured, sha256 e23ce16f…, is also the one at its head c3193bc).
+merged in #2 (206 scored lines, 16 VNs) and psp-test as merged in #5 (245 lines, 14 VNs).
 
 The table is the PR #11 review's rerun: one engine at a time, one thread on one core at
-nice 19 of the loaded shared host, outside heavy.sh, whose slots stayed full. On every line
-both runs read, it gives the same prediction as the first run, which had the six engines
-side by side in one heavy.sh slot. Host ms/line is informational only.
+nice 19 of the loaded shared host, outside heavy.sh, whose slots stayed full. It ran on
+PR #5's head, and gave the same prediction as the first run on every line both read (that
+run had the six engines side by side in one heavy.sh slot). The merged psp-test changes
+the boxes of 5 lines, one text and 4 tags. Each engine re-read those 5 crops, which now
+take in a closing 」 or 。 the old boxes cut off, and all 245 lines were scored again by
+`eval/run.py`. Host ms/line is informational only.
 
 | engine | vita-test CER / exact | psp-test CER / exact | host ms/line (vita / psp) |
 |---|---|---|---|
-| **PP-OCRv6 small rec** | **1.33% / 89.3%** | **1.47% / 87.8%** | 64 / 53 |
-| MeikiOCR rec (BGR, as its docs) | 1.60% / 86.4% | 4.10% / 76.7% | 55 / 53 |
-| MeikiOCR rec (RGB, as owocr feeds it) | 1.64% / 85.4% | 4.14% / 76.3% | 56 / 54 |
-| Chrome Screen AI (owocr) | 3.20% / 87.9% | 4.86% / 80.4% | 249 / 264 |
-| PP-OCRv5 server rec | 3.43% / 74.3% | 11.36% / 46.9% | 5630 / 5679 |
-| manga-ocr (re-flowed) | 5.46% / 65.0% | 7.81% / 60.8% | 1104 / 998 |
-| *bar: JIS-trimmed int8 PP-OCRv5 mobile (eval)* | *2.30%* | *5.58%* | |
+| **PP-OCRv6 small rec** | **1.33% / 89.3%** | **1.23% / 90.2%** | 64 / 53 |
+| MeikiOCR rec (BGR, as its docs) | 1.60% / 86.4% | 3.86% / 79.2% | 55 / 53 |
+| MeikiOCR rec (RGB, as owocr feeds it) | 1.64% / 85.4% | 3.90% / 78.8% | 56 / 54 |
+| Chrome Screen AI (owocr) | 3.20% / 87.9% | 4.62% / 82.9% | 249 / 264 |
+| PP-OCRv5 server rec | 3.43% / 74.3% | 11.04% / 48.6% | 5630 / 5679 |
+| manga-ocr (re-flowed) | 5.46% / 65.0% | 7.65% / 62.4% | 1104 / 998 |
+| *bar: JIS-trimmed int8 PP-OCRv5 mobile (eval, `docs/results.md`)* | *2.30%* | *5.34%* | |
 
 Of the engines measured, PP-OCRv6 small reads both sets best. It is also a CTC model, so
 its logits suit the soft (CTC) distillation the owner suggests. MeikiOCR drops characters
-on small PSP names: 20.1% CER on psp-test's 62 name lines, against 4.3% for PP-OCRv6 small.
+on small PSP names: 19.6% CER on psp-test's 62 name lines, against 3.8% for PP-OCRv6 small.
 That is one reason the teacher needs voters.
 
 ## The teacher on eval's screenshots: choosing the rule
@@ -56,7 +58,9 @@ of 3,672 rules (primary reading, voter set, votes, confidence and detector thres
 confusable veto and the truncation check). Votes come only from engines other than
 MeikiOCR, and a rule needs at least two of them (see "Independent votes" below). The rule
 chosen is the one with the highest recall whose precision is at least 99.5% on vita-test,
-on psp-test and pooled.
+on psp-test and pooled. The rule was chosen on PR #5's psp-test, then measured again on the
+merged one (no OCR needed): it is the same rule, with the same numbers on every row of the
+two tables below.
 
 **Chosen rule** (`teacher/rule.json`): MeikiOCR's own reading of the line it detected is
 the label when at least 2 of PP-OCRv6 small, manga-ocr and Chrome Screen AI read the same
@@ -95,9 +99,10 @@ The first version of this rule (PR #11 before review) also let MeikiOCR's re-rea
 voter view (`meikiv`) vote. That is one recognizer reading two crops of the same line, so
 its agreement is weak evidence, and 539 accepted training lines rested on MeikiOCR plus a
 single other engine plus `meikiv`. Read by eye, 2 of 30 random ones were wrong: a page
-cursor ▾ read as a trailing ・, and にゃるべそ。 where the screen has ぺ. Of the 37 whose
-only independent dissent was a dakuten or handakuten, 4 were wrong (スケシュール,
-負けたらとうする。, てきない and the にゃるべそ。 line) and 2 unclear (バ/パ at PSP size). The
+cursor ▾ read as a trailing ・, and にゃるべそ。 where the screen has ぺ. Of the 37 where a
+dissenting engine read the same text with a dakuten or handakuten changed, 4 were wrong
+(スケシュール, 負けたらとうする。, てきない and the にゃるべそ。 line) and 2 unclear (バ/パ at PSP
+size). The
 random spot check, 0 wrong of 159 lines then, could not show it, and eval's sets hold only
 11 scored lines on that path.
 
@@ -105,17 +110,17 @@ So the grid counts only PP-OCRv6 small, manga-ocr, Screen AI and PP-OCRv5 server
 and needs at least two of them (`measure.MIN_VOTES`). With one, half 0 of the 2-fold
 check picks MeikiOCR plus 1 of PP-OCRv6 small / manga-ocr at a minimum character
 confidence of 0.3, which scores 96.77% (90/93) on the other half. The chosen rule is the
-old one without `meikiv`. It costs 2.4 points of recall on eval's sets (65.4% → 63.0%),
-removes 583 training lines and adds back 7 that only `meikiv`'s confusable dissent had
-vetoed (all 7 checked by eye and right). The 2-fold held-out precision went from 99.01%
-(301/304) to 99.31% (289/291).
+old one without `meikiv`. It costs 2.4 points of recall on eval's sets (65.4% → 63.0%). On
+the relabel it rejects 583 lines the old rule accepted (counted before the repeat cap) and
+accepts 7 that only `meikiv`'s confusable dissent had vetoed (all 7 checked by eye and
+right). The 2-fold held-out precision went from 99.01% (301/304) to 99.31% (289/291).
 
 ## Relabel of the training screenshots
 
 The input is realdata's collection (`shots_{vita,psp,hires}.jsonl` at 1c03d92, 6,998
 screenshots). Dropped: every VN with `is_test_vn()` or in eval's `test_games.json` `all`,
 every screenshot of a reserved release (`sessions`), and every screenshot of eval's
-manifests (PR #5's superset of the merged list). That leaves 6,932 screenshots, read at
+manifests (PR #5's, now merged). That leaves 6,932 screenshots, read at
 native resolution in one heavy.sh slot (5 single-thread workers, 1 h 28 min wall).
 
 - **38,240 lines** read. **11,228 accepted** from 4,923 screenshots, 1,446 VNs and 1,768
@@ -162,9 +167,10 @@ whose `by` field says which sample a line came from):
 - 50 drawn in review from the rebuilt set, among lines not checked before.
 
 By the rule of three, the label error rate is at most 1.5% at 95% confidence. The review
-also checked 20 random lines of the 188 in the final set whose only independent dissent is
-a dakuten or handakuten: all 20 right, though one crop (v8576_55673_3) clips the row the
-dakuten sit in.
+also checked 20 random lines of the 188 in the final set where another reading (an engine's,
+or MeikiOCR's re-read) has the same text with a dakuten or handakuten changed: all 20
+right, though one crop (v8576_55673_3) cuts off the tops of the glyphs, where its dakuten
+sit.
 
 **realdata's hand checks** (321 training-side lines, `measure.py hand`): 174 of them have
 an accepted teacher label. 170 match exactly. I checked the other 4 by eye, and in each
@@ -199,8 +205,8 @@ Shard details:
 
 ## Limitations
 
-- psp-test comes from eval's PR #5 head, which wasn't merged when I measured. If it
-  changes, rerun `measure.py rules` and `build.py decide`; the reads don't change.
+- If eval's test sets change again, rerun `measure.py rules` and `build.py decide`; the
+  reads don't change. `rule.json` records the sha256 of the manifests it was measured on.
 - Recall is about 63%, and lower for PSP (58%) and for mincho, small, coloured and
   dark-on-light text (54–55%). The accepted set therefore under-represents the hardest
   styles. The distillation pool holds those lines unlabelled.

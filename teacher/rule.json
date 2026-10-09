@@ -126,9 +126,9 @@
    "source": "eval/manifests/vita-test.jsonl as merged in #2 (b4c584e)"
   },
   "psp-test": {
-   "path": "$TEACHER_OUT/inputs/eval/psp-test.jsonl",
-   "sha256": "e23ce16fca660c83dc5c5de33c7c4488565772c1072c70497f5a98a46a096f18",
-   "source": "eval/manifests/psp-test.jsonl from PR #5 head bebd4f9 (not merged when measured)"
+   "path": "eval/manifests/psp-test.jsonl",
+   "sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+   "source": "eval/manifests/psp-test.jsonl as merged in #5 (a2057df); the rule was first chosen on PR #5's head bebd4f9 (sha256 e23ce16f...), and re-measuring on the merged file gives the same rule and numbers"
   }
  }
 }

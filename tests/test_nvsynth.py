@@ -1,4 +1,5 @@
-"""nvsynth/nv_extract.py and fetch.py: line filters, ink box, grey visibility, crops and the shard format.
+"""nvsynth/nv_extract.py and nv_fetch.py: line filters, ink box, grey visibility, crops, the shard format and
+the download budget.
 
 Pages are drawn in memory (rectangles stand in for glyph rows), so nothing is downloaded.
 """
@@ -271,8 +272,8 @@ def test_run_skips_an_unreadable_source_and_a_bad_page(tmp_path, monkeypatch):
     files = {str(p.relative_to(raw)): (p.stat().st_size, "x") for p in (bad, good)}
     monkeypatch.setattr(fetch, "hub_files", lambda split: files)
 
-    def fake_download(path, size, sha, raw_dir, budget):
-        budget.take(size)
+    def fake_download(path, size, sha, raw_dir, budget, ticket=None):
+        budget.take(size, ticket)
         budget.landed(size)
         return raw_dir / path, 0.0
 
@@ -300,3 +301,44 @@ def test_budget_abort_wakes_waiting_downloads():
     b.abort()
     t.join(timeout=10)
     assert not t.is_alive() and err
+
+
+def test_budget_serves_downloads_in_file_order():
+    """The cutting loop takes the files in order, so a later file must never take the space an
+    earlier one waits for: the loop would then wait on the earlier file forever. (In the every-line
+    build, train_040 waited about 26 minutes while six later files took the budget, and landed
+    five minutes before the cutting reached it.)"""
+    import threading
+    import time
+    b = fetch.Budget(10, free=lambda: 10**12)
+    b.take(6, ticket=0)                                         # file 0 holds 6 of 10
+    order = []
+
+    def get(k):
+        b.take(6, ticket=k)
+        order.append(k)
+
+    later = threading.Thread(target=get, args=(2,))
+    later.start()                                               # file 2 starts waiting first ...
+    time.sleep(0.3)
+    earlier = threading.Thread(target=get, args=(1,))
+    earlier.start()                                             # ... then file 1
+    time.sleep(0.3)
+    assert order == []                                          # neither fits next to file 0
+    b.give(6)                                                   # file 0 cut: room for one more
+    earlier.join(timeout=10)
+    assert order == [1] and later.is_alive()                    # file 1 got it; file 2 waits its turn
+    b.give(6)
+    later.join(timeout=10)
+    assert order == [1, 2] and b.next_ticket == 3
+
+
+def test_budget_floor_covers_every_path(tmp_path, monkeypatch):
+    import shutil
+    from collections import namedtuple
+    usage = namedtuple("usage", "total used free")
+    frees = {str(tmp_path / "out"): 500, str(tmp_path / "raw"): 100}
+    monkeypatch.setattr(shutil, "disk_usage", lambda p: usage(0, 0, frees[str(p)]))
+    b = fetch.Budget(10**9, min_free=50, path=(str(tmp_path / "out"), str(tmp_path / "raw")))
+    assert b.free() == 100                                      # the fuller filesystem decides
+    assert b._ok(30) and not b._ok(45)

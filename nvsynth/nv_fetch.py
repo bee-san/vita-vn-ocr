@@ -14,10 +14,10 @@ cut their text lines into train.py shards, and delete each raw file afterwards.
       shards DIR/nv_<split>_NNN_bBB.npz by a hash of (file, page, line), so bucket BB
       of every file is a uniform sample of all pages: a glob such as '*_b00.npz' picks
       1/B of the lines without loading the rest.
-      Downloads run ahead of the cutting, but raw files on disk (finished or in flight)
-      never exceed --max-raw-gb, and a download waits while it would leave less than
-      --min-free-gb free on the disk. Resumable: finished sources are skipped and a
-      complete raw file is not downloaded again.
+      Downloads run ahead of the cutting, in file order, but raw files on disk (finished or in
+      flight) never exceed --max-raw-gb, and a download waits while it would leave less than
+      --min-free-gb free on the filesystem of DIR or --raw. Resumable: finished sources are
+      skipped and a complete raw file is not downloaded again.
   nv_fetch.py merge-val --parts DIR --to FILE
       Concatenates DIR/nv_validation_*.npz into one shard (the held-out set).
   nv_fetch.py manifest --dirs DIR [DIR ...] --write FILE [--val FILE]
@@ -114,14 +114,22 @@ def parse_range(spec, n):
 class Budget:
     """Raw-file bytes allowed on disk at once (finished downloads plus in-flight ones), and a
     floor of free disk space: a download starts only if the disk keeps min_free bytes free once
-    every pending download and the output still to be written for it have landed."""
+    every pending download and the output still to be written for it have landed. paths are the
+    directories whose filesystems must keep that floor (the raw and output directories).
+
+    Downloads with a ticket take their share strictly in ticket order (0, 1, 2, ...). The cutting
+    loop consumes the files in that order, so a later file must never take the space an earlier
+    one is waiting for: the loop would wait on the earlier file, which waits for space that only
+    the loop frees."""
 
     def __init__(self, limit, min_free=0, path="/", free=None):
-        self.limit, self.min_free, self.path = limit, min_free, path
+        self.limit, self.min_free = limit, min_free
+        self.paths = [path] if isinstance(path, (str, os.PathLike)) else list(path)
         self.used = 0                 # raw bytes held (on disk or in flight)
         self.pending = 0              # bytes not yet on disk: in-flight downloads plus their output
+        self.next_ticket = 0          # the ticketed download whose turn it is
         self.cond = threading.Condition()
-        self.free = free or (lambda: shutil.disk_usage(self.path).free)
+        self.free = free or (lambda: min(shutil.disk_usage(p).free for p in self.paths))
         self.waited = 0.0
         self.aborted = False
 
@@ -136,19 +144,25 @@ class Budget:
             return False
         return self.free() - self.pending - n - int(n * OUT_FRACTION) >= self.min_free
 
-    def take(self, n):
+    def take(self, n, ticket=None):
         t0 = time.time()
         with self.cond:
             warned = False
-            while not self._ok(n):
+            while True:
                 if self.aborted:
                     raise RuntimeError("download budget aborted")
-                if not warned and time.time() - t0 > 60:
+                turn = ticket is None or ticket == self.next_ticket
+                if turn and self._ok(n):
+                    break
+                if turn and not warned and time.time() - t0 > 60:
                     log(f"waiting for disk: {self.free() / 1e9:.0f} GB free, raw held {self.used / 1e9:.0f} GB")
                     warned = True
                 self.cond.wait(timeout=30)
             self.used += n
             self.pending += n + int(n * OUT_FRACTION)
+            if ticket is not None:
+                self.next_ticket += 1
+                self.cond.notify_all()        # the next ticket's turn
         self.waited += time.time() - t0
 
     def landed(self, n):
@@ -165,10 +179,11 @@ class Budget:
             self.cond.notify_all()
 
 
-def download(path, size, sha, raw, budget):
-    """Fetch one shard into raw/ (unless already complete) and verify its sha256."""
+def download(path, size, sha, raw, budget, ticket=None):
+    """Fetch one shard into raw/ (unless already complete) and verify its sha256. ticket is the
+    file's place in the cutting order (Budget.take)."""
     from huggingface_hub import hf_hub_download
-    budget.take(size)
+    budget.take(size, ticket)
     if budget.aborted:
         raise RuntimeError("download budget aborted")
     local = raw / path
@@ -341,12 +356,14 @@ def cmd_run(args):
             todo.append((path, tag))
     log(f"{len(todo)} {args.split} sources to do -> {out}, per page {args.per_page or 'all'}, {args.procs} procs, "
         f"{args.downloads} downloads, raw budget {args.max_raw_gb} GB, keep {args.min_free_gb} GB free")
-    budget = Budget(int(args.max_raw_gb * 1e9), int(args.min_free_gb * 1e9), path=str(out))
+    budget = Budget(int(args.max_raw_gb * 1e9), int(args.min_free_gb * 1e9), path=(str(out), str(raw)))
     t_all, total = time.time(), 0
     workers = Workers(args.procs)
     skipped = []
     with ThreadPoolExecutor(args.downloads) as dl, ThreadPoolExecutor(args.procs) as writers:
-        futures = [(path, tag, dl.submit(download, path, *files[path], raw, budget)) for path, tag in todo]
+        # ticket k: the budget serves the downloads in the order the loop below cuts them
+        futures = [(path, tag, dl.submit(download, path, *files[path], raw, budget, k))
+                   for k, (path, tag) in enumerate(todo)]
         try:
             for path, tag, fut in futures:
                 local, dl_s = fut.result()

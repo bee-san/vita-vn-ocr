@@ -37,6 +37,9 @@ How the rows were produced:
 
   It re-ran every psp-test row at 7a88cc4, and the psp-test figures below come
   from those runs. Only the five re-boxed lines read differently.
+  - 7a88cc4 is b116906 before the rebase onto #9.
+  - #9 leaves the default scoring alone, and v1 and JIS int8 give the same
+    psp-test predictions at 1ecd583.
 
 ```sh
 M1=$HERD/shared/models/v1/ckpt_best.pt; NC=data/eval/models/ncnn

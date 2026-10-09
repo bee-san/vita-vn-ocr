@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """Reduced recognizer vocabularies ranked by VN text frequency, and their coverage.
 
-  vocab.py names [--out data/vndb_names.txt]
+  vocab.py names [--out data/vndb_chars.jsonl]
       Fetches the original-script names of characters in Japanese-original VNs with
-      at least 100 VNDB votes from the VNDB kana API (rate-limited, User-Agent set).
-      Local only, never committed.
+      at least 100 VNDB votes from the VNDB kana API (rate-limited, User-Agent set),
+      one JSON object per character with the ids of the VNs it appears in. Local only,
+      never committed.
   vocab.py build --size 2500 [--out data/vocab_2500.txt] [--extra FILE]
       Always keeps every kana (small kana, ヴ and ー included), the VN punctuation and
       symbol set of build_corpus.PUNCT and the digits. The other characters are ranked
       by a VN-weighted frequency: 95% the synthetic text pools mixed with the
       renderer's weights (dialogue 0.45, narration 0.35, wiki 0.20), 5% the kanji of
       VNDB character names (VN scripts repeat their cast's names, which use kanji
-      that literary and encyclopedic text rarely does: 葵, 杏, 椎, 隼, 皐...). The
+      that literary and encyclopedic text rarely does: 葵, 杏, 椎, 隼, 皐...). A name
+      is left out if any of its VNs is one of eval's test games (eval's
+      manifests/test_games.json "all", or synth/common.is_test_vn): the test sets'
+      games never inform the ranking. The
       top size - 1 characters are kept and the <unk> token 〓 is appended. Only
       characters of the full vocab (data/vocab.txt) are eligible, so a reduced vocab
       is a subset of v1's. --size 0 keeps every eligible character (v1's vocab plus
@@ -43,12 +47,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "synth"))
-from common import DATA, load_vocab  # noqa: E402
+from common import DATA, is_test_vn, load_vocab  # noqa: E402
 
 UNK = "〓"
 POOL_WEIGHT = {"dialogue": 0.45, "narration": 0.35, "wiki": 0.20}   # synth/render.py
 NAME_WEIGHT = 0.05
-NAMES = DATA / "vndb_names.txt"
+NAMES = DATA / "vndb_chars.jsonl"
+TEST_GAMES = ROOT / "eval" / "manifests" / "test_games.json"
 DIGITS = "0123456789０１２３４５６７８９"
 RESEARCH = Path(os.environ.get("VOCR_RESEARCH",
                                "/local/home/skerraut/herd-vita-ocr/shared/research/scratch/real"))
@@ -67,6 +72,29 @@ def rel_freq(text):
     return {c: n / total for c, n in counts.items()}
 
 
+def reserved_vns(path=TEST_GAMES):
+    """eval's reserved test games (test_games.json "all"); is_test_vn() adds the rest."""
+    if not Path(path).exists():
+        raise SystemExit(f"{path} missing: the vocab ranking must exclude eval's test games")
+    return set(json.loads(Path(path).read_text(encoding="utf-8"))["all"])
+
+
+def load_names(path=NAMES, reserved=None):
+    """(names, dropped): the original names of a 'vocab.py names' JSONL, without every
+    character that appears in one of eval's test games (any of its VNs reserved)."""
+    reserved = reserved_vns() if reserved is None else reserved
+    names, dropped = [], 0
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        c = json.loads(line)
+        if not c.get("original"):
+            continue
+        if any(v in reserved or is_test_vn(v) for v in c.get("vns", [])):
+            dropped += 1
+            continue
+        names.append(c["original"])
+    return names, dropped
+
+
 def vn_freq(corpus=DATA / "corpus", names=NAMES):
     """VN-weighted relative character frequency (see the module docstring)."""
     mix = collections.Counter()
@@ -74,7 +102,9 @@ def vn_freq(corpus=DATA / "corpus", names=NAMES):
         for c, f in rel_freq((corpus / f"{name}.txt").read_text(encoding="utf-8")).items():
             mix[c] += (1 - NAME_WEIGHT) * weight * f
     if names.exists():
-        for c, f in rel_freq(names.read_text(encoding="utf-8")).items():
+        kept, dropped = load_names(names)
+        print(f"{names}: {len(kept)} character names ({dropped} of eval's test games left out)")
+        for c, f in rel_freq("\n".join(kept)).items():
             mix[c] += NAME_WEIGHT * f
     else:
         print(f"warning: {names} missing (run 'vocab.py names'); ranking without names")
@@ -109,28 +139,31 @@ def read_extra(path, min_count=1):
 
 
 def fetch_names(out, min_votes=100, max_pages=400):
+    """One JSON object per character: VNDB id, original name, ids of its VNs."""
     import requests
     s = requests.Session()
     s.headers["User-Agent"] = "vita-vn-ocr-vocab/0.1 (character-name kanji frequency)"
-    names, last = [], None
+    chars, last = [], None
     for _ in range(max_pages):
         flt = ["vn", "=", ["and", ["olang", "=", "ja"], ["votecount", ">=", min_votes]]]
         if last:
             flt = ["and", flt, ["id", ">", last]]
-        body = {"filters": flt, "fields": "original", "sort": "id", "results": 100}
+        body = {"filters": flt, "fields": "original,vns.id", "sort": "id", "results": 100}
         r = s.post("https://api.vndb.org/kana/character", json=body, timeout=60)
         if r.status_code == 429:
             time.sleep(60)
             continue
         r.raise_for_status()
         d = r.json()
-        names += [x["original"] for x in d["results"] if x.get("original")]
+        chars += [{"id": x["id"], "original": x.get("original"),
+                   "vns": [v["id"] for v in x.get("vns", [])]} for x in d["results"]]
         if not d["results"] or not d.get("more"):
             break
         last = d["results"][-1]["id"]
         time.sleep(1.6)                     # stays under 200 requests per 5 minutes
-    out.write_text("\n".join(names) + "\n", encoding="utf-8")
-    print(f"{out}: {len(names)} character names")
+    out.write_text("".join(json.dumps(c, ensure_ascii=False) + "\n" for c in chars),
+                   encoding="utf-8")
+    print(f"{out}: {len(chars)} characters, {sum(bool(c['original']) for c in chars)} with a name")
 
 
 def real_texts():

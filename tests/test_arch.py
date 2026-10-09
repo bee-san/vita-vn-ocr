@@ -112,6 +112,26 @@ def test_vocab_build_sizes_and_extra():
         build(5, freq, full)                                 # kana alone need 6 entries
 
 
+def test_vocab_names_leave_out_test_games(tmp_path):
+    """The name ranking never sees a character of one of eval's test games: a name is
+    dropped if any of its VNs is reserved (test_games.json 'all') or is_test_vn()."""
+    import json
+
+    from common import is_test_vn
+    from vocab import load_names, reserved_vns
+    reserved = reserved_vns()
+    test_vn = next(iter(sorted(reserved)))
+    hashed = next(f"v{i}" for i in range(1, 10_000) if is_test_vn(f"v{i}"))
+    free = next(f"v{i}" for i in range(1, 10_000) if f"v{i}" not in reserved and not is_test_vn(f"v{i}"))
+    rows = [{"id": "c1", "original": "葵", "vns": [free]},
+            {"id": "c2", "original": "杏", "vns": [free, test_vn]},
+            {"id": "c3", "original": "椎", "vns": [hashed]},
+            {"id": "c4", "original": None, "vns": [free]}]
+    p = tmp_path / "chars.jsonl"
+    p.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+    assert load_names(p) == (["葵"], 2)
+
+
 def test_checkpoint_round_trip(tmp_path):
     torch.manual_seed(0)
     m = TinyVNOCR(4, width=0.25, bottleneck=48).to(memory_format=torch.channels_last)

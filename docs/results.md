@@ -314,9 +314,9 @@ What the finder results show:
 - Repeated timing samples: each ms/line figure is one pass on a shared, loaded host.
 - The reference presets `ppocr-v5-server` and `ppocr-v6-small[-jis]` (wired in, not baselined).
 - Why int8 beats fp32 on real lines, and whether calibrating on real crops changes it.
-- linefind's `grad` finder (#3, `synth/common.find_lines(region, "grad")`, which
-  inverts dark-text crops), which is not wired in as a `--finder` name.
-  `eval/linefind/evaluate.py --eval-set vita-test` scores it.
+- linefind's `grad` finder (#3, `synth/common.find_lines(region, "grad")`, the
+  console's finder). #9 wired it in as `--finder console`, with `--polarity
+  console` for the console's inversion, but it has no baseline here yet.
 - A few visible psp-test lines that were never detected as candidates:
   - the ？？？ name plates in v3396_55752 and v11504_52181;
   - 「！！」 in v11708_55782;

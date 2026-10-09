@@ -338,6 +338,72 @@ static void test_run(int int8, unsigned c1)
         }
 }
 
+/* VOCR_INVERT reads every source pixel as 255 - grey before the resize (what
+ * synth/common.line_crops does for dark text): the same input, text and logits as an
+ * inverted grey copy of the crop, for grey and RGBA input. */
+static void test_invert(void)
+{
+    static unsigned char inv[40 * 300];
+    static unsigned char in_a[8 * 64], in_b[8 * 64];
+    vocr_model m;
+    vocr_opts o;
+    vocr_ctx c;
+    vocr_image im, iv;
+    char t_inv[256], t_copy[256], t_plain[256];
+    float l_inv[80 * CLASSES], l_copy[80 * CLASSES], l_plain[80 * CLASSES];
+    vocr_extra ex;
+    size_t n = build_blob(0), need;
+    unsigned w = 93, h = 19, x, y, w1 = 0, w2 = 0, p1 = 0, p2 = 0;
+    int rgba;
+    CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK);
+    memset(&o, 0, sizeof o);
+    need = vocr_arena_bytes(&m, &o);
+    CHECK(vocr_init(&c, &m, &o, arena_a, need) == VOCR_OK);
+    for (rgba = 0; rgba <= 1; rgba++) {
+        const unsigned bpp = rgba ? 4u : 1u;
+        make_image(w, h, rgba);
+        for (y = 0; y < h; y++)
+            for (x = 0; x < w; x++) {
+                const unsigned char *p = img_px + (y * w + x) * bpp;
+                const int g = rgba ? (77 * p[0] + 150 * p[1] + 29 * p[2]) >> 8 : p[0];
+                inv[y * w + x] = (unsigned char)(255 - g);
+            }
+        im.pixels = img_px;
+        im.width = w;
+        im.height = h;
+        im.stride = (size_t)w * bpp;
+        im.format = (rgba ? VOCR_RGBA8 : VOCR_GREY8) | VOCR_INVERT;
+        iv = im;
+        iv.pixels = inv;
+        iv.stride = w;
+        iv.format = VOCR_GREY8;
+        memset(&ex, 0, sizeof ex);
+        ex.cap_frames = 80;
+        memset(l_inv, 0, sizeof l_inv);
+        ex.logits = l_inv;
+        CHECK(vocr_run(&c, &im, t_inv, sizeof t_inv, &ex) == VOCR_OK);
+        memset(l_copy, 0, sizeof l_copy);
+        ex.logits = l_copy;
+        CHECK(vocr_run(&c, &iv, t_copy, sizeof t_copy, &ex) == VOCR_OK);
+        CHECK(strcmp(t_inv, t_copy) == 0);
+        CHECK(memcmp(l_inv, l_copy, sizeof l_inv) == 0);
+        im.format &= ~VOCR_INVERT; /* and the flag does change the result */
+        memset(l_plain, 0, sizeof l_plain);
+        ex.logits = l_plain;
+        CHECK(vocr_run(&c, &im, t_plain, sizeof t_plain, &ex) == VOCR_OK);
+        CHECK(memcmp(l_plain, l_inv, sizeof l_inv) != 0);
+        im.format |= VOCR_INVERT;
+        CHECK(vocr_preprocess(&m, &im, in_a, sizeof in_a, &w1, &p1) == VOCR_OK);
+        CHECK(vocr_preprocess(&m, &iv, in_b, sizeof in_b, &w2, &p2) == VOCR_OK);
+        CHECK(w1 == w2 && p1 == p2 && p1 * 8u <= sizeof in_a);
+        CHECK(memcmp(in_a, in_b, (size_t)p1 * 8u) == 0);
+    }
+    im.format = VOCR_INVERT; /* the flag alone is no pixel format */
+    CHECK(vocr_run(&c, &im, t_inv, sizeof t_inv, NULL) == VOCR_E_ARG);
+    im.format = VOCR_GREY8 | 0x200; /* unknown flag bits */
+    CHECK(vocr_run(&c, &im, t_inv, sizeof t_inv, NULL) == VOCR_E_ARG);
+}
+
 static void test_limits(void)
 {
     vocr_model m;
@@ -428,6 +494,7 @@ int main(void)
     test_run(1, 16);
     test_run(0, 272);
     test_run(1, 272);
+    test_invert();
     test_limits();
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);

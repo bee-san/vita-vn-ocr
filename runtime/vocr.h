@@ -14,7 +14,8 @@
  * carrying each layer's left context between tiles, so the arena does not grow with
  * the line width and the output is bit-identical for every tile size.
  *
- * Preprocessing matches train/train.py exactly: grey = (77 R + 150 G + 29 B) >> 8,
+ * Preprocessing matches train/train.py exactly: grey = (77 R + 150 G + 29 B) >> 8
+ * (then 255 - grey with VOCR_INVERT, as synth/common.line_crops does for dark text),
  * OpenCV INTER_LINEAR resize to the model height with width round(w * H / h) clamped
  * to [8, 1024], right-pad to a multiple of 8 by repeating the last column, then
  * x / 127.5 - 1. Greedy CTC (blank 0) gives the text.
@@ -58,6 +59,11 @@ enum {
 enum { VOCR_MODE_AUTO = 0, VOCR_MODE_F32 = 1, VOCR_MODE_W8F = 2, VOCR_MODE_W8I = 3 };
 
 enum { VOCR_GREY8 = 1, VOCR_RGBA8 = 4 };   /* pixel formats (RGBA: R, G, B, A bytes) */
+/* Or'ed into vocr_image.format: read every pixel as 255 - grey, before the resize, as
+ * training does for dark text (synth/common.line_crops). Set it when the line finder
+ * reports VocrLine.dark = 1 (docs/linefind.md, "Polarity contract"); it needs no copy
+ * of the crop. */
+enum { VOCR_INVERT = 0x100 };
 
 typedef struct {
     uint8_t type, flags, kh, kw, sh, sw, ph, pw;
@@ -91,7 +97,7 @@ typedef struct {
     const unsigned char *pixels;   /* top-left pixel of the line crop */
     unsigned width, height;        /* crop size in pixels */
     size_t stride;                 /* bytes from one row to the next */
-    int format;                    /* VOCR_GREY8 or VOCR_RGBA8 */
+    int format;                    /* VOCR_GREY8 or VOCR_RGBA8, optionally | VOCR_INVERT */
 } vocr_image;
 
 typedef struct {             /* optional per-line extras for vocr_run() */

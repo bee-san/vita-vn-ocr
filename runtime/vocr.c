@@ -384,6 +384,7 @@ int vocr_init(vocr_ctx *c, const vocr_model *m, const vocr_opts *o, void *arena,
 typedef struct {
     const vocr_image *img;
     unsigned nw, padded;
+    int rgba, inv;        /* RGBA input; inv = 255 with VOCR_INVERT (v ^ 255 == 255 - v) */
     double scale_x;
     const uint16_t *rows; /* per output row: y0, y1, b0, b1 */
 } line_t;
@@ -432,12 +433,14 @@ static void row_table(uint16_t *rows, unsigned H, unsigned h)
 
 static int check_image(const vocr_image *im)
 {
+    int fmt;
     unsigned bpp;
     if (!im || !im->pixels || !im->width || !im->height || im->width > 65535u ||
         im->height > 65535u)
         return VOCR_E_ARG;
-    if (im->format != VOCR_GREY8 && im->format != VOCR_RGBA8) return VOCR_E_ARG;
-    bpp = im->format == VOCR_GREY8 ? 1u : 4u;
+    fmt = im->format & ~VOCR_INVERT;
+    if (fmt != VOCR_GREY8 && fmt != VOCR_RGBA8) return VOCR_E_ARG;
+    bpp = fmt == VOCR_GREY8 ? 1u : 4u;
     if (im->stride < (size_t)im->width * bpp) return VOCR_E_ARG;
     return VOCR_OK;
 }
@@ -447,16 +450,22 @@ static void line_setup(line_t *ln, const vocr_model *m, const vocr_image *im, ui
     ln->img = im;
     ln->nw = vocr_resized_width(m, im->width, im->height);
     ln->padded = (ln->nw + m->stride - 1) / m->stride * m->stride;
+    ln->rgba = (im->format & ~VOCR_INVERT) == VOCR_RGBA8;
+    ln->inv = (im->format & VOCR_INVERT) ? 255 : 0;
     ln->scale_x = 1.0 / ((double)ln->nw / (double)im->width);
     ln->rows = rows;
     row_table(rows, m->height, im->height);
 }
 
-static int grey_px(int format, const unsigned char *row, unsigned x)
+/* The grey value training sees for source pixel x of a row: integer luma for RGBA
+ * (synth/common.to_gray), inverted with VOCR_INVERT. */
+static int grey_px(const line_t *ln, const unsigned char *row, unsigned x)
 {
-    if (format == VOCR_GREY8) return row[x];
-    row += 4u * x;
-    return (77 * row[0] + 150 * row[1] + 29 * row[2]) >> 8;
+    if (ln->rgba) {
+        row += 4u * x;
+        return ((77 * row[0] + 150 * row[1] + 29 * row[2]) >> 8) ^ ln->inv;
+    }
+    return row[x] ^ ln->inv;
 }
 
 /* One resized column x (x < nw): its source columns and coefficients. */
@@ -494,8 +503,8 @@ static unsigned resized_px(const line_t *ln, unsigned y, xcoef_t k)
     const uint16_t *r = ln->rows + 4u * y;
     const unsigned char *p0 = im->pixels + (size_t)r[0] * im->stride;
     const unsigned char *p1 = im->pixels + (size_t)r[1] * im->stride;
-    int h0 = grey_px(im->format, p0, k.s0) * k.a0 + grey_px(im->format, p0, k.s1) * k.a1;
-    int h1 = grey_px(im->format, p1, k.s0) * k.a0 + grey_px(im->format, p1, k.s1) * k.a1;
+    int h0 = grey_px(ln, p0, k.s0) * k.a0 + grey_px(ln, p0, k.s1) * k.a1;
+    int h1 = grey_px(ln, p1, k.s0) * k.a0 + grey_px(ln, p1, k.s1) * k.a1;
     return (unsigned)((((r[2] * (h0 >> 4)) >> 16) + ((r[3] * (h1 >> 4)) >> 16) + 2) >> 2);
 }
 

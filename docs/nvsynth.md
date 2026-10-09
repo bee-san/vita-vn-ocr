@@ -87,13 +87,18 @@ shards such as synth2's) into one directory for `train.py --synth 'DIR/*.npz'`.
 |---|---|---|---|---|---|---|
 | one line per page | train | 42 (000-041) | 845,519 | 19,520-20,776 | 42 | 5.4 GB |
 | one line per page | held-out (`nv_val.npz`) | validation 000-003 | 10,065 | 2,447-2,582 | 1 | 63 MB |
-| every line | train | 67 | building (first 7 sources: 2,000,392 lines, 282,942-289,903 per source, 14 shards each) | | | about 1.7 GB per source |
+| every line | train | 66 readable (042 is damaged) | building: 12,036,035 lines from 000-041 so far | 241,007-318,556 | 597 so far (12-16 per source) | 74.8 GB so far |
 | every line | validation | 67 | queued after train | | | |
 | every line | test | 67 | queued after validation | | | |
 
-The one-line set stops at 42 of the 67 train sources: its build hung at source 042 when its pool
-workers vanished, and by then the conductor had asked for every line of every page, which
-contains these lines too. The A/B below needs only sources 000-019. Per-source line counts,
+The one-line set stops at 42 of the 67 train sources. Source 042 is damaged (see "Damaged source
+file"; the first build deadlocked on it), and by then the conductor had asked for every line of
+every page, which contains these lines too. The A/B below needs only sources 000-019.
+
+The every-line build was still running when this PR was finalised. It resumes source by source
+and writes each source's shards and `.json` record only when that source is complete, so train2
+can use whatever has landed. `$HERD/shared/artifacts/nvsynth/README` has the live state and the
+log path. Per-source line counts,
 shard names, sizes and sha256s are in the manifests
 (`nvsynth/manifests/nvsynth_ja.json` for the one-line set; the every-line manifest is written
 to `$HERD/shared/artifacts/nvsynth/full/nvsynth_ja_full.json` when that build ends). On
@@ -176,7 +181,66 @@ plus `--steps`, `--seed` and `--out`), run by `nvsynth/ab.sh` through `heavy.sh`
 `nvsynth/ab_compare.py` (per-seed CER, the seeds' errors pooled, and a paired bootstrap over
 games for the difference to the synth arm).
 
-Results: running (queued in `heavy.sh` at the time of writing).
+Seed 1 (2026-10-09; seed 2 was still running when this PR was finalised, and its results land
+in `$HERD/shared/artifacts/nvsynth/ab/results/`; `nvsynth/ab_compare.py` pools whatever seeds are
+there):
+
+| arm (training data) | vita-test CER / exact | psp-test CER / exact | synth-val CER | nv-val CER |
+|---|---|---|---|---|
+| synth: v1's synthetic boxes (390k lines) | 28.51% / 39.3% | 51.39% / 22.9% | **1.25%** | 86.66% |
+| nv: NVIDIA crops (400k) | 20.94% / 23.3% | 23.98% / 22.9% | 13.04% | **13.62%** |
+| mix: both (790k) | **9.75% / 49.5%** | **15.18% / 40.0%** | 2.50% | 14.63% |
+| *v1 for reference (synth, 8 epochs = 32.5k steps)* | *23.75% / 52.4%* | *46.65% / 28.2%* | *0.32%* | |
+| *JIS-trimmed int8 PP-OCRv5 mobile (the bar)* | *2.30% / 79.1%* | *5.58%* | | |
+
+Mix against synth, CER difference with a 95% bootstrap interval over games: vita-test −18.8
+points (−37.6 to −5.0; better in 9 of 16 games, worse in 4), psp-test −36.2 points (−56.6 to
+−16.9; better in 11 of 14, worse in 2). The NVIDIA crops alone beat synth on psp-test (−27.4,
+−50.0 to −6.5) but not clearly on vita-test (−7.6, −29.6 to +8.9; worse in 10 of 16 games).
+
+Per style (CER, seed 1):
+
+| style | vita lines | synth | nv | mix | psp lines | synth | nv | mix |
+|---|---|---|---|---|---|---|---|---|
+| bright-on-dark | 142 | 11.22% | 21.01% | **8.79%** | 135 | 23.97% | 30.24% | **17.70%** |
+| dark-on-light | 64 | 69.93% | 20.79% | **12.05%** | 110 | 88.00% | 15.63% | **11.81%** |
+| outlined | 72 | 33.55% | 29.18% | **13.53%** | 69 | 29.73% | 33.38% | **18.24%** |
+| mincho | 47 | 3.40% | 13.17% | **2.96%** | 90 | 45.63% | 16.06% | **9.86%** |
+| coloured | 17 | 52.69% | 36.02% | **30.65%** | 20 | 68.22% | 26.64% | **23.36%** |
+| coloured-name | 7 | 42.11% | 47.37% | **26.32%** | 7 | 91.67% | **41.67%** | 45.83% |
+| name | 53 | **27.33%** | 42.44% | 28.49% | 62 | 71.77% | 53.59% | **45.45%** |
+| furigana | 3 | **15.62%** | 39.06% | 18.75% | 20 | **65.05%** | 80.10% | 65.53% |
+| small (PSP) | | | | | 106 | 57.35% | 13.16% | **8.43%** |
+
+What this says:
+
+- **The NVIDIA crops help, a lot, but as a mix.** At the same 5,000 steps, adding them to the VN
+  boxes cut vita-test CER by about two thirds and psp-test by about 70%, beating v1's full 8-epoch
+  run on both sets. The gains are where v1's data has nothing: dark-on-light text (70% → 12% on
+  Vita, 88% → 12% on PSP), small PSP glyphs (57% → 8%), and serif and outlined faces.
+- **They don't replace the VN-style data.** Alone, they lose bright-on-dark accuracy (11% → 21%
+  on Vita) and exact lines, because light text on dark translucent boxes is rare in the set
+  (20% of crops) and its text has no dialogue punctuation.
+- **Still unsolved by either:** names and name plates (28-45%) and lines with furigana above them
+  (65% on PSP). They need real crops (realdata, teacher) or synth2's name-box and furigana styles.
+- Each model is best on its own synthetic validation set, and synth-only is useless on the
+  NVIDIA one (87% CER). Synthetic validation says nothing about the real sets here, which is why
+  AGENTS.md insists on eval's real sets.
+- All of this is 5,000 steps of a 0.76M-parameter model; train2's longer pretraining and real
+  fine-tuning are where the bar (2.30% / 5.58%) gets attacked. For train2: pretrain on NVIDIA
+  crops **mixed with** VN-style synthetic boxes (synth2's renderer now covers dark-on-light,
+  outlines, names and furigana too), not on NVIDIA crops alone.
+
+## Damaged source file
+
+`ja/train/train_042.h5` at this revision can't be read: HDF5 reports "wrong B-tree signature" on
+its root group, so not even its dataset names can be listed. Its 10,103,761,681 bytes match the
+Hub's LFS sha256 (`85df20a8…`), so the file is damaged as published, not in transit. The first
+two builds deadlocked on it (an exception in the cutting loop left the download threads waiting
+for budget). `nv_fetch.py` now records an unreadable source in its JSON with the error, deletes
+the raw file, and goes on; the manifests list it under `skipped_sources`. Pages that raise are
+counted (`stats.errors`) and skipped, and any other error aborts the waiting downloads instead of
+hanging. The one-line set stops just before it, at 000-041.
 
 ## Label quality (spot check)
 

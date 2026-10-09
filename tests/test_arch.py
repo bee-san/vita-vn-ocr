@@ -173,9 +173,13 @@ def test_unk_scoring():
 
 
 def test_depth_and_ctx_knobs():
-    v1 = TinyVNOCR(5355)
+    v1 = TinyVNOCR(5355).state_dict()                         # the defaults are v1's layout
+    assert v1["features.7.0.weight"].shape == (192, 160, 2, 1)   # 2x1 row collapse
+    assert v1["features.9.dw.0.weight"].shape == (192, 1, 1, 5)  # second Ctx block
+    assert "features.10.dw.0.weight" not in v1
     big = TinyVNOCR(5355, depth=2, ctx=4, ctx_k=7)
-    assert set(v1.state_dict()) < set(big.state_dict())     # v1 keys keep their meaning
+    assert big.features[-1].dw[0].weight.shape == (192, 1, 1, 7)
+    assert sum(isinstance(m, type(big.features[2])) for m in big.features) == 9   # 3 + 3*2 DS
     with torch.no_grad():
         assert big.eval()(torch.zeros(1, 1, 32, 64)).shape == (8, 1, 5355)
     ck = {"model": big.state_dict(), "vocab": ["x"] * 5354, "depth": 2, "ctx": 4, "ctx_k": 7}

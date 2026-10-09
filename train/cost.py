@@ -4,6 +4,7 @@ estimated peak activation arena, for the Vita/PSP memory budget.
 
   cost.py [--width 1.0 --bottleneck 96 --classes 5355 --height 32] [--json]
   cost.py --ckpt runs/NAME/ckpt_last.pt
+  cost.py --table [--export PATH]      Markdown table of the arch-sweep grid
 
 Everything is measured on the real torch model (forward hooks on a 1 x H x W input),
 not re-derived by hand, so it tracks model.py.
@@ -173,6 +174,38 @@ def report(model, n_classes, height, vocab=None, exporter=None):
     return r
 
 
+GRID = {   # name: (width, bottleneck, classes, height)
+    "v1 (w1.0 b96 h32 5,355)": (1.0, 96, 5355, 32), "width 1.5": (1.5, 96, 5355, 32),
+    "width 0.75": (0.75, 96, 5355, 32), "width 0.5": (0.5, 96, 5355, 32),
+    "width 0.25": (0.25, 96, 5355, 32), "vocab 3,500": (1.0, 96, 3501, 32),
+    "vocab 2,500": (1.0, 96, 2501, 32), "bottleneck 64": (1.0, 64, 5355, 32),
+    "bottleneck 48": (1.0, 48, 5355, 32), "height 24": (1.0, 96, 5355, 24),
+}
+
+
+def table(exporter, grid=GRID):
+    """Markdown rows: size and MACs of each grid config (the longest line is 1024 px at
+    height 32 and 768 px at height 24, the same physical text)."""
+    w = WIDTHS[-1]
+    exact = exporter is not None
+    head = ("| config | params | head + bottleneck params | "
+            + ("int8 blob B | fp32 blob B | W8F arena B | W8I arena B | " if exact else
+               "int8 weights B (est.) | fp32 weights B (est.) | ")
+            + "non-streaming arena B (est.) | MMAC, longest line |")
+    rows = [head, "|" + "---|" * (head.count("|") - 1)]
+    for name, (width, bn, classes, height) in grid.items():
+        model = TinyVNOCR(classes, width=width, bottleneck=bn)
+        r = report(model, classes, height, None, exporter)
+        w_max = w * height // 32
+        sizes = (f"{r['blob_int8']:,} | {r['blob_f32']:,} | {r[f'rt_arena_w8f_{w}']:,} | "
+                 f"{r[f'rt_arena_w8i_{w}']:,}" if exact else
+                 f"{r['weights_int8']:,} | {r['weights_fp32']:,}")
+        rows.append(f"| {name} | {r['params']:,} | {r['head_params']:,} | {sizes} | "
+                    f"{arena(model, height, w_max, classes)[0]:,} | "
+                    f"{macs(model, height, w_max) / 1e6:.1f} |")
+    return "\n".join(rows)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", type=Path)
@@ -182,9 +215,13 @@ def main():
     ap.add_argument("--height", type=int, default=32)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--export", help="runtime's train/export.py (default: next to this file)")
+    ap.add_argument("--table", action="store_true", help="Markdown table of the sweep grid")
     args = ap.parse_args()
     torch.set_num_threads(1)
     exporter = runtime_exporter(args.export)
+    if args.table:
+        print(table(exporter))
+        return
     vocab = None
     if args.ckpt:
         model, meta = from_checkpoint(args.ckpt)

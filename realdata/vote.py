@@ -269,3 +269,14 @@ RULES = {
     "cross-manga-trim-dots": make_cross_rule(other=("manga",), trim=True, dots=True),
 }
 DEFAULT_RULE = "3of4-trim-dots-veto"
+
+
+def without(rule, name):
+    """The rule run as if reader `name` had not been run: the ablations in RULES."""
+    return lambda reads: rule({k: v for k, v in reads.items() if k != name})
+
+
+for _name, _pp, _other in (("v5s", ("v6s",), ("manga", "meiki")), ("manga", ("v6s", "v5s"), ("meiki",)),
+                           ("meiki", ("v6s", "v5s"), ("manga",))):
+    RULES[f"{DEFAULT_RULE} without {_name}"] = without(
+        make_count_rule(3, trim=True, dots=True, veto=True, pp=_pp, other=_other), _name)

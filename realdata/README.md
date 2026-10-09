@@ -41,6 +41,37 @@ crops are copyrighted: they stay there and are never committed.
 
 Test games are excluded at every step: `synth/common.is_test_vn()` and the eval set's
 reserved VNs (`eval/manifests/test_games.json` once merged, `eval_exclude.json` until then).
+If eval reserves more VNs later: `vndb.py prune`, then `build.py decide`.
+
+Models (labelling only, none ships): rapidocr 3.10.0's `ch_PP-OCRv5_det_mobile.onnx`
+(sha256 4d97c44a…), `ch_PP-OCRv5_rec_server.onnx` (e0938540…), `PP-OCRv6_rec_small.onnx`
+(6f327246…); manga-ocr 0.1.16 with `kha-white/manga-ocr-base` at aa6573bd; meiki
+`meiki.text.rec.v0.960x32.onnx` (3e96bc77…, LGPL-3.0, from the research campaign's scratch).
+
+## Results (2026-10-09)
+
+| | |
+|---|---|
+| screenshots | 6,932 of 1,488 VNs: 574 Vita, 2,354 PSP, 4,004 PC/console |
+| lines found / read | 23,919; 17,296 with Japanese text |
+| accepted | 8,318 lines (89,675 characters, 7,609 distinct labels) from 1,405 VNs; 2,748 dark-on-light |
+| crops | real_train 9,815 (Vita 5,454, PSP 4,361), real_val 1,499 (Vita 808, PSP 691) |
+| split | train 1,221 VNs / 1,478 sessions, val 184 VNs / 209 sessions |
+
+Label quality, all by eye on the crop the label goes with:
+
+- Dev sample (221 lines of 201 screenshots, sampled before the full run; 24 unreadable):
+  exact-line accuracy of each reader on the 197 readable ones: PP-OCRv6 small 85.8%,
+  PP-OCRv5 server 69.0%, manga-ocr 39.6%, meiki 38.1%. The old rule (`data/label_real.py`,
+  PP-OCRv5 server agrees with manga-ocr) accepts 37.1% with 72/73 correct; the rule here
+  accepts 53.3% with 105/105 correct. Without PP-OCRv5 server it would accept 35.0%
+  (68/69), without manga-ocr 42.1%, without meiki 36.5% (`evaluate_rules.py`). The rule
+  was chosen on this sample, so these precisions are optimistic.
+- Spot check (100 random accepted, vote-labelled lines of the final set): 1 wrong label
+  (a decorative bullet read as ・ by three readers), 1 character error in 987.
+
+These are training data, not a test set: hand-checked lines are labelled by hand and train
+like the rest. The eval test sets come from other games.
 
 ## Files
 
@@ -62,7 +93,7 @@ uploaded together) belongs to one VN, so it never straddles the split.
 ```python
 import sys; sys.path.insert(0, "realdata")
 import vndb, build
-for s in vndb.load_shots():          # 6,998 screenshots; s["kind"] in vita | psp | hires
+for s in vndb.load_shots():          # 6,932 screenshots; s["kind"] in vita | psp | hires
     path = vndb.shot_path(s)         # $REALDATA/shots/<kind>/<vn>_<file>; vndb.py fetch rebuilds it
     split = build.split_of(s["vn"])  # train | val, by game; s["session"] for session-level grouping
 ```

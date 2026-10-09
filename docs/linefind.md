@@ -52,6 +52,7 @@ for (unsigned i = 0; i < out.count; i++) { /* out.lines[i].x, y, w, h, dark */ }
 v1 was trained on light text only and cannot read dark-on-light text. When `VocrLine.dark` is 1, invert the crop (`255 − g`) before recognition.
 
 - The twin does this in `common.line_crops(img, finder="grad", invert_dark=True)`.
+- The recognizer runtime does it without a copy of the crop: `img.format |= VOCR_INVERT` (`runtime/vocr.h`) inverts each source pixel before the resize, exactly as `line_crops` does.
 - `synth/render.py` uses grad plus inversion by default. `--finder legacy --keep-polarity` reproduces v1's data.
 - On eval's vita-test (the 59 out-of-sample regions) this one step takes grad's CER from 32.6% to 21.1%; on set B, from 24.6% to 5.3%.
 

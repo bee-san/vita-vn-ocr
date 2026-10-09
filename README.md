@@ -10,7 +10,7 @@ General OCR models are too big for this. The best general option, a trimmed int8
 |---|---|
 | Model | `train/model.py`: a CTC line recognizer with 0.76M parameters (stem plus depthwise-separable blocks, factorised 5,355-class head), grey input at height 32 |
 | v1 baseline | Trained on synthetic dialogue boxes only. Synthetic validation: 0.34% CER, 95.6% of lines exact (`docs/v1-metrics.jsonl`). Real Vita screenshots (`eval/`, vita-test, 206 lines from 16 games): 23.75% CER, 52.4% exact, 81.8% CER on its 43 dark-on-light lines (`docs/results.md`). |
-| Runtime | Not written yet: a plain-C runtime for Vita (ARM Cortex-A9) and PSP (MIPS Allegrex) |
+| Runtime | `runtime/`: plain-C99 recognizer for Vita (NEON) and PSP (scalar), no malloc, 116-125 KB arena at any line width; int8 weights 0.86 MB (`runtime/README.md`) |
 | Hardware | Nothing has run on a PCH-1000 or a PSP yet |
 
 ## Layout
@@ -22,7 +22,8 @@ data/label_real.py             first real-line pseudo-labeller (PP-OCRv5 server 
 realdata/                      real training lines from Vita, PSP and scaled PC screenshots (4-reader vote)
 data/vocab.txt                 output character set
 synth/                         synthetic dialogue-box renderer and corpus builder
-train/                         model and CTC training
+train/                         model, CTC training, export.py (weights blob for the C runtime)
+runtime/                       on-console C99: recognizer (vocr.h/vocr.c), line finder (vocr_lines.c), tests
 docs/                          research notes and results
 .github/, ci/, tests/          CI: lint, unit tests, training smoke, C runtime checks (ci/README.md)
 ```

@@ -4,8 +4,7 @@
   "voters": [
    "v6s",
    "manga",
-   "screenai",
-   "meikiv"
+   "screenai"
   ],
   "votes": 2,
   "min_conf": 0.0,
@@ -17,68 +16,75 @@
  },
  "screenshots_read": 6932,
  "lines_read": 38240,
- "accepted": 11783,
+ "accepted": 11228,
  "rejected": {
-  "not-japanese": 9879,
-  "size": 7412,
-  "disagree": 6999,
+  "not-japanese": 9833,
+  "disagree": 7708,
+  "size": 7371,
   "screen-edge": 662,
-  "repeat-cap": 492,
-  "short": 380,
-  "confusable-dissent": 327,
-  "truncated": 170,
+  "repeat-cap": 418,
+  "short": 379,
+  "confusable-dissent": 221,
+  "truncated": 91,
   "oov": 2
  },
  "by_kind": {
-  "hires": 7519,
-  "vita": 1214,
-  "psp": 3050
+  "hires": 7169,
+  "vita": 1159,
+  "psp": 2900
  },
  "by_split": {
-  "train": 10269,
-  "val": 1514
+  "train": 9830,
+  "val": 1398
  },
  "crops_by_split_target": {
-  "train/vita": 7678,
-  "train/psp": 4973,
-  "val/vita": 1052,
-  "val/psp": 734
+  "train/vita": 7353,
+  "train/psp": 4762,
+  "val/vita": 972,
+  "val/psp": 679
  },
  "by_how": {
-  "meiki+v6s+manga+screenai+meikiv": 4546,
-  "meiki+v6s+screenai": 2127,
-  "meiki+v6s+screenai+meikiv": 2036,
-  "meiki+v6s+manga+screenai": 2022,
-  "meiki+v6s+meikiv": 309,
-  "meiki+v6s+manga+meikiv": 209,
-  "meiki+screenai+meikiv": 171,
-  "meiki+manga+screenai+meikiv": 132,
-  "meiki+v6s+manga": 92,
-  "meiki+manga+screenai": 80,
-  "meiki+manga+meikiv": 59
+  "meiki+v6s+manga+screenai": 6539,
+  "meiki+v6s+screenai": 4173,
+  "meiki+v6s+manga": 302,
+  "meiki+manga+screenai": 214
  },
  "by_polarity": {
-  "bright-on-dark": 7553,
-  "dark-on-light": 4227,
+  "bright-on-dark": 7182,
+  "dark-on-light": 4043,
   "null": 3
  },
  "vns": {
-  "train": 1268,
-  "val": 186
+  "train": 1265,
+  "val": 181
  },
- "sessions": 1785,
- "screenshots": 5033,
- "unique_labels": 10291,
- "chars": 120659,
+ "sessions": 1768,
+ "screenshots": 4923,
+ "unique_labels": 9840,
+ "chars": 114552,
  "distill_pool": {
-  "train/vita": 4781,
-  "train/psp": 3574,
-  "val/vita": 655,
-  "val/psp": 574
+  "train/vita": 5215,
+  "train/psp": 3829,
+  "val/vita": 701,
+  "val/psp": 560
  },
  "distill_why": {
-  "disagree": 6999,
-  "short": 380,
-  "confusable-dissent": 327
+  "disagree": 7708,
+  "short": 379,
+  "confusable-dissent": 221
+ },
+ "val_linked_to_train": {
+  "vns": [
+   "v17",
+   "v1762",
+   "v2125",
+   "v3260",
+   "v8440",
+   "v32753",
+   "v32787"
+  ],
+  "screenshots": 37,
+  "accepted": 53,
+  "pool": 53
  }
 }

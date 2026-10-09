@@ -22,8 +22,8 @@ or a `data/eval` symlink instead of fetching. synth-val reads
 
 | `--model` | what runs | preprocessing |
 |---|---|---|
-| `path/ckpt.pt` | `train/model.py` checkpoint (the v1 recipe) | grey (integer luma), height 32 bilinear, width ≤ 1024, padded to a multiple of 8 by repeating the last column; one line per forward pass; greedy CTC |
-| `path/model.onnx` | an ONNX export: 1 input channel = the tiny model (same preprocessing), 3 = a PaddleOCR rec | as above, or the Paddle row below |
+| `path/ckpt.pt` | `train/model.py` checkpoint (the v1 recipe), built with the checkpoint's `width` and `bottleneck` when it records them | grey (integer luma), bilinear to the checkpoint's `height` (32 if absent), width ≤ 1024, padded to a multiple of 8 by repeating the last column; one line per forward pass; greedy CTC. A class longer than one character (such as `<unk>`) decodes to U+FFFD, one wrong character |
+| `path/model.onnx` | an ONNX export: 1 input channel = the tiny model (same preprocessing, at the export's input height), 3 = a PaddleOCR rec | as above, or the Paddle row below |
 | `ppocr-v5-mobile`, `ppocr-v5-mobile-jis` | PP-OCRv5 mobile rec in ONNX Runtime, full head or masked to JIS X 0208 | vita-jp-overlay's: BGR, height 48, width `(w*48 + h/2)/h` clamped to [8, 1024], `(p - 127.5)/127.5` |
 | `ppocr-v5-server`, `ppocr-v6-small[-jis]` | the pseudo-labelling engines, for reference | same |
 | `ncnn:DIR` | an ncnn param/bin + `dict.txt` in DIR, run by `eval/ncnn/vocr_ncnn_rec` (the overlay's pinned ncnn 3798be64, one thread, fp16 off) | the overlay's `from_pixels_resize` path, exactly |
@@ -43,6 +43,9 @@ eval/ncnn/prepare_models.py                      # -> data/eval/models/ncnn/{ppo
 eval/run.py --model ncnn:data/eval/models/ncnn/ppocr-v5-mobile-jis-int8
 ```
 
+`prepare_models.py` checks every copied param, bin and dict against the sha256
+the published baselines were measured with, and exits non-zero on a mismatch.
+
 ## Sets
 
 | set | lines | source |
@@ -55,7 +58,9 @@ Every real line was read by eye on a contact sheet at ≤ 1280 px (2× zoom for
 small kana, dakuten and lookalikes), against PP-OCRv5 server, PP-OCRv6 small,
 manga-ocr and, where they existed, `data/label_real.py`'s pseudo-labels.
 Lines that could not be decided are kept as `"uncertain": true` and never
-scored. UI labels, menus, logos, vertical and rotated text are not in the sets.
+scored. UI labels, system menus, logos, vertical and rotated text are not in the
+sets. In-story choice options are, since the player reads them like dialogue
+(e.g. v16566_148766, v17286_92108, v19850_122862, v21789_116091).
 
 **Test games.** A test game is never used for training, calibration or as a
 synthetic background. The rule is: every VNDB VN with
@@ -92,7 +97,11 @@ Style tags: `bright-on-dark` and `dark-on-light` (text fill against its
 background; for outlined text, the fill against its outline), `outlined`
 (outline or heavy shadow), `name` (speaker name), `coloured` (fill colour other
 than white/black/grey), `coloured-name` (both), `furigana` (ruby above the line),
-`mincho` (serif face), `small` (main text under 16 px tall at native size).
+`mincho` (serif face), `no-box` (text drawn over the scene without a dialogue
+box), `small` (main text under 16 px tall at native size). `manifest.py` guesses
+the polarity from the share of ink brighter than the box border. That share
+includes outline pixels, so the guess is checked by eye and overridden in the
+decisions where it is wrong.
 
 ## Metrics
 
@@ -127,20 +136,22 @@ dialogue region instead and recognizes what it returns:
 A detection matches a ground-truth line when their vertical overlap is at least
 `--match` (0.5) of the smaller height and they overlap horizontally; matching is
 one-to-one. Reported: regions rejected, **line recall** (scored lines found),
-**line precision** (detections that match a line), **pipeline CER** (matched
-pairs' edit distance, plus every character of a missed line, plus every
-character read from a detection that matches nothing; a detection on an
-uncertain line is ignored) and **concat CER** (the research's measure: all
-detections read top to bottom against all lines, on regions without uncertain
-lines).
+**line precision** (detections that match a line, among detections not on an
+uncertain line), **pipeline CER** (matched pairs' edit distance, plus every
+character of a missed line, plus every character read from a detection that
+matches nothing; a detection on an uncertain line is ignored) and **concat CER**
+(the research's measure: all detections read top to bottom against all lines, on
+regions without uncertain lines).
 
 ## Reproducing the sets
 
 The tools in `eval/tools/` built the sets; they are not needed to run the benchmark.
 
 1. `vndb_list.py` lists VNDB screenshots per platform (kana API, 1 req/s).
-2. `collect.py vita|psp` gathers the reserved games' native-size screenshots
-   (sexual < 0.3, violence < 0.5).
+2. `collect.py vita|psp` gathers the candidate games' native-size screenshots
+   (sexual < 0.3, violence < 0.5). The candidates are every `is_test_vn` game in
+   the Japanese-original listing, plus the extra Vita games listed in
+   `collect.py` (`EXTRA`).
 3. `candidates.py` (heavy) finds text with PP-OCRv5 server det and reads every box
    with PP-OCRv5 server, PP-OCRv6 small and manga-ocr.
 4. `assemble.py` merges fragments, refines boxes to ink, attaches furigana.

@@ -222,3 +222,24 @@ def test_oov_report_character_classes():
     assert rep.kind("麺") == "kanji, JIS X 0208" and rep.kind("々") == "kanji, JIS X 0208"
     assert rep.kind("髙") == "kanji, not in JIS X 0208" and rep.kind("𠮟") == "kanji, not in JIS X 0208"
     assert rep.kind("^") == "ASCII" and rep.kind("이") == "Hangul" and rep.kind("\u0301") == "combining mark"
+
+
+def _die_once(marker):
+    """Worker task for the test below: the first call kills its own process."""
+    import os
+    import signal
+    if not os.path.exists(marker):
+        open(marker, "w").close()
+        os.kill(os.getpid(), signal.SIGKILL)
+    return 42
+
+
+def test_workers_recover_from_a_killed_worker(tmp_path):
+    w = fetch.Workers(2)
+    try:
+        with pytest.raises(fetch.BrokenProcessPool):
+            w.map(_die_once, [str(tmp_path / "marker")] * 3, timeout=120)
+        w.reset()
+        assert w.map(_die_once, [str(tmp_path / "marker")] * 3, timeout=120) == [42, 42, 42]
+    finally:
+        w.close()

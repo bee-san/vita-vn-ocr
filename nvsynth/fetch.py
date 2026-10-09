@@ -49,7 +49,9 @@ import threading
 import time
 import zlib
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+from concurrent.futures import TimeoutError as FuturesTimeout
+from concurrent.futures.process import BrokenProcessPool
 from pathlib import Path
 
 import numpy as np
@@ -204,13 +206,25 @@ def _pages(job):
     return items, stats, oov, chars
 
 
-def extract_file(pool, local, tag, per_page, seed):
+def extract_file(workers, local, tag, per_page, seed, timeout=1800, tries=3):
+    """Cuts one source file in page ranges on the worker processes. A worker that dies (the
+    OOM killer, a stray signal) or a file that takes longer than timeout seconds restarts the
+    workers and the file, up to tries times."""
     import h5py
     with h5py.File(local, "r") as f:
         n = f["images"].shape[0]
     jobs = [(str(local), tag, a, min(n, a + PAGES_PER_TASK), per_page, seed) for a in range(0, n, PAGES_PER_TASK)]
+    for attempt in range(1, tries + 1):
+        try:
+            results = workers.map(_pages, jobs, timeout)
+            break
+        except (BrokenProcessPool, FuturesTimeout, OSError) as e:
+            log(f"{tag}: workers failed ({e!r}), restarting them (attempt {attempt} of {tries})")
+            workers.reset()
+    else:
+        raise RuntimeError(f"{tag}: workers failed {tries} times")
     stats, oov, chars, crops, labels, metas = ex.new_stats(), Counter(), Counter(), [], [], []
-    for items, st, ov, ch in pool.imap(_pages, jobs):
+    for items, st, ov, ch in results:
         stats.update(st)
         oov.update(ov)
         chars.update(ch)
@@ -219,6 +233,35 @@ def extract_file(pool, local, tag, per_page, seed):
             labels.append(lab)
             metas.append(meta)
     return crops, labels, metas, stats, oov, chars
+
+
+class Workers:
+    """A process pool (spawn: no fork of a process that has download threads) that can be
+    thrown away and rebuilt when a worker dies."""
+
+    def __init__(self, n):
+        self.n, self.pool = n, None
+        self.reset()
+
+    def reset(self):
+        if self.pool is not None:
+            procs = list((getattr(self.pool, "_processes", None) or {}).values())
+            self.pool.shutdown(wait=False, cancel_futures=True)
+            for p in procs:                                   # stuck workers: stop them
+                if p.is_alive():
+                    p.kill()
+        self.pool = ProcessPoolExecutor(self.n, mp_context=mp.get_context("spawn"), initializer=_init_worker)
+
+    def map(self, fn, jobs, timeout):
+        """Results in job order; raises BrokenProcessPool or TimeoutError."""
+        futs = [self.pool.submit(fn, j) for j in jobs]
+        done = {}
+        for fut in as_completed(futs, timeout=timeout):
+            done[fut] = fut.result()
+        return [done[f] for f in futs]
+
+    def close(self):
+        self.pool.shutdown(wait=True)
 
 
 def bucket_of(meta, n_buckets):
@@ -267,14 +310,14 @@ def cmd_run(args):
         f"{args.downloads} downloads, raw budget {args.max_raw_gb} GB, keep {args.min_free_gb} GB free")
     budget = Budget(int(args.max_raw_gb * 1e9), int(args.min_free_gb * 1e9), path=str(out))
     t_all, total = time.time(), 0
-    with ThreadPoolExecutor(args.downloads) as dl, ThreadPoolExecutor(args.procs) as writers, \
-            mp.get_context("fork").Pool(args.procs, _init_worker) as pool:
+    workers = Workers(args.procs)
+    with ThreadPoolExecutor(args.downloads) as dl, ThreadPoolExecutor(args.procs) as writers:
         futures = [(path, tag, dl.submit(download, path, *files[path], raw, budget)) for path, tag in todo]
         for path, tag, fut in futures:
             local, dl_s = fut.result()
             size, sha = files[path]
             t0 = time.time()
-            crops, labels, metas, stats, oov, chars = extract_file(pool, local, tag, args.per_page, args.seed)
+            crops, labels, metas, stats, oov, chars = extract_file(workers, local, tag, args.per_page, args.seed)
             t_cut = time.time() - t0
             n_buckets = 1 if args.per_page else max(1, round(len(labels) / args.lines_per_shard))
             shards = write_shards(out, tag, crops, labels, metas, n_buckets, writers)
@@ -296,6 +339,7 @@ def cmd_run(args):
                 f"{rec['write_s']:.0f}s write, {n_buckets} shard(s), "
                 f"{sum(s['shard_bytes'] for s in shards) / 1e6:.0f} MB; {total} lines so far, "
                 f"{time.time() - t_all:.0f}s, {shutil.disk_usage(str(out)).free / 1e9:.0f} GB free")
+    workers.close()
     log(f"RUN_DONE {args.split}: {total} lines")
 
 

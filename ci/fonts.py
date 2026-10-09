@@ -42,7 +42,7 @@ def _fetch(url, dest, attempts=4):
             req = urllib.request.Request(url, headers={"User-Agent": UA})
             with urllib.request.urlopen(req, timeout=60) as r:
                 data = r.read()
-            tmp = dest.with_name(dest.name + ".part")
+            tmp = dest.with_name(f"{dest.name}.{os.getpid()}.part")    # the cache may be shared
             tmp.write_bytes(data)
             tmp.replace(dest)
             return

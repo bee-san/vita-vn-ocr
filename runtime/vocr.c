@@ -603,6 +603,31 @@ static void k_conv1(const vocr_op *op, const float *win, float *out, unsigned t0
                 vst1q_f32(o + c0 + 12, a3);
             }
 #endif
+            /* Scalar: 8 channels per pass with the sums in registers (see mm_f32). */
+            for (; c0 + 8 <= C; c0 += 8) {
+                float a0, a1, a2, a3, a4, a5, a6, a7, s[8];
+                if (op->bias) {
+                    const float *b = op->bias + c0;
+                    a0 = b[0], a1 = b[1], a2 = b[2], a3 = b[3], a4 = b[4], a5 = b[5], a6 = b[6], a7 = b[7];
+                } else {
+                    a0 = a1 = a2 = a3 = a4 = a5 = a6 = a7 = 0.0f;
+                }
+                for (dy = dy0; dy < dy1; dy++)
+                    for (dx = 0; dx < kw; dx++) {
+                        const float x = win[(size_t)(t * op->sw + dx) * Hi + (unsigned)(r0 + (int)dy)];
+                        const float *wt = op->w + (size_t)(dy * kw + dx) * C + c0;
+                        a0 = a0 + wt[0] * x;
+                        a1 = a1 + wt[1] * x;
+                        a2 = a2 + wt[2] * x;
+                        a3 = a3 + wt[3] * x;
+                        a4 = a4 + wt[4] * x;
+                        a5 = a5 + wt[5] * x;
+                        a6 = a6 + wt[6] * x;
+                        a7 = a7 + wt[7] * x;
+                    }
+                s[0] = a0, s[1] = a1, s[2] = a2, s[3] = a3, s[4] = a4, s[5] = a5, s[6] = a6, s[7] = a7;
+                for (c = 0; c < 8; c++) o[c0 + c] = relu ? relu_f(s[c]) : s[c];
+            }
             for (; c0 < C; c0 += 32) {
                 const unsigned cn = umin(32u, C - c0);
                 float acc[32];
@@ -663,6 +688,31 @@ static void k_dw(const vocr_op *op, const float *win, float *out, unsigned t0, u
                 vst1q_f32(o + c0 + 12, a3);
             }
 #endif
+            /* Scalar: 8 channels per pass with the sums in registers (see mm_f32). */
+            for (; c0 + 8 <= C; c0 += 8) {
+                float a0, a1, a2, a3, a4, a5, a6, a7, s[8];
+                if (op->bias) {
+                    const float *b = op->bias + c0;
+                    a0 = b[0], a1 = b[1], a2 = b[2], a3 = b[3], a4 = b[4], a5 = b[5], a6 = b[6], a7 = b[7];
+                } else {
+                    a0 = a1 = a2 = a3 = a4 = a5 = a6 = a7 = 0.0f;
+                }
+                for (dy = dy0; dy < dy1; dy++)
+                    for (dx = 0; dx < kw; dx++) {
+                        const float *x = win + ((size_t)(t * op->sw + dx) * Hi + (unsigned)(r0 + (int)dy)) * C + c0;
+                        const float *wt = op->w + (size_t)(dy * kw + dx) * C + c0;
+                        a0 = a0 + wt[0] * x[0];
+                        a1 = a1 + wt[1] * x[1];
+                        a2 = a2 + wt[2] * x[2];
+                        a3 = a3 + wt[3] * x[3];
+                        a4 = a4 + wt[4] * x[4];
+                        a5 = a5 + wt[5] * x[5];
+                        a6 = a6 + wt[6] * x[6];
+                        a7 = a7 + wt[7] * x[7];
+                    }
+                s[0] = a0, s[1] = a1, s[2] = a2, s[3] = a3, s[4] = a4, s[5] = a5, s[6] = a6, s[7] = a7;
+                for (c = 0; c < 8; c++) o[c0 + c] = relu ? relu_f(s[c]) : s[c];
+            }
             for (; c0 < C; c0 += 32) {
                 const unsigned cn = umin(32u, C - c0);
                 float acc[32];
@@ -758,6 +808,57 @@ static void mm_f32(const float *w, const float *bias, const float *x, size_t xs,
         vst1q_f32(y + p * ys + 4, hi);
     }
 #endif
+#ifndef VOCR_NEON /* the NEON loops above leave p == P */
+    /* Scalar: two positions x 8 outputs per pass with all 16 sums in registers. With the sums
+     * in an array (the loop below, now only the odd tail) gcc keeps them in memory, a load and
+     * a store per multiply-add: 8 instructions each on the PSP's Allegrex instead of about 3.
+     * The order of every sum is the same, so are the bits. */
+    for (; p + 2 <= P; p += 2) {
+        const float *x0 = x + p * xs, *x1 = x0 + xs;
+        float a0, a1, a2, a3, a4, a5, a6, a7, b0, b1, b2, b3, b4, b5, b6, b7, s[16];
+        if (bias) {
+            a0 = b0 = bias[0];
+            a1 = b1 = bias[1];
+            a2 = b2 = bias[2];
+            a3 = b3 = bias[3];
+            a4 = b4 = bias[4];
+            a5 = b5 = bias[5];
+            a6 = b6 = bias[6];
+            a7 = b7 = bias[7];
+        } else {
+            a0 = a1 = a2 = a3 = a4 = a5 = a6 = a7 = 0.0f;
+            b0 = b1 = b2 = b3 = b4 = b5 = b6 = b7 = 0.0f;
+        }
+        for (k = 0; k < K; k++) {
+            const float *wk = w + (size_t)k * 8;
+            const float v0 = x0[k], v1 = x1[k];
+            a0 = a0 + wk[0] * v0;
+            b0 = b0 + wk[0] * v1;
+            a1 = a1 + wk[1] * v0;
+            b1 = b1 + wk[1] * v1;
+            a2 = a2 + wk[2] * v0;
+            b2 = b2 + wk[2] * v1;
+            a3 = a3 + wk[3] * v0;
+            b3 = b3 + wk[3] * v1;
+            a4 = a4 + wk[4] * v0;
+            b4 = b4 + wk[4] * v1;
+            a5 = a5 + wk[5] * v0;
+            b5 = b5 + wk[5] * v1;
+            a6 = a6 + wk[6] * v0;
+            b6 = b6 + wk[6] * v1;
+            a7 = a7 + wk[7] * v0;
+            b7 = b7 + wk[7] * v1;
+        }
+        s[0] = a0, s[1] = a1, s[2] = a2, s[3] = a3, s[4] = a4, s[5] = a5, s[6] = a6, s[7] = a7;
+        s[8] = b0, s[9] = b1, s[10] = b2, s[11] = b3, s[12] = b4, s[13] = b5, s[14] = b6, s[15] = b7;
+        for (q = 0; q < 2; q++)
+            for (j = 0; j < 8; j++) {
+                float v = relu ? relu_f(s[q * 8 + j]) : s[q * 8 + j];
+                if (res) v = v + res[(p + q) * rs + j];
+                y[(p + q) * ys + j] = v;
+            }
+    }
+#endif
     for (; p < P; p += 4) {
         const unsigned pn = umin(4u, P - p);
         float acc[4][8];
@@ -782,7 +883,7 @@ static void mm_f32(const float *w, const float *bias, const float *x, size_t xs,
 /* int8 column block -> float: wf[k][j] = q[k][j] * scale[j]. */
 static void dequant8(const int8_t *qw, const float *scale, unsigned K, float *wf)
 {
-    unsigned k = 0, j;
+    unsigned k = 0;
 #ifdef VOCR_NEON
     const float32x4_t sl = vld1q_f32(scale), sh = vld1q_f32(scale + 4);
     for (; k < K; k++) {
@@ -791,8 +892,24 @@ static void dequant8(const int8_t *qw, const float *scale, unsigned K, float *wf
         vst1q_f32(wf + (size_t)k * 8 + 4, vmulq_f32(vcvtq_f32_s32(vmovl_s16(vget_high_s16(v))), sh));
     }
 #endif
-    for (; k < K; k++)
-        for (j = 0; j < 8; j++) wf[(size_t)k * 8 + j] = (float)qw[(size_t)k * 8 + j] * scale[j];
+#ifndef VOCR_NEON /* the NEON loop above leaves k == K */
+    if (k < K) { /* scalar: the 8 scales in registers, 5 instructions per weight on Allegrex */
+        const float s0 = scale[0], s1 = scale[1], s2 = scale[2], s3 = scale[3];
+        const float s4 = scale[4], s5 = scale[5], s6 = scale[6], s7 = scale[7];
+        for (; k < K; k++) {
+            const int8_t *q = qw + (size_t)k * 8;
+            float *f = wf + (size_t)k * 8;
+            f[0] = (float)q[0] * s0;
+            f[1] = (float)q[1] * s1;
+            f[2] = (float)q[2] * s2;
+            f[3] = (float)q[3] * s3;
+            f[4] = (float)q[4] * s4;
+            f[5] = (float)q[5] * s5;
+            f[6] = (float)q[6] * s6;
+            f[7] = (float)q[7] * s7;
+        }
+    }
+#endif
 }
 
 /* Per-position int16 quantisation: q = trunc(x * (32767 / max|x|) +- 0.5), and the
@@ -854,7 +971,7 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
                    const float *sx, unsigned K, unsigned P, float *y, size_t ys, const float *res,
                    size_t rs, int relu)
 {
-    unsigned p = 0, q, j, k, k0;
+    unsigned p = 0, q = 0, j, k, k0;
 #ifdef VOCR_NEON
     const float32x4_t z = vdupq_n_f32(0.0f), sl = vld1q_f32(scale), sh = vld1q_f32(scale + 4);
     const float32x4_t bl = bias ? vld1q_f32(bias) : z, bh = bias ? vld1q_f32(bias + 4) : z;
@@ -922,34 +1039,46 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
         }
     }
 #endif
-    for (; p < P; p += 4) {
-        const unsigned pn = umin(4u, P - p);
-        float fs[4][8];
-        for (q = 0; q < pn; q++)
-            for (j = 0; j < 8; j++) fs[q][j] = 0.0f;
+    /* Scalar: one position x 8 outputs per pass, the 8 int32 sums in registers (see mm_f32;
+     * two positions would need more integer registers than MIPS has). Integer sums are
+     * exact, and each chunk's sums are added to fs in the same order, so the bits are the
+     * same as with any blocking. */
+    (void)q;
+    for (; p < P; p++) {
+        const int16_t *xp = qx + (size_t)p * K;
+        float fs[8];
+        for (j = 0; j < 8; j++) fs[j] = 0.0f;
         for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
             const unsigned k1 = umin(K, k0 + W8I_CHUNK);
-            int32_t acc[4][8];
-            for (q = 0; q < pn; q++)
-                for (j = 0; j < 8; j++) acc[q][j] = 0;
+            int32_t c0 = 0, c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0, c6 = 0, c7 = 0;
             for (k = k0; k < k1; k++) {
                 const int8_t *wk = qw + (size_t)k * 8;
-                for (q = 0; q < pn; q++) {
-                    const int32_t xv = qx[(size_t)(p + q) * K + k];
-                    for (j = 0; j < 8; j++) acc[q][j] += (int32_t)wk[j] * xv;
-                }
+                const int32_t xv = xp[k];
+                c0 += (int32_t)wk[0] * xv;
+                c1 += (int32_t)wk[1] * xv;
+                c2 += (int32_t)wk[2] * xv;
+                c3 += (int32_t)wk[3] * xv;
+                c4 += (int32_t)wk[4] * xv;
+                c5 += (int32_t)wk[5] * xv;
+                c6 += (int32_t)wk[6] * xv;
+                c7 += (int32_t)wk[7] * xv;
             }
-            for (q = 0; q < pn; q++)
-                for (j = 0; j < 8; j++) fs[q][j] = fs[q][j] + (float)acc[q][j];
+            fs[0] = fs[0] + (float)c0;
+            fs[1] = fs[1] + (float)c1;
+            fs[2] = fs[2] + (float)c2;
+            fs[3] = fs[3] + (float)c3;
+            fs[4] = fs[4] + (float)c4;
+            fs[5] = fs[5] + (float)c5;
+            fs[6] = fs[6] + (float)c6;
+            fs[7] = fs[7] + (float)c7;
         }
-        for (q = 0; q < pn; q++)
-            for (j = 0; j < 8; j++) {
-                float v = fs[q][j] * (scale[j] * sx[p + q]);
-                if (bias) v = v + bias[j];
-                if (relu) v = relu_f(v);
-                if (res) v = v + res[(p + q) * rs + j];
-                y[(p + q) * ys + j] = v;
-            }
+        for (j = 0; j < 8; j++) {
+            float v = fs[j] * (scale[j] * sx[p]);
+            if (bias) v = v + bias[j];
+            if (relu) v = relu_f(v);
+            if (res) v = v + res[p * rs + j];
+            y[p * ys + j] = v;
+        }
     }
 }
 

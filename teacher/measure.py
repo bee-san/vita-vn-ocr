@@ -308,16 +308,74 @@ def cmd_rules(args):
         print(f"\nwrote {args.out} and {Path(args.out).with_suffix('.lines.json')}")
 
 
+def iou(a, b):
+    ix = max(0, min(a[2], b[2]) - max(a[0], b[0]))
+    iy = max(0, min(a[3], b[3]) - max(a[1], b[1]))
+    union = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - ix * iy
+    return ix * iy / max(union, 1)
+
+
+def cmd_hand(args):
+    """Precision of the rule's accepted labels on lines realdata checked by hand (its
+    manifests/handcheck.jsonl: training-side screenshots, dialogue and UI alike, so this is
+    independent of eval's test games). A teacher line is compared with the hand line of the
+    same screenshot whose ink box overlaps its crop most (IoU >= 0.5); hand lines marked
+    unreadable (truth null) are not scored."""
+    import build
+    rule = json.loads(Path(args.rule).read_text(encoding="utf-8"))["rule"]
+    hand = [json.loads(x) for x in Path(args.hand).read_text(encoding="utf-8").splitlines() if x.strip()]
+    shots = build.load_reads(args.reads)
+    by_shot = {}
+    for h in hand:
+        by_shot.setdefault(h["id"].rsplit("_", 1)[0], []).append(h)
+    n = ok = acc = 0
+    bad = []
+    for sk, hs in by_shot.items():
+        r = shots.get(sk)
+        if r is None:
+            continue
+        for ln in r["lines"]:
+            lab, how = vote.accept(ln, rule)
+            if lab is None:
+                continue
+            box = ln.get("crop") or ln["ink"]
+            h = max(hs, key=lambda h: iou(box, h["ink"]))
+            if iou(box, h["ink"]) < 0.5:
+                continue
+            acc += 1
+            if h["truth"] is None:
+                continue
+            n += 1
+            good = vote.eval_norm(lab) == vote.eval_norm(h["truth"])
+            ok += good
+            if not good:
+                bad.append((sk, lab, h["truth"], how))
+    print(f"hand-checked lines (realdata dev set): {len(hand)} in {len(by_shot)} screenshots, "
+          f"{sum(1 for s in by_shot if s in shots)} of them read; accepted {acc}, scored {n}, correct {ok} "
+          f"(precision {100 * ok / max(1, n):.2f}%, 95% CI {wilson(ok, n)})")
+    for b in bad:
+        print("  wrong:", b)
+    return {"hand_lines": len(hand), "accepted": acc, "scored": n, "correct": ok, "ci95": wilson(ok, n),
+            "wrong": [list(b) for b in bad]}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("hand")
+    p.add_argument("--hand", default=str(OUT / "inputs" / "realdata_handcheck.jsonl"))
+    p.add_argument("--rule", default=str(HERE / "rule.json"))
+    p.add_argument("--reads", default=str(OUT / "reads"))
     p = sub.add_parser("rules")
     p.add_argument("--set", default=",".join(EVAL_SETS))
     p.add_argument("--reads", default=str(OUT / "reads"))
     p.add_argument("--precision", type=float, default=0.99)
     p.add_argument("--out", default="")
     args = ap.parse_args()
-    cmd_rules(args)
+    if args.cmd == "hand":
+        cmd_hand(args)
+    else:
+        cmd_rules(args)
 
 
 if __name__ == "__main__":

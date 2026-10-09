@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # CI job "runtime (<cc>)": runtime/ built strictly with sanitizers, then its PyTorch parity test.
 #
-#   ci/runtime.sh gcc|clang          (from anywhere; uses $PYTHON, default: python on PATH)
+#   ci/runtime.sh gcc|clang          (from anywhere; uses $PYTHON, default: python on PATH;
+#                                     a relative $PYTHON is taken from the current directory)
 #
 # Until runtime/ exists this prints a notice and exits 0 (the workflow skips the job too).
 #
@@ -36,13 +37,17 @@
 set -euo pipefail
 
 cc=${1:?usage: ci/runtime.sh gcc|clang}
+# make -C runtime runs $PYTHON from runtime/, so a relative one (PYTHON=.venv-ci/bin/python)
+# is made absolute here, against the caller's directory.
+py=${PYTHON:-python}
+PYTHON=$(command -v "$py" || true)
+case $PYTHON in "" | /*) ;; *) PYTHON=$PWD/$PYTHON ;; esac
 cd "$(dirname "$0")/.."
 if [ ! -d runtime ]; then
   echo "::notice title=runtime ($cc) skipped::runtime/ does not exist yet, so there is nothing to build or check."
   exit 0
 fi
 
-PYTHON=$(command -v "${PYTHON:-python}")
 cflags=(-std=c99 -O2 -g -Wall -Wextra -Werror "-fsanitize=address,undefined" -fno-sanitize-recover=all
         -fno-omit-frame-pointer)
 CFLAGS="${cflags[*]}"
@@ -105,6 +110,7 @@ if [ ! -f runtime/Makefile ]; then
   rm -rf "$work"
   exit 0
 fi
+[ -n "$PYTHON" ] || { echo "error: no Python at PYTHON=$py; set PYTHON to the CI env's interpreter (ci/README.md)" >&2; exit 1; }
 "$PYTHON" ci/fixture_ckpt.py --out "$work/fixture.pt"
 "$PYTHON" ci/sandbox.py --out "$work/sandbox" --shards 1 --per-shard 48 --workers 2
 shard="$work/sandbox/repo/data/synth/synth_00000.npz"

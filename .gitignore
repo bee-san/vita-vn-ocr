@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+logs/
+models/
+runs/
+*.npz
+*.pt
+*.onnx
+data/*
+!data/*.py
+!data/vocab.txt
+!data/manifests/
+synth/*.png
+build/

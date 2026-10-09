@@ -6,7 +6,10 @@
   vndb.py fetch  [--delay S] [--mirror DIR ...]      -> $REALDATA/shots/<kind>/<vn>_<file>, fills sha256
 
 A listing row is one screenshot of a Japanese-original VN, with the release it was
-taken from (its platforms and languages). `select` keeps a screenshot only when
+taken from (its platforms and languages). A manifest row is
+  {vn, kind, url, dims, release, sexual, violence, sha256, session}
+where session (assign_sessions) groups screenshots of one release uploaded together.
+`select` keeps a screenshot only when
 
   * its VNDB flag averages are sexual < 0.3 and violence < 0.5 (the repo's filters),
   * its release is Japanese-only (so no English or Chinese text on screen),
@@ -192,7 +195,35 @@ def load_shots():
     return rows
 
 
+SESSION_GAP = 50
+
+
+def shot_number(url):
+    """VNDB's screenshot id (the file name: https://t.vndb.org/sf/44/112044.jpg -> 112044)."""
+    return int(url.rsplit("/", 1)[-1].split(".")[0])
+
+
+def assign_sessions(rows):
+    """Give every screenshot a capture-session id, "<vn>/<release>/<n>": screenshots of one
+    release whose VNDB ids are consecutive (gaps under SESSION_GAP) were uploaded together,
+    i.e. taken in one sitting. Splits are by VN, so a session never straddles a split."""
+    by = {}
+    for r in rows:
+        by.setdefault((r["vn"], r["release"] or "r0"), []).append(r)
+    for (vn, rel), rs in by.items():
+        rs.sort(key=lambda r: shot_number(r["url"]))
+        n, last = 0, None
+        for r in rs:
+            num = shot_number(r["url"])
+            if last is not None and num - last >= SESSION_GAP:
+                n += 1
+            r["session"] = f"{vn}/{rel}/{n}"
+            last = num
+    return rows
+
+
 def save_shots(rows):
+    assign_sessions(rows)
     MANIFESTS["vita"].parent.mkdir(parents=True, exist_ok=True)
     for k in KINDS:
         tmp = MANIFESTS[k].with_name(MANIFESTS[k].name + ".part")

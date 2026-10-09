@@ -8,7 +8,8 @@
  *       --repeat N         run every line N times (timing)
  *       --arena W[,W...]   print arena bytes for these max widths and exit
  *       --crc              verify the blob CRC first
- * A pack file is u32 count, then per crop u32 height, u32 width, height*width bytes.
+ * A pack file is u32 count, then per crop u32 height, u32 width, u32 channels (1 grey,
+ * 4 RGBA), then height*width*channels bytes.
  * Timing (wall clock, after the first run) goes to stderr.
  */
 #define _POSIX_C_SOURCE 200112L
@@ -82,7 +83,8 @@ static unsigned char *parse_pgm(unsigned char *buf, size_t n, unsigned *w, unsig
 }
 
 static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px, unsigned w,
-                    unsigned h, int repeat, FILE *logits_out, double *t_total, unsigned long *frames)
+                    unsigned h, unsigned ch, int repeat, FILE *logits_out, double *t_total,
+                    unsigned long *frames)
 {
     vocr_image img;
     vocr_extra ex;
@@ -93,8 +95,8 @@ static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px,
     img.pixels = px;
     img.width = w;
     img.height = h;
-    img.stride = w;
-    img.format = VOCR_GREY8;
+    img.stride = (size_t)w * ch;
+    img.format = ch == 4 ? VOCR_RGBA8 : VOCR_GREY8;
     memset(&ex, 0, sizeof ex);
     if (logits_out) {
         logits = (float *)malloc((size_t)cap * m->n_classes * sizeof(float));
@@ -225,14 +227,15 @@ int main(int argc, char **argv)
         }
         count = rd32(buf);
         for (j = 0; j < count; j++) {
-            unsigned h, w;
-            if (n - off < 8) break;
+            unsigned h, w, ch;
+            if (n - off < 12) break;
             h = rd32(buf + off);
             w = rd32(buf + off + 4);
-            off += 8;
-            if ((size_t)h * w > n - off) break;
-            if (run_line(&ctx, &m, buf + off, w, h, repeat, lf, &t_total, &frames)) return 1;
-            off += (size_t)h * w;
+            ch = rd32(buf + off + 8);
+            off += 12;
+            if ((ch != 1 && ch != 4) || (size_t)h * w * ch > n - off) break;
+            if (run_line(&ctx, &m, buf + off, w, h, ch, repeat, lf, &t_total, &frames)) return 1;
+            off += (size_t)h * w * ch;
             lines++;
         }
         if (j != count) {
@@ -255,7 +258,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "cannot read PGM %s\n", argv[i]);
             return 1;
         }
-        if (run_line(&ctx, &m, px, w, h, repeat, lf, &t_total, &frames)) return 1;
+        if (run_line(&ctx, &m, px, w, h, 1, repeat, lf, &t_total, &frames)) return 1;
         free(buf);
         lines++;
     }

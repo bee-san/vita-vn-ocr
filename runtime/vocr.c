@@ -1,4 +1,4 @@
-/* vocr.c - see vocr.h. C99; libc use is limited to memcpy/memset/memmove and math.h. */
+/* vocr.c - see vocr.h. C99; libc use is limited to memcpy, memset and math.h. */
 #include "vocr.h"
 
 #include <math.h>
@@ -26,6 +26,10 @@ static uint32_t rd32(const unsigned char *p)
     return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24;
 }
 static size_t al16(size_t n) { return (n + 15u) & ~(size_t)15u; }
+static int is_magic(const unsigned char *b)
+{
+    return b[0] == 'V' && b[1] == 'O' && b[2] == 'C' && b[3] == 'R';
+}
 static unsigned umin(unsigned a, unsigned b) { return a < b ? a : b; }
 
 static uint32_t crc32_ieee(const unsigned char *p, size_t n)
@@ -43,7 +47,7 @@ int vocr_check_crc(const void *blob, size_t bytes)
 {
     const unsigned char *b = (const unsigned char *)blob;
     uint32_t total;
-    if (!b || bytes < HEADER_BYTES || memcmp(b, "VOCR", 4)) return VOCR_E_FORMAT;
+    if (!b || bytes < HEADER_BYTES || !is_magic(b)) return VOCR_E_FORMAT;
     total = rd32(b + 8);
     if (total < HEADER_BYTES || total > bytes) return VOCR_E_FORMAT;
     return crc32_ieee(b + HEADER_BYTES, total - HEADER_BYTES) == rd32(b + 40) ? VOCR_OK
@@ -146,7 +150,7 @@ int vocr_load(vocr_model *m, const void *blob, size_t bytes)
     memset(m, 0, sizeof *m);
     if (*(const unsigned char *)&one != 1) return VOCR_E_FORMAT; /* the blob is little-endian */
     if ((uintptr_t)b & 15u) return VOCR_E_ALIGN;
-    if (bytes < HEADER_BYTES || memcmp(b, "VOCR", 4) || rd16(b + 4) != VOCR_BLOB_VERSION ||
+    if (bytes < HEADER_BYTES || !is_magic(b) || rd16(b + 4) != VOCR_BLOB_VERSION ||
         rd16(b + 6) != HEADER_BYTES)
         return VOCR_E_FORMAT;
     total = rd32(b + 8);
@@ -200,7 +204,7 @@ const char *vocr_class_text(const vocr_model *m, unsigned c, unsigned *len)
         return "";
     }
     if (len) *len = (unsigned)(m->vocab_off[c + 1] - m->vocab_off[c]);
-    return m->vocab + m->vocab_off[c];
+    return m->vocab_off[c + 1] == m->vocab_off[c] ? "" : m->vocab + m->vocab_off[c];
 }
 
 const char *vocr_strerror(int rc)
@@ -1038,9 +1042,14 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     }
 }
 
+/* Keep the last `halo` columns of a ring as its first ones. The ranges can overlap
+ * (fewer new columns than halo), so copy forwards: the destination is below the source. */
 static void ring_shift(float *ring, unsigned cap, unsigned halo, unsigned col)
 {
-    if (halo) memmove(ring, ring + (size_t)(cap - halo) * col, (size_t)halo * col * sizeof(float));
+    const float *src = ring + (size_t)(cap - halo) * col;
+    size_t i, n = (size_t)halo * col;
+    if (!halo || src == ring) return;
+    for (i = 0; i < n; i++) ring[i] = src[i];
 }
 
 /* Compute output columns [j0, j0 + n) of op i (wout of them exist) into its

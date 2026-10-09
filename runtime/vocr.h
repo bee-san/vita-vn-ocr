@@ -1,6 +1,6 @@
 /* vocr.h - a tiny CTC text-line recognizer for visual-novel dialogue on PS Vita / PSP.
  *
- * Plain C99. No malloc and no libc beyond memcpy/memset/memmove and <math.h>.
+ * Plain C99. No malloc and no libc beyond memcpy/memset and <math.h>.
  * The weights blob (written by train/export.py) is used in place; all working memory
  * comes from one caller-provided arena whose exact size vocr_arena_bytes() reports.
  *
@@ -133,7 +133,7 @@ unsigned vocr_resized_width(const vocr_model *m, unsigned w, unsigned h);
 /* The preprocessed grey line, height x padded width bytes, row-major. */
 int vocr_preprocess(const vocr_model *m, const vocr_image *img, unsigned char *out,
                     size_t cap, unsigned *width, unsigned *padded_width);
-/* UTF-8 text of class c (class 0, the CTC blank, is empty). */
+/* UTF-8 bytes of class c, *len of them (not NUL-terminated; "" for the blank, class 0). */
 const char *vocr_class_text(const vocr_model *m, unsigned c, unsigned *len);
 const char *vocr_strerror(int rc);
 /* sizeof(vocr_model) and sizeof(vocr_ctx), for foreign-function bindings. */

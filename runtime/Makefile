@@ -1,14 +1,16 @@
 # runtime/Makefile - host builds, sanitizers and ARM cross builds of the vocr runtime.
 #
 #   make                 build/vocr_cli and build/libvocr.so (gcc, -O2)
-#   make check           gcc + clang -Werror builds, ASan/UBSan CLI, C unit test
+#   make check           gcc + clang -Werror builds, ASan/UBSan CLIs, C unit tests
 #   make arm             static ARMv7 (Cortex-A9) CLIs: NEON and scalar
 #   make size            code size of vocr.o for the ARM target
 #
 # Tools can be overridden: CC, CLANG, ARM_CC (default: the Arm GNU toolchain prefix
 # arm-none-linux-gnueabihf-, see scripts/fetch_arm_tools.sh), QEMU.
 
-CC ?= gcc
+ifeq ($(origin CC),default)
+CC = gcc
+endif
 CLANG ?= clang
 OUT ?= build
 CSTD = -std=c99 -ffp-contract=off
@@ -48,9 +50,17 @@ $(OUT)/vocr_cli_clang_san: $(SRC) $(CLI) | $(OUT)
 $(OUT)/test_vocr: $(SRC) tests/test_vocr.c | $(OUT)
 	$(CC) $(CSTD) $(WARN) $(SAN) -o $@ vocr.c tests/test_vocr.c -lm
 
+$(OUT)/test_vocr_clang: $(SRC) tests/test_vocr.c | $(OUT)
+	$(CLANG) $(CSTD) $(WARN) $(SAN) -o $@ vocr.c tests/test_vocr.c -lm
+
+$(OUT)/test_vocr_neon_off: $(SRC) tests/test_vocr.c | $(OUT)
+	$(CC) $(CSTD) $(WARN) $(OPT) -DVOCR_NO_NEON -o $@ vocr.c tests/test_vocr.c -lm
+
+# SAN_ENV: e.g. LD_LIBRARY_PATH=... when gcc's libasan is not installed system-wide
 check: $(OUT)/vocr_cli $(OUT)/libvocr.so $(OUT)/vocr_cli_clang $(OUT)/vocr_cli_san \
-       $(OUT)/vocr_cli_clang_san $(OUT)/test_vocr
-	./$(OUT)/test_vocr
+       $(OUT)/vocr_cli_clang_san $(OUT)/test_vocr $(OUT)/test_vocr_clang
+	$(SAN_ENV) ./$(OUT)/test_vocr
+	./$(OUT)/test_vocr_clang
 
 arm: $(OUT)/arm/vocr_cli_neon $(OUT)/arm/vocr_cli_scalar
 

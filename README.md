@@ -11,7 +11,7 @@ General OCR models are too big for this. The best general option, a trimmed int8
 | Model | `train/model.py`: a CTC line recognizer with 0.76M parameters (stem plus depthwise-separable blocks, factorised 5,355-class head), grey input at height 32 |
 | v1 baseline | Trained on synthetic dialogue boxes only. Synthetic validation: 0.34% CER, 95.6% of lines exact (`docs/v1-metrics.jsonl`). Real Vita screenshots (`eval/`, vita-test, 206 lines from 16 games): 23.75% CER, 52.4% exact, 81.8% CER on its 43 dark-on-light lines. Real PSP screenshots (psp-test, 245 lines from 14 games): 46.45% CER, 30.2% exact, 86.8% CER on its 110 dark-on-light lines (`docs/results.md`). |
 | Runtime | `runtime/`: plain-C99 recognizer for Vita (NEON) and PSP (scalar), no malloc, 116-125 KB arena at any line width; int8 weights 0.86 MB (`runtime/README.md`) |
-| Hardware | Nothing has run on a PCH-1000 or a PSP yet |
+| Hardware | Nothing has run on a PCH-1000 or a PSP yet. The PSP build (`psp/`) gives the host runtime's exact output in PPSSPP, at 0.38 s emulated for the median psp-test line (`psp/README.md`) |
 
 ## Layout
 
@@ -26,6 +26,7 @@ synth/                         synthetic dialogue-box renderer and corpus builde
 nvsynth/                       Japanese line crops from NVIDIA OCR-Synthetic-Multilingual-v1 for pretraining (docs/nvsynth.md)
 train/                         model, CTC training, export.py (weights blob for the C runtime)
 runtime/                       on-console C99: recognizer (vocr.h/vocr.c), line finder (vocr_lines.c), tests
+psp/                           PSP build: pspdev toolchain, test EBOOT, PPSSPP-headless parity and timing
 docs/                          research notes and results
 .github/, ci/, tests/          CI: lint, unit tests, training smoke, C runtime checks (ci/README.md)
 ```

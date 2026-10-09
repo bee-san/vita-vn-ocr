@@ -119,6 +119,7 @@ Setup: x86-64, one thread pinned to one core, the first 100 synth-val lines (5,7
 - gcc 11 at `-O2` doesn't auto-vectorise the scalar loops, and its speed depends on code layout. In a 7-round interleaved A/B, w8i took 51.4 ms before the w8i chunking (4d80728), 70.6 ms with it (77d5b85) and 53.9 ms with this head's unrelated `VOCR_INVERT` edit. Built with `-falign-functions=64 -falign-loops=64`, the same three ran at 48.4, 45.0 and 48.1 ms. So the chunking costs nothing measurable, and single gcc `-O2` numbers can be a third off either way.
 - With `OPT=-O3`, gcc took 8.3-11.8 ms per line in f32 and 16 ms in w8i (the PR author's 2 runs, at an earlier head). The outputs stay bit-identical (parity passes on an `-O3` build), because vectorising runs across output channels, not along a sum.
 - On the Vita the NEON kernels are explicit, so none of this decides speed there.
+- The table predates the register-blocked scalar kernels (`psp/README.md`). With them, gcc 11.5 `-O2` on one core of the same loaded host, over psp-test, went from 36.9 to 12.6 ms per line in f32, 39.1 to 15.5 in w8f and 27.4 to 14.3 in w8i (median of 3 interleaved runs each), with identical logits.
 
 ## API
 
@@ -250,6 +251,7 @@ make -C runtime size ARM_CC=...                    # code size and stack frames
 - The blob and the arena must be 16-byte aligned, and the blob must stay alive while in use. Both can live anywhere: a memblock, a static buffer, or the overlay's private heap.
 - The blob format is little-endian, and `vocr_load()` refuses to run on a big-endian host. Vita and PSP are both little-endian.
 - The runtime makes no system calls and has no global state, so it's safe from a plugin thread.
+- PSP: `psp/` builds it with pspdev (`-O2 -G0`) into a test EBOOT and checks it in PPSSPPHeadless: the same bits as the host on vita-test, psp-test and synth-val in every mode (`psp/README.md`). The scalar kernels keep their sums in registers (2 positions × 8 outputs for f32, 1 × 8 for w8i, 8 channels for the stem and depthwise convs), which the PSP and the host's gcc `-O2` builds need to be fast. `-DVOCR_PSP_VFPU` (`make -C psp VFPU=1`) runs the float matrix products on the VFPU, with the same arithmetic in the same order; the thread needs `PSP_THREAD_ATTR_VFPU`.
 
 ## Not done here
 

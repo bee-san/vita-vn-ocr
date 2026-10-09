@@ -311,9 +311,28 @@ What the finder results show:
     leak did not inflate it.
   - Both games are reserved now, and later shards must skip `all`.
 
+## PSP build in PPSSPP
+
+`psp/` runs the C runtime's PSP build (pspdev, Allegrex, `-O2 -G0`) as a test EBOOT in
+PPSSPPHeadless 1.20.4 (`psp/README.md`; `psp/run_all.sh`). Its logits are bit-identical to the
+host runtime's on every line of vita-test, psp-test and synth-val (first 300) in f32, w8f and
+w8i. Through `eval/run.py --model 'cmd:python psp/ppsspp_cli.py v1_w8.vocr --mode w8f --stdin'`
+it returns the host's string on all 451 real lines: int8 v1 is 23.87% CER on vita-test and
+46.57% on psp-test, as on the host (manifests byte-identical to main's: psp-test sha256
+2b8db084…, vita-test 5fa68d04…).
+
+| v1, int8 (w8f, tile 16) | blob | arena | emulated ms per frame | median / p90 psp-test line |
+|---|---|---|---|---|
+| scalar build (default) | 859,904 B | 353,536 B (118,432 at tile 4) | 12.07 | 0.38 / 0.73 s |
+| VFPU build (`make -C psp VFPU=1`) | same | same | 7.96 | 0.25 / 0.47 s |
+
+PPSSPP's time is emulated (about one cycle per instruction at 333 MHz, no cache model), not
+console time. The console estimate in `psp/README.md` is 1.05-1.45× for the scalar build.
+
 ## Not measured yet
 
-- Any console speed or memory figure, and v1's peak memory (the runtime's arena report).
+- Any console speed or memory figure (`psp/README.md` has the PPSSPP-emulated PSP figures and
+  v1's measured arena), and v1's peak memory on a Vita.
 - Repeated timing samples: each ms/line figure is one pass on a shared, loaded host.
 - The reference presets `ppocr-v5-server` and `ppocr-v6-small[-jis]` (wired in, not baselined).
 - Why int8 beats fp32 on real lines, and whether calibrating on real crops changes it.

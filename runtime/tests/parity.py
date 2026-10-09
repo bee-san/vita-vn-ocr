@@ -1,27 +1,28 @@
 #!/usr/bin/env python3
 """Parity of the C runtime against PyTorch.
 
-  parity.py --fixture                                   # CI: random-init model, no data
-  parity.py --ckpt models/v1/ckpt_best.pt --set synth-val [--n 10000] [--workers 5]
-  parity.py --ckpt ... --set real                       # data/real/crops (RGBA path)
-  parity.py --ckpt ... --set synth-val --n 200 --cli "qemu-arm -cpu cortex-a9 build/arm/vocr_cli_neon"
+  parity.py --fixture                         # random-init model, random crops, no data
+  parity.py --ckpt CKPT [--shard SHARD.npz]   # default shard: the last synth shard (val)
+  parity.py --ckpt CKPT --set real            # data/real crops, through the RGBA path
+  parity.py ... --cli "qemu-arm -cpu cortex-a9 build/arm/vocr_cli_neon"
 
-For every line and mode it checks:
-  * preprocessing: vocr_preprocess() == cv2.resize(INTER_LINEAR) + replicate padding,
-    bit for bit (and for RGBA input, after the integer luma of synth/common.py);
-  * logits: max |C - reference| <= tol * max(1, max |reference|) per line;
-  * text: the C runtime's greedy CTC string == the reference's.
-References: f32 is the original PyTorch model (eval mode, batch 1, the crop padded to
-its own multiple of 8, as the runtime sees it). w8f and w8i are PyTorch re-implementations
-of the int8 blob (dequantised weights; plus per-position int16 activations with int32
-sums for w8i), so they test the runtime, not the quantisation. Quantisation cost is
-reported separately as CER against the labels and agreement with the f32 model.
-It also checks that the logits are bit-identical for several tile / head-batch sizes
-and that vocr_arena_bytes() == train/export.py plan_arena().
+The checkpoint is exported with train/export.py (fp32 and int8). For every line and mode:
+  * preprocessing: the runtime's grey input == cv2.resize(INTER_LINEAR) plus replicate
+    padding, bit for bit (RGBA input: after synth/common.py's integer luma);
+  * PyTorch: max |C - reference| <= tol * max(1, max |reference|), and the greedy CTC
+    strings are identical. f32 is compared with the original model (eval mode, batch 1,
+    the crop padded to a multiple of 8 like the runtime does); w8f and w8i with a PyTorch
+    forward of the int8 blob (dequantised weights; int16 activations and integer sums for
+    w8i), so the runtime is tested, not the quantisation;
+  * exact: the logits are bit-identical to tests/vocr_ref.py, a numpy model of the C
+    arithmetic, so a string can never differ by a near tie;
+  * tiles: the logits are bit-identical for several tile / head-batch sizes;
+  * arena: vocr_arena_bytes() == train/export.py plan_arena().
+Quantisation cost is reported as CER against the labels and agreement with f32.
 
---cli runs the C side through a vocr_cli binary (sanitizer builds, ARM under qemu)
-instead of build/libvocr.so; --save-logits keeps its logits to compare backends
-bit for bit with --compare-logits.
+The C side is build/libvocr.so through ctypes, or any vocr_cli build with --cli
+(sanitizer builds, ARM builds under qemu). --report writes the JSON object that CI's
+ci/parity_report.py checks.
 """
 import argparse
 import json
@@ -41,13 +42,16 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 RT = HERE.parent
 ROOT = RT.parent
-sys.path[:0] = [str(RT), str(ROOT / "train"), str(ROOT / "synth")]
+sys.path[:0] = [str(HERE), str(RT), str(ROOT / "train"), str(ROOT / "synth")]
 import export as E  # noqa: E402
-from pyvocr import Vocr  # noqa: E402
+import vocr_ref  # noqa: E402
 
 H, MAX_W, STRIDE = 32, 1024, 8
 TOL = {"f32": 1e-3, "w8f": 1e-3, "w8i": 5e-3}
-TILES = [(1, 1), (2, 5), (3, 7), (7, 3), (16, 16), (128, 128)]   # (tile, head) frames
+TILES = {"lib": [(1, 1), (2, 5), (3, 7), (7, 3), (16, 16), (128, 128)],   # (tile, head) frames
+         "cli": [(1, 1), (3, 7), (128, 128)]}
+MODE_ID = {"f32": E.MODE_F32, "w8f": E.MODE_W8F, "w8i": E.MODE_W8I}
+ARENA_WIDTHS = (8, 100, 256, 640, 1000, 1024)
 
 
 # ---------------------------------------------------------------- data
@@ -81,7 +85,7 @@ def load_real(data, n):
 
 
 def fixture_lines(n, seed=0):
-    """Random crops with text-like strokes; about a third are RGBA."""
+    """Random crops with text-like strokes; a third are RGBA, some are tiny."""
     rng = np.random.default_rng(seed)
     out = []
     for i in range(n):
@@ -102,24 +106,18 @@ def fixture_lines(n, seed=0):
     return out
 
 
-def grey_of(img):
-    return to_gray(img) if img.ndim == 3 else img
-
-
 def prep(img):
-    """train.py's resize32 + make_batch for one line: (uint8 resized, padded float input)."""
-    g = grey_of(img)
+    """train.py's resize32 + make_batch for one line: (padded uint8, unpadded width, float input)."""
+    g = to_gray(img) if img.ndim == 3 else img
     h, w = g.shape
     nw = max(8, min(MAX_W, int(round(w * H / h))))
     r = cv2.resize(g, (nw, H), interpolation=cv2.INTER_LINEAR)
     W = (nw + STRIDE - 1) // STRIDE * STRIDE
-    x = np.empty((H, W), np.float32)
-    x[:, :nw] = r
-    x[:, nw:] = r[:, -1:]
-    return r, x / 127.5 - 1.0
+    padded = np.concatenate([r, np.repeat(r[:, -1:], W - nw, 1)], 1)
+    return padded, nw, padded.astype(np.float32) / 127.5 - 1.0
 
 
-# ---------------------------------------------------------------- references
+# ---------------------------------------------------------------- PyTorch references
 
 def greedy(best, vocab):
     """vocab excludes the blank: class t > 0 is vocab[t - 1]."""
@@ -133,14 +131,13 @@ def greedy(best, vocab):
 
 
 def _quant16(X):
-    """Per-row int16 quantisation exactly as vocr.c quant16()."""
     import torch
     mx = X.abs().amax(1)
-    inv = torch.where(mx > 0, 32767.0 / torch.where(mx > 0, mx, torch.ones_like(mx)),
-                      torch.zeros_like(mx))
+    ok = mx > 0
+    inv = torch.where(ok, 32767.0 / torch.where(ok, mx, torch.ones_like(mx)), torch.zeros_like(mx))
     t = X * inv[:, None]
     q = torch.trunc(t + torch.where(torch.signbit(t), -0.5, 0.5)).clamp(-32767, 32767)
-    return q, torch.where(mx > 0, mx / 32767.0, torch.zeros_like(mx))
+    return q, torch.where(ok, mx / 32767.0, torch.zeros_like(mx))
 
 
 def _matmul(X, op, mode):
@@ -173,81 +170,115 @@ def blob_forward(blob, x, mode):
                 t = F.relu(t)
             continue
         _, c, h, w = t.shape
-        if op["collapse"]:
-            X = t[0].permute(2, 1, 0).reshape(w, h * c)
-        else:
-            X = t[0].permute(1, 2, 0).reshape(h * w, c)
+        X = t[0].permute(2, 1, 0).reshape(w, h * c) if op["collapse"] else \
+            t[0].permute(1, 2, 0).reshape(h * w, c)
         Y = _matmul(X, op, mode)
         if op["relu"]:
             Y = F.relu(Y)
         ho = 1 if op["collapse"] else h
         if op["res"]:
             Y = Y + dw_in[0].permute(1, 2, 0).reshape(ho * w, -1)
-        if op["collapse"]:
-            t = Y.T.reshape(1, -1, 1, w)
-        else:
-            t = Y.reshape(ho, w, -1).permute(2, 0, 1)[None]
+        t = Y.T.reshape(1, -1, 1, w) if op["collapse"] else Y.reshape(ho, w, -1).permute(2, 0, 1)[None]
     return t[0, :, 0, :].T.contiguous().numpy()
 
 
-class Reference:
-    def __init__(self, model, blobs):
-        self.model, self.blobs = model, blobs
-
-    def logits(self, x, mode):
-        import torch
-        with torch.no_grad():
-            if mode == "f32":
-                return self.model(torch.from_numpy(x)[None, None])[:, 0].numpy()
-            return blob_forward(self.blobs["w8"], x, mode)
+def fixture_model(seed=0, width=0.5):
+    """Random-init TinyVNOCR whose BatchNorm statistics are measured on fixture crops (so
+    activations vary along the line like a trained net's) with random BN scales and shifts,
+    so the exporter's folding is exercised."""
+    import torch
+    import torch.nn as nn
+    from common import load_vocab
+    from model import TinyVNOCR
+    torch.manual_seed(seed)
+    vocab = load_vocab(ROOT / "data" / "vocab.txt")
+    m = TinyVNOCR(len(vocab) + 1, width=width)
+    bns = [mod for mod in m.modules() if isinstance(mod, nn.BatchNorm2d)]
+    xs = [prep(img)[2] for _, img, _ in fixture_lines(16, seed + 1)]
+    W = max(x.shape[1] for x in xs)
+    batch = torch.from_numpy(np.stack([np.pad(x, ((0, 0), (0, W - x.shape[1])), mode="edge")
+                                       for x in xs]))[:, None]
+    with torch.no_grad():
+        for bn in bns:
+            bn.reset_running_stats()
+            bn.momentum = None
+        m.train()
+        m.features(batch)
+        g = torch.Generator().manual_seed(seed)
+        for bn in bns:
+            bn.weight.copy_(torch.empty_like(bn.weight).uniform_(0.7, 1.3, generator=g))
+            bn.bias.copy_(torch.empty_like(bn.bias).uniform_(-0.3, 0.2, generator=g))
+        m.head.weight.mul_(4.0)
+    m.eval()
+    return m, vocab
 
 
 # ---------------------------------------------------------------- C backends
+# run(items) -> [(text, logits frames x classes, grey input H x padded W, width)]
 
 class LibBackend:
     def __init__(self, blob_path, mode, tile=0, head=0):
+        from pyvocr import Vocr
+        self.blob_path, self.mode = blob_path, mode
         self.v = Vocr(blob_path, mode=mode, tile=tile, head=head)
 
     def run(self, items):
-        return [self.v.run(img, logits=True) for img in items]
+        out = []
+        for img in items:
+            text, logits = self.v.run(img, logits=True)
+            grey, w = self.v.preprocess(img)
+            out.append((text, logits, grey, w))
+        return out
+
+    def arena(self, widths, tile, head):
+        from pyvocr import Vocr
+        return {w: Vocr(self.blob_path, mode=self.mode, tile=tile, head=head, max_width=w).arena_bytes
+                for w in widths}
 
 
 class CliBackend:
-    """Runs a vocr_cli binary (possibly under qemu) over a pack file."""
+    """A vocr_cli binary (possibly under qemu) over a pack file."""
 
-    def __init__(self, cmd, blob_path, mode, tile=0, head=0, save=None):
-        self.cmd = shlex.split(cmd) + [str(blob_path), "--mode", mode, "--crc"]
-        if tile:
-            self.cmd += ["--tile", str(tile)]
-        if head:
-            self.cmd += ["--head", str(head)]
-        self.save = save
+    def __init__(self, cmd, blob_path, mode, tile=0, head=0):
+        self.base = shlex.split(cmd) + [str(blob_path), "--mode", mode]
+        self.cmd = self.base + ["--crc"] + (["--tile", str(tile)] if tile else []) + \
+            (["--head", str(head)] if head else [])
 
     def run(self, items):
         with tempfile.TemporaryDirectory() as td:
-            pack, lg = Path(td) / "in.bin", Path(td) / "logits.bin"
+            pack, lg, inp = Path(td) / "in.bin", Path(td) / "logits.bin", Path(td) / "input.bin"
             with open(pack, "wb") as f:
                 f.write(struct.pack("<I", len(items)))
                 for img in items:
-                    ch = 4 if img.ndim == 3 else 1
-                    f.write(struct.pack("<III", img.shape[0], img.shape[1], ch))
+                    f.write(struct.pack("<III", img.shape[0], img.shape[1], 4 if img.ndim == 3 else 1))
                     f.write(np.ascontiguousarray(img).tobytes())
-            p = subprocess.run(self.cmd + ["--pack", str(pack), "--logits", str(lg)],
-                               capture_output=True, stdin=subprocess.DEVNULL, timeout=3600)
+            p = subprocess.run(self.cmd + ["--pack", str(pack), "--logits", str(lg), "--input-out", str(inp)],
+                               capture_output=True, stdin=subprocess.DEVNULL, timeout=7200)
             if p.returncode:
-                raise RuntimeError(f"{self.cmd[0]} failed ({p.returncode}): {p.stderr.decode()[-2000:]}")
+                raise RuntimeError(f"{' '.join(self.cmd)} failed ({p.returncode}): "
+                                   f"{p.stderr.decode(errors='replace')[-3000:]}")
             texts = p.stdout.decode("utf-8").split("\n")[:len(items)]
-            raw = lg.read_bytes()
-        out, off = [], 0
+            raw, rin = lg.read_bytes(), inp.read_bytes()
+        out, off, oi = [], 0, 0
         for text in texts:
             frames, classes = struct.unpack_from("<II", raw, off)
-            off += 8
-            a = np.frombuffer(raw, np.float32, frames * classes, off).reshape(frames, classes)
-            off += 4 * frames * classes
-            out.append((text, a.copy()))
-        if self.save:
-            np.savez_compressed(self.save, *[a for _, a in out])
+            a = np.frombuffer(raw, np.float32, frames * classes, off + 8).reshape(frames, classes)
+            off += 8 + 4 * frames * classes
+            h, pw, w = struct.unpack_from("<III", rin, oi)
+            g = np.frombuffer(rin, np.uint8, h * pw, oi + 12).reshape(h, pw)
+            oi += 12 + h * pw
+            out.append((text, a.copy(), g.copy(), w))
         return out
+
+    def arena(self, widths, tile, head):
+        cmd = self.base + ["--tile", str(tile), "--head", str(head), "--arena", ",".join(map(str, widths))]
+        p = subprocess.run(cmd, capture_output=True, stdin=subprocess.DEVNULL, timeout=600, check=True)
+        got = {}
+        for line in p.stdout.decode().splitlines():
+            if line.startswith("max_width"):
+                _, w, _, n = line.split()
+                got[int(w)] = int(n)
+        return got
 
 
 # ---------------------------------------------------------------- checks
@@ -262,272 +293,218 @@ def edit_distance(a, b):
     return prev[-1]
 
 
-def fixture_model(seed=0, width=0.5):
-    """Random-init TinyVNOCR whose BatchNorm statistics are calibrated on fixture crops
-    (so activations vary along the line like a trained net's) and then perturbed, so
-    folding is exercised with non-trivial scales and shifts."""
-    import torch
-    import torch.nn as nn
-    from common import load_vocab
-    from model import TinyVNOCR
-    torch.manual_seed(seed)
-    vocab = load_vocab(ROOT / "data" / "vocab.txt")
-    m = TinyVNOCR(len(vocab) + 1, width=width)
-    bns = [mod for mod in m.modules() if isinstance(mod, nn.BatchNorm2d)]
-    xs = [prep(img)[1] for _, img, _ in fixture_lines(16, seed + 1)]
-    W = max(x.shape[1] for x in xs)
-    batch = torch.from_numpy(np.stack([np.pad(x, ((0, 0), (0, W - x.shape[1])), mode="edge")
-                                       for x in xs]))[:, None]
-    with torch.no_grad():
-        for bn in bns:
-            bn.reset_running_stats()
-            bn.momentum = None                     # cumulative average over the batch
-        m.train()
-        m.features(batch)
-        g = torch.Generator().manual_seed(seed)
-        for bn in bns:
-            bn.weight.copy_(torch.empty_like(bn.weight).uniform_(0.7, 1.3, generator=g))
-            bn.bias.copy_(torch.empty_like(bn.bias).uniform_(-0.3, 0.2, generator=g))
-        m.head.weight.mul_(4.0)
-    m.eval()
-    return m, vocab
-
-
 _W = {}
+
+
+def make_backend(cfg, mode, tile=0, head=0):
+    path = cfg["blobs"]["f32" if mode == "f32" else "w8"]
+    if cfg["cli"]:
+        return CliBackend(cfg["cli"], path, mode, tile, head)
+    return LibBackend(path, mode, tile, head)
 
 
 def worker_init(cfg):
     import torch
     torch.set_num_threads(int(cfg.get("threads", 1)))
-    torch.set_flush_denormal(False)
+    torch.set_flush_denormal(False)      # keep IEEE denormals, as the C code and numpy do
     if cfg["fixture"]:
         model, vocab = fixture_model(cfg["seed"], cfg["width"])
     else:
         model, vocab, _ = E.load_checkpoint(cfg["ckpt"])
+    model.eval()
     blobs = {k: E.read_blob(p) for k, p in cfg["blobs"].items()}
-    ref = Reference(model, blobs)
-    backends, tiles = {}, {}
-    for mode in cfg["modes"]:
-        path = cfg["blobs"]["f32" if mode == "f32" else "w8"]
-        if cfg["cli"]:
-            backends[mode] = CliBackend(cfg["cli"], path, mode)
+    kind = "cli" if cfg["cli"] else "lib"
+    _W.update(cfg=cfg, vocab=vocab, model=model, blobs=blobs,
+              main={m: make_backend(cfg, m) for m in cfg["modes"]},
+              tiles={(m, t, h): make_backend(cfg, m, t, h) for m in cfg["modes"] for t, h in TILES[kind]})
+
+
+def reference(mode, x):
+    import torch
+    blob = _W["blobs"]["f32" if mode == "f32" else "w8"]
+    with torch.no_grad():
+        if mode == "f32":
+            ref = _W["model"](torch.from_numpy(x)[None, None])[:, 0].numpy()
         else:
-            backends[mode] = LibBackend(path, mode)
-            for t, h in TILES:
-                tiles[mode, t, h] = LibBackend(path, mode, t, h)
-    _W.update(cfg=cfg, vocab=vocab, ref=ref, backends=backends, tiles=tiles,
-              prep=LibBackend(cfg["blobs"]["f32" if "f32" in cfg["modes"] else "w8"],
-                              cfg["modes"][0]).v)
+            ref = blob_forward(blob, x, mode)
+    return ref, vocr_ref.forward(blob, x, mode)
 
 
 def check_batch(batch):
-    cfg, vocab, ref = _W["cfg"], _W["vocab"], _W["ref"]
-    recs = []
-    xs, preps = [], []
-    for idx, ident, img, label in batch:
-        r, x = prep(img)
-        c_in, c_w = _W["prep"].preprocess(img)
-        padded = np.concatenate([r, np.repeat(r[:, -1:], x.shape[1] - r.shape[1], 1)], 1)
-        preps.append(bool(c_w == r.shape[1] and np.array_equal(c_in, padded)))
-        xs.append(x)
-        recs.append({"i": idx, "id": ident, "label": label, "w": int(r.shape[1]),
-                     "frames": int(x.shape[1] // STRIDE), "prep_ok": preps[-1]})
+    cfg, vocab = _W["cfg"], _W["vocab"]
     imgs = [b[2] for b in batch]
+    preps = [prep(img) for img in imgs]
+    recs = [{"i": i, "id": ident, "label": label, "w": nw, "frames": int(x.shape[1] // STRIDE)}
+            for (i, ident, _, label), (_, nw, x) in zip(batch, preps)]
+    tile_idx = [k for k, b in enumerate(batch) if b[0] < cfg["tile_lines"]]
     for mode in cfg["modes"]:
-        outs = _W["backends"][mode].run(imgs)
+        outs = _W["main"][mode].run(imgs)
+        tiled = {key: be.run([imgs[k] for k in tile_idx]) if tile_idx else []
+                 for key, be in _W["tiles"].items() if key[0] == mode}
         tol = TOL[mode] * cfg["tol_scale"]
-        for rec, x, img, (c_text, c_log) in zip(recs, xs, imgs, outs):
-            rl = ref.logits(x, mode)
-            m = {"text": c_text}
-            if c_log.shape != rl.shape:
-                m.update(ok=False, shape=list(c_log.shape))
+        for k, (rec, (padded, nw, x), (c_text, c_log, c_in, c_w)) in enumerate(zip(recs, preps, outs)):
+            m = {"text": c_text, "prep_ok": bool(c_w == nw and np.array_equal(c_in, padded))}
+            ref, exact = reference(mode, x)
+            if c_log.shape != ref.shape:
+                m.update(ok=False, exact=False, shape=list(c_log.shape))
                 rec[mode] = m
                 continue
-            scale = max(1.0, float(np.abs(rl).max()))
-            diff = float(np.abs(c_log - rl).max())
-            rb, cb = rl.argmax(1), c_log.argmax(1)
-            top2 = np.sort(rl, 1)[:, -2:]
+            scale = max(1.0, float(np.abs(ref).max()))
+            diff = float(np.abs(c_log - ref).max())
+            rb, cb = ref.argmax(1), c_log.argmax(1)
+            top2 = np.sort(ref, 1)[:, -2:]
             margin = top2[:, 1] - top2[:, 0]
             mism = np.flatnonzero(rb != cb)
-            m.update(diff=diff, scale=scale, ok=diff <= tol * scale,
+            m.update(diff=diff, scale=scale, ok=diff <= tol * scale, exact=bool(np.array_equal(c_log, exact)),
                      ref_text=greedy(rb, vocab), self_ok=greedy(cb, vocab) == c_text,
                      argmax_mismatch=int(len(mism)),
                      tie_only=bool(np.all(margin[mism] <= 2 * diff + 1e-12)),
                      min_margin=float(margin.min()) if len(margin) else 0.0)
             m["same_text"] = m["ref_text"] == c_text
-            if rec["i"] < cfg["tile_lines"] and not cfg["cli"]:
-                same = True
-                for (md, t, h), be in _W["tiles"].items():
-                    if md == mode:
-                        tt, tl = be.v.run(img, logits=True)
-                        same &= tt == c_text and np.array_equal(tl, c_log)
-                m["tiles_ok"] = bool(same)
+            if k in tile_idx:
+                j = tile_idx.index(k)
+                m["tiles_ok"] = all(t[j][0] == c_text and np.array_equal(t[j][1], c_log)
+                                    for t in tiled.values())
             rec[mode] = m
     return recs
 
 
-def arena_checks(blobs, modes):
+def arena_checks(cfg):
     """vocr_arena_bytes() against plan_arena() over widths, tiles and modes."""
-    out, ok = [], True
-    for mode in modes:
+    ok, table = True, []
+    kind = "cli" if cfg["cli"] else "lib"
+    for mode in cfg["modes"]:
         key = "f32" if mode == "f32" else "w8"
-        b = E.read_blob(blobs[key])
-        for w in (8, 100, 256, 640, 1000, 1024):
-            for t, h in [(0, 0)] + TILES:
-                c = Vocr(blobs[key], mode=mode, tile=t, head=h, max_width=w).arena_bytes
-                p = E.plan_arena(b, w, t, h, E.MODE_W8F if mode == "w8f" else
-                                 E.MODE_W8I if mode == "w8i" else E.MODE_F32)
-                ok &= c == p
+        blob = E.read_blob(cfg["blobs"][key])
+        for t, h in [(0, 0)] + TILES[kind]:
+            got = make_backend(cfg, mode).arena(ARENA_WIDTHS, t, h)
+            for w in ARENA_WIDTHS:
+                want = E.plan_arena(blob, w, t, h, MODE_ID[mode])
+                ok &= got.get(w) == want
                 if (t, h) == (0, 0) and w in (256, 640, 1024):
-                    out.append({"mode": mode, "max_width": w, "arena": c, "plan": p})
-    return ok, out
+                    table.append({"mode": mode, "max_width": w, "arena": got.get(w), "plan": want})
+    return bool(ok), table
 
 
-def summarize(recs, modes, has_cli):
-    s = {"lines": len(recs), "prep_ok": sum(r["prep_ok"] for r in recs)}
+def summarize(recs, modes):
+    s = {"lines": len(recs)}
     labelled = [r for r in recs if r["label"]]
     s["labelled"] = len(labelled)
     for mode in modes:
         ms = [r[mode] for r in recs]
-        d = {"logits_ok": sum(m.get("ok", False) for m in ms),
-             "max_norm_diff": max((m.get("diff", math.inf) / m.get("scale", 1)) for m in ms),
+        tl = [m["tiles_ok"] for m in ms if "tiles_ok" in m]
+        d = {"prep_ok": sum(m["prep_ok"] for m in ms),
+             "exact": sum(m.get("exact", False) for m in ms),
+             "logits_ok": sum(m.get("ok", False) for m in ms),
+             "max_norm_diff": max((m.get("diff", math.inf) / m.get("scale", 1.0)) for m in ms),
              "max_abs_diff": max(m.get("diff", math.inf) for m in ms),
              "same_text": sum(m.get("same_text", False) for m in ms),
-             "self_ok": sum(m.get("self_ok", False) for m in ms),
              "text_diff_tie_only": sum((not m.get("same_text", False)) and m.get("tie_only", False)
                                        for m in ms),
-             "argmax_mismatch_frames": sum(m.get("argmax_mismatch", 0) for m in ms)}
-        if not has_cli:
-            tl = [m["tiles_ok"] for m in ms if "tiles_ok" in m]
-            d["tiles_checked"], d["tiles_ok"] = len(tl), sum(tl)
+             "self_ok": sum(m.get("self_ok", False) for m in ms),
+             "argmax_mismatch_frames": sum(m.get("argmax_mismatch", 0) for m in ms),
+             "tiles_checked": len(tl), "tiles_ok": sum(tl)}
         if labelled:
             chars = sum(len(r["label"]) for r in labelled)
-            d["cer_c"] = sum(edit_distance(r[mode]["text"], r["label"]) for r in labelled) / chars
-            d["cer_ref"] = sum(edit_distance(r[mode].get("ref_text", ""), r["label"])
-                               for r in labelled) / chars
-            d["exact_c"] = sum(r[mode]["text"] == r["label"] for r in labelled) / len(labelled)
+            d["cer"] = sum(edit_distance(r[mode]["text"], r["label"]) for r in labelled) / chars
+            d["cer_pytorch"] = sum(edit_distance(r[mode].get("ref_text", ""), r["label"])
+                                   for r in labelled) / chars
+            d["exact_lines"] = sum(r[mode]["text"] == r["label"] for r in labelled) / len(labelled)
         if mode != "f32" and "f32" in modes:
-            d["same_as_f32_c"] = sum(r[mode]["text"] == r["f32"]["text"] for r in recs)
+            d["same_text_as_f32"] = sum(r[mode]["text"] == r["f32"]["text"] for r in recs)
+            if labelled:
+                d["cer_minus_f32"] = d["cer"] - s["f32"]["cer"]
         s[mode] = d
     return s
 
 
-def failed(s, modes, has_cli, tie_ok):
-    bad = []
-    if s["prep_ok"] != s["lines"]:
-        bad.append("preprocessing")
+def failures(s, modes):
+    bad, n = [], s["lines"]
     for mode in modes:
         d = s[mode]
-        if d["logits_ok"] != s["lines"]:
-            bad.append(f"{mode} logits")
-        if d["self_ok"] != s["lines"]:
-            bad.append(f"{mode} CTC")
-        if d["same_text"] + (d["text_diff_tie_only"] if tie_ok else 0) != s["lines"]:
-            bad.append(f"{mode} text")
-        if not has_cli and d["tiles_ok"] != d["tiles_checked"]:
-            bad.append(f"{mode} tile invariance")
+        for key, what in (("prep_ok", "preprocessing"), ("exact", "bit-exact logits"),
+                          ("logits_ok", "logits tolerance"), ("self_ok", "CTC decode")):
+            if d[key] != n:
+                bad.append(f"{mode} {what} ({d[key]}/{n})")
+        if d["same_text"] + d["text_diff_tie_only"] != n:
+            bad.append(f"{mode} text ({d['same_text']}/{n} identical, {d['text_diff_tie_only']} near ties)")
+        if d["tiles_ok"] != d["tiles_checked"]:
+            bad.append(f"{mode} tile invariance ({d['tiles_ok']}/{d['tiles_checked']})")
     return bad
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--ckpt")
-    ap.add_argument("--fixture", action="store_true", help="random-init model and crops (CI)")
-    ap.add_argument("--set", default="synth-val", choices=["synth-val", "real", "fixture"])
-    ap.add_argument("--shard", help="synth shard (default: the last, train.py's val shard)")
+    ap.add_argument("--ckpt", help="checkpoint (train.py format)")
+    ap.add_argument("--fixture", action="store_true", help="random-init model and crops, no data")
+    ap.add_argument("--set", default="synth-val", choices=["synth-val", "real"])
+    ap.add_argument("--shard", help="a render.py shard (default: the last synth shard, the val shard)")
     ap.add_argument("--data", type=Path, default=Path(os.environ.get("VOCR_DATA", ROOT / "data")))
-    ap.add_argument("--n", type=int, default=10**9)
+    ap.add_argument("--n", type=int, default=10**9, help="at most this many lines")
     ap.add_argument("--modes", default="f32,w8f,w8i")
     ap.add_argument("--workers", type=int, default=1)
-    ap.add_argument("--cli", default="", help="vocr_cli command instead of libvocr.so")
-    ap.add_argument("--tile-lines", type=int, default=50, help="lines checked at every tile size")
+    ap.add_argument("--cli", default="", help="vocr_cli command line instead of libvocr.so")
+    ap.add_argument("--tile-lines", type=int, default=40, help="lines checked at every tile size")
     ap.add_argument("--tol-scale", type=float, default=1.0)
-    ap.add_argument("--allow-ties", action="store_true",
-                    help="accept text differences caused only by near-tied logits")
-    ap.add_argument("--blob-dir", type=Path, help="keep the exported blobs here")
-    ap.add_argument("--save-logits", type=Path, help="npz of the C logits (--cli, one mode)")
-    ap.add_argument("--compare-logits", nargs=2, type=Path, metavar=("A", "B"),
-                    help="exit 0 iff two --save-logits files are bit-identical")
-    ap.add_argument("--out", type=Path, help="write the summary and per-line results as JSON")
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--width", type=float, default=0.5, help="fixture width multiplier")
+    ap.add_argument("--width", type=float, default=0.5, help="fixture model width multiplier")
+    ap.add_argument("--report", type=Path, help="summary JSON (CI's VOCR_REPORT contract)")
+    ap.add_argument("--out", type=Path, help="summary and per-line results as JSON")
     args = ap.parse_args()
-
-    if args.compare_logits:
-        a, b = (np.load(p) for p in args.compare_logits)
-        same = a.files == b.files and all(np.array_equal(a[k], b[k]) for k in a.files)
-        print(json.dumps({"bit_identical": bool(same), "lines": len(a.files)}))
-        sys.exit(0 if same else 1)
     if not args.fixture and not args.ckpt:
         ap.error("--ckpt or --fixture is required")
     modes = args.modes.split(",")
     t0 = time.time()
     tmp = tempfile.TemporaryDirectory()
-    bdir = args.blob_dir or Path(tmp.name)
-    bdir.mkdir(parents=True, exist_ok=True)
     if args.fixture:
         model, vocab = fixture_model(args.seed, args.width)
         height, sha = H, b"fixture"
     else:
-        model, vocab, height = E.load_checkpoint(args.ckpt)
         import hashlib
+        model, vocab, height = E.load_checkpoint(args.ckpt)
         sha = hashlib.sha256(Path(args.ckpt).read_bytes()).digest()
     ops = E.model_ops(model, height)
     blobs = {}
     for key, int8 in (("f32", False), ("w8", True)):
-        data, meta = E.build_blob(ops, vocab, height, int8, MAX_W, sha)
-        blobs[key] = str(bdir / f"model_{key}.vocr")
+        data, _ = E.build_blob(ops, vocab, height, int8, MAX_W, sha)
+        blobs[key] = str(Path(tmp.name) / f"model_{key}.vocr")
         Path(blobs[key]).write_bytes(data)
-    if args.save_logits and len(modes) != 1:
-        ap.error("--save-logits needs exactly one mode")
-    if not args.cli:
-        arena_ok, arena = arena_checks(blobs, modes)
-    else:
-        arena_ok, arena = True, []
-    if args.fixture or args.set == "fixture":
+    if args.shard:
+        lines = load_synth(args.data, args.n, args.shard)
+    elif args.fixture:
         lines = fixture_lines(min(args.n, 40), args.seed)
     elif args.set == "real":
         lines = load_real(args.data, args.n)
     else:
-        lines = load_synth(args.data, args.n, args.shard)
+        lines = load_synth(args.data, args.n)
     cfg = {"fixture": args.fixture, "seed": args.seed, "width": args.width, "ckpt": args.ckpt,
            "blobs": blobs, "modes": modes, "cli": args.cli, "tile_lines": args.tile_lines,
            "tol_scale": args.tol_scale}
+    arena_ok, arena = arena_checks(cfg)
     items = [(i, ident, img, label) for i, (ident, img, label) in enumerate(lines)]
-    bs = 32
-    batches = [items[i:i + bs] for i in range(0, len(items), bs)]
+    batches = [items[i:i + 32] for i in range(0, len(items), 32)]
     recs = []
     if args.workers > 1:
         import multiprocessing as mp
         with mp.get_context("spawn").Pool(args.workers, worker_init, (cfg,)) as pool:
             for k, out in enumerate(pool.imap(check_batch, batches)):
                 recs += out
-                if k % 20 == 0:
+                if k % 25 == 0:
                     print(f"{len(recs)}/{len(items)} lines, {time.time() - t0:.0f}s", flush=True)
     else:
-        if args.save_logits:
-            cfg["save"] = str(args.save_logits)
         worker_init({**cfg, "threads": int(os.environ.get("OMP_NUM_THREADS", "1"))})
-        if args.save_logits:
-            be = _W["backends"][modes[0]]
-            be.save = None
-            outs = []
-            for b in batches:
-                outs += be.run([x[2] for x in b])
-            np.savez_compressed(args.save_logits, *[a for _, a in outs])
-            print(json.dumps({"saved": str(args.save_logits), "lines": len(outs)}))
-            return
         for b in batches:
             recs += check_batch(b)
-    s = summarize(recs, modes, bool(args.cli))
-    s.update(set="fixture" if args.fixture else args.set, ckpt=args.ckpt, cli=args.cli,
-             arena_ok=arena_ok, arena=arena, seconds=round(time.time() - t0, 1),
-             blob_bytes={k: Path(p).stat().st_size for k, p in blobs.items()}, tol=TOL)
-    bad = failed(s, modes, bool(args.cli), args.allow_ties or args.fixture)
-    if not arena_ok:
-        bad.append("arena plan")
-    s["failed"] = bad
+    s = summarize(recs, modes)
+    bad = failures(s, modes) + ([] if arena_ok else ["arena plan"])
+    s.update(ckpt=args.ckpt or "fixture", shard=args.shard, set=None if args.shard else
+             ("fixture" if args.fixture else args.set), cli=args.cli, arena_ok=arena_ok, arena=arena,
+             blob_bytes={k: Path(p).stat().st_size for k, p in blobs.items()}, tol=TOL,
+             seconds=round(time.time() - t0, 1), failed=bad)
+    s["pass"] = not bad
     print(json.dumps(s, indent=1, ensure_ascii=False))
+    if args.report:
+        args.report.write_text(json.dumps(s, ensure_ascii=False))
     if args.out:
         args.out.write_text(json.dumps({"summary": s, "lines": recs}, ensure_ascii=False))
     print("PARITY_OK" if not bad else f"PARITY_FAIL {bad}", flush=True)

@@ -38,20 +38,53 @@ Tiles trade arena for speed (bytes; host speed is in the next table):
 
 Compute is 1,002,720 multiply-accumulates per CTC frame: 488,640 in the backbone and 514,080 in the head. A 640-px line is 80 frames, about 80 M MACs, against 1.52 G for PP-OCRv5 mobile at height 48 (research). The research puts one Cortex-A9 core at 444 MHz at 0.24-0.30 GMAC/s in fp32 with ncnn. By that figure, a 640-px line would take about 0.27-0.33 s. That's an **estimate**: nothing has run on a Vita yet.
 
-### Correctness (v1, measured on the host)
+### Correctness (v1)
 
-`tests/parity.py` (below) passes on all of these, in all three modes:
+`tests/parity.py` (below) passed every check in all three modes on all of these runs:
 
-| C build | lines | result |
-|---|---|---|
-| gcc 11.5 `-O2`, `libvocr.so` | synthetic val shard, first 300 | logits within tolerance and strings identical, 300/300 |
-| gcc 11.5 and clang 15 with ASan + UBSan, `vocr_cli` | synthetic val shard, first 100; random fixture, 40 | pass; no sanitizer report |
-| CI's own `ci/runtime.sh gcc` / `clang` | CI's random-init fixture on its 48-line OFL-font shard | `RUNTIME_CHECK_OK`; logits bit-identical to `tests/vocr_ref.py` |
-| Arm GNU gcc 14.2, Cortex-A9 NEON and scalar, under qemu-arm 10.0.13 | random fixture, 40; val, 20; real RGBA crops, 10 | logits bit-identical to `tests/vocr_ref.py`, i.e. NEON == scalar == host |
+| C build | lines |
+|---|---|
+| gcc 11.5 `-O2`, `libvocr.so` | synth-val (the held-out shard), first 1,000 |
+| gcc 11.5 `-O2`, `libvocr.so` | all 984 `data/real` crops, RGBA input |
+| Arm GNU gcc 14.2, Cortex-A9 **NEON**, qemu-arm 10.0.13 | synth-val first 100; real first 50 |
+| same, **scalar** (`-DVOCR_NO_NEON`) | synth-val first 100; real first 50 |
+| gcc 11.5 and clang 15, ASan + UBSan (`vocr_cli`) | synth-val first 100; random fixture, 40 |
+| CI's `ci/runtime.sh gcc` / `clang` (locally and on GitHub's ubuntu-24.04) | CI's random-init fixture on its 48-line OFL-font shard |
 
-On the 300 val lines the largest logit difference from PyTorch, relative to the largest logit, is 3.5e-6 (f32), 2.8e-6 (w8f) and 2.8e-4 (w8i). int8 changed no output string: CER against the labels is 0.32% in all three modes, the same as PyTorch fp32, with 97.3% of lines exact.
+"Every check" means:
+- preprocessing matches exactly;
+- the logits are within tolerance of PyTorch;
+- the strings are identical;
+- the logits are bit-identical to `tests/vocr_ref.py`;
+- the logits are bit-identical across tile sizes;
+- the arena plan matches.
 
-Host speed (x86-64, gcc `-O2`, one thread, a shared and loaded box, so treat it as a rough figure): about 47 ms per line, 0.78 ms per CTC frame, in f32 and w8i, and 58 ms in w8f, over the first 5 val lines.
+Since the NEON, scalar and host builds all equal the same numpy model bit for bit, they equal each other.
+
+The largest logit difference from PyTorch, relative to the largest logit, was 5.1e-6 in f32, 3.0e-6 in w8f and 4.4e-4 in w8i.
+
+What int8 costs:
+- On the 1,000 synth-val lines, CER against the labels is 0.41% in f32, w8f and w8i alike (95.4% of lines exact). int8 changed 2 strings, both already wrong in f32.
+- On the 984 real crops, int8 changed 99 strings. Every one was a line where the f32 model's top-1/top-2 margin fell below 0.5 somewhere (median 0.04); on unchanged lines the median margin is 0.89.
+- On the 336 crops with a pseudo-label (agreement of PP-OCRv5 server and manga-ocr, not hand-checked), CER was 9.74% for f32, 9.71% for w8f and 9.68% for w8i.
+
+So int8 shows no measurable loss. The absolute real CER is not the benchmark figure; that comes from `eval/`.
+
+### Host speed
+
+Setup: x86-64, one thread, the first 100 synth-val lines (5,767 CTC frames, 58 frames per line on average), median and range of 3 runs. The box is shared and was loaded (load average 13-16 on 16 cores), so only the ratios mean much. qemu timings say nothing about a Cortex-A9 and aren't reported.
+
+| build | tile/head | f32 ms/line | w8f ms/line | w8i ms/line |
+|---|---|---|---|---|
+| gcc 11.5 `-O2` (the Makefile default) | 4/16 | 53.4 (36.9-56.2) | 56.0 (40.8-58.5) | 47.8 (30.7-48.8) |
+| gcc 11.5 `-O2` | 1/1 | 57.4 (42.8-59.3) | 103.4 (74.1-109.4) | 55.9 (37.8-61.8) |
+| gcc 11.5 `-O2` | 128/128 (no streaming) | 53.1 (37.4-56.6) | 53.2 (38.5-56.4) | 52.1 (30.5-55.9) |
+| clang 15 `-O2` | 4/16 | 6.7 (5.4-8.0) | 10.6 (7.2-12.5) | 17.0 (13.3-19.6) |
+
+- Streaming costs nothing measurable at the default tile: 4/16 against 128/128.
+- In w8f, tiny tiles hurt, because each int8 weight block is dequantised again for every tile.
+- gcc 11 at `-O2` doesn't auto-vectorise the scalar loops. With `OPT=-O3`, gcc took 8.3-11.8 ms per line in f32 and 16 ms in w8i (2 runs). The outputs stay bit-identical (parity passes on an `-O3` build), because vectorising runs across output channels, not along a sum.
+- On the Vita the NEON kernels are explicit, so none of this decides speed there.
 
 ## API
 
@@ -172,4 +205,5 @@ make -C runtime size ARM_CC=...                    # code size and stack frames
 ## Not done here
 
 - Nothing has run on a PCH-1000 or a PSP; the console speed above is an estimate. The `vita` and `psp` agents build and run it there.
-- The eval test sets didn't exist yet, so parity was measured on the synthetic validation shard and on the pseudo-labelled `data/real` crops. Real-screenshot CER belongs to `eval/`.
+- Parity covered the first 1,000 of the 10,001 synth-val lines, not the whole shard. The `heavy.sh` slots stayed busy for hours, so these sampled runs went single-threaded instead. The full shard is one command: `parity.py --ckpt ... --workers 5`.
+- The eval test sets haven't merged yet, so their parity isn't measured. Once they exist it's `parity.py --shard <file>`, or eval's `cmd:` backend. Real-screenshot CER belongs to `eval/`.

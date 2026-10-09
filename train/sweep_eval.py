@@ -20,11 +20,13 @@ Sets (PROVISIONAL until eval/ merges; then use eval/run.py):
   real-pseudo  data/real lines of held-out test VNs (common.is_test_vn) on which
                PP-OCRv5 server and manga-ocr agree exactly (pseudo-labels, the
                overlay's bright-pixel finder crops)
-Dark-text crops are inverted before recognition (--polarity none disables it),
-since the v1 recipe only renders light text. Scoring: CER = Levenshtein / GT
-length after label_real.canon, full-width ASCII folded to ASCII, dash-like glyphs
-folded to ―, whitespace removed. A reduced vocab's <unk> (〓) is always an error.
-Writes <run>/eval_<ckpt stem>.json.
+Dark-text crops are inverted before recognition, since the v1 recipe only renders
+light text: --polarity tag (default) inverts the lines the research tagged dark text
+on a light background (an oracle; a deployed pipeline needs the line finder to
+report polarity), auto guesses from the crop, none feeds every crop as it is.
+Scoring: CER = Levenshtein / GT length after label_real.canon, full-width ASCII
+folded to ASCII, dash-like glyphs folded to ―, whitespace removed. A reduced
+vocab's <unk> (〓) is always an error. Writes <run>/eval_<ckpt stem>.json.
 """
 import argparse
 import glob
@@ -94,7 +96,18 @@ def synth_val(limit=None):
     return out
 
 
-def real_hand(pol=True):
+def dark_text(kind):
+    """Research style tag says dark text on a light background."""
+    k = str(kind).lower()
+    return k == "dark-on-light" or "dark on light" in k or "black on white" in k
+
+
+def real_hand(pol="tag"):
+    def fix(g, kind):
+        if pol == "tag":
+            return 255 - g if dark_text(kind) else g
+        return polarity(g) if pol == "auto" else g
+
     items, seen = [], set()
     gt_b = RESEARCH / "gt.json"
     if gt_b.exists():
@@ -105,7 +118,7 @@ def real_hand(pol=True):
                 path = RESEARCH / "lines" / Path(ln["crop"]).name
                 rgb = cv2.imread(str(path))[:, :, ::-1]
                 g = to_gray(rgb)
-                items.append((polarity(g) if pol else g, ln["text"],
+                items.append((fix(g, e["kind"]), ln["text"],
                               {"vn": e["vn"], "kind": e["kind"], "id": path.name}))
                 seen.add(score_norm(ln["text"]))
     gt_a = RESEARCH / "gt_real.json"
@@ -116,14 +129,15 @@ def real_hand(pol=True):
                 if score_norm(text) in seen or not path.exists():
                     continue
                 g = to_gray(cv2.imread(str(path))[:, :, ::-1])
-                items.append((polarity(g) if pol else g, text,
+                items.append((fix(g, e.get("notes", "")), text,
                               {"vn": e["shot"].split("_")[0], "kind": e.get("notes", ""),
                                "id": path.name}))
                 seen.add(score_norm(text))
     return items
 
 
-def real_pseudo(pol=True):
+def real_pseudo(pol="tag"):
+    """The overlay's bright-pixel finder cut these, so every line is light text."""
     items = []
     lines = DATA / "real" / "lines.jsonl"
     for x in lines.read_text(encoding="utf-8").splitlines():
@@ -131,7 +145,8 @@ def real_pseudo(pol=True):
         if r["agree"] and r["label"] and is_test_vn(r["vn"]):
             bgr = cv2.imread(str(DATA / "real" / "crops" / f"{r['id']:05d}.png"))
             g = to_gray(bgr[:, :, ::-1])
-            items.append((polarity(g) if pol else g, r["label"], {"vn": r["vn"], "id": r["id"]}))
+            items.append((polarity(g) if pol == "auto" else g, r["label"],
+                          {"vn": r["vn"], "id": r["id"]}))
     return items
 
 
@@ -182,7 +197,7 @@ def main():
     ap.add_argument("--run", type=Path, required=True)
     ap.add_argument("--ckpt", default="ckpt_last.pt")
     ap.add_argument("--sets", default="synth-val,real-hand,real-pseudo")
-    ap.add_argument("--polarity", choices=("auto", "none"), default="auto")
+    ap.add_argument("--polarity", choices=("tag", "auto", "none"), default="tag")
     ap.add_argument("--threads", type=int, default=0)
     ap.add_argument("--limit", type=int, default=None, help="first N synth-val lines (tests)")
     args = ap.parse_args()
@@ -191,7 +206,7 @@ def main():
     torch.set_flush_denormal(True)
     ck = torch.load(args.run / args.ckpt, map_location="cpu", weights_only=False)
     model, meta = from_checkpoint(ck)
-    pol = args.polarity == "auto"
+    pol = args.polarity
     loaders = {"synth-val": lambda: synth_val(args.limit), "real-hand": lambda: real_hand(pol),
                "real-pseudo": lambda: real_pseudo(pol)}
     sets = {name: loaders[name]() for name in args.sets.split(",")}

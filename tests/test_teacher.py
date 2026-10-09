@@ -258,6 +258,30 @@ def test_splits_follow_the_repo_rules():
             assert not is_test_vn(vn)
 
 
+def test_val_vns_sharing_a_capture_with_training_are_left_out():
+    vns = [f"v{i}" for i in range(1, 400)]
+    tr = [v for v in vns if build.split_of(v) == "train"]
+    va = [v for v in vns if build.split_of(v) == "val"]
+    rows = [{"vn": va[0], "release": "r1", "sha256": "a"}, {"vn": tr[0], "release": "r1", "sha256": "b"},  # bundle
+            {"vn": va[1], "release": "r2", "sha256": "c"}, {"vn": tr[1], "release": "r3", "sha256": "c"},  # same bytes
+            {"vn": va[2], "release": "r4", "sha256": "d"}, {"vn": va[3], "release": "r4", "sha256": "e"},  # val only
+            {"vn": va[4], "release": "r5", "sha256": "f"}, {"vn": va[5], "release": "r6", "sha256": "f"},
+            {"vn": tr[2], "release": "r6", "sha256": "g"},                                               # via a chain
+            {"vn": va[6], "release": None, "sha256": None}]
+    assert build.linked_val_vns(rows) == {va[0], va[1], va[4], va[5]}
+
+
+def test_grid_votes_come_from_engines_other_than_meikiocr():
+    rules = list(measure.grid())
+    assert rules and all(not ({"meiki", "meikiv"} & set(r["voters"])) for r in rules)
+    assert min(r["votes"] for r in rules) == measure.MIN_VOTES == 2
+
+
+def test_cipd_instance_id_of_the_pinned_screen_ai():
+    from teacher import engines
+    assert engines.cipd_instance_id(engines.PINS["screenai"][2]) == "rILR9cO-uFZlD6iTXuInJEUb0vZQuI1xnsQ2HLEEVkYC"
+
+
 def test_match_and_score():
     gts = {"v1_1": [{"id": "a", "vn": "v1", "xyxy": [100, 100, 300, 130], "text": "【名前】"},
                     {"id": "b", "vn": "v1", "xyxy": [320, 100, 600, 130], "text": "「こんにちは」"},

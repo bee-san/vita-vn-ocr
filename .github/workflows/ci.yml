@@ -113,3 +113,26 @@ jobs:
       - uses: ./.github/actions/python-env
       - name: Build runtime/ (C99, -Werror, ASan + UBSan) and run its parity test
         run: ci/runtime.sh "$CC_UNDER_TEST"
+
+  vita:
+    # runtime/ and the vocr_test app built with the pinned VitaSDK (vita/README.md). The VPK is
+    # uploaded so it can be installed on a PS Vita without installing the SDK.
+    name: vita (VitaSDK build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the pinned VitaSDK in user space (sha256-checked)
+        run: vita/scripts/fetch_vitasdk.sh "$RUNNER_TEMP/vita"
+      - name: Build runtime/ (arm-vita-eabi, -Werror) and vocr_test.vpk
+        run: VITASDK="$RUNNER_TEMP/vita/vitasdk" vita/scripts/build.sh "$RUNNER_TEMP/build-vita"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vocr_test-vpk
+          path: |
+            ${{ runner.temp }}/build-vita/vocr_test.vpk
+            ${{ runner.temp }}/build-vita/size.txt
+          if-no-files-found: error
+          retention-days: 30

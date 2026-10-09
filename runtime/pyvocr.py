@@ -70,6 +70,19 @@ class VocrError(RuntimeError):
 
 
 class Vocr:
+    @classmethod
+    def from_checkpoint(cls, ckpt, int8=True, **kw):
+        """Export a train.py checkpoint in memory (train/export.py) and load it.
+        int8=True gives the 0.86 MB int8 blob (default mode w8f), False the fp32 one."""
+        import hashlib
+        import sys
+        sys.path.insert(0, str(HERE.parent / "train"))
+        import export
+        model, vocab, height = export.load_checkpoint(ckpt)
+        blob, _ = export.build_blob(export.model_ops(model, height), vocab, height, int8,
+                                    source_sha=hashlib.sha256(Path(ckpt).read_bytes()).digest())
+        return cls(blob, **kw)
+
     def __init__(self, blob, mode="auto", tile=0, head=0, max_width=0, lib=None, check_crc=True):
         self.lib = lib if lib is not None else load_lib()
         data = Path(blob).read_bytes() if isinstance(blob, (str, Path)) else bytes(blob)

@@ -70,6 +70,14 @@ def sha256(path):
     return h.hexdigest()
 
 
+def cipd_instance_id(sha256_hex):
+    """CIPD's instance id of the package instance whose SHA256 is sha256_hex: the digest plus the
+    hash algorithm byte (2 = SHA256), base64url without padding (luci-go cipd/common/iid.go).
+    Downloading /dl/<package>/+/<instance id> fetches exactly that instance, whatever `latest` is."""
+    import base64
+    return base64.urlsafe_b64encode(bytes.fromhex(sha256_hex) + b"\x02").decode().rstrip("=")
+
+
 def model_path(name):
     """Local path of a pinned model file (fetch() must have run)."""
     src, fname, _ = PINS[name]
@@ -99,14 +107,13 @@ def fetch(names=None, mirrors=()):
             zpath = MODELS / "screen_ai" / fname
             zpath.parent.mkdir(parents=True, exist_ok=True)
             if not zpath.exists() or sha256(zpath) != want:
-                url = f"https://chrome-infra-packages.appspot.com/dl/{src[1]}/+/latest"
+                url = f"https://chrome-infra-packages.appspot.com/dl/{src[1]}/+/{cipd_instance_id(want)}"
                 req = urllib.request.Request(url, headers={"User-Agent": UA})
                 with urllib.request.urlopen(req, timeout=600) as r, open(zpath, "wb") as f:
                     shutil.copyfileobj(r, f)
             got = sha256(zpath)
             if got != want:
-                raise RuntimeError(f"Screen AI package sha256 {got} != pinned {want}: CIPD 'latest' moved; "
-                                   "update PINS after checking the new version")
+                raise RuntimeError(f"Screen AI package sha256 {got} != pinned {want}")
             import zipfile
             zipfile.ZipFile(zpath).extractall(dest)
             continue

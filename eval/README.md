@@ -10,8 +10,9 @@ eval/run.py --model models/v1/ckpt_best.pt       # every set: vita-test, psp-tes
 eval/run.py --model X --set vita-test --errors 20 --out results/x.json
 ```
 
-Run it through `$HERD/heavy.sh` on the shared box. A small model takes about a
-minute on all sets; manga-ocr and PP-OCRv5 server take longer.
+Run it through `$HERD/heavy.sh` on the shared box. Measured on all three sets in
+one 5-thread slot: v1 27 s, the PP-OCRv5 ONNX presets about 80 s, the ncnn
+models 3–4.5 min (one thread), manga-ocr 17 min.
 
 On the shared box the screenshots are already in `$HERD/shared/artifacts/eval`:
 point at them with `--data`, `export VOCR_EVAL_DATA=$HERD/shared/artifacts/eval`
@@ -50,8 +51,8 @@ the published baselines were measured with, and exits non-zero on a mismatch.
 
 | set | lines | source |
 |---|---|---|
-| `vita-test` | see `manifests/test_games.json` | 960×544 screenshots of Japanese PS Vita releases on VNDB |
-| `psp-test` | see `manifests/test_games.json` | 480×272 screenshots of Japanese PSP releases on VNDB |
+| `vita-test` | 206 (2,564 chars) from 16 games, 74 screenshots | 960×544 screenshots of Japanese PS Vita releases on VNDB |
+| `psp-test` | 245 (2,510 chars) from 14 games, 83 screenshots | 480×272 screenshots of Japanese PSP releases on VNDB |
 | `synth-val` | 3,000 | the first 3,000 lines of `data/synth/synth_00039.npz`, the shard `train/train.py` validates on (`--limit 0` for all 10,000) |
 
 Every real line was read by eye on a contact sheet at ≤ 1280 px (2× zoom for
@@ -74,7 +75,9 @@ versions, originals, fandiscs, sequels, prequels, side and parent stories,
 series). The split is by game **and** capture session: every line records its
 session (the VNDB release its screenshot was uploaded under), and
 `test_games.json` lists them all in `sessions`. Never use a screenshot from a
-listed session. `eval/tools/leakcheck.py POOL_DIR...` compares a training pool
+listed session. A game can be in both sets (v10856 and v13072 are, from their
+separate Vita and PSP releases), but no session is split between the sets; the
+tests check this. `eval/tools/leakcheck.py POOL_DIR...` compares a training pool
 with the test screenshots by thumbnail correlation and lists near-duplicates,
 after skipping reserved games as training must.
 

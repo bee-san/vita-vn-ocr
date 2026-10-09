@@ -9,7 +9,7 @@ General OCR models are too big for this. The best general option, a trimmed int8
 | | |
 |---|---|
 | Model | `train/model.py`: a CTC line recognizer with 0.76M parameters (stem plus depthwise-separable blocks, factorised 5,355-class head), grey input at height 32 |
-| v1 baseline | Trained on synthetic dialogue boxes only. Synthetic validation: 0.34% CER, 95.6% of lines exact (`docs/v1-metrics.jsonl`). Real Vita screenshots (`eval/`, vita-test, 206 lines from 16 games): 23.75% CER, 52.4% exact, 81.8% CER on its 43 dark-on-light lines (`docs/results.md`). |
+| v1 baseline | Trained on synthetic dialogue boxes only. Synthetic validation: 0.34% CER, 95.6% of lines exact (`docs/v1-metrics.jsonl`). Real Vita screenshots (`eval/`, vita-test, 206 lines from 16 games): 23.75% CER, 52.4% exact, 62.8% CER on dark-on-light text. Real PSP screenshots (psp-test, 245 lines from 14 games): 46.65% CER, 28.2% exact, 86.6% CER on dark-on-light text (`docs/results.md`). |
 | Runtime | `runtime/`: plain-C99 recognizer for Vita (NEON) and PSP (scalar), no malloc, 116-125 KB arena at any line width; int8 weights 0.86 MB (`runtime/README.md`) |
 | Hardware | Nothing has run on a PCH-1000 or a PSP yet |
 

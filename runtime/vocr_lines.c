@@ -9,7 +9,9 @@
  *     16 px (a text line becomes long runs; specks, vertical borders and the edges of
  *     big shapes do not); prof(y) = kept run length in row y
  *  5. rows with prof >= max(16, max(prof) / 16) are active; active rows with gaps of
- *     at most 2 rows form bands; bands under 8 rows are dropped
+ *     at most 2 rows form bands; bands under 8 rows are dropped. A bridged gap that
+ *     holds an empty row (prof 0) between two runs of at least 8 active rows ends
+ *     the band instead: lines set 1-2 px apart (PSP dialogue) stay separate lines
  *  6. per band: the column cluster with the most kept pixels (clusters split at gaps
  *     over twice the band height) is the line; it is widened over on-pixels at most
  *     max(4, h) columns away (punctuation, small kana) and grown by up to h/2 rows
@@ -52,8 +54,9 @@ typedef struct {
 
 static unsigned band_cap(unsigned h)
 {
-    /* bands are separated by at least MERGE + 1 inactive rows */
-    return h / (MERGE + 2u) + 2u;
+    /* stored bands are at least MIN_H rows tall and at least one row apart, so
+     * n * MIN_H + (n - 1) <= h */
+    return (h + 1u) / (MIN_H + 1u) + 1u;
 }
 
 static size_t up4(size_t n)
@@ -266,13 +269,30 @@ static int find_grad(const VocrLinesImage *im, unsigned char *base, VocrLineSet 
     th = peak / ROW_DIV;
     if (th < LMIN) th = LMIN;
 
-    /* Bands of active rows (gaps of up to MERGE rows bridged), at least MIN_H tall. */
+    /* Bands of active rows (gaps of up to MERGE rows bridged), at least MIN_H tall. A
+     * bridged gap holding an empty row, with runs of at least MIN_H active rows right
+     * above and below it, separates two lines instead. */
     for (y = 0; y < h;) {
-        unsigned s, last;
+        unsigned s, rs, last;
         if (prof[y] < th) { y++; continue; }
-        s = last = y++;
+        s = rs = last = y++;            /* rs: start of the current run of active rows */
         while (y < h && (prof[y] >= th || y - last <= MERGE)) {
-            if (prof[y] >= th) last = y;
+            if (prof[y] >= th) {
+                if (y - last > 1u) {    /* y ends a bridged gap */
+                    unsigned k = y, g, empty = 0;
+                    while (k < h && prof[k] >= th) k++;
+                    for (g = last + 1u; g < y; g++)
+                        if (!prof[g]) empty = 1u;
+                    if (empty && last + 1u - rs >= MIN_H && k - y >= MIN_H) {
+                        bands[nb].a = s;
+                        bands[nb].b = last + 1u;
+                        nb++;
+                        s = y;
+                    }
+                    rs = y;
+                }
+                last = y;
+            }
             y++;
         }
         if (last + 1 - s >= MIN_H) {

@@ -172,15 +172,25 @@ def _find_grad(img):
     prof = kept.sum(axis=1)
     th = max(LMIN, int(prof.max()) // ROW_DIV)
     act = prof >= th
+    # bands: gaps of up to MERGE rows bridged, except a gap holding an empty row
+    # between runs of >= MIN_H active rows (C: the band loop)
     bands, y = [], 0
     while y < H:
         if not act[y]:
             y += 1
             continue
-        s = last = y
+        s = rs = last = y
         y += 1
         while y < H and (act[y] or y - last <= MERGE):
             if act[y]:
+                if y - last > 1:
+                    k = y
+                    while k < H and act[k]:
+                        k += 1
+                    if not prof[last + 1:y].all() and last + 1 - rs >= MIN_H and k - y >= MIN_H:
+                        bands.append((s, last + 1))
+                        s = y
+                    rs = y
                 last = y
             y += 1
         if last + 1 - s >= MIN_H:

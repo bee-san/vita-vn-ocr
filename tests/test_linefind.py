@@ -31,17 +31,22 @@ def driver(tmp_path_factory):
     return out
 
 
-def lines_image(ink, paper, outline=None, h=80, w=320):
+def lines_image(ink, paper, outline=None, h=80, w=320, tops=(12, 46), thin=False):
     """Two lines of dense block 'glyphs' (rows 12..31 and 46..65, columns 16..259) on a
     flat box: 18-px cells every 24 px, 3-px strokes every 6 px and three 3-px bars, the
-    same pattern as the C selftest, so every glyph row has ink at most 3 px apart."""
+    same pattern as the C selftest, so every glyph row has ink at most 3 px apart.
+    `tops` moves the lines (each is 20 rows tall). The 3-px bars leave rows of zero
+    contrast inside a line; `thin` draws a 1-px grid every 4 px instead, which has none."""
     img = np.empty((h, w, 3), np.uint8)
     img[:] = paper
     yy, xx = np.mgrid[0:20, 0:w - 76]
     cell = xx % 24
-    ys, xs = np.nonzero((cell < 18) & ((cell % 6 < 3) | (yy % 8 < 3)))
+    if thin:
+        ys, xs = np.nonzero((cell < 18) & ((cell % 4 == 0) | (yy % 4 == 0)))
+    else:
+        ys, xs = np.nonzero((cell < 18) & ((cell % 6 < 3) | (yy % 8 < 3)))
     xs = xs + 16
-    for top in (12, 46):
+    for top in tops:
         if outline is not None:
             for dy in (-1, 0, 1):
                 for dx in (-1, 0, 1):
@@ -108,6 +113,24 @@ def test_outlined_light_text_on_light_box_stays_light():
     assert all(d == 0 for _, _, d in crops)
 
 
+def test_closely_set_lines_stay_apart():
+    # 3 and 4 px of paper between the lines leave 1 and 2 empty contrast rows: within
+    # MERGE, but an empty row between two 22-row runs splits the band (PSP dialogue).
+    for gap in (3, 4):
+        tops = (12, 32 + gap)
+        boxes = common.find_lines(lines_image(240, 30, tops=tops, thin=True))
+        assert len(boxes) == 2, gap
+        for (x, y, w, h), top in zip(boxes, tops):
+            assert y <= top and y + h >= top + 20               # each box holds its whole line
+            assert y + h <= top + 20 + gap + 3 and y >= top - gap - 3
+    # 2 px of paper is no gap at all after the 3x3 contrast: one band
+    assert len(common.find_lines(lines_image(240, 30, tops=(12, 34), thin=True))) == 1
+    # the thick-bar glyphs have empty rows inside each line, so the runs next to the
+    # gap are only 3 rows long: bridged as before, and lines must be 5 px apart
+    assert len(common.find_lines(lines_image(240, 30, tops=(12, 35)))) == 1
+    assert len(common.find_lines(lines_image(240, 30, tops=(12, 37)))) == 2
+
+
 def test_line_crops_invert_dark_text():
     dark = lines_image(30, 230)
     crops = common.line_crops(dark)
@@ -147,6 +170,7 @@ def test_c_selftest(driver):
 def test_c_matches_twin(driver):
     imgs = linefind_parity.make_cases(11, 160) + [lines_image(30, 230), lines_image(255, 180, outline=20),
                                                   lines_image(250, 200, outline=20)]
+    imgs += [lines_image(240, 30, tops=(12, 32 + gap), thin=t) for gap in (2, 3, 4, 5) for t in (False, True)]
     cases = [(img, f) for img in imgs for f in ("grad", "legacy")]
     assert linefind_parity.run(driver, cases, seed=11) == []
 

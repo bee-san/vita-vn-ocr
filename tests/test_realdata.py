@@ -87,11 +87,21 @@ def test_rule_vetoes_confusable_dissent():
     assert RULE(reads)[0] is None
 
 
+def test_rule_vetoes_a_bullet_another_reader_does_not_see():
+    # a list bullet in front of a name: three readers read it as ・, PP-OCRv5 server doesn't
+    reads = {"v6s": "・マジスコ", "meiki": "・マジスコ", "manga": "・マジスコ", "v5s": "マヅスコ"}
+    assert RULE(reads) == (None, "bullet-dissent")
+    reads = {"v6s": "·美岬", "meiki": "・美岬", "manga": "・美岬", "v5s": "美岬"}
+    assert RULE(reads) == (None, "bullet-dissent")
+    # a ・ that every reader sees stays
+    assert RULE({k: "・犯人は" for k in ("v6s", "v5s", "manga", "meiki")})[0] == "・犯人は"
+
+
 def test_v5s_cascade_never_changes_the_decision():
     """label.py skips v5s when v5s_can_matter() says so: check that no v5s reading could
     have changed the decision, over a grid of readings with the usual confusions."""
     pool = ["ジェイク様だ！」", "「ジェイク様だ！」", "ジエイク様だ!」", "ジェイク様だ", "ジェイク様だ！」。",
-            "……決めた", "…決めた", "「……決めた」", "決めた", ""]
+            "・ジェイク様だ！」", "……決めた", "…決めた", "「……決めた」", "決めた", ""]
     for v6, mg, mk in itertools.product(pool, repeat=3):
         reads = {"v6s": v6, "manga": mg, "meiki": mk}
         if vote.v5s_can_matter(reads):

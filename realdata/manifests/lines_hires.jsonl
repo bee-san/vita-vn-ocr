@@ -612,7 +612,6 @@
 {"id": "v727_24100_12", "ink": [181, 403, 521, 424], "targets": ["vita", "psp"], "label": "パパも私のこと大好きでいてね！", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v727_24100_2", "ink": [455, 54, 536, 73], "targets": ["vita", "psp"], "label": "はしもと", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v727_24100_4", "ink": [454, 115, 583, 135], "targets": ["vita", "psp"], "label": "無理はさせない", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v727_24101_1", "ink": [425, 29, 505, 50], "targets": ["vita", "psp"], "label": "所持金", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v727_24101_7", "ink": [518, 301, 578, 324], "targets": ["vita", "psp"], "label": "はい", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v727_24101_9", "ink": [181, 381, 438, 402], "targets": ["vita", "psp"], "label": "これでよろしいですか？", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v727_24102_1", "ink": [436, 31, 544, 50], "targets": ["vita", "psp"], "label": "ごろうこ", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -650,7 +649,7 @@
 {"id": "v783_3516_30", "ink": [559, 343, 636, 378], "targets": ["vita", "psp"], "label": "指輪", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v783_3516_31", "ink": [642, 353, 767, 378], "targets": ["vita", "psp"], "label": "巨人の指輪", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v783_3516_38", "ink": [461, 425, 560, 444], "targets": ["vita"], "label": "絶望の塔", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v783_3518_58", "ink": [496, 345, 536, 361], "targets": ["vita"], "label": "なし", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v783_3518_46", "ink": [496, 269, 536, 285], "targets": ["vita"], "label": "なし", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v783_3518_64", "ink": [24, 383, 111, 399], "targets": ["vita"], "label": "3必殺防御", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v783_3518_65", "ink": [496, 383, 535, 399], "targets": ["vita"], "label": "なし", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v783_3520_0", "ink": [1, 423, 240, 452], "targets": ["vita", "psp"], "label": "キツめの学園生", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -967,7 +966,6 @@
 {"id": "v1299_13502_0", "ink": [136, 75, 1136, 112], "targets": ["vita", "psp"], "label": "「そのKOKを取材したい。息子を紹介してくれ」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1299_13502_2", "ink": [937, 206, 1072, 245], "targets": ["vita", "psp"], "label": "亜智", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1299_13502_4", "ink": [161, 391, 368, 431], "targets": ["vita", "psp"], "label": "御法川", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v1299_13502_6", "ink": [680, 662, 760, 685], "targets": ["vita"], "label": "戻る", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1303_11358_2", "ink": [164, 513, 366, 543], "targets": ["vita", "psp"], "label": "中なんだよね。", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1307_6817_0", "ink": [144, 441, 264, 466], "targets": ["vita", "psp"], "label": "麗華", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1307_6818_1", "ink": [159, 480, 536, 507], "targets": ["vita", "psp"], "label": "「昨日、おじいちゃんが言ってた。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -1104,13 +1102,13 @@
 {"id": "v1755_20629_0", "ink": [40, 424, 91, 451], "targets": ["vita", "psp"], "label": "猫", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1755_24982_1", "ink": [74, 462, 704, 490], "targets": ["vita", "psp"], "label": "「『ヤモリイモリ・スタミナ・アイス』になりま", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1873_10127_1", "ink": [163, 447, 216, 468], "targets": ["vita"], "label": "男", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v1873_10127_8", "ink": [739, 535, 792, 551], "targets": ["vita"], "label": "好感度", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1873_10132_1", "ink": [162, 447, 282, 467], "targets": ["vita"], "label": "カブラカン", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v1873_10132_7", "ink": [743, 535, 794, 551], "targets": ["vita"], "label": "好感度", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1873_10133_4", "ink": [181, 493, 549, 514], "targets": ["vita"], "label": "やや傲慢な色合いを帯びた鳶色の左眼が、", "how": "hand", "pol": "dark-on-light", "split": "train"}
 {"id": "v1873_10133_6", "ink": [180, 522, 470, 543], "targets": ["vita"], "label": "室内に並ぶ幹部達を睨み据える。", "how": "hand", "pol": "dark-on-light", "split": "train"}
+{"id": "v1873_10133_7", "ink": [743, 535, 792, 551], "targets": ["vita"], "label": "好感度", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1873_10135_1", "ink": [166, 448, 261, 467], "targets": ["vita"], "label": "マスター", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1873_10135_7", "ink": [200, 522, 472, 543], "targets": ["vita"], "label": "そんなに急いで飲まなくても、", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v1873_10135_8", "ink": [739, 535, 793, 551], "targets": ["vita"], "label": "好感度", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1893_18317_0", "ink": [1, 355, 119, 387], "targets": ["vita", "psp"], "label": "「別に」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1894_2496_0", "ink": [95, 400, 147, 423], "targets": ["vita", "psp"], "label": "莉寿", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1894_2496_1", "ink": [63, 450, 520, 472], "targets": ["vita"], "label": "「四次元生物が1匹、四次元生物が二匹……」", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -1136,8 +1134,8 @@
 {"id": "v1953_2955_0", "ink": [10, 488, 80, 520], "targets": ["vita", "psp"], "label": "梢恵", "how": "hand", "pol": "light-on-dark", "split": "train"}
 {"id": "v1967_13366_2", "ink": [414, 547, 488, 573], "targets": ["vita", "psp"], "label": "読込", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1967_13366_4", "ink": [555, 548, 735, 573], "targets": ["vita", "psp"], "label": "選択を終了する", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v1967_13371_2", "ink": [742, 462, 799, 484], "targets": ["vita"], "label": "自動", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1967_13371_3", "ink": [108, 475, 446, 497], "targets": ["vita"], "label": "……召使いじゃなくて世話役な」", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v1967_13372_2", "ink": [743, 462, 799, 484], "targets": ["vita"], "label": "自動", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1967_13372_4", "ink": [41, 498, 653, 534], "targets": ["vita", "psp"], "label": "を平和にするために舞い降りた、愛の天使様なんだよ", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1970_22582_0", "ink": [342, 417, 480, 436], "targets": ["vita"], "label": "ルートヴィッヒ", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1970_22582_1", "ink": [397, 471, 887, 491], "targets": ["vita"], "label": "、別にお前にそんな感情ないんだからな！勘違いす", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -1252,16 +1250,16 @@
 {"id": "v2736_29089_3", "ink": [566, 272, 645, 297], "targets": ["vita", "psp"], "label": "公園", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2736_29089_4", "ink": [190, 310, 278, 335], "targets": ["vita", "psp"], "label": "通学路", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2736_29089_5", "ink": [323, 325, 473, 346], "targets": ["vita"], "label": "学園MAPへ", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v2748_32363_0", "ink": [723, 450, 758, 470], "targets": ["vita"], "label": "自動", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2748_32363_5", "ink": [695, 565, 782, 583], "targets": ["vita"], "label": "ゲーム設定", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2748_32364_1", "ink": [130, 409, 237, 436], "targets": ["vita", "psp"], "label": "実芽梨", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v2748_32364_3", "ink": [710, 470, 778, 486], "targets": ["vita"], "label": "スキップ", "how": "3:manga+meiki+v5s", "pol": "light-on-dark", "split": "train"}
-{"id": "v2748_32364_7", "ink": [694, 566, 784, 583], "targets": ["vita"], "label": "ゲーム設定", "how": "3:manga+meiki+v5s", "pol": "light-on-dark", "split": "train"}
+{"id": "v2748_32368_1", "ink": [722, 53, 758, 70], "targets": ["vita"], "label": "自動", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2748_32368_11", "ink": [301, 255, 480, 276], "targets": ["vita"], "label": "妊婦に囲まれること", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2748_32368_12", "ink": [312, 286, 472, 304], "targets": ["vita"], "label": "人の役に立つこと", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2748_32368_13", "ink": [311, 315, 477, 334], "targets": ["vita"], "label": "特に楽しくはない", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2748_32368_2", "ink": [374, 62, 656, 86], "targets": ["vita", "psp"], "label": "「お仕事の何が楽しいか教え", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2748_32368_3", "ink": [696, 70, 767, 87], "targets": ["vita"], "label": "スキップ", "how": "3:manga+meiki+v5s", "pol": "light-on-dark", "split": "train"}
+{"id": "v2748_32368_9", "ink": [697, 164, 781, 184], "targets": ["vita"], "label": "ゲーム設定", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2762_20885_0", "ink": [80, 460, 189, 480], "targets": ["vita"], "label": "グラディス", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2762_20885_1", "ink": [88, 486, 224, 512], "targets": ["vita", "psp"], "label": "「起きたか？」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v2799_194660_3", "ink": [80, 426, 420, 443], "targets": ["vita"], "label": "ら滑らかな肌に唇を這わせ、彼女の下着姿を楽しむ。", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -1352,7 +1350,6 @@
 {"id": "v3234_8656_18", "ink": [218, 525, 303, 555], "targets": ["vita", "psp"], "label": "表情", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v3234_8656_19", "ink": [14, 537, 149, 577], "targets": ["vita", "psp"], "label": "モード", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v3239_79291_1", "ink": [215, 440, 480, 462], "targets": ["vita", "psp"], "label": "「な、何を言ってるの……", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v3239_79291_3", "ink": [918, 521, 980, 540], "targets": ["vita"], "label": "自動", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3239_79294_1", "ink": [215, 440, 382, 461], "targets": ["vita"], "label": "「暁月、控えろ」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v3271_10796_0", "ink": [163, 442, 247, 470], "targets": ["vita", "psp"], "label": "ツキ", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3271_10796_1", "ink": [146, 479, 520, 517], "targets": ["vita", "psp"], "label": "「今日は別にボケはありませんよ」", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -1414,21 +1411,21 @@
 {"id": "v3789_16875_3", "ink": [279, 489, 796, 512], "targets": ["vita", "psp"], "label": "「危ないことがあったらすぐ電話するんだよ！変な", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v3789_16878_1", "ink": [245, 519, 344, 540], "targets": ["vita"], "label": "なんて。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v3789_16880_0", "ink": [269, 490, 695, 512], "targets": ["vita"], "label": "あんなに意気込んで、結局落っこちたのか。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v3861_17905_0", "ink": [895, 441, 1013, 458], "targets": ["vita"], "label": "文章自動送り", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17905_1", "ink": [897, 462, 1009, 479], "targets": ["vita"], "label": "文章スキップ", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v3861_17905_3", "ink": [897, 502, 1010, 518], "targets": ["vita"], "label": "次の選択肢へ", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17905_4", "ink": [894, 522, 1014, 538], "targets": ["vita"], "label": "履歴を表示", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17906_0", "ink": [411, 185, 607, 207], "targets": ["vita", "psp"], "label": "やっぱり気になる", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17906_1", "ink": [431, 249, 613, 266], "targets": ["vita"], "label": "まあいいか……", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17906_2", "ink": [894, 442, 1014, 459], "targets": ["vita"], "label": "文章自動送り", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v3861_17906_5", "ink": [897, 502, 1008, 518], "targets": ["vita"], "label": "次の選択肢へ", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v3861_17906_7", "ink": [897, 542, 1010, 558], "targets": ["vita"], "label": "文章を隠す", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17908_0", "ink": [458, 88, 990, 180], "targets": ["psp"], "label": "絶対領域が", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v3861_17908_2", "ink": [895, 441, 1013, 459], "targets": ["vita"], "label": "文章自動送り", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17908_4", "ink": [897, 462, 1009, 479], "targets": ["vita"], "label": "文章スキップ", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v3861_17908_6", "ink": [897, 502, 1008, 519], "targets": ["vita"], "label": "次の選択肢へ", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17908_7", "ink": [897, 521, 1010, 539], "targets": ["vita"], "label": "履歴を表示", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17908_8", "ink": [897, 542, 1010, 559], "targets": ["vita"], "label": "文章を隠す", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17910_0", "ink": [74, 386, 120, 402], "targets": ["vita"], "label": "声1", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3861_17910_2", "ink": [56, 454, 769, 477], "targets": ["vita", "psp"], "label": "「そうですね……その辺は、もう少し考慮する余地があるのかなあ」", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v3861_17910_5", "ink": [895, 502, 1012, 518], "targets": ["vita"], "label": "次の選択肢へ", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v3861_17910_7", "ink": [894, 542, 1014, 558], "targets": ["vita"], "label": "文章を隠す", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v3896_19103_9", "ink": [40, 496, 306, 520], "targets": ["vita", "psp"], "label": "はい。これで大丈夫ね", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v3896_19108_0", "ink": [21, 471, 88, 494], "targets": ["vita", "psp"], "label": "千夏", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v3896_19108_1", "ink": [22, 496, 323, 520], "targets": ["vita", "psp"], "label": "誰にも言ったらダメだよ？", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
@@ -1887,22 +1884,18 @@
 {"id": "v6763_21003_36", "ink": [866, 361, 1016, 392], "targets": ["vita", "psp"], "label": "天城颯馬", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v6763_21003_5", "ink": [680, 53, 809, 76], "targets": ["vita"], "label": "戦国大名", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v6763_21003_9", "ink": [834, 54, 934, 77], "targets": ["vita"], "label": "南出羽", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v6974_22624_1", "ink": [206, 402, 269, 425], "targets": ["vita", "psp"], "label": "晴明", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v6974_22624_2", "ink": [24, 416, 108, 437], "targets": ["vita"], "label": "表題へ", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v6974_22624_3", "ink": [198, 454, 764, 477], "targets": ["vita", "psp"], "label": "「その口に、わが名を呼ぶことを許してほしいなら、", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v6974_22624_4", "ink": [196, 494, 624, 518], "targets": ["vita", "psp"], "label": "様をつけろ。まずは、そこからだ」", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v6974_29772_0", "ink": [207, 404, 253, 422], "targets": ["vita"], "label": "彩雪", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v6974_29772_1", "ink": [198, 454, 545, 477], "targets": ["vita", "psp"], "label": "「やってみると結構、難しいね。", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v6974_29772_2", "ink": [198, 494, 704, 517], "targets": ["vita", "psp"], "label": "うん……これからもいろいろ勉強しないと」", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v6974_29773_0", "ink": [188, 402, 253, 425], "targets": ["vita", "psp"], "label": "晴明", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v6985_22535_1", "ink": [502, 591, 648, 624], "targets": ["vita", "psp"], "label": "ーリン！！」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v6985_22538_0", "ink": [20, 652, 211, 679], "targets": ["vita"], "label": "「だが惜しい。", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v6985_22538_1", "ink": [62, 687, 715, 715], "targets": ["vita"], "label": "俺様の守備範囲は15歳から29歳。当然アウトだ」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
+{"id": "v6985_22539_19", "ink": [287, 745, 372, 765], "targets": ["vita"], "label": "所持金", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v6985_22539_20", "ink": [723, 745, 820, 767], "targets": ["vita"], "label": "寄付回数", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "val"}
-{"id": "v6985_29336_1", "ink": [746, 127, 857, 154], "targets": ["vita"], "label": "・マジスコ", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "val"}
-{"id": "v6985_29336_10", "ink": [743, 375, 878, 400], "targets": ["vita"], "label": "・まじしゃん", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "val"}
-{"id": "v6985_29336_2", "ink": [744, 159, 876, 183], "targets": ["vita"], "label": "・クラーケン", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "val"}
-{"id": "v6985_29336_5", "ink": [744, 239, 859, 262], "targets": ["vita"], "label": "・かえる女", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "val"}
-{"id": "v6985_29336_9", "ink": [746, 346, 914, 370], "targets": ["vita"], "label": "・とっこーちゃん", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v7068_25478_1", "ink": [273, 494, 641, 523], "targets": ["vita", "psp"], "label": "で疲れるわけないでしょ？」", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v7184_39662_0", "ink": [291, 541, 991, 568], "targets": ["vita", "psp"], "label": "その昔、月の裏側には異世界への入り口があると本当に信じら", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v7184_39662_1", "ink": [266, 573, 428, 600], "targets": ["vita", "psp"], "label": "れていた。", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -2040,9 +2033,9 @@
 {"id": "v7769_72985_0", "ink": [326, 532, 481, 559], "targets": ["vita", "psp"], "label": "八神礼音", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v7769_72986_0", "ink": [326, 532, 503, 559], "targets": ["vita", "psp"], "label": "朝比奈勇気", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v7769_72986_2", "ink": [375, 593, 722, 618], "targets": ["vita"], "label": "「そんな、こそこそって」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v7769_72988_0", "ink": [323, 532, 502, 559], "targets": ["vita", "psp"], "label": "朝比奈勇気", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v7769_72988_2", "ink": [392, 593, 866, 619], "targets": ["vita"], "label": "「ベルワンでなにするかわからないけど、", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v7769_72988_3", "ink": [387, 632, 914, 657], "targets": ["vita"], "label": "チームワークだって必要だと思うんです」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v7769_72989_0", "ink": [326, 532, 505, 559], "targets": ["vita", "psp"], "label": "朝比奈勇気", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v7769_72989_2", "ink": [371, 593, 802, 619], "targets": ["vita"], "label": "「だから、バスケにしようぜ！」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v7771_26875_2", "ink": [554, 359, 726, 395], "targets": ["vita", "psp"], "label": "はじめから", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v7771_26875_3", "ink": [546, 399, 735, 442], "targets": ["vita", "psp"], "label": "つづきから", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -2279,11 +2272,11 @@
 {"id": "v10076_33932_2", "ink": [18, 499, 413, 528], "targets": ["vita", "psp"], "label": "てるかな～～って思って……」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10092_51092_1", "ink": [30, 459, 742, 480], "targets": ["vita"], "label": "鼻歌まじりにパソコンを立ち上げると、僕はさっそくメモリカードから、", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10092_51092_2", "ink": [29, 488, 258, 510], "targets": ["vita"], "label": "新しい画像を吸い出す。", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v10092_51092_3", "ink": [693, 572, 775, 589], "targets": ["vita"], "label": "断面図ON", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10092_51093_1", "ink": [31, 487, 413, 511], "targets": ["vita", "psp"], "label": "き込むと、心配そうに見つめていた。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10092_51093_3", "ink": [692, 571, 775, 590], "targets": ["vita"], "label": "断面図ON", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v10092_51098_1", "ink": [693, 571, 776, 590], "targets": ["vita"], "label": "断面図ON", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10238_37486_1", "ink": [281, 592, 738, 633], "targets": ["vita", "psp"], "label": "そらが俺から離れ、都の隣に並ぶ。", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v10238_37636_0", "ink": [217, 556, 314, 594], "targets": ["vita", "psp"], "label": "【暁】", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v10238_37580_0", "ink": [237, 556, 288, 585], "targets": ["vita", "psp"], "label": "【暁】", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10238_37636_2", "ink": [288, 594, 504, 624], "targets": ["vita", "psp"], "label": "「いててっ！」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10238_37638_0", "ink": [237, 556, 315, 586], "targets": ["vita", "psp"], "label": "【暁】", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v10251_45638_0", "ink": [10, 464, 336, 490], "targets": ["vita", "psp"], "label": "真理子「そんなの大丈夫よ。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -2381,9 +2374,10 @@
 {"id": "v10700_39345_1", "ink": [32, 468, 485, 490], "targets": ["vita"], "label": "「きゃあああっ……ご、ごめんなさいっ」", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10700_39346_1", "ink": [32, 467, 331, 489], "targets": ["vita"], "label": "「ごきげんよう、七海さん」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10726_42792_1", "ink": [29, 654, 88, 674], "targets": ["vita"], "label": "【愛実】", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v10726_42792_3", "ink": [949, 690, 1016, 720], "targets": ["vita", "psp"], "label": "自動", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10726_42793_2", "ink": [27, 653, 89, 675], "targets": ["vita"], "label": "【隆彦】", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v10726_42793_4", "ink": [949, 689, 1016, 720], "targets": ["vita", "psp"], "label": "自動", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10726_42793_5", "ink": [949, 725, 1017, 755], "targets": ["vita", "psp"], "label": "連続", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v10726_42797_3", "ink": [949, 690, 1016, 720], "targets": ["vita", "psp"], "label": "自動", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10726_42797_4", "ink": [31, 706, 279, 726], "targets": ["vita"], "label": "中でテカテカと照り輝いている。", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v10732_37938_0", "ink": [244, 604, 809, 648], "targets": ["vita", "psp"], "label": "「ボクね、お姉ちゃんのことを考えると、", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v10732_37938_1", "ink": [267, 653, 662, 681], "targets": ["vita"], "label": "おちんちんが固くなるんだ」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
@@ -3020,6 +3014,7 @@
 {"id": "v15523_71799_0", "ink": [45, 18, 359, 60], "targets": ["vita", "psp"], "label": "「そこを曲がってすぐだよ！", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v15523_71801_0", "ink": [60, 335, 119, 354], "targets": ["vita", "psp"], "label": "利根川", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v15523_71804_0", "ink": [55, 332, 110, 354], "targets": ["vita", "psp"], "label": "魅音", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v15563_81730_24", "ink": [542, 510, 600, 527], "targets": ["vita"], "label": "戻る", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v15563_81731_3", "ink": [48, 384, 160, 408], "targets": ["vita", "psp"], "label": "「君は……」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v15708_169116_0", "ink": [302, 557, 430, 591], "targets": ["vita", "psp"], "label": "【紫乃】", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v15708_98500_2", "ink": [315, 636, 507, 665], "targets": ["vita", "psp"], "label": "ませんっ！」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "val"}
@@ -3055,7 +3050,6 @@
 {"id": "v16069_80946_1", "ink": [280, 576, 448, 606], "targets": ["vita", "psp"], "label": "（み・て・た）", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v16070_83211_0", "ink": [245, 519, 367, 552], "targets": ["vita", "psp"], "label": "【少女】", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16070_83211_1", "ink": [273, 559, 973, 608], "targets": ["vita", "psp"], "label": "「あなたこそ、どうしてこんなところで寝てるんですか」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v16070_83215_10", "ink": [264, 352, 343, 383], "targets": ["vita", "psp"], "label": "【彩乃】", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16070_83215_12", "ink": [263, 388, 836, 416], "targets": ["vita", "psp"], "label": "「ぐすっ……そんなに先輩を苛めて楽しい………？」", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16070_83215_13", "ink": [264, 440, 343, 469], "targets": ["vita", "psp"], "label": "【遊真】", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16070_83215_15", "ink": [220, 528, 678, 557], "targets": ["vita", "psp"], "label": "さすがに何だか可哀想になってきた。", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -3064,6 +3058,7 @@
 {"id": "v16070_83215_18", "ink": [250, 669, 496, 690], "targets": ["vita"], "label": "ここは俺が折れよう。", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16070_83215_2", "ink": [264, 72, 343, 101], "targets": ["vita", "psp"], "label": "【彩乃】", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16070_83215_4", "ink": [248, 160, 472, 189], "targets": ["vita", "psp"], "label": "あ、先輩が壊れた。", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v16070_83215_5", "ink": [264, 212, 341, 241], "targets": ["vita", "psp"], "label": "【彩乃】", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16070_83220_0", "ink": [279, 559, 524, 603], "targets": ["vita", "psp"], "label": "「やっぱ彼氏かー」", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16082_79610_0", "ink": [247, 614, 880, 639], "targets": ["vita"], "label": "だけど、あまりそこにばかり目を向けるのは危険だ。", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v16082_79611_0", "ink": [219, 613, 1014, 639], "targets": ["vita"], "label": "まるで母親のように諭されて、僕はきまり悪くまた頭を下げる。", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "val"}
@@ -3599,6 +3594,7 @@
 {"id": "v18806_97460_0", "ink": [194, 550, 1003, 579], "targets": ["vita", "psp"], "label": "このへんの公立と違い、奈古江市の私立は一週間も前に夏", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v18806_97460_1", "ink": [192, 589, 1002, 618], "targets": ["vita", "psp"], "label": "休みなのだから、私服でもいいだろうに。真面目なことだ", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v18806_97461_1", "ink": [223, 589, 680, 630], "targets": ["vita", "psp"], "label": "これなら筋肉注射でなんとかなる。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v18830_92169_2", "ink": [584, 430, 704, 456], "targets": ["vita"], "label": "はじめから", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18830_92169_3", "ink": [572, 468, 704, 491], "targets": ["vita"], "label": "つづきから", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18830_92169_4", "ink": [591, 506, 696, 532], "targets": ["vita"], "label": "環境設定", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18830_92169_5", "ink": [555, 545, 720, 569], "targets": ["vita"], "label": "CGギャラリー", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -3754,7 +3750,8 @@
 {"id": "v19736_107518_1", "ink": [271, 600, 876, 624], "targets": ["vita"], "label": "「まあ、そう無邪気に面と向かって言われると、照れるな", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107519_11", "ink": [7, 583, 86, 602], "targets": ["vita"], "label": "町規模", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107519_12", "ink": [675, 610, 715, 631], "targets": ["vita"], "label": "国", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v19736_107519_8", "ink": [16, 287, 64, 309], "targets": ["vita"], "label": "格式", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v19736_107519_3", "ink": [79, 185, 220, 208], "targets": ["vita"], "label": "織田家", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v19736_107519_5", "ink": [15, 223, 64, 246], "targets": ["vita"], "label": "官位", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107520_10", "ink": [528, 316, 759, 335], "targets": ["vita"], "label": "これでよろしいですか？", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107520_11", "ink": [16, 349, 88, 374], "targets": ["vita"], "label": "軍資金", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107520_12", "ink": [136, 438, 220, 469], "targets": ["vita", "psp"], "label": "山城", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -3762,8 +3759,7 @@
 {"id": "v19736_107520_14", "ink": [704, 443, 776, 463], "targets": ["vita"], "label": "いいえ", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107520_19", "ink": [679, 611, 716, 630], "targets": ["vita"], "label": "国", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107520_20", "ink": [570, 664, 899, 685], "targets": ["vita"], "label": "下知（大和国楽市楽座）を実行します", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v19736_107520_3", "ink": [95, 185, 220, 208], "targets": ["vita"], "label": "織田家", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v19736_107520_5", "ink": [15, 223, 64, 246], "targets": ["vita"], "label": "官位", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v19736_107520_8", "ink": [16, 287, 64, 309], "targets": ["vita"], "label": "格式", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107521_11", "ink": [708, 252, 771, 272], "targets": ["vita"], "label": "政治10", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107521_13", "ink": [16, 287, 64, 309], "targets": ["vita"], "label": "格式", "how": "hand", "pol": "light-on-dark", "split": "train"}
 {"id": "v19736_107521_15", "ink": [515, 293, 634, 316], "targets": ["vita"], "label": "原田宗時", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -3975,13 +3971,13 @@
 {"id": "v20975_115317_0", "ink": [314, 549, 385, 574], "targets": ["vita"], "label": "宗太", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v20975_115318_1", "ink": [289, 586, 682, 613], "targets": ["vita", "psp"], "label": "リスみたいでほっこりと微笑ましい。", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v20975_115321_0", "ink": [335, 545, 392, 574], "targets": ["vita", "psp"], "label": "宗太", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v21047_138323_0", "ink": [318, 723, 472, 773], "targets": ["vita", "psp"], "label": "カズマ", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21047_138323_1", "ink": [235, 805, 1248, 864], "targets": ["vita", "psp"], "label": "俺の身の上の復習をしていただけだ。", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21047_138323_3", "ink": [199, 959, 1218, 1014], "targets": ["vita", "psp"], "label": "なけりゃ、今すぐやり直すのに……。", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21047_138327_0", "ink": [318, 723, 472, 773], "targets": ["vita", "psp"], "label": "カズマ", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21047_138327_1", "ink": [239, 805, 1318, 863], "targets": ["vita", "psp"], "label": "それを踏まえた上で、出迎えの挨拶は、", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21047_138327_2", "ink": [239, 880, 981, 938], "targets": ["vita", "psp"], "label": "お帰りなさいませご主人様、", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21047_138327_3", "ink": [232, 959, 1137, 1014], "targets": ["vita", "psp"], "label": "もしくはお嬢様ってことになる。", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "val"}
+{"id": "v21047_138329_0", "ink": [318, 723, 472, 773], "targets": ["vita", "psp"], "label": "カズマ", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21047_138329_1", "ink": [215, 807, 1139, 862], "targets": ["vita", "psp"], "label": "ああ、いいわー、柔らかいわー。", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21069_169613_0", "ink": [70, 108, 841, 136], "targets": ["vita"], "label": "「阿亮、どうして父親に挨拶に行かないんだ。待ってるぞ」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v21069_169613_1", "ink": [86, 162, 601, 190], "targets": ["vita"], "label": "と声をかけたのは花嫁の父である馬明。", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -4032,11 +4028,11 @@
 {"id": "v21321_106075_0", "ink": [42, 534, 560, 565], "targets": ["vita", "psp"], "label": "『オセ、ナカ、ナガシ、マスカ？』", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v21321_106082_1", "ink": [374, 412, 692, 443], "targets": ["vita", "psp"], "label": "この前みたいに……", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21321_106082_2", "ink": [900, 413, 1190, 443], "targets": ["vita", "psp"], "label": "この前以上の……", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
+{"id": "v21346_107110_0", "ink": [90, 573, 167, 598], "targets": ["vita"], "label": "茉莉花", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v21346_107110_1", "ink": [104, 612, 997, 636], "targets": ["vita"], "label": "「ん？私？んふふふ……どうかな？顔で笑って、心で泣いて……かもし", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v21346_107110_2", "ink": [116, 657, 283, 682], "targets": ["vita"], "label": "れないよ～？」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v21346_107111_0", "ink": [79, 573, 184, 598], "targets": ["vita"], "label": "茉莉花", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v21346_107111_1", "ink": [105, 612, 360, 637], "targets": ["vita"], "label": "「申し訳ありません！」", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v21346_107112_0", "ink": [88, 573, 167, 598], "targets": ["vita"], "label": "茉莉花", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v21346_107112_1", "ink": [204, 613, 673, 636], "targets": ["vita"], "label": "……もう、どうしてこんなことに……」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v21346_107113_0", "ink": [88, 572, 164, 598], "targets": ["vita"], "label": "桜井", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v21346_107113_1", "ink": [105, 612, 854, 636], "targets": ["vita"], "label": "「何だよ、こいつモブじゃなかったんだ。ハハハッ、マジうける」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -4216,12 +4212,12 @@
 {"id": "v22553_112941_0", "ink": [880, 393, 1025, 429], "targets": ["vita"], "label": "まあまあ", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v22553_112941_1", "ink": [862, 516, 1042, 552], "targets": ["vita"], "label": "似合ってる", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v22594_116887_11", "ink": [363, 506, 417, 534], "targets": ["vita", "psp"], "label": "和馬", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v22594_116887_2", "ink": [351, 110, 438, 138], "targets": ["vita", "psp"], "label": "和馬", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v22594_116887_3", "ink": [371, 147, 1064, 176], "targets": ["vita", "psp"], "label": "「当たり前だ。好きなエロゲーをにわかが騒ぎ立てることに関", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v22594_116887_4", "ink": [383, 181, 753, 210], "targets": ["vita", "psp"], "label": "して、俺は当然ながら不服です」", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v22594_116887_5", "ink": [369, 225, 799, 254], "targets": ["vita", "psp"], "label": "過去にこういったことは何度もあった。", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v22594_116887_6", "ink": [371, 307, 1057, 335], "targets": ["vita", "psp"], "label": "俺が泣きゲーのエロシーンでチンコ出しながら号泣している", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v22594_116887_8", "ink": [371, 375, 610, 404], "targets": ["vita", "psp"], "label": "傷ついたことがある。", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v22594_116887_9", "ink": [363, 424, 417, 452], "targets": ["vita", "psp"], "label": "和馬", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v22594_116888_0", "ink": [242, 552, 373, 584], "targets": ["vita", "psp"], "label": "レイナ", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v22603_116718_0", "ink": [316, 604, 680, 627], "targets": ["vita"], "label": "「うん、それはわかってるんだけど」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v22603_116719_1", "ink": [384, 567, 432, 586], "targets": ["vita"], "label": "水雪", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -4320,6 +4316,7 @@
 {"id": "v23288_121427_0", "ink": [566, 804, 829, 838], "targets": ["vita"], "label": "アズーリア", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v23290_153899_0", "ink": [440, 864, 1562, 907], "targets": ["vita", "psp"], "label": "急に現れた女の子は、外見もテンションも目立っていた。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v23388_118267_4", "ink": [133, 676, 265, 702], "targets": ["vita"], "label": "最初から始める", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v23388_118267_5", "ink": [540, 676, 642, 702], "targets": ["vita"], "label": "環境設定", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v23388_118274_2", "ink": [313, 570, 608, 606], "targets": ["vita", "psp"], "label": "「ええ、そうです。", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v23388_118274_3", "ink": [355, 620, 927, 654], "targets": ["vita", "psp"], "label": "あなたと少しお話をさせてもらいたくて」", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v23393_159648_0", "ink": [344, 759, 484, 802], "targets": ["vita", "psp"], "label": "正太郎", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -4347,7 +4344,6 @@
 {"id": "v23448_119234_5", "ink": [390, 560, 891, 600], "targets": ["vita", "psp"], "label": "その陽気な調べに耳を貸す", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v23464_130685_0", "ink": [111, 596, 212, 623], "targets": ["vita"], "label": "ディレク", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v23464_130685_1", "ink": [171, 637, 499, 662], "targets": ["vita"], "label": "（だが、それももう終わりだ）", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v23492_114516_0", "ink": [234, 510, 368, 534], "targets": ["vita"], "label": "・ムラサキ", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v23492_114516_1", "ink": [312, 559, 973, 583], "targets": ["vita"], "label": "「ふふふ、ごめんなさい。この位置ですと、レイカさん", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v23492_114516_2", "ink": [299, 593, 696, 618], "targets": ["vita"], "label": "のお姿がよく見えますもので」", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v23492_114518_3", "ink": [587, 235, 928, 265], "targets": ["vita", "psp"], "label": "自軍空4陸0海0", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -4398,18 +4394,18 @@
 {"id": "v24002_115926_6", "ink": [959, 601, 1043, 623], "targets": ["vita"], "label": "進行度", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24002_115926_7", "ink": [951, 635, 1088, 656], "targets": ["vita"], "label": "イブニクル", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24002_115926_8", "ink": [947, 690, 1045, 716], "targets": ["vita"], "label": "所持金", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v24002_115927_10", "ink": [945, 690, 1046, 716], "targets": ["vita"], "label": "所持金", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24002_115927_5", "ink": [295, 515, 360, 536], "targets": ["vita"], "label": "ランス", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24002_115927_6", "ink": [256, 571, 500, 598], "targets": ["vita", "psp"], "label": "「なに簡単なことだ。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24002_115927_8", "ink": [266, 612, 753, 639], "targets": ["vita", "psp"], "label": "無事に護衛が終わったら褒美をよこせ」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24002_115927_9", "ink": [949, 635, 1091, 656], "targets": ["vita"], "label": "イブニクル", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v24002_115929_10", "ink": [946, 690, 1045, 716], "targets": ["vita"], "label": "所持金", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24002_115929_5", "ink": [295, 515, 360, 536], "targets": ["vita"], "label": "ランス", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24002_115929_6", "ink": [256, 572, 648, 598], "targets": ["vita"], "label": "「おお、ラミアス！リッシュ！", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24002_115929_8", "ink": [267, 612, 781, 639], "targets": ["vita", "psp"], "label": "助けに来たのか！それでこそ俺の嫁！」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v24011_115956_0", "ink": [731, 421, 797, 438], "targets": ["vita"], "label": "脅迫効果", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24011_115957_1", "ink": [23, 524, 481, 555], "targets": ["vita", "psp"], "label": "の事好きな奴は何人もいるんだから」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24011_115958_0", "ink": [731, 421, 797, 438], "targets": ["vita"], "label": "脅迫効果", "how": "hand", "pol": "light-on-dark", "split": "train"}
 {"id": "v24011_115958_2", "ink": [56, 487, 483, 513], "targets": ["vita", "psp"], "label": "「えへへ～……今日は一緒に帰れるね」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v24011_115959_0", "ink": [731, 421, 799, 438], "targets": ["vita"], "label": "脅迫効果", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24011_115959_2", "ink": [49, 487, 384, 512], "targets": ["vita", "psp"], "label": "「えっと……た…ただいま…」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24151_122164_0", "ink": [176, 562, 240, 592], "targets": ["vita", "psp"], "label": "拓己", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24151_122167_1", "ink": [176, 608, 558, 640], "targets": ["vita", "psp"], "label": "「……ふう、もういいわよ～」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -4468,14 +4464,14 @@
 {"id": "v24586_127634_4", "ink": [257, 639, 829, 669], "targets": ["vita", "psp"], "label": "生活できるだけで夢物語だったんだけどね」", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24586_127635_1", "ink": [224, 598, 552, 632], "targets": ["vita", "psp"], "label": "結構飲んでる気がする。", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24618_123552_0", "ink": [100, 565, 229, 600], "targets": ["vita", "psp"], "label": "綾乃", "how": "hand", "pol": "dark-on-light", "split": "train"}
-{"id": "v24618_123553_0", "ink": [128, 565, 233, 599], "targets": ["vita", "psp"], "label": "綾乃", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v24618_123554_0", "ink": [128, 565, 232, 599], "targets": ["vita", "psp"], "label": "綾乃", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24618_123554_1", "ink": [128, 615, 736, 648], "targets": ["vita", "psp"], "label": "「ああ～もう大ピンチだよ～～生きていけない～～！」", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24618_153012_1", "ink": [112, 653, 640, 680], "targets": ["vita"], "label": "仕方がないので代わりにあたりに気をつける。", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24620_127804_0", "ink": [38, 548, 168, 612], "targets": ["vita", "psp"], "label": "佑馬", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24620_127806_1", "ink": [119, 616, 806, 647], "targets": ["vita", "psp"], "label": "「顔をお上げください。なぜ、ご主人様が謝られるのですか」", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24620_127807_0", "ink": [116, 616, 578, 646], "targets": ["vita", "psp"], "label": "イヴがわざわざ僕を出迎えてくれている。", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v24620_127808_0", "ink": [95, 616, 727, 644], "targets": ["vita"], "label": "柔和な熱は頭の芯をも優しく覆い、あっためてくれる。", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v24634_118129_0", "ink": [8, 375, 80, 400], "targets": ["vita", "psp"], "label": "小坂", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v24634_118130_0", "ink": [8, 375, 80, 400], "targets": ["vita", "psp"], "label": "小坂", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24634_147548_0", "ink": [62, 368, 154, 405], "targets": ["vita", "psp"], "label": "小坂", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24648_129007_1", "ink": [256, 582, 727, 601], "targets": ["vita"], "label": "秋乃「こんな偶然あるんだね。驚いちゃった」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v24648_129008_0", "ink": [297, 580, 519, 603], "targets": ["vita"], "label": "長い夏休みも終わり", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -4715,8 +4711,8 @@
 {"id": "v26448_138609_1", "ink": [247, 895, 1434, 945], "targets": ["vita", "psp"], "label": "かっていうのは、あたしにとってはすごく重要だから」", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v26523_135728_0", "ink": [280, 507, 336, 534], "targets": ["vita", "psp"], "label": "希亜", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v26523_135728_2", "ink": [247, 607, 606, 640], "targets": ["vita", "psp"], "label": "待って待って、順番ね～」", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v26523_135730_0", "ink": [280, 507, 337, 534], "targets": ["vita", "psp"], "label": "希亜", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v26523_135730_1", "ink": [230, 569, 902, 601], "targets": ["vita", "psp"], "label": "「たった一人でも、あなたを大事に思ってくれる人が", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v26523_152424_0", "ink": [280, 508, 334, 534], "targets": ["vita"], "label": "希亜", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v26523_152424_1", "ink": [261, 568, 650, 600], "targets": ["vita", "psp"], "label": "「砲撃にはロマンが詰まってる」", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v26537_185996_0", "ink": [264, 481, 413, 519], "targets": ["vita", "psp"], "label": "あざらし？", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v26537_185996_1", "ink": [287, 565, 728, 592], "targets": ["vita", "psp"], "label": "「ごきげんよう。ボク、あざらしだよ」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -4785,7 +4781,7 @@
 {"id": "v27385_133021_1", "ink": [248, 586, 758, 612], "targets": ["vita"], "label": "「今回の依頼は、一人だと手に余りそうなの……」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v27389_190894_0", "ink": [64, 571, 168, 600], "targets": ["vita", "psp"], "label": "かやり", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v27389_190894_5", "ink": [80, 619, 256, 653], "targets": ["vita", "psp"], "label": "「たまご丼」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v27389_190897_0", "ink": [64, 572, 146, 599], "targets": ["vita"], "label": "かやり", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v27389_190895_1", "ink": [57, 568, 173, 598], "targets": ["vita", "psp"], "label": "かやり", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v27389_190897_4", "ink": [80, 624, 388, 653], "targets": ["vita", "psp"], "label": "「ほんと？いいの？」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v27449_140966_0", "ink": [332, 543, 1116, 592], "targets": ["vita", "psp"], "label": "スマホのメモ帳を開きつつ、BGM代わりに動画を再生し", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v27449_140966_1", "ink": [331, 604, 1089, 633], "targets": ["vita", "psp"], "label": "た。最近だと毎朝生放送してる占いVTuberの雨野葉", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
@@ -4846,8 +4842,8 @@
 {"id": "v28634_144908_0", "ink": [431, 834, 516, 871], "targets": ["vita"], "label": "鈴夏", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v28634_144909_0", "ink": [398, 888, 1216, 925], "targets": ["vita"], "label": "「どうせなら姫と行動を共にと参じた次第です」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v28643_141770_0", "ink": [159, 575, 272, 604], "targets": ["vita", "psp"], "label": "香織", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v28643_141773_0", "ink": [184, 576, 248, 604], "targets": ["vita", "psp"], "label": "香織", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v28643_141773_5", "ink": [144, 655, 247, 678], "targets": ["vita"], "label": "話してね」", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v28643_141775_0", "ink": [164, 576, 248, 608], "targets": ["vita", "psp"], "label": "香織", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v28644_143872_0", "ink": [232, 504, 288, 530], "targets": ["vita"], "label": "紫苑", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v28644_143872_1", "ink": [128, 567, 1039, 592], "targets": ["vita"], "label": "「え……今まだだるくて、眠いんだけど……もうひと眠りしてからじゃダメ？」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v28644_143877_1", "ink": [128, 567, 775, 592], "targets": ["vita"], "label": "「あ、ごめん、その……ぼく、島の外から来たんだけど、", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -5077,7 +5073,6 @@
 {"id": "v32787_181137_2", "ink": [371, 543, 671, 569], "targets": ["vita", "psp"], "label": "ない！早くしてくれ！」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v32787_181138_1", "ink": [318, 539, 701, 571], "targets": ["vita", "psp"], "label": "もうちょっと横になってようね」", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v32855_176386_2", "ink": [120, 400, 245, 434], "targets": ["vita", "psp"], "label": "続きから", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v32855_176386_3", "ink": [120, 461, 248, 492], "targets": ["vita", "psp"], "label": "環境設定", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v32855_176386_4", "ink": [105, 520, 204, 552], "targets": ["vita", "psp"], "label": "鑑賞", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v32855_176388_0", "ink": [301, 553, 792, 574], "targets": ["vita"], "label": "そう言う僕も、このあじさい園には興奮していた。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v32855_176388_1", "ink": [301, 587, 792, 607], "targets": ["vita"], "label": "あじさいが海のようにどこまでも茂っているのだ。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -5147,17 +5142,17 @@
 {"id": "v36131_170303_0", "ink": [273, 550, 372, 585], "targets": ["vita", "psp"], "label": "葉月", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36131_170303_1", "ink": [292, 591, 916, 624], "targets": ["vita", "psp"], "label": "「じゃないよ！？それ全部私がやるんで", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36175_170477_1", "ink": [183, 579, 565, 606], "targets": ["vita", "psp"], "label": "「約束してたの、木曜だった」", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v36175_170478_10", "ink": [432, 168, 528, 189], "targets": ["vita"], "label": "魔法少女", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v36175_170478_11", "ink": [760, 168, 856, 189], "targets": ["vita"], "label": "奴隷闘士", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v36175_170478_12", "ink": [903, 168, 1016, 189], "targets": ["vita"], "label": "シスター", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36175_170478_13", "ink": [1112, 168, 1160, 189], "targets": ["vita"], "label": "怪盗", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v36175_170478_2", "ink": [504, 80, 552, 99], "targets": ["vita"], "label": "結愛", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36175_170478_20", "ink": [769, 277, 842, 304], "targets": ["vita", "psp"], "label": "初体験", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v36175_170478_21", "ink": [431, 368, 528, 392], "targets": ["vita"], "label": "魔法少女", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v36175_170478_23", "ink": [759, 368, 856, 392], "targets": ["vita"], "label": "奴隷闘士", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36175_170478_24", "ink": [1111, 368, 1160, 389], "targets": ["vita"], "label": "怪盗", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v36175_170478_26", "ink": [768, 478, 840, 499], "targets": ["vita"], "label": "デート", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36175_170478_28", "ink": [431, 568, 528, 592], "targets": ["vita"], "label": "魔法少女", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36175_170478_3", "ink": [784, 80, 831, 100], "targets": ["vita"], "label": "咲奈", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v36175_170478_30", "ink": [759, 568, 856, 592], "targets": ["vita"], "label": "奴隷闘士", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36175_170478_31", "ink": [903, 568, 1016, 589], "targets": ["vita"], "label": "シスター", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36366_169018_0", "ink": [245, 560, 576, 603], "targets": ["vita", "psp"], "label": "「シノアの知り合い？」", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v36614_167035_0", "ink": [87, 499, 177, 521], "targets": ["vita"], "label": "進来", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -5179,7 +5174,7 @@
 {"id": "v37116_171403_0", "ink": [542, 780, 663, 817], "targets": ["vita"], "label": "ひな", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v37116_171403_2", "ink": [408, 867, 740, 914], "targets": ["vita", "psp"], "label": "「いっきくん」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v38037_186910_0", "ink": [307, 586, 954, 609], "targets": ["vita"], "label": "殺した殺した殺した殺した殺した殺した殺した殺した殺した", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v38037_186910_2", "ink": [305, 658, 955, 681], "targets": ["vita"], "label": "殺した殺した殺した殺した殺した殺した殺した殺した殺した", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v38037_186910_1", "ink": [305, 623, 954, 645], "targets": ["vita"], "label": "殺した殺した殺した殺した殺した殺した殺した殺した殺した", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v38037_186913_1", "ink": [301, 623, 727, 644], "targets": ["vita"], "label": "結びついている気がしてならないのは。", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v38037_186916_0", "ink": [308, 587, 581, 608], "targets": ["vita"], "label": "弱気になるな。諦めるな。", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v38037_186916_1", "ink": [308, 623, 703, 645], "targets": ["vita"], "label": "全員でここから出ると誓ったはずだ。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -5238,8 +5233,8 @@
 {"id": "v45247_196699_2", "ink": [320, 612, 632, 640], "targets": ["vita", "psp"], "label": "続きは次回だ。いいな？」", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v45247_196700_0", "ink": [247, 519, 345, 552], "targets": ["vita", "psp"], "label": "銀音", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v45731_182569_3", "ink": [23, 548, 1011, 576], "targets": ["vita", "psp"], "label": "「いいのよ、そんなこと。ご近所なんだから、これからも何かあったら言ってね？」", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v45731_182570_0", "ink": [120, 498, 188, 523], "targets": ["vita"], "label": "綾乃", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v45731_182570_1", "ink": [8, 536, 432, 576], "targets": ["vita", "psp"], "label": "「お疲れ様、今日は忙しそうね？」", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v45731_182571_0", "ink": [124, 498, 170, 523], "targets": ["vita"], "label": "綾乃", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v45731_182572_0", "ink": [124, 498, 193, 523], "targets": ["vita"], "label": "綾乃", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v45731_182572_1", "ink": [32, 550, 432, 575], "targets": ["vita"], "label": "「ごめんね、遅くなっちゃって……」", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v47175_198310_0", "ink": [335, 515, 650, 555], "targets": ["vita", "psp"], "label": "身なりの良い少女", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}

@@ -34,7 +34,8 @@ crops are copyrighted: they stay there and are never committed.
 3. `vote.py`: a label needs three of the four readers behind one PP-OCR reading;
    manga-ocr and meiki may only differ by invented edge brackets or punctuation, and
    from PP-OCRv6 by ellipsis cell counts. A fourth reader that differs only in small
-   kana or ー/一 vetoes it. Labels follow the corpus conventions (`vote.canon`).
+   kana or ー/一 vetoes it, and a label may start with ・ only when every reader sees it
+   (otherwise it is mostly a list bullet). Labels follow the corpus conventions (`vote.canon`).
 4. `build.py`: hand checks override the vote; labels outside `data/vocab.txt` are
    dropped; one label is kept at most twice per VN and 8 times in all. Crops are cut at
    the target resolution with the console's conventions: padded so that the grad line
@@ -74,10 +75,10 @@ the sha256 before the reader loads and names the download URL when a file is mis
 |---|---|
 | screenshots | 6,932 of 1,488 VNs: 574 Vita, 2,354 PSP, 4,004 PC/console |
 | lines found / read | 23,752; 17,151 with Japanese text (PP-OCRv5 server skipped on 6,849 by the cascade) |
-| accepted | 8,318 lines (89,675 characters, 7,609 distinct labels) from 1,405 VNs; 2,748 dark-on-light |
-| crops | real_train 9,815 (Vita 5,454, PSP 4,361), real_val 1,499 (Vita 808, PSP 691) |
-| split | train 1,221 VNs / 1,478 sessions, val 184 VNs / 209 sessions |
-| unlabelled pool | 7,935 lines (11,172 crops) of 1,223 training-split VNs, for distillation |
+| accepted | 8,311 lines (89,629 characters, 7,602 distinct labels) from 1,405 VNs; 2,745 dark-on-light |
+| crops | real_train 9,811 (Vita 5,452, PSP 4,359), real_val 1,495 (Vita 804, PSP 691) |
+| split | train 1,221 VNs / 1,479 sessions, val 184 VNs / 208 sessions |
+| unlabelled pool | 7,937 lines (11,174 crops) of 1,223 training-split VNs, for distillation |
 
 Label quality, all by eye on the crop the label goes with:
 
@@ -96,6 +97,12 @@ Label quality, all by eye on the crop the label goes with:
   150 lines it read.
 - Spot check (100 random accepted, vote-labelled lines of the final set): 1 wrong label
   (a decorative bullet read as ・ by three readers), 1 character error in 987.
+- Leading ・ (review of PR #7): of the 8 full-run lines whose vote label started with a ・
+  that PP-OCRv5 server didn't read, 7 were a list bullet or a mark in front of a name
+  (the spot check's wrong line among them) and 1 the last dot of a ・・・ cut by the ink box.
+  The veto rejects them all: 7 lines leave the final set (the eighth is the hand-labelled
+  spot line), and no dev decision changes. The cap shuffle then sees a shorter list, so
+  61 other lines were swapped for another copy of the same label.
 
 These are training data, not a test set: hand-checked lines are labelled by hand and train
 like the rest. The eval test sets come from other games.

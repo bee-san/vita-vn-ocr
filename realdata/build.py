@@ -177,7 +177,7 @@ def decide(args):
             lab, how = rule({k: v[0] for k, v in r["r"].items()})
         if lab is None:
             why[how] += 1
-            if how in ("disagree", "confusable-dissent") and split_of(r["vn"]) == "train":
+            if how in ("disagree", "confusable-dissent", "bullet-dissent") and split_of(r["vn"]) == "train":
                 tg = targets_of(r["kind"], r["dims"], r["ink"])
                 if tg:
                     pool.append({"id": r["id"], "kind": r["kind"], "ink": r["ink"], "targets": tg, "pol": r["pol"],
@@ -284,7 +284,8 @@ p10-p90 -24..+17 px at x0, -17..+2 px at x1; realdata/check_finder.py on 400 lin
 Four readers vote: PP-OCRv5 server, PP-OCRv6 small, manga-ocr, meiki. Rule
 {stats['rule']}: at least three readers support one PP-OCR reading (manga-ocr/meiki may
 differ by invented edge brackets, and from v6s by ellipsis cell counts); a fourth reader
-that differs only in small kana or ー/一 vetoes. Lines checked by hand use the hand label.
+that differs only in small kana or ー/一 vetoes, and a label may start with ・ only when
+every reader sees it (otherwise it is mostly a list bullet). Lines checked by hand use the hand label.
 Label form: vote.canon (corpus conventions: full-width ！？～（）, one … per cell, ― for
 dashes, no spaces, no page-cursor icons). Spot check: {spot_result()}.
 

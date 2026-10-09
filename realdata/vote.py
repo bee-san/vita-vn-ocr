@@ -185,7 +185,9 @@ def make_count_rule(n=3, trim=True, dots=True, veto=False, pp=("v6s", "v5s"), ot
     """At least n of the four readers support one PP-OCR reading (v6s's, else v5s's):
     a PP reader supports it with the same key(); manga-ocr or meiki also when they only
     add edge brackets/punctuation (trim) or, against v6s's reading, differ only in
-    ellipsis cell counts (dots). Three supporters always span both model families."""
+    ellipsis cell counts (dots). Three supporters always span both model families.
+    veto: no label when a reader outside the majority differs only in small kana or
+    ー/一/―, or when the label starts with a ・ that some reader doesn't see."""
     def rule(reads):
         if not any(t and japanese(t) for t in reads.values() if t is not None):
             return None, "not-japanese"
@@ -213,6 +215,12 @@ def make_count_rule(n=3, trim=True, dots=True, veto=False, pp=("v6s", "v5s"), ot
                 if x not in best[1] and t is not None and key(t) and loose(t) == loose(ka) \
                         and _dotless(key(t)) != _dotless(ka):
                     return None, "confusable-dissent"
+            # a leading ・ that some reader doesn't see is mostly a list bullet or a mark in
+            # front of a name (7 of the 8 such full-run labels, checked by eye), which
+            # labels leave out
+            if ka.startswith("・") and any(t is not None and key(t) and not key(t).startswith("・")
+                                          for t in reads.values()):
+                return None, "bullet-dissent"
         return canon(reads[best[0]]), f"{len(best[1])}:{'+'.join(sorted(best[1]))}"
     return rule
 

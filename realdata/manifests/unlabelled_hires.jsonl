@@ -2562,6 +2562,7 @@
 {"id": "v23448_119231_1", "ink": [125, 587, 693, 625], "targets": ["vita", "psp"], "pol": "light-on-dark", "reads": {"v6s": "「男３人何も起きないはずはない、か」", "meiki": "「「男3人――何も起きないはずはないか」」", "manga": "「男３人一一何も起きないはずはない。か」"}}
 {"id": "v23464_130686_0", "ink": [159, 636, 677, 674], "targets": ["vita", "psp"], "pol": "light-on-dark", "reads": {"v6s": "この世界唯一にして最大のセレヌス大陸。", "meiki": "そこの世界健一にして最大のセレスス大性。", "manga": "・この世界唯一にして最大のセレヌス大陸。"}}
 {"id": "v23492_114515_2", "ink": [884, 663, 1038, 712], "targets": ["vita", "psp"], "pol": "dark-on-light", "reads": {"v6s": "×=2-", "meiki": "・メニュード"}}
+{"id": "v23492_114516_0", "ink": [234, 510, 368, 534], "targets": ["vita"], "pol": "dark-on-light", "reads": {"v6s": "・ムラサキ", "meiki": "・ムラサキ", "manga": "・ムラサキ", "v5s": "ムラサキ"}}
 {"id": "v23492_114516_3", "ink": [885, 663, 1035, 704], "targets": ["vita", "psp"], "pol": "dark-on-light", "reads": {"v6s": "X二ュ-", "meiki": "・メニュード", "manga": "えっ"}}
 {"id": "v23492_114518_10", "ink": [134, 604, 216, 634], "targets": ["vita", "psp"], "pol": "light-on-dark", "reads": {"v6s": "編制", "meiki": "編制", "manga": "・編制", "v5s": "編製"}}
 {"id": "v23492_114518_11", "ink": [313, 604, 475, 632], "targets": ["vita", "psp"], "pol": "light-on-dark", "reads": {"v6s": "戦闘開始", "meiki": "~戦闘開始一", "manga": "〰〰戦闘開始"}}

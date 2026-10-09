@@ -19,6 +19,7 @@
 {"id": "v1629_155352_2", "ink": [233, 161, 384, 197], "targets": ["vita"], "label": "鬼崎拓磨", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1629_155352_4", "ink": [225, 258, 384, 293], "targets": ["vita"], "label": "狐邑祐一", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1629_155352_7", "ink": [248, 409, 372, 439], "targets": ["vita"], "label": "狗谷遼", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v1629_155352_8", "ink": [285, 457, 344, 487], "targets": ["vita"], "label": "戻る", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1629_155353_0", "ink": [39, 33, 328, 92], "targets": ["vita"], "label": "画像鑑賞", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v1629_155353_10", "ink": [63, 405, 138, 429], "targets": ["vita"], "label": "その他", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v1629_155353_7", "ink": [47, 278, 144, 302], "targets": ["vita"], "label": "大蛇卓", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -48,6 +49,7 @@
 {"id": "v7557_151411_4", "ink": [336, 272, 872, 302], "targets": ["vita"], "label": "たちつてとなにぬねのはひふへほ", "how": "hand", "pol": "light-on-dark", "split": "train"}
 {"id": "v7557_151411_5", "ink": [343, 326, 868, 353], "targets": ["vita"], "label": "まみむめもやゆよらりるれろ", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v7557_151411_6", "ink": [340, 376, 688, 408], "targets": ["vita"], "label": "わをん英数記", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v7557_151411_7", "ink": [384, 452, 448, 481], "targets": ["vita"], "label": "戻る", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v7557_151411_8", "ink": [489, 452, 607, 481], "targets": ["vita"], "label": "初期化", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v7557_151411_9", "ink": [672, 452, 736, 481], "targets": ["vita"], "label": "削除", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v7557_151412_0", "ink": [95, 366, 163, 392], "targets": ["vita"], "label": "侑介", "how": "hand", "pol": "light-on-dark", "split": "train"}
@@ -100,7 +102,7 @@
 {"id": "v11173_108652_0", "ink": [15, 17, 219, 61], "targets": ["vita"], "label": "行動選択", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v11173_108652_16", "ink": [715, 434, 837, 456], "targets": ["vita"], "label": "曲発注資料", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v11173_108652_17", "ink": [764, 458, 802, 476], "targets": ["vita"], "label": "作成", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v11173_108652_7", "ink": [105, 154, 215, 188], "targets": ["vita"], "label": "未選択", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v11173_108652_8", "ink": [425, 154, 535, 188], "targets": ["vita"], "label": "未選択", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v11173_108652_9", "ink": [745, 154, 855, 188], "targets": ["vita"], "label": "未選択", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v11173_55389_1", "ink": [72, 465, 207, 489], "targets": ["vita"], "label": "パンツは？", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v11173_55390_1", "ink": [72, 465, 599, 489], "targets": ["vita"], "label": "そもそもあなたはパンツをはいているの？", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -172,7 +174,6 @@
 {"id": "v14415_106279_3", "ink": [115, 509, 186, 523], "targets": ["vita"], "label": "破壊跡", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v14534_75323_0", "ink": [42, 361, 178, 384], "targets": ["vita"], "label": "ジェイク", "how": "hand", "pol": "dark-on-light", "split": "train"}
 {"id": "v14534_75323_3", "ink": [89, 453, 317, 481], "targets": ["vita"], "label": "ジェイク様だ！」", "how": "hand", "pol": "dark-on-light", "split": "train"}
-{"id": "v14534_75324_0", "ink": [855, 9, 933, 42], "targets": ["vita"], "label": "戻る", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v14534_75324_10", "ink": [626, 282, 730, 302], "targets": ["vita"], "label": "夢・目標：", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v14534_75324_11", "ink": [620, 303, 838, 322], "targets": ["vita"], "label": "全ての女性は私のもの", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v14534_75324_13", "ink": [626, 363, 878, 384], "targets": ["vita"], "label": "ワイン、ワインに合う料理", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
@@ -371,7 +372,6 @@
 {"id": "v16060_83849_6", "ink": [4, 460, 205, 486], "targets": ["vita"], "label": "撃が20%上昇", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v16060_83850_1", "ink": [213, 343, 336, 381], "targets": ["vita"], "label": "高塚梓", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v16060_83850_2", "ink": [199, 399, 406, 432], "targets": ["vita"], "label": "ダリウス……", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v16060_83850_3", "ink": [827, 511, 956, 536], "targets": ["vita"], "label": "操作説明", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v16060_83851_3", "ink": [239, 351, 331, 382], "targets": ["vita"], "label": "探索", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v16060_83851_5", "ink": [439, 403, 589, 450], "targets": ["vita"], "label": "東京駅", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16060_83852_6", "ink": [104, 487, 183, 501], "targets": ["vita"], "label": "コハク", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -381,6 +381,7 @@
 {"id": "v16060_83854_2", "ink": [135, 185, 571, 216], "targets": ["vita"], "label": "コハクに証人になってもらう", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v16060_83854_3", "ink": [132, 258, 569, 297], "targets": ["vita"], "label": "どうすれば信じてくれる？", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v16060_83854_4", "ink": [173, 401, 304, 432], "targets": ["vita"], "label": "なら…", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v16060_83854_5", "ink": [807, 511, 957, 536], "targets": ["vita"], "label": "操作説明", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v16099_83086_1", "ink": [196, 412, 515, 440], "targets": ["vita"], "label": "「ジパング特殊高等警察隊」", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v16099_83087_0", "ink": [152, 411, 544, 442], "targets": ["vita"], "label": "みんなの顔に安堵が浮かぶ。", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v16128_107824_0", "ink": [32, 359, 89, 388], "targets": ["vita"], "label": "明人", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
@@ -585,22 +586,21 @@
 {"id": "v18212_137129_6", "ink": [894, 178, 924, 193], "targets": ["vita"], "label": "服装", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137129_7", "ink": [889, 246, 924, 261], "targets": ["vita"], "label": "表情", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_0", "ink": [208, 15, 280, 32], "targets": ["vita"], "label": "赤星瑛一郎", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v18212_137130_10", "ink": [863, 50, 904, 65], "targets": ["vita"], "label": "共通1", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v18212_137130_12", "ink": [470, 99, 528, 113], "targets": ["vita"], "label": "出会い1", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v18212_137130_15", "ink": [854, 99, 912, 113], "targets": ["vita"], "label": "出会い1", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v18212_137130_11", "ink": [214, 99, 272, 113], "targets": ["vita"], "label": "出会い1", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v18212_137130_13", "ink": [598, 99, 656, 113], "targets": ["vita"], "label": "出会い1", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_17", "ink": [470, 146, 531, 161], "targets": ["vita"], "label": "出会い2", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v18212_137130_20", "ink": [854, 146, 915, 161], "targets": ["vita"], "label": "出会い2", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v18212_137130_21", "ink": [214, 194, 276, 209], "targets": ["vita"], "label": "出会い3", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v18212_137130_18", "ink": [598, 146, 659, 161], "targets": ["vita"], "label": "出会い2", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_24", "ink": [726, 194, 788, 209], "targets": ["vita"], "label": "出会い3", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v18212_137130_25", "ink": [854, 194, 916, 209], "targets": ["vita"], "label": "出会い3", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_28", "ink": [598, 243, 660, 257], "targets": ["vita"], "label": "出会い4", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_29", "ink": [726, 243, 788, 257], "targets": ["vita"], "label": "出会い4", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_3", "ink": [856, 15, 920, 32], "targets": ["vita"], "label": "森嶋永遠", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v18212_137130_31", "ink": [214, 290, 276, 305], "targets": ["vita"], "label": "出会い5", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v18212_137130_32", "ink": [470, 290, 532, 305], "targets": ["vita"], "label": "出会い5", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v18212_137130_35", "ink": [854, 290, 916, 305], "targets": ["vita"], "label": "出会い5", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_36", "ink": [222, 338, 267, 353], "targets": ["vita"], "label": "共通2", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v18212_137130_40", "ink": [862, 338, 907, 353], "targets": ["vita"], "label": "共通2", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v18212_137130_41", "ink": [222, 386, 268, 401], "targets": ["vita"], "label": "共通3", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v18212_137130_43", "ink": [606, 386, 652, 401], "targets": ["vita"], "label": "共通3", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v18212_137130_37", "ink": [478, 338, 523, 353], "targets": ["vita"], "label": "共通2", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v18212_137130_42", "ink": [478, 386, 524, 401], "targets": ["vita"], "label": "共通3", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v18212_137130_45", "ink": [862, 386, 908, 401], "targets": ["vita"], "label": "共通3", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_46", "ink": [478, 434, 520, 449], "targets": ["vita"], "label": "清家1", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_47", "ink": [606, 434, 648, 449], "targets": ["vita"], "label": "武居1", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_48", "ink": [734, 434, 776, 449], "targets": ["vita"], "label": "成本1", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -608,7 +608,8 @@
 {"id": "v18212_137130_5", "ink": [728, 16, 792, 32], "targets": ["vita"], "label": "成本理", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v18212_137130_50", "ink": [606, 482, 656, 497], "targets": ["vita"], "label": "共通4", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18212_137130_51", "ink": [734, 482, 797, 496], "targets": ["vita"], "label": "共通4", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "train"}
-{"id": "v18212_137130_9", "ink": [735, 50, 776, 65], "targets": ["vita"], "label": "共通1", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
+{"id": "v18212_137130_6", "ink": [222, 50, 266, 65], "targets": ["vita"], "label": "共通1", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v18212_137130_8", "ink": [607, 50, 648, 65], "targets": ["vita"], "label": "共通1", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18432_112853_1", "ink": [264, 431, 637, 456], "targets": ["vita"], "label": "（どうしよう。この人、怖い……！）", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v18449_89741_1", "ink": [124, 386, 193, 411], "targets": ["vita"], "label": "小夜", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v18449_89741_3", "ink": [155, 431, 816, 456], "targets": ["vita"], "label": "「あの……私、人見知りだけど、榊さんを見て、私も頑", "how": "3:manga+meiki+v6s", "pol": "light-on-dark", "split": "train"}
@@ -661,7 +662,6 @@
 {"id": "v18643_103703_1", "ink": [135, 402, 411, 440], "targets": ["vita"], "label": "できるじゃないか。", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v18643_103703_2", "ink": [127, 459, 447, 483], "targets": ["vita"], "label": "立派な淑女に見えるよ。", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v18643_103710_0", "ink": [244, 360, 369, 388], "targets": ["vita"], "label": "ラヴァン", "how": "hand", "pol": "dark-on-light", "split": "val"}
-{"id": "v18695_147940_0", "ink": [115, 61, 290, 90], "targets": ["vita"], "label": "はじめから", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18695_147940_1", "ink": [86, 128, 295, 158], "targets": ["vita"], "label": "つづきから", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18695_147940_4", "ink": [127, 331, 256, 363], "targets": ["vita"], "label": "環境設定", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v18695_147940_5", "ink": [144, 399, 239, 429], "targets": ["vita"], "label": "おまけ", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -777,7 +777,6 @@
 {"id": "v19851_115942_1", "ink": [794, 96, 861, 133], "targets": ["vita"], "label": "け", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v19851_115942_10", "ink": [554, 386, 629, 423], "targets": ["vita"], "label": "記", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v19851_115942_11", "ink": [500, 453, 616, 481], "targets": ["vita"], "label": "初期", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
-{"id": "v19851_115942_13", "ink": [378, 455, 462, 480], "targets": ["vita"], "label": "戻る", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19851_115942_14", "ink": [620, 455, 736, 481], "targets": ["vita"], "label": "消去", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v19851_115942_5", "ink": [843, 214, 911, 247], "targets": ["vita"], "label": "ほ", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
 {"id": "v19851_115942_8", "ink": [304, 386, 389, 424], "targets": ["vita"], "label": "英", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "train"}
@@ -851,6 +850,7 @@
 {"id": "v20747_137689_4", "ink": [205, 471, 463, 504], "targets": ["vita"], "label": "見習ったらどうだ？", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v20747_137691_3", "ink": [37, 376, 88, 390], "targets": ["vita"], "label": "誕生日", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "train"}
 {"id": "v20747_137691_4", "ink": [264, 376, 313, 390], "targets": ["vita"], "label": "得意教科", "how": "3:manga+v5s+v6s", "pol": "light-on-dark", "split": "train"}
+{"id": "v21004_142141_0", "ink": [15, 423, 129, 447], "targets": ["vita"], "label": "如月恋", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v21004_142141_1", "ink": [74, 463, 687, 486], "targets": ["vita"], "label": "俺たちが暮らしているツキノ芸能プロダクションの寮、", "how": "4:manga+meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21004_142142_0", "ink": [9, 422, 133, 460], "targets": ["vita"], "label": "如月恋", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v21004_142142_1", "ink": [71, 462, 211, 486], "targets": ["vita"], "label": "風が……！", "how": "3:meiki+v5s+v6s", "pol": "dark-on-light", "split": "val"}
@@ -858,7 +858,6 @@
 {"id": "v21004_142145_1", "ink": [12, 424, 130, 449], "targets": ["vita"], "label": "霜月隼", "how": "3:meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v21004_142145_2", "ink": [83, 465, 561, 488], "targets": ["vita"], "label": "……何重にも扉があるのに、どうやって？", "how": "3:manga+meiki+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21004_142145_4", "ink": [75, 494, 505, 518], "targets": ["vita"], "label": "そんなことは深く考えてはいけない。", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "val"}
-{"id": "v21004_142146_0", "ink": [16, 424, 130, 449], "targets": ["vita"], "label": "如月恋", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v21004_142146_1", "ink": [72, 465, 519, 488], "targets": ["vita"], "label": "二人でいると、二つの味が楽しめる！", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "val"}
 {"id": "v21004_142147_0", "ink": [20, 425, 107, 448], "targets": ["vita"], "label": "皐月葵", "how": "4:manga+meiki+v5s+v6s", "pol": "light-on-dark", "split": "val"}
 {"id": "v21004_142147_1", "ink": [77, 465, 295, 488], "targets": ["vita"], "label": "すっごく楽しい！", "how": "3:manga+v5s+v6s", "pol": "dark-on-light", "split": "val"}

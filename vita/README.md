@@ -5,7 +5,7 @@
 What is known so far:
 - The Vita build of `runtime/vocr.c` and `vocr_lines.c` compiles warning-free with the runtime's own `-Werror` flags.
 - Inside Vita3K, every case of the test bundles gives the host build's text, logits (CRC-32 of every float) and line boxes, bit for bit: 728 of 728 cases of the full bundle in w8i, and 52 of 52 in each of w8i, w8f and f32 on the quick bundle.
-- From the Vita build's instruction mix, a 640-px dialogue line (80 CTC frames) of the v1 model should take **117-285 ms in w8i** on one Cortex-A9 core at 444 MHz (149-341 ms in f32). This is an estimate, not a measurement.
+- From the Vita build's instruction mix, a 640-px dialogue line (80 CTC frames) of the v1 model should take **113-212 ms in w8i** on one Cortex-A9 core at 444 MHz (151-342 ms in f32). This is an estimate, not a measurement. (Rebased onto `psp`'s PR #13, which register-blocks the scalar kernels that `step_op` also calls for the stem and depthwise convolutions: the estimate moved from 117-285 ms, re-measured below.)
 - Nothing has run on a PCH-1000 yet. The test app is ready for that; see "On a PCH-1000".
 
 ## Files
@@ -35,7 +35,7 @@ vita/scripts/build.sh                              # build/vita/vocr_test.vpk, l
 - The SDK is vitasdk/autobuilds release `sdk-snapshot-20260926.790.1`, SDK version 0.20260926.321, with arm-vita-eabi-gcc 15.2.0. The x86_64-linux tarball is checked against its sha256.
 - The runtime is compiled as `runtime/README.md` asks: C99, `-O2 -ffp-contract=off -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard`, with its full warning set and `-Werror`. The line finder also gets `vocr_lines.mk`'s `-Wconversion -Wsign-conversion`.
 - VitaSDK's gcc defaults to Thumb-2 and to short enums. `vocr.h` and `vocr_lines.h` pass no enum across the API, so the enum size does not matter.
-- Code size with the Vita compiler: `vocr.o` 13,143 B with NEON (10,543 B scalar) and `vocr_lines.o` 4,636 B. The whole test app, `eboot.bin`, is 76 KB.
+- Code size with the Vita compiler: `vocr.o` 14,583 B with NEON (12,455 B scalar) and `vocr_lines.o` 4,636 B. The whole test app, `eboot.bin`, is 78 KB. (Before rebasing onto `psp`'s PR #13: 13,143 / 10,543 B and 76 KB; its register-blocked scalar kernels, which the Vita build also compiles, grew `vocr.o`.)
 - CI's `vita (VitaSDK build)` job runs the same build on every pull request and uploads `vocr_test.vpk` as the `vocr_test-vpk` artifact.
 
 ## The test bundle
@@ -115,7 +115,7 @@ vita/scripts/run_vita3k.sh build/vita-bundle build/vita/vocr_test.vpk build/vita
 | full, before psp-test was on `main` | w8i | before and after the `mm_i16` change below | 390 | 390 each time | 0 |
 | quick, before psp-test | w8i, w8f, f32 | before and after the `mm_i16` change | 40 each | 40 each time | 0 |
 
-- **Emulator timing is not console timing.** Under Vita3K, w8i took 6.6-8.0 ms per CTC frame and f32 and w8f 74-100 ms, varying with the load on the shared host. That is a property of the x86 JIT, not of a Cortex-A9.
+- **Emulator timing is not console timing.** Under Vita3K, w8i took 5.5-7.3 ms per CTC frame and f32 and w8f 67-85 ms, varying with the load on the shared host. That is a property of the x86 JIT, not of a Cortex-A9.
 
 On the 728-case run, `compare.py` also scores the console's own pipeline against the hand-checked text (v1, w8i):
 
@@ -140,10 +140,10 @@ Reported by the app, Vita build (so far in Vita3K; a console run reports the sam
 |---|---|---|---|
 | weights blob | 859,904 B | 859,904 B | 3,067,840 B |
 | arena (`vocr_arena_bytes`, any line up to 1024 px) | 124,832 B | 118,432 B | 116,384 B |
-| line finder arena (`vocr_lines_arena_bytes`) | 83,323 B for a whole 960x544 screen; 41,395 B for the largest test region | same | same |
+| line finder arena (`vocr_lines_arena_bytes`) | 83,323 B for a whole 960x544 screen; 41,395 B as the app sizes it for the test regions (their largest width by their largest height, 855x249) | same | same |
 | `vocr_model` + `vocr_ctx` | 1,772 + 1,984 B | same | same |
 | stack, measured | 4,100 B | same | same |
-| code (`vocr.o` + `vocr_lines.o`) | 17,779 B | same | same |
+| code (`vocr.o` + `vocr_lines.o`) | 19,219 B | same | same |
 | total | about 1.09 MB | about 1.09 MB | about 3.29 MB |
 
 - The arena sizes equal the host's `vocr_arena_bytes()`, so the console uses the bytes the runtime README reports.
@@ -168,17 +168,17 @@ How it works:
    - **Low bound:** perfect overlap. It is the largest of: NEON + VFP issue cycles, instructions / 2 (dual issue), load/store-pipe cycles, and L2-to-L1 refill bandwidth. Add 3 cycles per unit switch.
    - **High bound:** no dual issue, 10 cycles per unit switch (with `VLDR`/`VSTR` counted as VFP), 11 per NEON-to-ARM register transfer, and every miss paying full latency: 30 cycles for an L2 hit, plus 110 ns for DRAM.
 
-v1, per CTC frame (1,002,720 MACs) and per 640-px line:
+v1, per CTC frame (1,002,720 MACs) and per 640-px line (rebased onto `psp`'s PR #13; see below):
 
 | mode | instructions / frame | NEON issue cycles | L1D misses | L2 misses | cycles / frame | 640-px line, 444 MHz | 333 MHz |
 |---|---|---|---|---|---|---|---|
-| w8i | 893,668 | 547,481 | 6,081 | 34 | 649K-1,580K | **117-285 ms** | 156-380 ms |
-| w8i at 71bc277 (before the change below) | 1,023,601 | 553,425 | 6,074 | 34 | 754K-1,796K | 136-324 ms | 181-431 ms |
-| w8f | 988,636 | 991,159 | 6,027 | 34 | 1,036K-1,265K | 187-228 ms | 249-304 ms |
-| f32 | 815,657 | 782,135 | 15,291 | 7,113 | 827K-1,890K | 149-341 ms | 199-433 ms |
+| w8i | 841,185 | 547,977 | 6,081 | 34 | 626K-1,175K | **113-212 ms** | 150-282 ms |
+| w8i at 71bc277 (before the `mm_i16` change) | 972,672 | 553,921 | 6,080 | 34 | 731K-1,387K | 132-250 ms | 175-333 ms |
+| w8f | 994,135 | 991,159 | 6,030 | 34 | 1,045K-1,275K | 188-230 ms | 251-306 ms |
+| f32 | 821,201 | 782,135 | 15,298 | 7,113 | 836K-1,900K | 151-342 ms | 201-436 ms |
 
 What the numbers say:
-- **Every mode is NEON-bound at the low end.** The busiest code is `mm_i16`/`mm_f32` (the pointwise layers and the head). Then come `step_op` with the inlined stem and depthwise convolutions (119K instructions per frame), `run_head`'s argmax over 5,355 classes in VFP compares (108K), and preprocessing (19K).
+- **Every mode is NEON-bound at the low end.** The busiest code is `mm_i16`/`mm_f32` (the pointwise layers and the head). Then come `step_op` with the inlined stem and depthwise convolutions (124K instructions per frame; PR #13's register-blocked scalar kernels, which `step_op` also compiles into, grew this from 119K and nearly emptied its `VLDR`/`VSTR` traffic, 9K to 6 per frame), `run_head`'s argmax over 5,355 classes in VFP compares (108K), and preprocessing (19K).
 - **w8i has the cheapest arithmetic.** One `VMLAL.S16` does 4 MACs per cycle, against 2 for `VMLA.F32`.
 - **f32 has the widest range.** Its 3.07 MB blob does not fit the 2 MiB L2, so its weights stream from DRAM: 7,113 L2 misses per frame.
 - **w8f is the slowest at the low end**, because it dequantises every weight block again on every tile (`runtime/README.md`).
@@ -189,15 +189,15 @@ What the numbers say:
   - how much of the L2 the game running beside the overlay takes.
 
   The PMU columns of a console run will settle the first three.
-- The runtime README's figure for v1 (80M MACs at the research's 0.24-0.30 GMAC/s, i.e. 0.27-0.33 s per 640-px line) sits at or above the top of these ranges.
+- The runtime README's figure for v1 (80M MACs at the research's 0.24-0.30 GMAC/s, i.e. 0.27-0.33 s per 640-px line) sits above the w8i and w8f ranges and inside the f32 range.
 
 **The `mm_i16` change in this branch.**
-- The estimate found that gcc 14.2 and 15.2 stored all eight w8i accumulators to the stack on every pass of the inner loop: 16 `VSTR` per 32 `VMLAL`, 179K VLDR/VSTR per frame.
-- `mm_i16` now holds them in named variables. That cuts w8i from 1.02M to 0.89M instructions per frame, and the 640-px estimate from 136-324 ms to 117-285 ms.
+- The estimate found that gcc 14.2 and 15.2 stored all eight w8i accumulators to the stack on every pass of the 32-`VMLAL` inner loop: 16 `VSTR` (0 `VLDR`) there, before the change.
+- `mm_i16` now holds them in named variables, which removes those 16 `VSTR` from the loop (the intrinsics run in the same order, so the output is bit-identical). That cuts w8i from 973K to 841K instructions per frame (rebased onto PR #13; at the pre-rebase head, 1.02M to 0.89M), and the 640-px estimate from 132-250 ms to 113-212 ms.
 - The output is bit-identical: parity-arm (NEON and scalar) on the fixture, NEON parity on all of vita-test in all three modes, and every Vita3K run above.
 - What is left in w8i:
-  - `mm_i16`'s plain-C path for leftover positions, which runs when a call's position count is not a multiple of 4 (head batches of 17-19 frames, the ends of a line). gcc vectorises it but keeps its accumulators in memory: 62K of the 80K VLDR/VSTR left per frame;
-  - `run_head`'s per-class VFP argmax.
+  - `mm_i16`'s plain-C path for leftover positions, which runs when a call's position count is not a multiple of 4 (head batches of 17-19 frames, the ends of a line): 29K `VLDR`/`VSTR` per frame, mostly `VSTR` to the stack;
+  - `run_head`'s per-class VFP argmax (16K `VLDR`/`VLDM` per frame, reloading the logits for the second pass).
 
   Both are follow-ups for `runtime/`.
 

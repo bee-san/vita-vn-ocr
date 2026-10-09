@@ -17,8 +17,6 @@ import re
 import unicodedata
 from pathlib import Path
 
-import pyarrow.parquet as pq
-
 DATA = Path(__file__).resolve().parents[1] / "data"
 CORPUS = DATA / "corpus"
 CAP = {"dialogue": 600_000, "narration": 600_000, "wiki": 400_000}
@@ -99,6 +97,7 @@ def aozora_paragraphs():
 
 
 def wiki_paragraphs():
+    import pyarrow.parquet as pq  # lazy, so the constants and norm() import without pyarrow
     for path in sorted((CORPUS / "wiki").rglob("*.parquet")):
         for batch in pq.ParquetFile(path).iter_batches(columns=["text"], batch_size=2000):
             for text in batch.column(0).to_pylist():

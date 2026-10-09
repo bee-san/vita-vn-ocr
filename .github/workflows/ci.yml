@@ -102,12 +102,14 @@ jobs:
         run: |
           # ubuntu-24.04 kernels use 32 bits of mmap randomisation, which makes ASan crash or hang.
           sudo sysctl -w vm.mmap_rnd_bits=28
+          # runtime/Makefile may build with both compilers, so clang must link sanitized code too.
           printf 'int main(void) { return 0; }\n' > "$RUNNER_TEMP/san.c"
-          if ! "$CC_UNDER_TEST" -fsanitize=address,undefined "$RUNNER_TEMP/san.c" -o "$RUNNER_TEMP/san"; then
+          if ! clang -fsanitize=address,undefined "$RUNNER_TEMP/san.c" -o "$RUNNER_TEMP/san"; then
             sudo apt-get update -q
             sudo apt-get install -y -q --no-install-recommends "libclang-rt-$(clang -dumpversion | cut -d. -f1)-dev"
           fi
-          "$CC_UNDER_TEST" --version | head -n 1
+          gcc --version | head -n 1
+          clang --version | head -n 1
       - uses: ./.github/actions/python-env
       - name: Build runtime/ (C99, -Werror, ASan + UBSan) and run its parity test
         run: ci/runtime.sh "$CC_UNDER_TEST"

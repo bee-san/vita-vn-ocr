@@ -20,14 +20,16 @@ UV_INDEX_STRATEGY=unsafe-best-match uv pip sync --python .venv-ci/bin/python --r
 
 ## The runtime contract
 
-Once `runtime/` exists, `ci/runtime.sh <cc>` checks that ASan and UBSan trap, compiles each `runtime/*.c` on its own, writes a fixed-seed random-init checkpoint (`ci/fixture_ckpt.py`, with random BatchNorm so that folding is exercised) and a 48-line shard, and then runs:
+Once `runtime/` exists, `ci/runtime.sh <cc>` checks that ASan and UBSan trap, then compiles each `runtime/*.c` on its own. If `runtime/Makefile` exists, it writes a fixed-seed random-init checkpoint (`ci/fixture_ckpt.py`, with random BatchNorm so that folding is exercised) and a 48-line shard, and runs:
 
 ```sh
 make -C runtime check CC=<cc> CFLAGS=<strict + sanitizers> LDFLAGS=<sanitizers> PYTHON=<python> \
-     VOCR_CKPT=<fixture .pt> VOCR_SHARD=<shard .npz>
+     VOCR_CKPT=<fixture .pt> VOCR_SHARD=<shard .npz> VOCR_REPORT=<report .json>
 ```
 
-The `check` target has to build with those `CC`/`CFLAGS`/`LDFLAGS`. It may append flags (for example `override CFLAGS += -ffp-contract=off`) but must not drop any; put `-I` in `CPPFLAGS` and `-lm` in `LDLIBS`. It also has to export `VOCR_CKPT` with `train/export.py` (fp32 and int8), and fail if the logits leave tolerance or a decoded string differs from a PyTorch reference with the same weights. The full text is at the top of `ci/runtime.sh`. The workflow sets `vm.mmap_rnd_bits=28` (ASan needs it on ubuntu-24.04 kernels) and installs clang's sanitizer runtime if it's missing. Do the same locally if the sanitizer self-test fails.
+Once the recognizer is there (`runtime/vocr.h`), `check` must run the parity test, and the parity programs must be built with `$(CC) $(CFLAGS) … $(LDFLAGS)`. They may add flags, for example `override CFLAGS += -ffp-contract=off`, but must not drop any; put `-I` in `CPPFLAGS` and `-lm` in `LDLIBS`. The test exports `VOCR_CKPT` with `train/export.py` (fp32 and int8) and fails if the logits leave tolerance or a decoded string differs from a PyTorch reference with the same weights. It writes `{"ckpt": VOCR_CKPT, "shard": VOCR_SHARD, "lines": <crops compared>, "pass": true, …}` to `VOCR_REPORT`, and `ci/parity_report.py` checks that report and adds it to the job summary.
+
+Other C code that arrives in `runtime/` before the recognizer, such as the line finder, is only built strictly (plus its own `check`, if it brings a Makefile). The full text is at the top of `ci/runtime.sh`. The workflow sets `vm.mmap_rnd_bits=28` (ASan needs it on ubuntu-24.04 kernels) and installs clang's sanitizer runtime if it's missing. Do the same locally if the sanitizer self-test fails.
 
 ## Updating pins
 

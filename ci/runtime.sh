@@ -1,31 +1,38 @@
 #!/usr/bin/env bash
-# CI job "runtime (<cc>)": the C runtime built strictly with sanitizers, then its PyTorch parity test.
+# CI job "runtime (<cc>)": runtime/ built strictly with sanitizers, then its PyTorch parity test.
 #
 #   ci/runtime.sh gcc|clang          (from anywhere; uses $PYTHON, default: python on PATH)
 #
 # Until runtime/ exists this prints a notice and exits 0 (the workflow skips the job too).
 #
 # 1. Checks that ASan and UBSan really trap with this compiler, so green means something.
-# 2. Compiles every runtime/*.c on its own with CFLAGS below: C99, -Wall -Wextra -Werror,
-#    ASan + UBSan. Each source has to be warning-free under both gcc and clang.
-# 3. Makes the parity inputs: a fixed-seed random-init checkpoint (ci/fixture_ckpt.py) and a
-#    48-line shard rendered from the pinned OFL font (ci/sandbox.py). Only the font is downloaded.
-# 4. Runs the runtime's own check target. This is the contract with runtime/:
+# 2. Compiles every runtime/*.c on its own as C99 with -Wall -Wextra -Werror, ASan and UBSan.
+#    Each source has to be warning-free under both gcc and clang.
+# 3. If runtime/Makefile exists: writes the parity inputs and runs its check target.
+#    The inputs are a fixed-seed random-init checkpoint (ci/fixture_ckpt.py) and a 48-line
+#    shard rendered from the pinned OFL font (ci/sandbox.py); only the font is downloaded.
 #
-#      make -C runtime check CC=<cc> CFLAGS=<CFLAGS> LDFLAGS=<LDFLAGS> PYTHON=<python> \
-#           VOCR_CKPT=<fixture .pt> VOCR_SHARD=<shard .npz>
+#      make -C runtime check CC=<cc> CFLAGS=<strict + sanitizers> LDFLAGS=<sanitizers> \
+#           PYTHON=<python> VOCR_CKPT=<fixture .pt> VOCR_SHARD=<shard .npz> VOCR_REPORT=<.json>
 #
-#    The target builds the runtime and its host test programs with these CC, CFLAGS and
-#    LDFLAGS: it may append flags (override CFLAGS += -ffp-contract=off) but must not drop
-#    any. Keep -I paths in CPPFLAGS and -lm in LDLIBS so they survive the command line. The
-#    six variables are also set in make's environment, so a Python driver run from the
-#    recipe can read them. The target exports VOCR_CKPT with train/export.py (fp32 and
-#    int8), runs PyTorch and the C runtime on the crops in VOCR_SHARD (render.py's shard
-#    format), and exits non-zero when logits differ beyond tolerance or any decoded string
-#    differs. Compare the strings against a reference with the same weights (dequantised
-#    for int8): this random-init fixture has small top-1/top-2 logit gaps. Run sanitized
-#    code as executables, because an ASan build can't be loaded into Python through ctypes
-#    without LD_PRELOAD.
+#    The same variables are also set in make's environment, for a Python driver.
+# 4. Once the recognizer exists (runtime/vocr.h), checks the parity report (ci/parity_report.py).
+#
+# The contract with runtime/, once runtime/vocr.h is there:
+#  - runtime/Makefile has a check target that runs the C tests and the parity test.
+#  - The parity programs are built with $(CC) $(CFLAGS) ... $(LDFLAGS). Flags may be added
+#    (override CFLAGS += -ffp-contract=off) but not dropped, so the parity run is sanitized
+#    under each compiler. Keep -I paths in CPPFLAGS and -lm in LDLIBS. Run sanitized code as
+#    executables: an ASan build can't be loaded into Python through ctypes without LD_PRELOAD.
+#  - The parity test exports VOCR_CKPT with train/export.py (fp32 and int8), runs PyTorch and
+#    the C runtime on the crops in VOCR_SHARD (render.py's shard format), fails when the
+#    logits differ beyond tolerance or any decoded string differs, and writes one JSON object
+#    to VOCR_REPORT: {"ckpt": VOCR_CKPT, "shard": VOCR_SHARD, "lines": <crops compared>,
+#    "pass": true, plus anything else, e.g. max logit difference per mode}. Compare strings
+#    against a reference with the same weights (dequantised for int8): this random-init
+#    fixture has small top-1/top-2 logit gaps.
+# Other C code in runtime/ before the recognizer lands (the line finder, say) gets steps 1-2,
+# and step 3 if it brings a Makefile; it needs no parity report.
 set -euo pipefail
 
 cc=${1:?usage: ci/runtime.sh gcc|clang}
@@ -87,20 +94,31 @@ for src in runtime/*.c; do
   "$cc" -Iruntime "${cflags[@]}" -c "$src" -o "$work/obj/$(basename "$src" .c).o"
 done
 
-# 3. Parity inputs.
+# 3. The runtime's own build and tests.
+if [ ! -f runtime/Makefile ]; then
+  if [ -f runtime/vocr.h ]; then
+    echo "error: runtime/vocr.h is here but runtime/Makefile is not; the recognizer needs a 'check'" \
+         "target that runs its parity test (contract at the top of ci/runtime.sh)" >&2
+    exit 1
+  fi
+  echo "::notice title=runtime ($cc) parity skipped::runtime/ has no recognizer yet (runtime/vocr.h and runtime/Makefile), so its sources were only built strictly with sanitizers."
+  rm -rf "$work"
+  exit 0
+fi
 "$PYTHON" ci/fixture_ckpt.py --out "$work/fixture.pt"
 "$PYTHON" ci/sandbox.py --out "$work/sandbox" --shards 1 --per-shard 48 --workers 2
 shard="$work/sandbox/repo/data/synth/synth_00000.npz"
-
-# 4. The runtime's own build and parity test.
-if [ ! -f runtime/Makefile ]; then
-  echo "error: runtime/ has no Makefile with a 'check' target (see the contract at the top of ci/runtime.sh)" >&2
-  exit 1
-fi
-vars=(CC="$cc" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" PYTHON="$PYTHON" VOCR_CKPT="$work/fixture.pt" VOCR_SHARD="$shard")
+report="$work/parity.json"
+vars=(CC="$cc" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" PYTHON="$PYTHON"
+      VOCR_CKPT="$work/fixture.pt" VOCR_SHARD="$shard" VOCR_REPORT="$report")
 env "${vars[@]}" make -C runtime check "${vars[@]}" || {
   echo "error: 'make -C runtime check' failed with $cc (contract at the top of ci/runtime.sh; inputs kept in $work)" >&2
   exit 1
 }
+
+# 4. Evidence that the recognizer's parity test ran on CI's fixture.
+if [ -f runtime/vocr.h ]; then
+  "$PYTHON" ci/parity_report.py "$report" --ckpt "$work/fixture.pt" --shard "$shard"
+fi
 rm -rf "$work"
 echo "RUNTIME_CHECK_OK $cc"

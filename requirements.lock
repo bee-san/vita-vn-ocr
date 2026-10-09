@@ -34,6 +34,7 @@ hf-xet==1.7.0
     # via huggingface-hub
 huggingface-hub==0.36.2
     # via
+    #   -r requirements.in
     #   tokenizers
     #   transformers
 idna==3.20

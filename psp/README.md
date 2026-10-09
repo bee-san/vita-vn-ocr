@@ -33,8 +33,8 @@ PPSSPP's timing is emulated time, not console time.
 - **PSP-lean variant:** not needed at v1's size, needed for anything bigger. v1's p90 psp-test
   line is already 0.77-1.06 s by the console estimate (scalar w8f), so a model wider or deeper
   than v1 (about 1.0 M MACs per CTC frame) needs its own PSP variant: the v1 layout with arch's
-  3,500-character vocab (about 658 KB int8, 0.82× v1's PSP time, +0.22 points of real CER in
-  arch's 5k-step sweep, 95% CI −0.48 to +0.93). Or the VFPU build, once a console has
+  3,500-character vocab (about 658 KB int8, 0.82× v1's PSP time, +0.17 points of real CER in
+  arch's 5k-step sweep, 95% CI −0.53 to +0.88). Or the VFPU build, once a console has
   checked it. Details below.
 - **Use w8f on the PSP.** Allegrex does every integer multiply through HI/LO (`mult` then
   `mflo`), so w8i is the slowest mode (16.4 ms per frame) and gets no VFPU path.
@@ -223,17 +223,21 @@ at about MACs per line × 4 / 333 MHz in the default build.
 
 **PSP-lean decision.** v1 runs a median psp-test line in 0.38 s emulated and fits the PSP's
 memory, but its p90 line is 0.77-1.06 s by the console estimate, so v1 is about the largest
-model the scalar PSP build carries at under about 1 s per line. arch's sweep (PR #10, a draft,
-`docs/arch-sweep.md` at 3544c61) measured these real-CER costs against the v1 layout at
-5,000 steps:
-- vocab 3,500: +0.22 points (CI −0.48 to +0.93);
-- width 0.75: +2.86;
-- height 24: +3.33.
+model the scalar PSP build carries at under about 1 s per line. arch's sweep (PR #10, still
+open; `docs/arch-sweep.md` at e541b6a, re-scored on main's merged vita-test and psp-test)
+measured these real-CER costs against the v1 layout, 5,000 steps on synthetic data:
+- vocab 3,500: +0.17 points (95% CI −0.53 to +0.88);
+- width 0.75: +2.84;
+- height 24: +3.38;
+- depth 2: +0.47 (−0.23 to +1.18).
 
-Its bottleneck and depth results weren't in yet. A release model wider or deeper than v1
+This README first cited arch's draft at 3544c61, before the re-scoring (+0.22, +2.86, +3.33).
+Its bottleneck 48 and 64 results aren't in yet. A release model wider or deeper than v1
 (width 1.5: 1.51×, width 2.0: 2.20×, depth 2: 1.19×, ctx 4: 1.08× v1's PSP time) puts the p90
-psp-test line at 0.8-1.6 s emulated, about 0.8-2.3 s on the console by the estimate above. In
-that case train the PSP-lean variant with the same recipe:
+psp-test line at 0.8-1.6 s emulated, about 0.8-2.3 s on the console by the estimate above.
+arch's provisional pick, width 1.5, is such a model, and arch leaves the PSP's choice between
+width 1.0 and the 3,500 vocab to measured PSP speed. In that case train the PSP-lean variant
+with the same recipe:
 - the v1 layout with the 3,500-character vocab;
 - if a PSP-1000 plugin has to save more memory, add bottleneck 64 (539,216 B, 0.72×), once
   arch has measured its accuracy.

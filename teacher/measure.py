@@ -262,6 +262,16 @@ def dump(items, scored_gt, rule, path):
                                      indent=1) + "\n", encoding="utf-8")
 
 
+def _rel(path):
+    """A manifest path as the repo sees it: repo-relative, else under $TEACHER_OUT."""
+    from label import ROOT
+    path = Path(path).resolve()
+    for base, name in ((ROOT.resolve(), ""), (OUT.resolve(), "$TEACHER_OUT/")):
+        if base in path.parents:
+            return name + str(path.relative_to(base))
+    return str(path)
+
+
 def cmd_rules(args):
     items, scored = [], {}
     sets = args.set.split(",")
@@ -360,8 +370,7 @@ def cmd_rules(args):
                          "per_set": report["chosen"]["per_set"], "per_set_ci95": report["chosen"]["per_set_ci95"],
                          "two_fold_held_out": [{"chosen_on_half": f["chosen_on"], "rule": f["rule"],
                                                 "held_out": f["held_out"]} for f in held if f]},
-            "eval_manifests": {n: {"path": m.split("/eval/")[-1] if "/eval/" in m else m,
-                                   "sha256": hashlib.sha256(Path(m).read_bytes()).hexdigest()}
+            "eval_manifests": {n: {"path": _rel(m), "sha256": hashlib.sha256(Path(m).read_bytes()).hexdigest()}
                                for n, m in mans.items()},
         }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         print(f"wrote {args.rule_out}")

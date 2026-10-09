@@ -16,7 +16,6 @@
   ]
  },
  "chosen_by": "teacher/measure.py rules --set vita-test,psp-test --precision 0.995: the highest pooled recall whose precision is >= 0.995 on vita-test and psp-test each and pooled",
- "status": "PROVISIONAL: eval's manifests from its open PRs #2 (aac4170/8cda2bf) and #5 (bebd4f9); re-measured once they merge",
  "measured": {
   "pooled": {
    "accepted": 343,
@@ -124,10 +123,14 @@
  },
  "eval_manifests": {
   "vita-test": {
-   "sha256": "92430d02133456679e766426970f84de2c9b6544a6152cbcb9017b698737c857"
+   "path": "eval/manifests/vita-test.jsonl",
+   "sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+   "source": "eval/manifests/vita-test.jsonl as merged in #2 (b4c584e)"
   },
   "psp-test": {
-   "sha256": "e23ce16fca660c83dc5c5de33c7c4488565772c1072c70497f5a98a46a096f18"
+   "path": "$TEACHER_OUT/inputs/eval/psp-test.jsonl",
+   "sha256": "e23ce16fca660c83dc5c5de33c7c4488565772c1072c70497f5a98a46a096f18",
+   "source": "eval/manifests/psp-test.jsonl from PR #5 head bebd4f9 (not merged when measured)"
   }
  }
 }

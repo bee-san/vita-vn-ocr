@@ -41,7 +41,7 @@ vita/scripts/build.sh                              # build/vita/vocr_test.vpk, l
 ## The test bundle
 
 ```sh
-python vita/bundle.py --out vocr-bundle --profile quick    # 40 cases; --profile full: 390 cases
+python vita/bundle.py --out vocr-bundle --profile quick    # 52 cases; --profile full: 728 cases
 ```
 
 Needs the v1 checkpoint (`--ckpt`, release v0.1.0-baseline) and eval's screenshots (`eval/fetch.py`; `--eval-data` or `$VOCR_EVAL_DATA`).
@@ -50,9 +50,11 @@ Needs the v1 checkpoint (`--ckpt`, release v0.1.0-baseline) and eval's screensho
 |---|---|---|
 | synth-val line crops (grey) | 8 | 100 |
 | vita-test line crops (RGBA, GT boxes) | 24, spread over the games | all 206 |
+| psp-test line crops (RGBA, GT boxes, 480x272 screenshots) | 8 | all 245 |
 | vita-test dialogue regions (line finder + recognizer) | 8 | all 84 |
+| psp-test dialogue regions | 4 | all 93 |
 
-`cases.bin` is 3.0 MB for quick and 28.8 MB for full; the two weights blobs add 3.9 MB. psp-test joins automatically once its manifest is on `main`.
+`cases.bin` is 3.4 MB for quick and 38.9 MB for full; the two weights blobs add 3.9 MB. PSP screenshots are in the bundle because PSP VNs also run on the Vita (Adrenaline), and their small text is a harder test of the same code.
 
 Each case carries the host build's result for every mode: the text, the CRC-32 of the logits, the frame count and, for regions, the line boxes. The host results come from `runtime/build/libvocr.so` and a host build of `vocr_lines.c`. Line crops of real screenshots take their polarity from `vocr_line_dark()` and run with `VOCR_INVERT` when the text is dark, which is what the line finder makes the overlay do. The bundle also has the weights blobs and a 16-px screen font (`font.bin`). The font is rasterised from the OFL font M+ 1p, and its licence goes with it as `font-OFL.txt`.
 
@@ -192,5 +194,5 @@ What the numbers say:
 
 - No run on a PCH-1000. Console speed above is an estimate, and emulator times are not console times.
 - ScePerf's counters are untested on retail firmware. The app falls back to timing only.
-- psp-test is not in the bundle until its manifest is on `main` (eval PR #5). The PSP itself is the `psp` agent's job.
+- The PSP itself (Allegrex, PSPSDK, PPSSPP) is the `psp` agent's job; here psp-test only runs on the Vita.
 - Vita3K's build 4154 will disappear from its rolling release. `fetch_vita3k.sh` takes `VITA3K_APPIMAGE=<kept copy>`.

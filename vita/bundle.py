@@ -2,7 +2,7 @@
 """Write the test bundle the Vita app reads from ux0:data/vocr/ (vita/app/main.c).
 
   bundle.py --out DIR [--profile quick|full] [--ckpt CKPT] [--modes w8i,w8f,f32]
-            [--sets synth-val,vita-test,regions] [--eval-data DIR] [--no-font]
+            [--sets synth-val,vita-test,psp-test,regions,psp-regions] [--eval-data DIR] [--no-font]
 
 DIR gets:
   cases.bin     the cases (line crops and dialogue regions) with the expected results
@@ -57,10 +57,11 @@ KIND_LINE, KIND_REGION = 0, 1
 FLAG_DARK, FLAG_AUTO = 1, 2
 LINES_MAX = 16
 MAGIC = b"VOCRCASE"
-PROFILES = {   # per set: number of cases (None = all)
-    "quick": {"synth-val": 8, "vita-test": 24, "psp-test": 8, "regions": 8},
-    "full": {"synth-val": 100, "vita-test": None, "psp-test": None, "regions": None},
+PROFILES = {   # per set: number of cases (None = all); regions / psp-regions: dialogue regions
+    "quick": {"synth-val": 8, "vita-test": 24, "psp-test": 8, "regions": 8, "psp-regions": 4},
+    "full": {"synth-val": 100, "vita-test": None, "psp-test": None, "regions": None, "psp-regions": None},
 }
+REGION_SETS = {"regions": "vita-test", "psp-regions": "psp-test"}
 # the v1 checkpoint (release v0.1.0-baseline): models/v1/ like runtime/README.md, or the fleet's copy
 DEFAULT_CKPT = (Path(os.environ["HERD"]) / "shared/models/v1/ckpt_best.pt" if os.environ.get("HERD")
                 else ROOT / "models/v1/ckpt_best.pt")
@@ -174,6 +175,9 @@ def line_cases(name, n, data_dir, lines_lib):
 def region_cases(name, n, data_dir):
     import sets
     from PIL import Image
+    if not (sets.MANIFESTS / f"{name}.jsonl").exists():
+        print(f"{name}: no manifest on this branch, regions skipped", file=sys.stderr)
+        return []
     regs = sets.regions(name, data_dir)
     regs = spread(regs, n, key=lambda r: r[2][0]["vn"])
     out = []
@@ -332,7 +336,7 @@ def main():
                     help="train.py checkpoint (default: $HERD/shared/models/v1 or models/v1)")
     ap.add_argument("--stem", default="v1", help="blob file names: STEM_f32.vocr, STEM_w8.vocr")
     ap.add_argument("--modes", default="w8i,w8f,f32")
-    ap.add_argument("--sets", default="synth-val,vita-test,psp-test,regions")
+    ap.add_argument("--sets", default="synth-val,vita-test,psp-test,regions,psp-regions")
     ap.add_argument("--eval-data", type=Path, default=None,
                     help="eval screenshots (default $VOCR_EVAL_DATA, data/eval)")
     ap.add_argument("--repeat", type=int, default=3)
@@ -350,8 +354,8 @@ def main():
     prof = PROFILES[args.profile]
     cases = []
     for s in args.sets.split(","):
-        if s == "regions":
-            cases += region_cases("vita-test", prof["regions"], data_dir)
+        if s in REGION_SETS:
+            cases += region_cases(REGION_SETS[s], prof[s], data_dir)
         else:
             cases += line_cases(s, prof[s], data_dir, lines_lib)
     modes = args.modes.split(",")

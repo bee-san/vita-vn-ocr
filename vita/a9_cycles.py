@@ -40,7 +40,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
+HERD = Path(os.environ["HERD"]) if os.environ.get("HERD") else None   # the fleet's shared tools, if set
 MODES = ("w8i", "w8f", "f32")
 CLOCKS = (444, 333)
 FRAMES_640 = 80
@@ -171,7 +171,7 @@ def classify(mn, ops):
 # ---------------------------------------------------------------- measure
 
 def default_arm_cc():
-    for p in (ROOT / "runtime/scripts/tools", HERD / "shared/artifacts/runtime/tools"):
+    for p in (ROOT / "runtime/scripts/tools", *([HERD / "shared/artifacts/runtime/tools"] if HERD else [])):
         cc = p / "arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc"
         if cc.exists():
             return str(cc)
@@ -179,7 +179,7 @@ def default_arm_cc():
 
 
 def default_qemu():
-    for p in (HERE / "tools/qemu", HERD / "shared/artifacts/vita/qemu"):
+    for p in (HERE / "tools/qemu", *([HERD / "shared/artifacts/vita/qemu"] if HERD else [])):
         if (p / "bin/qemu-arm").exists():
             return p
     raise SystemExit("no plugin-enabled qemu: run vita/scripts/build_qemu_plugins.sh")
@@ -397,7 +397,8 @@ def main():
     m.add_argument("--out", type=Path, required=True)
     m.add_argument("--lines", type=int, default=40)
     m.add_argument("--modes", default=",".join(MODES))
-    m.add_argument("--ckpt", type=Path, default=HERD / "shared/models/v1/ckpt_best.pt")
+    m.add_argument("--ckpt", type=Path, default=(HERD / "shared/models/v1/ckpt_best.pt") if HERD
+                   else ROOT / "models/v1/ckpt_best.pt")
     m.add_argument("--eval-data", type=Path)
     m.add_argument("--vitasdk")
     m.add_argument("--arm-cc")

@@ -19,13 +19,26 @@ DIR is the vita/bundle.py output the run used (its cases.json). Reports, per mod
 its times say nothing about a PS Vita).
 """
 import argparse
+import importlib.util
 import json
 import statistics
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path[:0] = [str(HERE.parent / "eval")]
+EVAL = HERE.parent / "eval"
+
+
+def eval_module(name):
+    """eval/<name>.py, loaded by path under a private name: eval/linefind has a metrics.py of
+    its own, so a bare 'import metrics' depends on sys.path order."""
+    key = f"_vita_eval_{name}"
+    if key not in sys.modules:
+        spec = importlib.util.spec_from_file_location(key, EVAL / f"{name}.py")
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[key] = mod
+        spec.loader.exec_module(mod)
+    return sys.modules[key]
 
 
 def unescape(s):
@@ -77,9 +90,9 @@ def quantiles(v):
 def score(cases, rows_by_id):
     """CER of the console output against the ground truth: line cases, and regions the way
     eval/run.py scores a finder (pipeline and concatenated CER)."""
-    import finders
-    import metrics
+    finders, metrics = eval_module("finders"), eval_module("metrics")
     line = {"errs": 0, "chars": 0, "exact": 0, "lines": 0}
+    by_set = {}
     reg = {"errors": 0, "chars": 0, "concat_errors": 0, "concat_chars": 0, "gt_lines": 0, "found": 0}
     for c in cases:
         r = rows_by_id.get(c["id"])
@@ -87,10 +100,11 @@ def score(cases, rows_by_id):
             continue
         if c["kind"] == 0:
             p, g = metrics.norm(r["text_vita"]), metrics.norm(c["gt"])
-            line["errs"] += metrics.lev(p, g)
-            line["chars"] += len(g)
-            line["exact"] += p == g
-            line["lines"] += 1
+            for t in (line, by_set.setdefault(c.get("set", "?"), {"errs": 0, "chars": 0, "exact": 0, "lines": 0})):
+                t["errs"] += metrics.lev(p, g)
+                t["chars"] += len(g)
+                t["exact"] += p == g
+                t["lines"] += 1
             continue
         preds = r["text_vita"].split("\n") if r["text_vita"] else []
         boxes = c["expected"][r["model"]]["boxes"]
@@ -120,6 +134,8 @@ def score(cases, rows_by_id):
     if line["lines"]:
         out["lines"] = dict(n=line["lines"], cer=line["errs"] / max(1, line["chars"]),
                             exact=line["exact"] / line["lines"])
+        out["lines_by_set"] = {k: dict(n=t["lines"], cer=t["errs"] / max(1, t["chars"]), exact=t["exact"] / t["lines"])
+                               for k, t in sorted(by_set.items())}
     if reg["gt_lines"]:
         out["regions"] = dict(gt_lines=reg["gt_lines"], line_recall=reg["found"] / reg["gt_lines"],
                               pipeline_cer=reg["errors"] / max(1, reg["chars"]),
@@ -200,10 +216,9 @@ def print_report(rep):
         for ident, status, host, vita in m["not_matching"][:10]:
             print(f"  {status} {ident}: host {host!r} / vita {vita!r}")
         acc = m["accuracy"]
-        if "lines" in acc:
-            a = acc["lines"]
-            print(f"  GT-box lines (console polarity rule): CER {100 * a['cer']:.2f}%, exact {100 * a['exact']:.1f}%"
-                  f" ({a['n']} lines)")
+        for name_set, a in acc.get("lines_by_set", {}).items():
+            print(f"  {name_set} GT-box lines (console polarity rule): CER {100 * a['cer']:.2f}%, "
+                  f"exact {100 * a['exact']:.1f}% ({a['n']} lines)")
         if "regions" in acc:
             a = acc["regions"]
             print(f"  regions, console pipeline: line recall {100 * a['line_recall']:.1f}%, pipeline CER "

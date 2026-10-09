@@ -171,3 +171,44 @@ def test_committed_manifests_are_consistent():
         assert set(r["targets"]) <= {"vita", "psp"} and r["targets"], r
     hand = [json.loads(x) for x in build.HAND.read_text(encoding="utf-8").splitlines() if x.strip()]
     assert len({h["id"] for h in hand}) == len(hand)
+
+
+def test_text_rows_splits_a_merged_neighbour_but_not_a_glyph_valley():
+    line = [2, 30, 50, 55, 52, 50, 48, 55, 50, 30]
+    neighbour = [12, 9, 14, 20, 26]                      # top of the next line, running off the window
+    prof = np.array([1, 1] + line + neighbour, np.float32)
+    assert L.text_rows(prof, 6, 5) == (3, 13)           # ends at the valley before the neighbour
+    two = np.array([1, 30, 50, 40, 15, 14, 40, 50, 30, 1], np.float32)  # 二: a valley inside the glyph
+    assert L.text_rows(two, 3, 4) == (1, 9)
+    edge = np.array([1, 30, 50, 55, 50, 30, 9, 30, 60, 20, 1], np.float32)  # strokes below, not a line
+    assert L.text_rows(edge, 3, 3) == (1, 10)
+
+
+def test_voter_margins_stop_before_a_neighbouring_line():
+    img = np.full((120, 300, 3), 20, np.uint8)
+    for y in (20, 52):                                   # two lines, 6 px apart
+        cv2.putText(img, "TEXT LINE", (10, y + 22), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (230, 230, 230), 2)
+    rows = np.flatnonzero((img[..., 0] > 100).any(axis=1))
+    first = rows[rows < 48]
+    ink = (10, int(first.min()), 200, int(first.max()) + 1)
+    x0, y0, x1, y1 = L.voter_box(ink, 300, 120, img)
+    assert y1 <= int(rows[rows >= 48].min()), (y1, rows)        # no row of the second line
+    assert y0 < ink[1]                                          # but a margin above
+
+
+def test_hand_checks_follow_the_line_not_the_number():
+    hand = {"v1_2_0": {"id": "v1_2_0", "ink": [10, 10, 100, 30], "truth": "あ"}}
+    recs = {"v1_2_0": {"id": "v1_2_0", "ink": [10, 40, 100, 60]},       # renumbered: another line
+            "v1_2_1": {"id": "v1_2_1", "ink": [11, 9, 101, 31]}}
+    assert list(build.match_hand(hand, recs)) == ["v1_2_1"]
+    assert build.match_hand(hand, {"v1_2_0": recs["v1_2_0"]}) == {}
+
+
+def test_sessions_nest_in_games_and_splits():
+    shots = vndb.load_shots()
+    assert all(s["session"].startswith(f"{s['vn']}/") for s in shots)
+    split = {}
+    for s in shots:
+        assert split.setdefault(s["session"], build.split_of(s["vn"])) == build.split_of(s["vn"])
+    rows = [{"vn": "v1", "release": "r1", "url": f"https://t.vndb.org/sf/00/{n}.jpg"} for n in (10, 11, 12, 90, 91)]
+    assert [r["session"] for r in vndb.assign_sessions(rows)] == ["v1/r1/0"] * 3 + ["v1/r1/1"] * 2

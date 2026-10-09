@@ -65,7 +65,7 @@ def line_candidates(det, bgr, kind):
         ih = ink[3] - ink[1]
         if not any(L.MIN_INK[t] <= ih * L.target_scale(w, h, t) <= L.MAX_INK for t in targets):
             continue
-        x0, y0, x1, y1 = L.voter_box(ink, w, h)
+        x0, y0, x1, y1 = L.voter_box(ink, w, h, rgb)
         out.append((ink, L.polarity(rgb[ink[1]:ink[3], ink[0]:ink[2]]), (x0, y0, x1, y1)))
     out.sort(key=lambda t: (t[0][1], t[0][0]))
     return out

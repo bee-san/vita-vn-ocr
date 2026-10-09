@@ -106,6 +106,40 @@ def runs(mask, max_gap):
     return out
 
 
+SPLIT_SIDE, SPLIT_DEPTH, SPLIT_KEEP = 3, 0.5, 0.5
+
+
+def text_rows(prof, mid, min_rows):
+    """The text row through row `mid` of a per-row energy profile: the run above 15% of
+    the maximum (gaps of up to two rows bridged) that holds `mid`, split at a valley
+    deeper than half of the lower of the two peaks beside it when the far part runs into
+    the profile's edge (a neighbouring line with tight leading), keeping mid's side if
+    that is at least min_rows tall (glyphs like 二 or 八 have valleys of their own)."""
+    pmax = float(prof.max())
+    hit = [r for r in runs(prof >= 0.15 * pmax, 2) if r[0] <= mid < r[1]]
+    if not hit:
+        return None
+    s, e = (int(v) for v in hit[0])
+    n = len(prof)
+    while e - s >= 6:
+        best = None
+        for r in range(s + SPLIT_SIDE, e - SPLIT_SIDE):
+            # only a part that runs into the window's edge can be another line; a part that
+            # ends inside the window is this line's own strokes (short words like 充実, 情報)
+            if not ((r < mid and s == 0) or (r > mid and e == n)):
+                continue
+            side = min(float(prof[s:r].max()), float(prof[r + 1:e].max()))
+            if prof[r] < SPLIT_DEPTH * side and (best is None or prof[r] < prof[best]):
+                best = r
+        if best is None or best == mid:
+            break
+        ns, ne = (s, best) if mid < best else (best + 1, e)
+        if ne - ns < min_rows:
+            break
+        s, e = ns, ne
+    return s, e
+
+
 def ink_box(rgb, box):
     """Refine a detector row box to the ink it holds. Returns (x0, y0, x1, y1) ints in
     source pixels (exclusive ends), or None when no clean text row is found."""
@@ -122,11 +156,10 @@ def ink_box(rgb, box):
     prof = e[:, cx0:cx1].mean(axis=1)
     if prof.max() <= 0:
         return None
-    mid = int(round((by0 + by1) / 2 - wy0))
-    cand = [r for r in runs(prof >= 0.15 * prof.max(), 2) if r[0] <= mid < r[1]]
-    if not cand:
+    ry = text_rows(prof, int(round((by0 + by1) / 2 - wy0)), int(math.ceil(SPLIT_KEEP * bh)))
+    if ry is None:
         return None
-    ry0, ry1 = cand[0]
+    ry0, ry1 = ry
     if not 0.5 * bh <= ry1 - ry0 <= 1.25 * bh:          # border or texture merged in
         return None
     # columns: energy within the text row, relative to the text's own level; keep the
@@ -165,9 +198,39 @@ def train_box(ink, s, img_w, img_h):
     return (max(0, x0 - PAD[0]), max(0, y0 - PAD[1]), min(img_w, x1 + PAD[2]), min(img_h, y1 + PAD[3]))
 
 
-def voter_box(ink, img_w, img_h):
+def voter_box(ink, img_w, img_h, rgb=None):
+    """The ink box plus 20% of its height on every side. With the image, the top and
+    bottom margins stop halfway to a neighbouring text row, so the readers don't see
+    half of the line above or below (tight leading, PSP fonts)."""
     m = max(3, int(round(0.2 * (ink[3] - ink[1]))))
-    return (max(0, ink[0] - m), max(0, ink[1] - m), min(img_w, ink[2] + m), min(img_h, ink[3] + m))
+    top = bottom = m
+    if rgb is not None:
+        top, bottom = clear_margins(rgb, ink, m)
+    return (max(0, ink[0] - m), max(0, ink[1] - top), min(img_w, ink[2] + m), min(img_h, ink[3] + bottom))
+
+
+def clear_margins(rgb, ink, m):
+    """(top, bottom) margins of at most m rows. Moving away from the ink box, the per-row
+    mean |dx| falls into the gap between lines; if it rises again within m rows (a
+    neighbouring line), the margin ends at the lowest row before the rise."""
+    x0, y0, x1, y1 = ink
+    a, b = max(0, y0 - m), min(rgb.shape[0], y1 + m)
+    f = rgb[a:b, x0:x1].astype(np.int16)
+    if f.shape[1] < 2:
+        return m, m
+    dx = np.abs(np.diff(f, axis=1)).max(axis=2).mean(axis=1)
+    ref = float(np.median(dx[y0 - a:y1 - a]))
+    out = []
+    for rows in (dx[:y0 - a][::-1], dx[y1 - a:]):
+        lo, lo_i, cut = float("inf"), 0, len(rows)
+        for i, v in enumerate(rows):
+            if v < lo:
+                lo, lo_i = float(v), i
+            elif v >= lo + 0.25 * (ref - lo) and v >= 0.2 * ref:
+                cut = lo_i + 1
+                break
+        out.append(min(m, max(1, cut)))
+    return tuple(out)
 
 
 def polarity(rgb):

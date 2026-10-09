@@ -1,6 +1,7 @@
-"""synth2 renderer pieces: the mask line finder, kinsoku wrapping, and (where the local
-data/ exists) the label invariants of rendered crops."""
+"""synth2 renderer pieces: the mask line finder, kinsoku wrapping, the background exclusions
+and asset pins, and (where the local data/ exists) the label invariants of rendered crops."""
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -12,7 +13,7 @@ sys.path.insert(0, str(ROOT / "synth"))
 
 import mask_finder  # noqa: E402
 import render  # noqa: E402
-from common import find_lines  # noqa: E402
+from common import find_lines, is_test_vn  # noqa: E402
 
 
 def test_mask_finder_geometry_and_furigana():
@@ -55,6 +56,25 @@ def test_background_exclusions_cover_eval_reserved_games():
     listed = {x.split()[0] for x in path.read_text().splitlines() if x.strip() and x[0] != "#"}
     missing = sorted(set(games["all"]) - listed)
     assert not missing, f"re-run synth/bg_exclude.py; not excluded: {missing[:10]}"
+
+
+def test_psp_background_manifest_is_training_side():
+    games = json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text(encoding="utf-8"))
+    rows = [json.loads(x) for x in (ROOT / "data" / "manifests" / "synth2_psp_shots.jsonl").read_text(
+        encoding="utf-8").splitlines() if x.strip()]
+    assert rows
+    for r in rows:
+        assert not is_test_vn(r["vn"]) and r["vn"] not in set(games["all"]), r
+        assert r["release"] not in set(games["sessions"]), r
+        assert re.fullmatch(r"[0-9a-f]{64}", r["sha256"]) and r["url"].startswith("https://t.vndb.org/"), r
+
+
+def test_fetch_rejects_a_file_that_differs_from_its_pin():
+    import fetch_synth2
+    fetch_synth2.check("x", "a" * 64, None)                # nothing pinned yet (--refresh)
+    fetch_synth2.check("x", "a" * 64, "a" * 64)
+    with pytest.raises(SystemExit):
+        fetch_synth2.check("x", "a" * 64, "b" * 64)
 
 
 def test_wrap_kinsoku():

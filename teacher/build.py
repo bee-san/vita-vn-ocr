@@ -17,10 +17,10 @@ training (< 15 is the test hash). A capture session (realdata's <vn>/<release>/<
 to one VN, so no session straddles the split.
 
 render is deterministic: native Vita and PSP screenshots are cropped as they are; PC shots
-are scaled to fit each target screen it is legible on (cv2.INTER_AREA). Crops are stored as
-they are on screen (dark text stays dark, as in eval's crops); meta "dark" is
-synth/common.line_dark() of the crop, the test the console runtime uses to invert dark-text
-lines before recognition (docs/linefind.md, polarity contract), so a trainer can apply it. The crop is the
+are scaled to fit each target screen it is legible on (cv2.INTER_AREA). The console's
+polarity contract (docs/linefind.md) is applied as realdata applies it: a crop whose text
+synth/common.line_dark() calls dark is stored inverted (255 - g), so every crop shows light
+text; meta "dark" and "inverted" record it (--keep-polarity stores crops as on screen). The crop is the
 line's ink box, with furigana and widened to the labelled characters' boxes, plus 4 px (Vita)
 or 2 px (PSP), as eval crops its test lines. Grey crops (integer luma) go into render.py's
 shard format, so train/train.py --real loads them as they are; per-crop meta holds the
@@ -300,11 +300,12 @@ def render(args):
                 x0, y0, x1, y1 = G.crop_box(r["crop"], sc, G.PAD[t], img.shape[1], img.shape[0])
                 crops, labels, metas = out[(name, r["split"])]
                 g = G.to_gray(img[y0:y1, x0:x1])
-                crops.append(g)
+                dark = int(line_dark(g, (0, 0, g.shape[1], g.shape[0])))
+                inverted = bool(dark and not getattr(args, "keep_polarity", False))
+                crops.append(255 - g if inverted else g)
                 f = extra.get(r["id"], {})
                 meta = {"real": True, "teacher": True, "id": r["id"], "vn": s["vn"], "session": s["session"],
-                        "kind": s["kind"], "target": t, "box": [x0, y0, x1, y1],
-                        "dark": int(line_dark(g, (0, 0, g.shape[1], g.shape[0])))}
+                        "kind": s["kind"], "target": t, "box": [x0, y0, x1, y1], "dark": dark, "inverted": inverted}
                 if name == "teacher":
                     labels.append(r["label"])
                     meta.update(how=r["how"], pol=f.get("pol"), chars=[
@@ -342,8 +343,9 @@ teacher_train.npz, teacher_val.npz
     Grey line crops (integer luma, synth/common.to_gray) in render.py's shard format (data, offsets,
     shapes, labels, meta), so train/train.py --real loads them as they are. Crops by split and target:
     {json.dumps(counts)}. meta per crop: id, vn, session, kind (vita | psp | hires), target (vita | psp),
-    how (the engines that agreed), pol, chars ([char, x0, y0, x1, y1, conf] relative to the crop:
-    MeikiOCR's character boxes and confidences).
+    how (the engines that agreed), pol, dark / inverted (dark-text crops are stored inverted, the
+    console's polarity contract, as realdata's), box (crop box in the target-resolution screenshot),
+    chars ([char, x0, y0, x1, y1, conf] relative to the crop: MeikiOCR's character boxes and confidences).
     Split by VNDB VN (val = 15 <= md5(vn) % 100 < 25), so no game or capture session is in both.
     Use teacher_val for model selection only; eval's vita-test / psp-test games are never here.
 
@@ -379,7 +381,9 @@ def main():
     p = sub.add_parser("decide")
     p.add_argument("--rule", default=str(RULE))
     p.add_argument("--reads", default=str(OUT / "reads"))
-    sub.add_parser("render")
+    p.add_argument("--keep-polarity", action="store_true", help="don't invert dark-text crops")
+    p = sub.add_parser("render")
+    p.add_argument("--keep-polarity", action="store_true", help="don't invert dark-text crops")
     args = ap.parse_args()
     {"decide": decide, "render": render}[args.cmd](args)
 

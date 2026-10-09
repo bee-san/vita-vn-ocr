@@ -199,7 +199,9 @@ def test_build_decide_and_render_end_to_end(tmp_path):
     for vn in (train_vn, test_vn):
         url = f"https://t.vndb.org/sf/00/{vn[1:]}.jpg"
         img = np.full((544, 960, 3), 20, np.uint8)
-        img[400:430, 100:400] = 230
+        img[400:430, 100:400] = 230                     # light text on a dark ground
+        img[436:494, 90:410] = 230                      # a light box with dark text strokes
+        img[452:478, 110:390:6] = 15
         (real / "shots" / "vita").mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(real / "shots" / "vita" / f"{vn}_{vn[1:]}.jpg"), img)
         shots.append({"vn": vn, "kind": "vita", "url": url, "dims": [960, 544], "release": "r1", "sha256": vn,
@@ -232,10 +234,13 @@ def test_build_decide_and_render_end_to_end(tmp_path):
     assert z["shapes"][0].tolist() == [30 + 2 * G.PAD["vita"], 400 - 82 + 2 * G.PAD["vita"]]
     assert lines[0]["crop"] == [82, 400, 400, 430]
     assert metas[0]["chars"][0][0] == "こ" and metas[0]["session"] == f"{train_vn}/r1/0"
-    assert metas[0]["dark"] == 0                         # light text on a dark ground
+    assert metas[0]["dark"] == 0 and metas[0]["inverted"] is False
     zd = np.load(out / "teacher_distill_train.npz")
     assert json.loads(str(zd["labels"])) == [""]
-    assert json.loads(str(zd["meta"]))[0]["reads"]["v6s"] == "ありがどう"
+    dmeta = json.loads(str(zd["meta"]))[0]
+    assert dmeta["reads"]["v6s"] == "ありがどう"
+    assert dmeta["dark"] == 1 and dmeta["inverted"] is True   # dark text stored inverted (console contract)
+    assert zd["data"].mean() < 128                            # the light box became the dark ground
     sys.path.insert(0, str(ROOT / "train"))
     import train  # the shard loads as a --real shard
     char2id = {c: i + 1 for i, c in enumerate(build.load_vocab())}

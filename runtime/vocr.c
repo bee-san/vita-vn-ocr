@@ -8,6 +8,13 @@
 #include <arm_neon.h>
 #define VOCR_NEON 1
 #endif
+/* PSP: the float matrix products on the VFPU, opt-in with -DVOCR_PSP_VFPU (psp/Makefile
+ * VFPU=1). It does the scalar code's multiplies and adds in the same order, 4 lanes at a time,
+ * which gives the same bits in PPSSPP; the real VFPU flushes denormals to zero, so a console
+ * run has to confirm it (psp/README.md). The thread that runs vocr needs PSP_THREAD_ATTR_VFPU. */
+#if defined(VOCR_PSP_VFPU) && defined(__psp__)
+#define VOCR_VFPU 1
+#endif
 #if defined(__clang__)
 #pragma STDC FP_CONTRACT OFF
 #endif
@@ -728,12 +735,64 @@ static void k_dw(const vocr_op *op, const float *win, float *out, unsigned t0, u
         }
 }
 
+#ifdef VOCR_VFPU
+/* s[q * 8 + j] = bias[j] (or 0) + w[0][j] x_q[0] + w[1][j] x_q[1] + ... for 4 positions
+ * x_q = x + q * xs and the 8 outputs of w ([K][8]): per k, vscl.q rounds each w * x and vadd.q
+ * each sum, lane by lane, like the scalar code. M1 / M2 hold the 4 x 4 low / high sums, M0 the
+ * weights (C000, C010) and the 4 inputs (S020..S023), M3 / M4 the products. w, bias and s
+ * must be 16-byte aligned. */
+static void vfpu_4x8(const float *w, const float *bias, const float *x, size_t xs, unsigned K,
+                     float *s)
+{
+    const float *x0 = x, *x1 = x + xs, *x2 = x1 + xs, *x3 = x2 + xs;
+    unsigned k;
+    if (bias)
+        __asm__ volatile("lv.q C100, 0(%0)\n\tlv.q C200, 16(%0)\n\t"
+                         "vmov.q C110, C100\n\tvmov.q C120, C100\n\tvmov.q C130, C100\n\t"
+                         "vmov.q C210, C200\n\tvmov.q C220, C200\n\tvmov.q C230, C200\n"
+                         : : "r"(bias) : "memory");
+    else
+        __asm__ volatile("vmzero.q M100\n\tvmzero.q M200\n" : : : "memory");
+    for (k = 0; k < K; k++)
+        __asm__ volatile("lv.q C000, 0(%0)\n\tlv.q C010, 16(%0)\n\t"
+                         "lv.s S020, 0(%1)\n\tlv.s S021, 0(%2)\n\t"
+                         "lv.s S022, 0(%3)\n\tlv.s S023, 0(%4)\n\t"
+                         "vscl.q C300, C000, S020\n\tvscl.q C310, C000, S021\n\t"
+                         "vscl.q C320, C000, S022\n\tvscl.q C330, C000, S023\n\t"
+                         "vscl.q C400, C010, S020\n\tvscl.q C410, C010, S021\n\t"
+                         "vscl.q C420, C010, S022\n\tvscl.q C430, C010, S023\n\t"
+                         "vadd.q C100, C100, C300\n\tvadd.q C110, C110, C310\n\t"
+                         "vadd.q C120, C120, C320\n\tvadd.q C130, C130, C330\n\t"
+                         "vadd.q C200, C200, C400\n\tvadd.q C210, C210, C410\n\t"
+                         "vadd.q C220, C220, C420\n\tvadd.q C230, C230, C430\n"
+                         : : "r"(w + (size_t)k * 8), "r"(x0 + k), "r"(x1 + k), "r"(x2 + k), "r"(x3 + k)
+                         : "memory");
+    __asm__ volatile("sv.q C100, 0(%0)\n\tsv.q C200, 16(%0)\n\tsv.q C110, 32(%0)\n\t"
+                     "sv.q C210, 48(%0)\n\tsv.q C120, 64(%0)\n\tsv.q C220, 80(%0)\n\t"
+                     "sv.q C130, 96(%0)\n\tsv.q C230, 112(%0)\n"
+                     : : "r"(s) : "memory");
+}
+#endif
+
 /* Float block: y[p][j] = act(bias[j] + sum_k w[k][j] x[p][k]) (+ res[p][j]) for the
  * 8 outputs of one column block w ([K][8]) and positions p < P. */
 static void mm_f32(const float *w, const float *bias, const float *x, size_t xs, unsigned K,
                    unsigned P, float *y, size_t ys, const float *res, size_t rs, int relu)
 {
     unsigned p = 0, q, j, k;
+#ifdef VOCR_VFPU
+    if (!(((uintptr_t)w | (uintptr_t)bias) & 15u))
+        for (; p + 4 <= P; p += 4) {
+            float buf[32 + 4], *s = (float *)(((uintptr_t)buf + 15u) & ~(uintptr_t)15u);
+            vfpu_4x8(w, bias, x + p * xs, xs, K, s);
+            for (q = 0; q < 4; q++)
+                for (j = 0; j < 8; j++) {
+                    float v = relu ? relu_f(s[q * 8 + j]) : s[q * 8 + j];
+                    if (res) v = v + res[(p + q) * rs + j];
+                    y[(p + q) * ys + j] = v;
+                }
+        }
+#endif
 #ifdef VOCR_NEON
     const float32x4_t z = vdupq_n_f32(0.0f);
     const float32x4_t bl = bias ? vld1q_f32(bias) : z, bh = bias ? vld1q_f32(bias + 4) : z;

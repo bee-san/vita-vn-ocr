@@ -1,0 +1,11 @@
+# Lint settings for CI (.github/workflows/ci.yml). ruff is pinned in requirements-ci.in.
+# Run locally: .venv-ci/bin/ruff check .   (the CI env, ci/README.md; or: uvx ruff@0.16.10 check .)
+target-version = "py311"
+line-length = 120
+# Script directories that import each other through sys.path (first-party for isort).
+src = [".", "ci", "data", "synth", "tests", "train"]
+
+[lint]
+# Selected explicitly: ruff's default rule set changes between releases.
+# E/W pycodestyle, F pyflakes, I import order.
+select = ["E", "F", "W", "I"]

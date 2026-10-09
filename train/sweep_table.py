@@ -18,9 +18,10 @@ recipe renders only light text, so the as-is vita-test mostly measures that data
 (which synth2 and the real fine-tuning close), not capacity; it is shown alongside.
 Without eval/ results the provisional real-hand + real-pseudo pool is used.
 "Δ vs ref" is the pooled real CER minus the reference run's, with a 95% paired
-bootstrap interval over lines (10,000 resamples, seed 0). A row is on the Pareto
-front when no other row has both a smaller on-console footprint (int8 blob + W8F
-arena) and a lower real CER.
+bootstrap interval over lines (10,000 resamples, seed 0). The Pareto front is taken
+over the runs with the reference run's step budget only (other budgets, e.g. v1's
+32k steps, are shown for scale): a row is on it when no other such row has both a
+smaller on-console footprint (int8 blob + W8F arena) and a lower real CER.
 """
 import argparse
 import json
@@ -137,12 +138,15 @@ def rows(runs_dir, eval_name, exporter, ref):
         for row in out:
             if row["run"] != ref:
                 row["delta_vs_ref"] = paired_delta(errs[row["run"]], errs[ref])
+    budget = next((a["step"] for a in out if a["run"] == ref), None)
+    matched = [a for a in out if budget is None or a["step"] == budget]
     for a in out:
-        a["pareto"] = a["real_int8"] is not None and not any(
+        a["matched_budget"] = a in matched
+        a["pareto"] = a in matched and a["real_int8"] is not None and not any(
             b is not a and b["real_int8"] is not None
             and b["footprint"] <= a["footprint"] and b["real_int8"] <= a["real_int8"]
             and (b["footprint"] < a["footprint"] or b["real_int8"] < a["real_int8"])
-            for b in out)
+            for b in matched)
     return out
 
 
@@ -152,6 +156,12 @@ def pct(x):
 
 def kib(x):
     return f"{x / 1024:,.0f}"
+
+
+def pareto_cell(a):
+    if a["pareto"]:
+        return "**yes**"
+    return "" if a["matched_budget"] else f"({a['step']:,} steps)"
 
 
 def markdown(rs, exact, ref):
@@ -176,7 +186,7 @@ def markdown(rs, exact, ref):
             f"{pct(a.get('vita-test_int8'))} | {pct(a.get('vita-test-inv_int8'))} | "
             f"{pct(a.get('real-hand-x_int8'))} | "
             f"{pct(a['real_fp32'])} / {pct(a['real_int8'])} | {delta} | "
-            f"{'**yes**' if a['pareto'] else ''} |")
+            f"{pareto_cell(a)} |")
     return "\n".join(lines)
 
 

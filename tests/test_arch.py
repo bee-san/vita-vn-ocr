@@ -1,5 +1,6 @@
 """Fast tests for the architecture-sweep pieces: QAT fake quantisation, height 24,
 <unk> vocabs, checkpoint round trip and the cost model. CPU only, no data files."""
+import subprocess
 import sys
 from pathlib import Path
 
@@ -191,3 +192,39 @@ def test_a9_estimate_scales_with_macs():
     r = cost.report(TinyVNOCR(5355), 5355, 32)
     slow, fast = r["a9_ms_1024"]
     assert fast < slow and abs(slow - 1000 * r["macs_1024"] / 0.24e9) < 1e-6
+
+
+def test_export_and_c_runtime_run_a_deeper_student(tmp_path):
+    """export.load_checkpoint rebuilds a depth/ctx/ctx_k checkpoint, and the C runtime's
+    f32 logits match PyTorch for it (skips if libvocr.so cannot be built here)."""
+    import shutil
+
+    import numpy as np
+
+    import export
+    torch.manual_seed(0)
+    vocab = [chr(0x3042 + i) for i in range(20)]
+    m = TinyVNOCR(len(vocab) + 1, width=0.25, bottleneck=48, depth=2, ctx=3, ctx_k=7).eval()
+    for mod in m.modules():
+        if isinstance(mod, nn.BatchNorm2d):
+            mod.running_var.uniform_(0.5, 2.0)
+    path = tmp_path / "deep.pt"
+    torch.save({"model": m.state_dict(), "vocab": vocab, "width": 0.25, "bottleneck": 48,
+                "depth": 2, "ctx": 3, "ctx_k": 7, "height": 24}, path)
+    model, v, height = export.load_checkpoint(path)
+    assert height == 24 and v == vocab
+    blob, _ = export.build_blob(export.model_ops(model, height), vocab, height)
+    if not (shutil.which("cc") or shutil.which("gcc")):
+        pytest.skip("no C compiler")
+    sys.path.insert(0, str(ROOT / "runtime"))
+    from pyvocr import Vocr
+    try:
+        r = Vocr(blob)
+    except (OSError, RuntimeError, subprocess.CalledProcessError) as e:
+        pytest.skip(f"libvocr.so unavailable: {e}")
+    g = np.random.default_rng(0).integers(0, 256, (24, 96), dtype=np.uint8)
+    _, logits = r.run(g, logits=True)
+    with torch.no_grad():
+        ref = m(torch.from_numpy(g.astype(np.float32) / 127.5 - 1.0)[None, None])[:, 0].numpy()
+    assert logits.shape == ref.shape
+    assert np.abs(logits - ref).max() <= 1e-3 * max(1.0, np.abs(ref).max())

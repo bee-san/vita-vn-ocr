@@ -366,6 +366,7 @@ def main():
     p.add_argument("--hand", default=str(OUT / "inputs" / "realdata_handcheck.jsonl"))
     p.add_argument("--rule", default=str(HERE / "rule.json"))
     p.add_argument("--reads", default=str(OUT / "reads"))
+    p.add_argument("--out", default="")
     p = sub.add_parser("rules")
     p.add_argument("--set", default=",".join(EVAL_SETS))
     p.add_argument("--reads", default=str(OUT / "reads"))
@@ -373,7 +374,9 @@ def main():
     p.add_argument("--out", default="")
     args = ap.parse_args()
     if args.cmd == "hand":
-        cmd_hand(args)
+        res = cmd_hand(args)
+        if args.out:
+            Path(args.out).write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     else:
         cmd_rules(args)
 

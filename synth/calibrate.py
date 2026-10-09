@@ -20,7 +20,8 @@ reserved test games and the hand-labelled real sets used for the A/B). Sources:
       crop height, aspect, text polarity, contrast and background busyness per source (JSON)
   calibrate.py finders [--n 2000]
       how often the console's finder (grad) or the overlay's (legacy) yields a usable
-      crop where the renderer's mask finder does, per text scheme
+      crop where the renderer's mask finder does, per text scheme, and how often the
+      console's polarity rule (common.line_dark) calls a mask crop dark
 """
 import argparse
 import glob
@@ -254,6 +255,7 @@ def finders(args):
         bright = render.extract(img, layout, ink, "legacy") or []
         yield_[key]["regions"] += 1
         yield_[key]["mask"] += len(mask)
+        yield_[key]["mask_dark"] += sum(d for _, _, _, _, d in mask)
         yield_[key]["grad"] += len(grad)
         yield_[key]["bright"] += len(bright)
         gb = [b for _, _, b, _, _ in grad]
@@ -271,7 +273,8 @@ def finders(args):
         res[key] = {"regions": y["regions"], "mask_lines": y["mask"],
                     "grad_lines_per_mask_line": round(y["grad"] / max(1, y["mask"]), 3),
                     "legacy_lines_per_mask_line": round(y["bright"] / max(1, y["mask"]), 3),
-                    "mask_boxes_matched_by_grad_iou50": round(agree[key][0] / max(1, agree[key][1]), 3)}
+                    "mask_boxes_matched_by_grad_iou50": round(agree[key][0] / max(1, agree[key][1]), 3),
+                    "mask_lines_console_marks_dark": round(y["mask_dark"] / max(1, y["mask"]), 3)}
     tot = {k: sum(r[k] if isinstance(r[k], int) else 0 for r in res.values()) for k in ("regions", "mask_lines")}
     res["all"] = tot | {"legacy_lines_per_mask_line": round(sum(yield_[k]["bright"] for k in yield_)
                                                             / max(1, tot["mask_lines"]), 3),

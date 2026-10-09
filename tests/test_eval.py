@@ -115,6 +115,19 @@ def test_finder_precision_ignores_uncertain_lines():
     assert f["pipeline_cer"] == 1.0   # the false alarm's 3 characters against 3 scored ones
 
 
+def test_console_polarity_inverts_dark_text_only():
+    import run
+    dark = np.full((24, 80, 3), 230, np.uint8)
+    dark[8:16, 10:70:3] = 20                      # dark strokes on a light box
+    light = 255 - dark                            # light strokes on a dark box
+    out, flags = run.console_polarity([dark, light])
+    assert flags == [True, False]
+    assert out[0].shape == dark.shape and (out[0] == 255 - dark[..., :1]).all()
+    assert out[1] is light
+    same, none = run.prepare([dark], "native")
+    assert same[0] is dark and none == [False]
+
+
 def test_paddle_prep_width():
     p = object.__new__(backends.PaddleOnnx)
     p.max_w = 1024

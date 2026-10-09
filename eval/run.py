@@ -2,7 +2,7 @@
 """Score a recognizer (and optionally a line finder) on real VN dialogue.
 
   eval/run.py --model MODEL [--set vita-test|psp-test|synth-val|all] [--finder F]
-              [--out results.json] [--errors N] [--data DIR] [--pad PX]
+              [--polarity native|console] [--out results.json] [--errors N] [--data DIR] [--pad PX]
 
 MODEL is a train/model.py checkpoint (.pt), an ONNX export, a named PaddleOCR
 baseline (ppocr-v5-mobile, ppocr-v5-mobile-jis, ppocr-v5-server, ppocr-v6-small),
@@ -14,6 +14,10 @@ Recognizer mode (default) reads every hand-checked line crop (the line's box plu
 breakdowns. With --finder (overlay, gradient, py:MOD:FUNC, cmd:COMMAND) it runs
 the finder on each dialogue region instead, recognizes what it finds, and reports
 line recall/precision and the whole-pipeline CER. Scores use eval/metrics.py norm().
+
+--polarity console hands every crop over the way the console does (docs/linefind.md,
+polarity contract): a crop whose text synth/common.line_dark calls dark is inverted
+(255 - grey) before recognition. The default, native, passes crops as they are.
 """
 import argparse
 import datetime
@@ -24,6 +28,8 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
+import numpy as np
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -59,6 +65,26 @@ def available_sets(names, data):
     return out
 
 
+def console_polarity(crops):
+    """The console's polarity contract: crops whose text common.line_dark calls dark become
+    255 - grey (in all three channels, so a grey recognizer sees exactly that); the others
+    pass unchanged. Returns (crops, inverted flags)."""
+    from common import line_polarity, to_gray
+    out, flags = [], []
+    for c in crops:
+        g = to_gray(c) if c.ndim == 3 else c
+        dark = bool(line_polarity(g))
+        out.append(np.repeat((255 - g)[..., None], 3, axis=2) if dark else c)
+        flags.append(dark)
+    return out, flags
+
+
+def prepare(crops, polarity):
+    if polarity == "console":
+        return console_polarity(crops)
+    return crops, [False] * len(crops)
+
+
 def fmt(v, pct=True):
     if v is None:
         return "-"
@@ -71,10 +97,15 @@ def recognizer_mode(rec, name, data, args):
         lines = sets.load_synth_val(path, limit=sets.SYNTH_VAL_LINES if args.limit is None else args.limit)
     else:
         lines, _ = sets.load(name, data, pad=args.pad, limit=args.limit)
-    preds, sec = backends.timed_read(rec, [ln.crop_rgb for ln in lines])
+    crops, inverted = prepare([ln.crop_rgb for ln in lines], getattr(args, "polarity", "native"))
+    preds, sec = backends.timed_read(rec, crops)
     rows = [{"id": ln.id, "vn": ln.vn, "styles": ln.styles, "text": ln.text, "pred": p}
             for ln, p in zip(lines, preds)]
+    for r, inv in zip(rows, inverted):
+        if inv:
+            r["inverted"] = True
     res = metrics.score_lines(rows)
+    res["inverted_lines"] = sum(inverted)
     res["host_ms_per_line"] = round(1000 * sec, 2)
     res["oov_chars"] = metrics.oov_chars([ln.text for ln in lines], rec.info.get("vocab_set"))
     res["lines"] = rows
@@ -108,6 +139,7 @@ def finder_mode(rec, find, name, data, args):
             continue
         dets = [tuple(int(v) for v in d) for d in dets]
         crops = [region[y:y + h, x:x + w] for (x, y, w, h) in dets]
+        crops, _ = prepare(crops, getattr(args, "polarity", "native"))
         preds = rec.read(crops) if crops else []
         pairs, unmatched = finders.match(dets, gts, args.match)
         # A detection on an uncertain line is neither a hit nor a false alarm (sets.py).
@@ -147,8 +179,9 @@ def finder_mode(rec, find, name, data, args):
 
 def print_recognizer(name, res, errors):
     a = res["all"]
+    inv = f" | {res['inverted_lines']} inverted" if res.get("inverted_lines") else ""
     print(f"\n{name}: {a['lines']} lines, {a['chars']} chars | CER {fmt(a['cer'])} | exact {fmt(a['exact'])}"
-          f" | game-macro CER {fmt(res['game_macro_cer'])} | {res['host_ms_per_line']} ms/line (host)")
+          f" | game-macro CER {fmt(res['game_macro_cer'])} | {res['host_ms_per_line']} ms/line (host){inv}")
     if res["styles"]:
         print(f"  {'style':16s} {'lines':>6s} {'chars':>6s} {'CER':>8s} {'exact':>8s}")
         for tag, s in res["styles"].items():
@@ -180,6 +213,9 @@ def main(argv=None):
     ap.add_argument("--limit", type=int, default=None,
                     help="only the first N lines of each set (synth-val defaults to 3000; 0 = all)")
     ap.add_argument("--match", type=float, default=0.5, help="finder mode: min vertical overlap to match")
+    ap.add_argument("--polarity", default="native", choices=["native", "console"],
+                    help="console: invert dark-text crops (synth/common.line_dark) before recognition, "
+                         "as the console does (docs/linefind.md)")
     ap.add_argument("--cmd-format", default="ppm", choices=["ppm", "pgm", "png"])
     ap.add_argument("--errors", type=int, default=0, help="print the N worst lines per set")
     ap.add_argument("--out", type=Path, default=None, help="write full results (per line) as JSON")
@@ -196,10 +232,10 @@ def main(argv=None):
     t0 = time.time()
     rec = backends.make_recognizer(args.model, args.cmd_format)
     info = {k: v for k, v in rec.info.items() if k != "vocab_set"}
-    print(f"model {rec.name} {json.dumps(info)}")
+    print(f"model {rec.name} {json.dumps(info)}" + (" | polarity console" if args.polarity == "console" else ""))
     find = finders.make_finder(args.finder) if args.finder else None
     results = {"model": args.model, "model_name": rec.name, "model_info": info, "finder": args.finder,
-               "pad": args.pad if args.pad is not None else sets.PAD, "sets": {},
+               "pad": args.pad if args.pad is not None else sets.PAD, "polarity": args.polarity, "sets": {},
                "env": {"git": git_sha(), "python": platform.python_version(), "host": platform.node(),
                        "threads": backends.threads(),
                        "date": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")}}

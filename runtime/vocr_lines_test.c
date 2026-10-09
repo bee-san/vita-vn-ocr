@@ -1,6 +1,8 @@
 /* Host test driver for vocr_lines.c (not part of the console runtime).
  *
  *   vocr_lines_test BATCH     run every image in BATCH, print one result line each
+ *   vocr_lines_test --bench BATCH REPS
+ *                             time every image in BATCH (best and mean of REPS runs)
  *   vocr_lines_test --arena W H
  *   vocr_lines_test --selftest
  *
@@ -16,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static int read_u32(FILE *f, unsigned *v)
 {
@@ -78,6 +81,78 @@ static int batch(const char *path)
         free(px);
     }
     fclose(f);
+    return 0;
+}
+
+/* --bench: load every record of BATCH, then run each one REPS times in a row and print
+ * "w h finder best_us mean_us" per record (CPU time from clock()), then the totals. The
+ * arena is allocated once for the largest record, as a console caller would. */
+static int bench(const char *path, unsigned reps)
+{
+    FILE *f = fopen(path, "rb");
+    VocrLinesImage *ims = NULL;
+    unsigned *finders = NULL;
+    unsigned n = 0, cap = 0, i, r, mw = 0, mh = 0;
+    unsigned w, h, bpp, finder, stride;
+    unsigned char *arena;
+    size_t need;
+    double tot_best = 0, tot_mean = 0;
+    if (!f) {
+        perror(path);
+        return 2;
+    }
+    if (reps == 0) reps = 1;
+    while (read_u32(f, &w)) {
+        unsigned char *px;
+        size_t bytes;
+        if (!read_u32(f, &h) || !read_u32(f, &bpp) || !read_u32(f, &finder) || !read_u32(f, &stride)) break;
+        bytes = (size_t)stride * h;
+        if (n == cap) {
+            cap = cap ? 2 * cap : 64;
+            ims = (VocrLinesImage *)realloc(ims, cap * sizeof *ims);
+            finders = (unsigned *)realloc(finders, cap * sizeof *finders);
+            if (!ims || !finders) return 2;
+        }
+        px = (unsigned char *)malloc(bytes ? bytes : 1);
+        if (!px || fread(px, 1, bytes, f) != bytes) {
+            fprintf(stderr, "truncated pixels\n");
+            return 2;
+        }
+        ims[n].pixels = px;
+        ims[n].width = w;
+        ims[n].height = h;
+        ims[n].stride = stride;
+        ims[n].bpp = bpp;
+        finders[n++] = finder;
+        if (w > mw) mw = w;
+        if (h > mh) mh = h;
+    }
+    fclose(f);
+    need = vocr_lines_arena_bytes(mw, mh);
+    arena = (unsigned char *)malloc(need ? need : 1);
+    if (!arena) return 2;
+    for (i = 0; i < n; i++) {
+        VocrLineSet out;
+        double best = 1e30, sum = 0;
+        for (r = 0; r < reps; r++) {
+            clock_t t0 = clock();
+            (void)vocr_find_lines(&ims[i], (int)finders[i], arena, need, &out);
+            {
+                double us = (double)(clock() - t0) * 1e6 / CLOCKS_PER_SEC;
+                if (us < best) best = us;
+                sum += us;
+            }
+        }
+        printf("%u %u %u %.1f %.1f\n", ims[i].width, ims[i].height, finders[i], best, sum / reps);
+        tot_best += best;
+        tot_mean += sum / reps;
+    }
+    printf("total %u records, %u reps: sum of best %.1f us, sum of means %.1f us, arena %lu bytes\n", n, reps,
+           tot_best, tot_mean, (unsigned long)need);
+    for (i = 0; i < n; i++) free((void *)ims[i].pixels);
+    free(ims);
+    free(finders);
+    free(arena);
     return 0;
 }
 
@@ -201,6 +276,7 @@ int main(int argc, char **argv)
         return 0;
     }
     if (argc == 2) return batch(argv[1]);
-    fprintf(stderr, "usage: %s BATCH | --arena W H | --selftest\n", argv[0]);
+    if (argc == 4 && !strcmp(argv[1], "--bench")) return bench(argv[2], (unsigned)strtoul(argv[3], NULL, 10));
+    fprintf(stderr, "usage: %s BATCH | --bench BATCH REPS | --arena W H | --selftest\n", argv[0]);
     return 2;
 }

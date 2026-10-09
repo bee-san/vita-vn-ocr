@@ -7,6 +7,8 @@ runs/
 *.npz
 *.pt
 *.onnx
+*.h5
+scratch/
 data/*
 !data/*.py
 !data/vocab.txt

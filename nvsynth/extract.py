@@ -101,18 +101,29 @@ def runs(on, gap):
 
 def energy(win):
     """|dx| + |dy| of a grey window (int32), the line finders' edge-strength measure."""
+    dx, dy = gradients(win)
+    return dx + dy
+
+
+def gradients(win):
+    """(|dx|, |dy|) as int32 arrays of the window's shape (forward differences, zero at
+    the last column / row)."""
     g = win.astype(np.int16)
-    e = np.zeros(g.shape, np.int32)
-    e[:, :-1] += np.abs(np.diff(g, axis=1))
-    e[:-1, :] += np.abs(np.diff(g, axis=0))
-    return e
+    dx = np.zeros(g.shape, np.int32)
+    dy = np.zeros(g.shape, np.int32)
+    dx[:, :-1] = np.abs(np.diff(g, axis=1))
+    dy[:-1, :] = np.abs(np.diff(g, axis=0))
+    return dx, dy
 
 
 def ink_box(gray, bbox):
     """Ink extent (x0, y0, x1, y1) of a line inside its annotated box, plus whether the
     gradient profile gave a clean answer. NVIDIA boxes span the font's line height, so
     the ink sits about 0.17 of the box height inside the top and bottom edges; when the
-    profile is unclear (busy backgrounds) that median trim is used instead."""
+    profile is unclear (busy backgrounds) that median trim is used instead.
+    Rows are profiled by |dx| and columns by |dy|: a forward difference across the
+    ink's top (left) edge lands on the background row (column) before it, so the
+    other direction's gradient keeps the box from growing a pixel there."""
     ph, pw = gray.shape
     x, y, w, h = bbox
     bx0, by0 = max(0, int(math.floor(x))), max(0, int(math.floor(y)))
@@ -122,8 +133,8 @@ def ink_box(gray, bbox):
     ya, yb = max(0, by0 - m), min(ph, by1 + m)
     if bx1 - bx0 < 4 or by1 - by0 < 4:
         return fallback, False
-    e = energy(gray[ya:yb, bx0:bx1])
-    rows = e.sum(axis=1)
+    dx, dy = gradients(gray[ya:yb, bx0:bx1])
+    rows = dx.sum(axis=1)
     peak = rows[by0 - ya:by1 - ya].max()
     if peak <= 0:
         return fallback, False
@@ -135,7 +146,7 @@ def ink_box(gray, bbox):
     bot = min(hit[-1][1] + ya, int(math.ceil(y + h + 0.1 * h)))
     if not 0.4 * h <= bot - top <= 1.05 * h:
         return fallback, False
-    cols = e[top - ya:bot - ya].sum(axis=0)
+    cols = dy[top - ya:bot - ya].sum(axis=0)       # includes the step below the last ink row
     on = np.flatnonzero(cols > 0.05 * cols.max()) if cols.max() > 0 else []
     if not len(on):
         return fallback, False

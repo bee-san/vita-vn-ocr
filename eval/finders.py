@@ -6,6 +6,9 @@ region (the overlay's VJO_E_OCR_REGION).
 
   overlay        synth/common.py find_lines(rgb, "legacy"): exact port of vita-jp-overlay's
                  bright-pixel row projection (core/ocr_lines.c), the shipped finder
+  console        synth/common.py find_lines(rgb, "grad"): the bit-exact twin of
+                 runtime/vocr_lines.c, the console's polarity-agnostic finder (#3); pair it
+                 with run.py --polarity console to score the console's whole path
   gradient       the research's polarity-agnostic gradient-energy projection
                  (scratch/real/grad_finder.py): rows above 25% of the max |dx|+|dy|
                  profile form runs, gaps under 3 px merge, runs under 8 px or under
@@ -35,6 +38,11 @@ for p in (ROOT, ROOT / "synth"):
 def overlay(rgb):
     from common import find_lines
     return find_lines(rgb, "legacy")
+
+
+def console(rgb):
+    from common import find_lines
+    return find_lines(rgb, "grad")
 
 
 def gradient(rgb):
@@ -108,6 +116,8 @@ def _cmd(command):
 def make_finder(spec):
     if spec == "overlay":
         return overlay
+    if spec == "console":
+        return console
     if spec == "gradient":
         return gradient
     if spec.startswith("py:"):

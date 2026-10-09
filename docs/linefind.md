@@ -53,10 +53,13 @@ v1 was trained on light text only and cannot read dark-on-light text. When `Vocr
 
 - The twin does this in `common.line_crops(img, finder="grad", invert_dark=True)`.
 - The recognizer runtime does it without a copy of the crop: `img.format |= VOCR_INVERT` (`runtime/vocr.h`) inverts each source pixel before the resize, exactly as `line_crops` does.
-- `synth/render.py` uses grad plus inversion by default. `--finder legacy --keep-polarity` reproduces v1's data.
+- `eval/run.py --polarity console` scores a recognizer behind this step.
 - On eval's vita-test (the 59 out-of-sample regions) this one step takes grad's CER from 32.6% to 21.1%; on set B, from 24.6% to 5.3%.
+- `synth/render.py` (synth2) cuts crops with an ideal finder on the renderer's ink mask and keeps their rendered polarity by default, so a recognizer trained on its shards reads both polarities. `--invert-dark` stores crops the way the console hands them over. The rule is not a clean split on synthetic styles: it calls 84% of dark-on-light crops dark, but also 40% of outlined light text on light boxes and 21% of dark outlined text (`calibrate.py finders --n 1000 --seed 5`).
+- Recognizers trained on synth2's default crops score within 0.3 points with and without the inversion (vita-test 5.38% and 5.11% CER for the 5,000-step A/B model), while light-only ones need it (the same recipe on v1's data: 29.25% and 13.18%). See `docs/synth2.md`.
+- v1's data came from the renderer before synth2 (`render.py --finder legacy --keep-polarity` at b4c584e); its shards are in `$HERD/shared/data/synth`.
 
-Any recognizer trained on these crops sees light-on-dark text only. Keep the inversion in the console runtime as long as that holds.
+Keep the inversion in the console runtime: light-only recognizers need it, and recognizers trained on synth2's default crops are indifferent to it.
 
 ## Ground truth (`eval/linefind/`)
 

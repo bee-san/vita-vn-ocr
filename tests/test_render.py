@@ -38,13 +38,20 @@ def test_shard_format(shard):
 
 
 def test_labels_are_fixture_text_in_the_vocab(shard):
-    labels = json.loads(str(np.load(shard)["labels"]))
+    z = np.load(shard)
+    labels = json.loads(str(z["labels"]))
+    meta = json.loads(str(z["meta"])) if "meta" in z.files else [{}] * len(labels)
     corpus = "\n".join(s for pool in sandbox.fixture_lines().values() for s in pool)
     assert all(lab and set(lab) <= set(VOCAB) for lab in labels)
-    # Most labels are verbatim pieces of the fixture sentences (render.py can add brackets,
-    # ellipses or a speaker name), which shows the text came from the sandbox's data/.
-    verbatim = [lab for lab in labels if lab in corpus]
-    assert len(verbatim) >= len(labels) // 2, labels
+    # Most labels hold verbatim pieces of the fixture sentences, which shows the text came
+    # from the sandbox's data/. render.py dresses text as VN dialogue (brackets, ellipses,
+    # dashes, interjections, endings) and draws generated speaker names, so name lines are
+    # skipped and a label counts when it contains a 4-character window of the fixture text.
+    text = [lab for lab, m in zip(labels, meta) if m.get("kind") != "name"]
+
+    def from_fixture(lab):
+        return lab in corpus or any(lab[i:i + 4] in corpus for i in range(len(lab) - 3))
+    assert text and sum(map(from_fixture, text)) >= 3 * len(text) // 4, text
 
 
 def test_train_loader_reads_the_shard(shard):

@@ -120,13 +120,27 @@ kana and dakuten are **not** folded: confusing them is an error.
 `--out` writes everything as JSON, including every line's prediction and the
 ground-truth characters the model cannot emit (`oov_chars`).
 
+### Polarity
+
+By default crops reach the recognizer as they are on screen (`--polarity native`).
+`--polarity console` hands them over the way the console does under the polarity
+contract of `docs/linefind.md`: a crop whose text `synth/common.line_dark` calls
+dark is inverted (`255 - grey`, the same grey in all three channels) before
+recognition. Use it for a recognizer that will run behind the console's inversion.
+On vita-test the rule inverts 37 of the 43 dark-on-light lines and 7 of the other
+163. Each inverted line carries `"inverted": true` in `--out`. Both modes
+(recognizer and `--finder`) honour it.
+
 ### Line finder mode
 
-`--finder overlay|gradient|py:MOD:FUNC|cmd:COMMAND` runs a finder on each
+`--finder overlay|console|gradient|py:MOD:FUNC|cmd:COMMAND` runs a finder on each
 dialogue region instead and recognizes what it returns:
 
 - `overlay`: `synth/common.find_lines(region, "legacy")`, the overlay's shipped
   bright-pixel finder;
+- `console`: `synth/common.find_lines(region, "grad")`, the bit-exact twin of the
+  console's finder `runtime/vocr_lines.c` (`docs/linefind.md`). With
+  `--polarity console` this scores the console's whole path;
 - `gradient`: the research's polarity-agnostic gradient-energy projection;
 - `py:MOD:FUNC`: any Python function `f(rgb_region) -> [(x, y, w, h)] | None`
   (None = region rejected);

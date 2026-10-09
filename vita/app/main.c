@@ -114,10 +114,12 @@ static void out_flush(void)
     out_len = 0;
 }
 
-/* One line to results.tsv and stdout (Vita3K logs it; on a console nothing reads it). */
+/* One line to results.tsv and stdout (Vita3K logs it; on a console nothing reads it).
+ * Only the worker thread emits, so the line buffer is static: it stays off the worker's
+ * stack, which config.txt's stack_kb may make as small as 16 KiB. */
 static void emit(const char *fmt, ...)
 {
-    char line[TEXT_CAP * 3];
+    static char line[TEXT_CAP * 3];
     va_list ap;
     int n;
     va_start(ap, fmt);
@@ -514,7 +516,9 @@ static Result res;
 static uint32_t do_case(const Case *cs, unsigned index)
 {
     unsigned mi, k;
-    char summary[200], e1[TEXT_CAP * 2], e2[TEXT_CAP * 2];
+    /* static (worker thread only): 16 KiB that would otherwise sit on the worker's stack */
+    static char e1[TEXT_CAP * 2], e2[TEXT_CAP * 2];
+    char summary[200];
     size_t sl = 0;
     uint32_t color = SCR_GREEN;
     unsigned dark = 0;

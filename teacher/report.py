@@ -72,6 +72,9 @@ def fmt_rule(r):
         s += f", det score >= {r['det_conf']}"
     if r.get("veto"):
         s += ", confusable veto"
+    if r.get("trunc"):
+        t = r["trunc"]
+        s += ", truncation check (" + ("+".join(t) if isinstance(t, (list, tuple)) else "any dissent") + ")"
     return s
 
 

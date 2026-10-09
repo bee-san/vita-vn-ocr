@@ -162,29 +162,31 @@ def wilson(k, n, z=1.96):
     return round(c - h, 4), round(c + h, 4)
 
 
+MIN_VOTES = 2        # a label needs MeikiOCR plus at least this many other engines
+
+
 def grid():
+    """Every rule measured. Votes only come from engines other than MeikiOCR: its re-read of the
+    view (meikiv) and of its own box (meiki) are the same recognizer on two crops of one line, so
+    their agreement is not independent evidence. A label also needs at least MIN_VOTES of them:
+    MeikiOCR plus one other engine was wrong too often on the training lines checked by eye
+    (docs/teacher.md, "Independent votes")."""
     voter_sets = []
     base = ("v6s", "manga", "screenai", "v5s")
-    for n in range(1, len(base) + 1):
+    for n in range(MIN_VOTES, len(base) + 1):
         voter_sets += list(itertools.combinations(base, n))
     for primary in ("meikiv", "meiki"):
-        other = "meiki" if primary == "meikiv" else "meikiv"
-        for min_conf in (0.0, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95):      # MeikiOCR's confidence alone
-            for det_conf in (0.0, 0.7, 0.8):
-                yield {"primary": primary, "voters": (), "votes": 0, "min_conf": min_conf, "det_conf": det_conf}
-        for vs in voter_sets:
-            for with_other in (False, True):
-                voters = vs + ((other,) if with_other else ())
-                for votes in range(1, len(voters) + 1):
-                    for min_conf in (0.0, 0.3, 0.5, 0.7, 0.8, 0.9):
-                        for det_conf in (0.0, 0.7, 0.8):
-                            for veto in (False, True):
-                                # trunc: any dissenting voter, or only Screen AI (it reads the whole
-                                # screenshot, so it sees glyphs the line's own box left out)
-                                for trunc in (False, True, ("screenai",)):
-                                    yield {"primary": primary, "voters": voters, "votes": votes,
-                                           "min_conf": min_conf, "det_conf": det_conf, "veto": veto,
-                                           "trunc": trunc}
+        for voters in voter_sets:
+            for votes in range(MIN_VOTES, len(voters) + 1):
+                for min_conf in (0.0, 0.3, 0.5, 0.7, 0.8, 0.9):
+                    for det_conf in (0.0, 0.7, 0.8):
+                        for veto in (False, True):
+                            # trunc: any dissenting voter, or only Screen AI (it reads the whole
+                            # screenshot, so it sees glyphs the line's own box left out)
+                            for trunc in (False, True, ("screenai",)):
+                                yield {"primary": primary, "voters": voters, "votes": votes,
+                                       "min_conf": min_conf, "det_conf": det_conf, "veto": veto,
+                                       "trunc": trunc}
 
 
 def choose(items, scored_gt, target, vns=None, cache=None):

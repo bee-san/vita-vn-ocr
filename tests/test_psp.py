@@ -84,6 +84,52 @@ def test_bundle_config_keys_are_the_apps():
     assert cfg == {"mode": "w8f", "invert": 1, "repeat": 2, "crc": 1, "clock": 222, "wait": 1, "tile": 16, "head": 0}
 
 
+def test_results_must_carry_per_line_frames(capsys):
+    """results.txt's per-line frames and chars must add up to stats.json's totals; with repeat
+    >= 1 the app used to write 0 for both on every line (accepted with a warning, for EBOOTs
+    built before the fix)."""
+    head = "# line\tframes\tchars\tus\ttext_ok\tlogits_ok\ttext\n"
+    st = {"lines": 2, "frames": 41, "chars": 4, "repeat": 1}
+    ok = head + "0\t9\t2\t128697\t1\t1\t悟空\n1\t32\t2\t379971\t1\t1\t「加\n# done: 2 lines\n"
+    ppsspp_cli.check_results(ok, st)
+    empty_text = head + "0\t9\t2\t1\t1\t1\t悟空\n1\t32\t2\t1\t1\t1\t\n"
+    ppsspp_cli.check_results(empty_text, st)
+    assert capsys.readouterr().err == ""
+    old = head + "0\t0\t0\t128697\t1\t1\t悟空\n1\t0\t0\t379971\t1\t1\t「加\n# done: 2 lines\n"
+    ppsspp_cli.check_results(old, st)
+    assert "no per-line frames" in capsys.readouterr().err
+    with pytest.raises(SystemExit):
+        ppsspp_cli.check_results(old, {**st, "repeat": 0})        # repeat 0 always had them
+    with pytest.raises(SystemExit):
+        ppsspp_cli.check_results(head + "0\t9\t2\t1\t1\t1\t悟空\n1\t30\t2\t1\t1\t1\t「加\n", st)
+    with pytest.raises(SystemExit):
+        ppsspp_cli.check_results(head + "0\t9\t2\t1\t1\t1\t悟空\n", st)
+
+
+def test_repeat_keeps_the_first_runs_extras():
+    """main.c sets up vocr_extra once per line, outside the repeat loop: the timed repeats pass
+    extra = NULL, and a memset inside the loop would zero the first run's frames and chars."""
+    loop = MAIN_C[MAIN_C.index("for (r = 0; r < runs; r++)"):MAIN_C.index("if (runs > 1) us /=")]
+    assert "memset(&ex" not in loop
+    assert "g_job.ex = r == 0 ? &ex : NULL" in loop
+
+
+def test_app_prints_each_number_from_its_own_buffer():
+    """u64s() formats into the buffer it is given, and all the arguments of a call are
+    evaluated before it, so one say()/fd_printf() must not pass the same buffer twice (the
+    on-screen totals once showed us/frame as the frame count)."""
+    calls = 0
+    for m in re.finditer(r"\b(say|fd_printf)\s*\(", MAIN_C):
+        i, depth = m.end(), 1
+        while depth:
+            depth += {"(": 1, ")": -1}.get(MAIN_C[i], 0)
+            i += 1
+        bufs = re.findall(r"u64s\([^;]*?,\s*(n\d)\)", MAIN_C[m.start():i])
+        calls += bool(bufs)
+        assert len(bufs) == len(set(bufs)), MAIN_C[m.start():i]
+    assert calls >= 5
+
+
 def test_stack_report_follows_the_deepest_chain(tmp_path):
     ci = tmp_path / "x.ci"
     ci.write_text('graph: { title: "x.c"\n'

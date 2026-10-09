@@ -465,7 +465,8 @@ int main(int argc, char **argv)
     unsigned arena_w[3] = {256, 640, 1024};
     size_t arena_at[3] = {0, 0, 0}, model_sz, ctx_sz;
     int rc, have_cfg, have_expect = 0, cpu_mhz, bus_mhz;
-    char n1[24], n2[24], n3[24], n4[24];
+    char n1[24], n2[24], n3[24], n4[24], n5[24]; /* one per u64s() in a call: arguments are all
+                                                   * evaluated before the call */
     SceOff blob_len;
     SceUID fd;
 
@@ -653,12 +654,14 @@ int main(int argc, char **argv)
         g_job.img.stride = (size_t)w * ch;
         g_job.img.format = (ch == 4 ? VOCR_RGBA8 : VOCR_GREY8) | (c.invert ? VOCR_INVERT : 0);
         g_job.text = text;
+        /* the extras (logits, frames, chars) come from the first run only, so ex is set up
+         * once: the later, timed runs get extra = NULL and leave the first run's values */
+        memset(&ex, 0, sizeof ex);
+        if (b_logits.p) {
+            ex.logits = (float *)b_logits.p;
+            ex.cap_frames = b_logits.size / 4u / m.n_classes;
+        }
         for (r = 0; r < runs; r++) {
-            memset(&ex, 0, sizeof ex);
-            if (b_logits.p) {
-                ex.logits = (float *)b_logits.p;
-                ex.cap_frames = b_logits.size / 4u / m.n_classes;
-            }
             g_job.ex = r == 0 ? &ex : NULL; /* logits only from the first, untimed, run */
             job_do();
             if (g_job.rc && g_job.rc != VOCR_E_TEXT) break;
@@ -715,7 +718,7 @@ int main(int argc, char **argv)
 
     say("\n%u lines, %s frames: %s us total, %s us/line, %s us/frame (max %s us/line)\n", count,
         u64s(frames_total, n1), u64s(us_total, n2), u64s(count ? us_total / count : 0, n3),
-        u64s(frames_total ? us_total / frames_total : 0, n1), u64s(us_max, n2));
+        u64s(frames_total ? us_total / frames_total : 0, n4), u64s(us_max, n5));
     if (have_expect > 0)
         say("host check: %u/%u texts identical, %u/%u logits bit-identical%s\n", text_ok, count, crc_ok,
             count, failed ? "  <-- MISMATCH" : "");

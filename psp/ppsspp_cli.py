@@ -132,6 +132,22 @@ def boot(a, home, app):
     return res, log
 
 
+def check_results(res, st):
+    """results.txt against stats.json: one row per crop, and the per-line frames and chars (the
+    columns a console run reports back) adding up to the app's totals. EBOOTs built before
+    psp/main.c kept the first run's extras wrote 0 for both whenever repeat >= 1: a warning."""
+    rows = [ln.split("\t") for ln in res.splitlines() if ln and not ln.startswith("#")]
+    frames, chars = sum(int(r[1]) for r in rows), sum(int(r[2]) for r in rows)
+    if len(rows) == st["lines"] and (frames, chars) == (st["frames"], st["chars"]):
+        return
+    if len(rows) == st["lines"] and frames == chars == 0 and st.get("repeat", 0) > 0:
+        print("warning: results.txt has no per-line frames or chars (an EBOOT from before the fix; "
+              "rebuild it with make -C psp)", file=sys.stderr)
+        return
+    raise SystemExit(f"results.txt ({len(rows)} rows, {frames} frames, {chars} chars) disagrees with "
+                     f"stats.json ({st['lines']} lines, {st['frames']} frames, {st['chars']} chars)")
+
+
 def run_bundle(a):
     """A pack.py bundle as the console would run it (its own vocr.cfg and expect.txt; only
     wait is turned off). Prints the app's summary; exit status 1 if a line differs from host."""
@@ -150,9 +166,16 @@ def run_bundle(a):
     if "# done" not in res:
         raise SystemExit(f"PSP app did not finish (timeout {a.timeout:g} s?):\n{log[-3000:]}")
     st = json.loads((app / "stats.json").read_text())
+    check_results(res, st)
     if a.stats:
         Path(a.stats).write_text(json.dumps(st, indent=1) + "\n")
-    print(log.strip())
+    if log.strip():
+        print(log.strip())
+    # PPSSPPHeadless shows the app's own stdout only with -l, so the summary comes from stats.json
+    n = st["lines"]
+    print(f"{n} lines, {st['frames']} frames; same as host: text {st['text_ok']}/{n}, logits {st['logits_ok']}/{n}; "
+          f"{st['us_total'] / 1e3 / max(n, 1):.3f} ms/line, {st['us_total'] / max(st['frames'], 1):.1f} us/frame "
+          f"(PPSSPP emulated time, not console time); arena {st['arena_bytes']} B, stack used {st['stack_used']} B")
     bad = st["expect"] and (st["text_ok"] != st["lines"] or st["logits_ok"] != st["lines"])
     sys.exit(1 if bad else 0)
 
@@ -199,6 +222,7 @@ def run(a):
     if a.input_out:
         shutil.copyfile(app / "input.bin", a.input_out)
     st = json.loads((app / "stats.json").read_text())
+    check_results(res, st)
     if a.stats:
         Path(a.stats).write_text(json.dumps(st, indent=1) + "\n")
     sys.stdout.write("".join(t + "\n" for t in texts))

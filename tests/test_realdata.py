@@ -195,6 +195,25 @@ def test_committed_manifests_are_consistent():
     assert all(h["set"] in ("dev", "spot") and len(h["ink"]) == 4 for h in hand)
 
 
+def test_unlabelled_pool_manifests_are_consistent():
+    """manifests/unlabelled_<kind>.jsonl (render's input for real_unlabelled.npz): lines of
+    training-split games only, none of them labelled, each in its kind's file."""
+    shots = {vndb.shot_key(s): s for s in vndb.load_shots()}
+    labelled = {r["id"] for r in build.load_lines()}
+    extra, sessions = vndb.excluded_vns(), vndb.excluded_sessions()
+    seen = set()
+    for kind, path in build.UNLABELLED.items():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            u = json.loads(line)
+            s = shots[u["id"].rsplit("_", 1)[0]]
+            assert s["kind"] == kind and u["id"] not in labelled and u["id"] not in seen, u["id"]
+            seen.add(u["id"])
+            assert build.split_of(s["vn"]) == "train" and vndb.exclusion(s, extra, sessions) is None, u["id"]
+            assert set(u["targets"]) <= {"vita", "psp"} and u["targets"] and len(u["ink"]) == 4, u
+            assert set(u["reads"]) <= {"v5s", "v6s", "manga", "meiki"} and u["reads"], u
+    assert len(seen) == len(build.load_unlabelled()) > 0
+
+
 def test_text_rows_splits_a_merged_neighbour_but_not_a_glyph_valley():
     line = [2, 30, 50, 55, 52, 50, 48, 55, 50, 30]
     neighbour = [12, 9, 14, 20, 26]                      # top of the next line, running off the window

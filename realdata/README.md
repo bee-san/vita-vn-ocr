@@ -85,11 +85,12 @@ like the rest. The eval test sets come from other games.
 |---|---|
 | `manifests/shots_<kind>.jsonl` | every screenshot: `vn, kind, url, dims, release, sexual, violence, sha256, session` |
 | `manifests/lines_<kind>.jsonl` | every accepted line: `id` (`<vn>_<screenshot id>_<k>`), `ink` box in source pixels, `targets`, `label`, `how`, `pol`, `split` |
+| `manifests/unlabelled_<kind>.jsonl` | the unlabelled pool: every other Japanese line of a training-split game (the readers disagreed): `id`, `ink`, `targets`, `pol` and the four `reads` |
 | `manifests/games.json` | every VN in the collection: title, split, kinds, sessions, screenshots, accepted lines |
 | `manifests/handcheck.jsonl` | lines checked by eye: `truth` (null = unreadable), the `ink` box checked, `set` (dev / spot) |
 | `manifests/stats.json` | counts from the last `build.py decide` |
 | `$REALDATA/real_train.npz`, `real_val.npz` | grey crops in render.py's shard format, dark text inverted; meta per crop: `id, vn, session, kind, target, pol, dark, inverted, how` |
-| `$REALDATA/real_unlabelled.npz` | the same crops for every other Japanese line of a training-split game (the readers disagreed): empty labels, the four readings in meta. For soft / logit distillation from a teacher; `train.py --real` drops them all |
+| `$REALDATA/real_unlabelled.npz` | the crops of `manifests/unlabelled_<kind>.jsonl`, cut the same way: empty labels, the four readings in meta. For soft / logit distillation from a teacher; `train.py --real` drops them all |
 
 The split is by game: a VN is validation when `15 <= md5(vn) % 100 < 25` (`build.split_of`),
 otherwise training. A capture session (`<vn>/<release>/<n>`, screenshots of one release

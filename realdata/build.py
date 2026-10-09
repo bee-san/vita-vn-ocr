@@ -2,9 +2,9 @@
 """Turn voter readings into labelled real training lines, and render the npz shards.
 
   build.py decide [--rule NAME]   labels/*.jsonl + hand checks -> realdata/manifests/lines_<kind>.jsonl,
-                                  stats.json, games.json; then renders (below)
-  build.py render                 realdata/manifests/lines_<kind>.jsonl + screenshots ->
-                                  $REALDATA/real_train.npz, real_val.npz
+                                  unlabelled_<kind>.jsonl, stats.json, games.json; then renders (below)
+  build.py render                 realdata/manifests/{lines,unlabelled}_<kind>.jsonl + screenshots ->
+                                  $REALDATA/real_train.npz, real_val.npz, real_unlabelled.npz
 
 `decide` applies the voting rule (vote.RULES) to every line read by label.py, lets a
 hand-checked truth (manifests/handcheck.jsonl) override the vote, and keeps a label only
@@ -16,10 +16,10 @@ lines of screenshots that `vndb.py prune` removed. Split by VN: 15 <= md5(vn) % 
 is validation (about 10% of VNs; < 15 is the test hash), everything else train.
 
 `decide` also lists every other line with Japanese text from a training-split game (the
-readers disagreed, so it has no label) in $REALDATA/unlabelled.jsonl, and `render` cuts
-those into real_unlabelled.npz: crops for soft / logit distillation from a teacher, with
-empty labels (train.py --real drops them, so they can't be trained on by mistake) and the
-four readings in meta as hints.
+readers disagreed, so it has no label) in manifests/unlabelled_<kind>.jsonl, with the four
+readings, and `render` cuts those into real_unlabelled.npz: crops for soft / logit
+distillation from a teacher, with empty labels (train.py --real drops them, so they can't
+be trained on by mistake) and the four readings in meta as hints.
 
 `render` is deterministic and needs no OCR: it rescales each screenshot to the line's
 target (vita 960x544 / psp 480x272; native Vita and PSP shots stay as they are, PC shots
@@ -52,8 +52,10 @@ from common import is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
 
 MAN = HERE / "manifests"
 LINES = {k: MAN / f"lines_{k}.jsonl" for k in KINDS}
+UNLABELLED = {k: MAN / f"unlabelled_{k}.jsonl" for k in KINDS}
 HAND = MAN / "handcheck.jsonl"
 FIELDS = ("id", "ink", "targets", "label", "how", "pol", "split")
+POOL_FIELDS = ("id", "ink", "targets", "pol", "reads")
 PER_VN_CAP, GLOBAL_CAP = 2, 8
 
 
@@ -93,6 +95,16 @@ def load_lines():
     for k in KINDS:
         if LINES[k].exists():
             rows += [json.loads(x) for x in LINES[k].read_text(encoding="utf-8").splitlines() if x.strip()]
+    return rows
+
+
+def load_unlabelled():
+    """The unlabelled pool (manifests/unlabelled_<kind>.jsonl): Japanese lines of training-split
+    games that the vote left without a label, with the four readings."""
+    rows = []
+    for k in KINDS:
+        if UNLABELLED[k].exists():
+            rows += [json.loads(x) for x in UNLABELLED[k].read_text(encoding="utf-8").splitlines() if x.strip()]
     return rows
 
 
@@ -168,7 +180,7 @@ def decide(args):
             if how in ("disagree", "confusable-dissent") and split_of(r["vn"]) == "train":
                 tg = targets_of(r["kind"], r["dims"], r["ink"])
                 if tg:
-                    pool.append({"id": r["id"], "ink": r["ink"], "targets": tg, "pol": r["pol"],
+                    pool.append({"id": r["id"], "kind": r["kind"], "ink": r["ink"], "targets": tg, "pol": r["pol"],
                                  "reads": {k: v[0] for k, v in r["r"].items()}})
             continue
         if not vote.japanese(lab):
@@ -203,9 +215,10 @@ def decide(args):
         LINES[kind].write_text("".join(json.dumps({x: k[x] for x in FIELDS}, ensure_ascii=False) + "\n"
                                        for k in out if k["kind"] == kind), encoding="utf-8")
     write_games(out, shots)
-    unl = realdata_dir() / "unlabelled.jsonl"
-    unl.write_text("".join(json.dumps(u, ensure_ascii=False) + "\n" for u in sorted(pool, key=lambda u: u["id"])),
-                   encoding="utf-8")
+    pool.sort(key=lambda u: u["id"])
+    for kind in KINDS:
+        UNLABELLED[kind].write_text("".join(json.dumps({x: u[x] for x in POOL_FIELDS}, ensure_ascii=False) + "\n"
+                                            for u in pool if u["kind"] == kind), encoding="utf-8")
     stats = {"rule": args.rule, "lines_read": len(recs), "accepted": len(out), "rejected": dict(why),
              "sessions": {sp: len({shots[k["url"]]["session"] for k in out if k["split"] == sp})
                           for sp in ("train", "val")},
@@ -273,14 +286,15 @@ Label form: vote.canon (corpus conventions: full-width ！？～（）, one … 
 dashes, no spaces, no page-cursor icons). Spot check: {spot_result()}.
 
 Other files: manifests/ (a copy of realdata/manifests at the git SHA above: shots_<kind>.jsonl
-with url, sha256, vn, release and capture session per screenshot, lines_<kind>.jsonl, games.json
-with every VN's split and sessions, handcheck.jsonl, stats.json), labels/*.jsonl (every line
-read, with all readings: label.py output), shots/<kind>/ (the screenshots; copyrighted, never
-commit or redistribute), vndb/ (raw VNDB listings).
+with url, sha256, vn, release and capture session per screenshot, lines_<kind>.jsonl,
+unlabelled_<kind>.jsonl (the unlabelled pool, with the four readings), games.json with every
+VN's split and sessions, handcheck.jsonl, stats.json), labels/*.jsonl (every line read, with
+all readings: label.py output), shots/<kind>/ (the screenshots; copyrighted, never commit or
+redistribute), vndb/ (raw VNDB listings).
 
 Rebuild from the repo alone:
     python realdata/vndb.py fetch          # screenshots from VNDB, sha256-checked
-    python realdata/build.py render        # npz from realdata/manifests/lines_*.jsonl
+    python realdata/build.py render        # all three npz from realdata/manifests/{{lines,unlabelled}}_*.jsonl
 Re-label from scratch: vndb.py list/select/fetch, label.py (via heavy.sh), build.py decide.
 
 stats: {json.dumps(stats, ensure_ascii=False)}
@@ -316,11 +330,8 @@ def render(args):
     by_shot = defaultdict(list)
     for r in load_lines():
         by_shot[r["id"].rsplit("_", 1)[0]].append(r)
-    unl = realdata_dir() / "unlabelled.jsonl"
-    if unl.exists():
-        for line in unl.read_text(encoding="utf-8").splitlines():
-            u = json.loads(line)
-            by_shot[u["id"].rsplit("_", 1)[0]].append({**u, "label": "", "split": "unlabelled", "how": "none"})
+    for u in load_unlabelled():
+        by_shot[u["id"].rsplit("_", 1)[0]].append({**u, "label": "", "split": "unlabelled", "how": "none"})
     out = {"train": ([], [], []), "val": ([], [], []), "unlabelled": ([], [], [])}
     for sk in sorted(by_shot):
         s = shots[sk]

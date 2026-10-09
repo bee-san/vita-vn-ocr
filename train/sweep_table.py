@@ -3,6 +3,11 @@
 
   sweep_table.py [--runs runs] [--eval eval_ckpt_last.json] [--ref base_s1]
                  [--export path/to/runtime/train/export.py] [--json docs/arch-sweep.json]
+                 [--doc docs/arch-sweep.md]
+
+--doc rewrites the blocks between <!-- BEGIN name --> and <!-- END name --> markers in
+the Markdown file: "results" (this table), "styles" (per-style CER) and "cost"
+(cost.table(), the size and speed of the sweep grid).
 
 For every runs/<name>/ with an eval JSON (sweep_eval.py) this reads the config from
 the checkpoint, measures its cost with cost.report and prints one row: parameters,
@@ -231,6 +236,43 @@ def markdown(rs, exact, ref):
     return "\n".join(lines)
 
 
+STYLE_COLS = ("bright-on-dark", "dark-on-light", "outlined", "coloured", "name", "furigana",
+              "mincho", "small")
+
+
+def style_table(rs):
+    """Per-style int8 CER on vita-test and psp-test as is (eval's tags), matched-budget runs
+    plus any reference rows."""
+    head = ("| run | set | " + " | ".join(STYLE_COLS) + " |")
+    lines = [head, "|" + "---|" * (head.count("|") - 1)]
+    for a in sorted(rs, key=lambda a: (a["footprint"], a["run"])):
+        for name, key in (("vita-test", "vita_styles_int8"), ("psp-test", "psp_styles_int8")):
+            st = a.get(key) or {}
+            if st:
+                lines.append(f"| {a['run']} | {name} | " + " | ".join(pct(st.get(c)) for c in STYLE_COLS) + " |")
+    return "\n".join(lines)
+
+
+def quant_table(rs):
+    """fp32 vs int8 weights (W8F) vs W8I, pooled real CER and synth-val CER, per run."""
+    head = ("| run | QAT | real CER fp32 | real CER int8 W8F | real CER W8I (sim.) | "
+            "synth-val CER fp32 | synth-val CER int8 |")
+    lines = [head, "|" + "---|" * (head.count("|") - 1)]
+    for a in sorted(rs, key=lambda a: (not a["qat"], a["run"])):
+        lines.append(f"| {a['run']} | {'yes' if a['qat'] else ''} | {pct(a['real_fp32'])} | "
+                     f"{pct(a['real_int8'])} | {pct(a['real_w8i'])} | {pct(a['synth_fp32'])} | "
+                     f"{pct(a['synth_int8'])} |")
+    return "\n".join(lines)
+
+
+def replace_block(text, name, body):
+    begin, end = f"<!-- BEGIN {name} -->", f"<!-- END {name} -->"
+    i, j = text.find(begin), text.find(end)
+    if i < 0 or j < i:
+        raise SystemExit(f"markers for {name!r} not found")
+    return text[:i + len(begin)] + "\n" + body + "\n" + text[j:]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", type=Path, default=HERE.parent / "runs")
@@ -238,13 +280,22 @@ def main():
     ap.add_argument("--ref", default="base_s1")
     ap.add_argument("--export", help="runtime's train/export.py (default: next to this file)")
     ap.add_argument("--json", type=Path)
+    ap.add_argument("--doc", type=Path, help="Markdown file with BEGIN/END table markers")
     args = ap.parse_args()
     torch.set_num_threads(1)
     exporter = cost.runtime_exporter(args.export)
     rs = rows(args.runs, args.eval, exporter, args.ref)
-    print(markdown(rs, exporter is not None, args.ref))
+    table = markdown(rs, exporter is not None, args.ref)
+    print(table)
     if args.json:
-        args.json.write_text(json.dumps(rs, indent=1), encoding="utf-8")
+        args.json.write_text(json.dumps(rs, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    if args.doc:
+        text = args.doc.read_text(encoding="utf-8")
+        for name, body in (("results", table), ("styles", style_table(rs)), ("quant", quant_table(rs)),
+                           ("cost", cost.table(exporter))):
+            if f"<!-- BEGIN {name} -->" in text:
+                text = replace_block(text, name, body)
+        args.doc.write_text(text, encoding="utf-8")
 
 
 if __name__ == "__main__":

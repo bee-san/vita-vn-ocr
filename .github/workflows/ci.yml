@@ -1,0 +1,113 @@
+# CI for vita-vn-ocr. Every action is pinned to a full commit SHA, with its tag in the comment.
+# ci/README.md lists the local command for each job.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  ruff:
+    name: ruff
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      runtime: ${{ steps.layout.outputs.runtime }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Is there a runtime/ to build? (gates the runtime jobs)
+        id: layout
+        run: |
+          if [ -d runtime ]; then
+            echo "runtime=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "runtime=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=runtime jobs skipped::runtime/ does not exist yet, so the C build and parity jobs are skipped."
+          fi
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.11.28"
+          enable-cache: false
+      - name: Install ruff (version and hashes from requirements-ci.lock)
+        run: |
+          sed -n '/^ruff==/,/^    # via/p' requirements-ci.lock > "$RUNNER_TEMP/ruff.txt"
+          uv venv "$RUNNER_TEMP/lint"
+          uv pip install --python "$RUNNER_TEMP/lint/bin/python" --require-hashes --no-deps -r "$RUNNER_TEMP/ruff.txt"
+      - name: ruff check
+        run: '"$RUNNER_TEMP/lint/bin/ruff" check --output-format=github .'
+
+  pytest:
+    name: pytest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/python-env
+      - name: Fetch the pinned OFL font (google/fonts, sha256-checked)
+        run: python ci/fonts.py
+      - name: pytest
+        run: python -m pytest
+
+  train-smoke:
+    name: training smoke (50 steps)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/python-env
+      - name: Render a tiny synthetic set from the pinned OFL font, train 50 CPU steps, check the outputs
+        run: python ci/train_smoke.py --workdir "$RUNNER_TEMP/smoke" --threads "$(nproc)"
+
+  runtime:
+    # Runs once runtime/ exists (see the ruff job); the contract with runtime/ is in ci/runtime.sh.
+    # GitHub appends the matrix value to the name: "runtime (gcc)", "runtime (clang)".
+    name: runtime
+    needs: ruff
+    if: ${{ !cancelled() && needs.ruff.outputs.runtime == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    env:
+      CC_UNDER_TEST: ${{ matrix.cc }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Sanitizer setup (ASLR entropy ASan can handle, clang's sanitizer runtime)
+        run: |
+          # ubuntu-24.04 kernels use 32 bits of mmap randomisation, which makes ASan crash or hang.
+          sudo sysctl -w vm.mmap_rnd_bits=28
+          printf 'int main(void) { return 0; }\n' > "$RUNNER_TEMP/san.c"
+          if ! "$CC_UNDER_TEST" -fsanitize=address,undefined "$RUNNER_TEMP/san.c" -o "$RUNNER_TEMP/san"; then
+            sudo apt-get update -q
+            sudo apt-get install -y -q --no-install-recommends "libclang-rt-$(clang -dumpversion | cut -d. -f1)-dev"
+          fi
+          "$CC_UNDER_TEST" --version | head -n 1
+      - uses: ./.github/actions/python-env
+      - name: Build runtime/ (C99, -Werror, ASan + UBSan) and run its parity test
+        run: ci/runtime.sh "$CC_UNDER_TEST"

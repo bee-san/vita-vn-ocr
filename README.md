@@ -23,6 +23,7 @@ data/vocab.txt                 output character set
 synth/                         synthetic dialogue-box renderer and corpus builder
 train/                         model and CTC training
 docs/                          research notes and results
+.github/, ci/, tests/          CI: lint, unit tests, training smoke, C runtime checks (ci/README.md)
 ```
 
 ## Data policy

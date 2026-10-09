@@ -92,7 +92,8 @@ int vc_case(const unsigned char *p, size_t n, unsigned n_models, char *strings, 
         s += tl + 1;
         p += pad4(tl);
     }
-    if ((size_t)(end - p) < (size_t)c->w * c->h * c->ch) return -1;
+    /* 64-bit: w * h * ch reaches 2^34 and would wrap in the Vita's 32-bit size_t */
+    if ((uint64_t)(end - p) < (uint64_t)c->w * c->h * c->ch) return -1;
     c->px = p;
     return 0;
 }

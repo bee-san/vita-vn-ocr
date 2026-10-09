@@ -107,9 +107,13 @@ def eval_modules():
     return None
 
 
+MANIFEST_SHA = {}     # set name -> sha256 of the eval manifest it was scored on
+
+
 def eval_set(name, invert_dark=False):
     """eval's real set as [(grey crop, text, meta)]; crops exactly as eval/run.py cuts them.
     $VOCR_EVAL_MANIFESTS overrides eval's manifest directory (e.g. a not yet merged set)."""
+    import hashlib
     import os
     mods = eval_modules()
     if mods is None:
@@ -117,6 +121,9 @@ def eval_set(name, invert_dark=False):
     eval_sets, _ = mods
     if os.environ.get("VOCR_EVAL_MANIFESTS"):
         eval_sets.MANIFESTS = Path(os.environ["VOCR_EVAL_MANIFESTS"])
+    manifest = eval_sets.MANIFESTS / f"{name}.jsonl"
+    sha = hashlib.sha256(manifest.read_bytes()).hexdigest()
+    MANIFEST_SHA[name + ("-inv" if invert_dark else "")] = sha
     from fetch import data_dir
     lines, _ = eval_sets.load(name, data_dir())
     out = []
@@ -367,11 +374,13 @@ def main():
                   f"{r['seconds']}s)", flush=True)
     for h in hooks:
         h.remove()
+    res["manifests"] = dict(MANIFEST_SHA)
     out = args.run / f"eval_{Path(args.ckpt).stem}{'_limit' if args.limit else ''}.json"
     if out.exists():                       # keep the other sets of an earlier run
         old = json.loads(out.read_text(encoding="utf-8"))
         if old.get("step") == res["step"]:
             res["results"] = {**old.get("results", {}), **res["results"]}
+            res["manifests"] = {**old.get("manifests", {}), **res["manifests"]}
     out.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
     print("EVAL_DONE", out, flush=True)
 

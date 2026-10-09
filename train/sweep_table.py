@@ -11,12 +11,15 @@ exporter is importable; otherwise cost.py's estimates, marked "est."), MACs at t
 longest line (1024 px at height 32, i.e. 768 px at height 24 for the same physical
 text), synth-val CER and real CER (fp32 and int8 weights).
 
-The decision metric ("real CER") pools eval's vita-test with dark-on-light lines
-inverted by their style tag (vita-test-inv) and the research's hand lines from 17
-other games (real-hand-x): errors / reference characters, int8 (W8F) weights. The v1
-recipe renders only light text, so the as-is vita-test mostly measures that data gap
-(which synth2 and the real fine-tuning close), not capacity; it is shown alongside.
-Without eval/ results the provisional real-hand + real-pseudo pool is used.
+The decision metric ("real CER") pools eval's vita-test and psp-test with their
+dark-on-light lines inverted by style tag (vita-test-inv, psp-test-inv) and the
+research's hand lines from 17 other games (real-hand-x): errors / reference
+characters, int8 (W8F) weights. Only sets that every run was scored on enter the
+pool, and a set scored on different manifest versions (sha256 in the eval JSON)
+across runs is reported and left out. The v1 recipe renders only light text, so the
+as-is sets mostly measure that data gap (which synth2 and the real fine-tuning
+close), not capacity; they are shown alongside. Without eval/ results the
+provisional real-hand + real-pseudo pool is used.
 "Δ vs ref" is the pooled real CER minus the reference run's, with a 95% paired
 bootstrap interval over lines (10,000 resamples, seed 0). Two Pareto fronts are
 taken over the runs with the reference run's step budget only (other budgets, e.g.
@@ -40,7 +43,7 @@ from model import from_checkpoint  # noqa: E402
 from sweep_eval import score_norm  # noqa: E402
 from train import edit_distance  # noqa: E402
 
-REAL = ("vita-test-inv", "real-hand-x")
+REAL = ("vita-test-inv", "psp-test-inv", "real-hand-x")
 PROVISIONAL = ("real-hand", "real-pseudo")
 
 
@@ -50,9 +53,19 @@ def pooled(res, variant, sets=REAL):
     return e / n if n else None
 
 
-def real_sets(res):
-    r = res["results"] if "results" in res else res
-    return REAL if all(f"int8/{s}" in r for s in REAL) else PROVISIONAL
+def common_sets(evals):
+    """The REAL sets every eval JSON has, on one manifest version each (else PROVISIONAL)."""
+    keep = []
+    for s in REAL:
+        if not all(f"int8/{s}" in e["results"] for e in evals):
+            continue
+        shas = {e.get("manifests", {}).get(s) for e in evals}
+        if len(shas) > 1:
+            print(f"warning: {s} was scored on {len(shas)} manifest versions; left out of the pool "
+                  "(rerun sweep_eval on the stale runs)", file=sys.stderr)
+            continue
+        keep.append(s)
+    return tuple(keep) or PROVISIONAL
 
 
 def line_errors(res, variant="int8", sets=REAL):
@@ -94,8 +107,10 @@ def train_minutes(log, batch=96):
 
 def rows(runs_dir, eval_name, exporter, ref):
     out, errs = [], {}
-    for ev in sorted(runs_dir.glob(f"*/{eval_name}")):
-        res = json.loads(ev.read_text(encoding="utf-8"))
+    paths = sorted(runs_dir.glob(f"*/{eval_name}"))
+    evals = [json.loads(p.read_text(encoding="utf-8")) for p in paths]
+    rs = common_sets(evals)
+    for ev, res in zip(paths, evals):
         ck = torch.load(ev.parent / res["ckpt"], map_location="cpu", weights_only=False)
         model, meta = from_checkpoint(ck)
         arch = {k: meta[k] for k in ("depth", "ctx", "ctx_k")}
@@ -104,7 +119,6 @@ def rows(runs_dir, eval_name, exporter, ref):
         c = cost.report(model, n_cls, meta["height"], meta["vocab"], exporter)
         est_arena, _ = cost.arena(model, meta["height"], w_max, n_cls)
         r = res["results"]
-        rs = real_sets(r)
         row = {
             "run": ev.parent.name, "width": meta["width"], "classes": n_cls,
             "bottleneck": meta["bottleneck"], "height": meta["height"], **arch,
@@ -126,6 +140,8 @@ def rows(runs_dir, eval_name, exporter, ref):
         styles = r.get("int8/vita-test", {}).get("styles") or {}
         row["vita_bright_on_dark_int8"] = styles.get("bright-on-dark")
         row["vita_styles_int8"] = styles
+        row["psp_styles_int8"] = r.get("int8/psp-test", {}).get("styles") or {}
+        row["manifests"] = res.get("manifests", {})
         for s in (*REAL, *PROVISIONAL, "vita-test", "psp-test", "psp-test-inv"):
             for v in ("fp32", "int8"):
                 if f"{v}/{s}" in r:
@@ -191,7 +207,7 @@ def markdown(rs, exact, ref):
                  "int8 weights KiB (est.) | non-streaming arena KiB (est.) | footprint KiB (est.)")
     head = (f"| run | knobs | params | {size_cols} | MMAC (longest line) | est. A9 ms (longest line) | "
             f"synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | "
-            f"vita-test-inv CER | real-hand-x CER | "
+            f"vita-test-inv CER | psp-test CER (as is) | psp-test-inv CER | real-hand-x CER | "
             f"real CER fp32 / int8 | Δ vs {ref} (95% CI) | Pareto |")
     lines = [head, "|" + "---|" * (head.count("|") - 1)]
     for a in sorted(rs, key=lambda a: (a["footprint"], a["run"])):
@@ -207,8 +223,8 @@ def markdown(rs, exact, ref):
             f"{a['macs_max'] / 1e6:.0f} | {a['a9_ms_max'][1]:.0f}-{a['a9_ms_max'][0]:.0f} | "
             f"{pct(a['synth_fp32'])} / {pct(a['synth_int8'])} | "
             f"{pct(a.get('vita-test_int8'))} | {pct(a.get('vita_bright_on_dark_int8'))} | "
-            f"{pct(a.get('vita-test-inv_int8'))} | "
-            f"{pct(a.get('real-hand-x_int8'))} | "
+            f"{pct(a.get('vita-test-inv_int8'))} | {pct(a.get('psp-test_int8'))} | "
+            f"{pct(a.get('psp-test-inv_int8'))} | {pct(a.get('real-hand-x_int8'))} | "
             f"{pct(a['real_fp32'])} / {pct(a['real_int8'])} | {delta} | "
             f"{pareto_cell(a)} |")
     return "\n".join(lines)

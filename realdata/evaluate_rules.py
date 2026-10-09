@@ -6,9 +6,12 @@
 For every hand-checked line with a confident truth: each voter's exact-line accuracy
 (on key()), and for each rule in vote.RULES its yield (accepted / checked lines) and
 precision (accepted labels whose key() equals the truth's). Lines whose truth was left
-uncertain are counted but not scored. Broken down by screenshot kind.
+uncertain are counted but not scored. Broken down by screenshot kind. Hand checks are
+matched to the line records by screenshot and ink-box overlap (build.match_hand), so
+--lines can be the dev sample or the full run's shards (a glob).
 """
 import argparse
+import glob
 import json
 import sys
 from collections import defaultdict
@@ -16,20 +19,29 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import build  # noqa: E402
 import vote  # noqa: E402
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--lines", type=Path, required=True)
+    ap.add_argument("--lines", required=True, help="label.py output file(s), a glob")
     ap.add_argument("--hand", type=Path, default=HERE / "manifests" / "handcheck.jsonl")
     ap.add_argument("--set", default="dev")
     ap.add_argument("--json", type=Path, default=None)
     args = ap.parse_args()
     hand = {h["id"]: h for h in map(json.loads, args.hand.read_text(encoding="utf-8").splitlines())
             if h and h.get("set") == args.set}
-    recs = {r["id"]: r for r in map(json.loads, args.lines.read_text(encoding="utf-8").splitlines())}
-    rows = [(recs[i], h) for i, h in hand.items() if i in recs]
+    recs = {}
+    for path in sorted(glob.glob(args.lines)):
+        for line in Path(path).read_text(encoding="utf-8").splitlines():
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if r["id"] not in recs or len(r["r"]) > len(recs[r["id"]]["r"]):
+                recs[r["id"]] = r
+    rows = [(recs[i], h) for i, h in build.match_hand(hand, recs).items()]
     unsure = sum(h["truth"] is None for _, h in rows)
     rows = [(r, h) for r, h in rows if h["truth"] is not None]
     out = {"checked": len(rows) + unsure, "uncertain": unsure, "voters": {}, "rules": {}}

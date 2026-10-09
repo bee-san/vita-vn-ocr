@@ -60,11 +60,11 @@ def targets_of(kind, dims, ink):
 
 
 def load_reads():
-    """Every line read by label.py (dev sample and shards), one record per line id. A
-    line read twice keeps the record with more readings; a torn last line (a killed
-    run) is skipped."""
+    """Every line read by label.py's full run (labels/lines.*.jsonl; the dev sample is
+    only for evaluate_rules.py), one record per line id. A line read twice keeps the
+    record with more readings; a torn last line (a killed run) is skipped."""
     recs, torn = {}, 0
-    for path in sorted((realdata_dir() / "labels").glob("*.jsonl")):
+    for path in sorted((realdata_dir() / "labels").glob("lines.*.jsonl")):
         for line in path.read_text(encoding="utf-8").splitlines():
             try:
                 r = json.loads(line)
@@ -101,13 +101,37 @@ def load_hand():
     return {h["id"]: h for h in map(json.loads, HAND.read_text(encoding="utf-8").splitlines()) if h}
 
 
+def iou(a, b):
+    ix = max(0, min(a[2], b[2]) - max(a[0], b[0]))
+    iy = max(0, min(a[3], b[3]) - max(a[1], b[1]))
+    union = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - ix * iy
+    return ix * iy / max(union, 1)
+
+
+def match_hand(hand, recs, min_iou=0.5):
+    """{record id: hand row}. A hand check names the line it was made on (id) and that
+    line's ink box; it applies to the record of the same screenshot whose ink box overlaps
+    it most (IoU >= min_iou), so a change in line geometry or numbering can't move a hand
+    label onto a different line."""
+    by_shot = defaultdict(list)
+    for r in recs.values():
+        by_shot[r["id"].rsplit("_", 1)[0]].append(r)
+    out = {}
+    for h in hand.values():
+        cands = by_shot.get(h["id"].rsplit("_", 1)[0], [])
+        best = max(cands, key=lambda r: iou(r["ink"], h["ink"]), default=None)
+        if best is not None and iou(best["ink"], h["ink"]) >= min_iou:
+            out[best["id"]] = h
+    return out
+
+
 def decide(args):
     rule = vote.RULES[args.rule]
     vocab = set(load_vocab())
     extra = excluded_vns()
-    hand = load_hand()
     shots = {r["url"]: r for r in load_shots()}
     recs = load_reads()
+    hand = match_hand(load_hand(), recs)
     why, kept = Counter(), []
     for r in recs.values():
         if is_test_vn(r["vn"]) or r["vn"] in extra:
@@ -152,19 +176,14 @@ def decide(args):
     for kind in KINDS:
         LINES[kind].write_text("".join(json.dumps({x: k[x] for x in FIELDS}, ensure_ascii=False) + "\n"
                                        for k in out if k["kind"] == kind), encoding="utf-8")
-    games = defaultdict(set)
-    for k in out:
-        games[k["split"]].add(k["vn"])
-    names = titles()
-    (MAN / "games.json").write_text(json.dumps(
-        {"note": "VNDB VNs with lines in the realdata train / val sets: eval must not test on these.",
-         **{s: {v: names.get(v) for v in sorted(games[s], key=lambda v: int(v[1:]))} for s in ("train", "val")}},
-        ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    write_games(out, shots)
     stats = {"rule": args.rule, "lines_read": len(recs), "accepted": len(out), "rejected": dict(why),
+             "sessions": {sp: len({shots[k["url"]]["session"] for k in out if k["split"] == sp})
+                          for sp in ("train", "val")},
              "by_split_kind": Counter(f"{k['split']}/{k['kind']}" for k in out),
              "crops_by_split_target": Counter(f"{k['split']}/{t}" for k in out for t in k["targets"]),
              "by_how": Counter(k["how"] for k in out), "by_polarity": Counter(k["pol"] for k in out),
-             "vns": {s: len(v) for s, v in games.items()},
+             "vns": {sp: len({k["vn"] for k in out if k["split"] == sp}) for sp in ("train", "val")},
              "unique_labels": len({k["label"] for k in out}),
              "chars": sum(len(k["label"]) for k in out)}
     (MAN / "stats.json").write_text(json.dumps(stats, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -236,6 +255,29 @@ stats: {json.dumps(stats, ensure_ascii=False)}
     (realdata_dir() / "README").write_text(text, encoding="utf-8")
 
 
+def write_games(out, shots):
+    """manifests/games.json: every VN (game) in the screenshot collection with its title,
+    split, kinds, capture sessions, screenshot count and accepted lines. eval must not
+    test on any of them; a teacher relabelling the collection can split on the same ids."""
+    names, lines = titles(), Counter(k["vn"] for k in out)
+    games = {}
+    for s in shots.values():
+        g = games.setdefault(s["vn"], {"title": names.get(s["vn"]), "split": split_of(s["vn"]), "kinds": set(),
+                                       "sessions": set(), "shots": 0})
+        g["kinds"].add(s["kind"])
+        g["sessions"].add(s["session"])
+        g["shots"] += 1
+    for vn, g in games.items():
+        g.update(kinds=sorted(g["kinds"]), sessions=sorted(g["sessions"]), lines=lines.get(vn, 0))
+    note = ("Every VNDB VN (game) in realdata's screenshot collection (manifests/shots_*.jsonl): eval must "
+            "not test on these. split: val if 15 <= md5(vn) % 100 < 25, else train (< 15 is the test hash, "
+            "excluded); a capture session belongs to one VN, so it never straddles a split.")
+    body = ",\n".join(f"  {json.dumps(vn)}: {json.dumps(games[vn], ensure_ascii=False)}"
+                       for vn in sorted(games, key=lambda v: int(v[1:])))
+    (MAN / "games.json").write_text(f'{{"note": {json.dumps(note)},\n "games": {{\n{body}\n}}}}\n',
+                                    encoding="utf-8")
+
+
 def render(args):
     shots = {shot_key(r): r for r in load_shots()}
     by_shot = defaultdict(list)
@@ -259,8 +301,8 @@ def render(args):
                 crops, labels, metas = out[r["split"]]
                 crops.append(to_gray(img[y0:y1, x0:x1]))
                 labels.append(r["label"])
-                metas.append({"real": True, "id": r["id"], "vn": s["vn"], "kind": s["kind"], "target": t,
-                              "pol": r["pol"], "how": r["how"]})
+                metas.append({"real": True, "id": r["id"], "vn": s["vn"], "session": s["session"],
+                              "kind": s["kind"], "target": t, "pol": r["pol"], "how": r["how"]})
     dest = realdata_dir()
     for split, (crops, labels, metas) in out.items():
         if not crops:

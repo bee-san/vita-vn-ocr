@@ -69,6 +69,33 @@ def test_tiny_prep_shape():
     assert float(x.min()) == -1.0
 
 
+def test_finder_precision_ignores_uncertain_lines():
+    import run
+    img = np.zeros((100, 200, 3), np.uint8)
+    rows = [{"id": "a", "box": [10, 10, 100, 20], "text": "あいう", "uncertain": False},
+            {"id": "b", "box": [10, 50, 100, 20], "text": "", "uncertain": True}]
+
+    class Rec:
+        def read(self, crops):
+            return ["あいう"] * len(crops)
+
+    def find(region):   # one detection per line, plus a false alarm
+        return [(0, 8, 200, 24), (0, 48, 200, 24), (0, 80, 200, 15)]
+
+    class Args:
+        match = 0.5
+
+    saved = run.sets.regions, run.sets.ImageCache.get
+    run.sets.regions = lambda name, data: [("x.png", [0, 0, 200, 100], rows)]
+    run.sets.ImageCache.get = lambda self, path: img
+    try:
+        f = run.finder_mode(Rec(), find, "vita-test", None, Args())["finder"]
+    finally:
+        run.sets.regions, run.sets.ImageCache.get = saved
+    assert f["detections"] == 2 and f["line_precision"] == 0.5 and f["line_recall"] == 1.0
+    assert f["pipeline_cer"] == 1.0   # the false alarm's 3 characters against 3 scored ones
+
+
 def test_paddle_prep_width():
     p = object.__new__(backends.PaddleOnnx)
     p.max_w = 1024

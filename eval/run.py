@@ -47,10 +47,11 @@ def available_sets(names, data):
     out = []
     for n in names:
         if n == "synth-val":
-            if Path(os.environ.get("VOCR_SYNTH_VAL", sets.SYNTH_VAL)).exists():
+            path = Path(os.environ.get("VOCR_SYNTH_VAL", sets.SYNTH_VAL))
+            if path.exists():
                 out.append(n)
             else:
-                print(f"skipping synth-val: {sets.SYNTH_VAL} not found", file=sys.stderr)
+                print(f"skipping synth-val: {path} not found", file=sys.stderr)
         elif (sets.MANIFESTS / f"{n}.jsonl").exists():
             out.append(n)
         else:
@@ -109,8 +110,10 @@ def finder_mode(rec, find, name, data, args):
         crops = [region[y:y + h, x:x + w] for (x, y, w, h) in dets]
         preds = rec.read(crops) if crops else []
         pairs, unmatched = finders.match(dets, gts, args.match)
-        tot["dets"] += len(dets)
-        tot["dets_ok"] += len(pairs)
+        # A detection on an uncertain line is neither a hit nor a false alarm (sets.py).
+        on_uncertain = sum(1 for _, j in pairs if gts[j].get("uncertain"))
+        tot["dets"] += len(dets) - on_uncertain
+        tot["dets_ok"] += len(pairs) - on_uncertain
         matched_g = {j for _, j in pairs}
         for i, j in pairs:
             g = gts[j]

@@ -3,10 +3,11 @@
 
   sweep_eval.py --run runs/NAME [--ckpt ckpt_last.pt] [--sets synth-val,real-hand,real-pseudo]
 
-Variants: fp32, and int8 = symmetric per-output-channel int8 weights (exactly the
-BN-folded export, see model.fake_quant_weight) with float activations. For a QAT
-run the int8 row is the QAT result; for every other run it is post-training
-quantisation of the same checkpoint.
+Variants: fp32, and int8 = the int8 export's weights (runtime/'s export.py --int8:
+symmetric per-output-channel int8 for the pointwise, row-collapse, bottleneck and
+head convs, BN folded; stem, depthwise and biases float; see model.int8_conv) with
+float activations, i.e. the runtime's W8F mode. For a QAT run the int8 row is the
+QAT result; for every other run it is post-training quantisation (PTQ).
 
 Sets (PROVISIONAL until eval/ merges; then use eval/run.py):
   synth-val    the held-out synthetic shard (data/synth, last shard), all lines

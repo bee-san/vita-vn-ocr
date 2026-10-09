@@ -55,6 +55,16 @@ def test_fake_quant_commutes_with_bn_folding():
     assert torch.allclose(a, b, atol=1e-6)
 
 
+def test_int8_set_matches_export():
+    m = TinyVNOCR(50)
+    set_weight_quant(m, 8)
+    stem = m.features[0][0]
+    dw = m.features[1].dw[0]
+    assert stem.wbits == 0 and dw.wbits == 0
+    assert m.features[1].pw[0].wbits == 8 and m.head.wbits == 8 and m.bottleneck.wbits == 8
+    assert m.features[7][0].wbits == 8                      # 2x1 row collapse
+
+
 def test_set_weight_quant_changes_and_restores_output():
     torch.manual_seed(0)
     m = TinyVNOCR(50, width=0.25).eval()

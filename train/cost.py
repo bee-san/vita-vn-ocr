@@ -10,9 +10,11 @@ not re-derived by hand, so it tracks model.py.
 
 Weights, after BatchNorm folding (every conv + BN becomes a conv with a bias):
   fp32 = 4 B per weight and per bias;
-  int8 = 1 B per weight + 4 B scale and 4 B bias per output channel (symmetric
-         per-output-channel int8 with fp32 scales and biases, as quantised by
-         model.fake_quant_weight). Vocab text is counted separately (UTF-8 + NUL).
+  int8 = 1 B per weight + 4 B scale per output channel for the pointwise, row
+         collapse, bottleneck and head convs (symmetric per-output-channel int8,
+         model.int8_conv / runtime's export.py --int8); the stem and depthwise
+         weights and every bias stay 4 B. Vocab text is counted separately (UTF-8 +
+         NUL). Blob headers and channel padding are not counted.
 
 Arena (ESTIMATE; replaced by runtime/'s exact formula once it merges): fp32
 activations, executed layer by layer at full line width W, with
@@ -35,7 +37,7 @@ import torch.nn as nn
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from model import DS, Ctx, TinyVNOCR, from_checkpoint  # noqa: E402
+from model import DS, Ctx, TinyVNOCR, from_checkpoint, int8_conv  # noqa: E402
 
 WIDTHS = (256, 640, 1024)
 F32 = 4
@@ -54,7 +56,7 @@ def weight_bytes(model):
         b = cout if has_bias else 0
         n += w + b
         fp32 += F32 * (w + b)
-        int8 += w + F32 * cout + F32 * b
+        int8 += (w + F32 * cout if int8_conv(m) else F32 * w) + F32 * b
     return fp32, int8, n
 
 

@@ -11,7 +11,8 @@ factorised through a 96-wide bottleneck because at stride 8 it dominates compute
 
 Every conv is a QConv2d: a plain nn.Conv2d (same parameters and state_dict keys)
 that can fake-quantise its weights to symmetric per-output-channel int8 with a
-straight-through gradient, for quantisation-aware training (set_weight_quant).
+straight-through gradient, for quantisation-aware training (set_weight_quant). The
+quantised set matches the int8 export: every conv but the stem and the depthwise ones.
 """
 import torch
 import torch.nn as nn
@@ -41,11 +42,18 @@ class QConv2d(nn.Conv2d):
         return self._conv_forward(x, w, self.bias)
 
 
+def int8_conv(m):
+    """True for the convs an int8 export stores as int8 (runtime/train/export.py --int8):
+    pointwise, row collapse, bottleneck and head. The stem (one input channel) and the
+    depthwise convs stay float32, as do all biases and scales."""
+    return isinstance(m, nn.Conv2d) and m.groups == 1 and m.in_channels > 1
+
+
 def set_weight_quant(model, bits):
-    """bits=8 turns on int8 weight fake quantisation in every conv, 0 turns it off."""
+    """bits=8 turns on int8 weight fake quantisation in every int8_conv, 0 turns it off."""
     for m in model.modules():
         if isinstance(m, QConv2d):
-            m.wbits = bits
+            m.wbits = bits if int8_conv(m) else 0
 
 
 def cbr(cin, cout, k, stride=1, groups=1, pad=None):

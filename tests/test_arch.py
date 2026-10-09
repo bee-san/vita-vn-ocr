@@ -99,6 +99,18 @@ def test_reduced_vocabs(size):
     assert set("、。「」『』！？…ー") <= set(v)
 
 
+def test_vocab_build_sizes_and_extra():
+    from vocab import build
+    full = list("あいうアイウ一二三四五")
+    freq = {"五": 5.0, "三": 3.0, "一": 1.0}
+    assert build(9, freq, full) == sorted("あいうアイウ五三") + [UNK]
+    assert build(0, freq, full) == sorted(full) + [UNK]
+    v = build(9, freq, full, extra=["龍"])                   # extras are always kept
+    assert "龍" in v and "五" in v and "三" not in v and len(v) == 9
+    with pytest.raises(ValueError):
+        build(5, freq, full)                                 # kana alone need 6 entries
+
+
 def test_checkpoint_round_trip(tmp_path):
     torch.manual_seed(0)
     m = TinyVNOCR(4, width=0.25, bottleneck=48).to(memory_format=torch.channels_last)

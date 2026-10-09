@@ -5,7 +5,7 @@
       Fetches the original-script names of characters in Japanese-original VNs with
       at least 100 VNDB votes from the VNDB kana API (rate-limited, User-Agent set).
       Local only, never committed.
-  vocab.py build --size 2500 [--out data/vocab_2500.txt]
+  vocab.py build --size 2500 [--out data/vocab_2500.txt] [--extra FILE]
       Always keeps every kana (small kana, ヴ and ー included), the VN punctuation and
       symbol set of build_corpus.PUNCT and the digits. The other characters are ranked
       by a VN-weighted frequency: 95% the synthetic text pools mixed with the
@@ -14,7 +14,11 @@
       that literary and encyclopedic text rarely does: 葵, 杏, 椎, 隼, 皐...). The
       top size - 1 characters are kept and the <unk> token 〓 is appended. Only
       characters of the full vocab (data/vocab.txt) are eligible, so a reduced vocab
-      is a subset of v1's.
+      is a subset of v1's. --size 0 keeps every eligible character (v1's vocab plus
+      <unk>). --extra FILE makes more characters eligible and always keeps them, e.g.
+      the frequent out-of-vocab characters nvsynth reports for the NVIDIA pretraining
+      text: a text file (every non-space character) or a JSON {char: count} object
+      (characters with count >= --extra-min).
   vocab.py coverage [--vocab F ...] [--json OUT]
       Character coverage and <unk> rate of each vocab on real VN dialogue text:
       hand-transcribed research lines, the agreed pseudo-labels in data/real, and
@@ -77,16 +81,31 @@ def vn_freq(corpus=DATA / "corpus", names=NAMES):
     return mix
 
 
-def build(size, freq, full):
-    """size - 1 characters (forced set first, then by frequency) plus UNK, code-point sorted."""
+def build(size, freq, full, extra=()):
+    """size - 1 characters (forced set first, then by frequency) plus UNK, code-point
+    sorted. size 0 keeps every character of full + extra."""
     from build_corpus import PUNCT  # lazy: build_corpus imports pyarrow
-    keep = {c for c in full if is_kana(c) or c in PUNCT or c in DIGITS}
+    extra = [c for c in extra if c != UNK and not c.isspace()]
+    full = list(dict.fromkeys([*full, *extra]))
+    keep = {c for c in full if is_kana(c) or c in PUNCT or c in DIGITS} | set(extra)
+    if size and len(keep) > size - 1:
+        raise ValueError(f"{len(keep)} forced characters do not fit in size {size}")
     for c, _ in sorted(((c, freq.get(c, 0.0)) for c in full if c not in keep),
                        key=lambda t: (-t[1], t[0])):
-        if len(keep) >= size - 1:
+        if size and len(keep) >= size - 1:
             break
         keep.add(c)
     return sorted(keep) + [UNK]
+
+
+def read_extra(path, min_count=1):
+    """Characters of an --extra file: JSON {char: count} or plain text."""
+    text = Path(path).read_text(encoding="utf-8")
+    try:
+        counts = json.loads(text)
+    except json.JSONDecodeError:
+        return list(dict.fromkeys(c for c in text if not c.isspace()))
+    return [c for c, n in sorted(counts.items(), key=lambda t: -t[1]) if len(c) == 1 and n >= min_count]
 
 
 def fetch_names(out, min_votes=100, max_pages=400):
@@ -160,8 +179,10 @@ def main():
     n = sub.add_parser("names")
     n.add_argument("--out", type=Path, default=NAMES)
     b = sub.add_parser("build")
-    b.add_argument("--size", type=int, required=True)
+    b.add_argument("--size", type=int, required=True, help="entries incl. <unk>; 0 = all eligible")
     b.add_argument("--out", type=Path)
+    b.add_argument("--extra", type=Path, help="more eligible, always-kept characters")
+    b.add_argument("--extra-min", type=int, default=1)
     c = sub.add_parser("coverage")
     c.add_argument("--vocab", type=Path, nargs="+",
                    default=[DATA / "vocab_2500.txt", DATA / "vocab_3500.txt", DATA / "vocab.txt"])
@@ -173,8 +194,9 @@ def main():
         return
     if args.cmd == "build":
         full = load_vocab()
-        vocab = build(args.size, vn_freq(), full)
-        out = args.out or DATA / f"vocab_{args.size}.txt"
+        extra = read_extra(args.extra, args.extra_min) if args.extra else []
+        vocab = build(args.size, vn_freq(), full, extra)
+        out = args.out or DATA / f"vocab_{args.size or len(vocab)}.txt"
         out.write_text("\n".join(vocab) + "\n", encoding="utf-8")
         kanji = sum(0x4E00 <= ord(ch) <= 0x9FFF for ch in vocab)
         print(f"{out}: {len(vocab)} entries ({kanji} kanji, {sum(map(is_kana, vocab))} kana, "

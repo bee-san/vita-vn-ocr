@@ -182,14 +182,26 @@ def predict(model, crops, height, vocab, batch=64):
     return out
 
 
-def score(preds, refs):
-    errs = chars = exact = 0
+def score(preds, refs, unk_vocab=None):
+    """CER and exact-line accuracy. With unk_vocab (the set of a reduced vocab, <unk>
+    excluded) it also reports cer_unk_ok: the CER when every reference character
+    outside that vocab counts as read correctly if the model printed 〓 there, i.e.
+    the errors that remain once the vocab's own coverage limit is set aside."""
+    errs = chars = exact = errs_unk = 0
     for p, r in zip(preds, refs):
         p, r = score_norm(p), score_norm(r)
         e = edit_distance(list(p), list(r))
         errs, chars, exact = errs + e, chars + len(r), exact + (e == 0)
-    return {"cer": errs / max(chars, 1), "line_acc": exact / max(len(refs), 1),
-            "lines": len(refs), "chars": chars, "errors": errs}
+        if unk_vocab is not None:
+            # score_norm folds full-width ASCII, so test membership on both spellings
+            ok = lambda c: c in unk_vocab or (0x21 <= ord(c) <= 0x7E  # noqa: E731
+                                              and chr(ord(c) + 0xFEE0) in unk_vocab)
+            errs_unk += edit_distance(list(p), [c if ok(c) else "〓" for c in r])
+    out = {"cer": errs / max(chars, 1), "line_acc": exact / max(len(refs), 1),
+           "lines": len(refs), "chars": chars, "errors": errs}
+    if unk_vocab is not None:
+        out["cer_unk_ok"] = errs_unk / max(chars, 1)
+    return out
 
 
 def main():
@@ -224,7 +236,8 @@ def main():
             t0 = time.time()
             preds = predict(model, [g for g, _, _ in items], meta["height"], meta["vocab"])
             refs = [t for _, t, _ in items]
-            r = score(preds, refs)
+            unk_vocab = set(meta["vocab"][:-1]) if meta["unk"] else None
+            r = score(preds, refs, unk_vocab)
             r["seconds"] = round(time.time() - t0, 1)
             if name != "synth-val":
                 r["lines_detail"] = [{"id": str(m["id"]), "ref": t, "pred": p}

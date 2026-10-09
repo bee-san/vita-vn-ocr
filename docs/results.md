@@ -60,8 +60,8 @@ Reading the table:
 
 - **int8 beats its own fp32 parent on real screenshots**, though the research
   saw them track within 0.2 points.
-  - The fp32 models (shipped ncnn, ONNX, ONNX JIS) agree with each other within
-    0.5 points on every style of both sets. The JIS head and the ncnn runtime are
+  - The float models (the shipped ncnn one with fp16-stored weights, ONNX, ONNX
+    JIS) agree with each other within 0.5 points on every style of both sets. The JIS head and the ncnn runtime are
     therefore not the cause. Nor is the squeeze-excitation rewrite, whose float output
     the research found identical. That leaves the int8 quantisation (KL-calibrated
     on about 300 synthetic Aozora-text lines).
@@ -76,8 +76,8 @@ Reading the table:
   the CER. The screen has half the resolution (106 of 245 lines are under 16 px
   tall), and 110 lines are dark-on-light.
 - **For v1 the problem is polarity, not size.** It reads the 44 small
-  bright-on-dark PSP lines at 2.8% CER, but dark-on-light ones at 78.8% (93.4%
-  when small).
+  bright-on-dark PSP lines at 2.8% CER, but the 48 dark-on-light lines that are
+  not small at 78.8% and the 62 small ones at 93.4%.
   - The six psp-test games it reads above 70% CER (v12155, v3542, v4147, v3396,
     v11504, v11095) are the six whose text is mostly dark-on-light.
   - Outlined text drawn over artwork is its next weakness: v12940 44.2%, v10856

@@ -43,8 +43,9 @@ HERE = Path(__file__).resolve().parent
 RT = HERE.parent
 ROOT = RT.parent
 sys.path[:0] = [str(HERE), str(RT), str(ROOT / "train"), str(ROOT / "synth")]
-import export as E  # noqa: E402
 import vocr_ref  # noqa: E402
+
+import export as E  # noqa: E402
 
 H, MAX_W, STRIDE = 32, 1024, 8
 TOL = {"f32": 1e-3, "w8f": 1e-3, "w8i": 5e-3}
@@ -188,6 +189,7 @@ def fixture_model(seed=0, width=0.5):
     so the exporter's folding is exercised."""
     import torch
     import torch.nn as nn
+
     from common import load_vocab
     from model import TinyVNOCR
     torch.manual_seed(seed)

@@ -83,6 +83,7 @@ def _fold(conv, bn):
 def model_ops(model, height):
     """Walk a TinyVNOCR (train/model.py) and return the runtime op list (float64 numpy)."""
     import torch.nn as nn
+
     from model import DS, Ctx
     ops, h = [], height
 

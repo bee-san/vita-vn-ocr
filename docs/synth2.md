@@ -136,7 +136,7 @@ favours the old arm on those sets.
   - old arm: v1's 40 shards (`$HERD/shared/data/synth`), 390,018 training lines
   - synth2 arm: `$HERD/shared/artifacts/synth2/shards`, 389,989 training lines
 - In both arms the last shard is the validation shard.
-- Runs and threads: synth2 at seeds 1 and 2, the old arm at seed 1, two runs per heavy slot at 2 threads each. `arch_base_s1` is the arch agent's run of the same recipe (old shards, 5,000 steps, seed 1; arch/sweep's `train.py` with channels_last, 5 threads), used as a second sample of the old arm. The old arm's seed-2 run is still waiting for a heavy slot.
+- Runs and threads: synth2 at seeds 1 and 2, the old arm at seed 1, two runs per heavy slot at 2 threads each. `arch_base_s1` is the arch agent's run of the same recipe (old shards, 5,000 steps, seed 1; arch/sweep's `train.py` with channels_last, 5 threads), used as a second sample of the old arm. The old arm's seed-2 run was not trained: it waited 1.5 h for a heavy slot and was cancelled.
 - Scoring: eval's benchmark, `eval/run.py` at bebd4f9 (PR #5's head, not merged yet). That is vita-test (206 scored lines, 16 VNs) and psp-test (245 lines, 14 VNs) on ground-truth line boxes, padded by 4 px on Vita and 2 px on PSP, with crops not inverted. synth-val is the first 3,000 lines of v1's shard 39. Host CPU, 1 thread. CER is over the whole set, after eval's normalisation.
 
 | model | data, steps | vita-test CER / exact | psp-test CER / exact | synth-val (old) |

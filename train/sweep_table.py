@@ -24,8 +24,9 @@ provisional real-hand + real-pseudo pool is used.
 bootstrap interval over lines (10,000 resamples, seed 0). Two Pareto fronts are
 taken over the runs with the reference run's step budget only (other budgets, e.g.
 v1's 32k steps, are shown for scale): memory (on-console footprint = int8 blob + W8F
-arena) and speed (estimated Cortex-A9 ms for the longest line, cost.a9_ms). A row is
-on a front when no other such row is at least as good on both axes and better on one.
+arena) and speed (estimated Cortex-A9 ms for a 640-px line, about the p90 real line
+width; cost.a9_ms). A row is on a front when no other such row is at least as good on
+both axes and better on one.
 """
 import argparse
 import json
@@ -172,7 +173,7 @@ def rows(runs_dir, eval_name, exporter, ref):
     for a in out:
         a["matched_budget"] = a in matched
         a["pareto"] = front(a, lambda r: r["footprint"])
-        a["pareto_speed"] = front(a, lambda r: r["a9_ms_max"][0])
+        a["pareto_speed"] = front(a, lambda r: r["a9_ms_640"][0])
     return out
 
 
@@ -205,7 +206,7 @@ def knobs(a):
 def markdown(rs, exact, ref):
     size_cols = ("int8 blob KiB | W8F arena KiB | footprint KiB" if exact else
                  "int8 weights KiB (est.) | non-streaming arena KiB (est.) | footprint KiB (est.)")
-    head = (f"| run | knobs | params | {size_cols} | MMAC (longest line) | est. A9 ms (longest line) | "
+    head = (f"| run | knobs | params | {size_cols} | MMAC (longest line) | est. A9 ms, 640-px line | "
             f"synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | "
             f"vita-test-inv CER | psp-test CER (as is) | psp-test-inv CER | real-hand-x CER | "
             f"real CER fp32 / int8 | Δ vs {ref} (95% CI) | Pareto |")
@@ -220,7 +221,7 @@ def markdown(rs, exact, ref):
                                                f"{100 * d[0]:+.2f} ({100 * d[1]:+.2f}, {100 * d[2]:+.2f})")
         lines.append(
             f"| {a['run']} | {knobs(a)} | {a['params']:,} | {sizes} | {kib(a['footprint'])} | "
-            f"{a['macs_max'] / 1e6:.0f} | {a['a9_ms_max'][1]:.0f}-{a['a9_ms_max'][0]:.0f} | "
+            f"{a['macs_max'] / 1e6:.0f} | {a['a9_ms_640'][1]:.0f}-{a['a9_ms_640'][0]:.0f} | "
             f"{pct(a['synth_fp32'])} / {pct(a['synth_int8'])} | "
             f"{pct(a.get('vita-test_int8'))} | {pct(a.get('vita_bright_on_dark_int8'))} | "
             f"{pct(a.get('vita-test-inv_int8'))} | {pct(a.get('psp-test_int8'))} | "

@@ -38,7 +38,10 @@ logits instead, for a runtime that does not stream the head.
 Cortex-A9 time per line (ESTIMATE, nothing has run on a console): MACs divided by
 0.24-0.30 GMAC/s, the research's fp32 throughput for one 444 MHz A9 core (ncnn
 MobileNet v1/v2 benchmarks scaled from 766 MHz), the figure runtime's PR uses too.
-Reported for a 640-px line and for the 1024-px clamp (the longest line).
+Reported for a 640-px line and for the 1024-px clamp. Measured on eval's sets after the
+resize to height 32: vita-test lines are 299 px wide at the median, 608 px at p90 and
+726 px at most; psp-test 247 / 485 / 664 px. So 640 px is a long real line, and no
+test line reaches the 1024-px clamp.
 """
 import argparse
 import importlib.util

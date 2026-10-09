@@ -12,6 +12,7 @@ import argparse
 import glob
 import json
 import math
+import os
 import sys
 import time
 from pathlib import Path
@@ -139,6 +140,13 @@ def evaluate(model, imgs, labels, n=3000, batch=128):
     return errs / max(chars, 1), exact / max(len(idx), 1)
 
 
+def default_threads():
+    for var in ("TORCH_NUM_THREADS", "OMP_NUM_THREADS"):
+        if os.environ.get(var, "").isdigit():
+            return int(os.environ[var])
+    return 5
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", default="v1")
@@ -146,15 +154,19 @@ def main():
     ap.add_argument("--real", default="")
     ap.add_argument("--real-weight", type=float, default=0.3)
     ap.add_argument("--epochs", type=float, default=8)
+    ap.add_argument("--steps", type=int, default=0, help="total steps (overrides --epochs)")
     ap.add_argument("--batch", type=int, default=96)
     ap.add_argument("--lr", type=float, default=2e-3)
     ap.add_argument("--width", type=float, default=1.0)
-    ap.add_argument("--threads", type=int, default=12)
+    ap.add_argument("--seed", type=int, default=None, help="seed torch and numpy (default: v1)")
+    ap.add_argument("--threads", type=int, default=default_threads())
     ap.add_argument("--eval-every", type=int, default=2000)
     ap.add_argument("--init", default="", help="start weights from this checkpoint")
     args = ap.parse_args()
     torch.set_num_threads(args.threads)
     torch.set_flush_denormal(True)
+    if args.seed is not None:
+        torch.manual_seed(args.seed)
     out = ROOT / "models" / args.run
     out.mkdir(parents=True, exist_ok=True)
 
@@ -192,11 +204,11 @@ def main():
         model.load_state_dict(ck["model"])
         print(f"initialised from {args.init}", flush=True)
 
-    rng = np.random.default_rng(step + 1)
+    rng = np.random.default_rng(step + 1 if args.seed is None else [args.seed, step])
     widths = [g.shape[1] for g in tr_imgs]
     weights = np.where(np.asarray(src) == 1, args.real_weight, 1.0)
     steps_per_epoch = len(tr_imgs) // args.batch
-    total = int(args.epochs * steps_per_epoch)
+    total = args.steps or int(args.epochs * steps_per_epoch)
     warm = 1000
     metrics = open(out / "metrics.jsonl", "a")
     t_log, seen, loss_acc = time.time(), 0, 0.0

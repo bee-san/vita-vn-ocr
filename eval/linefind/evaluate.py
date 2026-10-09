@@ -2,9 +2,20 @@
 """Score dialogue line finders on real regions: line/region recall and precision, and
 optionally the whole-pipeline CER with a recognizer checkpoint.
 
-  evaluate.py --manifest eval/linefind/manifests/research_b.jsonl [--manifest ...]
-              [--finders legacy,grad,research,oracle] [--rec models/v1/ckpt_best.pt]
-              [--shots DIR ...] [--json out.json] [--sheets DIR]
+  evaluate.py [--manifest eval/linefind/manifests/research_b.jsonl ...] [--eval-set vita-test ...]
+              [--finders legacy,grad,research,oracle] [--rec $HERD/shared/models/v1/ckpt_best.pt] [--norm]
+              [--by-tag] [--shots DIR ...] [--json out.json] [--sheets DIR]
+
+Sets:
+  --manifest M      a line-finder manifest (build_gt.py). research_a/b are the sets the
+                    finder's constants were tuned on, so their numbers are in-sample.
+  --eval-set S      one of eval's hand-checked test sets: eval/manifests/S.jsonl, or S
+                    itself if it is a file (eval's format: one row per line, with its
+                    region). Its lines are grouped back into their regions; a region holding
+                    an uncertain line is left out, and so, unless --with-tuning, is every
+                    region whose VN or screenshot is in research_a/b. Screenshots are looked
+                    up in --shots, build_gt.SHOT_DIRS and $VOCR_EVAL_DATA/{vita,psp}/shots
+                    (eval's artifacts; default data/eval).
 
 Finders:
   legacy    synth/common.py find_lines(finder="legacy"): the overlay's bright-pixel
@@ -14,7 +25,8 @@ Finders:
   c-grad, c-legacy  the C finder itself (runtime/vocr_lines.c through its CLI)
   research  the research campaign's gradient-energy row projection (float, full-width
             crops; bf653e98 scratch/real/grad_finder.py), ported here as a baseline
-  oracle    the ground-truth line boxes padded like the finders pad (upper bound)
+  oracle    the ground-truth line boxes themselves, unpadded: an upper bound for
+            detection only (v1 reads unpadded crops worse than the finders' padded ones)
   mod:fn    any function rgb -> boxes, imported from module `mod` (prototyping)
 
 Line matching is IoU >= 0.5, one to one (metrics.py). Regions where a finder
@@ -22,6 +34,9 @@ rejects the input count as finding nothing. Pipeline CER = sum of edit distances
 sum of reference lengths over all regions with a transcription, comparing the
 concatenated line texts after NFKC and whitespace removal; a rejected region scores
 its full length. Lines marked uncertain are kept in the reference (as in research).
+--norm inverts every crop that line_polarity() calls dark, which for grad is the
+console's rule (VocrLine.dark). --by-tag adds a table per region tag (tight / loose /
+empty for the detector-built sets, eval's style tags for --eval-set).
 """
 import argparse
 import importlib
@@ -43,6 +58,41 @@ import metrics  # noqa: E402
 from build_gt import SHOT_DIRS, read, region_rgb  # noqa: E402
 
 from common import find_lines, line_polarity, to_gray  # noqa: E402
+
+EVAL_DATA = Path(os.environ.get("VOCR_EVAL_DATA", ROOT / "data" / "eval"))
+TUNING_SETS = ("research_a.jsonl", "research_b.jsonl")
+
+
+def eval_set_rows(spec, with_tuning=False):
+    """Regions of one of eval's hand-checked sets, in this tool's row format (see --eval-set)."""
+    path = Path(spec) if Path(spec).is_file() else ROOT / "eval" / "manifests" / f"{spec}.jsonl"
+    by_region = {}
+    for ln in read(path):
+        by_region.setdefault((ln["sha256"], tuple(ln["region"])), []).append(ln)
+    tune = [r for m in TUNING_SETS for r in read(HERE / "manifests" / m)]
+    tune_vn, tune_sha = {r["vn"] for r in tune}, {r["sha256"] for r in tune}
+    rows, n_unc, n_tune = [], 0, 0
+    for (sha, (x, y, w, h)), lines in by_region.items():
+        first = lines[0]
+        if any(ln["uncertain"] for ln in lines):
+            n_unc += 1
+            continue
+        tuned = first["vn"] in tune_vn or sha in tune_sha
+        n_tune += tuned
+        if tuned and not with_tuning:
+            continue
+        sid = first["url"].rsplit("/", 1)[1].split(".")[0]
+        lines = sorted(lines, key=lambda ln: (ln["box"][1], ln["box"][0]))
+        rows.append({"id": f"{first['vn']}_{sid}@{x},{y}", "set": path.stem, "vn": first["vn"],
+                     "shot": f"{first['vn']}_{sid}.jpg", "url": first["url"], "sha256": sha,
+                     "platform": first["id"].split("-")[0], "region": [x, y, x + w, y + h], "mask": [],
+                     "lines": [{"box": [b[0], b[1], b[0] + b[2], b[1] + b[3]], "text": ln["text"], "ignore": False}
+                               for ln in lines for b in [ln["box"]]],
+                     "tags": sorted({s for ln in lines for s in ln["styles"]})})
+    print(f"{path}: {len(rows)} regions, {sum(len(r['lines']) for r in rows)} lines, "
+          f"{len({r['vn'] for r in rows})} VNs ({n_unc} regions with an uncertain line left out, "
+          f"{n_tune} regions of research_a/b VNs or screenshots {'kept' if with_tuning else 'left out'})")
+    return rows
 
 
 def research_grad(rgb):
@@ -180,8 +230,8 @@ def evaluate(rows, finders, shots, rec=None, sheets=None, norm_pol=False):
             m = metrics.match(to_xyxy(boxes or []), keep, ign)
             m["rejected"] = boxes is None
             per.append(m)
-            o = {"id": r["id"], "found": None if boxes is None else len(boxes), "gt": len(keep),
-                 "tp": m["tp"], "fp": m["fp"], "fn": m["fn"], "boxes": boxes}
+            o = {"id": r["id"], "tags": r.get("tags", []), "found": None if boxes is None else len(boxes),
+                 "gt": len(keep), **{k: m[k] for k in ("tp", "fp", "fn", "merged", "split", "cut")}, "boxes": boxes}
             texts = [ln["text"] for ln in r["lines"] if ln.get("text") and not ln.get("ignore")]
             if rec is not None and texts:
                 grey = to_gray(rgb)
@@ -193,7 +243,7 @@ def evaluate(rows, finders, shots, rec=None, sheets=None, norm_pol=False):
                 e = lev(norm(pred), ref)
                 errs += e
                 chars += len(ref)
-                o.update(pred=pred, cer=round(e / max(1, len(ref)), 4))
+                o.update(pred=pred, err=e, ref_len=len(ref), cer=round(e / max(1, len(ref)), 4))
             out_rows.append(o)
         s = metrics.summarize(per)
         s["rejected"] = sum(m["rejected"] for m in per)
@@ -241,25 +291,51 @@ def draw_sheets(rows, imgs, out_rows, out):
         h += t[1].height + 14
 
 
+def tag_table(res):
+    """Per region tag, per finder: regions, line R / P, region exact, false alarms, misses,
+    rejected regions and pipeline CER (when a recognizer ran)."""
+    tags = sorted({t for v in res.values() for o in v["rows"] for t in o["tags"]})
+    print("\n| tag | finder | regions | line R | line P | region exact | fp | fn | rejected | CER |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
+    for tag in tags:
+        for name, v in res.items():
+            rows = [o for o in v["rows"] if tag in o["tags"]]
+            tp, fp, fn = (sum(o[k] for o in rows) for k in ("tp", "fp", "fn"))
+            ref = sum(o.get("ref_len", 0) for o in rows)
+            cer = f"{100 * sum(o.get('err', 0) for o in rows) / ref:.1f}%" if ref else "-"
+            print(f"| {tag} | {name} | {len(rows)} | {tp / (tp + fn) if tp + fn else 0:.3f} | "
+                  f"{tp / (tp + fp) if tp + fp else 0:.3f} | "
+                  f"{sum(o['fp'] == 0 and o['fn'] == 0 for o in rows) / len(rows):.3f} | {fp} | {fn} | "
+                  f"{sum(o['found'] is None for o in rows)} | {cer} |")
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--manifest", action="append", required=True)
+    ap.add_argument("--manifest", action="append", default=[])
+    ap.add_argument("--eval-set", action="append", default=[],
+                    help="one of eval's hand-checked sets: a name (eval/manifests/NAME.jsonl) or a file")
+    ap.add_argument("--with-tuning", action="store_true",
+                    help="--eval-set: keep regions whose VN or screenshot is in research_a/b")
     ap.add_argument("--finders", default="legacy,grad,research,oracle")
     ap.add_argument("--rec", default="")
     ap.add_argument("--shots", action="append", default=[])
     ap.add_argument("--json", type=Path)
     ap.add_argument("--sheets")
     ap.add_argument("--norm", action="store_true", help="invert dark-text crops before recognition")
+    ap.add_argument("--by-tag", action="store_true", help="also print a table per region tag")
     args = ap.parse_args()
-    shots = args.shots + [str(d) for d in SHOT_DIRS]
+    if not args.manifest and not args.eval_set:
+        ap.error("give at least one --manifest or --eval-set")
+    shots = args.shots + [str(d) for d in SHOT_DIRS] + [str(EVAL_DATA / p / "shots") for p in ("vita", "psp")]
     rec = Recognizer(args.rec) if args.rec else None
+    sets = [(Path(m).stem, read(m)) for m in args.manifest]
+    sets += [(Path(s).stem, eval_set_rows(s, args.with_tuning)) for s in args.eval_set]
     report = {}
-    for man in args.manifest:
-        rows = read(man)
+    for stem, rows in sets:
         res = evaluate(rows, args.finders.split(","), shots, rec,
-                       None if not args.sheets else Path(args.sheets) / Path(man).stem, args.norm)
-        report[Path(man).stem] = res
-        print(f"\n## {Path(man).stem}: {len(rows)} regions")
+                       None if not args.sheets else Path(args.sheets) / stem, args.norm)
+        report[stem] = res
+        print(f"\n## {stem}: {len(rows)} regions")
         print("| finder | line R | line P | F1 | region exact | merged | split | cut | rejected | CER | ms |")
         print("|---|---|---|---|---|---|---|---|---|---|---|")
         for name, v in res.items():
@@ -268,6 +344,8 @@ def main():
             print(f"| {name} | {s['line_recall']:.3f} | {s['line_precision']:.3f} | {s['line_f1']:.3f} | "
                   f"{s['region_exact']:.3f} | {s['merged']} | {s['split']} | {s['cut']} | {s['rejected']} | "
                   f"{cer} | {s['ms_per_region']} |")
+        if args.by_tag:
+            tag_table(res)
     if args.json:
         args.json.write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
 

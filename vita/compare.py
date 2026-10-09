@@ -87,18 +87,32 @@ def quantiles(v):
     return dict(n=len(v), median=statistics.median(v), p10=q(0.1), p90=q(0.9), min=v[0], max=v[-1])
 
 
+def vita_boxes(row):
+    """The console's line boxes of a region row as [(x, y, w, h, dark)], or None for a
+    results.tsv from before the app wrote them (column boxes_vita)."""
+    s = row.get("boxes_vita")
+    if s is None:
+        return None
+    return [tuple(int(v) for v in b.split(",")) for b in s.split(";") if b]
+
+
 def score(cases, rows_by_id):
     """CER of the console output against the ground truth: line cases, and regions the way
-    eval/run.py scores a finder (pipeline and concatenated CER)."""
+    eval/run.py scores a finder (pipeline and concatenated CER), on the console's own line
+    boxes. A region that ran is left out only if its output is unknown, and then counted in
+    'unscored': status ERR, a results.tsv without boxes_vita and a status other than MATCH,
+    or a line count that does not fit the text."""
     finders, metrics = eval_module("finders"), eval_module("metrics")
     line = {"errs": 0, "chars": 0, "exact": 0, "lines": 0}
     by_set = {}
     reg_by_set = {}
     for c in cases:
         r = rows_by_id.get(c["id"])
-        if not r or r["status"] == "ERR":
-            continue
+        if not r:
+            continue                                       # not run: listed as missing
         if c["kind"] == 0:
+            if r["status"] == "ERR":
+                continue                                   # counted in the ERR column
             p, g = metrics.norm(r["text_vita"]), metrics.norm(c["gt"])
             for t in (line, by_set.setdefault(c.get("set", "?"), {"errs": 0, "chars": 0, "exact": 0, "lines": 0})):
                 t["errs"] += metrics.lev(p, g)
@@ -106,12 +120,18 @@ def score(cases, rows_by_id):
                 t["exact"] += p == g
                 t["lines"] += 1
             continue
-        preds = r["text_vita"].split("\n") if r["text_vita"] else []
-        boxes = c["expected"][r["model"]]["boxes"]
-        if r["status"] != "MATCH" or len(boxes) != len(preds):
-            continue                          # boxes are only known when they equal the host's
         reg = reg_by_set.setdefault(c.get("set", "?"), {"errors": 0, "chars": 0, "concat_errors": 0,
-                                                      "concat_chars": 0, "gt_lines": 0, "found": 0})
+                                                      "concat_chars": 0, "gt_lines": 0, "found": 0,
+                                                      "regions": 0, "unscored": 0})
+        boxes = vita_boxes(r) if r["status"] != "ERR" else None
+        if boxes is None and r["status"] == "MATCH":
+            boxes = c["expected"][r["model"]]["boxes"]     # MATCH: the console's boxes are the host's
+        # the app joins one text per line with "\n": n boxes give n texts, even empty ones
+        preds = r["text_vita"].split("\n") if boxes else []
+        if boxes is None or len(boxes) != len(preds):
+            reg["unscored"] += 1
+            continue
+        reg["regions"] += 1
         dets = [tuple(b[:4]) for b in boxes]
         gts = [dict(g, box_r=tuple(g["box"])) for g in c["rows"]]
         pairs, unmatched = finders.match(dets, gts)
@@ -139,10 +159,11 @@ def score(cases, rows_by_id):
         out["lines_by_set"] = {k: dict(n=t["lines"], cer=t["errs"] / max(1, t["chars"]), exact=t["exact"] / t["lines"])
                                for k, t in sorted(by_set.items())}
     out["regions_by_set"] = {
-        k: dict(gt_lines=r["gt_lines"], line_recall=r["found"] / r["gt_lines"],
+        k: dict(regions=r["regions"], unscored=r["unscored"], gt_lines=r["gt_lines"],
+                line_recall=r["found"] / max(1, r["gt_lines"]),
                 pipeline_cer=r["errors"] / max(1, r["chars"]),
                 concat_cer=r["concat_errors"] / max(1, r["concat_chars"]))
-        for k, r in sorted(reg_by_set.items()) if r["gt_lines"]}
+        for k, r in sorted(reg_by_set.items())}
     return out
 
 
@@ -223,8 +244,10 @@ def print_report(rep):
             print(f"  {name_set} GT-box lines (console polarity rule): CER {100 * a['cer']:.2f}%, "
                   f"exact {100 * a['exact']:.1f}% ({a['n']} lines)")
         for name_set, a in acc.get("regions_by_set", {}).items():
+            skipped = f", {a['unscored']} NOT SCORED (ERR, or line boxes unknown)" if a["unscored"] else ""
             print(f"  {name_set}, console pipeline: line recall {100 * a['line_recall']:.1f}%, pipeline CER "
-                  f"{100 * a['pipeline_cer']:.2f}%, concat CER {100 * a['concat_cer']:.2f}% ({a['gt_lines']} GT lines)")
+                  f"{100 * a['pipeline_cer']:.2f}%, concat CER {100 * a['concat_cer']:.2f}% ({a['regions']} regions, "
+                  f"{a['gt_lines']} GT lines{skipped})")
         tag = " [emulator time, not console time]" if rep["emulator"] else ""
         print(f"  time per line: {fmt_q(m['line_ms'], 'ms')}{tag}")
         print(f"  time per CTC frame: {fmt_q(m['us_per_frame'], 'us', 0)}; "

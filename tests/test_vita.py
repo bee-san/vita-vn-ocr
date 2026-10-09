@@ -197,11 +197,49 @@ def write_results(path, rows):
     cols = ["id", "kind", "model", "status", "rc", "dark", "width", "height", "frames", "lines", "ms_min",
             "ms_median", "us_per_frame", "cycles", "insns", "neon", "dmiss", "dstall", "nodispatch", "crc_host",
             "crc_vita", "text_host", "text_vita"]
+    if any("boxes_vita" in r for r in rows):       # the app's column since rev-vita; older files lack it
+        cols.append("boxes_vita")
     lines = ["# vocr_test version=1 git=abc built=x", "# clock arm_mhz=444 bus_mhz=222",
              "# stack probe_used=4100 probe_stack=32768 kernel_free=1", "#cols " + "\t".join(cols)]
-    lines += ["\t".join(str(r[c]) for c in cols) for r in rows]
+    lines += ["\t".join(str(r[c]).replace("\n", "\\n") for c in cols) for r in rows]
     lines.append("# done cases=2 of 2 total_s=1.0")
     Path(path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def test_compare_scores_regions_on_the_consoles_own_line_boxes(tmp_path):
+    gt_rows = [dict(id="r1", box=[0, 0, 100, 20], text="あいう", uncertain=False),
+               dict(id="r2", box=[0, 30, 100, 20], text="かき", uncertain=False)]
+    exp = dict(text="あいう\nかき", crc=1, frames=20, boxes=[[0, 0, 100, 20, 0], [0, 30, 100, 20, 0]])
+    one = dict(exp, text="", boxes=[[0, 0, 100, 20, 0]])
+    cases = [dict(id=f"{k}@region", kind=1, set="vita-test:regions", gt="あいう\nかき", rows=gt_rows,
+                  expected={"w8i": e}) for k, e in (("m", exp), ("t", exp), ("e", one), ("x", exp))]
+    (tmp_path / "cases.json").write_text(json.dumps(dict(models=[dict(name="w8i")], cases=cases)))
+    base = dict(kind="region", model="w8i", rc=0, dark=0, width=100, height=60, frames=20, ms_min=1, ms_median=1,
+                us_per_frame=50, cycles=0, insns=0, neon=0, dmiss=0, dstall=0, nodispatch=0, crc_host="00000001")
+    rows = [  # m: as on the host; t: the console found only the first line; e: one line, read as ""
+        dict(base, id="m@region", status="MATCH", lines=2, crc_vita="00000001", text_host=exp["text"],
+             text_vita=exp["text"], boxes_vita="0,0,100,20,0;0,30,100,20,0"),
+        dict(base, id="t@region", status="TEXT", lines=1, crc_vita="00000009", text_host=exp["text"],
+             text_vita="あいう", boxes_vita="0,0,100,20,0"),
+        dict(base, id="e@region", status="MATCH", lines=1, crc_vita="00000001", text_host="", text_vita="",
+             boxes_vita="0,0,100,20,0"),
+        dict(base, id="x@region", status="ERR", rc=-4, lines=0, crc_vita="00000000", text_host=exp["text"],
+             text_vita="", boxes_vita="")]                 # x: an error, so nothing to score
+    write_results(tmp_path / "results.tsv", rows)
+    reg = compare.summarise(tmp_path, tmp_path / "results.tsv")["models"]["w8i"]["accuracy"]["regions_by_set"]
+    a = reg["vita-test:regions"]
+    assert (a["regions"], a["unscored"], a["gt_lines"]) == (3, 1, 6)
+    assert a["line_recall"] == pytest.approx(4 / 6)       # m 2, t 1, e 1 (its empty read still matches r1)
+    assert a["pipeline_cer"] == pytest.approx((0 + 2 + 3 + 2) / 15)
+    # a results.tsv from before boxes_vita: the TEXT region's boxes are unknown, so it is
+    # counted as unscored (with the ERR one), and the one-line region read as "" is still scored
+    for r in rows:
+        del r["boxes_vita"]
+    write_results(tmp_path / "old.tsv", rows)
+    a = compare.summarise(tmp_path, tmp_path / "old.tsv")["models"]["w8i"]["accuracy"]["regions_by_set"][
+        "vita-test:regions"]
+    assert (a["regions"], a["unscored"]) == (2, 2)
+    assert a["pipeline_cer"] == pytest.approx((0 + 3 + 2) / 10)
 
 
 def test_compare_counts_agreement_cer_and_time(tmp_path):

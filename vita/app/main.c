@@ -512,6 +512,26 @@ static int boxes_equal(const Case *cs, unsigned mi, const Result *r)
 
 static Result res;
 
+/* The console's line boxes of a region as "x,y,w,h,dark;..." (empty for line cases and
+ * failed runs), so vita/compare.py can score the pipeline even where they differ from
+ * the host's. */
+static const char *boxes_text(const Case *cs, const Result *r, int rc)
+{
+    static char buf[VC_MAX_LINES * 32];
+    size_t o = 0;
+    unsigned i;
+    buf[0] = 0;
+    if (cs->kind != VC_KIND_REGION || rc) return buf;
+    for (i = 0; i < r->set.count && i < VC_MAX_LINES; i++) {
+        const VocrLine *l = &r->set.lines[i];
+        int n = snprintf(buf + o, sizeof buf - o, "%s%u,%u,%u,%u,%u", i ? ";" : "", l->x, l->y, l->w, l->h,
+                         l->dark);
+        if (n < 0 || (size_t)n >= sizeof buf - o) break;
+        o += (size_t)n;
+    }
+    return buf;
+}
+
 /* Runs every active model on one case; returns the colour of its screen line. */
 static uint32_t do_case(const Case *cs, unsigned index)
 {
@@ -600,13 +620,13 @@ static uint32_t do_case(const Case *cs, unsigned index)
                 }
             }
             emit("%s\t%s\t%s\t%s\t%d\t%u\t%u\t%u\t%u\t%u\t%.3f\t%.3f\t%.2f\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu"
-                 "\t%08lx\t%08lx\t%s\t%s",
+                 "\t%08lx\t%08lx\t%s\t%s\t%s",
                  cs->id, cs->kind == VC_KIND_LINE ? "line" : "region", md->name, status, rc, dark, cs->w, cs->h,
                  frames, cs->kind == VC_KIND_REGION ? res.set.count : 1u, t_min, t_med, usf,
                  pmu[0] / (unsigned)cfg.repeat, pmu[1] / (unsigned)cfg.repeat, pmu[2] / (unsigned)cfg.repeat,
                  pmu[3] / (unsigned)cfg.repeat, pmu[4] / (unsigned)cfg.repeat, pmu[5] / (unsigned)cfg.repeat,
                  (unsigned long)cs->exp[mi].crc, (unsigned long)res.crc, esc(cs->exp[mi].text, e1, sizeof e1),
-                 esc(res.text, e2, sizeof e2));
+                 esc(res.text, e2, sizeof e2), boxes_text(cs, &res, rc));
             sl += (size_t)snprintf(summary + sl, sl < sizeof summary ? sizeof summary - sl : 0, "%-5s %6.1f ",
                                    status, t_med);
         }
@@ -799,7 +819,7 @@ static int worker_main(SceSize args, void *argp)
              probe_stack_used, scePowerGetArmClockFrequency());
     scr_head(3, SCR_GREY, line);
     emit("#cols id\tkind\tmodel\tstatus\trc\tdark\twidth\theight\tframes\tlines\tms_min\tms_median\tus_per_frame"
-         "\tcycles\tinsns\tneon\tdmiss\tdstall\tnodispatch\tcrc_host\tcrc_vita\ttext_host\ttext_vita");
+         "\tcycles\tinsns\tneon\tdmiss\tdstall\tnodispatch\tcrc_host\tcrc_vita\ttext_host\ttext_vita\tboxes_vita");
     out_flush();
     for (i = 0; i < n_cases && !stop_requested; i++) {
         uint32_t len;

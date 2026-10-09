@@ -1,0 +1,50 @@
+{
+ "rule": "3of4-trim-dots-veto",
+ "lines_read": 23919,
+ "accepted": 8318,
+ "rejected": {
+  "test-game": 167,
+  "not-japanese": 6194,
+  "disagree": 8773,
+  "confusable-dissent": 324,
+  "hand-uncertain": 23,
+  "oov": 2,
+  "repeat-cap": 118
+ },
+ "sessions": {
+  "train": 1478,
+  "val": 209
+ },
+ "by_split_kind": {
+  "train/hires": 4638,
+  "val/hires": 651,
+  "train/vita": 817,
+  "train/psp": 1741,
+  "val/psp": 314,
+  "val/vita": 157
+ },
+ "crops_by_split_target": {
+  "train/vita": 5454,
+  "train/psp": 4361,
+  "val/vita": 808,
+  "val/psp": 691
+ },
+ "by_how": {
+  "4:manga+meiki+v5s+v6s": 3686,
+  "3:meiki+v5s+v6s": 1840,
+  "3:manga+v5s+v6s": 1746,
+  "3:manga+meiki+v6s": 654,
+  "hand": 295,
+  "3:manga+meiki+v5s": 97
+ },
+ "by_polarity": {
+  "light-on-dark": 5570,
+  "dark-on-light": 2748
+ },
+ "vns": {
+  "train": 1221,
+  "val": 184
+ },
+ "unique_labels": 7609,
+ "chars": 89675
+}

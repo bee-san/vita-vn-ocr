@@ -17,9 +17,14 @@ PY="$HERE/.venv/bin/python"
 export VOCR_EVAL_DATA="${VOCR_EVAL_DATA:-$HERD/shared/artifacts/eval}" OMP_NUM_THREADS=1 HF_HUB_OFFLINE=1
 mkdir -p "$OUT"
 cd "$EVAL_ROOT"
+PIN=()
+if [ -n "${HEAVY_SLOT:-}" ] && command -v taskset > /dev/null; then   # stay on the slot's 5 cores
+  first=$(( (HEAVY_SLOT - 1) * 5 ))
+  PIN=(taskset -c "$first-$(( first + 4 ))")
+fi
 pids=()
 for e in $ENGINES; do
-  unshare -rn "$PY" eval/run.py --model "cmd:$PY $HERE/engine_cli.py $e" --set "$SETS" --errors 30 \
+  "${PIN[@]}" unshare -rn "$PY" eval/run.py --model "cmd:$PY $HERE/engine_cli.py $e" --set "$SETS" --errors 30 \
     --out "$OUT/engine_$e.json" < /dev/null > "$OUT/engine_$e.log" 2>&1 &
   pids+=($!)
 done

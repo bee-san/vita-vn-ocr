@@ -9,10 +9,10 @@
          calibration, never for evaluation. Into data/vndb_psp/shots/.
   all    both
 
-Downloads are skipped when the file exists with the expected sha256. Each step
-writes a manifest (URL + sha256) to data/manifests/, which is committed; the
-fonts and screenshots themselves are not. Screenshots are copyrighted game
-images: keep them local.
+Downloads are skipped when the file already exists. Each step writes a manifest
+(URL + sha256 of the local file) to data/manifests/, which is committed; the fonts
+and screenshots themselves are not. Screenshots are copyrighted game images: keep
+them local. Requests carry a User-Agent; screenshots are fetched 1 per second.
 """
 import argparse
 import hashlib

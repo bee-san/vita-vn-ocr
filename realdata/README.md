@@ -38,9 +38,14 @@ crops are copyrighted: they stay there and are never committed.
 4. `build.py`: hand checks override the vote; labels outside `data/vocab.txt` are
    dropped; one label is kept at most twice per VN and 8 times in all. Crops are cut at
    the target resolution with the console's conventions: padded so that the grad line
-   finder (`runtime/vocr_lines.c`) gives the same boxes (median edge difference 0 px on
-   every side over 400 lines, `check_finder.py`), and inverted when `common.line_dark()`
+   finder (`runtime/vocr_lines.c`) gives the same boxes, and inverted when `common.line_dark()`
    calls the text dark (docs/linefind.md's polarity contract; `--keep-polarity` skips it).
+   `check_finder.py` (400 random accepted lines, each in a region 2 line heights wider on
+   either side and 0.6 taller, as a loose selection would be): the finder finds 299 at
+   IoU ≥ 0.5, and on those the median edge difference is 0 px on every side, but the spread
+   is wide. Only 46.5% / 69.6% / 42.1% / 66.9% of the x0 / y0 / x1 / y1 edges are within
+   1 px, and the 10th–90th percentile range is −24…+17 px at x0, −5…+1 at y0, −17…+2 at x1
+   and −2…+3 at y1.
 
 Test games are excluded at every step: `synth/common.is_test_vn()` and the eval set's
 reserved VNs (`eval/manifests/test_games.json` once merged, `eval_exclude.json` until then),
@@ -83,6 +88,12 @@ Label quality, all by eye on the crop the label goes with:
   accepts 53.3% with 105/105 correct. Without PP-OCRv5 server it would accept 35.0%
   (68/69), without manga-ocr 42.1%, without meiki 36.5% (`evaluate_rules.py`). The rule
   was chosen on this sample, so these precisions are optimistic.
+- The dev sample was read before the valley split changed the readers' view, so the same
+  hand truths were also scored against the full run's own readings, taken with the final
+  geometry (`evaluate_rules.py --lines "$REALDATA/labels/lines.*.jsonl"`, 195 matched
+  readable lines). The rule accepts 59.0% with 115/115 correct. The readers score
+  PP-OCRv6 small 86.7%, manga-ocr 47.2% and meiki 40.5%, and PP-OCRv5 server 72.7% of the
+  150 lines it read.
 - Spot check (100 random accepted, vote-labelled lines of the final set): 1 wrong label
   (a decorative bullet read as ・ by three readers), 1 character error in 987.
 
@@ -99,7 +110,7 @@ like the rest. The eval test sets come from other games.
 | `manifests/games.json` | every VN in the collection: title, split, kinds, sessions, screenshots, accepted lines |
 | `manifests/handcheck.jsonl` | lines checked by eye: `truth` (null = unreadable), the `ink` box checked, `set` (dev / spot) |
 | `manifests/stats.json` | counts from the last `build.py decide` |
-| `$REALDATA/real_train.npz`, `real_val.npz` | grey crops in render.py's shard format, dark text inverted; meta per crop: `id, vn, session, kind, target, pol, dark, inverted, how` |
+| `$REALDATA/real_train.npz`, `real_val.npz` | grey crops in render.py's shard format, dark text inverted; meta per crop: `id, vn, session, kind, target, pol, dark, inverted, how`. Train with `train.py --real $REALDATA/real_train.npz`, naming that file: the three npz share one directory, so a glob such as `--real "$REALDATA/*.npz"` would also train on `real_val.npz` |
 | `$REALDATA/real_unlabelled.npz` | the crops of `manifests/unlabelled_<kind>.jsonl`, cut the same way: empty labels, the four readings in meta. For soft / logit distillation from a teacher; `train.py --real` drops them all |
 
 The split is by game: a VN is validation when `15 <= md5(vn) % 100 < 25` (`build.split_of`),

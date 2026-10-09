@@ -13,8 +13,9 @@ Two crops come out of every ink box:
   train crop   the ink box at the target resolution (Vita 960x544 or PSP 480x272) padded
                2 px left and right, 3 px above and 4 px below: on 400 accepted lines the
                console's grad finder (synth/common.find_lines_ex, runtime/vocr_lines.c)
-               then gives boxes whose median edge difference is 0 px on every side
-               (check_finder.py). PC screenshots are first scaled to fit the target
+               then gives boxes whose median edge difference is 0 px on every side, though
+               only 42-70% of edges are within 1 px (p10-p90 -24..+17 px at x0, -17..+2 at
+               x1; check_finder.py). PC screenshots are first scaled to fit the target
                screen (cv2.INTER_AREA), so their glyphs end up at console size.
 """
 import math

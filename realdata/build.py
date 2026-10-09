@@ -267,6 +267,8 @@ real_train.npz, real_val.npz
     inversion), dark and inverted (the console's polarity flag), how (the vote, or "hand").
     {counts}
     Split by VNDB VN: val = 15 <= md5(vn) % 100 < 25. Use real_val for model selection only.
+    Train with `train.py --real <this dir>/real_train.npz`, naming that file: a glob over this
+    directory (--real '<dir>/*.npz') would also train on real_val.npz.
 
 Sources (VNDB kana API, screenshots of Japanese-only releases rated sexual < 0.3 and
 violence < 0.5): native Vita 960x544 (kind vita), native PSP 480x272 (kind psp), and PC /
@@ -277,7 +279,8 @@ and every screenshot of eval's test capture sessions (its "sessions", VNDB relea
 
 Labels: PP-OCRv5 mobile det finds the text rows; each row's ink box is refined by gradient
 energy (either polarity); crops are padded so the console's grad finder gives the same
-boxes (median edge difference 0 px on every side, realdata/check_finder.py).
+boxes (median edge difference 0 px on every side, but only 42-70% of edges within 1 px and
+p10-p90 -24..+17 px at x0, -17..+2 px at x1; realdata/check_finder.py on 400 lines).
 Four readers vote: PP-OCRv5 server, PP-OCRv6 small, manga-ocr, meiki. Rule
 {stats['rule']}: at least three readers support one PP-OCR reading (manga-ocr/meiki may
 differ by invented edge brackets, and from v6s by ellipsis cell counts); a fourth reader

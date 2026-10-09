@@ -4,7 +4,7 @@
   label.py [--shard K --nshards N] [--procs P] [--voters v6s,meiki,manga,v5s] [--limit-shots M]
            [--sample-lines P --seed S] [--out FILE]
 
-Reads realdata/manifests/shots.jsonl and the images that vndb.py fetched. For each
+Reads realdata/manifests/shots_<kind>.jsonl and the images that vndb.py fetched. For each
 screenshot: PP-OCRv5 mobile det (PSP frames are upscaled 2x for detection only), rows
 merged, ink boxes refined (lines.py), lines too small for every target dropped. Each
 line's voter view is read by v6s and meiki, then by manga-ocr and v5s (the slow ones)

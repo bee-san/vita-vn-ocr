@@ -1,9 +1,8 @@
 {
  "rule": "3of4-trim-dots-veto",
- "lines_read": 23919,
+ "lines_read": 23752,
  "accepted": 8318,
  "rejected": {
-  "test-game": 167,
   "not-japanese": 6194,
   "disagree": 8773,
   "confusable-dissent": 324,

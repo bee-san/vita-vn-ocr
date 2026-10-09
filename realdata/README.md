@@ -56,7 +56,7 @@ Models (labelling only, none ships): rapidocr 3.10.0's `ch_PP-OCRv5_det_mobile.o
 | | |
 |---|---|
 | screenshots | 6,932 of 1,488 VNs: 574 Vita, 2,354 PSP, 4,004 PC/console |
-| lines found / read | 23,919; 17,296 with Japanese text |
+| lines found / read | 23,752; 17,151 with Japanese text (PP-OCRv5 server skipped on 6,849 by the cascade) |
 | accepted | 8,318 lines (89,675 characters, 7,609 distinct labels) from 1,405 VNs; 2,748 dark-on-light |
 | crops | real_train 9,815 (Vita 5,454, PSP 4,361), real_val 1,499 (Vita 808, PSP 691) |
 | split | train 1,221 VNs / 1,478 sessions, val 184 VNs / 209 sessions |

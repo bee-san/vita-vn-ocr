@@ -6,7 +6,7 @@
 
 `sheet` draws N accepted lines uniformly at random (seeded) from teacher/manifests/lines_*.jsonl
 and renders each as it goes into the npz (the training crop at its target resolution),
-scaled to 40 px high, with its label typed underneath in BIZ UDGothic (OFL, from
+scaled to 48 px high, with its label typed underneath in BIZ UDGothic (OFL, from
 $HERD/shared/data/fonts; not committed) and its number. Sheets stay under 1280 px. Each line
 is then compared by eye, glyph by glyph (small kana, dakuten, ー/一, punctuation and ellipsis
 cell counts included), and recorded in teacher/manifests/spot.jsonl as
@@ -64,7 +64,8 @@ def cmd_sheet(args):
     (out / "sample.jsonl").write_text("".join(json.dumps({"n": i, "id": r["id"], "label": r["label"]},
                                                          ensure_ascii=False) + "\n" for i, r in enumerate(sample)),
                                       encoding="utf-8")
-    W, row_h = 1260, 40 + 30 + 14
+    H_CROP = 48
+    W, row_h = 1260, H_CROP + 34 + 16
     for s0 in range(0, len(sample), args.per_sheet):
         chunk = sample[s0:s0 + args.per_sheet]
         sheet = Image.new("RGB", (W, row_h * len(chunk) + 6), (255, 255, 255))
@@ -72,15 +73,15 @@ def cmd_sheet(args):
         for j, r in enumerate(chunk):
             crop, t = crop_image(r, shots)
             h, w = crop.shape[:2]
-            f = 40 / max(1, h)
+            f = H_CROP / max(1, h)
             if w * f > W - 60:
                 f = (W - 60) / w
             im = Image.fromarray(crop).resize((max(1, int(w * f)), max(1, int(h * f))), Image.LANCZOS)
             y = 4 + j * row_h
             d.text((4, y + 10), f"{s0 + j:02d}", fill=(200, 0, 0), font=small)
             sheet.paste(im, (40, y))
-            d.text((40, y + 42), r["label"], fill=(0, 0, 0), font=font)
-            d.text((W - 300, y + 42 + 8), f"{r['id']} {t}", fill=(120, 120, 120), font=small)
+            d.text((40, y + H_CROP + 4), r["label"], fill=(0, 0, 0), font=font)
+            d.text((W - 300, y + H_CROP + 12), f"{r['id']} {t}", fill=(120, 120, 120), font=small)
         p = out / f"sheet_{s0 // args.per_sheet:02d}.png"
         sheet.save(p)
         print(p, sheet.size, flush=True)
@@ -100,7 +101,7 @@ def main():
     p = sub.add_parser("sheet")
     p.add_argument("--n", type=int, default=100)
     p.add_argument("--seed", type=int, default=1)
-    p.add_argument("--per-sheet", type=int, default=10)
+    p.add_argument("--per-sheet", type=int, default=8)
     sub.add_parser("report")
     args = ap.parse_args()
     {"sheet": cmd_sheet, "report": cmd_report}[args.cmd](args)

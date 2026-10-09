@@ -120,6 +120,9 @@ def rows(runs_dir, eval_name, exporter, ref):
             "train_minutes": train_minutes(ev.parent / "train.log",
                                            int((ck.get("args") or {}).get("batch", 96))),
         }
+        styles = r.get("int8/vita-test", {}).get("styles") or {}
+        row["vita_bright_on_dark_int8"] = styles.get("bright-on-dark")
+        row["vita_styles_int8"] = styles
         for s in (*REAL, *PROVISIONAL, "vita-test", "psp-test", "psp-test-inv"):
             for v in ("fp32", "int8"):
                 if f"{v}/{s}" in r:
@@ -168,7 +171,8 @@ def markdown(rs, exact, ref):
     size_cols = ("int8 blob KiB | W8F arena KiB | footprint KiB" if exact else
                  "int8 weights KiB (est.) | non-streaming arena KiB (est.) | footprint KiB (est.)")
     head = (f"| run | width | classes | bneck | H | QAT | params | {size_cols} | MMAC (longest line) | "
-            f"synth-val CER fp32 / int8 | vita-test CER (as is) | vita-test-inv CER | real-hand-x CER | "
+            f"synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | "
+            f"vita-test-inv CER | real-hand-x CER | "
             f"real CER fp32 / int8 | Δ vs {ref} (95% CI) | Pareto |")
     lines = [head, "|" + "---|" * (head.count("|") - 1)]
     for a in sorted(rs, key=lambda a: (a["footprint"], a["run"])):
@@ -183,7 +187,8 @@ def markdown(rs, exact, ref):
             f"| {a['run']} | {a['width']} | {a['classes']} | {a['bottleneck']} | {a['height']} | "
             f"{'yes' if a['qat'] else ''} | {a['params']:,} | {sizes} | {kib(a['footprint'])} | "
             f"{a['macs_max'] / 1e6:.0f} | {pct(a['synth_fp32'])} / {pct(a['synth_int8'])} | "
-            f"{pct(a.get('vita-test_int8'))} | {pct(a.get('vita-test-inv_int8'))} | "
+            f"{pct(a.get('vita-test_int8'))} | {pct(a.get('vita_bright_on_dark_int8'))} | "
+            f"{pct(a.get('vita-test-inv_int8'))} | "
             f"{pct(a.get('real-hand-x_int8'))} | "
             f"{pct(a['real_fp32'])} / {pct(a['real_int8'])} | {delta} | "
             f"{pareto_cell(a)} |")

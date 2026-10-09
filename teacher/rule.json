@@ -1,0 +1,133 @@
+{
+ "rule": {
+  "primary": "meiki",
+  "voters": [
+   "v6s",
+   "manga",
+   "screenai",
+   "meikiv"
+  ],
+  "votes": 2,
+  "min_conf": 0.0,
+  "det_conf": 0.0,
+  "veto": true,
+  "trunc": [
+   "screenai"
+  ]
+ },
+ "chosen_by": "teacher/measure.py rules --set vita-test,psp-test --precision 0.995: the highest pooled recall whose precision is >= 0.995 on vita-test and psp-test each and pooled",
+ "status": "PROVISIONAL: eval's manifests from its open PRs #2 (aac4170/8cda2bf) and #5 (bebd4f9); re-measured once they merge",
+ "measured": {
+  "pooled": {
+   "accepted": 343,
+   "accepted_scored": 295,
+   "accepted_partial": 9,
+   "correct": 295,
+   "precision": 1.0,
+   "recall": 0.6541019955654102,
+   "gt_lines": 451,
+   "label_cer": 0.0
+  },
+  "precision_ci95": [
+   0.9871,
+   1.0
+  ],
+  "per_set": {
+   "vita-test": {
+    "accepted": 181,
+    "accepted_scored": 147,
+    "accepted_partial": 5,
+    "correct": 147,
+    "precision": 1.0,
+    "recall": 0.7135922330097088,
+    "gt_lines": 206,
+    "label_cer": 0.0
+   },
+   "psp-test": {
+    "accepted": 162,
+    "accepted_scored": 148,
+    "accepted_partial": 4,
+    "correct": 148,
+    "precision": 1.0,
+    "recall": 0.6040816326530613,
+    "gt_lines": 245,
+    "label_cer": 0.0
+   }
+  },
+  "per_set_ci95": {
+   "vita-test": [
+    0.9745,
+    1.0
+   ],
+   "psp-test": [
+    0.9747,
+    1.0
+   ]
+  },
+  "two_fold_held_out": [
+   {
+    "chosen_on_half": 0,
+    "rule": {
+     "primary": "meiki",
+     "voters": [
+      "v6s",
+      "manga",
+      "screenai",
+      "meikiv"
+     ],
+     "votes": 2,
+     "min_conf": 0.0,
+     "det_conf": 0.0,
+     "veto": true,
+     "trunc": false
+    },
+    "held_out": {
+     "accepted": 102,
+     "accepted_scored": 93,
+     "accepted_partial": 6,
+     "correct": 91,
+     "precision": 0.978494623655914,
+     "recall": 0.6232876712328768,
+     "gt_lines": 146,
+     "label_cer": 0.0029354207436399216
+    }
+   },
+   {
+    "chosen_on_half": 1,
+    "rule": {
+     "primary": "meiki",
+     "voters": [
+      "v6s",
+      "screenai",
+      "meikiv"
+     ],
+     "votes": 2,
+     "min_conf": 0.0,
+     "det_conf": 0.0,
+     "veto": false,
+     "trunc": [
+      "screenai"
+     ]
+    },
+    "held_out": {
+     "accepted": 250,
+     "accepted_scored": 211,
+     "accepted_partial": 3,
+     "correct": 210,
+     "precision": 0.995260663507109,
+     "recall": 0.6885245901639344,
+     "gt_lines": 305,
+     "label_cer": 0.000419639110365086
+    }
+   }
+  ]
+ },
+ "eval_manifests": {
+  "vita-test": {
+   "sha256": "92430d02133456679e766426970f84de2c9b6544a6152cbcb9017b698737c857"
+  },
+  "psp-test": {
+   "sha256": "e23ce16fca660c83dc5c5de33c7c4488565772c1072c70497f5a98a46a096f18"
+  }
+ }
+}

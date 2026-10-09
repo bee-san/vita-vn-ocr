@@ -16,9 +16,9 @@ leaves out). Then, for every rule in the grid (vote.accept parameters):
   label CER  edit distance of accepted labels / truth characters
   accepted   lines accepted in all, including unscored ones (what the relabel would keep)
 
-The chosen rule maximises recall with precision >= --precision on both sets pooled; it is
-also chosen on each half of the games (2-fold, by VN) and scored on the other half, so the
-reported held-out numbers are not tuned on the lines they describe. Per-engine accuracy on
+The chosen rule maximises pooled recall with precision >= --precision (default 99.5%) on
+each set and pooled; it is also chosen on each half of the games (2-fold, by VN) and scored
+on the other half, so the reported held-out numbers are not tuned on the lines they describe. Per-engine accuracy on
 the same matched lines is reported too ("pipeline" CER: each engine reading the teacher's
 own view of the line).
 """
@@ -349,6 +349,22 @@ def cmd_rules(args):
     print("\nfrontier (pooled):")
     for f in front[:25]:
         print(f"  recall {100 * f['recall']:.1f}%  precision {100 * f['precision']:.2f}%  {json.dumps(f['rule'])}")
+    if args.rule_out:
+        import hashlib
+        mans = {n: str(eval_manifest(n)) for n in sets}
+        Path(args.rule_out).write_text(json.dumps({
+            "rule": chosen,
+            "chosen_by": f"teacher/measure.py rules --set {args.set} --precision {args.precision}: the highest pooled "
+                         f"recall whose precision is >= {args.precision} on {' and '.join(sets)} each and pooled",
+            "measured": {"pooled": report["chosen"]["pooled"], "precision_ci95": report["chosen"]["precision_ci95"],
+                         "per_set": report["chosen"]["per_set"], "per_set_ci95": report["chosen"]["per_set_ci95"],
+                         "two_fold_held_out": [{"chosen_on_half": f["chosen_on"], "rule": f["rule"],
+                                                "held_out": f["held_out"]} for f in held if f]},
+            "eval_manifests": {n: {"path": m.split("/eval/")[-1] if "/eval/" in m else m,
+                                   "sha256": hashlib.sha256(Path(m).read_bytes()).hexdigest()}
+                               for n, m in mans.items()},
+        }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        print(f"wrote {args.rule_out}")
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -418,8 +434,9 @@ def main():
     p = sub.add_parser("rules")
     p.add_argument("--set", default=",".join(EVAL_SETS))
     p.add_argument("--reads", default=str(OUT / "reads"))
-    p.add_argument("--precision", type=float, default=0.99)
+    p.add_argument("--precision", type=float, default=0.995)
     p.add_argument("--out", default="")
+    p.add_argument("--rule-out", default="", help="write the chosen rule and its measurements (teacher/rule.json)")
     args = ap.parse_args()
     if args.cmd == "hand":
         res = cmd_hand(args)

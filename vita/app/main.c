@@ -765,6 +765,7 @@ static int worker_main(SceSize args, void *argp)
          cfg.repeat, cfg.pmu, cfg.limit, cfg.stack_kb, cfg.cpu, cfg.only, cfg.models);
     emit("# clock arm_mhz=%d bus_mhz=%d", scePowerGetArmClockFrequency(), scePowerGetBusClockFrequency());
     emit("# sizes vocr_model=%u vocr_ctx=%u", (unsigned)mb, (unsigned)cb);
+    out_flush();
     fd = sceIoOpen(DIR "cases.bin", SCE_O_RDONLY, 0);
     if (fd < 0) {
         say(SCR_RED, "no " DIR "cases.bin: copy the bundle from vita/bundle.py (vita/README.md)");
@@ -786,6 +787,7 @@ static int worker_main(SceSize args, void *argp)
         goto out;
     }
     emit("# lines arena=%u max_region=%ux%u", (unsigned)lines_arena_bytes, max_rw, max_rh);
+    out_flush();
     for (i = 0; i < n_models; i++)
         if (models[i].active) {
             snprintf(line, sizeof line, "%.16s: blob %u B, arena %u B", models[i].name, (unsigned)models[i].blob_n,
@@ -798,6 +800,7 @@ static int worker_main(SceSize args, void *argp)
     scr_head(3, SCR_GREY, line);
     emit("#cols id\tkind\tmodel\tstatus\trc\tdark\twidth\theight\tframes\tlines\tms_min\tms_median\tus_per_frame"
          "\tcycles\tinsns\tneon\tdmiss\tdstall\tnodispatch\tcrc_host\tcrc_vita\ttext_host\ttext_vita");
+    out_flush();
     for (i = 0; i < n_cases && !stop_requested; i++) {
         uint32_t len;
         unsigned char lb[4];
@@ -811,6 +814,10 @@ static int worker_main(SceSize args, void *argp)
         if (cfg.limit && done >= (unsigned)cfg.limit) break;
         do_case(&cs, i);
         done++;
+        /* each case's rows reach ux0: before the next case starts, so if the app dies on the
+         * console, results.tsv keeps every finished case and the first case missing from it
+         * is the one that was running */
+        out_flush();
         /* a full bundle runs for minutes without input: keep the console from suspending or
          * turning the screen off (resets those timers, like a button press would) */
         sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DEFAULT);

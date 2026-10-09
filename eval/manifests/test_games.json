@@ -1,0 +1,347 @@
+{
+ "rule": "A VN is a test game if synth/common.py is_test_vn(id) is true or its id is in 'all'; a screenshot is from a test capture session if its VNDB release id is in 'sessions'. Never train, calibrate or render synthetic backgrounds from a test game or a test session, on any platform. 'all' holds the set games, every is_test_vn() game with Vita or PSP screenshots, any VN sharing a release with a set screenshot, and each set game's direct VNDB relations of kinds alt, fan, orig, par, preq, seq, ser, side ('family').",
+ "all": [
+  "v3",
+  "v7",
+  "v9",
+  "v11",
+  "v14",
+  "v20",
+  "v68",
+  "v204",
+  "v250",
+  "v256",
+  "v264",
+  "v426",
+  "v430",
+  "v549",
+  "v562",
+  "v609",
+  "v689",
+  "v855",
+  "v968",
+  "v969",
+  "v1081",
+  "v1099",
+  "v1152",
+  "v1194",
+  "v1335",
+  "v1357",
+  "v1377",
+  "v1560",
+  "v1914",
+  "v1940",
+  "v2021",
+  "v2022",
+  "v2024",
+  "v2086",
+  "v2203",
+  "v2628",
+  "v2857",
+  "v2936",
+  "v2945",
+  "v2956",
+  "v3396",
+  "v3542",
+  "v3820",
+  "v4147",
+  "v4542",
+  "v4602",
+  "v4671",
+  "v4856",
+  "v4936",
+  "v5230",
+  "v5256",
+  "v5304",
+  "v5305",
+  "v5386",
+  "v5705",
+  "v5844",
+  "v6006",
+  "v6011",
+  "v6382",
+  "v6459",
+  "v6572",
+  "v7014",
+  "v7018",
+  "v7302",
+  "v7344",
+  "v7503",
+  "v7568",
+  "v7634",
+  "v7645",
+  "v7721",
+  "v7875",
+  "v8202",
+  "v8462",
+  "v9071",
+  "v9197",
+  "v9736",
+  "v9845",
+  "v9961",
+  "v10050",
+  "v10244",
+  "v10272",
+  "v10288",
+  "v10574",
+  "v10606",
+  "v10856",
+  "v11029",
+  "v11069",
+  "v11095",
+  "v11472",
+  "v11504",
+  "v11621",
+  "v11707",
+  "v11708",
+  "v11713",
+  "v11960",
+  "v11984",
+  "v12150",
+  "v12155",
+  "v12392",
+  "v12449",
+  "v12455",
+  "v12480",
+  "v12570",
+  "v12571",
+  "v12702",
+  "v12865",
+  "v12928",
+  "v12935",
+  "v12940",
+  "v12957",
+  "v12984",
+  "v13072",
+  "v13081",
+  "v13238",
+  "v13905",
+  "v13994",
+  "v14345",
+  "v14761",
+  "v14919",
+  "v15910",
+  "v16460",
+  "v16493",
+  "v16566",
+  "v16703",
+  "v16862",
+  "v17100",
+  "v17102",
+  "v17286",
+  "v17345",
+  "v17750",
+  "v17829",
+  "v17964",
+  "v18030",
+  "v18160",
+  "v18456",
+  "v18644",
+  "v18670",
+  "v18717",
+  "v18738",
+  "v18852",
+  "v18905",
+  "v18943",
+  "v19333",
+  "v19338",
+  "v19339",
+  "v19850",
+  "v20226",
+  "v20326",
+  "v20577",
+  "v21782",
+  "v21789",
+  "v22122",
+  "v23403",
+  "v23418",
+  "v24312",
+  "v24336",
+  "v25643",
+  "v25714",
+  "v25914",
+  "v26075",
+  "v28194",
+  "v29268",
+  "v30342",
+  "v32309",
+  "v40027",
+  "v55138",
+  "v55519"
+ ],
+ "sessions": [
+  "r22078",
+  "r38965",
+  "r39726",
+  "r39811",
+  "r41582",
+  "r42978",
+  "r46027",
+  "r46369",
+  "r47530",
+  "r49097",
+  "r50738",
+  "r53397",
+  "r53403",
+  "r55234",
+  "r56156",
+  "r66412"
+ ],
+ "family": {
+  "v7721": [
+   "v3",
+   "v18717",
+   "v26075",
+   "v40027"
+  ],
+  "v13072": [
+   "v10606"
+  ],
+  "v17750": [
+   "v20226",
+   "v24312"
+  ],
+  "v18030": [
+   "v10606"
+  ],
+  "v19339": [
+   "v19338"
+  ],
+  "v21782": [
+   "v25914"
+  ],
+  "v21789": [
+   "v18160"
+  ]
+ },
+ "vita-test": {
+  "v3820": {
+   "title": "Akai Suna Ochiru Tsuki",
+   "lines": 11,
+   "screenshots": 3,
+   "sessions": [
+    "r42978"
+   ]
+  },
+  "v7721": {
+   "title": "Utawarerumono: Itsuwari no Kamen",
+   "lines": 12,
+   "screenshots": 4,
+   "sessions": [
+    "r39726"
+   ]
+  },
+  "v10856": {
+   "title": "Time Travelers",
+   "lines": 2,
+   "screenshots": 1,
+   "sessions": [
+    "r22078"
+   ]
+  },
+  "v13072": {
+   "title": "Kin'iro no Corda 3 AnotherSky",
+   "lines": 3,
+   "screenshots": 1,
+   "sessions": [
+    "r56156"
+   ]
+  },
+  "v16460": {
+   "title": "Sweet Clown ~Gozen San-ji no Okashi na Doukeshi~",
+   "lines": 25,
+   "screenshots": 9,
+   "sessions": [
+    "r50738"
+   ]
+  },
+  "v16566": {
+   "title": "Saenai Heroine no Sodatekata -blessing flowers-",
+   "lines": 20,
+   "screenshots": 6,
+   "sessions": [
+    "r38965"
+   ]
+  },
+  "v17286": {
+   "title": "BELIEVER!",
+   "lines": 16,
+   "screenshots": 5,
+   "sessions": [
+    "r39811"
+   ]
+  },
+  "v17750": {
+   "title": "Kenka Banchou Otome",
+   "lines": 16,
+   "screenshots": 7,
+   "sessions": [
+    "r46369"
+   ]
+  },
+  "v17829": {
+   "title": "Naderebo!",
+   "lines": 12,
+   "screenshots": 5,
+   "sessions": [
+    "r55234"
+   ]
+  },
+  "v18030": {
+   "title": "Kin'iro no Corda 4",
+   "lines": 16,
+   "screenshots": 5,
+   "sessions": [
+    "r41582"
+   ]
+  },
+  "v19339": {
+   "title": "Reco Love Gold Beach",
+   "lines": 6,
+   "screenshots": 3,
+   "sessions": [
+    "r46027"
+   ]
+  },
+  "v19850": {
+   "title": "VARIABLE BARRICADE",
+   "lines": 8,
+   "screenshots": 3,
+   "sessions": [
+    "r47530"
+   ]
+  },
+  "v20326": {
+   "title": "Utsusemi no Meguri",
+   "lines": 14,
+   "screenshots": 5,
+   "sessions": [
+    "r49097"
+   ]
+  },
+  "v21782": {
+   "title": "Piofiore no Banshou",
+   "lines": 12,
+   "screenshots": 5,
+   "sessions": [
+    "r53397"
+   ]
+  },
+  "v21789": {
+   "title": "Collar x Malice -Unlimited-",
+   "lines": 25,
+   "screenshots": 9,
+   "sessions": [
+    "r53403"
+   ]
+  },
+  "v22122": {
+   "title": "Gunka o Haita Neko",
+   "lines": 8,
+   "screenshots": 3,
+   "sessions": [
+    "r66412"
+   ]
+  }
+ }
+}

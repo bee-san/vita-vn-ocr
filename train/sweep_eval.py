@@ -26,7 +26,10 @@ on a light background (an oracle; a deployed pipeline needs the line finder to
 report polarity), auto guesses from the crop, none feeds every crop as it is.
 Scoring: CER = Levenshtein / GT length after label_real.canon, full-width ASCII
 folded to ASCII, dash-like glyphs folded to ―, whitespace removed. A reduced
-vocab's <unk> (〓) is always an error. Writes <run>/eval_<ckpt stem>.json.
+vocab's <unk> (〓) is always an error. Writes <run>/eval_<ckpt stem>.json. --save-int8-ckpt also writes
+<run>/<ckpt stem>_int8w.pt, the same checkpoint with every int8 conv's weights
+replaced by their quantise-dequantise values: evaluated in fp32 by any tool (e.g.
+eval/run.py) it gives exactly the runtime's W8F output.
 """
 import argparse
 import glob
@@ -46,7 +49,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "synth"))
 sys.path.insert(0, str(ROOT / "data"))
 from common import DATA, is_test_vn, to_gray  # noqa: E402
-from model import from_checkpoint, int8_conv, set_weight_quant  # noqa: E402
+from model import fake_quant_weight, from_checkpoint, int8_conv, set_weight_quant  # noqa: E402
 from train import MAX_W, STRIDE, edit_distance, greedy  # noqa: E402
 from vocab import RESEARCH  # noqa: E402
 
@@ -212,12 +215,21 @@ def main():
     ap.add_argument("--polarity", choices=("tag", "auto", "none"), default="tag")
     ap.add_argument("--threads", type=int, default=0)
     ap.add_argument("--limit", type=int, default=None, help="first N synth-val lines (tests)")
+    ap.add_argument("--save-int8-ckpt", action="store_true")
     args = ap.parse_args()
     from train import default_threads
     torch.set_num_threads(args.threads or default_threads())
     torch.set_flush_denormal(True)
     ck = torch.load(args.run / args.ckpt, map_location="cpu", weights_only=False)
     model, meta = from_checkpoint(ck)
+    if args.save_int8_ckpt:
+        q = dict(ck)
+        q["model"] = {k: v.clone() for k, v in ck["model"].items()}
+        for name, m in model.named_modules():
+            if int8_conv(m):
+                q["model"][f"{name}.weight"] = fake_quant_weight(m.weight.detach()).contiguous()
+        q["int8_weights"] = "dequantised per-channel int8 (= runtime W8F)"
+        torch.save(q, args.run / f"{Path(args.ckpt).stem}_int8w.pt")
     pol = args.polarity
     loaders = {"synth-val": lambda: synth_val(args.limit), "real-hand": lambda: real_hand(pol),
                "real-pseudo": lambda: real_pseudo(pol)}

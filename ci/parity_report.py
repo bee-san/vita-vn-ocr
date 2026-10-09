@@ -5,9 +5,9 @@
 
 The report is one JSON object. Required keys: "ckpt" and "shard" (the VOCR_CKPT and
 VOCR_SHARD the target was given, which shows the test ran on CI's fixture), "lines" (crops
-compared, at least 1) and "pass" (true). Any other keys, such as per-mode logit differences
-or string matches, are free. The whole report is printed and added to the GitHub job summary.
-The contract is at the top of ci/runtime.sh.
+compared, which must be every crop in VOCR_SHARD) and "pass" (true). Any other keys, such
+as per-mode logit differences or string matches, are free. The whole report is printed and
+added to the GitHub job summary. The contract is at the top of ci/runtime.sh.
 """
 import argparse
 import json
@@ -16,8 +16,16 @@ import sys
 from pathlib import Path
 
 
-def problems(report, ckpt, shard):
-    """Contract violations in a loaded report; an empty list means it passes."""
+def shard_lines(shard):
+    """Number of crops in a render.py shard (the length of its labels)."""
+    import numpy as np
+    with np.load(shard) as z:
+        return len(json.loads(str(z["labels"])))
+
+
+def problems(report, ckpt, shard, n_lines):
+    """Contract violations in a loaded report; an empty list means it passes.
+    n_lines is the number of crops in the shard, all of which must have been compared."""
     if not isinstance(report, dict):
         return ["the report is not a JSON object"]
     out = []
@@ -26,8 +34,9 @@ def problems(report, ckpt, shard):
         if not isinstance(got, str) or os.path.realpath(got) != os.path.realpath(want):
             out.append(f'"{key}" is {got!r}, expected the VOCR_{key.upper()} that CI passed ({want})')
     lines = report.get("lines")
-    if not isinstance(lines, int) or isinstance(lines, bool) or lines < 1:
-        out.append(f'"lines" is {lines!r}, expected the number of crops compared (at least 1)')
+    if not isinstance(lines, int) or isinstance(lines, bool) or lines != n_lines:
+        out.append(f'"lines" is {lines!r}, expected {n_lines}: the number of crops compared, '
+                   "which must be every crop in VOCR_SHARD")
     if report.get("pass") is not True:
         out.append(f'"pass" is {report.get("pass")!r}, expected true')
     return out
@@ -49,7 +58,7 @@ def main():
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
             f.write(f"### Runtime parity report\n\n```json\n{text}\n```\n\n")
-    bad = problems(report, args.ckpt, args.shard)
+    bad = problems(report, args.ckpt, args.shard, shard_lines(args.shard))
     if bad:
         sys.exit("error: parity report does not meet the contract:\n  " + "\n  ".join(bad))
     print("PARITY_REPORT_OK")

@@ -26,12 +26,12 @@
 #    under each compiler. Keep -I paths in CPPFLAGS and -lm in LDLIBS. Run sanitized code as
 #    executables: an ASan build can't be loaded into Python through ctypes without LD_PRELOAD.
 #  - The parity test exports VOCR_CKPT with train/export.py (fp32 and int8), runs PyTorch and
-#    the C runtime on the crops in VOCR_SHARD (render.py's shard format), fails when the
+#    the C runtime on every crop in VOCR_SHARD (render.py's shard format), fails when the
 #    logits differ beyond tolerance or any decoded string differs, and writes one JSON object
-#    to VOCR_REPORT: {"ckpt": VOCR_CKPT, "shard": VOCR_SHARD, "lines": <crops compared>,
-#    "pass": true, plus anything else, e.g. max logit difference per mode}. Compare strings
-#    against a reference with the same weights (dequantised for int8): this random-init
-#    fixture has small top-1/top-2 logit gaps.
+#    to VOCR_REPORT: {"ckpt": VOCR_CKPT, "shard": VOCR_SHARD, "lines": <crops compared, which
+#    must be every crop in the shard>, "pass": true, plus anything else, e.g. max logit
+#    difference per mode}. Compare strings against a reference with the same weights
+#    (dequantised for int8): this random-init fixture has small top-1/top-2 logit gaps.
 # Other C code in runtime/ before the recognizer lands (the line finder, say) gets steps 1-2,
 # and step 3 if it brings a Makefile; it needs no parity report.
 set -euo pipefail

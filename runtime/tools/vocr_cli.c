@@ -1,0 +1,271 @@
+/* vocr_cli - host / qemu driver for the vocr runtime (not part of the console build).
+ *
+ *   vocr_cli MODEL.vocr [opts] IMAGE.pgm...     one text line per image on stdout
+ *   vocr_cli MODEL.vocr [opts] --pack LINES.bin  many grey crops in one file
+ *
+ * opts: --mode auto|f32|w8f|w8i  --tile N  --head N  --max-width N
+ *       --logits OUT.bin   per line: u32 frames, u32 classes, float32 logits
+ *       --repeat N         run every line N times (timing)
+ *       --arena W[,W...]   print arena bytes for these max widths and exit
+ *       --crc              verify the blob CRC first
+ * A pack file is u32 count, then per crop u32 height, u32 width, height*width bytes.
+ * Timing (wall clock, after the first run) goes to stderr.
+ */
+#define _POSIX_C_SOURCE 200112L
+#include "../vocr.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+static double now(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double)ts.tv_sec + 1e-9 * (double)ts.tv_nsec;
+}
+
+static void *read_file(const char *path, size_t *n, size_t align)
+{
+    FILE *f = fopen(path, "rb");
+    void *buf = NULL;
+    long len;
+    if (!f) return NULL;
+    if (fseek(f, 0, SEEK_END) || (len = ftell(f)) < 0 || fseek(f, 0, SEEK_SET)) {
+        fclose(f);
+        return NULL;
+    }
+    if (align > 1) {
+        size_t sz = ((size_t)len + align - 1) / align * align;
+        if (posix_memalign(&buf, align, sz ? sz : align)) buf = NULL;
+    } else {
+        buf = malloc((size_t)len ? (size_t)len : 1u);
+    }
+    if (buf && fread(buf, 1, (size_t)len, f) != (size_t)len) {
+        free(buf);
+        buf = NULL;
+    }
+    fclose(f);
+    *n = (size_t)len;
+    return buf;
+}
+
+static unsigned rd32(const unsigned char *p)
+{
+    return (unsigned)p[0] | (unsigned)p[1] << 8 | (unsigned)p[2] << 16 | (unsigned)p[3] << 24;
+}
+
+/* Binary PGM (P5, maxval 255). Returns pixels inside buf. */
+static unsigned char *parse_pgm(unsigned char *buf, size_t n, unsigned *w, unsigned *h)
+{
+    unsigned v[3];
+    size_t i = 2;
+    int k;
+    if (n < 3 || buf[0] != 'P' || buf[1] != '5') return NULL;
+    for (k = 0; k < 3; k++) {
+        while (i < n && (buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\r' || buf[i] == '\t' || buf[i] == '#')) {
+            if (buf[i] == '#')
+                while (i < n && buf[i] != '\n') i++;
+            else
+                i++;
+        }
+        v[k] = 0;
+        while (i < n && buf[i] >= '0' && buf[i] <= '9') v[k] = v[k] * 10u + (unsigned)(buf[i++] - '0');
+    }
+    if (i >= n || v[2] != 255) return NULL;
+    i++;
+    *w = v[0];
+    *h = v[1];
+    if (!*w || !*h || n - i < (size_t)*w * *h) return NULL;
+    return buf + i;
+}
+
+static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px, unsigned w,
+                    unsigned h, int repeat, FILE *logits_out, double *t_total, unsigned long *frames)
+{
+    vocr_image img;
+    vocr_extra ex;
+    char text[4096];
+    float *logits = NULL;
+    int rc = 0, r;
+    unsigned cap = (unsigned)vocr_resized_width(m, w, h) / m->stride + 1u;
+    img.pixels = px;
+    img.width = w;
+    img.height = h;
+    img.stride = w;
+    img.format = VOCR_GREY8;
+    memset(&ex, 0, sizeof ex);
+    if (logits_out) {
+        logits = (float *)malloc((size_t)cap * m->n_classes * sizeof(float));
+        if (!logits) return VOCR_E_ARG;
+        ex.logits = logits;
+        ex.cap_frames = cap;
+    }
+    for (r = 0; r < (repeat > 0 ? repeat : 1) + (repeat > 0 ? 1 : 0); r++) {
+        double t0 = now();
+        rc = vocr_run(ctx, &img, text, sizeof text, r == 0 ? &ex : NULL);
+        if (r > 0 || repeat <= 0) *t_total += now() - t0;
+        if (rc && rc != VOCR_E_TEXT) break;
+    }
+    *frames += ex.frames;
+    if (rc && rc != VOCR_E_TEXT) {
+        fprintf(stderr, "vocr_run: %s\n", vocr_strerror(rc));
+        free(logits);
+        return rc;
+    }
+    printf("%s\n", text);
+    if (logits_out) {
+        unsigned hdr[2];
+        hdr[0] = ex.frames;
+        hdr[1] = m->n_classes;
+        fwrite(hdr, sizeof hdr, 1, logits_out);
+        fwrite(logits, sizeof(float), (size_t)ex.frames * m->n_classes, logits_out);
+    }
+    free(logits);
+    return 0;
+}
+
+int main(int argc, char **argv)
+{
+    vocr_model m;
+    vocr_ctx ctx;
+    vocr_opts o;
+    size_t blob_n, need;
+    void *blob, *arena;
+    const char *pack = NULL, *logits_path = NULL, *arena_list = NULL;
+    FILE *lf = NULL;
+    int i, rc, repeat = 0, crc = 0, first_file = 0, nfiles = 0;
+    unsigned long lines = 0, frames = 0;
+    double t_total = 0.0;
+    if (argc < 2) {
+        fprintf(stderr, "usage: %s MODEL.vocr [opts] IMAGE.pgm... | --pack FILE\n", argv[0]);
+        return 2;
+    }
+    memset(&o, 0, sizeof o);
+    for (i = 2; i < argc; i++) {
+        const char *a = argv[i];
+        if (!strcmp(a, "--mode") && i + 1 < argc) {
+            const char *v = argv[++i];
+            o.mode = !strcmp(v, "f32") ? VOCR_MODE_F32 : !strcmp(v, "w8f") ? VOCR_MODE_W8F
+                   : !strcmp(v, "w8i") ? VOCR_MODE_W8I : VOCR_MODE_AUTO;
+        } else if (!strcmp(a, "--tile") && i + 1 < argc) {
+            o.tile_frames = (unsigned)atoi(argv[++i]);
+        } else if (!strcmp(a, "--head") && i + 1 < argc) {
+            o.head_frames = (unsigned)atoi(argv[++i]);
+        } else if (!strcmp(a, "--max-width") && i + 1 < argc) {
+            o.max_width = (unsigned)atoi(argv[++i]);
+        } else if (!strcmp(a, "--logits") && i + 1 < argc) {
+            logits_path = argv[++i];
+        } else if (!strcmp(a, "--repeat") && i + 1 < argc) {
+            repeat = atoi(argv[++i]);
+        } else if (!strcmp(a, "--pack") && i + 1 < argc) {
+            pack = argv[++i];
+        } else if (!strcmp(a, "--arena") && i + 1 < argc) {
+            arena_list = argv[++i];
+        } else if (!strcmp(a, "--crc")) {
+            crc = 1;
+        } else if (a[0] == '-' && a[1] == '-') {
+            fprintf(stderr, "unknown option %s\n", a);
+            return 2;
+        } else {
+            if (!first_file) first_file = i;
+            nfiles++;
+        }
+    }
+    blob = read_file(argv[1], &blob_n, 16);
+    if (!blob) {
+        fprintf(stderr, "cannot read %s\n", argv[1]);
+        return 1;
+    }
+    if (crc && vocr_check_crc(blob, blob_n)) {
+        fprintf(stderr, "CRC mismatch\n");
+        return 1;
+    }
+    rc = vocr_load(&m, blob, blob_n);
+    if (rc) {
+        fprintf(stderr, "vocr_load: %s\n", vocr_strerror(rc));
+        return 1;
+    }
+    if (arena_list) {
+        const char *p = arena_list;
+        while (*p) {
+            vocr_opts oo = o;
+            oo.max_width = (unsigned)strtoul(p, (char **)&p, 10);
+            printf("max_width %u arena %lu\n", oo.max_width, (unsigned long)vocr_arena_bytes(&m, &oo));
+            if (*p == ',') p++;
+            else break;
+        }
+        printf("blob %lu\n", (unsigned long)m.bytes);
+        return 0;
+    }
+    need = vocr_arena_bytes(&m, &o);
+    if (!need) {
+        fprintf(stderr, "invalid options for this model\n");
+        return 1;
+    }
+    if (posix_memalign(&arena, 16, need)) arena = NULL;
+    if (!arena || (rc = vocr_init(&ctx, &m, &o, arena, need))) {
+        fprintf(stderr, "vocr_init: %s\n", vocr_strerror(arena ? rc : VOCR_E_ARG));
+        return 1;
+    }
+    fprintf(stderr, "blob %lu bytes, arena %lu bytes, mode %d, tile %u, head %u\n",
+            (unsigned long)m.bytes, (unsigned long)need, ctx.mode, ctx.tile, ctx.head);
+    if (logits_path && !(lf = fopen(logits_path, "wb"))) {
+        fprintf(stderr, "cannot write %s\n", logits_path);
+        return 1;
+    }
+    if (pack) {
+        size_t n, off = 4;
+        unsigned char *buf = (unsigned char *)read_file(pack, &n, 1);
+        unsigned count, j;
+        if (!buf || n < 4) {
+            fprintf(stderr, "cannot read %s\n", pack);
+            return 1;
+        }
+        count = rd32(buf);
+        for (j = 0; j < count; j++) {
+            unsigned h, w;
+            if (n - off < 8) break;
+            h = rd32(buf + off);
+            w = rd32(buf + off + 4);
+            off += 8;
+            if ((size_t)h * w > n - off) break;
+            if (run_line(&ctx, &m, buf + off, w, h, repeat, lf, &t_total, &frames)) return 1;
+            off += (size_t)h * w;
+            lines++;
+        }
+        if (j != count) {
+            fprintf(stderr, "truncated pack file\n");
+            return 1;
+        }
+        free(buf);
+    }
+    for (i = first_file; nfiles && i < argc; i++) {
+        size_t n;
+        unsigned w, h;
+        unsigned char *buf, *px;
+        if (argv[i][0] == '-' && argv[i][1] == '-') {
+            if (strcmp(argv[i], "--crc")) i++;
+            continue;
+        }
+        buf = (unsigned char *)read_file(argv[i], &n, 1);
+        px = buf ? parse_pgm(buf, n, &w, &h) : NULL;
+        if (!px) {
+            fprintf(stderr, "cannot read PGM %s\n", argv[i]);
+            return 1;
+        }
+        if (run_line(&ctx, &m, px, w, h, repeat, lf, &t_total, &frames)) return 1;
+        free(buf);
+        lines++;
+    }
+    if (lf) fclose(lf);
+    if (lines)
+        fprintf(stderr, "%lu lines, %lu frames, %.3f ms/line, %.1f us/frame%s\n", lines, frames,
+                1e3 * t_total / (double)lines / (repeat > 0 ? repeat : 1),
+                1e6 * t_total / (double)(frames ? frames : 1) / (repeat > 0 ? repeat : 1),
+                repeat > 0 ? " (after warm-up)" : "");
+    free(arena);
+    free(blob);
+    return 0;
+}

@@ -1,33 +1,69 @@
-# runtime/Makefile - host checks of the C code in runtime/.
+# runtime/Makefile - host builds, sanitizers and ARM cross builds of the vocr runtime.
 #
-#   make check      the line finder's checks (check-lines, in vocr_lines.mk)
+#   make                 build/vocr_cli and build/libvocr.so (gcc, -O2)
+#   make check           gcc + clang -Werror builds, ASan/UBSan CLI, C unit test
+#   make arm             static ARMv7 (Cortex-A9) CLIs: NEON and scalar
+#   make size            code size of vocr.o for the ARM target
 #
-# CI (ci/runtime.sh) runs `make -C runtime check CC=... CFLAGS=... LDFLAGS=... PYTHON=...` and
-# expects test programs built with $(CC) $(CFLAGS) ... $(LDFLAGS): flags given on the command
-# line are kept and only extended. Without them the defaults below build with ASan + UBSan.
-# SAN_ENV prefixes the commands that run sanitized programs, for example when gcc's libasan is
-# not on the loader path:  make check SAN_ENV="env LD_LIBRARY_PATH=/path/to/gcc/lib"
-# The recognizer's Makefile keeps `include vocr_lines.mk` and makes `check` depend on check-lines.
+# Tools can be overridden: CC, CLANG, ARM_CC (default: the Arm GNU toolchain prefix
+# arm-none-linux-gnueabihf-, see scripts/fetch_arm_tools.sh), QEMU.
 
-ifeq ($(origin CC),default)
-CC = gcc
-endif
-PYTHON ?= python3
+CC ?= gcc
+CLANG ?= clang
 OUT ?= build
-SAN = -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer
-ifeq ($(origin CFLAGS),undefined)
-CFLAGS = -O2 -g $(SAN)
-endif
-ifeq ($(origin LDFLAGS),undefined)
-LDFLAGS = $(SAN)
-endif
-SAN_ENV ?=
+CSTD = -std=c99 -ffp-contract=off
+WARN = -Wall -Wextra -Werror -Wpedantic -Wshadow -Wstrict-prototypes -Wmissing-prototypes \
+       -Wcast-align -Wpointer-arith
+OPT ?= -O2
+SAN = -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer
+ARM_CC ?= arm-none-linux-gnueabihf-gcc
+ARM_FLAGS = -O2 -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -mtune=cortex-a9
+QEMU ?= qemu-arm
 
-.PHONY: check clean
+SRC = vocr.c vocr.h
+CLI = tools/vocr_cli.c
 
-check: check-lines
+.PHONY: all check arm size clean
 
-include vocr_lines.mk
+all: $(OUT)/vocr_cli $(OUT)/libvocr.so
+
+$(OUT):
+	mkdir -p $(OUT) $(OUT)/arm
+
+$(OUT)/vocr_cli: $(SRC) $(CLI) | $(OUT)
+	$(CC) $(CSTD) $(WARN) $(OPT) -o $@ vocr.c $(CLI) -lm
+
+$(OUT)/libvocr.so: $(SRC) | $(OUT)
+	$(CC) $(CSTD) $(WARN) $(OPT) -fPIC -shared -o $@ vocr.c -lm
+
+$(OUT)/vocr_cli_clang: $(SRC) $(CLI) | $(OUT)
+	$(CLANG) $(CSTD) $(WARN) $(OPT) -o $@ vocr.c $(CLI) -lm
+
+$(OUT)/vocr_cli_san: $(SRC) $(CLI) | $(OUT)
+	$(CC) $(CSTD) $(WARN) $(SAN) -o $@ vocr.c $(CLI) -lm
+
+$(OUT)/vocr_cli_clang_san: $(SRC) $(CLI) | $(OUT)
+	$(CLANG) $(CSTD) $(WARN) $(SAN) -o $@ vocr.c $(CLI) -lm
+
+$(OUT)/test_vocr: $(SRC) tests/test_vocr.c | $(OUT)
+	$(CC) $(CSTD) $(WARN) $(SAN) -o $@ vocr.c tests/test_vocr.c -lm
+
+check: $(OUT)/vocr_cli $(OUT)/libvocr.so $(OUT)/vocr_cli_clang $(OUT)/vocr_cli_san \
+       $(OUT)/vocr_cli_clang_san $(OUT)/test_vocr
+	./$(OUT)/test_vocr
+
+arm: $(OUT)/arm/vocr_cli_neon $(OUT)/arm/vocr_cli_scalar
+
+$(OUT)/arm/vocr_cli_neon: $(SRC) $(CLI) | $(OUT)
+	$(ARM_CC) $(CSTD) $(WARN) $(ARM_FLAGS) -static -o $@ vocr.c $(CLI) -lm
+
+$(OUT)/arm/vocr_cli_scalar: $(SRC) $(CLI) | $(OUT)
+	$(ARM_CC) $(CSTD) $(WARN) $(ARM_FLAGS) -DVOCR_NO_NEON -static -o $@ vocr.c $(CLI) -lm
+
+size: | $(OUT)
+	$(ARM_CC) $(CSTD) $(WARN) $(ARM_FLAGS) -c -o $(OUT)/arm/vocr_neon.o vocr.c
+	$(ARM_CC) $(CSTD) $(WARN) $(ARM_FLAGS) -DVOCR_NO_NEON -c -o $(OUT)/arm/vocr_scalar.o vocr.c
+	$(ARM_CC:gcc=size) $(OUT)/arm/vocr_neon.o $(OUT)/arm/vocr_scalar.o
 
 clean:
 	rm -rf $(OUT)

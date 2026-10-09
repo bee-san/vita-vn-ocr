@@ -1,0 +1,11895 @@
+{
+ "note": "VNDB VNs with teacher-labelled lines (train or val): eval must never test on these.",
+ "games": {
+  "v2": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v2/r1038/0"
+   ]
+  },
+  "v4": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v4/r13/0"
+   ]
+  },
+  "v5": {
+   "split": "train",
+   "lines": 15,
+   "shots": 3,
+   "sessions": [
+    "v5/r174/0",
+    "v5/r174/1"
+   ]
+  },
+  "v10": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v10/r22/0"
+   ]
+  },
+  "v12": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v12/r192/0"
+   ]
+  },
+  "v19": {
+   "split": "train",
+   "lines": 11,
+   "shots": 3,
+   "sessions": [
+    "v19/r221/0"
+   ]
+  },
+  "v21": {
+   "split": "train",
+   "lines": 17,
+   "shots": 4,
+   "sessions": [
+    "v21/r228/0",
+    "v21/r228/1"
+   ]
+  },
+  "v23": {
+   "split": "val",
+   "lines": 12,
+   "shots": 2,
+   "sessions": [
+    "v23/r232/1"
+   ]
+  },
+  "v26": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v26/r243/0"
+   ]
+  },
+  "v28": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v28/r1555/0",
+    "v28/r361/0"
+   ]
+  },
+  "v33": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v33/r106357/0",
+    "v33/r274/0"
+   ]
+  },
+  "v36": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v36/r46058/0",
+    "v36/r87/0"
+   ]
+  },
+  "v37": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v37/r79/0",
+    "v37/r80/0"
+   ]
+  },
+  "v38": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v38/r60987/0",
+    "v38/r81/0"
+   ]
+  },
+  "v39": {
+   "split": "train",
+   "lines": 18,
+   "shots": 4,
+   "sessions": [
+    "v39/r83/0"
+   ]
+  },
+  "v43": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v43/r1756/0"
+   ]
+  },
+  "v45": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v45/r188/0",
+    "v45/r22573/0"
+   ]
+  },
+  "v49": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v49/r342/0"
+   ]
+  },
+  "v50": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v50/r354/0"
+   ]
+  },
+  "v51": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v51/r131/0"
+   ]
+  },
+  "v52": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v52/r134/0"
+   ]
+  },
+  "v66": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v66/r35224/0"
+   ]
+  },
+  "v67": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v67/r256/0"
+   ]
+  },
+  "v69": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v69/r263/0"
+   ]
+  },
+  "v74": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v74/r125440/0",
+    "v74/r305/0"
+   ]
+  },
+  "v82": {
+   "split": "train",
+   "lines": 14,
+   "shots": 3,
+   "sessions": [
+    "v82/r379/0"
+   ]
+  },
+  "v83": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v83/r382/0"
+   ]
+  },
+  "v87": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v87/r388/1"
+   ]
+  },
+  "v88": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v88/r389/0",
+    "v88/r599/0"
+   ]
+  },
+  "v92": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v92/r7/0"
+   ]
+  },
+  "v93": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v93/r9/0",
+    "v93/r9/1"
+   ]
+  },
+  "v94": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v94/r1978/0"
+   ]
+  },
+  "v95": {
+   "split": "train",
+   "lines": 10,
+   "shots": 6,
+   "sessions": [
+    "v95/r16288/0",
+    "v95/r16288/1"
+   ]
+  },
+  "v96": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v96/r1628/0"
+   ]
+  },
+  "v97": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v97/r25/0"
+   ]
+  },
+  "v98": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v98/r28/0"
+   ]
+  },
+  "v102": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v102/r37/0"
+   ]
+  },
+  "v105": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v105/r43/0"
+   ]
+  },
+  "v114": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v114/r72556/0"
+   ]
+  },
+  "v121": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v121/r124/0"
+   ]
+  },
+  "v125": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v125/r122/0"
+   ]
+  },
+  "v128": {
+   "split": "train",
+   "lines": 7,
+   "shots": 2,
+   "sessions": [
+    "v128/r1757/0"
+   ]
+  },
+  "v147": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v147/r47445/0"
+   ]
+  },
+  "v155": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v155/r6253/0"
+   ]
+  },
+  "v167": {
+   "split": "train",
+   "lines": 8,
+   "shots": 1,
+   "sessions": [
+    "v167/r23208/0"
+   ]
+  },
+  "v174": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v174/r444/0",
+    "v174/r444/1"
+   ]
+  },
+  "v176": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v176/r448/0"
+   ]
+  },
+  "v177": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v177/r453/0"
+   ]
+  },
+  "v182": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v182/r2434/0",
+    "v182/r3707/0"
+   ]
+  },
+  "v183": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v183/r464/0"
+   ]
+  },
+  "v184": {
+   "split": "train",
+   "lines": 14,
+   "shots": 4,
+   "sessions": [
+    "v184/r3723/0",
+    "v184/r466/0"
+   ]
+  },
+  "v193": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v193/r483/0"
+   ]
+  },
+  "v195": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v195/r494/0"
+   ]
+  },
+  "v201": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v201/r511/0"
+   ]
+  },
+  "v202": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v202/r513/0"
+   ]
+  },
+  "v210": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v210/r16239/0",
+    "v210/r44665/0",
+    "v210/r527/0",
+    "v210/r527/1"
+   ]
+  },
+  "v211": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v211/r531/0"
+   ]
+  },
+  "v218": {
+   "split": "val",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v218/r102968/0",
+    "v218/r67338/0"
+   ]
+  },
+  "v221": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v221/r558/0"
+   ]
+  },
+  "v228": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v228/r15503/0",
+    "v228/r580/0"
+   ]
+  },
+  "v231": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v231/r594/0",
+    "v231/r594/1"
+   ]
+  },
+  "v232": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v232/r610/0"
+   ]
+  },
+  "v234": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v234/r600/0",
+    "v234/r600/1"
+   ]
+  },
+  "v235": {
+   "split": "train",
+   "lines": 19,
+   "shots": 3,
+   "sessions": [
+    "v235/r602/0"
+   ]
+  },
+  "v236": {
+   "split": "train",
+   "lines": 14,
+   "shots": 4,
+   "sessions": [
+    "v236/r605/0",
+    "v236/r8702/0"
+   ]
+  },
+  "v238": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v238/r1588/0"
+   ]
+  },
+  "v247": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v247/r5954/0",
+    "v247/r626/0"
+   ]
+  },
+  "v248": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v248/r626/0"
+   ]
+  },
+  "v254": {
+   "split": "train",
+   "lines": 6,
+   "shots": 5,
+   "sessions": [
+    "v254/r3818/0"
+   ]
+  },
+  "v266": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v266/r671/0"
+   ]
+  },
+  "v269": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v269/r1406/0"
+   ]
+  },
+  "v270": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v270/r1407/0"
+   ]
+  },
+  "v284": {
+   "split": "train",
+   "lines": 18,
+   "shots": 3,
+   "sessions": [
+    "v284/r715/0"
+   ]
+  },
+  "v287": {
+   "split": "train",
+   "lines": 17,
+   "shots": 4,
+   "sessions": [
+    "v287/r720/0"
+   ]
+  },
+  "v311": {
+   "split": "val",
+   "lines": 15,
+   "shots": 3,
+   "sessions": [
+    "v311/r35452/0",
+    "v311/r35452/1",
+    "v311/r765/0"
+   ]
+  },
+  "v315": {
+   "split": "train",
+   "lines": 11,
+   "shots": 3,
+   "sessions": [
+    "v315/r57582/0",
+    "v315/r57582/1"
+   ]
+  },
+  "v324": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v324/r790/0",
+    "v324/r790/1",
+    "v324/r790/2"
+   ]
+  },
+  "v369": {
+   "split": "train",
+   "lines": 18,
+   "shots": 4,
+   "sessions": [
+    "v369/r849/0"
+   ]
+  },
+  "v370": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v370/r853/0"
+   ]
+  },
+  "v387": {
+   "split": "train",
+   "lines": 13,
+   "shots": 6,
+   "sessions": [
+    "v387/r10617/0",
+    "v387/r10618/0"
+   ]
+  },
+  "v396": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v396/r881/0"
+   ]
+  },
+  "v397": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v397/r882/0"
+   ]
+  },
+  "v398": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v398/r884/0"
+   ]
+  },
+  "v400": {
+   "split": "val",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v400/r922/0"
+   ]
+  },
+  "v404": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v404/r892/1"
+   ]
+  },
+  "v415": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v415/r2277/0"
+   ]
+  },
+  "v418": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v418/r916/0"
+   ]
+  },
+  "v420": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v420/r918/0",
+    "v420/r918/1"
+   ]
+  },
+  "v428": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v428/r929/0",
+    "v428/r929/1"
+   ]
+  },
+  "v431": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v431/r933/0",
+    "v431/r933/2"
+   ]
+  },
+  "v432": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v432/r935/0",
+    "v432/r935/1"
+   ]
+  },
+  "v436": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v436/r947/1"
+   ]
+  },
+  "v440": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v440/r16353/0"
+   ]
+  },
+  "v445": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v445/r964/0"
+   ]
+  },
+  "v454": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v454/r981/0"
+   ]
+  },
+  "v456": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v456/r982/0"
+   ]
+  },
+  "v470": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v470/r1003/0"
+   ]
+  },
+  "v473": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v473/r2456/0",
+    "v473/r3602/0"
+   ]
+  },
+  "v476": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v476/r1010/0"
+   ]
+  },
+  "v477": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v477/r1011/0"
+   ]
+  },
+  "v478": {
+   "split": "val",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v478/r13477/0"
+   ]
+  },
+  "v481": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v481/r7392/0"
+   ]
+  },
+  "v496": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v496/r1042/0"
+   ]
+  },
+  "v515": {
+   "split": "val",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v515/r1071/0",
+    "v515/r78712/0"
+   ]
+  },
+  "v532": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v532/r1097/0"
+   ]
+  },
+  "v547": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v547/r1130/0"
+   ]
+  },
+  "v548": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v548/r5329/0"
+   ]
+  },
+  "v566": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v566/r1165/0"
+   ]
+  },
+  "v573": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v573/r1178/0"
+   ]
+  },
+  "v575": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v575/r1180/0"
+   ]
+  },
+  "v581": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v581/r1191/0"
+   ]
+  },
+  "v602": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v602/r1217/0"
+   ]
+  },
+  "v604": {
+   "split": "val",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v604/r1222/0"
+   ]
+  },
+  "v629": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v629/r1261/0"
+   ]
+  },
+  "v645": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v645/r1288/0"
+   ]
+  },
+  "v646": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v646/r1291/0"
+   ]
+  },
+  "v647": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v647/r1292/0"
+   ]
+  },
+  "v648": {
+   "split": "val",
+   "lines": 16,
+   "shots": 3,
+   "sessions": [
+    "v648/r1293/0"
+   ]
+  },
+  "v666": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v666/r1563/0"
+   ]
+  },
+  "v669": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v669/r1320/0"
+   ]
+  },
+  "v675": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v675/r6615/0"
+   ]
+  },
+  "v683": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v683/r1360/0"
+   ]
+  },
+  "v701": {
+   "split": "val",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v701/r1388/0"
+   ]
+  },
+  "v702": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v702/r1389/0"
+   ]
+  },
+  "v710": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v710/r1399/0"
+   ]
+  },
+  "v713": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v713/r1408/0"
+   ]
+  },
+  "v714": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v714/r1409/0"
+   ]
+  },
+  "v727": {
+   "split": "train",
+   "lines": 33,
+   "shots": 5,
+   "sessions": [
+    "v727/r1445/0",
+    "v727/r1446/0"
+   ]
+  },
+  "v728": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v728/r3347/0"
+   ]
+  },
+  "v729": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v729/r1461/0"
+   ]
+  },
+  "v732": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v732/r1467/0"
+   ]
+  },
+  "v751": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v751/r1513/0"
+   ]
+  },
+  "v768": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v768/r1549/0",
+    "v768/r1549/1"
+   ]
+  },
+  "v776": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v776/r3963/0",
+    "v776/r9924/0"
+   ]
+  },
+  "v777": {
+   "split": "train",
+   "lines": 11,
+   "shots": 3,
+   "sessions": [
+    "v777/r21806/0",
+    "v777/r21806/2"
+   ]
+  },
+  "v783": {
+   "split": "train",
+   "lines": 66,
+   "shots": 4,
+   "sessions": [
+    "v783/r1572/0"
+   ]
+  },
+  "v793": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v793/r1586/0"
+   ]
+  },
+  "v799": {
+   "split": "train",
+   "lines": 11,
+   "shots": 8,
+   "sessions": [
+    "v799/r1599/0",
+    "v799/r21075/0"
+   ]
+  },
+  "v802": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v802/r12665/0",
+    "v802/r34765/0"
+   ]
+  },
+  "v810": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v810/r6447/0"
+   ]
+  },
+  "v812": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v812/r1623/0"
+   ]
+  },
+  "v828": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v828/r4116/0"
+   ]
+  },
+  "v842": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v842/r1671/0"
+   ]
+  },
+  "v850": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v850/r13361/0"
+   ]
+  },
+  "v852": {
+   "split": "train",
+   "lines": 13,
+   "shots": 6,
+   "sessions": [
+    "v852/r19328/0"
+   ]
+  },
+  "v853": {
+   "split": "val",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v853/r1691/0"
+   ]
+  },
+  "v854": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v854/r10660/0"
+   ]
+  },
+  "v861": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v861/r28166/0"
+   ]
+  },
+  "v862": {
+   "split": "train",
+   "lines": 23,
+   "shots": 3,
+   "sessions": [
+    "v862/r1707/0"
+   ]
+  },
+  "v873": {
+   "split": "train",
+   "lines": 23,
+   "shots": 6,
+   "sessions": [
+    "v873/r16683/0",
+    "v873/r1720/0"
+   ]
+  },
+  "v875": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v875/r1724/0"
+   ]
+  },
+  "v887": {
+   "split": "train",
+   "lines": 20,
+   "shots": 3,
+   "sessions": [
+    "v887/r1743/0",
+    "v887/r1743/1"
+   ]
+  },
+  "v892": {
+   "split": "train",
+   "lines": 9,
+   "shots": 7,
+   "sessions": [
+    "v892/r15879/0"
+   ]
+  },
+  "v893": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v893/r1758/0",
+    "v893/r1758/1"
+   ]
+  },
+  "v897": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v897/r3444/0"
+   ]
+  },
+  "v913": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v913/r1843/0"
+   ]
+  },
+  "v914": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v914/r1816/0"
+   ]
+  },
+  "v916": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v916/r1819/0"
+   ]
+  },
+  "v917": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v917/r1820/0"
+   ]
+  },
+  "v933": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v933/r1991/0"
+   ]
+  },
+  "v961": {
+   "split": "val",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v961/r1916/0"
+   ]
+  },
+  "v972": {
+   "split": "train",
+   "lines": 12,
+   "shots": 3,
+   "sessions": [
+    "v972/r1934/0",
+    "v972/r1934/1"
+   ]
+  },
+  "v979": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v979/r1953/0",
+    "v979/r1953/1"
+   ]
+  },
+  "v992": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v992/r1969/0",
+    "v992/r1969/1"
+   ]
+  },
+  "v1001": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v1001/r1979/0"
+   ]
+  },
+  "v1009": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v1009/r1986/0"
+   ]
+  },
+  "v1011": {
+   "split": "train",
+   "lines": 16,
+   "shots": 7,
+   "sessions": [
+    "v1011/r13369/0"
+   ]
+  },
+  "v1014": {
+   "split": "train",
+   "lines": 34,
+   "shots": 7,
+   "sessions": [
+    "v1014/r2000/0"
+   ]
+  },
+  "v1015": {
+   "split": "train",
+   "lines": 15,
+   "shots": 6,
+   "sessions": [
+    "v1015/r52530/0",
+    "v1015/r6542/0"
+   ]
+  },
+  "v1027": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v1027/r2023/0"
+   ]
+  },
+  "v1037": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v1037/r6404/0"
+   ]
+  },
+  "v1039": {
+   "split": "val",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v1039/r2041/0",
+    "v1039/r2048/0"
+   ]
+  },
+  "v1056": {
+   "split": "train",
+   "lines": 13,
+   "shots": 3,
+   "sessions": [
+    "v1056/r2068/0"
+   ]
+  },
+  "v1060": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v1060/r9925/0"
+   ]
+  },
+  "v1063": {
+   "split": "train",
+   "lines": 7,
+   "shots": 2,
+   "sessions": [
+    "v1063/r23944/0"
+   ]
+  },
+  "v1071": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v1071/r14710/0"
+   ]
+  },
+  "v1078": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v1078/r2106/0"
+   ]
+  },
+  "v1080": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v1080/r28310/0"
+   ]
+  },
+  "v1094": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v1094/r5948/0"
+   ]
+  },
+  "v1104": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v1104/r2136/0"
+   ]
+  },
+  "v1120": {
+   "split": "train",
+   "lines": 52,
+   "shots": 4,
+   "sessions": [
+    "v1120/r2154/0"
+   ]
+  },
+  "v1130": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v1130/r2167/0"
+   ]
+  },
+  "v1141": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v1141/r4624/0",
+    "v1141/r4624/1"
+   ]
+  },
+  "v1143": {
+   "split": "train",
+   "lines": 7,
+   "shots": 2,
+   "sessions": [
+    "v1143/r3395/0"
+   ]
+  },
+  "v1153": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v1153/r4065/0",
+    "v1153/r56205/0"
+   ]
+  },
+  "v1155": {
+   "split": "train",
+   "lines": 16,
+   "shots": 4,
+   "sessions": [
+    "v1155/r2202/0",
+    "v1155/r2202/1",
+    "v1155/r2202/2"
+   ]
+  },
+  "v1160": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v1160/r2207/0",
+    "v1160/r2207/1"
+   ]
+  },
+  "v1166": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v1166/r2214/0",
+    "v1166/r2214/1"
+   ]
+  },
+  "v1170": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v1170/r10678/0",
+    "v1170/r2218/0"
+   ]
+  },
+  "v1171": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v1171/r11074/0"
+   ]
+  },
+  "v1173": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v1173/r10677/0"
+   ]
+  },
+  "v1179": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v1179/r5043/0"
+   ]
+  },
+  "v1185": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v1185/r2239/0"
+   ]
+  },
+  "v1193": {
+   "split": "val",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v1193/r2459/0"
+   ]
+  },
+  "v1195": {
+   "split": "train",
+   "lines": 19,
+   "shots": 4,
+   "sessions": [
+    "v1195/r2258/0"
+   ]
+  },
+  "v1199": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v1199/r2269/0",
+    "v1199/r48647/0"
+   ]
+  },
+  "v1241": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v1241/r54548/0",
+    "v1241/r54548/1"
+   ]
+  },
+  "v1248": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v1248/r11279/0"
+   ]
+  },
+  "v1257": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v1257/r2355/0"
+   ]
+  },
+  "v1267": {
+   "split": "train",
+   "lines": 20,
+   "shots": 7,
+   "sessions": [
+    "v1267/r11632/0",
+    "v1267/r2366/0"
+   ]
+  },
+  "v1269": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v1269/r2370/0"
+   ]
+  },
+  "v1278": {
+   "split": "train",
+   "lines": 16,
+   "shots": 4,
+   "sessions": [
+    "v1278/r2390/0",
+    "v1278/r2390/1",
+    "v1278/r2390/2"
+   ]
+  },
+  "v1281": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v1281/r2401/0",
+    "v1281/r30529/0"
+   ]
+  },
+  "v1286": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v1286/r2461/0"
+   ]
+  },
+  "v1296": {
+   "split": "val",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v1296/r77564/0"
+   ]
+  },
+  "v1298": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v1298/r2496/0"
+   ]
+  },
+  "v1299": {
+   "split": "train",
+   "lines": 7,
+   "shots": 2,
+   "sessions": [
+    "v1299/r4523/0"
+   ]
+  },
+  "v1300": {
+   "split": "train",
+   "lines": 33,
+   "shots": 8,
+   "sessions": [
+    "v1300/r21076/0"
+   ]
+  },
+  "v1303": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v1303/r2506/0"
+   ]
+  },
+  "v1307": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v1307/r5861/0"
+   ]
+  },
+  "v1315": {
+   "split": "val",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v1315/r16041/0",
+    "v1315/r16041/1"
+   ]
+  },
+  "v1316": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v1316/r2562/0"
+   ]
+  },
+  "v1322": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v1322/r2568/0",
+    "v1322/r83881/0"
+   ]
+  },
+  "v1325": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v1325/r2927/0"
+   ]
+  },
+  "v1326": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v1326/r10680/0"
+   ]
+  },
+  "v1331": {
+   "split": "val",
+   "lines": 6,
+   "shots": 5,
+   "sessions": [
+    "v1331/r10674/0",
+    "v1331/r139656/0",
+    "v1331/r2600/0"
+   ]
+  },
+  "v1337": {
+   "split": "train",
+   "lines": 16,
+   "shots": 4,
+   "sessions": [
+    "v1337/r3045/0"
+   ]
+  },
+  "v1338": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v1338/r2616/0",
+    "v1338/r2616/1"
+   ]
+  },
+  "v1341": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v1341/r3077/0"
+   ]
+  },
+  "v1342": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v1342/r17459/0"
+   ]
+  },
+  "v1347": {
+   "split": "train",
+   "lines": 6,
+   "shots": 5,
+   "sessions": [
+    "v1347/r17113/0"
+   ]
+  },
+  "v1348": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v1348/r3081/0"
+   ]
+  },
+  "v1358": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v1358/r2595/0"
+   ]
+  },
+  "v1360": {
+   "split": "train",
+   "lines": 41,
+   "shots": 8,
+   "sessions": [
+    "v1360/r2663/0"
+   ]
+  },
+  "v1399": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v1399/r2735/0"
+   ]
+  },
+  "v1413": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v1413/r2750/0"
+   ]
+  },
+  "v1414": {
+   "split": "train",
+   "lines": 8,
+   "shots": 1,
+   "sessions": [
+    "v1414/r2778/0"
+   ]
+  },
+  "v1415": {
+   "split": "train",
+   "lines": 22,
+   "shots": 5,
+   "sessions": [
+    "v1415/r6465/0"
+   ]
+  },
+  "v1427": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v1427/r5860/0"
+   ]
+  },
+  "v1442": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v1442/r2806/0"
+   ]
+  },
+  "v1474": {
+   "split": "val",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v1474/r2868/0",
+    "v1474/r64271/0"
+   ]
+  },
+  "v1483": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v1483/r3665/0",
+    "v1483/r3665/1"
+   ]
+  },
+  "v1491": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v1491/r2941/0"
+   ]
+  },
+  "v1492": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v1492/r2945/0"
+   ]
+  },
+  "v1495": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v1495/r2952/0"
+   ]
+  },
+  "v1502": {
+   "split": "train",
+   "lines": 15,
+   "shots": 6,
+   "sessions": [
+    "v1502/r2967/1"
+   ]
+  },
+  "v1517": {
+   "split": "train",
+   "lines": 8,
+   "shots": 6,
+   "sessions": [
+    "v1517/r11311/0",
+    "v1517/r51267/0"
+   ]
+  },
+  "v1541": {
+   "split": "val",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v1541/r3028/0"
+   ]
+  },
+  "v1542": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v1542/r3030/0"
+   ]
+  },
+  "v1545": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v1545/r3096/0"
+   ]
+  },
+  "v1547": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v1547/r3049/0"
+   ]
+  },
+  "v1552": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v1552/r11601/0",
+    "v1552/r3056/0"
+   ]
+  },
+  "v1564": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v1564/r3076/0"
+   ]
+  },
+  "v1565": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v1565/r3078/0"
+   ]
+  },
+  "v1566": {
+   "split": "train",
+   "lines": 7,
+   "shots": 5,
+   "sessions": [
+    "v1566/r7513/0"
+   ]
+  },
+  "v1604": {
+   "split": "train",
+   "lines": 14,
+   "shots": 4,
+   "sessions": [
+    "v1604/r3149/0"
+   ]
+  },
+  "v1605": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v1605/r3150/0"
+   ]
+  },
+  "v1616": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v1616/r3171/0"
+   ]
+  },
+  "v1625": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v1625/r38240/0"
+   ]
+  },
+  "v1629": {
+   "split": "train",
+   "lines": 25,
+   "shots": 8,
+   "sessions": [
+    "v1629/r70357/0"
+   ]
+  },
+  "v1641": {
+   "split": "train",
+   "lines": 17,
+   "shots": 6,
+   "sessions": [
+    "v1641/r6417/0"
+   ]
+  },
+  "v1646": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v1646/r3225/0"
+   ]
+  },
+  "v1648": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v1648/r3231/0"
+   ]
+  },
+  "v1660": {
+   "split": "train",
+   "lines": 12,
+   "shots": 2,
+   "sessions": [
+    "v1660/r3257/0"
+   ]
+  },
+  "v1678": {
+   "split": "train",
+   "lines": 13,
+   "shots": 6,
+   "sessions": [
+    "v1678/r6802/0",
+    "v1678/r6802/1"
+   ]
+  },
+  "v1707": {
+   "split": "train",
+   "lines": 8,
+   "shots": 2,
+   "sessions": [
+    "v1707/r18676/0"
+   ]
+  },
+  "v1713": {
+   "split": "train",
+   "lines": 25,
+   "shots": 4,
+   "sessions": [
+    "v1713/r70357/0"
+   ]
+  },
+  "v1739": {
+   "split": "train",
+   "lines": 10,
+   "shots": 6,
+   "sessions": [
+    "v1739/r13524/0"
+   ]
+  },
+  "v1740": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v1740/r3400/1"
+   ]
+  },
+  "v1751": {
+   "split": "train",
+   "lines": 7,
+   "shots": 1,
+   "sessions": [
+    "v1751/r11140/0"
+   ]
+  },
+  "v1755": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v1755/r3442/0",
+    "v1755/r3442/1"
+   ]
+  },
+  "v1763": {
+   "split": "train",
+   "lines": 14,
+   "shots": 6,
+   "sessions": [
+    "v1763/r12379/0"
+   ]
+  },
+  "v1794": {
+   "split": "val",
+   "lines": 13,
+   "shots": 6,
+   "sessions": [
+    "v1794/r24496/0"
+   ]
+  },
+  "v1803": {
+   "split": "train",
+   "lines": 11,
+   "shots": 5,
+   "sessions": [
+    "v1803/r23741/0"
+   ]
+  },
+  "v1805": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v1805/r7106/0"
+   ]
+  },
+  "v1806": {
+   "split": "train",
+   "lines": 12,
+   "shots": 5,
+   "sessions": [
+    "v1806/r12468/0",
+    "v1806/r12468/1"
+   ]
+  },
+  "v1872": {
+   "split": "train",
+   "lines": 18,
+   "shots": 5,
+   "sessions": [
+    "v1872/r12197/0"
+   ]
+  },
+  "v1873": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v1873/r3622/0"
+   ]
+  },
+  "v1874": {
+   "split": "val",
+   "lines": 16,
+   "shots": 6,
+   "sessions": [
+    "v1874/r8712/0"
+   ]
+  },
+  "v1877": {
+   "split": "val",
+   "lines": 6,
+   "shots": 5,
+   "sessions": [
+    "v1877/r3637/0"
+   ]
+  },
+  "v1890": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v1890/r3660/0"
+   ]
+  },
+  "v1892": {
+   "split": "train",
+   "lines": 10,
+   "shots": 5,
+   "sessions": [
+    "v1892/r3668/0"
+   ]
+  },
+  "v1893": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v1893/r3672/0"
+   ]
+  },
+  "v1894": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v1894/r3674/0"
+   ]
+  },
+  "v1896": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v1896/r3677/0",
+    "v1896/r3677/1"
+   ]
+  },
+  "v1898": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v1898/r3679/0",
+    "v1898/r3679/1"
+   ]
+  },
+  "v1899": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v1899/r5140/0"
+   ]
+  },
+  "v1913": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v1913/r3727/0",
+    "v1913/r3727/1"
+   ]
+  },
+  "v1919": {
+   "split": "train",
+   "lines": 11,
+   "shots": 6,
+   "sessions": [
+    "v1919/r3741/0"
+   ]
+  },
+  "v1949": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v1949/r10480/0"
+   ]
+  },
+  "v1951": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v1951/r35552/0"
+   ]
+  },
+  "v1953": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v1953/r3824/0"
+   ]
+  },
+  "v1964": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v1964/r3854/0"
+   ]
+  },
+  "v1967": {
+   "split": "train",
+   "lines": 17,
+   "shots": 3,
+   "sessions": [
+    "v1967/r2071/0"
+   ]
+  },
+  "v1970": {
+   "split": "train",
+   "lines": 12,
+   "shots": 6,
+   "sessions": [
+    "v1970/r14412/0",
+    "v1970/r3869/0"
+   ]
+  },
+  "v1971": {
+   "split": "val",
+   "lines": 10,
+   "shots": 5,
+   "sessions": [
+    "v1971/r11539/0"
+   ]
+  },
+  "v2002": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v2002/r5362/0"
+   ]
+  },
+  "v2023": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v2023/r3959/0"
+   ]
+  },
+  "v2046": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v2046/r4007/0"
+   ]
+  },
+  "v2047": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v2047/r4008/0",
+    "v2047/r4008/1"
+   ]
+  },
+  "v2061": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v2061/r4035/0",
+    "v2061/r4035/1"
+   ]
+  },
+  "v2063": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v2063/r43386/0"
+   ]
+  },
+  "v2088": {
+   "split": "val",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v2088/r4086/0"
+   ]
+  },
+  "v2089": {
+   "split": "val",
+   "lines": 15,
+   "shots": 3,
+   "sessions": [
+    "v2089/r65915/0"
+   ]
+  },
+  "v2093": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v2093/r1788/0"
+   ]
+  },
+  "v2113": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v2113/r14405/0"
+   ]
+  },
+  "v2153": {
+   "split": "val",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v2153/r15364/0"
+   ]
+  },
+  "v2170": {
+   "split": "train",
+   "lines": 19,
+   "shots": 7,
+   "sessions": [
+    "v2170/r4255/0"
+   ]
+  },
+  "v2244": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v2244/r4401/0"
+   ]
+  },
+  "v2306": {
+   "split": "val",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v2306/r4508/0"
+   ]
+  },
+  "v2368": {
+   "split": "val",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v2368/r7011/0"
+   ]
+  },
+  "v2375": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v2375/r14057/0",
+    "v2375/r20365/0"
+   ]
+  },
+  "v2377": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v2377/r4642/0",
+    "v2377/r4642/1",
+    "v2377/r4642/2"
+   ]
+  },
+  "v2477": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v2477/r72554/0"
+   ]
+  },
+  "v2505": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v2505/r4887/0"
+   ]
+  },
+  "v2622": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v2622/r5226/0"
+   ]
+  },
+  "v2654": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v2654/r5221/0"
+   ]
+  },
+  "v2715": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v2715/r5336/0"
+   ]
+  },
+  "v2736": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v2736/r5372/0"
+   ]
+  },
+  "v2748": {
+   "split": "train",
+   "lines": 14,
+   "shots": 3,
+   "sessions": [
+    "v2748/r5392/0"
+   ]
+  },
+  "v2762": {
+   "split": "train",
+   "lines": 4,
+   "shots": 1,
+   "sessions": [
+    "v2762/r5413/0"
+   ]
+  },
+  "v2799": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v2799/r5478/0"
+   ]
+  },
+  "v2817": {
+   "split": "val",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v2817/r5515/0",
+    "v2817/r5516/0"
+   ]
+  },
+  "v2835": {
+   "split": "val",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v2835/r40152/0",
+    "v2835/r5549/0"
+   ]
+  },
+  "v2836": {
+   "split": "train",
+   "lines": 7,
+   "shots": 2,
+   "sessions": [
+    "v2836/r6989/0"
+   ]
+  },
+  "v2868": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v2868/r14712/0"
+   ]
+  },
+  "v2913": {
+   "split": "train",
+   "lines": 10,
+   "shots": 8,
+   "sessions": [
+    "v2913/r11365/0"
+   ]
+  },
+  "v2923": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v2923/r27637/0"
+   ]
+  },
+  "v2954": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v2954/r5821/0"
+   ]
+  },
+  "v2959": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v2959/r5723/1"
+   ]
+  },
+  "v2960": {
+   "split": "train",
+   "lines": 20,
+   "shots": 8,
+   "sessions": [
+    "v2960/r7679/0"
+   ]
+  },
+  "v2968": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v2968/r5848/0"
+   ]
+  },
+  "v2999": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v2999/r5900/0"
+   ]
+  },
+  "v3018": {
+   "split": "train",
+   "lines": 17,
+   "shots": 4,
+   "sessions": [
+    "v3018/r5935/0"
+   ]
+  },
+  "v3031": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v3031/r5970/0"
+   ]
+  },
+  "v3053": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v3053/r6010/0"
+   ]
+  },
+  "v3066": {
+   "split": "val",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v3066/r6042/0"
+   ]
+  },
+  "v3071": {
+   "split": "train",
+   "lines": 33,
+   "shots": 3,
+   "sessions": [
+    "v3071/r6051/0"
+   ]
+  },
+  "v3079": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v3079/r6096/0"
+   ]
+  },
+  "v3091": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v3091/r10685/0"
+   ]
+  },
+  "v3106": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v3106/r11400/0"
+   ]
+  },
+  "v3184": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v3184/r6256/0",
+    "v3184/r6256/1",
+    "v3184/r6256/2"
+   ]
+  },
+  "v3194": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v3194/r6267/0"
+   ]
+  },
+  "v3234": {
+   "split": "train",
+   "lines": 17,
+   "shots": 4,
+   "sessions": [
+    "v3234/r6321/0"
+   ]
+  },
+  "v3239": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v3239/r26646/0"
+   ]
+  },
+  "v3246": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v3246/r6377/0"
+   ]
+  },
+  "v3259": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v3259/r6368/0"
+   ]
+  },
+  "v3262": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v3262/r6373/0"
+   ]
+  },
+  "v3263": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v3263/r21536/0"
+   ]
+  },
+  "v3271": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v3271/r6391/0",
+    "v3271/r6391/1",
+    "v3271/r6391/2"
+   ]
+  },
+  "v3272": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v3272/r6392/0"
+   ]
+  },
+  "v3278": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v3278/r6400/0"
+   ]
+  },
+  "v3284": {
+   "split": "train",
+   "lines": 16,
+   "shots": 7,
+   "sessions": [
+    "v3284/r11707/0"
+   ]
+  },
+  "v3319": {
+   "split": "train",
+   "lines": 17,
+   "shots": 4,
+   "sessions": [
+    "v3319/r6482/0"
+   ]
+  },
+  "v3333": {
+   "split": "val",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v3333/r6511/0"
+   ]
+  },
+  "v3334": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v3334/r6515/0",
+    "v3334/r6515/1"
+   ]
+  },
+  "v3360": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v3360/r6565/0"
+   ]
+  },
+  "v3370": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v3370/r6578/0",
+    "v3370/r6578/1"
+   ]
+  },
+  "v3371": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v3371/r6579/0"
+   ]
+  },
+  "v3413": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v3413/r6647/0",
+    "v3413/r6647/2"
+   ]
+  },
+  "v3429": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v3429/r21539/0"
+   ]
+  },
+  "v3430": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v3430/r21539/0"
+   ]
+  },
+  "v3496": {
+   "split": "val",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v3496/r6785/0"
+   ]
+  },
+  "v3531": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v3531/r6847/0"
+   ]
+  },
+  "v3549": {
+   "split": "val",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v3549/r22717/0"
+   ]
+  },
+  "v3556": {
+   "split": "train",
+   "lines": 18,
+   "shots": 5,
+   "sessions": [
+    "v3556/r6889/0"
+   ]
+  },
+  "v3602": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v3602/r6950/0"
+   ]
+  },
+  "v3631": {
+   "split": "train",
+   "lines": 20,
+   "shots": 8,
+   "sessions": [
+    "v3631/r6991/0"
+   ]
+  },
+  "v3684": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v3684/r7065/0"
+   ]
+  },
+  "v3696": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v3696/r7093/0",
+    "v3696/r7095/0"
+   ]
+  },
+  "v3697": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v3697/r7092/0",
+    "v3697/r7095/0"
+   ]
+  },
+  "v3699": {
+   "split": "train",
+   "lines": 14,
+   "shots": 4,
+   "sessions": [
+    "v3699/r7099/0"
+   ]
+  },
+  "v3770": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v3770/r11524/0"
+   ]
+  },
+  "v3789": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v3789/r7843/0"
+   ]
+  },
+  "v3861": {
+   "split": "train",
+   "lines": 19,
+   "shots": 4,
+   "sessions": [
+    "v3861/r10775/0"
+   ]
+  },
+  "v3896": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v3896/r7460/0"
+   ]
+  },
+  "v3902": {
+   "split": "val",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v3902/r7468/0"
+   ]
+  },
+  "v3921": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v3921/r7517/0"
+   ]
+  },
+  "v3938": {
+   "split": "val",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v3938/r7582/0"
+   ]
+  },
+  "v3941": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v3941/r7585/0"
+   ]
+  },
+  "v3947": {
+   "split": "train",
+   "lines": 14,
+   "shots": 4,
+   "sessions": [
+    "v3947/r7591/0"
+   ]
+  },
+  "v3970": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v3970/r9754/1"
+   ]
+  },
+  "v3971": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v3971/r7670/0"
+   ]
+  },
+  "v3973": {
+   "split": "train",
+   "lines": 15,
+   "shots": 4,
+   "sessions": [
+    "v3973/r7678/0"
+   ]
+  },
+  "v3988": {
+   "split": "train",
+   "lines": 15,
+   "shots": 1,
+   "sessions": [
+    "v3988/r7744/0"
+   ]
+  },
+  "v3990": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v3990/r9179/0"
+   ]
+  },
+  "v3992": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v3992/r7750/0",
+    "v3992/r7750/1"
+   ]
+  },
+  "v4028": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v4028/r10761/0",
+    "v4028/r10761/1"
+   ]
+  },
+  "v4031": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v4031/r7831/0"
+   ]
+  },
+  "v4037": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v4037/r7837/0"
+   ]
+  },
+  "v4040": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v4040/r7842/0",
+    "v4040/r7842/1",
+    "v4040/r7842/2"
+   ]
+  },
+  "v4041": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v4041/r7847/0",
+    "v4041/r7847/1"
+   ]
+  },
+  "v4060": {
+   "split": "train",
+   "lines": 10,
+   "shots": 5,
+   "sessions": [
+    "v4060/r7898/0"
+   ]
+  },
+  "v4091": {
+   "split": "train",
+   "lines": 12,
+   "shots": 8,
+   "sessions": [
+    "v4091/r7967/0",
+    "v4091/r7967/1"
+   ]
+  },
+  "v4099": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v4099/r7976/0"
+   ]
+  },
+  "v4137": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v4137/r8030/1"
+   ]
+  },
+  "v4185": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v4185/r8097/0"
+   ]
+  },
+  "v4261": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v4261/r8224/0"
+   ]
+  },
+  "v4355": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v4355/r8397/0"
+   ]
+  },
+  "v4408": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v4408/r8512/0"
+   ]
+  },
+  "v4463": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v4463/r8602/0"
+   ]
+  },
+  "v4540": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v4540/r14339/0",
+    "v4540/r14339/1"
+   ]
+  },
+  "v4594": {
+   "split": "train",
+   "lines": 14,
+   "shots": 6,
+   "sessions": [
+    "v4594/r9263/0"
+   ]
+  },
+  "v4597": {
+   "split": "val",
+   "lines": 17,
+   "shots": 7,
+   "sessions": [
+    "v4597/r13681/0",
+    "v4597/r20416/0"
+   ]
+  },
+  "v4633": {
+   "split": "train",
+   "lines": 7,
+   "shots": 6,
+   "sessions": [
+    "v4633/r23704/0"
+   ]
+  },
+  "v4670": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v4670/r15894/0"
+   ]
+  },
+  "v4697": {
+   "split": "train",
+   "lines": 16,
+   "shots": 6,
+   "sessions": [
+    "v4697/r8981/0"
+   ]
+  },
+  "v4703": {
+   "split": "train",
+   "lines": 27,
+   "shots": 3,
+   "sessions": [
+    "v4703/r8984/1",
+    "v4703/r8984/2"
+   ]
+  },
+  "v4719": {
+   "split": "train",
+   "lines": 13,
+   "shots": 8,
+   "sessions": [
+    "v4719/r17188/0",
+    "v4719/r17188/1"
+   ]
+  },
+  "v4795": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v4795/r9148/0"
+   ]
+  },
+  "v4822": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v4822/r9182/0"
+   ]
+  },
+  "v4831": {
+   "split": "train",
+   "lines": 11,
+   "shots": 3,
+   "sessions": [
+    "v4831/r9200/0"
+   ]
+  },
+  "v4851": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v4851/r9221/0"
+   ]
+  },
+  "v4857": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v4857/r9231/0"
+   ]
+  },
+  "v4880": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v4880/r9270/0"
+   ]
+  },
+  "v4895": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v4895/r9289/0"
+   ]
+  },
+  "v4942": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v4942/r9363/0",
+    "v4942/r9363/1"
+   ]
+  },
+  "v4958": {
+   "split": "train",
+   "lines": 13,
+   "shots": 3,
+   "sessions": [
+    "v4958/r9387/0"
+   ]
+  },
+  "v4959": {
+   "split": "train",
+   "lines": 5,
+   "shots": 1,
+   "sessions": [
+    "v4959/r9390/0"
+   ]
+  },
+  "v4962": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v4962/r9394/0"
+   ]
+  },
+  "v4981": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v4981/r15469/0"
+   ]
+  },
+  "v5000": {
+   "split": "val",
+   "lines": 13,
+   "shots": 3,
+   "sessions": [
+    "v5000/r22053/0"
+   ]
+  },
+  "v5080": {
+   "split": "train",
+   "lines": 22,
+   "shots": 7,
+   "sessions": [
+    "v5080/r9679/0",
+    "v5080/r9682/0"
+   ]
+  },
+  "v5094": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v5094/r9706/0"
+   ]
+  },
+  "v5127": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v5127/r9764/0"
+   ]
+  },
+  "v5130": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v5130/r9771/0"
+   ]
+  },
+  "v5154": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v5154/r9824/0"
+   ]
+  },
+  "v5218": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v5218/r9953/0"
+   ]
+  },
+  "v5240": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v5240/r10024/0"
+   ]
+  },
+  "v5243": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v5243/r10027/0"
+   ]
+  },
+  "v5244": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v5244/r10119/0"
+   ]
+  },
+  "v5258": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v5258/r10055/0",
+    "v5258/r10055/1"
+   ]
+  },
+  "v5284": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v5284/r10108/0"
+   ]
+  },
+  "v5286": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v5286/r10112/0",
+    "v5286/r32542/0"
+   ]
+  },
+  "v5297": {
+   "split": "train",
+   "lines": 22,
+   "shots": 9,
+   "sessions": [
+    "v5297/r32338/0",
+    "v5297/r32338/1"
+   ]
+  },
+  "v5299": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v5299/r10142/0"
+   ]
+  },
+  "v5303": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v5303/r10148/0",
+    "v5303/r10148/1"
+   ]
+  },
+  "v5349": {
+   "split": "val",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v5349/r10251/0"
+   ]
+  },
+  "v5351": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v5351/r10256/0"
+   ]
+  },
+  "v5381": {
+   "split": "val",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v5381/r10336/0"
+   ]
+  },
+  "v5471": {
+   "split": "train",
+   "lines": 11,
+   "shots": 5,
+   "sessions": [
+    "v5471/r10538/0"
+   ]
+  },
+  "v5472": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v5472/r10546/0"
+   ]
+  },
+  "v5519": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v5519/r10616/0"
+   ]
+  },
+  "v5549": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v5549/r10702/0",
+    "v5549/r10702/1"
+   ]
+  },
+  "v5652": {
+   "split": "train",
+   "lines": 16,
+   "shots": 2,
+   "sessions": [
+    "v5652/r12932/0"
+   ]
+  },
+  "v5657": {
+   "split": "val",
+   "lines": 15,
+   "shots": 2,
+   "sessions": [
+    "v5657/r10991/0"
+   ]
+  },
+  "v5690": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v5690/r11067/0",
+    "v5690/r13245/0"
+   ]
+  },
+  "v5706": {
+   "split": "val",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v5706/r11108/0",
+    "v5706/r11108/2"
+   ]
+  },
+  "v5743": {
+   "split": "train",
+   "lines": 21,
+   "shots": 4,
+   "sessions": [
+    "v5743/r11193/0",
+    "v5743/r39229/0"
+   ]
+  },
+  "v5744": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v5744/r11195/0",
+    "v5744/r11195/1"
+   ]
+  },
+  "v5834": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v5834/r11392/0"
+   ]
+  },
+  "v5837": {
+   "split": "val",
+   "lines": 18,
+   "shots": 9,
+   "sessions": [
+    "v5837/r15002/0"
+   ]
+  },
+  "v5841": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v5841/r11408/0"
+   ]
+  },
+  "v5854": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v5854/r11428/0"
+   ]
+  },
+  "v5909": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v5909/r11552/0"
+   ]
+  },
+  "v5912": {
+   "split": "train",
+   "lines": 6,
+   "shots": 5,
+   "sessions": [
+    "v5912/r21376/0"
+   ]
+  },
+  "v5916": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v5916/r20582/0"
+   ]
+  },
+  "v5919": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v5919/r11574/0"
+   ]
+  },
+  "v5950": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v5950/r22175/0",
+    "v5950/r22176/0"
+   ]
+  },
+  "v5951": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v5951/r11657/0"
+   ]
+  },
+  "v6017": {
+   "split": "train",
+   "lines": 17,
+   "shots": 9,
+   "sessions": [
+    "v6017/r11781/0",
+    "v6017/r11781/1"
+   ]
+  },
+  "v6032": {
+   "split": "train",
+   "lines": 26,
+   "shots": 10,
+   "sessions": [
+    "v6032/r24032/0",
+    "v6032/r24032/1"
+   ]
+  },
+  "v6135": {
+   "split": "val",
+   "lines": 7,
+   "shots": 6,
+   "sessions": [
+    "v6135/r12054/0"
+   ]
+  },
+  "v6157": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v6157/r12127/0"
+   ]
+  },
+  "v6173": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v6173/r12158/0"
+   ]
+  },
+  "v6218": {
+   "split": "val",
+   "lines": 19,
+   "shots": 9,
+   "sessions": [
+    "v6218/r12247/0",
+    "v6218/r12247/1"
+   ]
+  },
+  "v6245": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v6245/r19896/0"
+   ]
+  },
+  "v6256": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v6256/r12317/0",
+    "v6256/r13691/0"
+   ]
+  },
+  "v6291": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v6291/r12370/0",
+    "v6291/r12370/1"
+   ]
+  },
+  "v6339": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v6339/r12464/0"
+   ]
+  },
+  "v6341": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v6341/r12469/0"
+   ]
+  },
+  "v6346": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v6346/r12478/0"
+   ]
+  },
+  "v6357": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v6357/r12493/0",
+    "v6357/r49065/0"
+   ]
+  },
+  "v6359": {
+   "split": "train",
+   "lines": 24,
+   "shots": 4,
+   "sessions": [
+    "v6359/r12497/0"
+   ]
+  },
+  "v6403": {
+   "split": "train",
+   "lines": 17,
+   "shots": 7,
+   "sessions": [
+    "v6403/r12662/0"
+   ]
+  },
+  "v6438": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v6438/r12796/0",
+    "v6438/r12796/1"
+   ]
+  },
+  "v6458": {
+   "split": "val",
+   "lines": 38,
+   "shots": 3,
+   "sessions": [
+    "v6458/r12795/0",
+    "v6458/r12795/1"
+   ]
+  },
+  "v6466": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v6466/r19534/0"
+   ]
+  },
+  "v6472": {
+   "split": "train",
+   "lines": 14,
+   "shots": 4,
+   "sessions": [
+    "v6472/r12824/0"
+   ]
+  },
+  "v6475": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v6475/r12833/0"
+   ]
+  },
+  "v6540": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v6540/r12992/0"
+   ]
+  },
+  "v6589": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v6589/r13143/0"
+   ]
+  },
+  "v6593": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v6593/r13156/0"
+   ]
+  },
+  "v6656": {
+   "split": "val",
+   "lines": 21,
+   "shots": 9,
+   "sessions": [
+    "v6656/r13288/0"
+   ]
+  },
+  "v6662": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v6662/r13301/0"
+   ]
+  },
+  "v6682": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v6682/r13329/0"
+   ]
+  },
+  "v6688": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v6688/r13336/0"
+   ]
+  },
+  "v6700": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v6700/r13349/0",
+    "v6700/r16663/0"
+   ]
+  },
+  "v6710": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v6710/r13373/0"
+   ]
+  },
+  "v6714": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v6714/r13379/0"
+   ]
+  },
+  "v6723": {
+   "split": "train",
+   "lines": 14,
+   "shots": 9,
+   "sessions": [
+    "v6723/r15007/0",
+    "v6723/r15007/1"
+   ]
+  },
+  "v6747": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v6747/r13443/0"
+   ]
+  },
+  "v6763": {
+   "split": "train",
+   "lines": 38,
+   "shots": 3,
+   "sessions": [
+    "v6763/r13472/0"
+   ]
+  },
+  "v6974": {
+   "split": "train",
+   "lines": 23,
+   "shots": 8,
+   "sessions": [
+    "v6974/r13819/0",
+    "v6974/r13819/1",
+    "v6974/r14068/0"
+   ]
+  },
+  "v6985": {
+   "split": "val",
+   "lines": 27,
+   "shots": 4,
+   "sessions": [
+    "v6985/r15460/0",
+    "v6985/r18068/0"
+   ]
+  },
+  "v7019": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v7019/r13900/0"
+   ]
+  },
+  "v7068": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v7068/r13991/0"
+   ]
+  },
+  "v7184": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v7184/r14271/0",
+    "v7184/r22545/0"
+   ]
+  },
+  "v7192": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v7192/r14287/0"
+   ]
+  },
+  "v7198": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v7198/r14300/0"
+   ]
+  },
+  "v7203": {
+   "split": "train",
+   "lines": 9,
+   "shots": 5,
+   "sessions": [
+    "v7203/r14306/0",
+    "v7203/r23309/0"
+   ]
+  },
+  "v7204": {
+   "split": "val",
+   "lines": 9,
+   "shots": 5,
+   "sessions": [
+    "v7204/r23310/0",
+    "v7204/r24759/0"
+   ]
+  },
+  "v7225": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v7225/r14352/0"
+   ]
+  },
+  "v7227": {
+   "split": "train",
+   "lines": 11,
+   "shots": 2,
+   "sessions": [
+    "v7227/r14356/0"
+   ]
+  },
+  "v7230": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v7230/r14365/0"
+   ]
+  },
+  "v7238": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v7238/r14379/0",
+    "v7238/r15716/0"
+   ]
+  },
+  "v7249": {
+   "split": "train",
+   "lines": 6,
+   "shots": 5,
+   "sessions": [
+    "v7249/r14401/0"
+   ]
+  },
+  "v7260": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v7260/r14419/0",
+    "v7260/r15518/0"
+   ]
+  },
+  "v7290": {
+   "split": "val",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v7290/r58725/0"
+   ]
+  },
+  "v7301": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v7301/r24999/0"
+   ]
+  },
+  "v7321": {
+   "split": "val",
+   "lines": 13,
+   "shots": 7,
+   "sessions": [
+    "v7321/r22495/0",
+    "v7321/r23463/0"
+   ]
+  },
+  "v7366": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v7366/r14649/0"
+   ]
+  },
+  "v7402": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v7402/r14722/0",
+    "v7402/r20056/0"
+   ]
+  },
+  "v7425": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v7425/r14775/0"
+   ]
+  },
+  "v7442": {
+   "split": "val",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v7442/r14811/0"
+   ]
+  },
+  "v7507": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v7507/r15015/0"
+   ]
+  },
+  "v7533": {
+   "split": "train",
+   "lines": 18,
+   "shots": 7,
+   "sessions": [
+    "v7533/r15075/0"
+   ]
+  },
+  "v7540": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v7540/r15114/0",
+    "v7540/r23558/0"
+   ]
+  },
+  "v7553": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v7553/r23557/0"
+   ]
+  },
+  "v7557": {
+   "split": "train",
+   "lines": 19,
+   "shots": 8,
+   "sessions": [
+    "v7557/r45170/0"
+   ]
+  },
+  "v7576": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v7576/r15189/0",
+    "v7576/r15189/1"
+   ]
+  },
+  "v7595": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v7595/r15236/1",
+    "v7595/r15236/2"
+   ]
+  },
+  "v7603": {
+   "split": "train",
+   "lines": 15,
+   "shots": 5,
+   "sessions": [
+    "v7603/r15250/0"
+   ]
+  },
+  "v7612": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v7612/r15272/0"
+   ]
+  },
+  "v7625": {
+   "split": "train",
+   "lines": 5,
+   "shots": 1,
+   "sessions": [
+    "v7625/r15298/0"
+   ]
+  },
+  "v7633": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v7633/r19354/0"
+   ]
+  },
+  "v7636": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v7636/r15331/0",
+    "v7636/r17733/0"
+   ]
+  },
+  "v7639": {
+   "split": "train",
+   "lines": 14,
+   "shots": 6,
+   "sessions": [
+    "v7639/r24030/0"
+   ]
+  },
+  "v7647": {
+   "split": "train",
+   "lines": 7,
+   "shots": 5,
+   "sessions": [
+    "v7647/r15351/0",
+    "v7647/r15352/0"
+   ]
+  },
+  "v7675": {
+   "split": "train",
+   "lines": 12,
+   "shots": 6,
+   "sessions": [
+    "v7675/r15423/0",
+    "v7675/r23311/0"
+   ]
+  },
+  "v7689": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v7689/r15719/0"
+   ]
+  },
+  "v7707": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v7707/r15470/0"
+   ]
+  },
+  "v7713": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v7713/r15480/0"
+   ]
+  },
+  "v7714": {
+   "split": "train",
+   "lines": 18,
+   "shots": 8,
+   "sessions": [
+    "v7714/r15481/0",
+    "v7714/r15481/1"
+   ]
+  },
+  "v7716": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v7716/r15483/0"
+   ]
+  },
+  "v7723": {
+   "split": "train",
+   "lines": 16,
+   "shots": 4,
+   "sessions": [
+    "v7723/r15499/0"
+   ]
+  },
+  "v7724": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v7724/r15500/0"
+   ]
+  },
+  "v7738": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v7738/r15523/0",
+    "v7738/r15523/1"
+   ]
+  },
+  "v7747": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v7747/r15552/0"
+   ]
+  },
+  "v7766": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v7766/r15588/0",
+    "v7766/r15588/1"
+   ]
+  },
+  "v7769": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v7769/r15804/0"
+   ]
+  },
+  "v7770": {
+   "split": "train",
+   "lines": 17,
+   "shots": 7,
+   "sessions": [
+    "v7770/r16193/0"
+   ]
+  },
+  "v7771": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v7771/r17326/0",
+    "v7771/r17326/1"
+   ]
+  },
+  "v7772": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v7772/r15593/0"
+   ]
+  },
+  "v7794": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v7794/r15628/0"
+   ]
+  },
+  "v7803": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v7803/r15639/0"
+   ]
+  },
+  "v7805": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v7805/r16124/0"
+   ]
+  },
+  "v7815": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v7815/r16507/0"
+   ]
+  },
+  "v7833": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v7833/r26477/0"
+   ]
+  },
+  "v7835": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v7835/r15702/0"
+   ]
+  },
+  "v7836": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v7836/r15699/0"
+   ]
+  },
+  "v7853": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v7853/r15736/0"
+   ]
+  },
+  "v7867": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v7867/r15776/0",
+    "v7867/r15777/0",
+    "v7867/r15778/0"
+   ]
+  },
+  "v7899": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v7899/r15856/0"
+   ]
+  },
+  "v7907": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v7907/r15870/0"
+   ]
+  },
+  "v7943": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v7943/r15955/0"
+   ]
+  },
+  "v7955": {
+   "split": "train",
+   "lines": 8,
+   "shots": 2,
+   "sessions": [
+    "v7955/r15979/0"
+   ]
+  },
+  "v7967": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v7967/r18406/0"
+   ]
+  },
+  "v8020": {
+   "split": "train",
+   "lines": 14,
+   "shots": 3,
+   "sessions": [
+    "v8020/r16151/0"
+   ]
+  },
+  "v8030": {
+   "split": "train",
+   "lines": 24,
+   "shots": 8,
+   "sessions": [
+    "v8030/r16176/0"
+   ]
+  },
+  "v8038": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v8038/r17360/0"
+   ]
+  },
+  "v8043": {
+   "split": "train",
+   "lines": 21,
+   "shots": 9,
+   "sessions": [
+    "v8043/r16210/0",
+    "v8043/r16210/1"
+   ]
+  },
+  "v8044": {
+   "split": "train",
+   "lines": 11,
+   "shots": 6,
+   "sessions": [
+    "v8044/r16286/0"
+   ]
+  },
+  "v8063": {
+   "split": "val",
+   "lines": 11,
+   "shots": 9,
+   "sessions": [
+    "v8063/r16252/0"
+   ]
+  },
+  "v8091": {
+   "split": "val",
+   "lines": 8,
+   "shots": 6,
+   "sessions": [
+    "v8091/r16326/0"
+   ]
+  },
+  "v8092": {
+   "split": "train",
+   "lines": 15,
+   "shots": 8,
+   "sessions": [
+    "v8092/r16327/0",
+    "v8092/r16327/1"
+   ]
+  },
+  "v8095": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v8095/r16352/0"
+   ]
+  },
+  "v8111": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v8111/r16412/0"
+   ]
+  },
+  "v8112": {
+   "split": "val",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v8112/r16413/0"
+   ]
+  },
+  "v8114": {
+   "split": "train",
+   "lines": 5,
+   "shots": 1,
+   "sessions": [
+    "v8114/r16420/0"
+   ]
+  },
+  "v8115": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v8115/r16425/0"
+   ]
+  },
+  "v8123": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v8123/r16452/0"
+   ]
+  },
+  "v8124": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v8124/r16454/0"
+   ]
+  },
+  "v8158": {
+   "split": "train",
+   "lines": 7,
+   "shots": 5,
+   "sessions": [
+    "v8158/r16537/0",
+    "v8158/r21915/0",
+    "v8158/r36588/0"
+   ]
+  },
+  "v8192": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v8192/r16598/0"
+   ]
+  },
+  "v8194": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v8194/r16600/0"
+   ]
+  },
+  "v8203": {
+   "split": "train",
+   "lines": 11,
+   "shots": 6,
+   "sessions": [
+    "v8203/r21467/0",
+    "v8203/r21467/1",
+    "v8203/r21467/2"
+   ]
+  },
+  "v8213": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v8213/r19938/0"
+   ]
+  },
+  "v8243": {
+   "split": "train",
+   "lines": 16,
+   "shots": 8,
+   "sessions": [
+    "v8243/r16717/0"
+   ]
+  },
+  "v8279": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v8279/r16787/0"
+   ]
+  },
+  "v8301": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v8301/r16833/0"
+   ]
+  },
+  "v8311": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v8311/r16858/0"
+   ]
+  },
+  "v8322": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v8322/r16872/0"
+   ]
+  },
+  "v8408": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v8408/r17109/0"
+   ]
+  },
+  "v8410": {
+   "split": "val",
+   "lines": 23,
+   "shots": 7,
+   "sessions": [
+    "v8410/r17117/0"
+   ]
+  },
+  "v8411": {
+   "split": "train",
+   "lines": 18,
+   "shots": 9,
+   "sessions": [
+    "v8411/r17118/0"
+   ]
+  },
+  "v8412": {
+   "split": "train",
+   "lines": 29,
+   "shots": 9,
+   "sessions": [
+    "v8412/r17123/0"
+   ]
+  },
+  "v8424": {
+   "split": "train",
+   "lines": 19,
+   "shots": 4,
+   "sessions": [
+    "v8424/r35548/0"
+   ]
+  },
+  "v8434": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v8434/r17176/0"
+   ]
+  },
+  "v8438": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v8438/r17184/0"
+   ]
+  },
+  "v8455": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v8455/r17209/0"
+   ]
+  },
+  "v8469": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v8469/r17253/0"
+   ]
+  },
+  "v8502": {
+   "split": "val",
+   "lines": 16,
+   "shots": 6,
+   "sessions": [
+    "v8502/r17311/0"
+   ]
+  },
+  "v8508": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v8508/r19597/0"
+   ]
+  },
+  "v8524": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v8524/r17359/0",
+    "v8524/r17359/1"
+   ]
+  },
+  "v8576": {
+   "split": "train",
+   "lines": 21,
+   "shots": 8,
+   "sessions": [
+    "v8576/r17454/0"
+   ]
+  },
+  "v8591": {
+   "split": "train",
+   "lines": 18,
+   "shots": 7,
+   "sessions": [
+    "v8591/r23190/0",
+    "v8591/r23190/1"
+   ]
+  },
+  "v8606": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v8606/r17513/0"
+   ]
+  },
+  "v8701": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v8701/r17703/0"
+   ]
+  },
+  "v8731": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v8731/r17753/0"
+   ]
+  },
+  "v8766": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v8766/r17814/0"
+   ]
+  },
+  "v8789": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v8789/r17859/0"
+   ]
+  },
+  "v8799": {
+   "split": "train",
+   "lines": 13,
+   "shots": 5,
+   "sessions": [
+    "v8799/r17873/0"
+   ]
+  },
+  "v8832": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v8832/r15190/0"
+   ]
+  },
+  "v8900": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v8900/r18005/0",
+    "v8900/r18005/1"
+   ]
+  },
+  "v8928": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v8928/r18043/0"
+   ]
+  },
+  "v9093": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v9093/r18265/0",
+    "v9093/r20374/0"
+   ]
+  },
+  "v9124": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v9124/r18305/0",
+    "v9124/r18305/1",
+    "v9124/r32491/0"
+   ]
+  },
+  "v9125": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v9125/r18306/0"
+   ]
+  },
+  "v9178": {
+   "split": "val",
+   "lines": 15,
+   "shots": 4,
+   "sessions": [
+    "v9178/r23738/0"
+   ]
+  },
+  "v9196": {
+   "split": "val",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v9196/r18443/0"
+   ]
+  },
+  "v9198": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v9198/r18445/0",
+    "v9198/r18445/1"
+   ]
+  },
+  "v9205": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v9205/r18455/0"
+   ]
+  },
+  "v9303": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v9303/r18631/0"
+   ]
+  },
+  "v9409": {
+   "split": "val",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v9409/r18931/0"
+   ]
+  },
+  "v9643": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v9643/r19342/0"
+   ]
+  },
+  "v9678": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v9678/r21516/0"
+   ]
+  },
+  "v9684": {
+   "split": "val",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v9684/r19442/0"
+   ]
+  },
+  "v9708": {
+   "split": "train",
+   "lines": 18,
+   "shots": 3,
+   "sessions": [
+    "v9708/r19501/0"
+   ]
+  },
+  "v9709": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v9709/r19502/0"
+   ]
+  },
+  "v9711": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v9711/r19506/0"
+   ]
+  },
+  "v9728": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v9728/r19546/0"
+   ]
+  },
+  "v9846": {
+   "split": "train",
+   "lines": 12,
+   "shots": 6,
+   "sessions": [
+    "v9846/r19802/0",
+    "v9846/r19802/1",
+    "v9846/r24749/0"
+   ]
+  },
+  "v9885": {
+   "split": "train",
+   "lines": 17,
+   "shots": 6,
+   "sessions": [
+    "v9885/r21369/0"
+   ]
+  },
+  "v9901": {
+   "split": "val",
+   "lines": 17,
+   "shots": 7,
+   "sessions": [
+    "v9901/r19917/0"
+   ]
+  },
+  "v9910": {
+   "split": "train",
+   "lines": 19,
+   "shots": 7,
+   "sessions": [
+    "v9910/r19945/0",
+    "v9910/r19946/0"
+   ]
+  },
+  "v9917": {
+   "split": "train",
+   "lines": 6,
+   "shots": 5,
+   "sessions": [
+    "v9917/r19963/0"
+   ]
+  },
+  "v9918": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v9918/r19965/0"
+   ]
+  },
+  "v9985": {
+   "split": "train",
+   "lines": 24,
+   "shots": 6,
+   "sessions": [
+    "v9985/r20086/0",
+    "v9985/r20086/1"
+   ]
+  },
+  "v10001": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v10001/r20122/0",
+    "v10001/r20122/1"
+   ]
+  },
+  "v10016": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v10016/r20155/0",
+    "v10016/r20155/1"
+   ]
+  },
+  "v10028": {
+   "split": "val",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v10028/r20180/0"
+   ]
+  },
+  "v10035": {
+   "split": "train",
+   "lines": 14,
+   "shots": 7,
+   "sessions": [
+    "v10035/r20201/0"
+   ]
+  },
+  "v10041": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v10041/r20217/0"
+   ]
+  },
+  "v10045": {
+   "split": "train",
+   "lines": 13,
+   "shots": 6,
+   "sessions": [
+    "v10045/r20225/0"
+   ]
+  },
+  "v10046": {
+   "split": "train",
+   "lines": 22,
+   "shots": 7,
+   "sessions": [
+    "v10046/r20227/0"
+   ]
+  },
+  "v10047": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v10047/r20228/0",
+    "v10047/r20228/1"
+   ]
+  },
+  "v10051": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v10051/r20233/0"
+   ]
+  },
+  "v10076": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v10076/r20283/0"
+   ]
+  },
+  "v10091": {
+   "split": "val",
+   "lines": 13,
+   "shots": 5,
+   "sessions": [
+    "v10091/r20311/0"
+   ]
+  },
+  "v10092": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v10092/r20314/0"
+   ]
+  },
+  "v10098": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v10098/r20323/0"
+   ]
+  },
+  "v10104": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v10104/r20343/0",
+    "v10104/r20343/1"
+   ]
+  },
+  "v10105": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v10105/r20344/0"
+   ]
+  },
+  "v10109": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v10109/r20355/0"
+   ]
+  },
+  "v10115": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v10115/r20369/0"
+   ]
+  },
+  "v10162": {
+   "split": "train",
+   "lines": 13,
+   "shots": 6,
+   "sessions": [
+    "v10162/r20507/0"
+   ]
+  },
+  "v10231": {
+   "split": "val",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v10231/r20664/0"
+   ]
+  },
+  "v10238": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v10238/r20678/0",
+    "v10238/r20678/1"
+   ]
+  },
+  "v10251": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v10251/r20710/0"
+   ]
+  },
+  "v10255": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v10255/r20717/0"
+   ]
+  },
+  "v10271": {
+   "split": "val",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v10271/r20755/0",
+    "v10271/r20755/1"
+   ]
+  },
+  "v10273": {
+   "split": "train",
+   "lines": 16,
+   "shots": 7,
+   "sessions": [
+    "v10273/r29890/0"
+   ]
+  },
+  "v10279": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v10279/r20776/0"
+   ]
+  },
+  "v10289": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v10289/r20808/0"
+   ]
+  },
+  "v10304": {
+   "split": "val",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v10304/r20846/0"
+   ]
+  },
+  "v10326": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v10326/r20898/0"
+   ]
+  },
+  "v10341": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v10341/r20937/0"
+   ]
+  },
+  "v10362": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v10362/r20968/0"
+   ]
+  },
+  "v10383": {
+   "split": "val",
+   "lines": 11,
+   "shots": 5,
+   "sessions": [
+    "v10383/r21014/0",
+    "v10383/r39327/0"
+   ]
+  },
+  "v10396": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v10396/r21036/0",
+    "v10396/r23124/0"
+   ]
+  },
+  "v10418": {
+   "split": "train",
+   "lines": 21,
+   "shots": 8,
+   "sessions": [
+    "v10418/r21071/0"
+   ]
+  },
+  "v10419": {
+   "split": "train",
+   "lines": 24,
+   "shots": 10,
+   "sessions": [
+    "v10419/r21073/0"
+   ]
+  },
+  "v10475": {
+   "split": "train",
+   "lines": 12,
+   "shots": 5,
+   "sessions": [
+    "v10475/r21153/0"
+   ]
+  },
+  "v10477": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v10477/r21158/0"
+   ]
+  },
+  "v10526": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v10526/r21254/1"
+   ]
+  },
+  "v10541": {
+   "split": "train",
+   "lines": 7,
+   "shots": 5,
+   "sessions": [
+    "v10541/r21305/0"
+   ]
+  },
+  "v10546": {
+   "split": "train",
+   "lines": 44,
+   "shots": 4,
+   "sessions": [
+    "v10546/r22847/0",
+    "v10546/r22847/1"
+   ]
+  },
+  "v10557": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v10557/r21348/0",
+    "v10557/r21348/1"
+   ]
+  },
+  "v10561": {
+   "split": "train",
+   "lines": 4,
+   "shots": 1,
+   "sessions": [
+    "v10561/r21358/0"
+   ]
+  },
+  "v10569": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v10569/r21386/0"
+   ]
+  },
+  "v10577": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v10577/r21423/0"
+   ]
+  },
+  "v10598": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v10598/r21471/0"
+   ]
+  },
+  "v10608": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v10608/r21490/0",
+    "v10608/r21490/1"
+   ]
+  },
+  "v10613": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v10613/r21498/0"
+   ]
+  },
+  "v10619": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v10619/r21508/0"
+   ]
+  },
+  "v10623": {
+   "split": "train",
+   "lines": 29,
+   "shots": 8,
+   "sessions": [
+    "v10623/r21517/0"
+   ]
+  },
+  "v10631": {
+   "split": "train",
+   "lines": 13,
+   "shots": 6,
+   "sessions": [
+    "v10631/r21561/0",
+    "v10631/r21561/1"
+   ]
+  },
+  "v10641": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v10641/r21600/0"
+   ]
+  },
+  "v10659": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v10659/r21633/0",
+    "v10659/r21633/1"
+   ]
+  },
+  "v10680": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v10680/r47051/0"
+   ]
+  },
+  "v10700": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v10700/r23863/0"
+   ]
+  },
+  "v10726": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v10726/r25639/0"
+   ]
+  },
+  "v10732": {
+   "split": "val",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v10732/r21796/0"
+   ]
+  },
+  "v10793": {
+   "split": "val",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v10793/r21931/0"
+   ]
+  },
+  "v10796": {
+   "split": "train",
+   "lines": 8,
+   "shots": 7,
+   "sessions": [
+    "v10796/r19883/0",
+    "v10796/r19883/1"
+   ]
+  },
+  "v10803": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v10803/r21953/0",
+    "v10803/r21953/1"
+   ]
+  },
+  "v10804": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v10804/r21954/0"
+   ]
+  },
+  "v10805": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v10805/r21955/0"
+   ]
+  },
+  "v10895": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v10895/r22172/0"
+   ]
+  },
+  "v10899": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v10899/r22190/0"
+   ]
+  },
+  "v10932": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v10932/r22247/0"
+   ]
+  },
+  "v10950": {
+   "split": "train",
+   "lines": 19,
+   "shots": 9,
+   "sessions": [
+    "v10950/r22278/0"
+   ]
+  },
+  "v10951": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v10951/r22279/0"
+   ]
+  },
+  "v10968": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v10968/r22308/0"
+   ]
+  },
+  "v10969": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v10969/r22311/0"
+   ]
+  },
+  "v10971": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v10971/r22313/0"
+   ]
+  },
+  "v10972": {
+   "split": "val",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v10972/r25184/0"
+   ]
+  },
+  "v10979": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v10979/r22326/0"
+   ]
+  },
+  "v10983": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v10983/r22332/0"
+   ]
+  },
+  "v11000": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v11000/r22360/0",
+    "v11000/r25368/0"
+   ]
+  },
+  "v11033": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v11033/r22437/0"
+   ]
+  },
+  "v11045": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v11045/r22459/0"
+   ]
+  },
+  "v11071": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v11071/r16198/0",
+    "v11071/r16198/1"
+   ]
+  },
+  "v11072": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v11072/r22522/0"
+   ]
+  },
+  "v11086": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v11086/r22551/0"
+   ]
+  },
+  "v11093": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v11093/r22562/0",
+    "v11093/r22562/1"
+   ]
+  },
+  "v11108": {
+   "split": "train",
+   "lines": 26,
+   "shots": 9,
+   "sessions": [
+    "v11108/r22589/0"
+   ]
+  },
+  "v11132": {
+   "split": "train",
+   "lines": 10,
+   "shots": 5,
+   "sessions": [
+    "v11132/r31978/0"
+   ]
+  },
+  "v11173": {
+   "split": "train",
+   "lines": 32,
+   "shots": 7,
+   "sessions": [
+    "v11173/r22795/0",
+    "v11173/r22795/1"
+   ]
+  },
+  "v11186": {
+   "split": "train",
+   "lines": 17,
+   "shots": 7,
+   "sessions": [
+    "v11186/r22862/0"
+   ]
+  },
+  "v11194": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v11194/r22899/0"
+   ]
+  },
+  "v11224": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v11224/r22998/0"
+   ]
+  },
+  "v11237": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v11237/r23031/0"
+   ]
+  },
+  "v11239": {
+   "split": "train",
+   "lines": 9,
+   "shots": 5,
+   "sessions": [
+    "v11239/r23060/0"
+   ]
+  },
+  "v11264": {
+   "split": "train",
+   "lines": 19,
+   "shots": 8,
+   "sessions": [
+    "v11264/r23189/0"
+   ]
+  },
+  "v11300": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v11300/r23289/0"
+   ]
+  },
+  "v11301": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v11301/r23291/0",
+    "v11301/r40626/0"
+   ]
+  },
+  "v11309": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v11309/r23307/0"
+   ]
+  },
+  "v11327": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v11327/r23348/0"
+   ]
+  },
+  "v11342": {
+   "split": "train",
+   "lines": 13,
+   "shots": 7,
+   "sessions": [
+    "v11342/r23395/0"
+   ]
+  },
+  "v11454": {
+   "split": "val",
+   "lines": 10,
+   "shots": 5,
+   "sessions": [
+    "v11454/r23638/0"
+   ]
+  },
+  "v11459": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v11459/r23657/0"
+   ]
+  },
+  "v11469": {
+   "split": "train",
+   "lines": 13,
+   "shots": 8,
+   "sessions": [
+    "v11469/r23684/0"
+   ]
+  },
+  "v11487": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v11487/r23729/0",
+    "v11487/r23729/1"
+   ]
+  },
+  "v11500": {
+   "split": "train",
+   "lines": 9,
+   "shots": 5,
+   "sessions": [
+    "v11500/r23765/0"
+   ]
+  },
+  "v11502": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v11502/r23769/0",
+    "v11502/r23772/0"
+   ]
+  },
+  "v11575": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v11575/r23880/0"
+   ]
+  },
+  "v11620": {
+   "split": "train",
+   "lines": 33,
+   "shots": 3,
+   "sessions": [
+    "v11620/r24027/0",
+    "v11620/r25708/0"
+   ]
+  },
+  "v11636": {
+   "split": "train",
+   "lines": 19,
+   "shots": 9,
+   "sessions": [
+    "v11636/r24096/0"
+   ]
+  },
+  "v11637": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v11637/r24099/0",
+    "v11637/r42208/0",
+    "v11637/r80796/0"
+   ]
+  },
+  "v11640": {
+   "split": "val",
+   "lines": 10,
+   "shots": 5,
+   "sessions": [
+    "v11640/r24102/0"
+   ]
+  },
+  "v11641": {
+   "split": "train",
+   "lines": 12,
+   "shots": 6,
+   "sessions": [
+    "v11641/r24650/0"
+   ]
+  },
+  "v11677": {
+   "split": "val",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v11677/r24182/0"
+   ]
+  },
+  "v11688": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v11688/r24211/0"
+   ]
+  },
+  "v11699": {
+   "split": "train",
+   "lines": 9,
+   "shots": 6,
+   "sessions": [
+    "v11699/r24248/0"
+   ]
+  },
+  "v11706": {
+   "split": "train",
+   "lines": 10,
+   "shots": 6,
+   "sessions": [
+    "v11706/r24271/0"
+   ]
+  },
+  "v11717": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v11717/r24306/0"
+   ]
+  },
+  "v11734": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v11734/r24367/0"
+   ]
+  },
+  "v11735": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v11735/r24368/0"
+   ]
+  },
+  "v11769": {
+   "split": "train",
+   "lines": 25,
+   "shots": 4,
+   "sessions": [
+    "v11769/r24470/0"
+   ]
+  },
+  "v11855": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v11855/r24644/0",
+    "v11855/r24644/1"
+   ]
+  },
+  "v11856": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v11856/r24645/0"
+   ]
+  },
+  "v11857": {
+   "split": "val",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v11857/r26501/0"
+   ]
+  },
+  "v11865": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v11865/r24681/0"
+   ]
+  },
+  "v11879": {
+   "split": "train",
+   "lines": 7,
+   "shots": 5,
+   "sessions": [
+    "v11879/r24739/0"
+   ]
+  },
+  "v11881": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v11881/r24763/0",
+    "v11881/r24763/1"
+   ]
+  },
+  "v11904": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v11904/r24921/0"
+   ]
+  },
+  "v11916": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v11916/r24948/0"
+   ]
+  },
+  "v11920": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v11920/r24964/0"
+   ]
+  },
+  "v11943": {
+   "split": "train",
+   "lines": 10,
+   "shots": 6,
+   "sessions": [
+    "v11943/r25031/0"
+   ]
+  },
+  "v11971": {
+   "split": "train",
+   "lines": 24,
+   "shots": 7,
+   "sessions": [
+    "v11971/r25115/0"
+   ]
+  },
+  "v11985": {
+   "split": "train",
+   "lines": 15,
+   "shots": 7,
+   "sessions": [
+    "v11985/r25145/0",
+    "v11985/r25145/1"
+   ]
+  },
+  "v11986": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v11986/r25161/0"
+   ]
+  },
+  "v12019": {
+   "split": "val",
+   "lines": 13,
+   "shots": 5,
+   "sessions": [
+    "v12019/r25259/0"
+   ]
+  },
+  "v12033": {
+   "split": "train",
+   "lines": 32,
+   "shots": 3,
+   "sessions": [
+    "v12033/r33163/0"
+   ]
+  },
+  "v12034": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v12034/r25313/0"
+   ]
+  },
+  "v12084": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v12084/r25462/0"
+   ]
+  },
+  "v12096": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v12096/r25501/0"
+   ]
+  },
+  "v12125": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v12125/r29360/0"
+   ]
+  },
+  "v12126": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v12126/r25601/0"
+   ]
+  },
+  "v12141": {
+   "split": "train",
+   "lines": 9,
+   "shots": 5,
+   "sessions": [
+    "v12141/r25657/0"
+   ]
+  },
+  "v12158": {
+   "split": "train",
+   "lines": 24,
+   "shots": 4,
+   "sessions": [
+    "v12158/r25707/0",
+    "v12158/r26429/0",
+    "v12158/r26430/0"
+   ]
+  },
+  "v12167": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v12167/r25734/0",
+    "v12167/r27564/0"
+   ]
+  },
+  "v12171": {
+   "split": "train",
+   "lines": 14,
+   "shots": 6,
+   "sessions": [
+    "v12171/r25743/0"
+   ]
+  },
+  "v12178": {
+   "split": "train",
+   "lines": 11,
+   "shots": 7,
+   "sessions": [
+    "v12178/r25764/0"
+   ]
+  },
+  "v12188": {
+   "split": "val",
+   "lines": 14,
+   "shots": 6,
+   "sessions": [
+    "v12188/r25796/0"
+   ]
+  },
+  "v12219": {
+   "split": "train",
+   "lines": 11,
+   "shots": 7,
+   "sessions": [
+    "v12219/r25872/0"
+   ]
+  },
+  "v12246": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v12246/r70680/0"
+   ]
+  },
+  "v12260": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v12260/r25974/0"
+   ]
+  },
+  "v12282": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v12282/r38899/0"
+   ]
+  },
+  "v12283": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v12283/r26071/0",
+    "v12283/r26071/1"
+   ]
+  },
+  "v12287": {
+   "split": "train",
+   "lines": 13,
+   "shots": 6,
+   "sessions": [
+    "v12287/r26078/0"
+   ]
+  },
+  "v12369": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v12369/r23209/0"
+   ]
+  },
+  "v12407": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v12407/r26383/0"
+   ]
+  },
+  "v12428": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v12428/r26440/0"
+   ]
+  },
+  "v12431": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v12431/r26449/0"
+   ]
+  },
+  "v12436": {
+   "split": "val",
+   "lines": 11,
+   "shots": 9,
+   "sessions": [
+    "v12436/r31548/0"
+   ]
+  },
+  "v12447": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v12447/r26493/0"
+   ]
+  },
+  "v12450": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v12450/r26502/0"
+   ]
+  },
+  "v12451": {
+   "split": "val",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v12451/r26504/0"
+   ]
+  },
+  "v12456": {
+   "split": "train",
+   "lines": 7,
+   "shots": 5,
+   "sessions": [
+    "v12456/r26518/0"
+   ]
+  },
+  "v12457": {
+   "split": "train",
+   "lines": 10,
+   "shots": 6,
+   "sessions": [
+    "v12457/r26520/0"
+   ]
+  },
+  "v12472": {
+   "split": "train",
+   "lines": 9,
+   "shots": 6,
+   "sessions": [
+    "v12472/r26556/0",
+    "v12472/r26556/1"
+   ]
+  },
+  "v12476": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v12476/r26564/0"
+   ]
+  },
+  "v12505": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v12505/r29659/0",
+    "v12505/r29659/1"
+   ]
+  },
+  "v12509": {
+   "split": "train",
+   "lines": 16,
+   "shots": 6,
+   "sessions": [
+    "v12509/r26662/0"
+   ]
+  },
+  "v12559": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v12559/r26771/0"
+   ]
+  },
+  "v12561": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v12561/r26781/0"
+   ]
+  },
+  "v12589": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v12589/r26883/0"
+   ]
+  },
+  "v12600": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v12600/r26931/0"
+   ]
+  },
+  "v12605": {
+   "split": "train",
+   "lines": 12,
+   "shots": 5,
+   "sessions": [
+    "v12605/r26940/0"
+   ]
+  },
+  "v12630": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v12630/r101129/0"
+   ]
+  },
+  "v12689": {
+   "split": "train",
+   "lines": 12,
+   "shots": 2,
+   "sessions": [
+    "v12689/r27170/0"
+   ]
+  },
+  "v12694": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v12694/r29139/0"
+   ]
+  },
+  "v12705": {
+   "split": "val",
+   "lines": 19,
+   "shots": 8,
+   "sessions": [
+    "v12705/r27210/0"
+   ]
+  },
+  "v12710": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v12710/r27223/0"
+   ]
+  },
+  "v12714": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v12714/r33418/0"
+   ]
+  },
+  "v12751": {
+   "split": "train",
+   "lines": 17,
+   "shots": 7,
+   "sessions": [
+    "v12751/r31977/0"
+   ]
+  },
+  "v12775": {
+   "split": "train",
+   "lines": 11,
+   "shots": 7,
+   "sessions": [
+    "v12775/r20503/0"
+   ]
+  },
+  "v12776": {
+   "split": "train",
+   "lines": 15,
+   "shots": 5,
+   "sessions": [
+    "v12776/r27351/0"
+   ]
+  },
+  "v12794": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v12794/r33141/1"
+   ]
+  },
+  "v12796": {
+   "split": "val",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v12796/r27395/0"
+   ]
+  },
+  "v12807": {
+   "split": "train",
+   "lines": 12,
+   "shots": 7,
+   "sessions": [
+    "v12807/r31574/0",
+    "v12807/r31575/0"
+   ]
+  },
+  "v12830": {
+   "split": "val",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v12830/r27486/0"
+   ]
+  },
+  "v12831": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v12831/r27488/0"
+   ]
+  },
+  "v12849": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v12849/r27546/0"
+   ]
+  },
+  "v12854": {
+   "split": "train",
+   "lines": 10,
+   "shots": 2,
+   "sessions": [
+    "v12854/r27570/0"
+   ]
+  },
+  "v12858": {
+   "split": "val",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v12858/r27560/0",
+    "v12858/r27560/1"
+   ]
+  },
+  "v12882": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v12882/r27619/0"
+   ]
+  },
+  "v12900": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v12900/r27693/0"
+   ]
+  },
+  "v12914": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v12914/r28995/0"
+   ]
+  },
+  "v12927": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v12927/r27736/1"
+   ]
+  },
+  "v12934": {
+   "split": "train",
+   "lines": 17,
+   "shots": 6,
+   "sessions": [
+    "v12934/r27750/0",
+    "v12934/r27750/1"
+   ]
+  },
+  "v12942": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v12942/r27763/0"
+   ]
+  },
+  "v12949": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v12949/r27775/1"
+   ]
+  },
+  "v12992": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v12992/r27871/0"
+   ]
+  },
+  "v12995": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v12995/r30000/0",
+    "v12995/r31012/0"
+   ]
+  },
+  "v13015": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v13015/r27922/0"
+   ]
+  },
+  "v13039": {
+   "split": "train",
+   "lines": 11,
+   "shots": 6,
+   "sessions": [
+    "v13039/r27998/0"
+   ]
+  },
+  "v13046": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v13046/r28042/0"
+   ]
+  },
+  "v13074": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v13074/r31169/0"
+   ]
+  },
+  "v13083": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v13083/r28192/0"
+   ]
+  },
+  "v13086": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v13086/r28202/0"
+   ]
+  },
+  "v13089": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v13089/r28212/0"
+   ]
+  },
+  "v13090": {
+   "split": "train",
+   "lines": 21,
+   "shots": 5,
+   "sessions": [
+    "v13090/r40470/0"
+   ]
+  },
+  "v13107": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v13107/r28294/0",
+    "v13107/r28294/1"
+   ]
+  },
+  "v13108": {
+   "split": "val",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v13108/r28295/0"
+   ]
+  },
+  "v13127": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v13127/r28358/0",
+    "v13127/r34783/0"
+   ]
+  },
+  "v13188": {
+   "split": "val",
+   "lines": 11,
+   "shots": 3,
+   "sessions": [
+    "v13188/r28495/0"
+   ]
+  },
+  "v13267": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v13267/r28670/0"
+   ]
+  },
+  "v13308": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v13308/r56189/0",
+    "v13308/r56189/1"
+   ]
+  },
+  "v13321": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v13321/r28774/0",
+    "v13321/r28774/1"
+   ]
+  },
+  "v13325": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v13325/r28781/0",
+    "v13325/r28781/1"
+   ]
+  },
+  "v13419": {
+   "split": "train",
+   "lines": 12,
+   "shots": 6,
+   "sessions": [
+    "v13419/r28952/0"
+   ]
+  },
+  "v13627": {
+   "split": "val",
+   "lines": 11,
+   "shots": 6,
+   "sessions": [
+    "v13627/r29424/0"
+   ]
+  },
+  "v13631": {
+   "split": "val",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v13631/r29433/0"
+   ]
+  },
+  "v13632": {
+   "split": "train",
+   "lines": 8,
+   "shots": 5,
+   "sessions": [
+    "v13632/r29434/0",
+    "v13632/r41631/0"
+   ]
+  },
+  "v13636": {
+   "split": "val",
+   "lines": 19,
+   "shots": 4,
+   "sessions": [
+    "v13636/r29459/0"
+   ]
+  },
+  "v13711": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v13711/r29658/0"
+   ]
+  },
+  "v13729": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v13729/r29733/0"
+   ]
+  },
+  "v13758": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v13758/r29814/0"
+   ]
+  },
+  "v13759": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v13759/r29815/0"
+   ]
+  },
+  "v13760": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v13760/r29818/0"
+   ]
+  },
+  "v13765": {
+   "split": "train",
+   "lines": 18,
+   "shots": 7,
+   "sessions": [
+    "v13765/r29841/0"
+   ]
+  },
+  "v13766": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v13766/r29842/0"
+   ]
+  },
+  "v13802": {
+   "split": "train",
+   "lines": 19,
+   "shots": 3,
+   "sessions": [
+    "v13802/r29956/0"
+   ]
+  },
+  "v13833": {
+   "split": "val",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v13833/r30073/0"
+   ]
+  },
+  "v13849": {
+   "split": "val",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v13849/r33375/0"
+   ]
+  },
+  "v13850": {
+   "split": "train",
+   "lines": 8,
+   "shots": 6,
+   "sessions": [
+    "v13850/r30120/0"
+   ]
+  },
+  "v13879": {
+   "split": "train",
+   "lines": 9,
+   "shots": 5,
+   "sessions": [
+    "v13879/r30257/0"
+   ]
+  },
+  "v13901": {
+   "split": "train",
+   "lines": 26,
+   "shots": 3,
+   "sessions": [
+    "v13901/r30364/0"
+   ]
+  },
+  "v13911": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v13911/r30399/0"
+   ]
+  },
+  "v13919": {
+   "split": "train",
+   "lines": 8,
+   "shots": 7,
+   "sessions": [
+    "v13919/r30420/0"
+   ]
+  },
+  "v13943": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v13943/r30473/0"
+   ]
+  },
+  "v13962": {
+   "split": "train",
+   "lines": 30,
+   "shots": 4,
+   "sessions": [
+    "v13962/r30559/0"
+   ]
+  },
+  "v13999": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v13999/r32578/0"
+   ]
+  },
+  "v14005": {
+   "split": "train",
+   "lines": 14,
+   "shots": 4,
+   "sessions": [
+    "v14005/r30649/0",
+    "v14005/r30649/1"
+   ]
+  },
+  "v14018": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v14018/r44367/0"
+   ]
+  },
+  "v14022": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v14022/r27746/0"
+   ]
+  },
+  "v14062": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v14062/r30892/0",
+    "v14062/r30892/1"
+   ]
+  },
+  "v14069": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v14069/r30903/0"
+   ]
+  },
+  "v14087": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v14087/r30964/0"
+   ]
+  },
+  "v14240": {
+   "split": "val",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v14240/r31297/0"
+   ]
+  },
+  "v14264": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v14264/r31329/0",
+    "v14264/r31329/1"
+   ]
+  },
+  "v14265": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v14265/r31330/0",
+    "v14265/r31330/1"
+   ]
+  },
+  "v14267": {
+   "split": "val",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v14267/r31332/0",
+    "v14267/r35176/0"
+   ]
+  },
+  "v14269": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v14269/r31333/0"
+   ]
+  },
+  "v14340": {
+   "split": "train",
+   "lines": 16,
+   "shots": 7,
+   "sessions": [
+    "v14340/r31508/0"
+   ]
+  },
+  "v14365": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v14365/r31568/0",
+    "v14365/r31568/1"
+   ]
+  },
+  "v14415": {
+   "split": "train",
+   "lines": 20,
+   "shots": 8,
+   "sessions": [
+    "v14415/r31770/0"
+   ]
+  },
+  "v14520": {
+   "split": "val",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v14520/r31996/0"
+   ]
+  },
+  "v14522": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v14522/r31998/0"
+   ]
+  },
+  "v14534": {
+   "split": "train",
+   "lines": 17,
+   "shots": 5,
+   "sessions": [
+    "v14534/r33494/0"
+   ]
+  },
+  "v14610": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v14610/r34003/0",
+    "v14610/r36466/0"
+   ]
+  },
+  "v14652": {
+   "split": "train",
+   "lines": 38,
+   "shots": 10,
+   "sessions": [
+    "v14652/r33424/0"
+   ]
+  },
+  "v14759": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v14759/r32541/0"
+   ]
+  },
+  "v14763": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v14763/r32546/0"
+   ]
+  },
+  "v14811": {
+   "split": "train",
+   "lines": 17,
+   "shots": 9,
+   "sessions": [
+    "v14811/r32712/0"
+   ]
+  },
+  "v14812": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v14812/r32714/0"
+   ]
+  },
+  "v14813": {
+   "split": "train",
+   "lines": 22,
+   "shots": 10,
+   "sessions": [
+    "v14813/r32716/0"
+   ]
+  },
+  "v14825": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v14825/r32770/0"
+   ]
+  },
+  "v14826": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v14826/r33018/0",
+    "v14826/r33629/0"
+   ]
+  },
+  "v14869": {
+   "split": "train",
+   "lines": 26,
+   "shots": 7,
+   "sessions": [
+    "v14869/r32953/0"
+   ]
+  },
+  "v14878": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v14878/r32971/0"
+   ]
+  },
+  "v14887": {
+   "split": "val",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v14887/r32990/0"
+   ]
+  },
+  "v14888": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v14888/r32991/0"
+   ]
+  },
+  "v14895": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v14895/r33004/0"
+   ]
+  },
+  "v14910": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v14910/r33059/0"
+   ]
+  },
+  "v14911": {
+   "split": "train",
+   "lines": 11,
+   "shots": 7,
+   "sessions": [
+    "v14911/r33079/0"
+   ]
+  },
+  "v14917": {
+   "split": "train",
+   "lines": 21,
+   "shots": 10,
+   "sessions": [
+    "v14917/r33119/0"
+   ]
+  },
+  "v14922": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v14922/r33135/0",
+    "v14922/r44507/0"
+   ]
+  },
+  "v14934": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v14934/r33180/0"
+   ]
+  },
+  "v14973": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v14973/r33276/0"
+   ]
+  },
+  "v15062": {
+   "split": "train",
+   "lines": 7,
+   "shots": 2,
+   "sessions": [
+    "v15062/r33505/0"
+   ]
+  },
+  "v15064": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v15064/r33507/0"
+   ]
+  },
+  "v15070": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v15070/r38087/0"
+   ]
+  },
+  "v15077": {
+   "split": "train",
+   "lines": 14,
+   "shots": 4,
+   "sessions": [
+    "v15077/r33529/0"
+   ]
+  },
+  "v15080": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v15080/r40415/0",
+    "v15080/r40415/1"
+   ]
+  },
+  "v15104": {
+   "split": "train",
+   "lines": 12,
+   "shots": 7,
+   "sessions": [
+    "v15104/r33575/0"
+   ]
+  },
+  "v15110": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v15110/r33590/0"
+   ]
+  },
+  "v15111": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v15111/r33594/0"
+   ]
+  },
+  "v15140": {
+   "split": "train",
+   "lines": 7,
+   "shots": 5,
+   "sessions": [
+    "v15140/r33738/0"
+   ]
+  },
+  "v15143": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v15143/r45423/0"
+   ]
+  },
+  "v15167": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v15167/r33817/0"
+   ]
+  },
+  "v15231": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v15231/r36681/0"
+   ]
+  },
+  "v15288": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v15288/r34164/0"
+   ]
+  },
+  "v15293": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v15293/r34172/0"
+   ]
+  },
+  "v15361": {
+   "split": "train",
+   "lines": 4,
+   "shots": 1,
+   "sessions": [
+    "v15361/r34311/0"
+   ]
+  },
+  "v15393": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v15393/r36046/0",
+    "v15393/r39228/0"
+   ]
+  },
+  "v15395": {
+   "split": "val",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v15395/r34392/0"
+   ]
+  },
+  "v15417": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v15417/r34501/0"
+   ]
+  },
+  "v15458": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v15458/r35726/0"
+   ]
+  },
+  "v15473": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v15473/r34649/0"
+   ]
+  },
+  "v15493": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v15493/r55318/0",
+    "v15493/r55318/1"
+   ]
+  },
+  "v15495": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v15495/r34711/0",
+    "v15495/r44111/0"
+   ]
+  },
+  "v15496": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v15496/r34712/0"
+   ]
+  },
+  "v15499": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v15499/r34722/2"
+   ]
+  },
+  "v15523": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v15523/r34866/0"
+   ]
+  },
+  "v15562": {
+   "split": "train",
+   "lines": 8,
+   "shots": 2,
+   "sessions": [
+    "v15562/r35016/0"
+   ]
+  },
+  "v15563": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v15563/r35018/0"
+   ]
+  },
+  "v15577": {
+   "split": "train",
+   "lines": 14,
+   "shots": 7,
+   "sessions": [
+    "v15577/r35970/0"
+   ]
+  },
+  "v15637": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v15637/r37837/0"
+   ]
+  },
+  "v15708": {
+   "split": "val",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v15708/r35360/0",
+    "v15708/r35360/1",
+    "v15708/r45708/0"
+   ]
+  },
+  "v15771": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v15771/r35636/0"
+   ]
+  },
+  "v15772": {
+   "split": "train",
+   "lines": 13,
+   "shots": 6,
+   "sessions": [
+    "v15772/r35637/0"
+   ]
+  },
+  "v15773": {
+   "split": "val",
+   "lines": 22,
+   "shots": 9,
+   "sessions": [
+    "v15773/r35638/0"
+   ]
+  },
+  "v15816": {
+   "split": "train",
+   "lines": 10,
+   "shots": 6,
+   "sessions": [
+    "v15816/r35765/0"
+   ]
+  },
+  "v15871": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v15871/r35963/0",
+    "v15871/r36908/0"
+   ]
+  },
+  "v15874": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v15874/r36306/0"
+   ]
+  },
+  "v15891": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v15891/r36062/0"
+   ]
+  },
+  "v15892": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v15892/r36071/0",
+    "v15892/r36071/1"
+   ]
+  },
+  "v15940": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v15940/r36234/0"
+   ]
+  },
+  "v16049": {
+   "split": "train",
+   "lines": 14,
+   "shots": 5,
+   "sessions": [
+    "v16049/r36494/0"
+   ]
+  },
+  "v16057": {
+   "split": "train",
+   "lines": 11,
+   "shots": 7,
+   "sessions": [
+    "v16057/r36547/0"
+   ]
+  },
+  "v16060": {
+   "split": "train",
+   "lines": 26,
+   "shots": 8,
+   "sessions": [
+    "v16060/r37218/0"
+   ]
+  },
+  "v16069": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v16069/r36585/0",
+    "v16069/r37763/0"
+   ]
+  },
+  "v16070": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v16070/r36586/0"
+   ]
+  },
+  "v16082": {
+   "split": "val",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v16082/r36603/0"
+   ]
+  },
+  "v16099": {
+   "split": "train",
+   "lines": 7,
+   "shots": 5,
+   "sessions": [
+    "v16099/r36660/0",
+    "v16099/r82129/0"
+   ]
+  },
+  "v16103": {
+   "split": "train",
+   "lines": 24,
+   "shots": 4,
+   "sessions": [
+    "v16103/r36667/0"
+   ]
+  },
+  "v16104": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v16104/r36668/0"
+   ]
+  },
+  "v16128": {
+   "split": "val",
+   "lines": 27,
+   "shots": 9,
+   "sessions": [
+    "v16128/r36716/0",
+    "v16128/r36716/1"
+   ]
+  },
+  "v16131": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v16131/r36724/0",
+    "v16131/r36724/1"
+   ]
+  },
+  "v16134": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v16134/r39432/0"
+   ]
+  },
+  "v16166": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v16166/r36862/0"
+   ]
+  },
+  "v16172": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v16172/r36880/0"
+   ]
+  },
+  "v16193": {
+   "split": "train",
+   "lines": 14,
+   "shots": 4,
+   "sessions": [
+    "v16193/r36959/0"
+   ]
+  },
+  "v16208": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v16208/r37033/0"
+   ]
+  },
+  "v16212": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v16212/r37040/0"
+   ]
+  },
+  "v16218": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v16218/r37055/0"
+   ]
+  },
+  "v16238": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v16238/r37115/0"
+   ]
+  },
+  "v16262": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v16262/r40630/0"
+   ]
+  },
+  "v16266": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v16266/r37187/0"
+   ]
+  },
+  "v16338": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v16338/r37374/0"
+   ]
+  },
+  "v16339": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v16339/r37375/0"
+   ]
+  },
+  "v16341": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v16341/r37377/0"
+   ]
+  },
+  "v16386": {
+   "split": "val",
+   "lines": 16,
+   "shots": 8,
+   "sessions": [
+    "v16386/r37496/0"
+   ]
+  },
+  "v16416": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v16416/r37594/0"
+   ]
+  },
+  "v16459": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v16459/r37732/0"
+   ]
+  },
+  "v16468": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v16468/r37751/0"
+   ]
+  },
+  "v16479": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v16479/r37774/0"
+   ]
+  },
+  "v16484": {
+   "split": "train",
+   "lines": 4,
+   "shots": 1,
+   "sessions": [
+    "v16484/r40712/0"
+   ]
+  },
+  "v16496": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v16496/r37814/0"
+   ]
+  },
+  "v16497": {
+   "split": "train",
+   "lines": 13,
+   "shots": 3,
+   "sessions": [
+    "v16497/r37816/0"
+   ]
+  },
+  "v16511": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v16511/r37842/0"
+   ]
+  },
+  "v16516": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v16516/r62961/0"
+   ]
+  },
+  "v16560": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v16560/r37949/0"
+   ]
+  },
+  "v16563": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v16563/r37952/0",
+    "v16563/r37952/1"
+   ]
+  },
+  "v16580": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v16580/r37984/0"
+   ]
+  },
+  "v16608": {
+   "split": "train",
+   "lines": 7,
+   "shots": 6,
+   "sessions": [
+    "v16608/r38047/0"
+   ]
+  },
+  "v16610": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v16610/r44928/0"
+   ]
+  },
+  "v16640": {
+   "split": "train",
+   "lines": 18,
+   "shots": 3,
+   "sessions": [
+    "v16640/r38150/0"
+   ]
+  },
+  "v16658": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v16658/r39955/0"
+   ]
+  },
+  "v16702": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v16702/r2121/0",
+    "v16702/r38302/0"
+   ]
+  },
+  "v16770": {
+   "split": "val",
+   "lines": 20,
+   "shots": 8,
+   "sessions": [
+    "v16770/r38518/0"
+   ]
+  },
+  "v16802": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v16802/r38585/0"
+   ]
+  },
+  "v16842": {
+   "split": "train",
+   "lines": 23,
+   "shots": 5,
+   "sessions": [
+    "v16842/r39599/0",
+    "v16842/r55800/0"
+   ]
+  },
+  "v16845": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v16845/r38748/0"
+   ]
+  },
+  "v16851": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v16851/r38771/0"
+   ]
+  },
+  "v16874": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v16874/r38840/0"
+   ]
+  },
+  "v16915": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v16915/r38948/0"
+   ]
+  },
+  "v16953": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v16953/r39084/0"
+   ]
+  },
+  "v17012": {
+   "split": "val",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v17012/r76209/0",
+    "v17012/r76209/1"
+   ]
+  },
+  "v17018": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v17018/r39256/0"
+   ]
+  },
+  "v17038": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v17038/r39301/0"
+   ]
+  },
+  "v17046": {
+   "split": "val",
+   "lines": 16,
+   "shots": 2,
+   "sessions": [
+    "v17046/r39310/0"
+   ]
+  },
+  "v17099": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v17099/r39469/0"
+   ]
+  },
+  "v17101": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v17101/r92955/0"
+   ]
+  },
+  "v17147": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v17147/r39551/0"
+   ]
+  },
+  "v17153": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v17153/r39563/0"
+   ]
+  },
+  "v17284": {
+   "split": "train",
+   "lines": 5,
+   "shots": 1,
+   "sessions": [
+    "v17284/r39809/0"
+   ]
+  },
+  "v17287": {
+   "split": "train",
+   "lines": 14,
+   "shots": 6,
+   "sessions": [
+    "v17287/r39812/0"
+   ]
+  },
+  "v17337": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v17337/r41548/0"
+   ]
+  },
+  "v17344": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v17344/r40515/0"
+   ]
+  },
+  "v17376": {
+   "split": "train",
+   "lines": 15,
+   "shots": 4,
+   "sessions": [
+    "v17376/r44739/0"
+   ]
+  },
+  "v17388": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v17388/r39985/0"
+   ]
+  },
+  "v17427": {
+   "split": "val",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v17427/r40063/0"
+   ]
+  },
+  "v17516": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v17516/r40199/1"
+   ]
+  },
+  "v17588": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v17588/r43031/0"
+   ]
+  },
+  "v17608": {
+   "split": "train",
+   "lines": 14,
+   "shots": 5,
+   "sessions": [
+    "v17608/r40381/0"
+   ]
+  },
+  "v17632": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v17632/r40473/0"
+   ]
+  },
+  "v17641": {
+   "split": "train",
+   "lines": 12,
+   "shots": 7,
+   "sessions": [
+    "v17641/r44775/0"
+   ]
+  },
+  "v17642": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v17642/r40499/0"
+   ]
+  },
+  "v17708": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v17708/r40628/0"
+   ]
+  },
+  "v17731": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v17731/r92843/0"
+   ]
+  },
+  "v17742": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v17742/r40750/0",
+    "v17742/r44801/0"
+   ]
+  },
+  "v17790": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v17790/r40907/0"
+   ]
+  },
+  "v17823": {
+   "split": "val",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v17823/r41006/0",
+    "v17823/r44301/0"
+   ]
+  },
+  "v17827": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v17827/r55981/0"
+   ]
+  },
+  "v17836": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v17836/r41642/0"
+   ]
+  },
+  "v17839": {
+   "split": "train",
+   "lines": 23,
+   "shots": 3,
+   "sessions": [
+    "v17839/r41066/0"
+   ]
+  },
+  "v17843": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v17843/r41073/0"
+   ]
+  },
+  "v17863": {
+   "split": "val",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v17863/r41108/0"
+   ]
+  },
+  "v17897": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v17897/r41641/0"
+   ]
+  },
+  "v17935": {
+   "split": "train",
+   "lines": 22,
+   "shots": 6,
+   "sessions": [
+    "v17935/r41296/0"
+   ]
+  },
+  "v17955": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v17955/r41372/0"
+   ]
+  },
+  "v17972": {
+   "split": "val",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v17972/r41419/0"
+   ]
+  },
+  "v17976": {
+   "split": "train",
+   "lines": 20,
+   "shots": 9,
+   "sessions": [
+    "v17976/r5626/0"
+   ]
+  },
+  "v17978": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v17978/r43078/0",
+    "v17978/r43078/1"
+   ]
+  },
+  "v17991": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v17991/r43912/0"
+   ]
+  },
+  "v17997": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v17997/r41493/0"
+   ]
+  },
+  "v18077": {
+   "split": "train",
+   "lines": 18,
+   "shots": 3,
+   "sessions": [
+    "v18077/r44036/0"
+   ]
+  },
+  "v18131": {
+   "split": "train",
+   "lines": 24,
+   "shots": 4,
+   "sessions": [
+    "v18131/r42038/0"
+   ]
+  },
+  "v18141": {
+   "split": "val",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v18141/r42080/0"
+   ]
+  },
+  "v18148": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v18148/r42099/0"
+   ]
+  },
+  "v18149": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v18149/r42101/0",
+    "v18149/r53955/0"
+   ]
+  },
+  "v18152": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v18152/r42108/0",
+    "v18152/r42108/1"
+   ]
+  },
+  "v18154": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v18154/r42112/0"
+   ]
+  },
+  "v18161": {
+   "split": "val",
+   "lines": 11,
+   "shots": 7,
+   "sessions": [
+    "v18161/r47020/0"
+   ]
+  },
+  "v18162": {
+   "split": "train",
+   "lines": 12,
+   "shots": 8,
+   "sessions": [
+    "v18162/r42539/0"
+   ]
+  },
+  "v18163": {
+   "split": "val",
+   "lines": 28,
+   "shots": 9,
+   "sessions": [
+    "v18163/r42134/0"
+   ]
+  },
+  "v18164": {
+   "split": "train",
+   "lines": 17,
+   "shots": 6,
+   "sessions": [
+    "v18164/r42135/0",
+    "v18164/r42135/1"
+   ]
+  },
+  "v18212": {
+   "split": "train",
+   "lines": 38,
+   "shots": 5,
+   "sessions": [
+    "v18212/r50549/0"
+   ]
+  },
+  "v18259": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v18259/r44106/0"
+   ]
+  },
+  "v18279": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v18279/r42631/0",
+    "v18279/r42631/1"
+   ]
+  },
+  "v18291": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v18291/r42673/0"
+   ]
+  },
+  "v18295": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v18295/r42688/0"
+   ]
+  },
+  "v18314": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v18314/r69657/0"
+   ]
+  },
+  "v18315": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v18315/r42832/0"
+   ]
+  },
+  "v18334": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v18334/r42918/0",
+    "v18334/r42918/2"
+   ]
+  },
+  "v18335": {
+   "split": "val",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v18335/r42922/0"
+   ]
+  },
+  "v18344": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v18344/r42942/0"
+   ]
+  },
+  "v18432": {
+   "split": "val",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v18432/r43292/0"
+   ]
+  },
+  "v18449": {
+   "split": "train",
+   "lines": 6,
+   "shots": 5,
+   "sessions": [
+    "v18449/r43350/0",
+    "v18449/r43351/0"
+   ]
+  },
+  "v18457": {
+   "split": "train",
+   "lines": 38,
+   "shots": 8,
+   "sessions": [
+    "v18457/r43391/0",
+    "v18457/r43391/1"
+   ]
+  },
+  "v18458": {
+   "split": "val",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v18458/r44016/0"
+   ]
+  },
+  "v18486": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v18486/r43459/0"
+   ]
+  },
+  "v18495": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v18495/r43489/0",
+    "v18495/r45607/0"
+   ]
+  },
+  "v18498": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v18498/r43505/0"
+   ]
+  },
+  "v18540": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v18540/r43580/0"
+   ]
+  },
+  "v18589": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v18589/r43721/0"
+   ]
+  },
+  "v18641": {
+   "split": "train",
+   "lines": 14,
+   "shots": 5,
+   "sessions": [
+    "v18641/r43826/0",
+    "v18641/r53164/0"
+   ]
+  },
+  "v18642": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v18642/r43827/0"
+   ]
+  },
+  "v18643": {
+   "split": "val",
+   "lines": 20,
+   "shots": 6,
+   "sessions": [
+    "v18643/r46779/0"
+   ]
+  },
+  "v18649": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v18649/r71439/0"
+   ]
+  },
+  "v18683": {
+   "split": "train",
+   "lines": 16,
+   "shots": 3,
+   "sessions": [
+    "v18683/r43961/0"
+   ]
+  },
+  "v18690": {
+   "split": "val",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v18690/r44332/0"
+   ]
+  },
+  "v18694": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v18694/r43986/0"
+   ]
+  },
+  "v18695": {
+   "split": "train",
+   "lines": 21,
+   "shots": 9,
+   "sessions": [
+    "v18695/r54384/0"
+   ]
+  },
+  "v18721": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v18721/r44095/0"
+   ]
+  },
+  "v18734": {
+   "split": "train",
+   "lines": 31,
+   "shots": 4,
+   "sessions": [
+    "v18734/r44143/0"
+   ]
+  },
+  "v18753": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v18753/r52811/0"
+   ]
+  },
+  "v18757": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v18757/r44223/0"
+   ]
+  },
+  "v18760": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v18760/r44233/0"
+   ]
+  },
+  "v18766": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v18766/r44252/0"
+   ]
+  },
+  "v18770": {
+   "split": "train",
+   "lines": 7,
+   "shots": 2,
+   "sessions": [
+    "v18770/r44274/0"
+   ]
+  },
+  "v18783": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v18783/r44306/0"
+   ]
+  },
+  "v18791": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v18791/r44351/0"
+   ]
+  },
+  "v18795": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v18795/r45637/0"
+   ]
+  },
+  "v18806": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v18806/r44972/0"
+   ]
+  },
+  "v18830": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v18830/r44499/0"
+   ]
+  },
+  "v18831": {
+   "split": "train",
+   "lines": 7,
+   "shots": 2,
+   "sessions": [
+    "v18831/r44500/0"
+   ]
+  },
+  "v18837": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v18837/r44520/0"
+   ]
+  },
+  "v18838": {
+   "split": "train",
+   "lines": 21,
+   "shots": 7,
+   "sessions": [
+    "v18838/r44527/0"
+   ]
+  },
+  "v18842": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v18842/r44532/0"
+   ]
+  },
+  "v18857": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v18857/r50551/0"
+   ]
+  },
+  "v18970": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v18970/r5860/0",
+    "v18970/r5860/2"
+   ]
+  },
+  "v19012": {
+   "split": "train",
+   "lines": 18,
+   "shots": 9,
+   "sessions": [
+    "v19012/r45064/0"
+   ]
+  },
+  "v19035": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v19035/r75483/0"
+   ]
+  },
+  "v19037": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v19037/r54169/0"
+   ]
+  },
+  "v19042": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v19042/r49658/0"
+   ]
+  },
+  "v19133": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v19133/r45476/0"
+   ]
+  },
+  "v19141": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v19141/r48565/0"
+   ]
+  },
+  "v19151": {
+   "split": "val",
+   "lines": 8,
+   "shots": 1,
+   "sessions": [
+    "v19151/r45519/0"
+   ]
+  },
+  "v19178": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v19178/r45589/0"
+   ]
+  },
+  "v19182": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v19182/r50998/0"
+   ]
+  },
+  "v19192": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v19192/r45621/0",
+    "v19192/r46669/0"
+   ]
+  },
+  "v19223": {
+   "split": "train",
+   "lines": 13,
+   "shots": 3,
+   "sessions": [
+    "v19223/r45697/0"
+   ]
+  },
+  "v19233": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v19233/r46339/0",
+    "v19233/r47360/0"
+   ]
+  },
+  "v19288": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v19288/r46895/0"
+   ]
+  },
+  "v19294": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v19294/r45947/0"
+   ]
+  },
+  "v19302": {
+   "split": "val",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v19302/r45961/0"
+   ]
+  },
+  "v19319": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v19319/r45993/0"
+   ]
+  },
+  "v19345": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v19345/r46038/0"
+   ]
+  },
+  "v19347": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v19347/r46042/0"
+   ]
+  },
+  "v19373": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v19373/r46116/0"
+   ]
+  },
+  "v19391": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v19391/r46205/0"
+   ]
+  },
+  "v19427": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v19427/r46495/0"
+   ]
+  },
+  "v19441": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v19441/r46361/0",
+    "v19441/r46361/1"
+   ]
+  },
+  "v19444": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v19444/r46367/0"
+   ]
+  },
+  "v19463": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v19463/r46430/0"
+   ]
+  },
+  "v19513": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v19513/r46526/0",
+    "v19513/r46526/1"
+   ]
+  },
+  "v19545": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v19545/r46617/0"
+   ]
+  },
+  "v19587": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v19587/r46743/0"
+   ]
+  },
+  "v19609": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v19609/r46804/0"
+   ]
+  },
+  "v19611": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v19611/r46806/0",
+    "v19611/r48129/0"
+   ]
+  },
+  "v19630": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v19630/r65545/0"
+   ]
+  },
+  "v19634": {
+   "split": "train",
+   "lines": 12,
+   "shots": 3,
+   "sessions": [
+    "v19634/r46902/0",
+    "v19634/r47684/0"
+   ]
+  },
+  "v19643": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v19643/r46950/0"
+   ]
+  },
+  "v19686": {
+   "split": "val",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v19686/r47052/0"
+   ]
+  },
+  "v19716": {
+   "split": "train",
+   "lines": 13,
+   "shots": 5,
+   "sessions": [
+    "v19716/r47200/0"
+   ]
+  },
+  "v19717": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v19717/r47124/0",
+    "v19717/r47124/1"
+   ]
+  },
+  "v19736": {
+   "split": "train",
+   "lines": 50,
+   "shots": 4,
+   "sessions": [
+    "v19736/r47163/0"
+   ]
+  },
+  "v19743": {
+   "split": "train",
+   "lines": 33,
+   "shots": 9,
+   "sessions": [
+    "v19743/r47171/0"
+   ]
+  },
+  "v19765": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v19765/r47321/0"
+   ]
+  },
+  "v19810": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v19810/r47428/0"
+   ]
+  },
+  "v19830": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v19830/r47486/0"
+   ]
+  },
+  "v19841": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v19841/r55887/0",
+    "v19841/r55887/1"
+   ]
+  },
+  "v19851": {
+   "split": "train",
+   "lines": 21,
+   "shots": 7,
+   "sessions": [
+    "v19851/r47531/0"
+   ]
+  },
+  "v19853": {
+   "split": "train",
+   "lines": 32,
+   "shots": 6,
+   "sessions": [
+    "v19853/r47533/0",
+    "v19853/r47533/1"
+   ]
+  },
+  "v19890": {
+   "split": "train",
+   "lines": 18,
+   "shots": 6,
+   "sessions": [
+    "v19890/r47637/0"
+   ]
+  },
+  "v19953": {
+   "split": "train",
+   "lines": 6,
+   "shots": 5,
+   "sessions": [
+    "v19953/r56127/0"
+   ]
+  },
+  "v19964": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v19964/r47890/0"
+   ]
+  },
+  "v19982": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v19982/r47969/0"
+   ]
+  },
+  "v20002": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v20002/r48056/0",
+    "v20002/r48056/1"
+   ]
+  },
+  "v20003": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v20003/r48061/0"
+   ]
+  },
+  "v20032": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v20032/r48169/0"
+   ]
+  },
+  "v20062": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v20062/r48238/0"
+   ]
+  },
+  "v20070": {
+   "split": "train",
+   "lines": 10,
+   "shots": 2,
+   "sessions": [
+    "v20070/r45380/0"
+   ]
+  },
+  "v20072": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v20072/r46315/1"
+   ]
+  },
+  "v20144": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v20144/r48492/0",
+    "v20144/r48492/1"
+   ]
+  },
+  "v20148": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v20148/r49878/0",
+    "v20148/r51247/0"
+   ]
+  },
+  "v20170": {
+   "split": "val",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v20170/r51396/0"
+   ]
+  },
+  "v20196": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v20196/r48656/0",
+    "v20196/r48656/1"
+   ]
+  },
+  "v20228": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v20228/r48768/0"
+   ]
+  },
+  "v20232": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v20232/r48968/0",
+    "v20232/r48968/1"
+   ]
+  },
+  "v20264": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v20264/r47309/0"
+   ]
+  },
+  "v20292": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v20292/r48999/0"
+   ]
+  },
+  "v20314": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v20314/r49177/0"
+   ]
+  },
+  "v20330": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v20330/r51052/0"
+   ]
+  },
+  "v20357": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v20357/r50239/0"
+   ]
+  },
+  "v20406": {
+   "split": "train",
+   "lines": 30,
+   "shots": 4,
+   "sessions": [
+    "v20406/r49336/0",
+    "v20406/r50698/0"
+   ]
+  },
+  "v20418": {
+   "split": "train",
+   "lines": 16,
+   "shots": 3,
+   "sessions": [
+    "v20418/r49381/0",
+    "v20418/r49381/1",
+    "v20418/r49381/2"
+   ]
+  },
+  "v20424": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v20424/r56649/0"
+   ]
+  },
+  "v20431": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v20431/r90502/1"
+   ]
+  },
+  "v20444": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v20444/r49629/0"
+   ]
+  },
+  "v20464": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v20464/r49614/0"
+   ]
+  },
+  "v20471": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v20471/r49631/0"
+   ]
+  },
+  "v20491": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v20491/r53323/0"
+   ]
+  },
+  "v20515": {
+   "split": "train",
+   "lines": 16,
+   "shots": 4,
+   "sessions": [
+    "v20515/r49752/0"
+   ]
+  },
+  "v20524": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v20524/r49783/0"
+   ]
+  },
+  "v20598": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v20598/r20967/0"
+   ]
+  },
+  "v20599": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v20599/r25327/0"
+   ]
+  },
+  "v20601": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v20601/r27809/0"
+   ]
+  },
+  "v20604": {
+   "split": "val",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v20604/r46409/0"
+   ]
+  },
+  "v20615": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v20615/r58713/0"
+   ]
+  },
+  "v20622": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v20622/r49995/0",
+    "v20622/r52412/0"
+   ]
+  },
+  "v20634": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v20634/r51773/0"
+   ]
+  },
+  "v20689": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v20689/r50174/0"
+   ]
+  },
+  "v20747": {
+   "split": "train",
+   "lines": 24,
+   "shots": 5,
+   "sessions": [
+    "v20747/r50532/0"
+   ]
+  },
+  "v20760": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v20760/r50350/0"
+   ]
+  },
+  "v20763": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v20763/r50356/0"
+   ]
+  },
+  "v20795": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v20795/r50403/0"
+   ]
+  },
+  "v20802": {
+   "split": "train",
+   "lines": 21,
+   "shots": 4,
+   "sessions": [
+    "v20802/r50425/0",
+    "v20802/r50425/1",
+    "v20802/r50425/2"
+   ]
+  },
+  "v20860": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v20860/r50553/0",
+    "v20860/r50553/1",
+    "v20860/r52337/0"
+   ]
+  },
+  "v20903": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v20903/r59508/0"
+   ]
+  },
+  "v20975": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v20975/r50876/0"
+   ]
+  },
+  "v21004": {
+   "split": "val",
+   "lines": 19,
+   "shots": 7,
+   "sessions": [
+    "v21004/r51006/0"
+   ]
+  },
+  "v21024": {
+   "split": "train",
+   "lines": 16,
+   "shots": 6,
+   "sessions": [
+    "v21024/r51045/0"
+   ]
+  },
+  "v21047": {
+   "split": "val",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v21047/r56675/0"
+   ]
+  },
+  "v21069": {
+   "split": "train",
+   "lines": 11,
+   "shots": 2,
+   "sessions": [
+    "v21069/r51140/0",
+    "v21069/r51140/2"
+   ]
+  },
+  "v21140": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v21140/r52291/0"
+   ]
+  },
+  "v21178": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v21178/r53198/0",
+    "v21178/r53198/1"
+   ]
+  },
+  "v21185": {
+   "split": "val",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v21185/r51508/0"
+   ]
+  },
+  "v21232": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v21232/r51658/0"
+   ]
+  },
+  "v21261": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v21261/r53480/0"
+   ]
+  },
+  "v21267": {
+   "split": "train",
+   "lines": 26,
+   "shots": 4,
+   "sessions": [
+    "v21267/r51795/0"
+   ]
+  },
+  "v21269": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v21269/r51803/0"
+   ]
+  },
+  "v21300": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v21300/r55363/0",
+    "v21300/r55363/1"
+   ]
+  },
+  "v21321": {
+   "split": "val",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v21321/r52009/0"
+   ]
+  },
+  "v21346": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v21346/r52036/0"
+   ]
+  },
+  "v21355": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v21355/r52150/0"
+   ]
+  },
+  "v21393": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v21393/r52211/0"
+   ]
+  },
+  "v21405": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v21405/r52268/1"
+   ]
+  },
+  "v21438": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v21438/r84139/0"
+   ]
+  },
+  "v21465": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v21465/r54135/0"
+   ]
+  },
+  "v21474": {
+   "split": "train",
+   "lines": 12,
+   "shots": 3,
+   "sessions": [
+    "v21474/r52463/0",
+    "v21474/r52463/1"
+   ]
+  },
+  "v21523": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v21523/r52590/0",
+    "v21523/r55409/0"
+   ]
+  },
+  "v21528": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v21528/r52598/0"
+   ]
+  },
+  "v21552": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v21552/r54146/0"
+   ]
+  },
+  "v21620": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v21620/r53202/0"
+   ]
+  },
+  "v21644": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v21644/r48130/0"
+   ]
+  },
+  "v21667": {
+   "split": "train",
+   "lines": 11,
+   "shots": 2,
+   "sessions": [
+    "v21667/r57952/0"
+   ]
+  },
+  "v21668": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v21668/r53005/0"
+   ]
+  },
+  "v21690": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v21690/r53081/0"
+   ]
+  },
+  "v21766": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v21766/r54589/0"
+   ]
+  },
+  "v21769": {
+   "split": "train",
+   "lines": 12,
+   "shots": 2,
+   "sessions": [
+    "v21769/r53367/0"
+   ]
+  },
+  "v21787": {
+   "split": "train",
+   "lines": 11,
+   "shots": 7,
+   "sessions": [
+    "v21787/r53401/0"
+   ]
+  },
+  "v21836": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v21836/r53520/0"
+   ]
+  },
+  "v21852": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v21852/r53553/0",
+    "v21852/r53553/1",
+    "v21852/r53553/2"
+   ]
+  },
+  "v21854": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v21854/r53558/0"
+   ]
+  },
+  "v21922": {
+   "split": "train",
+   "lines": 7,
+   "shots": 5,
+   "sessions": [
+    "v21922/r53787/0"
+   ]
+  },
+  "v21956": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v21956/r55308/0"
+   ]
+  },
+  "v21964": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v21964/r54741/0"
+   ]
+  },
+  "v22013": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v22013/r63401/0"
+   ]
+  },
+  "v22033": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v22033/r54155/0"
+   ]
+  },
+  "v22045": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v22045/r54182/0"
+   ]
+  },
+  "v22075": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v22075/r56162/0"
+   ]
+  },
+  "v22174": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v22174/r54568/0"
+   ]
+  },
+  "v22175": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v22175/r54570/0"
+   ]
+  },
+  "v22186": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v22186/r54802/0"
+   ]
+  },
+  "v22205": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v22205/r54670/0"
+   ]
+  },
+  "v22230": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v22230/r54747/0"
+   ]
+  },
+  "v22242": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v22242/r54771/0"
+   ]
+  },
+  "v22292": {
+   "split": "train",
+   "lines": 9,
+   "shots": 1,
+   "sessions": [
+    "v22292/r55978/0"
+   ]
+  },
+  "v22303": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v22303/r54915/0"
+   ]
+  },
+  "v22304": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v22304/r54916/0"
+   ]
+  },
+  "v22311": {
+   "split": "val",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v22311/r55355/0"
+   ]
+  },
+  "v22313": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v22313/r54941/0",
+    "v22313/r54941/1"
+   ]
+  },
+  "v22314": {
+   "split": "val",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v22314/r54944/0"
+   ]
+  },
+  "v22345": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v22345/r55041/0",
+    "v22345/r55041/1",
+    "v22345/r55041/2"
+   ]
+  },
+  "v22357": {
+   "split": "val",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v22357/r55077/0"
+   ]
+  },
+  "v22436": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v22436/r55297/0"
+   ]
+  },
+  "v22439": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v22439/r55306/0"
+   ]
+  },
+  "v22448": {
+   "split": "train",
+   "lines": 13,
+   "shots": 3,
+   "sessions": [
+    "v22448/r55329/0"
+   ]
+  },
+  "v22483": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v22483/r60603/0"
+   ]
+  },
+  "v22553": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v22553/r55597/0"
+   ]
+  },
+  "v22594": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v22594/r55714/0",
+    "v22594/r56174/1"
+   ]
+  },
+  "v22603": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v22603/r55729/0"
+   ]
+  },
+  "v22648": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v22648/r55930/0"
+   ]
+  },
+  "v22658": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v22658/r55963/0"
+   ]
+  },
+  "v22697": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v22697/r63407/0"
+   ]
+  },
+  "v22713": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v22713/r56946/0"
+   ]
+  },
+  "v22725": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v22725/r58625/0"
+   ]
+  },
+  "v22741": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v22741/r56142/0"
+   ]
+  },
+  "v22774": {
+   "split": "train",
+   "lines": 20,
+   "shots": 4,
+   "sessions": [
+    "v22774/r56265/0"
+   ]
+  },
+  "v22775": {
+   "split": "train",
+   "lines": 11,
+   "shots": 2,
+   "sessions": [
+    "v22775/r56266/0"
+   ]
+  },
+  "v22783": {
+   "split": "train",
+   "lines": 17,
+   "shots": 3,
+   "sessions": [
+    "v22783/r56289/0"
+   ]
+  },
+  "v22847": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v22847/r56464/0",
+    "v22847/r58658/0"
+   ]
+  },
+  "v22880": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v22880/r56573/0",
+    "v22880/r58142/0"
+   ]
+  },
+  "v22899": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v22899/r56632/1"
+   ]
+  },
+  "v23154": {
+   "split": "val",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v23154/r57277/0"
+   ]
+  },
+  "v23157": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v23157/r57282/0"
+   ]
+  },
+  "v23227": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v23227/r57485/0"
+   ]
+  },
+  "v23281": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v23281/r59859/0"
+   ]
+  },
+  "v23288": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v23288/r57592/0"
+   ]
+  },
+  "v23290": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v23290/r57593/0"
+   ]
+  },
+  "v23388": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v23388/r60333/0"
+   ]
+  },
+  "v23393": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v23393/r73778/0",
+    "v23393/r73778/1"
+   ]
+  },
+  "v23407": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v23407/r57902/0"
+   ]
+  },
+  "v23448": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v23448/r57998/0"
+   ]
+  },
+  "v23464": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v23464/r61169/0"
+   ]
+  },
+  "v23492": {
+   "split": "train",
+   "lines": 17,
+   "shots": 3,
+   "sessions": [
+    "v23492/r58099/0"
+   ]
+  },
+  "v23501": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v23501/r62902/0"
+   ]
+  },
+  "v23725": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v23725/r62220/0",
+    "v23725/r62220/1"
+   ]
+  },
+  "v23740": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v23740/r58537/0"
+   ]
+  },
+  "v23741": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v23741/r62830/0",
+    "v23741/r70634/0"
+   ]
+  },
+  "v23742": {
+   "split": "train",
+   "lines": 22,
+   "shots": 4,
+   "sessions": [
+    "v23742/r59714/0"
+   ]
+  },
+  "v23744": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v23744/r61480/0"
+   ]
+  },
+  "v23772": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v23772/r58612/0"
+   ]
+  },
+  "v24002": {
+   "split": "train",
+   "lines": 14,
+   "shots": 3,
+   "sessions": [
+    "v24002/r58968/0"
+   ]
+  },
+  "v24011": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v24011/r58998/0"
+   ]
+  },
+  "v24151": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v24151/r59326/0"
+   ]
+  },
+  "v24202": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v24202/r59404/0"
+   ]
+  },
+  "v24208": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v24208/r73606/0"
+   ]
+  },
+  "v24216": {
+   "split": "train",
+   "lines": 10,
+   "shots": 5,
+   "sessions": [
+    "v24216/r59432/0"
+   ]
+  },
+  "v24276": {
+   "split": "val",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v24276/r59549/0"
+   ]
+  },
+  "v24291": {
+   "split": "train",
+   "lines": 22,
+   "shots": 7,
+   "sessions": [
+    "v24291/r62271/0",
+    "v24291/r62271/1"
+   ]
+  },
+  "v24297": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v24297/r59596/0"
+   ]
+  },
+  "v24320": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v24320/r62963/0"
+   ]
+  },
+  "v24328": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v24328/r64450/0"
+   ]
+  },
+  "v24351": {
+   "split": "train",
+   "lines": 11,
+   "shots": 2,
+   "sessions": [
+    "v24351/r59741/0"
+   ]
+  },
+  "v24381": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v24381/r59813/0"
+   ]
+  },
+  "v24417": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v24417/r59899/0"
+   ]
+  },
+  "v24555": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v24555/r60248/0"
+   ]
+  },
+  "v24564": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v24564/r60283/0"
+   ]
+  },
+  "v24586": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v24586/r61370/0",
+    "v24586/r62637/0"
+   ]
+  },
+  "v24618": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v24618/r60437/0",
+    "v24618/r60437/1"
+   ]
+  },
+  "v24620": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v24620/r60439/0"
+   ]
+  },
+  "v24634": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v24634/r60485/0"
+   ]
+  },
+  "v24648": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v24648/r60529/0"
+   ]
+  },
+  "v24689": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v24689/r67097/0",
+    "v24689/r67097/1"
+   ]
+  },
+  "v24702": {
+   "split": "val",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v24702/r62025/0",
+    "v24702/r62025/1"
+   ]
+  },
+  "v24714": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v24714/r60680/0"
+   ]
+  },
+  "v24716": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v24716/r60682/0"
+   ]
+  },
+  "v24717": {
+   "split": "val",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v24717/r62356/0"
+   ]
+  },
+  "v24725": {
+   "split": "val",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v24725/r60697/0",
+    "v24725/r63881/1"
+   ]
+  },
+  "v24770": {
+   "split": "train",
+   "lines": 23,
+   "shots": 4,
+   "sessions": [
+    "v24770/r60791/0"
+   ]
+  },
+  "v24779": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v24779/r61816/0"
+   ]
+  },
+  "v24798": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v24798/r69672/0"
+   ]
+  },
+  "v24803": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v24803/r60871/0"
+   ]
+  },
+  "v24825": {
+   "split": "val",
+   "lines": 12,
+   "shots": 3,
+   "sessions": [
+    "v24825/r60904/0"
+   ]
+  },
+  "v24853": {
+   "split": "train",
+   "lines": 16,
+   "shots": 4,
+   "sessions": [
+    "v24853/r62499/0",
+    "v24853/r62499/1"
+   ]
+  },
+  "v24883": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v24883/r61051/0"
+   ]
+  },
+  "v24916": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v24916/r61135/0"
+   ]
+  },
+  "v24917": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v24917/r62967/0"
+   ]
+  },
+  "v24935": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v24935/r61203/0",
+    "v24935/r61203/1"
+   ]
+  },
+  "v24987": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v24987/r61318/0"
+   ]
+  },
+  "v25007": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v25007/r61353/0"
+   ]
+  },
+  "v25050": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v25050/r61493/0"
+   ]
+  },
+  "v25124": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v25124/r61656/0",
+    "v25124/r61656/1"
+   ]
+  },
+  "v25132": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v25132/r62958/0"
+   ]
+  },
+  "v25144": {
+   "split": "train",
+   "lines": 25,
+   "shots": 3,
+   "sessions": [
+    "v25144/r61716/0"
+   ]
+  },
+  "v25227": {
+   "split": "train",
+   "lines": 15,
+   "shots": 9,
+   "sessions": [
+    "v25227/r61967/0",
+    "v25227/r61967/1"
+   ]
+  },
+  "v25236": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v25236/r61981/0"
+   ]
+  },
+  "v25366": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v25366/r62334/0"
+   ]
+  },
+  "v25492": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v25492/r63213/0"
+   ]
+  },
+  "v25583": {
+   "split": "val",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v25583/r63535/0"
+   ]
+  },
+  "v25596": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v25596/r63063/0"
+   ]
+  },
+  "v25684": {
+   "split": "val",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v25684/r65078/0"
+   ]
+  },
+  "v25713": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v25713/r80741/0"
+   ]
+  },
+  "v25796": {
+   "split": "val",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v25796/r63806/0"
+   ]
+  },
+  "v25816": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v25816/r63892/0"
+   ]
+  },
+  "v25942": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v25942/r64187/0"
+   ]
+  },
+  "v25964": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v25964/r64266/0"
+   ]
+  },
+  "v25999": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v25999/r64345/0",
+    "v25999/r69088/0"
+   ]
+  },
+  "v26000": {
+   "split": "train",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v26000/r64346/0"
+   ]
+  },
+  "v26054": {
+   "split": "val",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v26054/r65832/0"
+   ]
+  },
+  "v26180": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v26180/r65069/0",
+    "v26180/r65069/1"
+   ]
+  },
+  "v26206": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v26206/r65193/0"
+   ]
+  },
+  "v26232": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v26232/r67307/0"
+   ]
+  },
+  "v26238": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v26238/r65179/0"
+   ]
+  },
+  "v26307": {
+   "split": "val",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v26307/r68287/0"
+   ]
+  },
+  "v26397": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v26397/r65706/0",
+    "v26397/r66572/0"
+   ]
+  },
+  "v26414": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v26414/r67605/0"
+   ]
+  },
+  "v26418": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v26418/r65787/0"
+   ]
+  },
+  "v26419": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v26419/r65788/0",
+    "v26419/r65788/1"
+   ]
+  },
+  "v26448": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v26448/r65978/0"
+   ]
+  },
+  "v26523": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v26523/r70903/0"
+   ]
+  },
+  "v26537": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v26537/r66328/0"
+   ]
+  },
+  "v26563": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v26563/r66436/0"
+   ]
+  },
+  "v26721": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v26721/r66822/0"
+   ]
+  },
+  "v26765": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v26765/r66984/0"
+   ]
+  },
+  "v26987": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v26987/r67532/0",
+    "v26987/r67532/1"
+   ]
+  },
+  "v26989": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v26989/r69708/0",
+    "v26989/r69853/0"
+   ]
+  },
+  "v26999": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v26999/r67579/0"
+   ]
+  },
+  "v27032": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v27032/r72783/0"
+   ]
+  },
+  "v27057": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v27057/r67704/0"
+   ]
+  },
+  "v27092": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v27092/r67789/0"
+   ]
+  },
+  "v27151": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v27151/r67916/0"
+   ]
+  },
+  "v27152": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v27152/r67919/0"
+   ]
+  },
+  "v27227": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v27227/r69881/0"
+   ]
+  },
+  "v27385": {
+   "split": "val",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v27385/r69523/0"
+   ]
+  },
+  "v27389": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v27389/r68342/0"
+   ]
+  },
+  "v27449": {
+   "split": "val",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v27449/r68473/0"
+   ]
+  },
+  "v27456": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v27456/r68492/0",
+    "v27456/r68492/1",
+    "v27456/r68492/2"
+   ]
+  },
+  "v27492": {
+   "split": "train",
+   "lines": 8,
+   "shots": 4,
+   "sessions": [
+    "v27492/r71807/0"
+   ]
+  },
+  "v27519": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v27519/r73813/0"
+   ]
+  },
+  "v27746": {
+   "split": "val",
+   "lines": 12,
+   "shots": 3,
+   "sessions": [
+    "v27746/r69100/0"
+   ]
+  },
+  "v27747": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v27747/r69102/0"
+   ]
+  },
+  "v27916": {
+   "split": "train",
+   "lines": 15,
+   "shots": 2,
+   "sessions": [
+    "v27916/r69525/0"
+   ]
+  },
+  "v27938": {
+   "split": "val",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v27938/r70756/0"
+   ]
+  },
+  "v28126": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v28126/r72667/0"
+   ]
+  },
+  "v28218": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v28218/r73103/0"
+   ]
+  },
+  "v28235": {
+   "split": "train",
+   "lines": 43,
+   "shots": 4,
+   "sessions": [
+    "v28235/r70719/0"
+   ]
+  },
+  "v28283": {
+   "split": "val",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v28283/r70929/0",
+    "v28283/r70929/1"
+   ]
+  },
+  "v28286": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v28286/r73839/0"
+   ]
+  },
+  "v28297": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v28297/r70976/0"
+   ]
+  },
+  "v28633": {
+   "split": "train",
+   "lines": 13,
+   "shots": 4,
+   "sessions": [
+    "v28633/r72504/0",
+    "v28633/r75259/0"
+   ]
+  },
+  "v28634": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v28634/r72505/0"
+   ]
+  },
+  "v28643": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v28643/r73339/0"
+   ]
+  },
+  "v28644": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v28644/r72530/0"
+   ]
+  },
+  "v28666": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v28666/r75989/0"
+   ]
+  },
+  "v28731": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v28731/r74319/0"
+   ]
+  },
+  "v28806": {
+   "split": "train",
+   "lines": 4,
+   "shots": 4,
+   "sessions": [
+    "v28806/r133624/0",
+    "v28806/r73212/0"
+   ]
+  },
+  "v28834": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v28834/r73729/0"
+   ]
+  },
+  "v28875": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v28875/r74574/0"
+   ]
+  },
+  "v28915": {
+   "split": "val",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v28915/r73609/0"
+   ]
+  },
+  "v28929": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v28929/r75258/0"
+   ]
+  },
+  "v29057": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v29057/r73998/0",
+    "v29057/r73998/1"
+   ]
+  },
+  "v29189": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v29189/r74427/0"
+   ]
+  },
+  "v29300": {
+   "split": "train",
+   "lines": 8,
+   "shots": 3,
+   "sessions": [
+    "v29300/r75261/0"
+   ]
+  },
+  "v29329": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v29329/r74875/0"
+   ]
+  },
+  "v29443": {
+   "split": "train",
+   "lines": 15,
+   "shots": 4,
+   "sessions": [
+    "v29443/r91704/0"
+   ]
+  },
+  "v29444": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v29444/r85220/0"
+   ]
+  },
+  "v29667": {
+   "split": "train",
+   "lines": 6,
+   "shots": 2,
+   "sessions": [
+    "v29667/r75922/0"
+   ]
+  },
+  "v29724": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v29724/r76078/0",
+    "v29724/r76078/1"
+   ]
+  },
+  "v29872": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v29872/r77405/0",
+    "v29872/r80898/0"
+   ]
+  },
+  "v29930": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v29930/r78893/0"
+   ]
+  },
+  "v30012": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v30012/r82136/0"
+   ]
+  },
+  "v30029": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v30029/r76423/0"
+   ]
+  },
+  "v30118": {
+   "split": "val",
+   "lines": 7,
+   "shots": 3,
+   "sessions": [
+    "v30118/r77928/0"
+   ]
+  },
+  "v30185": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v30185/r79611/0"
+   ]
+  },
+  "v30227": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v30227/r77360/0"
+   ]
+  },
+  "v30228": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v30228/r78729/0"
+   ]
+  },
+  "v30235": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v30235/r77408/0"
+   ]
+  },
+  "v30458": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v30458/r77945/0",
+    "v30458/r92462/0"
+   ]
+  },
+  "v30599": {
+   "split": "val",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v30599/r79503/0"
+   ]
+  },
+  "v30616": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v30616/r317/0",
+    "v30616/r5298/0"
+   ]
+  },
+  "v30647": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v30647/r75261/0"
+   ]
+  },
+  "v30726": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v30726/r78724/0"
+   ]
+  },
+  "v30771": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v30771/r78848/0"
+   ]
+  },
+  "v30793": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v30793/r79972/0"
+   ]
+  },
+  "v30925": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v30925/r125536/0"
+   ]
+  },
+  "v30990": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v30990/r79368/0"
+   ]
+  },
+  "v31002": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v31002/r82131/0"
+   ]
+  },
+  "v31055": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v31055/r82473/0"
+   ]
+  },
+  "v31125": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v31125/r79788/0",
+    "v31125/r79788/1"
+   ]
+  },
+  "v31136": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v31136/r81770/0",
+    "v31136/r81771/0"
+   ]
+  },
+  "v31262": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v31262/r83295/0"
+   ]
+  },
+  "v31272": {
+   "split": "train",
+   "lines": 21,
+   "shots": 4,
+   "sessions": [
+    "v31272/r80177/0",
+    "v31272/r82138/0"
+   ]
+  },
+  "v31436": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v31436/r83011/0"
+   ]
+  },
+  "v31669": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v31669/r82135/0"
+   ]
+  },
+  "v31740": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v31740/r82475/0",
+    "v31740/r82475/1"
+   ]
+  },
+  "v31813": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v31813/r101749/0"
+   ]
+  },
+  "v32021": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v32021/r82620/0"
+   ]
+  },
+  "v32082": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v32082/r82539/0"
+   ]
+  },
+  "v32177": {
+   "split": "val",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v32177/r84961/0"
+   ]
+  },
+  "v32183": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v32183/r82859/0"
+   ]
+  },
+  "v32269": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v32269/r83287/0",
+    "v32269/r83287/1"
+   ]
+  },
+  "v32745": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v32745/r84535/0"
+   ]
+  },
+  "v32754": {
+   "split": "train",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v32754/r68322/0"
+   ]
+  },
+  "v32758": {
+   "split": "train",
+   "lines": 4,
+   "shots": 3,
+   "sessions": [
+    "v32758/r84560/0"
+   ]
+  },
+  "v32811": {
+   "split": "train",
+   "lines": 5,
+   "shots": 1,
+   "sessions": [
+    "v32811/r84698/0"
+   ]
+  },
+  "v32855": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v32855/r84870/0"
+   ]
+  },
+  "v32988": {
+   "split": "train",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v32988/r85752/0",
+    "v32988/r88136/0"
+   ]
+  },
+  "v33036": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v33036/r85373/0"
+   ]
+  },
+  "v33175": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v33175/r88668/0"
+   ]
+  },
+  "v33204": {
+   "split": "train",
+   "lines": 9,
+   "shots": 4,
+   "sessions": [
+    "v33204/r87950/0"
+   ]
+  },
+  "v33272": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v33272/r107601/0",
+    "v33272/r109967/0"
+   ]
+  },
+  "v33944": {
+   "split": "train",
+   "lines": 12,
+   "shots": 4,
+   "sessions": [
+    "v33944/r5841/0"
+   ]
+  },
+  "v34136": {
+   "split": "train",
+   "lines": 7,
+   "shots": 2,
+   "sessions": [
+    "v34136/r75248/0"
+   ]
+  },
+  "v34848": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v34848/r92866/0"
+   ]
+  },
+  "v35899": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v35899/r94449/0"
+   ]
+  },
+  "v36131": {
+   "split": "train",
+   "lines": 9,
+   "shots": 3,
+   "sessions": [
+    "v36131/r91784/0"
+   ]
+  },
+  "v36175": {
+   "split": "train",
+   "lines": 15,
+   "shots": 2,
+   "sessions": [
+    "v36175/r91884/0"
+   ]
+  },
+  "v36366": {
+   "split": "train",
+   "lines": 5,
+   "shots": 1,
+   "sessions": [
+    "v36366/r92252/1"
+   ]
+  },
+  "v36614": {
+   "split": "train",
+   "lines": 3,
+   "shots": 1,
+   "sessions": [
+    "v36614/r92729/0"
+   ]
+  },
+  "v37016": {
+   "split": "train",
+   "lines": 11,
+   "shots": 4,
+   "sessions": [
+    "v37016/r93538/0"
+   ]
+  },
+  "v37114": {
+   "split": "train",
+   "lines": 1,
+   "shots": 1,
+   "sessions": [
+    "v37114/r96701/0"
+   ]
+  },
+  "v37116": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v37116/r93916/0"
+   ]
+  },
+  "v38037": {
+   "split": "train",
+   "lines": 15,
+   "shots": 4,
+   "sessions": [
+    "v38037/r95319/0"
+   ]
+  },
+  "v39649": {
+   "split": "train",
+   "lines": 6,
+   "shots": 3,
+   "sessions": [
+    "v39649/r98355/0"
+   ]
+  },
+  "v40520": {
+   "split": "train",
+   "lines": 22,
+   "shots": 4,
+   "sessions": [
+    "v40520/r106563/0"
+   ]
+  },
+  "v41339": {
+   "split": "val",
+   "lines": 3,
+   "shots": 3,
+   "sessions": [
+    "v41339/r101349/0"
+   ]
+  },
+  "v41944": {
+   "split": "train",
+   "lines": 12,
+   "shots": 3,
+   "sessions": [
+    "v41944/r104625/0"
+   ]
+  },
+  "v42902": {
+   "split": "train",
+   "lines": 10,
+   "shots": 3,
+   "sessions": [
+    "v42902/r104588/0"
+   ]
+  },
+  "v44184": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v44184/r122272/0"
+   ]
+  },
+  "v45247": {
+   "split": "train",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v45247/r109684/0"
+   ]
+  },
+  "v45731": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v45731/r110012/0"
+   ]
+  },
+  "v47175": {
+   "split": "train",
+   "lines": 5,
+   "shots": 2,
+   "sessions": [
+    "v47175/r113440/0"
+   ]
+  },
+  "v47507": {
+   "split": "train",
+   "lines": 10,
+   "shots": 4,
+   "sessions": [
+    "v47507/r114144/0"
+   ]
+  },
+  "v47547": {
+   "split": "val",
+   "lines": 4,
+   "shots": 2,
+   "sessions": [
+    "v47547/r121329/0"
+   ]
+  },
+  "v47866": {
+   "split": "train",
+   "lines": 2,
+   "shots": 1,
+   "sessions": [
+    "v47866/r122338/0"
+   ]
+  },
+  "v47937": {
+   "split": "train",
+   "lines": 2,
+   "shots": 2,
+   "sessions": [
+    "v47937/r140481/0",
+    "v47937/r143606/0"
+   ]
+  },
+  "v48125": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v48125/r117864/0"
+   ]
+  },
+  "v48420": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v48420/r117708/0"
+   ]
+  },
+  "v49261": {
+   "split": "val",
+   "lines": 5,
+   "shots": 4,
+   "sessions": [
+    "v49261/r130444/0"
+   ]
+  },
+  "v50215": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v50215/r135965/0"
+   ]
+  },
+  "v52881": {
+   "split": "train",
+   "lines": 5,
+   "shots": 3,
+   "sessions": [
+    "v52881/r3064/0"
+   ]
+  },
+  "v55136": {
+   "split": "val",
+   "lines": 15,
+   "shots": 3,
+   "sessions": [
+    "v55136/r132841/0"
+   ]
+  },
+  "v56208": {
+   "split": "train",
+   "lines": 7,
+   "shots": 1,
+   "sessions": [
+    "v56208/r135231/0"
+   ]
+  },
+  "v56650": {
+   "split": "train",
+   "lines": 7,
+   "shots": 4,
+   "sessions": [
+    "v56650/r136283/0",
+    "v56650/r136283/1",
+    "v56650/r141090/0"
+   ]
+  },
+  "v57252": {
+   "split": "train",
+   "lines": 6,
+   "shots": 4,
+   "sessions": [
+    "v57252/r138450/0"
+   ]
+  },
+  "v60663": {
+   "split": "train",
+   "lines": 3,
+   "shots": 2,
+   "sessions": [
+    "v60663/r145227/0"
+   ]
+  }
+ }
+}

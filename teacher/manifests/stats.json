@@ -1,0 +1,90 @@
+{
+ "rule": {
+  "primary": "meiki",
+  "voters": [
+   "v6s",
+   "manga",
+   "screenai"
+  ],
+  "votes": 2,
+  "min_conf": 0.0,
+  "det_conf": 0.0,
+  "veto": true,
+  "trunc": [
+   "screenai"
+  ]
+ },
+ "screenshots_read": 6932,
+ "lines_read": 38240,
+ "accepted": 11228,
+ "rejected": {
+  "not-japanese": 9833,
+  "disagree": 7708,
+  "size": 7371,
+  "screen-edge": 662,
+  "repeat-cap": 418,
+  "short": 379,
+  "confusable-dissent": 221,
+  "truncated": 91,
+  "oov": 2
+ },
+ "by_kind": {
+  "hires": 7169,
+  "vita": 1159,
+  "psp": 2900
+ },
+ "by_split": {
+  "train": 9830,
+  "val": 1398
+ },
+ "crops_by_split_target": {
+  "train/vita": 7353,
+  "train/psp": 4762,
+  "val/vita": 972,
+  "val/psp": 679
+ },
+ "by_how": {
+  "meiki+v6s+manga+screenai": 6539,
+  "meiki+v6s+screenai": 4173,
+  "meiki+v6s+manga": 302,
+  "meiki+manga+screenai": 214
+ },
+ "by_polarity": {
+  "bright-on-dark": 7182,
+  "dark-on-light": 4043,
+  "null": 3
+ },
+ "vns": {
+  "train": 1265,
+  "val": 181
+ },
+ "sessions": 1768,
+ "screenshots": 4923,
+ "unique_labels": 9840,
+ "chars": 114552,
+ "distill_pool": {
+  "train/vita": 5215,
+  "train/psp": 3829,
+  "val/vita": 701,
+  "val/psp": 560
+ },
+ "distill_why": {
+  "disagree": 7708,
+  "short": 379,
+  "confusable-dissent": 221
+ },
+ "val_linked_to_train": {
+  "vns": [
+   "v17",
+   "v1762",
+   "v2125",
+   "v3260",
+   "v8440",
+   "v32753",
+   "v32787"
+  ],
+  "screenshots": 37,
+  "accepted": 53,
+  "pool": 53
+ }
+}

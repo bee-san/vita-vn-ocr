@@ -1,0 +1,134 @@
+{
+ "rule": {
+  "primary": "meiki",
+  "voters": [
+   "v6s",
+   "manga",
+   "screenai"
+  ],
+  "votes": 2,
+  "min_conf": 0.0,
+  "det_conf": 0.0,
+  "veto": true,
+  "trunc": [
+   "screenai"
+  ]
+ },
+ "chosen_by": "teacher/measure.py rules --set vita-test,psp-test --precision 0.995: the highest pooled recall whose precision is >= 0.995 on vita-test and psp-test each and pooled",
+ "measured": {
+  "pooled": {
+   "accepted": 329,
+   "accepted_scored": 284,
+   "accepted_partial": 9,
+   "correct": 284,
+   "precision": 1.0,
+   "recall": 0.6297117516629712,
+   "gt_lines": 451,
+   "label_cer": 0.0
+  },
+  "precision_ci95": [
+   0.9867,
+   1.0
+  ],
+  "per_set": {
+   "vita-test": {
+    "accepted": 175,
+    "accepted_scored": 143,
+    "accepted_partial": 5,
+    "correct": 143,
+    "precision": 1.0,
+    "recall": 0.6941747572815534,
+    "gt_lines": 206,
+    "label_cer": 0.0
+   },
+   "psp-test": {
+    "accepted": 154,
+    "accepted_scored": 141,
+    "accepted_partial": 4,
+    "correct": 141,
+    "precision": 1.0,
+    "recall": 0.5755102040816327,
+    "gt_lines": 245,
+    "label_cer": 0.0
+   }
+  },
+  "per_set_ci95": {
+   "vita-test": [
+    0.9738,
+    1.0
+   ],
+   "psp-test": [
+    0.9735,
+    1.0
+   ]
+  },
+  "two_fold_held_out": [
+   {
+    "chosen_on_half": 0,
+    "rule": {
+     "primary": "meiki",
+     "voters": [
+      "v6s",
+      "manga",
+      "screenai"
+     ],
+     "votes": 2,
+     "min_conf": 0.0,
+     "det_conf": 0.0,
+     "veto": true,
+     "trunc": false
+    },
+    "held_out": {
+     "accepted": 96,
+     "accepted_scored": 87,
+     "accepted_partial": 6,
+     "correct": 86,
+     "precision": 0.9885057471264368,
+     "recall": 0.589041095890411,
+     "gt_lines": 146,
+     "label_cer": 0.0010857763300760044
+    }
+   },
+   {
+    "chosen_on_half": 1,
+    "rule": {
+     "primary": "meiki",
+     "voters": [
+      "v6s",
+      "manga",
+      "screenai"
+     ],
+     "votes": 2,
+     "min_conf": 0.0,
+     "det_conf": 0.0,
+     "veto": false,
+     "trunc": [
+      "screenai"
+     ]
+    },
+    "held_out": {
+     "accepted": 240,
+     "accepted_scored": 204,
+     "accepted_partial": 3,
+     "correct": 203,
+     "precision": 0.9950980392156863,
+     "recall": 0.6655737704918033,
+     "gt_lines": 305,
+     "label_cer": 0.00042589437819420784
+    }
+   }
+  ]
+ },
+ "eval_manifests": {
+  "vita-test": {
+   "path": "eval/manifests/vita-test.jsonl",
+   "sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+   "source": "eval/manifests/vita-test.jsonl as merged in #2 (b4c584e)"
+  },
+  "psp-test": {
+   "path": "eval/manifests/psp-test.jsonl",
+   "sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+   "source": "eval/manifests/psp-test.jsonl as merged in #5 (a2057df); the rule was first chosen on PR #5's head bebd4f9 (sha256 e23ce16f...), and re-measuring on the merged file gives the same rule and numbers"
+  }
+ }
+}

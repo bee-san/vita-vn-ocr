@@ -145,7 +145,10 @@ def _matmul(X, op, mode):
     import torch
     if mode == "w8i":
         q, sx = _quant16(X)
-        acc = (q.double() @ torch.from_numpy(op["w"].astype(np.float64)).T).float()
+        w = torch.from_numpy(op["w"].astype(np.float64))
+        acc = torch.zeros(X.shape[0], w.shape[0])
+        for k0 in range(0, X.shape[1], vocr_ref.CHUNK):       # int32-safe chunks, as in vocr.c
+            acc = acc + (q[:, k0:k0 + vocr_ref.CHUNK].double() @ w[:, k0:k0 + vocr_ref.CHUNK].T).float()
         Y = acc * (torch.from_numpy(op["scale"])[None, :] * sx[:, None])
     else:
         Y = X @ torch.from_numpy(E.dequant(op)).T

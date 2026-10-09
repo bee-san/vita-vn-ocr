@@ -52,10 +52,14 @@ static uint32_t put(const void *data, size_t n)
 
 static uint32_t put_floats(unsigned n, float scale)
 {
-    float v[4096];
+    uint32_t off = (uint32_t)blob_pos;
     unsigned i;
-    for (i = 0; i < n; i++) v[i] = frand() * scale;
-    return put(v, n * sizeof(float));
+    for (i = 0; i < n; i++) {
+        float v = frand() * scale;
+        memcpy(blob_buf + blob_pos + 4u * i, &v, sizeof v);
+    }
+    blob_pos = (blob_pos + 4u * n + 15u) & ~(size_t)15u;
+    return off;
 }
 
 static uint32_t crc32_ref(const unsigned char *p, size_t n)
@@ -106,12 +110,15 @@ static void mat_op(unsigned i, unsigned type, unsigned flags, unsigned kh, unsig
     unsigned k = kh * cin, cout_pad = (cout + 7u) & ~7u, n = cout_pad * k, j;
     uint32_t w_off, s_off = 0, b_off = 0;
     if (int8) {
-        signed char q[4096];
-        float s[64];
-        for (j = 0; j < n; j++) q[j] = (signed char)(int)(frand() * 127.0f);
-        w_off = put(q, n);
-        for (j = 0; j < cout_pad; j++) s[j] = 0.01f + 0.004f * (float)(j % 5);
-        s_off = put(s, cout_pad * sizeof(float));
+        w_off = (uint32_t)blob_pos;
+        for (j = 0; j < n; j++) blob_buf[blob_pos + j] = (unsigned char)(signed char)(int)(frand() * 127.0f);
+        blob_pos = (blob_pos + n + 15u) & ~(size_t)15u;
+        s_off = (uint32_t)blob_pos;
+        for (j = 0; j < cout_pad; j++) {
+            float sc = 0.01f + 0.004f * (float)(j % 5);
+            memcpy(blob_buf + blob_pos + 4u * j, &sc, sizeof sc);
+        }
+        blob_pos = (blob_pos + 4u * cout_pad + 15u) & ~(size_t)15u;
         flags |= 8;
     } else {
         w_off = put_floats(n, 0.5f);
@@ -121,10 +128,14 @@ static void mat_op(unsigned i, unsigned type, unsigned flags, unsigned kh, unsig
            b_off, s_off, k, cout_pad);
 }
 
-static size_t build_blob(int int8)
+/* height 8, stride 4: stem 3x3/2 (1->8, 8->4 rows), dw 3x3/2 (4->2), pw 8->C1,
+ * collapse 2x1 (C1->16, 2->1), dw 1x5, pw residual, head 16->6. C1 = 16, or 272 when
+ * wide, which makes the collapse's reduction length K = 544 > 512 (the w8i chunk). */
+static size_t build_blob_c1(int int8, unsigned c1);
+static size_t build_blob(int int8) { return build_blob_c1(int8, 16); }
+
+static size_t build_blob_c1(int int8, unsigned c1)
 {
-    /* height 8, stride 4: stem 3x3/2 (1->8, 8->4 rows), dw 3x3/2 (4->2), pw 8->16,
-     * collapse 2x1 (16->16, 2->1), dw 1x5, pw residual, head 16->6 */
     unsigned char vocab[64];
     const char *chars[CLASSES - 1] = {"a", "\xe3\x81\x82", "b", "\xe3\x83\xbc", "!"};
     unsigned i, pos = 0, n_ops = 7;
@@ -136,8 +147,8 @@ static size_t build_blob(int int8)
     op_rec(0, 1, 1 | 4, 3, 3, 2, 2, 1, 1, 1, 8, 8, 4, off, 9 * 8 * 4, put_floats(8, 0.1f), 0, 9, 8);
     off = put_floats(9 * 8, 0.6f);
     op_rec(1, 2, 1 | 4, 3, 3, 2, 2, 1, 1, 8, 8, 4, 2, off, 9 * 8 * 4, put_floats(8, 0.1f), 0, 9, 8);
-    mat_op(2, 3, 1 | 4, 1, 8, 16, 2, 2, int8);
-    mat_op(3, 3, 1 | 4 | 16, 2, 16, 16, 2, 1, int8);
+    mat_op(2, 3, 1 | 4, 1, 8, c1, 2, 2, int8);
+    mat_op(3, 3, 1 | 4 | 16, 2, c1, 16, 2, 1, int8);
     off = put_floats(5 * 16, 0.6f);
     op_rec(4, 2, 1 | 4, 1, 5, 1, 1, 0, 2, 16, 16, 1, 1, off, 5 * 16 * 4, put_floats(16, 0.1f), 0, 5, 16);
     mat_op(5, 3, 1 | 2 | 4, 1, 16, 16, 1, 1, int8);
@@ -171,8 +182,8 @@ static size_t build_blob(int int8)
 
 /* ------------------------------------------------------------ helpers */
 
-static unsigned char arena_a[1 << 18] __attribute__((aligned(16)));
-static unsigned char arena_b[1 << 18] __attribute__((aligned(16)));
+static unsigned char arena_a[1 << 20] __attribute__((aligned(16)));
+static unsigned char arena_b[1 << 20] __attribute__((aligned(16)));
 static unsigned char img_px[40 * 300 * 4];
 
 static void make_image(unsigned w, unsigned h, int rgba)
@@ -259,14 +270,14 @@ static void test_load(int int8)
     CHECK(vocr_check_crc(blob_buf, n) == VOCR_OK);
 }
 
-static void test_run(int int8)
+static void test_run(int int8, unsigned c1)
 {
     vocr_model m;
     vocr_opts o;
     char ref[256], text[256];
-    float lref[80 * CLASSES], lcur[80 * CLASSES];
+    float lref[80 * CLASSES], lcur[80 * CLASSES], lw8f[80 * CLASSES];
     vocr_extra ex;
-    size_t n = build_blob(int8);
+    size_t n = build_blob_c1(int8, c1);
     const int modes_i8[2] = {VOCR_MODE_W8F, VOCR_MODE_W8I};
     int mi, nmodes = int8 ? 2 : 1, fmt;
     unsigned tiles[5][2] = {{1, 1}, {2, 3}, {3, 1}, {5, 7}, {64, 64}};
@@ -288,6 +299,17 @@ static void test_run(int int8)
             CHECK(ex.frames == (ex.width + 3u) / 4u);
             CHECK(ex.frames <= 80);
             for (t = 0; t < ex.frames * CLASSES; t++) CHECK(isfinite(lref[t]));
+            if (o.mode == VOCR_MODE_W8F) memcpy(lw8f, lref, sizeof lw8f);
+            if (o.mode == VOCR_MODE_W8I) { /* int16 activations stay close to float ones */
+                float mx = 0.0f, d = 0.0f;
+                for (t = 0; t < ex.frames * CLASSES; t++) {
+                    float a = fabsf(lw8f[t]), e = fabsf(lref[t] - lw8f[t]);
+                    if (a > mx) mx = a;
+                    if (e > d) d = e;
+                }
+                CHECK(mx > 0.1f);
+                CHECK(d <= 1e-3f * (mx > 1.0f ? mx : 1.0f));
+            }
             for (t = 0; t < 5; t++) {
                 vocr_opts ot = o;
                 ot.tile_frames = tiles[t][0];
@@ -402,8 +424,10 @@ int main(void)
 {
     test_load(0);
     test_load(1);
-    test_run(0);
-    test_run(1);
+    test_run(0, 16);
+    test_run(1, 16);
+    test_run(0, 272);
+    test_run(1, 272);
     test_limits();
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);

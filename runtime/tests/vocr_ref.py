@@ -7,8 +7,9 @@ sum rounded on its own (vocr.c is built with -ffp-contract=off):
   stem / depthwise: acc = bias; for dy (rows inside the image only), dx: acc = acc + w * x
   pointwise / head (f32, w8f): acc = bias; for k = 0..K-1: acc = acc + w[k] * x[k],
       where w8f uses w = float(q) * scale
-  pointwise / head (w8i): per position q16 = trunc(x * (32767 / max|x|) +- 0.5),
-      acc = sum q8 * q16 (exact integers), y = float(acc) * (scale * (max|x| / 32767)) + bias
+  pointwise / head (w8i): per position q16 = trunc(x * (32767 / max|x|) +- 0.5);
+      S = 0 + float(c_0) + float(c_1) + ... with c_i the exact sum of q8 * q16 over
+      k in [512 i, 512 i + 512); y = S * (scale * (max|x| / 32767)) + bias
   then ReLU (x > 0 ? x : 0), then the residual add.
 Columns outside the line are zeros, which the C code also adds (w * 0); rows outside
 the image are skipped. So on IEEE hardware without flush-to-zero the C runtime must
@@ -19,6 +20,7 @@ import numpy as np
 
 T_CONV, T_DW, T_PW, T_HEAD = 1, 2, 3, 4
 F32 = np.float32
+CHUNK = 512          # w8i: int32 sums over at most this many terms (vocr.c W8I_CHUNK)
 
 
 def _relu(y):
@@ -72,7 +74,10 @@ def matmul_exact(x, op, mode):
     b = op["bias"].astype(F32) if op["bias"] is not None else None
     if mode == "w8i":
         q, sx = quant16_exact(x)
-        acc = (q @ op["w"].astype(np.float64).T).astype(F32)    # exact integer sums
+        w = op["w"].astype(np.float64)
+        acc = np.zeros((x.shape[0], n), F32)
+        for k0 in range(0, x.shape[1], CHUNK):                 # exact integer sums per chunk
+            acc = (acc + (q[:, k0:k0 + CHUNK] @ w[:, k0:k0 + CHUNK].T).astype(F32)).astype(F32)
         y = (acc * (op["scale"].astype(F32)[None, :] * sx[:, None]).astype(F32)).astype(F32)
         if b is not None:
             y = (y + b[None, :]).astype(F32)

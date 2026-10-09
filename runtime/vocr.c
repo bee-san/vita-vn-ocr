@@ -18,7 +18,7 @@ enum { DST_RING = 1, DST_TRANS = 2, DST_ACC = 3 };
 #define HEADER_BYTES 64u
 #define OP_BYTES 64u
 #define MIN_WIDTH 8u
-#define W8I_MAX_K 516u /* 516 * 127 * 32767 < 2^31: int32 accumulators cannot overflow */
+#define W8I_CHUNK 512u /* int32 sums of at most 512 int8 x int16 products: 512 * 127 * 32767 < 2^31 */
 
 static unsigned rd16(const unsigned char *p) { return (unsigned)p[0] | (unsigned)p[1] << 8; }
 static uint32_t rd32(const unsigned char *p)
@@ -269,9 +269,6 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     if (mode < 0) return mode;
     c->model = m;
     c->mode = mode;
-    for (i = 0; i < L; i++)
-        if (mode == VOCR_MODE_W8I && m->op[i].type >= T_PW && m->op[i].k > W8I_MAX_K)
-            return VOCR_E_MODE;
     c->max_width = o->max_width && o->max_width < m->max_width ? o->max_width : m->max_width;
     c->max_width = (c->max_width + S - 1) / S * S;
     t_max = c->max_width / S;
@@ -840,22 +837,29 @@ static void quant16(const float *x, size_t xs, unsigned K, unsigned P, int16_t *
     }
 }
 
-/* Integer block: y[p][j] = act(float(sum_k q[k][j] qx[p][k]) * (scale[j] * sx[p]) + bias[j]). */
+/* Integer block: y[p][j] = act(S[p][j] * (scale[j] * sx[p]) + bias[j]), where
+ * S = 0 + float(c_0) + float(c_1) + ... (float adds, in order) and c_i is the exact int32
+ * sum of q[k][j] * qx[p][k] over k in [512 i, 512 i + 512). 512 * 127 * 32767 < 2^31, so
+ * no chunk can overflow, and for K <= 512 S is just float(sum). */
 static void mm_i16(const int8_t *qw, const float *scale, const float *bias, const int16_t *qx,
                    const float *sx, unsigned K, unsigned P, float *y, size_t ys, const float *res,
                    size_t rs, int relu)
 {
-    unsigned p = 0, q, j, k;
+    unsigned p = 0, q, j, k, k0;
 #ifdef VOCR_NEON
     const float32x4_t z = vdupq_n_f32(0.0f), sl = vld1q_f32(scale), sh = vld1q_f32(scale + 4);
     const float32x4_t bl = bias ? vld1q_f32(bias) : z, bh = bias ? vld1q_f32(bias + 4) : z;
     for (; p + 4 <= P; p += 4) {
         const int16_t *x0 = qx + (size_t)p * K, *x1 = x0 + K, *x2 = x1 + K, *x3 = x2 + K;
-        int32x4_t a[8];
-        for (q = 0; q < 8; q++) a[q] = vdupq_n_s32(0);
-        for (k = 0; k + 4 <= K; k += 4) {
-            const int16x4_t v0 = vld1_s16(x0 + k), v1 = vld1_s16(x1 + k);
-            const int16x4_t v2 = vld1_s16(x2 + k), v3 = vld1_s16(x3 + k);
+        float32x4_t f[8];
+        for (q = 0; q < 8; q++) f[q] = z;
+        for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
+            const unsigned k1 = umin(K, k0 + W8I_CHUNK);
+            int32x4_t a[8];
+            for (q = 0; q < 8; q++) a[q] = vdupq_n_s32(0);
+            for (k = k0; k + 4 <= k1; k += 4) {
+                const int16x4_t v0 = vld1_s16(x0 + k), v1 = vld1_s16(x1 + k);
+                const int16x4_t v2 = vld1_s16(x2 + k), v3 = vld1_s16(x3 + k);
 #define VOCR_ISTEP(LANE)                                                                     \
     do {                                                                                     \
         const int16x8_t wv = vmovl_s8(vld1_s8(qw + (size_t)(k + (LANE)) * 8));               \
@@ -869,27 +873,29 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
         a[6] = vmlal_lane_s16(a[6], wl, v3, LANE);                                           \
         a[7] = vmlal_lane_s16(a[7], wh, v3, LANE);                                           \
     } while (0)
-            VOCR_ISTEP(0);
-            VOCR_ISTEP(1);
-            VOCR_ISTEP(2);
-            VOCR_ISTEP(3);
+                VOCR_ISTEP(0);
+                VOCR_ISTEP(1);
+                VOCR_ISTEP(2);
+                VOCR_ISTEP(3);
 #undef VOCR_ISTEP
-        }
-        for (; k < K; k++) {
-            const int16x8_t wv = vmovl_s8(vld1_s8(qw + (size_t)k * 8));
-            const int16x4_t wl = vget_low_s16(wv), wh = vget_high_s16(wv);
-            a[0] = vmlal_n_s16(a[0], wl, x0[k]);
-            a[1] = vmlal_n_s16(a[1], wh, x0[k]);
-            a[2] = vmlal_n_s16(a[2], wl, x1[k]);
-            a[3] = vmlal_n_s16(a[3], wh, x1[k]);
-            a[4] = vmlal_n_s16(a[4], wl, x2[k]);
-            a[5] = vmlal_n_s16(a[5], wh, x2[k]);
-            a[6] = vmlal_n_s16(a[6], wl, x3[k]);
-            a[7] = vmlal_n_s16(a[7], wh, x3[k]);
+            }
+            for (; k < k1; k++) {
+                const int16x8_t wv = vmovl_s8(vld1_s8(qw + (size_t)k * 8));
+                const int16x4_t wl = vget_low_s16(wv), wh = vget_high_s16(wv);
+                a[0] = vmlal_n_s16(a[0], wl, x0[k]);
+                a[1] = vmlal_n_s16(a[1], wh, x0[k]);
+                a[2] = vmlal_n_s16(a[2], wl, x1[k]);
+                a[3] = vmlal_n_s16(a[3], wh, x1[k]);
+                a[4] = vmlal_n_s16(a[4], wl, x2[k]);
+                a[5] = vmlal_n_s16(a[5], wh, x2[k]);
+                a[6] = vmlal_n_s16(a[6], wl, x3[k]);
+                a[7] = vmlal_n_s16(a[7], wh, x3[k]);
+            }
+            for (q = 0; q < 8; q++) f[q] = vaddq_f32(f[q], vcvtq_f32_s32(a[q]));
         }
         for (q = 0; q < 4; q++) {
-            float32x4_t lo = vmulq_f32(vcvtq_f32_s32(a[2 * q]), vmulq_n_f32(sl, sx[p + q]));
-            float32x4_t hi = vmulq_f32(vcvtq_f32_s32(a[2 * q + 1]), vmulq_n_f32(sh, sx[p + q]));
+            float32x4_t lo = vmulq_f32(f[2 * q], vmulq_n_f32(sl, sx[p + q]));
+            float32x4_t hi = vmulq_f32(f[2 * q + 1], vmulq_n_f32(sh, sx[p + q]));
             if (bias) {
                 lo = vaddq_f32(lo, bl);
                 hi = vaddq_f32(hi, bh);
@@ -909,19 +915,27 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
 #endif
     for (; p < P; p += 4) {
         const unsigned pn = umin(4u, P - p);
-        int32_t acc[4][8];
+        float fs[4][8];
         for (q = 0; q < pn; q++)
-            for (j = 0; j < 8; j++) acc[q][j] = 0;
-        for (k = 0; k < K; k++) {
-            const int8_t *wk = qw + (size_t)k * 8;
-            for (q = 0; q < pn; q++) {
-                const int32_t xv = qx[(size_t)(p + q) * K + k];
-                for (j = 0; j < 8; j++) acc[q][j] += (int32_t)wk[j] * xv;
+            for (j = 0; j < 8; j++) fs[q][j] = 0.0f;
+        for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
+            const unsigned k1 = umin(K, k0 + W8I_CHUNK);
+            int32_t acc[4][8];
+            for (q = 0; q < pn; q++)
+                for (j = 0; j < 8; j++) acc[q][j] = 0;
+            for (k = k0; k < k1; k++) {
+                const int8_t *wk = qw + (size_t)k * 8;
+                for (q = 0; q < pn; q++) {
+                    const int32_t xv = qx[(size_t)(p + q) * K + k];
+                    for (j = 0; j < 8; j++) acc[q][j] += (int32_t)wk[j] * xv;
+                }
             }
+            for (q = 0; q < pn; q++)
+                for (j = 0; j < 8; j++) fs[q][j] = fs[q][j] + (float)acc[q][j];
         }
         for (q = 0; q < pn; q++)
             for (j = 0; j < 8; j++) {
-                float v = (float)acc[q][j] * (scale[j] * sx[p + q]);
+                float v = fs[q][j] * (scale[j] * sx[p + q]);
                 if (bias) v = v + bias[j];
                 if (relu) v = relu_f(v);
                 if (res) v = v + res[(p + q) * rs + j];

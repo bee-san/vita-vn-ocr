@@ -53,9 +53,8 @@ enum {
 
 /* Arithmetic. F32: float weights. W8F: int8 weights, float activations and
  * accumulation. W8I: int8 weights, activations quantised per position to int16,
- * int32 accumulation (needs every reduction length K <= 516, so the sums cannot
- * overflow; else VOCR_E_MODE). Stem, depthwise layers and biases are float in every
- * mode. */
+ * exact int32 sums over chunks of 512 terms (so they cannot overflow), chunk sums
+ * added in float. Stem, depthwise layers and biases are float in every mode. */
 enum { VOCR_MODE_AUTO = 0, VOCR_MODE_F32 = 1, VOCR_MODE_W8F = 2, VOCR_MODE_W8I = 3 };
 
 enum { VOCR_GREY8 = 1, VOCR_RGBA8 = 4 };   /* pixel formats (RGBA: R, G, B, A bytes) */

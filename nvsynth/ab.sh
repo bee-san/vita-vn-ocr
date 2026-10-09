@@ -17,7 +17,8 @@
 #   VOCR_EVAL_DATA (eval screenshots) [$HERD/shared/artifacts/eval]
 #
 # train.py validates on the last shard of its sorted --synth glob: synth_00039 for synth and
-# mix, nv_val for nv. That only picks ckpt_best; the comparison uses ckpt_last (step STEPS).
+# mix, nv_val for nv. That only picks ckpt_best; the comparison uses ckpt_last (step STEPS),
+# scored on EVAL_SETS (results/<arm>_s<seed>.json) and on nv_val.npz (results/nv-val/).
 set -euo pipefail
 arm=${1:?arm: synth|nv|mix}
 seed=${2:?seed}
@@ -60,5 +61,10 @@ run=${arm}_s$seed
 grep -q TRAIN_DONE "$AB_DIR/runs/$run.train.log"
 "$PY" "$EVAL_PY" --model "$AB_DIR/runs/$run/ckpt_last.pt" --set "$EVAL_SETS" \
   --out "$AB_DIR/results/$run.json" > "$AB_DIR/results/$run.log" 2>&1 < /dev/null
+# The NVIDIA held-out shard through the same harness (its synth-val slot; style tags meaningless).
+mkdir -p "$AB_DIR/results/nv-val"
+VOCR_SYNTH_VAL=$NV_DIR/nv_val.npz "$PY" "$EVAL_PY" --model "$AB_DIR/runs/$run/ckpt_last.pt" --set synth-val \
+  --out "$AB_DIR/results/nv-val/$run.json" > "$AB_DIR/results/nv-val/$run.log" 2>&1 < /dev/null
 tail -n 30 "$AB_DIR/results/$run.log"
+grep -h "synth-val:" "$AB_DIR/results/nv-val/$run.log" | sed 's/^synth-val/nv-val/'
 echo "AB_DONE $run"

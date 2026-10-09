@@ -52,11 +52,14 @@ def cer(lines, ids=None):
 
 
 def bootstrap(a, b, reps, seed=0):
-    """CER(b) - CER(a) over the shared lines, games resampled with replacement."""
+    """CER(b) - CER(a) over the shared lines, games resampled with replacement (lines, for
+    sets without games such as synth-val)."""
     ids = sorted(set(a) & set(b))
     games = defaultdict(list)
     for i in ids:
         games[a[i][2]].append(i)
+    if len(games) < 2:
+        games = {i: [i] for i in ids}
     keys = sorted(games)
     ea = np.array([sum(a[i][0] for i in games[g]) for g in keys])
     eb = np.array([sum(b[i][0] for i in games[g]) for g in keys])
@@ -101,8 +104,9 @@ def main():
             vs = "-"
             if base is not None and a != args.base:
                 d, lo, hi, better, worse, g = bootstrap(base, lines, args.reps)
+                unit = "games" if len({v[2] for v in lines.values()}) > 1 else "lines"
                 vs = (f"{100 * d:+.2f} pts ({100 * lo:+.2f} to {100 * hi:+.2f}); "
-                      f"better in {better}, worse in {worse} of {g} games")
+                      f"better in {better}, worse in {worse} of {g} {unit}")
             print(f"| {a} | {len(per_cer)} | {' / '.join(map(pct, per_cer))} | {' / '.join(map(pct, per_exact))} "
                   f"| {pct(cer(lines))} | {vs} |")
         styles = sorted({t for v in have.values() for (_, _, _, st) in v.values() for t in st})

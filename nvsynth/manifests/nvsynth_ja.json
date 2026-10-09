@@ -1,0 +1,2318 @@
+{
+ "dataset": "https://huggingface.co/datasets/nvidia/OCR-Synthetic-Multilingual-v1",
+ "revision": "69696a1cc543ef3a0f8e9892a89c17293e915263",
+ "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), (c) NVIDIA Corporation",
+ "subset": "ja (Japanese) only: train, validation",
+ "made_by": "nvsynth/fetch.py (see its docstring for the exact commands)",
+ "format": "train.py shards: data (uint8, flat), offsets, shapes (32 x W), labels (JSON list), meta (JSON list: src, sample, line, crop [x, y, w, h] on the page, ink_h, clean, contrast, grey_ratio, polarity)",
+ "per_page": [
+  1
+ ],
+ "filters": {
+  "min_box_h": 14,
+  "min_chars": 2,
+  "max_ascii": 0.5,
+  "one_word_box": true,
+  "pad_frac": [
+   0.1,
+   0.24
+  ],
+  "min_contrast": 16,
+  "min_grey_ratio": 0.25,
+  "height": 32,
+  "max_width": 1024,
+  "area_above": 48,
+  "mid_h": [
+   28,
+   40
+  ],
+  "seed": [
+   20261009
+  ],
+  "vocab": "data/vocab.txt (5,354 characters + CTC blank)",
+  "label_norm": "synth/build_corpus.py norm()"
+ },
+ "lines": {
+  "train": 845519,
+  "validation": 10065
+ },
+ "lines_total": 855584,
+ "shards": {
+  "train": 42,
+  "validation": 4
+ },
+ "val_shard": {
+  "shard": "nv_val.npz",
+  "shard_sha256": "105a2e9804d601e8b9eb933574bd47bd1fe6852ced017e89e6d5af93f056d1ad",
+  "shard_bytes": 63161208,
+  "lines": 10065
+ },
+ "stats": {
+  "pages": 987775,
+  "pages_kept": 855584,
+  "lines": 21682769,
+  "usable": 13446380,
+  "kept": 855584,
+  "h_lines": 20003724,
+  "h_chars": 305254477,
+  "h_oov_lines": 539988,
+  "h_oov_chars": 748301,
+  "bad_dims": 0,
+  "rotated": 0,
+  "vertical": 1679045,
+  "words": 1506252,
+  "clipped": 387,
+  "small": 1354356,
+  "short": 1029254,
+  "oov": 269411,
+  "ascii": 2397684,
+  "faint": 192056,
+  "wide": 172912,
+  "ctc": 21
+ },
+ "oov": {
+  "char_rate": 0.0024514005735614486,
+  "line_rate": 0.026994373647626812,
+  "note": "over every horizontal line of every processed page, after norm()",
+  "top": [
+   [
+    "–",
+    "U+2013",
+    130137
+   ],
+   [
+    "^",
+    "U+005E",
+    106498
+   ],
+   [
+    "•",
+    "U+2022",
+    92475
+   ],
+   [
+    "¥",
+    "U+00A5",
+    34362
+   ],
+   [
+    "▪",
+    "U+25AA",
+    31598
+   ],
+   [
+    "́",
+    "U+0301",
+    23541
+   ],
+   [
+    "`",
+    "U+0060",
+    23513
+   ],
+   [
+    "€",
+    "U+20AC",
+    22780
+   ],
+   [
+    "£",
+    "U+00A3",
+    22740
+   ],
+   [
+    "»",
+    "U+00BB",
+    18469
+   ],
+   [
+    "\\",
+    "U+005C",
+    12062
+   ],
+   [
+    "゚",
+    "U+309A",
+    10393
+   ],
+   [
+    "·",
+    "U+00B7",
+    5855
+   ],
+   [
+    "▶",
+    "U+25B6",
+    5849
+   ],
+   [
+    "®",
+    "U+00AE",
+    5300
+   ],
+   [
+    "̄",
+    "U+0304",
+    5272
+   ],
+   [
+    "é",
+    "U+00E9",
+    4893
+   ],
+   [
+    "Д",
+    "U+0414",
+    3750
+   ],
+   [
+    "›",
+    "U+203A",
+    3303
+   ],
+   [
+    "▸",
+    "U+25B8",
+    2735
+   ],
+   [
+    "♬",
+    "U+266C",
+    2714
+   ],
+   [
+    "д",
+    "U+0434",
+    2417
+   ],
+   [
+    "à",
+    "U+00E0",
+    1929
+   ],
+   [
+    "♫",
+    "U+266B",
+    1767
+   ],
+   [
+    "❤",
+    "U+2764",
+    1767
+   ],
+   [
+    "á",
+    "U+00E1",
+    1595
+   ],
+   [
+    "이",
+    "U+C774",
+    1531
+   ],
+   [
+    "∇",
+    "U+2207",
+    1452
+   ],
+   [
+    "彡",
+    "U+5F61",
+    1315
+   ],
+   [
+    "💕",
+    "U+1F495",
+    1283
+   ],
+   [
+    "다",
+    "U+B2E4",
+    1218
+   ],
+   [
+    "➡",
+    "U+27A1",
+    1207
+   ],
+   [
+    "è",
+    "U+00E8",
+    1175
+   ],
+   [
+    "￼",
+    "U+FFFC",
+    1135
+   ],
+   [
+    "✔",
+    "U+2714",
+    1129
+   ],
+   [
+    "̆",
+    "U+0306",
+    1054
+   ],
+   [
+    "«",
+    "U+00AB",
+    1053
+   ],
+   [
+    "〟",
+    "U+301F",
+    1048
+   ],
+   [
+    "♩",
+    "U+2669",
+    1033
+   ],
+   [
+    "〝",
+    "U+301D",
+    1013
+   ],
+   [
+    "Å",
+    "U+00C5",
+    976
+   ],
+   [
+    "►",
+    "U+25BA",
+    974
+   ],
+   [
+    "с",
+    "U+0441",
+    963
+   ],
+   [
+    "φ",
+    "U+03C6",
+    927
+   ],
+   [
+    "하",
+    "U+D558",
+    876
+   ],
+   [
+    "л",
+    "U+043B",
+    874
+   ],
+   [
+    "▷",
+    "U+25B7",
+    874
+   ],
+   [
+    "ó",
+    "U+00F3",
+    872
+   ],
+   [
+    "í",
+    "U+00ED",
+    847
+   ],
+   [
+    "☺",
+    "U+263A",
+    797
+   ],
+   [
+    "☑",
+    "U+2611",
+    786
+   ],
+   [
+    "✕",
+    "U+2715",
+    765
+   ],
+   [
+    "в",
+    "U+0432",
+    751
+   ],
+   [
+    "ā",
+    "U+0101",
+    736
+   ],
+   [
+    "✿",
+    "U+273F",
+    730
+   ],
+   [
+    "ì",
+    "U+00EC",
+    730
+   ],
+   [
+    "지",
+    "U+C9C0",
+    718
+   ],
+   [
+    "⌒",
+    "U+2312",
+    699
+   ],
+   [
+    "에",
+    "U+C5D0",
+    685
+   ],
+   [
+    "з",
+    "U+0437",
+    664
+   ],
+   [
+    "◉",
+    "U+25C9",
+    641
+   ],
+   [
+    "Φ",
+    "U+03A6",
+    632
+   ],
+   [
+    "니",
+    "U+B2C8",
+    626
+   ],
+   [
+    "요",
+    "U+C694",
+    624
+   ],
+   [
+    "는",
+    "U+B294",
+    620
+   ],
+   [
+    "의",
+    "U+C758",
+    607
+   ],
+   [
+    "⇩",
+    "U+21E9",
+    600
+   ],
+   [
+    "한",
+    "U+D55C",
+    591
+   ],
+   [
+    "가",
+    "U+AC00",
+    591
+   ],
+   [
+    "☞",
+    "U+261E",
+    583
+   ],
+   [
+    "어",
+    "U+C5B4",
+    582
+   ],
+   [
+    "鈑",
+    "U+9211",
+    567
+   ],
+   [
+    "스",
+    "U+C2A4",
+    565
+   ],
+   [
+    "ü",
+    "U+00FC",
+    559
+   ],
+   [
+    "∩",
+    "U+2229",
+    550
+   ],
+   [
+    "м",
+    "U+043C",
+    549
+   ],
+   [
+    "아",
+    "U+C544",
+    542
+   ],
+   [
+    "ã",
+    "U+00E3",
+    539
+   ],
+   [
+    "고",
+    "U+ACE0",
+    532
+   ],
+   [
+    "기",
+    "U+AE30",
+    527
+   ],
+   [
+    "ǎ",
+    "U+01CE",
+    521
+   ],
+   [
+    "♦",
+    "U+2666",
+    516
+   ],
+   [
+    "리",
+    "U+B9AC",
+    513
+   ],
+   [
+    "을",
+    "U+C744",
+    509
+   ],
+   [
+    "゙",
+    "U+3099",
+    503
+   ],
+   [
+    "ú",
+    "U+00FA",
+    503
+   ],
+   [
+    "⇨",
+    "U+21E8",
+    499
+   ],
+   [
+    "п",
+    "U+043F",
+    498
+   ],
+   [
+    "ī",
+    "U+012B",
+    498
+   ],
+   [
+    "로",
+    "U+B85C",
+    489
+   ],
+   [
+    "┣",
+    "U+2523",
+    489
+   ],
+   [
+    "사",
+    "U+C0AC",
+    485
+   ],
+   [
+    "裄",
+    "U+88C4",
+    476
+   ],
+   [
+    "┗",
+    "U+2517",
+    475
+   ],
+   [
+    "ê",
+    "U+00EA",
+    474
+   ],
+   [
+    "시",
+    "U+C2DC",
+    472
+   ],
+   [
+    "ç",
+    "U+00E7",
+    468
+   ],
+   [
+    "ä",
+    "U+00E4",
+    456
+   ],
+   [
+    "도",
+    "U+B3C4",
+    453
+   ],
+   [
+    "서",
+    "U+C11C",
+    451
+   ],
+   [
+    "❁",
+    "U+2741",
+    440
+   ],
+   [
+    "❀",
+    "U+2740",
+    435
+   ],
+   [
+    "❶",
+    "U+2776",
+    412
+   ],
+   [
+    "̇",
+    "U+0307",
+    412
+   ],
+   [
+    "ō",
+    "U+014D",
+    409
+   ],
+   [
+    "✓",
+    "U+2713",
+    400
+   ],
+   [
+    "☟",
+    "U+261F",
+    396
+   ],
+   [
+    "б",
+    "U+0431",
+    392
+   ],
+   [
+    "일",
+    "U+C77C",
+    388
+   ],
+   [
+    "나",
+    "U+B098",
+    387
+   ],
+   [
+    "ù",
+    "U+00F9",
+    386
+   ],
+   [
+    "ы",
+    "U+044B",
+    385
+   ],
+   [
+    "은",
+    "U+C740",
+    374
+   ],
+   [
+    "É",
+    "U+00C9",
+    373
+   ],
+   [
+    "у",
+    "U+0443",
+    372
+   ],
+   [
+    "해",
+    "U+D574",
+    371
+   ],
+   [
+    "я",
+    "U+044F",
+    371
+   ],
+   [
+    "ǐ",
+    "U+01D0",
+    369
+   ],
+   [
+    "̊",
+    "U+030A",
+    367
+   ],
+   [
+    "안",
+    "U+C548",
+    366
+   ],
+   [
+    "세",
+    "U+C138",
+    358
+   ],
+   [
+    "丿",
+    "U+4E3F",
+    349
+   ],
+   [
+    "자",
+    "U+C790",
+    347
+   ],
+   [
+    "인",
+    "U+C778",
+    347
+   ],
+   [
+    "〓",
+    "U+3013",
+    341
+   ],
+   [
+    "를",
+    "U+B97C",
+    336
+   ],
+   [
+    "ò",
+    "U+00F2",
+    335
+   ],
+   [
+    "黑",
+    "U+9ED1",
+    334
+   ],
+   [
+    "ô",
+    "U+00F4",
+    334
+   ],
+   [
+    "ǒ",
+    "U+01D2",
+    331
+   ],
+   [
+    "糀",
+    "U+7CC0",
+    331
+   ],
+   [
+    "그",
+    "U+ADF8",
+    325
+   ],
+   [
+    "麵",
+    "U+9EB5",
+    325
+   ],
+   [
+    "❷",
+    "U+2777",
+    324
+   ],
+   [
+    "г",
+    "U+0433",
+    323
+   ],
+   [
+    "라",
+    "U+B77C",
+    322
+   ],
+   [
+    "ь",
+    "U+044C",
+    320
+   ],
+   [
+    "ˆ",
+    "U+02C6",
+    316
+   ],
+   [
+    "대",
+    "U+B300",
+    314
+   ],
+   [
+    "â",
+    "U+00E2",
+    311
+   ],
+   [
+    "ö",
+    "U+00F6",
+    305
+   ],
+   [
+    "보",
+    "U+BCF4",
+    296
+   ],
+   [
+    "י",
+    "U+05D9",
+    295
+   ],
+   [
+    "̈",
+    "U+0308",
+    293
+   ],
+   [
+    "й",
+    "U+0439",
+    290
+   ],
+   [
+    "정",
+    "U+C815",
+    289
+   ],
+   [
+    "마",
+    "U+B9C8",
+    287
+   ],
+   [
+    "드",
+    "U+B4DC",
+    283
+   ],
+   [
+    "수",
+    "U+C218",
+    279
+   ],
+   [
+    "주",
+    "U+C8FC",
+    278
+   ],
+   [
+    "笘",
+    "U+7B18",
+    275
+   ],
+   [
+    "ш",
+    "U+0448",
+    272
+   ],
+   [
+    "오",
+    "U+C624",
+    270
+   ],
+   [
+    "ē",
+    "U+0113",
+    268
+   ],
+   [
+    "국",
+    "U+AD6D",
+    266
+   ],
+   [
+    "đ",
+    "U+0111",
+    265
+   ],
+   [
+    "ñ",
+    "U+00F1",
+    264
+   ],
+   [
+    "미",
+    "U+BBF8",
+    261
+   ],
+   [
+    "鬆",
+    "U+9B06",
+    260
+   ],
+   [
+    "우",
+    "U+C6B0",
+    257
+   ],
+   [
+    "̥",
+    "U+0325",
+    246
+   ],
+   [
+    "◡",
+    "U+25E1",
+    245
+   ],
+   [
+    "있",
+    "U+C788",
+    244
+   ],
+   [
+    "구",
+    "U+AD6C",
+    244
+   ],
+   [
+    "들",
+    "U+B4E4",
+    242
+   ],
+   [
+    "〗",
+    "U+3017",
+    242
+   ],
+   [
+    "录",
+    "U+5F55",
+    242
+   ],
+   [
+    "원",
+    "U+C6D0",
+    240
+   ],
+   [
+    "繚",
+    "U+7E5A",
+    238
+   ],
+   [
+    "❸",
+    "U+2778",
+    238
+   ],
+   [
+    "ч",
+    "U+0447",
+    238
+   ],
+   [
+    "〖",
+    "U+3016",
+    237
+   ],
+   [
+    "✖",
+    "U+2716",
+    237
+   ],
+   [
+    "乐",
+    "U+4E50",
+    234
+   ],
+   [
+    "전",
+    "U+C804",
+    231
+   ],
+   [
+    "ū",
+    "U+016B",
+    229
+   ],
+   [
+    "ı",
+    "U+0131",
+    228
+   ],
+   [
+    "게",
+    "U+AC8C",
+    226
+   ],
+   [
+    "洸",
+    "U+6D38",
+    225
+   ],
+   [
+    "你",
+    "U+4F60",
+    222
+   ],
+   [
+    "트",
+    "U+D2B8",
+    221
+   ],
+   [
+    "부",
+    "U+BD80",
+    220
+   ],
+   [
+    "爱",
+    "U+7231",
+    220
+   ],
+   [
+    "无",
+    "U+65E0",
+    219
+   ],
+   [
+    "节",
+    "U+8282",
+    217
+   ],
+   [
+    "动",
+    "U+52A8",
+    216
+   ],
+   [
+    "소",
+    "U+C18C",
+    216
+   ],
+   [
+    "网",
+    "U+7F51",
+    215
+   ],
+   [
+    "제",
+    "U+C81C",
+    215
+   ],
+   [
+    "☀",
+    "U+2600",
+    215
+   ],
+   [
+    "상",
+    "U+C0C1",
+    214
+   ],
+   [
+    "내",
+    "U+B0B4",
+    213
+   ],
+   [
+    "貓",
+    "U+8C93",
+    213
+   ],
+   [
+    "ו",
+    "U+05D5",
+    212
+   ],
+   [
+    "ě",
+    "U+011B",
+    212
+   ],
+   [
+    "장",
+    "U+C7A5",
+    210
+   ],
+   [
+    "◠",
+    "U+25E0",
+    210
+   ],
+   [
+    "⇓",
+    "U+21D3",
+    209
+   ],
+   [
+    "신",
+    "U+C2E0",
+    208
+   ],
+   [
+    "동",
+    "U+B3D9",
+    206
+   ],
+   [
+    "여",
+    "U+C5EC",
+    202
+   ],
+   [
+    "만",
+    "U+B9CC",
+    201
+   ],
+   [
+    "타",
+    "U+D0C0",
+    198
+   ],
+   [
+    "으",
+    "U+C73C",
+    198
+   ],
+   [
+    "➀",
+    "U+2780",
+    198
+   ],
+   [
+    "녕",
+    "U+B155",
+    197
+   ],
+   [
+    "공",
+    "U+ACF5",
+    197
+   ],
+   [
+    "♢",
+    "U+2662",
+    197
+   ],
+   [
+    "화",
+    "U+D654",
+    196
+   ],
+   [
+    "≡",
+    "U+2261",
+    194
+   ],
+   [
+    "입",
+    "U+C785",
+    193
+   ],
+   [
+    "ư",
+    "U+01B0",
+    191
+   ],
+   [
+    "发",
+    "U+53D1",
+    190
+   ],
+   [
+    "습",
+    "U+C2B5",
+    187
+   ],
+   [
+    "檬",
+    "U+6AAC",
+    187
+   ],
+   [
+    "➁",
+    "U+2781",
+    184
+   ],
+   [
+    "카",
+    "U+CE74",
+    184
+   ],
+   [
+    "ệ",
+    "U+1EC7",
+    184
+   ],
+   [
+    "☝",
+    "U+261D",
+    183
+   ],
+   [
+    "滉",
+    "U+6EC9",
+    182
+   ],
+   [
+    "檸",
+    "U+6AB8",
+    181
+   ],
+   [
+    "话",
+    "U+8BDD",
+    180
+   ],
+   [
+    "비",
+    "U+BE44",
+    180
+   ],
+   [
+    "∫",
+    "U+222B",
+    179
+   ],
+   [
+    "├",
+    "U+251C",
+    178
+   ],
+   [
+    "泵",
+    "U+6CF5",
+    178
+   ],
+   [
+    "鯵",
+    "U+9BF5",
+    177
+   ],
+   [
+    "德",
+    "U+5FB7",
+    177
+   ],
+   [
+    "繡",
+    "U+7E61",
+    173
+   ],
+   [
+    "❞",
+    "U+275E",
+    172
+   ],
+   [
+    "奶",
+    "U+5976",
+    172
+   ],
+   [
+    "弯",
+    "U+5F2F",
+    168
+   ],
+   [
+    "卡",
+    "U+5361",
+    168
+   ],
+   [
+    "ë",
+    "U+00EB",
+    167
+   ],
+   [
+    "ר",
+    "U+05E8",
+    166
+   ],
+   [
+    "유",
+    "U+C720",
+    166
+   ],
+   [
+    "진",
+    "U+C9C4",
+    166
+   ],
+   [
+    "赛",
+    "U+8D5B",
+    166
+   ],
+   [
+    "份",
+    "U+4EFD",
+    165
+   ],
+   [
+    "과",
+    "U+ACFC",
+    164
+   ],
+   [
+    "θ",
+    "U+03B8",
+    163
+   ],
+   [
+    "̀",
+    "U+0300",
+    162
+   ],
+   [
+    "야",
+    "U+C57C",
+    162
+   ],
+   [
+    "❹",
+    "U+2779",
+    161
+   ],
+   [
+    "⬇",
+    "U+2B07",
+    161
+   ],
+   [
+    "视",
+    "U+89C6",
+    160
+   ],
+   [
+    "영",
+    "U+C601",
+    160
+   ],
+   [
+    "호",
+    "U+D638",
+    160
+   ],
+   [
+    "⁄",
+    "U+2044",
+    160
+   ],
+   [
+    "灵",
+    "U+7075",
+    159
+   ],
+   [
+    "⤴",
+    "U+2934",
+    158
+   ],
+   [
+    "单",
+    "U+5355",
+    158
+   ],
+   [
+    "瑯",
+    "U+746F",
+    156
+   ],
+   [
+    "⋯",
+    "U+22EF",
+    156
+   ],
+   [
+    "좋",
+    "U+C88B",
+    155
+   ],
+   [
+    "ă",
+    "U+0103",
+    155
+   ],
+   [
+    "무",
+    "U+BB34",
+    154
+   ],
+   [
+    "时",
+    "U+65F6",
+    154
+   ],
+   [
+    "ʻ",
+    "U+02BB",
+    154
+   ],
+   [
+    "线",
+    "U+7EBF",
+    153
+   ],
+   [
+    "와",
+    "U+C640",
+    152
+   ],
+   [
+    "̮",
+    "U+032E",
+    152
+   ],
+   [
+    "식",
+    "U+C2DD",
+    150
+   ],
+   [
+    "모",
+    "U+BAA8",
+    150
+   ],
+   [
+    "∠",
+    "U+2220",
+    150
+   ],
+   [
+    "‿",
+    "U+203F",
+    150
+   ],
+   [
+    "П",
+    "U+041F",
+    149
+   ],
+   [
+    "생",
+    "U+C0DD",
+    148
+   ],
+   [
+    "김",
+    "U+AE40",
+    148
+   ],
+   [
+    "방",
+    "U+BC29",
+    147
+   ],
+   [
+    "‟",
+    "U+201F",
+    147
+   ],
+   [
+    "면",
+    "U+BA74",
+    147
+   ],
+   [
+    "华",
+    "U+534E",
+    146
+   ],
+   [
+    "长",
+    "U+957F",
+    146
+   ],
+   [
+    "龙",
+    "U+9F99",
+    146
+   ],
+   [
+    "단",
+    "U+B2E8",
+    145
+   ],
+   [
+    "琺",
+    "U+743A",
+    145
+   ],
+   [
+    "М",
+    "U+041C",
+    142
+   ],
+   [
+    "바",
+    "U+BC14",
+    142
+   ],
+   [
+    "❝",
+    "U+275D",
+    141
+   ],
+   [
+    "레",
+    "U+B808",
+    141
+   ],
+   [
+    "문",
+    "U+BB38",
+    140
+   ],
+   [
+    "╹",
+    "U+2579",
+    140
+   ],
+   [
+    "记",
+    "U+8BB0",
+    140
+   ],
+   [
+    "회",
+    "U+D68C",
+    139
+   ],
+   [
+    "치",
+    "U+CE58",
+    138
+   ],
+   [
+    "х",
+    "U+0445",
+    137
+   ],
+   [
+    "∟",
+    "U+221F",
+    137
+   ],
+   [
+    "터",
+    "U+D130",
+    137
+   ],
+   [
+    "醬",
+    "U+91AC",
+    136
+   ],
+   [
+    "연",
+    "U+C5F0",
+    136
+   ],
+   [
+    "ж",
+    "U+0436",
+    136
+   ],
+   [
+    "ế",
+    "U+1EBF",
+    136
+   ],
+   [
+    "ǔ",
+    "U+01D4",
+    136
+   ],
+   [
+    "儺",
+    "U+513A",
+    135
+   ],
+   [
+    "√",
+    "U+221A",
+    134
+   ],
+   [
+    "咖",
+    "U+5496",
+    134
+   ],
+   [
+    "珉",
+    "U+73C9",
+    134
+   ],
+   [
+    "⌘",
+    "U+2318",
+    133
+   ],
+   [
+    "⊂",
+    "U+2282",
+    133
+   ]
+  ]
+ },
+ "sources": [
+  {
+   "source": "ja/train/train_000.h5",
+   "source_bytes": 9710452902,
+   "source_sha256": "4cef69717c9fa0e8e9aaddb25f6cc86f8bb15aa24db87c8ab4e69b5e1141bca4",
+   "pages": 23213,
+   "lines": 19891,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_000.npz",
+     "lines": 19891,
+     "shard_bytes": 122587919,
+     "shard_sha256": "034bcde6cb977026a7451a8b97a5eeea8fd44662fcf454e9f47b183ff590e243"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_001.h5",
+   "source_bytes": 9719226674,
+   "source_sha256": "58d35486a5ac62a76eaa27fc81cce59dc55fcb975941040e4e806a971ea1e00b",
+   "pages": 23230,
+   "lines": 20001,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_001.npz",
+     "lines": 20001,
+     "shard_bytes": 122944332,
+     "shard_sha256": "ea02c1b439357d9fff1916f979093a0d7bce9b73fd42013f47ac1bf7cf5e8788"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_002.h5",
+   "source_bytes": 9864761304,
+   "source_sha256": "e3912832d1dd43e14491f84bc052507c387632116a282780c54686ad012bf485",
+   "pages": 23385,
+   "lines": 20177,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_002.npz",
+     "lines": 20177,
+     "shard_bytes": 124502219,
+     "shard_sha256": "99b53e7bcb5b8fef2395fecf4b3fde37dd663fe34f3f1be475e7b81ae8645bf7"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_003.h5",
+   "source_bytes": 9671389009,
+   "source_sha256": "0a0b1594a3f1af43a7c77b83b1d72b711ef87fd42e8e74e9aaf64f060088ecf2",
+   "pages": 23176,
+   "lines": 19841,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_003.npz",
+     "lines": 19841,
+     "shard_bytes": 122395688,
+     "shard_sha256": "e1fb4fb678d478733eaf837199dd4ebc6677eb22a5a9912ef3cf6dbf0cfca9c0"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_004.h5",
+   "source_bytes": 9738532657,
+   "source_sha256": "a8928adba778c7247a89e15d14ceca2092cf9460d88caac3985a0083ba470e33",
+   "pages": 23195,
+   "lines": 20015,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_004.npz",
+     "lines": 20015,
+     "shard_bytes": 123552973,
+     "shard_sha256": "9ad1bdad10a7d27a0c98a085c9606abb16cf8e05ba9bf7c240803f00bf278380"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_005.h5",
+   "source_bytes": 9795488050,
+   "source_sha256": "fd574c54d68b89e684323e0a05be183768c5074a6bb90df9b568c43c354373f9",
+   "pages": 23085,
+   "lines": 19801,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_005.npz",
+     "lines": 19801,
+     "shard_bytes": 122920799,
+     "shard_sha256": "ee2239ba0c6b6bee75c6929930b1725d3b7a6f859899abb703104ed8e2411a92"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_006.h5",
+   "source_bytes": 9745935726,
+   "source_sha256": "825caea3f9c919d6abe97a35862c6dacb2256b2d1cb7a73c07878234d91433f0",
+   "pages": 23211,
+   "lines": 20020,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_006.npz",
+     "lines": 20020,
+     "shard_bytes": 123304978,
+     "shard_sha256": "3306c0aec5e1ad933424fc961fbd01f23960da5dfde081d7439ca98ca685a7f7"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_007.h5",
+   "source_bytes": 9698646188,
+   "source_sha256": "52ed4ef45e8913eceecda2c1ba860bfcf3d8a05fab3c2221603edf53ff78a112",
+   "pages": 22977,
+   "lines": 19873,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_007.npz",
+     "lines": 19873,
+     "shard_bytes": 122478792,
+     "shard_sha256": "6cfbfe24979032e5c6ba1acc0354e78f8e57739bc6d2b9f06a91939d64fec07d"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_008.h5",
+   "source_bytes": 9864394034,
+   "source_sha256": "34f10889a15b9f35ecaaf1e12146ac9904fd5d318f00b04972b6e5dfd574762d",
+   "pages": 23273,
+   "lines": 20089,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_008.npz",
+     "lines": 20089,
+     "shard_bytes": 123925757,
+     "shard_sha256": "a7f7b9559c781ad69a2b2d24519214bf370f1d25c13646d8f10e9b1a489b2c6d"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_009.h5",
+   "source_bytes": 9782097990,
+   "source_sha256": "f8de4890d46dd9b30ed063dac8060efaaf196417206409d8e42e070f1d9bb306",
+   "pages": 23195,
+   "lines": 20044,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_009.npz",
+     "lines": 20044,
+     "shard_bytes": 122749536,
+     "shard_sha256": "2ff3b69cc6236f0c700a6fac946654ce7a1dcaee3f1dfd156fc8665fed24381c"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_010.h5",
+   "source_bytes": 9764012563,
+   "source_sha256": "58269f4bd057bf77cd02585c8b6dd2447e47448100378b9e79b1e44d66df3a5b",
+   "pages": 23222,
+   "lines": 19994,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_010.npz",
+     "lines": 19994,
+     "shard_bytes": 123354427,
+     "shard_sha256": "89faedf1ea71e8afc30a59e786a71eeb7b4cb673f319acdec69316577f15ba7e"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_011.h5",
+   "source_bytes": 9736250850,
+   "source_sha256": "565c988db61bd96dbf7559289baf67490ff0c70e24df6de46978c51a80b9c7dc",
+   "pages": 23212,
+   "lines": 19962,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_011.npz",
+     "lines": 19962,
+     "shard_bytes": 122660895,
+     "shard_sha256": "58e5a7754901255ece552a204c4391a48d4a1edf45c1403d50209985c00fc0eb"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_012.h5",
+   "source_bytes": 9707134159,
+   "source_sha256": "3f02811e61aea467e9a2e5c335f28ad6a6d8cc34aba12818961418841a6195e2",
+   "pages": 23209,
+   "lines": 19988,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_012.npz",
+     "lines": 19988,
+     "shard_bytes": 122688900,
+     "shard_sha256": "d7d30f180d94324925269e6010873f4533641d48ad151f2c41ae6ec2b4af502e"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_013.h5",
+   "source_bytes": 9756265312,
+   "source_sha256": "42d0645f7b70dc8ec66904ecaf97824cacbd3c4e08f0953b45423dcf925e2e09",
+   "pages": 23282,
+   "lines": 20004,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_013.npz",
+     "lines": 20004,
+     "shard_bytes": 124493794,
+     "shard_sha256": "3ebb3cd3af30d3d3e4e32d2f3048d4db9f2911dc161b86395d5f0a9bbab465ff"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_014.h5",
+   "source_bytes": 9724699654,
+   "source_sha256": "0d5c74fc5bc0d21f3a187ed088bc9eb8ffbb18c8a6846124fff698d0a16b9753",
+   "pages": 23059,
+   "lines": 19889,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_014.npz",
+     "lines": 19889,
+     "shard_bytes": 123378186,
+     "shard_sha256": "449e28180e93448724ad834806f0785dd8f70a68cd078bb8dc27d7060d9639ca"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_015.h5",
+   "source_bytes": 9746553049,
+   "source_sha256": "370449a3a284c31933db4452483bd5b1695a74660d360f7df4c036e8c1e88a9b",
+   "pages": 23089,
+   "lines": 19886,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_015.npz",
+     "lines": 19886,
+     "shard_bytes": 122850851,
+     "shard_sha256": "7ffbbaae5801765bdb7f399f2eb9ea9c0140889b665b945a200848faa2aa09b4"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_016.h5",
+   "source_bytes": 9728496115,
+   "source_sha256": "09c1c73d7cb1346789d674642216624b0978c0198ea1167ab933143937c4b14e",
+   "pages": 23126,
+   "lines": 19921,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_train_016.npz",
+     "lines": 19921,
+     "shard_bytes": 122970306,
+     "shard_sha256": "1450db1e33dec3182da6803d3c0e6a8c178e93e1aafb50420685e7f5801b5139"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_017.h5",
+   "source_bytes": 9705082018,
+   "source_sha256": "d577e07940693758488d7122faaf098c0e7a3ee26e58a54779f7a4b88455f8fe",
+   "pages": 23084,
+   "lines": 19816,
+   "git": "60976fdc2884e5b9e4cc66583a96a3183910c0df",
+   "shards": [
+    {
+     "shard": "nv_train_017.npz",
+     "lines": 19816,
+     "shard_bytes": 121805987,
+     "shard_sha256": "1e6f5a63acbe2dfeb929107082a4fa8df9c300ca355391f662dacf771e84b8a8"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_018.h5",
+   "source_bytes": 9749160150,
+   "source_sha256": "bc4361e7e91e3e61ef7ef236b8dece0d9f7f4fff96f815219b29fb4d366ff3c9",
+   "pages": 23114,
+   "lines": 19849,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_018.npz",
+     "lines": 19849,
+     "shard_bytes": 121185318,
+     "shard_sha256": "54fa222b1b9336c7a6575b6b7f6f0e27f9acb835abad9a8d8eafd03f1096a735"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_019.h5",
+   "source_bytes": 9804810969,
+   "source_sha256": "5d904d64dd141f85fd856a45a1b707bc57fa9e35eab06579087e1bc690e2b278",
+   "pages": 23122,
+   "lines": 19958,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_019.npz",
+     "lines": 19958,
+     "shard_bytes": 122763974,
+     "shard_sha256": "86ecf72968dc3c70758a3839120f4035788276465886d04a2bcf1a4d7707625e"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_020.h5",
+   "source_bytes": 9918466968,
+   "source_sha256": "0538d9eba3764cf34433abf03b03c063963882f32ab4134d70f7f549d18a94e6",
+   "pages": 23341,
+   "lines": 20480,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_020.npz",
+     "lines": 20480,
+     "shard_bytes": 130131212,
+     "shard_sha256": "146ce163a85393ebdcaa4e08990f6bebb69b3fc6078699abc9b5f448f8d7660d"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_021.h5",
+   "source_bytes": 9874839021,
+   "source_sha256": "a9f629117377ceb02a526205920bafe54079242c09b9237b6495e3796238f9de",
+   "pages": 23208,
+   "lines": 20306,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_021.npz",
+     "lines": 20306,
+     "shard_bytes": 130644714,
+     "shard_sha256": "44739702d4952a7f18f40d9c96925c523ff6f4d8388716e61508393eec815674"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_022.h5",
+   "source_bytes": 9865150166,
+   "source_sha256": "1a1b3c49e9a3795532d9dbf8c65ac534eca85e406391bf0d12721f4a3899686f",
+   "pages": 23295,
+   "lines": 20404,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_022.npz",
+     "lines": 20404,
+     "shard_bytes": 130681558,
+     "shard_sha256": "38e17d2bf44db0691850c2b782026caec4609230809ca0da0f8c8768a92ac775"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_023.h5",
+   "source_bytes": 9956970599,
+   "source_sha256": "c6c94ed7eca0909f5579a821a4b7652a2e5bc8a5d1aee3151a05e827c0709536",
+   "pages": 23378,
+   "lines": 20596,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_023.npz",
+     "lines": 20596,
+     "shard_bytes": 131835488,
+     "shard_sha256": "9768098cb1a93593bded453ae937bb3b31b6ffe99d84c0f874a885d74d24b894"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_024.h5",
+   "source_bytes": 9869108012,
+   "source_sha256": "791a63f7099c1d2cd1bc5273dfff88e9f6574c9de5f7411d5be6ec7b6126dac1",
+   "pages": 23186,
+   "lines": 20408,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_024.npz",
+     "lines": 20408,
+     "shard_bytes": 129654871,
+     "shard_sha256": "b932f9ea40be2052d6cf59f2b0c7dd046ab1aae34c254e42816749fd633e278f"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_025.h5",
+   "source_bytes": 9940516582,
+   "source_sha256": "b5a661dc0879ee7294a46464a39cbdb8fc32fb940dd4d7cd03afa04264f773c9",
+   "pages": 23294,
+   "lines": 20513,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_025.npz",
+     "lines": 20513,
+     "shard_bytes": 130967126,
+     "shard_sha256": "cc32bda49c5ae09c6a7936c77ae0a26277cf5ece2724c3a943ee4d8846517fe6"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_026.h5",
+   "source_bytes": 9839570827,
+   "source_sha256": "96155853420804553b4604728ebab9d01a8bab6f27f29c578e583842d80323df",
+   "pages": 23306,
+   "lines": 20453,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_026.npz",
+     "lines": 20453,
+     "shard_bytes": 130030450,
+     "shard_sha256": "36e7f517da5cf55d54895be0f3a3d720aa4477bd8ea6ef0bbf51d24e64337795"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_027.h5",
+   "source_bytes": 9888203590,
+   "source_sha256": "0d3b205820f0f1d8ac1ef77253293ceb1f1b1c30e040c1d0a982794c28cf4fa8",
+   "pages": 23285,
+   "lines": 20484,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_027.npz",
+     "lines": 20484,
+     "shard_bytes": 131661526,
+     "shard_sha256": "38b03d821936b5d38bf16ae71e276c13dcc17d5db1ee5a806d347d21b7a52223"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_028.h5",
+   "source_bytes": 9888772394,
+   "source_sha256": "e787d634a3df063efcd189202c899667decec7337ea3021b8b90efb71c19b6b5",
+   "pages": 23245,
+   "lines": 20460,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_028.npz",
+     "lines": 20460,
+     "shard_bytes": 130291510,
+     "shard_sha256": "11b98d8556c179b9c72a2e0c89d323a4705a2e29442a062655d9e25f3589c6cf"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_029.h5",
+   "source_bytes": 9989477204,
+   "source_sha256": "732f50a9b9a9f52e2cc8739b83a3f7bf1ae4b8a2b5ff86bd5ce3e7d092a5ecad",
+   "pages": 23578,
+   "lines": 20776,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_029.npz",
+     "lines": 20776,
+     "shard_bytes": 131854153,
+     "shard_sha256": "9aca72c863db54b17f4a0e6c2abd50005d4b0aefa28b6d0446308cb52a0cbbfd"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_030.h5",
+   "source_bytes": 10122080287,
+   "source_sha256": "71f3148e628edec255c1042a969719adfdfb239ab8c9f49b8fd80935ffe66efd",
+   "pages": 23229,
+   "lines": 20421,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_030.npz",
+     "lines": 20421,
+     "shard_bytes": 132308711,
+     "shard_sha256": "7cebada888df496333d2e4eb4661dc95134e8c4a9bdb8b4d0368a720c54ba626"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_031.h5",
+   "source_bytes": 10217661001,
+   "source_sha256": "6752626b5224ae53377066b3b0e9ec8f46e1c2a8b9c3376229b19a2a62737ebe",
+   "pages": 23383,
+   "lines": 20577,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_031.npz",
+     "lines": 20577,
+     "shard_bytes": 133244598,
+     "shard_sha256": "2fee25c3244e84c88c62a76791aea032266c5ab3e2d0c2db9424c5d3478071d1"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_032.h5",
+   "source_bytes": 10189069288,
+   "source_sha256": "5e5b9738fa31743d43888e74060183bee9c317f37ae23059837fc1053f90a868",
+   "pages": 23316,
+   "lines": 20510,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_032.npz",
+     "lines": 20510,
+     "shard_bytes": 133357566,
+     "shard_sha256": "db95c3308ee50d69d0e090abf56ed212fed03a8cb01f333a5ddfe3dc8ca95ae6"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_033.h5",
+   "source_bytes": 10180804979,
+   "source_sha256": "adac872eb1ddd2242456ceae42792f039e48e2be5c94e1cd721e95ba188c365f",
+   "pages": 23319,
+   "lines": 20541,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_033.npz",
+     "lines": 20541,
+     "shard_bytes": 133420912,
+     "shard_sha256": "3288a37e6bf89d3d08a82a3d85cad2acc810e57b839534040b5aaef455952f5f"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_034.h5",
+   "source_bytes": 10217240402,
+   "source_sha256": "35f31bcc56af4a055885d824906087117431f67a8a45ec48b9e944ed7bf79929",
+   "pages": 23311,
+   "lines": 20491,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_034.npz",
+     "lines": 20491,
+     "shard_bytes": 134249598,
+     "shard_sha256": "71f196650c8a68d2295d1fa033598685bbf7cb6e31680a826ecda5cf8def96ea"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_035.h5",
+   "source_bytes": 10113808019,
+   "source_sha256": "ff4a498f5ad79bb3166bc758957e162f30ce452887cbfad8a1de467840473562",
+   "pages": 23247,
+   "lines": 20437,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_035.npz",
+     "lines": 20437,
+     "shard_bytes": 130542252,
+     "shard_sha256": "5f3bb6e882aa6691346af28f0a2792aa6ad73f74b25cc85f380c8dd94ee33372"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_036.h5",
+   "source_bytes": 10215214216,
+   "source_sha256": "7c7d1839017398bd9f5ec1752b8d65734c0a890e8323cf7009f882eb4daa9a9f",
+   "pages": 23291,
+   "lines": 20455,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_036.npz",
+     "lines": 20455,
+     "shard_bytes": 131853701,
+     "shard_sha256": "58fe6d4f32cbb8a54fbb4662f73f140bdc6dda8d2e772e578c016ac344a57752"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_037.h5",
+   "source_bytes": 10067803523,
+   "source_sha256": "ba9edd700ea61db64c6210958840fb01a350430655de8140e49865d41a2d0f12",
+   "pages": 23165,
+   "lines": 19577,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_037.npz",
+     "lines": 19577,
+     "shard_bytes": 131478754,
+     "shard_sha256": "8e142e538454e53dc08fbd16e3ad1e78a5d28f186de2900f9334cbb76b148773"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_038.h5",
+   "source_bytes": 10159183038,
+   "source_sha256": "26799d4f3081476a4688572518a82dddd1d7bf19ec701eccb00b8d9f5188b392",
+   "pages": 23345,
+   "lines": 19759,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_038.npz",
+     "lines": 19759,
+     "shard_bytes": 132375741,
+     "shard_sha256": "35bce4c50c28d70c6d56ad9a5f39fd6b5d894bf09ccfc61b77bcc330a0bf3aa9"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_039.h5",
+   "source_bytes": 10192469842,
+   "source_sha256": "f22ebdb66fe7a3cf4691731c1f02a17414ab4199fb5b14c5e0186db51ae40b02",
+   "pages": 23309,
+   "lines": 19700,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_039.npz",
+     "lines": 19700,
+     "shard_bytes": 132835110,
+     "shard_sha256": "de808f263acf7d3686fdeb4151345af78a1e6944d5c946fb45e61ee3b5d4cfca"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_040.h5",
+   "source_bytes": 10227584197,
+   "source_sha256": "56bfd336a5b637e58019df3e3ed5e419c044cfe54ccf6ffb37819d1c0aeac31d",
+   "pages": 23417,
+   "lines": 19632,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_040.npz",
+     "lines": 19632,
+     "shard_bytes": 131568020,
+     "shard_sha256": "a7b09a13fe8d26630339301319587886e624276c1af559bd40306023157c47fe"
+    }
+   ]
+  },
+  {
+   "source": "ja/train/train_041.h5",
+   "source_bytes": 10175304458,
+   "source_sha256": "2cfda7e843eaa625d1bb2253d66fcfac63b844a6ce62e1a248c2d8ff8af72f2e",
+   "pages": 23184,
+   "lines": 19520,
+   "git": "544d8d42ec3675fabef3049ae64f2dbbedfd8802",
+   "shards": [
+    {
+     "shard": "nv_train_041.npz",
+     "lines": 19520,
+     "shard_bytes": 133106861,
+     "shard_sha256": "73a76c1cfb2e853d240344a949f4a851b6448ab04be3e9cc6e17631cef05e989"
+    }
+   ]
+  },
+  {
+   "source": "ja/validation/validation_000.h5",
+   "source_bytes": 1208485262,
+   "source_sha256": "f10aa791d5af73c6f1ed357daf3542e908ab214b8ddd7d4e67862cb6bd5e4a36",
+   "pages": 2897,
+   "lines": 2494,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_validation_000.npz",
+     "lines": 2494,
+     "shard_bytes": 15491552,
+     "shard_sha256": "f99ce66fbb2505e0b9458a7ccd8001f899fe534a1315667163c1cfb1c34faa20"
+    }
+   ]
+  },
+  {
+   "source": "ja/validation/validation_001.h5",
+   "source_bytes": 1230067352,
+   "source_sha256": "0bcbd49e0ba5edad08c98f2d16447099973f06165c91bf4305f0e562bb0de41a",
+   "pages": 2936,
+   "lines": 2542,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_validation_001.npz",
+     "lines": 2542,
+     "shard_bytes": 15915682,
+     "shard_sha256": "6e0fe5dbfc19b5a3e8b66d9e9eadefa16ed46fa6a21be96228170b4aefe11f60"
+    }
+   ]
+  },
+  {
+   "source": "ja/validation/validation_002.h5",
+   "source_bytes": 1215053996,
+   "source_sha256": "c122b5859e03947fb8c103b4671d2e0c67a8b14605c14fcdd6ac5021fc8be2be",
+   "pages": 2853,
+   "lines": 2447,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_validation_002.npz",
+     "lines": 2447,
+     "shard_bytes": 15117558,
+     "shard_sha256": "df72335f568bb62c369063d150c947326379207d43d1b7dbd221b330b837d37d"
+    }
+   ]
+  },
+  {
+   "source": "ja/validation/validation_003.h5",
+   "source_bytes": 1298694168,
+   "source_sha256": "3e2cb8aa1272f8ca3232057ab996eb52b27bd9324f834bb87909b67e236ea464",
+   "pages": 2998,
+   "lines": 2582,
+   "git": "74dd9be6b6ae66cfeac9e0f2825a346ed1d63613",
+   "shards": [
+    {
+     "shard": "nv_validation_003.npz",
+     "lines": 2582,
+     "shard_bytes": 16635260,
+     "shard_sha256": "b28bbc97ca24c4315410faad7de14cb72fb52a00efd993c2ddd4ce0b928d8649"
+    }
+   ]
+  }
+ ]
+}

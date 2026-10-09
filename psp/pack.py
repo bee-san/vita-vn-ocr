@@ -7,12 +7,13 @@
                        are RGBA (eval/sets.py's GT-box crops, as runtime/tests/parity.py feeds
                        them), synth-val is grey, so both input paths run.
       DIR/lines.jsonl  per crop: id, set, ground truth, style tags
-  pack.py expect --blob B.vocr --mode w8i --pack DIR/lines.bin --out DIR/expect_w8i.txt
+  pack.py expect --blob B.vocr --mode w8f --pack DIR/lines.bin --out DIR/expect_w8f.txt
       per crop: "<CRC-32 of the host runtime's logits, float32 LE, as 8 hex digits>\t<text>",
       from runtime/build/libvocr.so (pyvocr). The PSP app compares every line with it.
-  pack.py bundle --blob B.vocr --mode w8i --pack DIR --out OUT [--eboot psp/EBOOT.PBP] [--name VOCR]
+  pack.py bundle --blob B.vocr --mode w8f --pack DIR --out OUT [--eboot psp/EBOOT.PBP] [--name VOCR]
       OUT/PSP/GAME/VOCR/: EBOOT.PBP, model.vocr, lines.bin, expect.txt, vocr.cfg; copy OUT/PSP
       to the root of a memory stick (or into PPSSPP's memstick) and start "vocr OCR test".
+  --mode defaults to w8f, the mode psp/README.md recommends for the PSP.
 
 Screenshots come from --eval-data, $VOCR_EVAL_DATA or data/eval (eval/fetch.py rebuilds them);
 manifests from --manifests (default eval/manifests; point it at a directory holding
@@ -164,7 +165,7 @@ def main():
     u.add_argument("--clock", type=int, default=333)
     for p in (e, u):
         p.add_argument("--blob", required=True)
-        p.add_argument("--mode", default="w8i", choices=["f32", "w8f", "w8i"])
+        p.add_argument("--mode", default="w8f", choices=["f32", "w8f", "w8i"])
         p.add_argument("--invert", action="store_true")
     for p in (e, u):
         p.add_argument("--tile", type=int, default=0, help="CTC frames per tile (0: 4)")

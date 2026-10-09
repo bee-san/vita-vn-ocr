@@ -43,7 +43,7 @@ PPSSPP's timing is emulated time, not console time.
 
 | file | what |
 |---|---|
-| `scripts/fetch_pspdev.sh` | pspdev v20261001 (psp-gcc 15.2.0, binutils 2.44, pspsdk 6f15c15), sha256-pinned, in user space. On hosts with glibc < 2.38 it also unpacks Ubuntu 24.04's glibc 2.39 next to it and repoints the toolchain's host programs with patchelf 0.18.0 (both sha256-pinned) |
+| `scripts/fetch_pspdev.sh` | pspdev v20261001 (psp-gcc 15.2.0, binutils 2.44, pspsdk 6f15c15), sha256-pinned, in user space. On hosts with glibc < 2.38 it also unpacks Ubuntu 24.04's glibc 2.39 (sha256-pinned) next to it and turns each of the toolchain's host programs into a small wrapper that starts it with that glibc's loader (the ELF files are not edited) |
 | `scripts/build_ppsspp.sh` | PPSSPPHeadless from the PPSSPP 1.20.4 release tarball plus SDL2 2.32.10, both sha256-pinned. FFmpeg, X11 and Wayland are off |
 | `Makefile`, `main.c` | the EBOOT (`vocr_test`, title "vocr OCR test"): `make -C psp`, `make -C psp VFPU=1`, `make -C psp size` (code size, stack chains) |
 | `pack.py` | crop packs from eval's sets, the host runtime's expected outputs, memory-stick bundles |

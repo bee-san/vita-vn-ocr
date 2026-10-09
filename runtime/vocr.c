@@ -388,7 +388,7 @@ typedef struct {
     const vocr_image *img;
     unsigned nw, padded;
     double scale_x;
-    const int16_t *rows; /* per output row: y0, y1, b0, b1 */
+    const uint16_t *rows; /* per output row: y0, y1, b0, b1 */
 } line_t;
 
 static int floor_i(float v)
@@ -417,7 +417,7 @@ unsigned vocr_resized_width(const vocr_model *m, unsigned w, unsigned h)
     return q;
 }
 
-static void row_table(int16_t *rows, unsigned H, unsigned h)
+static void row_table(uint16_t *rows, unsigned H, unsigned h)
 {
     double scale = 1.0 / ((double)H / (double)h);
     unsigned y;
@@ -426,10 +426,10 @@ static void row_table(int16_t *rows, unsigned H, unsigned h)
         float fy = (float)(t - 0.5);
         int sy = floor_i(fy);
         fy -= (float)sy;
-        rows[4 * y + 0] = (int16_t)(sy < 0 ? 0 : sy > (int)h - 1 ? (int)h - 1 : sy);
-        rows[4 * y + 1] = (int16_t)(sy + 1 < 0 ? 0 : sy + 1 > (int)h - 1 ? (int)h - 1 : sy + 1);
-        rows[4 * y + 2] = (int16_t)round_even((1.0f - fy) * 2048.0f);
-        rows[4 * y + 3] = (int16_t)round_even(fy * 2048.0f);
+        rows[4 * y + 0] = (uint16_t)(sy < 0 ? 0 : sy > (int)h - 1 ? (int)h - 1 : sy);
+        rows[4 * y + 1] = (uint16_t)(sy + 1 < 0 ? 0 : sy + 1 > (int)h - 1 ? (int)h - 1 : sy + 1);
+        rows[4 * y + 2] = (uint16_t)round_even((1.0f - fy) * 2048.0f); /* 0..2048 */
+        rows[4 * y + 3] = (uint16_t)round_even(fy * 2048.0f);
     }
 }
 
@@ -445,7 +445,7 @@ static int check_image(const vocr_image *im)
     return VOCR_OK;
 }
 
-static void line_setup(line_t *ln, const vocr_model *m, const vocr_image *im, int16_t *rows)
+static void line_setup(line_t *ln, const vocr_model *m, const vocr_image *im, uint16_t *rows)
 {
     ln->img = im;
     ln->nw = vocr_resized_width(m, im->width, im->height);
@@ -494,7 +494,7 @@ static xcoef_t col_coef(const line_t *ln, unsigned x)
 static unsigned resized_px(const line_t *ln, unsigned y, xcoef_t k)
 {
     const vocr_image *im = ln->img;
-    const int16_t *r = ln->rows + 4u * y;
+    const uint16_t *r = ln->rows + 4u * y;
     const unsigned char *p0 = im->pixels + (size_t)r[0] * im->stride;
     const unsigned char *p1 = im->pixels + (size_t)r[1] * im->stride;
     int h0 = grey_px(im->format, p0, k.s0) * k.a0 + grey_px(im->format, p0, k.s1) * k.a1;
@@ -522,7 +522,7 @@ static void src_cols(const line_t *ln, unsigned H, long j0, unsigned n, float *d
 int vocr_preprocess(const vocr_model *m, const vocr_image *img, unsigned char *out,
                     size_t cap, unsigned *width, unsigned *padded_width)
 {
-    int16_t rows[4 * VOCR_MAX_HEIGHT];
+    uint16_t rows[4 * VOCR_MAX_HEIGHT];
     line_t ln;
     unsigned x, y;
     int rc = check_image(img);
@@ -1116,7 +1116,7 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
     L = m->n_ops;
     S = m->stride;
     f = c->front;
-    line_setup(&ln, m, img, (int16_t *)(void *)(c->arena + c->rows_off));
+    line_setup(&ln, m, img, (uint16_t *)(void *)(c->arena + c->rows_off));
     if (ln.nw > c->max_width) return VOCR_E_WIDTH;
     T = ln.padded / S;
     memset(&o, 0, sizeof o);

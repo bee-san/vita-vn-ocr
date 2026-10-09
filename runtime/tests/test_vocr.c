@@ -371,6 +371,22 @@ static void test_limits(void)
     im.width = 1;
     im.height = 1;
     CHECK(vocr_run(&c, &im, text, sizeof text, NULL) == VOCR_OK);
+    /* a crop taller than 32767 rows (one column): row indices must not wrap */
+    {
+        static unsigned char tall[40000];
+        unsigned char col[8 * 8];
+        unsigned y, w = 0, pw = 0;
+        for (y = 0; y < 40000; y++) tall[y] = (unsigned char)(y >= 35000 ? 255 : 0);
+        im.pixels = tall;
+        im.width = 1;
+        im.height = 40000;
+        im.stride = 1;
+        CHECK(vocr_run(&c, &im, text, sizeof text, NULL) == VOCR_OK);
+        CHECK(vocr_preprocess(&m, &im, col, sizeof col, &w, &pw) == VOCR_OK && w == 8 && pw == 8);
+        CHECK(col[0] == 0 && col[7 * 8] == 255); /* output row 7 samples source rows 37499-37500 */
+        im.pixels = img_px;
+        im.stride = 300;
+    }
     /* cancellation, polled per tile */
     im.width = 300;
     im.height = 8;

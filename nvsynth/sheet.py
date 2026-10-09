@@ -4,13 +4,14 @@
   sheet.py shard  SHARD.npz [--n 36] [--seed 0] --out sheet.png
       crops as train.py sees them (grey, height 32) with their labels
   sheet.py compare 'SHARDS*.npz' --real-lines LINES.jsonl --real-shots DIR
-                   [--kind vita|psp] [--pad 4] [--n 30] --out sheet.png
+                   [--kind vita|psp] [--pad 4] [--n 30] [--agreed] --out sheet.png
       NVIDIA crops (left) next to real crops (right), both grey at height 32:
       real lines are cut from screenshots with the same ink box + pad the
-      eval harness and the line finder use (4 px on Vita, 2 on PSP)
+      eval harness and the line finder use (4 px on Vita, 2 on PSP); --agreed
+      keeps the real lines two OCR readings agree on (dialogue, not logos)
 
-Real lines are realdata rows ({"url", "kind", "ink": [x0, y0, x1, y1]}); their
-screenshots are DIR/<vn>_<vndb image id>.jpg. Screenshots are copyrighted game
+Real lines are realdata rows ({"url", "kind", "ink": [x0, y0, x1, y1], "r":
+{engine: [text, score]}}); their screenshots are DIR/<vn>_<vndb image id>.jpg. Screenshots are copyrighted game
 images: keep the sheets local and never commit them. Every sheet is at most
 1280 px on each side.
 """
@@ -49,9 +50,19 @@ def to32(g):
     return cv2.resize(g, (max(8, int(round(w * 32 / h))), 32), interpolation=cv2.INTER_LINEAR)
 
 
-def real_crops(lines_path, shots, kind, pad, n, rng):
+def agreed(row, min_jp=3):
+    """True when at least two of the row's OCR readings agree (NFKC, no spaces) on a text
+    with min_jp+ kana/kanji: a readable Japanese line rather than a logo or a button."""
+    import unicodedata
+    texts = [unicodedata.normalize("NFKC", t[0]).replace(" ", "") for t in (row.get("r") or {}).values()
+             if t and t[0]]
+    jp = [t for t in texts if sum(0x3041 <= ord(c) <= 0x30FF or 0x4E00 <= ord(c) <= 0x9FFF for c in t) >= min_jp]
+    return any(jp.count(t) >= 2 for t in jp)
+
+
+def real_crops(lines_path, shots, kind, pad, n, rng, only_agreed=False):
     rows = [json.loads(x) for x in Path(lines_path).read_text().splitlines() if x.strip()]
-    rows = [r for r in rows if r.get("kind") == kind and r.get("ink")]
+    rows = [r for r in rows if r.get("kind") == kind and r.get("ink") and (not only_agreed or agreed(r))]
     out = []
     for i in rng.permutation(len(rows)):
         if len(out) >= n:
@@ -96,7 +107,7 @@ def cmd_compare(args):
     for p in sorted(glob.glob(args.shards)):
         nv += [g for g, _ in load_shard(p)]
     nv = [nv[i] for i in rng.choice(len(nv), min(args.n, len(nv)), replace=False)]
-    real = real_crops(args.real_lines, args.real_shots, args.kind, args.pad, args.n, rng)
+    real = real_crops(args.real_lines, args.real_shots, args.kind, args.pad, args.n, rng, args.agreed)
     half = SIDE // 2
     rows = max(len(nv), len(real))
     sheet = Image.new("L", (SIDE, ROW * rows + 24), 40)
@@ -126,6 +137,7 @@ def main():
     b.add_argument("--kind", default="vita", choices=("vita", "psp"))
     b.add_argument("--pad", type=int, default=None, help="default 4 on Vita, 2 on PSP")
     b.add_argument("--n", type=int, default=30)
+    b.add_argument("--agreed", action="store_true", help="only real lines two OCR readings agree on")
     b.add_argument("--seed", type=int, default=0)
     b.add_argument("--out", required=True)
     args = ap.parse_args()

@@ -1,8 +1,9 @@
 """ctypes binding of the vocr C runtime (runtime/vocr.h) for host tests and evaluation.
 
     from pyvocr import Vocr
-    r = Vocr("v1_w8.vocr", mode="w8i")          # builds runtime/build/libvocr.so if needed
+    r = Vocr("v1_w8.vocr", mode="w8i")          # (re)builds runtime/build/libvocr.so if needed
     text = r.text(crop)                          # crop: HxW uint8 grey or HxWx4 uint8 RGBA
+    text = r.text(crop, invert=True)             # dark text: read as 255 - grey (VOCR_INVERT)
     text, logits = r.run(crop, logits=True)      # logits: frames x classes float32
     r.arena_bytes                                # exact arena bytes of this context
 
@@ -17,7 +18,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 LIB = HERE / "build" / "libvocr.so"
 MODES = {"auto": 0, "f32": 1, "w8f": 2, "w8i": 3}
-GREY8, RGBA8 = 1, 4
+GREY8, RGBA8, INVERT = 1, 4, 0x100
 
 
 class _Opts(C.Structure):
@@ -42,9 +43,17 @@ def _aligned(nbytes, align=16):
     return raw[off:off + nbytes]
 
 
+def _stale(lib):
+    """True if lib is missing or older than the sources it is built from."""
+    if not lib.exists():
+        return True
+    built = lib.stat().st_mtime
+    return any((HERE / src).stat().st_mtime > built for src in ("vocr.c", "vocr.h"))
+
+
 def load_lib(path=None):
     path = Path(path) if path else LIB
-    if path == LIB and not LIB.exists():
+    if path == LIB and _stale(LIB):        # never test an old build of vocr.c
         subprocess.run(["make", "-s", "-C", str(HERE), str(LIB.relative_to(HERE))], check=True)
     lib = C.CDLL(str(path))
     vp, sz, u = C.c_void_p, C.c_size_t, C.c_uint
@@ -111,20 +120,24 @@ class Vocr:
         if rc:
             raise VocrError(self.lib, rc, what)
 
-    def _image(self, img):
-        img = np.ascontiguousarray(img, np.uint8)
+    def _image(self, img, invert=False):
+        img = np.asarray(img)
+        if img.dtype != np.uint8:      # no silent casts: a [0, 1] float crop would become 0/1
+            raise TypeError(f"image must be uint8, not {img.dtype}")
+        img = np.ascontiguousarray(img)
+        inv = INVERT if invert else 0
         if img.ndim == 2:
-            return img, _Image(img.ctypes.data, img.shape[1], img.shape[0], img.strides[0], GREY8)
+            return img, _Image(img.ctypes.data, img.shape[1], img.shape[0], img.strides[0], GREY8 | inv)
         if img.ndim == 3 and img.shape[2] == 4:
-            return img, _Image(img.ctypes.data, img.shape[1], img.shape[0], img.strides[0], RGBA8)
+            return img, _Image(img.ctypes.data, img.shape[1], img.shape[0], img.strides[0], RGBA8 | inv)
         raise ValueError("image must be HxW grey or HxWx4 RGBA uint8")
 
     def resized_width(self, w, h):
         return self.lib.vocr_resized_width(self._model, w, h)
 
-    def preprocess(self, img):
+    def preprocess(self, img, invert=False):
         """The grey network input (height x padded width, uint8) and the unpadded width."""
-        keep, im = self._image(img)
+        keep, im = self._image(img, invert)
         w, pw = C.c_uint(), C.c_uint()
         self._check(self.lib.vocr_preprocess(self._model, C.byref(im), None, 0, C.byref(w),
                                               C.byref(pw)), "vocr_preprocess")
@@ -134,8 +147,9 @@ class Vocr:
                                               C.byref(w), C.byref(pw)), "vocr_preprocess")
         return out, w.value
 
-    def run(self, img, logits=False):
-        keep, im = self._image(img)
+    def run(self, img, logits=False, invert=False):
+        """invert=True reads the crop as 255 - grey (VOCR_INVERT), for dark text."""
+        keep, im = self._image(img, invert)
         ex = _Extra()
         out = best = None
         cap = self.resized_width(im.width, im.height) // self.stride + 1
@@ -151,5 +165,5 @@ class Vocr:
         self.last_best = best[:ex.frames]
         return (text, out[:ex.frames]) if logits else text
 
-    def text(self, img):
-        return self.run(img)
+    def text(self, img, invert=False):
+        return self.run(img, invert=invert)

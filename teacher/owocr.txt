@@ -1,0 +1,2 @@
+# Installed with --no-deps --require-hashes by teacher/setup_venv.sh (see requirements.in for why).
+owocr==1.26.8 --hash=sha256:9251195d0a36922e1e9337737705e4a3aca716bdbd407e42470e2c2da8b268f3

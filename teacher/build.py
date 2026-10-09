@@ -26,6 +26,7 @@ character boxes (relative to the crop) and confidences.
 import argparse
 import hashlib
 import json
+import os
 import random
 import subprocess
 import sys
@@ -41,10 +42,11 @@ import geometry as G  # noqa: E402
 import vote  # noqa: E402
 from label import OUT, REALDATA, load_shots  # noqa: E402
 
-MAN = HERE / "manifests"
+MAN = Path(os.environ.get("TEACHER_MANIFESTS") or HERE / "manifests")
 RULE = HERE / "rule.json"
 PER_VN_CAP, GLOBAL_CAP = 2, 8
 LINE_FIELDS = ("id", "crop", "label", "how", "targets", "split")
+DISTILL_FIELDS = ("id", "crop", "targets", "split", "why")
 EVAL_GAMES = [ROOT / "eval" / "manifests" / "test_games.json", OUT / "inputs" / "eval" / "test_games.json",
               OUT / "inputs" / "realdata_eval_exclude.json"]
 
@@ -102,14 +104,31 @@ def load_vocab():
     return {c for c in (ROOT / "data" / "vocab.txt").read_text(encoding="utf-8").split("\n") if c}
 
 
+# Rejected lines that are still real text lines of the right size: kept, unlabelled, for logit
+# (soft) distillation. Lines rejected for geometry or for not being Japanese text are not.
+DISTILL_WHY = {"disagree", "low-conf", "low-det", "confusable-dissent", "short"}
+
+
+def readings(ln):
+    """{engine: text} of every reading of a line."""
+    out = {}
+    for e in vote.VOTERS:
+        t = vote.reading(ln, e)
+        if t is not None:
+            out[e] = t[0]
+    return out
+
+
 def crop_of(ln, rule):
     """Source-pixel box of the training crop: ink (+ furigana), widened to the labelled
-    characters' boxes (the primary reading's), so every labelled glyph is inside."""
+    characters' boxes (the primary reading's), so every labelled glyph is inside, but never
+    beyond the view the voters read."""
     c = list(ln.get("crop") or ln["ink"])
     chars = vote.reading(ln, rule.get("primary", vote.DEFAULT["primary"]))[1]
     if chars:
-        c[0] = min(c[0], min(ch[1] for ch in chars))
-        c[2] = max(c[2], max(ch[3] for ch in chars))
+        v = ln.get("view") or [c[0], c[1], c[2], c[3]]
+        c[0] = max(min(v[0], c[0]), min(c[0], min(ch[1] for ch in chars)))
+        c[2] = min(max(v[2], c[2]), max(c[2], max(ch[3] for ch in chars)))
     return c
 
 
@@ -119,15 +138,21 @@ def decide(args):
     ex = eval_exclusions()
     shots = load_reads(args.reads)
     collection = {r["url"]: r for r in load_shots("train")}
-    why, kept, shot_rows = Counter(), [], {}
+    why, kept, shot_rows, pool = Counter(), [], {}, []
     for sk, r in sorted(shots.items()):
         if excluded({**collection.get(r["url"], {}), **r}, ex):
             why["test-game"] += len(r["lines"])
             continue
+        shot_rows[sk] = r
         for ln in r["lines"]:
             lab, how = vote.accept(ln, rule)
             if lab is None:
                 why[how] += 1
+                if how in DISTILL_WHY and any(vote.japanese(t) for t in readings(ln).values()):
+                    pool.append({"id": f"{sk}_{ln['k']}", "shot": sk, "url": r["url"], "vn": r["vn"],
+                                 "kind": r["kind"], "session": r.get("session"), "crop": crop_of(ln, rule),
+                                 "targets": ln["targets"], "split": split_of(r["vn"]), "why": how,
+                                 "reads": readings(ln), "det_conf": ln.get("det_conf")})
                 continue
             if any(c not in vocab for c in lab):
                 why["oov"] += 1
@@ -137,7 +162,6 @@ def decide(args):
                          "session": r.get("session"), "crop": crop_of(ln, rule), "label": lab, "how": how,
                          "targets": ln["targets"], "split": split_of(r["vn"]), "pol": G.polarity(ln.get("hint", {})),
                          "chars": m[1], "det_conf": ln.get("det_conf")})
-            shot_rows[sk] = r
     rng = random.Random(20261009)
     rng.shuffle(kept)
     per_vn, glob, out = Counter(), Counter(), []
@@ -149,13 +173,21 @@ def decide(args):
         glob[k["label"]] += 1
         out.append(k)
     out.sort(key=lambda k: (int(k["vn"][1:]), k["id"]))
-    used = {k["shot"] for k in out}
+    pool = [p for p in pool if p["targets"]]
+    pool.sort(key=lambda k: (int(k["vn"][1:]), k["id"]))
+    used = {k["shot"] for k in out} | {p["shot"] for p in pool}
     MAN.mkdir(parents=True, exist_ok=True)
     for kind in ("vita", "psp", "hires"):
         rows = [k for k in out if k["kind"] == kind]
         (MAN / f"lines_{kind}.jsonl").write_text(
             "".join(json.dumps({f: k[f] for f in LINE_FIELDS}, ensure_ascii=False) + "\n" for k in rows),
             encoding="utf-8")
+        rows = [p for p in pool if p["kind"] == kind]       # geometry only: no text in git
+        (MAN / f"distill_{kind}.jsonl").write_text(
+            "".join(json.dumps({f: p[f] for f in DISTILL_FIELDS}, ensure_ascii=False) + "\n" for p in rows),
+            encoding="utf-8")
+    (OUT / "distill_full.jsonl").write_text("".join(json.dumps(p, ensure_ascii=False) + "\n" for p in pool),
+                                            encoding="utf-8")
     shots_out = []
     for sk in sorted(used, key=lambda s: (int(s.split("_")[0][1:]), s)):
         r = shot_rows[sk]
@@ -186,8 +218,10 @@ def decide(args):
              "by_how": dict(Counter(k["how"] for k in out).most_common()),
              "by_polarity": dict(Counter(k["pol"] for k in out)),
              "vns": dict(Counter(g["split"] for g in games.values())),
-             "sessions": len({k["session"] for k in out}), "screenshots": len(used),
-             "unique_labels": len({k["label"] for k in out}), "chars": sum(len(k["label"]) for k in out)}
+             "sessions": len({k["session"] for k in out}), "screenshots": len({k["shot"] for k in out}),
+             "unique_labels": len({k["label"] for k in out}), "chars": sum(len(k["label"]) for k in out),
+             "distill_pool": dict(Counter(f"{p['split']}/{t}" for p in pool for t in p["targets"])),
+             "distill_why": dict(Counter(p["why"] for p in pool))}
     (MAN / "stats.json").write_text(json.dumps(stats, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     full = OUT / "lines_full.jsonl"            # with character boxes: artifacts only (too big to commit)
     full.write_text("".join(json.dumps(k, ensure_ascii=False) + "\n" for k in out), encoding="utf-8")
@@ -214,27 +248,36 @@ def shot_path(s):
     return None
 
 
+def _load(path):
+    return [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x.strip()] \
+        if path.exists() else []
+
+
+def _save(path, crops, labels, metas):
+    shapes = np.array([c.shape for c in crops], np.int32)
+    offsets = np.concatenate([[0], np.cumsum(shapes[:, 0] * shapes[:, 1])]).astype(np.int64)
+    tmp = path.with_name(path.name + ".tmp.npz")
+    np.savez_compressed(tmp, data=np.concatenate([c.ravel() for c in crops]), offsets=offsets, shapes=shapes,
+                        labels=np.array(json.dumps(labels, ensure_ascii=False)),
+                        meta=np.array(json.dumps(metas, ensure_ascii=False)))
+    tmp.replace(path)
+
+
 def render(args):
+    """teacher_{train,val}.npz from manifests/lines_<kind>.jsonl, and teacher_distill_{train,val}.npz
+    (empty labels: for logit distillation) from manifests/distill_<kind>.jsonl."""
     import cv2
-    shots = {json.loads(x)["shot"]: json.loads(x) for x in (MAN / "shots.jsonl").read_text(
-        encoding="utf-8").splitlines() if x.strip()}
-    full = {}
-    fp = OUT / "lines_full.jsonl"
-    if fp.exists():
-        for x in fp.read_text(encoding="utf-8").splitlines():
-            k = json.loads(x)
-            full[k["id"]] = k
-    by_shot = defaultdict(list)
-    for kind in ("vita", "psp", "hires"):
-        p = MAN / f"lines_{kind}.jsonl"
-        if p.exists():
-            for x in p.read_text(encoding="utf-8").splitlines():
-                if x.strip():
-                    r = json.loads(x)
-                    by_shot[r["id"].rsplit("_", 1)[0]].append(r)
-    out = {"train": ([], [], []), "val": ([], [], [])}
+    shots = {s["shot"]: s for s in _load(MAN / "shots.jsonl")}
+    extra = {k["id"]: k for k in _load(OUT / "lines_full.jsonl") + _load(OUT / "distill_full.jsonl")}
+    pools = {"teacher": "lines", "teacher_distill": "distill"}
+    rows = {name: defaultdict(list) for name in pools}
+    for name, prefix in pools.items():
+        for kind in ("vita", "psp", "hires"):
+            for r in _load(MAN / f"{prefix}_{kind}.jsonl"):
+                rows[name][r["id"].rsplit("_", 1)[0]].append(r)
+    out = {(name, split): ([], [], []) for name in pools for split in ("train", "val")}
     missing = 0
-    for sk in sorted(by_shot):
+    for sk in sorted(set(rows["teacher"]) | set(rows["teacher_distill"])):
         s = shots[sk]
         path = shot_path(s)
         bgr = cv2.imread(str(path), cv2.IMREAD_COLOR) if path else None
@@ -243,35 +286,33 @@ def render(args):
             continue
         rgb = np.ascontiguousarray(bgr[:, :, ::-1])
         for t in ("vita", "psp"):
-            todo = [r for r in by_shot[sk] if t in r["targets"]]
+            todo = [(name, r) for name in pools for r in rows[name][sk] if t in r["targets"]]
             if not todo:
                 continue
             sc = G.target_scale(rgb.shape[1], rgb.shape[0], t) if s["kind"] == "hires" else 1.0
             img = G.scale_image(rgb, sc)
-            for r in todo:
+            for name, r in todo:
                 x0, y0, x1, y1 = G.crop_box(r["crop"], sc, G.PAD[t], img.shape[1], img.shape[0])
-                crops, labels, metas = out[r["split"]]
+                crops, labels, metas = out[(name, r["split"])]
                 crops.append(G.to_gray(img[y0:y1, x0:x1]))
-                labels.append(r["label"])
-                f = full.get(r["id"], {})
-                chars = [[c[0], round(c[1] * sc - x0, 1), round(c[2] * sc - y0, 1), round(c[3] * sc - x0, 1),
-                          round(c[4] * sc - y0, 1), c[5]] for c in f.get("chars", [])]
-                metas.append({"real": True, "teacher": True, "id": r["id"], "vn": s["vn"], "session": s["session"],
-                              "kind": s["kind"], "target": t, "how": r["how"], "pol": f.get("pol"), "chars": chars})
+                f = extra.get(r["id"], {})
+                meta = {"real": True, "teacher": True, "id": r["id"], "vn": s["vn"], "session": s["session"],
+                        "kind": s["kind"], "target": t, "box": [x0, y0, x1, y1]}
+                if name == "teacher":
+                    labels.append(r["label"])
+                    meta.update(how=r["how"], pol=f.get("pol"), chars=[
+                        [c[0], round(c[1] * sc - x0, 1), round(c[2] * sc - y0, 1), round(c[3] * sc - x0, 1),
+                         round(c[4] * sc - y0, 1), c[5]] for c in f.get("chars", [])])
+                else:
+                    labels.append("")
+                    meta.update(why=r["why"], reads=f.get("reads", {}))
+                metas.append(meta)
     counts = {}
-    for split, (crops, labels, metas) in out.items():
-        counts[split] = dict(Counter(m["target"] for m in metas))
-        if not crops:
-            continue
-        shapes = np.array([c.shape for c in crops], np.int32)
-        offsets = np.concatenate([[0], np.cumsum(shapes[:, 0] * shapes[:, 1])]).astype(np.int64)
-        path = OUT / f"teacher_{split}.npz"
-        tmp = path.with_name(path.name + ".tmp.npz")
-        np.savez_compressed(tmp, data=np.concatenate([c.ravel() for c in crops]), offsets=offsets, shapes=shapes,
-                            labels=np.array(json.dumps(labels, ensure_ascii=False)),
-                            meta=np.array(json.dumps(metas, ensure_ascii=False)))
-        tmp.replace(path)
-        print(f"{path}: {len(crops)} crops {counts[split]}", flush=True)
+    for (name, split), (crops, labels, metas) in out.items():
+        counts[f"{name}_{split}"] = dict(Counter(m["target"] for m in metas))
+        if crops:
+            _save(OUT / f"{name}_{split}.npz", crops, labels, metas)
+            print(f"{OUT / f'{name}_{split}.npz'}: {len(crops)} crops {counts[f'{name}_{split}']}", flush=True)
     if missing:
         print(f"WARNING: {missing} screenshots missing (run realdata/vndb.py fetch)", flush=True)
     write_readme(counts)
@@ -298,6 +339,15 @@ teacher_train.npz, teacher_val.npz
     MeikiOCR's character boxes and confidences).
     Split by VNDB VN (val = 15 <= md5(vn) % 100 < 25), so no game or capture session is in both.
     Use teacher_val for model selection only; eval's vita-test / psp-test games are never here.
+
+teacher_distill_train.npz, teacher_distill_val.npz
+    The real text lines the rule did NOT accept (engines disagree, low confidence, ...), same
+    format and crops but with empty labels: unlabelled real crops for logit (soft CTC)
+    distillation from a strong local teacher (PP-OCRv6 small measured best, see rule.json).
+    meta: why (the rejection reason) and reads (every engine's raw reading), plus box (crop box
+    in the target-resolution screenshot) so RGB crops can be re-cut from the screenshots.
+    train/train.py drops lines with empty labels, so this file is never mixed into supervised
+    training by accident.
 
 Source: realdata's screenshot collection (native Vita 960x544, native PSP 480x272, PC/console
 shots scaled to both), read at native resolution: MeikiOCR finds and reads every horizontal text

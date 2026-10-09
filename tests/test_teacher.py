@@ -141,6 +141,70 @@ def test_targets_and_crop_box():
     assert G.crop_box([10, 10, 50, 30], 0.5, 2, 480, 272) == [3, 3, 27, 17]
 
 
+def test_build_decide_and_render_end_to_end(tmp_path):
+    """decide() + render() on one synthetic screenshot: accepted lines go to teacher_*.npz in
+    train.py's format with character boxes, rejected real lines to teacher_distill_*.npz with
+    empty labels, a test-game screenshot is dropped, and nothing is written into the repo."""
+    import json
+    import os
+    import subprocess
+
+    import cv2
+    out, real, man = tmp_path / "out", tmp_path / "realdata", tmp_path / "man"
+    (out / "reads").mkdir(parents=True)
+    (out / "inputs" / "eval").mkdir(parents=True)
+    vns = [f"v{i}" for i in range(1, 200)]
+    train_vn = next(v for v in vns if build.split_of(v) == "train")
+    test_vn = next(v for v in vns if build.is_test_vn(v))
+    rows, shots = [], []
+    for vn in (train_vn, test_vn):
+        url = f"https://t.vndb.org/sf/00/{vn[1:]}.jpg"
+        img = np.full((544, 960, 3), 20, np.uint8)
+        img[400:430, 100:400] = 230
+        (real / "shots" / "vita").mkdir(parents=True, exist_ok=True)
+        cv2.imwrite(str(real / "shots" / "vita" / f"{vn}_{vn[1:]}.jpg"), img)
+        shots.append({"vn": vn, "kind": "vita", "url": url, "dims": [960, 544], "release": "r1", "sha256": vn,
+                      "session": f"{vn}/r1/0"})
+        good = line("こんにちは", v6s="こんにちは", screenai="こんにちは")
+        good.update(k=0, crop=[100, 400, 400, 430], ink=[100, 400, 400, 430], view=[82, 392, 418, 438])
+        bad = line("ありがとう", v6s="ありがどう", screenai="あいがとう")
+        bad.update(k=1, crop=[100, 450, 400, 480], ink=[100, 450, 400, 480], view=[82, 442, 418, 488])
+        rows.append({"shot": f"{vn}_{vn[1:]}", "url": url, "sha256": vn, "vn": vn, "kind": "vita", "release": "r1",
+                     "session": f"{vn}/r1/0", "dims": [960, 544], "lines": [good, bad]})
+    (out / "reads" / "train.0of1.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
+                                                   encoding="utf-8")
+    for kind in ("vita", "psp", "hires"):
+        (out / "inputs" / f"shots_{kind}.jsonl").write_text(
+            "".join(json.dumps(s) + "\n" for s in shots if s["kind"] == kind), encoding="utf-8")
+    (out / "rule.json").write_text(json.dumps({"rule": {"votes": 2}}), encoding="utf-8")
+    env = dict(os.environ, TEACHER_OUT=str(out), REALDATA=str(real), TEACHER_MANIFESTS=str(man))
+    r = subprocess.run([sys.executable, str(ROOT / "teacher" / "build.py"), "decide", "--rule", str(out / "rule.json")],
+                       env=env, capture_output=True, text=True, timeout=300)
+    assert r.returncode == 0, r.stderr[-2000:]
+    assert "BUILD_DONE" in r.stdout
+    lines = [json.loads(x) for x in (man / "lines_vita.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert [x["label"] for x in lines] == ["こんにちは"] and lines[0]["id"].startswith(train_vn + "_")
+    distill = [json.loads(x) for x in (man / "distill_vita.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert len(distill) == 1 and distill[0]["why"] == "disagree" and "label" not in distill[0]
+    z = np.load(out / "teacher_train.npz")
+    labels, metas = json.loads(str(z["labels"])), json.loads(str(z["meta"]))
+    assert labels == ["こんにちは"]
+    # the fake character boxes start at x = 0: the crop widens to them, but only to the view (82)
+    assert z["shapes"][0].tolist() == [30 + 2 * G.PAD["vita"], 400 - 82 + 2 * G.PAD["vita"]]
+    assert lines[0]["crop"] == [82, 400, 400, 430]
+    assert metas[0]["chars"][0][0] == "こ" and metas[0]["session"] == f"{train_vn}/r1/0"
+    zd = np.load(out / "teacher_distill_train.npz")
+    assert json.loads(str(zd["labels"])) == [""]
+    assert json.loads(str(zd["meta"]))[0]["reads"]["v6s"] == "ありがどう"
+    sys.path.insert(0, str(ROOT / "train"))
+    import train  # the shard loads as a --real shard
+    char2id = {c: i + 1 for i, c in enumerate(build.load_vocab())}
+    imgs, labs, dropped = train.load([str(out / "teacher_train.npz")], char2id)
+    assert len(imgs) == 1 and dropped == 0
+    imgs, labs, dropped = train.load([str(out / "teacher_distill_train.npz")], char2id)
+    assert len(imgs) == 0 and dropped == 1               # empty labels never enter supervised training
+
+
 def test_splits_follow_the_repo_rules():
     from common import is_test_vn
     for vn in (f"v{i}" for i in range(1, 400)):

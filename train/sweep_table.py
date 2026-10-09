@@ -26,7 +26,9 @@ as-is sets mostly measure that data gap (which synth2 and the real fine-tuning
 close), not capacity; they are shown alongside. Without eval/ results the
 provisional real-hand + real-pseudo pool is used.
 "Δ vs ref" is the pooled real CER minus the reference run's, with a 95% paired
-bootstrap interval over lines (10,000 resamples, seed 0).
+bootstrap interval over lines (10,000 resamples, seed 0). It is computed from the same
+per-line errors as the pooled CER columns (eval/metrics.py on eval's sets), so the point
+estimate equals the difference of the table's own pooled CERs.
 
 Runs are grouped by training data (the checkpoint's --real args): by default the table
 shows the synthetic-only runs (plus v1); --data real shows the runs that mixed in
@@ -89,12 +91,33 @@ def common_sets(evals, pool=REAL):
 
 
 def line_errors(res, variant="int8", sets=REAL):
-    """{(set, line id): (errors, reference chars)} of one eval JSON."""
+    """{(set, line id): (errors, reference chars)} of one eval JSON, under the scorer that
+    gave the set's pooled errors: the per-line counts sweep_eval stores, or for an older
+    JSON a re-score with eval/metrics.py on eval's sets and score_norm on the others.
+    Warns if the lines do not add up to the set's errors."""
+    metrics = None
     out = {}
     for s in sets:
-        for d in res["results"].get(f"{variant}/{s}", {}).get("lines_detail", []):
-            p, r = score_norm(d["pred"]), score_norm(d["ref"])
-            out[(s, d["id"])] = (edit_distance(list(p), list(r)), len(r))
+        r = res["results"].get(f"{variant}/{s}", {})
+        tot = [0, 0]
+        for d in r.get("lines_detail", []):
+            if "errors" in d:
+                e, n = d["errors"], d["n"]
+            elif s.startswith(("vita-test", "psp-test")):
+                if metrics is None:
+                    from sweep_eval import eval_modules
+                    metrics = eval_modules()[1]
+                p, g = metrics.norm(d["pred"]), metrics.norm(d["ref"])
+                e, n = metrics.lev(p, g), len(g)
+            else:
+                p, g = score_norm(d["pred"]), score_norm(d["ref"])
+                e, n = edit_distance(list(p), list(g)), len(g)
+            out[(s, d["id"])] = (e, n)
+            tot[0] += e
+            tot[1] += n
+        if r.get("lines_detail") and tot != [r["errors"], r["chars"]]:
+            print(f"warning: {res.get('run')} {variant}/{s}: lines add up to {tot[0]}/{tot[1]}, "
+                  f"the set reports {r['errors']}/{r['chars']}", file=sys.stderr)
     return out
 
 
@@ -265,8 +288,8 @@ def markdown(rs, exact, ref):
     return "\n".join(lines)
 
 
-STYLE_COLS = ("bright-on-dark", "dark-on-light", "outlined", "coloured", "name", "furigana",
-              "mincho", "small")
+STYLE_COLS = ("bright-on-dark", "dark-on-light", "outlined", "coloured", "name", "coloured-name",
+              "furigana", "mincho", "small", "no-box")
 
 
 def style_table(rs):

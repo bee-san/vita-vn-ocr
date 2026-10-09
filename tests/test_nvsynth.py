@@ -164,11 +164,55 @@ def test_shards_load_in_train_py_unchanged(tmp_path):
 def test_fetch_helpers():
     assert fetch.parse_range("0-2,5", 10) == [0, 1, 2, 5]
     assert fetch.parse_range("", 3) == [0, 1, 2]
-    b = fetch.Budget(10)
+    b = fetch.Budget(10, free=lambda: 10**12)
     b.take(6)
+    b.landed(6)
     b.give(6)
     b.take(25)                                                  # a single file over the limit still fits alone
     assert b.used == 25
+
+
+def test_budget_keeps_the_disk_floor():
+    free = [100.0]
+    b = fetch.Budget(10**9, min_free=50, free=lambda: free[0])
+    assert b._ok(30)                                            # 100 - 30 * 1.2 = 64 >= 50
+    assert not b._ok(45)                                        # 100 - 54 < 50
+    b.take(30)
+    assert b.pending == 36 and b._ok(5) and not b._ok(15)      # pending download + output count as used
+    free[0] = 70.0                                              # the 30 landed on disk
+    b.landed(30)
+    assert b.pending == 6
+    b.give(30)                                                  # raw deleted, output written
+    assert b.used == 0 and b.pending == 0
+
+
+def test_every_line_mode_contains_the_one_line_pick():
+    rgb = page(rows=((30, 20, 20, 300), (110, 20, 20, 250)))
+    ann = {"line_bboxes": [line("一行目のテキスト", 15, 23, 310, 34), line("二行目のテキスト", 15, 103, 260, 34)]}
+    one = ex.process_page(jpeg(rgb), ann, [200, 400], 7, "t", 1, 5, VOCAB, ex.new_stats(), Counter())
+    every = ex.process_page(jpeg(rgb), ann, [200, 400], 7, "t", 0, 5, VOCAB, ex.new_stats(), Counter())
+    assert len(one) == 1 and len(every) == 2
+    assert one[0][1] == every[0][1] and one[0][2] == every[0][2] and np.array_equal(one[0][0], every[0][0])
+
+
+def test_buckets_are_deterministic_and_spread_lines(tmp_path):
+    metas = [{"src": "train_000", "sample": s, "line": li} for s in range(300) for li in range(10)]
+    b = [fetch.bucket_of(m, 4) for m in metas]
+    assert b == [fetch.bucket_of(m, 4) for m in metas]
+    counts = np.bincount(b, minlength=4)
+    assert counts.min() > 600                                   # about 750 each
+    pages = [len({m["sample"] for m, k in zip(metas, b) if k == j}) for j in range(4)]
+    assert min(pages) > 250                                     # a bucket spans most pages, not a page range
+    crops = [np.full((32, 8 + i % 5), i % 256, np.uint8) for i in range(len(metas))]
+    labels = ["あい"] * len(metas)
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(2) as pool:
+        shards = fetch.write_shards(tmp_path, "train_000", crops, labels, metas, 4, pool)
+    assert [s["shard"] for s in shards] == [f"nv_train_000_b{j:02d}.npz" for j in range(4)]
+    assert sum(s["lines"] for s in shards) == len(metas) and [s["lines"] for s in shards] == counts.tolist()
+    with ThreadPoolExecutor(1) as pool:
+        one = fetch.write_shards(tmp_path, "train_001", crops[:5], labels[:5], metas[:5], 1, pool)
+    assert one[0]["shard"] == "nv_train_001.npz" and one[0]["lines"] == 5
 
 
 def test_oov_report_character_classes():

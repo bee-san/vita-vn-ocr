@@ -232,7 +232,9 @@ def decode(jpeg):
 
 
 def process_page(jpeg, ann, dims, sample_id, tag, per_page, seed, vocab, stats, oov, chars=None):
-    """Picks up to per_page usable lines of one page at random and crops them.
+    """Picks up to per_page usable lines of one page at random (per_page 0: all of them, in
+    the same random order, so a one-line-per-page run's line is the first one kept here, with
+    the same margins) and crops them.
     dims is the page's [H, W] (the HDF5 'dimensions' row). Updates stats (reason
     counts), oov (out-of-vocab character counts) and chars (every character of every
     horizontal line, if given) in place. Returns [(grey crop, label, meta)]."""
@@ -258,15 +260,16 @@ def process_page(jpeg, ann, dims, sample_id, tag, per_page, seed, vocab, stats, 
         stats[reason or "usable"] += 1
         if reason is None:
             usable.append((li, line, label))
-    if not usable or per_page <= 0:
+    if not usable:
         return []
+    limit = per_page if per_page > 0 else len(usable)     # 0: every usable line of the page
     rgb = decode(jpeg)
     if rgb is None or rgb.shape[:2] != (page_h, page_w):
         stats["bad_dims"] += 1
         return []
     out = []
     for j in rng.permutation(len(usable)):
-        if len(out) >= per_page:
+        if len(out) >= limit:
             break
         li, line, label = usable[j]
         # Grey only around the line: crop() never reads further than about 0.4 box heights

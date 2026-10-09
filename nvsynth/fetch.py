@@ -2,25 +2,38 @@
 """Download the Japanese shards of NVIDIA OCR-Synthetic-Multilingual-v1 one by one,
 cut their text lines into train.py shards, and delete each raw file afterwards.
 
-  fetch.py run --split train|validation [--files 0-66] [--per-page 1] [--seed S]
-               [--out DIR] [--raw DIR] [--max-raw-gb 32] [--downloads 2] [--procs N]
+  fetch.py run --split train|validation|test --out DIR [--files 0-66] [--per-page 1]
+               [--seed S] [--lines-per-shard 20000] [--raw DIR] [--max-raw-gb 36]
+               [--min-free-gb 70] [--downloads 3] [--procs N]
       For every ja/<split>/<split>_NNN.h5 at the pinned REVISION: download it with
       huggingface_hub, check its sha256 against the Hub's LFS record, crop up to
-      --per-page usable lines per page (nvsynth/extract.py) into
-      DIR/nv_<split>_NNN.npz plus a .json of counts (validation: DIR/val_parts/),
-      then delete the raw file.
-      Downloads run ahead of the extraction, but the raw files on disk (finished
-      or in flight) never exceed --max-raw-gb. Resumable: finished shards are
-      skipped and a complete raw file is not downloaded again.
-  fetch.py merge-val [--out DIR]
-      Concatenates DIR/val_parts/nv_validation_*.npz into DIR/nv_val.npz. With
-      train.py's convention (the last shard of the --synth glob is the validation
-      shard), --synth 'DIR/nv_*.npz' trains on nv_train_* and validates on nv_val.npz.
-  fetch.py manifest [--out DIR] [--write nvsynth/manifests/nvsynth_ja.json]
-      Collects the per-shard counts, sha256s and OOV statistics into the manifest.
+      --per-page usable lines per page (0 = every usable line; nvsynth/extract.py),
+      write them to DIR, record counts in DIR/nv_<split>_NNN.json, delete the raw file.
+      With --per-page 1 a source file becomes one shard, DIR/nv_<split>_NNN.npz. With
+      --per-page 0 its lines are spread over B = round(lines / --lines-per-shard)
+      shards DIR/nv_<split>_NNN_bBB.npz by a hash of (file, page, line), so bucket BB
+      of every file is a uniform sample of all pages: a glob such as '*_b00.npz' picks
+      1/B of the lines without loading the rest.
+      Downloads run ahead of the cutting, but raw files on disk (finished or in flight)
+      never exceed --max-raw-gb, and a download waits while it would leave less than
+      --min-free-gb free on the disk. Resumable: finished sources are skipped and a
+      complete raw file is not downloaded again.
+  fetch.py merge-val --parts DIR --to FILE
+      Concatenates DIR/nv_validation_*.npz into one shard (the held-out set).
+  fetch.py manifest --dirs DIR [DIR ...] --write FILE [--val FILE]
+      Collects the per-source counts, sha256s and OOV statistics into the manifest.
+
+Commands that made the shared artifacts ($HERD/shared/artifacts/nvsynth, see docs/nvsynth.md):
+  one line per page:  run --split validation --files 0-3 --out shards/val_parts;
+                      merge-val --parts shards/val_parts --to shards/nv_val.npz;
+                      run --split train --out shards; manifest --dirs shards shards/val_parts
+                      --val shards/nv_val.npz --write nvsynth/manifests/nvsynth_ja.json
+  every line:         run --split S --per-page 0 --out full/S for S in train, validation, test;
+                      manifest --dirs full/train full/validation full/test
+                      --write nvsynth/manifests/nvsynth_ja_full.json
 
 The dataset is CC BY 4.0 (NVIDIA); see README.md for the attribution. Raw shards
-are about 9.8 GB (train) and 1.2 GB (validation) each. Threads follow
+are about 9.8 GB (train) and 1.2 GB (validation, test) each. Worker processes follow
 OMP_NUM_THREADS (heavy.sh sets 5) unless --procs is given.
 """
 import argparse
@@ -29,10 +42,12 @@ import json
 import multiprocessing as mp
 import os
 import re
+import shutil
 import subprocess
 import sys
 import threading
 import time
+import zlib
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -46,9 +61,11 @@ import extract as ex  # noqa: E402
 REPO = "nvidia/OCR-Synthetic-Multilingual-v1"
 REVISION = "69696a1cc543ef3a0f8e9892a89c17293e915263"     # main on 2026-10-09 (last change 2026-04-20)
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
-DEFAULT_OUT = HERD / "shared" / "artifacts" / "nvsynth" / "shards"
+ARTIFACTS = HERD / "shared" / "artifacts" / "nvsynth"
 DEFAULT_SEED = 20261009
 PAGES_PER_TASK = 500
+OUT_FRACTION = 0.2          # output bytes per raw byte, for the disk-free check (measured: 0.013 at one
+                            # line per page, about 0.16 with every line)
 
 
 def log(msg):
@@ -93,20 +110,47 @@ def parse_range(spec, n):
 
 
 class Budget:
-    """Bytes of raw shards allowed on disk at once (finished downloads plus in-flight ones)."""
+    """Raw-file bytes allowed on disk at once (finished downloads plus in-flight ones), and a
+    floor of free disk space: a download starts only if the disk keeps min_free bytes free once
+    every pending download and the output still to be written for it have landed."""
 
-    def __init__(self, limit):
-        self.limit, self.used, self.cond = limit, 0, threading.Condition()
+    def __init__(self, limit, min_free=0, path="/", free=None):
+        self.limit, self.min_free, self.path = limit, min_free, path
+        self.used = 0                 # raw bytes held (on disk or in flight)
+        self.pending = 0              # bytes not yet on disk: in-flight downloads plus their output
+        self.cond = threading.Condition()
+        self.free = free or (lambda: shutil.disk_usage(self.path).free)
+        self.waited = 0.0
+
+    def _ok(self, n):
+        if self.used and self.used + n > self.limit:
+            return False
+        return self.free() - self.pending - n - int(n * OUT_FRACTION) >= self.min_free
 
     def take(self, n):
+        t0 = time.time()
         with self.cond:
-            while self.used and self.used + n > self.limit:
-                self.cond.wait()
+            warned = False
+            while not self._ok(n):
+                if not warned and time.time() - t0 > 60:
+                    log(f"waiting for disk: {self.free() / 1e9:.0f} GB free, raw held {self.used / 1e9:.0f} GB")
+                    warned = True
+                self.cond.wait(timeout=30)
             self.used += n
+            self.pending += n + int(n * OUT_FRACTION)
+        self.waited += time.time() - t0
+
+    def landed(self, n):
+        """A download of n bytes finished (now on disk); its output is still pending."""
+        with self.cond:
+            self.pending -= n
+            self.cond.notify_all()
 
     def give(self, n):
+        """The raw file was cut and deleted; its output is on disk."""
         with self.cond:
             self.used -= n
+            self.pending -= int(n * OUT_FRACTION)
             self.cond.notify_all()
 
 
@@ -127,6 +171,7 @@ def download(path, size, sha, raw, budget):
         else:
             raise RuntimeError(f"could not download {path}")
     dt = time.time() - t0
+    budget.landed(size)
     got = sha256_file(local)
     if got != sha:
         local.unlink()
@@ -176,49 +221,82 @@ def extract_file(pool, local, tag, per_page, seed):
     return crops, labels, metas, stats, oov, chars
 
 
+def bucket_of(meta, n_buckets):
+    """Sub-shard of one line: a hash of (source file, page, line), so every bucket of a file is a
+    uniform sample of its pages, and a line's bucket depends only on the bucket count."""
+    key = f"{meta['src']}:{meta['sample']}:{meta['line']}".encode()
+    return zlib.crc32(key) % n_buckets
+
+
+def write_shards(out, tag, crops, labels, metas, n_buckets, writers):
+    """Writes the lines as n_buckets shards (in parallel threads: zlib releases the GIL).
+    Returns [{shard, lines, shard_bytes, shard_sha256}]."""
+    groups = [[] for _ in range(n_buckets)]
+    for i, m in enumerate(metas):
+        groups[bucket_of(m, n_buckets) if n_buckets > 1 else 0].append(i)
+    names = [f"nv_{tag}.npz"] if n_buckets == 1 else [f"nv_{tag}_b{b:02d}.npz" for b in range(n_buckets)]
+
+    def one(b):
+        idx = groups[b]
+        path = out / names[b]
+        ex.save_shard(path, [crops[i] for i in idx], [labels[i] for i in idx], [metas[i] for i in idx])
+        return {"shard": names[b], "lines": len(idx), "shard_bytes": path.stat().st_size,
+                "shard_sha256": sha256_file(path)}
+
+    return list(writers.map(one, range(n_buckets)))
+
+
+def record_path(out, tag):
+    return out / f"nv_{tag}.json"
+
+
 def cmd_run(args):
     out, raw = Path(args.out), Path(args.raw)
-    if args.split == "validation":      # merged into nv_val.npz by merge-val; kept out of nv_*.npz
-        out = out / "val_parts"
     out.mkdir(parents=True, exist_ok=True)
     raw.mkdir(parents=True, exist_ok=True)
     files = hub_files(args.split)
-    names = sorted(files)
     todo = []
-    for i in parse_range(args.files, len(names)):
+    for i in parse_range(args.files, len(files)):
         path = f"ja/{args.split}/{args.split}_{i:03d}.h5"
         if path not in files:
             raise SystemExit(f"{path} is not in {REPO}@{REVISION}")
         tag = Path(path).stem
-        if (out / f"nv_{tag}.npz").exists() and (out / f"nv_{tag}.json").exists():
-            continue
-        todo.append((path, tag))
-    log(f"{len(todo)} {args.split} shards to do, {args.procs} procs, {args.downloads} downloads, "
-        f"raw budget {args.max_raw_gb} GB")
-    budget = Budget(int(args.max_raw_gb * 1e9))
-    t_all = time.time()
-    with ThreadPoolExecutor(args.downloads) as dl, mp.get_context("fork").Pool(args.procs, _init_worker) as pool:
+        if not record_path(out, tag).exists():
+            todo.append((path, tag))
+    log(f"{len(todo)} {args.split} sources to do -> {out}, per page {args.per_page or 'all'}, {args.procs} procs, "
+        f"{args.downloads} downloads, raw budget {args.max_raw_gb} GB, keep {args.min_free_gb} GB free")
+    budget = Budget(int(args.max_raw_gb * 1e9), int(args.min_free_gb * 1e9), path=str(out))
+    t_all, total = time.time(), 0
+    with ThreadPoolExecutor(args.downloads) as dl, ThreadPoolExecutor(args.procs) as writers, \
+            mp.get_context("fork").Pool(args.procs, _init_worker) as pool:
         futures = [(path, tag, dl.submit(download, path, *files[path], raw, budget)) for path, tag in todo]
         for path, tag, fut in futures:
             local, dl_s = fut.result()
             size, sha = files[path]
             t0 = time.time()
             crops, labels, metas, stats, oov, chars = extract_file(pool, local, tag, args.per_page, args.seed)
-            npz = out / f"nv_{tag}.npz"
-            ex.save_shard(npz, crops, labels, metas)
-            rec = {"source": path, "source_bytes": size, "source_sha256": sha, "shard": npz.name,
-                   "shard_bytes": npz.stat().st_size, "shard_sha256": sha256_file(npz), "lines": len(labels),
+            t_cut = time.time() - t0
+            n_buckets = 1 if args.per_page else max(1, round(len(labels) / args.lines_per_shard))
+            shards = write_shards(out, tag, crops, labels, metas, n_buckets, writers)
+            del crops, metas
+            rec = {"source": path, "source_bytes": size, "source_sha256": sha, "lines": len(labels),
                    "per_page": args.per_page, "seed": args.seed, "revision": REVISION, "git": git_sha(),
-                   "download_s": round(dl_s, 1), "extract_s": round(time.time() - t0, 1),
+                   "download_s": round(dl_s, 1), "extract_s": round(t_cut, 1),
+                   "write_s": round(time.time() - t0 - t_cut, 1), "shards": shards,
                    "stats": dict(stats), "oov": dict(oov.most_common()), "chars": dict(chars.most_common())}
-            tmp = out / f"nv_{tag}.json.tmp"
+            if n_buckets == 1:      # one-line-per-page layout: the shard's fields at the top level, as before
+                rec.update(shards[0])
+            tmp = record_path(out, tag).with_suffix(".json.tmp")
             tmp.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
-            tmp.rename(out / f"nv_{tag}.json")
+            tmp.rename(record_path(out, tag))
             local.unlink()
             budget.give(size)
-            log(f"{tag}: {len(labels)} lines from {stats['pages']} pages in {rec['extract_s']}s, "
-                f"{rec['shard_bytes'] / 1e6:.0f} MB, total {time.time() - t_all:.0f}s")
-    log("RUN_DONE")
+            total += len(labels)
+            log(f"{tag}: {len(labels)} lines from {stats['pages']} pages in {t_cut:.0f}s cut + "
+                f"{rec['write_s']:.0f}s write, {n_buckets} shard(s), "
+                f"{sum(s['shard_bytes'] for s in shards) / 1e6:.0f} MB; {total} lines so far, "
+                f"{time.time() - t_all:.0f}s, {shutil.disk_usage(str(out)).free / 1e9:.0f} GB free")
+    log(f"RUN_DONE {args.split}: {total} lines")
 
 
 def load_npz(path):
@@ -227,63 +305,71 @@ def load_npz(path):
 
 
 def cmd_merge_val(args):
-    out = Path(args.out)
-    parts = sorted((out / "val_parts").glob("nv_validation_*.npz"))
+    parts = sorted(Path(args.parts).glob("nv_validation_*.npz"))
     if not parts:
-        raise SystemExit("no val_parts/nv_validation_*.npz to merge")
+        raise SystemExit(f"no nv_validation_*.npz in {args.parts}")
     crops, labels, metas = [], [], []
     for p in parts:
         data, offs, shapes, labs, mets = load_npz(p)
         crops += [data[offs[i]:offs[i + 1]].reshape(shapes[i]) for i in range(len(labs))]
         labels += labs
         metas += mets
-    ex.save_shard(out / "nv_val.npz", crops, labels, metas)
-    log(f"nv_val.npz: {len(labels)} lines from {len(parts)} shards")
+    ex.save_shard(Path(args.to), crops, labels, metas)
+    log(f"{args.to}: {len(labels)} lines from {len(parts)} shards")
 
 
 def cmd_manifest(args):
-    out = Path(args.out)
-    recs = [json.loads(p.read_text()) for p in [*sorted(out.glob("nv_*.json")),
-                                               *sorted((out / "val_parts").glob("nv_*.json"))]]
-    shards, total, oov = [], ex.new_stats(), Counter()
+    recs = []
+    for d in args.dirs:
+        recs += [json.loads(p.read_text()) for p in sorted(Path(d).glob("nv_*.json"))]
+    total, oov, by_split, shards_by_split = ex.new_stats(), Counter(), Counter(), Counter()
+    sources = []
     for r in recs:
         total.update(r["stats"])
         oov.update(r["oov"])
-        shards.append({k: r[k] for k in ("source", "source_bytes", "source_sha256", "shard", "shard_bytes",
-                                         "shard_sha256", "lines", "git")} | {"pages": r["stats"]["pages"]})
-    val = out / "nv_val.npz"
-    by_split = Counter()
-    for r in recs:
-        by_split[r["source"].split("/")[1]] += r["lines"]
+        split = r["source"].split("/")[1]
+        shards = r.get("shards") or [{k: r[k] for k in ("shard", "lines", "shard_bytes", "shard_sha256")}]
+        by_split[split] += r["lines"]
+        shards_by_split[split] += len(shards)
+        sources.append({"source": r["source"], "source_bytes": r["source_bytes"],
+                        "source_sha256": r["source_sha256"], "pages": r["stats"]["pages"], "lines": r["lines"],
+                        "git": r["git"], "shards": shards})
     st = dict(total)
     man = {
         "dataset": f"https://huggingface.co/datasets/{REPO}",
         "revision": REVISION,
         "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), (c) NVIDIA Corporation",
-        "subset": "ja (Japanese): train and validation splits only",
-        "made_by": "nvsynth/fetch.py run, then merge-val and manifest",
+        "subset": "ja (Japanese) only: " + ", ".join(sorted(by_split)),
+        "made_by": "nvsynth/fetch.py (see its docstring for the exact commands)",
         "format": "train.py shards: data (uint8, flat), offsets, shapes (32 x W), labels (JSON list), meta "
                   "(JSON list: src, sample, line, crop [x, y, w, h] on the page, ink_h, clean, contrast, "
                   "grey_ratio, polarity)",
+        "per_page": sorted({r["per_page"] for r in recs}),
         "filters": {"min_box_h": ex.MIN_BOX_H, "min_chars": ex.MIN_CHARS, "max_ascii": ex.MAX_ASCII,
-                    "pad_frac": list(ex.PAD_FRAC), "min_contrast": ex.CONTRAST, "min_grey_ratio": ex.GREY_RATIO,
-                    "height": ex.H, "max_width": ex.MAX_W, "area_above": ex.AREA_ABOVE, "mid_h": list(ex.MID_H),
-                    "per_page": sorted({r["per_page"] for r in recs}), "seed": sorted({r["seed"] for r in recs}),
+                    "one_word_box": True, "pad_frac": list(ex.PAD_FRAC), "min_contrast": ex.CONTRAST,
+                    "min_grey_ratio": ex.GREY_RATIO, "height": ex.H, "max_width": ex.MAX_W,
+                    "area_above": ex.AREA_ABOVE, "mid_h": list(ex.MID_H), "seed": sorted({r["seed"] for r in recs}),
                     "vocab": "data/vocab.txt (5,354 characters + CTC blank)",
                     "label_norm": "synth/build_corpus.py norm()"},
         "lines": dict(by_split),
-        "val_shard": {"shard": val.name, "shard_sha256": sha256_file(val), "shard_bytes": val.stat().st_size}
-        if val.exists() else None,
+        "lines_total": sum(by_split.values()),
+        "shards": dict(shards_by_split),
+        "val_shard": None,
         "stats": st,
         "oov": {"char_rate": st["h_oov_chars"] / max(1, st["h_chars"]),
                 "line_rate": st["h_oov_lines"] / max(1, st["h_lines"]),
                 "note": "over every horizontal line of every processed page, after norm()",
                 "top": [[c, f"U+{ord(c):04X}", n] for c, n in oov.most_common(300)]},
-        "shards": shards,
+        "sources": sources,
     }
+    if args.val:
+        val = Path(args.val)
+        man["val_shard"] = {"shard": val.name, "shard_sha256": sha256_file(val), "shard_bytes": val.stat().st_size,
+                            "lines": len(json.loads(str(np.load(val)["labels"])))}
     Path(args.write).parent.mkdir(parents=True, exist_ok=True)
     Path(args.write).write_text(json.dumps(man, ensure_ascii=False, indent=1) + "\n")
-    log(f"manifest: {len(shards)} shards, {sum(by_split.values())} lines -> {args.write}")
+    log(f"manifest: {len(sources)} sources, {sum(shards_by_split.values())} shards, "
+        f"{man['lines_total']} lines -> {args.write}")
 
 
 def default_procs():
@@ -295,20 +381,24 @@ def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run")
-    r.add_argument("--split", choices=("train", "validation"), required=True)
-    r.add_argument("--files", default="", help="shard numbers, e.g. 0-66 or 0,3,5-9 (default: all)")
-    r.add_argument("--per-page", type=int, default=1)
+    r.add_argument("--split", choices=("train", "validation", "test"), required=True)
+    r.add_argument("--out", required=True, help="directory for this split's shards and counts")
+    r.add_argument("--files", default="", help="source numbers, e.g. 0-66 or 0,3,5-9 (default: all)")
+    r.add_argument("--per-page", type=int, default=1, help="lines per page (0 = every usable line)")
+    r.add_argument("--lines-per-shard", type=int, default=20000, help="with --per-page 0")
     r.add_argument("--seed", type=int, default=DEFAULT_SEED)
-    r.add_argument("--out", default=str(DEFAULT_OUT))
     r.add_argument("--raw", default=str(HERE.parent / "scratch" / "raw"))
-    r.add_argument("--max-raw-gb", type=float, default=32)
-    r.add_argument("--downloads", type=int, default=2)
+    r.add_argument("--max-raw-gb", type=float, default=36)
+    r.add_argument("--min-free-gb", type=float, default=70)
+    r.add_argument("--downloads", type=int, default=3)
     r.add_argument("--procs", type=int, default=default_procs())
     m = sub.add_parser("merge-val")
-    m.add_argument("--out", default=str(DEFAULT_OUT))
+    m.add_argument("--parts", required=True)
+    m.add_argument("--to", required=True)
     f = sub.add_parser("manifest")
-    f.add_argument("--out", default=str(DEFAULT_OUT))
-    f.add_argument("--write", default=str(HERE / "manifests" / "nvsynth_ja.json"))
+    f.add_argument("--dirs", nargs="+", required=True)
+    f.add_argument("--val", default="")
+    f.add_argument("--write", required=True)
     args = ap.parse_args()
     {"run": cmd_run, "merge-val": cmd_merge_val, "manifest": cmd_manifest}[args.cmd](args)
 

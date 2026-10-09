@@ -63,7 +63,7 @@ These are **estimates**; this runtime's NEON speed on a real A9 hasn't been meas
 
 | C build | lines, at this head | lines, at earlier heads |
 |---|---|---|
-| gcc 11.5 `-O2`, `libvocr.so` | eval's hand-checked **vita-test** (206 lines, 16 games) and **psp-test** (245 lines, 14 games; eval PR #5, not merged yet), as the GT-box crops of `eval/sets.py`; all 984 `data/real` crops (RGBA input); synth-val lines 1,001-4,000 | synth-val (the held-out shard) lines 1-1,000 and 9,001-10,000 |
+| gcc 11.5 `-O2`, `libvocr.so` | eval's hand-checked **vita-test** (206 lines, 16 games; grey, and RGBA with `--set vita-test`) and **psp-test** (245 lines, 14 games; eval PR #5, not merged yet), as the GT-box crops of `eval/sets.py`; all 984 `data/real` crops (RGBA input); synth-val lines 1,001-4,000 | synth-val (the held-out shard) lines 1-1,000 and 9,001-10,000 |
 | Arm GNU gcc 14.2, Cortex-A9 **NEON**, qemu-arm 10.0.13 | vita-test, psp-test | synth-val first 100; real first 50 |
 | same, **scalar** (`-DVOCR_NO_NEON`) | vita-test, psp-test | synth-val first 100; real first 50 |
 | gcc 11.5 / clang 15, ASan + UBSan (`vocr_cli`) | vita-test (gcc), psp-test (clang) | synth-val first 100; random fixture, 40 |
@@ -217,7 +217,10 @@ make -C runtime check            # line finder checks, then C unit tests + PyTor
                                  # random-init fixture, built with ASan + UBSan (CI: ci/runtime.sh)
 python runtime/tests/parity.py --ckpt models/v1/ckpt_best.pt               # synth val shard
 python runtime/tests/parity.py --ckpt models/v1/ckpt_best.pt --set real    # RGBA crops
+python runtime/tests/parity.py --ckpt models/v1/ckpt_best.pt --set vita-test   # eval's set, RGBA
 ```
+
+`--set vita-test` (and `psp-test`, once its manifest is on main) reads the crops through `eval/sets.py`, with the screenshots from `--eval-data`, `$VOCR_EVAL_DATA` or `data/eval` (`eval/fetch.py` rebuilds them).
 
 Per line and mode, `tests/parity.py` checks:
 - the grey input equals `cv2.resize(INTER_LINEAR)` at the model's height exactly;

@@ -4,6 +4,7 @@
   parity.py --fixture                         # random-init model, random crops, no data
   parity.py --ckpt CKPT [--shard SHARD.npz]   # default shard: the last synth shard (val)
   parity.py --ckpt CKPT --set real            # data/real crops, through the RGBA path
+  parity.py --ckpt CKPT --set vita-test       # eval's hand-checked sets (also psp-test), RGBA
   parity.py ... --cli "qemu-arm -cpu cortex-a9 build/arm/vocr_cli_neon"
 
 The checkpoint is exported with train/export.py (fp32 and int8). For every line and mode:
@@ -89,6 +90,21 @@ def load_real(data, n):
         rgb = np.asarray(Image.open(data / "real" / "crops" / f"{r['id']:05d}.png").convert("RGB"))
         rgba = np.concatenate([rgb, np.full(rgb.shape[:2] + (1,), 255, np.uint8)], axis=2)
         out.append((f"real:{r['id']}:{r['split']}", rgba, r["label"] if r["agree"] else None))
+    return out
+
+
+def load_eval(name, n, data_dir=None):
+    """eval's hand-checked lines (eval/sets.py: GT box plus the set's padding), as RGBA so the
+    runtime's luma is tested too; screenshots from --eval-data, $VOCR_EVAL_DATA or data/eval."""
+    sys.path.insert(0, str(ROOT / "eval"))
+    import fetch
+    import sets
+    lines, _ = sets.load(name, fetch.data_dir(data_dir))
+    out = []
+    for ln in lines[:n]:
+        rgb = ln.crop_rgb
+        rgba = np.concatenate([rgb, np.full(rgb.shape[:2] + (1,), 255, np.uint8)], axis=2)
+        out.append((f"{name}:{ln.id}", np.ascontiguousarray(rgba), ln.text))
     return out
 
 
@@ -466,7 +482,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--ckpt", help="checkpoint (train.py format)")
     ap.add_argument("--fixture", action="store_true", help="random-init model and crops, no data")
-    ap.add_argument("--set", default="synth-val", choices=["synth-val", "real"])
+    ap.add_argument("--set", default="synth-val", choices=["synth-val", "real", "vita-test", "psp-test"])
+    ap.add_argument("--eval-data", help="eval's screenshot dir (default $VOCR_EVAL_DATA or data/eval)")
     ap.add_argument("--shard", help="a render.py shard (default: the last synth shard, the val shard)")
     ap.add_argument("--data", type=Path, default=Path(os.environ.get("VOCR_DATA", ROOT / "data")))
     ap.add_argument("--n", type=int, default=10**9, help="at most this many lines")
@@ -504,6 +521,8 @@ def main():
         lines = fixture_lines(min(args.n, 40), args.seed)
     elif args.set == "real":
         lines = load_real(args.data, args.n)
+    elif args.set in ("vita-test", "psp-test"):
+        lines = load_eval(args.set, args.n, args.eval_data)
     else:
         lines = load_synth(args.data, args.n)
     cfg = {"fixture": args.fixture, "seed": args.seed, "width": args.width, "ckpt": args.ckpt,

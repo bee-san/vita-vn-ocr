@@ -14,7 +14,9 @@ times in all (UI strings repeat on every screenshot of a game).
 
 Split by game, as realdata: a VN is validation when 15 <= md5(vn) % 100 < 25, otherwise
 training (< 15 is the test hash). A capture session (realdata's <vn>/<release>/<n>) belongs
-to one VN, so no session straddles the split.
+to one VN. One capture can still be filed under two VN ids (a bundle release, an alternative
+version), so a validation VN that shares a VNDB release or a byte-identical screenshot with a
+training VN is left out (linked_val_vns): no release or screenshot is in both splits.
 
 render is deterministic: native Vita and PSP screenshots are cropped as they are; PC shots
 are scaled to fit each target screen it is legible on (cv2.INTER_AREA). The console's
@@ -50,8 +52,8 @@ RULE = HERE / "rule.json"
 PER_VN_CAP, GLOBAL_CAP = 2, 8
 LINE_FIELDS = ("id", "crop", "label", "how", "targets", "split")
 DISTILL_FIELDS = ("id", "crop", "targets", "split", "why")
-EVAL_GAMES = [ROOT / "eval" / "manifests" / "test_games.json", OUT / "inputs" / "eval" / "test_games.json",
-              OUT / "inputs" / "realdata_eval_exclude.json"]
+EVAL_GAMES = [ROOT / "eval" / "manifests" / "test_games.json", ROOT / "realdata" / "eval_exclude.json",
+              OUT / "inputs" / "eval" / "test_games.json", OUT / "inputs" / "realdata_eval_exclude.json"]
 
 
 def is_test_vn(vn):
@@ -89,6 +91,41 @@ def excluded(r, ex):
     vns, rels, urls, shas = ex
     return (is_test_vn(r["vn"]) or r["vn"] in vns or r.get("release") in rels or r["url"] in urls
             or r.get("sha256") in shas)
+
+
+def linked_val_vns(rows):
+    """Validation VNs tied to a training VN by a shared VNDB release or a byte-identical
+    screenshot: one capture filed under two VN ids (a bundle or an alternative version, e.g.
+    v1762 and v1763 under release r12379). md5(vn) alone would put the two copies in different
+    splits; these val VNs are left out instead, so no release or screenshot is in both. rows:
+    screenshot rows with vn, release, sha256."""
+    parent = {}
+
+    def find(x):
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    groups = defaultdict(set)
+    for r in rows:
+        find(r["vn"])
+        for k in ("release", "sha256"):
+            if r.get(k):
+                groups[(k, r[k])].add(r["vn"])
+    for vs in groups.values():
+        first, *rest = sorted(vs)
+        for v in rest:
+            parent[find(v)] = find(first)
+    comps = defaultdict(set)
+    for v in list(parent):
+        comps[find(v)].add(v)
+    out = set()
+    for vs in comps.values():
+        if any(split_of(v) == "train" for v in vs):
+            out |= {v for v in vs if split_of(v) == "val"}
+    return out
 
 
 def load_reads(reads_dir):
@@ -141,10 +178,24 @@ def decide(args):
     ex = eval_exclusions()
     shots = load_reads(args.reads)
     collection = {r["url"]: r for r in load_shots("train")}
+    rows = [{**collection.get(r["url"], {}), **r} for r in shots.values()]
+    read_urls = {r["url"] for r in rows}
+    rows += [c for u, c in collection.items() if u not in read_urls]
+    linked = linked_val_vns([r for r in rows if not excluded(r, ex)])
     why, kept, shot_rows, pool = Counter(), [], {}, []
+    dropped = {"vns": sorted(linked, key=lambda v: int(v[1:])), "screenshots": 0, "accepted": 0, "pool": 0}
     for sk, r in sorted(shots.items()):
         if excluded({**collection.get(r["url"], {}), **r}, ex):
             why["test-game"] += len(r["lines"])
+            continue
+        if r["vn"] in linked:                   # val copy of a training VN's capture: in neither split
+            dropped["screenshots"] += 1
+            for ln in G.refurigana(r["lines"]):
+                lab, how = vote.accept(ln, rule)
+                if lab is not None:
+                    dropped["accepted"] += 1
+                elif how in DISTILL_WHY and ln["targets"] and any(vote.japanese(t) for t in readings(ln).values()):
+                    dropped["pool"] += 1
             continue
         shot_rows[sk] = r
         for ln in G.refurigana(r["lines"]):
@@ -224,7 +275,8 @@ def decide(args):
              "sessions": len({k["session"] for k in out}), "screenshots": len({k["shot"] for k in out}),
              "unique_labels": len({k["label"] for k in out}), "chars": sum(len(k["label"]) for k in out),
              "distill_pool": dict(Counter(f"{p['split']}/{t}" for p in pool for t in p["targets"])),
-             "distill_why": dict(Counter(p["why"] for p in pool))}
+             "distill_why": dict(Counter(p["why"] for p in pool)),
+             "val_linked_to_train": dropped}
     (MAN / "stats.json").write_text(json.dumps(stats, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     full = OUT / "lines_full.jsonl"            # with character boxes: artifacts only (too big to commit)
     full.write_text("".join(json.dumps(k, ensure_ascii=False) + "\n" for k in out), encoding="utf-8")
@@ -346,7 +398,8 @@ teacher_train.npz, teacher_val.npz
     how (the engines that agreed), pol, dark / inverted (dark-text crops are stored inverted, the
     console's polarity contract, as realdata's), box (crop box in the target-resolution screenshot),
     chars ([char, x0, y0, x1, y1, conf] relative to the crop: MeikiOCR's character boxes and confidences).
-    Split by VNDB VN (val = 15 <= md5(vn) % 100 < 25), so no game or capture session is in both.
+    Split by VNDB VN (val = 15 <= md5(vn) % 100 < 25), so no game or capture session is in both;
+    val VNs that share a VNDB release or an identical screenshot with a training VN are left out.
     Use teacher_val for model selection only; eval's vita-test / psp-test games are never here.
 
 teacher_distill_train.npz, teacher_distill_val.npz

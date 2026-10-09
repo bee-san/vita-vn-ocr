@@ -169,3 +169,25 @@ def test_cachesim_counts_misses(tmp_path):
     assert rep["lines"] == 4 and rep["frames"] > 0 and rep["load_bytes"] > 0
     for c in rep["configs"]:
         assert 0 < c["misses"] < c["accesses"] and c["writebacks"] <= c["misses"]
+
+
+def test_crop_header_is_checked_before_its_size():
+    """main.c bounds h * w * ch (in 64 bits) before it forms the 32-bit size, which could
+    otherwise wrap to a small allocation that vocr_run then reads past."""
+    i_check = MAIN_C.index("(unsigned long long)h * w * ch >")
+    i_size = MAIN_C.index("bytes = h * w * ch;")
+    assert i_check < i_size
+
+
+def test_pack_reads_synth_val_from_env(tmp_path, monkeypatch):
+    """pack.py build --set synth-val reads $VOCR_SYNTH_VAL when set, as eval/run.py does."""
+    rng = np.random.default_rng(1)
+    crops = [rng.integers(0, 256, (32, w), dtype=np.uint8) for w in (40, 56)]
+    offs = np.cumsum([0] + [c.size for c in crops])
+    shard = tmp_path / "shard.npz"
+    np.savez(shard, data=np.concatenate([c.ravel() for c in crops]), offsets=offs,
+             shapes=np.array([c.shape for c in crops]), labels=np.array(json.dumps(["あ", "い"])))
+    monkeypatch.setenv("VOCR_SYNTH_VAL", str(shard))
+    out = pack.load_set("synth-val", 0, None, None)
+    assert [t for _, _, _, t, _ in out] == ["あ", "い"]
+    assert all(np.array_equal(g, c) for (_, _, g, _, _), c in zip(out, crops))

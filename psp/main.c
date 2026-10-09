@@ -627,11 +627,14 @@ int main(int argc, char **argv)
         h = hdr[0];
         w = hdr[1];
         ch = hdr[2];
-        bytes = h * w * ch;
-        if ((ch != 1 && ch != 4) || !h || !w || h > 65535u || w > 65535u) {
+        /* checked before h * w * ch is formed, which must not wrap: at most 16 MB per crop
+         * (a whole 480 x 272 RGBA screen is 510 KB) */
+        if ((ch != 1 && ch != 4) || !h || !w || h > 65535u || w > 65535u ||
+            (unsigned long long)h * w * ch > (16u << 20)) {
             snprintf(err, sizeof err, "bad crop header at line %u", j);
             goto fail;
         }
+        bytes = h * w * ch;
         if (bytes > b_crop.size) {
             unsigned f;
             block_free(&b_crop);

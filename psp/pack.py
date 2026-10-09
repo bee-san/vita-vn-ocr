@@ -22,6 +22,7 @@ screenshots: packs stay local, like the screenshots.
 """
 import argparse
 import json
+import os
 import shutil
 import struct
 import sys
@@ -46,7 +47,8 @@ def load_set(name, n, eval_data, manifests):
         sets.MANIFESTS = Path(manifests)
     if name == "synth-val":
         out = []
-        for ln in sets.load_synth_val(limit=n or sets.SYNTH_VAL_LINES):
+        shard = os.environ.get("VOCR_SYNTH_VAL", sets.SYNTH_VAL)              # as eval/run.py
+        for ln in sets.load_synth_val(shard, limit=n or sets.SYNTH_VAL_LINES):
             g = np.ascontiguousarray(ln.crop_rgb[:, :, 0])           # the shard's grey line
             out.append((ln.id, name, g, ln.text, ln.styles))
         return out

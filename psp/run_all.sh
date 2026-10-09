@@ -9,9 +9,10 @@
 # emulation is one host thread; the PyTorch references run with 1 thread).
 #
 #  1. EBOOTs: the scalar build (the default) and the VFPU=1 build; code size and stack chains
-#  2. crop packs: psp-test, vita-test (eval's GT-box crops, RGBA) and synth-val (300, grey)
+#  2. crop packs: psp-test and vita-test (eval's GT-box crops, RGBA)
 #  3. parity: runtime/tests/parity.py with the PSP build in PPSSPP as its C side
-#     (--cli psp/ppsspp_cli.py): bit-exact logits against tests/vocr_ref.py, tolerance against
+#     (--cli psp/ppsspp_cli.py) on psp-test, vita-test and synth-val (the shard's first 300
+#     lines, grey): bit-exact logits against tests/vocr_ref.py, tolerance against
 #     PyTorch, strings, tile invariance, VOCR_INVERT, arena plan; f32, w8f, w8i
 #  4. bundles: the console self-check (host CRC-32 of every line's logits) and PPSSPP's
 #     emulated time per line, per build and mode, tile 4 / head 16 and tile 16 / head 16
@@ -44,7 +45,7 @@ make -s -C runtime > /dev/null
 
 log "2. packs"
 for s in psp-test vita-test; do $PY psp/pack.py build --set "$s" --out "$OUT/packs/$s" | tee -a "$OUT/run.log"; done
-$PY psp/pack.py build --set synth-val --n 300 --out "$OUT/packs/synth-val" | tee -a "$OUT/run.log"
+# (synth-val needs no pack: parity.py reads the shard itself, and the bundles run the real sets)
 
 log "3. parity through PPSSPP"
 for b in scalar vfpu; do

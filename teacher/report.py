@@ -14,8 +14,8 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-from label import OUT  # noqa: E402
+sys.path.insert(0, str(HERE.parent))
+from teacher.label import OUT  # noqa: E402
 
 NAMES = {"meiki": "MeikiOCR rec (BGR, as its docs)", "meiki-rgb": "MeikiOCR rec (RGB, as owocr feeds it)",
          "v6s": "PP-OCRv6 small rec", "v5s": "PP-OCRv5 server rec", "manga": "manga-ocr (re-flowed)",
@@ -142,18 +142,74 @@ def spot():
     return out + [""]
 
 
+def styles(res):
+    """Per-style precision and recall of the chosen rule on eval's sets, from rules.lines.json
+    (measure.py's per-line dump) and the manifests' style tags."""
+    p = res / "rules.lines.json"
+    if not p.exists():
+        return []
+    from teacher import measure
+    d = json.loads(p.read_text(encoding="utf-8"))
+    tags = {}
+    for name in ("vita-test", "psp-test"):
+        try:
+            rows = measure.gt_rows(name)
+        except SystemExit:
+            continue
+        for rs in rows.values():
+            for g in rs:
+                if not g.get("uncertain"):
+                    tags[g["id"]] = g.get("styles") or []
+    recalled, acc, ok = set(), {}, {}
+    for r in d["lines"]:
+        if r["label"] is None or r["truth"] is None:
+            continue
+        for gid in r["gt"]:
+            for t in tags.get(gid, []):
+                acc[t] = acc.get(t, 0) + 1
+                ok[t] = ok.get(t, 0) + bool(r["ok"])
+            if r["ok"]:
+                recalled.add(gid)
+    out = ["Chosen rule by style (vita-test + psp-test; a joined row counts once per truth line):", "",
+           "| style | truth lines | recall | accepted (scored) | precision |", "|---|---|---|---|---|"]
+    for t in sorted({t for ts in tags.values() for t in ts}):
+        ids = [i for i, ts in tags.items() if t in ts]
+        rec = sum(i in recalled for i in ids) / len(ids)
+        prec = ok.get(t, 0) / acc[t] if acc.get(t) else None
+        out.append(f"| {t} | {len(ids)} | {pct(rec, 1)} | {acc.get(t, 0)} | {pct(prec)} |")
+    return out + [""]
+
+
+def timing():
+    """Host seconds per engine in the relabel (label.py's per-screenshot timers)."""
+    from teacher import build
+    shots = build.load_reads(OUT / "reads")
+    if not shots:
+        return []
+    tot, n_lines = {}, 0
+    for r in shots.values():
+        for k, v in r.get("secs", {}).items():
+            tot[k] = tot.get(k, 0.0) + v
+        n_lines += len(r["lines"])
+    out = [f"Relabel cost (host, one thread per worker): {len(shots)} screenshots, {n_lines} lines.", "",
+           "| engine | s per screenshot | s total |", "|---|---|---|"]
+    for k, v in sorted(tot.items(), key=lambda kv: -kv[1]):
+        out.append(f"| {k} | {v / len(shots):.3f} | {v:.0f} |")
+    return out + [""]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results", default=str(OUT / "results"))
     args = ap.parse_args()
     res = Path(args.results)
     hand = res / "hand.json"
-    lines = engines(res) + rules(res)
+    lines = engines(res) + rules(res) + styles(res)
     if hand.exists():
         h = json.loads(hand.read_text())
         lines += [f"realdata's hand-checked training-side lines: {h['correct']}/{h['scored']} accepted labels "
-                  f"correct ({pct(h['correct'] / max(1, h['scored']))}, 95% CI {h['ci95']}).", ""]
-    print("\n".join(lines + build_stats() + spot()))
+                  f"match exactly ({pct(h['correct'] / max(1, h['scored']))}, 95% CI {h['ci95']}).", ""]
+    print("\n".join(lines + build_stats() + spot() + timing()))
 
 
 if __name__ == "__main__":

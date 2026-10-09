@@ -21,10 +21,10 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-import build  # noqa: E402
-import geometry as G  # noqa: E402
-from label import HERD, OUT  # noqa: E402
+sys.path.insert(0, str(HERE.parent))
+from teacher import build  # noqa: E402
+from teacher import geometry as G  # noqa: E402
+from teacher.label import HERD, OUT  # noqa: E402
 
 FONT = HERD / "shared" / "data" / "fonts" / "bizudgothic" / "BIZUDGothic-Regular.ttf"
 SPOT = build.MAN / "spot.jsonl"

@@ -15,9 +15,9 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-from label import EVAL_DATA, EVAL_SETS  # noqa: E402
-from spot import FONT  # noqa: E402
+sys.path.insert(0, str(HERE.parent))
+from teacher.label import EVAL_DATA, EVAL_SETS  # noqa: E402
+from teacher.spot import FONT  # noqa: E402
 
 
 def main():

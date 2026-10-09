@@ -40,10 +40,10 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(HERE))
-import geometry as G  # noqa: E402
-import vote  # noqa: E402
-from label import OUT, REALDATA, load_shots  # noqa: E402
+sys.path.insert(0, str(ROOT))
+from teacher import geometry as G  # noqa: E402
+from teacher import vote  # noqa: E402
+from teacher.label import OUT, REALDATA, load_shots  # noqa: E402
 
 MAN = Path(os.environ.get("TEACHER_MANIFESTS") or HERE / "manifests")
 RULE = HERE / "rule.json"

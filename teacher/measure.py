@@ -32,9 +32,9 @@ from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-import vote  # noqa: E402
-from label import EVAL_SETS, OUT, eval_manifest  # noqa: E402
+sys.path.insert(0, str(HERE.parent))
+from teacher import vote  # noqa: E402
+from teacher.label import EVAL_SETS, OUT, eval_manifest  # noqa: E402
 
 ENGINES = ("meiki", "meikiv", "v6s", "manga", "screenai", "v5s")
 
@@ -94,8 +94,8 @@ def match(shots, gts, name):
     the rule's primary reading). status: scored | partial (the crop covers < COVER of the
     truth's width, so box matching can't tell whether a shorter label is right for it) |
     uncertain | unmatched (UI, menus and other text eval leaves out)."""
-    import build
-    import geometry as G
+    from teacher import build
+    from teacher import geometry as G
     items, scored_gt = [], {}
     for key, rows in gts.items():
         for g in rows:
@@ -241,7 +241,7 @@ def fmt(s):
 def dump(items, scored_gt, rule, path):
     """Per-line diagnostics for one rule: every scored or partial teacher line with all
     readings, the decision and the truth, plus truth lines no teacher line covers."""
-    import build
+    from teacher import build
     rows, covered = [], set()
     for it in items:
         name, vn, ln, _ = it
@@ -264,7 +264,7 @@ def dump(items, scored_gt, rule, path):
 
 def _rel(path):
     """A manifest path as the repo sees it: repo-relative, else under $TEACHER_OUT."""
-    from label import ROOT
+    from teacher.label import ROOT
     path = Path(path).resolve()
     for base, name in ((ROOT.resolve(), ""), (OUT.resolve(), "$TEACHER_OUT/")):
         if base in path.parents:
@@ -394,7 +394,7 @@ def cmd_hand(args):
     independent of eval's test games). A teacher line is compared with the hand line of the
     same screenshot whose ink box overlaps its crop most (IoU >= 0.5); hand lines marked
     unreadable (truth null) are not scored."""
-    import build
+    from teacher import build
     rule = json.loads(Path(args.rule).read_text(encoding="utf-8"))["rule"]
     hand = [json.loads(x) for x in Path(args.hand).read_text(encoding="utf-8").splitlines() if x.strip()]
     shots = build.load_reads(args.reads)

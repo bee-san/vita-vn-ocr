@@ -38,8 +38,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(HERE))
-import geometry as G  # noqa: E402
+sys.path.insert(0, str(ROOT))
+from teacher import geometry as G  # noqa: E402
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 OUT = Path(os.environ.get("TEACHER_OUT") or HERD / "shared" / "artifacts" / "teacher")
@@ -101,7 +101,7 @@ def shard_of(url, n):
 
 
 def japanese_ish(text):
-    import vote
+    from teacher import vote
     return vote.japanese(text)
 
 
@@ -231,14 +231,14 @@ def cmd_read(args):
     rows = [r for r in load_shots(args.set) if shard_of(r["url"], args.nshards) == args.shard
             and r["url"] not in done and Path(r["path"]).exists()]
     if args.set == "train":                 # never even read a test game (build.py re-checks)
-        import build
+        from teacher import build
         ex = build.eval_exclusions()
         rows = [r for r in rows if not build.excluded(r, ex)]
     if args.kinds:
         rows = [r for r in rows if r["kind"] in args.kinds.split(",")]
     if args.limit_shots:
         rows = rows[:args.limit_shots]
-    import engines
+    from teacher import engines
     voters = [v for v in args.voters.split(",") if v]
     eng = engines.load(["meiki", *voters])
     print(f"{args.set} shard {args.shard}/{args.nshards}: {len(rows)} screenshots, voters {voters}, "
@@ -267,8 +267,8 @@ def cmd_augment(args):
     decision of the rule in --rule (vote.undecided); rewrites the reads files in place
     (atomically, per file). Used to add a slow voter after the rule has been measured."""
     import cv2
-    import engines
-    import vote
+
+    from teacher import engines, vote
     pin_to_slot()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     rule = json.loads(Path(args.rule).read_text(encoding="utf-8"))["rule"]
@@ -325,7 +325,7 @@ def main():
                    help="read every line with every voter (default: skip lines no rule can accept)")
     args = ap.parse_args()
     if args.cmd == "fetch":
-        import engines
+        from teacher import engines
         engines.fetch(mirrors=args.mirror)
         print("FETCH_DONE", flush=True)
     elif args.cmd == "augment":

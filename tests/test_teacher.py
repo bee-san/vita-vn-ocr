@@ -8,12 +8,10 @@ import numpy as np
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "teacher"))
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "synth"))
-import build  # noqa: E402
-import geometry as G  # noqa: E402
-import measure  # noqa: E402
-import vote  # noqa: E402
+from teacher import build, measure, vote  # noqa: E402
+from teacher import geometry as G  # noqa: E402
 
 
 @pytest.mark.parametrize("raw,want", [

@@ -14,14 +14,14 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
 def main():
     import cv2
     name = sys.argv[1]
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
-    import engines
+    from teacher import engines
     eng = engines.load([name])[name]
     out = sys.stdout
     for path in sys.stdin.read().split("\n"):

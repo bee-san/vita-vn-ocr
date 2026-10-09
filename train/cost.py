@@ -17,8 +17,8 @@ Weights, after BatchNorm folding (every conv + BN becomes a conv with a bias):
          weights and every bias stay 4 B. Vocab text is counted separately (UTF-8 +
          NUL). Blob headers and channel padding are not counted.
 
-Exact sizes from runtime/ (when its train/export.py is importable: after it merges,
-or via --export / $VOCR_EXPORT pointing at a checkout's export.py): the blob bytes
+Exact sizes from runtime/ (its train/export.py, merged in #4; --export / $VOCR_EXPORT
+point at another checkout's export.py): the blob bytes
 build_blob() writes (fp32 and int8; header, channel padding and vocab included) and
 plan_arena(), the exact bytes vocr_arena_bytes() asks for, per arithmetic mode (f32,
 w8f, w8i) at its default tiling (4-frame tiles, 16-frame head batches). The runtime
@@ -40,7 +40,7 @@ Cortex-A9 time per line (ESTIMATE, nothing has run on a console): MACs divided b
 MobileNet v1/v2 benchmarks scaled from 766 MHz), the figure runtime's PR uses too.
 Reported for a 640-px line and for the 1024-px clamp. Measured on eval's sets after the
 resize to height 32: vita-test lines are 299 px wide at the median, 608 px at p90 and
-726 px at most; psp-test 247 / 485 / 664 px. So 640 px is a long real line, and no
+726 px at most; psp-test 247 / 488 / 664 px. So 640 px is a long real line, and no
 test line reaches the 1024-px clamp.
 """
 import argparse
@@ -147,12 +147,11 @@ def runtime_exporter(path=None):
     return None
 
 
-W8I_MAX_K = 516     # runtime/vocr.c: W8I needs every reduction length K <= 516
-
-
 def runtime_sizes(E, model, vocab, height, widths=WIDTHS):
     """Blob bytes and exact arena bytes per mode and width from runtime's exporter.
-    A mode the runtime cannot run for this model (W8I with K > 516) gets None."""
+    Every mode runs any of these models: W8I sums int8 x int16 products exactly in int32
+    chunks of 512 terms (runtime/vocr.c W8I_CHUNK) and adds the chunks in float, so a
+    reduction length over 512 (the row collapse at width >= 2.0: K = 640) is fine."""
     out = {}
     ops = E.model_ops(model.eval(), height)
     out["rt_ops"] = len(ops)
@@ -163,9 +162,8 @@ def runtime_sizes(E, model, vocab, height, widths=WIDTHS):
         out["blob_int8" if int8 else "blob_f32"] = len(blob)
         modes = (("w8f", E.MODE_W8F), ("w8i", E.MODE_W8I)) if int8 else (("f32", E.MODE_F32),)
         for name, mode in modes:
-            ok = name != "w8i" or out["rt_max_k"] <= W8I_MAX_K
             for w in widths:
-                out[f"rt_arena_{name}_{w}"] = E.plan_arena(parsed, w, 0, 0, mode) if ok else None
+                out[f"rt_arena_{name}_{w}"] = E.plan_arena(parsed, w, 0, 0, mode)
     return out
 
 
@@ -234,9 +232,8 @@ def table(exporter, grid=GRID):
     for name, cfg in grid.items():
         model, classes, height = build(cfg)
         r = report(model, classes, height, None, exporter)
-        w8i = r.get(f"rt_arena_w8i_{w}")
         sizes = (f"{r['blob_int8']:,} | {r['blob_f32']:,} | {r[f'rt_arena_w8f_{w}']:,} | "
-                 + (f"{w8i:,}" if w8i else "n/a (K > 516)") if exact else
+                 f"{r[f'rt_arena_w8i_{w}']:,}" if exact else
                  f"{r['weights_int8']:,} | {r['weights_fp32']:,}")
         m640 = macs(model, height, 640 * height // 32)
         mmax = macs(model, height, w * height // 32)
@@ -290,11 +287,11 @@ def main():
     if exporter is None:
         print("  runtime exporter not found: no exact blob / arena sizes")
         return
-    print(f"  runtime blob: fp32 {r['blob_f32']:,} B, int8 {r['blob_int8']:,} B")
+    print(f"  runtime blob: fp32 {r['blob_f32']:,} B, int8 {r['blob_int8']:,} B "
+          f"(largest reduction length K {r['rt_max_k']})")
     for mode in ("f32", "w8f", "w8i"):
         print(f"  runtime arena {mode}: " + ", ".join(
-            f"W={w} {r[f'rt_arena_{mode}_{w}']:,} B" if r[f"rt_arena_{mode}_{w}"] is not None
-            else f"W={w} n/a (K {r['rt_max_k']} > {W8I_MAX_K})" for w in WIDTHS))
+            f"W={w} {r[f'rt_arena_{mode}_{w}']:,} B" for w in WIDTHS))
 
 
 if __name__ == "__main__":

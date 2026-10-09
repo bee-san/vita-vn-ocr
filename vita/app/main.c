@@ -807,6 +807,9 @@ static int worker_main(SceSize args, void *argp)
         if (cfg.limit && done >= (unsigned)cfg.limit) break;
         do_case(&cs, i);
         done++;
+        /* a full bundle runs for minutes without input: keep the console from suspending or
+         * turning the screen off (resets those timers, like a button press would) */
+        sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DEFAULT);
         if (stop_pressed()) stop_requested = 1;
         snprintf(line, sizeof line, "%u / %u cases   (CIRCLE: stop)", i + 1, n_cases);
         scr_status(SCR_CYAN, line, i + 1, n_cases);

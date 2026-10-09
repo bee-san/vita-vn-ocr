@@ -83,7 +83,9 @@ for t in address:heap-buffer-overflow undefined:"signed integer overflow"; do
   # Only this sanitizer, so the other one can't report the bug first (UBSan's object-size
   # check catches the out-of-bounds read too).
   "$cc" -std=c99 -O1 -g -fsanitize="$san" -fno-sanitize-recover=all "$work/$name.c" -o "$work/$name"
-  if timeout 60 "$work/$name" > "$work/$name.log" 2>&1 || ! grep -q "${t#*:}" "$work/$name.log"; then
+  # abort_on_error=0: the expected report ends in exit(1), not SIGABRT, so bash logs no "Aborted".
+  if ASAN_OPTIONS=detect_leaks=0:abort_on_error=0 timeout 60 "$work/$name" > "$work/$name.log" 2>&1 ||
+     ! grep -q "${t#*:}" "$work/$name.log"; then
     cat "$work/$name.log"
     echo "error: $cc's -fsanitize=$san build did not report a deliberate bug. Missing sanitizer runtime" \
          "(clang: libclang-rt-<N>-dev)? ASan crashing with DEADLYSIGNAL: sudo sysctl vm.mmap_rnd_bits=28" >&2

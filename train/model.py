@@ -8,7 +8,6 @@ residual adds, so the Vita runtime is a handful of plain C kernels: 3x3 stem,
 About 0.76M parameters at width 1.0 with the 5,355-class head; the head is
 factorised through a 96-wide bottleneck because at stride 8 it dominates compute.
 """
-import torch
 import torch.nn as nn
 
 

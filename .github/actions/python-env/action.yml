@@ -1,0 +1,22 @@
+name: CI Python env
+description: >-
+  Pinned uv and CPython, then .venv synced to the hash-checked requirements-ci.lock
+  (CPU torch, numpy, OpenCV, Pillow, fontTools, pytest, ruff) and put on PATH.
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      with:
+        version: "0.11.28"
+        enable-cache: true
+        cache-dependency-glob: requirements-ci.lock
+    - name: Sync .venv to requirements-ci.lock
+      shell: bash
+      env:
+        UV_INDEX_STRATEGY: unsafe-best-match   # torch from the CPU index, the rest from PyPI; hashes pin both
+      run: |
+        uv venv --python 3.11.15 .venv
+        uv pip sync --python .venv/bin/python --require-hashes requirements-ci.lock
+        echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+        .venv/bin/python -c "import cv2, numpy, PIL, torch; print('torch', torch.__version__, 'numpy', numpy.__version__, 'cv2', cv2.__version__, 'PIL', PIL.__version__)"

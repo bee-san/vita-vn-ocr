@@ -179,7 +179,7 @@ def main():
     print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M", flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.01)
     ctc = nn.CTCLoss(blank=0, zero_infinity=True)
-    step, best, epoch_done = 0, 1.0, 0.0
+    step, best = 0, 1.0
     last = out / "ckpt_last.pt"
     if last.exists():
         ck = torch.load(last, map_location="cpu", weights_only=False)

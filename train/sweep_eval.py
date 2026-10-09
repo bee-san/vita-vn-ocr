@@ -7,7 +7,10 @@ Variants: fp32, and int8 = the int8 export's weights (runtime/'s export.py --int
 symmetric per-output-channel int8 for the pointwise, row-collapse, bottleneck and
 head convs, BN folded; stem, depthwise and biases float; see model.int8_conv) with
 float activations, i.e. the runtime's W8F mode. For a QAT run the int8 row is the
-QAT result; for every other run it is post-training quantisation (PTQ).
+QAT result; for every other run it is post-training quantisation (PTQ). w8i adds
+the runtime's W8I activation rounding as described in runtime/vocr.h (inputs of the
+int8 convs quantised per position to int16, symmetric max-abs over the channels),
+simulated in float.
 
 Sets (PROVISIONAL until eval/ merges; then use eval/run.py):
   synth-val    the held-out synthetic shard (data/synth, last shard), all lines
@@ -41,7 +44,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "synth"))
 sys.path.insert(0, str(ROOT / "data"))
 from common import DATA, is_test_vn, to_gray  # noqa: E402
-from model import from_checkpoint, set_weight_quant  # noqa: E402
+from model import from_checkpoint, int8_conv, set_weight_quant  # noqa: E402
 from train import MAX_W, STRIDE, edit_distance, greedy  # noqa: E402
 from vocab import RESEARCH  # noqa: E402
 
@@ -132,6 +135,13 @@ def real_pseudo(pol=True):
     return items
 
 
+def int16_positions(module, inp):
+    """Forward pre-hook: round a conv input per position (over channels) to int16."""
+    x = inp[0]
+    s = x.abs().amax(dim=1, keepdim=True).clamp(min=1e-30) / 32767
+    return (torch.clamp(torch.round(x / s), -32767, 32767) * s,)
+
+
 def prep(g, height):
     h, w = g.shape
     nw = max(8, min(MAX_W, int(round(w * height / h))))
@@ -189,8 +199,12 @@ def main():
            "bottleneck": meta["bottleneck"], "height": meta["height"],
            "classes": len(meta["vocab"]) + 1, "unk": meta["unk"], "qat": ck.get("qat"),
            "polarity": args.polarity, "results": {}}
-    for variant, bits in (("fp32", 0), ("int8", 8)):
+    hooks = []
+    for variant, bits in (("fp32", 0), ("int8", 8), ("w8i", 8)):
         set_weight_quant(model, bits)
+        if variant == "w8i":
+            hooks = [m.register_forward_pre_hook(int16_positions)
+                     for m in model.modules() if int8_conv(m)]
         for name, items in sets.items():
             t0 = time.time()
             preds = predict(model, [g for g, _, _ in items], meta["height"], meta["vocab"])
@@ -211,6 +225,8 @@ def main():
             print(f"{args.run.name} {variant:4s} {name:11s} CER {r['cer'] * 100:6.2f}% "
                   f"line acc {r['line_acc'] * 100:5.1f}% ({r['lines']} lines, {r['chars']} chars, "
                   f"{r['seconds']}s)", flush=True)
+    for h in hooks:
+        h.remove()
     out = args.run / f"eval_{Path(args.ckpt).stem}{'_limit' if args.limit else ''}.json"
     out.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
     print("EVAL_DONE", out, flush=True)

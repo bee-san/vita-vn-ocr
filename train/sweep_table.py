@@ -26,7 +26,15 @@ as-is sets mostly measure that data gap (which synth2 and the real fine-tuning
 close), not capacity; they are shown alongside. Without eval/ results the
 provisional real-hand + real-pseudo pool is used.
 "Δ vs ref" is the pooled real CER minus the reference run's, with a 95% paired
-bootstrap interval over lines (10,000 resamples, seed 0). Two Pareto fronts are
+bootstrap interval over lines (10,000 resamples, seed 0).
+
+Runs are grouped by training data (the checkpoint's --real args): by default the table
+shows the synthetic-only runs (plus v1); --data real shows the runs that mixed in
+realdata's real_train.npz. real-hand-x shares games and screenshots with realdata's
+training split, so for real-data runs it is left out of the pool, which is then
+vita-test-inv + psp-test-inv (both verified free of realdata's games and sessions).
+
+Two Pareto fronts are
 taken over the runs with the reference run's step budget only (other budgets, e.g.
 v1's 32k steps, are shown for scale): memory (on-console footprint = int8 blob + W8F
 arena) and speed (estimated Cortex-A9 ms for a 640-px line, about the p90 real line
@@ -59,10 +67,16 @@ def pooled(res, variant, sets=REAL):
     return e / n if n else None
 
 
-def common_sets(evals):
-    """The REAL sets every eval JSON has, on one manifest version each (else PROVISIONAL)."""
+def train_data(ck):
+    """'synth' or 'synth+real' from a checkpoint's recorded args (v1 has none: synth)."""
+    real = ((ck.get("args") or {}).get("real") or "").strip()
+    return "synth+real" if real else "synth"
+
+
+def common_sets(evals, pool=REAL):
+    """The pool sets every eval JSON has, on one manifest version each (else PROVISIONAL)."""
     keep = []
-    for s in REAL:
+    for s in pool:
         if not all(f"int8/{s}" in e["results"] for e in evals):
             continue
         shas = {e.get("manifests", {}).get(s) for e in evals}
@@ -111,13 +125,19 @@ def train_minutes(log, batch=96):
     return int(steps[-1][0]) * batch / (sum(rates) / len(rates)) / 60
 
 
-def rows(runs_dir, eval_name, exporter, ref):
+def rows(runs_dir, eval_name, exporter, ref, data="synth"):
     out, errs = [], {}
-    paths = sorted(runs_dir.glob(f"*/{eval_name}"))
-    evals = [json.loads(p.read_text(encoding="utf-8")) for p in paths]
-    rs = common_sets(evals)
-    for ev, res in zip(paths, evals):
-        ck = torch.load(ev.parent / res["ckpt"], map_location="cpu", weights_only=False)
+    paths, evals, cks = [], [], []
+    for p in sorted(runs_dir.glob(f"*/{eval_name}")):
+        res = json.loads(p.read_text(encoding="utf-8"))
+        ck = torch.load(p.parent / res["ckpt"], map_location="cpu", weights_only=False)
+        if train_data(ck) == data or (data == "synth+real" and p.parent.name == "v1"):
+            paths.append(p)
+            evals.append(res)
+            cks.append(ck)
+    pool = REAL if data == "synth" else tuple(s for s in REAL if s != "real-hand-x")
+    rs = common_sets(evals, pool)
+    for ev, res, ck in zip(paths, evals, cks):
         model, meta = from_checkpoint(ck)
         arch = {k: meta[k] for k in ("depth", "ctx", "ctx_k")}
         n_cls = len(meta["vocab"]) + 1
@@ -126,7 +146,7 @@ def rows(runs_dir, eval_name, exporter, ref):
         est_arena, _ = cost.arena(model, meta["height"], w_max, n_cls)
         r = res["results"]
         row = {
-            "run": ev.parent.name, "width": meta["width"], "classes": n_cls,
+            "run": ev.parent.name, "data": train_data(ck), "width": meta["width"], "classes": n_cls,
             "bottleneck": meta["bottleneck"], "height": meta["height"], **arch,
             "a9_ms_640": c["a9_ms_640"], "a9_ms_max": c["a9_ms_1024"],
             "qat": bool(res.get("qat")), "step": res["step"], "params": c["params"],
@@ -148,7 +168,11 @@ def rows(runs_dir, eval_name, exporter, ref):
         row["vita_styles_int8"] = styles
         row["psp_styles_int8"] = r.get("int8/psp-test", {}).get("styles") or {}
         row["manifests"] = res.get("manifests", {})
-        for s in (*REAL, *PROVISIONAL, "vita-test", "psp-test", "psp-test-inv"):
+        con = [s for s in ("vita-test-con", "psp-test-con") if f"int8/{s}" in r]
+        if len(con) == 2:
+            row["console_int8"] = pooled(r, "int8", tuple(con))
+        for s in (*REAL, *PROVISIONAL, "vita-test", "psp-test", "psp-test-inv", "vita-test-con",
+                  "psp-test-con"):
             for v in ("fp32", "int8"):
                 if f"{v}/{s}" in r:
                     row[f"{s}_{v}"] = r[f"{v}/{s}"]["cer"]
@@ -214,6 +238,7 @@ def markdown(rs, exact, ref):
     head = (f"| run | knobs | params | {size_cols} | MMAC (longest line) | est. A9 ms, 640-px line | "
             f"synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | "
             f"vita-test-inv CER | psp-test CER (as is) | psp-test-inv CER | real-hand-x CER | "
+            f"vita+psp CER, console polarity | "
             f"real CER fp32 / int8 | Δ vs {ref} (95% CI) | Pareto |")
     lines = [head, "|" + "---|" * (head.count("|") - 1)]
     for a in sorted(rs, key=lambda a: (a["footprint"], a["run"])):
@@ -231,6 +256,7 @@ def markdown(rs, exact, ref):
             f"{pct(a.get('vita-test_int8'))} | {pct(a.get('vita_bright_on_dark_int8'))} | "
             f"{pct(a.get('vita-test-inv_int8'))} | {pct(a.get('psp-test_int8'))} | "
             f"{pct(a.get('psp-test-inv_int8'))} | {pct(a.get('real-hand-x_int8'))} | "
+            f"{pct(a.get('console_int8'))} | "
             f"{pct(a['real_fp32'])} / {pct(a['real_int8'])} | {delta} | "
             f"{pareto_cell(a)} |")
     return "\n".join(lines)
@@ -281,18 +307,23 @@ def main():
     ap.add_argument("--export", help="runtime's train/export.py (default: next to this file)")
     ap.add_argument("--json", type=Path)
     ap.add_argument("--doc", type=Path, help="Markdown file with BEGIN/END table markers")
+    ap.add_argument("--data", choices=("synth", "real"), default="synth",
+                    help="synthetic-only runs (default) or the runs that mixed in real data")
     args = ap.parse_args()
     torch.set_num_threads(1)
     exporter = cost.runtime_exporter(args.export)
-    rs = rows(args.runs, args.eval, exporter, args.ref)
+    data = "synth+real" if args.data == "real" else "synth"
+    rs = rows(args.runs, args.eval, exporter, args.ref, data)
     table = markdown(rs, exporter is not None, args.ref)
     print(table)
     if args.json:
         args.json.write_text(json.dumps(rs, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     if args.doc:
         text = args.doc.read_text(encoding="utf-8")
-        for name, body in (("results", table), ("styles", style_table(rs)), ("quant", quant_table(rs)),
-                           ("cost", cost.table(exporter))):
+        blocks = ((("results", table), ("styles", style_table(rs)), ("quant", quant_table(rs)),
+                   ("cost", cost.table(exporter))) if data == "synth" else
+                  (("results-real", table), ("styles-real", style_table(rs))))
+        for name, body in blocks:
             if f"<!-- BEGIN {name} -->" in text:
                 text = replace_block(text, name, body)
         args.doc.write_text(text, encoding="utf-8")

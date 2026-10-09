@@ -21,6 +21,9 @@ pointing at an eval checkout, and $VOCR_EVAL_DATA at its screenshots):
   vita-test-inv, psp-test-inv   the same lines with the dark-on-light ones inverted by
                their style tag (an oracle): the v1 recipe renders only light text, so
                this separates recognizer capacity from that data gap
+  vita-test-con, psp-test-con   the same lines inverted where the console's own rule
+               (synth/common.line_dark, C vocr_line_dark, on the crop) calls the text
+               dark, as the deployed pipeline and realdata's training crops do
   real-hand-x  real-hand (below) minus the lines from vita-test's games: 17 more games,
                a check that is independent of vita-test
 Provisional sets (from before eval/ existed; real-pseudo is all from vita-test games):
@@ -59,7 +62,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "synth"))
 sys.path.insert(0, str(ROOT / "data"))
-from common import DATA, is_test_vn, to_gray  # noqa: E402
+from common import DATA, is_test_vn, line_dark, to_gray  # noqa: E402
 from model import fake_quant_weight, from_checkpoint, int8_conv, set_weight_quant  # noqa: E402
 from train import MAX_W, STRIDE, edit_distance, greedy  # noqa: E402
 from vocab import RESEARCH  # noqa: E402
@@ -110,7 +113,7 @@ def eval_modules():
 MANIFEST_SHA = {}     # set name -> sha256 of the eval manifest it was scored on
 
 
-def eval_set(name, invert_dark=False):
+def eval_set(name, invert_dark=False, console=False):
     """eval's real set as [(grey crop, text, meta)]; crops exactly as eval/run.py cuts them.
     $VOCR_EVAL_MANIFESTS overrides eval's manifest directory (e.g. a not yet merged set)."""
     import hashlib
@@ -123,13 +126,15 @@ def eval_set(name, invert_dark=False):
         eval_sets.MANIFESTS = Path(os.environ["VOCR_EVAL_MANIFESTS"])
     manifest = eval_sets.MANIFESTS / f"{name}.jsonl"
     sha = hashlib.sha256(manifest.read_bytes()).hexdigest()
-    MANIFEST_SHA[name + ("-inv" if invert_dark else "")] = sha
+    MANIFEST_SHA[name + ("-inv" if invert_dark else "-con" if console else "")] = sha
     from fetch import data_dir
     lines, _ = eval_sets.load(name, data_dir())
     out = []
     for ln in lines:
         g = to_gray(ln.crop_rgb)
         if invert_dark and "dark-on-light" in ln.styles:
+            g = 255 - g
+        elif console and line_dark(ln.crop_rgb, (0, 0, g.shape[1], g.shape[0])):
             g = 255 - g
         out.append((g, ln.text, {"id": ln.id, "vn": ln.vn, "styles": ln.styles}))
     return out
@@ -149,10 +154,10 @@ def default_sets():
     mods = eval_modules()
     if mods is None:
         return "synth-val,real-hand,real-pseudo"
-    names = ["synth-val", "vita-test", "vita-test-inv", "real-hand-x"]
+    names = ["synth-val", "vita-test", "vita-test-inv", "vita-test-con", "real-hand-x"]
     manifests = Path(os.environ.get("VOCR_EVAL_MANIFESTS") or mods[0].MANIFESTS)
     if (manifests / "psp-test.jsonl").exists():
-        names[3:3] = ["psp-test", "psp-test-inv"]
+        names[4:4] = ["psp-test", "psp-test-inv", "psp-test-con"]
     return ",".join(names)
 
 
@@ -336,8 +341,10 @@ def main():
                "real-pseudo": lambda: real_pseudo(pol), "real-hand-x": lambda: real_hand_x(pol),
                "vita-test": lambda: eval_set("vita-test"),
                "vita-test-inv": lambda: eval_set("vita-test", invert_dark=True),
+               "vita-test-con": lambda: eval_set("vita-test", console=True),
                "psp-test": lambda: eval_set("psp-test"),
-               "psp-test-inv": lambda: eval_set("psp-test", invert_dark=True)}
+               "psp-test-inv": lambda: eval_set("psp-test", invert_dark=True),
+               "psp-test-con": lambda: eval_set("psp-test", console=True)}
     sets = {name: loaders[name]() for name in (args.sets or default_sets()).split(",")}
     res = {"run": args.run.name, "ckpt": args.ckpt, "step": ck["step"], "width": meta["width"],
            "bottleneck": meta["bottleneck"], "height": meta["height"],

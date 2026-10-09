@@ -1,5 +1,5 @@
 {
- "status": "PROVISIONAL (eval agent, 2026-10-09): reserved for the eval test sets; exclude ALL of these from training, calibration and synthetic backgrounds. The final list ships in eval/manifests/test_games.json and may shrink, never grow, except by the is_test_vn() rule.",
+ "status": "PROVISIONAL (eval agent, 2026-10-09, updated 09:40Z: +v28755): reserved for the eval test sets; exclude ALL of these from training, calibration and synthetic backgrounds. The final list ships in eval/manifests/test_games.json and may shrink, never grow, except by the is_test_vn() rule.",
  "rule": "Every VNDB VN id v with synth/common.py is_test_vn(v) == True is a test game on every platform; the ids below are the hash-test VNs that have usable screenshots, plus extra Vita VNs that the hash rule does not cover.",
  "vita_hash": {
   "v3820": "Akai Suna Ochiru Tsuki",
@@ -34,7 +34,8 @@
   "v19913": "Gakusen Toshi Asterisk Festa: Houka Kenran",
   "v20727": "Kangokutou Mary Skelter",
   "v6618": "STEINS;GATE: Hiyoku Renri no Darling",
-  "v7679": "Super Dangan Ronpa 2 Sayonara Zetsubou Gakuen"
+  "v7679": "Super Dangan Ronpa 2 Sayonara Zetsubou Gakuen",
+  "v28755": "Buried Stars"
  },
  "psp_hash": {
   "v855": "Mizu no Senritsu",
@@ -179,6 +180,7 @@
   "v21782",
   "v21789",
   "v22122",
+  "v28755",
   "v55519"
  ]
 }

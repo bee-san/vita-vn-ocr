@@ -170,7 +170,8 @@ def test_committed_manifests_are_consistent():
         assert r["split"] == build.split_of(shots[r["id"].rsplit("_", 1)[0]]["vn"]), r
         assert set(r["targets"]) <= {"vita", "psp"} and r["targets"], r
     hand = [json.loads(x) for x in build.HAND.read_text(encoding="utf-8").splitlines() if x.strip()]
-    assert len({h["id"] for h in hand}) == len(hand)
+    assert len({(h["set"], h["id"]) for h in hand}) == len(hand)
+    assert all(h["set"] in ("dev", "spot") and len(h["ink"]) == 4 for h in hand)
 
 
 def test_text_rows_splits_a_merged_neighbour_but_not_a_glyph_valley():
@@ -197,11 +198,14 @@ def test_voter_margins_stop_before_a_neighbouring_line():
 
 
 def test_hand_checks_follow_the_line_not_the_number():
-    hand = {"v1_2_0": {"id": "v1_2_0", "ink": [10, 10, 100, 30], "truth": "あ"}}
+    hand = {"dev:v1_2_0": {"id": "v1_2_0", "ink": [10, 10, 100, 30], "truth": "あ"}}
     recs = {"v1_2_0": {"id": "v1_2_0", "ink": [10, 40, 100, 60]},       # renumbered: another line
             "v1_2_1": {"id": "v1_2_1", "ink": [11, 9, 101, 31]}}
     assert list(build.match_hand(hand, recs)) == ["v1_2_1"]
     assert build.match_hand(hand, {"v1_2_0": recs["v1_2_0"]}) == {}
+    hand["spot:v1_2_0"] = {"id": "v1_2_0", "ink": [10, 40, 100, 60], "truth": "い"}   # same id, other line
+    got = build.match_hand(hand, recs)
+    assert got["v1_2_0"]["truth"] == "い" and got["v1_2_1"]["truth"] == "あ"
 
 
 def test_sessions_nest_in_games_and_splits():

@@ -95,7 +95,6 @@
 {"id": "v1678_55572_1", "ink": [133, 206, 266, 220], "set": "dev", "truth": "悟郎？……え？", "note": null}
 {"id": "v1763_57030_0", "ink": [254, 242, 309, 259], "set": "dev", "truth": null, "note": "uncertain"}
 {"id": "v1874_11820_0", "ink": [108, 24, 216, 42], "set": "dev", "truth": "知識を勉強中…", "note": null}
-{"id": "v2251_55753_2", "ink": [200, 179, 280, 194], "set": "dev", "truth": "続きから", "note": null}
 {"id": "v2960_57179_1", "ink": [46, 199, 365, 215], "set": "dev", "truth": "う、うぅん……お話だけじゃなくて…", "note": null}
 {"id": "v2960_57179_2", "ink": [46, 218, 385, 238], "set": "dev", "truth": "もっと、その先も、し、したい、かな。", "note": null}
 {"id": "v3106_52278_0", "ink": [98, 207, 462, 230], "set": "dev", "truth": "【チョコレートマン】：「どうせお前もこれが目当てな", "note": "geom-partial-line"}
@@ -121,7 +120,6 @@
 {"id": "v873_57848_5", "ink": [139, 230, 309, 252], "set": "dev", "truth": null, "note": "icon-ambiguous"}
 {"id": "v9901_56806_1", "ink": [64, 255, 296, 271], "set": "dev", "truth": null, "note": "icons"}
 {"id": "v9901_56806_3", "ink": [415, 256, 479, 270], "set": "dev", "truth": "メニュー", "note": "icon"}
-{"id": "v9915_56717_0", "ink": [26, 168, 148, 196], "set": "dev", "truth": "宮ノ杜正", "note": null}
 {"id": "v10001_36032_2", "ink": [1152, 398, 1190, 417], "set": "dev", "truth": "通学", "note": null}
 {"id": "v1039_20132_0", "ink": [7, 455, 420, 488], "set": "dev", "truth": "睦美「ごめんね…、ごめんね…", "note": null}
 {"id": "v10557_48032_3", "ink": [132, 582, 329, 609], "set": "dev", "truth": "「がおーがおー」", "note": null}
@@ -221,3 +219,103 @@
 {"id": "v8508_28600_0", "ink": [91, 433, 205, 455], "set": "dev", "truth": "榎木サチ", "note": null}
 {"id": "v8508_28600_1", "ink": [148, 462, 463, 484], "set": "dev", "truth": "『ユリトピア』にするために！", "note": null}
 {"id": "v916_26572_0", "ink": [61, 469, 111, 493], "set": "dev", "truth": "冬史", "note": null}
+{"id": "v1566_57907_1", "ink": [15, 237, 70, 254], "set": "spot", "truth": "迷惑だ。", "pseudo": "迷惑だ。", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v16128_107824_2", "ink": [125, 445, 465, 470], "set": "spot", "truth": "なるほど燃えるシチュだ。", "pseudo": "なるほど燃えるシチュだ。", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v10046_52199_14", "ink": [31, 196, 80, 215], "set": "spot", "truth": "喧嘩", "pseudo": "喧嘩", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v5657_14711_12", "ink": [234, 392, 327, 410], "set": "spot", "truth": "レベル:1", "pseudo": "レベル:1", "how": "3:manga+meiki+v6s", "note": null}
+{"id": "v12171_56502_4", "ink": [96, 242, 432, 262], "set": "spot", "truth": "お茶の用意をさせているから、こちらに来なさい」", "pseudo": "お茶の用意をさせているから、こちらに来なさい」", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v20292_99614_0", "ink": [224, 527, 301, 552], "set": "spot", "truth": "由里子", "pseudo": "由里子", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v2089_172537_0", "ink": [80, 164, 673, 190], "set": "spot", "truth": "そもそもここに書かれているのは起きた後の出来事と、こ", "pseudo": "そもそもここに書かれているのは起きた後の出来事と、こ", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v13962_66186_2", "ink": [45, 614, 168, 655], "set": "spot", "truth": "勇歌理", "pseudo": "勇歌理", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v875_3774_1", "ink": [87, 436, 173, 457], "set": "spot", "truth": "【りん】", "pseudo": "【りん】", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v5127_23179_4", "ink": [691, 472, 772, 489], "set": "spot", "truth": "自動", "pseudo": "自動", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v1502_56435_2", "ink": [20, 239, 243, 255], "set": "spot", "truth": "ほら、おまえもこんなものを", "pseudo": "ほら、おまえもこんなものを", "how": "3:manga+meiki+v6s", "note": null}
+{"id": "v1014_57046_0", "ink": [97, 208, 264, 223], "set": "spot", "truth": "よく、恋が女の子を", "pseudo": "よく、恋が女の子を", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v24618_123552_0", "ink": [100, 565, 229, 600], "set": "spot", "truth": "綾乃", "pseudo": "綾乃", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v20292_99610_4", "ink": [138, 567, 606, 612], "set": "spot", "truth": "「なら、寄り道しないでとっとと行こう」", "pseudo": "「なら、寄り道しないでとっとと行こう」", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v11706_55804_0", "ink": [32, 182, 122, 197], "set": "spot", "truth": "女子の声", "pseudo": "女子の声", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v13419_89408_0", "ink": [33, 198, 319, 213], "set": "spot", "truth": "「僕たちもお仕事の帰りなんですよ～。", "pseudo": "「僕たちもお仕事の帰りなんですよ～。", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v10418_40574_8", "ink": [194, 233, 448, 255], "set": "spot", "truth": "な？ちょっと想像できないな。", "pseudo": "な？ちょっと想像できないな。", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v16842_108649_5", "ink": [447, 334, 526, 369], "set": "spot", "truth": "次へ", "pseudo": "次へ", "how": "3:manga+meiki+v5s", "note": null}
+{"id": "v7402_29299_1", "ink": [115, 401, 368, 440], "set": "spot", "truth": "美しく、艶やかに。", "pseudo": "美しく、艶やかに。", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v1071_76220_1", "ink": [33, 500, 184, 522], "set": "spot", "truth": "「……え？」", "pseudo": "「……え？」", "how": "3:manga+meiki+v6s", "note": null}
+{"id": "v20330_104473_0", "ink": [387, 563, 463, 603], "set": "spot", "truth": "春", "pseudo": "春", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v16060_83854_1", "ink": [135, 105, 640, 136], "set": "spot", "truth": "あなたが私を逃がさなければいい", "pseudo": "あなたが私を逃がさなければいい", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v1872_56491_2", "ink": [55, 231, 219, 247], "set": "spot", "truth": "お願い、します……", "pseudo": "お願い、します……", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v19288_154791_0", "ink": [269, 397, 622, 441], "set": "spot", "truth": "「守られるだけの女の癖に、", "pseudo": "「守られるだけの女の癖に、", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v10289_56984_1", "ink": [51, 203, 117, 219], "set": "spot", "truth": "「おい！", "pseudo": "「おい！", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v1566_57902_0", "ink": [16, 220, 292, 236], "set": "spot", "truth": "もちろん、そうじゃない場合もある。", "pseudo": "もちろん、そうじゃない場合もある。", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v8731_28758_0", "ink": [359, 227, 441, 249], "set": "spot", "truth": "断る", "pseudo": "断る", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v9124_77001_1", "ink": [263, 575, 688, 601], "set": "spot", "truth": "「放課後の部室の時は危なかったよね」", "pseudo": "「放課後の部室の時は危なかったよね」", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v14520_72277_1", "ink": [6, 355, 144, 383], "set": "spot", "truth": "ノーマル", "pseudo": "ノーマル", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v11857_46224_0", "ink": [137, 552, 311, 582], "set": "spot", "truth": "シャロン", "pseudo": "シャロン", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v15773_139475_6", "ink": [608, 295, 764, 322], "set": "spot", "truth": "らりるれろ", "pseudo": "らりるれろ", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v19441_125259_4", "ink": [490, 480, 578, 501], "set": "spot", "truth": "着ぐるみ", "pseudo": "着ぐるみ", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v24648_129010_0", "ink": [319, 575, 748, 602], "set": "spot", "truth": "あの可愛さだ、男が放っておくわけがない。", "pseudo": "あの可愛さだ、男が放っておくわけがない。", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v17012_144282_0", "ink": [472, 136, 528, 160], "set": "spot", "truth": "保谷町", "pseudo": "保谷町", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v17101_167446_1", "ink": [263, 648, 617, 673], "set": "spot", "truth": "そのレトロな車に飛び乗った。", "pseudo": "そのレトロな車に飛び乗った。", "how": "3:manga+meiki+v6s", "note": null}
+{"id": "v20802_142621_10", "ink": [755, 662, 906, 704], "set": "spot", "truth": "ゼス王国", "pseudo": "ゼス王国", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v850_56615_5", "ink": [93, 52, 144, 65], "set": "spot", "truth": "伊藤", "pseudo": "伊藤", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v7557_151411_4", "ink": [336, 272, 872, 302], "set": "spot", "truth": "たちつてとなにぬねのはひふへほ", "pseudo": "たちつてとなにぬねのはひふへほ", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v24291_151165_1", "ink": [208, 392, 512, 421], "set": "spot", "truth": "星奏学院で練習する時", "pseudo": "星奏学院で練習する時", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v232_11579_0", "ink": [188, 438, 297, 474], "set": "spot", "truth": "【麻衣】", "pseudo": "【麻衣】", "how": "3:manga+meiki+v5s", "note": null}
+{"id": "v15111_80116_0", "ink": [95, 197, 323, 212], "set": "spot", "truth": "「そうか……、僕ももう帰るところだ。", "pseudo": "「そうか……、僕ももう帰るところだ。", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v24011_115958_0", "ink": [731, 421, 797, 438], "set": "spot", "truth": "脅迫効果", "pseudo": "脅迫効果", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v20515_106872_8", "ink": [681, 337, 987, 357], "set": "spot", "truth": "「姉様」として、主人公のことを", "pseudo": "「姉様」として、主人公のことを", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v17897_87258_0", "ink": [72, 421, 128, 444], "set": "spot", "truth": "孝太", "pseudo": "孝太", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v5690_19713_0", "ink": [174, 376, 200, 401], "set": "spot", "truth": "霞", "pseudo": "霞", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v19736_107521_13", "ink": [16, 287, 64, 309], "set": "spot", "truth": "格式", "pseudo": "格式", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v18830_92170_5", "ink": [285, 623, 439, 655], "set": "spot", "truth": "みちる様」", "pseudo": "みちる様」", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v5000_37538_0", "ink": [85, 531, 228, 568], "set": "spot", "truth": "女科学者", "pseudo": "女科学者", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v27227_134144_1", "ink": [392, 544, 464, 568], "set": "spot", "truth": "カノン", "pseudo": "カノン", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v23744_136917_0", "ink": [274, 578, 739, 615], "set": "spot", "truth": "力を抜きながら、刀の向きを変える。", "pseudo": "力を抜きながら、刀の向きを変える。", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v12605_73939_0", "ink": [99, 191, 446, 209], "set": "spot", "truth": "今では、桂木が構ってくるのを私があしらう、とい", "pseudo": "今では、桂木が構ってくるのを私があしらう、とい", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v10251_45638_1", "ink": [109, 496, 709, 522], "set": "spot", "truth": "うちのことなら気にしなくていいから、うちに居候しちゃ", "pseudo": "うちのことなら気にしなくていいから、うちに居候しちゃ", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v1300_57617_3", "ink": [83, 238, 301, 253], "set": "spot", "truth": "世話しておいたであろうな、", "pseudo": "世話しておいたであろうな、", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v8043_56293_0", "ink": [82, 184, 408, 213], "set": "spot", "truth": "一言にモンスターと言っても、その種類", "pseudo": "一言にモンスターと言っても、その種類", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v14264_70380_0", "ink": [266, 509, 365, 540], "set": "spot", "truth": "尚芳", "pseudo": "尚芳", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v12900_55455_1", "ink": [3, 21, 45, 33], "set": "spot", "truth": "はかせ", "pseudo": "はかせ", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v25596_135070_1", "ink": [53, 469, 711, 493], "set": "spot", "truth": "「あなたには、是非とも良い結果を掴み取っていただきたいん", "pseudo": "「あなたには、是非とも良い結果を掴み取っていただきたいん", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v20406_102087_5", "ink": [919, 422, 1003, 441], "set": "spot", "truth": "ダーリン", "pseudo": "ダーリン", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v15892_78946_2", "ink": [298, 628, 775, 656], "set": "spot", "truth": "ああ、悪魔！鬼畜外道！ヘンシツシャ！」", "pseudo": "ああ、悪魔！鬼畜外道！ヘンシツシャ！」", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v14522_71524_1", "ink": [198, 62, 528, 85], "set": "spot", "truth": "まだ何も準備してないぞ……！", "pseudo": "まだ何も準備してないぞ……！", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v5000_37528_1", "ink": [428, 136, 806, 170], "set": "spot", "truth": "用語:放射線被曝防止薬", "pseudo": "用語:放射線被曝防止薬", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v21667_166637_0", "ink": [552, 312, 706, 350], "set": "spot", "truth": "それでも、", "pseudo": "それでも、", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v18152_95559_1", "ink": [340, 615, 768, 639], "set": "spot", "truth": "合うという事をどう捉えているの？」", "pseudo": "合うという事をどう捉えているの？」", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v11641_56818_4", "ink": [74, 239, 368, 256], "set": "spot", "truth": "どうだ、たまには一緒に学校へ行かないか。", "pseudo": "どうだ、たまには一緒に学校へ行かないか。", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v1009_3242_1", "ink": [63, 430, 239, 457], "set": "spot", "truth": "「……あれは」", "pseudo": "「……あれは」", "how": "3:manga+meiki+v6s", "note": null}
+{"id": "v7867_55507_14", "ink": [246, 221, 331, 240], "set": "spot", "truth": "笹木美紀", "pseudo": "笹木美紀", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v6359_32593_0", "ink": [101, 399, 160, 419], "set": "spot", "truth": "大和", "pseudo": "大和", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v12282_157063_1", "ink": [181, 407, 810, 448], "set": "spot", "truth": "「おまえも、本当に趣味の悪い女だな。", "pseudo": "「おまえも、本当に趣味の悪い女だな。", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v21069_171878_6", "ink": [52, 594, 842, 622], "set": "spot", "truth": "歩んだらどうだい？貧しい病人の気持ちに触れることが、", "pseudo": "歩んだらどうだい？貧しい病人の気持ちに触れることが、", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v24798_174278_1", "ink": [79, 927, 1205, 984], "set": "spot", "truth": "クソッ！何もかも面倒だからベガスに来たのに、", "pseudo": "クソッ！何もかも面倒だからベガスに来たのに、", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v28806_182540_0", "ink": [72, 815, 243, 860], "set": "spot", "truth": "卓司", "pseudo": "卓司", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v1360_21512_7", "ink": [77, 185, 342, 208], "set": "spot", "truth": "レンディルカラキノウアンコール。", "pseudo": "レンディルカラキノウアンコール。", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v15395_83913_0", "ink": [265, 572, 935, 599], "set": "spot", "truth": "ダリア「はい。ありがとうございます。では、次は手島", "pseudo": "ダリア「はい。ありがとうございます。では、次は手島", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v18831_92167_4", "ink": [306, 592, 751, 617], "set": "spot", "truth": "「当たり前だろ？JBは私のボスだ」", "pseudo": "「当たり前だろ？JBは私のボスだ」", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v19716_157046_5", "ink": [59, 377, 80, 397], "set": "spot", "truth": "わ", "pseudo": "わ", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v24586_120175_0", "ink": [261, 599, 829, 629], "set": "spot", "truth": "目の前に運ばれてきたカップから立ち昇る、", "pseudo": "目の前に運ばれてきたカップから立ち昇る、", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v17046_82659_1", "ink": [108, 398, 432, 417], "set": "spot", "truth": "まさか、生身でここに来ただと……？", "pseudo": "まさか、生身でここに来ただと……？", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v41944_176600_11", "ink": [334, 598, 448, 623], "set": "spot", "truth": "小田清子", "pseudo": "小田清子", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v1063_39430_5", "ink": [5, 568, 118, 588], "set": "spot", "truth": "終了する", "pseudo": "終了する", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v10162_56953_2", "ink": [114, 223, 410, 241], "set": "spot", "truth": "召し家荘の大家兼管理人になりました", "pseudo": "召し家荘の大家兼管理人になりました", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v11342_53487_3", "ink": [55, 239, 268, 253], "set": "spot", "truth": "ま、俺は負ける気ねぇけどな」", "pseudo": "ま、俺は負ける気ねぇけどな」", "how": "3:manga+meiki+v6s", "note": null}
+{"id": "v18314_177191_0", "ink": [315, 507, 469, 538], "set": "spot", "truth": "ヘンゼル", "pseudo": "ヘンゼル", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v1517_115187_1", "ink": [199, 429, 264, 452], "set": "spot", "truth": "大翔", "pseudo": "大翔", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v1120_6157_18", "ink": [610, 233, 730, 251], "set": "spot", "truth": "上杉謙信", "pseudo": "上杉謙信", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v18131_94299_4", "ink": [383, 657, 807, 688], "set": "spot", "truth": "これは、単なる蒸気排水です！！」", "pseudo": "これは、単なる蒸気排水です！！」", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v33944_159960_24", "ink": [1003, 573, 1044, 596], "set": "spot", "truth": "環", "pseudo": "環", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v50_228_1", "ink": [76, 147, 723, 176], "set": "spot", "truth": "そういえば、なぜヤツは赤い外套を付けていないのだ", "pseudo": "そういえば、なぜヤツは赤い外套を付けていないのだ", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v17101_167449_0", "ink": [105, 371, 200, 393], "set": "spot", "truth": "田淵亮一", "pseudo": "田淵亮一", "how": "3:manga+meiki+v6s", "note": null}
+{"id": "v18770_99380_1", "ink": [334, 527, 807, 564], "set": "spot", "truth": "「アイ！ラブ！哲！学！」", "pseudo": "「アイ！ラブ！哲！学！」", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v22741_120415_2", "ink": [497, 271, 786, 301], "set": "spot", "truth": "「あすく、落ち着け」", "pseudo": "「あすく、落ち着け」", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v1763_57032_1", "ink": [42, 196, 261, 219], "set": "spot", "truth": "気になった事って何だ？", "pseudo": "気になった事って何だ？", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v22436_109491_0", "ink": [80, 527, 149, 556], "set": "spot", "truth": "僕", "pseudo": "僕", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v12775_50662_0", "ink": [112, 88, 271, 109], "set": "spot", "truth": "外に散歩に出かける", "pseudo": "外に散歩に出かける", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v15111_80111_0", "ink": [103, 199, 264, 216], "set": "spot", "truth": "「はい、終わりました」", "pseudo": "「はい、終わりました」", "how": "3:manga+v5s+v6s", "note": null}
+{"id": "v11469_52193_2", "ink": [103, 222, 445, 239], "set": "spot", "truth": "は柔らかくて、目を細めずに見ることが出来る。夜", "pseudo": "は柔らかくて、目を細めずに見ることが出来る。夜", "how": "3:manga+meiki+v6s", "note": null}
+{"id": "v5657_14711_1", "ink": [24, 80, 81, 101], "set": "spot", "truth": "わざ", "pseudo": "わざ", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v202_11765_2", "ink": [22, 495, 239, 517], "set": "spot", "truth": "濯物干したい……」", "pseudo": "濯物干したい……」", "how": "3:meiki+v5s+v6s", "note": null}
+{"id": "v17608_91393_5", "ink": [530, 289, 579, 313], "set": "spot", "truth": "アイ", "pseudo": "アイ", "how": "4:manga+meiki+v5s+v6s", "note": null}
+{"id": "v22899_115070_0", "ink": [383, 647, 487, 684], "set": "spot", "truth": "美岬", "pseudo": "・美岬", "how": "3:manga+meiki+v6s", "note": "decorative bullet before the name read as ・ by three readers"}
+{"id": "v17827_111791_0", "ink": [97, 504, 162, 538], "set": "spot", "truth": "一彩", "pseudo": "一彩", "how": "4:manga+meiki+v5s+v6s", "note": "drawn after 1 of the first 100 was dropped (game reserved by eval)"}

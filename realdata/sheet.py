@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 """Contact sheets for checking line labels by eye.
 
-  sheet.py --lines FILE [--ids a,b,...|--idfile F] [--sample N --seed S] --out DIR
-           [--height 44] [--per-sheet 24] [--crop view|vita|psp]
+  sheet.py --lines GLOB [--ids a,b,...|--idfile F] [--sample N --seed S] [--skip-how hand]
+           --out DIR [--height 44] [--per-sheet 24] [--crop view|train|vita|psp]
 
-Each sheet is at most 1280x1280 px (safe to view). Row i shows the line's voter view
-(or its train crop at a target, --crop) scaled to a fixed height, numbered on the left.
+Each sheet is at most 1280x1280 px (safe to view). Row i shows the line's voter view, or
+its training crop (--crop train: the crop build.py renders for the line's first target,
+the exact pixels its label goes with), scaled to a fixed height, numbered on the left.
+--lines takes label.py output or the accepted-line manifests (manifests/lines_*.jsonl).
 The matching table (DIR/sheet_NN.txt, also printed) lists every row's id, kind and the
 voters' readings plus the label if the record has one, so the image can be compared
 with the text.
 """
 import argparse
+import glob
 import json
 import random
 import sys
@@ -63,7 +66,8 @@ def crop_of(rec, which, cache):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--lines", type=Path, required=True)
+    ap.add_argument("--lines", required=True, help="file or glob")
+    ap.add_argument("--skip-how", default="", help="drop lines whose 'how' is this (e.g. hand)")
     ap.add_argument("--ids", default="")
     ap.add_argument("--idfile", type=Path)
     ap.add_argument("--sample", type=int, default=0)
@@ -71,9 +75,12 @@ def main():
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--height", type=int, default=44)
     ap.add_argument("--per-sheet", type=int, default=24)
-    ap.add_argument("--crop", default="view", choices=["view", "vita", "psp"])
+    ap.add_argument("--crop", default="view", choices=["view", "train", "vita", "psp"])
     args = ap.parse_args()
-    recs = with_shot([json.loads(x) for x in args.lines.read_text(encoding="utf-8").splitlines() if x.strip()])
+    recs = with_shot([json.loads(x) for f in sorted(glob.glob(args.lines))
+                      for x in Path(f).read_text(encoding="utf-8").splitlines() if x.strip()])
+    if args.skip_how:
+        recs = [r for r in recs if r.get("how") != args.skip_how]
     ids = [i for i in args.ids.split(",") if i]
     if args.idfile:
         ids += [x.strip() for x in args.idfile.read_text().split() if x.strip()]
@@ -90,7 +97,7 @@ def main():
         table = []
         for j, rec in enumerate(chunk):
             n = s0 + j
-            c = crop_of(rec, args.crop, cache)
+            c = crop_of(rec, rec["targets"][0] if args.crop == "train" else args.crop, cache)
             nw = max(1, int(round(c.shape[1] * args.height / c.shape[0])))
             c = cv2.resize(c, (nw, args.height), interpolation=cv2.INTER_AREA if c.shape[0] > args.height
                            else cv2.INTER_CUBIC)[:, :W_MAX - NUM_W]
@@ -100,7 +107,8 @@ def main():
                         (255, 255, 0), 1, cv2.LINE_AA)
             reads = " | ".join(f"{k}:{v[0]}" for k, v in rec.get("r", {}).items())
             lab = f"  LABEL:{rec['label']}" if rec.get("label") is not None else ""
-            table.append(f"{n:4d} {rec['id']} [{rec['kind']}]{lab}  {reads}")
+            tgt = f"->{rec['targets'][0]}" if args.crop == "train" else ""
+            table.append(f"{n:4d} {rec['id']} [{rec['kind']}{tgt}]{lab}  {reads}")
         cv2.imwrite(str(args.out / f"sheet_{s0 // args.per_sheet:02d}.png"), sheet)
         (args.out / f"sheet_{s0 // args.per_sheet:02d}.txt").write_text("\n".join(table) + "\n", encoding="utf-8")
         print("\n".join(table), flush=True)

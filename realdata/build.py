@@ -96,9 +96,11 @@ def titles():
 
 
 def load_hand():
+    """{"<set>:<line id>": hand row}. Line ids are only unique within one labelling run,
+    so a dev check and a spot check can share an id while naming different lines."""
     if not HAND.exists():
         return {}
-    return {h["id"]: h for h in map(json.loads, HAND.read_text(encoding="utf-8").splitlines()) if h}
+    return {f"{h['set']}:{h['id']}": h for h in map(json.loads, HAND.read_text(encoding="utf-8").splitlines()) if h}
 
 
 def iou(a, b):
@@ -116,12 +118,15 @@ def match_hand(hand, recs, min_iou=0.5):
     by_shot = defaultdict(list)
     for r in recs.values():
         by_shot[r["id"].rsplit("_", 1)[0]].append(r)
-    out = {}
+    out, score = {}, {}
     for h in hand.values():
         cands = by_shot.get(h["id"].rsplit("_", 1)[0], [])
         best = max(cands, key=lambda r: iou(r["ink"], h["ink"]), default=None)
-        if best is not None and iou(best["ink"], h["ink"]) >= min_iou:
-            out[best["id"]] = h
+        if best is None:
+            continue
+        o = iou(best["ink"], h["ink"])
+        if o >= min_iou and o > score.get(best["id"], 0.0):    # two checks of one line: the closer one
+            out[best["id"]], score[best["id"]] = h, o
     return out
 
 

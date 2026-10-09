@@ -27,7 +27,10 @@
 #    executables: an ASan build can't be loaded into Python through ctypes without LD_PRELOAD.
 #  - The parity test exports VOCR_CKPT with train/export.py (fp32 and int8), runs PyTorch and
 #    the C runtime on every crop in VOCR_SHARD (render.py's shard format), fails when the
-#    logits differ beyond tolerance or any decoded string differs, and writes one JSON object
+#    logits differ beyond tolerance or any decoded string differs (runtime/tests/parity.py:
+#    except on a near tie, where every differing frame's top-2 margin is within twice the
+#    measured logit difference; its logits must still equal a bit-exact model of the C
+#    arithmetic), and writes one JSON object
 #    to VOCR_REPORT: {"ckpt": VOCR_CKPT, "shard": VOCR_SHARD, "lines": <crops compared, which
 #    must be every crop in the shard>, "pass": true, plus anything else, e.g. max logit
 #    difference per mode}. Compare strings against a reference with the same weights

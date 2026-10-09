@@ -136,6 +136,21 @@ def test_paddle_prep_width():
     assert p.prep(np.zeros((40, 2, 3), np.uint8)).shape == (1, 3, 48, 8)
 
 
+def test_reference_weights_are_pinned(tmp_path):
+    assert set(backends.PPOCR_FILES) == set(backends.PPOCR.values())
+    assert all(re.fullmatch(r"[0-9a-f]{64}", sha) for _, sha in backends.PPOCR_FILES.values())
+    assert re.fullmatch(r"[0-9a-f]{40}", backends.MANGA_OCR[1])
+    (tmp_path / backends.PPOCR["ppocr-v5-mobile"]).write_bytes(b"not the pinned export")
+    saved, backends.MODEL_DIRS = backends.MODEL_DIRS, [tmp_path]
+    try:
+        backends.make_recognizer("ppocr-v5-mobile-jis")
+        raise AssertionError("a preset file with another sha256 was accepted")
+    except ValueError as e:
+        assert "sha256" in str(e)
+    finally:
+        backends.MODEL_DIRS = saved
+
+
 def test_cmd_backend_protocols(tmp_path):
     crops = [np.full((8, 12, 3), 200, np.uint8), np.zeros((9, 5, 3), np.uint8)]
     batch = backends.Cmd("sed 's#.*/##'").read(crops)

@@ -28,8 +28,14 @@ or a `data/eval` symlink instead of fetching. synth-val reads
 | `ppocr-v5-mobile`, `ppocr-v5-mobile-jis` | PP-OCRv5 mobile rec in ONNX Runtime, full head or masked to JIS X 0208 | vita-jp-overlay's: BGR, height 48, width `(w*48 + h/2)/h` clamped to [8, 1024], `(p - 127.5)/127.5` |
 | `ppocr-v5-server`, `ppocr-v6-small[-jis]` | the pseudo-labelling engines, for reference | same |
 | `ncnn:DIR` | an ncnn param/bin + `dict.txt` in DIR, run by `eval/ncnn/vocr_ncnn_rec` (the overlay's pinned ncnn 3798be64, one thread, fp16 off) | the overlay's `from_pixels_resize` path, exactly |
-| `manga-ocr` | manga-ocr base (reference only; ~400 MB) | long lines re-flowed into a square-ish block first, as `data/label_real.py` does (`manga-ocr-raw`: no re-flow) |
+| `manga-ocr` | manga-ocr base (reference only; ~400 MB), `kha-white/manga-ocr-base` at commit `aa6573bd` (`backends.MANGA_OCR`) | long lines re-flowed into a square-ish block first, as `data/label_real.py` does (`manga-ocr-raw`: no re-flow) |
 | `cmd:COMMAND` | any external program, e.g. the C runtime's host CLI | crops written as binary PPM (or `--cmd-format pgm\|png`) |
+
+The PaddleOCR presets load `ch_PP-OCRv5_rec_mobile.onnx`, `ch_PP-OCRv5_rec_server.onnx` or
+`PP-OCRv6_rec_small.onnx` from `$VOCR_MODELS`, `data/eval/models`, rapidocr's model directory
+or the research's scratch copies. They are the files rapidocr 3.10.0 downloads from
+ModelScope (`backends.PPOCR_FILES` has the URLs), and a preset refuses any file whose sha256
+differs from the one the baselines were measured with; run another export by its path.
 
 `cmd:` protocol: if COMMAND contains `{}`, it runs once per crop with `{}`
 replaced by the crop's path and prints that line's text; otherwise it runs once,

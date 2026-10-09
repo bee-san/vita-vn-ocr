@@ -3,7 +3,10 @@
 per-shard counts that fetch.py run writes (every horizontal line of every page,
 after the corpus normalisation, whether or not the line was cropped).
 
-  oov_report.py [--out DIR] [--vocab data/vocab.txt ...] [--top 40] [--top-kanji 30] [--json FILE]
+  oov_report.py [--dirs DIR ...] [--vocab data/vocab.txt ...] [--top 40] [--top-kanji 30] [--json FILE]
+
+--dirs defaults to the one-line-per-page shards ($HERD/shared/artifacts/nvsynth/shards and
+its val_parts); the counts cover every horizontal line of the pages either way.
 
 For each vocab: the share of characters it misses, split by kind (an <unk>-terminated
 vocab, as in the arch sweep, counts its last entry as <unk>, not as a character). Then
@@ -59,9 +62,8 @@ def shown(c):
     return f"◌{c}" if unicodedata.category(c)[0] in "MZC" else c
 
 
-def load(out):
-    recs = [json.loads(p.read_text()) for p in
-            [*sorted(Path(out).glob("nv_*.json")), *sorted((Path(out) / "val_parts").glob("nv_*.json"))]]
+def load(dirs):
+    recs = [json.loads(p.read_text()) for d in dirs for p in sorted(Path(d).glob("nv_*.json"))]
     chars, stats = Counter(), Counter()
     for r in recs:
         chars.update(r.get("chars", {}))
@@ -76,16 +78,17 @@ def vocab_chars(path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=str(fetch.DEFAULT_OUT))
+    ap.add_argument("--dirs", nargs="+",
+                    default=[str(fetch.ARTIFACTS / "shards"), str(fetch.ARTIFACTS / "shards" / "val_parts")])
     ap.add_argument("--vocab", nargs="*", default=[str(HERE.parent / "data" / "vocab.txt")])
     ap.add_argument("--top", type=int, default=40)
     ap.add_argument("--top-kanji", type=int, default=30)
     ap.add_argument("--json", default="")
     args = ap.parse_args()
-    recs, chars, stats = load(args.out)
+    recs, chars, stats = load(args.dirs)
     total = sum(chars.values())
     if not total:
-        raise SystemExit(f"no character counts under {args.out}")
+        raise SystemExit(f"no character counts under {args.dirs}")
     print(f"{len(recs)} shards, {stats['pages']:,} pages, {stats['h_lines']:,} horizontal lines, "
           f"{total:,} characters, {len(chars):,} distinct\n")
     kinds = sorted({kind(c) for c in chars})

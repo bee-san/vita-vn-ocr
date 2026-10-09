@@ -10,9 +10,10 @@
 hand-checked truth (manifests/handcheck.jsonl) override the vote, and keeps a label only
 if it is Japanese and inside data/vocab.txt. A label is kept at most twice per VN and
 eight times overall (UI strings like セーブ repeat on every screenshot). Test games
-(synth/common.is_test_vn, eval's reserved list) are dropped again here in case the list
-changed after selection. Split by VN: 15 <= md5(vn) % 100 < 25 is validation (about 10%
-of VNs; < 15 is the test hash), everything else train.
+(synth/common.is_test_vn, eval's reserved list) and eval's test capture sessions (VNDB
+release ids) are dropped again here in case the lists changed after selection, as are
+lines of screenshots that `vndb.py prune` removed. Split by VN: 15 <= md5(vn) % 100 < 25
+is validation (about 10% of VNs; < 15 is the test hash), everything else train.
 
 `decide` also lists every other line with Japanese text from a training-split game (the
 readers disagreed, so it has no label) in $REALDATA/unlabelled.jsonl, and `render` cuts
@@ -44,7 +45,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 import lines as L  # noqa: E402
 import vote  # noqa: E402
-from vndb import KINDS, excluded_vns, load_shots, realdata_dir, shot_key, shot_path  # noqa: E402
+from vndb import KINDS, excluded_sessions, excluded_vns, load_shots, realdata_dir, shot_key, shot_path  # noqa: E402
 
 sys.path.insert(0, str(ROOT / "synth"))
 from common import is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
@@ -142,14 +143,20 @@ def match_hand(hand, recs, min_iou=0.5):
 def decide(args):
     rule = vote.RULES[args.rule]
     vocab = set(load_vocab())
-    extra = excluded_vns()
+    extra, sessions = excluded_vns(), excluded_sessions()
     shots = {r["url"]: r for r in load_shots()}
     recs = load_reads()
     hand = match_hand(load_hand(), recs)
     why, kept, pool = Counter(), [], []
     for r in recs.values():
-        if is_test_vn(r["vn"]) or r["vn"] in extra:
-            why["test-game"] += 1
+        s = shots.get(r["url"])
+        # test games and test capture sessions again (eval's lists grow); a screenshot that
+        # `vndb.py prune` removed from the shots manifests is gone for good
+        reason = ("test-game" if is_test_vn(r["vn"]) or r["vn"] in extra else
+                  "unselected" if s is None else
+                  "test-session" if s["release"] in sessions else None)
+        if reason:
+            why[reason] += 1
             continue
         h = hand.get(r["id"])
         if h is not None:
@@ -211,9 +218,6 @@ def decide(args):
              "unlabelled_train_lines": len(pool)}
     (MAN / "stats.json").write_text(json.dumps(stats, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(stats, ensure_ascii=False, indent=1), flush=True)
-    missing = {k["url"] for k in out} - set(shots)
-    if missing:
-        print(f"WARNING: {len(missing)} screenshots not in the shots manifests", flush=True)
     render(args)
 
 
@@ -255,7 +259,8 @@ Sources (VNDB kana API, screenshots of Japanese-only releases rated sexual < 0.3
 violence < 0.5): native Vita 960x544 (kind vita), native PSP 480x272 (kind psp), and PC /
 home-console screenshots (kind hires) scaled to fit 960x544 and 480x272 (cv2.INTER_AREA),
 one crop per target where the ink is 14-72 px (Vita) or 10-72 px (PSP) tall.
-Test games excluded: synth/common.is_test_vn() and every id in eval's test_games.json.
+Test games excluded: synth/common.is_test_vn() and every id in eval's test_games.json ("all"),
+and every screenshot of eval's test capture sessions (its "sessions", VNDB release ids).
 
 Labels: PP-OCRv5 mobile det finds the text rows; each row's ink box is refined by gradient
 energy (either polarity); crops are padded so the console's grad finder gives the same

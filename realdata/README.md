@@ -43,8 +43,10 @@ crops are copyrighted: they stay there and are never committed.
    calls the text dark (docs/linefind.md's polarity contract; `--keep-polarity` skips it).
 
 Test games are excluded at every step: `synth/common.is_test_vn()` and the eval set's
-reserved VNs (`eval/manifests/test_games.json` once merged, `eval_exclude.json` until then).
-If eval reserves more VNs later: `vndb.py prune`, then `build.py decide`.
+reserved VNs (`eval/manifests/test_games.json` once merged, `eval_exclude.json` until then),
+plus every screenshot of eval's test capture sessions (the `sessions` release ids in the
+same files, `vndb.excluded_sessions()`). If eval reserves more VNs or sessions later:
+`vndb.py prune`, then `build.py decide`.
 
 Models (labelling only, none ships): rapidocr 3.10.0's `ch_PP-OCRv5_det_mobile.onnx`
 (sha256 4d97c44a…), `ch_PP-OCRv5_rec_server.onnx` (e0938540…), `PP-OCRv6_rec_small.onnx`
@@ -103,4 +105,6 @@ for s in vndb.load_shots():          # 6,932 screenshots; s["kind"] in vita | ps
     split = build.split_of(s["vn"])  # train | val, by game; s["session"] for session-level grouping
 ```
 
-`vndb.excluded_vns()` plus `is_test_vn()` are the test games to keep out.
+`vndb.excluded_vns()` plus `is_test_vn()` are the test games to keep out, and
+`vndb.excluded_sessions()` the test capture sessions (release ids); `vndb.exclusion(row, ...)`
+applies both to a screenshot row.

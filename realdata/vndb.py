@@ -3,7 +3,7 @@
 
   vndb.py list   --platform psv|psp|pc [--top N]     -> $REALDATA/vndb/<platform>.jsonl
   vndb.py select [--per-vn-hires K]                  -> realdata/manifests/shots_<kind>.jsonl (no hashes yet)
-  vndb.py prune                                      drops VNs that became test games since `select`
+  vndb.py prune                                      drops test games and test sessions added since `select`
   vndb.py fetch  [--delay S] [--mirror DIR ...]      -> $REALDATA/shots/<kind>/<vn>_<file>, fills sha256
 
 A listing row is one screenshot of a Japanese-original VN, with the release it was
@@ -16,6 +16,8 @@ where session (assign_sessions) groups screenshots of one release uploaded toget
   * its release is Japanese-only (so no English or Chinese text on screen),
   * the VN is not a test game: synth/common.is_test_vn(v), or listed in the eval
     agent's reserved list (realdata/eval_exclude.json, a copy of eval's test_games.json),
+  * its release is not one of eval's test capture sessions (test_games.json "sessions":
+    VNDB release ids),
   * and it falls into one of three kinds:
       vita   a psv release at 960x544 (native Vita frame buffer)
       psp    a psp release at 480x272 (native PSP frame buffer)
@@ -66,17 +68,36 @@ def realdata_dir():
     return Path(os.environ.get("REALDATA") or Path(herd) / "shared" / "artifacts" / "realdata")
 
 
-def excluded_vns():
-    """Test games of the eval sets: the reserved ids, on top of the is_test_vn() rule."""
+def _eval_lists(key):
     out = set()
     for path in EVAL_EXCLUDE:
         if path.exists():
-            out |= set(json.loads(path.read_text(encoding="utf-8"))["all"])
+            out |= set(json.loads(path.read_text(encoding="utf-8")).get(key, []))
     return out
+
+
+def excluded_vns():
+    """Test games of the eval sets: the reserved ids, on top of the is_test_vn() rule."""
+    return _eval_lists("all")
+
+
+def excluded_sessions():
+    """Eval's test capture sessions: VNDB release ids ("sessions" in test_games.json). No
+    screenshot of these releases may be used, whatever its VN."""
+    return _eval_lists("sessions")
 
 
 def is_excluded(vn, extra):
     return is_test_vn(vn) or vn in extra
+
+
+def exclusion(row, vns, sessions):
+    """Why a screenshot row ({vn, release, ...}) is off limits ("test-game" or "test-session"), or None."""
+    if is_excluded(row["vn"], vns):
+        return "test-game"
+    if row.get("release") in sessions:
+        return "test-session"
+    return None
 
 
 def post(session, body):
@@ -141,7 +162,7 @@ def kind_of(row):
 
 
 def cmd_select(args):
-    extra = excluded_vns()
+    extra, sessions = excluded_vns(), excluded_sessions()
     seen, keep, why = set(), [], {}
     for name in ("psv", "psp", "pc"):
         path = realdata_dir() / "vndb" / f"{name}.jsonl"
@@ -154,10 +175,10 @@ def cmd_select(args):
                 continue
             seen.add(r["url"])
             k = kind_of(r)
-            reason = ("test-game" if is_excluded(r["vn"], extra) else
-                      "rating" if r["sexual"] >= SEXUAL_MAX or r["violence"] >= VIOLENCE_MAX else
-                      "language" if r["langs"] != ["ja"] else
-                      "kind" if k is None else None)
+            reason = (exclusion(r, extra, sessions) or
+                      ("rating" if r["sexual"] >= SEXUAL_MAX or r["violence"] >= VIOLENCE_MAX else
+                       "language" if r["langs"] != ["ja"] else
+                       "kind" if k is None else None))
             if reason:
                 why[reason] = why.get(reason, 0) + 1
                 continue
@@ -184,7 +205,7 @@ def cmd_select(args):
     for k in ("vita", "psp", "hires"):
         rs = [r for r in keep if r["kind"] == k]
         print(f"{k}: {len(rs)} screenshots from {len({r['vn'] for r in rs})} VNs", flush=True)
-    print(f"dropped: {why}; eval reserved ids: {len(extra)}", flush=True)
+    print(f"dropped: {why}; eval reserved ids: {len(extra)}, test sessions: {len(sessions)}", flush=True)
 
 
 def load_shots():
@@ -239,15 +260,18 @@ def shot_key(r):
 
 
 def cmd_prune(args):
-    """Drop the screenshots of VNs that became test games after selection (eval's list
-    grew), keeping every other row as it is. Re-running `select` instead would reshuffle
-    the per-VN caps of later VNs and pick screenshots that were never fetched or read."""
-    extra = excluded_vns()
+    """Drop the screenshots of VNs that became test games, or of releases that became test
+    capture sessions, after selection (eval's lists grew), keeping every other row as it
+    is. Re-running `select` instead would reshuffle the per-VN caps of later VNs and pick
+    screenshots that were never fetched or read."""
+    extra, sessions = excluded_vns(), excluded_sessions()
     rows = load_shots()
-    keep = [r for r in rows if not is_excluded(r["vn"], extra)]
+    keep = [r for r in rows if exclusion(r, extra, sessions) is None]
     gone = sorted({r["vn"] for r in rows} - {r["vn"] for r in keep}, key=lambda v: int(v[1:]))
+    rels = sorted({r["release"] for r in rows if exclusion(r, extra, sessions) == "test-session"})
     save_shots(keep)
-    print(f"pruned {len(rows) - len(keep)} screenshots of {len(gone)} VNs: {gone}", flush=True)
+    print(f"pruned {len(rows) - len(keep)} screenshots: every one of {len(gone)} VNs {gone}, "
+          f"and those of {len(rels)} test-session releases {rels}", flush=True)
 
 
 def sha256(path):

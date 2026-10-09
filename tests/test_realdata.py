@@ -155,6 +155,15 @@ def test_val_split_is_disjoint_from_the_test_hash():
     assert 0.08 < len(val) / len(vns) < 0.12
 
 
+def test_exclusion_covers_test_games_and_test_sessions():
+    vn = next(f"v{i}" for i in range(1, 100) if not is_test_vn(f"v{i}"))
+    tvn = next(f"v{i}" for i in range(1, 100) if is_test_vn(f"v{i}"))
+    assert vndb.exclusion({"vn": vn, "release": "r1"}, set(), {"r9"}) is None
+    assert vndb.exclusion({"vn": tvn, "release": "r1"}, set(), set()) == "test-game"
+    assert vndb.exclusion({"vn": vn, "release": "r1"}, {vn}, set()) == "test-game"
+    assert vndb.exclusion({"vn": vn, "release": "r9"}, set(), {"r9"}) == "test-session"
+
+
 def test_kind_of():
     row = {"platforms": ["psv"], "dims": [960, 544]}
     assert vndb.kind_of(row) == "vita"
@@ -167,11 +176,13 @@ def test_kind_of():
 def test_committed_manifests_are_consistent():
     shots = {vndb.shot_key(s): s for s in vndb.load_shots()}
     assert shots, "no shots manifests"
-    extra = vndb.excluded_vns()
+    extra, sessions = vndb.excluded_vns(), vndb.excluded_sessions()
+    assert sessions, "eval's test capture sessions are missing (eval_exclude.json 'sessions')"
     for s in shots.values():
         assert len(s["sha256"] or "") == 64, s
         assert s["sexual"] < vndb.SEXUAL_MAX and s["violence"] < vndb.VIOLENCE_MAX, s
         assert not is_test_vn(s["vn"]) and s["vn"] not in extra, s
+        assert s["release"] not in sessions, s
     rows = build.load_lines()
     vocab = set(load_vocab())
     for r in rows:

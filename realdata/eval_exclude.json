@@ -1,5 +1,5 @@
 {
- "note": "realdata's copy of the eval test games while eval is in review: the union of eval's provisional $HERD/shared/artifacts/eval/test_games.json (both versions seen) and eval/manifests/test_games.json on eval/benchmark at aac4170. realdata excludes every id here, every id in eval's merged manifest, and every VN with is_test_vn() True.",
+ "note": "realdata's copy of the eval test games while eval is in review: the union of eval's provisional $HERD/shared/artifacts/eval/test_games.json (both versions seen) and eval/manifests/test_games.json on eval/benchmark at aac4170. realdata excludes every id here, every id in eval's merged manifest, and every VN with is_test_vn() True. 'sessions' are eval's test capture sessions (VNDB release ids, the union of the shared copy and eval/manifests/test_games.json on eval/benchmark 8cda2bf and eval/psp-test bebd4f9): no screenshot of those releases is used either.",
  "all": [
   "v3",
   "v7",
@@ -187,5 +187,38 @@
   "v40027",
   "v55138",
   "v55519"
+ ],
+ "sessions": [
+  "r6862",
+  "r8936",
+  "r14071",
+  "r14940",
+  "r15325",
+  "r22078",
+  "r22079",
+  "r22565",
+  "r23774",
+  "r24273",
+  "r25701",
+  "r27758",
+  "r28150",
+  "r28151",
+  "r32662",
+  "r36141",
+  "r38965",
+  "r39726",
+  "r39811",
+  "r41582",
+  "r42978",
+  "r46027",
+  "r46369",
+  "r47530",
+  "r49097",
+  "r50738",
+  "r53397",
+  "r53403",
+  "r55234",
+  "r56156",
+  "r66412"
  ]
 }

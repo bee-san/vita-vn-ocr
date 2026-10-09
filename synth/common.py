@@ -1,13 +1,16 @@
 """Shared pieces for the Vita VN OCR toolchain.
 
-find_lines() is a bit-exact twin of runtime/vocr_lines.c, so the training crops are
-the crops the console hands its recognizer:
-  finder="grad"    the polarity-agnostic dialogue line finder (default; the console's)
+find_lines(img, finder) is a bit-exact twin of runtime/vocr_lines.c, so the training
+crops are the crops the console hands its recognizer:
+  finder="grad"    the polarity-agnostic dialogue line finder (the console's)
   finder="legacy"  an exact port of vita-jp-overlay's vjo_ocr_find_lines
                    (core/ocr_lines.c), the bright-pixel projection used for v1's data
-line_crops() turns a region into the grey line crops the recognizer reads, inverting
-dark-text lines by default so the recognizer always sees light text on a dark ground.
-docs/linefind.md describes the method and its evaluation.
+The finder has no default in find_lines(), which used to mean the legacy finder: a
+caller written before grad existed fails loudly instead of silently switching finder.
+find_lines_ex() and line_crops() default to grad. line_crops() turns a region into
+the grey line crops the recognizer reads, inverting dark-text lines by default so the
+recognizer always sees light text on a dark ground. docs/linefind.md describes the
+method and its evaluation.
 """
 import hashlib
 from pathlib import Path
@@ -39,9 +42,10 @@ def grey_of(img):
     return to_gray(img)
 
 
-def find_lines(img, finder="grad"):
-    """img: HxW grey or HxWx3/4 RGB(A) uint8 region. Returns [(x, y, w, h), ...] top to
-    bottom, or None where the legacy finder rejects the region."""
+def find_lines(img, finder):
+    """img: HxW grey or HxWx3/4 RGB(A) uint8 region; finder: "grad" or "legacy" (no
+    default, see the module docstring). Returns [(x, y, w, h), ...] top to bottom, or
+    None where the legacy finder rejects the region."""
     r = find_lines_ex(img, finder)
     return None if r is None else r[0]
 

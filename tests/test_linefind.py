@@ -118,17 +118,17 @@ def test_closely_set_lines_stay_apart():
     # MERGE, but an empty row between two 22-row runs splits the band (PSP dialogue).
     for gap in (3, 4):
         tops = (12, 32 + gap)
-        boxes = common.find_lines(lines_image(240, 30, tops=tops, thin=True))
+        boxes = common.find_lines(lines_image(240, 30, tops=tops, thin=True), "grad")
         assert len(boxes) == 2, gap
         for (x, y, w, h), top in zip(boxes, tops):
             assert y <= top and y + h >= top + 20               # each box holds its whole line
             assert y + h <= top + 20 + gap + 3 and y >= top - gap - 3
     # 2 px of paper is no gap at all after the 3x3 contrast: one band
-    assert len(common.find_lines(lines_image(240, 30, tops=(12, 34), thin=True))) == 1
+    assert len(common.find_lines(lines_image(240, 30, tops=(12, 34), thin=True), "grad")) == 1
     # the thick-bar glyphs have empty rows inside each line, so the runs next to the
     # gap are only 3 rows long: bridged as before, and lines must be 5 px apart
-    assert len(common.find_lines(lines_image(240, 30, tops=(12, 35)))) == 1
-    assert len(common.find_lines(lines_image(240, 30, tops=(12, 37)))) == 2
+    assert len(common.find_lines(lines_image(240, 30, tops=(12, 35)), "grad")) == 1
+    assert len(common.find_lines(lines_image(240, 30, tops=(12, 37)), "grad")) == 2
 
 
 def test_line_crops_invert_dark_text():
@@ -149,11 +149,11 @@ def test_grey_and_rgba_inputs_agree():
 
 
 def test_empty_and_tiny_regions():
-    assert common.find_lines(np.full((60, 200, 3), 128, np.uint8)) == []
+    assert common.find_lines(np.full((60, 200, 3), 128, np.uint8), "grad") == []
     for w, h in ((1, 1), (3, 1), (1, 9), (5, 5)):
-        assert common.find_lines(np.zeros((h, w, 3), np.uint8)) == []
+        assert common.find_lines(np.zeros((h, w, 3), np.uint8), "grad") == []
     noise = np.random.default_rng(0).integers(0, 256, (100, 300, 3), dtype=np.uint8)
-    assert len(common.find_lines(noise)) <= common.LINES_MAX
+    assert len(common.find_lines(noise, "grad")) <= common.LINES_MAX
 
 
 def test_legacy_twin_unchanged():
@@ -178,3 +178,10 @@ def test_c_matches_twin(driver):
 def test_c_arena_bytes(driver):
     out = subprocess.run([str(driver), "--arena", "960", "544"], check=True, capture_output=True, text=True)
     assert int(out.stdout) < 128 * 1024                      # the whole finder needs < 128 KiB at 960x544
+
+
+def test_find_lines_needs_a_finder():
+    # find_lines(img) used to mean the legacy finder; a caller must now name the finder,
+    # so old code fails here instead of silently switching to grad.
+    with pytest.raises(TypeError):
+        common.find_lines(lines_image(240, 30))

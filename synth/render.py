@@ -77,8 +77,8 @@ CAT_WEIGHT = {
     "vita": {"gothic": 0.45, "rounded": 0.20, "mincho": 0.21, "pen": 0.04, "pixel": 0.06, "display": 0.04},
     "psp": {"gothic": 0.44, "rounded": 0.16, "mincho": 0.18, "pen": 0.03, "pixel": 0.16, "display": 0.03},
 }
-POOL_WEIGHT = {"dialogue": 0.50, "narration": 0.34, "wiki": 0.16}
-LAYOUT_WEIGHT = {"adv": 0.50, "band": 0.15, "nvl": 0.10, "balloon": 0.07, "choice": 0.08, "bare": 0.10}
+POOL_WEIGHT = {"dialogue": 0.58, "narration": 0.34, "wiki": 0.08}
+LAYOUT_WEIGHT = {"adv": 0.50, "band": 0.15, "nvl": 0.10, "balloon": 0.06, "choice": 0.07, "bare": 0.12}
 SCHEME_WEIGHT = {   # per layout: text/box polarity
     "adv": {"light_on_dark": 0.53, "dark_on_light": 0.31, "outlined_on_light": 0.09, "on_colour": 0.07},
     "band": {"light_on_dark": 0.62, "dark_on_light": 0.28, "outlined_on_light": 0.10},
@@ -88,7 +88,7 @@ SCHEME_WEIGHT = {   # per layout: text/box polarity
     "bare": {"outlined_on_light": 0.75, "dark_outlined": 0.25},
 }
 PSP_SCHEME_BIAS = {"light_on_dark": 1.4, "dark_on_light": 0.45, "outlined_on_light": 1.3}
-PLATFORM_WEIGHT = {"vita": 0.64, "psp": 0.26, "psp2x": 0.10}
+PLATFORM_WEIGHT = {"vita": 0.58, "psp": 0.30, "psp2x": 0.12}
 SCREEN = {"vita": (960, 544), "psp": (480, 272), "psp2x": (480, 272)}
 
 NO_START = set("、。，．・：；？！ー―…‥」』）】〕〉》］｝〙〗ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ々ゝゞヽヾ"
@@ -477,7 +477,7 @@ def background(rng, w, h, platform):
     """Scene behind the box: a crop of the upper part of a training-side screenshot,
     or a synthetic gradient with blobs. Screenshot crops avoid the lower 38% of the
     screen, where the screenshot's own dialogue text usually is."""
-    if rng.random() < 0.75:
+    if rng.random() < 0.85:
         if platform != "vita" and R.bg_psp and rng.random() < 0.75:
             path, base = R.bg_psp[rng.integers(len(R.bg_psp))], 1.0
         elif R.bg_vita:
@@ -511,6 +511,26 @@ def background(rng, w, h, platform):
     if rng.random() < 0.5:
         small = rng.normal(0, rng.uniform(3, 15), (h // 8 + 2, w // 8 + 2, 3)).astype(np.float32)
         img += cv2.resize(small, (w, h), interpolation=cv2.INTER_CUBIC)
+    if rng.random() < 0.6:           # scene clutter: shapes, strokes and sparkles
+        canvas = Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
+        d = ImageDraw.Draw(canvas)
+        for _ in range(int(rng.integers(3, 30))):
+            c = tuple(int(v) for v in rng.uniform(0, 255, 3))
+            x0, y0 = rng.uniform(-20, w), rng.uniform(-20, h)
+            x1, y1 = x0 + rng.uniform(4, w / 3 + 5), y0 + rng.uniform(4, h / 2 + 5)
+            kind = rng.random()
+            if kind < 0.35:
+                d.rectangle((x0, y0, x1, y1), fill=c)
+            elif kind < 0.65:
+                d.ellipse((x0, y0, x1, y1), fill=c)
+            elif kind < 0.9:
+                d.line((x0, y0, x1, y1), fill=c, width=int(rng.integers(1, 6)))
+            else:
+                r = rng.uniform(2, 6)
+                d.polygon([(x0, y0 - r), (x0 + r / 3, y0), (x0, y0 + r), (x0 - r / 3, y0)], fill=(255, 255, 255))
+        img = np.asarray(canvas, np.float32)
+        if rng.random() < 0.5:
+            img = cv2.GaussianBlur(img, (0, 0), float(rng.uniform(0.6, 3.0)))
     return np.clip(img, 0, 255)
 
 
@@ -548,6 +568,22 @@ def shape_mask(w, h, kind, rect, radius=0, width=None, tail=None):
     return np.asarray(im, np.float32) / 255.0
 
 
+def frame_style(rng, psp, st, border):
+    """Decoration of an ADV/NVL box: glossy top band, inner frame line, corner ornaments."""
+    fr = {}
+    if rng.random() < 0.15:
+        fr["gloss"] = float(rng.uniform(0.3, 0.6))
+    if rng.random() < 0.25:
+        fr["inset"] = int(rng.integers(2, 6)) if psp else int(rng.integers(3, 10))
+        fr["w"] = 1 if psp else int(rng.choice([1, 1, 2]))
+        fr["c"] = border[1] if border is not None else (light_colour(rng, 0.5, 0.7) if st["on_dark"]
+                                                         else accent(rng, False))
+    if rng.random() < 0.1:
+        fr["corners"] = int(rng.integers(3, 6)) if psp else int(rng.integers(4, 11))
+        fr["c"] = fr.get("c", accent(rng, st["on_dark"]))
+    return fr
+
+
 def draw_box(img, rng, b, st):
     """Composite one box: shape, colour (solid, gradient or patterned), alpha
     (flat or vertical fade) and an optional border."""
@@ -569,10 +605,29 @@ def draw_box(img, rng, b, st):
     else:
         am = np.float32(a)
     over(img, m * am, np.clip(col, 0, 255))
+    fr = b.get("frame") or {}
+    if fr.get("gloss"):              # glassy highlight over the top of the box
+        x0, y0, x1, y1 = b["rect"]
+        t = np.clip((np.arange(h, dtype=np.float32) - y0) / max(1.0, (y1 - y0) * fr["gloss"]), 0, 1)
+        over(img, m * ((1 - t) * 0.22)[:, None], (255, 255, 255))
     if b.get("border"):
         bw, bc = b["border"]
         bm = shape_mask(w, h, b["shape"], b["rect"], b.get("radius", 0), width=bw, tail=b.get("tail"))
         over(img, bm, bc)
+    if fr.get("inset"):              # a second, inner frame line
+        x0, y0, x1, y1 = b["rect"]
+        k = fr["inset"]
+        bm = shape_mask(w, h, b["shape"], (x0 + k, y0 + k, x1 - k, y1 - k), max(0, b.get("radius", 0) - k),
+                        width=fr["w"])
+        over(img, bm, fr["c"])
+    if fr.get("corners"):            # small corner ornaments
+        x0, y0, x1, y1 = b["rect"]
+        q = fr["corners"]
+        cm = Image.new("L", (w, h), 0)
+        d = ImageDraw.Draw(cm)
+        for cx, cy in ((x0, y0), (x1, y0), (x0, y1), (x1, y1)):
+            d.polygon([(cx, cy - q), (cx + q, cy), (cx, cy + q), (cx - q, cy)], fill=255)
+        over(img, np.asarray(cm, np.float32) / 255.0, fr["c"])
     return img
 
 
@@ -773,7 +828,8 @@ def render_region(rng, platform=None):
         aa = float(mult).is_integer() is False
         ss = 1
     else:
-        fs = int(rng.integers(12, 17)) if psp else int(np.clip(rng.normal(24, 3.2), 16, 34))
+        fs = int(rng.choice([12, 13, 14, 15, 16], p=[0.26, 0.26, 0.24, 0.14, 0.10])) if psp \
+            else int(np.clip(rng.normal(24, 3.2), 16, 34))
         aa = rng.random() < (0.55 if psp else 0.95)
         ss = 2 if aa and rng.random() < 0.45 else 1
     track = 0 if rng.random() < 0.6 else int(rng.integers(-1, 3 if psp else 5))
@@ -916,7 +972,10 @@ def render_region(rng, platform=None):
     img = background(rng, w, h, platform)
     boxes = []
     rect = (out_l, out_t, w - out_r - 1, h - out_b - 1 - (int(fs * 0.8) if lay == "balloon" else 0))
-    box_alpha = float(rng.uniform(0.5, 0.92)) if st["on_dark"] else float(rng.uniform(0.82, 1.0))
+    if st["on_dark"]:
+        box_alpha = float(rng.uniform(0.35, 0.7) if rng.random() < 0.5 else rng.uniform(0.7, 0.92))
+    else:
+        box_alpha = float(rng.uniform(0.62, 0.85) if rng.random() < 0.3 else rng.uniform(0.85, 1.0))
     if sch == "on_colour":
         box_alpha = float(rng.uniform(0.7, 0.97))
     border = None
@@ -925,9 +984,9 @@ def render_region(rng, platform=None):
         bc = light_colour(rng, 0.5, 0.75) if st["on_dark"] else (dark_colour(rng, 0.4) if rng.random() < 0.5
                                                                   else accent(rng, False))
         border = (bw, bc)
-    pat = float(rng.uniform(4, 14)) if rng.random() < 0.2 else 0.0
+    pat = float(rng.uniform(4, 16)) if rng.random() < 0.3 else 0.0
     col2 = None
-    if rng.random() < 0.25:
+    if rng.random() < 0.35:
         col2 = np.clip(st["box"] + rng.normal(0, 25, 3), 0, 255)
     if lay in ("adv", "nvl"):
         radius = 0 if rng.random() < 0.4 else int(rng.uniform(4, 22) / (2 if psp else 1))
@@ -938,7 +997,7 @@ def render_region(rng, platform=None):
             alpha = (float(rng.uniform(0.15, 0.6)) * box_alpha, box_alpha)
         boxes.append({"shape": "round" if radius else "rect", "rect": rect, "radius": radius,
                       "colour": st["box"], "colour2": col2, "alpha": alpha, "pattern": pat,
-                      "border": border})
+                      "border": border, "frame": frame_style(rng, psp, st, border)})
     elif lay == "band":
         a0 = float(rng.uniform(0.0, 0.7)) * box_alpha if rng.random() < 0.5 else box_alpha
         boxes.append({"shape": "rect", "rect": (-2, rect[1], w + 2, h + 2), "colour": st["box"],

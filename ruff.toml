@@ -3,7 +3,7 @@
 target-version = "py311"
 line-length = 120
 # Script directories that import each other through sys.path (first-party for isort).
-src = [".", "ci", "data", "realdata", "synth", "tests", "train"]
+src = [".", "ci", "data", "nvsynth", "realdata", "synth", "tests", "train"]
 
 [lint]
 # Selected explicitly: ruff's default rule set changes between releases.

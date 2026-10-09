@@ -137,3 +137,36 @@ def test_cost_model_consistent():
     # height 24 uses the same parameters and needs less arena at the same width
     r24 = cost.report(m, 5355, 24)
     assert r24["params"] == r["params"] and r24["arena_1024"] < r["arena_1024"]
+
+
+def test_exact_batching_equals_one_line_inference():
+    """sweep_eval.predict(exact=True) batches only equal padded widths, so its text is
+    what a one-line-at-a-time evaluator (eval/run.py) gets."""
+    import numpy as np
+
+    import sweep_eval
+    torch.manual_seed(0)
+    m = TinyVNOCR(30, width=0.25, bottleneck=48).eval()
+    for mod in m.modules():                      # non-trivial BN so the output varies
+        if isinstance(mod, nn.BatchNorm2d):
+            mod.running_var.uniform_(0.5, 2.0)
+    vocab = [chr(0x3042 + i) for i in range(29)]
+    rng = np.random.default_rng(0)
+    crops = [rng.integers(0, 256, (32, int(w)), dtype=np.uint8) for w in (40, 41, 48, 97, 100, 160, 41)]
+    one = [sweep_eval.predict(m, [c], 32, vocab)[0] for c in crops]
+    assert sweep_eval.predict(m, crops, 32, vocab, exact=True) == one
+
+
+def test_paired_bootstrap_delta():
+    import sweep_table
+    a = {("s", str(i)): (2, 10) for i in range(50)}         # CER 20%
+    b = {("s", str(i)): (1, 10) for i in range(50)}         # CER 10%
+    d, lo, hi = sweep_table.paired_delta(a, b, n_boot=200)
+    assert abs(d - 0.10) < 1e-12 and lo <= d <= hi
+    assert sweep_table.paired_delta(a, {}) is None
+
+
+def test_unk_scoring():
+    import sweep_eval
+    r = sweep_eval.score(["ab〓d", "abcd"], ["abxd", "abcd"], unk_vocab=set("abcd"))
+    assert r["cer"] == 1 / 8 and r["cer_unk_ok"] == 0 and r["line_acc"] == 0.5

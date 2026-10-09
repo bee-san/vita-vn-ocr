@@ -151,17 +151,18 @@ def run(binary, cases, seed=0):
 
 
 def real_regions(manifests):
+    """Region crops of every manifest row whose screenshot is available locally."""
     sys.path.insert(0, str(ROOT / "eval" / "linefind"))
-    from build_gt import read, region_rgb
-    shots = [str(ROOT / "data" / "vndb" / "shots"),
-             "/local/home/skerraut/herd-vita-ocr/shared/artifacts/linefind/psp_dev/shots"]
-    out = []
+    from build_gt import SHOT_DIRS, read, region_rgb
+    out, missing = [], 0
     for m in manifests:
         for r in read(m):
             try:
-                out.append(region_rgb(r, shots))
+                out.append(region_rgb(r, SHOT_DIRS))
             except FileNotFoundError:
-                pass
+                missing += 1
+    if missing:
+        print(f"{missing} regions skipped: screenshot not local (eval/linefind/build_gt.py fetch)")
     return out
 
 

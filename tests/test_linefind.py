@@ -1,0 +1,156 @@
+"""Tests for the dialogue line finder: runtime/vocr_lines.c and its Python twin.
+
+The C parts compile runtime/vocr_lines.c with the system compiler (cc, or $CC) and
+are skipped when no compiler is available.
+"""
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "synth"))
+sys.path.insert(0, str(ROOT / "tests"))
+import common  # noqa: E402
+import linefind_parity  # noqa: E402
+
+CC = shutil.which("cc") or shutil.which("gcc") or shutil.which("clang")
+
+
+@pytest.fixture(scope="module")
+def driver(tmp_path_factory):
+    if CC is None:
+        pytest.skip("no C compiler")
+    out = tmp_path_factory.mktemp("vocr") / "vocr_lines_test"
+    subprocess.run([CC, "-std=c99", "-O2", "-Wall", "-Wextra", "-Werror",
+                    str(ROOT / "runtime" / "vocr_lines.c"), str(ROOT / "runtime" / "vocr_lines_test.c"),
+                    "-o", str(out)], check=True)
+    return out
+
+
+def lines_image(ink, paper, outline=None, h=80, w=320):
+    """Two lines of dense block 'glyphs' (rows 12..31 and 46..65, columns 16..259) on a
+    flat box: 18-px cells every 24 px, 3-px strokes every 6 px and three 3-px bars, the
+    same pattern as the C selftest, so every glyph row has ink at most 3 px apart."""
+    img = np.empty((h, w, 3), np.uint8)
+    img[:] = paper
+    yy, xx = np.mgrid[0:20, 0:w - 76]
+    cell = xx % 24
+    ys, xs = np.nonzero((cell < 18) & ((cell % 6 < 3) | (yy % 8 < 3)))
+    xs = xs + 16
+    for top in (12, 46):
+        if outline is not None:
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    img[top + ys + dy, xs + dx] = outline
+        img[top + ys, xs] = ink
+    return img
+
+
+def legacy_frozen(rgb):
+    """The overlay finder exactly as the seed commit shipped it (synth/common.py)."""
+    h_img, w_img = rgb.shape[:2]
+    if not w_img or not h_img or w_img > 960 or h_img > 544:
+        return None
+    bright = (rgb[..., 0] >= 180) & (rgb[..., 1] >= 180) & (rgb[..., 2] >= 180)
+    counts = bright.sum(axis=1)
+    if (counts > w_img * 3 // 4).any():
+        return None
+    has = counts > 0
+    left = np.where(has, bright.argmax(axis=1), w_img)
+    right = np.where(has, w_img - bright[:, ::-1].argmax(axis=1), 0)
+    lines, active, start, last = [], False, 0, 0
+    for y in range(h_img + 1):
+        count = counts[y] if y < h_img else 0
+        if count >= 2:
+            if not active:
+                start, active = y, True
+            last = y
+        if active and (y == h_img or y - last >= 3):
+            h = last - start + 1
+            if h >= 8:
+                if h > 88 or len(lines) == 8:
+                    return None
+                x1, x2 = int(left[start:last + 1].min()), int(right[start:last + 1].max())
+                if x2 > x1:
+                    lx = x1 - 4 if x1 > 4 else 0
+                    ly = start - 4 if start > 4 else 0
+                    ex = x2 + 4 if x2 + 4 < w_img else w_img
+                    ey = last + 5 if last + 5 < h_img else h_img
+                    lines.append((lx, ly, ex - lx, ey - ly))
+            active = False
+    return lines
+
+
+def test_grad_is_polarity_agnostic():
+    light = lines_image(240, 30)
+    dark = lines_image(30, 230)
+    bl, dl, _ = common.find_lines_ex(light)
+    bd, dd, _ = common.find_lines_ex(dark)
+    assert len(bl) == 2 and bl == bd
+    assert dl == [0, 0] and dd == [1, 1]
+    for (x, y, w, h), top in zip(bl, (12, 46)):
+        assert y <= top - 3 and y + h >= top + 20 + 3       # whole line plus padding
+        assert x <= 16 - 3 and x + w >= 260 + 3
+    assert common.find_lines(dark, "legacy") is None        # the old finder rejects light boxes
+    assert len(common.find_lines(light, "legacy")) == 2
+
+
+def test_outlined_light_text_on_light_box_stays_light():
+    # White fill, black outline, light box: the dark outline outnumbers nothing 8:1.
+    img = lines_image(255, 180, outline=20)
+    boxes, dark, _ = common.find_lines_ex(img)
+    assert len(boxes) == 2 and dark == [0, 0]
+    crops = common.line_crops(img)
+    assert all(d == 0 for _, _, d in crops)
+
+
+def test_line_crops_invert_dark_text():
+    dark = lines_image(30, 230)
+    crops = common.line_crops(dark)
+    assert len(crops) == 2 and all(d == 1 for _, _, d in crops)
+    for crop, (x, y, w, h), _ in crops:
+        assert crop.shape == (h, w)
+        assert np.median(crop) < 64                          # inverted: dark ground, light text
+    kept = common.line_crops(dark, invert_dark=False)
+    assert np.median(kept[0][0]) > 192
+
+
+def test_grey_and_rgba_inputs_agree():
+    rgb = lines_image(30, 230)
+    rgba = np.concatenate([rgb, np.full(rgb.shape[:2] + (1,), 7, np.uint8)], axis=2)
+    assert common.find_lines_ex(rgb) == common.find_lines_ex(rgba) == common.find_lines_ex(common.to_gray(rgb))
+
+
+def test_empty_and_tiny_regions():
+    assert common.find_lines(np.full((60, 200, 3), 128, np.uint8)) == []
+    for w, h in ((1, 1), (3, 1), (1, 9), (5, 5)):
+        assert common.find_lines(np.zeros((h, w, 3), np.uint8)) == []
+    noise = np.random.default_rng(0).integers(0, 256, (100, 300, 3), dtype=np.uint8)
+    assert len(common.find_lines(noise)) <= common.LINES_MAX
+
+
+def test_legacy_twin_unchanged():
+    for img in linefind_parity.make_cases(3, 120):
+        if img.ndim == 3:
+            assert common.find_lines(img[..., :3], "legacy") == legacy_frozen(img[..., :3])
+
+
+def test_c_selftest(driver):
+    out = subprocess.run([str(driver), "--selftest"], check=True, capture_output=True, text=True).stdout
+    assert "selftest ok" in out
+
+
+def test_c_matches_twin(driver):
+    imgs = linefind_parity.make_cases(11, 160) + [lines_image(30, 230), lines_image(255, 180, outline=20),
+                                                  lines_image(250, 200, outline=20)]
+    cases = [(img, f) for img in imgs for f in ("grad", "legacy")]
+    assert linefind_parity.run(driver, cases, seed=11) == []
+
+
+def test_c_arena_bytes(driver):
+    out = subprocess.run([str(driver), "--arena", "960", "544"], check=True, capture_output=True, text=True)
+    assert int(out.stdout) < 128 * 1024                      # the whole finder needs < 128 KiB at 960x544

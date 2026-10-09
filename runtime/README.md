@@ -21,7 +21,11 @@ Memory, measured with `vocr_arena_bytes()` (equal to `export.plan_arena()`; the 
 | code (`vocr.o`, ARM `-O2`, NEON / scalar) | 12,287 / 9,779 B | same | same |
 | total | ≈ 3.2 MB | ≈ 0.99 MB | ≈ 1.0 MB |
 
-For comparison, the research measured the trimmed int8 PP-OCRv5 at a 13.4 MiB peak in the overlay. The deepest static stack (`-fstack-usage`, ARM) is about 2.7 KB, in `vocr_arena_bytes()`. `vocr_run()` uses about 1.2 KB.
+For comparison, the research measured the trimmed int8 PP-OCRv5 at a 13.4 MiB peak in the overlay.
+
+Stack, from `-fstack-usage` on ARM:
+- The deepest static chain is `vocr_arena_bytes()` → `plan()`, 2,664 B, because it plans into a local `vocr_ctx`.
+- `vocr_run()` → `step_op()` → `mm_f32()` is 1,136 B with NEON and 968 B scalar.
 
 Tiles trade arena for speed (bytes; host speed is in the next table):
 
@@ -86,6 +90,12 @@ text = r.text(crop)                                 # HxW uint8 grey or HxWx4 ui
 text, logits = r.run(crop, logits=True)
 ```
 
+From eval's harness (PR #2), use its `cmd:` protocol. The CLI reads PGM or PPM paths on stdin and prints one line each:
+
+```sh
+python eval/run.py --model 'cmd:runtime/build/vocr_cli v1_w8.vocr --mode w8i --stdin' --set vita-test
+```
+
 ## Modes and exactness
 
 | mode | weights | pointwise and head arithmetic |
@@ -103,7 +113,7 @@ The rest is 744,960 B of int8 matrices (the head alone is 514,560 B) and 27,904 
 
 Every output is computed in a fixed order: bias first, then each product added and rounded on its own. The NEON code only vectorises across output channels, so it gives the scalar code's bits. Build with `-ffp-contract=off` (the Makefile does), so that compilers don't fuse `a*b+c`. `tests/vocr_ref.py` is a numpy model of exactly this arithmetic, and the parity test requires the C logits to equal it bit for bit.
 
-ARMv7 NEON flushes denormals to zero while VFP and x86 don't, so in principle the NEON build could differ wherever a denormal appears. No line in the tests produced one.
+ARMv7 NEON flushes denormals to zero while VFP and x86 don't, so in principle the NEON build could differ wherever a denormal appears. On every line tested so far, the NEON logits were bit-identical to the scalar and host ones.
 
 ## Weights blob
 

@@ -1,7 +1,11 @@
 /* vocr_cli - host / qemu driver for the vocr runtime (not part of the console build).
  *
- *   vocr_cli MODEL.vocr [opts] IMAGE.pgm...     one text line per image on stdout
- *   vocr_cli MODEL.vocr [opts] --pack LINES.bin  many grey crops in one file
+ *   vocr_cli MODEL.vocr [opts] IMAGE.pgm|ppm...  one text line per image on stdout
+ *   vocr_cli MODEL.vocr [opts] --stdin           image paths on stdin, one per line
+ *   vocr_cli MODEL.vocr [opts] --pack LINES.bin  many crops in one file
+ *
+ * Images are binary PGM (P5, grey) or PPM (P6, RGB, run through the RGBA path), maxval 255.
+ * --stdin fits eval/run.py: --model 'cmd:runtime/build/vocr_cli MODEL.vocr --stdin'.
  *
  * opts: --mode auto|f32|w8f|w8i  --tile N  --head N  --max-width N
  *       --logits OUT.bin   per line: u32 frames, u32 classes, float32 logits
@@ -59,13 +63,14 @@ static unsigned rd32(const unsigned char *p)
     return (unsigned)p[0] | (unsigned)p[1] << 8 | (unsigned)p[2] << 16 | (unsigned)p[3] << 24;
 }
 
-/* Binary PGM (P5, maxval 255). Returns pixels inside buf. */
-static unsigned char *parse_pgm(unsigned char *buf, size_t n, unsigned *w, unsigned *h)
+/* Binary PGM (P5) or PPM (P6), maxval 255. Returns pixels inside buf; *ch = 1 or 3. */
+static unsigned char *parse_pnm(unsigned char *buf, size_t n, unsigned *w, unsigned *h, unsigned *ch)
 {
     unsigned v[3];
     size_t i = 2;
     int k;
-    if (n < 3 || buf[0] != 'P' || buf[1] != '5') return NULL;
+    if (n < 3 || buf[0] != 'P' || (buf[1] != '5' && buf[1] != '6')) return NULL;
+    *ch = buf[1] == '5' ? 1u : 3u;
     for (k = 0; k < 3; k++) {
         while (i < n && (buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\r' || buf[i] == '\t' || buf[i] == '#')) {
             if (buf[i] == '#')
@@ -74,13 +79,14 @@ static unsigned char *parse_pgm(unsigned char *buf, size_t n, unsigned *w, unsig
                 i++;
         }
         v[k] = 0;
-        while (i < n && buf[i] >= '0' && buf[i] <= '9') v[k] = v[k] * 10u + (unsigned)(buf[i++] - '0');
+        while (i < n && buf[i] >= '0' && buf[i] <= '9' && v[k] < 1000000u)
+            v[k] = v[k] * 10u + (unsigned)(buf[i++] - '0');
     }
-    if (i >= n || v[2] != 255) return NULL;
+    if (i >= n || v[2] != 255 || v[0] > 65535u || v[1] > 65535u) return NULL;
     i++;
     *w = v[0];
     *h = v[1];
-    if (!*w || !*h || n - i < (size_t)*w * *h) return NULL;
+    if (!*w || !*h || (n - i) / *ch < (size_t)*w * *h) return NULL;
     return buf + i;
 }
 
@@ -179,21 +185,48 @@ static int run_pack(vocr_ctx *ctx, const vocr_model *m, const char *path, int re
     return rc ? 1 : 0;
 }
 
-static int run_pgm(vocr_ctx *ctx, const vocr_model *m, const char *path, int repeat, FILE *lf,
-                   FILE *inf, double *t_total, unsigned long *frames, unsigned long *lines)
+static int run_image(vocr_ctx *ctx, const vocr_model *m, const char *path, int repeat, FILE *lf,
+                     FILE *inf, double *t_total, unsigned long *frames, unsigned long *lines)
 {
-    size_t n;
-    unsigned w = 0, h = 0;
+    size_t n, j;
+    unsigned w = 0, h = 0, ch = 1;
     unsigned char *buf = (unsigned char *)read_file(path, &n, 1);
-    unsigned char *px = buf ? parse_pgm(buf, n, &w, &h) : NULL;
+    unsigned char *px = buf ? parse_pnm(buf, n, &w, &h, &ch) : NULL, *rgba = NULL;
     int rc = 1;
-    if (!px)
-        fprintf(stderr, "cannot read PGM %s\n", path);
-    else if (!run_line(ctx, m, px, w, h, 1, repeat, lf, inf, t_total, frames))
-        rc = 0;
+    if (!px) {
+        fprintf(stderr, "cannot read PGM/PPM %s\n", path);
+    } else if (ch == 3 && !(rgba = (unsigned char *)malloc((size_t)w * h * 4u))) {
+        fprintf(stderr, "out of memory\n");
+    } else {
+        if (rgba)
+            for (j = 0; j < (size_t)w * h; j++) {
+                rgba[4 * j] = px[3 * j];
+                rgba[4 * j + 1] = px[3 * j + 1];
+                rgba[4 * j + 2] = px[3 * j + 2];
+                rgba[4 * j + 3] = 255;
+            }
+        if (!run_line(ctx, m, rgba ? rgba : px, w, h, rgba ? 4u : 1u, repeat, lf, inf, t_total, frames))
+            rc = 0;
+    }
+    free(rgba);
     free(buf);
     ++*lines;
     return rc;
+}
+
+/* One image path per stdin line (trailing CR/LF stripped; empty lines skipped). */
+static int run_stdin(vocr_ctx *ctx, const vocr_model *m, int repeat, FILE *lf, FILE *inf,
+                     double *t_total, unsigned long *frames, unsigned long *lines)
+{
+    char path[4096];
+    while (fgets(path, sizeof path, stdin)) {
+        size_t len = strlen(path);
+        while (len && (path[len - 1] == '\n' || path[len - 1] == '\r')) path[--len] = 0;
+        if (!len) continue;
+        if (run_image(ctx, m, path, repeat, lf, inf, t_total, frames, lines)) return 1;
+        fflush(stdout);
+    }
+    return ferror(stdin) ? 1 : 0;
 }
 
 static int mode_of(const char *v)
@@ -211,11 +244,11 @@ int main(int argc, char **argv)
     void *blob = NULL, *arena = NULL;
     const char *pack = NULL, *logits_path = NULL, *arena_list = NULL, *input_path = NULL;
     FILE *lf = NULL, *inf = NULL;
-    int i, rc, status = 1, repeat = 0, crc = 0;
+    int i, rc, status = 1, repeat = 0, crc = 0, use_stdin = 0;
     unsigned long lines = 0, frames = 0;
     double t_total = 0.0;
     if (argc < 2) {
-        fprintf(stderr, "usage: %s MODEL.vocr [opts] IMAGE.pgm... | --pack FILE\n", argv[0]);
+        fprintf(stderr, "usage: %s MODEL.vocr [opts] IMAGE.pgm/ppm... | --stdin | --pack FILE\n", argv[0]);
         return 2;
     }
     memset(&o, 0, sizeof o);
@@ -232,6 +265,7 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--pack") && has) pack = argv[++i];
         else if (!strcmp(a, "--arena") && has) arena_list = argv[++i];
         else if (!strcmp(a, "--crc")) crc = 1;
+        else if (!strcmp(a, "--stdin")) use_stdin = 1;
         else if (a[0] == '-' && a[1] == '-') {
             fprintf(stderr, "unknown option or missing value: %s\n", a);
             return 2;
@@ -290,13 +324,14 @@ int main(int argc, char **argv)
     if (pack && run_pack(&ctx, &m, pack, repeat, lf, inf, &t_total, &frames, &lines)) goto done;
     for (i = 2; i < argc; i++) {
         const char *a = argv[i];
-        if (!strcmp(a, "--crc")) continue;
+        if (!strcmp(a, "--crc") || !strcmp(a, "--stdin")) continue;
         if (a[0] == '-' && a[1] == '-') {
             i++; /* option value */
             continue;
         }
-        if (run_pgm(&ctx, &m, a, repeat, lf, inf, &t_total, &frames, &lines)) goto done;
+        if (run_image(&ctx, &m, a, repeat, lf, inf, &t_total, &frames, &lines)) goto done;
     }
+    if (use_stdin && run_stdin(&ctx, &m, repeat, lf, inf, &t_total, &frames, &lines)) goto done;
     if (lines)
         fprintf(stderr, "%lu lines, %lu frames, %.3f ms/line, %.1f us/frame%s\n", lines, frames,
                 1e3 * t_total / (double)lines / (repeat > 0 ? repeat : 1),

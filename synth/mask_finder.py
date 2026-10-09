@@ -1,4 +1,4 @@
-"""Polarity-agnostic line finders for cutting synthetic training crops.
+"""An ideal, polarity-agnostic line finder for cutting synthetic training crops.
 
 The console's line finder (common.find_lines(img, "grad"), the twin of
 runtime/vocr_lines.c) misses some lines of hard styles, and the overlay's legacy

@@ -26,7 +26,7 @@ calibrated on contact sheets of real training-side Vita and PSP screenshots
             multiples of their pixel size; ordinary faces are also drawn
             without anti-aliasing sometimes (bitmap-like PSP text)
 
-Lines are cut with finders.find_lines_mask on the renderer's own text-ink mask:
+Lines are cut with mask_finder.find_lines_mask on the renderer's own text-ink mask:
 the overlay's projection rules, applied to text of any polarity (an ideal finder).
 `--finder grad` cuts with the console's line finder instead (common.find_lines_ex,
 the bit-exact twin of runtime/vocr_lines.c) and `--finder legacy` with the
@@ -64,7 +64,7 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 from common import DATA, find_lines, find_lines_ex, is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
-from finders import find_lines_mask  # noqa: E402
+from mask_finder import find_lines_mask  # noqa: E402
 
 FONT_DIRS = [DATA / "fonts", DATA / "fonts_extra"]   # the first one is never written to
 CATEGORY = {

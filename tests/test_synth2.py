@@ -9,7 +9,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "synth"))
 
-import finders  # noqa: E402
+import mask_finder  # noqa: E402
 import render  # noqa: E402
 from common import find_lines  # noqa: E402
 
@@ -19,7 +19,7 @@ def test_mask_finder_geometry_and_furigana():
     ink[10:16, 40:60] = True          # furigana: 6 rows, under 0.55x the line height -> dropped
     ink[20:44, 30:250] = True         # line 1: 24 rows
     ink[60:84, 30:180] = True         # line 2
-    boxes = finders.find_lines_mask(ink)
+    boxes = mask_finder.find_lines_mask(ink)
     assert boxes == [(26, 16, 228, 32), (26, 56, 158, 32)]   # 4 px pad left/right/top, 5 below
 
 
@@ -27,12 +27,12 @@ def test_mask_finder_merges_close_furigana_and_rejects_tall_runs():
     ink = np.zeros((100, 200), bool)
     ink[8:14, 20:40] = True           # furigana 1 px above the line: part of the line's run
     ink[15:39, 10:150] = True
-    assert finders.find_lines_mask(ink) == [(6, 4, 148, 39)]
+    assert mask_finder.find_lines_mask(ink) == [(6, 4, 148, 39)]
     tall = np.zeros((120, 50), bool)
     tall[5:94, 5:40] = True           # one run of 89 rows (> 88): the region is rejected, as in common.py
-    assert finders.find_lines_mask(tall) is None
+    assert mask_finder.find_lines_mask(tall) is None
     tall[93] = False                  # 88 rows: still a line
-    assert finders.find_lines_mask(tall) == [(1, 1, 43, 96)]
+    assert mask_finder.find_lines_mask(tall) == [(1, 1, 43, 96)]
 
 
 def test_mask_finder_is_polarity_agnostic_and_the_console_finder_agrees():
@@ -41,7 +41,7 @@ def test_mask_finder_is_polarity_agnostic_and_the_console_finder_agrees():
         img[20:40, 20:180:4] = text                  # glyph-like vertical strokes
         ink = np.zeros((60, 200), bool)
         ink[20:40, 20:180:4] = True
-        assert finders.find_lines_mask(ink) == [(16, 16, 165, 28)]
+        assert mask_finder.find_lines_mask(ink) == [(16, 16, 165, 28)]
         (x, y, w, h), = find_lines(img, "grad")
         assert abs(x - 16) <= 5 and abs(y - 16) <= 3 and abs(w - 165) <= 8 and abs(h - 28) <= 4
 

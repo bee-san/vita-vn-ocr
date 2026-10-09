@@ -37,7 +37,7 @@ label.
 
 | `--finder` | what it is |
 |---|---|
-| `mask` (default) | `finders.find_lines_mask`: the overlay's projection rules applied to the renderer's exact text-ink mask, plus the furigana rule (runs under 0.55x the median height are dropped). Rules: rows with at least 2 ink pixels form runs, a gap of 3 rows ends a run, runs under 8 rows are ignored, a run over 88 rows or more than 8 lines rejects the region, boxes are padded by 4 px (5 below). |
+| `mask` (default) | `mask_finder.find_lines_mask`: the overlay's projection rules applied to the renderer's exact text-ink mask, plus the furigana rule (runs under 0.55x the median height are dropped). Rules: rows with at least 2 ink pixels form runs, a gap of 3 rows ends a run, runs under 8 rows are ignored, a run over 88 rows or more than 8 lines rejects the region, boxes are padded by 4 px (5 below). |
 | `grad` | `common.find_lines_ex(img, "grad")`, the bit-exact twin of the console's finder `runtime/vocr_lines.c` (#3) |
 | `legacy` | `common.find_lines(img, "legacy")`, the overlay's bright-pixel finder that cut v1's data |
 

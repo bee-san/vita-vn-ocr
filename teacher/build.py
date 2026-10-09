@@ -17,7 +17,10 @@ training (< 15 is the test hash). A capture session (realdata's <vn>/<release>/<
 to one VN, so no session straddles the split.
 
 render is deterministic: native Vita and PSP screenshots are cropped as they are; PC shots
-are scaled to fit each target screen it is legible on (cv2.INTER_AREA). The crop is the
+are scaled to fit each target screen it is legible on (cv2.INTER_AREA). Crops are stored as
+they are on screen (dark text stays dark, as in eval's crops); meta "dark" is
+synth/common.line_dark() of the crop, the test the console runtime uses to invert dark-text
+lines before recognition (docs/linefind.md, polarity contract), so a trainer can apply it. The crop is the
 line's ink box, with furigana and widened to the labelled characters' boxes, plus 4 px (Vita)
 or 2 px (PSP), as eval crops its test lines. Grey crops (integer luma) go into render.py's
 shard format, so train/train.py --real loads them as they are; per-crop meta holds the
@@ -267,6 +270,8 @@ def render(args):
     """teacher_{train,val}.npz from manifests/lines_<kind>.jsonl, and teacher_distill_{train,val}.npz
     (empty labels: for logit distillation) from manifests/distill_<kind>.jsonl."""
     import cv2
+    sys.path.insert(0, str(ROOT / "synth"))
+    from common import line_dark  # the console's polarity test (runtime/vocr_lines.c twin)
     shots = {s["shot"]: s for s in _load(MAN / "shots.jsonl")}
     extra = {k["id"]: k for k in _load(OUT / "lines_full.jsonl") + _load(OUT / "distill_full.jsonl")}
     pools = {"teacher": "lines", "teacher_distill": "distill"}
@@ -294,10 +299,12 @@ def render(args):
             for name, r in todo:
                 x0, y0, x1, y1 = G.crop_box(r["crop"], sc, G.PAD[t], img.shape[1], img.shape[0])
                 crops, labels, metas = out[(name, r["split"])]
-                crops.append(G.to_gray(img[y0:y1, x0:x1]))
+                g = G.to_gray(img[y0:y1, x0:x1])
+                crops.append(g)
                 f = extra.get(r["id"], {})
                 meta = {"real": True, "teacher": True, "id": r["id"], "vn": s["vn"], "session": s["session"],
-                        "kind": s["kind"], "target": t, "box": [x0, y0, x1, y1]}
+                        "kind": s["kind"], "target": t, "box": [x0, y0, x1, y1],
+                        "dark": int(line_dark(g, (0, 0, g.shape[1], g.shape[0])))}
                 if name == "teacher":
                     labels.append(r["label"])
                     meta.update(how=r["how"], pol=f.get("pol"), chars=[

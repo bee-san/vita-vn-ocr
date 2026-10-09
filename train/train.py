@@ -197,6 +197,8 @@ def main():
     ap.add_argument("--seed", type=int, default=None, help="seed torch and numpy (default: v1)")
     ap.add_argument("--threads", type=int, default=default_threads())
     ap.add_argument("--eval-every", type=int, default=2000)
+    ap.add_argument("--keep-evals", action="store_true",
+                    help="also keep ckpt_step<N>.pt at every eval (learning curves)")
     ap.add_argument("--init", default="", help="start weights from this checkpoint")
     args = ap.parse_args()
     torch.set_num_threads(args.threads)
@@ -304,6 +306,8 @@ def main():
                     torch.save(ck, out / "ckpt_best.pt")
                 torch.save(ck, out / "ckpt_last.tmp")
                 (out / "ckpt_last.tmp").replace(last)
+                if args.keep_evals:
+                    torch.save(ck, out / f"ckpt_step{step}.pt")
                 print(f"eval step {step}: val CER {cer:.4f} line acc {acc:.4f} (best {best:.4f})",
                       flush=True)
     print("TRAIN_DONE", flush=True)

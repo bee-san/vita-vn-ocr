@@ -9,7 +9,7 @@ General OCR models are too big for this. The best general option, a trimmed int8
 | | |
 |---|---|
 | Model | `train/model.py`: a CTC line recognizer with 0.76M parameters (stem plus depthwise-separable blocks, factorised 5,355-class head), grey input at height 32 |
-| v1 baseline | Trained on synthetic dialogue boxes only. Synthetic validation: 0.34% CER, 95.6% of lines exact (`docs/v1-metrics.jsonl`). Not yet measured on real screenshots. |
+| v1 baseline | Trained on synthetic dialogue boxes only. Synthetic validation: 0.34% CER, 95.6% of lines exact (`docs/v1-metrics.jsonl`). Real Vita screenshots (`eval/`, vita-test, 206 lines from 16 games): 23.75% CER, 52.4% exact, 62.8% CER on dark-on-light text (`docs/results.md`). |
 | Runtime | Not written yet: a plain-C runtime for Vita (ARM Cortex-A9) and PSP (MIPS Allegrex) |
 | Hardware | Nothing has run on a PCH-1000 or a PSP yet |
 

@@ -33,11 +33,12 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(ROOT / "synth"))
 import lines as L  # noqa: E402
 import vote  # noqa: E402
-from common import is_test_vn, load_vocab, to_gray  # noqa: E402
 from vndb import KINDS, excluded_vns, load_shots, realdata_dir, shot_key, shot_path  # noqa: E402
+
+sys.path.insert(0, str(ROOT / "synth"))
+from common import is_test_vn, load_vocab, to_gray  # noqa: E402
 
 MAN = HERE / "manifests"
 LINES = {k: MAN / f"lines_{k}.jsonl" for k in KINDS}

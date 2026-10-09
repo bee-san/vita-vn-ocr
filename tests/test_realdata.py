@@ -17,7 +17,8 @@ import build  # noqa: E402
 import lines as L  # noqa: E402
 import vndb  # noqa: E402
 import vote  # noqa: E402
-from common import is_test_vn, load_vocab  # noqa: E402
+
+is_test_vn, load_vocab = build.is_test_vn, build.load_vocab      # synth/common.py
 
 
 @pytest.mark.parametrize("raw, label", [

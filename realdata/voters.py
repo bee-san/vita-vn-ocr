@@ -34,6 +34,9 @@ def threads():
     return max(1, int(os.environ.get("OMP_NUM_THREADS", "4")))
 
 
+cv2.setNumThreads(threads())
+
+
 def session(path):
     import onnxruntime as ort
     so = ort.SessionOptions()

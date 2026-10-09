@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Find the text lines of every selected screenshot and read each with the OCR voters.
 
-  label.py [--shard K --nshards N] [--voters v6s,meiki,manga,v5s] [--limit-shots M]
+  label.py [--shard K --nshards N] [--procs P] [--voters v6s,meiki,manga,v5s] [--limit-shots M]
            [--sample-lines P --seed S] [--out FILE]
 
 Reads realdata/manifests/shots.jsonl and the images that vndb.py fetched. For each
@@ -12,14 +12,21 @@ unless v6s reads nothing Japanese (English UI, copyright strings: never labelled
 is also skipped where vote.v5s_can_matter() shows it cannot change the default rule's
 decision; such rows list it under "skip".
 
-Writes one JSON row per line to $REALDATA/labels/lines.<K>.jsonl:
+Writes one JSON row per line to $REALDATA/labels/lines.<K>of<N>.jsonl:
   id, url, vn, kind, dims, ink [x0, y0, x1, y1] (source px), pol, r {voter: [text, score]}
-and the screenshot URL to lines.<K>.done once all its lines are written, so a killed
-run resumes where it stopped. build.py turns these rows into labelled crops.
+and the screenshot URL to lines.<K>of<N>.done once all its lines are written. Every
+lines.*.done counts, so a killed run resumes where it stopped, even with a different
+sharding. build.py turns these rows into labelled crops.
+
+--procs P splits this shard over P worker processes with OMP_NUM_THREADS / P threads each
+(the readers scale poorly with threads on short lines: manga-ocr reads a line in 0.72 s on
+one thread and 0.47 s on five), so one heavy.sh slot runs P single-thread workers.
 """
 import argparse
 import hashlib
 import json
+import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -64,6 +71,38 @@ def line_candidates(det, bgr, kind):
     return out
 
 
+def spawn(args):
+    """Run this shard as `procs` worker processes (sub-shards), each with an equal share of
+    the slot's threads, and wait for all of them."""
+    n = args.procs
+    if args.out:
+        sys.exit("--out cannot be combined with --procs (each worker writes its own shard file)")
+    env = dict(os.environ)
+    each = str(max(1, V.threads() // n))
+    for var in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "TORCH_NUM_THREADS"):
+        env[var] = each
+    skip = {"--procs", "--shard", "--nshards"}
+    rest, it = [], iter(sys.argv[1:])
+    for a in it:
+        if a.split("=")[0] in skip:
+            if "=" not in a:
+                next(it, None)
+            continue
+        rest.append(a)
+    procs = []
+    for i in range(n):
+        cmd = [sys.executable, str(Path(__file__).resolve()), "--shard", str(args.shard * n + i),
+               "--nshards", str(args.nshards * n), *rest]
+        log = open(realdata_dir() / "labels" / f"worker.{args.shard * n + i}of{args.nshards * n}.log", "a")
+        procs.append(subprocess.Popen(cmd, env=env, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL))
+    print(f"{n} workers with {each} thread(s) each: pids {[p.pid for p in procs]}", flush=True)
+    rcs = [p.wait() for p in procs]
+    print(f"workers done, exit codes {rcs}", flush=True)
+    if any(rcs):
+        sys.exit(1)
+    print("LABEL_DONE", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--shard", type=int, default=0)
@@ -78,11 +117,17 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--no-cascade", action="store_true", help="always run every voter")
+    ap.add_argument("--procs", type=int, default=1)
     args = ap.parse_args()
-    out = args.out or realdata_dir() / "labels" / f"lines.{args.shard}.jsonl"
+    if args.procs > 1:
+        return spawn(args)
+    out = args.out or realdata_dir() / "labels" / f"lines.{args.shard}of{args.nshards}.jsonl"
     out.parent.mkdir(parents=True, exist_ok=True)
     done_path = out.with_suffix(".done")
-    done = set(done_path.read_text().split()) if done_path.exists() else set()
+    done = set()
+    for path in [done_path] + ([] if args.out else sorted(out.parent.glob("lines.*.done"))):
+        if path.exists():
+            done |= set(path.read_text().split())
 
     kinds = set(args.kinds.split(","))
     rows = [r for r in load_shots() if r["kind"] in kinds and shard_of(r["url"], args.nshards) == args.shard

@@ -11,9 +11,11 @@ Two crops come out of every ink box:
   voter view   the ink box plus 20% of its height on every side, at source resolution.
                The OCR voters read this; for PC screenshots it is the sharp original.
   train crop   the ink box at the target resolution (Vita 960x544 or PSP 480x272) padded
-               like the overlay's line finder pads its lines: 4 px left/top/right, 5 px
-               below. PC screenshots are first scaled to fit the target screen
-               (cv2.INTER_AREA), so their glyphs end up at console size.
+               2 px left and right, 3 px above and 4 px below: on 400 accepted lines the
+               console's grad finder (synth/common.find_lines_ex, runtime/vocr_lines.c)
+               then gives boxes whose median edge difference is 0 px on every side
+               (check_finder.py). PC screenshots are first scaled to fit the target
+               screen (cv2.INTER_AREA), so their glyphs end up at console size.
 """
 import math
 
@@ -26,7 +28,7 @@ TARGETS = {"vita": (960, 544), "psp": (480, 272)}
 # title or logo, not dialogue.
 MIN_INK = {"vita": 14, "psp": 10}
 MAX_INK = 72
-PAD = (4, 4, 4, 5)                      # left, top, right, bottom: as common.find_lines
+PAD = (2, 3, 2, 4)                      # left, top, right, bottom
 
 
 def make_detector(threads):

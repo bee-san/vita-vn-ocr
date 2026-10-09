@@ -17,7 +17,10 @@ of VNs; < 15 is the test hash), everything else train.
 `render` is deterministic and needs no OCR: it rescales each screenshot to the line's
 target (vita 960x544 / psp 480x272; native Vita and PSP shots stay as they are, PC shots
 give one crop per target where the glyphs are legible), crops the padded line box, and
-stores integer-luma grey crops in render.py's shard format, with per-line meta.
+stores integer-luma grey crops in render.py's shard format, with per-line meta. It keeps
+the console's polarity contract (docs/linefind.md): a crop whose text common.line_dark()
+calls dark is inverted (255 - g), so every crop shows light text, as synth/render.py's
+shards do; --keep-polarity writes the crops as they are.
 """
 import argparse
 import hashlib
@@ -38,7 +41,7 @@ import vote  # noqa: E402
 from vndb import KINDS, excluded_vns, load_shots, realdata_dir, shot_key, shot_path  # noqa: E402
 
 sys.path.insert(0, str(ROOT / "synth"))
-from common import is_test_vn, load_vocab, to_gray  # noqa: E402
+from common import is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
 
 MAN = HERE / "manifests"
 LINES = {k: MAN / f"lines_{k}.jsonl" for k in KINDS}
@@ -226,8 +229,10 @@ def write_readme(stats, counts):
 real_train.npz, real_val.npz
     Grey line crops (integer luma, synth/common.to_gray) at native size, in render.py's shard
     format (data, offsets, shapes, labels, meta) so train/train.py --real loads them as they
-    are. meta per crop: id, vn, kind (vita | psp | hires), target (vita | psp), pol
-    (light-on-dark | dark-on-light), how (the vote that labelled it, or "hand").
+    are. Dark-text crops (common.line_dark, the console's rule) are inverted to light text,
+    as the console and synth/render.py do. meta per crop: id, vn, session, kind (vita | psp |
+    hires), target (vita | psp), pol (light-on-dark | dark-on-light, the style before
+    inversion), dark and inverted (the console's polarity flag), how (the vote, or "hand").
     {counts}
     Split by VNDB VN: val = 15 <= md5(vn) % 100 < 25. Use real_val for model selection only.
 
@@ -238,7 +243,8 @@ one crop per target where the ink is 14-72 px (Vita) or 10-72 px (PSP) tall.
 Test games excluded: synth/common.is_test_vn() and every id in eval's test_games.json.
 
 Labels: PP-OCRv5 mobile det finds the text rows; each row's ink box is refined by gradient
-energy (either polarity); crops are padded like the overlay's line finder (4 px, 5 below).
+energy (either polarity); crops are padded so the console's grad finder gives the same
+boxes (median edge difference 0 px on every side, realdata/check_finder.py).
 Four readers vote: PP-OCRv5 server, PP-OCRv6 small, manga-ocr, meiki. Rule
 {stats['rule']}: at least three readers support one PP-OCR reading (manga-ocr/meiki may
 differ by invented edge brackets, and from v6s by ellipsis cell counts); a fourth reader
@@ -300,14 +306,17 @@ def render(args):
             if not todo:
                 continue
             sc = L.target_scale(rgb.shape[1], rgb.shape[0], t) if s["kind"] == "hires" else 1.0
-            img = L.scale_image(rgb, sc)
+            grey = to_gray(L.scale_image(rgb, sc))
             for r in todo:
-                x0, y0, x1, y1 = L.train_box(r["ink"], sc, img.shape[1], img.shape[0])
+                x0, y0, x1, y1 = L.train_box(r["ink"], sc, grey.shape[1], grey.shape[0])
+                dark = line_dark(grey, (x0, y0, x1 - x0, y1 - y0))
+                crop = grey[y0:y1, x0:x1]
                 crops, labels, metas = out[r["split"]]
-                crops.append(to_gray(img[y0:y1, x0:x1]))
+                crops.append(255 - crop if dark and not args.keep_polarity else crop.copy())
                 labels.append(r["label"])
                 metas.append({"real": True, "id": r["id"], "vn": s["vn"], "session": s["session"],
-                              "kind": s["kind"], "target": t, "pol": r["pol"], "how": r["how"]})
+                              "kind": s["kind"], "target": t, "pol": r["pol"], "dark": dark,
+                              "inverted": bool(dark and not args.keep_polarity), "how": r["how"]})
     dest = realdata_dir()
     for split, (crops, labels, metas) in out.items():
         if not crops:
@@ -335,7 +344,9 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("decide")
     p.add_argument("--rule", default=vote.DEFAULT_RULE)
-    sub.add_parser("render")
+    p.add_argument("--keep-polarity", action="store_true", help="don't invert dark-text crops")
+    p = sub.add_parser("render")
+    p.add_argument("--keep-polarity", action="store_true", help="don't invert dark-text crops")
     args = ap.parse_args()
     {"decide": decide, "render": render}[args.cmd](args)
 

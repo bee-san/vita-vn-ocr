@@ -131,11 +131,21 @@ def test_merge_rows_joins_a_split_line_only():
     assert sorted(map(tuple, rows)) == [(10, 100, 400, 131), (10, 140, 300, 170)]
 
 
-def test_train_box_pads_like_the_line_finder():
-    assert L.train_box((100, 50, 300, 74), 1.0, 960, 544) == (96, 46, 304, 79)
-    assert L.train_box((2, 1, 300, 541), 1.0, 960, 544) == (0, 0, 304, 544)
-    assert L.train_box((200, 100, 600, 140), 0.375, 480, 270) == (71, 33, 229, 58)
+def test_train_box_padding():
+    assert L.train_box((100, 50, 300, 74), 1.0, 960, 544) == (98, 47, 302, 78)
+    assert L.train_box((1, 1, 300, 541), 1.0, 960, 544) == (0, 0, 302, 544)
+    assert L.train_box((200, 100, 600, 140), 0.375, 480, 270) == (73, 34, 227, 57)
     assert L.target_scale(1280, 720, "vita") == 0.75 and L.target_scale(1280, 720, "psp") == 0.375
+
+
+def test_dark_text_is_flagged_for_inversion():
+    """build.render writes light-text crops: dark text (common.line_dark) is inverted."""
+    for polarity in ("light", "dark"):
+        img, (x0, y0, x1, y1) = text_image(polarity)
+        g = build.to_gray(img)
+        box = L.train_box((x0, y0, x1, y1), 1.0, img.shape[1], img.shape[0])
+        dark = build.line_dark(g, (box[0], box[1], box[2] - box[0], box[3] - box[1]))
+        assert dark == (polarity == "dark")
 
 
 def test_val_split_is_disjoint_from_the_test_hash():

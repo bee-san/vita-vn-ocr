@@ -36,8 +36,11 @@ crops are copyrighted: they stay there and are never committed.
    from PP-OCRv6 by ellipsis cell counts. A fourth reader that differs only in small
    kana or ー/一 vetoes it. Labels follow the corpus conventions (`vote.canon`).
 4. `build.py`: hand checks override the vote; labels outside `data/vocab.txt` are
-   dropped; one label is kept at most twice per VN and 8 times in all; crops are
-   padded like the overlay's line finder (4 px, 5 px below) at the target resolution.
+   dropped; one label is kept at most twice per VN and 8 times in all. Crops are cut at
+   the target resolution with the console's conventions: padded so that the grad line
+   finder (`runtime/vocr_lines.c`) gives the same boxes (median edge difference 0 px on
+   every side over 400 lines, `check_finder.py`), and inverted when `common.line_dark()`
+   calls the text dark (docs/linefind.md's polarity contract; `--keep-polarity` skips it).
 
 Test games are excluded at every step: `synth/common.is_test_vn()` and the eval set's
 reserved VNs (`eval/manifests/test_games.json` once merged, `eval_exclude.json` until then).
@@ -82,7 +85,7 @@ like the rest. The eval test sets come from other games.
 | `manifests/games.json` | every VN in the collection: title, split, kinds, sessions, screenshots, accepted lines |
 | `manifests/handcheck.jsonl` | lines checked by eye: `truth` (null = unreadable), the `ink` box checked, `set` (dev / spot) |
 | `manifests/stats.json` | counts from the last `build.py decide` |
-| `$REALDATA/real_train.npz`, `real_val.npz` | grey crops in render.py's shard format; meta per crop: `id, vn, session, kind, target, pol, how` |
+| `$REALDATA/real_train.npz`, `real_val.npz` | grey crops in render.py's shard format, dark text inverted; meta per crop: `id, vn, session, kind, target, pol, dark, inverted, how` |
 
 The split is by game: a VN is validation when `15 <= md5(vn) % 100 < 25` (`build.split_of`),
 otherwise training. A capture session (`<vn>/<release>/<n>`, screenshots of one release

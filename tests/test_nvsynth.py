@@ -135,9 +135,10 @@ def test_process_page_is_deterministic_and_counts_reasons():
 def test_oov_statistics_cover_every_horizontal_line():
     rgb = page()
     ann = {"line_bboxes": [line("価格は€5です", 10, 10, 200, 30), line("¥100です", 10, 60, 200, 30)]}
-    stats, oov = ex.new_stats(), Counter()
-    ex.process_page(jpeg(rgb), ann, [200, 400], 0, "t", 1, 0, VOCAB, stats, oov)
+    stats, oov, chars = ex.new_stats(), Counter(), Counter()
+    ex.process_page(jpeg(rgb), ann, [200, 400], 0, "t", 1, 0, VOCAB, stats, oov, chars)
     assert oov == Counter({"€": 1, "¥": 1}) and stats["h_oov_lines"] == 2 and stats["h_lines"] == 2
+    assert chars == Counter("価格は€5です") + Counter("¥100です") and stats["h_chars"] == sum(chars.values())
 
 
 def test_shards_load_in_train_py_unchanged(tmp_path):

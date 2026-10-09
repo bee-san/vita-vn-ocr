@@ -219,11 +219,11 @@ def page_rng(seed, tag, sample_id):
     return np.random.default_rng([seed, zlib.crc32(tag.encode()), int(sample_id)])
 
 
-def process_page(jpeg, ann, dims, sample_id, tag, per_page, seed, vocab, stats, oov):
+def process_page(jpeg, ann, dims, sample_id, tag, per_page, seed, vocab, stats, oov, chars=None):
     """Picks up to per_page usable lines of one page at random and crops them.
     dims is the page's [H, W] (the HDF5 'dimensions' row). Updates stats (reason
-    counts) and oov (out-of-vocab character counts) in place.
-    Returns [(grey crop, label, meta)]."""
+    counts), oov (out-of-vocab character counts) and chars (every character of every
+    horizontal line, if given) in place. Returns [(grey crop, label, meta)]."""
     ann = json.loads(ann) if isinstance(ann, (str, bytes)) else ann
     rng = page_rng(seed, tag, sample_id)
     stats["pages"] += 1
@@ -236,6 +236,8 @@ def process_page(jpeg, ann, dims, sample_id, tag, per_page, seed, vocab, stats, 
         if label is not None:                              # horizontal: OOV statistics
             stats["h_lines"] += 1
             stats["h_chars"] += len(label)
+            if chars is not None:
+                chars.update(label)
             missing = [c for c in label if c not in vocab]
             if missing:
                 stats["h_oov_lines"] += 1

@@ -146,17 +146,17 @@ def _init_worker():
 
 
 def _pages(job):
-    """Worker: crop pages [a, b) of one shard. Returns (items, stats, oov)."""
+    """Worker: crop pages [a, b) of one shard. Returns (items, stats, oov, chars)."""
     import h5py
     path, tag, a, b, per_page, seed = job
-    stats, oov, items = ex.new_stats(), Counter(), []
+    stats, oov, chars, items = ex.new_stats(), Counter(), Counter(), []
     with h5py.File(path, "r") as f:
         anns, dims, sids = f["annotations"][a:b], f["dimensions"][a:b], f["sample_ids"][a:b]
         images = f["images"]
         for k in range(b - a):
             items += ex.process_page(images[a + k].tobytes(), anns[k], dims[k], sids[k], tag, per_page, seed,
-                                     _VOCAB, stats, oov)
-    return items, stats, oov
+                                     _VOCAB, stats, oov, chars)
+    return items, stats, oov, chars
 
 
 def extract_file(pool, local, tag, per_page, seed):
@@ -164,15 +164,16 @@ def extract_file(pool, local, tag, per_page, seed):
     with h5py.File(local, "r") as f:
         n = f["images"].shape[0]
     jobs = [(str(local), tag, a, min(n, a + PAGES_PER_TASK), per_page, seed) for a in range(0, n, PAGES_PER_TASK)]
-    stats, oov, crops, labels, metas = ex.new_stats(), Counter(), [], [], []
-    for items, st, ov in pool.imap(_pages, jobs):
+    stats, oov, chars, crops, labels, metas = ex.new_stats(), Counter(), Counter(), [], [], []
+    for items, st, ov, ch in pool.imap(_pages, jobs):
         stats.update(st)
         oov.update(ov)
+        chars.update(ch)
         for g, lab, meta in items:
             crops.append(g)
             labels.append(lab)
             metas.append(meta)
-    return crops, labels, metas, stats, oov
+    return crops, labels, metas, stats, oov, chars
 
 
 def cmd_run(args):
@@ -202,14 +203,14 @@ def cmd_run(args):
             local, dl_s = fut.result()
             size, sha = files[path]
             t0 = time.time()
-            crops, labels, metas, stats, oov = extract_file(pool, local, tag, args.per_page, args.seed)
+            crops, labels, metas, stats, oov, chars = extract_file(pool, local, tag, args.per_page, args.seed)
             npz = out / f"nv_{tag}.npz"
             ex.save_shard(npz, crops, labels, metas)
             rec = {"source": path, "source_bytes": size, "source_sha256": sha, "shard": npz.name,
                    "shard_bytes": npz.stat().st_size, "shard_sha256": sha256_file(npz), "lines": len(labels),
                    "per_page": args.per_page, "seed": args.seed, "revision": REVISION, "git": git_sha(),
                    "download_s": round(dl_s, 1), "extract_s": round(time.time() - t0, 1),
-                   "stats": dict(stats), "oov": dict(oov.most_common())}
+                   "stats": dict(stats), "oov": dict(oov.most_common()), "chars": dict(chars.most_common())}
             tmp = out / f"nv_{tag}.json.tmp"
             tmp.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
             tmp.rename(out / f"nv_{tag}.json")

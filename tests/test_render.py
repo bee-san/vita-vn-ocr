@@ -59,13 +59,17 @@ def test_fixture_corpus_is_in_vocab_and_font(font):
     sandbox.check_fixture(sandbox.fixture_lines(), vocab, font)    # raises if not
 
 
-def test_find_lines_on_bright_text_bars():
-    """Two bright bars on a dark box: one crop per bar, each containing its bar."""
+@pytest.mark.parametrize("finder", ["grad", "legacy"])
+def test_find_lines_on_bright_text_bars(finder):
+    """Two bright bars on a dark box: one crop per bar, each containing its bar. The bars
+    carry 1-px dark strokes every 6 px like glyphs do: grad (the default) finds text by its
+    texture, and a solid block has contrast only along its outline."""
     img = np.full((80, 200, 3), 30, np.uint8)
     bars = [(20, 10, 130, 20), (20, 45, 80, 20)]           # x, y, w, h
     for x, y, w, h in bars:
         img[y:y + h, x:x + w] = 240
-    boxes = find_lines(img)
+        img[y:y + h, x + 2:x + w - 2:6] = 30
+    boxes = find_lines(img, finder)
     assert boxes is not None and len(boxes) == len(bars), boxes
     for (bx, by, bw, bh), (x, y, w, h) in zip(sorted(boxes, key=lambda b: b[1]), bars):
         assert bx <= x and by <= y and bx + bw >= x + w and by + bh >= y + h

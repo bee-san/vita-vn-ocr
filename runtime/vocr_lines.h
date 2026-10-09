@@ -52,7 +52,7 @@ typedef struct {
 } VocrLineSet;
 
 /* Exact arena bytes needed by either finder for any region up to max_width x
- * max_height (0 if either is 0). At 960x544 it is 89,328 bytes. */
+ * max_height (0 if either is 0): 85,171 bytes at 960x544, 26,291 at 480x272. */
 size_t vocr_lines_arena_bytes(unsigned max_width, unsigned max_height);
 
 /* Finds the lines of `im`. `arena` needs no particular alignment and is scratch

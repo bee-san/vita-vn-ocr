@@ -66,7 +66,7 @@ static size_t grad_bytes(unsigned w, unsigned h)
     size_t words = ((size_t)w + 31u) / 32u;
     return up4(words * h * 4u)              /* on-mask */
          + up4((size_t)h * 4u)              /* prof */
-         + up4((size_t)w) * 10u             /* grey, row max, row min rings; contrast row */
+         + up4((size_t)w) * 7u              /* row max and row min rings; contrast row */
          + up4((size_t)w * 4u) * 2u         /* kc, oc */
          + up4(sizeof(Band) * band_cap(h))
          + up4(sizeof(Cand) * band_cap(h));
@@ -100,42 +100,44 @@ static unsigned grey_at(const VocrLinesImage *im, unsigned x, unsigned y)
     return (77u * p[0] + 150u * p[1] + 29u * p[2]) >> 8;
 }
 
-static void grey_row(const VocrLinesImage *im, unsigned y, unsigned char *out)
+/* One step of the horizontal 3-max / 3-min: a, b, c are grey at x - 1, x, x + 1. */
+static void put3(unsigned char *mx, unsigned char *mn, unsigned x, unsigned a, unsigned b, unsigned c)
 {
-    unsigned x, w = im->width;
-    const unsigned char *p = im->pixels + (size_t)y * im->stride;
-    if (im->bpp == VOCR_LINES_GREY) {
-        memcpy(out, p, w);
-        return;
-    }
-    for (x = 0; x < w; x++, p += 4)
-        out[x] = (unsigned char)((77u * p[0] + 150u * p[1] + 29u * p[2]) >> 8);
+    unsigned hi = a > b ? a : b, lo = a < b ? a : b;
+    mx[x] = (unsigned char)(c > hi ? c : hi);
+    mn[x] = (unsigned char)(c < lo ? c : lo);
 }
 
-/* Horizontal 3-max and 3-min of one grey row (edges replicated). */
-static void row_maxmin(const unsigned char *g, unsigned w, unsigned char *mx, unsigned char *mn)
-{
-    unsigned x;
-    for (x = 0; x < w; x++) {
-        unsigned a = g[x ? x - 1 : 0], b = g[x], c = g[x + 1 < w ? x + 1 : w - 1];
-        unsigned hi = a > b ? a : b, lo = a < b ? a : b;
-        mx[x] = (unsigned char)(c > hi ? c : hi);
-        mn[x] = (unsigned char)(c < lo ? c : lo);
-    }
-}
-
-/* Streams the 3x3 contrast of every row: calls back with row y's contrast in out. */
+/* Streams the 3x3 contrast of every row from rings of 3 rows of horizontal max / min. */
 typedef struct {
     const VocrLinesImage *im;
-    unsigned char *g[3], *mx[3], *mn[3];
+    unsigned char *mx[3], *mn[3];
     unsigned next;  /* next source row to load into the ring */
 } Contrast;
 
+/* Grey of source row y and its horizontal 3-max and 3-min (edges replicated) into ring
+ * slot y % 3. The grey row itself is never stored. */
 static void contrast_load(Contrast *cs, unsigned y)
 {
-    unsigned s = y % 3u;
-    grey_row(cs->im, y, cs->g[s]);
-    row_maxmin(cs->g[s], cs->im->width, cs->mx[s], cs->mn[s]);
+    const VocrLinesImage *im = cs->im;
+    const unsigned char *p = im->pixels + (size_t)y * im->stride;
+    unsigned char *mx = cs->mx[y % 3u], *mn = cs->mn[y % 3u];
+    unsigned w = im->width, x, a, b, c;
+    if (im->bpp == VOCR_LINES_GREY) {
+        a = b = p[0];
+        for (x = 0; x + 1 < w; x++, a = b, b = c) {
+            c = p[x + 1];
+            put3(mx, mn, x, a, b, c);
+        }
+    } else {
+        a = b = (77u * p[0] + 150u * p[1] + 29u * p[2]) >> 8;
+        for (x = 0; x + 1 < w; x++, a = b, b = c) {
+            const unsigned char *q = p + 4u * (x + 1u);
+            c = (77u * q[0] + 150u * q[1] + 29u * q[2]) >> 8;
+            put3(mx, mn, x, a, b, c);
+        }
+    }
+    put3(mx, mn, w - 1u, a, b, b);
 }
 
 static void contrast_begin(Contrast *cs)
@@ -158,11 +160,9 @@ static void contrast_row(Contrast *cs, unsigned y, unsigned char *out)
     ma = cs->mx[ya % 3u]; mb = cs->mx[y % 3u]; mc = cs->mx[yc % 3u];
     na = cs->mn[ya % 3u]; nb = cs->mn[y % 3u]; nc = cs->mn[yc % 3u];
     for (x = 0; x < w; x++) {
-        unsigned hi = ma[x], lo = na[x];
-        if (mb[x] > hi) hi = mb[x];
-        if (mc[x] > hi) hi = mc[x];
-        if (nb[x] < lo) lo = nb[x];
-        if (nc[x] < lo) lo = nc[x];
+        unsigned hi = ma[x] > mb[x] ? ma[x] : mb[x], lo = na[x] < nb[x] ? na[x] : nb[x];
+        hi = mc[x] > hi ? mc[x] : hi;
+        lo = nc[x] < lo ? nc[x] : lo;
         out[x] = (unsigned char)(hi - lo);
     }
 }
@@ -227,7 +227,6 @@ static int find_grad(const VocrLinesImage *im, unsigned char *base, VocrLineSet 
 
     bits = (uint32_t *)(void *)p; p += up4((size_t)words * h * 4u);
     prof = (uint32_t *)(void *)p; p += up4((size_t)h * 4u);
-    for (i = 0; i < 3; i++) { cs.g[i] = p; p += up4(w); }
     for (i = 0; i < 3; i++) { cs.mx[i] = p; p += up4(w); }
     for (i = 0; i < 3; i++) { cs.mn[i] = p; p += up4(w); }
     crow = p; p += up4(w);
@@ -260,7 +259,7 @@ static int find_grad(const VocrLinesImage *im, unsigned char *base, VocrLineSet 
         uint32_t *row = bits + (size_t)y * words;
         contrast_row(&cs, y, crow);
         for (x = 0; x < w; x++)
-            if (crow[x] >= T) row[x >> 5] |= (uint32_t)1u << (x & 31u);
+            row[x >> 5] |= (uint32_t)(crow[x] >= T) << (x & 31u);
         prof[y] = row_kept(row, w, NULL);
         if (prof[y] > peak) peak = prof[y];
     }

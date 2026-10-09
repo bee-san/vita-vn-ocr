@@ -3,6 +3,7 @@
 
   vndb.py list   --platform psv|psp|pc [--top N]     -> $REALDATA/vndb/<platform>.jsonl
   vndb.py select [--per-vn-hires K]                  -> realdata/manifests/shots_<kind>.jsonl (no hashes yet)
+  vndb.py prune                                      drops VNs that became test games since `select`
   vndb.py fetch  [--delay S] [--mirror DIR ...]      -> $REALDATA/shots/<kind>/<vn>_<file>, fills sha256
 
 A listing row is one screenshot of a Japanese-original VN, with the release it was
@@ -237,6 +238,18 @@ def shot_key(r):
     return f"{r['vn']}_{r['url'].rsplit('/', 1)[-1].rsplit('.', 1)[0]}"
 
 
+def cmd_prune(args):
+    """Drop the screenshots of VNs that became test games after selection (eval's list
+    grew), keeping every other row as it is. Re-running `select` instead would reshuffle
+    the per-VN caps of later VNs and pick screenshots that were never fetched or read."""
+    extra = excluded_vns()
+    rows = load_shots()
+    keep = [r for r in rows if not is_excluded(r["vn"], extra)]
+    gone = sorted({r["vn"] for r in rows} - {r["vn"] for r in keep}, key=lambda v: int(v[1:]))
+    save_shots(keep)
+    print(f"pruned {len(rows) - len(keep)} screenshots of {len(gone)} VNs: {gone}", flush=True)
+
+
 def sha256(path):
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -312,12 +325,13 @@ def main():
     p.add_argument("--top", type=int, default=0, help="stop after this many VNs (pc: most-voted first)")
     p = sub.add_parser("select")
     p.add_argument("--per-vn-hires", type=int, default=4)
+    sub.add_parser("prune")
     p = sub.add_parser("fetch")
     p.add_argument("--delay", type=float, default=0.5, help="seconds between downloads")
     p.add_argument("--mirror", action="append", default=[], help="directory of already-downloaded shots")
     p.add_argument("--kind", choices=["vita", "psp", "hires"], help="only this kind")
     args = ap.parse_args()
-    {"list": cmd_list, "select": cmd_select, "fetch": cmd_fetch}[args.cmd](args)
+    {"list": cmd_list, "select": cmd_select, "prune": cmd_prune, "fetch": cmd_fetch}[args.cmd](args)
 
 
 if __name__ == "__main__":

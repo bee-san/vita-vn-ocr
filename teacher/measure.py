@@ -364,6 +364,17 @@ def cmd_rules(args):
     if args.rule_out:
         import hashlib
         mans = {n: str(eval_manifest(n)) for n in sets}
+        notes = {}                  # provenance notes of the previous rule file, kept while the sha256 holds
+        if Path(args.rule_out).exists():
+            prev = json.loads(Path(args.rule_out).read_text(encoding="utf-8")).get("eval_manifests", {})
+            notes = {n: (m.get("sha256"), m["source"]) for n, m in prev.items() if m.get("source")}
+
+        def manifest(n, m):
+            sha = hashlib.sha256(Path(m).read_bytes()).hexdigest()
+            out = {"path": _rel(m), "sha256": sha}
+            if n in notes and notes[n][0] == sha:
+                out["source"] = notes[n][1]
+            return out
         Path(args.rule_out).write_text(json.dumps({
             "rule": chosen,
             "chosen_by": f"teacher/measure.py rules --set {args.set} --precision {args.precision}: the highest pooled "
@@ -372,8 +383,7 @@ def cmd_rules(args):
                          "per_set": report["chosen"]["per_set"], "per_set_ci95": report["chosen"]["per_set_ci95"],
                          "two_fold_held_out": [{"chosen_on_half": f["chosen_on"], "rule": f["rule"],
                                                 "held_out": f["held_out"]} for f in held if f]},
-            "eval_manifests": {n: {"path": _rel(m), "sha256": hashlib.sha256(Path(m).read_bytes()).hexdigest()}
-                               for n, m in mans.items()},
+            "eval_manifests": {n: manifest(n, m) for n, m in mans.items()},
         }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         print(f"wrote {args.rule_out}")
     if args.out:

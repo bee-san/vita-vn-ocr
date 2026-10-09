@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Build the teacher labeller's env in teacher/.venv: owocr + MeikiOCR + the voters, CPU only.
 # Idempotent: re-running re-resolves teacher/requirements.lock and re-syncs the venv to it.
-#   teacher/setup_venv.sh            resolve (if requirements.in changed) and sync
-#   teacher/setup_venv.sh --frozen   sync to the committed lock without re-resolving
+#   teacher/setup_venv.sh            re-resolve the lock (uv keeps its pins unless requirements.in needs others) and sync
+#   teacher/setup_venv.sh --frozen   sync to the committed lock without re-resolving (reproduction)
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(dirname "$HERE")"

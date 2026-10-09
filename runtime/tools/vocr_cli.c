@@ -8,6 +8,7 @@
  * --stdin fits eval/run.py: --model 'cmd:runtime/build/vocr_cli MODEL.vocr --stdin'.
  *
  * opts: --mode auto|f32|w8f|w8i  --tile N  --head N  --max-width N
+ *       --invert           read every crop as 255 - grey (VOCR_INVERT: dark text)
  *       --logits OUT.bin   per line: u32 frames, u32 classes, float32 logits
  *       --input-out OUT.bin  per line: u32 height, u32 padded width, u32 width, then the
  *                          preprocessed grey input (height x padded width bytes)
@@ -25,6 +26,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+static int invert_flag; /* VOCR_INVERT or 0, from --invert, for every crop */
 
 static double now(void)
 {
@@ -104,7 +107,7 @@ static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px,
     img.width = w;
     img.height = h;
     img.stride = (size_t)w * ch;
-    img.format = ch == 4 ? VOCR_RGBA8 : VOCR_GREY8;
+    img.format = (ch == 4 ? VOCR_RGBA8 : VOCR_GREY8) | invert_flag;
     memset(&ex, 0, sizeof ex);
     if (input_out) {
         unsigned rw = 0, pw = 0, hdr3[3];
@@ -231,8 +234,8 @@ static int run_stdin(vocr_ctx *ctx, const vocr_model *m, int repeat, FILE *lf, F
 
 static int mode_of(const char *v)
 {
-    return !strcmp(v, "f32") ? VOCR_MODE_F32 : !strcmp(v, "w8f") ? VOCR_MODE_W8F
-         : !strcmp(v, "w8i") ? VOCR_MODE_W8I : VOCR_MODE_AUTO;
+    return !strcmp(v, "auto") ? VOCR_MODE_AUTO : !strcmp(v, "f32") ? VOCR_MODE_F32
+         : !strcmp(v, "w8f") ? VOCR_MODE_W8F : !strcmp(v, "w8i") ? VOCR_MODE_W8I : -1;
 }
 
 int main(int argc, char **argv)
@@ -243,6 +246,7 @@ int main(int argc, char **argv)
     size_t blob_n = 0, need;
     void *blob = NULL, *arena = NULL;
     const char *pack = NULL, *logits_path = NULL, *arena_list = NULL, *input_path = NULL;
+    const char *mode_name = "auto";
     FILE *lf = NULL, *inf = NULL;
     int i, rc, status = 1, repeat = 0, crc = 0, use_stdin = 0;
     unsigned long lines = 0, frames = 0;
@@ -255,7 +259,7 @@ int main(int argc, char **argv)
     for (i = 2; i < argc; i++) { /* options first; image paths are read in a second pass */
         const char *a = argv[i];
         int has = i + 1 < argc;
-        if (!strcmp(a, "--mode") && has) o.mode = mode_of(argv[++i]);
+        if (!strcmp(a, "--mode") && has) mode_name = argv[++i];
         else if (!strcmp(a, "--tile") && has) o.tile_frames = (unsigned)atoi(argv[++i]);
         else if (!strcmp(a, "--head") && has) o.head_frames = (unsigned)atoi(argv[++i]);
         else if (!strcmp(a, "--max-width") && has) o.max_width = (unsigned)atoi(argv[++i]);
@@ -266,10 +270,15 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--arena") && has) arena_list = argv[++i];
         else if (!strcmp(a, "--crc")) crc = 1;
         else if (!strcmp(a, "--stdin")) use_stdin = 1;
+        else if (!strcmp(a, "--invert")) invert_flag = VOCR_INVERT;
         else if (a[0] == '-' && a[1] == '-') {
             fprintf(stderr, "unknown option or missing value: %s\n", a);
             return 2;
         }
+    }
+    if ((o.mode = mode_of(mode_name)) < 0) {
+        fprintf(stderr, "unknown --mode %s (auto, f32, w8f or w8i)\n", mode_name);
+        return 2;
     }
     blob = read_file(argv[1], &blob_n, 16);
     if (!blob) {
@@ -324,7 +333,7 @@ int main(int argc, char **argv)
     if (pack && run_pack(&ctx, &m, pack, repeat, lf, inf, &t_total, &frames, &lines)) goto done;
     for (i = 2; i < argc; i++) {
         const char *a = argv[i];
-        if (!strcmp(a, "--crc") || !strcmp(a, "--stdin")) continue;
+        if (!strcmp(a, "--crc") || !strcmp(a, "--stdin") || !strcmp(a, "--invert")) continue;
         if (a[0] == '-' && a[1] == '-') {
             i++; /* option value */
             continue;

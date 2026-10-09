@@ -23,6 +23,7 @@ one string per crop. make_recognizer() turns a --model spec into a backend:
                            otherwise it runs once with one crop path per stdin line and
                            must print exactly one UTF-8 line of text per input line.
 """
+import hashlib
 import os
 import shlex
 import subprocess
@@ -54,6 +55,20 @@ PPOCR = {
     "ppocr-v5-server": "ch_PP-OCRv5_rec_server.onnx",
     "ppocr-v6-small": "PP-OCRv6_rec_small.onnx",
 }
+# Source URL and sha256 of each preset file: the files rapidocr 3.10.0 downloads (its
+# default_models.yaml lists the same URLs and hashes), which the baselines were measured with.
+# make_recognizer() refuses a preset file with another sha256; pass a different export by path.
+_RAPIDOCR = "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/"
+PPOCR_FILES = {
+    "ch_PP-OCRv5_rec_mobile.onnx": (_RAPIDOCR + "PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile.onnx",
+                                    "5825fc7ebf84ae7a412be049820b4d86d77620f204a041697b0494669b1742c5"),
+    "ch_PP-OCRv5_rec_server.onnx": (_RAPIDOCR + "PP-OCRv5/rec/ch_PP-OCRv5_rec_server.onnx",
+                                    "e09385400eaaaef34ceff54aeb7c4f0f1fe014c27fa8b9905d4709b65746562a"),
+    "PP-OCRv6_rec_small.onnx": (_RAPIDOCR + "PP-OCRv6/rec/PP-OCRv6_rec_small.onnx",
+                                "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884"),
+}
+# manga-ocr's weights: the Hugging Face repo at a fixed commit (the snapshot the baselines used).
+MANGA_OCR = ("kha-white/manga-ocr-base", "aa6573bd10b0d446cbf622e29c3e084914df9741")
 UNK = "\ufffd"  # what a multi-character class such as "<unk>" decodes to: one wrong character
 
 
@@ -71,7 +86,19 @@ def find_model(name):
     for d in dirs:
         if (d / name).exists():
             return d / name
-    raise FileNotFoundError(f"{name} not found in {[str(d) for d in dirs]} (set VOCR_MODELS)")
+    url = PPOCR_FILES[name][0] if name in PPOCR_FILES else None
+    raise FileNotFoundError(f"{name} not found in {[str(d) for d in dirs]} (set VOCR_MODELS"
+                            + (f"; download {url}" if url else "") + ")")
+
+
+def check_pinned(path):
+    """sha256 of a preset file; raises ValueError unless it is the pinned one (PPOCR_FILES)."""
+    url, want = PPOCR_FILES[Path(path).name]
+    got = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    if got != want:
+        raise ValueError(f"{path}: sha256 {got} is not the pinned {want} ({url}); "
+                         "pass another export as a path instead of the preset name")
+    return got
 
 
 def to_gray(rgb):
@@ -271,13 +298,15 @@ class MangaOcrRec(Recognizer):
         import torch
         from PIL import Image
         torch.set_num_threads(threads())
+        from huggingface_hub import snapshot_download
         from manga_ocr import MangaOcr
-        self.m = MangaOcr(force_cpu=True)
+        repo, rev = MANGA_OCR
+        self.m = MangaOcr(snapshot_download(repo, revision=rev), force_cpu=True)
         self.Image = Image
         self.raw = raw
         self.name = "manga-ocr" + ("-raw" if raw else "")
         n = sum(p.numel() for p in self.m.model.parameters())
-        self.info = {"params": n, "fp32_weight_bytes": 4 * n}
+        self.info = {"params": n, "fp32_weight_bytes": 4 * n, "weights": f"{repo}@{rev}"}
 
     def read(self, crops):
         out = []
@@ -391,8 +420,11 @@ def make_recognizer(spec, cmd_format="ppm"):
         return MangaOcrRec(raw=spec.endswith("-raw"))
     base = spec[:-4] if spec.endswith("-jis") else spec
     if base in PPOCR:
-        return PaddleOnnx(find_model(PPOCR[base]), keep=jis_x0208() if spec.endswith("-jis") else None,
-                          name=spec)
+        path = find_model(PPOCR[base])
+        sha = check_pinned(path)
+        rec = PaddleOnnx(path, keep=jis_x0208() if spec.endswith("-jis") else None, name=spec)
+        rec.info["sha256"] = sha
+        return rec
     p = Path(spec)
     if p.suffix == ".pt":
         return TinyTorch(p)

@@ -10,8 +10,9 @@ eval/run.py --model models/v1/ckpt_best.pt       # every set: vita-test, psp-tes
 eval/run.py --model X --set vita-test --errors 20 --out results/x.json
 ```
 
-Run it through `$HERD/heavy.sh` on the shared box. A small model takes about a
-minute on all sets; manga-ocr and PP-OCRv5 server take longer.
+Run it through `$HERD/heavy.sh` on the shared box. Measured on all three sets in
+one 5-thread slot: v1 27 s, the PP-OCRv5 ONNX presets about 80 s, the ncnn
+models 3–4.5 min (one thread), manga-ocr 17 min.
 
 On the shared box the screenshots are already in `$HERD/shared/artifacts/eval`:
 point at them with `--data`, `export VOCR_EVAL_DATA=$HERD/shared/artifacts/eval`
@@ -27,8 +28,14 @@ or a `data/eval` symlink instead of fetching. synth-val reads
 | `ppocr-v5-mobile`, `ppocr-v5-mobile-jis` | PP-OCRv5 mobile rec in ONNX Runtime, full head or masked to JIS X 0208 | vita-jp-overlay's: BGR, height 48, width `(w*48 + h/2)/h` clamped to [8, 1024], `(p - 127.5)/127.5` |
 | `ppocr-v5-server`, `ppocr-v6-small[-jis]` | the pseudo-labelling engines, for reference | same |
 | `ncnn:DIR` | an ncnn param/bin + `dict.txt` in DIR, run by `eval/ncnn/vocr_ncnn_rec` (the overlay's pinned ncnn 3798be64, one thread, fp16 off) | the overlay's `from_pixels_resize` path, exactly |
-| `manga-ocr` | manga-ocr base (reference only; ~400 MB) | long lines re-flowed into a square-ish block first, as `data/label_real.py` does (`manga-ocr-raw`: no re-flow) |
+| `manga-ocr` | manga-ocr base (reference only; ~400 MB), `kha-white/manga-ocr-base` at commit `aa6573bd` (`backends.MANGA_OCR`) | long lines re-flowed into a square-ish block first, as `data/label_real.py` does (`manga-ocr-raw`: no re-flow) |
 | `cmd:COMMAND` | any external program, e.g. the C runtime's host CLI | crops written as binary PPM (or `--cmd-format pgm\|png`) |
+
+The PaddleOCR presets load `ch_PP-OCRv5_rec_mobile.onnx`, `ch_PP-OCRv5_rec_server.onnx` or
+`PP-OCRv6_rec_small.onnx` from `$VOCR_MODELS`, `data/eval/models`, rapidocr's model directory
+or the research's scratch copies. They are the files rapidocr 3.10.0 downloads from
+ModelScope (`backends.PPOCR_FILES` has the URLs), and a preset refuses any file whose sha256
+differs from the one the baselines were measured with; run another export by its path.
 
 `cmd:` protocol: if COMMAND contains `{}`, it runs once per crop with `{}`
 replaced by the crop's path and prints that line's text; otherwise it runs once,
@@ -50,8 +57,8 @@ the published baselines were measured with, and exits non-zero on a mismatch.
 
 | set | lines | source |
 |---|---|---|
-| `vita-test` | see `manifests/test_games.json` | 960×544 screenshots of Japanese PS Vita releases on VNDB |
-| `psp-test` | see `manifests/test_games.json` | 480×272 screenshots of Japanese PSP releases on VNDB |
+| `vita-test` | 206 (2,564 chars) from 16 games, 74 screenshots | 960×544 screenshots of Japanese PS Vita releases on VNDB |
+| `psp-test` | 245 (2,510 chars) from 14 games, 83 screenshots | 480×272 screenshots of Japanese PSP releases on VNDB |
 | `synth-val` | 3,000 | the first 3,000 lines of `data/synth/synth_00039.npz`, the shard `train/train.py` validates on (`--limit 0` for all 10,000) |
 
 Every real line was read by eye on a contact sheet at ≤ 1280 px (2× zoom for
@@ -74,7 +81,9 @@ versions, originals, fandiscs, sequels, prequels, side and parent stories,
 series). The split is by game **and** capture session: every line records its
 session (the VNDB release its screenshot was uploaded under), and
 `test_games.json` lists them all in `sessions`. Never use a screenshot from a
-listed session. `eval/tools/leakcheck.py POOL_DIR...` compares a training pool
+listed session. A game can be in both sets (v10856 and v13072 are, from their
+separate Vita and PSP releases), but no session is split between the sets; the
+tests check this. `eval/tools/leakcheck.py POOL_DIR...` compares a training pool
 with the test screenshots by thumbnail correlation and lists near-duplicates,
 after skipping reserved games as training must.
 

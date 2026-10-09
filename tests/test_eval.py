@@ -136,6 +136,21 @@ def test_paddle_prep_width():
     assert p.prep(np.zeros((40, 2, 3), np.uint8)).shape == (1, 3, 48, 8)
 
 
+def test_reference_weights_are_pinned(tmp_path):
+    assert set(backends.PPOCR_FILES) == set(backends.PPOCR.values())
+    assert all(re.fullmatch(r"[0-9a-f]{64}", sha) for _, sha in backends.PPOCR_FILES.values())
+    assert re.fullmatch(r"[0-9a-f]{40}", backends.MANGA_OCR[1])
+    (tmp_path / backends.PPOCR["ppocr-v5-mobile"]).write_bytes(b"not the pinned export")
+    saved, backends.MODEL_DIRS = backends.MODEL_DIRS, [tmp_path]
+    try:
+        backends.make_recognizer("ppocr-v5-mobile-jis")
+        raise AssertionError("a preset file with another sha256 was accepted")
+    except ValueError as e:
+        assert "sha256" in str(e)
+    finally:
+        backends.MODEL_DIRS = saved
+
+
 def test_cmd_backend_protocols(tmp_path):
     crops = [np.full((8, 12, 3), 200, np.uint8), np.zeros((9, 5, 3), np.uint8)]
     batch = backends.Cmd("sed 's#.*/##'").read(crops)
@@ -236,8 +251,10 @@ def test_test_games_reservations():
             assert vn in reserved and set(g["sessions"]) <= set(games["sessions"]), vn
     for vn, ids in games.get("family", {}).items():
         assert vn in reserved and set(ids) <= reserved, vn
-    other = {k: set(v) for k, v in games.items() if k.endswith("-test")}
-    assert not (other.get("vita-test", set()) & other.get("psp-test", set())), "a game in two sets"
+    # A game may be in both sets (its Vita and PSP releases are separate captures, and both sets
+    # are held out), but one capture session may not be split across them.
+    sess = {k: {s for g in v.values() for s in g["sessions"]} for k, v in games.items() if k.endswith("-test")}
+    assert not (sess.get("vita-test", set()) & sess.get("psp-test", set())), "a capture session in two sets"
 
 
 def test_test_games_disjoint_from_real_train():

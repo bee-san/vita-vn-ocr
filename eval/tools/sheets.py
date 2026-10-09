@@ -21,6 +21,7 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from fetch import data_dir  # noqa: E402
+from sets import PAD  # noqa: E402
 
 MAX = 1280
 FONT = sorted((HERE.parents[1] / "data" / "fonts" / "notosansjp").glob("*.ttf"))
@@ -125,7 +126,7 @@ def shots_sheet(which, start, count, file, vns=None):
 
 
 def final_sheet(which, ids, tag, scale):
-    """Decided lines as the eval crops them (final box + 4 px), with their GT printed."""
+    """Decided lines as the eval crops them (final box + the set's default pad), with their GT printed."""
     data = data_dir()
     rows = [json.loads(x) for x in (data / which / "review.jsonl").read_text(encoding="utf-8").splitlines()]
     sel = [rows[i] for i in ids]
@@ -137,7 +138,8 @@ def final_sheet(which, ids, tag, scale):
         img = cache[r["shot"]]
         x, y, w, h = r.get("box_override") or r["box"]
         H, W = img.shape[:2]
-        crop = Image.fromarray(img[max(0, y - 4):min(H, y + h + 4), max(0, x - 4):min(W, x + w + 4)])
+        pd = PAD[which]
+        crop = Image.fromarray(img[max(0, y - pd):min(H, y + h + pd), max(0, x - pd):min(W, x + w + pd)])
         s = min(scale, (MAX - 70) / crop.width)
         tiles.append((r["idx"], crop.resize((max(1, int(crop.width * s)), max(1, int(crop.height * s))),
                                             Image.LANCZOS)))

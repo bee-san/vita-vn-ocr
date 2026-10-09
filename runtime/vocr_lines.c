@@ -15,8 +15,8 @@
  *     max(4, h) columns away (punctuation, small kana) and grown by up to h/2 rows
  *     (never past half the gap to the next band) while rows hold 2+ on-pixels
  *  7. lines under 55% of the median line height are dropped (furigana, icons)
- *  8. boxes are padded by 3 px (4 below), like the legacy crops after the 1 px
- *     dilation of step 2, and each gets a polarity flag (vocr_line_dark)
+ *  8. boxes are padded by 3 px, which after the 1 px dilation of step 2 matches the
+ *     legacy finder's 4 px around bright ink, and each gets a polarity flag
  *
  * Memory: a 1-bit on-mask of the region plus a few rows and per-row/column counters,
  * all carved from the caller's arena. Integer arithmetic only.
@@ -354,7 +354,7 @@ static int find_grad(const VocrLinesImage *im, unsigned char *base, VocrLineSet 
             lx = cand[k].x1 > PAD ? cand[k].x1 - PAD : 0;
             ly = cand[k].top > PAD ? cand[k].top - PAD : 0;
             ex = cand[k].x2 + PAD < w ? cand[k].x2 + PAD : w;
-            ey = cand[k].bot + PAD + 1u < h ? cand[k].bot + PAD + 1u : h;
+            ey = cand[k].bot + PAD < h ? cand[k].bot + PAD : h;
             ln = &out->lines[out->count++];
             ln->x = lx; ln->y = ly; ln->w = ex - lx; ln->h = ey - ly;
             ln->dark = (unsigned)vocr_line_dark(im, lx, ly, ln->w, ln->h);

@@ -4,8 +4,7 @@
   "voters": [
    "v6s",
    "manga",
-   "screenai",
-   "meikiv"
+   "screenai"
   ],
   "votes": 2,
   "min_conf": 0.0,
@@ -18,48 +17,48 @@
  "chosen_by": "teacher/measure.py rules --set vita-test,psp-test --precision 0.995: the highest pooled recall whose precision is >= 0.995 on vita-test and psp-test each and pooled",
  "measured": {
   "pooled": {
-   "accepted": 343,
-   "accepted_scored": 295,
+   "accepted": 329,
+   "accepted_scored": 284,
    "accepted_partial": 9,
-   "correct": 295,
+   "correct": 284,
    "precision": 1.0,
-   "recall": 0.6541019955654102,
+   "recall": 0.6297117516629712,
    "gt_lines": 451,
    "label_cer": 0.0
   },
   "precision_ci95": [
-   0.9871,
+   0.9867,
    1.0
   ],
   "per_set": {
    "vita-test": {
-    "accepted": 181,
-    "accepted_scored": 147,
+    "accepted": 175,
+    "accepted_scored": 143,
     "accepted_partial": 5,
-    "correct": 147,
+    "correct": 143,
     "precision": 1.0,
-    "recall": 0.7135922330097088,
+    "recall": 0.6941747572815534,
     "gt_lines": 206,
     "label_cer": 0.0
    },
    "psp-test": {
-    "accepted": 162,
-    "accepted_scored": 148,
+    "accepted": 154,
+    "accepted_scored": 141,
     "accepted_partial": 4,
-    "correct": 148,
+    "correct": 141,
     "precision": 1.0,
-    "recall": 0.6040816326530613,
+    "recall": 0.5755102040816327,
     "gt_lines": 245,
     "label_cer": 0.0
    }
   },
   "per_set_ci95": {
    "vita-test": [
-    0.9745,
+    0.9738,
     1.0
    ],
    "psp-test": [
-    0.9747,
+    0.9735,
     1.0
    ]
   },
@@ -71,8 +70,7 @@
      "voters": [
       "v6s",
       "manga",
-      "screenai",
-      "meikiv"
+      "screenai"
      ],
      "votes": 2,
      "min_conf": 0.0,
@@ -81,14 +79,14 @@
      "trunc": false
     },
     "held_out": {
-     "accepted": 102,
-     "accepted_scored": 93,
+     "accepted": 96,
+     "accepted_scored": 87,
      "accepted_partial": 6,
-     "correct": 91,
-     "precision": 0.978494623655914,
-     "recall": 0.6232876712328768,
+     "correct": 86,
+     "precision": 0.9885057471264368,
+     "recall": 0.589041095890411,
      "gt_lines": 146,
-     "label_cer": 0.0029354207436399216
+     "label_cer": 0.0010857763300760044
     }
    },
    {
@@ -97,8 +95,8 @@
      "primary": "meiki",
      "voters": [
       "v6s",
-      "screenai",
-      "meikiv"
+      "manga",
+      "screenai"
      ],
      "votes": 2,
      "min_conf": 0.0,
@@ -109,14 +107,14 @@
      ]
     },
     "held_out": {
-     "accepted": 250,
-     "accepted_scored": 211,
+     "accepted": 240,
+     "accepted_scored": 204,
      "accepted_partial": 3,
-     "correct": 210,
-     "precision": 0.995260663507109,
-     "recall": 0.6885245901639344,
+     "correct": 203,
+     "precision": 0.9950980392156863,
+     "recall": 0.6655737704918033,
      "gt_lines": 305,
-     "label_cer": 0.000419639110365086
+     "label_cer": 0.00042589437819420784
     }
    }
   ]

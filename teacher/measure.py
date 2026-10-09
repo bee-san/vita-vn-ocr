@@ -438,7 +438,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("hand")
-    p.add_argument("--hand", default=str(OUT / "inputs" / "realdata_handcheck.jsonl"))
+    merged = HERE.parent / "realdata" / "manifests" / "handcheck.jsonl"
+    p.add_argument("--hand", default=str(merged if merged.exists() else OUT / "inputs" / "realdata_handcheck.jsonl"))
     p.add_argument("--rule", default=str(HERE / "rule.json"))
     p.add_argument("--reads", default=str(OUT / "reads"))
     p.add_argument("--out", default="")

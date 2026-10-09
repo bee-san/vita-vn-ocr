@@ -18,7 +18,7 @@ collection (realdata's `shots_<kind>.jsonl`).
 | `v6s` | PP-OCRv6 small rec (rapidocr 3.10.0 ONNX) | the voter view | sha256 |
 | `v5s` | PP-OCRv5 server rec (rapidocr 3.10.0 ONNX), `label_real.py`'s engine | the voter view | sha256 |
 | `manga` | manga-ocr base (kha-white), `label_real.py`'s engine; long lines re-flowed into a block | the voter view | HF revision |
-| `screenai` | Chrome Screen AI through `owocr.ocr.ChromeScreenAI` (owocr 1.26.8) | the whole screenshot; its lines are matched to the teacher's | CIPD instance sha256 |
+| `screenai` | Chrome Screen AI through `owocr.ocr.ChromeScreenAI` (owocr 1.26.8) | the whole screenshot; its lines are matched to the teacher's | CIPD instance id (its sha256) |
 
 owocr's cloud engines (Google Lens, Bing, Google Vision, Azure, OCRSpace) are never
 loaded. Screen AI's library describes itself as on-device ("do not send any data to
@@ -29,7 +29,7 @@ Text and WinRT are Windows/macOS only.
 ## Pipeline
 
 ```sh
-teacher/setup_venv.sh                                  # teacher/.venv: owocr + MeikiOCR + voters (pinned)
+teacher/setup_venv.sh --frozen                         # teacher/.venv from the committed lock (pinned)
 teacher/.venv/bin/python teacher/label.py fetch        # model files -> $TEACHER_OUT/models (sha256-checked)
 PY=teacher/.venv/bin/python
 # 1. read eval's test sets (every engine on every line), then the training collection, offline
@@ -56,16 +56,18 @@ $PY teacher/report.py                                  # the result tables (docs
    short therefore reads longer for the voters and is rejected instead of being labelled
    with half its text.
 3. **Rule** (`vote.accept`, chosen by measurement into `rule.json`): MeikiOCR's reading of
-   the line it detected is the label when at least 2 of PP-OCRv6 small, manga-ocr, Chrome
-   Screen AI and MeikiOCR's re-read of the view read the same agreement key, which is
-   eval's scoring normalisation (two readings agree exactly when they would score the same
-   on the benchmark; small kana, dakuten, ー/一 and lookalike kanji must match). A dissent
-   that differs only in small kana or ー/一 vetoes the line, and so does a Screen AI reading
-   with extra text at one end (the line runs on past MeikiOCR's box). Measured on eval's
-   sets: 99.0% precision held out by game, 65% recall (`docs/teacher.md`).
+   the line it detected is the label when at least 2 of PP-OCRv6 small, manga-ocr and
+   Chrome Screen AI read the same agreement key, which is eval's scoring normalisation
+   (two readings agree exactly when they would score the same on the benchmark; small kana,
+   dakuten, ー/一 and lookalike kanji must match). MeikiOCR's own re-read of the view never
+   counts as a vote: it is the same recognizer. A dissent that differs only in small kana or
+   ー/一 vetoes the line, and so does a Screen AI reading with extra text at one end (the line
+   runs on past MeikiOCR's box). Measured on eval's sets: 99.3% precision held out by game,
+   63% recall (`docs/teacher.md`).
 4. **Build** (`build.py`): labels outside `data/vocab.txt` are dropped, a label is kept
    at most twice per VN and 8 times overall, eval's test games and sessions are excluded
-   again, the split is by game (as realdata: val = `15 <= md5(vn) % 100 < 25`), and crops
+   again, the split is by game (as realdata: val = `15 <= md5(vn) % 100 < 25`; a val VN
+   that shares a VNDB release or a screenshot with a training VN is left out), and crops
    are cut like eval's (ink box + furigana, widened to the labelled characters, plus 4 px
    on Vita or 2 px on PSP) at the target resolution (PC shots scaled to fit 960×544 and
    480×272). Dark-text crops are stored inverted (`common.line_dark`, the console's
@@ -81,7 +83,7 @@ $PY teacher/report.py                                  # the result tables (docs
 | `manifests/lines_<kind>.jsonl` | every accepted line: id, crop box (source px), label, how, targets, split |
 | `manifests/distill_<kind>.jsonl` | every rejected real text line (geometry only): id, crop box, targets, split, why |
 | `manifests/games.json`, `stats.json` | games (split, sessions, counts) and build statistics |
-| `manifests/spot.jsonl` | the by-eye spot check of 100 random accepted lines |
+| `manifests/spot.jsonl` | the by-eye spot check: 200 random accepted lines (the PR's and the review's samples, field `by`) |
 | `$TEACHER_OUT/teacher_{train,val}.npz` | grey crops in render.py's shard format; meta has the character boxes |
 | `$TEACHER_OUT/teacher_distill_{train,val}.npz` | the rejected real lines, empty labels, every engine's reading in meta |
 | `$TEACHER_OUT/lines_full.jsonl`, `reads/` | accepted lines with character boxes; every engine's raw reading |

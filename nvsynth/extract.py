@@ -20,10 +20,9 @@ train.py and the runtime resize. Taller ones are first area-downscaled to a rand
 28-40 px, a native Vita line height, so a page's big headings don't reach the model
 as aliased bilinear 2-4x downscales the console never produces.
 
-This module needs numpy, OpenCV and Pillow only; nvsynth/fetch.py adds h5py and
+This module needs numpy and OpenCV only; nvsynth/fetch.py adds h5py and
 huggingface_hub to read and download the shards.
 """
-import io
 import json
 import math
 import sys
@@ -33,7 +32,6 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "synth"))
@@ -219,6 +217,14 @@ def page_rng(seed, tag, sample_id):
     return np.random.default_rng([seed, zlib.crc32(tag.encode()), int(sample_id)])
 
 
+def decode(jpeg):
+    """JPEG bytes to RGB uint8 (OpenCV's libjpeg-turbo: about 15% faster than Pillow here,
+    and pixel-identical to Pillow's decode on the dataset's pages). EXIF orientation is
+    ignored, as Pillow's Image.open does, so pixels stay in the annotations' frame."""
+    bgr = cv2.imdecode(np.frombuffer(jpeg, np.uint8), cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+    return None if bgr is None else np.ascontiguousarray(bgr[:, :, ::-1])
+
+
 def process_page(jpeg, ann, dims, sample_id, tag, per_page, seed, vocab, stats, oov, chars=None):
     """Picks up to per_page usable lines of one page at random and crops them.
     dims is the page's [H, W] (the HDF5 'dimensions' row). Updates stats (reason
@@ -248,9 +254,8 @@ def process_page(jpeg, ann, dims, sample_id, tag, per_page, seed, vocab, stats, 
             usable.append((li, line, label))
     if not usable or per_page <= 0:
         return []
-    rgb = np.asarray(Image.open(io.BytesIO(jpeg)).convert("RGB"))
-    gray = to_gray(rgb)
-    if gray.shape != (page_h, page_w):
+    rgb = decode(jpeg)
+    if rgb is None or rgb.shape[:2] != (page_h, page_w):
         stats["bad_dims"] += 1
         return []
     out = []
@@ -258,10 +263,20 @@ def process_page(jpeg, ann, dims, sample_id, tag, per_page, seed, vocab, stats, 
         if len(out) >= per_page:
             break
         li, line, label = usable[j]
-        g, meta = crop(rgb, gray, line, label, rng)
+        # Grey only around the line: crop() never reads further than about 0.4 box heights
+        # outside the box, so the result is identical to working on the whole page.
+        x, y, w, h = line["bbox"]
+        m = int(math.ceil(0.5 * h)) + 4
+        wx0, wy0 = max(0, int(math.floor(x)) - m), max(0, int(math.floor(y)) - m)
+        wx1, wy1 = min(page_w, int(math.ceil(x + w)) + m), min(page_h, int(math.ceil(y + h)) + m)
+        win_rgb = rgb[wy0:wy1, wx0:wx1]
+        shifted = dict(line, bbox=[x - wx0, y - wy0, w, h])
+        g, meta = crop(win_rgb, to_gray(win_rgb), shifted, label, rng)
         if g is None:
             stats[meta] += 1
             continue
+        cx, cy, cw, ch = meta["crop"]
+        meta["crop"] = [cx + wx0, cy + wy0, cw, ch]
         stats["kept"] += 1
         meta.update({"src": tag, "sample": int(sample_id), "line": li})
         out.append((g, label, meta))

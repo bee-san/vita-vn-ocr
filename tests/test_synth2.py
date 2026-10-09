@@ -1,5 +1,6 @@
 """synth2 renderer pieces: the mask line finder, kinsoku wrapping, and (where the local
 data/ exists) the label invariants of rendered crops."""
+import json
 import sys
 from pathlib import Path
 
@@ -44,6 +45,16 @@ def test_mask_finder_is_polarity_agnostic_and_the_console_finder_agrees():
         assert mask_finder.find_lines_mask(ink) == [(16, 16, 165, 28)]
         (x, y, w, h), = find_lines(img, "grad")
         assert abs(x - 16) <= 5 and abs(y - 16) <= 3 and abs(w - 165) <= 8 and abs(h - 28) <= 4
+
+
+def test_background_exclusions_cover_eval_reserved_games():
+    """Every VN eval reserves (eval/manifests/test_games.json "all") is in the committed
+    background exclusion manifest; when eval's list grows, re-run synth/bg_exclude.py."""
+    games = json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text(encoding="utf-8"))
+    path = ROOT / "data" / "manifests" / "synth2_bg_exclude.txt"
+    listed = {x.split()[0] for x in path.read_text().splitlines() if x.strip() and x[0] != "#"}
+    missing = sorted(set(games["all"]) - listed)
+    assert not missing, f"re-run synth/bg_exclude.py; not excluded: {missing[:10]}"
 
 
 def test_wrap_kinsoku():

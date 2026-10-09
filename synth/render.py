@@ -63,6 +63,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+from bg_exclude import load_exclusions  # noqa: E402
 from common import DATA, find_lines, find_lines_ex, is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
 from mask_finder import find_lines_mask  # noqa: E402
 
@@ -127,12 +128,10 @@ class Resources:
         self.fonts = self._fonts()
         self.by_cat = {c: [f for f in self.fonts if f[0] == c] for c in CATEGORY}
         self.by_cat = {c: fs for c, fs in self.by_cat.items() if fs}
-        # Backgrounds: training-side screenshots only. The exclusion manifest holds VN ids
-        # (eval's reserved test games) and single screenshots (hand-labelled real sets).
-        exclude = set()
-        ex_path = HERE.parent / "data" / "manifests" / "synth2_bg_exclude.txt"
-        if ex_path.exists():
-            exclude = {x.split()[0] for x in ex_path.read_text().splitlines() if x.strip() and x[0] != "#"}
+        # Backgrounds: training-side screenshots only. The exclusions hold VN ids (eval's
+        # reserved test games, from the manifest and from eval/manifests/test_games.json)
+        # and single screenshots (hand-labelled real sets).
+        exclude = load_exclusions()
 
         def usable(p):
             vn = p.name.split("_")[0]

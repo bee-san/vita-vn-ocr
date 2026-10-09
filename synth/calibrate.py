@@ -36,17 +36,15 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+from bg_exclude import load_exclusions  # noqa: E402
 from common import DATA, find_lines, is_test_vn, to_gray  # noqa: E402
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 DET = HERD / "shared" / "artifacts" / "linefind" / "det" / "vita_shots_det.jsonl"
-EXCLUDE = HERE.parent / "data" / "manifests" / "synth2_bg_exclude.txt"
 
 
 def excluded():
-    if not EXCLUDE.exists():
-        return set()
-    return {x.split()[0] for x in EXCLUDE.read_text().splitlines() if x.strip() and x[0] != "#"}
+    return load_exclusions()
 
 
 def usable(name, ex):

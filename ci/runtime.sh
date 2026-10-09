@@ -8,7 +8,7 @@
 #
 # 1. Checks that ASan and UBSan really trap with this compiler, so green means something.
 # 2. Compiles every runtime/*.c on its own as C99 with -Wall -Wextra -Werror, ASan and UBSan.
-#    Each source has to be warning-free under both gcc and clang.
+#    Each source has to be warning-free under both gcc and clang. Nothing is run in this step.
 # 3. If runtime/Makefile exists: writes the parity inputs and runs its check target.
 #    The inputs are a fixed-seed random-init checkpoint (ci/fixture_ckpt.py) and a 48-line
 #    shard rendered from the pinned OFL font (ci/sandbox.py); only the font is downloaded.
@@ -33,7 +33,8 @@
 #    difference per mode}. Compare strings against a reference with the same weights
 #    (dequantised for int8): this random-init fixture has small top-1/top-2 logit gaps.
 # Other C code in runtime/ before the recognizer lands (the line finder, say) gets steps 1-2,
-# and step 3 if it brings a Makefile; it needs no parity report.
+# and step 3 if it brings a Makefile; it needs no parity report. Without a Makefile nothing of
+# it is run, so the sanitizers check nothing: a check target is how its tests run under them.
 set -euo pipefail
 
 cc=${1:?usage: ci/runtime.sh gcc|clang}
@@ -106,7 +107,7 @@ if [ ! -f runtime/Makefile ]; then
          "target that runs its parity test (contract at the top of ci/runtime.sh)" >&2
     exit 1
   fi
-  echo "::notice title=runtime ($cc) parity skipped::runtime/ has no recognizer yet (runtime/vocr.h and runtime/Makefile), so its sources were only built strictly with sanitizers."
+  echo "::notice title=runtime ($cc): compiled only, nothing run::runtime/ has no recognizer (runtime/vocr.h) and no Makefile, so its sources were compiled warning-free with the sanitizer flags but nothing was run, and ASan and UBSan only check code that runs. A 'check' target in runtime/Makefile runs tests under them (ci/runtime.sh)."
   rm -rf "$work"
   exit 0
 fi

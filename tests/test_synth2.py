@@ -48,6 +48,31 @@ def test_mask_finder_is_polarity_agnostic_and_the_console_finder_agrees():
         assert abs(x - 16) <= 5 and abs(y - 16) <= 3 and abs(w - 165) <= 8 and abs(h - 28) <= 4
 
 
+def test_mask_finder_equals_the_legacy_finder_on_bright_ink():
+    """On ink drawn bright on black, find_lines_mask gives the overlay's (legacy) boxes
+    exactly, wherever the furigana rule does not fire (docs/synth2.md)."""
+    rng = np.random.default_rng(0)
+    compared = 0
+    for _ in range(400):
+        h, w = int(rng.integers(40, 300)), int(rng.integers(60, 500))
+        ink = np.zeros((h, w), bool)
+        y = int(rng.integers(0, 12))
+        while y < h:
+            lh = int(rng.integers(1, 40))                  # some runs under 8 rows (ignored)
+            x0 = int(rng.integers(0, w // 2))
+            x1 = int(rng.integers(x0 + 1, w + 1))
+            cols = np.arange(x0, x1, int(rng.integers(1, 4)))
+            ink[y:y + lh, cols] = rng.random((min(lh, h - y), len(cols))) < 0.6
+            y += lh + int(rng.integers(1, 12))             # gaps of 1-2 rows merge, 3+ split
+        runs = [(a, b) for a, b in mask_finder._runs(ink.sum(axis=1) >= 2) if b - a + 1 >= 8]
+        if len(mask_finder._median_filter(runs)) != len(runs) or (ink.sum(axis=1) > w * 3 // 4).any():
+            continue                                       # the furigana rule, or legacy's light-box reject
+        img = np.where(ink[..., None], 255, 0).astype(np.uint8).repeat(3, axis=2)
+        assert mask_finder.find_lines_mask(ink) == find_lines(img, "legacy")
+        compared += 1
+    assert compared > 150
+
+
 def test_background_exclusions_cover_eval_reserved_games():
     """Every VN eval reserves (eval/manifests/test_games.json "all") is in the committed
     background exclusion manifest; when eval's list grows, re-run synth/bg_exclude.py."""

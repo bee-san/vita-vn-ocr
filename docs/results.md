@@ -6,9 +6,11 @@ on a console.
 
 ## Baselines
 
-Measured 2026-10-09 between 13:14 and 13:42Z from a checkout of 049c86d, in
-one `heavy.sh` slot of the shared x86 host (5 threads for torch and ONNX
-Runtime). Software: Python 3.11.15, torch 2.5.1+cpu, onnxruntime 1.30.0,
+Measured 2026-10-09 between 13:14 and 13:42Z at 049c86d, in one `heavy.sh` slot
+of the shared x86 host (5 threads for torch and ONNX Runtime). 049c86d is c4a5b9d
+before the rebase onto #3. Re-running v1 on all sets, and v1 and JIS int8 with
+both finders, at c4a5b9d (one thread) gave the same predictions on every line.
+The other rows go through the same scoring code, which #3 did not touch. Software: Python 3.11.15, torch 2.5.1+cpu, onnxruntime 1.30.0,
 manga-ocr 0.1.16, and the ncnn helper `eval/ncnn/vocr_ncnn_rec` (ncnn 3798be64,
 one thread, fp16 off, int8 on, the overlay's preprocessing). Decoding is greedy
 and the crops are fixed, so a rerun gives the same text. The v1, shipped and JIS
@@ -132,7 +134,8 @@ Per-game numbers are in each result JSON (`sets.<set>.games`).
 ### Line finders
 
 vita-test has 84 dialogue regions holding 206 scored lines; psp-test has 93
-holding 245.
+holding 245. The vita-test rows are partly in-sample for `gradient`, as explained
+below the table. psp-test is out of sample for both finders.
 
 | recognizer | finder | set | regions rejected | line recall | line precision | pipeline CER | concat CER |
 |---|---|---|---|---|---|---|---|
@@ -159,6 +162,18 @@ What the finder results show:
     14 of v11095's 20.
 - **`gradient` rejects nothing but still misses lines:** 11% of the Vita lines
   and 21% of the PSP ones.
+- **Tuning overlap on vita-test.** The research chose `gradient`'s rules on its
+  16 hand-transcribed regions, which are linefind's `research_a`. Together with
+  the replication `research_b`, those sets sit on 6 vita-test screenshots of v7721,
+  v19850, v21782 and v21789 (`docs/linefind.md`, `eval/linefind/manifests/`).
+  Leaving out every region of those 4 games leaves 60 regions and 149 lines:
+  - v1: `overlay` 40.26% and `gradient` 44.88% pipeline CER (22.66% from
+    hand-drawn boxes);
+  - JIS int8: `overlay` 36.36% and `gradient` 21.83% (2.28% from hand-drawn
+    boxes);
+  - recall: 65.10% for `overlay` and 87.25% for `gradient`.
+  So the in-sample screenshots flatter `gradient` by about 3 points on vita-test.
+  `overlay` is a port of the shipped C finder and was not tuned here.
 
 ## Test-set hygiene
 
@@ -174,6 +189,10 @@ What the finder results show:
   v20226, v24312, v25914, v26075 and v40027 for vita-test, and v2251, v9915,
   v11639, v11709 and v12159 for psp-test (v11707 was already reserved).
   `all` now holds 172 ids.
+- **linefind's sets (#3).** Its dev and holdout manifests share no screenshot,
+  session or set game with vita-test or psp-test. Its tuning sets `research_a` and
+  `research_b` include 6 vita-test screenshots, which is why the finder numbers
+  above carry a caveat.
 - **Near-duplicate audit.** `eval/tools/leakcheck.py` compared the 157 test
   screenshots (74 vita-test, 83 psp-test) with 7,603 non-reserved pool images
   (v1's background pool `data/vndb/shots` plus realdata's vita, psp and hires
@@ -203,3 +222,6 @@ What the finder results show:
 - Repeated timing samples: each ms/line figure is one pass on a shared, loaded host.
 - The reference presets `ppocr-v5-server` and `ppocr-v6-small[-jis]` (wired in, not baselined).
 - Why int8 beats fp32 on real lines, and whether calibrating on real crops changes it.
+- linefind's `grad` finder (#3, `synth/common.find_lines(region, "grad")`, which inverts
+  dark-text crops) is not wired in as a `--finder` name. `eval/linefind/evaluate.py
+  --eval-set vita-test` scores it.

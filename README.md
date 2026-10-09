@@ -21,6 +21,7 @@ data/fetch_assets.py           OFL fonts, Aozora/Wikipedia text, VNDB screenshot
 data/label_real.py             first real-line pseudo-labeller (PP-OCRv5 server + manga-ocr agreement)
 realdata/                      real training lines from Vita, PSP and scaled PC screenshots (4-reader vote)
 data/vocab.txt                 output character set
+teacher/                       real-screenshot labels: MeikiOCR first, local owocr engines vote (docs/teacher.md)
 synth/                         synthetic dialogue-box renderer and corpus builder
 train/                         model, CTC training, export.py (weights blob for the C runtime)
 runtime/                       on-console C99: recognizer (vocr.h/vocr.c), line finder (vocr_lines.c), tests

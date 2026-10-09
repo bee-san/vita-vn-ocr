@@ -31,17 +31,18 @@ Text and WinRT are Windows/macOS only.
 ```sh
 teacher/setup_venv.sh                                  # teacher/.venv: owocr + MeikiOCR + voters (pinned)
 teacher/.venv/bin/python teacher/label.py fetch        # model files -> $TEACHER_OUT/models (sha256-checked)
-PY="unshare -rn teacher/.venv/bin/python"
-# 1. read eval's test sets with every engine, and score each engine on eval's own crops
-$HERD/heavy.sh $PY teacher/label.py read --set vita-test --no-cascade --procs 5
-$HERD/heavy.sh teacher/measure_engines.sh vita-test,psp-test
-# 2. choose the rule: recall-max at >= 99% precision, 2-fold by game
-teacher/.venv/bin/python teacher/measure.py rules --out $TEACHER_OUT/results/rules.json
-# 3. relabel the training screenshots (realdata's collection, minus eval's test games/sessions)
-$HERD/heavy.sh $PY teacher/label.py read --set train --procs 5 --voters screenai,v6s,manga
-teacher/.venv/bin/python teacher/build.py decide       # rule.json -> manifests/, npz, README
-# 4. spot check
-teacher/.venv/bin/python teacher/spot.py sheet         # 100 random accepted lines -> contact sheets
+PY=teacher/.venv/bin/python
+# 1. read eval's test sets (every engine on every line), then the training collection, offline
+$HERD/heavy.sh teacher/read_all.sh
+# 2. choose the rule on eval's hand-checked sets: recall-max at >= 99.5% precision per set
+$PY teacher/measure.py rules --out $TEACHER_OUT/results/rules.json --rule-out teacher/rule.json
+$PY teacher/measure.py hand --out $TEACHER_OUT/results/hand.json   # realdata's hand checks
+$HERD/heavy.sh teacher/measure_engines.sh             # each engine alone on eval's crops
+# 3. labels: rule.json -> manifests/, npz, $TEACHER_OUT/README
+$PY teacher/build.py decide
+# 4. spot check: 100 random accepted lines -> contact sheets, verdicts in manifests/spot.jsonl
+$PY teacher/spot.py sheet && $PY teacher/spot.py report
+$PY teacher/report.py                                  # the result tables (docs/teacher.md)
 ```
 
 `$TEACHER_OUT` defaults to `$HERD/shared/artifacts/teacher`.
@@ -54,16 +55,22 @@ teacher/.venv/bin/python teacher/spot.py sheet         # 100 random accepted lin
    0.6 line heights left and right (stopping halfway to a neighbour). A line MeikiOCR cut
    short therefore reads longer for the voters and is rejected instead of being labelled
    with half its text.
-3. **Rule** (`vote.accept`, chosen in `rule.json`): MeikiOCR's reading is the label when
-   its confidences pass and enough voters read the same agreement key, which is eval's
-   scoring normalisation: two readings agree exactly when they would score the same on
-   the benchmark. Small kana, dakuten, ー/一 and lookalike kanji must match.
+3. **Rule** (`vote.accept`, chosen by measurement into `rule.json`): MeikiOCR's reading of
+   the line it detected is the label when at least 2 of PP-OCRv6 small, manga-ocr, Chrome
+   Screen AI and MeikiOCR's re-read of the view read the same agreement key, which is
+   eval's scoring normalisation (two readings agree exactly when they would score the same
+   on the benchmark; small kana, dakuten, ー/一 and lookalike kanji must match). A dissent
+   that differs only in small kana or ー/一 vetoes the line, and so does a Screen AI reading
+   with extra text at one end (the line runs on past MeikiOCR's box). Measured on eval's
+   sets: 99.0% precision held out by game, 65% recall (`docs/teacher.md`).
 4. **Build** (`build.py`): labels outside `data/vocab.txt` are dropped, a label is kept
    at most twice per VN and 8 times overall, eval's test games and sessions are excluded
    again, the split is by game (as realdata: val = `15 <= md5(vn) % 100 < 25`), and crops
    are cut like eval's (ink box + furigana, widened to the labelled characters, plus 4 px
    on Vita or 2 px on PSP) at the target resolution (PC shots scaled to fit 960×544 and
-   480×272).
+   480×272). Dark-text crops are stored inverted (`common.line_dark`, the console's
+   polarity contract), as realdata's are. Rejected real text lines go, unlabelled, to a
+   pool for logit distillation.
 
 ## Files
 
@@ -72,9 +79,11 @@ teacher/.venv/bin/python teacher/spot.py sheet         # 100 random accepted lin
 | `rule.json` | the acceptance rule and the measurements that chose it |
 | `manifests/shots.jsonl` | every screenshot with an accepted line: url, sha256, vn, kind, release, session, split |
 | `manifests/lines_<kind>.jsonl` | every accepted line: id, crop box (source px), label, how, targets, split |
+| `manifests/distill_<kind>.jsonl` | every rejected real text line (geometry only): id, crop box, targets, split, why |
 | `manifests/games.json`, `stats.json` | games (split, sessions, counts) and build statistics |
 | `manifests/spot.jsonl` | the by-eye spot check of 100 random accepted lines |
 | `$TEACHER_OUT/teacher_{train,val}.npz` | grey crops in render.py's shard format; meta has the character boxes |
+| `$TEACHER_OUT/teacher_distill_{train,val}.npz` | the rejected real lines, empty labels, every engine's reading in meta |
 | `$TEACHER_OUT/lines_full.jsonl`, `reads/` | accepted lines with character boxes; every engine's raw reading |
 
 Screenshots and crops are copyrighted: they stay under `$HERD/shared/artifacts`, never

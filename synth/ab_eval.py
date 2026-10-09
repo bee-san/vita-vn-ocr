@@ -3,13 +3,18 @@
 
 Sets (all local, never committed):
 
-  hand69       The research's hand-transcribed real lines (docs/research-findings.md, Q5):
-               32 lines from gt_real.json and 37 from q5_run_a/gt.json, 35 Vita screenshots,
-               on the research's own line crops. Tagged light-on-dark / dark-on-light /
-               light-on-light (outlined or light boxes) from the transcriber's notes.
-               Most games are training-side: the old shards could use these screenshots
-               as backgrounds, synth2 excludes them (data/manifests/synth2_bg_exclude.txt).
-  hand69-test  The hand69 lines from reserved test games (is_test_vn or eval's list).
+  hand         The research's hand-transcribed real lines (docs/research-findings.md, Q5),
+               on the research's own line crops: gt_real.json (32 lines) and
+               q5_run_a/gt.json (37 lines). The two sets share 7 screenshots, so lines are
+               deduplicated by (screenshot sha256, normalised text): 58 lines, 28 Vita
+               screenshots. Tagged light-on-dark / dark-on-light / light-on-light (outlined
+               text or light boxes) from the transcribers' notes. Most games are training-
+               side: the old shards could use these screenshots as backgrounds; synth2
+               excludes them (data/manifests/synth2_bg_exclude.txt).
+  hand-tight   The same crops trimmed horizontally to their edge-energy columns plus 4 px
+               (the research crops span the whole region width; the overlay's finder hands
+               the recognizer tight boxes). Groups [reserved-test-games] and
+               [training-side-games] split both by eval's reserved list and is_test_vn.
   pseudo-test  data/real lines where PP-OCRv5 and manga-ocr agree, test-split games
                (is_test_vn): bright-finder crops of bright text, labels not hand-checked.
   pseudo-train The same for training-side games.
@@ -70,21 +75,44 @@ def grey(path):
     return to_gray(np.asarray(Image.open(path).convert("RGB")))
 
 
-def hand69():
-    """[(crop, text, vn, kind)] from the research's two hand-transcribed sets."""
-    out = []
+def tighten(g, frac=0.12, pad=4):
+    """Trim a line crop horizontally to the columns with edge energy above frac x the
+    maximum (the column rule of finders.find_lines_grad), keeping pad px each side."""
+    f = g.astype(np.float32)
+    e = np.zeros_like(f)
+    e[:-1, :-1] = np.abs(np.diff(f, axis=1))[:-1, :] + np.abs(np.diff(f, axis=0))[:, :-1]
+    col = np.convolve(e.sum(axis=0), np.ones(5) / 5, mode="same")
+    cols = np.flatnonzero(col > frac * col.max()) if col.max() > 0 else []
+    if not len(cols):
+        return g
+    x0, x1 = max(0, int(cols[0]) - pad), min(g.shape[1], int(cols[-1]) + 1 + pad)
+    return g[:, x0:x1] if x1 - x0 >= 8 else g
+
+
+def file_sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def hand():
+    """[(crop, text, vn, kind, source)] from the research's two hand-transcribed sets,
+    deduplicated by (screenshot sha256, normalised text); the first transcription wins."""
+    out, seen = [], set()
+
+    def add(shot_path, crop_path, text, vn, kind, src):
+        key = (file_sha(shot_path), norm(text))
+        if key not in seen:
+            seen.add(key)
+            out.append((grey(crop_path), text, vn, kind, src))
     for it in json.loads((RESEARCH / "gt_real.json").read_text(encoding="utf-8")):
-        vn = it["shot"].split("_")[0]
+        shot = next((RESEARCH / "shots").glob(f"{it['shot']}.*"))
         for j, text in enumerate(it["lines"]):
-            p = RESEARCH / "lines" / f"{it['shot']}_{j}.png"
-            out.append((grey(p), text, vn, kind_from_notes(it["notes"]), "gt_real"))
+            add(shot, RESEARCH / "lines" / f"{it['shot']}_{j}.png", text, it["shot"].split("_")[0],
+                kind_from_notes(it["notes"]), "gt_real")
     for it in json.loads((RESEARCH / "q5_run_a" / "gt.json").read_text(encoding="utf-8")):
-        kind = "light-on-light" if it["kind"] == "light-on-light" else it["kind"]
+        shot = RESEARCH / "q5_run_a" / "raw" / Path(it["file"]).name
         for j, ln in enumerate(it["lines"]):
-            if not ln.get("text"):
-                continue
-            p = RESEARCH / "lines" / f"{it['tag']}_{j}.png"
-            out.append((grey(p), ln["text"], it["vn"], kind, "q5"))
+            if ln.get("text"):
+                add(shot, RESEARCH / "lines" / f"{it['tag']}_{j}.png", ln["text"], it["vn"], it["kind"], "q5")
     return out
 
 
@@ -173,8 +201,9 @@ def main():
     args = ap.parse_args()
     torch.set_num_threads(args.threads)
     is_res = reserved()
-    hand = hand69()
-    sets = {"hand69": hand, "pseudo-test": pseudo("test"), "pseudo-train": pseudo("train")}
+    hand_set = hand()
+    tight = [(tighten(it[0]),) + tuple(it[1:]) for it in hand_set]
+    sets = {"hand": hand_set, "hand-tight": tight, "pseudo-test": pseudo("test"), "pseudo-train": pseudo("train")}
     for spec in args.synth_val:
         name, path = spec.split("=", 1)
         sets[f"synth-val:{name}"] = synth_val(path, args.synth_n)
@@ -189,11 +218,12 @@ def main():
         for k, v in sorted(by.items()):
             if len(by) > 1:
                 groups[(name, k)] = v
-    res_idx = [i for i, it in enumerate(hand) if is_res(it[2])]
-    groups[("hand69", "reserved-test-games")] = res_idx
-    groups[("hand69", "training-side-games")] = [i for i in range(len(hand)) if i not in set(res_idx)]
-    crops_sha = hashlib.sha256(b"".join(it[0].tobytes() for it in hand)).hexdigest()[:16]
-    out = {"sets": {k: len(v) for k, v in sets.items()}, "hand69_crops_sha256_16": crops_sha,
+    res_idx = [i for i, it in enumerate(hand_set) if is_res(it[2])]
+    for name in ("hand", "hand-tight"):
+        groups[(name, "reserved-test-games")] = res_idx
+        groups[(name, "training-side-games")] = [i for i in range(len(hand_set)) if i not in set(res_idx)]
+    crops_sha = hashlib.sha256(b"".join(it[0].tobytes() for it in hand_set)).hexdigest()[:16]
+    out = {"sets": {k: len(v) for k, v in sets.items()}, "hand_crops_sha256_16": crops_sha,
            "models": {}, "results": {}, "pairs": {}}
     rows = {}
     dump = []

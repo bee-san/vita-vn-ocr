@@ -18,7 +18,8 @@ subset into single-line crops in the format `train/train.py` already loads.
 - Pages are SynthDoG-style documents, 513-1,525 px a side: text blocks over photos, flat or
   gradient fills and translucent panels, in many fonts, sizes and colours. About 20 lines per
   page. A line box spans the font's line height, so the ink sits about 17% of the box height
-  inside its top and bottom edges. 4.7% of the lines are vertical; no rotated line was found.
+  inside its top and bottom edges. 7.7% of the annotated lines are vertical (the funnel below);
+  no rotated line was found.
 
 ## What `nvsynth/` extracts
 
@@ -69,14 +70,20 @@ depend on how pages are split across worker processes.
 `nv_fetch.py run` streams the shards: downloads run ahead of the cutting in threads, the raw files
 on disk (finished or in flight) never exceed `--max-raw-gb` (36 GB for the one-line set, 100 GB
 for the every-line set), a download waits while it would leave under `--min-free-gb` (70 GB)
-free on the disk, and each raw file is deleted as soon as its crops are written. Worker
-processes are spawned, not forked, and a source file whose workers die or hang for 30 minutes
-is redone on fresh workers (the first one-line build hung once after its workers vanished).
+free on the output or the raw filesystem, and each raw file is deleted as soon as its crops are
+written. Downloads take that budget strictly in file order: the cutting loop consumes the files
+in order, so a later file that took the space an earlier one was waiting for would deadlock the
+run (the builds that made the shared artifacts predate this; in one, train_040 waited 26 minutes
+while six later files took the budget). Worker processes are spawned, not forked, and a source
+file whose workers die or hang for 30 minutes is redone on fresh workers (the first one-line
+build hung once after its workers vanished).
 
 In the every-line set a source file's lines are spread over `round(lines / 20,000)` shards,
 `nv_<split>_NNN_bBB.npz`, by a CRC32 of (file, page, line). Every bucket is therefore a uniform
-sample of all of that file's pages, and the same bucket of every file a uniform sample of the
-split: `full/train/nv_train_*_b00.npz` is about 1/12 of all train lines, from all 1.5M pages,
+sample of that file's lines, spread over all its pages rather than a page range. A train file has
+12-16 buckets, so the same bucket of every file is a sample stratified by file, not exactly a
+uniform sample of the split: `full/train/nv_train_*_b00.npz` is 1/12 to 1/16 of each file
+(848,808 lines, 1/14.2 of the 42 train files built by 2026-10-09), from pages all over the split,
 without opening the other shards. `nvsynth/subset.py` links a chosen set of buckets (plus a
 held-out shard named `zz_val.npz`, which `train.py` then validates on, and optionally other
 shards such as synth2's) into one directory for `train.py --synth 'DIR/*.npz'`.
@@ -87,21 +94,22 @@ shards such as synth2's) into one directory for `train.py --synth 'DIR/*.npz'`.
 |---|---|---|---|---|---|---|
 | one line per page | train | 42 (000-041) | 845,519 | 19,520-20,776 | 42 | 5.4 GB |
 | one line per page | held-out (`nv_val.npz`) | validation 000-003 | 10,065 | 2,447-2,582 | 1 | 63 MB |
-| every line | train | 66 readable (042 is damaged) | building: 12,036,035 lines from 000-041 so far | 241,007-318,556 | 597 so far (12-16 per source) | 74.8 GB so far |
-| every line | validation | 67 | queued after train | | | |
-| every line | test | 67 | queued after validation | | | |
+| every line | train | 000-041 of 66 readable (042 is damaged) | 12,036,035 | 241,007-318,556 | 597 (12-16 per source) | 74.8 GB |
+| every line | validation | 0 of 67 | | | | |
+| every line | test | 0 of 67 | | | | |
 
 The one-line set stops at 42 of the 67 train sources. Source 042 is damaged (see "Damaged source
 file"; the first build deadlocked on it), and by then the conductor had asked for every line of
 every page, which contains these lines too. The A/B below needs only sources 000-019.
 
-The every-line build was still running when this PR was finalised. It resumes source by source
-and writes each source's shards and `.json` record only when that source is complete, so train2
-can use whatever has landed. `$HERD/shared/artifacts/nvsynth/README` has the live state and the
-log path. Per-source line counts,
-shard names, sizes and sha256s are in the manifests
-(`nvsynth/manifests/nvsynth_ja.json` for the one-line set; the every-line manifest is written
-to `$HERD/shared/artifacts/nvsynth/full/nvsynth_ja_full.json` when that build ends). On
+The every-line rows are the state when this PR merged (2026-10-09): train 043-066, validation
+and test were still to be built, by a resumable job of the nvsynth agent
+(`$HERD/shared/artifacts/nvsynth/README` has its state, log and resume command). A source's
+shards and `.json` record are written only when that source is complete, so train2 can use
+whatever has landed. When the build ends it writes the every-line manifest,
+`$HERD/shared/artifacts/nvsynth/full/nvsynth_ja_full.json`, to be committed as
+`nvsynth/manifests/nvsynth_ja_full.json` in a follow-up. Per-source line counts, shard names, sizes
+and sha256s of the one-line set are in `nvsynth/manifests/nvsynth_ja.json`. On
 `validation_004`, the every-line mode kept 36,501 lines from 2,989 pages: 12.2 per page, 89% of
 the usable lines (the rest: 2,415 too wide, 1,876 faint), 6.2 KB per line compressed.
 
@@ -167,8 +175,8 @@ model needs most has to come from the synthetic VN set and the real crops.
 
 The v1 architecture (`train/model.py`, 0.76M parameters) trained for 5,000 steps (batch 96,
 lr 2e-3 with v1's warm-up and cosine schedule) from the same seed on three data sets, then
-scored at step 5,000 by eval's harness (`eval/run.py`, PR #5 head `bebd4f9`: vita-test 206
-lines from 16 Vita games, psp-test 245 lines from 14 PSP games), and on both held-out
+scored at step 5,000 (`ckpt_last`) by eval's harness (`eval/run.py` as merged in #5: vita-test
+206 lines from 16 Vita games, psp-test 245 lines from 14 PSP games), and on both held-out
 synthetic shards:
 
 - **synth**: v1's synthetic dialogue boxes, `data/synth` (39 shards, 390k lines; light text on
@@ -177,54 +185,70 @@ synthetic shards:
 - **mix**: both (about 790k lines, so about half of each arm's samples).
 
 Seeds 1 and 2, `train.py` from arch's branch (`8af9144`: the same model and schedule as v1,
-plus `--steps`, `--seed` and `--out`), run by `nvsynth/ab.sh` through `heavy.sh`, compared by
-`nvsynth/ab_compare.py` (per-seed CER, the seeds' errors pooled, and a paired bootstrap over
-games for the difference to the synth arm).
+plus `--steps`, `--seed` and `--out`; this repo's `train.py` now has `--out` too), run by
+`nvsynth/ab.sh` through `heavy.sh`, compared by `nvsynth/ab_compare.py` (per-seed CER, the seeds'
+errors pooled, and a paired bootstrap over games for the difference to the synth arm). nv-val is
+the first 3,000 lines of `nv_val.npz` (the harness's synth-val limit). Its pages are held out,
+but its text only partly: 29% of `nv_val`'s lines have a label that also occurs in the one-line
+train set, mostly sentence-end fragments such as ます。 (86 distinct ones of 12 or more
+characters, web boilerplate). Training is deterministic: the reviewer retrained mix seed 1 and
+got a bit-identical checkpoint, and the synth seed-1 checkpoint is bit-identical to arch's
+independent `base_s1` run.
 
-Seed 1 (2026-10-09; seed 2 was still running when this PR was finalised, and its results land
-in `$HERD/shared/artifacts/nvsynth/ab/results/`; `nvsynth/ab_compare.py` pools whatever seeds are
-there):
+CER per seed (seed 1 / seed 2), with the exact-line share pooled over both seeds:
 
-| arm (training data) | vita-test CER / exact | psp-test CER / exact | synth-val CER | nv-val CER |
-|---|---|---|---|---|
-| synth: v1's synthetic boxes (390k lines) | 28.51% / 39.3% | 51.39% / 22.9% | **1.25%** | 86.66% |
-| nv: NVIDIA crops (400k) | 20.94% / 23.3% | 23.98% / 22.9% | 13.04% | **13.62%** |
-| mix: both (790k) | **9.75% / 49.5%** | **15.18% / 40.0%** | 2.50% | 14.63% |
-| *v1 for reference (synth, 8 epochs = 32.5k steps)* | *23.75% / 52.4%* | *46.65% / 28.2%* | *0.32%* | |
-| *JIS-trimmed int8 PP-OCRv5 mobile (the bar)* | *2.30% / 79.1%* | *5.58%* | | |
+| arm (training data) | vita-test CER | vita exact | psp-test CER | psp exact | synth-val CER | nv-val CER |
+|---|---|---|---|---|---|---|
+| synth: v1's synthetic boxes (390k lines) | 28.51% / 30.03% | 39.1% | 51.27% / 53.67% | 25.9% | **1.25% / 1.24%** | 86.66% / 88.71% |
+| nv: NVIDIA crops (400k) | 20.94% / 17.47% | 24.8% | 23.82% / 21.35% | 24.3% | 13.04% / 11.19% | **13.62% / 13.02%** |
+| mix: both (790k) | **9.75% / 10.18%** | **49.0%** | **14.98% / 14.70%** | **42.4%** | 2.50% / 2.50% | 14.63% / 14.30% |
+| *v1 for reference (synth, 8 epochs = 32.5k steps)* | *23.75%* | *52.4%* | *46.45%* | *30.2%* | *0.32%* | |
+| *JIS-trimmed int8 PP-OCRv5 mobile* | *2.30%* | *79.1%* | *5.34%* | *66.1%* | | |
 
-Mix against synth, CER difference with a 95% bootstrap interval over games: vita-test −18.8
-points (−37.6 to −5.0; better in 9 of 16 games, worse in 4), psp-test −36.2 points (−56.6 to
-−16.9; better in 11 of 14, worse in 2). The NVIDIA crops alone beat synth on psp-test (−27.4,
-−50.0 to −6.5) but not clearly on vita-test (−7.6, −29.6 to +8.9; worse in 10 of 16 games).
+The reference rows are `docs/results.md`; the owner's bar quotes 2.30% / 5.58%, the int8
+model's psp-test CER before #5's psp-test fixes.
 
-Per style (CER, seed 1):
+Pooled over both seeds, CER difference to synth with a 95% bootstrap interval over games:
+
+| | vita-test | psp-test |
+|---|---|---|
+| mix − synth | −19.3 points (−38.2 to −5.5); better in 10 of 16 games, worse in 5 | −37.6 points (−58.9 to −17.3); better in 11 of 14, worse in 3 |
+| nv − synth | −10.1 points (−31.1 to +5.5); better in 6 of 16, worse in 10 | −29.9 points (−52.4 to −8.6); better in 8 of 14, worse in 6 |
+| mix − nv | −9.2 points (−13.0 to −5.7); better in 15 of 16, worse in 0 | −7.8 points (−10.4 to −5.3); better in 13 of 14, worse in 1 |
+
+The intervals resample games over the pooled errors, so they cover which games are in the test
+sets, not training noise beyond these two seeds; the per-seed columns show that noise (up to 3.5
+points on vita-test for the nv arm).
+
+Per style (CER, both seeds pooled, eval's style tags as merged):
 
 | style | vita lines | synth | nv | mix | psp lines | synth | nv | mix |
 |---|---|---|---|---|---|---|---|---|
-| bright-on-dark | 142 | 11.22% | 21.01% | **8.79%** | 135 | 23.97% | 30.24% | **17.70%** |
-| dark-on-light | 64 | 69.93% | 20.79% | **12.05%** | 110 | 88.00% | 15.63% | **11.81%** |
-| outlined | 72 | 33.55% | 29.18% | **13.53%** | 69 | 29.73% | 33.38% | **18.24%** |
-| mincho | 47 | 3.40% | 13.17% | **2.96%** | 90 | 45.63% | 16.06% | **9.86%** |
-| coloured | 17 | 52.69% | 36.02% | **30.65%** | 20 | 68.22% | 26.64% | **23.36%** |
-| coloured-name | 7 | 42.11% | 47.37% | **26.32%** | 7 | 91.67% | **41.67%** | 45.83% |
-| name | 53 | **27.33%** | 42.44% | 28.49% | 62 | 71.77% | 53.59% | **45.45%** |
-| furigana | 3 | **15.62%** | 39.06% | 18.75% | 20 | **65.05%** | 80.10% | 65.53% |
-| small (PSP) | | | | | 106 | 57.35% | 13.16% | **8.43%** |
+| bright-on-dark | 163 | 13.14% | 21.28% | **10.42%** | 135 | 22.60% | 28.35% | **18.38%** |
+| dark-on-light | 43 | 88.59% | 11.59% | **8.30%** | 110 | 90.69% | 15.21% | **10.31%** |
+| outlined | 74 | 34.88% | 26.29% | **13.75%** | 69 | 30.47% | 29.80% | **19.05%** |
+| mincho | 47 | **2.96%** | 11.69% | 3.62% | 90 | 46.85% | 15.70% | **8.89%** |
+| coloured | 19 | 55.90% | 36.15% | **32.82%** | 20 | 69.86% | 25.70% | **23.36%** |
+| coloured-name | 8 | 47.62% | 42.86% | **26.19%** | 7 | 95.83% | **39.58%** | 41.67% |
+| name | 53 | 28.78% | 42.15% | **28.49%** | 62 | 72.25% | 51.67% | **45.22%** |
+| furigana | 3 | 18.75% | 33.59% | **16.41%** | 20 | **66.50%** | 75.73% | 67.48% |
+| small (PSP) | | | | | 106 | 57.66% | 13.16% | **8.12%** |
 
 What this says:
 
 - **The NVIDIA crops help, a lot, but as a mix.** At the same 5,000 steps, adding them to the VN
-  boxes cut vita-test CER by about two thirds and psp-test by about 70%, beating v1's full 8-epoch
-  run on both sets. The gains are where v1's data has nothing: dark-on-light text (70% → 12% on
-  Vita, 88% → 12% on PSP), small PSP glyphs (57% → 8%), and serif and outlined faces.
-- **They don't replace the VN-style data.** Alone, they lose bright-on-dark accuracy (11% → 21%
+  boxes cut vita-test CER by about two thirds and psp-test by about 70%, on both seeds, beating
+  v1's full 8-epoch run on both sets. The gains are where v1's data has nothing: dark-on-light
+  text (89% → 8% on Vita, 91% → 10% on PSP), small PSP glyphs (58% → 8%), and serif and outlined
+  faces.
+- **They don't replace the VN-style data.** Alone, they lose bright-on-dark accuracy (13% → 21%
   on Vita) and exact lines, because light text on dark translucent boxes is rare in the set
-  (20% of crops) and its text has no dialogue punctuation.
+  (18% of crops) and its text has no dialogue punctuation. Mix beats nv in 15 of 16 Vita games
+  and 13 of 14 PSP games.
 - **Still unsolved by either:** names and name plates (28-45%) and lines with furigana above them
-  (65% on PSP). They need real crops (realdata, teacher) or synth2's name-box and furigana styles.
+  (67% on PSP). They need real crops (realdata, teacher) or synth2's name-box and furigana styles.
 - Each model is best on its own synthetic validation set, and synth-only is useless on the
-  NVIDIA one (87% CER). Synthetic validation says nothing about the real sets here, which is why
+  NVIDIA one (88% CER). Synthetic validation says nothing about the real sets here, which is why
   AGENTS.md insists on eval's real sets.
 - All of this is 5,000 steps of a 0.76M-parameter model; train2's longer pretraining and real
   fine-tuning are where the bar (2.30% / 5.58%) gets attacked. For train2: pretrain on NVIDIA
@@ -255,6 +279,24 @@ characters or 680 px:
   fallback on a busy background);
 - a dozen faint lines (light grey on white, text over photos), all still legible at 1x.
 
+A second, independent check (the reviewer, 60 random kept crops: 20 each of `nv_train_007`,
+`nv_val` and `full/train/nv_train_030_b05`, read on sheets at 1.2x with 2.5x zooms of the doubtful
+ones) agrees that the labels are the rendered text: no crop shows a wrong character. But some
+labelled text cannot be seen in grey:
+
+- 2 of 60 crops (3%) are mostly invisible: light text runs into a light photo, so of
+  「日、TBSの29歳・テレビ局...」 only 「日、TBSの2」 shows, and of
+  「昨日は最近人気の…【FF14日記】」 little more than 「【…日記】」;
+- 1 crop's final 。 is invisible, and 1 crop is a lone small kana (ぁ。) that the tight crop makes
+  indistinguishable from あ.
+
+The faint filter misses these because it measures the whole crop, and part of each line has
+contrast. A windowed measure catches them: the share of 32-px windows whose grey range
+(p98 - p2) is under 16 flags exactly those 2 of the 60 at 25% or more, and flags 2.5% of `nv_val`
+(1.2% at 50%). Such lines teach the model to emit text it cannot see. A windowed contrast filter is
+left as a follow-up because it changes the built sets; until then this is a known label-noise
+floor of about 2-3% of lines.
+
 An earlier sheet, before the one-word filter, had 2 label errors in 34 lines, both list entries
 whose leader dots (`76 ……… そのため`, `増えて ……… l`) were drawn but not labelled. That would
 have taught the model to ignore ……, VN dialogue's most common punctuation, so two-word lines
@@ -268,9 +310,9 @@ box plus eval's pad (4 px Vita, 2 px PSP) and restricted to lines two OCR readin
 
 | | NVIDIA crops | real Vita | real PSP |
 |---|---|---|---|
-| polarity | 80% dark-on-light (2,113 of 2,638 in `validation_001`) | 52% light-on-dark (realdata agreed lines); 69% in eval vita-test | 66% light-on-dark |
-| ink height at native size (p5 / p50 / p95) | 10 / 20 / 53 px | 17 / 26 / 42 px | 13 / 17 / 24 px |
-| characters per line (p50 / p95) | 10 / 36 | 12.5 / 24 (vita-test) | |
+| polarity | 80% dark-on-light (2,045 of 2,542 in `validation_001`; 82% of the one-line set) | 52% light-on-dark (realdata agreed lines); 79% of eval's vita-test lines are bright-on-dark | 66% light-on-dark (realdata); 55% of psp-test |
+| ink height at native size (p5 / p50 / p95) | 11 / 20 / 56 px (one-line set; every-line bucket 00: 10 / 18 / 41) | 17 / 26 / 42 px | 13 / 17 / 24 px |
+| characters per line (p50 / p95) | 9 / 32 | 12.5 / 24 (vita-test) | |
 | image quality | JPEG q100 renders, crisp anti-aliasing | VNDB JPEG screenshots: ringing, chroma blur | half the resolution: 12-17 px glyphs, blur |
 | look | web and print layouts: flat fills, gradients, photos, translucent panels; many document fonts and weights (gothic, mincho, rounded, pop, brush, italic, very heavy display faces) | game gothics and rounded faces (Rodin, Seurat-like), minchos, heavy outlines and drop shadows, translucent dark boxes, coloured names, furigana | the same at small sizes, some bitmap-like faces |
 | text | web text: product names, prices, dates, Latin, digits, 【】, katakana loanwords, fragments cut mid-word by the page's wrapping | dialogue and narration: kana-heavy speech, 「」『』, ……, ！？, ～, names | same |
@@ -278,9 +320,9 @@ box plus eval's pad (4 px Vita, 2 px PSP) and restricted to lines two OCR readin
 So the NVIDIA set brings what v1's light-on-dark synthetic boxes lack (dark text on light
 backgrounds, a wide font and weight range, busy photo backgrounds, digits and Latin), and lacks
 what VN boxes have most: outlined or shadowed light text on translucent dark boxes, low-resolution
-glyphs, furigana, and dialogue punctuation. Vertical text (4.7% of NVIDIA's lines) is dropped by
-design. That is why the A/B below also tries a mix with VN-style synthetic data, and why the
-owner's plan fine-tunes on real crops afterwards.
+glyphs, furigana, and dialogue punctuation. Vertical text (7.7% of NVIDIA's annotated lines) is
+dropped by design. That is why the A/B above also tries a mix with VN-style synthetic data, and
+why the owner's plan fine-tunes on real crops afterwards.
 
 ## JSSODa
 

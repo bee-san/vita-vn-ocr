@@ -17,8 +17,8 @@ The checkpoint is exported with train/export.py (fp32 and int8). For every line 
   * strings: the C runtime's greedy CTC string equals PyTorch's, except on a near tie. A
     string may differ only if, at every frame whose argmax differs, PyTorch's own top-1 /
     top-2 margin is at most twice the measured logit difference (counted as
-    text_diff_tie_only; it does occur in w8i, whose int16 activations PyTorch computes in a
-    different summation order);
+    text_diff_tie_only; it does occur in w8i, whose int16 rounding amplifies the 1-ulp
+    differences of PyTorch's float summation order);
   * exact: the logits are bit-identical to tests/vocr_ref.py, a numpy model of the C
     arithmetic, so the C strings are exactly that model's;
   * tiles: the logits are bit-identical for several tile / head-batch sizes;

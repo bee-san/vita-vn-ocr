@@ -4,14 +4,13 @@ A finder takes an RGB region (H x W x 3 uint8, the box a player draws) and retur
 line boxes [(x, y, w, h), ...] in region coordinates, or None when it rejects the
 region (the overlay's VJO_E_OCR_REGION).
 
-  overlay        synth/common.py find_lines: exact port of vita-jp-overlay's
+  overlay        synth/common.py find_lines(rgb, "legacy"): exact port of vita-jp-overlay's
                  bright-pixel row projection (core/ocr_lines.c), the shipped finder
   gradient       the research's polarity-agnostic gradient-energy projection
                  (scratch/real/grad_finder.py): rows above 25% of the max |dx|+|dy|
                  profile form runs, gaps under 3 px merge, runs under 8 px or under
                  0.55x the median height are dropped; full-width bands, 4/6 px pad
-  py:MOD:FUNC    any Python function with the same contract, e.g. the linefind
-                 agent's twin: py:common:find_lines_v2 (MOD may also be a .py path)
+  py:MOD:FUNC    any Python function with the same contract (MOD may also be a .py path)
   cmd:COMMAND    an external finder: the region is written as a binary PPM, {} in
                  COMMAND is replaced by its path (else the path is appended); it prints
                  one "x y w h" line per text line; a non-zero exit means "rejected"
@@ -35,7 +34,7 @@ for p in (ROOT, ROOT / "synth"):
 
 def overlay(rgb):
     from common import find_lines
-    return find_lines(rgb)
+    return find_lines(rgb, "legacy")
 
 
 def gradient(rgb):

@@ -116,10 +116,11 @@ ground-truth characters the model cannot emit (`oov_chars`).
 `--finder overlay|gradient|py:MOD:FUNC|cmd:COMMAND` runs a finder on each
 dialogue region instead and recognizes what it returns:
 
-- `overlay`: `synth/common.find_lines`, the overlay's shipped bright-pixel finder;
+- `overlay`: `synth/common.find_lines(region, "legacy")`, the overlay's shipped
+  bright-pixel finder;
 - `gradient`: the research's polarity-agnostic gradient-energy projection;
 - `py:MOD:FUNC`: any Python function `f(rgb_region) -> [(x, y, w, h)] | None`
-  (None = region rejected), e.g. linefind's twin in `synth/common.py`;
+  (None = region rejected);
 - `cmd:COMMAND`: an external program that reads the region (PPM) and prints
   `x y w h` lines, exit status non-zero = rejected.
 

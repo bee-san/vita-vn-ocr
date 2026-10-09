@@ -23,6 +23,7 @@ realdata/                      real training lines from Vita, PSP and scaled PC 
 data/vocab.txt                 output character set
 teacher/                       real-screenshot labels: MeikiOCR first, local owocr engines vote (docs/teacher.md)
 synth/                         synthetic dialogue-box renderer and corpus builder
+nvsynth/                       Japanese line crops from NVIDIA OCR-Synthetic-Multilingual-v1 for pretraining (docs/nvsynth.md)
 train/                         model, CTC training, export.py (weights blob for the C runtime)
 runtime/                       on-console C99: recognizer (vocr.h/vocr.c), line finder (vocr_lines.c), tests
 docs/                          research notes and results
@@ -39,6 +40,10 @@ Game screenshots, rendered shards, downloaded corpora, fonts and checkpoints sta
 ./setup_env.sh
 .venv/bin/python data/fetch_assets.py all
 ```
+
+## Third-party data
+
+Pretraining uses line crops cut from the Japanese subset of [OCR-Synthetic-Multilingual-v1](https://huggingface.co/datasets/nvidia/OCR-Synthetic-Multilingual-v1) by NVIDIA Corporation (Chesler, 2026), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), at revision `69696a1cc543ef3a0f8e9892a89c17293e915263`. The crops are modified: single horizontal text lines are cut from the pages, converted to grey and resized to height 32, and lines with characters outside `data/vocab.txt` are dropped (`nvsynth/`, `docs/nvsynth.md`). Neither the dataset nor the crops are redistributed here; `nvsynth/nv_fetch.py` rebuilds them from the Hub. Model weights trained on them carry the same attribution in their release notes.
 
 ## License
 

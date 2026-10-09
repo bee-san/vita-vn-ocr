@@ -150,6 +150,7 @@ def default_threads():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", default="v1")
+    ap.add_argument("--out", type=Path, default=ROOT / "models", help="runs directory")
     ap.add_argument("--synth", default=str(DATA / "synth" / "synth_*.npz"))
     ap.add_argument("--real", default="")
     ap.add_argument("--real-weight", type=float, default=0.3)
@@ -167,7 +168,7 @@ def main():
     torch.set_flush_denormal(True)
     if args.seed is not None:
         torch.manual_seed(args.seed)
-    out = ROOT / "models" / args.run
+    out = args.out / args.run
     out.mkdir(parents=True, exist_ok=True)
 
     vocab = load_vocab()

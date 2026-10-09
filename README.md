@@ -18,7 +18,8 @@ General OCR models are too big for this. The best general option, a trimmed int8
 ```
 setup_env.sh, requirements.*   Python env (uv; CPU torch)
 data/fetch_assets.py           OFL fonts, Aozora/Wikipedia text, VNDB screenshot list
-data/label_real.py             pseudo-labels real screenshots (PP-OCRv5 server + manga-ocr agreement)
+data/label_real.py             first real-line pseudo-labeller (PP-OCRv5 server + manga-ocr agreement)
+realdata/                      real training lines from Vita, PSP and scaled PC screenshots (4-reader vote)
 data/vocab.txt                 output character set
 synth/                         synthetic dialogue-box renderer and corpus builder
 train/                         model and CTC training

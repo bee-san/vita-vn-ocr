@@ -167,6 +167,95 @@ def test_paired_bootstrap_delta():
     assert sweep_table.paired_delta(a, {}) is None
 
 
+def test_line_errors_use_the_pooled_cers_scorer(capsys):
+    """The paired Δ must come from the same per-line errors as the pooled CER: eval's
+    metrics.norm folds ・・ runs like an ellipsis, sweep_eval.score_norm does not (a real
+    psp-test line). Stored per-line counts win; older JSONs are re-scored with eval's
+    scorer on eval's sets; lines that don't add up to the set's errors are reported."""
+    import sweep_table
+    line = {"id": "x", "ref": "「……なんだよ。", "pred": "「・・～と・なんだよ。"}
+    res = {"run": "r", "results": {"int8/psp-test-inv": {"errors": 3, "chars": 8,
+                                                         "lines_detail": [dict(line)]}}}
+    assert sweep_table.line_errors(res, "int8", ("psp-test-inv",)) == {("psp-test-inv", "x"): (3, 8)}
+    assert capsys.readouterr().err == ""
+    stored = {"run": "r", "results": {"int8/psp-test-inv": {
+        "errors": 4, "chars": 8, "lines_detail": [{**line, "errors": 4, "n": 8}]}}}
+    assert sweep_table.line_errors(stored, "int8", ("psp-test-inv",))[("psp-test-inv", "x")] == (4, 8)
+    res["results"]["int8/psp-test-inv"]["errors"] = 5                # inconsistent JSON
+    sweep_table.line_errors(res, "int8", ("psp-test-inv",))
+    assert "warning" in capsys.readouterr().err
+
+
+def test_w8i_sizes_for_reductions_over_512():
+    """Width 2.0's row collapse has K = 640 > 512: the runtime's W8I sums it in int32
+    chunks, so cost.py reports a W8I arena for it (no K limit)."""
+    E = cost.runtime_exporter()
+    if E is None:
+        pytest.skip("train/export.py not importable")
+    r = cost.runtime_sizes(E, TinyVNOCR(21, width=2.0), [chr(0x4E00 + i) for i in range(20)], 32)
+    assert r["rt_max_k"] == 640
+    assert all(r[f"rt_arena_w8i_{w}"] > r[f"rt_arena_w8f_{w}"] > 0 for w in cost.WIDTHS)
+
+
+def test_c_runtime_w8i_with_reduction_over_512():
+    """The C runtime runs W8I for a width-2.0 model (K = 640): logits within the parity
+    tolerance of PyTorch with the int8 weights (skips if libvocr.so cannot be built)."""
+    import shutil
+
+    import numpy as np
+
+    import export
+    from model import set_weight_quant
+    torch.manual_seed(0)
+    vocab = [chr(0x3042 + i) for i in range(20)]
+    m = TinyVNOCR(len(vocab) + 1, width=2.0).eval()
+    for mod in m.modules():
+        if isinstance(mod, nn.BatchNorm2d):
+            mod.running_var.uniform_(0.5, 2.0)
+    blob, _ = export.build_blob(export.model_ops(m, 32), vocab, 32, True, 1024, b"")
+    if not (shutil.which("cc") or shutil.which("gcc")):
+        pytest.skip("no C compiler")
+    sys.path.insert(0, str(ROOT / "runtime"))
+    from pyvocr import Vocr
+    try:
+        r = Vocr(blob, mode="w8i")
+    except (OSError, RuntimeError, subprocess.CalledProcessError) as e:
+        pytest.skip(f"libvocr.so unavailable: {e}")
+    g = np.random.default_rng(0).integers(0, 256, (32, 96), dtype=np.uint8)
+    _, logits = r.run(g, logits=True)
+    set_weight_quant(m, 8)
+    with torch.no_grad():
+        ref = m(torch.from_numpy(g.astype(np.float32) / 127.5 - 1.0)[None, None])[:, 0].numpy()
+    assert logits.shape == ref.shape
+    assert np.abs(logits - ref).max() <= 5e-3 * max(1.0, np.abs(ref).max())
+
+
+def test_predict_is_exact_by_default():
+    """Every sweep_eval set is predicted one padded width per batch, so no crop is padded
+    beyond what a one-line forward pass pads (in a mixed-width batch the replicate
+    padding changes the frames near a shorter crop's right edge)."""
+    import collections
+
+    import numpy as np
+
+    import sweep_eval
+    m = TinyVNOCR(30, width=0.25, bottleneck=48).eval()
+    fed = collections.Counter()
+
+    def recording_model(x):
+        fed[x.shape[-1]] += x.shape[0]
+        return m(x)
+
+    vocab = [chr(0x3042 + i) for i in range(29)]
+    widths = np.random.default_rng(3).integers(16, 400, 40)
+    crops = [np.zeros((32, int(w)), np.uint8) for w in widths]
+    sweep_eval.predict(recording_model, crops, 32, vocab)
+    assert fed == collections.Counter(int(w + 7) // 8 * 8 for w in widths)
+    fed.clear()
+    sweep_eval.predict(recording_model, crops, 32, vocab, exact=False)   # the old packing
+    assert fed != collections.Counter(int(w + 7) // 8 * 8 for w in widths)
+
+
 def test_unk_scoring():
     import sweep_eval
     r = sweep_eval.score(["ab〓d", "abcd"], ["abxd", "abcd"], unk_vocab=set("abcd"))

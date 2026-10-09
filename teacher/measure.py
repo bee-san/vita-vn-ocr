@@ -203,6 +203,27 @@ def fmt(s):
     return out + f"accepted {s['accepted']}"
 
 
+def dump(items, scored_gt, rule, path):
+    """Per-line diagnostics for one rule: every scored or partial teacher line with all
+    readings, the decision and the truth, plus truth lines no teacher line covers."""
+    rows, covered = [], set()
+    for name, vn, ln, truth, ids, status in items:
+        lab, how = vote.accept(ln, rule)
+        covered.update(ids)
+        if status == "unmatched" and lab is None:
+            continue
+        reads = {e: vote.reading(ln, e)[0] for e in ENGINES if vote.reading(ln, e) is not None}
+        rows.append({"set": name, "vn": vn, "status": status, "gt": ids, "truth": truth, "label": lab,
+                     "how": how, "ok": None if truth is None or lab is None else
+                     vote.eval_norm(lab) == vote.eval_norm(truth), "crop": ln.get("crop"),
+                     "det_conf": ln.get("det_conf"),
+                     "conf": vote.low_conf(vote.reading(ln, rule.get("primary", "meikiv"))[1])
+                     if vote.reading(ln, rule.get("primary", "meikiv")) else None, "reads": reads})
+    missed = [{"gt": g["id"], "text": g["text"], "box": g["xyxy"]} for i, g in scored_gt.items() if i not in covered]
+    Path(path).write_text(json.dumps({"rule": rule, "lines": rows, "uncovered_truth": missed}, ensure_ascii=False,
+                                     indent=1) + "\n", encoding="utf-8")
+
+
 def cmd_rules(args):
     items, scored = [], {}
     sets = args.set.split(",")
@@ -283,7 +304,8 @@ def cmd_rules(args):
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        print(f"\nwrote {args.out}")
+        dump(items, scored, rule, Path(args.out).with_suffix(".lines.json"))
+        print(f"\nwrote {args.out} and {Path(args.out).with_suffix('.lines.json')}")
 
 
 def main():

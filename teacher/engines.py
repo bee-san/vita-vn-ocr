@@ -379,12 +379,21 @@ class ScreenAI:
         return out
 
     def __call__(self, bgr):
-        """Recognizer use on a line crop: every horizontal line it finds, top to bottom."""
-        lines = [ln for ln in self.ocr(bgr) if not ln["vertical"]]
-        lines.sort(key=lambda ln: ((ln["box"][1] + ln["box"][3]) / 2, ln["box"][0]))
-        cs = [ln["conf"] for ln in lines]
-        return ["".join(ln["text"] for ln in lines), round(float(np.mean(cs)), 4) if cs else 0.0,
-                round(min(cs), 4) if cs else 0.0]
+        """Recognizer use on a one-line crop: the segments on the crop's main row (the tallest
+        segment's row; furigana and stray UI above or below it are left out), left to right."""
+        lines = [ln for ln in self.ocr(bgr) if not ln["vertical"] and ln["text"]]
+        if not lines:
+            return ["", 0.0, 0.0]
+        main = max(lines, key=lambda ln: ln["box"][3] - ln["box"][1])
+
+        def vov(a, b):
+            inter = min(a[3], b[3]) - max(a[1], b[1])
+            return max(0, inter) / max(1, min(a[3] - a[1], b[3] - b[1]))
+        row = sorted((ln for ln in lines if vov(ln["box"], main["box"]) >= 0.5
+                      and (ln["box"][3] - ln["box"][1]) >= 0.65 * (main["box"][3] - main["box"][1])),
+                     key=lambda ln: ln["box"][0])
+        cs = [ln["conf"] for ln in row]
+        return ["".join(ln["text"] for ln in row), round(float(np.mean(cs)), 4), round(min(cs), 4)]
 
 
 def load(names, n_threads=None):

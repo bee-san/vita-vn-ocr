@@ -28,6 +28,7 @@ import itertools
 import json
 import math
 import sys
+from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -66,8 +67,14 @@ def vov(a, b):
     return max(0, inter) / max(1, min(a[3] - a[1], b[3] - b[1]))
 
 
+COVER = 0.9          # a teacher crop must span this share of the truth's width to be scored
+
+
 def match(shots, gts, name):
-    """[(set, vn, teacher line, truth text or None, [gt ids])], and the scored gt ids."""
+    """[(set, vn, teacher line, truth text or None, [gt ids], status)], and the scored gt ids.
+    status: scored | partial (the crop covers < COVER of the truth's width, so box matching
+    can't tell whether a shorter label is right for it) | uncertain | unmatched (UI, menus
+    and other text eval leaves out)."""
     items, scored_gt = [], {}
     for key, rows in gts.items():
         for g in rows:
@@ -79,24 +86,32 @@ def match(shots, gts, name):
             box = ln.get("crop") or ln["ink"]
             hits = [g for g in rows if vov(box, g["xyxy"]) >= 0.5
                     and min(box[2], g["xyxy"][2]) - max(box[0], g["xyxy"][0]) > 0]
-            if not hits or any(g.get("uncertain") for g in hits):
-                truth = None
-            else:
-                truth = "".join(g["text"] for g in sorted(hits, key=lambda g: g["xyxy"][0]))
-            items.append((name, r["vn"], ln, truth, [g["id"] for g in hits]))
+            truth, status = None, "unmatched"
+            if hits and any(g.get("uncertain") for g in hits):
+                status = "uncertain"
+            elif hits:
+                gx0, gx1 = min(g["xyxy"][0] for g in hits), max(g["xyxy"][2] for g in hits)
+                cover = (min(box[2], gx1) - max(box[0], gx0)) / max(1, gx1 - gx0)
+                if cover < COVER:
+                    status = "partial"
+                else:
+                    status = "scored"
+                    truth = "".join(g["text"] for g in sorted(hits, key=lambda g: g["xyxy"][0]))
+            items.append((name, r["vn"], ln, truth, [g["id"] for g in hits], status))
     return items, scored_gt
 
 
 def score(items, scored_gt, rule, vns=None):
-    acc = acc_scored = correct = errs = chars = 0
+    acc = acc_scored = correct = errs = chars = partial = 0
     recalled = set()
-    for _, vn, ln, truth, ids in items:
+    for _, vn, ln, truth, ids, status in items:
         if vns is not None and vn not in vns:
             continue
         lab, _ = vote.accept(ln, rule)
         if lab is None:
             continue
         acc += 1
+        partial += status == "partial"
         if truth is None:
             continue
         acc_scored += 1
@@ -107,7 +122,7 @@ def score(items, scored_gt, rule, vns=None):
             correct += 1
             recalled.update(i for i in ids if i in scored_gt)
     n_gt = sum(1 for g in scored_gt.values() if vns is None or g["vn"] in vns)
-    return {"accepted": acc, "accepted_scored": acc_scored, "correct": correct,
+    return {"accepted": acc, "accepted_scored": acc_scored, "accepted_partial": partial, "correct": correct,
             "precision": correct / acc_scored if acc_scored else None,
             "recall": len(recalled) / n_gt if n_gt else None, "gt_lines": n_gt,
             "label_cer": errs / chars if chars else None}
@@ -162,7 +177,7 @@ def pipeline_engines(items):
     out = {}
     for e in ENGINES:
         n = exact = errs = chars = 0
-        for _, _, ln, truth, _ in items:
+        for _, _, ln, truth, _, _ in items:
             if truth is None:
                 continue
             t = vote.reading(ln, e)
@@ -202,10 +217,10 @@ def cmd_rules(args):
         per_set[name] = (it, sg)
         items += it
         scored.update(sg)
-        n_det = len({i for _, _, _, _, ids in it for i in ids if i in sg})
-        print(f"{name}: {len(shots)} screenshots, {len(it)} teacher lines, {sum(t is not None for *_, t, _ in it)}"
-              f" matched to truth; {len(sg)} scored truth lines, {n_det} overlapped by a teacher line "
-              f"({100 * n_det / max(1, len(sg)):.1f}% detection recall)", flush=True)
+        n_det = len({i for *_, ids, _ in it for i in ids if i in sg})
+        st = Counter(x[5] for x in it)
+        print(f"{name}: {len(shots)} screenshots, {len(it)} teacher lines ({dict(st)}); {len(sg)} scored truth "
+              f"lines, {n_det} overlapped by a teacher line ({100 * n_det / max(1, len(sg)):.1f}%)", flush=True)
     report = {"sets": sets, "engines": {n: pipeline_engines(it) for n, (it, _) in per_set.items()}}
     print("\nper-engine accuracy on the matched lines (each engine reading the teacher's view):")
     for name, eng in report["engines"].items():

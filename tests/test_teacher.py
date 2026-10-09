@@ -78,6 +78,22 @@ def test_accept_veto_on_confusable_dissent():
     assert vote.accept(ln, {"votes": 2, "veto": True}) == (None, "confusable-dissent")
 
 
+def test_undecided_never_skips_a_voter_that_could_change_the_result():
+    import itertools
+    rule = {"voters": ("v6s", "manga", "screenai", "v5s"), "votes": 2, "veto": True}
+    texts = ["まあね", "まぁね", "ちがう", None]
+    for combo in itertools.product(texts, repeat=4):
+        reads = {v: t for v, t in zip(rule["voters"], combo) if t is not None}
+        ln = line("まあね", **reads)
+        full = vote.accept(ln, rule)
+        for v in rule["voters"]:                    # any single read still missing...
+            if v in reads:
+                continue
+            if not vote.undecided(ln, rule):        # ...was declared unable to matter: check it
+                for t in texts[:3]:
+                    assert vote.accept(line("まあね", **reads, **{v: t}), rule)[0] == full[0], (reads, v, t)
+
+
 def test_merge_rows_joins_fragments_left_to_right():
     a = {"det": [100, 10, 200, 40], "det_conf": 0.9, "vertical": False, "text": "「ええと",
          "chars": [["「", 100, 10, 110, 40, 0.9]]}
@@ -145,7 +161,13 @@ def test_match_and_score():
     menu["crop"] = [800, 500, 900, 520]
     shots = {"v1_1": {"vn": "v1", "lines": [good, wrong, menu]}}
     items, scored = measure.match(shots, gts, "vita-test")
-    truths = [t for *_, t, _ in items]
-    assert truths == ["【名前】「こんにちは」", None, None]     # joined row; uncertain and menu unscored
+    assert [(x[3], x[5]) for x in items] == [("【名前】「こんにちは」", "scored"), (None, "uncertain"),
+                                             (None, "unmatched")]       # joined row; uncertain and menu unscored
     s = measure.score(items, scored, {"votes": 2})
     assert s["accepted"] == 3 and s["accepted_scored"] == 1 and s["precision"] == 1.0 and s["recall"] == 1.0
+    whole = line("「こんにちは」", v6s="「こんにちは」", screenai="「こんにちは」")
+    whole["crop"] = [318, 99, 602, 131]                            # exactly the second gt line: scored
+    half = line("「こんに", v6s="「こんに", screenai="「こんに")
+    half["crop"] = [318, 99, 450, 131]                             # half of it: not scorable by boxes
+    items, _ = measure.match({"v1_1": {"vn": "v1", "lines": [whole, half]}}, gts, "vita-test")
+    assert [(x[3], x[5]) for x in items] == [("「こんにちは」", "scored"), (None, "partial")]

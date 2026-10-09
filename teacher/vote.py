@@ -148,6 +148,26 @@ def low_conf(chars):
     return min((c[5] for c in chars), default=0.0)
 
 
+def undecided(line, rule):
+    """Whether reading another of the rule's voters could still change accept()'s result for
+    this line (label.py's cascade). False once the primary fails its own tests, once enough
+    voters agree (without veto), or once too few unread voters remain to reach `votes`."""
+    r = {**DEFAULT, **(rule or {})}
+    lab, why = accept(line, {**r, "voters": (), "votes": 0, "veto": False})
+    if lab is None:
+        return False
+    k = key(reading(line, r["primary"])[0])
+    voters = [v for v in r["voters"] if v != r["primary"]]
+    read = [v for v in voters if reading(line, v) is not None]
+    agree = sum(key(reading(line, v)[0]) == k for v in read)
+    left = len(voters) - len(read)
+    if agree + left < r["votes"]:
+        return False
+    if not r["veto"]:
+        return agree < r["votes"]
+    return accept(line, r)[1] != "confusable-dissent" and left > 0
+
+
 def accept(line, rule=None):
     """(label, how) for one line read by label.py, or (None, why)."""
     r = {**DEFAULT, **(rule or {})}

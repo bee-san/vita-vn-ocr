@@ -107,10 +107,13 @@ def japanese_ish(text):
 
 def match_sai(ink, sai):
     """Chrome Screen AI's reading of a line: its horizontal lines that overlap the ink box
-    (vertically by at least half the smaller height, and horizontally at all), joined
-    left to right. A Screen AI line wider than MeikiOCR's line brings its extra text."""
-    hits = [s for s in sai if not s["vertical"] and G.vov(s["box"], ink) >= 0.5
-            and min(s["box"][2], ink[2]) - max(s["box"][0], ink[0]) > 0]
+    (vertically by at least half the smaller height, horizontally at all, and at least 0.65x
+    the ink height, so furigana stays out), joined left to right. A Screen AI line wider
+    than MeikiOCR's line brings its extra text, so the vote fails on a truncated line."""
+    ih = ink[3] - ink[1]
+    hits = [s for s in sai if not s["vertical"] and s["text"] and G.vov(s["box"], ink) >= 0.5
+            and min(s["box"][2], ink[2]) - max(s["box"][0], ink[0]) > 0
+            and s["box"][3] - s["box"][1] >= 0.65 * ih]
     if not hits:
         return ["", 0.0, 0.0]
     hits.sort(key=lambda s: s["box"][0])
@@ -224,6 +227,10 @@ def cmd_read(args):
         done |= set(p.read_text().split())
     rows = [r for r in load_shots(args.set) if shard_of(r["url"], args.nshards) == args.shard
             and r["url"] not in done and Path(r["path"]).exists()]
+    if args.set == "train":                 # never even read a test game (build.py re-checks)
+        import build
+        ex = build.eval_exclusions()
+        rows = [r for r in rows if not build.excluded(r, ex)]
     if args.kinds:
         rows = [r for r in rows if r["kind"] in args.kinds.split(",")]
     if args.limit_shots:
@@ -252,11 +259,56 @@ def cmd_read(args):
     print("READ_DONE", flush=True)
 
 
+def cmd_augment(args):
+    """Read extra voters on lines already read, but only where they can still change the
+    decision of the rule in --rule (vote.undecided); rewrites the reads files in place
+    (atomically, per file). Used to add a slow voter after the rule has been measured."""
+    import cv2
+    import engines
+    import vote
+    pin_to_slot()
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    rule = json.loads(Path(args.rule).read_text(encoding="utf-8"))["rule"]
+    names = [v for v in args.voters.split(",") if v]
+    eng = engines.load(names)
+    paths = sorted(Path(args.reads).glob(f"{args.set}.*.jsonl"))
+    paths = [p for i, p in enumerate(paths) if i % args.nshards == args.shard]
+    t0, n = time.time(), 0
+    for p in paths:
+        rows = [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
+        for r in rows:
+            todo = [ln for ln in r["lines"] if not ln.get("skip") and any(v not in ln["reads"] for v in names)
+                    and vote.undecided(ln, rule)]
+            if not todo:
+                continue
+            src = next(s for s in load_shots(args.set) if s["url"] == r["url"]) if args.set != "train" else \
+                {"path": str(REALDATA / "shots" / r["kind"] / f"{r['vn']}_{r['url'].rsplit('/', 1)[-1]}")}
+            bgr = cv2.imread(src["path"], cv2.IMREAD_COLOR)
+            for ln in todo:
+                x0, y0, x1, y1 = ln["view"]
+                for v in names:
+                    if v not in ln["reads"] and vote.undecided(ln, rule):
+                        ln["reads"][v] = eng[v](bgr[y0:y1, x0:x1])
+                        n += 1
+        tmp = p.with_name(p.name + ".tmp")
+        tmp.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+        tmp.replace(p)
+        print(f"{p.name}: {n} reads so far, {time.time() - t0:.0f}s", flush=True)
+    print("AUGMENT_DONE", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("fetch")
     p.add_argument("--mirror", action="append", default=[], help="directory with already-downloaded model files")
+    p = sub.add_parser("augment")
+    p.add_argument("--set", default="train", choices=["train", *EVAL_SETS])
+    p.add_argument("--voters", default="v5s")
+    p.add_argument("--rule", default=str(HERE / "rule.json"))
+    p.add_argument("--reads", default=str(OUT / "reads"))
+    p.add_argument("--shard", type=int, default=0)
+    p.add_argument("--nshards", type=int, default=1)
     p = sub.add_parser("read")
     p.add_argument("--set", default="train", choices=["train", *EVAL_SETS])
     p.add_argument("--shard", type=int, default=0)
@@ -273,6 +325,8 @@ def main():
         import engines
         engines.fetch(mirrors=args.mirror)
         print("FETCH_DONE", flush=True)
+    elif args.cmd == "augment":
+        cmd_augment(args)
     else:
         cmd_read(args)
 

@@ -58,12 +58,15 @@ def split_of(vn):
 
 
 def eval_exclusions():
-    """(VN ids, screenshot URLs, sha256s) of eval's test sets: its reserved games plus every
-    screenshot in its manifests (merged copy first, else the copies in $TEACHER_OUT/inputs)."""
-    vns, urls, shas = set(), set(), set()
+    """(VN ids, release ids, screenshot URLs, sha256s) of eval's test sets: its reserved games
+    and sessions plus every screenshot in its manifests (the merged copy in this checkout,
+    else the copies in $TEACHER_OUT/inputs)."""
+    vns, rels, urls, shas = set(), set(), set(), set()
     for p in EVAL_GAMES:
         if p.exists():
-            vns |= set(json.loads(p.read_text(encoding="utf-8")).get("all", []))
+            d = json.loads(p.read_text(encoding="utf-8"))
+            vns |= set(d.get("all", []))
+            rels |= set(d.get("sessions", []))
     for d in (ROOT / "eval" / "manifests", OUT / "inputs" / "eval"):
         for p in d.glob("*-test.jsonl"):
             for line in p.read_text(encoding="utf-8").splitlines():
@@ -72,7 +75,15 @@ def eval_exclusions():
                     vns.add(r["vn"])
                     urls.add(r["url"])
                     shas.add(r["sha256"])
-    return vns, urls, shas
+                    if r.get("session"):
+                        rels.add(r["session"])
+    return vns, rels, urls, shas
+
+
+def excluded(r, ex):
+    vns, rels, urls, shas = ex
+    return (is_test_vn(r["vn"]) or r["vn"] in vns or r.get("release") in rels or r["url"] in urls
+            or r.get("sha256") in shas)
 
 
 def load_reads(reads_dir):
@@ -105,12 +116,12 @@ def crop_of(ln, rule):
 def decide(args):
     rule = json.loads(Path(args.rule).read_text(encoding="utf-8"))["rule"]
     vocab = load_vocab()
-    ex_vns, ex_urls, ex_shas = eval_exclusions()
+    ex = eval_exclusions()
     shots = load_reads(args.reads)
     collection = {r["url"]: r for r in load_shots("train")}
     why, kept, shot_rows = Counter(), [], {}
     for sk, r in sorted(shots.items()):
-        if is_test_vn(r["vn"]) or r["vn"] in ex_vns or r["url"] in ex_urls or r.get("sha256") in ex_shas:
+        if excluded({**collection.get(r["url"], {}), **r}, ex):
             why["test-game"] += len(r["lines"])
             continue
         for ln in r["lines"]:

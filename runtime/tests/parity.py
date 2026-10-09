@@ -7,16 +7,23 @@
   parity.py ... --cli "qemu-arm -cpu cortex-a9 build/arm/vocr_cli_neon"
 
 The checkpoint is exported with train/export.py (fp32 and int8). For every line and mode:
-  * preprocessing: the runtime's grey input == cv2.resize(INTER_LINEAR) plus replicate
-    padding, bit for bit (RGBA input: after synth/common.py's integer luma);
-  * PyTorch: max |C - reference| <= tol * max(1, max |reference|), and the greedy CTC
-    strings are identical. f32 is compared with the original model (eval mode, batch 1,
-    the crop padded to a multiple of 8 like the runtime does); w8f and w8i with a PyTorch
-    forward of the int8 blob (dequantised weights; int16 activations and integer sums for
-    w8i), so the runtime is tested, not the quantisation;
+  * preprocessing: the runtime's grey input == cv2.resize(INTER_LINEAR) to the model's
+    height plus replicate padding, bit for bit (RGBA input: after synth/common.py's integer
+    luma);
+  * PyTorch: max |C - reference| <= tol * max(1, max |reference|). f32 is compared with the
+    original model (eval mode, batch 1, the crop padded to a multiple of 8 like the runtime
+    does); w8f and w8i with a PyTorch forward of the int8 blob (dequantised weights; int16
+    activations and integer sums for w8i), so the runtime is tested, not the quantisation;
+  * strings: the C runtime's greedy CTC string equals PyTorch's, except on a near tie. A
+    string may differ only if, at every frame whose argmax differs, PyTorch's own top-1 /
+    top-2 margin is at most twice the measured logit difference (counted as
+    text_diff_tie_only; it does occur in w8i, whose int16 activations PyTorch computes in a
+    different summation order);
   * exact: the logits are bit-identical to tests/vocr_ref.py, a numpy model of the C
-    arithmetic, so a string can never differ by a near tie;
+    arithmetic, so the C strings are exactly that model's;
   * tiles: the logits are bit-identical for several tile / head-batch sizes;
+  * invert: on the same lines, VOCR_INVERT gives exactly the input and logits of 255 - grey
+    inverted before the resize, as synth/common.line_crops does for dark text;
   * arena: vocr_arena_bytes() == train/export.py plan_arena().
 Quantisation cost is reported as CER against the labels and agreement with f32.
 
@@ -107,12 +114,15 @@ def fixture_lines(n, seed=0):
     return out
 
 
-def prep(img):
-    """train.py's resize32 + make_batch for one line: (padded uint8, unpadded width, float input)."""
+def prep(img, height=H, invert=False):
+    """train.py's resize + make_batch for one line at the model's height: (padded uint8,
+    unpadded width, float input). invert: 255 - grey first, as common.line_crops does."""
     g = to_gray(img) if img.ndim == 3 else img
+    if invert:
+        g = 255 - g
     h, w = g.shape
-    nw = max(8, min(MAX_W, int(round(w * H / h))))
-    r = cv2.resize(g, (nw, H), interpolation=cv2.INTER_LINEAR)
+    nw = max(8, min(MAX_W, int(round(w * height / h))))
+    r = cv2.resize(g, (nw, height), interpolation=cv2.INTER_LINEAR)
     W = (nw + STRIDE - 1) // STRIDE * STRIDE
     padded = np.concatenate([r, np.repeat(r[:, -1:], W - nw, 1)], 1)
     return padded, nw, padded.astype(np.float32) / 127.5 - 1.0
@@ -227,11 +237,11 @@ class LibBackend:
         self.blob_path, self.mode = blob_path, mode
         self.v = Vocr(blob_path, mode=mode, tile=tile, head=head)
 
-    def run(self, items):
+    def run(self, items, invert=False):
         out = []
         for img in items:
-            text, logits = self.v.run(img, logits=True)
-            grey, w = self.v.preprocess(img)
+            text, logits = self.v.run(img, logits=True, invert=invert)
+            grey, w = self.v.preprocess(img, invert=invert)
             out.append((text, logits, grey, w))
         return out
 
@@ -249,7 +259,8 @@ class CliBackend:
         self.cmd = self.base + ["--crc"] + (["--tile", str(tile)] if tile else []) + \
             (["--head", str(head)] if head else [])
 
-    def run(self, items):
+    def run(self, items, invert=False):
+        cmd = self.cmd + (["--invert"] if invert else [])
         with tempfile.TemporaryDirectory() as td:
             pack, lg, inp = Path(td) / "in.bin", Path(td) / "logits.bin", Path(td) / "input.bin"
             with open(pack, "wb") as f:
@@ -257,10 +268,10 @@ class CliBackend:
                 for img in items:
                     f.write(struct.pack("<III", img.shape[0], img.shape[1], 4 if img.ndim == 3 else 1))
                     f.write(np.ascontiguousarray(img).tobytes())
-            p = subprocess.run(self.cmd + ["--pack", str(pack), "--logits", str(lg), "--input-out", str(inp)],
+            p = subprocess.run(cmd + ["--pack", str(pack), "--logits", str(lg), "--input-out", str(inp)],
                                capture_output=True, stdin=subprocess.DEVNULL, timeout=7200)
             if p.returncode:
-                raise RuntimeError(f"{' '.join(self.cmd)} failed ({p.returncode}): "
+                raise RuntimeError(f"{' '.join(cmd)} failed ({p.returncode}): "
                                    f"{p.stderr.decode(errors='replace')[-3000:]}")
             texts = p.stdout.decode("utf-8").split("\n")[:len(items)]
             raw, rin = lg.read_bytes(), inp.read_bytes()
@@ -319,7 +330,7 @@ def worker_init(cfg):
     model.eval()
     blobs = {k: E.read_blob(p) for k, p in cfg["blobs"].items()}
     kind = "cli" if cfg["cli"] else "lib"
-    _W.update(cfg=cfg, vocab=vocab, model=model, blobs=blobs,
+    _W.update(cfg=cfg, vocab=vocab, model=model, blobs=blobs, height=blobs["f32"]["height"],
               main={m: make_backend(cfg, m) for m in cfg["modes"]},
               tiles={(m, t, h): make_backend(cfg, m, t, h) for m in cfg["modes"] for t, h in TILES[kind]})
 
@@ -338,7 +349,8 @@ def reference(mode, x):
 def check_batch(batch):
     cfg, vocab = _W["cfg"], _W["vocab"]
     imgs = [b[2] for b in batch]
-    preps = [prep(img) for img in imgs]
+    height = _W["height"]
+    preps = [prep(img, height) for img in imgs]
     recs = [{"i": i, "id": ident, "label": label, "w": nw, "frames": int(x.shape[1] // STRIDE)}
             for (i, ident, _, label), (_, nw, x) in zip(batch, preps)]
     tile_idx = [k for k, b in enumerate(batch) if b[0] < cfg["tile_lines"]]
@@ -346,6 +358,7 @@ def check_batch(batch):
         outs = _W["main"][mode].run(imgs)
         tiled = {key: be.run([imgs[k] for k in tile_idx]) if tile_idx else []
                  for key, be in _W["tiles"].items() if key[0] == mode}
+        inverted = _W["main"][mode].run([imgs[k] for k in tile_idx], invert=True) if tile_idx else []
         tol = TOL[mode] * cfg["tol_scale"]
         for k, (rec, (padded, nw, x), (c_text, c_log, c_in, c_w)) in enumerate(zip(recs, preps, outs)):
             m = {"text": c_text, "prep_ok": bool(c_w == nw and np.array_equal(c_in, padded))}
@@ -370,6 +383,13 @@ def check_batch(batch):
                 j = tile_idx.index(k)
                 m["tiles_ok"] = all(t[j][0] == c_text and np.array_equal(t[j][1], c_log)
                                     for t in tiled.values())
+                # VOCR_INVERT == the C arithmetic on 255 - grey, inverted before the resize
+                i_padded, i_nw, i_x = prep(imgs[k], height, invert=True)
+                i_text, i_log, i_in, i_w = inverted[j]
+                i_ref = vocr_ref.forward(_W["blobs"]["f32" if mode == "f32" else "w8"], i_x, mode)
+                m["invert_ok"] = bool(i_w == i_nw and np.array_equal(i_in, i_padded) and
+                                      i_log.shape == i_ref.shape and np.array_equal(i_log, i_ref) and
+                                      greedy(i_log.argmax(1), vocab) == i_text)
             rec[mode] = m
     return recs
 
@@ -398,6 +418,7 @@ def summarize(recs, modes):
     for mode in modes:
         ms = [r[mode] for r in recs]
         tl = [m["tiles_ok"] for m in ms if "tiles_ok" in m]
+        il = [m["invert_ok"] for m in ms if "invert_ok" in m]
         d = {"prep_ok": sum(m["prep_ok"] for m in ms),
              "exact": sum(m.get("exact", False) for m in ms),
              "logits_ok": sum(m.get("ok", False) for m in ms),
@@ -408,7 +429,8 @@ def summarize(recs, modes):
                                        for m in ms),
              "self_ok": sum(m.get("self_ok", False) for m in ms),
              "argmax_mismatch_frames": sum(m.get("argmax_mismatch", 0) for m in ms),
-             "tiles_checked": len(tl), "tiles_ok": sum(tl)}
+             "tiles_checked": len(tl), "tiles_ok": sum(tl),
+             "invert_checked": len(il), "invert_ok": sum(il)}
         if labelled:
             chars = sum(len(r["label"]) for r in labelled)
             d["cer"] = sum(edit_distance(r[mode]["text"], r["label"]) for r in labelled) / chars
@@ -435,6 +457,8 @@ def failures(s, modes):
             bad.append(f"{mode} text ({d['same_text']}/{n} identical, {d['text_diff_tie_only']} near ties)")
         if d["tiles_ok"] != d["tiles_checked"]:
             bad.append(f"{mode} tile invariance ({d['tiles_ok']}/{d['tiles_checked']})")
+        if d["invert_ok"] != d["invert_checked"]:
+            bad.append(f"{mode} VOCR_INVERT ({d['invert_ok']}/{d['invert_checked']})")
     return bad
 
 

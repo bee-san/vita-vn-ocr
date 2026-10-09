@@ -147,15 +147,18 @@ def read_shot(r, eng, voters, cascade):
             rec["furi"], rec["furi_text"] = ln["furi"], ln["furi_text"]
         tg = G.targets_of(r["kind"], [W, H], ln["ink"])
         rec["targets"] = tg
-        skip = cascade and (not tg or ln["edge"] or not japanese_ish(ln["text"]))
         x0, y0, x1, y1 = ln["view"]
         view = bgr[y0:y1, x0:x1]
         if sai is not None:
             rec["reads"]["screenai"] = match_sai(ln["ink"], sai)
-        if not skip and view.size:
+        if view.size and (tg and not ln["edge"] or not cascade):
             t, mean, low, chars = timed("meikiv", eng["meiki"], view)
             rec["reads"]["meikiv"] = [t, mean, low, [[c[0], c[1] + x0, c[2] + y0, c[3] + x0, c[4] + y0, c[5]]
                                                      for c in chars]]
+        # no rule accepts a line without a target, at the screen edge, or with no Japanese reading
+        skip = cascade and (not tg or ln["edge"] or not (
+            japanese_ish(ln["text"]) or japanese_ish(rec["reads"].get("meikiv", [""])[0])))
+        if not skip and view.size:
             for name in voters:
                 if name != "screenai":
                     rec["reads"][name] = timed(name, eng[name], view)

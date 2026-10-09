@@ -1412,7 +1412,8 @@ def main():
     ap.add_argument("--invert-dark", action="store_true",
                     help="invert dark-text crops with the console's rule (common.line_dark)")
     ap.add_argument("--keep-polarity", action="store_true",
-                    help="accepted for compatibility: crops keep their polarity unless --invert-dark")
+                    help="no-op since synth2 (crops keep their polarity unless --invert-dark); "
+                         "kept so the pre-synth2 commands in docs/linefind.md still parse")
     args = ap.parse_args()
     cv2.setNumThreads(1)
     init()

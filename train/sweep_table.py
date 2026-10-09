@@ -18,10 +18,11 @@ recipe renders only light text, so the as-is vita-test mostly measures that data
 (which synth2 and the real fine-tuning close), not capacity; it is shown alongside.
 Without eval/ results the provisional real-hand + real-pseudo pool is used.
 "Δ vs ref" is the pooled real CER minus the reference run's, with a 95% paired
-bootstrap interval over lines (10,000 resamples, seed 0). The Pareto front is taken
-over the runs with the reference run's step budget only (other budgets, e.g. v1's
-32k steps, are shown for scale): a row is on it when no other such row has both a
-smaller on-console footprint (int8 blob + W8F arena) and a lower real CER.
+bootstrap interval over lines (10,000 resamples, seed 0). Two Pareto fronts are
+taken over the runs with the reference run's step budget only (other budgets, e.g.
+v1's 32k steps, are shown for scale): memory (on-console footprint = int8 blob + W8F
+arena) and speed (estimated Cortex-A9 ms for the longest line, cost.a9_ms). A row is
+on a front when no other such row is at least as good on both axes and better on one.
 """
 import argparse
 import json
@@ -97,6 +98,7 @@ def rows(runs_dir, eval_name, exporter, ref):
         res = json.loads(ev.read_text(encoding="utf-8"))
         ck = torch.load(ev.parent / res["ckpt"], map_location="cpu", weights_only=False)
         model, meta = from_checkpoint(ck)
+        arch = {k: meta[k] for k in ("depth", "ctx", "ctx_k")}
         n_cls = len(meta["vocab"]) + 1
         w_max = 1024 * meta["height"] // 32
         c = cost.report(model, n_cls, meta["height"], meta["vocab"], exporter)
@@ -105,7 +107,8 @@ def rows(runs_dir, eval_name, exporter, ref):
         rs = real_sets(r)
         row = {
             "run": ev.parent.name, "width": meta["width"], "classes": n_cls,
-            "bottleneck": meta["bottleneck"], "height": meta["height"],
+            "bottleneck": meta["bottleneck"], "height": meta["height"], **arch,
+            "a9_ms_640": c["a9_ms_640"], "a9_ms_max": c["a9_ms_1024"],
             "qat": bool(res.get("qat")), "step": res["step"], "params": c["params"],
             "weights_int8_est": c["weights_int8"], "weights_fp32_est": c["weights_fp32"],
             "arena_est_max": est_arena, "w_max": w_max,
@@ -143,13 +146,17 @@ def rows(runs_dir, eval_name, exporter, ref):
                 row["delta_vs_ref"] = paired_delta(errs[row["run"]], errs[ref])
     budget = next((a["step"] for a in out if a["run"] == ref), None)
     matched = [a for a in out if budget is None or a["step"] == budget]
+    def front(a, key):
+        return a in matched and a["real_int8"] is not None and not any(
+            b is not a and b["real_int8"] is not None
+            and key(b) <= key(a) and b["real_int8"] <= a["real_int8"]
+            and (key(b) < key(a) or b["real_int8"] < a["real_int8"])
+            for b in matched)
+
     for a in out:
         a["matched_budget"] = a in matched
-        a["pareto"] = a in matched and a["real_int8"] is not None and not any(
-            b is not a and b["real_int8"] is not None
-            and b["footprint"] <= a["footprint"] and b["real_int8"] <= a["real_int8"]
-            and (b["footprint"] < a["footprint"] or b["real_int8"] < a["real_int8"])
-            for b in matched)
+        a["pareto"] = front(a, lambda r: r["footprint"])
+        a["pareto_speed"] = front(a, lambda r: r["a9_ms_max"][0])
     return out
 
 
@@ -162,15 +169,27 @@ def kib(x):
 
 
 def pareto_cell(a):
-    if a["pareto"]:
-        return "**yes**"
-    return "" if a["matched_budget"] else f"({a['step']:,} steps)"
+    if not a["matched_budget"]:
+        return f"({a['step']:,} steps)"
+    return " / ".join(n for n, k in (("memory", "pareto"), ("speed", "pareto_speed")) if a[k])
+
+
+def knobs(a):
+    """The non-v1 architecture knobs of a row, e.g. 'w1.5 d2'."""
+    parts = [f"w{a['width']:g}" if a["width"] != 1.0 else "",
+             f"b{a['bottleneck']}" if a["bottleneck"] != 96 else "",
+             f"h{a['height']}" if a["height"] != 32 else "",
+             f"{a['classes'] - 1} chars" if a["classes"] != 5355 else "",
+             f"d{a['depth']}" if a["depth"] != 1 else "",
+             f"ctx{a['ctx']}" if a["ctx"] != 2 else "", f"k{a['ctx_k']}" if a["ctx_k"] != 5 else "",
+             "QAT" if a["qat"] else ""]
+    return " ".join(p for p in parts if p) or "v1 layout"
 
 
 def markdown(rs, exact, ref):
     size_cols = ("int8 blob KiB | W8F arena KiB | footprint KiB" if exact else
                  "int8 weights KiB (est.) | non-streaming arena KiB (est.) | footprint KiB (est.)")
-    head = (f"| run | width | classes | bneck | H | QAT | params | {size_cols} | MMAC (longest line) | "
+    head = (f"| run | knobs | params | {size_cols} | MMAC (longest line) | est. A9 ms (longest line) | "
             f"synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | "
             f"vita-test-inv CER | real-hand-x CER | "
             f"real CER fp32 / int8 | Δ vs {ref} (95% CI) | Pareto |")
@@ -184,9 +203,9 @@ def markdown(rs, exact, ref):
         delta = "ref" if a["run"] == ref else ("–" if d is None else
                                                f"{100 * d[0]:+.2f} ({100 * d[1]:+.2f}, {100 * d[2]:+.2f})")
         lines.append(
-            f"| {a['run']} | {a['width']} | {a['classes']} | {a['bottleneck']} | {a['height']} | "
-            f"{'yes' if a['qat'] else ''} | {a['params']:,} | {sizes} | {kib(a['footprint'])} | "
-            f"{a['macs_max'] / 1e6:.0f} | {pct(a['synth_fp32'])} / {pct(a['synth_int8'])} | "
+            f"| {a['run']} | {knobs(a)} | {a['params']:,} | {sizes} | {kib(a['footprint'])} | "
+            f"{a['macs_max'] / 1e6:.0f} | {a['a9_ms_max'][1]:.0f}-{a['a9_ms_max'][0]:.0f} | "
+            f"{pct(a['synth_fp32'])} / {pct(a['synth_int8'])} | "
             f"{pct(a.get('vita-test_int8'))} | {pct(a.get('vita_bright_on_dark_int8'))} | "
             f"{pct(a.get('vita-test-inv_int8'))} | "
             f"{pct(a.get('real-hand-x_int8'))} | "

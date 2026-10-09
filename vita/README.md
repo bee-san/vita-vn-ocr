@@ -41,8 +41,10 @@ vita/scripts/build.sh                              # build/vita/vocr_test.vpk, l
 ## The test bundle
 
 ```sh
-python vita/bundle.py --out vocr-bundle --profile quick    # 52 cases; --profile full: 728 cases
+python vita/bundle.py --out build/vita-bundle --profile quick    # 52 cases; --profile full: 728 cases
 ```
+
+Write bundles under `build/`, which git ignores: a bundle holds crops of copyrighted screenshots and the weights.
 
 Needs the v1 checkpoint (`--ckpt`, release v0.1.0-baseline) and eval's screenshots (`eval/fetch.py`; `--eval-data` or `$VOCR_EVAL_DATA`).
 
@@ -75,7 +77,7 @@ You need a PS Vita that runs homebrew (HENkaku, h-encore or Ensō) and VitaShell
 5. **Read the results.** Copy `ux0:data/vocr/results.tsv` back, then run:
 
    ```sh
-   python vita/compare.py --bundle vocr-bundle results.tsv
+   python vita/compare.py --bundle build/vita-bundle results.tsv
    ```
 
    Please attach `results.tsv` and that output to issue #6.
@@ -99,7 +101,7 @@ What the statuses mean:
 
 ```sh
 vita/scripts/fetch_vita3k.sh                                   # vita/tools/vita3k/4154
-vita/scripts/run_vita3k.sh vocr-bundle build/vita/vocr_test.vpk out models=w8i repeat=1
+vita/scripts/run_vita3k.sh build/vita-bundle build/vita/vocr_test.vpk build/vita3k-run models=w8i repeat=1
 ```
 
 - **Pin.** Build 4154 (v0.2.1, commit b75d5e62, 2026-10-09), by the AppImage's sha256, from that build's release in Vita3K/Vita3K-builds (the rolling "continuous" release of Vita3K/Vita3K is the fallback).

@@ -12,7 +12,8 @@ BLOCKED = {
     "screenshots or crops": {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".tif", ".tiff"},
     "shards, datasets or archives": {".npz", ".npy", ".parquet", ".arrow", ".zip", ".tar", ".gz", ".xz", ".zst",
                                      ".7z"},
-    "weights or checkpoints": {".pt", ".pth", ".ckpt", ".onnx", ".safetensors", ".tflite", ".bin", ".pdparams"},
+    "weights or checkpoints": {".pt", ".pth", ".ckpt", ".onnx", ".safetensors", ".tflite", ".bin", ".pdparams",
+                               ".vocr"},
     "console binaries": {".vpk", ".self", ".velf", ".elf", ".suprx", ".skprx", ".prx", ".pbp", ".iso", ".cso"},
 }
 MAX_BYTES = 2 * 1024 * 1024

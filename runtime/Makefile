@@ -59,11 +59,15 @@ $(OUT)/vocr_cli: $(SRC) $(CLI) | $(OUT)
 $(OUT)/libvocr.so: $(SRC) | $(OUT)
 	$(CC) $(WARN) $(OPT) -fPIC -shared -o $@ vocr.c $(LDLIBS)
 
-# ---- check programs: $(CC) $(CFLAGS) ... $(LDFLAGS)
-$(OUT)/test_vocr_check: $(SRC) tests/test_vocr.c | $(OUT)
+# ---- check programs: $(CC) $(CFLAGS) ... $(LDFLAGS); rebuilt whenever CC or the flags change
+FLAGS_STAMP = $(OUT)/.check-flags
+$(shell mkdir -p $(OUT)/arm; echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)' | cmp -s - $(FLAGS_STAMP) || \
+        echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)' > $(FLAGS_STAMP))
+
+$(OUT)/test_vocr_check: $(SRC) tests/test_vocr.c $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ vocr.c tests/test_vocr.c $(LDFLAGS) $(LDLIBS)
 
-$(OUT)/vocr_cli_check: $(SRC) $(CLI) | $(OUT)
+$(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ vocr.c $(CLI) $(LDFLAGS) $(LDLIBS)
 
 check: $(OUT)/test_vocr_check $(OUT)/vocr_cli_check

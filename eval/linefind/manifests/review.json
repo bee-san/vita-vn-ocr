@@ -1,0 +1,224 @@
+{
+ "_doc": "Hand review of the detector-built candidates (build_gt.py det) on contact sheets (build_gt.py sheets). 'drop': region id -> reason it is not a usable dialogue region or its GT is wrong. 'ignore': region id -> GT line boxes to score as ignore (press-kit copyright watermarks, which a console screen does not show). build_gt.py finalize applies this to SET.candidates.jsonl -> SET.jsonl.",
+ "drop": {
+  "psp_loose_v1015_57055": "status/profile UI",
+  "psp_loose_v10606_57073": "title screen",
+  "psp_loose_v10796_35420": "press-kit watermark only",
+  "psp_loose_v10968_57570": "screenshot-save UI",
+  "psp_loose_v10_97180": "chapter-select menu",
+  "psp_loose_v12456_57453": "title screen",
+  "psp_loose_v12900_55452": "title screen",
+  "psp_loose_v12900_55453": "GT box misses the leading '……い、'",
+  "psp_loose_v1751_52749": "minigame UI",
+  "psp_loose_v1794_56733": "press-kit watermark only",
+  "psp_loose_v1877_57773": "title screen",
+  "psp_loose_v1919_55615": "title menu",
+  "psp_loose_v2913_57985": "title menu with watermark",
+  "psp_loose_v3260_56751": "title screen",
+  "psp_loose_v3260_56752": "button-bar UI only",
+  "psp_loose_v3263_56781": "press-kit watermark only",
+  "psp_loose_v3263_56782": "button-bar UI only",
+  "psp_loose_v3430_58089": "title screen",
+  "psp_loose_v3697_57342": "title screen",
+  "psp_loose_v4060_10992": "chapter-select menu",
+  "psp_loose_v7249_19540": "system menu help text (UI)",
+  "psp_loose_v7603_57522": "minigame UI",
+  "psp_loose_v7899_56593": "press-kit watermark only",
+  "psp_loose_v8410_57140": "press-kit watermark only",
+  "psp_loose_v854_57883": "title screen",
+  "psp_loose_v8799_56367": "screenshot-save UI",
+  "psp_tight_v1015_57055": "status/profile UI",
+  "psp_tight_v10606_57073": "title screen",
+  "psp_tight_v10796_35420": "press-kit watermark only",
+  "psp_tight_v10968_57570": "screenshot-save UI",
+  "psp_tight_v10_97180": "chapter-select menu",
+  "psp_tight_v12456_57453": "title screen",
+  "psp_tight_v12900_55452": "title screen",
+  "psp_tight_v12900_55453": "GT box misses the leading '……い、'",
+  "psp_tight_v1751_52749": "minigame UI",
+  "psp_tight_v1794_56733": "press-kit watermark only",
+  "psp_tight_v1877_57773": "title screen",
+  "psp_tight_v1919_55615": "title menu",
+  "psp_tight_v2913_57985": "title menu with watermark",
+  "psp_tight_v3260_56751": "title screen",
+  "psp_tight_v3260_56752": "button-bar UI only",
+  "psp_tight_v3263_56781": "press-kit watermark only",
+  "psp_tight_v3263_56782": "button-bar UI only",
+  "psp_tight_v3430_58089": "title screen",
+  "psp_tight_v3697_57342": "title screen",
+  "psp_tight_v4060_10992": "chapter-select menu",
+  "psp_tight_v7249_19540": "system menu help text (UI)",
+  "psp_tight_v7603_57522": "minigame UI",
+  "psp_tight_v7899_56593": "press-kit watermark only",
+  "psp_tight_v8410_57140": "press-kit watermark only",
+  "psp_tight_v854_57883": "title screen",
+  "psp_tight_v8799_56367": "screenshot-save UI",
+  "psp_tight_v9915_56713": "title screen",
+  "vita_loose_v11173_108650": "save/load UI screen",
+  "vita_loose_v1199_122516": "press-kit watermark only",
+  "vita_loose_v12178_127144": "UI/title screen",
+  "vita_loose_v14534_75322": "title menu",
+  "vita_loose_v15499_108588": "press-kit watermark only",
+  "vita_loose_v15499_108646": "press-kit watermark only",
+  "vita_loose_v15499_108647": "press-kit watermark only",
+  "vita_loose_v15499_85590": "press-kit watermark only",
+  "vita_loose_v15772_91532": "press-kit watermark only",
+  "vita_loose_v15773_139474": "press-kit watermark only",
+  "vita_loose_v16060_83851": "map UI",
+  "vita_loose_v16842_108649": "GT box merges dialogue with copyright line",
+  "vita_loose_v17344_93109": "title screen",
+  "vita_loose_v17935_91756": "title screen",
+  "vita_loose_v18164_149317": "press-kit watermark only",
+  "vita_loose_v18212_137124": "GT box merges dialogue with copyright line",
+  "vita_loose_v18212_137126": "choice header (stylised English), not dialogue",
+  "vita_loose_v18457_108875": "stats/status UI",
+  "vita_loose_v18695_147941": "name-entry UI",
+  "vita_loose_v18838_99910": "press-kit watermark only",
+  "vita_loose_v18857_139292": "stats/status UI",
+  "vita_loose_v19643_101619": "GT box merges dialogue with copyright line",
+  "vita_loose_v19716_157046": "kana name-entry grid",
+  "vita_loose_v19953_168195": "in-game forum screen with tiny text (UI)",
+  "vita_loose_v20747_137685": "GT box error (one box spans two lines, another misses a glyph)",
+  "vita_loose_v20747_137687": "press-kit watermark only",
+  "vita_loose_v21004_142140": "title screen",
+  "vita_loose_v21024_148038": "button-hint UI only",
+  "vita_loose_v21787_115560": "title screen",
+  "vita_loose_v21922_115908": "title screen",
+  "vita_loose_v24291_151117": "UI summary screen",
+  "vita_loose_v7557_151411": "kana name-entry grid",
+  "vita_tight_v11173_108650": "save/load UI screen",
+  "vita_tight_v1199_122516": "press-kit watermark only",
+  "vita_tight_v12178_127144": "UI/title screen",
+  "vita_tight_v13308_145158": "region clips the line's last glyph; GT box stops short",
+  "vita_tight_v14534_75322": "title menu",
+  "vita_tight_v15577_157070": "kana name-entry grid",
+  "vita_tight_v15772_91532": "press-kit watermark only",
+  "vita_tight_v15773_139474": "press-kit watermark only",
+  "vita_tight_v15773_139475": "kana name-entry grid",
+  "vita_tight_v16060_83851": "map UI",
+  "vita_tight_v16099_83085": "title screen",
+  "vita_tight_v16842_108649": "GT box merges dialogue with copyright line",
+  "vita_tight_v1713_155282": "kana name-entry grid",
+  "vita_tight_v17344_93109": "title screen",
+  "vita_tight_v17608_91393": "logo only",
+  "vita_tight_v17935_91756": "title screen",
+  "vita_tight_v18161_169605": "title menu",
+  "vita_tight_v18164_149317": "press-kit watermark only",
+  "vita_tight_v18212_137126": "choice header (stylised English), not dialogue",
+  "vita_tight_v18457_108875": "stats/status UI",
+  "vita_tight_v18695_147941": "name-entry UI",
+  "vita_tight_v18838_99910": "press-kit watermark only",
+  "vita_tight_v18857_139292": "stats/status UI",
+  "vita_tight_v19643_101619": "GT box merges dialogue with copyright line",
+  "vita_tight_v19716_157046": "kana name-entry grid",
+  "vita_tight_v19851_115941": "title screen",
+  "vita_tight_v19851_115942": "kana name-entry grid",
+  "vita_tight_v19953_168195": "in-game forum screen with tiny text (UI)",
+  "vita_tight_v20747_137685": "GT box error (one box spans two lines, another misses a glyph)",
+  "vita_tight_v20747_137687": "press-kit watermark only",
+  "vita_tight_v21004_142140": "title screen",
+  "vita_tight_v21024_148037": "kana name-entry grid",
+  "vita_tight_v21024_148038": "button-hint UI only",
+  "vita_tight_v21787_115560": "title screen",
+  "vita_tight_v21922_115908": "title screen",
+  "vita_tight_v24291_151117": "UI summary screen",
+  "vita_tight_v56208_212253": "stats/status UI",
+  "vita_tight_v7557_151411": "kana name-entry grid"
+ },
+ "ignore": {
+  "psp_loose_v11879_56278": [
+   [
+    368,
+    164,
+    398,
+    181
+   ]
+  ],
+  "psp_tight_v11879_56278": [
+   [
+    368,
+    164,
+    398,
+    181
+   ]
+  ],
+  "vita_loose_v11301_103600": [
+   [
+    584,
+    512,
+    953,
+    543
+   ]
+  ],
+  "vita_loose_v14652_93690": [
+   [
+    626,
+    511,
+    956,
+    543
+   ]
+  ],
+  "vita_loose_v15499_85589": [
+   [
+    588,
+    486,
+    951,
+    503
+   ],
+   [
+    588,
+    503,
+    715,
+    520
+   ]
+  ],
+  "vita_loose_v18695_147945": [
+   [
+    440,
+    308,
+    492,
+    347
+   ]
+  ],
+  "vita_loose_v19716_157048": [
+   [
+    241,
+    302,
+    350,
+    346
+   ]
+  ],
+  "vita_tight_v11301_103600": [
+   [
+    584,
+    512,
+    953,
+    543
+   ]
+  ],
+  "vita_tight_v14652_93690": [
+   [
+    626,
+    511,
+    956,
+    543
+   ]
+  ],
+  "vita_tight_v18695_147945": [
+   [
+    440,
+    308,
+    492,
+    347
+   ]
+  ],
+  "vita_tight_v19716_157048": [
+   [
+    241,
+    302,
+    350,
+    346
+   ]
+  ]
+ }
+}

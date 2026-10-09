@@ -88,6 +88,21 @@ def test_tiny_checkpoint_fields(tmp_path):
     assert backends.ctc_greedy([3, 1], rec.vocab) == backends.UNK + "あ"
 
 
+def test_tiny_checkpoint_deeper_student(tmp_path):
+    """arch's depth / ctx / ctx_k fields rebuild the deeper model (its state dict loads)."""
+    import torch
+
+    from model import TinyVNOCR
+    vocab = ["あ", "い"]
+    m = TinyVNOCR(len(vocab) + 1, width=0.25, bottleneck=48, depth=2, ctx=3, ctx_k=7)
+    path = tmp_path / "deep.pt"
+    torch.save({"model": m.state_dict(), "vocab": vocab, "width": 0.25, "bottleneck": 48,
+                "depth": 2, "ctx": 3, "ctx_k": 7, "step": 1}, path)
+    rec = backends.TinyTorch(path)
+    assert (rec.info["depth"], rec.info["ctx"], rec.info["ctx_k"]) == (2, 3, 7)
+    assert len(rec.read([np.full((30, 90, 3), 128, np.uint8)])) == 1
+
+
 def test_finder_precision_ignores_uncertain_lines():
     import run
     img = np.zeros((100, 200, 3), np.uint8)

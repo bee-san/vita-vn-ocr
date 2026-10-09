@@ -148,9 +148,9 @@ class TinyTorch(Recognizer):
     """train/model.py checkpoint; preprocessing = train/train.py (grey, bilinear resize to
     the checkpoint's input height, 32 unless it records "height", width <= 1024, padded to
     a multiple of 8 by repeating the last column), one line per forward pass, greedy CTC.
-    The model is built with the checkpoint's "width" and "bottleneck" when it records
-    them. A vocab entry longer than one character (e.g. "<unk>") decodes to U+FFFD, so
-    it counts as one wrong character."""
+    The model is built with the checkpoint's "width", "bottleneck", "depth", "ctx" and
+    "ctx_k" when it records them (arch's larger students). A vocab entry longer than one
+    character (e.g. "<unk>") decodes to U+FFFD, so it counts as one wrong character."""
 
     H, MAX_W, STRIDE = 32, 1024, 8
 
@@ -165,7 +165,8 @@ class TinyTorch(Recognizer):
         self.vocab = [c if len(c) == 1 else UNK for c in ck["vocab"]]
         self.H = int(ck.get("height") or TinyTorch.H)
         accepted = inspect.signature(TinyVNOCR).parameters
-        kw = {k: ck[k] for k in ("width", "bottleneck") if ck.get(k) is not None and k in accepted}
+        kw = {k: ck[k] for k in ("width", "bottleneck", "depth", "ctx", "ctx_k")
+              if ck.get(k) is not None and k in accepted}
         self.model = TinyVNOCR(len(self.vocab) + 1, **kw)
         self.model.load_state_dict(ck["model"])
         self.model.eval()

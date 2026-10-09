@@ -288,6 +288,22 @@ def dequant(op):
     return op["w"]
 
 
+def macs_per_frame(blob):
+    """Multiply-accumulates the runtime does per CTC frame (8 input columns): a line of
+    width W costs ceil(W / 8) times this. Returns (total, head)."""
+    S, s, tot, head = blob["stride"], 1, 0, 0
+    for op in blob["ops"]:
+        s *= op["sw"]
+        cols = S // s                                   # output columns per frame
+        if op["type"] in (T_CONV, T_DW):
+            macs = cols * op["h_out"] * op["cout"] * op["kh"] * op["kw"]
+        else:
+            macs = cols * (1 if op["collapse"] else op["h_in"]) * op["k"] * op["cout"]
+        tot += macs
+        head += macs if op["type"] == T_HEAD else 0
+    return tot, head
+
+
 # ---------------------------------------------------------------- arena plan (mirror of C)
 
 def plan_arena(blob, max_width=0, tile=0, head=0, mode=0):
@@ -384,8 +400,12 @@ def main():
         modes = [MODE_W8F, MODE_W8I] if b["int8"] else [MODE_F32]
         rows = {MODE_NAME[m]: {w: plan_arena(b, w, args.tile, args.head, m)
                                for w in map(int, args.widths.split(","))} for m in modes}
+        macs, head = macs_per_frame(b)
         print(json.dumps({"blob": str(args.info), "bytes": b["bytes"], "params": b["params"],
                           "classes": b["n_classes"], "height": b["height"], "ops": len(b["ops"]),
+                          "macs_per_frame": macs, "head_macs_per_frame": head,
+                          "macs_per_line": {w: macs * -(-w // b["stride"])
+                                            for w in map(int, args.widths.split(","))},
                           "tile": args.tile, "head": args.head, "arena": rows}))
 
 

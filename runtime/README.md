@@ -38,6 +38,25 @@ Tiles trade arena for speed (bytes; host speed is in the next table):
 
 Compute is 1,002,720 multiply-accumulates per CTC frame: 488,640 in the backbone and 514,080 in the head. A 640-px line is 80 frames, about 80 M MACs, against 1.52 G for PP-OCRv5 mobile at height 48 (research). The research puts one Cortex-A9 core at 444 MHz at 0.24-0.30 GMAC/s in fp32 with ncnn. By that figure, a 640-px line would take about 0.27-0.33 s. That's an **estimate**: nothing has run on a Vita yet.
 
+### Larger students (owner goal of 2026-10-09: at most 50 MB, under about 1 s per line)
+
+The runtime takes any `TinyVNOCR` width and bottleneck. Shapes only (random weights), computed with `export.py` and `plan_arena()`:
+
+| width | bottleneck | params | int8 blob | fp32 blob | arena w8f / w8i | MACs per frame | 640-px line |
+|---|---|---|---|---|---|---|---|
+| 1.0 (v1) | 96 | 0.76M | 0.86 MB | 3.07 MB | 118 / 125 KB | 1.00M | 80M MACs |
+| 1.5 | 96 | 1.04M | 1.16 MB | 4.18 MB | 173 / 183 KB | 1.56M | 125M |
+| 2.0 | 96 | 1.42M | 1.56 MB | 5.72 MB | 229 / 241 KB | 2.34M | 187M |
+| 2.0 | 192 | 1.97M | 2.11 MB | 7.93 MB | 236 / 248 KB | 2.89M | 231M |
+| 3.0 | 192 | 3.08M | 3.25 MB | 12.36 MB | 346 / 365 KB | 5.09M | 407M |
+
+Memory stays far under 50 MB at every size here, so speed is what limits a student. At the research's 0.24-0.30 GMAC/s (one 444 MHz A9 core, ncnn fp32), a 640-px line takes about:
+- 0.3 s at width 1.0;
+- 0.6-0.8 s at width 2.0;
+- 1.4-1.7 s at width 3.0.
+
+These are **estimates**; this runtime's NEON speed on a real A9 hasn't been measured. `export.py --info` prints the MACs per frame and per line of any blob.
+
 ### Correctness (v1)
 
 `tests/parity.py` (below) passed every check in all three modes on all of these runs:
@@ -135,7 +154,7 @@ python eval/run.py --model 'cmd:runtime/build/vocr_cli v1_w8.vocr --mode w8i --s
 |---|---|---|
 | `f32` | float32 | float32 |
 | `w8f` | int8, one float32 scale per output channel | weights dequantised to float32 per 8-channel block, then float32 |
-| `w8i` | same | activations quantised to int16 per position (max-abs), int32 sums, one float rescale |
+| `w8i` | same | activations quantised to int16 per position (max-abs), exact int32 sums over chunks of 512 terms (added in float), one float rescale |
 
 The stem, the depthwise layers, the biases and the scales stay float32 in every mode. In the 859,904-byte int8 blob that's 87 KB:
 - stem and depthwise weights: 29,568 B;

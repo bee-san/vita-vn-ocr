@@ -164,6 +164,23 @@ def test_exclusion_covers_test_games_and_test_sessions():
     assert vndb.exclusion({"vn": vn, "release": "r9"}, set(), {"r9"}) == "test-session"
 
 
+def test_voter_models_are_pinned_and_hash_checked(tmp_path, monkeypatch):
+    voters = pytest.importorskip("voters")
+    for name, (fname, sha, url) in voters.MODELS.items():
+        assert len(sha) == 64 and int(sha, 16) >= 0 and url.startswith("https://") and url.endswith(fname), name
+    assert len(voters.MANGA[1]) == 40
+    monkeypatch.setenv("REALDATA_MODELS", str(tmp_path))
+    monkeypatch.setitem(voters.MODELS, "meiki", ("m.onnx", voters.file_sha256(__file__), "https://x/m.onnx"))
+    monkeypatch.setattr(voters, "HERD", tmp_path / "no-herd")
+    with pytest.raises(FileNotFoundError, match="https://x/m.onnx"):
+        voters.model_path("meiki")
+    (tmp_path / "m.onnx").write_bytes(Path(__file__).read_bytes())
+    assert voters.model_path("meiki") == tmp_path / "m.onnx"
+    (tmp_path / "m.onnx").write_bytes(b"not the pinned model")
+    with pytest.raises(RuntimeError, match="sha256"):
+        voters.model_path("meiki")
+
+
 def test_kind_of():
     row = {"platforms": ["psv"], "dims": [960, 544]}
     assert vndb.kind_of(row) == "vita"

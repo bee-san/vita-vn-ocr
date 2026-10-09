@@ -48,10 +48,20 @@ plus every screenshot of eval's test capture sessions (the `sessions` release id
 same files, `vndb.excluded_sessions()`). If eval reserves more VNs or sessions later:
 `vndb.py prune`, then `build.py decide`.
 
-Models (labelling only, none ships): rapidocr 3.10.0's `ch_PP-OCRv5_det_mobile.onnx`
-(sha256 4d97c44a…), `ch_PP-OCRv5_rec_server.onnx` (e0938540…), `PP-OCRv6_rec_small.onnx`
-(6f327246…); manga-ocr 0.1.16 with `kha-white/manga-ocr-base` at aa6573bd; meiki
-`meiki.text.rec.v0.960x32.onnx` (3e96bc77…, LGPL-3.0, from the research campaign's scratch).
+Models (labelling only, none ships), pinned in `voters.MODELS` / `voters.MANGA`:
+
+| reader | file | sha256 / revision | source |
+|---|---|---|---|
+| detector (`lines.py`) | `ch_PP-OCRv5_det_mobile.onnx` | `4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae` | rapidocr 3.10.0 ([ModelScope RapidAI/RapidOCR v3.10.0](https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx)); rapidocr checks this hash itself |
+| v5s | `ch_PP-OCRv5_rec_server.onnx` | `e09385400eaaaef34ceff54aeb7c4f0f1fe014c27fa8b9905d4709b65746562a` | [rapidocr 3.10.0, ModelScope](https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv5/rec/ch_PP-OCRv5_rec_server.onnx) |
+| v6s | `PP-OCRv6_rec_small.onnx` | `6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884` | [rapidocr 3.10.0, ModelScope](https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv6/rec/PP-OCRv6_rec_small.onnx) |
+| meiki | `meiki.text.rec.v0.960x32.onnx` | `3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000` | [Hugging Face rtr46/meiki.txt.recognition.v0 at a28cf587](https://huggingface.co/rtr46/meiki.txt.recognition.v0/tree/a28cf5874dc2438ebb1c86336be26bcec51e3375), LGPL-3.0 |
+| manga | `kha-white/manga-ocr-base` | revision `aa6573bd10b0d446cbf622e29c3e084914df9741` | Hugging Face, through manga-ocr 0.1.16 |
+
+`voters.model_path()` looks for each ONNX reader in `$REALDATA_MODELS` if set, then in the
+installed rapidocr package's `models/` (where rapidocr keeps its downloads) or, for meiki,
+the research campaign's copy (`$HERD/shared/research/scratch/eval/models/meiki/`). It checks
+the sha256 before the reader loads and names the download URL when a file is missing.
 
 ## Results (2026-10-09)
 

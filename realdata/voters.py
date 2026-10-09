@@ -12,8 +12,16 @@ reading, a line confidence in [0, 1] and one confidence per output character (ma
 has no per-character scores and returns an empty list). Readers only label training
 data: none of them ships on the console.
 
+The models are pinned (MODELS, MANGA): the ONNX files by sha256, with their public source.
+model_path() looks for a file in $REALDATA_MODELS if set, then in rapidocr's own model dir
+(the installed package's rapidocr/models, where rapidocr 3.10.0 keeps them) or, for meiki,
+the research campaign's copy, and checks the sha256 before a reader loads it. manga-ocr is
+loaded from the Hugging Face snapshot at the pinned revision.
+
 Threads follow OMP_NUM_THREADS (heavy.sh sets 5).
 """
+import hashlib
+import importlib.util
 import math
 import os
 from pathlib import Path
@@ -22,12 +30,54 @@ import cv2
 import numpy as np
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
-VENV_MODELS = HERD / "shared" / "venv" / "lib" / "python3.11" / "site-packages" / "rapidocr" / "models"
+RAPIDOCR_URL = "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/"
+MEIKI_URL = ("https://huggingface.co/rtr46/meiki.txt.recognition.v0/resolve/"
+             "a28cf5874dc2438ebb1c86336be26bcec51e3375/meiki.text.rec.v0.960x32.onnx")
+# reader: (file name, sha256, public source). The PP-OCR hashes are the ones in rapidocr
+# 3.10.0's default_models.yaml; meiki's is the Hugging Face LFS sha256 at that revision.
 MODELS = {
-    "v5s": VENV_MODELS / "ch_PP-OCRv5_rec_server.onnx",
-    "v6s": VENV_MODELS / "PP-OCRv6_rec_small.onnx",
-    "meiki": HERD / "shared" / "research" / "scratch" / "eval" / "models" / "meiki" / "meiki.text.rec.v0.960x32.onnx",
+    "v5s": ("ch_PP-OCRv5_rec_server.onnx", "e09385400eaaaef34ceff54aeb7c4f0f1fe014c27fa8b9905d4709b65746562a",
+            RAPIDOCR_URL + "PP-OCRv5/rec/ch_PP-OCRv5_rec_server.onnx"),
+    "v6s": ("PP-OCRv6_rec_small.onnx", "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884",
+            RAPIDOCR_URL + "PP-OCRv6/rec/PP-OCRv6_rec_small.onnx"),
+    "meiki": ("meiki.text.rec.v0.960x32.onnx", "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000",
+              MEIKI_URL),
 }
+MANGA = ("kha-white/manga-ocr-base", "aa6573bd10b0d446cbf622e29c3e084914df9741")   # repo, revision
+
+
+def model_dirs(name):
+    dirs = [Path(os.environ["REALDATA_MODELS"])] if os.environ.get("REALDATA_MODELS") else []
+    if name == "meiki":
+        dirs.append(HERD / "shared" / "research" / "scratch" / "eval" / "models" / "meiki")
+    else:
+        spec = importlib.util.find_spec("rapidocr")
+        if spec is not None and spec.origin:
+            dirs.append(Path(spec.origin).parent / "models")
+    return dirs
+
+
+def file_sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def model_path(name):
+    """The pinned model file of reader `name`, once its sha256 has been checked."""
+    fname, sha, url = MODELS[name]
+    dirs = model_dirs(name)
+    for d in dirs:
+        path = d / fname
+        if path.is_file():
+            got = file_sha256(path)
+            if got != sha:
+                raise RuntimeError(f"{name}: {path} has sha256 {got}, expected {sha} ({url})")
+            return path
+    raise FileNotFoundError(f"{name}: {fname} is not in {[str(d) for d in dirs]}; download {url} "
+                            f"(sha256 {sha}) and point REALDATA_MODELS at its directory")
 
 
 def threads():
@@ -51,7 +101,7 @@ class PaddleRec:
 
     def __init__(self, name):
         self.name = name
-        self.s = session(MODELS[name])
+        self.s = session(model_path(name))
         chars = self.s.get_modelmeta().custom_metadata_map["character"].split("\n")
         self.chars = [""] + chars + [" "]               # 0 = CTC blank, last = space
         n_out = self.s.get_outputs()[0].shape[-1]
@@ -110,6 +160,16 @@ def blockify(rgb):
     return block
 
 
+def manga_snapshot():
+    """Local directory of kha-white/manga-ocr-base at the pinned revision (the cache first)."""
+    from huggingface_hub import snapshot_download
+    from huggingface_hub.errors import LocalEntryNotFoundError
+    try:
+        return snapshot_download(MANGA[0], revision=MANGA[1], local_files_only=True)
+    except LocalEntryNotFoundError:
+        return snapshot_download(MANGA[0], revision=MANGA[1])
+
+
 class MangaOCR:
     name = "manga"
 
@@ -117,7 +177,7 @@ class MangaOCR:
         import torch
         torch.set_num_threads(threads())
         from manga_ocr import MangaOcr
-        self.m = MangaOcr()
+        self.m = MangaOcr(manga_snapshot())
 
     def __call__(self, bgr):
         from PIL import Image
@@ -131,7 +191,7 @@ class Meiki:
     W, H, THR, OVERLAP = 960, 32, 0.1, 0.3
 
     def __init__(self):
-        self.s = session(MODELS["meiki"])
+        self.s = session(model_path("meiki"))
 
     def __call__(self, bgr):
         h, w = bgr.shape[:2]

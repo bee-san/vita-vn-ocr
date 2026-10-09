@@ -11,7 +11,7 @@ e.g. the C runtime's host CLI). See eval/backends.py and eval/README.md.
 
 Recognizer mode (default) reads every hand-checked line crop (the line's box plus
 --pad px: 4 on Vita, 2 on PSP) and reports CER, exact-line accuracy and per-style and per-game
-breakdowns. With --finder (overlay, gradient, py:MOD:FUNC, cmd:COMMAND) it runs
+breakdowns. With --finder (overlay, console, gradient, py:MOD:FUNC, cmd:COMMAND) it runs
 the finder on each dialogue region instead, recognizes what it finds, and reports
 line recall/precision and the whole-pipeline CER. Scores use eval/metrics.py norm().
 
@@ -206,7 +206,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--model", required=True, help="checkpoint, ONNX, preset, ncnn:DIR, manga-ocr or cmd:COMMAND")
     ap.add_argument("--set", default="all", help="vita-test, psp-test, synth-val, comma list, or all")
-    ap.add_argument("--finder", default=None, help="overlay, gradient, py:MOD:FUNC or cmd:COMMAND")
+    ap.add_argument("--finder", default=None, help="overlay, console, gradient, py:MOD:FUNC or cmd:COMMAND")
     ap.add_argument("--data", default=None, help="screenshot dir (default $VOCR_EVAL_DATA or data/eval)")
     ap.add_argument("--pad", type=int, default=None,
                     help="px added around each line box (default 4 on vita-test, 2 on psp-test)")

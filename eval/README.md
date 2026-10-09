@@ -133,11 +133,14 @@ On vita-test the rule inverts 37 of the 43 dark-on-light lines and 7 of the othe
 
 ### Line finder mode
 
-`--finder overlay|gradient|py:MOD:FUNC|cmd:COMMAND` runs a finder on each
+`--finder overlay|console|gradient|py:MOD:FUNC|cmd:COMMAND` runs a finder on each
 dialogue region instead and recognizes what it returns:
 
 - `overlay`: `synth/common.find_lines(region, "legacy")`, the overlay's shipped
   bright-pixel finder;
+- `console`: `synth/common.find_lines(region, "grad")`, the bit-exact twin of the
+  console's finder `runtime/vocr_lines.c` (`docs/linefind.md`). With
+  `--polarity console` this scores the console's whole path;
 - `gradient`: the research's polarity-agnostic gradient-energy projection;
 - `py:MOD:FUNC`: any Python function `f(rgb_region) -> [(x, y, w, h)] | None`
   (None = region rejected);

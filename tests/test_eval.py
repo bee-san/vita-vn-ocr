@@ -159,6 +159,14 @@ def test_gradient_finder_and_match():
     assert sorted(j for _, j in pairs) == [0, 1] and not unmatched
 
 
+def test_console_finder_is_the_runtime_twin():
+    from common import find_lines
+    img = np.full((60, 200, 3), 225, np.uint8)     # dark strokes on a light box: both polarities work
+    img[20:40, 20:180:4] = 20
+    assert finders.make_finder("console") is finders.console
+    assert finders.console(img) == find_lines(img, "grad") and len(finders.console(img)) == 1
+
+
 def test_overlay_finder_rejects_light_box():
     img = np.full((40, 200, 3), 240, np.uint8)
     img[10:25, 10:150] = 20

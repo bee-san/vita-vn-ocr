@@ -13,12 +13,13 @@
 #   NV_DIR     nvsynth shards (nv_fetch.py run + merge-val)    [$HERD/shared/artifacts/nvsynth/shards]
 #   SYNTH_DIR  v1 synthetic shards synth_00000..00039          [$HERD/shared/data/synth]
 #   NV_SHARDS  NVIDIA train shards per arm (about 20k lines each)              [20]
-#   STEPS      [5000]   EVAL_SETS  [vita-test,synth-val]
+#   STEPS      [5000]   EVAL_SETS  [vita-test,psp-test,synth-val]
 #   VOCR_EVAL_DATA (eval screenshots) [$HERD/shared/artifacts/eval]
 #
 # train.py validates on the last shard of its sorted --synth glob: synth_00039 for synth and
 # mix, nv_val for nv. That only picks ckpt_best; the comparison uses ckpt_last (step STEPS),
-# scored on EVAL_SETS (results/<arm>_s<seed>.json) and on nv_val.npz (results/nv-val/).
+# scored on EVAL_SETS (results/<arm>_s<seed>.json) and on nv_val.npz (results/nv-val/; like
+# synth-val, eval/run.py scores the first 3,000 lines of the shard).
 set -euo pipefail
 arm=${1:?arm: synth|nv|mix}
 seed=${2:?seed}
@@ -32,7 +33,7 @@ NV_DIR=${NV_DIR:-$HERD/shared/artifacts/nvsynth/shards}
 SYNTH_DIR=${SYNTH_DIR:-$HERD/shared/data/synth}
 NV_SHARDS=${NV_SHARDS:-20}
 STEPS=${STEPS:-5000}
-EVAL_SETS=${EVAL_SETS:-vita-test,synth-val}
+EVAL_SETS=${EVAL_SETS:-vita-test,psp-test,synth-val}
 export VOCR_EVAL_DATA=${VOCR_EVAL_DATA:-$HERD/shared/artifacts/eval}
 export VOCR_SYNTH_VAL=${VOCR_SYNTH_VAL:-$SYNTH_DIR/synth_00039.npz}
 

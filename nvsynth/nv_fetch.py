@@ -11,9 +11,9 @@ cut their text lines into train.py shards, and delete each raw file afterwards.
       write them to DIR, record counts in DIR/nv_<split>_NNN.json, delete the raw file.
       With --per-page 1 a source file becomes one shard, DIR/nv_<split>_NNN.npz. With
       --per-page 0 its lines are spread over B = round(lines / --lines-per-shard)
-      shards DIR/nv_<split>_NNN_bBB.npz by a hash of (file, page, line), so bucket BB
-      of every file is a uniform sample of all pages: a glob such as '*_b00.npz' picks
-      1/B of the lines without loading the rest.
+      shards DIR/nv_<split>_NNN_bBB.npz by a hash of (file, page, line), so each bucket is a
+      uniform sample of its file's lines, spread over all its pages: a glob such as
+      '*_b00.npz' picks 1/B of every file (B is 12-16 for train) without loading the rest.
       Downloads run ahead of the cutting, in file order, but raw files on disk (finished or in
       flight) never exceed --max-raw-gb, and a download waits while it would leave less than
       --min-free-gb free on the filesystem of DIR or --raw. Resumable: finished sources are

@@ -5,8 +5,10 @@
             [--sources 0-66] [--val validation:0] [--extra 'GLOB' ...]
 
 Each source file's lines are spread over its shards nv_train_NNN_bBB.npz by a hash of
-(file, page, line), so bucket BB of every source is a uniform sample of all 1.5M pages.
---buckets picks which buckets (e.g. 0, or 0-2 for 3/12 of the lines), --sources which
+(file, page, line), so bucket BB of a source is a uniform sample of that source's lines, from
+all its pages. Train sources have 12-16 buckets of about 20k lines, so one bucket of every
+source is 1/12 to 1/16 of each (about 1/14 overall).
+--buckets picks which buckets (e.g. 0, or 0-2 for about 3/14 of the lines), --sources which
 train files. --val adds one held-out shard as zz_val.npz, which sorts after nv_* and
 synth_*, so train.py (it validates on the last shard of its sorted glob) validates on
 it: 'validation:N' is bucket 0 of ja/validation file N, or give a path. --extra links

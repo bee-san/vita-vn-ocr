@@ -3,15 +3,20 @@
 
 A sample is a dialogue-box *region*, like the one a user selects with Square:
 bright text on a translucent dark box over a background. Lines are cropped with
-common.find_lines (an exact port of the overlay's line finder), so the crops are
-the crops the recognizer sees on the Vita. A crop is kept only when it matches one
-rendered line unambiguously; its label is that line's text (ruby and the
-page-cursor icon are distractors and never part of a label).
+common.line_crops, the bit-exact twin of the console's line finder
+(runtime/vocr_lines.c), so the crops are the crops the recognizer sees on the Vita;
+dark-text lines are inverted to light text there and here alike. A crop is kept
+only when it matches one rendered line unambiguously; its label is that line's text
+(ruby and the page-cursor icon are distractors and never part of a label).
 
-  render.py preview [--n 12]
+  render.py preview [--n 12] [--finder grad|legacy] [--keep-polarity]
       -> synth/preview_regions.png, synth/preview_crops.png
   render.py shards --out DIR --shards N --per-shard M [--workers W] [--seed S]
+                   [--finder grad|legacy] [--keep-polarity]
       -> DIR/synth_00000.npz ... (uint8 grey crops at native size + labels)
+
+--finder legacy reproduces the v1 data (the overlay's bright-pixel finder);
+--keep-polarity stores dark-text crops as they are instead of inverted.
 """
 import argparse
 import io
@@ -27,7 +32,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from common import DATA, find_lines, is_test_vn, load_vocab, to_gray  # noqa: E402
+from common import DATA, find_lines, is_test_vn, line_crops, load_vocab  # noqa: E402
 
 FONT_DIR = DATA / "fonts"
 # Style buckets approximate what Vita VNs ship: Shin Go/Rodin-like gothics,
@@ -357,11 +362,18 @@ def draw_ruby(rng, ln, xs, f, ss, top, ruby_fs, gap, rf, dfill, dstroke, rsw):
         i = j
 
 
+FINDER = {"finder": "grad", "invert_dark": True}   # set by main() before workers fork
+
+
 def extract(img, layout):
-    """Match find_lines detections to rendered lines; return [(grey crop, label, box)]."""
-    dets = find_lines(img)
-    if dets is None:
+    """Match finder detections to rendered lines; return [(grey crop, label, box)]."""
+    got = line_crops(img, FINDER["finder"], FINDER["invert_dark"])
+    if got is None:
         return None
+    dets = [box for _, box, _ in got]
+    crops = [crop for crop, _, _ in got]
+    # Both finders put the box 4 px outside the ink (5 below; grad pads its 1 px
+    # dilated contrast mask by 3), so these are each detection's ink rows.
     ink = [(y + 4, y + h - 5) for (x, y, w, h) in dets]
     ov = np.array([[min(b, L["y1"]) - max(a, L["y0"]) for L in layout] for a, b in ink], np.float32)
     out = []
@@ -383,7 +395,7 @@ def extract(img, layout):
             continue
         if x + w < img.shape[1] and abs(x + w - 4 - L["ix1"]) > 3:
             continue
-        out.append((to_gray(img[y:y + h, x:x + w]), L["text"], (x, y, w, h)))
+        out.append((crops[d], L["text"], (x, y, w, h)))
     return out
 
 
@@ -438,7 +450,7 @@ def preview(n):
             continue
         vis = Image.fromarray(img)
         d = ImageDraw.Draw(vis)
-        for (x, y, w, h) in find_lines(img):
+        for (x, y, w, h) in find_lines(img, FINDER["finder"]) or []:
             d.rectangle((x, y, x + w - 1, y + h - 1), outline=(255, 0, 0))
         for _, _, (x, y, w, h) in got:
             d.rectangle((x, y, x + w - 1, y + h - 1), outline=(0, 255, 0))
@@ -475,7 +487,11 @@ def main():
     ap.add_argument("--per-shard", type=int, default=10_000)
     ap.add_argument("--workers", type=int, default=12)
     ap.add_argument("--seed", type=int, default=20261008)
+    ap.add_argument("--finder", choices=["grad", "legacy"], default="grad")
+    ap.add_argument("--keep-polarity", action="store_true",
+                    help="store dark-text crops as rendered instead of inverted")
     args = ap.parse_args()
+    FINDER.update(finder=args.finder, invert_dark=not args.keep_polarity)
     init()
     print(f"fonts {len(R.fonts)} in {sorted(R.by_cat)}, bg shots {len(R.bg_shots)}, "
           f"vocab {len(R.vocab)}", flush=True)

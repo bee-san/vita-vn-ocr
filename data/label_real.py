@@ -110,18 +110,19 @@ def expand(box, w_img, h_img, m=6):
 
 def regions_and_lines(bgr, cands):
     """[(region, [line boxes])]: the union region if the finder accepts it,
-    otherwise every candidate line on its own."""
+    otherwise every candidate line on its own. Uses the overlay's legacy bright-pixel
+    finder, as v1's real labels did (common.find_lines now defaults to "grad")."""
     h_img, w_img = bgr.shape[:2]
     union = (min(c[0] for c in cands), min(c[1] for c in cands),
              max(c[2] for c in cands), max(c[3] for c in cands))
     x, y, w, h = expand(union, w_img, h_img)
-    lines = find_lines(bgr[y:y + h, x:x + w, ::-1])
+    lines = find_lines(bgr[y:y + h, x:x + w, ::-1], "legacy")
     if lines:
         return [((x, y, w, h), lines)], "union"
     out = []
     for c in cands:
         x, y, w, h = expand(c, w_img, h_img)
-        lines = find_lines(bgr[y:y + h, x:x + w, ::-1])
+        lines = find_lines(bgr[y:y + h, x:x + w, ::-1], "legacy")
         if lines:
             out.append(((x, y, w, h), lines))
     return out, "per-line"

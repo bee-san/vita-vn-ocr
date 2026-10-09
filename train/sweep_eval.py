@@ -12,7 +12,18 @@ the runtime's W8I activation rounding as described in runtime/vocr.h (inputs of 
 int8 convs quantised per position to int16, symmetric max-abs over the channels),
 simulated in float.
 
-Sets (PROVISIONAL until eval/ merges; then use eval/run.py):
+Sets from eval's shared benchmark (needs eval/ in this checkout, or $VOCR_EVAL_CODE
+pointing at an eval checkout, and $VOCR_EVAL_DATA at its screenshots):
+  vita-test, psp-test   eval's hand-checked lines, cropped and scored exactly as
+               eval/run.py does (eval/sets.py + eval/metrics.py), crops fed as they
+               are; one forward pass per padded width, so the text is identical to
+               run.py's one-line-at-a-time inference
+  vita-test-inv, psp-test-inv   the same lines with the dark-on-light ones inverted by
+               their style tag (an oracle): the v1 recipe renders only light text, so
+               this separates recognizer capacity from that data gap
+  real-hand-x  real-hand (below) minus the lines from vita-test's games: 17 more games,
+               a check that is independent of vita-test
+Provisional sets (from before eval/ existed; real-pseudo is all from vita-test games):
   synth-val    the held-out synthetic shard (data/synth, last shard), all lines
   real-hand    hand-transcribed real Vita lines from the research campaign
                (scratch/real/gt.json confident lines, plus gt_real.json lines whose
@@ -82,6 +93,54 @@ def polarity(g):
     if ink.size and ink.mean() < bg:
         return 255 - g
     return g
+
+
+def eval_modules():
+    """eval/'s sets and metrics modules (eval/ here or $VOCR_EVAL_CODE/eval), or None."""
+    import os
+    for base in (os.environ.get("VOCR_EVAL_CODE"), str(ROOT)):
+        if base and (Path(base) / "eval" / "sets.py").exists():
+            sys.path.insert(0, str(Path(base) / "eval"))
+            import metrics as eval_metrics
+            import sets as eval_sets
+            return eval_sets, eval_metrics
+    return None
+
+
+def eval_set(name, invert_dark=False):
+    """eval's real set as [(grey crop, text, meta)]; crops exactly as eval/run.py cuts them."""
+    mods = eval_modules()
+    if mods is None:
+        raise SystemExit(f"{name}: eval/ not found (set VOCR_EVAL_CODE to an eval checkout)")
+    eval_sets, _ = mods
+    from fetch import data_dir
+    lines, _ = eval_sets.load(name, data_dir())
+    out = []
+    for ln in lines:
+        g = to_gray(ln.crop_rgb)
+        if invert_dark and "dark-on-light" in ln.styles:
+            g = 255 - g
+        out.append((g, ln.text, {"id": ln.id, "vn": ln.vn, "styles": ln.styles}))
+    return out
+
+
+def real_hand_x(pol="tag"):
+    """real-hand without the games of eval's vita-test (independent of it)."""
+    mods = eval_modules()
+    if mods is None:
+        return real_hand(pol)
+    games = {r["vn"] for r in mods[0].read_manifest("vita-test")}
+    return [it for it in real_hand(pol) if it[2]["vn"] not in games]
+
+
+def default_sets():
+    mods = eval_modules()
+    if mods is None:
+        return "synth-val,real-hand,real-pseudo"
+    names = ["synth-val", "vita-test", "vita-test-inv", "real-hand-x"]
+    if (mods[0].MANIFESTS / "psp-test.jsonl").exists():
+        names[3:3] = ["psp-test", "psp-test-inv"]
+    return ",".join(names)
 
 
 def synth_val(limit=None):
@@ -167,13 +226,21 @@ def prep(g, height):
 
 
 @torch.no_grad()
-def predict(model, crops, height, vocab, batch=64):
+def predict(model, crops, height, vocab, batch=64, exact=False):
+    """Greedy CTC text per crop. exact=True batches only crops of the same padded width,
+    so every crop sees exactly the input of a one-line forward pass (eval/run.py)."""
     gs = [prep(g, height) for g in crops]
-    order = np.argsort([g.shape[1] for g in gs])
+    pw = [(g.shape[1] + STRIDE - 1) // STRIDE * STRIDE for g in gs]
+    order = np.argsort(pw, kind="stable")
+    groups = []
+    for i in order:
+        if groups and len(groups[-1]) < batch and (not exact or pw[groups[-1][0]] == pw[i]):
+            groups[-1].append(i)
+        else:
+            groups.append([i])
     out = [None] * len(gs)
-    for s in range(0, len(order), batch):
-        idx = order[s:s + batch]
-        W = (max(gs[i].shape[1] for i in idx) + STRIDE - 1) // STRIDE * STRIDE
+    for idx in groups:
+        W = max(pw[i] for i in idx)
         x = np.empty((len(idx), 1, height, W), np.float32)
         for j, i in enumerate(idx):
             w = gs[i].shape[1]
@@ -182,6 +249,25 @@ def predict(model, crops, height, vocab, batch=64):
         in_len = torch.tensor([math.ceil(gs[i].shape[1] / STRIDE) for i in idx])
         for i, seq in zip(idx, greedy(model(torch.from_numpy(x / 127.5 - 1.0)), in_len)):
             out[i] = "".join(vocab[t - 1] for t in seq)
+    return out
+
+
+def eval_score(preds, items, unk_vocab=None):
+    """eval/metrics.score_lines (CER, exact, per style, per game), plus cer_unk_ok."""
+    _, eval_metrics = eval_modules()
+    rows = [{"id": m["id"], "vn": m["vn"], "styles": m["styles"], "text": t, "pred": p}
+            for (_, t, m), p in zip(items, preds)]
+    res = eval_metrics.score_lines(rows)
+    a = res["all"]
+    out = {"cer": a["cer"], "line_acc": a["exact"], "lines": a["lines"], "chars": a["chars"],
+           "errors": a["errors"], "styles": {k: v["cer"] for k, v in res["styles"].items()},
+           "game_macro_cer": res["game_macro_cer"]}
+    if unk_vocab is not None:
+        errs = 0
+        for (_, t, _), p in zip(items, preds):
+            ref = "".join(c if c in unk_vocab else "〓" for c in t)
+            errs += eval_metrics.lev(eval_metrics.norm(p), eval_metrics.norm(ref))
+        out["cer_unk_ok"] = errs / max(a["chars"], 1)
     return out
 
 
@@ -211,7 +297,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", type=Path, required=True)
     ap.add_argument("--ckpt", default="ckpt_last.pt")
-    ap.add_argument("--sets", default="synth-val,real-hand,real-pseudo")
+    ap.add_argument("--sets", default=None,
+                    help="comma list (default: eval's sets + real-hand-x if eval/ is found, "
+                         "else synth-val,real-hand,real-pseudo)")
     ap.add_argument("--polarity", choices=("tag", "auto", "none"), default="tag")
     ap.add_argument("--threads", type=int, default=0)
     ap.add_argument("--limit", type=int, default=None, help="first N synth-val lines (tests)")
@@ -232,8 +320,12 @@ def main():
         torch.save(q, args.run / f"{Path(args.ckpt).stem}_int8w.pt")
     pol = args.polarity
     loaders = {"synth-val": lambda: synth_val(args.limit), "real-hand": lambda: real_hand(pol),
-               "real-pseudo": lambda: real_pseudo(pol)}
-    sets = {name: loaders[name]() for name in args.sets.split(",")}
+               "real-pseudo": lambda: real_pseudo(pol), "real-hand-x": lambda: real_hand_x(pol),
+               "vita-test": lambda: eval_set("vita-test"),
+               "vita-test-inv": lambda: eval_set("vita-test", invert_dark=True),
+               "psp-test": lambda: eval_set("psp-test"),
+               "psp-test-inv": lambda: eval_set("psp-test", invert_dark=True)}
+    sets = {name: loaders[name]() for name in (args.sets or default_sets()).split(",")}
     res = {"run": args.run.name, "ckpt": args.ckpt, "step": ck["step"], "width": meta["width"],
            "bottleneck": meta["bottleneck"], "height": meta["height"],
            "classes": len(meta["vocab"]) + 1, "unk": meta["unk"], "qat": ck.get("qat"),
@@ -246,10 +338,12 @@ def main():
                      for m in model.modules() if int8_conv(m)]
         for name, items in sets.items():
             t0 = time.time()
-            preds = predict(model, [g for g, _, _ in items], meta["height"], meta["vocab"])
+            harness = name.startswith(("vita-test", "psp-test"))
+            preds = predict(model, [g for g, _, _ in items], meta["height"], meta["vocab"],
+                            exact=harness)
             refs = [t for _, t, _ in items]
             unk_vocab = set(meta["vocab"][:-1]) if meta["unk"] else None
-            r = score(preds, refs, unk_vocab)
+            r = eval_score(preds, items, unk_vocab) if harness else score(preds, refs, unk_vocab)
             r["seconds"] = round(time.time() - t0, 1)
             if name != "synth-val":
                 r["lines_detail"] = [{"id": str(m["id"]), "ref": t, "pred": p}
@@ -268,6 +362,10 @@ def main():
     for h in hooks:
         h.remove()
     out = args.run / f"eval_{Path(args.ckpt).stem}{'_limit' if args.limit else ''}.json"
+    if out.exists():                       # keep the other sets of an earlier run
+        old = json.loads(out.read_text(encoding="utf-8"))
+        if old.get("step") == res["step"]:
+            res["results"] = {**old.get("results", {}), **res["results"]}
     out.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
     print("EVAL_DONE", out, flush=True)
 

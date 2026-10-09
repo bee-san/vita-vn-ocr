@@ -11,11 +11,16 @@ exporter is importable; otherwise cost.py's estimates, marked "est."), MACs at t
 longest line (1024 px at height 32, i.e. 768 px at height 24 for the same physical
 text), synth-val CER and real CER (fp32 and int8 weights).
 
-Real CER is pooled over real-hand and real-pseudo (errors / reference characters).
-"Δ vs ref" is the pooled int8 real CER minus the reference run's, with a 95% paired
+The decision metric ("real CER") pools eval's vita-test with dark-on-light lines
+inverted by their style tag (vita-test-inv) and the research's hand lines from 17
+other games (real-hand-x): errors / reference characters, int8 (W8F) weights. The v1
+recipe renders only light text, so the as-is vita-test mostly measures that data gap
+(which synth2 and the real fine-tuning close), not capacity; it is shown alongside.
+Without eval/ results the provisional real-hand + real-pseudo pool is used.
+"Δ vs ref" is the pooled real CER minus the reference run's, with a 95% paired
 bootstrap interval over lines (10,000 resamples, seed 0). A row is on the Pareto
 front when no other row has both a smaller on-console footprint (int8 blob + W8F
-arena) and a lower pooled int8 real CER.
+arena) and a lower real CER.
 """
 import argparse
 import json
@@ -33,13 +38,19 @@ from model import from_checkpoint  # noqa: E402
 from sweep_eval import score_norm  # noqa: E402
 from train import edit_distance  # noqa: E402
 
-REAL = ("real-hand", "real-pseudo")
+REAL = ("vita-test-inv", "real-hand-x")
+PROVISIONAL = ("real-hand", "real-pseudo")
 
 
 def pooled(res, variant, sets=REAL):
     e = sum(res[f"{variant}/{s}"]["errors"] for s in sets if f"{variant}/{s}" in res)
     n = sum(res[f"{variant}/{s}"]["chars"] for s in sets if f"{variant}/{s}" in res)
     return e / n if n else None
+
+
+def real_sets(res):
+    r = res["results"] if "results" in res else res
+    return REAL if all(f"int8/{s}" in r for s in REAL) else PROVISIONAL
 
 
 def line_errors(res, variant="int8", sets=REAL):
@@ -55,6 +66,8 @@ def line_errors(res, variant="int8", sets=REAL):
 def paired_delta(a, b, n_boot=10_000, seed=0):
     """Pooled CER(a) - CER(b) over their common lines, with a 95% bootstrap interval."""
     keys = sorted(set(a) & set(b))
+    if not keys:
+        return None
     ea = np.array([a[k][0] for k in keys], np.float64)
     eb = np.array([b[k][0] for k in keys], np.float64)
     n = np.array([a[k][1] for k in keys], np.float64)
@@ -88,6 +101,7 @@ def rows(runs_dir, eval_name, exporter, ref):
         c = cost.report(model, n_cls, meta["height"], meta["vocab"], exporter)
         est_arena, _ = cost.arena(model, meta["height"], w_max, n_cls)
         r = res["results"]
+        rs = real_sets(r)
         row = {
             "run": ev.parent.name, "width": meta["width"], "classes": n_cls,
             "bottleneck": meta["bottleneck"], "height": meta["height"],
@@ -98,23 +112,26 @@ def rows(runs_dir, eval_name, exporter, ref):
             "synth_fp32": r["fp32/synth-val"]["cer"], "synth_int8": r["int8/synth-val"]["cer"],
             "synth_line_fp32": r["fp32/synth-val"]["line_acc"],
             "synth_by_cat_fp32": r["fp32/synth-val"].get("by_cat"),
-            "real_fp32": pooled(r, "fp32"), "real_int8": pooled(r, "int8"),
-            "real_w8i": pooled(r, "w8i"),
-            "real_chars": sum(r[f"fp32/{s}"]["chars"] for s in REAL if f"fp32/{s}" in r),
+            "real_sets": list(rs),
+            "real_fp32": pooled(r, "fp32", rs), "real_int8": pooled(r, "int8", rs),
+            "real_w8i": pooled(r, "w8i", rs),
+            "real_chars": sum(r[f"fp32/{s}"]["chars"] for s in rs if f"fp32/{s}" in r),
             "train_minutes": train_minutes(ev.parent / "train.log",
                                            int((ck.get("args") or {}).get("batch", 96))),
         }
-        for s in REAL:
+        for s in (*REAL, *PROVISIONAL, "vita-test", "psp-test", "psp-test-inv"):
             for v in ("fp32", "int8"):
                 if f"{v}/{s}" in r:
                     row[f"{s}_{v}"] = r[f"{v}/{s}"]["cer"]
                     row[f"{s}_line_{v}"] = r[f"{v}/{s}"]["line_acc"]
+                    if r[f"{v}/{s}"].get("cer_unk_ok") is not None:
+                        row[f"{s}_unk_ok_{v}"] = r[f"{v}/{s}"]["cer_unk_ok"]
         if exporter is not None:
             row.update({k: v for k, v in c.items() if k.startswith(("blob_", "rt_arena_"))})
             row["footprint"] = row["blob_int8"] + row[f"rt_arena_w8f_{cost.WIDTHS[-1]}"]
         else:
             row["footprint"] = row["weights_int8_est"] + row["arena_est_max"]
-        errs[row["run"]] = line_errors(res)
+        errs[row["run"]] = line_errors(res, "int8", rs)
         out.append(row)
     if ref in errs:
         for row in out:
@@ -141,8 +158,8 @@ def markdown(rs, exact, ref):
     size_cols = ("int8 blob KiB | W8F arena KiB | footprint KiB" if exact else
                  "int8 weights KiB (est.) | non-streaming arena KiB (est.) | footprint KiB (est.)")
     head = (f"| run | width | classes | bneck | H | QAT | params | {size_cols} | MMAC (longest line) | "
-            f"synth-val CER fp32 / int8 | real-hand CER int8 | real-pseudo CER int8 | "
-            f"real pooled CER fp32 / int8 | Δ vs {ref} (95% CI) | Pareto |")
+            f"synth-val CER fp32 / int8 | vita-test CER (as is) | vita-test-inv CER | real-hand-x CER | "
+            f"real CER fp32 / int8 | Δ vs {ref} (95% CI) | Pareto |")
     lines = [head, "|" + "---|" * (head.count("|") - 1)]
     for a in sorted(rs, key=lambda a: (a["footprint"], a["run"])):
         if exact:
@@ -156,7 +173,8 @@ def markdown(rs, exact, ref):
             f"| {a['run']} | {a['width']} | {a['classes']} | {a['bottleneck']} | {a['height']} | "
             f"{'yes' if a['qat'] else ''} | {a['params']:,} | {sizes} | {kib(a['footprint'])} | "
             f"{a['macs_max'] / 1e6:.0f} | {pct(a['synth_fp32'])} / {pct(a['synth_int8'])} | "
-            f"{pct(a.get('real-hand_int8'))} | {pct(a.get('real-pseudo_int8'))} | "
+            f"{pct(a.get('vita-test_int8'))} | {pct(a.get('vita-test-inv_int8'))} | "
+            f"{pct(a.get('real-hand-x_int8'))} | "
             f"{pct(a['real_fp32'])} / {pct(a['real_int8'])} | {delta} | "
             f"{'**yes**' if a['pareto'] else ''} |")
     return "\n".join(lines)

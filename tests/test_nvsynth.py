@@ -62,6 +62,12 @@ def test_check_rejects(ln, reason):
     assert ex.check(ln, 400, 200, VOCAB)[0] == reason
 
 
+def test_multi_word_lines_are_rejected_but_still_counted_for_oov():
+    ln = dict(line("76 そのため、安心してください。", 10, 10, 300, 30), word_indices=[0, 1])
+    assert ex.check(ln, 400, 200, VOCAB) == ("words", "76そのため、安心してください。")
+    assert ex.check(dict(ln, word_indices=[3]), 400, 200, VOCAB)[0] is None
+
+
 def test_labels_use_the_corpus_normalisation():
     # spaces (half and full width) go, 〜 becomes ～, half-width katakana become full-width
     assert ex.check(line("見え ます　〜ｶﾀｶﾅ", 10, 10, 300, 30), 400, 200, VOCAB) == (None, "見えます～カタカナ")

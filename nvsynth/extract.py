@@ -4,7 +4,9 @@ A page is one HDF5 sample of the dataset: a JPEG plus a JSON annotation whose
 line_bboxes hold each text line's box, quad and text. check() decides which lines
 the recognizer can learn from; crop() cuts one the way the console sees a line:
 
-  * horizontal, axis-aligned, fully on the page, box at least MIN_BOX_H px tall;
+  * horizontal, axis-aligned, fully on the page, box at least MIN_BOX_H px tall, and one
+    word box (a two-word line is a list or contents entry whose leader dots between the
+    words are drawn but not labelled);
   * the text after the corpus normalisation (synth/build_corpus.py norm(): NFC,
     half-width kana to full-width, 〜 to ～, no spaces) has 2+ characters, all in
     data/vocab.txt, at least one kana or kanji and at most half ASCII;
@@ -49,7 +51,7 @@ GREY_RATIO = 0.25                   # min grey_ratio() of the ink band: below it
                                     # mostly hue on hue and largely vanishes in grey
 AREA_ABOVE = 48                     # taller crops are area-downscaled first ...
 MID_H = (28, 40)                    # ... to this native-looking height, then bilinear to 32
-REASONS = ("rotated", "vertical", "clipped", "small", "short", "oov", "ascii")
+REASONS = ("rotated", "vertical", "words", "clipped", "small", "short", "oov", "ascii")
 CROP_REASONS = ("faint", "wide", "ctc")
 
 
@@ -73,6 +75,10 @@ def check(line, page_w, page_h, vocab):
     label = norm(line.get("text") or "")
     if h > w and len(label) > 1:
         return "vertical", None
+    if len(line.get("word_indices") or ()) > 1:
+        # "76 ...... text", "text ____ 3": list and contents layouts whose dot or rule leaders
+        # between the words are drawn but not in the text, often with a bigger page number
+        return "words", label
     if x < -1 or y < -1 or x + w > page_w + 1 or y + h > page_h + 1:
         return "clipped", label
     if h < MIN_BOX_H:

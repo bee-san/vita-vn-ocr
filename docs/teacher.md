@@ -32,11 +32,11 @@ merged in #2 (206 scored lines, 16 VNs) and psp-test from PR #5's head bebd4f9 (
 | MeikiOCR rec (BGR, as its docs) | 1.60% / 86.4% | 4.10% / 76.7% | 495 / 414 |
 | MeikiOCR rec (RGB, as owocr feeds it) | 1.64% / 85.4% | 4.14% / 76.3% | 499 / 412 |
 | Chrome Screen AI (owocr) | 3.20% / 87.9% | 4.86% / 80.4% | 1365 / 803 |
-| PP-OCRv5 server rec | 3.43% / 74.3% | not run (queued) | 4460 |
-| manga-ocr (re-flowed) | 5.46% / 65.0% | not run (queued) | 879 |
+| PP-OCRv5 server rec | 3.43% / 74.3% | not run | 4460 |
+| manga-ocr (re-flowed) | 5.46% / 65.0% | not run | 879 |
 | *bar: JIS-trimmed int8 PP-OCRv5 mobile (eval)* | *2.30%* | *5.58%* | |
 
-Of the engines measured, PP-OCRv6 small reads both sets best. It is also a CTC model, so
+Of the engines measured, PP-OCRv6 small reads both sets best. PP-OCRv5 server and manga-ocr were not run on psp-test's crops (the heavy.sh slots stayed full); their teacher-pipeline readings of psp-test lines are in the next section. It is also a CTC model, so
 its logits suit the soft (CTC) distillation the owner suggests. MeikiOCR drops characters
 on small PSP names: 20.1% CER on psp-test's 62 name lines, against 4.3% for PP-OCRv6 small.
 That is one reason the teacher needs voters.

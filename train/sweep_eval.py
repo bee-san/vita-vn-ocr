@@ -108,11 +108,15 @@ def eval_modules():
 
 
 def eval_set(name, invert_dark=False):
-    """eval's real set as [(grey crop, text, meta)]; crops exactly as eval/run.py cuts them."""
+    """eval's real set as [(grey crop, text, meta)]; crops exactly as eval/run.py cuts them.
+    $VOCR_EVAL_MANIFESTS overrides eval's manifest directory (e.g. a not yet merged set)."""
+    import os
     mods = eval_modules()
     if mods is None:
         raise SystemExit(f"{name}: eval/ not found (set VOCR_EVAL_CODE to an eval checkout)")
     eval_sets, _ = mods
+    if os.environ.get("VOCR_EVAL_MANIFESTS"):
+        eval_sets.MANIFESTS = Path(os.environ["VOCR_EVAL_MANIFESTS"])
     from fetch import data_dir
     lines, _ = eval_sets.load(name, data_dir())
     out = []
@@ -134,11 +138,13 @@ def real_hand_x(pol="tag"):
 
 
 def default_sets():
+    import os
     mods = eval_modules()
     if mods is None:
         return "synth-val,real-hand,real-pseudo"
     names = ["synth-val", "vita-test", "vita-test-inv", "real-hand-x"]
-    if (mods[0].MANIFESTS / "psp-test.jsonl").exists():
+    manifests = Path(os.environ.get("VOCR_EVAL_MANIFESTS") or mods[0].MANIFESTS)
+    if (manifests / "psp-test.jsonl").exists():
         names[3:3] = ["psp-test", "psp-test-inv"]
     return ",".join(names)
 

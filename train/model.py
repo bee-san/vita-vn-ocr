@@ -97,20 +97,24 @@ def channels(width):
 
 
 class TinyVNOCR(nn.Module):
-    def __init__(self, n_classes, width=1.0, bottleneck=96):
+    """width scales every channel count; depth is the number of stride-1 DS blocks after
+    each of the three downsampling DS blocks (v1: 1); ctx is the number of temporal Ctx
+    blocks (v1: 2) and ctx_k their kernel width (v1: 5; the runtime allows up to 7).
+    The defaults build v1 exactly (same layers, same state_dict keys)."""
+
+    def __init__(self, n_classes, width=1.0, bottleneck=96, depth=1, ctx=2, ctx_k=5):
         super().__init__()
         c32, c64, c128, c160, c192 = channels(width)
         self.features = nn.Sequential(
             cbr(1, c32, 3, 2),                           # 16 x W/2  (12 at height 24)
             DS(c32, c64, 2),                             # 8 x W/4
-            DS(c64, c64, 1),
+            *[DS(c64, c64, 1) for _ in range(depth)],
             DS(c64, c128, 2),                            # 4 x W/8
-            DS(c128, c128, 1),
+            *[DS(c128, c128, 1) for _ in range(depth)],
             DS(c128, c160, (2, 1)),                      # 2 x W/8
-            DS(c160, c160, 1),
+            *[DS(c160, c160, 1) for _ in range(depth)],
             cbr(c160, c192, (2, 1), pad=(0, 0)),         # 1 x W/8
-            Ctx(c192),
-            Ctx(c192),
+            *[Ctx(c192, ctx_k) for _ in range(ctx)],
         )
         self.drop = nn.Dropout(0.1)
         self.bottleneck = QConv2d(c192, bottleneck, 1, bias=False)
@@ -123,14 +127,16 @@ class TinyVNOCR(nn.Module):
         return f.squeeze(2).permute(2, 0, 1)
 
 
+ARCH_KEYS = {"width": 1.0, "bottleneck": 96, "depth": 1, "ctx": 2, "ctx_k": 5}
+
+
 def from_checkpoint(ck):
     """Rebuild the model a train.py checkpoint (dict or path) describes, v1 included.
-    Returns (model in eval mode, meta) with meta = {vocab, width, bottleneck, height, unk}."""
+    Returns (model in eval mode, meta) with meta = {vocab, height, unk} plus ARCH_KEYS."""
     if not isinstance(ck, dict):
         ck = torch.load(ck, map_location="cpu", weights_only=False)
-    meta = {"vocab": ck["vocab"], "width": ck.get("width", 1.0),
-            "bottleneck": ck.get("bottleneck", 96), "height": ck.get("height", 32),
-            "unk": ck.get("unk")}
-    model = TinyVNOCR(len(meta["vocab"]) + 1, width=meta["width"], bottleneck=meta["bottleneck"])
+    meta = {"vocab": ck["vocab"], "height": ck.get("height", 32), "unk": ck.get("unk"),
+            **{k: ck.get(k, v) for k, v in ARCH_KEYS.items()}}
+    model = TinyVNOCR(len(meta["vocab"]) + 1, **{k: meta[k] for k in ARCH_KEYS})
     model.load_state_dict(ck["model"])
     return model.eval(), meta

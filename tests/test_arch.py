@@ -170,3 +170,20 @@ def test_unk_scoring():
     import sweep_eval
     r = sweep_eval.score(["ab〓d", "abcd"], ["abxd", "abcd"], unk_vocab=set("abcd"))
     assert r["cer"] == 1 / 8 and r["cer_unk_ok"] == 0 and r["line_acc"] == 0.5
+
+
+def test_depth_and_ctx_knobs():
+    v1 = TinyVNOCR(5355)
+    big = TinyVNOCR(5355, depth=2, ctx=4, ctx_k=7)
+    assert set(v1.state_dict()) < set(big.state_dict())     # v1 keys keep their meaning
+    with torch.no_grad():
+        assert big.eval()(torch.zeros(1, 1, 32, 64)).shape == (8, 1, 5355)
+    ck = {"model": big.state_dict(), "vocab": ["x"] * 5354, "depth": 2, "ctx": 4, "ctx_k": 7}
+    m, meta = from_checkpoint(ck)
+    assert (meta["depth"], meta["ctx"], meta["ctx_k"]) == (2, 4, 7)
+
+
+def test_a9_estimate_scales_with_macs():
+    r = cost.report(TinyVNOCR(5355), 5355, 32)
+    slow, fast = r["a9_ms_1024"]
+    assert fast < slow and abs(slow - 1000 * r["macs_1024"] / 0.24e9) < 1e-6

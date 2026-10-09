@@ -8,7 +8,8 @@ interpolation, the same resize the Vita runtime does. The last synthetic shard i
 held out for validation. Writes models/<run>/ckpt_last.pt (resumed automatically),
 ckpt_best.pt and metrics.jsonl.
 
-Architecture-sweep options (defaults reproduce v1): --width, --bottleneck, --height,
+Architecture-sweep options (defaults reproduce v1): --width, --bottleneck, --depth,
+--ctx, --ctx-k, --height,
 --vocab (a vocab whose last entry is the <unk> token 〓 maps every other character
 to it instead of dropping the line), --steps (a fixed budget instead of --epochs),
 --seed (seeds torch and numpy) and --qat F (int8 weight fake quantisation from
@@ -186,6 +187,9 @@ def main():
     ap.add_argument("--lr", type=float, default=2e-3)
     ap.add_argument("--width", type=float, default=1.0)
     ap.add_argument("--bottleneck", type=int, default=96)
+    ap.add_argument("--depth", type=int, default=1, help="stride-1 DS blocks per stage (v1: 1)")
+    ap.add_argument("--ctx", type=int, default=2, help="temporal Ctx blocks (v1: 2)")
+    ap.add_argument("--ctx-k", type=int, default=5, choices=(3, 5, 7), help="Ctx kernel width")
     ap.add_argument("--height", type=int, default=H, choices=(24, 32))
     ap.add_argument("--vocab", type=Path, default=DATA / "vocab.txt")
     ap.add_argument("--qat", type=float, default=0.0,
@@ -220,7 +224,8 @@ def main():
     print(f"train {len(tr_imgs)} / val {len(va_imgs)} lines, dropped {d1 + d2}, "
           f"loaded in {time.time() - t0:.0f}s", flush=True)
 
-    model = TinyVNOCR(len(vocab) + 1, width=args.width, bottleneck=args.bottleneck)
+    model = TinyVNOCR(len(vocab) + 1, width=args.width, bottleneck=args.bottleneck,
+                      depth=args.depth, ctx=args.ctx, ctx_k=args.ctx_k)
     model = model.to(memory_format=torch.channels_last)
     print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M, classes "
           f"{len(vocab) + 1}, height {args.height}, threads {args.threads}", flush=True)
@@ -290,7 +295,8 @@ def main():
                 ck = {"model": {k: v.contiguous() for k, v in model.state_dict().items()},
                       "opt": opt.state_dict(), "step": step,
                       "best_cer": min(best, cer), "vocab": vocab, "width": args.width,
-                      "bottleneck": args.bottleneck, "height": args.height, "unk": unk,
+                      "bottleneck": args.bottleneck, "depth": args.depth, "ctx": args.ctx,
+                      "ctx_k": args.ctx_k, "height": args.height, "unk": unk,
                       "qat": {"bits": 8, "from_step": qat_from} if qat_from is not None else None,
                       "args": {k: str(v) for k, v in vars(args).items()}}
                 if cer < best:

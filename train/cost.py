@@ -34,6 +34,11 @@ width): fp32 activations, executed layer by layer at full line width W, with
 The input buffer (height x W floats after the resize) is part of the arena; the
 caller's RGBA crop is not. "head_full" adds the cost of materialising all T x C
 logits instead, for a runtime that does not stream the head.
+
+Cortex-A9 time per line (ESTIMATE, nothing has run on a console): MACs divided by
+0.24-0.30 GMAC/s, the research's fp32 throughput for one 444 MHz A9 core (ncnn
+MobileNet v1/v2 benchmarks scaled from 766 MHz), the figure runtime's PR uses too.
+Reported for a 640-px line and for the 1024-px clamp (the longest line).
 """
 import argparse
 import importlib.util
@@ -51,6 +56,12 @@ from model import DS, Ctx, TinyVNOCR, from_checkpoint, int8_conv  # noqa: E402
 
 WIDTHS = (256, 640, 1024)
 F32 = 4
+A9_GMACS = (0.24, 0.30)          # fp32 GMAC/s, one 444 MHz Cortex-A9 core (estimate)
+
+
+def a9_ms(n_macs):
+    """(slow, fast) estimated A9 milliseconds for n_macs multiply-accumulates."""
+    return tuple(1000 * n_macs / (g * 1e9) for g in A9_GMACS)
 
 
 def convs(model):
@@ -133,17 +144,25 @@ def runtime_exporter(path=None):
     return None
 
 
+W8I_MAX_K = 516     # runtime/vocr.c: W8I needs every reduction length K <= 516
+
+
 def runtime_sizes(E, model, vocab, height, widths=WIDTHS):
-    """Blob bytes and exact arena bytes per mode and width from runtime's exporter."""
+    """Blob bytes and exact arena bytes per mode and width from runtime's exporter.
+    A mode the runtime cannot run for this model (W8I with K > 516) gets None."""
     out = {}
+    ops = E.model_ops(model.eval(), height)
+    out["rt_ops"] = len(ops)
+    out["rt_max_k"] = max(op["w"].shape[1] for op in ops if op["type"] in (E.T_PW, E.T_HEAD))
     for int8 in (False, True):
-        blob, _ = E.build_blob(E.model_ops(model.eval(), height), vocab, height, int8, 1024, b"")
+        blob, _ = E.build_blob(ops, vocab, height, int8, 1024, b"")
         parsed = E.read_blob(blob)
         out["blob_int8" if int8 else "blob_f32"] = len(blob)
         modes = (("w8f", E.MODE_W8F), ("w8i", E.MODE_W8I)) if int8 else (("f32", E.MODE_F32),)
         for name, mode in modes:
+            ok = name != "w8i" or out["rt_max_k"] <= W8I_MAX_K
             for w in widths:
-                out[f"rt_arena_{name}_{w}"] = E.plan_arena(parsed, w, 0, 0, mode)
+                out[f"rt_arena_{name}_{w}"] = E.plan_arena(parsed, w, 0, 0, mode) if ok else None
     return out
 
 
@@ -169,40 +188,59 @@ def report(model, n_classes, height, vocab=None, exporter=None):
         r[f"macs_{w}"] = macs(model, height, w)
         r[f"arena_{w}"] = streamed
         r[f"arena_head_full_{w}"] = full
+    for w in (640, 1024):             # the same physical line at any input height
+        r[f"a9_ms_{w}"] = a9_ms(macs(model, height, w * height // 32))
     if exporter is not None:
         r.update(runtime_sizes(exporter, model, vocab or default_vocab(n_classes), height))
     return r
 
 
-GRID = {   # name: (width, bottleneck, classes, height)
-    "v1 (w1.0 b96 h32 5,355)": (1.0, 96, 5355, 32), "width 1.5": (1.5, 96, 5355, 32),
-    "width 0.75": (0.75, 96, 5355, 32), "width 0.5": (0.5, 96, 5355, 32),
-    "width 0.25": (0.25, 96, 5355, 32), "vocab 3,500": (1.0, 96, 3501, 32),
-    "vocab 2,500": (1.0, 96, 2501, 32), "bottleneck 64": (1.0, 64, 5355, 32),
-    "bottleneck 48": (1.0, 48, 5355, 32), "height 24": (1.0, 96, 5355, 24),
+GRID = {   # name: (width, bottleneck, classes, height[, depth, ctx, ctx_k])
+    "v1 (w1.0 b96 h32 5,355)": (1.0, 96, 5355, 32),
+    "width 0.25": (0.25, 96, 5355, 32), "width 0.5": (0.5, 96, 5355, 32),
+    "width 0.75": (0.75, 96, 5355, 32), "width 1.5": (1.5, 96, 5355, 32),
+    "width 2.0": (2.0, 96, 5355, 32), "width 2.5": (2.5, 96, 5355, 32),
+    "width 3.0": (3.0, 96, 5355, 32),
+    "depth 2": (1.0, 96, 5355, 32, 2), "depth 3": (1.0, 96, 5355, 32, 3),
+    "ctx 4": (1.0, 96, 5355, 32, 1, 4), "ctx 4, k 7": (1.0, 96, 5355, 32, 1, 4, 7),
+    "bottleneck 128": (1.0, 128, 5355, 32), "bottleneck 64": (1.0, 64, 5355, 32),
+    "bottleneck 48": (1.0, 48, 5355, 32), "vocab 3,500": (1.0, 96, 3501, 32),
+    "vocab 2,500": (1.0, 96, 2501, 32), "height 24": (1.0, 96, 5355, 24),
+    "w1.5 depth 2 ctx 4": (1.5, 96, 5355, 32, 2, 4),
+    "w2.0 height 24": (2.0, 96, 5355, 24),
 }
 
 
+def build(cfg):
+    width, bn, classes, height, *rest = cfg
+    depth, ctx, ctx_k = (list(rest) + [1, 2, 5][len(rest):])[:3]
+    return TinyVNOCR(classes, width=width, bottleneck=bn, depth=depth, ctx=ctx, ctx_k=ctx_k), \
+        classes, height
+
+
 def table(exporter, grid=GRID):
-    """Markdown rows: size and MACs of each grid config (the longest line is 1024 px at
-    height 32 and 768 px at height 24, the same physical text)."""
+    """Markdown rows: size, MACs and estimated A9 time of each grid config (the longest
+    line is 1024 px at height 32 and 768 px at height 24, the same physical text)."""
     w = WIDTHS[-1]
     exact = exporter is not None
     head = ("| config | params | head + bottleneck params | "
             + ("int8 blob B | fp32 blob B | W8F arena B | W8I arena B | " if exact else
                "int8 weights B (est.) | fp32 weights B (est.) | ")
-            + "non-streaming arena B (est.) | MMAC, longest line |")
+            + "MMAC 640 px / longest line | est. A9 ms, 640 px | est. A9 ms, longest line |")
     rows = [head, "|" + "---|" * (head.count("|") - 1)]
-    for name, (width, bn, classes, height) in grid.items():
-        model = TinyVNOCR(classes, width=width, bottleneck=bn)
+    for name, cfg in grid.items():
+        model, classes, height = build(cfg)
         r = report(model, classes, height, None, exporter)
-        w_max = w * height // 32
+        w8i = r.get(f"rt_arena_w8i_{w}")
         sizes = (f"{r['blob_int8']:,} | {r['blob_f32']:,} | {r[f'rt_arena_w8f_{w}']:,} | "
-                 f"{r[f'rt_arena_w8i_{w}']:,}" if exact else
+                 + (f"{w8i:,}" if w8i else "n/a (K > 516)") if exact else
                  f"{r['weights_int8']:,} | {r['weights_fp32']:,}")
+        m640 = macs(model, height, 640 * height // 32)
+        mmax = macs(model, height, w * height // 32)
+        ms640, msmax = a9_ms(m640), a9_ms(mmax)
         rows.append(f"| {name} | {r['params']:,} | {r['head_params']:,} | {sizes} | "
-                    f"{arena(model, height, w_max, classes)[0]:,} | "
-                    f"{macs(model, height, w_max) / 1e6:.1f} |")
+                    f"{m640 / 1e6:.0f} / {mmax / 1e6:.0f} | {ms640[1]:.0f}-{ms640[0]:.0f} | "
+                    f"{msmax[1]:.0f}-{msmax[0]:.0f} |")
     return "\n".join(rows)
 
 
@@ -213,6 +251,9 @@ def main():
     ap.add_argument("--bottleneck", type=int, default=96)
     ap.add_argument("--classes", type=int, default=5355)
     ap.add_argument("--height", type=int, default=32)
+    ap.add_argument("--depth", type=int, default=1)
+    ap.add_argument("--ctx", type=int, default=2)
+    ap.add_argument("--ctx-k", type=int, default=5)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--export", help="runtime's train/export.py (default: next to this file)")
     ap.add_argument("--table", action="store_true", help="Markdown table of the sweep grid")
@@ -227,7 +268,8 @@ def main():
         model, meta = from_checkpoint(args.ckpt)
         vocab, height, classes = meta["vocab"], meta["height"], len(meta["vocab"]) + 1
     else:
-        model = TinyVNOCR(args.classes, width=args.width, bottleneck=args.bottleneck)
+        model = TinyVNOCR(args.classes, width=args.width, bottleneck=args.bottleneck,
+                          depth=args.depth, ctx=args.ctx, ctx_k=args.ctx_k)
         height, classes = args.height, args.classes
     r = report(model, classes, height, vocab, exporter)
     if args.json:
@@ -239,13 +281,17 @@ def main():
     for w in WIDTHS:
         print(f"  W={w:4d}: {r[f'macs_{w}'] / 1e6:7.1f} MMAC, non-streaming est. arena "
               f"{r[f'arena_{w}']:,} B ({r[f'arena_head_full_{w}']:,} B with all logits materialised)")
+    for w in (640, 1024):
+        slow, fast = r[f"a9_ms_{w}"]
+        print(f"  est. Cortex-A9 444 MHz, {w}-px line: {fast:.0f}-{slow:.0f} ms")
     if exporter is None:
         print("  runtime exporter not found: no exact blob / arena sizes")
         return
     print(f"  runtime blob: fp32 {r['blob_f32']:,} B, int8 {r['blob_int8']:,} B")
     for mode in ("f32", "w8f", "w8i"):
-        print(f"  runtime arena {mode}: " + ", ".join(f"W={w} {r[f'rt_arena_{mode}_{w}']:,} B"
-                                                   for w in WIDTHS))
+        print(f"  runtime arena {mode}: " + ", ".join(
+            f"W={w} {r[f'rt_arena_{mode}_{w}']:,} B" if r[f"rt_arena_{mode}_{w}"] is not None
+            else f"W={w} n/a (K {r['rt_max_k']} > {W8I_MAX_K})" for w in WIDTHS))
 
 
 if __name__ == "__main__":

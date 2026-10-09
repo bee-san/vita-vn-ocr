@@ -252,9 +252,11 @@ that differs only in small kana or ー/一 vetoes. Lines checked by hand use the
 Label form: vote.canon (corpus conventions: full-width ！？～（）, one … per cell, ― for
 dashes, no spaces, no page-cursor icons). Spot check: {spot_result()}.
 
-Other files: labels/*.jsonl (every line read, with all readings: label.py output),
-shots/<kind>/ (the screenshots; copyrighted, never commit or redistribute),
-vndb/ (raw VNDB listings).
+Other files: manifests/ (a copy of realdata/manifests at the git SHA above: shots_<kind>.jsonl
+with url, sha256, vn, release and capture session per screenshot, lines_<kind>.jsonl, games.json
+with every VN's split and sessions, handcheck.jsonl, stats.json), labels/*.jsonl (every line
+read, with all readings: label.py output), shots/<kind>/ (the screenshots; copyrighted, never
+commit or redistribute), vndb/ (raw VNDB listings).
 
 Rebuild from the repo alone:
     python realdata/vndb.py fetch          # screenshots from VNDB, sha256-checked
@@ -336,6 +338,10 @@ def render(args):
     stats_path = MAN / "stats.json"
     write_readme(json.loads(stats_path.read_text(encoding="utf-8")) if stats_path.exists() else {"rule": "?"},
                  counts)
+    import shutil
+    (dest / "manifests").mkdir(exist_ok=True)
+    for f in sorted(MAN.glob("*.json*")):
+        shutil.copyfile(f, dest / "manifests" / f.name)
     print("BUILD_DONE", flush=True)
 
 

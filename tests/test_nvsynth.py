@@ -1,4 +1,4 @@
-"""nvsynth/extract.py and fetch.py: line filters, ink box, grey visibility, crops and the shard format.
+"""nvsynth/nv_extract.py and fetch.py: line filters, ink box, grey visibility, crops and the shard format.
 
 Pages are drawn in memory (rectangles stand in for glyph rows), so nothing is downloaded.
 """
@@ -16,8 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 for d in ("nvsynth", "synth", "train"):
     sys.path.insert(0, str(ROOT / d))
 
-import extract as ex  # noqa: E402
-import fetch  # noqa: E402
+import nv_extract as ex  # noqa: E402
+import nv_fetch as fetch  # noqa: E402
 
 VOCAB = ex.vocab_set()
 

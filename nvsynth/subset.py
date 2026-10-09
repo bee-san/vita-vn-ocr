@@ -23,7 +23,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import fetch  # noqa: E402
+import nv_fetch as fetch  # noqa: E402
 
 
 def records(split_dir):

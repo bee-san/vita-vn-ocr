@@ -2,12 +2,12 @@
 """Download the Japanese shards of NVIDIA OCR-Synthetic-Multilingual-v1 one by one,
 cut their text lines into train.py shards, and delete each raw file afterwards.
 
-  fetch.py run --split train|validation|test --out DIR [--files 0-66] [--per-page 1]
+  nv_fetch.py run --split train|validation|test --out DIR [--files 0-66] [--per-page 1]
                [--seed S] [--lines-per-shard 20000] [--raw DIR] [--max-raw-gb 36]
                [--min-free-gb 70] [--downloads 3] [--procs N]
       For every ja/<split>/<split>_NNN.h5 at the pinned REVISION: download it with
       huggingface_hub, check its sha256 against the Hub's LFS record, crop up to
-      --per-page usable lines per page (0 = every usable line; nvsynth/extract.py),
+      --per-page usable lines per page (0 = every usable line; nvsynth/nv_extract.py),
       write them to DIR, record counts in DIR/nv_<split>_NNN.json, delete the raw file.
       With --per-page 1 a source file becomes one shard, DIR/nv_<split>_NNN.npz. With
       --per-page 0 its lines are spread over B = round(lines / --lines-per-shard)
@@ -18,9 +18,9 @@ cut their text lines into train.py shards, and delete each raw file afterwards.
       never exceed --max-raw-gb, and a download waits while it would leave less than
       --min-free-gb free on the disk. Resumable: finished sources are skipped and a
       complete raw file is not downloaded again.
-  fetch.py merge-val --parts DIR --to FILE
+  nv_fetch.py merge-val --parts DIR --to FILE
       Concatenates DIR/nv_validation_*.npz into one shard (the held-out set).
-  fetch.py manifest --dirs DIR [DIR ...] --write FILE [--val FILE]
+  nv_fetch.py manifest --dirs DIR [DIR ...] --write FILE [--val FILE]
       Collects the per-source counts, sha256s and OOV statistics into the manifest.
 
 Commands that made the shared artifacts ($HERD/shared/artifacts/nvsynth, see docs/nvsynth.md):
@@ -58,7 +58,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import extract as ex  # noqa: E402
+import nv_extract as ex  # noqa: E402
 
 REPO = "nvidia/OCR-Synthetic-Multilingual-v1"
 REVISION = "69696a1cc543ef3a0f8e9892a89c17293e915263"     # main on 2026-10-09 (last change 2026-04-20)
@@ -443,7 +443,7 @@ def cmd_manifest(args):
         "revision": REVISION,
         "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), (c) NVIDIA Corporation",
         "subset": "ja (Japanese) only: " + ", ".join(sorted(by_split)),
-        "made_by": "nvsynth/fetch.py (see its docstring for the exact commands)",
+        "made_by": "nvsynth/nv_fetch.py (see its docstring for the exact commands)",
         "format": "train.py shards: data (uint8, flat), offsets, shapes (32 x W), labels (JSON list), meta "
                   "(JSON list: src, sample, line, crop [x, y, w, h] on the page, ink_h, clean, contrast, "
                   "grey_ratio, polarity)",

@@ -8,7 +8,7 @@ subset into single-line crops in the format `train/train.py` already loads.
 ## Source
 
 - Revision `69696a1cc543ef3a0f8e9892a89c17293e915263` (the Hub's `main` on 2026-10-09; last
-  change 2026-04-20). `nvsynth/fetch.py` pins it, and every raw shard is checked against the
+  change 2026-04-20). `nvsynth/nv_fetch.py` pins it, and every raw shard is checked against the
   Hub's LFS sha256 before it is used.
 - `ja/` has 67 train shards (656 GB, about 9.8 GB and 22,400 pages each), 67 validation shards
   (82 GB) and 67 test shards (82 GB). Only Japanese is read; the other five languages (most of
@@ -22,7 +22,7 @@ subset into single-line crops in the format `train/train.py` already loads.
 
 ## What `nvsynth/` extracts
 
-`extract.py` decides, per annotated line (`check()`), whether the recognizer can learn from it:
+`nv_extract.py` decides, per annotated line (`check()`), whether the recognizer can learn from it:
 
 | filter | rule |
 |---|---|
@@ -66,7 +66,7 @@ Two sets are built from the same code:
 Every page gets its own generator seeded from (seed, shard, sample id), so the output does not
 depend on how pages are split across worker processes.
 
-`fetch.py run` streams the shards: downloads run ahead of the cutting in threads, the raw files
+`nv_fetch.py run` streams the shards: downloads run ahead of the cutting in threads, the raw files
 on disk (finished or in flight) never exceed `--max-raw-gb` (36 GB for the one-line set, 100 GB
 for the every-line set), a download waits while it would leave under `--min-free-gb` (70 GB)
 free on the disk, and each raw file is deleted as soon as its crops are written. Worker
@@ -198,7 +198,7 @@ are now dropped (7% of usable lines; with one line per page the yield barely cha
 
 ## How the NVIDIA crops differ from real console crops
 
-Contact sheets (`nvsynth/sheet.py compare`, kept local): NVIDIA crops next to real Vita and PSP
+Contact sheets (`nvsynth/nv_sheet.py compare`, kept local): NVIDIA crops next to real Vita and PSP
 line crops from realdata's screenshots, both grey at height 32, the real ones cut at their ink
 box plus eval's pad (4 px Vita, 2 px PSP) and restricted to lines two OCR readings agree on.
 

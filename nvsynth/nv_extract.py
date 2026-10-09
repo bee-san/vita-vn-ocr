@@ -22,7 +22,7 @@ train.py and the runtime resize. Taller ones are first area-downscaled to a rand
 28-40 px, a native Vita line height, so a page's big headings don't reach the model
 as aliased bilinear 2-4x downscales the console never produces.
 
-This module needs numpy and OpenCV only; nvsynth/fetch.py adds h5py and
+This module needs numpy and OpenCV only; nvsynth/nv_fetch.py adds h5py and
 huggingface_hub to read and download the shards.
 """
 import json

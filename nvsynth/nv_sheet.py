@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Contact sheets for the NVIDIA line crops, alone or next to real console crops.
 
-  sheet.py shard  SHARD.npz [--n 36] [--seed 0] --out sheet.png
+  nv_sheet.py shard  SHARD.npz [--n 36] [--seed 0] --out sheet.png
       crops as train.py sees them (grey, height 32) with their labels
-  sheet.py compare 'SHARDS*.npz' --real-lines LINES.jsonl --real-shots DIR
+  nv_sheet.py compare 'SHARDS*.npz' --real-lines LINES.jsonl --real-shots DIR
                    [--kind vita|psp] [--pad 4] [--n 30] [--agreed] --out sheet.png
       NVIDIA crops (left) next to real crops (right), both grey at height 32:
       real lines are cut from screenshots with the same ink box + pad the

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Character coverage of recognizer vocabs on the NVIDIA Japanese text, from the
-per-shard counts that fetch.py run writes (every horizontal line of every page,
+per-shard counts that nv_fetch.py run writes (every horizontal line of every page,
 after the corpus normalisation, whether or not the line was cropped).
 
   oov_report.py [--dirs DIR ...] [--vocab data/vocab.txt ...] [--top 40] [--top-kanji 30] [--json FILE]
@@ -22,7 +22,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "synth"))
-import fetch  # noqa: E402
+import nv_fetch as fetch  # noqa: E402
 from common import load_vocab  # noqa: E402
 
 UNK = "〓"

@@ -169,3 +169,12 @@ def test_fetch_helpers():
     b.give(6)
     b.take(25)                                                  # a single file over the limit still fits alone
     assert b.used == 25
+
+
+def test_oov_report_character_classes():
+    import oov_report as rep
+    assert rep.in_jis0208("亜") and rep.in_jis0208("…") and rep.in_jis0208("ぁ")
+    assert not rep.in_jis0208("¥") and not rep.in_jis0208("—") and not rep.in_jis0208("A")
+    assert rep.kind("麺") == "kanji, JIS X 0208" and rep.kind("々") == "kanji, JIS X 0208"
+    assert rep.kind("鬆") == "kanji, not in JIS X 0208"
+    assert rep.kind("^") == "ASCII" and rep.kind("이") == "Hangul" and rep.kind("\u0301") == "combining mark"

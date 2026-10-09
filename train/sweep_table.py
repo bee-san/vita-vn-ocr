@@ -184,6 +184,9 @@ def rows(runs_dir, eval_name, exporter, ref, data="synth"):
             row["footprint"] = row["blob_int8"] + row[f"rt_arena_w8f_{cost.WIDTHS[-1]}"]
         else:
             row["footprint"] = row["weights_int8_est"] + row["arena_est_max"]
+        if row["data"] == "synth+real":       # real-hand-x shares games with realdata's train split
+            for k in [k for k in row if k.startswith("real-hand-x_")]:
+                row[k] = None
         errs[row["run"]] = line_errors(res, "int8", rs)
         out.append(row)
     if ref in errs:

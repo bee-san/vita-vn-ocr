@@ -1,7 +1,31 @@
 # Architecture sweep: how small, and how big, should the recognizer be?
 
 <!-- BEGIN summary -->
-STATUS: runs in progress; summary and recommendation follow when the sweep completes.
+**Recommendation for train2 (provisional, 2026-10-09 21:45Z): width 1.5, v1's layout otherwise, int8 weights.**
+
+| | train2 (release) | PSP-lean variant |
+|---|---|---|
+| config | `--width 1.5`, bottleneck 96, height 32, 2 Ctx blocks (k 5), depth 1, the full 5,354-character vocab | v1's size: `--width 1.0`, the rest the same (optionally `--vocab data/vocab_3500.txt`) |
+| params | 1,041,915 | 761,771 (581,933 with the 3,500 vocab) |
+| int8 blob (runtime's exporter) | 1,155,968 B | 859,904 B (657,664 B) |
+| arena, `vocr_arena_bytes()` W8F / W8I | 173,472 / 182,944 B, at any line width | 118,432 / 124,832 B |
+| MMAC, median / p90 real Vita line (299 / 608 px) | 59 / 119 | 38 / 76 (31 / 63) |
+| est. Cortex-A9 444 MHz, one core, p90 Vita line | **396-496 ms** (estimate) | 254-318 ms (209-261 ms) |
+| real CER at 5,000 steps with real data, int8 (vita-test-inv + psp-test-inv) | **7.55%** | 9.22% |
+| as-is vita-test / psp-test CER at 5,000 steps, int8 | 7.33% / 17.29% | 10.76% / 20.88% |
+
+Why:
+
+- **Width is the only knob that measurably helps once real data is in the mix.** With realdata's 9,811 real lines mixed in (`--real real_train.npz --real-weight 10`), width 1.5 beats width 1.0 by **-1.71 points** of pooled real CER (95% bootstrap CI -2.41 to -1.03). That is beyond the 1.05-point seed-to-seed spread of the baseline. The as-is vita-test drops from 10.76% to 7.33% and psp-test from 20.88% to 17.29%. It improves on every style except vita-test's coloured names, where the two tie.
+- On synthetic data alone, no knob beats the v1 layout by more than seed noise: width 1.5 -0.34, bottleneck 128 -0.40, ctx 4 / k 7 -0.45, depth 2 +0.38, vocab 3,500 +0.22 points. Width 1.5 still fits synth-val much better (0.84% vs 1.21%), so the synthetic-to-real gap, not capacity, limited those runs.
+- **Shrinking hurts:** width 0.75 costs +2.86 points, height 24 +3.33, width 0.5 +5.55, all with intervals clear of zero. Vocab 2,500 costs +0.83 (CI +0.13 to +1.54) and can't emit 0.43% of vita-test's characters.
+- **Data and budget matter more than any architecture knob.** Mixing in real data cuts the as-is vita-test CER of the v1-size model from 28.67% to 10.76% at the same 5,000 steps. Training 6.5× longer (v1's 32k steps) cuts the synthetic-only pooled real CER from 15.95% to 10.48%. The 2.30% bar has to come from train2's data and budget: about 23M NVIDIA lines, synth2, and teacher-labelled real crops.
+- **int8 needs no QAT:** post-training per-channel int8 (W8F) moves pooled real CER by at most 0.16 points in any run (7.49% fp32 vs 7.55% int8 for width 1.5). Simulated W8I matches W8F to within one character error on every pooled set.
+- **Everything fits the budget easily.** Across the whole grid the int8 blob is 0.55-2.7 MB (width 3.0 is the largest) and the arena 36-340 KiB, at most about 6% of the 50 MB budget. Speed is the binding constraint. The estimates for a p90 Vita line are 593-741 ms at width 2.0, 0.84-1.05 s at width 2.5 and 1.15-1.43 s at width 3.0.
+- **Keep the full vocab** for the release model. It misses 0.04% of vita-test's characters and none of psp-test's. The 3,500 vocab misses 0.12% / 0.04% and 0.49% of the NVIDIA text, for 18% fewer MACs. To keep NVIDIA lines that contain rare symbols, `train/vocab.py build --size 0 --extra <nvsynth's OOV list>` builds the full vocab plus those symbols and `<unk>`.
+- **PSP-lean:** the PSP has no NEON, so MACs matter more there. Width 1.0 saves 36% of width 1.5's MACs for +1.71 points; the 3,500 vocab saves 47%. Height 24 isn't worth its +3.3 points. The psp agent should pick between the two on measured PSP speed.
+
+**Still running** (posted to this PR as comments when they finish; see "Still running" below): width 2.0 and width 1.5 + depth 2 + ctx 4 with real data, the 3,500 vocab with real data, QAT and bottleneck 48 with real data, and the decisive **15,000-step pair (width 1.0 vs 1.5, real data)**, with learning curves at 5k/10k/15k. If width 2.0 beats width 1.5 by more than about 1 point with its interval clear of zero, it is still within budget (W8F only: its row-collapse K = 640 exceeds W8I's 516).
 <!-- END summary -->
 
 ## Setup
@@ -10,22 +34,24 @@ Every run uses the v1 recipe: `train/train.py` on v1's synthetic shards, the sam
 augmentation, AdamW at lr 2e-3 with 1,000 warm-up steps and a cosine decay to 5%. Each
 run changes **one knob** and trains for a **matched budget of 5,000 steps of 96 lines**
 (480k lines, 1.2 epochs of the 390k-line synthetic set) with seed 1. Each `heavy.sh`
-slot (5 threads) runs two configs at 2 threads each. v1 itself trained for 32,496
+slot (5 threads) runs two or three configs at 2 + 2 (+ 1) threads, which changes only
+the wall time. v1 itself trained for 32,496
 steps (8 epochs); its row is shown for scale and isn't part of the Pareto
 comparison. `base_s2` repeats the baseline with seed 2 to show the seed-to-seed
 noise.
 
 Knobs (the defaults rebuild v1 exactly; `train.py --help`):
 
-| knob | values | what it changes |
-|---|---|---|
-| `--width` | 0.25, 0.5, 0.75, **1.0**, 1.5, 2.0, 2.5 | every channel count (32/64/128/160/192 at 1.0) |
-| `--depth` | **1**, 2, 3 | stride-1 DS blocks after each of the three downsampling blocks |
-| `--ctx`, `--ctx-k` | **2**, 4 blocks; k **5**, 7 | temporal context blocks (depthwise 1×k + pointwise, residual) on the CTC frame row |
-| `--bottleneck` | 48, 64, **96**, 128 | width of the factorised head's 1×1 bottleneck |
-| `--vocab` | 2,500 / 3,500 / **5,354** + blank | output classes; the reduced vocabs end in an `<unk>` class |
-| `--height` | 24, **32** | input line height (24 collapses 24→12→6→3→2→1 with the same layers) |
-| `--qat` | off, 0.5 | int8 weight fake quantisation over the last half of training |
+| knob | trained (v1's value in bold) | cost only | what it changes |
+|---|---|---|---|
+| `--width` | 0.5, 0.75, **1.0**, 1.5; 2.0 with real data (running) | 0.25, 2.5, 3.0 | every channel count (32/64/128/160/192 at 1.0) |
+| `--depth` | **1**, 2; 2 + ctx 4 at width 1.5 with real data (running) | 3 | stride-1 DS blocks after each of the three downsampling blocks |
+| `--ctx`, `--ctx-k` | **2** blocks k **5**; 4 blocks k 7 | | temporal context blocks (depthwise 1×k + pointwise, residual) on the CTC frame row |
+| `--bottleneck` | **96**, 128; 48 with real data (queued) | 64 | width of the factorised head's 1×1 bottleneck |
+| `--vocab` | 2,500 and 3,500 + `<unk>`, **5,354**; 3,500 with real data (running) | | output classes (plus the CTC blank) |
+| `--height` | 24, **32** | | input line height (24 collapses 24→12→6→3→2→1 with the same layers) |
+| `--qat` | with real data (queued) | | int8 weight fake quantisation over the last half of training |
+| `--real` | off; realdata's `real_train.npz` at weight 10 for `*_r` runs | | mixes real training lines into every batch |
 
 Scores (`train/sweep_eval.py`, collected by `train/sweep_table.py`):
 
@@ -69,15 +95,20 @@ Environment: the shared 16-core x86 host, Python 3.11.15, torch 2.5.1+cpu.
 ## Results
 
 <!-- BEGIN results -->
-| run | knobs | params | int8 blob KiB | W8F arena KiB | footprint KiB | MMAC (longest line) | est. A9 ms, 640-px line | synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | vita-test-inv CER | psp-test CER (as is) | psp-test-inv CER | real-hand-x CER | real CER fp32 / int8 | Δ vs base_s1 (95% CI) | Pareto |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| w050 | w0.5 | 587,611 | 654 | 62 | 716 | 84 | 174-217 | 2.77% / 2.79% | 32.72% | 17.21% | 15.80% | 56.06% | 21.83% | 40.44% | 21.34% / 21.50% | +5.55 (+4.39, +6.78) | memory / speed |
-| v3500 | 3500 chars | 581,933 | 642 | 116 | 758 | 106 | 220-275 | 1.32% / 1.33% | 29.68% | 12.95% | 11.82% | 53.31% | 18.21% | 24.35% | 16.10% / 16.15% | +0.22 (-0.48, +0.93) | memory / speed |
-| w075 | w0.75 | 661,443 | 734 | 89 | 823 | 103 | 214-267 | 1.71% / 1.71% | 31.55% | 14.88% | 13.77% | 55.30% | 20.00% | 32.46% | 18.74% / 18.81% | +2.86 (+2.02, +3.74) | speed |
-| h24 | h24 | 761,771 | 840 | 95 | 935 | 91 | 189-236 | 2.46% / 2.46% | 32.49% | 16.47% | 15.05% | 55.14% | 20.36% | 30.40% | 19.19% / 19.27% | +3.33 (+2.40, +4.27) | speed |
-| base_s1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.21% / 1.21% | 28.67% | 12.35% | 11.54% | 51.31% | 17.85% | 24.90% | 15.91% / 15.95% | ref | memory / speed |
-| base_s2 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.23% / 1.23% | 30.07% | 14.04% | 12.68% | 53.90% | 18.37% | 27.37% | 17.00% / 16.98% | +1.05 (+0.33, +1.78) |  |
-| v1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 0.29% / 0.30% | 23.87% | 8.04% | 7.37% | 46.77% | 12.27% | 15.27% | 10.45% / 10.48% | -5.46 (-6.47, -4.52) | (32,496 steps) |
+| run | knobs | params | int8 blob KiB | W8F arena KiB | footprint KiB | MMAC (longest line) | est. A9 ms, 640-px line | synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | vita-test-inv CER | psp-test CER (as is) | psp-test-inv CER | real-hand-x CER | vita+psp CER, console polarity | real CER fp32 / int8 | Δ vs base_s1 (95% CI) | Pareto |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| v2500 | 2500 chars | 484,933 | 536 | 116 | 651 | 93 | 194-243 | 1.84% / 1.84% | 30.54% | 13.64% | 12.68% | 54.30% | 18.05% | 26.69% | 15.81% | 16.76% / 16.76% | +0.83 (+0.13, +1.54) | memory / speed |
+| w050 | w0.5 | 587,611 | 654 | 62 | 716 | 84 | 174-217 | 2.77% / 2.79% | 32.72% | 17.21% | 15.80% | 56.06% | 21.83% | 40.44% | 18.92% | 21.34% / 21.50% | +5.55 (+4.39, +6.78) | speed |
+| v3500 | 3500 chars | 581,933 | 642 | 116 | 758 | 106 | 220-275 | 1.32% / 1.33% | 29.68% | 12.95% | 11.82% | 53.31% | 18.21% | 24.35% | 15.29% | 16.10% / 16.15% | +0.22 (-0.48, +0.93) | memory / speed |
+| w075 | w0.75 | 661,443 | 734 | 89 | 823 | 103 | 214-267 | 1.71% / 1.71% | 31.55% | 14.88% | 13.77% | 55.30% | 20.00% | 32.46% | 16.87% | 18.74% / 18.81% | +2.86 (+2.02, +3.74) |  |
+| h24 | h24 | 761,771 | 840 | 95 | 935 | 91 | 189-236 | 2.46% / 2.46% | 32.49% | 16.47% | 15.05% | 55.14% | 20.36% | 30.40% | 17.88% | 19.19% / 19.27% | +3.33 (+2.40, +4.27) | speed |
+| base_s1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.21% / 1.21% | 28.67% | 12.35% | 11.54% | 51.31% | 17.85% | 24.90% | 14.96% | 15.91% / 15.95% | ref | memory / speed |
+| base_s2 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.23% / 1.23% | 30.07% | 14.04% | 12.68% | 53.90% | 18.37% | 27.37% | 15.61% | 17.00% / 16.98% | +1.05 (+0.33, +1.78) |  |
+| v1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 0.29% / 0.30% | 23.87% | 8.04% | 7.37% | 46.77% | 12.27% | 15.27% | 10.03% | 10.45% / 10.48% | -5.46 (-6.47, -4.52) | (32,496 steps) |
+| d2 | d2 | 812,427 | 902 | 153 | 1,055 | 154 | 320-401 | 1.26% / 1.25% | 29.52% | 12.75% | 11.78% | 51.23% | 17.41% | 28.61% | 14.88% | 16.29% / 16.32% | +0.38 (-0.33, +1.09) |  |
+| c4k7 | ctx4 k7 | 840,491 | 930 | 134 | 1,064 | 138 | 288-360 | 1.17% / 1.17% | 28.43% | 12.35% | 11.31% | 52.51% | 17.49% | 23.25% | 14.74% | 15.46% / 15.48% | -0.45 (-1.15, +0.25) | memory / speed |
+| b128 | b128 | 939,275 | 1,013 | 118 | 1,131 | 151 | 315-393 | 1.17% / 1.17% | 28.32% | 12.20% | 11.12% | 53.62% | 17.77% | 23.38% | 14.84% | 15.55% / 15.53% | -0.40 (-1.12, +0.34) |  |
+| w150 | w1.5 | 1,041,915 | 1,129 | 169 | 1,298 | 200 | 417-522 | 0.84% / 0.84% | 28.63% | 12.55% | 11.70% | 52.75% | 16.45% | 26.00% | 14.33% | 15.55% / 15.55% | -0.34 (-1.08, +0.38) |  |
 <!-- END results -->
 
 Per-style int8 CER as is (eval's tags). Inverting dark-on-light lines changes only the
@@ -86,6 +117,8 @@ dark-on-light column and the rows that share lines with it.
 <!-- BEGIN styles -->
 | run | set | bright-on-dark | dark-on-light | outlined | coloured | name | furigana | mincho | small |
 |---|---|---|---|---|---|---|---|---|---|
+| v2500 | vita-test | 13.64% | 92.70% | 35.79% | 56.41% | 32.56% | 21.88% | 4.14% | – |
+| v2500 | psp-test | 24.04% | 94.70% | 29.73% | 70.09% | 75.60% | 65.53% | 49.59% | 58.79% |
 | w050 | vita-test | 17.21% | 89.78% | 39.74% | 56.92% | 37.79% | 37.50% | 5.77% | – |
 | w050 | psp-test | 28.50% | 92.84% | 34.59% | 72.90% | 78.47% | 79.13% | 49.59% | 58.89% |
 | v3500 | vita-test | 12.95% | 91.24% | 34.88% | 56.41% | 30.81% | 18.75% | 3.25% | – |
@@ -100,7 +133,55 @@ dark-on-light column and the rows that share lines with it.
 | base_s2 | psp-test | 24.39% | 93.30% | 31.08% | 71.03% | 72.73% | 67.96% | 48.88% | 58.17% |
 | v1 | vita-test | 8.04% | 82.12% | 27.00% | 46.15% | 21.51% | 7.81% | 1.33% | – |
 | v1 | psp-test | 16.79% | 86.79% | 20.00% | 64.95% | 63.64% | 45.15% | 44.71% | 56.42% |
+| d2 | vita-test | 12.75% | 91.24% | 35.39% | 56.41% | 29.65% | 14.06% | 2.37% | – |
+| d2 | psp-test | 22.93% | 89.02% | 28.78% | 71.50% | 72.73% | 66.02% | 45.12% | 57.14% |
+| c4k7 | vita-test | 12.35% | 87.59% | 33.57% | 54.36% | 33.14% | 21.88% | 3.85% | – |
+| c4k7 | psp-test | 22.44% | 92.65% | 27.43% | 69.63% | 72.73% | 65.05% | 48.07% | 58.48% |
+| b128 | vita-test | 12.20% | 87.59% | 33.37% | 53.33% | 29.07% | 20.31% | 2.96% | – |
+| b128 | psp-test | 23.90% | 93.30% | 29.87% | 69.16% | 73.21% | 67.96% | 48.48% | 58.07% |
+| w150 | vita-test | 12.55% | 87.77% | 34.28% | 56.92% | 29.07% | 14.06% | 2.81% | – |
+| w150 | psp-test | 22.58% | 93.02% | 28.11% | 68.69% | 71.29% | 60.68% | 48.88% | 57.97% |
 <!-- END styles -->
+
+### With real data mixed in
+
+`--real real_train.npz --real-weight 10` adds realdata's 9,811 real Vita and PSP training
+lines (dark text already inverted by the console's rule), at about 20% of each batch.
+These runs are scored on vita-test-inv and psp-test-inv only, because real-hand-x shares
+13 of its 17 games with realdata's training split (its column is blank for them). vita-test and psp-test share no game
+and no capture session with realdata's training or validation split; I checked both
+manifests against `real_train.npz` and `real_val.npz`.
+
+<!-- BEGIN results-real -->
+| run | knobs | params | int8 blob KiB | W8F arena KiB | footprint KiB | MMAC (longest line) | est. A9 ms, 640-px line | synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | vita-test-inv CER | psp-test CER (as is) | psp-test-inv CER | real-hand-x CER | vita+psp CER, console polarity | real CER fp32 / int8 | Δ vs base_r (95% CI) | Pareto |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| base_r | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.86% / 1.87% | 10.76% | 7.54% | 6.63% | 20.88% | 11.87% | – | 9.24% | 9.22% / 9.22% | ref | memory / speed |
+| v1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 0.29% / 0.30% | 23.87% | 8.04% | 7.37% | 46.77% | 12.27% | 15.27% | 10.03% | 9.74% / 9.80% | +0.49 (-1.04, +2.14) | (32,496 steps) |
+| w150_r | w1.5 | 1,041,915 | 1,129 | 169 | 1,298 | 200 | 417-522 | 1.31% / 1.31% | 7.33% | 4.96% | 4.68% | 17.29% | 10.48% | – | 7.63% | 7.49% / 7.55% | -1.71 (-2.41, -1.03) | memory / speed |
+<!-- END results-real -->
+
+<!-- BEGIN styles-real -->
+| run | set | bright-on-dark | dark-on-light | outlined | coloured | name | furigana | mincho | small |
+|---|---|---|---|---|---|---|---|---|---|
+| base_r | vita-test | 7.54% | 22.63% | 10.01% | 20.00% | 22.67% | 14.06% | 4.44% | – |
+| base_r | psp-test | 15.05% | 28.65% | 12.84% | 35.98% | 54.07% | 57.28% | 17.89% | 23.12% |
+| v1 | vita-test | 8.04% | 82.12% | 27.00% | 46.15% | 21.51% | 7.81% | 1.33% | – |
+| v1 | psp-test | 16.79% | 86.79% | 20.00% | 64.95% | 63.64% | 45.15% | 44.71% | 56.42% |
+| w150_r | vita-test | 4.96% | 16.06% | 7.08% | 15.38% | 16.86% | 7.81% | 2.22% | – |
+| w150_r | psp-test | 12.33% | 23.91% | 10.95% | 26.64% | 46.41% | 50.00% | 13.52% | 19.32% |
+<!-- END styles-real -->
+
+<!-- BEGIN running -->
+### Still running (2026-10-09 21:45Z)
+
+These are in `heavy.sh` slots or queued behind them. An unattended job posts each group's tables to this PR as a comment when it finishes, and copies the checkpoints to `$HERD/shared/artifacts/arch/runs/`.
+
+| run | knobs | budget | status at 21:45Z |
+|---|---|---|---|
+| `base_r15`, `w150_r15` | width 1.0 vs 1.5, real data mixed in, checkpoints kept at 5k/10k/15k | 15,000 steps | training (step ~3k of 15k), about 3-4 h left |
+| `w200_r`, `w150d2c4_r`, `v3500_r` | width 2.0; width 1.5 + depth 2 + ctx 4; the 3,500 vocab; all with real data | 5,000 steps | training, about 3-4 h |
+| `qat_r`, `b48_r` | QAT from half-way; bottleneck 48; with real data | 5,000 steps | queued after those |
+<!-- END running -->
 
 ## What each knob costs
 
@@ -181,13 +262,18 @@ int8 convs, the runtime's W8I mode, simulated.
 <!-- BEGIN quant -->
 | run | QAT | real CER fp32 | real CER int8 W8F | real CER W8I (sim.) | synth-val CER fp32 | synth-val CER int8 |
 |---|---|---|---|---|---|---|
+| b128 |  | 15.55% | 15.53% | 15.53% | 1.17% | 1.17% |
 | base_s1 |  | 15.91% | 15.95% | 15.95% | 1.21% | 1.21% |
 | base_s2 |  | 17.00% | 16.98% | 16.98% | 1.23% | 1.23% |
+| c4k7 |  | 15.46% | 15.48% | 15.48% | 1.17% | 1.17% |
+| d2 |  | 16.29% | 16.32% | 16.32% | 1.26% | 1.25% |
 | h24 |  | 19.19% | 19.27% | 19.27% | 2.46% | 2.46% |
 | v1 |  | 10.45% | 10.48% | 10.48% | 0.29% | 0.30% |
+| v2500 |  | 16.76% | 16.76% | 16.76% | 1.84% | 1.84% |
 | v3500 |  | 16.10% | 16.15% | 16.15% | 1.32% | 1.33% |
 | w050 |  | 21.34% | 21.50% | 21.50% | 2.77% | 2.79% |
 | w075 |  | 18.74% | 18.81% | 18.81% | 1.71% | 1.71% |
+| w150 |  | 15.55% | 15.55% | 15.57% | 0.84% | 0.84% |
 <!-- END quant -->
 
 ## Runtime compatibility
@@ -216,7 +302,9 @@ pass `depth`/`ctx`/`ctx_k`. eval's `TinyTorch` backend passes them (this PR).
   can change with budget and data, usually in favour of larger models, so the large end
   of this sweep is a lower bound on what capacity buys.
 - One seed per config, plus one repeat of the baseline, which differed by 1.05 points.
-  Single-seed differences under about 1–2 points are within training noise.
+  Single-seed differences under about 1–2 points are within training noise. The
+  width 1.5 vs 1.0 gain with real data (-1.71 points) is one seed pair; the 15,000-step
+  pair that is still running repeats the comparison at three times the budget.
 - vita-test-inv and psp-test-inv use the style tags as a polarity oracle. The deployed
   pipeline needs the line finder or the training data to handle dark text. Two psp-test
   lines look mis-tagged (reported on PR #5); they count against every model equally.

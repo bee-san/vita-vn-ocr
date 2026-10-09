@@ -4,11 +4,11 @@
 #
 #   vita/scripts/fetch_vita3k.sh [DEST]     default DEST: vita/tools (gitignored)
 #
-# Vita3K only publishes a rolling "continuous" release, so the pin is a build: 4154
-# (v0.2.1, commit b75d5e6292d5caa6a8411bacc9db1eca1531beab, 2026-10-09), checked by the
-# AppImage's sha256. Once upstream moves on, the URL serves a newer build and the check
-# fails: point VITA3K_APPIMAGE at a kept copy of the pinned file instead (the vita agent left
-# one in $HERD/shared/artifacts/vita/dl/), or update the pin after testing a newer build.
+# The pin is Vita3K build 4154 (v0.2.1, commit b75d5e6292d5caa6a8411bacc9db1eca1531beab,
+# 2026-10-09), checked by the AppImage's sha256. Vita3K/Vita3K-builds keeps a release per
+# build, so the pinned file stays downloadable; the rolling "continuous" release of
+# Vita3K/Vita3K serves the same file only until upstream moves on, and is tried second.
+# VITA3K_APPIMAGE=<file> uses a kept copy instead (one is in $HERD/shared/artifacts/vita/dl/).
 #
 # The binary needs glibc >= 2.43 and libwayland-client >= 1.24, newer than many hosts
 # (Amazon Linux 2023 has 2.34), so Debian's libc6 2.43-7 and libwayland-client0 1.26.0-1 are
@@ -22,7 +22,8 @@ mkdir -p "$DEST/dl"
 DEST=$(cd "$DEST" && pwd)
 BUILD=4154
 APPIMAGE_SHA=b42ba0296458831018837e7fcc1a12d216d7a1190fbc79be3c3f97baf884e57a
-APPIMAGE_URL=https://github.com/Vita3K/Vita3K/releases/download/continuous/Vita3K-x86_64.AppImage
+APPIMAGE_URL=https://github.com/Vita3K/Vita3K-builds/releases/download/$BUILD/Vita3K-x86_64.AppImage
+APPIMAGE_URL2=https://github.com/Vita3K/Vita3K/releases/download/continuous/Vita3K-x86_64.AppImage
 LIBC=libc6_2.43-7_amd64.deb
 LIBC_SHA=5c71715c51103beb4fbba9fe9f8dff604af6610dfa71c70bff342f54a7860803
 LIBC_SHA1=d3b47ff25250d1e0065ca0b39417fc55b4e8e341
@@ -52,8 +53,8 @@ if [ ! -x "$V/app/usr/bin/Vita3K" ] || [ ! -f "$V/compat/libc.so.6" ]; then
   if [ -n "${VITA3K_APPIMAGE:-}" ]; then
     cp "$VITA3K_APPIMAGE" "$img"
   fi
-  if ! fetch "$img" "$APPIMAGE_SHA" "$APPIMAGE_URL"; then
-    echo "Vita3K's continuous release is no longer build $BUILD; set VITA3K_APPIMAGE to a copy of it" >&2
+  if ! fetch "$img" "$APPIMAGE_SHA" "$APPIMAGE_URL" "$APPIMAGE_URL2"; then
+    echo "no download gave Vita3K build $BUILD; set VITA3K_APPIMAGE to a copy of it" >&2
     exit 1
   fi
   fetch "$DEST/dl/$LIBC" "$LIBC_SHA" "https://deb.debian.org/debian/pool/main/g/glibc/$LIBC" \

@@ -102,7 +102,7 @@ vita/scripts/fetch_vita3k.sh                                   # vita/tools/vita
 vita/scripts/run_vita3k.sh vocr-bundle build/vita/vocr_test.vpk out models=w8i repeat=1
 ```
 
-- **Pin.** Vita3K only publishes a rolling "continuous" release. The pin is build 4154 (v0.2.1, commit b75d5e62, 2026-10-09), by the AppImage's sha256.
+- **Pin.** Build 4154 (v0.2.1, commit b75d5e62, 2026-10-09), by the AppImage's sha256, from that build's release in Vita3K/Vita3K-builds (the rolling "continuous" release of Vita3K/Vita3K is the fallback).
 - **Running it here.** The binary needs glibc 2.43, so the script unpacks Debian's libc6 2.43-7 and libwayland-client0 1.26.0-1 beside it and starts Vita3K through that loader. It runs in a throwaway sandbox (config, `ux0:` and logs under `$TMPDIR`, never `$HOME`), with the SDL frontend and OpenGL on Mesa llvmpipe under Xvfb. No PS Vita firmware is needed: the app uses only HLE'd system calls.
 - **Results.** Vita3K runs the Vita's own ARM machine code (`eboot.bin`) through a JIT. Every run reproduced the host exactly:
 
@@ -204,4 +204,4 @@ What the numbers say:
 - No run on a PCH-1000. Console speed above is an estimate, and emulator times are not console times.
 - ScePerf's counters are untested on retail firmware. The app falls back to timing only.
 - The PSP itself (Allegrex, PSPSDK, PPSSPP) is the `psp` agent's job; here psp-test only runs on the Vita.
-- Vita3K's build 4154 will disappear from its rolling release. `fetch_vita3k.sh` takes `VITA3K_APPIMAGE=<kept copy>`.
+- Vita3K's build 4154 will disappear from its rolling release; `fetch_vita3k.sh` fetches it from Vita3K/Vita3K-builds, or takes `VITA3K_APPIMAGE=<kept copy>`.

@@ -11,5 +11,6 @@ pillow
 opencv-python-headless
 fonttools
 pyarrow
+h5py==3.16.0
 tqdm
 requests

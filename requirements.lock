@@ -28,6 +28,8 @@ fsspec==2026.9.0
     #   torch
 fugashi==1.5.2
     # via manga-ocr
+h5py==3.16.0
+    # via -r requirements.in
 hf-xet==1.7.0
     # via huggingface-hub
 huggingface-hub==0.36.2
@@ -53,6 +55,7 @@ networkx==3.6.1
 numpy==2.4.6
     # via
     #   -r requirements.in
+    #   h5py
     #   manga-ocr
     #   onnxruntime
     #   opencv-python-headless

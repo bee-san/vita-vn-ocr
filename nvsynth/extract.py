@@ -296,7 +296,7 @@ def process_page(jpeg, ann, dims, sample_id, tag, per_page, seed, vocab, stats, 
 
 def new_stats():
     return Counter({k: 0 for k in ("pages", "pages_kept", "lines", "usable", "kept", "h_lines", "h_chars",
-                                   "h_oov_lines", "h_oov_chars", "bad_dims", *REASONS, *CROP_REASONS)})
+                                   "h_oov_lines", "h_oov_chars", "bad_dims", "errors", *REASONS, *CROP_REASONS)})
 
 
 def save_shard(path, crops, labels, metas):

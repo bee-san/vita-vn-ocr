@@ -123,6 +123,13 @@ class Budget:
         self.cond = threading.Condition()
         self.free = free or (lambda: shutil.disk_usage(self.path).free)
         self.waited = 0.0
+        self.aborted = False
+
+    def abort(self):
+        """Wake every waiting download and make it fail (the run is stopping)."""
+        with self.cond:
+            self.aborted = True
+            self.cond.notify_all()
 
     def _ok(self, n):
         if self.used and self.used + n > self.limit:
@@ -134,6 +141,8 @@ class Budget:
         with self.cond:
             warned = False
             while not self._ok(n):
+                if self.aborted:
+                    raise RuntimeError("download budget aborted")
                 if not warned and time.time() - t0 > 60:
                     log(f"waiting for disk: {self.free() / 1e9:.0f} GB free, raw held {self.used / 1e9:.0f} GB")
                     warned = True
@@ -160,6 +169,8 @@ def download(path, size, sha, raw, budget):
     """Fetch one shard into raw/ (unless already complete) and verify its sha256."""
     from huggingface_hub import hf_hub_download
     budget.take(size)
+    if budget.aborted:
+        raise RuntimeError("download budget aborted")
     local = raw / path
     t0 = time.time()
     if not (local.exists() and local.stat().st_size == size):
@@ -193,17 +204,29 @@ def _init_worker():
 
 
 def _pages(job):
-    """Worker: crop pages [a, b) of one shard. Returns (items, stats, oov, chars)."""
+    """Worker: crop pages [a, b) of one shard. Returns (items, stats, oov, chars, errors). A page
+    that raises is counted in stats["errors"] and skipped; the first messages are returned."""
+    import traceback
+
     import h5py
     path, tag, a, b, per_page, seed = job
-    stats, oov, chars, items = ex.new_stats(), Counter(), Counter(), []
+    stats, oov, chars, items, errors = ex.new_stats(), Counter(), Counter(), [], []
     with h5py.File(path, "r") as f:
         anns, dims, sids = f["annotations"][a:b], f["dimensions"][a:b], f["sample_ids"][a:b]
         images = f["images"]
         for k in range(b - a):
-            items += ex.process_page(images[a + k].tobytes(), anns[k], dims[k], sids[k], tag, per_page, seed,
-                                     _VOCAB, stats, oov, chars)
-    return items, stats, oov, chars
+            try:
+                items += ex.process_page(images[a + k].tobytes(), anns[k], dims[k], sids[k], tag, per_page, seed,
+                                         _VOCAB, stats, oov, chars)
+            except Exception:  # a malformed page must not stop the file
+                stats["errors"] += 1
+                if len(errors) < 3:
+                    errors.append(f"page {a + k}: {traceback.format_exc(limit=3)}")
+    return items, stats, oov, chars, errors
+
+
+class SourceUnreadable(Exception):
+    """The HDF5 source file can't be opened or read (its structure is damaged)."""
 
 
 def extract_file(workers, local, tag, per_page, seed, timeout=1800, tries=3):
@@ -211,8 +234,14 @@ def extract_file(workers, local, tag, per_page, seed, timeout=1800, tries=3):
     OOM killer, a stray signal) or a file that takes longer than timeout seconds restarts the
     workers and the file, up to tries times."""
     import h5py
-    with h5py.File(local, "r") as f:
-        n = f["images"].shape[0]
+    try:
+        with h5py.File(local, "r") as f:
+            n = f["images"].shape[0]
+            for k in ("annotations", "dimensions", "sample_ids"):
+                if f[k].shape[0] != n:
+                    raise SourceUnreadable(f"{k} has {f[k].shape[0]} rows, images {n}")
+    except (OSError, KeyError, RuntimeError, ValueError) as e:
+        raise SourceUnreadable(f"{type(e).__name__}: {e}") from e
     jobs = [(str(local), tag, a, min(n, a + PAGES_PER_TASK), per_page, seed) for a in range(0, n, PAGES_PER_TASK)]
     for attempt in range(1, tries + 1):
         try:
@@ -224,10 +253,14 @@ def extract_file(workers, local, tag, per_page, seed, timeout=1800, tries=3):
     else:
         raise RuntimeError(f"{tag}: workers failed {tries} times")
     stats, oov, chars, crops, labels, metas = ex.new_stats(), Counter(), Counter(), [], [], []
-    for items, st, ov, ch in results:
+    shown = 0
+    for items, st, ov, ch, errs in results:
         stats.update(st)
         oov.update(ov)
         chars.update(ch)
+        for msg in errs[:max(0, 3 - shown)]:
+            log(f"{tag}: skipped {msg}")
+            shown += 1
         for g, lab, meta in items:
             crops.append(g)
             labels.append(lab)
@@ -311,36 +344,59 @@ def cmd_run(args):
     budget = Budget(int(args.max_raw_gb * 1e9), int(args.min_free_gb * 1e9), path=str(out))
     t_all, total = time.time(), 0
     workers = Workers(args.procs)
+    skipped = []
     with ThreadPoolExecutor(args.downloads) as dl, ThreadPoolExecutor(args.procs) as writers:
         futures = [(path, tag, dl.submit(download, path, *files[path], raw, budget)) for path, tag in todo]
-        for path, tag, fut in futures:
-            local, dl_s = fut.result()
-            size, sha = files[path]
-            t0 = time.time()
-            crops, labels, metas, stats, oov, chars = extract_file(workers, local, tag, args.per_page, args.seed)
-            t_cut = time.time() - t0
-            n_buckets = 1 if args.per_page else max(1, round(len(labels) / args.lines_per_shard))
-            shards = write_shards(out, tag, crops, labels, metas, n_buckets, writers)
-            del crops, metas
-            rec = {"source": path, "source_bytes": size, "source_sha256": sha, "lines": len(labels),
-                   "per_page": args.per_page, "seed": args.seed, "revision": REVISION, "git": git_sha(),
-                   "download_s": round(dl_s, 1), "extract_s": round(t_cut, 1),
-                   "write_s": round(time.time() - t0 - t_cut, 1), "shards": shards,
-                   "stats": dict(stats), "oov": dict(oov.most_common()), "chars": dict(chars.most_common())}
-            if n_buckets == 1:      # one-line-per-page layout: the shard's fields at the top level, as before
-                rec.update(shards[0])
-            tmp = record_path(out, tag).with_suffix(".json.tmp")
-            tmp.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
-            tmp.rename(record_path(out, tag))
-            local.unlink()
-            budget.give(size)
-            total += len(labels)
-            log(f"{tag}: {len(labels)} lines from {stats['pages']} pages in {t_cut:.0f}s cut + "
-                f"{rec['write_s']:.0f}s write, {n_buckets} shard(s), "
-                f"{sum(s['shard_bytes'] for s in shards) / 1e6:.0f} MB; {total} lines so far, "
-                f"{time.time() - t_all:.0f}s, {shutil.disk_usage(str(out)).free / 1e9:.0f} GB free")
+        try:
+            for path, tag, fut in futures:
+                local, dl_s = fut.result()
+                size, sha = files[path]
+                try:
+                    n = cut_source(args, out, path, tag, local, size, sha, dl_s, workers, writers)
+                except SourceUnreadable as e:
+                    # The published file's bytes match the Hub's sha256 but its HDF5 structure is
+                    # damaged: record it, so resumes skip it and the manifest lists it, and go on.
+                    log(f"{tag}: SKIPPED, unreadable: {e}")
+                    skipped.append(tag)
+                    rec = {"source": path, "source_bytes": size, "source_sha256": sha, "error": str(e),
+                           "revision": REVISION, "git": git_sha()}
+                    record_path(out, tag).write_text(json.dumps(rec, ensure_ascii=False, indent=1))
+                    n = 0
+                local.unlink()
+                budget.give(size)
+                total += n
+                log(f"{tag} done; {total} lines so far, {time.time() - t_all:.0f}s, "
+                    f"{shutil.disk_usage(str(out)).free / 1e9:.0f} GB free")
+        except BaseException:
+            budget.abort()                 # waiting downloads fail fast instead of blocking the exit
+            for _, _, fut in futures:
+                fut.cancel()
+            raise
     workers.close()
-    log(f"RUN_DONE {args.split}: {total} lines")
+    log(f"RUN_DONE {args.split}: {total} lines" + (f", skipped unreadable {skipped}" if skipped else ""))
+
+
+def cut_source(args, out, path, tag, local, size, sha, dl_s, workers, writers):
+    """Cuts one downloaded source file and writes its shards and record. Returns its line count."""
+    t0 = time.time()
+    crops, labels, metas, stats, oov, chars = extract_file(workers, local, tag, args.per_page, args.seed)
+    t_cut = time.time() - t0
+    n_buckets = 1 if args.per_page else max(1, round(len(labels) / args.lines_per_shard))
+    shards = write_shards(out, tag, crops, labels, metas, n_buckets, writers)
+    rec = {"source": path, "source_bytes": size, "source_sha256": sha, "lines": len(labels),
+           "per_page": args.per_page, "seed": args.seed, "revision": REVISION, "git": git_sha(),
+           "download_s": round(dl_s, 1), "extract_s": round(t_cut, 1),
+           "write_s": round(time.time() - t0 - t_cut, 1), "shards": shards,
+           "stats": dict(stats), "oov": dict(oov.most_common()), "chars": dict(chars.most_common())}
+    if n_buckets == 1:      # one-line-per-page layout: the shard's fields at the top level, as before
+        rec.update(shards[0])
+    tmp = record_path(out, tag).with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
+    tmp.rename(record_path(out, tag))
+    log(f"{tag}: {len(labels)} lines from {stats['pages']} pages in {t_cut:.0f}s cut + {rec['write_s']:.0f}s write, "
+        f"{n_buckets} shard(s), {sum(s['shard_bytes'] for s in shards) / 1e6:.0f} MB"
+        + (f", {stats['errors']} page(s) skipped on errors" if stats["errors"] else ""))
+    return len(labels)
 
 
 def load_npz(path):
@@ -367,8 +423,11 @@ def cmd_manifest(args):
     for d in args.dirs:
         recs += [json.loads(p.read_text()) for p in sorted(Path(d).glob("nv_*.json"))]
     total, oov, by_split, shards_by_split = ex.new_stats(), Counter(), Counter(), Counter()
-    sources = []
+    sources, skipped = [], [{k: r.get(k) for k in ("source", "source_bytes", "source_sha256", "error")}
+                            for r in recs if "error" in r]
     for r in recs:
+        if "error" in r:
+            continue
         total.update(r["stats"])
         oov.update(r["oov"])
         split = r["source"].split("/")[1]
@@ -388,11 +447,12 @@ def cmd_manifest(args):
         "format": "train.py shards: data (uint8, flat), offsets, shapes (32 x W), labels (JSON list), meta "
                   "(JSON list: src, sample, line, crop [x, y, w, h] on the page, ink_h, clean, contrast, "
                   "grey_ratio, polarity)",
-        "per_page": sorted({r["per_page"] for r in recs}),
+        "per_page": sorted({r["per_page"] for r in recs if "error" not in r}),
         "filters": {"min_box_h": ex.MIN_BOX_H, "min_chars": ex.MIN_CHARS, "max_ascii": ex.MAX_ASCII,
                     "one_word_box": True, "pad_frac": list(ex.PAD_FRAC), "min_contrast": ex.CONTRAST,
                     "min_grey_ratio": ex.GREY_RATIO, "height": ex.H, "max_width": ex.MAX_W,
-                    "area_above": ex.AREA_ABOVE, "mid_h": list(ex.MID_H), "seed": sorted({r["seed"] for r in recs}),
+                    "area_above": ex.AREA_ABOVE, "mid_h": list(ex.MID_H),
+                    "seed": sorted({r["seed"] for r in recs if "error" not in r}),
                     "vocab": "data/vocab.txt (5,354 characters + CTC blank)",
                     "label_norm": "synth/build_corpus.py norm()"},
         "lines": dict(by_split),
@@ -404,6 +464,7 @@ def cmd_manifest(args):
                 "line_rate": st["h_oov_lines"] / max(1, st["h_lines"]),
                 "note": "over every horizontal line of every processed page, after norm()",
                 "top": [[c, f"U+{ord(c):04X}", n] for c, n in oov.most_common(300)]},
+        "skipped_sources": skipped,
         "sources": sources,
     }
     if args.val:

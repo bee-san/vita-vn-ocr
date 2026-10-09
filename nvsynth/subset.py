@@ -27,7 +27,8 @@ import fetch  # noqa: E402
 
 
 def records(split_dir):
-    return {Path(p).stem: json.loads(Path(p).read_text()) for p in sorted(glob.glob(f"{split_dir}/nv_*.json"))}
+    recs = {Path(p).stem: json.loads(Path(p).read_text()) for p in sorted(glob.glob(f"{split_dir}/nv_*.json"))}
+    return {k: r for k, r in recs.items() if "error" not in r}   # unreadable sources have no shards
 
 
 def shard_list(rec):

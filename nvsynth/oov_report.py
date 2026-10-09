@@ -64,6 +64,7 @@ def shown(c):
 
 def load(dirs):
     recs = [json.loads(p.read_text()) for d in dirs for p in sorted(Path(d).glob("nv_*.json"))]
+    recs = [r for r in recs if "error" not in r]          # unreadable sources: no counts
     chars, stats = Counter(), Counter()
     for r in recs:
         chars.update(r.get("chars", {}))

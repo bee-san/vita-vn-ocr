@@ -243,3 +243,60 @@ def test_workers_recover_from_a_killed_worker(tmp_path):
         assert w.map(_die_once, [str(tmp_path / "marker")] * 3, timeout=120) == [42, 42, 42]
     finally:
         w.close()
+
+
+def make_h5(path, pages):
+    """A tiny NVIDIA-format shard: pages = [(rgb, annotation dict or raw str)]."""
+    h5py = pytest.importorskip("h5py")
+    with h5py.File(path, "w") as f:
+        vb = h5py.vlen_dtype(np.dtype("uint8"))
+        imgs = f.create_dataset("images", (len(pages),), dtype=vb)
+        for i, (rgb, _) in enumerate(pages):
+            imgs[i] = np.frombuffer(jpeg(rgb), np.uint8)
+        f.create_dataset("annotations", data=[a if isinstance(a, str) else json.dumps(a) for _, a in pages],
+                         dtype=h5py.string_dtype())
+        f.create_dataset("dimensions", data=np.array([rgb.shape[:2] for rgb, _ in pages], np.int32))
+        f.create_dataset("sample_ids", data=np.arange(len(pages), dtype=np.int64))
+
+
+def test_run_skips_an_unreadable_source_and_a_bad_page(tmp_path, monkeypatch):
+    import argparse
+    raw, out = tmp_path / "raw", tmp_path / "out"
+    good, bad = raw / "ja/train/train_001.h5", raw / "ja/train/train_000.h5"
+    good.parent.mkdir(parents=True)
+    rgb = page(rows=((30, 20, 20, 300), (110, 20, 20, 250)))
+    ann = {"line_bboxes": [line("一行目のテキスト", 15, 23, 310, 34), line("二行目のテキスト", 15, 103, 260, 34)]}
+    make_h5(good, [(rgb, ann), (rgb, "{not json"), (rgb, ann)])
+    bad.write_bytes(b"\x89HDF\r\n\x1a\n" + b"\0" * 4096)                     # a damaged HDF5 file
+    files = {str(p.relative_to(raw)): (p.stat().st_size, "x") for p in (bad, good)}
+    monkeypatch.setattr(fetch, "hub_files", lambda split: files)
+
+    def fake_download(path, size, sha, raw_dir, budget):
+        budget.take(size)
+        budget.landed(size)
+        return raw_dir / path, 0.0
+
+    monkeypatch.setattr(fetch, "download", fake_download)
+    args = argparse.Namespace(out=str(out), raw=str(raw), split="train", files="", per_page=0, seed=1,
+                              lines_per_shard=20000, max_raw_gb=1, min_free_gb=0, downloads=2, procs=1)
+    fetch.cmd_run(args)
+    rec_bad = json.loads((out / "nv_train_000.json").read_text())
+    rec_good = json.loads((out / "nv_train_001.json").read_text())
+    assert "error" in rec_bad and not bad.exists() and not good.exists()      # raw files deleted
+    assert rec_good["lines"] == 4 and rec_good["stats"]["errors"] == 1 and rec_good["stats"]["pages"] == 2
+    man = tmp_path / "m.json"
+    fetch.cmd_manifest(argparse.Namespace(dirs=[str(out)], val="", write=str(man)))
+    m = json.loads(man.read_text())
+    assert m["lines_total"] == 4 and [s["source"] for s in m["skipped_sources"]] == ["ja/train/train_000.h5"]
+
+
+def test_budget_abort_wakes_waiting_downloads():
+    import threading
+    b = fetch.Budget(10, free=lambda: 10**12)
+    b.take(8)
+    err = []
+    t = threading.Thread(target=lambda: err.append(pytest.raises(RuntimeError, b.take, 8)))
+    t.start()
+    b.abort()
+    t.join(timeout=10)
+    assert not t.is_alive() and err

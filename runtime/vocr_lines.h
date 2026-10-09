@@ -29,8 +29,9 @@ extern "C" {
 #define VOCR_LINES_OK 0
 #define VOCR_LINES_E_ARG (-1)    /* null pointer, empty image or unknown format/finder */
 #define VOCR_LINES_E_ARENA (-2)  /* arena smaller than vocr_lines_arena_bytes(w, h) */
-#define VOCR_LINES_E_REGION (-3) /* legacy finder only: light box, line over 88 px or
-                                    more than 8 lines (the overlay's VJO_E_OCR_REGION) */
+#define VOCR_LINES_E_REGION (-3) /* legacy finder only: region over 960x544, light box,
+                                    line over 88 px or more than 8 lines (the overlay's
+                                    VJO_E_OCR_REGION) */
 
 typedef struct {
     const unsigned char *pixels; /* top-left pixel of the region */

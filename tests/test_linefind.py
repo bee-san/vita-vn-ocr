@@ -176,8 +176,10 @@ def test_c_matches_twin(driver):
 
 
 def test_c_arena_bytes(driver):
-    out = subprocess.run([str(driver), "--arena", "960", "544"], check=True, capture_output=True, text=True)
-    assert int(out.stdout) < 128 * 1024                      # the whole finder needs < 128 KiB at 960x544
+    # The figures docs/linefind.md and vocr_lines.h quote, exactly.
+    for (w, h), need in {(960, 544): 83_323, (480, 272): 25_355}.items():
+        out = subprocess.run([str(driver), "--arena", str(w), str(h)], check=True, capture_output=True, text=True)
+        assert int(out.stdout) == need, (w, h)
 
 
 def test_find_lines_needs_a_finder():

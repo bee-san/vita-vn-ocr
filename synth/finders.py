@@ -1,8 +1,8 @@
 """Polarity-agnostic line finders for cutting synthetic training crops.
 
-The overlay's own finder (common.find_lines) only sees bright pixels, so it
-rejects dark-on-light boxes. Until the linefind work ships its C finder and a
-bit-exact Python twin, render.py cuts crops with one of these:
+The console's line finder (common.find_lines(img, "grad"), the twin of
+runtime/vocr_lines.c) misses some lines of hard styles, and the overlay's legacy
+finder only sees bright pixels. render.py's default finder is an ideal one:
 
 find_lines_mask(ink)
     The overlay's projection rules (rows with >= 2 ink pixels form runs, a gap of
@@ -13,18 +13,11 @@ find_lines_mask(ink)
     bright pixels, so it behaves like an ideal finder of either polarity: the
     crop geometry matches what the overlay hands the recognizer for bright text,
     and the same geometry is used for dark, outlined and coloured text.
-
-find_lines_grad(rgb)
-    The research's unprivileged gradient-energy finder (docs/research-findings.md:
-    rows above 25% of the maximum of |dx|+|dy| form runs, gaps under 3 px merge,
-    runs under 8 px or under 0.55x the median height are dropped), with the line's
-    horizontal extent trimmed to its edge-energy columns and the same padding.
-    Used to measure how often a real image-only finder agrees with the mask crops.
 """
 import numpy as np
 
 MAX_LINES = 8
-TOO_TALL = 88      # common.find_lines rejects a line run taller than MAX_LINE_H - 8 = 88 rows
+TOO_TALL = 88      # the legacy finder rejects a line run taller than MAX_LINE_H - 8 = 88 rows
 
 
 def _runs(on, gap=3):
@@ -70,34 +63,6 @@ def find_lines_mask(ink):
     out = []
     for a, b in runs:
         cols = np.flatnonzero(ink[a:b + 1].any(axis=0))
-        if len(cols):
-            out.append(_pad(int(cols[0]), int(cols[-1]) + 1, a, b, w_img, h_img))
-    return out
-
-
-def edge_energy(rgb):
-    c = rgb.astype(np.float32)
-    g = (77 * c[..., 0] + 150 * c[..., 1] + 29 * c[..., 2]) / 256.0   # no BLAS: workers stay 1-thread
-    e = np.zeros_like(g)
-    e[:-1, :-1] = np.abs(np.diff(g, axis=1))[:-1, :] + np.abs(np.diff(g, axis=0))[:, :-1]
-    return e
-
-
-def find_lines_grad(rgb, col_frac=0.12):
-    """rgb: HxWx3 uint8. Image-only polarity-agnostic finder; same output format."""
-    h_img, w_img = rgb.shape[:2]
-    e = edge_energy(rgb)
-    prof = np.convolve(e.sum(axis=1), np.ones(3) / 3, mode="same")
-    if prof.max() <= 0:
-        return []
-    runs = [(a, b) for a, b in _runs(prof > 0.25 * prof.max()) if b - a + 1 >= 8]
-    runs = _median_filter(runs)
-    if len(runs) > MAX_LINES or any(b - a + 1 > TOO_TALL for a, b in runs):
-        return None
-    out = []
-    for a, b in runs:
-        col = np.convolve(e[a:b + 1].sum(axis=0), np.ones(5) / 5, mode="same")
-        cols = np.flatnonzero(col > col_frac * col.max()) if col.max() > 0 else []
         if len(cols):
             out.append(_pad(int(cols[0]), int(cols[-1]) + 1, a, b, w_img, h_img))
     return out

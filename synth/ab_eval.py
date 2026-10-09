@@ -77,7 +77,7 @@ def grey(path):
 
 def tighten(g, frac=0.12, pad=4):
     """Trim a line crop horizontally to the columns with edge energy above frac x the
-    maximum (the column rule of finders.find_lines_grad), keeping pad px each side."""
+    maximum (the research gradient finder's column rule), keeping pad px each side."""
     f = g.astype(np.float32)
     e = np.zeros_like(f)
     e[:-1, :-1] = np.abs(np.diff(f, axis=1))[:-1, :] + np.abs(np.diff(f, axis=0))[:, :-1]

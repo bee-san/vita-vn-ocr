@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "synth"))
 
 import finders  # noqa: E402
 import render  # noqa: E402
+from common import find_lines  # noqa: E402
 
 
 def test_mask_finder_geometry_and_furigana():
@@ -34,14 +35,14 @@ def test_mask_finder_merges_close_furigana_and_rejects_tall_runs():
     assert finders.find_lines_mask(tall) == [(1, 1, 43, 96)]
 
 
-def test_mask_finder_is_polarity_agnostic_and_grad_finder_agrees():
+def test_mask_finder_is_polarity_agnostic_and_the_console_finder_agrees():
     for text, box in ((235, 30), (20, 225)):      # light on dark, dark on light
         img = np.full((60, 200, 3), box, np.uint8)
         img[20:40, 20:180:4] = text                  # glyph-like vertical strokes
         ink = np.zeros((60, 200), bool)
         ink[20:40, 20:180:4] = True
         assert finders.find_lines_mask(ink) == [(16, 16, 165, 28)]
-        (x, y, w, h), = finders.find_lines_grad(img)
+        (x, y, w, h), = find_lines(img, "grad")
         assert abs(x - 16) <= 5 and abs(y - 16) <= 3 and abs(w - 165) <= 8 and abs(h - 28) <= 4
 
 
@@ -76,8 +77,8 @@ def test_rendered_crops_have_clean_labels(resources):
             continue
         img, layout, ink, meta = r
         assert img.dtype == np.uint8 and img.shape[:2] == ink.shape
-        for g, label, (x, y, w, h), line in render.extract(img, layout, ink, "mask", rng) or []:
+        for g, label, (x, y, w, h), line, dark in render.extract(img, layout, ink, "mask", rng) or []:
             n += 1
-            assert g.shape == (h, w) and h >= 8 and w >= 8
+            assert g.shape == (h, w) and h >= 8 and w >= 8 and dark in (0, 1)
             assert label and "　" not in label and set(label) <= resources.vocab_set
     assert n > 150

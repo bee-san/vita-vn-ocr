@@ -7,10 +7,10 @@ reserved test games and the hand-labelled real sets used for the A/B). Sources:
 
   vita-det   linefind's text-line detections on data/vndb/shots
              ($HERD/shared/artifacts/linefind/det/vita_shots_det.jsonl), horizontal
-             boxes in the lower 55% of the screen, re-cut to finder geometry by
-             finders.find_lines_grad inside the box (any text polarity)
-  psp-band   PSP 480x272 screenshots (data/vndb_psp): find_lines_grad on the lower
-             42% of the screen (dialogue area; also picks up some UI text)
+             boxes in the lower 55% of the screen, re-cut to finder geometry by the
+             console's line finder (common.find_lines(img, "grad")) inside the box
+  psp-band   PSP 480x272 screenshots (data/vndb_psp): the console's finder on the
+             lower 42% of the screen (dialogue area; also picks up some UI text)
   real-bright data/real pseudo-label crops (the overlay's bright finder; train split)
 
   calibrate.py sheets --synth 'DIR/*.npz' [--out runs/calib]
@@ -19,8 +19,8 @@ reserved test games and the hand-labelled real sets used for the A/B). Sources:
   calibrate.py stats --synth 'old=data/synth/synth_00000.npz' --synth 'new=DIR/synth_0000[0-1].npz'
       crop height, aspect, text polarity, contrast and background busyness per source (JSON)
   calibrate.py finders [--n 2000]
-      how often an image-only finder (gradient, or the overlay's bright finder)
-      agrees with the renderer's mask crops, per text scheme
+      how often the console's finder (grad) or the overlay's (legacy) yields a usable
+      crop where the renderer's mask finder does, per text scheme
 """
 import argparse
 import glob
@@ -36,8 +36,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from common import DATA, is_test_vn, to_gray  # noqa: E402
-from finders import find_lines_grad  # noqa: E402
+from common import DATA, find_lines, is_test_vn, to_gray  # noqa: E402
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 DET = HERD / "shared" / "artifacts" / "linefind" / "det" / "vita_shots_det.jsonl"
@@ -63,7 +62,7 @@ def grad_recut(rgb, box, pad=6):
     sub = rgb[y0:y1, x0:x1]
     if sub.shape[0] < 10 or sub.shape[1] < 10:
         return None
-    dets = find_lines_grad(sub)
+    dets = find_lines(sub, "grad")
     if not dets:
         return None
     x, y, w, h = max(dets, key=lambda d: d[3] * d[2])
@@ -109,7 +108,7 @@ def real_psp_band(limit, rng):
         if rgb.shape[:2] != (272, 480):
             continue
         y0 = int(272 * 0.58)
-        dets = find_lines_grad(rgb[y0:])
+        dets = find_lines(rgb[y0:], "grad")
         for x, y, w, h in dets or []:
             if 10 <= h <= 40 and w >= 3 * h:
                 out.append((to_gray(rgb[y0 + y:y0 + y + h, x:x + w]), p.name))
@@ -254,13 +253,13 @@ def finders(args):
         key = meta["scheme"]
         mask = render.extract(img, layout, ink, "mask") or []
         grad = render.extract(img, layout, ink, "grad") or []
-        bright = render.extract(img, layout, ink, "bright") or []
+        bright = render.extract(img, layout, ink, "legacy") or []
         yield_[key]["regions"] += 1
         yield_[key]["mask"] += len(mask)
         yield_[key]["grad"] += len(grad)
         yield_[key]["bright"] += len(bright)
-        gb = [b for _, _, b, _ in grad]
-        for _, _, (x, y, w, h), _ in mask:
+        gb = [b for _, _, b, _, _ in grad]
+        for _, _, (x, y, w, h), _, _ in mask:
             agree[key][1] += 1
             for gx, gy, gw, gh in gb:
                 ix = max(0, min(x + w, gx + gw) - max(x, gx))
@@ -273,10 +272,10 @@ def finders(args):
         y = yield_[key]
         res[key] = {"regions": y["regions"], "mask_lines": y["mask"],
                     "grad_lines_per_mask_line": round(y["grad"] / max(1, y["mask"]), 3),
-                    "bright_lines_per_mask_line": round(y["bright"] / max(1, y["mask"]), 3),
+                    "legacy_lines_per_mask_line": round(y["bright"] / max(1, y["mask"]), 3),
                     "mask_boxes_matched_by_grad_iou50": round(agree[key][0] / max(1, agree[key][1]), 3)}
     tot = {k: sum(r[k] if isinstance(r[k], int) else 0 for r in res.values()) for k in ("regions", "mask_lines")}
-    res["all"] = tot | {"bright_lines_per_mask_line": round(sum(yield_[k]["bright"] for k in yield_)
+    res["all"] = tot | {"legacy_lines_per_mask_line": round(sum(yield_[k]["bright"] for k in yield_)
                                                             / max(1, tot["mask_lines"]), 3),
                         "grad_lines_per_mask_line": round(sum(yield_[k]["grad"] for k in yield_)
                                                           / max(1, tot["mask_lines"]), 3),

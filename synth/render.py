@@ -27,16 +27,23 @@ calibrated on contact sheets of real training-side Vita and PSP screenshots
             without anti-aliasing sometimes (bitmap-like PSP text)
 
 Lines are cut with finders.find_lines_mask on the renderer's own text-ink mask:
-the overlay's projection rules, applied to text of any polarity. A crop is kept
-only when it matches one rendered line unambiguously; its label is that line's
-text (furigana, emphasis dots, page cursors and faint typewriter glyphs are
-distractors and never part of a label; full-width spaces are not labelled).
-`--finder bright` cuts with the overlay's bright-pixel finder instead (bright
-text only), `--finder grad` with the image-only gradient finder.
+the overlay's projection rules, applied to text of any polarity (an ideal finder).
+`--finder grad` cuts with the console's line finder instead (common.find_lines_ex,
+the bit-exact twin of runtime/vocr_lines.c) and `--finder legacy` with the
+overlay's bright-pixel finder. A crop is kept only when it matches one rendered
+line unambiguously; its label is that line's text (furigana, emphasis dots, page
+cursors and faint typewriter glyphs are distractors and never part of a label;
+full-width spaces are not labelled).
 
-  render.py preview [--n 12]
-      -> synth/preview_regions.png, synth/preview_crops.png (both <= 1280 px)
+Crops keep the rendered polarity, so recognizers learn to read dark text as well
+as light text. `--invert-dark` applies the console's polarity rule instead
+(common.line_dark: dark-text crops become 255 - g), for a recognizer trained on
+light text only. Each crop's meta records the rule's verdict ("dark").
+
+  render.py preview [--n 12] [--finder mask|grad|legacy] [--invert-dark]
+      -> synth/preview_regions*.png, synth/preview_crops.png (all <= 1280 px)
   render.py shards --out DIR --shards N --per-shard M [--workers W] [--seed S]
+                   [--finder mask|grad|legacy] [--invert-dark]
       -> DIR/synth_00000.npz ... (uint8 grey crops at native size + labels + meta)
 """
 import argparse
@@ -56,8 +63,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from common import DATA, find_lines, is_test_vn, load_vocab, to_gray  # noqa: E402
-from finders import find_lines_grad, find_lines_mask  # noqa: E402
+from common import DATA, find_lines, find_lines_ex, is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
+from finders import find_lines_mask  # noqa: E402
 
 FONT_DIRS = [DATA / "fonts", DATA / "fonts_extra"]   # the first one is never written to
 CATEGORY = {
@@ -1237,19 +1244,26 @@ def jpeg(arr, q, rng):
 
 # ----------------------------------------------------------------------------- crops
 
-def extract(img, layout, ink=None, finder="mask", rng=None):
-    """Match finder detections to rendered lines; return [(grey crop, label, box, line)]."""
+def extract(img, layout, ink=None, finder="mask", rng=None, invert=False):
+    """Match finder detections to rendered lines; return [(grey crop, label, box, line, dark)].
+    dark is common.line_dark's verdict on the crop's box (the console's polarity rule);
+    with invert, dark-text crops are returned inverted (255 - g)."""
+    flags = None
     if finder == "mask":
         dets = find_lines_mask(ink)
     elif finder == "grad":
-        dets = find_lines_grad(img)
+        r = find_lines_ex(img, "grad")
+        dets, flags = (None, None) if r is None else (r[0], r[1])
+    elif finder == "legacy":
+        dets = find_lines(img, "legacy")
     else:
-        dets = find_lines(img)
+        raise ValueError(f"unknown finder {finder!r}")
     if dets is None:
         return None
     out = []
     if not len(dets) or not layout:
         return out
+    grey = to_gray(img)
     h_img, w_img = img.shape[:2]
     rows = [(y + (4 if y > 0 else 0), y + h - (5 if y + h < h_img else 0)) for (x, y, w, h) in dets]
     ov = np.array([[min(b, L["y1"]) - max(a, L["y0"]) for L in layout] for a, b in rows], np.float32)
@@ -1269,21 +1283,26 @@ def extract(img, layout, ink=None, finder="mask", rng=None):
                 continue
             if x + w < w_img and abs(x + w - 4 - L["ix1"]) > 3:
                 continue
-        if rng is not None and rng.random() < 0.3:      # finder-to-finder geometry jitter
+        moved = False
+        if rng is not None and finder != "grad" and rng.random() < 0.3:   # finder-to-finder jitter
             j = rng.integers(-1, 4, 4)
             x0, y0 = max(0, x - int(j[0])), max(0, y - int(j[1]))
             x1, y1 = min(w_img, x + w + int(j[2])), min(h_img, y + h + int(j[3]))
             if x1 - x0 > 8 and y1 - y0 > 8:
-                x, y, w, h = x0, y0, x1 - x0, y1 - y0
-        out.append((to_gray(img[y:y + h, x:x + w]), L["text"], (x, y, w, h), L))
+                x, y, w, h, moved = x0, y0, x1 - x0, y1 - y0, True
+        dark = int(flags[d]) if flags is not None and not moved else line_dark(grey, (x, y, w, h))
+        g = grey[y:y + h, x:x + w]
+        out.append((255 - g if (invert and dark) else g.copy(), L["text"], (x, y, w, h), L, dark))
     return out
 
 
-def crop_meta(meta, L):
+def crop_meta(meta, L, dark=0, inverted=False):
     m = dict(meta)
     m["kind"] = L["kind"]
     for k in ("ruby", "cursor", "coloured"):
         m[k] = bool(L.get(k, False))
+    m["dark"] = bool(dark)
+    m["inverted"] = bool(inverted and dark)
     return m
 
 
@@ -1293,7 +1312,7 @@ def init(pool_limit=300_000):
 
 
 def run_shard(job):
-    idx, n_lines, seed, out_dir, finder = job
+    idx, n_lines, seed, out_dir, finder, invert = job
     cv2.setNumThreads(1)        # workers stay single-threaded (heavy.sh gives the job 5 threads)
     path = Path(out_dir) / f"synth_{idx:05d}.npz"
     if path.exists():
@@ -1313,12 +1332,12 @@ def run_shard(job):
         if r is None:
             continue
         img, layout, ink, meta = r
-        got = extract(img, layout, ink, finder, rng)
+        got = extract(img, layout, ink, finder, rng, invert)
         regions += 1
-        for g, label, _, L in got or []:
+        for g, label, _, L, dark in got or []:
             crops.append(g)
             labels.append(label)
-            metas.append(crop_meta(meta, L))
+            metas.append(crop_meta(meta, L, dark, invert))
     crops, labels, metas = crops[:n_lines], labels[:n_lines], metas[:n_lines]
     shapes = np.array([c.shape for c in crops], np.int32)
     offsets = np.concatenate([[0], np.cumsum(shapes[:, 0] * shapes[:, 1])]).astype(np.int64)
@@ -1330,7 +1349,7 @@ def run_shard(job):
     return idx, len(crops), regions, errors, time.time() - t0
 
 
-def preview(n, finder="mask", seed=7, out_dir=HERE):
+def preview(n, finder="mask", seed=7, out_dir=HERE, invert=False):
     """Contact sheets (both <= 1280 px wide and tall) of regions and their crops."""
     rng = np.random.default_rng(seed)
     label_font = ImageFont.truetype(str(sorted((DATA / "fonts" / "notosansjp").glob("*.ttf"))[0]), 16)
@@ -1340,15 +1359,15 @@ def preview(n, finder="mask", seed=7, out_dir=HERE):
         if r is None:
             continue
         img, layout, ink, meta = r
-        got = extract(img, layout, ink, finder)
+        got = extract(img, layout, ink, finder, None, invert)
         if not got:
             continue
         vis = Image.fromarray(img)
         d = ImageDraw.Draw(vis)
-        for _, _, (x, y, w, h), _ in got:
+        for _, _, (x, y, w, h), _, _ in got:
             d.rectangle((x, y, x + w - 1, y + h - 1), outline=(0, 255, 0))
         regions.append(vis)
-        crops += [(g, lab, crop_meta(meta, L)) for g, lab, _, L in got]
+        crops += [(g, lab, crop_meta(meta, L, dark, invert)) for g, lab, _, L, dark in got]
     sheets, cur, y = [], [], 0
     for im in regions:
         im = im if im.width <= 1280 else im.resize((1280, im.height * 1280 // im.width))
@@ -1390,17 +1409,22 @@ def main():
     ap.add_argument("--per-shard", type=int, default=10_000)
     ap.add_argument("--workers", type=int, default=int(os.environ.get("OMP_NUM_THREADS", 4)))
     ap.add_argument("--seed", type=int, default=20261009)
-    ap.add_argument("--finder", choices=["mask", "grad", "bright"], default="mask")
+    ap.add_argument("--finder", choices=["mask", "grad", "legacy"], default="mask")
+    ap.add_argument("--invert-dark", action="store_true",
+                    help="invert dark-text crops with the console's rule (common.line_dark)")
+    ap.add_argument("--keep-polarity", action="store_true",
+                    help="accepted for compatibility: crops keep their polarity unless --invert-dark")
     args = ap.parse_args()
     cv2.setNumThreads(1)
     init()
     print(f"fonts {len(R.fonts)} in {sorted(R.by_cat)}, bg vita {len(R.bg_vita)} psp {len(R.bg_psp)}, "
           f"vocab {len(R.vocab)}", flush=True)
     if args.mode == "preview":
-        preview(args.n, args.finder, args.seed)
+        preview(args.n, args.finder, args.seed, invert=args.invert_dark)
         return
     args.out.mkdir(parents=True, exist_ok=True)
-    jobs = [(i, args.per_shard, args.seed, str(args.out), args.finder) for i in range(args.shards)]
+    jobs = [(i, args.per_shard, args.seed, str(args.out), args.finder, args.invert_dark)
+            for i in range(args.shards)]
     t0, total = time.time(), 0
     with mp.get_context("fork").Pool(args.workers) as pool:
         for idx, n, regions, errors, dt in pool.imap_unordered(run_shard, jobs):

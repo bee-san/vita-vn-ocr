@@ -1,31 +1,37 @@
 # Architecture sweep: how small, and how big, should the recognizer be?
 
 <!-- BEGIN summary -->
-**Recommendation for train2 (provisional, 2026-10-09 21:45Z): width 1.5, v1's layout otherwise, int8 weights.**
+**Recommendation for train2 (reviewed and re-scored 2026-10-10, after the long runs finished): width 2.0, v1's layout otherwise, int8 weights. Width 1.5 is the lighter fallback if the console speed estimate (below) is too slow. PSP-lean: v1's width 1.0.**
 
-| | train2 (release) | PSP-lean variant |
-|---|---|---|
-| config | `--width 1.5`, bottleneck 96, height 32, 2 Ctx blocks (k 5), depth 1, the full 5,354-character vocab | v1's size: `--width 1.0`, the rest the same (optionally `--vocab data/vocab_3500.txt`) |
-| params | 1,041,915 | 761,771 (581,933 with the 3,500 vocab) |
-| int8 blob (runtime's exporter) | 1,155,968 B | 859,904 B (657,664 B) |
-| arena, `vocr_arena_bytes()` W8F / W8I | 173,472 / 182,944 B, at any line width | 118,432 / 124,832 B |
-| MMAC, median / p90 real Vita line (299 / 608 px) | 59 / 119 | 38 / 76 (31 / 63) |
-| est. Cortex-A9 444 MHz, one core, p90 Vita line | **396-496 ms** (estimate) | 254-318 ms (209-261 ms) |
-| real CER at 5,000 steps with real data, int8 (vita-test-inv + psp-test-inv) | **7.33%** | 8.99% |
-| as-is vita-test / psp-test CER at 5,000 steps, int8 (exact lines) | 7.33% / 17.09% (54.9% / 42.0%) | 10.76% / 20.80% (44.2% / 33.5%) |
+| | train2 (width 2.0) | lighter (width 1.5) | PSP-lean (width 1.0) |
+|---|---|---|---|
+| config | `--width 2.0`, bottleneck 96, height 32, 2 Ctx (k 5), depth 1, full vocab | `--width 1.5`, the rest the same | v1's size, `--width 1.0` (optionally `--vocab data/vocab_3500.txt`) |
+| params | 1,423,499 | 1,041,915 | 761,771 (581,933 with 3,500) |
+| int8 blob (runtime's exporter) | 1,558,016 B | 1,155,968 B | 859,904 B (657,664 B) |
+| arena, `vocr_arena_bytes()` W8F / W8I | 228,512 / 241,056 B | 173,472 / 182,944 B | 118,432 / 124,832 B |
+| MMAC, median / p90 real Vita line (299 / 608 px) | 89 / 178 | 59 / 119 | 38 / 76 (31 / 63) |
+| **est.** Cortex-A9 444 MHz, one core, p90 Vita line | **593-741 ms** (estimate) | 396-496 ms | 254-318 ms (209-261 ms) |
+| real CER at 5,000 steps with real data, int8 (vita-test-inv + psp-test-inv) | **5.95%** | 7.33% | 8.99% |
+| as-is vita-test / psp-test CER, int8 (exact lines) | 6.28% / 15.70% (63.6% / 44.1%) | 7.33% / 17.09% (54.9% / 42.0%) | 10.76% / 20.80% (44.2% / 33.5%) |
+
+Width 2.0 was still training when this PR was first opened; its run (`w200_r`) and the decisive 15,000-step pair have since finished and been re-scored, so the recommendation moves from width 1.5 to width 2.0 (the PR's stated condition: width 2.0 beats width 1.5 by more than a point with its interval clear of zero, and is within the speed budget).
 
 Why:
 
-- **Width is the only knob that measurably helps once real data is in the mix.** With realdata's 9,811 real lines mixed in (`--real real_train.npz --real-weight 10`), width 1.5 beats width 1.0 by **-1.69 points** of pooled real CER (95% bootstrap CI -2.35 to -1.05). That is beyond the 1.05-point seed-to-seed spread of the baseline. The as-is vita-test drops from 10.76% to 7.33% and psp-test from 20.80% to 17.09%. It improves on every style except vita-test's coloured names, where the two tie.
-- On synthetic data alone, no knob beats the v1 layout by more than seed noise: width 1.5 -0.36, bottleneck 128 -0.38, ctx 4 / k 7 -0.45, depth 2 +0.47, vocab 3,500 +0.17 points. Width 1.5 still fits synth-val much better (0.84% vs 1.21%), so the synthetic-to-real gap, not capacity, limited those runs.
-- **Shrinking hurts:** width 0.75 costs +2.84 points, height 24 +3.38, width 0.5 +5.52, all with intervals clear of zero. Vocab 2,500 costs +0.83 (CI +0.12 to +1.54) and can't emit 0.43% of vita-test's characters.
-- **Data and budget matter more than any architecture knob.** Mixing in real data cuts the as-is vita-test CER of the v1-size model from 28.67% to 10.76% at the same 5,000 steps. Training 6.5× longer (v1's 32k steps) cuts the synthetic-only pooled real CER from 15.39% to 9.88%. The 2.30% bar has to come from train2's data and budget: about 23M NVIDIA lines, synth2, and teacher-labelled real crops.
-- **int8 needs no QAT:** post-training per-channel int8 (W8F) moves pooled real CER by at most 0.16 points in any run (7.27% fp32 vs 7.33% int8 for width 1.5 with real data). Simulated W8I matches W8F to within one character error on every pooled set.
-- **Everything fits the budget easily.** Across the whole grid the int8 blob is 0.55-2.7 MB (width 3.0 is the largest) and the arena 36-340 KiB, at most about 6% of the 50 MB budget. Speed is the binding constraint. The estimates for a p90 Vita line are 593-741 ms at width 2.0, 0.84-1.05 s at width 2.5 and 1.15-1.43 s at width 3.0.
+- **Width is the only knob that measurably helps once real data is in the mix, and it keeps paying up to width 2.0.** With realdata's 9,811 real lines mixed in (`--real real_train.npz --real-weight 10`, 5,000 steps):
+  - width 1.5 beats width 1.0 by **-1.66 points** of pooled real CER (95% bootstrap CI -2.32 to -1.00);
+  - width 2.0 beats width 1.5 by a further **-1.38 points** (CI -2.01 to -0.76), and width 1.0 by -3.04 (CI -3.79 to -2.33). As-is vita-test 6.28%, psp-test 15.70%. It is better than width 1.5 on every style of both sets except vita-test furigana (3 lines) and the two coloured-name ties.
+  - Both gains are beyond the 0.98-point seed-to-seed spread of the baseline.
+- **The 15,000-step pair confirms width 1.5 > 1.0 at 3× the budget**, so the width gain is not a short-run artefact: width 1.5 is -1.50 points (CI -2.10 to -0.89), and ahead at every checkpoint (pooled vita-test-inv + psp-test-inv: 7.80% vs 10.21% at 5k, 5.64% vs 7.11% at 10k, 4.59% vs 6.09% at 15k). I did not run a 15k width 2.0; the 5k gain plus this trend is the evidence for going wider.
+- On synthetic data alone, no knob beats the v1 layout by more than seed noise: width 1.5 -0.45, bottleneck 128 -0.41, ctx 4 / k 7 -0.55, depth 2 +0.41, vocab 3,500 +0.10 points. Width 1.5 still fits synth-val much better (0.85% vs 1.28%), so the synthetic-to-real gap, not capacity, limited those runs.
+- **depth and ctx add nothing over plain width.** With real data, width 1.5 + depth 2 + ctx 4 (`w150d2c4_r`) ties width 1.5 (-0.12 points, CI -0.72 to +0.49) at more MACs, so plain width 2.0 is the better way to spend the budget.
+- **Shrinking hurts:** width 0.75 costs +2.81 points, height 24 +3.31, width 0.5 +5.52, all with intervals clear of zero. Vocab 2,500 costs +0.79 (CI +0.10 to +1.51) and can't emit 0.43% of vita-test's characters.
+- **Data and budget matter more than any architecture knob.** Mixing in real data cuts the as-is vita-test CER of the v1-size model from 28.67% to 10.76% at the same 5,000 steps. Training 6.5× longer (v1's 32k steps) cuts the synthetic-only pooled real CER from 15.46% to 9.88%. The 2.30% bar has to come from train2's data and budget: nvsynth's NVIDIA line crops (17.0M every-line train crops built so far), synth2, and teacher-labelled real crops.
+- **int8 needs no QAT:** post-training per-channel int8 (W8F) moves pooled real CER by at most 0.19 points in any run (width 0.5; 7.27% fp32 vs 7.33% int8 for width 1.5 with real data). QAT from half-way (`qat_r`) does not beat v1-size PTQ (+0.08 points vs `base_r`, CI -0.33 to +0.51). Simulated W8I matches W8F to within one character error in every run, and the C runtime gives the same CERs in f32, W8F and W8I.
+- **bottleneck 48 does not help with real data** (`b48_r`: +0.26 points vs `base_r`, CI -0.40 to +0.92), so the head bottleneck stays at 96.
+- **Everything fits the budget easily.** Across the whole grid the int8 blob is 0.55-2.7 MB (width 3.0 is the largest) and the arena 35-349 KiB, at most about 6% of the 50 MB budget. Every width runs in all three runtime modes, W8I included. Speed is the binding constraint, and all of it is an estimate (below): a p90 Vita line is about 593-741 ms at width 2.0, 396-496 ms at width 1.5, 0.84-1.05 s at width 2.5 and 1.15-1.43 s at width 3.0. The vita agent's cycle-level estimate (PR #12, qemu instruction mix plus a cache model) is lower than this GMAC/s figure for v1 (w8i about 117-285 ms for a 640-px line), so these ms numbers are likely pessimistic; a console run is still the only real measurement.
 - **Keep the full vocab** for the release model. It misses 0.04% of vita-test's characters and none of psp-test's. The 3,500 vocab misses 0.12% / 0.04% and 0.49% of the NVIDIA text, for 18% fewer MACs. To keep NVIDIA lines that contain rare symbols, `train/vocab.py build --size 0 --extra <nvsynth's OOV list>` builds the full vocab plus those symbols and `<unk>`.
-- **PSP-lean:** the PSP has no NEON, so MACs matter more there. Width 1.0 saves 36% of width 1.5's MACs for +1.69 points; the 3,500 vocab saves 47%. Height 24 isn't worth its +3.3 points. The psp agent should pick between the two on measured PSP speed.
-
-**Still running** (posted to this PR as comments when they finish; see "Still running" below): width 2.0 and width 1.5 + depth 2 + ctx 4 with real data, the 3,500 vocab with real data, QAT and bottleneck 48 with real data, and the decisive **15,000-step pair (width 1.0 vs 1.5, real data)**, with learning curves at 5k/10k/15k. If width 2.0 beats width 1.5 by more than about 1 point with its interval clear of zero, it is still within budget (W8F only: its row-collapse K = 640 exceeds W8I's 516).
+- **PSP-lean:** the PSP has no NEON, so MACs matter more there, and the psp agent (PR #13) estimates a width-2.0 line at about 2.2× v1's, with v1 already near 1 s. Width 1.0 saves 64% of width 2.0's MACs for +3.04 points; the 3,500 vocab saves another 18%. With real data the 3,500 vocab is level with the full one (`v3500_r`: +0.06 points, 95% CI -0.61 to +0.73, single seed). Height 24 isn't worth its +3.3 points. The psp agent should pick between v1's width 1.0 and the 3,500 vocab on measured PSP speed.
 <!-- END summary -->
 
 ## Setup
@@ -44,13 +50,13 @@ Knobs (the defaults rebuild v1 exactly; `train.py --help`):
 
 | knob | trained (v1's value in bold) | cost only | what it changes |
 |---|---|---|---|
-| `--width` | 0.5, 0.75, **1.0**, 1.5; 2.0 with real data (not finished at merge) | 0.25, 2.5, 3.0 | every channel count (32/64/128/160/192 at 1.0) |
-| `--depth` | **1**, 2; 2 + ctx 4 at width 1.5 with real data (not finished at merge) | 3 | stride-1 DS blocks after each of the three downsampling blocks |
+| `--width` | 0.5, 0.75, **1.0**, 1.5, 2.0; 2.0 and the 1.0-vs-1.5 pair at 15k with real data | 0.25, 2.5, 3.0 | every channel count (32/64/128/160/192 at 1.0) |
+| `--depth` | **1**, 2; 2 + ctx 4 at width 1.5 with real data | 3 | stride-1 DS blocks after each of the three downsampling blocks |
 | `--ctx`, `--ctx-k` | **2** blocks k **5**; 4 blocks k 7 | | temporal context blocks (depthwise 1×k + pointwise, residual) on the CTC frame row |
-| `--bottleneck` | **96**, 128; 48 with real data (not finished at merge) | 64 | width of the factorised head's 1×1 bottleneck |
-| `--vocab` | 2,500 and 3,500 + `<unk>`, **5,354**; 3,500 with real data (not finished at merge) | | output classes (plus the CTC blank) |
+| `--bottleneck` | **96**, 128; 48 with real data | 64 | width of the factorised head's 1×1 bottleneck |
+| `--vocab` | 2,500 and 3,500 + `<unk>`, **5,354**; 3,500 with real data | | output classes (plus the CTC blank) |
 | `--height` | 24, **32** | | input line height (24 collapses 24→12→6→3→2→1 with the same layers) |
-| `--qat` | with real data (not finished at merge) | | int8 weight fake quantisation over the last half of training |
+| `--qat` | with real data | | int8 weight fake quantisation over the last half of training |
 | `--real` | off; realdata's `real_train.npz` at weight 10 for `*_r` runs | | mixes real training lines into every batch |
 
 Scores (`train/sweep_eval.py`, collected by `train/sweep_table.py`):
@@ -106,50 +112,50 @@ Environment: the shared 16-core x86 host, Python 3.11.15, torch 2.5.1+cpu.
 <!-- BEGIN results -->
 | run | knobs | params | int8 blob KiB | W8F arena KiB | footprint KiB | MMAC (longest line) | est. A9 ms, 640-px line | synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | vita-test-inv CER | psp-test CER (as is) | psp-test-inv CER | real-hand-x CER | vita+psp CER, console polarity | real CER fp32 / int8 | Δ vs base_s1 (95% CI) | Pareto |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| v2500 | 2500 chars | 484,933 | 536 | 116 | 651 | 93 | 194-243 | 1.84% / 1.84% | 30.54% | 13.64% | 12.68% | 54.10% | 16.77% | 26.69% | 15.71% | 16.20% / 16.20% | +0.83 (+0.12, +1.54) | memory / speed |
-| w050 | w0.5 | 587,611 | 654 | 62 | 716 | 84 | 174-217 | 2.77% / 2.79% | 32.72% | 17.21% | 15.80% | 55.86% | 20.48% | 40.44% | 18.82% | 20.76% / 20.91% | +5.52 (+4.35, +6.74) | speed |
-| v3500 | 3500 chars | 581,933 | 642 | 116 | 758 | 106 | 220-275 | 1.32% / 1.33% | 29.68% | 12.95% | 11.82% | 53.11% | 16.81% | 24.35% | 15.20% | 15.50% / 15.55% | +0.17 (-0.53, +0.88) | memory / speed |
-| w075 | w0.75 | 661,443 | 734 | 89 | 823 | 103 | 214-267 | 1.71% / 1.71% | 31.55% | 14.88% | 13.77% | 55.10% | 18.68% | 32.46% | 16.75% | 18.15% / 18.24% | +2.84 (+2.00, +3.73) |  |
-| h24 | h24 | 761,771 | 840 | 95 | 935 | 91 | 189-236 | 2.46% / 2.46% | 32.49% | 16.47% | 15.05% | 54.94% | 19.20% | 30.40% | 17.80% | 18.69% / 18.77% | +3.38 (+2.46, +4.31) | speed |
-| base_s1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.21% / 1.21% | 28.67% | 12.35% | 11.54% | 51.20% | 16.57% | 24.90% | 14.90% | 15.36% / 15.39% | ref | memory / speed |
-| base_s2 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.23% / 1.23% | 30.07% | 14.04% | 12.68% | 53.71% | 17.09% | 27.37% | 15.51% | 16.45% / 16.43% | +1.05 (+0.33, +1.78) |  |
-| v1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 0.29% / 0.30% | 23.87% | 8.04% | 7.37% | 46.57% | 10.88% | 15.27% | 9.91% | 9.84% / 9.88% | -5.52 (-6.53, -4.57) | (32,496 steps) |
-| d2 | d2 | 812,427 | 902 | 153 | 1,055 | 154 | 320-401 | 1.26% / 1.25% | 29.52% | 12.75% | 11.78% | 51.04% | 16.34% | 28.61% | 14.78% | 15.82% / 15.86% | +0.47 (-0.23, +1.18) |  |
-| c4k7 | ctx4 k7 | 840,491 | 930 | 134 | 1,064 | 138 | 288-360 | 1.17% / 1.17% | 28.43% | 12.35% | 11.31% | 52.31% | 16.21% | 23.25% | 14.64% | 14.91% / 14.93% | -0.45 (-1.15, +0.24) | memory / speed |
-| b128 | b128 | 939,275 | 1,013 | 118 | 1,131 | 151 | 315-393 | 1.17% / 1.17% | 28.32% | 12.20% | 11.12% | 53.47% | 16.53% | 23.38% | 14.76% | 15.01% / 15.00% | -0.38 (-1.10, +0.34) |  |
-| w150 | w1.5 | 1,041,915 | 1,129 | 169 | 1,298 | 200 | 417-522 | 0.84% / 0.84% | 28.63% | 12.55% | 11.70% | 52.59% | 15.14% | 26.00% | 14.25% | 14.98% / 14.98% | -0.36 (-1.10, +0.36) |  |
+| v2500 | 2500 chars | 484,933 | 536 | 116 | 651 | 93 | 194-243 | 1.85% / 1.85% | 30.54% | 13.64% | 12.68% | 54.10% | 16.77% | 27.10% | 15.71% | 16.26% / 16.26% | +0.79 (+0.10, +1.51) | memory / speed |
+| w050 | w0.5 | 587,611 | 654 | 62 | 716 | 84 | 174-217 | 2.80% / 2.82% | 32.72% | 17.21% | 15.80% | 55.86% | 20.48% | 40.99% | 18.82% | 20.79% / 20.98% | +5.52 (+4.36, +6.73) | speed |
+| v3500 | 3500 chars | 581,933 | 642 | 116 | 758 | 106 | 220-275 | 1.34% / 1.34% | 29.68% | 12.95% | 11.82% | 53.11% | 16.81% | 24.48% | 15.20% | 15.51% / 15.57% | +0.10 (-0.61, +0.81) | memory / speed |
+| w075 | w0.75 | 661,443 | 734 | 89 | 823 | 103 | 214-267 | 1.73% / 1.73% | 31.55% | 14.88% | 13.77% | 55.10% | 18.68% | 32.74% | 16.75% | 18.20% / 18.27% | +2.81 (+1.97, +3.70) |  |
+| h24 | h24 | 761,771 | 840 | 95 | 935 | 91 | 189-236 | 2.49% / 2.49% | 32.49% | 16.47% | 15.05% | 54.94% | 19.20% | 30.40% | 17.80% | 18.69% / 18.77% | +3.31 (+2.37, +4.25) | speed |
+| base_s1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.28% / 1.28% | 28.67% | 12.35% | 11.54% | 51.20% | 16.57% | 25.45% | 14.90% | 15.43% / 15.46% | ref | memory / speed |
+| base_s2 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.24% / 1.24% | 30.07% | 14.04% | 12.68% | 53.71% | 17.09% | 27.51% | 15.51% | 16.46% / 16.45% | +0.98 (+0.25, +1.72) |  |
+| v1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 0.30% / 0.30% | 23.87% | 8.04% | 7.37% | 46.57% | 10.88% | 15.27% | 9.91% | 9.84% / 9.88% | -5.59 (-6.60, -4.63) | (32,496 steps) |
+| d2 | d2 | 812,427 | 902 | 153 | 1,055 | 154 | 320-401 | 1.27% / 1.26% | 29.52% | 12.75% | 11.78% | 51.04% | 16.34% | 28.75% | 14.78% | 15.86% / 15.88% | +0.41 (-0.28, +1.13) |  |
+| c4k7 | ctx4 k7 | 840,491 | 930 | 134 | 1,064 | 138 | 288-360 | 1.18% / 1.18% | 28.43% | 12.35% | 11.31% | 52.31% | 16.21% | 23.11% | 14.64% | 14.89% / 14.91% | -0.55 (-1.25, +0.14) | memory / speed |
+| b128 | b128 | 939,275 | 1,013 | 118 | 1,131 | 151 | 315-393 | 1.18% / 1.18% | 28.32% | 12.20% | 11.12% | 53.47% | 16.53% | 23.80% | 14.76% | 15.07% / 15.05% | -0.41 (-1.14, +0.31) |  |
+| w150 | w1.5 | 1,041,915 | 1,129 | 169 | 1,298 | 200 | 417-522 | 0.85% / 0.85% | 28.63% | 12.55% | 11.70% | 52.59% | 15.14% | 26.27% | 14.25% | 15.01% / 15.01% | -0.45 (-1.19, +0.29) |  |
 <!-- END results -->
 
 Per-style int8 CER as is (eval's tags). Inverting dark-on-light lines changes only the
 dark-on-light column and the rows that share lines with it.
 
 <!-- BEGIN styles -->
-| run | set | bright-on-dark | dark-on-light | outlined | coloured | name | furigana | mincho | small |
-|---|---|---|---|---|---|---|---|---|---|
-| v2500 | vita-test | 13.64% | 92.70% | 35.79% | 56.41% | 32.56% | 21.88% | 4.14% | – |
-| v2500 | psp-test | 22.50% | 94.55% | 29.73% | 70.09% | 75.60% | 65.53% | 49.09% | 58.68% |
-| w050 | vita-test | 17.21% | 89.78% | 39.74% | 56.92% | 37.79% | 37.50% | 5.77% | – |
-| w050 | psp-test | 26.83% | 93.01% | 34.59% | 72.90% | 78.47% | 79.13% | 49.09% | 58.79% |
-| v3500 | vita-test | 12.95% | 91.24% | 34.88% | 56.41% | 30.81% | 18.75% | 3.25% | – |
-| v3500 | psp-test | 21.93% | 93.01% | 29.73% | 71.50% | 72.73% | 67.96% | 47.46% | 57.76% |
-| w075 | vita-test | 14.88% | 92.88% | 38.52% | 60.51% | 35.47% | 20.31% | 3.85% | – |
-| w075 | psp-test | 24.70% | 94.01% | 32.57% | 71.50% | 76.08% | 72.82% | 49.80% | 59.20% |
-| h24 | vita-test | 16.47% | 91.42% | 38.93% | 58.97% | 37.21% | 26.56% | 5.33% | – |
-| h24 | psp-test | 25.48% | 92.64% | 32.84% | 71.96% | 76.08% | 74.27% | 49.39% | 59.51% |
-| base_s1 | vita-test | 12.35% | 88.69% | 32.56% | 54.36% | 27.33% | 17.19% | 3.40% | – |
-| base_s1 | psp-test | 22.14% | 88.37% | 29.32% | 68.22% | 71.77% | 65.05% | 45.53% | 57.35% |
-| base_s2 | vita-test | 14.04% | 89.05% | 37.41% | 57.44% | 30.23% | 21.88% | 2.51% | – |
-| base_s2 | psp-test | 22.78% | 93.28% | 31.08% | 71.03% | 72.73% | 67.96% | 48.37% | 58.07% |
-| v1 | vita-test | 8.04% | 82.12% | 27.00% | 46.15% | 21.51% | 7.81% | 1.33% | – |
-| v1 | psp-test | 14.97% | 87.01% | 20.00% | 64.95% | 63.64% | 45.15% | 44.21% | 56.32% |
-| d2 | vita-test | 12.75% | 91.24% | 35.39% | 56.41% | 29.65% | 14.06% | 2.37% | – |
-| d2 | psp-test | 21.50% | 88.83% | 28.78% | 71.50% | 72.73% | 66.02% | 44.61% | 57.04% |
-| c4k7 | vita-test | 12.35% | 87.59% | 33.57% | 54.36% | 33.14% | 21.88% | 3.85% | – |
-| c4k7 | psp-test | 20.79% | 92.64% | 27.43% | 69.63% | 72.73% | 65.05% | 47.56% | 58.38% |
-| b128 | vita-test | 12.20% | 87.59% | 33.37% | 53.33% | 29.07% | 20.31% | 2.96% | – |
-| b128 | psp-test | 22.29% | 93.37% | 29.87% | 69.16% | 73.21% | 67.96% | 48.07% | 57.97% |
-| w150 | vita-test | 12.55% | 87.77% | 34.28% | 56.92% | 29.07% | 14.06% | 2.81% | – |
-| w150 | psp-test | 20.94% | 93.10% | 28.11% | 68.69% | 71.29% | 60.68% | 48.48% | 57.97% |
+| run | set | bright-on-dark | dark-on-light | outlined | coloured | name | coloured-name | furigana | mincho | small | no-box |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| v2500 | vita-test | 13.64% | 92.70% | 35.79% | 56.41% | 32.56% | 52.38% | 21.88% | 4.14% | – | – |
+| v2500 | psp-test | 22.50% | 94.55% | 29.73% | 70.09% | 75.60% | 95.83% | 65.53% | 49.09% | 58.68% | 72.88% |
+| w050 | vita-test | 17.21% | 89.78% | 39.74% | 56.92% | 37.79% | 47.62% | 37.50% | 5.77% | – | – |
+| w050 | psp-test | 26.83% | 93.01% | 34.59% | 72.90% | 78.47% | 100.00% | 79.13% | 49.09% | 58.79% | 83.05% |
+| v3500 | vita-test | 12.95% | 91.24% | 34.88% | 56.41% | 30.81% | 47.62% | 18.75% | 3.25% | – | – |
+| v3500 | psp-test | 21.93% | 93.01% | 29.73% | 71.50% | 72.73% | 83.33% | 67.96% | 47.46% | 57.76% | 77.97% |
+| w075 | vita-test | 14.88% | 92.88% | 38.52% | 60.51% | 35.47% | 66.67% | 20.31% | 3.85% | – | – |
+| w075 | psp-test | 24.70% | 94.01% | 32.57% | 71.50% | 76.08% | 95.83% | 72.82% | 49.80% | 59.20% | 91.53% |
+| h24 | vita-test | 16.47% | 91.42% | 38.93% | 58.97% | 37.21% | 52.38% | 26.56% | 5.33% | – | – |
+| h24 | psp-test | 25.48% | 92.64% | 32.84% | 71.96% | 76.08% | 87.50% | 74.27% | 49.39% | 59.51% | 81.36% |
+| base_s1 | vita-test | 12.35% | 88.69% | 32.56% | 54.36% | 27.33% | 42.86% | 17.19% | 3.40% | – | – |
+| base_s1 | psp-test | 22.14% | 88.37% | 29.32% | 68.22% | 71.77% | 91.67% | 65.05% | 45.53% | 57.35% | 74.58% |
+| base_s2 | vita-test | 14.04% | 89.05% | 37.41% | 57.44% | 30.23% | 52.38% | 21.88% | 2.51% | – | – |
+| base_s2 | psp-test | 22.78% | 93.28% | 31.08% | 71.03% | 72.73% | 100.00% | 67.96% | 48.37% | 58.07% | 83.05% |
+| v1 | vita-test | 8.04% | 82.12% | 27.00% | 46.15% | 21.51% | 33.33% | 7.81% | 1.33% | – | – |
+| v1 | psp-test | 14.97% | 87.01% | 20.00% | 64.95% | 63.64% | 87.50% | 45.15% | 44.21% | 56.32% | 59.32% |
+| d2 | vita-test | 12.75% | 91.24% | 35.39% | 56.41% | 29.65% | 47.62% | 14.06% | 2.37% | – | – |
+| d2 | psp-test | 21.50% | 88.83% | 28.78% | 71.50% | 72.73% | 100.00% | 66.02% | 44.61% | 57.04% | 79.66% |
+| c4k7 | vita-test | 12.35% | 87.59% | 33.57% | 54.36% | 33.14% | 52.38% | 21.88% | 3.85% | – | – |
+| c4k7 | psp-test | 20.79% | 92.64% | 27.43% | 69.63% | 72.73% | 95.83% | 65.05% | 47.56% | 58.38% | 74.58% |
+| b128 | vita-test | 12.20% | 87.59% | 33.37% | 53.33% | 29.07% | 47.62% | 20.31% | 2.96% | – | – |
+| b128 | psp-test | 22.29% | 93.37% | 29.87% | 69.16% | 73.21% | 87.50% | 67.96% | 48.07% | 57.97% | 79.66% |
+| w150 | vita-test | 12.55% | 87.77% | 34.28% | 56.92% | 29.07% | 52.38% | 14.06% | 2.81% | – | – |
+| w150 | psp-test | 20.94% | 93.10% | 28.11% | 68.69% | 71.29% | 91.67% | 60.68% | 48.48% | 57.97% | 72.88% |
 <!-- END styles -->
 
 ### With real data mixed in
@@ -164,32 +170,65 @@ manifests against `real_train.npz` and `real_val.npz`.
 <!-- BEGIN results-real -->
 | run | knobs | params | int8 blob KiB | W8F arena KiB | footprint KiB | MMAC (longest line) | est. A9 ms, 640-px line | synth-val CER fp32 / int8 | vita-test CER (as is) | of which bright-on-dark | vita-test-inv CER | psp-test CER (as is) | psp-test-inv CER | real-hand-x CER | vita+psp CER, console polarity | real CER fp32 / int8 | Δ vs base_r (95% CI) | Pareto |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| base_r | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.86% / 1.87% | 10.76% | 7.54% | 6.63% | 20.80% | 11.39% | – | 9.18% | 9.01% / 8.99% | ref | memory / speed |
-| v1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 0.29% / 0.30% | 23.87% | 8.04% | 7.37% | 46.57% | 10.88% | 15.27% | 9.91% | 9.05% / 9.11% | +0.04 (-1.44, +1.59) | (32,496 steps) |
-| w150_r | w1.5 | 1,041,915 | 1,129 | 169 | 1,298 | 200 | 417-522 | 1.31% / 1.31% | 7.33% | 4.96% | 4.68% | 17.09% | 10.04% | – | 7.53% | 7.27% / 7.33% | -1.69 (-2.35, -1.05) | memory / speed |
+| b48_r | b48 | 495,515 | 579 | 112 | 691 | 94 | 196-245 | 2.10% / 2.11% | 10.22% | 7.19% | 6.47% | 21.32% | 12.07% | – | 9.50% | 9.26% / 9.24% | +0.26 (-0.40, +0.92) | memory / speed |
+| v3500_r | 3500 chars | 581,933 | 642 | 116 | 758 | 106 | 220-275 | 1.83% / 1.84% | 9.83% | 6.75% | 6.32% | 19.64% | 11.83% | – | 9.28% | 9.09% / 9.05% | +0.06 (-0.61, +0.73) | memory / speed |
+| base_r | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.88% / 1.90% | 10.76% | 7.54% | 6.63% | 20.80% | 11.39% | – | 9.18% | 9.01% / 8.99% | ref | memory / speed |
+| base_r15 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 0.88% / 0.89% | 6.36% | 4.76% | 4.33% | 14.38% | 7.89% | – | 6.17% | 6.01% / 6.09% | -2.90 (-3.60, -2.23) | (15,000 steps) |
+| qat_r | QAT | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 1.89% / 1.89% | 10.72% | 7.74% | 6.83% | 20.64% | 11.36% | – | 9.26% | 9.12% / 9.07% | +0.08 (-0.33, +0.51) |  |
+| v1 | v1 layout | 761,771 | 840 | 116 | 955 | 128 | 267-334 | 0.30% / 0.30% | 23.87% | 8.04% | 7.37% | 46.57% | 10.88% | 15.27% | 9.91% | 9.05% / 9.11% | +0.12 (-1.35, +1.65) | (32,496 steps) |
+| w150_r | w1.5 | 1,041,915 | 1,129 | 169 | 1,298 | 200 | 417-522 | 1.33% / 1.32% | 7.33% | 4.96% | 4.68% | 17.09% | 10.04% | – | 7.53% | 7.27% / 7.33% | -1.66 (-2.32, -1.00) | memory / speed |
+| w150_r15 | w1.5 | 1,041,915 | 1,129 | 169 | 1,298 | 200 | 417-522 | 0.56% / 0.56% | 4.29% | 3.08% | 2.85% | 12.27% | 6.38% | – | 4.79% | 4.65% / 4.59% | -4.39 (-5.31, -3.56) | (15,000 steps) |
+| w150d2c4_r | w1.5 d2 ctx4 | 1,323,531 | 1,436 | 244 | 1,679 | 278 | 578-723 | 1.29% / 1.28% | 7.53% | 5.31% | 5.03% | 16.65% | 9.44% | – | 7.43% | 7.27% / 7.21% | -1.77 (-2.48, -1.08) | memory / speed |
+| w200_r | w2 | 1,428,043 | 1,522 | 223 | 1,745 | 299 | 624-780 | 1.01% / 1.01% | 6.28% | 4.22% | 3.94% | 15.70% | 8.01% | – | 6.27% | 5.97% / 5.95% | -3.04 (-3.79, -2.33) | memory / speed |
 <!-- END results-real -->
 
 <!-- BEGIN styles-real -->
-| run | set | bright-on-dark | dark-on-light | outlined | coloured | name | furigana | mincho | small |
-|---|---|---|---|---|---|---|---|---|---|
-| base_r | vita-test | 7.54% | 22.63% | 10.01% | 20.00% | 22.67% | 14.06% | 4.44% | – |
-| base_r | psp-test | 14.34% | 29.06% | 12.84% | 35.98% | 54.07% | 57.28% | 17.68% | 23.12% |
-| v1 | vita-test | 8.04% | 82.12% | 27.00% | 46.15% | 21.51% | 7.81% | 1.33% | – |
-| v1 | psp-test | 14.97% | 87.01% | 20.00% | 64.95% | 63.64% | 45.15% | 44.21% | 56.32% |
-| w150_r | vita-test | 4.96% | 16.06% | 7.08% | 15.38% | 16.86% | 7.81% | 2.22% | – |
-| w150_r | psp-test | 11.85% | 23.80% | 10.95% | 26.17% | 45.93% | 50.00% | 13.11% | 19.32% |
+| run | set | bright-on-dark | dark-on-light | outlined | coloured | name | coloured-name | furigana | mincho | small | no-box |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| b48_r | vita-test | 7.19% | 21.35% | 11.22% | 22.05% | 22.09% | 19.05% | 15.62% | 3.40% | – | – |
+| b48_r | psp-test | 14.76% | 29.70% | 14.73% | 32.71% | 51.68% | 75.00% | 57.28% | 16.77% | 24.15% | 47.46% |
+| v3500_r | vita-test | 6.75% | 21.17% | 9.40% | 17.95% | 20.93% | 14.29% | 14.06% | 4.59% | – | – |
+| v3500_r | psp-test | 13.41% | 27.61% | 11.49% | 31.31% | 52.63% | 70.83% | 58.25% | 15.35% | 22.61% | 52.54% |
+| base_r | vita-test | 7.54% | 22.63% | 10.01% | 20.00% | 22.67% | 23.81% | 14.06% | 4.44% | – | – |
+| base_r | psp-test | 14.34% | 29.06% | 12.84% | 35.98% | 54.07% | 70.83% | 57.28% | 17.68% | 23.12% | 47.46% |
+| base_r15 | vita-test | 4.76% | 12.23% | 6.27% | 12.82% | 14.54% | 23.81% | 7.81% | 2.22% | – | – |
+| base_r15 | psp-test | 9.65% | 20.44% | 7.43% | 23.83% | 42.10% | 58.33% | 44.17% | 11.58% | 16.96% | 33.90% |
+| qat_r | vita-test | 7.74% | 21.71% | 10.62% | 20.51% | 22.09% | 23.81% | 10.94% | 4.44% | – | – |
+| qat_r | psp-test | 14.12% | 28.97% | 12.70% | 30.84% | 51.68% | 62.50% | 55.34% | 16.77% | 23.33% | 47.46% |
+| v1 | vita-test | 8.04% | 82.12% | 27.00% | 46.15% | 21.51% | 33.33% | 7.81% | 1.33% | – | – |
+| v1 | psp-test | 14.97% | 87.01% | 20.00% | 64.95% | 63.64% | 87.50% | 45.15% | 44.21% | 56.32% | 59.32% |
+| w150_r | vita-test | 4.96% | 16.06% | 7.08% | 15.38% | 16.86% | 23.81% | 7.81% | 2.22% | – | – |
+| w150_r | psp-test | 11.85% | 23.80% | 10.95% | 26.17% | 45.93% | 58.33% | 50.00% | 13.11% | 19.32% | 42.37% |
+| w150_r15 | vita-test | 3.08% | 8.76% | 3.84% | 9.74% | 9.30% | 14.29% | 6.25% | 1.18% | – | – |
+| w150_r15 | psp-test | 7.45% | 18.44% | 6.22% | 17.29% | 39.23% | 54.17% | 36.41% | 10.06% | 14.08% | 23.73% |
+| w150d2c4_r | vita-test | 5.31% | 15.69% | 5.87% | 12.31% | 19.77% | 14.29% | 12.50% | 2.96% | – | – |
+| w150d2c4_r | psp-test | 11.07% | 23.80% | 9.32% | 28.04% | 44.50% | 70.83% | 47.09% | 14.02% | 19.22% | 37.29% |
+| w200_r | vita-test | 4.22% | 13.87% | 5.26% | 12.31% | 16.86% | 19.05% | 9.38% | 1.63% | – | – |
+| w200_r | psp-test | 9.51% | 23.61% | 8.11% | 22.43% | 42.10% | 58.33% | 46.60% | 12.91% | 18.40% | 40.68% |
 <!-- END styles-real -->
 
 <!-- BEGIN running -->
-### Still running (2026-10-09 21:45Z)
+### The long runs (finished after the PR was opened)
 
-These are in `heavy.sh` slots or queued behind them. An unattended job posts each group's tables to this PR as a comment when it finishes, and copies the checkpoints to `$HERD/shared/artifacts/arch/runs/`.
+These were still training when the PR was first opened. They have since finished and been
+re-scored with the reviewed code (one padded width per batch); their numbers are folded into
+the recommendation and the real-data results above. The arch agent's unattended job also
+posted its own tables to PR #10 as comments, scored with the pre-review code (Δ via
+`score_norm`, real-hand-x in mixed-width batches): those differ from the numbers here by at
+most about 0.1 point.
 
-| run | knobs | budget | status at 21:45Z |
-|---|---|---|---|
-| `base_r15`, `w150_r15` | width 1.0 vs 1.5, real data mixed in, checkpoints kept at 5k/10k/15k | 15,000 steps | training (step ~3k of 15k), about 3-4 h left |
-| `w200_r`, `w150d2c4_r`, `v3500_r` | width 2.0; width 1.5 + depth 2 + ctx 4; the 3,500 vocab; all with real data | 5,000 steps | training, about 3-4 h |
-| `qat_r`, `b48_r` | QAT from half-way; bottleneck 48; with real data | 5,000 steps | queued after those |
+| run | knobs | budget | pooled real CER int8 (vita-test-inv + psp-test-inv) | Δ |
+|---|---|---|---|---|
+| `base_r15`, `w150_r15` | width 1.0 vs 1.5, real data, checkpoints at 5k/10k/15k | 15,000 steps | 6.09% vs 4.59% | w1.5 -1.50 (-2.10, -0.89) |
+| `w200_r` | width 2.0, real data | 5,000 steps | 5.95% | -1.38 vs w1.5 (-2.01, -0.76) |
+| `w150d2c4_r` | width 1.5 + depth 2 + ctx 4, real data | 5,000 steps | 7.21% | -0.12 vs w1.5 (-0.72, +0.49) |
+| `v3500_r` | the 3,500 vocab (pre-review version) with real data | 5,000 steps | 9.05% | +0.06 vs base_r (-0.61, +0.73) |
+| `qat_r` | QAT from half-way, real data | 5,000 steps | 9.07% | +0.08 vs base_r (-0.33, +0.51) |
+| `b48_r` | bottleneck 48, real data | 5,000 steps | 9.24% | +0.26 vs base_r (-0.40, +0.92) |
+
+Learning curve, pooled vita-test-inv + psp-test-inv, int8 (5k/10k from the arch agent's
+kept checkpoints, 15k re-scored here): base_r15 10.21% / 7.11% / 6.09%, w150_r15 7.80% /
+5.64% / 4.59%.
 <!-- END running -->
 
 ## What each knob costs
@@ -205,9 +244,9 @@ the same physical text.
 | width 0.5 | 587,611 | 528,651 | 669,824 | 2,375,744 | 63,392 | 66,720 | 52 / 84 | 174-217 | 278-348 |
 | width 0.75 | 661,443 | 533,259 | 751,616 | 2,668,800 | 90,912 | 95,776 | 64 / 103 | 214-267 | 342-427 |
 | width 1.5 | 1,041,915 | 547,083 | 1,155,968 | 4,183,872 | 173,472 | 182,944 | 125 / 200 | 417-522 | 668-835 |
-| width 2.0 | 1,428,043 | 556,299 | 1,558,016 | 5,723,840 | 228,512 | n/a (K > 516) | 187 / 299 | 624-780 | 998-1248 |
-| width 2.5 | 1,920,155 | 565,515 | 2,066,048 | 7,687,744 | 283,552 | n/a (K > 516) | 266 / 426 | 887-1108 | 1419-1774 |
-| width 3.0 | 2,518,251 | 574,731 | 2,680,064 | 10,075,584 | 338,592 | n/a (K > 516) | 362 / 579 | 1206-1508 | 1930-2413 |
+| width 2.0 | 1,428,043 | 556,299 | 1,558,016 | 5,723,840 | 228,512 | 241,056 | 187 / 299 | 624-780 | 998-1248 |
+| width 2.5 | 1,920,155 | 565,515 | 2,066,048 | 7,687,744 | 283,552 | 299,168 | 266 / 426 | 887-1108 | 1419-1774 |
+| width 3.0 | 2,518,251 | 574,731 | 2,680,064 | 10,075,584 | 338,592 | 357,280 | 362 / 579 | 1206-1508 | 1930-2413 |
 | depth 2 | 812,427 | 537,867 | 923,264 | 3,268,032 | 156,832 | 163,232 | 96 / 154 | 320-401 | 513-641 |
 | depth 3 | 863,083 | 537,867 | 986,624 | 3,468,224 | 199,328 | 205,728 | 112 / 179 | 374-467 | 598-747 |
 | ctx 4 | 838,955 | 537,867 | 946,176 | 3,373,760 | 130,720 | 137,120 | 86 / 138 | 288-359 | 460-575 |
@@ -219,7 +258,7 @@ the same physical text.
 | vocab 2,500 | 484,933 | 261,029 | 548,688 | 1,945,520 | 118,432 | 124,832 | 58 / 93 | 194-243 | 311-389 |
 | height 24 | 761,771 | 537,867 | 859,904 | 3,067,840 | 97,216 | 100,480 | 57 / 91 | 189-236 | 302-378 |
 | w1.5 depth 2 ctx 4 | 1,323,531 | 547,083 | 1,469,952 | 5,302,144 | 249,504 | 258,976 | 174 / 278 | 578-723 | 925-1157 |
-| w2.0 height 24 | 1,428,043 | 556,299 | 1,558,016 | 5,723,840 | 186,304 | n/a (K > 516) | 127 / 204 | 425-531 | 679-849 |
+| w2.0 height 24 | 1,428,043 | 556,299 | 1,558,016 | 5,723,840 | 186,304 | 192,640 | 127 / 204 | 425-531 | 679-849 |
 <!-- END cost -->
 
 The output head (bottleneck plus the 5,355-way 1×1 conv) holds 71% of v1's parameters.
@@ -293,18 +332,18 @@ error of W8F in every run.
 <!-- BEGIN quant -->
 | run | QAT | real CER fp32 | real CER int8 W8F | real CER W8I (sim.) | synth-val CER fp32 | synth-val CER int8 |
 |---|---|---|---|---|---|---|
-| b128 |  | 15.01% | 15.00% | 15.00% | 1.17% | 1.17% |
-| base_s1 |  | 15.36% | 15.39% | 15.39% | 1.21% | 1.21% |
-| base_s2 |  | 16.45% | 16.43% | 16.43% | 1.23% | 1.23% |
-| c4k7 |  | 14.91% | 14.93% | 14.93% | 1.17% | 1.17% |
-| d2 |  | 15.82% | 15.86% | 15.86% | 1.26% | 1.25% |
-| h24 |  | 18.69% | 18.77% | 18.77% | 2.46% | 2.46% |
-| v1 |  | 9.84% | 9.88% | 9.88% | 0.29% | 0.30% |
-| v2500 |  | 16.20% | 16.20% | 16.20% | 1.84% | 1.84% |
-| v3500 |  | 15.50% | 15.55% | 15.55% | 1.32% | 1.33% |
-| w050 |  | 20.76% | 20.91% | 20.91% | 2.77% | 2.79% |
-| w075 |  | 18.15% | 18.24% | 18.24% | 1.71% | 1.71% |
-| w150 |  | 14.98% | 14.98% | 15.00% | 0.84% | 0.84% |
+| b128 |  | 15.07% | 15.05% | 15.05% | 1.18% | 1.18% |
+| base_s1 |  | 15.43% | 15.46% | 15.46% | 1.28% | 1.28% |
+| base_s2 |  | 16.46% | 16.45% | 16.45% | 1.24% | 1.24% |
+| c4k7 |  | 14.89% | 14.91% | 14.91% | 1.18% | 1.18% |
+| d2 |  | 15.86% | 15.88% | 15.88% | 1.27% | 1.26% |
+| h24 |  | 18.69% | 18.77% | 18.77% | 2.49% | 2.49% |
+| v1 |  | 9.84% | 9.88% | 9.88% | 0.30% | 0.30% |
+| v2500 |  | 16.26% | 16.26% | 16.26% | 1.85% | 1.85% |
+| v3500 |  | 15.51% | 15.57% | 15.57% | 1.34% | 1.34% |
+| w050 |  | 20.79% | 20.98% | 20.98% | 2.80% | 2.82% |
+| w075 |  | 18.20% | 18.27% | 18.27% | 1.73% | 1.73% |
+| w150 |  | 15.01% | 15.01% | 15.03% | 0.85% | 0.85% |
 <!-- END quant -->
 
 ## Runtime compatibility

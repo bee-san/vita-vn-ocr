@@ -115,7 +115,8 @@ Measured inside the app on the full psp-test run (`stats.json`):
   24,408,832 B to 20,640,768 B. 994,720 B of that is the OCR (blob + arena + stack). The rest
   is the self-check's 2,763,180-B logits buffer and `expect.txt`, which an integration
   doesn't need.
-- The whole EBOOT (newlib, pspsdk, the app) is 218,298 B.
+- The whole EBOOT (newlib, pspsdk, the app) is 218,458 B (218,298 B before the review's
+  main.c fixes; `vocr.o` is unchanged).
 
 **Next to a running VN (a plugin) on a PSP-1000.** The OCR needs about 1.0 MB at once:
 
@@ -172,6 +173,12 @@ emulated time is close to a lower bound. The console adds:
   line fills per frame at tile 4 and 730 at tile 16 (the 230,400 B of backbone matrices once
   per tile, the 514,560-B head once per 16 frames). The rest are activation reads: each
   pointwise layer reads its whole input tile once per 8 output channels.
+  The counts depend on where the host's allocator puts the blob, the arena and the crops
+  (address-space randomisation), so they vary between runs. In 5 reruns at the review's head,
+  the 2-way counts per frame were f32 tile 4 9,998-10,579, w8f tile 16 6,441-6,995, w8f tile 4
+  5,862-6,610 and w8i 4,220-4,313; 1-way varies most (w8f tile 4: 9,753-13,856). The console's
+  layout differs again, so take the estimate's miss term as ±10% (2-way). For scalar w8f, tile
+  16, that moves the console range below by at most 0.02× (1.05-1.46× at the extremes).
 - **Stalls** that PPSSPP doesn't model. The f32 and w8f inner loops keep 16 independent sums,
   so FPU and VFPU latency (VFPU arithmetic: 5 cycles) is covered. w8i's `mult`/`mflo` pairs
   are back to back.

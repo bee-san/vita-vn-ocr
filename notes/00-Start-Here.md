@@ -14,6 +14,8 @@ This vault records the native text-hook investigation alongside the OCR project.
 
 The earlier OCR-first path is implemented and installed, but its physical request fails when allocating the full-frame 2,040 KiB kernel capture buffer, before JPEG or Lens. The region-sized capture repair and bounded picker diagnostics are merged through `5e5bc25`, with combined artifacts prepared but not installed. Live production Lens on the host exactly matched one short verified page; that result bypassed the failing kernel allocation. See [[19-Physical-OCR-source-failure]] and [[18-OCR-anchor-memory-measurements]].
 
+A new title-specific register profile matches two changing visible pages and remains stable during idle intervals in isolated Vita3K. It supersedes entry hooks that read the wrong argument or preloaded future lines. The profile is not installed on hardware; see [[22-CLANNAD-register-profile-proof]].
+
 The previous repair remains a verified install/boot result and a two-page emulator capture/top-five result, not a completed physical text-hook experience. It is implementation `6eef6c0`, reviewed head `69006af`, merged as `a5e0c50`, with 264 passing synthetic Vita3K checks. The stronger physical UX failure is now part of the record.
 
 ## Start a session
@@ -42,6 +44,7 @@ The previous repair remains a verified install/boot result and a two-page emulat
 | Physical OCR -108 failure and confirmed capture allocation failure | [[19-Physical-OCR-source-failure]] |
 | Current fixed manual list, selection and wrong-text concern | [[20-Fixed-manual-hook-workflow]] |
 | Merged picker diagnostics and screenshot-runtime uncertainty | [[21-Picker-diagnostics-and-screenshot-provenance]] |
+| Two-page native register profile proof and rejected candidates | [[22-CLANNAD-register-profile-proof]] |
 | What tests establish, and what they cannot | [[08-Validation-and-measurements]] |
 | Safe operational commands and recovery | [[09-Device-operations-and-recovery]] |
 | Worktrees, commits and merged PRs | [[10-Repositories-and-revisions]] |

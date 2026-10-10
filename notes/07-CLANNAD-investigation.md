@@ -92,19 +92,12 @@ Potential remaining causes of empty/wrong candidates include failed game-memory 
 Do not infer success from a hook ID, a candidate count, one matching buffer, a host test or an emulator launch. See [[08-Validation-and-measurements]] and [[12-Open-questions-and-next-steps]].
 
 
-## Title-specific candidate after the wrong-text report
+## Title-specific profile after the wrong-text report
 
-The user is concerned that the selected manual text is wrong and asks whether Vita text hooking is feasible. The two-page emulator result shows real interception is possible for this title, while the physical current-dialogue workflow remains unproved. Do not treat that distinction as a reason to label the task completed or abandon the user's actual result.
+The final current-dialogue candidate is segment 0 + `0x2CA70`, Thumb, r6 CP932, no dereference/padding, for native module `VITA` NID `0xC5187D60`. Production REGISTER stream `0x70000000` now exactly matches two visible pages and remains unchanged over two no-input intervals in isolated Vita3K. The profile is 63 B, SHA `99c73600540f5c441939a06f6cc727ec21b284fa055bc936f7bb0359382f9f81`. Root is preparing a separate revision-guarded profile/docs PR. No profile has been installed on the physical device. Full evidence and its limits are in [[22-CLANNAD-register-profile-proof]].
 
-Root is privately investigating a candidate entry at module-relative offset `0x2C906`. The first descriptor read `r1` as CP932; actual observed entry calls show original `r1=1`, so that descriptor is superseded and wrong for the text pointer. The corrected candidate reads the fifth argument at `*(original SP)` (profile register D, one indirection), as CP932. Two-visible-page validation of that corrected descriptor is pending.
+The earlier `0x2C906` entry descriptors are superseded: r1 was actually 1, so the first descriptor used the wrong argument; dereferencing the fifth argument at original SP then captured preloaded future lines. Seeing expected text somewhere in that feed did not establish that it was the visible current line. Those rejected experiments remain in the chronology and new profile note.
 
-The investigator identifies `0xC5187D60` as the actual native main-module NID for module `VITA`, derived from private module-info bytes and Vita3K logs; it is not an imported function NID. The full profile/instruction signature remains private and ignored. Isolated validation targets a new register-observer stream `0x70000000` across two changed visible lines; no success is claimed yet.
+The private emulator helper needed explicit current-thread stack bounds because Vita3K's memory lookup omits directly allocated thread stacks. This helper workaround does not establish a production observer/kernel bug or physical stack-reading safety. The final source's stability/visible matches establish an emulator result, not shell source selection/follow behavior.
 
-This is an experimental candidate, not a verified or installed CLANNAD profile. Exact executable identity, instruction signature, ABI/register lifetime, bounded text and correspondence with multiple visible pages are still required before treating it as usable. Earlier generic capture evidence does not prove a title-specific hook is necessary. See [[20-Fixed-manual-hook-workflow]].
-
-
-The first isolated run did not produce a useful kind-4 register text stream. Subsequent entry observations confirm events fire, but the original descriptor read the wrong register; this is an experimental profile error, not evidence of a production observer bug. Neither descriptor has been installed on hardware, and the corrected stack-argument descriptor still needs visible-page capture proof.
-
-The current private helper's SDK memory lookup omits thread stacks, so a bounded `GetThreadInfo` stack-range fallback is being tested. This helper limitation does not establish a production kernel/profile fault. The corrected original-SP descriptor still awaits two changed visible-line captures.
-
-Separately, bounded picker diagnostics are now merged in PR #15; actual game text from those diagnostics stays private, and the diagnostic build is not installed. See [[21-Picker-diagnostics-and-screenshot-provenance]].
+Bounded picker diagnostics are merged as PR #15 but uninstalled; their actual game-text excerpts stay private. The physical manual source remains suspect. The two-page generic and register evidence shows real interception is possible for this title, while the user's physical current-dialogue workflow remains unproved. A title-specific profile is now a concrete candidate, not a general requirement proved for all games or every CLANNAD build. See [[21-Picker-diagnostics-and-screenshot-provenance]] and [[20-Fixed-manual-hook-workflow]].

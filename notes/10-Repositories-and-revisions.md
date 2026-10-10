@@ -20,6 +20,7 @@ Paths below are local research locations. Private artifact directories remain un
 | `ps-vita-ocr-notes/` | Isolated notes worktree, branch `docs/vita-hook-investigation-notes`, based on OCR origin/main `7964b43f022e51bd26da84f9ff1fc0a26c9dd1aa`. Only `notes/` belongs to this change. |
 | `vita-jp-overlay-hooks/` | Firmware fix branch `fix/native-hooks-fw365`. |
 | `vita-jp-overlay-low-memory/` | Picker-memory branch `fix/native-text-low-memory`. |
+| `vita-jp-overlay-clannad-profile/` | Root's separate profile/docs worktree, based on merge `5e5bc25`; prepares the final `0x2CA70`/r6 profile. No physical profile installation yet. |
 | `vita-jp-overlay-discovery/` | Current branch `fix/region-sized-ocr-capture`, based on PR #13 merge `539c2888`; capture-buffer changes are PR #14 head `5118c4a`, merged as `c888b59` but not installed at this snapshot. Earlier capture branch `fix/native-libc-capture` remains separate. Earlier diagnostic experiment preserved separately in local-only `fix/native-text-discovery` commit `2d56ce4`, not deployed or submitted as a PR. |
 | `ps-vita-ocr-lab/vita-jp-overlay/` | Shared overlay worktree; last observed on `fix/local-ocr-memory`, owned by the OCR session. Preserve it. |
 | `ps-vita-ocr-lab/vita-agent-use/` | Device control client and private ignored `agent/` evidence. |

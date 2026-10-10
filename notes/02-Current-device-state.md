@@ -2,7 +2,7 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 12:00"
+snapshot_utc: "2026-10-10 12:06"
 status: manual-mode-selected-dialogue-match-unverified
 tags: [vita, device, handoff]
 ---
@@ -16,6 +16,8 @@ tags: [vita, device, handoff]
 **Prior physical failure:** the previous shell/manual `text_source=hooks` mode produced a flood of changing 0% hooks and irrelevant text. Its status reached source sequence 3,035, full discovery active and selected source 0. Root acknowledged configuring that unanchored manual mode. This failed workflow motivated the new explicit user preference: one screenshot first, then a matching source. The successful install/boot does not erase that failure or prove its resolution. See [[17-OCR-first-physical-workflow]].
 
 **Latest manual result:** source ID 1 was selected (kind 2, encoding 0, six bytes, one update). A 256 KiB Paf dictionary workspace completed the selection job with `rc=0`, 37 ms and 110,080 B arena peak; two later reopens also completed. The user suspects the text is wrong. The screenshot tool reports stage `jpeg_encode`/code -7, so root requested a short example. Its installed runtime has not been matched to the dirty local agent source; the stage is not a source-level diagnosis. No visible-page correspondence or changing selected dialogue is verified. See [[20-Fixed-manual-hook-workflow]].
+
+**New emulator evidence, not installed:** a `0x2CA70`/r6 CP932 register profile matches two changed visible pages and stays stable during no-input intervals. Earlier `0x2C906` candidates were rejected for wrong argument/prefetched future lines. Root is preparing a profile PR; physical profile attachment and selected dialogue remain unverified. See [[22-CLANNAD-register-profile-proof]].
 
 ## Installed plugin set
 

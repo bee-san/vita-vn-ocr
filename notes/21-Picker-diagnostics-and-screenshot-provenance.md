@@ -34,7 +34,7 @@ The combined PR #14+#15 artifacts are prepared locally under `vita-agent-use/age
 | Shell with picker diagnostics | 159,528 | `4f1f0650816c5ae5d9073d3d92bb7afbacc020500497e474e29765daf9371b83` |
 | Text, unchanged | 7,936 | `84259631e0efe87472750a04a944a0d2cb7673f218c85f316ae3a450e6c7565f` |
 
-They are **not installed**. The device still has kernel `6cc2dc86...`, shell `32baceeb...` and text `84259631...` in manual hooks mode. Prepared files are not readbacks, and merged diagnostics do not establish physical dialogue capture. The corrected private stack-argument profile also remains uninstalled and lacks its two-line emulator proof.
+They are **not installed**. The device still has kernel `6cc2dc86...`, shell `32baceeb...` and text `84259631...` in manual hooks mode. Prepared files are not readbacks, and merged diagnostics do not establish physical dialogue capture. The stack-entry candidate was rejected for preloading future lines. Its replacement at `0x2CA70`/r6 now passes two-page emulator proof but remains uninstalled; see [[22-CLANNAD-register-profile-proof]].
 
 ## Screenshot failure is not a source-level diagnosis
 

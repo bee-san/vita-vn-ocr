@@ -32,6 +32,7 @@ Each validation layer answers a different question. A passing lower layer does n
 | Physical fixed manual selection | Selected source metadata; 256 KiB Paf dictionary jobs rc=0, peak 110,080 B; user suspects wrong text | Selection and allocator/job completion on the device | Visible dialogue match, useful dictionary output or selected-source continuity |
 | Region-sized capture, PR #14 head `5118c4a` | 10 host suites in 4.61 s, 41 worker/16 kernel cases; kernel ASAN/UBSAN; Vita release/ABI; 6,055 ARM instructions, no FPU/NEON | Requested capacity/ownership regression coverage and build compatibility | Successful physical region allocation/capture, Lens result or corrected error propagation on hardware |
 | Bounded picker diagnostics, PR #15 head `f58b1aa` | 10 host suites in 5.31 s; clean ncnn-OFF Vita/ABI; exact hosted host and Vita pass | Bounded explicit-action log implementation builds and passes existing suites | Actual device diagnostics or correct dialogue correspondence; build is uninstalled |
+| CLANNAD register profile, isolated real-game run | Two visible pages match stream `70000000`, updates 1→3/ranks 2→5, unchanged rows across 10.330/11.290 s idle intervals | Current register-observer dialogue in those two emulator checkpoints | Physical stack mapping/syscall safety, picker selection, other scenes or broad compatibility |
 
 ## Reproduction commands
 

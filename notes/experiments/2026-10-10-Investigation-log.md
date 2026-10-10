@@ -212,3 +212,8 @@ The user asks whether real Vita hooking is possible and whether to give up. Root
 PR #14 final head `5118c4a` passed hosted host 56 s and Vita 3m41s, then merged at 11:46:20 UTC as `c888b5936ca46729b0fbc7698b2348c5a4b3d387`; local main/origin are synchronized. Prepared private artifacts are kernel 39,048 B SHA `ae3c0341...`, shell 158,848 B SHA `83dac94f...`, unchanged text `84259631...`. The notes author independently hashed them. No release or physical install occurred.
 
 The first candidate-profile emulator run has no kind-4 register stream, so attachment/capture is still being diagnosed. A separate small bounded picker-diagnostics branch is in development for explicit-action observations, with private game text excluded from public notes. The user has not been asked to test the prepared capture build; manual hooks and the wrong-text concern remain current.
+
+
+## 34. Register entry fires; initial experimental descriptor read the wrong argument
+
+Actual observations at candidate entry `0x2C906` show original r1=1, while the text pointer is the fifth argument at `*(original SP)`. The first r1 descriptor was wrong, explaining absent useful text; it was neither installed nor validated. The corrected private descriptor uses register D with one indirection and CP932. Two changed visible pages still need to match its captured output. This is a candidate-profile correction, not a demonstrated observer source bug or hardware fix. Full profile/signature bytes remain private.

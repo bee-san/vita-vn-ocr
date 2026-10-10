@@ -10,7 +10,7 @@ tags: [vita, native-text, libc, validation]
 
 The first generic text plugin observed SceLibKernel clib functions. Offline CLANNAD inspection found none of those four imports and found equivalent functions in SceLibc. The fix supports **both** families instead of treating this as proof that the game needs an engine-specific profile.
 
-Source commit: `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, branch `fix/native-libc-capture`, version `0.6-hooks.5`. [Draft PR #12](https://github.com/bee-san/vita-jp-overlay/pull/12) is published for review. **This revision is not installed on the physical Vita and real CLANNAD dialogue remains unverified.**
+Source commit: `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, branch `fix/native-libc-capture`, version `0.6-hooks.5`. [PR #12](https://github.com/bee-san/vita-jp-overlay/pull/12) is ready for review at final evidence-only head `69006af9e36347b75534c01900b48d43ed372981`; artifact bytes remain those of implementation `6eef6c0`. **This revision is not installed on the physical Vita.** The emulator test bridge matched two visible narration pages through one immediate source without a title profile. A full-feed follow-up found a production ranking bug, corrected at `6eef6c0`; the new run displays the three matching sources in the top five on both pages. Physical capture/manual selection remain pending. Evidence-only follow-up `d1ee0dc` kept the original artifacts unchanged; `6eef6c0` changes the kernel comparator and its artifact hash.
 
 ## Capture behavior
 
@@ -28,6 +28,7 @@ This is a kernel-and-text-plugin change. The shell artifact hash is unchanged. M
 | Production kernel cases | 10 passed, including CP932 at allocation end, absent NUL, ASCII and rejection of automatic-encoding register events |
 | Vita release build | Passed, OCR OFF, text test app ON |
 | Packaged syscall ABI | Passed |
+| Hosted exact-head CI | Host and Vita both SUCCESS on run `38045205714`, completed 2026-10-10 10:36:03 UTC; PR remains draft |
 | Isolated Vita3K | **255 checks, zero failures**: 43 portable + 192 observer + 20 production-plugin |
 | Synthetic production plugin events | 8 copy/string call events, 2 register-profile events, 10 matching sources |
 
@@ -40,7 +41,16 @@ python3 tools/test_vita3k_hooks.py --vpk build/vita/vjo-hook-test.vpk \
   --workdir build/vita3k-libc-test
 ```
 
-## Built artifacts, not installed artifacts
+## Independent read-only review
+
+A separate reviewer found no blockers at this exact head. Confirmed checks include the explicit zero-length copy gate, bounded strcpy handling, allocation-end/NUL behavior and correct mapping release. Compiled submit/offer/similarity frames still total 2,784 B excluding OS overhead; the new kernel has 5,922 decoded ARM instructions and zero FPU/NEON.
+
+The review calls out an important test boundary: the Vita3K fake transport uses a strlen substitute and does not itself prove production kernel bounds. Separate host tests of the actual kernel path provide that coverage. Real-game capture and extra syscall overhead remain unmeasured. A real CLANNAD startup memmove was observed, but with zero bytes; it is not text evidence. See [[15-Vita3K-runtime-investigation]].
+
+## Built artifacts at the original import-fix commit
+
+The following hashes belong to implementation `0a660159...` before the ranking correction. Current candidate `6eef6c0` changes the kernel to SHA-256 `6cc2dc868dc4403bcab252d689acd2f0779a55f9bd8069654b335eaffa571933` (38,620 B), with the same shell/text bytes. See [[16-Full-feed-picker-ranking]] for its 264-check validation and full-feed rerun status. None of these candidate kernels has been installed on the physical console.
+
 
 | Artifact | Bytes | SHA-256 |
 |---|---:|---|
@@ -52,4 +62,4 @@ See [[02-Current-device-state]] for the separately verified installed set. Furth
 
 ## Remaining decisions
 
-Physical startup/capture, runtime overhead, real dialogue continuity and whether a title profile is necessary are unresolved. A separate real-CLANNAD runtime experiment is in progress. Review the exact head before deployment, then establish actual attachment and two advancing visible pages. See [[12-Open-questions-and-next-steps]].
+Physical startup/capture, runtime overhead, real dialogue continuity and whether a title profile is necessary are unresolved. Two visible CLANNAD pages now match the same immediate generic source in the emulator. The full-feed experiment exposed and verified the correction of an initial-picker ranking defect; [[16-Full-feed-picker-ranking]] records the preserved failing baseline and successful new snapshot ranks. Review the exact head before deployment, then establish actual attachment and two advancing visible pages. See [[12-Open-questions-and-next-steps]].

@@ -2,14 +2,14 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 10:32"
+snapshot_utc: "2026-10-10 10:53"
 status: needs-live-refresh
 tags: [vita, device, handoff]
 ---
 
 # Current device state snapshot
 
-**This is a dated handoff, not live telemetry.** Latest user report: the console is on. Latest update from the active investigator: game closed, native running-app inventory empty, old text plugin restored with full readback. Experimental scanner/kernel diagnostics have **not** been installed. The generic-import correction is built and locally validated at `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, draft PR #12, and is not installed. Its new kernel/text artifacts are listed separately in [[14-Retail-libc-hook-coverage]]; do not confuse them with this installed set.
+**This is a dated handoff, not live telemetry.** Latest user report: the console is on. Latest update from the active investigator: device connected, native running-app inventory empty, and fresh read-only backups verify the old kernel `447f2e64...` and restored text plugin `c146238b...`. Experimental scanner/kernel diagnostics have **not** been installed. The current generic-import and picker-ranking correction passes the corrected full-feed two-page emulator test and is built at `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e`, PR #12 (final evidence head `69006af9e36347b75534c01900b48d43ed372981`), and is not installed. Its versioned kernel/text artifacts are listed separately in [[14-Retail-libc-hook-coverage]] and [[16-Full-feed-picker-ranking]]; do not confuse them with this installed set.
 
 Normal boot was already physically verified for the firmware fix and again after installing the low-memory shell. The user later reported another power-off around a CLANNAD launch. Its cause is not established; do not turn the earlier boot success into a claim that all later shutdowns are resolved.
 

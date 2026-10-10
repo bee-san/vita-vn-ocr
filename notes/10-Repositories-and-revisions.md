@@ -20,7 +20,7 @@ Paths below are local research locations. Private artifact directories remain un
 | `ps-vita-ocr-notes/` | Isolated notes worktree, branch `docs/vita-hook-investigation-notes`, based on OCR origin/main `7964b43f022e51bd26da84f9ff1fc0a26c9dd1aa`. Only `notes/` belongs to this change. |
 | `vita-jp-overlay-hooks/` | Firmware fix branch `fix/native-hooks-fw365`. |
 | `vita-jp-overlay-low-memory/` | Picker-memory branch `fix/native-text-low-memory`. |
-| `vita-jp-overlay-discovery/` | Current branch `fix/native-libc-capture`, based on merged `13bcf816...`; draft PR #12. Earlier diagnostic experiment preserved separately in local-only `fix/native-text-discovery` commit `2d56ce4`, not deployed or submitted as a PR. |
+| `vita-jp-overlay-discovery/` | Current branch `fix/native-libc-capture`, based on merged `13bcf816...`; PR #12. Earlier diagnostic experiment preserved separately in local-only `fix/native-text-discovery` commit `2d56ce4`, not deployed or submitted as a PR. |
 | `ps-vita-ocr-lab/vita-jp-overlay/` | Shared overlay worktree; last observed on `fix/local-ocr-memory`, owned by the OCR session. Preserve it. |
 | `ps-vita-ocr-lab/vita-agent-use/` | Device control client and private ignored `agent/` evidence. |
 | `ps-vita-ocr-lab/tools/vitasdk/` | Local VitaSDK; arm-vita-eabi-gcc 15.2.0 in the recorded boot-fix build. |
@@ -37,9 +37,13 @@ GitHub PR states above were independently queried on 2026-10-10. The active inve
 
 The installed shell was built from the low-memory implementation; later docs/merge commits do not imply a different installed binary. Artifact hashes are the deployment evidence in [[02-Current-device-state]]. Source, built artifact, remote branch, merged revision and installed bytes are separate states.
 
+## Notes publication
+
+This notebook is published separately as [OCR PR #17](https://github.com/bee-san/vita-vn-ocr/pull/17), branch `docs/vita-hook-investigation-notes`. Its initial head `b2295008c646405a02da7325c86cef1b86a7121e` passed all six hosted gates. Follow-up notes capture ongoing investigation; confirm the latest PR head/checks before merge. The user-facing current folder contains a byte-verified mirror of the owned note files, not a branch switch or staged OCR-code change.
+
 ## Capture correction in review
 
-[Overlay draft PR #12](https://github.com/bee-san/vita-jp-overlay/pull/12), head `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, adds the missing SceLibc imports. It has 10 passing host suites, 255 passing synthetic Vita3K checks, and a passing Vita release build/ABI audit. It is deliberately draft pending real-game evidence; it is not installed or a CLANNAD compatibility result. See [[14-Retail-libc-hook-coverage]].
+[Overlay PR #12](https://github.com/bee-san/vita-jp-overlay/pull/12), implementation commit `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, adds the missing SceLibc imports. It has 10 passing host suites, 255 passing synthetic Vita3K checks, and a passing Vita release build/ABI audit. Hosted host/Vita CI also passed at that exact head (run `38045205714`). Evidence-only follow-up `d1ee0dc` records two visible-page matches through the same immediate source; artifact bytes remain unchanged. CI for that newer head was pending at the update (run `38046046267`). A full-feed check then found a production picker-ranking bug. Current head `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e` fixes the comparator and passes 10 host suites, 264 Vita3K checks and the release build/ABI audit. The corrected full-feed two-page run now passes: matching sources are in the five displayed choices on both pages. The final evidence-only head is `69006af9e36347b75534c01900b48d43ed372981`, ready for review (no longer draft), with implementation artifacts unchanged from `6eef6c0`. Exact final-head CI is starting; physical installation/manual-selection evidence is still pending. The new kernel hash is recorded separately in [[16-Full-feed-picker-ranking]]. It is not installed or a complete CLANNAD compatibility result. See [[14-Retail-libc-hook-coverage]].
 
 ## Adjacent work to preserve
 

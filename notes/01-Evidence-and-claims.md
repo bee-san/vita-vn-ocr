@@ -28,12 +28,19 @@ Use this ledger to prevent a partial result becoming a compatibility claim. Evid
 | E12 | Original installed `eboot.bin` is an encrypted SELF; the later research ELF contains decrypted, relocated loaded segments. | Distinct hashes, dump boundary and private research metadata. They must never be confused. [[07-CLANNAD-investigation]] |
 | E13 | PRs 10 and 11 are merged. | GitHub API queried 2026-10-10; exact merge revisions in [[10-Repositories-and-revisions]]. |
 | E14 | Corrected generic hooks pass 255 isolated Vita3K checks, including actual retail-library alias imports. | Production-plugin test result and benchmark at `0a660159...`; 43 portable + 192 observer + 20 plugin checks, zero failures. Draft PR #12, no physical deployment/capture claim. [[14-Retail-libc-hook-coverage]] |
+| E15 | Real CLANNAD execution reached imported SceLibc memmove at `0x810A9458`, caller LR `0x81033D6F`. | Private `runtime-trace.jsonl`: first observed call had `n=0` and source NULL, so this is call-path evidence, not dialogue capture. [[15-Vita3K-runtime-investigation]] |
+| E16 | The inspected Vita3K debugger continuation path re-locks the same thread mutex. | `cmd_continue` holds `thread->mutex` then calls `ThreadState::resume`, which locks that nonrecursive mutex again; source revision `b75d5e6292d5caa6a8411bacc9db1eca1531beab`. This explains the observed breakpoint-resume hang in the investigation. |
+| E17 | Uninstrumented CLANNAD rendered Japanese startup notices in isolated Vita3K/Xvfb with SDL X11 selected. | Active runtime investigator report; private captures stay local. The inherited Wayland setting had produced misleading black captures. Startup notices are not dialogue validation. |
+| E18 | The first visible CLANNAD narration page matches five records emitted through the unchanged production text plugin and emulator test bridge, with no game-specific profile. | Root independently compared private `dialogue-3.png` and `captures-first-run.log` (81,920 B, 506 TEXT records). Four inspected matching call sites are BLX memcpy. This proves a real-page match, not yet a temporally current stream or hardware capture. [[15-Vita3K-runtime-investigation]] |
+| E19 | Two different visible narration pages matched immediate source `0x8102CA7F` through generic SceLibc memcpy, without a title profile. | Benchmark at evidence commit `d1ee0dc`; pages 1 and 4 matched 17/13 input bytes and 24/18 UTF-8 bytes. The first helper filtered short/non-Japanese events before ranking, so it did not prove production picker selectability. |
+| E20 | Full-feed production ranking hid initial dialogue outside the five displayed choices. | First-page snapshot sequence 425 retained the actual six-normalized-character line in three streams, each displayed rank 0 (outside top five). Update-heavy noise, mixed data and static strings ranked above it. Page 4 sequence 1684 put `0x8102CA7F` at rank 5 with update count 3. [[16-Full-feed-picker-ranking]] |
+| E21 | Corrected full-feed ranking displays three matching sources on both checked pages. | Exact comparator revision `6eef6c0`, unchanged production Text SHA `84259631...`, test bridge SHA `106be9d4...`, no title profile. Page 1 seq424 ranks 2/3/4, updates 1; page 4 seq1680 ranks 3/4/5, updates 3. All snapshots complete; selected=0, so manual selection was not exercised. [[16-Full-feed-picker-ranking]] |
 
 ## Inferences and hypotheses
 
 | ID | Claim | Status | What would resolve it |
 |---|---|---|---|
-| H01 | Correct generic `SceLibc` hooks may expose useful CLANNAD text. | Implemented and synthetic tests pass; real-game capture remains pending. | Successful hook attachment, bounded observations, then two visible pages matching output. |
+| H01 | Correct generic `SceLibc` hooks may expose useful CLANNAD text. | Two visible-page matches and corrected top-five source ranking pass in the emulator; hardware capture remains pending. | Successful hook attachment, bounded observations, then two visible pages matching output. |
 | H02 | CLANNAD requires a signed native register profile. | **Unproven.** Earlier suspicion was premature because the generic hooks targeted absent imports. | Reassess only after corrected generic capture and measured scanner diagnostics. |
 | H03 | CP932 should be tried before assuming UTF-16 for this title. | Supported by offline font data, still an inference for live dialogue. | Compare captured bytes to visible pages with an explicitly recorded decoder. |
 | H04 | Scanner zero candidates means the game stores no readable Japanese text. | Unsupported. | First establish that reads enter the right process and cover readable mappings, then inspect decoding/filter statistics. |
@@ -43,7 +50,7 @@ Use this ledger to prevent a partial result becoming a compatibility claim. Evid
 ## Claims that are explicitly not established
 
 - Generic native extraction works for arbitrary Vita visual novels.
-- CLANNAD dialogue extraction works, or a correct picker candidate has been selected.
+- The complete physical CLANNAD workflow works, or a correct picker candidate has been manually selected.
 - A static matching script string follows the current page.
 - Native PSP/Adrenaline text hooks work; that is a different CPU and backend.
 - A single partition-memory sample belongs to CLANNAD. Process ownership was uncertain.

@@ -10,7 +10,7 @@ tags: [vita, native-text, moc]
 
 This vault records the native text-hook investigation alongside the OCR project. Open this `notes/` directory as an Obsidian vault, or follow the ordinary Markdown files. It needs no Obsidian plugin. Findings are linked so a future session can recover the reasoning, evidence and limits without rereading the whole conversation.
 
-**Current outcome:** firmware 3.65 boots with the corrected plugins; CLANNAD's text picker opens without the previous memory error. **Current failure:** no Japanese candidates or advancing dialogue have been verified. Offline inspection now shows that the generic plugin targeted a library the game's main module does not import. A CLANNAD-specific hook is therefore not yet demonstrated to be necessary. The corrected generic implementation now passes 255 synthetic Vita3K checks and is in draft PR #12, but is not installed or verified with real dialogue. See [[07-CLANNAD-investigation]] and [[14-Retail-libc-hook-coverage]].
+**Current outcome:** firmware 3.65 boots with the corrected plugins; CLANNAD's physical text picker opens without the previous memory error. The corrected generic SceLibc hooks now capture two visible narration pages through the same source in actual CLANNAD under isolated Vita3K, using the production text plugin and no game-specific profile. A stronger full-feed check then found and fixed a production ranking bug. A fresh run now puts the three matching sources in the displayed top five on both tested pages. **Still unresolved:** physical installation, kernel mapping, manual selection and dictionary behavior on the Vita. The current correction passes 264 synthetic Vita3K checks and is in PR #12, ready for review at evidence head `69006af`, but is not installed on the console. See [[07-CLANNAD-investigation]], [[14-Retail-libc-hook-coverage]] and [[15-Vita3K-runtime-investigation]].
 
 The latest user report says the console is on. That is a user observation, not a fresh telemetry claim. The last supplied device update has the game closed and the original text plugin restored with readback verification. See [[02-Current-device-state]] before touching the device.
 
@@ -33,6 +33,8 @@ The latest user report says the console is on. That is a user observation, not a
 | Picker/raw text under memory pressure | [[06-Low-memory-overlay]] |
 | CLANNAD's actual imports and possible encodings | [[07-CLANNAD-investigation]] |
 | Corrected generic SceLibc hooks and validation | [[14-Retail-libc-hook-coverage]] |
+| Real-game startup trace and emulator tooling failures | [[15-Vita3K-runtime-investigation]] |
+| Full-feed source-ranking failure and validation gate | [[16-Full-feed-picker-ranking]] |
 | What tests establish, and what they cannot | [[08-Validation-and-measurements]] |
 | Safe operational commands and recovery | [[09-Device-operations-and-recovery]] |
 | Worktrees, commits and merged PRs | [[10-Repositories-and-revisions]] |

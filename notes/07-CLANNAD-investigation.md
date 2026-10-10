@@ -2,13 +2,13 @@
 title: CLANNAD native text investigation
 created: 2026-10-10
 updated: 2026-10-10
-status: capture-unverified
+status: emulator-page-match-hardware-unverified
 tags: [vita, clannad, native-text, investigation]
 ---
 
 # CLANNAD native text investigation
 
-**Title:** CLANNAD, `PCSG00415`. **Outcome so far:** the low-memory picker opens, but no advancing dialogue capture is verified. **Newest finding:** the four generic hooks targeted imports absent from this game's inspected main module. The module instead imports equivalent functions from `SceLibc`.
+**Title:** CLANNAD, `PCSG00415`. **Outcome so far:** the physical low-memory picker opens; corrected generic SceLibc hooks produce five records matching the first visible narration page in isolated Vita3K. A follow-up matched two visible pages through one immediate stream, but a stronger full-feed snapshot found that the initial page is buried outside the five picker choices. The corrected full-feed rerun now displays all three matching sources in the top five on both pages. Capture and manual selection on the physical console remain pending. The four original generic hooks targeted imports absent from the main module; the correction observes the SceLibc imports the game actually uses.
 
 Native extraction is technically feasible in this homebrew environment. The current observations do not establish working CLANNAD extraction, and they do not yet establish that CLANNAD needs a bespoke engine hook.
 
@@ -43,7 +43,25 @@ No PVF/font import was present in this main-module inventory. A shared-font-hook
 
 **Decision:** correct the generic library coverage and observe attachment/capture before deciding a CLANNAD-specific native instruction hook is necessary. A STARTED plugin with four absent imports can still produce zero useful observations.
 
-The correction is now implemented as `0.6-hooks.5`, commit `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, and passes 255 synthetic Vita3K checks. It is published in draft PR #12, not installed or proven against real CLANNAD dialogue. See [[14-Retail-libc-hook-coverage]].
+The correction is now implemented as `0.6-hooks.5`, commit `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, and passes 255 synthetic Vita3K checks. It is published in PR #12 and not installed on the console. The first real-page match is now observed through a test-only emulator transport, while continuity and physical capture remain unverified. See [[14-Retail-libc-hook-coverage]].
+
+## First real-game execution evidence
+
+The isolated game reached SceLibc `memmove` at `0x810A9458`, caller LR `0x81033D6F`. The observed startup call had source NULL and length zero, so it contains no dialogue and should be ignored by the capture gate. This is stronger than a static import inventory only in showing that the real game executes the import; it does not establish useful Japanese text through that import.
+
+Further breakpoint tracing was obstructed by a confirmed Vita3K debugger mutex recursion. Uninstrumented startup worked with SDL explicitly using X11 under Xvfb; Japanese startup notices rendered without adding a firmware installation. The investigator subsequently reached a first narration page and captured matching records, described below. See [[15-Vita3K-runtime-investigation]] for the separate tooling findings and their limits.
+
+## First visible-page match through generic capture
+
+Root independently compared the private screenshot `dialogue-3.png` with the first-run bridge log: the visible first narration matches five captured records. The production text plugin is unchanged (SHA `84259631...`), and no `.vjhook` title profile was loaded. Matching stream addresses were `0x81023C23`, `0x8102CA7F`, `0x810A2393`, `0x810A34EF` and `0x81028773`; disassembly of four sites, excluding `0x8102CA7F`, showed BLX to memcpy import stub `0x810A9388`.
+
+The log contains 506 TEXT records, including false positives, and the test bridge also reported mapping rejections. A matching page can come from script prefetch. The next question is whether one stable stream follows successive **visible** pages in time; this result does not yet establish that. Screenshots and dialogue stay private. See [[15-Vita3K-runtime-investigation]].
+
+## Stronger test found a picker-ranking bug
+
+The next experiment matched pages 1 and 4 through immediate source `0x8102CA7F`; the implementation artifacts were unchanged and evidence was published in commit `d1ee0dc`. The initial bridge filtered short/non-Japanese events before offering them to the source ranker, however, so that evidence did not establish that the real picker would display the source.
+
+A full-feed bridge then retained all production candidate input. It captured the actual first-page line in three streams, but all were outside the top five. On a later page the immediate source reached display rank 5. This caught a real production ranking defect: update count preceded Japanese fraction/length, allowing frequent short noise and mixed data to bury dialogue. Commit `6eef6c0` moves text fraction/length ahead of activity and passes 264 synthetic checks. A fresh full-feed run now puts matching sources at ranks 2/3/4 on page 1 and 3/4/5 on page 4, with changed text and update count 1→3. See [[16-Full-feed-picker-ranking]]. This is a stronger-validation finding and verified correction, not a failed bridge.
 
 ## Executable provenance: two different artifacts
 

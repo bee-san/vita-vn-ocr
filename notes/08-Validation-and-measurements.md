@@ -18,6 +18,8 @@ Each validation layer answers a different question. A passing lower layer does n
 | Isolated Vita3K self-test | 249 checks, zero failures | 43 portable checks + 192 observer checks + 14 production-plugin checks | Physical kernel loading, SceShell/Paf behavior, commercial-title compatibility |
 | Host CTest, low-memory fix | 10 suites; 30 worker cases; 1.59 s recorded run | Policy and bounded fallback ownership under host substitutes | Device Paf fallback success or console performance |
 | SceLibc correction, host and isolated Vita3K | 10 host suites (2.14 s), 10 production-kernel cases, 255 emulator checks; zero emulator failures | Both C-library hook families, bounded strcpy, original returns, overlapping memmove, zero-length suppression and hook removal | Real CLANNAD dialogue or physical startup of this new revision |
+| Ranking correction, host and synthetic Vita3K | 10 host suites (5.44 s); 264 checks (52 portable + 192 observer + 20 plugin); old comparator fails four new fixture checks | Discriminating comparator regression with unchanged 26,480 B source table | Full-game compatibility or hardware performance |
+| Actual CLANNAD with corrected full-feed bridge | Two rendered narration pages match the same three streams; ranks 2/3/4 then 3/4/5 | Generic interception/decoding and production top-five ranking on these two pages, no title profile | Physical kernel mapping, shell rendering, manual selection (`selected=0`), dictionary or wider scenes |
 | Installed binary readback | Full hashes matched | Intended bytes reached installed paths | Loaded modules or functional capture |
 | Physical normal boot | API 8, registration 0, STARTED 6 | Corrected set initialized on this 3.65 device | Later game stability on all paths |
 | Physical picker | User observed it open after low-memory fix | Previous eager-allocation gate removed in this scenario | Useful text capture |
@@ -44,6 +46,12 @@ python3 tools/test_vita3k_hooks.py   --vpk build/vita-hooks-device/vjo-hook-test
 ```
 
 Record the commit, compiler, configuration and exact command for each new result. The 249-check emulator run belongs to the recorded boot-fix source; do not imply it reran after every shell edit. Low-memory source had its own host/Vita validation.
+
+## Independent review of the SceLibc correction
+
+A separate read-only review of head `0a660159...` found no blockers. It checked the zero-length memcpy gate, kernel-bounded strcpy without user-side strlen, allocation-end/NUL behavior and release ownership. The new kernel has 5,922 decoded ARM instructions with zero FPU/NEON, and the submit/offer/similarity compiled subtotal remains 2,784 B excluding OS overhead. These values belong to the newer revision; the earlier 5,923-instruction count remains valid for its recorded boot-fix binary.
+
+The synthetic Vita3K test transport uses a host-side substitute that calls strlen; it does not itself test production kernel read bounds. The separate production-kernel host cases exercise those bounds. Added syscall cost in real games remains unmeasured. See [[14-Retail-libc-hook-coverage]].
 
 ## Important diagnostic limits
 

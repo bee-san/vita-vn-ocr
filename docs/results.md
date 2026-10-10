@@ -4,6 +4,50 @@ Real-screenshot numbers come from the shared benchmark, `eval/run.py` (see
 `eval/README.md`). Host speed is informational only; nothing here was measured
 on a console.
 
+## The release models (train2, v0.2.0)
+
+`train2` pretrains on NVIDIA OCR-Synthetic-Multilingual-v1 Japanese line crops (nvsynth) mixed
+with synth2's VN boxes, then fine-tunes on teacher-labelled real crops. Method, ablation,
+per-style tables and the selection rule are in `docs/train2.md`.
+
+Three models are published as `v0.2.0`. The numbers are int8 through the C runtime, scored by
+`eval/run.py`. The C runtime decodes the same text as the PyTorch checkpoints on every test line
+(0 argmax-mismatch frames in f32, w8f and w8i; the logits agree within the parity test's
+tolerance, not bit for bit), so it scores the same CER.
+
+| model | width / vocab | int8 blob | arena (w8f / w8i) | vita-test CER / exact | psp-test CER / exact | est. A9 ms, 640-px line (w8i) |
+|---|---|---|---|---|---|---|
+| bar: JIS-trimmed int8 PP-OCRv5 mobile | — | 2,749,540 B | 13.4 MiB peak (research) | 2.30% / 79.1% | 5.34% / 66.1% | — |
+| **H15 (recommended)** | 1.5 / 5,355 | 1,155,968 B | 173,472 / 182,944 B | **1.56% / 83.5%** | **2.63% / 82.4%** | 166-302 ms |
+| F20 | 2.0 / 5,355 | 1,558,016 B | 228,512 / 241,056 B | 1.79% / 84.0% | 2.79% / 79.6% | 235-416 ms |
+| FL10 (PSP-lean) | 1.0 / 3,500 | 657,664 B | 118,432 / 124,832 B | 2.30% / 77.7% | 5.18% / 69.8% | 94-178 ms |
+
+Intervals are 95% paired bootstraps over lines; differences are in points of CER.
+
+- **H15 beats the bar on both sets.**
+  - vita-test −0.74 (CI −1.44 to −0.04), psp-test −2.71 (CI −4.05 to −1.36).
+  - It uses 0.42× the bar's int8 weight bytes. With its w8i arena and the line finder's, it needs
+    about 1.42 MB of memory on the console, plus the runtime's code.
+  - Its CER is 15× and 18× lower than v1's (int8: 23.87% / 46.57%).
+- **F20 beats the bar on psp-test** (−2.55, CI −3.84 to −1.30). On vita-test it is −0.51 (CI
+  −1.33 to +0.37).
+- **FL10 ties the bar on vita-test** (59 errors each) and is −0.16 on psp-test (CI −1.66 to
+  +1.42).
+- **The per-style criterion is not met.**
+  - Every model is above the bar on vita `coloured`, `coloured-name` and `name`, and on psp
+    `name` and `no-box`. These are mostly short rare-kanji crops.
+  - H15 and FL10 are also above it on psp `furigana`, F20 on vita `dark-on-light`, and FL10 on
+    four more styles.
+  - Most of these differences, on 4 to 62 lines, are within noise.
+- **The NVIDIA + synth2 pretrain does most of the work.** At width 1.5 alone it gets 1.72% /
+  3.19%.
+- **Fine-tuning on real crops lowers the selection CER (teacher_val) by 0.9 points at width
+  1.5.** On the test sets the gain is within noise (pooled −0.35, CI −0.76 to +0.04).
+- **Frame-level distillation from PP-OCRv6 small did not help.** F15, H15's recipe plus the KD
+  term, is +0.53 worse on teacher_val (CI +0.32 to +0.74) and level on the test sets.
+- **The A9 times are estimates** from the Vita compiler's machine code (`vita/a9_cycles.py`).
+  Nothing has run on a console.
+
 ## Baselines
 
 Measured 2026-10-09 on the shared x86 host with:

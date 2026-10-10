@@ -2,8 +2,8 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 11:29"
-status: ocr-first-installed-boot-verified-user-test-pending
+snapshot_utc: "2026-10-10 11:34"
+status: ocr-first-installed-physical-source-failure
 tags: [vita, device, handoff]
 ---
 
@@ -11,7 +11,7 @@ tags: [vita, device, handoff]
 
 **Latest verified state:** the OCR-first shell from merged overlay PR #13 is installed, fully read back and normally booted. The active configuration is now `text_source=auto`; Google Lens and the saved region are preserved. A fresh 706 B status log (device modification time 11:27:24 UTC) shows API 8, shell registration 0 and `bootstrap: worker started`. The complete 27-entry native inventory has kernel and shell STARTED (6), with zero query errors. CLANNAD `PCSG00415` was subsequently confirmed in the foreground.
 
-**Pending user test:** show dialogue and press L+R, then report the OCR excerpt and stable matching choice, or the exact error. Physical Lens completion, a correct visible-page match, source selection and following the next page remain unverified. Do not repeat the same request while this response is pending.
+**Latest physical test failed:** the user reports “text recognition failed. unexpected response (-108). no game text found yet.” Six paired status/kernel attempts identify a failed 2,040 KiB capture-buffer allocation (`0x80024302`) before JPEG or Lens; job arena peak is 0. The shell receives `0xC0000002` instead of the expected no-memory return, an additional propagation issue under review. Physical Lens completion, a correct visible-page match, source selection and following the next page remain unverified. See [[19-Physical-OCR-source-failure]].
 
 **Prior physical failure:** the previous shell/manual `text_source=hooks` mode produced a flood of changing 0% hooks and irrelevant text. Its status reached source sequence 3,035, full discovery active and selected source 0. Root acknowledged configuring that unanchored manual mode. This failed workflow motivated the new explicit user preference: one screenshot first, then a matching source. The successful install/boot does not erase that failure or prove its resolution. See [[17-OCR-first-physical-workflow]].
 
@@ -31,7 +31,7 @@ Kernel/text implementation source: `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e`; f
 
 ## Preserved rollback and evidence
 
-The latest private directory is `vita-agent-use/agent/overlay-ocr-picker-20261010/`. It contains shell/config/region backups, the deployment plan, transfer journals, full readbacks, `installation-report.json`, `status.after-reboot.txt` and `status.clannad-start.txt`. The report records upload completion and full readback verification; its physical OCR field remains `pending user dialogue test`. Operation IDs and private configuration stay local.
+The latest private directory is `vita-agent-use/agent/overlay-ocr-picker-20261010/`. It contains shell/config/region backups, the deployment plan, transfer journals, full readbacks, `installation-report.json`, `status.after-reboot.txt` and `status.clannad-start.txt`. The report records upload completion and full readback verification; its physical OCR field at installation was `pending user dialogue test`, now superseded by the user failure above. Operation IDs and private configuration stay local.
 
 The notes author inspected the fresh startup log. It is 706 B, SHA-256 `bc3577582f65bb2538c7e6bd424d1c65fe13db1aea74c9c8c75699bb8a71e6fb`. Its content/hash equals the earlier healthy startup, so freshness comes from the newly collected file and device modification time, not a different digest. The CLANNAD startup status is 2,056 B, SHA-256 `f88744dabecd69056a441fcbbeb0610975d4182834025f00992651a6a3549296`.
 
@@ -48,4 +48,4 @@ No firmware, bootloader, tai configuration or region setting was changed. The on
 - Live production Lens on the host exactly matches one short verified page from full-frame and cropped inputs. It does not establish physical capture/TLS or broad OCR accuracy. See [[18-OCR-anchor-memory-measurements]].
 - An earlier launch/power-off report remains historical and unresolved; normal boot of the latest installed set is established separately.
 
-This is a dated snapshot. PIDs, app state, tokens and connections can change. Read current state before another operation and preserve paired configuration/transfer state; see [[09-Device-operations-and-recovery]]. Next record the user's actual screenshot/match result, then continuity across another page and dictionary behavior. See [[12-Open-questions-and-next-steps]].
+This is a dated snapshot. PIDs, app state, tokens and connections can change. Read current state before another operation and preserve paired configuration/transfer state; see [[09-Device-operations-and-recovery]]. Next validate the region-sized capture-buffer correction and error propagation, then repeat the screenshot/match test after a concrete fix. See [[12-Open-questions-and-next-steps]].

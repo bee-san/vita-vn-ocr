@@ -12,7 +12,7 @@ The immediate goal is to make the user's CLANNAD dialogue available in the Vita 
 
 ## Current decision
 
-The physical test did not produce a usable workflow: the user saw changing 0% hooks and irrelevant text. The user explicitly wants one OCR screenshot first, then the matching source, and accepts Google Lens to reduce local memory demand. The built follow-up is overlay PR #13, merged as `539c2888` from exact reviewed head `5826329`. Shell/config readbacks and normal boot are verified; CLANNAD is launched and the user screenshot/match test is pending. Do not ask the user to keep trying the same manual stream-picker flow as if the earlier hardware test were merely unanswered.
+The physical test did not produce a usable workflow: the user saw changing 0% hooks and irrelevant text. The user explicitly wants one OCR screenshot first, then the matching source, and accepts Google Lens to reduce local memory demand. The built follow-up is overlay PR #13, merged as `539c2888` from exact reviewed head `5826329`. Shell/config readbacks and normal boot are verified; CLANNAD launches, but the user screenshot test failed with “unexpected response (-108)” and no game text. Paired logs identify failed 2,040 KiB kernel capture allocation before Lens. Validate a region-sized allocation repair and original-error propagation before another physical attempt; see [[19-Physical-OCR-source-failure]]. Do not ask the user to keep trying the same manual stream-picker flow as if the earlier hardware test were merely unanswered.
 
 ## Follow-up work
 
@@ -20,8 +20,8 @@ The physical test did not produce a usable workflow: the user saw changing 0% ho
 2. **Make match state truthful.** The prior installed manual mode had no OCR reference. A 0% label there does not mean a calibrated match failed; distinguish uncalibrated discovery from a computed score.
 3. **Stop unrelated source churn from driving the default UI.** The baseline starts full memory discovery on open and republishes the picker for every source-table sequence change. Verify the actual corrective behavior rather than assuming a comparator tweak alone fixes the interaction.
 4. **Validate the constrained OCR path and failure handling.** CLANNAD already exhausted large result allocations. A one-time OCR anchor must be tested under the relevant memory budget and leave useful, stable feedback on failure.
-5. **Preserve the completed deployment record.** Shell/config readbacks match reviewed head `5826329`; only hooks→auto changed. Normal boot is verified. Avoid another install/reboot merely while waiting for the requested user test.
-6. **Retest the user's actual workflow.** One screenshot should yield relevant current-page text/source matching, then a chosen source should follow another page. Verify dictionary behavior and reopens afterward. Candidate count, normal boot and emulator snapshots alone do not satisfy this.
+5. **Preserve the completed deployment record.** Shell/config readbacks match reviewed head `5826329`; only hooks→auto changed. Normal boot is verified. Preserve this known bootable set while isolating the new source-stage failure.
+6. **Resolve the source failure, then retest the actual workflow.** The -108 UI wording hid a confirmed full-frame kernel capture OOM; fix and validate region-sized storage and original-error handling. Then One screenshot should yield relevant current-page text/source matching, then a chosen source should follow another page. Verify dictionary behavior and reopens afterward. Candidate count, normal boot and emulator snapshots alone do not satisfy this.
 
 The prior boot/install and two-page emulator results remain valid within their scopes. The physical experience remains unverified/failed until the requested OCR-first interaction works for the user. See [[17-OCR-first-physical-workflow]].
 

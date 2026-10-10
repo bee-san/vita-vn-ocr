@@ -18,7 +18,7 @@ The anchor job uses one temporary **384 KiB (393,216 B)** result arena, first th
 
 The former worker requested two 384 KiB arenas in one 768 KiB USER_RW allocation even for the first screenshot. Its existing 256 KiB Paf fallback applied only after a native source was selected. Selected native text still uses its separate dictionary path. Arena capacity is not the complete resident cost of the plugin, capture buffers or operating system.
 
-The raw capture separately requests **2,088,960 B (2,040 KiB) KERNEL_RW** for 960×544×4 pixels. The observed shell USER_RW failure does not prove this different allocation failed. Keep those domains distinct when diagnosing memory errors.
+The raw capture separately requests **2,088,960 B (2,040 KiB) KERNEL_RW** for 960×544×4 pixels. The earlier shell USER_RW failure did not prove this different allocation failed. The later physical OCR test now independently confirms this KERNEL_RW allocation fails with `0x80024302`; see [[19-Physical-OCR-source-failure]]. Keep these separate failures and allocations distinct.
 
 ## JPEG and TLS measurements
 
@@ -74,7 +74,7 @@ The saved normalized region `(2457,47826,51541,17588)` became pixel rectangle `(
 
 Source inspection shows `kernel/display.c:display_hook` admits only primary-display/index-0 submissions from `g.game_pid`. `kernel/capture.c:capture_copy` copies from that game-owned pointer, before final display composition. The Paf picker belongs to SceShell and fails the game-PID filter. Opening it blocks controller input but does not suspend the game. A game that stops submitting frames reaches the existing 1.5-second capture timeout; no stale composited framebuffer fallback is used. This is a source-code finding, not a new physical capture validation.
 
-Production-worker tests with Vita I/O substitutes cover Paf fallback, allocation failure, delayed completion, close/reopen, exit cancellation, stable choices and stale-source confirmation. The final PR #13 head `5826329` passes 10 host suites in 4.18 s, including 37 worker cases, plus local Vita release/ABI checks. None measures actual Paf availability. The shell is now installed and normally booted, but the anchor job itself has no verified physical OCR result yet.
+Production-worker tests with Vita I/O substitutes cover Paf fallback, allocation failure, delayed completion, close/reopen, exit cancellation, stable choices and stale-source confirmation. The final PR #13 head `5826329` passes 10 host suites in 4.18 s, including 37 worker cases, plus local Vita release/ABI checks. None measures actual Paf availability. The shell is installed and normally booted, but its physical OCR test failed with source error -108. Paired logs confirm the full-frame kernel buffer allocation fails before JPEG or Lens; see [[19-Physical-OCR-source-failure]].
 
 ## Evidence locations and next measurement
 

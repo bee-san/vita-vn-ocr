@@ -177,3 +177,13 @@ Exact head `5826329` passed hosted host (52 s) and Vita (4m25s) in run `38048108
 ## 26. OCR-first shell installed and normally booted; user test pending
 
 Full readback verified shell 158,564 B SHA `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c` and config 3,082 B SHA `b7c0dd2e5214c0d00612e832abeba2b5ea5dde67ad63875745764ce4ae4beeb0`. The notes author independently checked those local readbacks and confirmed only hooks→auto changed; Lens and the region remain preserved. The fresh 11:27:24 UTC startup log records API 8, registration 0 and worker startup. Root reports complete 27-entry native inventory, kernel/shell STARTED 6, zero errors, and CLANNAD confirmed foreground after launch. The user was asked to show dialogue, press L+R and report the OCR excerpt/stable match or exact error. Physical OCR remains pending. Narrow evidence paths and current hashes are in [[02-Current-device-state]].
+
+
+## 27. Physical OCR fails with source error -108
+
+The user reports “text recognition failed. unexpected response (-108). no game text found yet.” This supersedes the pending physical test, while verified installation/boot and host Lens results retain their narrower scopes. `core/conn.h` labels -108 `VJO_E_SOURCE`; inspection finds capture request, timeout, capture result and non-OOM JPEG failures all mapped there. The UI has no dedicated source-error case and uses generic “unexpected response” wording. No original branch/cause is yet confirmed. See [[19-Physical-OCR-source-failure]] for the stage table and evidence needed.
+
+
+## 28. Paired physical logs identify full-frame capture allocation failure
+
+Six attempts in `status.ocr-failed.txt` each return capture-request error -1073741826 (`0xC0000002`), job -108 and arena peak 0. Six corresponding `kernel.ocr-failed.txt` entries report the 2,040 KiB capture-buffer allocation failed with `0x80024302`. No JPEG/Lens request began. The notes author inspected these markers and recorded file hashes in [[19-Physical-OCR-source-failure]]. Root is developing storage sized to the selected 755×146 region; that correction is not yet installed. The expected -2 no-memory return becoming `0xC0000002` is a separate unresolved propagation issue under review.

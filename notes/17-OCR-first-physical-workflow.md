@@ -2,7 +2,7 @@
 title: Physical UX failure and OCR-first workflow
 created: 2026-10-10
 updated: 2026-10-10
-status: installed-boot-verified-physical-ocr-pending
+status: installed-physical-source-error
 tags: [vita, clannad, ocr, ux, requirements]
 ---
 
@@ -74,7 +74,7 @@ The UI preview formatter passed 650 ASAN/UBSAN cases and the renderer object com
 
 Current installed shell: **158,564 B**, SHA-256 `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c`. This supersedes the earlier 158,516 B candidate `28097a40...`. The kernel/text binaries remain unchanged. Root backed up the device's existing shell/config/region; the shell/config uploads completed with full readbacks and normal boot verified. The only configuration change is `text_source=hooks` → `auto`, preserving Lens and other selected settings.
 
-At head `a048faa`, hosted run `38047960757` failed the core configuration golden equality check: the updated explanatory comment in `docs/config.example.ini` was not synchronized with the generated default string in `core/config.c`. Hosted worker tests passed. Head `5826329` fixes the documentation/default-string mismatch and the cancelled subtitle state. The full host/Vita checks above were rerun afterward. Both hosted jobs at `5826329` passed in run `38048108519`: host 52 s and Vita 4m25s. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`. The older mismatch is a superseded CI failure, not a physical OCR failure. Shell/config installation and normal boot are verified; CLANNAD is in the foreground. The user has been asked to show dialogue and press L+R, then report the excerpt/match or exact error. Physical OCR and source selection are still pending.
+At head `a048faa`, hosted run `38047960757` failed the core configuration golden equality check: the updated explanatory comment in `docs/config.example.ini` was not synchronized with the generated default string in `core/config.c`. Hosted worker tests passed. Head `5826329` fixes the documentation/default-string mismatch and the cancelled subtitle state. The full host/Vita checks above were rerun afterward. Both hosted jobs at `5826329` passed in run `38048108519`: host 52 s and Vita 4m25s. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`. The older mismatch is a superseded CI failure, not a physical OCR failure. Shell/config installation and normal boot are verified; CLANNAD is in the foreground. The resulting physical user test failed with “text recognition failed. unexpected response (-108). no game text found yet.” Paired logs identify a failed 2,040 KiB kernel capture allocation before JPEG/Lens. Region-sized capture storage is being developed; source selection is still unverified. See [[19-Physical-OCR-source-failure]].
 
 Live Lens OCR on the Vita, available device memory and the physical interaction remain unverified; the separate host endpoint result is established only within its narrow scope. The source-level 384 KiB workspace is a bounded allocation policy, not a measured total additional memory figure.
 

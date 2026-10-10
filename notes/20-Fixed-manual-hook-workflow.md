@@ -24,6 +24,8 @@ The selected source remains six bytes with update count 1 in the recorded sample
 
 **Established:** a source can be selected, the manual list is no longer driving the earlier repeated OCR failure, and the physical Paf dictionary allocation/job completes successfully for that selected text. **Unverified:** the selected source is the visible dialogue, the dictionary result is useful on-screen, and the source follows advancing pages. Stable wrong text is still a failed dialogue workflow.
 
+The latest completed app inventory has no running entries after the user closed CLANNAD. Do not reinterpret that as an observed crash. Root is separately evaluating a possible title-specific register entry; its validity is not established by the current manual selection.
+
 ## Evidence and follow-up
 
 Private directory: `/home/bee/Documents/src/ps-vita-ocr-lab/vita-agent-use/agent/overlay-ocr-picker-20261010/`.

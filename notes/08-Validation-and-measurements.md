@@ -30,6 +30,7 @@ Each validation layer answers a different question. A passing lower layer does n
 | Physical OCR-first deployment | Shell/config readback hashes match, only hooks→auto changes; normal boot and CLANNAD foreground launch verified | Reviewed binary/config reached the device and initialized | Anchor allocation, actual Lens result, rendered stable choices or selected-source continuity |
 | Physical OCR-first interaction | User reports “unexpected response (-108)” and no game text | The physical screenshot/OCR flow still fails | A specific capture cause, a Lens server error or successful text selection |
 | Physical fixed manual selection | Selected source metadata; 256 KiB Paf dictionary jobs rc=0, peak 110,080 B; user suspects wrong text | Selection and allocator/job completion on the device | Visible dialogue match, useful dictionary output or selected-source continuity |
+| Region-sized capture, PR #14 head `5118c4a` | 10 host suites in 4.61 s, 41 worker/16 kernel cases; kernel ASAN/UBSAN; Vita release/ABI; 6,055 ARM instructions, no FPU/NEON | Requested capacity/ownership regression coverage and build compatibility | Successful physical region allocation/capture, Lens result or corrected error propagation on hardware |
 
 ## Reproduction commands
 

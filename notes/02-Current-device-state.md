@@ -2,14 +2,14 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 11:40"
+snapshot_utc: "2026-10-10 11:44"
 status: manual-mode-selected-dialogue-match-unverified
 tags: [vita, device, handoff]
 ---
 
 # Current device state snapshot
 
-**Latest verified state:** the OCR-first shell from merged overlay PR #13 is installed, fully read back and normally booted. The user subsequently chose a fixed manual list; the active configuration is now `text_source=hooks`, verified by full readback without a reboot. Google Lens and the saved region are preserved for optional later use. A fresh 706 B status log (device modification time 11:27:24 UTC) shows API 8, shell registration 0 and `bootstrap: worker started`. The complete 27-entry native inventory has kernel and shell STARTED (6), with zero query errors. CLANNAD `PCSG00415` was subsequently confirmed in the foreground.
+**Latest verified state:** the OCR-first shell from merged overlay PR #13 is installed, fully read back and normally booted. The user subsequently chose a fixed manual list; the active configuration is now `text_source=hooks`, verified by full readback without a reboot. Google Lens and the saved region are preserved for optional later use. A fresh 706 B status log (device modification time 11:27:24 UTC) shows API 8, shell registration 0 and `bootstrap: worker started`. The complete 27-entry native inventory has kernel and shell STARTED (6), with zero query errors. CLANNAD `PCSG00415` was subsequently confirmed foreground for testing; latest completed app inventory is empty after the user closed the game. That inventory is not a crash diagnosis.
 
 **Earlier OCR test failed:** the user reports “text recognition failed. unexpected response (-108). no game text found yet.” Six paired status/kernel attempts identify a failed 2,040 KiB capture-buffer allocation (`0x80024302`) before JPEG or Lens; job arena peak is 0. The shell receives `0xC0000002` instead of the expected no-memory return, an additional propagation issue under review. Physical Lens completion, a correct visible-page match, source selection and following the next page remain unverified. See [[19-Physical-OCR-source-failure]].
 
@@ -44,7 +44,7 @@ No firmware, bootloader, tai configuration or region setting was changed. The ov
 ## Environment and boundaries
 
 - Physical device: PCH-1001, actual firmware 3.65.
-- Title: CLANNAD, `PCSG00415`; foreground launch confirmed after latest reboot.
+- Title: CLANNAD, `PCSG00415`; tested after reboot, then closed by the user (latest completed app inventory empty).
 - Controls/configuration: L+R overlay, Select+R subtitles, hooks text source, optional Google Lens OCR, existing local dictionary configuration.
 - Offline generic capture matches two visible narration pages without a title profile. Corrected full-feed ranking displays matching sources in the top five, but those snapshots had no selected source.
 - Live production Lens on the host exactly matches one short verified page from full-frame and cropped inputs. It does not establish physical capture/TLS or broad OCR accuracy. See [[18-OCR-anchor-memory-measurements]].

@@ -90,3 +90,10 @@ Potential remaining causes of empty/wrong candidates include failed game-memory 
 6. Only then test dictionary lookup, title restart, scene changes and stability.
 
 Do not infer success from a hook ID, a candidate count, one matching buffer, a host test or an emulator launch. See [[08-Validation-and-measurements]] and [[12-Open-questions-and-next-steps]].
+
+
+## Title-specific candidate after the wrong-text report
+
+The user is concerned that the selected manual text is wrong and asks whether Vita text hooking is feasible. The two-page emulator result shows real interception is possible for this title, while the physical current-dialogue workflow remains unproved. Do not treat that distinction as a reason to label the task completed or abandon the user's actual result.
+
+Root is privately investigating a candidate entry at module-relative offset `0x2C906`, reading `r1` as CP932, with register-capture validation pending. The investigator identifies `0xC5187D60` as the actual native main-module NID for module `VITA`, derived from private module-info bytes and Vita3K logs; it is not an imported function NID. The full profile/instruction signature remains private and ignored. Isolated validation targets a new register-observer stream `0x70000000` across two changed visible lines; no success is claimed yet. This is an experimental candidate, not a verified or installed CLANNAD profile. Exact executable identity, instruction signature, ABI/register lifetime, bounded text and correspondence with multiple visible pages are still required before treating it as usable. Earlier generic capture evidence does not prove a title-specific hook is necessary. See [[20-Fixed-manual-hook-workflow]].

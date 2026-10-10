@@ -196,3 +196,12 @@ After suggesting optional downscale/black-and-white, the user accepted ordinary 
 ## 30. Region-sized capture and explicit JPEG ownership under review
 
 The uncommitted `fix/region-sized-ocr-capture` patch requests 432 KiB for the saved crop rather than 2,040 KiB for every frame. It freezes crop geometry, checks capacity, publishes pending state atomically, preserves multipass local OCR and frees single-pass JPEG raw storage after the final copied row before Lens. A DISCARD flag handles an idle failed encoder without freeing pending or multipass ownership. Reviewers cover lifetimes/regressions. No completed final build/PR/deployment is claimed at this checkpoint; manual hooks remain the chosen physical mode.
+
+
+## 31. Capture repair published with final local validation
+
+PR #14 head `5118c4a09248a3d8b7e8018d85fa0d0247b82ca4` passes 10 host suites in 4.61 s (41 actual worker cases, 16 production-kernel cases), kernel ASAN/UBSAN, SDK ncnn-OFF Release and packaged ABI. The kernel audit counts 6,055 ARM instructions and zero FPU/NEON. Two independent reviews completed; hosted host passed in 56 s, Vita remained running. The repair is not merged or deployed. User-selected manual hooks and installed binaries remain unchanged.
+
+## 32. Physical wrong-text concern keeps title-specific investigation open
+
+The user asks whether real Vita hooking is possible and whether to give up. Root preserves the difference between the verified two-page emulator capture and the unverified/wrong physical selection. A private candidate at module-relative `0x2C906`, r1/CP932, is awaiting validated register captures; it is not an installed or proven profile. A completed native app inventory has no running entries because the user closed CLANNAD, not evidence of a new crash.

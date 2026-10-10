@@ -37,6 +37,6 @@ Private directory: `/home/bee/Documents/src/ps-vita-ocr-lab/vita-agent-use/agent
 
 `config.before-manual.ini`, `config.manual.ini` and transfer state remain local. Preserve operation IDs privately. Notes work made no device calls.
 
-Next compare the short user-reported text with the visible line or obtain equivalent safe visual evidence. Choose a different source if required, then verify two changing pages rather than accepting a one-time selection or dictionary return code. Keep the manual mode until the user chooses otherwise. The optional region-sized capture repair can proceed independently; it is not installed and does not gate this requested manual experiment.
+Next compare the short user-reported text with the visible line or obtain equivalent safe visual evidence. Choose a different source if required, then verify two changing pages rather than accepting a one-time selection or dictionary return code. Keep the manual mode until the user chooses otherwise. The optional region-sized capture repair is now merged as `c888b59`; its prepared artifacts remain uninstalled and do not gate this requested manual experiment.
 
 Related: [[02-Current-device-state]], [[06-Low-memory-overlay]], [[17-OCR-first-physical-workflow]], [[19-Physical-OCR-source-failure]], [[12-Open-questions-and-next-steps]].

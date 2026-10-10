@@ -14,7 +14,7 @@ The immediate goal is to make the user's CLANNAD dialogue available in the Vita 
 
 The user now explicitly chooses a fixed manual hook list and accepts ordinary text hooking without OCR if the list stays stable. Root switched only auto→hooks with full config readback; no reboot or new binary was needed. A source can be selected and physical Paf dictionary jobs complete, but the user thinks the text is wrong. Root requested a short example because the screenshot tool fails at JPEG encoding. See [[20-Fixed-manual-hook-workflow]].
 
-The OCR-first shell and its boot remain verified. Its earlier screenshot failure is a confirmed full-frame kernel capture allocation failure before Lens. Region-sized storage is being developed separately; it is optional for the current manual experiment and is not installed. See [[19-Physical-OCR-source-failure]].
+The OCR-first shell and its boot remain verified. Its earlier screenshot failure is a confirmed full-frame kernel capture allocation failure before Lens. Region-sized storage is now merged as PR #14 `c888b59`; it is optional for the current manual experiment and is not installed. See [[19-Physical-OCR-source-failure]].
 
 ## Follow-up work
 
@@ -22,7 +22,7 @@ The OCR-first shell and its boot remain verified. Its earlier screenshot failure
 2. **Validate manual continuity.** Keep the list stable, deliberately select a relevant source and verify two advancing pages. The source-table sequence changing does not mean the selected text changes.
 3. **Confirm dictionary usefulness.** Paf allocation and `rc=0` are now physical evidence, but the on-screen result still needs to correspond to the intended text.
 4. **Preserve the user's mode choice.** The current config is hooks, with Lens/region retained. Avoid silently changing back to auto or rebooting solely for a config change that takes effect on the next open.
-5. **Finish the optional capture repair under review.** Region-sized storage, frozen geometry/capacity, single-pass JPEG release, multipass OCR preservation and failure cleanup need complete validation before a separate deployment claim.
+5. **Keep the merged optional capture repair distinct from deployment.** Region-sized storage, frozen geometry/capacity, single-pass JPEG release, multipass preservation and cleanup passed host/build/review checks in PR #14. Prepared binaries are not installed; hardware allocation and capture remain unverified.
 6. **Preserve each outcome separately.** Boot/readback, host Lens, failed physical capture, successful allocator/job returns and correct visible dialogue are distinct observations. A usable text hook requires the last one.
 
 ## Questions requiring evidence

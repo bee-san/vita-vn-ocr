@@ -20,7 +20,7 @@ Paths below are local research locations. Private artifact directories remain un
 | `ps-vita-ocr-notes/` | Isolated notes worktree, branch `docs/vita-hook-investigation-notes`, based on OCR origin/main `7964b43f022e51bd26da84f9ff1fc0a26c9dd1aa`. Only `notes/` belongs to this change. |
 | `vita-jp-overlay-hooks/` | Firmware fix branch `fix/native-hooks-fw365`. |
 | `vita-jp-overlay-low-memory/` | Picker-memory branch `fix/native-text-low-memory`. |
-| `vita-jp-overlay-discovery/` | Current branch `fix/region-sized-ocr-capture`, based on PR #13 merge `539c2888`; capture-buffer changes are published as PR #14 head `5118c4a`, unmerged and uninstalled at this snapshot. Earlier capture branch `fix/native-libc-capture` remains separate. Earlier diagnostic experiment preserved separately in local-only `fix/native-text-discovery` commit `2d56ce4`, not deployed or submitted as a PR. |
+| `vita-jp-overlay-discovery/` | Current branch `fix/region-sized-ocr-capture`, based on PR #13 merge `539c2888`; capture-buffer changes are PR #14 head `5118c4a`, merged as `c888b59` but not installed at this snapshot. Earlier capture branch `fix/native-libc-capture` remains separate. Earlier diagnostic experiment preserved separately in local-only `fix/native-text-discovery` commit `2d56ce4`, not deployed or submitted as a PR. |
 | `ps-vita-ocr-lab/vita-jp-overlay/` | Shared overlay worktree; last observed on `fix/local-ocr-memory`, owned by the OCR session. Preserve it. |
 | `ps-vita-ocr-lab/vita-agent-use/` | Device control client and private ignored `agent/` evidence. |
 | `ps-vita-ocr-lab/tools/vitasdk/` | Local VitaSDK; arm-vita-eabi-gcc 15.2.0 in the recorded boot-fix build. |
@@ -33,7 +33,7 @@ Paths below are local research locations. Private artifact directories remain un
 | Native hook 3.65 boot ABI, guards, stack correction | `8486c97`; evidence `8e7a6e8`; SDK pin `c7eed5066fe2550ddb17748929db620951209418` | [#10](https://github.com/bee-san/vita-jp-overlay/pull/10), merged `bfb1ada4f3f6995100cb7fa04d4b8240c868ddcf` |
 | Picker/raw text without eager result arenas, optional bounded heap fallback | `e2ed3b7`; measured evidence `ca46033`; exact PR head `5b1310328a102aba915a58db9413a0b3ac475c9f` | [#11](https://github.com/bee-san/vita-jp-overlay/pull/11), merged `13bcf816ab4e45fb8f59da0f52407a621b07284e` |
 
-GitHub PR states above were independently queried on 2026-10-10. The active investigator reports overlay local main subsequently synchronized through PR #12 to latest merge `539c2888`. Do not switch or fast-forward another session's feature worktree to achieve that again.
+GitHub PR states above were independently queried on 2026-10-10. The active investigator reports overlay local main subsequently synchronized through PR #14 to latest merge `c888b59`. Do not switch or fast-forward another session's feature worktree to achieve that again.
 
 The earlier installed shell came from the low-memory implementation; it is now replaced by the OCR-first shell. Later docs/merge commits alone do not imply a different installed binary. Artifact hashes are the deployment evidence in [[02-Current-device-state]]. Source, built artifact, remote branch, merged revision and installed bytes are separate states.
 
@@ -55,9 +55,9 @@ The new kernel/text pair is installed and read back, with normal boot verified; 
 
 Final local validation passed all 10 host suites in 4.18 s, including 37 worker cases, and the Vita release/packaged ABI check. Two reviews found no remaining blockers. The older hosted `a048faa` failed only generated-default/config-example equality after a comment change; this is fixed in `5826329`. Both exact-head hosted jobs passed in run `38048108519`: host 52 s, Vita 4m25s. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`; local main was synchronized. Shell/config installation, complete readbacks and normal reboot are verified. The installed shell is 158,564 B, SHA `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c`. Live production-Lens host checks subsequently matched one short verified page from full and cropped inputs; the physical test subsequently failed with source error -108 and no game text. Paired logs now show the full-frame capture allocation fails before Lens; a region-sized allocation repair is being developed. The user subsequently chose fixed manual hooks; the current config is hooks, with Lens and its saved region preserved. See [[19-Physical-OCR-source-failure]].
 
-## Optional capture repair published
+## Optional capture repair merged, uninstalled
 
-[Overlay PR #14](https://github.com/bee-san/vita-jp-overlay/pull/14), head `5118c4a09248a3d8b7e8018d85fa0d0247b82ca4`, uses selected-region capture capacity and explicit single-pass JPEG ownership. Final local checks: 10 host suites in 4.61 s, 41 worker/16 production-kernel cases, kernel ASAN/UBSAN, ncnn-OFF SDK Release and packaged ABI; 6,055 kernel ARM instructions, no FPU/NEON. Both independent reviews completed. Hosted host passed (56 s), Vita remained running at the inspected snapshot. It is unmerged/uninstalled; the device remains in user-selected manual hooks mode. See [[19-Physical-OCR-source-failure]].
+[Overlay PR #14](https://github.com/bee-san/vita-jp-overlay/pull/14), head `5118c4a09248a3d8b7e8018d85fa0d0247b82ca4`, uses selected-region capture capacity and explicit single-pass JPEG ownership. Final local checks: 10 host suites in 4.61 s, 41 worker/16 production-kernel cases, kernel ASAN/UBSAN, ncnn-OFF SDK Release and packaged ABI; 6,055 kernel ARM instructions, no FPU/NEON. Both independent reviews completed. Both hosted jobs passed (host 56 s, Vita 3m41s), and PR #14 merged at 11:46:20 UTC as `c888b5936ca46729b0fbc7698b2348c5a4b3d387`. Local main/origin are synchronized. The prepared kernel/shell are not released or installed; the device remains in user-selected manual hooks mode. See [[19-Physical-OCR-source-failure]].
 
 ## Adjacent work to preserve
 

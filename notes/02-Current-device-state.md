@@ -2,7 +2,7 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 11:44"
+snapshot_utc: "2026-10-10 11:48"
 status: manual-mode-selected-dialogue-match-unverified
 tags: [vita, device, handoff]
 ---
@@ -50,4 +50,4 @@ No firmware, bootloader, tai configuration or region setting was changed. The ov
 - Live production Lens on the host exactly matches one short verified page from full-frame and cropped inputs. It does not establish physical capture/TLS or broad OCR accuracy. See [[18-OCR-anchor-memory-measurements]].
 - An earlier launch/power-off report remains historical and unresolved; normal boot of the latest installed set is established separately.
 
-This is a dated snapshot. PIDs, app state, tokens and connections can change. Read current state before another operation and preserve paired configuration/transfer state; see [[09-Device-operations-and-recovery]]. Next resolve the user's wrong-text concern and verify that a selected manual source follows dialogue. Region-sized capture work remains a separate, optional path under development. See [[12-Open-questions-and-next-steps]].
+This is a dated snapshot. PIDs, app state, tokens and connections can change. Read current state before another operation and preserve paired configuration/transfer state; see [[09-Device-operations-and-recovery]]. Next resolve the user's wrong-text concern and verify that a selected manual source follows dialogue. Region-sized capture PR #14 is merged and prepared separately, but no new binary is installed; it remains optional for the current manual experiment. See [[12-Open-questions-and-next-steps]].

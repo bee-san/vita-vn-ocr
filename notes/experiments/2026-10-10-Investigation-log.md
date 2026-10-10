@@ -205,3 +205,10 @@ PR #14 head `5118c4a09248a3d8b7e8018d85fa0d0247b82ca4` passes 10 host suites in 
 ## 32. Physical wrong-text concern keeps title-specific investigation open
 
 The user asks whether real Vita hooking is possible and whether to give up. Root preserves the difference between the verified two-page emulator capture and the unverified/wrong physical selection. A private candidate at module-relative `0x2C906`, r1/CP932, is awaiting validated register captures; it is not an installed or proven profile. A completed native app inventory has no running entries because the user closed CLANNAD, not evidence of a new crash.
+
+
+## 33. Capture repair merged; title-profile proof still absent
+
+PR #14 final head `5118c4a` passed hosted host 56 s and Vita 3m41s, then merged at 11:46:20 UTC as `c888b5936ca46729b0fbc7698b2348c5a4b3d387`; local main/origin are synchronized. Prepared private artifacts are kernel 39,048 B SHA `ae3c0341...`, shell 158,848 B SHA `83dac94f...`, unchanged text `84259631...`. The notes author independently hashed them. No release or physical install occurred.
+
+The first candidate-profile emulator run has no kind-4 register stream, so attachment/capture is still being diagnosed. A separate small bounded picker-diagnostics branch is in development for explicit-action observations, with private game text excluded from public notes. The user has not been asked to test the prepared capture build; manual hooks and the wrong-text concern remain current.

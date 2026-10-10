@@ -44,13 +44,25 @@ The memory-specific request/result error is separately mapped to `VJO_E_OOM=-103
 
 `core/client.c` has no dedicated `VJO_E_SOURCE` presentation case, so it falls through to “unexpected response (%d).” The wording does not establish an unexpected HTTP response or Lens rejection. `core/client.c` can also produce a source error when reading its JPEG input; preserve the original stage and logs before choosing a cause.
 
-## Region-sized repair under development
+## Region-sized repair merged, not installed
 
 At published [overlay PR #14](https://github.com/bee-san/vita-jp-overlay/pull/14), head `5118c4a09248a3d8b7e8018d85fa0d0247b82ca4` on `fix/region-sized-ocr-capture` from merge `539c2888`, root implements 4 KiB-aligned allocation for the requested pixel region. The saved 755×146 crop needs **442,368 B (432 KiB)** after alignment, compared with the old 2,040 KiB frame allocation. This is code-derived requested capacity, not a successful physical allocation measurement.
 
-The patch freezes requested framebuffer/crop geometry before allocation, checks raw capacity before copying, and publishes pending state atomically. A `VJO_CAPTURE_ONCE` flag distinguishes a single JPEG pass from local ncnn OCR's multiple row passes: the kernel frees the JPEG raw buffer after the final copied row, before Lens transmission, while preserving a multipass image. `VJO_CAPTURE_DISCARD` releases an idle single-pass image after encoder failure and refuses pending/multipass ownership. Both independent reviewers checked these lifetimes/regressions. Final local validation passes all 10 host suites in 4.61 s, including 41 actual worker cases and 16 production-kernel cases; kernel ASAN/UBSAN also passes. The ncnn-OFF SDK Release build and packaged ABI pass; the kernel has 6,055 decoded ARM instructions with zero FPU/NEON. Hosted host passed at exact head `5118c4a` (56 s), with Vita CI still running in run `38049340699` when checked. PR #14 is open, unmerged and uninstalled.
+The patch freezes requested framebuffer/crop geometry before allocation, checks raw capacity before copying, and publishes pending state atomically. A `VJO_CAPTURE_ONCE` flag distinguishes a single JPEG pass from local ncnn OCR's multiple row passes: the kernel frees the JPEG raw buffer after the final copied row, before Lens transmission, while preserving a multipass image. `VJO_CAPTURE_DISCARD` releases an idle single-pass image after encoder failure and refuses pending/multipass ownership. Both independent reviewers checked these lifetimes/regressions. Final local validation passes all 10 host suites in 4.61 s, including 41 actual worker cases and 16 production-kernel cases; kernel ASAN/UBSAN also passes. The ncnn-OFF SDK Release build and packaged ABI pass; the kernel has 6,055 decoded ARM instructions with zero FPU/NEON. Both hosted jobs passed at exact head `5118c4a` in run `38049340699`: host 56 s, Vita 3m41s. PR #14 merged at 11:46:20 UTC as `c888b5936ca46729b0fbc7698b2348c5a4b3d387`; local main/origin are synchronized. It is not released or installed.
 
 The user subsequently chose a fixed manual list, so this repair is an optional OCR path rather than a prerequisite for the current requested manual experiment. See [[20-Fixed-manual-hook-workflow]].
+
+## Prepared artifacts, separate from installed binaries
+
+The notes author independently hashed the prepared files under `vita-agent-use/agent/overlay-region-capture-20261010/`. These are local build/deployment-preparation artifacts, not device readbacks:
+
+| Artifact | Bytes | SHA-256 |
+|---|---:|---|
+| Kernel candidate | 39,048 | `ae3c03412837ceb0770d078dbc4f7c5197accfefccd96a3e86292a0d67515cfd` |
+| Shell candidate | 158,848 | `83dac94f1af2410f4b28bc8f9a1409a0a78c6ee8349f560d21e6425e4bcb4b3b` |
+| Text, unchanged | 7,936 | `84259631e0efe87472750a04a944a0d2cb7673f218c85f316ae3a450e6c7565f` |
+
+The installed physical hashes remain in [[02-Current-device-state]]. No successful region-sized capture allocation or Lens request is established on the device, and the user has not been asked to retry this new build.
 
 ## Next evidence
 

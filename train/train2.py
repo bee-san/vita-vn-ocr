@@ -227,16 +227,32 @@ class StreamSource:
         return p
 
     def _loader(self):
-        while True:
-            p = self._next_path()
-            items, _ = load_shard(p, self.encode, self.opts, self.key)
-            if items:
+        # Any failure (load_shard's SystemExit for missing targets, a corrupt shard, a whole
+        # pass over the shard list without a usable line) is handed to the training thread,
+        # which raises it, instead of ending this thread silently and leaving _take() blocked.
+        try:
+            empty = 0
+            while True:
+                p = self._next_path()
+                items, _ = load_shard(p, self.encode, self.opts, self.key)
+                if not items:
+                    empty += 1
+                    if empty >= len(self.paths):
+                        raise SystemExit(f"source {self.name}: no usable lines in any of its "
+                                         f"{len(self.paths)} shards")
+                    continue
+                empty = 0
                 perm = self.lrng.permutation(len(items))
                 self.q.put([items[j] for j in perm])
+        except BaseException as e:   # SystemExit included: a thread would swallow it
+            self.q.put(e)
 
     def _take(self):
         self.loaded += 1
-        return self.q.get()
+        got = self.q.get()
+        if isinstance(got, BaseException):
+            raise RuntimeError(f"source {self.name}: shard loader failed: {got}") from got
+        return got
 
     def sample(self):
         k = int(self.rng.integers(len(self.pool)))

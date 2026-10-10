@@ -44,40 +44,49 @@ Knobs (the defaults rebuild v1 exactly; `train.py --help`):
 
 | knob | trained (v1's value in bold) | cost only | what it changes |
 |---|---|---|---|
-| `--width` | 0.5, 0.75, **1.0**, 1.5; 2.0 with real data (running) | 0.25, 2.5, 3.0 | every channel count (32/64/128/160/192 at 1.0) |
-| `--depth` | **1**, 2; 2 + ctx 4 at width 1.5 with real data (running) | 3 | stride-1 DS blocks after each of the three downsampling blocks |
+| `--width` | 0.5, 0.75, **1.0**, 1.5; 2.0 with real data (not finished at merge) | 0.25, 2.5, 3.0 | every channel count (32/64/128/160/192 at 1.0) |
+| `--depth` | **1**, 2; 2 + ctx 4 at width 1.5 with real data (not finished at merge) | 3 | stride-1 DS blocks after each of the three downsampling blocks |
 | `--ctx`, `--ctx-k` | **2** blocks k **5**; 4 blocks k 7 | | temporal context blocks (depthwise 1×k + pointwise, residual) on the CTC frame row |
-| `--bottleneck` | **96**, 128; 48 with real data (queued) | 64 | width of the factorised head's 1×1 bottleneck |
-| `--vocab` | 2,500 and 3,500 + `<unk>`, **5,354**; 3,500 with real data (running) | | output classes (plus the CTC blank) |
+| `--bottleneck` | **96**, 128; 48 with real data (not finished at merge) | 64 | width of the factorised head's 1×1 bottleneck |
+| `--vocab` | 2,500 and 3,500 + `<unk>`, **5,354**; 3,500 with real data (not finished at merge) | | output classes (plus the CTC blank) |
 | `--height` | 24, **32** | | input line height (24 collapses 24→12→6→3→2→1 with the same layers) |
-| `--qat` | with real data (queued) | | int8 weight fake quantisation over the last half of training |
+| `--qat` | with real data (not finished at merge) | | int8 weight fake quantisation over the last half of training |
 | `--real` | off; realdata's `real_train.npz` at weight 10 for `*_r` runs | | mixes real training lines into every batch |
 
 Scores (`train/sweep_eval.py`, collected by `train/sweep_table.py`):
 
 - **vita-test** and **psp-test** are eval's hand-checked sets, cropped and scored by
-  eval's own `sets.py` and `metrics.py`. vita-test is on main (206 lines, 2,564
-  characters, 16 Vita games) and psp-test (245 lines, 2,510 characters, 14 PSP VNs),
-  both as merged on main (eval #2 and #5; manifest sha256s are in each run's eval
-  JSON). On v1 this gives eval's published numbers exactly: vita-test 23.75% CER /
-  52.43% exact, psp-test 46.45% / 30.2%.
+  eval's own `sets.py` and `metrics.py`: vita-test (206 lines, 2,564 characters, 16 Vita
+  games) and psp-test (245 lines, 2,510 characters, 14 PSP VNs) as merged on main (eval
+  #2 and #5; manifest sha256s are in each run's eval JSON). On v1 this gives eval's
+  published numbers exactly: vita-test 23.75% CER / 52.43% exact, psp-test 46.45% / 30.2%.
 - **vita-test-inv** and **psp-test-inv** are the same lines with the dark-on-light
   ones inverted by their style tag. The v1 recipe renders only light text, so every
   v1-recipe model reads dark text at 80–95% CER whatever its size. That's a data gap,
   which synth2, NVIDIA pretraining and the real fine-tuning close. Inverting by the tag
   (an oracle) keeps it from drowning the architecture differences. Inverted, v1 reads
-  dark-on-light lines at 4.9% (vita) and 6.2% (psp) CER.
+  dark-on-light lines at 4.9% (vita) and 5.6% (psp) CER (int8).
 - **real-hand-x** is 46 lines (727 characters) that the research campaign
-  transcribed by hand from 17 Vita games outside vita-test, with dark lines inverted by
-  their tag.
+  transcribed by hand from 17 Vita games outside vita-test's set games, with dark lines
+  inverted by their tag. Two caveats: 2 of the lines are from v3, which eval's
+  `test_games.json` reserves as family of vita-test's v7721, so the set is not strictly
+  independent of vita-test; and the research cut `v17287_1_2` as a 99×380 scene crop
+  with about 20 px of text at the bottom, which no model reads at height 32. Neither
+  line is training data (only synthetic-only runs are scored on this pool).
 - **real CER**, the decision metric, pools vita-test-inv, psp-test-inv and real-hand-x:
-  5,801 characters, 47 games, int8 weights (the runtime's W8F mode). "Δ vs base" is the
-  paired difference to `base_s1`, with a 95% bootstrap interval over lines (10,000
-  resamples). That interval covers test-set sampling only. Training noise is a separate
+  5,801 characters from 45 games (vita-test and psp-test share v10856 and v13072), int8
+  weights (the runtime's W8F mode). "Δ vs base" is the paired difference to `base_s1`,
+  with a 95% bootstrap interval over lines (10,000 resamples), computed from the same
+  per-line errors as the pooled CERs, so it equals the difference of the table's
+  columns. That interval covers test-set sampling only. Training noise is a separate
   term, which `base_s2` measures.
 - **synth-val** is the whole held-out synthetic shard (10,001 lines).
+- Every set is predicted in batches of one padded width, so every line gets exactly the
+  input of eval/run.py's (and the C runtime's) one-line inference. In a mixed-width
+  batch the replicate padding of shorter lines changes their last frames.
 
-Sizes come from runtime's exporter (`train/export.py` on runtime's PR #4 at `d7460e3`).
+Sizes come from runtime's exporter (`train/export.py`, merged in #4) and are the same
+numbers `vocr_cli --arena` prints for the exported blobs.
 The **int8 blob** has BN folded, per-output-channel int8 for every pointwise,
 row-collapse, bottleneck and head conv, float32 stem, depthwise convs, biases and
 scales, and the vocab embedded. The **arena** is the exact `vocr_arena_bytes()` at the
@@ -88,7 +97,7 @@ grow with line width. The **footprint** is the int8 blob plus the W8F arena.
 line divided by 0.24–0.30 GMAC/s, the research's fp32 throughput for one 444 MHz
 Cortex-A9 core, which runtime's PR uses too. 640 px is about the p90 of real lines once
 resized to height 32: vita-test lines are 299 px at the median, 608 px at p90 and 726 px
-at most; psp-test lines are 247 / 485 / 664 px. No test line reaches the 1024-px clamp.
+at most; psp-test lines are 247 / 488 / 664 px. No test line reaches the 1024-px clamp.
 
 Environment: the shared 16-core x86 host, Python 3.11.15, torch 2.5.1+cpu.
 
@@ -216,21 +225,34 @@ the same physical text.
 The output head (bottleneck plus the 5,355-way 1×1 conv) holds 71% of v1's parameters.
 So width barely moves the weights: halving it saves 22% of the blob, while it halves the
 arena and cuts the backbone's MACs. The vocab and the bottleneck shrink the head itself.
-The arena is 36–340 KiB for every config, so the weights dominate the footprint, and
-every config is far below the 50 MB budget. At width ≥ 2.0 the row collapse has a
-reduction length K = 640, over the runtime's W8I limit of 516, so those models run in
-f32 or W8F only.
+The arena is 35–349 KiB for every config (W8F 35–331 KiB, W8I 37–349 KiB), so the
+weights dominate the footprint, and every config is far below the 50 MB budget. Every
+config runs in all three modes. At width ≥ 2.0 the row collapse has a reduction length
+K = 640, and W8I still runs it: the runtime sums int8 × int16 products exactly in int32
+chunks of 512 terms and adds the chunks in float (`runtime/vocr.c`, `W8I_CHUNK`). The
+C runtime's W8I logits for random-init width 2.0 and 3.0 models (K = 640 and 960) are
+within 2.2e-5 of PyTorch's int8-weight model, with the same argmax on every frame
+(`tests/test_arch.py` checks width 2.0).
 
 ## Vocabulary
 
 `train/vocab.py build --size N` keeps every kana, the VN punctuation set and the digits.
 It ranks the other characters of v1's vocab by a VN-weighted frequency: 95% the
-synthetic text pools at the renderer's weights, 5% the kanji of 25,215 VNDB character
-names, because VN scripts repeat their cast's names. It keeps the top N - 1 and appends
-`〓` as `<unk>`. `train.py --vocab` maps every other character to `<unk>`, so the model
-learns to say "unknown" instead of guessing a lookalike. A reduced vocab is a subset of
-v1's. `--extra FILE` adds characters, for example the frequent ones nvsynth reports
-missing from the NVIDIA text.
+synthetic text pools at the renderer's weights, 5% the kanji of VNDB character names,
+because VN scripts repeat their cast's names. The names are those of every character of
+a Japanese-original VN with at least 100 votes (`vocab.py names`, 25,215 names), minus
+the 5,134 that appear in one of eval's test games (`test_games.json` `all` or
+`is_test_vn`), so the test sets' games never inform the ranking: 20,081 names. It keeps
+the top N - 1 and appends `〓` as `<unk>`. `train.py --vocab` maps every other character
+to `<unk>`, so the model learns to say "unknown" instead of guessing a lookalike. A
+reduced vocab is a subset of v1's. `--extra FILE` adds characters, for example the
+frequent ones nvsynth reports missing from the NVIDIA text.
+
+The test-game exclusion came in at review. Before it, `vocab_2500.txt` had 坪碗蛍覇餌Ｂ
+instead of x峯朧澪荻蓄 and `vocab_3500.txt` had 枷柾沫盧穗錫黛 instead of 柘櫂瓏籐耆蕾鴫.
+The sweep's `v2500` and `v3500` runs (and the follow-up `v3500_r`) were trained with
+those earlier files. None of the 26 characters occurs in vita-test or psp-test, and both
+sets' coverage is the same with either version.
 
 `train/vocab.py coverage` gives the share of characters, and of lines, that a vocab can't
 emit:
@@ -238,16 +260,22 @@ emit:
 | text | characters | 2,500 + unk | 3,500 + unk | v1 (5,354) |
 |---|---|---|---|---|
 | eval vita-test (16 games) | 2,564 | 0.43% (4.4% of lines) | 0.12% (1.5%) | 0.04% (0.5%) |
+| eval psp-test (14 games) | 2,510 | 0.40% (3.7%) | 0.04% (0.4%) | 0 |
 | research hand transcriptions (21 games) | 952 | 0.74% (8.5%) | 0.21% (1.7%) | 0 |
 | agreed real pseudo-labels, all splits | 3,492 | 0.63% (5.7%) | 0.12% (0.9%) | 0.03% (0.3%) |
 | synth-val labels | 181,264 | 0.77% (11.4%) | 0.20% (3.3%) | 0 |
-| Aozora dialogue pool (every 20th chunk) | 1,236,590 | 0.66% (18.0%) | 0.20% (5.8%) | 0.06% (1.4%) |
-| NVIDIA Japanese text (nvsynth PR #8, 305M chars) | | 1.33% | 0.49% | 0.25% (2.65% of lines) |
+| Aozora dialogue pool (every 20th chunk) | 1,236,590 | 0.67% (18.1%) | 0.20% (5.8%) | 0.06% (1.4%) |
+| NVIDIA Japanese text (nvsynth's every-line build, 89 sources, 473M characters) | | 1.31% | 0.49% | 0.25% (2.71% of lines) |
 
 On vita-test, the 2,500 vocab misses 浬唾縋咄嗟箕羨蓬瘴耽, the 3,500 vocab misses 浬瘴,
-and v1's misses 瘴. The VNDB-name weighting matters at 2,500: ranking by the corpus alone
-misses 1.05% of the research lines' characters instead of 0.74%. v1's misses on the
-NVIDIA text are mostly web symbols (– ^ • ¥ ▪ € £ ` ´ ») and 0.012% kanji.
+and v1's misses 瘴. On psp-test, 2,500 misses 霄錆蓬濯鞄絢爛虹漏鴎, 3,500 misses 霄, and v1's
+misses nothing. The VNDB-name weighting is measured on text from games outside every test
+set: on realdata's validation split (16,555 characters), ranking with the names misses
+0.48% of the characters at 2,500 and 0.04% at 3,500. Ranking by the corpus alone misses
+0.74% and 0.16%. The NVIDIA row counts every horizontal line of nvsynth's per-source
+records (`full/<split>/nv_<split>_NNN.json` character histograms, 65 train and 24
+validation sources as of 2026-10-09 23:40Z). v1's misses there are mostly web symbols
+(– ^ • ¥ ▪ € £ ` ´ ») and 0.014% kanji (nvsynth PR #8's report).
 
 ## Quantisation
 
@@ -257,7 +285,10 @@ per-output-channel int8 with a straight-through gradient. Per output channel it 
 with BatchNorm folding (`tests/test_arch.py`), so it simulates the exported weights
 exactly. `sweep_eval.py` scores every checkpoint three ways: fp32; int8 weights with
 float activations, the runtime's W8F mode; and int16 per-position activations into the
-int8 convs, the runtime's W8I mode, simulated.
+int8 convs, the runtime's W8I mode, simulated. Post-training W8F moves the pooled real
+CER by at most 0.19 points (width 0.5: 1,206 → 1,217 errors in 5,801 characters), and
+by 0.06 points for the recommended width 1.5 with real data. W8I is within one character
+error of W8F in every run.
 
 <!-- BEGIN quant -->
 | run | QAT | real CER fp32 | real CER int8 W8F | real CER W8I (sim.) | synth-val CER fp32 | synth-val CER int8 |
@@ -283,32 +314,48 @@ row collapse, depthwise 1×k temporal with k ≤ 7, ReLU, residual adds and the
 factorised head. No op was added; a BiLSTM or attention mixer would need new kernels,
 and the temporal Ctx blocks already are an attention-free mixer.
 
-On runtime's code (export.py `cdcf220`, vocr.c/h `e5c4bb6`), four random-init configs
-with randomised BN statistics were checked on 24 synth-val crops each:
-w1.0/b96/h32/5,355; w0.25/b48/h24/2,501; w0.5/b64/h24/3,501; w0.75/b96/h32/3,501.
-- f32: the C logits equal this branch's PyTorch model exactly (max relative difference 0).
-- W8F: they equal `set_weight_quant(model, 8)` exactly (0).
-- W8I: within 1.7e-5.
-- Every frame has the same argmax.
+On main's runtime (merged in #4), re-checked at review: six random-init configs with
+randomised BN statistics, 24 synth-val crops each, with the runtime's own preprocessing
+as the network input. The configs are w1.0/b96/h32/5,355; w0.25/b48/h24/2,501;
+w0.5/b64/h24/3,501; w0.75/b96/h32/3,501; w1.5 depth 2 ctx 4; and w2.0 (K = 640).
+- f32: the C logits match this branch's PyTorch model to within 5.4e-7 of the largest
+  logit.
+- W8F: they match `set_weight_quant(model, 8)` to within 1.2e-6. That is the int8 export
+  `fake_quant_weight` simulates, so QAT trains exactly the deployed weights.
+- W8I: within 3.7e-5.
+- Every frame has the same argmax in every mode.
 
-The sizes are the same with runtime's PR head (`d7460e3`). Coordination is on PR #4:
-`tests/parity.py` hard-codes height 32, and `export.load_checkpoint()` doesn't yet
-pass `depth`/`ctx`/`ctx_k`. eval's `TinyTorch` backend passes them (this PR).
+The trained recommendation (`w150_r`) passes `runtime/tests/parity.py` on 40 lines each
+of vita-test and psp-test, in f32, W8F and W8I:
+- logits bit-identical to `tests/vocr_ref.py` and the same strings as PyTorch;
+- tile-size invariant and `VOCR_INVERT` correct (checked on 10 of the lines);
+- `vocr_arena_bytes()` equal to the plan.
+
+Through eval's harness (`eval/run.py --model 'cmd:runtime/build/vocr_cli …'`), the C
+runtime gives the PyTorch CERs on all 451 lines: 7.29% / 17.05% in f32, and 7.33% /
+17.09% in W8F and W8I. `export.load_checkpoint()` and eval's `TinyTorch` backend rebuild
+depth / ctx / ctx_k students (this PR). `tests/test_arch.py` exports a height-24 depth-2
+ctx-3 k7 student through the C runtime.
 
 ## Limitations
 
-- 5,000 steps is 15% of v1's budget, and train2 pretrains on far more data (about 23M
-  NVIDIA lines, synth2, then real fine-tuning). Gaps between sizes measured this early
-  can change with budget and data, usually in favour of larger models, so the large end
-  of this sweep is a lower bound on what capacity buys.
-- One seed per config, plus one repeat of the baseline, which differed by 1.05 points.
+- 5,000 steps is 15% of v1's budget, and train2 pretrains on far more data: nvsynth's
+  every-line NVIDIA set (PR #8, not merged yet) had 17.0M train lines from 65 sources at
+  2026-10-09 23:28Z, plus synth2, then real fine-tuning. Gaps between sizes measured this
+  early can change with budget and data, usually in favour of larger models, so the
+  large end of this sweep is a lower bound on what capacity buys.
+- One seed per config, plus one repeat of the baseline, which differed by 0.98 points.
   Single-seed differences under about 1–2 points are within training noise. The
-  width 1.5 vs 1.0 gain with real data (-1.69 points) is one seed pair; the 15,000-step
-  pair that is still running repeats the comparison at three times the budget.
+  width 1.5 vs 1.0 gain with real data (-1.66 points) is one seed pair. The 15,000-step
+  pair, which repeats the comparison at three times the budget, was still training at
+  merge (below).
 - vita-test-inv and psp-test-inv use the style tags as a polarity oracle. The deployed
   pipeline needs the line finder or the training data to handle dark text. The
   vita-test-con / psp-test-con columns use the console's own polarity rule instead
-  (`common.line_dark`, which agrees with the tags on 93.7% / 94.7% of lines).
+  (`common.line_dark`, which agrees with the tags on 93.7% / 95.5% of lines).
+- `v2500` and `v3500` were trained with the reduced vocabs from before the test-game
+  exclusion (Vocabulary). The two versions differ in 6 and 7 characters, none of them
+  in the test sets.
 - Console speed isn't measured; MACs are the proxy. qemu-arm has no instruction-count
   plugin here.
 
@@ -317,11 +364,18 @@ pass `depth`/`ctx`/`ctx_k`. eval's `TinyTorch` backend passes them (this PR).
 ```sh
 H=/local/home/skerraut/herd-vita-ocr; PY=$H/shared/venv/bin/python
 export VOCR_EVAL_DATA=$H/shared/artifacts/eval      # eval's screenshots
-export VOCR_EVAL_MANIFESTS=DIR                      # optional: main's vita-test + PR #5's psp-test
-$PY train/vocab.py names                            # VNDB character names (local only)
+$PY train/vocab.py names                            # VNDB character names + VN ids (local only)
 $PY train/vocab.py build --size 2500; $PY train/vocab.py build --size 3500
 $PY train/vocab.py coverage
+# one knob per run; *_r runs add: --real $H/shared/artifacts/realdata/real_train.npz --real-weight 10
 $H/heavy.sh $PY train/train.py --run base_s1 --out runs --steps 5000 --eval-every 2500 --seed 1 [knob]
-$H/heavy.sh $PY train/sweep_eval.py --run runs/base_s1
-$PY train/sweep_table.py --ref base_s1 --export RUNTIME/train/export.py --json docs/arch-sweep.json --doc docs/arch-sweep.md
+mkdir -p runs/v1 && ln -s $H/shared/models/v1/ckpt_best.pt runs/v1/ckpt_last.pt   # v1, for scale
+$H/heavy.sh $PY train/sweep_eval.py --run runs/base_s1        # every set, fp32 / W8F / W8I
+$PY train/sweep_table.py --runs runs --ref base_s1 --json docs/arch-sweep.json --doc docs/arch-sweep.md
+$PY train/sweep_table.py --runs runs --data real --ref base_r --json docs/arch-sweep-real.json --doc docs/arch-sweep.md
+$PY train/cost.py --table                                   # the cost block (also written by --doc)
 ```
+
+The review re-scored all 14 evaluated checkpoints this way at commit 777f74d. Its eval
+JSONs, with every line's prediction and errors, are in
+`$HERD/shared/artifacts/arch/review-777f74d/<run>/`.

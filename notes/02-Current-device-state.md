@@ -2,7 +2,7 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 11:48"
+snapshot_utc: "2026-10-10 12:00"
 status: manual-mode-selected-dialogue-match-unverified
 tags: [vita, device, handoff]
 ---
@@ -15,7 +15,7 @@ tags: [vita, device, handoff]
 
 **Prior physical failure:** the previous shell/manual `text_source=hooks` mode produced a flood of changing 0% hooks and irrelevant text. Its status reached source sequence 3,035, full discovery active and selected source 0. Root acknowledged configuring that unanchored manual mode. This failed workflow motivated the new explicit user preference: one screenshot first, then a matching source. The successful install/boot does not erase that failure or prove its resolution. See [[17-OCR-first-physical-workflow]].
 
-**Latest manual result:** source ID 1 was selected (kind 2, encoding 0, six bytes, one update). A 256 KiB Paf dictionary workspace completed the selection job with `rc=0`, 37 ms and 110,080 B arena peak; two later reopens also completed. The user suspects the text is wrong. Device screenshots fail at JPEG encoding, so root requested a short example. No visible-page correspondence or changing selected dialogue is verified. See [[20-Fixed-manual-hook-workflow]].
+**Latest manual result:** source ID 1 was selected (kind 2, encoding 0, six bytes, one update). A 256 KiB Paf dictionary workspace completed the selection job with `rc=0`, 37 ms and 110,080 B arena peak; two later reopens also completed. The user suspects the text is wrong. The screenshot tool reports stage `jpeg_encode`/code -7, so root requested a short example. Its installed runtime has not been matched to the dirty local agent source; the stage is not a source-level diagnosis. No visible-page correspondence or changing selected dialogue is verified. See [[20-Fixed-manual-hook-workflow]].
 
 ## Installed plugin set
 
@@ -50,4 +50,4 @@ No firmware, bootloader, tai configuration or region setting was changed. The ov
 - Live production Lens on the host exactly matches one short verified page from full-frame and cropped inputs. It does not establish physical capture/TLS or broad OCR accuracy. See [[18-OCR-anchor-memory-measurements]].
 - An earlier launch/power-off report remains historical and unresolved; normal boot of the latest installed set is established separately.
 
-This is a dated snapshot. PIDs, app state, tokens and connections can change. Read current state before another operation and preserve paired configuration/transfer state; see [[09-Device-operations-and-recovery]]. Next resolve the user's wrong-text concern and verify that a selected manual source follows dialogue. Region-sized capture PR #14 is merged and prepared separately, but no new binary is installed; it remains optional for the current manual experiment. See [[12-Open-questions-and-next-steps]].
+This is a dated snapshot. PIDs, app state, tokens and connections can change. Read current state before another operation and preserve paired configuration/transfer state; see [[09-Device-operations-and-recovery]]. Next resolve the user's wrong-text concern and verify that a selected manual source follows dialogue. Region-sized capture PR #14 and bounded picker-diagnostics PR #15 are merged and prepared separately, but no new binary/profile is installed. Combined candidate hashes and the screenshot-runtime provenance limit are in [[21-Picker-diagnostics-and-screenshot-provenance]]. See [[12-Open-questions-and-next-steps]].

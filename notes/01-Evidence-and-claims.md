@@ -46,6 +46,7 @@ Use this ledger to prevent a partial result becoming a compatibility claim. Evid
 | E30 | The user chose a fixed manual hook list; only auto→hooks changed on the device. | Full 3,083 B config readback SHA `3833843d...`, no reboot/plugin replacement. Physical selection is logged, but the user suspects wrong text. [[20-Fixed-manual-hook-workflow]] |
 | E31 | The physical Paf fallback completes local dictionary jobs for the selected text. | Session 12 selected ID 1, kind 2/encoding 0, six bytes/one update; 256 KiB Paf, job rc=0, peak 110,080 B, observed 37/21/25 ms. This does not prove dialogue correspondence or visible dictionary usefulness. [[06-Low-memory-overlay]] |
 | E32 | Region-sized capture repair passes local validation and is published in PR #14. | Head `5118c4a`: 10 host suites in 4.61 s; 41 worker/16 production-kernel cases; kernel ASAN/UBSAN; SDK Release/ABI; 6,055 ARM instructions, no FPU/NEON. Two reviews; hosted host/Vita passed. Merged `c888b59`; prepared artifacts are not installed. [[19-Physical-OCR-source-failure]] |
+| E33 | Bounded explicit-action picker diagnostics are merged and combined artifacts are prepared. | PR #15 head `f58b1aa`, merge `5e5bc25`, local 10 suites/clean Vita ABI and both exact hosted jobs pass. Combined shell `4f1f0650...` is not installed. Screenshot code -7/stage `jpeg_encode` remains a returned label with unmatched installed-agent provenance. [[21-Picker-diagnostics-and-screenshot-provenance]] |
 
 ## Inferences and hypotheses
 

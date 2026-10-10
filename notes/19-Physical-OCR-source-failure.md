@@ -54,12 +54,12 @@ The user subsequently chose a fixed manual list, so this repair is an optional O
 
 ## Prepared artifacts, separate from installed binaries
 
-The notes author independently hashed the prepared files under `vita-agent-use/agent/overlay-region-capture-20261010/`. These are local build/deployment-preparation artifacts, not device readbacks:
+The notes author independently hashed the prepared files under `vita-agent-use/agent/overlay-region-capture-20261010/`. The table below records the earlier PR #14-only preparation. The shell is now superseded by the combined PR #14+#15 shell `4f1f0650...` (159,528 B); current prepared hashes are in [[21-Picker-diagnostics-and-screenshot-provenance]]. These are local build/deployment-preparation artifacts, not device readbacks:
 
 | Artifact | Bytes | SHA-256 |
 |---|---:|---|
 | Kernel candidate | 39,048 | `ae3c03412837ceb0770d078dbc4f7c5197accfefccd96a3e86292a0d67515cfd` |
-| Shell candidate | 158,848 | `83dac94f1af2410f4b28bc8f9a1409a0a78c6ee8349f560d21e6425e4bcb4b3b` |
+| Earlier shell, superseded | 158,848 | `83dac94f1af2410f4b28bc8f9a1409a0a78c6ee8349f560d21e6425e4bcb4b3b` |
 | Text, unchanged | 7,936 | `84259631e0efe87472750a04a944a0d2cb7673f218c85f316ae3a450e6c7565f` |
 
 The installed physical hashes remain in [[02-Current-device-state]]. No successful region-sized capture allocation or Lens request is established on the device, and the user has not been asked to retry this new build.

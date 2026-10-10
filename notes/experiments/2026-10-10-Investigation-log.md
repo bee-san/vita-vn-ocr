@@ -217,3 +217,10 @@ The first candidate-profile emulator run has no kind-4 register stream, so attac
 ## 34. Register entry fires; initial experimental descriptor read the wrong argument
 
 Actual observations at candidate entry `0x2C906` show original r1=1, while the text pointer is the fifth argument at `*(original SP)`. The first r1 descriptor was wrong, explaining absent useful text; it was neither installed nor validated. The corrected private descriptor uses register D with one indirection and CP932. Two changed visible pages still need to match its captured output. This is a candidate-profile correction, not a demonstrated observer source bug or hardware fix. Full profile/signature bytes remain private.
+
+
+## 35. Picker diagnostics merged; combined artifacts remain uninstalled
+
+PR #15 exact head `f58b1aa49dd43fcc3d6d78b0c9bcd48a1c0ca6d7` merged at 11:55:40 UTC as `5e5bc2557ee183e60c4afd9335b55666e8697cea`. It logs bounded actual displayed rows/selection only for explicit actions, with excerpts kept private. Local 10 suites passed in 5.31 s, clean Vita Release/ABI passed, exact hosted host/Vita passed in 1m06s/3m07s. Combined prepared artifacts are kernel 39,048 B `ae3c0341...`, shell 159,528 B `4f1f0650...`, unchanged text 7,936 B `84259631...`; the notes author independently hashed them. None is installed.
+
+The corrected original-SP profile still needs two changed visible-line captures. The private emulator helper's SDK memory lookup omits thread stacks, and a bounded `GetThreadInfo` fallback is being tested; this is not a proven production observer/kernel fault. Separately, the installed screenshot runtime has not been matched to the dirty local agent backend, so code -7/stage `jpeg_encode` is not a source-level JPEG diagnosis. No agent source changes were made. See [[21-Picker-diagnostics-and-screenshot-provenance]].

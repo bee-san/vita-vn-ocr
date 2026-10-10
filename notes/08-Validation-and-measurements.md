@@ -31,6 +31,7 @@ Each validation layer answers a different question. A passing lower layer does n
 | Physical OCR-first interaction | User reports “unexpected response (-108)” and no game text | The physical screenshot/OCR flow still fails | A specific capture cause, a Lens server error or successful text selection |
 | Physical fixed manual selection | Selected source metadata; 256 KiB Paf dictionary jobs rc=0, peak 110,080 B; user suspects wrong text | Selection and allocator/job completion on the device | Visible dialogue match, useful dictionary output or selected-source continuity |
 | Region-sized capture, PR #14 head `5118c4a` | 10 host suites in 4.61 s, 41 worker/16 kernel cases; kernel ASAN/UBSAN; Vita release/ABI; 6,055 ARM instructions, no FPU/NEON | Requested capacity/ownership regression coverage and build compatibility | Successful physical region allocation/capture, Lens result or corrected error propagation on hardware |
+| Bounded picker diagnostics, PR #15 head `f58b1aa` | 10 host suites in 5.31 s; clean ncnn-OFF Vita/ABI; exact hosted host and Vita pass | Bounded explicit-action log implementation builds and passes existing suites | Actual device diagnostics or correct dialogue correspondence; build is uninstalled |
 
 ## Reproduction commands
 
@@ -62,7 +63,7 @@ The synthetic Vita3K test transport uses a host-side substitute that calls strle
 
 ## Important diagnostic limits
 
-Vita-agent screenshot attempts failed with `frame_unavailable`, code `-7`, stage `jpeg_encode`. No successful image file from those attempts exists. User reports and metadata were therefore needed for visual behavior; a screenshot request alone is not image evidence.
+Vita-agent screenshot attempts failed with `frame_unavailable`, code `-7`, stage `jpeg_encode`. No successful image file from those attempts exists. The installed agent runtime has not been matched to the dirty local source/backend, so this returned stage label cannot diagnose a specific encoder implementation; see [[21-Picker-diagnostics-and-screenshot-provenance]]. User reports and metadata were therefore needed for visual behavior; a screenshot request alone is not image evidence.
 
 A performance command returned a client error, while pushed native events contained roughly 59.992 FPS and partition free-memory fields (USER_RW 28,672 B free of 50 MiB; CDRAM 0 free of 16 MiB). Address-space ownership was not verified; these must not be reported as confirmed CLANNAD memory measurements. One sample is also not a latency distribution or stability benchmark.
 

@@ -10,9 +10,11 @@ tags: [vita, native-text, moc]
 
 This vault records the native text-hook investigation alongside the OCR project. Open this `notes/` directory as an Obsidian vault, or follow the ordinary Markdown files. It needs no Obsidian plugin. Findings are linked so a future session can recover the reasoning, evidence and limits without rereading the whole conversation.
 
-**Current outcome:** firmware 3.65 boots with the corrected plugins; CLANNAD's physical text picker opens without the previous memory error. The corrected generic SceLibc hooks now capture two visible narration pages through the same source in actual CLANNAD under isolated Vita3K, using the production text plugin and no game-specific profile. A stronger full-feed check then found and fixed a production ranking bug. A fresh run now puts the three matching sources in the displayed top five on both tested pages. **Still unresolved:** physical installation, kernel mapping, manual selection and dictionary behavior on the Vita. The current correction passes 264 synthetic Vita3K checks and is in PR #12, ready for review at evidence head `69006af`, but is not installed on the console. See [[07-CLANNAD-investigation]], [[14-Retail-libc-hook-coverage]] and [[15-Vita3K-runtime-investigation]].
+**Current outcome:** the corrected generic SceLibc hooks and source ranking are merged, installed on the physical Vita, read back and normally booted. Kernel API 8, shell registration 0 and STARTED kernel/shell states are verified. The same code captures two visible CLANNAD narration pages in isolated Vita3K without a game-specific profile, with all three matching sources in the top five after the ranking repair.
 
-The latest user report says the console is on. That is a user observation, not a fresh telemetry claim. The last supplied device update has the game closed and the original text plugin restored with readback verification. See [[02-Current-device-state]] before touching the device.
+**Still unresolved:** actual CLANNAD source selection, advancing dialogue and dictionary behavior on the physical Vita. The user has been asked to open CLANNAD, choose matching text with L+R / ▲▼ / ×, then advance and reopen twice; their result is pending. See [[02-Current-device-state]], [[07-CLANNAD-investigation]] and [[16-Full-feed-picker-ranking]].
+
+The deployed implementation is `6eef6c0`; final reviewed evidence head is `69006af`; overlay PR #12 merged as `a5e0c50`. It passed 264 synthetic Vita3K checks and exact final-head hosted CI. These are distinct from the pending physical game test.
 
 ## Start a session
 

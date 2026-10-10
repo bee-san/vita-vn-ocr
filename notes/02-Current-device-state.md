@@ -2,45 +2,46 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 10:53"
-status: needs-live-refresh
+snapshot_utc: "2026-10-10 11:00:20"
+status: installed-boot-verified-game-test-pending
 tags: [vita, device, handoff]
 ---
 
 # Current device state snapshot
 
-**This is a dated handoff, not live telemetry.** Latest user report: the console is on. Latest update from the active investigator: device connected, native running-app inventory empty, and fresh read-only backups verify the old kernel `447f2e64...` and restored text plugin `c146238b...`. Experimental scanner/kernel diagnostics have **not** been installed. The current generic-import and picker-ranking correction passes the corrected full-feed two-page emulator test and is built at `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e`, PR #12 (final evidence head `69006af9e36347b75534c01900b48d43ed372981`), and is not installed. Its versioned kernel/text artifacts are listed separately in [[14-Retail-libc-hook-coverage]] and [[16-Full-feed-picker-ranking]]; do not confuse them with this installed set.
+**Latest verified state:** the generic SceLibc and source-ranking correction is installed, fully read back, and normally booted on the physical Vita. The fresh 706 B status log (device modification time 11:00:20 UTC) shows API 8, shell registration 0 and `bootstrap: worker started`. The control server reconnected. Native inventory was complete (27 entries); kernel and shell were loaded in STARTED state 6, with zero query errors. The per-title text plugin was unloaded because the game was not running at that check, which is expected.
 
-Normal boot was already physically verified for the firmware fix and again after installing the low-memory shell. The user later reported another power-off around a CLANNAD launch. Its cause is not established; do not turn the earlier boot success into a claim that all later shutdowns are resolved.
+**Pending:** the user has been asked to open CLANNAD, show a page, press L+R, select matching text with ▲/▼ and ×, then advance dialogue and reopen twice. No physical game-capture result from this installed version has arrived at this snapshot. Do not infer success from the boot or the earlier emulator result.
 
-## Last verified installed plugin set
+## Installed plugin set
 
-All three use custom API 8. `ur0:tai/` is the active plugin location in this investigation. Check the current runtime and readback before the next deployment.
+All use custom API 8, under the active `ur0:tai/` path. Kernel and text were uploaded sequentially with expected-old-hash guards, native completion and full readback before reboot. The low-memory shell remains unchanged.
 
-| Plugin | Bytes | SHA-256 | Last evidence |
+| Plugin | Bytes | SHA-256 | Evidence |
 |---|---:|---|---|
-| `VitaJPOverlay_Kernel.skprx` | 38,620 | `447f2e640973743f80dbeb6099e62b6e7c2b72fe85936af4f8d9c24dfd54f217` | Boot-fix upload, full readback and successful normal boot; unchanged by the low-memory shell install. |
-| `VitaJPOverlay_Shell.suprx` | 156,196 | `45f86b1ea83c08bdf61c1dfd174cc5356151e746a3659a0299218436a8f10c8c` | Low-memory upload and full readback, followed by normal boot and user-visible picker. |
-| `VitaJPOverlay_Text.suprx` | 7,680 | `c146238b6e6544ec9ba27f1b03d35db89072c2fc4f3a05d0e75d94c679a777a7` | Restored original production text plugin; investigator confirmed full readback. |
+| `VitaJPOverlay_Kernel.skprx` | 38,620 | `6cc2dc868dc4403bcab252d689acd2f0779a55f9bd8069654b335eaffa571933` | Fresh installed-file readback and successful normal boot. |
+| `VitaJPOverlay_Shell.suprx` | 156,196 | `45f86b1ea83c08bdf61c1dfd174cc5356151e746a3659a0299218436a8f10c8c` | Previous full readback; unchanged in this install; loaded and started after reboot. |
+| `VitaJPOverlay_Text.suprx` | 7,936 | `84259631e0efe87472750a04a944a0d2cb7673f218c85f316ae3a450e6c7565f` | Fresh installed-file readback; game-process load/capture test pending. |
 
-The preceding shell backup is 155,068 B, SHA-256 `e5a408f3b68aaf809a0e37ada54160fbaa91d1b615d0b12b2774ab32a58bde57`. It belongs to the fixed-boot but eager-allocation version; it is not the current low-memory shell.
+Implementation source: `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e`. Final reviewed evidence head: `69006af9e36347b75534c01900b48d43ed372981`. Overlay PR #12 merged at 10:59:00 UTC as `a5e0c50b1096b5ae7de450ae712e63b272dc7f17`; final-head host (46 s) and Vita (4 m 23 s) CI both passed. The installed artifacts come from the implementation revision; the evidence-only commit changes no binary.
 
-## Confirmed behavior
+## Preserved rollback and evidence
 
-- Device: physical PCH-1001, actual firmware 3.65.
-- Boot markers: kernel API 8; shell registration 0; final `bootstrap: worker started`.
-- Kernel and shell reached native `STARTED` state 6. The game text module also reached that state in an earlier CLANNAD run.
-- Title under investigation: **CLANNAD, PCSG00415**.
-- User could open the native picker after the low-memory install; no captured candidate followed dialogue.
-- Input configuration at the last inspected point: L+R overlay, Select+R subtitles, hooks text source, local dictionary.
-- No firmware, bootloader or broad tai configuration migration was part of these repairs.
+Fresh preinstall backups match the previous kernel SHA `447f2e640973743f80dbeb6099e62b6e7c2b72fe85936af4f8d9c24dfd54f217` and previous text SHA `c146238b6e6544ec9ba27f1b03d35db89072c2fc4f3a05d0e75d94c679a777a7`. They remain private under `vita-agent-use/agent/overlay-libc-20261010/`, alongside upload journals, readbacks and the installation report. Operation IDs remain in private state.
 
-## Do not reuse transient state
+The notes author independently hashed both local readbacks and inspected the postboot log. Its SHA-256 is `bc3577582f65bb2538c7e6bd424d1c65fe13db1aea74c9c8c75699bb8a71e6fb`. Installation-report status is `installed_readback_verified_normal_boot_verified_awaiting_user_clannad_test`, installation time `2026-10-10T11:00:04.481678+00:00`.
 
-PIDs, app IDs, tokens, RPC IDs, transfer IDs and connection state are session-specific. Obtain them from current native inventory or saved private operation state. A PID from an earlier boot is not a valid target after reboot.
+No firmware, bootloader, tai configuration or region settings were changed in this deployment. The emulator test bridge was not installed. Experimental scanner/kernel diagnostic commit `2d56ce4` was not shipped.
 
-The existing paired control identity and its private directory are preserved. See [[09-Device-operations-and-recovery]]; the public notebook deliberately contains no network address, credential, certificate fingerprint or identity string.
+## Environment and boundaries
 
-## Next update checklist
+- Physical device: PCH-1001, actual firmware 3.65.
+- Title: CLANNAD, `PCSG00415`.
+- Last inspected controls/configuration: L+R overlay, Select+R subtitles, hooks text source, local dictionary.
+- The earlier installed low-memory shell already opened the picker, but found no usable sources with the old text backend.
+- Latest offline proof: two visible narration pages captured through generic imports, with three matching sources in the top five on each page and no title profile. Physical kernel mapping and shell interaction are separate tests.
+- A later pre-fix launch/power-off report remains a historical unresolved observation; normal boot of this new installed revision is now independently established.
 
-Record the new source commit, full plugin hashes and exact readback result. Record whether normal boot, game launch, hook attachment, candidate discovery and two advancing pages each passed. Keep these as separate fields even if one fails. Link the new private log in [[11-Sources-and-artifacts]], then append the event in [[2026-10-10-Investigation-log]].
+This is still a dated snapshot. PIDs, app state, tokens and connection state can change. Obtain them live before the next operation. Preserve the existing paired configuration and exact transfer state; see [[09-Device-operations-and-recovery]].
+
+Next update: record the user's actual picker/source-selection result, then metadata for two advancing pages and dictionary behavior. Keep a failure at any stage visible rather than replacing the verified boot/install record. See [[12-Open-questions-and-next-steps]].

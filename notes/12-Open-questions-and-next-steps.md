@@ -12,19 +12,18 @@ The immediate goal is to make the user's CLANNAD dialogue available in the Vita 
 
 ## Current decision
 
-The corrected generic SceLibc hooks capture two visible narration pages in actual CLANNAD under the emulator bridge, without a game profile. A stronger full-feed check found a production ranking defect; commit `6eef6c0` fixes it and a fresh run now places all three matching sources in the top five on both pages. The remaining immediate gate is the physical Vita workflow. See [[07-CLANNAD-investigation]] and [[16-Full-feed-picker-ranking]].
+The generic SceLibc capture and ranking repair is merged, installed, read back and normally booted. Corrected full-feed emulator proof matches two visible pages through the same streams and shows them in the top five without a game profile. The remaining immediate question is the user's physical CLANNAD experience. See [[02-Current-device-state]] and [[16-Full-feed-picker-ranking]].
 
-## Ordered investigation
+## Pending user test and follow-up
 
-1. **Verify deployment preconditions and exact-head review/checks.** Root refreshed read-only backups of the installed kernel/text, confirmed connection and an empty app inventory, and updated the private plan with the new kernel hash. Refresh again if state changes; source snapshots are not live telemetry.
-2. **Install the tested kernel/text pair when the primary investigator proceeds.** Preserve backups and perform full readback before reboot. The physical shell already matches the candidate build. Never install the emulator test bridge.
-3. **Run the normal-boot and controlled physical test.** Establish startup/API state, launch CLANNAD, show a page and confirm matching picker choices. The user asked to be told when this real-Vita test is needed; make the concrete test request at that point.
-4. **Select a source and advance dialogue.** Emulator snapshots had `selected=0`; actual manual selection and selected-source continuity remain untested. Verify at least two distinct visible pages and close/reopen behavior.
-5. **If physical candidates are absent, isolate the transport boundary.** Check actual hook attachment, game PID/mapping ownership, successful reads and decoder/rejection counters. The emulator bridge does not implement kernel page pinning or process isolation.
-6. **Verify dictionary and lifecycle.** Test bounded allocation fallback, overlay reopen, scene change, game restart and suspend/resume. Measure overhead/memory with correct process ownership.
-7. **Revisit title-specific work only if evidence requires it.** The two tested pages use generic imports with no profile. Other scenes, engine features and revisions remain untested; any new profile needs exact module/instruction validation.
+1. **Wait for the requested CLANNAD result.** The user has been asked to open CLANNAD, show dialogue, press L+R, choose the matching text with ▲/▼ and ×, then advance dialogue and reopen twice. Avoid duplicate requests while that response is pending.
+2. **Verify actual selection and page changes.** Emulator snapshots had `selected=0`; manual selection and selected-source continuity remain separate hardware evidence. Collect current metadata while respecting one-client device ownership.
+3. **If the picker is empty or wrong, isolate the boundary.** Verify the current game's text module/attachment, process/mapping identity, successful reads and decoding/ranking counters. The known-correct emulator decoder/ranker does not prove physical kernel mapping.
+4. **If the device stops or the game exits, preserve the exact state.** Keep installed hashes, last markers and any completed coredump; use the established recovery path and private backups as needed. Do not assume the original boot ABI failure has returned.
+5. **Once text follows pages, verify dictionary and lifecycle.** Exercise the bounded allocation fallback, overlay reopen, scene change, restart and suspend/resume. Measure overhead/memory with correct process ownership.
+6. **Revisit title-specific work only when evidence requires it.** The two tested pages use generic imports without a profile. Other scenes, features and revisions remain untested; any profile needs exact module/instruction validation.
 
-The current candidate passed 10 host suites, a Vita release build/ABI audit, 264 synthetic Vita3K checks, and the two-page corrected full-feed ranking experiment. These establish a concrete reviewed candidate for hardware testing, not success on the physical device. No physical install has occurred at this note snapshot.
+Do not reinstall or reboot merely because the user has not answered yet. The concrete candidate is already on the device, and boot is verified; the next observation should resolve the actual game workflow.
 
 ## Questions requiring evidence
 

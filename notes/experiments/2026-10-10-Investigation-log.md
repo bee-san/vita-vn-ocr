@@ -119,3 +119,13 @@ Root refreshed read-only physical backups: installed kernel remains `447f2e64...
 Final evidence-only overlay head `69006af9e36347b75534c01900b48d43ed372981` publishes the complete unfiltered checkpoints and hashes. Root independently compared both rendered pages with the corresponding source text and checked all six evidence hashes plus complete snapshot headers/footers. Implementation artifacts are unchanged from `6eef6c0`. PR #12 is now ready for review, no longer draft; exact final-head CI is starting. Earlier passing CI belongs to earlier heads and is recorded separately.
 
 Fresh physical read-only backups still show the old kernel/text; the new candidate has not been installed. The next dependent action waits for final-head checks/merge, then follows the existing authorized backup/readback/install workflow.
+
+## 18. Final revision merged, installed and normally booted
+
+Final head `69006af` passed hosted host (46 s) and Vita (4 m 23 s) CI, then merged at 10:59:00 UTC as `a5e0c50b1096b5ae7de450ae712e63b272dc7f17`. The standalone local main reference was fast-forwarded without changing concurrent worktree branches.
+
+Kernel SHA `6cc2dc86...` (38,620 B) and text SHA `84259631...` (7,936 B) were installed sequentially with expected-old-hash guards, native completion and whole-file readback comparisons. The low-memory shell SHA `45f86b1e...` remained unchanged. No config, region or firmware changes accompanied this deployment; the emulator bridge was not installed.
+
+Reboot was first accepted, then independently confirmed by reconnection and a fresh 706 B status log at 11:00:20 UTC: API 8, shell registration 0, worker started. Complete native inventory (27 entries) showed kernel/shell STARTED 6 with zero errors. The per-title text plugin was unloaded with the game closed, as expected. The notes author independently hashed both saved readbacks and inspected the startup log.
+
+The installation report now states `installed_readback_verified_normal_boot_verified_awaiting_user_clannad_test`. The user was asked to open CLANNAD, select matching text in the L+R picker, then advance/reopen twice; their result is pending. This records successful installation and boot, not physical dialogue capture. Exact hashes and private evidence locations are in [[02-Current-device-state]].

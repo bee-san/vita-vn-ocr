@@ -10,7 +10,9 @@ tags: [vita, native-text, libc, validation]
 
 The first generic text plugin observed SceLibKernel clib functions. Offline CLANNAD inspection found none of those four imports and found equivalent functions in SceLibc. The fix supports **both** families instead of treating this as proof that the game needs an engine-specific profile.
 
-Source commit: `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, branch `fix/native-libc-capture`, version `0.6-hooks.5`. [PR #12](https://github.com/bee-san/vita-jp-overlay/pull/12) is ready for review at final evidence-only head `69006af9e36347b75534c01900b48d43ed372981`; artifact bytes remain those of implementation `6eef6c0`. **This revision is not installed on the physical Vita.** The emulator test bridge matched two visible narration pages through one immediate source without a title profile. A full-feed follow-up found a production ranking bug, corrected at `6eef6c0`; the new run displays the three matching sources in the top five on both pages. Physical capture/manual selection remain pending. Evidence-only follow-up `d1ee0dc` kept the original artifacts unchanged; `6eef6c0` changes the kernel comparator and its artifact hash.
+Initial import-fix source: `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, version `0.6-hooks.5`. The later ranking repair is implementation `6eef6c0`; final evidence head `69006af9e36347b75534c01900b48d43ed372981` merged in [PR #12](https://github.com/bee-san/vita-jp-overlay/pull/12) as `a5e0c50b1096b5ae7de450ae712e63b272dc7f17`.
+
+**The final kernel/text pair is installed, fully read back and normally booted on the physical Vita.** Actual CLANNAD selection/capture there remains pending. The emulator proof matches two pages through the same immediate sources without a title profile, and the full-feed ranking repair puts all three matching sources in the displayed five on both pages. See [[02-Current-device-state]] and [[16-Full-feed-picker-ranking]].
 
 ## Capture behavior
 
@@ -20,7 +22,7 @@ Four additional import hooks cover SceLibc memcpy, strcpy, strncpy and memmove, 
 
 This is a kernel-and-text-plugin change. The shell artifact hash is unchanged. Match the tested pair if installing; do not assume a newer text plugin's bounded submission semantics are covered by the old installed kernel.
 
-## Validation at this head
+## Validation at the initial import-fix head
 
 | Check | Result |
 |---|---|
@@ -28,7 +30,7 @@ This is a kernel-and-text-plugin change. The shell artifact hash is unchanged. M
 | Production kernel cases | 10 passed, including CP932 at allocation end, absent NUL, ASCII and rejection of automatic-encoding register events |
 | Vita release build | Passed, OCR OFF, text test app ON |
 | Packaged syscall ABI | Passed |
-| Hosted exact-head CI | Host and Vita both SUCCESS on run `38045205714`, completed 2026-10-10 10:36:03 UTC; PR remains draft |
+| Hosted exact-head CI | Host and Vita both SUCCESS on run `38045205714`, completed 2026-10-10 10:36:03 UTC; PR was draft at that stage |
 | Isolated Vita3K | **255 checks, zero failures**: 43 portable + 192 observer + 20 production-plugin |
 | Synthetic production plugin events | 8 copy/string call events, 2 register-profile events, 10 matching sources |
 
@@ -49,7 +51,7 @@ The review calls out an important test boundary: the Vita3K fake transport uses 
 
 ## Built artifacts at the original import-fix commit
 
-The following hashes belong to implementation `0a660159...` before the ranking correction. Current candidate `6eef6c0` changes the kernel to SHA-256 `6cc2dc868dc4403bcab252d689acd2f0779a55f9bd8069654b335eaffa571933` (38,620 B), with the same shell/text bytes. See [[16-Full-feed-picker-ranking]] for its 264-check validation and full-feed rerun status. None of these candidate kernels has been installed on the physical console.
+The following hashes belong to implementation `0a660159...` before the ranking correction. Current candidate `6eef6c0` changes the kernel to SHA-256 `6cc2dc868dc4403bcab252d689acd2f0779a55f9bd8069654b335eaffa571933` (38,620 B), with the same shell/text bytes. See [[16-Full-feed-picker-ranking]] for its 264-check validation and full-feed rerun status. The original pre-ranking kernel was not installed; the final `6cc2dc86...` kernel is now installed and normally booted.
 
 
 | Artifact | Bytes | SHA-256 |
@@ -62,4 +64,4 @@ See [[02-Current-device-state]] for the separately verified installed set. Furth
 
 ## Remaining decisions
 
-Physical startup/capture, runtime overhead, real dialogue continuity and whether a title profile is necessary are unresolved. Two visible CLANNAD pages now match the same immediate generic source in the emulator. The full-feed experiment exposed and verified the correction of an initial-picker ranking defect; [[16-Full-feed-picker-ranking]] records the preserved failing baseline and successful new snapshot ranks. Review the exact head before deployment, then establish actual attachment and two advancing visible pages. See [[12-Open-questions-and-next-steps]].
+Physical startup now passes. Actual game capture/selection, runtime overhead, broader-scene dialogue continuity and whether later scenes need a title profile remain unresolved. Two visible CLANNAD pages now match the same immediate generic source in the emulator. The full-feed experiment exposed and verified the correction of an initial-picker ranking defect; [[16-Full-feed-picker-ranking]] records the preserved failing baseline and successful new snapshot ranks. Review the exact head before deployment, then establish actual attachment and two advancing visible pages. See [[12-Open-questions-and-next-steps]].

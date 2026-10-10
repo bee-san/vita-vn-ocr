@@ -43,7 +43,7 @@ No PVF/font import was present in this main-module inventory. A shared-font-hook
 
 **Decision:** correct the generic library coverage and observe attachment/capture before deciding a CLANNAD-specific native instruction hook is necessary. A STARTED plugin with four absent imports can still produce zero useful observations.
 
-The correction is now implemented as `0.6-hooks.5`, commit `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, and passes 255 synthetic Vita3K checks. It is published in PR #12 and not installed on the console. The first real-page match is now observed through a test-only emulator transport, while continuity and physical capture remain unverified. See [[14-Retail-libc-hook-coverage]].
+The correction is now implemented as `0.6-hooks.5`, commit `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, and passes 255 synthetic Vita3K checks. It was published in PR #12; the final version including the ranking repair is now merged, installed and normally booted on the console. Physical game capture remains pending. The first real-page match is now observed through a test-only emulator transport, while continuity and physical capture remain unverified. See [[14-Retail-libc-hook-coverage]].
 
 ## First real-game execution evidence
 

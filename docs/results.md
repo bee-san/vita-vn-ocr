@@ -26,8 +26,8 @@ Intervals are 95% paired bootstraps over lines; differences are in points of CER
 
 - **H15 beats the bar on both sets.**
   - vita-test −0.74 (CI −1.44 to −0.04), psp-test −2.71 (CI −4.05 to −1.36).
-  - It uses 0.42× the bar's int8 weight bytes and, with the line finder, about 1.42 MB of memory
-    on the console.
+  - It uses 0.42× the bar's int8 weight bytes. With its w8i arena and the line finder's, it needs
+    about 1.42 MB of memory on the console, plus the runtime's code.
   - Its CER is 15× and 18× lower than v1's (int8: 23.87% / 46.57%).
 - **F20 beats the bar on psp-test** (−2.55, CI −3.84 to −1.30). On vita-test it is −0.51 (CI
   −1.33 to +0.37).
@@ -36,7 +36,8 @@ Intervals are 95% paired bootstraps over lines; differences are in points of CER
 - **The per-style criterion is not met.**
   - Every model is above the bar on vita `coloured`, `coloured-name` and `name`, and on psp
     `name` and `no-box`. These are mostly short rare-kanji crops.
-  - H15 and FL10 are also above it on psp `furigana`, and FL10 on four more styles.
+  - H15 and FL10 are also above it on psp `furigana`, F20 on vita `dark-on-light`, and FL10 on
+    four more styles.
   - Most of these differences, on 4 to 62 lines, are within noise.
 - **The NVIDIA + synth2 pretrain does most of the work.** At width 1.5 alone it gets 1.72% /
   3.19%.

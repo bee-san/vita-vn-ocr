@@ -350,7 +350,7 @@ as in the Recipe:
 With the Recipe's commands, then for each model:
 
 ```sh
-export VOCR_EVAL_DATA=$A/eval VITASDK=$A/vita/vitasdk
+export HERD VOCR_EVAL_DATA=$A/eval VITASDK=$A/vita/vitasdk   # a9_cycles.py finds the shared qemu via $HERD
 train/export.py --ckpt runs/H15/ckpt_best.pt --out H15_f32.vocr
 train/export.py --ckpt runs/H15/ckpt_best.pt --out H15_w8.vocr --int8
 make -C runtime

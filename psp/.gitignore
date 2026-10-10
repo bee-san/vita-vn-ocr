@@ -1,0 +1,9 @@
+tools/
+build/
+*.o
+*.su
+*.ci
+*.elf
+*.prx
+*.PBP
+PARAM.SFO

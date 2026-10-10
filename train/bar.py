@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """Compare eval/run.py results with the owner's quality bar (RULES.md "Owner goal").
 
-  bar.py RESULT.json [RESULT2.json ...] [--bar JIS.json ...] [--md]
+  bar.py RESULT.json [RESULT2.json ...] [--md]
 
 The bar is the JIS-trimmed int8 PP-OCRv5 mobile (eval's `ncnn:.../ppocr-v5-mobile-jis-int8`
 baseline). Every result is re-scored from its per-line predictions against the committed
 manifests (eval/manifests/*.jsonl): eval/metrics.norm, Levenshtein over total ground-truth
 characters, overall and per style tag, so a JSON written before a tag fix scores with
-today's tags. Lines no longer in a manifest, or now uncertain, are left out.
+today's tags. Lines no longer in a manifest, or now uncertain, are left out. A result that
+lacks some of the manifest's lines is scored on the rest, with a warning on stderr: its
+numbers are then not comparable with the bar's.
+
+RULES.md asks for an overall CER *below* the bar's and a CER *at or below* it in every style,
+so `*` marks the overall row only when it is strictly below the bar (a tie is marked `=`) and
+a style row when it is at or below.
 
 The default bar files are eval's own baseline runs on the shared host: vita-test from
 results/ncnn-jis-int8.json, psp-test from results/rev01-psp/jis-int8.json (the run on the
@@ -53,6 +59,19 @@ def score(preds, man):
     return {k: (v[0] / max(v[1], 1), v[2] / max(v[3], 1), v[3]) for k, v in acc.items()}
 
 
+def mark(cer, bar_cer, overall):
+    """'*' if a CER meets the bar (overall: strictly below it; a style: at or below it), '='
+    for an overall tie, '' otherwise."""
+    if overall:
+        return "*" if cer < bar_cer - 1e-12 else "=" if abs(cer - bar_cer) <= 1e-12 else ""
+    return "*" if cer <= bar_cer + 1e-12 else ""
+
+
+def missing(preds, man):
+    """Manifest line ids a result has no prediction for."""
+    return [lid for lid in man if lid not in preds]
+
+
 def preds_of(path, name):
     d = json.loads(Path(path).read_text("utf-8"))
     s = d["sets"].get(name)
@@ -73,11 +92,17 @@ def main():
         for r in a.results:
             p = preds_of(r, name)
             if p is not None:
+                gone = missing(p, man)
+                if gone:
+                    print(f"warning: {r} {name}: no prediction for {len(gone)} of {len(man)} manifest lines "
+                          f"(e.g. {gone[0]}); scored on the rest, so not comparable with the bar",
+                          file=sys.stderr)
                 cols.append((Path(r).stem, score(p, man)))
         if not cols:
             continue
         tags = ["all"] + sorted(t for t in bar if t != "all")
-        print(f"\n{name} (CER / exact; * = at or below the bar)")
+        print(f"\n{name} (CER / exact; * = meets the bar: overall below it, a style at or below it; "
+              f"= overall tie)")
         head = ["style", "lines", "bar (JIS int8)"] + [c for c, _ in cols]
         if a.md:
             print("| " + " | ".join(head) + " |")
@@ -92,8 +117,8 @@ def main():
                 if v is None:
                     cells.append("")
                     continue
-                ok = b is not None and v[0] <= b[0] + 1e-12
-                cells.append(f"{100 * v[0]:.2f}% / {100 * v[1]:.1f}%" + (" *" if ok else ""))
+                m = mark(v[0], b[0], t == "all") if b is not None else ""
+                cells.append(f"{100 * v[0]:.2f}% / {100 * v[1]:.1f}%" + (f" {m}" if m else ""))
             if a.md:
                 print("| " + " | ".join(cells) + " |")
             else:

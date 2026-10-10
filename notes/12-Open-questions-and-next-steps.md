@@ -16,6 +16,12 @@ The user reports the physical manual-hook workflow works. Fresh logs verify a se
 
 The current kernel/shell/profile are installed/read back and normally booted; manual mode is preserved. The final refresh in the success log intentionally clears selection, so source ID 18 must not be assumed persistent. Do not request the same test again merely because broader compatibility remains unmeasured.
 
+## Current input repair
+
+The user confirmed a new defect: pressing × to choose a hook also advances CLANNAD, while idle does not. Native capture success remains established in its earlier scope. Overlay PR #17 contains checked neutral writes, copy-error propagation, checked-open failure handling and bounded diagnostics. Production controller/worker host tests pass, but the prepared binaries are uninstalled and the physical cause/fix remains unconfirmed. The user has since explicitly stopped the deployment to try something else. No upload, app close or reboot happened; only read-only backups were initiated. See [[24-Overlay-selection-input-leak]].
+
+Do not merge/deploy this candidate or resume the physical test automatically. Preserve the open PR, prepared binaries and current installed setup while awaiting the user's new direction. If the user later resumes the fix, × containment and normal controls after close still require physical evidence.
+
 ## Follow-up work when requested
 
 1. **Preserve the working manual configuration and evidence.** Keep exact installed hashes, successful source metadata and private diagnostic logs. Avoid unrequested mode changes/reinstalls.

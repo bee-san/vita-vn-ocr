@@ -254,3 +254,19 @@ The independently inspected pngshot revision `113d4715` hooks the same 3.65 SceS
 At about 12:15 UTC the user replied “omg it works.” Fresh private status (4,952 B, device time 12:14:59, SHA `c31bb2cc0692a3e3f049894950a8f3ec6fc8864c6c997541cbcfab92565656b1`) independently shows selected ID18/kind2 CALL/encoding0 AUTO at `8105910F`. Its own updates progress 1→5 and UTF-8 sizes 24→6→18→72→18. Native dictionary jobs return rc=0 at 111/166/1,290 ms, plus a 421 ms rerun after changed text; final explicit refresh clears selection. The fixed picker shows five bounded rows without scanning.
 
 This supports a working physical native follow/lookup experience together with the user report. It does not prove REGISTER `70000000` supplied the successful text, identify the profile as the missing component, independently count visible pages or validate physical OCR. The plan status now records user-reported native success with logged follow/lookup. See [[23-Physical-native-hook-success]].
+
+
+## 40. × selection reaches the game; ownership hardening prepared
+
+After native-text success, the user confirms the visual novel advances only when × is pressed to select a hook, not while idle. Existing picker selection retains its input block and does not close/unblock; Positive2 is already hooked with input-hook installation results 0. The exact physical leakage path remains unconfirmed.
+
+Overlay PR #17 head `464248a8606e38b45c0cd35677acb3d37cd6879f` (implementation `cda7de4`) adds direct neutral writes independent of sample reads, checked write errors/oversized batches, checked opening with retry/game-change error cleanup, and at most five controller-condition records per opening. It makes no speculative ENTER or close-latch change. Eleven host suites pass in 4.26 s, including seven actual controller cases and 44 actual worker cases; the original controller fails four regressions. Focused worker flow proves open/select/completion/refresh retain ownership, close releases once, and denied/stale paths clean up. Vita Release/ABI and 6,492 ARM/no FPU pass. Hosted host passes 1m03s; Vita remains pending.
+
+Prepared kernel 40,056 B SHA `fee142fa...` and shell 159,752 B SHA `faea5914...` are independently hashed, not installed. Root notified the user to save before the eventual merge/install/reboot. The actual × fix still requires the physical test. See [[24-Overlay-selection-input-leak]].
+
+
+## 41. User stops the input-fix deployment before any new write
+
+The user says “dont put it on the vita, i wanna try something else.” Root stops before any input-fix upload, app close or reboot. Only read-only backups had begun; the kernel download completed and the shell read was in flight. The working-text installation remains kernel `ae3c0341...`, shell `4f1f0650...`, Text `84259631...`, profile `99c73600...` and manual config `3833843d...`. Overlay PR #17 stays open/unmerged, and prepared binaries are preserved. Neither completed CI nor this notebook authorizes resuming deployment. Authorized notes publication continues without any device calls.
+
+The final read-only PR query shows both exact-head jobs passing (host 1m03s, Vita 2m46s), while the overlay PR remains open. No merge or deployment follows the check completion because the user stopped it.

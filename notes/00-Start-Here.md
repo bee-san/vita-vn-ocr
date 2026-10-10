@@ -12,6 +12,8 @@ This vault records the native text-hook investigation alongside the OCR project.
 
 **Current outcome:** the user reports **“omg it works”** on the physical Vita. Fresh logs confirm a selected native CALL source changes through five updates and completes dictionary jobs across reopens. The working source is kind 2 CALL, **not** the installed kind 4 REGISTER profile. Exact visible-page count is not separately stated; see [[23-Physical-native-hook-success]].
 
+**New physical issue:** × selects a hook but also advances the visual novel; the user confirmed it happens on the press, not while idle. The selection path already retains input ownership, and Positive2 is hooked. A controller hardening/diagnostic candidate is published as overlay PR #17, prepared but not installed. The user explicitly stopped deployment before any upload, app close or reboot; the PR remains open/unmerged, and the physical fix is unverified. See [[24-Overlay-selection-input-leak]].
+
 The kernel, diagnostic shell and title profile are installed/read back, normal boot and CLANNAD launch pass, and the user's fixed manual mode is preserved. The new register profile has two-page emulator proof but no physical register-source match yet. OCR remains optional and physically unverified after the capture repair. See [[02-Current-device-state]] and [[22-CLANNAD-register-profile-proof]].
 
 Earlier wrong-text, memory and boot failures remain part of the record. User-reported usefulness plus logged selected-source follow/lookup is a stronger result than installation alone, while broader scenes and compatibility remain unmeasured.
@@ -46,6 +48,7 @@ The earlier repair established install/boot and a two-page emulator capture/top-
 | Merged picker diagnostics and screenshot-runtime uncertainty | [[21-Picker-diagnostics-and-screenshot-provenance]] |
 | Two-page native register profile proof and rejected candidates | [[22-CLANNAD-register-profile-proof]] |
 | User-reported physical success and actual CALL-source evidence | [[23-Physical-native-hook-success]] |
+| × selection reaching the game and pending controller hardening | [[24-Overlay-selection-input-leak]] |
 | What tests establish, and what they cannot | [[08-Validation-and-measurements]] |
 | Safe operational commands and recovery | [[09-Device-operations-and-recovery]] |
 | Worktrees, commits and merged PRs | [[10-Repositories-and-revisions]] |

@@ -12,6 +12,8 @@ At approximately 12:15 UTC, after the combined install and requested physical te
 
 The successful selected source is **CALL kind 2**, not REGISTER kind 4. The newly installed title profile exists and has emulator proof, but this hardware result does not establish that the profile supplied the working text or was the missing component. Keep that distinction explicit.
 
+**Subsequent input issue:** the user reports × selection also advances the game, only when pressed. The text-hook/follow evidence still stands, but input isolation needs repair and physical verification. See [[24-Overlay-selection-input-leak]].
+
 ## Recorded physical source and progression
 
 | Field | Observation |

@@ -21,6 +21,7 @@ Paths below are local research locations. Private artifact directories remain un
 | `vita-jp-overlay-hooks/` | Firmware fix branch `fix/native-hooks-fw365`. |
 | `vita-jp-overlay-low-memory/` | Picker-memory branch `fix/native-text-low-memory`. |
 | `vita-jp-overlay-clannad-profile/` | Root's separate profile/docs worktree, based on merge `5e5bc25`; prepares the final `0x2CA70`/r6 profile. PR #16 merged and profile installed with complete readback; physical user-reported CALL success is logged; REGISTER-profile correspondence remains unproved. |
+| `vita-jp-overlay-input-ownership/` | Root's branch `fix/overlay-input-ownership`; overlay PR #17 head `464248a`, controller blocking hardening and ownership regressions. Prepared, uninstalled; user stopped deployment before writes. |
 | `vita-jp-overlay-discovery/` | Current branch `fix/region-sized-ocr-capture`, based on PR #13 merge `539c2888`; capture-buffer changes are PR #14 head `5118c4a`, merged as `c888b59`; now installed with PR #15 shell and PR #16 profile. Earlier capture branch `fix/native-libc-capture` remains separate. Earlier diagnostic experiment preserved separately in local-only `fix/native-text-discovery` commit `2d56ce4`, not deployed or submitted as a PR. |
 | `ps-vita-ocr-lab/vita-jp-overlay/` | Shared overlay worktree; last observed on `fix/local-ocr-memory`, owned by the OCR session. Preserve it. |
 | `ps-vita-ocr-lab/vita-agent-use/` | Device control client and private ignored `agent/` evidence. |
@@ -67,6 +68,10 @@ Final local validation passed all 10 host suites in 4.18 s, including 37 worker 
 ## CLANNAD profile merged and installed
 
 [Overlay PR #16](https://github.com/bee-san/vita-jp-overlay/pull/16), exact head `30a68d216243f74e772410a31b90ff17be6dddcb`, merged at 12:09:53 UTC as `264241eb0f6323f373049a458be214448f8320cb`; local main/origin both match. Hosted run `38050663785` passed host 44 s and Vita 4m26s. The 63 B profile SHA `99c73600...` is installed with byte-equal readback. Normal boot and foreground launch pass; the user now reports success and logs show CALL-source follow/lookup. Physical REGISTER correspondence and exact visible-page count remain unproved. See [[22-CLANNAD-register-profile-proof]].
+
+## Input ownership follow-up published, uninstalled
+
+[Overlay PR #17](https://github.com/bee-san/vita-jp-overlay/pull/17), head `464248a8606e38b45c0cd35677acb3d37cd6879f`, combines implementation `cda7de4` and production controller/worker regressions. It addresses the user's × selection reaching CLANNAD without assuming the exact hardware cause. Local 11 suites/4.26 s, 7 controller/44 worker cases and Vita release/ABI pass; 6,492 kernel ARM instructions, no FPU/NEON. Both exact-head hosted jobs passed: host 1m03s, Vita 2m46s. Prepared hashes are kernel `fee142fa...`, shell `faea5914...`; neither is installed. The user stopped deployment before upload/app close/reboot; PR stays open/unmerged and must not be merged/deployed merely because CI completes. See [[24-Overlay-selection-input-leak]].
 
 ## Adjacent work to preserve
 

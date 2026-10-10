@@ -35,6 +35,7 @@ Each validation layer answers a different question. A passing lower layer does n
 | CLANNAD register profile, isolated real-game run | Two visible pages match stream `70000000`, updates 1→3/ranks 2→5, unchanged rows across 10.330/11.290 s idle intervals | Current register-observer dialogue in those two emulator checkpoints | Physical stack mapping/syscall safety, picker selection, other scenes or broad compatibility |
 | Combined PR #14/#15/#16 physical install | Kernel/shell/profile complete readbacks; unchanged text/manual config exact; API 8/registration 0; loaded kernel/shell STARTED 6; foreground CLANNAD launch | Intended bytes installed and normal boot/game launch completed | Physical register attachment, current visible dialogue, chosen-source continuity, or new region-sized OCR success |
 | Physical native CALL success | User says “omg it works”; selected ID 18/kind2/AUTO0, own updates 1→5, changing byte lengths and dictionary rc=0 across reopens | User-reported usefulness plus logged selected native follow/lookup | Exact visible-page count, screenshot comparison, physical REGISTER-profile causation, broad compatibility or OCR success |
+| Input hardening, overlay PR #17 head `464248a` | 11 host suites/4.26 s; 7 actual controller cases, 44 actual worker cases; original controller fails 4 regressions; Vita release/ABI; 6,492 ARM/no FPU | Direct neutralization/copy-error handling and retained shell ownership under checked substitutes | Actual physical × leak cause or correction; candidate uninstalled |
 
 ## Reproduction commands
 

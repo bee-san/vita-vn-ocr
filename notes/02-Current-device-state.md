@@ -2,8 +2,8 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 12:18"
-status: physical-native-call-working-user-reported-metadata-verified
+snapshot_utc: "2026-10-10 12:33"
+status: native-text-works-input-fix-deployment-stopped
 tags: [vita, device, handoff]
 ---
 
@@ -12,6 +12,8 @@ tags: [vita, device, handoff]
 **Latest verified state:** the region-sized capture kernel, bounded picker-diagnostics shell and revision-checked CLANNAD profile are installed with complete readbacks. The unchanged text plugin and manual config also match their recorded bytes. Normal boot at 12:10:49 UTC shows API 8, shell registration 0 and worker startup; the complete 27-entry inventory reports kernel/shell loaded in STARTED state 6, with zero query errors. Root confirmed CLANNAD `PCSG00415` foreground at 12:11:53 UTC.
 
 **Physical result:** the user replied “omg it works.” Fresh logs show selected ID 18, **CALL kind 2**, encoding AUTO 0, address `0x8105910F`, changing from one to five updates with successful dictionary jobs across reopens. This is user-reported visible success plus independent native follow/lookup metadata; exact page count is not separately stated. The selected source is not the profile's REGISTER stream `0x70000000`, so physical profile capture remains unproved. Final explicit refresh clears selection to 0. See [[23-Physical-native-hook-success]].
+
+**New input defect:** the user confirms pressing × to select a hook advances CLANNAD, with no idle advance. The existing selection path does not unblock input; Positive2 is already hooked. Overlay PR #17 head `464248a` hardens neutral writes/error propagation and adds bounded diagnostics; its kernel `fee142fa...` and shell `faea5914...` are prepared, not installed. The user explicitly stopped this deployment before upload, app close or reboot. The PR is open/unmerged, the installed setup is unchanged, and the actual leak is not yet fixed or causally localized on hardware. See [[24-Overlay-selection-input-leak]].
 
 **Current mode:** the user's fixed manual-list choice is preserved, `text_source=hooks`. No OCR is needed to open this workflow; Google Lens and the saved region remain configured for optional future use. The previous manual selection returned dictionary jobs successfully but appeared wrong to the user. That was an earlier generic selection; the new successful physical selection is also CALL kind 2. The installed profile cannot be credited as the cause from that result.
 
@@ -47,4 +49,4 @@ Preinstall kernel `6cc2dc86...` and shell `32baceeb...` are preserved in the ins
 - The installed screenshot-agent runtime is now identified as the stock private SceShell JPEG backend, SHA `d3018186...`, 310,212 B. Its reported code -7/stage `jpeg_encode` still has multiple possible causes; the dirty local alternate backend was neither installed nor changed. See [[21-Picker-diagnostics-and-screenshot-provenance]].
 - Two-page generic and register capture proofs, plus one short-page live Lens host result, remain separate from physical visible dialogue. No broad game compatibility or console peak-memory/performance claim is established.
 
-This is a dated snapshot. PIDs, app state and connections can change. Read current state before another operation; see [[09-Device-operations-and-recovery]]. The latest success log is 4,952 B, SHA `c31bb2cc0692a3e3f049894950a8f3ec6fc8864c6c997541cbcfab92565656b1`, from device time 12:14:59 UTC. Next sessions should preserve the working manual setup and distinguish any broader validation from the completed user-reported native-text result. See [[12-Open-questions-and-next-steps]].
+This is a dated snapshot. PIDs, app state and connections can change. Read current state before another operation; see [[09-Device-operations-and-recovery]]. The latest success log is 4,952 B, SHA `c31bb2cc0692a3e3f049894950a8f3ec6fc8864c6c997541cbcfab92565656b1`, from device time 12:14:59 UTC. Preserve the working manual setup while addressing the × input leak; host hardening and a prepared build do not establish the physical press is contained. See [[12-Open-questions-and-next-steps]].

@@ -4,6 +4,34 @@ Real-screenshot numbers come from the shared benchmark, `eval/run.py` (see
 `eval/README.md`). Host speed is informational only; nothing here was measured
 on a console.
 
+## The release model (train2, v0.2.0)
+
+`train2` trains the release recogniser: pretrain on NVIDIA OCR-Synthetic-Multilingual-v1
+Japanese line crops (nvsynth) mixed with synth2's VN boxes, then fine-tune on the teacher's
+real crops with PP-OCRv6-small distillation (method and per-style tables in `docs/train2.md`).
+Three models are published as `v0.2.0`; numbers are int8 (runtime W8F) through the C runtime,
+scored by `eval/run.py`, and reproduce the PyTorch checkpoints bit for bit (0 argmax-mismatch
+frames in f32, w8f and w8i on all 206 vita-test and 245 psp-test lines).
+
+| model | width / vocab | int8 blob | arena (w8f) | vita-test CER / exact | psp-test CER / exact | est. A9 ms, 640 px |
+|---|---|---|---|---|---|---|
+| bar: JIS-trimmed int8 PP-OCRv5 mobile | — | 2,749,540 B | 13.4 MiB peak (research) | 2.30% / 79.1% | 5.34% / 66.1% | — |
+| **F15 (release)** | 1.5 / 5,355 | 1,155,968 B | 173,472 B | **1.48% / 85.9%** | **3.03% / 78.0%** | 120-285 ms |
+| F20 (lower PSP CER) | 2.0 / 5,355 | 1,558,016 B | 228,512 B | 1.79% / 84.0% | 2.79% / 79.6% | ~2× F15 |
+| FL10 (PSP-lean) | 1.0 / 3,500 | 657,664 B | 118,432 B | 2.30% / 77.7% | 5.18% / 69.8% | ~0.8× v1 |
+
+- **F15 beats the bar on both sets** at 0.42× the int8 weight bytes and far under the 50 MB and
+  1 s/line budget. Against v1 (23.75% / 46.45%) it is a 16× and 15× lower CER.
+- Stage ablation (int8): v1 synth-only 23.75% / 46.45% → + NVIDIA + synth2 pretrain 1.68% /
+  3.19% → + real fine-tune 1.87% / 3.59% → + PP-OCRv6-small frame KD, 15k steps 1.48% / 3.03%.
+  The pretrain alone clears the bar; fine-tuning with distillation adds exact-line accuracy and
+  cuts the hardest styles.
+- Per style, F15 is at or below the bar on every high-frequency style of both sets; it is above
+  on short rare-kanji crops (vita coloured/coloured-name/name, psp name/furigana). F20 closes
+  the psp furigana row and reads psp names lower. Full tables: `docs/train2.md`.
+- Weights, arena and the Cortex-A9 time estimate are the runtime's exact figures (`train/export.py`,
+  `runtime/README.md`) and the vita agent's A9 estimate (#12). Nothing has run on a console.
+
 ## Baselines
 
 Measured 2026-10-09 on the shared x86 host with:

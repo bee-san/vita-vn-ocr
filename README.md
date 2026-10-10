@@ -8,7 +8,8 @@ General OCR models are too big for this. The best general option, a trimmed int8
 
 | | |
 |---|---|
-| Model | `train/model.py`: a CTC line recognizer with 0.76M parameters (stem plus depthwise-separable blocks, factorised 5,355-class head), grey input at height 32 |
+| Model | `train/model.py`: a CTC line recognizer (stem plus depthwise-separable blocks, factorised head), grey input at height 32. The v0.2.0 release model is width 1.5, 1.04M parameters, 5,355 classes |
+| v0.2.0 release (train2) | Pretrained on NVIDIA OCR-Synthetic-Multilingual-v1 Japanese crops (nvsynth) mixed with VN-style synthetic boxes (synth2), fine-tuned on teacher-labelled real crops with PP-OCRv6-small distillation. **F15** (release): real Vita screenshots (`eval/`, vita-test) **1.48% CER, 85.9% exact**; real PSP (psp-test) **3.03% CER, 78.0% exact** — beats trimmed int8 PP-OCRv5 mobile (2.30% / 5.34%) at 1.16 MB int8 weights and a 173 KB arena. **FL10** PSP-lean variant (width 1.0, 3,500-char vocab): 2.30% / 5.18%, 658 KB. C-runtime parity verified bit-exact. Estimated 0.1-0.3 s per line on a Cortex-A9. Ablation, per-style tables and the width-2.0 variant in `docs/train2.md` and `docs/results.md` |
 | v1 baseline | Trained on synthetic dialogue boxes only. Synthetic validation: 0.34% CER, 95.6% of lines exact (`docs/v1-metrics.jsonl`). Real Vita screenshots (`eval/`, vita-test, 206 lines from 16 games): 23.75% CER, 52.4% exact, 81.8% CER on its 43 dark-on-light lines. Real PSP screenshots (psp-test, 245 lines from 14 games): 46.45% CER, 30.2% exact, 86.8% CER on its 110 dark-on-light lines (`docs/results.md`). |
 | Runtime | `runtime/`: plain-C99 recognizer for Vita (NEON) and PSP (scalar), no malloc, 116-125 KB arena at any line width; int8 weights 0.86 MB (`runtime/README.md`) |
 | Architecture sweep | `docs/arch-sweep.md`: width, depth, temporal context, head bottleneck, vocab, input height and int8 on the v1 recipe, 5,000-step runs (plus a 15,000-step width pair) scored on vita-test and psp-test. Recommendation for train2: width 2.0 (1.42M parameters, 1.56 MB int8, 229 KB arena, an estimated 0.59-0.74 s for a long Vita line on one 444 MHz A9 core); width 1.5 is the lighter fallback and v1's width 1.0 the PSP-lean variant. Post-training int8 is enough; no QAT needed |
@@ -26,7 +27,7 @@ data/vocab.txt                 output character set
 teacher/                       real-screenshot labels: MeikiOCR first, local owocr engines vote (docs/teacher.md)
 synth/                         synthetic dialogue-box renderer and corpus builder
 nvsynth/                       Japanese line crops from NVIDIA OCR-Synthetic-Multilingual-v1 for pretraining (docs/nvsynth.md)
-train/                         model, CTC training, export.py (weights blob for the C runtime)
+train/                         model, CTC training (train.py; train2.py: the release recipe), export.py (weights blob for the C runtime)
 runtime/                       on-console C99: recognizer (vocr.h/vocr.c), line finder (vocr_lines.c), tests
 psp/                           PSP build: pspdev toolchain, test EBOOT, PPSSPP-headless parity and timing
 vita/                          PS Vita: VitaSDK build, test app (VPK), Vita3K check, Cortex-A9 cycle estimate

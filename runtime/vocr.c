@@ -1040,8 +1040,9 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
         for (q = 0; q < 8; q++) f[q] = z;
         for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
             const unsigned k1 = umin(K, k0 + W8I_CHUNK);
-            int32x4_t a[8];
-            for (q = 0; q < 8; q++) a[q] = vdupq_n_s32(0);
+            /* Eight named accumulators, not an array: with int32x4_t a[8], gcc 14 and 15 store
+             * all eight to the stack on every pass of the k loop (16 VSTR per 32 VMLAL). */
+            int32x4_t a0 = vdupq_n_s32(0), a1 = a0, a2 = a0, a3 = a0, a4 = a0, a5 = a0, a6 = a0, a7 = a0;
             for (k = k0; k + 4 <= k1; k += 4) {
                 const int16x4_t v0 = vld1_s16(x0 + k), v1 = vld1_s16(x1 + k);
                 const int16x4_t v2 = vld1_s16(x2 + k), v3 = vld1_s16(x3 + k);
@@ -1049,14 +1050,14 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
     do {                                                                                     \
         const int16x8_t wv = vmovl_s8(vld1_s8(qw + (size_t)(k + (LANE)) * 8));               \
         const int16x4_t wl = vget_low_s16(wv), wh = vget_high_s16(wv);                       \
-        a[0] = vmlal_lane_s16(a[0], wl, v0, LANE);                                           \
-        a[1] = vmlal_lane_s16(a[1], wh, v0, LANE);                                           \
-        a[2] = vmlal_lane_s16(a[2], wl, v1, LANE);                                           \
-        a[3] = vmlal_lane_s16(a[3], wh, v1, LANE);                                           \
-        a[4] = vmlal_lane_s16(a[4], wl, v2, LANE);                                           \
-        a[5] = vmlal_lane_s16(a[5], wh, v2, LANE);                                           \
-        a[6] = vmlal_lane_s16(a[6], wl, v3, LANE);                                           \
-        a[7] = vmlal_lane_s16(a[7], wh, v3, LANE);                                           \
+        a0 = vmlal_lane_s16(a0, wl, v0, LANE);                                               \
+        a1 = vmlal_lane_s16(a1, wh, v0, LANE);                                               \
+        a2 = vmlal_lane_s16(a2, wl, v1, LANE);                                               \
+        a3 = vmlal_lane_s16(a3, wh, v1, LANE);                                               \
+        a4 = vmlal_lane_s16(a4, wl, v2, LANE);                                               \
+        a5 = vmlal_lane_s16(a5, wh, v2, LANE);                                               \
+        a6 = vmlal_lane_s16(a6, wl, v3, LANE);                                               \
+        a7 = vmlal_lane_s16(a7, wh, v3, LANE);                                               \
     } while (0)
                 VOCR_ISTEP(0);
                 VOCR_ISTEP(1);
@@ -1067,16 +1068,23 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
             for (; k < k1; k++) {
                 const int16x8_t wv = vmovl_s8(vld1_s8(qw + (size_t)k * 8));
                 const int16x4_t wl = vget_low_s16(wv), wh = vget_high_s16(wv);
-                a[0] = vmlal_n_s16(a[0], wl, x0[k]);
-                a[1] = vmlal_n_s16(a[1], wh, x0[k]);
-                a[2] = vmlal_n_s16(a[2], wl, x1[k]);
-                a[3] = vmlal_n_s16(a[3], wh, x1[k]);
-                a[4] = vmlal_n_s16(a[4], wl, x2[k]);
-                a[5] = vmlal_n_s16(a[5], wh, x2[k]);
-                a[6] = vmlal_n_s16(a[6], wl, x3[k]);
-                a[7] = vmlal_n_s16(a[7], wh, x3[k]);
+                a0 = vmlal_n_s16(a0, wl, x0[k]);
+                a1 = vmlal_n_s16(a1, wh, x0[k]);
+                a2 = vmlal_n_s16(a2, wl, x1[k]);
+                a3 = vmlal_n_s16(a3, wh, x1[k]);
+                a4 = vmlal_n_s16(a4, wl, x2[k]);
+                a5 = vmlal_n_s16(a5, wh, x2[k]);
+                a6 = vmlal_n_s16(a6, wl, x3[k]);
+                a7 = vmlal_n_s16(a7, wh, x3[k]);
             }
-            for (q = 0; q < 8; q++) f[q] = vaddq_f32(f[q], vcvtq_f32_s32(a[q]));
+            f[0] = vaddq_f32(f[0], vcvtq_f32_s32(a0));
+            f[1] = vaddq_f32(f[1], vcvtq_f32_s32(a1));
+            f[2] = vaddq_f32(f[2], vcvtq_f32_s32(a2));
+            f[3] = vaddq_f32(f[3], vcvtq_f32_s32(a3));
+            f[4] = vaddq_f32(f[4], vcvtq_f32_s32(a4));
+            f[5] = vaddq_f32(f[5], vcvtq_f32_s32(a5));
+            f[6] = vaddq_f32(f[6], vcvtq_f32_s32(a6));
+            f[7] = vaddq_f32(f[7], vcvtq_f32_s32(a7));
         }
         for (q = 0; q < 4; q++) {
             float32x4_t lo = vmulq_f32(f[2 * q], vmulq_n_f32(sl, sx[p + q]));

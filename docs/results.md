@@ -333,6 +333,9 @@ console time. The console estimate in `psp/README.md` is 1.05-1.45× for the sca
 
 - Any console speed or memory figure (`psp/README.md` has the PPSSPP-emulated PSP figures and
   v1's measured arena), and v1's peak memory on a Vita.
+  For the PS Vita there is so far a bit-exact check in the Vita3K emulator and a
+  Cortex-A9 cycle estimate (113-212 ms per 640-px line for v1 in w8i at 444 MHz),
+  both in `vita/README.md`; neither is a console measurement.
 - Repeated timing samples: each ms/line figure is one pass on a shared, loaded host.
 - The reference presets `ppocr-v5-server` and `ppocr-v6-small[-jis]` (wired in, not baselined).
 - Why int8 beats fp32 on real lines, and whether calibrating on real crops changes it.

@@ -18,14 +18,15 @@ Memory, measured with `vocr_arena_bytes()` (equal to `export.plan_arena()`; the 
 | arena for lines up to 640 px | 116,384 B | 118,432 B | 124,832 B |
 | arena for lines up to 1024 px | 116,384 B | 118,432 B | 124,832 B |
 | `vocr_model` + `vocr_ctx`, 32-bit ARM | 1,772 + 1,984 B | same | same |
-| code (`vocr.o`, ARM `-O2`, NEON / scalar) | 12,479 / 9,855 B | same | same |
+| code (`vocr.o`, ARM `-O2`, NEON / scalar) | 13,843 / 11,699 B (VitaSDK gcc 15.2: 14,583 / 12,455 B) | same | same |
 | total | ≈ 3.2 MB | ≈ 0.99 MB | ≈ 1.0 MB |
 
 For comparison, the research measured the trimmed int8 PP-OCRv5 at a 13.4 MiB peak in the overlay.
 
 Stack on ARM, from gcc's call graph (`-fcallgraph-info=su`; every frame is static):
 - The deepest chain is `vocr_arena_bytes()` → `plan()`, 2,664 B, because it plans into a local `vocr_ctx`.
-- `vocr_run()` → `step_op()` → `mm_i16()` (w8i) is 1,264 B with NEON and 1,104 B scalar. Through `mm_f32()` (f32, w8f) it is 1,128 / 960 B.
+- `vocr_run()` → `step_op()` → `mm_i16()` (w8i) is 1,400 B with NEON and 1,000 B scalar. Through `mm_f32()` (f32, w8f) it is 1,224 / 1,168 B. (Before `psp`'s PR #13 register-blocked the scalar kernels `step_op` also compiles into, these were 1,264 / 1,104 and 1,128 / 960 B; this PR's own `mm_i16` NEON change adds 8 B on top of #13's base, 1,392 to 1,400.)
+- On the Vita (VitaSDK gcc 15.2), the test app's probe thread (`vita/app/main.c`) measured 4,100 B of stack for `vocr_arena_bytes()`, `vocr_init()`, `vocr_run()` on a 1024-px line and both line finders, thread entry included (in Vita3K, which runs the Vita's own machine code).
 
 Tiles trade arena for speed (bytes; host speed is in the next table):
 
@@ -99,9 +100,9 @@ What `VOCR_INVERT` buys v1, on the same GT-box crops in w8i (inverting where `sy
 | set | without inversion | with the polarity rule |
 |---|---|---|
 | vita-test | 23.87% | 9.05% |
-| psp-test | 46.77% | 11.04% |
+| psp-test | 46.57% | 10.80% |
 
-This is CER with `eval/metrics.py`'s normalisation, on ground-truth boxes, so it is not eval's pipeline number.
+This is CER with `eval/metrics.py`'s normalisation, on ground-truth boxes, so it is not eval's pipeline number. The psp-test row is re-measured on the merged psp-test manifest (eval #5) with `eval/run.py --model 'cmd:runtime/build/vocr_cli v1_w8.vocr --mode w8i --stdin' --set psp-test`, with and without `--polarity console`; before the merge it read 46.77% and 11.04%.
 
 ### Host speed
 
@@ -246,6 +247,7 @@ make -C runtime size ARM_CC=...                    # code size and stack frames
 ## Porting notes (vita, psp)
 
 - Compile `vocr.c` alone with `-std=c99 -O2 -ffp-contract=off`. Vita: `-mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard`. PSP: the scalar path is picked automatically when `__ARM_NEON` is undefined.
+- `mm_i16()` keeps its eight int32 accumulators in named variables. Written as an array (`int32x4_t a[8]`), gcc 14.2 and 15.2 stored all eight to the stack on every pass of the 32-`VMLAL` inner loop (16 `VSTR` there). Measured under qemu on the VitaSDK build, the change takes w8i from 973K to 841K instructions per CTC frame with bit-identical output (`vita/README.md`, "Cortex-A9 estimate").
 - The Cortex-A9 has no integer divide, so on ARM `vocr.o` also needs libgcc's `__aeabi_idiv`, `__aeabi_uidiv` and `__aeabi_uidivmod` (VitaSDK links libgcc by default). Expect the same kind of helpers on MIPS. They are used per line and per tile, not per MAC.
 - To match OpenCV bit for bit, preprocessing computes one `double` per output row and per resized column (`row_table`, `col_coef`). On the PSP, whose FPU is single precision, these are soft-float calls: a few thousand per line, against millions of MACs.
 - The blob and the arena must be 16-byte aligned, and the blob must stay alive while in use. Both can live anywhere: a memblock, a static buffer, or the overlay's private heap.
@@ -255,6 +257,6 @@ make -C runtime size ARM_CC=...                    # code size and stack frames
 
 ## Not done here
 
-- Nothing has run on a PCH-1000 or a PSP; the console speed above is an estimate. The `vita` and `psp` agents build and run it there.
+- Nothing has run on a PCH-1000 or a PSP; the console speed above is an estimate. `vita/` builds it with VitaSDK, checks it bit for bit in the Vita3K emulator and estimates Cortex-A9 cycles from the Vita build's instruction mix (`vita/README.md`); the `psp` agent covers the PSP.
 - Parity covered 5,000 of the 10,001 synth-val lines (1-4,000 and 9,001-10,000), not the whole shard, because the `heavy.sh` slots stayed busy. The full shard is one command: `parity.py --ckpt ... --workers 5`.
 - Real-screenshot CER belongs to `eval/`; the CER figures here only show that the runtime reproduces PyTorch, and what int8 and `VOCR_INVERT` change.

@@ -10,13 +10,13 @@ tags: [vita, native-text, moc]
 
 This vault records the native text-hook investigation alongside the OCR project. Open this `notes/` directory as an Obsidian vault, or follow the ordinary Markdown files. It needs no Obsidian plugin. Findings are linked so a future session can recover the reasoning, evidence and limits without rereading the whole conversation.
 
-**Current outcome:** the user chose a fixed manual hook list after the OCR capture failure. The installed shell remains normally bootable; only the configuration changed back to `text_source=hooks`, with full readback verified. A source was selected and physical Paf dictionary jobs completed, but the user thinks the chosen text is wrong. Correct visible dialogue and following the next page remain unverified. See [[20-Fixed-manual-hook-workflow]].
+**Current outcome:** the user reports **“omg it works”** on the physical Vita. Fresh logs confirm a selected native CALL source changes through five updates and completes dictionary jobs across reopens. The working source is kind 2 CALL, **not** the installed kind 4 REGISTER profile. Exact visible-page count is not separately stated; see [[23-Physical-native-hook-success]].
 
-The earlier OCR-first path is implemented and installed, but its physical request fails when allocating the full-frame 2,040 KiB kernel capture buffer, before JPEG or Lens. The region-sized capture repair and bounded picker diagnostics are merged through `5e5bc25`, with combined artifacts prepared but not installed. Live production Lens on the host exactly matched one short verified page; that result bypassed the failing kernel allocation. See [[19-Physical-OCR-source-failure]] and [[18-OCR-anchor-memory-measurements]].
+The kernel, diagnostic shell and title profile are installed/read back, normal boot and CLANNAD launch pass, and the user's fixed manual mode is preserved. The new register profile has two-page emulator proof but no physical register-source match yet. OCR remains optional and physically unverified after the capture repair. See [[02-Current-device-state]] and [[22-CLANNAD-register-profile-proof]].
 
-A new title-specific register profile matches two changing visible pages and remains stable during idle intervals in isolated Vita3K. It supersedes entry hooks that read the wrong argument or preloaded future lines. The profile is not installed on hardware; see [[22-CLANNAD-register-profile-proof]].
+Earlier wrong-text, memory and boot failures remain part of the record. User-reported usefulness plus logged selected-source follow/lookup is a stronger result than installation alone, while broader scenes and compatibility remain unmeasured.
 
-The previous repair remains a verified install/boot result and a two-page emulator capture/top-five result, not a completed physical text-hook experience. It is implementation `6eef6c0`, reviewed head `69006af`, merged as `a5e0c50`, with 264 passing synthetic Vita3K checks. The stronger physical UX failure is now part of the record.
+The earlier repair established install/boot and a two-page emulator capture/top-five result; the later user report and selected CALL metadata now add a working physical experience. It is implementation `6eef6c0`, reviewed head `69006af`, merged as `a5e0c50`, with 264 passing synthetic Vita3K checks. The stronger physical UX failure is now part of the record.
 
 ## Start a session
 
@@ -45,6 +45,7 @@ The previous repair remains a verified install/boot result and a two-page emulat
 | Current fixed manual list, selection and wrong-text concern | [[20-Fixed-manual-hook-workflow]] |
 | Merged picker diagnostics and screenshot-runtime uncertainty | [[21-Picker-diagnostics-and-screenshot-provenance]] |
 | Two-page native register profile proof and rejected candidates | [[22-CLANNAD-register-profile-proof]] |
+| User-reported physical success and actual CALL-source evidence | [[23-Physical-native-hook-success]] |
 | What tests establish, and what they cannot | [[08-Validation-and-measurements]] |
 | Safe operational commands and recovery | [[09-Device-operations-and-recovery]] |
 | Worktrees, commits and merged PRs | [[10-Repositories-and-revisions]] |
@@ -55,6 +56,6 @@ The previous repair remains a verified install/boot result and a two-page emulat
 
 ## Evidence boundary
 
-No commercial-game compatibility, capture latency, console peak-memory or real-screenshot CER number is established here. Host tests, synthetic Vita3K tests, correct installation and a started module are useful but separate pieces of evidence. Success requires the selected source to follow at least two actual dialogue pages, then a broader validation pass.
+A working physical CLANNAD experience is user-reported and supported by native follow/lookup metadata; broad commercial-game compatibility, capture latency, console peak-memory and real-screenshot CER remain unmeasured. Host tests, synthetic Vita3K tests, correct installation and a started module are useful but separate pieces of evidence. The user did not separately enumerate page count, and no screenshot comparison was obtained; keep those limits distinct from the successful native metadata.
 
 Only notes, small derived tables, hashes and links belong here. Game executables, screenshots, dialogue, fonts, RAM dumps, licenses, device identity, credentials and network details remain outside the repository. Private local links are deliberate references, not attachments.

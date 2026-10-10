@@ -2,54 +2,49 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 12:06"
-status: manual-mode-selected-dialogue-match-unverified
+snapshot_utc: "2026-10-10 12:18"
+status: physical-native-call-working-user-reported-metadata-verified
 tags: [vita, device, handoff]
 ---
 
 # Current device state snapshot
 
-**Latest verified state:** the OCR-first shell from merged overlay PR #13 is installed, fully read back and normally booted. The user subsequently chose a fixed manual list; the active configuration is now `text_source=hooks`, verified by full readback without a reboot. Google Lens and the saved region are preserved for optional later use. A fresh 706 B status log (device modification time 11:27:24 UTC) shows API 8, shell registration 0 and `bootstrap: worker started`. The complete 27-entry native inventory has kernel and shell STARTED (6), with zero query errors. CLANNAD `PCSG00415` was subsequently confirmed foreground for testing; latest completed app inventory is empty after the user closed the game. That inventory is not a crash diagnosis.
+**Latest verified state:** the region-sized capture kernel, bounded picker-diagnostics shell and revision-checked CLANNAD profile are installed with complete readbacks. The unchanged text plugin and manual config also match their recorded bytes. Normal boot at 12:10:49 UTC shows API 8, shell registration 0 and worker startup; the complete 27-entry inventory reports kernel/shell loaded in STARTED state 6, with zero query errors. Root confirmed CLANNAD `PCSG00415` foreground at 12:11:53 UTC.
 
-**Earlier OCR test failed:** the user reports “text recognition failed. unexpected response (-108). no game text found yet.” Six paired status/kernel attempts identify a failed 2,040 KiB capture-buffer allocation (`0x80024302`) before JPEG or Lens; job arena peak is 0. The shell receives `0xC0000002` instead of the expected no-memory return, an additional propagation issue under review. Physical Lens completion, a correct visible-page match, source selection and following the next page remain unverified. See [[19-Physical-OCR-source-failure]].
+**Physical result:** the user replied “omg it works.” Fresh logs show selected ID 18, **CALL kind 2**, encoding AUTO 0, address `0x8105910F`, changing from one to five updates with successful dictionary jobs across reopens. This is user-reported visible success plus independent native follow/lookup metadata; exact page count is not separately stated. The selected source is not the profile's REGISTER stream `0x70000000`, so physical profile capture remains unproved. Final explicit refresh clears selection to 0. See [[23-Physical-native-hook-success]].
 
-**Prior physical failure:** the previous shell/manual `text_source=hooks` mode produced a flood of changing 0% hooks and irrelevant text. Its status reached source sequence 3,035, full discovery active and selected source 0. Root acknowledged configuring that unanchored manual mode. This failed workflow motivated the new explicit user preference: one screenshot first, then a matching source. The successful install/boot does not erase that failure or prove its resolution. See [[17-OCR-first-physical-workflow]].
+**Current mode:** the user's fixed manual-list choice is preserved, `text_source=hooks`. No OCR is needed to open this workflow; Google Lens and the saved region remain configured for optional future use. The previous manual selection returned dictionary jobs successfully but appeared wrong to the user. That was an earlier generic selection; the new successful physical selection is also CALL kind 2. The installed profile cannot be credited as the cause from that result.
 
-**Latest manual result:** source ID 1 was selected (kind 2, encoding 0, six bytes, one update). A 256 KiB Paf dictionary workspace completed the selection job with `rc=0`, 37 ms and 110,080 B arena peak; two later reopens also completed. The user suspects the text is wrong. The screenshot tool reports stage `jpeg_encode`/code -7, so root requested a short example. Its installed runtime has not been matched to the dirty local agent source; the stage is not a source-level diagnosis. No visible-page correspondence or changing selected dialogue is verified. See [[20-Fixed-manual-hook-workflow]].
+## Installed artifacts
 
-**New emulator evidence, not installed:** a `0x2CA70`/r6 CP932 register profile matches two changed visible pages and stays stable during no-input intervals. Earlier `0x2C906` candidates were rejected for wrong argument/prefetched future lines. Root is preparing a profile PR; physical profile attachment and selected dialogue remain unverified. See [[22-CLANNAD-register-profile-proof]].
+Custom API remains 8. Kernel/shell are under `ur0:tai/`; the title profile is `ux0:data/VitaJPOverlay/hooks/PCSG00415.vjhook`. Staged uploads completed and complete readbacks were byte-equal before reboot. The notes author independently hashed the local readbacks/preserved copies.
 
-## Installed plugin set
-
-All use custom API 8 under the active `ur0:tai/` path. The kernel/text were installed with expected-old-hash guards, native completion and full readback for PR #12. PR #13 replaced only the shell; kernel/text remain unchanged. Its initial hooks→auto configuration was later changed back to hooks at the user's request, with no binary update.
-
-| Plugin | Bytes | SHA-256 | Evidence |
+| Artifact | Bytes | SHA-256 | Evidence |
 |---|---:|---|---|
-| `VitaJPOverlay_Kernel.skprx` | 38,620 | `6cc2dc868dc4403bcab252d689acd2f0779a55f9bd8069654b335eaffa571933` | PR #12 full installed-file readback; started after latest normal boot. |
-| `VitaJPOverlay_Shell.suprx` | 158,564 | `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c` | PR #13 full installed-file readback; started after latest normal boot. |
-| `VitaJPOverlay_Text.suprx` | 7,936 | `84259631e0efe87472750a04a944a0d2cb7673f218c85f316ae3a450e6c7565f` | PR #12 full readback; prior physical candidate traffic observed, correct dialogue still unverified. |
+| `VitaJPOverlay_Kernel.skprx` | 39,048 | `ae3c03412837ceb0770d078dbc4f7c5197accfefccd96a3e86292a0d67515cfd` | Fresh full readback; normal boot and loaded STARTED 6. |
+| `VitaJPOverlay_Shell.suprx` | 159,528 | `4f1f0650816c5ae5d9073d3d92bb7afbacc020500497e474e29765daf9371b83` | Fresh full readback; normal boot and loaded STARTED 6. |
+| `VitaJPOverlay_Text.suprx` | 7,936 | `84259631e0efe87472750a04a944a0d2cb7673f218c85f316ae3a450e6c7565f` | Unchanged full readback; native CALL follow/lookup verified; REGISTER-profile observations unproved. |
+| `PCSG00415.vjhook` | 63 | `99c73600540f5c441939a06f6cc727ec21b284fa055bc936f7bb0359382f9f81` | Fresh full readback; two-page proof is emulator-only so far. |
+| Preserved `config.ini` | 3,083 | `3833843d30aa9bd2bc294149d6c63b90f2909ce679ea05a2b2b731e9c101eabd` | Exact manual hooks config preserved; no mode/region change in this install. |
 
-Shell source: reviewed head `5826329ddcb1244b0e318f2c6c527181cc14d4d8`, merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`. Both exact-head hosted jobs passed (host 52 s, Vita 4m25s). The initial 3,082 B auto config had SHA `b7c0dd2e5214c0d00612e832abeba2b5ea5dde67ad63875745764ce4ae4beeb0`. The current 3,083 B manual config is SHA `3833843d30aa9bd2bc294149d6c63b90f2909ce679ea05a2b2b731e9c101eabd`. The notes author independently hashed the readbacks and confirmed the later change only replaces `text_source = auto` with `text_source = hooks`.
+Kernel source: PR #14 head `5118c4a09248a3d8b7e8018d85fa0d0247b82ca4`, merge `c888b5936ca46729b0fbc7698b2348c5a4b3d387`. Shell with diagnostics: PR #15 head `f58b1aa49dd43fcc3d6d78b0c9bcd48a1c0ca6d7`, merge `5e5bc2557ee183e60c4afd9335b55666e8697cea`. Profile: PR #16 head `30a68d216243f74e772410a31b90ff17be6dddcb`, merged at 12:09:53 UTC as `264241eb0f6323f373049a458be214448f8320cb`; exact-head host (44 s) and Vita (4m26s) passed. Local main/origin are both `264241e`.
 
-Kernel/text implementation source: `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e`; final evidence head `69006af9e36347b75534c01900b48d43ed372981`; PR #12 merge `a5e0c50b1096b5ae7de450ae712e63b272dc7f17`. The evidence-only commit changed no binary.
+## Private evidence and rollback
 
-## Preserved rollback and evidence
+The latest directory is `vita-agent-use/agent/overlay-region-capture-20261010/`. It contains staged artifacts, kernel/shell `.before` backups, complete `.readback` files, unchanged text/config copies, transfer journals, `deployment-plan.json`, the fresh startup log and the installed agent-runtime provenance copy. Keep operation IDs, pairing and config contents private.
 
-The latest private directory is `vita-agent-use/agent/overlay-ocr-picker-20261010/`. It contains shell/config/region backups, the deployment plan, transfer journals, full readbacks, `installation-report.json`, `status.after-reboot.txt` and `status.clannad-start.txt`. The report records upload completion and full readback verification; its physical OCR field at installation was `pending user dialogue test`, now superseded by the user failure above. Operation IDs and private configuration stay local.
+Installation time in the plan is `2026-10-10T12:10:33.316736+00:00`. It records all uploads/readbacks, preserved manual default and verified normal boot. Its latest status is `physical_native_hook_user_reported_working_logs_confirm_follow_and_lookup`, with text-plugin loaded verification true; this supersedes earlier launch/test-pending labels. The complete postlaunch inventory reports the per-title text plugin loaded in STARTED state 6 with zero query error. Loading alone does not prove profile observation or dialogue correspondence.
 
-The notes author inspected the fresh startup log. It is 706 B, SHA-256 `bc3577582f65bb2538c7e6bd424d1c65fe13db1aea74c9c8c75699bb8a71e6fb`. Its content/hash equals the earlier healthy startup, so freshness comes from the newly collected file and device modification time, not a different digest. The CLANNAD startup status is 2,056 B, SHA-256 `f88744dabecd69056a441fcbbeb0610975d4182834025f00992651a6a3549296`.
+`status.after-reboot.txt` is 706 B, SHA-256 `bc3577582f65bb2538c7e6bd424d1c65fe13db1aea74c9c8c75699bb8a71e6fb`, with fresh device time 12:10:49 UTC. Its contents/hash match earlier healthy startup logs; freshness is established by collection and device time, not a different digest. The notes author inspected API 8/registration 0/worker-start markers.
 
-The previous low-memory shell `45f86b1ea83c08bdf61c1dfd174cc5356151e746a3659a0299218436a8f10c8c` remains backed up. Earlier kernel/text backups are under `vita-agent-use/agent/overlay-libc-20261010/`: kernel SHA `447f2e640973743f80dbeb6099e62b6e7c2b72fe85936af4f8d9c24dfd54f217`, text SHA `c146238b6e6544ec9ba27f1b03d35db89072c2fc4f3a05d0e75d94c679a777a7`. Preserve the installation-specific journals rather than mixing rollback sets.
+Preinstall kernel `6cc2dc86...` and shell `32baceeb...` are preserved in the installation-specific backups. Earlier boot/capture/auto/manual experiments remain under `agent/overlay-libc-20261010/` and `agent/overlay-ocr-picker-20261010/`; do not mix rollback sets or reset unrelated agent files. Firmware, bootloader, tai configuration and saved region were unchanged. The emulator test bridge was not installed.
 
-No firmware, bootloader, tai configuration or region setting was changed. The overlay-mode changes were hooks→auto for the OCR test, then auto→hooks for the user's fixed manual-list choice. The emulator bridge and local scanner diagnostic commit `2d56ce4` were not installed.
+## Earlier failures and remaining limits
 
-## Environment and boundaries
+- The previous manual/scanning shell produced changing 0% hooks and irrelevant text. Its source-table sequence reached 3,035 with no selected source. See [[17-OCR-first-physical-workflow]].
+- The OCR-first physical test failed before JPEG/Lens: six paired logs identify the old 2,040 KiB kernel capture allocation failing with `0x80024302`. The now-installed region-sized replacement has not yet completed a verified physical OCR request. See [[19-Physical-OCR-source-failure]].
+- The later fixed manual list selected a generic six-byte/one-update source and completed 256 KiB Paf dictionary jobs (`rc=0`, peak 110,080 B), but the user suspected wrong text. See [[20-Fixed-manual-hook-workflow]].
+- The installed screenshot-agent runtime is now identified as the stock private SceShell JPEG backend, SHA `d3018186...`, 310,212 B. Its reported code -7/stage `jpeg_encode` still has multiple possible causes; the dirty local alternate backend was neither installed nor changed. See [[21-Picker-diagnostics-and-screenshot-provenance]].
+- Two-page generic and register capture proofs, plus one short-page live Lens host result, remain separate from physical visible dialogue. No broad game compatibility or console peak-memory/performance claim is established.
 
-- Physical device: PCH-1001, actual firmware 3.65.
-- Title: CLANNAD, `PCSG00415`; tested after reboot, then closed by the user (latest completed app inventory empty).
-- Controls/configuration: L+R overlay, Select+R subtitles, hooks text source, optional Google Lens OCR, existing local dictionary configuration.
-- Offline generic capture matches two visible narration pages without a title profile. Corrected full-feed ranking displays matching sources in the top five, but those snapshots had no selected source.
-- Live production Lens on the host exactly matches one short verified page from full-frame and cropped inputs. It does not establish physical capture/TLS or broad OCR accuracy. See [[18-OCR-anchor-memory-measurements]].
-- An earlier launch/power-off report remains historical and unresolved; normal boot of the latest installed set is established separately.
-
-This is a dated snapshot. PIDs, app state, tokens and connections can change. Read current state before another operation and preserve paired configuration/transfer state; see [[09-Device-operations-and-recovery]]. Next resolve the user's wrong-text concern and verify that a selected manual source follows dialogue. Region-sized capture PR #14 and bounded picker-diagnostics PR #15 are merged and prepared separately, but no new binary/profile is installed. Combined candidate hashes and the screenshot-runtime provenance limit are in [[21-Picker-diagnostics-and-screenshot-provenance]]. See [[12-Open-questions-and-next-steps]].
+This is a dated snapshot. PIDs, app state and connections can change. Read current state before another operation; see [[09-Device-operations-and-recovery]]. The latest success log is 4,952 B, SHA `c31bb2cc0692a3e3f049894950a8f3ec6fc8864c6c997541cbcfab92565656b1`, from device time 12:14:59 UTC. Next sessions should preserve the working manual setup and distinguish any broader validation from the completed user-reported native-text result. See [[12-Open-questions-and-next-steps]].

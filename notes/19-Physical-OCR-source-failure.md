@@ -44,17 +44,17 @@ The memory-specific request/result error is separately mapped to `VJO_E_OOM=-103
 
 `core/client.c` has no dedicated `VJO_E_SOURCE` presentation case, so it falls through to “unexpected response (%d).” The wording does not establish an unexpected HTTP response or Lens rejection. `core/client.c` can also produce a source error when reading its JPEG input; preserve the original stage and logs before choosing a cause.
 
-## Region-sized repair merged, not installed
+## Region-sized repair installed; physical OCR not yet verified
 
 At published [overlay PR #14](https://github.com/bee-san/vita-jp-overlay/pull/14), head `5118c4a09248a3d8b7e8018d85fa0d0247b82ca4` on `fix/region-sized-ocr-capture` from merge `539c2888`, root implements 4 KiB-aligned allocation for the requested pixel region. The saved 755×146 crop needs **442,368 B (432 KiB)** after alignment, compared with the old 2,040 KiB frame allocation. This is code-derived requested capacity, not a successful physical allocation measurement.
 
-The patch freezes requested framebuffer/crop geometry before allocation, checks raw capacity before copying, and publishes pending state atomically. A `VJO_CAPTURE_ONCE` flag distinguishes a single JPEG pass from local ncnn OCR's multiple row passes: the kernel frees the JPEG raw buffer after the final copied row, before Lens transmission, while preserving a multipass image. `VJO_CAPTURE_DISCARD` releases an idle single-pass image after encoder failure and refuses pending/multipass ownership. Both independent reviewers checked these lifetimes/regressions. Final local validation passes all 10 host suites in 4.61 s, including 41 actual worker cases and 16 production-kernel cases; kernel ASAN/UBSAN also passes. The ncnn-OFF SDK Release build and packaged ABI pass; the kernel has 6,055 decoded ARM instructions with zero FPU/NEON. Both hosted jobs passed at exact head `5118c4a` in run `38049340699`: host 56 s, Vita 3m41s. PR #14 merged at 11:46:20 UTC as `c888b5936ca46729b0fbc7698b2348c5a4b3d387`; local main/origin are synchronized. It is not released or installed.
+The patch freezes requested framebuffer/crop geometry before allocation, checks raw capacity before copying, and publishes pending state atomically. A `VJO_CAPTURE_ONCE` flag distinguishes a single JPEG pass from local ncnn OCR's multiple row passes: the kernel frees the JPEG raw buffer after the final copied row, before Lens transmission, while preserving a multipass image. `VJO_CAPTURE_DISCARD` releases an idle single-pass image after encoder failure and refuses pending/multipass ownership. Both independent reviewers checked these lifetimes/regressions. Final local validation passes all 10 host suites in 4.61 s, including 41 actual worker cases and 16 production-kernel cases; kernel ASAN/UBSAN also passes. The ncnn-OFF SDK Release build and packaged ABI pass; the kernel has 6,055 decoded ARM instructions with zero FPU/NEON. Both hosted jobs passed at exact head `5118c4a` in run `38049340699`: host 56 s, Vita 3m41s. PR #14 merged at 11:46:20 UTC as `c888b5936ca46729b0fbc7698b2348c5a4b3d387`; local main/origin are synchronized. The combined PR #14+#15 kernel/shell are now installed with full readbacks and normal boot. A successful physical OCR request using the smaller allocation is still unverified.
 
 The user subsequently chose a fixed manual list, so this repair is an optional OCR path rather than a prerequisite for the current requested manual experiment. See [[20-Fixed-manual-hook-workflow]].
 
 ## Prepared artifacts, separate from installed binaries
 
-The notes author independently hashed the prepared files under `vita-agent-use/agent/overlay-region-capture-20261010/`. The table below records the earlier PR #14-only preparation. The shell is now superseded by the combined PR #14+#15 shell `4f1f0650...` (159,528 B); current prepared hashes are in [[21-Picker-diagnostics-and-screenshot-provenance]]. These are local build/deployment-preparation artifacts, not device readbacks:
+The notes author independently hashed the prepared files under `vita-agent-use/agent/overlay-region-capture-20261010/`. The table below records the earlier PR #14-only preparation. The shell is now superseded by the combined PR #14+#15 shell `4f1f0650...` (159,528 B); current installed/readback hashes are in [[21-Picker-diagnostics-and-screenshot-provenance]]. These are local build/deployment-preparation artifacts, not device readbacks:
 
 | Artifact | Bytes | SHA-256 |
 |---|---:|---|
@@ -62,11 +62,11 @@ The notes author independently hashed the prepared files under `vita-agent-use/a
 | Earlier shell, superseded | 158,848 | `83dac94f1af2410f4b28bc8f9a1409a0a78c6ee8349f560d21e6425e4bcb4b3b` |
 | Text, unchanged | 7,936 | `84259631e0efe87472750a04a944a0d2cb7673f218c85f316ae3a450e6c7565f` |
 
-The installed physical hashes remain in [[02-Current-device-state]]. No successful region-sized capture allocation or Lens request is established on the device, and the user has not been asked to retry this new build.
+The current installed physical hashes are in [[02-Current-device-state]]. No successful region-sized capture allocation or Lens request is established on the device. The user has been asked for a two-page manual register-hook test, which does not require OCR.
 
 ## Next evidence
 
-Validate the region-sized allocation and bounded reuse before deployment. Preserve the current full-frame OOM baseline, fix the error reporting/propagation as evidence permits, then repeat the real screenshot request. Confirm actual kernel capture, JPEG completion, Lens entry/result and the stable match separately. The shell anchor's 384 KiB budget and the kernel raw buffer are different allocations; the host Lens result bypassed the failing physical kernel allocation.
+The reviewed/build-tested region-sized allocation is deployed; physical allocation/capture behavior still needs a separate observation if OCR is retried. Preserve the current full-frame OOM baseline, fix the error reporting/propagation as evidence permits, then repeat the real screenshot request. Confirm actual kernel capture, JPEG completion, Lens entry/result and the stable match separately. The shell anchor's 384 KiB budget and the kernel raw buffer are different allocations; the host Lens result bypassed the failing physical kernel allocation.
 
 Do not treat “no game text found” as proof that generic hooks never fire. Keep this capture failure separate from the earlier unanchored source-picker UX and boot ABI bug. Append corrective measurements and device outcomes here and in [[2026-10-10-Investigation-log]].
 

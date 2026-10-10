@@ -48,12 +48,15 @@ Use this ledger to prevent a partial result becoming a compatibility claim. Evid
 | E32 | Region-sized capture repair passes local validation and is published in PR #14. | Head `5118c4a`: 10 host suites in 4.61 s; 41 worker/16 production-kernel cases; kernel ASAN/UBSAN; SDK Release/ABI; 6,055 ARM instructions, no FPU/NEON. Two reviews; hosted host/Vita passed. Merged `c888b59`; prepared artifacts are not installed. [[19-Physical-OCR-source-failure]] |
 | E33 | Bounded explicit-action picker diagnostics are merged and combined artifacts are prepared. | PR #15 head `f58b1aa`, merge `5e5bc25`, local 10 suites/clean Vita ABI and both exact hosted jobs pass. Combined shell `4f1f0650...` is not installed. Screenshot code -7/stage `jpeg_encode` remains a returned label with unmatched installed-agent provenance. [[21-Picker-diagnostics-and-screenshot-provenance]] |
 | E34 | A title-specific register source matches two current visible pages and remains stable during idle intervals in Vita3K. | Final `0x2CA70`/r6 CP932 profile SHA `99c73600...`; complete sequences 906/3,432, stream `70000000`, ranks 2/5, updates 1/3, idle 10.330/11.290 s. Seventeen referenced artifact hashes checked by notes author. Earlier entry descriptors rejected; no physical install/selection claim. [[22-CLANNAD-register-profile-proof]] |
+| E35 | Combined capture/diagnostic binaries and CLANNAD profile are installed with exact readbacks, normal boot and foreground game launch verified. | Kernel `ae3c0341...`, shell `4f1f0650...`, profile `99c73600...`; unchanged text/config. Fresh 12:10:49 UTC startup API 8/registration 0, complete kernel/shell STARTED 6 inventory; CLANNAD foreground at 12:11:53. Physical two-page result pending. [[02-Current-device-state]] |
+| E36 | Installed screenshot runtime provenance is now matched, but code -7 remains ambiguous. | Readback SHA `d3018186...`, 310,212 B, stock private SceShell JPEG backend; dirty local alternate backend differs. Invalid geometry/Paf OOM/invalid output/native -7 remain possible branches; no agent-code changes. [[21-Picker-diagnostics-and-screenshot-provenance]] |
+| E37 | User reports physical native hooks work; fresh logs verify selected CALL text changes and lookups complete. | ID18/kind2/AUTO0 at `8105910F`, updates1→5, bytes24→6→18→72→18, lookup rc=0; final refresh clears selection. Success log SHA `c31bb2cc...`. Not a physical REGISTER profile proof or independently counted/screenshot-verified page test. [[23-Physical-native-hook-success]] |
 
 ## Inferences and hypotheses
 
 | ID | Claim | Status | What would resolve it |
 |---|---|---|---|
-| H01 | Correct generic `SceLibc` hooks may expose useful CLANNAD text. | Two visible-page matches and corrected top-five source ranking pass in the emulator; hardware capture remains pending. | Successful hook attachment, bounded observations, then two visible pages matching output. |
+| H01 | Correct generic `SceLibc` hooks may expose useful CLANNAD text. | Two visible-page matches and corrected top-five source ranking pass in the emulator; physical CALL follow/lookup now has user-reported success and logged source updates; REGISTER correspondence remains unproved. | Successful hook attachment, bounded observations, then two visible pages matching output. |
 | H02 | CLANNAD requires a signed native register profile. | **Unproven.** Earlier suspicion was premature because the generic hooks targeted absent imports. | Reassess only after corrected generic capture and measured scanner diagnostics. |
 | H03 | CP932 should be tried before assuming UTF-16 for this title. | Supported by offline font data, still an inference for live dialogue. | Compare captured bytes to visible pages with an explicitly recorded decoder. |
 | H04 | Scanner zero candidates means the game stores no readable Japanese text. | Unsupported. | First establish that reads enter the right process and cover readable mappings, then inspect decoding/filter statistics. |
@@ -63,7 +66,7 @@ Use this ledger to prevent a partial result becoming a compatibility claim. Evid
 ## Claims that are explicitly not established
 
 - Generic native extraction works for arbitrary Vita visual novels.
-- The complete physical CLANNAD workflow works, or a correct picker candidate has been manually selected.
+- The physical REGISTER profile itself supplied the working text, or broad CLANNAD/game compatibility follows from the user-reported native CALL success.
 - A static matching script string follows the current page.
 - Native PSP/Adrenaline text hooks work; that is a different CPU and backend.
 - A single partition-memory sample belongs to CLANNAD. Process ownership was uncertain.

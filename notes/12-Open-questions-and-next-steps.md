@@ -12,18 +12,17 @@ The immediate goal is to make the user's CLANNAD dialogue available in the Vita 
 
 ## Current decision
 
-The user now explicitly chooses a fixed manual hook list and accepts ordinary text hooking without OCR if the list stays stable. Root switched only auto→hooks with full config readback; no reboot or new binary was needed. A source can be selected and physical Paf dictionary jobs complete, but the user thinks the text is wrong. Bounded picker diagnostics are merged in PR #15 but not installed; the entry/SP candidate was rejected for preloading future lines. A later `0x2CA70`/r6 profile now passes two-page emulator/current-source stability proof, with physical attachment and selection still unverified; see [[22-CLANNAD-register-profile-proof]]. Root requested a short example because the screenshot tool fails at JPEG encoding. See [[20-Fixed-manual-hook-workflow]].
+The user reports the physical manual-hook workflow works. Fresh logs verify a selected CALL source changes through five updates and completes dictionary jobs across reopens. The successful source is kind 2 CALL, not the installed kind 4 REGISTER profile. Exact visible-page count was not separately stated and no independent physical screenshot was obtained. See [[23-Physical-native-hook-success]].
 
-The OCR-first shell and its boot remain verified. Its earlier screenshot failure is a confirmed full-frame kernel capture allocation failure before Lens. Region-sized storage is now merged as PR #14 `c888b59`; it is optional for the current manual experiment and is not installed. See [[19-Physical-OCR-source-failure]].
+The current kernel/shell/profile are installed/read back and normally booted; manual mode is preserved. The final refresh in the success log intentionally clears selection, so source ID 18 must not be assumed persistent. Do not request the same test again merely because broader compatibility remains unmeasured.
 
-## Follow-up work
+## Follow-up work when requested
 
-1. **Resolve the current wrong-text concern.** Compare the requested short example to the visible line; do not publish dialogue in the notebook. Six selected bytes and one update do not establish a current dialogue stream.
-2. **Validate manual continuity.** Keep the list stable, deliberately select a relevant source and verify two advancing pages. The source-table sequence changing does not mean the selected text changes.
-3. **Confirm dictionary usefulness.** Paf allocation and `rc=0` are now physical evidence, but the on-screen result still needs to correspond to the intended text.
-4. **Preserve the user's mode choice.** The current config is hooks, with Lens/region retained. Avoid silently changing back to auto or rebooting solely for a config change that takes effect on the next open.
-5. **Keep the merged optional capture repair distinct from deployment.** Region-sized storage, frozen geometry/capacity, single-pass JPEG release, multipass preservation and cleanup passed host/build/review checks in PR #14. The combined PR #14+#15 binaries are prepared but not installed; hardware allocation/capture and diagnostic logs remain unverified. Match the installed agent runtime to its source before diagnosing its separate screenshot failure.
-6. **Preserve each outcome separately.** Boot/readback, host Lens, failed physical capture, successful allocator/job returns and correct visible dialogue are distinct observations. A usable text hook requires the last one.
+1. **Preserve the working manual configuration and evidence.** Keep exact installed hashes, successful source metadata and private diagnostic logs. Avoid unrequested mode changes/reinstalls.
+2. **Separate generic success from profile proof.** The title profile has strong emulator evidence, but the successful physical source was CALL. A later profile-specific check must identify actual REGISTER observations, not infer causation from installation timing.
+3. **Broaden validation deliberately.** Other scenes, speakers, choices, restarts and suspend/resume remain untested; record their real outcomes without turning the current success into blanket compatibility.
+4. **Keep OCR optional.** The smaller kernel buffer is installed, but no successful physical OCR request has been measured. Native hooking already supplies the requested current workflow.
+5. **Diagnose screenshots only from new evidence.** pngshot's encoder overlap makes a PNG/JPEG mismatch likely, but no live returned PNG or alternate screenshot retrieval is confirmed. The dirty local agent backend remains untouched.
 
 ## Questions requiring evidence
 

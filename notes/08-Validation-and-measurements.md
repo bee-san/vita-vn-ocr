@@ -33,6 +33,8 @@ Each validation layer answers a different question. A passing lower layer does n
 | Region-sized capture, PR #14 head `5118c4a` | 10 host suites in 4.61 s, 41 worker/16 kernel cases; kernel ASAN/UBSAN; Vita release/ABI; 6,055 ARM instructions, no FPU/NEON | Requested capacity/ownership regression coverage and build compatibility | Successful physical region allocation/capture, Lens result or corrected error propagation on hardware |
 | Bounded picker diagnostics, PR #15 head `f58b1aa` | 10 host suites in 5.31 s; clean ncnn-OFF Vita/ABI; exact hosted host and Vita pass | Bounded explicit-action log implementation builds and passes existing suites | Actual device diagnostics or correct dialogue correspondence; build is uninstalled |
 | CLANNAD register profile, isolated real-game run | Two visible pages match stream `70000000`, updates 1→3/ranks 2→5, unchanged rows across 10.330/11.290 s idle intervals | Current register-observer dialogue in those two emulator checkpoints | Physical stack mapping/syscall safety, picker selection, other scenes or broad compatibility |
+| Combined PR #14/#15/#16 physical install | Kernel/shell/profile complete readbacks; unchanged text/manual config exact; API 8/registration 0; loaded kernel/shell STARTED 6; foreground CLANNAD launch | Intended bytes installed and normal boot/game launch completed | Physical register attachment, current visible dialogue, chosen-source continuity, or new region-sized OCR success |
+| Physical native CALL success | User says “omg it works”; selected ID 18/kind2/AUTO0, own updates 1→5, changing byte lengths and dictionary rc=0 across reopens | User-reported usefulness plus logged selected native follow/lookup | Exact visible-page count, screenshot comparison, physical REGISTER-profile causation, broad compatibility or OCR success |
 
 ## Reproduction commands
 
@@ -64,7 +66,7 @@ The synthetic Vita3K test transport uses a host-side substitute that calls strle
 
 ## Important diagnostic limits
 
-Vita-agent screenshot attempts failed with `frame_unavailable`, code `-7`, stage `jpeg_encode`. No successful image file from those attempts exists. The installed agent runtime has not been matched to the dirty local source/backend, so this returned stage label cannot diagnose a specific encoder implementation; see [[21-Picker-diagnostics-and-screenshot-provenance]]. User reports and metadata were therefore needed for visual behavior; a screenshot request alone is not image evidence.
+Vita-agent screenshot attempts failed with `frame_unavailable`, code `-7`, stage `jpeg_encode`. No successful image file from those attempts exists. The installed agent runtime has now been matched to a stock private SceShell JPEG backend, distinct from the dirty local source. The returned stage label still cannot identify one of its several possible failure branches; see [[21-Picker-diagnostics-and-screenshot-provenance]]. User reports and metadata were therefore needed for visual behavior; a screenshot request alone is not image evidence.
 
 A performance command returned a client error, while pushed native events contained roughly 59.992 FPS and partition free-memory fields (USER_RW 28,672 B free of 50 MiB; CDRAM 0 free of 16 MiB). Address-space ownership was not verified; these must not be reported as confirmed CLANNAD memory measurements. One sample is also not a latency distribution or stability benchmark.
 

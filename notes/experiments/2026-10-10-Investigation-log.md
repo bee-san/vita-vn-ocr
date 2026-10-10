@@ -231,3 +231,26 @@ The corrected original-SP profile still needs two changed visible-line captures.
 The corrected original-SP fifth-argument descriptor at `0x2C906` captured preloaded future lines, so expected-line occurrences were insufficient and the entry hook was rejected. The final private candidate uses segment 0 + `0x2CA70`, Thumb, r6 CP932, without indirection/padding. Its production REGISTER stream `70000000` exactly matches two different visible pages: complete sequences 906/3,432, ranks 2/5, update counts 1/3. Full rows remain identical over no-input intervals of 10.330/11.290 s. The profile SHA is `99c73600540f5c441939a06f6cc727ec21b284fa055bc936f7bb0359382f9f81`.
 
 The private bridge uses explicit current-thread stack bounds because the emulator SDK memory lookup omits these stacks. This does not prove physical kernel stack reads, process isolation or source selection. The emulator is stopped; no device calls or physical profile installation occurred. Root is preparing a separate profile/docs PR. The notes author checked all 17 artifact hashes and bounded proof metadata, while attributing visual comparison to the investigator. See [[22-CLANNAD-register-profile-proof]].
+
+
+## 37. Profile merged; combined install and normal boot verified
+
+PR #16 exact head `30a68d216243f74e772410a31b90ff17be6dddcb` passed hosted host 44 s/full Vita 4m26s and merged at 12:09:53 UTC as `264241eb0f6323f373049a458be214448f8320cb`; main/origin are synchronized. Sequential staged uploads completed with byte-equal full readbacks for kernel 39,048 B `ae3c0341...`, shell 159,528 B `4f1f0650...` and 63 B profile `99c73600...`. Text `84259631...` and manual config `3833843d...` were unchanged and read back. The notes author independently hashed those local evidence files.
+
+After reboot, fresh startup at 12:10:49 UTC shows API 8, registration 0 and worker startup. Complete 27-entry inventory confirms kernel/shell loaded STARTED 6 with zero errors. Root confirms CLANNAD foreground at 12:11:53; the user was asked to test two visible pages. The deployment-plan status snapshot still says launch pending while the confirmed launch metadata is being appended. Physical register capture/selection and new OCR capture remain unverified.
+
+The installed agent shell was separately matched to a stock private SceShell JPEG runtime, 310,212 B SHA `d30181867cba4c8922b7f744796a4cddb6455b44702c121263d04b131e87704f`. The reported -7 still has several possible branches; the dirty local backend differs and was not changed or installed. See [[02-Current-device-state]] and [[21-Picker-diagnostics-and-screenshot-provenance]].
+
+
+## 38. Screenshot conflict becomes a concrete hypothesis; launch record catches up
+
+The final deployment plan now records normal boot and foreground CLANNAD launch, with native Text loaded/STARTED 6/error 0 in the complete inventory. This supersedes its temporary launch-pending status, but still does not prove the selected dialogue stream.
+
+The independently inspected pngshot revision `113d4715` hooks the same 3.65 SceShell encoder entry used by the matched agent runtime and forces PNG output; that agent expects JPEG markers. With pngshot loaded, this is a strong format-conflict hypothesis, not a live raw-PNG observation. No encoder patch/plugin disable occurred. The user was asked to use physical PS+START; the screenshot folder currently reports ENOENT and no image has yet been retrieved.
+
+
+## 39. User reports success; physical source is CALL, not REGISTER
+
+At about 12:15 UTC the user replied “omg it works.” Fresh private status (4,952 B, device time 12:14:59, SHA `c31bb2cc0692a3e3f049894950a8f3ec6fc8864c6c997541cbcfab92565656b1`) independently shows selected ID18/kind2 CALL/encoding0 AUTO at `8105910F`. Its own updates progress 1→5 and UTF-8 sizes 24→6→18→72→18. Native dictionary jobs return rc=0 at 111/166/1,290 ms, plus a 421 ms rerun after changed text; final explicit refresh clears selection. The fixed picker shows five bounded rows without scanning.
+
+This supports a working physical native follow/lookup experience together with the user report. It does not prove REGISTER `70000000` supplied the successful text, identify the profile as the missing component, independently count visible pages or validate physical OCR. The plan status now records user-reported native success with logged follow/lookup. See [[23-Physical-native-hook-success]].

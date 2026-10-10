@@ -2,13 +2,13 @@
 title: CLANNAD register profile proof
 created: 2026-10-10
 updated: 2026-10-10
-status: two-page-emulator-proof-physical-validation-pending
+status: installed-register-proof-emulator-only
 tags: [vita, clannad, register-hook, evidence]
 ---
 
 # CLANNAD register profile proof
 
-A title-specific register hook now matches two different visible CLANNAD narration pages through the production ARM observer in isolated Vita3K. The same captured source stays unchanged during two idle periods and changes when the visible page advances. This is stronger timing evidence than finding the expected line somewhere in prefetched script text. The profile and new plugins are **not installed on the physical Vita**.
+A title-specific register hook now matches two different visible CLANNAD narration pages through the production ARM observer in isolated Vita3K. The same captured source stays unchanged during two idle periods and changes when the visible page advances. This is stronger timing evidence than finding the expected line somewhere in prefetched script text. The profile and new plugins are **installed and normally booted on the physical Vita**, but the later working physical selection is a generic CALL source, not this REGISTER stream. Physical register-source correspondence remains unproved; see [[23-Physical-native-hook-success]].
 
 ## Candidate evolution
 
@@ -20,7 +20,7 @@ A title-specific register hook now matches two different visible CLANNAD narrati
 
 The final profile targets native module `VITA`, module NID `0xC5187D60`. Its unique eight-byte instruction signature and placement were checked; the proof records no direct branch target entering the overwritten interior, and independent placement review found no blocker. This is revision/placement evidence, not proof of hardware kernel stack access or every instruction/runtime path.
 
-The final profile is 63 B with SHA-256 `99c73600540f5c441939a06f6cc727ec21b284fa055bc936f7bb0359382f9f81`. Root is preparing a separate profile/docs PR from merge `5e5bc25` in `/home/bee/Documents/src/vita-jp-overlay-clannad-profile`, planning `profiles/PCSG00415.vjhook` as small derived revision-guarded configuration. The full instruction bytes are not reproduced in this notebook. Game executables, screenshots, dialogue and complete logs remain private.
+The final profile is 63 B with SHA-256 `99c73600540f5c441939a06f6cc727ec21b284fa055bc936f7bb0359382f9f81`. [Overlay PR #16](https://github.com/bee-san/vita-jp-overlay/pull/16) publishes `profiles/PCSG00415.vjhook` as small derived revision-guarded configuration, with a short evidence document. Exact head `30a68d216243f74e772410a31b90ff17be6dddcb` merged at 12:09:53 UTC as `264241eb0f6323f373049a458be214448f8320cb`; hosted run `38050663785` passed host 44 s and full Vita 4m26s. The profile worktree is `/home/bee/Documents/src/vita-jp-overlay-clannad-profile`, based on merge `5e5bc25`. The full instruction bytes are not reproduced in this notebook. Game executables, screenshots, dialogue and complete logs remain private.
 
 ## Complete two-page evidence
 
@@ -49,6 +49,6 @@ Private evidence is under `/home/bee/Documents/src/vita-jp-overlay-discovery/bui
 
 The notes author inspected the bounded proof metadata and independently verified all 17 referenced artifact hashes, without copying game content. Visible-line comparison is attributed to the capture investigator; this notes pass did not repeat visual inspection. Hash integrity does not substitute for physical execution.
 
-Next publish/review the concrete revision-guarded profile, then verify actual physical attachment and bounded register capture. Confirm a displayed candidate matches two changing pages after deliberate selection, including reopen and dictionary behavior. Other scenes, speakers, choices, releases and long-running stability remain untested.
+The published profile now has a byte-equal device readback at `ux0:data/VitaJPOverlay/hooks/PCSG00415.vjhook`. Normal boot and foreground CLANNAD launch are verified. The user now reports the manual native workflow works, with logged CALL-source updates/lookups; this does not validate the register profile on hardware. Any future profile-specific test must verify actual attachment and bounded REGISTER capture. Confirm a displayed candidate matches two changing pages after deliberate selection, including reopen and dictionary behavior. Other scenes, speakers, choices, releases and long-running stability remain untested.
 
 Related: [[07-CLANNAD-investigation]], [[20-Fixed-manual-hook-workflow]], [[21-Picker-diagnostics-and-screenshot-provenance]], [[02-Current-device-state]], [[12-Open-questions-and-next-steps]].

@@ -1,0 +1,173 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 119c06d..76888b9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -19,4 +19,7 @@ if(POLICY CMP0091)
+ endif()
+ project(MNN VERSION ${MNN_VERSION} LANGUAGES C CXX ASM)
++if(VITA)
++    add_definitions(-DMNN_VITA)
++endif()
+ # complier options
+ set(CMAKE_C_STANDARD 99)
+@@ -332,5 +335,4 @@ endif()
+
+ if(CMAKE_SYSTEM_NAME MATCHES "^Linux")
+-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STRICT_ANSI__")
+     if(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv7")
+         add_definitions(-mfpu=neon)    #please define in project/cross-compile/arm.toolchain.cmake
+diff --git a/source/backend/cpu/CPUTopKV2.cpp b/source/backend/cpu/CPUTopKV2.cpp
+index fe96d18..e80de8b 100644
+--- a/source/backend/cpu/CPUTopKV2.cpp
++++ b/source/backend/cpu/CPUTopKV2.cpp
+@@ -11,4 +11,5 @@
+ #include "core/Macro.h"
+ #include "core/Concurrency.h"
++#include "core/AutoStorage.h"
+ #include "backend/cpu/compute/CommonOptFunction.h"
+ #include <algorithm>
+@@ -16,10 +17,16 @@ namespace MNN {
+
+ template <typename T>
+-void findTopK(int32_t rowSize, int32_t numRows, const T* data, int32_t k, int32_t* outputIndexes, T* outputValues, bool largest) {
++ErrorCode findTopK(int32_t rowSize, int32_t numRows, const T* data, int32_t k, int32_t* outputIndexes, T* outputValues, bool largest) {
+     struct DataType {
+         T value;
+         int index;
+     };
+-    std::vector<DataType> cacheData(rowSize);
++    // Route the potentially large sorting scratch through MNN's allocator,
++    // so a bounded embedding does not exhaust its separate STL/newlib heap.
++    AutoStorage<DataType> storage(rowSize);
++    DataType* cacheData = storage.get();
++    if (nullptr == cacheData) {
++        return OUT_OF_MEMORY;
++    }
+     auto compareL = [](const DataType& A, const DataType& B) {
+         return A.value > B.value;
+@@ -37,7 +44,7 @@ void findTopK(int32_t rowSize, int32_t numRows, const T* data, int32_t k, int32_
+         }
+         if (largest) {
+-            std::partial_sort(cacheData.begin(), cacheData.begin() + k, cacheData.end(), compareL);
++            std::partial_sort(cacheData, cacheData + k, cacheData + rowSize, compareL);
+         } else {
+-            std::partial_sort(cacheData.begin(), cacheData.begin() + k, cacheData.end(), compareM);
++            std::partial_sort(cacheData, cacheData + k, cacheData + rowSize, compareM);
+         }
+         for (int i=0; i<k; ++i) {
+@@ -46,4 +53,5 @@ void findTopK(int32_t rowSize, int32_t numRows, const T* data, int32_t k, int32_
+         }
+     }
++    return NO_ERROR;
+ }
+
+@@ -122,10 +130,10 @@ ErrorCode CPUTopKV2::onExecute(const std::vector<Tensor*>& inputs, const std::ve
+         auto topkData    = outputData->host<float>();
+         int* indicesData = outputIndices->host<int32_t>();
+-        findTopK<float>(rowSize, numRows, inputData, k, indicesData, topkData, mLargest);
++        return findTopK<float>(rowSize, numRows, inputData, k, indicesData, topkData, mLargest);
+     } else if(halide_type_int == inputTensor->getType().code && 32 == inputTensor->getType().bits) {
+         auto inputData   = inputTensor->host<int32_t>();
+         auto topkData    = outputData->host<int32_t>();
+         int* indicesData = outputIndices->host<int32_t>();
+-        findTopK<int32_t>(rowSize, numRows, inputData, k, indicesData, topkData, mLargest);
++        return findTopK<int32_t>(rowSize, numRows, inputData, k, indicesData, topkData, mLargest);
+     } else {
+         MNN_PRINT("TODO\n");
+diff --git a/source/backend/cpu/arm/arm32/MNNCubicLineC16.S b/source/backend/cpu/arm/arm32/MNNCubicLineC16.S
+index c294ab3..9b768c2 100644
+--- a/source/backend/cpu/arm/arm32/MNNCubicLineC16.S
++++ b/source/backend/cpu/arm/arm32/MNNCubicLineC16.S
+@@ -78,6 +78,6 @@ vmla.f32 q13, q6, d1[1]
+
+ //A
+-vld1.32{q3, q4}, [r1]!
+-vld1.32{q5, q6}, [r1]!
++vld1.32 {q3, q4}, [r1]!
++vld1.32 {q5, q6}, [r1]!
+
+ // Caculate a0, d0
+@@ -114,5 +114,5 @@ vmla.f32 q13, q6, d3[1]
+ // D
+ vld1.32 {q3, q4}, [r4]!
+-vld1.32{q5, q6}, [r4]!
++vld1.32 {q5, q6}, [r4]!
+
+ vmla.f32 q10, q3, d4[1]
+@@ -158,3 +158,3 @@ pop {r4-r8, r10-r11, pc}
+
+ #endif
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/source/core/MNNFileUtils.cpp b/source/core/MNNFileUtils.cpp
+index fe3eee8..2659e16 100644
+--- a/source/core/MNNFileUtils.cpp
++++ b/source/core/MNNFileUtils.cpp
+@@ -204,4 +204,7 @@ ErrorCode MNNSetFileSize(file_t file, size_t aimed_size)
+     }
+     return NO_ERROR;
++#else
++#ifdef MNN_VITA
++    return FILE_RESIZE_FAILED;
+ #else
+     if (-1 == ftruncate(file, aimed_size)) {
+@@ -210,4 +213,5 @@ ErrorCode MNNSetFileSize(file_t file, size_t aimed_size)
+     return NO_ERROR;
+ #endif
++#endif
+ }
+
+@@ -282,4 +286,7 @@ void * MNNMmapFile(file_t file, size_t size)
+     CloseHandle(hFileMapping);
+     return addr;
++#else
++#ifdef MNN_VITA
++    return nullptr;
+ #else
+     void * addr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, file, 0);
+@@ -290,4 +297,5 @@ void * MNNMmapFile(file_t file, size_t size)
+     return addr;
+ #endif
++#endif
+ }
+
+@@ -298,8 +306,12 @@ ErrorCode MNNUnmapFile(void * addr, size_t size)
+         return FILE_UNMAP_FAILED;
+     }
++#else
++#ifdef MNN_VITA
++    return FILE_UNMAP_FAILED;
+ #else
+     if (-1 == munmap(addr, size)) {
+         return FILE_UNMAP_FAILED;
+     }
++#endif
+ #endif
+     return NO_ERROR;
+@@ -312,8 +324,12 @@ ErrorCode MNNMmapSync(void * addr, size_t size)
+         return FILE_UNMAP_FAILED;
+     }
++#else
++#ifdef MNN_VITA
++    return FILE_UNMAP_FAILED;
+ #else
+     if (-1 == msync(addr, size, MS_SYNC)) {
+         return FILE_UNMAP_FAILED;
+     }
++#endif
+ #endif
+     return NO_ERROR;
+diff --git a/source/core/MNNFileUtils.h b/source/core/MNNFileUtils.h
+index db30e17..4fad8aa 100644
+--- a/source/core/MNNFileUtils.h
++++ b/source/core/MNNFileUtils.h
+@@ -25,6 +25,8 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
++#ifndef MNN_VITA
+ #include <sys/mman.h>
+ #endif
++#endif
+
+ using namespace MNN;

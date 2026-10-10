@@ -1,0 +1,323 @@
+{
+  "environment": {
+    "kind": "host CPU, one thread; not Vita speed or total Vita memory",
+    "onnxruntime": "1.22.0"
+  },
+  "inputs": "eval/manifests/vita-test.jsonl and psp-test.jsonl, hand checked real screenshots; not training/calibration",
+  "graph_parity": {
+    "raw_code_differences": 0,
+    "text_differences": 0,
+    "max_box_delta": 1.78977370262146,
+    "max_score_delta": 3.7550926208496094e-05
+  },
+  "full_float_text_differences": 0,
+  "int8_text_changes": 22,
+  "models": {
+    "original": {
+      "vita-test": {
+        "all": {
+          "lines": 206,
+          "chars": 2564,
+          "errors": 37,
+          "cer": 0.01443,
+          "exact": 0.86893
+        },
+        "styles": {
+          "bright-on-dark": {
+            "lines": 163,
+            "chars": 2016,
+            "errors": 28,
+            "cer": 0.01389,
+            "exact": 0.88344
+          },
+          "coloured": {
+            "lines": 19,
+            "chars": 195,
+            "errors": 12,
+            "cer": 0.06154,
+            "exact": 0.63158
+          },
+          "coloured-name": {
+            "lines": 8,
+            "chars": 21,
+            "errors": 1,
+            "cer": 0.04762,
+            "exact": 0.875
+          },
+          "dark-on-light": {
+            "lines": 43,
+            "chars": 548,
+            "errors": 9,
+            "cer": 0.01642,
+            "exact": 0.81395
+          },
+          "furigana": {
+            "lines": 3,
+            "chars": 64,
+            "errors": 1,
+            "cer": 0.01562,
+            "exact": 0.66667
+          },
+          "mincho": {
+            "lines": 47,
+            "chars": 676,
+            "errors": 6,
+            "cer": 0.00888,
+            "exact": 0.93617
+          },
+          "name": {
+            "lines": 53,
+            "chars": 172,
+            "errors": 4,
+            "cer": 0.02326,
+            "exact": 0.92453
+          },
+          "outlined": {
+            "lines": 74,
+            "chars": 989,
+            "errors": 16,
+            "cer": 0.01618,
+            "exact": 0.85135
+          }
+        }
+      },
+      "psp-test": {
+        "all": {
+          "lines": 245,
+          "chars": 2510,
+          "errors": 92,
+          "cer": 0.03665,
+          "exact": 0.79592
+        },
+        "styles": {
+          "bright-on-dark": {
+            "lines": 135,
+            "chars": 1409,
+            "errors": 57,
+            "cer": 0.04045,
+            "exact": 0.80741
+          },
+          "coloured": {
+            "lines": 20,
+            "chars": 214,
+            "errors": 9,
+            "cer": 0.04206,
+            "exact": 0.7
+          },
+          "coloured-name": {
+            "lines": 7,
+            "chars": 24,
+            "errors": 2,
+            "cer": 0.08333,
+            "exact": 0.71429
+          },
+          "dark-on-light": {
+            "lines": 110,
+            "chars": 1101,
+            "errors": 35,
+            "cer": 0.03179,
+            "exact": 0.78182
+          },
+          "furigana": {
+            "lines": 20,
+            "chars": 206,
+            "errors": 48,
+            "cer": 0.23301,
+            "exact": 0.05
+          },
+          "mincho": {
+            "lines": 90,
+            "chars": 984,
+            "errors": 18,
+            "cer": 0.01829,
+            "exact": 0.85556
+          },
+          "name": {
+            "lines": 62,
+            "chars": 209,
+            "errors": 41,
+            "cer": 0.19617,
+            "exact": 0.69355
+          },
+          "no-box": {
+            "lines": 4,
+            "chars": 59,
+            "errors": 7,
+            "cer": 0.11864,
+            "exact": 0.25
+          },
+          "outlined": {
+            "lines": 69,
+            "chars": 740,
+            "errors": 18,
+            "cer": 0.02432,
+            "exact": 0.85507
+          },
+          "small": {
+            "lines": 106,
+            "chars": 973,
+            "errors": 23,
+            "cer": 0.02364,
+            "exact": 0.83962
+          }
+        }
+      }
+    },
+    "meiki-stream-int8": {
+      "vita-test": {
+        "all": {
+          "lines": 206,
+          "chars": 2564,
+          "errors": 36,
+          "cer": 0.01404,
+          "exact": 0.86893
+        },
+        "styles": {
+          "bright-on-dark": {
+            "lines": 163,
+            "chars": 2016,
+            "errors": 28,
+            "cer": 0.01389,
+            "exact": 0.88344
+          },
+          "coloured": {
+            "lines": 19,
+            "chars": 195,
+            "errors": 13,
+            "cer": 0.06667,
+            "exact": 0.63158
+          },
+          "coloured-name": {
+            "lines": 8,
+            "chars": 21,
+            "errors": 1,
+            "cer": 0.04762,
+            "exact": 0.875
+          },
+          "dark-on-light": {
+            "lines": 43,
+            "chars": 548,
+            "errors": 8,
+            "cer": 0.0146,
+            "exact": 0.81395
+          },
+          "furigana": {
+            "lines": 3,
+            "chars": 64,
+            "errors": 2,
+            "cer": 0.03125,
+            "exact": 0.66667
+          },
+          "mincho": {
+            "lines": 47,
+            "chars": 676,
+            "errors": 5,
+            "cer": 0.0074,
+            "exact": 0.93617
+          },
+          "name": {
+            "lines": 53,
+            "chars": 172,
+            "errors": 4,
+            "cer": 0.02326,
+            "exact": 0.92453
+          },
+          "outlined": {
+            "lines": 74,
+            "chars": 989,
+            "errors": 17,
+            "cer": 0.01719,
+            "exact": 0.85135
+          }
+        }
+      },
+      "psp-test": {
+        "all": {
+          "lines": 245,
+          "chars": 2510,
+          "errors": 89,
+          "cer": 0.03546,
+          "exact": 0.79592
+        },
+        "styles": {
+          "bright-on-dark": {
+            "lines": 135,
+            "chars": 1409,
+            "errors": 55,
+            "cer": 0.03903,
+            "exact": 0.8
+          },
+          "coloured": {
+            "lines": 20,
+            "chars": 214,
+            "errors": 9,
+            "cer": 0.04206,
+            "exact": 0.7
+          },
+          "coloured-name": {
+            "lines": 7,
+            "chars": 24,
+            "errors": 2,
+            "cer": 0.08333,
+            "exact": 0.71429
+          },
+          "dark-on-light": {
+            "lines": 110,
+            "chars": 1101,
+            "errors": 34,
+            "cer": 0.03088,
+            "exact": 0.79091
+          },
+          "furigana": {
+            "lines": 20,
+            "chars": 206,
+            "errors": 46,
+            "cer": 0.2233,
+            "exact": 0.05
+          },
+          "mincho": {
+            "lines": 90,
+            "chars": 984,
+            "errors": 16,
+            "cer": 0.01626,
+            "exact": 0.86667
+          },
+          "name": {
+            "lines": 62,
+            "chars": 209,
+            "errors": 39,
+            "cer": 0.1866,
+            "exact": 0.69355
+          },
+          "no-box": {
+            "lines": 4,
+            "chars": 59,
+            "errors": 7,
+            "cer": 0.11864,
+            "exact": 0.25
+          },
+          "outlined": {
+            "lines": 69,
+            "chars": 740,
+            "errors": 18,
+            "cer": 0.02432,
+            "exact": 0.84058
+          },
+          "small": {
+            "lines": 106,
+            "chars": 973,
+            "errors": 24,
+            "cer": 0.02467,
+            "exact": 0.83962
+          }
+        }
+      }
+    }
+  },
+  "session_only_memory_mib": {
+    "float": 20.283745,
+    "int8": 7.183529
+  },
+  "memory_scope": "MNN session only; excludes model loading, metadata, application heap, code and startup peak",
+  "physical_vita": "Unverified; user requested all further physical tests be manual after device crashes"
+}

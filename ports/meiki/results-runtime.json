@@ -1,0 +1,40 @@
+{
+  "host": {
+    "kind": "host static MNN, same C binding; not physical Vita RAM or speed",
+    "cases": 451,
+    "workspace_bytes": 16777216,
+    "peak_model_tensor_bytes": 13235648,
+    "max_retained_pool_bytes": 0,
+    "c_decoder_text_differences": 0,
+    "reference_text_differences": 0
+  },
+  "emulator": {
+    "version": "Vita3K v0.2.1 4154-b75d5e62",
+    "target": "VitaSDK ARMv7-A NEON, hard float, one inference thread",
+    "cases": 8,
+    "unique_crops": 4,
+    "completed": true,
+    "host_text_matches": 6,
+    "raw_output_repeat_differences": 0,
+    "peak_model_tensor_bytes": 13090176,
+    "workspace_bytes": 16777216,
+    "newlib_heap_reservation_bytes": 4194304,
+    "workspace_free_rc": 0,
+    "all_arenas_released": true,
+    "steady_newlib_used_after_bytes": [
+      105128,
+      105128,
+      105128,
+      105128,
+      105128,
+      105128,
+      105128
+    ],
+    "text_difference": "One PSP punctuation crop differs between ARM and PC on both repeats; full ARM CER is not measured"
+  },
+  "physical_vita": {
+    "status": "awaiting manual test",
+    "in_game_and_adrenaline": "not yet verified"
+  },
+  "limits": "Pool peaks include model/tensor/TopK allocations, not total process RAM. Emulator memory sizes and timings are not physical measurements."
+}

@@ -12,7 +12,7 @@ The first generic text plugin observed SceLibKernel clib functions. Offline CLAN
 
 Initial import-fix source: `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd`, version `0.6-hooks.5`. The later ranking repair is implementation `6eef6c0`; final evidence head `69006af9e36347b75534c01900b48d43ed372981` merged in [PR #12](https://github.com/bee-san/vita-jp-overlay/pull/12) as `a5e0c50b1096b5ae7de450ae712e63b272dc7f17`.
 
-**The final kernel/text pair is installed, fully read back and normally booted on the physical Vita.** Actual CLANNAD selection/capture there remains pending. The emulator proof matches two pages through the same immediate sources without a title profile, and the full-feed ranking repair puts all three matching sources in the displayed five on both pages. See [[02-Current-device-state]] and [[16-Full-feed-picker-ranking]].
+**The final kernel/text pair is installed, fully read back and normally booted on the physical Vita.** The physical user test then produced changing 0% candidates and irrelevant text, so usable current-dialogue selection/capture remains unverified. The emulator proof matches two pages through the same immediate sources without a title profile, and the full-feed ranking repair puts all three matching sources in the displayed five on both pages. See [[02-Current-device-state]] and [[16-Full-feed-picker-ranking]].
 
 ## Capture behavior
 

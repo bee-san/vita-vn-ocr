@@ -23,7 +23,10 @@ Each validation layer answers a different question. A passing lower layer does n
 | Installed binary readback | Full hashes matched | Intended bytes reached installed paths | Loaded modules or functional capture |
 | Physical normal boot | API 8, registration 0, STARTED 6 | Corrected set initialized on this 3.65 device | Later game stability on all paths |
 | Physical picker | User observed it open after low-memory fix | Previous eager-allocation gate removed in this scenario | Useful text capture |
-| Physical CLANNAD capture | Not verified; picker empty | Current failure reproduced | A compatibility success |
+| Physical CLANNAD workflow, old text backend | Picker empty after low-memory repair | Original capture failure reproduced | A compatibility success |
+| Physical CLANNAD workflow, retail-hook/ranking repair | Candidate traffic present; user reports rapidly changing 0% hooks and irrelevant text; selected=0 in saved metadata | Installed path now produces candidates, but the requested UX fails | Correct visible-page capture, selected-source continuity or a working text-hook experience |
+| OCR-first worker, PR #13 head `5826329` | 10 host suites in 4.18 s, 37 worker cases; local Vita release/ABI pass; 650 preview sanitizer cases | Ownership, cancellation, fresh reference and stable selection under host substitutes | Physical Paf/capture/TLS or UI behavior |
+| Production Lens endpoint on host | Full image and saved crop recognize one verified six-codepoint line exactly; HTTP 200; peaks 131,128/93,432 B | Actual endpoint/parser compatibility and narrow current-page match within tested arena | Shared-benchmark CER, repeated timing, Vita TLS/allocator behavior or broader accuracy |
 
 ## Reproduction commands
 

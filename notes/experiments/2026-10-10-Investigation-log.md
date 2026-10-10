@@ -129,3 +129,46 @@ Kernel SHA `6cc2dc86...` (38,620 B) and text SHA `84259631...` (7,936 B) were in
 Reboot was first accepted, then independently confirmed by reconnection and a fresh 706 B status log at 11:00:20 UTC: API 8, shell registration 0, worker started. Complete native inventory (27 entries) showed kernel/shell STARTED 6 with zero errors. The per-title text plugin was unloaded with the game closed, as expected. The notes author independently hashed both saved readbacks and inspected the startup log.
 
 The installation report now states `installed_readback_verified_normal_boot_verified_awaiting_user_clannad_test`. The user was asked to open CLANNAD, select matching text in the L+R picker, then advance/reopen twice; their result is pending. This records successful installation and boot, not physical dialogue capture. Exact hashes and private evidence locations are in [[02-Current-device-state]].
+
+## 19. Physical test reports changing 0% hooks and irrelevant text
+
+The user opened the installed overlay and reported a flood of changing 0% hooks, then irrelevant text. This fails the intended physical workflow despite successful boot and nonzero candidate traffic. Saved status metadata shows candidates 1→5 before opening, then full discovery and sequence growth to 3,035 with selected=0. No correct current-page match or selected-source continuity was established.
+
+The user explicitly requested the default flow take one OCR screenshot and show the match. Root acknowledged that the device was configured as manual `text_source=hooks`, so no OCR reference existed for the 0% labels. The repository default `text_source=auto` and logged `ocr_mode auto` do not override that physical setting.
+
+Baseline worker/renderer inspection explains additional churn: opening starts full memory discovery, picker publication follows every table sequence change, and the renderer prints match percentages even without a reference. A new `fix/ocr-first-hook-picker` branch starts from `a5e0c50`, with worker/config/device, OCR-memory and UI work split among agents. The prior physical capture result remains unverified; this is a UX failure to fix, not a completed text-hook success. See [[17-OCR-first-physical-workflow]].
+
+## 20. OCR-first worker and explicit picker states under development
+
+Root is implementing one OCR anchor job with one 384 KiB workspace, no dictionary lookup during anchoring, and release only after job completion. The renderer work adds explicit none/matching/ready/failed states, a bounded screenshot excerpt, readable previews and scores only when a valid OCR reference exists. These are development changes, with no live OCR or new physical deployment validated yet.
+
+The notes author inspected the UI/view-model diff and preserved the distinction between inspected work in progress and shipped behavior. Publication of this notes follow-up is held until implementation results arrive, while the current-folder mirror already records the user's failed physical UX and requested OCR-first default.
+
+## 21. Lens accepted; OCR-first lifecycle fixes and intermediate validation
+
+The user explicitly accepted Google Lens for lower local memory demand. Root confirmed it was already configured/default and kept it. The working tree now uses one temporary 384 KiB anchor workspace with no dictionary lookup, LISTEN rather than full memory scanning, a screenshot excerpt, stable candidates at ≥50% normalized string similarity, explicit source selection and retries only on explicit open/reopen or Triangle.
+
+Reviews caught stale clicked rows, close/advance/reopen consuming an old screenshot, and dictionary-to-picker transitions losing the reference. Focused production-worker regressions cover these lifetimes; cancellation cannot free an anchor still used by the worker. An intermediate full 10-suite host run passed in 4.86 s, plus Vita OCR-disabled build/ABI, before the newest stale-choice regression. Final rebuild is pending. No new physical install or live Lens success is claimed.
+
+## 22. OCR-first candidate published; local validation and hosted config mismatch
+
+Overlay PR #13 publishes code `4205be7` and docs head `a048faa`. The final focused production-worker run passed 36 cases in 0.02 s; the prior full 10-suite run passed in 4.86 s. Vita release/packaged ABI passed and both independent reviews found no remaining blockers. UI preview sanitizers passed 650 cases. The new shell is 158,516 B, SHA `28097a40d824fb0a97abe69d8ea851e046ef9477e2f3e50a85ffaa05564cce10`; no kernel/text changes are needed.
+
+Host Lens probes measured 117,336/133,720 B arena peaks for two private screenshots and up to 391,769 B with padded responses, supporting the chosen 384 KiB allocation for those tested cases. These are deterministic host allocation results, not live OCR, console speed or a universal response-memory bound. See [[18-OCR-anchor-memory-measurements]].
+
+Hosted head `a048faa` failed the core config golden comparison because its explanatory config-example comment was not synchronized with the generated default string; worker tests passed. Root is correcting that mismatch and rerunning full host/Vita checks. Device shell/config/region backups are prepared; Lens remains selected with only hooks→auto planned. No new install or physical OCR result has occurred.
+
+
+## 22. Config equality corrected and final worker regression added
+
+Head `5826329ddcb1244b0e318f2c6c527181cc14d4d8` synchronizes the generated-default comment with the example config and clears the subtitle busy indicator when cancellation completes. The final 10 host suites pass in 4.18 s, including 37 worker cases; the Vita release/packaged ABI check passes. The new shell is 158,564 B, SHA `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c`, superseding the earlier candidate. Hosted host passed at this exact head; Vita remained in progress in run `38048108519` when checked. Device shell/config/region backups are prepared, but the candidate is uninstalled and live OCR remains unverified.
+
+
+## 23. Live host Lens recognizes the previously verified page
+
+Two production JPEG/OCR/BearSSL requests at 11:23–11:24 UTC completed with HTTP 200, TLS 0 and `rc=0` in a 384 KiB arena. The full 960×544 page used a 131,128 B arena peak; the saved 755×146 crop used 93,432 B. Both exactly matched the same verified six-codepoint current line and produced 100% normalized similarity against all three established streams. These single host samples establish a narrow real endpoint result; they are not shared-benchmark CER, repeated timing, console memory measurements or a physical UI test. Evidence and reproduction paths are in [[18-OCR-anchor-memory-measurements]].
+
+
+## 24. OCR-first change merged; deployment verification pending
+
+Exact head `5826329` passed hosted host (52 s) and Vita (4m25s) in run `38048108519`. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`, and local main was synchronized from `a5e0c50`. Root began the shell upload. No successful new readback/normal boot or physical OCR interaction has yet been recorded at this checkpoint.

@@ -10,11 +10,11 @@ tags: [vita, native-text, moc]
 
 This vault records the native text-hook investigation alongside the OCR project. Open this `notes/` directory as an Obsidian vault, or follow the ordinary Markdown files. It needs no Obsidian plugin. Findings are linked so a future session can recover the reasoning, evidence and limits without rereading the whole conversation.
 
-**Current outcome:** the corrected generic SceLibc hooks and source ranking are merged, installed on the physical Vita, read back and normally booted. Kernel API 8, shell registration 0 and STARTED kernel/shell states are verified. The same code captures two visible CLANNAD narration pages in isolated Vita3K without a game-specific profile, with all three matching sources in the top five after the ranking repair.
+**Current outcome:** the installed capture/ranking repair boots normally and supplies candidates, but the physical CLANNAD test failed the intended workflow. The user saw rapidly changing hooks labelled 0% and then irrelevant text. No correct selected source following visible dialogue has been verified on the Vita.
 
-**Still unresolved:** actual CLANNAD source selection, advancing dialogue and dictionary behavior on the physical Vita. The user has been asked to open CLANNAD, choose matching text with L+R / ▲▼ / ×, then advance and reopen twice; their result is pending. See [[02-Current-device-state]], [[07-CLANNAD-investigation]] and [[16-Full-feed-picker-ranking]].
+**New explicit preference:** opening the overlay should take one OCR screenshot first and show the matching source. The deployed configuration was manual `text_source=hooks`, so it had no OCR reference; its 0% labels were not evidence that the visible text had been compared and rejected. The implemented follow-up is merged in overlay PR #13 as `539c2888`, with exact-head host/Vita CI passing. Its shell upload is in progress; verified installation and boot remain pending. Live production Lens on the host now exactly matches one verified short page from full-frame and cropped inputs; physical OCR and the interaction remain unverified. See [[17-OCR-first-physical-workflow]] and [[02-Current-device-state]].
 
-The deployed implementation is `6eef6c0`; final reviewed evidence head is `69006af`; overlay PR #12 merged as `a5e0c50`. It passed 264 synthetic Vita3K checks and exact final-head hosted CI. These are distinct from the pending physical game test.
+The previous repair remains a verified install/boot result and a two-page emulator capture/top-five result, not a completed physical text-hook experience. It is implementation `6eef6c0`, reviewed head `69006af`, merged as `a5e0c50`, with 264 passing synthetic Vita3K checks. The stronger physical UX failure is now part of the record.
 
 ## Start a session
 
@@ -37,6 +37,8 @@ The deployed implementation is `6eef6c0`; final reviewed evidence head is `69006
 | Corrected generic SceLibc hooks and validation | [[14-Retail-libc-hook-coverage]] |
 | Real-game startup trace and emulator tooling failures | [[15-Vita3K-runtime-investigation]] |
 | Full-feed source-ranking failure and validation gate | [[16-Full-feed-picker-ranking]] |
+| Physical UX failure and requested OCR-first workflow | [[17-OCR-first-physical-workflow]] |
+| Measured Lens anchor workspace and its limits | [[18-OCR-anchor-memory-measurements]] |
 | What tests establish, and what they cannot | [[08-Validation-and-measurements]] |
 | Safe operational commands and recovery | [[09-Device-operations-and-recovery]] |
 | Worktrees, commits and merged PRs | [[10-Repositories-and-revisions]] |

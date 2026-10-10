@@ -47,7 +47,13 @@ This notebook is published separately as [OCR PR #17](https://github.com/bee-san
 
 Implementation `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e` combines initial import correction `0a660159...` with the production comparator repair. It passes 10 host suites, 264 synthetic Vita3K checks, the release build/ABI audit and a corrected full-feed two-page CLANNAD ranking experiment. Intermediate evidence-only commit `d1ee0dc` records the first two-page capture; final evidence head `69006af` preserves the stronger snapshot proof. Artifact hashes do not change across evidence-only commits.
 
-The new kernel/text pair is installed and read back, with normal boot verified; physical CLANNAD source selection/capture is still awaiting the user's test. See [[02-Current-device-state]], [[14-Retail-libc-hook-coverage]] and [[16-Full-feed-picker-ranking]].
+The new kernel/text pair is installed and read back, with normal boot verified; the user's physical test found changing 0% hooks and irrelevant text. Correct dialogue selection/capture is still unverified. The follow-up `fix/ocr-first-hook-picker` is active from that merged baseline. See [[02-Current-device-state]], [[14-Retail-libc-hook-coverage]] and [[16-Full-feed-picker-ranking]].
+
+## OCR-first follow-up candidate
+
+[Overlay PR #13](https://github.com/bee-san/vita-jp-overlay/pull/13), “Read screenshots first and keep native text matches stable,” is on `fix/ocr-first-hook-picker` from merged `a5e0c50`. Code `4205be7034a2b48df45e65c7f253e7c7524b349a` introduced the 384 KiB anchor, stable screenshot matches and explicit user selection. Current head `5826329ddcb1244b0e318f2c6c527181cc14d4d8` also synchronizes the generated default config and clears cancelled subtitle busy state. See [[17-OCR-first-physical-workflow]].
+
+Final local validation passed all 10 host suites in 4.18 s, including 37 worker cases, and the Vita release/packaged ABI check. Two reviews found no remaining blockers. The older hosted `a048faa` failed only generated-default/config-example equality after a comment change; this is fixed in `5826329`. Both exact-head hosted jobs passed in run `38048108519`: host 52 s, Vita 4m25s. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`; local main was synchronized. Shell upload is in progress, with verified installation still pending. Candidate shell is 158,564 B, SHA `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c`. Live production-Lens host checks subsequently matched one short verified page from full and cropped inputs; physical OCR and shell/config deployment remain pending.
 
 ## Adjacent work to preserve
 

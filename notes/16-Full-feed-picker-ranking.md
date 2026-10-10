@@ -73,6 +73,6 @@ Both snapshots contain five choices and `selected=0`. Thus generic capture, page
 
 The failed proof remains `offline-capture-proof-before-ranking.json` (5,962 B, SHA-256 `5e707f06762778b18a3e7c1d2eb1913ec00abc8b0463407dce41816d56426579`). The successful proof records separate screenshot, capture-log and source-snapshot hashes. See [[11-Sources-and-artifacts]]. The earlier 255-check run predates the ranking change; its synthetic regression result is the later 264-check run.
 
-The corrected kernel/text pair is now merged, installed and normally booted; the user's physical CLANNAD selection/capture test is pending. The PR's coherent outcome is usable generic capture, which includes source selection as well as interception. See [[12-Open-questions-and-next-steps]].
+The corrected kernel/text pair is now merged, installed and normally booted; the user's physical test failed the intended UX with changing 0% candidates and irrelevant text. The emulator top-five result remains valid, but it did not exercise full memory discovery, shell interaction or manual selection. See [[17-OCR-first-physical-workflow]]. The PR's coherent outcome is usable generic capture, which includes source selection as well as interception. See [[12-Open-questions-and-next-steps]].
 
 Related: [[03-Native-text-architecture]], [[07-CLANNAD-investigation]], [[14-Retail-libc-hook-coverage]], [[15-Vita3K-runtime-investigation]], [[2026-10-10-Investigation-log]].

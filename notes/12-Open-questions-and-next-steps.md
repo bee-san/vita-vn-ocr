@@ -12,18 +12,18 @@ The immediate goal is to make the user's CLANNAD dialogue available in the Vita 
 
 ## Current decision
 
-The generic SceLibc capture and ranking repair is merged, installed, read back and normally booted. Corrected full-feed emulator proof matches two visible pages through the same streams and shows them in the top five without a game profile. The remaining immediate question is the user's physical CLANNAD experience. See [[02-Current-device-state]] and [[16-Full-feed-picker-ranking]].
+The physical test did not produce a usable workflow: the user saw changing 0% hooks and irrelevant text. The user explicitly wants one OCR screenshot first, then the matching source, and accepts Google Lens to reduce local memory demand. The built follow-up is overlay PR #13, merged as `539c2888` from exact reviewed head `5826329`. Shell upload has begun; verified installation and physical behavior remain pending. Do not ask the user to keep trying the same manual stream-picker flow as if the earlier hardware test were merely unanswered.
 
-## Pending user test and follow-up
+## Follow-up work
 
-1. **Wait for the requested CLANNAD result.** The user has been asked to open CLANNAD, show dialogue, press L+R, choose the matching text with ▲/▼ and ×, then advance dialogue and reopen twice. Avoid duplicate requests while that response is pending.
-2. **Verify actual selection and page changes.** Emulator snapshots had `selected=0`; manual selection and selected-source continuity remain separate hardware evidence. Collect current metadata while respecting one-client device ownership.
-3. **If the picker is empty or wrong, isolate the boundary.** Verify the current game's text module/attachment, process/mapping identity, successful reads and decoding/ranking counters. The known-correct emulator decoder/ranker does not prove physical kernel mapping.
-4. **If the device stops or the game exits, preserve the exact state.** Keep installed hashes, last markers and any completed coredump; use the established recovery path and private backups as needed. Do not assume the original boot ABI failure has returned.
-5. **Once text follows pages, verify dictionary and lifecycle.** Exercise the bounded allocation fallback, overlay reopen, scene change, restart and suspend/resume. Measure overhead/memory with correct process ownership.
-6. **Revisit title-specific work only when evidence requires it.** The two tested pages use generic imports without a profile. Other scenes, features and revisions remain untested; any profile needs exact module/instruction validation.
+1. **Make the requested OCR-first path concrete.** Root owns worker/configuration and eventual physical deployment; delegated work covers OCR memory and picker rendering. The working tree now implements a single 384 KiB anchor, stable ≥50% matches, LISTEN without full scans, and explicit user selection. Current head `5826329` passes the final 10 host suites in 4.18 s, including 37 worker cases, and the local Vita release/ABI check. The config-comment mismatch is fixed; both exact-head hosted jobs passed (host 52 s, Vita 4m25s), and PR #13 merged as `539c2888`. Live production-Lens host checks pass for one short verified page; physical OCR remains pending.
+2. **Make match state truthful.** The installed manual mode has no OCR reference. A 0% label there does not mean a calibrated match failed; distinguish uncalibrated discovery from a computed score.
+3. **Stop unrelated source churn from driving the default UI.** The baseline starts full memory discovery on open and republishes the picker for every source-table sequence change. Verify the actual corrective behavior rather than assuming a comparator tweak alone fixes the interaction.
+4. **Validate the constrained OCR path and failure handling.** CLANNAD already exhausted large result allocations. A one-time OCR anchor must be tested under the relevant memory budget and leave useful, stable feedback on failure.
+5. **Deploy only the reviewed concrete follow-up with backup/readback.** Record configuration as well as binary hashes; repository defaults and device overrides are separate facts.
+6. **Retest the user's actual workflow.** One screenshot should yield relevant current-page text/source matching, then a chosen source should follow another page. Verify dictionary behavior and reopens afterward. Candidate count, normal boot and emulator snapshots alone do not satisfy this.
 
-Do not reinstall or reboot merely because the user has not answered yet. The concrete candidate is already on the device, and boot is verified; the next observation should resolve the actual game workflow.
+The prior boot/install and two-page emulator results remain valid within their scopes. The physical experience remains unverified/failed until the requested OCR-first interaction works for the user. See [[17-OCR-first-physical-workflow]].
 
 ## Questions requiring evidence
 

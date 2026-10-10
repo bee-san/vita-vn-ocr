@@ -146,7 +146,9 @@ def load_checkpoint(path, height=None):
     sd = ck["model"]
     n_classes = sd["head.weight"].shape[0]
     bottleneck = sd["bottleneck.weight"].shape[0]
-    model = TinyVNOCR(n_classes, width=float(ck.get("width", 1.0)), bottleneck=bottleneck)
+    # depth / ctx / ctx_k: arch's deeper students (train.py records them; v1 has none)
+    arch = {k: int(ck[k]) for k in ("depth", "ctx", "ctx_k") if ck.get(k) is not None}
+    model = TinyVNOCR(n_classes, width=float(ck.get("width", 1.0)), bottleneck=bottleneck, **arch)
     model.load_state_dict(sd)
     model.eval()
     vocab = list(ck["vocab"])

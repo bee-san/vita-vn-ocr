@@ -3,10 +3,17 @@
 
   train.py --run v1 [--synth 'data/synth/*.npz'] [--real 'data/real/*.npz' --real-weight 0.3]
 
-Crops (render.py / label_real.py shards) are resized to height 32 with bilinear
+Crops (render.py / label_real.py shards) are resized to --height (32) with bilinear
 interpolation, the same resize the Vita runtime does. The last synthetic shard is
 held out for validation. Writes models/<run>/ckpt_last.pt (resumed automatically),
 ckpt_best.pt and metrics.jsonl.
+
+Architecture-sweep options (defaults reproduce v1): --width, --bottleneck, --depth,
+--ctx, --ctx-k, --height,
+--vocab (a vocab whose last entry is the <unk> token 〓 maps every other character
+to it instead of dropping the line), --steps (a fixed budget instead of --epochs),
+--seed (seeds torch and numpy) and --qat F (int8 weight fake quantisation from
+fraction F of the steps onwards). Threads default to $TORCH_NUM_THREADS (heavy.sh).
 """
 import argparse
 import glob
@@ -26,15 +33,20 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "synth"))
 from common import DATA, ROOT, load_vocab  # noqa: E402
-from model import TinyVNOCR  # noqa: E402
+from model import TinyVNOCR, set_weight_quant  # noqa: E402
 
 H, MAX_W, STRIDE = 32, 1024, 8
+UNK = "〓"   # GETA MARK: the <unk> class of a reduced vocab, always its last entry
+
+
+def resize_h(g, height=H):
+    h, w = g.shape
+    nw = max(8, min(MAX_W, int(round(w * height / h))))
+    return cv2.resize(g, (nw, height), interpolation=cv2.INTER_LINEAR)
 
 
 def resize32(g):
-    h, w = g.shape
-    nw = max(8, min(MAX_W, int(round(w * H / h))))
-    return cv2.resize(g, (nw, H), interpolation=cv2.INTER_LINEAR)
+    return resize_h(g, 32)
 
 
 def ctc_ok(ids, width):
@@ -42,18 +54,30 @@ def ctc_ok(ids, width):
     return len(ids) + repeats <= math.ceil(width / STRIDE)
 
 
-def load(paths, char2id):
+def encoder(vocab):
+    """char -> class id (vocab[i] is class i + 1). With an <unk> vocab (last entry
+    UNK) every other character maps to UNK's id; otherwise unknown chars are -1."""
+    char2id = {c: i + 1 for i, c in enumerate(vocab)}
+    unk = char2id.get(UNK) if vocab and vocab[-1] == UNK else None
+    return lambda s: [char2id.get(c, -1 if unk is None else unk) for c in s]
+
+
+def load(paths, encode, height=H):
+    """encode: encoder(vocab), or a plain char2id dict as in v1 (unknown chars drop)."""
+    if isinstance(encode, dict):
+        char2id = encode
+        encode = lambda s: [char2id.get(c, -1) for c in s]  # noqa: E731
     imgs, labels, dropped = [], [], 0
     for p in paths:
         z = np.load(p)
         data, offs, shapes = z["data"], z["offsets"], z["shapes"]
         for i, lab in enumerate(json.loads(str(z["labels"]))):
-            ids = [char2id.get(c, -1) for c in lab]
+            ids = encode(lab)
             if not ids or -1 in ids:
                 dropped += 1
                 continue
             h, w = (int(v) for v in shapes[i])
-            g = resize32(data[offs[i]:offs[i + 1]].reshape(h, w))
+            g = resize_h(data[offs[i]:offs[i + 1]].reshape(h, w), height)
             if not ctc_ok(ids, g.shape[1]):
                 dropped += 1
                 continue
@@ -63,14 +87,15 @@ def load(paths, char2id):
 
 
 def augment(g, rng):
+    height = g.shape[0]
     g = g.astype(np.float32)
     if rng.random() < 0.3:                                   # horizontal stretch
         nw = max(8, min(MAX_W, int(g.shape[1] * rng.uniform(0.88, 1.12))))
-        g = cv2.resize(g, (nw, H), interpolation=cv2.INTER_LINEAR)
+        g = cv2.resize(g, (nw, height), interpolation=cv2.INTER_LINEAR)
     if rng.random() < 0.3:                                   # vertical jitter of the crop
         d = int(rng.integers(1, 3))
         g = g[d:] if rng.random() < 0.5 else np.pad(g, ((d, 0), (0, 0)), mode="edge")
-        g = cv2.resize(g, (g.shape[1], H), interpolation=cv2.INTER_LINEAR)
+        g = cv2.resize(g, (g.shape[1], height), interpolation=cv2.INTER_LINEAR)
     if rng.random() < 0.2:
         g = cv2.GaussianBlur(g, (0, 0), rng.uniform(0.3, 0.9))
     if rng.random() < 0.5:
@@ -91,12 +116,14 @@ def batches(widths, batch, rng):
 def make_batch(imgs, labels, idx, rng=None):
     gs = [augment(imgs[i], rng) if rng is not None else imgs[i].astype(np.float32) for i in idx]
     W = (max(g.shape[1] for g in gs) + STRIDE - 1) // STRIDE * STRIDE
-    x = np.empty((len(gs), 1, H, W), np.float32)
+    x = np.empty((len(gs), 1, gs[0].shape[0], W), np.float32)
     for j, g in enumerate(gs):
         w = g.shape[1]
         x[j, 0, :, :w] = g
         x[j, 0, :, w:] = g[:, -1:]
-    x = torch.from_numpy(x / 127.5 - 1.0)
+    # channels_last: same values, ~1.4x faster CPU convs (N x 1 x H x W has one channel,
+    # so this only tags the layout that the conv outputs then inherit)
+    x = torch.from_numpy(x / 127.5 - 1.0).contiguous(memory_format=torch.channels_last)
     in_len = torch.tensor([math.ceil(g.shape[1] / STRIDE) for g in gs], dtype=torch.long)
     tgt = [labels[i] for i in idx]
     return x, in_len, torch.from_numpy(np.concatenate(tgt)), torch.tensor([len(t) for t in tgt])
@@ -159,9 +186,19 @@ def main():
     ap.add_argument("--batch", type=int, default=96)
     ap.add_argument("--lr", type=float, default=2e-3)
     ap.add_argument("--width", type=float, default=1.0)
+    ap.add_argument("--bottleneck", type=int, default=96)
+    ap.add_argument("--depth", type=int, default=1, help="stride-1 DS blocks per stage (v1: 1)")
+    ap.add_argument("--ctx", type=int, default=2, help="temporal Ctx blocks (v1: 2)")
+    ap.add_argument("--ctx-k", type=int, default=5, choices=(3, 5, 7), help="Ctx kernel width")
+    ap.add_argument("--height", type=int, default=H, choices=(24, 32))
+    ap.add_argument("--vocab", type=Path, default=DATA / "vocab.txt")
+    ap.add_argument("--qat", type=float, default=0.0,
+                    help="int8 weight fake quantisation from this fraction of the steps (0 = off)")
     ap.add_argument("--seed", type=int, default=None, help="seed torch and numpy (default: v1)")
     ap.add_argument("--threads", type=int, default=default_threads())
     ap.add_argument("--eval-every", type=int, default=2000)
+    ap.add_argument("--keep-evals", action="store_true",
+                    help="also keep ckpt_step<N>.pt at every eval (learning curves)")
     ap.add_argument("--init", default="", help="start weights from this checkpoint")
     args = ap.parse_args()
     torch.set_num_threads(args.threads)
@@ -171,16 +208,17 @@ def main():
     out = args.out / args.run
     out.mkdir(parents=True, exist_ok=True)
 
-    vocab = load_vocab()
-    char2id = {c: i + 1 for i, c in enumerate(vocab)}
+    vocab = load_vocab(args.vocab)
+    encode = encoder(vocab)
+    unk = UNK if vocab[-1] == UNK else None
     shards = sorted(glob.glob(args.synth))
     t0 = time.time()
-    tr_imgs, tr_labels, d1 = load(shards[:-1], char2id)
-    va_imgs, va_labels, d2 = load(shards[-1:], char2id)
+    tr_imgs, tr_labels, d1 = load(shards[:-1], encode, args.height)
+    va_imgs, va_labels, d2 = load(shards[-1:], encode, args.height)
     src = [0] * len(tr_imgs)
     if args.real:
         real = sorted(glob.glob(args.real))
-        r_imgs, r_labels, d3 = load(real, char2id)
+        r_imgs, r_labels, d3 = load(real, encode, args.height)
         tr_imgs += r_imgs
         tr_labels += r_labels
         src += [1] * len(r_imgs)
@@ -188,8 +226,11 @@ def main():
     print(f"train {len(tr_imgs)} / val {len(va_imgs)} lines, dropped {d1 + d2}, "
           f"loaded in {time.time() - t0:.0f}s", flush=True)
 
-    model = TinyVNOCR(len(vocab) + 1, width=args.width)
-    print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M", flush=True)
+    model = TinyVNOCR(len(vocab) + 1, width=args.width, bottleneck=args.bottleneck,
+                      depth=args.depth, ctx=args.ctx, ctx_k=args.ctx_k)
+    model = model.to(memory_format=torch.channels_last)
+    print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M, classes "
+          f"{len(vocab) + 1}, height {args.height}, threads {args.threads}", flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.01)
     ctc = nn.CTCLoss(blank=0, zero_infinity=True)
     step, best = 0, 1.0
@@ -210,6 +251,7 @@ def main():
     weights = np.where(np.asarray(src) == 1, args.real_weight, 1.0)
     steps_per_epoch = len(tr_imgs) // args.batch
     total = args.steps or int(args.epochs * steps_per_epoch)
+    qat_from = int(args.qat * total) if args.qat else None
     warm = 1000
     metrics = open(out / "metrics.jsonl", "a")
     t_log, seen, loss_acc = time.time(), 0, 0.0
@@ -225,6 +267,8 @@ def main():
         for idx in chunks:
             if step >= total:
                 break
+            if qat_from is not None and step >= qat_from:
+                set_weight_quant(model, 8)
             lr = args.lr * min(1.0, (step + 1) / warm) * (
                 0.05 + 0.95 * 0.5 * (1 + math.cos(math.pi * min(1.0, step / total))))
             for g in opt.param_groups:
@@ -250,13 +294,20 @@ def main():
                        "val_line_acc": acc, "lr": lr, "time": time.time()}
                 metrics.write(json.dumps(rec) + "\n")
                 metrics.flush()
-                ck = {"model": model.state_dict(), "opt": opt.state_dict(), "step": step,
-                      "best_cer": min(best, cer), "vocab": vocab, "width": args.width}
+                ck = {"model": {k: v.contiguous() for k, v in model.state_dict().items()},
+                      "opt": opt.state_dict(), "step": step,
+                      "best_cer": min(best, cer), "vocab": vocab, "width": args.width,
+                      "bottleneck": args.bottleneck, "depth": args.depth, "ctx": args.ctx,
+                      "ctx_k": args.ctx_k, "height": args.height, "unk": unk,
+                      "qat": {"bits": 8, "from_step": qat_from} if qat_from is not None else None,
+                      "args": {k: str(v) for k, v in vars(args).items()}}
                 if cer < best:
                     best = cer
                     torch.save(ck, out / "ckpt_best.pt")
                 torch.save(ck, out / "ckpt_last.tmp")
                 (out / "ckpt_last.tmp").replace(last)
+                if args.keep_evals:
+                    torch.save(ck, out / f"ckpt_step{step}.pt")
                 print(f"eval step {step}: val CER {cer:.4f} line acc {acc:.4f} (best {best:.4f})",
                       flush=True)
     print("TRAIN_DONE", flush=True)

@@ -20,7 +20,7 @@ Paths below are local research locations. Private artifact directories remain un
 | `ps-vita-ocr-notes/` | Isolated notes worktree, branch `docs/vita-hook-investigation-notes`, based on OCR origin/main `7964b43f022e51bd26da84f9ff1fc0a26c9dd1aa`. Only `notes/` belongs to this change. |
 | `vita-jp-overlay-hooks/` | Firmware fix branch `fix/native-hooks-fw365`. |
 | `vita-jp-overlay-low-memory/` | Picker-memory branch `fix/native-text-low-memory`. |
-| `vita-jp-overlay-discovery/` | Current branch `fix/native-libc-capture`, based on merged `13bcf816...`; PR #12. Earlier diagnostic experiment preserved separately in local-only `fix/native-text-discovery` commit `2d56ce4`, not deployed or submitted as a PR. |
+| `vita-jp-overlay-discovery/` | Current branch `fix/ocr-first-hook-picker`, based on merged PR #12 `a5e0c50`; latest PR #13 merged `539c2888`. Earlier capture branch `fix/native-libc-capture` remains separate. Earlier diagnostic experiment preserved separately in local-only `fix/native-text-discovery` commit `2d56ce4`, not deployed or submitted as a PR. |
 | `ps-vita-ocr-lab/vita-jp-overlay/` | Shared overlay worktree; last observed on `fix/local-ocr-memory`, owned by the OCR session. Preserve it. |
 | `ps-vita-ocr-lab/vita-agent-use/` | Device control client and private ignored `agent/` evidence. |
 | `ps-vita-ocr-lab/tools/vitasdk/` | Local VitaSDK; arm-vita-eabi-gcc 15.2.0 in the recorded boot-fix build. |
@@ -33,9 +33,9 @@ Paths below are local research locations. Private artifact directories remain un
 | Native hook 3.65 boot ABI, guards, stack correction | `8486c97`; evidence `8e7a6e8`; SDK pin `c7eed5066fe2550ddb17748929db620951209418` | [#10](https://github.com/bee-san/vita-jp-overlay/pull/10), merged `bfb1ada4f3f6995100cb7fa04d4b8240c868ddcf` |
 | Picker/raw text without eager result arenas, optional bounded heap fallback | `e2ed3b7`; measured evidence `ca46033`; exact PR head `5b1310328a102aba915a58db9413a0b3ac475c9f` | [#11](https://github.com/bee-san/vita-jp-overlay/pull/11), merged `13bcf816ab4e45fb8f59da0f52407a621b07284e` |
 
-GitHub PR states above were independently queried on 2026-10-10. The active investigator reports overlay local main synchronized to merge `13bcf816...`. Do not switch or fast-forward another session's feature worktree to achieve that again.
+GitHub PR states above were independently queried on 2026-10-10. The active investigator reports overlay local main subsequently synchronized through PR #12 to latest merge `539c2888`. Do not switch or fast-forward another session's feature worktree to achieve that again.
 
-The installed shell was built from the low-memory implementation; later docs/merge commits do not imply a different installed binary. Artifact hashes are the deployment evidence in [[02-Current-device-state]]. Source, built artifact, remote branch, merged revision and installed bytes are separate states.
+The earlier installed shell came from the low-memory implementation; it is now replaced by the OCR-first shell. Later docs/merge commits alone do not imply a different installed binary. Artifact hashes are the deployment evidence in [[02-Current-device-state]]. Source, built artifact, remote branch, merged revision and installed bytes are separate states.
 
 ## Notes publication
 
@@ -49,11 +49,11 @@ Implementation `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e` combines initial impor
 
 The new kernel/text pair is installed and read back, with normal boot verified; the user's physical test found changing 0% hooks and irrelevant text. Correct dialogue selection/capture is still unverified. The follow-up `fix/ocr-first-hook-picker` is active from that merged baseline. See [[02-Current-device-state]], [[14-Retail-libc-hook-coverage]] and [[16-Full-feed-picker-ranking]].
 
-## OCR-first follow-up candidate
+## OCR-first follow-up merged and installed
 
 [Overlay PR #13](https://github.com/bee-san/vita-jp-overlay/pull/13), “Read screenshots first and keep native text matches stable,” is on `fix/ocr-first-hook-picker` from merged `a5e0c50`. Code `4205be7034a2b48df45e65c7f253e7c7524b349a` introduced the 384 KiB anchor, stable screenshot matches and explicit user selection. Current head `5826329ddcb1244b0e318f2c6c527181cc14d4d8` also synchronizes the generated default config and clears cancelled subtitle busy state. See [[17-OCR-first-physical-workflow]].
 
-Final local validation passed all 10 host suites in 4.18 s, including 37 worker cases, and the Vita release/packaged ABI check. Two reviews found no remaining blockers. The older hosted `a048faa` failed only generated-default/config-example equality after a comment change; this is fixed in `5826329`. Both exact-head hosted jobs passed in run `38048108519`: host 52 s, Vita 4m25s. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`; local main was synchronized. Shell upload is in progress, with verified installation still pending. Candidate shell is 158,564 B, SHA `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c`. Live production-Lens host checks subsequently matched one short verified page from full and cropped inputs; physical OCR and shell/config deployment remain pending.
+Final local validation passed all 10 host suites in 4.18 s, including 37 worker cases, and the Vita release/packaged ABI check. Two reviews found no remaining blockers. The older hosted `a048faa` failed only generated-default/config-example equality after a comment change; this is fixed in `5826329`. Both exact-head hosted jobs passed in run `38048108519`: host 52 s, Vita 4m25s. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`; local main was synchronized. Shell/config installation, complete readbacks and normal reboot are verified. The installed shell is 158,564 B, SHA `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c`. Live production-Lens host checks subsequently matched one short verified page from full and cropped inputs; physical OCR/source selection remain pending the user test; the config now uses auto with Lens and its saved region preserved.
 
 ## Adjacent work to preserve
 

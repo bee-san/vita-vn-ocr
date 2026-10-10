@@ -27,6 +27,7 @@ Each validation layer answers a different question. A passing lower layer does n
 | Physical CLANNAD workflow, retail-hook/ranking repair | Candidate traffic present; user reports rapidly changing 0% hooks and irrelevant text; selected=0 in saved metadata | Installed path now produces candidates, but the requested UX fails | Correct visible-page capture, selected-source continuity or a working text-hook experience |
 | OCR-first worker, PR #13 head `5826329` | 10 host suites in 4.18 s, 37 worker cases; local Vita release/ABI pass; 650 preview sanitizer cases | Ownership, cancellation, fresh reference and stable selection under host substitutes | Physical Paf/capture/TLS or UI behavior |
 | Production Lens endpoint on host | Full image and saved crop recognize one verified six-codepoint line exactly; HTTP 200; peaks 131,128/93,432 B | Actual endpoint/parser compatibility and narrow current-page match within tested arena | Shared-benchmark CER, repeated timing, Vita TLS/allocator behavior or broader accuracy |
+| Physical OCR-first deployment | Shell/config readback hashes match, only hooks→auto changes; normal boot and CLANNAD foreground launch verified | Reviewed binary/config reached the device and initialized | Anchor allocation, actual Lens result, rendered stable choices or selected-source continuity |
 
 ## Reproduction commands
 

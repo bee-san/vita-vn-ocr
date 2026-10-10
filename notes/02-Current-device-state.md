@@ -2,48 +2,50 @@
 title: Current device state snapshot
 created: 2026-10-10
 updated: 2026-10-10
-snapshot_utc: "2026-10-10 11:26"
-status: boot-verified-physical-workflow-failed
+snapshot_utc: "2026-10-10 11:29"
+status: ocr-first-installed-boot-verified-user-test-pending
 tags: [vita, device, handoff]
 ---
 
 # Current device state snapshot
 
-**Latest verified state:** the generic SceLibc and source-ranking correction is installed, fully read back, and normally booted on the physical Vita. The fresh 706 B status log (device modification time 11:00:20 UTC) shows API 8, shell registration 0 and `bootstrap: worker started`. The control server reconnected. Native inventory was complete (27 entries); kernel and shell were loaded in STARTED state 6, with zero query errors. The per-title text plugin was unloaded because the game was not running at that check, which is expected.
+**Latest verified state:** the OCR-first shell from merged overlay PR #13 is installed, fully read back and normally booted. The active configuration is now `text_source=auto`; Google Lens and the saved region are preserved. A fresh 706 B status log (device modification time 11:27:24 UTC) shows API 8, shell registration 0 and `bootstrap: worker started`. The complete 27-entry native inventory has kernel and shell STARTED (6), with zero query errors. CLANNAD `PCSG00415` was subsequently confirmed in the foreground.
 
-**Physical test result:** the user opened CLANNAD and reported a flood of changing hooks labelled 0%, followed by irrelevant text. The workflow is not working for the user, and correct current-dialogue capture/selection remains unverified. Saved metadata shows candidates rising from 1 to 5 before opening; opening starts full memory discovery, with sequence advancing to 3,035, scanning active and selected source 0. See [[17-OCR-first-physical-workflow]].
+**Pending user test:** show dialogue and press L+R, then report the OCR excerpt and stable matching choice, or the exact error. Physical Lens completion, a correct visible-page match, source selection and following the next page remain unverified. Do not repeat the same request while this response is pending.
 
-**New user preference:** take one OCR screenshot first and present the match by default. Root acknowledged that the installed configuration was manual `text_source=hooks`, with no OCR reference. The follow-up from `a5e0c50` is merged through overlay PR #13 (`fix/ocr-first-hook-picker`); its deployment is not yet verified. Candidate head is `5826329`; shell is 158,564 B, SHA `32baceeb...`. Fresh shell/config/region backups are prepared, and Lens remains selected. The generated-config comment mismatch is fixed. PR #13 merged as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd` after exact-head host (52 s) and Vita (4m25s) passed. Shell upload is in progress; readback/boot verification is still required. The last fully verified installed binary set is below; an in-progress upload is not yet treated as a successful replacement. A live production-Lens host check matches one short verified page; it does not establish physical OCR. See [[18-OCR-anchor-memory-measurements]].
+**Prior physical failure:** the previous shell/manual `text_source=hooks` mode produced a flood of changing 0% hooks and irrelevant text. Its status reached source sequence 3,035, full discovery active and selected source 0. Root acknowledged configuring that unanchored manual mode. This failed workflow motivated the new explicit user preference: one screenshot first, then a matching source. The successful install/boot does not erase that failure or prove its resolution. See [[17-OCR-first-physical-workflow]].
 
-## Last fully verified installed plugin set
+## Installed plugin set
 
-All use custom API 8, under the active `ur0:tai/` path. Kernel and text were uploaded sequentially with expected-old-hash guards, native completion and full readback before reboot. The low-memory shell remains unchanged.
+All use custom API 8 under the active `ur0:tai/` path. The kernel/text were installed with expected-old-hash guards, native completion and full readback for PR #12. PR #13 replaced only the shell and changed the overlay config from hooks to auto; kernel/text remain unchanged.
 
 | Plugin | Bytes | SHA-256 | Evidence |
 |---|---:|---|---|
-| `VitaJPOverlay_Kernel.skprx` | 38,620 | `6cc2dc868dc4403bcab252d689acd2f0779a55f9bd8069654b335eaffa571933` | Fresh installed-file readback and successful normal boot. |
-| `VitaJPOverlay_Shell.suprx` | 156,196 | `45f86b1ea83c08bdf61c1dfd174cc5356151e746a3659a0299218436a8f10c8c` | Previous full readback; unchanged in this install; loaded and started after reboot. |
-| `VitaJPOverlay_Text.suprx` | 7,936 | `84259631e0efe87472750a04a944a0d2cb7673f218c85f316ae3a450e6c7565f` | Fresh installed-file readback; physical candidate traffic observed, but correct dialogue selection unverified. |
+| `VitaJPOverlay_Kernel.skprx` | 38,620 | `6cc2dc868dc4403bcab252d689acd2f0779a55f9bd8069654b335eaffa571933` | PR #12 full installed-file readback; started after latest normal boot. |
+| `VitaJPOverlay_Shell.suprx` | 158,564 | `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c` | PR #13 full installed-file readback; started after latest normal boot. |
+| `VitaJPOverlay_Text.suprx` | 7,936 | `84259631e0efe87472750a04a944a0d2cb7673f218c85f316ae3a450e6c7565f` | PR #12 full readback; prior physical candidate traffic observed, correct dialogue still unverified. |
 
-Implementation source: `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e`. Final reviewed evidence head: `69006af9e36347b75534c01900b48d43ed372981`. Overlay PR #12 merged at 10:59:00 UTC as `a5e0c50b1096b5ae7de450ae712e63b272dc7f17`; final-head host (46 s) and Vita (4 m 23 s) CI both passed. The installed artifacts come from the implementation revision; the evidence-only commit changes no binary.
+Shell source: reviewed head `5826329ddcb1244b0e318f2c6c527181cc14d4d8`, merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`. Both exact-head hosted jobs passed (host 52 s, Vita 4m25s). The 3,082 B config readback has SHA-256 `b7c0dd2e5214c0d00612e832abeba2b5ea5dde67ad63875745764ce4ae4beeb0`. The notes author independently hashed both readbacks and compared old/new config lines: only `text_source = hooks` → `text_source = auto` differs.
+
+Kernel/text implementation source: `6eef6c031aa1cc4bc162ebf31b8628d3098f0f5e`; final evidence head `69006af9e36347b75534c01900b48d43ed372981`; PR #12 merge `a5e0c50b1096b5ae7de450ae712e63b272dc7f17`. The evidence-only commit changed no binary.
 
 ## Preserved rollback and evidence
 
-Fresh preinstall backups match the previous kernel SHA `447f2e640973743f80dbeb6099e62b6e7c2b72fe85936af4f8d9c24dfd54f217` and previous text SHA `c146238b6e6544ec9ba27f1b03d35db89072c2fc4f3a05d0e75d94c679a777a7`. They remain private under `vita-agent-use/agent/overlay-libc-20261010/`, alongside upload journals, readbacks and the installation report. Operation IDs remain in private state.
+The latest private directory is `vita-agent-use/agent/overlay-ocr-picker-20261010/`. It contains shell/config/region backups, the deployment plan, transfer journals, full readbacks, `installation-report.json`, `status.after-reboot.txt` and `status.clannad-start.txt`. The report records upload completion and full readback verification; its physical OCR field remains `pending user dialogue test`. Operation IDs and private configuration stay local.
 
-The notes author independently hashed both local readbacks and inspected the postboot log. Its SHA-256 is `bc3577582f65bb2538c7e6bd424d1c65fe13db1aea74c9c8c75699bb8a71e6fb`. At installation completion the report status was `installed_readback_verified_normal_boot_verified_awaiting_user_clannad_test`; the later user result below supersedes that pending-test state, installation time `2026-10-10T11:00:04.481678+00:00`.
+The notes author inspected the fresh startup log. It is 706 B, SHA-256 `bc3577582f65bb2538c7e6bd424d1c65fe13db1aea74c9c8c75699bb8a71e6fb`. Its content/hash equals the earlier healthy startup, so freshness comes from the newly collected file and device modification time, not a different digest. The CLANNAD startup status is 2,056 B, SHA-256 `f88744dabecd69056a441fcbbeb0610975d4182834025f00992651a6a3549296`.
 
-No firmware, bootloader, tai configuration or region settings were changed in this deployment. The emulator test bridge was not installed. Experimental scanner/kernel diagnostic commit `2d56ce4` was not shipped.
+The previous low-memory shell `45f86b1ea83c08bdf61c1dfd174cc5356151e746a3659a0299218436a8f10c8c` remains backed up. Earlier kernel/text backups are under `vita-agent-use/agent/overlay-libc-20261010/`: kernel SHA `447f2e640973743f80dbeb6099e62b6e7c2b72fe85936af4f8d9c24dfd54f217`, text SHA `c146238b6e6544ec9ba27f1b03d35db89072c2fc4f3a05d0e75d94c679a777a7`. Preserve the installation-specific journals rather than mixing rollback sets.
+
+No firmware, bootloader, tai configuration or region setting was changed. The only overlay-config change was hooks→auto. The emulator bridge and local scanner diagnostic commit `2d56ce4` were not installed.
 
 ## Environment and boundaries
 
 - Physical device: PCH-1001, actual firmware 3.65.
-- Title: CLANNAD, `PCSG00415`.
-- Last inspected controls/configuration: L+R overlay, Select+R subtitles, hooks text source, local dictionary.
-- The earlier low-memory shell opened an empty picker with the old backend. The new backend produces candidate traffic, but the manual/scanning UI is unstable and did not give the user relevant current text.
-- Latest offline proof: two visible narration pages captured through generic imports, with three matching sources in the top five on each page and no title profile. Physical kernel mapping and shell interaction are separate tests.
-- A later pre-fix launch/power-off report remains a historical unresolved observation; normal boot of this new installed revision is now independently established.
+- Title: CLANNAD, `PCSG00415`; foreground launch confirmed after latest reboot.
+- Controls/configuration: L+R overlay, Select+R subtitles, auto text source, Google Lens OCR, existing local dictionary configuration.
+- Offline generic capture matches two visible narration pages without a title profile. Corrected full-feed ranking displays matching sources in the top five, but those snapshots had no selected source.
+- Live production Lens on the host exactly matches one short verified page from full-frame and cropped inputs. It does not establish physical capture/TLS or broad OCR accuracy. See [[18-OCR-anchor-memory-measurements]].
+- An earlier launch/power-off report remains historical and unresolved; normal boot of the latest installed set is established separately.
 
-This is still a dated snapshot. PIDs, app state, tokens and connection state can change. Obtain them live before the next operation. Preserve the existing paired configuration and exact transfer state; see [[09-Device-operations-and-recovery]].
-
-Next update: record the OCR-first change, exact deployment/configuration and whether one screenshot supplies a matching current-page source. Preserve this failed physical UX result alongside the successful install/boot record. See [[12-Open-questions-and-next-steps]].
+This is a dated snapshot. PIDs, app state, tokens and connections can change. Read current state before another operation and preserve paired configuration/transfer state; see [[09-Device-operations-and-recovery]]. Next record the user's actual screenshot/match result, then continuity across another page and dictionary behavior. See [[12-Open-questions-and-next-steps]].

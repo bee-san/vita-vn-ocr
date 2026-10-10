@@ -74,7 +74,7 @@ The saved normalized region `(2457,47826,51541,17588)` became pixel rectangle `(
 
 Source inspection shows `kernel/display.c:display_hook` admits only primary-display/index-0 submissions from `g.game_pid`. `kernel/capture.c:capture_copy` copies from that game-owned pointer, before final display composition. The Paf picker belongs to SceShell and fails the game-PID filter. Opening it blocks controller input but does not suspend the game. A game that stops submitting frames reaches the existing 1.5-second capture timeout; no stale composited framebuffer fallback is used. This is a source-code finding, not a new physical capture validation.
 
-Production-worker tests with Vita I/O substitutes cover Paf fallback, allocation failure, delayed completion, close/reopen, exit cancellation, stable choices and stale-source confirmation. The final PR #13 head `5826329` passes 10 host suites in 4.18 s, including 37 worker cases, plus local Vita release/ABI checks. None measures actual Paf availability. The shell upload is in progress, but the new shell/anchor path has no verified Vita execution yet.
+Production-worker tests with Vita I/O substitutes cover Paf fallback, allocation failure, delayed completion, close/reopen, exit cancellation, stable choices and stale-source confirmation. The final PR #13 head `5826329` passes 10 host suites in 4.18 s, including 37 worker cases, plus local Vita release/ABI checks. None measures actual Paf availability. The shell is now installed and normally booted, but the anchor job itself has no verified physical OCR result yet.
 
 ## Evidence locations and next measurement
 

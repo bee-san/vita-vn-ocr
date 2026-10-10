@@ -2,7 +2,7 @@
 title: Physical UX failure and OCR-first workflow
 created: 2026-10-10
 updated: 2026-10-10
-status: merged-deployment-verification-pending
+status: installed-boot-verified-physical-ocr-pending
 tags: [vita, clannad, ocr, ux, requirements]
 ---
 
@@ -45,7 +45,7 @@ The source-table ranking repair still matters: it prevents short/frequent noise 
 
 Branch `fix/ocr-first-hook-picker` starts from merged `a5e0c50`. Root owns worker behavior, configuration and device work; another agent investigates OCR memory and another owns picker rendering. Notes work remains separate and makes no device calls.
 
-The follow-up is published as [overlay PR #13](https://github.com/bee-san/vita-jp-overlay/pull/13). Implementation commit `4205be7034a2b48df45e65c7f253e7c7524b349a` and current follow-up head `5826329ddcb1244b0e318f2c6c527181cc14d4d8` are built, reviewed and merged; shell upload is in progress and verified installation is pending. Exact-head hosted validation is discussed below; live production Lens has since matched one verified short page on the host, while device behavior remains unverified. The installed kernel/text remain the verified `6cc2dc86...` / `84259631...` pair, with low-memory shell `45f86b1e...`.
+The follow-up is published as [overlay PR #13](https://github.com/bee-san/vita-jp-overlay/pull/13). Implementation commit `4205be7034a2b48df45e65c7f253e7c7524b349a` and current follow-up head `5826329ddcb1244b0e318f2c6c527181cc14d4d8` are built, reviewed, merged and installed with full shell/config readback and normal boot verified. Exact-head hosted validation is discussed below; live production Lens has since matched one verified short page on the host, while device behavior remains unverified. The installed kernel/text remain the verified `6cc2dc86...` / `84259631...` pair, now accompanied by OCR-first shell `32baceeb...` replacing the backed-up low-memory shell `45f86b1e...`.
 
 ## Implemented follow-up
 
@@ -72,9 +72,9 @@ Host coverage includes anchor heap ownership, explicit/retryable OOM, free-after
 
 The UI preview formatter passed 650 ASAN/UBSAN cases and the renderer object compiled. These checks do not show the physical rendered UI. The separate Lens memory probes and their limitations are in [[18-OCR-anchor-memory-measurements]].
 
-Current candidate shell: **158,564 B**, SHA-256 `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c`. This supersedes the earlier 158,516 B candidate `28097a40...`. The kernel/text binaries remain unchanged. Root backed up the device's existing shell/config/region; the shell upload is in progress, with full readback/normal boot still pending. The intended configuration change is `text_source=hooks` → `auto`, preserving Lens and other selected settings.
+Current installed shell: **158,564 B**, SHA-256 `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c`. This supersedes the earlier 158,516 B candidate `28097a40...`. The kernel/text binaries remain unchanged. Root backed up the device's existing shell/config/region; the shell/config uploads completed with full readbacks and normal boot verified. The only configuration change is `text_source=hooks` → `auto`, preserving Lens and other selected settings.
 
-At head `a048faa`, hosted run `38047960757` failed the core configuration golden equality check: the updated explanatory comment in `docs/config.example.ini` was not synchronized with the generated default string in `core/config.c`. Hosted worker tests passed. Head `5826329` fixes the documentation/default-string mismatch and the cancelled subtitle state. The full host/Vita checks above were rerun afterward. Both hosted jobs at `5826329` passed in run `38048108519`: host 52 s and Vita 4m25s. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`. The older mismatch is a superseded CI failure, not a physical OCR failure. Shell upload has begun; verified readback and normal boot are still pending.
+At head `a048faa`, hosted run `38047960757` failed the core configuration golden equality check: the updated explanatory comment in `docs/config.example.ini` was not synchronized with the generated default string in `core/config.c`. Hosted worker tests passed. Head `5826329` fixes the documentation/default-string mismatch and the cancelled subtitle state. The full host/Vita checks above were rerun afterward. Both hosted jobs at `5826329` passed in run `38048108519`: host 52 s and Vita 4m25s. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`. The older mismatch is a superseded CI failure, not a physical OCR failure. Shell/config installation and normal boot are verified; CLANNAD is in the foreground. The user has been asked to show dialogue and press L+R, then report the excerpt/match or exact error. Physical OCR and source selection are still pending.
 
 Live Lens OCR on the Vita, available device memory and the physical interaction remain unverified; the separate host endpoint result is established only within its narrow scope. The source-level 384 KiB workspace is a bounded allocation policy, not a measured total additional memory figure.
 

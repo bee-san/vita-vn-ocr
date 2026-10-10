@@ -159,16 +159,21 @@ Host Lens probes measured 117,336/133,720 B arena peaks for two private screensh
 Hosted head `a048faa` failed the core config golden comparison because its explanatory config-example comment was not synchronized with the generated default string; worker tests passed. Root is correcting that mismatch and rerunning full host/Vita checks. Device shell/config/region backups are prepared; Lens remains selected with only hooks→auto planned. No new install or physical OCR result has occurred.
 
 
-## 22. Config equality corrected and final worker regression added
+## 23. Config equality corrected and final worker regression added
 
 Head `5826329ddcb1244b0e318f2c6c527181cc14d4d8` synchronizes the generated-default comment with the example config and clears the subtitle busy indicator when cancellation completes. The final 10 host suites pass in 4.18 s, including 37 worker cases; the Vita release/packaged ABI check passes. The new shell is 158,564 B, SHA `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c`, superseding the earlier candidate. Hosted host passed at this exact head; Vita remained in progress in run `38048108519` when checked. Device shell/config/region backups are prepared, but the candidate is uninstalled and live OCR remains unverified.
 
 
-## 23. Live host Lens recognizes the previously verified page
+## 24. Live host Lens recognizes the previously verified page
 
 Two production JPEG/OCR/BearSSL requests at 11:23–11:24 UTC completed with HTTP 200, TLS 0 and `rc=0` in a 384 KiB arena. The full 960×544 page used a 131,128 B arena peak; the saved 755×146 crop used 93,432 B. Both exactly matched the same verified six-codepoint current line and produced 100% normalized similarity against all three established streams. These single host samples establish a narrow real endpoint result; they are not shared-benchmark CER, repeated timing, console memory measurements or a physical UI test. Evidence and reproduction paths are in [[18-OCR-anchor-memory-measurements]].
 
 
-## 24. OCR-first change merged; deployment verification pending
+## 25. OCR-first change merged; deployment verification pending
 
 Exact head `5826329` passed hosted host (52 s) and Vita (4m25s) in run `38048108519`. PR #13 merged at 11:26:11 UTC as `539c2888f61b28277bb7fd7bdd2b6a4bb5b330fd`, and local main was synchronized from `a5e0c50`. Root began the shell upload. No successful new readback/normal boot or physical OCR interaction has yet been recorded at this checkpoint.
+
+
+## 26. OCR-first shell installed and normally booted; user test pending
+
+Full readback verified shell 158,564 B SHA `32baceebd6b9af749b7b52a59336fe9225bef382f20eec10a60c41b930815d3c` and config 3,082 B SHA `b7c0dd2e5214c0d00612e832abeba2b5ea5dde67ad63875745764ce4ae4beeb0`. The notes author independently checked those local readbacks and confirmed only hooks→auto changed; Lens and the region remain preserved. The fresh 11:27:24 UTC startup log records API 8, registration 0 and worker startup. Root reports complete 27-entry native inventory, kernel/shell STARTED 6, zero errors, and CLANNAD confirmed foreground after launch. The user was asked to show dialogue, press L+R and report the OCR excerpt/stable match or exact error. Physical OCR remains pending. Narrow evidence paths and current hashes are in [[02-Current-device-state]].

@@ -72,7 +72,20 @@ from model import TinyVNOCR, set_weight_quant  # noqa: E402
 from train import UNK, ctc_ok, default_threads, encoder, resize_h  # noqa: E402
 
 H, MAX_W, STRIDE = 32, 1024, 8
+# Teacher targets index data/vocab.txt's classes. With another --vocab, KD_REMAP maps each of
+# those classes to the training vocab's (a reduced vocab's <unk> takes the ones it lacks).
+KD_REMAP = None
 
+
+def kd_remap(vocab):
+    full = load_vocab(DATA / "vocab.txt")
+    if list(vocab) == full:
+        return None
+    ids = {c: i + 1 for i, c in enumerate(vocab)}
+    unk = ids.get(UNK) if vocab[-1] == UNK else None
+    if unk is None:
+        raise SystemExit("KD targets with a reduced vocab need its <unk> class (last entry 〓)")
+    return np.asarray([0] + [ids.get(c, unk) for c in full], np.int64)
 
 # ----------------------------------------------------------------------------- sources
 
@@ -154,6 +167,8 @@ def load_shard(path, encode, opts, vocab_key):
             if same and T == (g.shape[1] + STRIDE - 1) // STRIDE:
                 a, b = int(tg["off"][i]), int(tg["off"][i + 1])
                 kid, kp = tg["kid"][a:b], tg["kp"][a:b]
+                if KD_REMAP is not None:
+                    kid = KD_REMAP[kid.astype(np.int64)].astype(np.int16)
                 stats["kd"] += 1
         if use_kd_only and kid is None:
             stats["dropped"] += 1
@@ -455,6 +470,9 @@ def main():
     vocab = load_vocab(args.vocab)
     encode = encoder(vocab)
     unk = UNK if vocab[-1] == UNK else None
+    global KD_REMAP
+    if any("kd=1" in s or "kdonly=1" in s for s in args.src):
+        KD_REMAP = kd_remap(vocab)
     rng = np.random.default_rng(args.seed)
     t0 = time.time()
     sources, weights, src_opts = [], [], []

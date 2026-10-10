@@ -86,8 +86,12 @@ class Teacher:
         so.inter_op_num_threads = 1
         self.s = ort.InferenceSession(str(path), so, providers=["CPUExecutionProvider"])
         self.inp = self.s.get_inputs()[0].name
-        chars = self.s.get_modelmeta().custom_metadata_map["character"].split("\n")
-        self.chars = [""] + chars + [" "]                   # 0 = blank, last = space
+        self.set_classes(self.s.get_modelmeta().custom_metadata_map["character"].split("\n"), vocab)
+
+    def set_classes(self, chars, vocab):
+        """The teacher's dictionary (chars, without blank and space) mapped onto the student's
+        vocab through canon(); split out of __init__ so tests can build it without the model."""
+        self.chars = [""] + list(chars) + [" "]             # 0 = blank, last = space
         ours = {c: i + 1 for i, c in enumerate(vocab)}
         # teacher class -> student class (0 = blank), or -1 = no single-character image
         m = np.full(len(self.chars), -1, np.int64)

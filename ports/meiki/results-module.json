@@ -1,0 +1,134 @@
+{
+  "kind": "Actual ARM VitaSDK user-module loader in isolated Vita3K; not physical Shell RAM or console speed",
+  "command": "python ports/meiki/module-probe/run_vita3k.py --vpk <private-build>/meiki-module-probe.vpk --out <isolated-private-output>",
+  "environment": {
+    "vitasdk": "sdk-snapshot-20260926.790.1",
+    "gcc": "15.2.0",
+    "mnn": "3.2.0,embedding patch,MNN_ENABLE_EXCEPTIONS=ON",
+    "module_abi": 2
+  },
+  "module": {
+    "bytes": 1152288,
+    "sha256": "58397289b03d0b45a84abb1e248b3ac62384d3777b4e11302b1462ba6e398132",
+    "engine_thread_stack_bytes": 131072,
+    "elf_text_bytes": 1629716,
+    "elf_data_bytes": 3052,
+    "elf_bss_bytes": 144472
+  },
+  "mnn_archive": {
+    "bytes": 8558692,
+    "sha256": "c83546bf53f7d90f147e34efb9f59159b5c30f8be44388fdb82c3fa5b52b5b68",
+    "patch_sha256": "a780d1252f24e1c04e01f2245ae07723b8edb673aa83a031e6e9b25f970bc052"
+  },
+  "caller_buffers": {
+    "model_arena_bytes": 16777216,
+    "private_metadata_heap_bytes": 4194304,
+    "reusable_input_bytes": 737280,
+    "reusable_scratch_bytes": 13440
+  },
+  "healthy": {
+    "cycles": 2,
+    "detector_calls": 4,
+    "detector_derived_line_recognitions": 12,
+    "baseline_line_recognitions": 16,
+    "detector_peak_arena_bytes": 12258112,
+    "recognizer_peak_arena_bytes": 13090176,
+    "max_metadata_brk_bytes": 2764800,
+    "all_wrapped_allocations_released": true,
+    "all_calls_succeeded": true,
+    "all_stops_and_unloads_succeeded": true,
+    "all_caller_memblocks_released": true,
+    "detector_tensor_differences": 0,
+    "detector_raw_repeat_differences": 0,
+    "detected_line_raw_repeat_differences": 0,
+    "recognizer_baseline_raw_differences": 0,
+    "recognizer_baseline_repeat_differences": 0,
+    "same_ARM_boxes_host_recognition_text_cases": 6,
+    "same_ARM_boxes_host_recognition_text_differences": 0,
+    "metadata_after_stop_live_snapshots": [
+      40160,
+      40160
+    ]
+  },
+  "guards": [
+    {
+      "status": "guard_checks",
+      "cycle": 0,
+      "missing_model_rc": -2,
+      "invalid_workspace_rc": -100,
+      "tainted": 0
+    },
+    {
+      "status": "detector_guards",
+      "missing_model_rc": -2,
+      "invalid_target_rc": -100,
+      "wrong_model_rc": -4,
+      "heap_remaining": 0,
+      "tainted": 0
+    },
+    {
+      "status": "busy_checks",
+      "run_rc": -101,
+      "stop_rc": -101
+    },
+    {
+      "status": "guard_checks",
+      "cycle": 1,
+      "missing_model_rc": -2,
+      "invalid_workspace_rc": -100,
+      "tainted": 0
+    },
+    {
+      "status": "detector_guards",
+      "missing_model_rc": -2,
+      "invalid_target_rc": -100,
+      "wrong_model_rc": -4,
+      "heap_remaining": 0,
+      "tainted": 0
+    }
+  ],
+  "fault960": {
+    "result": {
+      "status": "detector_oom",
+      "rc": -103,
+      "rejected_rc": -103,
+      "heap_peak": 9399616,
+      "heap_remaining": 0,
+      "allocation_failed": 1,
+      "metadata_brk_peak": 2289664,
+      "tainted": 1
+    },
+    "stop_and_unload": {
+      "status": "unloaded",
+      "cycle": 2,
+      "stop_rc": 0,
+      "unload_rc": 0,
+      "unload_status": 0,
+      "metadata_brk_peak": 2289664,
+      "metadata_used_before": 40352,
+      "metadata_used_after": 40224,
+      "tainted": 1
+    },
+    "ownership": "Tainted module refuses further jobs; stop joins and unload succeeds before caller releases both buffers; reuse requires fresh load"
+  },
+  "metadata_host_verifier": {
+    "command": "python ports/meiki/module/verify_metadata.py --out <private-output>",
+    "sanitizers": [
+      "ASan",
+      "UBSan"
+    ],
+    "passed": [
+      "Exact4 MiB capacity and guard bytes",
+      "Exhaustion taint and nonallocating MNN allocation-failure marker",
+      "Signed ptrdiff extremes",
+      "Owner-thread rejection",
+      "4000 random brk adjustments"
+    ]
+  },
+  "limits": [
+    "metadata_brk_peak is actual bounded sbrk highwater. mallinfo live values are snapshots,not every transient malloc live-allocation peak. Entire metadata buffer is released after successful stop/unload.",
+    "Measured module ELF sections exclude kernel mapping/page overhead; total physical Shell and in-game RAM remain unmeasured.",
+    "ARM retained detector boxes differ from host by up to1pixel on the two fixtures. Raw rejected TopK slots reorder; this is not exact host detector parity.",
+    "Two sampled detector regions do not establish full ARM detector-region CER. Full451-crop ARM recognition is independently measured with frozen ABI1."
+  ]
+}

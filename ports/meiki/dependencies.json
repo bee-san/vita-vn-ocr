@@ -27,7 +27,9 @@
     "sha256": "b7ba3219cd1bfeef5cb6b42ef6686683b991c6561b7ad3b1c41d32817deba21e",
     "weight_quantization_bits": 8,
     "license": "LGPL-3.0",
-    "tensor_precision": "float32"
+    "tensor_precision": "float32",
+    "mnn_biz_code": "meiki-vita",
+    "mnn_uuid": "88dfd245-536c-4529-877b-e9f1eceafce0"
   },
   "mnn": {
     "repository": "https://github.com/alibaba/MNN",
@@ -36,7 +38,8 @@
     "license": "Apache-2.0",
     "patch": "mnn-vita.patch",
     "runtime_memory_mode": "Memory_Low",
-    "runtime_convolution_activations": "dynamic int8 in low-memory CPU convolutions; other tensor interfaces float32"
+    "runtime_convolution_activations": "dynamic int8 in low-memory CPU convolutions; other tensor interfaces float32",
+    "embedding_exceptions_enabled": true
   },
   "vitasdk": {
     "repository": "https://github.com/vitasdk/autobuilds",
@@ -50,5 +53,12 @@
     "license": "GPL-3.0-or-later",
     "commit": "61a2a50ab93953753b7531ec408621f36618cf98",
     "file": "core/ocr_heap.c"
+  },
+  "opencv_resize_source": {
+    "repository": "https://github.com/opencv/opencv",
+    "version": "4.12.0",
+    "path": "modules/imgproc/src/resize.cpp",
+    "sha256": "89db2e4de92e1d03890f3e7fe517f895a36514f355da097b2c8e4c55fc1847e4",
+    "license": "BSD-3-Clause notices retained for adapted sections"
   }
 }

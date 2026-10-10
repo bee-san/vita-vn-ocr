@@ -1,0 +1,41 @@
+{
+  "weights": {
+    "repository": "https://huggingface.co/rtr46/meiki.text.detect.v0",
+    "revision": "a9cffa4f60cbf72ddb87edf19c6f98a01cd042e6",
+    "filename": "meiki.text.detect.v0.1.320x192.onnx",
+    "bytes": 14084361,
+    "sha256": "8cdc5daa5c13a5f93adb40ee2e53ad1a3d2f7e372584c5c665b038adeb74ae6d",
+    "license": "LGPL-3.0",
+    "license_source": "https://huggingface.co/rtr46/meiki.text.detect.v0/blob/a9cffa4f60cbf72ddb87edf19c6f98a01cd042e6/README.md",
+    "architecture": "Author-trained Meiki v0.1 D-FINE with MobileNet v4 small backbone,64 boxes"
+  },
+  "prepared": {
+    "filename": "meiki-detect-batch1.onnx",
+    "sha256": "c4219d056b083d97f3a2d1d44d669458d7ae3f65ace8ca19250c5cedcb1f8fbd",
+    "batch": 1,
+    "onnx_version": "1.18.0",
+    "onnxsim_version": "0.4.36",
+    "inputs": {"images": [1,3,192,320], "orig_target_sizes": [1,2]},
+    "transformation": "Fix batch and simplify existing graph; no training, architecture replacement or output filtering"
+  },
+  "converted": {
+    "filename": "meiki-detect-int8.mnn",
+    "bytes": 4119220,
+    "sha256": "f0865ed291846a130905527f67c33f17e64d0f2c5eb38378ed1faea57f74b1ba",
+    "weight_quantization_bits": 8,
+    "tensor_precision": "float32",
+    "license": "LGPL-3.0",
+    "mnn_version": "3.2.0",
+    "mnn_commit": "ebdada82634300956e08bd4056ecfeb1e4f23b32",
+    "mnn_biz_code": "meiki-detector-diagnostic",
+    "mnn_uuid": "24ef4b84-9104-48e0-8b59-a96b92738c56"
+  },
+  "runtime": {
+    "dependency_manifest": "dependencies.json",
+    "input_bytes": 737280,
+    "scratch_bytes": 9600,
+    "shared_model_arena_bytes": 16777216,
+    "module_metadata_heap_bytes": 4194304,
+    "recognition": "Sequential reuse of the same input, scratch, model arena and private metadata domain"
+  }
+}

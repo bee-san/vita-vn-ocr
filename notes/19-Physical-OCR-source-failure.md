@@ -44,6 +44,14 @@ The memory-specific request/result error is separately mapped to `VJO_E_OOM=-103
 
 `core/client.c` has no dedicated `VJO_E_SOURCE` presentation case, so it falls through to “unexpected response (%d).” The wording does not establish an unexpected HTTP response or Lens rejection. `core/client.c` can also produce a source error when reading its JPEG input; preserve the original stage and logs before choosing a cause.
 
+## Region-sized repair under development
+
+At the inspected uncommitted `fix/region-sized-ocr-capture` worktree based on merge `539c2888`, root implements 4 KiB-aligned allocation for the requested pixel region. The saved 755×146 crop needs **442,368 B (432 KiB)** after alignment, compared with the old 2,040 KiB frame allocation. This is code-derived requested capacity, not a successful physical allocation measurement.
+
+The patch freezes requested framebuffer/crop geometry before allocation, checks raw capacity before copying, and publishes pending state atomically. A `VJO_CAPTURE_ONCE` flag distinguishes a single JPEG pass from local ncnn OCR's multiple row passes: the kernel frees the JPEG raw buffer after the final copied row, before Lens transmission, while preserving a multipass image. `VJO_CAPTURE_DISCARD` releases an idle single-pass image after encoder failure and refuses pending/multipass ownership. Both code-review agents are checking these lifetimes and regressions; final validation/publication are not yet recorded. No new capture plugin is installed.
+
+The user subsequently chose a fixed manual list, so this repair is an optional OCR path rather than a prerequisite for the current requested manual experiment. See [[20-Fixed-manual-hook-workflow]].
+
 ## Next evidence
 
 Validate the region-sized allocation and bounded reuse before deployment. Preserve the current full-frame OOM baseline, fix the error reporting/propagation as evidence permits, then repeat the real screenshot request. Confirm actual kernel capture, JPEG completion, Lens entry/result and the stable match separately. The shell anchor's 384 KiB budget and the kernel raw buffer are different allocations; the host Lens result bypassed the failing physical kernel allocation.

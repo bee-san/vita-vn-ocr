@@ -29,6 +29,7 @@ Each validation layer answers a different question. A passing lower layer does n
 | Production Lens endpoint on host | Full image and saved crop recognize one verified six-codepoint line exactly; HTTP 200; peaks 131,128/93,432 B | Actual endpoint/parser compatibility and narrow current-page match within tested arena | Shared-benchmark CER, repeated timing, Vita TLS/allocator behavior or broader accuracy |
 | Physical OCR-first deployment | Shell/config readback hashes match, only hooks→auto changes; normal boot and CLANNAD foreground launch verified | Reviewed binary/config reached the device and initialized | Anchor allocation, actual Lens result, rendered stable choices or selected-source continuity |
 | Physical OCR-first interaction | User reports “unexpected response (-108)” and no game text | The physical screenshot/OCR flow still fails | A specific capture cause, a Lens server error or successful text selection |
+| Physical fixed manual selection | Selected source metadata; 256 KiB Paf dictionary jobs rc=0, peak 110,080 B; user suspects wrong text | Selection and allocator/job completion on the device | Visible dialogue match, useful dictionary output or selected-source continuity |
 
 ## Reproduction commands
 

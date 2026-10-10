@@ -187,3 +187,12 @@ The user reports “text recognition failed. unexpected response (-108). no game
 ## 28. Paired physical logs identify full-frame capture allocation failure
 
 Six attempts in `status.ocr-failed.txt` each return capture-request error -1073741826 (`0xC0000002`), job -108 and arena peak 0. Six corresponding `kernel.ocr-failed.txt` entries report the 2,040 KiB capture-buffer allocation failed with `0x80024302`. No JPEG/Lens request began. The notes author inspected these markers and recorded file hashes in [[19-Physical-OCR-source-failure]]. Root is developing storage sized to the selected 755×146 region; that correction is not yet installed. The expected -2 no-memory return becoming `0xC0000002` is a separate unresolved propagation issue under review.
+
+
+## 29. User chooses fixed manual hooks; selection works but text is suspect
+
+After suggesting optional downscale/black-and-white, the user accepted ordinary hooks without OCR if the list stays stable and selected the fixed manual-list option. Root changed only auto→hooks, guarded the actual config hash and verified its complete 3,083 B readback (SHA `3833843d...`), without reboot. Session 12 then selected ID 1, kind 2/encoding 0, six bytes and one update. A 256 KiB Paf dictionary job returned rc=0 in 37 ms with 110,080 B arena peak; later reopens returned rc=0 in 21/25 ms. The user thinks the text is wrong; screenshot capture fails at JPEG encoding, so root requested a short example. This proves allocation/selection/job completion, not the dialogue stream. See [[20-Fixed-manual-hook-workflow]].
+
+## 30. Region-sized capture and explicit JPEG ownership under review
+
+The uncommitted `fix/region-sized-ocr-capture` patch requests 432 KiB for the saved crop rather than 2,040 KiB for every frame. It freezes crop geometry, checks capacity, publishes pending state atomically, preserves multipass local OCR and frees single-pass JPEG raw storage after the final copied row before Lens. A DISCARD flag handles an idle failed encoder without freeing pending or multipass ownership. Reviewers cover lifetimes/regressions. No completed final build/PR/deployment is claimed at this checkpoint; manual hooks remain the chosen physical mode.

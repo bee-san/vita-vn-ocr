@@ -29,10 +29,10 @@ The fix separates viewing and selecting native text from optional result storage
 | Path | Total result storage | Arena size | Evidence |
 |---|---:|---:|---|
 | Normal physical allocation | 786,432 B | Two × 393,216 B | Existing full lookup/OCR capacity |
-| Native selected text fallback | 262,144 B | Two × 131,072 B | Host validated; physical success unobserved |
+| Native selected text fallback | 262,144 B | Two × 131,072 B | Host validated; later physical 256 KiB Paf dictionary jobs complete with rc=0 |
 | Picker/raw text only | No result arenas | None | Host validated and picker opened on device |
 
-When the full allocation fails for a current selected native source, `vjo_shell_heap_alloc` uses `sce_paf_memalign(16, bytes)` and releases with `sce_paf_free`. Existing Paf heap pages may satisfy it without acquiring a new physical memory block. That is the mechanism, not a measured claim that it succeeded in CLANNAD.
+When the full allocation fails for a current selected native source, `vjo_shell_heap_alloc` uses `sce_paf_memalign(16, bytes)` and releases with `sce_paf_free`. Existing Paf heap pages may satisfy it without acquiring a new physical memory block. The later manual-mode log now confirms this allocation path succeeded for selected text in CLANNAD; it does not prove the selected bytes are the visible dialogue.
 
 `mem_heap` tracks ownership independently of a negative `mem_uid`. Freeing storage clears the view list under lock, resets arena/cache ownership and uses the matching allocator. A native-to-OCR transition retires the small heap allocation before requesting full capacity, with no running job using it. Deferred exit cleanup checks both ownership kinds.
 
@@ -44,4 +44,4 @@ The Vita release build and packaged ABI check passed. Shell SHA-256 `45f86b1ea83
 
 Metadata logging records session, sequence, candidate count, scanning state, address, selected ID/kind/encoding, byte count and update count without raw dialogue. It throttles to at most one update per second while retaining a pending transition.
 
-Merged as [overlay PR #11](https://github.com/bee-san/vita-jp-overlay/pull/11), merge `13bcf816ab4e45fb8f59da0f52407a621b07284e`. Physical dictionary fallback, successful captured pages, peak memory and game slowdown remain unmeasured.
+Merged as [overlay PR #11](https://github.com/bee-san/vita-jp-overlay/pull/11), merge `13bcf816ab4e45fb8f59da0f52407a621b07284e`. Later physical manual selection uses the 256 KiB Paf fallback and returns dictionary `rc=0` (37 ms, arena peak 110,080 B; reopens 21/25 ms). These are isolated job observations, not total memory or performance measurements. The user suspects the selected text is wrong, and correct captured pages remain unverified. See [[20-Fixed-manual-hook-workflow]].

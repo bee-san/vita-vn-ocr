@@ -41,6 +41,10 @@ The baseline renderer always formats `c->score` as a match percentage. Without a
 
 The source-table ranking repair still matters: it prevents short/frequent noise from burying readable sources in a snapshot. It does not identify current visible text by itself or stabilize the shell interaction. Keep this later failure separate from the fixed comparator regression.
 
+## Subsequent user choice
+
+After the physical source failure, the user explicitly chose a fixed manual hook list. Root changed only auto→hooks and verified the complete config readback; the installed shell is unchanged. A selected source and successful Paf dictionary jobs are logged, but the user thinks the text is wrong. OCR is therefore optional for the immediate workflow. See [[20-Fixed-manual-hook-workflow]].
+
 ## Follow-up ownership and scope
 
 Branch `fix/ocr-first-hook-picker` starts from merged `a5e0c50`. Root owns worker behavior, configuration and device work; another agent investigates OCR memory and another owns picker rendering. Notes work remains separate and makes no device calls.

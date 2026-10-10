@@ -43,6 +43,8 @@ Use this ledger to prevent a partial result becoming a compatibility claim. Evid
 | E27 | OCR-first shell/config are installed, read back and normally booted; CLANNAD foreground launch is confirmed. | Shell SHA `32baceeb...`, config SHA `b7c0dd2e...`, only hooks→auto changed. Fresh startup at 11:27:24 UTC has API 8/registration 0; complete inventory has kernel/shell STARTED 6 and zero errors. The user screenshot/match test is pending. [[02-Current-device-state]] |
 | E28 | The physical OCR-first test failed with -108 and no game text. | Exact user report in [[19-Physical-OCR-source-failure]]. `VJO_E_SOURCE=-108` covers multiple screenshot/JPEG paths; generic “unexpected response” wording does not establish a Lens/HTTP error. Precise original stage/cause is unresolved. |
 | E29 | Six physical OCR attempts fail before JPEG/Lens because the 2,040 KiB full-frame kernel capture buffer cannot be allocated. | Paired shell/kernel logs: request error `0xC0000002`, job -108/arena peak 0; kernel allocation `0x80024302`. Expected no-memory error propagation remains under review. A region-sized buffer repair is not yet deployed. [[19-Physical-OCR-source-failure]] |
+| E30 | The user chose a fixed manual hook list; only auto→hooks changed on the device. | Full 3,083 B config readback SHA `3833843d...`, no reboot/plugin replacement. Physical selection is logged, but the user suspects wrong text. [[20-Fixed-manual-hook-workflow]] |
+| E31 | The physical Paf fallback completes local dictionary jobs for the selected text. | Session 12 selected ID 1, kind 2/encoding 0, six bytes/one update; 256 KiB Paf, job rc=0, peak 110,080 B, observed 37/21/25 ms. This does not prove dialogue correspondence or visible dictionary usefulness. [[06-Low-memory-overlay]] |
 
 ## Inferences and hypotheses
 
@@ -53,7 +55,7 @@ Use this ledger to prevent a partial result becoming a compatibility claim. Evid
 | H03 | CP932 should be tried before assuming UTF-16 for this title. | Supported by offline font data, still an inference for live dialogue. | Compare captured bytes to visible pages with an explicitly recorded decoder. |
 | H04 | Scanner zero candidates means the game stores no readable Japanese text. | Unsupported. | First establish that reads enter the right process and cover readable mappings, then inspect decoding/filter statistics. |
 | H05 | The later reported power-off has the same cause as the fixed boot failure. | Unknown. | A new sequence of installed hashes, last markers, module state and crash evidence. Do not reuse the earlier diagnosis by resemblance. |
-| H06 | Paf's existing heap will sustain dictionary lookup under physical-page exhaustion. | Host behavior validated; physical success not observed. | Actual local lookup on the device with allocation-path evidence. |
+| H06 | Paf's existing heap will sustain dictionary lookup under physical-page exhaustion. | Physical 256 KiB Paf allocation and local dictionary rc=0 now observed; visible usefulness unverified. | User-visible correct result and dialogue correspondence, beyond allocation/job return code. |
 
 ## Claims that are explicitly not established
 

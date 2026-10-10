@@ -10,7 +10,7 @@ tags: [vita, ocr, lens, memory, measurements]
 
 The OCR-first flow needs a screenshot reference under CLANNAD's tight shell-memory conditions. The user explicitly accepted Google Lens to reduce local memory demand. Lens is the existing configured/default backend; no local OCR model is being deployed here.
 
-**Current evidence:** production Lens OCR on the host recognized one previously verified short dialogue line exactly from both its full screenshot and saved crop. Both completed in a 384 KiB arena. Physical screenshot capture, Vita TLS, Paf allocation and the new UI remain unverified.
+**Current evidence:** production Lens OCR on the host recognized one previously verified short dialogue line exactly from both its full screenshot and saved crop. Both completed in a 384 KiB arena. Physical Lens completion and correct dialogue matching remain unverified. Later logs do confirm the 384 KiB Paf anchor allocation succeeds before the separate kernel capture allocation fails.
 
 ## Allocation policy
 
@@ -74,7 +74,7 @@ The saved normalized region `(2457,47826,51541,17588)` became pixel rectangle `(
 
 Source inspection shows `kernel/display.c:display_hook` admits only primary-display/index-0 submissions from `g.game_pid`. `kernel/capture.c:capture_copy` copies from that game-owned pointer, before final display composition. The Paf picker belongs to SceShell and fails the game-PID filter. Opening it blocks controller input but does not suspend the game. A game that stops submitting frames reaches the existing 1.5-second capture timeout; no stale composited framebuffer fallback is used. This is a source-code finding, not a new physical capture validation.
 
-Production-worker tests with Vita I/O substitutes cover Paf fallback, allocation failure, delayed completion, close/reopen, exit cancellation, stable choices and stale-source confirmation. The final PR #13 head `5826329` passes 10 host suites in 4.18 s, including 37 worker cases, plus local Vita release/ABI checks. None measures actual Paf availability. The shell is installed and normally booted, but its physical OCR test failed with source error -108. Paired logs confirm the full-frame kernel buffer allocation fails before JPEG or Lens; see [[19-Physical-OCR-source-failure]].
+Production-worker tests with Vita I/O substitutes cover Paf fallback, allocation failure, delayed completion, close/reopen, exit cancellation, stable choices and stale-source confirmation. The final PR #13 head `5826329` passes 10 host suites in 4.18 s, including 37 worker cases, plus local Vita release/ABI checks. The original host tests do not measure actual Paf availability. Later physical logs show the anchor obtaining 384 KiB from Paf on all six failed capture attempts; those requests still stop before JPEG or Lens. The shell is installed and normally booted, but its physical OCR test failed with source error -108. Paired logs confirm the full-frame kernel buffer allocation fails before JPEG or Lens; see [[19-Physical-OCR-source-failure]].
 
 ## Evidence locations and next measurement
 

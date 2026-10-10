@@ -1,0 +1,55 @@
+---
+title: Sources and private artifact register
+created: 2026-10-10
+updated: 2026-10-10
+status: active
+tags: [vita, sources, provenance]
+---
+
+# Sources and private artifact register
+
+This is an evidence locator. Public references can be shared; private artifacts must stay local. Existence of a filename is not enough: each claim should identify what was actually inspected and its limitations. No credentials, game bytes or raw dialogue are copied here.
+
+## Repository evidence inspected for these notes
+
+| ID | Source | Use |
+|---|---|---|
+| S01 | [Firmware benchmark at pinned overlay commit](https://github.com/bee-san/vita-jp-overlay/blob/c7eed5066fe2550ddb17748929db620951209418/docs/benchmarks/native-hooks-fw365-20261010.json) | Runtime binding, physical boot, installed hashes, host/Vita/Vita3K results, stack frames. |
+| S02 | [Native-text architecture at the same commit](https://github.com/bee-san/vita-jp-overlay/blob/c7eed5066fe2550ddb17748929db620951209418/docs/native-text.md) | Modes, source selection, limits, profiles and validation boundaries. |
+| S03 | [Low-memory benchmark at merged revision](https://github.com/bee-san/vita-jp-overlay/blob/13bcf816ab4e45fb8f59da0f52407a621b07284e/docs/benchmarks/native-text-low-memory-20261010.json) | Host case count, changed allocation sizes, picker success and remaining empty-source failure. |
+| S04 | [Toolchain pin](https://github.com/bee-san/vita-jp-overlay/commit/c7eed5066fe2550ddb17748929db620951209418) | Headers/stubs needed by CI. |
+| S05 | [Initial source-only research PR](https://github.com/bee-san/vita-vn-ocr/pull/15) | Feasibility, generic-vs-engine-specific distinction, PSP separation. Local `hooker/RESEARCH.md` is earlier research, not a current experiment log. |
+| S06 | Local `vita-agent-use/AGENTS.md` and `docs/agent-reference/` | Actual client invocation, recovery and concurrency rules. Read fresh before operations. |
+| S08 | [Retail-libc benchmark at exact draft head](https://github.com/bee-san/vita-jp-overlay/blob/0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd/docs/benchmarks/native-libc-hooks-20261010.json) | Corrected import coverage, host/emulator validation, built artifact hashes and explicit hardware limits. |
+| S07 | Active-investigator updates in the 2026-10-10 conversation | Later text-plugin rollback, user screen reports, import-table and font-codepoint findings. Separately marked where direct artifact inspection was not repeated. |
+
+## Primary external references
+
+These are references recorded by the investigation; the notebook does not imply every moving upstream page was revalidated while writing it.
+
+- [VitaSDK 3.60 SceSysmem NIDs, pinned headers revision](https://github.com/vitasdk/vita-headers/blob/e66ebe90b73d1fa4cce005a5b2072cec27322544/db/360/SceSysmem.yml) and [3.63 SceSysmem NIDs](https://github.com/vitasdk/vita-headers/blob/e66ebe90b73d1fa4cce005a5b2072cec27322544/db/363/SceSysmem.yml): firmware import comparison.
+- [taiHEN usage](https://github.com/yifanlu/taiHEN/blob/master/USAGE.md): native hooking and syscall stack context.
+- [VitaSDK kernel module management](https://docs.vitasdk.org/group__SceModulemgrKernel.html): module-state interpretation.
+- [VitaSDK Paf user APIs](https://docs.vitasdk.org/group__ScePafUser.html): Paf allocator interface.
+- [Pinned Luna Vita hook table](https://github.com/HIllya51/LunaTranslator/blob/b0c0c2d2a03b330c388b42d7e8f0556b6d230980/src/NativeImpl/LunaHook/LunaHook/emulators/vita3k_1.cpp): examples of title-specific emulator descriptions; not drop-in native profiles.
+- [PSVshellPlus memory information source](https://github.com/GrapheneCt/PSVshellPlus/blob/main/PSVshellPlus_Kernel/info.c): reason to verify process/address-space ownership before attributing memory metrics.
+
+## Local private evidence
+
+Artifact paths are intentionally local and may be machine-specific. Read only the narrow file required. Emulator logs and game directories can contain license/decryption material; never dump them wholesale into tool output or a commit.
+
+| Local directory or file | What it contains | Status/limits |
+|---|---|---|
+| `/home/bee/Documents/src/ps-vita-ocr-lab/vita-agent-use/agent/overlay-firmware-fix-20261010/` | Plugin backups/readbacks, installation report, `status-after-boot.txt`, postboot/game plugin inventories, initial memory-failure log | Physical boot evidence; no successful commercial-text capture. |
+| `/home/bee/Documents/src/ps-vita-ocr-lab/vita-agent-use/agent/overlay-low-memory-20261010/` | Shell backup/readback, upload state, `status-after-boot.txt`, `status-clannad-01.txt`, `status-clannad-02.txt` | Low-memory deployment and empty-picker metadata. Do not publish transfer-state JSON. |
+| `/home/bee/Documents/src/vita-jp-overlay-discovery/build/clannad-offline/research-metadata.json` | Loaded-image hash, boundary and 250-import count | Small metadata inspected locally; original path fields are private and not blindly copied. |
+| `/home/bee/Documents/src/vita-jp-overlay-discovery/build/clannad-offline/imports.tsv` and `imports.json` | Main-module imported library/NID/stub records | Derived metadata; this notebook includes only the four relevant rows. |
+| `/home/bee/Documents/src/vita-jp-overlay-discovery/build/clannad-offline/eboot.loaded.elf` | Loaded/relocated decrypted game segments, SHA-256 recorded in [[07-CLANNAD-investigation]] | Private copyrighted artifact; never install this research reconstruction on hardware. |
+| `/home/bee/Documents/src/vita-jp-overlay-discovery/build/vita3k-libc-test/pref/ux0/data/VitaJPOverlay-hook-test/results.txt` | Synthetic production-plugin result: 255 checks, 8 call events, 2 register events, 10 matching sources | Test-app sources, not commercial CLANNAD dialogue. |
+| `/home/bee/Documents/src/vita-jp-overlay-low-memory/build/host/low-memory-build.log` | Host build/test output | Verify its revision before reusing a result. |
+| `/home/bee/Documents/src/vita-jp-overlay-low-memory/build/vita-hooks-device/low-memory-build.log` | Device-build output | Installed shell hash in [[02-Current-device-state]]. |
+| `/home/bee/Documents/src/ps-vita-ocr-lab/device/agent/` | Existing private control configuration and paired identity | Reference location only; do not print, copy or commit its contents. |
+
+## What to preserve for the next finding
+
+Keep source revision, build settings, tool versions, exact artifact hash, command, completion status, observations, and a narrow evidence path. Preserve failed results too, including whether a failure occurred before execution, during authentication, while reading memory, or after a launch was merely accepted. [[Experiment-template]] provides the fields.

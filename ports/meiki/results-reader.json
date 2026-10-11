@@ -1,0 +1,98 @@
+{
+  "scope": "Host pinned static MNN reader/path raw-output and cleanup comparison; not console RAM/timing; not CER",
+  "command": "python ports/meiki/verify_reader.py --mnn-source <pinned-MNN> --mnn-library <host-static-MNN> --model <pinned-recognizer> --input <private-hand-checked-tensors> --out <private-output> --cases <private-cases.tsv> --sanitize",
+  "platform": "Linux-7.2.6-1-cachyos-x86_64-with-glibc2.44",
+  "compiler": "clang version 22.1.8",
+  "adapter_sanitizers": true,
+  "mnn_archive_instrumented_by_this_command": false,
+  "mnn_version": "3.2.0",
+  "mnn_commit": "ebdada82634300956e08bd4056ecfeb1e4f23b32",
+  "mnn_library_sha256": "bbbe12591df4c4a0b992800478c02bf216de93d0862757f8933e0f31455298b6",
+  "mnn_patch_sha256": "a780d1252f24e1c04e01f2245ae07723b8edb673aa83a031e6e9b25f970bc052",
+  "model_bytes": 5392856,
+  "model_sha256": "b7ba3219cd1bfeef5cb6b42ef6686683b991c6561b7ad3b1c41d32817deba21e",
+  "workspace_bytes": 16777216,
+  "reader_chunk_bytes": 8192,
+  "reader_repetitions_per_fixture": 3,
+  "path_repetitions_per_fixture": 1,
+  "inputs": [
+    {
+      "name": "vita-test-0.f32",
+      "sha256": "21d3d39e06866a78541c440ad845710d9845322eca396ef58c59bded316574ef",
+      "crop_effective_widths": [
+        313,
+        323
+      ]
+    },
+    {
+      "name": "vita-test-1.f32",
+      "sha256": "c94c175c852da2337302a55ebedbf0ad89920cd729acfdc92d9cff311903d018",
+      "crop_effective_widths": [
+        381,
+        393
+      ]
+    },
+    {
+      "name": "psp-test-0.f32",
+      "sha256": "148c943aef70d84a108992907603846d89506369f1f07c5898c6ff0412c1e2e4",
+      "crop_effective_widths": [
+        150,
+        253
+      ]
+    },
+    {
+      "name": "psp-test-1.f32",
+      "sha256": "66cfd6aa515550a905077c244d21a2f2915fb19a649b50498ef9d67e0e0b286c",
+      "crop_effective_widths": [
+        267,
+        407
+      ]
+    }
+  ],
+  "case_manifest_sha256": "bb03eac7c43857cce18cd015cd795e7520356b7cc8636a021df193af08f17614",
+  "matrix_manifest_sha256": null,
+  "eval_manifests": {
+    "vita-test.jsonl": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+    "psp-test.jsonl": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc"
+  },
+  "source_sha256": {
+    "runtime.cpp": "50dfeb27107af965b167830ada18f7f27a13e4d9dd91e10bffb8568b3e42a6c4",
+    "runtime.h": "31426ee1ac2c5bf2db77ef010b12a84ec2c0d63cb82fe69ec07ee1a0c11f59cc",
+    "model_reader.c": "11ed21326fe045b833e94027d76e7df9a1efe2a0b268ca1e85ccd4ba808f73e6",
+    "model_reader.h": "92dc4e561717cb81d9f8723efc8c7d13e17bb8733db87295a84285675c7056c3",
+    "reader_probe.cpp": "aa2b3691dc0fd224728737cc6c697de96eee17f6829b234b6ec2a86fdc251445"
+  },
+  "measured": {
+    "fixtures": 4,
+    "successful_reader_calls": 36,
+    "failure_cases": 24,
+    "path_calls": 4,
+    "path_heap_peak": 13235648,
+    "reader_heap_peak": 13235648,
+    "maximum_retained": 0,
+    "raw_output_differences": 0,
+    "decoded_output_differences": 0
+  },
+  "datasets": null,
+  "limits": "Four supplied real-VN preprocessing tensors, not the full shared evaluation set. System host C++ metadata heap is not the isolated Vita 4MiB heap. Actual Vita engine metadata bounds remain separately guarded. Reader buffer and MNN owning copy are both included in the measured 16MiB pool peak.",
+  "native_build": {
+    "command": "VITASDK=<pinned-sdk> cmake -S ports/meiki/module -B <private-build> -DMNN_SOURCE=<pinned-MNN> -DMNN_LIBRARY=<pinned-Vita-libMNN.a>; cmake --build <private-build>",
+    "sdk_release": "sdk-snapshot-20260926.790.1",
+    "compiler": "arm-vita-eabi-g++15.2.0",
+    "module_abi": 3,
+    "metadata_bytes": 4194304,
+    "engine_stack_bytes": 131072,
+    "module_bytes": 1153980,
+    "module_sha256": "00ab2bd41389e3a84030aab7505db7dff1190bc97b1f6bb5b3586bc25b68b861",
+    "allocated_elf_sections_bytes": 1778908,
+    "mnn_archive_sha256": "c83546bf53f7d90f147e34efb9f59159b5c30f8be44388fdb82c3fa5b52b5b68",
+    "physical_execution_measured": false,
+    "velf_load_segments_bytes": {
+      "rx": 1632492,
+      "rw": 147560
+    },
+    "page_rounded_load_segments_bytes": 1785856,
+    "page_rounded_segments_and_engine_stack_bytes": 1916928,
+    "geometry_limit": "Build geometry only; excludes runtime kernel/module bookkeeping and does not measure physical game memory usage"
+  }
+}

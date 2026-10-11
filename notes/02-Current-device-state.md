@@ -129,9 +129,9 @@ pending game/visual checks.
 **Sleep prevention remains pending:** the installed agent calls PowerTick with
 argument 1 (`AUTO_SUSPEND`), which leaves the display timer available. A local
 source change to argument 0 is not installed, and synchronous requests block
-the old service-loop tick. A standalone agent candidate at `87e9bc6` adds an
-independent default-tick worker; no deployed sleep fix or sustained awake-device
-result is claimed.
+the old service-loop tick. An uncommitted standalone agent candidate based on
+`87e9bc6` adds an independent default-tick worker; no deployed sleep fix or
+sustained awake-device result is claimed.
 
 Private receipts are under `vita-agent-use/agent/ocr-choice-20261011/`:
 `daijirin-recover-after-reconnect.jsonl`, `daijirin-installed-stat.jsonl`,

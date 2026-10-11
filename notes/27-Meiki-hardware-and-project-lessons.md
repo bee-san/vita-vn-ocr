@@ -386,8 +386,8 @@ inventory, native identities or operation IDs are published.
 **Pending power-management repair, NI06:** the installed native agent calls
 PowerTick with argument 1 (`AUTO_SUSPEND`), leaving the screen timer available.
 The local source's argument 0 change is not installed. Synchronous native work
-blocks the existing service-loop tick. A standalone agent candidate at
-`87e9bc6` adds an independent default-tick worker. This is
+blocks the existing service-loop tick. An uncommitted standalone agent candidate
+based on `87e9bc6` adds an independent default-tick worker. This is
 source/installed-image analysis, not a deployed fix
 or measured proof that the Vita stays awake during long requests. Sleep
 prevention remains pending; pairing, stop policy and retained operation state
@@ -472,6 +472,7 @@ reported the command service returning to pairing with stop monitoring ready,
 no held/stopped chord and no guard error. A physical reboot/open-Settings step
 was requested. The transfer journal and identities remained intact; that
 observation alone did not establish destination installation. Host waiting
-messages are not native hash progress. Power ticks outside synchronous upload
-work are a source-level gap,
-but causation and the exact installed runtime implementation are unproved.
+messages are not native hash progress. At that historical checkpoint, the
+source-level power-tick gap had not yet been tied to the installed runtime.
+NI06 records the later installed-image audit; causation of each disconnect
+remains unproved.

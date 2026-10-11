@@ -30,7 +30,8 @@ ROW_DIV = 16        # active rows: kept length >= max(LMIN, peak // ROW_DIV)
 MIN_H = 8           # shortest band
 MERGE = 2           # inactive rows bridged inside a band
 GAPC = 2            # column clusters split at gaps over GAPC * band height
-PAD = 3             # crop padding: legacy's 4 px around bright ink, less the 1 px dilation
+PAD_X = 7          # horizontal crop padding: previous 3 px plus 4 px, clamped to ROI
+PAD_Y = 3          # vertical crop padding: 4 px around ink, less the 1 px dilation
 FURI_PCT = 55       # lines under this % of the median height are dropped
 
 
@@ -232,8 +233,8 @@ def _find_grad(img):
             if len(boxes) == LINES_MAX:
                 truncated = True
                 break
-            lx, ly = max(0, x1 - PAD), max(0, top - PAD)
-            ex, ey = min(W, x2 + PAD), min(H, bot + PAD)
+            lx, ly = max(0, x1 - PAD_X), max(0, top - PAD_Y)
+            ex, ey = min(W, x2 + PAD_X), min(H, bot + PAD_Y)
             boxes.append((lx, ly, ex - lx, ey - ly))
             dark.append(line_dark(g, (lx, ly, ex - lx, ey - ly)))
     return boxes, dark, truncated

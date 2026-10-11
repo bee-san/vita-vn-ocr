@@ -147,6 +147,43 @@ def test_line_crops_invert_dark_text():
     assert np.median(kept[0][0]) > 192
 
 
+@pytest.mark.parametrize("cut", [slice(None), slice(14, 270), slice(18, 256), slice(8, 266)])
+def test_horizontal_expansion_preserves_detections_and_vertical_boxes(driver, monkeypatch, cut):
+    # Tight user ROIs exercise left, right and both clamps; no pixels outside the
+    # selected region can be recovered by a wider recognition crop.
+    img = lines_image(240, 30)[:, cut]
+    with monkeypatch.context() as old:
+        old.setattr(common, "PAD_X", 3)
+        previous, _, previous_truncated = common.find_lines_ex(img)
+    boxes, _, truncated = common.find_lines_ex(img)
+    assert len(previous) == len(boxes) == 2
+    assert previous_truncated == truncated
+    for original, widened in zip(previous, boxes):
+        x, y, w, h = original
+        left, right = max(0, x - 4), min(img.shape[1], x + w + 4)
+        assert widened == (left, y, right - left, h)
+    if cut != slice(None):
+        assert any(x == 0 or x + w == img.shape[1] for x, _, w, _ in boxes)
+    assert linefind_parity.run(driver, [(img, "grad"), (img, "legacy")], seed=7) == []
+
+
+def test_expanded_pixels_recompute_polarity_in_c_and_python(driver, monkeypatch):
+    # The added bright patch has contrast < T_MIN and cannot change detection.
+    # It does change the dark/bright deviation ratio of the widened crop.
+    img = np.full((40, 80), 100, np.uint8)
+    img[12:24, 20:40:3] = 40
+    img[12:24, 12:16] = 130
+    with monkeypatch.context() as old:
+        old.setattr(common, "PAD_X", 3)
+        assert common.find_lines_ex(img) == ([(16, 8, 27, 20)], [1], False)
+    assert common.find_lines_ex(img) == ([(12, 8, 35, 20)], [0], False)
+    crop, box, dark = common.line_crops(img)[0]
+    assert dark == 0
+    x, y, w, h = box
+    np.testing.assert_array_equal(crop, img[y:y + h, x:x + w])
+    assert linefind_parity.run(driver, [(img, "grad")], seed=13) == []
+
+
 def test_grey_and_rgba_inputs_agree():
     rgb = lines_image(30, 230)
     rgba = np.concatenate([rgb, np.full(rgb.shape[:2] + (1,), 7, np.uint8)], axis=2)

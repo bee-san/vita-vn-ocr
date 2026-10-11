@@ -245,11 +245,16 @@ def render_shards(root, split, arguments, background_manifest=None):
                                for folder in ("vndb", "vndb_psp")):
         raise ValueError("screenshot backgrounds require a reviewed --background-manifest")
     policy_path = None
+    native_manifest = None
     for i, argument in enumerate(arguments):
         if argument == "--kanji-policy":
             policy_path = Path(arguments[i + 1])
         elif argument.startswith("--kanji-policy="):
             policy_path = Path(argument.split("=", 1)[1])
+        elif argument == "--native-font-manifest":
+            native_manifest = Path(arguments[i + 1])
+        elif argument.startswith("--native-font-manifest="):
+            native_manifest = Path(argument.split("=", 1)[1])
     policy_sha = sha256(policy_path) if policy_path else None
     original_meta = render.crop_meta
 
@@ -268,6 +273,7 @@ def render_shards(root, split, arguments, background_manifest=None):
              "wrapper_argv": sys.argv.copy(),
              "book_split_sha256": cohort_sha, "kanji_policy_sha256": policy_sha,
              "background_manifest_sha256": backgrounds["manifest_sha256"] if backgrounds else None,
+             "native_font_manifest_sha256": sha256(native_manifest) if native_manifest else None,
              "renderer_source_sha256": sha256(HERE / "render.py"), "helper_sha256": sha256(__file__),
              "started_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()}
     root.mkdir(parents=True, exist_ok=True)
@@ -282,7 +288,8 @@ def render_shards(root, split, arguments, background_manifest=None):
         render.crop_meta = original_meta
 
 
-def dataset_manifest(root, sources, vocab_path=None, policy_path=None, background_manifest=None):
+def dataset_manifest(root, sources, vocab_path=None, policy_path=None, background_manifest=None,
+                     native_font_manifest=None, native_font_root=None):
     import cv2
     import fontTools
     import numpy as np
@@ -291,6 +298,15 @@ def dataset_manifest(root, sources, vocab_path=None, policy_path=None, backgroun
 
     root = Path(root).resolve()
     backgrounds = verify_backgrounds(root, background_manifest) if background_manifest else None
+    native_binding = None
+    native_coverage = {}
+    if bool(native_font_manifest) != bool(native_font_root):
+        raise ValueError("native fonts require both a manifest and local source directory")
+    if native_font_manifest:
+        from native_font_manifest import load_manifest
+        _, native_rows, native_binding = load_manifest(native_font_manifest, native_font_root)
+        native_coverage = {family: coverage for _, family, _, coverage in native_rows}
+    native_identities = {f["family"]: f for f in native_binding["fonts"]} if native_binding else {}
     if not backgrounds and any(list((root / folder / platform_dir / "shots").glob("*.jpg"))
                                for folder in ("assets", "assets-dev") for platform_dir in ("vndb", "vndb_psp")):
         raise ValueError("screenshot backgrounds require --background-manifest")
@@ -334,6 +350,37 @@ def dataset_manifest(root, sources, vocab_path=None, policy_path=None, backgroun
                     raise ValueError(f"unbound background sources in {path}")
                 if row.get("source_kind") != "synthetic":
                     raise ValueError("source_kind must be synthetic")
+                if row.get("native_font_manifest_sha256"):
+                    if not native_binding or row["native_font_manifest_sha256"] != native_binding["manifest_sha256"]:
+                        raise ValueError("unbound native font sources in crop metadata")
+                    from native_font_manifest import probability
+                    probability(row.get("native_font_probability", float("nan")))
+                    if type(row.get("native_font_used")) is not bool:
+                        raise ValueError("native font crop requires an explicit boolean font-used flag")
+                if row.get("native_font_used"):
+                    identity = native_identities.get(row.get("fam"))
+                    if (not row.get("native_font_manifest_sha256") or not row.get("native_font_probability")
+                            or not identity or row.get("native_font_sha256") != identity["fnt"]["sha256"]
+                            or row.get("native_metrics_sha256") != identity["pro"]["sha256"]
+                            or row.get("cat") != identity["category"]
+                            or type(row.get("native_strike")) is not int or row["native_strike"] not in (0, 1)
+                            or not set(label) <= native_coverage[row.get("fam")]):
+                        raise ValueError("native font family/hash/strike differs from pinned sources")
+                    core, crop, original = (row.get(key) for key in
+                                            ("native_core_box", "crop_box", "original_crop_box"))
+                    if (row.get("native_label_ink_preserved") is not True
+                            or row.get("native_core_alpha_threshold") != 128
+                            or any(not isinstance(box, list) or len(box) != 4
+                                   or any(type(v) is not int for v in box) for box in (core, crop, original))
+                            or core[2] <= core[0] or core[3] <= core[1]
+                            or any(box[2] <= 0 or box[3] <= 0 or box[0] > core[0] or box[1] > core[1]
+                                   or box[0] + box[2] < core[2] or box[1] + box[3] < core[3]
+                                   for box in (crop, original))):
+                        raise ValueError("native crop does not preserve labelled core ink")
+                    counts[f"native_strike:{row['native_strike']}"] += 1
+                    counts["native_font_used"] += 1
+                    counts["native_label_ink_preserved"] += 1
+                    counts["native_core_jitter_reverted"] += bool(row.get("native_core_jitter_reverted"))
                 if vocab is not None and not set(label) <= vocab:
                     raise ValueError(f"out-of-vocabulary label in {path}")
                 if row.get("hand_checked"):
@@ -382,7 +429,8 @@ def dataset_manifest(root, sources, vocab_path=None, policy_path=None, backgroun
     dev_pixels = set().union(*(pixels[n] for n, s in sources.items() if s == "dev"))
     if train_pixels & dev_pixels:
         raise ValueError("training and development pixels overlap")
-    result = {"schema": 2, "assets": assets, "backgrounds": backgrounds, "pools": pools, "sources": sources,
+    result = {"schema": 2, "assets": assets, "backgrounds": backgrounds, "native_fonts": native_binding,
+              "pools": pools, "sources": sources,
               "shards": records,
               "summary": summaries, "train_dev_pixel_intersection": 0,
               "kanji_policy_sha256": policy_sha,
@@ -392,7 +440,8 @@ def dataset_manifest(root, sources, vocab_path=None, policy_path=None, backgroun
               "source_sha256": {str(p.relative_to(REPO)): sha256(p) for p in
                                 (Path(__file__), HERE / "build_corpus.py", HERE / "render.py", HERE / "common.py",
                                  HERE / "mask_finder.py", HERE / "bg_exclude.py", PIN, REPO / "requirements-ci.lock",
-                                 HERE / "kanji_policy.py", REPO / "data/fresh_backgrounds.py") if p.exists()},
+                                 HERE / "kanji_policy.py", REPO / "data/fresh_backgrounds.py",
+                                 HERE / "native_bitmap_font.py", HERE / "native_font_manifest.py") if p.exists()},
               "environment": {"python": sys.version.split()[0], "platform": platform.platform(),
                               "numpy": np.__version__, "pillow": PIL.__version__,
                               "freetype": features.version_module("freetype2"),
@@ -429,6 +478,8 @@ def main():
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--kanji-policy", type=Path)
     parser.add_argument("--background-manifest", type=Path)
+    parser.add_argument("--native-font-manifest", type=Path)
+    parser.add_argument("--native-font-root", type=Path)
     parser.add_argument("--split", choices=("train", "dev"), default="train")
     parser.add_argument("--source", action="append", help="manifest source directory name:train|dev")
     args, remaining = parser.parse_known_args()
@@ -448,6 +499,10 @@ def main():
         extra = ["--kanji-policy", str(args.kanji_policy)] if args.kanji_policy else []
         if args.background_manifest:
             extra.extend(["--background-manifest", str(args.background_manifest)])
+        if args.native_font_manifest:
+            extra.extend(["--native-font-manifest", str(args.native_font_manifest)])
+        if args.native_font_root:
+            extra.extend(["--native-font-root", str(args.native_font_root)])
         render_shards(args.root, args.split, ["--vocab", str(args.vocab), "--seed", str(args.seed),
                                             "--workers", str(args.workers), *extra, *remaining],
                       args.background_manifest)
@@ -456,7 +511,8 @@ def main():
             "general": "train", "targeted": "train", "synthetic-dev": "dev"}
         if any(split not in ("train", "dev") for split in sources.values()):
             parser.error("manifest sources must have train or dev roles")
-        dataset_manifest(args.root, sources, args.vocab, args.kanji_policy, args.background_manifest)
+        dataset_manifest(args.root, sources, args.vocab, args.kanji_policy, args.background_manifest,
+                         args.native_font_manifest, args.native_font_root)
 
 
 if __name__ == "__main__":

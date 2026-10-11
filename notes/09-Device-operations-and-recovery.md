@@ -1,7 +1,7 @@
 ---
 title: Device operations and recovery
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-11
 status: operating-reference
 tags: [vita, operations, recovery]
 ---
@@ -51,6 +51,8 @@ With the agent healthy, use its supported CLI; its workspace explicitly disallow
 Pairing, new ACL and Content Manager approvals require the human's physical approval. Existing authorized ACLs do not need to be requested again without a new scope. Do not send controller input to approve a pending security dialog. PS+SELECT means “Agent stopped”; honor it and wait for explicit authorization before resuming control.
 
 If a coredump is being saved, wait for its matching completion event. Do not close the game or reboot while a `.psp2dmp.tmp` is still being written. USB attachment alone does not establish a supported USB control transport; the inspected client did not provide one.
+
+For exact error lookup, completed CPU dump analysis and a repeatable evidence workflow, see [[25-Vita-debugging-tools]].
 
 ## Useful local references
 

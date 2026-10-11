@@ -140,9 +140,14 @@ readback of the 311,356-byte candidate matches SHA-256
 After the ordinary reboot, fresh logs report worker initialization result 0
 and the first DEFAULT tick result 0 with count 1. Settings relaunch is confirmed
 foreground with `system_ui_overlaid=false`; the post-boot configuration remains
-byte-identical to the intended 2,951-byte file. The six-minute quiet interval is
-still pending. These checks do not prove OLED visibility, pairing-wait protection
-or long-request hardware wakefulness. See NI09 in
+byte-identical to the intended 2,951-byte file. A command-free connection check
+passed over 374.066 seconds from 14:34:32 UTC, with only PC-side status reads
+before the end diagnostic. Native response then confirmed the same boot and
+Settings process, `system_ui_overlaid=false`, a healthy stop guard and no
+disconnect/crash events in the 14-event window (zero lost). The ordinary final
+snapshot includes screen-on, so OLED visibility during the interval was not
+measured. Pairing-wait protection and long-request hardware wakefulness remain
+unproved. See NI09 in
 [[27-Meiki-hardware-and-project-lessons]].
 
 Private receipts are under `vita-agent-use/agent/ocr-choice-20261011/`:

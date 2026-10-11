@@ -448,14 +448,23 @@ tick, not physical display inspection. Protected active control is the scope;
 no claim covers pairing waits, physical OLED visibility or hardware wakefulness
 during a long request. Kernel and loader were not rebuilt or deployed.
 
-The six-minute command-free quiet interval started at 14:34:32 UTC; its result
-remains pending. Worker ticking during a blocked owner is covered only by host
-tests.
+**Measured command-free connection check:** an interval starting at 14:34:32 UTC
+lasted 374.066 seconds. Only PC-side status reads occurred; no native, wake or
+input request was issued before the end UDP diagnostic. That diagnostic reports
+phase 8 and stop guard ready 1/held 0/stopped 0/error 0. A fresh ordinary snapshot
+responds in the same boot with the same Settings process foreground and
+`system_ui_overlaid=false`. The 14-event post-boot window reports zero lost
+events and no disconnect, stop or coredump. This establishes a responsive native
+connection after the interval. The final snapshot uses the normal screen-on
+path, so the physical OLED's visibility throughout the interval was not
+measured. Worker ticking during a blocked owner is covered only by host tests.
 
 Private host receipt: `vita-agent-use-keepawake/agent/keepawake-review/verification.json`,
 SHA-256 `e3b46b052ac6155994125e8c6accc7a52bae178c0270cf968708ffeff763cfad`.
 Private native receipt: `keepawake-audit/native-activation-proof.json`, SHA-256
 `46393c45a75acea2d430b65f82b1c6fc3a84729e57468947482a6d29fe011224`.
+Private quiet-interval receipt: `keepawake-audit/verified-quiet-interval.json`,
+SHA-256 `f7b3bb144f5436e13c27764515bde9b2d33ed88b10be2fa7ed53435ffd65c7bd`.
 This source revision remains local-only; no upstream publication is credited.
 
 Native installation, readback, boot, repaired process execution and saved

@@ -1,0 +1,12 @@
+# Optional standalone Google Lens environment; install with --no-deps.
+# Full owocr desktop/GSM integrations are not needed by eval/owocr_bridge.py.
+# Versions match the frozen local Linux Python 3.11 comparison environment.
+owocr==1.26.7
+numpy==2.4.6
+Pillow==12.3.0
+loguru==0.7.3
+curl_cffi==0.16.3
+protobuf==7.36.2
+cffi==2.1.1
+certifi==2026.7.22
+pycparser==3.11

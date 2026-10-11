@@ -2,13 +2,21 @@
 title: Game-process OCR hardware checkpoint
 created: 2026-10-11
 updated: 2026-10-11
-status: v075-character-lookup-hardware-confirmed-accuracy-unmeasured
+status: historical-v075-hardware-confirmed-see-later-checkpoint
 tags: [vita, ocr, hardware, debugging, input]
 ---
 
 # Game-process OCR hardware checkpoint
 
-**Latest checkpoint:** v0.7.5 is released, installed with full native readback, booted and physically tested in CLANNAD. Local lookup selects characters manually, returns at most one entry and uses one 64 KiB result arena; background local OCR uses no dictionary-result arena. All frozen-source sanitizer and exact PR/main/tag checks pass. Seven fresh text-bearing FL10 jobs finish with `rc=0 io=0 cleanup=0`; the local arena peaks at 53,488 bytes. Physical cursor sessions reuse saved text without another OCR job, and the user reports "works great". The user also reports poor OCR quality and requests another Meiki trial. Recognition accuracy/CER, broad compatibility and total peak memory remain unmeasured; historical checkpoints retain their original boundaries.
+**Later checkpoint:** [[27-Meiki-hardware-and-project-lessons]] records two
+successful physical ABI3 Meiki jobs, the Square/Circle repair, verified release
+installation and the user's working-region confirmation. It also records the
+locally validated Settings engine picker, VOCR default, Japanese-only selection
+default, Daijirin conversion/staging and pending installation/LiveArea checks.
+The v0.7.5 record below remains historical; Meiki game-mount visibility is now
+proved for CLANNAD.
+
+**Historical v0.7.5 checkpoint:** v0.7.5 is released, installed with full native readback, booted and physically tested in CLANNAD. Local lookup selects characters manually, returns at most one entry and uses one 64 KiB result arena; background local OCR uses no dictionary-result arena. All frozen-source sanitizer and exact PR/main/tag checks pass. Seven fresh text-bearing FL10 jobs finish with `rc=0 io=0 cleanup=0`; the local arena peaks at 53,488 bytes. Physical cursor sessions reuse saved text without another OCR job, and the user reports "works great". The user also reports poor OCR quality and requests another Meiki trial. Recognition accuracy/CER, broad compatibility and total peak memory remain unmeasured; historical checkpoints retain their original boundaries.
 
 ## Exact release and native evidence
 
@@ -132,7 +140,7 @@ Private derived evidence and commands: `vita-agent-use/agent/private-debug/elf-c
 
 - Compare recognized text with the actual displayed dialogue; record a bounded result before any accuracy claim.
 - Return physically to actual game dialogue and verify foreground/system-UI routing before any title-bound input. HW10 already establishes `0xC00` → `0` with zero pressures and a successful copy. Obtain a visual comparison or user confirmation before claiming that L+R no longer advances dialogue. Treat this separately from the earlier × selection leak in [[24-Overlay-selection-input-leak]].
-- Preserve the physically confirmed v0.7.5 character workflow and 64 KiB allocation from HW15. Investigate the earlier Meiki engine's game-process/API compatibility and model visibility before a separate trial; do not replace the working UI with an older Shell-based branch merely to change recognizers.
+- Preserve the physically confirmed character workflow and 64 KiB allocation from HW15. [[27-Meiki-hardware-and-project-lessons]] now records Meiki's game-process/API compatibility and model visibility in CLANNAD. The next check is the new Settings picker and Japanese-only navigation on hardware after verified installation; do not use the old Shell-based branch as a recognizer switch.
 - Preserve the successful API 13 native log and installed revision while testing; verify further captures, cleanup and user-visible behavior with fresh evidence.
 
 The older device snapshot remains history in [[02-Current-device-state]]. Tool diagnostics, host regression tests, package readback, native boot and visible dialogue correspondence remain distinct claims.

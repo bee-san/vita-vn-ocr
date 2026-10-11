@@ -4,13 +4,44 @@ created: 2026-10-10
 updated: 2026-10-11
 historical_snapshot_utc: "2026-10-10 12:33"
 latest_checkpoint_date: 2026-10-11
-status: game-ocr-native-success-trigger-input-leak-open
+status: settings-readability-published-native-installation-pending
 tags: [vita, device, handoff]
 ---
 
 # Current device state snapshot
 
-**2026-10-11 checkpoint:** API 13 is booted and all three overlay plugins are loaded. Fresh native game-process FL10 jobs complete with `rc=0 io=0 cleanup=0`, and subsequent captures succeed. The user reports L+R advances dialogue when opening the overlay; accuracy/CER and that input fix remain unverified. The saved paired agent command path responds without a pairing reset. Exact evidence, release revision and limits are in [[26-Game-process-OCR-hardware-checkpoint]].
+**Current October 11 checkpoint:** [[27-Meiki-hardware-and-project-lessons]] records
+verified meiki.2 installation, fresh API13 boot, two actual CLANNAD Meiki runs,
+and the user-confirmed region controls. VOCR was separately confirmed in
+[[26-Game-process-OCR-hardware-checkpoint]]. The new Settings engine picker,
+VOCR default and Japanese-only selection default are implemented and locally
+validated: 22 host suites, 22 sanitizer suites and the native Release build pass.
+The PR #33 build is merged and v0.7.6 is published with all downloaded asset
+checksums verified. The Settings-only readability follow-up is PR #34 at
+`c9ec54f9a6562ad61cbb8d9e4876e86028e652f4`, packaged as v0.7.7: three larger
+game cards, clearer tabs, wrapped titles and higher-contrast text. Its actual
+Settings input/draw loop passes 12/12 host ASan/UBSan scenarios, and the native
+Release build passes. These checks do not establish physical firmware-font
+readability or touch behavior. PR #34 is merged as
+`b6518d0b01cf5274eddfa036f7f5f65109121450`; exact-head host/Vita CI passed and
+v0.7.7 is published. All six downloaded assets match the audited candidate,
+including all five payload checksums. Native installation remains pending.
+
+**Native transfer checkpoint, 2026-10-11 13:23 UTC:** Daijirin v3 is converted
+and privately staged in full. Native verification of the staged file passed in
+53.27 seconds; commit returned recovery-required, and recovery using the bounded
+600-second response budget timed out while the device went dark. The user has
+woken it; saved-session reconnect then timed out. A physical reboot and
+Settings opening have been requested. Recovery with the original transfer
+identity remains pending. The
+destination installation and active dictionary priority are unconfirmed;
+physical preference/navigation checks remain pending. Preserve the unchanged
+emergency-stop guard and resolve the recorded operation before new writes.
+The 59-app,
+seven-page LiveArea plan also awaits supported, observed moves. The device
+narrative below retains its dated native-hook state.
+
+**Historical early October 11 checkpoint:** API 13 booted and all three overlay plugins loaded. Fresh native game-process FL10 jobs completed with `rc=0 io=0 cleanup=0`, and subsequent captures succeeded. At that point the user reported L+R advancing dialogue when opening the overlay, and the input repair was unverified. Later hook-7 containment and physical character-workflow evidence are retained in [[26-Game-process-OCR-hardware-checkpoint]]; the repaired Square/Circle workflow and actual Meiki runs are in [[27-Meiki-hardware-and-project-lessons]]. Hardware accuracy/CER remains unmeasured.
 
 ## Historical snapshot — 2026-10-10 12:33 UTC
 

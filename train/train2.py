@@ -531,11 +531,12 @@ def validate_policy_options(opts):
         raise ValueError("source policy requires GT labels without unpinned teacher/KD auxiliaries")
 
 
-def execution_identity(vocab_path, vocab):
+def execution_identity(vocab_path, vocab, context=None):
     files = [HERE / name for name in ("train2.py", "source_policy.py", "train.py", "model.py", "restore_blob.py")]
     files += [ROOT / "synth/common.py", ROOT / "eval/metrics.py"]
-    return {"schema": 1, "vocabulary_file_sha256": file_sha256(vocab_path),
+    identity = {"schema": 1, "vocabulary_file_sha256": file_sha256(vocab_path),
             "ordered_vocabulary_sha256": json_digest(vocab),
+            "geometry": {"height": H, "max_width": MAX_W, "stride": STRIDE},
             "code": {str(path.relative_to(ROOT)): file_sha256(path) for path in files},
             "dependencies": {"python": sys.version, "python_executable_sha256": file_sha256(sys.executable),
                              "torch": torch.__version__, "numpy": np.__version__, "opencv": cv2.__version__,
@@ -561,6 +562,9 @@ def execution_identity(vocab_path, vocab):
                              "opencv_threads": cv2.getNumThreads(), "opencv_optimized": cv2.useOptimized(),
                              "opencv_opencl": cv2.ocl.useOpenCL()},
             "optimizer": "torch.optim.AdamW", "dropout": "TinyVNOCR.drop; pinned model.py"}
+    if context is not None:
+        identity["prospective_driver"] = json.loads(json.dumps(context))
+    return identity
 
 
 def model_state_sha256(model):
@@ -666,7 +670,7 @@ def kd_loss(logits, kd, tau):
     return (kl * mask).sum() / mask.sum().clamp_min(1.0) * tau * tau
 
 
-def main():
+def main(argv=None, *, execution_context=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
     ap.add_argument("--out", type=Path, default=ROOT / "runs")
@@ -703,7 +707,9 @@ def main():
     ap.add_argument("--eval-every", type=int, default=2000)
     ap.add_argument("--keep-evals", action="store_true")
     ap.add_argument("--log-every", type=int, default=100)
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
+    if execution_context is not None and not args.source_policy:
+        raise ValueError("prospective execution context requires a source policy")
     if args.source_policy and (args.val or args.select):
         raise ValueError("--source-policy does not accept --val/--select; evaluate retained checkpoints with the "
                          "separately frozen general-VN selector")
@@ -733,7 +739,7 @@ def main():
         paths = expand(globs)
         specifications.append((name, wt, paths, opts))
     policy = SourcePolicy(args.source_policy) if args.source_policy else None
-    execution = execution_identity(args.vocab, vocab) if policy else None
+    execution = execution_identity(args.vocab, vocab, execution_context) if policy else None
     provenance = None
     if policy:
         if len({name for name, _, _, _ in specifications}) != len(specifications):
@@ -956,7 +962,9 @@ def main():
             torch.save(ck, out / "ckpt_last.tmp")
             (out / "ckpt_last.tmp").replace(last)
             if args.keep_evals:
-                torch.save(ck, out / f"ckpt_step{step}.pt")
+                retained = out / f"ckpt_step{step}.pt"
+                torch.save(ck, retained.with_suffix(".tmp"))
+                retained.with_suffix(".tmp").replace(retained)
             vs = " ".join(f"{k} {v[0]:.4f}/{v[1]:.3f}" for k, v in res.items())
             print(f"eval step {step}: {vs} sel {sel:.4f} (best {best:.4f} @ {best_step}) "
                   f"[{time.time() - t1:.0f}s]", flush=True)

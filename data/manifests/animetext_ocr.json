@@ -1,0 +1,12 @@
+{
+  "repo": "JustANormalTinkerer/animetext-ocr",
+  "revision": "9c70c6b5609c4378d46ac0df4927c4119ebfd83d",
+  "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr",
+  "license": "CC-BY-NC-SA-4.0",
+  "purpose": "Private personal recognition fine-tuning; raw data stays local",
+  "seq_confidence": 0.95,
+  "min_token_confidence": 0.9,
+  "max_crops": 20000,
+  "split_seed": 1,
+  "holdout_percent": 10
+}

@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "assets": [
+    {
+      "url": "https://huggingface.co/datasets/globis-university/aozorabunko-clean/resolve/42a9c9c0f1d67e6a5554d9bea4201973dc9b049c/aozorabunko-dedupe-clean.jsonl.gz",
+      "file": "assets/corpus/aozora/aozorabunko-dedupe-clean.jsonl.gz",
+      "sha256": "3f41359c59b4bb1bf2d5692131463afc3f34a8208b987a563c1d60f9ab90d278",
+      "bytes": 240780659,
+      "repo": "globis-university/aozorabunko-clean",
+      "revision": "42a9c9c0f1d67e6a5554d9bea4201973dc9b049c",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "family": "fusionpixel10",
+      "zip_url": "https://github.com/TakWolf/fusion-pixel-font/releases/download/2026.09.25/fusion-pixel-font-10px-proportional-ttf-v2026.09.25.zip",
+      "zip_sha256": "ea3e9c6cfffa4d42edc78e4b8d5d3032f5601908261628fee2d8df906af75aec",
+      "file": "assets/fonts_extra/fusionpixel10/fusion-pixel-10px-proportional-ja.ttf",
+      "sha256": "7db8ba41d0d51ee4a8495ba894e3730e837fb42b0cae8489f924597a660bb0ba",
+      "license": "OFL-1.1",
+      "bytes": 4046680
+    },
+    {
+      "family": "fusionpixel12",
+      "zip_url": "https://github.com/TakWolf/fusion-pixel-font/releases/download/2026.09.25/fusion-pixel-font-12px-proportional-ttf-v2026.09.25.zip",
+      "zip_sha256": "47585b9c4b6d8d57380e9dec75bc7e8043fdbfa77d1843c3aaa19a1e7bd15d50",
+      "file": "assets/fonts_extra/fusionpixel12/fusion-pixel-12px-proportional-ja.ttf",
+      "sha256": "cb54245a786df7fe302e20a63d3771cecbd9feb6f91bec439d030c218f24a808",
+      "license": "OFL-1.1",
+      "bytes": 7050736
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf",
+      "file": "assets/fonts/notosansjp/NotoSansJP[wght].ttf",
+      "sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f",
+      "bytes": 9589900,
+      "family": "notosansjp",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosansjp/OFL.txt",
+      "file": "assets/fonts/notosansjp/OFL.txt",
+      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
+      "bytes": 4388,
+      "family": "notosansjp",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notoserifjp/NotoSerifJP%5Bwght%5D.ttf",
+      "file": "assets/fonts/notoserifjp/NotoSerifJP[wght].ttf",
+      "sha256": "2fd527ba12b6a44ec30d796d633360da0aeba6c5d4af1304ce12bb4dc15a7dfc",
+      "bytes": 13574352,
+      "family": "notoserifjp",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notoserifjp/OFL.txt",
+      "file": "assets/fonts/notoserifjp/OFL.txt",
+      "sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6",
+      "bytes": 4350,
+      "family": "notoserifjp",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/mplus1p/MPLUS1p-Regular.ttf",
+      "file": "assets/fonts/mplus1p/MPLUS1p-Regular.ttf",
+      "sha256": "2f294ad496432b1608f070d310e3aa2adcf1de4af429f4901df97ec4bd361ed1",
+      "bytes": 1758688,
+      "family": "mplus1p",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/mplus1p/OFL.txt",
+      "file": "assets/fonts/mplus1p/OFL.txt",
+      "sha256": "da15da6b1496d4de18f97e2ad1b722ef8a1c121149c2c93b2cf7eac6ac27b35c",
+      "bytes": 4389,
+      "family": "mplus1p",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/mplusrounded1c/MPLUSRounded1c-Regular.ttf",
+      "file": "assets/fonts/mplusrounded1c/MPLUSRounded1c-Regular.ttf",
+      "sha256": "b75708b53e45b06d17d470aeeca5b766e3d1b3999f03f13ec4eb863ca846c14c",
+      "bytes": 3389792,
+      "family": "mplusrounded1c",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zenmarugothic/ZenMaruGothic-Regular.ttf",
+      "file": "assets/fonts/zenmarugothic/ZenMaruGothic-Regular.ttf",
+      "sha256": "a0c0b53543e0993ae2225e629c833f3d51495ad31720694ff112ce4ce11111ef",
+      "bytes": 3832756,
+      "family": "zenmarugothic",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zenmarugothic/OFL.txt",
+      "file": "assets/fonts/zenmarugothic/OFL.txt",
+      "sha256": "2a20cf7ce1909d8ee1e949095d340f7d7656705f7c810a2d6faf56800ad0cb3d",
+      "bytes": 4402,
+      "family": "zenmarugothic",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/kleeone/KleeOne-Regular.ttf",
+      "file": "assets/fonts/kleeone/KleeOne-Regular.ttf",
+      "sha256": "bf4063f030cc2ae6adf0a11424a1888e5c0eb4438f1f6d02f52294af868e9b3a",
+      "bytes": 8724204,
+      "family": "kleeone",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/kleeone/OFL.txt",
+      "file": "assets/fonts/kleeone/OFL.txt",
+      "sha256": "e376b0df8e8a2345a9533db6f0a5333a1107975569ad9d1973a7ee557161ca38",
+      "bytes": 4479,
+      "family": "kleeone",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/bizudgothic/BIZUDGothic-Regular.ttf",
+      "file": "assets/fonts/bizudgothic/BIZUDGothic-Regular.ttf",
+      "sha256": "709fcd41e3209fb765da750472f55ccdf925653e9fa7e1eb007cb65c8f749c75",
+      "bytes": 4667376,
+      "family": "bizudgothic",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/bizudgothic/OFL.txt",
+      "file": "assets/fonts/bizudgothic/OFL.txt",
+      "sha256": "e753d7155d53c747d037a445e584c8ecfca6dd79846db610417e282a736b28bc",
+      "bytes": 4408,
+      "family": "bizudgothic",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/dotgothic16/DotGothic16-Regular.ttf",
+      "file": "assets/fonts/dotgothic16/DotGothic16-Regular.ttf",
+      "sha256": "3ad9af88726d42b40f7f365f0dcac785af73cf20ea6f1d5b44e57cc21150b8f1",
+      "bytes": 2069236,
+      "family": "dotgothic16",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/dotgothic16/OFL.txt",
+      "file": "assets/fonts/dotgothic16/OFL.txt",
+      "sha256": "b6630c61ea078cacd7fabe37d14ffe557a0b45b06683374a9aa9e24262993e33",
+      "bytes": 4492,
+      "family": "dotgothic16",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/mplusrounded1c/METADATA.pb",
+      "file": "assets/fonts/mplusrounded1c/METADATA.pb",
+      "sha256": "2d18325f7c495995984d2ad3158244a2896a4f80095fd71cfc08a3bfd750c732",
+      "bytes": 2253,
+      "family": "mplusrounded1c",
+      "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+      "license": "OFL-1.1",
+      "role": "license declaration"
+    }
+  ],
+  "scope": "Pinned corpus and font assets. Screenshot backgrounds, when used, are separately pinned by the native background manifest. The Rounded M+ pinned Google metadata declares OFL; that directory has no separate OFL.txt."
+}

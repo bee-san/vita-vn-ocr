@@ -123,6 +123,162 @@ def test_kana_targets_cannot_be_derived_from_test_results(tmp_path):
         render.development_kana(path)
 
 
+def test_pair_shards_cap_rare_exposure_and_return_missing_bands_to_common():
+    from collections import Counter
+    schedule = render.pair_schedule(np.random.default_rng(1), 250, {0: ["日目"], 1: ["己巳"],
+                                                                  2: ["己已"], 3: ["寝寢"]})
+    assert Counter(schedule) == {0: 213, 1: 25, 2: 10, 3: 2}
+    assert Counter(render.pair_schedule(np.random.default_rng(1), 250, {0: ["日目"], 2: ["己已"]})) == {
+        0: 240, 2: 10}
+
+
+def test_generated_names_keep_common_kanji_dominant(monkeypatch):
+    from collections import Counter
+    from types import SimpleNamespace
+    monkeypatch.setattr(render, "R", SimpleNamespace(katakana=list("アカ"), hiragana=list("あか"),
+                                                     name_kanji=list("日寢"), name_probs=[.999, .001]))
+    rng, counts = np.random.default_rng(9), Counter()
+    for _ in range(2000):
+        _, label = render.random_name(rng)
+        counts.update(label)
+    assert counts["日"] > 1000 and 0 < counts["寢"] < counts["日"] / 100
+
+
+def test_crop_edges_preserve_ink_and_exclude_adjacent_rows():
+    line = {"fs": 16, "ix0": 20, "ix1": 80, "y0": 20, "y1": 36}
+    before, after = {"y0": 1, "y1": 15}, {"y0": 41, "y1": 56}
+    rng, boxes = np.random.default_rng(21), set()
+    for _ in range(100):
+        x, y, w, h = render.edge_box((16, 16, 68, 24), line, [before, line, after], (60, 100), rng)
+        assert x <= 20 and x + w >= 80 and y <= 20 and y + h >= 36
+        assert y >= 15 and y + h <= 41 and x >= 0 and x + w <= 100
+        boxes.add((x, y, w, h))
+    assert len(boxes) > 10
+
+
+def test_crop_edge_jitter_falls_back_when_fractional_neighbours_cannot_be_separated():
+    line = {"fs": 16, "ix0": 20, "ix1": 80, "y0": 20.3, "y1": 36.3}
+    before, after = {"y0": 1, "y1": 20.2}, {"y0": 36.4, "y1": 56}
+    original = (16, 16, 68, 24)
+    rng = np.random.default_rng(1)
+    for _ in range(20):
+        assert render.edge_box(original, line, [before, line, after], (60, 100), rng) == original
+
+
+@pytest.mark.parametrize("failure", ["no-region", "empty-extract", "wrong-target"])
+def test_unrenderable_pair_endpoint_fails_after_bounded_attempts(tmp_path, monkeypatch, failure):
+    from types import SimpleNamespace
+    resources = SimpleNamespace(kanji_pairs=True, pair_bands={0: ["人入"]}, kanji_policy=None,
+                                crop_edge_jitter=False, target_kana=set(), active_kanji=None)
+    monkeypatch.setattr(render, "R", resources)
+    monkeypatch.setattr(render, "MAX_PAIR_ATTEMPTS", 3)
+    monkeypatch.setattr(render, "sample_pair", lambda *args, **kwargs: ("人", "入"))
+    attempts = []
+    pixels = np.zeros((32, 64, 3), np.uint8)
+
+    def region(rng):
+        attempts.append(resources.active_kanji)
+        return None if failure == "no-region" else (pixels, [], None, {})
+
+    monkeypatch.setattr(render, "render_region", region)
+    monkeypatch.setattr(render, "extract", lambda *args, **kwargs: [] if failure == "empty-extract" else [
+        (pixels[:, :, 0], "日", (0, 0, 64, 32), {"kind": "dialogue"}, 0)])
+    with pytest.raises(RuntimeError, match="pair 人入 endpoint 人 after 3 attempts"):
+        render.run_shard((0, 2, 1, str(tmp_path), "grad", True))
+    assert attempts == ["人", "人", "人"]
+    assert not list(tmp_path.glob("*.npz"))
+
+
+def test_failed_pair_crops_keep_endpoint_and_success_resets_attempt_budget(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    resources = SimpleNamespace(kanji_pairs=True, pair_bands={0: ["人入"]}, kanji_policy=None,
+                                crop_edge_jitter=False, target_kana=set(), active_kanji=None)
+    monkeypatch.setattr(render, "R", resources)
+    monkeypatch.setattr(render, "MAX_PAIR_ATTEMPTS", 3)
+    monkeypatch.setattr(render, "sample_pair", lambda *args, **kwargs: ("人", "入"))
+    pixels = np.zeros((32, 64, 3), np.uint8)
+    monkeypatch.setattr(render, "render_region", lambda rng: (pixels, [], None, {}))
+    monkeypatch.setattr(render, "crop_meta", lambda *args, **kwargs: {})
+    attempts = []
+
+    def extract(*args, **kwargs):
+        attempts.append(resources.active_kanji)
+        if len(attempts) in (1, 3, 4):
+            return []
+        return [(pixels[:, :, 0], resources.active_kanji, (0, 0, 64, 32), {"kind": "dialogue"}, 0)]
+
+    monkeypatch.setattr(render, "extract", extract)
+    render.run_shard((0, 2, 1, str(tmp_path), "grad", True))
+    assert attempts == ["人", "人", "入", "入", "入"]
+    with np.load(tmp_path / "synth_00000.npz") as shard:
+        labels = json.loads(str(shard["labels"]))
+        metadata = json.loads(str(shard["meta"]))
+    assert labels == ["人", "入"]
+    assert [row["kanji_target"] for row in metadata] == labels
+    assert [row["kanji_pair"] for row in metadata] == ["人入", "人入"]
+    assert [row["kanji_band"] for row in metadata] == [0, 0]
+
+
+def test_pair_endpoints_ignore_generated_names_and_accept_natural_dialogue(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    resources = SimpleNamespace(kanji_pairs=True, pair_bands={0: ["人入"]}, kanji_policy=None,
+                                crop_edge_jitter=False, target_kana=set(), active_kanji=None)
+    monkeypatch.setattr(render, "R", resources)
+    monkeypatch.setattr(render, "sample_pair", lambda *args, **kwargs: ("人", "入"))
+    pixels = np.zeros((32, 64, 3), np.uint8)
+    monkeypatch.setattr(render, "render_region", lambda rng: (pixels, [], None, {}))
+    monkeypatch.setattr(render, "crop_meta", lambda meta, line, *args: {"kind": line["kind"]})
+    targets = []
+
+    def extract(*args, **kwargs):
+        target = resources.active_kanji
+        targets.append(target)
+        return [(np.full((32, 64), 1, np.uint8), target, (0, 0, 64, 32), {"kind": "name"}, 0),
+                (np.full((32, 64), 200, np.uint8), target, (0, 0, 64, 32), {"kind": "dialogue"}, 0)]
+
+    monkeypatch.setattr(render, "extract", extract)
+    render.run_shard((0, 2, 1, str(tmp_path), "grad", True))
+    with np.load(tmp_path / "synth_00000.npz") as shard:
+        labels = json.loads(str(shard["labels"]))
+        metadata = json.loads(str(shard["meta"]))
+        assert (shard["data"] == 200).all()
+    assert targets == labels == ["人", "入"]
+    assert [row["kind"] for row in metadata] == ["dialogue", "dialogue"]
+
+
+@pytest.mark.parametrize("enabled, draw, changed", [
+    (False, False, False), (True, False, False), (True, True, False), (True, True, True)])
+def test_extraction_records_actual_jitter_and_preserves_layout(monkeypatch, enabled, draw, changed):
+    from types import SimpleNamespace
+    pixels = np.zeros((40, 40, 3), np.uint8)
+    line = {"kind": "dialogue", "text": "人", "fs": 16, "ix0": 8, "ix1": 24, "y0": 8, "y1": 24}
+    original_line = dict(line)
+    original_box, moved_box = (4, 4, 24, 24), (2, 2, 28, 28)
+    monkeypatch.setattr(render, "R", SimpleNamespace(crop_edge_jitter=enabled, policy_sha256=None))
+    monkeypatch.setattr(render, "find_lines_ex", lambda *args: ([original_box], [0]))
+    edge_calls = []
+
+    def edge(box, *args):
+        edge_calls.append(box)
+        return moved_box if changed else box
+
+    monkeypatch.setattr(render, "edge_box", edge)
+    rng = SimpleNamespace(random=lambda: 0 if draw else 1)
+    crops = render.extract(pixels, [line], finder="grad", rng=rng, edge_jitter=enabled)
+    assert len(crops) == 1
+    crop, label, box, derived_line, dark = crops[0]
+    expected = moved_box if changed else original_box
+    assert box == expected and crop.shape == (expected[3], expected[2]) and label == "人"
+    assert line == original_line and derived_line is not line
+    assert len(edge_calls) == int(enabled and draw)
+    metadata = render.crop_meta({}, derived_line, dark)
+    assert metadata["crop_edge_jitter_enabled"] is enabled
+    assert metadata["crop_edge_jitter_applied"] is (enabled and draw)
+    assert metadata["crop_edge_jitter_changed"] is changed
+    assert metadata["original_crop_box"] == list(original_box)
+    assert metadata["crop_box"] == list(expected)
+
+
 def test_gate_rejects_regressions_dataset_changes_and_memory(monkeypatch, tmp_path):
     import copy
     import hashlib
@@ -139,6 +295,7 @@ def test_gate_rejects_regressions_dataset_changes_and_memory(monkeypatch, tmp_pa
     candidate = copy.deepcopy(base)
     candidate["sets"]["clannad-test"]["hiragana"]["errors"] = 3
     assert HG.check(base, base, candidate, blob)["accepted"]
+    assert HG.check(base, None, candidate, blob)["accepted"]
     candidate["sets"]["psp-test"]["all"]["errors"] = 11
     assert not HG.check(base, base, candidate, blob)["accepted"]
     candidate["datasets"]["clannad-test"]["split"] = "dev"
@@ -146,6 +303,7 @@ def test_gate_rejects_regressions_dataset_changes_and_memory(monkeypatch, tmp_pa
         HG.check(base, base, candidate, blob)
     candidate = copy.deepcopy(base)
     assert not HG.check(base, base, candidate, blob)["accepted"]
+    assert HG.check(base, None, candidate, blob)["failures"] == ["CLANNAD hiragana does not improve over baseline"]
     candidate["polarity"] = "native"
     with pytest.raises(ValueError, match="console polarity"):
         HG.check(base, base, candidate, blob)

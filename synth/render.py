@@ -48,6 +48,7 @@ light text only. Each crop's meta records the rule's verdict ("dark").
 """
 import argparse
 import colorsys
+import hashlib
 import io
 import json
 import math
@@ -65,6 +66,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 from bg_exclude import load_exclusions  # noqa: E402
 from common import DATA, find_lines, find_lines_ex, is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
+from kanji_policy import allowed_label, load_policy, name_weights, sample_pair  # noqa: E402
 from mask_finder import find_lines_mask  # noqa: E402
 
 FONT_DIRS = [DATA / "fonts", DATA / "fonts_extra"]   # the first one is never written to
@@ -115,19 +117,34 @@ R = None          # per-process resources, loaded before workers fork
 _FONTS = {}
 _AXES = {}
 _BG = {}
+MAX_PAIR_ATTEMPTS = 500
 
 
 class Resources:
-    def __init__(self, pool_limit=300_000, target_kana="", vocab=None):
+    def __init__(self, pool_limit=300_000, target_kana="", vocab=None, kanji_policy=None, kanji_pairs=False,
+                 crop_edge_jitter=False):
         self.vocab = load_vocab(vocab) if vocab else load_vocab()
         self.vocab_set = set(self.vocab)
+        self.kanji_policy = load_policy(kanji_policy) if kanji_policy else None
+        self.policy_sha256 = hashlib.sha256(Path(kanji_policy).read_bytes()).hexdigest() if kanji_policy else None
+        if self.kanji_policy and (not vocab or hashlib.sha256(Path(vocab).read_bytes()).hexdigest()
+                                 != self.kanji_policy["vocab_sha256"]):
+            raise ValueError("kanji policy requires its exact model vocabulary")
+        if kanji_pairs and (not self.kanji_policy or target_kana):
+            raise ValueError("kanji pairs require a policy and cannot mix with kana targeting")
+        self.kanji_pairs = kanji_pairs
+        self.crop_edge_jitter = crop_edge_jitter
+        self.active_kanji = None
         self.target_kana = set(target_kana)
         if any(not "ぁ" <= c <= "ゖ" or c not in self.vocab_set for c in self.target_kana):
             raise ValueError("targets must be hiragana in the model vocabulary")
         self.pools = {}
         for name in POOL_WEIGHT:
             text = (DATA / "corpus" / f"{name}.txt").read_text(encoding="utf-8")
-            self.pools[name] = [s for s in text.split("\n", pool_limit)[:pool_limit] if s]
+            self.pools[name] = [s for s in text.split("\n", pool_limit)[:pool_limit]
+                               if s and (not self.kanji_policy or allowed_label(s, self.kanji_policy))]
+            if not self.pools[name]:
+                raise ValueError(f"empty allowed corpus pool: {name}")
         self.target_pools = {}
         for c in sorted(self.target_kana):
             pools = {name: [s for s in items if c in s] for name, items in self.pools.items()}
@@ -153,6 +170,31 @@ class Resources:
         freq = json.loads((DATA / "corpus" / "char_freq.json").read_text(encoding="utf-8"))
         self.kanji = [c for c in freq if is_kanji(c) and c in self.vocab_set][:2000]
         self.name_kanji = self.kanji[:1200]
+        if self.kanji_policy:
+            self.name_kanji = [c for c in self.name_kanji if c in self.kanji_policy["ranks"]]
+            self.name_probs = name_weights(self.name_kanji, self.kanji_policy)
+        else:
+            # The corpus provides counts. Uniform names exaggerated uncommon glyphs.
+            counts = np.array([freq[c] for c in self.name_kanji], dtype=np.float64)
+            self.name_probs = counts / counts.sum()
+        self.kanji_contexts = {}
+        self.pair_bands = {}
+        if kanji_pairs:
+            connected = set("".join(self.kanji_policy["pairs"]))
+            for pool, texts in self.pools.items():
+                for text in texts:
+                    for c in set(text) & connected:
+                        self.kanji_contexts.setdefault(c, {}).setdefault(pool, []).append(text)
+            for pair in self.kanji_policy["pairs"]:
+                if all(c in self.kanji_contexts for c in pair):
+                    rank = max(self.kanji_policy["ranks"][c] for c in pair)
+                    band = 0 if rank <= 2000 else 1 if rank <= 3000 else 2 if rank <= 4000 else 3
+                    self.pair_bands.setdefault(band, []).append(pair)
+            if not self.pair_bands.get(0):
+                raise ValueError("no common similar-kanji pair has natural contexts")
+            print(f"natural-context pairs: {sum(map(len, self.pair_bands.values()))} / "
+                  f"{len(self.kanji_policy['pairs'])}; bands "
+                  f"{ {k: len(v) for k, v in self.pair_bands.items()} }", flush=True)
 
     def _fonts(self):
         out = []
@@ -275,10 +317,12 @@ def clean(s):
 def sample_text(rng, kind="dialogue"):
     """VN-like text: corpus chunks with VN punctuation, interjections and endings."""
     pools = R.pools
+    if getattr(R, "active_kanji", None):
+        pools = R.kanji_contexts[R.active_kanji]
     if getattr(R, "target_pools", None):
         c = rng.choice(sorted(R.target_pools))
         pools = R.target_pools[c]
-    if kind == "choice" and not getattr(R, "target_pools", None):
+    if kind == "choice" and not getattr(R, "target_pools", None) and not getattr(R, "active_kanji", None):
         items = R.pools["dialogue" if rng.random() < 0.5 else "narration"]
         s = clean(items[rng.integers(len(items))]).strip("「」『』")
         cut = [i + 1 for i, c in enumerate(s) if c in "、。！？" and 3 <= i < 18]
@@ -325,8 +369,8 @@ def random_name(rng):
         if rng.random() < 0.12:
             name += "・" + "".join(rng.choice(R.katakana, size=int(rng.integers(2, 5))))
     elif r < 0.90:
-        fam = "".join(rng.choice(R.name_kanji, size=int(rng.choice([1, 2, 2, 2, 3]))))
-        giv = "".join(rng.choice(R.name_kanji, size=int(rng.choice([1, 2, 2]))))
+        fam = "".join(rng.choice(R.name_kanji, size=int(rng.choice([1, 2, 2, 2, 3])), p=R.name_probs))
+        giv = "".join(rng.choice(R.name_kanji, size=int(rng.choice([1, 2, 2])), p=R.name_probs))
         name = fam + ("　" if rng.random() < 0.35 else "") + giv
         if rng.random() < 0.15:
             name = giv
@@ -827,6 +871,8 @@ def render_region(rng, platform=None):
                                  None: 0.38 if lay == "adv" else 0.70})
     elif lay == "nvl" and rng.random() < 0.15:
         name_mode = "line"
+    if R.kanji_pairs:
+        name_mode = None  # corrective endpoints come from the natural corpus, never generated names
     name_disp = name_label = None
     if name_mode:
         name_disp, name_label = random_name(rng)
@@ -1257,7 +1303,31 @@ def jpeg(arr, q, rng):
 
 # ----------------------------------------------------------------------------- crops
 
-def extract(img, layout, ink=None, finder="mask", rng=None, invert=False):
+def edge_box(box, line, layout, shape, rng):
+    """Vary spare margins without removing labelled ink or adding another text row."""
+    x, y, w, h = box
+    height, width = shape[:2]
+    margin = max(2, round(line["fs"] / 4))
+    x0 = max(0, min(x + int(rng.integers(-margin, margin // 2 + 1)), line["ix0"] - 1))
+    x1 = min(width, max(x + w + int(rng.integers(-margin // 2, margin + 1)), line["ix1"] + 1))
+    y0 = max(0, min(y + int(rng.integers(-margin, margin // 2 + 1)), math.floor(line["y0"])))
+    y1 = min(height, max(y + h + int(rng.integers(-margin // 2, margin + 1)), math.ceil(line["y1"])))
+    for other in layout:
+        if other is line:
+            continue
+        if other["y1"] <= line["y0"]:
+            y0 = max(y0, math.ceil(other["y1"]))
+        elif other["y0"] >= line["y1"]:
+            y1 = min(y1, math.floor(other["y0"]))
+        else:
+            return box
+    if (x0 > line["ix0"] or x1 < line["ix1"] or y0 > math.floor(line["y0"])
+            or y1 < math.ceil(line["y1"])):
+        return box  # fractional neighbour bounds may leave no safe integer-pixel margin
+    return (x0, y0, x1 - x0, y1 - y0) if x1 - x0 > 8 and y1 - y0 > 8 else box
+
+
+def extract(img, layout, ink=None, finder="mask", rng=None, invert=False, edge_jitter=False):
     """Match finder detections to rendered lines; return [(grey crop, label, box, line, dark)].
     dark is common.line_dark's verdict on the crop's box (the console's polarity rule);
     with invert, dark-text crops are returned inverted (255 - g)."""
@@ -1296,16 +1366,25 @@ def extract(img, layout, ink=None, finder="mask", rng=None, invert=False):
                 continue
             if x + w < w_img and abs(x + w - 4 - L["ix1"]) > 3:
                 continue
-        moved = False
+        moved, jitter_applied, jitter_changed = False, False, False
+        original_box = (int(x), int(y), int(w), int(h))
         if rng is not None and finder != "grad" and rng.random() < 0.3:   # finder-to-finder jitter
             j = rng.integers(-1, 4, 4)
             x0, y0 = max(0, x - int(j[0])), max(0, y - int(j[1]))
             x1, y1 = min(w_img, x + w + int(j[2])), min(h_img, y + h + int(j[3]))
             if x1 - x0 > 8 and y1 - y0 > 8:
                 x, y, w, h, moved = x0, y0, x1 - x0, y1 - y0, True
+        if edge_jitter and rng is not None and rng.random() < .4:
+            jitter_applied = True
+            box = edge_box((x, y, w, h), L, layout, img.shape, rng)
+            jitter_changed = box != (x, y, w, h)
+            moved |= jitter_changed
+            x, y, w, h = box
         dark = int(flags[d]) if flags is not None and not moved else line_dark(grey, (x, y, w, h))
         g = grey[y:y + h, x:x + w]
-        out.append((255 - g if (invert and dark) else g.copy(), L["text"], (x, y, w, h), L, dark))
+        line = dict(L, original_crop_box=list(original_box), crop_box=list(map(int, (x, y, w, h))),
+                    crop_edge_jitter_applied=jitter_applied, crop_edge_jitter_changed=jitter_changed)
+        out.append((255 - g if (invert and dark) else g.copy(), L["text"], (x, y, w, h), line, dark))
     return out
 
 
@@ -1316,12 +1395,30 @@ def crop_meta(meta, L, dark=0, inverted=False):
         m[k] = bool(L.get(k, False))
     m["dark"] = bool(dark)
     m["inverted"] = bool(inverted and dark)
+    m["crop_edge_jitter_enabled"] = R.crop_edge_jitter
+    for key in ("original_crop_box", "crop_box", "crop_edge_jitter_applied", "crop_edge_jitter_changed"):
+        m[key] = L[key]
+    if R.policy_sha256:
+        m["kanji_policy_sha256"] = R.policy_sha256
+        m["kanji_pairs"] = R.kanji_pairs
     return m
 
 
-def init(pool_limit=300_000, target_kana="", vocab=None):
+def init(pool_limit=300_000, target_kana="", vocab=None, kanji_policy=None, kanji_pairs=False,
+         crop_edge_jitter=False):
     global R
-    R = Resources(pool_limit, target_kana, vocab)
+    R = Resources(pool_limit, target_kana, vocab, kanji_policy, kanji_pairs, crop_edge_jitter)
+
+
+def pair_schedule(rng, n_pairs, bands):
+    """Finite rare-band caps; missing rare contexts return their budget to common pairs."""
+    schedule = []
+    for band, fraction in ((1, .10), (2, .04), (3, .01)):
+        if bands.get(band):
+            schedule.extend([band] * int(n_pairs * fraction))
+    schedule.extend([0] * (n_pairs - len(schedule)))
+    rng.shuffle(schedule)
+    return schedule
 
 
 def development_kana(path):
@@ -1345,8 +1442,22 @@ def run_shard(job):
     if path.exists():
         return idx, 0, 0, 0, 0.0
     rng = np.random.default_rng(seed + idx * 1_000_003)
+    if R.kanji_pairs and n_lines % 2:
+        raise ValueError("paired kanji shards need an even number of crops")
+    schedule = pair_schedule(rng, n_lines // 2, R.pair_bands) if R.kanji_pairs else []
+    pair, pending, band, attempts = "", [], None, 0
     t0, crops, labels, metas, regions, errors = time.time(), [], [], [], 0, 0
     while len(crops) < n_lines:
+        if R.kanji_pairs:
+            if not pending:
+                band = schedule.pop()
+                pair = sample_pair(rng, R.kanji_policy, pairs=R.pair_bands[band])
+                pending = list(pair)
+            R.active_kanji = pending[0]
+            attempts += 1
+            if attempts > MAX_PAIR_ATTEMPTS:
+                raise RuntimeError(f"shard {idx}: cannot render pair {''.join(pair)} endpoint "
+                                   f"{R.active_kanji} after {MAX_PAIR_ATTEMPTS} attempts")
         try:
             r = render_region(rng)
         except Exception as e:  # noqa: BLE001 - a rare bad draw must not kill a long render
@@ -1359,14 +1470,24 @@ def run_shard(job):
         if r is None:
             continue
         img, layout, ink, meta = r
-        got = extract(img, layout, ink, finder, rng, invert)
+        got = extract(img, layout, ink, finder, rng, invert, edge_jitter=R.crop_edge_jitter)
         regions += 1
         for g, label, _, L, dark in got or []:
             if R.target_kana and not any(c in label for c in R.target_kana):
                 continue
+            if R.active_kanji and R.active_kanji not in label:
+                continue
+            if R.kanji_pairs and L["kind"] == "name":
+                continue
+            if R.kanji_policy and not allowed_label(label, R.kanji_policy):
+                raise ValueError("rendered label escaped the kanji allowlist")
             crops.append(g)
             labels.append(label)
             metas.append(crop_meta(meta, L, dark, invert))
+            if R.kanji_pairs:
+                metas[-1].update(kanji_pair="".join(pair), kanji_target=pending.pop(0), kanji_band=band)
+                attempts = 0
+                break
     crops, labels, metas = crops[:n_lines], labels[:n_lines], metas[:n_lines]
     shapes = np.array([c.shape for c in crops], np.int32)
     offsets = np.concatenate([[0], np.cumsum(shapes[:, 0] * shapes[:, 1])]).astype(np.int64)
@@ -1448,12 +1569,18 @@ def main():
     targets.add_argument("--target-kana", default="",
                          help="oversample natural corpus lines containing these development kana")
     targets.add_argument("--target-report", type=Path, help="derive kana from a development-only eval/run.py report")
+    ap.add_argument("--kanji-policy", type=Path, help="Jiten allowlist and bounded similarity policy")
+    ap.add_argument("--kanji-pairs", action="store_true", help="balanced similar-kanji natural contexts in shards")
+    ap.add_argument("--crop-edge-jitter", action="store_true", help="vary spare crop margins; keep labelled ink")
     ap.add_argument("--vocab", type=Path, help="exact restored model vocabulary")
     args = ap.parse_args()
     if args.target_report:
         args.target_kana = development_kana(args.target_report)
+    if args.kanji_pairs and args.mode != "shards":
+        ap.error("--kanji-pairs requires shards mode")
     cv2.setNumThreads(1)
-    init(target_kana=args.target_kana, vocab=args.vocab)
+    init(target_kana=args.target_kana, vocab=args.vocab, kanji_policy=args.kanji_policy,
+         kanji_pairs=args.kanji_pairs, crop_edge_jitter=args.crop_edge_jitter)
     print(f"fonts {len(R.fonts)} in {sorted(R.by_cat)}, bg vita {len(R.bg_vita)} psp {len(R.bg_psp)}, "
           f"vocab {len(R.vocab)}", flush=True)
     if args.mode == "preview":

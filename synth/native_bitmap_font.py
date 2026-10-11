@@ -235,6 +235,27 @@ class NativeBitmapFont(ImageFont.FreeTypeFont):
         """Unicode code points with canonical CP932 glyphs and positive metrics."""
         return set(self._coverage)
 
+    def ambiguous_glyph_groups(self):
+        """Distinct labels with identical nonblank cells and metrics in either bank.
+
+        This is source-level equality, independent of scaling. Blank spacing
+        characters are excluded because their layout, rather than ink, matters.
+        The adapter retains its raw coverage; training can fall back per region.
+        """
+        cell_bytes = self.glyphs.width * self.glyphs.height // 2
+        groups = set()
+        for strike in (0, 1):
+            seen = collections.defaultdict(list)
+            for index, code in enumerate(self.glyphs.codes):
+                if code not in self._records:
+                    continue
+                offset = (strike * len(self.glyphs.codes) + index) * cell_bytes
+                raw = self.glyphs._payload[offset:offset + cell_bytes]
+                if any(raw):
+                    seen[(raw, self._records[code].raw)].append(_code_bytes(code)[1])
+            groups.update("".join(sorted(chars)) for chars in seen.values() if len(chars) > 1)
+        return tuple(sorted(groups))
+
     def _text(self, text):
         if isinstance(text, (bytes, bytearray)):
             raw = bytes(text)

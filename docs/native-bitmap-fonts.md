@@ -27,6 +27,19 @@ an unsupported glyph uses one covered OFL font for the entire region. It never
 substitutes a different Unicode label or renders a missing-glyph box. Ruby
 distractor readings also respect the selected font's coverage.
 
+Source inspection found no blank or placeholder glyphs in the supported model
+vocabulary. Across the complete font it found all 52 ASCII/fullwidth Latin letter
+pairs with identical cells and metrics, plus an identical horizontal-bar pair
+in one mincho face. Nineteen pairs have both labels in the model vocabulary;
+other pairs still trigger fallback for their supported endpoint. Those labels
+cannot be distinguished from these pixels.
+The loader discovers exact nonblank cell-and-metric duplicates in either bank
+and excludes every endpoint from training eligibility. Affected regions use
+whole-region OFL fallback with unchanged labels. Raw adapter coverage stays
+unchanged; the dataset binding records both coverage counts and duplicate groups.
+Eligible model coverage is 3,421 characters in three faces and 3,420 in the
+remaining mincho face; unsupported or ambiguous lines use the existing OFL fonts.
+
 Use the existing hash-verified corpus, reviewed scenery and bounded Jiten
 policy with an explicit source directory and probability:
 
@@ -75,11 +88,11 @@ Validation uses generated binary fixtures, not extracted proprietary glyphs:
 
 All four local fonts also passed 32 Pillow baseline/stroke checks at sizes
 14, 20.5, 32 and 64 across both banks; painted bounds matched reported bounds.
-The final 64-crop native-font smoke run produced 63 native and one covered OFL
-fallback crop from 54 regions, with zero rendering exceptions. An independent
+The final 64-crop native-font smoke run produced 61 native and three covered OFL
+fallback crops from 53 regions, with zero rendering exceptions. An independent
 per-glyph replay exactly reproduced stored pixels and labels, with no clipped
 native core strokes, unsupported glyphs or CTC-infeasible crops. It included
-31 changed edge-jitter crops and four ruby cases. Images were visually reviewed
+29 changed edge-jitter crops and four ruby cases. Images were visually reviewed
 locally and remain ignored. This validates rendering, not OCR accuracy.
 
 Train and development books and scenery games remain separate. Do not train on

@@ -85,6 +85,15 @@ def test_pro_keeps_raw_triplets_and_exposes_signed_bearing_hints():
     assert record.advance_hint == 3
 
 
+def test_training_ambiguity_requires_identical_nonblank_ink_and_metrics():
+    assert _font(codes=(0x41, 0x42)).ambiguous_glyph_groups() == ("AB",)
+    assert _font(codes=(0x41, 0x42), records={66: (0, 0, 3)}).ambiguous_glyph_groups() == ()
+    blank = [[[0] * 4, [0] * 4] for _ in range(2)]
+    assert _font(codes=(0x41, 0x42), banks=blank).ambiguous_glyph_groups() == ()
+    one_bank = [[[15] * 4, [15] * 4], [[15] * 4, [0, 15, 15, 15]]]
+    assert _font(codes=(0x41, 0x42), banks=one_bank).ambiguous_glyph_groups() == ("AB",)
+
+
 @pytest.mark.parametrize("index", [-1, 67, 1000000])
 def test_pro_record_bounds_do_not_wrap(index):
     with pytest.raises((IndexError, ValueError)):

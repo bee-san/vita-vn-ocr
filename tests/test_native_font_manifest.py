@@ -18,7 +18,8 @@ def pinned(tmp_path):
     codes = sorted(int.from_bytes(c.encode("cp932"), "big") for c in "A　あっ")
     blob = (struct.pack("<HHI", 8, 8, len(codes)) + bytes(8)
             + struct.pack(f"<{len(codes)}H", *codes)
-            + bytes([0xf0] * 32 * len(codes)) + bytes([0x0f] * 32 * len(codes)))
+            + b"".join(bytes([0xf0 - i * 16] * 32) for i in range(len(codes)))
+            + b"".join(bytes([0x0f - i] * 32) for i in range(len(codes))))
     count = max(N.metric_index(code) for code in codes) + 1
     pro = struct.pack("<I", count) + bytes(12) + bytes([0, 0, 8] * count)
     record = {"family": "generated_bitmap", "category": "gothic"}
@@ -80,6 +81,31 @@ def test_missing_glyph_uses_one_covered_fallback_for_the_whole_region(pinned, mo
     assert render.pick_font(rng, set("あっ"), "vita")[1] == "generated_bitmap"
     assert render.pick_font(rng, set("あ土"), "psp") == fallback
     assert render.pick_font(rng, {"龜"}, "psp") is None
+
+
+def test_identical_ink_and_metrics_use_whole_region_fallback(pinned, monkeypatch):
+    manifest, root, record = pinned
+    path = root / record["fnt"]["file"]
+    data = bytearray(path.read_bytes())
+    # A and full-width space are distinct generated fixture labels. Give them
+    # equal nonblank cells in one bank, preserving their equal metric triplets.
+    start = 16 + 2 * 4
+    data[start + 32:start + 64] = data[start:start + 32]
+    path.write_bytes(data)
+    pin = json.loads(manifest.read_text())
+    pin["fonts"][0]["fnt"]["sha256"] = hashlib.sha256(data).hexdigest()
+    manifest.write_text(json.dumps(pin))
+    faces, rows, binding = M.load_manifest(manifest, root)
+    assert next(iter(faces.values())).coverage == {ord(c) for c in "A　あっ"}
+    assert rows[0][3] == set("あっ")
+    assert binding["fonts"][0]["visually_ambiguous_groups"] == ["A　"]
+    fallback = ("gothic", "fixture_ofl", root / "fixture.ttf", set("A　あっ"))
+    monkeypatch.setattr(render, "R", SimpleNamespace(native_font_probability=1,
+                       native_faces=faces, native_fonts=rows,
+                       by_cat={"gothic": [fallback]}, fonts=[fallback]))
+    rng = np.random.default_rng(42)
+    assert render.pick_font(rng, set("Aあ"), "vita") == fallback
+    assert render.pick_font(rng, set("あっ"), "vita")[1] == "generated_bitmap"
 
 
 def test_disabled_native_fonts_preserve_rng_sequence(pinned, monkeypatch):

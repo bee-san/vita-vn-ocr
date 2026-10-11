@@ -59,10 +59,14 @@ def load_manifest(manifest_path, root):
         if "　" not in coverage:
             raise ValueError("native renderer fonts require a full-width space advance")
         faces[path] = font
-        rows.append((category, name, path, coverage))
+        ambiguities = font.ambiguous_glyph_groups()
+        training_coverage = coverage - set("".join(ambiguities))
+        rows.append((category, name, path, training_coverage))
         identities.append({"family": name, "category": category,
                            "fnt": record["fnt"], "pro": record["pro"],
                            "canonical_unicode_coverage": len(coverage),
+                           "unambiguous_training_coverage": len(training_coverage),
+                           "visually_ambiguous_groups": list(ambiguities),
                            "source_cell": [font.glyphs.width, font.glyphs.height]})
     binding = {"manifest_sha256": hashlib.sha256(raw).hexdigest(), "fonts": identities,
                "redistribute": False, "sampling_unit": "eligible rendered region",

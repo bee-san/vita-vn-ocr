@@ -4,7 +4,7 @@ created: 2026-10-10
 updated: 2026-10-11
 historical_snapshot_utc: "2026-10-10 12:33"
 latest_checkpoint_date: 2026-10-11
-latest_checkpoint_utc: "2026-10-11 17:03"
+latest_checkpoint_utc: "2026-10-11 17:07:49"
 interruption_checkpoint_utc: "2026-10-11 15:34:40"
 settings_controls_verified_by_utc: "2026-10-11 15:43:54"
 latest_request_utc: "2026-10-11 15:45"
@@ -14,7 +14,7 @@ tags: [vita, device, handoff]
 
 # Current device state snapshot
 
-**Latest October 11 checkpoint, 17:03 UTC:** overlay PR #38 at
+**Latest October 11 checkpoint, 17:07:49 UTC:** overlay PR #38 at
 `ee796f1ea683d84a668bbc52961bf146a9f9986c` passed exact-head host/Vita CI and
 merged as `dc0bea53a6a8d075d4598cea27708953ed467666`. It adds default
 whole-word/optional character highlighting and Japanese-filtered recognized
@@ -48,12 +48,14 @@ returned. A revised local helper preserves all prior library imports and resolve
 sorting exports only for guarded commands. Its complete native upload/readback,
 accepted reboot and fresh `livearea.sort` capabilities prove activation. Its
 actual coordinator passed 41 sanitizer cases. All 59 current bubble coordinates
-match the uploaded, fully read-back plan. After the user made Settings visible, native status recorded physical scoped
+match the uploaded, fully read-back plan. After the user made Settings visible,
+native status recorded physical scoped
 approval (`approved`, persistent, result zero). The guarded sort returned
 `0x80010016` (`SCE_ERROR_ERRNO_EINVAL`, decoded with `psp2_err`); the full
 post-error layout still matches all 59 original coordinates. The failed stage
 is not established. The user then canceled icon sorting; no further move or
-helper deployment is authorized by that request. Game-header taps and physical font readability remain pending.
+helper deployment is authorized by that request. Game-header taps and physical
+font readability remain pending.
 After sorting was canceled, Settings was relaunched and confirmed foreground.
 A final complete configuration readback is byte-identical to the 2,973-byte
 whole-word file above, retaining VOCR, Japanese-only ON and Daijirin before

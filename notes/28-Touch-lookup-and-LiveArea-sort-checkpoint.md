@@ -2,7 +2,7 @@
 title: Touch lookup and native LiveArea sorting checkpoint
 created: 2026-10-11
 updated: 2026-10-11
-checkpoint_utc: "2026-10-11 17:03"
+checkpoint_utc: "2026-10-11 17:07:49"
 interruption_checkpoint_utc: "2026-10-11 15:34:40"
 settings_controls_verified_by_utc: "2026-10-11 15:43:54"
 status: settings-highlight-controls-verified-game-touch-pending
@@ -23,7 +23,7 @@ revised local native sorting helper has booted and advertises its operation.
 Its verified 59-bubble plan is uploaded. Physical approval was subsequently
 recorded; a sorting call returned an error and the full layout stayed unchanged.
 The user canceled sorting, so no further sorting work is planned. This checkpoint
-was refreshed at 17:03 UTC on October 11.
+was refreshed at 17:07:49 UTC on October 11.
 
 Earlier working VOCR/Meiki, region controls, repaired Settings preferences and
 the 374.066-second quiet connection result remain dated evidence in
@@ -129,8 +129,8 @@ SHA-256 `ab88dcfca340ccf0df048d6e8e86527feeb9cc29dd8fab35ccffa6bf046c9743`.
 The first Character action was at 15:41:20 UTC; a clock check immediately after
 all four actions bounds completion to no later than 15:43:54 UTC. The aggregate
 receipt has no own timestamp. Settings-card taps are separate from recognized
-header taps in a game. Physical font readability, fresh Shell loaded-module
-proof was subsequently obtained; game-touch behavior remains pending.
+header taps in a game. Fresh Shell loaded-module proof was subsequently
+obtained; physical font readability and game-touch behavior remain pending.
 
 **Verified publication, TL06:** [stable v0.7.9](https://github.com/bee-san/vita-jp-overlay/releases/tag/v0.7.9)
 was published at 15:44:16 UTC, targeting merge
@@ -264,8 +264,8 @@ A fresh complete inventory still contained 59 bubbles, nine page records
 (including the special and empty tail pages) and zero orphans. All source
 coordinates matched the 1,904-byte plan, SHA-256
 `81b343f422a7772f5bc87da97217bd2949f5b291257ca04c1271766c4f21b6b1`.
-The uploaded plan has an identical full readback. Genre placement remains the
-same: visual novels, Japanese games, other games, then tools.
+The uploaded plan has an identical full readback. Its proposed genre placement
+is visual novels, Japanese games, other games, then tools; it was not applied.
 
 The initial scoped access request returned agent `VAU_BUSY` (`-2`) while system
 UI covered Settings; an unapproved guarded sort returned `VAU_DENIED` (`-4`).

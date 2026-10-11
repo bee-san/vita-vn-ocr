@@ -1,0 +1,198 @@
+{
+  "kind": "ARM emulator cropped-line recognition benchmark",
+  "scope": {
+    "module_abi": 1,
+    "frozen_recognizer": true,
+    "detector_included": false,
+    "physical_console_tested": false,
+    "physical_console_speed_estimate": false,
+    "final_abi2_baseline_equivalence": {
+      "measured_separately": true,
+      "cases": 16,
+      "results": "results-module.json"
+    }
+  },
+  "environment": {
+    "host": "Linux-7.2.6-1-cachyos-x86_64-with-glibc2.44",
+    "host_cpu": "Intel Core Ultra 7 165U",
+    "emulator": "Vita3K",
+    "emulator_version": "0.2.1",
+    "emulator_build": "4154-b75d5e62",
+    "xvfb": true,
+    "sdl_video_driver": "x11",
+    "renderer": "OpenGL",
+    "vitasdk_release": "sdk-snapshot-20260926.790.1",
+    "arm_gcc_version": "15.2.0",
+    "target_cpu": "cortex-a9",
+    "target_fpu": "neon",
+    "target_float_abi": "hard",
+    "python_version": "3.11.15",
+    "numpy_version": "2.2.6",
+    "opencv_version": "4.12.0"
+  },
+  "provenance": {
+    "mnn_version": "3.2.0",
+    "mnn_commit": "ebdada82634300956e08bd4056ecfeb1e4f23b32",
+    "mnn_cpp_exceptions_enabled": true,
+    "mnn_library_sha256": "c83546bf53f7d90f147e34efb9f59159b5c30f8be44388fdb82c3fa5b52b5b68",
+    "module_sha256": "79edec1d1877a1b4cdb1071bce18ea1233de4ef1839319d7ffe1f20e82795b10",
+    "module_bytes": 1149944,
+    "vpk_sha256": "1c7675a20c49fe46b826321c92804cda2faa649389654d958d1c218686c4fce1",
+    "model_sha256": "b7ba3219cd1bfeef5cb6b42ef6686683b991c6561b7ad3b1c41d32817deba21e",
+    "frozen_sources_sha256": {
+      "runtime.h": "0a37260d0e33b3c2f7ca098d89f8a6a6f1a2b37fa1b17983e6d4edfb36aadcbb",
+      "module/api.h": "8efd5bca989a57f9cfbc249a0420e7c04f555e768b65b60a7a3e04dc5b20c96b",
+      "preprocess.c": "02793943ccfcaf374eb4484e07fc8e892215a947b2654748a06b5007935e1c53",
+      "preprocess.h": "88f772d141a4c7db4c8622578fa2b28642114fd8161e2b16c59b32007a82be50",
+      "decode.c": "7a2e654b207b260306982a6e266ac0240cc38c20b437a370320aef6ef5e54a79",
+      "decode.h": "27ad16a639f5d0f77db1f0eb4fe86a4a2272c9987eb5e4faf44ff54d8ffc204c",
+      "libMNN.a": "c83546bf53f7d90f147e34efb9f59159b5c30f8be44388fdb82c3fa5b52b5b68",
+      "mnn-vita.patch": "a780d1252f24e1c04e01f2245ae07723b8edb673aa83a031e6e9b25f970bc052",
+      "runtime.cpp": "04f1d7aa1e763bbbe88ec9e9168f8c2d4eae7cce30668183731c0a1ac977eec2"
+    },
+    "private_harness_sha256": {
+      "prepare.py": "c79bf651690675d51d0c2c435b31de986c69d14c138e0d40763f5a498b73b9a8",
+      "run.py": "3d6abae3ebb68a1b47f50bfb275ac631ca6a4e77588ff35290d9df637ffdf4b8",
+      "probe/main.c": "45e344103e51a0bd16ef68421fa6e53fab7fcc241817d44fd7488c4d6cd9341e",
+      "probe/CMakeLists.txt": "4e26d60ab7bb14e3e3e5ba0d82a288f0856b902fd1012589e06ae7b69d081821"
+    },
+    "private_reference_outputs_sha256": "108fa5d93a99d71d57152f23fb3a494f962537d127266d4e4bfacff19da2c4cc",
+    "private_fixture_metadata_sha256": "dd21d66a68d1433963ba363415ff6754e0a2041b47a8eef4befe7a817924cd89",
+    "evaluation_metrics_sha256": "67489db34a2a89219998cf29ec640d903eb6980f58394cccc71505b1ee4f5c38"
+  },
+  "manifests": {
+    "vita-test": {
+      "path": "eval/manifests/vita-test.jsonl",
+      "sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+      "hand_checked": true,
+      "uncertain_lines_excluded": true,
+      "crop_padding_pixels": 4,
+      "lines": 206
+    },
+    "psp-test": {
+      "path": "eval/manifests/psp-test.jsonl",
+      "sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+      "hand_checked": true,
+      "uncertain_lines_excluded": true,
+      "crop_padding_pixels": 2,
+      "lines": 245
+    }
+  },
+  "accuracy": {
+    "vita-test": {
+      "lines": 206,
+      "normalized_characters": 2564,
+      "character_errors": 37,
+      "cer": 0.014430577223088924,
+      "exact_lines": 178
+    },
+    "psp-test": {
+      "lines": 245,
+      "normalized_characters": 2510,
+      "character_errors": 92,
+      "cer": 0.036653386454183264,
+      "exact_lines": 194
+    }
+  },
+  "host_comparison": {
+    "decoded_text_identical_cases": 436,
+    "decoded_text_different_cases": 15,
+    "raw_output_identical_cases": 0,
+    "raw_output_different_cases": 451
+  },
+  "checks": {
+    "cases": 451,
+    "preprocessing_tensors_bytes_each": 368640,
+    "preprocessing_tensor_identical_cases": 451,
+    "preprocessing_tensor_different_cases": 0,
+    "runtime_error_cases": 0,
+    "allocation_failure_cases": 0,
+    "tainted_cases": 0,
+    "retained_pool_cases": 0,
+    "repeat_cases": 4,
+    "repeat_raw_output_differences": 0,
+    "module_stop_rc": 0,
+    "module_unload_rc": 0,
+    "module_unload_status": 0,
+    "workspace_free_rc": 0,
+    "metadata_free_rc": 0,
+    "process_exit_code": 0
+  },
+  "memory": {
+    "pool_capacity_bytes": 16777216,
+    "pool_peak_bytes": 13090176,
+    "pool_max_retained_bytes": 0,
+    "metadata_capacity_bytes": 4194304,
+    "metadata_brk_highwater_bytes": 2764800,
+    "metadata_used_after_min_bytes": 40232,
+    "metadata_used_after_max_bytes": 40232,
+    "metadata_snapshots": 451,
+    "metadata_used_after_stop_bytes": 40160,
+    "preprocessing_scratch_bytes": 13440
+  },
+  "commands": {
+    "prepare": [
+      "/home/bee/Documents/src/ps-vita-ocr-lab/.venv/bin/python",
+      "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/prepare.py"
+    ],
+    "configure": {
+      "environment": {
+        "VITASDK": "/home/bee/Documents/src/ps-vita-ocr-lab/tools/vitasdk"
+      },
+      "argv": [
+        "cmake",
+        "-S",
+        "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/probe",
+        "-B",
+        "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/build",
+        "-G",
+        "Ninja",
+        "-DMEIKI_MODULE=/home/bee/Documents/src/ps-vita-ocr-lab/module-test/recognizer-final-frozen/meiki-engine.suprx"
+      ]
+    },
+    "build": {
+      "environment": {
+        "VITASDK": "/home/bee/Documents/src/ps-vita-ocr-lab/tools/vitasdk"
+      },
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/build",
+        "-j4"
+      ]
+    },
+    "run_wrapper": [
+      "/home/bee/Documents/src/ps-vita-ocr-lab/.venv/bin/python",
+      "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/run.py",
+      "--vpk",
+      "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/build/meiki-arm-benchmark.vpk",
+      "--out",
+      "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/emulator-final-451",
+      "--timeout",
+      "3600"
+    ],
+    "emulator": {
+      "environment": {
+        "SDL_VIDEODRIVER": "x11",
+        "XDG_CONFIG_HOME": "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/emulator-final-451/config",
+        "XDG_DATA_HOME": "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/emulator-final-451/data",
+        "XDG_CACHE_HOME": "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/emulator-final-451/cache"
+      },
+      "argv": [
+        "timeout",
+        "3600",
+        "xvfb-run",
+        "-a",
+        "-s",
+        "-screen 0 1280x720x24",
+        "vita3k",
+        "--config-location",
+        "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/emulator-final-451/config.yml",
+        "--load-config",
+        "--frontend",
+        "sdl",
+        "/home/bee/Documents/src/ps-vita-ocr-lab/arm-benchmark/build/meiki-arm-benchmark.vpk"
+      ]
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "host": {
+    "kind": "host static MNN, same C binding; not physical Vita RAM or speed",
+    "cases": 451,
+    "workspace_bytes": 16777216,
+    "peak_model_tensor_bytes": 13235648,
+    "max_retained_pool_bytes": 0,
+    "c_decoder_text_differences": 0,
+    "reference_text_differences": 0,
+    "library_sha256": "bbbe12591df4c4a0b992800478c02bf216de93d0862757f8933e0f31455298b6"
+  },
+  "emulator": {
+    "version": "Vita3K v0.2.1 4154-b75d5e62",
+    "target": "VitaSDK ARMv7-A NEON, hard float, one inference thread",
+    "cases": 8,
+    "unique_crops": 4,
+    "completed": true,
+    "host_text_matches": 6,
+    "raw_output_repeat_differences": 0,
+    "peak_model_tensor_bytes": 13090176,
+    "workspace_bytes": 16777216,
+    "newlib_heap_reservation_bytes": 4194304,
+    "workspace_free_rc": 0,
+    "all_arenas_released": true,
+    "steady_newlib_used_after_bytes": [
+      104928,
+      105128,
+      105128,
+      105128,
+      105128,
+      105128,
+      105128,
+      105128
+    ],
+    "text_difference": "One PSP punctuation crop differs between ARM and PC on both repeats; full ARM cropped-line CER is recorded separately in results-arm.json",
+    "probe_version": "1.02",
+    "vpk_sha256": "94004704cabd0bb70fef5d3dfa0365d12c6f1aac7cb45d912f883f9c5a2dab36",
+    "code_source_commit": "b62c3238aa21405c3c5ff05641d1e2af5f0c7062",
+    "mnn_library_sha256": "c83546bf53f7d90f147e34efb9f59159b5c30f8be44388fdb82c3fa5b52b5b68"
+  },
+  "physical_vita": {
+    "status": "awaiting manual test",
+    "in_game_and_adrenaline": "not yet verified"
+  },
+  "limits": "Pool peaks include model/tensor/TopK allocations, not total process RAM. Emulator memory sizes and timings are not physical measurements."
+}

@@ -1,0 +1,64 @@
+{
+  "meiki": {
+    "repository": "https://github.com/rtr46/meikiocr",
+    "commit": "52aa607ecdc1038c7bf390f37cd9a8b306e8a08a",
+    "version": "0.3.5",
+    "code_license": "Apache-2.0"
+  },
+  "weights": {
+    "repository": "https://huggingface.co/rtr46/meiki.txt.recognition.v0",
+    "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+    "filename": "meiki.text.rec.v0.960x32.onnx",
+    "bytes": 18593254,
+    "sha256": "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000",
+    "license": "LGPL-3.0"
+  },
+  "prepared": {
+    "filename": "meiki-stream.onnx",
+    "sha256": "683d52a9d1bcd3885fc8b0f38d5d1d92d3196b4f11513c5e1ec5a5ea2c44b9cd",
+    "batch": 1,
+    "class_chunk": 128,
+    "original_head_tensor_bytes": 11017440,
+    "prepared_head_tensor_bytes": 322560
+  },
+  "converted": {
+    "filename": "meiki-stream-int8.mnn",
+    "bytes": 5392856,
+    "sha256": "b7ba3219cd1bfeef5cb6b42ef6686683b991c6561b7ad3b1c41d32817deba21e",
+    "weight_quantization_bits": 8,
+    "license": "LGPL-3.0",
+    "tensor_precision": "float32",
+    "mnn_biz_code": "meiki-vita",
+    "mnn_uuid": "88dfd245-536c-4529-877b-e9f1eceafce0"
+  },
+  "mnn": {
+    "repository": "https://github.com/alibaba/MNN",
+    "commit": "ebdada82634300956e08bd4056ecfeb1e4f23b32",
+    "version": "3.2.0",
+    "license": "Apache-2.0",
+    "patch": "mnn-vita.patch",
+    "runtime_memory_mode": "Memory_Low",
+    "runtime_convolution_activations": "dynamic int8 in low-memory CPU convolutions; other tensor interfaces float32",
+    "embedding_exceptions_enabled": true
+  },
+  "vitasdk": {
+    "repository": "https://github.com/vitasdk/autobuilds",
+    "release": "sdk-snapshot-20260926.790.1",
+    "sdk_version": "0.20260926.321",
+    "gcc_version": "15.2.0",
+    "sha256": "87b111ff350c1f36bde1c2923e57467c1f86b044d54bc616631260486f2a512c"
+  },
+  "arena_source": {
+    "repository": "https://github.com/bee-san/vita-jp-overlay",
+    "license": "GPL-3.0-or-later",
+    "commit": "61a2a50ab93953753b7531ec408621f36618cf98",
+    "file": "core/ocr_heap.c"
+  },
+  "opencv_resize_source": {
+    "repository": "https://github.com/opencv/opencv",
+    "version": "4.12.0",
+    "path": "modules/imgproc/src/resize.cpp",
+    "sha256": "89db2e4de92e1d03890f3e7fe517f895a36514f355da097b2c8e4c55fc1847e4",
+    "license": "BSD-3-Clause notices retained for adapted sections"
+  }
+}

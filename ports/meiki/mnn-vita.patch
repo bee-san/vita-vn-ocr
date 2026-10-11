@@ -1,0 +1,385 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 119c06d..0c62d88 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -20,2 +20,5 @@ endif()
+ project(MNN VERSION ${MNN_VERSION} LANGUAGES C CXX ASM)
++if(VITA)
++    add_definitions(-DMNN_VITA)
++endif()
+ # complier options
+@@ -333,3 +336,2 @@ endif()
+ if(CMAKE_SYSTEM_NAME MATCHES "^Linux")
+-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STRICT_ANSI__")
+     if(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv7")
+@@ -569,4 +571,10 @@ if ((NOT MSVC) AND MNN_HIDDEN)
+ endif()
++option(MNN_ENABLE_EXCEPTIONS "Enable C++ cleanup for bounded embedders" OFF)
+ if (NOT MSVC)
+-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstrict-aliasing -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions ")
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstrict-aliasing -ffunction-sections -fdata-sections -fno-rtti ")
++    if(MNN_ENABLE_EXCEPTIONS)
++        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
++    else()
++        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
++    endif()
+     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fstrict-aliasing -ffunction-sections -fdata-sections ")
+diff --git a/source/backend/cpu/CPUBackend.hpp b/source/backend/cpu/CPUBackend.hpp
+index 99fd052..6f98286 100644
+--- a/source/backend/cpu/CPUBackend.hpp
++++ b/source/backend/cpu/CPUBackend.hpp
+@@ -13,2 +13,3 @@
+ #include <memory>
++#include <new>
+ #include <MNN/AutoTime.hpp>
+@@ -87,4 +88,14 @@ public:
+     virtual ~ CPUMemObj() {
+-        if (mAllocator) {
++        if (mAllocator && !MNNEmbeddingAllocationFailed()) {
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++            // free() may allocate metadata while coalescing. Never propagate
++            // an OOM through this noexcept destructor; abandon the failed job.
++            try {
++                mAllocator->free(mChunk);
++            } catch (const std::bad_alloc&) {
++                MNNEmbeddingRecordAllocationFailure();
++            }
++#else
+             mAllocator->free(mChunk);
++#endif
+         }
+diff --git a/source/backend/cpu/CPUTopKV2.cpp b/source/backend/cpu/CPUTopKV2.cpp
+index fe96d18..e80de8b 100644
+--- a/source/backend/cpu/CPUTopKV2.cpp
++++ b/source/backend/cpu/CPUTopKV2.cpp
+@@ -12,2 +12,3 @@
+ #include "core/Concurrency.h"
++#include "core/AutoStorage.h"
+ #include "backend/cpu/compute/CommonOptFunction.h"
+@@ -17,3 +18,3 @@ namespace MNN {
+ template <typename T>
+-void findTopK(int32_t rowSize, int32_t numRows, const T* data, int32_t k, int32_t* outputIndexes, T* outputValues, bool largest) {
++ErrorCode findTopK(int32_t rowSize, int32_t numRows, const T* data, int32_t k, int32_t* outputIndexes, T* outputValues, bool largest) {
+     struct DataType {
+@@ -22,3 +23,9 @@ void findTopK(int32_t rowSize, int32_t numRows, const T* data, int32_t k, int32_
+     };
+-    std::vector<DataType> cacheData(rowSize);
++    // Route the potentially large sorting scratch through MNN's allocator,
++    // so a bounded embedding does not exhaust its separate STL/newlib heap.
++    AutoStorage<DataType> storage(rowSize);
++    DataType* cacheData = storage.get();
++    if (nullptr == cacheData) {
++        return OUT_OF_MEMORY;
++    }
+     auto compareL = [](const DataType& A, const DataType& B) {
+@@ -38,5 +45,5 @@ void findTopK(int32_t rowSize, int32_t numRows, const T* data, int32_t k, int32_
+         if (largest) {
+-            std::partial_sort(cacheData.begin(), cacheData.begin() + k, cacheData.end(), compareL);
++            std::partial_sort(cacheData, cacheData + k, cacheData + rowSize, compareL);
+         } else {
+-            std::partial_sort(cacheData.begin(), cacheData.begin() + k, cacheData.end(), compareM);
++            std::partial_sort(cacheData, cacheData + k, cacheData + rowSize, compareM);
+         }
+@@ -47,2 +54,3 @@ void findTopK(int32_t rowSize, int32_t numRows, const T* data, int32_t k, int32_
+     }
++    return NO_ERROR;
+ }
+@@ -123,3 +131,3 @@ ErrorCode CPUTopKV2::onExecute(const std::vector<Tensor*>& inputs, const std::ve
+         int* indicesData = outputIndices->host<int32_t>();
+-        findTopK<float>(rowSize, numRows, inputData, k, indicesData, topkData, mLargest);
++        return findTopK<float>(rowSize, numRows, inputData, k, indicesData, topkData, mLargest);
+     } else if(halide_type_int == inputTensor->getType().code && 32 == inputTensor->getType().bits) {
+@@ -128,3 +136,3 @@ ErrorCode CPUTopKV2::onExecute(const std::vector<Tensor*>& inputs, const std::ve
+         int* indicesData = outputIndices->host<int32_t>();
+-        findTopK<int32_t>(rowSize, numRows, inputData, k, indicesData, topkData, mLargest);
++        return findTopK<int32_t>(rowSize, numRows, inputData, k, indicesData, topkData, mLargest);
+     } else {
+diff --git a/source/backend/cpu/arm/arm32/MNNCubicLineC16.S b/source/backend/cpu/arm/arm32/MNNCubicLineC16.S
+index c294ab3..9b768c2 100644
+--- a/source/backend/cpu/arm/arm32/MNNCubicLineC16.S
++++ b/source/backend/cpu/arm/arm32/MNNCubicLineC16.S
+@@ -79,4 +79,4 @@ vmla.f32 q13, q6, d1[1]
+ //A
+-vld1.32{q3, q4}, [r1]!
+-vld1.32{q5, q6}, [r1]!
++vld1.32 {q3, q4}, [r1]!
++vld1.32 {q5, q6}, [r1]!
+
+@@ -115,3 +115,3 @@ vmla.f32 q13, q6, d3[1]
+ vld1.32 {q3, q4}, [r4]!
+-vld1.32{q5, q6}, [r4]!
++vld1.32 {q5, q6}, [r4]!
+
+@@ -159,2 +159,2 @@ pop {r4-r8, r10-r11, pc}
+ #endif
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/source/backend/cpu/compute/ConvInt8TiledExecutor.cpp b/source/backend/cpu/compute/ConvInt8TiledExecutor.cpp
+index 31bf484..97bf6ad 100644
+--- a/source/backend/cpu/compute/ConvInt8TiledExecutor.cpp
++++ b/source/backend/cpu/compute/ConvInt8TiledExecutor.cpp
+@@ -77,4 +77,7 @@ void ConvInt8TiledExecutor::initializeConvInt8QuantInfo(std::shared_ptr<CPUConvo
+
+-void ConvInt8TiledExecutor::reorderWeight(uint8_t* dst, const uint8_t* src, int32_t* info, int32_t initval, float* kernelsum, weightSummerFuncion summerFunc) {
++bool ConvInt8TiledExecutor::reorderWeight(uint8_t* dst, const uint8_t* src, int32_t* info, int32_t initval, float* kernelsum, weightSummerFuncion summerFunc) {
+     // weight shape = {UP_DIV(oc, UNIT), blockNum, kernelCount* UP_DIV(ic / blockNum, SRC_UNIT), UNIT, SRC_UNIT};
++    if (!dst || !src) {
++        return false;
++    }
+     MNN_ASSERT(dst != nullptr && src != nullptr);
+@@ -112,2 +115,5 @@ void ConvInt8TiledExecutor::reorderWeight(uint8_t* dst, const uint8_t* src, int3
+         AutoStorage<uint8_t> tmpBuffer(ic * kernelCount * ROUND_UP(oc, UNIT));
++        if (!tmpBuffer.get()) {
++            return false;
++        }
+         memset(tmpBuffer.get(), 0, tmpBuffer.size());
+@@ -125,2 +131,5 @@ void ConvInt8TiledExecutor::reorderWeight(uint8_t* dst, const uint8_t* src, int3
+         AutoStorage<uint8_t> packedBuffer(weightlen);
++        if (!packedBuffer.get()) {
++            return false;
++        }
+         memset(packedBuffer.get(), 0, weightlen);
+@@ -155,2 +164,3 @@ void ConvInt8TiledExecutor::reorderWeight(uint8_t* dst, const uint8_t* src, int3
+     }
++    return true;
+ }
+@@ -559,3 +569,5 @@ DenseConvInt8TiledExecutor::DenseConvInt8TiledExecutor(Backend* backend, const O
+                 }
+-                reorderWeight(packedInt8weight.get(), (uint8_t*)tmpWeight.data(), info, 0, (float*)kernelsum.get(), gcore->MNNSumWeightInt8);
++                if (!reorderWeight(packedInt8weight.get(), (uint8_t*)tmpWeight.data(), info, 0, (float*)kernelsum.get(), gcore->MNNSumWeightInt8)) {
++                    return -1;
++                }
+                 // pack two int4 to int8
+@@ -577,3 +589,5 @@ DenseConvInt8TiledExecutor::DenseConvInt8TiledExecutor(Backend* backend, const O
+             } else { // int8 weight
+-                reorderWeight((uint8_t*)weightReordered.get(), (uint8_t*)quanCommon->weight.get(), info, 0, (float*)kernelsum.get(), gcore->MNNSumWeightInt8);
++                if (!reorderWeight((uint8_t*)weightReordered.get(), (uint8_t*)quanCommon->weight.get(), info, 0, (float*)kernelsum.get(), gcore->MNNSumWeightInt8)) {
++                    return -1;
++                }
+             }
+@@ -624,2 +638,5 @@ void DenseConvInt8TiledExecutor::getPackParameter(int* Unit, int* srcUnit, int*
+ ErrorCode DenseConvInt8TiledExecutor::onResize(const std::vector<Tensor*>& inputs, const std::vector<Tensor*>& outputs) {
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++    try {
++#endif
+     // Initialize.
+@@ -936,2 +953,9 @@ ErrorCode DenseConvInt8TiledExecutor::onResize(const std::vector<Tensor*>& input
+ #endif
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++    } catch (const std::bad_alloc&) {
++        // Tensor/member cleanup must not coalesce partially resized buffers.
++        MNNEmbeddingRecordAllocationFailure();
++        throw;
++    }
++#endif
+ }
+diff --git a/source/backend/cpu/compute/ConvInt8TiledExecutor.hpp b/source/backend/cpu/compute/ConvInt8TiledExecutor.hpp
+index 28d62cb..ad403c4 100644
+--- a/source/backend/cpu/compute/ConvInt8TiledExecutor.hpp
++++ b/source/backend/cpu/compute/ConvInt8TiledExecutor.hpp
+@@ -27,3 +27,3 @@ public:
+     static void packWeightAndQuantInfo(int8_t* dstbuffer, const int8_t* weight, const int8_t* quantInfo, int32_t* info, int infoBytes = 4);
+-    static void reorderWeight(uint8_t* dst, const uint8_t* src, int32_t* info, int32_t initval = 0, float* kernelsum = nullptr, weightSummerFuncion summerFunc = nullptr);
++    static bool reorderWeight(uint8_t* dst, const uint8_t* src, int32_t* info, int32_t initval = 0, float* kernelsum = nullptr, weightSummerFuncion summerFunc = nullptr);
+     static void initializeConvInt8QuantInfo(std::shared_ptr<CPUConvolution::ResourceInt8>& resourceInt8, const Convolution2D* conv2D);
+diff --git a/source/core/BufferAllocator.cpp b/source/core/BufferAllocator.cpp
+index f30c53c..5dd1ec3 100644
+--- a/source/core/BufferAllocator.cpp
++++ b/source/core/BufferAllocator.cpp
+@@ -195,2 +195,12 @@ EagerBufferAllocator::Node::~Node() {
+ MemChunk EagerBufferAllocator::alloc(size_t size, bool separate, size_t align) {
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++    try {
++#endif
++    if (MNNEmbeddingAllocationFailed()) {
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++        throw std::bad_alloc();
++#else
++        return MemChunk();
++#endif
++    }
+ #ifdef DUMP_USAGE
+@@ -265,2 +275,10 @@ MemChunk EagerBufferAllocator::alloc(size_t size, bool separate, size_t align) {
+     return pointer;
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++    } catch (const std::bad_alloc&) {
++        // Splitting mutates allocator metadata before some STL allocations.
++        // Poison the job before tensor destructors try to reuse that state.
++        MNNEmbeddingRecordAllocationFailure();
++        throw;
++    }
++#endif
+ }
+@@ -300,2 +318,5 @@ void EagerBufferAllocator::returnMemory(FREELIST* listP, SharedPtr<Node> node, b
+ bool EagerBufferAllocator::free(MemChunk chunk) {
++    if (MNNEmbeddingAllocationFailed()) {
++        return false;
++    }
+     std::pair<void*, size_t> pointer(chunk.first, chunk.second);
+@@ -465,2 +486,12 @@ DeferBufferAllocator::DeferBufferAllocator(SingleBufferWithAllocator* root, size
+ MemChunk DeferBufferAllocator::alloc(size_t size, bool separate, size_t align) {
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++    try {
++#endif
++    if (MNNEmbeddingAllocationFailed()) {
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++        throw std::bad_alloc();
++#else
++        return MemChunk();
++#endif
++    }
+     if (0 == align) {
+@@ -499,4 +530,13 @@ MemChunk DeferBufferAllocator::alloc(size_t size, bool separate, size_t align) {
+     return MemChunk(selectChunk);
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++    } catch (const std::bad_alloc&) {
++        MNNEmbeddingRecordAllocationFailure();
++        throw;
++    }
++#endif
+ }
+ bool DeferBufferAllocator::free(MemChunk chunk) {
++    if (MNNEmbeddingAllocationFailed()) {
++        return false;
++    }
+ #ifdef DUMP_USAGE
+diff --git a/source/core/Interpreter.cpp b/source/core/Interpreter.cpp
+index 02d404a..c45d031 100644
+--- a/source/core/Interpreter.cpp
++++ b/source/core/Interpreter.cpp
+@@ -30,2 +30,17 @@ namespace MNN {
+
++static int embeddingAllocationFailed = 0;
++extern "C" void MNNEmbeddingResetFailures() { embeddingAllocationFailed = 0; }
++extern "C" int MNNEmbeddingAllocationFailed() { return embeddingAllocationFailed; }
++extern "C" void MNNEmbeddingRecordAllocationFailure() { embeddingAllocationFailed = 1; }
++
++// The bounded embedding throws before unchecked CPU operations see a NULL
++// allocation. Its caller must refuse a library without C++ unwind cleanup.
++extern "C" int MNNEmbeddingExceptionSupport() {
++#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
++    return 1;
++#else
++    return 0;
++#endif
++}
++
+ struct Content {
+@@ -80,3 +95,3 @@ static Content* loadModelFile(const char* file) {
+     }
+-    auto net     = new Content;
++    std::unique_ptr<Content> net(new Content);
+     bool success = loader->merge(net->buffer);
+@@ -86,3 +101,3 @@ static Content* loadModelFile(const char* file) {
+     loader.reset();
+-    return net;
++    return net.release();
+ }
+@@ -90,3 +105,3 @@ static Content* loadModelFile(const char* file) {
+ Interpreter* Interpreter::createFromFile(const char* file) {
+-    Content* net = loadModelFile(file);
++    std::unique_ptr<Content> net(loadModelFile(file));
+     if (nullptr == net) {
+@@ -97,3 +112,3 @@ Interpreter* Interpreter::createFromFile(const char* file) {
+
+-    return createFromBufferInternal(net, true);
++    return createFromBufferInternal(net.release(), true);
+ }
+@@ -104,3 +119,3 @@ Interpreter* Interpreter::createFromBuffer(const void* buffer, size_t size) {
+     }
+-    auto net = new Content;
++    std::unique_ptr<Content> net(new Content);
+     net->buffer.reset((int)size);
+@@ -112,3 +127,3 @@ Interpreter* Interpreter::createFromBuffer(const void* buffer, size_t size) {
+
+-    return createFromBufferInternal(net, true);
++    return createFromBufferInternal(net.release(), true);
+ }
+@@ -116,2 +131,3 @@ Interpreter* Interpreter::createFromBuffer(const void* buffer, size_t size) {
+ Interpreter* Interpreter::createFromBufferInternal(Content* net, bool enforceAuth) {
++    std::unique_ptr<Content> ownedNet(net);
+     if (nullptr == net) {
+@@ -127,3 +143,2 @@ Interpreter* Interpreter::createFromBufferInternal(Content* net, bool enforceAut
+         MNN_ERROR("Model has no oplist\n");
+-        delete net;
+         return nullptr;
+@@ -135,3 +150,2 @@ Interpreter* Interpreter::createFromBufferInternal(Content* net, bool enforceAut
+             MNN_ERROR("Invalid Model, the %d op is empty\n", i);
+-            delete net;
+             return nullptr;
+@@ -139,3 +153,5 @@ Interpreter* Interpreter::createFromBufferInternal(Content* net, bool enforceAut
+     }
+-    return new Interpreter(net);
++    auto interpreter = new Interpreter(net);
++    ownedNet.release();
++    return interpreter;
+ }
+diff --git a/source/core/MNNFileUtils.cpp b/source/core/MNNFileUtils.cpp
+index fe3eee8..2659e16 100644
+--- a/source/core/MNNFileUtils.cpp
++++ b/source/core/MNNFileUtils.cpp
+@@ -205,2 +205,5 @@ ErrorCode MNNSetFileSize(file_t file, size_t aimed_size)
+     return NO_ERROR;
++#else
++#ifdef MNN_VITA
++    return FILE_RESIZE_FAILED;
+ #else
+@@ -211,2 +214,3 @@ ErrorCode MNNSetFileSize(file_t file, size_t aimed_size)
+ #endif
++#endif
+ }
+@@ -283,2 +287,5 @@ void * MNNMmapFile(file_t file, size_t size)
+     return addr;
++#else
++#ifdef MNN_VITA
++    return nullptr;
+ #else
+@@ -291,2 +298,3 @@ void * MNNMmapFile(file_t file, size_t size)
+ #endif
++#endif
+ }
+@@ -299,2 +307,5 @@ ErrorCode MNNUnmapFile(void * addr, size_t size)
+     }
++#else
++#ifdef MNN_VITA
++    return FILE_UNMAP_FAILED;
+ #else
+@@ -303,2 +314,3 @@ ErrorCode MNNUnmapFile(void * addr, size_t size)
+     }
++#endif
+ #endif
+@@ -313,2 +325,5 @@ ErrorCode MNNMmapSync(void * addr, size_t size)
+     }
++#else
++#ifdef MNN_VITA
++    return FILE_UNMAP_FAILED;
+ #else
+@@ -317,2 +332,3 @@ ErrorCode MNNMmapSync(void * addr, size_t size)
+     }
++#endif
+ #endif
+diff --git a/source/core/MNNFileUtils.h b/source/core/MNNFileUtils.h
+index db30e17..4fad8aa 100644
+--- a/source/core/MNNFileUtils.h
++++ b/source/core/MNNFileUtils.h
+@@ -26,4 +26,6 @@
+ #include <fcntl.h>
++#ifndef MNN_VITA
+ #include <sys/mman.h>
+ #endif
++#endif
+
+diff --git a/source/core/MNNMemoryUtils.h b/source/core/MNNMemoryUtils.h
+index e275740..50c3cec 100644
+--- a/source/core/MNNMemoryUtils.h
++++ b/source/core/MNNMemoryUtils.h
+@@ -20,2 +20,8 @@ extern "C" {
+
++/* Serialized bounded-embedding failure state. */
++MNN_PUBLIC int MNNEmbeddingExceptionSupport();
++MNN_PUBLIC void MNNEmbeddingResetFailures();
++MNN_PUBLIC int MNNEmbeddingAllocationFailed();
++MNN_PUBLIC void MNNEmbeddingRecordAllocationFailure();
++
+ /**

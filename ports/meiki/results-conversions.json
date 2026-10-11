@@ -1,0 +1,23 @@
+{
+  "kind": "Actual fresh MNN3.2.0 conversions,UUID metadata normalization and strict full-file validation",
+  "mnn_version": "3.2.0",
+  "mnn_commit": "ebdada82634300956e08bd4056ecfeb1e4f23b32",
+  "onnx_version": "1.18.0",
+  "onnxsim_version": "0.4.36",
+  "recognizer_command": "MNNConvert -f ONNX --modelFile <private>/meiki-stream.onnx --MNNModel <private>/meiki-stream-int8.mnn --bizCode meiki-vita --weightQuantBits 8; python ports/meiki/normalize_mnn_uuid.py --model recognizer <converted>",
+  "detector_command": "python ports/meiki/prepare_detect.py --source <pinned-private320-ONNX> --out <private-output> --converter <pinned-MNNConvert>",
+  "normalization": "Only the fixed-length Net.mnn_uuid metadata string changes. All tensors/operators/coefficients/layout bytes remain the converter output; expected full-file SHA is validated before writing.",
+  "corrupt_model_guard": "A private copy with one changed non-UUID byte was rejected; every original byte was preserved.",
+  "models": {
+    "recognizer": {
+      "bytes": 5392856,
+      "sha256": "b7ba3219cd1bfeef5cb6b42ef6686683b991c6561b7ad3b1c41d32817deba21e",
+      "strict_guard_reproduced": true
+    },
+    "detector": {
+      "bytes": 4119220,
+      "sha256": "f0865ed291846a130905527f67c33f17e64d0f2c5eb38378ed1faea57f74b1ba",
+      "strict_guard_reproduced": true
+    }
+  }
+}

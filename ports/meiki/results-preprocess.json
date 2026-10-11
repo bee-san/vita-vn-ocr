@@ -1,0 +1,22 @@
+{
+  "kind": "Host C RGBA binding vs Meiki 0.3.5/OpenCV 4.12.0 uint8 INTER_LINEAR",
+  "scratch_bytes": 13440,
+  "output_bytes": 368640,
+  "dynamic_allocations": 0,
+  "cases": 451,
+  "tensor_different_cases": 0,
+  "tensor_different_elements": 0,
+  "max_pixel_difference": 0,
+  "metadata_differences": 0,
+  "boundaries": {
+    "successful_geometries": 13,
+    "geometry_tensor_differences": 0,
+    "invalid_cases": 12,
+    "source_failure_cases": 3,
+    "cancellation_cases": 5
+  },
+  "recognition": {
+    "text_differences_from_upstream_preprocessed_int8_MNN": 0,
+    "peak_model_tensor_bytes": 13235648
+  }
+}

@@ -513,3 +513,24 @@ def test_collector_resume_appends_new_pages_without_recapturing_old_signatures(t
     assert counts["incomplete_observations"] == counts["duplicate_signature_observations"] == 4
     for name, expected in input_hashes.items():
         assert LR.file_sha(args.session_dir / name) == expected
+
+
+@pytest.mark.parametrize("reveal", [None, "x"])
+def test_verified_controller_sequence_releases_keys_and_does_not_repeat_advance(monkeypatch, reveal):
+    calls, sleeps = [], []
+    monkeypatch.setattr(LR.subprocess, "run", lambda command, **kwargs: calls.append(command))
+    monkeypatch.setattr(LR.time, "sleep", sleeps.append)
+    args = SimpleNamespace(window="77", advance_key="c", key_hold_seconds=0.3, reveal_key=reveal, reveal_delay=0.5)
+    LR.advance(args, {"DISPLAY": ":test"})
+    assert calls[:3] == [["xdotool", "windowfocus", "77"], ["xdotool", "keydown", "c"], ["xdotool", "keyup", "c"]]
+    assert sleeps == ([0.3] if reveal is None else [0.3, 0.5, 0.3])
+    if reveal:
+        assert calls[3:] == [["xdotool", "windowfocus", "77"], ["xdotool", "keydown", "x"], ["xdotool", "keyup", "x"]]
+    else:
+        assert len(calls) == 3
+
+
+def test_automatic_controller_requires_explicit_operator_screen_kind():
+    args = SimpleNamespace(split="test", complete_box=[0, 0, 10, 10], control_file=None, advance_key="c")
+    with pytest.raises(ValueError, match="screen-kind control"):
+        LR.protocol(args, None)

@@ -263,6 +263,8 @@ def protocol(args, native):
     require_test(args.split)
     if args.complete_box is None and args.control_file is None:
         raise ValueError("require completion indicator box or operator control file; stability is not completeness")
+    if args.advance_key and args.control_file is None:
+        raise ValueError("automatic advancement requires an operator screen-kind control file")
     return {
         "schema": 1,
         "purpose": "new real-VN test diagnostics only; forbidden for model/preprocessing selection",
@@ -283,6 +285,8 @@ def protocol(args, native):
         "idle_timeout": args.idle_timeout,
         "advance_key": args.advance_key,
         "key_hold_seconds": getattr(args, "key_hold_seconds", 0.3),
+        "reveal_key": getattr(args, "reveal_key", None),
+        "reveal_delay_seconds": getattr(args, "reveal_delay", 0.5),
         "display": args.display,
         "window": args.window,
         "runtime": native.info,
@@ -390,13 +394,20 @@ def read_control(path):
     return value
 
 
-def advance(args, env):
+def press_key(args, key, env):
     subprocess.run(["xdotool", "windowfocus", args.window], env=env, check=True)
-    subprocess.run(["xdotool", "keydown", args.advance_key], env=env, check=True)
+    subprocess.run(["xdotool", "keydown", key], env=env, check=True)
     try:
         time.sleep(getattr(args, "key_hold_seconds", 0.3))
     finally:
-        subprocess.run(["xdotool", "keyup", args.advance_key], env=env, check=True)
+        subprocess.run(["xdotool", "keyup", key], env=env, check=True)
+
+
+def advance(args, env):
+    press_key(args, args.advance_key, env)
+    if getattr(args, "reveal_key", None):
+        time.sleep(args.reveal_delay)
+        press_key(args, args.reveal_key, env)
 
 
 @contextmanager
@@ -433,6 +444,7 @@ def _collect(args):
         or args.stable_seconds <= 0
         or args.idle_timeout <= 0
         or getattr(args, "key_hold_seconds", 0.3) <= 0
+        or getattr(args, "reveal_delay", 0.5) < 0
     ):
         raise ValueError("positive count/interval/stability and >=2 observations required")
     args.session_dir.mkdir(parents=True, exist_ok=True)
@@ -880,6 +892,8 @@ def main():
     )
     cap.add_argument("--advance-key", help="optional authorized game advance after completed capture")
     cap.add_argument("--key-hold-seconds", type=float, default=0.3)
+    cap.add_argument("--reveal-key", help="verified optional current-page reveal key; never an additional advance")
+    cap.add_argument("--reveal-delay", type=float, default=0.5)
     cmp = sub.add_parser("compare")
     cmp.add_argument("--session-dir", type=Path, required=True)
     cmp.add_argument("--model", type=Path, required=True)

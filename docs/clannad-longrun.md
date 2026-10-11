@@ -25,14 +25,29 @@ uv pip install --python .venv-owocr/bin/python --no-deps -r eval/requirements-ow
 
 Before starting this new test session, use a separate ignored pilot to verify navigation and skip the previously captured development opening. Do not count known development/pilot frames toward the new 40,000-character test. The collector and comparison worker stay alive; they do not restart Python per page. An external game controller may advance the window, or the collector may hold an explicitly configured key for the configured key-hold interval (0.3 seconds in the verified Qt profile) after an accepted completed page. It focuses the selected window before each key input. Use the actual working frontend/window/key; the following geometry and marker came from the original development screenshot, not a held-out tuning run:
 
+The excluded capture pilot expands this game's ROI to include the complete name
+area and lowers the completion threshold to recognize its later triangle icon.
+These are controller/capture-profile settings, not recognizer preprocessing or
+training rules. The same raw ROI is passed to the general finder and whole-ROI
+reference. The verified game controls use `c` to advance and `x` to reveal the
+current message without advancing. An optional reveal key is disabled by default;
+only configure it after checking the game's actual controls. Automatic advancement
+requires an operator screen-kind file, which must be paused before opening any
+menu. Bright menu controls can resemble a continuation marker.
+
 ```sh
+mkdir -p build/clannad-longrun
+printf '%s\n' '{"kind":"dialogue","complete":false}' > build/clannad-longrun/control.json
+
 /home/bee/Documents/src/vita-vn-ocr/.venv-ci/bin/python eval/clannad_longrun.py collect \
   --display :97 --window 6291485 --session clannad-longrun-20261011 --split test \
   --session-dir build/clannad-longrun --model /private/FL10_w8.vocr \
   --owocr-python /home/bee/Documents/src/vita-vn-ocr/.venv-owocr/bin/python \
-  --roi 32,414,896,128 --complete-box 874,508,30,28 \
-  --native-size 960,544 --complete-threshold 200 --complete-pixels 15 --count 2000 \
-  --interval .25 --stable-seconds 2 --stable-samples 3 --max-lines 5 --advance-key c --key-hold-seconds .3
+  --roi 32,360,896,184 --complete-box 874,508,30,28 \
+  --native-size 960,544 --complete-threshold 160 --complete-pixels 15 --count 2000 \
+  --control-file build/clannad-longrun/control.json \
+  --interval .25 --stable-seconds 2 --stable-samples 3 --max-lines 5 \
+  --advance-key c --key-hold-seconds .3 --reveal-key x --reveal-delay .5
 ```
 
 The completion marker is automatically excluded from stability, but retained in the app ROI and OCR inputs. A `--control-file` may override the screen kind with JSON such as `{"kind":"pause","complete":false}` or `{"kind":"choice","complete":false}`. Without a marker, require an operator to issue a unique per-page acknowledgement `{"kind":"dialogue","complete":true,"page":"000001"}` after verifying the fully displayed text. Menus/choices/transitions and pauses never trigger automatic key input. Configured control-file path and capture options are frozen; acknowledgement content can change intentionally as controller state.

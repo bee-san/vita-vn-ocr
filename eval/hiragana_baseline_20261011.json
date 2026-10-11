@@ -1,0 +1,2068 @@
+{
+  "date": "2026-10-11",
+  "status": "baseline only; nine-run fine-tuning blocked by absent original hard-label snapshots",
+  "model_info": {
+    "backend": "vocr",
+    "mode": "w8i",
+    "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832
+  },
+  "env": {
+    "git": "c2381bd",
+    "python": "3.11.15",
+    "host": "artemis",
+    "threads": 1,
+    "date": "2026-10-11T13:38:34+00:00"
+  },
+  "measurement_tree": "c2381bd plus the host-tool changes in this PR; runtime C unchanged",
+  "datasets": {
+    "vita-test": {
+      "manifest_sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+      "split": "test",
+      "sessions": [
+        "r22078",
+        "r38965",
+        "r39726",
+        "r39811",
+        "r41582",
+        "r42978",
+        "r46027",
+        "r46369",
+        "r47530",
+        "r49097",
+        "r50738",
+        "r53397",
+        "r53403",
+        "r55234",
+        "r56156",
+        "r66412"
+      ]
+    },
+    "psp-test": {
+      "manifest_sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+      "split": "test",
+      "sessions": [
+        "r14071",
+        "r14940",
+        "r15325",
+        "r22079",
+        "r22565",
+        "r23774",
+        "r24273",
+        "r25701",
+        "r27758",
+        "r28150",
+        "r28151",
+        "r32662",
+        "r36141",
+        "r6862",
+        "r8936"
+      ]
+    },
+    "clannad-test": {
+      "manifest_sha256": "ab226eba6cafee7e9e735a1be42b6f1c2e877be2c255bd57ec9913bc15faacd6",
+      "split": "test",
+      "sessions": [
+        "clannad-opening-B"
+      ]
+    },
+    "clannad-dev": {
+      "manifest_sha256": "a32ba010c2b8dc7ed79fe81965c53e87d0bd8ab02a7757c215614ccaba1c387b",
+      "split": "dev",
+      "sessions": [
+        "clannad-opening-A"
+      ]
+    }
+  },
+  "sets": {
+    "vita-test": {
+      "all": {
+        "lines": 206,
+        "chars": 2564,
+        "errors": 61,
+        "cer": 0.02379,
+        "exact": 0.76699
+      },
+      "hiragana": {
+        "chars": 1417,
+        "errors": 15,
+        "cer": 0.01059,
+        "substitutions": 12,
+        "deletions": 3,
+        "insertions": 0,
+        "into_hiragana": 1,
+        "confusions": [
+          {
+            "reference": "い",
+            "prediction": "り",
+            "count": 4
+          },
+          {
+            "reference": "ぁ",
+            "prediction": "あ",
+            "count": 1
+          },
+          {
+            "reference": "ぇ",
+            "prediction": "え",
+            "count": 1
+          },
+          {
+            "reference": "ず",
+            "prediction": "す",
+            "count": 1
+          },
+          {
+            "reference": "た",
+            "prediction": null,
+            "count": 1
+          },
+          {
+            "reference": "っ",
+            "prediction": "り",
+            "count": 1
+          },
+          {
+            "reference": "と",
+            "prediction": null,
+            "count": 1
+          },
+          {
+            "reference": "と",
+            "prediction": "ど",
+            "count": 1
+          },
+          {
+            "reference": "ど",
+            "prediction": "と",
+            "count": 1
+          },
+          {
+            "reference": "ぱ",
+            "prediction": "ば",
+            "count": 1
+          },
+          {
+            "reference": "む",
+            "prediction": "な",
+            "count": 1
+          },
+          {
+            "reference": "や",
+            "prediction": null,
+            "count": 1
+          },
+          {
+            "reference": "乙",
+            "prediction": "こ",
+            "count": 1
+          }
+        ]
+      },
+      "styles": {
+        "bright-on-dark": {
+          "lines": 163,
+          "chars": 2016,
+          "errors": 56,
+          "cer": 0.02778,
+          "exact": 0.73006
+        },
+        "coloured": {
+          "lines": 19,
+          "chars": 195,
+          "errors": 13,
+          "cer": 0.06667,
+          "exact": 0.42105
+        },
+        "coloured-name": {
+          "lines": 8,
+          "chars": 21,
+          "errors": 3,
+          "cer": 0.14286,
+          "exact": 0.625
+        },
+        "dark-on-light": {
+          "lines": 43,
+          "chars": 548,
+          "errors": 5,
+          "cer": 0.00912,
+          "exact": 0.90698
+        },
+        "furigana": {
+          "lines": 3,
+          "chars": 64,
+          "errors": 3,
+          "cer": 0.04688,
+          "exact": 0.66667
+        },
+        "mincho": {
+          "lines": 47,
+          "chars": 676,
+          "errors": 10,
+          "cer": 0.01479,
+          "exact": 0.82979
+        },
+        "name": {
+          "lines": 53,
+          "chars": 172,
+          "errors": 12,
+          "cer": 0.06977,
+          "exact": 0.79245
+        },
+        "outlined": {
+          "lines": 74,
+          "chars": 989,
+          "errors": 22,
+          "cer": 0.02224,
+          "exact": 0.74324
+        }
+      },
+      "games": {
+        "v10856": {
+          "lines": 2,
+          "chars": 50,
+          "errors": 0,
+          "cer": 0.0,
+          "exact": 1.0
+        },
+        "v13072": {
+          "lines": 3,
+          "chars": 29,
+          "errors": 0,
+          "cer": 0.0,
+          "exact": 1.0
+        },
+        "v16460": {
+          "lines": 25,
+          "chars": 369,
+          "errors": 4,
+          "cer": 0.01084,
+          "exact": 0.88
+        },
+        "v16566": {
+          "lines": 20,
+          "chars": 230,
+          "errors": 0,
+          "cer": 0.0,
+          "exact": 1.0
+        },
+        "v17286": {
+          "lines": 16,
+          "chars": 190,
+          "errors": 2,
+          "cer": 0.01053,
+          "exact": 0.875
+        },
+        "v17750": {
+          "lines": 16,
+          "chars": 163,
+          "errors": 1,
+          "cer": 0.00613,
+          "exact": 0.9375
+        },
+        "v17829": {
+          "lines": 12,
+          "chars": 127,
+          "errors": 12,
+          "cer": 0.09449,
+          "exact": 0.16667
+        },
+        "v18030": {
+          "lines": 16,
+          "chars": 121,
+          "errors": 2,
+          "cer": 0.01653,
+          "exact": 0.875
+        },
+        "v19339": {
+          "lines": 6,
+          "chars": 82,
+          "errors": 2,
+          "cer": 0.02439,
+          "exact": 0.66667
+        },
+        "v19850": {
+          "lines": 8,
+          "chars": 94,
+          "errors": 3,
+          "cer": 0.03191,
+          "exact": 0.75
+        },
+        "v20326": {
+          "lines": 14,
+          "chars": 179,
+          "errors": 5,
+          "cer": 0.02793,
+          "exact": 0.71429
+        },
+        "v21782": {
+          "lines": 12,
+          "chars": 142,
+          "errors": 14,
+          "cer": 0.09859,
+          "exact": 0.25
+        },
+        "v21789": {
+          "lines": 25,
+          "chars": 373,
+          "errors": 6,
+          "cer": 0.01609,
+          "exact": 0.8
+        },
+        "v22122": {
+          "lines": 8,
+          "chars": 128,
+          "errors": 1,
+          "cer": 0.00781,
+          "exact": 0.875
+        },
+        "v3820": {
+          "lines": 11,
+          "chars": 128,
+          "errors": 7,
+          "cer": 0.05469,
+          "exact": 0.54545
+        },
+        "v7721": {
+          "lines": 12,
+          "chars": 159,
+          "errors": 2,
+          "cer": 0.01258,
+          "exact": 0.83333
+        }
+      },
+      "game_macro_cer": 0.02578,
+      "oov_chars": {
+        "浬": 2,
+        "瘴": 1
+      },
+      "finder": {
+        "regions": 84,
+        "regions_rejected": 0,
+        "gt_lines": 206,
+        "line_recall": 0.88835,
+        "detections": 183,
+        "line_precision": 1.0,
+        "pipeline_cer": 0.16459,
+        "concat_cer": 0.14046,
+        "concat_regions_chars": 2506,
+        "hiragana": {
+          "chars": 1417,
+          "errors": 175,
+          "cer": 0.1235,
+          "substitutions": 26,
+          "deletions": 132,
+          "insertions": 17,
+          "into_hiragana": 11,
+          "confusions": [
+            {
+              "reference": "に",
+              "prediction": null,
+              "count": 9
+            },
+            {
+              "reference": "た",
+              "prediction": null,
+              "count": 8
+            },
+            {
+              "reference": "し",
+              "prediction": null,
+              "count": 7
+            },
+            {
+              "reference": "と",
+              "prediction": null,
+              "count": 6
+            },
+            {
+              "reference": "な",
+              "prediction": null,
+              "count": 6
+            },
+            {
+              "reference": "い",
+              "prediction": null,
+              "count": 5
+            },
+            {
+              "reference": "て",
+              "prediction": null,
+              "count": 5
+            },
+            {
+              "reference": "の",
+              "prediction": null,
+              "count": 5
+            },
+            {
+              "reference": "を",
+              "prediction": null,
+              "count": 5
+            },
+            {
+              "reference": "あ",
+              "prediction": null,
+              "count": 4
+            },
+            {
+              "reference": "こ",
+              "prediction": null,
+              "count": 4
+            },
+            {
+              "reference": "っ",
+              "prediction": null,
+              "count": 4
+            },
+            {
+              "reference": "る",
+              "prediction": null,
+              "count": 4
+            },
+            {
+              "reference": "う",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "が",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "き",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "さ",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "す",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "は",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "ま",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "よ",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "ら",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "り",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "ん",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": null,
+              "prediction": "い",
+              "count": 2
+            },
+            {
+              "reference": null,
+              "prediction": "な",
+              "count": 2
+            },
+            {
+              "reference": null,
+              "prediction": "ら",
+              "count": 2
+            },
+            {
+              "reference": "い",
+              "prediction": "り",
+              "count": 2
+            },
+            {
+              "reference": "か",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "く",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "け",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "だ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ち",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ば",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "も",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ゃ",
+              "prediction": "や",
+              "count": 2
+            },
+            {
+              "reference": "れ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": null,
+              "prediction": "け",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "こ",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "し",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "そ",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "た",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "っ",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "と",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "ど",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "の",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "れ",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "ん",
+              "count": 1
+            },
+            {
+              "reference": "。",
+              "prediction": "て",
+              "count": 1
+            },
+            {
+              "reference": "」",
+              "prediction": "え",
+              "count": 1
+            },
+            {
+              "reference": "」",
+              "prediction": "に",
+              "count": 1
+            },
+            {
+              "reference": "ぁ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "い",
+              "prediction": "け",
+              "count": 1
+            },
+            {
+              "reference": "う",
+              "prediction": "な",
+              "count": 1
+            },
+            {
+              "reference": "ぇ",
+              "prediction": "え",
+              "count": 1
+            },
+            {
+              "reference": "え",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "か",
+              "prediction": "な",
+              "count": 1
+            },
+            {
+              "reference": "く",
+              "prediction": "然",
+              "count": 1
+            },
+            {
+              "reference": "し",
+              "prediction": "き",
+              "count": 1
+            },
+            {
+              "reference": "し",
+              "prediction": "な",
+              "count": 1
+            },
+            {
+              "reference": "じ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "そ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "た",
+              "prediction": "い",
+              "count": 1
+            },
+            {
+              "reference": "た",
+              "prediction": "み",
+              "count": 1
+            },
+            {
+              "reference": "づ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "で",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "と",
+              "prediction": "ど",
+              "count": 1
+            },
+            {
+              "reference": "ど",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "な",
+              "prediction": "た",
+              "count": 1
+            },
+            {
+              "reference": "な",
+              "prediction": "を",
+              "count": 1
+            },
+            {
+              "reference": "に",
+              "prediction": "在",
+              "count": 1
+            },
+            {
+              "reference": "ね",
+              "prediction": "合",
+              "count": 1
+            },
+            {
+              "reference": "の",
+              "prediction": "な",
+              "count": 1
+            },
+            {
+              "reference": "ぼ",
+              "prediction": "”",
+              "count": 1
+            },
+            {
+              "reference": "ま",
+              "prediction": "く",
+              "count": 1
+            },
+            {
+              "reference": "み",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "め",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "も",
+              "prediction": "や",
+              "count": 1
+            },
+            {
+              "reference": "も",
+              "prediction": "人",
+              "count": 1
+            },
+            {
+              "reference": "ゃ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "る",
+              "prediction": "ん",
+              "count": 1
+            },
+            {
+              "reference": "ろ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "わ",
+              "prediction": "か",
+              "count": 1
+            },
+            {
+              "reference": "を",
+              "prediction": "と",
+              "count": 1
+            },
+            {
+              "reference": "ヘ",
+              "prediction": "へ",
+              "count": 1
+            },
+            {
+              "reference": "乙",
+              "prediction": "こ",
+              "count": 1
+            },
+            {
+              "reference": "及",
+              "prediction": "き",
+              "count": 1
+            },
+            {
+              "reference": "場",
+              "prediction": "く",
+              "count": 1
+            },
+            {
+              "reference": "師",
+              "prediction": "た",
+              "count": 1
+            },
+            {
+              "reference": "所",
+              "prediction": "ぶ",
+              "count": 1
+            },
+            {
+              "reference": "道",
+              "prediction": "か",
+              "count": 1
+            },
+            {
+              "reference": "頭",
+              "prediction": "な",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "psp-test": {
+      "all": {
+        "lines": 245,
+        "chars": 2510,
+        "errors": 133,
+        "cer": 0.05299,
+        "exact": 0.67347
+      },
+      "hiragana": {
+        "chars": 1382,
+        "errors": 30,
+        "cer": 0.02171,
+        "substitutions": 22,
+        "deletions": 6,
+        "insertions": 2,
+        "into_hiragana": 3,
+        "confusions": [
+          {
+            "reference": "さ",
+            "prediction": "き",
+            "count": 3
+          },
+          {
+            "reference": "ど",
+            "prediction": "と",
+            "count": 3
+          },
+          {
+            "reference": "き",
+            "prediction": "さ",
+            "count": 2
+          },
+          {
+            "reference": null,
+            "prediction": "で",
+            "count": 1
+          },
+          {
+            "reference": null,
+            "prediction": "ぱ",
+            "count": 1
+          },
+          {
+            "reference": "ぁ",
+            "prediction": "あ",
+            "count": 1
+          },
+          {
+            "reference": "い",
+            "prediction": null,
+            "count": 1
+          },
+          {
+            "reference": "か",
+            "prediction": null,
+            "count": 1
+          },
+          {
+            "reference": "か",
+            "prediction": "め",
+            "count": 1
+          },
+          {
+            "reference": "く",
+            "prediction": "そ",
+            "count": 1
+          },
+          {
+            "reference": "げ",
+            "prediction": "け",
+            "count": 1
+          },
+          {
+            "reference": "じ",
+            "prediction": "い",
+            "count": 1
+          },
+          {
+            "reference": "ぞ",
+            "prediction": null,
+            "count": 1
+          },
+          {
+            "reference": "っ",
+            "prediction": null,
+            "count": 1
+          },
+          {
+            "reference": "で",
+            "prediction": null,
+            "count": 1
+          },
+          {
+            "reference": "で",
+            "prediction": "て",
+            "count": 1
+          },
+          {
+            "reference": "に",
+            "prediction": "!",
+            "count": 1
+          },
+          {
+            "reference": "は",
+            "prediction": null,
+            "count": 1
+          },
+          {
+            "reference": "ふ",
+            "prediction": "、",
+            "count": 1
+          },
+          {
+            "reference": "ぶ",
+            "prediction": "よ",
+            "count": 1
+          },
+          {
+            "reference": "ぷ",
+            "prediction": "ぶ",
+            "count": 1
+          },
+          {
+            "reference": "み",
+            "prediction": "あ",
+            "count": 1
+          },
+          {
+            "reference": "み",
+            "prediction": "の",
+            "count": 1
+          },
+          {
+            "reference": "ゅ",
+            "prediction": "ゆ",
+            "count": 1
+          },
+          {
+            "reference": "る",
+            "prediction": "ろ",
+            "count": 1
+          },
+          {
+            "reference": "加",
+            "prediction": "か",
+            "count": 1
+          },
+          {
+            "reference": "男",
+            "prediction": "り",
+            "count": 1
+          },
+          {
+            "reference": "私",
+            "prediction": "れ",
+            "count": 1
+          }
+        ]
+      },
+      "styles": {
+        "bright-on-dark": {
+          "lines": 135,
+          "chars": 1409,
+          "errors": 74,
+          "cer": 0.05252,
+          "exact": 0.71111
+        },
+        "coloured": {
+          "lines": 20,
+          "chars": 214,
+          "errors": 13,
+          "cer": 0.06075,
+          "exact": 0.6
+        },
+        "coloured-name": {
+          "lines": 7,
+          "chars": 24,
+          "errors": 1,
+          "cer": 0.04167,
+          "exact": 0.85714
+        },
+        "dark-on-light": {
+          "lines": 110,
+          "chars": 1101,
+          "errors": 59,
+          "cer": 0.05359,
+          "exact": 0.62727
+        },
+        "furigana": {
+          "lines": 20,
+          "chars": 206,
+          "errors": 48,
+          "cer": 0.23301,
+          "exact": 0.05
+        },
+        "mincho": {
+          "lines": 90,
+          "chars": 984,
+          "errors": 46,
+          "cer": 0.04675,
+          "exact": 0.64444
+        },
+        "name": {
+          "lines": 62,
+          "chars": 209,
+          "errors": 37,
+          "cer": 0.17703,
+          "exact": 0.62903
+        },
+        "no-box": {
+          "lines": 4,
+          "chars": 59,
+          "errors": 8,
+          "cer": 0.13559,
+          "exact": 0.25
+        },
+        "outlined": {
+          "lines": 69,
+          "chars": 740,
+          "errors": 30,
+          "cer": 0.04054,
+          "exact": 0.78261
+        },
+        "small": {
+          "lines": 106,
+          "chars": 973,
+          "errors": 35,
+          "cer": 0.03597,
+          "exact": 0.73585
+        }
+      },
+      "games": {
+        "v10856": {
+          "lines": 13,
+          "chars": 181,
+          "errors": 34,
+          "cer": 0.18785,
+          "exact": 0.07692
+        },
+        "v11095": {
+          "lines": 20,
+          "chars": 207,
+          "errors": 0,
+          "cer": 0.0,
+          "exact": 1.0
+        },
+        "v11504": {
+          "lines": 24,
+          "chars": 251,
+          "errors": 18,
+          "cer": 0.07171,
+          "exact": 0.5
+        },
+        "v11708": {
+          "lines": 11,
+          "chars": 105,
+          "errors": 11,
+          "cer": 0.10476,
+          "exact": 0.36364
+        },
+        "v12155": {
+          "lines": 21,
+          "chars": 160,
+          "errors": 2,
+          "cer": 0.0125,
+          "exact": 0.90476
+        },
+        "v12865": {
+          "lines": 22,
+          "chars": 171,
+          "errors": 18,
+          "cer": 0.10526,
+          "exact": 0.54545
+        },
+        "v12940": {
+          "lines": 16,
+          "chars": 181,
+          "errors": 3,
+          "cer": 0.01657,
+          "exact": 0.8125
+        },
+        "v13072": {
+          "lines": 14,
+          "chars": 117,
+          "errors": 2,
+          "cer": 0.01709,
+          "exact": 0.85714
+        },
+        "v15910": {
+          "lines": 24,
+          "chars": 280,
+          "errors": 6,
+          "cer": 0.02143,
+          "exact": 0.83333
+        },
+        "v3396": {
+          "lines": 24,
+          "chars": 233,
+          "errors": 17,
+          "cer": 0.07296,
+          "exact": 0.45833
+        },
+        "v3542": {
+          "lines": 11,
+          "chars": 124,
+          "errors": 6,
+          "cer": 0.04839,
+          "exact": 0.54545
+        },
+        "v4147": {
+          "lines": 7,
+          "chars": 88,
+          "errors": 9,
+          "cer": 0.10227,
+          "exact": 0.28571
+        },
+        "v4671": {
+          "lines": 18,
+          "chars": 220,
+          "errors": 5,
+          "cer": 0.02273,
+          "exact": 0.83333
+        },
+        "v7634": {
+          "lines": 20,
+          "chars": 192,
+          "errors": 2,
+          "cer": 0.01042,
+          "exact": 0.9
+        }
+      },
+      "game_macro_cer": 0.05671,
+      "oov_chars": {
+        "霄": 1
+      },
+      "finder": {
+        "regions": 93,
+        "regions_rejected": 0,
+        "gt_lines": 245,
+        "line_recall": 0.78776,
+        "detections": 195,
+        "line_precision": 0.98974,
+        "pipeline_cer": 0.36175,
+        "concat_cer": 0.35936,
+        "concat_regions_chars": 2510,
+        "hiragana": {
+          "chars": 1382,
+          "errors": 430,
+          "cer": 0.31114,
+          "substitutions": 35,
+          "deletions": 391,
+          "insertions": 4,
+          "into_hiragana": 22,
+          "confusions": [
+            {
+              "reference": "い",
+              "prediction": null,
+              "count": 30
+            },
+            {
+              "reference": "の",
+              "prediction": null,
+              "count": 18
+            },
+            {
+              "reference": "し",
+              "prediction": null,
+              "count": 15
+            },
+            {
+              "reference": "っ",
+              "prediction": null,
+              "count": 13
+            },
+            {
+              "reference": "な",
+              "prediction": null,
+              "count": 13
+            },
+            {
+              "reference": "も",
+              "prediction": null,
+              "count": 12
+            },
+            {
+              "reference": "う",
+              "prediction": null,
+              "count": 11
+            },
+            {
+              "reference": "た",
+              "prediction": null,
+              "count": 11
+            },
+            {
+              "reference": "て",
+              "prediction": null,
+              "count": 11
+            },
+            {
+              "reference": "に",
+              "prediction": null,
+              "count": 11
+            },
+            {
+              "reference": "ま",
+              "prediction": null,
+              "count": 11
+            },
+            {
+              "reference": "る",
+              "prediction": null,
+              "count": 11
+            },
+            {
+              "reference": "が",
+              "prediction": null,
+              "count": 10
+            },
+            {
+              "reference": "く",
+              "prediction": null,
+              "count": 10
+            },
+            {
+              "reference": "で",
+              "prediction": null,
+              "count": 10
+            },
+            {
+              "reference": "と",
+              "prediction": null,
+              "count": 10
+            },
+            {
+              "reference": "は",
+              "prediction": null,
+              "count": 10
+            },
+            {
+              "reference": "さ",
+              "prediction": null,
+              "count": 9
+            },
+            {
+              "reference": "よ",
+              "prediction": null,
+              "count": 9
+            },
+            {
+              "reference": "れ",
+              "prediction": null,
+              "count": 9
+            },
+            {
+              "reference": "え",
+              "prediction": null,
+              "count": 8
+            },
+            {
+              "reference": "あ",
+              "prediction": null,
+              "count": 7
+            },
+            {
+              "reference": "こ",
+              "prediction": null,
+              "count": 7
+            },
+            {
+              "reference": "だ",
+              "prediction": null,
+              "count": 7
+            },
+            {
+              "reference": "ど",
+              "prediction": null,
+              "count": 7
+            },
+            {
+              "reference": "お",
+              "prediction": null,
+              "count": 6
+            },
+            {
+              "reference": "か",
+              "prediction": null,
+              "count": 6
+            },
+            {
+              "reference": "す",
+              "prediction": null,
+              "count": 6
+            },
+            {
+              "reference": "ち",
+              "prediction": null,
+              "count": 6
+            },
+            {
+              "reference": "や",
+              "prediction": null,
+              "count": 6
+            },
+            {
+              "reference": "を",
+              "prediction": null,
+              "count": 6
+            },
+            {
+              "reference": "ん",
+              "prediction": null,
+              "count": 6
+            },
+            {
+              "reference": "そ",
+              "prediction": null,
+              "count": 5
+            },
+            {
+              "reference": "ら",
+              "prediction": null,
+              "count": 5
+            },
+            {
+              "reference": "け",
+              "prediction": null,
+              "count": 4
+            },
+            {
+              "reference": "せ",
+              "prediction": null,
+              "count": 4
+            },
+            {
+              "reference": "ふ",
+              "prediction": null,
+              "count": 4
+            },
+            {
+              "reference": "り",
+              "prediction": null,
+              "count": 4
+            },
+            {
+              "reference": "き",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "ゆ",
+              "prediction": null,
+              "count": 3
+            },
+            {
+              "reference": "き",
+              "prediction": "さ",
+              "count": 2
+            },
+            {
+              "reference": "ぐ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ご",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "さ",
+              "prediction": "き",
+              "count": 2
+            },
+            {
+              "reference": "じ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "つ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ぬ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ね",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ば",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ぶ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ほ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "み",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "め",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "ろ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": "わ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": null,
+              "prediction": "こ",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "す",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "で",
+              "count": 1
+            },
+            {
+              "reference": null,
+              "prediction": "は",
+              "count": 1
+            },
+            {
+              "reference": "!",
+              "prediction": "ぶ",
+              "count": 1
+            },
+            {
+              "reference": "!",
+              "prediction": "ん",
+              "count": 1
+            },
+            {
+              "reference": "?",
+              "prediction": "ん",
+              "count": 1
+            },
+            {
+              "reference": "―",
+              "prediction": "で",
+              "count": 1
+            },
+            {
+              "reference": "―",
+              "prediction": "ら",
+              "count": 1
+            },
+            {
+              "reference": "…",
+              "prediction": "お",
+              "count": 1
+            },
+            {
+              "reference": "…",
+              "prediction": "こ",
+              "count": 1
+            },
+            {
+              "reference": "。",
+              "prediction": "あ",
+              "count": 1
+            },
+            {
+              "reference": "」",
+              "prediction": "や",
+              "count": 1
+            },
+            {
+              "reference": "ぁ",
+              "prediction": "の",
+              "count": 1
+            },
+            {
+              "reference": "い",
+              "prediction": "張",
+              "count": 1
+            },
+            {
+              "reference": "い",
+              "prediction": "然",
+              "count": 1
+            },
+            {
+              "reference": "い",
+              "prediction": "素",
+              "count": 1
+            },
+            {
+              "reference": "い",
+              "prediction": "要",
+              "count": 1
+            },
+            {
+              "reference": "ぇ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "お",
+              "prediction": "”",
+              "count": 1
+            },
+            {
+              "reference": "が",
+              "prediction": "か",
+              "count": 1
+            },
+            {
+              "reference": "が",
+              "prediction": "際",
+              "count": 1
+            },
+            {
+              "reference": "ぎ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "く",
+              "prediction": "光",
+              "count": 1
+            },
+            {
+              "reference": "げ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "げ",
+              "prediction": "け",
+              "count": 1
+            },
+            {
+              "reference": "ざ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "し",
+              "prediction": "無",
+              "count": 1
+            },
+            {
+              "reference": "ず",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "せ",
+              "prediction": "ん",
+              "count": 1
+            },
+            {
+              "reference": "ぞ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "だ",
+              "prediction": "た",
+              "count": 1
+            },
+            {
+              "reference": "だ",
+              "prediction": "立",
+              "count": 1
+            },
+            {
+              "reference": "だ",
+              "prediction": "認",
+              "count": 1
+            },
+            {
+              "reference": "だ",
+              "prediction": "高",
+              "count": 1
+            },
+            {
+              "reference": "つ",
+              "prediction": "っ",
+              "count": 1
+            },
+            {
+              "reference": "で",
+              "prediction": "て",
+              "count": 1
+            },
+            {
+              "reference": "ど",
+              "prediction": "と",
+              "count": 1
+            },
+            {
+              "reference": "な",
+              "prediction": "、",
+              "count": 1
+            },
+            {
+              "reference": "に",
+              "prediction": "…",
+              "count": 1
+            },
+            {
+              "reference": "ね",
+              "prediction": "3",
+              "count": 1
+            },
+            {
+              "reference": "は",
+              "prediction": "ロ",
+              "count": 1
+            },
+            {
+              "reference": "ひ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "び",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "ふ",
+              "prediction": "「",
+              "count": 1
+            },
+            {
+              "reference": "ぷ",
+              "prediction": "つ",
+              "count": 1
+            },
+            {
+              "reference": "べ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "ま",
+              "prediction": "物",
+              "count": 1
+            },
+            {
+              "reference": "み",
+              "prediction": "初",
+              "count": 1
+            },
+            {
+              "reference": "む",
+              "prediction": "あ",
+              "count": 1
+            },
+            {
+              "reference": "ゃ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "ゃ",
+              "prediction": "や",
+              "count": 1
+            },
+            {
+              "reference": "ゅ",
+              "prediction": "ゆ",
+              "count": 1
+            },
+            {
+              "reference": "ゆ",
+              "prediction": "ゅ",
+              "count": 1
+            },
+            {
+              "reference": "ょ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "ァ",
+              "prediction": "か",
+              "count": 1
+            },
+            {
+              "reference": "タ",
+              "prediction": "お",
+              "count": 1
+            },
+            {
+              "reference": "加",
+              "prediction": "か",
+              "count": 1
+            },
+            {
+              "reference": "小",
+              "prediction": "が",
+              "count": 1
+            },
+            {
+              "reference": "様",
+              "prediction": "で",
+              "count": 1
+            },
+            {
+              "reference": "男",
+              "prediction": "り",
+              "count": 1
+            },
+            {
+              "reference": "私",
+              "prediction": "れ",
+              "count": 1
+            },
+            {
+              "reference": "美",
+              "prediction": "ま",
+              "count": 1
+            },
+            {
+              "reference": "良",
+              "prediction": "た",
+              "count": 1
+            },
+            {
+              "reference": "身",
+              "prediction": "り",
+              "count": 1
+            },
+            {
+              "reference": "長",
+              "prediction": "ん",
+              "count": 1
+            },
+            {
+              "reference": "阿",
+              "prediction": "な",
+              "count": 1
+            },
+            {
+              "reference": "青",
+              "prediction": "お",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "clannad-test": {
+      "all": {
+        "lines": 25,
+        "chars": 388,
+        "errors": 7,
+        "cer": 0.01804,
+        "exact": 0.76
+      },
+      "hiragana": {
+        "chars": 229,
+        "errors": 3,
+        "cer": 0.0131,
+        "substitutions": 1,
+        "deletions": 2,
+        "insertions": 0,
+        "into_hiragana": 0,
+        "confusions": [
+          {
+            "reference": "い",
+            "prediction": null,
+            "count": 2
+          },
+          {
+            "reference": "ぇ",
+            "prediction": "え",
+            "count": 1
+          }
+        ]
+      },
+      "styles": {
+        "bright-on-dark": {
+          "lines": 25,
+          "chars": 388,
+          "errors": 7,
+          "cer": 0.01804,
+          "exact": 0.76
+        },
+        "outlined": {
+          "lines": 25,
+          "chars": 388,
+          "errors": 7,
+          "cer": 0.01804,
+          "exact": 0.76
+        }
+      },
+      "games": {
+        "v4": {
+          "lines": 25,
+          "chars": 388,
+          "errors": 7,
+          "cer": 0.01804,
+          "exact": 0.76
+        }
+      },
+      "game_macro_cer": 0.01804,
+      "oov_chars": {},
+      "finder": {
+        "regions": 20,
+        "regions_rejected": 0,
+        "gt_lines": 25,
+        "line_recall": 0.88,
+        "detections": 23,
+        "line_precision": 0.95652,
+        "pipeline_cer": 0.06701,
+        "concat_cer": 0.06701,
+        "concat_regions_chars": 388,
+        "hiragana": {
+          "chars": 229,
+          "errors": 11,
+          "cer": 0.04803,
+          "substitutions": 1,
+          "deletions": 7,
+          "insertions": 3,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": null,
+              "prediction": "う",
+              "count": 2
+            },
+            {
+              "reference": "だ",
+              "prediction": null,
+              "count": 2
+            },
+            {
+              "reference": null,
+              "prediction": "す",
+              "count": 1
+            },
+            {
+              "reference": "ぇ",
+              "prediction": "え",
+              "count": 1
+            },
+            {
+              "reference": "か",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "が",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "た",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "っ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "ん",
+              "prediction": null,
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "clannad-dev": {
+      "all": {
+        "lines": 19,
+        "chars": 207,
+        "errors": 5,
+        "cer": 0.02415,
+        "exact": 0.89474
+      },
+      "hiragana": {
+        "chars": 127,
+        "errors": 2,
+        "cer": 0.01575,
+        "substitutions": 2,
+        "deletions": 0,
+        "insertions": 0,
+        "into_hiragana": 0,
+        "confusions": [
+          {
+            "reference": "ず",
+            "prediction": "す",
+            "count": 1
+          },
+          {
+            "reference": "っ",
+            "prediction": "つ",
+            "count": 1
+          }
+        ]
+      },
+      "styles": {
+        "bright-on-dark": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 5,
+          "cer": 0.02415,
+          "exact": 0.89474
+        },
+        "outlined": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 5,
+          "cer": 0.02415,
+          "exact": 0.89474
+        }
+      },
+      "games": {
+        "v4": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 5,
+          "cer": 0.02415,
+          "exact": 0.89474
+        }
+      },
+      "game_macro_cer": 0.02415,
+      "oov_chars": {},
+      "finder": {
+        "regions": 19,
+        "regions_rejected": 0,
+        "gt_lines": 19,
+        "line_recall": 1.0,
+        "detections": 19,
+        "line_precision": 1.0,
+        "pipeline_cer": 0.04831,
+        "concat_cer": 0.04831,
+        "concat_regions_chars": 207,
+        "hiragana": {
+          "chars": 127,
+          "errors": 1,
+          "cer": 0.00787,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "っ",
+              "prediction": "つ",
+              "count": 1
+            }
+          ]
+        }
+      }
+    }
+  },
+  "restoration": {
+    "random_input_parity": [
+      {
+        "width": 64,
+        "max_logit_error": 8.821487426757812e-06,
+        "same_argmax": true
+      },
+      {
+        "width": 256,
+        "max_logit_error": 1.1444091796875e-05,
+        "same_argmax": true
+      },
+      {
+        "width": 640,
+        "max_logit_error": 1.1920928955078125e-05,
+        "same_argmax": true
+      },
+      {
+        "width": 1024,
+        "max_logit_error": 1.1920928955078125e-05,
+        "same_argmax": true
+      }
+    ],
+    "shared_w8i_predictions_unchanged": 451,
+    "bn_stats_frozen_smoke_steps": 3,
+    "max_smoke_parameter_change": 0.000301361083984375
+  },
+  "capture_kind": "Vita3K native 960x544; no physical console measurement",
+  "sampling": {
+    "clannad_dev_captured_frames": 24,
+    "clannad_dev_excluded_frames": [
+      3,
+      4,
+      21,
+      22,
+      23
+    ],
+    "clannad_test_captured_frames": 24,
+    "clannad_test_excluded_frames": [
+      2,
+      3,
+      16,
+      23
+    ],
+    "exclusion_reason": "blank transitions or visibly incomplete/fading typewriter text",
+    "known_training_game": "CLANNAD v4; these are additional sessions, not an unseen-game benchmark"
+  },
+  "source_sha256": {
+    "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+    "eval/run.py": "9312d3e667a072b306aba2878ddad437877eecf67f2eb86b9e75214511425a67",
+    "eval/sets.py": "3a9ec2e9161264bf10702e1572d6acda9237c70bc11ac8764cf7ab36a98b62a4",
+    "eval/backends.py": "fc0cec2b6076658c198f8ea2b3d547208571dcac45b50d5aa565324edf1e9ae4",
+    "train/restore_blob.py": "e96d3142455f92bd6410ebc7d08d86228f2d0e9a123d2c1b83944db688a34fab",
+    "synth/render.py": "14b38f0f9db9c4fe64bf4bc40335105d64fba3cf94de8e9097a6f0c78752418c"
+  },
+  "validation": {
+    "pytest_passed": 320,
+    "pytest_skipped": 1,
+    "skip_reason": "existing optional synth2 test requires original local corpus/fonts; targeted renderer separately tested on fixtures",
+    "training_smoke_steps": 50,
+    "gcc_runtime_sanitizers_and_parity": true,
+    "clang_runtime_sanitizers_and_parity": true
+  }
+}

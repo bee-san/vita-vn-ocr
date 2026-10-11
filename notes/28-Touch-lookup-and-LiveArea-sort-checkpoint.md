@@ -2,7 +2,7 @@
 title: Touch lookup and native LiveArea sorting checkpoint
 created: 2026-10-11
 updated: 2026-10-11
-checkpoint_utc: "2026-10-11 15:53:04"
+checkpoint_utc: "2026-10-11 17:03"
 interruption_checkpoint_utc: "2026-10-11 15:34:40"
 settings_controls_verified_by_utc: "2026-10-11 15:43:54"
 status: settings-highlight-controls-verified-game-touch-pending
@@ -20,8 +20,10 @@ verified independently of the retained uncertain promoter status. The new Shell
 file was read back after a new boot; fresh native module inventory now confirms
 that the Shell plugin is loaded. Actual game-header taps remain pending. The
 revised local native sorting helper has booted and advertises its operation.
-Its verified 59-bubble plan is uploaded; physical approval and moves remain
-pending. This checkpoint was refreshed at 16:47 UTC on October 11.
+Its verified 59-bubble plan is uploaded. Physical approval was subsequently
+recorded; a sorting call returned an error and the full layout stayed unchanged.
+The user canceled sorting, so no further sorting work is planned. This checkpoint
+was refreshed at 17:03 UTC on October 11.
 
 Earlier working VOCR/Meiki, region controls, repaired Settings preferences and
 the 374.066-second quiet connection result remain dated evidence in
@@ -265,16 +267,32 @@ coordinates matched the 1,904-byte plan, SHA-256
 The uploaded plan has an identical full readback. Genre placement remains the
 same: visual novels, Japanese games, other games, then tools.
 
-No grant or bubble move is established. The scoped access request returned
-agent `VAU_BUSY` (`-2`) while system UI covered Settings; status showed no active
-request. A guarded sorting call returned `VAU_DENIED` (`-4`) without the ACL.
-These small negative codes are defined by the agent header, not Sony error
-codes. Extra SQLite column diagnostics in that response are stale metadata,
-not evidence of a dictionary/memory failure. A JPEG capture returned
-`frame_unavailable`, `jpeg_encode`, code `-7`; it supplied no usable image.
-Settings launch is confirmed, but the app must be made physically visible
-before the approval dialog can appear. The agent cannot inject PS or approve
-that dialog. No input is sent while a physical approval is pending.
+The initial scoped access request returned agent `VAU_BUSY` (`-2`) while system
+UI covered Settings; an unapproved guarded sort returned `VAU_DENIED` (`-4`).
+These small negative codes are agent definitions, not Sony error codes. Extra
+cached SQLite column details are not evidence of a dictionary/memory failure.
+A JPEG capture returned `frame_unavailable`, `jpeg_encode`, code `-7` and supplied
+no usable image.
+
+After the user made Settings visible, the first accepted approval prompt expired.
+A new physical prompt was approved by the user, and native status recorded
+`state=approved`, `persistent=true`, `native_result=0`. No agent input was sent
+while approval was pending. With Settings closed and a fresh complete source
+layout checked, the same retained sorting operation returned `0x80010016`.
+The bundled `psp2_err` decoded it as `SCE_ERROR_ERRNO_EINVAL`; the exact failed
+stage is unknown. A complete post-error inventory still matches all 59 original
+coordinates, nine page records and zero orphans. No movement is established.
+
+The user then explicitly canceled icon sorting. Stop further sorter retries,
+helper deployments and icon changes. A diagnostic helper build remained local
+and was not installed. Settings was relaunched through the native agent and
+confirmed foreground with the expected title. Retain the failed operation and
+plan privately without editing the database, layout file, identity or ACL store.
+
+The final complete configuration readback still matches the verified 2,973-byte
+file: VOCR selected, Japanese-only ON, whole-word highlighting and private
+Daijirin before JMdict. Settings relaunch is confirmed by native foreground
+observation; no new game-text or typography result is inferred.
 
 Private evidence remains under `vita-agent-use/agent/touch-lookup-20261011/`
 and `vita-agent-use-livearea-sort/agent/lazy-lsdb-review/`. Keep captures,
@@ -288,8 +306,6 @@ firmware, identity data and private dictionaries out of public artifacts.
 - Verify both highlight choices and Japanese-only header taps in a game,
   including held-touch/release and region-editor ownership.
 - Inspect physical typography separately from successful saves or snapshots.
-- Obtain physical scoped approval, then sort only through the supported guarded
-  operation and verify
-  complete persisted layout and physical page order.
+- Icon sorting is canceled by the user; preserve the unchanged layout.
 - Retain pending native Daijirin lookup and hardware OCR CER; earlier host and
   game runs do not establish these new-release checks.

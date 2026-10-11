@@ -1,0 +1,14 @@
+{
+  "original": {
+    "nv": "/private/original/nv_train_*.npz",
+    "s2": "/private/original/s2_train_*.npz",
+    "tt": "/private/original/teacher_train.npz",
+    "rd": "/private/original/real_train.npz",
+    "ps": "/private/original/pseudolabels_hard_train.npz"
+  },
+  "targeted": "/private/targeted/synth_*.npz",
+  "anime": "/private/animetext_curated/train/*.npz",
+  "anime_manifest": "/private/animetext_curated/crops.jsonl",
+  "anime_audit": "/private/animetext_curated/audit-summary.json",
+  "dev": "/private/clannad/dev.npz"
+}

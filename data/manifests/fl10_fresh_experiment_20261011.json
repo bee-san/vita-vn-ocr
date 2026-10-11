@@ -1,0 +1,625 @@
+{
+  "recipe": "fresh-fl10-hiragana-kanji-v2",
+  "config": {
+    "general": "build/hiragana/fresh-jiten/general/*.npz",
+    "targeted": "build/hiragana/fresh-jiten/targeted/*.npz",
+    "kanji": "build/hiragana/fresh-jiten/kanji/*.npz",
+    "kanji_policy": "data/manifests/fl10_kanji_policy_20261011.json",
+    "kanji_manifest": "build/hiragana/fresh-jiten/dataset_manifest.json",
+    "anime": "build/hiragana/animetext-curated/train/*.npz",
+    "anime_manifest": "build/hiragana/animetext-curated/crops.jsonl",
+    "anime_audit": "build/hiragana/animetext-curated/audit-summary.json",
+    "dev": "build/hiragana/clannad/dev.npz",
+    "synthetic_dev": "build/hiragana/fresh-jiten/synthetic-dev/synth_00000.npz"
+  },
+  "config_sha256": "abb1636dc57b90f14b6bb631b268715f70374b6d084cfd3e9963007183063b30",
+  "init_sha256": "9fbcb3b2c620a582a003353abb9481d0ee05eb8a5709d4bb1481d4e733597b47",
+  "vocab_sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8",
+  "architecture": {
+    "width": 1.0,
+    "bottleneck": 96,
+    "depth": 1,
+    "ctx": 2,
+    "ctx_k": 5,
+    "height": 32
+  },
+  "inputs": {
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/audit-summary.json": {
+      "role": "provenance",
+      "source": "anime_audit",
+      "sha256": "ecdcfd9cd774645140713b95900abb355faf45eb579fb8557e29aafbb253f427",
+      "bytes": 1547
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/crops.jsonl": {
+      "role": "provenance",
+      "source": "anime_manifest",
+      "sha256": "04d6a3707fe4acc3caa83af300685bf4df987584fbe7db78e535ff2eb283ad09",
+      "bytes": 12969619
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/train/animetext_00000.npz": {
+      "role": "train",
+      "source": "anime",
+      "crops": 2000,
+      "sha256": "b9cb9e4871a316bb00c01992d528ee91b62773e8bac53469814aba231cd3b933",
+      "bytes": 7815587
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/train/animetext_00001.npz": {
+      "role": "train",
+      "source": "anime",
+      "crops": 2000,
+      "sha256": "7e8bb18094701f7f48da1420cfc64bd69e514fee62615af25209b525750c2d6d",
+      "bytes": 8599436
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/train/animetext_00002.npz": {
+      "role": "train",
+      "source": "anime",
+      "crops": 2000,
+      "sha256": "c66d869cb129e1c05de1e483deaf46c6335479564943c5eee9f5da8faefbe948",
+      "bytes": 8599948
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/train/animetext_00003.npz": {
+      "role": "train",
+      "source": "anime",
+      "crops": 2000,
+      "sha256": "a87e9346eab7c4226a65176223036b5ba3a1b1673c7e81c32f21a3103aa14ffb",
+      "bytes": 8187374
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/train/animetext_00004.npz": {
+      "role": "train",
+      "source": "anime",
+      "crops": 2000,
+      "sha256": "2f2f068da80f73fd8fc286cd5ab61557611fb1b37e105d46aea742a491e8846c",
+      "bytes": 8956067
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/train/animetext_00005.npz": {
+      "role": "train",
+      "source": "anime",
+      "crops": 2000,
+      "sha256": "103f87f3a05c70c862c2f2f807f34b652b9c32c56d20f17a914fc6ff5cdb05c3",
+      "bytes": 7733021
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/train/animetext_00006.npz": {
+      "role": "train",
+      "source": "anime",
+      "crops": 2000,
+      "sha256": "98804ddc6c80dc70d1096b0e563530cf1eca0523c5b672b5ce4da690d36be8ad",
+      "bytes": 9041787
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/animetext-curated/train/animetext_00007.npz": {
+      "role": "train",
+      "source": "anime",
+      "crops": 1883,
+      "sha256": "e14dccbb1163a6716bf962b8a12f4fd13156bcf7ee75203325088434f2f33ef0",
+      "bytes": 7904137
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/clannad/dev.npz": {
+      "role": "dev",
+      "source": "dev",
+      "crops": 19,
+      "sha256": "81d7c221cbd6efb5ac71b2ee22d33e66c518581cb059119d98f8298c8ec1d60c",
+      "bytes": 113787
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/dataset_manifest.json": {
+      "role": "provenance",
+      "source": "kanji_manifest",
+      "sha256": "370950a9b97e1a6a9599f537dc6ebc929cfc6a3120f761eab92a403e7a6221a6",
+      "bytes": 312732
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00000.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "aff18af35b4b3820afd39498493339b0e8901adee9e4df64590ed8960ea3151d",
+      "bytes": 4051286
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00001.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "c3212b88431a1b592664a95f526a902daacf861655939ef7f8b8a6243ae05694",
+      "bytes": 3922082
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00002.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "773210cc57aa24cc93e54544bd43cdd9afec02b8c7105d044d8ddda10d4f5048",
+      "bytes": 4155490
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00003.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "727d2fb81d5e65ef564a1d8755dbb10d678e5f2b4e278856db30c82dc74d6727",
+      "bytes": 3941158
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00004.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "783464d8f80a845da6b64101b5ed08faef9aa91938a35c7f5906d0fb8bcbabe1",
+      "bytes": 4048910
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00005.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "16cbab5c732febbc41ccfe5c36e9f1958eda04580bdd84488686dbb11c736a23",
+      "bytes": 4216796
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00006.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "3e2bc3e9fd418cb84f4ff29fdb87af103432fad431a793e2f6c096fa0dbe1067",
+      "bytes": 4167849
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00007.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "f252fa28e068d5f59ab8650ca37c86c280a93894c6b0672917b10a2465c83f8d",
+      "bytes": 3846040
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00008.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "d9b1e5bca4974604104601652ba25a3d0a64f686397d71874d7ec3abbda8cf35",
+      "bytes": 3972833
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00009.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "5a2b34cb480833ae523c3de5d18d4ae20dd50009cf38d4a00ca6a555f551cec9",
+      "bytes": 4082403
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00010.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "ebfbab9380c2b47e8c24e71aa6175909e9d8aa1cecc71c0b987aa0b0780f13dd",
+      "bytes": 4289834
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00011.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "7c301de233a9a48ca48476f4d2c78c53b068cc6dc9c4f33eba5e81ae1061690c",
+      "bytes": 3730395
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00012.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "652690b1d65012df96dc95ac17e104228a98932f142fc53e9790bcc78fc6c221",
+      "bytes": 4284570
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00013.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "8b118afac7f409f0db25198d0fde424511679c756b60065615fe6ad4fcb9594d",
+      "bytes": 3779697
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00014.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "e2ae0588898a078b6deb60556187cc2e3c0d86d2aac3c5f7e71b44b3be1b2c61",
+      "bytes": 4364319
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00015.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "cdd2b18471707659bf610de83fb3536ad4c6345769c1976ff98a2bfa3569c469",
+      "bytes": 3923695
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00016.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "65b81e2901a2e588d72a4168cd615b18b981290b5b51547f34c29e63d129c957",
+      "bytes": 3985545
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00017.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "86cc3e7942286396b9c3d09eb56d2e2a52f9ca761cc23dafab638b6bacd239e1",
+      "bytes": 4129981
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00018.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "969827273242bf0c82f97ca1e983c8f1f4e699b5c5d77aed3f17213b0d679632",
+      "bytes": 4195633
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00019.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "e978a5ad8bacd7ed238b0dbcd2e14c546acfff15b6dec3b89bf1821d00789675",
+      "bytes": 4416579
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00020.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "d1c652193f6e5d3ff51ef14d66ce6cc107e5b9cf0dc950b89601829d3f2b3309",
+      "bytes": 4093072
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00021.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "b2bc8783c477ead278c99e3ee90f35b5656c7a269dfc9658c7116cc02ff3cfbe",
+      "bytes": 4149869
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00022.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "04f3cc32aeb8a2f79fece92906f6b1ddab08e2ade2676be350f5a23838d1cb1e",
+      "bytes": 4106831
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/general/synth_00023.npz": {
+      "role": "train",
+      "source": "general",
+      "crops": 500,
+      "sha256": "408647f9417135c5303283445ce74c4037196537f446235ed96ce18d63d4ffa9",
+      "bytes": 4097699
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/kanji/synth_00000.npz": {
+      "role": "train",
+      "source": "kanji",
+      "crops": 500,
+      "sha256": "c30cde72cc7dbd1e6283693c3da28d2dc15641a06decf2bea81bfc7d935c965e",
+      "bytes": 5396766
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/kanji/synth_00001.npz": {
+      "role": "train",
+      "source": "kanji",
+      "crops": 500,
+      "sha256": "f1e5914706f9af3d079949e1cce20e96dc9e3729c1e7366b93df6967f2cbcba6",
+      "bytes": 5765724
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/kanji/synth_00002.npz": {
+      "role": "train",
+      "source": "kanji",
+      "crops": 500,
+      "sha256": "946814585ad01a7d487bb23c0d236e601a0fb2042b4b6e07f85844464cc0ad36",
+      "bytes": 5606173
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/synthetic-dev/synth_00000.npz": {
+      "role": "dev",
+      "source": "synthetic_dev",
+      "crops": 500,
+      "sha256": "be050dc163a0517b1509168831e33718a0e954921e78bee1fa3c1999bb5c6b64",
+      "bytes": 3753423
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/targeted/synth_00000.npz": {
+      "role": "train",
+      "source": "targeted",
+      "crops": 500,
+      "sha256": "0376f65218f1ba51a6fc491d3fb2a61fcadeca2cef3be488877c011bba2692b9",
+      "bytes": 5367050
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/targeted/synth_00001.npz": {
+      "role": "train",
+      "source": "targeted",
+      "crops": 500,
+      "sha256": "07feb6625c005551c8ea391c075c6865d34b96d0cdea0608291ee751344455af",
+      "bytes": 4923577
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/targeted/synth_00002.npz": {
+      "role": "train",
+      "source": "targeted",
+      "crops": 500,
+      "sha256": "115d2ef9403d9eb1ec3a36cb472a126eb0bb6e0b473b64323559979dbba8ca92",
+      "bytes": 5366443
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/targeted/synth_00003.npz": {
+      "role": "train",
+      "source": "targeted",
+      "crops": 500,
+      "sha256": "4f9cd372f8265e2e9bdd14bc690ab749263a91dd04bc62be61d4d0eaaf2c7792",
+      "bytes": 5441584
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/targeted/synth_00004.npz": {
+      "role": "train",
+      "source": "targeted",
+      "crops": 500,
+      "sha256": "52dd27f2cbf6b58d1851e0888fe548dc78b73f9104bedf77fc66b137c01f0276",
+      "bytes": 5370828
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/targeted/synth_00005.npz": {
+      "role": "train",
+      "source": "targeted",
+      "crops": 500,
+      "sha256": "e543d9114011b29cb8637a686829271cb95a9af1ebecabde106733a06ac3fcee",
+      "bytes": 5003243
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/targeted/synth_00006.npz": {
+      "role": "train",
+      "source": "targeted",
+      "crops": 500,
+      "sha256": "0f18f393afb73651e6538eb76fa212f1ad42d12dfd890125b28e25fc674fb69d",
+      "bytes": 5083273
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-jiten/targeted/synth_00007.npz": {
+      "role": "train",
+      "source": "targeted",
+      "crops": 500,
+      "sha256": "008f26c97e51ac6070536407fe6a3bbbec3b32a0a8067f0371ab4c35cf200227",
+      "bytes": 5515589
+    },
+    "/home/bee/Documents/src/vita-vn-ocr/data/manifests/fl10_kanji_policy_20261011.json": {
+      "role": "provenance",
+      "source": "kanji_policy",
+      "sha256": "8fc9ea20804cc45876e25b60ed669446dc75fc7f0b6b383d65cc4688e050f763",
+      "bytes": 165795
+    }
+  },
+  "commands": [
+    [
+      "/home/bee/Documents/src/vita-vn-ocr/.venv-ci/bin/python",
+      "/home/bee/Documents/src/vita-vn-ocr/train/train2.py",
+      "--run",
+      "fresh_general_s1",
+      "--out",
+      "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs",
+      "--init",
+      "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fl10_init.pt",
+      "--vocab",
+      "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/vocab.txt",
+      "--width",
+      "1.0",
+      "--bottleneck",
+      "96",
+      "--depth",
+      "1",
+      "--ctx",
+      "2",
+      "--ctx-k",
+      "5",
+      "--steps",
+      "1000",
+      "--batch",
+      "32",
+      "--lr",
+      "0.00002",
+      "--warmup",
+      "50",
+      "--seed",
+      "1",
+      "--threads",
+      "6",
+      "--wd",
+      "0.01",
+      "--final-lr",
+      "0.05",
+      "--freeze-bn-stats",
+      "--kd-weight",
+      "0",
+      "--eval-every",
+      "100",
+      "--keep-evals",
+      "--log-every",
+      "100",
+      "--val",
+      "clannad:build/hiragana/clannad/dev.npz",
+      "--val",
+      "synthetic:build/hiragana/fresh-jiten/synthetic-dev/synth_00000.npz",
+      "--select",
+      "clannad",
+      "--select-metric",
+      "hiragana",
+      "--src",
+      "general:0.98:build/hiragana/fresh-jiten/general/*.npz:inv=0.2",
+      "--src",
+      "kanji:0.02:build/hiragana/fresh-jiten/kanji/*.npz:inv=0.2"
+    ],
+    [
+      "/home/bee/Documents/src/vita-vn-ocr/.venv-ci/bin/python",
+      "/home/bee/Documents/src/vita-vn-ocr/train/train2.py",
+      "--run",
+      "fresh_targeted_s1",
+      "--out",
+      "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs",
+      "--init",
+      "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fl10_init.pt",
+      "--vocab",
+      "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/vocab.txt",
+      "--width",
+      "1.0",
+      "--bottleneck",
+      "96",
+      "--depth",
+      "1",
+      "--ctx",
+      "2",
+      "--ctx-k",
+      "5",
+      "--steps",
+      "1000",
+      "--batch",
+      "32",
+      "--lr",
+      "0.00002",
+      "--warmup",
+      "50",
+      "--seed",
+      "1",
+      "--threads",
+      "6",
+      "--wd",
+      "0.01",
+      "--final-lr",
+      "0.05",
+      "--freeze-bn-stats",
+      "--kd-weight",
+      "0",
+      "--eval-every",
+      "100",
+      "--keep-evals",
+      "--log-every",
+      "100",
+      "--val",
+      "clannad:build/hiragana/clannad/dev.npz",
+      "--val",
+      "synthetic:build/hiragana/fresh-jiten/synthetic-dev/synth_00000.npz",
+      "--select",
+      "clannad",
+      "--select-metric",
+      "hiragana",
+      "--src",
+      "general:0.88:build/hiragana/fresh-jiten/general/*.npz:inv=0.2",
+      "--src",
+      "targeted:0.1:build/hiragana/fresh-jiten/targeted/*.npz:inv=0.2",
+      "--src",
+      "kanji:0.02:build/hiragana/fresh-jiten/kanji/*.npz:inv=0.2"
+    ],
+    [
+      "/home/bee/Documents/src/vita-vn-ocr/.venv-ci/bin/python",
+      "/home/bee/Documents/src/vita-vn-ocr/train/train2.py",
+      "--run",
+      "fresh_anime_s1",
+      "--out",
+      "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs",
+      "--init",
+      "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fl10_init.pt",
+      "--vocab",
+      "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/vocab.txt",
+      "--width",
+      "1.0",
+      "--bottleneck",
+      "96",
+      "--depth",
+      "1",
+      "--ctx",
+      "2",
+      "--ctx-k",
+      "5",
+      "--steps",
+      "1000",
+      "--batch",
+      "32",
+      "--lr",
+      "0.00002",
+      "--warmup",
+      "50",
+      "--seed",
+      "1",
+      "--threads",
+      "6",
+      "--wd",
+      "0.01",
+      "--final-lr",
+      "0.05",
+      "--freeze-bn-stats",
+      "--kd-weight",
+      "0",
+      "--eval-every",
+      "100",
+      "--keep-evals",
+      "--log-every",
+      "100",
+      "--val",
+      "clannad:build/hiragana/clannad/dev.npz",
+      "--val",
+      "synthetic:build/hiragana/fresh-jiten/synthetic-dev/synth_00000.npz",
+      "--select",
+      "clannad",
+      "--select-metric",
+      "hiragana",
+      "--src",
+      "general:0.83:build/hiragana/fresh-jiten/general/*.npz:inv=0.2",
+      "--src",
+      "targeted:0.1:build/hiragana/fresh-jiten/targeted/*.npz:inv=0.2",
+      "--src",
+      "anime:0.05:build/hiragana/animetext-curated/train/*.npz:inv=0.2",
+      "--src",
+      "kanji:0.02:build/hiragana/fresh-jiten/kanji/*.npz:inv=0.2"
+    ]
+  ],
+  "code_sha256": {
+    "train/hiragana_fresh.py": "64b56ceeb0b0cdb009080f7e9d75727527c9648257004abe23000569a9ce7a25",
+    "train/hiragana_experiment.py": "3ad1d31be981e8320f1b8fae139d430a6bad8d94d756190f8e3a56f6876ada05",
+    "train/train2.py": "4112ffdc50301274c5e40b93df891fe3f7e7455ce19f12690f374ec6df679b0f",
+    "train/train.py": "688217b2d7b32ca23881865dc5e7f7648d3962ecb2b9ec996b5dc75d690cc2fb",
+    "train/model.py": "ba45bcaba8b383963bad097be323f19d894fb96eda22b3462907476b72fc8303",
+    "train/restore_blob.py": "e96d3142455f92bd6410ebc7d08d86228f2d0e9a123d2c1b83944db688a34fab",
+    "train/export.py": "a1bd752814a34f2d2a415532ee401d500c2863a3700ed2492260e62656f727a4",
+    "synth/render.py": "965ad3d1fcc746447fe405cf9e8ed326699b502639b2ad2e0526bc87b19af53b",
+    "synth/common.py": "6b8ca608c4e1ec60c87dd3bc6fa44a03fbb84fe0387ccc77a4c8aefbdc0c13ca",
+    "synth/bg_exclude.py": "58dbf9eca7dd86273ef17117b077c9c094dffcd06856f3ca786332c57f8aa752",
+    "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+    "eval/run.py": "9312d3e667a072b306aba2878ddad437877eecf67f2eb86b9e75214511425a67",
+    "eval/sets.py": "a65154a114c922e8a2bacf621dc96289f2fc74706e1705ab297a5014edb09bce",
+    "eval/backends.py": "fc0cec2b6076658c198f8ea2b3d547208571dcac45b50d5aa565324edf1e9ae4",
+    "data/import_animetext.py": "caa4a778ad75e29daa1bc4236bdfb7a7c6b724092407f86272c078276d86c2aa",
+    "synth/kanji_policy.py": "c98e9516171c2f2a34dcccf47393143266ef3c1dfdd2eabc6baf05980f2ae7ca"
+  },
+  "dependency_sha256": {
+    "requirements.lock": "2fc57d1824fdf25e9d86974ead2f05cde7e29ca9210513604860fd6466d1818e",
+    "requirements-ci.lock": "529385fa711e896b05aaba1130e81d0ac3334ae8ddea40b253c8546cbaae9539"
+  },
+  "environment": {
+    "host": "artemis",
+    "platform": "Linux-7.2.6-1-cachyos-x86_64-with-glibc2.44",
+    "machine": "x86_64",
+    "cpu": "Intel(R) Core(TM) Ultra 7 165U",
+    "logical_cpus": 14,
+    "python": "3.11.15",
+    "torch": "2.5.1+cpu",
+    "numpy": "2.4.6",
+    "opencv": "5.0.0",
+    "cuda_available": false,
+    "training_threads": 6
+  },
+  "sampling": {
+    "unit": "source probability per sampled line; independent of shard count",
+    "source_order": [
+      "general",
+      "targeted",
+      "anime",
+      "kanji"
+    ],
+    "arm_weights": {
+      "general": [
+        0.98,
+        0.0,
+        0.0,
+        0.02
+      ],
+      "targeted": [
+        0.88,
+        0.1,
+        0.0,
+        0.02
+      ],
+      "anime": [
+        0.83,
+        0.1,
+        0.05,
+        0.02
+      ]
+    },
+    "kanji_corrective_probability": 0.02,
+    "kanji_policy_sha256": "8fc9ea20804cc45876e25b60ed669446dc75fc7f0b6b383d65cc4688e050f763",
+    "within_kanji_source": "finite rendered schedule follows policy rank bands/pair weights"
+  },
+  "selection": {
+    "train2": "preliminary development hiragana only; all checkpoints retained",
+    "final": "export C W8I; development hiragana/full CER with full-CER and synthetic guards",
+    "held_out": "evaluate only after the selected blob identity is locked"
+  },
+  "reproducibility": {
+    "complete_restart": "pinned inputs, code, dependency locks, commands and seeds",
+    "checkpoint_resume": "approximate; train2 omits RNG and source/mixer states"
+  }
+}

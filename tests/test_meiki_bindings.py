@@ -21,7 +21,8 @@ def binding(tmp_path_factory):
         pytest.skip("C compiler unavailable")
     out = tmp_path_factory.mktemp("meiki-c") / "binding.so"
     subprocess.run([cc, "-std=c99", "-O2", "-ffp-contract=off", "-Wall", "-Wextra", "-Werror",
-                    "-fPIC", "-shared", str(PORT / "arena.c"), str(PORT / "decode.c"), "-o", str(out)], check=True)
+                    "-fPIC", "-shared", str(PORT / "arena.c"), str(PORT / "decode.c"),
+                    str(PORT / "model_reader.c"), "-o", str(out)], check=True)
     lib = C.CDLL(str(out))
     lib.meiki_arena_begin.argtypes = [C.c_void_p, C.c_size_t]
     lib.meiki_arena_alloc.argtypes = [C.c_size_t]
@@ -30,6 +31,89 @@ def binding(tmp_path_factory):
     lib.meiki_arena_used.restype = lib.meiki_arena_peak.restype = C.c_size_t
     lib.meiki_decode.argtypes = [C.POINTER(Output), C.c_uint, C.c_uint, C.c_void_p, C.c_size_t]
     return lib
+
+
+READ = C.CFUNCTYPE(C.c_int, C.c_void_p, C.c_uint32, C.c_void_p, C.c_uint32)
+
+
+class Reader(C.Structure):
+    _fields_ = [("size", C.c_uint32), ("byte_count", C.c_uint32),
+                ("context", C.c_void_p), ("read", READ)]
+
+
+class Stats(C.Structure):
+    _fields_ = [("heap_peak", C.c_size_t), ("heap_remaining", C.c_size_t),
+                ("session_memory_mib", C.c_float), ("load_us", C.c_uint64),
+                ("inference_us", C.c_uint64), ("allocation_failed", C.c_int),
+                ("model_read_bytes", C.c_size_t), ("model_read_error", C.c_int)]
+
+
+@pytest.mark.parametrize("failure_offset,error", [
+    (None, 0), (0, -19), (8192, -17), (5390336, -5), (8192, 37),
+])
+def test_model_reader_exact_bounds_and_error_cleanup(binding, failure_offset, error):
+    size = 5392856
+    backing = C.create_string_buffer(b"\xa5" * (size + 2))
+    destination = C.addressof(backing) + 1
+    calls = []
+
+    @READ
+    def read(context, offset, target, count):
+        assert context == 17
+        assert offset == len(calls) * 8192
+        assert 0 < count <= 8192 and count <= size - offset
+        assert target == destination + offset
+        calls.append((offset, count))
+        if offset == failure_offset:
+            return error
+        C.memset(target, (offset // 8192) & 255, count)
+        return 0
+
+    reader, stats = Reader(C.sizeof(Reader), size, 17, read), Stats()
+    binding.meiki_model_read.argtypes = [C.POINTER(Reader), C.c_void_p, C.c_size_t, C.POINTER(Stats)]
+    rc = binding.meiki_model_read(C.byref(reader), destination, size, C.byref(stats))
+    assert rc == (0 if failure_offset is None else -14)
+    assert stats.model_read_bytes == (size if failure_offset is None else failure_offset)
+    assert stats.model_read_error == error
+    assert backing[0] == backing[size + 1] == b"\xa5"
+    if failure_offset is None:
+        assert len(calls) == 659 and calls[-1] == (5390336, 2520)
+
+
+@pytest.mark.parametrize("field,value", [("size", 0), ("byte_count", 0),
+                                         ("byte_count", 5392855), ("byte_count", 0xffffffff)])
+def test_model_reader_rejects_unpinned_size_before_callback(binding, field, value):
+    calls = []
+
+    @READ
+    def read(*args):
+        calls.append(args)
+        return 0
+
+    reader = Reader(C.sizeof(Reader), 5392856, None, read)
+    setattr(reader, field, value)
+    stats, target = Stats(), C.create_string_buffer(1)
+    assert binding.meiki_model_read(C.byref(reader), C.addressof(target), 1, C.byref(stats)) == -1
+    assert not calls and stats.model_read_bytes == 0
+
+
+def test_model_reader_rejects_misaligned_descriptor_before_field_access(binding):
+    calls = []
+
+    @READ
+    def read(*args):
+        calls.append(args)
+        return -19
+
+    reader = Reader(C.sizeof(Reader), 5392856, None, read)
+    descriptor = C.create_string_buffer(C.sizeof(reader) + C.alignment(Reader))
+    address = C.addressof(descriptor) + 1
+    assert address % C.alignment(Reader)
+    C.memmove(address, C.byref(reader), C.sizeof(reader))
+    target, stats = C.create_string_buffer(5392856), Stats()
+    pointer = C.cast(address, C.POINTER(Reader))
+    assert binding.meiki_model_read(pointer, C.addressof(target), len(target), C.byref(stats)) == -1
+    assert not calls
 
 
 @pytest.mark.parametrize("seed", [17, 81])

@@ -1,0 +1,63 @@
+{
+  "scope": "Host pinned static MNN reader/path raw-output and cleanup comparison; not console RAM/timing; full shared real-crop CER",
+  "command": "python ports/meiki/verify_reader.py --mnn-source <pinned-MNN> --mnn-library <host-static-MNN> --model <pinned-recognizer> --matrix <pinned-private-ground_truth.json> --out <private-output> --sanitize",
+  "platform": "Linux-7.2.6-1-cachyos-x86_64-with-glibc2.44",
+  "compiler": "clang version 22.1.8",
+  "adapter_sanitizers": true,
+  "mnn_archive_instrumented_by_this_command": false,
+  "mnn_version": "3.2.0",
+  "mnn_commit": "ebdada82634300956e08bd4056ecfeb1e4f23b32",
+  "mnn_library_sha256": "bbbe12591df4c4a0b992800478c02bf216de93d0862757f8933e0f31455298b6",
+  "mnn_patch_sha256": "a780d1252f24e1c04e01f2245ae07723b8edb673aa83a031e6e9b25f970bc052",
+  "model_bytes": 5392856,
+  "model_sha256": "b7ba3219cd1bfeef5cb6b42ef6686683b991c6561b7ad3b1c41d32817deba21e",
+  "workspace_bytes": 16777216,
+  "reader_chunk_bytes": 8192,
+  "reader_repetitions_per_fixture": 2,
+  "path_repetitions_per_fixture": 2,
+  "inputs": {
+    "count": 451,
+    "manifest_sha256": "ecffed336eda5678a3837be8fa21221e484f103b299eaf07602cf2bd8f473d3b"
+  },
+  "case_manifest_sha256": null,
+  "matrix_manifest_sha256": "dd21d66a68d1433963ba363415ff6754e0a2041b47a8eef4befe7a817924cd89",
+  "eval_manifests": {
+    "vita-test.jsonl": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+    "psp-test.jsonl": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc"
+  },
+  "source_sha256": {
+    "runtime.cpp": "50dfeb27107af965b167830ada18f7f27a13e4d9dd91e10bffb8568b3e42a6c4",
+    "runtime.h": "31426ee1ac2c5bf2db77ef010b12a84ec2c0d63cb82fe69ec07ee1a0c11f59cc",
+    "model_reader.c": "11ed21326fe045b833e94027d76e7df9a1efe2a0b268ca1e85ccd4ba808f73e6",
+    "model_reader.h": "92dc4e561717cb81d9f8723efc8c7d13e17bb8733db87295a84285675c7056c3",
+    "reader_probe.cpp": "aa2b3691dc0fd224728737cc6c697de96eee17f6829b234b6ec2a86fdc251445"
+  },
+  "measured": {
+    "fixtures": 451,
+    "successful_reader_calls": 902,
+    "failure_cases": 0,
+    "path_calls": 902,
+    "path_heap_peak": 13235648,
+    "reader_heap_peak": 13235648,
+    "maximum_retained": 0,
+    "raw_output_differences": 0,
+    "decoded_output_differences": 0
+  },
+  "datasets": {
+    "vita-test": {
+      "lines": 206,
+      "chars": 2564,
+      "errors": 36,
+      "cer": 0.01404,
+      "exact": 0.86893
+    },
+    "psp-test": {
+      "lines": 245,
+      "chars": 2510,
+      "errors": 89,
+      "cer": 0.03546,
+      "exact": 0.79592
+    }
+  },
+  "limits": "Complete451 hand-checked crop tensors from the pinned private bundle. System host C++ metadata heap is not the isolated Vita 4MiB heap. Actual Vita engine metadata bounds remain separately guarded. Reader buffer and MNN owning copy are both included in the measured 16MiB pool peak."
+}

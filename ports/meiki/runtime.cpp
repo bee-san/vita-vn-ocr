@@ -1,5 +1,6 @@
 #include "runtime.h"
 #include "arena.h"
+#include "model_reader.h"
 #include <MNN/Interpreter.hpp>
 #include <MNN/Tensor.hpp>
 #include <cstring>
@@ -82,12 +83,33 @@ private:
     MeikiStats *stats_;
 };
 
-static int execute(const char *path, const float *data, MeikiOutput *out,
+class ModelBuffer {
+public:
+    ModelBuffer() : data_(meiki_arena_alloc(MEIKI_MODEL_BYTES)) {
+        if (!data_) throw std::bad_alloc();
+    }
+    ~ModelBuffer() { meiki_arena_free(data_); }
+    void *data() const { return data_; }
+private:
+    void *data_;
+};
+
+static int execute(const char *path, const MeikiModelReader *reader,
+                   const float *data, MeikiOutput *out,
                    MeikiStats *stats) {
     TRACE("loading model");
     uint64_t started = microseconds();
-    std::unique_ptr<MNN::Interpreter> net(
-        MNN::Interpreter::createFromFile(path));
+    std::unique_ptr<MNN::Interpreter> net;
+    if (reader) {
+        ModelBuffer source;
+        int rc = meiki_model_read(reader, source.data(), MEIKI_MODEL_BYTES, stats);
+        if (rc) return rc;
+        net.reset(MNN::Interpreter::createFromBuffer(source.data(), MEIKI_MODEL_BYTES));
+        // createFromBuffer owns a copy. Release the temporary before allocating
+        // weights and activations in createSession; both copies stay in pool.
+    } else {
+        net.reset(MNN::Interpreter::createFromFile(path));
+    }
     if (!net)
         return -2;
     TRACE("creating session");
@@ -156,10 +178,20 @@ static int execute(const char *path, const float *data, MeikiOutput *out,
     return 0;
 }
 
-extern "C" int meiki_run(const char *path, const float *data, void *workspace,
+static int run(const char *path, const MeikiModelReader *reader,
+                const float *data, void *workspace,
                          size_t bytes, MeikiOutput *out, MeikiStats *stats) {
-    if (!path || !data || !out || !stats)
+    if ((!path && !reader) || (reader && !meiki_model_reader_valid(reader)) ||
+        !data || !out || !stats)
         return -1;
+    if (reader) {
+        uintptr_t base = (uintptr_t)workspace, descriptor = (uintptr_t)reader;
+        uintptr_t context = (uintptr_t)reader->context;
+        if (base > UINTPTR_MAX - bytes || descriptor > UINTPTR_MAX - sizeof(*reader) ||
+            (descriptor < base + bytes && base < descriptor + sizeof(*reader)) ||
+            (context && context >= base && context < base + bytes))
+            return -1;
+    }
     std::memset(out, 0, sizeof(*out));
     std::memset(stats, 0, sizeof(*stats));
     if (!MNNEmbeddingExceptionSupport())
@@ -173,7 +205,7 @@ extern "C" int meiki_run(const char *path, const float *data, void *workspace,
     {
         ArenaScope arena_scope(stats);
         try {
-            rc = execute(path, data, out, stats);
+            rc = execute(path, reader, data, out, stats);
         } catch (const std::bad_alloc &) {
             stats->allocation_failed = 1;
             rc = -10;
@@ -184,4 +216,15 @@ extern "C" int meiki_run(const char *path, const float *data, void *workspace,
     if (stats->allocation_failed)
         return -10;
     return stats->heap_remaining ? -12 : rc;
+}
+
+extern "C" int meiki_run(const char *path, const float *data, void *workspace,
+                         size_t bytes, MeikiOutput *out, MeikiStats *stats) {
+    return run(path, nullptr, data, workspace, bytes, out, stats);
+}
+
+extern "C" int meiki_run_reader(const MeikiModelReader *reader, const float *data,
+                                void *workspace, size_t bytes, MeikiOutput *out,
+                                MeikiStats *stats) {
+    return run(nullptr, reader, data, workspace, bytes, out, stats);
 }

@@ -216,6 +216,55 @@ pairing or network service is part of the package.
 
 ## Isolated overlay module
 
+ABI3 adds a synchronous exact reader for the pinned 5,392,856-byte recognizer.
+The game worker can supply 8 KiB kernel-broker reads without giving the engine
+direct access to `ux0:`. With `MeikiModuleRequest.reader` set, `model_path` is
+unused and MNN receives `createFromBuffer`. The descriptor is copied before
+dispatch. Its callback/context are borrowed until `run` returns; the callback
+runs on the private engine thread and must use thread-safe kernel/`sceClib`
+operations. Keep the entire context outside workspace, metadata, input, output
+and stats. The bridge checks descriptor ranges and the context's starting
+address; it cannot infer the caller's context size.
+
+The caller verifies the model's pinned SHA256 before running the engine. Reads
+must fill the exact requested bytes and return zero, or return a negative I/O
+or cancellation code. Positive partial counts are rejected. The runtime stores
+that code and the fully read byte count in `MeikiStats`, and returns `-14` for
+read failures. It never retains a destination or callback after return.
+Detection and existing standalone probes keep their path loading behavior.
+ABI2 binaries must be rebuilt against ABI3 before using the new descriptor.
+
+The temporary model and MNN's owning model copy both live in the existing
+16 MiB neural arena. The temporary is freed before session creation and on
+read/exception failure. `results-reader.json` records four private real-VN
+preprocessing tensors: three reader repetitions each and six injected failures
+plus recovery per tensor. All 36 successful reader calls matched path loading
+in raw and decoded output; both paths peaked at 13,235,648 bytes, with no retained
+pool bytes. This is host ownership evidence, with a system C++ metadata heap;
+it does not measure the console's 4 MiB metadata heap, console latency or CER.
+`results-reader-matrix.json` separately records the complete pinned hand-checked
+crop set: 206 Vita and 245 PSP tensors, two file-loader and two reader passes
+(902 calls each). The reader's newly measured host CER is 36/2,564 (1.404%) for
+Vita and 89/2,510 (3.546%) for PSP, using the shared `eval/metrics.py` normalization.
+All raw and decoded outputs matched between loaders and repetitions; pool peak
+was 13,235,648 bytes with zero retained bytes. This measures cropped-line
+recognition, including uncertain-line exclusion and the original 4/2-pixel
+Vita/PSP crop padding. It does not measure detection, live selection or physical
+console quality. Older ARM-emulator CER remains separately scoped in
+`results-arm.json` (ABI1); the ABI3 module was built, not executed on a console.
+
+```sh
+python -m pytest tests/test_meiki_bindings.py tests/test_meiki_reader_module.py
+python ports/meiki/verify_reader.py \
+  --mnn-source <pinned-MNN-source> --mnn-library <pinned-host-static-libMNN.a> \
+  --model <pinned-meiki-stream-int8.mnn> --input <private-BGR-NCHW-tensors> \
+  --cases <private-cases.tsv> --out <private-output> --sanitize
+python ports/meiki/verify_reader.py \
+  --mnn-source <pinned-MNN-source> --mnn-library <pinned-host-static-libMNN.a> \
+  --model <pinned-meiki-stream-int8.mnn> --matrix <pinned-private-ground_truth.json> \
+  --out <private-matrix-output> --sanitize
+```
+
 `module/` builds `meiki-engine.suprx`. It receives a caller-owned, 64-byte
 aligned 4 MiB metadata heap and 16 MiB neural workspace through a versioned
 C ABI. It creates no default SDK USER heap. Newlib, C++ constructors, MNN

@@ -1,5 +1,6 @@
 /* Caller-facing code uses only kernel APIs and sceClib: no newlib TLS access. */
 #include "internal.h"
+#include "../model_reader.h"
 #include <psp2/kernel/clib.h>
 #include <psp2/kernel/modulemgr.h>
 #include <psp2/kernel/threadmgr.h>
@@ -13,6 +14,7 @@ static void *metadata;
 static size_t metadata_bytes;
 static char model_path[256];
 static MeikiModuleRequest request;
+static MeikiModelReader model_reader;
 static MeikiModuleDetectRequest detect_request;
 static MeikiModuleStats stats;
 
@@ -84,7 +86,7 @@ static int submit(int requested_command, MeikiModuleStats *out)
 
 static int api_run(const MeikiModuleRequest *in, MeikiModuleStats *out)
 {
-    if (!in || in->size != sizeof(*in) || !in->model_path || !in->input ||
+    if (!in || in->size != sizeof(*in) || (!in->model_path && !in->reader) || !in->input ||
         !in->workspace || !in->output || in->workspace_bytes < MEIKI_WORKSPACE_BYTES ||
         ((uintptr_t)in->workspace & 63u) || ((uintptr_t)in->input & 3u) ||
         ((uintptr_t)in->output & 3u) ||
@@ -100,6 +102,20 @@ static int api_run(const MeikiModuleRequest *in, MeikiModuleStats *out)
                  overlaps(out, sizeof(*out), in->input, MEIKI_INPUT_ELEMENTS * sizeof(float)) ||
                  overlaps(out, sizeof(*out), in->output, sizeof(*in->output)))))
         return MEIKI_MODULE_INVALID;
+    if (in->reader &&
+        (!meiki_model_reader_valid(in->reader) ||
+         overlaps(in->reader, sizeof(*in->reader), metadata, metadata_bytes) ||
+         overlaps(in->reader, sizeof(*in->reader), in->workspace, in->workspace_bytes) ||
+         overlaps(in->reader, sizeof(*in->reader), in->input, MEIKI_INPUT_ELEMENTS * sizeof(float)) ||
+         overlaps(in->reader, sizeof(*in->reader), in->output, sizeof(*in->output)) ||
+         (out && overlaps(in->reader, sizeof(*in->reader), out, sizeof(*out))) ||
+         (in->reader->context &&
+          (overlaps(in->reader->context, 1, metadata, metadata_bytes) ||
+           overlaps(in->reader->context, 1, in->workspace, in->workspace_bytes) ||
+           overlaps(in->reader->context, 1, in->input, MEIKI_INPUT_ELEMENTS * sizeof(float)) ||
+           overlaps(in->reader->context, 1, in->output, sizeof(*in->output)) ||
+           (out && overlaps(in->reader->context, 1, out, sizeof(*out)))))))
+        return MEIKI_MODULE_INVALID;
     if (__atomic_load_n(&running, __ATOMIC_ACQUIRE) != ENGINE_RUNNING || gate < 0)
         return MEIKI_MODULE_STOPPED;
     if (sceKernelTryLockMutex(gate, 1) < 0) return MEIKI_MODULE_BUSY;
@@ -107,15 +123,22 @@ static int api_run(const MeikiModuleRequest *in, MeikiModuleStats *out)
     if (running != ENGINE_RUNNING) rc = MEIKI_MODULE_STOPPED;
     else if (stats.tainted) rc = MEIKI_MODULE_TAINTED;
     else {
-        size_t length = sceClibStrnlen(in->model_path, sizeof(model_path));
-        if (!length || length == sizeof(model_path)) rc = MEIKI_MODULE_INVALID;
+        size_t length = in->reader ? 0 : sceClibStrnlen(in->model_path, sizeof(model_path));
+        if (!in->reader && (!length || length == sizeof(model_path))) rc = MEIKI_MODULE_INVALID;
         else {
             sceClibMemcpy(&request, in, sizeof(request));
-            sceClibMemcpy(model_path, in->model_path, (SceSize)(length + 1));
-            request.model_path = model_path;
+            if (in->reader) {
+                sceClibMemcpy(&model_reader, in->reader, sizeof(model_reader));
+                request.reader = &model_reader;
+                request.model_path = NULL;
+            } else {
+                sceClibMemcpy(model_path, in->model_path, (SceSize)(length + 1));
+                request.model_path = model_path;
+            }
             rc = submit(COMMAND_RUN, out);
             // DONE acknowledges the engine has released every request pointer.
             sceClibMemset(&request, 0, sizeof(request));
+            sceClibMemset(&model_reader, 0, sizeof(model_reader));
         }
     }
     sceKernelUnlockMutex(gate, 1);

@@ -31,6 +31,14 @@
     "mnn_biz_code": "meiki-vita",
     "mnn_uuid": "88dfd245-536c-4529-877b-e9f1eceafce0"
   },
+  "reader": {
+    "module_abi": 3,
+    "maximum_read_bytes": 8192,
+    "exact_byte_count": 5392856,
+    "validation": "Caller verifies the converted SHA256 before invoking the isolated engine",
+    "ownership": "Caller reader/context borrowed until synchronous run returns; source buffer and MNN copy in the same 16MiB arena; source freed before createSession",
+    "io": "Reader recognition uses createFromBuffer and never reopens model_path; path loading remains for existing host and standalone probes"
+  },
   "mnn": {
     "repository": "https://github.com/alibaba/MNN",
     "commit": "ebdada82634300956e08bd4056ecfeb1e4f23b32",

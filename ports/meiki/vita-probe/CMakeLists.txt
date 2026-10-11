@@ -12,7 +12,7 @@ if(NOT EXISTS "${MEIKI_BUNDLE_DIR}/cases.tsv" OR NOT EXISTS "${MEIKI_BUNDLE_DIR}
   message(FATAL_ERROR "Set MEIKI_BUNDLE_DIR to the prepared manual-test bundle")
 endif()
 set(SCREEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../vita/app")
-add_executable(meiki_probe main.cpp diagnostics.cpp ../runtime.cpp ../arena.c ../decode.c "${SCREEN_DIR}/screen.c")
+add_executable(meiki_probe main.cpp diagnostics.cpp ../runtime.cpp ../arena.c ../decode.c ../model_reader.c "${SCREEN_DIR}/screen.c")
 target_include_directories(meiki_probe PRIVATE .. "${SCREEN_DIR}" "${MNN_SOURCE}/include")
 target_compile_definitions(meiki_probe PRIVATE MEIKI_TRACE=1)
 target_compile_options(meiki_probe PRIVATE -O2 -mfpu=neon -mfloat-abi=hard -ffp-contract=off -ffunction-sections -fdata-sections)

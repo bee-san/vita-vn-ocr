@@ -77,8 +77,11 @@ extern "C" int meiki_engine_run(const MeikiModuleRequest *request,
     if (!initialized) return MEIKI_MODULE_STOPPED;
     if (meiki_metadata_tainted()) { observe(stats); return MEIKI_MODULE_TAINTED; }
     stats->metadata_used_before = used_bytes();
-    int rc = meiki_run(request->model_path, request->input, request->workspace,
-                       request->workspace_bytes, request->output, &stats->runtime);
+    int rc = request->reader ?
+        meiki_run_reader(request->reader, request->input, request->workspace,
+                          request->workspace_bytes, request->output, &stats->runtime) :
+        meiki_run(request->model_path, request->input, request->workspace,
+                   request->workspace_bytes, request->output, &stats->runtime);
     if (stats->runtime.heap_remaining || stats->runtime.allocation_failed || rc == -11)
         runtime_tainted = true;
     observe(stats);

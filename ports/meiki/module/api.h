@@ -6,7 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define MEIKI_MODULE_ABI 2u
+#define MEIKI_MODULE_ABI 3u
 #define MEIKI_MODULE_MAGIC 0x4d4b494du
 #define MEIKI_MODULE_METADATA_BYTES (4u * 1024u * 1024u)
 enum {
@@ -24,6 +24,7 @@ typedef struct {
     void *workspace; /* >= MEIKI_WORKSPACE_BYTES, aligned to 64 bytes */
     size_t workspace_bytes;
     MeikiOutput *output;
+    const MeikiModelReader *reader; /* Optional; when present model_path is unused. */
 } MeikiModuleRequest;
 typedef struct {
     uint32_t size;

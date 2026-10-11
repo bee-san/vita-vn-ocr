@@ -118,13 +118,23 @@ _BG = {}
 
 
 class Resources:
-    def __init__(self, pool_limit=300_000):
-        self.vocab = load_vocab()
+    def __init__(self, pool_limit=300_000, target_kana="", vocab=None):
+        self.vocab = load_vocab(vocab) if vocab else load_vocab()
         self.vocab_set = set(self.vocab)
+        self.target_kana = set(target_kana)
+        if any(not "ぁ" <= c <= "ゖ" or c not in self.vocab_set for c in self.target_kana):
+            raise ValueError("targets must be hiragana in the model vocabulary")
         self.pools = {}
         for name in POOL_WEIGHT:
             text = (DATA / "corpus" / f"{name}.txt").read_text(encoding="utf-8")
             self.pools[name] = [s for s in text.split("\n", pool_limit)[:pool_limit] if s]
+        self.target_pools = {}
+        for c in sorted(self.target_kana):
+            pools = {name: [s for s in items if c in s] for name, items in self.pools.items()}
+            pools = {name: items for name, items in pools.items() if items}
+            if not pools:
+                raise ValueError(f"target {c} is absent from the natural corpus")
+            self.target_pools[c] = pools
         self.fonts = self._fonts()
         self.by_cat = {c: [f for f in self.fonts if f[0] == c] for c in CATEGORY}
         self.by_cat = {c: fs for c, fs in self.by_cat.items() if fs}
@@ -264,14 +274,18 @@ def clean(s):
 
 def sample_text(rng, kind="dialogue"):
     """VN-like text: corpus chunks with VN punctuation, interjections and endings."""
-    if kind == "choice":
+    pools = R.pools
+    if getattr(R, "target_pools", None):
+        c = rng.choice(sorted(R.target_pools))
+        pools = R.target_pools[c]
+    if kind == "choice" and not getattr(R, "target_pools", None):
         items = R.pools["dialogue" if rng.random() < 0.5 else "narration"]
         s = clean(items[rng.integers(len(items))]).strip("「」『』")
         cut = [i + 1 for i, c in enumerate(s) if c in "、。！？" and 3 <= i < 18]
         s = s[:cut[0]] if cut else s[:int(rng.integers(5, 16))]
         return s.rstrip("、。") or s
-    pool = choose(rng, POOL_WEIGHT)
-    items = R.pools[pool]
+    pool = choose(rng, {name: POOL_WEIGHT[name] for name in pools})
+    items = pools[pool]
     s = clean(items[rng.integers(len(items))])
     if not s:
         return s
@@ -1305,9 +1319,23 @@ def crop_meta(meta, L, dark=0, inverted=False):
     return m
 
 
-def init(pool_limit=300_000):
+def init(pool_limit=300_000, target_kana="", vocab=None):
     global R
-    R = Resources(pool_limit)
+    R = Resources(pool_limit, target_kana, vocab)
+
+
+def development_kana(path):
+    """Derive targets only from scored development sessions, never shared/test results."""
+    report = json.loads(Path(path).read_text())
+    datasets = report.get("datasets", {})
+    if not datasets or datasets.keys() != report["sets"].keys() or any(
+            d.get("split") != "dev" for d in datasets.values()):
+        raise ValueError("kana targeting requires development-only evaluation results")
+    kana = {c for result in report["sets"].values() for pair in result["hiragana"]["confusions"]
+            for c in (pair["reference"], pair["prediction"]) if c and "ぁ" <= c <= "ゖ"}
+    if not kana:
+        raise ValueError("development report has no hiragana confusions")
+    return "".join(sorted(kana))
 
 
 def run_shard(job):
@@ -1334,6 +1362,8 @@ def run_shard(job):
         got = extract(img, layout, ink, finder, rng, invert)
         regions += 1
         for g, label, _, L, dark in got or []:
+            if R.target_kana and not any(c in label for c in R.target_kana):
+                continue
             crops.append(g)
             labels.append(label)
             metas.append(crop_meta(meta, L, dark, invert))
@@ -1414,9 +1444,16 @@ def main():
     ap.add_argument("--keep-polarity", action="store_true",
                     help="no-op since synth2 (crops keep their polarity unless --invert-dark); "
                          "kept so the pre-synth2 commands in docs/linefind.md still parse")
+    targets = ap.add_mutually_exclusive_group()
+    targets.add_argument("--target-kana", default="",
+                         help="oversample natural corpus lines containing these development kana")
+    targets.add_argument("--target-report", type=Path, help="derive kana from a development-only eval/run.py report")
+    ap.add_argument("--vocab", type=Path, help="exact restored model vocabulary")
     args = ap.parse_args()
+    if args.target_report:
+        args.target_kana = development_kana(args.target_report)
     cv2.setNumThreads(1)
-    init()
+    init(target_kana=args.target_kana, vocab=args.vocab)
     print(f"fonts {len(R.fonts)} in {sorted(R.by_cat)}, bg vita {len(R.bg_vita)} psp {len(R.bg_psp)}, "
           f"vocab {len(R.vocab)}", flush=True)
     if args.mode == "preview":

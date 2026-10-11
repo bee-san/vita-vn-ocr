@@ -88,7 +88,7 @@ Without matching images, separate the captured PC/LR, memory coverage and module
 | 2 | `VauService`; `UNDEFINED_INSTRUCTION`, `pngshot@1+0x8000` | Same module-offset failure group. No matching pngshot ELF was supplied. |
 | 1 | `SceLiveAreaDailyCronJob`; `PREFETCH_ABORT`, `ScePaf@1+0x13d8` | Execute fault with ScePaf/SceShell return candidates. No matching ScePaf ELF was supplied. |
 
-A bounded `tty --tail 20` query on the third dump records Shell physical-memory allocation failures: a 131,072-byte request with 81,920 bytes shown available, then an 8,192-byte request with zero available. This supports the historical pressure concern behind moving OCR away from Shell. It does not measure current OCR peak memory or prove the source-level cause of the prefetch abort. No October 11/API 13 dump or successful physical OCR is established by these old files.
+A bounded `tty --tail 20` query on the third dump records Shell physical-memory allocation failures: requests for 131,072 bytes and 8,192 bytes both failed. The adjacent diagnostic values are not treated as measured available memory because the log does not label them that way. This supports the historical pressure concern behind moving OCR away from Shell. It does not measure current OCR peak memory or prove the source-level cause of the prefetch abort. No October 11/API 13 dump or successful physical OCR is established by these old files.
 
 Private evidence locator: `/home/bee/Downloads/vita-release-2026-10-11/capture-error-20261011T091332Z/core-dumps/`. Keep the dumps, analysis JSON and TTY content private; only the derived counts/groupings above belong in the notebook.
 

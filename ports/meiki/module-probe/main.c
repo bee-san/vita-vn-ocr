@@ -126,7 +126,7 @@ static int detected_lines(unsigned cycle, unsigned detector_index, const char *n
         int prep_rc = meiki_preprocess_rgba(&image, &crops[i], data, MEIKI_DETECT_ELEMENTS,
             resize_scratch, sizeof(resize_scratch), &prepared);
         MeikiModuleRequest request = {sizeof(request), "app0:data/meiki-stream-int8.mnn",
-            data, workspace, MEIKI_WORKSPACE_BYTES, &output};
+            data, workspace, MEIKI_WORKSPACE_BYTES, &output, NULL};
         MeikiModuleStats stats = {0};
         int rc = prep_rc ? -999 : api.run(&request, &stats);
         unsigned different = 0;
@@ -270,7 +270,7 @@ int main(void) {
             break;
         }
         MeikiModuleStats probe_stats = {0};
-        MeikiModuleRequest request = {sizeof(request), "app0:data/missing-model.mnn", data, workspace, MEIKI_WORKSPACE_BYTES, &output};
+        MeikiModuleRequest request = {sizeof(request), "app0:data/missing-model.mnn", data, workspace, MEIKI_WORKSPACE_BYTES, &output, NULL};
         if (cycle == 2) {
             MeikiModuleDetectRequest fault = {sizeof(fault), "app0:data/meiki-detect-oom.mnn",
                 data, 960, 544, workspace, MEIKI_WORKSPACE_BYTES, &detector_output};

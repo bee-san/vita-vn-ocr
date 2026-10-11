@@ -9,7 +9,7 @@ if(NOT EXISTS "${MNN_LIBRARY}" OR NOT EXISTS "${MNN_SOURCE}/include/MNN/Interpre
 endif()
 execute_process(COMMAND "${CMAKE_C_COMPILER}" -print-file-name=crtbegin.o OUTPUT_VARIABLE CRT_BEGIN OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND "${CMAKE_C_COMPILER}" -print-file-name=crtend.o OUTPUT_VARIABLE CRT_END OUTPUT_STRIP_TRAILING_WHITESPACE)
-add_executable(meiki_module "${CRT_BEGIN}" bridge.c metadata.c engine.cpp ../runtime.cpp ../detect_runtime.cpp ../arena.c "${CRT_END}")
+add_executable(meiki_module "${CRT_BEGIN}" bridge.c metadata.c engine.cpp ../runtime.cpp ../detect_runtime.cpp ../arena.c ../model_reader.c "${CRT_END}")
 target_include_directories(meiki_module PRIVATE .. "${MNN_SOURCE}/include")
 target_compile_features(meiki_module PRIVATE c_std_99 cxx_std_17)
 target_compile_options(meiki_module PRIVATE -O2 -mfpu=neon -mfloat-abi=hard -ffp-contract=off -fno-builtin -ffunction-sections -fdata-sections -Wall -Wextra)

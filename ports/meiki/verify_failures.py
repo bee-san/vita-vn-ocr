@@ -43,7 +43,8 @@ def main():
     subprocess.run([cc, "-std=c99", *flags, "-c", str(PORT / "arena.c"), "-o", str(arena)], check=True)
     probe = args.out / "failure-probe"
     subprocess.run([cxx, "-std=c++17", *flags, f"-I{args.mnn_source / 'include'}",
-                    str(PORT / "runtime_failure_probe.cpp"), str(PORT / "runtime.cpp"), str(arena),
+                    str(PORT / "runtime_failure_probe.cpp"), str(PORT / "runtime.cpp"),
+                    str(PORT / "model_reader.c"), str(arena),
                     str(args.mnn_library), "-pthread", "-lm", "-ldl",
                     "-Wl,--wrap=MNNMemoryAllocAlign", "-Wl,--wrap=MNNMemoryCallocAlign",
                     "-Wl,--wrap=MNNMemoryFreeAlign", "-Wl,--wrap=meiki_arena_alloc",

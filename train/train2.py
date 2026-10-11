@@ -370,6 +370,15 @@ class Mixer:
         return self.ready.pop()
 
 
+def train_scope(model, scope):
+    """A head-only adaptation keeps every encoder and collapse parameter fixed."""
+    if scope not in ("all", "head"):
+        raise ValueError("unknown train scope")
+    model.requires_grad_(scope == "all")
+    if scope == "head":
+        model.head.requires_grad_(True)
+
+
 # ----------------------------------------------------------------------------- eval
 
 class ValSet:
@@ -482,6 +491,8 @@ def main():
     ap.add_argument("--ema", type=float, default=0.0, help="EMA decay (0 = off), e.g. 0.999")
     ap.add_argument("--qat", type=float, default=0.0, help="int8 weight fake quant from this fraction")
     ap.add_argument("--init", default="", help="start weights from this checkpoint")
+    ap.add_argument("--train-scope", choices=("all", "head"), default="all",
+                    help="head freezes encoder/collapse weights and BN statistics")
     ap.add_argument("--freeze-bn-stats", action="store_true",
                     help="freeze BN running statistics; automatic for restored release blobs")
     ap.add_argument("--seed", type=int, default=1)
@@ -490,6 +501,7 @@ def main():
     ap.add_argument("--keep-evals", action="store_true")
     ap.add_argument("--log-every", type=int, default=100)
     args = ap.parse_args()
+    args.freeze_bn_stats |= args.train_scope == "head"
     torch.set_num_threads(args.threads)
     torch.set_flush_denormal(True)
     torch.manual_seed(args.seed)
@@ -528,6 +540,7 @@ def main():
     model = TinyVNOCR(len(vocab) + 1, width=args.width, bottleneck=args.bottleneck,
                       depth=args.depth, ctx=args.ctx, ctx_k=args.ctx_k)
     model = model.to(memory_format=torch.channels_last)
+    train_scope(model, args.train_scope)
     print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M, classes {len(vocab) + 1}, "
           f"threads {args.threads}", flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.wd)
@@ -536,6 +549,8 @@ def main():
     ema = None
     if last.exists():
         ck = torch.load(last, map_location="cpu", weights_only=False)
+        if ck.get("args", {}).get("train_scope", "all") != args.train_scope:
+            raise ValueError("resume train scope differs from checkpoint")
         if ck.get("args", {}).get("select_metric", "cer") != args.select_metric:
             raise ValueError("resume selection metric differs from checkpoint")
         if ck["vocab"] != vocab:

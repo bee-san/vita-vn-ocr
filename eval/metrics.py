@@ -20,6 +20,7 @@ normalised prediction equals the normalised ground truth.
 """
 import re
 import unicodedata
+from collections import Counter
 
 _DASHES = "―—─━–‐‑‒−-"
 _TILDES = "〜～~∼"
@@ -48,6 +49,74 @@ def lev(a, b):
             cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
         prev = cur
     return prev[-1]
+
+
+def align_text(reference, prediction):
+    """Minimum-edit alignment of normalized text, with deterministic diagonal ties.
+
+    Each pair is (reference character or None, predicted character or None).
+    Align the full text before attributing errors to scripts: stripping kanji
+    first would hide hiragana/kanji substitutions and invent matching kana.
+    """
+    g, p = norm(reference), norm(prediction)
+    table = [list(range(len(p) + 1))]
+    for i, cg in enumerate(g, 1):
+        row = [i]
+        for j, cp in enumerate(p, 1):
+            row.append(min(table[-1][j] + 1, row[-1] + 1,
+                           table[-1][j - 1] + (cg != cp)))
+        table.append(row)
+    pairs, i, j = [], len(g), len(p)
+    while i or j:
+        if i and j and table[i][j] == table[i - 1][j - 1] + (g[i - 1] != p[j - 1]):
+            pairs.append((g[i - 1], p[j - 1]))
+            i, j = i - 1, j - 1
+        elif i and table[i][j] == table[i - 1][j] + 1:
+            pairs.append((g[i - 1], None))
+            i -= 1
+        else:
+            pairs.append((None, p[j - 1]))
+            j -= 1
+    return pairs[::-1]
+
+
+def is_hiragana(c):
+    return c is not None and "\u3041" <= c <= "\u309f"
+
+
+def score_hiragana(rows):
+    """Reference hiragana substitutions/deletions plus hiragana insertions.
+
+    A substitution is charged to its reference script. Non-hiragana ->
+    hiragana substitutions are listed separately (and in confusions), rather
+    than counted twice. This supplements, never replaces, full-text CER.
+    """
+    chars = substitutions = deletions = insertions = into_hiragana = 0
+    confusions = Counter()
+    for row in rows:
+        for g, p in align_text(row["text"], row["pred"]):
+            chars += int(is_hiragana(g))
+            if g == p:
+                continue
+            if is_hiragana(g):
+                if p is None:
+                    deletions += 1
+                else:
+                    substitutions += 1
+            elif g is None and is_hiragana(p):
+                insertions += 1
+            elif is_hiragana(p):
+                into_hiragana += 1
+            if is_hiragana(g) or is_hiragana(p):
+                confusions[g, p] += 1
+    errors = substitutions + deletions + insertions
+    return {"chars": chars, "errors": errors, "cer": round(errors / chars, 5) if chars else None,
+            "substitutions": substitutions, "deletions": deletions, "insertions": insertions,
+            "into_hiragana": into_hiragana,
+            "confusions": [{"reference": g, "prediction": p, "count": n}
+                           for (g, p), n in sorted(confusions.items(),
+                                                  key=lambda kv: (-kv[1], kv[0][0] or "",
+                                                                  kv[0][1] or ""))]}
 
 
 class Tally:
@@ -85,6 +154,7 @@ def score_lines(rows):
     per_game = {k: v.summary() for k, v in sorted(games.items())}
     cers = [v["cer"] for v in per_game.values() if v["cer"] is not None]
     return {"all": total.summary(),
+            "hiragana": score_hiragana(rows),
             "styles": {k: v.summary() for k, v in sorted(styles.items())},
             "games": per_game,
             "game_macro_cer": round(sum(cers) / len(cers), 5) if cers else None}

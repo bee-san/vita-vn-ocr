@@ -21,6 +21,7 @@ Manifest rows (eval/manifests/<set>.jsonl), one per text line:
   uncertain   true if the text could not be decided by eye; such lines are never
               scored (in finder mode a detection on them is neither hit nor false alarm)
 """
+import hashlib
 import json
 from pathlib import Path
 
@@ -30,6 +31,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 MANIFESTS = HERE / "manifests"
 SETS = {"vita-test": "vita", "psp-test": "psp", "synth-val": None}
+LOCAL_MANIFESTS = {}
 PAD = {"vita": 4, "psp": 2}  # default px around each line box, per platform
 SYNTH_VAL = ROOT / "data" / "synth" / "synth_00039.npz"
 SYNTH_VAL_LINES = 3000
@@ -58,8 +60,36 @@ class Line:
 
 
 def read_manifest(name):
-    path = MANIFESTS / f"{name}.jsonl"
+    path = LOCAL_MANIFESTS.get(name, MANIFESTS / f"{name}.jsonl")
     return [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x.strip()]
+
+
+def register_local(name, path):
+    """Private hand-checked captures use the same scorer without changing shared sets."""
+    if name in SETS:
+        raise ValueError(f"cannot override shared set {name}")
+    path = Path(path).resolve()
+    rows = [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x.strip()]
+    if not rows or len({r["id"] for r in rows}) != len(rows):
+        raise ValueError("empty manifest or duplicate line ids")
+    roles = {r["split"] for r in rows}
+    if len(roles) != 1 or not roles <= {"dev", "test"}:
+        raise ValueError("a capture manifest must contain exactly one dev/test role")
+    for r in rows:
+        if not r.get("session") or r.get("hand_checked") is not True:
+            raise ValueError("local captures require a session and hand_checked=true")
+        image = path.parent / r["image"]
+        if hashlib.sha256(image.read_bytes()).hexdigest() != r["sha256"]:
+            raise ValueError(f"capture hash mismatch: {r['id']}")
+    SETS[name] = "vita"
+    LOCAL_MANIFESTS[name] = path
+
+
+def image_path(name, data_dir, row):
+    if name in LOCAL_MANIFESTS:
+        return LOCAL_MANIFESTS[name].parent / row["image"]
+    from fetch import shot_path
+    return shot_path(data_dir, SETS[name], row["vn"], row["url"])
 
 
 def pad_box(box, pad, w_img, h_img):
@@ -85,7 +115,6 @@ class ImageCache:
 
 
 def load_real(name, data_dir, pad=None, include_uncertain=False):
-    from fetch import shot_path
     platform = SETS[name]
     pad = PAD[platform] if pad is None else pad
     cache = ImageCache()
@@ -93,7 +122,7 @@ def load_real(name, data_dir, pad=None, include_uncertain=False):
     for r in read_manifest(name):
         if r.get("uncertain") and not include_uncertain:
             continue
-        path = shot_path(data_dir, platform, r["vn"], r["url"])
+        path = image_path(name, data_dir, r)
         img = cache.get(path)
         x0, y0, x1, y1 = pad_box(r["box"], pad, img.shape[1], img.shape[0])
         lines.append(Line(id=r["id"], set=name, vn=r["vn"], title=r.get("title"), image=str(path),
@@ -145,11 +174,10 @@ def load(name, data_dir, pad=None, limit=None):
 def regions(name, data_dir):
     """Regions of a real set for finder mode: [(image path, region box, [manifest rows])]
     with every row of the region, uncertain ones included (as don't-care)."""
-    from fetch import shot_path
     out = {}
     for r in read_manifest(name):
         if not r.get("region"):
             continue
-        path = str(shot_path(data_dir, SETS[name], r["vn"], r["url"]))
+        path = str(image_path(name, data_dir, r))
         out.setdefault((path, tuple(r["region"])), []).append(r)
     return [(p, list(reg), rows) for (p, reg), rows in out.items()]

@@ -188,3 +188,17 @@ schema, sessions and reservations. No network or screenshots needed.
 
 The local working files (screenshots, readings, decisions) live in
 `$HERD/shared/artifacts/eval/`; only the manifests are committed.
+
+## Hiragana and private captures
+
+Every recognizer result includes a `hiragana` table and confusion counts. Text is
+aligned before errors are attributed to hiragana; small kana and dakuten remain
+distinct. `vocr:PATH` runs the C runtime in deployment W8I mode and records the
+blob hash and model/arena byte counts. This backend requires an int8 blob.
+
+Private hand-checked captures use `--set clannad-dev --manifest PATH` (or
+`clannad-test`). Each row requires `image` relative to the manifest, `sha256`,
+`session`, `split` (`dev` or `test`), `hand_checked: true`, and the usual `id`,
+`vn`, `box`, `region` and `text` fields. Image hashes are verified before scoring;
+these manifests cannot replace the shared sets. Keep captures and transcriptions
+outside Git. See [the FL10 workflow](../docs/hiragana.md).

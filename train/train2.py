@@ -266,11 +266,11 @@ class StreamSource:
 
 # ----------------------------------------------------------------------------- augmentation
 
-def augment(g, rng, geo=True, inv=0.0):
+def augment(g, rng, geo=True, inv=0.0, min_width=8):
     height = g.shape[0]
     g = g.astype(np.float32)
     if geo and rng.random() < 0.3:                           # horizontal stretch
-        nw = max(8, min(MAX_W, int(g.shape[1] * rng.uniform(0.88, 1.12))))
+        nw = max(8, min_width, min(MAX_W, int(g.shape[1] * rng.uniform(0.88, 1.12))))
         g = cv2.resize(g, (nw, height), interpolation=cv2.INTER_LINEAR)
     if rng.random() < 0.3:                                   # vertical jitter (width kept)
         d = int(rng.integers(1, 3))
@@ -304,7 +304,14 @@ def make_batch(items, rng, src_opts):
     for it in items:
         o = src_opts[it.src]
         if rng is not None and o.get("aug", "1") != "0":
-            g = augment(it.img, rng, geo=it.kid is None, inv=float(o.get("inv", 0.2)))
+            # Shrinking a tight crop must retain enough frames for the label, including
+            # a blank between adjacent repeated characters. Otherwise zero_infinity
+            # silently removes that sample's CTC gradient.
+            frames = 1 if it.ids is None else len(it.ids) + sum(
+                a == b for a, b in zip(it.ids, it.ids[1:]))
+            min_width = max(8, (frames - 1) * STRIDE + 1)
+            g = augment(it.img, rng, geo=it.kid is None, inv=float(o.get("inv", 0.2)),
+                        min_width=min_width)
         else:
             g = it.img.astype(np.float32)
         gs.append(g)

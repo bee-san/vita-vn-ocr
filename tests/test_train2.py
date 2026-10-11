@@ -92,6 +92,44 @@ def test_make_batch_pads_and_builds_ctc_and_kd_inputs():
     assert mask.tolist() == [[0] * 8, [1] * 8, [1] * 3 + [0] * 5]
 
 
+class ShrinkRng:
+    """Force the strongest horizontal shrink and disable the later random effects."""
+    def __init__(self):
+        self.calls = 0
+
+    def random(self):
+        self.calls += 1
+        return 0.0 if self.calls == 1 else 1.0
+
+    def uniform(self, low, high):
+        return low
+
+    def integers(self, low, high):
+        return low
+
+
+@pytest.mark.parametrize("ids", [list(range(1, 16)), [1] * 8])
+def test_batch_horizontal_shrink_keeps_tight_ctc_labels_reachable(ids):
+    # Both labels require 15 frames at 113 px; an unrestricted 12% shrink leaves 13.
+    item = T2.Item(np.full((32, 113), 200, np.uint8), np.asarray(ids, np.int64))
+    _, in_len, _, tgt, tgt_len, _ = T2.make_batch([item], ShrinkRng(), [{"inv": "0"}])
+    logits = torch.zeros(int(in_len[0]), 1, 16)
+    loss = torch.nn.functional.ctc_loss(logits.log_softmax(2), tgt, in_len, tgt_len,
+                                       zero_infinity=True)
+    assert torch.isfinite(loss) and float(loss) > 0.0
+
+
+def test_ctc_shrink_guard_keeps_kd_frame_geometry_and_direct_augment_defaults():
+    image = np.full((32, 113), 200, np.uint8)
+    assert T2.augment(image, ShrinkRng()).shape[1] == int(113 * 0.88)
+    kid = np.zeros((15, K), np.int16)
+    kp = np.full((15, K), 1 / K, np.float32)
+    item = T2.Item(image, np.asarray([1] * 8, np.int64), kid, kp)
+    _, in_len, _, _, _, kd = T2.make_batch([item], ShrinkRng(), [{"inv": "0"}])
+    assert in_len.tolist() == [15]
+    assert kd[2].tolist() == [[1] * 15]
+
+
 # ----------------------------------------------------------------------------- shard loader
 
 def write_shard(path, crops, labels):

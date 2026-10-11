@@ -186,12 +186,12 @@ and a private seven-page LiveArea plan is prepared. Applying the plan awaits
 supported, observed Edit Mode moves and native page/slot verification. No
 completed move, rewritten AppDB/layout file or unseen drag is credited here.
 
-Publication, installed-file readback, physical engine switching, Japanese-only
+Native installation, installed-file readback, physical engine switching, Japanese-only
 navigation and LiveArea placement remain separate follow-up checks. Preserve
 the working meiki.2 rollback and the earlier hardware observations above while
 performing them.
 
-## Settings readability follow-up: built, not installed
+## Settings readability follow-up: published; native checks pending
 
 **Implemented, SR01:** [overlay PR #34](https://github.com/bee-san/vita-jp-overlay/pull/34)
 at exact head `c9ec54f9a6562ad61cbb8d9e4876e86028e652f4` packages the

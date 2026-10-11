@@ -383,15 +383,12 @@ Private receipts: `settings-v078-candidate-readback.jsonl`,
 `settings-v078-first-launch.jsonl` in the checkpoint directory. No raw registry
 inventory, native identities or operation IDs are published.
 
-**Pending power-management repair, NI06:** the installed native agent calls
+**Observed earlier power-management gap, NI06:** the previously loaded agent called
 PowerTick with argument 1 (`AUTO_SUSPEND`), leaving the screen timer available.
-The local source's argument 0 change is not installed. Synchronous native work
-blocks the existing service-loop tick. An uncommitted standalone agent candidate
-based on `87e9bc6` adds an independent default-tick worker. This is
-source/installed-image analysis, not a deployed fix
-or measured proof that the Vita stays awake during long requests. Sleep
-prevention remains pending; pairing, stop policy and retained operation state
-must remain intact.
+Synchronous native work blocked the existing service-loop tick. NI09 records
+the later independent-worker candidate and native file readback; physical
+long-request wakefulness remains a separate measurement. Pairing, stop policy
+and retained operation state must remain intact.
 
 **Measured native controls, NI07:** the repaired Settings process remained
 foreground with `system_ui_overlaid=false` over 100.106 seconds measured from
@@ -422,6 +419,44 @@ again byte-equal to the intended 2,951-byte file in NI02. Private receipt:
 `2bd521fae593dbdb0e1b4638f91dcd822bb317650aa2b2e48b77abd90263b9b1`.
 This proves the Settings ON → OFF → ON save path while preserving the original
 discrepancy, not Japanese-character navigation within a game.
+
+**Measured keep-awake build, native readback and activation, NI09:** local-only agent
+commit `1d8a438d51454c27508a42849e0674080f01e9cd` is based on
+`87e9bc6feea3401d16844ee7d9b5d89c74ab3316`; the clean baseline build is
+byte-identical to the previous installed Shell, SHA-256
+`d30181867cba4c8922b7f744796a4cddb6455b44702c121263d04b131e87704f`.
+The candidate adds an independent 8 KiB worker issuing DEFAULT ticks every five
+seconds while authenticated command control or pending native
+install/decrypt/content work is active. It performs
+no worker I/O and changes no trust, pinning, ACL, stop/input or operation policy.
+Eighteen tests compile the actual worker under ASan/UBSan, including blocked
+owner execution and 20 repeated lifecycles; no sanitizer report is recorded.
+Host wait acceleration validates scheduling and the five-second native timeout,
+not physical elapsed timing. Imports remain 31 libraries and 143 functions.
+
+Native upload completed with code 0, complete/verified state and audit sequence
+1799. The 311,356-byte complete native readback matches SHA-256
+`7b803d324963257fcdc0d88d7f141ea8ae3c753b7520ccd759253956341de5c4`.
+An ordinary reboot loaded the worker. Fresh runtime log records initialization
+at monotonic 7,174,029 microseconds with result 0 and the first DEFAULT tick at
+21,416,363 microseconds with result 0/count 1. A fresh snapshot follows at
+89,680,721 microseconds; Settings relaunch is confirmed at 145,801,860
+microseconds and its snapshot reports foreground `VJOSET001` with
+`system_ui_overlaid=false`. The post-boot config is byte-identical to the
+intended 2,951-byte file in NI02. These establish native loading and a successful
+tick, not physical display inspection. Protected active control is the scope;
+no claim covers pairing waits, physical OLED visibility or hardware wakefulness
+during a long request. Kernel and loader were not rebuilt or deployed.
+
+The six-minute command-free quiet interval started at 14:34:32 UTC; its result
+remains pending. Worker ticking during a blocked owner is covered only by host
+tests.
+
+Private host receipt: `vita-agent-use-keepawake/agent/keepawake-review/verification.json`,
+SHA-256 `e3b46b052ac6155994125e8c6accc7a52bae178c0270cf968708ffeff763cfad`.
+Private native receipt: `keepawake-audit/native-activation-proof.json`, SHA-256
+`46393c45a75acea2d430b65f82b1c6fc3a84729e57468947482a6d29fe011224`.
+This source revision remains local-only; no upstream publication is credited.
 
 Native installation, readback, boot, repaired process execution and saved
 preference controls are established separately. Physical firmware-font

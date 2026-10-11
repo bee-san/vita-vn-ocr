@@ -126,12 +126,24 @@ The private download-audit receipt is
 GitHub publication is separate from retained promotion status and the still
 pending game/visual checks.
 
-**Sleep prevention remains pending:** the installed agent calls PowerTick with
-argument 1 (`AUTO_SUSPEND`), which leaves the display timer available. A local
-source change to argument 0 is not installed, and synchronous requests block
-the old service-loop tick. An uncommitted standalone agent candidate based on
-`87e9bc6` adds an independent default-tick worker; no deployed sleep fix or
-sustained awake-device result is claimed.
+**Keep-awake worker installed and loaded:** the previously loaded
+agent called PowerTick with argument 1 (`AUTO_SUSPEND`), leaving the display
+timer available, and synchronous requests blocked its service-loop tick.
+Local-only commit `1d8a438d51454c27508a42849e0674080f01e9cd`, based on
+`87e9bc6`, adds an independent 8 KiB worker issuing DEFAULT ticks every five
+seconds during authenticated command control or pending native
+install/decrypt/content work. Eighteen actual-worker ASan/UBSan cases and 20
+repeated lifecycles pass; imports remain 31 libraries and 143 functions.
+Native upload completed with code 0 and full
+readback of the 311,356-byte candidate matches SHA-256
+`7b803d324963257fcdc0d88d7f141ea8ae3c753b7520ccd759253956341de5c4`.
+After the ordinary reboot, fresh logs report worker initialization result 0
+and the first DEFAULT tick result 0 with count 1. Settings relaunch is confirmed
+foreground with `system_ui_overlaid=false`; the post-boot configuration remains
+byte-identical to the intended 2,951-byte file. The six-minute quiet interval is
+still pending. These checks do not prove OLED visibility, pairing-wait protection
+or long-request hardware wakefulness. See NI09 in
+[[27-Meiki-hardware-and-project-lessons]].
 
 Private receipts are under `vita-agent-use/agent/ocr-choice-20261011/`:
 `daijirin-recover-after-reconnect.jsonl`, `daijirin-installed-stat.jsonl`,

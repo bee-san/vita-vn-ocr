@@ -1,12 +1,12 @@
 # FL10 hiragana fine-tuning
 
-This implements the host evaluation, checkpoint recovery, data preparation and
-matched experiment workflow. It has **not produced an accepted replacement
-model**. The original five training source snapshots are absent locally; the
-9 × 5,000-step experiment has not run. Rebuild those inputs before comparing
-the control, targeted and AnimeText arms. Existing released weights remain the
-baseline. CLANNAD was in the original training collection, so these new sessions
-measure additional known-game captures, not an unseen-game benchmark.
+The active experiment fine-tunes the released FL10 using new, reproducible
+Vita/PSP dialogue crops, development-targeted hiragana, bounded similar-kanji
+practice and audited AnimeText. The original training shards are unavailable;
+`hiragana_experiment.py` remains an optional historical reproduction workflow.
+The fresh experiment does not depend on those shards. CLANNAD was in the original
+training collection, so its new sessions measure additional known-game captures.
+An accuracy improvement requires the held-out native C W8I gate below.
 
 ## Measured baseline, 2026-10-11
 
@@ -100,7 +100,101 @@ excluded problematic samples and the ambiguous kana classes `ぁ`, `あ`, `お`,
 `data/manifests/animetext_import_20261011.json`. This audit does not establish
 the accuracy of the complete dataset or of a trained recognizer.
 
-## Private capture and matched training
+## Fresh Vita/PSP training snapshots
+
+`synth/fresh_dataset.py` rebuilds pinned corpus/font assets, natural dialogue and
+narration pools, native VN rendering, role metadata and hash manifests under a
+configurable ignored root. A deterministic split by Aozora book ID separates
+training and synthetic development books. Background screenshots also use
+separate training/development games and exclude the shared benchmark games and
+CLANNAD. Downloaded images, fonts, corpora, NPZ shards and checkpoints stay local.
+Commit source URLs/hashes, configuration and aggregate results; put weights on
+GitHub releases. Retain the exact scripts, logs and data manifest for each run.
+
+The app receives a selected dialogue region, rather than an entire screen.
+Rendering creates those regions at Vita 960×544, PSP 480×272 and PSP 2× scales;
+the console gradient finder extracts training lines. `--crop-edge-jitter` varies
+spare line margins on 40% of draws, retains labelled ink, avoids adjacent text
+rows, and recalculates console polarity after changing a crop. This models small
+edge inaccuracies; it does not claim to recover glyphs a user cropped away.
+`eval/crop_stress.py` checks development-only edge margins and optional dialogue
+ROI offsets. The shared finder benchmark already uses annotated dialogue regions.
+
+The pinned [official Jiten kanji list](https://jiten.moe/frequency-dictionaries)
+is an allowlist, intersected with the exact released vocabulary. Its ranks are
+not occurrence counts. All 3,112 released kanji are allowed, covering 1,990 of the
+2,000 characters with rank ≤2,000. The model cannot emit the remaining 7,937 Jiten
+characters; the training recipe leaves the vocabulary and memory size unchanged.
+`data/manifests/fl10_kanji_policy_20261011.json` records the derived table,
+coverage, source hashes and attribution. The older kanji_anki CSV and dictionary
+KANJIDIC-only fallback characters do not override the official allowlist.
+
+The MIT [similar-kanji graph](https://github.com/siikamiika/similar-kanji) supplies
+5,212 supported visual pairs, including 土/士, 未/末 and 己/已/巳. Pair sampling
+uses an explicit inverse-rank heuristic. Render one natural-context crop per
+endpoint; discard wrapped crops that lose the selected character. Inside each
+finite corrective shard, pair quotas with maximum endpoint ranks 2,001–3,000,
+3,001–4,000 and >4,000 are capped at 10%, 4% and 1%; the rest go to common pairs.
+Missing corpus contexts return their budget to common pairs. Generated names also
+use rank weights, replacing uniform kanji draws. The manifest records actual
+glyph exposure and paired-sample bands so rare overweighting remains measurable.
+
+Three matched, seed-1 arms start at the same restored checkpoint, use 1,000
+steps, batch 32, LR 2e-5, 50-step warmup, six CPU threads, frozen BN statistics,
+no distillation and evaluation every 100 steps:
+
+| Arm | General synthetic | Targeted hiragana | Curated AnimeText | Similar kanji |
+|---|---:|---:|---:|---:|
+| General | 98% | 0% | 0% | 2% |
+| Targeted | 88% | 10% | 0% | 2% |
+| AnimeText | 83% | 10% | 5% | 2% |
+
+These percentages are source probabilities per sampled line, independent of
+shard count. Natural dialogue keeps most training weight. A single-seed
+experiment is exploratory; it cannot isolate a dataset's causal effect.
+
+```sh
+.venv-ci/bin/python synth/fresh_dataset.py assets --root build/hiragana/fresh-jiten
+.venv-ci/bin/python synth/fresh_dataset.py pools --root build/hiragana/fresh-jiten \
+  --vocab build/hiragana/vocab.txt
+# Replay the pinned background manifest into the same root, then render each source.
+.venv-ci/bin/python synth/fresh_dataset.py render --root build/hiragana/fresh-jiten \
+  --split train --vocab build/hiragana/vocab.txt --finder grad --invert-dark \
+  --kanji-policy data/manifests/fl10_kanji_policy_20261011.json --crop-edge-jitter \
+  --out build/hiragana/fresh-jiten/general --shards 24 --per-shard 500 --workers 2
+# Repeat into targeted with --target-report /private/development.json;
+# into kanji with --kanji-pairs; and synthetic-dev with --split dev and another seed.
+.venv-ci/bin/python synth/fresh_dataset.py manifest --root build/hiragana/fresh-jiten \
+  --vocab build/hiragana/vocab.txt --kanji-policy data/manifests/fl10_kanji_policy_20261011.json \
+  --source general:train --source targeted:train --source kanji:train --source synthetic-dev:dev
+.venv-ci/bin/python train/hiragana_fresh.py --config /private/fresh-config.json \
+  --init build/hiragana/fl10_init.pt --vocab build/hiragana/vocab.txt \
+  --out runs/hiragana-fresh --run
+.venv-ci/bin/python train/hiragana_select.py --baseline /private/FL10_w8.vocr \
+  --dev-manifest /private/dev/labels.jsonl \
+  --synthetic-dev build/hiragana/fresh-jiten/synthetic-dev/synth_00000.npz \
+  --checkpoints 'runs/hiragana-fresh/*/ckpt_step*.pt' --out /private/selection.json
+```
+
+Start with `train/hiragana_fresh_config.example.json`. Preparation checks labelled
+training roles, exact vocabulary and Jiten policy, curated AnimeText audit
+identity, corrective shard hashes, selected pair endpoint presence, and
+session/image/pixel separation from development data. The experiment snapshot
+records commands, inputs, code/dependency hashes and host environment. Seeds and
+pinned inputs permit a complete restart. Checkpoint resume is approximate because
+train2 does not save RNG/source/mixer state.
+
+The final selector exports **every** saved evaluation checkpoint to int8 and
+scores it through native scalar C W8I. A checkpoint must avoid full-CER regression
+on both CLANNAD development and independent synthetic development, then strictly
+reduce development hiragana errors. Ranking uses hiragana errors, real full
+errors, synthetic full errors, step and checkpoint path. An existing selection
+file cannot be overwritten: its chosen blob SHA is locked before test evaluation.
+If no checkpoint qualifies, retain the released baseline. Held-out test data never
+selects checkpoints. The fresh gate compares the locked candidate with the release;
+`--targeted` additionally checks an independent targeted control when available.
+
+## Private capture and historical matched training
 
 Run Vita3K using a disposable preference directory; do not use live console
 saves. `eval/capture_vita3k.py capture` records a named native-resolution window
@@ -115,7 +209,7 @@ and capture session. Manually label stable frames with the schema in
   --out /private/development.json
 ```
 
-Populate a disposable rendering checkout with the original natural Japanese
+For historical reproduction only, populate a disposable rendering checkout with the original natural Japanese
 corpus and pinned OFL fonts. Keep its training backgrounds separate from both
 capture blocks and the shared test games. Render targeted data with the existing
 VN styles, outlines and native Vita/PSP resolutions:

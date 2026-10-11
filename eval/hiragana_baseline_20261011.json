@@ -1,6 +1,6 @@
 {
   "date": "2026-10-11",
-  "status": "baseline only; nine-run fine-tuning blocked by absent original hard-label snapshots",
+  "status": "Released baseline measurement; fresh training outcomes are recorded in hiragana_fresh_20261011.json.",
   "model_info": {
     "backend": "vocr",
     "mode": "w8i",
@@ -2064,5 +2064,73 @@
     "training_smoke_steps": 50,
     "gcc_runtime_sanitizers_and_parity": true,
     "clang_runtime_sanitizers_and_parity": true
-  }
+  },
+  "historical_snapshots": "Original hard-label training shards are unavailable; the user authorized fresh snapshots instead.",
+  "console_finder": {
+    "report_sha256": "519a5c749aeac241df22be69945ffbb7d503f4a7ea25228a727a0763f9b7c23f",
+    "finder": "console",
+    "sets": {
+      "vita-test": {
+        "regions": 84,
+        "regions_rejected": 0,
+        "gt_lines": 206,
+        "line_recall": 0.95146,
+        "detections": 205,
+        "line_precision": 0.9561,
+        "pipeline_cer": 0.08541,
+        "concat_cer": 0.08659,
+        "concat_regions_chars": 2506,
+        "hiragana": {
+          "chars": 1417,
+          "errors": 66,
+          "cer": 0.04658,
+          "substitutions": 23,
+          "deletions": 42,
+          "insertions": 1,
+          "into_hiragana": 4
+        }
+      },
+      "psp-test": {
+        "regions": 93,
+        "regions_rejected": 0,
+        "gt_lines": 245,
+        "line_recall": 0.90204,
+        "detections": 233,
+        "line_precision": 0.9485,
+        "pipeline_cer": 0.17928,
+        "concat_cer": 0.17649,
+        "concat_regions_chars": 2510,
+        "hiragana": {
+          "chars": 1382,
+          "errors": 152,
+          "cer": 0.10999,
+          "substitutions": 33,
+          "deletions": 118,
+          "insertions": 1,
+          "into_hiragana": 12
+        }
+      },
+      "clannad-test": {
+        "regions": 20,
+        "regions_rejected": 0,
+        "gt_lines": 25,
+        "line_recall": 0.96,
+        "detections": 26,
+        "line_precision": 0.92308,
+        "pipeline_cer": 0.05928,
+        "concat_cer": 0.0567,
+        "concat_regions_chars": 388,
+        "hiragana": {
+          "chars": 229,
+          "errors": 5,
+          "cer": 0.02183,
+          "substitutions": 3,
+          "deletions": 2,
+          "insertions": 0,
+          "into_hiragana": 2
+        }
+      }
+    }
+  },
+  "research_finder_note": "Original finder fields use the research gradient finder; console_finder uses the bit-exact twin of runtime/vocr_lines.c."
 }

@@ -1,0 +1,5320 @@
+{
+  "schema": 1,
+  "date": "2026-10-11",
+  "phases": {
+    "fresh_synthetic": {
+      "training_code_commit": "a52749b",
+      "input_snapshot_sha256": "370950a9b97e1a6a9599f537dc6ebc929cfc6a3120f761eab92a403e7a6221a6",
+      "experiment_sha256": "5aa59c4fe7bc3531966a492baf7eb0e982e241d85dec3322d2f35eb07577aae6",
+      "selection_report_sha256": "1e63ccd5f77ba96e9505af01a4160e92ae1575284329d728cca1332e2340ce35",
+      "selection_rule": {
+        "qualify": "real_dev.full_errors <= baseline and synthetic_dev.full_errors <= baseline",
+        "rank": [
+          "real_dev.hiragana_errors",
+          "real_dev.full_errors",
+          "synthetic_dev.full_errors",
+          "step",
+          "checkpoint_path"
+        ],
+        "replace_baseline": "qualified checkpoint strictly reduces real_dev.hiragana_errors"
+      },
+      "datasets": {
+        "real_dev": {
+          "split": "dev",
+          "manifest_sha256": "a32ba010c2b8dc7ed79fe81965c53e87d0bd8ab02a7757c215614ccaba1c387b",
+          "sessions": [
+            "clannad-opening-A"
+          ],
+          "lines": 19,
+          "pad": 4,
+          "polarity": "console"
+        },
+        "synthetic_dev": {
+          "split": "dev",
+          "npz_sha256": "be050dc163a0517b1509168831e33718a0e954921e78bee1fa3c1999bb5c6b64",
+          "book_split_sha256": "0e14a5a0a0fa15f9f618bf6dad9fb0e4ef53d03f1efe46071c9e894661edf321",
+          "lines": 500,
+          "polarity": "stored console crops"
+        }
+      },
+      "strict_dev_hiragana_improvement": false,
+      "chosen": {
+        "blob": "/home/bee/Downloads/vita-release-2026-10-11/ocr/FL10_w8.vocr",
+        "blob_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+      },
+      "baseline": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 5,
+            "cer": 0.02415,
+            "exact": 0.89474
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 510,
+            "cer": 0.06848,
+            "exact": 0.644
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 190,
+            "cer": 0.04318,
+            "substitutions": 115,
+            "deletions": 73,
+            "insertions": 2,
+            "into_hiragana": 29
+          }
+        }
+      },
+      "checkpoints": [
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step100.pt",
+          "checkpoint_sha256": "8002157b479fa83337adeb6ec4aeee7d85100f85a7980d6ecfde163a295c68fc",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step100-8002157b479fa833.vocr",
+          "blob_sha256": "f82e305cffb96d7dbfa1259f46c41f75c91d158df2ea0423f294fd3537926072",
+          "step": 100,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 9,
+                "cer": 0.04348,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 2
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 473,
+                "cer": 0.06352,
+                "exact": 0.666
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 176,
+                "cer": 0.04,
+                "substitutions": 129,
+                "deletions": 46,
+                "insertions": 1,
+                "into_hiragana": 38
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step1000.pt",
+          "checkpoint_sha256": "8f3097284cb766b40868c9d6f1bf561347957de38462a8187641e6b35a93d97f",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step1000-8f3097284cb766b4.vocr",
+          "blob_sha256": "92541e497333100f987b13f4cd6e7b0854a168eb3756964ac6ad9c5e1b01717c",
+          "step": 1000,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 442,
+                "cer": 0.05935,
+                "exact": 0.694
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 166,
+                "cer": 0.03773,
+                "substitutions": 118,
+                "deletions": 47,
+                "insertions": 1,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step200.pt",
+          "checkpoint_sha256": "ded0a44d79f27ff186056a265977c2bdc0cba883aba1c29dba20f665e8c3d7dc",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step200-ded0a44d79f27ff1.vocr",
+          "blob_sha256": "5c3586d178da24138f3678f91f1c3fe5e432c39517277cf6c13e4f8d3a7adeb5",
+          "step": 200,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 8,
+                "cer": 0.03865,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 3,
+                "cer": 0.02362,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 1,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 473,
+                "cer": 0.06352,
+                "exact": 0.678
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 184,
+                "cer": 0.04182,
+                "substitutions": 130,
+                "deletions": 53,
+                "insertions": 1,
+                "into_hiragana": 37
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step300.pt",
+          "checkpoint_sha256": "a1ab7cb3b1179793838f952e18d45b2b990a98e797b4d7a2d27f6a9535cadeb9",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step300-a1ab7cb3b1179793.vocr",
+          "blob_sha256": "254fddadab29789aaf86e38c132955606147719dd0fcb107a84844e977385453",
+          "step": 300,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 460,
+                "cer": 0.06177,
+                "exact": 0.682
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 177,
+                "cer": 0.04023,
+                "substitutions": 125,
+                "deletions": 50,
+                "insertions": 2,
+                "into_hiragana": 37
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step400.pt",
+          "checkpoint_sha256": "f8de725724c769962c401088dbc83c46ef9a00c61a66c120fc19c3e2a012946f",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step400-f8de725724c76996.vocr",
+          "blob_sha256": "f4d76bda4aae1e24de7dda0cf320e27414da242fdeeaffdb5e885470b64460d8",
+          "step": 400,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 454,
+                "cer": 0.06096,
+                "exact": 0.698
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 179,
+                "cer": 0.04068,
+                "substitutions": 119,
+                "deletions": 57,
+                "insertions": 3,
+                "into_hiragana": 32
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step500.pt",
+          "checkpoint_sha256": "e970fa6dff207c1f732a1d588ecd5deb69f357a8d6781bfeb07696b211d1c0a0",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step500-e970fa6dff207c1f.vocr",
+          "blob_sha256": "ffa3970157cd66d39a4a591427a9e9fbe16c7a05517636711182a2f05c56c5d1",
+          "step": 500,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 441,
+                "cer": 0.05922,
+                "exact": 0.704
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 172,
+                "cer": 0.03909,
+                "substitutions": 115,
+                "deletions": 54,
+                "insertions": 3,
+                "into_hiragana": 35
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step600.pt",
+          "checkpoint_sha256": "e79d276072c330ffb6b6c9de18f57879f129cf2997d88fa4be401e7f7258722a",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step600-e79d276072c330ff.vocr",
+          "blob_sha256": "d0dbb7bb6685850be683847705dfa762b0fcea89cf08ed7e5d9cd8657f85a49a",
+          "step": 600,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 11,
+                "cer": 0.05314,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 441,
+                "cer": 0.05922,
+                "exact": 0.698
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 168,
+                "cer": 0.03818,
+                "substitutions": 123,
+                "deletions": 43,
+                "insertions": 2,
+                "into_hiragana": 34
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step700.pt",
+          "checkpoint_sha256": "c9032839357639a26216d0cda73e10c540c9bd13a8f71557bab7760b4ce8357c",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step700-c9032839357639a2.vocr",
+          "blob_sha256": "14e15fc88a679c3b61f68c2acb73a19f928ec41e38206621d06a0d7b7aa435d8",
+          "step": 700,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 452,
+                "cer": 0.0607,
+                "exact": 0.692
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 168,
+                "cer": 0.03818,
+                "substitutions": 118,
+                "deletions": 48,
+                "insertions": 2,
+                "into_hiragana": 33
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step800.pt",
+          "checkpoint_sha256": "3b4e623b769c5f8d954dc62d8520ad704fe6ef669a668e3d3d16f41ee88c32c8",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step800-3b4e623b769c5f8d.vocr",
+          "blob_sha256": "f3429f1c21cbf557d5d0b1874abe5255ae193d8782eead7aa040aec328c6adaa",
+          "step": 800,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 448,
+                "cer": 0.06016,
+                "exact": 0.692
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 168,
+                "cer": 0.03818,
+                "substitutions": 116,
+                "deletions": 50,
+                "insertions": 2,
+                "into_hiragana": 35
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_anime_s1/ckpt_step900.pt",
+          "checkpoint_sha256": "b4c8dfc036b5d10264d026717ac2485b33d04dda747815f5de573610bfdb94f1",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_anime_s1-ckpt_step900-b4c8dfc036b5d102.vocr",
+          "blob_sha256": "a4ee0186b1744f4ff637fd4e79a0a22f1100bbb80545e895443846c5033862b4",
+          "step": 900,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 443,
+                "cer": 0.05949,
+                "exact": 0.692
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 167,
+                "cer": 0.03795,
+                "substitutions": 121,
+                "deletions": 45,
+                "insertions": 1,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step100.pt",
+          "checkpoint_sha256": "f10bd936db170cc03fd45e21f7955b2cc7f0bab885b2e38de999fb8694e4fa4f",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step100-f10bd936db170cc0.vocr",
+          "blob_sha256": "0d745c25b2bb71c442c4e04acf1d8c46404edaca4d2db65527ee94f5334fe7d5",
+          "step": 100,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 7,
+                "cer": 0.03382,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 3,
+                "cer": 0.02362,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 1,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 474,
+                "cer": 0.06365,
+                "exact": 0.67
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 178,
+                "cer": 0.04045,
+                "substitutions": 119,
+                "deletions": 56,
+                "insertions": 3,
+                "into_hiragana": 31
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step1000.pt",
+          "checkpoint_sha256": "9067e7df4a83b091f7d02dd31d30d909b92a33a9d3aa344b4d9fe2ccab95872e",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step1000-9067e7df4a83b091.vocr",
+          "blob_sha256": "99c2354f4b629cca78a4010003657580a3b3f15ec6bc08d61d19badc5224f076",
+          "step": 1000,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 451,
+                "cer": 0.06056,
+                "exact": 0.678
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 171,
+                "cer": 0.03886,
+                "substitutions": 123,
+                "deletions": 46,
+                "insertions": 2,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step200.pt",
+          "checkpoint_sha256": "4dae1ca42cdf0c4cdba88ee80a65ee963b004bd0557577474e1842e3f65b7e7e",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step200-4dae1ca42cdf0c4c.vocr",
+          "blob_sha256": "7d0a3e4325c0664c55995e45a6a962ef5323fdc0ff7c7103ebf139d021249b20",
+          "step": 200,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 9,
+                "cer": 0.04348,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 3,
+                "cer": 0.02362,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 1,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 460,
+                "cer": 0.06177,
+                "exact": 0.678
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 171,
+                "cer": 0.03886,
+                "substitutions": 114,
+                "deletions": 55,
+                "insertions": 2,
+                "into_hiragana": 39
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step300.pt",
+          "checkpoint_sha256": "68d50d554bd61513529ad3c42696d3c0af1a9f1bc717f37767caf81aea2a00bb",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step300-68d50d554bd61513.vocr",
+          "blob_sha256": "56de76f10a22aa1c59260e9738ea7743dae3e569baa0ede6a1b5d8bf06b603e1",
+          "step": 300,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 9,
+                "cer": 0.04348,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 3,
+                "cer": 0.02362,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 1,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 456,
+                "cer": 0.06123,
+                "exact": 0.69
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 175,
+                "cer": 0.03977,
+                "substitutions": 116,
+                "deletions": 58,
+                "insertions": 1,
+                "into_hiragana": 39
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step400.pt",
+          "checkpoint_sha256": "1b97d59d2d49c1ca3a55f8b85a83db7939f9376e65d5f37aedf78bac97d75e2b",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step400-1b97d59d2d49c1ca.vocr",
+          "blob_sha256": "f289ac69b9bccf5c171115a22c962912ec8a0d5b8bb04f325ca1503db7527b79",
+          "step": 400,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 451,
+                "cer": 0.06056,
+                "exact": 0.686
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 174,
+                "cer": 0.03955,
+                "substitutions": 122,
+                "deletions": 50,
+                "insertions": 2,
+                "into_hiragana": 39
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step500.pt",
+          "checkpoint_sha256": "d69b85c3d6f829b6e965db105643d94d48499758aef4e831f5085285e85b03d9",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step500-d69b85c3d6f829b6.vocr",
+          "blob_sha256": "94c6d3a5605e5f60f84e8ba058916fb826c7ac042714b22f23f54d32ccb9d569",
+          "step": 500,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 458,
+                "cer": 0.0615,
+                "exact": 0.68
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 178,
+                "cer": 0.04045,
+                "substitutions": 130,
+                "deletions": 47,
+                "insertions": 1,
+                "into_hiragana": 34
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step600.pt",
+          "checkpoint_sha256": "592433ec94c1e428a827c6e8159b96db84652946bde0f31794e677a29e0c54b1",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step600-592433ec94c1e428.vocr",
+          "blob_sha256": "d138d94cea5278faceaacb7feb4eec4c703f19c9bdcdd9138f5112da92742712",
+          "step": 600,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 5,
+                "cer": 0.03937,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 3,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 450,
+                "cer": 0.06043,
+                "exact": 0.684
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 171,
+                "cer": 0.03886,
+                "substitutions": 123,
+                "deletions": 47,
+                "insertions": 1,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step700.pt",
+          "checkpoint_sha256": "2bf3f0052998f865633e0a436e208388b45b4a662dc33960797bc6908f8456ce",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step700-2bf3f0052998f865.vocr",
+          "blob_sha256": "7647aaa223e353921e008f3925d6f6fce8d4095ac31efe9db16e98a61fcfe8d5",
+          "step": 700,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 446,
+                "cer": 0.05989,
+                "exact": 0.684
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 169,
+                "cer": 0.03841,
+                "substitutions": 120,
+                "deletions": 48,
+                "insertions": 1,
+                "into_hiragana": 35
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step800.pt",
+          "checkpoint_sha256": "c16ca5624af2e2fbe1977c45daa13a4b2cf8f3e966c0f8e7119ad81c485420bd",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step800-c16ca5624af2e2fb.vocr",
+          "blob_sha256": "55e64e6e144079a36af06d9dfafe2024e57b327eb1cd5370c3b9f49db409cfec",
+          "step": 800,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 450,
+                "cer": 0.06043,
+                "exact": 0.682
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 170,
+                "cer": 0.03864,
+                "substitutions": 121,
+                "deletions": 47,
+                "insertions": 2,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_general_s1/ckpt_step900.pt",
+          "checkpoint_sha256": "9823971277149b724e91d23947d0d58551fc2a1f3b22f6076f66a5eee04200ac",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_general_s1-ckpt_step900-9823971277149b72.vocr",
+          "blob_sha256": "75d07352bca5f2d723e8ddd9004b137befa6200b04d8f18e035213d40ddecd3d",
+          "step": 900,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 453,
+                "cer": 0.06083,
+                "exact": 0.676
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 172,
+                "cer": 0.03909,
+                "substitutions": 124,
+                "deletions": 47,
+                "insertions": 1,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step100.pt",
+          "checkpoint_sha256": "8a7569d011a953eef7a6209209c627da8f5275e87f0dd716b94782c5a448f473",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step100-8a7569d011a953ee.vocr",
+          "blob_sha256": "1f106468629d1715ac656c78ff8c68664f2d822f4762b5ef07cc6a51d3aca22c",
+          "step": 100,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 8,
+                "cer": 0.03865,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 3,
+                "cer": 0.02362,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 1,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 463,
+                "cer": 0.06217,
+                "exact": 0.684
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 176,
+                "cer": 0.04,
+                "substitutions": 120,
+                "deletions": 53,
+                "insertions": 3,
+                "into_hiragana": 34
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step1000.pt",
+          "checkpoint_sha256": "688b72e8f308b1d840288895a9d6ed1522396e777d042f6a5f2884089e29d0db",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step1000-688b72e8f308b1d8.vocr",
+          "blob_sha256": "0d109c23d58c001f48d8ff1be6007c8ca4e1fbbcebaac68e0974313981e1e683",
+          "step": 1000,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 9,
+                "cer": 0.04348,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 3,
+                "cer": 0.02362,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 1,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 441,
+                "cer": 0.05922,
+                "exact": 0.694
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 167,
+                "cer": 0.03795,
+                "substitutions": 121,
+                "deletions": 44,
+                "insertions": 2,
+                "into_hiragana": 34
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step200.pt",
+          "checkpoint_sha256": "12fdfd64dc4a79db8329ec6112f35924eb97707fe4330efac2ca271f0d9d0f30",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step200-12fdfd64dc4a79db.vocr",
+          "blob_sha256": "7eb36f16c8597b8dbc79725f814ac183832f09cb91bb50c7250bb15c80a9de9a",
+          "step": 200,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 467,
+                "cer": 0.06271,
+                "exact": 0.682
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 172,
+                "cer": 0.03909,
+                "substitutions": 119,
+                "deletions": 51,
+                "insertions": 2,
+                "into_hiragana": 40
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step300.pt",
+          "checkpoint_sha256": "6b7380fdbfd1fddfc811c37d47e14309269b185a4960b58044d90ddc04081b9a",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step300-6b7380fdbfd1fddf.vocr",
+          "blob_sha256": "fcc61af0ea319f909a6a5be4dd6efd8d5a121b89fd351c685805bd336b7cc9f1",
+          "step": 300,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 463,
+                "cer": 0.06217,
+                "exact": 0.69
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 175,
+                "cer": 0.03977,
+                "substitutions": 128,
+                "deletions": 44,
+                "insertions": 3,
+                "into_hiragana": 35
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step400.pt",
+          "checkpoint_sha256": "60b5825416b304151a5720f25ee4420e329fb0117f902c7f8cc6c1438933afa5",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step400-60b5825416b30415.vocr",
+          "blob_sha256": "9bcae5af9f1fd31da81c8d8cf6de76920ba7def02324cdcdfa76f8d8be1785d2",
+          "step": 400,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 5,
+                "cer": 0.03937,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 3,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 449,
+                "cer": 0.06029,
+                "exact": 0.696
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 165,
+                "cer": 0.0375,
+                "substitutions": 118,
+                "deletions": 45,
+                "insertions": 2,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step500.pt",
+          "checkpoint_sha256": "9866892106a23737f1441790b6f754aa592866121c808638d1ebd0559b3aaa7c",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step500-9866892106a23737.vocr",
+          "blob_sha256": "e8b7d70f9fc3ae82a17ad55ad96dea08c0edc91765dceff019a100b80f96f59e",
+          "step": 500,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 8,
+                "cer": 0.03865,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 3,
+                "cer": 0.02362,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 1,
+                "into_hiragana": 2
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 453,
+                "cer": 0.06083,
+                "exact": 0.684
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 168,
+                "cer": 0.03818,
+                "substitutions": 116,
+                "deletions": 51,
+                "insertions": 1,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step600.pt",
+          "checkpoint_sha256": "5555d98e060ad5abb72ef8e449691ac37db4424d77bade555130eb938759fb0b",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step600-5555d98e060ad5ab.vocr",
+          "blob_sha256": "7b4bbd96872bf1dfc94d844aab6db80de7058e25ab16b2462a5246416ced4e77",
+          "step": 600,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 447,
+                "cer": 0.06002,
+                "exact": 0.69
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 168,
+                "cer": 0.03818,
+                "substitutions": 121,
+                "deletions": 46,
+                "insertions": 1,
+                "into_hiragana": 34
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step700.pt",
+          "checkpoint_sha256": "461cccf934e9ce842dd525c622befcfb51aabcac837a82733dbb11130fe8a5a9",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step700-461cccf934e9ce84.vocr",
+          "blob_sha256": "f165d69ed8afefc305cabfebae5bdc563100ca10f4e2308873012f74aa740fde",
+          "step": 700,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 9,
+                "cer": 0.04348,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 450,
+                "cer": 0.06043,
+                "exact": 0.686
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 167,
+                "cer": 0.03795,
+                "substitutions": 121,
+                "deletions": 45,
+                "insertions": 1,
+                "into_hiragana": 37
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step800.pt",
+          "checkpoint_sha256": "8640c8a4aa3df24798a08cc697833ef8433069c8156ddaeb36c2439e50c5a133",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step800-8640c8a4aa3df247.vocr",
+          "blob_sha256": "06bb437d1b96b8d9aeccacc6391411798fbe1f47fd66a5c3c1d2e48871f81c1a",
+          "step": 800,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 9,
+                "cer": 0.04348,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 2
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 445,
+                "cer": 0.05976,
+                "exact": 0.692
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 167,
+                "cer": 0.03795,
+                "substitutions": 118,
+                "deletions": 48,
+                "insertions": 1,
+                "into_hiragana": 37
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-runs/fresh_targeted_s1/ckpt_step900.pt",
+          "checkpoint_sha256": "58f75295475047115e92b83b1d01ce7da5110076f01f1d3478dc5c6e74d82aa8",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/fresh-selection_exports/fresh_targeted_s1-ckpt_step900-58f7529547504711.vocr",
+          "blob_sha256": "009f27f09d124a85cbb752102472dc78856449027edf8024f63a17236961dc81",
+          "step": 900,
+          "status": "scored",
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 448,
+                "cer": 0.06016,
+                "exact": 0.692
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 172,
+                "cer": 0.03909,
+                "substitutions": 127,
+                "deletions": 43,
+                "insertions": 2,
+                "into_hiragana": 34
+              }
+            }
+          }
+        }
+      ],
+      "training_metrics": {
+        "fresh_anime_s1": [
+          {
+            "step": 100,
+            "lr": 1.9875552027684024e-05,
+            "time": 1791731768.7254958,
+            "eval_s": 2.2,
+            "clannad_cer": 0.043478260869565216,
+            "synthetic_cer": 0.06311266281724184,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.666,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.04045,
+            "sel": 0.0315,
+            "mix": {
+              "general": 3178,
+              "targeted": 378,
+              "anime": 209,
+              "kanji": 75
+            }
+          },
+          {
+            "step": 200,
+            "lr": 1.8869907253069344e-05,
+            "time": 1791731789.1758902,
+            "eval_s": 1.1,
+            "clannad_cer": 0.033816425120772944,
+            "synthetic_cer": 0.06257553377198873,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.684,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.04023,
+            "sel": 0.02362,
+            "mix": {
+              "general": 5786,
+              "targeted": 653,
+              "anime": 348,
+              "kanji": 125
+            }
+          },
+          {
+            "step": 300,
+            "lr": 1.6957253155092345e-05,
+            "time": 1791731806.3940666,
+            "eval_s": 2.0,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.061769840204109035,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.684,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03932,
+            "sel": 0.0315,
+            "mix": {
+              "general": 8326,
+              "targeted": 948,
+              "anime": 517,
+              "kanji": 193
+            }
+          },
+          {
+            "step": 400,
+            "lr": 1.434485548315498e-05,
+            "time": 1791731836.8055835,
+            "eval_s": 2.2,
+            "clannad_cer": 0.043478260869565216,
+            "synthetic_cer": 0.06096414663622935,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.688,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.04,
+            "sel": 0.02362,
+            "mix": {
+              "general": 10877,
+              "targeted": 1257,
+              "anime": 669,
+              "kanji": 253
+            }
+          },
+          {
+            "step": 500,
+            "lr": 1.1315808060538063e-05,
+            "time": 1791731861.2553432,
+            "eval_s": 1.1,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.059487041761783266,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.702,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03864,
+            "sel": 0.0315,
+            "mix": {
+              "general": 13429,
+              "targeted": 1567,
+              "anime": 811,
+              "kanji": 321
+            }
+          },
+          {
+            "step": 600,
+            "lr": 8.198355175995531e-06,
+            "time": 1791731877.5712306,
+            "eval_s": 1.8,
+            "clannad_cer": 0.05314009661835749,
+            "synthetic_cer": 0.05894991271653015,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.7,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03773,
+            "sel": 0.0315,
+            "mix": {
+              "general": 15969,
+              "targeted": 1883,
+              "anime": 965,
+              "kanji": 383
+            }
+          },
+          {
+            "step": 700,
+            "lr": 5.330321221833039e-06,
+            "time": 1791731911.6041358,
+            "eval_s": 2.0,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06029273532966295,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.694,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03818,
+            "sel": 0.0315,
+            "mix": {
+              "general": 19146,
+              "targeted": 2263,
+              "anime": 1172,
+              "kanji": 459
+            }
+          },
+          {
+            "step": 800,
+            "lr": 3.0225021791161014e-06,
+            "time": 1791731937.6148853,
+            "eval_s": 0.9,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06002417080703639,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.688,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03795,
+            "sel": 0.0315,
+            "mix": {
+              "general": 21701,
+              "targeted": 2586,
+              "anime": 1311,
+              "kanji": 514
+            }
+          },
+          {
+            "step": 900,
+            "lr": 1.5249860506251315e-06,
+            "time": 1791731953.0916784,
+            "eval_s": 1.2,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06029273532966295,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.684,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03841,
+            "sel": 0.0315,
+            "mix": {
+              "general": 24279,
+              "targeted": 2874,
+              "anime": 1456,
+              "kanji": 575
+            }
+          },
+          {
+            "step": 1000,
+            "lr": 1.0000519452389823e-06,
+            "time": 1791731976.1946616,
+            "eval_s": 2.3,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.060158453068349674,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.684,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03795,
+            "sel": 0.0315,
+            "mix": {
+              "general": 26819,
+              "targeted": 3211,
+              "anime": 1602,
+              "kanji": 624
+            }
+          }
+        ],
+        "fresh_general_s1": [
+          {
+            "step": 100,
+            "lr": 1.9875552027684024e-05,
+            "time": 1791731271.182697,
+            "eval_s": 2.2,
+            "clannad_cer": 0.033816425120772944,
+            "synthetic_cer": 0.06364979186249496,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.666,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.04068,
+            "sel": 0.02362,
+            "mix": {
+              "general": 3763,
+              "kanji": 77
+            }
+          },
+          {
+            "step": 200,
+            "lr": 1.8869907253069344e-05,
+            "time": 1791731301.0017257,
+            "eval_s": 2.1,
+            "clannad_cer": 0.043478260869565216,
+            "synthetic_cer": 0.061769840204109035,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.682,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.03886,
+            "sel": 0.02362,
+            "mix": {
+              "general": 6776,
+              "kanji": 136
+            }
+          },
+          {
+            "step": 300,
+            "lr": 1.6957253155092345e-05,
+            "time": 1791731316.6003,
+            "eval_s": 1.1,
+            "clannad_cer": 0.043478260869565216,
+            "synthetic_cer": 0.06136699342016919,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.692,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.04,
+            "sel": 0.02362,
+            "mix": {
+              "general": 9775,
+              "kanji": 209
+            }
+          },
+          {
+            "step": 400,
+            "lr": 1.434485548315498e-05,
+            "time": 1791731341.3489134,
+            "eval_s": 2.4,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.059487041761783266,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.692,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03886,
+            "sel": 0.0315,
+            "mix": {
+              "general": 12779,
+              "kanji": 277
+            }
+          },
+          {
+            "step": 500,
+            "lr": 1.1315808060538063e-05,
+            "time": 1791731370.911997,
+            "eval_s": 2.3,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06042701759097623,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.682,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.04023,
+            "sel": 0.0315,
+            "mix": {
+              "general": 15783,
+              "kanji": 345
+            }
+          },
+          {
+            "step": 600,
+            "lr": 8.198355175995531e-06,
+            "time": 1791731390.875141,
+            "eval_s": 1.2,
+            "clannad_cer": 0.03864734299516908,
+            "synthetic_cer": 0.06002417080703639,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.682,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.03841,
+            "sel": 0.02362,
+            "mix": {
+              "general": 18798,
+              "kanji": 402
+            }
+          },
+          {
+            "step": 700,
+            "lr": 5.330321221833039e-06,
+            "time": 1791731409.413697,
+            "eval_s": 2.7,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06002417080703639,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.68,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03795,
+            "sel": 0.0315,
+            "mix": {
+              "general": 22558,
+              "kanji": 482
+            }
+          },
+          {
+            "step": 800,
+            "lr": 3.0225021791161014e-06,
+            "time": 1791731440.1078131,
+            "eval_s": 2.3,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06042701759097623,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.678,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03886,
+            "sel": 0.0315,
+            "mix": {
+              "general": 25555,
+              "kanji": 557
+            }
+          },
+          {
+            "step": 900,
+            "lr": 1.5249860506251315e-06,
+            "time": 1791731463.8074737,
+            "eval_s": 1.2,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.060158453068349674,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.68,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03841,
+            "sel": 0.0315,
+            "mix": {
+              "general": 28568,
+              "kanji": 616
+            }
+          },
+          {
+            "step": 1000,
+            "lr": 1.0000519452389823e-06,
+            "time": 1791731479.6916971,
+            "eval_s": 1.2,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.060158453068349674,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.682,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03841,
+            "sel": 0.0315,
+            "mix": {
+              "general": 31568,
+              "kanji": 688
+            }
+          }
+        ],
+        "fresh_targeted_s1": [
+          {
+            "step": 100,
+            "lr": 1.9875552027684024e-05,
+            "time": 1791731517.0511572,
+            "eval_s": 2.1,
+            "clannad_cer": 0.03864734299516908,
+            "synthetic_cer": 0.06163555794279576,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.688,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.03909,
+            "sel": 0.02362,
+            "mix": {
+              "general": 3374,
+              "targeted": 390,
+              "kanji": 76
+            }
+          },
+          {
+            "step": 200,
+            "lr": 1.8869907253069344e-05,
+            "time": 1791731542.353913,
+            "eval_s": 1.1,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06284409829461528,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.678,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03909,
+            "sel": 0.0315,
+            "mix": {
+              "general": 6073,
+              "targeted": 712,
+              "kanji": 127
+            }
+          },
+          {
+            "step": 300,
+            "lr": 1.6957253155092345e-05,
+            "time": 1791731558.6089854,
+            "eval_s": 1.2,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06190412246542232,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.69,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03932,
+            "sel": 0.0315,
+            "mix": {
+              "general": 8753,
+              "targeted": 1037,
+              "kanji": 194
+            }
+          },
+          {
+            "step": 400,
+            "lr": 1.434485548315498e-05,
+            "time": 1791731585.0778296,
+            "eval_s": 2.3,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.05962132402309655,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.696,
+            "clannad_hiragana_cer": 0.03937,
+            "synthetic_hiragana_cer": 0.03795,
+            "sel": 0.03937,
+            "mix": {
+              "general": 11450,
+              "targeted": 1335,
+              "kanji": 271
+            }
+          },
+          {
+            "step": 500,
+            "lr": 1.1315808060538063e-05,
+            "time": 1791731615.4639003,
+            "eval_s": 2.2,
+            "clannad_cer": 0.03864734299516908,
+            "synthetic_cer": 0.060829864374916075,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.688,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.03818,
+            "sel": 0.01575,
+            "mix": {
+              "general": 14140,
+              "targeted": 1654,
+              "kanji": 334
+            }
+          },
+          {
+            "step": 600,
+            "lr": 8.198355175995531e-06,
+            "time": 1791731633.7283432,
+            "eval_s": 1.2,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06002417080703639,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.69,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03864,
+            "sel": 0.0315,
+            "mix": {
+              "general": 16804,
+              "targeted": 1988,
+              "kanji": 408
+            }
+          },
+          {
+            "step": 700,
+            "lr": 5.330321221833039e-06,
+            "time": 1791731653.6628265,
+            "eval_s": 2.8,
+            "clannad_cer": 0.043478260869565216,
+            "synthetic_cer": 0.05975560628440983,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.692,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03727,
+            "sel": 0.0315,
+            "mix": {
+              "general": 20195,
+              "targeted": 2360,
+              "kanji": 485
+            }
+          },
+          {
+            "step": 800,
+            "lr": 3.0225021791161014e-06,
+            "time": 1791731684.6068153,
+            "eval_s": 2.2,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.05988988854572311,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.692,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.0375,
+            "sel": 0.0315,
+            "mix": {
+              "general": 22877,
+              "targeted": 2691,
+              "kanji": 544
+            }
+          },
+          {
+            "step": 900,
+            "lr": 1.5249860506251315e-06,
+            "time": 1791731709.7951832,
+            "eval_s": 1.1,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.05975560628440983,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.686,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03727,
+            "sel": 0.0315,
+            "mix": {
+              "general": 25601,
+              "targeted": 2981,
+              "kanji": 602
+            }
+          },
+          {
+            "step": 1000,
+            "lr": 1.0000519452389823e-06,
+            "time": 1791731726.6458755,
+            "eval_s": 1.3,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.059487041761783266,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.692,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.03705,
+            "sel": 0.0315,
+            "mix": {
+              "general": 28323,
+              "targeted": 3279,
+              "kanji": 654
+            }
+          }
+        ]
+      },
+      "mix_counts_definition": "Cumulative samples drawn into width buckets; includes queued samples not yet consumed by the optimizer.",
+      "outcome": "All 30 exports failed real-development guards. No candidate held-out tests were run. Keep the released baseline."
+    },
+    "native_head": {
+      "training_code_commit": "d6ef77d",
+      "input_snapshot_sha256": "714ee3b43f89d450849900668fbf72e3de7beb4e5a0be212b45005a8345c42b4",
+      "targeted_snapshot_sha256": "e3b4e2cd6f43ab8fae1c47c9e0c1d66a6b439a62825e5e67971bf66bedf0ab7c",
+      "experiment_sha256": "7fd70300ecbb68f9b9c591c60ff8ea395c469551eaccb909a91c2c858b89bc42",
+      "selection_report_sha256": "60c08a7403bbcbc84f4c2c0f72e4487d919d8fe899ff48d5b7299fcebe65d2bf",
+      "selection_rule": {
+        "qualify": "real_dev.full_errors <= baseline and synthetic_dev.full_errors <= baseline",
+        "rank": [
+          "real_dev.hiragana_errors",
+          "real_dev.full_errors",
+          "synthetic_dev.full_errors",
+          "step",
+          "checkpoint_path"
+        ],
+        "replace_baseline": "qualified checkpoint strictly reduces real_dev.hiragana_errors"
+      },
+      "datasets": {
+        "real_dev": {
+          "split": "dev",
+          "manifest_sha256": "a32ba010c2b8dc7ed79fe81965c53e87d0bd8ab02a7757c215614ccaba1c387b",
+          "sessions": [
+            "clannad-opening-A"
+          ],
+          "lines": 19,
+          "pad": 4,
+          "polarity": "console"
+        },
+        "synthetic_dev": {
+          "split": "dev",
+          "npz_sha256": "be050dc163a0517b1509168831e33718a0e954921e78bee1fa3c1999bb5c6b64",
+          "book_split_sha256": "0e14a5a0a0fa15f9f618bf6dad9fb0e4ef53d03f1efe46071c9e894661edf321",
+          "lines": 500,
+          "polarity": "stored console crops"
+        }
+      },
+      "strict_dev_hiragana_improvement": false,
+      "chosen": {
+        "blob": "/home/bee/Downloads/vita-release-2026-10-11/ocr/FL10_w8.vocr",
+        "blob_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+      },
+      "baseline": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 5,
+            "cer": 0.02415,
+            "exact": 0.89474
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 510,
+            "cer": 0.06848,
+            "exact": 0.644
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 190,
+            "cer": 0.04318,
+            "substitutions": 115,
+            "deletions": 73,
+            "insertions": 2,
+            "into_hiragana": 29
+          }
+        }
+      },
+      "checkpoints": [
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step100.pt",
+          "checkpoint_sha256": "6afcebe37aa32018d215d6eae3167f4348a8d31c27463121c65df27cb1a3eef2",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step100-6afcebe37aa32018.vocr",
+          "blob_sha256": "8432a6a777d14b6dc7dfce2fcb5629d85513b06f13222b5b55c38787a6c5f63c",
+          "step": 100,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 493,
+                "cer": 0.0662,
+                "exact": 0.646
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 181,
+                "cer": 0.04114,
+                "substitutions": 113,
+                "deletions": 66,
+                "insertions": 2,
+                "into_hiragana": 32
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step1000.pt",
+          "checkpoint_sha256": "7714a01b297b20f05363ac740d23a44d5ca7a14fa599275286a2191364f25d5b",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step1000-7714a01b297b20f0.vocr",
+          "blob_sha256": "6ebb96747ddea73a114ec278bd8f27f4cb90d8652124aa5229b66b92a4665e0e",
+          "step": 1000,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 472,
+                "cer": 0.06338,
+                "exact": 0.672
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 181,
+                "cer": 0.04114,
+                "substitutions": 119,
+                "deletions": 59,
+                "insertions": 3,
+                "into_hiragana": 37
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step200.pt",
+          "checkpoint_sha256": "db9bce7675d9c17123b897a9a5e96d233a425d9d3be3c482c6e508cf12897155",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step200-db9bce7675d9c171.vocr",
+          "blob_sha256": "0d53e12022f946e72cd2e4d0445b97113af0adbb2f4d588087e11631ab925770",
+          "step": 200,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 484,
+                "cer": 0.06499,
+                "exact": 0.656
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 182,
+                "cer": 0.04136,
+                "substitutions": 115,
+                "deletions": 64,
+                "insertions": 3,
+                "into_hiragana": 33
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step300.pt",
+          "checkpoint_sha256": "74c1c8bb72d87d67910eb4224dde1ebfd648bb7da71c5de1bdaf6a5dc6ac896d",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step300-74c1c8bb72d87d67.vocr",
+          "blob_sha256": "4ea9407d519f2af9ba0cedf675f9a5def61c3ae21e3c11454159aaa7586783d8",
+          "step": 300,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 482,
+                "cer": 0.06472,
+                "exact": 0.658
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 181,
+                "cer": 0.04114,
+                "substitutions": 116,
+                "deletions": 62,
+                "insertions": 3,
+                "into_hiragana": 34
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step400.pt",
+          "checkpoint_sha256": "1bcb58fdf26d5e8c76c423c6a767d96235b5478ee459124ff3efa1b12f51110e",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step400-1bcb58fdf26d5e8c.vocr",
+          "blob_sha256": "cf39914932008bb132effa33e87a1d1deab78ac779e6495be1c78617237b9850",
+          "step": 400,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 475,
+                "cer": 0.06378,
+                "exact": 0.662
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 180,
+                "cer": 0.04091,
+                "substitutions": 118,
+                "deletions": 59,
+                "insertions": 3,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step500.pt",
+          "checkpoint_sha256": "04d0b1c3014c5a561351f33506be16ce359b11d253637a3424179edb9b7b1179",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step500-04d0b1c3014c5a56.vocr",
+          "blob_sha256": "333131b2b0cb18c28577a485ad8fe15257351154747cfea9bdd441cf72696f37",
+          "step": 500,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 475,
+                "cer": 0.06378,
+                "exact": 0.666
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 180,
+                "cer": 0.04091,
+                "substitutions": 118,
+                "deletions": 59,
+                "insertions": 3,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step600.pt",
+          "checkpoint_sha256": "e2dc3076c6e39c9509d77298d2a86ef4b0ba79209a37da76aeaad5412ca7286a",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step600-e2dc3076c6e39c95.vocr",
+          "blob_sha256": "2230d523ed140b2d21762266921bbdd5593532849d73a1f89eee2d9fac0a0b0a",
+          "step": 600,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 476,
+                "cer": 0.06392,
+                "exact": 0.668
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 182,
+                "cer": 0.04136,
+                "substitutions": 121,
+                "deletions": 58,
+                "insertions": 3,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step700.pt",
+          "checkpoint_sha256": "7b079f882537bc4ea00e4846bf2c8d8e6fcbd2e8d8fa55ddbc246d98ef1ec693",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step700-7b079f882537bc4e.vocr",
+          "blob_sha256": "c1d56e888282635cc00eaf40923be3de642a9d6d3e1bc454bbec4717c27275d9",
+          "step": 700,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 474,
+                "cer": 0.06365,
+                "exact": 0.67
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 182,
+                "cer": 0.04136,
+                "substitutions": 119,
+                "deletions": 60,
+                "insertions": 3,
+                "into_hiragana": 37
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step800.pt",
+          "checkpoint_sha256": "5f3f8e39a072c10d58d4608673480836519b8cdbc844e322c787b2af1030e329",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step800-5f3f8e39a072c10d.vocr",
+          "blob_sha256": "843bd0cea4df5bfcb9dc57816815e9193efce0926380b03f0f3f80dc21d3cb0e",
+          "step": 800,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 474,
+                "cer": 0.06365,
+                "exact": 0.668
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 181,
+                "cer": 0.04114,
+                "substitutions": 119,
+                "deletions": 59,
+                "insertions": 3,
+                "into_hiragana": 38
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_s1/ckpt_step900.pt",
+          "checkpoint_sha256": "398fa1b2491baa3e1f45d2f7c120de519fd7914ee523ba9a8a87fcc20704031c",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_s1-ckpt_step900-398fa1b2491baa3e.vocr",
+          "blob_sha256": "b622c5c670ef9604ae7b61892b1452d341d574503376cc83cce09be9c1a4a3e5",
+          "step": 900,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 473,
+                "cer": 0.06352,
+                "exact": 0.67
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 181,
+                "cer": 0.04114,
+                "substitutions": 119,
+                "deletions": 59,
+                "insertions": 3,
+                "into_hiragana": 38
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step100.pt",
+          "checkpoint_sha256": "83c44adbad8dc6970c2975ad3adc9f4e551dd2ffc7857d1d7fda29d14ef79167",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step100-83c44adbad8dc697.vocr",
+          "blob_sha256": "0eefdf5fe7c1dc5357b6b2652dd954fd26c4a3b0c2cdab935e084ef588537012",
+          "step": 100,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 505,
+                "cer": 0.06781,
+                "exact": 0.648
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 190,
+                "cer": 0.04318,
+                "substitutions": 117,
+                "deletions": 71,
+                "insertions": 2,
+                "into_hiragana": 29
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step1000.pt",
+          "checkpoint_sha256": "2610b1b5c765d69c15c8576a2993bfc3a92ddb15566a40dc083251cc3c85e6e7",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step1000-2610b1b5c765d69c.vocr",
+          "blob_sha256": "1a9545779fa6ef563029ccdc597dbd8ed4240b0229ff0317fe0437f985323d0c",
+          "step": 1000,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 484,
+                "cer": 0.06499,
+                "exact": 0.654
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 180,
+                "cer": 0.04091,
+                "substitutions": 112,
+                "deletions": 66,
+                "insertions": 2,
+                "into_hiragana": 33
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step200.pt",
+          "checkpoint_sha256": "f98fae11bdba1a041c092944155dadcada00acfc06995133674ad56a9ba6d18d",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step200-f98fae11bdba1a04.vocr",
+          "blob_sha256": "3d514932c897c35b7fe457c09e3882e829b8c14d777f49a2a58fa04d3c3446c0",
+          "step": 200,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 502,
+                "cer": 0.06741,
+                "exact": 0.648
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 189,
+                "cer": 0.04295,
+                "substitutions": 119,
+                "deletions": 68,
+                "insertions": 2,
+                "into_hiragana": 30
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step300.pt",
+          "checkpoint_sha256": "30d8ec3fe0241600e3e0930bbd9b331c765aac24ced8cf0de1784495927f8a98",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step300-30d8ec3fe0241600.vocr",
+          "blob_sha256": "09bbbee7ad094da59c0b45febcb43bc41670d0ff6effbaa05793caa2a252f57e",
+          "step": 300,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 498,
+                "cer": 0.06687,
+                "exact": 0.648
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 185,
+                "cer": 0.04205,
+                "substitutions": 113,
+                "deletions": 70,
+                "insertions": 2,
+                "into_hiragana": 31
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step400.pt",
+          "checkpoint_sha256": "fcc77e6f67f442ed7783d4ef44891788a75637ed4e045222d62cea03ec64bd4d",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step400-fcc77e6f67f442ed.vocr",
+          "blob_sha256": "bd403047730fe1b2b389715a91ebacb6ff43e57725190eac030d0a2d368a24a2",
+          "step": 400,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 493,
+                "cer": 0.0662,
+                "exact": 0.652
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 181,
+                "cer": 0.04114,
+                "substitutions": 114,
+                "deletions": 65,
+                "insertions": 2,
+                "into_hiragana": 30
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step500.pt",
+          "checkpoint_sha256": "5ce69a676afa40cfcff4c5f3fc8f9d9f99761c52f7862c6e98313c24f6e440c1",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step500-5ce69a676afa40cf.vocr",
+          "blob_sha256": "6d725e85665fd03c1562f48d3a9b1a05dcd90e8f63ed970d93669fbba035f9ce",
+          "step": 500,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 490,
+                "cer": 0.0658,
+                "exact": 0.65
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 180,
+                "cer": 0.04091,
+                "substitutions": 112,
+                "deletions": 66,
+                "insertions": 2,
+                "into_hiragana": 31
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step600.pt",
+          "checkpoint_sha256": "de79957c7be756f65c77ff168a9cae5d94e1b1c17290fb3ff00d892019261df9",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step600-de79957c7be756f6.vocr",
+          "blob_sha256": "1c975cce3e9e25a961f9fc7dd1911132df032acc525440d10b8e250b970afe05",
+          "step": 600,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 484,
+                "cer": 0.06499,
+                "exact": 0.654
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 180,
+                "cer": 0.04091,
+                "substitutions": 112,
+                "deletions": 66,
+                "insertions": 2,
+                "into_hiragana": 33
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step700.pt",
+          "checkpoint_sha256": "80ab291f155d421502ffa31ea87ed1213cd55f7f11954c610ae4d4c86307cc15",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step700-80ab291f155d4215.vocr",
+          "blob_sha256": "fa13410a152f2f24f1618ae0c25a75278b517efdd5d38ddd94c6f8d60d5886bc",
+          "step": 700,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 485,
+                "cer": 0.06513,
+                "exact": 0.652
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 180,
+                "cer": 0.04091,
+                "substitutions": 112,
+                "deletions": 66,
+                "insertions": 2,
+                "into_hiragana": 33
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step800.pt",
+          "checkpoint_sha256": "9cfb6cd2bd30595fe29abc7bff12d31a29934f413ab87bb60609d3f0e8d57ade",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step800-9cfb6cd2bd30595f.vocr",
+          "blob_sha256": "742d6c5bbda95ee346f46573a336216e23944609c55ed3a094a13cfb82939eab",
+          "step": 800,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 485,
+                "cer": 0.06513,
+                "exact": 0.652
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 180,
+                "cer": 0.04091,
+                "substitutions": 112,
+                "deletions": 66,
+                "insertions": 2,
+                "into_hiragana": 33
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-runs/native_head_slow_s1/ckpt_step900.pt",
+          "checkpoint_sha256": "665651c4684a06284b9ed61f0c0028ea5676244e63b2daf42f084c98e670c1af",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-selection_exports/native_head_slow_s1-ckpt_step900-665651c4684a0628.vocr",
+          "blob_sha256": "ce0edb9bd15029d8e0d5300083d124c10ba85519522d378ea4075714e0e2ee0a",
+          "step": 900,
+          "status": "scored",
+          "qualified": true,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 5,
+                "cer": 0.02415,
+                "exact": 0.89474
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 484,
+                "cer": 0.06499,
+                "exact": 0.654
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 180,
+                "cer": 0.04091,
+                "substitutions": 112,
+                "deletions": 66,
+                "insertions": 2,
+                "into_hiragana": 33
+              }
+            }
+          }
+        }
+      ],
+      "training_metrics": {
+        "native_head_s1": [
+          {
+            "step": 100,
+            "lr": 9.937776013842011e-05,
+            "time": 1791734009.5902286,
+            "eval_s": 2.2,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06700684839532697,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.648,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04114,
+            "sel": 0.01575,
+            "mix": {
+              "general": 3206,
+              "targeted": 370,
+              "native": 190,
+              "kanji": 74
+            }
+          },
+          {
+            "step": 200,
+            "lr": 9.434953626534672e-05,
+            "time": 1791734025.1237066,
+            "eval_s": 2.3,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06499261447562776,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.65,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04114,
+            "sel": 0.01575,
+            "mix": {
+              "general": 5745,
+              "targeted": 676,
+              "native": 358,
+              "kanji": 133
+            }
+          },
+          {
+            "step": 300,
+            "lr": 8.478626577546172e-05,
+            "time": 1791734040.9060624,
+            "eval_s": 2.2,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06458976769168792,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.646,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04114,
+            "sel": 0.01575,
+            "mix": {
+              "general": 8265,
+              "targeted": 989,
+              "native": 534,
+              "kanji": 196
+            }
+          },
+          {
+            "step": 400,
+            "lr": 7.17242774157749e-05,
+            "time": 1791734056.0846274,
+            "eval_s": 2.3,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06458976769168792,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.65,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04114,
+            "sel": 0.01575,
+            "mix": {
+              "general": 10828,
+              "targeted": 1293,
+              "native": 689,
+              "kanji": 246
+            }
+          },
+          {
+            "step": 500,
+            "lr": 5.657904030269031e-05,
+            "time": 1791734071.9933002,
+            "eval_s": 2.4,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06378407412380825,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.656,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04045,
+            "sel": 0.01575,
+            "mix": {
+              "general": 13328,
+              "targeted": 1645,
+              "native": 844,
+              "kanji": 311
+            }
+          },
+          {
+            "step": 600,
+            "lr": 4.099177587997765e-05,
+            "time": 1791734082.2991345,
+            "eval_s": 0.9,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06351550960118169,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.66,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04091,
+            "sel": 0.01575,
+            "mix": {
+              "general": 15884,
+              "targeted": 1958,
+              "native": 999,
+              "kanji": 359
+            }
+          },
+          {
+            "step": 700,
+            "lr": 2.6651606109165193e-05,
+            "time": 1791734090.6231804,
+            "eval_s": 1.1,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06311266281724184,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.662,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04023,
+            "sel": 0.01575,
+            "mix": {
+              "general": 19053,
+              "targeted": 2352,
+              "native": 1199,
+              "kanji": 436
+            }
+          },
+          {
+            "step": 800,
+            "lr": 1.5112510895580506e-05,
+            "time": 1791734105.766064,
+            "eval_s": 2.8,
+            "clannad_cer": 0.028985507246376812,
+            "synthetic_cer": 0.06324694507855512,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.662,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04045,
+            "sel": 0.01575,
+            "mix": {
+              "general": 21591,
+              "targeted": 2667,
+              "native": 1358,
+              "kanji": 496
+            }
+          },
+          {
+            "step": 900,
+            "lr": 7.624930253125657e-06,
+            "time": 1791734122.173812,
+            "eval_s": 2.5,
+            "clannad_cer": 0.028985507246376812,
+            "synthetic_cer": 0.06338122733986841,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.66,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04045,
+            "sel": 0.01575,
+            "mix": {
+              "general": 24180,
+              "targeted": 2953,
+              "native": 1490,
+              "kanji": 561
+            }
+          },
+          {
+            "step": 1000,
+            "lr": 5.000259726194912e-06,
+            "time": 1791734138.544066,
+            "eval_s": 2.5,
+            "clannad_cer": 0.028985507246376812,
+            "synthetic_cer": 0.06324694507855512,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.662,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04045,
+            "sel": 0.01575,
+            "mix": {
+              "general": 26752,
+              "targeted": 3246,
+              "native": 1641,
+              "kanji": 617
+            }
+          }
+        ],
+        "native_head_slow_s1": [
+          {
+            "step": 100,
+            "lr": 1.9875552027684024e-05,
+            "time": 1791733855.4017482,
+            "eval_s": 2.2,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06767825970189338,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.65,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04295,
+            "sel": 0.01575,
+            "mix": {
+              "general": 3206,
+              "targeted": 370,
+              "native": 190,
+              "kanji": 74
+            }
+          },
+          {
+            "step": 200,
+            "lr": 1.8869907253069344e-05,
+            "time": 1791733871.4375858,
+            "eval_s": 2.3,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06714113065664026,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.65,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.0425,
+            "sel": 0.01575,
+            "mix": {
+              "general": 5745,
+              "targeted": 676,
+              "native": 358,
+              "kanji": 133
+            }
+          },
+          {
+            "step": 300,
+            "lr": 1.6957253155092345e-05,
+            "time": 1791733887.580339,
+            "eval_s": 2.4,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06700684839532697,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.654,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04205,
+            "sel": 0.01575,
+            "mix": {
+              "general": 8265,
+              "targeted": 989,
+              "native": 534,
+              "kanji": 196
+            }
+          },
+          {
+            "step": 400,
+            "lr": 1.434485548315498e-05,
+            "time": 1791733902.6591713,
+            "eval_s": 2.3,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06673828387270042,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.656,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04159,
+            "sel": 0.01575,
+            "mix": {
+              "general": 10828,
+              "targeted": 1293,
+              "native": 689,
+              "kanji": 246
+            }
+          },
+          {
+            "step": 500,
+            "lr": 1.1315808060538063e-05,
+            "time": 1791733918.726483,
+            "eval_s": 2.4,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06660400161138713,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.656,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04159,
+            "sel": 0.01575,
+            "mix": {
+              "general": 13328,
+              "targeted": 1645,
+              "native": 844,
+              "kanji": 311
+            }
+          },
+          {
+            "step": 600,
+            "lr": 8.198355175995531e-06,
+            "time": 1791733931.5306346,
+            "eval_s": 1.1,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06620115482744729,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.654,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04182,
+            "sel": 0.01575,
+            "mix": {
+              "general": 15884,
+              "targeted": 1958,
+              "native": 999,
+              "kanji": 359
+            }
+          },
+          {
+            "step": 700,
+            "lr": 5.330321221833039e-06,
+            "time": 1791733939.7608473,
+            "eval_s": 1.2,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06593259030482074,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.656,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04159,
+            "sel": 0.01575,
+            "mix": {
+              "general": 19053,
+              "targeted": 2352,
+              "native": 1199,
+              "kanji": 436
+            }
+          },
+          {
+            "step": 800,
+            "lr": 3.0225021791161014e-06,
+            "time": 1791733954.691088,
+            "eval_s": 2.5,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06593259030482074,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.656,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04159,
+            "sel": 0.01575,
+            "mix": {
+              "general": 21591,
+              "targeted": 2667,
+              "native": 1358,
+              "kanji": 496
+            }
+          },
+          {
+            "step": 900,
+            "lr": 1.5249860506251315e-06,
+            "time": 1791733970.580844,
+            "eval_s": 2.5,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06606687256613401,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.654,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04159,
+            "sel": 0.01575,
+            "mix": {
+              "general": 24180,
+              "targeted": 2953,
+              "native": 1490,
+              "kanji": 561
+            }
+          },
+          {
+            "step": 1000,
+            "lr": 1.0000519452389823e-06,
+            "time": 1791733986.2509663,
+            "eval_s": 2.1,
+            "clannad_cer": 0.024154589371980676,
+            "synthetic_cer": 0.06593259030482074,
+            "clannad_exact": 0.8947368421052632,
+            "synthetic_exact": 0.656,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04159,
+            "sel": 0.01575,
+            "mix": {
+              "general": 26752,
+              "targeted": 3246,
+              "native": 1641,
+              "kanji": 617
+            }
+          }
+        ]
+      },
+      "mix_counts_definition": "Number drawn into width-bucket mixer pools, including samples still queued; not exact optimizer-consumed counts.",
+      "outcome": {
+        "candidate_heldout_test_evaluated": false,
+        "replacement_selected": false
+      }
+    },
+    "native_full": {
+      "training_code_commit": "d6ef77d",
+      "input_snapshot_sha256": "714ee3b43f89d450849900668fbf72e3de7beb4e5a0be212b45005a8345c42b4",
+      "targeted_snapshot_sha256": "e3b4e2cd6f43ab8fae1c47c9e0c1d66a6b439a62825e5e67971bf66bedf0ab7c",
+      "experiment_sha256": "0d9e2df20be034c744c59be1862654e9556b5e8ea68775b64bbb6adbdd5262d4",
+      "selection_report_sha256": "0da24205a1628994d98118a1c6503a74735556fdb821fc0aa0384555b15335c8",
+      "selection_rule": {
+        "qualify": "real_dev.full_errors <= baseline and synthetic_dev.full_errors <= baseline",
+        "rank": [
+          "real_dev.hiragana_errors",
+          "real_dev.full_errors",
+          "synthetic_dev.full_errors",
+          "step",
+          "checkpoint_path"
+        ],
+        "replace_baseline": "qualified checkpoint strictly reduces real_dev.hiragana_errors"
+      },
+      "datasets": {
+        "real_dev": {
+          "split": "dev",
+          "manifest_sha256": "a32ba010c2b8dc7ed79fe81965c53e87d0bd8ab02a7757c215614ccaba1c387b",
+          "sessions": [
+            "clannad-opening-A"
+          ],
+          "lines": 19,
+          "pad": 4,
+          "polarity": "console"
+        },
+        "synthetic_dev": {
+          "split": "dev",
+          "npz_sha256": "be050dc163a0517b1509168831e33718a0e954921e78bee1fa3c1999bb5c6b64",
+          "book_split_sha256": "0e14a5a0a0fa15f9f618bf6dad9fb0e4ef53d03f1efe46071c9e894661edf321",
+          "lines": 500,
+          "polarity": "stored console crops"
+        }
+      },
+      "strict_dev_hiragana_improvement": false,
+      "chosen": {
+        "blob": "/home/bee/Downloads/vita-release-2026-10-11/ocr/FL10_w8.vocr",
+        "blob_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+      },
+      "baseline": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 5,
+            "cer": 0.02415,
+            "exact": 0.89474
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 510,
+            "cer": 0.06848,
+            "exact": 0.644
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 190,
+            "cer": 0.04318,
+            "substitutions": 115,
+            "deletions": 73,
+            "insertions": 2,
+            "into_hiragana": 29
+          }
+        }
+      },
+      "checkpoints": [
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step100.pt",
+          "checkpoint_sha256": "7e6e3e563fb63e0051de3144cf57320295c5eb495889d3e972af20bf5b6b4e25",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step100-7e6e3e563fb63e00.vocr",
+          "blob_sha256": "d3524f06b2c47c37f3a12a450ad8f183c84f5ff4b53d5bc58c4c050665988a42",
+          "step": 100,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 7,
+                "cer": 0.03382,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 2,
+                "cer": 0.01575,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 0,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 473,
+                "cer": 0.06352,
+                "exact": 0.676
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 176,
+                "cer": 0.04,
+                "substitutions": 117,
+                "deletions": 57,
+                "insertions": 2,
+                "into_hiragana": 36
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step1000.pt",
+          "checkpoint_sha256": "61032bd6ec8355c83e0e788f72ae5d8117f7153fbf8b9b244f21bb867e894841",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step1000-61032bd6ec8355c8.vocr",
+          "blob_sha256": "ffaccdd1123cee60c1dc5c5537e8628bc86148a6a7809daf9ed97b1563cfb2e5",
+          "step": 1000,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 5,
+                "cer": 0.03937,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 3,
+                "into_hiragana": 2
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 447,
+                "cer": 0.06002,
+                "exact": 0.682
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 171,
+                "cer": 0.03886,
+                "substitutions": 122,
+                "deletions": 46,
+                "insertions": 3,
+                "into_hiragana": 32
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step200.pt",
+          "checkpoint_sha256": "ac221f1a3aa942eab8fb844da84a9982f1e396c7505eba7472bbc592697ac524",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step200-ac221f1a3aa942ea.vocr",
+          "blob_sha256": "076021957f921e46f28ab3403c09f62a97bd4830e3632f31fdbda4618afcc4f1",
+          "step": 200,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 9,
+                "cer": 0.04348,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 3,
+                "cer": 0.02362,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 1,
+                "into_hiragana": 0
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 468,
+                "cer": 0.06284,
+                "exact": 0.676
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 178,
+                "cer": 0.04045,
+                "substitutions": 123,
+                "deletions": 54,
+                "insertions": 1,
+                "into_hiragana": 35
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step300.pt",
+          "checkpoint_sha256": "d5c11521ee655ed086739eeb80c9c8a81577568e88d5b24dba2fce8a235b680d",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step300-d5c11521ee655ed0.vocr",
+          "blob_sha256": "71b9212b628683c64bb6b0205c23dfcc81a9db78cf46af0654d63296b70c80e1",
+          "step": 300,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 471,
+                "cer": 0.06325,
+                "exact": 0.674
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 181,
+                "cer": 0.04114,
+                "substitutions": 127,
+                "deletions": 49,
+                "insertions": 5,
+                "into_hiragana": 32
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step400.pt",
+          "checkpoint_sha256": "eaa74b2a59bfe50eb5de88a90d633f8abfc051570c5ed70b2fcdc6f7f42a0e82",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step400-eaa74b2a59bfe50e.vocr",
+          "blob_sha256": "140501be8c17b1cab4525f73799262ed221942851e1252ab786f20434c1de8ee",
+          "step": 400,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 5,
+                "cer": 0.03937,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 3,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 466,
+                "cer": 0.06258,
+                "exact": 0.676
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 175,
+                "cer": 0.03977,
+                "substitutions": 123,
+                "deletions": 48,
+                "insertions": 4,
+                "into_hiragana": 33
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step500.pt",
+          "checkpoint_sha256": "ecaaf62f5d3511f73b0bbe9b1e81f12187fa5b906cb8b189c61ff86aeab8cb74",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step500-ecaaf62f5d3511f7.vocr",
+          "blob_sha256": "11d4d9c15cc3a81ee3d51d1775218fdfb9b2ac4eb58899c27760897fcbfb04b3",
+          "step": 500,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 9,
+                "cer": 0.04348,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 3,
+                "cer": 0.02362,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 1,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 455,
+                "cer": 0.0611,
+                "exact": 0.682
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 171,
+                "cer": 0.03886,
+                "substitutions": 122,
+                "deletions": 45,
+                "insertions": 4,
+                "into_hiragana": 39
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step600.pt",
+          "checkpoint_sha256": "86342f5229fa1043eebede8f978cde095c04c015dd2982664123c275021b5fc4",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step600-86342f5229fa1043.vocr",
+          "blob_sha256": "668b2e880ad9a73ab260e182801532b8eb683e0cb6ad18b5dd8b400587dbfd27",
+          "step": 600,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 11,
+                "cer": 0.05314,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 4,
+                "cer": 0.0315,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 2,
+                "into_hiragana": 1
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 463,
+                "cer": 0.06217,
+                "exact": 0.674
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 174,
+                "cer": 0.03955,
+                "substitutions": 120,
+                "deletions": 51,
+                "insertions": 3,
+                "into_hiragana": 35
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step700.pt",
+          "checkpoint_sha256": "ddf44c798ff827c5454bf431e8650c505a6c6ea2af6e1c73680ce4e46c4edfb4",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step700-ddf44c798ff827c5.vocr",
+          "blob_sha256": "cb0b6040215d765c2d5001d9fb285c2fc526344630f521c2abcc0f585a8090bf",
+          "step": 700,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 5,
+                "cer": 0.03937,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 3,
+                "into_hiragana": 2
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 454,
+                "cer": 0.06096,
+                "exact": 0.676
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 175,
+                "cer": 0.03977,
+                "substitutions": 122,
+                "deletions": 49,
+                "insertions": 4,
+                "into_hiragana": 32
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step800.pt",
+          "checkpoint_sha256": "7fe28177d9601f655317aadccfe23d3863e79474cbc816bd054398adfb66b91a",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step800-7fe28177d9601f65.vocr",
+          "blob_sha256": "d45d940257c11419ffcd2a770efbb1d716285ccc023e6ff4c2abd07259121687",
+          "step": 800,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 5,
+                "cer": 0.03937,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 3,
+                "into_hiragana": 2
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 444,
+                "cer": 0.05962,
+                "exact": 0.688
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 171,
+                "cer": 0.03886,
+                "substitutions": 120,
+                "deletions": 47,
+                "insertions": 4,
+                "into_hiragana": 32
+              }
+            }
+          }
+        },
+        {
+          "checkpoint": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-runs/native_all_s1/ckpt_step900.pt",
+          "checkpoint_sha256": "4cb6930b20bec75c77773c6c324b93f2460afa32f336c7b9ddcb7f9db6678584",
+          "blob": "/home/bee/Documents/src/vita-vn-ocr/build/hiragana/native-full-selection_exports/native_all_s1-ckpt_step900-4cb6930b20bec75c.vocr",
+          "blob_sha256": "57f2384a2e6e6eae65cd1b8a4c5e8c272bc400717796bd538bd0a32e7418a971",
+          "step": 900,
+          "status": "scored",
+          "qualified": false,
+          "memory": {
+            "blob_bytes": 657664,
+            "arena_bytes": 124832
+          },
+          "scores": {
+            "real_dev": {
+              "all": {
+                "lines": 19,
+                "chars": 207,
+                "errors": 10,
+                "cer": 0.04831,
+                "exact": 0.84211
+              },
+              "hiragana": {
+                "chars": 127,
+                "errors": 5,
+                "cer": 0.03937,
+                "substitutions": 2,
+                "deletions": 0,
+                "insertions": 3,
+                "into_hiragana": 2
+              }
+            },
+            "synthetic_dev": {
+              "all": {
+                "lines": 500,
+                "chars": 7447,
+                "errors": 448,
+                "cer": 0.06016,
+                "exact": 0.684
+              },
+              "hiragana": {
+                "chars": 4400,
+                "errors": 171,
+                "cer": 0.03886,
+                "substitutions": 122,
+                "deletions": 46,
+                "insertions": 3,
+                "into_hiragana": 32
+              }
+            }
+          }
+        }
+      ],
+      "training_metrics": {
+        "native_all_s1": [
+          {
+            "step": 100,
+            "lr": 1.9875552027684024e-05,
+            "time": 1791734939.1940808,
+            "eval_s": 2.4,
+            "clannad_cer": 0.033816425120772944,
+            "synthetic_cer": 0.06458976769168792,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.672,
+            "clannad_hiragana_cer": 0.01575,
+            "synthetic_hiragana_cer": 0.04114,
+            "sel": 0.01575,
+            "mix": {
+              "general": 3206,
+              "targeted": 370,
+              "native": 190,
+              "kanji": 74
+            }
+          },
+          {
+            "step": 200,
+            "lr": 1.8869907253069344e-05,
+            "time": 1791734970.0172808,
+            "eval_s": 2.4,
+            "clannad_cer": 0.043478260869565216,
+            "synthetic_cer": 0.0620384047267356,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.682,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.03977,
+            "sel": 0.02362,
+            "mix": {
+              "general": 5745,
+              "targeted": 676,
+              "native": 358,
+              "kanji": 133
+            }
+          },
+          {
+            "step": 300,
+            "lr": 1.6957253155092345e-05,
+            "time": 1791735001.4098096,
+            "eval_s": 2.4,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06297838055592857,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.676,
+            "clannad_hiragana_cer": 0.0315,
+            "synthetic_hiragana_cer": 0.04159,
+            "sel": 0.0315,
+            "mix": {
+              "general": 8265,
+              "targeted": 989,
+              "native": 534,
+              "kanji": 196
+            }
+          },
+          {
+            "step": 400,
+            "lr": 1.434485548315498e-05,
+            "time": 1791735020.1857321,
+            "eval_s": 1.0,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06230696924936216,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.682,
+            "clannad_hiragana_cer": 0.03937,
+            "synthetic_hiragana_cer": 0.04,
+            "sel": 0.03937,
+            "mix": {
+              "general": 10828,
+              "targeted": 1293,
+              "native": 689,
+              "kanji": 246
+            }
+          },
+          {
+            "step": 500,
+            "lr": 1.1315808060538063e-05,
+            "time": 1791735057.282037,
+            "eval_s": 2.4,
+            "clannad_cer": 0.043478260869565216,
+            "synthetic_cer": 0.06190412246542232,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.678,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.03932,
+            "sel": 0.02362,
+            "mix": {
+              "general": 13328,
+              "targeted": 1645,
+              "native": 844,
+              "kanji": 311
+            }
+          },
+          {
+            "step": 600,
+            "lr": 8.198355175995531e-06,
+            "time": 1791735090.1467373,
+            "eval_s": 2.2,
+            "clannad_cer": 0.05314009661835749,
+            "synthetic_cer": 0.06096414663622935,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.678,
+            "clannad_hiragana_cer": 0.02362,
+            "synthetic_hiragana_cer": 0.03932,
+            "sel": 0.02362,
+            "mix": {
+              "general": 15884,
+              "targeted": 1958,
+              "native": 999,
+              "kanji": 359
+            }
+          },
+          {
+            "step": 700,
+            "lr": 5.330321221833039e-06,
+            "time": 1791735123.1437197,
+            "eval_s": 2.7,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06096414663622935,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.684,
+            "clannad_hiragana_cer": 0.03937,
+            "synthetic_hiragana_cer": 0.04,
+            "sel": 0.03937,
+            "mix": {
+              "general": 19053,
+              "targeted": 2352,
+              "native": 1199,
+              "kanji": 436
+            }
+          },
+          {
+            "step": 800,
+            "lr": 3.0225021791161014e-06,
+            "time": 1791735164.7947567,
+            "eval_s": 1.0,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06029273532966295,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.688,
+            "clannad_hiragana_cer": 0.03937,
+            "synthetic_hiragana_cer": 0.03909,
+            "sel": 0.03937,
+            "mix": {
+              "general": 21591,
+              "targeted": 2667,
+              "native": 1358,
+              "kanji": 496
+            }
+          },
+          {
+            "step": 900,
+            "lr": 1.5249860506251315e-06,
+            "time": 1791735189.554895,
+            "eval_s": 2.7,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.06002417080703639,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.686,
+            "clannad_hiragana_cer": 0.03937,
+            "synthetic_hiragana_cer": 0.03909,
+            "sel": 0.03937,
+            "mix": {
+              "general": 24180,
+              "targeted": 2953,
+              "native": 1490,
+              "kanji": 561
+            }
+          },
+          {
+            "step": 1000,
+            "lr": 1.0000519452389823e-06,
+            "time": 1791735227.249815,
+            "eval_s": 3.5,
+            "clannad_cer": 0.04830917874396135,
+            "synthetic_cer": 0.060561299852289516,
+            "clannad_exact": 0.8421052631578947,
+            "synthetic_exact": 0.678,
+            "clannad_hiragana_cer": 0.03937,
+            "synthetic_hiragana_cer": 0.03909,
+            "sel": 0.03937,
+            "mix": {
+              "general": 26752,
+              "targeted": 3246,
+              "native": 1641,
+              "kanji": 617
+            }
+          }
+        ]
+      },
+      "mix_counts_definition": "Number drawn into width-bucket mixer pools, including samples still queued; not exact optimizer-consumed counts.",
+      "outcome": {
+        "candidate_heldout_test_evaluated": false,
+        "replacement_selected": false
+      }
+    }
+  },
+  "physical_console_validation": "pending; host/emulator evidence only",
+  "runtime_changed": false,
+  "released_console_finder": {
+    "report_sha256": "519a5c749aeac241df22be69945ffbb7d503f4a7ea25228a727a0763f9b7c23f",
+    "model_info": {
+      "backend": "vocr",
+      "mode": "w8i",
+      "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+      "blob_bytes": 657664,
+      "arena_bytes": 124832
+    },
+    "finder": "console",
+    "polarity": "console",
+    "datasets": {
+      "vita-test": {
+        "manifest_sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+        "split": "test",
+        "sessions": [
+          "r22078",
+          "r38965",
+          "r39726",
+          "r39811",
+          "r41582",
+          "r42978",
+          "r46027",
+          "r46369",
+          "r47530",
+          "r49097",
+          "r50738",
+          "r53397",
+          "r53403",
+          "r55234",
+          "r56156",
+          "r66412"
+        ]
+      },
+      "psp-test": {
+        "manifest_sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+        "split": "test",
+        "sessions": [
+          "r14071",
+          "r14940",
+          "r15325",
+          "r22079",
+          "r22565",
+          "r23774",
+          "r24273",
+          "r25701",
+          "r27758",
+          "r28150",
+          "r28151",
+          "r32662",
+          "r36141",
+          "r6862",
+          "r8936"
+        ]
+      },
+      "clannad-test": {
+        "manifest_sha256": "ab226eba6cafee7e9e735a1be42b6f1c2e877be2c255bd57ec9913bc15faacd6",
+        "split": "test",
+        "sessions": [
+          "clannad-opening-B"
+        ]
+      }
+    },
+    "sets": {
+      "vita-test": {
+        "regions": 84,
+        "regions_rejected": 0,
+        "gt_lines": 206,
+        "line_recall": 0.95146,
+        "detections": 205,
+        "line_precision": 0.9561,
+        "pipeline_cer": 0.08541,
+        "concat_cer": 0.08659,
+        "concat_regions_chars": 2506,
+        "hiragana": {
+          "chars": 1417,
+          "errors": 66,
+          "cer": 0.04658,
+          "substitutions": 23,
+          "deletions": 42,
+          "insertions": 1,
+          "into_hiragana": 4
+        }
+      },
+      "psp-test": {
+        "regions": 93,
+        "regions_rejected": 0,
+        "gt_lines": 245,
+        "line_recall": 0.90204,
+        "detections": 233,
+        "line_precision": 0.9485,
+        "pipeline_cer": 0.17928,
+        "concat_cer": 0.17649,
+        "concat_regions_chars": 2510,
+        "hiragana": {
+          "chars": 1382,
+          "errors": 152,
+          "cer": 0.10999,
+          "substitutions": 33,
+          "deletions": 118,
+          "insertions": 1,
+          "into_hiragana": 12
+        }
+      },
+      "clannad-test": {
+        "regions": 20,
+        "regions_rejected": 0,
+        "gt_lines": 25,
+        "line_recall": 0.96,
+        "detections": 26,
+        "line_precision": 0.92308,
+        "pipeline_cer": 0.05928,
+        "concat_cer": 0.0567,
+        "concat_regions_chars": 388,
+        "hiragana": {
+          "chars": 229,
+          "errors": 5,
+          "cer": 0.02183,
+          "substitutions": 3,
+          "deletions": 2,
+          "insertions": 0,
+          "into_hiragana": 2
+        }
+      }
+    },
+    "purpose": "Baseline measurement only; no candidate selection or training labels."
+  },
+  "released_kanji": {
+    "report_sha256": "95c9b28d7f5afab5ece021f35a335705038799d4c1c12ec1362aae14976f51da",
+    "policy_sha256": "8fc9ea20804cc45876e25b60ed669446dc75fc7f0b6b383d65cc4688e050f763",
+    "purpose": "aggregate diagnostics only; no model selection",
+    "sets": {
+      "vita-test": {
+        "lines": 206,
+        "kanji": {
+          "chars": 669,
+          "substitutions": 18,
+          "deletions": 6,
+          "insertions": 0,
+          "into_kanji": 4,
+          "errors": 24,
+          "evidence": "observed",
+          "cer": 0.03587
+        },
+        "reference_rank_bands": {
+          "common": {
+            "chars": 651,
+            "substitutions": 13,
+            "deletions": 4,
+            "errors": 17,
+            "evidence": "observed",
+            "reference_error_rate": 0.02611
+          },
+          "uncommon": {
+            "chars": 13,
+            "substitutions": 2,
+            "deletions": 1,
+            "errors": 3,
+            "evidence": "observed",
+            "reference_error_rate": 0.23077
+          },
+          "rare": {
+            "chars": 2,
+            "substitutions": 0,
+            "deletions": 1,
+            "errors": 1,
+            "evidence": "observed",
+            "reference_error_rate": 0.5
+          },
+          "very_rare": {
+            "chars": 0,
+            "substitutions": 0,
+            "deletions": 0,
+            "errors": 0,
+            "evidence": "no_evidence",
+            "reference_error_rate": null
+          },
+          "unsupported": {
+            "chars": 3,
+            "substitutions": 3,
+            "deletions": 0,
+            "errors": 3,
+            "evidence": "observed",
+            "reference_error_rate": 1.0
+          }
+        },
+        "similar": {
+          "substitutions": 4,
+          "reference_chars": 655,
+          "evidence": "observed"
+        }
+      },
+      "psp-test": {
+        "lines": 245,
+        "kanji": {
+          "chars": 595,
+          "substitutions": 65,
+          "deletions": 8,
+          "insertions": 0,
+          "into_kanji": 1,
+          "errors": 73,
+          "evidence": "observed",
+          "cer": 0.12269
+        },
+        "reference_rank_bands": {
+          "common": {
+            "chars": 572,
+            "substitutions": 54,
+            "deletions": 8,
+            "errors": 62,
+            "evidence": "observed",
+            "reference_error_rate": 0.10839
+          },
+          "uncommon": {
+            "chars": 19,
+            "substitutions": 9,
+            "deletions": 0,
+            "errors": 9,
+            "evidence": "observed",
+            "reference_error_rate": 0.47368
+          },
+          "rare": {
+            "chars": 3,
+            "substitutions": 1,
+            "deletions": 0,
+            "errors": 1,
+            "evidence": "observed",
+            "reference_error_rate": 0.33333
+          },
+          "very_rare": {
+            "chars": 0,
+            "substitutions": 0,
+            "deletions": 0,
+            "errors": 0,
+            "evidence": "no_evidence",
+            "reference_error_rate": null
+          },
+          "unsupported": {
+            "chars": 1,
+            "substitutions": 1,
+            "deletions": 0,
+            "errors": 1,
+            "evidence": "observed",
+            "reference_error_rate": 1.0
+          }
+        },
+        "similar": {
+          "substitutions": 17,
+          "reference_chars": 586,
+          "evidence": "observed"
+        }
+      },
+      "clannad-test": {
+        "lines": 25,
+        "kanji": {
+          "chars": 103,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0,
+          "into_kanji": 0,
+          "errors": 1,
+          "evidence": "observed",
+          "cer": 0.00971
+        },
+        "reference_rank_bands": {
+          "common": {
+            "chars": 102,
+            "substitutions": 0,
+            "deletions": 0,
+            "errors": 0,
+            "evidence": "observed",
+            "reference_error_rate": 0.0
+          },
+          "uncommon": {
+            "chars": 1,
+            "substitutions": 1,
+            "deletions": 0,
+            "errors": 1,
+            "evidence": "observed",
+            "reference_error_rate": 1.0
+          },
+          "rare": {
+            "chars": 0,
+            "substitutions": 0,
+            "deletions": 0,
+            "errors": 0,
+            "evidence": "no_evidence",
+            "reference_error_rate": null
+          },
+          "very_rare": {
+            "chars": 0,
+            "substitutions": 0,
+            "deletions": 0,
+            "errors": 0,
+            "evidence": "no_evidence",
+            "reference_error_rate": null
+          },
+          "unsupported": {
+            "chars": 0,
+            "substitutions": 0,
+            "deletions": 0,
+            "errors": 0,
+            "evidence": "no_evidence",
+            "reference_error_rate": null
+          }
+        },
+        "similar": {
+          "substitutions": 0,
+          "reference_chars": 101,
+          "evidence": "observed"
+        }
+      }
+    },
+    "limitation": "Five test reference kanji at Jiten rank3001-4000; none above4000. No evidence of rare-kanji accuracy improvement."
+  },
+  "development_crop_stress": {
+    "purpose": "development_diagnostic_only",
+    "dataset": {
+      "split": "dev",
+      "manifest_sha256": "a32ba010c2b8dc7ed79fe81965c53e87d0bd8ab02a7757c215614ccaba1c387b",
+      "sessions": [
+        "clannad-opening-A"
+      ],
+      "scored_lines": 19,
+      "uncertain_lines": 0,
+      "images": [
+        {
+          "sha256": "05466ec82637bccf492c11c94f8069d7623be0d44477e00795a37db90e27ad8e",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "1377c0f077134e70ea2d81c3bb1e4ed0e3c790dc796e335878144cb4a471b5be",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "1fbaf190a617f5523c07b0ae283b84974cc535c900dd04b1935f1b858530667f",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "22be7d7c38e19dd7817e6c55ffea66e955218958a15e29958c0a767bc1bdc5e6",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "3d2ee1c206c1ce60da02e85f421013551ef7a4b1bf3991eeee04777620ca8d91",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "3e9eae5e362a2770ca8c2e95f3eb0a47fdcba78d5d1113da97af713c3e77aa9d",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "403be389622fcd68e8b70005e7c20a494d28f80df1f9ec81facef63dd89bec0a",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "53b15b44090352e6de3726dc17e5e0fac01987fa22783eb005db5c2d92f6e728",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "664c45574cdae1e2b9df728b8b1ce6065d7e0dc767e5ffe5b09f624f3d8906f6",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "7588e496e32226bf963550fa048ced09c6dc25898fced4b371e89861608d3f15",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "7dce957bb90bee4e38ec1a3d9923a3d8053301fee3f3a6979b2d4d0c2807736b",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "91bc53af5505d21aaa697be01af74f037550304162bb16f18f2b6334867923a3",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "ae09d7e99d91420f16f1aa29261269930cf69e30beed79801ba851766e9c8e54",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "c6e9c3d60fc6bdcebc70d659afc172fc994c34f07d772182c9089b21f8339921",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "d04b47c6e5017d11ff97b99e0b5d8a45f7a42d900b36053107c90dca1198f561",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "e18506ca46913cec0457515cf7f185894512157dd52b2527e98782b59ab1cc1e",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "e5e9c61c21a4ef257e4e483909a70d97157e7becc4315fa890cf05313dd0dd92",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "e73b4992661ea5b33e36791de09a850be08a4c61d38ab8c38e8406b6eff9e194",
+          "width": 960,
+          "height": 544
+        },
+        {
+          "sha256": "f09e829d1698e810097d35aa5810a1b1d92345cfbdff511962f745d20d611802",
+          "width": 960,
+          "height": 544
+        }
+      ]
+    },
+    "model_info": {
+      "backend": "vocr",
+      "mode": "w8i",
+      "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+      "blob_bytes": 657664,
+      "arena_bytes": 124832
+    },
+    "polarity": "console",
+    "cases": [
+      {
+        "case": {
+          "name": "symmetric-0",
+          "left": 0,
+          "right": 0,
+          "top": 4,
+          "bottom": 4
+        },
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 6,
+          "cer": 0.02899,
+          "exact": 0.84211
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 1,
+          "cer": 0.00787,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "っ",
+              "prediction": "つ",
+              "count": 1
+            }
+          ]
+        },
+        "inverted_lines": 0,
+        "geometry_sha256": "db280c0be9e79ab70c0258185e0300d9c340734ce21753d272090717c971f083",
+        "fully_visible_ink_lines": 19,
+        "padding_clamped_lines": 0,
+        "actual_padding": {
+          "left": {
+            "min": 0,
+            "max": 0
+          },
+          "right": {
+            "min": 0,
+            "max": 0
+          },
+          "top": {
+            "min": 4,
+            "max": 4
+          },
+          "bottom": {
+            "min": 4,
+            "max": 4
+          }
+        },
+        "host_inference_seconds": 0.230435
+      },
+      {
+        "case": {
+          "name": "symmetric-2",
+          "left": 2,
+          "right": 2,
+          "top": 4,
+          "bottom": 4
+        },
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 6,
+          "cer": 0.02899,
+          "exact": 0.84211
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 1,
+          "cer": 0.00787,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "お",
+              "prediction": "あ",
+              "count": 1
+            }
+          ]
+        },
+        "inverted_lines": 0,
+        "geometry_sha256": "39b8a0997d9ad5ea166434353fdbf9b80e0ae24e17317723fae0e2b3f7d11768",
+        "fully_visible_ink_lines": 19,
+        "padding_clamped_lines": 0,
+        "actual_padding": {
+          "left": {
+            "min": 2,
+            "max": 2
+          },
+          "right": {
+            "min": 2,
+            "max": 2
+          },
+          "top": {
+            "min": 4,
+            "max": 4
+          },
+          "bottom": {
+            "min": 4,
+            "max": 4
+          }
+        },
+        "host_inference_seconds": 0.240865
+      },
+      {
+        "case": {
+          "name": "symmetric-4",
+          "left": 4,
+          "right": 4,
+          "top": 4,
+          "bottom": 4
+        },
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 5,
+          "cer": 0.02415,
+          "exact": 0.89474
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 2,
+          "cer": 0.01575,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "ず",
+              "prediction": "す",
+              "count": 1
+            },
+            {
+              "reference": "っ",
+              "prediction": "つ",
+              "count": 1
+            }
+          ]
+        },
+        "inverted_lines": 0,
+        "geometry_sha256": "ca1acb732727440421c570163537d2d905465be4de0e85621534ab314547b112",
+        "fully_visible_ink_lines": 19,
+        "padding_clamped_lines": 0,
+        "actual_padding": {
+          "left": {
+            "min": 4,
+            "max": 4
+          },
+          "right": {
+            "min": 4,
+            "max": 4
+          },
+          "top": {
+            "min": 4,
+            "max": 4
+          },
+          "bottom": {
+            "min": 4,
+            "max": 4
+          }
+        },
+        "host_inference_seconds": 0.252734
+      },
+      {
+        "case": {
+          "name": "symmetric-8",
+          "left": 8,
+          "right": 8,
+          "top": 4,
+          "bottom": 4
+        },
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 5,
+          "cer": 0.02415,
+          "exact": 0.89474
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 0,
+          "cer": 0.0,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": []
+        },
+        "inverted_lines": 0,
+        "geometry_sha256": "c3dc9aa3de408f004bd8f73eb5d39e86e6fc00fb08108a86d1cbb1141b53cf25",
+        "fully_visible_ink_lines": 19,
+        "padding_clamped_lines": 0,
+        "actual_padding": {
+          "left": {
+            "min": 8,
+            "max": 8
+          },
+          "right": {
+            "min": 8,
+            "max": 8
+          },
+          "top": {
+            "min": 4,
+            "max": 4
+          },
+          "bottom": {
+            "min": 4,
+            "max": 4
+          }
+        },
+        "host_inference_seconds": 0.271537
+      },
+      {
+        "case": {
+          "name": "left-0-right-8",
+          "left": 0,
+          "right": 8,
+          "top": 4,
+          "bottom": 4
+        },
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 7,
+          "cer": 0.03382,
+          "exact": 0.84211
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 1,
+          "cer": 0.00787,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "っ",
+              "prediction": "つ",
+              "count": 1
+            }
+          ]
+        },
+        "inverted_lines": 0,
+        "geometry_sha256": "2d240575e1c28330944d7ddcf17676ad650341e65b2fae01507260dd63b4bf7f",
+        "fully_visible_ink_lines": 19,
+        "padding_clamped_lines": 0,
+        "actual_padding": {
+          "left": {
+            "min": 0,
+            "max": 0
+          },
+          "right": {
+            "min": 8,
+            "max": 8
+          },
+          "top": {
+            "min": 4,
+            "max": 4
+          },
+          "bottom": {
+            "min": 4,
+            "max": 4
+          }
+        },
+        "host_inference_seconds": 0.26272
+      },
+      {
+        "case": {
+          "name": "left-8-right-0",
+          "left": 8,
+          "right": 0,
+          "top": 4,
+          "bottom": 4
+        },
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 7,
+          "cer": 0.03382,
+          "exact": 0.84211
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 1,
+          "cer": 0.00787,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "ゃ",
+              "prediction": "や",
+              "count": 1
+            }
+          ]
+        },
+        "inverted_lines": 0,
+        "geometry_sha256": "740bce5229b9f716da351d2b1aaf0acdb7feeb742de4e44a855afa9df2ec3d04",
+        "fully_visible_ink_lines": 19,
+        "padding_clamped_lines": 0,
+        "actual_padding": {
+          "left": {
+            "min": 8,
+            "max": 8
+          },
+          "right": {
+            "min": 0,
+            "max": 0
+          },
+          "top": {
+            "min": 4,
+            "max": 4
+          },
+          "bottom": {
+            "min": 4,
+            "max": 4
+          }
+        },
+        "host_inference_seconds": 0.262844
+      }
+    ],
+    "roi_cases": [
+      {
+        "roi_offset": -4,
+        "finder": "console Python bit-exact twin of runtime/vocr_lines.c",
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 9,
+          "cer": 0.04348,
+          "exact": 0.78947
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 1,
+          "cer": 0.00787,
+          "substitutions": 0,
+          "deletions": 1,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "と",
+              "prediction": null,
+              "count": 1
+            }
+          ]
+        },
+        "regions": 19,
+        "regions_skipped_to_preserve_ink": 0,
+        "regions_rejected": 0,
+        "padding_clamped_regions": 0,
+        "fully_visible_gt_lines": 19,
+        "found_lines": 18,
+        "detections": 18,
+        "line_recall": 0.94737,
+        "line_precision": 1.0,
+        "inverted_lines": 0,
+        "geometry_sha256": "394f15fb3fcb369f5929efce7c27d05cd46a0eb58ca4c86dcfd08997aea2338e"
+      },
+      {
+        "roi_offset": -2,
+        "finder": "console Python bit-exact twin of runtime/vocr_lines.c",
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 9,
+          "cer": 0.04348,
+          "exact": 0.78947
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 1,
+          "cer": 0.00787,
+          "substitutions": 0,
+          "deletions": 1,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "と",
+              "prediction": null,
+              "count": 1
+            }
+          ]
+        },
+        "regions": 19,
+        "regions_skipped_to_preserve_ink": 0,
+        "regions_rejected": 0,
+        "padding_clamped_regions": 0,
+        "fully_visible_gt_lines": 19,
+        "found_lines": 18,
+        "detections": 18,
+        "line_recall": 0.94737,
+        "line_precision": 1.0,
+        "inverted_lines": 0,
+        "geometry_sha256": "9ae845e0f342db4e93ac891e58f00bb2d6c28f10aad4735dd9776a30da81363b"
+      },
+      {
+        "roi_offset": 0,
+        "finder": "console Python bit-exact twin of runtime/vocr_lines.c",
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 9,
+          "cer": 0.04348,
+          "exact": 0.78947
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 1,
+          "cer": 0.00787,
+          "substitutions": 0,
+          "deletions": 1,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "と",
+              "prediction": null,
+              "count": 1
+            }
+          ]
+        },
+        "regions": 19,
+        "regions_skipped_to_preserve_ink": 0,
+        "regions_rejected": 0,
+        "padding_clamped_regions": 0,
+        "fully_visible_gt_lines": 19,
+        "found_lines": 18,
+        "detections": 18,
+        "line_recall": 0.94737,
+        "line_precision": 1.0,
+        "inverted_lines": 0,
+        "geometry_sha256": "9bb51d374f93dd436c2c1345917dc207a8e8b1fee83455f105784445c4fd2d1b"
+      },
+      {
+        "roi_offset": 2,
+        "finder": "console Python bit-exact twin of runtime/vocr_lines.c",
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 21,
+          "cer": 0.10145,
+          "exact": 0.42105
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 5,
+          "cer": 0.03937,
+          "substitutions": 1,
+          "deletions": 4,
+          "insertions": 0,
+          "into_hiragana": 1,
+          "confusions": [
+            {
+              "reference": "う",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "く",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "ず",
+              "prediction": "す",
+              "count": 1
+            },
+            {
+              "reference": "そ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "と",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "覆",
+              "prediction": "だ",
+              "count": 1
+            }
+          ]
+        },
+        "regions": 19,
+        "regions_skipped_to_preserve_ink": 0,
+        "regions_rejected": 0,
+        "padding_clamped_regions": 0,
+        "fully_visible_gt_lines": 19,
+        "found_lines": 15,
+        "detections": 15,
+        "line_recall": 0.78947,
+        "line_precision": 1.0,
+        "inverted_lines": 10,
+        "geometry_sha256": "ed3cfbd46aee07a45eda1a139050e365375020905d8ee993b4c2c755ef3301a9"
+      },
+      {
+        "roi_offset": 4,
+        "finder": "console Python bit-exact twin of runtime/vocr_lines.c",
+        "full": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 23,
+          "cer": 0.11111,
+          "exact": 0.36842
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 6,
+          "cer": 0.04724,
+          "substitutions": 3,
+          "deletions": 3,
+          "insertions": 0,
+          "into_hiragana": 0,
+          "confusions": [
+            {
+              "reference": "う",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "が",
+              "prediction": "か",
+              "count": 1
+            },
+            {
+              "reference": "き",
+              "prediction": "さ",
+              "count": 1
+            },
+            {
+              "reference": "ず",
+              "prediction": "す",
+              "count": 1
+            },
+            {
+              "reference": "そ",
+              "prediction": null,
+              "count": 1
+            },
+            {
+              "reference": "と",
+              "prediction": null,
+              "count": 1
+            }
+          ]
+        },
+        "regions": 19,
+        "regions_skipped_to_preserve_ink": 0,
+        "regions_rejected": 0,
+        "padding_clamped_regions": 19,
+        "fully_visible_gt_lines": 19,
+        "found_lines": 15,
+        "detections": 15,
+        "line_recall": 0.78947,
+        "line_precision": 1.0,
+        "inverted_lines": 10,
+        "geometry_sha256": "bba14fe9191bca435f6ce3c6da8fa7cebe934fd1d602ce2bf656a712b15635d3"
+      }
+    ],
+    "padding_contract": "all annotated ink visible; only image-boundary padding may clamp",
+    "heldout_test_evaluated": false,
+    "report_sha256": "73e0f91992470754fde2297286f6687e2eecc18146d900d640dd5b5bb79387f6"
+  },
+  "outcome": {
+    "training_runs": 6,
+    "c_checkpoints_scored": 60,
+    "qualified_accuracy_replacement": false,
+    "candidate_heldout_test_evaluated": false,
+    "released_blob_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+    "next_action": "Native bitmap-font rendering and independently gated dialogue crop preprocessing.",
+    "claim": "These single-seed recipes failed to improve the released model on real development data; no accuracy improvement is claimed."
+  }
+}

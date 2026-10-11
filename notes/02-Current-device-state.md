@@ -1,13 +1,20 @@
 ---
 title: Current device state snapshot
 created: 2026-10-10
-updated: 2026-10-10
-snapshot_utc: "2026-10-10 12:33"
-status: native-text-works-input-fix-deployment-stopped
+updated: 2026-10-11
+historical_snapshot_utc: "2026-10-10 12:33"
+latest_checkpoint_date: 2026-10-11
+status: game-ocr-native-success-trigger-input-leak-open
 tags: [vita, device, handoff]
 ---
 
 # Current device state snapshot
+
+**2026-10-11 checkpoint:** API 13 is booted and all three overlay plugins are loaded. Fresh native game-process FL10 jobs complete with `rc=0 io=0 cleanup=0`, and subsequent captures succeed. The user reports L+R advances dialogue when opening the overlay; accuracy/CER and that input fix remain unverified. The saved paired agent command path responds without a pairing reset. Exact evidence, release revision and limits are in [[26-Game-process-OCR-hardware-checkpoint]].
+
+## Historical snapshot — 2026-10-10 12:33 UTC
+
+The remaining text below preserves the earlier native-hook setup and its then-current limits. It does not describe the installed API 13 release.
 
 **Latest verified state:** the region-sized capture kernel, bounded picker-diagnostics shell and revision-checked CLANNAD profile are installed with complete readbacks. The unchanged text plugin and manual config also match their recorded bytes. Normal boot at 12:10:49 UTC shows API 8, shell registration 0 and worker startup; the complete 27-entry inventory reports kernel/shell loaded in STARTED state 6, with zero query errors. Root confirmed CLANNAD `PCSG00415` foreground at 12:11:53 UTC.
 

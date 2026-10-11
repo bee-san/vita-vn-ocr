@@ -4,13 +4,53 @@ created: 2026-10-10
 updated: 2026-10-11
 historical_snapshot_utc: "2026-10-10 12:33"
 latest_checkpoint_date: 2026-10-11
-status: settings-png-repair-controls-verified
+latest_checkpoint_utc: "2026-10-11 15:53:04"
+interruption_checkpoint_utc: "2026-10-11 15:34:40"
+settings_controls_verified_by_utc: "2026-10-11 15:43:54"
+latest_request_utc: "2026-10-11 15:45"
+status: settings-highlight-controls-verified-game-touch-pending
 tags: [vita, device, handoff]
 ---
 
 # Current device state snapshot
 
-**Current October 11 checkpoint:** [[27-Meiki-hardware-and-project-lessons]] records
+**Latest October 11 checkpoint, 15:53:04 UTC:** overlay PR #38 at
+`ee796f1ea683d84a668bbc52961bf146a9f9986c` passed exact-head host/Vita CI and
+merged as `dc0bea53a6a8d075d4598cea27708953ed467666`. It adds default
+whole-word/optional character highlighting and Japanese-filtered recognized
+header taps, preserving character navigation and the saved text. Stable v0.7.9
+was published at 15:44:16 UTC; all six fresh downloaded assets match their
+candidates, with package manifests and nested archives verified.
+The 150,500-byte replacement Shell file has complete native readback after a new
+boot, SHA-256 `2e477d8d2616e3b9f72a5cc2da354d2af42719c9e7c594b4a583312329770716`;
+fresh loaded-module proof and actual game-header touch remain pending.
+The staged 283,521-byte Settings VPK has full native readback SHA-256
+`3e9795fbfd833379d090b90482783cb05cf99f622e7c6addd3625f4d07e0ac00`.
+Promotion lost its connection at 15:34:40 UTC; the saved status remains uncertain
+and not running. After the user powered the Vita on, the installed executable
+was fully read back: 277,608 bytes, SHA-256
+`b5a6e579536085215c1a6464bbdd41926242b9905fbf153e863a7dff35c5be16`.
+Registered title `VJOSET001` and a native foreground launch were verified; the
+snapshot reported `system_ui_overlaid=false`. This was followed
+by actual touch Character → Left Word → Right Character → touch Word actions
+with complete configuration readbacks. VOCR, Japanese-only ON and unrelated
+bytes were preserved. The final whole-word configuration is 2,973 bytes, SHA-256
+`162280dcbf85bd43b7152d4d8d01899fc77112ff83494ac95c2a224a474c37be`.
+This independently establishes the installed Settings controls, without
+reclassifying the retained promoter status or establishing game touches or
+physical font readability. A clock check immediately after the four actions
+bounds their completion to no later than 15:43:54 UTC; the aggregate receipt
+has no own timestamp. The private native-sort runtime now has complete native
+readback and an accepted 15:45 UTC reboot request, but fresh activation remains
+unconfirmed after refused command connections, a timed-out diagnostic and a
+later no-route diagnostic. The pending subscription is preserved; log/recovery
+work remains pending. Its 12 host sanitizer cases, clean build and 59-icon plan
+do not establish hardware
+moves. The physical ACL has not yet been requested, and no sort was performed.
+Full current scope and remaining checks are in
+[[28-Touch-lookup-and-LiveArea-sort-checkpoint]].
+
+**Earlier October 11 checkpoint, through v0.7.8:** [[27-Meiki-hardware-and-project-lessons]] records
 verified meiki.2 installation, fresh API13 boot, two actual CLANNAD Meiki runs,
 and the user-confirmed region controls. VOCR was separately confirmed in
 [[26-Game-process-OCR-hardware-checkpoint]]. The new Settings engine picker,

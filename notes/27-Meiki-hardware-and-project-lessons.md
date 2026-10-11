@@ -520,3 +520,19 @@ messages are not native hash progress. At that historical checkpoint, the
 source-level power-tick gap had not yet been tied to the installed runtime.
 NI06 records the later installed-image audit; causation of each disconnect
 remains unproved.
+
+## Later touch/highlight and sorting candidate
+
+[[28-Touch-lookup-and-LiveArea-sort-checkpoint]] records the next merged overlay
+implementation, verified stable v0.7.9 publication and native file readbacks.
+Promotion lost its connection while running at 15:34:40 UTC; its retained status remains uncertain. Later complete
+installed-executable readback, registered native launch and four actual Settings
+touch/controller highlight actions establish the new Settings controls
+independently of that status. Whole-word highlighting retains character
+navigation without a tokenizer. Fresh Shell loaded-module proof, game-header
+taps and physical font readability remain pending. The separate guarded native
+sorter uses native AppDB operations and a SHA-bound complete plan, with 12
+actual-coordinator host sanitizer cases and a clean native build. Complete
+runtime readback and an accepted reboot do not establish fresh activation;
+physical ACL approval and hardware moves remain pending. These later
+stages do not replace the dated native successes above.

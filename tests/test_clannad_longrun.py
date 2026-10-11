@@ -451,7 +451,14 @@ def test_collector_resume_appends_new_pages_without_recapturing_old_signatures(t
 
     monkeypatch.setattr(LR, "Native", Native)
     monkeypatch.setattr(
-        LR, "protocol", lambda args, native: {"split": "test", "session": args.session, "ignore_boxes": args.ignore_box}
+        LR,
+        "protocol",
+        lambda args, native: {
+            "split": "test",
+            "session": args.session,
+            "ignore_boxes": args.ignore_box,
+            "native_size": [960, 544],
+        },
     )
     monkeypatch.setattr(LR, "read_control", control)
     monkeypatch.setattr(LR.subprocess, "run", screenshot)

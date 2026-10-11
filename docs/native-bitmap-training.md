@@ -20,6 +20,12 @@ These are sampling probabilities, not per-character quotas. Recorded mixer count
 include prefetched draws; report them separately from the 64,000 consumed lines
 per completed arm.
 
+This is a bounded hypothesis using one game's bitmap-font family. The remaining
+OFL fonts and dialogue sources keep the experiment broader than that family, but
+separate text/books and crop pixels do not establish transfer to unseen fonts or
+games. The 30% bitmap sampling cap is not a claim that this family represents all
+PSP or Vita typography.
+
 Inversion augmentation is zero because the saved crops already follow console
 polarity. Bitmap and real native sources also disable trainer augmentation:
 the renderer already provides visual/crop variation, and trainer vertical slicing
@@ -62,3 +68,20 @@ These counts do not measure physical-console speed or memory peaks. A candidate
 must be locked by development data before the unchanged shared/private held-out
 gate is run. The separate long CLANNAD/Google comparison cannot select or train
 these trials. No accuracy upgrade is established by preparing this recipe.
+
+Both arms completed 2,000 steps. All 20 retained checkpoints were exported and
+measured through scalar C W8I using the frozen rules and the five development
+sets above; see `eval/hiragana_bitmap_20261011.json` for commands and hashes.
+The four head-only checkpoints through step 800 retain the original five full
+and two hiragana errors; none strictly improves its hiragana count. All-parameter
+checkpoints increase the original real-development errors. Other development
+sets improve for some candidates, but those gains do not satisfy this trial's
+replacement rule. The released baseline is retained and no candidate was tested
+on the held-out benchmark.
+
+The original improvement objective is narrow: its primary real-development set
+is the short CLANNAD opening. Additional PSP/Vita guards currently combine games
+within each console, so they also cannot prove per-game nonregression. Future
+experiments should preregister a balanced objective across VN/font/console
+development strata and per-stratum guards before training. The separate long
+CLANNAD test remains diagnostic only and must not determine that objective.

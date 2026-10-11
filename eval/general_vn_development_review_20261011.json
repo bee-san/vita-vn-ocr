@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "kind": "general-vn-development-review",
+  "role": "dev",
+  "source_manifest_sha256": "5ec2a7207e76bf2c7bfafae2bc3ade09060a0f4a50ddf9fc6fd30ae81c6afd7f",
+  "private_labels_sha256": "4338b919d784cec417d8d3d0bb8479706052f2e8719daf541eb874553d712648",
+  "review_input_sha256": {
+    "psp-first-review.json": "e5c5399de9332b2ea0ff282b5339314d0b298791d49252b06f15cca7847d576c",
+    "psp-independent-review.json": "e3a94d046ce990e9c0680150ba45e68e806a32cdcecbc384003e1d044e9e48b8",
+    "vita-first-review.json": "2dc5100e92570f1bdce3b9d137bfa84b1b5f226b05749e0f87923236468c5476",
+    "vita-root-independent-reading.json": "5680ee60549c7c7caba309c644e1d526410ab1feb97eb06337d4ae9fc36eb281"
+  },
+  "assistant_reviewed": true,
+  "human_reviewed": false,
+  "independent_visual_review_count": 2,
+  "source_frames": 60,
+  "ordinary_horizontal_dialogue_frames": 25,
+  "lines": 78,
+  "body_lines": 53,
+  "body_chars": 860,
+  "body_hiragana": 512,
+  "source_byte_and_decoded_pixel_pins_verified": true,
+  "native_bounds_and_regions_verified": true,
+  "first_pass_corrections": {
+    "psp": 2,
+    "vita": 2
+  },
+  "similar_kanji_visual_disagreements": [
+    {
+      "frame": "v15773_139478",
+      "body_line_index": 0,
+      "first_reader": "姉",
+      "native_pixel_resolution": "姐",
+      "method": "native nearest-neighbor 6x glyph inspection after independent reading"
+    },
+    {
+      "frame": "v15773_139483",
+      "body_line_index": 1,
+      "first_reader": "容",
+      "native_pixel_resolution": "客",
+      "method": "native nearest-neighbor 6x glyph inspection after independent reading"
+    }
+  ],
+  "font_family_identity": "not inferred",
+  "model_scored": false,
+  "google_access": false,
+  "protected_pixels_read": false,
+  "historical_training_snapshot": "unavailable; no unseen-baseline assertion",
+  "readiness": {
+    "ready": false,
+    "minimums": {
+      "vns_per_console": 3,
+      "frames_per_vn": 5,
+      "body_chars_per_vn": 500,
+      "body_hiragana_per_vn": 200
+    },
+    "groups": {
+      "psp:v10091": {
+        "platform": "psp",
+        "vn": "v10091",
+        "scored_lines": 8,
+        "frames": 3,
+        "body_lines": 5,
+        "body_chars": 63,
+        "body_hiragana": 43
+      },
+      "psp:v11454": {
+        "platform": "psp",
+        "vn": "v11454",
+        "scored_lines": 15,
+        "frames": 5,
+        "body_lines": 10,
+        "body_chars": 154,
+        "body_hiragana": 94
+      },
+      "vita:v15773": {
+        "platform": "vita",
+        "vn": "v15773",
+        "scored_lines": 28,
+        "frames": 8,
+        "body_lines": 20,
+        "body_chars": 311,
+        "body_hiragana": 193
+      },
+      "vita:v16128": {
+        "platform": "vita",
+        "vn": "v16128",
+        "scored_lines": 17,
+        "frames": 5,
+        "body_lines": 12,
+        "body_chars": 206,
+        "body_hiragana": 118
+      },
+      "vita:v18163": {
+        "platform": "vita",
+        "vn": "v18163",
+        "scored_lines": 10,
+        "frames": 4,
+        "body_lines": 6,
+        "body_chars": 126,
+        "body_hiragana": 64
+      }
+    },
+    "reasons": [
+      "psp:v10091: frames 3 < 5",
+      "psp:v10091: body_chars 63 < 500",
+      "psp:v10091: body_hiragana 43 < 200",
+      "psp:v11454: body_chars 154 < 500",
+      "psp:v11454: body_hiragana 94 < 200",
+      "vita:v15773: body_chars 311 < 500",
+      "vita:v15773: body_hiragana 193 < 200",
+      "vita:v16128: body_chars 206 < 500",
+      "vita:v16128: body_hiragana 118 < 200",
+      "vita:v18163: frames 4 < 5",
+      "vita:v18163: body_chars 126 < 500",
+      "vita:v18163: body_hiragana 64 < 200",
+      "psp: VNs 2 < 3"
+    ],
+    "vns_per_console": {
+      "psp": 2,
+      "vita": 3
+    },
+    "distinct_vns": 5
+  },
+  "published_source_manifest": {
+    "file": "data/manifests/general_vn_development_sources_20261011.json",
+    "sha256": "90614a931eacb1faf28d66f289ddfc24fc4aeea65e6222720873fb92de405922"
+  },
+  "training_isolation": {
+    "schema": 1,
+    "role": "dev",
+    "private_labels_sha256": "4338b919d784cec417d8d3d0bb8479706052f2e8719daf541eb874553d712648",
+    "training_config_sha256": "7db7db8f477451729fb35022db8c36606fdc1555b90ad1d77f2383b2c0b24f71",
+    "training_shard_count": 44,
+    "training_samples": 21522,
+    "training_unique_crop_hashes": 42515,
+    "development_crop_hashes": 906,
+    "development_training_pixel_overlap": [],
+    "hash_definition": "SHA256(little-endian int32 height,width + contiguous grayscale uint8 bytes); training raw+resize24, development pads0/2/4 both polarities raw+resize24",
+    "protected_pixels_read": false,
+    "historical_training_shards": "unavailable; only exact current bitmap recipe training inputs checked",
+    "private_full_inventory_sha256": "9fe72af81280513a6b3dee6b0f62a7f2f4bfeed584d75476b820aa6a9ea1814a"
+  },
+  "measurement": {
+    "date": "2026-10-11",
+    "environment": "x86_64 Linux host; Python3.11.15, NumPy2.4.6, Pillow12.3.0",
+    "commands": [
+      ".venv-ci/bin/python build/hiragana/general-vn-dev/review_geometry.py",
+      ".venv-ci/bin/python build/hiragana/general-vn-dev/merge_review.py",
+      ".venv-ci/bin/python build/hiragana/general-vn-dev/check_training_isolation.py"
+    ],
+    "visual_method": "Two separate assistant readings of native frames; disagreement glyphs enlarged with nearest-neighbor sampling; all78 line boxes overlaid and checked against source pixels. Neither reviewer used OCR predictions.",
+    "private_scripts_sha256": {
+      "review_geometry.py": "631ed6b2e18be8d6c80134e45c6d1abc958ee21fb858f69ae8a19b7b8a702195",
+      "merge_review.py": "0b6f6ded8e7e83c713be9a3700f0af49fb190880bc58738373b101c2adcb22f7",
+      "check_training_isolation.py": "eccdf15d2b13cf20a3887019069dac0833690ea9d3cc2d80bdd762b69b2d1ab6"
+    }
+  },
+  "excluded_frames": 35
+}

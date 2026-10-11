@@ -32,6 +32,16 @@ explicit book-separated synthetic development guard. False readiness refuses
 preparation before source metadata/crop arrays or initializer tensors and creates
 no output directory. No real training should start until this cohort is ready.
 
+Schema-2 configurations additionally require the separately frozen
+[textbox development preparation](general-vn-textbox-guard.md) in
+`textbox_development`. It binds complete ordered dialogue/name references and
+rough native ROI variants to the same ready line-crop lock before training. The
+driver verifies that preparation before source metadata, crop arrays or initializer
+tensors and on resume. The end-to-end guard later compares only the fixed
+development-selected export with the released model; the existing line-crop
+selector does not measure C finder behavior and remains unchanged. A schema-1
+configuration or missing textbox preparation is refused.
+
 Make the selector preparation from the integrated checkout that will run this
 driver. Its runtime identity deliberately binds the source/compiler command and
 checkout directory. A preparation from another worktree cannot be reused merely
@@ -65,13 +75,14 @@ forwarded prefix caps.
 
 ```json
 {
-  "schema": 1,
+  "schema": 2,
   "kind": "general-vn-fl10-training-config",
   "init": {"file": "<restored initializer path>", "sha256": "<fixed initializer SHA>"},
   "vocab": {"file": "<released ordered vocabulary path>", "sha256": "<fixed vocabulary SHA>"},
   "kanji_policy": {"file": "<original Jiten policy path>", "sha256": "<fixed policy SHA>"},
   "source_policy": {"file": "<reviewed training policy path>", "sha256": "<measured policy SHA>"},
   "development": {"file": "<ready generic development preparation>", "sha256": "<measured preparation SHA>"},
+  "textbox_development": {"file": "<frozen textbox preparation>", "sha256": "<measured textbox preparation SHA>"},
   "run": {"name": "generic_all_s1", "out": "<new private output root>"},
   "recipe": {
     "steps": 2000, "batch": 32, "lr": 0.00002, "final_lr": 0.05,

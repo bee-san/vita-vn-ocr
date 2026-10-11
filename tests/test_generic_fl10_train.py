@@ -13,6 +13,7 @@ import source_policy as SP
 import train2
 from test_general_vn_select import package  # noqa: F401 - reusable generated selector fixture
 from test_general_vn_select import prepare as prepare_development
+from test_general_vn_textbox_guard import plan_for
 
 
 def pin(path):
@@ -23,8 +24,17 @@ def pin(path):
 def training(request, monkeypatch):
     generated = request.getfixturevalue("package")
     root = generated["root"]
+    for row in generated["rows"]:
+        row["content_kind"] = "body"
+    generated["manifest"].write_text("".join(json.dumps(row) + "\n" for row in generated["rows"]))
     development = prepare_development(generated)
     monkeypatch.setattr(G, "BASELINE_SHA", SP.sha256(generated["baseline"]))
+    monkeypatch.setattr(G.textbox_guard, "BASELINE_SHA", SP.sha256(generated["baseline"]))
+    roi_plan, roi_manifest, textbox = root / "roi-plan.json", root / "roi-manifest.json", root / "textbox.json"
+    roi_plan.write_text(json.dumps(plan_for(generated)))
+    G.textbox_guard.materialize_plan(generated["out"], roi_plan, roi_manifest)
+    G.textbox_guard.prepare(generated["out"], roi_manifest, textbox, root / "textbox-result.json",
+                           compiler=str(generated["compiler"]))
     torch.set_num_threads(1)
     vocab = root / "vocab.txt"
     vocab.write_text("あ\nい\n人\n入\n漢\n〓\n", encoding="utf-8")
@@ -64,8 +74,9 @@ def training(request, monkeypatch):
                     "sha256": SP.sha256(shard), "bytes": shard.stat().st_size}]}
     policy.write_text(json.dumps(policy_doc))
     config = root / "config.json"
-    doc = {"schema": 1, "kind": "general-vn-fl10-training-config", "init": pin(init), "vocab": pin(vocab),
+    doc = {"schema": 2, "kind": "general-vn-fl10-training-config", "init": pin(init), "vocab": pin(vocab),
         "kanji_policy": pin(kanji), "development": pin(generated["out"]), "source_policy": pin(policy),
+        "textbox_development": pin(textbox),
         "run": {"name": "generated", "out": str(root / "runs")},
         "recipe": {"steps": 2, "batch": 2, "lr": .00002, "final_lr": .05, "warmup": 0, "wd": .01,
                    "train_scope": "head", "seed": 1, "threads": 1, "eval_every": 1},
@@ -73,7 +84,7 @@ def training(request, monkeypatch):
     config.write_text(json.dumps(doc))
     return {**generated, "config": config, "config_doc": doc, "policy": policy, "policy_doc": policy_doc,
             "init": init, "checkpoint": checkpoint, "vocab": vocab, "kanji": kanji, "shard": shard,
-            "prepared": root / "frozen/prepared.json", "development": development}
+            "prepared": root / "frozen/prepared.json", "development": development, "textbox": textbox}
 
 
 def save_config(training):
@@ -169,7 +180,7 @@ def test_arbitrary_geometry_validation_and_teacher_arguments_cannot_enter_config
     training["config_doc"][extra] = "must-not-open"
     save_config(training)
     monkeypatch.setattr(torch, "load", forbidden_load)
-    with pytest.raises(ValueError, match="exact schema-1"):
+    with pytest.raises(ValueError, match="exact schema-2"):
         G.prepare(training["config"], training["prepared"])
 
 
@@ -198,7 +209,8 @@ def test_prepare_is_metadata_only_atomic_and_does_not_overwrite(training, monkey
     assert list(training["prepared"].parent.iterdir()) == [training["prepared"]]
 
 
-@pytest.mark.parametrize("change", ["config", "driver", "geometry", "policy", "init", "development", "kanji"])
+@pytest.mark.parametrize(
+    "change", ["config", "driver", "geometry", "policy", "init", "development", "textbox", "kanji"])
 def test_changed_fingerprint_refuses_before_checkpoint_or_crop_load(training, monkeypatch, change):
     G.prepare(training["config"], training["prepared"])
     monkeypatch.setattr(torch, "load", forbidden_load)
@@ -286,7 +298,7 @@ def test_development_lock_byte_drift_during_preparation_cannot_publish_identity(
         return result
 
     monkeypatch.setattr(G, "checked_development", drift)
-    with pytest.raises(ValueError, match="development preparation changed during"):
+    with pytest.raises(ValueError, match="development preparation changed during|frozen textbox inputs changed"):
         G.prepare(training["config"], training["prepared"])
     assert not training["prepared"].parent.exists()
 
@@ -298,5 +310,25 @@ def test_same_geometry_alternative_baseline_cannot_weaken_released_comparison(tr
     monkeypatch.setattr(torch, "load", forbidden_load)
     monkeypatch.setattr(SP.SourcePolicy, "bind", forbidden_load)
     with pytest.raises(ValueError, match="exact released W8 baseline"):
+        G.prepare(training["config"], training["prepared"])
+    assert not training["prepared"].parent.exists()
+
+
+@pytest.mark.parametrize("change", ["missing", "legacy_schema", "wrong_role"])
+def test_textbox_preparation_is_mandatory_before_training_sources_or_tensors(training, monkeypatch, change):
+    if change == "missing":
+        training["config_doc"].pop("textbox_development")
+    elif change == "legacy_schema":
+        training["config_doc"]["schema"] = 1
+    else:
+        doc = json.loads(training["textbox"].read_text())
+        doc["test_or_google_evaluated"] = True
+        training["textbox"].write_text(json.dumps(doc))
+        training["config_doc"]["textbox_development"] = pin(training["textbox"])
+    save_config(training)
+    monkeypatch.setattr(torch, "load", forbidden_load)
+    monkeypatch.setattr(train2, "load_shard", forbidden_load)
+    monkeypatch.setattr(SP.SourcePolicy, "bind", forbidden_load)
+    with pytest.raises(ValueError, match="schema-2|development-only textbox"):
         G.prepare(training["config"], training["prepared"])
     assert not training["prepared"].parent.exists()

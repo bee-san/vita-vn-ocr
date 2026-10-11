@@ -2,6 +2,12 @@
 
 The new selector applies the same recognizer, vocabulary and preprocessing to every game. It is independent of the original CLANNAD-led experiment: `hiragana_select.py`, `hiragana_gate.py`, the twenty frozen checkpoints/results, runtime and CI remain unchanged. The new protocol must be registered before a future experiment. Preparing it does not evaluate models or establish an accuracy improvement. Google long-run outputs and protected test results never enter development selection.
 
+This selector measures hand-annotated individual line crops. It does not measure
+the C finder's whole-textbox behavior. The separate [prospective textbox guard](general-vn-textbox-guard.md)
+freezes reviewed input ROIs before training, then compares only the one selected
+export with the released baseline through the actual C finder/W8I pipeline.
+The prospective training driver requires that preparation; both checks must pass.
+
 Real development strata are `(platform, vn)`. A game appearing on both consoles receives two separate nonregression checks and counts as one distinct VN for the required gains. Release/session, line IDs, styles, source-image hashes and geometry are preserved in aggregates. Native dimensions establish platform when old manifests lack an explicit platform field; contradictory metadata is rejected. Speaker-name lines are excluded from body strata using annotation tags, without inspecting the recognized words. No font-family identity is inferred from screenshot appearance, styles or game titles.
 
 ## Readiness before scoring

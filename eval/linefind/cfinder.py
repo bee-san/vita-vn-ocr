@@ -31,8 +31,11 @@ class Finder:
         self.code = {"grad": 0, "legacy": 1}[finder]
         self.bin = Path(binary or os.environ.get("VOCR_LINES_BIN") or build())
         self.last_dark = []
+        self.last_truncated = False
 
     def __call__(self, img):
+        self.last_dark = []
+        self.last_truncated = False
         img = np.asarray(img)
         h, w = img.shape[:2]
         if img.ndim == 2:
@@ -49,6 +52,7 @@ class Finder:
         if v[0] != 0:
             return None
         n = v[1]
+        self.last_truncated = bool(v[2])
         boxes = [tuple(v[3 + 5 * i:3 + 5 * i + 4]) for i in range(n)]
         self.last_dark = [v[3 + 5 * i + 4] for i in range(n)]
         return boxes

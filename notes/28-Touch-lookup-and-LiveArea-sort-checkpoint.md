@@ -2,7 +2,7 @@
 title: Touch lookup and native LiveArea sorting checkpoint
 created: 2026-10-11
 updated: 2026-10-11
-checkpoint_utc: "2026-10-11 15:53:04"
+checkpoint_utc: "2026-10-11 17:07:49"
 interruption_checkpoint_utc: "2026-10-11 15:34:40"
 settings_controls_verified_by_utc: "2026-10-11 15:43:54"
 status: settings-highlight-controls-verified-game-touch-pending
@@ -17,10 +17,13 @@ merged, v0.7.9 is published with verified downloaded assets, and its new files
 have native readbacks. After the promotion connection loss, the installed
 Settings executable and four actual highlight controls were
 verified independently of the retained uncertain promoter status. The new Shell
-file was read back after a new boot; fresh loaded-module proof and actual game
-header taps remain pending. The separate native sorting candidate is built and
-host-tested and fully read back on the device. Its reboot was accepted, but
-activation and hardware moves remain unconfirmed.
+file was read back after a new boot; fresh native module inventory now confirms
+that the Shell plugin is loaded. Actual game-header taps remain pending. The
+revised local native sorting helper has booted and advertises its operation.
+Its verified 59-bubble plan is uploaded. Physical approval was subsequently
+recorded; a sorting call returned an error and the full layout stayed unchanged.
+The user canceled sorting, so no further sorting work is planned. This checkpoint
+was refreshed at 17:07:49 UTC on October 11.
 
 Earlier working VOCR/Meiki, region controls, repaired Settings preferences and
 the 374.066-second quiet connection result remain dated evidence in
@@ -86,7 +89,7 @@ establish these bytes. Their activation stages remain separate.
 
 | Artifact | Bytes | SHA-256 | Established stage |
 |---|---:|---|---|
-| New Shell plugin | 150,500 | `2e477d8d2616e3b9f72a5cc2da354d2af42719c9e7c594b4a583312329770716` | Replaced at the installed plugin path and fully read back after a new boot; fresh loaded-module proof pending |
+| New Shell plugin | 150,500 | `2e477d8d2616e3b9f72a5cc2da354d2af42719c9e7c594b4a583312329770716` | Replaced at the installed plugin path and fully read back after a new boot; fresh native inventory confirms loaded after restart |
 | New Settings VPK | 283,521 | `3e9795fbfd833379d090b90482783cb05cf99f622e7c6addd3625f4d07e0ac00` | Staged and fully read back; original promoter status retained as uncertain |
 | Installed Settings executable | 277,608 | `b5a6e579536085215c1a6464bbdd41926242b9905fbf153e863a7dff35c5be16` | Complete installed-file readback, registered title and native foreground launch verified in TL05 |
 
@@ -126,8 +129,8 @@ SHA-256 `ab88dcfca340ccf0df048d6e8e86527feeb9cc29dd8fab35ccffa6bf046c9743`.
 The first Character action was at 15:41:20 UTC; a clock check immediately after
 all four actions bounds completion to no later than 15:43:54 UTC. The aggregate
 receipt has no own timestamp. Settings-card taps are separate from recognized
-header taps in a game. Physical font readability, fresh Shell loaded-module
-proof and game-touch behavior remain pending.
+header taps in a game. Fresh Shell loaded-module proof was subsequently
+obtained; physical font readability and game-touch behavior remain pending.
 
 **Verified publication, TL06:** [stable v0.7.9](https://github.com/bee-san/vita-jp-overlay/releases/tag/v0.7.9)
 was published at 15:44:16 UTC, targeting merge
@@ -198,8 +201,8 @@ connections were refused, the UDP diagnostic timed out and a later no-route
 diagnostic followed. At 15:53:04 UTC, activation remained unconfirmed. The saved
 pending subscription was preserved. These symptoms do not prove a boot
 cause or successful loading. Recovery/log inspection and any narrowly approved
-rollback remain pending. The physical `ur0:shell` ACL has not yet been
-requested, and no sorting operation occurred. This is a local candidate, not
+rollback were pending at that earlier checkpoint. The recovery and revised
+runtime below supersede that activation status. This is a local helper, not
 an upstream agent release.
 
 The build audit caught stale callback offsets after a fast CMake path bypassed
@@ -209,16 +212,100 @@ retained the prior 143 imports and added five documented SDK imports. A successf
 link alone was insufficient: callback-layout and object-identity checks caught
 the stale build before deployment.
 
+## Recovery and revised native boot
+
+The fresh loader tail identified the first candidate's failure as
+`-2147299325`, or `0x8002D003`. The bundled `psp2_err` decoded it as
+`SCE_KERNEL_ERROR_MODULEMGR_NO_LIB`. The code identifies a library-binding
+failure; it does not name the library. SceLsdb was the only newly imported
+library, making it the leading compatibility suspect rather than a proven
+firmware export diagnosis. Do not attribute this result to sleep or OCR.
+
+The user explicitly authorized a narrow FTP recovery. Only the loader log and
+agent runtime were read, and the previous runtime was restored through a
+separate staging file, full readbacks and a preserved failed-trial backup.
+The restored 311,356-byte file matched
+`7b803d324963257fcdc0d88d7f141ea8ae3c753b7520ccd759253956341de5c4`.
+No tai configuration, database, identity or ACL files were changed. A subsequent
+16:09:33 log was byte-identical to the failed-boot log; this did not establish a
+new failure of the restored runtime.
+
+At about 16:22 the host `serve` process was found absent despite its socket
+remaining. Restarting ordinary `serve` with the saved identity and state
+recovered the native connection. Fresh snapshots then confirmed the overlay
+Shell/kernel and agent kernel/loader loaded. Check process and connection
+health together; do not delete trust, counters or pending state to repair a
+stale socket.
+
+Local runtime revision `90c494a9fe3622523262629e39751b486fe3f093` resolves exactly
+four SceLsdb exports per guarded command, before journal creation, rather than
+adding a mandatory startup import. An unavailable or partial resolution fails
+without an icon effect. It retains Shell's shared provider and database; it
+neither loads/unloads the provider nor opens/closes/rebuilds Shell's database.
+The journal uses the existing full-width seek wrapper. An independent binary
+check matched all 31 prior library records, 143 function and three variable
+imports, and verified unchanged transport, approval UI, runtime, keep-awake and
+diagnostic objects. The actual coordinator passed 41 ASan/UBSan cases,
+including missing/null exports, fresh retry, guards and recovery.
+
+The revised 315,584-byte runtime has SHA-256
+`10ad086ffeb5cc2382ab183e2051f2eae88e1b5b30ff50c7e92b667ffaa468bd`.
+Its native upload completed with code zero, verified/complete flags and an
+identical full readback. After an accepted ordinary native reboot, the saved
+session renewed and fresh capabilities advertised `livearea.sort` among 62
+operations. This establishes actual runtime activation. Companion local client
+revision `ce74602aaf00798668f9587e269a22683a237a00` validates only the exact known
+operation, a 32-digit ID, SHA-bound plan path and literal `yes=true`; 17 actual
+validator cases passed on each of two clients. Existing long-hash behavior,
+request recovery and security checks were retained. These local tool changes
+were not published upstream.
+
+A fresh complete inventory still contained 59 bubbles, nine page records
+(including the special and empty tail pages) and zero orphans. All source
+coordinates matched the 1,904-byte plan, SHA-256
+`81b343f422a7772f5bc87da97217bd2949f5b291257ca04c1271766c4f21b6b1`.
+The uploaded plan has an identical full readback. Its proposed genre placement
+is visual novels, Japanese games, other games, then tools; it was not applied.
+
+The initial scoped access request returned agent `VAU_BUSY` (`-2`) while system
+UI covered Settings; an unapproved guarded sort returned `VAU_DENIED` (`-4`).
+These small negative codes are agent definitions, not Sony error codes. Extra
+cached SQLite column details are not evidence of a dictionary/memory failure.
+A JPEG capture returned `frame_unavailable`, `jpeg_encode`, code `-7` and supplied
+no usable image.
+
+After the user made Settings visible, the first accepted approval prompt expired.
+A new physical prompt was approved by the user, and native status recorded
+`state=approved`, `persistent=true`, `native_result=0`. No agent input was sent
+while approval was pending. With Settings closed and a fresh complete source
+layout checked, the same retained sorting operation returned `0x80010016`.
+The bundled `psp2_err` decoded it as `SCE_ERROR_ERRNO_EINVAL`; the exact failed
+stage is unknown. A complete post-error inventory still matches all 59 original
+coordinates, nine page records and zero orphans. No movement is established.
+
+The user then explicitly canceled icon sorting. Stop further sorter retries,
+helper deployments and icon changes. A diagnostic helper build remained local
+and was not installed. Settings was relaunched through the native agent and
+confirmed foreground with the expected title. Retain the failed operation and
+plan privately without editing the database, layout file, identity or ACL store.
+
+The final complete configuration readback still matches the verified 2,973-byte
+file: VOCR selected, Japanese-only ON, whole-word highlighting and private
+Daijirin before JMdict. Settings relaunch is confirmed by native foreground
+observation; no new game-text or typography result is inferred.
+
+Private evidence remains under `vita-agent-use/agent/touch-lookup-20261011/`
+and `vita-agent-use-livearea-sort/agent/lazy-lsdb-review/`. Keep captures,
+firmware, identity data and private dictionaries out of public artifacts.
+
 ## Remaining checks
 
 - Retain the original uncertain promoter status alongside the independently
   verified installed executable and actual Settings controls.
-- Confirm the new Shell loaded after the observed fresh boot.
+- Retain the fresh native Shell-loaded proof alongside installed byte readbacks.
 - Verify both highlight choices and Japanese-only header taps in a game,
   including held-touch/release and region-editor ownership.
 - Inspect physical typography separately from successful saves or snapshots.
-- Verify the new runtime's firmware import compatibility and actual activation,
-  then test sorting only through the supported guarded operation and verify
-  complete persisted layout and physical page order.
+- Icon sorting is canceled by the user; preserve the unchanged layout.
 - Retain pending native Daijirin lookup and hardware OCR CER; earlier host and
   game runs do not establish these new-release checks.

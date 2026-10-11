@@ -4,7 +4,7 @@ created: 2026-10-10
 updated: 2026-10-11
 historical_snapshot_utc: "2026-10-10 12:33"
 latest_checkpoint_date: 2026-10-11
-latest_checkpoint_utc: "2026-10-11 15:53:04"
+latest_checkpoint_utc: "2026-10-11 17:07:49"
 interruption_checkpoint_utc: "2026-10-11 15:34:40"
 settings_controls_verified_by_utc: "2026-10-11 15:43:54"
 latest_request_utc: "2026-10-11 15:45"
@@ -14,7 +14,7 @@ tags: [vita, device, handoff]
 
 # Current device state snapshot
 
-**Latest October 11 checkpoint, 15:53:04 UTC:** overlay PR #38 at
+**Latest October 11 checkpoint, 17:07:49 UTC:** overlay PR #38 at
 `ee796f1ea683d84a668bbc52961bf146a9f9986c` passed exact-head host/Vita CI and
 merged as `dc0bea53a6a8d075d4598cea27708953ed467666`. It adds default
 whole-word/optional character highlighting and Japanese-filtered recognized
@@ -23,7 +23,7 @@ was published at 15:44:16 UTC; all six fresh downloaded assets match their
 candidates, with package manifests and nested archives verified.
 The 150,500-byte replacement Shell file has complete native readback after a new
 boot, SHA-256 `2e477d8d2616e3b9f72a5cc2da354d2af42719c9e7c594b4a583312329770716`;
-fresh loaded-module proof and actual game-header touch remain pending.
+fresh native inventory now confirms loaded; actual game-header touch remains pending.
 The staged 283,521-byte Settings VPK has full native readback SHA-256
 `3e9795fbfd833379d090b90482783cb05cf99f622e7c6addd3625f4d07e0ac00`.
 Promotion lost its connection at 15:34:40 UTC; the saved status remains uncertain
@@ -40,13 +40,26 @@ This independently establishes the installed Settings controls, without
 reclassifying the retained promoter status or establishing game touches or
 physical font readability. A clock check immediately after the four actions
 bounds their completion to no later than 15:43:54 UTC; the aggregate receipt
-has no own timestamp. The private native-sort runtime now has complete native
-readback and an accepted 15:45 UTC reboot request, but fresh activation remains
-unconfirmed after refused command connections, a timed-out diagnostic and a
-later no-route diagnostic. The pending subscription is preserved; log/recovery
-work remains pending. Its 12 host sanitizer cases, clean build and 59-icon plan
-do not establish hardware
-moves. The physical ACL has not yet been requested, and no sort was performed.
+has no own timestamp. The original sorting helper failed library binding
+(`0x8002D003`, decoded by `psp2_err`). A user-authorized narrow FTP rollback
+preserved the trial and verified the previous runtime. The host server was
+later found stopped and restarted with the saved identity/state; native access
+returned. A revised local helper preserves all prior library imports and resolves
+sorting exports only for guarded commands. Its complete native upload/readback,
+accepted reboot and fresh `livearea.sort` capabilities prove activation. Its
+actual coordinator passed 41 sanitizer cases. All 59 current bubble coordinates
+match the uploaded, fully read-back plan. After the user made Settings visible,
+native status recorded physical scoped
+approval (`approved`, persistent, result zero). The guarded sort returned
+`0x80010016` (`SCE_ERROR_ERRNO_EINVAL`, decoded with `psp2_err`); the full
+post-error layout still matches all 59 original coordinates. The failed stage
+is not established. The user then canceled icon sorting; no further move or
+helper deployment is authorized by that request. Game-header taps and physical
+font readability remain pending.
+After sorting was canceled, Settings was relaunched and confirmed foreground.
+A final complete configuration readback is byte-identical to the 2,973-byte
+whole-word file above, retaining VOCR, Japanese-only ON and Daijirin before
+JMdict.
 Full current scope and remaining checks are in
 [[28-Touch-lookup-and-LiveArea-sort-checkpoint]].
 
@@ -201,7 +214,8 @@ Commercial dictionary contents, configuration contents and device identities
 remain private. The earlier 13:23 UTC recovery-required/600-second timeout is
 retained as history in [[27-Meiki-hardware-and-project-lessons]] and is
 superseded by the completed recovery above. The 59-app/seven-page LiveArea plan
-still awaits supported, observed moves. The device narrative below retains its
+is retained privately; sorting was canceled by the user without changing the
+measured bubble coordinates. The device narrative below retains its
 dated native-hook state.
 
 **Historical early October 11 checkpoint:** API 13 booted and all three overlay plugins loaded. Fresh native game-process FL10 jobs completed with `rc=0 io=0 cleanup=0`, and subsequent captures succeeded. At that point the user reported L+R advancing dialogue when opening the overlay, and the input repair was unverified. Later hook-7 containment and physical character-workflow evidence are retained in [[26-Game-process-OCR-hardware-checkpoint]]; the repaired Square/Circle workflow and actual Meiki runs are in [[27-Meiki-hardware-and-project-lessons]]. Hardware accuracy/CER remains unmeasured.

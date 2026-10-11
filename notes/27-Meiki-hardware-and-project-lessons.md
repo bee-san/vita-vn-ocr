@@ -523,6 +523,13 @@ remains unproved.
 
 ## Later touch/highlight and sorting candidate
 
+**Superseded checkpoint:** the initial pending activation and sorting below are
+resolved by [[28-Touch-lookup-and-LiveArea-sort-checkpoint]]. Fresh Shell loading
+and physical scoped approval were subsequently established. A guarded sort
+failed and all 59 coordinates remained unchanged; the user canceled sorting.
+Do not resume it from this historical candidate description. Game-header touch
+and physical font readability remain unmeasured.
+
 [[28-Touch-lookup-and-LiveArea-sort-checkpoint]] records the next merged overlay
 implementation, verified stable v0.7.9 publication and native file readbacks.
 Promotion lost its connection while running at 15:34:40 UTC; its retained status remains uncertain. Later complete

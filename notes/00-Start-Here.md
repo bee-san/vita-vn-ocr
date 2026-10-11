@@ -10,7 +10,7 @@ tags: [vita, native-text, moc]
 
 This vault records the native text-hook investigation alongside the OCR project. Open this `notes/` directory as an Obsidian vault, or follow the ordinary Markdown files. It needs no Obsidian plugin. Findings are linked so a future session can recover the reasoning, evidence and limits without rereading the whole conversation.
 
-**2026-10-11 debugging checkpoint:** see [[25-Vita-debugging-tools]] for tool commands, current OCR transport-error evidence and historical dump analysis. The device-state narratives below retain the 2026-10-10 native-hook checkpoint.
+**2026-10-11 hardware checkpoint:** API 13 boots and completes text-bearing game-process OCR with clean I/O/cleanup and repeated captures. The user reports L+R still advances dialogue. See [[26-Game-process-OCR-hardware-checkpoint]] for native evidence and limits, and [[25-Vita-debugging-tools]] for the diagnostic workflow. The device-state narratives below retain the 2026-10-10 native-hook checkpoint.
 
 **Current outcome:** the user reports **“omg it works”** on the physical Vita. Fresh logs confirm a selected native CALL source changes through five updates and completes dictionary jobs across reopens. The working source is kind 2 CALL, **not** the installed kind 4 REGISTER profile. Exact visible-page count is not separately stated; see [[23-Physical-native-hook-success]].
 
@@ -52,6 +52,7 @@ The earlier repair established install/boot and a two-page emulator capture/top-
 | User-reported physical success and actual CALL-source evidence | [[23-Physical-native-hook-success]] |
 | × selection reaching the game and pending controller hardening | [[24-Overlay-selection-input-leak]] |
 | What tests establish, and what they cannot | [[08-Validation-and-measurements]] |
+| API 13 native OCR, repeated captures and outstanding L+R input leak | [[26-Game-process-OCR-hardware-checkpoint]] |
 | Error lookup, CPU dumps and live native debugging | [[25-Vita-debugging-tools]] |
 | Safe operational commands and recovery | [[09-Device-operations-and-recovery]] |
 | Worktrees, commits and merged PRs | [[10-Repositories-and-revisions]] |

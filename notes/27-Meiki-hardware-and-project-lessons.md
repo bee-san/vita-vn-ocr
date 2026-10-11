@@ -2,7 +2,7 @@
 title: Meiki hardware and project lessons
 created: 2026-10-11
 updated: 2026-10-11
-status: settings-readability-built-native-installation-pending
+status: settings-readability-published-native-installation-pending
 tags: [vita, ocr, meiki, memory, deployment, lessons]
 ---
 

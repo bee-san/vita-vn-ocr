@@ -23,7 +23,7 @@ was published at 15:44:16 UTC; all six fresh downloaded assets match their
 candidates, with package manifests and nested archives verified.
 The 150,500-byte replacement Shell file has complete native readback after a new
 boot, SHA-256 `2e477d8d2616e3b9f72a5cc2da354d2af42719c9e7c594b4a583312329770716`;
-fresh loaded-module proof and actual game-header touch remain pending.
+fresh native inventory now confirms loaded; actual game-header touch remains pending.
 The staged 283,521-byte Settings VPK has full native readback SHA-256
 `3e9795fbfd833379d090b90482783cb05cf99f622e7c6addd3625f4d07e0ac00`.
 Promotion lost its connection at 15:34:40 UTC; the saved status remains uncertain
@@ -40,13 +40,17 @@ This independently establishes the installed Settings controls, without
 reclassifying the retained promoter status or establishing game touches or
 physical font readability. A clock check immediately after the four actions
 bounds their completion to no later than 15:43:54 UTC; the aggregate receipt
-has no own timestamp. The private native-sort runtime now has complete native
-readback and an accepted 15:45 UTC reboot request, but fresh activation remains
-unconfirmed after refused command connections, a timed-out diagnostic and a
-later no-route diagnostic. The pending subscription is preserved; log/recovery
-work remains pending. Its 12 host sanitizer cases, clean build and 59-icon plan
-do not establish hardware
-moves. The physical ACL has not yet been requested, and no sort was performed.
+has no own timestamp. The original sorting helper failed library binding
+(`0x8002D003`, decoded by `psp2_err`). A user-authorized narrow FTP rollback
+preserved the trial and verified the previous runtime. The host server was
+later found stopped and restarted with the saved identity/state; native access
+returned. A revised local helper preserves all prior library imports and resolves
+sorting exports only for guarded commands. Its complete native upload/readback,
+accepted reboot and fresh `livearea.sort` capabilities prove activation. Its
+actual coordinator passed 41 sanitizer cases. All 59 current bubble coordinates
+match the uploaded, fully read-back plan. Scoped access remains blocked by
+system UI over Settings (`VAU_BUSY`); no physical approval or icon move is
+established. Game-header taps and physical font readability remain pending.
 Full current scope and remaining checks are in
 [[28-Touch-lookup-and-LiveArea-sort-checkpoint]].
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Pin a small native PSP/Vita background cohort, then replay its URL/hash manifest.
 
-The screenshots stay in ignored build/ storage. They supply upper-screen scenery
-for synthetic rendering only; their dialogue is never treated as an OCR label.
+The screenshots stay in ignored build/ storage. Reviewed, text-free rectangles
+supply synthetic scenery only; their dialogue is never treated as an OCR label.
 Each platform gets 16 training games and four different development games. All
 40 games are distinct, and CLANNAD plus the shared benchmark games/sessions are
 excluded. Existing PSP image hashes are retained from synth2_psp_shots.jsonl.
@@ -111,7 +111,7 @@ def choose(rows, platform, count, excluded, sessions, used_vns=(), used_releases
 
 
 def validate_manifest(manifest, excluded=None, sessions=None):
-    if manifest.get("schema") != 1:
+    if manifest.get("schema") not in (1, 2):
         raise ValueError("unsupported fresh background manifest schema")
     if manifest.get("content_sha256") != canonical_sha(
             {k: v for k, v in manifest.items() if k != "content_sha256"}):
@@ -127,6 +127,18 @@ def validate_manifest(manifest, excluded=None, sessions=None):
         platform, split = row.get("platform"), row.get("split")
         if split not in counts or not eligible(row, platform, excluded, sessions):
             raise ValueError(f"excluded or non-native background: {row.get('vn')}")
+        if manifest["schema"] == 2:
+            review = row.get("scenery_review", {})
+            if (review.get("hand_checked") is not True
+                    or not isinstance(review.get("reason"), str) or not review["reason"].strip()
+                    or "scenery_box" not in row):
+                raise ValueError("every scenery patch requires an explicit hand-checked review")
+            box = row["scenery_box"]
+            if box is not None:
+                w, h = PLATFORMS[platform][0]
+                if (not isinstance(box, list) or len(box) != 4 or any(type(v) is not int for v in box)
+                        or not 0 <= box[0] < box[2] <= w or not 0 <= box[1] < box[3] <= h):
+                    raise ValueError("scenery rectangle must fit inside the native screenshot")
         expected = f"{'assets' if split == 'train' else 'assets-dev'}/{PLATFORMS[platform][1]}/shots/{filename(row)}"
         if row.get("file") != expected:
             raise ValueError("background file must have its exact cohort/platform path")

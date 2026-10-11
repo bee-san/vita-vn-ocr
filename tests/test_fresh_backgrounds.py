@@ -144,3 +144,27 @@ def test_query_cache_is_bound_to_exact_request(tmp_path):
     assert queries[0]["response_sha256"] == FB.canonical_sha(response)
     with pytest.raises(ValueError, match="different query identity"):
         FB.query(None, {"results": 50}, cache, [])
+
+
+def reviewed(manifest):
+    manifest["schema"] = 2
+    for record in manifest["records"]:
+        record["scenery_box"] = [0, 0, record["dims"][0], 100]
+        record["scenery_review"] = {"hand_checked": True, "reason": "generated text-free fixture"}
+    return seal(manifest)
+
+
+@pytest.mark.parametrize("box", [[-1, 0, 100, 100], [0, 0, 481, 100], [0, 0, 100, 273],
+                               [100, 0, 100, 100], [0, 20, 100, 10], [0, 0, 100.0, 100], [0, 0, 10]])
+def test_reviewed_scenery_must_fit_the_native_image(manifest, box):
+    reviewed(manifest)["records"][0]["scenery_box"] = box
+    with pytest.raises(ValueError, match="rectangle must fit"):
+        FB.validate_manifest(seal(manifest), set(), set())
+
+
+def test_reviewed_scenery_requires_explicit_human_review_and_allows_exclusion(manifest):
+    reviewed(manifest)["records"][0]["scenery_box"] = None
+    FB.validate_manifest(seal(manifest), set(), set())
+    manifest["records"][0]["scenery_review"]["hand_checked"] = False
+    with pytest.raises(ValueError, match="hand-checked review"):
+        FB.validate_manifest(seal(manifest), set(), set())

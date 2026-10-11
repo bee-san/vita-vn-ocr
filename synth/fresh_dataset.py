@@ -129,6 +129,10 @@ def verify_backgrounds(root, manifest, fetch=False):
 
     root = Path(root).resolve()
     doc = json.loads(Path(manifest).read_text(encoding="utf-8"))
+    if doc.get("schema") != 2:
+        raise ValueError("fresh rendering requires a reviewed schema2 background manifest")
+    if any(row.get("scenery_review", {}).get("hand_checked") is not True for row in doc.get("records", [])):
+        raise ValueError("every background record needs a hand-checked scenery review")
     validate_manifest(doc)
     rows = doc["records"]
     reserved = load_exclusions() | {"v4"}
@@ -237,6 +241,9 @@ def render_shards(root, split, arguments, background_manifest=None):
     render.POOL_WEIGHT = POOL_WEIGHTS.copy()
     cohort_sha = sha256(render.DATA / "corpus/book_ids.json")
     backgrounds = verify_backgrounds(root, background_manifest) if background_manifest else None
+    if not backgrounds and any(list((render.DATA / folder / "shots").glob("*.jpg"))
+                               for folder in ("vndb", "vndb_psp")):
+        raise ValueError("screenshot backgrounds require a reviewed --background-manifest")
     policy_path = None
     for i, argument in enumerate(arguments):
         if argument == "--kanji-policy":
@@ -258,6 +265,7 @@ def render_shards(root, split, arguments, background_manifest=None):
 
     render.crop_meta = bound_meta
     event = {"split": split, "argv": [str(HERE / "render.py"), "shards", *arguments],
+             "wrapper_argv": sys.argv.copy(),
              "book_split_sha256": cohort_sha, "kanji_policy_sha256": policy_sha,
              "background_manifest_sha256": backgrounds["manifest_sha256"] if backgrounds else None,
              "renderer_source_sha256": sha256(HERE / "render.py"), "helper_sha256": sha256(__file__),
@@ -438,6 +446,8 @@ def main():
         if not args.vocab:
             parser.error("render requires --vocab")
         extra = ["--kanji-policy", str(args.kanji_policy)] if args.kanji_policy else []
+        if args.background_manifest:
+            extra.extend(["--background-manifest", str(args.background_manifest)])
         render_shards(args.root, args.split, ["--vocab", str(args.vocab), "--seed", str(args.seed),
                                             "--workers", str(args.workers), *extra, *remaining],
                       args.background_manifest)

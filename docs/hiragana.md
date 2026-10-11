@@ -107,16 +107,22 @@ narration pools, native VN rendering, role metadata and hash manifests under a
 configurable ignored root. A deterministic split by Aozora book ID separates
 training and synthetic development books. Background screenshots also use
 separate training/development games and exclude the shared benchmark games and
-CLANNAD. Downloaded images, fonts, corpora, NPZ shards and checkpoints stay local.
+CLANNAD. Native PSP/Vita VNDB screenshots contribute scenery only, from explicitly
+hand-reviewed, text-free rectangles. Title, menu, load and name-entry screens are
+excluded. A requested region must fit entirely within an approved patch, or the
+renderer uses synthetic scenery. Downloaded images, fonts, corpora, NPZ shards and
+checkpoints stay local.
 Commit source URLs/hashes, configuration and aggregate results; put weights on
 GitHub releases. Retain the exact scripts, logs and data manifest for each run.
 
 The app receives a selected dialogue region, rather than an entire screen.
 Rendering creates those regions at Vita 960×544, PSP 480×272 and PSP 2× scales;
-the console gradient finder extracts training lines. `--crop-edge-jitter` varies
+the gradient finder extracts training lines. `--crop-edge-jitter` varies
 spare line margins on 40% of draws, retains labelled ink, avoids adjacent text
 rows, and recalculates console polarity after changing a crop. This models small
 edge inaccuracies; it does not claim to recover glyphs a user cropped away.
+Crops whose labels cannot fit the recognizer’s CTC sequence after height-32 resize
+are rejected, including the blank steps needed between repeated characters.
 `eval/crop_stress.py` checks development-only edge margins and optional dialogue
 ROI offsets. The shared finder benchmark already uses annotated dialogue regions.
 
@@ -161,11 +167,13 @@ experiment is exploratory; it cannot isolate a dataset's causal effect.
 .venv-ci/bin/python synth/fresh_dataset.py render --root build/hiragana/fresh-jiten \
   --split train --vocab build/hiragana/vocab.txt --finder grad --invert-dark \
   --kanji-policy data/manifests/fl10_kanji_policy_20261011.json --crop-edge-jitter \
+  --background-manifest data/manifests/fresh_jiten_backgrounds.json \
   --out build/hiragana/fresh-jiten/general --shards 24 --per-shard 500 --workers 2
 # Repeat into targeted with --target-report /private/development.json;
 # into kanji with --kanji-pairs; and synthetic-dev with --split dev and another seed.
 .venv-ci/bin/python synth/fresh_dataset.py manifest --root build/hiragana/fresh-jiten \
   --vocab build/hiragana/vocab.txt --kanji-policy data/manifests/fl10_kanji_policy_20261011.json \
+  --background-manifest data/manifests/fresh_jiten_backgrounds.json \
   --source general:train --source targeted:train --source kanji:train --source synthetic-dev:dev
 .venv-ci/bin/python train/hiragana_fresh.py --config /private/fresh-config.json \
   --init build/hiragana/fl10_init.pt --vocab build/hiragana/vocab.txt \

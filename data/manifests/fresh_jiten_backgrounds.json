@@ -1,12 +1,12 @@
 {
-  "schema": 1,
+  "schema": 2,
   "created_utc": "2026-10-11T14:35:34.704957+00:00",
   "counts": {
     "train": 16,
     "dev": 4
   },
   "selection_seed": 1,
-  "usage": "Synthetic scenery only, upper 62 percent; no screenshot-derived OCR labels.",
+  "usage": "Synthetic scenery only from hand-reviewed source rectangles; no screenshot-derived OCR labels. Entire requested region must fit, otherwise use synthetic scenery.",
   "provenance": {
     "api_documentation": "https://api.vndb.org/kana",
     "psp_manifest": {
@@ -468,7 +468,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v7204_52767.jpg",
-      "bytes": 55275
+      "bytes": 55275,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v10950",
@@ -489,7 +499,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v10950_49235.jpg",
-      "bytes": 40486
+      "bytes": 40486,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v10383",
@@ -510,7 +530,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v10383_56667.jpg",
-      "bytes": 60677
+      "bytes": 60677,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v5837",
@@ -531,7 +561,12 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v5837_56989.jpg",
-      "bytes": 91990
+      "bytes": 91990,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v8591",
@@ -552,7 +587,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v8591_56354.jpg",
-      "bytes": 77625
+      "bytes": 77625,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v15104",
@@ -573,7 +618,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v15104_80145.jpg",
-      "bytes": 61405
+      "bytes": 61405,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v4597",
@@ -594,7 +649,12 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v4597_55700.jpg",
-      "bytes": 106015
+      "bytes": 106015,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v1803",
@@ -615,7 +675,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v1803_56673.jpg",
-      "bytes": 52356
+      "bytes": 52356,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v3091",
@@ -636,7 +706,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v3091_18557.jpg",
-      "bytes": 57997
+      "bytes": 57997,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v10105",
@@ -657,7 +737,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v10105_56300.jpg",
-      "bytes": 76533
+      "bytes": 76533,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v3106",
@@ -678,7 +768,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v3106_52269.jpg",
-      "bytes": 41594
+      "bytes": 41594,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v5690",
@@ -699,7 +799,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v5690_52118.jpg",
-      "bytes": 60849
+      "bytes": 60849,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v6723",
@@ -720,7 +830,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v6723_36094.jpg",
-      "bytes": 63529
+      "bytes": 63529,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v850",
@@ -741,7 +861,12 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v850_56614.jpg",
-      "bytes": 58973
+      "bytes": 58973,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v3261",
@@ -762,7 +887,12 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v3261_56761.jpg",
-      "bytes": 58654
+      "bytes": 58654,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v8243",
@@ -783,7 +913,17 @@
       "platform": "psp",
       "split": "train",
       "file": "assets/vndb_psp/shots/v8243_47974.jpg",
-      "bytes": 40416
+      "bytes": 40416,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v5297",
@@ -804,7 +944,17 @@
       "platform": "psp",
       "split": "dev",
       "file": "assets-dev/vndb_psp/shots/v5297_95205.jpg",
-      "bytes": 50401
+      "bytes": 50401,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v4719",
@@ -825,7 +975,17 @@
       "platform": "psp",
       "split": "dev",
       "file": "assets-dev/vndb_psp/shots/v4719_53401.jpg",
-      "bytes": 24761
+      "bytes": 24761,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v12775",
@@ -846,7 +1006,17 @@
       "platform": "psp",
       "split": "dev",
       "file": "assets-dev/vndb_psp/shots/v12775_50651.jpg",
-      "bytes": 73026
+      "bytes": 73026,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v6618",
@@ -867,7 +1037,12 @@
       "platform": "psp",
       "split": "dev",
       "file": "assets-dev/vndb_psp/shots/v6618_55662.jpg",
-      "bytes": 82525
+      "bytes": 82525,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v14908",
@@ -888,7 +1063,17 @@
       "split": "train",
       "file": "assets/vndb/shots/v14908_84041.jpg",
       "sha256": "37ca590e808fef4f0600674c2d5648ebab91d27e6b45d16529aa2045c60875d5",
-      "bytes": 174728
+      "bytes": 174728,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v14813",
@@ -909,7 +1094,17 @@
       "split": "train",
       "file": "assets/vndb/shots/v14813_78848.jpg",
       "sha256": "80619831aa59ebfa958283ce3ce0b5eae54a205c613652c09130ddb3b821345b",
-      "bytes": 126306
+      "bytes": 126306,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v13308",
@@ -930,7 +1125,17 @@
       "split": "train",
       "file": "assets/vndb/shots/v13308_145309.jpg",
       "sha256": "4de2698b50e2ebd5806460f33b29ea43fd90a7e7c1337860899961302916b83a",
-      "bytes": 135872
+      "bytes": 135872,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v11173",
@@ -951,7 +1156,12 @@
       "split": "train",
       "file": "assets/vndb/shots/v11173_108650.jpg",
       "sha256": "48825d89c57e06057fc71ab147f23b669c219ddbdd74d33c5b9a0296974b4198",
-      "bytes": 155604
+      "bytes": 155604,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v13090",
@@ -972,7 +1182,12 @@
       "split": "train",
       "file": "assets/vndb/shots/v13090_154661.jpg",
       "sha256": "c13774c36b15ed81f49d26f1af29e1bd1a02b2bf272baad9fd75a5c079dca778",
-      "bytes": 191014
+      "bytes": 191014,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v12424",
@@ -993,7 +1208,12 @@
       "split": "train",
       "file": "assets/vndb/shots/v12424_129921.jpg",
       "sha256": "c4e28252cde5d895dd37c27d192d5b65927d7dd6c40aa0524062162bc82008e2",
-      "bytes": 201410
+      "bytes": 201410,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v14415",
@@ -1014,7 +1234,17 @@
       "split": "train",
       "file": "assets/vndb/shots/v14415_106270.jpg",
       "sha256": "083470fc447b9fd77917404c137c3e8a8fd5e86e333782205e3b404928edc816",
-      "bytes": 145107
+      "bytes": 145107,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v1713",
@@ -1035,7 +1265,12 @@
       "split": "train",
       "file": "assets/vndb/shots/v1713_155282.jpg",
       "sha256": "19149891d8bb20aad0d08d8082e6e355a0ef0bb8561553f0b42664f6ae8b0515",
-      "bytes": 138638
+      "bytes": 138638,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v13632",
@@ -1056,7 +1291,17 @@
       "split": "train",
       "file": "assets/vndb/shots/v13632_101506.jpg",
       "sha256": "c7fad273611596e0e48961c6dd4583a9152a535a2aca2964090814157587e43c",
-      "bytes": 139640
+      "bytes": 139640,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v14534",
@@ -1077,7 +1322,12 @@
       "split": "train",
       "file": "assets/vndb/shots/v14534_75322.jpg",
       "sha256": "db948b80a7da22b244c39a14529ea0e43308731979a6196c7a37c272487040c6",
-      "bytes": 254159
+      "bytes": 254159,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v1199",
@@ -1098,7 +1348,17 @@
       "split": "train",
       "file": "assets/vndb/shots/v1199_122516.jpg",
       "sha256": "5e22d42684f23015fa84de3e580d2a6a23ce740ec80db45aa5256b62959e2903",
-      "bytes": 167610
+      "bytes": 167610,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v12402",
@@ -1119,7 +1379,12 @@
       "split": "train",
       "file": "assets/vndb/shots/v12402_109747.jpg",
       "sha256": "935a644b896c851bc9cc22b918e810290c97e56013705bba3b832803f81c4831",
-      "bytes": 134740
+      "bytes": 134740,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v14917",
@@ -1140,7 +1405,17 @@
       "split": "train",
       "file": "assets/vndb/shots/v14917_79135.jpg",
       "sha256": "3b1b84618a1d4a4ddbcd9b5791d34c1895093f16c351595b8db33dd7b06f7c90",
-      "bytes": 188974
+      "bytes": 188974,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v2835",
@@ -1161,7 +1436,17 @@
       "split": "train",
       "file": "assets/vndb/shots/v2835_96454.jpg",
       "sha256": "0440abb437c315fc543492b75c7347c72c71a8cba6402848e80fe5d3fd01ef4a",
-      "bytes": 164731
+      "bytes": 164731,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v12282",
@@ -1182,7 +1467,12 @@
       "split": "train",
       "file": "assets/vndb/shots/v12282_157058.jpg",
       "sha256": "4b5e13957d43bfe8e78b67e598a805549e5f4a10fb687a2a8d154cb59a5b82e1",
-      "bytes": 202459
+      "bytes": 202459,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v7679",
@@ -1203,7 +1493,17 @@
       "split": "train",
       "file": "assets/vndb/shots/v7679_74929.jpg",
       "sha256": "665cf1ed1ed98fe4ca13502ae570c21b4962afc196ca78ba29533456c991f4e7",
-      "bytes": 161893
+      "bytes": 161893,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v1281",
@@ -1224,7 +1524,17 @@
       "split": "dev",
       "file": "assets-dev/vndb/shots/v1281_189569.jpg",
       "sha256": "a20cf764f7f856cf02928555aebf5ddbd60e159191eb40f2eeabe4dfbfb92131",
-      "bytes": 87805
+      "bytes": 87805,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v1015",
@@ -1245,7 +1555,17 @@
       "split": "dev",
       "file": "assets-dev/vndb/shots/v1015_151320.jpg",
       "sha256": "ba7978ce7df37d0d09187ce47d736c80be50fa27467fd5d197b0cc2dfbb76591",
-      "bytes": 155270
+      "bytes": 155270,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     },
     {
       "vn": "v12178",
@@ -1266,7 +1586,12 @@
       "split": "dev",
       "file": "assets-dev/vndb/shots/v12178_127144.jpg",
       "sha256": "35575032aa5151391a0457b5d0007091a83e97a19b95449aa0f15cd56a7d3844",
-      "bytes": 195011
+      "bytes": 195011,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
     },
     {
       "vn": "v13766",
@@ -1287,8 +1612,33 @@
       "split": "dev",
       "file": "assets-dev/vndb/shots/v13766_88834.jpg",
       "sha256": "85e45bd221775840506629f7daa0b2fe0fc4383c5034ccfabfa596accd9a5732",
-      "bytes": 108172
+      "bytes": 108172,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
     }
   ],
-  "content_sha256": "9e3a5a68848317fc2fa0108b99ae945e682665bd9548068825619c121bdf407a"
+  "scenery_review": {
+    "date": "2026-10-11",
+    "source_manifest_sha256": "26ce34fa6e8beeaf16fee92ee4567321dc840e75d88c109fd53842f67b078f7d",
+    "method": "Visual review of all 40 native images; exclude menu/title/load/name-entry screens and restrict remaining scenery to upper 40 percent.",
+    "counts": {
+      "train:psp:approved": 12,
+      "train:psp:excluded": 4,
+      "dev:psp:approved": 3,
+      "dev:psp:excluded": 1,
+      "train:psv:approved": 9,
+      "train:psv:excluded": 7,
+      "dev:psv:approved": 3,
+      "dev:psv:excluded": 1
+    }
+  },
+  "content_sha256": "44255f75880fb2dc4a75c39bac07c8863518bc9938973409f42126b719416ea1"
 }

@@ -122,7 +122,7 @@ MAX_PAIR_ATTEMPTS = 500
 
 class Resources:
     def __init__(self, pool_limit=300_000, target_kana="", vocab=None, kanji_policy=None, kanji_pairs=False,
-                 crop_edge_jitter=False):
+                 crop_edge_jitter=False, background_manifest=None):
         self.vocab = load_vocab(vocab) if vocab else load_vocab()
         self.vocab_set = set(self.vocab)
         self.kanji_policy = load_policy(kanji_policy) if kanji_policy else None
@@ -165,6 +165,9 @@ class Resources:
             return not is_test_vn(vn) and vn not in exclude and p.name not in exclude
         self.bg_vita = [p for p in sorted((DATA / "vndb" / "shots").glob("*.jpg")) if usable(p)]
         self.bg_psp = [p for p in sorted((DATA / "vndb_psp" / "shots").glob("*.jpg")) if usable(p)]
+        self.bg_boxes = {}
+        if background_manifest:
+            self.bg_vita, self.bg_psp, self.bg_boxes = reviewed_backgrounds(DATA, background_manifest)
         self.katakana = [c for c in self.vocab if 0x30A1 <= ord(c) <= 0x30FA and c not in "ヵヶヮ"]
         self.hiragana = [c for c in self.vocab if 0x3041 <= ord(c) <= 0x3093 and c not in "ゎゐゑ"]
         freq = json.loads((DATA / "corpus" / "char_freq.json").read_text(encoding="utf-8"))
@@ -522,13 +525,43 @@ def shift(m, dx, dy):
     return out
 
 
-def load_bg(path, scale):
-    key = (str(path), round(scale, 2))
+def reviewed_backgrounds(data, manifest):
+    """Bind this asset cohort to reviewed native scenery and reject unpinned files."""
+    sys.path.insert(0, str(HERE.parent))
+    from data.fresh_backgrounds import sha256, validate_manifest
+
+    data = Path(data).resolve()
+    doc = validate_manifest(json.loads(Path(manifest).read_text(encoding="utf-8")))
+    if doc["schema"] != 2 or data.name not in ("assets", "assets-dev"):
+        raise ValueError("reviewed backgrounds require schema2 and an explicit asset cohort")
+    split = "train" if data.name == "assets" else "dev"
+    paths, boxes, expected = {"psv": [], "psp": []}, {}, set()
+    for row in doc["records"]:
+        if row["split"] != split:
+            continue
+        path = (data.parent / row["file"]).resolve()
+        if sha256(path) != row["sha256"] or path.stat().st_size != row["bytes"]:
+            raise ValueError(f"background identity changed: {path}")
+        expected.add(path)
+        if row["scenery_box"] is not None:
+            paths[row["platform"]].append(path)
+            boxes[path] = tuple(row["scenery_box"])
+    actual = {p.resolve() for folder in ("vndb", "vndb_psp")
+              for p in (data / folder / "shots").glob("*.jpg")}
+    if actual != expected:
+        raise ValueError("asset cohort contains missing or unbound screenshot backgrounds")
+    return paths["psv"], paths["psp"], boxes
+
+
+def load_bg(path, scale, box=None):
+    key = (str(path), round(scale, 2), box)
     im = _BG.get(key)
     if im is None:
         if len(_BG) > 40:
             _BG.clear()
         pil = Image.open(path).convert("RGB")
+        if box is not None:
+            pil = pil.crop(box)
         if scale != 1.0:
             pil = pil.resize((max(1, int(pil.width * scale)), max(1, int(pil.height * scale))),
                              Image.BILINEAR)
@@ -538,9 +571,10 @@ def load_bg(path, scale):
 
 
 def background(rng, w, h, platform):
-    """Scene behind the box: a crop of the upper part of a training-side screenshot,
-    or a synthetic gradient with blobs. Screenshot crops avoid the lower 38% of the
-    screen, where the screenshot's own dialogue text usually is."""
+    """Scene from an approved patch that fits the whole region, or synthetic blobs.
+
+    Legacy unreviewed assets use the upper 62 percent, with the same fit guard.
+    """
     if rng.random() < 0.85:
         if platform != "vita" and R.bg_psp and rng.random() < 0.75:
             path, base = R.bg_psp[rng.integers(len(R.bg_psp))], 1.0
@@ -550,11 +584,13 @@ def background(rng, w, h, platform):
             path = None
         if path is not None:
             try:
-                im = load_bg(path, base * round(float(rng.uniform(1.0, 1.4)), 1))
+                box = getattr(R, "bg_boxes", {}).get(path)
+                im = load_bg(path, base * round(float(rng.uniform(1.0, 1.4)), 1), box)
                 H, W = im.shape[:2]
-                if W >= w and H >= h:
+                safe_h = H if box is not None else int(0.62 * H)
+                if W >= w and safe_h >= h:
                     x0 = int(rng.integers(0, W - w + 1))
-                    ymax = max(0, min(H - h, int(0.62 * H) - h))
+                    ymax = safe_h - h
                     y0 = int(rng.integers(0, ymax + 1))
                     arr = im[y0:y0 + h, x0:x0 + w].astype(np.float32)
                     return arr[:, ::-1].copy() if rng.random() < 0.5 else arr
@@ -1405,9 +1441,17 @@ def crop_meta(meta, L, dark=0, inverted=False):
 
 
 def init(pool_limit=300_000, target_kana="", vocab=None, kanji_policy=None, kanji_pairs=False,
-         crop_edge_jitter=False):
+         crop_edge_jitter=False, background_manifest=None):
     global R
-    R = Resources(pool_limit, target_kana, vocab, kanji_policy, kanji_pairs, crop_edge_jitter)
+    R = Resources(pool_limit, target_kana, vocab, kanji_policy, kanji_pairs, crop_edge_jitter, background_manifest)
+
+
+def crop_ctc_feasible(shape, label):
+    """Match FL10's height-32 resize, width cap and stride-8 output sequence."""
+    h, w = shape
+    width = max(8, min(1024, round(w * 32 / h)))
+    needed = len(label) + sum(a == b for a, b in zip(label, label[1:]))
+    return bool(label) and math.ceil(width / 8) >= needed
 
 
 def pair_schedule(rng, n_pairs, bands):
@@ -1473,6 +1517,8 @@ def run_shard(job):
         got = extract(img, layout, ink, finder, rng, invert, edge_jitter=R.crop_edge_jitter)
         regions += 1
         for g, label, _, L, dark in got or []:
+            if not crop_ctc_feasible(g.shape, label):
+                continue
             if R.target_kana and not any(c in label for c in R.target_kana):
                 continue
             if R.active_kanji and R.active_kanji not in label:
@@ -1573,6 +1619,7 @@ def main():
     ap.add_argument("--kanji-pairs", action="store_true", help="balanced similar-kanji natural contexts in shards")
     ap.add_argument("--crop-edge-jitter", action="store_true", help="vary spare crop margins; keep labelled ink")
     ap.add_argument("--vocab", type=Path, help="exact restored model vocabulary")
+    ap.add_argument("--background-manifest", type=Path, help="reviewed native scenery rectangles and source hashes")
     args = ap.parse_args()
     if args.target_report:
         args.target_kana = development_kana(args.target_report)
@@ -1580,7 +1627,8 @@ def main():
         ap.error("--kanji-pairs requires shards mode")
     cv2.setNumThreads(1)
     init(target_kana=args.target_kana, vocab=args.vocab, kanji_policy=args.kanji_policy,
-         kanji_pairs=args.kanji_pairs, crop_edge_jitter=args.crop_edge_jitter)
+         kanji_pairs=args.kanji_pairs, crop_edge_jitter=args.crop_edge_jitter,
+         background_manifest=args.background_manifest)
     print(f"fonts {len(R.fonts)} in {sorted(R.by_cat)}, bg vita {len(R.bg_vita)} psp {len(R.bg_psp)}, "
           f"vocab {len(R.vocab)}", flush=True)
     if args.mode == "preview":

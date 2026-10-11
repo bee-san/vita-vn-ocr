@@ -108,6 +108,7 @@ def test_renderer_flags_are_forwarded_to_existing_renderer(tmp_path, monkeypatch
                         lambda root, split, arguments, bg=None: calls.append((root, split, arguments)))
     monkeypatch.setattr(sys, "argv", ["fresh_dataset.py", "render", "--root", str(tmp_path),
                                     "--vocab", "vocab.txt", "--kanji-policy", "policy.json",
+                                    "--background-manifest", "backgrounds.json",
                                     "--kanji-pairs", "--crop-edge-jitter", "--finder", "grad",
                                     "--out", "kanji", "--shards", "3", "--per-shard", "500",
                                     "--workers", "2", "--seed", "20261014"])
@@ -115,6 +116,7 @@ def test_renderer_flags_are_forwarded_to_existing_renderer(tmp_path, monkeypatch
     root, split, arguments = calls[0]
     assert root == tmp_path and split == "train"
     assert arguments[arguments.index("--kanji-policy") + 1] == "policy.json"
+    assert arguments[arguments.index("--background-manifest") + 1] == "backgrounds.json"
     assert arguments[arguments.index("--seed") + 1] == "20261014"
     assert "--kanji-pairs" in arguments and "--crop-edge-jitter" in arguments
     assert arguments[arguments.index("--finder") + 1] == "grad"

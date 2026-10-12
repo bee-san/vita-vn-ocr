@@ -16,8 +16,8 @@ Own options: --ppsspp PATH ($PPSSPP, default psp/tools/ppsspp/PPSSPPHeadless), -
 --cpu jit|ir|interp (PPSSPP's CPU core, default jit), --clock MHz (default 333), --stack-kb N,
 --stats OUT.json (the app's stats.json), --keep DIR (keep the app directory there).
 
-Every call boots the EBOOT once, in a fresh memory stick ($HOME/.ppsspp of a temporary HOME),
-from ms0:/PSP/GAME/VOCR/, exactly the layout on a PSP. The texts, logits and preprocessed
+Every call boots the EBOOT once, with a private directory mounted on host0: through
+PPSSPP's --root option. The caller's HOME and memory stick are preserved. The texts, logits and preprocessed
 inputs are what the PSP build of vocr.c computed. The ms/line it prints is PPSSPP's emulated
 time: PPSSPP charges about one cycle per MIPS instruction, with no cache or pipeline model, so
 it is not the console's speed.
@@ -120,10 +120,10 @@ def make_cfg(a):
 
 
 def boot(a, home, app):
-    """Boot app/EBOOT.PBP in PPSSPPHeadless with HOME=home; returns (results.txt, log)."""
-    env = dict(os.environ, HOME=str(home))
-    cmd = [a.ppsspp, CPU[a.cpu], f"--timeout={a.timeout:g}", str(app / "EBOOT.PBP")]
-    p = subprocess.run(cmd, env=env, stdin=subprocess.DEVNULL, capture_output=True,
+    """Boot in an explicit private host0: mount; preserve the user's environment."""
+    cmd = [a.ppsspp, CPU[a.cpu], "--root", str(home), f"--timeout={a.timeout:g}",
+           str(app / "EBOOT.PBP")]
+    p = subprocess.run(cmd, cwd=app, stdin=subprocess.DEVNULL, capture_output=True,
                        timeout=a.timeout + 120)
     log = p.stdout.decode("utf-8", "replace") + p.stderr.decode("utf-8", "replace")
     res = (app / "results.txt").read_text("utf-8", "replace") if (app / "results.txt").exists() else ""

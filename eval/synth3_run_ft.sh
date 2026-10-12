@@ -9,7 +9,7 @@ OUT=$A/synth3/ablation/runs
 VOCAB=$A/train2/release/FL10_vocab_3500.txt
 NV="nv:0.25:$A/nvsynth/shards/nv_train_0*.npz:stream=1,pool=3,inv=0.2"
 S2G="$A/synth2/shards/synth_000[0-2]?.npz+$A/synth2/shards/synth_0003[0-8].npz"
-S3G="$A/synth3/shards/train/synth3_000??.npz"
+S3G="$A/synth3/shards/train_v2/synth3_000??.npz"
 case $ARM in
   A_s2)  SYN=(--src "s2:0.25:$S2G:stream=1,pool=3,inv=0.2") ;;
   B_s3)  SYN=(--src "s3:0.25:$S3G:stream=1,pool=3,inv=0.2") ;;

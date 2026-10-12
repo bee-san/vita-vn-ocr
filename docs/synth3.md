@@ -6,21 +6,29 @@ visual-novel dialogue, names, choices and UI as the PS Vita and PSP show them, i
 no source document with training. It is meant to replace synth2 as the VN-style source in
 train2's mixture, or to be mixed with it. The generator is `synth/synth3.py`.
 
-**Status (2026-10-12 17:30Z).**
-- **Study 1 (frozen ablation, short recipe): the mix of synth2 and synth3 is the best VN-style
-  synthetic data.** FL10 models pretrained for 16,000 steps on NVIDIA crops plus synth2 (A),
-  synth3 (B) or half of each (C), two seeds per arm, through the C runtime (W8I) on the
-  development cohort teacher_val (1,651 real lines, 181 VNs):
-  - C − A = −0.51 points of CER (VN-cluster 95% CI −0.77 to −0.26), C − B = −0.49 (CI −0.74 to
-    −0.25), both seeds below zero in both. C beats both, so under the protocol's rule the mix
-    (synth2 0.25 + synth3 0.25) is the recommended VN-style synthetic data.
-  - synth3 alone is level with synth2 (B − A = −0.01, CI −0.34 to +0.30).
-  - On the protected test sets (scored once, after the decision was committed) the three arms
-    are within noise of each other: pooled C − A = −0.16 (CI −0.62 to +0.26).
+**Status (2026-10-12 21:30Z).**
+- **Study 1 (frozen ablation, short recipe): under the protocol's rule the mix of synth2 and
+  synth3 is the recommended VN-style synthetic data.** FL10 models pretrained for 16,000 steps on
+  NVIDIA crops plus synth2 (A), synth3 (B) or half of each (C), two seeds per arm, read through the
+  C runtime (W8I) on the development cohort teacher_val (1,651 real lines, 181 VNs):
+  - C − A = −0.51 points of CER (VN-cluster 95% CI −0.76 to −0.26) and C − B = −0.49 (CI −0.74
+    to −0.25), with both seeds below zero in both comparisons.
+  - The gain is measured on teacher_val's PC/console screenshots scaled to console size (64% of
+    its lines: C − A −0.70, CI −1.02 to −0.39). On its 587 native Vita and PSP lines no arm
+    separates from another (C − A −0.09, CI −0.53 to +0.31).
+  - synth3 alone shows no measured difference from synth2 (B − A −0.01, CI −0.34 to +0.30).
+  - On the protected test sets (scored once, after the decision was committed) no comparison is
+    resolved: pooled C − A −0.16 (CI −0.62 to +0.26), B − A −0.12, C − B −0.04 (console
+    polarity).
+- **Secondaries (exploratory, one seed each).** After a 5,000-step real fine-tune the mix still
+  leads (ft C − ft A −0.32, CI −0.57 to −0.08), with half the pre-fine-tune gap. At H15 width
+  synth3 alone beats synth2 (−0.52, CI −0.80 to −0.25), also on the native lines (−0.38, CI
+  −0.70 to −0.10).
 - **Study 2 (full release recipe) is running** under its own frozen protocol
   (`eval/synth3_study2_protocol.json`): nvsynth's every-line set, train2's pretrain lengths and
-  the real fine-tune, A against C at FL10 (3 seeds) and H15 (2 seeds), plus a synth3 learning
-  curve (0.25M to 2M crops) and a pretrain-length curve. No study-2 result yet.
+  the real fine-tune (on pools without CLANNAD and its family), A against C at FL10 (3 seeds) and
+  H15 (2 seeds), plus a synth3 learning curve (0.25M to 2M crops) and a pretrain-length curve. No
+  study-2 result yet.
 
 Commit hashes cited in this document, the protocols and the result files refer to the branch's
 history before it was rebased onto main; that history, with its original commit times, is kept at
@@ -70,14 +78,17 @@ area-scaled to a console resolution (teacher's `hires` kind). synth2 has no such
 
 `synth/synth3_mine.py` read 3,339 training-side real lines with the released int8 blobs through
 the C runtime (W8I). The pools are teacher_distill_train and realdata's real_unlabelled
-(training-split games only, never a teacher_val, test or development VN), and a line counts only
+(training-split games only; no teacher_val or test VN), and a line counts only
 when PP-OCRv6 small reads it with lowest character confidence at least 0.9 and another reader
 agrees. These are consensus references, not hand labels, and part of this pool was a
-pseudo-label source in train2's fine-tune.
+pseudo-label source in train2's fine-tune. The miner's forbid list held teacher_val's 181 VNs but
+not yet the nine general-VN and CLANNAD development VNs, so 26 of the 3,339 lines come from six of
+those (v1015, v1281, v12775, v13766, v5154, v5297); they are 0.8% of the lines behind the focus
+weights.
 
 | stratum | lines | FL10 CER | H15 CER |
 |---|---|---|---|
-| all | 3,339 | 2.56% | 1.25% |
+| all | 3,339 | 2.56% | 1.24% |
 | 1-4 characters | 1,182 | 5.03% | 2.78% |
 | name-like | 1,368 | 5.61% | 3.16% |
 | 25+ characters | 320 | 1.98% | 0.72% |
@@ -87,9 +98,12 @@ pseudo-label source in train2's fine-tune.
 | Latin letters and digits (by character) | 295 chars | 18.0% | 9.8% |
 | kanji / katakana / hiragana (by character) | | 3.6% / 3.3% / 1.1% | 1.7% / 1.6% / 0.3% |
 
-The most frequent substitutions are dakuten and handakuten (バ→パ, プ→ブ, ペ→ベ, ば→は, が→か,
-じ→し, ず→す), small kana (っ→つ, ゃ→や), 『』→「」, ー/一, and dropped edge punctuation (」、。…！).
-Short crops have about twice the CER of long ones, for both models.
+The most frequent single error of both models is an inserted ― (16 for FL10, 22 for H15). The
+most frequent substitutions are dakuten and handakuten (バ→パ, プ→ブ, ペ→ベ, ば→は, が→か, じ→し,
+ず→す), small kana (っ→つ, ゃ→や), 『』→「」, ー/一, and dropped edge punctuation (」、。…！). Some of
+H15's top kanji "substitutions" are Chinese variants outside `data/vocab.txt` in the consensus
+references (值→値, 歷→歴, 擊→撃, 錄→録): reference artifacts counted as model errors. Crops of 1-4
+characters have 2.5x (FL10) and 3.9x (H15) the CER of crops of 25 or more.
 
 ### Design
 
@@ -107,7 +121,7 @@ Short crops have about twice the CER of long ones, for both models.
 | crops | half the regions: the labelled ink (fill, outline, shadow, attached furigana) plus 4 px (Vita) / 2 px (PSP) like eval's and teacher's boxes, 55% with an extra margin up to 0.12-0.24 x ink height per side; the other half: the console's GRAD finder (`common.find_lines_ex`, the twin of `runtime/vocr_lines.c`) matched to one rendered line | eval crops are ink + 4/2 px, teacher crops are looser, the console reads GRAD boxes |
 | polarity | stored as the console hands crops over: dark text inverted by `common.line_dark` | teacher and realdata store real crops the same way |
 | layouts | synth2's ADV / band / NVL / balloon / choice / bare, plus VN UI menus and buttons (セーブ, オート, Q.LOAD, タイトルに戻る, 第三章, 4月1日（月）), tighter line pitch (from 1.12 em) so crop edges catch neighbouring lines, more translucent boxes and name plates, ruby 15% (Vita) / 20% (PSP), cursors 33%, typewriter lines 8% (fading glyphs labelled only at alpha 0.5 or more) | real crops include UI and cut neighbours; real edge busyness 21.6 against synth2's 16.5 |
-| scenes | crops of the upper 62% of 6,260 training-split screenshots (synth2's list plus realdata's Vita, PSP and PC shots) from 1,185 VNs, else synth2's procedural scenes | synth2's scene list held 22 of teacher_val's 181 VNs; synth3 drops every development VN |
+| scenes | crops of the upper 62% of training-split screenshots (synth2's list plus realdata's Vita, PSP and PC shots; version 2: 5,238 screenshots of 1,182 VNs, version 1: 6,260 of 1,185), else synth2's procedural scenes | synth2's scene list holds 22 of teacher_val's 181 VNs and 110 of its screenshots; synth3 drops every development VN |
 
 ## Dataset
 
@@ -125,9 +139,9 @@ Short crops have about twice the CER of long ones, for both models.
   なりきり posts). The owner uses the recognizer privately and accepts non-commercial sources;
   nothing is redistributed.
 - Names: 102,536 VNDB character names (dump of 2026-10-12, ODbL / DbCL) after dropping 24,331
-  characters that appear in any of 362 reserved VNs (eval's 172 test and family VNs, every
-  is_test_vn VN, teacher_val's 181 VNs and the general-VN / CLANNAD development VNs), plus 300,000
-  SyosetuNames (ODC-BY).
+  characters that appear in a reserved VN: the 362 listed ones (eval's 172 test and family VNs,
+  teacher_val's 181 VNs and the 9 general-VN / CLANNAD development VNs) and every is_test_vn VN;
+  plus 300,000 SyosetuNames (ODC-BY).
 - Scenes (version 2): upper 62% of training-split screenshots whose text lines are known
   (realdata's line boxes, linefind's detections), and only patches that touch none of them.
 - Vocabulary: `data/vocab.txt` (5,354 classes); lines with any other character are dropped
@@ -139,7 +153,7 @@ Short crops have about twice the CER of long ones, for both models.
 |---|---|---|---|---|---|
 | version 1 (superseded before any scoring) | version 1 | 1,000,000 | 100 | 5.95 GB | `data/manifests/synth3_shards_20261012.json` |
 | **version 2 (the ablations' s3)** | version 2 | 1,000,000 | 100 | 5,517,419,265 B | `data/manifests/synth3_shards_v2.json` |
-| version 2 extension (learning curve's 2M point) | version 2, shards 100-199 | 1,000,000 | 100 | | `data/manifests/synth3_shards_v2_ext.json` |
+| version 2 extension (learning curve's 2M point) | version 2, shards 100-199 | 1,000,000 | 100 | 5,520,646,261 B | `data/manifests/synth3_shards_v2_ext.json` |
 | version 2 development split (`dev_v2`) | version 2, `--split dev` | 20,000 | 2 | | not pinned; never trained on |
 
 - Version 2: seed 20261012, `--profile personal`, 315 font files under 110 family names (the loader
@@ -170,8 +184,11 @@ teacher misread; the worst crops are then read by eye.
 - Version 2 removes both causes: scenes are cut only from screenshots with known text boxes and
   avoid them, ink columns come from each line's own glyph extent, and a GRAD box must hold and hug
   exactly one labelled line (`tests/test_synth3.py` checks the matcher).
-- The 36 worst version-2 crops were all teacher misreads of hard renders (pixel, pen and tiny
-  fonts, rare-kanji names); no generator fault was seen.
+- Of the 36 worst version-2 crops, 32 are teacher misreads of legible hard renders (pixel, pen
+  and tiny fonts, rare-kanji names). Four cannot be read from their pixels (a washed-out
+  pixel-font name, a blurred two-kanji name, a smudged 【雫】 and a name whose last two kanji are
+  scattered dots; found by the independent audit at 4x zoom): for those the image does not
+  support the label. The rate of such crops across the set was not measured.
 - Metadata over 100,000 crops of each version (`meta_check.py`, the same definitions for both):
 
 | fault | version 1 | version 2 |
@@ -201,9 +218,11 @@ looser definition. Both definitions show the same drop.
 | ！ / ？ per 1,000 characters | 6.8 / 6.8 | 1.7 / 3.2 | 6.1 / 8.9 | 6.2 / 9.1 |
 | 」 per 1,000 characters | 16.1 | 12.1 | 9.6 | 9.3 |
 
-synth3 matches the real text distribution (lengths, names, punctuation, character KL halved) and
-the PSP geometry and polarity. Gaps that remain, and that a version 3 targets (stacked work, not
-in these ablations):
+synth3 is close to the real text distribution in label lengths, name share and characters (KL
+halved), and matches the PSP crop heights and the share of dark text. It does not match all
+punctuation (？ 9.1 against 6.8 per 1,000 characters, 」 9.3 against 16.1, ～ 0.58 against 1.32)
+or the PSP margins (p50 top / bottom / left / right .19 / .20 / .20 / .20 against real
+.14 / .21 / .17 / .25). Gaps that a version 3 targets (separate work, not in these ablations):
 - Vita crops are too tall and too tight; real crops have more margin, mostly below and to the
   right.
 - Backgrounds are too clean (edge busyness 13.9 against 21.6).
@@ -220,88 +239,140 @@ through the C runtime (W8I) on teacher_val in both polarities (`rv` as stored, `
 polarity), errors summed over seeds and views; VN-cluster paired bootstraps with 10,000
 resamples (`eval/synth3_ablation.py`). The decision rule was fixed in advance. All six runs trained
 together, 14:54-16:21Z, on a 32-core EPYC 9R14 box (5 threads each); result
-`eval/synth3_ablation_20261012.json`.
+`eval/synth3_ablation_20261012.json`. The tables below are rounded once from the stored per-line
+errors (`eval/reproducibility/synth3-20261012/doc_tables.py`); the result JSON rounds deltas to
+3 decimals first, so a last digit can differ.
 
 | run | rv | rvn |
 |---|---|---|
 | A_s2_seed1 | 5.88% | 5.81% |
 | A_s2_seed2 | 5.56% | 5.50% |
 | B_s3_seed1 | 5.67% | 5.62% |
-| B_s3_seed2 | 5.73% | 5.67% |
+| B_s3_seed2 | 5.72% | 5.67% |
 | C_mix_seed1 | 5.09% | 5.12% |
 | C_mix_seed2 | 5.26% | 5.25% |
 
 | comparison | CER X → Y | Y − X, points (VN-cluster 95% CI) | line CI | seed 1 | seed 2 | VNs better / worse / equal | decision |
 |---|---|---|---|---|---|---|---|
-| B_s3 vs A_s2 | 5.69% → 5.67% | −0.01 (−0.34 to +0.30) | −0.24 to +0.22 | −0.20 | +0.17 | 69 / 70 / 42 | no decision |
-| C_mix vs A_s2 | 5.69% → 5.18% | **−0.51 (−0.77 to −0.26)** | −0.72 to −0.29 | −0.74 | −0.27 | 96 / 40 / 45 | **C better** |
+| B_s3 vs A_s2 | 5.69% → 5.67% | −0.01 (−0.34 to +0.30) | −0.25 to +0.22 | −0.20 | +0.17 | 69 / 70 / 42 | no decision |
+| C_mix vs A_s2 | 5.69% → 5.18% | **−0.51 (−0.76 to −0.26)** | −0.72 to −0.30 | −0.74 | −0.27 | 96 / 40 / 45 | **C better** |
 | C_mix vs B_s3 | 5.67% → 5.18% | **−0.49 (−0.74 to −0.25)** | −0.70 to −0.29 | −0.54 | −0.44 | 88 / 47 / 46 | **C better** |
 
 C beats both A and B, so under the protocol the mix is the recommended VN-style synthetic data.
 
 Strata (reported, not decided; teacher_val's own metadata; VN-cluster intervals; CER is errors
-over both views and both seeds):
+over both views and both seeds; 54 intervals without multiplicity control):
 
 | stratum | lines | A_s2 | B_s3 | C_mix | B − A | C − A | C − B |
 |---|---|---|---|---|---|---|---|
-| target Vita | 972 | 4.70% | 4.69% | 4.12% | −0.01 (−0.37 to +0.35) | −0.57 (−0.89 to −0.28) | −0.57 (−0.88 to −0.27) |
-| target PSP | 679 | 7.12% | 7.09% | 6.71% | −0.03 (−0.53 to +0.43) | −0.41 (−0.85 to +0.00) | −0.38 (−0.76 to −0.01) |
+| target Vita | 972 | 4.70% | 4.69% | 4.12% | −0.00 (−0.37 to +0.35) | −0.57 (−0.89 to −0.28) | −0.57 (−0.88 to −0.27) |
+| target PSP | 679 | 7.11% | 7.09% | 6.71% | −0.03 (−0.53 to +0.43) | −0.41 (−0.85 to +0.00) | −0.38 (−0.76 to −0.01) |
 | native Vita | 161 | 2.95% | 2.86% | 2.61% | −0.09 (−1.48 to +0.77) | −0.34 (−1.46 to +0.39) | −0.25 (−0.57 to +0.17) |
-| native PSP | 426 | 3.26% | 3.46% | 3.27% | +0.20 (−0.30 to +0.71) | +0.01 (−0.42 to +0.46) | −0.19 (−0.54 to +0.17) |
-| PC/console shot scaled | 1,064 | 6.88% | 6.80% | 6.17% | −0.07 (−0.50 to +0.33) | −0.70 (−1.02 to −0.39) | −0.63 (−0.95 to −0.30) |
-| bright on dark | 1,050 | 4.50% | 4.52% | 4.03% | +0.03 (−0.29 to +0.33) | −0.47 (−0.78 to −0.18) | −0.50 (−0.76 to −0.26) |
-| dark on light | 601 | 7.63% | 7.54% | 7.07% | −0.09 (−0.70 to +0.51) | −0.56 (−0.99 to −0.16) | −0.48 (−0.92 to −0.01) |
-| ink under 14 px | 484 | 12.62% | 12.46% | 11.67% | −0.17 (−0.98 to +0.57) | −0.95 (−1.62 to −0.34) | −0.79 (−1.47 to −0.12) |
-| ink 14-19 px | 760 | 3.61% | 3.60% | 3.30% | −0.00 (−0.38 to +0.36) | −0.31 (−0.63 to −0.00) | −0.31 (−0.59 to −0.03) |
-| ink 20-27 px | 363 | 3.08% | 3.22% | 2.70% | +0.14 (−0.32 to +0.56) | −0.38 (−0.76 to −0.05) | −0.52 (−0.88 to −0.16) |
-| ink 28 px and taller | 44 | 3.85% | 3.50% | 2.78% | −0.35 (−2.37 to +1.41) | −1.07 (−3.82 to +1.13) | −0.71 (−1.92 to +0.85) |
-| 1-4 characters | 608 | 16.61% | 15.39% | 15.13% | −1.22 (−2.79 to +0.19) | −1.48 (−2.73 to −0.28) | −0.26 (−1.29 to +0.77) |
+| native PSP | 426 | 3.26% | 3.46% | 3.27% | +0.20 (−0.30 to +0.72) | +0.01 (−0.42 to +0.46) | −0.19 (−0.54 to +0.17) |
+| native Vita + PSP (not a protocol stratum) | 587 | | | | +0.11 (−0.39 to +0.58) | −0.09 (−0.53 to +0.31) | −0.20 (−0.47 to +0.08) |
+| PC/console shot scaled | 1,064 | 6.88% | 6.80% | 6.17% | −0.08 (−0.50 to +0.33) | −0.70 (−1.02 to −0.39) | −0.63 (−0.95 to −0.30) |
+| bright on dark | 1,050 | 4.49% | 4.53% | 4.03% | +0.03 (−0.29 to +0.33) | −0.47 (−0.78 to −0.18) | −0.50 (−0.76 to −0.26) |
+| dark on light | 601 | 7.63% | 7.54% | 7.07% | −0.09 (−0.70 to +0.51) | −0.57 (−0.99 to −0.16) | −0.48 (−0.92 to −0.01) |
+| ink under 14 px | 484 | 12.62% | 12.46% | 11.67% | −0.17 (−0.98 to +0.57) | −0.95 (−1.63 to −0.34) | −0.78 (−1.47 to −0.12) |
+| ink 14-19 px | 760 | 3.61% | 3.61% | 3.30% | −0.00 (−0.38 to +0.36) | −0.31 (−0.63 to −0.00) | −0.31 (−0.59 to −0.03) |
+| ink 20-27 px | 363 | 3.08% | 3.22% | 2.70% | +0.13 (−0.32 to +0.56) | −0.38 (−0.76 to −0.05) | −0.52 (−0.88 to −0.16) |
+| ink 28 px and taller | 44 | 3.85% | 3.50% | 2.78% | −0.36 (−2.37 to +1.41) | −1.07 (−3.82 to +1.13) | −0.71 (−1.92 to +0.85) |
+| 1-4 characters | 608 | 16.61% | 15.39% | 15.13% | −1.22 (−2.79 to +0.19) | −1.47 (−2.73 to −0.28) | −0.26 (−1.29 to +0.77) |
 | 5-12 characters | 453 | 6.22% | 6.05% | 5.89% | −0.17 (−0.67 to +0.33) | −0.33 (−0.83 to +0.16) | −0.16 (−0.71 to +0.37) |
-| 13+ characters | 590 | 3.89% | 4.10% | 3.48% | +0.21 (−0.13 to +0.53) | −0.41 (−0.66 to −0.18) | −0.63 (−0.90 to −0.37) |
+| 13+ characters | 590 | 3.89% | 4.10% | 3.47% | +0.21 (−0.13 to +0.53) | −0.41 (−0.66 to −0.18) | −0.63 (−0.89 to −0.37) |
 | name-like | 710 | 15.74% | 14.65% | 14.08% | −1.09 (−2.32 to −0.01) | −1.66 (−2.76 to −0.61) | −0.57 (−1.46 to +0.35) |
 | dakuten / small kana | 831 | 4.41% | 4.43% | 3.93% | +0.02 (−0.33 to +0.34) | −0.48 (−0.74 to −0.24) | −0.50 (−0.75 to −0.25) |
 | rare kanji | 116 | 7.28% | 6.95% | 6.87% | −0.33 (−1.60 to +0.78) | −0.41 (−1.64 to +0.70) | −0.08 (−0.87 to +0.71) |
-| Latin / digits | 62 | 10.09% | 11.06% | 10.12% | +0.97 (−0.90 to +2.08) | +0.03 (−2.14 to +1.41) | −0.94 (−2.71 to +0.50) |
+| Latin / digits | 62 | 10.09% | 11.06% | 10.12% | +0.97 (−0.90 to +2.08) | +0.03 (−2.14 to +1.41) | −0.94 (−2.70 to +0.50) |
 
 What this says:
-- The mix helps nearly everywhere at once: both targets, both polarities, every ink height up to
+- The mix's gain is measured on the 64% of teacher_val that is PC/console screenshots scaled to
+  console size (C − A −0.70, CI −1.02 to −0.39). On the native Vita and PSP captures no arm
+  separates from another: C − A −0.09 (CI −0.53 to +0.31) on their 587 lines together. The
+  native development cohort (devnative) is what can test the gain on console text.
+- Within the scaled shots and the Vita target the mix helps across polarities, ink heights up to
   27 px, short and long lines, names and dakuten/small kana. One explanation, not tested: the
-  diversity of two generators with different fonts, layouts and text, rather than any single
-  synth3 feature.
-- synth3 alone helps where it was aimed, names and short crops (name-like −1.09, CI −2.32 to
-  −0.01), but is slightly worse on long lines (+0.21, CI −0.13 to +0.53) and Latin, and level
-  with synth2 overall.
-- The gain is clearest on Vita targets and scaled PC shots; native PSP crops are level in every
-  pair.
+  diversity of two generators with different fonts, layouts and text.
+- synth3 alone shows no measured difference from synth2 overall. Of its strata, only name-like
+  excludes 0, and only just (−1.09, CI −2.32 to −0.01); 1-4 characters is −1.22 (CI −2.79 to
+  +0.19); long lines (+0.21) and Latin (+0.97) are not resolved either way.
 - 40 of 181 VNs are worse under C than A; the largest per-VN regressions are on VNs with 8-189
   characters (no per-VN veto; listed in the result JSON).
+
+**Overlap with synth2's scenes.** synth2's background list (which arms A and C use, and B does
+not) holds 110 of teacher_val's own screenshots (253 of its lines) and 22 of its VNs (311 lines).
+The protocol's note that teacher_val shares no screenshot with any training pool is therefore
+wrong for synth2's scenes, which crop the upper 62% of those screenshots (the protocol file is left
+unchanged because the result pins its sha256). The overlap favours the arms with more synth2, so
+it works against the reported gain. Without the 22 VNs (the audit's sensitivity check, protocol
+statistics): C − A −0.56 (CI −0.85 to −0.29), C − B −0.53 (CI −0.82 to −0.24), B − A −0.03 (CI
+−0.41 to +0.33); the decision stands. Study 2 inherits the overlap: both its arms use synth2.
 
 ### Study 1 on the protected test sets (reported only)
 
 After the decision and result were committed (6803fd9), every primary export was scored once on
-vita-test (206 lines, 16 games) and psp-test (245 lines, 14 games) with `eval/run.py --model
-vocr:BLOB` (W8I), in console and native polarity, and summarised by
-`eval/synth3_test_report.py` (`eval/synth3_ablation_test_20261012.json`). The released FL10
-(`FL10_w8.vocr`, v0.2.0) was scored the same way as a reference: it reproduces its published
-2.30% / 5.18% in native polarity. These numbers cannot change the decision.
+vita-test (206 lines, 16 games) and psp-test (245 lines, 14 games; 28 distinct VNs in the pooled
+cluster bootstrap) with `eval/run.py --model vocr:BLOB` (W8I), in console and native polarity,
+and summarised by `eval/synth3_test_report.py` (`eval/synth3_ablation_test_20261012.json`). The
+released FL10 (`FL10_w8.vocr`, v0.2.0) was scored the same way as a reference: it reproduces its
+published 2.30% / 5.18% in native polarity. These numbers cannot change the decision.
 
-| console polarity | vita-test CER / exact | psp-test CER / exact | pooled |
+| arm (2 seeds) | console: vita-test | console: psp-test | console: pooled | native: vita-test | native: psp-test | native: pooled |
+|---|---|---|---|---|---|---|
+| A_s2 | 3.32% | 6.18% | 4.73% | 3.35% | 6.22% | 4.77% |
+| B_s3 | 2.94% | 6.31% | 4.61% | 2.89% | 6.10% | 4.47% |
+| C_mix | 2.96% | 6.22% | 4.57% | 3.02% | 6.31% | 4.65% |
+| reference: released FL10 (32k pretrain + fine-tune) | 2.38% | 5.30% | 3.82% | 2.30% | 5.18% | 3.72% |
+
+| difference, points (VN-cluster CI) | vita-test | psp-test | pooled |
 |---|---|---|---|
-| A_s2 (2 seeds) | 3.31% / 72.8% | 6.17% / 66.5% | 4.73% |
-| B_s3 (2 seeds) | 2.94% / 76.2% | 6.31% / 66.5% | 4.61% |
-| C_mix (2 seeds) | 2.96% / 75.7% | 6.21% / 68.2% | 4.57% |
-| reference: released FL10 (32k pretrain + fine-tune) | 2.38% / 76.7% | 5.30% / 67.3% | 3.82% |
+| console, B − A | −0.37 (−1.19 to +0.29) | +0.14 (−0.27 to +0.57) | −0.12 (−0.57 to +0.28) |
+| console, C − A | −0.35 (−1.22 to +0.33) | +0.04 (−0.39 to +0.51) | −0.16 (−0.62 to +0.26) |
+| console, C − B | +0.02 (−0.36 to +0.35) | −0.10 (−0.68 to +0.53) | −0.04 (−0.37 to +0.33) |
+| native, B − A | −0.47 (−1.28 to +0.21) | −0.12 (−0.79 to +0.51) | −0.30 (−0.82 to +0.17) |
+| native, C − A | −0.33 (−1.24 to +0.38) | +0.10 (−0.42 to +0.62) | −0.12 (−0.62 to +0.33) |
+| native, C − B | +0.14 (−0.21 to +0.43) | +0.22 (−0.39 to +0.86) | +0.18 (−0.15 to +0.52) |
 
-| C_mix − A_s2, points (VN-cluster CI) | vita-test | psp-test | pooled |
+No difference is resolved: every interval includes 0 (451 lines from 28 VNs give pooled intervals
+of about ±0.45 points). In native polarity synth3 alone (B) has the lowest pooled CER and C − B
+has the opposite sign to teacher_val. The 16k-step pretrain-only models are 0.75-0.91 points
+behind the released FL10 in console polarity and 0.75-1.05 in native polarity; the released FL10
+had twice the pretraining and a real fine-tune, which study 2 adds.
+
+### Study 1's secondaries (exploratory)
+
+The protocol's secondary runs, scored like the primaries; one seed each, so an interval covers the
+sampling of development lines, not training noise. The comparisons were fixed in
+`eval/synth3_ablation_secondary.json` before any secondary was exported or scored (the
+fine-tunes' own in-training evaluations of their final checkpoints were already logged); result
+`eval/synth3_ablation_secondary_20261012.json`.
+- **Fine-tunes:** from each arm's seed-1 pretrain, 5,000 steps on nv 0.25 + the arm's synthetic
+  data 0.25 + teacher_train 0.35 + real_train 0.15 (unfiltered pools: they hold CLANNAD's family,
+  see study 2's amendment 2).
+- **H15:** arms A and B at width 1.5 with `data/vocab.txt`, study 1's recipe, seed 1.
+
+| teacher_val | CER X → Y | Y − X (VN-cluster CI) | native Vita + PSP lines (587) |
 |---|---|---|---|
-| console polarity | −0.35 (−1.22 to +0.33) | +0.04 (−0.39 to +0.51) | −0.16 (−0.62 to +0.26) |
-| native polarity | −0.33 (−1.24 to +0.38) | +0.10 (−0.41 to +0.62) | −0.12 (−0.62 to +0.34) |
+| ft B − ft A | 4.66% → 4.52% | −0.14 (−0.44 to +0.16) | +0.26 (−0.15 to +0.72) |
+| ft C − ft A | 4.66% → 4.34% | −0.32 (−0.57 to −0.08) | −0.08 (−0.44 to +0.26) |
+| ft C − ft B | 4.52% → 4.34% | −0.18 (−0.50 to +0.15) | −0.35 (−0.86 to +0.10) |
+| fine-tuning gain, A | 5.84% → 4.66% | −1.19 (−1.65 to −0.78) | −0.67 (−1.20 to −0.22) |
+| fine-tuning gain, B | 5.64% → 4.52% | −1.13 (−1.60 to −0.72) | −0.35 (−0.76 to +0.09) |
+| fine-tuning gain, C | 5.11% → 4.34% | −0.77 (−1.21 to −0.39) | −0.63 (−1.07 to −0.20) |
+| C − A, seed 1, before fine-tuning | 5.84% → 5.11% | −0.74 (−1.05 to −0.44) | −0.13 (−0.66 to +0.38) |
+| **H15: B − A** | 4.52% → 4.00% | **−0.52 (−0.80 to −0.25)** | **−0.38 (−0.70 to −0.10)** |
 
-The test sets do not resolve the arms: 451 lines from 30 games give intervals of about ±0.45
-points pooled. The direction matches teacher_val on vita-test; psp-test is level, as are native
-PSP lines on teacher_val. The 16k-step pretrain-only models are 0.75-0.9 points behind the
-released FL10, which had twice the pretraining and a real fine-tune; study 2 measures the mix in
-that full recipe.
+- The fine-tune keeps the order (ft C < ft B < ft A) but the seed-1 C − A gap falls from −0.74
+  to −0.32: real data gains more for A and B than for C. This is study 2's question, in one seed.
+- At H15 width synth3 alone beats synth2, on the native lines too, with names −2.20 (CI −3.38
+  to −1.08), Latin/digits −2.76 (CI −4.78 to −1.35) and dark-on-light −0.89 (CI −1.40 to −0.41).
+  At FL10 width it did not. One seed; the mix was not run at H15 width in study 1.
+
+On the protected test sets (each once, after the secondary result was committed; console
+polarity, pooled vita-test + psp-test): ft A 4.57%, ft B 4.73%, ft C 4.14%; H15 A 3.29%, H15 B
+3.05%. Differences: ft C − ft A −0.43 (CI −1.01 to +0.09), ft C − ft B −0.59 (CI −1.20 to −0.03),
+ft B − ft A +0.16 (CI −0.35 to +0.66), H15 B − H15 A −0.24 (CI −0.98 to +0.39). Native polarity:
+ft A 4.73%, ft B 4.63%, ft C 4.30%; H15 A 3.43%, H15 B 3.07%.
 
 ## Study 2: the full release recipe (running)
 
@@ -314,20 +385,30 @@ The protocol (`eval/synth3_study2_protocol.json`) was committed before any study
 - Arms and seeds: A against C, FL10 seeds 1-3 and H15 seeds 1-2, scored on teacher_val with
   study 1's statistics and decision rule per architecture. The native development cohort
   (`devnative`) is co-primary only if it is committed before the first study-2 score.
+- Amendment 1 (before any score): how devnative's subset files are pooled when it is co-primary.
+- Amendment 2 (before any fine-tune step): the four fine-tune pools are copies without CLANNAD
+  (v4) and its VNDB family (45 of 42,144 rows: v4, v4060, v12), made by
+  `eval/synth3_filter_pools.py` and pinned in `eval/synth3_study2_pools.sha256`. The released
+  v0.2.0 models and study 1's secondary fine-tunes trained on the unfiltered pools.
 - Also reported: pretrain-only scores, a pretrain-length curve (FL10 C_mix at 64k and 128k
   pretrain steps) and a synth3 learning curve (study 1's B_s3 at 0.25M, 0.5M, 1M and 2M crops).
 
 ## Limits
 
-- teacher_val is the only development cohort on this machine (the six-title general-VN cohort and
-  the CLANNAD captures are private and not here). Two thirds of its lines are PC/console
-  screenshots scaled to console size, not native console captures, and the mix's gain is
-  concentrated there and on Vita targets; native PSP lines are level.
+- teacher_val is the only development cohort on this machine so far (the six-title general-VN
+  cohort and the CLANNAD captures are private and not here). Two thirds of its lines are
+  PC/console screenshots scaled to console size, and study 1's gain is measured there: on native
+  Vita and PSP captures no arm separates (see Study 1).
+- teacher_val shares 110 screenshots (253 lines) with synth2's scene list (see Study 1); the
+  overlap favours synth2 arms.
 - Study 1 is a short recipe (16,000 steps, no real fine-tune). Whether the gain survives the
-  release recipe is study 2's question.
+  release recipe is study 2's question; the secondary fine-tunes halve it in one seed.
 - Two seeds per arm in study 1; seed-to-seed spread within an arm was up to 0.32 points.
 - Hard-example mining used machine-consensus references on training-side pools, part of which
-  was a pseudo-label source in train2's fine-tune.
+  was a pseudo-label source in train2's fine-tune; 26 of its 3,339 lines are from six general-VN
+  development VNs (see the mining section).
+- The learning curve's 1M point reuses study 1's runs from the 32-core box; cross-machine
+  equivalence rests on identical logged losses and draws for the first 700 steps of a replay.
 - Native game fonts were not used: the private CLANNAD font files are not on this machine. The
   dataset uses free and non-commercial fonts only (`--profile open` drops the non-commercial
   ones; not separately evaluated).
@@ -336,17 +417,35 @@ The protocol (`eval/synth3_study2_protocol.json`) was committed before any study
   tables (768 of 789 local Vita screenshots carry the standard Q90 tables, 667 are 4:2:0 and 122
   4:4:4) and the real crop geometry above.
 - Nothing here has run on a console.
+- **CLANNAD in the inherited real pools.** teacher_train and real_train hold 8 crops of CLANNAD
+  (v4) and 23 of its family (v4060, v12); the pseudo-label pools hold 14 family crops. synth3
+  never used them (its names and scenes exclude v4, and it reads no real pool), but train2's
+  fine-tunes did, so the released v0.2.0 models and study 1's secondary fine-tunes trained on
+  them. Study 2 fine-tunes on copies without them (amendment 2). synth3's own exclusion list
+  holds v4 but not its family, and VNDB lists CLANNAD's main cast again as characters of Tomoyo
+  After (v12) and Hikari Mimamoru Sakamichi de (v4060): 19 name parts of those 22 entries (古河,
+  渚, 岡崎, 坂上, 智代, 春原, 陽平, 伊吹, 風子, 藤林, 杏, 椋, 秋生, 早苗, ...) are VNDB rows of
+  `names.train.tsv`, and 7 version-2 crops hold a full cast name (春原陽平 2, 坂上智代 2,
+  伊吹風子, 岡崎汐, 藤林椋); single parts occur in more crops but are mostly common words or
+  names (`clannad_names.py.snapshot` in `eval/reproducibility/synth3-20261012/`). realdata's
+  shots, a scene source, hold 6 screenshots of v12 and v4060. So any synth3-trained model is
+  exposed to CLANNAD's character names, which matters for the CLANNAD long run; the released
+  models are exposed through the real crops above. Later renders should exclude the family.
 - **Fresh native textbox test exposure (names only).** synth3's name pool was built before that
-  test's six titles were published (PR #49) and did not exclude them: 39 VNDB character names that
-  occur only in those titles' entries (PSP v14909, v25459, v29454; Vita v21289, v21976, v20519;
-  reserves v16509, v19140) are in `names.train.tsv`, and 346 of the 1,000,000 version-2 crops
-  (0.035%) have a label containing one of them. Most of those hits are common words or substrings
-  (ラゴン inside ドラゴン 129, 常盤/常磐 106, 駐在 17); the distinctive ones (トリリオン, フェゴール,
-  ペルペル, ...) are a few dozen crops. No screenshot, scene or real crop of those titles is in any
-  synth3 input (checked against synth2's backgrounds, realdata's and teacher's games and all five
-  real pools). Any model trained on synth3 v2 carries this exposure into that test. Later renders
-  should add the eight VNs and their relations to the name exclusion (`synth3_text.py names
-  --dev-vns`).
+  test's six titles were published (PR #49) and did not exclude them (PSP v14909, v25459,
+  v29454; Vita v21289, v21976, v20519; reserves v16509, v19140). About 70 VNDB names occur only in
+  those titles' entries and are in `names.train.tsv` (39 single names and 31 two-part names). 340
+  of the 1,000,000 version-2 crops (0.034%) have a label containing one of the 39 single names,
+  and 13 a full two-part name; most single-name hits are common words or substrings (ラゴン inside
+  ドラゴン, 常盤/常磐, 駐在), the distinctive ones (トリリオン, フェゴール, ペルペル, ...) are a few
+  dozen crops. No screenshot, scene or real crop of those titles is in any synth3 input. Any model
+  trained on synth3 v2 carries this exposure into that test. Later renders should add the eight
+  VNs and their relations to the name exclusion (`synth3_text.py names --dev-vns`).
+- **Test speaker names in the name pool.** 33 of the 94 distinct speaker names of vita-test and
+  psp-test are in `names.train.tsv`, through characters of unreserved VNs or SyosetuNames
+  (for example 宮ノ杜 勇 of test VN v7634, through a character of v21784, a 'set' relation that
+  eval's family rule does not reserve); 856 version-2 crops carry one as their whole label, 545
+  of them 少女. This is within eval's rule.
 
 ## Reproduce
 
@@ -362,7 +461,8 @@ synth/synth3_text.py names --vndb-chars $S3/text/vndb_chars.tsv --syosetu $S3/te
 synth/synth3_text.py index --pools $P --split train && synth/synth3_text.py index --pools $P --split dev
 synth/synth3_mine.py run --pool $A/teacher/teacher_distill_train.npz --pool $A/realdata/real_unlabelled.npz \
     --targets $A/train2/targets --blob FL10=$A/train2/release/FL10_w8.vocr --blob H15=$A/train2/release/H15_w8.vocr \
-    --conf 0.9 --forbid-vns $(cat $S3/mining/exclude_dev_vns.txt) --out $S3/mining/mining_v6s_consensus.json
+    --conf 0.9 --forbid-vns $(cat $S3/mining/dev_vns.txt) --out $S3/mining/mining_v6s_consensus.json
+#   (as run: dev_vns.txt is teacher_val's 181 VNs; exclude_dev_vns.txt, written later, adds the 9 development VNs)
 synth/synth3_text.py targets --pools $P --real $A/teacher/teacher_train.npz+$A/realdata/real_train.npz \
     --jiten-vn $S3/text/jiten/frequency_list_visual_novel.csv --mining $S3/mining/mining_v6s_consensus.json
 # render (two heavy.sh slots of 5 workers each), then pin
@@ -370,11 +470,14 @@ $HERD/heavy.sh synth/synth3.py shards --out $S3/shards/train_v2 --split train --
 $HERD/heavy.sh synth/synth3.py shards --out $S3/shards/train_v2 --split train --shards 50 --first 50 --per-shard 10000 --workers 5
 synth/synth3.py manifest --dir $S3/shards/train_v2 --out data/manifests/synth3_shards_v2.json
 synth/synth3_stats.py measure --name real=$A/teacher/teacher_train.npz+$A/realdata/real_train.npz \
-    --name s2=$A/synth2/shards/synth_0000[0-1].npz --name s3="$S3/shards/train_v2/synth3_0000[0-1].npz" --out stats.json
+    --name s2=$A/synth2/shards/synth_0000[0-1].npz --name s3v1="$S3/shards/train/synth3_0000[0-1].npz" \
+    --name s3="$S3/shards/train_v2/synth3_0000[0-1].npz" --out stats.json
 # the ablation: eval/synth3_run_arm.sh ARM SEED (through heavy.sh), then
 eval/synth3_ablation.py export --ckpt $S3/ablation/runs/RUN/ckpt_step16000.pt --out RUN_w8.vocr
-eval/synth3_ablation.py score --blob RUN=RUN_w8.vocr ... --dev $A/teacher/teacher_val.npz --out scores.json
-eval/synth3_ablation.py compare --scores scores.json --protocol eval/synth3_ablation_protocol.json --out result.json
+eval/synth3_ablation.py score --blob RUN=RUN_w8.vocr --dev $A/teacher/teacher_val.npz --out S/RUN.json   # one file per run
+eval/synth3_ablation.py compare --scores S/{A_s2,B_s3,C_mix}_seed{1,2}.json --protocol eval/synth3_ablation_protocol.json \
+    --out result.json
+# the exact scripts that ran, and the doc's tables: eval/reproducibility/synth3-20261012/
 # the protected-test report, once the decision is committed (each export once per polarity)
 VOCR_EVAL_DATA=$A/eval eval/run.py --model vocr:RUN_w8.vocr --set vita-test,psp-test --polarity console --out T/RUN_console.json
 VOCR_EVAL_DATA=$A/eval eval/run.py --model vocr:RUN_w8.vocr --set vita-test,psp-test --polarity native --out T/RUN_native.json

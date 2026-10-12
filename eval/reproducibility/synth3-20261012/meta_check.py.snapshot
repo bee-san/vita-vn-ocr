@@ -1,0 +1,30 @@
+import glob, json, sys
+import numpy as np
+from collections import Counter
+def run(pattern):
+    c = Counter()
+    for p in sorted(glob.glob(pattern))[:10]:
+        z = np.load(p)
+        labels = json.loads(str(z["labels"])); metas = json.loads(str(z["meta"])); shapes = z["shapes"]
+        for lab, m, (h, w) in zip(labels, metas, shapes):
+            ib = m.get("ink_box")
+            mode = m.get("crop")
+            c[f"{mode}:n"] += 1
+            if not ib:
+                c[f"{mode}:no_ink"] += 1
+                continue
+            iw, ih = ib[2] - ib[0], ib[3] - ib[1]
+            if ih <= 0 or iw <= 0:
+                c[f"{mode}:no_ink"] += 1
+                continue
+            n = max(1, len(lab))
+            if iw / (n * ih) > 1.6:
+                c[f"{mode}:ink_much_wider_than_label"] += 1
+            if h / ih > 2.2:
+                c[f"{mode}:crop_over_2.2x_ink_height"] += 1
+    return c
+for name, pat in (("v1", sys.argv[1]), ("v2", sys.argv[2])):
+    c = run(pat)
+    for mode in ("gt", "grad"):
+        n = c[f"{mode}:n"]
+        print(name, mode, n, {k.split(":", 1)[1]: f"{c[k]} ({100 * c[k] / max(1, n):.2f}%)" for k in c if k.startswith(mode + ":") and not k.endswith(":n")})

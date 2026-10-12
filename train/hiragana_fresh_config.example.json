@@ -1,0 +1,12 @@
+{
+  "general": "build/hiragana/fresh-jiten/general/*.npz",
+  "targeted": "build/hiragana/fresh-jiten/targeted/*.npz",
+  "kanji": "build/hiragana/fresh-jiten/kanji/*.npz",
+  "kanji_policy": "data/manifests/fl10_kanji_policy_20261011.json",
+  "kanji_manifest": "build/hiragana/fresh-jiten/dataset_manifest.json",
+  "anime": "build/hiragana/animetext-curated/train/*.npz",
+  "anime_manifest": "build/hiragana/animetext-curated/crops.jsonl",
+  "anime_audit": "build/hiragana/animetext-curated/audit-summary.json",
+  "dev": "build/hiragana/clannad/dev.npz",
+  "synthetic_dev": "build/hiragana/fresh-jiten/synthetic-dev/synth_00000.npz"
+}

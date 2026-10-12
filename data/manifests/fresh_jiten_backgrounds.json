@@ -1,0 +1,1644 @@
+{
+  "schema": 2,
+  "created_utc": "2026-10-11T14:35:34.704957+00:00",
+  "counts": {
+    "train": 16,
+    "dev": 4
+  },
+  "selection_seed": 1,
+  "usage": "Synthetic scenery only from hand-reviewed source rectangles; no screenshot-derived OCR labels. Entire requested region must fit, otherwise use synthetic scenery.",
+  "provenance": {
+    "api_documentation": "https://api.vndb.org/kana",
+    "psp_manifest": {
+      "file": "data/manifests/synth2_psp_shots.jsonl",
+      "sha256": "a5036b9ad677eb600e2183b4d47765cbb14be3a5b236e887d65e7c1586f803c0"
+    },
+    "test_games_sha256": "d986adff49f1bfcf3df30ae841d658ec8f06f2b89e01fe37990a0bbd53966d39",
+    "background_exclusions_sha256": "a6b0bb48cf78b09ec1591f83018ed51bc3bbaaaa78da1974809874f9652f5c1b",
+    "fetcher_sha256": "694aa671b0c6c35cc6c4ba3f633eadca94531bc13be34e09ab41e1e50ed7ab69",
+    "queries": [
+      {
+        "url": "https://api.vndb.org/kana/vn",
+        "request": {
+          "filters": [
+            "or",
+            [
+              "id",
+              "=",
+              "v10"
+            ],
+            [
+              "id",
+              "=",
+              "v182"
+            ],
+            [
+              "id",
+              "=",
+              "v481"
+            ],
+            [
+              "id",
+              "=",
+              "v850"
+            ],
+            [
+              "id",
+              "=",
+              "v1015"
+            ],
+            [
+              "id",
+              "=",
+              "v1341"
+            ],
+            [
+              "id",
+              "=",
+              "v1640"
+            ],
+            [
+              "id",
+              "=",
+              "v1641"
+            ],
+            [
+              "id",
+              "=",
+              "v1646"
+            ],
+            [
+              "id",
+              "=",
+              "v1715"
+            ],
+            [
+              "id",
+              "=",
+              "v1794"
+            ],
+            [
+              "id",
+              "=",
+              "v1803"
+            ],
+            [
+              "id",
+              "=",
+              "v1874"
+            ],
+            [
+              "id",
+              "=",
+              "v1892"
+            ],
+            [
+              "id",
+              "=",
+              "v1949"
+            ],
+            [
+              "id",
+              "=",
+              "v2061"
+            ],
+            [
+              "id",
+              "=",
+              "v3091"
+            ],
+            [
+              "id",
+              "=",
+              "v3106"
+            ],
+            [
+              "id",
+              "=",
+              "v3260"
+            ],
+            [
+              "id",
+              "=",
+              "v3261"
+            ],
+            [
+              "id",
+              "=",
+              "v3284"
+            ],
+            [
+              "id",
+              "=",
+              "v4540"
+            ],
+            [
+              "id",
+              "=",
+              "v4597"
+            ],
+            [
+              "id",
+              "=",
+              "v4719"
+            ],
+            [
+              "id",
+              "=",
+              "v5297"
+            ],
+            [
+              "id",
+              "=",
+              "v5471"
+            ],
+            [
+              "id",
+              "=",
+              "v5472"
+            ],
+            [
+              "id",
+              "=",
+              "v5690"
+            ],
+            [
+              "id",
+              "=",
+              "v5837"
+            ],
+            [
+              "id",
+              "=",
+              "v6618"
+            ],
+            [
+              "id",
+              "=",
+              "v6656"
+            ],
+            [
+              "id",
+              "=",
+              "v6723"
+            ],
+            [
+              "id",
+              "=",
+              "v7203"
+            ],
+            [
+              "id",
+              "=",
+              "v7204"
+            ],
+            [
+              "id",
+              "=",
+              "v7301"
+            ],
+            [
+              "id",
+              "=",
+              "v7602"
+            ],
+            [
+              "id",
+              "=",
+              "v7675"
+            ],
+            [
+              "id",
+              "=",
+              "v7679"
+            ],
+            [
+              "id",
+              "=",
+              "v7803"
+            ],
+            [
+              "id",
+              "=",
+              "v7815"
+            ],
+            [
+              "id",
+              "=",
+              "v8043"
+            ],
+            [
+              "id",
+              "=",
+              "v8203"
+            ],
+            [
+              "id",
+              "=",
+              "v8243"
+            ],
+            [
+              "id",
+              "=",
+              "v8591"
+            ],
+            [
+              "id",
+              "=",
+              "v9846"
+            ],
+            [
+              "id",
+              "=",
+              "v10045"
+            ],
+            [
+              "id",
+              "=",
+              "v10105"
+            ],
+            [
+              "id",
+              "=",
+              "v10289"
+            ],
+            [
+              "id",
+              "=",
+              "v10383"
+            ],
+            [
+              "id",
+              "=",
+              "v10950"
+            ],
+            [
+              "id",
+              "=",
+              "v11000"
+            ],
+            [
+              "id",
+              "=",
+              "v11108"
+            ],
+            [
+              "id",
+              "=",
+              "v11179"
+            ],
+            [
+              "id",
+              "=",
+              "v11186"
+            ],
+            [
+              "id",
+              "=",
+              "v11469"
+            ],
+            [
+              "id",
+              "=",
+              "v11636"
+            ],
+            [
+              "id",
+              "=",
+              "v11677"
+            ],
+            [
+              "id",
+              "=",
+              "v11879"
+            ],
+            [
+              "id",
+              "=",
+              "v11971"
+            ],
+            [
+              "id",
+              "=",
+              "v12019"
+            ],
+            [
+              "id",
+              "=",
+              "v12188"
+            ],
+            [
+              "id",
+              "=",
+              "v12714"
+            ],
+            [
+              "id",
+              "=",
+              "v12751"
+            ],
+            [
+              "id",
+              "=",
+              "v12775"
+            ],
+            [
+              "id",
+              "=",
+              "v13911"
+            ],
+            [
+              "id",
+              "=",
+              "v14267"
+            ],
+            [
+              "id",
+              "=",
+              "v15104"
+            ],
+            [
+              "id",
+              "=",
+              "v15361"
+            ]
+          ],
+          "fields": "id,title,screenshots.url,screenshots.dims,screenshots.sexual,screenshots.violence,screenshots.release.id,screenshots.release.platforms",
+          "results": 100
+        },
+        "response_sha256": "b2814db1859245cd0f6b4b7b776f04b0d0c45f45395f6c8135f0a975b87c3767"
+      },
+      {
+        "url": "https://api.vndb.org/kana/vn",
+        "request": {
+          "filters": [
+            "and",
+            [
+              "olang",
+              "=",
+              "ja"
+            ],
+            [
+              "release",
+              "=",
+              [
+                "platform",
+                "=",
+                "psv"
+              ]
+            ]
+          ],
+          "fields": "id,title,screenshots.url,screenshots.dims,screenshots.sexual,screenshots.violence,screenshots.release.id,screenshots.release.platforms",
+          "results": 100,
+          "page": 1
+        },
+        "response_sha256": "033991ef1fc7d6c0c8a320311cc32d0092a3cf59f86e2b6d69cf6928314c1fc8"
+      },
+      {
+        "url": "https://api.vndb.org/kana/vn",
+        "request": {
+          "filters": [
+            "and",
+            [
+              "olang",
+              "=",
+              "ja"
+            ],
+            [
+              "release",
+              "=",
+              [
+                "platform",
+                "=",
+                "psv"
+              ]
+            ]
+          ],
+          "fields": "id,title,screenshots.url,screenshots.dims,screenshots.sexual,screenshots.violence,screenshots.release.id,screenshots.release.platforms",
+          "results": 100,
+          "page": 2
+        },
+        "response_sha256": "dcc862f1a1f19b125c1657aa02a60e35eb73dc40f817d15276f3279a60cb6b17"
+      },
+      {
+        "url": "https://api.vndb.org/kana/vn",
+        "request": {
+          "filters": [
+            "and",
+            [
+              "olang",
+              "=",
+              "ja"
+            ],
+            [
+              "release",
+              "=",
+              [
+                "platform",
+                "=",
+                "psv"
+              ]
+            ]
+          ],
+          "fields": "id,title,screenshots.url,screenshots.dims,screenshots.sexual,screenshots.violence,screenshots.release.id,screenshots.release.platforms",
+          "results": 100,
+          "page": 3
+        },
+        "response_sha256": "b3ac8df9361142d0816acd1c6dea824b26a96c63c50ef1d7065b7bfd0694a957"
+      }
+    ]
+  },
+  "records": [
+    {
+      "vn": "v7204",
+      "title": "Tokyo Yamanote Boys Super Mint Disc",
+      "url": "https://t.vndb.org/sf/67/52767.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r23310",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "9c2e6f6eeeba8f0d40d30e387d9976c9ced3f0a5fb1628d20d0a95448b99e7d3",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v7204_52767.jpg",
+      "bytes": 55275,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v10950",
+      "title": "School Wars",
+      "url": "https://t.vndb.org/sf/35/49235.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r22278",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "663efa702f309809b75defc4c136f541e47264411b4f5c766cfa834c7532bcc7",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v10950_49235.jpg",
+      "bytes": 40486,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v10383",
+      "title": "Hakuouki Reimeiroku",
+      "url": "https://t.vndb.org/sf/67/56667.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r21014",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "d723f9203ba645a3e52cbb11d8533079fdc303005b3f8752f27b69f1f86c8735",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v10383_56667.jpg",
+      "bytes": 60677,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v5837",
+      "title": "Kaeru Batake DE Tsukamaete: Natsu Chigira Sansen!",
+      "url": "https://t.vndb.org/sf/89/56989.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r15002",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "4ddf62e1f1f72fd657e45e47cff97305308b3ef28890c0310418a71f14a09417",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v5837_56989.jpg",
+      "bytes": 91990,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v8591",
+      "title": "AMNESIA LATER",
+      "url": "https://t.vndb.org/sf/54/56354.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r23190",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "85cd4b18a0572d99bac248a76cc10ca30ba4b165fb4a46b123e773335b513692",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v8591_56354.jpg",
+      "bytes": 77625,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v15104",
+      "title": "Kaleidoeve",
+      "url": "https://t.vndb.org/sf/45/80145.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r33575",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "cfb01db39242c108b738889bae730fc33db7673b1cc78fa83705f0b3618e02ae",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v15104_80145.jpg",
+      "bytes": 61405,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v4597",
+      "title": "STORM LOVER",
+      "url": "https://t.vndb.org/sf/00/55700.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r20416",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "54c41b0bc162d399b480264c8a81cd80bd6de863ef05a619d486c705604309ad",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v4597_55700.jpg",
+      "bytes": 106015,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v1803",
+      "title": "Hakuouki Zuisouroku",
+      "url": "https://t.vndb.org/sf/73/56673.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r23741",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "95d4ef0ea2b910b523838118fe86d8cfb2b0ee2918de7da84d4c83bd098bc7f5",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v1803_56673.jpg",
+      "bytes": 52356,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v3091",
+      "title": "CHAOS;HEAD Love Chu☆Chu!",
+      "url": "https://t.vndb.org/sf/57/18557.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r10685",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "62ff4b1ffaa4f94ae059a123cbd49f443ea35b230a6dbf3b47011bc2e5ce2797",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v3091_18557.jpg",
+      "bytes": 57997,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v10105",
+      "title": "24 Ji no Kane to Cinderella ~Halloween Wedding~",
+      "url": "https://t.vndb.org/sf/00/56300.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r20344",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "2b3f710ebd3d3ec040f2de477df6eb0f03b52f9410d72d1f4524e56ba5ae66f0",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v10105_56300.jpg",
+      "bytes": 76533,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v3106",
+      "title": "Kaeru Batake DE Tsukamaete☆",
+      "url": "https://t.vndb.org/sf/69/52269.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r11400",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "8258750a0484efa939052f1c9b7a0df04115a00074366762171c6cf2bc334157",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v3106_52269.jpg",
+      "bytes": 41594,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v5690",
+      "title": "Memories Off: Yubikiri no Kioku",
+      "url": "https://t.vndb.org/sf/18/52118.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r13245",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "3aee1a02a7271874e629d527a7c000cfaee48c9b14185e3fa89b0b85768036d4",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v5690_52118.jpg",
+      "bytes": 60849,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v6723",
+      "title": "Clock Zero ~Shuuen no Ichibyou~",
+      "url": "https://t.vndb.org/sf/94/36094.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r15007",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "34fc5ec463901e7e47ce7ff7ae1a8ed3d27a575fd91bd2db4caed50732fc54d3",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v6723_36094.jpg",
+      "bytes": 63529,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v850",
+      "title": "Gakuen Heaven: Boy's Love Scramble!",
+      "url": "https://t.vndb.org/sf/14/56614.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r13361",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "af76c1c35642acf8defabe448720f29dfc12e8c5c12fc6c79c1e7253630a3d29",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v850_56614.jpg",
+      "bytes": 58973,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v3261",
+      "title": "Harukanaru Toki no Naka de 3: Izayoiki",
+      "url": "https://t.vndb.org/sf/61/56761.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r6371",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "d43349ae72a56e2ba9b5927c429fde2522152ca0a4357896c9c5d04aa00781ce",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v3261_56761.jpg",
+      "bytes": 58654,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v8243",
+      "title": "Eikoku Tantei Mysteria",
+      "url": "https://t.vndb.org/sf/74/47974.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r16717",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "b2bc320fe792d4787a45037da27a28949408eda7d1884ccb5ebda40a83c1236e",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v8243_47974.jpg",
+      "bytes": 40416,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v5297",
+      "title": "Durarara!! 3-way Standoff",
+      "url": "https://t.vndb.org/sf/05/95205.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r32338",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "7c7c5b61f608673e0ec88f5faf5e79c48d7a6a13b34dd629cd8cbaba6f38362f",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "dev",
+      "file": "assets-dev/vndb_psp/shots/v5297_95205.jpg",
+      "bytes": 50401,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v4719",
+      "title": "Scared Rider Xechs",
+      "url": "https://t.vndb.org/sf/01/53401.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r17188",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "45dd7deceec81642c679b5ca79c353a41db0c50f33da5603fec282cd405488b2",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "dev",
+      "file": "assets-dev/vndb_psp/shots/v4719_53401.jpg",
+      "bytes": 24761,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v12775",
+      "title": "Black Wolves Saga -Last Hope-",
+      "url": "https://t.vndb.org/sf/51/50651.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r20503",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "5ae2deb88f1f8db87b5b01894432e57d268c06a8f16ca8e1552992115f8b8184",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "dev",
+      "file": "assets-dev/vndb_psp/shots/v12775_50651.jpg",
+      "bytes": 73026,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v6618",
+      "title": "STEINS;GATE: Hiyoku Renri no Darling",
+      "url": "https://t.vndb.org/sf/62/55662.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r17300",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "d0418b58344c7dc0b5736e2710f5941604e3bffade036903582a6cfd18726beb",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "dev",
+      "file": "assets-dev/vndb_psp/shots/v6618_55662.jpg",
+      "bytes": 82525,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v14908",
+      "title": "Code: Realize ~Sousei no Himegimi~",
+      "url": "https://t.vndb.org/sf/41/84041.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r40158",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v14908_84041.jpg",
+      "sha256": "37ca590e808fef4f0600674c2d5648ebab91d27e6b45d16529aa2045c60875d5",
+      "bytes": 174728,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v14813",
+      "title": "RE:VICE[D]",
+      "url": "https://t.vndb.org/sf/48/78848.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r32716",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v14813_78848.jpg",
+      "sha256": "80619831aa59ebfa958283ce3ce0b5eae54a205c613652c09130ddb3b821345b",
+      "bytes": 126306,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v13308",
+      "title": "Galtia",
+      "url": "https://t.vndb.org/sf/09/145309.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r56189",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v13308_145309.jpg",
+      "sha256": "4de2698b50e2ebd5806460f33b29ea43fd90a7e7c1337860899961302916b83a",
+      "bytes": 135872,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v11173",
+      "title": "Sakura-sou no Pet na Kanojo",
+      "url": "https://t.vndb.org/sf/50/108650.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r22795",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v11173_108650.jpg",
+      "sha256": "48825d89c57e06057fc71ab147f23b669c219ddbdd74d33c5b9a0296974b4198",
+      "bytes": 155604,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v13090",
+      "title": "Gakuen K -Wonderful School Days-",
+      "url": "https://t.vndb.org/sf/61/154661.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r40470",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v13090_154661.jpg",
+      "sha256": "c13774c36b15ed81f49d26f1af29e1bd1a02b2bf272baad9fd75a5c079dca778",
+      "bytes": 191014,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v12424",
+      "title": "Hakuouki SSL ~Sweet School Life~",
+      "url": "https://t.vndb.org/sf/21/129921.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r26420",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v12424_129921.jpg",
+      "sha256": "c4e28252cde5d895dd37c27d192d5b65927d7dd6c40aa0524062162bc82008e2",
+      "bytes": 201410,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v14415",
+      "title": "Norn9 ~Norn + Nonette~ Last Era",
+      "url": "https://t.vndb.org/sf/70/106270.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r31770",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v14415_106270.jpg",
+      "sha256": "083470fc447b9fd77917404c137c3e8a8fd5e86e333782205e3b404928edc816",
+      "bytes": 145107,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v1713",
+      "title": "Hiiro no Kakera ~Ano Sora no Shita de~",
+      "url": "https://t.vndb.org/sf/82/155282.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r70357",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v1713_155282.jpg",
+      "sha256": "19149891d8bb20aad0d08d8082e6e355a0ef0bb8561553f0b42664f6ae8b0515",
+      "bytes": 138638,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v13632",
+      "title": "Kiss Ato",
+      "url": "https://t.vndb.org/sf/06/101506.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r41631",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v13632_101506.jpg",
+      "sha256": "c7fad273611596e0e48961c6dd4583a9152a535a2aca2964090814157587e43c",
+      "bytes": 139640,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v14534",
+      "title": "Soukai Buccaneers!",
+      "url": "https://t.vndb.org/sf/22/75322.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r33494",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v14534_75322.jpg",
+      "sha256": "db948b80a7da22b244c39a14529ea0e43308731979a6196c7a37c272487040c6",
+      "bytes": 254159,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v1199",
+      "title": "Sakaagari Hurricane - Let's Pile Up Our School!!",
+      "url": "https://t.vndb.org/sf/16/122516.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r48647",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v1199_122516.jpg",
+      "sha256": "5e22d42684f23015fa84de3e580d2a6a23ce740ec80db45aa5256b62959e2903",
+      "bytes": 167610,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v12402",
+      "title": "Fata Morgana no Yakata",
+      "url": "https://t.vndb.org/sf/47/109747.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r48225",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v12402_109747.jpg",
+      "sha256": "935a644b896c851bc9cc22b918e810290c97e56013705bba3b832803f81c4831",
+      "bytes": 134740,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v14917",
+      "title": "Senjou no Waltz",
+      "url": "https://t.vndb.org/sf/35/79135.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r33119",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v14917_79135.jpg",
+      "sha256": "3b1b84618a1d4a4ddbcd9b5791d34c1895093f16c351595b8db33dd7b06f7c90",
+      "bytes": 188974,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v2835",
+      "title": "Amatsu Misora ni!",
+      "url": "https://t.vndb.org/sf/54/96454.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r40152",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v2835_96454.jpg",
+      "sha256": "0440abb437c315fc543492b75c7347c72c71a8cba6402848e80fe5d3fd01ef4a",
+      "bytes": 164731,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v12282",
+      "title": "Romeo VS Juliet",
+      "url": "https://t.vndb.org/sf/58/157058.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r38899",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v12282_157058.jpg",
+      "sha256": "4b5e13957d43bfe8e78b67e598a805549e5f4a10fb687a2a8d154cb59a5b82e1",
+      "bytes": 202459,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v7679",
+      "title": "Super Dangan Ronpa 2 Sayonara Zetsubou Gakuen",
+      "url": "https://t.vndb.org/sf/29/74929.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r34412",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v7679_74929.jpg",
+      "sha256": "665cf1ed1ed98fe4ca13502ae570c21b4962afc196ca78ba29533456c991f4e7",
+      "bytes": 161893,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v1281",
+      "title": "Amagami",
+      "url": "https://t.vndb.org/sf/69/189569.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0.07,
+      "violence": 0,
+      "release": "r117862",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "dev",
+      "file": "assets-dev/vndb/shots/v1281_189569.jpg",
+      "sha256": "a20cf764f7f856cf02928555aebf5ddbd60e159191eb40f2eeabe4dfbfb92131",
+      "bytes": 87805,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v1015",
+      "title": "Kin'iro no Corda 2",
+      "url": "https://t.vndb.org/sf/20/151320.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r52530",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "dev",
+      "file": "assets-dev/vndb/shots/v1015_151320.jpg",
+      "sha256": "ba7978ce7df37d0d09187ce47d736c80be50fa27467fd5d197b0cc2dfbb76591",
+      "bytes": 155270,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v12178",
+      "title": "Haiyore! Nyaruko-san  Meijou Shigatai Game no You na Mono",
+      "url": "https://t.vndb.org/sf/44/127144.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r25764",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "dev",
+      "file": "assets-dev/vndb/shots/v12178_127144.jpg",
+      "sha256": "35575032aa5151391a0457b5d0007091a83e97a19b95449aa0f15cd56a7d3844",
+      "bytes": 195011,
+      "scenery_box": null,
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Excluded title, menu, load or name-entry UI with source text."
+      }
+    },
+    {
+      "vn": "v13766",
+      "title": "Rou-Kyuu-Bu! Naisho no Shutter Chance",
+      "url": "https://t.vndb.org/sf/34/88834.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r29842",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "dev",
+      "file": "assets-dev/vndb/shots/v13766_88834.jpg",
+      "sha256": "85e45bd221775840506629f7daa0b2fe0fc4383c5034ccfabfa596accd9a5732",
+      "bytes": 108172,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    }
+  ],
+  "scenery_review": {
+    "date": "2026-10-11",
+    "source_manifest_sha256": "26ce34fa6e8beeaf16fee92ee4567321dc840e75d88c109fd53842f67b078f7d",
+    "method": "Visual review of all 40 native images; exclude menu/title/load/name-entry screens and restrict remaining scenery to upper 40 percent.",
+    "counts": {
+      "train:psp:approved": 12,
+      "train:psp:excluded": 4,
+      "dev:psp:approved": 3,
+      "dev:psp:excluded": 1,
+      "train:psv:approved": 9,
+      "train:psv:excluded": 7,
+      "dev:psv:approved": 3,
+      "dev:psv:excluded": 1
+    }
+  },
+  "content_sha256": "44255f75880fb2dc4a75c39bac07c8863518bc9938973409f42126b719416ea1"
+}

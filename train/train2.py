@@ -65,7 +65,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "synth"))
 sys.path.insert(0, str(ROOT / "eval"))
-from metrics import lev, norm  # noqa: E402
+from metrics import lev, norm, score_hiragana  # noqa: E402
 
 from common import DATA, load_vocab  # noqa: E402
 from model import TinyVNOCR, set_weight_quant  # noqa: E402
@@ -266,11 +266,11 @@ class StreamSource:
 
 # ----------------------------------------------------------------------------- augmentation
 
-def augment(g, rng, geo=True, inv=0.0):
+def augment(g, rng, geo=True, inv=0.0, min_width=8):
     height = g.shape[0]
     g = g.astype(np.float32)
     if geo and rng.random() < 0.3:                           # horizontal stretch
-        nw = max(8, min(MAX_W, int(g.shape[1] * rng.uniform(0.88, 1.12))))
+        nw = max(8, min_width, min(MAX_W, int(g.shape[1] * rng.uniform(0.88, 1.12))))
         g = cv2.resize(g, (nw, height), interpolation=cv2.INTER_LINEAR)
     if rng.random() < 0.3:                                   # vertical jitter (width kept)
         d = int(rng.integers(1, 3))
@@ -304,7 +304,14 @@ def make_batch(items, rng, src_opts):
     for it in items:
         o = src_opts[it.src]
         if rng is not None and o.get("aug", "1") != "0":
-            g = augment(it.img, rng, geo=it.kid is None, inv=float(o.get("inv", 0.2)))
+            # Shrinking a tight crop must retain enough frames for the label, including
+            # a blank between adjacent repeated characters. Otherwise zero_infinity
+            # silently removes that sample's CTC gradient.
+            frames = 1 if it.ids is None else len(it.ids) + sum(
+                a == b for a, b in zip(it.ids, it.ids[1:]))
+            min_width = max(8, (frames - 1) * STRIDE + 1)
+            g = augment(it.img, rng, geo=it.kid is None, inv=float(o.get("inv", 0.2)),
+                        min_width=min_width)
         else:
             g = it.img.astype(np.float32)
         gs.append(g)
@@ -363,6 +370,15 @@ class Mixer:
         return self.ready.pop()
 
 
+def train_scope(model, scope):
+    """A head-only adaptation keeps every encoder and collapse parameter fixed."""
+    if scope not in ("all", "head"):
+        raise ValueError("unknown train scope")
+    model.requires_grad_(scope == "all")
+    if scope == "head":
+        model.head.requires_grad_(True)
+
+
 # ----------------------------------------------------------------------------- eval
 
 class ValSet:
@@ -395,6 +411,7 @@ class ValSet:
     def score(self, model, vocab, batch=64):
         chars = [""] + [c if len(c) == 1 else "\ufffd" for c in vocab]
         errs = tot = exact = 0
+        rows = []
         for T, idx in self.groups.items():
             for s in range(0, len(idx), batch):
                 part = idx[s:s + batch]
@@ -412,9 +429,10 @@ class ValSet:
                             out.append(chars[t])
                         last = t
                     pred = norm("".join(out))
+                    rows.append({"text": self.refs[i], "pred": pred})
                     e = lev(pred, self.refs[i])
                     errs, tot, exact = errs + e, tot + len(self.refs[i]), exact + (e == 0)
-        return errs / max(tot, 1), exact / max(len(self.imgs), 1)
+        return errs / max(tot, 1), exact / max(len(self.imgs), 1), score_hiragana(rows)["cer"]
 
 
 # ----------------------------------------------------------------------------- training
@@ -454,6 +472,8 @@ def main():
     ap.add_argument("--src", action="append", required=True, help="NAME:WEIGHT:GLOBS[:OPTS]")
     ap.add_argument("--val", action="append", default=[], help="NAME:PATH[:OPTS]")
     ap.add_argument("--select", default="", help="comma list of --val names (mean CER)")
+    ap.add_argument("--select-metric", choices=("cer", "hiragana"), default="cer",
+                    help="select checkpoints on development sets only")
     ap.add_argument("--steps", type=int, required=True)
     ap.add_argument("--batch", type=int, default=96)
     ap.add_argument("--lr", type=float, default=2e-3)
@@ -471,12 +491,17 @@ def main():
     ap.add_argument("--ema", type=float, default=0.0, help="EMA decay (0 = off), e.g. 0.999")
     ap.add_argument("--qat", type=float, default=0.0, help="int8 weight fake quant from this fraction")
     ap.add_argument("--init", default="", help="start weights from this checkpoint")
+    ap.add_argument("--train-scope", choices=("all", "head"), default="all",
+                    help="head freezes encoder/collapse weights and BN statistics")
+    ap.add_argument("--freeze-bn-stats", action="store_true",
+                    help="freeze BN running statistics; automatic for restored release blobs")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--threads", type=int, default=default_threads())
     ap.add_argument("--eval-every", type=int, default=2000)
     ap.add_argument("--keep-evals", action="store_true")
     ap.add_argument("--log-every", type=int, default=100)
     args = ap.parse_args()
+    args.freeze_bn_stats |= args.train_scope == "head"
     torch.set_num_threads(args.threads)
     torch.set_flush_denormal(True)
     torch.manual_seed(args.seed)
@@ -515,6 +540,7 @@ def main():
     model = TinyVNOCR(len(vocab) + 1, width=args.width, bottleneck=args.bottleneck,
                       depth=args.depth, ctx=args.ctx, ctx_k=args.ctx_k)
     model = model.to(memory_format=torch.channels_last)
+    train_scope(model, args.train_scope)
     print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M, classes {len(vocab) + 1}, "
           f"threads {args.threads}", flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.wd)
@@ -523,6 +549,13 @@ def main():
     ema = None
     if last.exists():
         ck = torch.load(last, map_location="cpu", weights_only=False)
+        if ck.get("args", {}).get("train_scope", "all") != args.train_scope:
+            raise ValueError("resume train scope differs from checkpoint")
+        if ck.get("args", {}).get("select_metric", "cer") != args.select_metric:
+            raise ValueError("resume selection metric differs from checkpoint")
+        if ck["vocab"] != vocab:
+            raise ValueError("resume vocabulary order differs from checkpoint")
+        args.freeze_bn_stats |= ck.get("freeze_bn_stats", False)
         model.load_state_dict(ck.get("model_raw", ck["model"]))
         opt.load_state_dict(ck["opt"])
         step, best, best_step = ck["step"], ck["best_sel"], ck.get("best_step", 0)
@@ -533,6 +566,9 @@ def main():
         rng = np.random.default_rng([args.seed, step])
     elif args.init:
         ck = torch.load(args.init, map_location="cpu", weights_only=False)
+        if ck["vocab"] != vocab:
+            raise ValueError("init vocabulary order differs from checkpoint")
+        args.freeze_bn_stats |= ck.get("freeze_bn_stats", False)
         model.load_state_dict(ck["model"])
         print(f"initialised from {args.init} (step {ck.get('step')})", flush=True)
     if args.ema and ema is None:
@@ -552,6 +588,9 @@ def main():
 
     t_log, seen, acc = time.time(), 0, {"ctc": 0.0, "kd": 0.0, "n": 0}
     model.train()
+    if args.freeze_bn_stats:
+        from restore_blob import freeze_bn_stats
+        freeze_bn_stats(model)
     while step < args.steps:
         if qat_from is not None and step >= qat_from:
             set_weight_quant(model, 8)
@@ -601,9 +640,14 @@ def main():
             eval_model.eval()
             t1 = time.time()
             res = {v.name: v.score(eval_model, vocab) for v in vals}
-            sel = float(np.mean([res[s][0] for s in select])) if vals else -float(step)
+            metric_index = 2 if args.select_metric == "hiragana" else 0
+            selected = [res[s][metric_index] for s in select]
+            if any(v is None for v in selected):
+                raise ValueError("selected development set has no hiragana references")
+            sel = float(np.mean(selected)) if vals else -float(step)
             rec = {"step": step, "lr": lr, "time": time.time(), "eval_s": round(time.time() - t1, 1),
                    **{f"{k}_cer": v[0] for k, v in res.items()}, **{f"{k}_exact": v[1] for k, v in res.items()},
+                   **{f"{k}_hiragana_cer": v[2] for k, v in res.items()},
                    "sel": sel, "mix": {s.name: int(c) for s, c in zip(sources, mixer.counts)}}
             metrics.write(json.dumps(rec) + "\n")
             metrics.flush()
@@ -613,6 +657,7 @@ def main():
                   "opt": opt.state_dict(), "step": step, "best_sel": best, "best_step": best_step,
                   "vocab": vocab, "width": args.width, "bottleneck": args.bottleneck,
                   "depth": args.depth, "ctx": args.ctx, "ctx_k": args.ctx_k, "height": H, "unk": unk,
+                  "freeze_bn_stats": args.freeze_bn_stats,
                   "qat": {"bits": 8, "from_step": qat_from} if qat_from is not None else None,
                   "args": cfg, "val": {k: list(v) for k, v in res.items()}}
             if ema is not None:

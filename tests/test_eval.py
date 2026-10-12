@@ -4,6 +4,7 @@
 
 No network, no screenshots, no model downloads.
 """
+import hashlib
 import json
 import re
 import sys
@@ -54,6 +55,52 @@ def test_lev_and_scores():
 
 def test_oov_chars():
     assert metrics.oov_chars(["あい！"], {"あ", "!"}) == {"い": 1}
+
+
+def test_local_capture_identity_and_roles(tmp_path, monkeypatch):
+    import pytest
+    from PIL import Image
+    monkeypatch.setattr(sets, "SETS", dict(sets.SETS))
+    monkeypatch.setattr(sets, "LOCAL_MANIFESTS", {})
+    image = tmp_path / "capture.png"
+    Image.fromarray(np.full((64, 96, 3), 30, np.uint8)).save(image)
+    row = {"id": "capture-1", "vn": "v4", "image": image.name, "box": [8, 8, 40, 16],
+           "region": [0, 0, 96, 64], "text": "あいう", "split": "dev", "session": "A",
+           "hand_checked": True, "sha256": hashlib.sha256(image.read_bytes()).hexdigest()}
+    manifest = tmp_path / "local.jsonl"
+    manifest.write_text(json.dumps(row) + "\n")
+    sets.register_local("private-dev", manifest)
+    lines, _ = sets.load("private-dev", None)
+    assert lines[0].text == "あいう" and lines[0].crop_rgb.shape == (24, 48, 3)
+    assert len(sets.regions("private-dev", None)) == 1
+    with pytest.raises(ValueError, match="override"):
+        sets.register_local("vita-test", manifest)
+    row["sha256"] = "0" * 64
+    manifest.write_text(json.dumps(row) + "\n")
+    with pytest.raises(ValueError, match="hash"):
+        sets.register_local("corrupted", manifest)
+
+
+def test_hiragana_alignment_attributes_full_text_errors():
+    rows = [{"text": "っが猫あ", "pred": "つかああ"}, {"text": "い", "pred": ""},
+            {"text": "", "pred": "う"}]
+    h = metrics.score_hiragana(rows)
+    assert (h["chars"], h["substitutions"], h["deletions"], h["insertions"]) == (4, 2, 1, 1)
+    assert h["errors"] == 4 and h["cer"] == 1.0 and h["into_hiragana"] == 1
+    assert { (c["reference"], c["prediction"]) for c in h["confusions"] } == {
+        ("っ", "つ"), ("が", "か"), ("猫", "あ"), ("い", None), (None, "う")}
+    assert metrics.score_hiragana([{"text": "猫", "pred": "犬"}])["cer"] is None
+
+
+def test_alignment_cost_matches_levenshtein():
+    import itertools
+    words = ["".join(w) for n in range(4) for w in itertools.product("あ猫", repeat=n)]
+    for g in words:
+        for p in words:
+            pairs = metrics.align_text(g, p)
+            assert "".join(a for a, _ in pairs if a is not None) == g
+            assert "".join(b for _, b in pairs if b is not None) == p
+            assert sum(a != b for a, b in pairs) == metrics.lev(g, p)
 
 
 def test_ctc_greedy():

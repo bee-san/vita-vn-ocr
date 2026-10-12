@@ -1,6 +1,6 @@
 # CI
 
-`.github/workflows/ci.yml` runs on every pull request and every push to `main`, on `ubuntu-24.04`, with each action pinned to a commit SHA. Python is 3.11.15 with the hash-checked `requirements-ci.lock`: CPU torch 2.5.1 and the same numpy, OpenCV, Pillow and fontTools versions as `requirements.lock`, plus pytest and ruff. Nothing copyrighted is downloaded. The one download is the OFL font M+ 1p from google/fonts at a pinned commit, checked against its sha256.
+`.github/workflows/ci.yml` runs on every pull request and every push to `main`, on `ubuntu-24.04`, with each action pinned to a commit SHA. Python is 3.11.15 with the hash-checked `requirements-ci.lock`: CPU torch 2.5.1 and the same numpy, OpenCV, Pillow, fontTools and PyArrow versions as `requirements.lock`, plus pytest and ruff. Nothing copyrighted is downloaded. The one data download is the OFL font M+ 1p from google/fonts at a pinned commit, checked against its sha256.
 
 | Job | Checks | Local command |
 |---|---|---|

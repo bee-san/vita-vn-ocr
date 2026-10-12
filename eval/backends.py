@@ -144,6 +144,29 @@ class Recognizer:
         pass
 
 
+class NativeVocr(Recognizer):
+    """The deployment C runtime in W8I mode, with the evaluated blob's identity."""
+
+    def __init__(self, path):
+        sys.path.insert(0, str(ROOT / "runtime"))
+        sys.path.insert(0, str(ROOT / "train"))
+        from pyvocr import Vocr
+
+        from export import read_blob
+        self.runtime = Vocr(path, mode="w8i", max_width=1024)
+        blob = read_blob(path)
+        if not blob["int8"]:
+            raise ValueError("vocr: evaluation requires an int8 blob for deployment W8I mode")
+        self.name = Path(path).stem + "/w8i"
+        self.info = {"backend": "vocr", "mode": "w8i", "sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+                     "blob_bytes": self.runtime.blob_bytes, "arena_bytes": self.runtime.arena_bytes,
+                     "vocab_set": set(blob["vocab"][1:])}
+
+    def read(self, crops):
+        from common import to_gray
+        return [self.runtime.run(to_gray(c) if c.ndim == 3 else c) for c in crops]
+
+
 class TinyTorch(Recognizer):
     """train/model.py checkpoint; preprocessing = train/train.py (grey, bilinear resize to
     the checkpoint's input height, 32 unless it records "height", width <= 1024, padded to
@@ -413,6 +436,8 @@ class Ncnn(Recognizer):
 
 
 def make_recognizer(spec, cmd_format="ppm"):
+    if spec.startswith("vocr:"):
+        return NativeVocr(spec[5:])
     if spec.startswith("cmd:"):
         return Cmd(spec[4:], cmd_format)
     if spec.startswith("ncnn:"):

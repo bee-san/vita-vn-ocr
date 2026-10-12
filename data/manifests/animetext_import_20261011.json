@@ -1,0 +1,493 @@
+{
+  "policy": {
+    "repo": "JustANormalTinkerer/animetext-ocr",
+    "revision": "9c70c6b5609c4378d46ac0df4927c4119ebfd83d",
+    "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr",
+    "license": "CC-BY-NC-SA-4.0",
+    "purpose": "Private personal recognition fine-tuning; raw data stays local",
+    "seq_confidence": 0.95,
+    "min_token_confidence": 0.9,
+    "max_crops": 20000,
+    "split_seed": 1,
+    "holdout_percent": 10
+  },
+  "sources": [
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00000.parquet",
+      "sha256": "24711ba62688029908123df57af24b814fe2e83260c1e0211b8986bfe0ecc8c4",
+      "bytes": 124624699
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00001.parquet",
+      "sha256": "4e25dfc3808102fa24e11098af95a53c3235958a0120b8f3912f0ee10cfc87f9",
+      "bytes": 125190018
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00002.parquet",
+      "sha256": "2ddaf374d9ccf3565a22cd30800d364daf3bdbffe1eff3c5d63430b19d2a002c",
+      "bytes": 135706613
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00003.parquet",
+      "sha256": "7bc98b576d28adda53aacb7208f966619f6d9cf7e41acb7af6385b1194e1c6de",
+      "bytes": 129966553
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00004.parquet",
+      "sha256": "7deb8ab6dc909ace08d21ed9693762f8e11358b59dfe6e166cfffe9d1b1dd0e9",
+      "bytes": 138720139
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00005.parquet",
+      "sha256": "163ededb43a2917c2a3db5fa6244a093faa8b0a495438d8fcd836644234ce338",
+      "bytes": 154257397
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00006.parquet",
+      "sha256": "47eac8a9c04143ca325f4d0c2a6fffd1b40347e0cf1d04c0209e9b8bd0973cab",
+      "bytes": 155095482
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00007.parquet",
+      "sha256": "2dc8ec73f73aec0f209863a0a52e5a4b6225739212944d73b61dc68ceffbd1a6",
+      "bytes": 132915046
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00008.parquet",
+      "sha256": "a790100bab0eb7313d7b1dff0142634476188f99daa26164b0f4e79b48db8dc2",
+      "bytes": 148351896
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00009.parquet",
+      "sha256": "2a3cab7c88e0fe8b96169ae404c3f561ee35baec53d61e15be9c2f48b08f00c7",
+      "bytes": 131374720
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00010.parquet",
+      "sha256": "6885f86cf362378ea5d4fd5fe84feb817d50f3d8a5360f8f8b25803c2d5b1fc0",
+      "bytes": 151755756
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00011.parquet",
+      "sha256": "575922d301640acf2299b4f1c7e2faf9356b2b0e2ae70f224ac2390882c31450",
+      "bytes": 132499718
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00012.parquet",
+      "sha256": "c9449e69f5d432ac59c134a821751ff02800d94c2004de3cb799f97aa95b9f2c",
+      "bytes": 137437685
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00013.parquet",
+      "sha256": "0bf65d711755152493e88a1ff8e0754a123dd2fc4d5f3094ad9c2f54352607ad",
+      "bytes": 147162049
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00014.parquet",
+      "sha256": "b40479d892a32371d1b6fdf242afd742b4a5b371e9424b548283134dcc9072ee",
+      "bytes": 144103378
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00015.parquet",
+      "sha256": "e2b887ff56b4c64095aab6c7c1bde728ec3073820a8e4a5cea39458b2c8a56dd",
+      "bytes": 144193644
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00016.parquet",
+      "sha256": "c61fd0316af944e822c54c7bc5f588fc818698a0dd1f0017386afdb52378e3bc",
+      "bytes": 149867025
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00017.parquet",
+      "sha256": "1c3e96141d3f35ef1fe5084cf58a434ccd97607da55dde7b34b1a15ae05b6b70",
+      "bytes": 144523267
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00018.parquet",
+      "sha256": "0a44ebbf07e9c034f5cf018f6ac3de54b714d600f647430af6f6c68e6a38bcb5",
+      "bytes": 140710814
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00019.parquet",
+      "sha256": "38809e7b1d68eb8391797517fcab4e7a4817468d93418e01940e919866633faf",
+      "bytes": 134108071
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00020.parquet",
+      "sha256": "3e8e9f2d1c4b1b2c31d7abb502b0df6c2f0a9e15de362b0e4fb4511f46fc82cd",
+      "bytes": 152176101
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00021.parquet",
+      "sha256": "a8277692ff09123d60532bcc30e759f88e2202f1af6bb4aaf01e8d2e60d92fdd",
+      "bytes": 127995060
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00022.parquet",
+      "sha256": "9e1e802639caffb0cbd6e03396eede8cb0191eb0533f017b24dbe2b6b97e2959",
+      "bytes": 142808514
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00023.parquet",
+      "sha256": "6f2ce89b0224d5f1f49e364fe1c791e7698cb472052e243ddb228759abc9e431",
+      "bytes": 131579481
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00024.parquet",
+      "sha256": "0c83e6e3c321375773406ecfd67b309865f47b63c7be6c1923540c75d35586ca",
+      "bytes": 138516886
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00025.parquet",
+      "sha256": "2cab8c9b73e5575391a92fef2aa429522ab9bdfb811e227f19f938b4108444c9",
+      "bytes": 141523927
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00026.parquet",
+      "sha256": "b4a3dd5d4a0f7e7ebbc0e55e310fc90795157687aa1ab98f0c1560a4f7b576c7",
+      "bytes": 137415865
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00027.parquet",
+      "sha256": "7bcce999a4148dd829f003f6d351837c17ecc9ae35b66b2e8648242e194cf871",
+      "bytes": 138090100
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00028.parquet",
+      "sha256": "7b0a64428f11c39eb3a0d0cac7b29ce298059c7775f1bb40753e34e2f616cab7",
+      "bytes": 136996012
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00029.parquet",
+      "sha256": "cef289410edf11bacdc69ed6eb58626ef78d020fbcbfbba1e828fa4b51debf4d",
+      "bytes": 147986090
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00030.parquet",
+      "sha256": "914e593791c9141b035afd6d0f5a8505ddd7aaefecba3c14fe2b69a722b59ced",
+      "bytes": 138044698
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00031.parquet",
+      "sha256": "ab2629490d560edf0a2cbe7289319dde0c3339fd9af7c02c35ec3642620a74f8",
+      "bytes": 124886169
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00032.parquet",
+      "sha256": "9b59c09dfce2cd6649b27e03f568f35ca9961001feaad7ccf85eed7be8016bb2",
+      "bytes": 133783326
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00033.parquet",
+      "sha256": "ec05feab43de1086d80f42f329c74538ff89eda43fc6fe0d25b7caf59188d036",
+      "bytes": 121847510
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00034.parquet",
+      "sha256": "2a5b6c89307eba57b9eae6048c3c3f2f326201ed7f1657b466eb05ad2d908a51",
+      "bytes": 144054602
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00035.parquet",
+      "sha256": "fee1af9db23b04309f3a0fb7d028a6ff089fb560344f47d0f6a4fee8b94194b8",
+      "bytes": 144768338
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00036.parquet",
+      "sha256": "89c9e8efa9f00e726ccea98a6ae324b4e5d269625241f7cdd7be544b44b5ddbb",
+      "bytes": 139310902
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00037.parquet",
+      "sha256": "8115850637261e07cf46855af895d15eddfe1bb447955907610f409cdb047e6c",
+      "bytes": 173822765
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00038.parquet",
+      "sha256": "cee32302bc16e3fa864bb688d76d80ba74086863c31c5a57ffd1c09b5aa862d2",
+      "bytes": 153469814
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00039.parquet",
+      "sha256": "ee0735332ffd25a8669ffea81769ae8f443bb62d88845a5ac2f486ff05551089",
+      "bytes": 138786279
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00040.parquet",
+      "sha256": "8062053978d55517ef73ed2bf1d4f5043605c90f5b0199cc63a579a0b4e9bdca",
+      "bytes": 115549333
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00041.parquet",
+      "sha256": "f777e79bbbf8fcefc311f039bb8bfa70c16dc0366d651249643828344f186ef9",
+      "bytes": 129591566
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00042.parquet",
+      "sha256": "57cf53630469791b1538695b2b1c18b97b76ebdc42d6dadf2efd28b4aca0093b",
+      "bytes": 129927523
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00043.parquet",
+      "sha256": "b1d9c216864fd6de37a82bb809923179ec64e31eb2745a57adb01e1891447390",
+      "bytes": 132864269
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00044.parquet",
+      "sha256": "07cf5ba4809b141adb2650bca34e15747d6858c3cafa904a80b191a3eb2f017e",
+      "bytes": 129411828
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00045.parquet",
+      "sha256": "75967192d286d9b3ae50c55c8e7e5b1a12a4699112ada78b5e980b748a2a4190",
+      "bytes": 118852391
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00046.parquet",
+      "sha256": "ecd04be07079b7d6dfdc7c93e1aed29c2d92f2ffa55c08b817382bf17c6bb2d8",
+      "bytes": 137614646
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00047.parquet",
+      "sha256": "122ac6ec9783ae2b8c51dd1faeeb1714be630501ea2b5f4c485e242734624682",
+      "bytes": 160833686
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00048.parquet",
+      "sha256": "02b80358185d63cd82bc594ffc161186282404a097dfc768dc993e15c030ce21",
+      "bytes": 128448887
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00049.parquet",
+      "sha256": "9bf8f38a08014839e1fc7910d906c09a42ade8a00350daaafa3e96365131e587",
+      "bytes": 128910986
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00050.parquet",
+      "sha256": "3f3c19807f00298e80fb53c2b8ff65dc5787b2c8f171d4dbaf40444d70e9cd31",
+      "bytes": 131965954
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00051.parquet",
+      "sha256": "30753ce55c2a346d5bdb98b9eaaee7c2f2484b8511d67812f889ad5cb16fb8d7",
+      "bytes": 136767102
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00052.parquet",
+      "sha256": "5a2257297ee9e30d6ab4d3dd2c64918d3deb4e25357ce69aca2614cc5a006cd3",
+      "bytes": 140445060
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00053.parquet",
+      "sha256": "62c453f8d80594a6802156919bb39ac60ade00a296c840b46920486ee306b82c",
+      "bytes": 136698669
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00054.parquet",
+      "sha256": "dfa073f8564d7571fa289215e89b8051a30550551021b9b4fb00013a97d5061f",
+      "bytes": 141946681
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00055.parquet",
+      "sha256": "52686936a7377913e940165bce0e81baeec31e7cec1595fb80e263ad58d4c769",
+      "bytes": 138766987
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00056.parquet",
+      "sha256": "983c2dc22c8b55ae4bc8c0bf50de0898bf2a3a1d13930a770e0b9d974da339a5",
+      "bytes": 154154225
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00057.parquet",
+      "sha256": "2a72176dfa65a00cb81f7e2bf305c4a922936e4af43421ea8a19b4bf639d2ba6",
+      "bytes": 144729484
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00058.parquet",
+      "sha256": "a7f1fb6ba6639c12717189d659b50a97dd2112a61798a50b3e34aa9c814f4a10",
+      "bytes": 148401502
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00059.parquet",
+      "sha256": "2bda5004189448f432066008393813904d0abd6c8dfdb508cfe59a990cc72e42",
+      "bytes": 134441972
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00060.parquet",
+      "sha256": "42b5984bd5f2ecc8e4927fde5fb5fde94543b2d2ab592b93a3fef70cfb4f7028",
+      "bytes": 143470387
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00061.parquet",
+      "sha256": "0da6e529f92baca5b7a0283cc2456268558c456167701dd966f446a88c85c031",
+      "bytes": 121961627
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00062.parquet",
+      "sha256": "f069cba7f0be90c5422272f3172f736a73e34d8284dee919076d0b0c3f4b8224",
+      "bytes": 146273295
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00063.parquet",
+      "sha256": "3aa527ef4fbf746d44a23afaae538a11ee08cb386ac5ed6b57d4a50aaca1ceee",
+      "bytes": 130296869
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00064.parquet",
+      "sha256": "e63ad3d934fb6e9b3de17ef529e91cf8291f08a389c54c04c42be7d69181cc97",
+      "bytes": 145412825
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00065.parquet",
+      "sha256": "bb9e4725e036bfc6724824c6e8f49d9d50f3645ee45e91f16b7bfb0613d6b501",
+      "bytes": 140519410
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00066.parquet",
+      "sha256": "f2c933d519552966dac88faaf9d3d91b9c2c8be8289cd02f6834e9fb3f9a81d4",
+      "bytes": 126851098
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00067.parquet",
+      "sha256": "1b01e02a98ba44f54b88d0d891c11fcc203bb04f975f005526385a48066ad467",
+      "bytes": 144902303
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00068.parquet",
+      "sha256": "bfec6e1d5158af4dcf54f908f173f1576265e4fe4238b488cf41418c9f7721e7",
+      "bytes": 138341738
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00069.parquet",
+      "sha256": "80681c5c722d5eeb57cdefe291eecc98d0536b83e70687fd5ae90e24ac2f509a",
+      "bytes": 129180950
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00070.parquet",
+      "sha256": "519dfb06f56673fa607d1103e1af4eec5164eb80450a9d1e2e22527d488e5261",
+      "bytes": 141749845
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00071.parquet",
+      "sha256": "4b4e3ada2ca45712fd31bd93ae4a3484223edc0b3c04750630683a961e3adce9",
+      "bytes": 142528483
+    },
+    {
+      "url": "https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr/resolve/9c70c6b5609c4378d46ac0df4927c4119ebfd83d/data/train-00072.parquet",
+      "sha256": "5c999bb76ac525a88e3c5e9c854316fd829932e09d142789381bf8facd1b3119",
+      "bytes": 123019050
+    }
+  ],
+  "vocab_sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8",
+  "counts": {
+    "read": 724241,
+    "accepted": 20000,
+    "accepted_train": 18072,
+    "seq_confidence": 406487,
+    "multiple_bands": 1721,
+    "language": 115143,
+    "vertical_or_multiline": 121655,
+    "min_token_confidence": 51752,
+    "dimensions": 6744,
+    "vocabulary": 682,
+    "accepted_holdout": 1928,
+    "empty_or_whitespace": 22,
+    "ctc_length": 7,
+    "duplicate": 28
+  },
+  "audit": {
+    "checked": 200,
+    "label_errors": 0,
+    "layout_errors": 11,
+    "uncertain_labels": 13,
+    "decidable_labels": 187,
+    "label_error_rate": 0.0,
+    "rejected_kana": [
+      "ぁ",
+      "あ",
+      "お",
+      "ぷ"
+    ],
+    "observed_kana": {
+      "に": 7,
+      "ふ": 2,
+      "よ": 3,
+      "で": 12,
+      "こ": 7,
+      "し": 15,
+      "お": 13,
+      "ま": 10,
+      "い": 24,
+      "が": 6,
+      "あ": 18,
+      "え": 6,
+      "る": 10,
+      "け": 10,
+      "な": 17,
+      "か": 10,
+      "っ": 20,
+      "た": 12,
+      "す": 11,
+      "ぎ": 1,
+      "て": 18,
+      "の": 25,
+      "も": 6,
+      "と": 6,
+      "へ": 1,
+      "げ": 1,
+      "ち": 7,
+      "は": 6,
+      "そ": 4,
+      "わ": 5,
+      "り": 13,
+      "さ": 11,
+      "ん": 21,
+      "ぬ": 1,
+      "ね": 3,
+      "れ": 10,
+      "ゃ": 4,
+      "を": 5,
+      "だ": 11,
+      "ら": 10,
+      "め": 3,
+      "や": 4,
+      "ぽ": 1,
+      "ゅ": 1,
+      "く": 10,
+      "せ": 2,
+      "び": 1,
+      "み": 8,
+      "ほ": 3,
+      "う": 6,
+      "ゆ": 2,
+      "べ": 2,
+      "き": 6,
+      "ど": 4,
+      "じ": 3,
+      "ぇ": 1,
+      "ご": 1,
+      "ば": 3,
+      "ぶ": 2,
+      "つ": 2,
+      "ぞ": 1,
+      "ぐ": 1,
+      "む": 1
+    },
+    "kana_confusions": [],
+    "counts": {
+      "audit_rejected": 2189,
+      "accepted": 15883,
+      "holdout": 1928
+    },
+    "audit_sha256": "85f2195b8a7c9a0fd11d4cf2f55e33d60dccffa852c663e6c66b43eff9af2bde",
+    "import_manifest_sha256": "dbcad377a488156dc0e64603113763e1f5d95f6164e0461d2278ea9f3bfee0f5",
+    "approved_training_manifest_sha256": "04d6a3707fe4acc3caa83af300685bf4df987584fbe7db78e535ff2eb283ad09"
+  },
+  "audit_sample": {
+    "sample_population": "First flushed accepted training crops, before import completed",
+    "population_rows": 8000,
+    "split": "train",
+    "seed": 1,
+    "checked": 200
+  }
+}

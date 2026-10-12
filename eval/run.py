@@ -21,6 +21,7 @@ polarity contract): a crop whose text synth/common.line_dark calls dark is inver
 """
 import argparse
 import datetime
+import hashlib
 import json
 import os
 import platform
@@ -58,7 +59,7 @@ def available_sets(names, data):
                 out.append(n)
             else:
                 print(f"skipping synth-val: {path} not found", file=sys.stderr)
-        elif (sets.MANIFESTS / f"{n}.jsonl").exists():
+        elif n in sets.LOCAL_MANIFESTS or (sets.MANIFESTS / f"{n}.jsonl").exists():
             out.append(n)
         else:
             print(f"skipping {n}: no manifest yet", file=sys.stderr)
@@ -116,7 +117,7 @@ def finder_mode(rec, find, name, data, args):
     cache = sets.ImageCache()
     tot = {"regions": 0, "rejected": 0, "gt_lines": 0, "found": 0, "dets": 0, "dets_ok": 0,
            "errors": 0, "chars": 0, "concat_errors": 0, "concat_chars": 0}
-    out_regions = []
+    out_regions, script_rows = [], []
     for path, (rx, ry, rw, rh), rows in sets.regions(name, data):
         img = cache.get(path)
         region = img[ry:ry + rh, rx:rx + rw]
@@ -130,6 +131,7 @@ def finder_mode(rec, find, name, data, args):
         rec_reg = {"region": [rx, ry, rw, rh], "image": Path(path).name, "rejected": dets is None,
                    "gt": [g["id"] for g in gts], "dets": []}
         if dets is None:
+            script_rows.extend({"text": g["text"], "pred": ""} for g in scored)
             tot["rejected"] += 1
             tot["errors"] += n_gt
             if not any(g.get("uncertain") for g in gts):
@@ -150,12 +152,15 @@ def finder_mode(rec, find, name, data, args):
         for i, j in pairs:
             g = gts[j]
             if not g.get("uncertain"):
+                script_rows.append({"text": g["text"], "pred": preds[i]})
                 tot["found"] += 1
                 tot["errors"] += metrics.lev(metrics.norm(preds[i]), metrics.norm(g["text"]))
         for j, g in enumerate(gts):
             if j not in matched_g and not g.get("uncertain"):
+                script_rows.append({"text": g["text"], "pred": ""})
                 tot["errors"] += len(metrics.norm(g["text"]))
         for i in unmatched:
+            script_rows.append({"text": "", "pred": preds[i]})
             tot["errors"] += len(metrics.norm(preds[i]))
         if not any(g.get("uncertain") for g in gts):
             order = sorted(range(len(dets)), key=lambda i: (dets[i][1], dets[i][0]))
@@ -174,6 +179,7 @@ def finder_mode(rec, find, name, data, args):
         "concat_cer": round(tot["concat_errors"] / max(1, tot["concat_chars"]), 5),
         "concat_regions_chars": tot["concat_chars"],
     }
+    summary["hiragana"] = metrics.score_hiragana(script_rows)
     return {"finder": summary, "regions": out_regions}
 
 
@@ -182,6 +188,13 @@ def print_recognizer(name, res, errors):
     inv = f" | {res['inverted_lines']} inverted" if res.get("inverted_lines") else ""
     print(f"\n{name}: {a['lines']} lines, {a['chars']} chars | CER {fmt(a['cer'])} | exact {fmt(a['exact'])}"
           f" | game-macro CER {fmt(res['game_macro_cer'])} | {res['host_ms_per_line']} ms/line (host){inv}")
+    h = res["hiragana"]
+    print(f"  hiragana CER {fmt(h['cer'])}: {h['errors']}/{h['chars']} "
+          f"(sub {h['substitutions']}, del {h['deletions']}, ins {h['insertions']}; "
+          f"other scripts -> hiragana {h['into_hiragana']})")
+    if errors:
+        for c in h["confusions"][:errors]:
+            print(f"    {c['reference'] or '∅'} -> {c['prediction'] or '∅'}: {c['count']}")
     if res["styles"]:
         print(f"  {'style':16s} {'lines':>6s} {'chars':>6s} {'CER':>8s} {'exact':>8s}")
         for tag, s in res["styles"].items():
@@ -206,6 +219,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--model", required=True, help="checkpoint, ONNX, preset, ncnn:DIR, manga-ocr or cmd:COMMAND")
     ap.add_argument("--set", default="all", help="vita-test, psp-test, synth-val, comma list, or all")
+    ap.add_argument("--manifest", type=Path, help="private hand-checked local capture manifest; --set names it")
+    ap.add_argument("--local-set", action="append", default=[], metavar="NAME=MANIFEST",
+                    help="add a private capture set alongside the shared benchmark; repeatable")
     ap.add_argument("--finder", default=None, help="overlay, console, gradient, py:MOD:FUNC or cmd:COMMAND")
     ap.add_argument("--data", default=None, help="screenshot dir (default $VOCR_EVAL_DATA or data/eval)")
     ap.add_argument("--pad", type=int, default=None,
@@ -222,7 +238,18 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     data = data_dir(args.data)
-    names = ["vita-test", "psp-test", "synth-val"] if args.set == "all" else args.set.split(",")
+    local_names = []
+    for spec in args.local_set:
+        name, sep, path = spec.partition("=")
+        if not sep or not name or not path:
+            ap.error("--local-set requires NAME=MANIFEST")
+        sets.register_local(name, path)
+        local_names.append(name)
+    if args.manifest:
+        if args.set == "all" or "," in args.set:
+            ap.error("--manifest requires one new --set name")
+        sets.register_local(args.set, args.manifest)
+    names = ["vita-test", "psp-test", "synth-val", *local_names] if args.set == "all" else args.set.split(",")
     for n in names:
         if n not in sets.SETS:
             ap.error(f"unknown set {n!r}")
@@ -239,6 +266,15 @@ def main(argv=None):
                "env": {"git": git_sha(), "python": platform.python_version(), "host": platform.node(),
                        "threads": backends.threads(),
                        "date": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")}}
+    results["datasets"] = {}
+    for n in names:
+        if n == "synth-val":
+            continue
+        manifest = sets.LOCAL_MANIFESTS.get(n, sets.MANIFESTS / f"{n}.jsonl")
+        rows = sets.read_manifest(n)
+        results["datasets"][n] = {"manifest_sha256": hashlib.sha256(manifest.read_bytes()).hexdigest(),
+            "split": rows[0]["split"] if n in sets.LOCAL_MANIFESTS else "test",
+            "sessions": sorted({r["session"] for r in rows if r.get("session")})}
     for n in names:
         if find:
             res = finder_mode(rec, find, n, data, args)

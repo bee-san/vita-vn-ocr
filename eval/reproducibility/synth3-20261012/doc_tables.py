@@ -45,7 +45,10 @@ def load_scores(paths):
     models, lines = {}, None
     for p in paths:
         s = json.loads(Path(p).read_text(encoding="utf-8"))
-        lines = lines or s["lines"]
+        if lines is None:
+            lines = s["lines"]
+        elif [x["id"] for x in s["lines"]] != [x["id"] for x in lines]:
+            raise SystemExit(f"{p}: holds other development lines than {paths[0]}")
         models.update(s["models"])
     return lines, models
 

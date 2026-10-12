@@ -4,6 +4,7 @@
   sheets.py make --mode pass1 --out BATCH [--reads R] [--subsets strict,tv_native,scene_vn]
   sheets.py make --mode pass2 --out BATCH --lines ids.json      (ids from decide.py queue)
   sheets.py make --mode blind --out BATCH --lines ids.json
+  (gradcheck.py writes "grad" batches: the frame is the GRAD box, the one candidate the label)
 
 A batch directory holds README.md (the task and the exact output format), S001.png ... (sheets
 of at most 1280 x 1280 px) and S001.json ... (per entry: its number, line id and numbered
@@ -127,8 +128,8 @@ def _fonts():
             ImageFont.truetype(str(FONT), 13))
 
 
-def context_box(line, kind, W, H):
-    cx0, cy0, cx1, cy1 = L.crop_box(line, kind, W, H)
+def context_box(line, kind, W, H, frame=None):
+    cx0, cy0, cx1, cy1 = frame or L.crop_box(line, kind, W, H)
     h = max(1, line["ink"][3] - line["ink"][1])
     dx, dy = max(4, round(1.0 * h)), max(3, round(0.35 * h))
     return [max(0, cx0 - dx), max(0, cy0 - dy), min(W, cx1 + dx), min(H, cy1 + dy)]
@@ -142,14 +143,15 @@ def zoom_of(line, ctx_w):
     return z
 
 
-def render_entry(rgb, line, kind, n, cands, show_engines, fonts):
-    """One entry block (PIL RGB image): header, the framed crop in context, the candidates."""
+def render_entry(rgb, line, kind, n, cands, show_engines, fonts, frame=None):
+    """One entry block (PIL RGB image): header, the framed crop in context, the candidates.
+    frame: the box to mark (default: the line's ink crop)."""
     from PIL import Image, ImageDraw
     font, bold, small = fonts
     H, W = rgb.shape[:2]
-    ctx = context_box(line, kind, W, H)
+    ctx = context_box(line, kind, W, H, frame)
     if ctx[2] - ctx[0] > SHEET - 20:          # too wide even at 1x: keep the crop, trim the context
-        c = L.crop_box(line, kind, W, H)
+        c = frame or L.crop_box(line, kind, W, H)
         ctx = [max(0, c[0] - 4), ctx[1], min(W, c[2] + 4), ctx[3]]
     z = zoom_of(line, ctx[2] - ctx[0])
     patch = Image.fromarray(np.ascontiguousarray(rgb[ctx[1]:ctx[3], ctx[0]:ctx[2]]))
@@ -159,7 +161,7 @@ def render_entry(rgb, line, kind, n, cands, show_engines, fonts):
         z = f
     else:
         patch = patch.resize((patch.width * z, patch.height * z), Image.NEAREST)
-    c = L.crop_box(line, kind, W, H)
+    c = frame or L.crop_box(line, kind, W, H)
     d = ImageDraw.Draw(patch)
     fx0, fy0 = (c[0] - ctx[0]) * z - 1, (c[1] - ctx[1]) * z - 1
     fx1, fy1 = (c[2] - ctx[0]) * z, (c[3] - ctx[1]) * z
@@ -270,6 +272,12 @@ INTRO = {
              "image alone. The candidates are shuffled and unattributed; any of them, or none, may be right.",
     "blind": "Blind re-check: decide each line from the image alone. The candidates are shuffled and "
              "unattributed; any of them, or none, may be right.",
+    "grad": "GRAD-crop check. Here the red frame is the box the console's line finder cut for the line, and "
+            "the one candidate is the line's decided label. Pick 1 when the frame shows exactly that text and no "
+            "other readable character (decoration, plates, background art and unreadable slivers of glyphs cut "
+            "off at the frame's edge are fine). Otherwise type exactly what the frame shows (for example the "
+            "label plus the digits of a card), skip \"cut\" when the frame cuts characters of the label, or mark "
+            "unsure.",
 }
 DEFAULT = ("A shortcut for entries with a single candidate: {\"sheet\": \"S001\", \"default\": 1} accepts\n"
            "candidate 1 of every entry of that sheet that has exactly one candidate and no explicit line.\n"
@@ -284,17 +292,17 @@ def shuffled(cands, line_id):
 
 
 def make_batch(entries, out, mode, name=None):
-    """entries: [(line id, shot row, line, candidates)], numbered 1..N in this order (numbers
-    are unique in the batch). Writes the batch directory."""
+    """entries: [(line id, shot row, line, candidates[, frame box])], numbered 1..N in this order
+    (numbers are unique in the batch). Writes the batch directory."""
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     fonts = _fonts()
     show = mode == "pass1"
     blocks, cur, rgb = [], None, None
-    for n, (lid, s, ln, cands) in enumerate(entries, 1):
+    for n, (lid, s, ln, cands, *frame) in enumerate(entries, 1):
         if s["shot"] != cur:
             cur, rgb = s["shot"], _load(s)
-        blocks.append(render_entry(rgb, ln, s["kind"], n, cands, show, fonts))
+        blocks.append(render_entry(rgb, ln, s["kind"], n, cands, show, fonts, frame[0] if frame else None))
     sheets, sizes = pack(blocks)
     from PIL import Image
     index = []
@@ -303,7 +311,7 @@ def make_batch(entries, out, mode, name=None):
         page = Image.new("RGB", (max(64, w), max(64, h)), (255, 255, 255))
         rows = []
         for bi, x, y in members:
-            lid, s, ln, cands = entries[bi]
+            lid, s, ln, cands = entries[bi][:4]
             page.paste(blocks[bi], (x, y))
             row = {"n": bi + 1, "id": lid, "candidates": [{"c": i, "text": c["text"]} for i, c in enumerate(cands, 1)]}
             if show:
@@ -321,7 +329,8 @@ def make_batch(entries, out, mode, name=None):
     eng = (" Each candidate also shows which engines read it (M MeikiOCR on its own box, m MeikiOCR on a wider "
            "view, V PP-OCRv6 small on that view, v PP-OCRv6 small on the crop; · = not that engine).") if show else ""
     (out / "README.md").write_text(README.format(name=name or out.name, mode=mode, n=len(entries), sheets=len(sheets),
-                                                 intro=INTRO[mode], engines=eng, default=DEFAULT if show else ""),
+                                                 intro=INTRO[mode], engines=eng,
+                                                 default=DEFAULT if mode in ("pass1", "grad") else ""),
                                    encoding="utf-8")
     return len(sheets)
 

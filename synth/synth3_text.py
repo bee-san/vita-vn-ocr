@@ -6,6 +6,7 @@
                         --dev-vns dev_vns.txt --out POOLS
   synth3_text.py index  --pools POOLS            # char -> sampled contexts (focus-character control)
   synth3_text.py targets --pools POOLS --real REAL.npz[+REAL2.npz] --jiten-vn VN.csv --mining M.json
+  synth3_text.py dev-vns --dev teacher_val.npz --out exclude_dev_vns.txt
 
 Every source is read from a pinned local copy (data/manifests/synth3_text_sources.json lists URL,
 sha256, licence class); nothing is downloaded here. A line is kept only if every character is in
@@ -506,6 +507,20 @@ def cmd_targets(args):
           f"{sum(1 for c in vocab if real[c])} seen in real labels", flush=True)
 
 
+GENERAL_VN_DEV = ("v4 v1015 v1281 v2632 v5154 v5297 v10091 v11109 v11454 v12775 v13766 v15773 v16128 v18161 "
+                  "v18163 v18643").split()   # every VN of the general-VN and CLANNAD development manifests
+
+
+def cmd_dev_vns(args):
+    """The development VNs synth3's names and scenes must avoid: every VN of the development
+    cohort (teacher_val's meta) and of the repo's general-VN / CLANNAD development manifests."""
+    vns = set(GENERAL_VN_DEV)
+    for spec in args.dev:
+        vns |= {m["vn"] for m in json.loads(str(np.load(spec)["meta"]))}
+    Path(args.out).write_text("\n".join(sorted(vns)) + "\n")
+    print(f"{len(vns)} development VNs -> {args.out}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--vocab", type=Path, default=DATA / "vocab.txt")
@@ -532,8 +547,12 @@ def main():
     t.add_argument("--real", required=True, help="training-side real crops (labels only)")
     t.add_argument("--jiten-vn", required=True)
     t.add_argument("--mining")
+    d = sub.add_parser("dev-vns")
+    d.add_argument("--dev", action="append", required=True, help="development npz (meta holds vn)")
+    d.add_argument("--out", required=True)
     args = ap.parse_args()
-    {"pools": cmd_pools, "names": cmd_names, "index": cmd_index, "targets": cmd_targets}[args.cmd](args)
+    {"pools": cmd_pools, "names": cmd_names, "index": cmd_index, "targets": cmd_targets,
+     "dev-vns": cmd_dev_vns}[args.cmd](args)
 
 
 if __name__ == "__main__":

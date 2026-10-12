@@ -1,0 +1,320 @@
+{
+  "candidate_evaluated": false,
+  "capture_period_utc": {
+    "first": "2026-10-11T18:32:05.348061+00:00",
+    "last": "2026-10-12T05:20:48.905468+00:00"
+  },
+  "exclusions": {
+    "capture_profile_sha256": "f8442d826baf1a0201432bc4d20ea750adad5525e5fd4b6a8f6842bc379d7815",
+    "explicit_verified_pilot": {
+      "successful_pages_excluded": 9,
+      "summary_sha256": "e8a956a2bf52fef2fa8b5046fa983674704edc737891603f3f61681b4cae766f",
+      "whole_roi_proxy_chars_excluded": 127
+    },
+    "finder_geometry_failures_not_contributed_to_target": true,
+    "finder_geometry_pauses_excluded": 3,
+    "geometry_pause_events": [
+      "51a616f3b337ccaa6aad274878be04779b65265978a7c2a3b466045e4dd4bd51",
+      "67ff5298e6a38738f62c8cca4d14cc279d9d56cb8a88b050fab572b089982c1e",
+      "775039831472f6845de5245ed05f1c9f83c84a43a7160836ff87e91b1da2e392"
+    ],
+    "pause_reasons": {
+      "finder_empty_truncated_or_many_lines": 3,
+      "no_new_completed_dialogue_timeout": 78
+    },
+    "pilot_native_images_not_contributed_to_target": true,
+    "pilots": [
+      {
+        "capture_journal_sha256": "c553162099fde230b234a140e153a2ec884e270d27bfe430f1a073f96b5a3517",
+        "captured_pages_excluded": 9,
+        "final_profile_signature_overlap": 0,
+        "pilot": "pilot"
+      },
+      {
+        "capture_journal_sha256": "c3ef6ce4d4282eb56a741433ed005912f94caefad2d238d36cb53393f4296213",
+        "captured_pages_excluded": 1,
+        "final_profile_signature_overlap": 0,
+        "pilot": "pilot-final"
+      },
+      {
+        "capture_journal_sha256": "603dff8e03b797adc020a647fdc18463dfbe436657bb7beb1ff7e61607164d57",
+        "captured_pages_excluded": 20,
+        "final_profile_signature_overlap": 0,
+        "pilot": "pilot-full-dialogue"
+      },
+      {
+        "capture_journal_sha256": "489399f4d169a592a527ff3b467e03f3fe5dff82f1f08fb88ae350988a421ef7",
+        "captured_pages_excluded": 29,
+        "final_profile_signature_overlap": 0,
+        "pilot": "pilot-profile"
+      },
+      {
+        "capture_journal_sha256": "71e7dbc11ce7e558c41309532fbede9260c613e86ab37614320d62c57caf969c",
+        "captured_pages_excluded": 2,
+        "final_profile_signature_overlap": 0,
+        "pilot": "pilot-speed"
+      },
+      {
+        "capture_journal_sha256": "731abfeb07ca32dfd27e02f1bcf41f710b3ab65ec51776afdd9059a238416ff8",
+        "captured_pages_excluded": 2,
+        "final_profile_signature_overlap": 0,
+        "pilot": "pilot-steady"
+      },
+      {
+        "capture_journal_sha256": "a99056b35bbc1008d9aaf309e59d655907091f36242246d6c741892ef4306325",
+        "captured_pages_excluded": 9,
+        "final_profile_signature_overlap": 0,
+        "pilot": "pilot-verified"
+      }
+    ],
+    "pilots_captured_pages_excluded": 72,
+    "teacher_failures_retained_without_retry": 27,
+    "uncaptured_choices_menus_transitions_not_contributed_to_target": true
+  },
+  "game": "CLANNAD (PS Vita), Vita3K Qt native 960x544",
+  "google_request_period_utc": {
+    "first": "2026-10-11T18:32:09.229035+00:00",
+    "last": "2026-10-12T05:33:18.094473+00:00"
+  },
+  "harness_revision": "e80690eb6c2f29ee84f5dddf55a1d21d8007c90b",
+  "integrity": {
+    "all_capture_comparison_bindings_valid": true,
+    "capture_completion_stability_receipts_and_native_signatures_valid": true,
+    "capture_journal_events": 3364,
+    "capture_journal_head_sha256": "27a39349b92f0df1613f23c4d2245596536731dc7d4bf761323f6d73efee0e94",
+    "comparison_attempts_per_capture": 1,
+    "comparison_journal_events": 2204,
+    "comparison_journal_head_sha256": "64a54255e2211e626892276b44cca34e7301ac80c8088705691c2169e6250876",
+    "frozen_sources_model_library_and_dependencies_valid": true,
+    "hash_chains_valid": true,
+    "image_file_and_decoded_pixel_hashes_verified": 8719,
+    "model_initializations_or_forwards_during_audit": 0,
+    "native_roi_and_line_pixel_relations_verified": 2204,
+    "paired_line_input_bindings_verified": 4311,
+    "retry_attempts": 0,
+    "session_unchanged_during_audit": true,
+    "summary_file_sha256": "57995390aa6f992f5f3d89774265bdda24f204870c7fa7b568b56f356c0c26ec",
+    "teacher_requests_during_audit": 0
+  },
+  "limitations": [
+    "Google Lens output is an automated reference proxy, not hand-checked ground truth or human CER.",
+    "Whole-ROI comparisons include finder coverage/order, name text and incidental crop-edge content.",
+    "One VN session and one old baseline model; no measured VOCR2 improvement in this diagnostic run.",
+    "Host timings are uncontrolled single calls over differing inputs; no console speed or resident-memory proof.",
+    "Google's remote service is unversioned; local engine/dependencies, request times and outputs are retained.",
+    "Failures, finder-rejected frames and pilot pages contribute zero target characters; rates condition on successful unique captures.",
+    "Native screenshots, crops, engine dialogue outputs and detailed journals remain private and ignored.",
+    "Pilot overlap verification compares exact thresholded foreground masks under the final profile; it does not prove semantic or text independence across other datasets."
+  ],
+  "model_selection_or_training_use": false,
+  "protocol": {
+    "advance_key": "c",
+    "complete_box": [
+      874,
+      508,
+      30,
+      28
+    ],
+    "complete_pixels": 15,
+    "complete_threshold": 160,
+    "host": {
+      "machine": "x86_64",
+      "platform": "Linux-7.2.6-1-cachyos-x86_64-with-glibc2.44",
+      "python": "3.11.15 (main, May 10 2026, 19:28:18) [Clang 22.1.3 ]"
+    },
+    "host_dependencies": {
+      "Pillow": "12.3.0",
+      "numpy": "2.4.6"
+    },
+    "idle_timeout": 120.0,
+    "ignore_boxes": [
+      [
+        874,
+        508,
+        30,
+        28
+      ]
+    ],
+    "ink_threshold": 200,
+    "interval": 0.25,
+    "key_hold_seconds": 0.3,
+    "max_lines": 5,
+    "native_size": [
+      960,
+      544
+    ],
+    "normalization": "eval.metrics.norm; no small-kana/dakuten/kanji folding",
+    "reveal_delay_seconds": 0.5,
+    "reveal_key": "x",
+    "roi": [
+      32,
+      360,
+      896,
+      184
+    ],
+    "stable_samples": 3,
+    "stable_seconds": 2.0
+  },
+  "schema": 1,
+  "status": "completed_diagnostic_test",
+  "summary": {
+    "capture_journal_sha256": "b6cd582c582d22af883710f202f60f9c44848be23c4a8fe2f726799c7f8f81ed",
+    "comparison_journal_sha256": "f2754897c8b69f555706b93a3cd4f709b8066c4a7578c03baf828458db584cd9",
+    "counts": {
+      "captures": 2204,
+      "duplicate_dialogue_signatures": 0,
+      "duplicate_signature_observations": 15802,
+      "empty_roi_reference": 24,
+      "failed_captures": 27,
+      "finder_empty_captures": 0,
+      "incomplete_observations": 3144,
+      "line_google_failures": 3,
+      "line_vocr_failures": 0,
+      "pending_captures": 0,
+      "roi_google_failures": 0,
+      "sampled_frames": 29745,
+      "successful_paired_lines": 4271,
+      "successful_unique_pages": 2177,
+      "whole_roi_google_lines": 4150
+    },
+    "dedup": "foreground dialogue-mask identity; never Google text, which could collapse distinct OCR failures",
+    "lock_sha256": "14ba9297269b1cc741a9993425b3f901a1086bed74be4eaad274381a83ac6425",
+    "model_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+    "paired_line_proxy": {
+      "disagreement_rate": 0.08603548692943248,
+      "edit_disagreements": 3176,
+      "hiragana": {
+        "chars": 20323,
+        "deletions": 142,
+        "disagreement_rate": 0.04886,
+        "errors": 993,
+        "insertions": 284,
+        "into_hiragana": 142,
+        "substitutions": 567
+      },
+      "reference_chars": 36915,
+      "units": 4271
+    },
+    "reference": "Google Lens automated proxy; not hand-checked ground truth/CER",
+    "runtime": {
+      "blob_bytes": 657664,
+      "compile_flags": [
+        "-std=c99",
+        "-O2",
+        "-ffp-contract=off",
+        "-DVOCR_NO_NEON",
+        "-fPIC",
+        "-shared",
+        "-lm"
+      ],
+      "compiler": "gcc (GCC) 16.2.1 20260810",
+      "finder": "scalar C GRAD; unchanged baseline geometry",
+      "library_sha256": "4f9cef809b88025ccaf3b5ee10f0f22eabc07505c6cd118f8a6af814656bfb59",
+      "max_width": 1024,
+      "mode": "w8i",
+      "model_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+      "polarity": "C finder dark flag; invert crop once before both engines",
+      "recognizer_arena_bytes": 124832
+    },
+    "schema": 1,
+    "sources": {
+      "eval/clannad_longrun.py": "6ba8a7efb1f34c953338d43744bfe4de21276133994d52a5a03a4da5f1b4beec",
+      "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+      "eval/owocr_bridge.py": "684796d2bc7156cf89f4235a3ee25866eeed462d31b3a235d48a764403b53180",
+      "eval/requirements-owocr-longrun.txt": "4ee50e80eac71ee8a2711e5eda343d292c50032867517357988d92ae80c88803",
+      "runtime/pyvocr.py": "49cd9bf0ac474728f5aae9df9c7a7b7656a57db85f1eec75ec3ba7829b427376",
+      "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+      "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+      "runtime/vocr_lines.c": "2430531cf5d58e47676f165247f8400b819b5377b1f39669107d88a150f67d06",
+      "runtime/vocr_lines.h": "e54bd395e63d0f6968dd427749d7d949ac8cb9be058ab7c3bb37a30283e57630",
+      "synth/common.py": "6b8ca608c4e1ec60c87dd3bc6fa44a03fbb84fe0387ccc77a4c8aefbdc0c13ca"
+    },
+    "split": "test",
+    "target_chars": 40000,
+    "target_met": true,
+    "teacher_sha256": "1c30b93c6122cfc3432cfcee71dfef921ea6d7ed0891fafa1c3a31bb6f9b3153",
+    "timing": {
+      "google_lines": {
+        "median_seconds": 0.48334931899808,
+        "p95_seconds": 1.5989972740007943,
+        "samples": 4271,
+        "total_seconds": 3183.2913925199255
+      },
+      "google_roi": {
+        "median_seconds": 0.7338036629989801,
+        "p95_seconds": 3.532440935201157,
+        "samples": 2177,
+        "total_seconds": 2939.977573025085
+      },
+      "vocr": {
+        "median_seconds": 0.007379472997854464,
+        "p95_seconds": 0.020549373999529053,
+        "samples": 4271,
+        "total_seconds": 37.48341721211909
+      }
+    },
+    "timing_scope": "host only; Google includes network latency; not console estimates",
+    "whole_roi_vocr_proxy": {
+      "disagreement_rate": 0.14005085506307025,
+      "edit_disagreements": 5618,
+      "hiragana": {
+        "chars": 21729,
+        "deletions": 1428,
+        "disagreement_rate": 0.10037,
+        "errors": 2181,
+        "insertions": 100,
+        "into_hiragana": 261,
+        "substitutions": 653
+      },
+      "reference_chars": 40114,
+      "units": 2177
+    },
+    "whole_roi_vs_google_finder_proxy": {
+      "disagreement_rate": 0.10360472652939123,
+      "edit_disagreements": 4156,
+      "hiragana": {
+        "chars": 21729,
+        "deletions": 1377,
+        "disagreement_rate": 0.06751,
+        "errors": 1467,
+        "insertions": 6,
+        "into_hiragana": 17,
+        "substitutions": 84
+      },
+      "reference_chars": 40114,
+      "units": 2177
+    }
+  },
+  "teacher": {
+    "bridge_sha256": "684796d2bc7156cf89f4235a3ee25866eeed462d31b3a235d48a764403b53180",
+    "dependencies": {
+      "Pillow": "12.3.0",
+      "certifi": "2026.7.22",
+      "cffi": "2.1.1",
+      "curl_cffi": "0.16.3",
+      "loguru": "0.7.3",
+      "numpy": "2.4.6",
+      "owocr": "1.26.7",
+      "protobuf": "7.36.2",
+      "pycparser": "3.11"
+    },
+    "engine": "GoogleLens",
+    "installed_sources_sha256": {
+      "Pillow": "0dbb92e6b5bce656828378ad645ad14ddd476b821e25c663a9e7b05de5516724",
+      "certifi": "6dedd2a81a4823481af48a8d1252c73802e635d42b74588a6f50cc874dd30423",
+      "cffi": "d17e170b8a24a4559ebac61c0ced733d5ba8ad999774b648bb79476eb686d381",
+      "curl_cffi": "4b30266ecdbbd9094c5d1b7827aed02563139d3879b92195e34bc4e6cb8ba186",
+      "loguru": "b59e951ff1b2485d39536a354f384a2b366810cc8addbfd81c25e4052cc631ab",
+      "numpy": "e600275b497f08d3ed76902bde91775dd395310dbb8eea77a8ed4860e842369a",
+      "owocr": "34eaa7884fe429893a1dab21ffc77d8baa7ecc22ab1b22e31d83a947556b4c7e",
+      "protobuf": "63070e7958c119ce4c636a896f7eea5599e1ab08456d492092ede80aa68c37a6",
+      "pycparser": "d89fbc6e286f045a6541ed91dc2f678cffc10437168d6b254c72ba05293592aa"
+    },
+    "png_encoder": {
+      "format": "lossless PNG; no resizing below 3000000 pixels",
+      "module_sha256": null,
+      "optimized": false
+    },
+    "remote_service": "Google Lens is unversioned; only local engine/dependencies can be frozen"
+  }
+}

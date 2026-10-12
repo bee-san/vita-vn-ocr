@@ -677,14 +677,17 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
                     continue
             chars_v = L.label_chars(lv, vote.key, r["label"])
             fc_p = L.final_crop(lp, "psp", Wp, Hp, scale_chars(chars_v, fx, fy))
+            fr_v = L.crop_box(idx[r["id"]][1], "vita", Wv, Hv)          # the frame the reviewers saw
+            fr_p = [max(0, int(fr_v[0] * fx)), max(0, int(fr_v[1] * fy)), min(Wp, -int(-fr_v[2] * fx // 1)),
+                    min(Hp, -int(-fr_v[3] * fy // 1))]
             row = {"id": r["id"], "shot": sk, "vn": s["vn"], "image": int(sk.split("_")[1]), "session": session,
                    "release": s.get("release"), "how": r["how"], "support": r["support"], "readers": r["readers"],
                    "pass1": r.get("pass1"), "pass2": r.get("pass2"), "blind": r.get("blind"),
                    "looks": r.get("looks"), "name": r.get("name", False), "edge": {"flags": flags, "why": edge_why},
                    "reviewer_kind": "assistant", "chars": len(vote.key(r["label"])), "crops": {}}
             out = []
-            for target, ln, g, rgb, W, H, fc in (("vita", lv, g_v, rgb_v, Wv, Hv, fc_v),
-                                                 ("psp", lp, g_p, rgb_p, Wp, Hp, fc_p)):
+            for target, ln, g, rgb, W, H, fc, fr in (("vita", lv, g_v, rgb_v, Wv, Hv, fc_v, fr_v),
+                                                     ("psp", lp, g_p, rgb_p, Wp, Hp, fc_p, fr_p)):
                 if target == "psp" and not pok:
                     drops["psp-too-small"] += 1
                     continue
@@ -701,9 +704,9 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
                             continue
                         box = g["box"]
                         # devnative build.grad_default (0cb084e): a GRAD box that runs beyond the
-                        # reviewed crop may hold text the label lacks; without a GRAD check it gets no
+                        # reviewed frame may hold text the label lacks; without a GRAD check it gets no
                         # crop. build.covers (f523e30): it must hold the final crop's labelled extent.
-                        if GC.needs_check(box, L.crop_box(ln, target, W, H), L.ink_height(ln)):
+                        if GC.needs_check(box, fr, L.ink_height(ln)):
                             drops[f"{target}-grad-unchecked"] += 1
                             continue
                         if not B.covers(box, fc, target):

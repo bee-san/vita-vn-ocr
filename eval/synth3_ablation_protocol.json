@@ -1,0 +1,69 @@
+{
+ "kind": "synth3-ablation-protocol",
+ "schema": 1,
+ "frozen": "2026-10-12, before any ablation run was trained or scored",
+ "question": "Used as the VN-style synthetic source of train2's pretraining mixture, does synth3 lower real-screenshot CER on the development cohort compared with synth2, at a fixed architecture, recipe, step count and seed?",
+ "architecture": {
+  "name": "FL10 (the shipped default's topology)",
+  "width": 1.0, "bottleneck": 96, "depth": 1, "ctx": 2, "ctx_k": 5, "height": 32,
+  "vocab": {"file": "$HERD/shared/artifacts/train2/release/FL10_vocab_3500.txt", "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8"}
+ },
+ "recipe": {
+  "trainer": "train/train2.py (unchanged)",
+  "init": "from scratch",
+  "steps": 16000, "batch": 96, "lr": 0.002, "warmup": 1000, "final_lr": 0.05, "wd": 0.01, "ema": 0.999,
+  "threads": 5, "eval_every": 4000, "keep_evals": true, "kd": "none",
+  "note": "train2's pretraining recipe (docs/train2.md) at 16,000 instead of 32,000-40,000 steps"
+ },
+ "sources": {
+  "nv": {"files": "$HERD/shared/artifacts/nvsynth/shards/nv_train_0*.npz", "shards": 42, "lines": 845519,
+         "opts": "stream=1,pool=3,inv=0.2",
+         "note": "nvsynth's one-line-per-page set (docs/nvsynth.md). train2's every-line set (nvsynth/full) was deleted from the shared disk on 2026-10-12 09:48Z by a disk clean-up, so every arm uses this set instead."},
+  "s2": {"files": "$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz + synth_0003[0-8].npz", "shards": 39,
+         "opts": "stream=1,pool=3,inv=0.2", "note": "exactly train2's s2 source"},
+  "s3": {"files": "$HERD/shared/artifacts/synth3/shards/train/synth3_000??.npz", "shards": 100,
+         "opts": "stream=1,pool=3,inv=0.2",
+         "note": "pinned by data/manifests/synth3_shards_20261012.json, committed before the first synth3 arm trains"}
+ },
+ "arm_sources": {
+  "A_s2": {"nv": 0.5, "s2": 0.5},
+  "B_s3": {"nv": 0.5, "s3": 0.5},
+  "C_mix": {"nv": 0.5, "s2": 0.25, "s3": 0.25}
+ },
+ "arms": {
+  "A_s2": ["A_s2_seed1", "A_s2_seed2"],
+  "B_s3": ["B_s3_seed1", "B_s3_seed2"],
+  "C_mix": ["C_mix_seed1", "C_mix_seed2"]
+ },
+ "seeds": [1, 2],
+ "checkpoint": "ckpt_step16000.pt of every run (EMA weights). No checkpoint selection: the in-training teacher_val evaluations are logged for monitoring only.",
+ "export": "eval/synth3_ablation.py export (train/export.py, per-channel int8) -> C runtime W8I through runtime/pyvocr.py, max width 1024",
+ "dev": {
+  "set": "$HERD/shared/artifacts/teacher/teacher_val.npz",
+  "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671",
+  "lines": 1651, "vns": 181,
+  "note": "train2's selection set: no VN, release or screenshot shared with any training pool or with eval's test sets; synth3 excluded all of its VNs from names and scenes"
+ },
+ "views": ["rv", "rvn"],
+ "metric": "CER (eval/metrics.norm both sides, Levenshtein over reference characters) over all development lines, both views, errors summed over the arm's two seeds",
+ "bootstrap": {"resamples": 10000, "seed": 0, "unit": "VN (cluster); line-level intervals reported alongside"},
+ "comparisons": {"B_vs_A": ["A_s2", "B_s3"], "C_vs_A": ["A_s2", "C_mix"], "C_vs_B": ["B_s3", "C_mix"]},
+ "decision": "For each comparison X_vs_Y, Y is better than X iff the VN-cluster 95% interval of CER(Y) - CER(X) lies entirely below 0 and CER(Y) - CER(X) < 0 for each seed pair. Recommended VN-style synthetic data: synth3 if B beats A and C does not beat B; the mix if C beats both A and B; otherwise synth2 stays and the result is reported as no measured improvement.",
+ "reported_not_decided": [
+  "every stratum of eval/synth3_ablation.py (target, kind, polarity, ink height, length, name-like, dakuten/small kana, rare kanji, Latin/digits) with intervals",
+  "per-VN better/worse counts and the largest per-VN regressions (no per-VN veto)",
+  "the in-training teacher_val and synthetic validation curves"
+ ],
+ "secondary": {
+  "status": "exploratory; runs only if heavy slots are free after the primary arms; cannot change the decision",
+  "finetune": "from each arm's seed-1 step-16000 checkpoint: 5,000 steps, lr 1.2e-3, warmup 500, EMA 0.999, sources nv 0.25 + that arm's synthetic 0.25 (C: s2 0.125 + s3 0.125) + teacher_train 0.35 + real_train 0.15 (inv 0.5, kd=0); scored like the primary runs",
+  "h15": "arms A and B at width 1.5 with data/vocab.txt (5,354 classes), seed 1, the same recipe; scored like the primary runs"
+ },
+ "protected_test": "Only after this decision and its result are committed: every primary and secondary run's export is scored once on vita-test and psp-test with eval/run.py (vocr: backend, W8I; native and console polarity). Those numbers are reported and cannot change the decision, the recipe or the dataset.",
+ "hygiene": [
+  "synth3's text, fonts, scenes and names never read teacher_val, vita-test, psp-test, the fresh native textbox test or CLANNAD references",
+  "hard-example mining used training-side unlabelled real pools only (synth/synth3_mine.py, teacher_distill_train + real_unlabelled)",
+  "calibration statistics used training-side real crops only (teacher_train + real_train)",
+  "names and scenes exclude every eval test VN, every is_test_vn VN, every teacher_val VN and every general-VN development VN"
+ ]
+}

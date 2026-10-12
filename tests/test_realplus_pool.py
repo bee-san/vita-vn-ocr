@@ -223,3 +223,20 @@ def test_scale_line_maps_view_and_chars_to_psp():
     p = PL.scale_line(ln, 0.5, 0.5)
     assert p["view"] == [44, 95, 160, 116]
     assert PL.scale_chars([["あ", 101, 201, 111, 223, 0.9]], 0.5, 0.5) == [["あ", 50, 100, 56, 112, 0.9]]
+
+
+def test_edge_flags_judge_the_reviewed_frame_and_cut_evals_crop():
+    gray = np.full((200, 300), 30, np.uint8)
+    for x in range(40, 200, 12):
+        gray[100:120, x:x + 8] = 220                                    # a line of glyphs, ink 40..200
+    gray[92:128, 206:210] = 220                                         # a window border 6-9 px right of it
+    ln = _line(0, [40, 100, 200, 120], ("あいう", "あいう", "あいう", "あいう"))
+    ln["crop"] = [36, 96, 204, 124]                                     # read.py: the padded crop
+    ln["view"] = [20, 92, 260, 128]
+    fc, frame, why = PL.edge_flags(gray, ln, "vita", 300, 200, "あいう")
+    assert fc == [36, 96, 204, 124] and frame == [32, 92, 208, 128] and why == []
+    _, _, why = PL.edge_flags(gray, ln, "vita", 300, 200, "かきく")     # no MeikiOCR reading spells it
+    assert "no-char-boxes" in why
+    gray[100:120, 214:222] = 220                                        # the line runs on past the frame
+    _, _, why = PL.edge_flags(gray, ln, "vita", 300, 200, "あいう")
+    assert "ink-right" in why

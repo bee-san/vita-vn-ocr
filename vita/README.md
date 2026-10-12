@@ -6,7 +6,7 @@ What is known so far:
 - The Vita build of `runtime/vocr.c` and `vocr_lines.c` compiles warning-free with the runtime's own `-Werror` flags.
 - Inside Vita3K, every case of the test bundles gives the host build's text, logits (CRC-32 of every float) and line boxes, bit for bit: 728 of 728 cases of the full bundle in w8i, and 52 of 52 in each of w8i, w8f and f32 on the quick bundle.
 - From the Vita build's instruction mix, a 640-px dialogue line (80 CTC frames) of the v1 model should take **113-212 ms in w8i** on one Cortex-A9 core at 444 MHz (151-342 ms in f32). This is an estimate, not a measurement. (Rebased onto `psp`'s PR #13, which register-blocks the scalar kernels that `step_op` also calls for the stem and depthwise convolutions: the estimate moved from 117-285 ms, re-measured below.)
-- Nothing has run on a PCH-1000 yet. The test app is ready for that; see "On a PCH-1000".
+- The test app has not run on a PCH-1000 yet; see "On a PCH-1000". The runtime has, inside vita-jp-overlay (FL10, logged per job, not per line; `docs/vita-memory-budget.md`).
 
 ## Files
 
@@ -35,7 +35,7 @@ vita/scripts/build.sh                              # build/vita/vocr_test.vpk, l
 - The SDK is vitasdk/autobuilds release `sdk-snapshot-20260926.790.1`, SDK version 0.20260926.321, with arm-vita-eabi-gcc 15.2.0. The x86_64-linux tarball is checked against its sha256.
 - The runtime is compiled as `runtime/README.md` asks: C99, `-O2 -ffp-contract=off -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard`, with its full warning set and `-Werror`. The line finder also gets `vocr_lines.mk`'s `-Wconversion -Wsign-conversion`.
 - VitaSDK's gcc defaults to Thumb-2 and to short enums. `vocr.h` and `vocr_lines.h` pass no enum across the API, so the enum size does not matter.
-- Code size with the Vita compiler: `vocr.o` 14,583 B with NEON (12,455 B scalar) and `vocr_lines.o` 4,636 B. The whole test app, `eboot.bin`, is 78 KB. (Before rebasing onto `psp`'s PR #13: 13,143 / 10,543 B and 76 KB; its register-blocked scalar kernels, which the Vita build also compiles, grew `vocr.o`.)
+- Code size with the Vita compiler: `vocr.o` 14,583 B with NEON (12,455 B scalar) and `vocr_lines.o` 12,456 B at `2873b98` (4,636 B before the textbox finder, `49ff6f4` and `cfa7ee6`, was added to it). The whole test app, `eboot.bin`, is 84 KB (78 KB before). (Before rebasing onto `psp`'s PR #13: 13,143 / 10,543 B and 76 KB; its register-blocked scalar kernels, which the Vita build also compiles, grew `vocr.o`.)
 - CI's `vita (VitaSDK build)` job runs the same build on every pull request and uploads `vocr_test.vpk` as the `vocr_test-vpk` artifact.
 
 ## The test bundle
@@ -142,9 +142,9 @@ Reported by the app, Vita build (so far in Vita3K; a console run reports the sam
 | arena (`vocr_arena_bytes`, any line up to 1024 px) | 124,832 B | 118,432 B | 116,384 B |
 | line finder arena (`vocr_lines_arena_bytes`) | 83,323 B for a whole 960x544 screen; 41,395 B as the app sizes it for the test regions (their largest width by their largest height, 855x249) | same | same |
 | `vocr_model` + `vocr_ctx` | 1,772 + 1,984 B | same | same |
-| stack, measured | 4,100 B | same | same |
-| code (`vocr.o` + `vocr_lines.o`) | 19,219 B | same | same |
-| total | about 1.09 MB | about 1.09 MB | about 3.29 MB |
+| stack, measured | 4,316 B at `2873b98` (4,100 B when this table was first measured) | same | same |
+| code (`vocr.o` + `vocr_lines.o`) | 27,039 B at `2873b98` (19,219 B before the textbox finder) | same | same |
+| total | about 1.10 MB | about 1.10 MB | about 3.30 MB |
 
 - The arena sizes equal the host's `vocr_arena_bytes()`, so the console uses the bytes the runtime README reports.
 - The stack figure comes from a probe thread that paints its 32 KiB stack. It runs `vocr_arena_bytes()`, `vocr_init()`, `vocr_run()` on a 1024-px line and both line finders, thread entry included.
@@ -162,7 +162,7 @@ How it works:
 1. `a9_cycles.py` compiles `runtime/vocr.c` with the Vita's compiler and flags, and links that object into an ARM Linux `vocr_cli`. qemu-arm then runs the Vita's exact machine code for the runtime.
 2. It runs 40 lines, 20 from synth-val and 20 from vita-test (1,828 CTC frames), with two plugins:
    - `qemu/insn_mix.c` counts every executed instruction and every switch between the NEON and VFP units. The A9 runs one at a time.
-   - qemu's cache simulator is set up like the Vita: 32 KiB 4-way L1 caches with 32-byte lines, and the 2 MiB L2.
+   - qemu's cache simulator is set up like the Vita: 32 KiB 4-way L1 caches with 32-byte lines, and the 2 MiB L2. The simulated L2 is 8-way; the Vita's PL310 is 16-way (`docs/vita-memory-budget.md`, which also models a smaller share of the L2).
 3. Each instruction gets its Cortex-A9 issue cost from the NEON MPE TRM (ARM DDI 0409I, tables 3-2 to 3-10). NEON loads and stores are costed as unaligned, because gcc emits no alignment hints.
 4. The result is a range:
    - **Low bound:** perfect overlap. It is the largest of: NEON + VFP issue cycles, instructions / 2 (dual issue), load/store-pipe cycles, and L2-to-L1 refill bandwidth. Add 3 cycles per unit switch.
@@ -186,7 +186,7 @@ What the numbers say:
   - how well the A9 overlaps NEON with integer work;
   - whether VLDR/VSTR count as VFP for unit switches;
   - whether the L1 prefetcher is on;
-  - how much of the L2 the game running beside the overlay takes.
+  - how much of the L2 the game running beside the overlay takes. `docs/vita-memory-budget.md` (`vita/budget_sweep.py`) estimates the effect for every model size, and the size ceiling that follows.
 
   The PMU columns of a console run will settle the first three.
 - The runtime README's figure for v1 (80M MACs at the research's 0.24-0.30 GMAC/s, i.e. 0.27-0.33 s per 640-px line) sits above the w8i and w8f ranges and inside the f32 range.
@@ -203,7 +203,7 @@ What the numbers say:
 
 ## Not done here
 
-- No run on a PCH-1000. Console speed above is an estimate, and emulator times are not console times.
+- This test app has not run on a PCH-1000. Console speed above is an estimate, and emulator times are not console times. The runtime itself has run on a console only inside vita-jp-overlay (FL10 in CLANNAD, `docs/vita-memory-budget.md`).
 - ScePerf's counters are untested on retail firmware. The app falls back to timing only.
 - The PSP itself (Allegrex, PSPSDK, PPSSPP) is the `psp` agent's job; here psp-test only runs on the Vita.
 - Vita3K's build 4154 will disappear from its rolling release; `fetch_vita3k.sh` fetches it from Vita3K/Vita3K-builds, or takes `VITA3K_APPIMAGE=<kept copy>`.

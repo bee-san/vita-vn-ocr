@@ -26,7 +26,7 @@ For comparison, the research measured the trimmed int8 PP-OCRv5 at a 13.4 MiB pe
 Stack on ARM, from gcc's call graph (`-fcallgraph-info=su`; every frame is static):
 - The deepest chain is `vocr_arena_bytes()` → `plan()`, 2,664 B, because it plans into a local `vocr_ctx`.
 - `vocr_run()` → `step_op()` → `mm_i16()` (w8i) is 1,400 B with NEON and 1,000 B scalar. Through `mm_f32()` (f32, w8f) it is 1,224 / 1,168 B. (Before `psp`'s PR #13 register-blocked the scalar kernels `step_op` also compiles into, these were 1,264 / 1,104 and 1,128 / 960 B; this PR's own `mm_i16` NEON change adds 8 B on top of #13's base, 1,392 to 1,400.)
-- On the Vita (VitaSDK gcc 15.2), the test app's probe thread (`vita/app/main.c`) measured 4,100 B of stack for `vocr_arena_bytes()`, `vocr_init()`, `vocr_run()` on a 1024-px line and both line finders, thread entry included (in Vita3K, which runs the Vita's own machine code).
+- On the Vita (VitaSDK gcc 15.2), the test app's probe thread (`vita/app/main.c`) measured 4,316 B of stack at `2873b98` (4,100 B at an earlier head) for `vocr_arena_bytes()`, `vocr_init()`, `vocr_run()` on a 1024-px line and both line finders, thread entry included (in Vita3K, which runs the Vita's own machine code).
 
 Tiles trade arena for speed (bytes; host speed is in the next table):
 
@@ -37,7 +37,7 @@ Tiles trade arena for speed (bytes; host speed is in the next table):
 | 16 / 16 | 351,488 | 353,536 | 385,280 |
 | 128 / 128, 1024 px (one tile, no streaming) | 2,589,696 | 2,591,744 | 2,860,032 |
 
-Compute is 1,002,720 multiply-accumulates per CTC frame: 488,640 in the backbone and 514,080 in the head. A 640-px line is 80 frames, about 80 M MACs, against 1.52 G for PP-OCRv5 mobile at height 48 (research). The research puts one Cortex-A9 core at 444 MHz at 0.24-0.30 GMAC/s in fp32 with ncnn. By that figure, a 640-px line would take about 0.27-0.33 s. That's an **estimate**: nothing has run on a Vita yet.
+Compute is 1,002,720 multiply-accumulates per CTC frame: 488,640 in the backbone and 514,080 in the head. A 640-px line is 80 frames, about 80 M MACs, against 1.52 G for PP-OCRv5 mobile at height 48 (research). The research puts one Cortex-A9 core at 444 MHz at 0.24-0.30 GMAC/s in fp32 with ncnn. By that figure, a 640-px line would take about 0.27-0.33 s. The later cycle model of the Vita build (`vita/README.md`) puts it at 113-212 ms in w8i. Both are **estimates**: the runtime has run on a console only inside vita-jp-overlay (FL10, `docs/vita-memory-budget.md`), without per-line timing.
 
 ### Larger students (owner goal of 2026-10-09: at most 50 MB, under about 1 s per line)
 
@@ -51,12 +51,12 @@ The runtime takes any `TinyVNOCR` width and bottleneck. Shapes only (random weig
 | 2.0 | 192 | 1.97M | 2.11 MB | 7.93 MB | 236 / 248 KB | 2.89M | 231M |
 | 3.0 | 192 | 3.08M | 3.25 MB | 12.36 MB | 346 / 365 KB | 5.09M | 407M |
 
-Memory stays far under 50 MB at every size here, so speed is what limits a student. At the research's 0.24-0.30 GMAC/s (one 444 MHz A9 core, ncnn fp32), a 640-px line takes about:
-- 0.3 s at width 1.0;
-- 0.6-0.8 s at width 2.0;
-- 1.4-1.7 s at width 3.0.
+Memory stays far under 50 MB at every size here, so speed is what limits a student. The cycle model of the Vita build (`vita/a9_cycles.py`, w8i, one 444 MHz A9 core) puts a 640-px line at about:
+- 112-210 ms at width 1.0;
+- 234-411 ms at width 2.0;
+- 420-965 ms at width 3.0, whose 2.68 MB of weights no longer fit the 2 MiB L2.
 
-These are **estimates**; this runtime's NEON speed on a real A9 hasn't been measured. `export.py --info` prints the MACs per frame and per line of any blob.
+The research's 0.24-0.30 GMAC/s (ncnn fp32) gave 0.3, 0.6-0.8 and 1.4-1.7 s. All of these are **estimates**; this runtime's NEON speed on a real A9 hasn't been measured. `docs/vita-memory-budget.md` has the full grid, the L2 effect and the size ceiling new models design to. `export.py --info` prints the MACs per frame and per line of any blob.
 
 ### Correctness (v1)
 
@@ -257,6 +257,6 @@ make -C runtime size ARM_CC=...                    # code size and stack frames
 
 ## Not done here
 
-- Nothing has run on a PCH-1000 or a PSP; the console speed above is an estimate. `vita/` builds it with VitaSDK, checks it bit for bit in the Vita3K emulator and estimates Cortex-A9 cycles from the Vita build's instruction mix (`vita/README.md`); the `psp` agent covers the PSP.
+- Only FL10 has run on a console (a PCH-1001, inside vita-jp-overlay), without a per-line timing or hardware CER (`docs/vita-memory-budget.md`), and nothing has run on a PSP; the console speed above is an estimate. `vita/` builds it with VitaSDK, checks it bit for bit in the Vita3K emulator and estimates Cortex-A9 cycles from the Vita build's instruction mix (`vita/README.md`); the `psp` agent covers the PSP.
 - Parity covered 5,000 of the 10,001 synth-val lines (1-4,000 and 9,001-10,000), not the whole shard, because the `heavy.sh` slots stayed busy. The full shard is one command: `parity.py --ckpt ... --workers 5`.
 - Real-screenshot CER belongs to `eval/`; the CER figures here only show that the runtime reproduces PyTorch, and what int8 and `VOCR_INVERT` change.

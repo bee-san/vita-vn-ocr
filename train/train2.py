@@ -45,13 +45,16 @@ A run resumes from <out>/<run>/ckpt_last.pt. Threads: $TORCH_NUM_THREADS (heavy.
 """
 import argparse
 import glob
+import hashlib
 import json
 import math
 import os
+import platform
 import queue
 import sys
 import threading
 import time
+from collections import Counter
 from pathlib import Path
 
 import cv2
@@ -69,6 +72,17 @@ from metrics import lev, norm, score_hiragana  # noqa: E402
 
 from common import DATA, load_vocab  # noqa: E402
 from model import TinyVNOCR, set_weight_quant  # noqa: E402
+from source_policy import (  # noqa: E402
+    CAPS,
+    ExposureJournal,
+    ExposureLedger,
+    RunWriter,
+    SourcePolicy,
+    digest,
+    freeze_json,
+    json_digest,
+)
+from source_policy import sha256 as file_sha256  # noqa: E402
 from train import UNK, ctc_ok, default_threads, encoder, resize_h  # noqa: E402
 
 H, MAX_W, STRIDE = 32, 1024, 8
@@ -108,17 +122,20 @@ def expand(globs):
 
 
 class Item:
-    __slots__ = ("img", "ids", "kid", "kp", "src")
+    __slots__ = ("img", "ids", "kid", "kp", "src", "provenance")
 
-    def __init__(self, img, ids, kid=None, kp=None, src=0):
+    def __init__(self, img, ids, kid=None, kp=None, src=0, provenance=None):
         self.img, self.ids, self.kid, self.kp, self.src = img, ids, kid, kp, src
+        self.provenance = provenance
 
 
-def load_shard(path, encode, opts, vocab_key):
+def load_shard(path, encode, opts, vocab_key, provenance=None):
     """Items of one shard under a source's options. vocab_key(text) -> eval-scoring key."""
     z = np.load(path)
     data, offs, shapes = z["data"], z["offsets"], z["shapes"]
     labels = json.loads(str(z["labels"]))
+    if provenance is not None and (len(provenance) != len(shapes) or len(labels) != len(shapes)):
+        raise ValueError("source policy row count differs from crop/label arrays")
     tg = None
     if opts.get("targets"):
         tp = Path(opts["targets"]) / (Path(path).stem + ".v6s.npz")
@@ -174,17 +191,18 @@ def load_shard(path, encode, opts, vocab_key):
             stats["dropped"] += 1
             continue
         stats["kdonly"] += use_kd_only
-        items.append(Item(g, ids, kid, kp))
+        items.append(Item(g, ids, kid, kp, provenance=None if provenance is None else provenance[i]))
         stats["kept"] += 1
     return items, stats
 
 
 class RamSource:
-    def __init__(self, name, paths, encode, opts, key, rng):
+    def __init__(self, name, paths, encode, opts, key, rng, provenance=None):
         self.name, self.opts, self.rng = name, opts, rng
         self.items, self.stats = [], {}
         for p in paths:
-            it, st = load_shard(p, encode, opts, key)
+            it, st = load_shard(p, encode, opts, key,
+                                None if provenance is None else provenance[Path(p).resolve()])
             self.items += it
             for k, v in st.items():
                 self.stats[k] = self.stats.get(k, 0) + v
@@ -357,7 +375,7 @@ class Mixer:
         items = []
         for s in pick:
             it = self.sources[s].sample()
-            items.append(Item(it.img, it.ids, it.kid, it.kp, int(s)))
+            items.append(Item(it.img, it.ids, it.kid, it.kp, int(s), it.provenance))
             self.counts[s] += 1
         order = np.argsort(np.array([it.img.shape[1] for it in items]) + self.rng.uniform(0, 24, n))
         chunks = [[items[j] for j in order[i:i + self.batch]] for i in range(0, n, self.batch)]
@@ -368,6 +386,193 @@ class Mixer:
         if not self.ready:
             self._fill()
         return self.ready.pop()
+
+
+class PolicyMixer(Mixer):
+    """Check final consumption order, replacing capped/unknown rows with broad fallback.
+
+    Prefetch is never credited as model exposure. A caller must record every successful
+    forward, including a forward that produces no optimizer update, before asking for more.
+    """
+    def __init__(self, sources, weights, batch, rng, policy, src_opts, bucket=24):
+        if any(not isinstance(source, RamSource) for source in sources):
+            raise ValueError("source policy supports deterministic RAM sources only")
+        for opts in src_opts:
+            validate_policy_options(opts)
+        if (len(weights) != len(sources) or not weights or any(not math.isfinite(w) or w < 0 for w in weights)
+                or sum(weights) <= 0 or type(batch) is not int or batch <= 0
+                or type(bucket) is not int or bucket <= 0):
+            raise ValueError("source policy requires valid weights and positive batch/bucket sizes")
+        super().__init__(sources, weights, batch, rng, bucket)
+        self.policy = policy
+        names = [source.name for source in sources]
+        if len(set(names)) != len(names):
+            raise ValueError("source policy requires unique source names")
+        if any(item.provenance is None for source in sources for item in source.items):
+            raise ValueError("source policy requires bound immutable row provenance")
+        self.fallback = names.index(policy.fallback_source)
+        if any(item.provenance is None or not item.provenance.fallback_verified or item.ids is None
+               for item in sources[self.fallback].items):
+            raise ValueError("all usable fallback rows require verified broad provenance and CTC labels")
+        self.settings = {"sources": names, "weights": [float(w) for w in weights],
+                         "batch": batch, "bucket": bucket, "options": src_opts}
+        self.lookup = {(s, item.provenance.sample_id): item for s, source in enumerate(sources)
+                       for item in source.items}
+        self.ledger = ExposureLedger()
+        self.rejected, self.fallback_draws = Counter(), 0
+        self.pending = self.optimizer_pending = None
+
+    def next(self):
+        if self.pending is not None:
+            raise ValueError("previous batch has not been recorded as forwarded")
+        self.optimizer_pending = None
+        reserved, selected = self.ledger.reserve(), []
+        for item in super().next():
+            reason = reserved.reason(item.provenance)
+            if reason:
+                self.rejected[reason] += 1
+                source_item = self.sources[self.fallback].sample()
+                item = Item(source_item.img, source_item.ids, source_item.kid, source_item.kp,
+                            self.fallback, source_item.provenance)
+                self.fallback_draws += 1
+            reserved.consume(item.provenance, self.sources[item.src].name)
+            selected.append(item)
+        self.pending = selected
+        return selected
+
+    def record_forward(self, items):
+        if items is not self.pending:
+            raise ValueError("forwarded batch differs from its policy reservation")
+        for item in items:
+            self.ledger.consume(item.provenance, self.sources[item.src].name)
+        self.pending = None
+        self.optimizer_pending = items
+
+    def record_optimizer(self, items):
+        if items is not self.optimizer_pending:
+            raise ValueError("optimizer batch must be the last forwarded batch, counted once")
+        self.ledger.optimized([self.sources[item.src].name for item in items])
+        self.optimizer_pending = None
+
+    def report(self):
+        return {"policy_sha256": self.policy.sha256, "caps": CAPS,
+                "prefetch_draws": {source.name: int(count) for source, count in zip(self.sources, self.counts)},
+                "fallback_draws": self.fallback_draws, "rejected": dict(self.rejected),
+                "buffered_rows": sum(map(len, self.ready)), "consumed": self.ledger.state_dict()}
+
+    def state_dict(self):
+        if self.pending is not None:
+            raise ValueError("cannot checkpoint a batch before recording its forward")
+        return {"schema": 1, "policy_sha256": self.policy.sha256, "settings": self.settings,
+                "ledger": self.ledger.state_dict(), "rng": self.rng.bit_generator.state,
+                "counts": self.counts.tolist(), "fallback_draws": self.fallback_draws,
+                "rejected": dict(self.rejected),
+                "ready": [[[item.src, item.provenance.sample_id] for item in batch] for batch in self.ready],
+                "sources": [{"order": source.order.tolist(), "pos": int(source.pos),
+                             "rng": source.rng.bit_generator.state} for source in self.sources]}
+
+    def load_state_dict(self, state):
+        if (not isinstance(state, dict) or state.get("schema") != 1
+                or state.get("policy_sha256") != self.policy.sha256 or state.get("settings") != self.settings):
+            raise ValueError("resumed source policy or sampler configuration differs")
+        ledger = ExposureLedger.from_state(state["ledger"])
+        counts = state["counts"]
+        if (not isinstance(counts, list) or len(counts) != len(self.sources)
+                or any(type(n) is not int or n < 0 for n in counts)
+                or type(state["fallback_draws"]) is not int or state["fallback_draws"] < 0):
+            raise ValueError("invalid resumed draw counts")
+        rejected = state["rejected"]
+        if not isinstance(rejected, dict) or any(type(n) is not int or n < 0 for n in rejected.values()):
+            raise ValueError("invalid resumed rejection counts")
+        source_states = state["sources"]
+        if not isinstance(source_states, list) or len(source_states) != len(self.sources):
+            raise ValueError("invalid resumed source states")
+        for source, saved in zip(self.sources, source_states):
+            order, pos = saved["order"], saved["pos"]
+            if (not isinstance(order, list) or any(type(n) is not int for n in order)
+                    or sorted(order) != list(range(len(source.items)))
+                    or type(pos) is not int or not 0 <= pos <= len(order)):
+                raise ValueError("invalid resumed source cursor")
+        ready = []
+        if not isinstance(state["ready"], list):
+            raise ValueError("invalid resumed prefetch buffer")
+        for batch in state["ready"]:
+            if not isinstance(batch, list) or len(batch) != self.batch:
+                raise ValueError("invalid resumed prefetch batch")
+            restored = []
+            for reference in batch:
+                if (not isinstance(reference, list) or len(reference) != 2
+                        or type(reference[0]) is not int or tuple(reference) not in self.lookup):
+                    raise ValueError("resumed immutable row identity is absent")
+                s, sample_id = reference
+                item = self.lookup[(s, sample_id)]
+                restored.append(Item(item.img, item.ids, item.kid, item.kp, s, item.provenance))
+            ready.append(restored)
+        if (sum(counts) != ledger.forwarded + sum(map(len, ready))
+                or state["fallback_draws"] != sum(rejected.values())):
+            raise ValueError("resumed draws/forwards/buffers/rejections do not balance")
+        # Validate RNG states before mutating any source/ledger state.
+        for saved_rng in [state["rng"], *(saved["rng"] for saved in source_states)]:
+            trial = np.random.default_rng()
+            trial.bit_generator.state = saved_rng
+        self.ledger, self.counts, self.ready = ledger, np.asarray(counts, np.int64), ready
+        self.fallback_draws, self.rejected = state["fallback_draws"], Counter(rejected)
+        self.rng.bit_generator.state = state["rng"]
+        for source, saved in zip(self.sources, source_states):
+            source.order, source.pos = np.asarray(saved["order"], np.int64), saved["pos"]
+            source.rng.bit_generator.state = saved["rng"]
+
+
+def validate_policy_options(opts):
+    if opts.get("stream", "0") != "0":
+        raise ValueError("source policy is RAM-only: use stream=0")
+    if ("targets" in opts or opts.get("label", "gt") != "gt"
+            or any(opts.get(key, "0") != "0" for key in ("kd", "kdonly"))):
+        raise ValueError("source policy requires GT labels without unpinned teacher/KD auxiliaries")
+
+
+def execution_identity(vocab_path, vocab, context=None):
+    files = [HERE / name for name in ("train2.py", "source_policy.py", "train.py", "model.py", "restore_blob.py")]
+    files += [ROOT / "synth/common.py", ROOT / "eval/metrics.py"]
+    identity = {"schema": 1, "vocabulary_file_sha256": file_sha256(vocab_path),
+            "ordered_vocabulary_sha256": json_digest(vocab),
+            "geometry": {"height": H, "max_width": MAX_W, "stride": STRIDE},
+            "code": {str(path.relative_to(ROOT)): file_sha256(path) for path in files},
+            "dependencies": {"python": sys.version, "python_executable_sha256": file_sha256(sys.executable),
+                             "torch": torch.__version__, "numpy": np.__version__, "opencv": cv2.__version__,
+                             "lock_sha256": {name: file_sha256(ROOT / name)
+                                             for name in ("requirements.lock", "requirements-ci.lock")}},
+            "host": {"platform": platform.platform(), "system": platform.system(), "release": platform.release(),
+                     "machine": platform.machine(), "processor": platform.processor(), "node": platform.node(),
+                     "libc": list(platform.libc_ver())},
+            "math_backend": {"torch_build_sha256": json_digest(torch.__config__.show()),
+                             "torch_parallel_sha256": json_digest(torch.__config__.parallel_info()),
+                             "cpu_capability": torch.backends.cpu.get_cpu_capability(),
+                             "float32_matmul_precision": torch.get_float32_matmul_precision(),
+                             "mkldnn_enabled": torch.backends.mkldnn.enabled,
+                             "mkldnn_deterministic": torch.backends.mkldnn.deterministic,
+                             "mkl_available": torch.backends.mkl.is_available(),
+                             "openmp_available": torch.backends.openmp.is_available(),
+                             "deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
+                             "deterministic_warn_only": torch.is_deterministic_algorithms_warn_only_enabled(),
+                             "torch_threads": torch.get_num_threads(),
+                             "torch_interop_threads": torch.get_num_interop_threads(),
+                             "flush_denormal_requested": True,
+                             "opencv_build_sha256": json_digest(cv2.getBuildInformation()),
+                             "opencv_threads": cv2.getNumThreads(), "opencv_optimized": cv2.useOptimized(),
+                             "opencv_opencl": cv2.ocl.useOpenCL()},
+            "optimizer": "torch.optim.AdamW", "dropout": "TinyVNOCR.drop; pinned model.py"}
+    if context is not None:
+        identity["prospective_driver"] = json.loads(json.dumps(context))
+    return identity
+
+
+def model_state_sha256(model):
+    digest = hashlib.sha256()
+    for name, tensor in sorted(model.state_dict().items()):
+        digest.update(json.dumps([name, str(tensor.dtype), list(tensor.shape)]).encode())
+        digest.update(tensor.detach().cpu().contiguous().reshape(-1).view(torch.uint8).numpy().tobytes())
+    return digest.hexdigest()
 
 
 def train_scope(model, scope):
@@ -465,11 +670,13 @@ def kd_loss(logits, kd, tau):
     return (kl * mask).sum() / mask.sum().clamp_min(1.0) * tau * tau
 
 
-def main():
+def main(argv=None, *, execution_context=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
     ap.add_argument("--out", type=Path, default=ROOT / "runs")
     ap.add_argument("--src", action="append", required=True, help="NAME:WEIGHT:GLOBS[:OPTS]")
+    ap.add_argument("--source-policy", type=Path,
+                    help="opt-in exact-prefix general-VN provenance/caps (RAM sources only)")
     ap.add_argument("--val", action="append", default=[], help="NAME:PATH[:OPTS]")
     ap.add_argument("--select", default="", help="comma list of --val names (mean CER)")
     ap.add_argument("--select-metric", choices=("cer", "hiragana"), default="cer",
@@ -500,13 +707,21 @@ def main():
     ap.add_argument("--eval-every", type=int, default=2000)
     ap.add_argument("--keep-evals", action="store_true")
     ap.add_argument("--log-every", type=int, default=100)
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
+    if execution_context is not None and not args.source_policy:
+        raise ValueError("prospective execution context requires a source policy")
+    if args.source_policy and (args.val or args.select):
+        raise ValueError("--source-policy does not accept --val/--select; evaluate retained checkpoints with the "
+                         "separately frozen general-VN selector")
     args.freeze_bn_stats |= args.train_scope == "head"
     torch.set_num_threads(args.threads)
     torch.set_flush_denormal(True)
     torch.manual_seed(args.seed)
     out = args.out / args.run
     out.mkdir(parents=True, exist_ok=True)
+    # Hold until process exit, before writing args/logs/checkpoints; also prevents a
+    # non-policy invocation of this driver from racing a policy run in the same dir.
+    _writer = RunWriter(out)
 
     vocab = load_vocab(args.vocab)
     encode = encoder(vocab)
@@ -516,19 +731,33 @@ def main():
         KD_REMAP = kd_remap(vocab)
     rng = np.random.default_rng(args.seed)
     t0 = time.time()
-    sources, weights, src_opts = [], [], []
+    sources, weights, src_opts, specifications = [], [], [], []
     for spec in args.src:
         parts = spec.split(":", 3)
         name, wt, globs = parts[0], float(parts[1]), parts[2]
         opts = parse_opts(parts[3] if len(parts) > 3 else "")
         paths = expand(globs)
+        specifications.append((name, wt, paths, opts))
+    policy = SourcePolicy(args.source_policy) if args.source_policy else None
+    execution = execution_identity(args.vocab, vocab, execution_context) if policy else None
+    provenance = None
+    if policy:
+        if len({name for name, _, _, _ in specifications}) != len(specifications):
+            raise ValueError("source policy requires unique source names")
+        for _, _, _, opts in specifications:
+            validate_policy_options(opts)
+        provenance = policy.bind({name: paths for name, _, paths, _ in specifications})
+    for name, wt, paths, opts in specifications:
         big = sum(os.path.getsize(p) for p in paths) > 2e9
-        cls = StreamSource if opts.get("stream", "1" if big else "0") == "1" else RamSource
+        cls = RamSource if policy else (StreamSource if opts.get("stream", "1" if big else "0") == "1" else RamSource)
         srng = np.random.default_rng([args.seed, len(sources), 7])
-        sources.append(cls(name, paths, encode, opts, norm, srng))
+        sources.append(cls(name, paths, encode, opts, norm, srng,
+                           **({"provenance": provenance} if policy else {})))
         weights.append(wt)
         src_opts.append(opts)
         print(f"source {sources[-1].describe()} weight {wt} opts {opts}", flush=True)
+    if policy:
+        policy.verify_inputs()
     vals = []
     for spec in args.val:
         parts = spec.split(":", 2)
@@ -547,8 +776,30 @@ def main():
     step, best, best_step = 0, 1e9, 0
     last = out / "ckpt_last.pt"
     ema = None
+    resume_policy, resume_torch_rng, checkpoint_tail = None, None, None
     if last.exists():
         ck = torch.load(last, map_location="cpu", weights_only=False)
+        if bool(policy) != ("source_policy" in ck):
+            raise ValueError("resume cannot add or remove the source exposure policy")
+        if policy:
+            previous_execution = ck.get("source_policy_execution")
+            if (not isinstance(previous_execution, dict) or any(previous_execution.get(key) != value
+                    for key, value in execution.items()) or "initial_model" not in previous_execution):
+                raise ValueError("resume source-policy execution/vocabulary identity differs")
+            initial = previous_execution["initial_model"]
+            if not isinstance(initial, dict) or initial.get("kind") not in ("checkpoint", "seeded_random"):
+                raise ValueError("resume requires the frozen initial model identity")
+            digest(initial.get("sha256") if initial["kind"] == "checkpoint" else initial.get("state_sha256"))
+            if initial["kind"] == "seeded_random" and initial.get("seed") != args.seed:
+                raise ValueError("resume initial model seed differs")
+            if args.init and previous_execution["initial_model"].get("sha256") != file_sha256(args.init):
+                raise ValueError("resume initial model bytes differ")
+            execution = previous_execution
+            resume_policy = ck["source_policy"]
+            resume_torch_rng = ck.get("torch_rng")
+            checkpoint_tail = ck.get("source_policy_journal_sha256")
+            if resume_torch_rng is None:
+                raise ValueError("policy resume requires saved torch RNG state")
         if ck.get("args", {}).get("train_scope", "all") != args.train_scope:
             raise ValueError("resume train scope differs from checkpoint")
         if ck.get("args", {}).get("select_metric", "cer") != args.select_metric:
@@ -563,23 +814,47 @@ def main():
             ema = EMA(model, args.ema)
             ema.shadow = {k: v.clone() for k, v in ck["model"].items()}
         print(f"resumed at step {step}, best {best:.4f}", flush=True)
-        rng = np.random.default_rng([args.seed, step])
+        if not policy:
+            rng = np.random.default_rng([args.seed, step])
     elif args.init:
+        init_sha256 = file_sha256(args.init) if policy else None
         ck = torch.load(args.init, map_location="cpu", weights_only=False)
+        if policy:
+            if file_sha256(args.init) != init_sha256:
+                raise ValueError("initial model bytes changed during loading")
+            execution["initial_model"] = {"kind": "checkpoint", "sha256": init_sha256}
         if ck["vocab"] != vocab:
             raise ValueError("init vocabulary order differs from checkpoint")
         args.freeze_bn_stats |= ck.get("freeze_bn_stats", False)
         model.load_state_dict(ck["model"])
         print(f"initialised from {args.init} (step {ck.get('step')})", flush=True)
+    if policy and "initial_model" not in execution:
+        execution["initial_model"] = {"kind": "seeded_random", "seed": args.seed,
+                                      "state_sha256": model_state_sha256(model)}
     if args.ema and ema is None:
         ema = EMA(model, args.ema)
-    mixer = Mixer(sources, weights, args.batch, rng)
+    mixer = (PolicyMixer(sources, weights, args.batch, rng, policy, src_opts)
+             if policy else Mixer(sources, weights, args.batch, rng))
+    if resume_policy is not None:
+        mixer.load_state_dict(resume_policy)
+    if policy:
+        freeze_json(out / "source_execution.json", execution)
+    journal = (ExposureJournal(out / "source_exposures.jsonl", execution, policy.sha256,
+                               mixer.ledger.state_dict() if resume_policy is not None else None, checkpoint_tail)
+               if policy else None)
     qat_from = int(args.qat * args.steps) if args.qat else None
     cfg = {k: str(v) for k, v in vars(args).items()}
+    if policy and resume_policy is not None:
+        recipe_keys = ("steps", "seed", "threads", "lr", "final_lr", "warmup", "wd", "width", "bottleneck",
+                       "depth", "ctx", "ctx_k", "kd_weight", "kd_tau", "ema", "qat", "freeze_bn_stats")
+        if any(ck["args"].get(key) != cfg[key] for key in recipe_keys):
+            raise ValueError("source-policy resume training recipe differs from checkpoint")
     (out / "args.json").write_text(json.dumps(cfg, indent=1))
     metrics = open(out / "metrics.jsonl", "a")
     eval_model = TinyVNOCR(len(vocab) + 1, width=args.width, bottleneck=args.bottleneck,
                            depth=args.depth, ctx=args.ctx, ctx_k=args.ctx_k).to(memory_format=torch.channels_last)
+    if resume_torch_rng is not None:
+        torch.set_rng_state(resume_torch_rng)
 
     def lr_at(s):
         warm = min(1.0, (s + 1) / max(1, args.warmup))
@@ -599,7 +874,12 @@ def main():
             g["lr"] = lr
         items = mixer.next()
         x, in_len, lab, tgt, tgt_len, kd = make_batch(items, rng, src_opts)
+        if policy:
+            journal.append("intent", mixer.ledger)
         logits = model(x)                                    # T x N x C
+        if policy:
+            mixer.record_forward(items)
+            journal.append("forward", mixer.ledger)
         loss = torch.zeros(())
         if len(lab):
             logp = logits.float().log_softmax(2)
@@ -617,10 +897,15 @@ def main():
             acc["kd"] += float(k)
         if not loss.requires_grad:
             continue
+        if policy and not torch.isfinite(loss):
+            raise ValueError("nonfinite training loss; forwarded exposure was journaled, run aborted")
         opt.zero_grad(set_to_none=True)
         loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), 5.0)
         opt.step()
+        if policy:
+            mixer.record_optimizer(items)
+            journal.append("optimizer", mixer.ledger)
         if ema is not None:
             ema.update(model)
         step += 1
@@ -629,6 +914,8 @@ def main():
         if step % args.log_every == 0:
             dt = time.time() - t_log
             mix = " ".join(f"{s.name}={c}" for s, c in zip(sources, mixer.counts))
+            if policy:
+                mix += f" forwarded={mixer.ledger.forwarded} optimizer_rows={mixer.ledger.optimizer}"
             print(f"step {step}/{args.steps} ctc {acc['ctc'] / acc['n']:.4f} kd {acc['kd'] / acc['n']:.4f} "
                   f"lr {lr:.2e} {seen / dt:.0f} lines/s [{mix}]", flush=True)
             t_log, seen, acc = time.time(), 0, {"ctc": 0.0, "kd": 0.0, "n": 0}
@@ -649,6 +936,8 @@ def main():
                    **{f"{k}_cer": v[0] for k, v in res.items()}, **{f"{k}_exact": v[1] for k, v in res.items()},
                    **{f"{k}_hiragana_cer": v[2] for k, v in res.items()},
                    "sel": sel, "mix": {s.name: int(c) for s, c in zip(sources, mixer.counts)}}
+            if policy:
+                rec["source_policy"] = mixer.report()
             metrics.write(json.dumps(rec) + "\n")
             metrics.flush()
             if sel < best:
@@ -660,6 +949,11 @@ def main():
                   "freeze_bn_stats": args.freeze_bn_stats,
                   "qat": {"bits": 8, "from_step": qat_from} if qat_from is not None else None,
                   "args": cfg, "val": {k: list(v) for k, v in res.items()}}
+            if policy:
+                ck["source_policy"] = mixer.state_dict()
+                ck["torch_rng"] = torch.get_rng_state()
+                ck["source_policy_execution"] = execution
+                ck["source_policy_journal_sha256"] = journal.tail
             if ema is not None:
                 ck["model_raw"] = {k: v.contiguous() for k, v in model.state_dict().items()}
             if best_step == step:
@@ -668,7 +962,9 @@ def main():
             torch.save(ck, out / "ckpt_last.tmp")
             (out / "ckpt_last.tmp").replace(last)
             if args.keep_evals:
-                torch.save(ck, out / f"ckpt_step{step}.pt")
+                retained = out / f"ckpt_step{step}.pt"
+                torch.save(ck, retained.with_suffix(".tmp"))
+                retained.with_suffix(".tmp").replace(retained)
             vs = " ".join(f"{k} {v[0]:.4f}/{v[1]:.3f}" for k, v in res.items())
             print(f"eval step {step}: {vs} sel {sel:.4f} (best {best:.4f} @ {best_step}) "
                   f"[{time.time() - t1:.0f}s]", flush=True)

@@ -215,7 +215,393 @@ static unsigned row_on(const uint32_t *row, unsigned x1, unsigned x2)
     return n;
 }
 
-static int find_grad(const VocrLinesImage *im, unsigned char *base, VocrLineSet *out)
+/* A textbox row has runs of >= MIN_H pixels separated by >= GAP empty pixels.
+ * Keep only four rows of runs and their live union-find components. This fits
+ * inside GRAD's row rings/counters, which are dead once the on-mask is built. */
+typedef struct { unsigned x1, x2, label; } TextRun;
+typedef struct {
+    unsigned x1, top, x2, bot, last, parent, mass;
+} TextComponent;
+typedef struct { unsigned x1, top, x2, bot, mass; } TextCand;
+#define TEXT_STRONG (1u << 28)
+#define TEXT_DUP (1u << 29)
+#define TEXT_USE (1u << 30)
+#define TEXT_INFO_MASK (TEXT_STRONG - 1u)
+
+static int text_same_box(unsigned ax, unsigned ay, unsigned aw, unsigned ah,
+                         unsigned bx, unsigned by, unsigned bw, unsigned bh)
+{
+    unsigned left = ax > bx ? ax : bx, top = ay > by ? ay : by;
+    unsigned right = ax + aw < bx + bw ? ax + aw : bx + bw;
+    unsigned bottom = ay + ah < by + bh ? ay + ah : by + bh;
+    if (right <= left || bottom <= top) return 0;
+    return 10u * (right - left) >= 9u * aw && 10u * (right - left) >= 9u * bw &&
+           10u * (bottom - top) >= 9u * ah && 10u * (bottom - top) >= 9u * bh;
+}
+
+static unsigned text_old_height(const VocrLine *line)
+{
+    unsigned ch = line->h > 2u * PAD ? line->h - 2u * PAD : line->h;
+    return ch < MIN_H ? MIN_H : ch;
+}
+
+static int text_coherent(const TextCand *cand, unsigned main)
+{
+    unsigned ch = cand->mass & 255u;
+    return !(cand->mass & TEXT_DUP) && (cand->mass & TEXT_STRONG) &&
+           100u * ch >= FURI_PCT * main && ch <= GAPC * main;
+}
+
+/* Repeated ordinary GRAD row heights anchor the scale before new scene or
+ * border components can influence it. A unique geometry-matched old row also
+ * anchors it; incompatible single-row anchors request conservative fallback. */
+static unsigned text_main_height(const VocrLineSet *old, const TextCand *cand,
+                                  unsigned nc, unsigned proposed)
+{
+    unsigned i, j, best = 0, height = 0, single = 0;
+    for (i = 0; i < old->count; i++) {
+        unsigned ch = text_old_height(&old->lines[i]), count = 0;
+        if (ch > LEG_MAX_LINE_H) continue;
+        for (j = 0; j < old->count; j++) {
+            unsigned other = text_old_height(&old->lines[j]);
+            unsigned small = ch < other ? ch : other, big = ch > other ? ch : other;
+            if (other <= LEG_MAX_LINE_H && 4u * big <= 5u * small) count++;
+        }
+        if (count > best || (count == best && ch > height)) { best = count; height = ch; }
+    }
+    if (best >= 2u) return height;
+    for (i = 0; i < old->count; i++) {
+        const VocrLine *line = &old->lines[i];
+        unsigned ch = text_old_height(line);
+        if (ch > LEG_MAX_LINE_H) continue;
+        for (j = 0; j < nc; j++) {
+            unsigned small, big;
+            if (cand[j].mass & TEXT_DUP) continue;
+            if (!text_same_box(line->x, line->y, line->w, line->h,
+                               cand[j].x1, cand[j].top, cand[j].x2 - cand[j].x1,
+                               cand[j].bot - cand[j].top)) continue;
+            small = ch < single ? ch : single; big = ch > single ? ch : single;
+            if (single && 4u * big > 5u * small) return 0;
+            if (ch > single) single = ch;
+            break;
+        }
+    }
+    return single ? single : proposed;
+}
+
+static int text_inside(const TextCand *cand, const VocrLine *line)
+{
+    unsigned center = (cand->top + cand->bot) / 2u;
+    unsigned left = cand->x1 > line->x ? cand->x1 : line->x;
+    unsigned right = cand->x2 < line->x + line->w ? cand->x2 : line->x + line->w;
+    return center >= line->y && center < line->y + line->h && right > left &&
+           2u * (right - left) >= cand->x2 - cand->x1;
+}
+
+static void text_route(const VocrLinesImage *im, TextCand *cand, unsigned nc,
+                        unsigned proposed, VocrLineSet *out)
+{
+    unsigned main = text_main_height(out, cand, nc, proposed), i, j, k, replace = 0;
+    unsigned missing = out->count == 0, old_count = out->count, kept = 0;
+    if (!main) return;
+    for (i = 0; i < old_count; i++) {
+        const VocrLine *line = &out->lines[i];
+        if (10u * line->w >= 9u * im->width && 2u * text_old_height(line) >= 3u * main)
+            missing = 1;
+        if (line->h <= 2u * main + 2u * PAD) continue;
+        for (j = 0; j < nc; j++) {
+            if (!text_coherent(&cand[j], main) || !text_inside(&cand[j], line)) continue;
+            for (k = j + 1u; k < nc; k++) {
+                unsigned first = (cand[j].top + cand[j].bot) / 2u;
+                unsigned second = (cand[k].top + cand[k].bot) / 2u;
+                unsigned distance = first > second ? first - second : second - first;
+                if (distance >= main && text_coherent(&cand[k], main) && text_inside(&cand[k], line)) {
+                    replace |= 1u << i;
+                    break;
+                }
+            }
+            if (replace & (1u << i)) break;
+        }
+        if (replace & (1u << i))
+            for (j = 0; j < nc; j++)
+                if (text_coherent(&cand[j], main) && text_inside(&cand[j], line)) cand[j].mass |= TEXT_USE;
+    }
+    /* Preserve retained old coordinates, padding and polarity byte-for-byte. */
+    for (i = 0; i < old_count; i++)
+        if (!(replace & (1u << i))) out->lines[kept++] = out->lines[i];
+    out->count = kept;
+    for (i = 0; i < nc; i++) {
+        unsigned ch = cand[i].mass & 255u, overlap = 0;
+        VocrLine *line;
+        if (cand[i].mass & TEXT_DUP) continue;
+        if (!(cand[i].mass & TEXT_USE) &&
+            !(missing && (old_count ? text_coherent(&cand[i], main) :
+              (100u * ch >= FURI_PCT * main && ch <= GAPC * main)))) continue;
+        for (j = 0; j < out->count; j++) {
+            unsigned top = cand[i].top > out->lines[j].y ? cand[i].top : out->lines[j].y;
+            unsigned bot = cand[i].bot < out->lines[j].y + out->lines[j].h ?
+                           cand[i].bot : out->lines[j].y + out->lines[j].h;
+            unsigned small = cand[i].bot - cand[i].top < out->lines[j].h ?
+                             cand[i].bot - cand[i].top : out->lines[j].h;
+            if (bot > top && 2u * (bot - top) >= small) { overlap = 1; break; }
+        }
+        if (overlap) continue;
+        if (out->count == VOCR_LINES_MAX) { out->truncated = 1; break; }
+        line = &out->lines[out->count++];
+        line->x = cand[i].x1; line->y = cand[i].top;
+        line->w = cand[i].x2 - cand[i].x1; line->h = cand[i].bot - cand[i].top;
+        line->dark = (unsigned)vocr_line_dark(im, line->x, line->y, line->w, line->h);
+    }
+    for (i = 1; i < out->count; i++) {
+        VocrLine value = out->lines[i]; j = i;
+        while (j && (out->lines[j - 1u].y > value.y ||
+                     (out->lines[j - 1u].y == value.y && out->lines[j - 1u].x > value.x))) {
+            out->lines[j] = out->lines[j - 1u]; j--;
+        }
+        out->lines[j] = value;
+    }
+}
+
+static unsigned component_root(TextComponent *components, unsigned label)
+{
+    unsigned root = label;
+    while (components[root - 1u].parent != root) root = components[root - 1u].parent;
+    while (label != root) {
+        unsigned next = components[label - 1u].parent;
+        components[label - 1u].parent = root;
+        label = next;
+    }
+    return root;
+}
+
+static unsigned component_join(TextComponent *components, unsigned first, unsigned second)
+{
+    TextComponent *a, *b;
+    first = component_root(components, first);
+    second = component_root(components, second);
+    if (first == second) return first;
+    a = &components[first - 1u]; b = &components[second - 1u];
+    if (b->x1 < a->x1) a->x1 = b->x1;
+    if (b->top < a->top) a->top = b->top;
+    if (b->x2 > a->x2) a->x2 = b->x2;
+    if (b->bot > a->bot) a->bot = b->bot;
+    if (b->last > a->last) a->last = b->last;
+    a->mass += b->mass;
+    b->parent = first;
+    return first;
+}
+
+static unsigned textbox_runs(const uint32_t *row, unsigned w, TextRun *runs)
+{
+    unsigned x, start = 0, last = 0, count = 0;
+    int have = 0;
+    for (x = 0; x <= w; x++) {
+        if (x < w && !bit(row, x)) continue;
+        if (x < w && have && x - last <= GAP) { last = x; continue; }
+        if (have && last + 1u - start >= MIN_H) {
+            runs[count].x1 = start; runs[count].x2 = last + 1u;
+            runs[count++].label = 0;
+        }
+        if (x == w) break;
+        start = last = x; have = 1;
+    }
+    return count;
+}
+
+static void textbox_emit(const TextComponent *component, TextCand *cand, unsigned *nc,
+                         unsigned cap, unsigned *truncated)
+{
+    unsigned ch = component->bot - component->top;
+    unsigned i;
+    TextCand value;
+    /* The legacy finder's native line-height ceiling excludes frame-sized
+     * structures from the height estimate. Boundary contact and narrow glyph
+     * shape are not reasons to discard an otherwise line-sized component. */
+    if (ch < MIN_H || ch > LEG_MAX_LINE_H) return;
+    value.x1 = component->x1; value.top = component->top;
+    value.x2 = component->x2; value.bot = component->bot;
+    value.mass = component->mass;
+    /* Coalesce on emission, before imposing the bounded line capacity: a line
+     * may have more disconnected word fragments than there are text rows. */
+    for (i = 0; i < *nc;) {
+        unsigned ah = value.bot - value.top, bh = cand[i].bot - cand[i].top;
+        unsigned low = value.top > cand[i].top ? value.top : cand[i].top;
+        unsigned high = value.bot < cand[i].bot ? value.bot : cand[i].bot;
+        unsigned small = ah < bh ? ah : bh, big = ah > bh ? ah : bh;
+        unsigned gap = value.x2 < cand[i].x1 ? cand[i].x1 - value.x2 :
+                       cand[i].x2 < value.x1 ? value.x1 - cand[i].x2 : 0;
+        if (high > low && 2u * (high - low) >= small && big <= 2u * small && gap <= GAPC * big) {
+            if (cand[i].x1 < value.x1) value.x1 = cand[i].x1;
+            if (cand[i].top < value.top) value.top = cand[i].top;
+            if (cand[i].x2 > value.x2) value.x2 = cand[i].x2;
+            if (cand[i].bot > value.bot) value.bot = cand[i].bot;
+            value.mass += cand[i].mass;
+            cand[i] = cand[--(*nc)]; i = 0;
+        } else i++;
+    }
+    if (*nc == cap) { *truncated = 1; return; }
+    cand[(*nc)++] = value;
+}
+
+/* Preserve the old close-line rule locally: a blank row separates two tall
+ * components when the following MIN_H rows all contain ink in the same span. */
+static int textbox_separate(const uint32_t *bits, unsigned words, unsigned h,
+                            unsigned y, const TextComponent *component, const TextRun *run)
+{
+    unsigned x1 = component->x1 < run->x1 ? component->x1 : run->x1;
+    unsigned x2 = component->x2 > run->x2 ? component->x2 : run->x2;
+    unsigned k, empty = 0;
+    if (component->bot - component->top < MIN_H || y + MIN_H > h) return 0;
+    for (k = component->bot; k < y; k++)
+        if (!row_on(bits + (size_t)k * words, x1, x2)) empty = 1;
+    if (!empty) return 0;
+    for (k = y; k < y + MIN_H; k++)
+        if (row_on(bits + (size_t)k * words, x1, x2) < 2) return 0;
+    return 1;
+}
+
+static int find_textbox(const VocrLinesImage *im, const uint32_t *bits, unsigned char *scratch,
+                        VocrLineSet *out)
+{
+    unsigned w = im->width, h = im->height, words = (w + 31u) / 32u;
+    unsigned max_runs = (w + GAP) / (MIN_H + GAP), cap = 4u * max_runs;
+    unsigned counts[4] = {0, 0, 0, 0}, y, i, j, k, nc = 0, truncated = 0, med = 0, total = 0, broad_only = 1;
+    TextRun *runs = (TextRun *)(void *)scratch;
+    TextComponent *components = (TextComponent *)(void *)(scratch + up4(sizeof(TextRun) * cap));
+    TextCand *cand = (TextCand *)(void *)((unsigned char *)components + up4(sizeof(TextComponent) * cap));
+    unsigned cand_cap = band_cap(h);
+    if (w < MIN_H || h < MIN_H) return VOCR_LINES_OK;
+    memset(components, 0, sizeof(TextComponent) * cap);
+    for (y = 0; y <= h + MERGE; y++) {
+        unsigned slot = y % 4u;
+        TextRun *current = runs + (size_t)slot * max_runs;
+        counts[slot] = 0;
+        for (i = 0; i < cap; i++) {
+            if (components[i].parent == i + 1u && y > components[i].last + MERGE + 1u) {
+                textbox_emit(&components[i], cand, &nc, cand_cap, &truncated);
+                components[i].parent = 0;
+            }
+        }
+        if (y >= h) continue;
+        counts[slot] = textbox_runs(bits + (size_t)y * words, w, current);
+        for (i = 0; i < counts[slot]; i++) {
+            TextRun *run = &current[i];
+            unsigned label = 0, age;
+            for (age = 1; age <= MERGE + 1u && age <= y; age++) {
+                unsigned previous = (y - age) % 4u;
+                TextRun *before = runs + (size_t)previous * max_runs;
+                for (j = 0; j < counts[previous]; j++) {
+                    unsigned root;
+                    if (run->x1 > before[j].x2 || before[j].x1 > run->x2) continue;
+                    root = component_root(components, before[j].label);
+                    if (age > 1u && textbox_separate(bits, words, h, y, &components[root - 1u], run)) continue;
+                    label = label ? component_join(components, label, root) : root;
+                }
+            }
+            if (!label) {
+                for (j = 0; j < cap && components[j].parent; j++) {}
+                if (j == cap) return VOCR_LINES_OK; /* preserve GRAD on unsafe scratch topology */
+                label = j + 1u;
+                components[j].x1 = run->x1; components[j].top = y;
+                components[j].x2 = run->x2; components[j].bot = y + 1u;
+                components[j].parent = label; components[j].mass = 0;
+            }
+            run->label = component_root(components, label);
+            {
+                TextComponent *component = &components[run->label - 1u];
+                if (run->x1 < component->x1) component->x1 = run->x1;
+                if (run->x2 > component->x2) component->x2 = run->x2;
+                component->bot = y + 1u; component->last = y;
+                component->mass += run->x2 - run->x1;
+            }
+        }
+        /* Rewrite every live reference before freeing merged labels for reuse. */
+        for (i = 0; i < 4; i++)
+            for (j = 0; j < counts[i]; j++) {
+                TextRun *run = &runs[(size_t)i * max_runs + j];
+                run->label = component_root(components, run->label);
+            }
+        for (i = 0; i < cap; i++)
+            if (components[i].parent && components[i].parent != i + 1u) components[i].parent = 0;
+    }
+    for (i = 0; i < cap; i++)
+        if (components[i].parent == i + 1u) textbox_emit(&components[i], cand, &nc, cand_cap, &truncated);
+    if (truncated) return VOCR_LINES_OK;
+    for (i = 1; i < nc; i++) {
+        TextCand value = cand[i]; j = i;
+        while (j && (cand[j - 1u].top > value.top ||
+                     (cand[j - 1u].top == value.top && cand[j - 1u].x1 > value.x1))) {
+            cand[j] = cand[j - 1u]; j--;
+        }
+        cand[j] = value;
+    }
+    /* Estimate only from broad coherent support. Empty GRAD output may also
+     * use a short/narrow component; retained GRAD rows never depend on this. */
+    for (i = 0; i < nc; i++) {
+        unsigned ch = cand[i].bot - cand[i].top, weight = (cand[i].mass + ch / 2u) / ch;
+        if (ch <= LEG_MAX_LINE_H && weight >= 2u * ch) total += weight;
+    }
+    if (!total && !out->count) {
+        broad_only = 0;
+        for (i = 0; i < nc; i++) {
+            unsigned ch = cand[i].bot - cand[i].top;
+            if (ch <= LEG_MAX_LINE_H) total += (cand[i].mass + ch / 2u) / ch;
+        }
+    }
+    for (i = 0; i < nc && !med; i++) {
+        unsigned ch = cand[i].bot - cand[i].top, below = 0, equal = 0;
+        if (ch > LEG_MAX_LINE_H) continue;
+        for (j = 0; j < nc; j++) {
+            unsigned other = cand[j].bot - cand[j].top, weight;
+            if (other > LEG_MAX_LINE_H) continue;
+            weight = (cand[j].mass + other / 2u) / other;
+            if (broad_only && weight < 2u * other) continue;
+            if (other < ch) below += weight;
+            if (other == ch) equal += weight;
+        }
+        if (below <= total / 2u && total / 2u < below + equal) med = ch;
+    }
+    for (i = 0; i < nc; i++) {
+        unsigned x1 = cand[i].x1, x2 = cand[i].x2, top = cand[i].top, bot = cand[i].bot;
+        unsigned bh = bot - top, last, x, y1, y2, weight = (cand[i].mass + bh / 2u) / bh;
+        if (bh > LEG_MAX_LINE_H) { cand[i].mass = TEXT_DUP; continue; }
+        /* Recover nearby punctuation which was too small to make a kept run. */
+        for (last = x2 - 1u, x = x2; x < w && x - last <= bh; x++)
+            for (k = top; k < bot; k++)
+                if (bit(bits + (size_t)k * words, x)) { last = x; break; }
+        x2 = last + 1u;
+        for (last = x1, x = x1; x && last - (x - 1u) <= bh; x--)
+            for (k = top; k < bot; k++)
+                if (bit(bits + (size_t)k * words, x - 1u)) { last = x - 1u; break; }
+        x1 = last;
+        y1 = top; y2 = bot;
+        while (y1 && top - y1 < PAD && row_on(bits + (size_t)(y1 - 1u) * words, x1, x2) >= 2) y1--;
+        while (y2 < h && y2 - bot < PAD && row_on(bits + (size_t)y2 * words, x1, x2) >= 2) y2++;
+        cand[i].x1 = x1 > PAD ? x1 - PAD : 0; cand[i].top = y1 > PAD ? y1 - PAD : 0;
+        cand[i].x2 = x2 + PAD < w ? x2 + PAD : w; cand[i].bot = y2 + PAD < h ? y2 + PAD : h;
+        cand[i].mass = (weight << 8) | bh | (weight >= 2u * bh ? TEXT_STRONG : 0);
+    }
+    /* Expansion can make previously distinct fragments the same physical row.
+     * Coalesce FINAL geometry before topology decisions or recognizer calls. */
+    for (i = 0; i < nc; i++) {
+        if (cand[i].mass & TEXT_DUP) continue;
+        for (j = i + 1u; j < nc; j++) {
+            if (cand[j].mass & TEXT_DUP) continue;
+            if (!text_same_box(cand[i].x1, cand[i].top, cand[i].x2 - cand[i].x1, cand[i].bot - cand[i].top,
+                               cand[j].x1, cand[j].top, cand[j].x2 - cand[j].x1, cand[j].bot - cand[j].top)) continue;
+            if ((cand[j].mass & 255u) > (cand[i].mass & 255u)) cand[i].mass = cand[j].mass;
+            if (cand[j].x1 < cand[i].x1) cand[i].x1 = cand[j].x1;
+            if (cand[j].top < cand[i].top) cand[i].top = cand[j].top;
+            if (cand[j].x2 > cand[i].x2) cand[i].x2 = cand[j].x2;
+            if (cand[j].bot > cand[i].bot) cand[i].bot = cand[j].bot;
+            cand[j].mass |= TEXT_DUP;
+        }
+    }
+    text_route(im, cand, nc, med, out);
+    return VOCR_LINES_OK;
+}
+
+static int find_grad(const VocrLinesImage *im, unsigned char *base, VocrLineSet *out, int textbox)
 {
     unsigned w = im->width, h = im->height, words = (w + 31u) / 32u;
     unsigned x, y, i, nb = 0, nc = 0, peak = 0, th, T, p99 = 0;
@@ -379,6 +765,7 @@ static int find_grad(const VocrLinesImage *im, unsigned char *base, VocrLineSet 
             ln->dark = (unsigned)vocr_line_dark(im, lx, ly, ln->w, ln->h);
         }
     }
+    if (textbox && !out->truncated) return find_textbox(im, bits, (unsigned char *)(void *)prof, out);
     return VOCR_LINES_OK;
 }
 
@@ -447,11 +834,12 @@ int vocr_find_lines(const VocrLinesImage *im, int finder, void *arena, size_t ar
     if (!im || !im->pixels || !im->width || !im->height || !arena ||
         (im->bpp != VOCR_LINES_GREY && im->bpp != VOCR_LINES_RGBA) ||
         im->stride < (size_t)im->width * im->bpp ||
-        (finder != VOCR_LINES_GRAD && finder != VOCR_LINES_LEGACY))
+        (finder != VOCR_LINES_GRAD && finder != VOCR_LINES_LEGACY && finder != VOCR_LINES_TEXTBOX))
         return VOCR_LINES_E_ARG;
     if (arena_bytes < vocr_lines_arena_bytes(im->width, im->height)) return VOCR_LINES_E_ARENA;
     base = align4(arena);
-    rc = finder == VOCR_LINES_GRAD ? find_grad(im, base, out) : find_legacy(im, base, out);
+    rc = finder == VOCR_LINES_LEGACY ? find_legacy(im, base, out) :
+         find_grad(im, base, out, finder == VOCR_LINES_TEXTBOX);
     if (rc) out->count = 0; /* never report a partial result */
     return rc;
 }

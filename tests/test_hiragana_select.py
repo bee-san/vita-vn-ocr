@@ -102,6 +102,37 @@ def test_full_text_guards_override_hiragana_improvement():
     assert not regresses_real["qualified"] and not regresses_synth["qualified"]
 
 
+@pytest.mark.parametrize("script", ["all", "hiragana"])
+def test_extra_development_guards_cannot_be_offset_by_original_gains(script):
+    baseline = scored("baseline")
+    baseline["scores"]["psp_dev"] = {"all": {"errors": 4}, "hiragana": {"errors": 2}}
+    candidate = scored("better-original", hira=0, real=0, synth=0)
+    candidate["scores"]["psp_dev"] = {"all": {"errors": 4}, "hiragana": {"errors": 2}}
+    candidate["scores"]["psp_dev"][script]["errors"] += 1
+    assert HS.choose(baseline, [candidate]) == (baseline, False)
+    assert not candidate["qualified"]
+    candidate["scores"]["psp_dev"][script]["errors"] -= 1
+    assert HS.choose(baseline, [candidate]) == (candidate, True)
+
+
+def test_missing_extra_guard_rejects_candidate():
+    baseline = scored("baseline")
+    baseline["scores"]["new_font_dev"] = {"all": {"errors": 3}, "hiragana": {"errors": 1}}
+    assert HS.choose(baseline, [scored("incomplete", hira=0)]) == (baseline, False)
+
+
+def test_extra_guards_preserve_declared_padding_and_reject_test_before_pixels(datasets):
+    manifest, synthetic, row, _, _ = datasets
+    lines, identities = HS.load_guards([("psp", manifest, 2)], [("native_font", synthetic)])
+    assert identities["psp"]["pad"] == 2 and set(lines) == {"psp", "native_font"}
+    with pytest.raises(ValueError, match="distinct"):
+        HS.load_guards([("real_dev", manifest, 2)])
+    row.update(split="test", image="absent.png")
+    manifest.write_text(json.dumps(row))
+    with pytest.raises(ValueError, match="development-only"):
+        HS.load_guards([("psp", manifest, 2)])
+
+
 def test_ranking_and_ties_are_deterministic_and_keep_baseline_without_strict_improvement():
     baseline = scored("baseline")
     assert HS.choose(baseline, [scored("equal", step=100)])[0] is baseline
@@ -204,7 +235,7 @@ def test_selection_locks_chosen_hash_and_refuses_rerun(model_files, datasets, mo
     baseline, checkpoint, _, _ = model_files
     calls = []
 
-    def score(path, real, synth):
+    def score(path, real, synth, guards=None):
         calls.append(path)
         record = scored("baseline" if path == baseline else "candidate", hira=2 if path == baseline else 1)
         return {"scores": record["scores"], "memory": {"blob_bytes": HS.MODEL_BYTES,

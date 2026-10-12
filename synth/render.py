@@ -68,6 +68,8 @@ from bg_exclude import load_exclusions  # noqa: E402
 from common import DATA, find_lines, find_lines_ex, is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
 from kanji_policy import allowed_label, load_policy, name_weights, sample_pair  # noqa: E402
 from mask_finder import find_lines_mask  # noqa: E402
+from native_font_manifest import load_manifest as load_native_fonts  # noqa: E402
+from native_font_manifest import probability  # noqa: E402
 
 FONT_DIRS = [DATA / "fonts", DATA / "fonts_extra"]   # the first one is never written to
 CATEGORY = {
@@ -122,7 +124,17 @@ MAX_PAIR_ATTEMPTS = 500
 
 class Resources:
     def __init__(self, pool_limit=300_000, target_kana="", vocab=None, kanji_policy=None, kanji_pairs=False,
-                 crop_edge_jitter=False, background_manifest=None):
+                 crop_edge_jitter=False, background_manifest=None, native_font_manifest=None,
+                 native_font_root=None, native_font_probability=0):
+        self.native_font_probability = probability(native_font_probability)
+        if bool(native_font_manifest) != bool(native_font_root):
+            raise ValueError("native fonts require both a manifest and a local source directory")
+        if self.native_font_probability and not native_font_manifest:
+            raise ValueError("native font sampling requires a pinned manifest")
+        self.native_faces, self.native_fonts, self.native_font_binding = {}, [], None
+        if native_font_manifest:
+            self.native_faces, self.native_fonts, self.native_font_binding = load_native_fonts(
+                native_font_manifest, native_font_root)
         self.vocab = load_vocab(vocab) if vocab else load_vocab()
         self.vocab_set = set(self.vocab)
         self.kanji_policy = load_policy(kanji_policy) if kanji_policy else None
@@ -271,13 +283,15 @@ def accent(rng, on_dark):
 # ----------------------------------------------------------------------------- text
 
 def get_font(path, size, wght):
-    key = (str(path), size, wght)
+    native = getattr(R, "native_faces", {}).get(path)
+    key = (str(path), size, wght, native.glyphs.sha256 if native else None,
+           native.metrics.sha256 if native else None)
     font = _FONTS.get(key)
     if font is None:
         if len(_FONTS) > 400:
             _FONTS.clear()
-        font = ImageFont.truetype(str(path), size)
-        if wght is not None:
+        font = native.font_variant(size=size, strike=wght) if native else ImageFont.truetype(str(path), size)
+        if wght is not None and not native:
             try:
                 font.set_variation_by_axes([wght])
             except (OSError, ValueError):
@@ -287,6 +301,8 @@ def get_font(path, size, wght):
 
 
 def pick_weight(rng, path):
+    if path in getattr(R, "native_faces", {}):
+        return int(rng.integers(2))
     if "[wght]" not in path.name:
         return None
     if path not in _AXES:
@@ -301,7 +317,58 @@ def pick_weight(rng, path):
     return int(round(rng.uniform(lo, hi) / 100.0) * 100)
 
 
+def text_baseline(top, size, path):
+    """Bitmap anchors use the cell bottom; OFL keeps its original ascender rule."""
+    return top + (1.0 if path in getattr(R, "native_faces", {}) else .88) * size
+
+
+def native_vertical_band(font, text, top, size, ss=1):
+    """Include nominal cell bounds and measured ink (including metric descenders)."""
+    box = font.getbbox(text, anchor="ls")
+    base = top + size
+    return min(top, base + box[1] / ss), max(top + size, base + box[3] / ss)
+
+
+def native_glyph_core_box(font, ch, x, base, ss=1):
+    """Bounds of alpha >=128 at the same fractional origin Pillow draws.
+
+    Called only for labelled native glyphs: ruby, cursors and typewriter ghosts
+    are excluded. Empty spacing glyphs contribute no ink, including cell slack.
+    """
+    px, py = x * ss, base * ss
+    mask, offset = font.getmask2(ch, mode="1", anchor="ls",
+                               start=(math.modf(px)[0], math.modf(py)[0]))
+    box = Image.frombytes("L", mask.size, bytes(mask)).getbbox()
+    if box is None:
+        return None
+    ox, oy = int(px) + offset[0], int(py) + offset[1]
+    return (math.floor((ox + box[0]) / ss), math.floor((oy + box[1]) / ss),
+            math.ceil((ox + box[2]) / ss), math.ceil((oy + box[3]) / ss))
+
+
+def union_core_box(current, box):
+    if box is None:
+        return current
+    if current is None:
+        return box
+    return (min(current[0], box[0]), min(current[1], box[1]),
+            max(current[2], box[2]), max(current[3], box[3]))
+
+
+def preserves_core(box, core):
+    """Test half-open crop XYWH against measured labelled-ink LTRB bounds."""
+    if core is None:
+        return False
+    x, y, w, h = box
+    return x <= core[0] and y <= core[1] and x + w >= core[2] and y + h >= core[3]
+
+
 def pick_font(rng, chars, platform, cat=None):
+    native_probability = getattr(R, "native_font_probability", 0)
+    if native_probability:
+        cands = [f for f in R.native_fonts if chars <= f[3] and (cat is None or cat == f[0])]
+        if cands and rng.random() < native_probability:
+            return cands[rng.integers(len(cands))]
     weights = CAT_WEIGHT["vita" if platform == "vita" else "psp"]
     cat = cat or choose(rng, {c: weights[c] for c in R.by_cat})
     cands = [f for f in R.by_cat.get(cat, []) if chars <= f[3]]
@@ -918,7 +985,14 @@ def render_region(rng, platform=None):
         return None
     cat, fam, path, fchars = font
     wght = pick_weight(rng, path)
-    if fam in PIXEL_EM:
+    native_font = path in R.native_faces
+    if path in R.native_faces:
+        # Keep the measured bitmap at native Vita size often, with downsampled
+        # size variants for other dialogue fonts and PSP-sized renderings.
+        fs = int(rng.choice([12, 14, 16], p=[.10, .30, .60])) if psp else \
+            int(rng.choice([24, 28, 32], p=[.20, .30, .50]))
+        aa, ss = True, 1
+    elif fam in PIXEL_EM:
         em = PIXEL_EM[fam]
         if psp:
             mult = 1 if em >= 12 else int(rng.choice([1, 2], p=[0.3, 0.7]))
@@ -1143,14 +1217,19 @@ def render_region(rng, platform=None):
     y = out_t + pt + ruby_space
     if name_line:
         nx = x_left
-        base = y + 0.88 * name_fs
+        base = text_baseline(y, name_fs, path)
+        core_box = None
         for ch in name_disp:
             layer.glyph(nx, base, ch, nf, 1 if name_coloured else 0)
+            if native_font:
+                core_box = union_core_box(core_box, native_glyph_core_box(nf, ch, nx, base, ss))
             nx += nf.getlength(ch) / ss
         if name_coloured:
             n_fill = max(n_fill, 2)
         layout.append({"text": name_label, "top": y, "fs": name_fs, "x0": x_left, "x1": nx,
                        "kind": "name"})
+        if native_font:
+            layout[-1]["native_core_box"] = core_box
         y += name_line_h
     if lay == "choice":
         tops = [out_t + i * (bar_h + bar_gap) + (bar_h - fs) / 2 for i in range(len(lines))]
@@ -1160,16 +1239,19 @@ def render_region(rng, platform=None):
     ink_extra = []
     for i, ln in enumerate(lines):
         top = tops[i]
-        base = top + 0.88 * fs
+        base = text_baseline(top, fs, path)
         if lay in ("choice", "balloon"):
             x = (w - widths[i]) / 2
         else:
             x = x_left + (fs if indent and i > 0 else 0)
         xs = []
+        core_box = None
         for k, ch in enumerate(ln):
             xs.append(x)
             if ch != "　":
                 layer.glyph(x, base, ch, f, colour_of[i][k])
+                if native_font:
+                    core_box = union_core_box(core_box, native_glyph_core_box(f, ch, x, base, ss))
             x += f.getlength(ch) / ss + track
         x_end = x - track
         if ruby:
@@ -1196,6 +1278,8 @@ def render_region(rng, platform=None):
                        "ruby": bool(ruby and any(is_kanji(c) for c in ln)),
                        "cursor": bool(cursor_xy is not None and cursor["inline"] and i == len(lines) - 1),
                        "coloured": bool(any(colour_of[i]))})
+        if native_font:
+            layout[-1]["native_core_box"] = core_box
     fills, s1, s2 = layer.arrays()
     cols = [st["fill"], st["accent"]] + [st["fill"]] * max(0, len(fills) - 2)
     if cursor is not None:
@@ -1225,11 +1309,14 @@ def render_region(rng, platform=None):
         else:
             nx = tab["rect"][0] + name_fs * 0.5
         ntop = tab["rect"][1] + (tab["h"] - name_fs) / 2
-        nbase = ntop + 0.88 * name_fs
+        nbase = text_baseline(ntop, name_fs, path)
         x = nx
+        core_box = None
         for ch in name_disp:
             if ch != "　":
                 tl.glyph(x, nbase, ch, nf)
+                if native_font:
+                    core_box = union_core_box(core_box, native_glyph_core_box(nf, ch, x, nbase, ss))
             x += nf.getlength(ch) / ss
         nfill = (light_colour(rng, 0.1, 0.9) if on_tab_dark else dark_colour(rng, 0.25)) \
             if not name_coloured else accent(rng, on_tab_dark)
@@ -1241,6 +1328,8 @@ def render_region(rng, platform=None):
         np.maximum(core, tcore, out=core)
         np.maximum(ink, tink, out=ink)
         layout.insert(0, {"text": name_label, "top": ntop, "fs": name_fs, "x0": nx, "x1": x, "kind": "name"})
+        if native_font:
+            layout[0]["native_core_box"] = core_box
 
     # ---- finder geometry: an ideal finder sees either the text core (like the overlay's
     # bright finder on outlined or shadowed text) or the full ink with outline and shadow
@@ -1249,6 +1338,10 @@ def render_region(rng, platform=None):
         ink = core
 
     # ---- screen artefacts
+    if path in R.native_faces:
+        for L in layout:
+            font = nf if L["kind"] == "name" else f
+            L["native_y0"], L["native_y1"] = native_vertical_band(font, L["text"], L["top"], L["fs"], ss)
     up2x = platform == "psp2x"
     scale = 1.0
     if platform == "vita" and rng.random() < 0.12:       # sub-native rendering, GPU upscale
@@ -1267,6 +1360,11 @@ def render_region(rng, platform=None):
         for L in layout:
             for key in ("top", "x0", "x1"):
                 L[key] *= 2
+            for key in ("native_y0", "native_y1"):
+                if key in L:
+                    L[key] *= 2
+            if L.get("native_core_box") is not None:
+                L["native_core_box"] = tuple(v * 2 for v in L["native_core_box"])
             L["fs"] *= 2
         sw, sw2, dy, ruby_space = 2 * sw, 2 * sw2, 2 * dy, 2 * ruby_space
     q = 0
@@ -1278,8 +1376,8 @@ def render_region(rng, platform=None):
 
     ink_b = ink >= 0.5
     for L in layout:     # vertical band of each line's own text ink (furigana excluded)
-        L["y0"] = L["top"] - max(sw, sw2) - 1
-        L["y1"] = L["top"] + L["fs"] + max(sw, sw2) + dy + 1
+        L["y0"] = L.get("native_y0", L["top"]) - max(sw, sw2) - 1
+        L["y1"] = L.get("native_y1", L["top"] + L["fs"]) + max(sw, sw2) + dy + 1
         rows = ink_b[max(int(L["y0"]), 0):max(int(L["y1"]), 0)]
         cols = np.flatnonzero(rows.any(axis=0)) if rows.size else []
         L["ix0"], L["ix1"] = (int(cols[0]), int(cols[-1]) + 1) if len(cols) else (-99, -99)
@@ -1288,6 +1386,15 @@ def render_region(rng, platform=None):
             "grad": st["grad"] is not None, "name": name_mode, "partial": partial is not None,
             "cursor": None if cursor is None else ("inline" if cursor["inline"] else "corner"),
             "jpeg": q, "scale": round(scale, 2), "border": bool(show_border), "geom": geom}
+    if getattr(R, "native_font_binding", None):
+        native_face = R.native_faces.get(path)
+        meta.update(native_font_manifest_sha256=R.native_font_binding["manifest_sha256"],
+                    native_font_probability=R.native_font_probability,
+                    native_font_used=native_face is not None)
+        if native_face:
+            meta.update(native_font_sha256=native_face.glyphs.sha256,
+                        native_metrics_sha256=native_face.metrics.sha256,
+                        native_strike=wght)
     return out, layout, ink_b, meta
 
 
@@ -1303,11 +1410,17 @@ def draw_ruby(rng, layer, ln, xs, f, ss, top, ruby_fs, gap, path, wght):
             j += 1
         if rng.random() < 0.6:
             kana = R.hiragana if rng.random() < 0.85 else R.katakana
+            native = getattr(R, "native_faces", {}).get(path)
+            if native:
+                kana = [c for c in kana if ord(c) in native.coverage]
+                if not kana:
+                    i = j
+                    continue
             reading = "".join(rng.choice(kana, size=(j - i) * int(rng.integers(1, 3))))
             span0, span1 = xs[i], xs[j - 1] + f.getlength(ln[j - 1]) / ss
             width = sum(rf.getlength(c) for c in reading) / ss
             x = (span0 + span1 - width) / 2
-            base = top - gap - 0.12 * ruby_fs
+            base = top - gap - (0 if native else .12) * ruby_fs
             for ch in reading:
                 layer.glyph(x, base, ch, rf, 0, small=True)
                 x += rf.getlength(ch) / ss
@@ -1404,6 +1517,9 @@ def extract(img, layout, ink=None, finder="mask", rng=None, invert=False, edge_j
                 continue
         moved, jitter_applied, jitter_changed = False, False, False
         original_box = (int(x), int(y), int(w), int(h))
+        native_core = L.get("native_core_box")
+        if "native_core_box" in L and not preserves_core(original_box, native_core):
+            continue  # the console finder already cut labelled strokes; do not widen its crop
         if rng is not None and finder != "grad" and rng.random() < 0.3:   # finder-to-finder jitter
             j = rng.integers(-1, 4, 4)
             x0, y0 = max(0, x - int(j[0])), max(0, y - int(j[1]))
@@ -1416,10 +1532,17 @@ def extract(img, layout, ink=None, finder="mask", rng=None, invert=False, edge_j
             jitter_changed = box != (x, y, w, h)
             moved |= jitter_changed
             x, y, w, h = box
+        native_jitter_reverted = False
+        if native_core is not None and not preserves_core((x, y, w, h), native_core):
+            x, y, w, h = original_box
+            moved, jitter_changed, native_jitter_reverted = False, False, True
         dark = int(flags[d]) if flags is not None and not moved else line_dark(grey, (x, y, w, h))
         g = grey[y:y + h, x:x + w]
         line = dict(L, original_crop_box=list(original_box), crop_box=list(map(int, (x, y, w, h))),
                     crop_edge_jitter_applied=jitter_applied, crop_edge_jitter_changed=jitter_changed)
+        if native_core is not None:
+            line.update(native_core_box=list(native_core), native_core_alpha_threshold=128,
+                        native_label_ink_preserved=True, native_core_jitter_reverted=native_jitter_reverted)
         out.append((255 - g if (invert and dark) else g.copy(), L["text"], (x, y, w, h), line, dark))
     return out
 
@@ -1434,6 +1557,10 @@ def crop_meta(meta, L, dark=0, inverted=False):
     m["crop_edge_jitter_enabled"] = R.crop_edge_jitter
     for key in ("original_crop_box", "crop_box", "crop_edge_jitter_applied", "crop_edge_jitter_changed"):
         m[key] = L[key]
+    for key in ("native_core_box", "native_core_alpha_threshold", "native_label_ink_preserved",
+                "native_core_jitter_reverted"):
+        if key in L:
+            m[key] = L[key]
     if R.policy_sha256:
         m["kanji_policy_sha256"] = R.policy_sha256
         m["kanji_pairs"] = R.kanji_pairs
@@ -1441,9 +1568,11 @@ def crop_meta(meta, L, dark=0, inverted=False):
 
 
 def init(pool_limit=300_000, target_kana="", vocab=None, kanji_policy=None, kanji_pairs=False,
-         crop_edge_jitter=False, background_manifest=None):
+         crop_edge_jitter=False, background_manifest=None, native_font_manifest=None,
+         native_font_root=None, native_font_probability=0):
     global R
-    R = Resources(pool_limit, target_kana, vocab, kanji_policy, kanji_pairs, crop_edge_jitter, background_manifest)
+    R = Resources(pool_limit, target_kana, vocab, kanji_policy, kanji_pairs, crop_edge_jitter, background_manifest,
+                  native_font_manifest, native_font_root, native_font_probability)
 
 
 def crop_ctc_feasible(shape, label):
@@ -1620,6 +1749,10 @@ def main():
     ap.add_argument("--crop-edge-jitter", action="store_true", help="vary spare crop margins; keep labelled ink")
     ap.add_argument("--vocab", type=Path, help="exact restored model vocabulary")
     ap.add_argument("--background-manifest", type=Path, help="reviewed native scenery rectangles and source hashes")
+    ap.add_argument("--native-font-manifest", type=Path, help="hash-pinned private bitmap font sources")
+    ap.add_argument("--native-font-root", type=Path, help="directory of the user's own game font files")
+    ap.add_argument("--native-font-probability", type=probability, default=0,
+                    help="probability per eligible region; unsupported lines use covered OFL fonts")
     args = ap.parse_args()
     if args.target_report:
         args.target_kana = development_kana(args.target_report)
@@ -1628,8 +1761,10 @@ def main():
     cv2.setNumThreads(1)
     init(target_kana=args.target_kana, vocab=args.vocab, kanji_policy=args.kanji_policy,
          kanji_pairs=args.kanji_pairs, crop_edge_jitter=args.crop_edge_jitter,
-         background_manifest=args.background_manifest)
-    print(f"fonts {len(R.fonts)} in {sorted(R.by_cat)}, bg vita {len(R.bg_vita)} psp {len(R.bg_psp)}, "
+         background_manifest=args.background_manifest, native_font_manifest=args.native_font_manifest,
+         native_font_root=args.native_font_root, native_font_probability=args.native_font_probability)
+    print(f"fonts {len(R.fonts)} OFL + {len(R.native_fonts)} native in {sorted(R.by_cat)}, "
+          f"bg vita {len(R.bg_vita)} psp {len(R.bg_psp)}, "
           f"vocab {len(R.vocab)}", flush=True)
     if args.mode == "preview":
         preview(args.n, args.finder, args.seed, invert=args.invert_dark)

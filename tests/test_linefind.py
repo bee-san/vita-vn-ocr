@@ -187,6 +187,200 @@ def test_c_arena_bytes(driver):
         assert int(out.stdout) == need, (w, h)
 
 
+def test_textbox_components_separate_text_from_a_portrait_edge(driver):
+    """A narrow diagonal edge crosses every text gap but is not a text line.
+
+    This generated case reproduces the row-projection failure without using
+    copyrighted screenshots or fitting to a reference transcript.
+    """
+    from cfinder import Finder
+    img = np.full((160, 420), 230, np.uint8)
+    for y in range(160):
+        left = y // 8
+        img[y, left:left + 36:4] = 20
+    img[:3, :] = 20                              # rough textbox border touches the ROI
+    tops = (18, 62, 102)
+    for top in tops:
+        yy, xx = np.mgrid[:20, :244]
+        ink = ((xx % 24) < 18) & ((xx % 4 == 0) | (yy % 4 == 0))
+        img[top:top + 20, 90:334][ink] = 20
+    old = Finder("grad", binary=driver)(img)
+    finder = Finder("textbox", binary=driver)
+    boxes = finder(img)
+    assert len(old) != 3 or any(h > 40 for _, _, _, h in old)
+    assert len(boxes) == 3 and not finder.last_truncated
+    assert finder.last_dark == [1, 1, 1]
+    for (x, y, w, h), top in zip(boxes, tops):
+        assert 80 <= x <= 90 and x + w >= 330
+        assert y <= top and y + h >= top + 20 and h < 40
+
+
+def test_textbox_components_keep_nearby_fragments_and_punctuation(driver):
+    from cfinder import Finder
+    img = np.full((80, 320), 30, np.uint8)
+    yy, xx = np.mgrid[:20, :74]
+    ink = ((xx % 24) < 18) & ((xx % 4 == 0) | (yy % 4 == 0))
+    for left in (28, 122):
+        img[20:40, left:left + 74][ink] = 240
+    img[30:34, 210:213] = 240                   # punctuation alone is under LMIN
+    finder = Finder("textbox", binary=driver)
+    boxes = finder(img)
+    assert len(boxes) == 1 and finder.last_dark == [0]
+    x, y, w, h = boxes[0]
+    assert x <= 28 and x + w >= 216 and y <= 20 and y + h >= 40
+
+
+def test_textbox_components_preserve_close_lines_and_pixel_formats(driver):
+    from cfinder import Finder
+    finder = Finder("textbox", binary=driver)
+    for gap in (3, 4):
+        rgb = lines_image(240, 30, tops=(12, 32 + gap), thin=True)
+        boxes = finder(rgb)
+        assert len(boxes) == 2
+        grad = Finder("grad", binary=driver)
+        assert boxes == grad(rgb) and finder.last_dark == grad.last_dark
+        rgba = np.concatenate([rgb, np.full(rgb.shape[:2] + (1,), 7, np.uint8)], axis=2)
+        assert finder(rgba) == boxes
+        assert finder(common.to_gray(rgb)) == boxes
+
+
+def test_textbox_fragments_merge_before_the_line_capacity(driver):
+    from cfinder import Finder
+    img = np.full((32, 520), 30, np.uint8)
+    yy, xx = np.mgrid[:16, :18]
+    ink = (xx % 4 == 0) | (yy % 4 == 0)
+    for left in range(20, 480, 40):
+        img[8:24, left:left + 18][ink] = 240
+    finder = Finder("textbox", binary=driver)
+    boxes = finder(img)
+    assert len(boxes) == 1 and not finder.last_truncated
+    assert boxes[0][0] <= 20 and boxes[0][0] + boxes[0][2] >= 478
+
+
+@pytest.mark.parametrize("side", ["left", "right", "top", "bottom"])
+@pytest.mark.parametrize("margin", [0, 1, 2])
+def test_textbox_preserves_line_ink_at_each_crop_edge(driver, side, margin):
+    from cfinder import Finder
+    img = lines_image(240, 30, tops=(24,), thin=True)
+    x1, x2, y1, y2 = 10, 266, 18, 50
+    if side == "left":
+        x1 = 16 - margin
+    elif side == "right":
+        x2 = 260 + margin
+    elif side == "top":
+        y1 = 24 - margin
+    else:
+        y2 = 44 + margin
+    finder = Finder("textbox", binary=driver)
+    boxes = finder(img[y1:y2, x1:x2])
+    assert len(boxes) == 1 and not finder.last_truncated
+    assert finder.last_dark == [0]
+
+
+@pytest.mark.parametrize("width", [8, 18])
+def test_textbox_preserves_a_single_narrow_glyph(driver, width):
+    from cfinder import Finder
+    img = np.full((64, 80), 30, np.uint8)
+    yy, xx = np.mgrid[:26, :width]
+    ink = (xx % 4 == 0) | (yy % 4 == 0)
+    img[18:44, 30:30 + width][ink] = 240
+    finder = Finder("textbox", binary=driver)
+    boxes = finder(img)
+    assert len(boxes) == 1 and not finder.last_truncated
+    x, y, w, h = boxes[0]
+    assert x <= 30 and x + w >= 30 + width and y <= 18 and y + h >= 44
+
+
+def test_textbox_suppresses_small_ruby_rows(driver):
+    from cfinder import Finder
+    img = np.full((90, 320), 30, np.uint8)
+    for top, height, left, width in ((16, 9, 28, 120), (40, 24, 20, 264)):
+        yy, xx = np.mgrid[:height, :width]
+        ink = ((xx % 24) < 18) & ((xx % 4 == 0) | (yy % 4 == 0))
+        img[top:top + height, left:left + width][ink] = 240
+    finder = Finder("textbox", binary=driver)
+    boxes = finder(img)
+    assert len(boxes) == 1 and not finder.last_truncated
+    assert boxes[0][1] <= 40 and boxes[0][1] + boxes[0][3] >= 64
+
+
+def test_textbox_outlined_text_keeps_light_polarity(driver):
+    from cfinder import Finder
+    finder = Finder("textbox", binary=driver)
+    boxes = finder(lines_image(255, 180, outline=20))
+    assert len(boxes) == 2 and finder.last_dark == [0, 0]
+
+
+def test_textbox_inseparable_frame_uses_exact_grad_fallback(driver):
+    from cfinder import Finder
+    img = np.full((160, 420), 230, np.uint8)
+    img[:3, :] = 20
+    img[:, :36:4] = 20
+    yy, xx = np.mgrid[:20, :244]
+    ink = ((xx % 24) < 18) & ((xx % 4 == 0) | (yy % 4 == 0))
+    img[62:82, 28:272][ink] = 20                 # joins the frame through the left edge
+    grad = Finder("grad", binary=driver)
+    expected = grad(img)
+    finder = Finder("textbox", binary=driver)
+    assert expected and any(h > 96 for _, _, _, h in expected)
+    assert finder(img) == expected
+    assert finder.last_dark == grad.last_dark and finder.last_truncated == grad.last_truncated
+
+
+def test_textbox_preserves_ordinary_rows_amid_broad_header_and_small_art(driver):
+    from cfinder import Finder
+    img = np.full((190, 420), 230, np.uint8)
+    img[:60, ::4] = 20                         # broad header, unlike the ordinary rows
+    for top in (96, 138):
+        yy, xx = np.mgrid[:24, :244]
+        ink = ((xx % 24) < 18) & ((xx % 4 == 0) | (yy % 4 == 0))
+        img[top:top + 24, 90:334][ink] = 20
+    for left in range(70, 300, 24):
+        yy, xx = np.mgrid[:10, :8]
+        ink = (xx % 4 == 0) | (yy % 4 == 0)
+        img[76:86, left:left + 8][ink] = 20    # too small to set the old row profile
+    grad = Finder("grad", binary=driver)
+    expected = grad(img)
+    assert len(expected) == 3
+    finder = Finder("textbox", binary=driver)
+    assert finder(img) == expected and finder.last_dark == grad.last_dark
+    assert finder.last_truncated == grad.last_truncated
+
+
+def test_textbox_final_recovery_emits_each_physical_row_once(driver):
+    from cfinder import Finder
+    img = np.full((170, 420), 230, np.uint8)
+    img[:3, :] = 20
+    img[:, :36:4] = 20                         # forces the old projection to merge rows
+    for top in (62, 112):
+        for left in (70, 280):
+            yy, xx = np.mgrid[:24, :60]
+            ink = (xx % 4 == 0) | (yy % 4 == 0)
+            img[top:top + 24, left:left + 60][ink] = 20
+        for left in (146, 172, 198, 224, 250):
+            img[top + 8:top + 12, left:left + 8] = 20
+    grad = Finder("grad", binary=driver)
+    assert len(grad(img)) == 1
+    finder = Finder("textbox", binary=driver)
+    boxes = finder(img)
+    assert len(boxes) == 2 and len(set(boxes)) == 2 and not finder.last_truncated
+    assert finder.last_dark == [1, 1]
+    for (x, y, w, h), top in zip(boxes, (62, 112)):
+        assert x <= 70 and x + w >= 340 and y <= top and y + h >= top + 24 and h < 40
+
+
+def test_textbox_short_punctuation_crop_is_unchanged(driver):
+    from cfinder import Finder
+    img = lines_image(240, 30, tops=(12, 46), thin=True)
+    img[46:, 90:] = 30                         # a short final row with trailing punctuation
+    img[54:58, 103:107] = 240
+    grad = Finder("grad", binary=driver)
+    expected = grad(img)
+    assert len(expected) == 2 and expected[1][2] < 100
+    finder = Finder("textbox", binary=driver)
+    assert finder(img) == expected and finder.last_dark == grad.last_dark
+
+
 def test_find_lines_needs_a_finder():
     # find_lines(img) used to mean the legacy finder; a caller must now name the finder,
     # so old code fails here instead of silently switching to grad.

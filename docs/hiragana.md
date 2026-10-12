@@ -18,12 +18,19 @@ were excluded before scoring. Each block has its own session and split.
 Private images and transcriptions remain under ignored `build/hiragana/`.
 The new captures are a small opening-scene sample, not coverage of the whole game.
 
-| Set | Lines | Full errors / chars | Full CER | Hiragana errors / chars | Hiragana CER | Finder pipeline CER |
-|---|---:|---:|---:|---:|---:|---:|
-| Shared Vita | 206 | 61 / 2,564 | 2.38% | 15 / 1,417 | 1.06% | 16.46% |
-| Shared PSP | 245 | 133 / 2,510 | 5.30% | 30 / 1,382 | 2.17% | 36.18% |
-| CLANNAD development | 19 | 5 / 207 | 2.42% | 2 / 127 | 1.57% | 4.83% |
-| CLANNAD held out | 25 | 7 / 388 | 1.80% | 3 / 229 | 1.31% | 6.70% |
+| Set | Lines | Full errors / chars | Full CER | Hiragana errors / chars | Hiragana CER | Console finder pipeline CER | Research gradient finder CER |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Shared Vita | 206 | 61 / 2,564 | 2.38% | 15 / 1,417 | 1.06% | 8.54% | 16.46% |
+| Shared PSP | 245 | 133 / 2,510 | 5.30% | 30 / 1,382 | 2.17% | 17.93% | 36.18% |
+| CLANNAD development | 19 | 5 / 207 | 2.42% | 2 / 127 | 1.57% | — | 4.83% |
+| CLANNAD held out | 25 | 7 / 388 | 1.80% | 3 / 229 | 1.31% | 5.93% | 6.70% |
+
+The console finder is the bit-exact Python twin of `runtime/vocr_lines.c`;
+the research gradient finder uses different geometry. Both consume annotated
+dialogue regions. Console finder recall is 95.15% on Vita, 90.20% on PSP and
+96.00% on held-out CLANNAD. Their hiragana pipeline CERs are 4.66%, 11.00% and
+2.18%. These include missed lines; recognizer-only CER assumes correctly
+extracted lines. A model improvement alone cannot fix missing line detections.
 
 Development substitutions were `ず → す` and `っ → つ`. Target derivation uses
 only that development report. Shared and held-out test reports cannot be passed
@@ -202,6 +209,71 @@ If no checkpoint qualifies, retain the released baseline. Held-out test data nev
 selects checkpoints. The fresh gate compares the locked candidate with the release;
 `--targeted` additionally checks an independent targeted control when available.
 
+## Native dialogue recovery and experiment results
+
+The fresh snapshot contains 12,000 general, 4,000 targeted and 1,500 paired-kanji
+training crops, plus 500 independent synthetic development crops. All training
+sources have zero CTC-infeasible or out-of-vocabulary labels and no development
+pixel overlap. Every one of the 30 saved checkpoints from the three matched
+arms was exported and scored through C W8I. Synthetic full errors improved from
+510 to 441–474, but real development full errors increased from 5 to 7–11 and
+hiragana errors from 2 to 3–5. None qualified. Synthetic gains did not justify
+replacing the release.
+
+For native font anchors, `data/import_native.py` packs 22 dialogue crops from
+13 training-side VNDB games, evenly divided between PSP and Vita. The assistant
+visually checked crop boundaries and transcriptions; ambiguous, clipped and mixed
+rows were removed. These are training data, not an independently human-validated
+test set. Images and transcriptions remain private. The importer binds source
+URLs/hashes, annotations, vocabulary and Jiten policy, verifies complete crop
+geometry and rejects CTC-infeasible labels. Shared test games, CLANNAD and
+development source games are excluded.
+
+```sh
+.venv-ci/bin/python data/import_native.py --root build/hiragana/fresh-jiten \
+  --sources data/manifests/fresh_jiten_backgrounds.json \
+  --annotations /private/native-annotations.jsonl --vocab build/hiragana/vocab.txt \
+  --policy data/manifests/fl10_kanji_policy_20261011.json \
+  --out build/hiragana/native-train
+.venv-ci/bin/python train/hiragana_native.py \
+  --config train/hiragana_native_config.example.json \
+  --init build/hiragana/fl10_init.pt --vocab build/hiragana/vocab.txt \
+  --out build/hiragana/native-runs --run
+```
+
+The two frozen-encoder trials use head-only learning rates 2e-5 and 1e-4, seed 1,
+1,000 steps and the same development protocol. General/targeted/native/kanji
+sampling is 83/10/5/2 percent; inversion augmentation is zero because stored
+crops already use console polarity. The new targeted snapshot contains 4,000
+crops targeting the reference-side development confusions `ず` and `っ` only.
+Encoder, bottleneck and BatchNorm state stay frozen. All 20 C exports retained
+the baseline's 5 full errors and 2 hiragana errors; none gave a strict hiragana
+improvement. A separately frozen full-model trial with these same inputs is
+recorded in `data/manifests/fl10_native_full_experiment_20261011.json`. Its ten
+C exports had 7–11 full errors and 2–5 hiragana errors on real development
+data, so none qualified either. Across all six runs and 60 C exports, the
+released model remains selected. No trained candidate was scored on held-out
+screenshots. The single-seed, small-development experiment does not prove that
+AnimeText or synthetic data cannot help; it shows these recipes failed to
+improve this released model.
+
+The real kanji diagnostic records 4 graph-listed similar substitutions on Vita
+and 17 on PSP. Across the shared sets there are just five reference kanji with
+Jiten ranks 3,001–4,000 and none above 4,000. This cannot establish accuracy on
+rare kanji, despite explicit bounded coverage in training. Aggregate experiment
+evidence is in `eval/hiragana_fresh_20261011.json`; the source manifests preserve
+shard hashes, actual glyph exposure, commands and code identities. Training uses
+source commits `a52749b` and `d6ef77d`; complete restart is reproducible, while
+checkpoint resume still omits RNG/source/mixer state.
+
+The research snapshot retains all 60 evaluation checkpoints, initialization,
+vocabulary, settings, training logs, frozen experiment recipes and filtered
+source archives. Each archived member has a SHA-256 and size; checkpoints also
+receive ZIP CRC validation. Images, annotations, corpora, fonts and rendered
+shards are excluded. It is explicitly a research prerelease, without qualified
+replacement deployment weights. Failed experiments remain reproducible rather
+than being presented as an OCR accuracy release.
+
 ## Private capture and historical matched training
 
 Run Vita3K using a disposable preference directory; do not use live console
@@ -256,7 +328,7 @@ each baseline/control/candidate with the C `vocr:` backend:
   --set vita-test,psp-test,clannad-test --data /private/shared-eval \
   --local-set clannad-test=/private/test/labels.jsonl --polarity console \
   --out /private/candidate.json
-# Repeat with --finder gradient and retain production-crop results too.
+# Repeat with --finder console and retain production dialogue-region results too.
 .venv-ci/bin/python train/hiragana_gate.py --baseline /private/baseline.json \
   --targeted /private/targeted.json --candidate /private/candidate.json \
   --blob /private/candidate.vocr --out /private/gate.json

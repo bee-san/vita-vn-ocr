@@ -1,0 +1,209 @@
+{
+  "archives": [
+    {
+      "bytes": 72291282,
+      "file": "generic-fl10-checkpoints.zip",
+      "members": [
+        {
+          "bytes": 7257559,
+          "file": "step0200.pt",
+          "sha256": "eb393681b16427da924f32d5a61d135b4352884746b4566181e41f3dde7e5f07"
+        },
+        {
+          "bytes": 657664,
+          "file": "step0200.vocr",
+          "sha256": "895e3d4b858d1d57194c26bb66de82f6a4cd0a25f4f867d51891000609bc3f42"
+        },
+        {
+          "bytes": 7235479,
+          "file": "step0400.pt",
+          "sha256": "d8207c12fca8ca8801d1418096e38334559fc348d8f4142c3ded87ae6d6762b6"
+        },
+        {
+          "bytes": 657664,
+          "file": "step0400.vocr",
+          "sha256": "f2e54afb29bace701af46ac55ceb615634046999e2ac8c5ffc076ed22bf36593"
+        },
+        {
+          "bytes": 7213079,
+          "file": "step0600.pt",
+          "sha256": "5cce124c05902166a47686a6a3c08053e92f31d2fa92762902ae745d087976a5"
+        },
+        {
+          "bytes": 657664,
+          "file": "step0600.vocr",
+          "sha256": "86e71e7c5986d0540945b17b7e37a63fc02b63332a319d12f26391ebd476874a"
+        },
+        {
+          "bytes": 7265047,
+          "file": "step0800.pt",
+          "sha256": "dc6398fb09be1678d0f151048e01a1c7fd606694c88b2e09c69864675f0d0eec"
+        },
+        {
+          "bytes": 657664,
+          "file": "step0800.vocr",
+          "sha256": "3b427b1cb296bb1ea01a5d9019f8105e9fd1fafed2f71fbc5d3428fa0c0a5ef5"
+        },
+        {
+          "bytes": 7243126,
+          "file": "step1000.pt",
+          "sha256": "ecba095ab6e4b9e57e15d8fa4fbe22f75c8119cf94777746ce8bc0b98f4aa038"
+        },
+        {
+          "bytes": 657664,
+          "file": "step1000.vocr",
+          "sha256": "b08bac7b5ce5840758d11823c07dd508a6b908b77e93fc49fe6637ab6a2b6de6"
+        },
+        {
+          "bytes": 7220150,
+          "file": "step1200.pt",
+          "sha256": "2060b9abba5a93c37d0d8ab23dd9f29591e7d777772abb0da8fecaca22659819"
+        },
+        {
+          "bytes": 657664,
+          "file": "step1200.vocr",
+          "sha256": "fe1fdeaf28a83c8a86ecb4fa99ce46da11a5cdea1d3b75da7323f2092b4580d9"
+        },
+        {
+          "bytes": 7271222,
+          "file": "step1400.pt",
+          "sha256": "06f9301a914a573109e813eb5c89738e280a4f0b84969b26095b9f03472035c4"
+        },
+        {
+          "bytes": 657664,
+          "file": "step1400.vocr",
+          "sha256": "3b665e87631e720005e23100c2a1e5b46bb8f47e6e55e33c60432acba2d79248"
+        },
+        {
+          "bytes": 7247798,
+          "file": "step1600.pt",
+          "sha256": "60746244ce0283a83ce880a1e3ab97db637a01145fba7e05a064971fdd8c6a66"
+        },
+        {
+          "bytes": 657664,
+          "file": "step1600.vocr",
+          "sha256": "4d7dc9a21f598c4da3b2af14f0deeff02393b4a7aa4c16c971eac8ab83c5b86f"
+        },
+        {
+          "bytes": 7224182,
+          "file": "step1800.pt",
+          "sha256": "5aab7bb3ab7855586fa6971d7e811f660d27ac99fa32cc03bfa9a384552d2584"
+        },
+        {
+          "bytes": 657664,
+          "file": "step1800.vocr",
+          "sha256": "0f963a20fa7b2ab2f802514489d98d4a4cbbcd661e14824f4e56af9272a428de"
+        },
+        {
+          "bytes": 7274486,
+          "file": "step2000.pt",
+          "sha256": "70edc583c9c798bcbaffb7ad445455017cf103afaeba0ec6fd31ddf076cb5a6f"
+        },
+        {
+          "bytes": 657664,
+          "file": "step2000.vocr",
+          "sha256": "faa275045bc01e8dd431ec1620bb988a3d38ca707a08ebe5655f1922885310e9"
+        }
+      ],
+      "readback_crc_and_member_hashes_verified": true,
+      "sha256": "38bfe8eb0f444ff86974c4ff20fb7703d5862217bab99e2b61dbd99de4c21ad8"
+    },
+    {
+      "bytes": 19606061,
+      "file": "generic-fl10-blends.zip",
+      "members": [
+        {
+          "bytes": 2426644,
+          "file": "alpha_00_01.pt",
+          "sha256": "cc214ba7ff2c268163988cb490979d8ca5459723e9600d6567ed17d73068c620"
+        },
+        {
+          "bytes": 657664,
+          "file": "alpha_00_01.vocr",
+          "sha256": "7601f58f24b10527a81a8225e2a3490dfc496fcc2d6bdc4e81e6a2a55291b40b"
+        },
+        {
+          "bytes": 2426644,
+          "file": "alpha_01_01.pt",
+          "sha256": "abbb8966b74f581140c17ea3e71c6e0f163129f6d001a44e60785c44e9e8479b"
+        },
+        {
+          "bytes": 657664,
+          "file": "alpha_01_01.vocr",
+          "sha256": "0949229781540f5d6e0a08b2a93080b7cc4c2cc1da2137744e11b35e690d5cd7"
+        },
+        {
+          "bytes": 2426644,
+          "file": "alpha_01_02.pt",
+          "sha256": "c1bf3bb3383054ca502d3156f4bd6e49be19646cb3d79e52fffbcabc76bd94c2"
+        },
+        {
+          "bytes": 657664,
+          "file": "alpha_01_02.vocr",
+          "sha256": "5f67d227558dcde08b67dc9b5c84d2cc4334407ab56985c027fe835c9f8e1562"
+        },
+        {
+          "bytes": 2426644,
+          "file": "alpha_01_04.pt",
+          "sha256": "3970b20ee814a35d8d395a80bf1e3305e3a12b3fb2bb35d4ea3c84bd9062ae2f"
+        },
+        {
+          "bytes": 657664,
+          "file": "alpha_01_04.vocr",
+          "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766"
+        },
+        {
+          "bytes": 2426644,
+          "file": "alpha_01_08.pt",
+          "sha256": "f3962716f7630dba1120cfa9a99408f84969261e8819692c96ee8d4b24d299fe"
+        },
+        {
+          "bytes": 657664,
+          "file": "alpha_01_08.vocr",
+          "sha256": "d174dedf3cef2105d8ef7e7c6c1e9a0b2c841a17036882d4eedac566171eef37"
+        },
+        {
+          "bytes": 2426644,
+          "file": "alpha_01_16.pt",
+          "sha256": "ce6b09a1d6c51e0547611de9c0a95dee4ab6e99ca8895f1284a0607a8583b36a"
+        },
+        {
+          "bytes": 657664,
+          "file": "alpha_01_16.vocr",
+          "sha256": "2a29da5fbd813861f87d11d381c3507a0a8b69a3b58686fcb1b6bdd913cd4ae7"
+        },
+        {
+          "bytes": 2426644,
+          "file": "alpha_03_04.pt",
+          "sha256": "1b92501f4fb3c038483934270365d3c896c228c51063dd96b56db33c3f18b5f0"
+        },
+        {
+          "bytes": 657664,
+          "file": "alpha_03_04.vocr",
+          "sha256": "541964763b7bc073af04ed753022809b1c8c04765b378282e07eff651990677c"
+        }
+      ],
+      "readback_crc_and_member_hashes_verified": true,
+      "sha256": "c1e4b82c43f3df92af2f77db604008b65d2d300c73caeb91573e085b9d81e66b"
+    }
+  ],
+  "checkpoint_uses": "Research/reproducibility only; scheduled original checkpoints retain optimizer state, blends are derived inference checkpoints with no resume state.",
+  "data_published": false,
+  "kind": "rejected-general-fl10-research-snapshot",
+  "model_promoted": false,
+  "protected_candidate_evaluated": false,
+  "release_tag": "v0.2.2-fl10-general.1",
+  "results": [
+    {
+      "file": "general-fl10-20261012.json",
+      "sha256": "9fa248d6a6ae9073795f9a3c7d89e23fb384e6e46a02477d0176be00c738fafa",
+      "source_summary_sha256": "403937031bb00f1609ae3c73de3ce69ae829058ef24b13975b02afcc43a592a3"
+    },
+    {
+      "file": "general-fl10-blends-20261012.json",
+      "sha256": "6eddc1b26a4d69ab2d38cfcea1b36dd3902ad57f2b5f7e1c80e2299e1bfb4340",
+      "source_summary_sha256": "e7a2c90358fe1e6f8011b21ad0c4caf93791059c598f4b218c687ec0353610b8"
+    }
+  ],
+  "schema": 1
+}

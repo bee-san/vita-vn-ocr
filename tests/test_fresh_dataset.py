@@ -109,6 +109,8 @@ def test_renderer_flags_are_forwarded_to_existing_renderer(tmp_path, monkeypatch
     monkeypatch.setattr(sys, "argv", ["fresh_dataset.py", "render", "--root", str(tmp_path),
                                     "--vocab", "vocab.txt", "--kanji-policy", "policy.json",
                                     "--background-manifest", "backgrounds.json",
+                                    "--native-font-manifest", "native-fonts.json", "--native-font-root", "owned-game",
+                                    "--native-font-probability", "0.25",
                                     "--kanji-pairs", "--crop-edge-jitter", "--finder", "grad",
                                     "--out", "kanji", "--shards", "3", "--per-shard", "500",
                                     "--workers", "2", "--seed", "20261014"])
@@ -117,6 +119,52 @@ def test_renderer_flags_are_forwarded_to_existing_renderer(tmp_path, monkeypatch
     assert root == tmp_path and split == "train"
     assert arguments[arguments.index("--kanji-policy") + 1] == "policy.json"
     assert arguments[arguments.index("--background-manifest") + 1] == "backgrounds.json"
+    assert arguments[arguments.index("--native-font-manifest") + 1] == "native-fonts.json"
+    assert arguments[arguments.index("--native-font-root") + 1] == "owned-game"
+    assert arguments[arguments.index("--native-font-probability") + 1] == "0.25"
     assert arguments[arguments.index("--seed") + 1] == "20261014"
     assert "--kanji-pairs" in arguments and "--crop-edge-jitter" in arguments
     assert arguments[arguments.index("--finder") + 1] == "grad"
+
+
+@pytest.mark.parametrize("field,value", [("native_label_ink_preserved", False),
+                                         ("native_core_alpha_threshold", 64),
+                                         ("native_core_box", [2, -1, 20, 14]),
+                                         ("crop_box", [0, 0, 19, 16]),
+                                         ("original_crop_box", [0, 4, 40, 12]),
+                                         ("native_font_manifest_sha256", None),
+                                         ("native_metrics_sha256", "wrong"),
+                                         ("native_strike", True)])
+def test_native_snapshot_rejects_forged_source_or_ink_preservation_claims(tmp_path, monkeypatch, field, value):
+    import native_font_manifest
+
+    vocab = corpus_fixture(tmp_path)
+    pools = F.build_pools(tmp_path, vocab, caps={s: {"dialogue": 4, "narration": 4} for s in ("train", "dev")})
+    F.write_json(tmp_path / "assets_manifest.json", {"assets": []})
+    cohort = next(r["sha256"] for r in pools["pool_records"]
+                  if r.get("role") == "source_book_cohort" and r["split"] == "train")
+    path = synthetic_shard(tmp_path, "native-general", "train", cohort)
+    identity = {"family": "fixture_bitmap", "category": "gothic",
+                "fnt": {"sha256": "b" * 64}, "pro": {"sha256": "c" * 64}}
+    binding = {"manifest_sha256": "a" * 64, "fonts": [identity]}
+    coverage = set(vocab.read_text().splitlines())
+    monkeypatch.setattr(native_font_manifest, "load_manifest",
+                        lambda *_: ({}, [("gothic", "fixture_bitmap", None, coverage)], binding))
+    with np.load(path) as z:
+        arrays = {key: z[key] for key in z.files}
+    meta = json.loads(str(arrays["meta"]))
+    meta[0].update(native_font_used=True, fam="fixture_bitmap", cat="gothic", native_strike=0,
+                   native_font_manifest_sha256="a" * 64, native_font_sha256="b" * 64,
+                   native_metrics_sha256="c" * 64, native_font_probability=1,
+                   native_label_ink_preserved=True, native_core_alpha_threshold=128,
+                   native_core_box=[2, 3, 20, 14], crop_box=[0, 0, 40, 16], original_crop_box=[0, 0, 40, 16])
+    arrays["meta"] = np.array(json.dumps(meta))
+    np.savez_compressed(path, **arrays)
+    kwargs = {"native_font_manifest": "generated-identity", "native_font_root": tmp_path}
+    assert F.dataset_manifest(tmp_path, {"native-general": "train"}, vocab, **kwargs)["summary"][
+        "native-general"]["native_label_ink_preserved"] == 1
+    meta[0][field] = value
+    arrays["meta"] = np.array(json.dumps(meta))
+    np.savez_compressed(path, **arrays)
+    with pytest.raises(ValueError, match="native"):
+        F.dataset_manifest(tmp_path, {"native-general": "train"}, vocab, **kwargs)

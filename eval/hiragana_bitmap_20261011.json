@@ -1,0 +1,2327 @@
+{
+  "schema": 1,
+  "date": "2026-10-11",
+  "scope": "development-only scalar C W8I measurement; no held-out candidate evaluation",
+  "selection_report_sha256": "afd76d6e304c6155c3a129152f7d75086cbee4ac23a943ca176f6be98e99aacc",
+  "selection_command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 .venv-ci/bin/python train/hiragana_select.py --baseline /home/bee/Downloads/vita-release-2026-10-11/ocr/FL10_w8.vocr --dev-manifest build/hiragana/clannad/dev/labels.jsonl --synthetic-dev build/hiragana/fresh-jiten/synthetic-dev/synth_00000.npz --real-guard psp_dev:2:build/hiragana/native-font-dev/all-psp-labels.jsonl --real-guard vita_dev:4:build/hiragana/native-font-dev/all-psv-labels.jsonl --synthetic-guard bitmap_dev:build/hiragana/native-bitmap-dataset/synthetic-dev/synth_00000.npz --checkpoints 'build/hiragana/bitmap-runs/bitmap_head_s1/ckpt_step*.pt' --checkpoints 'build/hiragana/bitmap-runs/bitmap_all_s1/ckpt_step*.pt' --out build/hiragana/bitmap-selection.json",
+  "experiment_manifest": "data/manifests/fl10_bitmap_experiment_20261011.json",
+  "dataset_manifest": "data/manifests/fl10_native_bitmap_dataset_20261011.json",
+  "selection_rule": {
+    "qualify": "real_dev.full_errors <= baseline and synthetic_dev.full_errors <= baseline",
+    "rank": [
+      "real_dev.hiragana_errors",
+      "real_dev.full_errors",
+      "synthetic_dev.full_errors",
+      "step",
+      "checkpoint_path"
+    ],
+    "replace_baseline": "qualified checkpoint strictly reduces real_dev.hiragana_errors"
+  },
+  "additional_guards": {
+    "names": [
+      "psp_dev",
+      "vita_dev",
+      "bitmap_dev"
+    ],
+    "qualify": "each full and hiragana error count <= its own baseline"
+  },
+  "datasets": {
+    "real_dev": {
+      "split": "dev",
+      "manifest_sha256": "a32ba010c2b8dc7ed79fe81965c53e87d0bd8ab02a7757c215614ccaba1c387b",
+      "sessions": [
+        "clannad-opening-A"
+      ],
+      "lines": 19,
+      "pad": 4,
+      "polarity": "console"
+    },
+    "synthetic_dev": {
+      "split": "dev",
+      "npz_sha256": "be050dc163a0517b1509168831e33718a0e954921e78bee1fa3c1999bb5c6b64",
+      "book_split_sha256": "0e14a5a0a0fa15f9f618bf6dad9fb0e4ef53d03f1efe46071c9e894661edf321",
+      "lines": 500,
+      "polarity": "stored console crops"
+    },
+    "psp_dev": {
+      "split": "dev",
+      "manifest_sha256": "cad0754ed84273b7f29753771346915d5208bc1ef5713f288cb26cf2e60a9bfe",
+      "sessions": [
+        "vndb-dev:v12775:r20503",
+        "vndb-dev:v5297:r32338"
+      ],
+      "lines": 22,
+      "pad": 2,
+      "polarity": "console"
+    },
+    "vita_dev": {
+      "split": "dev",
+      "manifest_sha256": "7e80d45c4fd6586b46bdb16d1ced8883b2bcd5a7af63e3d07e3a345a78d34928",
+      "sessions": [
+        "vndb-dev:v1015:r52530",
+        "vndb-dev:v13766:r29842"
+      ],
+      "lines": 9,
+      "pad": 4,
+      "polarity": "console"
+    },
+    "bitmap_dev": {
+      "split": "dev",
+      "npz_sha256": "d5cc558416b0836b798f58bff218e26deef290802e2c3619dc21cdaf89291475",
+      "book_split_sha256": "0e14a5a0a0fa15f9f618bf6dad9fb0e4ef53d03f1efe46071c9e894661edf321",
+      "lines": 500,
+      "polarity": "stored console crops"
+    }
+  },
+  "baseline": {
+    "blob": "FL10_w8.vocr",
+    "blob_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+    "scores": {
+      "real_dev": {
+        "all": {
+          "lines": 19,
+          "chars": 207,
+          "errors": 5,
+          "cer": 0.02415,
+          "exact": 0.89474
+        },
+        "hiragana": {
+          "chars": 127,
+          "errors": 2,
+          "cer": 0.01575,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0
+        }
+      },
+      "synthetic_dev": {
+        "all": {
+          "lines": 500,
+          "chars": 7447,
+          "errors": 510,
+          "cer": 0.06848,
+          "exact": 0.644
+        },
+        "hiragana": {
+          "chars": 4400,
+          "errors": 190,
+          "cer": 0.04318,
+          "substitutions": 115,
+          "deletions": 73,
+          "insertions": 2,
+          "into_hiragana": 29
+        }
+      },
+      "psp_dev": {
+        "all": {
+          "lines": 22,
+          "chars": 265,
+          "errors": 2,
+          "cer": 0.00755,
+          "exact": 0.90909
+        },
+        "hiragana": {
+          "chars": 132,
+          "errors": 0,
+          "cer": 0.0,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0
+        }
+      },
+      "vita_dev": {
+        "all": {
+          "lines": 9,
+          "chars": 80,
+          "errors": 1,
+          "cer": 0.0125,
+          "exact": 0.88889
+        },
+        "hiragana": {
+          "chars": 43,
+          "errors": 1,
+          "cer": 0.02326,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0,
+          "into_hiragana": 0
+        }
+      },
+      "bitmap_dev": {
+        "all": {
+          "lines": 500,
+          "chars": 6804,
+          "errors": 425,
+          "cer": 0.06246,
+          "exact": 0.676
+        },
+        "hiragana": {
+          "chars": 3906,
+          "errors": 156,
+          "cer": 0.03994,
+          "substitutions": 99,
+          "deletions": 56,
+          "insertions": 1,
+          "into_hiragana": 27
+        }
+      }
+    },
+    "memory": {
+      "blob_bytes": 657664,
+      "arena_bytes": 124832
+    },
+    "backend": "vocr",
+    "mode": "w8i"
+  },
+  "candidates": [
+    {
+      "checkpoint": "ckpt_step1000.pt",
+      "checkpoint_sha256": "abc5379126c53b61f57364087bcaff594009035c50e6638f210c8b5e8d7d0dd2",
+      "step": 1000,
+      "blob": "bitmap_all_s1-ckpt_step1000-abc5379126c53b61.vocr",
+      "blob_sha256": "b96f71d728e9be1751d1873a04bbc6308cfa4d19022e71c4c8d312a915303997",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 8,
+            "cer": 0.03865,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 3,
+            "cer": 0.02362,
+            "substitutions": 1,
+            "deletions": 0,
+            "insertions": 2,
+            "into_hiragana": 1
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 447,
+            "cer": 0.06002,
+            "exact": 0.682
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 170,
+            "cer": 0.03864,
+            "substitutions": 121,
+            "deletions": 49,
+            "insertions": 0,
+            "into_hiragana": 34
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 337,
+            "cer": 0.04953,
+            "exact": 0.762
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 116,
+            "cer": 0.0297,
+            "substitutions": 84,
+            "deletions": 29,
+            "insertions": 3,
+            "into_hiragana": 30
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step1200.pt",
+      "checkpoint_sha256": "b68c077805071a8ea8ec19dde800efc5c17c220015b33f8f5be0c442e693409c",
+      "step": 1200,
+      "blob": "bitmap_all_s1-ckpt_step1200-b68c077805071a8e.vocr",
+      "blob_sha256": "aef7c998aba69820bcc3aabda769337b4015606d14d21db96bf7b02dd85b167c",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 10,
+            "cer": 0.04831,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 5,
+            "cer": 0.03937,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 3,
+            "into_hiragana": 1
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 447,
+            "cer": 0.06002,
+            "exact": 0.688
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 168,
+            "cer": 0.03818,
+            "substitutions": 119,
+            "deletions": 47,
+            "insertions": 2,
+            "into_hiragana": 33
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 343,
+            "cer": 0.05041,
+            "exact": 0.77
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 123,
+            "cer": 0.03149,
+            "substitutions": 89,
+            "deletions": 30,
+            "insertions": 4,
+            "into_hiragana": 31
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step1400.pt",
+      "checkpoint_sha256": "32ed5322062b05f2297ee40221fb879798ad2d70376e0c8d9e9aac4711438fed",
+      "step": 1400,
+      "blob": "bitmap_all_s1-ckpt_step1400-32ed5322062b05f2.vocr",
+      "blob_sha256": "602b2998d96916213037ef01530dd8c31ddca9855ef47d6d8ae8e6cce93467ee",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 10,
+            "cer": 0.04831,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 5,
+            "cer": 0.03937,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 3,
+            "into_hiragana": 2
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 439,
+            "cer": 0.05895,
+            "exact": 0.7
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 170,
+            "cer": 0.03864,
+            "substitutions": 123,
+            "deletions": 45,
+            "insertions": 2,
+            "into_hiragana": 32
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 333,
+            "cer": 0.04894,
+            "exact": 0.778
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 118,
+            "cer": 0.03021,
+            "substitutions": 85,
+            "deletions": 29,
+            "insertions": 4,
+            "into_hiragana": 29
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step1600.pt",
+      "checkpoint_sha256": "f456df209a90cc80caa0f3a40c8293d8084030096e2af125367465ea58c795e1",
+      "step": 1600,
+      "blob": "bitmap_all_s1-ckpt_step1600-f456df209a90cc80.vocr",
+      "blob_sha256": "5773744bd0b823112add37dbc23ace6f83c7a7cb55fa0a1683cbf9b47314dd81",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 10,
+            "cer": 0.04831,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 5,
+            "cer": 0.03937,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 3,
+            "into_hiragana": 2
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 443,
+            "cer": 0.05949,
+            "exact": 0.686
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 166,
+            "cer": 0.03773,
+            "substitutions": 119,
+            "deletions": 46,
+            "insertions": 1,
+            "into_hiragana": 35
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 338,
+            "cer": 0.04968,
+            "exact": 0.776
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 121,
+            "cer": 0.03098,
+            "substitutions": 88,
+            "deletions": 30,
+            "insertions": 3,
+            "into_hiragana": 29
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step1800.pt",
+      "checkpoint_sha256": "7cefe5b0f30a8738a9070926b836ea1e969ec1bafb0790694f63de30637b97e3",
+      "step": 1800,
+      "blob": "bitmap_all_s1-ckpt_step1800-7cefe5b0f30a8738.vocr",
+      "blob_sha256": "facf5fc3efc3b0cc964fbfb7ab9959c42cb76ad639c3d8ae72fd91697ee524a2",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 9,
+            "cer": 0.04348,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 4,
+            "cer": 0.0315,
+            "substitutions": 1,
+            "deletions": 0,
+            "insertions": 3,
+            "into_hiragana": 1
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 438,
+            "cer": 0.05882,
+            "exact": 0.692
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 169,
+            "cer": 0.03841,
+            "substitutions": 119,
+            "deletions": 49,
+            "insertions": 1,
+            "into_hiragana": 33
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 339,
+            "cer": 0.04982,
+            "exact": 0.774
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 121,
+            "cer": 0.03098,
+            "substitutions": 89,
+            "deletions": 29,
+            "insertions": 3,
+            "into_hiragana": 30
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step200.pt",
+      "checkpoint_sha256": "3867e151f16c1ca05154543d8cdb992bcf8ba768fa24d462e51481fe88a90449",
+      "step": 200,
+      "blob": "bitmap_all_s1-ckpt_step200-3867e151f16c1ca0.vocr",
+      "blob_sha256": "7ca0aeadc47e0cf14de353e04b367aa93856af4314115e8684cc1b2136dc69f7",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 9,
+            "cer": 0.04348,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 3,
+            "cer": 0.02362,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 1,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 462,
+            "cer": 0.06204,
+            "exact": 0.676
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 177,
+            "cer": 0.04023,
+            "substitutions": 122,
+            "deletions": 52,
+            "insertions": 3,
+            "into_hiragana": 35
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 376,
+            "cer": 0.05526,
+            "exact": 0.742
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 140,
+            "cer": 0.03584,
+            "substitutions": 100,
+            "deletions": 37,
+            "insertions": 3,
+            "into_hiragana": 37
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step2000.pt",
+      "checkpoint_sha256": "f351091910f690bb15b94b9b94a3f445cf21c29b21ab53338c8c91bb8bf97f04",
+      "step": 2000,
+      "blob": "bitmap_all_s1-ckpt_step2000-f351091910f690bb.vocr",
+      "blob_sha256": "7134266b4b9986e950e24de6832f2e51b061974014e5a8b923ad96772846af79",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 9,
+            "cer": 0.04348,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 4,
+            "cer": 0.0315,
+            "substitutions": 1,
+            "deletions": 0,
+            "insertions": 3,
+            "into_hiragana": 1
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 440,
+            "cer": 0.05908,
+            "exact": 0.692
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 168,
+            "cer": 0.03818,
+            "substitutions": 120,
+            "deletions": 47,
+            "insertions": 1,
+            "into_hiragana": 35
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 340,
+            "cer": 0.04997,
+            "exact": 0.768
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 120,
+            "cer": 0.03072,
+            "substitutions": 88,
+            "deletions": 29,
+            "insertions": 3,
+            "into_hiragana": 30
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step400.pt",
+      "checkpoint_sha256": "82a7db39d4a40321f03ce399f073e82530b819f802883c12783be8d16df09e49",
+      "step": 400,
+      "blob": "bitmap_all_s1-ckpt_step400-82a7db39d4a40321.vocr",
+      "blob_sha256": "65321d0ae5a0798e2e1953c6567f7b578a94acfcc4f71db458da75d412c252f6",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 11,
+            "cer": 0.05314,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 5,
+            "cer": 0.03937,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 3,
+            "into_hiragana": 1
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 461,
+            "cer": 0.0619,
+            "exact": 0.692
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 176,
+            "cer": 0.04,
+            "substitutions": 125,
+            "deletions": 50,
+            "insertions": 1,
+            "into_hiragana": 31
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 365,
+            "cer": 0.05364,
+            "exact": 0.744
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 131,
+            "cer": 0.03354,
+            "substitutions": 92,
+            "deletions": 36,
+            "insertions": 3,
+            "into_hiragana": 29
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step600.pt",
+      "checkpoint_sha256": "11bbaeae9d3192ff706d2ee146984cf6ce75d1b93dcf30d85bf14bb629f23b63",
+      "step": 600,
+      "blob": "bitmap_all_s1-ckpt_step600-11bbaeae9d3192ff.vocr",
+      "blob_sha256": "b8dbed541088a42b0fec4506e3a468ddd0bea35076593a7208571e12e6f2541f",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 11,
+            "cer": 0.05314,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 4,
+            "cer": 0.0315,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 2,
+            "into_hiragana": 1
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 451,
+            "cer": 0.06056,
+            "exact": 0.682
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 169,
+            "cer": 0.03841,
+            "substitutions": 123,
+            "deletions": 44,
+            "insertions": 2,
+            "into_hiragana": 38
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 339,
+            "cer": 0.04982,
+            "exact": 0.772
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 121,
+            "cer": 0.03098,
+            "substitutions": 90,
+            "deletions": 29,
+            "insertions": 2,
+            "into_hiragana": 31
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step800.pt",
+      "checkpoint_sha256": "1d78b6bfe2195a097921a5d341aad386f32a8e863c2fa472c7fa28798db92bab",
+      "step": 800,
+      "blob": "bitmap_all_s1-ckpt_step800-1d78b6bfe2195a09.vocr",
+      "blob_sha256": "4d5b5c06c4d32fb8c3e0d2c450f62aece67139d8f177714a03124af31716fa59",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 9,
+            "cer": 0.04348,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 4,
+            "cer": 0.0315,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 2,
+            "into_hiragana": 1
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 447,
+            "cer": 0.06002,
+            "exact": 0.686
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 167,
+            "cer": 0.03795,
+            "substitutions": 120,
+            "deletions": 47,
+            "insertions": 0,
+            "into_hiragana": 35
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 346,
+            "cer": 0.05085,
+            "exact": 0.766
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 122,
+            "cer": 0.03123,
+            "substitutions": 89,
+            "deletions": 29,
+            "insertions": 4,
+            "into_hiragana": 29
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step1000.pt",
+      "checkpoint_sha256": "48a6da1e432d6b041ac39b70dcc733ce9c0c7e188252a1f680b76768690f6365",
+      "step": 1000,
+      "blob": "bitmap_head_s1-ckpt_step1000-48a6da1e432d6b04.vocr",
+      "blob_sha256": "d2d55847edb18563c3b7b3577c7ccec3d52ffe1c697cd244795bef6c5b983175",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 6,
+            "cer": 0.02899,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 477,
+            "cer": 0.06405,
+            "exact": 0.654
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 179,
+            "cer": 0.04068,
+            "substitutions": 120,
+            "deletions": 57,
+            "insertions": 2,
+            "into_hiragana": 34
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 370,
+            "cer": 0.05438,
+            "exact": 0.73
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 131,
+            "cer": 0.03354,
+            "substitutions": 87,
+            "deletions": 42,
+            "insertions": 2,
+            "into_hiragana": 33
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step1200.pt",
+      "checkpoint_sha256": "64e2fb7e153a4e388c4415778b6ad4c4795f62f4c98d4181916e8a0ba3ed83b3",
+      "step": 1200,
+      "blob": "bitmap_head_s1-ckpt_step1200-64e2fb7e153a4e38.vocr",
+      "blob_sha256": "fdcfc318d3579f129d702249035e8d9af6b5c12700c3d536528918f9438d1932",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 6,
+            "cer": 0.02899,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 478,
+            "cer": 0.06419,
+            "exact": 0.658
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 177,
+            "cer": 0.04023,
+            "substitutions": 118,
+            "deletions": 57,
+            "insertions": 2,
+            "into_hiragana": 32
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 2,
+            "cer": 0.00755,
+            "exact": 0.90909
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 367,
+            "cer": 0.05394,
+            "exact": 0.73
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 129,
+            "cer": 0.03303,
+            "substitutions": 85,
+            "deletions": 42,
+            "insertions": 2,
+            "into_hiragana": 33
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step1400.pt",
+      "checkpoint_sha256": "828990856c3761856d402cc0ae64e4bd9fa249eac9dc62930f60359db9ecaded",
+      "step": 1400,
+      "blob": "bitmap_head_s1-ckpt_step1400-828990856c376185.vocr",
+      "blob_sha256": "48728885de199b315df51d2b13f1f10915465d5f5ac83a8d91df1155a1a588ca",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 6,
+            "cer": 0.02899,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 478,
+            "cer": 0.06419,
+            "exact": 0.652
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 178,
+            "cer": 0.04045,
+            "substitutions": 119,
+            "deletions": 57,
+            "insertions": 2,
+            "into_hiragana": 35
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 367,
+            "cer": 0.05394,
+            "exact": 0.732
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 130,
+            "cer": 0.03328,
+            "substitutions": 86,
+            "deletions": 42,
+            "insertions": 2,
+            "into_hiragana": 32
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step1600.pt",
+      "checkpoint_sha256": "8f6703c4f9013fa3d3a1113669d5115fa407f7984438c478f986dc29fea9b429",
+      "step": 1600,
+      "blob": "bitmap_head_s1-ckpt_step1600-8f6703c4f9013fa3.vocr",
+      "blob_sha256": "233abc55f6ac8ba1b220e1384aa61b0c60eb6329f7e38738dd29368e7e08a9b0",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 7,
+            "cer": 0.03382,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 478,
+            "cer": 0.06419,
+            "exact": 0.65
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 178,
+            "cer": 0.04045,
+            "substitutions": 120,
+            "deletions": 55,
+            "insertions": 3,
+            "into_hiragana": 34
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 2,
+            "cer": 0.00755,
+            "exact": 0.90909
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 369,
+            "cer": 0.05423,
+            "exact": 0.732
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 130,
+            "cer": 0.03328,
+            "substitutions": 86,
+            "deletions": 42,
+            "insertions": 2,
+            "into_hiragana": 33
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step1800.pt",
+      "checkpoint_sha256": "3e204fa7589aa7f72200cf7a0227f25e54782eb862457b9d80545dc5dbc37fbd",
+      "step": 1800,
+      "blob": "bitmap_head_s1-ckpt_step1800-3e204fa7589aa7f7.vocr",
+      "blob_sha256": "fce29b4622e8c0aca082cb983228b2426eb43447506e30a37bd5c2f1e43ac5e2",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 6,
+            "cer": 0.02899,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 479,
+            "cer": 0.06432,
+            "exact": 0.65
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 178,
+            "cer": 0.04045,
+            "substitutions": 120,
+            "deletions": 55,
+            "insertions": 3,
+            "into_hiragana": 34
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 2,
+            "cer": 0.00755,
+            "exact": 0.90909
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 369,
+            "cer": 0.05423,
+            "exact": 0.73
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 129,
+            "cer": 0.03303,
+            "substitutions": 85,
+            "deletions": 42,
+            "insertions": 2,
+            "into_hiragana": 33
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step200.pt",
+      "checkpoint_sha256": "f1c5f0063bd465d114e55a3d8c54f7758655ca3f252942f24e63ed966389383d",
+      "step": 200,
+      "blob": "bitmap_head_s1-ckpt_step200-f1c5f0063bd465d1.vocr",
+      "blob_sha256": "ee1d3cc1e81d392933c39b713ef7bcefecdc8b0bdedb161728791b0532e96c85",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 5,
+            "cer": 0.02415,
+            "exact": 0.89474
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 492,
+            "cer": 0.06607,
+            "exact": 0.648
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 184,
+            "cer": 0.04182,
+            "substitutions": 117,
+            "deletions": 65,
+            "insertions": 2,
+            "into_hiragana": 32
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 382,
+            "cer": 0.05614,
+            "exact": 0.724
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 138,
+            "cer": 0.03533,
+            "substitutions": 91,
+            "deletions": 46,
+            "insertions": 1,
+            "into_hiragana": 32
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": true
+    },
+    {
+      "checkpoint": "ckpt_step2000.pt",
+      "checkpoint_sha256": "3bf9e5601bf9e7d8010f462735660a22b9c3fc2b1c3db9daf19911a89cd7e8bd",
+      "step": 2000,
+      "blob": "bitmap_head_s1-ckpt_step2000-3bf9e5601bf9e7d8.vocr",
+      "blob_sha256": "3d5decab5f12edaedca5769a6a58a7504d4726c12471788ef9d9b1f369bdeda0",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 6,
+            "cer": 0.02899,
+            "exact": 0.84211
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 478,
+            "cer": 0.06419,
+            "exact": 0.652
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 177,
+            "cer": 0.04023,
+            "substitutions": 119,
+            "deletions": 55,
+            "insertions": 3,
+            "into_hiragana": 34
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 2,
+            "cer": 0.00755,
+            "exact": 0.90909
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 366,
+            "cer": 0.05379,
+            "exact": 0.734
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 129,
+            "cer": 0.03303,
+            "substitutions": 85,
+            "deletions": 42,
+            "insertions": 2,
+            "into_hiragana": 33
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": false
+    },
+    {
+      "checkpoint": "ckpt_step400.pt",
+      "checkpoint_sha256": "49d3d415553e9d005f97f4715c5017ef36649bf9a6fab29426918000f76ff8be",
+      "step": 400,
+      "blob": "bitmap_head_s1-ckpt_step400-49d3d415553e9d00.vocr",
+      "blob_sha256": "0b4860fd99a3398644a9757f9d46431f6c194eff91937fc805eee8d8459f6420",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 5,
+            "cer": 0.02415,
+            "exact": 0.89474
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 482,
+            "cer": 0.06472,
+            "exact": 0.658
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 180,
+            "cer": 0.04091,
+            "substitutions": 120,
+            "deletions": 58,
+            "insertions": 2,
+            "into_hiragana": 34
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 376,
+            "cer": 0.05526,
+            "exact": 0.722
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 134,
+            "cer": 0.03431,
+            "substitutions": 88,
+            "deletions": 45,
+            "insertions": 1,
+            "into_hiragana": 30
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": true
+    },
+    {
+      "checkpoint": "ckpt_step600.pt",
+      "checkpoint_sha256": "f2637bdf1f70d391cedae7224e1af9094f3c8dce0992f601e330d7ffe313e3ad",
+      "step": 600,
+      "blob": "bitmap_head_s1-ckpt_step600-f2637bdf1f70d391.vocr",
+      "blob_sha256": "aa121e776d62a11b6c3ecdd51248934f2e32f040931daaea97915b7e96f6a046",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 5,
+            "cer": 0.02415,
+            "exact": 0.89474
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 474,
+            "cer": 0.06365,
+            "exact": 0.662
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 179,
+            "cer": 0.04068,
+            "substitutions": 120,
+            "deletions": 56,
+            "insertions": 3,
+            "into_hiragana": 33
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 374,
+            "cer": 0.05497,
+            "exact": 0.73
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 135,
+            "cer": 0.03456,
+            "substitutions": 89,
+            "deletions": 44,
+            "insertions": 2,
+            "into_hiragana": 32
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": true
+    },
+    {
+      "checkpoint": "ckpt_step800.pt",
+      "checkpoint_sha256": "16831adcf717f728d3e085f01250b977057e04d8b9d70cb554f70cd0bbafed72",
+      "step": 800,
+      "blob": "bitmap_head_s1-ckpt_step800-16831adcf717f728.vocr",
+      "blob_sha256": "82ebb0c9cd0d670e55e49fb30e9d924cb7cf91d5daf02546a65c30ddc0c93f05",
+      "scores": {
+        "real_dev": {
+          "all": {
+            "lines": 19,
+            "chars": 207,
+            "errors": 5,
+            "cer": 0.02415,
+            "exact": 0.89474
+          },
+          "hiragana": {
+            "chars": 127,
+            "errors": 2,
+            "cer": 0.01575,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "synthetic_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 7447,
+            "errors": 471,
+            "cer": 0.06325,
+            "exact": 0.66
+          },
+          "hiragana": {
+            "chars": 4400,
+            "errors": 177,
+            "cer": 0.04023,
+            "substitutions": 120,
+            "deletions": 55,
+            "insertions": 2,
+            "into_hiragana": 32
+          }
+        },
+        "psp_dev": {
+          "all": {
+            "lines": 22,
+            "chars": 265,
+            "errors": 1,
+            "cer": 0.00377,
+            "exact": 0.95455
+          },
+          "hiragana": {
+            "chars": 132,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "vita_dev": {
+          "all": {
+            "lines": 9,
+            "chars": 80,
+            "errors": 0,
+            "cer": 0.0,
+            "exact": 1.0
+          },
+          "hiragana": {
+            "chars": 43,
+            "errors": 0,
+            "cer": 0.0,
+            "substitutions": 0,
+            "deletions": 0,
+            "insertions": 0,
+            "into_hiragana": 0
+          }
+        },
+        "bitmap_dev": {
+          "all": {
+            "lines": 500,
+            "chars": 6804,
+            "errors": 365,
+            "cer": 0.05364,
+            "exact": 0.734
+          },
+          "hiragana": {
+            "chars": 3906,
+            "errors": 130,
+            "cer": 0.03328,
+            "substitutions": 86,
+            "deletions": 42,
+            "insertions": 2,
+            "into_hiragana": 32
+          }
+        }
+      },
+      "memory": {
+        "blob_bytes": 657664,
+        "arena_bytes": 124832
+      },
+      "backend": "vocr",
+      "mode": "w8i",
+      "status": "scored",
+      "qualified": true
+    }
+  ],
+  "strict_dev_hiragana_improvement": false,
+  "chosen": {
+    "blob": "FL10_w8.vocr",
+    "blob_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+  },
+  "heldout_test_evaluated": false,
+  "outcome": "All20 candidates fail the frozen strict original-development hiragana gain. Released baseline retained; no accuracy promotion. This is a bounded one-game-font experiment, not unseen-font or VN generalization evidence. Future trials must preregister a balanced multi-VN objective before training."
+}

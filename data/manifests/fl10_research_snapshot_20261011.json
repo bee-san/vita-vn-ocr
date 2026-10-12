@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "date": "2026-10-11",
+  "release_tag": "v0.2.2-fl10-training.1",
+  "role": "research_snapshot",
+  "qualified_for_deployment": false,
+  "training_runs": 6,
+  "checkpoints": 60,
+  "training_code_commits": [
+    "a52749b",
+    "d6ef77d"
+  ],
+  "validation": {
+    "archive_member_count": 82,
+    "checkpoint_count": 60,
+    "checkpoint_zip_crc_passed": 60,
+    "excluded_data_present": false,
+    "filtered_source_readback": true,
+    "hash_and_size_readback": true,
+    "schema": 1,
+    "status": "passed"
+  },
+  "assets": [
+    {
+      "bytes": 361068759,
+      "file": "weights-research-20261011.tar.gz",
+      "sha256": "ba8ddf7d341320fef12dbc45e99e3b6d5b2f935a613d84a3408345613db05b94",
+      "url": "https://github.com/bee-san/vita-vn-ocr/releases/download/v0.2.2-fl10-training.1/weights-research-20261011.tar.gz"
+    },
+    {
+      "bytes": 16431,
+      "file": "research-members.json",
+      "sha256": "6fbbfc3cf18622e10f6c23c747548b06dc992ab18d656f2c70e5724fd39bf888",
+      "url": "https://github.com/bee-san/vita-vn-ocr/releases/download/v0.2.2-fl10-training.1/research-members.json"
+    },
+    {
+      "bytes": 955780,
+      "file": "code-a52749b-research.tar.gz",
+      "sha256": "3cd166c67ba48ff5b51c9e8dfccc2fe44cbb3c2e18c8c844e0063e20ef2a6a0f",
+      "url": "https://github.com/bee-san/vita-vn-ocr/releases/download/v0.2.2-fl10-training.1/code-a52749b-research.tar.gz"
+    },
+    {
+      "bytes": 961702,
+      "file": "code-d6ef77d-research.tar.gz",
+      "sha256": "7f1fb22d61f86b0b89e26d5d2e501636d85d509abfffc43ada1869e9b655e17d",
+      "url": "https://github.com/bee-san/vita-vn-ocr/releases/download/v0.2.2-fl10-training.1/code-d6ef77d-research.tar.gz"
+    }
+  ],
+  "excluded": "Images, crops, corpus, fonts, NPZ shards, annotation manifests and held-out data.",
+  "resume": "Complete restart is pinned; checkpoint resume omits RNG/source/mixer states.",
+  "outcome": "No trained checkpoint passed strict real-development hiragana selection; released FL10 remains selected."
+}

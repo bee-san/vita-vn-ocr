@@ -62,9 +62,11 @@ def validate_blob(blob, reference=None):
         raise ValueError("FL10 model or arena memory changed")
 
 
-def load_development(manifest, synthetic):
-    """Validate roles before opening pixels; no synthetic development sample cap."""
-    manifest, synthetic = Path(manifest).resolve(), Path(synthetic).resolve()
+def load_real_development(manifest, pad=4):
+    """Reject non-development roles before opening images, with explicit padding."""
+    manifest = Path(manifest).resolve()
+    if type(pad) is not int or not 0 <= pad <= 32:
+        raise ValueError("development padding must be an integer between 0 and 32")
     rows = [json.loads(line) for line in manifest.read_text().splitlines() if line.strip()]
     if not rows or any(row.get("split") != "dev" for row in rows):
         raise ValueError("real selection manifest must be development-only")
@@ -73,10 +75,23 @@ def load_development(manifest, synthetic):
         raise ValueError("development set name already registered")
     try:
         register_local(name, manifest)
-        real, _ = load_real(name, ROOT / "data" / "eval")
+        real, _ = load_real(name, ROOT / "data" / "eval", pad=pad)
     finally:
         SETS.pop(name, None)
         LOCAL_MANIFESTS.pop(name, None)
+    if not real or any(not line.text for line in real):
+        raise ValueError("development datasets must contain scored nonempty labels")
+    for line in real:
+        gray = to_gray(line.crop_rgb)
+        line.crop_rgb = np.ascontiguousarray(255 - gray if line_polarity(gray) else gray)
+    return real, {"split": "dev", "manifest_sha256": sha256(manifest),
+                  "sessions": sorted({row["session"] for row in rows}),
+                  "lines": len(real), "pad": pad, "polarity": "console"}
+
+
+def load_synthetic_development(synthetic):
+    """Validate role and book cohort; score all stored console-polarity crops."""
+    synthetic = Path(synthetic).resolve()
     with np.load(synthetic, allow_pickle=False) as shard:
         if "meta" not in shard:
             raise ValueError("synthetic selection shard needs development-role metadata")
@@ -91,28 +106,41 @@ def load_development(manifest, synthetic):
         if len(cohort) != 64 or any(c not in "0123456789abcdef" for c in cohort):
             raise ValueError("invalid synthetic held-out book cohort hash")
     synth = load_synth_val(synthetic, limit=0)
-    if not real or any(not line.text for line in real + synth):
+    if not synth or any(not line.text for line in synth):
         raise ValueError("development datasets must contain scored nonempty labels")
-    for line in real:
-        gray = to_gray(line.crop_rgb)
-        line.crop_rgb = np.ascontiguousarray(255 - gray if line_polarity(gray) else gray)
-    identity = {"real_dev": {"split": "dev", "manifest_sha256": sha256(manifest),
-                             "sessions": sorted({row["session"] for row in rows}),
-                             "lines": len(real), "pad": 4, "polarity": "console"},
-                "synthetic_dev": {"split": "dev", "npz_sha256": sha256(synthetic),
-                                  "book_split_sha256": cohort, "lines": len(synth),
-                                  "polarity": "stored console crops"}}
-    return real, synth, identity
+    return synth, {"split": "dev", "npz_sha256": sha256(synthetic),
+                   "book_split_sha256": cohort, "lines": len(synth),
+                   "polarity": "stored console crops"}
 
 
-def score_blob(path, real, synth):
+def load_development(manifest, synthetic):
+    real, real_identity = load_real_development(manifest)
+    synth, synth_identity = load_synthetic_development(synthetic)
+    return real, synth, {"real_dev": real_identity, "synthetic_dev": synth_identity}
+
+
+def load_guards(real_guards=(), synthetic_guards=()):
+    lines, identities = {}, {}
+    for name, path, pad in real_guards:
+        if not name or name in lines or name in ("real_dev", "synthetic_dev"):
+            raise ValueError("development guards require distinct non-reserved names")
+        lines[name], identities[name] = load_real_development(path, pad)
+    for name, path in synthetic_guards:
+        if not name or name in lines or name in ("real_dev", "synthetic_dev"):
+            raise ValueError("development guards require distinct non-reserved names")
+        lines[name], identities[name] = load_synthetic_development(path)
+    return lines, identities
+
+
+def score_blob(path, real, synth, guards=None):
     rec = NativeVocr(path)
     try:
         memory = {key: rec.info[key] for key in ("blob_bytes", "arena_bytes")}
         if (memory["blob_bytes"], memory["arena_bytes"]) != (MODEL_BYTES, ARENA_BYTES):
             raise ValueError("C runtime FL10 model or arena memory changed")
         scores = {}
-        for name, lines in (("real_dev", real), ("synthetic_dev", synth)):
+        datasets = {"real_dev": real, "synthetic_dev": synth, **(guards or {})}
+        for name, lines in datasets.items():
             predictions = rec.read([line.crop_rgb for line in lines])
             if len(predictions) != len(lines):
                 raise ValueError("recognizer did not return one prediction per development crop")
@@ -159,6 +187,10 @@ def choose(baseline, candidates):
         scores = candidate["scores"]
         candidate["qualified"] = all(scores[name]["all"]["errors"] <= base[name]["all"]["errors"]
                                      for name in ("real_dev", "synthetic_dev"))
+        candidate["qualified"] &= all(
+            name in scores and all(scores[name][script]["errors"] <= base[name][script]["errors"]
+                                   for script in ("all", "hiragana"))
+            for name in base if name not in ("real_dev", "synthetic_dev"))
         if candidate["qualified"]:
             qualified.append(candidate)
     ranked = sorted(qualified, key=lambda candidate: (
@@ -170,15 +202,17 @@ def choose(baseline, candidates):
     return baseline, False
 
 
-def select(baseline, manifest, synthetic, checkpoints, out):
+def select(baseline, manifest, synthetic, checkpoints, out, real_guards=(), synthetic_guards=()):
     out, baseline = Path(out).resolve(), Path(baseline).resolve()
     if out.exists():
         raise FileExistsError(f"completed selection already exists: {out}")
     real, synth, datasets = load_development(manifest, synthetic)
+    guards, guard_identities = load_guards(real_guards, synthetic_guards)
+    datasets.update(guard_identities)
     reference = export.read_blob(baseline)
     validate_blob(reference)
     baseline_hash = sha256(baseline)
-    base = {"blob": str(baseline), "blob_sha256": baseline_hash, **score_blob(baseline, real, synth)}
+    base = {"blob": str(baseline), "blob_sha256": baseline_hash, **score_blob(baseline, real, synth, guards)}
     directory = out.with_name(out.stem + "_exports")
     directory.mkdir(parents=True, exist_ok=True)
     (directory / ".gitignore").write_text("*\n")
@@ -187,7 +221,7 @@ def select(baseline, manifest, synthetic, checkpoints, out):
         record = {"checkpoint": path, "checkpoint_sha256": sha256(path)}
         try:
             record.update(export_checkpoint(path, reference, directory))
-            record.update(score_blob(record["blob"], real, synth))
+            record.update(score_blob(record["blob"], real, synth, guards))
             record["status"] = "scored"
         except (ValueError, AssertionError, RuntimeError, KeyError) as error:
             record.update(status="rejected", reason=str(error), qualified=False)
@@ -200,6 +234,8 @@ def select(baseline, manifest, synthetic, checkpoints, out):
     if sha256(chosen["blob"]) != chosen["blob_sha256"]:
         raise ValueError("chosen blob changed during selection")
     result = {"schema": 1, "selection_data": "development_only", "selection_rule": RULE,
+              "additional_guards": {"names": list(guards),
+                                    "qualify": "each full and hiragana error count <= its own baseline"},
               "datasets": datasets, "baseline": base, "candidates": candidates,
               "strict_dev_hiragana_improvement": improved,
               "chosen": {key: chosen[key] for key in ("blob", "blob_sha256")},
@@ -220,6 +256,8 @@ def main():
     parser.add_argument("--synthetic-dev", type=Path, required=True)
     parser.add_argument("--checkpoints", action="append", required=True, help="checkpoint path/glob; repeatable")
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--real-guard", action="append", default=[], metavar="NAME:PAD:MANIFEST")
+    parser.add_argument("--synthetic-guard", action="append", default=[], metavar="NAME:NPZ")
     args = parser.parse_args()
     paths = []
     for pattern in args.checkpoints:
@@ -227,7 +265,14 @@ def main():
         if not matches:
             parser.error(f"no checkpoints match {pattern}")
         paths.extend(matches)
-    result = select(args.baseline, args.dev_manifest, args.synthetic_dev, paths, args.out)
+    try:
+        real_guards = [(name, path, int(pad)) for name, pad, path in
+                       (item.split(":", 2) for item in args.real_guard)]
+        synthetic_guards = [tuple(item.split(":", 1)) for item in args.synthetic_guard]
+        result = select(args.baseline, args.dev_manifest, args.synthetic_dev, paths, args.out,
+                        real_guards, synthetic_guards)
+    except ValueError as error:
+        parser.error(str(error))
     print(json.dumps({"chosen": result["chosen"],
                       "strict_dev_hiragana_improvement": result["strict_dev_hiragana_improvement"]}, indent=2))
 

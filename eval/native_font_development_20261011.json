@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "role": "dev",
+  "assistant_reviewed": true,
+  "human_reviewed": false,
+  "source_candidates": 23,
+  "accepted": {
+    "images": 9,
+    "regions": 9,
+    "lines": 24,
+    "dialogue_lines": 15,
+    "speaker_lines": 7,
+    "raw_characters": 283,
+    "normalized_characters": 283,
+    "hiragana_characters": 147,
+    "by_platform": {
+      "psp": 18,
+      "psv": 6
+    }
+  },
+  "independently_reviewed_frames": 9,
+  "second_review_sha256": "c0905e874acc246082b53fa916f247d0b911b7f649c212ebd61673d65fc9a3bb",
+  "narration_lines": 2,
+  "frames_by_platform": {
+    "psp": 7,
+    "psv": 2
+  },
+  "psp_body_lines_ge20_characters": 5,
+  "protected_pixels_opened": false,
+  "model_scored": false,
+  "runtime_or_padding_changed": false,
+  "environment": {
+    "python": "3.11.15 (main, May 10 2026, 19:28:18) [Clang 22.1.3 ]",
+    "numpy": "2.4.6",
+    "pillow": "12.3.0"
+  },
+  "uncertain_transcriptions_included": 0,
+  "compatibility": {
+    "labels.jsonl": {
+      "lines": 24,
+      "regions": 9,
+      "validation_pad": 4,
+      "sha256": "138d6bea48fef76e8170089821f0c0746c1a86f4887b18eba04df7fb3f29244e"
+    },
+    "psp-labels.jsonl": {
+      "lines": 18,
+      "regions": 7,
+      "validation_pad": 2,
+      "sha256": "effab2e65e94c2a8194808bfcd51891d8554e9da75d02c7e5aef1b67fe780c28"
+    },
+    "vita-labels.jsonl": {
+      "lines": 6,
+      "regions": 2,
+      "validation_pad": 4,
+      "sha256": "f32e8567d06ffc060c1f3c7f6e00489f4e528003488f35f983a69fe2e5970bfb"
+    }
+  },
+  "sources_sha256": "08113b0c2af22cc7db33fa4baec23044e452de2f3f561f2d6c3278dbdd3198ce",
+  "source_review_sha256": "7db2ffa97c7931c5deff0f46f165e9151de4c1be7edd7cc8d42d525f8bc7a71f",
+  "isolation_sha256": "32aa0f041ffd12c21552e26daae132e65bdaadbc42ac45a43036cafb263e2356",
+  "builder_sha256": "7b237ea53381cb33555e58eda98478cc8b9fcafed0651b026ed02f2967a1405d",
+  "source_code_sha256": {
+    "base_builder": "3b27aa98263c148bc91b8188037741b03d38579adeefc939745f9d759617063a",
+    "eval/sets.py": "a65154a114c922e8a2bacf621dc96289f2fc74706e1705ab297a5014edb09bce",
+    "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+    "synth/common.py": "6b8ca608c4e1ec60c87dd3bc6fa44a03fbb84fe0387ccc77a4c8aefbdc0c13ca"
+  },
+  "combined": {
+    "file": "../all-dialogue-labels.jsonl",
+    "sha256": "6b74b3eebf4414e54d0530f136ae6a45bd205978d2c0032ef202eb7bf70dc068",
+    "counts": {
+      "images": 12,
+      "regions": 12,
+      "lines": 31,
+      "dialogue_lines": 19,
+      "speaker_lines": 10,
+      "raw_characters": 345,
+      "normalized_characters": 345,
+      "hiragana_characters": 175,
+      "by_platform": {
+        "psp": 22,
+        "psv": 9
+      }
+    },
+    "narration_lines": 2
+  },
+  "note": "Standard VN dialogue panels include narration; two additional narrative body lines are explicitly tagged. Mission/gameplay UI is excluded. Assistant visual review is not human ground truth.",
+  "source": {
+    "expanded_sources_sha256": "08113b0c2af22cc7db33fa4baec23044e452de2f3f561f2d6c3278dbdd3198ce",
+    "labels_sha256": "6b74b3eebf4414e54d0530f136ae6a45bd205978d2c0032ef202eb7bf70dc068",
+    "isolation_sha256": "32aa0f041ffd12c21552e26daae132e65bdaadbc42ac45a43036cafb263e2356"
+  },
+  "labels_tracked": false
+}

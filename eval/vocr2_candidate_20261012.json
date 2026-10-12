@@ -1,0 +1,2412 @@
+{
+  "Google_used_for_selection": false,
+  "date": "2026-10-12",
+  "environment": {
+    "Pillow": "12.3.0",
+    "compiler": "GCC 16.2.1 20260810",
+    "cv2": "5.0.0",
+    "finder_flags": [
+      "-std=c99",
+      "-O2",
+      "-ffp-contract=off",
+      "-DVOCR_NO_NEON"
+    ],
+    "host": "Linux x86_64 glibc 2.44",
+    "numpy": "2.4.6",
+    "python": "3.11.15",
+    "recognition": "original scalar dependency-free C W8I runtime",
+    "torch": "2.5.1+cpu"
+  },
+  "evidence_access": "frozen audit inputs, transcripts, predictions and drivers are retained privately; hashes permit identity checks, not public replay",
+  "fixed_line_test": {
+    "actual_inputs_equal": true,
+    "decision": {
+      "passed": true,
+      "pooled_hiragana": {
+        "baseline_errors": 48,
+        "candidate_errors": 40,
+        "chars": 3028
+      },
+      "reasons": []
+    },
+    "runtime_library_sha256": "4a5635ba9a0721373f35e8957c0788b74e1725ea8cd96b8200cc5e427536b11b",
+    "sets": {
+      "clannad-test": {
+        "baseline": {
+          "all": {
+            "cer": 0.01804123711340206,
+            "chars": 388,
+            "errors": 7
+          },
+          "hiragana": {
+            "cer": 0.013100436681222707,
+            "chars": 229,
+            "errors": 3
+          }
+        },
+        "candidate": {
+          "all": {
+            "cer": 0.01804123711340206,
+            "chars": 388,
+            "errors": 7
+          },
+          "hiragana": {
+            "cer": 0.008733624454148471,
+            "chars": 229,
+            "errors": 2
+          }
+        },
+        "chars": 388,
+        "hira_chars": 229,
+        "lines": 25,
+        "manifest_sha256": "ab226eba6cafee7e9e735a1be42b6f1c2e877be2c255bd57ec9913bc15faacd6",
+        "pad": 4,
+        "platform": "vita",
+        "reference_sha256": "d0c9515350e574b8dca24ded7a975048a3b792f743784ff31293434eb865196d",
+        "split": "test"
+      },
+      "psp-test": {
+        "baseline": {
+          "all": {
+            "cer": 0.05298804780876494,
+            "chars": 2510,
+            "errors": 133
+          },
+          "hiragana": {
+            "cer": 0.02170767004341534,
+            "chars": 1382,
+            "errors": 30
+          }
+        },
+        "candidate": {
+          "all": {
+            "cer": 0.047410358565737054,
+            "chars": 2510,
+            "errors": 119
+          },
+          "hiragana": {
+            "cer": 0.01808972503617945,
+            "chars": 1382,
+            "errors": 25
+          }
+        },
+        "chars": 2510,
+        "hira_chars": 1382,
+        "lines": 245,
+        "manifest_sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+        "pad": 2,
+        "platform": "psp",
+        "reference_sha256": "bda55f92fffa88aff9b9877bda1261c3c610f7545a7dbb1f8d8b4df015b1d8d0",
+        "split": "test"
+      },
+      "vita-test": {
+        "baseline": {
+          "all": {
+            "cer": 0.02379095163806552,
+            "chars": 2564,
+            "errors": 61
+          },
+          "hiragana": {
+            "cer": 0.01058574453069866,
+            "chars": 1417,
+            "errors": 15
+          }
+        },
+        "candidate": {
+          "all": {
+            "cer": 0.023010920436817472,
+            "chars": 2564,
+            "errors": 59
+          },
+          "hiragana": {
+            "cer": 0.009174311926605505,
+            "chars": 1417,
+            "errors": 13
+          }
+        },
+        "chars": 2564,
+        "hira_chars": 1417,
+        "lines": 206,
+        "manifest_sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+        "pad": 4,
+        "platform": "vita",
+        "reference_sha256": "be63cd168614d8a9bbf408440f34a1655f1ae8d8d60499b6b8e12a7bede4c2db",
+        "split": "test"
+      }
+    },
+    "split": "test",
+    "successful_model_forwards": {
+      "baseline": 476,
+      "candidate": 476
+    }
+  },
+  "hardware_measured": false,
+  "host_finder_timing": {
+    "clock": "C clock() process CPU time",
+    "hardware_measured": false,
+    "host": "Linux-7.2.6-1-cachyos-x86_64-with-glibc2.44",
+    "protected_images_read": false,
+    "recognizer_forwards": 0,
+    "records": 711,
+    "repetitions_per_record": 30,
+    "sides": {
+      "baseline": {
+        "batch_sha256": "656f3dee8f4ac4106fc7840bc111cbc0b3598d766c1b070962556328dfd17b28",
+        "mean_record_mean_us": 920.8917018284106,
+        "median_record_best_us": 608.0,
+        "median_record_mean_us": 638.8,
+        "p95_record_mean_us": 1889.4,
+        "raw_timing_sha256": "b856ca92d3d84b926ac4f8def98b90b49ae0860412a26e3b5788058e0734dc73"
+      },
+      "candidate": {
+        "batch_sha256": "bb6174f8a44d60260bc28519a18f275d6f9ce146f4b5bd33747e70835d77a22d",
+        "mean_record_mean_us": 1089.6963431786216,
+        "median_record_best_us": 787.0,
+        "median_record_mean_us": 824.0,
+        "p95_record_mean_us": 2016.7,
+        "raw_timing_sha256": "f2baaa510e065a174a325a0dbc542305a301bffb7d09b70319f85ec49a3f6c20"
+      }
+    }
+  },
+  "kind": "experimental-vocr2-candidate-qualification",
+  "models": {
+    "baseline": {
+      "name": "FL10_w8.vocr",
+      "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+    },
+    "candidate": {
+      "blend_selected_on": "development only",
+      "fixed_blend_alpha": "1/4",
+      "name": "VOCR2_FL10_w8.vocr",
+      "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766"
+    }
+  },
+  "private_evidence_sha256": {
+    "C3_source_freeze": "63b17dbcb2fc289c1bca656b0608868133650cd6f4a505466fbe6981f6c98ec0",
+    "development_choice": "57a34dfb0172d19f0ac3102c886091fced6b8614406d23aa02557adbf0f1b46c",
+    "development_choice_plan": "68e8f7170a9d650b3ff694ddd58fd0b574d3a077b9eff43565d94f148102a009",
+    "development_paired_prepared": "78db98d9cd77bce05d03d78b571952828ab0b18d2bddf1490e88de16a23ed986",
+    "development_paired_protocol": "93d9dc26cefcb1aebc7930de07f178bf27d342a22688c77171a02edfd3883028",
+    "development_paired_result": "5ed854ab6ad342f03f3de375ff2cb2099c9ffbd765c352fdf1518649210916bc",
+    "host_finder_timing": "d692a39db3b061267c13cde4a180951bef36f8077725412dba8c940688214429",
+    "protected_driver": "b74207cbd65fa74700951624b83159a3f7ed989c195303b80148641e21c839f6",
+    "protected_fixed_line_driver": "b69f85ceec6cc5ba28e36392cd9bc58614667e5a75866444ddf80e7b70e22d34",
+    "protected_fixed_line_result": "e30808015e50199665e6463929e60405fe4c2c383fe2eb72bfe6284aaad196ec",
+    "protected_paired_prepared": "3890e728459fbf45995a6f8cb78d13b8df3eaa5c42e9afe6cf1aa591d56b0009",
+    "protected_paired_protocol": "6e8274abe09e120511d09a171e8a40ef87a03c7c001b598a63256df83760ff38",
+    "protected_paired_result": "3c2c873239e1bcbdf3858650d7b628853b0f4b1f4c324ecc9519a7348c8d09f7",
+    "protected_private_predictions": "cb520d7784d57ef2ff2294dbd018c72833ca1517aa9478a832cc235388af9173"
+  },
+  "promotion_passed": false,
+  "protected_retuning_or_fallback": false,
+  "publication_role": "opt-in experimental trial of the same failed coupled candidate; stable baseline unchanged",
+  "resource_contract": {
+    "blob_bytes_each": 657664,
+    "finder_arena_delta_bytes": 0,
+    "host_gcc_O2_estimated_dark_callchain_peak_bytes": {
+      "baseline": 3568,
+      "candidate": 3680
+    },
+    "host_gcc_O2_finder_stack_frame_bytes": {
+      "baseline": 1296,
+      "candidate": 1408
+    },
+    "host_gcc_O2_object_data_BSS_bytes_each": 0,
+    "host_gcc_O2_object_text_bytes": {
+      "baseline": 7554,
+      "candidate": 14746
+    },
+    "input_height": 32,
+    "max_width": 1024,
+    "model_kanji": 3112,
+    "new_heap_allocations": 0,
+    "recognizer_arena_bytes_each": 124832,
+    "target_stack_speed_and_peak_memory_measured": false,
+    "vocabulary_chars": 3500
+  },
+  "schema": 1,
+  "source_sha256": {
+    "eval/manifests/psp-test.jsonl": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+    "eval/manifests/vita-test.jsonl": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+    "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+    "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+    "runtime/vocr_lines.c": "0752584953d92efa1e7e8195eaae31048bc4b79694da832349c37e1da82fa348",
+    "runtime/vocr_lines.h": "2a5ba01c129608b94b92c28b77057f4e4ddb64a6f58c9c88fb1f8dfa8442d8e6"
+  },
+  "training_policy": {
+    "all_model_kanji_in_jiten": true,
+    "corrective_kanji_forward_prefix_cap": 0.02,
+    "existing_vocabulary_only": true,
+    "game_specific_adaptation": false,
+    "jiten_policy_sha256": "8fc9ea20804cc45876e25b60ed669446dc75fc7f0b6b383d65cc4688e050f763",
+    "per_kana_intent_forward_prefix_cap": 0.005,
+    "test_or_Google_training": false
+  },
+  "whole_dialogue_development": {
+    "decision": {
+      "gain_vns": [
+        "v1281",
+        "v18163",
+        "v18643",
+        "v2632",
+        "v5154"
+      ],
+      "gain_vns_by_variant": {
+        "base": [
+          "v1281",
+          "v18163",
+          "v18643",
+          "v2632",
+          "v5154"
+        ],
+        "expanded-4": [
+          "v1281",
+          "v18163",
+          "v18643",
+          "v2632",
+          "v5154"
+        ],
+        "expanded-8": [
+          "v1281",
+          "v18163",
+          "v18643",
+          "v2632",
+          "v5154"
+        ]
+      },
+      "passed": true,
+      "reasons": []
+    },
+    "failed_guard_cells": [],
+    "split": "dev",
+    "successful_model_forwards": {
+      "baseline": 1453,
+      "candidate": 1470
+    },
+    "title_guards": [
+      {
+        "group": "psp:v1281",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v2632",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v5154",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v18161",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v18163",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v18643",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      }
+    ],
+    "variants": {
+      "base": {
+        "by_side": {
+          "baseline": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.07151496824916843,
+                  "chars": 6614,
+                  "errors": 473
+                },
+                "hira": {
+                  "cer": 0.05205402363534046,
+                  "chars": 3554,
+                  "errors": 185
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.06292597876050088,
+                  "chars": 6309,
+                  "errors": 397
+                },
+                "hira": {
+                  "cer": 0.05264655663062037,
+                  "chars": 3514,
+                  "errors": 185
+                }
+              },
+              "detections": 470,
+              "regions": 237,
+              "title_platform_groups": 6
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.03948065712771595,
+                  "chars": 3774,
+                  "errors": 149
+                },
+                "hira": {
+                  "cer": 0.02493765586034913,
+                  "chars": 2005,
+                  "errors": 50
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.03747917823431427,
+                  "chars": 3602,
+                  "errors": 135
+                },
+                "hira": {
+                  "cer": 0.02544529262086514,
+                  "chars": 1965,
+                  "errors": 50
+                }
+              },
+              "detections": 262,
+              "regions": 144,
+              "title_platform_groups": 3
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.11408450704225352,
+                  "chars": 2840,
+                  "errors": 324
+                },
+                "hira": {
+                  "cer": 0.08715300193673338,
+                  "chars": 1549,
+                  "errors": 135
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.0967861100849649,
+                  "chars": 2707,
+                  "errors": 262
+                },
+                "hira": {
+                  "cer": 0.08715300193673338,
+                  "chars": 1549,
+                  "errors": 135
+                }
+              },
+              "detections": 208,
+              "regions": 93,
+              "title_platform_groups": 3
+            }
+          },
+          "candidate": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.05125491381917145,
+                  "chars": 6614,
+                  "errors": 339
+                },
+                "hira": {
+                  "cer": 0.026730444569499155,
+                  "chars": 3554,
+                  "errors": 95
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.041210968457758755,
+                  "chars": 6309,
+                  "errors": 260
+                },
+                "hira": {
+                  "cer": 0.02703471826977803,
+                  "chars": 3514,
+                  "errors": 95
+                }
+              },
+              "detections": 476,
+              "regions": 237,
+              "title_platform_groups": 6
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.03842077371489136,
+                  "chars": 3774,
+                  "errors": 145
+                },
+                "hira": {
+                  "cer": 0.022942643391521196,
+                  "chars": 2005,
+                  "errors": 46
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.03609106052193226,
+                  "chars": 3602,
+                  "errors": 130
+                },
+                "hira": {
+                  "cer": 0.02340966921119593,
+                  "chars": 1965,
+                  "errors": 46
+                }
+              },
+              "detections": 262,
+              "regions": 144,
+              "title_platform_groups": 3
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.06830985915492958,
+                  "chars": 2840,
+                  "errors": 194
+                },
+                "hira": {
+                  "cer": 0.0316333118140736,
+                  "chars": 1549,
+                  "errors": 49
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.04802364240857037,
+                  "chars": 2707,
+                  "errors": 130
+                },
+                "hira": {
+                  "cer": 0.0316333118140736,
+                  "chars": 1549,
+                  "errors": 49
+                }
+              },
+              "detections": 214,
+              "regions": 93,
+              "title_platform_groups": 3
+            }
+          }
+        },
+        "console_balanced_hiragana_rates": {
+          "baseline": {
+            "all": "1647567442973/20750998511496",
+            "body": "6361791702991/79012563754960"
+          },
+          "candidate": {
+            "all": "1257584554681/34584997519160",
+            "body": "739031736141/19753140938740"
+          }
+        },
+        "strict_console_balanced_hiragana_gain": {
+          "all": true,
+          "body": true
+        }
+      },
+      "expanded-4": {
+        "by_side": {
+          "baseline": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.08950710613849411,
+                  "chars": 6614,
+                  "errors": 592
+                },
+                "hira": {
+                  "cer": 0.06809229037703995,
+                  "chars": 3554,
+                  "errors": 242
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.07608178792201617,
+                  "chars": 6309,
+                  "errors": 480
+                },
+                "hira": {
+                  "cer": 0.06516789982925442,
+                  "chars": 3514,
+                  "errors": 229
+                }
+              },
+              "detections": 470,
+              "regions": 237,
+              "title_platform_groups": 6
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.061738208797032325,
+                  "chars": 3774,
+                  "errors": 233
+                },
+                "hira": {
+                  "cer": 0.04837905236907731,
+                  "chars": 2005,
+                  "errors": 97
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.054969461410327596,
+                  "chars": 3602,
+                  "errors": 198
+                },
+                "hira": {
+                  "cer": 0.042748091603053436,
+                  "chars": 1965,
+                  "errors": 84
+                }
+              },
+              "detections": 258,
+              "regions": 144,
+              "title_platform_groups": 3
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.12640845070422535,
+                  "chars": 2840,
+                  "errors": 359
+                },
+                "hira": {
+                  "cer": 0.09360877985797289,
+                  "chars": 1549,
+                  "errors": 145
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.1041743627632065,
+                  "chars": 2707,
+                  "errors": 282
+                },
+                "hira": {
+                  "cer": 0.09360877985797289,
+                  "chars": 1549,
+                  "errors": 145
+                }
+              },
+              "detections": 212,
+              "regions": 93,
+              "title_platform_groups": 3
+            }
+          },
+          "candidate": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.06697913516782582,
+                  "chars": 6614,
+                  "errors": 443
+                },
+                "hira": {
+                  "cer": 0.0413618458075408,
+                  "chars": 3554,
+                  "errors": 147
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.05294024409573625,
+                  "chars": 6309,
+                  "errors": 334
+                },
+                "hira": {
+                  "cer": 0.03870233352305066,
+                  "chars": 3514,
+                  "errors": 136
+                }
+              },
+              "detections": 476,
+              "regions": 237,
+              "title_platform_groups": 6
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.05829358770535241,
+                  "chars": 3774,
+                  "errors": 220
+                },
+                "hira": {
+                  "cer": 0.04488778054862843,
+                  "chars": 2005,
+                  "errors": 90
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.05247084952803998,
+                  "chars": 3602,
+                  "errors": 189
+                },
+                "hira": {
+                  "cer": 0.04020356234096692,
+                  "chars": 1965,
+                  "errors": 79
+                }
+              },
+              "detections": 258,
+              "regions": 144,
+              "title_platform_groups": 3
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.07852112676056339,
+                  "chars": 2840,
+                  "errors": 223
+                },
+                "hira": {
+                  "cer": 0.036797934151065206,
+                  "chars": 1549,
+                  "errors": 57
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.05356483191725157,
+                  "chars": 2707,
+                  "errors": 145
+                },
+                "hira": {
+                  "cer": 0.036797934151065206,
+                  "chars": 1549,
+                  "errors": 57
+                }
+              },
+              "detections": 218,
+              "regions": 93,
+              "title_platform_groups": 3
+            }
+          }
+        },
+        "console_balanced_hiragana_rates": {
+          "baseline": {
+            "all": "31185560338781/311264977672440",
+            "body": "13894577580167/142222614758928"
+          },
+          "candidate": {
+            "all": "5722851754643/103754992557480",
+            "body": "3159916687253/59259422816220"
+          }
+        },
+        "strict_console_balanced_hiragana_gain": {
+          "all": true,
+          "body": true
+        }
+      },
+      "expanded-8": {
+        "by_side": {
+          "baseline": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.08572724523737527,
+                  "chars": 6614,
+                  "errors": 567
+                },
+                "hira": {
+                  "cer": 0.05486775464265616,
+                  "chars": 3554,
+                  "errors": 195
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.06673006815660168,
+                  "chars": 6309,
+                  "errors": 421
+                },
+                "hira": {
+                  "cer": 0.048662492885600456,
+                  "chars": 3514,
+                  "errors": 171
+                }
+              },
+              "detections": 513,
+              "regions": 237,
+              "title_platform_groups": 6
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.07816640169581346,
+                  "chars": 3774,
+                  "errors": 295
+                },
+                "hira": {
+                  "cer": 0.061845386533665836,
+                  "chars": 2005,
+                  "errors": 124
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.06635202665186007,
+                  "chars": 3602,
+                  "errors": 239
+                },
+                "hira": {
+                  "cer": 0.05089058524173028,
+                  "chars": 1965,
+                  "errors": 100
+                }
+              },
+              "detections": 264,
+              "regions": 144,
+              "title_platform_groups": 3
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.09577464788732394,
+                  "chars": 2840,
+                  "errors": 272
+                },
+                "hira": {
+                  "cer": 0.045836023240800515,
+                  "chars": 1549,
+                  "errors": 71
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.06723309937199852,
+                  "chars": 2707,
+                  "errors": 182
+                },
+                "hira": {
+                  "cer": 0.045836023240800515,
+                  "chars": 1549,
+                  "errors": 71
+                }
+              },
+              "detections": 249,
+              "regions": 93,
+              "title_platform_groups": 3
+            }
+          },
+          "candidate": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.07937707892349562,
+                  "chars": 6614,
+                  "errors": 525
+                },
+                "hira": {
+                  "cer": 0.04839617332583005,
+                  "chars": 3554,
+                  "errors": 172
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.0597559042637502,
+                  "chars": 6309,
+                  "errors": 377
+                },
+                "hira": {
+                  "cer": 0.0421172453044963,
+                  "chars": 3514,
+                  "errors": 148
+                }
+              },
+              "detections": 518,
+              "regions": 237,
+              "title_platform_groups": 6
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.07657657657657657,
+                  "chars": 3774,
+                  "errors": 289
+                },
+                "hira": {
+                  "cer": 0.06034912718204489,
+                  "chars": 2005,
+                  "errors": 121
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.06440866185452526,
+                  "chars": 3602,
+                  "errors": 232
+                },
+                "hira": {
+                  "cer": 0.04936386768447837,
+                  "chars": 1965,
+                  "errors": 97
+                }
+              },
+              "detections": 264,
+              "regions": 144,
+              "title_platform_groups": 3
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.08309859154929577,
+                  "chars": 2840,
+                  "errors": 236
+                },
+                "hira": {
+                  "cer": 0.0329244673983215,
+                  "chars": 1549,
+                  "errors": 51
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.05356483191725157,
+                  "chars": 2707,
+                  "errors": 145
+                },
+                "hira": {
+                  "cer": 0.0329244673983215,
+                  "chars": 1549,
+                  "errors": 51
+                }
+              },
+              "detections": 254,
+              "regions": 93,
+              "title_platform_groups": 3
+            }
+          }
+        },
+        "console_balanced_hiragana_rates": {
+          "baseline": {
+            "all": "11734578728621/155632488836220",
+            "body": "49358839652321/711113073794640"
+          },
+          "candidate": {
+            "all": "10183536283291/155632488836220",
+            "body": "21123807026447/355556536897320"
+          }
+        },
+        "strict_console_balanced_hiragana_gain": {
+          "all": true,
+          "body": true
+        }
+      }
+    }
+  },
+  "whole_dialogue_test": {
+    "decision": {
+      "fixed_line_passed": true,
+      "gain_vns": [
+        "v10856",
+        "v15910",
+        "v16566",
+        "v17286",
+        "v17829",
+        "v21782",
+        "v3396",
+        "v3542",
+        "v3820",
+        "v7634"
+      ],
+      "gain_vns_by_variant": {
+        "base": [
+          "v10856",
+          "v15910",
+          "v16566",
+          "v21782",
+          "v3396",
+          "v3542",
+          "v3820",
+          "v7634"
+        ],
+        "expanded-4": [
+          "v15910",
+          "v17286",
+          "v17829",
+          "v21782",
+          "v3820",
+          "v7634"
+        ],
+        "expanded-8": [
+          "v15910",
+          "v17286",
+          "v21782",
+          "v3820",
+          "v7634"
+        ]
+      },
+      "passed": false,
+      "pipeline_passed": false,
+      "reasons": [
+        "base/vita:v17829/all/full: regression/reference mismatch",
+        "base/vita:v17829/all/hira: regression/reference mismatch",
+        "base/vita:v17829/body/full: regression/reference mismatch",
+        "base/vita:v17829/body/hira: regression/reference mismatch",
+        "base/vita:v22122/all/full: regression/reference mismatch",
+        "expanded-4/vita:v22122/all/full: regression/reference mismatch",
+        "expanded-4/psp:v11504/all/full: regression/reference mismatch",
+        "expanded-4/psp:v11504/body/full: regression/reference mismatch",
+        "expanded-4/psp:v12155/body/full: regression/reference mismatch",
+        "expanded-4/psp:v12865/all/full: regression/reference mismatch",
+        "expanded-4/psp:v12865/body/full: regression/reference mismatch",
+        "expanded-8/vita:v18030/all/full: regression/reference mismatch",
+        "expanded-8/vita:v18030/body/full: regression/reference mismatch",
+        "expanded-8/vita:v20326/all/full: regression/reference mismatch",
+        "expanded-8/vita:v20326/body/full: regression/reference mismatch",
+        "expanded-8/vita:v22122/all/full: regression/reference mismatch",
+        "expanded-8/psp:v3396/all/full: regression/reference mismatch",
+        "expanded-8/psp:v10856/all/full: regression/reference mismatch",
+        "expanded-8/psp:v10856/body/full: regression/reference mismatch"
+      ]
+    },
+    "failed_guard_cells": [
+      {
+        "baseline_errors": 73,
+        "candidate_errors": 74,
+        "chars": 181,
+        "group": "psp:v10856",
+        "metric": "full",
+        "scope": "all",
+        "variant": "expanded-8"
+      },
+      {
+        "baseline_errors": 73,
+        "candidate_errors": 74,
+        "chars": 181,
+        "group": "psp:v10856",
+        "metric": "full",
+        "scope": "body",
+        "variant": "expanded-8"
+      },
+      {
+        "baseline_errors": 53,
+        "candidate_errors": 55,
+        "chars": 251,
+        "group": "psp:v11504",
+        "metric": "full",
+        "scope": "all",
+        "variant": "expanded-4"
+      },
+      {
+        "baseline_errors": 44,
+        "candidate_errors": 45,
+        "chars": 239,
+        "group": "psp:v11504",
+        "metric": "full",
+        "scope": "body",
+        "variant": "expanded-4"
+      },
+      {
+        "baseline_errors": 44,
+        "candidate_errors": 45,
+        "chars": 144,
+        "group": "psp:v12155",
+        "metric": "full",
+        "scope": "body",
+        "variant": "expanded-4"
+      },
+      {
+        "baseline_errors": 69,
+        "candidate_errors": 71,
+        "chars": 171,
+        "group": "psp:v12865",
+        "metric": "full",
+        "scope": "all",
+        "variant": "expanded-4"
+      },
+      {
+        "baseline_errors": 43,
+        "candidate_errors": 45,
+        "chars": 144,
+        "group": "psp:v12865",
+        "metric": "full",
+        "scope": "body",
+        "variant": "expanded-4"
+      },
+      {
+        "baseline_errors": 36,
+        "candidate_errors": 37,
+        "chars": 233,
+        "group": "psp:v3396",
+        "metric": "full",
+        "scope": "all",
+        "variant": "expanded-8"
+      },
+      {
+        "baseline_errors": 19,
+        "candidate_errors": 21,
+        "chars": 127,
+        "group": "vita:v17829",
+        "metric": "full",
+        "scope": "all",
+        "variant": "base"
+      },
+      {
+        "baseline_errors": 8,
+        "candidate_errors": 9,
+        "chars": 86,
+        "group": "vita:v17829",
+        "metric": "hira",
+        "scope": "all",
+        "variant": "base"
+      },
+      {
+        "baseline_errors": 15,
+        "candidate_errors": 17,
+        "chars": 117,
+        "group": "vita:v17829",
+        "metric": "full",
+        "scope": "body",
+        "variant": "base"
+      },
+      {
+        "baseline_errors": 8,
+        "candidate_errors": 9,
+        "chars": 82,
+        "group": "vita:v17829",
+        "metric": "hira",
+        "scope": "body",
+        "variant": "base"
+      },
+      {
+        "baseline_errors": 7,
+        "candidate_errors": 8,
+        "chars": 121,
+        "group": "vita:v18030",
+        "metric": "full",
+        "scope": "all",
+        "variant": "expanded-8"
+      },
+      {
+        "baseline_errors": 4,
+        "candidate_errors": 5,
+        "chars": 104,
+        "group": "vita:v18030",
+        "metric": "full",
+        "scope": "body",
+        "variant": "expanded-8"
+      },
+      {
+        "baseline_errors": 19,
+        "candidate_errors": 20,
+        "chars": 179,
+        "group": "vita:v20326",
+        "metric": "full",
+        "scope": "all",
+        "variant": "expanded-8"
+      },
+      {
+        "baseline_errors": 18,
+        "candidate_errors": 19,
+        "chars": 168,
+        "group": "vita:v20326",
+        "metric": "full",
+        "scope": "body",
+        "variant": "expanded-8"
+      },
+      {
+        "baseline_errors": 5,
+        "candidate_errors": 6,
+        "chars": 128,
+        "group": "vita:v22122",
+        "metric": "full",
+        "scope": "all",
+        "variant": "base"
+      },
+      {
+        "baseline_errors": 7,
+        "candidate_errors": 8,
+        "chars": 128,
+        "group": "vita:v22122",
+        "metric": "full",
+        "scope": "all",
+        "variant": "expanded-4"
+      },
+      {
+        "baseline_errors": 6,
+        "candidate_errors": 8,
+        "chars": 128,
+        "group": "vita:v22122",
+        "metric": "full",
+        "scope": "all",
+        "variant": "expanded-8"
+      }
+    ],
+    "split": "test",
+    "successful_model_forwards": {
+      "baseline": 1388,
+      "candidate": 1394
+    },
+    "title_guards": [
+      {
+        "group": "psp:v10856",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [
+              "all/full",
+              "body/full"
+            ],
+            "nonregression_passed": false
+          }
+        }
+      },
+      {
+        "group": "psp:v11095",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v11504",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [
+              "all/full",
+              "body/full"
+            ],
+            "nonregression_passed": false
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v11708",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v12155",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [
+              "body/full"
+            ],
+            "nonregression_passed": false
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v12865",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [
+              "all/full",
+              "body/full"
+            ],
+            "nonregression_passed": false
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v12940",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v13072",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v15910",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v3396",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [
+              "all/full"
+            ],
+            "nonregression_passed": false
+          }
+        }
+      },
+      {
+        "group": "psp:v3542",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v4147",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v4671",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "psp:v7634",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v10856",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v13072",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v16460",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v16566",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v17286",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v17750",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v17829",
+        "variants": {
+          "base": {
+            "failed_metrics": [
+              "all/full",
+              "all/hira",
+              "body/full",
+              "body/hira"
+            ],
+            "nonregression_passed": false
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v18030",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [
+              "all/full",
+              "body/full"
+            ],
+            "nonregression_passed": false
+          }
+        }
+      },
+      {
+        "group": "vita:v19339",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v19850",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v20326",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [
+              "all/full",
+              "body/full"
+            ],
+            "nonregression_passed": false
+          }
+        }
+      },
+      {
+        "group": "vita:v21782",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v21789",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v22122",
+        "variants": {
+          "base": {
+            "failed_metrics": [
+              "all/full"
+            ],
+            "nonregression_passed": false
+          },
+          "expanded-4": {
+            "failed_metrics": [
+              "all/full"
+            ],
+            "nonregression_passed": false
+          },
+          "expanded-8": {
+            "failed_metrics": [
+              "all/full"
+            ],
+            "nonregression_passed": false
+          }
+        }
+      },
+      {
+        "group": "vita:v3820",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v4",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      },
+      {
+        "group": "vita:v7721",
+        "variants": {
+          "base": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-4": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          },
+          "expanded-8": {
+            "failed_metrics": [],
+            "nonregression_passed": true
+          }
+        }
+      }
+    ],
+    "variants": {
+      "base": {
+        "by_side": {
+          "baseline": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.12620281273131015,
+                  "chars": 5404,
+                  "errors": 682
+                },
+                "hira": {
+                  "cer": 0.07402467489163055,
+                  "chars": 2999,
+                  "errors": 222
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.10372287477603026,
+                  "chars": 5023,
+                  "errors": 521
+                },
+                "hira": {
+                  "cer": 0.07303938067990576,
+                  "chars": 2971,
+                  "errors": 217
+                }
+              },
+              "detections": 460,
+              "regions": 195,
+              "title_platform_groups": 31
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.17649402390438246,
+                  "chars": 2510,
+                  "errors": 443
+                },
+                "hira": {
+                  "cer": 0.10998552821997105,
+                  "chars": 1382,
+                  "errors": 152
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.14254671881790526,
+                  "chars": 2301,
+                  "errors": 328
+                },
+                "hira": {
+                  "cer": 0.1095690284879474,
+                  "chars": 1369,
+                  "errors": 150
+                }
+              },
+              "detections": 233,
+              "regions": 93,
+              "title_platform_groups": 14
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.08258465791292328,
+                  "chars": 2894,
+                  "errors": 239
+                },
+                "hira": {
+                  "cer": 0.04329004329004329,
+                  "chars": 1617,
+                  "errors": 70
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.07090374724467303,
+                  "chars": 2722,
+                  "errors": 193
+                },
+                "hira": {
+                  "cer": 0.041822721598002495,
+                  "chars": 1602,
+                  "errors": 67
+                }
+              },
+              "detections": 227,
+              "regions": 102,
+              "title_platform_groups": 17
+            }
+          },
+          "candidate": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.12046632124352331,
+                  "chars": 5404,
+                  "errors": 651
+                },
+                "hira": {
+                  "cer": 0.0703567855951984,
+                  "chars": 2999,
+                  "errors": 211
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.09894485367310372,
+                  "chars": 5023,
+                  "errors": 497
+                },
+                "hira": {
+                  "cer": 0.06967351060249075,
+                  "chars": 2971,
+                  "errors": 207
+                }
+              },
+              "detections": 461,
+              "regions": 195,
+              "title_platform_groups": 31
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.16892430278884463,
+                  "chars": 2510,
+                  "errors": 424
+                },
+                "hira": {
+                  "cer": 0.10347322720694646,
+                  "chars": 1382,
+                  "errors": 143
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.13646240764884832,
+                  "chars": 2301,
+                  "errors": 314
+                },
+                "hira": {
+                  "cer": 0.10372534696859022,
+                  "chars": 1369,
+                  "errors": 142
+                }
+              },
+              "detections": 233,
+              "regions": 93,
+              "title_platform_groups": 14
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.07843814789219074,
+                  "chars": 2894,
+                  "errors": 227
+                },
+                "hira": {
+                  "cer": 0.042053184910327765,
+                  "chars": 1617,
+                  "errors": 68
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.06722997795738428,
+                  "chars": 2722,
+                  "errors": 183
+                },
+                "hira": {
+                  "cer": 0.04057428214731586,
+                  "chars": 1602,
+                  "errors": 65
+                }
+              },
+              "detections": 228,
+              "regions": 102,
+              "title_platform_groups": 17
+            }
+          }
+        },
+        "console_balanced_hiragana_rates": {
+          "baseline": {
+            "all": "1962611077930503882975975181/22980452705798586903693488700",
+            "body": "41937663743986075803273869/503842636166426898426425340"
+          },
+          "candidate": {
+            "all": "71083983341924415364480272839/873257202820346302340352570600",
+            "body": "2013332650722482108946592/25192131808321344921321267"
+          }
+        },
+        "strict_console_balanced_hiragana_gain": {
+          "all": true,
+          "body": true
+        }
+      },
+      "expanded-4": {
+        "by_side": {
+          "baseline": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.154700222057735,
+                  "chars": 5404,
+                  "errors": 836
+                },
+                "hira": {
+                  "cer": 0.09469823274424809,
+                  "chars": 2999,
+                  "errors": 284
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.13059924347999205,
+                  "chars": 5023,
+                  "errors": 656
+                },
+                "hira": {
+                  "cer": 0.09390777515987883,
+                  "chars": 2971,
+                  "errors": 279
+                }
+              },
+              "detections": 453,
+              "regions": 195,
+              "title_platform_groups": 31
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.22231075697211156,
+                  "chars": 2510,
+                  "errors": 558
+                },
+                "hira": {
+                  "cer": 0.14327062228654125,
+                  "chars": 1382,
+                  "errors": 198
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.18687527162103434,
+                  "chars": 2301,
+                  "errors": 430
+                },
+                "hira": {
+                  "cer": 0.14317019722425128,
+                  "chars": 1369,
+                  "errors": 196
+                }
+              },
+              "detections": 229,
+              "regions": 93,
+              "title_platform_groups": 14
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.09606081548030408,
+                  "chars": 2894,
+                  "errors": 278
+                },
+                "hira": {
+                  "cer": 0.05318491032776747,
+                  "chars": 1617,
+                  "errors": 86
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.08302718589272594,
+                  "chars": 2722,
+                  "errors": 226
+                },
+                "hira": {
+                  "cer": 0.05181023720349563,
+                  "chars": 1602,
+                  "errors": 83
+                }
+              },
+              "detections": 224,
+              "regions": 102,
+              "title_platform_groups": 17
+            }
+          },
+          "candidate": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.1504441154700222,
+                  "chars": 5404,
+                  "errors": 813
+                },
+                "hira": {
+                  "cer": 0.09136378792930977,
+                  "chars": 2999,
+                  "errors": 274
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.12701572765279714,
+                  "chars": 5023,
+                  "errors": 638
+                },
+                "hira": {
+                  "cer": 0.09054190508246382,
+                  "chars": 2971,
+                  "errors": 269
+                }
+              },
+              "detections": 456,
+              "regions": 195,
+              "title_platform_groups": 31
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.2199203187250996,
+                  "chars": 2510,
+                  "errors": 552
+                },
+                "hira": {
+                  "cer": 0.13965267727930536,
+                  "chars": 1382,
+                  "errors": 193
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.18513689700130379,
+                  "chars": 2301,
+                  "errors": 426
+                },
+                "hira": {
+                  "cer": 0.13951789627465302,
+                  "chars": 1369,
+                  "errors": 191
+                }
+              },
+              "detections": 229,
+              "regions": 93,
+              "title_platform_groups": 14
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.09018659295093297,
+                  "chars": 2894,
+                  "errors": 261
+                },
+                "hira": {
+                  "cer": 0.05009276437847866,
+                  "chars": 1617,
+                  "errors": 81
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.07788390889052167,
+                  "chars": 2722,
+                  "errors": 212
+                },
+                "hira": {
+                  "cer": 0.04868913857677903,
+                  "chars": 1602,
+                  "errors": 78
+                }
+              },
+              "detections": 227,
+              "regions": 102,
+              "title_platform_groups": 17
+            }
+          }
+        },
+        "console_balanced_hiragana_rates": {
+          "baseline": {
+            "all": "430914743010721047575410737/4138516562418273260710817150",
+            "body": "487246848814366697494189/4775594379050815351073770"
+          },
+          "candidate": {
+            "all": "220565661058842167599366514771/2185136744956848281655311455200",
+            "body": "249023693826866855008488217/2521513832138830505366950560"
+          }
+        },
+        "strict_console_balanced_hiragana_gain": {
+          "all": true,
+          "body": true
+        }
+      },
+      "expanded-8": {
+        "by_side": {
+          "baseline": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.16395262768319763,
+                  "chars": 5404,
+                  "errors": 886
+                },
+                "hira": {
+                  "cer": 0.10003334444814939,
+                  "chars": 2999,
+                  "errors": 300
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.1355763487955405,
+                  "chars": 5023,
+                  "errors": 681
+                },
+                "hira": {
+                  "cer": 0.09794681925277685,
+                  "chars": 2971,
+                  "errors": 291
+                }
+              },
+              "detections": 475,
+              "regions": 195,
+              "title_platform_groups": 31
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.23705179282868527,
+                  "chars": 2510,
+                  "errors": 595
+                },
+                "hira": {
+                  "cer": 0.15412445730824892,
+                  "chars": 1382,
+                  "errors": 213
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.19469795740982182,
+                  "chars": 2301,
+                  "errors": 448
+                },
+                "hira": {
+                  "cer": 0.15193571950328708,
+                  "chars": 1369,
+                  "errors": 208
+                }
+              },
+              "detections": 240,
+              "regions": 93,
+              "title_platform_groups": 14
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.10055286800276433,
+                  "chars": 2894,
+                  "errors": 291
+                },
+                "hira": {
+                  "cer": 0.05380333951762523,
+                  "chars": 1617,
+                  "errors": 87
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.08559882439382807,
+                  "chars": 2722,
+                  "errors": 233
+                },
+                "hira": {
+                  "cer": 0.05181023720349563,
+                  "chars": 1602,
+                  "errors": 83
+                }
+              },
+              "detections": 235,
+              "regions": 102,
+              "title_platform_groups": 17
+            }
+          },
+          "candidate": {
+            "pooled": {
+              "all": {
+                "full": {
+                  "cer": 0.16006661732050334,
+                  "chars": 5404,
+                  "errors": 865
+                },
+                "hira": {
+                  "cer": 0.09736578859619874,
+                  "chars": 2999,
+                  "errors": 292
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.13119649611785786,
+                  "chars": 5023,
+                  "errors": 659
+                },
+                "hira": {
+                  "cer": 0.09525412319084484,
+                  "chars": 2971,
+                  "errors": 283
+                }
+              },
+              "detections": 477,
+              "regions": 195,
+              "title_platform_groups": 31
+            },
+            "psp": {
+              "all": {
+                "full": {
+                  "cer": 0.23346613545816733,
+                  "chars": 2510,
+                  "errors": 586
+                },
+                "hira": {
+                  "cer": 0.15050651230101303,
+                  "chars": 1382,
+                  "errors": 208
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.18948283355063017,
+                  "chars": 2301,
+                  "errors": 436
+                },
+                "hira": {
+                  "cer": 0.14828341855368882,
+                  "chars": 1369,
+                  "errors": 203
+                }
+              },
+              "detections": 241,
+              "regions": 93,
+              "title_platform_groups": 14
+            },
+            "vita": {
+              "all": {
+                "full": {
+                  "cer": 0.09640635798203179,
+                  "chars": 2894,
+                  "errors": 279
+                },
+                "hira": {
+                  "cer": 0.05194805194805195,
+                  "chars": 1617,
+                  "errors": 84
+                }
+              },
+              "body": {
+                "full": {
+                  "cer": 0.08192505510653932,
+                  "chars": 2722,
+                  "errors": 223
+                },
+                "hira": {
+                  "cer": 0.049937578027465665,
+                  "chars": 1602,
+                  "errors": 80
+                }
+              },
+              "detections": 236,
+              "regions": 102,
+              "title_platform_groups": 17
+            }
+          }
+        },
+        "console_balanced_hiragana_rates": {
+          "baseline": {
+            "all": "53501843757119641213294567807069/478544947145549773682513208688800",
+            "body": "11965673927755167850143964675/110442305847680776135072434528"
+          },
+          "candidate": {
+            "all": "26152756045230466812541866546767/239272473572774886841256604344400",
+            "body": "5841936549075281610012964901/55221152923840388067536217264"
+          }
+        },
+        "strict_console_balanced_hiragana_gain": {
+          "all": true,
+          "body": true
+        }
+      }
+    }
+  },
+  "whole_dialogue_test_scope": {
+    "all_outputs_charged": true,
+    "body_unmatched_insertions_charged": true,
+    "cases": 585,
+    "fixed_line_shared_benchmark_unchanged": true,
+    "predeclared_excluded_ambiguous_shared_vita_regions": 2,
+    "predeclared_excluded_certain_lines": 4,
+    "predeclared_excluded_chars": 58,
+    "reference_counts": {
+      "clannad-test": {
+        "chars": 388,
+        "hira": 229,
+        "lines": 25,
+        "regions": 20
+      },
+      "psp-test": {
+        "chars": 2510,
+        "hira": 1382,
+        "lines": 245,
+        "regions": 93
+      },
+      "vita-test": {
+        "chars": 2506,
+        "hira": 1388,
+        "lines": 202,
+        "regions": 82
+      }
+    },
+    "regions": 195,
+    "title_platform_groups": 31,
+    "variant_expansion_native_pixels": {
+      "base": 0,
+      "expanded-4": 4,
+      "expanded-8": 8
+    },
+    "vita_platform_summary_includes_clannad_test": true
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "date": "2026-10-11",
+  "models_scored": false,
+  "native_pixels_decoded": false,
+  "new_annotations": "assistant reviewed; not independent human test references",
+  "phase": "development-manifest-metadata-only",
+  "readiness": {
+    "distinct_vns": 5,
+    "groups": {
+      "psp:v12775": {
+        "body_chars": 90,
+        "body_hiragana": 46,
+        "body_lines": 7,
+        "frames": 5,
+        "platform": "psp",
+        "scored_lines": 11,
+        "vn": "v12775"
+      },
+      "psp:v5297": {
+        "body_chars": 142,
+        "body_hiragana": 86,
+        "body_lines": 7,
+        "frames": 4,
+        "platform": "psp",
+        "scored_lines": 11,
+        "vn": "v5297"
+      },
+      "vita:v1015": {
+        "body_chars": 47,
+        "body_hiragana": 26,
+        "body_lines": 5,
+        "frames": 2,
+        "platform": "vita",
+        "scored_lines": 7,
+        "vn": "v1015"
+      },
+      "vita:v13766": {
+        "body_chars": 25,
+        "body_hiragana": 17,
+        "body_lines": 2,
+        "frames": 1,
+        "platform": "vita",
+        "scored_lines": 2,
+        "vn": "v13766"
+      },
+      "vita:v4": {
+        "body_chars": 207,
+        "body_hiragana": 127,
+        "body_lines": 19,
+        "frames": 19,
+        "platform": "vita",
+        "scored_lines": 19,
+        "vn": "v4"
+      }
+    },
+    "minimums": {
+      "body_chars_per_vn": 500,
+      "body_hiragana_per_vn": 200,
+      "frames_per_vn": 5,
+      "vns_per_console": 3
+    },
+    "ready": false,
+    "reasons": [
+      "psp:v12775: body_chars 90 < 500",
+      "psp:v12775: body_hiragana 46 < 200",
+      "psp:v5297: frames 4 < 5",
+      "psp:v5297: body_chars 142 < 500",
+      "psp:v5297: body_hiragana 86 < 200",
+      "vita:v1015: frames 2 < 5",
+      "vita:v1015: body_chars 47 < 500",
+      "vita:v1015: body_hiragana 26 < 200",
+      "vita:v13766: frames 1 < 5",
+      "vita:v13766: body_chars 25 < 500",
+      "vita:v13766: body_hiragana 17 < 200",
+      "vita:v4: body_chars 207 < 500",
+      "vita:v4: body_hiragana 127 < 200",
+      "psp: VNs 2 < 3"
+    ],
+    "vns_per_console": {
+      "psp": 2,
+      "vita": 3
+    }
+  },
+  "schema": 1,
+  "source_manifests": {
+    "clannad_dev": {
+      "path": "build/hiragana/clannad/dev/labels.jsonl",
+      "sha256": "a32ba010c2b8dc7ed79fe81965c53e87d0bd8ab02a7757c215614ccaba1c387b"
+    },
+    "native_font_dev": {
+      "path": "build/hiragana/native-font-dev/all-dialogue-labels.jsonl",
+      "sha256": "6b74b3eebf4414e54d0530f136ae6a45bd205978d2c0032ef202eb7bf70dc068"
+    }
+  },
+  "test_or_google_evaluated": false
+}

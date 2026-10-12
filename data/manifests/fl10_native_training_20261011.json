@@ -1,0 +1,576 @@
+{
+  "schema": 1,
+  "role": "train",
+  "annotations_sha256": "7708fec5effcf155c7d3b62c8214f141cfe0e3af7ff90865dbe5b24cd1da3bc2",
+  "background_manifest_sha256": "f15be47ff6d3b72c8a21f05905e5eaba398ec6ce8cd8e6446c741633d781603d",
+  "kanji_policy_sha256": "8fc9ea20804cc45876e25b60ed669446dc75fc7f0b6b383d65cc4688e050f763",
+  "vocab_sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8",
+  "importer_sha256": "9a80db90f3f579773cee88b2767dd8f7e6dc00c7ff08a21bd7e899de1886456e",
+  "review": "Crops/transcriptions inspected visually; ambiguous or mixed crops removed.",
+  "annotated_lines": 22,
+  "kept_lines": 22,
+  "counts": {
+    "kept:psp": 11,
+    "kept:psv": 11
+  },
+  "characters": 341,
+  "label_character_counts": {
+    "若": 1,
+    "干": 1,
+    "、": 8,
+    "男": 1,
+    "だ": 7,
+    "か": 9,
+    "女": 1,
+    "わ": 1,
+    "ん": 9,
+    "ね": 3,
+    "ぇ": 1,
+    "や": 4,
+    "つ": 2,
+    "い": 9,
+    "る": 4,
+    "が": 4,
+    "。": 9,
+    "「": 9,
+    "三": 2,
+    "角": 1,
+    "関": 1,
+    "係": 1,
+    "続": 1,
+    "行": 1,
+    "中": 1,
+    "な": 10,
+    "で": 8,
+    "す": 10,
+    "！": 3,
+    "先": 1,
+    "輩": 1,
+    "り": 5,
+    "ま": 4,
+    "」": 9,
+    "訓": 1,
+    "練": 1,
+    "の": 11,
+    "日": 1,
+    "々": 1,
+    "は": 7,
+    "私": 1,
+    "に": 3,
+    "と": 2,
+    "っ": 12,
+    "て": 11,
+    "刺": 1,
+    "激": 1,
+    "的": 1,
+    "も": 2,
+    "ば": 1,
+    "こ": 2,
+    "人": 1,
+    "新": 1,
+    "選": 2,
+    "組": 3,
+    "六": 1,
+    "番": 1,
+    "長": 1,
+    "を": 5,
+    "勤": 1,
+    "め": 2,
+    "井": 1,
+    "上": 1,
+    "源": 1,
+    "郎": 1,
+    "さ": 3,
+    "余": 1,
+    "裕": 1,
+    "あ": 2,
+    "緊": 1,
+    "張": 1,
+    "隠": 1,
+    "た": 6,
+    "虚": 1,
+    "勢": 1,
+    "様": 1,
+    "ち": 3,
+    "お": 4,
+    "く": 3,
+    "弁": 1,
+    "当": 1,
+    "作": 1,
+    "き": 1,
+    "…": 6,
+    "ゃ": 2,
+    "そ": 2,
+    "れ": 3,
+    "食": 1,
+    "べ": 1,
+    "う": 2,
+    "約": 1,
+    "束": 1,
+    "ら": 2,
+    "よ": 3,
+    "シ": 1,
+    "ン": 1,
+    "役": 1,
+    "者": 1,
+    "ぷ": 1,
+    "？": 2,
+    "幸": 3,
+    "せ": 3,
+    "下": 2,
+    "深": 1,
+    "琴": 1,
+    "皆": 1,
+    "急": 1,
+    "ぐ": 1,
+    "理": 2,
+    "由": 1,
+    "し": 3,
+    "無": 1,
+    "ダ": 2,
+    "メ": 1,
+    "―": 2,
+    "分": 1,
+    "却": 1,
+    "最": 1,
+    "低": 1,
+    "セ": 1,
+    "ク": 1,
+    "ハ": 1,
+    "ラ": 1,
+    "訴": 1,
+    "え": 1,
+    "失": 1,
+    "礼": 1,
+    "神": 1,
+    "奈": 1,
+    "庇": 1,
+    "芹": 1,
+    "夏": 1,
+    "『": 1,
+    "一": 1,
+    "年": 1,
+    "超": 1,
+    "特": 1,
+    "醤": 1,
+    "油": 1,
+    "サ": 1,
+    "イ": 1,
+    "ー": 1,
+    "買": 1,
+    "』": 1
+  },
+  "source_images": [
+    {
+      "vn": "v7204",
+      "title": "Tokyo Yamanote Boys Super Mint Disc",
+      "url": "https://t.vndb.org/sf/67/52767.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r23310",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "9c2e6f6eeeba8f0d40d30e387d9976c9ced3f0a5fb1628d20d0a95448b99e7d3",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v7204_52767.jpg",
+      "bytes": 55275,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v10950",
+      "title": "School Wars",
+      "url": "https://t.vndb.org/sf/35/49235.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r22278",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "663efa702f309809b75defc4c136f541e47264411b4f5c766cfa834c7532bcc7",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v10950_49235.jpg",
+      "bytes": 40486,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v15104",
+      "title": "Kaleidoeve",
+      "url": "https://t.vndb.org/sf/45/80145.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r33575",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "cfb01db39242c108b738889bae730fc33db7673b1cc78fa83705f0b3618e02ae",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v15104_80145.jpg",
+      "bytes": 61405,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v1803",
+      "title": "Hakuouki Zuisouroku",
+      "url": "https://t.vndb.org/sf/73/56673.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r23741",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "95d4ef0ea2b910b523838118fe86d8cfb2b0ee2918de7da84d4c83bd098bc7f5",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v1803_56673.jpg",
+      "bytes": 52356,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v10105",
+      "title": "24 Ji no Kane to Cinderella ~Halloween Wedding~",
+      "url": "https://t.vndb.org/sf/00/56300.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r20344",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "2b3f710ebd3d3ec040f2de477df6eb0f03b52f9410d72d1f4524e56ba5ae66f0",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v10105_56300.jpg",
+      "bytes": 76533,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v5690",
+      "title": "Memories Off: Yubikiri no Kioku",
+      "url": "https://t.vndb.org/sf/18/52118.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r13245",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "3aee1a02a7271874e629d527a7c000cfaee48c9b14185e3fa89b0b85768036d4",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v5690_52118.jpg",
+      "bytes": 60849,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v6723",
+      "title": "Clock Zero ~Shuuen no Ichibyou~",
+      "url": "https://t.vndb.org/sf/94/36094.jpg",
+      "dims": [
+        480,
+        272
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r15007",
+      "release_platforms": [
+        "psp"
+      ],
+      "sha256": "34fc5ec463901e7e47ce7ff7ae1a8ed3d27a575fd91bd2db4caed50732fc54d3",
+      "source": "synth2_psp_shots.jsonl+VNDB-kana",
+      "platform": "psp",
+      "split": "train",
+      "file": "assets/vndb_psp/shots/v6723_36094.jpg",
+      "bytes": 63529,
+      "scenery_box": [
+        0,
+        0,
+        480,
+        108
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v13308",
+      "title": "Galtia",
+      "url": "https://t.vndb.org/sf/09/145309.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r56189",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v13308_145309.jpg",
+      "sha256": "4de2698b50e2ebd5806460f33b29ea43fd90a7e7c1337860899961302916b83a",
+      "bytes": 135872,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v14415",
+      "title": "Norn9 ~Norn + Nonette~ Last Era",
+      "url": "https://t.vndb.org/sf/70/106270.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r31770",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v14415_106270.jpg",
+      "sha256": "083470fc447b9fd77917404c137c3e8a8fd5e86e333782205e3b404928edc816",
+      "bytes": 145107,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v13632",
+      "title": "Kiss Ato",
+      "url": "https://t.vndb.org/sf/06/101506.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r41631",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v13632_101506.jpg",
+      "sha256": "c7fad273611596e0e48961c6dd4583a9152a535a2aca2964090814157587e43c",
+      "bytes": 139640,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v1199",
+      "title": "Sakaagari Hurricane - Let's Pile Up Our School!!",
+      "url": "https://t.vndb.org/sf/16/122516.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r48647",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v1199_122516.jpg",
+      "sha256": "5e22d42684f23015fa84de3e580d2a6a23ce740ec80db45aa5256b62959e2903",
+      "bytes": 167610,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v14917",
+      "title": "Senjou no Waltz",
+      "url": "https://t.vndb.org/sf/35/79135.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r33119",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v14917_79135.jpg",
+      "sha256": "3b1b84618a1d4a4ddbcd9b5791d34c1895093f16c351595b8db33dd7b06f7c90",
+      "bytes": 188974,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    },
+    {
+      "vn": "v2835",
+      "title": "Amatsu Misora ni!",
+      "url": "https://t.vndb.org/sf/54/96454.jpg",
+      "dims": [
+        960,
+        544
+      ],
+      "sexual": 0,
+      "violence": 0,
+      "release": "r40152",
+      "release_platforms": [
+        "psv"
+      ],
+      "source": "VNDB-kana",
+      "platform": "psv",
+      "split": "train",
+      "file": "assets/vndb/shots/v2835_96454.jpg",
+      "sha256": "0440abb437c315fc543492b75c7347c72c71a8cba6402848e80fe5d3fd01ef4a",
+      "bytes": 164731,
+      "scenery_box": [
+        0,
+        0,
+        960,
+        217
+      ],
+      "scenery_review": {
+        "hand_checked": true,
+        "reason": "Visually reviewed upper 40 percent contains no dialogue, title or menu UI."
+      }
+    }
+  ],
+  "shards": [
+    {
+      "file": "native_00000.npz",
+      "samples": 22,
+      "sha256": "4a47053f7dd684dfae0ecd695a953e4f44c377dc9ae11aca9066bb83b351052d",
+      "bytes": 208393
+    }
+  ]
+}

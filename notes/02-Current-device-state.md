@@ -4,13 +4,221 @@ created: 2026-10-10
 updated: 2026-10-11
 historical_snapshot_utc: "2026-10-10 12:33"
 latest_checkpoint_date: 2026-10-11
-status: game-ocr-native-success-trigger-input-leak-open
+latest_checkpoint_utc: "2026-10-11 17:07:49"
+interruption_checkpoint_utc: "2026-10-11 15:34:40"
+settings_controls_verified_by_utc: "2026-10-11 15:43:54"
+latest_request_utc: "2026-10-11 15:45"
+status: settings-highlight-controls-verified-game-touch-pending
 tags: [vita, device, handoff]
 ---
 
 # Current device state snapshot
 
-**2026-10-11 checkpoint:** API 13 is booted and all three overlay plugins are loaded. Fresh native game-process FL10 jobs complete with `rc=0 io=0 cleanup=0`, and subsequent captures succeed. The user reports L+R advances dialogue when opening the overlay; accuracy/CER and that input fix remain unverified. The saved paired agent command path responds without a pairing reset. Exact evidence, release revision and limits are in [[26-Game-process-OCR-hardware-checkpoint]].
+**Latest October 11 checkpoint, 17:07:49 UTC:** overlay PR #38 at
+`ee796f1ea683d84a668bbc52961bf146a9f9986c` passed exact-head host/Vita CI and
+merged as `dc0bea53a6a8d075d4598cea27708953ed467666`. It adds default
+whole-word/optional character highlighting and Japanese-filtered recognized
+header taps, preserving character navigation and the saved text. Stable v0.7.9
+was published at 15:44:16 UTC; all six fresh downloaded assets match their
+candidates, with package manifests and nested archives verified.
+The 150,500-byte replacement Shell file has complete native readback after a new
+boot, SHA-256 `2e477d8d2616e3b9f72a5cc2da354d2af42719c9e7c594b4a583312329770716`;
+fresh native inventory now confirms loaded; actual game-header touch remains pending.
+The staged 283,521-byte Settings VPK has full native readback SHA-256
+`3e9795fbfd833379d090b90482783cb05cf99f622e7c6addd3625f4d07e0ac00`.
+Promotion lost its connection at 15:34:40 UTC; the saved status remains uncertain
+and not running. After the user powered the Vita on, the installed executable
+was fully read back: 277,608 bytes, SHA-256
+`b5a6e579536085215c1a6464bbdd41926242b9905fbf153e863a7dff35c5be16`.
+Registered title `VJOSET001` and a native foreground launch were verified; the
+snapshot reported `system_ui_overlaid=false`. This was followed
+by actual touch Character → Left Word → Right Character → touch Word actions
+with complete configuration readbacks. VOCR, Japanese-only ON and unrelated
+bytes were preserved. The final whole-word configuration is 2,973 bytes, SHA-256
+`162280dcbf85bd43b7152d4d8d01899fc77112ff83494ac95c2a224a474c37be`.
+This independently establishes the installed Settings controls, without
+reclassifying the retained promoter status or establishing game touches or
+physical font readability. A clock check immediately after the four actions
+bounds their completion to no later than 15:43:54 UTC; the aggregate receipt
+has no own timestamp. The original sorting helper failed library binding
+(`0x8002D003`, decoded by `psp2_err`). A user-authorized narrow FTP rollback
+preserved the trial and verified the previous runtime. The host server was
+later found stopped and restarted with the saved identity/state; native access
+returned. A revised local helper preserves all prior library imports and resolves
+sorting exports only for guarded commands. Its complete native upload/readback,
+accepted reboot and fresh `livearea.sort` capabilities prove activation. Its
+actual coordinator passed 41 sanitizer cases. All 59 current bubble coordinates
+match the uploaded, fully read-back plan. After the user made Settings visible,
+native status recorded physical scoped
+approval (`approved`, persistent, result zero). The guarded sort returned
+`0x80010016` (`SCE_ERROR_ERRNO_EINVAL`, decoded with `psp2_err`); the full
+post-error layout still matches all 59 original coordinates. The failed stage
+is not established. The user then canceled icon sorting; no further move or
+helper deployment is authorized by that request. Game-header taps and physical
+font readability remain pending.
+After sorting was canceled, Settings was relaunched and confirmed foreground.
+A final complete configuration readback is byte-identical to the 2,973-byte
+whole-word file above, retaining VOCR, Japanese-only ON and Daijirin before
+JMdict.
+Full current scope and remaining checks are in
+[[28-Touch-lookup-and-LiveArea-sort-checkpoint]].
+
+**Earlier October 11 checkpoint, through v0.7.8:** [[27-Meiki-hardware-and-project-lessons]] records
+verified meiki.2 installation, fresh API13 boot, two actual CLANNAD Meiki runs,
+and the user-confirmed region controls. VOCR was separately confirmed in
+[[26-Game-process-OCR-hardware-checkpoint]]. The new Settings engine picker,
+VOCR default and Japanese-only selection default are implemented and locally
+validated: 22 host suites, 22 sanitizer suites and the native Release build pass.
+The PR #33 build is merged and v0.7.6 is published with all downloaded asset
+checksums verified. The Settings-only readability follow-up is PR #34 at
+`c9ec54f9a6562ad61cbb8d9e4876e86028e652f4`, packaged as v0.7.7: three larger
+game cards, clearer tabs, wrapped titles and higher-contrast text. Its actual
+Settings input/draw loop passes 12/12 host ASan/UBSan scenarios, and the native
+Release build passes. These checks do not establish physical firmware-font
+readability or touch behavior. PR #34 is merged as
+`b6518d0b01cf5274eddfa036f7f5f65109121450`; exact-head host/Vita CI passed and
+v0.7.7 is published. All six downloaded assets match the audited candidate,
+including all five payload checksums. The native installation is now verified
+as recorded below. The later v0.7.8 repair and native preference checks are
+recorded separately; physical firmware-font readability remains pending.
+
+**Native v0.7.7 installation checkpoint, 2026-10-11:** recovery using the original
+Daijirin transfer identity completed in 72.143 seconds with `code=0`,
+`verified=true`, `complete=true` and `readback_required=false`. A subsequent
+native stat confirms the installed destination is a 156,827,663-byte file.
+Settings promotion completed with `installed=true`, `running=false`,
+`native_result=0`, title `VJOSET001` and audit sequence 1778. Full readback of
+the installed executable is byte-equal to the release VPK's executable. The
+Shell and configuration were also fully read back and verified.
+
+| Installed artifact | Bytes | SHA-256 |
+|---|---:|---|
+| v0.7.7 Shell | 149,220 | `d120e548be9e24f36f5e9551cb6ab8792eb5e595ae29430241450f97b401e308` |
+| v0.7.7 Settings `eboot.bin`, before PNG repair | 277,084 | `2a34d0c7b2a7e4a500b34be4626d365d3bd9b715d7b4fc85bba807706e1f3b11` |
+| Private configuration | 2,951 | `312ce783379b86e0194c04750eb2fe7e120cd51f29dcb5085ed01dd2dab79c00` |
+| Private Daijirin v3 dictionary | 156,827,663 | `e767f405bcd8021f7fb226b8ca6da70ba0b6250782e8afc998bf924ab7c4fb53` |
+
+Only three configuration values changed: `ocr_backend=vocr`,
+`japanese_only_selection=on` and the local dictionary list, now Daijirin first
+with JMdict fallback. `dictionary=local` was already selected, and
+`ocr_mode=on_press` and unrelated settings remain intact. This proves the saved
+preferences at that checkpoint, not an actual lookup using that priority or a
+physical toggle. Later native input checks are recorded below.
+The installed SFO retains static `APP_VER=01.00`; the executable checksum and
+release comparison establish the v0.7.7 package identity.
+
+**Fresh boot and launch:** the reboot accepted at 13:56 UTC is followed by a
+snapshot at about 30 seconds uptime with Kernel/Shell native state 6 and zero
+query errors. Fresh Shell startup reports API 13, PAF loaded and worker started.
+Settings launch at about 62 seconds uptime is confirmed with the expected
+title and an empty list of closed apps. The native snapshot at that checkpoint
+reports `system_ui_overlaid=true`. No buttons were sent to clear it; the user
+was asked to open the app physically and subsequently confirms Settings is
+visible, but reports an error. Two completed native dumps now identify the
+same `_free_r` failure at module offset `0x442f0`, with invalid read address
+`0x7f80dea9`. Qualified stack scanning points into PNG loading and jump-buffer
+cleanup; linked-code/layout analysis identifies a libPNG/setjmp ABI mismatch.
+The linked `setjmp` writes 104 bytes into the shipped libPNG's 92-byte inline
+jump buffer, overwriting its following cleanup metadata. The repair rebuilds
+pinned libPNG 1.6.58 against the current SDK's 160-byte `jmp_buf`; the newer
+candidate's build and installed-file checkpoint is recorded below.
+See NI04 in [[27-Meiki-hardware-and-project-lessons]]. At this original
+checkpoint, installed bytes, normal startup, process launch and user-reported
+app visibility were established; successful saves and preference controls
+had not yet been measured. The repaired app's later checks follow below.
+
+**PNG repair candidate checkpoint:** [overlay PR #36](https://github.com/bee-san/vita-jp-overlay/pull/36)
+at `1c8e8db1d4df301342416b6d68c4998e9dddbd67` passes both host and native CI in
+[run 38146423675](https://github.com/bee-san/vita-jp-overlay/actions/runs/38146423675).
+The complete 283,190-byte candidate VPK was uploaded and read back with SHA-256
+`c8d032acca58ea4ff586c9de7c505f9dc5ea068af6d408659c7d459e43f2bd04`.
+The connection disconnected while waiting for promotion. Retained status is
+`state=uncertain`, `phase=idle`, `running=false`, `installed=null`; it is not a
+terminal installed receipt. Reconciliation finds Settings launchable in a
+complete 88-entry native app inventory. Full installed executable readback is
+277,212 bytes, SHA-256
+`217628a7fa68d10d8ae9f3f194d37eda53a1e0e2da5bccd69a2c86a5e6cb9299`,
+byte-equal to the repaired candidate. The first repaired process launch is
+confirmed. Preserve the retained promotion identity and distinguish those file
+and launch observations from its unresolved terminal operation status.
+
+**Verified native controls:** the same repaired Settings process remained
+foreground with `system_ui_overlaid=false` over a measured 100.106 seconds.
+Six controller submissions, including the initial SELECT, and two page/focus
+touch submissions finished with zero error and released input. Complete config
+readback after each of the five subsequent controller actions verified Meiki
+then VOCR, the Japanese-only OFF state and restoration to ON. The flag was
+already OFF before its LEFT action; this does not measure an ON-to-OFF change.
+The final 2,951-byte config is byte-equal to the intended configuration above,
+preserving dictionary priority, `ocr_mode=on_press` and unrelated settings.
+The sampled native event window, sequences 2635–2648, contains no coredump and
+reports zero lost events; this applies only to the observed interval.
+
+The initial SELECT/readback unexpectedly showed Japanese-only OFF. A baseline
+assertion caught it; user/interleaving causation is unknown. Two explicit
+OCR-tab/VOCR-badge touch actions normalized focus before the measured sequence.
+Private receipt: `settings-native-check/verified-controls.json`, SHA-256
+`8d8bd3905e0ff6304e949fdc8d75b19a2f618befd20763487c2794c6ec652d5d`.
+A later check measured the missing ON → OFF → ON transition: OCR-tab touch
+retained ON, tapping the Japanese-only card changed it to OFF, and RIGHT
+restored ON. Each action completed and had a full config readback; the final
+configuration again matches the intended 2,951-byte file exactly. Receipt:
+`settings-native-check/verified-japanese-transition.json`, SHA-256
+`2bd521fae593dbdb0e1b4638f91dcd822bb317650aa2b2e48b77abd90263b9b1`.
+Physical firmware-font inspection, new game OCR, Japanese-character navigation
+and actual Daijirin-first lookup remain pending.
+
+**Verified publication:** PR #36 merged as
+`b0642493688c0f31bc33738d937d876ba0edbab6`.
+[Release v0.7.8](https://github.com/bee-san/vita-jp-overlay/releases/tag/v0.7.8)
+was published at 14:23:11 UTC on October 11. All six downloaded assets are
+byte-equal to the audited candidates, and every downloaded ZIP passes CRC.
+The private download-audit receipt is
+`vita-release-2026-10-11/published-v078-audit/verification.json`, SHA-256
+`36aae9d2b0a275e1d460a30e39191a66d2142107012844e66cbebf40ce269d77`.
+GitHub publication is separate from retained promotion status and the still
+pending game/visual checks.
+
+**Keep-awake worker installed and loaded:** the previously loaded
+agent called PowerTick with argument 1 (`AUTO_SUSPEND`), leaving the display
+timer available, and synchronous requests blocked its service-loop tick.
+Local-only commit `1d8a438d51454c27508a42849e0674080f01e9cd`, based on
+`87e9bc6`, adds an independent 8 KiB worker issuing DEFAULT ticks every five
+seconds during authenticated command control or pending native
+install/decrypt/content work. Eighteen actual-worker ASan/UBSan cases and 20
+repeated lifecycles pass; imports remain 31 libraries and 143 functions.
+Native upload completed with code 0 and full
+readback of the 311,356-byte candidate matches SHA-256
+`7b803d324963257fcdc0d88d7f141ea8ae3c753b7520ccd759253956341de5c4`.
+After the ordinary reboot, fresh logs report worker initialization result 0
+and the first DEFAULT tick result 0 with count 1. Settings relaunch is confirmed
+foreground with `system_ui_overlaid=false`; the post-boot configuration remains
+byte-identical to the intended 2,951-byte file. A command-free connection check
+passed over 374.066 seconds from 14:34:32 UTC, with only PC-side status reads
+before the end diagnostic. Native response then confirmed the same boot and
+Settings process, `system_ui_overlaid=false`, a healthy stop guard and no
+disconnect/crash events in the 14-event window (zero lost). The ordinary final
+snapshot includes screen-on, so OLED visibility during the interval was not
+measured. Pairing-wait protection and long-request hardware wakefulness remain
+unproved. See NI09 in
+[[27-Meiki-hardware-and-project-lessons]].
+
+Private receipts are under `vita-agent-use/agent/ocr-choice-20261011/`:
+`daijirin-recover-after-reconnect.jsonl`, `daijirin-installed-stat.jsonl`,
+`settings-v077-install-status-02.jsonl`, the installed-executable and
+configuration readbacks, post-reboot startup/snapshot records, and
+`settings-v077-crash-symbols.json`/`settings-v077-two-crashes-compare.json`.
+The repair-candidate installed-executable and retained install-status receipts
+are in the same directory; raw operation IDs remain private.
+Commercial dictionary contents, configuration contents and device identities
+remain private. The earlier 13:23 UTC recovery-required/600-second timeout is
+retained as history in [[27-Meiki-hardware-and-project-lessons]] and is
+superseded by the completed recovery above. The 59-app/seven-page LiveArea plan
+is retained privately; sorting was canceled by the user without changing the
+measured bubble coordinates. The device narrative below retains its
+dated native-hook state.
+
+**Historical early October 11 checkpoint:** API 13 booted and all three overlay plugins loaded. Fresh native game-process FL10 jobs completed with `rc=0 io=0 cleanup=0`, and subsequent captures succeeded. At that point the user reported L+R advancing dialogue when opening the overlay, and the input repair was unverified. Later hook-7 containment and physical character-workflow evidence are retained in [[26-Game-process-OCR-hardware-checkpoint]]; the repaired Square/Circle workflow and actual Meiki runs are in [[27-Meiki-hardware-and-project-lessons]]. Hardware accuracy/CER remains unmeasured.
 
 ## Historical snapshot — 2026-10-10 12:33 UTC
 

@@ -332,6 +332,17 @@ The protocol (`eval/synth3_study2_protocol.json`) was committed before any study
   tables (768 of 789 local Vita screenshots carry the standard Q90 tables, 667 are 4:2:0 and 122
   4:4:4) and the real crop geometry above.
 - Nothing here has run on a console.
+- **Fresh native textbox test exposure (names only).** synth3's name pool was built before that
+  test's six titles were published (PR #49) and did not exclude them: 39 VNDB character names that
+  occur only in those titles' entries (PSP v14909, v25459, v29454; Vita v21289, v21976, v20519;
+  reserves v16509, v19140) are in `names.train.tsv`, and 346 of the 1,000,000 version-2 crops
+  (0.035%) have a label containing one of them. Most of those hits are common words or substrings
+  (ラゴン inside ドラゴン 129, 常盤/常磐 106, 駐在 17); the distinctive ones (トリリオン, フェゴール,
+  ペルペル, ...) are a few dozen crops. No screenshot, scene or real crop of those titles is in any
+  synth3 input (checked against synth2's backgrounds, realdata's and teacher's games and all five
+  real pools). Any model trained on synth3 v2 carries this exposure into that test. Later renders
+  should add the eight VNs and their relations to the name exclusion (`synth3_text.py names
+  --dev-vns`).
 
 ## Reproduce
 

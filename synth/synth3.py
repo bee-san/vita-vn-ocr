@@ -224,7 +224,7 @@ def drawn_chars(path, vocab):
 
 class Resources:
     def __init__(self, assets=ASSETS, split="train", profile="personal", font_manifest=FONT_MANIFEST,
-                 vocab=None, holdout_fonts=()):
+                 vocab=None, holdout_fonts=(), scenes=True):
         self.assets, self.split, self.profile = Path(assets), split, profile
         self.vocab = load_vocab(vocab) if vocab else load_vocab()
         self.vocab_set = set(self.vocab)
@@ -234,7 +234,7 @@ class Resources:
         for f in self.fonts:
             self.by_cat.setdefault(f.cat, {}).setdefault(f.fam, []).append(f)
         self._text()
-        self._backgrounds()
+        self._backgrounds(scenes)
         self.hiragana = [c for c in self.vocab if 0x3041 <= ord(c) <= 0x3093 and c not in "ゎゐゑ"]
         self.katakana = [c for c in self.vocab if 0x30A1 <= ord(c) <= 0x30FA and c not in "ヵヶヮ"]
         self.native_faces = {}
@@ -322,7 +322,8 @@ class Resources:
         self.prior = np.array([(tg[c]["real"] + tg[c]["jiten_vn"] if c in tg else 0.0) + 1e-7 for c in self.vocab])
         self.prior = self.prior ** CFG["focus_prior_exponent"]
         jk = [c for c in self.vocab if S2.is_kanji(c)]
-        jw = np.array([tg[c]["jiten_vn"] + tg[c]["real"] for c in jk]) + 1e-7
+        zero = {"real": 0.0, "jiten_vn": 0.0}
+        jw = np.array([tg.get(c, zero)["jiten_vn"] + tg.get(c, zero)["real"] for c in jk]) + 1e-7
         order = np.argsort(-jw)
         self.name_kanji = [jk[i] for i in order[:2500]]
         w = jw[order[:2500]] ** 0.7
@@ -334,7 +335,13 @@ class Resources:
                               "lists": sha256(self.assets / "text" / "lists.json")}
 
     # ---- scenes
-    def _backgrounds(self):
+    def _backgrounds(self, scenes=True):
+        """Training-side screenshots for scenes (synth2's list plus realdata's shots), never a
+        test or development VN, split by VN between train and dev. scenes=False: none (the
+        renderer then draws synthetic scenes only, as in CI)."""
+        if not scenes:
+            self.bg, self.bg_vns = {"vita": [], "psp": [], "hires": []}, []
+            return
         forbid = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"])
         forbid |= set((self.assets / "mining" / "exclude_dev_vns.txt").read_text().split())
         bg = json.loads((HERD / "shared" / "artifacts" / "synth2" / "backgrounds.json").read_text())

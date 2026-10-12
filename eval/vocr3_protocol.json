@@ -22,7 +22,24 @@
     "VOCR_H15": {"file": "H15_w8.vocr", "release": "v0.2.0 (identical to vita-jp-overlay main's default, core/vocr_ocr.c)", "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd", "finder": "grad"}
    },
    "replaces": "VOCR_H15 (the overlay default users run; the bar VOCR3-H15 must beat)"
+  },
+  "W20": {
+   "topology": "width 2.0, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32 (train2's F20 size; added by amendment 1)",
+   "vocab": {"file": "data/vocab.txt", "sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b", "classes": 5355},
+   "expected": {"blob_bytes": 1558016, "arena_w8i_bytes": 241056},
+   "baselines": {
+    "VOCR_H15": {"file": "H15_w8.vocr", "release": "v0.2.0 (the overlay default)", "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd", "finder": "grad"},
+    "F20": {"file": "F20_w8.vocr", "release": "v0.2.0", "bytes": 1558016, "finder": "grad", "note": "same size, reference only; its sha256 is pinned in the report spec from the release asset"}
+   },
+   "replaces": "VOCR_H15 if it qualifies against it and fits the budget below"
   }
+ },
+ "budget": {
+  "source": "docs/vita-memory-budget.md (#53, main db9ca0c): BUDGET_READY weights<=1600000 arena<=262144 ms<=550, the ceiling for a model inside vita-jp-overlay on a PCH-1000; RAM is not the limit, speed is, then the shared 2 MiB L2",
+  "weights_max_bytes": 1600000,
+  "arena_max_bytes": 262144,
+  "ms_max_per_640px_line": 550,
+  "rule": "every candidate's W8I blob is checked with vita/budget_sweep.py check (blob bytes, W8I arena, and the high bound of vita/a9_cycles.py's W8I estimate for a 640-px line on one A9 core at 333 MHz, on synth-val lines only); a candidate that fails any limit is not selectable. The ms figure is a host estimate, never a console measurement. Train2's F20 shape is at 311-548 ms, inside the ceiling with 2 ms to spare; the doc's other in-budget shapes (w150d2, w150b128, w150c4) are not candidates because the architecture sweep found depth, context blocks and a wider head add nothing over plain width once real data is in the mix (docs/arch-sweep.md)"
  },
  "candidates": {
   "rule": "For each size, the candidates are the final fine-tune checkpoints (EMA weights, no checkpoint selection inside a run) of the runs below that use the VN-style synthetic data study 2 recommends for that size (eval/synth3_study2_protocol.json decision). If study 2 finds no measured difference for a size, the runs of both arms are candidates.",
@@ -33,11 +50,16 @@
   "H15": {
    "study2": ["ft_H15_A_s2_seed1", "ft_H15_A_s2_seed2", "ft_H15_C_mix_seed1", "ft_H15_C_mix_seed2"]
   },
+  "W20": {
+   "runs": ["ft_W20_C_mix_seed1", "ft_W20_A_s2_seed1", "ft_W20_B_s3_seed1"],
+   "script": "eval/vocr3_run.sh W20 ARM 1 (study 2's recipe at width 2.0, 32,000 pretrain steps as train2's p20; outputs under $HERD/shared/artifacts/synth3/vocr3/runs)",
+   "rule": "all three are candidates and all three must finish before the W20 selection; there is no study-2 decision at this width. B_s3 is included because study 1's H15-width secondary favoured synth3 alone (B - A -0.52, CI -0.80 to -0.25; one seed)"
+  },
   "variants": {
    "status": "optional; each is trained only if its precondition holds, and enters the candidate list only through the ablation rule below",
    "realplus": {
     "precondition": "realplus.status POOL_READY <commit>, with its manifest committed and its measured blind-check precision reported",
-    "run": "from the pretrain checkpoint of the size's base selection (below), same seed, the study-2 fine-tune with the real half re-split as tt 0.2 + rd 0.1 + rp 0.2 (the realplus pool, inv=0.5, kd=0; no ps); the synthetic half unchanged",
+    "run": "from the pretrain checkpoint of the size's base selection (below), same seed, the study-2 fine-tune with the real half re-split as tt 0.2 + rd 0.1 + rp 0.2 (tt and rd: the CLANNAD-free copies of amendment 1; the realplus pool, inv=0.5, kd=0; no ps); the synthetic half unchanged",
     "ablation_rule": "it replaces the base selection iff its teacher_val CER (both views) is lower with the VN-cluster 95% interval of the difference entirely below 0 (and, when devnative is a selection cohort, devnative's interval is not entirely above 0)"
    },
    "synth3_v3": {
@@ -67,7 +89,9 @@
    "VOCR_H15": "H15_w8.vocr + GRAD",
    "VOCR3-FL10": "the FL10 selection + GRAD",
    "VOCR3-FL10-C3": "the FL10 selection + TEXTBOX (C3): finder-matched to VOCR2, reported only",
-   "VOCR3-H15": "the H15 selection + GRAD"
+   "VOCR3-H15": "the H15 selection + GRAD",
+   "VOCR3-W20": "the W20 selection + GRAD",
+   "F20": "F20_w8.vocr (v0.2.0) + GRAD, reference"
   },
   "sets": {
    "vita-test, psp-test fixed lines": "eval/run.py's recognizer mode through the scalar C W8I runtime; console polarity primary, native also; per set, per style, per VN, pooled; full text and hiragana",
@@ -75,12 +99,12 @@
    "fresh native textbox test": "eval/fresh_native_textbox.py through the harness adapter, only if the owner provides its private inputs and execution authorization before the report runs; reported with the disclosure that synth3 v2's name pool held 39 names unique to its titles (docs/synth3.md, Limits)",
    "CLANNAD long run": "eval/clannad_longrun.py through the harness adapter on the stored captures, only if the owner provides the private inputs; Google Lens readings are a proxy, not human references"
   },
-  "pairs": [["VOCR3-FL10", "VOCR1"], ["VOCR3-FL10", "VOCR2"], ["VOCR3-H15", "VOCR_H15"], ["VOCR3-H15", "VOCR1"], ["VOCR3-FL10-C3", "VOCR2"]],
+  "pairs": [["VOCR3-FL10", "VOCR1"], ["VOCR3-FL10", "VOCR2"], ["VOCR3-H15", "VOCR_H15"], ["VOCR3-H15", "VOCR1"], ["VOCR3-FL10-C3", "VOCR2"], ["VOCR3-W20", "VOCR_H15"], ["VOCR3-W20", "F20"], ["VOCR3-W20", "VOCR3-H15"]],
   "statistics": "CAND - BASE in points with paired bootstrap 95% intervals (10,000 resamples, seed 0) over lines and over VN clusters (strata with at least 5 VNs)",
   "also": ["blob bytes, W8I and W8F arenas", "estimated Vita Cortex-A9 time per line from vita/a9_cycles.py (host estimate, marked as such)", "the overlay host cross-check: vita-jp-overlay's tools/benchmark_local_ocr.py on a read-only clone (no change, no PR there)"]
  },
  "qualification": {
-  "gates": [["VOCR3-FL10", "VOCR1"], ["VOCR3-H15", "VOCR_H15"]],
+  "gates": [["VOCR3-FL10", "VOCR1"], ["VOCR3-H15", "VOCR_H15"], ["VOCR3-W20", "VOCR_H15"]],
   "fixed_line_gate": "VOCR2's: in the primary polarity, no set's full-text or hiragana errors increase, and pooled hiragana errors decrease",
   "dialogue_guard": "VOCR2's held-out whole-dialogue guard: no title/variant all-text or body full/hiragana regression; every variant improves console-balanced hiragana in both scopes and gains on at least two titles",
   "consequence": "A candidate qualifies to replace its baseline only if every gate passes on every set available; even then the default changes only with the owner's agreement. Nothing is merged. Results are reported whether or not they qualify."
@@ -91,5 +115,12 @@
   "the locked report runs once; its numbers cannot change the selection",
   "realplus and devnative exclude every test VN and family, CLANNAD, the fresh native test's titles and relations, and every eval screenshot (their own manifests record it)"
  ],
- "amendments": []
+ "amendments": [
+  {
+   "date": "2026-10-12 (commit time in git), before any VOCR3 candidate was scored",
+   "change": "(1) A third size, W20 (width 2.0, data/vocab.txt; train2's F20 size), with three candidate runs (C_mix, A_s2, B_s3, seed 1) from eval/vocr3_run.sh, the same base rule, the report arm VOCR3-W20, the released F20 as a same-size reference, the pairs VOCR3-W20 vs VOCR_H15, F20 and VOCR3-H15, and the gate VOCR3-W20 vs VOCR_H15. (2) The vita-budget ceiling (weights <= 1,600,000 B, W8I arena <= 262,144 B, estimated <= 550 ms per 640-px line) as a selectability rule for every size. (3) Every VOCR3 fine-tune, including study 2's (its amendment 2) and the realplus variant, uses the copies of teacher_train, real_train and the pseudo-label pools without CLANNAD (v4) and its VNDB family (eval/synth3_study2_pools.sha256).",
+   "reason": "The owner allowed a slightly larger model if it fits a PCH-1000 inside vita-jp-overlay, and the vita-budget agent set the ceiling at 20:5xZ; the first synth3 audit (B1) found CLANNAD crops in the inherited pools.",
+   "unchanged": "the FL10 and H15 sizes, their candidates and baselines, the selection cohorts and rule, the locked report's sets and statistics, the qualification gates for FL10 and H15, publication and hygiene"
+  }
+ ]
 }

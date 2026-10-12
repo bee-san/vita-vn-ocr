@@ -1,0 +1,30 @@
+{
+ "kind": "synth3-ablation-secondary-spec",
+ "schema": 1,
+ "frozen": "2026-10-12, after study 1's decision was committed (6803fd9) and before any secondary run was exported or scored",
+ "protocol": "eval/synth3_ablation_protocol.json (\"secondary\": exploratory, scored like the primary runs, cannot change the decision)",
+ "note": "The comparisons of the protocol's secondary runs, in the format eval/synth3_ablation.py compare reads. Every arm here is one run (seed 1), so each interval covers the sampling of development lines only, not training noise. The b_better field that compare prints applies the primary rule mechanically and decides nothing here.",
+ "views": ["rv", "rvn"],
+ "bootstrap": {"resamples": 10000, "seed": 0, "unit": "VN (cluster); line-level intervals reported alongside"},
+ "decision": "none: exploratory secondaries, reported only",
+ "arms": {
+  "A1": ["A_s2_seed1"],
+  "B1": ["B_s3_seed1"],
+  "C1": ["C_mix_seed1"],
+  "ftA": ["ft_A_s2_seed1"],
+  "ftB": ["ft_B_s3_seed1"],
+  "ftC": ["ft_C_mix_seed1"],
+  "A_w15": ["A_s2_w15_seed1"],
+  "B_w15": ["B_s3_w15_seed1"]
+ },
+ "comparisons": {
+  "ft_B_vs_A": ["ftA", "ftB"],
+  "ft_C_vs_A": ["ftA", "ftC"],
+  "ft_C_vs_B": ["ftB", "ftC"],
+  "ft_gain_A": ["A1", "ftA"],
+  "ft_gain_B": ["B1", "ftB"],
+  "ft_gain_C": ["C1", "ftC"],
+  "h15_B_vs_A": ["A_w15", "B_w15"]
+ },
+ "checkpoints": "fine-tunes: ckpt_step5000.pt; H15 runs: ckpt_step16000.pt (EMA weights, no selection)"
+}

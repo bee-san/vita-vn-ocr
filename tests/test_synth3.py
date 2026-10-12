@@ -331,3 +331,56 @@ def test_test_report_arms_pairs_and_styles(tmp_path):
     assert set(c["styles"]) == {"name", "outlined"} and "ref" in s["runs"]
     pooled = res["polarities"]["native"]["sets"]["pooled"]["arms"]["B"]
     assert pooled["chars"] == 2 * 2 * 180 and "B_vs_A" in TR.markdown(res)
+
+
+def _scores(path, names_shift, n=300, vns=20, seed=0, tag=""):
+    rng = np.random.default_rng(seed)
+    lines = [{"id": f"{tag}l{i}", "vn": f"v{i % vns}", "ref": "あいうえお", "tags": ["kind:psp"]} for i in range(n)]
+    base = rng.integers(0, 3, n)
+    models = {}
+    for run, shift in names_shift.items():
+        e = np.clip(base + (shift * (rng.random(n) < 0.5)), 0, None).tolist()
+        models[run] = {"blob": "x", "blob_sha256": "0" * 64, "blob_bytes": 1, "arena_bytes": 1,
+                       "pred": {"rv": [""] * n, "rvn": [""] * n}, "errors": {"rv": e, "rvn": e}}
+    for m in models.values():
+        m["cer"] = {v: sum(e) / (5 * n) for v, e in m["errors"].items()}
+    Path(path).write_text(json.dumps({"dev": {"lines": n}, "lines": lines, "models": models}))
+    return path
+
+
+def test_study2_result_applies_the_frozen_rule(tmp_path):
+    import synth3_study2 as S2
+    runs_a = {f"ft_FL10_A_s2_seed{s}": 0 for s in (1, 2, 3)}
+    better = {f"ft_FL10_C_mix_seed{s}": -1 for s in (1, 2, 3)}
+    tv = _scores(tmp_path / "tv.json", {**runs_a, **better})
+    dn1 = _scores(tmp_path / "devnative_strict_ink.json", {**runs_a, **better}, n=100, seed=1, tag="s")
+    dn2 = _scores(tmp_path / "devnative_tv_native_grad.json", {**runs_a, **better}, n=80, seed=2, tag="t")
+    merged = S2.merge([dn1, dn2])
+    assert merged["dev"]["lines"] == 180 and merged["lines"][0]["id"].startswith("devnative_strict_ink:")
+    assert len(merged["models"]["ft_FL10_A_s2_seed1"]["errors"]["rv"]) == 180
+    (tmp_path / "dn.json").write_text(json.dumps(merged))
+    out = tmp_path / "r.json"
+    args = type("A", (), {"protocol": ROOT / "eval" / "synth3_study2_protocol.json", "tv": [tv],
+                          "dn": str(tmp_path / "dn.json"), "dn_commit": "abc", "reported": "",
+                          "reported_scores": [], "out": out})()
+    S2.cmd_result(args)
+    r = json.loads(out.read_text())
+    assert list(r["comparisons"]) == ["FL10_C_vs_A"]           # H15 runs are not scored
+    d = r["comparisons"]["FL10_C_vs_A"]["decision"]
+    assert d["better"] == "C_mix" and d["c_better"]["devnative_ci_side"] and not d["a_better"]["holds"]
+    same = {f"ft_FL10_C_mix_seed{s}": 0 for s in (1, 2, 3)}
+    tv0 = _scores(tmp_path / "tv0.json", {**runs_a, **same})
+    args.tv, args.dn, args.out = [tv0], "", tmp_path / "r0.json"
+    S2.cmd_result(args)
+    d0 = json.loads((tmp_path / "r0.json").read_text())["comparisons"]["FL10_C_vs_A"]["decision"]
+    assert d0["better"] is None and d0["recommended"] == "A_s2"
+
+
+def test_study2_reported_spec_is_consistent():
+    rep = json.loads((ROOT / "eval" / "synth3_study2_reported.json").read_text(encoding="utf-8"))
+    p = json.loads((ROOT / "eval" / "synth3_study2_protocol.json").read_text(encoding="utf-8"))
+    for arm, runs in p["arms"].items():
+        assert rep["arms"][arm] == runs
+    for a, b in rep["comparisons"].values():
+        assert a in rep["arms"] and b in rep["arms"] and len(rep["arms"][a]) == len(rep["arms"][b])
+    assert rep["arms"]["curve_1M"] == ["B_s3_seed1", "B_s3_seed2"]

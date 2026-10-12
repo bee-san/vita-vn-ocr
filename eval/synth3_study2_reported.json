@@ -1,0 +1,38 @@
+{
+ "kind": "synth3-study2-reported-spec",
+ "schema": 1,
+ "frozen": "2026-10-12, before any study-2 run was scored (commit time in git)",
+ "protocol": "eval/synth3_study2_protocol.json (\"reported_not_decided\", \"step_curve\", \"learning_curve\")",
+ "note": "The protocol's reported-only comparisons in the format eval/synth3_study2.py result reads (teacher_val, views rv and rvn, VN-cluster and line bootstraps). Nothing here decides anything. Pretrain-only runs are scored from their final pretrain checkpoint (FL10 ckpt_step32000.pt, H15 ckpt_step40000.pt; step curve ckpt_step64000.pt / ckpt_step128000.pt), fine-tunes from ckpt_step15000.pt, learning-curve runs from ckpt_step16000.pt. The 1M learning-curve point is study 1's B_s3 runs and scores.",
+ "arms": {
+  "pre_FL10_A_s2": ["pre_FL10_A_s2_seed1", "pre_FL10_A_s2_seed2", "pre_FL10_A_s2_seed3"],
+  "pre_FL10_C_mix": ["pre_FL10_C_mix_seed1", "pre_FL10_C_mix_seed2", "pre_FL10_C_mix_seed3"],
+  "pre_H15_A_s2": ["pre_H15_A_s2_seed1", "pre_H15_A_s2_seed2"],
+  "pre_H15_C_mix": ["pre_H15_C_mix_seed1", "pre_H15_C_mix_seed2"],
+  "FL10_A_s2": ["ft_FL10_A_s2_seed1", "ft_FL10_A_s2_seed2", "ft_FL10_A_s2_seed3"],
+  "FL10_C_mix": ["ft_FL10_C_mix_seed1", "ft_FL10_C_mix_seed2", "ft_FL10_C_mix_seed3"],
+  "H15_A_s2": ["ft_H15_A_s2_seed1", "ft_H15_A_s2_seed2"],
+  "H15_C_mix": ["ft_H15_C_mix_seed1", "ft_H15_C_mix_seed2"],
+  "FL10_C_mix_32k_s1": ["ft_FL10_C_mix_seed1"],
+  "FL10_C_mix_64k_s1": ["ft_FL10_C_mix_pre64k_seed1"],
+  "FL10_C_mix_128k_s1": ["ft_FL10_C_mix_pre128k_seed1"],
+  "curve_025M": ["B_s3_025M_seed1", "B_s3_025M_seed2"],
+  "curve_050M": ["B_s3_050M_seed1", "B_s3_050M_seed2"],
+  "curve_1M": ["B_s3_seed1", "B_s3_seed2"],
+  "curve_2M": ["B_s3_2M_seed1", "B_s3_2M_seed2"]
+ },
+ "comparisons": {
+  "pre_FL10_C_vs_A": ["pre_FL10_A_s2", "pre_FL10_C_mix"],
+  "pre_H15_C_vs_A": ["pre_H15_A_s2", "pre_H15_C_mix"],
+  "ftgain_FL10_A": ["pre_FL10_A_s2", "FL10_A_s2"],
+  "ftgain_FL10_C": ["pre_FL10_C_mix", "FL10_C_mix"],
+  "ftgain_H15_A": ["pre_H15_A_s2", "H15_A_s2"],
+  "ftgain_H15_C": ["pre_H15_C_mix", "H15_C_mix"],
+  "step_64k_vs_32k": ["FL10_C_mix_32k_s1", "FL10_C_mix_64k_s1"],
+  "step_128k_vs_32k": ["FL10_C_mix_32k_s1", "FL10_C_mix_128k_s1"],
+  "step_128k_vs_64k": ["FL10_C_mix_64k_s1", "FL10_C_mix_128k_s1"],
+  "curve_050M_vs_025M": ["curve_025M", "curve_050M"],
+  "curve_1M_vs_050M": ["curve_050M", "curve_1M"],
+  "curve_2M_vs_1M": ["curve_1M", "curve_2M"]
+ }
+}

@@ -14,6 +14,7 @@ import numpy as np
 import torch
 
 import general_vn_select as selector
+import general_vn_textbox_guard as textbox_guard
 import train2
 from kanji_policy import allowed_label, load_policy
 from source_policy import SourcePolicy, json_digest, parse_json, sha256
@@ -27,8 +28,8 @@ KANJI_POLICY_SHA = "8fc9ea20804cc45876e25b60ed669446dc75fc7f0b6b383d65cc4688e050
 BASELINE_SHA = "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
 CLASSES = 3500
 RECIPE_KEYS = {"steps", "batch", "lr", "final_lr", "warmup", "wd", "train_scope", "seed", "threads", "eval_every"}
-CODE = sorted(set(selector.CODE + ["synth/kanji_policy.py", "train/generic_fl10_train.py", "train/train2.py",
-                                  "train/source_policy.py", "train/train.py", "train/restore_blob.py"]))
+CODE = sorted(set(selector.CODE + textbox_guard.CODE + ["synth/kanji_policy.py", "train/generic_fl10_train.py",
+                    "train/train2.py", "train/source_policy.py", "train/train.py", "train/restore_blob.py"]))
 
 
 def pinned_path(row, base):
@@ -81,13 +82,15 @@ def checked_config(config_path):
     before = sha256(config_path)
     doc = parse_json(config_path.read_bytes())
     required = {"schema", "kind", "init", "vocab", "kanji_policy", "source_policy", "development",
-                "run", "recipe", "sources"}
+                "textbox_development", "run", "recipe", "sources"}
     if (not isinstance(doc, dict) or set(doc) != required or type(doc["schema"]) is not int
-            or doc["schema"] != 1 or doc["kind"] != "general-vn-fl10-training-config"):
-        raise ValueError("expected the exact schema-1 general-vn-fl10-training config")
+            or doc["schema"] != 2 or doc["kind"] != "general-vn-fl10-training-config"):
+        raise ValueError("expected exact schema-2 general-vn-fl10-training config with mandatory textbox preparation")
     base = config_path.parent
     development = pinned_path(doc["development"], base)
     lock, rows = checked_development(development)
+    textbox_development = pinned_path(doc["textbox_development"], base)
+    textbox_guard.verify_prepared(textbox_development, line_lock=development)
     recipe = checked_recipe(doc["recipe"])
     run = doc["run"]
     if (not isinstance(run, dict) or set(run) != {"name", "out"} or not isinstance(run["name"], str)
@@ -172,17 +175,22 @@ def checked_config(config_path):
         raise ValueError("frozen training config/initializer/vocabulary changed during preparation")
     policy.verify_inputs()
     checked_development(development)
+    textbox_guard.verify_prepared(textbox_development, line_lock=development)
     if sha256(development) != doc["development"]["sha256"]:
         raise ValueError("development preparation changed during training preparation")
+    if sha256(textbox_development) != doc["textbox_development"]["sha256"]:
+        raise ValueError("textbox preparation changed during training preparation")
     return {"schema": 1, "kind": "general-vn-fl10-training-prepared", "config": str(config_path),
             "config_sha256": before, "development": str(development),
             "development_sha256": doc["development"]["sha256"],
+            "textbox_development_sha256": doc["textbox_development"]["sha256"],
             "source_policy_sha256": policy.sha256, "init_sha256": INIT_SHA, "vocab_sha256": VOCAB_SHA,
             "kanji_policy_sha256": KANJI_POLICY_SHA,
             "architecture": ARCH, "argv": argv, "run_directory": str(out / run["name"]),
             "checkpoint_steps": list(range(recipe["eval_every"], recipe["steps"] + 1, recipe["eval_every"])),
             "inputs": {name: {"file": str(path), "sha256": checksum} for name, path, checksum in (
                 ("development", development, doc["development"]["sha256"]),
+                ("textbox_development", textbox_development, doc["textbox_development"]["sha256"]),
                 ("source_policy", policy_path, policy.sha256),
                 ("init", init, INIT_SHA), ("vocab", vocab, VOCAB_SHA), ("kanji_policy", kanji_path, KANJI_POLICY_SHA))},
             "code_sha256": {name: sha256(ROOT / name) for name in CODE},
@@ -229,7 +237,8 @@ def verify_prepared(path):
     if (sha256(frozen["config"]) != frozen["config_sha256"] or frozen.get("architecture") != ARCH
             or set(frozen.get("code_sha256", {})) != set(CODE)
             or any(sha256(ROOT / name) != value for name, value in frozen["code_sha256"].items())
-            or set(frozen.get("inputs", {})) != {"development", "source_policy", "init", "vocab", "kanji_policy"}):
+            or set(frozen.get("inputs", {})) != {
+                "development", "textbox_development", "source_policy", "init", "vocab", "kanji_policy"}):
         raise ValueError("prepared training fingerprint changed before any crop/checkpoint load")
     for pin in frozen["inputs"].values():
         pinned_path(pin, path.parent)
@@ -246,6 +255,7 @@ def context(path, identity, checksum):
     return {"schema": 1, "driver": "generic_fl10_train", "prepared": str(Path(path).resolve()),
             "prepared_sha256": checksum, "wrapper_sha256": identity["code_sha256"]["train/generic_fl10_train.py"],
             "config_sha256": identity["config_sha256"], "development_sha256": identity["development_sha256"],
+            "textbox_development_sha256": identity["textbox_development_sha256"],
             "architecture": identity["architecture"], "identity_sha256": json_digest(identity)}
 
 

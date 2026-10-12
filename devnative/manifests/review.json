@@ -1,0 +1,515 @@
+{
+ "kind": "devnative-review-summary",
+ "reviewer_kind": "assistant",
+ "reviewer": "Claude Opus 5.5 sessions reading contact sheets (no human review)",
+ "selection": {
+  "listed": 1742,
+  "excluded": {
+   "not-native": 1207,
+   "label-pool-vn": 82,
+   "rating": 29,
+   "other-set-shot": 25,
+   "scene-shot": 25,
+   "language": 18,
+   "clannad-family": 10
+  },
+  "selected": 346,
+  "by_subset_kind": {
+   "strict/psp": 77,
+   "tv_native/psp": 203,
+   "tv_native/vita": 63,
+   "scene_vn/psp": 3
+  },
+  "vns_by_subset": {
+   "strict": 26,
+   "tv_native": 51,
+   "scene_vn": 3
+  },
+  "flags": {
+   "tv_native:bg_shot": 110,
+   "tv_native:linefind": 41,
+   "tv_native:scene_vn": 118,
+   "tv_native:general_vn_dev": 37,
+   "scene_vn:scene_vn": 3
+  },
+  "clannad_family": [
+   "v10058",
+   "v11057",
+   "v12",
+   "v16901",
+   "v21002",
+   "v23354",
+   "v25142",
+   "v27548",
+   "v28752",
+   "v29951",
+   "v4",
+   "v4060",
+   "v42392",
+   "v54298",
+   "v5698",
+   "v64301",
+   "v64642",
+   "v7983",
+   "v8324",
+   "v869"
+  ],
+  "fresh_test_family": [
+   "v14909",
+   "v15053",
+   "v16509",
+   "v19140",
+   "v20519",
+   "v21289",
+   "v21976",
+   "v25385",
+   "v25459",
+   "v28146",
+   "v29454",
+   "v52836",
+   "v57035"
+  ]
+ },
+ "listing": {
+  "api": "https://api.vndb.org/kana/vn",
+  "fetched_utc": "2026-10-12T17:49:10Z",
+  "reserved": 190,
+  "reserved_sha256": "6e04aaf572ee7ec8f420a81cb68c310e16c3453d1d07cae5a7a1352730d14531",
+  "vns_returned": 190,
+  "screenshots": 1742,
+  "queries_sha256": "e5e1ad406400bfac724610743cfeaee92473c193bf00643c4f471973454dd242",
+  "responses_sha256": "8dc53c4d3ac993e85b0fe87b153d51514872a5a81fbc65da9a9198aca3af4025"
+ },
+ "engines": {
+  "meiki_det": {
+   "file": "meiki.text.detect.v0.1.960x544.onnx",
+   "sha256": "40b6a016667745cae7d3055929ae3b8b1e7716aac795f5904cd3c2c7c3b8404b",
+   "pinned": "40b6a016667745cae7d3055929ae3b8b1e7716aac795f5904cd3c2c7c3b8404b"
+  },
+  "meiki_rec": {
+   "file": "meiki.text.rec.v0.960x32.onnx",
+   "sha256": "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000",
+   "pinned": "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000"
+  },
+  "v6s": {
+   "file": "PP-OCRv6_rec_small.onnx",
+   "sha256": "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884",
+   "pinned": "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884"
+  },
+  "packages": {
+   "meikiocr": "0.3.5",
+   "onnxruntime": "1.30.0",
+   "numpy": "2.4.6",
+   "opencv-python-headless": "5.0.0.93"
+  }
+ },
+ "reads": {
+  "screenshots": 346,
+  "lines": 1477,
+  "by_subset_status": {
+   "scene_vn:candidate": 1,
+   "strict:candidate": 64,
+   "strict:not-japanese": 32,
+   "strict:screen-edge": 7,
+   "strict:size": 18,
+   "tv_native:candidate": 972,
+   "tv_native:not-japanese": 261,
+   "tv_native:screen-edge": 24,
+   "tv_native:size": 98
+  }
+ },
+ "stages": {
+  "pass1": {
+   "lines": 1037,
+   "decisions": {
+    "pick": 657,
+    "skip-bad": 26,
+    "skip-cut": 27,
+    "skip-ui": 304,
+    "text": 11,
+    "unsure": 12
+   },
+   "names": 188,
+   "batches": 9
+  },
+  "pass2": {
+   "lines": 113,
+   "decisions": {
+    "pick": 109,
+    "skip-cut": 1,
+    "unsure": 3
+   },
+   "names": 16,
+   "batches": 2
+  },
+  "grad": {
+   "lines": 179,
+   "decisions": {
+    "pick": 173,
+    "text": 5,
+    "unsure": 1
+   },
+   "names": 0,
+   "batches": 2
+  },
+  "blind": {
+   "lines": 300,
+   "decisions": {
+    "pick": 293,
+    "skip-cut": 2,
+    "skip-ui": 1,
+    "text": 1,
+    "unsure": 3
+   },
+   "names": 74,
+   "batches": 3
+  },
+  "edge": {
+   "lines": 178,
+   "decisions": {
+    "pick": 169,
+    "skip-bad": 2,
+    "skip-cut": 4,
+    "text": 1,
+    "unsure": 2
+   },
+   "names": 33,
+   "batches": 3
+  },
+  "confirm1": {
+   "lines": 173,
+   "decisions": {
+    "pick": 168,
+    "skip-ui": 5
+   },
+   "names": 28,
+   "batches": 3
+  },
+  "confirm2": {
+   "lines": 133,
+   "decisions": {
+    "pick": 130,
+    "unsure": 3
+   },
+   "names": 70,
+   "batches": 3
+  }
+ },
+ "pass1_label_support": {
+  "consensus": 555,
+  "single": 102,
+  "changed": 11
+ },
+ "blind_recheck": {
+  "sample": {
+   "n": 300,
+   "seed": 20261012,
+   "from_kept": 664
+  },
+  "agreement": {
+   "all": {
+    "agree": 291,
+    "lines": 300,
+    "rate": 0.97,
+    "wilson95": [
+     0.944,
+     0.9841
+    ]
+   },
+   "how:changed": {
+    "agree": 1,
+    "lines": 1,
+    "rate": 1.0
+   },
+   "how:consensus": {
+    "agree": 242,
+    "lines": 251,
+    "rate": 0.9641
+   },
+   "how:single": {
+    "agree": 48,
+    "lines": 48,
+    "rate": 1.0
+   },
+   "kind:psp": {
+    "agree": 212,
+    "lines": 221,
+    "rate": 0.9593
+   },
+   "kind:vita": {
+    "agree": 79,
+    "lines": 79,
+    "rate": 1.0
+   },
+   "subset:strict": {
+    "agree": 11,
+    "lines": 12,
+    "rate": 0.9167
+   },
+   "subset:tv_native": {
+    "agree": 280,
+    "lines": 288,
+    "rate": 0.9722
+   }
+  },
+  "disagreements": [
+   {
+    "id": "v10091_56559_0",
+    "subset": "tv_native",
+    "kind": "skip-ui",
+    "in_final": true,
+    "final_why": null
+   },
+   {
+    "id": "v11454_57093_5",
+    "subset": "tv_native",
+    "kind": "skip-cut",
+    "in_final": false,
+    "final_why": "edge-cut"
+   },
+   {
+    "id": "v12858_60790_0",
+    "subset": "strict",
+    "kind": "unsure",
+    "in_final": true,
+    "final_why": null
+   },
+   {
+    "id": "v12858_60791_2",
+    "subset": "tv_native",
+    "kind": "skip-cut",
+    "in_final": true,
+    "final_why": null
+   },
+   {
+    "id": "v4597_55701_1",
+    "subset": "tv_native",
+    "kind": "unsure",
+    "in_final": false,
+    "final_why": "edge-unsure"
+   },
+   {
+    "id": "v55136_209480_1",
+    "subset": "tv_native",
+    "kind": "end-punctuation",
+    "in_final": true,
+    "final_why": null
+   },
+   {
+    "id": "v55136_209480_2",
+    "subset": "tv_native",
+    "kind": "end-punctuation",
+    "in_final": false,
+    "final_why": "edge-cut"
+   },
+   {
+    "id": "v55136_209481_5",
+    "subset": "tv_native",
+    "kind": "end-punctuation",
+    "in_final": true,
+    "final_why": null
+   },
+   {
+    "id": "v8063_46795_0",
+    "subset": "tv_native",
+    "kind": "unsure",
+    "in_final": false,
+    "final_why": "blind-ambiguous-glyph"
+   }
+  ],
+  "sampled_lines_in_final": 292,
+  "agree_in_final": 287
+ },
+ "third_look": [
+  {
+   "id": "v1874_11826_0",
+   "keep": true,
+   "why": "misread-kana",
+   "note": "third look at 12x: the first kana is yu (open left side, long bottom stroke), not ko; the edge check typed the same text independently; every engine read ko",
+   "text_changed": true
+  },
+  {
+   "id": "v8063_46795_0",
+   "keep": false,
+   "why": "ambiguous-glyph",
+   "note": "third look at 16x: the first kanji's two variant forms (U+53B3 / U+56B4) cannot be told apart; blind re-check unsure; PP-OCRv6 on the crop read the variant",
+   "text_changed": false
+  },
+  {
+   "id": "v12858_60790_0",
+   "keep": true,
+   "why": "variant-outside-vocab",
+   "note": "blind re-check unsure between U+7114 and U+7130; both engines and pass 1 read U+7114; U+7130 is outside CP932 (a PSP game's text encoding) and data/vocab.txt",
+   "text_changed": false
+  },
+  {
+   "id": "v12858_60789_0",
+   "keep": true,
+   "why": "variant-outside-vocab",
+   "note": "same name plate as v12858_60790_0: confirm read unsure between U+7114 and U+7130; U+7130 is outside CP932 and data/vocab.txt",
+   "text_changed": false
+  },
+  {
+   "id": "v9178_49221_0",
+   "keep": true,
+   "why": "measured-small-kana",
+   "note": "pixel mask: the middle kana is 9 px wide and 9 px tall, bottom-aligned, against 10-11 x 11 px for the other two: small yo; confirm read unsure; three of four readings small yo",
+   "text_changed": false
+  },
+  {
+   "id": "v16386_217560_0",
+   "keep": false,
+   "why": "ambiguous-glyph",
+   "note": "third look at 14x: tachibana vs hashi (right part) not settled; confirm read unsure",
+   "text_changed": false
+  }
+ ],
+ "final_labels": {
+  "by": {
+   "dropped:skip-ui": 304,
+   "kept:consensus": 547,
+   "kept:single": 99,
+   "dropped:skip-cut": 27,
+   "dropped:skip-bad": 26,
+   "dropped:pass2-unsure": 3,
+   "kept:changed": 11,
+   "dropped:pass1-unsure": 12,
+   "dropped:confirm-skip": 5,
+   "dropped:blind-ambiguous-glyph": 2,
+   "dropped:pass2-skip": 1
+  },
+  "kept_by_looks": {
+   "2": 604,
+   "3": 49,
+   "1": 4
+  }
+ },
+ "grad": {
+  "grad-missed": 53,
+  "grad-mixed": 27,
+  "checked": 173,
+  "inside": 394,
+  "grad-partial": 15,
+  "grad-extra-text": 5,
+  "grad-unsure": 1
+ },
+ "edge": {
+  "unflagged": 480,
+  "checked": 169,
+  "edge-cut": 4,
+  "edge-unsure": 2,
+  "edge-bad": 2
+ },
+ "built": {
+  "files": {
+   "devnative_scene_vn_ink.npz": {
+    "lines": 0,
+    "vns": 0,
+    "by_kind": {},
+    "chars": 0
+   },
+   "devnative_scene_vn_grad.npz": {
+    "lines": 0,
+    "vns": 0,
+    "by_kind": {},
+    "chars": 0
+   },
+   "devnative_strict_ink.npz": {
+    "lines": 38,
+    "vns": 14,
+    "by_kind": {
+     "psp": 38
+    },
+    "chars": 411,
+    "sha256": "ab2cc6890a0da59f49e9c1b491a0a1bc4e68cb9d7715ac485674b80cf2414f51"
+   },
+   "devnative_strict_grad.npz": {
+    "lines": 26,
+    "vns": 12,
+    "by_kind": {
+     "psp": 26
+    },
+    "chars": 314,
+    "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e"
+   },
+   "devnative_tv_native_ink.npz": {
+    "lines": 607,
+    "vns": 48,
+    "by_kind": {
+     "psp": 444,
+     "vita": 163
+    },
+    "chars": 6992,
+    "sha256": "7fb36fc291ff7213d06bf023f0e7cb6fb391a88524d411d02b43d15c1c984d32"
+   },
+   "devnative_tv_native_grad.npz": {
+    "lines": 503,
+    "vns": 48,
+    "by_kind": {
+     "psp": 361,
+     "vita": 142
+    },
+    "chars": 5957,
+    "sha256": "f810690caec0164f47224b29ad537efa3500f41b1cc08653a49abdf6f6f94747"
+   }
+  },
+  "kept": 645,
+  "dropped": {
+   "skip-ui": 304,
+   "skip-cut": 27,
+   "skip-bad": 26,
+   "pass2-unsure": 3,
+   "edge-cut": 4,
+   "pass1-unsure": 12,
+   "edge-unsure": 2,
+   "confirm-skip": 5,
+   "blind-ambiguous-glyph": 2,
+   "edge-bad": 2,
+   "pass2-skip": 1,
+   "repeat-cap": 4
+  },
+  "by_subset_kind": {
+   "tv_native/psp": 444,
+   "strict/psp": 38,
+   "tv_native/vita": 163
+  },
+  "vns": {
+   "scene_vn": 0,
+   "strict": 14,
+   "tv_native": 48
+  },
+  "screenshots": {
+   "scene_vn": 0,
+   "strict": 22,
+   "tv_native": 227
+  },
+  "how": {
+   "tv_native:consensus": 515,
+   "tv_native:changed": 10,
+   "strict:consensus": 22,
+   "strict:single": 16,
+   "tv_native:single": 82
+  },
+  "grad": {
+   "tv_native:grad-mixed": 25,
+   "tv_native:grad-missed": 46,
+   "tv_native:inside": 351,
+   "tv_native:checked": 152,
+   "strict:grad-missed": 5,
+   "strict:inside": 15,
+   "strict:checked": 11,
+   "tv_native:grad-cuts-label": 20,
+   "tv_native:grad-partial": 11,
+   "tv_native:grad-unsure": 1,
+   "tv_native:grad-extra-text": 1,
+   "strict:grad-partial": 3,
+   "strict:grad-mixed": 2,
+   "strict:grad-cuts-label": 2
+  },
+  "names": 175,
+  "tv_overlap": {
+   "lines": 421,
+   "label_agrees": 421
+  }
+ }
+}

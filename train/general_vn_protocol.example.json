@@ -1,0 +1,40 @@
+{
+  "arena_bytes": 124832,
+  "backend": "scalar C W8I",
+  "blob_bytes": 657664,
+  "body_definition": "exclude styles=name or content_kind=name",
+  "font_family_metadata": "not inferred",
+  "group_by": [
+    "platform",
+    "vn"
+  ],
+  "guard": "each VN all/body full and hiragana errors <= its own baseline; each synthetic full/hira <= baseline",
+  "max_width": 1024,
+  "minimum_improving_vns": 2,
+  "minimums": {
+    "body_chars_per_vn": 500,
+    "body_hiragana_per_vn": 200,
+    "frames_per_vn": 5,
+    "vns_per_console": 3
+  },
+  "normalization": "eval.metrics.norm; no kana folding",
+  "pads": {
+    "psp": 2,
+    "vita": 4
+  },
+  "platform_weights": {
+    "psp": "1/2",
+    "vita": "1/2"
+  },
+  "purpose": "prospective general-VN development only; never test or Google selection",
+  "rank": [
+    "console_balanced_hiragana",
+    "console_balanced_full",
+    "total_full_errors",
+    "synthetic_full_errors",
+    "step",
+    "checkpoint_path"
+  ],
+  "replace": "strict console-balanced hiragana reduction and gains in at least two distinct VN IDs",
+  "schema": 1
+}

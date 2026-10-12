@@ -91,12 +91,17 @@ def test_boot_uses_private_host_mount_without_replacing_home(tmp_path, monkeypat
 
     monkeypatch.setattr(ppsspp_cli.subprocess, "run", run)
     args = ppsspp_cli.parse_args(["model.vocr", "--ppsspp", "/pinned/PPSSPPHeadless"])
-    result, log = ppsspp_cli.boot(args, tmp_path, app)
+    result, log = ppsspp_cli.boot(args, app)
     argv, kwargs = calls[0]
-    assert argv[argv.index("--root") + 1] == str(tmp_path)
+    assert argv[argv.index("--root") + 1] == str(app)
     assert argv[-1] == str(app / "EBOOT.PBP")
     assert kwargs["cwd"] == app and "env" not in kwargs
     assert result == "# done: 0 lines\n" and log == ""
+
+    monkeypatch.chdir(tmp_path)
+    args.ppsspp = "relative-tools/PPSSPPHeadless"
+    ppsspp_cli.boot(args, app)
+    assert calls[-1][0][0] == str(tmp_path / args.ppsspp)
 
 
 def test_bundle_config_keys_are_the_apps():

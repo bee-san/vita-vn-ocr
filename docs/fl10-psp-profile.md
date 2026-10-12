@@ -90,7 +90,7 @@ cp psp/EBOOT.PBP build/fl10-psp-profile/EBOOT_vfpu.PBP
 gcc -std=c99 -O2 -shared -fPIC -ffp-contract=off -DVOCR_NO_NEON \
   -Wall -Wextra -Werror runtime/vocr.c \
   -o build/fl10-psp-profile/libvocr-scalar.so -lm
-python psp/profile.py \
+python psp/fl10_profile.py \
   --model /absolute/path/to/VOCR2_FL10_w8.vocr \
   --model-sha256 d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766 \
   --scalar-eboot build/fl10-psp-profile/EBOOT_scalar.PBP \
@@ -101,12 +101,20 @@ python psp/profile.py \
 python -m pytest -q tests/test_psp.py tests/test_psp_profile.py
 ```
 
-`profile.py` refuses to overwrite an output directory. It pins the inputs before
+`fl10_profile.py` refuses to overwrite an output directory. It pins the inputs before
 execution and checks for changes afterward. Its generated pack is reproducible
 from the recorded seed; private per-boot files retain the actual predictions and
 emulator log. The public JSON retains derived counts, hashes, timings and allocation
 measurements. The driver uses PPSSPP's explicit `host0:` mount via `--root` and
-does not replace the caller's `HOME`.
+does not replace the caller's `HOME`. Emulated copies use a `vocr-emulator-app/` directory:
+PPSSPP redirects paths containing `PSP/GAME` to its real `ms0:` mount. The bundle
+entry point was also exercised with these generated inputs; all 12 text and
+logit checks passed with a 118,432-byte arena and 2,992-byte observed stack use.
+An existing copy is preserved; use a fresh `--keep` directory for another run.
+
+Local full-suite verification after the profiler filename fix passed 1,269 tests
+with one optional local-data test skipped. The final focused PSP suite passed
+28 tests after the host-mount adjustment; Ruff and source/result audits passed.
 
 PPSSPP does not model the PSP's cache and pipeline timing. The VFPU option still
 needs numerical checking on a physical PSP, especially its handling of denormals.

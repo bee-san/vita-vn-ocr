@@ -95,7 +95,7 @@ def profile(args):
         ("scalar", args.scalar_eboot), ("vfpu", args.vfpu_eboot),
         ("host_library", args.library), ("emulator", args.ppsspp))}
     pins = {name: sha(path) for name, path in binaries.items()}
-    source_names = ("psp/profile.py", "psp/pack.py", "psp/ppsspp_cli.py", "psp/main.c",
+    source_names = ("psp/fl10_profile.py", "psp/pack.py", "psp/ppsspp_cli.py", "psp/main.c",
                     "psp/Makefile", "runtime/vocr.c", "runtime/vocr.h", "runtime/pyvocr.py")
     sources = {name: sha(ROOT / name) for name in source_names}
     images = generated_inputs()
@@ -134,7 +134,7 @@ def profile(args):
                 config.update(wait=0, max_width=1024, stack_kb=4)
                 (app / "vocr.cfg").write_text("".join(f"{key}={value}\n" for key, value in config.items()))
                 options = SimpleNamespace(ppsspp=str(binaries["emulator"]), cpu="jit", timeout=120)
-                _, log = ppsspp_cli.boot(options, app, app)
+                _, log = ppsspp_cli.boot(options, app)
                 (app / "emulator.log").write_text(log)
                 stats, rows = checked_run(app, len(images), memory, mode, tile, invert)
                 measurements.append({"profile": name, "invert": invert, "boot": boot_index,

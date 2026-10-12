@@ -1985,10 +1985,10 @@
     ],
     "source_sha256": {
       "psp/Makefile": "d32deca6393c2dc09a756be4f90b0b86cf8de920096e1863e7b48399ae21bf99",
+      "psp/fl10_profile.py": "b43418eee27d16b1e10720a361f3074e2351ef12eb558e6149fadb4e1ff260c8",
       "psp/main.c": "782604488e9a3df7bb7b02bf925b7468fc40da0e6bae7735aea4fa09233bf902",
       "psp/pack.py": "e842576b210b4419265ade246c2d740d2627596fec78ba34c203188b222e361b",
-      "psp/ppsspp_cli.py": "9aa721d58aa7a98860425a0e22bbfd147ce546c64bc4cfcdf5790a6a1ccf7fec",
-      "psp/profile.py": "8f86c906be9f3e65da4331ba8ce01d63ef5e0cc4664a4151fe09eea15af741f8",
+      "psp/ppsspp_cli.py": "96f94d65dba90448caedb8b1897483b45449e86ac1617eea201ef1709007a48f",
       "runtime/pyvocr.py": "49cd9bf0ac474728f5aae9df9c7a7b7656a57db85f1eec75ec3ba7829b427376",
       "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
       "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd"
@@ -1996,7 +1996,7 @@
     "stack_bytes": 4096,
     "timed_repeats_after_first_check": 3
   },
-  "protocol_sha256": "195a5c44b4102e0939b16ee8225cedf4cb604b087d8478e6e0625cb59785a078",
+  "protocol_sha256": "2e120139be8f113c01401529b1ccd3708734256fde08f98b5925dcc87ae1313f",
   "schema": 1,
   "scope": "generated numerical checks only; PPSSPP emulated allocation/timing, not physical PSP or real-VN CER",
   "status": "completed"

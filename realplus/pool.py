@@ -789,7 +789,8 @@ def cmd_blind(args):
     man = {m["id"]: m for m in jl(OUT / "manifests" / "lines.jsonl")}
     if not man:
         sys.exit("build first: the blind sample is drawn from the built lines")
-    kept = sorted(r["id"] for r in labels if r["status"] == "kept" and "vita_ink" in man.get(r["id"], {}).get("crops", {}))
+    kept = sorted(r["id"] for r in labels
+                  if r["status"] == "kept" and "vita_ink" in man.get(r["id"], {}).get("crops", {}))
     rng = random.Random(args.seed)
     ids = sorted(rng.sample(kept, min(args.n, len(kept))))
     (REVIEW / "blind_ids.json").write_text(json.dumps({"ids": ids, "seed": args.seed, "from": len(kept)}) + "\n")

@@ -4,7 +4,8 @@
   sheets.py make --mode pass1 --out BATCH [--reads R] [--subsets strict,tv_native,scene_vn]
   sheets.py make --mode pass2 --out BATCH --lines ids.json      (ids from decide.py queue)
   sheets.py make --mode blind --out BATCH --lines ids.json
-  (gradcheck.py writes "grad" batches: the frame is the GRAD box, the one candidate the label)
+  (gradcheck.py writes "grad" batches: the frame is the GRAD box, the one candidate the label;
+   edgecheck.py writes "edge" batches: the frame is the final ink crop, the candidate the label)
 
 A batch directory holds README.md (the task and the exact output format), S001.png ... (sheets
 of at most 1280 x 1280 px) and S001.json ... (per entry: its number, line id and numbered
@@ -278,6 +279,14 @@ INTRO = {
             "off at the frame's edge are fine). Otherwise type exactly what the frame shows (for example the "
             "label plus the digits of a card), skip \"cut\" when the frame cuts characters of the label, or mark "
             "unsure.",
+    "edge": "Crop-edge check. The red frame is the final crop of the line and the one candidate is its decided "
+            "label. Pick 1 only when the frame holds the whole line and exactly the label: every character of the "
+            "label fully inside, and no character, bracket or punctuation mark of this line (or of any other text) "
+            "partly or fully inside the frame that the label leaves out. Decoration, plate borders, background "
+            "art and unreadable slivers of a neighbouring line's glyphs at the frame's top or bottom edge are "
+            "fine. Skip \"cut\" when the frame cuts a character of the label or the line visibly continues just "
+            "outside the frame (for example its closing 」 or 。 sits right next to the frame); type the text when "
+            "the frame shows exactly some other text; unsure when you cannot tell.",
 }
 DEFAULT = ("A shortcut for entries with a single candidate: {\"sheet\": \"S001\", \"default\": 1} accepts\n"
            "candidate 1 of every entry of that sheet that has exactly one candidate and no explicit line.\n"
@@ -330,7 +339,7 @@ def make_batch(entries, out, mode, name=None):
            "view, V PP-OCRv6 small on that view, v PP-OCRv6 small on the crop; · = not that engine).") if show else ""
     (out / "README.md").write_text(README.format(name=name or out.name, mode=mode, n=len(entries), sheets=len(sheets),
                                                  intro=INTRO[mode], engines=eng,
-                                                 default=DEFAULT if mode in ("pass1", "grad") else ""),
+                                                 default=DEFAULT if mode in ("pass1", "grad", "edge") else ""),
                                    encoding="utf-8")
     return len(sheets)
 
@@ -351,9 +360,10 @@ def pass1_entries(shots, subsets):
     return out
 
 
-def review_entries(shots, ids, extra=None):
+def review_entries(shots, ids, extra=None, frames=None):
     """Entries for pass 2 / blind: candidates shuffled; `extra` {id: text} adds a candidate
-    (pass 1's decision) when its key is not among them."""
+    (pass 1's decision) when its key is not among them; `frames` {id: box} marks that box
+    (e.g. the final crop) instead of the ink crop."""
     idx = line_index(shots)
     out = []
     for lid in ids:
@@ -362,7 +372,8 @@ def review_entries(shots, ids, extra=None):
         t = (extra or {}).get(lid)
         if t and vote.key(t) not in {c["key"] for c in cands}:
             cands.append({"text": vote.canon(t), "key": vote.key(t), "engines": []})
-        out.append((lid, s, ln, shuffled(cands, lid)))
+        e = (lid, s, ln, shuffled(cands, lid))
+        out.append(e + (frames[lid],) if frames and lid in frames else e)
     return out
 
 
@@ -373,7 +384,8 @@ def cmd_make(args):
     else:
         spec = json.loads(Path(args.lines).read_text(encoding="utf-8"))
         ids = spec["ids"] if isinstance(spec, dict) else spec
-        entries = review_entries(shots, ids, spec.get("extra") if isinstance(spec, dict) else None)
+        entries = review_entries(shots, ids, spec.get("extra") if isinstance(spec, dict) else None,
+                                 spec.get("frames") if isinstance(spec, dict) else None)
     if args.chunk:
         k = 0
         for i in range(0, len(entries), args.chunk):
@@ -394,7 +406,7 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--reads", default=str(P.OUT / "reads" / "reads.jsonl"))
     p.add_argument("--subsets", default="strict,tv_native,scene_vn")
-    p.add_argument("--lines", help="pass2/blind: JSON list of line ids, or {ids, extra}")
+    p.add_argument("--lines", help="pass2/blind: JSON list of line ids, or {ids, extra, frames}")
     p.add_argument("--chunk", type=int, default=0, help="split into batch sub-directories of this many lines")
     args = ap.parse_args()
     cmd_make(args)

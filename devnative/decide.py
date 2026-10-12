@@ -4,7 +4,7 @@
   decide.py parse  --batch DIR                      validate DIR/decisions.jsonl -> DIR/decisions.parsed.jsonl
   decide.py queue  --pass1 DIR... --out Q.json      lines pass 2 must review (+ pass 1's text, unmarked)
   decide.py final  --pass1 DIR... [--pass2 DIR...] [--resolve R.jsonl] [--mode dev|train]
-                   [--auto-consensus] [--out $OUT/labels.jsonl]
+                   [--blind DIR...] [--confirm DIR...] [--auto-consensus] [--out $OUT/labels.jsonl]
   decide.py sample --labels L --n 300 --seed 20261012 --out B.json      random kept lines for the blind re-check
   decide.py blind  --labels L --batch DIR... --out REPORT.json          agreement of the blind pass
 
@@ -24,7 +24,13 @@ skipped, or the passes disagree) is dropped: nobody could settle it.
 Training rule (--mode train, for realplus): a label needs at least one engine family after
 review (changed labels are dropped; pass 2 optional, applied when given); --auto-consensus
 also keeps, without review, lines all four readings agree on.
---resolve applies a third look after the blind re-check: {"id", "keep": bool, "text"?, "why"}.
+--resolve applies a third look after the blind re-check: {"id", "keep": bool, "text"?, "why" (a short
+code), "note"?}.
+--confirm: independent blind reads of the final crops (sheets.py mode blind with frames); a kept
+line read there keeps its label only when the confirming read has the label's key, else it is
+dropped (confirm-disagree / confirm-unsure / confirm-skip) unless a --resolve entry keeps it.
+Every kept record counts its independent agreeing reads in "looks" (pass 1, an agreeing pass 2,
+blind or confirm read, a keeping third look); --blind batches only count, they never change a label.
 """
 import argparse
 import json
@@ -78,8 +84,8 @@ def parse_decisions(text, sheets, mode, batch_name):
             errs.append(f"line {i}: unknown sheet {sid!r}")
             continue
         if "default" in d:
-            if mode not in ("pass1", "grad") or d["default"] != 1:
-                errs.append(f"line {i}: default is only {{'default': 1}} in pass 1 and the GRAD check")
+            if mode not in ("pass1", "grad", "edge") or d["default"] != 1:
+                errs.append(f"line {i}: default is only {{'default': 1}} in pass 1 and the GRAD / edge checks")
             defaults.add(sid)
             continue
         n = d.get("n")
@@ -225,7 +231,7 @@ def decide_line(lid, line, p1, p2, mode, auto_consensus=False, resolution=None):
     else:
         out["why"] = {"unsure": "pass2-unsure", "skip": "pass2-skip"}.get(p2["decision"], "pass2-disagree")
     if resolution is not None and out["status"] == "kept":
-        out["resolution"] = {k: resolution.get(k) for k in ("keep", "why") if k in resolution}
+        out["resolution"] = {k: resolution.get(k) for k in ("keep", "why", "note") if k in resolution}
         if not resolution.get("keep", True):
             out.update(status="dropped", why=f"blind-{resolution.get('why') or 'resolved'}", label=None)
         elif resolution.get("text"):
@@ -234,6 +240,27 @@ def decide_line(lid, line, p1, p2, mode, auto_consensus=False, resolution=None):
             out["how"], out["support"] = classify(t, line)
             out["resolution"]["changed_label"] = True
     return out
+
+
+def agrees(dec, label):
+    return dec is not None and dec["decision"] in ("pick", "text") and vote.key(dec["text"]) == vote.key(label)
+
+
+def apply_confirm(rec, conf, blind):
+    """Apply an independent confirming read (or none) to a final record, and count its looks."""
+    if rec["status"] != "kept":
+        return rec
+    if conf is not None:
+        rec["confirm"] = {"decision": conf["decision"], "agree": agrees(conf, rec["label"]), "batch": conf["batch"]}
+        if not rec["confirm"]["agree"] and not (rec.get("resolution") or {}).get("keep"):
+            why = {"unsure": "confirm-unsure", "skip": "confirm-skip"}.get(conf["decision"], "confirm-disagree")
+            rec.update(status="dropped", label=None, why=why)
+            return rec
+    if blind is not None:
+        rec["blind"] = {"decision": blind["decision"], "agree": agrees(blind, rec["label"])}
+    rec["looks"] = 1 + bool((rec.get("pass2") or {}).get("agree")) + bool((rec.get("blind") or {}).get("agree")) \
+        + bool((rec.get("confirm") or {}).get("agree")) + bool((rec.get("resolution") or {}).get("keep"))
+    return rec
 
 
 def cmd_parse(args):
@@ -274,16 +301,19 @@ def cmd_final(args):
                 res[r["id"]] = r
     ids = sorted(set(p1) | ({lid for lid, (s, ln) in idx.items() if S.is_candidate(ln)[0]}
                             if args.auto_consensus else set()))
+    blind, conf = collect(args.blind or []), collect(args.confirm or [])
     out = []
     for lid in ids:
         s, ln = idx[lid]
         rec = decide_line(lid, ln, p1.get(lid), p2.get(lid), args.mode, args.auto_consensus, res.get(lid))
         rec.update(shot=s["shot"], vn=s["vn"], subset=s["subset"], kind=s["kind"])
+        apply_confirm(rec, conf.get(lid), blind.get(lid))
         out.append(rec)
     Path(args.out).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in out), encoding="utf-8")
     st = Counter(f"{r['status']}:{r['how'] if r['status'] == 'kept' else r['why']}" for r in out)
-    print(json.dumps({"lines": len(out), "kept": sum(r["status"] == "kept" for r in out), "by": dict(st)},
-                     indent=1), flush=True)
+    looks = Counter(r.get("looks") for r in out if r["status"] == "kept")
+    print(json.dumps({"lines": len(out), "kept": sum(r["status"] == "kept" for r in out), "by": dict(st),
+                      "kept_by_looks": {str(k): v for k, v in sorted(looks.items())}}, indent=1), flush=True)
 
 
 def cmd_sample(args):
@@ -346,6 +376,8 @@ def main():
     p.add_argument("--pass1", nargs="+", required=True)
     p.add_argument("--pass2", nargs="*")
     p.add_argument("--resolve", nargs="*")
+    p.add_argument("--blind", nargs="*", help="blind re-check batches (counted in looks; never change a label)")
+    p.add_argument("--confirm", nargs="*", help="independent confirming reads: a disagreeing one drops the line")
     p.add_argument("--mode", choices=("dev", "train"), default="dev")
     p.add_argument("--auto-consensus", action="store_true")
     p.add_argument("--out", default=str(P.OUT / "labels.jsonl"))

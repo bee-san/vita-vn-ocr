@@ -8,26 +8,31 @@ under `$DEVNATIVE_OUT` (default `$HERD/shared/artifacts/devnative`); git holds t
 ## Pipeline
 
 ```sh
-HERD=/local/home/skerraut/herd-vita-ocr; OUT=$HERD/shared/artifacts/devnative
+HERD=/local/home/skerraut/herd-vita-ocr; OUT=$HERD/shared/artifacts/devnative; R=$OUT/review
 PY=.venv/bin/python; TPY=teacher/.venv/bin/python
 $PY devnative/select.py list                                   # fresh VNDB listing (kana API, polite)
 HEAVY_SLOTS=12 $HERD/heavy.sh timeout 3600 $PY devnative/select.py refs     # hash every screenshot to avoid
 HEAVY_SLOTS=12 $HERD/heavy.sh timeout 3600 $PY devnative/select.py select   # rules, fetch, dedupe
 HEAVY_SLOTS=12 $HERD/heavy.sh timeout 7200 unshare -rn $TPY devnative/read.py run --procs 5
-$PY devnative/sheets.py make --mode pass1 --out $OUT/review/pass1 --chunk 200
-#   ... decisions.jsonl written in each batch (README.md there has the format)
-$PY devnative/decide.py queue --pass1 $OUT/review/pass1 --out $OUT/review/pass2_queue.json
-$PY devnative/sheets.py make --mode pass2 --lines $OUT/review/pass2_queue.json --out $OUT/review/pass2 --chunk 150
-$PY devnative/gradcheck.py boxes --pass1 $OUT/review/pass1      # GRAD boxes from pass 1's dialogue regions
-$PY devnative/gradcheck.py sheets --out $OUT/review/gradcheck --chunk 60
-#   ... decisions.jsonl in each GRAD-check batch (does the finder's box show exactly the label?)
-$PY devnative/gradcheck.py apply --batch $OUT/review/gradcheck
-$PY devnative/decide.py final --pass1 $OUT/review/pass1 --pass2 $OUT/review/pass2
-$PY devnative/decide.py sample --n 300 --out $OUT/review/blind_ids.json
-$PY devnative/sheets.py make --mode blind --lines $OUT/review/blind_ids.json --out $OUT/review/blind --chunk 150
-$PY devnative/decide.py blind --batch $OUT/review/blind --out $OUT/review/blind_report.json
-$PY devnative/decide.py final --pass1 ... --pass2 ... --resolve $OUT/review/resolutions.jsonl   # third look
-$PY devnative/build.py npz --grad $OUT/grad/grad.jsonl
+$PY devnative/sheets.py make --mode pass1 --out $R/pass1 --chunk 120          # -> decisions.jsonl per batch
+$PY devnative/decide.py queue --pass1 $R/pass1 --out $R/pass2_queue.json
+$PY devnative/sheets.py make --mode pass2 --lines $R/pass2_queue.json --out $R/pass2 --chunk 57
+$PY devnative/gradcheck.py boxes --pass1 $R/pass1 && $PY devnative/gradcheck.py sheets --out $R/gradcheck --chunk 120
+$PY devnative/gradcheck.py apply --batch $R/gradcheck
+$PY devnative/decide.py final --pass1 $R/pass1 --pass2 $R/pass2
+$PY devnative/decide.py sample --n 300 --seed 20261012 --out $R/blind_ids.json
+$PY devnative/sheets.py make --mode blind --lines $R/blind_ids.json --out $R/blind --chunk 100
+$PY devnative/decide.py blind --batch $R/blind --out $R/blind_report.json            # the measured agreement
+$PY devnative/edgecheck.py boxes --evidence $R/gradcheck $R/blind && $PY devnative/edgecheck.py sheets --out $R/edgecheck --chunk 60
+#   confirming reads: every kept line with one look, blind, framed on its final crop
+#   ({"ids": [...], "frames": {id: final crop}} from $OUT/edge/boxes.jsonl), then
+$PY devnative/sheets.py make --mode blind --lines $R/confirm_ids.json --out $R/confirm --chunk 58
+$PY devnative/decide.py final --pass1 $R/pass1 --pass2 $R/pass2 --blind $R/blind --confirm $R/confirm $R/confirm2 \
+    --resolve $R/resolutions.jsonl                                              # third looks (assistant)
+$PY devnative/edgecheck.py boxes --evidence $R/gradcheck $R/blind $R/confirm $R/confirm2
+$PY devnative/edgecheck.py apply --batch $R/edgecheck
+$PY devnative/build.py npz --grad $OUT/grad/grad.jsonl --edge $OUT/edge/edge.jsonl
+$PY devnative/report.py                                                         # manifests/review.json
 ```
 
 | stage | file | what it does |
@@ -37,7 +42,9 @@ $PY devnative/build.py npz --grad $OUT/grad/grad.jsonl
 | sheets | `sheets.py` | contact sheets of at most 1280 x 1280 px: the framed crop in context, integer zoom, numbered candidates with differences in red; pass 1 shows engine support, pass 2 and the blind re-check shuffle candidates and hide it |
 | decide | `decide.py` | validates `decisions.jsonl`, classifies each pass-1 label (consensus: both engine families read it; single: one; changed: none), queues single and changed labels for the independent second pass, applies the rule, samples and scores the blind re-check |
 | GRAD check | `gradcheck.py` | the console finder on each dialogue region (the lines pass 1 called dialogue), matched to the lines; a box that holds the whole line and no other detected text is used, and one that runs beyond the reviewed ink crop only after a contact-sheet check that it shows exactly the label (the detector misses some glyphs: card digits, icons, run-on text) |
-| build | `build.py` | ink crops (ink + furigana + 4/2 px) and the checked GRAD crops, console polarity, npz files in teacher_val's format, manifests. Without `--grad` it uses regions of the kept lines and leaves out every GRAD box that runs beyond the ink crop |
+| edge check | `edgecheck.py` | final ink crops widened to the labelled characters' boxes (teacher's rule); every crop that changed, has ink continuing past it, or that a later look called cut is checked on a contact sheet (mode edge); a failed check drops the line |
+| report | `report.py` | text-free summary of every stage's counts, the blind agreement and the third looks (`manifests/review.json`) |
+| build | `build.py` | final ink crops and the checked GRAD crops, console polarity, npz files in teacher_val's format, manifests. Without `--grad` it uses regions of the kept lines and leaves out every GRAD box that runs beyond the ink crop |
 | geometry | `lines.py` | regions, finder matching, crop boxes, polarity (pure numpy; tested in CI) |
 
 ## Rules
@@ -49,6 +56,9 @@ $PY devnative/build.py npz --grad $OUT/grad/grad.jsonl
 - Training labels (`--mode train`): at least one engine family must read the label after review
   (changed labels are dropped); `--auto-consensus` keeps lines all four readings agree on
   without review; pass 2 is optional and, when given, must agree.
+- After the blind re-check, every kept line without two independent agreeing reads gets a blind
+  confirming read on its final crop (`--confirm`); a disagreeing, unsure or skipping read drops the
+  line unless a third-look resolution (`--resolve`) keeps it.
 - Every decision is recorded with `reviewer_kind: "assistant"` (Claude reading the sheets).
 
 ## Reusing it on another screenshot pool

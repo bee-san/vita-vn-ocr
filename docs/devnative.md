@@ -230,7 +230,8 @@ noticed, shows such errors can exist.
 `PIPELINE_FROZEN` was first written at `35a86ca`, which covers select, read, sheets and the
 pass-1/2 and blind rules. Two amendments followed:
 - `0cb084e`: the GRAD containment check;
-- this PR: final-crop widening, the edge check, confirming reads and resolutions.
+- `f523e30`: final-crop widening, the edge check, confirming reads and resolutions. The cohort
+  (`c83ba3f`) was built with this code.
 
 Each came from evidence found during review. The selection and reading stages are unchanged, and
 their output reproduces exactly.

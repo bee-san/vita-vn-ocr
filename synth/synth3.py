@@ -222,7 +222,7 @@ def merge_cfg(base, patch):
 def load_exclusions(paths):
     """VN ids, screenshot hashes (file and decoded-RGB pixel sha256) and name hashes that synth3
     must never use, from exclusion manifests (data/manifests/synth3_exclude_*.json)."""
-    ex = {"vns": set(), "sha256": set(), "pixel_sha256": set(), "name_sha256": set(), "files": []}
+    ex = {"vns": set(), "sha256": set(), "pixel_sha256": set(), "name_sha256": set(), "markers": set(), "files": []}
     for p in paths:
         doc = json.loads(Path(p).read_text(encoding="utf-8"))
         if doc.get("kind") != "synth3-exclusion":
@@ -231,8 +231,14 @@ def load_exclusions(paths):
         ex["sha256"] |= set(doc.get("screenshots", {}).get("sha256", []))
         ex["pixel_sha256"] |= set(doc.get("screenshots", {}).get("pixel_sha256", []))
         ex["name_sha256"] |= set(doc.get("names", {}).get("name_sha256", []))
+        ex["markers"] |= set(doc.get("text_markers", {}).get("strings", []))
         ex["files"].append({"file": Path(p).name, "sha256": sha256(p), "vns": len(doc["vns"])})
     return ex
+
+
+def marked(s, markers):
+    """Does text s hold an exclusion marker (a protected title's character names or title)?"""
+    return any(m in s for m in markers)
 
 
 def name_hash(parts):
@@ -414,8 +420,8 @@ class Resources:
         bad = self.exclusions["name_sha256"]
         for line in (pools_dir / f"names.{split}.tsv").read_text(encoding="utf-8").splitlines():
             p = line.split("\t")
-            if bad and name_hash(p[2:]) in bad:      # a character of an excluded VN, or its homonym
-                self.names_dropped += 1
+            if (bad and name_hash(p[2:]) in bad) or marked("".join(p[2:]), self.exclusions["markers"]):
+                self.names_dropped += 1            # a character of an excluded VN, or its homonym
                 continue
             self.names.setdefault(p[0], []).append(tuple(p[2:]))
         targets_path = self.targets_path or pools_dir / "targets.json"
@@ -507,10 +513,18 @@ class Resources:
         same = [k for k in ks if self.kind_of(self.ctx_pool[k]) == kind and self.ctx_pool[k] not in ref]
         other = [k for k in ks if self.ctx_pool[k] not in ref]
         pick = same or other
+        if self.exclusions["markers"]:
+            pick = [k for k in pick if not marked(self.pools[self.ctx_pool[k]][int(self.ctx_line[k])],
+                                                  self.exclusions["markers"])]
+            if not pick:
+                return None, None
         if pick and not LATIN.match(self.vocab[c]) and rng.random() >= CFG["latin_keep"]:
             plain = [k for k in pick if not LATIN.search(self.pools[self.ctx_pool[k]][int(self.ctx_line[k])])]
             pick = plain or pick         # v3: Latin letters only where the focus character needs them
         k = int(pick[rng.integers(len(pick))]) if pick else int(rng.integers(a, b))
+        if self.exclusions["markers"] and marked(self.pools[self.ctx_pool[k]][int(self.ctx_line[k])],
+                                                 self.exclusions["markers"]):
+            return None, None
         pool = self.ctx_pool[k]
         return self.pools[pool][int(self.ctx_line[k])], pool
 
@@ -584,13 +598,19 @@ def clean(s):
 def pool_line(rng, pool):
     """A line of `pool`. One holding Latin letters or digits is kept with probability CFG
     latin_keep, else redrawn (at most latin_redraws times): subtitle, roleplay and Wikipedia lines
-    carry about 3x the Latin share of real VN crops (version 3)."""
+    carry about 3x the Latin share of real VN crops (version 3). A line holding an exclusion text
+    marker (CLANNAD's character names and title) is always redrawn."""
+    bad = R.exclusions["markers"]
     s = R.pools[pool].sample(rng)
     for _ in range(CFG["latin_redraws"]):
         if not LATIN.search(s) or rng.random() < CFG["latin_keep"]:
             break
         s = R.pools[pool].sample(rng)
-    return s
+    for _ in range(50):         # never a line naming a protected title's characters
+        if not (bad and marked(s, bad)):
+            return s
+        s = R.pools[pool].sample(rng)
+    return ""
 
 
 def template_line(rng):

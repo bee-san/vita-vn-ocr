@@ -1,0 +1,2003 @@
+{
+  "accuracy_evaluated": false,
+  "default_changed": false,
+  "measurements": [
+    {
+      "boot": 0,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 55500,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 215863,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 355943,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 583143,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 1088040,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 866573,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 1740503,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 731127,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 1631636,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 82249,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 110106,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 216511,
+          "frames": 16
+        }
+      ],
+      "invert": false,
+      "profile": "scalar-w8i-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 124832,
+          "256": 124832,
+          "640": 124832
+        },
+        "arena_bytes": 124832,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 82,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 0,
+        "kernel_max_free_start": 24146688,
+        "kernel_total_free_start": 24408832,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8i",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 1740503,
+        "us_total": 7677194,
+        "user_free_loaded": 21815040,
+        "user_free_min": 21323520,
+        "user_free_start": 24408832,
+        "user_max_block_loaded": 21556992,
+        "user_max_block_start": 24146688,
+        "variant": "scalar FPU path"
+      }
+    },
+    {
+      "boot": 1,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 55500,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 215863,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 355943,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 583143,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 1088040,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 866573,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 1740503,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 731127,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 1631636,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 82249,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 110106,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 216511,
+          "frames": 16
+        }
+      ],
+      "invert": false,
+      "profile": "scalar-w8i-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 124832,
+          "256": 124832,
+          "640": 124832
+        },
+        "arena_bytes": 124832,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 82,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 0,
+        "kernel_max_free_start": 24146688,
+        "kernel_total_free_start": 24408832,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8i",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 1740503,
+        "us_total": 7677194,
+        "user_free_loaded": 21815040,
+        "user_free_min": 21323520,
+        "user_free_start": 24408832,
+        "user_max_block_loaded": 21556992,
+        "user_max_block_start": 24146688,
+        "variant": "scalar FPU path"
+      }
+    },
+    {
+      "boot": 0,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 55503,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 215862,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 355943,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 583145,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 1088044,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 866568,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 1740491,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 731125,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 1631640,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 82248,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 110101,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 216521,
+          "frames": 16
+        }
+      ],
+      "invert": true,
+      "profile": "scalar-w8i-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 124832,
+          "256": 124832,
+          "640": 124832
+        },
+        "arena_bytes": 124832,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 91,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 1,
+        "kernel_max_free_start": 24146688,
+        "kernel_total_free_start": 24408832,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8i",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 1740491,
+        "us_total": 7677191,
+        "user_free_loaded": 21815040,
+        "user_free_min": 21323520,
+        "user_free_start": 24408832,
+        "user_max_block_loaded": 21556992,
+        "user_max_block_start": 24146688,
+        "variant": "scalar FPU path"
+      }
+    },
+    {
+      "boot": 1,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 55503,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 215862,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 355943,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 583145,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 1088044,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 866568,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 1740491,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 731125,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 1631640,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 82248,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 110101,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 216521,
+          "frames": 16
+        }
+      ],
+      "invert": true,
+      "profile": "scalar-w8i-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 124832,
+          "256": 124832,
+          "640": 124832
+        },
+        "arena_bytes": 124832,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 91,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 1,
+        "kernel_max_free_start": 24146688,
+        "kernel_total_free_start": 24408832,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8i",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 1740491,
+        "us_total": 7677191,
+        "user_free_loaded": 21815040,
+        "user_free_min": 21323520,
+        "user_free_start": 24408832,
+        "user_max_block_loaded": 21556992,
+        "user_max_block_start": 24146688,
+        "variant": "scalar FPU path"
+      }
+    },
+    {
+      "boot": 0,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 49754,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 168427,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 279987,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 463289,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 841101,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 669690,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 1345513,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 570032,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 1265338,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 69999,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 89693,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 170241,
+          "frames": 16
+        }
+      ],
+      "invert": false,
+      "profile": "scalar-w8f-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 118432,
+          "256": 118432,
+          "640": 118432
+        },
+        "arena_bytes": 118432,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 82,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 0,
+        "kernel_max_free_start": 24146688,
+        "kernel_total_free_start": 24408832,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 1345513,
+        "us_total": 5983064,
+        "user_free_loaded": 21821440,
+        "user_free_min": 21329920,
+        "user_free_start": 24408832,
+        "user_max_block_loaded": 21563392,
+        "user_max_block_start": 24146688,
+        "variant": "scalar FPU path"
+      }
+    },
+    {
+      "boot": 1,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 49754,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 168427,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 279987,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 463289,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 841101,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 669690,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 1345513,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 570032,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 1265338,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 69999,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 89693,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 170241,
+          "frames": 16
+        }
+      ],
+      "invert": false,
+      "profile": "scalar-w8f-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 118432,
+          "256": 118432,
+          "640": 118432
+        },
+        "arena_bytes": 118432,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 82,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 0,
+        "kernel_max_free_start": 24146688,
+        "kernel_total_free_start": 24408832,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 1345513,
+        "us_total": 5983064,
+        "user_free_loaded": 21821440,
+        "user_free_min": 21329920,
+        "user_free_start": 24408832,
+        "user_max_block_loaded": 21563392,
+        "user_max_block_start": 24146688,
+        "variant": "scalar FPU path"
+      }
+    },
+    {
+      "boot": 0,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 49756,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 168426,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 279986,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 463287,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 841099,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 669442,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 1345504,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 570031,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 1265341,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 69998,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 89689,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 170035,
+          "frames": 16
+        }
+      ],
+      "invert": true,
+      "profile": "scalar-w8f-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 118432,
+          "256": 118432,
+          "640": 118432
+        },
+        "arena_bytes": 118432,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 91,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 1,
+        "kernel_max_free_start": 24146688,
+        "kernel_total_free_start": 24408832,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 1345504,
+        "us_total": 5982594,
+        "user_free_loaded": 21821440,
+        "user_free_min": 21329920,
+        "user_free_start": 24408832,
+        "user_max_block_loaded": 21563392,
+        "user_max_block_start": 24146688,
+        "variant": "scalar FPU path"
+      }
+    },
+    {
+      "boot": 1,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 49756,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 168426,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 279986,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 463287,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 841099,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 669442,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 1345504,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 570031,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 1265341,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 69998,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 89689,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 170035,
+          "frames": 16
+        }
+      ],
+      "invert": true,
+      "profile": "scalar-w8f-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 118432,
+          "256": 118432,
+          "640": 118432
+        },
+        "arena_bytes": 118432,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 91,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 1,
+        "kernel_max_free_start": 24146688,
+        "kernel_total_free_start": 24408832,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 1345504,
+        "us_total": 5982594,
+        "user_free_loaded": 21821440,
+        "user_free_min": 21329920,
+        "user_free_start": 24408832,
+        "user_max_block_loaded": 21563392,
+        "user_max_block_start": 24146688,
+        "variant": "scalar FPU path"
+      }
+    },
+    {
+      "boot": 0,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 36078,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 114425,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 194453,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 320172,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 564342,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 446771,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 900673,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 388456,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 850128,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 54480,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 62581,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 114083,
+          "frames": 16
+        }
+      ],
+      "invert": false,
+      "profile": "vfpu-w8f-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 118432,
+          "256": 118432,
+          "640": 118432
+        },
+        "arena_bytes": 118432,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 82,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 0,
+        "kernel_max_free_start": 24146176,
+        "kernel_total_free_start": 24408320,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 900673,
+        "us_total": 4046642,
+        "user_free_loaded": 21820928,
+        "user_free_min": 21329408,
+        "user_free_start": 24408320,
+        "user_max_block_loaded": 21562880,
+        "user_max_block_start": 24146176,
+        "variant": "VFPU matrix products"
+      }
+    },
+    {
+      "boot": 1,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 36078,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 114425,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 194453,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 320172,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 564342,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 446771,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 900673,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 388456,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 850128,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 54480,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 62581,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 114083,
+          "frames": 16
+        }
+      ],
+      "invert": false,
+      "profile": "vfpu-w8f-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 118432,
+          "256": 118432,
+          "640": 118432
+        },
+        "arena_bytes": 118432,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 82,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 0,
+        "kernel_max_free_start": 24146176,
+        "kernel_total_free_start": 24408320,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 900673,
+        "us_total": 4046642,
+        "user_free_loaded": 21820928,
+        "user_free_min": 21329408,
+        "user_free_start": 24408320,
+        "user_max_block_loaded": 21562880,
+        "user_max_block_start": 24146176,
+        "variant": "VFPU matrix products"
+      }
+    },
+    {
+      "boot": 0,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 36081,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 114423,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 194454,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 320173,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 564345,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 446765,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 900662,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 388454,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 850132,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 54480,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 62575,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 114094,
+          "frames": 16
+        }
+      ],
+      "invert": true,
+      "profile": "vfpu-w8f-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 118432,
+          "256": 118432,
+          "640": 118432
+        },
+        "arena_bytes": 118432,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 91,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 1,
+        "kernel_max_free_start": 24146176,
+        "kernel_total_free_start": 24408320,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 900662,
+        "us_total": 4046638,
+        "user_free_loaded": 21820928,
+        "user_free_min": 21329408,
+        "user_free_start": 24408320,
+        "user_max_block_loaded": 21562880,
+        "user_max_block_start": 24146176,
+        "variant": "VFPU matrix products"
+      }
+    },
+    {
+      "boot": 1,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 36081,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 114423,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 194454,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 320173,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 564345,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 446765,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 900662,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 388454,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 850132,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 54480,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 62575,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 114094,
+          "frames": 16
+        }
+      ],
+      "invert": true,
+      "profile": "vfpu-w8f-t4",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 118432,
+          "256": 118432,
+          "640": 118432
+        },
+        "arena_bytes": 118432,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 91,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 1,
+        "kernel_max_free_start": 24146176,
+        "kernel_total_free_start": 24408320,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 4,
+        "us_max_line": 900662,
+        "us_total": 4046638,
+        "user_free_loaded": 21820928,
+        "user_free_min": 21329408,
+        "user_free_start": 24408320,
+        "user_max_block_loaded": 21562880,
+        "user_max_block_start": 24146176,
+        "variant": "VFPU matrix products"
+      }
+    },
+    {
+      "boot": 0,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 33588,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 103647,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 171941,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 283424,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 496762,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 395026,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 791938,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 331500,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 736896,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 48431,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 54809,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 103410,
+          "frames": 16
+        }
+      ],
+      "invert": false,
+      "profile": "vfpu-w8f-t16",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 353536,
+          "256": 353536,
+          "640": 353536
+        },
+        "arena_bytes": 353536,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 82,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 0,
+        "kernel_max_free_start": 24146176,
+        "kernel_total_free_start": 24408320,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 16,
+        "us_max_line": 791938,
+        "us_total": 3551372,
+        "user_free_loaded": 21585920,
+        "user_free_min": 21094400,
+        "user_free_start": 24408320,
+        "user_max_block_loaded": 21327872,
+        "user_max_block_start": 24146176,
+        "variant": "VFPU matrix products"
+      }
+    },
+    {
+      "boot": 1,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 33588,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 103647,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 171941,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 283424,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 496762,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 395026,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 791938,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 331500,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 736896,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 48431,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 54809,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 103410,
+          "frames": 16
+        }
+      ],
+      "invert": false,
+      "profile": "vfpu-w8f-t16",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 353536,
+          "256": 353536,
+          "640": 353536
+        },
+        "arena_bytes": 353536,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 82,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 0,
+        "kernel_max_free_start": 24146176,
+        "kernel_total_free_start": 24408320,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 16,
+        "us_max_line": 791938,
+        "us_total": 3551372,
+        "user_free_loaded": 21585920,
+        "user_free_min": 21094400,
+        "user_free_start": 24408320,
+        "user_max_block_loaded": 21327872,
+        "user_max_block_start": 24146176,
+        "variant": "VFPU matrix products"
+      }
+    },
+    {
+      "boot": 0,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 33590,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 103646,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 171940,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 283425,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 496765,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 395021,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 791926,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 331497,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 736900,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 48430,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 54804,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 103421,
+          "frames": 16
+        }
+      ],
+      "invert": true,
+      "profile": "vfpu-w8f-t16",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 353536,
+          "256": 353536,
+          "640": 353536
+        },
+        "arena_bytes": 353536,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 91,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 1,
+        "kernel_max_free_start": 24146176,
+        "kernel_total_free_start": 24408320,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 16,
+        "us_max_line": 791926,
+        "us_total": 3551365,
+        "user_free_loaded": 21585920,
+        "user_free_min": 21094400,
+        "user_free_start": 24408320,
+        "user_max_block_loaded": 21327872,
+        "user_max_block_start": 24146176,
+        "variant": "VFPU matrix products"
+      }
+    },
+    {
+      "boot": 1,
+      "cases": [
+        {
+          "case": 0,
+          "emulated_us": 33590,
+          "frames": 4
+        },
+        {
+          "case": 1,
+          "emulated_us": 103646,
+          "frames": 16
+        },
+        {
+          "case": 2,
+          "emulated_us": 171940,
+          "frames": 26
+        },
+        {
+          "case": 3,
+          "emulated_us": 283425,
+          "frames": 43
+        },
+        {
+          "case": 4,
+          "emulated_us": 496765,
+          "frames": 80
+        },
+        {
+          "case": 5,
+          "emulated_us": 395021,
+          "frames": 64
+        },
+        {
+          "case": 6,
+          "emulated_us": 791926,
+          "frames": 128
+        },
+        {
+          "case": 7,
+          "emulated_us": 331497,
+          "frames": 54
+        },
+        {
+          "case": 8,
+          "emulated_us": 736900,
+          "frames": 120
+        },
+        {
+          "case": 9,
+          "emulated_us": 48430,
+          "frames": 6
+        },
+        {
+          "case": 10,
+          "emulated_us": 54804,
+          "frames": 8
+        },
+        {
+          "case": 11,
+          "emulated_us": 103421,
+          "frames": 16
+        }
+      ],
+      "invert": true,
+      "profile": "vfpu-w8f-t16",
+      "stats": {
+        "app": "vocr_test",
+        "arena_at": {
+          "1024": 353536,
+          "256": 353536,
+          "640": 353536
+        },
+        "arena_bytes": 353536,
+        "blob_bytes": 657664,
+        "bus_mhz": 166,
+        "chars": 91,
+        "classes": 3501,
+        "cpu_mhz": 333,
+        "crop_buffer_bytes": 491520,
+        "expect": true,
+        "frames": 565,
+        "head": 16,
+        "input_buffer_bytes": 0,
+        "int8": 1,
+        "invert": 1,
+        "kernel_max_free_start": 24146176,
+        "kernel_total_free_start": 24408320,
+        "lines": 12,
+        "logits_buffer_bytes": 1806516,
+        "logits_ok": 12,
+        "max_width": 1024,
+        "mode": "w8f",
+        "model": "model.vocr",
+        "params": 579661,
+        "repeat": 3,
+        "sizeof_ctx": 1984,
+        "sizeof_model": 1772,
+        "stack_bytes": 4096,
+        "stack_used": 2992,
+        "text_ok": 12,
+        "tile": 16,
+        "us_max_line": 791926,
+        "us_total": 3551365,
+        "user_free_loaded": 21585920,
+        "user_free_min": 21094400,
+        "user_free_start": 24408320,
+        "user_max_block_loaded": 21327872,
+        "user_max_block_start": 24146176,
+        "variant": "VFPU matrix products"
+      }
+    }
+  ],
+  "profiles": [
+    {
+      "arena_bytes": 124832,
+      "blob_bytes": 657664,
+      "boots": 4,
+      "emulated_us_per_frame": 13587.951327433628,
+      "emulated_us_per_frame_range": [
+        13587.948672566372,
+        13587.953982300885
+      ],
+      "mode": "w8i",
+      "model_and_context_bytes": 3756,
+      "numerical_checks": 48,
+      "profile": "scalar-w8i-t4",
+      "repeated_case_timings_identical": true,
+      "stack_reserved_bytes": 4096,
+      "stack_used_max": 2992,
+      "tile": 4
+    },
+    {
+      "arena_bytes": 118432,
+      "blob_bytes": 657664,
+      "boots": 4,
+      "emulated_us_per_frame": 10589.077876106194,
+      "emulated_us_per_frame_range": [
+        10588.661946902655,
+        10589.493805309734
+      ],
+      "mode": "w8f",
+      "model_and_context_bytes": 3756,
+      "numerical_checks": 48,
+      "profile": "scalar-w8f-t4",
+      "repeated_case_timings_identical": true,
+      "stack_reserved_bytes": 4096,
+      "stack_used_max": 2992,
+      "tile": 4
+    },
+    {
+      "arena_bytes": 118432,
+      "blob_bytes": 657664,
+      "boots": 4,
+      "emulated_us_per_frame": 7162.194690265486,
+      "emulated_us_per_frame_range": [
+        7162.191150442478,
+        7162.198230088496
+      ],
+      "mode": "w8f",
+      "model_and_context_bytes": 3756,
+      "numerical_checks": 48,
+      "profile": "vfpu-w8f-t4",
+      "repeated_case_timings_identical": true,
+      "stack_reserved_bytes": 4096,
+      "stack_used_max": 2992,
+      "tile": 4
+    },
+    {
+      "arena_bytes": 353536,
+      "blob_bytes": 657664,
+      "boots": 4,
+      "emulated_us_per_frame": 6285.60796460177,
+      "emulated_us_per_frame_range": [
+        6285.601769911505,
+        6285.614159292036
+      ],
+      "mode": "w8f",
+      "model_and_context_bytes": 3756,
+      "numerical_checks": 48,
+      "profile": "vfpu-w8f-t16",
+      "repeated_case_timings_identical": true,
+      "stack_reserved_bytes": 4096,
+      "stack_used_max": 2992,
+      "tile": 16
+    }
+  ],
+  "protocol": {
+    "binary_sha256": {
+      "emulator": "c065cf204335e9eb26a85592947e9f8fb4ddc718bc4eaad2ce06240a01d82f8d",
+      "host_library": "4a5635ba9a0721373f35e8957c0788b74e1725ea8cd96b8200cc5e427536b11b",
+      "scalar": "e976944cb2beaca7d077f1c24e7e35df1a44b05474a0fa532523c53b416d5a9b",
+      "vfpu": "7444bcb1e46acea01d07e4c01f62d21bd36560406ef5c0029856aa944c1bb57a"
+    },
+    "boots_per_profile_polarity": 2,
+    "cpu_core": "jit",
+    "cpu_mhz": 333,
+    "generated_pack_sha256": "90d2c9763d3dc45e49ffd9f6061d9dfb471de736211a6aaf56cd775123cbcc64",
+    "head": 16,
+    "host": {
+      "numpy": "2.4.6",
+      "platform": "Linux-7.2.6-1-cachyos-x86_64-with-glibc2.44",
+      "python": "3.11.15 (main, May 10 2026, 19:28:18) [Clang 22.1.3 ]"
+    },
+    "max_width": 1024,
+    "model_sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766",
+    "polarities": [
+      false,
+      true
+    ],
+    "profiles": [
+      [
+        "scalar-w8i-t4",
+        "scalar",
+        "w8i",
+        4
+      ],
+      [
+        "scalar-w8f-t4",
+        "scalar",
+        "w8f",
+        4
+      ],
+      [
+        "vfpu-w8f-t4",
+        "vfpu",
+        "w8f",
+        4
+      ],
+      [
+        "vfpu-w8f-t16",
+        "vfpu",
+        "w8f",
+        16
+      ]
+    ],
+    "purpose": "generated PSP numerical parity and emulator profile; no accuracy claim",
+    "schema": 1,
+    "seed": 20261012,
+    "shapes_hwc": [
+      [
+        1,
+        1,
+        1
+      ],
+      [
+        16,
+        64,
+        1
+      ],
+      [
+        20,
+        128,
+        4
+      ],
+      [
+        24,
+        256,
+        1
+      ],
+      [
+        24,
+        480,
+        4
+      ],
+      [
+        32,
+        512,
+        1
+      ],
+      [
+        32,
+        1024,
+        4
+      ],
+      [
+        48,
+        640,
+        1
+      ],
+      [
+        64,
+        1920,
+        4
+      ],
+      [
+        32,
+        48,
+        1
+      ],
+      [
+        32,
+        64,
+        4
+      ],
+      [
+        24,
+        96,
+        1
+      ]
+    ],
+    "source_sha256": {
+      "psp/Makefile": "d32deca6393c2dc09a756be4f90b0b86cf8de920096e1863e7b48399ae21bf99",
+      "psp/fl10_profile.py": "b43418eee27d16b1e10720a361f3074e2351ef12eb558e6149fadb4e1ff260c8",
+      "psp/main.c": "782604488e9a3df7bb7b02bf925b7468fc40da0e6bae7735aea4fa09233bf902",
+      "psp/pack.py": "e842576b210b4419265ade246c2d740d2627596fec78ba34c203188b222e361b",
+      "psp/ppsspp_cli.py": "96f94d65dba90448caedb8b1897483b45449e86ac1617eea201ef1709007a48f",
+      "runtime/pyvocr.py": "49cd9bf0ac474728f5aae9df9c7a7b7656a57db85f1eec75ec3ba7829b427376",
+      "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+      "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd"
+    },
+    "stack_bytes": 4096,
+    "timed_repeats_after_first_check": 3
+  },
+  "protocol_sha256": "2e120139be8f113c01401529b1ccd3708734256fde08f98b5925dcc87ae1313f",
+  "schema": 1,
+  "scope": "generated numerical checks only; PPSSPP emulated allocation/timing, not physical PSP or real-VN CER",
+  "status": "completed"
+}

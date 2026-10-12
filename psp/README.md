@@ -5,6 +5,10 @@ path), a test EBOOT that runs it on line crops from the memory stick, and a PPSS
 harness that checks it against the host runtime. **Nothing here has run on a PSP console.**
 PPSSPP's timing is emulated time, not console time.
 
+The [released FL10 / VOCR2 profile](../docs/fl10-psp-profile.md) adds current-weight
+measurements and a reproducible generated-input check. The v1 figures below remain
+historical; the FL10 profile is an arithmetic and allocation test, not an accuracy test.
+
 ## Results
 
 - **Same output as the host.** In PPSSPPHeadless 1.20.4 the PSP build's logits are

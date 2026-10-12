@@ -10,6 +10,7 @@ import struct
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -76,6 +77,31 @@ def test_driver_takes_vocr_cli_arguments():
     a = ppsspp_cli.parse_args(["m.vocr", "--mode", "w8i", "--tile", "3", "--head", "7", "--invert"])
     cfg = ppsspp_cli.make_cfg(a)
     assert (cfg["mode"], cfg["tile"], cfg["head"], cfg["invert"], cfg["wait"]) == ("w8i", 3, 7, 1, 0)
+
+
+def test_boot_uses_private_host_mount_without_replacing_home(tmp_path, monkeypatch):
+    app = tmp_path / "PSP" / "GAME" / "VOCR"
+    app.mkdir(parents=True)
+    (app / "results.txt").write_text("# done: 0 lines\n")
+    calls = []
+
+    def run(argv, **kwargs):
+        calls.append((argv, kwargs))
+        return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(ppsspp_cli.subprocess, "run", run)
+    args = ppsspp_cli.parse_args(["model.vocr", "--ppsspp", "/pinned/PPSSPPHeadless"])
+    result, log = ppsspp_cli.boot(args, app)
+    argv, kwargs = calls[0]
+    assert argv[argv.index("--root") + 1] == str(app)
+    assert argv[-1] == str(app / "EBOOT.PBP")
+    assert kwargs["cwd"] == app and "env" not in kwargs
+    assert result == "# done: 0 lines\n" and log == ""
+
+    monkeypatch.chdir(tmp_path)
+    args.ppsspp = "relative-tools/PPSSPPHeadless"
+    ppsspp_cli.boot(args, app)
+    assert calls[-1][0][0] == str(tmp_path / args.ppsspp)
 
 
 def test_bundle_config_keys_are_the_apps():

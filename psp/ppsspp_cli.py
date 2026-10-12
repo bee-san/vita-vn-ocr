@@ -16,8 +16,8 @@ Own options: --ppsspp PATH ($PPSSPP, default psp/tools/ppsspp/PPSSPPHeadless), -
 --cpu jit|ir|interp (PPSSPP's CPU core, default jit), --clock MHz (default 333), --stack-kb N,
 --stats OUT.json (the app's stats.json), --keep DIR (keep the app directory there).
 
-Every call boots the EBOOT once, in a fresh memory stick ($HOME/.ppsspp of a temporary HOME),
-from ms0:/PSP/GAME/VOCR/, exactly the layout on a PSP. The texts, logits and preprocessed
+Every call boots the EBOOT once, with a private directory mounted on host0: through
+PPSSPP's --root option. The caller's HOME and memory stick are preserved. The texts, logits and preprocessed
 inputs are what the PSP build of vocr.c computed. The ms/line it prints is PPSSPP's emulated
 time: PPSSPP charges about one cycle per MIPS instruction, with no cache or pipeline model, so
 it is not the console's speed.
@@ -119,11 +119,12 @@ def make_cfg(a):
     return cfg
 
 
-def boot(a, home, app):
-    """Boot app/EBOOT.PBP in PPSSPPHeadless with HOME=home; returns (results.txt, log)."""
-    env = dict(os.environ, HOME=str(home))
-    cmd = [a.ppsspp, CPU[a.cpu], f"--timeout={a.timeout:g}", str(app / "EBOOT.PBP")]
-    p = subprocess.run(cmd, env=env, stdin=subprocess.DEVNULL, capture_output=True,
+def boot(a, app):
+    """Boot in an explicit private host0: mount; preserve the user's environment."""
+    executable = str(Path(shutil.which(a.ppsspp) or a.ppsspp).resolve())
+    cmd = [executable, CPU[a.cpu], "--root", str(app), f"--timeout={a.timeout:g}",
+           str(app / "EBOOT.PBP")]
+    p = subprocess.run(cmd, cwd=app, stdin=subprocess.DEVNULL, capture_output=True,
                        timeout=a.timeout + 120)
     log = p.stdout.decode("utf-8", "replace") + p.stderr.decode("utf-8", "replace")
     res = (app / "results.txt").read_text("utf-8", "replace") if (app / "results.txt").exists() else ""
@@ -156,13 +157,15 @@ def run_bundle(a):
         raise SystemExit(f"{a.bundle}: expected one PSP/GAME/<name>/EBOOT.PBP, found {len(games)}")
     tmp = tempfile.TemporaryDirectory(prefix="vocr_psp_")
     home = Path(a.keep).resolve() if a.keep else Path(tmp.name)
-    app = home / ".ppsspp" / "PSP" / "GAME" / games[0].name
+    # PPSSPP rewrites paths containing PSP/GAME to the real ms0: mount, even
+    # with --root. Use a plain host directory for the emulated copy instead.
+    app = home / "vocr-emulator-app"
     if app.exists():
-        shutil.rmtree(app)
+        raise SystemExit(f"{app} already exists: use a fresh --keep directory")
     shutil.copytree(games[0], app)
     cfg = [ln for ln in (app / "vocr.cfg").read_text().splitlines() if not ln.startswith("wait=")]
     (app / "vocr.cfg").write_text("\n".join(cfg + ["wait=0"]) + "\n")
-    res, log = boot(a, home, app)
+    res, log = boot(a, app)
     if "# done" not in res:
         raise SystemExit(f"PSP app did not finish (timeout {a.timeout:g} s?):\n{log[-3000:]}")
     st = json.loads((app / "stats.json").read_text())
@@ -187,9 +190,9 @@ def run(a):
         raise SystemExit("MODEL.vocr is required (or --bundle DIR)")
     tmp = tempfile.TemporaryDirectory(prefix="vocr_psp_")
     home = Path(a.keep).resolve() if a.keep else Path(tmp.name)
-    app = home / ".ppsspp" / "PSP" / "GAME" / "VOCR"
+    app = home / "vocr-emulator-app"
     if app.exists():
-        shutil.rmtree(app)
+        raise SystemExit(f"{app} already exists: use a fresh --keep directory")
     app.mkdir(parents=True)
     shutil.copyfile(a.eboot, app / "EBOOT.PBP")
     shutil.copyfile(a.model, app / "model.vocr")
@@ -206,7 +209,7 @@ def run(a):
     elif not a.arena:
         raise SystemExit("no input: give --pack, --stdin or image paths")
     (app / "vocr.cfg").write_text("".join(f"{k}={v}\n" for k, v in make_cfg(a).items()))
-    res, log = boot(a, home, app)
+    res, log = boot(a, app)
     if a.arena:
         sys.stdout.write((app / "arena.txt").read_text())
         return

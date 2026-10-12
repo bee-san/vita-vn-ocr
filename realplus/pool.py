@@ -348,7 +348,9 @@ def start_read():
     cmd_prep(None)
     log = OUT / "logs" / f"read_{time.strftime('%H%M%S')}.log"
     herd = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
-    cmd = (f"HEAVY_SLOTS=12 {herd}/heavy.sh timeout 14400 unshare -rn {ROOT}/teacher/.venv/bin/python "
+    # REALPLUS_HEAVY_SLOTS=13: the conductor's 20:38Z allowance of one extra slot for this read only.
+    slots = int(os.environ.get("REALPLUS_HEAVY_SLOTS", "12"))
+    cmd = (f"HEAVY_SLOTS={slots} {herd}/heavy.sh timeout 14400 unshare -rn {ROOT}/teacher/.venv/bin/python "
            f"{ROOT}/devnative/read.py run --shots {OUT}/reads/shots.jsonl --out {OUT}/reads --procs 5 "
            f"> {log} 2>&1 < /dev/null")
     proc = subprocess.Popen(["bash", "-c", cmd], cwd=ROOT, start_new_session=True)

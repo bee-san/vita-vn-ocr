@@ -384,3 +384,35 @@ def test_study2_reported_spec_is_consistent():
     for a, b in rep["comparisons"].values():
         assert a in rep["arms"] and b in rep["arms"] and len(rep["arms"][a]) == len(rep["arms"][b])
     assert rep["arms"]["curve_1M"] == ["B_s3_seed1", "B_s3_seed2"]
+
+
+def test_filter_pools_drops_vns_with_aligned_targets(tmp_path):
+    import synth3_filter_pools as FP
+    rng = np.random.default_rng(3)
+    crops = [rng.integers(0, 255, (32, 8 + 4 * i), dtype=np.uint8) for i in range(6)]
+    shapes = np.array([c.shape for c in crops], np.int32)
+    offs = np.concatenate([[0], np.cumsum([c.size for c in crops])]).astype(np.int64)
+    vns = ["v1", "v4", "v2", "v4060", "v3", "v4"]
+    labels = [f"あ{i}" for i in range(6)]
+    meta = [{"id": f"x{i}", "vn": v} for i, v in enumerate(vns)]
+    (tmp_path / "in").mkdir()
+    (tmp_path / "t").mkdir()
+    np.savez_compressed(tmp_path / "in" / "pool.npz", data=np.concatenate([c.ravel() for c in crops]), offsets=offs,
+                        shapes=shapes, labels=np.array(json.dumps(labels)), meta=np.array(json.dumps(meta)))
+    T = np.array([2, 3, 1, 4, 2, 3], np.int32)
+    toff = np.concatenate([[0], np.cumsum(T)]).astype(np.int64)
+    kid = np.arange(int(toff[-1]) * 4, dtype=np.int16).reshape(-1, 4)
+    np.savez(tmp_path / "t" / "pool.v6s.npz", text=json.dumps(labels), stext=json.dumps(labels),
+             conf=np.ones((6, 2), np.float32), T=T, off=toff, kid=kid, kp=kid.astype(np.float16),
+             soft_ok=np.ones(6, bool), info="x")
+    rec = FP.filter_pool(tmp_path / "in" / "pool.npz", {"v4", "v4060"}, tmp_path, tmp_path / "t", tmp_path / "t2")
+    assert rec["dropped"] == {"v4": 2, "v4060": 1} and rec["out_rows"] == 3
+    z = np.load(tmp_path / "pool.npz")
+    keep = [0, 2, 4]
+    assert json.loads(str(z["labels"])) == [labels[i] for i in keep]
+    for j, i in enumerate(keep):
+        assert np.array_equal(z["data"][z["offsets"][j]:z["offsets"][j + 1]], crops[i].ravel())
+    t = np.load(tmp_path / "t2" / "pool.v6s.npz")
+    assert list(t["T"]) == [2, 1, 2] and json.loads(str(t["text"])) == [labels[i] for i in keep]
+    for j, i in enumerate(keep):
+        assert np.array_equal(t["kid"][t["off"][j]:t["off"][j + 1]], kid[toff[i]:toff[i + 1]])

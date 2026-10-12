@@ -1,0 +1,95 @@
+{
+ "kind": "vocr3-protocol",
+ "schema": 1,
+ "frozen": "2026-10-12, before any VOCR3 candidate (every study-2 run included) was scored on any development or test set (commit time in git)",
+ "goal": "VOCR3: console-sized recognizers trained on the best recipe the synth3 studies support, one per size class, each compared head to head with the released models it would replace, in one locked report.",
+ "sizes": {
+  "FL10": {
+   "topology": "FL10's exactly: width 1.0, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32",
+   "vocab": {"file": "$HERD/shared/artifacts/train2/release/FL10_vocab_3500.txt", "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8", "classes": 3501},
+   "expected": {"blob_bytes": 657664, "arena_w8i_bytes": 124832},
+   "baselines": {
+    "VOCR1": {"file": "FL10_w8.vocr", "release": "v0.2.0", "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84", "finder": "grad"},
+    "VOCR2": {"file": "VOCR2_FL10_w8.vocr", "release": "v0.2.3-vocr2.1", "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766", "finder": "textbox (C3), as it ships"}
+   },
+   "replaces": "VOCR1 (the released FL10; VOCR2 is an opt-in trial that did not qualify)"
+  },
+  "H15": {
+   "topology": "width 1.5, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32",
+   "vocab": {"file": "data/vocab.txt", "sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b", "classes": 5355, "note": "5,354 characters + the CTC blank"},
+   "expected": {"blob_bytes": 1155968, "arena_w8i_bytes": 182944},
+   "baselines": {
+    "VOCR_H15": {"file": "H15_w8.vocr", "release": "v0.2.0 (identical to vita-jp-overlay main's default, core/vocr_ocr.c)", "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd", "finder": "grad"}
+   },
+   "replaces": "VOCR_H15 (the overlay default users run; the bar VOCR3-H15 must beat)"
+  }
+ },
+ "candidates": {
+  "rule": "For each size, the candidates are the final fine-tune checkpoints (EMA weights, no checkpoint selection inside a run) of the runs below that use the VN-style synthetic data study 2 recommends for that size (eval/synth3_study2_protocol.json decision). If study 2 finds no measured difference for a size, the runs of both arms are candidates.",
+  "FL10": {
+   "study2": ["ft_FL10_A_s2_seed1", "ft_FL10_A_s2_seed2", "ft_FL10_A_s2_seed3", "ft_FL10_C_mix_seed1", "ft_FL10_C_mix_seed2", "ft_FL10_C_mix_seed3"],
+   "step_curve": ["ft_FL10_C_mix_pre64k_seed1", "ft_FL10_C_mix_pre128k_seed1"]
+  },
+  "H15": {
+   "study2": ["ft_H15_A_s2_seed1", "ft_H15_A_s2_seed2", "ft_H15_C_mix_seed1", "ft_H15_C_mix_seed2"]
+  },
+  "variants": {
+   "status": "optional; each is trained only if its precondition holds, and enters the candidate list only through the ablation rule below",
+   "realplus": {
+    "precondition": "realplus.status POOL_READY <commit>, with its manifest committed and its measured blind-check precision reported",
+    "run": "from the pretrain checkpoint of the size's base selection (below), same seed, the study-2 fine-tune with the real half re-split as tt 0.2 + rd 0.1 + rp 0.2 (the realplus pool, inv=0.5, kd=0; no ps); the synthetic half unchanged",
+    "ablation_rule": "it replaces the base selection iff its teacher_val CER (both views) is lower with the VN-cluster 95% interval of the difference entirely below 0 (and, when devnative is a selection cohort, devnative's interval is not entirely above 0)"
+   },
+   "synth3_v3": {
+    "precondition": "synth3-v3's study 1b result (eval/synth3_study1b_protocol.json) committed with D_s3v3 better than B_s3 under its rule",
+    "run": "only when the size's recommended arm uses synth3: one full study-2 run of that arm with synth3 v3 in place of v2 (same seed as the base selection), FL10 first",
+    "ablation_rule": "as for realplus, against the base selection"
+   },
+   "amendments": "Further variants may be added only by an amendment committed before that variant is scored on any development set; protected sets are never used to add, drop or tune a variant."
+  }
+ },
+ "export": "eval/synth3_ablation.py export (train/export.py, per-channel int8) -> C runtime W8I; blob bytes and arena from runtime/pyvocr.py at max width 1024",
+ "selection": {
+  "cohorts": {
+   "teacher_val": {"set": "$HERD/shared/artifacts/teacher/teacher_val.npz", "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671", "lines": 1651, "vns": 181, "views": ["rv", "rvn"]},
+   "devnative": "agent devnative's native Vita/PSP cohort (strict and tv_native subsets; scene_vn reported only), a selection cohort if and only if its manifest is committed (COHORT_FROZEN) before the first VOCR3 selection score of that size"
+  },
+  "score": "development CER = errors / reference characters (eval/metrics.norm, Levenshtein) over teacher_val in both views; with devnative as a cohort, the mean of teacher_val's CER and devnative's CER (both views, strict + tv_native lines)",
+  "base_rule": "per size, the candidate with the lowest development score; ties at 5 decimals go to the shorter pretrain, then the lower seed",
+  "commit": "the selection (every candidate's development score, the chosen run, its blob sha256) is committed before the locked report runs"
+ },
+ "locked_report": {
+  "when": "once, after both sizes' selections (including any variant ablation) are committed",
+  "tool": "eval/vocr3_report.py (agent vocr3-harness, verified by reproducing the released blobs' published numbers), the commit recorded in the report",
+  "arms": {
+   "VOCR1": "FL10_w8.vocr + GRAD",
+   "VOCR2": "VOCR2_FL10_w8.vocr + TEXTBOX (C3)",
+   "VOCR_H15": "H15_w8.vocr + GRAD",
+   "VOCR3-FL10": "the FL10 selection + GRAD",
+   "VOCR3-FL10-C3": "the FL10 selection + TEXTBOX (C3): finder-matched to VOCR2, reported only",
+   "VOCR3-H15": "the H15 selection + GRAD"
+  },
+  "sets": {
+   "vita-test, psp-test fixed lines": "eval/run.py's recognizer mode through the scalar C W8I runtime; console polarity primary, native also; per set, per style, per VN, pooled; full text and hiragana",
+   "vita-test, psp-test whole dialogue": "each region at base and +4/+8 native px with the arm's own C finder (the VOCR2 held-out guard's scoring)",
+   "fresh native textbox test": "eval/fresh_native_textbox.py through the harness adapter, only if the owner provides its private inputs and execution authorization before the report runs; reported with the disclosure that synth3 v2's name pool held 39 names unique to its titles (docs/synth3.md, Limits)",
+   "CLANNAD long run": "eval/clannad_longrun.py through the harness adapter on the stored captures, only if the owner provides the private inputs; Google Lens readings are a proxy, not human references"
+  },
+  "pairs": [["VOCR3-FL10", "VOCR1"], ["VOCR3-FL10", "VOCR2"], ["VOCR3-H15", "VOCR_H15"], ["VOCR3-H15", "VOCR1"], ["VOCR3-FL10-C3", "VOCR2"]],
+  "statistics": "CAND - BASE in points with paired bootstrap 95% intervals (10,000 resamples, seed 0) over lines and over VN clusters (strata with at least 5 VNs)",
+  "also": ["blob bytes, W8I and W8F arenas", "estimated Vita Cortex-A9 time per line from vita/a9_cycles.py (host estimate, marked as such)", "the overlay host cross-check: vita-jp-overlay's tools/benchmark_local_ocr.py on a read-only clone (no change, no PR there)"]
+ },
+ "qualification": {
+  "gates": [["VOCR3-FL10", "VOCR1"], ["VOCR3-H15", "VOCR_H15"]],
+  "fixed_line_gate": "VOCR2's: in the primary polarity, no set's full-text or hiragana errors increase, and pooled hiragana errors decrease",
+  "dialogue_guard": "VOCR2's held-out whole-dialogue guard: no title/variant all-text or body full/hiragana regression; every variant improves console-balanced hiragana in both scopes and gains on at least two titles",
+  "consequence": "A candidate qualifies to replace its baseline only if every gate passes on every set available; even then the default changes only with the owner's agreement. Nothing is merged. Results are reported whether or not they qualify."
+ },
+ "publication": "draft PR feat/vocr3 (stacked on feat/synth3) with docs/vocr3.md, this protocol, the selection and the report JSON; weights only as a release asset with the owner's agreement",
+ "hygiene": [
+  "no candidate, variant, recipe, checkpoint or threshold is chosen, tuned or dropped on vita-test, psp-test, the fresh native textbox test or CLANNAD",
+  "the locked report runs once; its numbers cannot change the selection",
+  "realplus and devnative exclude every test VN and family, CLANNAD, the fresh native test's titles and relations, and every eval screenshot (their own manifests record it)"
+ ],
+ "amendments": []
+}

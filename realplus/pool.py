@@ -280,7 +280,10 @@ def results():
 def outstanding(log, res):
     """Helpers queued or working whose batch is not done and who have not printed a final marker."""
     out = []
+    cancelled = {h["label"] for h in log if h.get("cancelled")}
     for h in log:
+        if h.get("cancelled") or h["label"] in cancelled:
+            continue
         b = Path(h["batch"])
         if h["label"].startswith("self") or batch_state(b)[0] == "done":
             continue
@@ -303,7 +306,7 @@ def cmd_helpers(args):
             st, _ = batch_state(b)
             if st == "done":
                 continue
-            prior = [h for h in log if h["batch"] == str(b)]
+            prior = [h for h in log if h.get("batch") == str(b)]
             if prior and any(h in busy for h in prior):
                 continue
             if prior and not args.retry:
@@ -360,7 +363,7 @@ def start_read():
 
 
 def unassigned(log):
-    have = {h["batch"] for h in log}
+    have = {h["batch"] for h in log if "batch" in h}
     return [b for b in batch_dirs("pass1") if str(b) not in have and batch_state(b)[0] != "done"]
 
 

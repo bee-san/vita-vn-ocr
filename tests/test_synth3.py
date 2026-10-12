@@ -510,16 +510,18 @@ def test_grad_mode_falls_back_to_the_gt_crop(font, monkeypatch):
 
 def test_gt_box_pads_the_fill_of_outlined_white_text():
     """eval's and teacher's boxes come from refine(), whose white-text mask finds the glyph fill
-    (+1 px): the outline of white text sits inside the pad. A line flagged fillbox gets that box."""
+    (+1 px): the outline of white text above and below sits inside the pad. A line flagged fillbox
+    takes its rows from the fill; its columns stay the full ink's, so a glyph whose thin fill
+    vanished (here the last 30 columns, like 。」 at a small size) is never cut off."""
     ink = np.zeros((60, 200), bool)
     ink[10:40, 20:120] = True                 # fill plus a 3 px outline
     fill = np.zeros_like(ink)
-    fill[13:37, 23:117] = True                # the fill, dilated by 1 px
+    fill[13:37, 23:87] = True                 # the fill, dilated by 1 px; no fill left in 87-117
     lay = [{"y0": 9, "y1": 41, "fs": 26, "ix0": 20, "ix1": 120, "fillbox": True}]
     zero = {"p": 0.0, "top": 0, "bottom": 0, "left": 0, "right": 0}
     box, ib = synth3.gt_box(lay[0], lay, ink, np.zeros_like(ink), 4, np.random.default_rng(0), ink.shape,
                             extra=zero, fill=fill)
-    assert ib == (23, 13, 117, 37) and box == (19, 9, 102, 32)
+    assert ib == (20, 13, 120, 37) and box == (16, 9, 108, 32)
     lay[0]["fillbox"] = False                 # coloured text: refine() keeps the outline
     box, ib = synth3.gt_box(lay[0], lay, ink, np.zeros_like(ink), 4, np.random.default_rng(0), ink.shape,
                             extra=zero, fill=fill)

@@ -66,7 +66,7 @@
    "files": "$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz",
    "shards": 100,
    "opts": "stream=1,pool=3,inv=0.2",
-   "note": "generator version 3 (synth/synth3.py at ab5db0e; its synth3.py, render.py, common.py and synth3_text.py are byte-identical to 84b555b, where the render started), seed 20261012, 100 x 10,000 crops; pinned by data/manifests/synth3_shards_v3.json, which is committed and pushed before D_s3v3 trains"
+   "note": "generator version 3 (synth/synth3.py at 1ba727c), seed 20261012, 100 x 10,000 crops; pinned by data/manifests/synth3_shards_v3.json, which is committed and pushed before D_s3v3 trains"
   }
  },
  "arm_sources": {
@@ -180,5 +180,14 @@
   "version 2 (B_s3) is used exactly as pinned for study 1 and is not re-rendered; its VNDB name pool (names.train.tsv) holds 124 rows whose name equals the name of a character of the 13 fresh-native VNs (version 3 drops them, docs/synth3-v3.md)",
   "neither arm uses synth2, so the 110 teacher_val screenshots among synth2's scene backgrounds (study 1 audit F5) touch neither arm"
  ],
- "amendments": []
+ "amendments": [
+  {
+   "date": "2026-10-12T21:30Z (commit time in git)",
+   "before_any_scoring": true,
+   "before_any_D_run": true,
+   "change": "s3v3 points to the render of commit 1ba727c instead of ab5db0e/84b555b.",
+   "reason": "The subtitle pools hold CLANNAD anime dialogue (e.g. 朋也くんも、食べたいですか). 1ba727c redraws every text line that names CLANNAD's characters or the title (data/manifests/synth3_exclude_clannad.json, text_markers). The 84b555b render was discarded before it was pinned; no run trained on it.",
+   "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparison and decision rule"
+  }
+ ]
 }

@@ -14,7 +14,7 @@ built. Labels were reviewed by an assistant (Claude Opus 5.5), not by a human.
 | version | commit | files | lines | used by |
 |---|---|---|---|---|
 | v1 | `f5a1dbd` (tag `devnative-cohort-v1`) | `$HERD/shared/artifacts/devnative/devnative_*.npz` | 645 | study 1b (its protocol pins the four sha256s) and study 2 (its FL10 scoring recorded `COHORT_FROZEN f5a1dbd` and the sha256s at 2026-10-12T22:59:35Z) |
-| v2 | this document (tag `devnative-cohort-v2`) | `$HERD/shared/artifacts/devnative/v2/devnative_*.npz` | 553 | any protocol written from now on |
+| v2 | tag `devnative-cohort-v2` | `$HERD/shared/artifacts/devnative/v2/devnative_*.npz` | 553 | any protocol written from now on |
 
 v1 kept 41 screenshots of eval/linefind's sets in tv_native, flagged `linefind`, on the grounds
 that they were not test sets. That was wrong: `vita_holdout` and `psp_holdout` are the line
@@ -307,6 +307,10 @@ error every look makes the same way is not caught. The ユ/コ correction, which
 noticed, shows such errors can exist.
 
 ## Pipeline history
+
+The hashes below are the commits on `feat/devnative` as they were when each status was written
+and each protocol cited them. They stay reachable from the tag `devnative-cohort-v1`. The branch
+was later rebased onto main and squash-merged, so main has different hashes for the same content.
 
 | commit | what |
 |---|---|

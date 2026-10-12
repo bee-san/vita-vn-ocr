@@ -1,0 +1,167 @@
+"""Join hash-pinned reviewed source metadata and private references; no inference."""
+import argparse
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def pinned(item):
+    path = Path(item['path'])
+    assert sha(path) == item['sha256'], f'Changed input: {path.name}'
+    return json.loads(path.read_text())
+
+
+def main(config_path, output):
+    config = json.loads(Path(config_path).read_text())
+    assert not output.exists(), 'Use a new output directory'
+    driver = Path(config['driver'])
+    assert sha(driver / 'eval/fresh_native_textbox.py') == config['driver_sha256']
+    sys.path.insert(0, str(driver / 'eval'))
+    import fresh_native_textbox as fresh
+    from PIL import Image
+
+    evidence = pinned(config['exposure'])
+    exclusions = {key: evidence['excluded'][key] for key in ('vns', 'release_ids', 'urls', 'sha256')}
+    sources = {}
+    input_pins = {str(Path(config_path).resolve()): sha(config_path)}
+    for item in [config['exposure'], *config['source_pools'], *config['acquisitions'], *config['references'], *config['reviews']]:
+        pinned(item)
+        input_pins[item['path']] = item['sha256']
+        nested = pinned(item).get('input_pins', {})
+        pairs = nested.items() if isinstance(nested, dict) else ((x['path'], x['sha256']) for x in nested)
+        for path, expected in pairs:
+            assert sha(path) == expected, f'Changed transitive input: {Path(path).name}'
+            if path in input_pins:
+                assert input_pins[path] == expected
+            input_pins[path] = expected
+    for pool in config['source_pools']:
+        document = pinned(pool)
+        for original in document[pool['key']]:
+            row = dict(original)
+            if 'round' not in row:
+                row['round'] = pool['round']
+            key = (row['vn'], row['round'], row['index'])
+            if key in sources:
+                assert sources[key]['sha256'] == row['sha256'], 'Conflicting source mapping'
+            sources[key] = row
+    acquisitions = {}
+    for item in config['acquisitions']:
+        for row in pinned(item)['records']:
+            if row.get('sha256') and row.get('final_url'):
+                key = (row['vn'], row['url'], row['sha256'])
+                assert key not in acquisitions or acquisitions[key]['final_url'] == row['final_url']
+                acquisitions[key] = row
+    manifest = {
+        'schema': 1, 'split': 'test', 'purpose': 'fresh-native-textbox',
+        'original_training_history': 'unknown',
+        'exclusions': {'schema': 1, 'evidence_file': str(Path(config['exposure']['path']).resolve()),
+                       'evidence_sha256': config['exposure']['sha256'], **exclusions},
+        'sources': [],
+    }
+    annotations = {'schema': 1, 'split': 'test', 'lines': [], 'supplementary': []}
+    omitted, seen = [], set()
+    for ref in config['references']:
+        for ann in pinned(ref)['annotations']:
+            key = (ann['vn'], ann['round'], ann['index'])
+            assert key not in seen, 'Duplicate annotation source'
+            seen.add(key)
+            if ann['vn'] not in config['titles']:
+                omitted.append({'source_key': list(key), 'reason': 'not in prospectively selected title cohort'})
+                continue
+            if ann['manual_transcription_uncertainty']:
+                omitted.append({'source_key': list(key), 'reason': 'source reference/completion uncertainty'})
+                continue
+            original = sources[key]
+            title = config['titles'][ann['vn']]
+            dimensions = fresh.DIMENSIONS[title['platform']]
+            assert original['dims'] == dimensions
+            assert original['platform'] == title['platform']
+            release = original['release']
+            assert original.get('release_binding') or original.get('source_edition_identity')
+            metadata_path = Path(original['metadata_file'])
+            assert sha(metadata_path) == original['metadata_file_sha256']
+            metadata = json.loads(metadata_path.read_text())
+            rows = [row for row in metadata['results'] if row['id'] == release]
+            assert len(rows) == 1 and rows[0] == original['release_metadata_row']
+            row = rows[0]
+            assert any(v['id'] == ann['vn'] for v in row['vns'])
+            assert ('psv' if title['platform'] == 'vita' else 'psp') in row['platforms']
+            assert any(lang['lang'] == 'ja' for lang in row['languages'])
+            assert release not in exclusions['release_ids'] and ann['vn'] not in exclusions['vns']
+            assert original['url'] not in exclusions['urls'] and original['sha256'] not in exclusions['sha256']
+            path = Path(original['file'])
+            assert sha(path) == original['sha256']
+            with Image.open(path) as image:
+                assert list(image.size) == dimensions
+                rgb = image.convert('RGB')
+            assert hashlib.sha256(rgb.tobytes()).hexdigest() == original['pixel_sha256_RGB']
+            source_id = f"fresh-{title['platform']}-{ann['vn']}-r{ann['round']:02d}-i{ann['index']:03d}"
+            x, y, right, bottom = ann['base_roi_xyxy']
+            base = [x, y, right-x, bottom-y]
+            variants = {}
+            for variant, box in fresh.roi_variants(base, dimensions).items():
+                a, b, width, height = box
+                variants[variant] = {'roi': box, 'pixel_sha256': hashlib.sha256(
+                    rgb.crop((a, b, a+width, b+height)).tobytes()).hexdigest()}
+            main = []
+            for kind in ('body', 'name'):
+                for number, (text, box) in enumerate(ann[kind]):
+                    a, b, c, d = box
+                    row = {'id': f'{source_id}-{kind}-{number:02d}', 'source_id': source_id,
+                           'split': 'test', 'content_kind': kind, 'box': [a,b,c-a,d-b],
+                           'text': text, 'uncertain': False}
+                    main.append(row)
+            main.sort(key=lambda row: (row['box'][1], row['box'][0], row['id']))
+            annotations['lines'].extend(main)
+            for text, box in ann['ruby']:
+                a,b,c,d = box
+                annotations['supplementary'].append({'source_id': source_id, 'kind': 'ruby',
+                                                     'box': [a,b,c-a,d-b]})
+            acquired = acquisitions[(ann['vn'], original['url'], original['sha256'])]
+            assert acquired['pixel_sha256_RGB'] == original['pixel_sha256_RGB']
+            assert acquired['source_page'] == original['source_page']
+            assert acquired['source_html_sha256'] == original['source_html_sha256']
+            url = acquired['final_url']
+            assert url not in exclusions['urls']
+            assert url.startswith('https://'), 'Require recorded HTTPS final URL; never invent redirect'
+            manifest['sources'].append({
+                'id': source_id, 'split': 'test', 'platform': title['platform'], 'vn': ann['vn'],
+                'release': release, 'session': f"public-native-{ann['vn']}-round{ann['round']}",
+                'image': str(path.resolve()), 'url': url, 'sha256': original['sha256'],
+                'source_url_as_linked': original['url'], 'source_page': original['source_page'],
+                'source_html_sha256': original['source_html_sha256'],
+                'release_binding': original.get('release_binding', original.get('source_edition_identity')),
+
+                'release_metadata_sha256': original['metadata_file_sha256'],
+                'pixel_sha256': original['pixel_sha256_RGB'], 'dims': dimensions,
+                'base_roi': base, 'variants': variants, 'line_ids': [row['id'] for row in main],
+                'hand_checked': True, 'reviewer_kind': 'assistant', 'complete_eligible_text': True,
+                'uncertain': False, 'scope_exclusions': ['supplementary ruby; non-story UI outside base ROI'],
+                'eligibility': dict.fromkeys(fresh.ELIGIBILITY, False),
+            })
+    selected, readiness = fresh.checked_cohort(manifest, annotations)
+    receipt = {'schema': 1, 'kind': 'source-only-reviewed-input-join', 'input_pins': input_pins,
+               'script_sha256': sha(__file__), 'readiness': readiness, 'omitted': omitted,
+               'manifest_sources': len(manifest['sources']), 'selected_sources': len(selected),
+               'main_lines': len(annotations['lines']), 'supplementary': len(annotations['supplementary']),
+               'new_model_forwards': 0, 'new_finder_calls': 0, 'new_teacher_calls': 0,
+               'original_training_history': 'unknown'}
+    output.mkdir()
+    for name, value in [('manifest.json', manifest), ('annotations.json', annotations)]:
+        fresh.freeze(output / name, value)
+        receipt[name+'_sha256'] = sha(output / name)
+    fresh.freeze(output / 'input-join-receipt.json', receipt)
+    print(json.dumps({'directory': str(output), 'readiness': readiness}, ensure_ascii=False))
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--config', type=Path, required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    args = parser.parse_args()
+    main(args.config, args.output)

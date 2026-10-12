@@ -1,0 +1,444 @@
+"""Independent stored-output audit. Never imports or executes OCR/finder code."""
+import argparse
+import collections
+import hashlib
+import importlib.metadata
+import json
+import platform
+import re
+import struct
+import sys
+import unicodedata
+import zlib
+from fractions import Fraction
+from pathlib import Path
+
+from PIL import Image
+
+MODES = {"original_GRAD": 0, "pure_C3": 2, "C4": 3}
+PADS = {"base": 0, "expanded-4": 4, "expanded-8": 8}
+MINIMUMS = {"frames_per_vn": 5, "body_chars_per_vn": 500,
+            "body_hiragana_per_vn": 200, "vns_per_console": 3}
+DIMS = {"psp": [480, 272], "vita": [960, 544]}
+TRANS = str.maketrans({**dict.fromkeys("―—─━–‐‑‒−-", "―"),
+                      **dict.fromkeys("〜～~∼", "~")})
+
+
+def read(path):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False,
+                                     separators=(",", ":")).encode()).hexdigest()
+
+
+def need(condition, label):
+    if not condition:
+        raise ValueError(label)
+
+
+def normalized(value):
+    text = unicodedata.normalize("NFKC", value)
+    text = re.sub(r"\s+", "", text)
+    text = text.replace("...", "…").replace("..", "‥")
+    text = re.sub(r"・{2,}", lambda m: "…" * max(1, len(m[0]) // 3), text)
+    return text.translate(TRANS)
+
+
+def hira(char):
+    return char is not None and "\u3041" <= char <= "\u309f"
+
+
+def empty_score():
+    return {scope: {script: {"chars": 0, "errors": 0}
+                    for script in ("full", "hira")} for scope in ("all", "body")}
+
+
+def score(lines, predictions):
+    """Two-row edit-distance DP with ranked operation trace, independent of guard."""
+    ref, mask = "", []
+    for line in lines:
+        text = normalized(line["text"])
+        ref += text
+        mask.extend([line["content_kind"] == "body"] * len(text))
+    pred = "".join(normalized(text) for text in predictions)
+    nr, np = len(ref), len(pred)
+    stride = np + 1
+    trace = bytearray((nr + 1) * stride)
+    for j in range(1, np + 1):
+        trace[j] = 2  # insertion
+    previous = list(range(stride))
+    for i in range(1, nr + 1):
+        trace[i * stride] = 1  # deletion
+        current = [i] + [0] * np
+        for j in range(1, np + 1):
+            diagonal = previous[j - 1] + (ref[i - 1] != pred[j - 1])
+            deletion, insertion = previous[j] + 1, current[j - 1] + 1
+            # Ranked ties: diagonal, deletion, insertion.
+            if diagonal <= deletion and diagonal <= insertion:
+                current[j], trace[i * stride + j] = diagonal, 0
+            elif deletion <= insertion:
+                current[j], trace[i * stride + j] = deletion, 1
+            else:
+                current[j], trace[i * stride + j] = insertion, 2
+        previous = current
+    answer = empty_score()
+    answer["all"]["full"]["chars"] = nr
+    answer["all"]["hira"]["chars"] = sum(map(hira, ref))
+    answer["body"]["full"]["chars"] = sum(mask)
+    answer["body"]["hira"]["chars"] = sum(hira(c) and b for c, b in zip(ref, mask))
+    i, j = nr, np
+    while i or j:
+        operation = trace[i * stride + j]
+        if operation == 0:
+            reference, prediction = ref[i - 1], pred[j - 1]
+            in_body = mask[i - 1]
+            i, j = i - 1, j - 1
+        elif operation == 1:
+            reference, prediction = ref[i - 1], None
+            in_body = mask[i - 1]
+            i -= 1
+        else:
+            reference, prediction, in_body = None, pred[j - 1], True
+            j -= 1
+        if reference != prediction:
+            for scope in ("all", "body") if in_body else ("all",):
+                answer[scope]["full"]["errors"] += 1
+                answer[scope]["hira"]["errors"] += int(
+                    hira(reference) or (reference is None and hira(prediction)))
+    need(answer["all"]["full"]["errors"] == previous[-1], "trace distance mismatch")
+    return answer
+
+
+def box_ok(box, dims):
+    return (isinstance(box, list) and len(box) == 4
+            and all(type(n) is int for n in box)
+            and box[0] >= 0 and box[1] >= 0 and box[2] > 0 and box[3] > 0
+            and box[0] + box[2] <= dims[0] and box[1] + box[3] <= dims[1])
+
+
+def cohort(manifest, annotations, manifest_path):
+    need(manifest["split"] == annotations["split"] == "test", "test roles")
+    lines = {}
+    for line in annotations["lines"]:
+        need(line["id"] not in lines and line["split"] == "test"
+             and line["uncertain"] is False
+             and line["content_kind"] in ("body", "name")
+             and isinstance(line["text"], str) and normalized(line["text"]), "main line schema")
+        lines[line["id"]] = dict(line, styles=["name"] if line["content_kind"] == "name" else [])
+    selected, removed, bound, pixels, bodies = [], [], set(), {}, {}
+    exclusions = manifest["exclusions"]
+    evidence = Path(exclusions["evidence_file"])
+    if not evidence.is_absolute():
+        evidence = manifest_path.parent / evidence
+    need(sha(evidence) == exclusions["evidence_sha256"], "exposure evidence hash")
+    excluded = read(evidence)["excluded"]
+    need(all(sorted(exclusions[k]) == sorted(excluded[k])
+             for k in ("vns", "release_ids", "urls", "sha256")), "exclusion lists")
+    for original in sorted(manifest["sources"], key=lambda s: s["id"]):
+        s = dict(original)
+        need(s["split"] == "test" and s["uncertain"] is False
+             and s["complete_eligible_text"] is True and s["hand_checked"] is True
+             and s["reviewer_kind"] in ("assistant", "human")
+             and set(s["eligibility"]) == {
+                 "used_in_recorded_training", "used_in_calibration",
+                 "used_in_development", "related_to_used_title"}
+             and all(v is False for v in s["eligibility"].values()), "source roles")
+        need(s["platform"] in DIMS and s["dims"] == DIMS[s["platform"]], "native dimensions")
+        need(s["vn"] not in excluded["vns"] and s["release"] not in excluded["release_ids"]
+             and s["url"] not in excluded["urls"] and s["sha256"] not in excluded["sha256"]
+             and s["pixel_sha256"] not in excluded["sha256"], "known source exposure")
+        need(box_ok(s["base_roi"], s["dims"]) and set(s["variants"]) == set(PADS), "ROI schema")
+        x, y, w, h = s["base_roi"]
+        for variant, pad in PADS.items():
+            left, top = max(0, x-pad), max(0, y-pad)
+            roi = [left, top, min(s["dims"][0], x+w+pad)-left,
+                   min(s["dims"][1], y+h+pad)-top]
+            need(s["variants"][variant]["roi"] == roi, "fixed symmetric ROI geometry")
+        ordered = []
+        for lid in s["line_ids"]:
+            need(lid in lines and lid not in bound and lines[lid]["source_id"] == s["id"],
+                 "line binding")
+            line = lines[lid]
+            need(box_ok(line["box"], s["dims"]), "native ink bounds")
+            a, b, c, d = line["box"]
+            need(a >= x and b >= y and a+c <= x+w and b+d <= y+h, "base ROI main ink clipping")
+            ordered.append(line)
+            bound.add(lid)
+        body = "".join(normalized(line["text"]) for line in ordered
+                       if line["content_kind"] == "body")
+        need(body, "empty body")
+        body_hash = hashlib.sha256(body.encode()).hexdigest()
+        title = (s["platform"], s["vn"])
+        semantic = [(line["content_kind"], normalized(line["text"]), line["box"])
+                    for line in ordered]
+        if s["pixel_sha256"] in pixels:
+            prior = pixels[s["pixel_sha256"]]
+            need(prior["title"] == title and prior["semantic"] == semantic,
+                 "contradictory global RGB duplicate")
+            removed.append({"source_id": s["id"], "reason": "duplicate_rgb",
+                            "retained_id": prior["id"]})
+            continue
+        pixels[s["pixel_sha256"]] = {"id": s["id"], "title": title, "semantic": semantic}
+        body_key = (*title, body_hash)
+        if body_key in bodies:
+            removed.append({"source_id": s["id"], "reason": "repeated_body",
+                            "retained_id": bodies[body_key]})
+            continue
+        bodies[body_key] = s["id"]
+        s.update(_lines=ordered, _body_sha256=body_hash, _reference_sha256=digest(ordered),
+                 _image=str((manifest_path.parent / s["image"]).resolve()))
+        selected.append(s)
+    need(bound == set(lines), "unbound main line")
+    sources_by_id = {s["id"]: s for s in manifest["sources"]}
+    for r in annotations["supplementary"]:
+        need(r["kind"] == "ruby" and r["source_id"] in sources_by_id
+             and box_ok(r["box"], sources_by_id[r["source_id"]]["dims"]), "supplementary ruby")
+    groups, counted = {}, set()
+    for s in selected:
+        key = s["platform"] + ":" + s["vn"]
+        g = groups.setdefault(key, dict(platform=s["platform"], vn=s["vn"], frames=0,
+                                        body_chars=0, body_hiragana=0))
+        g["frames"] += 1
+        for line in s["_lines"]:
+            t = normalized(line["text"])
+            if line["content_kind"] == "body" and (key, t) not in counted:
+                counted.add((key, t))
+                g["body_chars"] += len(t)
+                g["body_hiragana"] += sum(map(hira, t))
+    for g in groups.values():
+        need(g["frames"] >= 5 and g["body_chars"] >= 500 and g["body_hiragana"] >= 200,
+             "fixed readiness minima")
+    need(all(sum(g["platform"] == c for g in groups.values()) >= 3 for c in DIMS),
+         "three titles per console")
+    readiness = dict(ready=True, minimums=MINIMUMS, groups=groups, reasons=[],
+                     selected_sources=len(selected), deduplicated_sources=removed)
+    return selected, readiness
+
+
+def balance(groups):
+    return sum((sum((Fraction(g["body"]["hira"]["errors"], g["body"]["hira"]["chars"])
+                     for g in groups.values() if g["platform"] == c), Fraction())
+                / sum(g["platform"] == c for g in groups.values()) for c in DIMS), Fraction()) / 2
+
+
+def gate(results, protocol):
+    reasons, gains, pooled = [], {}, {}
+    for variant in PADS:
+        base, prior, candidate = (results[m][variant] for m in MODES)
+        need(set(base) == set(prior) == set(candidate), "gate title identities")
+        for title, ref in base.items():
+            need(title == ref["platform"] + ":" + ref["vn"], "gate title metadata")
+            for side in (prior[title], candidate[title]):
+                need(all(side[k] == ref[k] for k in ("platform", "vn", "frames", "reference_sha256")),
+                     "gate reference identity")
+            for scope in ("all", "body"):
+                for script in ("full", "hira"):
+                    need(all(side[title][scope][script]["chars"] == ref[scope][script]["chars"]
+                             for side in (prior, candidate)), "gate denominators")
+                    if candidate[title][scope][script]["errors"] > ref[scope][script]["errors"]:
+                        reasons.append(f"{variant}/{title}/{scope}/{script}: regression versus mode0")
+        gains[variant] = {}
+        for console in DIMS:
+            improved = sorted(g["vn"] for title, g in candidate.items()
+                              if g["platform"] == console and
+                              g["body"]["hira"]["errors"] < base[title]["body"]["hira"]["errors"])
+            gains[variant][console] = improved
+            if len(set(improved)) < 2:
+                reasons.append(variant + "/" + console + ": insufficient fresh titles/body gains")
+        if balance(candidate) >= balance(base):
+            reasons.append(variant + ": no strict console-balanced body-hiragana gain")
+        pooled[variant] = {}
+        for scope in ("all", "body"):
+            for script in ("full", "hira"):
+                sums = {mode: {count: sum(g[scope][script][count] for g in groups.values())
+                               for count in ("chars", "errors")}
+                        for mode, groups in (("pure_C3", prior), ("C4", candidate))}
+                pooled[variant][scope + "/" + script] = sums
+                if sums["C4"]["errors"] > sums["pure_C3"]["errors"]:
+                    reasons.append(f"{variant}/{scope}/{script}: pooled regression versus mode2")
+        old = pooled[variant]["all/full"]["pure_C3"]["errors"]
+        new = pooled[variant]["all/full"]["C4"]["errors"]
+        if old <= 0 or 100 * new > 90 * old:
+            reasons.append(variant + ": less than10 percent pooled full-error reduction versus mode2")
+    return dict(passed=not reasons, reasons=reasons, body_gain_titles=gains, pooled=pooled,
+                material_fraction="9/10", weights=protocol["weights"])
+
+
+def audit(prepared_path, root):
+    directory = prepared_path.parent
+    prepared, report = read(prepared_path), read(directory / "result.json")
+    protocol = read(directory / "protocol.json")
+    need(report["status"] == "complete" and report["prepared_sha256"] == sha(prepared_path),
+         "completed result/preparation pin")
+    need(protocol == report["protocol"] and sha(directory/"protocol.json") == prepared["protocol_sha256"],
+         "protocol pin")
+    need(protocol["modes"] == MODES and protocol["variants"] == PADS and protocol["minimums"] == MINIMUMS
+         and protocol["model_selection"] is False and protocol["runtime_promotion"] is False
+         and protocol["teacher"] is None and protocol["one_attempt"] is True and protocol["retry"] is False,
+         "fixed protocol")
+    need(prepared["finder_calls"] == prepared["model_forwards"] == 0, "zero-forward prepare")
+    manifest_path = Path(prepared["manifest"])
+    need(sha(manifest_path) == report["manifest_sha256"] == prepared["manifest_sha256"],
+         "manifest pin")
+    need(sha(prepared["annotations"]) == report["annotations_sha256"] == prepared["annotations_sha256"],
+         "annotations pin")
+    document, refs = read(manifest_path), read(prepared["annotations"])
+    selected, readiness = cohort(document, refs, manifest_path)
+    need(readiness == prepared["readiness"] == report["readiness"], "readiness/dedup identity")
+    need(digest([{k: v for k, v in s.items() if k != "_lines"} for s in selected])
+         == prepared["source_fingerprint"] == report["source_fingerprint"], "source fingerprint")
+    need(digest([s["_reference_sha256"] for s in selected])
+         == prepared["reference_fingerprint"] == report["reference_fingerprint"], "reference fingerprint")
+    need(document["exclusions"]["evidence_sha256"] == prepared["exposure_evidence_sha256"]
+         == report["exposure_evidence_sha256"], "exposure evidence identity")
+    for name, expected in prepared["code_sha256"].items():
+        need(sha(root/name) == expected, "frozen code hash " + name)
+    need(report["source_sha256"] == prepared["code_sha256"], "report code pins")
+    for slot in ("model", "library"):
+        need(sha(prepared[slot]) == prepared[slot+"_sha256"] == report[slot+"_sha256"],
+             slot + " byte pin")
+    need(prepared["model_sha256"] == protocol["model_sha256"]
+         and prepared["library_sha256"] == protocol["scalar_library_sha256"], "protocol model/library pins")
+    blob = Path(prepared["model"]).read_bytes()
+    need(len(blob) == 657664 and blob[:4] == b"VOCR"
+         and struct.unpack_from("<HHII", blob, 4)[:3] == (1, 64, 657664)
+         and struct.unpack_from("<I", blob, 12)[0] & 1
+         and struct.unpack_from("<I", blob, 24)[0] == 3501
+         and struct.unpack_from("<H", blob, 18)[0] == 1024
+         and zlib.crc32(blob[64:]) == struct.unpack_from("<I", blob, 40)[0], "static model header/CRC")
+    need(sha(prepared["finder"]["binary"]) == prepared["finder"]["sha256"] == report["finder_sha256"]
+         and sha(prepared["finder"]["compiler"]) == prepared["finder"]["compiler_sha256"],
+         "finder/compiler binary pins")
+    env = prepared["environment"]
+    need(sha(sys.executable) == env["python_executable_sha256"] and sys.version == env["Python"]
+         and platform.system() == env["system"] and platform.machine() == env["machine"]
+         and all(importlib.metadata.version(k) == v for k, v in env["packages"].items()),
+         "recorded host environment pins")
+    authorization = read(directory/"execution-authorization.json")
+    need(authorization == dict(schema=1, authorization="root-reviewed-one-shot-fresh-native-test",
+         prepared_sha256=sha(prepared_path), protocol_sha256=prepared["protocol_sha256"],
+         source_fingerprint=prepared["source_fingerprint"], model_sha256=protocol["model_sha256"],
+         candidate_source_sha256=protocol["candidate_source_sha256"]), "execution authorization")
+    need(read(directory/"attempt.json") == dict(schema=1, prepared_sha256=sha(prepared_path),
+         authorization_sha256=sha(directory/"execution-authorization.json")), "one-attempt receipt")
+    need(not (directory/"failure.json").exists(), "failure receipt unexpectedly present")
+    native_files = {}
+    for s in document["sources"]:
+        image_path = (manifest_path.parent / s["image"]).resolve()
+        need(sha(image_path) == s["sha256"], "source byte pin")
+        with Image.open(image_path) as im:
+            need(list(im.size) == s["dims"], "actual native image dimensions")
+            rgb = im.convert("RGB")
+        need(hashlib.sha256(rgb.tobytes()).hexdigest() == s["pixel_sha256"], "source RGB pin")
+        for value in s["variants"].values():
+            x, y, w, h = value["roi"]
+            need(hashlib.sha256(rgb.crop((x,y,x+w,y+h)).tobytes()).hexdigest()
+                 == value["pixel_sha256"], "fixed ROI RGB pin")
+        native_files[s["id"]] = s["sha256"]
+    raw = directory/"private-predictions.jsonl"
+    need(sha(raw) == report["raw_predictions_sha256"], "raw prediction-log pin")
+    rows = [json.loads(line) for line in raw.read_text(encoding="utf-8").splitlines()]
+    expected_order = [(s["id"], v, mode) for s in selected for v in s["variants"]
+                      for mode in MODES.values()]
+    actual_order = [(r.get("source_id"), r.get("variant"), r.get("mode")) for r in rows]
+    need(actual_order == expected_order and len(set(actual_order)) == len(expected_order),
+         "all case identities, multiplicity and output order")
+    result = {m: {v: {} for v in PADS} for m in MODES}
+    forwards, blanks, zero = collections.Counter(), collections.Counter(), collections.Counter()
+    source_map = {s["id"]: s for s in selected}
+    mode_map = {number: name for name, number in MODES.items()}
+    score_receipts = []
+    for row in rows:
+        need(row["status"] == "ok" and isinstance(row["predictions"], list)
+             and all(isinstance(p, str) for p in row["predictions"])
+             and len(row["detections"]) == len(row["predictions"]), "successful crop accounting")
+        s, mode, variant = source_map[row["source_id"]], mode_map[row["mode"]], row["variant"]
+        width, height = s["variants"][variant]["roi"][2:]
+        for detection in row["detections"]:
+            need(box_ok(detection["box"], [width, height]) and type(detection["dark"]) is bool,
+                 "native C crop bounds/polarity")
+        fresh_score = score(s["_lines"], row["predictions"])
+        need(fresh_score == row["score"], "independent per-case score mismatch")
+        key = s["platform"] + ":" + s["vn"]
+        reference_hash = digest([v["_reference_sha256"] for v in selected
+                                 if v["platform"] + ":" + v["vn"] == key])
+        group = result[mode][variant].setdefault(key, dict(platform=s["platform"], vn=s["vn"],
+            frames=0, detections=0, blank_outputs=0, zero_detection_frames=0,
+            reference_sha256=reference_hash, **empty_score()))
+        n, blank = len(row["detections"]), sum(not normalized(p) for p in row["predictions"])
+        group["frames"] += 1
+        group["detections"] += n
+        group["blank_outputs"] += blank
+        group["zero_detection_frames"] += int(n == 0)
+        forwards[mode] += n
+        blanks[mode] += blank
+        zero[mode] += int(n == 0)
+        for scope in ("all", "body"):
+            for script in ("full", "hira"):
+                for count in ("chars", "errors"):
+                    group[scope][script][count] += fresh_score[scope][script][count]
+        score_receipts.append(dict(source_id=s["id"], mode=row["mode"], variant=variant,
+                                   score=fresh_score, detections=n, blanks=blank))
+    need(result == report["results"], "all aggregate/title counters mismatch")
+    need(dict(forwards) == report["successful_model_forwards"], "stored detections/forward totals")
+    need(report["finder_errors"] == report["truncations"] == report["reader_errors"] == 0,
+         "failure counters")
+    decision = gate(result, protocol)
+    need(decision == report["decision"], "independent fixed-gate mismatch")
+    fields = ("id", "url", "sha256", "pixel_sha256", "platform", "vn", "release",
+              "session", "dims", "reviewer_kind")
+    need([{k: s[k] for k in fields} for s in selected] == report["source_manifest"],
+         "public source manifest identity")
+    need(report["model_selection"] is False and report["runtime_promotion"] is False,
+         "no implicit model selection/promotion")
+    return dict(schema=1, kind="independent-stored-fresh-native-score-audit", status="passed",
+        result_sha256=sha(directory/"result.json"), prepared_sha256=sha(prepared_path),
+        private_predictions_sha256=sha(raw), manifest_sha256=sha(manifest_path),
+        annotations_sha256=sha(prepared["annotations"]), helper_sha256=sha(__file__),
+        protocol_sha256=sha(directory/"protocol.json"), source_fingerprint=prepared["source_fingerprint"],
+        reference_fingerprint=prepared["reference_fingerprint"], source_code_sha256=prepared["code_sha256"],
+        selected_sources=len(selected), raw_manifest_sources=len(document["sources"]),
+        rejected_duplicate_sources=len(readiness["deduplicated_sources"]), expected_cases=len(expected_order),
+        observed_cases=len(rows), independent_case_score_fingerprint=digest(score_receipts),
+        all_per_case_scores_match=True, all_aggregate_counters_match=True, all_fixed_gates_match=True,
+        all_native_file_RGB_and_variant_pins_match=True, all_inputs_code_environment_binary_pins_match=True,
+        exact_identity_order_no_duplicates_or_missing_cases=True, zero_coerced_failures=True,
+        successful_prior_forwards=dict(forwards), normalized_blank_outputs=dict(blanks),
+        zero_detection_frames=dict(zero), readiness=readiness, recomputed_results=result,
+        recomputed_decision=decision, new_model_forwards=0, new_finder_calls=0, new_teacher_calls=0,
+        scoring_implementation="Independent two-row DP/ranked byte trace; no harness scorer/gate imported",
+        scope="Stored-output arithmetic/identity/pin audit only; no new inference or native hardware proof",
+        original_training_history="unknown", reviewer_kind="assistant",
+        domain_caveat="Trillion is an RPG ordinary story-dialogue title, not a pure-VN domain claim")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--prepared", type=Path, required=True)
+    parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    # Small known edge cases establish crop-boundary and reference-script semantics.
+    need(score([dict(text="あ", content_kind="body")], [])["body"]["hira"]
+         == {"chars": 1, "errors": 1}, "zero-detection deletion contract")
+    need(score([dict(text="漢", content_kind="body")], ["あ"])["body"]["hira"]
+         == {"chars": 0, "errors": 0}, "reference-script substitution contract")
+    need(score([dict(text="名", content_kind="name")], ["名あ"])["body"]["hira"]
+         == {"chars": 0, "errors": 1}, "unmatched insertion attributed to body")
+    need(score([dict(text="..", content_kind="body"), dict(text=".", content_kind="body")],
+               ["..."])["all"]["full"] == {"chars": 2, "errors": 2},
+         "no post-join punctuation renormalization")
+    output = audit(args.prepared.resolve(), args.root.resolve())
+    with args.out.open("x", encoding="utf-8") as stream:
+        json.dump(output, stream, ensure_ascii=False, sort_keys=True, indent=2)
+        stream.write("\n")
+    print(json.dumps({k: output[k] for k in ("status", "selected_sources", "observed_cases",
+        "successful_prior_forwards", "normalized_blank_outputs", "zero_detection_frames",
+        "new_model_forwards", "new_finder_calls")}, sort_keys=True))
+    print("audit_sha256=" + sha(args.out))

@@ -1,0 +1,81 @@
+"""Publish text-free provenance for one frozen source-only cohort join."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(Path(path).read_text())
+
+
+def main(inputs, selection, result, output):
+    joined = read(inputs / 'input-join-receipt.json')
+    manifest = read(inputs / 'manifest.json')
+    annotations = read(inputs / 'annotations.json')
+    outcome = read(result)
+    assert sha(inputs / 'manifest.json') == joined['manifest.json_sha256'] == outcome['manifest_sha256']
+    assert sha(inputs / 'annotations.json') == joined['annotations.json_sha256'] == outcome['annotations_sha256']
+    assert joined['readiness'] == outcome['readiness']
+    for path, expected in joined['input_pins'].items():
+        assert sha(path) == expected
+    plan = read(selection)
+    assert sorted(v for titles in plan['selected'].values() for v in titles) == sorted(
+        x['vn'] for x in joined['readiness']['groups'].values())
+    annotations_by_id = {x['id']: x for x in annotations['lines']}
+    selected = {x['id'] for x in outcome['source_manifest']}
+    sources = []
+    for source in manifest['sources']:
+        if source['id'] not in selected:
+            continue
+        row = {key: source[key] for key in (
+            'id', 'platform', 'vn', 'release', 'session', 'url', 'source_url_as_linked',
+            'sha256', 'pixel_sha256', 'dims', 'source_page', 'source_html_sha256',
+            'release_binding', 'release_metadata_sha256', 'base_roi', 'variants',
+            'reviewer_kind', 'complete_eligible_text', 'uncertain', 'eligibility')}
+        lines = [annotations_by_id[line_id] for line_id in source['line_ids']]
+        row['main_reference_lines'] = len(lines)
+        row['body_reference_lines'] = sum(x['content_kind'] == 'body' for x in lines)
+        row['name_reference_lines'] = sum(x['content_kind'] == 'name' for x in lines)
+        row['supplementary_ruby_groups'] = sum(x['source_id'] == source['id'] for x in annotations['supplementary'])
+        sources.append(row)
+    assert len(sources) == len(selected) == outcome['readiness']['selected_sources']
+    public = {
+        'schema': 1, 'kind': 'fresh-native-source-provenance',
+        'source_join_receipt_sha256': sha(inputs / 'input-join-receipt.json'),
+        'source_join_script_sha256': joined['script_sha256'],
+        'source_selection_sha256': sha(selection),
+        'source_selection': {k: v for k, v in plan.items() if k != 'input_pins'},
+        'source_only_input_pins': [{'name': Path(path).name, 'sha256': value}
+                                   for path, value in sorted(joined['input_pins'].items())],
+        'readiness': joined['readiness'], 'omitted': joined['omitted'],
+        'joined_sources_before_body_dedup': joined['manifest_sources'],
+        'joined_main_lines_before_body_dedup': joined['main_lines'],
+        'joined_supplementary_groups_before_body_dedup': joined['supplementary'],
+        'independent_human_review': False, 'reviewer_kind': 'assistant',
+        'new_model_forwards_during_source_preparation': 0,
+        'new_finder_calls_during_source_preparation': 0,
+        'new_teacher_calls_during_source_preparation': 0,
+        'original_training_history': 'unknown',
+        'pixel_or_dialogue_assets_in_git': False,
+        'sources': sources,
+        'publication_helper_sha256': sha(__file__),
+    }
+    raw = json.dumps(public, ensure_ascii=False, indent=2, sort_keys=True) + '\n'
+    assert '/tmp/' not in raw and '/home/' not in raw
+    assert all('text' not in row and 'image' not in row for row in sources)
+    with output.open('x') as stream:
+        stream.write(raw)
+    print(json.dumps({'sha256': sha(output), 'selected_sources': len(sources), 'bytes': output.stat().st_size}))
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    for field in ('inputs', 'selection', 'result', 'output'):
+        parser.add_argument('--' + field, type=Path, required=True)
+    args = parser.parse_args()
+    main(args.inputs, args.selection, args.result, args.output)

@@ -302,3 +302,32 @@ def test_run_scripts_parse(script):
     import subprocess
     subprocess.run(["bash", "-n", str(ROOT / "eval" / script)], check=True)
 
+
+def _run_json(errors, vns):
+    lines = [{"id": f"x{i}", "vn": vns[i], "styles": ["name"] if i % 2 else ["outlined"], "text": "あいう", "pred": "",
+              "errors": int(e), "n": 3} for i, e in enumerate(errors)]
+    sets = {s: {"lines": lines} for s in ("vita-test", "psp-test")}
+    return {"model_info": {"sha256": "0" * 64, "blob_bytes": 1, "arena_bytes": 1}, "env": {"git": "x"}, "sets": sets}
+
+
+def test_test_report_arms_pairs_and_styles(tmp_path):
+    import synth3_test_report as TR
+    rng = np.random.default_rng(1)
+    vns = [f"v{i % 10}" for i in range(60)]
+    base = rng.integers(0, 3, 60)
+    for run, shift in (("a1", 0), ("a2", 0), ("b1", 1), ("b2", 1), ("ref", 0)):
+        for pol in ("console", "native"):
+            (tmp_path / f"{run}_{pol}.json").write_text(json.dumps(_run_json(base + shift, vns)))
+    proto = {"bootstrap": {"resamples": 500, "seed": 0}, "arms": {"A": ["a1", "a2"], "B": ["b1", "b2"]},
+             "comparisons": {"B_vs_A": ["A", "B"]}}
+    (tmp_path / "p.json").write_text(json.dumps(proto))
+    args = type("A", (), {"protocol": tmp_path / "p.json", "dir": tmp_path, "pair": ["a1=b1"], "ref": ["ref"]})()
+    res = TR.build(args)
+    s = res["polarities"]["console"]["sets"]["vita-test"]
+    assert s["arms"]["A"]["errors"] == 2 * int(base.sum()) and s["arms"]["A"]["chars"] == 2 * 180
+    c = s["comparisons"]["B_vs_A"]
+    assert c["vn_cluster"]["delta_points"] == pytest.approx(100 / 3, abs=1e-3) and c["vn_cluster"]["ci95"][0] > 0
+    assert s["pairs"]["a1->b1"]["line"]["delta_points"] == pytest.approx(100 / 3, abs=1e-3)
+    assert set(c["styles"]) == {"name", "outlined"} and "ref" in s["runs"]
+    pooled = res["polarities"]["native"]["sets"]["pooled"]["arms"]["B"]
+    assert pooled["chars"] == 2 * 2 * 180 and "B_vs_A" in TR.markdown(res)

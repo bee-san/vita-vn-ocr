@@ -66,7 +66,7 @@
    "files": "$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz",
    "shards": 100,
    "opts": "stream=1,pool=3,inv=0.2",
-   "note": "generator version 3 (synth/synth3.py at 1ba727c), seed 20261012, 100 x 10,000 crops; pinned by data/manifests/synth3_shards_v3.json, which is committed and pushed before D_s3v3 trains"
+   "note": "generator version 3 (synth/synth3.py at edb8443), seed 20261012, 100 x 10,000 crops; pinned by data/manifests/synth3_shards_v3.json as re-pinned after that render, committed and pushed before D_s3v3 trains"
   }
  },
  "arm_sources": {
@@ -187,6 +187,14 @@
    "before_any_D_run": true,
    "change": "s3v3 points to the render of commit 1ba727c instead of ab5db0e/84b555b.",
    "reason": "The subtitle pools hold CLANNAD anime dialogue (e.g. 朋也くんも、食べたいですか). 1ba727c redraws every text line that names CLANNAD's characters or the title (data/manifests/synth3_exclude_clannad.json, text_markers). The 84b555b render was discarded before it was pinned; no run trained on it.",
+   "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparison and decision rule"
+  },
+  {
+   "date": "2026-10-12T22:57Z (commit time in git)",
+   "before_any_scoring": true,
+   "before_any_D_run": true,
+   "change": "s3v3 points to the render of commit edb8443; the pin of the 1ba727c render (f62ae57) is superseded.",
+   "reason": "The label audit's worst crops showed gt crops of outlined or shadowed white or black text with thin glyphs cut off (label す。」 on a crop showing す): 2.9% of gt crops had ink touching a side edge, version 2 0.23%. edb8443 keeps the line's full-ink columns and takes only rows from the fill; a 20,000-crop check render has 0.28%. D_s3v3 seeds 1 and 2 had been queued after the f62ae57 pin and were stopped while still waiting for a slot: no step was trained and nothing was scored.",
    "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparison and decision rule"
   }
  ]

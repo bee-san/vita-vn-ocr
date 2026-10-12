@@ -182,3 +182,64 @@ def cut(rgb, box, invert=True):
 def box_iou(a, b):
     i = area(inter(a, b))
     return i / max(1, area(a) + area(b) - i)
+
+
+def label_chars(line, key_of, label):
+    """MeikiOCR's character boxes (screen px) of the reading whose agreement key equals the
+    label's: its own box first, then its reading of the view. None when neither matches."""
+    k = key_of(label)
+    for e in ("meiki", "meikiv"):
+        r = (line.get("reads") or {}).get(e)
+        if not r:
+            continue
+        chars = r[1] if e == "meiki" else r[3]
+        if chars and key_of(r[0]) == k:
+            return chars
+    return None
+
+
+def final_crop(line, kind, W, H, chars=None):
+    """The ink crop widened left and right to the labelled characters' boxes (plus PAD), never
+    beyond the line's view: teacher/build.py's crop_of rule, so every labelled glyph MeikiOCR
+    located is inside the crop."""
+    c = crop_box(line, kind, W, H)
+    if not chars:
+        return c
+    p, v = P.PAD[kind], line.get("view") or c
+    x0 = max(min(v[0], c[0]), min(c[0], min(ch[1] for ch in chars) - p))
+    x1 = min(max(v[2], c[2]), max(c[2], max(ch[3] for ch in chars) + p))
+    return [max(0, x0), c[1], min(W, x1), c[3]]
+
+
+def ink_beyond(gray, line, crop):
+    """(left, right) px of ink that continues the line's rows beyond `crop`: columns whose
+    contrast against the local background exceeds the refine threshold, chained with gaps of
+    at most 0.6 ink heights, searched within the line's view. A bracket or 。 the detector
+    left out shows up here (so do plate borders and decoration)."""
+    x0, y0, x1, y1 = line["ink"]
+    h = max(1, y1 - y0)
+    v = line.get("view") or crop
+    H, W = gray.shape[:2]
+    vx0, vx1 = max(0, min(v[0], crop[0])), min(W, max(v[2], crop[2]))
+    wy0, wy1 = max(0, y0 - 2), min(H, y1 + 2)
+    win = gray[wy0:wy1, vx0:vx1].astype(np.int32)
+    if win.size == 0:
+        return 0, 0
+    ring = np.concatenate([win[0], win[-1], win[:, 0], win[:, -1]])
+    d = np.abs(win - float(np.median(ring)))
+    t = max(28.0, 0.4 * float(np.percentile(d, 99)))
+    on = (d[y0 - wy0:y1 - wy0] > t).sum(0) >= 2
+    gap = max(3, round(0.6 * h))
+    last = crop[2] - 1 - vx0
+    for c in range(crop[2] - vx0, len(on)):
+        if on[c]:
+            if c - last > gap:
+                break
+            last = c
+    first = crop[0] - vx0
+    for c in range(crop[0] - 1 - vx0, -1, -1):
+        if on[c]:
+            if first - c > gap:
+                break
+            first = c
+    return max(0, crop[0] - (vx0 + first)), max(0, vx0 + last + 1 - crop[2])

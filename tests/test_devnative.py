@@ -409,3 +409,57 @@ def test_grad_check_batch(tmp_path):
     batch, sheets = D.load_batch(tmp_path / "g")
     recs = D.parse_decisions('{"sheet": "S001", "default": 1}\n', sheets, "grad", "g")
     assert recs[0]["decision"] == "pick" and recs[0]["pick"] == 1
+
+
+# ----------------------------------------------------------------------------- final crops and edge check
+
+def test_final_crop_and_ink_beyond():
+    from teacher import vote
+    img = np.full((272, 480, 3), 40, np.uint8)
+    _glyph_rows(img, 196, 30, 300, 16, 230)                 # glyph columns 28..311
+    img[205:212, 318:322] = 230                             # a small 。 the detector left out
+    ln = _read_line("あいう。", "あいう。", "あいう。", "あいう", ink=(28, 196, 312, 212))
+    ln["view"] = [10, 190, 340, 218]
+    ln["reads"]["meikiv"][3] = [["あ", 28, 196, 40, 212, 0.9], ["。", 317, 204, 323, 212, 0.9]]
+    ch = L.label_chars(ln, vote.key, "あいう。")
+    assert ch is not None and L.label_chars(ln, vote.key, "かきく") is None
+    rc = L.crop_box(ln, "psp", 480, 272)
+    fc = L.final_crop(ln, "psp", 480, 272, ch)
+    assert rc == [26, 194, 314, 214] and fc == [26, 194, 325, 214]
+    g = img[..., 0]
+    assert L.ink_beyond(g, ln, rc)[1] > 2                    # the 。 continues the row past the reviewed crop
+    assert L.ink_beyond(g, ln, fc) == (0, 0)
+    from devnative import edgecheck as E
+    fc2, rc2, why = E.flags(g, ln, "psp", 480, 272, "あいう。")
+    assert fc2 == fc and "widened-right" in why
+    fc3, _, why3 = E.flags(g, ln, "psp", 480, 272, "あいう")      # label without 。: crop not widened
+    assert fc3 == rc and "ink-right" in why3
+
+
+def test_edge_accept_and_covers():
+    from devnative import edgecheck as E
+    rec = {"check": True, "label": "あいう"}
+    assert E.accept({"check": False}, None) == (True, "unflagged")
+    assert E.accept(rec, None) == (False, "edge-unchecked")
+    assert E.accept(rec, {"decision": "pick", "pick": 1}) == (True, "checked")
+    assert E.accept(rec, {"decision": "skip", "skip": "cut"}) == (False, "edge-cut")
+    assert E.accept(rec, {"decision": "text", "text": "あいう」"}) == (False, "edge-other-text")
+    assert B.covers([10, 0, 100, 20], [8, 0, 102, 20], "psp")
+    assert not B.covers([10, 0, 100, 20], [8, 0, 110, 20], "psp")
+
+
+def test_confirm_reads():
+    ln = _read_line("かきく", "かきく", "かきく", "かきく")
+    base = lambda: D.decide_line("x", ln, _p("pick", "かきく"), None, "dev")  # noqa: E731
+    r = D.apply_confirm(base(), None, None)
+    assert r["status"] == "kept" and r["looks"] == 1
+    r = D.apply_confirm(base(), None, _p("pick", "かきく"))
+    assert r["looks"] == 2 and r["blind"]["agree"]
+    r = D.apply_confirm(base(), None, _p("unsure"))
+    assert r["status"] == "kept" and r["looks"] == 1          # a blind read only counts
+    r = D.apply_confirm(base(), _p("text", "かきく"), None)
+    assert r["looks"] == 2 and r["confirm"]["agree"]
+    r = D.apply_confirm(base(), _p("pick", "かぎく"), None)
+    assert (r["status"], r["why"]) == ("dropped", "confirm-disagree")
+    r = D.apply_confirm(base(), _p("skip", skip="cut"), None)
+    assert r["why"] == "confirm-skip"

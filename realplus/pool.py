@@ -918,6 +918,16 @@ def decision_counts(kind):
     return dict(c)
 
 
+def last_json(path):
+    """The last JSON object line of a log (the leak check's summary), or None."""
+    if not Path(path).exists():
+        return None
+    for x in reversed(Path(path).read_text(encoding="utf-8").splitlines()):
+        if x.startswith("{"):
+            return json.loads(x)
+    return None
+
+
 def cmd_publish(args):
     """The committed, text-free part of the pool: realplus/manifests/shots_NN.jsonl (every screenshot a
     built line comes from: URL, file and pixel sha256, VN, release, capture session, line and crop
@@ -958,7 +968,14 @@ def cmd_publish(args):
         "read": {"screenshots": len(load_reads())},
         "review": {"pass1": decision_counts("pass1"), "edge": decision_counts("edge"),
                    "pass2": decision_counts("pass2"), "reviewer_kind": "assistant"},
-        "labels": dict(collections.Counter(f"{r['status']}:{r.get('how') or r.get('why')}" for r in labels)),
+        "labels": dict(collections.Counter(f"{r['status']}:{r['how'] if r['status'] == 'kept' else r.get('why')}"
+                                           for r in labels)),
+        "edge_check": dict(collections.Counter(e["edge_why"] for e in jl(EDGE / "edge.jsonl"))),
+        "leakcheck": {name: last_json(OUT / "logs" / f"{name}.log") for name in ("leakcheck", "leakcheck_devnative")},
+        "leak_dropped_screenshots": len(json.loads((OUT / "manifests" / "leak_drop.json").read_text()))
+        if (OUT / "manifests" / "leak_drop.json").exists() else 0,
+        "blind_sample": {k: v for k, v in json.loads((REVIEW / "blind_ids.json").read_text()).items() if k != "order"}
+        if (REVIEW / "blind_ids.json").exists() else None,
         "build": build,
         "screenshot_manifests": names,
         "local_manifests": {n: P.file_sha256(OUT / n) for n in ("manifests/lines.jsonl", "labels.jsonl",

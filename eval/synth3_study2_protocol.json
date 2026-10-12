@@ -36,10 +36,10 @@
   "nv": {"files": "$HERD/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz + nv_train_04[01]_b*.npz", "what": "nvsynth's every-line set, train sources 000-041 (docs/nvsynth.md), rebuilt on this machine by nvsynth/nv_fetch.py run --per-page 0 at the pinned dataset revision; pinned by nvsynth/manifests/nvsynth_ja_full.json, committed before the first study-2 run trains", "expected": "12,036,035 lines in 597 shards (the build of 2026-10-09)"},
   "s2": {"files": "$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz + synth_0003[0-8].npz", "shards": 39, "lines": 390000, "note": "exactly train2's and study 1's s2"},
   "s3": {"files": "$HERD/shared/artifacts/synth3/shards/train_v2/synth3_000??.npz", "shards": 100, "lines": 1000000, "pin": "data/manifests/synth3_shards_v2.json (generator version 2)"},
-  "tt": {"file": "$HERD/shared/artifacts/teacher/teacher_train.npz", "sha256": "3c27c057af9a41574a7704d04599d9d6220faea525536d0d6c6023301ff852df"},
-  "rd": {"file": "$HERD/shared/artifacts/realdata/real_train.npz", "sha256": "10f8b68f99357d6db0d5813fbabf3cd3ac9e154fee2fe10c6b03605950f91324"},
-  "ps": {"files": "$HERD/shared/artifacts/teacher/teacher_distill_train.npz + $HERD/shared/artifacts/realdata/real_unlabelled.npz", "sha256": ["5ba2b8b3921e847d70cbba9a6ed6e6251ea128741cb276b3bbaa311d64bac7bf", "61b5350888b9737e6830efeaf71f594503a6dbf5bd1203d0ebce3b8b73969786"], "labels": "PP-OCRv6 small readings where its lowest character confidence is at least 0.7 (label=teacher,conf=0.7)"},
-  "targets": {"dir": "$HERD/shared/artifacts/train2/targets", "sha256": {"teacher_train.v6s.npz": "4a2950e8b0906c97aef1424eb95011cc2a4414fb58552403bb74c4fcd495703f", "real_train.v6s.npz": "968af1ee650bf3d17e6f08c37adffecba75b17dd66a5c304076b471160788199", "teacher_distill_train.v6s.npz": "e18cc6cfe1a33df75f34519d4b2e380b3fd3f2668e743bd0400473ea5f6aca19", "real_unlabelled.v6s.npz": "6868e2fef573af65992306003d15b4b0498f221bf60a1c860230ff936ec97b47"}}
+  "tt": {"file": "$HERD/shared/artifacts/synth3/study2/pools/teacher_train.npz", "sha256": "59a11650fc93d99830f4b8bec0461ccde1a0e1258ab93dc7eaede969ce356151", "rows": 12100, "from": "$HERD/shared/artifacts/teacher/teacher_train.npz (sha256 3c27c057af9a41574a7704d04599d9d6220faea525536d0d6c6023301ff852df, 12,115 rows) without CLANNAD and its family (amendment 2)"},
+  "rd": {"file": "$HERD/shared/artifacts/synth3/study2/pools/real_train.npz", "sha256": "c55e9f59ac82e727b300ffa084563ec23e0be4930bc9c2c16c042ee6aca6da1e", "rows": 9795, "from": "$HERD/shared/artifacts/realdata/real_train.npz (sha256 10f8b68f99357d6db0d5813fbabf3cd3ac9e154fee2fe10c6b03605950f91324, 9,811 rows) without CLANNAD and its family (amendment 2)"},
+  "ps": {"files": "$HERD/shared/artifacts/synth3/study2/pools/teacher_distill_train.npz + $HERD/shared/artifacts/synth3/study2/pools/real_unlabelled.npz", "sha256": ["d856e1edf0694463901180c91cb30325305e430e4540cbf2e6289b2fb29fc153", "e57e892d153536cae5d69907ad1cf856500db60db98d73fd7b53c37295a70814"], "rows": [9035, 11169], "from": "teacher/teacher_distill_train.npz (5ba2b8b3921e847d70cbba9a6ed6e6251ea128741cb276b3bbaa311d64bac7bf, 9,044 rows) + realdata/real_unlabelled.npz (61b5350888b9737e6830efeaf71f594503a6dbf5bd1203d0ebce3b8b73969786, 11,174 rows) without CLANNAD and its family (amendment 2)", "labels": "PP-OCRv6 small readings where its lowest character confidence is at least 0.7 (label=teacher,conf=0.7)"},
+  "targets": {"dir": "$HERD/shared/artifacts/synth3/study2/pools/targets", "sha256": {"teacher_train.v6s.npz": "c29314de6ad00600a4da52de3c51337470c2b03ba13f6b645397138a26550b8b", "real_train.v6s.npz": "c8ec3fca8cbf8251908b15da612782503c7cbc60767c81b708e8e6b03a9ccfa7", "teacher_distill_train.v6s.npz": "67c90a3e277bdc84a6bd816b0a6c3813ede18546d1a996e16cac50270652126d", "real_unlabelled.v6s.npz": "bfcb2c7a621e2963e283d95829a9e6454fad9043d01e6a614011e6e9276ccede"}, "from": "$HERD/shared/artifacts/train2/targets with the same rows dropped (amendment 2); originally teacher_train.v6s.npz 4a2950e8b0906c97aef1424eb95011cc2a4414fb58552403bb74c4fcd495703f, real_train.v6s.npz 968af1ee650bf3d17e6f08c37adffecba75b17dd66a5c304076b471160788199, teacher_distill_train.v6s.npz e18cc6cfe1a33df75f34519d4b2e380b3fd3f2668e743bd0400473ea5f6aca19, real_unlabelled.v6s.npz 6868e2fef573af65992306003d15b4b0498f221bf60a1c860230ff936ec97b47"}
  },
  "arm_sources": {
   "A_s2": {"pretrain": {"nv": 0.5, "s2": 0.5}, "finetune": {"nv": 0.25, "s2": 0.25, "tt": 0.275, "rd": 0.125, "ps": 0.1}},
@@ -98,7 +98,8 @@
  "hygiene": [
   "the same as study 1 (eval/synth3_ablation_protocol.json hygiene): synth3's text, fonts, scenes and names never read teacher_val, a test set or CLANNAD; calibration and mining used training-side pools only",
   "no study-2 run, curve or selection reads vita-test, psp-test, the fresh native textbox test or CLANNAD references",
-  "nvsynth/full is synthetic NVIDIA data (CC BY 4.0), rebuilt from the Hub at the pinned revision"
+  "nvsynth/full is synthetic NVIDIA data (CC BY 4.0), rebuilt from the Hub at the pinned revision",
+  "no study-2 fine-tune trains on CLANNAD (v4) or its VNDB family: the four fine-tune pools are copies without those rows (amendment 2)"
  ],
  "amendments": [
   {
@@ -107,6 +108,15 @@
    "change": "Fixes how devnative is read when it is co-primary, and the tools. devnative writes one npz per subset and crop (devnative_<strict|tv_native|scene_vn>_<ink|grad>.npz, teacher_val's format). Its decision set is the strict and tv_native subsets with both crops (ink + 4/2 px boxes and the checked GRAD finder boxes), pooled into one cohort by eval/synth3_study2.py merge (each crop a separate line; VNs resampled as clusters), read in both views (rv, rvn). scene_vn is scored and reported only. The comparisons and the decision are computed by eval/synth3_study2.py result (study 1's statistics via eval/synth3_ablation.py compare); the reported-only comparisons are listed in eval/synth3_study2_reported.json.",
    "reason": "The protocol named devnative's subsets but not its two crop files, which devnative's build step fixed after this protocol was committed.",
    "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, teacher_val, metric, bootstrap, comparisons, decision rule and run order"
+  },
+  {
+   "date": "2026-10-12 (commit time in git), before any study-2 fine-tune step and before any study-2 score",
+   "before_any_scoring": true,
+   "change": "The fine-tune's real pools (tt, rd, ps) and their teacher targets are replaced by copies without the rows of CLANNAD (v4) and its direct VNDB relations of kinds alt, fan, orig, par, preq, seq, ser, side (eval's family rule): v4, v12, v4060, v28752, v27548, v10058, v29951, v23354, v16901, v5698, v7983, v54298. Rows dropped: teacher_train 15 (v4 4, v4060 10, v12 1), real_train 16 (v4 4, v4060 9, v12 3), teacher_distill_train 9 (v4060 7, v12 2), real_unlabelled 5 (v4060 5). Every other row is byte-identical (eval/synth3_filter_pools.py; checked row by row). eval/synth3_study2_run.sh checks the copies against eval/synth3_study2_pools.sha256 before each fine-tune starts. The pretrain reads no real pool and is unchanged.",
+   "reason": "An independent audit (finding B1) found CLANNAD crops in teacher_train and real_train; the fleet rules and the plan keep CLANNAD, a protected test title, and its family out of training and selection. The family rows were found while fixing it.",
+   "disclosure": "Study 1's three secondary fine-tunes (eval/synth3_run_ft.sh) trained on the unfiltered teacher_train and real_train, and so did the released v0.2.0 models (FL10, H15, F20) and VOCR2's initializer, which are VOCR3's baselines.",
+   "runs_affected": "none: every study-2 run was still pretraining when this amendment was committed",
+   "unchanged": "arms, pretrain, mixture weights, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparisons and decision rule"
   }
  ]
 }

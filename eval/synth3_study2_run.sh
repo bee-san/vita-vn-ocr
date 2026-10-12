@@ -42,11 +42,15 @@ if [ ! -s "$OUT/$PRUN/ckpt_step$PRE.pt" ]; then
     --eval-every 4000 --keep-evals --src "nv:0.5:$NVG:stream=1,pool=3,inv=0.2" "${PSYN[@]}" "${VALS[@]}" \
     --val "nvv:$A/nvsynth/shards/nv_val.npz:n=2000" --val "s2v:$A/synth2/shards/synth_00039.npz:n=2000"
 fi
+# Fine-tune pools without CLANNAD (v4) and its VNDB family (protocol amendment 2): copies made by
+# eval/synth3_filter_pools.py, checked against eval/synth3_study2_pools.sha256 before the fine-tune starts.
+FP=$A/synth3/study2/pools
+(cd "$FP" && sha256sum --quiet -c "$REPO/eval/synth3_study2_pools.sha256")
 exec .venv-ci/bin/python train/train2.py --run "$FRUN" --out "$OUT" --init "$OUT/$PRUN/ckpt_step$PRE.pt" \
   --steps 15000 --batch 96 --lr 1.2e-3 --warmup 500 --final-lr 0.05 --wd 0.01 --ema 0.999 --width "$WIDTH" \
   --vocab "$VOCAB" --seed "$SEED" --threads 5 --eval-every 2500 --keep-evals \
   --src "nv:0.25:$NVG:stream=1,pool=3,inv=0.2" "${FSYN[@]}" \
-  --src "tt:0.275:$A/teacher/teacher_train.npz:targets=$TGT,kd=0,inv=0.5" \
-  --src "rd:0.125:$A/realdata/real_train.npz:targets=$TGT,kd=0,inv=0.5" \
-  --src "ps:0.1:$A/teacher/teacher_distill_train.npz+$A/realdata/real_unlabelled.npz:targets=$TGT,label=teacher,conf=0.7,kd=0,inv=0.5" \
+  --src "tt:0.275:$FP/teacher_train.npz:targets=$FP/targets,kd=0,inv=0.5" \
+  --src "rd:0.125:$FP/real_train.npz:targets=$FP/targets,kd=0,inv=0.5" \
+  --src "ps:0.1:$FP/teacher_distill_train.npz+$FP/real_unlabelled.npz:targets=$FP/targets,label=teacher,conf=0.7,kd=0,inv=0.5" \
   "${VALS[@]}"

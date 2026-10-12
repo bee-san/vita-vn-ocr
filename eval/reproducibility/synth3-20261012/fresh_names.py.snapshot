@@ -1,0 +1,27 @@
+import csv, sys, json, glob, numpy as np
+from concurrent.futures import ProcessPoolExecutor
+S3 = '/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3'
+FRESH = {"v14909", "v25459", "v29454", "v21289", "v21976", "v20519", "v16509", "v19140"}
+rows = list(csv.DictReader(open(f'{S3}/text/vndb_chars.tsv', encoding='utf-8'), delimiter='\t'))
+fresh, other = set(), set()
+for r in rows:
+    vns = set(r['vn_ids'].split(','))
+    (fresh if vns & FRESH else other).add(r['name'])
+only_fresh = {n for n in fresh if n not in other}
+print('fresh char rows names', len(fresh), 'names unique to fresh VNs', len(only_fresh))
+train = [l.rstrip('\n').split('\t') for l in open(f'{S3}/text/pools3/names.train.tsv', encoding='utf-8')]
+pool_names = {x for r in train for x in r[2:] if x}
+inpool = {n for n in only_fresh if n in pool_names or any(n == ''.join(r[2:]) for r in train[:0])}
+print('unique-to-fresh names present as name parts in names.train.tsv', len(inpool), sorted(inpool)[:40])
+def scan(p):
+    z = np.load(p); labs = json.loads(str(z['labels'])); hits = []
+    for lab in labs:
+        for n in inpool:
+            if len(n) >= 2 and n in lab: hits.append((lab, n))
+    return hits
+files = sorted(glob.glob(f'{S3}/shards/train_v2/synth3_000??.npz'))
+with ProcessPoolExecutor(5) as ex: res = list(ex.map(scan, files))
+hits = [h for r in res for h in r]
+print('v2 crops whose label contains a name unique to the fresh VNs:', len(hits))
+from collections import Counter
+print(Counter(n for _, n in hits).most_common(25))

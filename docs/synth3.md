@@ -22,6 +22,10 @@ train2's mixture, or to be mixed with it. The generator is `synth/synth3.py`.
   the real fine-tune, A against C at FL10 (3 seeds) and H15 (2 seeds), plus a synth3 learning
   curve (0.25M to 2M crops) and a pretrain-length curve. No study-2 result yet.
 
+Commit hashes cited in this document, the protocols and the result files refer to the branch's
+history before it was rebased onto main; that history, with its original commit times, is kept at
+tag `synth3-history-20261012`.
+
 ## What changed from synth2, and why
 
 Every choice below was set from training-side evidence only: real crops of teacher_train and

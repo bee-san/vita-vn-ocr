@@ -100,5 +100,13 @@
   "no study-2 run, curve or selection reads vita-test, psp-test, the fresh native textbox test or CLANNAD references",
   "nvsynth/full is synthetic NVIDIA data (CC BY 4.0), rebuilt from the Hub at the pinned revision"
  ],
- "amendments": []
+ "amendments": [
+  {
+   "date": "2026-10-12 (commit time in git)",
+   "before_any_scoring": true,
+   "change": "Fixes how devnative is read when it is co-primary, and the tools. devnative writes one npz per subset and crop (devnative_<strict|tv_native|scene_vn>_<ink|grad>.npz, teacher_val's format). Its decision set is the strict and tv_native subsets with both crops (ink + 4/2 px boxes and the checked GRAD finder boxes), pooled into one cohort by eval/synth3_study2.py merge (each crop a separate line; VNs resampled as clusters), read in both views (rv, rvn). scene_vn is scored and reported only. The comparisons and the decision are computed by eval/synth3_study2.py result (study 1's statistics via eval/synth3_ablation.py compare); the reported-only comparisons are listed in eval/synth3_study2_reported.json.",
+   "reason": "The protocol named devnative's subsets but not its two crop files, which devnative's build step fixed after this protocol was committed.",
+   "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, teacher_val, metric, bootstrap, comparisons, decision rule and run order"
+  }
+ ]
 }

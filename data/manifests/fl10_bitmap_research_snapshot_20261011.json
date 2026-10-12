@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "date": "2026-10-11",
+  "release_tag": "v0.2.2-fl10-bitmap.1",
+  "role": "research_snapshot",
+  "qualified_for_deployment": false,
+  "training_runs": 2,
+  "checkpoints": 20,
+  "quantized_exports": 20,
+  "training_code_commit": "1ce7123929cc53c4650dca748c9a049b311dec0b",
+  "validation": {
+    "archive_member_count": 53,
+    "checkpoint_zip_crc_passed": 20,
+    "excluded_data_present": false,
+    "hash_and_size_readback": true,
+    "quantized_export_hashes_verified": 20,
+    "schema": 1,
+    "status": "passed"
+  },
+  "assets": [
+    {
+      "bytes": 128587173,
+      "file": "weights-bitmap-research-20261011.tar.gz",
+      "sha256": "9cd5d051561dde39ac7b427cffd8af8c5e9871909089544d5c8a9be8e8c53b10",
+      "url": "https://github.com/bee-san/vita-vn-ocr/releases/download/v0.2.2-fl10-bitmap.1/weights-bitmap-research-20261011.tar.gz"
+    },
+    {
+      "bytes": 9068,
+      "file": "bitmap-members.json",
+      "sha256": "a7f69c4c2efc96d8210f2e8bbfb0415dbfdc72e055e6591c4b909bd8042c598a",
+      "url": "https://github.com/bee-san/vita-vn-ocr/releases/download/v0.2.2-fl10-bitmap.1/bitmap-members.json"
+    },
+    {
+      "bytes": 1043931,
+      "file": "code-fl10-bitmap-research.tar.gz",
+      "sha256": "75e8123ccca971cf6f300dd0ddd71b52206deb865a4a157b764779631bbe24db",
+      "url": "https://github.com/bee-san/vita-vn-ocr/releases/download/v0.2.2-fl10-bitmap.1/code-fl10-bitmap-research.tar.gz"
+    }
+  ],
+  "results": "eval/hiragana_bitmap_20261011.json",
+  "excluded": "Images, crops, fonts, corpora, NPZ shards, transcriptions, annotation manifests and held-out data.",
+  "resume": "Complete restart is pinned; approximate checkpoint resume omits RNG/source/mixer states.",
+  "outcome": "No candidate passes frozen original-development hiragana selection. Baseline retained; no held-out test or accuracy promotion."
+}

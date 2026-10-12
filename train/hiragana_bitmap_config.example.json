@@ -1,0 +1,21 @@
+{
+  "general": "build/hiragana/fresh-jiten/general/*.npz",
+  "kanji": "build/hiragana/fresh-jiten/kanji/*.npz",
+  "kanji_policy": "data/manifests/fl10_kanji_policy_20261011.json",
+  "kanji_manifest": "build/hiragana/fresh-jiten/dataset_manifest.json",
+  "native": "build/hiragana/native-train/*.npz",
+  "native_manifest": "build/hiragana/native-train/manifest.json",
+  "native_sources": "data/manifests/fresh_jiten_backgrounds.json",
+  "dev": "build/hiragana/clannad/dev.npz",
+  "synthetic_dev": "build/hiragana/fresh-jiten/synthetic-dev/synth_00000.npz",
+  "general_manifest": "build/hiragana/fresh-jiten/dataset_manifest.json",
+  "bitmap_manifest": "build/hiragana/native-bitmap-dataset/dataset_manifest.json",
+  "bitmap_general": "build/hiragana/native-bitmap-dataset/general/*.npz",
+  "bitmap_targeted": "build/hiragana/native-bitmap-dataset/targeted/*.npz",
+  "bitmap_dev": "build/hiragana/native-bitmap-dataset/synthetic-dev/synth_00000.npz",
+  "psp_dev": "build/hiragana/native-font-dev/psp-dev.npz",
+  "vita_dev": "build/hiragana/native-font-dev/psv-dev.npz",
+  "real_guard_manifest_psp": "build/hiragana/native-font-dev/all-psp-labels.jsonl",
+  "real_guard_manifest_vita": "build/hiragana/native-font-dev/all-psv-labels.jsonl",
+  "dev_manifest": "build/hiragana/clannad/dev/labels.jsonl"
+}

@@ -1,0 +1,342 @@
+{
+  "schema": 1,
+  "purpose": "rejected_fixed_horizontal_padding_research",
+  "decision": {
+    "accepted": false,
+    "recommendation": "retain original preprocessing; do not deploy this branch default",
+    "new_margin_or_device_rule_selected": false,
+    "retuned_after_test": false,
+    "candidate_count": 1,
+    "heldout_runs": 1
+  },
+  "provenance": {
+    "lock_sha256": "33c73eb3c75f86b1a6529f959566d403eebca2d0e1f9cce6f12a3807cd7a21b8",
+    "heldout_report_sha256": "93a4bb69b0f9d066436515c71b5bacd541f9512a46f4f60636610e744f89a9a5",
+    "development_report_sha256": "61cdff434543e4016b824e5960c8db565db6a4793538c2249d2ea0e4380553fd",
+    "locked_at_utc": "2026-10-11T16:36:37.670425+00:00",
+    "baseline_revision": "d6ef77d5a2547215530749985a46bb9ff82b5c70",
+    "candidate_revision": "91e4cd17f9b85d410560bb0e9cff796ada630616",
+    "source_sha256": {
+      "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+      "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+      "runtime/vocr_lines.c": "798fe0bc95f79d8f96af9a16edcc1e0caedf3b4848f2f2784ad543556a287559",
+      "runtime/vocr_lines.h": "e54bd395e63d0f6968dd427749d7d949ac8cb9be058ab7c3bb37a30283e57630",
+      "runtime/pyvocr.py": "49cd9bf0ac474728f5aae9df9c7a7b7656a57db85f1eec75ec3ba7829b427376",
+      "synth/common.py": "b87a9ca6b9c17fa4679fc31c3c241b33e4e7c6832791f5cc9f334853bc56977d",
+      "eval/padding_protocol.py": "9009643791f5c3d7530c453215f1e41ca65a72184b4b10dd5b5d546dfb6cb0a0",
+      "eval/finders.py": "920b8e0912555297cb70bfd23f86bd0f6edb448b95d118df1672e2384f1ea8f3",
+      "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+      "eval/sets.py": "a65154a114c922e8a2bacf621dc96289f2fc74706e1705ab297a5014edb09bce",
+      "eval/fetch.py": "dac64d6eeff274c675d908eaaede9cc6207b49da7f4dccc6371605c45eb6f257"
+    },
+    "baseline_source_sha256": {
+      "runtime/vocr_lines.c": "2430531cf5d58e47676f165247f8400b819b5377b1f39669107d88a150f67d06",
+      "runtime/vocr_lines.h": "e54bd395e63d0f6968dd427749d7d949ac8cb9be058ab7c3bb37a30283e57630"
+    },
+    "native_library_sha256": {
+      "baseline": "4f9cef809b88025ccaf3b5ee10f0f22eabc07505c6cd118f8a6af814656bfb59",
+      "candidate": "9958ba062f9e0ff7f90cbf29ec6b2b73753c7a45614e3f3ea98d0309df158595"
+    }
+  },
+  "rule": {
+    "horizontal_extra_pixels_each_side": 4,
+    "vertical_extra_pixels": 0,
+    "crop_boundary": "user-selected dialogue ROI",
+    "polarity": "C recomputed on emitted crop",
+    "primary_matching": "original baseline boxes",
+    "secondary_matching": "expanded candidate boxes",
+    "require": "full errors <= baseline on all three sets and strict CLANNAD hiragana reduction, under both matching methods; detection and vertical geometry unchanged",
+    "candidate_count": 1,
+    "model_gate": "hiragana_gate.py unchanged; recognizer reports retain old padding"
+  },
+  "datasets": {
+    "vita-test": {
+      "sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+      "split": "test",
+      "local": false,
+      "rows": 208,
+      "scored_lines": 206,
+      "reference_sha256": "7cd6aa91723ceda049eaff5456c5cc929cb74dba4150369e7fe2fc616f7321ff"
+    },
+    "psp-test": {
+      "sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+      "split": "test",
+      "local": false,
+      "rows": 245,
+      "scored_lines": 245,
+      "reference_sha256": "99d4c6246bb12a7a9da31b7bbca5c8b31bac095b7c8e9d89affec4564a9ff939"
+    },
+    "clannad-test": {
+      "sha256": "ab226eba6cafee7e9e735a1be42b6f1c2e877be2c255bd57ec9913bc15faacd6",
+      "split": "test",
+      "local": true,
+      "rows": 25,
+      "scored_lines": 25,
+      "reference_sha256": "ee1194040c104cf7825c57104af8aaad025618545430d5bba6e2d16951f32169"
+    }
+  },
+  "backend": "C GRAD finder and scalar C W8I recognizer",
+  "host": {
+    "platform": "Linux-7.2.6-1-cachyos-x86_64-with-glibc2.44",
+    "python": "3.11.15",
+    "compiler": "gcc (GCC) 16.2.1 20260810"
+  },
+  "memory": {
+    "blob_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832,
+    "max_width": 1024,
+    "max_finder_arena_bytes": {
+      "baseline": 28651,
+      "candidate": 28651
+    }
+  },
+  "heldout_evaluated": true,
+  "sets": {
+    "vita-test": {
+      "regions": 84,
+      "detections": 207,
+      "horizontal_padding_clamped_crops": 49,
+      "polarity_changes": 1,
+      "resized_width_clamped_candidate_crops": 0,
+      "geometry_sha256": "ba696b285347880c05d7cc86a3976967504efd00e8e6d9f4e874e039f821224e",
+      "resized_width_clamped_baseline_crops": 0,
+      "scored_gt_lines_clipped_by_selected_roi": 0,
+      "matching_changed_regions": 0,
+      "image_count": 74,
+      "image_sha256_list_digest": "60bc6c53a4b825692485aeeb405d8ed3295bc7962519cae2aec9ea7ea191bf11",
+      "scores": {
+        "baseline": {
+          "found_lines": 196,
+          "missed_lines": 10,
+          "false_positive_detections": 9,
+          "full": {
+            "lines": 215,
+            "chars": 2564,
+            "errors": 219,
+            "cer": 0.08541,
+            "exact": 0.60465
+          },
+          "hiragana": {
+            "chars": 1417,
+            "errors": 66,
+            "cer": 0.04658,
+            "substitutions": 23,
+            "deletions": 42,
+            "insertions": 1,
+            "into_hiragana": 4
+          }
+        },
+        "candidate_fixed_matching": {
+          "found_lines": 196,
+          "missed_lines": 10,
+          "false_positive_detections": 9,
+          "full": {
+            "lines": 215,
+            "chars": 2564,
+            "errors": 223,
+            "cer": 0.08697,
+            "exact": 0.60465
+          },
+          "hiragana": {
+            "chars": 1417,
+            "errors": 67,
+            "cer": 0.04728,
+            "substitutions": 26,
+            "deletions": 40,
+            "insertions": 1,
+            "into_hiragana": 3
+          }
+        },
+        "candidate_emitted_matching": {
+          "found_lines": 196,
+          "missed_lines": 10,
+          "false_positive_detections": 9,
+          "full": {
+            "lines": 215,
+            "chars": 2564,
+            "errors": 223,
+            "cer": 0.08697,
+            "exact": 0.60465
+          },
+          "hiragana": {
+            "chars": 1417,
+            "errors": 67,
+            "cer": 0.04728,
+            "substitutions": 26,
+            "deletions": 40,
+            "insertions": 1,
+            "into_hiragana": 3
+          }
+        }
+      }
+    },
+    "psp-test": {
+      "regions": 93,
+      "detections": 233,
+      "horizontal_padding_clamped_crops": 179,
+      "polarity_changes": 0,
+      "resized_width_clamped_candidate_crops": 0,
+      "geometry_sha256": "b16b077204628a123e177f652d51087f1d95854fd1d0ccd3fa5c305b7bd392f7",
+      "resized_width_clamped_baseline_crops": 0,
+      "scored_gt_lines_clipped_by_selected_roi": 0,
+      "matching_changed_regions": 0,
+      "image_count": 83,
+      "image_sha256_list_digest": "b9c49b1efb97bf2c18be6cc2402a99b7bf9f7c2131fdaddab9302cb9256ebad3",
+      "scores": {
+        "baseline": {
+          "found_lines": 221,
+          "missed_lines": 24,
+          "false_positive_detections": 12,
+          "full": {
+            "lines": 257,
+            "chars": 2510,
+            "errors": 450,
+            "cer": 0.17928,
+            "exact": 0.50584
+          },
+          "hiragana": {
+            "chars": 1382,
+            "errors": 152,
+            "cer": 0.10999,
+            "substitutions": 33,
+            "deletions": 118,
+            "insertions": 1,
+            "into_hiragana": 12
+          }
+        },
+        "candidate_fixed_matching": {
+          "found_lines": 221,
+          "missed_lines": 24,
+          "false_positive_detections": 12,
+          "full": {
+            "lines": 257,
+            "chars": 2510,
+            "errors": 440,
+            "cer": 0.1753,
+            "exact": 0.51362
+          },
+          "hiragana": {
+            "chars": 1382,
+            "errors": 145,
+            "cer": 0.10492,
+            "substitutions": 30,
+            "deletions": 112,
+            "insertions": 3,
+            "into_hiragana": 7
+          }
+        },
+        "candidate_emitted_matching": {
+          "found_lines": 221,
+          "missed_lines": 24,
+          "false_positive_detections": 12,
+          "full": {
+            "lines": 257,
+            "chars": 2510,
+            "errors": 440,
+            "cer": 0.1753,
+            "exact": 0.51362
+          },
+          "hiragana": {
+            "chars": 1382,
+            "errors": 145,
+            "cer": 0.10492,
+            "substitutions": 30,
+            "deletions": 112,
+            "insertions": 3,
+            "into_hiragana": 7
+          }
+        }
+      }
+    },
+    "clannad-test": {
+      "regions": 20,
+      "detections": 26,
+      "horizontal_padding_clamped_crops": 0,
+      "polarity_changes": 0,
+      "resized_width_clamped_candidate_crops": 0,
+      "geometry_sha256": "ca4dca9c34e026261715950b74a763bd74c9b367be7f56d1b1cd7487a6a44d91",
+      "resized_width_clamped_baseline_crops": 0,
+      "scored_gt_lines_clipped_by_selected_roi": 0,
+      "matching_changed_regions": 0,
+      "image_count": 20,
+      "image_sha256_list_digest": "0a67763e5bb3cdcc2ab0226571905915eda062ceb64703587045fbd799e82c89",
+      "scores": {
+        "baseline": {
+          "found_lines": 24,
+          "missed_lines": 1,
+          "false_positive_detections": 2,
+          "full": {
+            "lines": 27,
+            "chars": 388,
+            "errors": 23,
+            "cer": 0.05928,
+            "exact": 0.59259
+          },
+          "hiragana": {
+            "chars": 229,
+            "errors": 5,
+            "cer": 0.02183,
+            "substitutions": 3,
+            "deletions": 2,
+            "insertions": 0,
+            "into_hiragana": 2
+          }
+        },
+        "candidate_fixed_matching": {
+          "found_lines": 24,
+          "missed_lines": 1,
+          "false_positive_detections": 2,
+          "full": {
+            "lines": 27,
+            "chars": 388,
+            "errors": 23,
+            "cer": 0.05928,
+            "exact": 0.66667
+          },
+          "hiragana": {
+            "chars": 229,
+            "errors": 6,
+            "cer": 0.0262,
+            "substitutions": 1,
+            "deletions": 5,
+            "insertions": 0,
+            "into_hiragana": 3
+          }
+        },
+        "candidate_emitted_matching": {
+          "found_lines": 24,
+          "missed_lines": 1,
+          "false_positive_detections": 2,
+          "full": {
+            "lines": 27,
+            "chars": 388,
+            "errors": 23,
+            "cer": 0.05928,
+            "exact": 0.66667
+          },
+          "hiragana": {
+            "chars": 229,
+            "errors": 6,
+            "cer": 0.0262,
+            "substitutions": 1,
+            "deletions": 5,
+            "insertions": 0,
+            "into_hiragana": 3
+          }
+        }
+      }
+    }
+  },
+  "gate": {
+    "accepted": false,
+    "failures": [
+      "vita-test: full error regression (candidate_fixed_matching)",
+      "vita-test: full error regression (candidate_emitted_matching)",
+      "CLANNAD hiragana does not strictly improve (candidate_fixed_matching)",
+      "CLANNAD hiragana does not strictly improve (candidate_emitted_matching)"
+    ],
+    "physical_console_validation": "pending"
+  },
+  "physical_console_validation": "not performed; rejected candidate was not deployed"
+}

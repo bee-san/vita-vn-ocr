@@ -14,6 +14,7 @@ clusters on the sheet. Needs onnxruntime (the shared venv), not the CI env.
 import argparse
 import glob
 import json
+import os
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -35,7 +36,8 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", required=True)
     ap.add_argument("--sheet")
-    ap.add_argument("--font", default="/local/home/skerraut/herd-vita-ocr/shared/data/fonts/notosansjp/NotoSansJP[wght].ttf")
+    herd = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
+    ap.add_argument("--font", default=str(herd / "shared/data/fonts/notosansjp/NotoSansJP[wght].ttf"))
     args = ap.parse_args()
     import backends
     paths = sorted(glob.glob(args.shards))

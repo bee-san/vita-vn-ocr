@@ -162,6 +162,33 @@ def test_gt_box_pads_ink_and_keeps_neighbours_out():
         assert y + h <= 33 + 0.25 * 22 + 1                          # at most a quarter of line 2
 
 
+def test_grad_crops_need_one_hugged_line(font):
+    """A GRAD box is kept only when it holds one labelled line and hugs its ink: unlabelled text
+    in the same band (screen text, a neighbour) makes the box wider and drops the crop."""
+    from PIL import Image, ImageDraw, ImageFont
+    f = ImageFont.truetype(str(font), 24)
+
+    def region(extra):
+        im = Image.new("RGB", (520, 60), (20, 20, 30))
+        d = ImageDraw.Draw(im)
+        d.text((16, 40), "あいうえお", font=f, fill=(240, 240, 240), anchor="ls")
+        if extra:
+            d.text((150, 40), "かきくけこさしすせそ", font=f, fill=(240, 240, 240), anchor="ls")
+        img = np.asarray(im)
+        m = Image.new("L", (520, 60), 0)
+        ImageDraw.Draw(m).text((16, 40), "あいうえお", font=f, fill=255, anchor="ls")
+        ink = np.asarray(m) >= 128
+        cols = np.flatnonzero(ink.any(axis=0))
+        lay = [{"text": "あいうえお", "top": 40 - 0.88 * 24, "fs": 24, "y0": 40 - 0.88 * 24 - 1,
+                "y1": 40 + 0.12 * 24 + 1, "ix0": int(cols[0]), "ix1": int(cols[-1]) + 1, "kind": "dialogue"}]
+        return img, lay
+    img, lay = region(False)
+    got = synth3.grad_crops(img, lay)
+    assert len(got) == 1 and got[0][1] == "あいうえお"
+    img, lay = region(True)
+    assert synth3.grad_crops(img, lay) == []
+
+
 def test_length_gate_moves_toward_the_target():
     """Proposals with every length 1-40 equally likely (far too few short lines): the kept crops'
     length histogram is much closer to the target. The gate assumes every target bin gets

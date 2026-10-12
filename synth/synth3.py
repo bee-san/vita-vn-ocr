@@ -27,12 +27,27 @@ crops (teacher_train + real_train) and the released models' errors on training-s
              small jitter) or the console's own GRAD finder boxes (common.find_lines_ex),
              both stored in console polarity (dark text inverted by common.line_dark)
 
+Version 3 (docs/synth3-v3.md) keeps every version-2 fix and closes the gaps measured against
+the training-side real crops: more large renders area-scaled to the console (two thirds of real
+crops are PC shots scaled down) at the real ink sizes, the VNDB JPEG applied at the source
+resolution before that downscale, busier crop edges (more scenes, finer scene zoom, more
+translucent boxes, a GRAD box that fails the one-line check falls back to the line's gt crop
+instead of dropping a line in a busy region), Latin letters and digits near the real share (fewer
+UI menus and Latin UI words, pool lines with Latin mostly redrawn, less alnum dressing), and
+pages: text that overflows the box continues on a later page (v2 showed only the first, so a
+long utterance never reached its closing 」). Names, scenes and screenshots of the fresh native
+textbox titles and their VNDB relations (data/manifests/synth3_exclude_fresh_native.json) are
+never used.
+
   synth3.py preview --out DIR [--n 16]                contact sheets (<= 1280 px)
   synth3.py shards  --out DIR --split train --shards N --per-shard M [--workers W] [--seed S]
   synth3.py manifest --dir DIR [--dir DIR2] --out MANIFEST.json
+  synth3.py scene-hashes --out HASHES.json           file and RGB-pixel sha256 of every scene candidate
 
-Assets come from --assets (default $HERD/shared/artifacts/synth3): fonts/, text/pools3/,
-and screenshot backgrounds (training-split games only; test and development VNs excluded).
+--cfg '{"platform": {...}}' (or --cfg @file.json) overrides CFG for calibration renders; it is
+recorded in the recipe. Assets come from --assets (default $HERD/shared/artifacts/synth3): fonts/,
+text/pools3/, and screenshot backgrounds (training-split games only; test, development and
+excluded VNs never).
 """
 import argparse
 import hashlib
@@ -60,12 +75,18 @@ HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 ASSETS = HERD / "shared" / "artifacts" / "synth3"
 SHARED_DATA = HERD / "shared" / "data"
 FONT_MANIFEST = ROOT / "data" / "manifests" / "synth3_fonts.json"
+# Titles protected like eval's test games (the fresh native textbox test, its reserves and their
+# VNDB relations): never a name, scene or screenshot of synth3 (version 3 on).
+EXCLUDE_MANIFESTS = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",)
+LATIN = re.compile(r"[0-9A-Za-z０-９Ａ-Ｚａ-ｚ]")
 
 # Every probability of the generator, recorded verbatim in the shard manifest.
 CFG = {
-    "version": 2,
-    "platform": {"vita": 0.46, "psp": 0.30, "psp2x": 0.13, "scaled": 0.11},
-    "scaled_to_psp": 0.3,
+    "version": 3,
+    # v3: two thirds of the real training crops are PC / home-console shots area-scaled to a
+    # console size, so large renders scaled down get a bigger share (docs/synth3-v3.md)
+    "platform": {"vita": 0.24, "psp": 0.24, "psp2x": 0.05, "scaled": 0.47},
+    "scaled_to_psp": 0.4,
     "category": {
         "vita": {"gothic": 0.40, "rounded": 0.20, "mincho": 0.18, "pen": 0.05, "display": 0.07, "pixel": 0.10},
         "psp": {"gothic": 0.36, "rounded": 0.14, "mincho": 0.14, "pen": 0.03, "display": 0.05, "pixel": 0.28},
@@ -76,6 +97,8 @@ CFG = {
     },
     "gamma": {"p": 0.5, "lo": 0.7, "hi": 1.45},
     "layout": {"adv": 0.50, "band": 0.12, "nvl": 0.09, "balloon": 0.04, "choice": 0.08, "bare": 0.12, "ui": 0.05},
+    # v3: UI menus were 12% of v2's crops and carried half its Latin letters
+    "ui": {"lines": [2, 5], "latin_word": 0.08, "places": 0.45},
     "short": 0.15,
     "narration": 0.18,
     "narrate_nvl": 0.4,
@@ -84,14 +107,22 @@ CFG = {
     "focus_hard_gain": 4.0,
     "focus_prior_exponent": 0.35,       # VN relevance: (real + Jiten-VN frequency + 1e-7) ** this
     "reference_pools": ["wiktionary", "wikiquote"],   # focus contexts only when nothing else has the char
-    "brackets": {"named": 0.6, "unnamed": 0.3, "double": 0.03},
+    "brackets": {"named": 0.7, "unnamed": 0.35, "double": 0.03},
     "dressing": {"interjection": 0.08, "stammer": 0.03, "ending": 0.15, "terminal": 0.75, "dots": 0.06,
-                 "elongation": 0.03, "alnum": 0.04},
+                 "elongation": 0.03, "alnum": 0.012},
+    # v3: a pool line holding Latin letters or digits is kept with this probability, else redrawn
+    # (at most latin_redraws times); focus contexts for a non-Latin character likewise
+    "latin_keep": 0.22,
+    "latin_redraws": 8,
+    # v3: text longer than the box continues on later pages and a screenshot shows any page (v2
+    # showed only the first, so a long utterance never reached its closing 」)
+    "pages": {"wrap_lines": 48},
     "terminal": {"。": 0.45, "！": 0.17, "？": 0.13, "……": 0.12, "っ！": 0.04, "！？": 0.03, "～": 0.04, "♪": 0.02},
     "names": {"vndb": 0.6, "syosetu": 0.3, "generated": 0.1, "honorific": 0.2, "brackets": 0.1,
               "unknown": 0.03, "role": 0.03, "space": 0.3},
-    "name_mode": {"vita": {"tab": 0.54, "inline": 0.18, "line": 0.18, None: 0.10},
-                  "psp": {"tab": 0.49, "inline": 0.22, "line": 0.19, None: 0.10}},
+    # v3: names inline before 「 were 5.6% of crops and put 「 mid-line 3.5x as often as in real crops
+    "name_mode": {"vita": {"tab": 0.58, "inline": 0.06, "line": 0.24, None: 0.12},
+                  "psp": {"tab": 0.55, "inline": 0.08, "line": 0.25, None: 0.12}},
     "nvl_name": 0.3,
     "name_coloured": 0.65,
     "ruby": {"vita": 0.15, "psp": 0.20},
@@ -101,23 +132,46 @@ CFG = {
     "drop_aside": 0.8,
     "coloured": {"span": 0.14, "line": 0.10},
     "outline": {"vita": {"light_on_dark": 0.40, "dark_on_light": 0.12, "on_colour": 0.7},
-                "psp": {"light_on_dark": 0.60, "dark_on_light": 0.20, "on_colour": 0.8}},
-    "shadow": {"vita": 0.30, "psp": 0.25},
+                "psp": {"light_on_dark": 0.60, "dark_on_light": 0.20, "on_colour": 0.8},
+                "scaled": {"light_on_dark": 0.55, "dark_on_light": 0.2, "on_colour": 0.8}},
+    "shadow": {"vita": 0.30, "psp": 0.25, "scaled": 0.5},
+    # native PSP em sizes and their probabilities (v3: one step larger, real PSP ink p90 23 px)
+    "psp_sizes": [[12, 13, 14, 15, 16, 17, 18, 20], [0.04, 0.10, 0.17, 0.21, 0.19, 0.12, 0.10, 0.07]],
     "capture": {"vita": {"clean": 0.5, "vndb2": 0.5},
                 "psp": {"clean": 0.35, "q90": 0.35, "vndb2": 0.30},
                 "psp2x": {"bilinear": 0.6, "nearest": 0.3, "x1995": 0.05, "scanlines": 0.05, "jpeg": 0.1},
+                # v3: VNDB's JPEG happens at the source resolution, before the area downscale
+                # that made the real crops (teacher/realdata), as on a real PC screenshot
                 "scaled": {"q90": 0.85, "clean": 0.15}},
     "dither565": 0.45,
     "blur": 0.15,
     "noise": 0.15,
     "subnative": 0.03,
-    "crop": {"gt": 0.5, "grad": 0.5},
+    "crop": {"gt": 0.25, "grad": 0.75},
+    # v3: a line whose GRAD box fails the one-line check gets its gt crop instead of no crop
+    # (v2 dropped those lines, which sit in busy regions: GRAD crops were the cleanest)
+    "grad_fallback": True,
     "pad": {"vita": 4, "psp": 2},
-    "pad_extra": {"p": 0.55, "top": 0.12, "bottom": 0.2, "left": 0.16, "right": 0.24},
-    # final em of large renders area-scaled down (teacher's hires crops: ink p50 18.7 px on the
-    # Vita target, 10.9 px on the PSP target)
-    "scaled_em": {"vita": [21.0, 2.5, 16, 27], "psp": [11.5, 1.5, 9, 15]},
-    "background": {"scene": 0.82},
+    # extra gt margin per side, U(0, max x ink height) with probability p (v3: per target, from
+    # one pixel-ink measure for real and synthetic crops; real crops are their ink plus 4 / 2 px,
+    # a little more on the left; v2 copied MeikiOCR character-box margins, which sit inside the ink)
+    "pad_extra": {"vita": {"p": 1.0, "top": 0.04, "bottom": 0.06, "left": 0.12, "right": 0.04},
+                  "psp": {"p": 1.0, "top": 0.0, "bottom": 0.02, "left": 0.2, "right": 0.0}},
+    # final em of large renders area-scaled down: N(mean, sd) clipped to [lo, hi] (v3: matched to
+    # the pixel ink height of teacher's and realdata's hires crops, p10/50/90 14-15/21/31-32 px
+    # on the Vita target)
+    "scaled_em": {"vita": [20.5, 3.3, 13, 30], "psp": [13.5, 2.0, 9, 19]},
+    "background": {"scene": 0.92},
+    "scene_zoom": [1.0, 1.2],
+    # dialogue-box opacity per platform group: [p of the low range, low range, high range] (v3:
+    # PC renders scaled down see far more scene through their boxes, as in the real hires crops)
+    "box_alpha": {"vita": {"on_dark": [0.55, [0.3, 0.7], [0.7, 0.93]], "light": [0.3, [0.65, 0.88], [0.88, 1.0]],
+                           "on_colour": [0.7, 0.97]},
+                  "psp": {"on_dark": [0.7, [0.2, 0.65], [0.65, 0.9]], "light": [0.5, [0.5, 0.82], [0.82, 1.0]],
+                          "on_colour": [0.6, 0.95]},
+                  "scaled": {"on_dark": [0.8, [0.15, 0.6], [0.6, 0.85]], "light": [0.65, [0.4, 0.75], [0.75, 0.95]],
+                             "on_colour": [0.5, 0.9]}},
+    "pitch": [1.12, 1.8],
     "dialogue_pools": {
         "aozora_dialogue": 0.16, "narikiri": 0.20, "aratako_dsv3": 0.07, "aratako_gpt4omini": 0.09,
         "opensubtitles": 0.09, "jesc": 0.09, "tatoeba": 0.07, "nucc": 0.03, "jdd": 0.02, "bsd": 0.01,
@@ -151,6 +205,45 @@ def choose(rng, weights):
     names = list(weights)
     p = np.array([weights[n] for n in names], dtype=np.float64)
     return names[rng.choice(len(names), p=p / p.sum())]
+
+
+def merge_cfg(base, patch):
+    """CFG with a calibration override merged in: nested dicts merge key by key, anything else
+    replaces. A key the generator does not have is an error (a typo would be silently ignored)."""
+    out = dict(base)
+    for k, v in patch.items():
+        if k not in base:
+            raise KeyError(f"unknown CFG key {k!r}")
+        out[k] = merge_cfg(base[k], v) if isinstance(v, dict) and isinstance(base[k], dict) else v
+    return out
+
+
+def load_exclusions(paths):
+    """VN ids, screenshot hashes (file and decoded-RGB pixel sha256) and name hashes that synth3
+    must never use, from exclusion manifests (data/manifests/synth3_exclude_*.json)."""
+    ex = {"vns": set(), "sha256": set(), "pixel_sha256": set(), "name_sha256": set(), "files": []}
+    for p in paths:
+        doc = json.loads(Path(p).read_text(encoding="utf-8"))
+        if doc.get("kind") != "synth3-exclusion":
+            raise ValueError(f"{p} is not a synth3 exclusion manifest")
+        ex["vns"] |= set(doc["vns"])
+        ex["sha256"] |= set(doc.get("screenshots", {}).get("sha256", []))
+        ex["pixel_sha256"] |= set(doc.get("screenshots", {}).get("pixel_sha256", []))
+        ex["name_sha256"] |= set(doc.get("names", {}).get("name_sha256", []))
+        ex["files"].append({"file": Path(p).name, "sha256": sha256(p), "vns": len(doc["vns"])})
+    return ex
+
+
+def name_hash(parts):
+    """The exclusion manifests' name key: the name's parts as names.tsv stores them, joined."""
+    return hashlib.sha256("".join(parts).encode("utf-8")).hexdigest()
+
+
+def pixel_sha256(path):
+    """sha256 of the decoded RGB pixels (eval/fresh_native_textbox.py's definition)."""
+    with Image.open(path) as im:
+        rgb = np.asarray(im.convert("RGB"), dtype=np.uint8)
+    return hashlib.sha256(np.ascontiguousarray(rgb).tobytes()).hexdigest()
 
 
 # ----------------------------------------------------------------------------- resources
@@ -225,8 +318,11 @@ def drawn_chars(path, vocab):
 
 class Resources:
     def __init__(self, assets=ASSETS, split="train", profile="personal", font_manifest=FONT_MANIFEST,
-                 vocab=None, holdout_fonts=(), scenes=True):
+                 vocab=None, holdout_fonts=(), scenes=True, exclude=EXCLUDE_MANIFESTS, font_cache=None,
+                 scene_hashes=None):
         self.assets, self.split, self.profile = Path(assets), split, profile
+        self.exclusions = load_exclusions(exclude)
+        self.font_cache = Path(font_cache) if font_cache else self.assets / "fonts" / "coverage_cache.json"
         self.vocab = load_vocab(vocab) if vocab else load_vocab()
         self.vocab_set = set(self.vocab)
         self.cid = {c: i for i, c in enumerate(self.vocab)}
@@ -235,7 +331,7 @@ class Resources:
         for f in self.fonts:
             self.by_cat.setdefault(f.cat, {}).setdefault(f.fam, []).append(f)
         self._text()
-        self._backgrounds(scenes)
+        self._backgrounds(scenes, scene_hashes)
         self.hiragana = [c for c in self.vocab if 0x3041 <= ord(c) <= 0x3093 and c not in "ゎゐゑ"]
         self.katakana = [c for c in self.vocab if 0x30A1 <= ord(c) <= 0x30FA and c not in "ヵヶヮ"]
         self.native_faces = {}
@@ -247,7 +343,7 @@ class Resources:
     def _fonts(self, manifest_path, holdout):
         doc = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
         allowed = LICENCE_PROFILES[self.profile]
-        cache_path = self.assets / "fonts" / "coverage_cache.json"
+        cache_path = self.font_cache
         cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
         n_cache = len(cache)
         out = []
@@ -312,8 +408,13 @@ class Resources:
         self.ctx_line = z["line"][keep][order]
         self.ctx_start = np.searchsorted(self.ctx_char, np.arange(len(self.vocab) + 1))
         self.names = {"vndb": [], "syosetu": []}
+        self.names_dropped = 0
+        bad = self.exclusions["name_sha256"]
         for line in (pools_dir / f"names.{split}.tsv").read_text(encoding="utf-8").splitlines():
             p = line.split("\t")
+            if bad and name_hash(p[2:]) in bad:      # a character of an excluded VN, or its homonym
+                self.names_dropped += 1
+                continue
             self.names.setdefault(p[0], []).append(tuple(p[2:]))
         tg = json.loads((pools_dir / "targets.json").read_text(encoding="utf-8"))["chars"]
         self.hard = np.array([tg[c]["hard"] if c in tg else 0.0 for c in self.vocab])
@@ -332,36 +433,51 @@ class Resources:
         self.has_ctx = (self.ctx_start[1:] - self.ctx_start[:-1]) > 0
         self.text_identity = {"pools": self.pool_meta, "contexts": sha256(pools_dir / f"contexts.{split}.npz"),
                               "names": sha256(pools_dir / f"names.{split}.tsv"),
+                              "names_dropped_excluded": self.names_dropped,
                               "targets": sha256(pools_dir / "targets.json"),
                               "lists": sha256(self.assets / "text" / "lists.json")}
 
     # ---- scenes
-    def _backgrounds(self, scenes=True):
+    def _backgrounds(self, scenes=True, scene_hashes=None):
         """Training-side screenshots for scenes (synth2's list plus realdata's shots), never a
-        test or development VN, split by VN between train and dev. scenes=False: none (the
-        renderer then draws synthetic scenes only, as in CI)."""
+        test, development or excluded VN, and never a screenshot whose file or RGB-pixel sha256 an
+        exclusion manifest lists; split by VN between train and dev. scenes=False: none (the
+        renderer then draws synthetic scenes only, as in CI). scene_hashes: a scene-hashes file
+        (file sha256 -> pixel sha256), so the pixels need not be decoded here."""
+        self.scene_dropped = {"excluded_vn": 0, "excluded_hash": 0}
         if not scenes:
             self.bg, self.bg_vns, self.bg_text = {"vita": [], "psp": [], "hires": []}, [], {}
             return
         forbid = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"])
         forbid |= set((self.assets / "mining" / "exclude_dev_vns.txt").read_text().split())
-        bg = json.loads((HERD / "shared" / "artifacts" / "synth2" / "backgrounds.json").read_text())
-        rd = HERD / "shared" / "artifacts" / "realdata" / "shots"
-        vita = [SHARED_DATA / "vndb" / "shots" / s for s in bg["vita_shots"]] + sorted((rd / "vita").glob("*.jpg"))
-        psp = sorted((rd / "psp").glob("*.jpg"))
-        hires = sorted((rd / "hires").glob("*.jpg"))
-        self.bg_text = scene_text_boxes(rd)
+        excluded = self.exclusions["vns"]
+        vita, psp, hires = scene_candidates()
+        self.bg_text = scene_text_boxes(HERD / "shared" / "artifacts" / "realdata" / "shots")
+        known = json.loads(Path(scene_hashes).read_text(encoding="utf-8"))["pixels"] if scene_hashes else {}
+
+        def clean(p):        # not a screenshot an exclusion manifest lists (by bytes or by pixels)
+            if not (self.exclusions["sha256"] or self.exclusions["pixel_sha256"]):
+                return True
+            fs = sha256(p)
+            ps = known.get(fs) or pixel_sha256(p)
+            if fs in self.exclusions["sha256"] or ps in self.exclusions["pixel_sha256"]:
+                self.scene_dropped["excluded_hash"] += 1
+                return False
+            return True
 
         def ok(p):      # a scene needs a text detection record: its patches must avoid the screen's text
             vn = p.name.split("_")[0]
+            if vn in excluded:
+                self.scene_dropped["excluded_vn"] += 1
+                return False
             return p.exists() and vn not in forbid and not is_test_vn(vn) and p in self.bg_text
         split_dev = self.split.startswith("dev")
 
         def mine(p):        # scenes split by VN between train and synthetic dev
             h = int(hashlib.sha256(f"synth3-bg:{p.name.split('_')[0]}".encode()).hexdigest()[:8], 16)
             return (h % 10 == 0) == split_dev
-        self.bg = {"vita": [p for p in vita if ok(p) and mine(p)], "psp": [p for p in psp if ok(p) and mine(p)],
-                   "hires": [p for p in hires if ok(p) and mine(p)]}
+        self.bg = {k: [p for p in v if ok(p) and mine(p) and clean(p)]
+                   for k, v in (("vita", vita), ("psp", psp), ("hires", hires))}
         self.bg_vns = sorted({p.name.split("_")[0] for v in self.bg.values() for p in v})
 
     # ---- focus characters
@@ -388,9 +504,38 @@ class Resources:
         same = [k for k in ks if self.kind_of(self.ctx_pool[k]) == kind and self.ctx_pool[k] not in ref]
         other = [k for k in ks if self.ctx_pool[k] not in ref]
         pick = same or other
+        if pick and not LATIN.match(self.vocab[c]) and rng.random() >= CFG["latin_keep"]:
+            plain = [k for k in pick if not LATIN.search(self.pools[self.ctx_pool[k]][int(self.ctx_line[k])])]
+            pick = plain or pick         # v3: Latin letters only where the focus character needs them
         k = int(pick[rng.integers(len(pick))]) if pick else int(rng.integers(a, b))
         pool = self.ctx_pool[k]
         return self.pools[pool][int(self.ctx_line[k])], pool
+
+
+def scene_candidates():
+    """(vita, psp, hires) screenshot paths synth3 may cut scenes from, before any filter."""
+    bg = json.loads((HERD / "shared" / "artifacts" / "synth2" / "backgrounds.json").read_text())
+    rd = HERD / "shared" / "artifacts" / "realdata" / "shots"
+    vita = [SHARED_DATA / "vndb" / "shots" / s for s in bg["vita_shots"]] + sorted((rd / "vita").glob("*.jpg"))
+    return vita, sorted((rd / "psp").glob("*.jpg")), sorted((rd / "hires").glob("*.jpg"))
+
+
+def _hash_pair(p):
+    return sha256(p), pixel_sha256(p)
+
+
+def scene_hashes(args):
+    """File sha256 -> decoded-RGB pixel sha256 of every scene candidate, so render workers check
+    the exclusion manifests' pixel hashes without decoding thousands of screenshots each."""
+    paths = [p for p in dict.fromkeys(sum(scene_candidates(), [])) if p.exists()]
+    with mp.get_context("fork").Pool(args.workers) as pool:
+        pairs = pool.map(_hash_pair, paths, chunksize=32)
+    ex = load_exclusions(args.exclude)
+    hits = [str(p) for p, (fs, ps) in zip(paths, pairs) if fs in ex["sha256"] or ps in ex["pixel_sha256"]]
+    doc = {"kind": "synth3-scene-hashes", "schema": 1, "candidates": len(paths), "pixels": dict(pairs),
+           "excluded_matches": hits, "exclusions": ex["files"]}
+    Path(args.out).write_text(json.dumps(doc, indent=0) + "\n", encoding="utf-8")
+    print(f"{len(paths)} scene candidates hashed; {len(hits)} match an exclusion manifest -> {args.out}", flush=True)
 
 
 def scene_text_boxes(rd):
@@ -433,6 +578,18 @@ def clean(s):
     return "".join(c for c in s if c in R.vocab_set)
 
 
+def pool_line(rng, pool):
+    """A line of `pool`. One holding Latin letters or digits is kept with probability CFG
+    latin_keep, else redrawn (at most latin_redraws times): subtitle, roleplay and Wikipedia lines
+    carry about 3x the Latin share of real VN crops (version 3)."""
+    s = R.pools[pool].sample(rng)
+    for _ in range(CFG["latin_redraws"]):
+        if not LATIN.search(s) or rng.random() < CFG["latin_keep"]:
+            break
+        s = R.pools[pool].sample(rng)
+    return s
+
+
 def template_line(rng):
     L = R.lists
     r = rng.random()
@@ -460,10 +617,10 @@ def dialogue_text(rng, named):
     if focus is None:
         weights = {k: v for k, v in CFG["dialogue_pools"].items() if k == "templates" or k in R.pools}
         pool = choose(rng, weights)
-        s = template_line(rng) if pool == "templates" else R.pools[pool].sample(rng)
+        s = template_line(rng) if pool == "templates" else pool_line(rng, pool)
     s = clean(s).lstrip("、。，．・").strip("「」『』").lstrip("、。")
     if pool != "templates" and focus is None and rng.random() < CFG["join"] and pool in R.pools:
-        more = clean(R.pools[pool].sample(rng)).strip("「」『』").lstrip("、。")   # a box holds several sentences
+        more = clean(pool_line(rng, pool)).strip("「」『』").lstrip("、。")   # a box holds several sentences
         if more and s and len(s) + len(more) <= 70:
             s = s + ("" if s[-1] in "。！？…―～♪" else "。") + more
     if "（" in s and rng.random() < CFG["drop_aside"]:
@@ -527,7 +684,19 @@ def narration_text(rng):
             return clean(s).strip("「」『』").lstrip("、。"), pool, focus
         focus = None
     pool = choose(rng, {k: v for k, v in CFG["narration_pools"].items() if k in R.pools})
-    return clean(R.pools[pool].sample(rng)).lstrip("、。"), pool, focus
+    return clean(pool_line(rng, pool)).lstrip("、。"), pool, focus
+
+
+def paginate(lines, max_lines, rng):
+    """(page lines, page index, pages): text that overflows a box of max_lines continues on the
+    next page, and a screenshot is equally likely to show any page. Version 2 always showed the
+    first page, so an utterance that overflowed never showed its closing 」 (9.3 per 1,000
+    characters against the real crops' 16.1)."""
+    if len(lines) <= max_lines:
+        return lines, 0, 1
+    pages = [lines[i:i + max_lines] for i in range(0, len(lines), max_lines)]
+    k = int(rng.integers(len(pages)))
+    return pages[k], k, len(pages)
 
 
 UI_WORDS = [w.replace("_", " ") for w in """
@@ -546,10 +715,26 @@ VOICE 画面設定 文字表示速度 オート速度 既読 未読 閉じる �
 """.split()]
 
 
+UI_LATIN = [w for w in UI_WORDS if LATIN.search(w)]
+UI_JAPANESE = [w for w in UI_WORDS if not LATIN.search(w)]
+# v3: place and status labels of VN screens (map, scene title, status window), the other short
+# unpunctuated crops the real training crops hold besides names and menus
+UI_PLACES = """
+教室 屋上 廊下 中庭 校門 校庭 体育館 図書室 保健室 職員室 生徒会室 部室 音楽室 理科室 食堂 購買 寮
+自室 自宅 居間 台所 玄関 浴室 寝室 公園 駅前 商店街 神社 寺 喫茶店 繁華街 広場 河原 海岸 砂浜 港
+病院 森 湖 山道 丘 城 城下町 王宮 宿屋 酒場 武器屋 道具屋 教会 墓地 村 町外れ 路地裏 屋敷 研究所
+放課後 昼休み 早朝 午前 午後 夕方 夜 深夜 翌朝 数日後 回想 体力 気力 好感度 所持金 攻撃力 防御力
+素早さ 魅力 知力 経験値 名前 年齢 職業 所属 装備 状態 移動 会話 調べる 話す 考える 持ち物 表情 主人公
+""".split()
+
+
 def ui_text(rng):
     r = rng.random()
-    if r < 0.7:
-        s = UI_WORDS[rng.integers(len(UI_WORDS))]
+    if r < CFG["ui"]["places"]:
+        s = UI_PLACES[rng.integers(len(UI_PLACES))]
+    elif r < 0.7:        # v3: Latin menu words (SAVE, Q.LOAD, CGモード) at CFG ui.latin_word, not 27%
+        words = UI_LATIN if rng.random() < CFG["ui"]["latin_word"] else UI_JAPANESE
+        s = words[rng.integers(len(words))]
     elif r < 0.85:
         s = f"第{'一二三四五六七八九十'[rng.integers(10)]}{['章', '話', '幕', '部'][rng.integers(4)]}"
     else:
@@ -566,11 +751,11 @@ def short_text(rng, named):
     else:
         pool = choose(rng, {k: CFG["dialogue_pools"][k] for k in ("opensubtitles", "jesc", "nucc", "narikiri",
                                                                     "tatoeba") if k in R.pools})
-        s = R.pools[pool].sample(rng)
+        s = pool_line(rng, pool)
         for _ in range(30):
             if len(s) <= 7:
                 break
-            s = R.pools[pool].sample(rng)
+            s = pool_line(rng, pool)
     s = clean(s).strip("「」『』")
     if s and s[-1] not in "。！？…―～♪っ" and rng.random() < 0.7:
         s += choose(rng, CFG["terminal"])
@@ -719,9 +904,10 @@ class Layer3:
 
 # ----------------------------------------------------------------------------- style
 
-def sample_style(rng, platform):
+def sample_style(rng, platform, effects=None):
     """synth2's palette and effects (render.sample_style, run with synth3's layout weights),
-    then outline and shadow rates per console (docs/synth3.md)."""
+    then outline and shadow rates per console, or per `effects` (v3: "scaled", PC renders,
+    whose text is more often outlined or shadowed; docs/synth3-v3.md)."""
     saved, saved_s = S2.LAYOUT_WEIGHT, S2.SCHEME_WEIGHT
     S2.LAYOUT_WEIGHT = CFG["layout"]
     S2.SCHEME_WEIGHT = dict(saved_s, ui=saved_s["choice"])
@@ -730,12 +916,13 @@ def sample_style(rng, platform):
     finally:
         S2.LAYOUT_WEIGHT, S2.SCHEME_WEIGHT = saved, saved_s
     con = "vita" if platform == "vita" else "psp"
-    p_out = CFG["outline"][con].get(st["scheme"])
+    fx = effects or con
+    p_out = CFG["outline"][fx].get(st["scheme"])
     if st["stroke"] is None and p_out and rng.random() < p_out:
         w = 1 if con == "psp" or rng.random() < 0.5 else int(rng.choice([2, 3], p=[0.8, 0.2]))
         dark = S2.luma(st["fill"]) > 128
         st["stroke"] = {"w": w, "c": S2.dark_colour(rng, 0.25) if dark else S2.light_colour(rng, 0.15, 0.9)}
-    if st["shadow"] is None and rng.random() < CFG["shadow"][con] * 0.5:
+    if st["shadow"] is None and rng.random() < CFG["shadow"][fx] * 0.5:
         d = 1 if con == "psp" or rng.random() < 0.6 else 2
         st["shadow"] = {"dx": d, "dy": d, "blur": 0.7 if rng.random() < 0.3 else 0.0,
                         "c": S2.dark_colour(rng, 0.15) if st["on_dark"] else S2.light_colour(rng, 0.1, 0.85),
@@ -751,7 +938,8 @@ def font_size(rng, platform, font):
         mult = 1 if platform in ("psp", "psp2x") or em >= 17 else 2
         return em * mult, em, mult
     if platform in ("psp", "psp2x"):
-        fs = int(rng.choice([12, 13, 14, 15, 16, 17, 18, 20], p=[.10, .16, .21, .21, .17, .07, .06, .02]))
+        sizes, p = CFG["psp_sizes"]
+        fs = int(rng.choice(sizes, p=np.asarray(p) / np.sum(p)))
     else:   # native Vita crops: ink p50 24 px (teacher_train, kind vita)
         r = rng.random()
         fs = int(rng.integers(17, 21)) if r < 0.10 else int(rng.integers(30, 35)) if r < 0.18 else \
@@ -791,7 +979,7 @@ def render_region(rng, platform=None):
         geom = "vita"
     else:
         geom = "vita" if platform == "vita" else "psp"
-    st = sample_style(rng, geom)
+    st = sample_style(rng, geom, "scaled" if platform == "scaled" else None)
     lay, sch = st["layout"], st["scheme"]
     psp = geom == "psp"
     SW, SH = (960, 544) if not psp else (480, 272)
@@ -816,7 +1004,8 @@ def render_region(rng, platform=None):
         (name_mode is None and rng.random() < CFG["narration"])
     sources, focus = [], []
     if lay in ("choice", "ui"):
-        n_lines = int(rng.choice([2, 3, 4], p=[0.35, 0.45, 0.2])) if lay == "choice" else int(rng.integers(2, 7))
+        lo, hi = CFG["ui"]["lines"]
+        n_lines = int(rng.choice([2, 3, 4], p=[0.35, 0.45, 0.2])) if lay == "choice" else int(rng.integers(lo, hi + 1))
         texts = []
         for _ in range(n_lines):
             t, pool, fc = choice_text(rng) if lay == "choice" else ui_text(rng)
@@ -882,6 +1071,7 @@ def render_region(rng, platform=None):
         return sum(cadv(c, fnt) for c in text_) + track * max(len(text_) - 1, 0)
 
     # ---- lines
+    page, pages = 0, 1
     if lay in ("choice", "ui"):
         lines = [S2.add_spaces(t, rng) for t in texts]
         box_w = None
@@ -896,8 +1086,9 @@ def render_region(rng, platform=None):
                      "bare": int(rng.choice([1, 2, 3], p=[0.4, 0.4, 0.2]))}[lay]
         if lay == "balloon":
             cpl = min(cpl, int(rng.integers(8, 20)))
-        lines = S2.wrap(S2.add_spaces(text, rng), cpl, max_lines, rng, at_punct=rng.random() < 0.35)
-        if lay == "nvl" and rng.random() < 0.5 and len(lines) > 1:
+        wrapped = S2.wrap(S2.add_spaces(text, rng), cpl, CFG["pages"]["wrap_lines"], rng, at_punct=rng.random() < 0.35)
+        lines, page, pages = paginate(wrapped, max_lines, rng)
+        if lay == "nvl" and rng.random() < 0.5 and len(lines) > 1 and page == pages - 1:
             more, pool2, fc2 = narration_text(rng)
             extra = [ln for ln in S2.wrap(more, cpl, max(0, max_lines - len(lines)), rng)
                      if set(ln) <= font.chars | {"　"}]
@@ -908,8 +1099,9 @@ def render_region(rng, platform=None):
     lines = [ln for ln in lines if ln]
     if not lines:
         return None
-    indent = rng.random() < 0.5 and lines[0][0] in "「『（" and lay not in ("choice", "ui", "balloon")
-    inline_name = name_mode == "inline"
+    first = lines[0] if page == 0 else text.lstrip("　")
+    indent = rng.random() < 0.5 and first[:1] in ("「", "『", "（") and lay not in ("choice", "ui", "balloon")
+    inline_name = name_mode == "inline" and page == 0     # an inline name opens the utterance, not page 2
     if inline_name:
         lines[0] = name_disp + "　" * int(rng.choice([0, 0, 1, 2])) + lines[0]
     labels = [ln.replace("　", "") for ln in lines]
@@ -964,7 +1156,7 @@ def render_region(rng, platform=None):
 
     # ---- geometry
     widths = [measure_w(f, ln) for ln in lines]
-    pitch = max(fs * rng.uniform(1.12, 1.8), fs + 2 * max(sw, sw2) + dy + (1 if psp else 2)) + ruby_space
+    pitch = max(fs * rng.uniform(*CFG["pitch"]), fs + 2 * max(sw, sw2) + dy + (1 if psp else 2)) + ruby_space
     if lay == "nvl":
         pitch = max(pitch, fs * rng.uniform(1.4, 2.0) + ruby_space)
     pl, pr = pad(8, 48), pad(8, 48)
@@ -1007,15 +1199,14 @@ def render_region(rng, platform=None):
         return None
 
     # ---- scene and boxes
-    img = background(rng, w, h, platform, target, up)
+    img, bg_tag = background(rng, w, h, platform, target, up)
     boxes = []
     rect = (out_l, out_t, w - out_r - 1, h - out_b - 1 - (int(fs * 0.8) if lay == "balloon" else 0))
-    if st["on_dark"]:
-        box_alpha = float(rng.uniform(0.3, 0.7) if rng.random() < 0.55 else rng.uniform(0.7, 0.93))
-    else:
-        box_alpha = float(rng.uniform(0.65, 0.88) if rng.random() < 0.3 else rng.uniform(0.88, 1.0))
+    BA = CFG["box_alpha"]["scaled" if platform == "scaled" else "psp" if psp else "vita"]
+    p_lo, lo, hi = BA["on_dark"] if st["on_dark"] else BA["light"]
+    box_alpha = float(rng.uniform(*lo) if rng.random() < p_lo else rng.uniform(*hi))
     if sch == "on_colour":
-        box_alpha = float(rng.uniform(0.7, 0.97))
+        box_alpha = float(rng.uniform(*BA["on_colour"]))
     border = None
     if show_border:
         bw = 1 if psp else int(rng.choice([1, 2, 3, 4], p=[0.35, 0.35, 0.2, 0.1]))
@@ -1072,6 +1263,11 @@ def render_region(rng, platform=None):
     layer = Layer3(w, h, ck, aa, n_fill, sw, sw2, resample, integer)
     layer.cursor_k = cursor_k
     layout = []
+    # v3: eval's and teacher's line boxes come from refine(), whose white-text and black-text
+    # masks find the glyph fill (+1 px), so the outline or shadow of white or black text sits
+    # inside the 4 / 2 px pad of a real crop; synth3's gt box follows that rule for such lines
+    fill_box = (st["grad"] is None and bool(st["stroke"] or st["shadow"] or st["stroke2"])
+                and (min(st["fill"]) >= 200 or max(st["fill"]) <= 70))
     x_left = out_l + pl
     y = out_t + pt + ruby_space
     base_k = 1.0 if mode == "pixel" else 0.88
@@ -1085,7 +1281,7 @@ def render_region(rng, platform=None):
         if name_coloured:
             n_fill = max(n_fill, 2)
         layout.append({"text": name_label, "top": y, "fs": name_fs, "x0": x_left, "x1": nx, "kind": "name",
-                       "xs": None})
+                       "xs": None, "fillbox": fill_box and not name_coloured})
         y += name_line_h
     tops = ([out_t + i * (bar_h + bar_gap) + (bar_h - fs) / 2 for i in range(len(lines))] if lay in ("choice", "ui")
             else [y + i * pitch for i in range(len(lines))])
@@ -1093,7 +1289,8 @@ def render_region(rng, platform=None):
     for i, ln in enumerate(lines):
         top = tops[i]
         base = top + base_k * fs
-        x = (w - widths[i]) / 2 if lay in ("choice", "ui", "balloon") else x_left + (fs if indent and i > 0 else 0)
+        x = (w - widths[i]) / 2 if lay in ("choice", "ui", "balloon") else \
+            x_left + (fs if indent and (i > 0 or page > 0) else 0)
         xs = []
         for k, ch in enumerate(ln):
             xs.append(x)
@@ -1117,7 +1314,7 @@ def render_region(rng, platform=None):
                                                  "narration" if narrate else "dialogue")
         layout.append({"text": labels[i], "top": top, "fs": fs, "x0": xs[0] if xs else x, "x1": x_end, "kind": kind,
                        "ruby": bool(ruby and any(S2.is_kanji(c) for c in ln)), "xs": xs, "line": ln,
-                       "coloured": bool(any(colour_of[i]))})
+                       "coloured": bool(any(colour_of[i])), "fillbox": fill_box and not any(colour_of[i])})
     q4c = mode == "atlas" and rng.random() < 0.7
     q4 = mode == "aa4"
     gamma = 1.0
@@ -1185,7 +1382,7 @@ def render_region(rng, platform=None):
         np.maximum(core, tcore, out=core)
         np.maximum(ink, tink, out=ink)
         layout.insert(0, {"text": name_label, "top": ntop, "fs": name_fs, "x0": nx, "x1": x, "kind": "name",
-                          "xs": None})
+                          "xs": None, "fillbox": bool(tl.sw) and (min(nfill) >= 200 or max(nfill) <= 70)})
 
     # ---- screen and capture
     cap = []
@@ -1205,6 +1402,7 @@ def render_region(rng, platform=None):
         cap.append("noise")
     out = np.clip(img + 0.5, 0, 255).astype(np.uint8)
     ink_f = ink.astype(np.float32)
+    core_f = core.astype(np.float32)
     ruby_f = ruby_m
     k_final = 1.0
     if platform == "psp2x":
@@ -1220,13 +1418,15 @@ def render_region(rng, platform=None):
             out = jpeg(out, 90, 2, rng)
             cap.append("q90")
     elif platform == "scaled":
+        # v3: as a real PC screenshot reaches the training crops, VNDB's Q90 JPEG at the source
+        # resolution, then the area downscale to the console size (teacher/realdata build.py)
+        if choose(rng, CFG["capture"]["scaled"]) == "q90":
+            out = jpeg(out, 90, 2 if rng.random() < 0.85 else 0, rng)
+            cap.append("q90")
         k_final = 1.0 / up
         W2, H2 = max(8, int(round(w * k_final))), max(8, int(round(h * k_final)))
         out = cv2.resize(out, (W2, H2), interpolation=cv2.INTER_AREA)
         cap.append(f"area{k_final:.2f}")
-        if choose(rng, CFG["capture"]["scaled"]) == "q90":
-            out = jpeg(out, 90, 2 if rng.random() < 0.85 else 0, rng)
-            cap.append("q90")
     else:
         chain = choose(rng, CFG["capture"][con])
         if chain == "vndb2":
@@ -1239,6 +1439,7 @@ def render_region(rng, platform=None):
         H2, W2 = out.shape[:2]
         ink_f = cv2.resize(ink_f, (W2, H2), interpolation=cv2.INTER_AREA if k_final < 1 else cv2.INTER_LINEAR)
         ruby_f = cv2.resize(ruby_f, (W2, H2), interpolation=cv2.INTER_AREA if k_final < 1 else cv2.INTER_LINEAR)
+        core_f = cv2.resize(core_f, (W2, H2), interpolation=cv2.INTER_AREA if k_final < 1 else cv2.INTER_LINEAR)
         for L in layout:
             for key in ("top", "x0", "x1"):
                 L[key] *= k_final
@@ -1273,8 +1474,11 @@ def render_region(rng, platform=None):
             "name": name_mode, "name_src": name_src, "partial": partial is not None,
             "cursor": None if cursor is None else ("inline" if cursor["inline"] else "corner"),
             "capture": "+".join(cap), "border": bool(show_border), "pools": sources,
-            "focus": [None if c is None else R.vocab[c] for c in focus]}
+            "focus": [None if c is None else R.vocab[c] for c in focus],
+            "bg": bg_tag, "box_alpha": round(box_alpha, 2) if boxes else None, "page": [page, pages]}
     meta["_ruby_mask"] = ruby_b
+    meta["_fill_mask"] = (cv2.dilate((core_f >= 0.5).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
+                          if any(L.get("fillbox") for L in layout) else None)
     return out, layout, ink_b, meta
 
 
@@ -1327,8 +1531,9 @@ def load_bg(path, scale, box=None):
 
 
 def background(rng, w, h, platform, target, up):
-    """A scene crop (upper 62% of a training-side screenshot) that fits the region, else
-    synthetic gradients, blobs and clutter (synth2's generator)."""
+    """(region, tag): a scene crop (upper 62% of a training-side screenshot) that fits the region,
+    else synthetic gradients, blobs and clutter (synth2's generator); tag "scene:KIND" or
+    "synthetic"."""
     if rng.random() < CFG["background"]["scene"]:
         if platform == "scaled":
             pools = [("hires", up * (0.5 if target == "psp" else 1.0))]
@@ -1341,7 +1546,7 @@ def background(rng, w, h, platform, target, up):
         for _ in range(4 if paths else 0):
             p = paths[rng.integers(len(paths))]
             try:
-                z = round(float(rng.uniform(1.0, 1.4)), 1)
+                z = round(float(rng.uniform(*CFG["scene_zoom"])), 1)
                 with Image.open(p) as pim:
                     sw0 = pim.width
                 scale = round(960 * base * z / sw0, 3) if kind == "hires" else base * z
@@ -1357,13 +1562,13 @@ def background(rng, w, h, platform, target, up):
                                     (tb[:, 1] - 3 < y0 + h) & (tb[:, 3] + 3 > y0)).any():
                         continue            # the patch would carry real, unlabelled screen text
                     arr = im[y0:y0 + h, x0:x0 + w].astype(np.float32)
-                    return arr[:, ::-1].copy() if rng.random() < 0.5 else arr
+                    return (arr[:, ::-1].copy() if rng.random() < 0.5 else arr), f"scene:{kind}"
             except OSError:
                 pass
     saved = S2.R
     S2.R = _NoScenes
     try:
-        return S2.background(rng, w, h, "vita")
+        return S2.background(rng, w, h, "vita"), "synthetic"
     finally:
         S2.R = saved
 
@@ -1397,22 +1602,39 @@ def line_ink(L, layout, ink, ruby, shape):
     return x0, top, x1, bot
 
 
-def gt_box(L, layout, ink, ruby, pad, rng, shape):
-    """The labelled ink padded like eval's boxes (4 px Vita, 2 px PSP); 60% of crops add a
-    random margin per side up to the teacher crops' measured extra (CFG pad_extra, in units
-    of ink height). Another line's band may not enter the crop by more than a quarter."""
+def fill_ink(L, layout, fill, ruby, shape):
+    """The line's box as refine() finds white or black text: its glyph fill dilated by 1 px
+    (rows and columns of `fill` inside the line's band and ink columns), plus attached furigana."""
+    ib = line_ink(L, layout, fill, ruby, shape)
+    if ib is None:
+        return None
+    x0, top, x1, bot = ib
+    cols = np.flatnonzero((fill[top:bot, x0:x1] & ~ruby[top:bot, x0:x1]).any(axis=0))
+    if not len(cols):
+        return None
+    return x0 + int(cols[0]), top, x0 + int(cols[-1]) + 1, bot
+
+
+def gt_box(L, layout, ink, ruby, pad, rng, shape, extra=None, fill=None):
+    """The labelled ink padded like eval's boxes (4 px Vita, 2 px PSP), plus a random margin per
+    side (CFG pad_extra of the target: with probability p, U(0, max) x ink height; `extra`
+    overrides it). Another line's band may not enter the crop by more than a quarter."""
     H, W = shape[:2]
-    ib = line_ink(L, layout, ink, ruby, shape)
+    ib = None
+    if fill is not None and L.get("fillbox"):
+        ib = fill_ink(L, layout, fill, ruby, shape)
+    if ib is None:
+        ib = line_ink(L, layout, ink, ruby, shape)
     if ib is None:
         return None, None
     x0, top, x1, bot = ib
     ih = bot - top
-    E = CFG["pad_extra"]
-    extra = [0, 0, 0, 0]
+    E = extra if extra is not None else CFG["pad_extra"]["vita" if pad >= 4 else "psp"]
+    more = [0, 0, 0, 0]
     if rng.random() < E["p"]:
-        extra = [int(rng.uniform(0, E[k]) * ih + 0.5) for k in ("left", "top", "right", "bottom")]
-    bx0, by0 = max(0, x0 - pad - extra[0]), max(0, top - pad - extra[1])
-    bx1, by1 = min(W, x1 + pad + extra[2]), min(H, bot + pad + extra[3])
+        more = [int(rng.uniform(0, E[k]) * ih + 0.5) for k in ("left", "top", "right", "bottom")]
+    bx0, by0 = max(0, x0 - pad - more[0]), max(0, top - pad - more[1])
+    bx1, by1 = min(W, x1 + pad + more[2]), min(H, bot + pad + more[3])
     for o in layout:
         if o is L or o["ix0"] < 0:
             continue
@@ -1470,23 +1692,31 @@ def grad_crops(img, layout):
     return out
 
 
-def extract(img, layout, ink, rng, mode, pad, ruby=None):
-    """[(grey crop in console polarity, label, box, line, dark)]."""
+def extract(img, layout, ink, rng, mode, pad, ruby=None, fill=None):
+    """[(grey crop in console polarity, label, box, line, dark, crop kind)]. In GRAD mode (v3),
+    a labelled line without an accepted GRAD box gets its gt crop instead (kind "gt"), so a line
+    next to screen clutter or a close neighbour is not dropped (CFG grad_fallback)."""
     ruby = ruby if ruby is not None else np.zeros_like(ink)
-    if mode == "grad":
-        return grad_crops(img, layout)
-    grey = to_gray(img)
     out = []
-    for L in layout:
-        if not L.get("text"):
-            continue
-        box, _ = gt_box(L, layout, ink, ruby, pad, rng, img.shape)
+    if mode == "grad":
+        out = [g + ("grad",) for g in grad_crops(img, layout)]
+        if not CFG["grad_fallback"]:
+            return out
+        done = {id(g[3]) for g in out}
+        todo = [L for L in layout if L.get("text") and id(L) not in done]
+    else:
+        todo = [L for L in layout if L.get("text")]
+    if not todo:
+        return out
+    grey = to_gray(img)
+    for L in todo:
+        box, _ = gt_box(L, layout, ink, ruby, pad, rng, img.shape, fill=fill)
         if box is None:
             continue
         x, y, w, h = box
         dark = line_dark(grey, box)
         g = grey[y:y + h, x:x + w]
-        out.append((255 - g if dark else g.copy(), L["text"], box, L, dark))
+        out.append((255 - g if dark else g.copy(), L["text"], box, L, dark, "gt"))
     return out
 
 
@@ -1553,7 +1783,8 @@ def run_shard(job):
         crop_mode = choose(rng, CFG["crop"])
         pad = CFG["pad"]["psp" if meta["target"] == "psp" else "vita"]
         ruby_mask = meta.pop("_ruby_mask")
-        for g, lab, box, L, dark in extract(img, layout, ink, rng, crop_mode, pad, ruby_mask):
+        fill_mask = meta.pop("_fill_mask")
+        for g, lab, box, L, dark, kind in extract(img, layout, ink, rng, crop_mode, pad, ruby_mask, fill_mask):
             if not lab or any(c not in R.vocab_set for c in lab) or not S2.crop_ctc_feasible(g.shape, lab):
                 continue
             if set(lab) <= set("「」『』（）()、。・"):      # a stray bracket or comma is not a line
@@ -1561,7 +1792,7 @@ def run_shard(job):
             if not gate.accept(rng, len(lab)):
                 continue
             m = dict(meta)
-            m.update(kind=L["kind"], crop=crop_mode, dark=bool(dark), inverted=bool(dark),
+            m.update(kind=L["kind"], crop=kind, crop_mode=crop_mode, dark=bool(dark), inverted=bool(dark),
                      ruby=bool(L.get("ruby_top") is not None), coloured=bool(L.get("coloured")),
                      fade=int(L.get("fade", 0)), box=[int(v) for v in box],
                      ink_box=crop_ink_box(L, layout, ink, ruby_mask, box))
@@ -1590,6 +1821,8 @@ def recipe(args):
             "fonts": len(R.fonts), "font_families": len({f.fam for f in R.fonts}),
             "text": R.text_identity, "background_vns": len(R.bg_vns),
             "background_shots": {k: len(v) for k, v in R.bg.items()},
+            "exclusions": R.exclusions["files"], "scenes_dropped": R.scene_dropped,
+            "scene_hashes_sha256": sha256(args.scene_hashes) if getattr(args, "scene_hashes", None) else None,
             "versions": {"numpy": np.__version__, "opencv": cv2.__version__, "pillow": Image.__version__,
                          "freetype": __import__("PIL.features", fromlist=["version"]).version("freetype2")}}
 
@@ -1609,20 +1842,20 @@ def preview(args):
         img, layout, ink, meta = r
         mode = choose(rng, CFG["crop"])
         got = extract(img, layout, ink, rng, mode, CFG["pad"]["psp" if meta["target"] == "psp" else "vita"],
-                      meta.pop("_ruby_mask"))
+                      meta.pop("_ruby_mask"), meta.pop("_fill_mask"))
         if not got:
             continue
         vis = Image.fromarray(img)
         d = ImageDraw.Draw(vis)
-        for _, _, (x, y, w, h), _, _ in got:
+        for _, _, (x, y, w, h), _, _, _ in got:
             d.rectangle((x, y, x + w - 1, y + h - 1), outline=(0, 255, 0))
         if len(regions) < args.n:
             regions.append(vis)
-        for g, lab, _, L, dark in got:
+        for g, lab, _, L, dark, kind in got:
             g32 = Image.fromarray(g).resize((max(8, round(g.shape[1] * 32 / g.shape[0])), 32), Image.BILINEAR)
             row = Image.new("RGB", (1280, 34), (0, 0, 0))
             row.paste(g32.crop((0, 0, min(g32.width, 700), 32)).convert("RGB"), (0, 1))
-            tag = (f"{lab[:24]} [{meta['platform']} {meta['fam']} {meta['raster']} {mode} "
+            tag = (f"{lab[:24]} [{meta['platform']} {meta['fam']} {meta['raster']} {kind} "
                    f"{'inv ' if dark else ''}{meta['capture']}]")
             ImageDraw.Draw(row).text((710, 7), tag, font=label_font, fill=(255, 255, 160))
             rows.append(row)
@@ -1668,9 +1901,17 @@ def manifest(args):
     print(f"{len(shards)} shards, {doc['samples']} samples, {doc['bytes'] / 1e9:.2f} GB -> {args.out}")
 
 
+def apply_cfg(spec):
+    """--cfg: a JSON object, or @path to one, merged into CFG in place (calibration renders)."""
+    patch = json.loads(Path(spec[1:]).read_text(encoding="utf-8") if spec.startswith("@") else spec)
+    merged = merge_cfg(CFG, patch)
+    CFG.clear()
+    CFG.update(merged)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("mode", choices=["preview", "shards", "manifest"])
+    ap.add_argument("mode", choices=["preview", "shards", "manifest", "scene-hashes"])
     ap.add_argument("--assets", type=Path, default=ASSETS)
     ap.add_argument("--out", type=Path)
     ap.add_argument("--dir", action="append")
@@ -1683,15 +1924,28 @@ def main():
     ap.add_argument("--workers", type=int, default=int(os.environ.get("OMP_NUM_THREADS", 4)))
     ap.add_argument("--seed", type=int, default=20261012)
     ap.add_argument("--n", type=int, default=16)
+    ap.add_argument("--cfg", help="JSON (or @file) merged into CFG, for calibration renders; recorded in the recipe")
+    ap.add_argument("--exclude", nargs="*", type=Path, default=list(EXCLUDE_MANIFESTS),
+                    help="exclusion manifests (VNs, screenshot and name hashes never used)")
+    ap.add_argument("--scene-hashes", type=Path, help="scene-hashes output: pixel sha256 per scene file sha256")
+    ap.add_argument("--font-cache", type=Path, help="font coverage cache (default ASSETS/fonts/coverage_cache.json)")
     args = ap.parse_args()
     if args.mode == "manifest":
         manifest(args)
         return
+    if args.mode == "scene-hashes":
+        scene_hashes(args)
+        return
+    if args.cfg:
+        apply_cfg(args.cfg)
     cv2.setNumThreads(1)
-    init(assets=args.assets, split=args.split, profile=args.profile, holdout_fonts=set(args.holdout_fonts))
+    init(assets=args.assets, split=args.split, profile=args.profile, holdout_fonts=set(args.holdout_fonts),
+         exclude=args.exclude, font_cache=args.font_cache, scene_hashes=args.scene_hashes)
     print(f"fonts {len(R.fonts)} files / {len({f.fam for f in R.fonts})} families "
           f"{ {c: len(v) for c, v in R.by_cat.items()} }; pools {list(R.pools)}; "
-          f"scenes { {k: len(v) for k, v in R.bg.items()} } from {len(R.bg_vns)} VNs", flush=True)
+          f"scenes { {k: len(v) for k, v in R.bg.items()} } from {len(R.bg_vns)} VNs; "
+          f"excluded: {len(R.exclusions['vns'])} VNs, scenes dropped {R.scene_dropped}, "
+          f"names dropped {R.names_dropped}", flush=True)
     if args.mode == "preview":
         preview(args)
         return

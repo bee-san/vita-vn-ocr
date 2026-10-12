@@ -586,3 +586,20 @@ def test_study1b_protocol_copies_study1():
     tail = lambda s: s[s.index("exec "):].replace('--width "$WIDTH"', "--width 1.0")  # noqa: E731
     assert tail(run) == tail(old)                      # the same train2.py invocation as study 1
     assert "synth3-v3/ablation/runs" in run and "synth3_shards_v3.json" in run
+
+
+def test_clannad_text_markers_keep_its_names_out_of_text(assets, tmp_path):
+    """The subtitle pools hold CLANNAD anime dialogue: a pool line or focus context naming its
+    characters (the manifest's text markers) is never drawn, nor is a name row holding one."""
+    synth3.init(assets=assets, font_manifest=assets / "fonts_manifest.json", scenes=False)
+    assert "朋也" in synth3.R.exclusions["markers"] and synth3.marked("春原が悪い", synth3.R.exclusions["markers"])
+    path = tmp_path / "pool.txt"
+    lines = [("朋也くん、おはよう" if i % 2 else "おはよう") for i in range(200)]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    synth3.R.pools["subs"] = synth3.TextPool(path)
+    try:
+        rng = np.random.default_rng(5)
+        got = [synth3.pool_line(rng, "subs") for _ in range(500)]
+        assert got and not any("朋也" in g for g in got) and set(got) == {"おはよう"}
+    finally:
+        del synth3.R.pools["subs"]

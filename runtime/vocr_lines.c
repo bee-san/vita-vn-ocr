@@ -17,10 +17,8 @@
  *     max(4, h) columns away (punctuation, small kana) and grown by up to h/2 rows
  *     (never past half the gap to the next band) while rows hold 2+ on-pixels
  *  7. lines under 55% of the median line height are dropped (furigana, icons)
- *  8. boxes are padded by 7 px horizontally and 3 px vertically, clamped to the
- *     selected region. This widens the previous crops by 4 px on each horizontal
- *     side; after step 2's 1 px dilation, the margins are about 8 px / 4 px.
- *     Polarity is computed on the final widened crop.
+ *  8. boxes are padded by 3 px, which after the 1 px dilation of step 2 matches the
+ *     legacy finder's 4 px around bright ink, and each gets a polarity flag
  *
  * Memory: a 1-bit on-mask of the region plus a few rows and per-row/column counters,
  * all carved from the caller's arena. Integer arithmetic only.
@@ -37,8 +35,7 @@
 #define MIN_H 8u
 #define MERGE 2u
 #define GAPC 2u
-#define PAD_X 7u
-#define PAD_Y 3u
+#define PAD 3u
 #define FURI_PCT 55u
 
 /* legacy (vjo_ocr_find_lines) limits */
@@ -373,10 +370,10 @@ static int find_grad(const VocrLinesImage *im, unsigned char *base, VocrLineSet 
             VocrLine *ln;
             if (100u * hk < FURI_PCT * med) continue;
             if (out->count == VOCR_LINES_MAX) { out->truncated = 1; break; }
-            lx = cand[k].x1 > PAD_X ? cand[k].x1 - PAD_X : 0;
-            ly = cand[k].top > PAD_Y ? cand[k].top - PAD_Y : 0;
-            ex = cand[k].x2 + PAD_X < w ? cand[k].x2 + PAD_X : w;
-            ey = cand[k].bot + PAD_Y < h ? cand[k].bot + PAD_Y : h;
+            lx = cand[k].x1 > PAD ? cand[k].x1 - PAD : 0;
+            ly = cand[k].top > PAD ? cand[k].top - PAD : 0;
+            ex = cand[k].x2 + PAD < w ? cand[k].x2 + PAD : w;
+            ey = cand[k].bot + PAD < h ? cand[k].bot + PAD : h;
             ln = &out->lines[out->count++];
             ln->x = lx; ln->y = ly; ln->w = ex - lx; ln->h = ey - ly;
             ln->dark = (unsigned)vocr_line_dark(im, lx, ly, ln->w, ln->h);

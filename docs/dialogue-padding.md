@@ -1,6 +1,6 @@
 # Horizontal dialogue crop padding
 
-**Rejected research experiment.** The locked candidate failed held-out acceptance. Retain the original preprocessing for deployment. This branch keeps the rejected padding change as its default solely to reproduce the experiment; it is not approved for deployment, merge into the runtime, or release.
+**Rejected research experiment.** The locked candidate failed held-out acceptance. Retain the original preprocessing for deployment. The merged record keeps the protocol and aggregate results, while restoring the original C and Python finder behavior. The rejected candidate source remains available at the frozen revision below for reproduction; it is not deployed or included in the default runtime.
 
 Some small kana errors change when a line crop has more horizontal background. The fixed candidate widens each existing GRAD crop by 4 px on each horizontal side, clamps to the user-selected dialogue ROI, preserves its vertical geometry, and recomputes polarity from the widened pixels. It uses horizontal padding 7 and vertical padding 3 around the contrast mask; the mask's one-pixel expansion gives approximately 8/4 px around ink. Detection bands, filtering, order, maximum line count, legacy behavior and model weights remain unchanged.
 
@@ -28,7 +28,7 @@ No further margin or device-specific rule was chosen using these results. No can
 
 Before opening any held-out pixels, commit the code and create an immutable lock. It binds the clean candidate commit, every evaluation source hash, baseline source, released blob and all three manifest identities. `lock` reads manifest metadata only. `run` requires the exact preregistered lock SHA256, validates every manifest before scoring any set, and creates an exclusive receipt keyed by that lock. Reusing the lock with another output filename is refused.
 
-From the candidate worktree, with private captures and shared screenshots kept outside Git:
+The original commands below require a detached worktree at the frozen candidate revision `91e4cd17f9b85d410560bb0e9cff796ada630616`, with private captures and shared screenshots kept outside Git. The current runtime deliberately retains the original padding; it does not reproduce the rejected candidate.
 
 ```bash
 PY=/home/bee/Documents/src/vita-vn-ocr/.venv-ci/bin/python

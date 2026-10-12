@@ -1,6 +1,6 @@
 # Dialogue line finder (`runtime/vocr_lines.c`)
 
-This research branch defaults to a [rejected horizontal-padding experiment](dialogue-padding.md). Its one-shot held-out test regressed Vita full CER and CLANNAD hiragana CER. Keep the original preprocessing for deployment; this branch is retained for review and reproduction, not runtime promotion.
+A [rejected horizontal-padding experiment](dialogue-padding.md) is archived with its frozen source revision and aggregate results. Its runtime change is excluded; the original preprocessing remains the default.
 
 The recognizer reads one line at a time, so something has to cut the user's region into lines. The finder v1 was trained with is vita-jp-overlay's bright-pixel row projection (`vjo_ocr_find_lines`). It only sees near-white text. Dark text on a light box, light text on a light bar, outlined text and pale-yellow names make it reject the region or find nothing. On the research campaign's 16 real regions it rejects 4, and the pipeline CER is 28.4%.
 
@@ -22,13 +22,13 @@ All steps work on the region the user selected: a tight box or a whole text box,
    - It is widened over on-pixels at most `max(4, h)` columns away, for punctuation and small kana.
    - It is grown vertically by up to `h/2` rows, never past half the gap to the next band, while rows hold 2 or more on-pixels.
 7. Lines under 55% of the median line height are dropped (furigana, icons).
-8. Boxes are padded by 7 px horizontally and 3 px vertically, clamped to the user-selected region. This adds 4 px on each horizontal side to the previous GRAD crops while preserving line count, order and vertical geometry. After step 2's 1 px dilation the margins are approximately 8 px horizontally and 4 px vertically. The legacy finder retains its original padding.
+8. Boxes are padded by 3 px. After step 2's 1 px dilation this equals the legacy finder's 4 px around the ink. On 400 synthetic regions the median box edge difference against legacy is 0 on every side.
 9. Polarity per box:
    - background = median of the box's border pixels;
    - `d = max(16, (p98 − p2)/4)`;
    - the box is dark when the count of `g < bg − d` exceeds 8 × the count of `g > bg + d`.
 
-The detection constants were chosen on research sets A and B plus synthetic regions, before the detector-built sets existed, so A and B are tuning sets and their results are in-sample. Step 5's split was then added after analysing psp_dev merges, and was checked on the dev sets only (see "Change log"). The horizontal crop expansion was selected separately on CLANNAD development captures; [the preprocessing protocol](dialogue-padding.md) records its evidence and prospective acceptance rule. The historical benchmark numbers below used the earlier 3 px horizontal padding.
+The constants were chosen on research sets A and B plus synthetic regions, before the detector-built sets existed, so A and B are tuning sets and their results are in-sample. Step 5's split was then added after analysing psp_dev merges, and was checked on the dev sets only (see "Change log").
 
 ## API and memory
 

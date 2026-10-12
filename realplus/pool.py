@@ -22,6 +22,7 @@ adds what a training pool of PC / console shots needs on top:
   pool.py edge-apply               edgecheck.py apply over the decided edge batches -> $REALPLUS/edge/edge.jsonl
   pool.py build                    the npz files (teacher_train's format) and the committed manifests
   pool.py blind --n 500            a blind re-check sample -> $REALPLUS/review/blind (decide.py blind scores it)
+  pool.py publish                  the committed, text-free manifests: realplus/manifests/shots_NN.jsonl, stats.json
 
 Each PC / console screenshot is read once, scaled to fit the Vita screen (960x544, cv2.INTER_AREA as
 teacher scales its hires shots, devnative/paths.load_screen). A kept line becomes a Vita crop and,
@@ -805,6 +806,96 @@ def cmd_blind(args):
         print(f"{out}: {len(entries[k:k + args.size])} lines, {ns} sheets", flush=True)
 
 
+# ----------------------------------------------------------------------------- publish
+
+MANIFESTS = HERE / "manifests"
+MAX_FILE = 1_900_000                  # committed files stay under tests/test_repo_policy.py's 2 MiB
+
+
+def write_split(rows, stem, out_dir=MANIFESTS, limit=MAX_FILE):
+    """rows as JSON lines in <stem>_01.jsonl, <stem>_02.jsonl ..., each under `limit` bytes; stale
+    files of the same stem are removed. Returns the file names."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    parts, cur, size = [], [], 0
+    for r in rows:
+        line = json.dumps(r, ensure_ascii=False, separators=(",", ":")) + "\n"
+        if cur and size + len(line.encode()) > limit:
+            parts.append(cur)
+            cur, size = [], 0
+        cur.append(line)
+        size += len(line.encode())
+    if cur:
+        parts.append(cur)
+    names = []
+    for i, part in enumerate(parts, 1):
+        name = f"{stem}_{i:02d}.jsonl"
+        (out_dir / name).write_text("".join(part), encoding="utf-8")
+        names.append(name)
+    for old in out_dir.glob(f"{stem}_*.jsonl"):
+        if old.name not in names:
+            old.unlink()
+    return names
+
+
+def decision_counts(kind):
+    c = collections.Counter()
+    for b in done_batches(kind):
+        for r in D.parsed(b):
+            c[r["decision"] + (f"-{r['skip']}" if r["decision"] == "skip" else "")] += 1
+    return dict(c)
+
+
+def cmd_publish(args):
+    """The committed, text-free part of the pool: realplus/manifests/shots_NN.jsonl (every screenshot a
+    built line comes from: URL, file and pixel sha256, VN, release, capture session, line and crop
+    counts) and realplus/manifests/stats.json (counts at every stage, npz and local-manifest hashes,
+    the blind re-check). Labels and crop boxes stay in the local lines manifests, pinned by hash."""
+    man = jl(OUT / "manifests" / "lines.jsonl")
+    if not man:
+        sys.exit("build first")
+    build = json.loads((OUT / "manifests" / "build_stats.json").read_text())
+    rows = {f"{r['vn']}_{r['image']}": r for r in SH.load_shots()}
+    nl, nc = collections.Counter(), collections.Counter()
+    for m in man:
+        nl[m["shot"]] += 1
+        nc[m["shot"]] += len(m["crops"])
+    shots_ = []
+    for sk in sorted(nl, key=lambda k: (int(k.split("_")[0][1:]), int(k.split("_")[1]))):
+        r = rows[sk]
+        shots_.append({"shot": sk, "vn": r["vn"], "url": r["url"], "sha256": r["sha256"],
+                       "pixel_sha256": r["pixel_sha256"], "dims": r["dims"], "release": r["release"],
+                       "session": r["session"], "lines": nl[sk], "crops": nc[sk]})
+    names = write_split(shots_, "shots")
+    sel = json.loads((OUT / "manifests" / "selection.json").read_text())
+    fetched = collections.Counter("ok" if r.get("sha256") else r.get("status", "not-fetched") for r in rows.values())
+    dump = SH.realplus_dir() / "vndb" / f"vndb-db-{args.dump_date}.tar.zst"
+    labels = jl(OUT / "labels.jsonl")
+    blind = OUT / "review" / "blind_report.json"
+    stats = {
+        "pool": "realplus",
+        "pipeline": {"devnative": "f5a1dbd: read and sheets as frozen at 35a86ca, GRAD containment 0cb084e, "
+                                  "final crops, edge check and looks f523e30",
+                     "realplus": args.commit},
+        "vndb_dump": {"file": dump.name, "sha256": P.file_sha256(dump) if dump.exists() else None,
+                      "bytes": dump.stat().st_size if dump.exists() else None, "timestamp": sel["dump"]},
+        "selection": {k: sel[k] for k in ("kinds", "screenshots", "vns", "dropped", "reserved_vns",
+                                          "reserved_screenshots")},
+        "fetch": dict(fetched),
+        "duplicates": len(dups()),
+        "read": {"screenshots": len(load_reads())},
+        "review": {"pass1": decision_counts("pass1"), "edge": decision_counts("edge"),
+                   "pass2": decision_counts("pass2"), "reviewer_kind": "assistant"},
+        "labels": dict(collections.Counter(f"{r['status']}:{r.get('how') or r.get('why')}" for r in labels)),
+        "build": build,
+        "screenshot_manifests": names,
+        "local_manifests": {n: P.file_sha256(OUT / n) for n in ("manifests/lines.jsonl", "labels.jsonl",
+                                                                "lines_full.jsonl")},
+        "blind": json.loads(blind.read_text())["summary"] if blind.exists() else None,
+    }
+    (MANIFESTS / "stats.json").write_text(json.dumps(stats, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"shots": len(shots_), "files": names, "lines": len(man)}), flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -837,6 +928,10 @@ def main():
     p.add_argument("--size", type=int, default=200)
     p.add_argument("--min", type=int, help="smallest batch to write (default --size)")
     sub.add_parser("edge-apply")
+    p = sub.add_parser("publish")
+    p.add_argument("--dump-date", default="2026-10-12")
+    p.add_argument("--commit", default=subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
+                                                      capture_output=True, text=True).stdout.strip())
     p = sub.add_parser("blind")
     p.add_argument("--n", type=int, default=500)
     p.add_argument("--seed", type=int, default=20261013)
@@ -845,7 +940,7 @@ def main():
     {"prep": cmd_prep, "plan": cmd_plan, "batches": cmd_batches, "helpers": cmd_helpers, "status": cmd_status,
      "final": cmd_final, "build": cmd_build, "blind": cmd_blind, "reserve": cmd_reserve,
      "feed": cmd_feed, "edge-boxes": cmd_edge_boxes, "edge-batches": cmd_edge_batches,
-     "edge-apply": cmd_edge_apply}[args.cmd](args)
+     "edge-apply": cmd_edge_apply, "publish": cmd_publish}[args.cmd](args)
 
 
 if __name__ == "__main__":

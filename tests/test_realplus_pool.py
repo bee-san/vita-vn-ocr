@@ -240,3 +240,12 @@ def test_edge_flags_judge_the_reviewed_frame_and_cut_evals_crop():
     gray[100:120, 214:222] = 220                                        # the line runs on past the frame
     _, _, why = PL.edge_flags(gray, ln, "vita", 300, 200, "あいう")
     assert "ink-right" in why
+
+
+def test_write_split_keeps_files_under_the_limit_and_drops_stale_parts(tmp_path):
+    rows = [{"shot": f"v1_{i}", "pad": "x" * 80} for i in range(50)]
+    (tmp_path / "shots_09.jsonl").write_text("stale\n")
+    names = PL.write_split(rows, "shots", out_dir=tmp_path, limit=1000)
+    assert len(names) > 1 and not (tmp_path / "shots_09.jsonl").exists()
+    back = [json.loads(x) for n in names for x in (tmp_path / n).read_text().splitlines()]
+    assert back == rows and all((tmp_path / n).stat().st_size <= 1000 for n in names)

@@ -1,0 +1,1017 @@
+{
+ "kind": "synth3-ablation-result",
+ "protocol_sha256": "8604061330b1b5959625591accc8558cf90b72f5e1e026526e4e106e8b8edcc0",
+ "dev": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_val.npz",
+  "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671",
+  "lines": 1651,
+  "chars": 17118,
+  "vns": 181
+ },
+ "models": {
+  "A_s2_seed1": {
+   "blob_sha256": "3e7ab5985bd6a1f634683481f217a66fc519088b29f4d2ed04c66814c78e4586",
+   "blob_bytes": 657664,
+   "arena_bytes": 124832,
+   "cer": {
+    "rv": 0.05877,
+    "rvn": 0.05813
+   }
+  },
+  "A_s2_seed2": {
+   "blob_sha256": "c7ac5c0f3c15c7d729681346f65daf57aae088f5af53c37310ec7793a7b769cb",
+   "blob_bytes": 657664,
+   "arena_bytes": 124832,
+   "cer": {
+    "rv": 0.05556,
+    "rvn": 0.05497
+   }
+  },
+  "B_s3_seed1": {
+   "blob_sha256": "632bff01e84a82a6afe94a2b01a8d5d0276832340d08777af2b8b0ff790924a6",
+   "blob_bytes": 657664,
+   "arena_bytes": 124832,
+   "cer": {
+    "rv": 0.05667,
+    "rvn": 0.0562
+   }
+  },
+  "B_s3_seed2": {
+   "blob_sha256": "267f3fe426ecf9a78de2c0b676de8c95027d26e9bd8067f1539b8ad1adbe349e",
+   "blob_bytes": 657664,
+   "arena_bytes": 124832,
+   "cer": {
+    "rv": 0.05725,
+    "rvn": 0.05672
+   }
+  },
+  "C_mix_seed1": {
+   "blob_sha256": "928a267a92f123c9f65553ce19eedb917f365f2934db80704a89a4c32f371e75",
+   "blob_bytes": 657664,
+   "arena_bytes": 124832,
+   "cer": {
+    "rv": 0.05094,
+    "rvn": 0.05117
+   }
+  },
+  "C_mix_seed2": {
+   "blob_sha256": "a9f23111f92253af535dee28b66e83218a6000898125eeedfb25717606f50cde",
+   "blob_bytes": 657664,
+   "arena_bytes": 124832,
+   "cer": {
+    "rv": 0.05263,
+    "rvn": 0.05246
+   }
+  }
+ },
+ "comparisons": {
+  "B_vs_A": {
+   "a": "A_s2",
+   "b": "B_s3",
+   "runs_a": [
+    "A_s2_seed1",
+    "A_s2_seed2"
+   ],
+   "runs_b": [
+    "B_s3_seed1",
+    "B_s3_seed2"
+   ],
+   "all_vn_cluster": {
+    "delta_points": -0.015,
+    "ci95": [
+     -0.337,
+     0.304
+    ],
+    "cer_a": 0.05686,
+    "cer_b": 0.05671
+   },
+   "all_line": {
+    "delta_points": -0.015,
+    "ci95": [
+     -0.245,
+     0.219
+    ],
+    "cer_a": 0.05686,
+    "cer_b": 0.05671
+   },
+   "per_view": {
+    "rv": {
+     "delta_points": -0.02,
+     "ci95": [
+      -0.345,
+      0.302
+     ],
+     "cer_a": 0.05716,
+     "cer_b": 0.05696
+    },
+    "rvn": {
+     "delta_points": -0.009,
+     "ci95": [
+      -0.341,
+      0.31
+     ],
+     "cer_a": 0.05655,
+     "cer_b": 0.05646
+    }
+   },
+   "per_seed": {
+    "A_s2_seed1->B_s3_seed1": {
+     "delta_points": -0.202,
+     "ci95": [
+      -0.616,
+      0.212
+     ],
+     "cer_a": 0.05845,
+     "cer_b": 0.05643
+    },
+    "A_s2_seed2->B_s3_seed2": {
+     "delta_points": 0.172,
+     "ci95": [
+      -0.209,
+      0.548
+     ],
+     "cer_a": 0.05526,
+     "cer_b": 0.05699
+    }
+   },
+   "strata": {
+    "dakuten-smallkana": {
+     "delta_points": 0.016,
+     "ci95": [
+      -0.327,
+      0.341
+     ],
+     "cer_a": 0.04414,
+     "cer_b": 0.04429,
+     "lines": 831
+    },
+    "ink:14-19": {
+     "delta_points": -0.003,
+     "ci95": [
+      -0.376,
+      0.364
+     ],
+     "cer_a": 0.03608,
+     "cer_b": 0.03605,
+     "lines": 760
+    },
+    "ink:20-27": {
+     "delta_points": 0.135,
+     "ci95": [
+      -0.321,
+      0.56
+     ],
+     "cer_a": 0.03081,
+     "cer_b": 0.03216,
+     "lines": 363
+    },
+    "ink:28+": {
+     "delta_points": -0.355,
+     "ci95": [
+      -2.366,
+      1.409
+     ],
+     "cer_a": 0.03851,
+     "cer_b": 0.03495,
+     "lines": 44
+    },
+    "ink:<14": {
+     "delta_points": -0.166,
+     "ci95": [
+      -0.983,
+      0.575
+     ],
+     "cer_a": 0.12622,
+     "cer_b": 0.12455,
+     "lines": 484
+    },
+    "kind:hires": {
+     "delta_points": -0.075,
+     "ci95": [
+      -0.503,
+      0.334
+     ],
+     "cer_a": 0.06875,
+     "cer_b": 0.068,
+     "lines": 1064
+    },
+    "kind:psp": {
+     "delta_points": 0.199,
+     "ci95": [
+      -0.304,
+      0.715
+     ],
+     "cer_a": 0.03257,
+     "cer_b": 0.03456,
+     "lines": 426
+    },
+    "kind:vita": {
+     "delta_points": -0.094,
+     "ci95": [
+      -1.478,
+      0.771
+     ],
+     "cer_a": 0.02951,
+     "cer_b": 0.02858,
+     "lines": 161
+    },
+    "latin-digits": {
+     "delta_points": 0.968,
+     "ci95": [
+      -0.899,
+      2.083
+     ],
+     "cer_a": 0.10094,
+     "cer_b": 0.11062,
+     "lines": 62
+    },
+    "len:1-4": {
+     "delta_points": -1.22,
+     "ci95": [
+      -2.793,
+      0.189
+     ],
+     "cer_a": 0.16605,
+     "cer_b": 0.15386,
+     "lines": 608
+    },
+    "len:13+": {
+     "delta_points": 0.212,
+     "ci95": [
+      -0.126,
+      0.534
+     ],
+     "cer_a": 0.03889,
+     "cer_b": 0.04101,
+     "lines": 590
+    },
+    "len:5-12": {
+     "delta_points": -0.168,
+     "ci95": [
+      -0.665,
+      0.328
+     ],
+     "cer_a": 0.0622,
+     "cer_b": 0.06053,
+     "lines": 453
+    },
+    "namelike": {
+     "delta_points": -1.089,
+     "ci95": [
+      -2.32,
+      -0.011
+     ],
+     "cer_a": 0.1574,
+     "cer_b": 0.14651,
+     "lines": 710
+    },
+    "pol:bright-on-dark": {
+     "delta_points": 0.031,
+     "ci95": [
+      -0.292,
+      0.327
+     ],
+     "cer_a": 0.04495,
+     "cer_b": 0.04525,
+     "lines": 1050
+    },
+    "pol:dark-on-light": {
+     "delta_points": -0.088,
+     "ci95": [
+      -0.701,
+      0.506
+     ],
+     "cer_a": 0.07631,
+     "cer_b": 0.07542,
+     "lines": 601
+    },
+    "rare-kanji": {
+     "delta_points": -0.331,
+     "ci95": [
+      -1.604,
+      0.78
+     ],
+     "cer_a": 0.07276,
+     "cer_b": 0.06946,
+     "lines": 116
+    },
+    "target:psp": {
+     "delta_points": -0.029,
+     "ci95": [
+      -0.529,
+      0.435
+     ],
+     "cer_a": 0.07115,
+     "cer_b": 0.07086,
+     "lines": 679
+    },
+    "target:vita": {
+     "delta_points": -0.005,
+     "ci95": [
+      -0.373,
+      0.355
+     ],
+     "cer_a": 0.04696,
+     "cer_b": 0.04691,
+     "lines": 972
+    }
+   },
+   "per_vn": {
+    "vns": 181,
+    "better": 69,
+    "worse": 70,
+    "equal": 42,
+    "largest_regressions": [
+     {
+      "vn": "v7442",
+      "delta_points": 5.29,
+      "chars": 189
+     },
+     {
+      "vn": "v13636",
+      "delta_points": 5.25,
+      "chars": 200
+     },
+     {
+      "vn": "v3896",
+      "delta_points": 4.66,
+      "chars": 59
+     },
+     {
+      "vn": "v6135",
+      "delta_points": 3.85,
+      "chars": 26
+     },
+     {
+      "vn": "v8063",
+      "delta_points": 3.68,
+      "chars": 129
+     },
+     {
+      "vn": "v12949",
+      "delta_points": 3.57,
+      "chars": 56
+     },
+     {
+      "vn": "v3549",
+      "delta_points": 3.41,
+      "chars": 44
+     },
+     {
+      "vn": "v13108",
+      "delta_points": 3.06,
+      "chars": 49
+     },
+     {
+      "vn": "v575",
+      "delta_points": 2.78,
+      "chars": 27
+     },
+     {
+      "vn": "v12830",
+      "delta_points": 2.72,
+      "chars": 46
+     }
+    ]
+   },
+   "decision": {
+    "b_better": false,
+    "ci_upper_below_zero": false,
+    "every_seed_below_zero": false,
+    "rule": "For each comparison X_vs_Y, Y is better than X iff the VN-cluster 95% interval of CER(Y) - CER(X) lies entirely below 0 and CER(Y) - CER(X) < 0 for each seed pair. Recommended VN-style synthetic data: synth3 if B beats A and C does not beat B; the mix if C beats both A and B; otherwise synth2 stays and the result is reported as no measured improvement."
+   }
+  },
+  "C_vs_A": {
+   "a": "A_s2",
+   "b": "C_mix",
+   "runs_a": [
+    "A_s2_seed1",
+    "A_s2_seed2"
+   ],
+   "runs_b": [
+    "C_mix_seed1",
+    "C_mix_seed2"
+   ],
+   "all_vn_cluster": {
+    "delta_points": -0.505,
+    "ci95": [
+     -0.765,
+     -0.259
+    ],
+    "cer_a": 0.05686,
+    "cer_b": 0.0518
+   },
+   "all_line": {
+    "delta_points": -0.505,
+    "ci95": [
+     -0.719,
+     -0.295
+    ],
+    "cer_a": 0.05686,
+    "cer_b": 0.0518
+   },
+   "per_view": {
+    "rv": {
+     "delta_points": -0.537,
+     "ci95": [
+      -0.797,
+      -0.289
+     ],
+     "cer_a": 0.05716,
+     "cer_b": 0.05179
+    },
+    "rvn": {
+     "delta_points": -0.473,
+     "ci95": [
+      -0.748,
+      -0.213
+     ],
+     "cer_a": 0.05655,
+     "cer_b": 0.05182
+    }
+   },
+   "per_seed": {
+    "A_s2_seed1->C_mix_seed1": {
+     "delta_points": -0.739,
+     "ci95": [
+      -1.052,
+      -0.439
+     ],
+     "cer_a": 0.05845,
+     "cer_b": 0.05106
+    },
+    "A_s2_seed2->C_mix_seed2": {
+     "delta_points": -0.272,
+     "ci95": [
+      -0.609,
+      0.053
+     ],
+     "cer_a": 0.05526,
+     "cer_b": 0.05255
+    }
+   },
+   "strata": {
+    "dakuten-smallkana": {
+     "delta_points": -0.482,
+     "ci95": [
+      -0.744,
+      -0.237
+     ],
+     "cer_a": 0.04414,
+     "cer_b": 0.03931,
+     "lines": 831
+    },
+    "ink:14-19": {
+     "delta_points": -0.309,
+     "ci95": [
+      -0.626,
+      -0.003
+     ],
+     "cer_a": 0.03608,
+     "cer_b": 0.03299,
+     "lines": 760
+    },
+    "ink:20-27": {
+     "delta_points": -0.382,
+     "ci95": [
+      -0.76,
+      -0.051
+     ],
+     "cer_a": 0.03081,
+     "cer_b": 0.02699,
+     "lines": 363
+    },
+    "ink:28+": {
+     "delta_points": -1.066,
+     "ci95": [
+      -3.818,
+      1.133
+     ],
+     "cer_a": 0.03851,
+     "cer_b": 0.02784,
+     "lines": 44
+    },
+    "ink:<14": {
+     "delta_points": -0.951,
+     "ci95": [
+      -1.625,
+      -0.34
+     ],
+     "cer_a": 0.12622,
+     "cer_b": 0.11671,
+     "lines": 484
+    },
+    "kind:hires": {
+     "delta_points": -0.701,
+     "ci95": [
+      -1.025,
+      -0.386
+     ],
+     "cer_a": 0.06875,
+     "cer_b": 0.06174,
+     "lines": 1064
+    },
+    "kind:psp": {
+     "delta_points": 0.013,
+     "ci95": [
+      -0.421,
+      0.459
+     ],
+     "cer_a": 0.03257,
+     "cer_b": 0.0327,
+     "lines": 426
+    },
+    "kind:vita": {
+     "delta_points": -0.344,
+     "ci95": [
+      -1.455,
+      0.386
+     ],
+     "cer_a": 0.02951,
+     "cer_b": 0.02608,
+     "lines": 161
+    },
+    "latin-digits": {
+     "delta_points": 0.029,
+     "ci95": [
+      -2.143,
+      1.41
+     ],
+     "cer_a": 0.10094,
+     "cer_b": 0.10123,
+     "lines": 62
+    },
+    "len:1-4": {
+     "delta_points": -1.475,
+     "ci95": [
+      -2.731,
+      -0.279
+     ],
+     "cer_a": 0.16605,
+     "cer_b": 0.1513,
+     "lines": 608
+    },
+    "len:13+": {
+     "delta_points": -0.414,
+     "ci95": [
+      -0.659,
+      -0.182
+     ],
+     "cer_a": 0.03889,
+     "cer_b": 0.03475,
+     "lines": 590
+    },
+    "len:5-12": {
+     "delta_points": -0.328,
+     "ci95": [
+      -0.832,
+      0.161
+     ],
+     "cer_a": 0.0622,
+     "cer_b": 0.05892,
+     "lines": 453
+    },
+    "namelike": {
+     "delta_points": -1.66,
+     "ci95": [
+      -2.761,
+      -0.614
+     ],
+     "cer_a": 0.1574,
+     "cer_b": 0.1408,
+     "lines": 710
+    },
+    "pol:bright-on-dark": {
+     "delta_points": -0.469,
+     "ci95": [
+      -0.784,
+      -0.179
+     ],
+     "cer_a": 0.04495,
+     "cer_b": 0.04026,
+     "lines": 1050
+    },
+    "pol:dark-on-light": {
+     "delta_points": -0.565,
+     "ci95": [
+      -0.987,
+      -0.156
+     ],
+     "cer_a": 0.07631,
+     "cer_b": 0.07065,
+     "lines": 601
+    },
+    "rare-kanji": {
+     "delta_points": -0.409,
+     "ci95": [
+      -1.64,
+      0.697
+     ],
+     "cer_a": 0.07276,
+     "cer_b": 0.06868,
+     "lines": 116
+    },
+    "target:psp": {
+     "delta_points": -0.407,
+     "ci95": [
+      -0.847,
+      0.0
+     ],
+     "cer_a": 0.07115,
+     "cer_b": 0.06708,
+     "lines": 679
+    },
+    "target:vita": {
+     "delta_points": -0.573,
+     "ci95": [
+      -0.891,
+      -0.278
+     ],
+     "cer_a": 0.04696,
+     "cer_b": 0.04123,
+     "lines": 972
+    }
+   },
+   "per_vn": {
+    "vns": 181,
+    "better": 96,
+    "worse": 40,
+    "equal": 45,
+    "largest_regressions": [
+     {
+      "vn": "v20598",
+      "delta_points": 6.82,
+      "chars": 22
+     },
+     {
+      "vn": "v7716",
+      "delta_points": 6.25,
+      "chars": 8
+     },
+     {
+      "vn": "v575",
+      "delta_points": 4.63,
+      "chars": 27
+     },
+     {
+      "vn": "v8063",
+      "delta_points": 3.29,
+      "chars": 129
+     },
+     {
+      "vn": "v10231",
+      "delta_points": 3.12,
+      "chars": 32
+     },
+     {
+      "vn": "v1315",
+      "delta_points": 2.7,
+      "chars": 37
+     },
+     {
+      "vn": "v1474",
+      "delta_points": 2.42,
+      "chars": 31
+     },
+     {
+      "vn": "v7442",
+      "delta_points": 2.38,
+      "chars": 189
+     },
+     {
+      "vn": "v1971",
+      "delta_points": 2.08,
+      "chars": 72
+     },
+     {
+      "vn": "v13188",
+      "delta_points": 2.05,
+      "chars": 122
+     }
+    ]
+   },
+   "decision": {
+    "b_better": true,
+    "ci_upper_below_zero": true,
+    "every_seed_below_zero": true,
+    "rule": "For each comparison X_vs_Y, Y is better than X iff the VN-cluster 95% interval of CER(Y) - CER(X) lies entirely below 0 and CER(Y) - CER(X) < 0 for each seed pair. Recommended VN-style synthetic data: synth3 if B beats A and C does not beat B; the mix if C beats both A and B; otherwise synth2 stays and the result is reported as no measured improvement."
+   }
+  },
+  "C_vs_B": {
+   "a": "B_s3",
+   "b": "C_mix",
+   "runs_a": [
+    "B_s3_seed1",
+    "B_s3_seed2"
+   ],
+   "runs_b": [
+    "C_mix_seed1",
+    "C_mix_seed2"
+   ],
+   "all_vn_cluster": {
+    "delta_points": -0.491,
+    "ci95": [
+     -0.736,
+     -0.252
+    ],
+    "cer_a": 0.05671,
+    "cer_b": 0.0518
+   },
+   "all_line": {
+    "delta_points": -0.491,
+    "ci95": [
+     -0.701,
+     -0.29
+    ],
+    "cer_a": 0.05671,
+    "cer_b": 0.0518
+   },
+   "per_view": {
+    "rv": {
+     "delta_points": -0.517,
+     "ci95": [
+      -0.765,
+      -0.275
+     ],
+     "cer_a": 0.05696,
+     "cer_b": 0.05179
+    },
+    "rvn": {
+     "delta_points": -0.464,
+     "ci95": [
+      -0.717,
+      -0.218
+     ],
+     "cer_a": 0.05646,
+     "cer_b": 0.05182
+    }
+   },
+   "per_seed": {
+    "B_s3_seed1->C_mix_seed1": {
+     "delta_points": -0.537,
+     "ci95": [
+      -0.88,
+      -0.204
+     ],
+     "cer_a": 0.05643,
+     "cer_b": 0.05106
+    },
+    "B_s3_seed2->C_mix_seed2": {
+     "delta_points": -0.444,
+     "ci95": [
+      -0.785,
+      -0.115
+     ],
+     "cer_a": 0.05699,
+     "cer_b": 0.05255
+    }
+   },
+   "strata": {
+    "dakuten-smallkana": {
+     "delta_points": -0.498,
+     "ci95": [
+      -0.751,
+      -0.247
+     ],
+     "cer_a": 0.04429,
+     "cer_b": 0.03931,
+     "lines": 831
+    },
+    "ink:14-19": {
+     "delta_points": -0.306,
+     "ci95": [
+      -0.59,
+      -0.03
+     ],
+     "cer_a": 0.03605,
+     "cer_b": 0.03299,
+     "lines": 760
+    },
+    "ink:20-27": {
+     "delta_points": -0.517,
+     "ci95": [
+      -0.876,
+      -0.158
+     ],
+     "cer_a": 0.03216,
+     "cer_b": 0.02699,
+     "lines": 363
+    },
+    "ink:28+": {
+     "delta_points": -0.711,
+     "ci95": [
+      -1.919,
+      0.852
+     ],
+     "cer_a": 0.03495,
+     "cer_b": 0.02784,
+     "lines": 44
+    },
+    "ink:<14": {
+     "delta_points": -0.785,
+     "ci95": [
+      -1.473,
+      -0.117
+     ],
+     "cer_a": 0.12455,
+     "cer_b": 0.11671,
+     "lines": 484
+    },
+    "kind:hires": {
+     "delta_points": -0.626,
+     "ci95": [
+      -0.949,
+      -0.297
+     ],
+     "cer_a": 0.068,
+     "cer_b": 0.06174,
+     "lines": 1064
+    },
+    "kind:psp": {
+     "delta_points": -0.186,
+     "ci95": [
+      -0.536,
+      0.175
+     ],
+     "cer_a": 0.03456,
+     "cer_b": 0.0327,
+     "lines": 426
+    },
+    "kind:vita": {
+     "delta_points": -0.25,
+     "ci95": [
+      -0.575,
+      0.174
+     ],
+     "cer_a": 0.02858,
+     "cer_b": 0.02608,
+     "lines": 161
+    },
+    "latin-digits": {
+     "delta_points": -0.939,
+     "ci95": [
+      -2.705,
+      0.501
+     ],
+     "cer_a": 0.11062,
+     "cer_b": 0.10123,
+     "lines": 62
+    },
+    "len:1-4": {
+     "delta_points": -0.255,
+     "ci95": [
+      -1.286,
+      0.769
+     ],
+     "cer_a": 0.15386,
+     "cer_b": 0.1513,
+     "lines": 608
+    },
+    "len:13+": {
+     "delta_points": -0.626,
+     "ci95": [
+      -0.895,
+      -0.367
+     ],
+     "cer_a": 0.04101,
+     "cer_b": 0.03475,
+     "lines": 590
+    },
+    "len:5-12": {
+     "delta_points": -0.161,
+     "ci95": [
+      -0.708,
+      0.368
+     ],
+     "cer_a": 0.06053,
+     "cer_b": 0.05892,
+     "lines": 453
+    },
+    "namelike": {
+     "delta_points": -0.571,
+     "ci95": [
+      -1.456,
+      0.352
+     ],
+     "cer_a": 0.14651,
+     "cer_b": 0.1408,
+     "lines": 710
+    },
+    "pol:bright-on-dark": {
+     "delta_points": -0.499,
+     "ci95": [
+      -0.757,
+      -0.26
+     ],
+     "cer_a": 0.04525,
+     "cer_b": 0.04026,
+     "lines": 1050
+    },
+    "pol:dark-on-light": {
+     "delta_points": -0.477,
+     "ci95": [
+      -0.922,
+      -0.013
+     ],
+     "cer_a": 0.07542,
+     "cer_b": 0.07065,
+     "lines": 601
+    },
+    "rare-kanji": {
+     "delta_points": -0.078,
+     "ci95": [
+      -0.871,
+      0.715
+     ],
+     "cer_a": 0.06946,
+     "cer_b": 0.06868,
+     "lines": 116
+    },
+    "target:psp": {
+     "delta_points": -0.378,
+     "ci95": [
+      -0.757,
+      -0.011
+     ],
+     "cer_a": 0.07086,
+     "cer_b": 0.06708,
+     "lines": 679
+    },
+    "target:vita": {
+     "delta_points": -0.568,
+     "ci95": [
+      -0.877,
+      -0.266
+     ],
+     "cer_a": 0.04691,
+     "cer_b": 0.04123,
+     "lines": 972
+    }
+   },
+   "per_vn": {
+    "vns": 181,
+    "better": 88,
+    "worse": 47,
+    "equal": 46,
+    "largest_regressions": [
+     {
+      "vn": "v7716",
+      "delta_points": 9.38,
+      "chars": 8
+     },
+     {
+      "vn": "v20598",
+      "delta_points": 6.82,
+      "chars": 22
+     },
+     {
+      "vn": "v1474",
+      "delta_points": 4.84,
+      "chars": 31
+     },
+     {
+      "vn": "v18458",
+      "delta_points": 4.17,
+      "chars": 84
+     },
+     {
+      "vn": "v13188",
+      "delta_points": 4.1,
+      "chars": 122
+     },
+     {
+      "vn": "v17823",
+      "delta_points": 3.85,
+      "chars": 52
+     },
+     {
+      "vn": "v11857",
+      "delta_points": 3.7,
+      "chars": 27
+     },
+     {
+      "vn": "v27938",
+      "delta_points": 2.78,
+      "chars": 18
+     },
+     {
+      "vn": "v22311",
+      "delta_points": 2.78,
+      "chars": 54
+     },
+     {
+      "vn": "v1971",
+      "delta_points": 2.78,
+      "chars": 72
+     }
+    ]
+   },
+   "decision": {
+    "b_better": true,
+    "ci_upper_below_zero": true,
+    "every_seed_below_zero": true,
+    "rule": "For each comparison X_vs_Y, Y is better than X iff the VN-cluster 95% interval of CER(Y) - CER(X) lies entirely below 0 and CER(Y) - CER(X) < 0 for each seed pair. Recommended VN-style synthetic data: synth3 if B beats A and C does not beat B; the mix if C beats both A and B; otherwise synth2 stays and the result is reported as no measured improvement."
+   }
+  }
+ }
+}

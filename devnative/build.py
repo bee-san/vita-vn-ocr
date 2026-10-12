@@ -9,7 +9,10 @@ grey integer luma (synth/common.to_gray) in the console polarity (a crop whose t
 common.line_dark calls dark is stored inverted, meta dark/inverted):
   ink   the line's ink box with furigana, plus 4 px (Vita) / 2 px (PSP): teacher's and eval's crop;
   grad  the box the console's GRAD finder returns for the line's dialogue region (devnative/
-        lines.py), only where it holds the whole line and no other text (status "ok").
+        lines.py), only where it holds the whole line and no other detected text (status "ok") and
+        shows exactly the label: --grad takes gradcheck.py's results (regions from every pass-1
+        dialogue line, boxes that run beyond the ink crop checked on contact sheets); without it,
+        regions come from the kept lines and a box that runs beyond the ink crop is left out.
 Identical labels are kept at most twice per VN (teacher's cap: names and UI strings repeat).
 
 Outputs, one file per subset and crop, never pooled (the conductor's decision):
@@ -121,9 +124,26 @@ def cap_repeats(kept):
     return out, capped
 
 
-def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devnative"):
+def grad_default(rgb, lines, dets, kind):
+    """GRAD results without a containment check: regions from these lines; a box that runs
+    beyond the ink crop (gradcheck.needs_check) gets no crop."""
+    from devnative import gradcheck as GC
+    H, W = rgb.shape[:2]
+    out = []
+    for ln, g in zip(lines, L.grad_assign(rgb, lines, dets, kind)):
+        g = dict(g, grad_ok=g["status"] == "ok", grad_why=f"grad-{g['status']}")
+        if g["status"] == "ok":
+            crop = L.crop_box(ln, kind, W, H)
+            g["check"] = GC.needs_check(g["box"], crop, L.ink_height(ln))
+            g["grad_ok"], g["grad_why"] = (False, "grad-unchecked") if g["check"] else (True, "inside")
+        out.append(g)
+    return out
+
+
+def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devnative", grad=None):
     """Cut, write the npz files and the manifests. tvl: teacher_val's native lines
-    (teacher_val_lines(); loaded when a tv_native line is kept and none are given)."""
+    (teacher_val_lines(); loaded when a tv_native line is kept and none are given). grad:
+    {line id: gradcheck.py apply record}; None = grad_default()."""
     idx = S.line_index(shots)
     kept, capped = cap_repeats([r for r in labels if r["status"] == "kept"])
     dropped = [r for r in labels if r["status"] != "kept"] + [dict(r, status="dropped", why="repeat-cap")
@@ -143,10 +163,14 @@ def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devna
         H, W = rgb.shape[:2]
         recs = sorted(by_shot[sk], key=lambda r: r["id"])
         lines = [idx[r["id"]][1] for r in recs]
-        grads = L.grad_assign(rgb, lines, s.get("dets", []), s["kind"])
+        if grad is None:
+            grads = grad_default(rgb, lines, s.get("dets", []), s["kind"])
+        else:
+            grads = [grad.get(r["id"]) or {"region": None, "box": None, "status": "missing", "dark": None,
+                                           "grad_ok": False, "grad_why": "grad-missing"} for r in recs]
         shot_meta = {"url": s["url"], "release": s.get("release")}
         for r, ln, g in zip(recs, lines, grads):
-            grad_stats[f"{s['subset']}:{g['status']}"] += 1
+            grad_stats[f"{s['subset']}:{g['grad_why']}"] += 1
             tv = tv_overlap(L.crop_box(ln, s["kind"], W, H), tvl.get(sk, [])) if s["subset"] == "tv_native" else None
             base = {"real": True, "pool": prefix, "id": r["id"], "vn": s["vn"], "session": s.get("release"),
                     "kind": s["kind"], "target": s["kind"], "how": r["how"], "pol": G.polarity(ln.get("hint", {})),
@@ -156,7 +180,8 @@ def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devna
                 base["tv_id"] = tv[0]
             row = {"id": r["id"], "shot": sk, "subset": s["subset"], "vn": s["vn"], "kind": s["kind"],
                    "session": s.get("release"), **shot_meta, "ink": ln["ink"], "text_box": L.text_box(ln),
-                   "region": g["region"], "grad": {"box": g["box"], "status": g["status"], "dark": g["dark"]},
+                   "region": g["region"], "grad": {"box": g["box"], "status": g["status"], "dark": g["dark"],
+                                                   "ok": g["grad_ok"], "why": g["grad_why"]},
                    "styles": base["styles"], "flags": base["flags"], "how": r["how"], "support": r["support"],
                    "readers": r["readers"], "pass1": r["pass1"], "pass2": r["pass2"],
                    "reviewer_kind": "assistant", "chars": len(vote.key(r["label"]))}
@@ -167,7 +192,7 @@ def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devna
                 row["tv_label_agrees"] = vote.key(tv[2]) == vote.key(r["label"])
             for crop in CROPS:
                 box = L.crop_box(ln, s["kind"], W, H) if crop == "ink" else g["box"]
-                if crop == "grad" and g["status"] != "ok":
+                if crop == "grad" and not g["grad_ok"]:
                     continue
                 img, dark, inverted = L.cut(rgb, box)
                 ch, ch_ok = chars_in(ln, r["label"], box)
@@ -217,7 +242,11 @@ def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devna
 def cmd_npz(args):
     labels = [json.loads(x) for x in Path(args.labels).read_text(encoding="utf-8").splitlines() if x.strip()]
     shots = S.load_reads(args.reads)
-    stats = build(labels, shots, args.out, manifests=args.manifests, prefix=args.prefix)
+    grad = None
+    if args.grad:
+        grad = {r["id"]: r for r in (json.loads(x) for x in Path(args.grad).read_text(encoding="utf-8").splitlines()
+                                     if x.strip())}
+    stats = build(labels, shots, args.out, manifests=args.manifests, prefix=args.prefix, grad=grad)
     print(json.dumps(stats, ensure_ascii=False, indent=1), flush=True)
     print("BUILD_DONE", flush=True)
 
@@ -231,6 +260,7 @@ def main():
     p.add_argument("--out", default=str(P.OUT))
     p.add_argument("--prefix", default="devnative", help="npz file prefix and meta 'pool'")
     p.add_argument("--manifests", default=str(P.MANIFESTS), help="where lines/dropped/stats.json go")
+    p.add_argument("--grad", help="gradcheck.py apply output (default: no containment check, see grad_default)")
     args = ap.parse_args()
     cmd_npz(args)
 

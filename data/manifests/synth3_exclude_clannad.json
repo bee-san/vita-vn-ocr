@@ -1,0 +1,279 @@
+{
+ "kind": "synth3-exclusion",
+ "schema": 1,
+ "name": "CLANNAD as a title (the CLANNAD long-run references are protected; the rules protect the title)",
+ "rule": "Never use these VNs for synth3 names, scenes, calibration, text, mining or development cohorts. 'vns' = CLANNAD (v4), every direct VNDB relation of any kind, and every VN sharing a VNDB release with it (compilation boxes).",
+ "protected": {
+  "titles": [
+   "v4"
+  ]
+ },
+ "relations": {
+  "v4": [
+   {
+    "id": "v64642",
+    "relation": "char",
+    "official": false,
+    "title": "QUIZ de CLANNAD"
+   },
+   {
+    "id": "v12",
+    "relation": "seq",
+    "official": true,
+    "title": "Tomoyo After ~It's a Wonderful Life~"
+   },
+   {
+    "id": "v4060",
+    "relation": "side",
+    "official": true,
+    "title": "CLANNAD - Hikari Mimamoru Sakamichi de"
+   },
+   {
+    "id": "v42392",
+    "relation": "char",
+    "official": false,
+    "title": "YAMANNAD"
+   },
+   {
+    "id": "v11057",
+    "relation": "char",
+    "official": false,
+    "title": "NETANNAD"
+   },
+   {
+    "id": "v28752",
+    "relation": "side",
+    "official": false,
+    "title": "HARMONIOUS"
+   },
+   {
+    "id": "v64301",
+    "relation": "char",
+    "official": false,
+    "title": "Kuraburo"
+   },
+   {
+    "id": "v27548",
+    "relation": "side",
+    "official": false,
+    "title": "Clann"
+   },
+   {
+    "id": "v10058",
+    "relation": "side",
+    "official": false,
+    "title": "To Heart Hii Sunohara After"
+   },
+   {
+    "id": "v29951",
+    "relation": "side",
+    "official": false,
+    "title": "CLANNAD Another Story ~Xiwang de Yuzhou~"
+   },
+   {
+    "id": "v23354",
+    "relation": "side",
+    "official": false,
+    "title": "Fuuko Sanjou! Kamen Henner: Version☆Hitode"
+   },
+   {
+    "id": "v869",
+    "relation": "char",
+    "official": false,
+    "title": "Silliness"
+   },
+   {
+    "id": "v16901",
+    "relation": "side",
+    "official": false,
+    "title": "Kyou After ~another Way another Ring~"
+   },
+   {
+    "id": "v8324",
+    "relation": "char",
+    "official": false,
+    "title": "Worlds of Haruhi Suzumiya"
+   },
+   {
+    "id": "v5698",
+    "relation": "seq",
+    "official": false,
+    "title": "CLANNAD: Lost \"Winter\""
+   },
+   {
+    "id": "v7983",
+    "relation": "preq",
+    "official": false,
+    "title": "Clannad -The Past Path-"
+   },
+   {
+    "id": "v25142",
+    "relation": "set",
+    "official": false,
+    "title": "James: The Visual Novel"
+   },
+   {
+    "id": "v21002",
+    "relation": "char",
+    "official": false,
+    "title": "Danganronpa Forge:Re"
+   },
+   {
+    "id": "v54298",
+    "relation": "seq",
+    "official": false,
+    "title": "CLANNAD -Happy Birthday-"
+   }
+  ]
+ },
+ "relations_source": {
+  "api": "https://api.vndb.org/kana/vn",
+  "queried": "2026-10-12T19:35:35Z"
+ },
+ "vns_sharing_a_release": [
+  "v4",
+  "v5",
+  "v12",
+  "v33",
+  "v34",
+  "v36"
+ ],
+ "vns": [
+  "v4",
+  "v5",
+  "v12",
+  "v33",
+  "v34",
+  "v36",
+  "v869",
+  "v4060",
+  "v5698",
+  "v7983",
+  "v8324",
+  "v10058",
+  "v11057",
+  "v16901",
+  "v21002",
+  "v23354",
+  "v25142",
+  "v27548",
+  "v28752",
+  "v29951",
+  "v42392",
+  "v54298",
+  "v64301",
+  "v64642"
+ ],
+ "screenshots": {
+  "sources": 0,
+  "sha256": [],
+  "pixel_sha256": [],
+  "note": "the CLANNAD long-run captures are private and not on this machine; VN ids exclude every VNDB screenshot"
+ },
+ "names": {
+  "source": "VNDB characters of any VN in 'vns' (synth3 text/vndb_chars.tsv, VNDB dump 2026-10-12), any language",
+  "sha256_of_tsv": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
+  "characters": 113,
+  "definition": "as in synth3_exclude_fresh_native.json",
+  "name_sha256": [
+   "00559d63e12b054dbd4f6c650c3e7db98c7744a4c97c9a0ca1542299c7cf6531",
+   "078ef083b66e6a29b4c3730355b33da5c1c709727682b75bfcf58aa28093492b",
+   "0799bb390915d8a9cc033d47c1d5ccc6818e73b0ae79cd0562d4f8195b9760cf",
+   "0ddbb192c91b6a0529d9c9f34c1c42179f1eff91cbe5aab136c305549cd6d5ac",
+   "11ef1e58ab209d2baff9ac71cae3f09fcdc48bd99a2b0d3e80c6d145116250ad",
+   "12c47d976370bde77df7a1dc884fc707a9f062e882d2ca3f631ee793e5381bde",
+   "12f74ad4a6bec29d6fdc572a59b6a559d90d4af0bc4837f3b326ddd1cd79e964",
+   "1323fdc5d2dda46e80c47e3a35f7dd3e2b748694a6e62c6c3c8e53633541c9e8",
+   "1336d646fe3fca597a23e5fbc3b44e25265c288deeaddd7083d9822a177dd3b3",
+   "17dc838cefbb92cb3184b5b14d6c1bc47cfe8f25179383658e9ddc7097b332b0",
+   "186368b0623e0ec0d8924e516666d8b3532a055b593c71fcdb2beace8ee42d54",
+   "18813d9a4023878d9826107dd4421e6a110f22e95e6b3c6c6a9eaf9410be36bd",
+   "1ee11c07faa0df9b91d2046f94bb09394875ccff7396f4fabe6ffe5d6327537b",
+   "1ee47fd4777feed49320c7418ab6e627da8426014da43582a095044285f7c8eb",
+   "23393fd97689965b782e433d815985b529509f01bad2d54b9addc4071e3a3930",
+   "23a1cdff1053220b791937445a5d622e5c172afdb0cc1ab36c27d88c8ae06275",
+   "26f27f01054281881788a8f18b850cee48039399e741ec76bf63323192e387d3",
+   "27bddee8cda79cc07c4f7d896ef67d7db86febf41ed68988b9c3c6f309436396",
+   "27cbc111080aaa94a09b42696e4885ccadb72b52b582d12aea33cccf0074c969",
+   "29d664d9fa483a27b017062265a7ff79723f77ddc11a9441b43c0a8fad57c86b",
+   "2a42ab3016c44f96ebf1c62c9563347015f635d0cc3a8aaf1785fd6efbe6f0bb",
+   "2aa30a0a1a73eb09df96088c83f0324672b624bcd6435db1d02a7eb2beaa720e",
+   "2b4330bd9e6a3a5cc10e8017d9dab9b3291b07ba6f827372940e92c652d38b5d",
+   "3151c2595f93013a23ffa8b5e4df2d124b33625a3fca5de58709b2814e6539a6",
+   "3227e0a7fdeba2389ff1a51f92f82d5aac0b9c7d18aaf1d278e1c991ab7550f0",
+   "329b2e3a3abe1cec42c4f5144daad73853eeb1f2e7d918577227e3684846d1e7",
+   "32d31f988a478618560723eaf49442f81f2e47f7aab6e3f4469a559be493ab3d",
+   "3362118ecc5816e6adfe269871950caa58d4a68b03a621df9da3ab48d3af7164",
+   "34790a3e76c0fb4662776a0a92d5ca15fbc2828d8814080ec2edd0452d383e01",
+   "352adad786ef63279f34f05cdfbcfa733f240fa14835d773d8de26e6f4267687",
+   "37eae4be7c6025beb2c696b22e38afcce364e71e3a08413e6bf4086d5337cf22",
+   "3895f6471413e69101fc9103977eaeafb6ae66792068ec5a6d6133be854f29ab",
+   "38f71bd73385c0a8284649d6e7c0ba5d1c1f324936e226489dd554187b266c0a",
+   "412eb8fd3a0831e0c20737ee5ca6e86d3deeb75953737f06e7c74cacc9916bb3",
+   "4147470bf41c6437dd18e95d1034de21404e9640335bb781301e347bf5105331",
+   "41f6b74ff1dc90568d8069e4dc4cbf62336ccae592b2dfe72b2cb4aa02b98523",
+   "4595a1c6b2487645aa355a801056fd0b8b641c1e46c89c50a601a49caf8d5281",
+   "49d7c10cb75519d6bb51b342416de1ca76a4f4f3a1be637d61264479e93201e0",
+   "52aa60c999ce7b2c3cb0b265f2b6e13c4126ecbd4cd3d38bf7af85ca5a801001",
+   "5c5d73bf53db510400ef09a8b56f0105aee0d5dca0d46e64dc064e3bf1aae3d3",
+   "5d3c528dcc04011a5d2182117ef788b7034651a91312853384acfa2f0171b220",
+   "624221f03ca6c470fbfceb9f667221b6d274a60088af5ef943ad9c112983e983",
+   "6fdf6ca83bf0cb923c8f9e893f34875d4278e844b94a36be5f3de87f0bafb7a0",
+   "72c29e765a3ae60127e82568131ec503cbc5c807039ddb626f52c76a77f3cc1c",
+   "733462dbbd76a60f427ab406b90a6370335d3e890edf9f7d22227e98739630db",
+   "73c7640aa64e4d79dc89b0ab66df9584776a64848a30fe0446fef3ad66d5dee5",
+   "76b97e8f15c723d56506eaa4b00db360ea3fc3aa28150d312bb2bc508a90d8b8",
+   "77fef98c7a999ab9feda33725dc4679b816a0cdac195b623b2a77e7fd0e6aec8",
+   "7a1e70660a9d57a6046713c336324ec6f8f5e17381ba1e076cac4feec547c813",
+   "7c95de5efcebcab34338258a4ceee099889e2527bb37916224b6130a5e4cb440",
+   "7d40a0397b1c0bd381b20da631d107c20df2b6999c440b22296d4afeb54da932",
+   "7e8a5d12f87f51e0332d1cd9ede08233868338bb7fb8b45d88b73fd3cb7be8f5",
+   "7f0ef72530d38c6204ee2dc3a94b77611997f9e7cf928568eef98b1a0f3ec50c",
+   "7f4c523253d4fa17bd9bee33c34a0ecc835701b92a59033114bed2e605ddac05",
+   "7f6243a306442e38c88ceaf8b0de33b4612b3c63a76c18fdd4660c438301a7d0",
+   "88b5e1fb24922ccb10789fa454537dc6fbfc9c98d536324aea48e3950504a72c",
+   "89561b0f5ac6b6ae89c3be5a5f71e3ffde826208ac9b55a62def8e55a8c76c48",
+   "8b9b27bd21ddb7c55f192560e8ec6a1e08e78d33bc44d9c48d082ffc2893c50d",
+   "942504ebb85121c2b2de7de400ac49d8b78637670234f422fc21f109a9d1ffe1",
+   "981bb6da474028c2d69acc3dca4e99059651543e9b1852932a7c33c257993477",
+   "997a05ce19ce84e66434a77edb0637ab5d30e7dab43bc9eb43f4f24ba2386005",
+   "9c8af8d02d0e726675dc095b70ebd4f94f97979ee9420f4c43d1421b57dc5c65",
+   "9c9d736deaafcd8db083e760cf5dc7db86afe4012b021d5a39e247e4f6f5590c",
+   "9d78e6a1609a157f91ea88e89401d9e09983ff6ee1a03b83bf1553b8f31c27cb",
+   "a814fa33642bd18f680d44cabcea577a548f46d5ad639aca043745c148d4f0f1",
+   "a8c14dc2b9255c40ab61d441ff9a07e622dae0262a403d11c8e46f9aa582a0fb",
+   "a9d1ce27512c3d8f129382745f10df52eda12a970a3c9623bf4225a638fd5d29",
+   "a9f134de84f7a1927ff8d533749db692257305e34cd6007dcc1c153be2d676a2",
+   "aaff6bd0f980fc3a21aff21f0b4a5fb4ba3759c7d7c1f36255438607d1dfb85e",
+   "ac60cc0159243559e47425fee16e7ea7d0aba21aed12a91c0c22781c8ac12307",
+   "afc85cd1eac5803f58711bdeb5636716e3c80a558d307ffa0253bbe1a92c8a3d",
+   "aff8e5ccec9c40651ff30c7f3cd26431afa5b9ac457954b6249533f1ad9f6144",
+   "b00a5dc215a12d854573d8f3514e6ac91f1932142cb61be989325d6fd64b5b66",
+   "b82deab2593da90e0cf0b4c99348ed5fe9800def23439748d72823e777f30487",
+   "b97e7e6bdbf7d504c335941aaab17e5eff223f832e49239aecc293c973ebbe10",
+   "be2c12e361ab261af5d91220661b6d05815d31a87d65b18f91c94c56f30e1508",
+   "bf4986085fb7319f3645b90920317325d07a776e3c44c26ed17bf4815e64b3b1",
+   "c2b3bb6b18e225250ec1a0bf9fedf4a41902ce5fc28e60353c5be22e954a03f4",
+   "c6b3e0da2b448463f916422e7431c97dbb507d8ea7f5563351242e7b9dbed8dd",
+   "c93d043c62db3db9fb28afefb2d476e969348a71737b952a335f3a6bdc3751f9",
+   "c99c499785320fe0c6e6e95f7a6592bf5f13bc93b6bd1f0970d6b14ce8bef952",
+   "cac410151bdc90fb5664bffa028971bf6421b62c32f31b5c2daf83ce13e56f03",
+   "caecf1ad879427685d3085ca23981cf54d6d66ac51c04db81b590a2c92a28e24",
+   "d09f3771c784035cd957d273a327784a2e0d84447f2a53ff189f9844477d41f3",
+   "d65019cca87cd66c1b331181b173e8e5e7b87d0f6144baf8be3c5402d5338750",
+   "d76b2a486020597c892742ea1171d136f5914d7b309f4a4695e16ff16ba7ee98",
+   "db615a72abb35c28a36cca066045d37c722ef655da54fa39a44092affd67ab85",
+   "dd021f7d64294d352ce5a446a34e1b34d170edfa9cb07b18d6f81165f9761a5d",
+   "dd87cd9af0c3a2067d9e3c07e208e4b85650d5b36a4b91517314000ab9fc2b44",
+   "ded653ba3c87e00e5f33f2b5622b912356025f43ef14b6c801f8760b2773fad4",
+   "e25c8ef05037d65ce40b0f703f0c2c0d622423cd2b11a6dd5aade1794f141475",
+   "e44c343fb6cb5f56f6923111400dcab4269336d214c5681a37f8f278b6d2c032",
+   "e649be690040cd5afe5ecc91536103ede6a53ec2ec643d91246a5a4226302ecc",
+   "e6d5e87af25faa1b6498b7b476f14ad46d7aed85609e3248787bb9f1d5674d22",
+   "edc4f2add70c7cfe4d6adf130a31494eb593af245a9cc96e4991a79124695ba6",
+   "efadf56c2d6399f8ed3c19d2e231413cd326997c93fabb26582162905cba5878",
+   "f70a17fa049d85fb7a8fd6fabc0ce6a3ea3b7fa29551db668c2c8b11431dc17f",
+   "f8137568e48c08c94fe6d3c6f34a4754e44111aee79c9b1d94bc99a60530e493"
+  ]
+ }
+}

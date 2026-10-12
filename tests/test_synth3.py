@@ -509,6 +509,19 @@ def test_exclusion_manifest_covers_the_fresh_native_titles():
     assert ex["vns"] == set(doc["vns"]) and len(ex["pixel_sha256"]) == 157
 
 
+def test_clannad_is_excluded_as_a_title():
+    """CLANNAD is protected as a title (binding rules): v4, every direct VNDB relation and every
+    VN sharing a release with it never feed names, scenes, calibration or mining."""
+    doc = json.loads((ROOT / "data" / "manifests" / "synth3_exclude_clannad.json").read_text(encoding="utf-8"))
+    assert doc["kind"] == "synth3-exclusion" and "v4" in doc["vns"]
+    assert {r["id"] for r in doc["relations"]["v4"]} <= set(doc["vns"])
+    assert set(doc["vns_sharing_a_release"]) <= set(doc["vns"])
+    assert all(re.fullmatch(r"[0-9a-f]{64}", h) for h in doc["names"]["name_sha256"])
+    assert set(synth3.EXCLUDE_MANIFESTS) >= {ROOT / "data" / "manifests" / "synth3_exclude_clannad.json"}
+    import synth3_stats as S
+    assert "v4" in S.reserved_vns(S.DEFAULT_EXCLUDE) and "v14909" in S.reserved_vns(S.DEFAULT_EXCLUDE)
+
+
 def test_excluded_names_are_dropped(assets, tmp_path):
     """A name whose characters belong to an excluded VN never reaches a crop (by name hash)."""
     doc = {"kind": "synth3-exclusion", "schema": 1, "vns": ["v999999"],

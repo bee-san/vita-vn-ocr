@@ -9,7 +9,8 @@
 Only training-side real crops may be measured here (teacher_train, real_train): never the
 selection set and never eval's test sets. Rows of a reserved VN are dropped and counted
 (eval's test games, synth/common.is_test_vn, and every VN of the exclusion manifests, by default
-data/manifests/synth3_exclude_fresh_native.json). Statistics per source:
+data/manifests/synth3_exclude_fresh_native.json and synth3_exclude_clannad.json; add the
+development VNs with --exclude ... exclude_dev_vns.txt). Statistics per source:
 
   text      label length histogram, script shares (hiragana/katakana/kanji/latin/punct),
             VN punctuation per 1,000 characters, name-like line share, distinct characters,
@@ -48,7 +49,8 @@ from metrics import norm  # noqa: E402
 PUNCT = {"……": "…", "――": "―", "「": "「", "」": "」", "『": "『", "』": "』", "！": "!", "？": "?",
          "、": "、", "。": "。", "～": "~", "♪": "♪", "（": "(", "ー": "ー", "っ": "っ"}
 NAME_STOP = set("「」『』。、！？!?…―（）()")
-DEFAULT_EXCLUDE = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",)
+DEFAULT_EXCLUDE = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
+                   ROOT / "data" / "manifests" / "synth3_exclude_clannad.json")
 KIND_OF_PLATFORM = {"vita": "vita", "psp": "psp", "psp2x": "psp2x", "scaled": "hires"}
 
 
@@ -331,15 +333,16 @@ def main():
     m.add_argument("--name", action="append", required=True, help="NAME=GLOB[+GLOB...]")
     m.add_argument("--limit", type=int, default=20000)
     m.add_argument("--seed", type=int, default=0)
-    m.add_argument("--exclude", nargs="*", default=[str(p) for p in DEFAULT_EXCLUDE],
-                   help="exclusion manifests (.json with 'vns') or VN-id lists (.txt) whose rows are dropped")
+    m.add_argument("--exclude", nargs="*", default=[],
+                   help="more exclusion manifests (.json with 'vns') or VN-id lists (.txt) whose rows are dropped "
+                        "(always: eval's test games and the default manifests)")
     m.add_argument("--out", required=True)
     t = sub.add_parser("table")
     t.add_argument("stats")
     args = ap.parse_args()
     if args.cmd == "measure":
         rng = np.random.default_rng(args.seed)
-        reserved = reserved_vns(args.exclude)
+        reserved = reserved_vns(list(DEFAULT_EXCLUDE) + list(args.exclude))
         res = {}
         for spec in args.name:
             name, _, globs = spec.partition("=")

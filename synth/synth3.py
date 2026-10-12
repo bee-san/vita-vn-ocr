@@ -75,9 +75,10 @@ HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 ASSETS = HERD / "shared" / "artifacts" / "synth3"
 SHARED_DATA = HERD / "shared" / "data"
 FONT_MANIFEST = ROOT / "data" / "manifests" / "synth3_fonts.json"
-# Titles protected like eval's test games (the fresh native textbox test, its reserves and their
-# VNDB relations): never a name, scene or screenshot of synth3 (version 3 on).
-EXCLUDE_MANIFESTS = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",)
+# Titles protected like eval's test games (the fresh native textbox test, its reserves, CLANNAD,
+# and their VNDB relations): never a name, scene or screenshot of synth3 (version 3 on).
+EXCLUDE_MANIFESTS = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
+                     ROOT / "data" / "manifests" / "synth3_exclude_clannad.json")
 LATIN = re.compile(r"[0-9A-Za-z０-９Ａ-Ｚａ-ｚ]")
 
 # Every probability of the generator, recorded verbatim in the shard manifest.
@@ -319,8 +320,9 @@ def drawn_chars(path, vocab):
 class Resources:
     def __init__(self, assets=ASSETS, split="train", profile="personal", font_manifest=FONT_MANIFEST,
                  vocab=None, holdout_fonts=(), scenes=True, exclude=EXCLUDE_MANIFESTS, font_cache=None,
-                 scene_hashes=None):
+                 scene_hashes=None, targets=None):
         self.assets, self.split, self.profile = Path(assets), split, profile
+        self.targets_path = Path(targets) if targets else None
         self.exclusions = load_exclusions(exclude)
         self.font_cache = Path(font_cache) if font_cache else self.assets / "fonts" / "coverage_cache.json"
         self.vocab = load_vocab(vocab) if vocab else load_vocab()
@@ -416,7 +418,8 @@ class Resources:
                 self.names_dropped += 1
                 continue
             self.names.setdefault(p[0], []).append(tuple(p[2:]))
-        tg = json.loads((pools_dir / "targets.json").read_text(encoding="utf-8"))["chars"]
+        targets_path = self.targets_path or pools_dir / "targets.json"
+        tg = json.loads(targets_path.read_text(encoding="utf-8"))["chars"]
         self.hard = np.array([tg[c]["hard"] if c in tg else 0.0 for c in self.vocab])
         conf = set("".join(CONFUSABLE))
         self.hard += np.array([0.05 if c in conf else 0.0 for c in self.vocab])
@@ -434,7 +437,7 @@ class Resources:
         self.text_identity = {"pools": self.pool_meta, "contexts": sha256(pools_dir / f"contexts.{split}.npz"),
                               "names": sha256(pools_dir / f"names.{split}.tsv"),
                               "names_dropped_excluded": self.names_dropped,
-                              "targets": sha256(pools_dir / "targets.json"),
+                              "targets": sha256(targets_path),
                               "lists": sha256(self.assets / "text" / "lists.json")}
 
     # ---- scenes
@@ -1929,6 +1932,7 @@ def main():
                     help="exclusion manifests (VNs, screenshot and name hashes never used)")
     ap.add_argument("--scene-hashes", type=Path, help="scene-hashes output: pixel sha256 per scene file sha256")
     ap.add_argument("--font-cache", type=Path, help="font coverage cache (default ASSETS/fonts/coverage_cache.json)")
+    ap.add_argument("--targets", type=Path, help="focus-character targets (default ASSETS/text/pools3/targets.json)")
     args = ap.parse_args()
     if args.mode == "manifest":
         manifest(args)
@@ -1940,7 +1944,7 @@ def main():
         apply_cfg(args.cfg)
     cv2.setNumThreads(1)
     init(assets=args.assets, split=args.split, profile=args.profile, holdout_fonts=set(args.holdout_fonts),
-         exclude=args.exclude, font_cache=args.font_cache, scene_hashes=args.scene_hashes)
+         exclude=args.exclude, font_cache=args.font_cache, scene_hashes=args.scene_hashes, targets=args.targets)
     print(f"fonts {len(R.fonts)} files / {len({f.fam for f in R.fonts})} families "
           f"{ {c: len(v) for c, v in R.by_cat.items()} }; pools {list(R.pools)}; "
           f"scenes { {k: len(v) for k, v in R.bg.items()} } from {len(R.bg_vns)} VNs; "

@@ -1,0 +1,538 @@
+{
+  "audit_script_sha256": "509fa0e8b4626a874cff849bc21733d439f85a51c2ec2731af7cae44ff816622",
+  "baseline_counts": {
+    "full": {
+      "chars": 6614,
+      "console_balanced_rate": "152258869520843/4721772767725728",
+      "errors": 183
+    },
+    "hira": {
+      "chars": 3554,
+      "console_balanced_rate": "534112458547/25938748139370",
+      "errors": 65
+    }
+  },
+  "baseline_record_equal_original_all_run": true,
+  "candidate_selection": [
+    {
+      "console_balanced_full": "16647411638337/524641418636192",
+      "console_balanced_hiragana": "534112458547/25938748139370",
+      "eligible": false,
+      "full_errors": 180,
+      "gain_vns": [],
+      "hiragana_errors": 65,
+      "qualified": true,
+      "regression_reasons": [],
+      "step": 200
+    },
+    {
+      "console_balanced_full": "154715695080941/4721772767725728",
+      "console_balanced_hiragana": "554408067463/25938748139370",
+      "eligible": false,
+      "full_errors": 186,
+      "gain_vns": [],
+      "hiragana_errors": 68,
+      "qualified": false,
+      "regression_reasons": [
+        "vita:v18161/all/full: regression or invalid error count",
+        "vita:v18161/all/hira: regression or invalid error count",
+        "vita:v18161/body/full: regression or invalid error count",
+        "vita:v18161/body/hira: regression or invalid error count",
+        "vita:v18163/body/full: regression or invalid error count",
+        "vita:v18643/all/full: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count",
+        "vita:v18643/body/full: regression or invalid error count",
+        "vita:v18643/body/hira: regression or invalid error count"
+      ],
+      "step": 400
+    },
+    {
+      "console_balanced_full": "74589932521943/2360886383862864",
+      "console_balanced_hiragana": "6642195465287/311264977672440",
+      "eligible": false,
+      "full_errors": 180,
+      "gain_vns": [],
+      "hiragana_errors": 68,
+      "qualified": false,
+      "regression_reasons": [
+        "vita:v18161/all/full: regression or invalid error count",
+        "vita:v18161/all/hira: regression or invalid error count",
+        "vita:v18161/body/full: regression or invalid error count",
+        "vita:v18161/body/hira: regression or invalid error count",
+        "vita:v18163/body/full: regression or invalid error count",
+        "vita:v18643/all/full: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count",
+        "vita:v18643/body/full: regression or invalid error count",
+        "vita:v18643/body/hira: regression or invalid error count"
+      ],
+      "step": 600
+    },
+    {
+      "console_balanced_full": "8742087654631/277751339277984",
+      "console_balanced_hiragana": "1678075047497/77816244418110",
+      "eligible": false,
+      "full_errors": 180,
+      "gain_vns": [],
+      "hiragana_errors": 69,
+      "qualified": false,
+      "regression_reasons": [
+        "vita:v18161/all/full: regression or invalid error count",
+        "vita:v18161/all/hira: regression or invalid error count",
+        "vita:v18161/body/full: regression or invalid error count",
+        "vita:v18161/body/hira: regression or invalid error count",
+        "vita:v18163/body/full: regression or invalid error count",
+        "vita:v18643/all/full: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count",
+        "vita:v18643/body/full: regression or invalid error count",
+        "vita:v18643/body/hira: regression or invalid error count"
+      ],
+      "step": 800
+    },
+    {
+      "console_balanced_full": "2137856357905/69437834819496",
+      "console_balanced_hiragana": "166374424742/7781624441811",
+      "eligible": false,
+      "full_errors": 175,
+      "gain_vns": [],
+      "hiragana_errors": 68,
+      "qualified": false,
+      "regression_reasons": [
+        "vita:v18161/all/full: regression or invalid error count",
+        "vita:v18161/all/hira: regression or invalid error count",
+        "vita:v18161/body/full: regression or invalid error count",
+        "vita:v18161/body/hira: regression or invalid error count",
+        "vita:v18163/body/full: regression or invalid error count",
+        "vita:v18643/all/full: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count",
+        "vita:v18643/body/full: regression or invalid error count",
+        "vita:v18643/body/hira: regression or invalid error count"
+      ],
+      "step": 1000
+    },
+    {
+      "console_balanced_full": "778682286977/25250121752544",
+      "console_balanced_hiragana": "6584872264979/311264977672440",
+      "eligible": false,
+      "full_errors": 175,
+      "gain_vns": [],
+      "hiragana_errors": 67,
+      "qualified": false,
+      "regression_reasons": [
+        "vita:v18161/all/hira: regression or invalid error count",
+        "vita:v18161/body/hira: regression or invalid error count",
+        "vita:v18163/body/full: regression or invalid error count",
+        "vita:v18643/all/full: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count",
+        "vita:v18643/body/full: regression or invalid error count",
+        "vita:v18643/body/hira: regression or invalid error count"
+      ],
+      "step": 1200
+    },
+    {
+      "console_balanced_full": "778682286977/25250121752544",
+      "console_balanced_hiragana": "166374424742/7781624441811",
+      "eligible": false,
+      "full_errors": 175,
+      "gain_vns": [],
+      "hiragana_errors": 68,
+      "qualified": false,
+      "regression_reasons": [
+        "vita:v18161/all/hira: regression or invalid error count",
+        "vita:v18161/body/hira: regression or invalid error count",
+        "vita:v18163/body/full: regression or invalid error count",
+        "vita:v18643/all/full: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count",
+        "vita:v18643/body/full: regression or invalid error count",
+        "vita:v18643/body/hira: regression or invalid error count"
+      ],
+      "step": 1400
+    },
+    {
+      "console_balanced_full": "778682286977/25250121752544",
+      "console_balanced_hiragana": "166374424742/7781624441811",
+      "eligible": false,
+      "full_errors": 175,
+      "gain_vns": [],
+      "hiragana_errors": 68,
+      "qualified": false,
+      "regression_reasons": [
+        "vita:v18161/all/hira: regression or invalid error count",
+        "vita:v18161/body/hira: regression or invalid error count",
+        "vita:v18163/body/full: regression or invalid error count",
+        "vita:v18643/all/full: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count",
+        "vita:v18643/body/full: regression or invalid error count",
+        "vita:v18643/body/hira: regression or invalid error count"
+      ],
+      "step": 1600
+    },
+    {
+      "console_balanced_full": "778682286977/25250121752544",
+      "console_balanced_hiragana": "166374424742/7781624441811",
+      "eligible": false,
+      "full_errors": 175,
+      "gain_vns": [],
+      "hiragana_errors": 68,
+      "qualified": false,
+      "regression_reasons": [
+        "vita:v18161/all/hira: regression or invalid error count",
+        "vita:v18161/body/hira: regression or invalid error count",
+        "vita:v18163/body/full: regression or invalid error count",
+        "vita:v18643/all/full: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count",
+        "vita:v18643/body/full: regression or invalid error count",
+        "vita:v18643/body/hira: regression or invalid error count"
+      ],
+      "step": 1800
+    },
+    {
+      "console_balanced_full": "778682286977/25250121752544",
+      "console_balanced_hiragana": "166374424742/7781624441811",
+      "eligible": false,
+      "full_errors": 175,
+      "gain_vns": [],
+      "hiragana_errors": 68,
+      "qualified": false,
+      "regression_reasons": [
+        "vita:v18161/all/hira: regression or invalid error count",
+        "vita:v18161/body/hira: regression or invalid error count",
+        "vita:v18163/body/full: regression or invalid error count",
+        "vita:v18643/all/full: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count",
+        "vita:v18643/body/full: regression or invalid error count",
+        "vita:v18643/body/hira: regression or invalid error count"
+      ],
+      "step": 2000
+    }
+  ],
+  "checkpoint_and_export_count": 10,
+  "checkpoint_exports_reconstructed_byte_identically_in_memory": true,
+  "checkpoints": [
+    {
+      "buffered_rows": 512,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "ed3c9325b138a2dc5cd262fc4be3a4b9988a2887c287b8b83db434596d5fb5b9",
+      "export_sha256": "7c432164b099d7f690e36e2fe3a73503ee5195e3f9bc57ed28276df6e53a77fb",
+      "fallback_draws": 5,
+      "forwarded_rows": 6400,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 200,
+      "unchanged_bn_buffers": 54
+    },
+    {
+      "buffered_rows": 256,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "88c0a83f8e48f174039b72a8e8f1f7ff25b359eb573a83c7a58b8574baeab204",
+      "export_sha256": "eaa77b11c1fa22608a548cb655ac70f694be21bdd19cf8f8714098bf9e7ac739",
+      "fallback_draws": 5,
+      "forwarded_rows": 12800,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 400,
+      "unchanged_bn_buffers": 54
+    },
+    {
+      "buffered_rows": 0,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "29aef6d906f555ca505dab27fed01b71d31a457cd94a5b16555fe9bbefdb086c",
+      "export_sha256": "23b8e36832ae43f4ba11cf22b1b560b8e64fcbb67e3d7bf8fe30a0988ffea3e7",
+      "fallback_draws": 5,
+      "forwarded_rows": 19200,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 600,
+      "unchanged_bn_buffers": 54
+    },
+    {
+      "buffered_rows": 512,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "c28408dbb8a9af58cc49020e8b35f4c0dad6e3f29bcb66a441c4155ef46ed471",
+      "export_sha256": "88c76be82e4592b0f8c8d9da4f71f7fcd62ee81e468fe00d08a99d4c4d60a3d4",
+      "fallback_draws": 5,
+      "forwarded_rows": 25600,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 800,
+      "unchanged_bn_buffers": 54
+    },
+    {
+      "buffered_rows": 256,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "604c6edac31c90df730552f2150eec07c66048a78be736299f5566082ff27d88",
+      "export_sha256": "5e96f6b44d24f601f5156559762d6d3860c6ad81343f0e93944875dbc38583a1",
+      "fallback_draws": 5,
+      "forwarded_rows": 32000,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 1000,
+      "unchanged_bn_buffers": 54
+    },
+    {
+      "buffered_rows": 0,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "f5c1da5e85bc6bf681f14e9c4d78dc289c74e07567aef6cb9aec190b5a58c9d5",
+      "export_sha256": "c0c822030e125fd1763608306b28dfe67b483107866d52f0ec0811817a9a6893",
+      "fallback_draws": 5,
+      "forwarded_rows": 38400,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 1200,
+      "unchanged_bn_buffers": 54
+    },
+    {
+      "buffered_rows": 512,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "ac5c481008645ec6e88b62f21442ae9eff9082e58dba19231b2cde026f19115b",
+      "export_sha256": "770251591b3e474f14dd6c759f2491feb26803695ecbdb26b515b4edf8e2e30b",
+      "fallback_draws": 13,
+      "forwarded_rows": 44800,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 1400,
+      "unchanged_bn_buffers": 54
+    },
+    {
+      "buffered_rows": 256,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "234c30f47318f024a488e66341473a8bef7467cabe2e99a57ab402ab3ba8b979",
+      "export_sha256": "d749705288c7fca077ebb953a19d66a808de01666abf6e3aa2ff2dda0c85c717",
+      "fallback_draws": 13,
+      "forwarded_rows": 51200,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 1600,
+      "unchanged_bn_buffers": 54
+    },
+    {
+      "buffered_rows": 0,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "cca6b4fda3ae2b2e217bab8a81dd8c35f34dee8b79d70b90f11539468d5a24f4",
+      "export_sha256": "806ab8da527af22fc9c8f09b18bbfbd2a9bbb2cb80274b2a6285d4bdc3b72679",
+      "fallback_draws": 20,
+      "forwarded_rows": 57600,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 1800,
+      "unchanged_bn_buffers": 54
+    },
+    {
+      "buffered_rows": 512,
+      "changed_head_tensors": 2,
+      "checkpoint_sha256": "2fb155081318d532f080a11aa17ead24d639be4a08343ee2ca7da0b0c513caa1",
+      "export_sha256": "18b96139b00a97583d1d2e0a6e3201067fe5129ca3e18fdfe3478da377649d6d",
+      "fallback_draws": 23,
+      "forwarded_rows": 64000,
+      "frozen_nonhead_tensor_entries": 109,
+      "optimizer_state_entries": 2,
+      "step": 2000,
+      "unchanged_bn_buffers": 54
+    }
+  ],
+  "chosen_baseline": true,
+  "error_count_evidence_limit": "Saved aggregate error counters were validated and their selector decision recomputed; raw per-line predictions are unavailable, so edit distances were not independently recomputed.",
+  "exposure_events": {
+    "forward": 2000,
+    "intent": 2000,
+    "optimizer": 2000
+  },
+  "exposures": {
+    "all_recorded_boundaries_within_caps": true,
+    "by_source": {
+      "broad_ofl": 62457,
+      "kana_corrective": 278,
+      "kanji_corrective": 1265
+    },
+    "distinct_correction_patterns": 689,
+    "forwarded": 64000,
+    "game_assets": 0,
+    "game_font_text_vns": 0,
+    "kanji_corrective": 1265,
+    "maximum_pattern_rows": 278,
+    "optimizer": 64000,
+    "scope": "6000 aggregate journal boundaries; per-row sequential cap enforcement is bound by frozen trainer source, not individually logged rows"
+  },
+  "fresh_or_clannad_evaluation_access": false,
+  "historical_artifact_sha256": {
+    "head-run/config.json": "e9aa7e9b63e0edee1ffa3014f6eea826cbbd34d852c4d78ee1d32231db0d6067",
+    "head-run/preflight.json": "38fe34d1c650e8b5970d2d789cd13fad83f3aa974d68a41ca817b502d1db1b82",
+    "head-run/protocol-candidates.json": "c21e1b7d5c99ee970840444f15253e3ba00d523983b942128cbacc5b741b5458",
+    "head-run/protocol.json": "c9610348bbd973d92d1b6940d6bf7a45dbcae3c5df547e753570fe2c228362fc",
+    "head-run/protocol_runtime/.gitignore": "cdbcae15105d6b781e620813c79c7e868740d4e9cc53ce6f5fcbbc12387adf4b",
+    "head-run/protocol_runtime/build.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "head-run/protocol_runtime/libvocr_scalar.so": "4a5635ba9a0721373f35e8957c0788b74e1725ea8cd96b8200cc5e427536b11b",
+    "head-run/runs/general_ofl_head_s1/.train2-writer.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "head-run/runs/general_ofl_head_s1/args.json": "effea7ecff99203ef0a23f590782f658b4a9c1c0d49aa4bf3b29d8a0f0ea3bbe",
+    "head-run/runs/general_ofl_head_s1/ckpt_best.pt": "37ac853e7e88130a1668d857911115f7cee01c0d632fe3989e63037e75782d15",
+    "head-run/runs/general_ofl_head_s1/ckpt_last.pt": "87a79dbf8a4fcfc7237314fa1d496249d4eb6fc10910232f45ca034296b30779",
+    "head-run/runs/general_ofl_head_s1/ckpt_step1000.pt": "604c6edac31c90df730552f2150eec07c66048a78be736299f5566082ff27d88",
+    "head-run/runs/general_ofl_head_s1/ckpt_step1200.pt": "f5c1da5e85bc6bf681f14e9c4d78dc289c74e07567aef6cb9aec190b5a58c9d5",
+    "head-run/runs/general_ofl_head_s1/ckpt_step1400.pt": "ac5c481008645ec6e88b62f21442ae9eff9082e58dba19231b2cde026f19115b",
+    "head-run/runs/general_ofl_head_s1/ckpt_step1600.pt": "234c30f47318f024a488e66341473a8bef7467cabe2e99a57ab402ab3ba8b979",
+    "head-run/runs/general_ofl_head_s1/ckpt_step1800.pt": "cca6b4fda3ae2b2e217bab8a81dd8c35f34dee8b79d70b90f11539468d5a24f4",
+    "head-run/runs/general_ofl_head_s1/ckpt_step200.pt": "ed3c9325b138a2dc5cd262fc4be3a4b9988a2887c287b8b83db434596d5fb5b9",
+    "head-run/runs/general_ofl_head_s1/ckpt_step2000.pt": "2fb155081318d532f080a11aa17ead24d639be4a08343ee2ca7da0b0c513caa1",
+    "head-run/runs/general_ofl_head_s1/ckpt_step400.pt": "88c0a83f8e48f174039b72a8e8f1f7ff25b359eb573a83c7a58b8574baeab204",
+    "head-run/runs/general_ofl_head_s1/ckpt_step600.pt": "29aef6d906f555ca505dab27fed01b71d31a457cd94a5b16555fe9bbefdb086c",
+    "head-run/runs/general_ofl_head_s1/ckpt_step800.pt": "c28408dbb8a9af58cc49020e8b35f4c0dad6e3f29bcb66a441c4155ef46ed471",
+    "head-run/runs/general_ofl_head_s1/metrics.jsonl": "cfbbbed227758e698ad50623b37658d9b6691b6a045ad03b30ac86de78a06e0a",
+    "head-run/runs/general_ofl_head_s1/retained-checkpoints.json": "2772205aac23bb798e90afb647617e6049a59e9dcce8ace186b39fc95cb47398",
+    "head-run/runs/general_ofl_head_s1/source_execution.json": "6a457516bf184c5f6627eed8ea8ec92bfd98c80df036a38dd70fb671bfaa52cf",
+    "head-run/runs/general_ofl_head_s1/source_exposures.jsonl": "d4235b37358792b49bc34bb3c1dadf1918bfeeb1600fe09ad1efb55337936c08",
+    "head-run/selection.json": "4d6a1a2439cbb4736951c346446df6665ba06a0e1a057b033a83bb633e4c741c",
+    "head-run/selection_exports/.gitignore": "cdbcae15105d6b781e620813c79c7e868740d4e9cc53ce6f5fcbbc12387adf4b",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step1000-604c6edac31c90df.vocr": "5e96f6b44d24f601f5156559762d6d3860c6ad81343f0e93944875dbc38583a1",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step1200-f5c1da5e85bc6bf6.vocr": "c0c822030e125fd1763608306b28dfe67b483107866d52f0ec0811817a9a6893",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step1400-ac5c481008645ec6.vocr": "770251591b3e474f14dd6c759f2491feb26803695ecbdb26b515b4edf8e2e30b",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step1600-234c30f47318f024.vocr": "d749705288c7fca077ebb953a19d66a808de01666abf6e3aa2ff2dda0c85c717",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step1800-cca6b4fda3ae2b2e.vocr": "806ab8da527af22fc9c8f09b18bbfbd2a9bbb2cb80274b2a6285d4bdc3b72679",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step200-ed3c9325b138a2dc.vocr": "7c432164b099d7f690e36e2fe3a73503ee5195e3f9bc57ed28276df6e53a77fb",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step2000-2fb155081318d532.vocr": "18b96139b00a97583d1d2e0a6e3201067fe5129ca3e18fdfe3478da377649d6d",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step400-88c0a83f8e48f174.vocr": "eaa77b11c1fa22608a548cb655ac70f694be21bdd19cf8f8714098bf9e7ac739",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step600-29aef6d906f555ca.vocr": "23b8e36832ae43f4ba11cf22b1b560b8e64fcbb67e3d7bf8fe30a0988ffea3e7",
+    "head-run/selection_exports/general_ofl_head_s1-ckpt_step800-c28408dbb8a9af58.vocr": "88c76be82e4592b0f8c8d9da4f71f7fcd62ee81e468fe00d08a99d4c4d60a3d4",
+    "head-run/textbox-prepared.json": "d46ed45200dc614202256f197809941a879fd363faadc6c5f265ca8e28531e06",
+    "head-run/textbox-prepared_runtime/.gitignore": "cdbcae15105d6b781e620813c79c7e868740d4e9cc53ce6f5fcbbc12387adf4b",
+    "head-run/textbox-prepared_runtime/build.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "head-run/textbox-prepared_runtime/finder-build.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "head-run/textbox-prepared_runtime/libvocr_scalar.so": "4a5635ba9a0721373f35e8957c0788b74e1725ea8cd96b8200cc5e427536b11b",
+    "head-run/textbox-prepared_runtime/vocr_lines_guard": "bac8422f892d6028dc278d2eacd5e9ffb87b919211fbd416d5a7ee5054bbd33e",
+    "head-run/training-prepared.json": "ef2c20b73417f1b303e8fd96799ddd0cde1b18385d4c8c42f5f50017a36e4750",
+    "previous-run/final-train-config.json": "f3bd5e53b9a38564106cc56ac6c26c9274937cb424b83c1d7e4bc755d695d6f0",
+    "previous-run/protocol-candidates.json": "c3efe6a036c9742a14696ee0b1625199e252fd56a9cba387a1044296d2f9747d",
+    "previous-run/protocol.json": "4ba6297da1158d05368bf2e72bf047db475a252636a576a377a6638223ead2cd",
+    "previous-run/selection.json": "0ac687b9e74d960beb0aa400576c483b7ac31347050ae1860a84657052d8e547",
+    "previous-run/textbox-prepared.json": "6381ebf582a8a56e9bb6ad599c0795e93ebd4d6202088669d24f3da80f8c60ca",
+    "previous-run/training-prepared.json": "02356cae221e6e83b4496635bd38b8d2fe3a5283a5e422d25f5587d5ac02dfa9"
+  },
+  "input_bindings": {
+    "baseline_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+    "config_sha256": "e9aa7e9b63e0edee1ffa3014f6eea826cbbd34d852c4d78ee1d32231db0d6067",
+    "execution_sha256": "a57c8110f1580a861842bff678754e1f0a72eec589433b9275040aa507a13094",
+    "journal_tail_sha256": "5c030db3cebefd88e8157e6f10807bf51a52884c4b8f2fa67cad47424e121a24",
+    "original_selection_sha256": "0ac687b9e74d960beb0aa400576c483b7ac31347050ae1860a84657052d8e547",
+    "preflight_sha256": "38fe34d1c650e8b5970d2d789cd13fad83f3aa974d68a41ca817b502d1db1b82",
+    "prepared_sha256": "ef2c20b73417f1b303e8fd96799ddd0cde1b18385d4c8c42f5f50017a36e4750",
+    "protocol_sha256": "c9610348bbd973d92d1b6940d6bf7a45dbcae3c5df547e753570fe2c228362fc",
+    "selection_sha256": "4d6a1a2439cbb4736951c346446df6665ba06a0e1a057b033a83bb633e4c741c",
+    "source_journal_sha256": "d4235b37358792b49bc34bb3c1dadf1918bfeeb1600fe09ad1efb55337936c08",
+    "source_policy_sha256": "aba8fe7ffab3767b7b28be32dc4abb595d45b8ea7ede1a55b656000542a461d9",
+    "textbox_prepared_sha256": "d46ed45200dc614202256f197809941a879fd363faadc6c5f265ca8e28531e06"
+  },
+  "kind": "independent-read-only-head-only-development-audit",
+  "new_finder_calls": 0,
+  "new_model_forwards": 0,
+  "new_teacher_calls": 0,
+  "new_textbox_comparison": false,
+  "only_recipe_change": {
+    "train_scope": [
+      "all",
+      "head"
+    ]
+  },
+  "original_comparison_files_checked": 6,
+  "original_private_audit_sha256": "e013f147504c7b944d841968b17c9ee4b29a9b74046705c0844a88c4aaa2929e",
+  "passed": true,
+  "preflight_and_frozen_preparation_revalidated": true,
+  "private_labels_read_only_for_input_isolation_and_denominators": true,
+  "public_projection": "Run path removed; historical artifact path prefixes replaced with head-run/ and previous-run/. All other original audit fields unchanged.",
+  "readiness": {
+    "distinct_vns": 6,
+    "groups": {
+      "psp:v1281": {
+        "body_chars": 1217,
+        "body_hiragana": 642,
+        "body_lines": 81,
+        "frames": 50,
+        "platform": "psp",
+        "scored_lines": 87,
+        "vn": "v1281"
+      },
+      "psp:v2632": {
+        "body_chars": 777,
+        "body_hiragana": 419,
+        "body_lines": 59,
+        "frames": 44,
+        "platform": "psp",
+        "scored_lines": 94,
+        "vn": "v2632"
+      },
+      "psp:v5154": {
+        "body_chars": 1608,
+        "body_hiragana": 904,
+        "body_lines": 95,
+        "frames": 50,
+        "platform": "psp",
+        "scored_lines": 131,
+        "vn": "v5154"
+      },
+      "vita:v18161": {
+        "body_chars": 1264,
+        "body_hiragana": 740,
+        "body_lines": 82,
+        "frames": 43,
+        "platform": "vita",
+        "scored_lines": 82,
+        "vn": "v18161"
+      },
+      "vita:v18163": {
+        "body_chars": 588,
+        "body_hiragana": 330,
+        "body_lines": 30,
+        "frames": 21,
+        "platform": "vita",
+        "scored_lines": 48,
+        "vn": "v18163"
+      },
+      "vita:v18643": {
+        "body_chars": 855,
+        "body_hiragana": 479,
+        "body_lines": 58,
+        "frames": 29,
+        "platform": "vita",
+        "scored_lines": 75,
+        "vn": "v18643"
+      }
+    },
+    "minimums": {
+      "body_chars_per_vn": 500,
+      "body_hiragana_per_vn": 200,
+      "frames_per_vn": 5,
+      "vns_per_console": 3
+    },
+    "ready": true,
+    "reasons": [],
+    "vns_per_console": {
+      "psp": 3,
+      "vita": 3
+    }
+  },
+  "replacement_rejected": true,
+  "run_artifact_files_checked": 44,
+  "same_original_initializer_sources_development_protocol": true,
+  "saved_artifacts_unchanged": true,
+  "schema": 1,
+  "source_inventory": {
+    "broad_ofl": {
+      "game_rows": 0,
+      "rows": 16000,
+      "shards": 32,
+      "unknown": 0,
+      "verified_broad": 16000
+    },
+    "kana_corrective": {
+      "game_rows": 0,
+      "rows": 2000,
+      "shards": 4,
+      "unknown": 0,
+      "verified_broad": 0
+    },
+    "kanji_corrective": {
+      "game_rows": 0,
+      "rows": 2000,
+      "shards": 4,
+      "unknown": 0,
+      "verified_broad": 0
+    }
+  }
+}

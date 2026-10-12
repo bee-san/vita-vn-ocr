@@ -1,0 +1,32 @@
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+root=Path('/tmp/vita-vn-ocr-general-vn-textbox-guard')
+old=root/'build/prospective-general-vn-20261011'
+out=root/'build/prospective-general-vn-head-20261012'
+out.mkdir()
+python=Path('/home/bee/Documents/src/vita-vn-ocr/.venv-ci/bin/python')
+def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def write(p,d):
+ with p.open('x') as f: json.dump(d,f,indent=2,sort_keys=True); f.write('\n')
+a=json.loads((old/'protocol.json').read_text())
+b=json.loads((old/'textbox-prepared.json').read_text())
+c=json.loads((old/'final-train-config.json').read_text())
+commands=[]
+cmd=[str(python),'train/general_vn_select.py','prepare','--protocol',a['protocol_path'],'--baseline',a['baseline'],'--out',str(out/'protocol.json'),'--selection-out',str(out/'selection.json')]
+for m in a['manifests']: cmd+=['--dev-manifest',m]
+for n,p in a['synthetic'].items(): cmd+=['--synthetic-dev',n+'='+p]
+commands.append(cmd);subprocess.run(cmd,cwd=root,check=True)
+cmd=[str(python),'train/general_vn_textbox_guard.py','prepare','--line-lock',str(out/'protocol.json'),'--roi-manifest',b['manifest'],'--out',str(out/'textbox-prepared.json'),'--result-out',str(out/'textbox-result.json')]
+commands.append(cmd);subprocess.run(cmd,cwd=root,check=True)
+c['recipe']['train_scope']='head'
+c['run']={'name':'general_ofl_head_s1','out':str(out/'runs')}
+for k,name in [('development','protocol.json'),('textbox_development','textbox-prepared.json')]: c[k]={'file':str(out/name),'sha256':sha(out/name)}
+write(out/'config.json',c)
+cmd=[str(python),'train/generic_fl10_train.py','prepare','--config',str(out/'config.json'),'--out',str(out/'training-prepared.json')]
+commands.append(cmd);subprocess.run(cmd,cwd=root,check=True)
+write(out/'preflight.json',{'schema':1,'kind':'head-only-development-followup','training_started':False,'purpose':'Follow up all-parameter adaptation regressions by freezing visual features and adapting only the classifier.','hypothesis':'Head-only adaptation may improve recognition while retaining development performance across both consoles.','changed_recipe_fields':{'train_scope':{'previous':'all','current':'head'}},'previous_config_sha256':sha(old/'final-train-config.json'),'config_sha256':sha(out/'config.json'),'prepared_sha256':sha(out/'training-prepared.json'),'checkpoints':list(range(200,2001,200)),'selection_policy':'unchanged per-title, per-script line guard followed by one selected whole-textbox comparison; reject any failing candidate','test_or_google_used':False,'new_c4_used':False,'commands':commands})
+print('PREPARED',out,sha(out/'preflight.json'))

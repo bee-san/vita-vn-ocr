@@ -1,0 +1,365 @@
+"""Private independent read-only audit; no model forwards or release mutations."""
+import sys
+sys.dont_write_bytecode = True
+import copy
+import hashlib
+import json
+import math
+from collections import Counter
+from fractions import Fraction
+from pathlib import Path
+
+import numpy as np
+import torch
+
+ROOT = Path('/tmp/vita-vn-ocr-general-vn-textbox-guard')
+RUN = ROOT / 'build/prospective-general-vn-head-20261012'
+OLD = ROOT / 'build/prospective-general-vn-20261011'
+OUT = Path('/tmp/vita-vn-ocr-head-independent-audit-20261012.json')
+for part in ('train', 'eval', 'synth'):
+    sys.path.insert(0, str(ROOT / part))
+import generic_fl10_train as driver
+import general_vn_select as selector
+import general_vn_textbox_guard as guard
+import group_metrics as gm
+import export
+import source_policy as sp
+from metrics import norm, is_hiragana
+
+
+def sha(path):
+    h = hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for block in iter(lambda: stream.read(1 << 20), b''):
+            h.update(block)
+    return h.hexdigest()
+
+
+def doc(path):
+    return sp.parse_json(Path(path).read_bytes())
+
+
+def require(value, detail):
+    if not value:
+        raise AssertionError(detail)
+
+
+def denied(*args, **kwargs):
+    raise AssertionError('audit forbids inference, scoring, runtime builds and historical writes')
+
+
+# Safeguards are installed before verification; scalar compiler version probes are allowed.
+torch.nn.Module._call_impl = denied
+selector.NativeVocr.__init__ = denied
+selector.CachedNativeVocr.__init__ = denied
+selector.score_blob = denied
+selector.select = denied
+selector.build_scalar_runtime = denied
+selector.export_checkpoint = denied
+guard.build_finder = denied
+driver.worker = denied
+driver.atomic_freeze = denied
+sp.ExposureJournal.__init__ = denied
+sp.RunWriter.__init__ = denied
+
+
+def readonly_hook(event, args):
+    if event == 'open':
+        filename, mode, flags = args
+        if isinstance(filename, (str, bytes)):
+            path = Path(filename).resolve()
+            require(not any(word in str(path).lower() for word in ('clannad', 'iwaihime', 'prospective-general-vn-fresh')),
+                    'protected evaluation/game path access')
+            writing = (isinstance(mode, str) and any(c in mode for c in 'wax+')) or flags & 0x643
+            if writing:
+                require(path in (OUT, Path('/dev/null')), 'audit attempted write outside new receipt')
+    elif event.startswith('socket.'):
+        denied()
+    elif event == 'subprocess.Popen':
+        require(list(args[1]) in (['/usr/bin/gcc', '--version'], ['uname', '-p']),
+                'unexpected subprocess during read-only audit')
+
+
+require(not OUT.exists(), 'audit receipt already exists; no overwrite')
+sys.addaudithook(readonly_hook)
+original_paths = sorted(p for p in RUN.rglob('*') if p.is_file())
+old_paths = [OLD / n for n in ('final-train-config.json', 'training-prepared.json', 'protocol.json',
+                             'textbox-prepared.json', 'selection.json', 'protocol-candidates.json')]
+before = {str(p): sha(p) for p in original_paths + old_paths}
+config, preflight, prepared = (doc(RUN / n) for n in ('config.json', 'preflight.json', 'training-prepared.json'))
+old_config = doc(OLD / 'final-train-config.json')
+require(preflight['config_sha256'] == sha(RUN / 'config.json'), 'preflight config pin')
+require(preflight['prepared_sha256'] == sha(RUN / 'training-prepared.json'), 'preflight preparation pin')
+require(preflight['previous_config_sha256'] == sha(OLD / 'final-train-config.json'), 'preflight original config pin')
+require(preflight['changed_recipe_fields'] == {'train_scope': {'current': 'head', 'previous': 'all'}}, 'declared recipe difference')
+changes = {k: (old_config['recipe'][k], v) for k, v in config['recipe'].items() if old_config['recipe'][k] != v}
+require(changes == {'train_scope': ('all', 'head')}, 'actual recipe difference')
+for key in ('init', 'vocab', 'kanji_policy', 'source_policy', 'sources'):
+    require(config[key] == old_config[key], 'training source/initializer changed: ' + key)
+require(preflight['test_or_google_used'] is False and preflight['new_c4_used'] is False,
+        'preflight protected selection flags')
+require(driver.verify_prepared(RUN / 'training-prepared.json') == (prepared, sha(RUN / 'training-prepared.json')),
+        'original read-only frozen driver validation')
+lock, rows = selector.verify_lock(RUN / 'protocol.json')
+textbox, sources = guard.verify_prepared(RUN / 'textbox-prepared.json', line_lock=RUN / 'protocol.json')
+old_lock = doc(OLD / 'protocol.json')
+require(lock['protocol'] == old_lock['protocol'], 'selection protocol changed')
+for key in ('baseline', 'baseline_sha256', 'manifests', 'synthetic', 'inputs', 'readiness',
+            'code_sha256', 'dependency_sha256', 'environment'):
+    require(lock[key] == old_lock[key], 'selection inputs/environment changed: ' + key)
+require(textbox['manifest'] == doc(OLD / 'textbox-prepared.json')['manifest'], 'textbox source changed')
+require(prepared['checkpoint_steps'] == preflight['checkpoints'] == list(range(200, 2001, 200)), 'bounded retained steps')
+
+directory = Path(prepared['run_directory'])
+args, execution, inventory = (doc(directory / n) for n in ('args.json', 'source_execution.json', 'retained-checkpoints.json'))
+require(args['train_scope'] == 'head' and args['freeze_bn_stats'] == 'True' and args['keep_evals'] == 'True', 'scope/BN/retention flags')
+for k, v in config['recipe'].items():
+    require(args[k] == str(v), 'actual recipe ' + k)
+require(execution['prospective_driver'] == driver.context(RUN / 'training-prepared.json', prepared,
+                                                         sha(RUN / 'training-prepared.json')), 'driver execution binding')
+require(execution['initial_model']['sha256'] == prepared['init_sha256'], 'initializer binding')
+for k, v in prepared['execution'].items():
+    if k != 'math_backend':
+        require(execution[k] == v, 'executed identity differs from prepared: ' + k)
+require(inventory['prepared_sha256'] == sha(RUN / 'training-prepared.json'), 'checkpoint inventory preparation pin')
+require([r['step'] for r in inventory['checkpoints']] == prepared['checkpoint_steps'], 'retained inventory schedule')
+require(set(directory.glob('ckpt_step*.pt')) == {Path(r['file']) for r in inventory['checkpoints']}, 'extra/missing checkpoints')
+
+policy = sp.SourcePolicy(config['source_policy']['file'])
+mapping = {r['name']: sorted(p for p, meta in policy.shards.items() if meta['source'] == r['name']) for r in config['sources']}
+policy.bind(mapping)  # metadata and byte validation; no image arrays or forwards
+require({r['vn'] for r in rows} <= policy.forbidden_vns and 'v4' in policy.forbidden_vns, 'development/CLANNAD training isolation')
+source_stats = {}
+exposure_lookup = {}
+for path, exposures in policy.provenance.items():
+    source = policy.shards[path]['source']
+    out = source_stats.setdefault(source, {'shards': 0, 'rows': 0, 'unknown': 0, 'game_rows': 0, 'verified_broad': 0})
+    out['shards'] += 1
+    out['rows'] += len(exposures)
+    out['unknown'] += sum(e.unknown for e in exposures)
+    out['game_rows'] += sum(e.game_assets for e in exposures)
+    out['verified_broad'] += sum(e.fallback_verified for e in exposures)
+    for e in exposures:
+        require((source, e.sample_id) not in exposure_lookup, 'duplicate training exposure identity')
+        exposure_lookup[(source, e.sample_id)] = e
+require(all(g['unknown'] == g['game_rows'] == 0 for g in source_stats.values()), 'source role/provenance issue')
+
+tail = '0' * 64
+ledger = sp.ExposureLedger().state_dict()
+snapshots = {}
+record_counts = Counter()
+execution_sha = sp.json_digest(execution)
+with (directory / 'source_exposures.jsonl').open() as stream:
+    for index, raw in enumerate(stream):
+        row = sp.parse_json(raw)
+        observed = row.pop('sha256')
+        require(row['schema'] == 1 and row['previous_sha256'] == tail and observed == sp.json_digest(row), 'exposure hashchain')
+        require(row['execution_sha256'] == execution_sha and row['policy_sha256'] == policy.sha256, 'exposure source/execution binding')
+        expected_event = ('intent', 'forward', 'optimizer')[index % 3]
+        require(row['event'] == expected_event, 'exposure event order')
+        now = row['ledger']
+        sp.ExposureLedger.from_state(now)
+        require(all(isinstance(v, dict) or type(v) is int and v >= 0 for v in now.values()), 'invalid ledger values')
+        if expected_event == 'intent':
+            require(now == ledger, 'intent changed counters')
+        elif expected_event == 'forward':
+            require(now['forwarded'] == ledger['forwarded'] + 32 and now['optimizer'] == ledger['optimizer'], 'forward batch counters')
+            require(now['optimizer_by_source'] == ledger['optimizer_by_source'], 'forward modified optimizer counters')
+            for k in ('game_assets', 'kanji'):
+                require(now[k] >= ledger[k], 'exposure scalar counter decreased')
+            for k in ('by_source', 'by_game', 'by_pattern'):
+                require(all(now[k].get(g, 0) >= n for g, n in ledger[k].items()), 'group count decreased')
+            require(now['game_assets'] == 0 and now['by_game'] == {}, 'game training exposure')
+        else:
+            require(now['optimizer'] == ledger['optimizer'] + 32 == now['forwarded'], 'optimizer row counts')
+            require(now['optimizer_by_source'] == now['by_source'], 'optimized source counts')
+            require(all(now[k] == ledger[k] for k in now if k not in ('optimizer', 'optimizer_by_source')), 'optimizer altered exposure counters')
+            step = (index + 1) // 3
+            if step % 200 == 0:
+                snapshots[step] = {'tail': observed, 'ledger': copy.deepcopy(now)}
+        ledger, tail = now, observed
+        record_counts[expected_event] += 1
+require(dict(record_counts) == {'intent': 2000, 'forward': 2000, 'optimizer': 2000}, 'training steps/journal count')
+require(ledger['forwarded'] == ledger['optimizer'] == 64000, 'training total rows')
+
+initial = torch.load(config['init']['file'], map_location='cpu', weights_only=False)
+base_state = initial['model']
+bn_names = [k for k in base_state if k.endswith(('running_mean', 'running_var', 'num_batches_tracked'))]
+frozen_names = [k for k in base_state if not k.startswith('head.')]
+
+
+def tensor_bytes(t):
+    return t.detach().cpu().contiguous().reshape(-1).view(torch.uint8).numpy().tobytes()
+
+
+selection = doc(RUN / 'selection.json')
+old_selection = doc(OLD / 'selection.json')
+require(selection['baseline'] == old_selection['baseline'], 'cached baseline differs from original all-run')
+require(selection['protocol_lock_sha256'] == sha(RUN / 'protocol.json'), 'selection protocol binding')
+require(selection['protocol'] == lock['protocol'] and selection['environment'] == lock['environment']
+        and selection['runtime'] == lock['runtime'] and selection['readiness'] == lock['readiness'], 'selection execution/protocol binding')
+candidate_inventory = doc(RUN / 'protocol-candidates.json')
+require(selection['candidate_inventory_sha256'] == sha(RUN / 'protocol-candidates.json'), 'selection candidate inventory pin')
+require(candidate_inventory['checkpoints'] == {r['file']: r['sha256'] for r in inventory['checkpoints']}, 'inventory alignment')
+require(candidate_inventory['protocol_lock_sha256'] == sha(RUN / 'protocol.json')
+        and candidate_inventory['selection_out'] == str(RUN / 'selection.json'), 'inventory protocol/output binding')
+require(len(selection['candidates']) == 10 and all(c['status'] == 'scored' for c in selection['candidates']), 'candidate completed cohort')
+candidates = {c['step']: c for c in selection['candidates']}
+reference = export.read_blob(lock['baseline'])
+require(reference['bytes'] == 657664 and reference['n_classes'] == 3501
+        and export.plan_arena(reference, max_width=1024, mode=export.MODE_W8I) == 124832, 'baseline deployment shape/memory')
+checkpoint_rows = []
+for row in inventory['checkpoints']:
+    file = Path(row['file'])
+    require(sha(file) == row['sha256'], 'checkpoint hash changed')
+    ck = torch.load(file, map_location='cpu', weights_only=False)
+    require(ck['step'] == row['step'] and ck['args'] == args and ck['freeze_bn_stats'] is True, 'checkpoint recipe/step/BN binding')
+    require(ck['source_policy_execution'] == execution and ck['source_policy_journal_sha256'] == snapshots[ck['step']]['tail'], 'checkpoint execution/journal binding')
+    state = ck['model']
+    require(set(state) == set(base_state), 'checkpoint tensor namespace')
+    for name in frozen_names:
+        require(state[name].dtype == base_state[name].dtype and state[name].shape == base_state[name].shape
+                and tensor_bytes(state[name]) == tensor_bytes(base_state[name]), 'frozen nonhead tensor changed: ' + name)
+    changed_heads = [name for name in ('head.weight', 'head.bias') if tensor_bytes(state[name]) != tensor_bytes(base_state[name])]
+    require(len(changed_heads) == 2, 'head-only experiment did not update both classifier tensors')
+    require(all(torch.isfinite(t).all().item() for t in state.values()), 'nonfinite checkpoint tensor')
+    require(len(ck['opt']['state']) == 2, 'optimizer contains non-head state')
+    saved = ck['source_policy']
+    require(saved['policy_sha256'] == policy.sha256 and saved['ledger'] == snapshots[ck['step']]['ledger'], 'checkpoint exposure ledger binding')
+    require(saved['settings']['sources'] == [r['name'] for r in config['sources']]
+            and saved['settings']['weights'] == [r['weight'] for r in config['sources']]
+            and saved['settings']['batch'] == 32, 'checkpoint source sampler settings')
+    buffered = Counter()
+    for batch in saved['ready']:
+        require(len(batch) == 32, 'prefetch batch width')
+        for source_index, sample_id in batch:
+            source = saved['settings']['sources'][source_index]
+            require((source, sample_id) in exposure_lookup, 'prefetched row identity absent from frozen policy')
+            buffered[source] += 1
+    require(sum(saved['counts']) == saved['ledger']['forwarded'] + sum(buffered.values()), 'prefetch/forward balance')
+    rejected_draws = 0
+    for source, draws in zip(saved['settings']['sources'], saved['counts'], strict=True):
+        consumed_or_buffered = saved['ledger']['by_source'].get(source, 0) + buffered[source]
+        if source == policy.fallback_source:
+            require(draws + saved['fallback_draws'] == consumed_or_buffered, 'fallback source draw/forward balance')
+        else:
+            require(draws >= consumed_or_buffered, 'nonfallback proposed draws below consumed rows')
+            rejected_draws += draws - consumed_or_buffered
+    require(rejected_draws == saved['fallback_draws'], 'replaced proposed source draw accounting')
+    require(saved['fallback_draws'] == sum(saved['rejected'].values()), 'fallback/rejection balance')
+    candidate = candidates[row['step']]
+    require(candidate['checkpoint'] == str(file) and candidate['checkpoint_sha256'] == row['sha256'], 'selection checkpoint binding')
+    require(sha(candidate['blob']) == candidate['blob_sha256'], 'candidate export hash')
+    # Reconstruct export bytes in memory from tensors; this never calls a neural forward.
+    model, vocab, height = export.load_checkpoint(file)
+    raw_blob, _ = export.build_blob(export.model_ops(model, height), vocab, height, int8=True,
+                                    max_width=1024, source_sha=bytes.fromhex(row['sha256']))
+    require(hashlib.sha256(raw_blob).hexdigest() == candidate['blob_sha256']
+            and raw_blob == Path(candidate['blob']).read_bytes(), 'export not byte-identical to in-memory checkpoint export')
+    selector.validate_blob(export.read_blob(raw_blob), reference)
+    checkpoint_rows.append({'step': ck['step'], 'checkpoint_sha256': row['sha256'], 'export_sha256': candidate['blob_sha256'],
+                            'frozen_nonhead_tensor_entries': len(frozen_names), 'unchanged_bn_buffers': len(bn_names),
+                            'changed_head_tensors': len(changed_heads), 'optimizer_state_entries': len(ck['opt']['state']),
+                            'forwarded_rows': saved['ledger']['forwarded'], 'buffered_rows': sum(buffered.values()),
+                            'fallback_draws': saved['fallback_draws']})
+
+# Stored errors are inputs to this independent selector reproduction; raw predictions were not retained.
+baseline_scores = selection['baseline']['scores']
+reference_groups = gm.group_score([{**row, 'pred': row['text']} for row in rows])
+for item in [selection['baseline'], *selection['candidates']]:
+    require(item['scores']['groups'].keys() == reference_groups.keys(), 'score VN/platform cohort')
+    for key, expected in reference_groups.items():
+        got = item['scores']['groups'][key]
+        require(all(got[n] == expected[n] for n in ('platform', 'vn', 'provenance', 'reference_sha256')), 'score reference provenance')
+        for part in ('all', 'body'):
+            require(got[part]['lines'] == expected[part]['lines'], 'scored line denominators')
+            for script in ('full', 'hira'):
+                require(got[part][script]['chars'] == expected[part][script]['chars'], 'score reference char denominators')
+                require(type(got[part][script]['errors']) is int and got[part][script]['errors'] >= 0, 'saved error count invalid')
+    for key, path in lock['synthetic'].items():
+        with np.load(path, allow_pickle=False) as z:
+            labels = json.loads(str(z['labels']))
+        expected = {'full': sum(len(norm(t)) for t in labels),
+                    'hira': sum(sum(is_hiragana(c) for c in norm(t)) for t in labels)}
+        require(all(item['scores']['synthetic'][key][script]['chars'] == chars for script, chars in expected.items()),
+                'synthetic denominator mismatch')
+
+
+def independent_rate(scores, script):
+    platform_rates = []
+    for platform in ('psp', 'vita'):
+        rates = [Fraction(g['all'][script]['errors'], g['all'][script]['chars'])
+                 for g in scores['groups'].values() if g['platform'] == platform]
+        platform_rates.append(sum(rates, Fraction()) / len(rates))
+    return sum(platform_rates, Fraction()) / 2
+
+
+score_rows = []
+for c in sorted(selection['candidates'], key=lambda c: c['step']):
+    reasons = selector.qualify(baseline_scores, c['scores'])
+    improved_vns = sorted(g['vn'] for k, g in baseline_scores['groups'].items()
+                          if c['scores']['groups'][k]['all']['hira']['errors'] < g['all']['hira']['errors'])
+    qualified = not reasons
+    gains = improved_vns if qualified else []
+    eligible = qualified and len(gains) >= 2 and independent_rate(c['scores'], 'hira') < independent_rate(baseline_scores, 'hira')
+    require(c['qualified'] == qualified and c['eligible'] == eligible and c['reasons'] == reasons
+            and c['gain_vns'] == gains, 'recorded selection decision mismatch')
+    score_rows.append({'step': c['step'], 'qualified': qualified, 'eligible': eligible, 'gain_vns': gains,
+                       'regression_reasons': reasons,
+                       'full_errors': sum(g['all']['full']['errors'] for g in c['scores']['groups'].values()),
+                       'hiragana_errors': sum(g['all']['hira']['errors'] for g in c['scores']['groups'].values()),
+                       'console_balanced_hiragana': str(independent_rate(c['scores'], 'hira')),
+                       'console_balanced_full': str(independent_rate(c['scores'], 'full'))})
+require(not any(r['eligible'] for r in score_rows), 'unexpected eligible replacement')
+chosen, improved = selector.choose(copy.deepcopy(selection['baseline']), copy.deepcopy(selection['candidates']))
+require(improved is False and chosen == selection['baseline'] and selection['strict_general_dev_improvement'] is False,
+        'selector baseline retention decision')
+require(selection['chosen'] == {k: selection['baseline'][k] for k in ('blob', 'blob_sha256')}, 'chosen baseline identity')
+require(selection['test_or_google_evaluated'] is False and selection['runtime_promotion'] is False,
+        'protected evaluation/promotion flags')
+require(not any((RUN / n).exists() for n in ('textbox-result.json', 'textbox-prepared-candidate.json')), 'unexpected selected textbox execution')
+metrics = [doc_line for raw in (directory / 'metrics.jsonl').read_text().splitlines() if (doc_line := sp.parse_json(raw))]
+require([m['step'] for m in metrics] == prepared['checkpoint_steps'], 'training metric schedule')
+for m in metrics:
+    require(m['source_policy']['consumed'] == snapshots[m['step']]['ledger'], 'metrics consumed counts')
+after = {p: sha(p) for p in before}
+require(before == after and sorted(p for p in RUN.rglob('*') if p.is_file()) == original_paths, 'historical run artifacts changed during audit')
+receipt = {
+    'schema': 1, 'kind': 'independent-read-only-head-only-development-audit', 'passed': True,
+    'run': str(RUN), 'audit_script_sha256': sha(Path(__file__)), 'saved_artifacts_unchanged': True,
+    'run_artifact_files_checked': len(original_paths), 'original_comparison_files_checked': len(old_paths),
+    'input_bindings': {'config_sha256': sha(RUN / 'config.json'), 'preflight_sha256': sha(RUN / 'preflight.json'),
+                      'prepared_sha256': sha(RUN / 'training-prepared.json'), 'protocol_sha256': sha(RUN / 'protocol.json'),
+                      'textbox_prepared_sha256': sha(RUN / 'textbox-prepared.json'), 'selection_sha256': sha(RUN / 'selection.json'),
+                      'original_selection_sha256': sha(OLD / 'selection.json'), 'baseline_sha256': lock['baseline_sha256'],
+                      'source_policy_sha256': policy.sha256, 'source_journal_sha256': sha(directory / 'source_exposures.jsonl'),
+                      'journal_tail_sha256': tail, 'execution_sha256': execution_sha},
+    'preflight_and_frozen_preparation_revalidated': True, 'only_recipe_change': changes,
+    'same_original_initializer_sources_development_protocol': True,
+    'baseline_record_equal_original_all_run': True, 'readiness': lock['readiness'],
+    'source_inventory': source_stats, 'exposure_events': dict(record_counts),
+    'exposures': {'forwarded': ledger['forwarded'], 'optimizer': ledger['optimizer'], 'by_source': ledger['by_source'],
+                  'game_assets': ledger['game_assets'], 'game_font_text_vns': len(ledger['by_game']),
+                  'kanji_corrective': ledger['kanji'], 'distinct_correction_patterns': len(ledger['by_pattern']),
+                  'maximum_pattern_rows': max(ledger['by_pattern'].values()),
+                  'all_recorded_boundaries_within_caps': True,
+                  'scope': '6000 aggregate journal boundaries; per-row sequential cap enforcement is bound by frozen trainer source, not individually logged rows'},
+    'checkpoints': checkpoint_rows, 'checkpoint_and_export_count': 10,
+    'checkpoint_exports_reconstructed_byte_identically_in_memory': True,
+    'baseline_counts': {script: {'errors': sum(g['all'][script]['errors'] for g in baseline_scores['groups'].values()),
+                                'chars': sum(g['all'][script]['chars'] for g in baseline_scores['groups'].values()),
+                                'console_balanced_rate': str(independent_rate(baseline_scores, script))} for script in ('full', 'hira')},
+    'candidate_selection': score_rows, 'chosen_baseline': True, 'replacement_rejected': True,
+    'new_model_forwards': 0, 'new_finder_calls': 0, 'new_teacher_calls': 0,
+    'fresh_or_clannad_evaluation_access': False, 'new_textbox_comparison': False,
+    'private_labels_read_only_for_input_isolation_and_denominators': True,
+    'error_count_evidence_limit': 'Saved aggregate error counters were validated and their selector decision recomputed; raw per-line predictions are unavailable, so edit distances were not independently recomputed.',
+    'historical_artifact_sha256': before,
+}
+with OUT.open('x', encoding='utf-8') as stream:
+    json.dump(receipt, stream, indent=2, sort_keys=True)
+    stream.write('\n')
+print(json.dumps({'passed': True, 'receipt': str(OUT), 'receipt_sha256': sha(OUT),
+                  'forwarded_rows': ledger['forwarded'], 'checkpoints': len(checkpoint_rows),
+                  'qualified': sum(r['qualified'] for r in score_rows), 'eligible': sum(r['eligible'] for r in score_rows),
+                  'model_forwards': 0}, indent=2))

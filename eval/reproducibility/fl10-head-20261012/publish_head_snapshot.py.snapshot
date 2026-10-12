@@ -1,0 +1,94 @@
+"""Freeze public counters and a weight-only archive from the rejected head-only run."""
+import hashlib
+import json
+import zipfile
+from pathlib import Path
+
+RUN = Path('/tmp/vita-vn-ocr-general-vn-textbox-guard/build/prospective-general-vn-head-20261012')
+OUT = Path('/tmp/vita-vn-ocr-head-release-20261012-r1')
+TAG = 'v0.2.4-fl10-head.1'
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+def write(path, data):
+    with path.open('x', encoding='utf-8') as stream:
+        json.dump(data, stream, indent=2, sort_keys=True)
+        stream.write('\n')
+
+def scores(raw):
+    groups = {name: {key: row[key] for key in ('platform', 'vn', 'all', 'body')}
+              for name, row in raw['groups'].items()}
+    totals = {part: {script: {field: sum(row[part][script][field] for row in groups.values())
+                            for field in ('errors', 'chars')} for script in ('full', 'hira')}
+              for part in ('all', 'body')}
+    synthetic_total = {script: {field: sum(row[script][field] for row in raw['synthetic'].values())
+                               for field in ('errors', 'chars')} for script in ('full', 'hira')}
+    return {'groups': groups, 'total': totals, 'synthetic': raw['synthetic'], 'synthetic_total': synthetic_total}
+
+OUT.mkdir()
+selection = json.loads((RUN / 'selection.json').read_text())
+config = json.loads((RUN / 'config.json').read_text())
+prepared = json.loads((RUN / 'training-prepared.json').read_text())
+retained = json.loads((RUN / 'runs/general_ofl_head_s1/retained-checkpoints.json').read_text())
+assert selection['strict_general_dev_improvement'] is False
+assert selection['chosen']['blob_sha256'] == selection['baseline']['blob_sha256']
+assert selection['test_or_google_evaluated'] is False and selection['runtime_promotion'] is False
+cohort = sorted(selection['candidates'], key=lambda row: row['step'])
+assert [c['step'] for c in cohort] == list(range(200, 2001, 200))
+assert len(retained['checkpoints']) == 10
+inventory = {row['step']: row for row in retained['checkpoints']}
+files = []
+for candidate in cohort:
+    step = candidate['step']
+    assert inventory[step]['sha256'] == candidate['checkpoint_sha256']
+    assert inventory[step]['file'] == candidate['checkpoint']
+    for key, suffix in (('checkpoint', '.pt'), ('blob', '.vocr')):
+        path = Path(candidate[key])
+        assert sha(path) == candidate[key + '_sha256']
+        files.append((path, f'step{step:04d}{suffix}'))
+archive = OUT / 'generic-fl10-head-checkpoints.zip'
+with zipfile.ZipFile(archive, 'x', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as output:
+    for path, name in files:
+        info = zipfile.ZipInfo(name, date_time=(2026, 10, 12, 0, 0, 0))
+        info.compress_type = zipfile.ZIP_DEFLATED
+        info.external_attr = 0o100644 << 16
+        output.writestr(info, path.read_bytes())
+members = []
+with zipfile.ZipFile(archive) as source:
+    assert source.testzip() is None
+    assert source.namelist() == [name for _, name in files]
+    for path, name in files:
+        data = source.read(name)
+        assert data == path.read_bytes()
+        members.append({'file': name, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
+public = {
+    'schema': 1, 'kind': 'rejected-head-only-fl10-development-experiment', 'date': '2026-10-12',
+    'source_commit': 'd80ca3fba113cdd1b9fccefecc9fb6edf8dd8a80',
+    'recipe': config['recipe'], 'sources': config['sources'], 'architecture': prepared['architecture'],
+    'source_policy_sha256': prepared['source_policy_sha256'],
+    'init_sha256': prepared['init_sha256'], 'vocab_sha256': prepared['vocab_sha256'],
+    'kanji_policy_sha256': prepared['kanji_policy_sha256'], 'code_sha256': prepared['code_sha256'],
+    'inputs_sha256': {name: sha(RUN / name) for name in ('preflight.json', 'config.json',
+        'training-prepared.json', 'protocol.json', 'textbox-prepared.json', 'protocol-candidates.json',
+        'selection.json', 'runs/general_ofl_head_s1/retained-checkpoints.json')},
+    'protocol': selection['protocol'], 'readiness': selection['readiness'],
+    'environment': {**selection['environment'], 'python': {k:v for k,v in selection['environment']['python'].items() if k != 'executable'}},
+    'compiler': {k:v for k,v in selection['runtime']['compiler'].items() if k != 'executable'},
+    'scalar_library_sha256': selection['runtime']['library_sha256'],
+    'baseline': {'blob_sha256': selection['baseline']['blob_sha256'], 'scores': scores(selection['baseline']['scores'])},
+    'candidates': [{**{key:c[key] for key in ('step', 'checkpoint_sha256', 'blob_sha256', 'eligible',
+                        'gain_vns', 'qualified', 'reasons', 'status')}, 'scores': scores(c['scores'])} for c in cohort],
+    'chosen_blob_sha256': selection['chosen']['blob_sha256'],
+    'strict_general_dev_improvement': False, 'runtime_promotion': False, 'test_or_google_evaluated': False,
+    'textbox_comparison_performed': False, 'release_defaults_changed': False,
+    'scope': 'Six-title real development reference evaluation; not protected test or fresh-title accuracy. No candidate was eligible for replacement.',
+    'archive': {'file': archive.name, 'bytes': archive.stat().st_size, 'sha256': sha(archive),
+                'url': f'https://github.com/bee-san/vita-vn-ocr/releases/download/{TAG}/{archive.name}',
+                'members': members, 'local_crc_and_member_hashes_verified': True},
+}
+write(OUT / 'head-only-results.json', public)
+with (OUT / 'SHA256SUMS').open('x') as stream:
+    for path in (archive, OUT / 'head-only-results.json'): stream.write(f'{sha(path)}  {path.name}\n')
+print(json.dumps({'archive_bytes': archive.stat().st_size, 'archive_sha256': sha(archive),
+                  'results_sha256': sha(OUT / 'head-only-results.json'), 'members_verified':len(members)}))

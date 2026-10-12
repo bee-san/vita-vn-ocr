@@ -13,6 +13,8 @@ protected-test results in `docs/synth3.md` (paths are the shared box's; `$S3` =
 | `meta_check.py.snapshot` | the metadata-fault table (100,000 crops of version 1 and version 2) |
 | `fresh_names.py.snapshot` | the first count of fresh-native names in the name pool (single names only; see docs/synth3.md, Limits) |
 | `doc_tables.py` | the doc's study-1, secondary and test tables, rounded once from the stored per-line errors |
+| `ink_geometry.py` | the teacher_train ink-geometry table (recomputed; first computed inline) |
+| `clannad_names.py.snapshot` | the CLANNAD-family name counts in the name pool and the v2 labels |
 
 ```sh
 eval/reproducibility/synth3-20261012/doc_tables.py --scores $S3/ablation/scores --test $S3/ablation/test

@@ -88,7 +88,8 @@ Validation, for model selection only:
   and `rvn`. CER is eval's: `eval/metrics.norm` on both sides, Levenshtein over the total
   ground-truth characters.
 - **Hygiene.**
-  - `teacher_val` has 181 VNs. It shares no VN, release or screenshot with any training pool.
+  - `teacher_val` has 181 VNs. It shares no VN, release or screenshot with any real training pool. synth2's
+    scene list (a synthetic source) holds 22 of its VNs and 110 of its screenshots (docs/synth3.md, Study 1).
   - No training or validation file holds a VN of eval's test sets or reserved games
     (`eval/manifests/test_games.json`), a test capture session, or a test screenshot, by id or
     by sha256 (re-checked in review).

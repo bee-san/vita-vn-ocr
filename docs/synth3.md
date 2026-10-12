@@ -20,10 +20,11 @@ train2's mixture, or to be mixed with it. The generator is `synth/synth3.py`.
   - On the protected test sets (scored once, after the decision was committed) no comparison is
     resolved: pooled C − A −0.16 (CI −0.62 to +0.26), B − A −0.12, C − B −0.04 (console
     polarity).
-- **Secondaries (exploratory, one seed each).** After a 5,000-step real fine-tune the mix still
-  leads (ft C − ft A −0.32, CI −0.57 to −0.08), with half the pre-fine-tune gap. At H15 width
-  synth3 alone beats synth2 (−0.52, CI −0.80 to −0.25), also on the native lines (−0.38, CI
-  −0.70 to −0.10).
+- **Secondaries (exploratory, one run per arm).** After a 5,000-step real fine-tune the mix still
+  leads (ft C − ft A −0.32, CI −0.57 to −0.08), with less than half the pre-fine-tune gap. At
+  H15 width synth3 alone is lower than synth2 in one run per arm (−0.52, CI −0.80 to −0.25; the
+  interval covers line sampling only; not replicated), also on the native lines (−0.38, CI −0.70
+  to −0.10); the test sets do not resolve it.
 - **Study 2 (full release recipe) is running** under its own frozen protocol
   (`eval/synth3_study2_protocol.json`): nvsynth's every-line set, train2's pretrain lengths and
   the real fine-tune (on pools without CLANNAD and its family), A against C at FL10 (3 seeds) and
@@ -290,9 +291,11 @@ What this says:
   console size (C − A −0.70, CI −1.02 to −0.39). On the native Vita and PSP captures no arm
   separates from another: C − A −0.09 (CI −0.53 to +0.31) on their 587 lines together. The
   native development cohort (devnative) is what can test the gain on console text.
-- Within the scaled shots and the Vita target the mix helps across polarities, ink heights up to
-  27 px, short and long lines, names and dakuten/small kana. One explanation, not tested: the
-  diversity of two generators with different fonts, layouts and text.
+- Across teacher_val's strata (64% of its lines are scaled shots) the mix is lower in both
+  polarities, at every ink height up to 27 px, on 1-4 and 13+ character lines, names and
+  dakuten/small kana; 5-12 characters is not resolved (−0.33, CI −0.83 to +0.16). One
+  explanation, not tested: the diversity of two generators with different fonts, layouts and
+  text.
 - synth3 alone shows no measured difference from synth2 overall. Of its strata, only name-like
   excludes 0, and only just (−1.09, CI −2.32 to −0.01); 1-4 characters is −1.22 (CI −2.79 to
   +0.19); long lines (+0.21) and Latin (+0.97) are not resolved either way.
@@ -336,7 +339,7 @@ published 2.30% / 5.18% in native polarity. These numbers cannot change the deci
 No difference is resolved: every interval includes 0 (451 lines from 28 VNs give pooled intervals
 of about ±0.45 points). In native polarity synth3 alone (B) has the lowest pooled CER and C − B
 has the opposite sign to teacher_val. The 16k-step pretrain-only models are 0.75-0.91 points
-behind the released FL10 in console polarity and 0.75-1.05 in native polarity; the released FL10
+behind the released FL10 in console polarity and 0.75-1.04 in native polarity; the released FL10
 had twice the pretraining and a real fine-tune, which study 2 adds.
 
 ### Study 1's secondaries (exploratory)
@@ -347,8 +350,8 @@ sampling of development lines, not training noise. The comparisons were fixed in
 fine-tunes' own in-training evaluations of their final checkpoints were already logged); result
 `eval/synth3_ablation_secondary_20261012.json`.
 - **Fine-tunes:** from each arm's seed-1 pretrain, 5,000 steps on nv 0.25 + the arm's synthetic
-  data 0.25 + teacher_train 0.35 + real_train 0.15 (unfiltered pools: they hold CLANNAD's family,
-  see study 2's amendment 2).
+  data 0.25 + teacher_train 0.35 + real_train 0.15 (unfiltered pools: they hold CLANNAD and its
+  family, see study 2's amendment 2).
 - **H15:** arms A and B at width 1.5 with `data/vocab.txt`, study 1's recipe, seed 1.
 
 | teacher_val | CER X → Y | Y − X (VN-cluster CI) | native Vita + PSP lines (587) |
@@ -363,13 +366,17 @@ fine-tunes' own in-training evaluations of their final checkpoints were already 
 | **H15: B − A** | 4.52% → 4.00% | **−0.52 (−0.80 to −0.25)** | **−0.38 (−0.70 to −0.10)** |
 
 - The fine-tune keeps the order (ft C < ft B < ft A) but the seed-1 C − A gap falls from −0.74
-  to −0.32: real data gains more for A and B than for C. This is study 2's question, in one seed.
-- At H15 width synth3 alone beats synth2, on the native lines too, with names −2.20 (CI −3.38
-  to −1.08), Latin/digits −2.76 (CI −4.78 to −1.35) and dark-on-light −0.89 (CI −1.40 to −0.41).
-  At FL10 width it did not. One seed; the mix was not run at H15 width in study 1.
+  to −0.32 (43% of it): real data gains more for A and B than for C. This is study 2's question,
+  in one seed.
+- At H15 width, in one run per arm, synth3 alone is lower than synth2, on the native lines too,
+  with names −2.20 (CI −3.38 to −1.08), Latin/digits −2.76 (CI −4.78 to −1.35) and dark-on-light
+  −0.88 (CI −1.40 to −0.41). The intervals cover line sampling only: at FL10 width the same
+  comparison was −0.20 in seed 1 and +0.17 in seed 2. Not replicated; the mix was not run at H15
+  width in study 1.
 
-On the protected test sets (each once, after the secondary result was committed; console
-polarity, pooled vita-test + psp-test): ft A 4.57%, ft B 4.73%, ft C 4.14%; H15 A 3.29%, H15 B
+On the protected test sets (each once, after the secondary result was committed;
+`eval/synth3_ablation_secondary_test_20261012.json`; console polarity, pooled vita-test +
+psp-test): ft A 4.57%, ft B 4.73%, ft C 4.14%; H15 A 3.29%, H15 B
 3.05%. Differences: ft C − ft A −0.43 (CI −1.01 to +0.09), ft C − ft B −0.59 (CI −1.20 to −0.03),
 ft B − ft A +0.16 (CI −0.35 to +0.66), H15 B − H15 A −0.24 (CI −0.98 to +0.39). Native polarity:
 ft A 4.73%, ft B 4.63%, ft C 4.30%; H15 A 3.43%, H15 B 3.07%.
@@ -402,7 +409,8 @@ The protocol (`eval/synth3_study2_protocol.json`) was committed before any study
 - teacher_val shares 110 screenshots (253 lines) with synth2's scene list (see Study 1); the
   overlap favours synth2 arms.
 - Study 1 is a short recipe (16,000 steps, no real fine-tune). Whether the gain survives the
-  release recipe is study 2's question; the secondary fine-tunes halve it in one seed.
+  release recipe is study 2's question; in one seed the secondary fine-tunes leave less than
+  half of it.
 - Two seeds per arm in study 1; seed-to-seed spread within an arm was up to 0.32 points.
 - Hard-example mining used machine-consensus references on training-side pools, part of which
   was a pseudo-label source in train2's fine-tune; 26 of its 3,339 lines are from six general-VN
@@ -418,10 +426,18 @@ The protocol (`eval/synth3_study2_protocol.json`) was committed before any study
   4:4:4) and the real crop geometry above.
 - Nothing here has run on a console.
 - **CLANNAD in the inherited real pools.** teacher_train and real_train hold 8 crops of CLANNAD
-  (v4) and 23 of its family (v4060, v12); the pseudo-label pools hold 14 family crops. synth3
-  never used them (its names and scenes exclude v4, and it reads no real pool), but train2's
-  fine-tunes did, so the released v0.2.0 models and study 1's secondary fine-tunes trained on
-  them. Study 2 fine-tunes on copies without them (amendment 2). synth3's own exclusion list
+  (v4) and 23 of its family (v4060, v12); the pseudo-label pools hold 14 family crops. train2's
+  fine-tunes trained on them, so the released v0.2.0 models and study 1's secondary fine-tunes
+  did too; study 2 fine-tunes on copies without them (amendment 2). synth3 read them only as
+  calibration and mining data, at a negligible scale (second audit, recounted from the pinned
+  inputs): its focus-character targets count every label character of teacher_train + real_train,
+  363 of whose 235,997 characters come from those rows (v4 116, v4060 213, v12 34); its length
+  target and calibration tables sample 20,000 crops of the same pools (how many CLANNAD rows the
+  sample drew is not recorded); and 4 of the 3,339 mined lines are family lines (v12 2, v4060 2;
+  none from v4). Its scenes include 5 family screenshots (four of v4060, one of v12; neither v4
+  screenshot). Study 1's and study 2's hygiene notes ("synth3 ... never read ... CLANNAD") hold
+  for v4's names and scenes but not for this calibration, the family's scenes or the family's
+  names below; the protocol files stay unchanged because results pin their sha256. synth3's own exclusion list
   holds v4 but not its family, and VNDB lists CLANNAD's main cast again as characters of Tomoyo
   After (v12) and Hikari Mimamoru Sakamichi de (v4060): 19 name parts of those 22 entries (古河,
   渚, 岡崎, 坂上, 智代, 春原, 陽平, 伊吹, 風子, 藤林, 杏, 椋, 秋生, 早苗, ...) are VNDB rows of
@@ -430,7 +446,8 @@ The protocol (`eval/synth3_study2_protocol.json`) was committed before any study
   names (`clannad_names.py.snapshot` in `eval/reproducibility/synth3-20261012/`). realdata's
   shots, a scene source, hold 6 screenshots of v12 and v4060. So any synth3-trained model is
   exposed to CLANNAD's character names, which matters for the CLANNAD long run; the released
-  models are exposed through the real crops above. Later renders should exclude the family.
+  models are exposed through the real crops above. Later renders should exclude CLANNAD's
+  family from names, scenes, calibration and mining.
 - **Fresh native textbox test exposure (names only).** synth3's name pool was built before that
   test's six titles were published (PR #49) and did not exclude them (PSP v14909, v25459,
   v29454; Vita v21289, v21976, v20519; reserves v16509, v19140). About 70 VNDB names occur only in

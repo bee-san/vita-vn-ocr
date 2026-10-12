@@ -78,6 +78,10 @@ NOTE = ("\nNote (realplus): these screenshots are PC / home-console visual-novel
         "decisions of each sheet to decisions.jsonl in this directory as soon as that sheet is decided, so a\n"
         "fresh session can resume: if decisions.jsonl already exists, keep it and continue with the first sheet\n"
         "that has no decisions yet.\n")
+EDGE_NOTE = ("This check is about the frame only: menus, buttons, system text and speaker names are in scope\n"
+             "like dialogue (do not skip them as \"ui\"); pick 1 when the frame shows exactly the label.\n")
+BLIND_NOTE = ("This is a label-precision check: transcribe the framed text whatever it is (dialogue, a menu,\n"
+              "a button, a name); do not use skip \"ui\". Skip \"cut\" or \"bad\" only as defined above.\n")
 
 
 def jl(path):
@@ -487,7 +491,7 @@ def cmd_edge_batches(args):
             out = d / f"b{start + k + 1:04d}"
             n = S.make_batch(part, out, "edge", name=f"realplus/edge/{out.name}")
             with open(out / "README.md", "a", encoding="utf-8") as f:
-                f.write(NOTE)
+                f.write(NOTE + EDGE_NOTE)
             print(f"{out}: {len(part)} lines, {n} sheets", flush=True)
 
 
@@ -779,20 +783,24 @@ def cmd_build(args):
 # ----------------------------------------------------------------------------- blind re-check
 
 def cmd_blind(args):
+    """A blind re-check sample of the built pool: --n random built lines, each framed on the Vita ink
+    crop the npz holds (the final crop), candidates shuffled and unattributed (sheets mode blind)."""
     labels = jl(OUT / "labels.jsonl")
-    built = {m["id"] for m in jl(OUT / "manifests" / "lines.jsonl")}
-    kept = sorted(r["id"] for r in labels if r["status"] == "kept" and (not built or r["id"] in built))
+    man = {m["id"]: m for m in jl(OUT / "manifests" / "lines.jsonl")}
+    if not man:
+        sys.exit("build first: the blind sample is drawn from the built lines")
+    kept = sorted(r["id"] for r in labels if r["status"] == "kept" and "vita_ink" in man.get(r["id"], {}).get("crops", {}))
     rng = random.Random(args.seed)
     ids = sorted(rng.sample(kept, min(args.n, len(kept))))
     (REVIEW / "blind_ids.json").write_text(json.dumps({"ids": ids, "seed": args.seed, "from": len(kept)}) + "\n")
     shots = load_reads()
-    entries = S.review_entries(shots, ids)
+    entries = S.review_entries(shots, ids, frames={i: man[i]["crops"]["vita_ink"] for i in ids})
     rng.shuffle(entries)                     # batches mix tiers and VNs
     for k in range(0, len(entries), args.size):
         out = REVIEW / "blind" / f"b{k // args.size + 1:04d}"
         ns = S.make_batch(entries[k:k + args.size], out, "blind", name=f"realplus/blind/{out.name}")
         with open(out / "README.md", "a", encoding="utf-8") as f:
-            f.write(NOTE)
+            f.write(NOTE + BLIND_NOTE)
         print(f"{out}: {len(entries[k:k + args.size])} lines, {ns} sheets", flush=True)
 
 

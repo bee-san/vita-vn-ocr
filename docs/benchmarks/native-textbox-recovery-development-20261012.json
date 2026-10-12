@@ -1,0 +1,810 @@
+{
+  "schema": 1,
+  "scope": "DEVELOPMENT ONLY; native whole-textbox OCR; no held-out or physical-console qualification",
+  "date": "2026-10-12",
+  "candidate": {
+    "finder_mode": 3,
+    "C_name": "VOCR_LINES_TEXTBOX_RECOVERY",
+    "Python_name": "textbox_recovery",
+    "default_finder_mode": 0,
+    "weight_adaptation": false,
+    "overlay_or_model_promotion": false,
+    "source_sha256": {
+      "eval/linefind/cfinder.py": "b3c29dde5ac7f5c234c932782988999846368a312e3a93342c6f04e5ec9e12b8",
+      "runtime/tests/test_vocr_lines_recovery.c": "84c9480fb4b21a6ae30b7e371e272a0a57a0ac98ea4e32f093229bf4882af1e7",
+      "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+      "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+      "runtime/vocr_lines_test.c": "c1af9976ce7ccc51b1804417b5cb42959fda4b231da0cc1f0e04e2b049eb9c45",
+      "tests/test_linefind_recovery.py": "465672e3834337fe51a47704b00fd7cf00179aadc09e7f42ca56b05f53a25fbd"
+    }
+  },
+  "model": {
+    "name": "released FL10",
+    "asset_url": "https://github.com/bee-san/vita-vn-ocr/releases/download/v0.2.1/FL10_w8.vocr",
+    "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+    "mode": "W8I",
+    "blob_bytes": 657664,
+    "recognizer_arena_bytes_at_max_width_1024": 124832,
+    "vocabulary_characters": 3500,
+    "CTC_classes_including_blank": 3501
+  },
+  "cohort": {
+    "native_frames": 237,
+    "cases": 711,
+    "titles": {
+      "psp:v1281": {
+        "vndb_url": "https://vndb.org/v1281",
+        "platform": "psp",
+        "frames": 50,
+        "reference_sha256": "7650cbc6f4f7be8cbc071518339cda8c3eee7089241c0934973075ff3a80dba7",
+        "all_full_reference_characters": 1223,
+        "all_hiragana_reference_characters": 642,
+        "body_full_reference_characters": 1217,
+        "body_hiragana_reference_characters": 642
+      },
+      "psp:v2632": {
+        "vndb_url": "https://vndb.org/v2632",
+        "platform": "psp",
+        "frames": 44,
+        "reference_sha256": "d7d2370ede4942d0a6e26c0a3b789407144e626974fa9e3fb94f48e1ec488655",
+        "all_full_reference_characters": 869,
+        "all_hiragana_reference_characters": 458,
+        "body_full_reference_characters": 777,
+        "body_hiragana_reference_characters": 419
+      },
+      "psp:v5154": {
+        "vndb_url": "https://vndb.org/v5154",
+        "platform": "psp",
+        "frames": 50,
+        "reference_sha256": "c3918adf6d7512aeeb0eff0ce4ee82175f769e451c877a04a5c175f2c47a3ea1",
+        "all_full_reference_characters": 1682,
+        "all_hiragana_reference_characters": 905,
+        "body_full_reference_characters": 1608,
+        "body_hiragana_reference_characters": 904
+      },
+      "vita:v18161": {
+        "vndb_url": "https://vndb.org/v18161",
+        "platform": "vita",
+        "frames": 43,
+        "reference_sha256": "b7f705fe96060cbd2890c17a37c42572ed4d3c26234318fb2e2ec4fe032a71a1",
+        "all_full_reference_characters": 1264,
+        "all_hiragana_reference_characters": 740,
+        "body_full_reference_characters": 1264,
+        "body_hiragana_reference_characters": 740
+      },
+      "vita:v18163": {
+        "vndb_url": "https://vndb.org/v18163",
+        "platform": "vita",
+        "frames": 21,
+        "reference_sha256": "4ab840b1f914ceb814b760411d41885ec9308c333e3d53226b2eee9fbdf9268b",
+        "all_full_reference_characters": 663,
+        "all_hiragana_reference_characters": 330,
+        "body_full_reference_characters": 588,
+        "body_hiragana_reference_characters": 330
+      },
+      "vita:v18643": {
+        "vndb_url": "https://vndb.org/v18643",
+        "platform": "vita",
+        "frames": 29,
+        "reference_sha256": "c36baaaec764f5131ec1128ed4c8660904d96f247c374aefa00eae37d0b6e333",
+        "all_full_reference_characters": 913,
+        "all_hiragana_reference_characters": 479,
+        "body_full_reference_characters": 855,
+        "body_hiragana_reference_characters": 479
+      }
+    },
+    "reference_characters_per_variant": {
+      "all_full": 6614,
+      "all_hiragana": 3554,
+      "body_full": 6309,
+      "body_hiragana": 3514
+    }
+  },
+  "method": {
+    "measurement_command": "python paired_pipeline.py compare (private pinned development audit)",
+    "normalization": "eval.metrics.norm independently per reference line and detected crop; no second normalization after joining",
+    "alignment": "Levenshtein, tie order diagonal then deletion then insertion",
+    "body_attribution": "reference body substitutions/deletions and all unmatched insertions",
+    "recognize_every_C_finder_crop_in_order": true,
+    "annotation_based_output_filtering": false,
+    "raw_baseline_rows_reproduced_exactly": true,
+    "baseline_reproduction_cases": 711,
+    "single_authorized_comparison": true,
+    "recognition_forwards": {
+      "baseline": 1453,
+      "candidate": 1563
+    },
+    "protected_or_Google_access": false,
+    "fresh_multititle_test_unseen": true,
+    "runtime": "explicit pinned scalar C W8I library",
+    "runtime_library_sha256": "4a5635ba9a0721373f35e8957c0788b74e1725ea8cd96b8200cc5e427536b11b",
+    "environment": {
+      "system": "Linux",
+      "machine": "x86_64",
+      "Python": "3.11.15",
+      "torch": "2.5.1+cpu",
+      "numpy": "2.4.6",
+      "Pillow": "12.3.0",
+      "finder_compiler": "GCC 16.2.1 20260810",
+      "finder_flags": [
+        "-std=c99",
+        "-O2",
+        "-ffp-contract=off",
+        "-DVOCR_NO_NEON",
+        "-Wall",
+        "-Wextra",
+        "-Werror"
+      ]
+    }
+  },
+  "results": {
+    "base": {
+      "roi_expansion_pixels": 0,
+      "pooled": {
+        "original_GRAD": {
+          "all_full_errors": 473,
+          "all_hiragana_errors": 185,
+          "body_full_errors": 397,
+          "body_hiragana_errors": 185,
+          "detections": 470
+        },
+        "pure_C3": {
+          "all_full_errors": 341,
+          "all_hiragana_errors": 99,
+          "body_full_errors": 265,
+          "body_hiragana_errors": 99,
+          "detections": 476
+        },
+        "C4": {
+          "all_full_errors": 264,
+          "all_hiragana_errors": 57,
+          "body_full_errors": 191,
+          "body_hiragana_errors": 57,
+          "detections": 499
+        }
+      },
+      "titles": {
+        "psp:v1281": {
+          "original_GRAD": {
+            "all_full_errors": 56,
+            "all_hiragana_errors": 10,
+            "body_full_errors": 55,
+            "body_hiragana_errors": 10,
+            "detections": 81
+          },
+          "pure_C3": {
+            "all_full_errors": 56,
+            "all_hiragana_errors": 10,
+            "body_full_errors": 55,
+            "body_hiragana_errors": 10,
+            "detections": 81
+          },
+          "C4": {
+            "all_full_errors": 56,
+            "all_hiragana_errors": 10,
+            "body_full_errors": 55,
+            "body_hiragana_errors": 10,
+            "detections": 81
+          }
+        },
+        "psp:v2632": {
+          "original_GRAD": {
+            "all_full_errors": 79,
+            "all_hiragana_errors": 33,
+            "body_full_errors": 66,
+            "body_hiragana_errors": 33,
+            "detections": 88
+          },
+          "pure_C3": {
+            "all_full_errors": 79,
+            "all_hiragana_errors": 33,
+            "body_full_errors": 66,
+            "body_hiragana_errors": 33,
+            "detections": 88
+          },
+          "C4": {
+            "all_full_errors": 75,
+            "all_hiragana_errors": 31,
+            "body_full_errors": 62,
+            "body_hiragana_errors": 31,
+            "detections": 100
+          }
+        },
+        "psp:v5154": {
+          "original_GRAD": {
+            "all_full_errors": 14,
+            "all_hiragana_errors": 7,
+            "body_full_errors": 14,
+            "body_hiragana_errors": 7,
+            "detections": 93
+          },
+          "pure_C3": {
+            "all_full_errors": 14,
+            "all_hiragana_errors": 7,
+            "body_full_errors": 14,
+            "body_hiragana_errors": 7,
+            "detections": 93
+          },
+          "C4": {
+            "all_full_errors": 9,
+            "all_hiragana_errors": 4,
+            "body_full_errors": 9,
+            "body_hiragana_errors": 4,
+            "detections": 95
+          }
+        },
+        "vita:v18161": {
+          "original_GRAD": {
+            "all_full_errors": 16,
+            "all_hiragana_errors": 1,
+            "body_full_errors": 16,
+            "body_hiragana_errors": 1,
+            "detections": 82
+          },
+          "pure_C3": {
+            "all_full_errors": 16,
+            "all_hiragana_errors": 1,
+            "body_full_errors": 16,
+            "body_hiragana_errors": 1,
+            "detections": 82
+          },
+          "C4": {
+            "all_full_errors": 16,
+            "all_hiragana_errors": 1,
+            "body_full_errors": 16,
+            "body_hiragana_errors": 1,
+            "detections": 82
+          }
+        },
+        "vita:v18163": {
+          "original_GRAD": {
+            "all_full_errors": 227,
+            "all_hiragana_errors": 106,
+            "body_full_errors": 193,
+            "body_hiragana_errors": 106,
+            "detections": 47
+          },
+          "pure_C3": {
+            "all_full_errors": 106,
+            "all_hiragana_errors": 30,
+            "body_full_errors": 72,
+            "body_hiragana_errors": 30,
+            "detections": 52
+          },
+          "C4": {
+            "all_full_errors": 62,
+            "all_hiragana_errors": 3,
+            "body_full_errors": 28,
+            "body_hiragana_errors": 3,
+            "detections": 55
+          }
+        },
+        "vita:v18643": {
+          "original_GRAD": {
+            "all_full_errors": 81,
+            "all_hiragana_errors": 28,
+            "body_full_errors": 53,
+            "body_hiragana_errors": 28,
+            "detections": 79
+          },
+          "pure_C3": {
+            "all_full_errors": 70,
+            "all_hiragana_errors": 18,
+            "body_full_errors": 42,
+            "body_hiragana_errors": 18,
+            "detections": 80
+          },
+          "C4": {
+            "all_full_errors": 46,
+            "all_hiragana_errors": 8,
+            "body_full_errors": 21,
+            "body_hiragana_errors": 8,
+            "detections": 86
+          }
+        }
+      },
+      "console_balanced_body_hiragana_error_fraction": {
+        "baseline": "6361791702991/79012563754960",
+        "candidate": "1435624759499/71111307379464"
+      }
+    },
+    "expanded-4": {
+      "roi_expansion_pixels": 4,
+      "pooled": {
+        "original_GRAD": {
+          "all_full_errors": 592,
+          "all_hiragana_errors": 242,
+          "body_full_errors": 480,
+          "body_hiragana_errors": 229,
+          "detections": 470
+        },
+        "pure_C3": {
+          "all_full_errors": 457,
+          "all_hiragana_errors": 155,
+          "body_full_errors": 345,
+          "body_hiragana_errors": 142,
+          "detections": 476
+        },
+        "C4": {
+          "all_full_errors": 314,
+          "all_hiragana_errors": 75,
+          "body_full_errors": 206,
+          "body_hiragana_errors": 62,
+          "detections": 510
+        }
+      },
+      "titles": {
+        "psp:v1281": {
+          "original_GRAD": {
+            "all_full_errors": 58,
+            "all_hiragana_errors": 11,
+            "body_full_errors": 57,
+            "body_hiragana_errors": 11,
+            "detections": 82
+          },
+          "pure_C3": {
+            "all_full_errors": 58,
+            "all_hiragana_errors": 11,
+            "body_full_errors": 57,
+            "body_hiragana_errors": 11,
+            "detections": 82
+          },
+          "C4": {
+            "all_full_errors": 58,
+            "all_hiragana_errors": 11,
+            "body_full_errors": 57,
+            "body_hiragana_errors": 11,
+            "detections": 83
+          }
+        },
+        "psp:v2632": {
+          "original_GRAD": {
+            "all_full_errors": 161,
+            "all_hiragana_errors": 79,
+            "body_full_errors": 127,
+            "body_hiragana_errors": 66,
+            "detections": 83
+          },
+          "pure_C3": {
+            "all_full_errors": 161,
+            "all_hiragana_errors": 79,
+            "body_full_errors": 127,
+            "body_hiragana_errors": 66,
+            "detections": 83
+          },
+          "C4": {
+            "all_full_errors": 107,
+            "all_hiragana_errors": 48,
+            "body_full_errors": 73,
+            "body_hiragana_errors": 35,
+            "detections": 101
+          }
+        },
+        "psp:v5154": {
+          "original_GRAD": {
+            "all_full_errors": 14,
+            "all_hiragana_errors": 7,
+            "body_full_errors": 14,
+            "body_hiragana_errors": 7,
+            "detections": 93
+          },
+          "pure_C3": {
+            "all_full_errors": 14,
+            "all_hiragana_errors": 7,
+            "body_full_errors": 14,
+            "body_hiragana_errors": 7,
+            "detections": 93
+          },
+          "C4": {
+            "all_full_errors": 9,
+            "all_hiragana_errors": 4,
+            "body_full_errors": 9,
+            "body_hiragana_errors": 4,
+            "detections": 95
+          }
+        },
+        "vita:v18161": {
+          "original_GRAD": {
+            "all_full_errors": 17,
+            "all_hiragana_errors": 1,
+            "body_full_errors": 17,
+            "body_hiragana_errors": 1,
+            "detections": 82
+          },
+          "pure_C3": {
+            "all_full_errors": 17,
+            "all_hiragana_errors": 1,
+            "body_full_errors": 17,
+            "body_hiragana_errors": 1,
+            "detections": 82
+          },
+          "C4": {
+            "all_full_errors": 17,
+            "all_hiragana_errors": 1,
+            "body_full_errors": 17,
+            "body_hiragana_errors": 1,
+            "detections": 82
+          }
+        },
+        "vita:v18163": {
+          "original_GRAD": {
+            "all_full_errors": 240,
+            "all_hiragana_errors": 108,
+            "body_full_errors": 193,
+            "body_hiragana_errors": 108,
+            "detections": 52
+          },
+          "pure_C3": {
+            "all_full_errors": 116,
+            "all_hiragana_errors": 31,
+            "body_full_errors": 69,
+            "body_hiragana_errors": 31,
+            "detections": 57
+          },
+          "C4": {
+            "all_full_errors": 73,
+            "all_hiragana_errors": 4,
+            "body_full_errors": 26,
+            "body_hiragana_errors": 4,
+            "detections": 60
+          }
+        },
+        "vita:v18643": {
+          "original_GRAD": {
+            "all_full_errors": 102,
+            "all_hiragana_errors": 36,
+            "body_full_errors": 72,
+            "body_hiragana_errors": 36,
+            "detections": 78
+          },
+          "pure_C3": {
+            "all_full_errors": 91,
+            "all_hiragana_errors": 26,
+            "body_full_errors": 61,
+            "body_hiragana_errors": 26,
+            "detections": 79
+          },
+          "C4": {
+            "all_full_errors": 50,
+            "all_hiragana_errors": 7,
+            "body_full_errors": 24,
+            "body_hiragana_errors": 7,
+            "detections": 89
+          }
+        }
+      },
+      "console_balanced_body_hiragana_error_fraction": {
+        "baseline": "13894577580167/142222614758928",
+        "candidate": "7892009746279/355556536897320"
+      }
+    },
+    "expanded-8": {
+      "roi_expansion_pixels": 8,
+      "pooled": {
+        "original_GRAD": {
+          "all_full_errors": 567,
+          "all_hiragana_errors": 195,
+          "body_full_errors": 421,
+          "body_hiragana_errors": 171,
+          "detections": 513
+        },
+        "pure_C3": {
+          "all_full_errors": 532,
+          "all_hiragana_errors": 173,
+          "body_full_errors": 386,
+          "body_hiragana_errors": 149,
+          "detections": 518
+        },
+        "C4": {
+          "all_full_errors": 415,
+          "all_hiragana_errors": 114,
+          "body_full_errors": 272,
+          "body_hiragana_errors": 90,
+          "detections": 554
+        }
+      },
+      "titles": {
+        "psp:v1281": {
+          "original_GRAD": {
+            "all_full_errors": 60,
+            "all_hiragana_errors": 12,
+            "body_full_errors": 59,
+            "body_hiragana_errors": 12,
+            "detections": 86
+          },
+          "pure_C3": {
+            "all_full_errors": 60,
+            "all_hiragana_errors": 12,
+            "body_full_errors": 59,
+            "body_hiragana_errors": 12,
+            "detections": 86
+          },
+          "C4": {
+            "all_full_errors": 60,
+            "all_hiragana_errors": 12,
+            "body_full_errors": 59,
+            "body_hiragana_errors": 12,
+            "detections": 86
+          }
+        },
+        "psp:v2632": {
+          "original_GRAD": {
+            "all_full_errors": 221,
+            "all_hiragana_errors": 105,
+            "body_full_errors": 166,
+            "body_hiragana_errors": 81,
+            "detections": 79
+          },
+          "pure_C3": {
+            "all_full_errors": 221,
+            "all_hiragana_errors": 105,
+            "body_full_errors": 166,
+            "body_hiragana_errors": 81,
+            "detections": 79
+          },
+          "C4": {
+            "all_full_errors": 128,
+            "all_hiragana_errors": 60,
+            "body_full_errors": 73,
+            "body_hiragana_errors": 36,
+            "detections": 97
+          }
+        },
+        "psp:v5154": {
+          "original_GRAD": {
+            "all_full_errors": 14,
+            "all_hiragana_errors": 7,
+            "body_full_errors": 14,
+            "body_hiragana_errors": 7,
+            "detections": 99
+          },
+          "pure_C3": {
+            "all_full_errors": 14,
+            "all_hiragana_errors": 7,
+            "body_full_errors": 14,
+            "body_hiragana_errors": 7,
+            "detections": 99
+          },
+          "C4": {
+            "all_full_errors": 9,
+            "all_hiragana_errors": 4,
+            "body_full_errors": 9,
+            "body_hiragana_errors": 4,
+            "detections": 101
+          }
+        },
+        "vita:v18161": {
+          "original_GRAD": {
+            "all_full_errors": 29,
+            "all_hiragana_errors": 2,
+            "body_full_errors": 29,
+            "body_hiragana_errors": 2,
+            "detections": 81
+          },
+          "pure_C3": {
+            "all_full_errors": 25,
+            "all_hiragana_errors": 2,
+            "body_full_errors": 25,
+            "body_hiragana_errors": 2,
+            "detections": 83
+          },
+          "C4": {
+            "all_full_errors": 25,
+            "all_hiragana_errors": 2,
+            "body_full_errors": 25,
+            "body_hiragana_errors": 2,
+            "detections": 83
+          }
+        },
+        "vita:v18163": {
+          "original_GRAD": {
+            "all_full_errors": 158,
+            "all_hiragana_errors": 53,
+            "body_full_errors": 105,
+            "body_hiragana_errors": 53,
+            "detections": 66
+          },
+          "pure_C3": {
+            "all_full_errors": 137,
+            "all_hiragana_errors": 40,
+            "body_full_errors": 84,
+            "body_hiragana_errors": 40,
+            "detections": 67
+          },
+          "C4": {
+            "all_full_errors": 115,
+            "all_hiragana_errors": 26,
+            "body_full_errors": 62,
+            "body_hiragana_errors": 26,
+            "detections": 69
+          }
+        },
+        "vita:v18643": {
+          "original_GRAD": {
+            "all_full_errors": 85,
+            "all_hiragana_errors": 16,
+            "body_full_errors": 48,
+            "body_hiragana_errors": 16,
+            "detections": 102
+          },
+          "pure_C3": {
+            "all_full_errors": 75,
+            "all_hiragana_errors": 7,
+            "body_full_errors": 38,
+            "body_hiragana_errors": 7,
+            "detections": 104
+          },
+          "C4": {
+            "all_full_errors": 78,
+            "all_hiragana_errors": 10,
+            "body_full_errors": 44,
+            "body_hiragana_errors": 10,
+            "detections": 118
+          }
+        }
+      },
+      "console_balanced_body_hiragana_error_fraction": {
+        "baseline": "49358839652321/711113073794640",
+        "candidate": "313189946149/8888913422433"
+      }
+    }
+  },
+  "frozen_gate": {
+    "passed": true,
+    "failure_reasons": [],
+    "per_title_variant_scope_metric_nonregression_checks_against_original_GRAD": 72,
+    "pooled_scope_metric_nonregression_checks_against_pure_C3": 12,
+    "material_pooled_all_full_max_errors": {
+      "base": 306,
+      "expanded-4": 411,
+      "expanded-8": 478
+    },
+    "strict_console_balanced_body_hiragana_gain_each_variant": true,
+    "minimum_body_hiragana_gain_titles_per_console_each_variant": 2,
+    "body_hiragana_gain_titles": {
+      "base": {
+        "psp": [
+          "v2632",
+          "v5154"
+        ],
+        "vita": [
+          "v18163",
+          "v18643"
+        ]
+      },
+      "expanded-4": {
+        "psp": [
+          "v2632",
+          "v5154"
+        ],
+        "vita": [
+          "v18163",
+          "v18643"
+        ]
+      },
+      "expanded-8": {
+        "psp": [
+          "v2632",
+          "v5154"
+        ],
+        "vita": [
+          "v18163",
+          "v18643"
+        ]
+      }
+    },
+    "console_weights": "1/2 each; titles equal within console",
+    "thresholds_fixed_before_run": true
+  },
+  "crop_preservation": {
+    "C3_crops_lost": 0,
+    "retained_C3_raw_outputs_changed": 0,
+    "additional_crops_base_plus4_plus8": [
+      23,
+      34,
+      36
+    ],
+    "blank_additional_crops_base_plus4_plus8": [
+      13,
+      15,
+      14
+    ],
+    "frames_with_additional_crops_base_plus4_plus8": [
+      17,
+      29,
+      30
+    ],
+    "blank_output_kept": true
+  },
+  "finder_memory": {
+    "arena_bytes_960x544": 83323,
+    "arena_bytes_480x272": 25355,
+    "arena_bytes_8x8": 235,
+    "arena_growth_bytes": 0,
+    "new_runtime_heap_allocations": 0,
+    "height_histogram_bytes_reusing_dead_scratch": 97,
+    "new_output_or_mark_array_bytes": 0
+  },
+  "actual_Vita_static_compile": {
+    "scope": "compile-only per-function static frames and object sections; no physical residency or speed measurement",
+    "compiler": "arm-vita-eabi-gcc 15.2.0",
+    "effective_optimization": "-O2",
+    "architecture_flags": [
+      "-mcpu=cortex-a9",
+      "-mfpu=neon",
+      "-mfloat-abi=hard"
+    ],
+    "frames_bytes": {
+      "original_GRAD": {
+        "find_grad": 1224,
+        "vocr_find_lines": 80,
+        "vocr_line_dark": 2120
+      },
+      "packaged_C3": {
+        "find_grad": 1400,
+        "vocr_find_lines": 80,
+        "vocr_line_dark": 2120
+      },
+      "C4": {
+        "find_grad": 1440,
+        "vocr_find_lines": 80,
+        "vocr_line_dark": 2120,
+        "recovery_mark_span": 48
+      }
+    },
+    "object_text_bytes": {
+      "original_GRAD": 4636,
+      "packaged_C3": 9716,
+      "C4": 12456
+    },
+    "object_data_bytes": 0,
+    "object_bss_bytes": 0,
+    "C4_object_sha256": "db1e4f36ba817d38f41378f29b8011a946a43c537eea0ad7e09897b8ec93562b",
+    "C4_stack_usage_sha256": "6210969f83d051c55ede62cfca2963987583e30ec1db0ecec3e155425f5e642c"
+  },
+  "generated_checks": {
+    "semantic_and_existing_finder_tests_passed": 213,
+    "holdout_metadata_tests_deselected": 2,
+    "historical_modes": [
+      0,
+      1,
+      2
+    ],
+    "published_baseline_commit": "2c028bf655af08b6a864630671c78c917fbadb62",
+    "historical_mode_parity_generated_images": 473,
+    "historical_mode_parity_calls": 1419,
+    "historical_mode_output_bytes_equal": true,
+    "ASan_UBSan_generated_images_per_compiler": 2400,
+    "ASan_UBSan_compilers": [
+      "GCC 16.2.1",
+      "Clang 22.1.8"
+    ],
+    "exact_arenas_alignment_offsets": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "audit_driver_generated_tests_passed": 47
+  },
+  "audit_sha256": {
+    "result": "04397de91ad3e28709d238366cfab6d88c1581757dfffcf6885b667a343244e7",
+    "driver": "696730214e95ed8aaaf0dbf28c774863165fa5fc280468b483051c26d564faf4",
+    "gate_helper": "4bee36f534c0c200b7f4d02472a705184857a31fc15d36031e209c620866d597",
+    "protocol": "43481d691fd69722d3895030ead7b37bc6ed199a80a348cd75420249d1d5afa9",
+    "prepared": "2e2668d3792eeb02cc056df04f9db27e25818758aa0485ab7ec983ab95b6b2dc",
+    "source_freeze": "7a52051f1606cd7ce7d65dfb329fffe99616531a5bd40c341d85a9e59fc43c48",
+    "archived_pure_C3_result": "61fd5315fe28ed3b0b81061dd0ed584f06a3d55b7aeb2209afe0816fa7afa3c5",
+    "generated_review": "83761b0e005d4ac88e4b7097b0c78087d5c704bb6324010a3482f07747f7d838",
+    "independent_semantic_review": "1c73700238182aa44aedd7dae58f2760d309c0441513fe9f0bfeb840872beeda",
+    "actual_Vita_static_compile": "09359d909d710955d09312c3366c2f3cfa73862b9d95fbf9ab0133cbd3e7cdbc"
+  },
+  "limits": [
+    "Development data informed the algorithm family; these results are not independent test accuracy.",
+    "Scene texture can resemble text and new crops include blank outputs.",
+    "Existing C3 false-positive crops are preserved.",
+    "Ambiguous scale, overflow, clipped pixels and entirely isolated short rows may remain unresolved.",
+    "No new shared benchmark, protected screenshot, Google, CLANNAD or fresh test audit was run.",
+    "No physical-console latency or residency was measured."
+  ]
+}

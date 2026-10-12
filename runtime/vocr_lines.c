@@ -362,6 +362,280 @@ static void text_route(const VocrLinesImage *im, TextCand *cand, unsigned nc,
     }
 }
 
+/* Recovery uses component core heights, not the height of a projection crop
+ * which may include a portrait or a speaker banner. The run/component storage
+ * is dead here: its first 97 bytes hold a bounded height histogram. Even the
+ * smallest 8x8 scratch layout has 160 bytes before the candidate array. */
+static unsigned recovery_height(const TextCand *cand, unsigned nc, const VocrLineSet *old,
+                                 unsigned char *heights, unsigned *independent)
+{
+    unsigned i, j, best = nc, anchor = nc, main = 0, count = 0, total = 0;
+    memset(heights, 0, LEG_MAX_LINE_H + 1u);
+    *independent = nc;
+    for (i = 0; i < nc; i++) {
+        unsigned ch = cand[i].mass & 255u, weight = (cand[i].mass & TEXT_INFO_MASK) >> 8;
+        if ((cand[i].mass & TEXT_DUP) || !(cand[i].mass & TEXT_STRONG)) continue;
+        if (best == nc || weight * (cand[best].mass & 255u) >
+                         ((cand[best].mass & TEXT_INFO_MASK) >> 8) * ch ||
+            (weight * (cand[best].mass & 255u) ==
+             ((cand[best].mass & TEXT_INFO_MASK) >> 8) * ch && ch > (cand[best].mass & 255u))) best = i;
+        for (j = 0; j < old->count; j++) {
+            const VocrLine *line = &old->lines[j];
+            if (!text_same_box(line->x, line->y, line->w, line->h,
+                               cand[i].x1, cand[i].top, cand[i].x2 - cand[i].x1,
+                               cand[i].bot - cand[i].top)) continue;
+            if (heights[ch] < 255u) heights[ch]++;
+            total++;
+            break;
+        }
+    }
+    if (best == nc) return 0;
+    /* A repeated supported height class beats a single wide scene component.
+     * Count heights within a 5:4 ratio, with taller classes winning ties. */
+    for (i = MIN_H; i <= LEG_MAX_LINE_H; i++) {
+        unsigned upper = 5u * i / 4u, n = 0, largest = 0;
+        if (upper > LEG_MAX_LINE_H) upper = LEG_MAX_LINE_H;
+        for (j = i; j <= upper; j++) {
+            n += heights[j];
+            if (heights[j]) largest = j;
+        }
+        if (n > count || (n == count && largest > main)) { count = n; main = largest; }
+    }
+    if (count >= 2u) return main;
+    if (total > 1u) return 0; /* incompatible supported scales: retain TEXTBOX */
+    if (count) {
+        for (i = 0; i < nc; i++) {
+            if ((cand[i].mass & TEXT_DUP) || !(cand[i].mass & TEXT_STRONG) ||
+                (cand[i].mass & 255u) != main) continue;
+            for (j = 0; j < old->count; j++) {
+                const VocrLine *line = &old->lines[j];
+                if (text_same_box(line->x, line->y, line->w, line->h,
+                                  cand[i].x1, cand[i].top, cand[i].x2 - cand[i].x1,
+                                  cand[i].bot - cand[i].top)) { anchor = i; break; }
+            }
+            if (anchor != nc) break;
+        }
+        /* A lower row with at least 5:4 horizontal support per core-height can
+         * override one tall scene-like anchor. Ruby above an ordinary row
+         * cannot reset the scale. Nothing is removed from the old output. */
+        if (anchor != nc && cand[best].top >= cand[anchor].bot &&
+            4u * ((cand[best].mass & TEXT_INFO_MASK) >> 8) * main >=
+            5u * ((cand[anchor].mass & TEXT_INFO_MASK) >> 8) * (cand[best].mass & 255u)) {
+            unsigned ch = cand[best].mass & 255u;
+            if (4u * (ch > main ? ch : main) > 5u * (ch < main ? ch : main)) *independent = best;
+            return ch;
+        }
+        return main;
+    }
+    /* Without a supported old row, require one unambiguous line-like scale.
+     * A competing scale with >=3/4 of the best aspect support is ambiguous. */
+    main = cand[best].mass & 255u;
+    for (i = 0; i < nc; i++) {
+        unsigned ch = cand[i].mass & 255u, small = ch < main ? ch : main, big = ch > main ? ch : main;
+        if ((cand[i].mass & TEXT_DUP) || !(cand[i].mass & TEXT_STRONG) || 4u * big <= 5u * small) continue;
+        if (4u * ((cand[i].mass & TEXT_INFO_MASK) >> 8) * main >=
+            3u * ((cand[best].mass & TEXT_INFO_MASK) >> 8) * ch) return 0;
+    }
+    *independent = best;
+    return main;
+}
+
+static int recovery_neighbor(const TextCand *a, const TextCand *b, unsigned main)
+{
+    unsigned ah = a->mass & 255u, bh = b->mass & 255u;
+    unsigned ac = (a->top + a->bot) / 2u, bc = (b->top + b->bot) / 2u;
+    unsigned distance = ac > bc ? ac - bc : bc - ac;
+    unsigned left = a->x1 > b->x1 ? a->x1 : b->x1;
+    unsigned right = a->x2 < b->x2 ? a->x2 : b->x2;
+    unsigned aw = a->x2 - a->x1, bw = b->x2 - b->x1, small = aw < bw ? aw : bw;
+    unsigned start = a->x1 > b->x1 ? a->x1 - b->x1 : b->x1 - a->x1;
+    if (4u * (ah > bh ? ah : bh) > 5u * (ah < bh ? ah : bh)) return 0;
+    return distance >= main && distance <= 4u * main &&
+           (start <= main || (right > left && 2u * (right - left) >= small));
+}
+
+static int recovery_covered(const TextCand *cand, const VocrLineSet *out)
+{
+    unsigned i, ch = cand->mass & 255u, center = (cand->top + cand->bot) / 2u;
+    unsigned top = center >= ch / 2u ? center - ch / 2u : 0, bot = top + ch;
+    for (i = 0; i < out->count; i++) {
+        const VocrLine *line = &out->lines[i];
+        unsigned left = cand->x1 > line->x ? cand->x1 : line->x;
+        unsigned right = cand->x2 < line->x + line->w ? cand->x2 : line->x + line->w;
+        unsigned y1 = top > line->y ? top : line->y, y2 = bot < line->y + line->h ? bot : line->y + line->h;
+        unsigned small = cand->x2 - cand->x1 < line->w ? cand->x2 - cand->x1 : line->w;
+        if (right > left && 2u * (right - left) >= small && y2 > y1 && 2u * (y2 - y1) >= ch) return 1;
+    }
+    return 0;
+}
+
+/* Small disconnected strokes may be shorter than the component run minimum.
+ * Only newly recovered crops get this bounded attachment. Join pixels with the
+ * same horizontal gap rule; a row-wide ruby/border run is not a small mark. */
+static int recovery_mark_row(const uint32_t *row, unsigned x1, unsigned x2, unsigned main)
+{
+    unsigned x, start = 0, last = 0, on = 0;
+    for (x = x1; x < x2; x++) {
+        if (!bit(row, x)) continue;
+        if (on && x - last > GAP) start = x;
+        else if (!on) start = x;
+        last = x; on++;
+        if (2u * (last + 1u - start) > main) return 0;
+    }
+    return on >= 2u;
+}
+
+static int recovery_mark_span(const uint32_t *bits, unsigned words, unsigned h,
+                               unsigned x1, unsigned x2, unsigned y, unsigned main,
+                               unsigned fence, int up, unsigned *outer)
+{
+    unsigned n, limit = main / 4u;
+    if (limit < PAD + 2u) limit = PAD + 2u;
+    /* Probe one row beyond the complete permitted span. A component which
+     * continues past that bound, an image edge or another row fence is not a
+     * small detached mark. Never accept just its nearest horizontal slices. */
+    for (n = 0; n <= limit; n++) {
+        unsigned row;
+        if (up) {
+            if (n > y || y - n < fence) return 0;
+            row = y - n;
+        } else {
+            if (n >= h - y || y + n >= fence) return 0;
+            row = y + n;
+        }
+        if (!row_on(bits + (size_t)row * words, x1, x2)) {
+            if (!n) return 0;
+            *outer = up ? row + 1u : row - 1u;
+            return 1;
+        }
+        if (n == limit || !recovery_mark_row(bits + (size_t)row * words, x1, x2, main)) return 0;
+    }
+    return 0;
+}
+
+static void recovery_marks(const VocrLinesImage *im, const uint32_t *bits,
+                            const TextCand *all, unsigned nc, unsigned index,
+                            TextCand *cand, unsigned main)
+{
+    unsigned words = (im->width + 31u) / 32u, ch = cand->mass & 255u;
+    unsigned center = (cand->top + cand->bot) / 2u, top = center >= ch / 2u ? center - ch / 2u : 0;
+    unsigned bot = top + ch, step, empty = 0, first = top, last = bot, lower = 0, upper = im->height, i;
+    /* Other candidate cores retain their original geometry during every probe.
+     * A midpoint fence prevents a new crop from claiming a neighbour's tail. */
+    for (i = 0; i < nc; i++) {
+        unsigned other, och, otop, obot, left, right, small;
+        if (i == index || (all[i].mass & TEXT_DUP)) continue;
+        other = (all[i].top + all[i].bot) / 2u;
+        och = all[i].mass & 255u;
+        otop = other >= och / 2u ? other - och / 2u : 0; obot = otop + och;
+        left = cand->x1 > all[i].x1 ? cand->x1 : all[i].x1;
+        right = cand->x2 < all[i].x2 ? cand->x2 : all[i].x2;
+        small = cand->x2 - cand->x1 < all[i].x2 - all[i].x1 ? cand->x2 - cand->x1 : all[i].x2 - all[i].x1;
+        if (right <= left || 2u * (right - left) < small) continue;
+        if (obot <= top) {
+            unsigned fence = (obot + top + 1u) / 2u;
+            if (fence > lower) lower = fence;
+        }
+        if (otop >= bot) {
+            unsigned fence = (bot + otop) / 2u;
+            if (fence < upper) upper = fence;
+        }
+    }
+    for (step = 1; step <= main / 3u && step <= top; step++) {
+        unsigned y = top - step, outer, count;
+        if (y < lower) break;
+        count = row_on(bits + (size_t)y * words, cand->x1, cand->x2);
+        if (!count) { if (++empty > PAD) break; continue; }
+        if (recovery_mark_span(bits, words, im->height, cand->x1, cand->x2, y, main, lower, 1, &outer))
+            first = outer;
+        break;
+    }
+    empty = 0;
+    for (step = 0; step < main / 3u && bot + step < im->height; step++) {
+        unsigned y = bot + step, outer, count;
+        if (y >= upper) break;
+        count = row_on(bits + (size_t)y * words, cand->x1, cand->x2);
+        if (!count) { if (++empty > PAD) break; continue; }
+        if (recovery_mark_span(bits, words, im->height, cand->x1, cand->x2, y, main, upper, 0, &outer))
+            last = outer + 1u;
+        break;
+    }
+    first = first > PAD ? first - PAD : 0;
+    last = last + PAD < im->height ? last + PAD : im->height;
+    if (first < cand->top) cand->top = first;
+    if (last > cand->bot) cand->bot = last;
+}
+
+static void text_recover(const VocrLinesImage *im, TextCand *cand, unsigned nc,
+                          const uint32_t *bits, unsigned char *scratch, VocrLineSet *out)
+{
+    unsigned independent, main = recovery_height(cand, nc, out, scratch, &independent), i, j, added = 0;
+    unsigned old_count = out->count, staged = 0, kept = old_count;
+    if (!main) return;
+    for (i = 0; i < nc; i++) cand[i].mass &= ~TEXT_USE;
+    for (i = 0; i < nc; i++) {
+        unsigned ch = cand[i].mass & 255u, supported = i == independent;
+        if ((cand[i].mass & TEXT_DUP) || 100u * ch < FURI_PCT * main || 4u * ch > 5u * main ||
+            recovery_covered(&cand[i], out)) continue;
+        /* Both broad and short rows require a coherent neighbour, except for
+         * the independently selected unambiguous scale below a scene-like old
+         * anchor. Never borrow from a newly accepted weak component. */
+        if (!supported)
+            for (j = 0; j < nc; j++) {
+                if (i == j || (cand[j].mass & TEXT_DUP) || !(cand[j].mass & TEXT_STRONG) ||
+                    100u * (cand[j].mass & 255u) < FURI_PCT * main ||
+                    4u * (cand[j].mass & 255u) > 5u * main) continue;
+                if (recovery_neighbor(&cand[i], &cand[j], main)) { supported = 1; break; }
+            }
+        if (!supported) continue;
+        /* Final geometries have already been coalesced. Do not spend output
+         * slots on a second core row produced by nearby punctuation fragments. */
+        for (j = 0; j < i; j++) {
+            if (!(cand[j].mass & TEXT_USE)) continue;
+            if (text_same_box(cand[i].x1, cand[i].top, cand[i].x2 - cand[i].x1, cand[i].bot - cand[i].top,
+                              cand[j].x1, cand[j].top, cand[j].x2 - cand[j].x1, cand[j].bot - cand[j].top)) break;
+        }
+        if (j < i) continue;
+        cand[i].mass |= TEXT_USE;
+        added++;
+    }
+    if (added > VOCR_LINES_MAX - out->count) return; /* all-or-nothing safe fallback */
+    for (i = 0; i < nc; i++) {
+        TextCand value;
+        VocrLine *line;
+        if (!(cand[i].mass & TEXT_USE)) continue;
+        value = cand[i];
+        recovery_marks(im, bits, cand, nc, i, &value, main);
+        /* Unused output slots stage final rectangles; candidate cores stay
+         * immutable, and no old output coordinate/polarity is touched. */
+        line = &out->lines[old_count + staged++];
+        line->x = value.x1; line->y = value.top;
+        line->w = value.x2 - value.x1; line->h = value.bot - value.top;
+        line->dark = 0;
+    }
+    /* Small-mark attachment can change geometry: deduplicate AGAIN afterwards,
+     * before polarity work or recognition. Old C3 crops always win a duplicate. */
+    for (i = old_count; i < old_count + staged; i++) {
+        VocrLine *line = &out->lines[i];
+        for (j = 0; j < kept; j++)
+            if (text_same_box(line->x, line->y, line->w, line->h,
+                              out->lines[j].x, out->lines[j].y, out->lines[j].w, out->lines[j].h)) break;
+        if (j < kept) continue;
+        if (kept != i) out->lines[kept] = *line;
+        line = &out->lines[kept++];
+        line->dark = (unsigned)vocr_line_dark(im, line->x, line->y, line->w, line->h);
+    }
+    out->count = kept;
+    for (i = 1; i < out->count; i++) {
+        VocrLine value = out->lines[i]; j = i;
+        while (j && (out->lines[j - 1u].y > value.y ||
+                     (out->lines[j - 1u].y == value.y && out->lines[j - 1u].x > value.x))) {
+            out->lines[j] = out->lines[j - 1u]; j--;
+        }
+        out->lines[j] = value;
+    }
+}
+
 static unsigned component_root(TextComponent *components, unsigned label)
 {
     unsigned root = label;
@@ -461,7 +735,7 @@ static int textbox_separate(const uint32_t *bits, unsigned words, unsigned h,
 }
 
 static int find_textbox(const VocrLinesImage *im, const uint32_t *bits, unsigned char *scratch,
-                        VocrLineSet *out)
+                        VocrLineSet *out, int recovery)
 {
     unsigned w = im->width, h = im->height, words = (w + 31u) / 32u;
     unsigned max_runs = (w + GAP) / (MIN_H + GAP), cap = 4u * max_runs;
@@ -598,6 +872,7 @@ static int find_textbox(const VocrLinesImage *im, const uint32_t *bits, unsigned
         }
     }
     text_route(im, cand, nc, med, out);
+    if (recovery) text_recover(im, cand, nc, bits, scratch, out);
     return VOCR_LINES_OK;
 }
 
@@ -765,7 +1040,8 @@ static int find_grad(const VocrLinesImage *im, unsigned char *base, VocrLineSet 
             ln->dark = (unsigned)vocr_line_dark(im, lx, ly, ln->w, ln->h);
         }
     }
-    if (textbox && !out->truncated) return find_textbox(im, bits, (unsigned char *)(void *)prof, out);
+    if (textbox && !out->truncated)
+        return find_textbox(im, bits, (unsigned char *)(void *)prof, out, textbox == 2);
     return VOCR_LINES_OK;
 }
 
@@ -834,12 +1110,13 @@ int vocr_find_lines(const VocrLinesImage *im, int finder, void *arena, size_t ar
     if (!im || !im->pixels || !im->width || !im->height || !arena ||
         (im->bpp != VOCR_LINES_GREY && im->bpp != VOCR_LINES_RGBA) ||
         im->stride < (size_t)im->width * im->bpp ||
-        (finder != VOCR_LINES_GRAD && finder != VOCR_LINES_LEGACY && finder != VOCR_LINES_TEXTBOX))
+        (finder != VOCR_LINES_GRAD && finder != VOCR_LINES_LEGACY && finder != VOCR_LINES_TEXTBOX &&
+         finder != VOCR_LINES_TEXTBOX_RECOVERY))
         return VOCR_LINES_E_ARG;
     if (arena_bytes < vocr_lines_arena_bytes(im->width, im->height)) return VOCR_LINES_E_ARENA;
     base = align4(arena);
     rc = finder == VOCR_LINES_LEGACY ? find_legacy(im, base, out) :
-         find_grad(im, base, out, finder == VOCR_LINES_TEXTBOX);
+         find_grad(im, base, out, finder == VOCR_LINES_TEXTBOX_RECOVERY ? 2 : finder == VOCR_LINES_TEXTBOX);
     if (rc) out->count = 0; /* never report a partial result */
     return rc;
 }

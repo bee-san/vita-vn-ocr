@@ -25,6 +25,7 @@ extern "C" {
 #define VOCR_LINES_GRAD 0   /* polarity-agnostic local-contrast projection (default) */
 #define VOCR_LINES_LEGACY 1 /* vita-jp-overlay's bright-pixel projection, for comparison */
 #define VOCR_LINES_TEXTBOX 2 /* preserve GRAD rows; repair proven textbox topology */
+#define VOCR_LINES_TEXTBOX_RECOVERY 3 /* TEXTBOX plus independently supported missing rows */
 
 /* Return codes. */
 #define VOCR_LINES_OK 0

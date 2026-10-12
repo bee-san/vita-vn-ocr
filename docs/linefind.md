@@ -16,6 +16,14 @@ An old crop is replaced only if it is taller than twice the main height plus six
 
 This geometry cannot identify all UI art, repair missing words within an otherwise ordinary row, or recover pixels omitted by the user's crop. Glyph rows under eight pixels retain the existing finder limitation. Real-screenshot CER and console timings must be measured before promotion; generated geometry checks are not accuracy measurements.
 
+`VOCR_LINES_TEXTBOX_RECOVERY` (mode 3, `Finder("textbox_recovery")`) optionally
+extends TEXTBOX with independently supported missing rows. It retains existing
+TEXTBOX crops and uses component core heights, compatible neighboring rows and
+complete detached-mark spans to recover uncovered text. Its caller arena is
+unchanged. The frozen six-title development comparison passes its prospective
+gate; independent test accuracy and physical-console performance remain pending.
+See [the algorithm and DEVELOPMENT ONLY results](native-textbox-recovery.md).
+
 The optional stage uses the old output array in place and reuses dead GRAD scratch. For `R = floor((width + 10) / 18)` and `b = band_cap(height)`, its runs, live components and candidates need `160R + 20b` bytes, bounded by the existing `15*width + 4*height + 24b` scratch space for width/height at least eight. At 8×8 both are exactly 200 bytes, so `vocr_lines_arena_bytes()` remains 235 there and unchanged elsewhere. There is no heap allocation, additional output-array copy or recursion. Scalars and the existing four-row count array use bounded stack; target stack/code size and time require separate console builds or measurements. `eval/linefind/cfinder.py Finder("textbox")` calls this C mode; GRAD/legacy and their historical protocols remain unchanged.
 
 Out of sample, on eval's hand-checked vita-test (PR #2: 59 regions from 12 VNs that share no VN or screenshot with the tuning sets), v1's pipeline CER goes from 40.6% with the legacy finder to 21.1% with grad and dark-text crops inverted. With the ground-truth boxes it is 15.4%. Line F1 on the four detector-built sets goes from 0.41–0.48 to 0.58–0.72. On research sets A and B, which the constants were tuned on, CER goes from 28.4% to 4.4% and from 38.5% to 5.3%; those two are in-sample numbers (details below).

@@ -1,0 +1,1538 @@
+{
+  "schema": 1,
+  "kind": "general-vn-synthetic-snapshot-metadata",
+  "snapshot_id": "provenance-synthetic-20261011",
+  "private_root": "build/general-vn/provenance-synthetic-20261011",
+  "distribution": {
+    "status": "private local snapshot; no dataset release",
+    "committed": "metadata and results only",
+    "excluded": [
+      "crop pixels",
+      "labels",
+      "corpus text",
+      "fonts",
+      "checkpoints",
+      "full per-chunk asset registries"
+    ]
+  },
+  "producer": {
+    "commit": "1c55d8dac471eda5b98437dda8368b462f6b364c",
+    "url": "https://github.com/bee-san/vita-vn-ocr/tree/1c55d8dac471eda5b98437dda8368b462f6b364c"
+  },
+  "consumer": {
+    "commit": "01641d124df0d395d14cc3fc1a57a29a89dccfe8",
+    "url": "https://github.com/bee-san/vita-vn-ocr/tree/01641d124df0d395d14cc3fc1a57a29a89dccfe8"
+  },
+  "sources": {
+    "corpus": {
+      "url": "https://huggingface.co/datasets/globis-university/aozorabunko-clean/resolve/42a9c9c0f1d67e6a5554d9bea4201973dc9b049c/aozorabunko-dedupe-clean.jsonl.gz",
+      "file": "assets/corpus/aozora/aozorabunko-dedupe-clean.jsonl.gz",
+      "sha256": "3f41359c59b4bb1bf2d5692131463afc3f34a8208b987a563c1d60f9ab90d278",
+      "bytes": 240780659,
+      "repo": "globis-university/aozorabunko-clean",
+      "revision": "42a9c9c0f1d67e6a5554d9bea4201973dc9b049c",
+      "license": "CC-BY-4.0"
+    },
+    "fonts": {
+      "font:fusionpixel10": {
+        "file": "assets/fonts/fusionpixel10/fusion-pixel-10px-proportional-ja.ttf",
+        "bytes": 4046680,
+        "sha256": "7db8ba41d0d51ee4a8495ba894e3730e837fb42b0cae8489f924597a660bb0ba",
+        "kind": "font",
+        "origin": "ofl",
+        "license": "OFL-1.1",
+        "license_file": {
+          "file": "assets/fonts/fusionpixel10/OFL.txt",
+          "bytes": 4418,
+          "sha256": "bc518cf64b8032c07690f33cc270c35c179255a6ac8efa7c165ebae7e8f76a63"
+        },
+        "family": "fusionpixel10",
+        "category": "pixel",
+        "source_download": {
+          "family": "fusionpixel10",
+          "zip_url": "https://github.com/TakWolf/fusion-pixel-font/releases/download/2026.09.25/fusion-pixel-font-10px-proportional-ttf-v2026.09.25.zip",
+          "zip_sha256": "ea3e9c6cfffa4d42edc78e4b8d5d3032f5601908261628fee2d8df906af75aec",
+          "file": "assets/fonts_extra/fusionpixel10/fusion-pixel-10px-proportional-ja.ttf",
+          "sha256": "7db8ba41d0d51ee4a8495ba894e3730e837fb42b0cae8489f924597a660bb0ba",
+          "license": "OFL-1.1",
+          "bytes": 4046680
+        }
+      },
+      "font:fusionpixel12": {
+        "file": "assets/fonts/fusionpixel12/fusion-pixel-12px-proportional-ja.ttf",
+        "bytes": 7050736,
+        "sha256": "cb54245a786df7fe302e20a63d3771cecbd9feb6f91bec439d030c218f24a808",
+        "kind": "font",
+        "origin": "ofl",
+        "license": "OFL-1.1",
+        "license_file": {
+          "file": "assets/fonts/fusionpixel12/OFL.txt",
+          "bytes": 4418,
+          "sha256": "bc518cf64b8032c07690f33cc270c35c179255a6ac8efa7c165ebae7e8f76a63"
+        },
+        "family": "fusionpixel12",
+        "category": "pixel",
+        "source_download": {
+          "family": "fusionpixel12",
+          "zip_url": "https://github.com/TakWolf/fusion-pixel-font/releases/download/2026.09.25/fusion-pixel-font-12px-proportional-ttf-v2026.09.25.zip",
+          "zip_sha256": "47585b9c4b6d8d57380e9dec75bc7e8043fdbfa77d1843c3aaa19a1e7bd15d50",
+          "file": "assets/fonts_extra/fusionpixel12/fusion-pixel-12px-proportional-ja.ttf",
+          "sha256": "cb54245a786df7fe302e20a63d3771cecbd9feb6f91bec439d030c218f24a808",
+          "license": "OFL-1.1",
+          "bytes": 7050736
+        }
+      },
+      "font:notosansjp": {
+        "file": "assets/fonts/notosansjp/NotoSansJP[wght].ttf",
+        "bytes": 9589900,
+        "sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f",
+        "kind": "font",
+        "origin": "ofl",
+        "license": "OFL-1.1",
+        "license_file": {
+          "file": "assets/fonts/notosansjp/OFL.txt",
+          "bytes": 4388,
+          "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+        },
+        "family": "notosansjp",
+        "category": "gothic",
+        "source_download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf",
+          "file": "assets/fonts/notosansjp/NotoSansJP[wght].ttf",
+          "sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f",
+          "bytes": 9589900,
+          "family": "notosansjp",
+          "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+          "license": "OFL-1.1"
+        }
+      },
+      "font:notoserifjp": {
+        "file": "assets/fonts/notoserifjp/NotoSerifJP[wght].ttf",
+        "bytes": 13574352,
+        "sha256": "2fd527ba12b6a44ec30d796d633360da0aeba6c5d4af1304ce12bb4dc15a7dfc",
+        "kind": "font",
+        "origin": "ofl",
+        "license": "OFL-1.1",
+        "license_file": {
+          "file": "assets/fonts/notoserifjp/OFL.txt",
+          "bytes": 4350,
+          "sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6"
+        },
+        "family": "notoserifjp",
+        "category": "mincho",
+        "source_download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notoserifjp/NotoSerifJP%5Bwght%5D.ttf",
+          "file": "assets/fonts/notoserifjp/NotoSerifJP[wght].ttf",
+          "sha256": "2fd527ba12b6a44ec30d796d633360da0aeba6c5d4af1304ce12bb4dc15a7dfc",
+          "bytes": 13574352,
+          "family": "notoserifjp",
+          "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+          "license": "OFL-1.1"
+        }
+      },
+      "font:mplus1p": {
+        "file": "assets/fonts/mplus1p/MPLUS1p-Regular.ttf",
+        "bytes": 1758688,
+        "sha256": "2f294ad496432b1608f070d310e3aa2adcf1de4af429f4901df97ec4bd361ed1",
+        "kind": "font",
+        "origin": "ofl",
+        "license": "OFL-1.1",
+        "license_file": {
+          "file": "assets/fonts/mplus1p/OFL.txt",
+          "bytes": 4389,
+          "sha256": "da15da6b1496d4de18f97e2ad1b722ef8a1c121149c2c93b2cf7eac6ac27b35c"
+        },
+        "family": "mplus1p",
+        "category": "gothic",
+        "source_download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/mplus1p/MPLUS1p-Regular.ttf",
+          "file": "assets/fonts/mplus1p/MPLUS1p-Regular.ttf",
+          "sha256": "2f294ad496432b1608f070d310e3aa2adcf1de4af429f4901df97ec4bd361ed1",
+          "bytes": 1758688,
+          "family": "mplus1p",
+          "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+          "license": "OFL-1.1"
+        }
+      },
+      "font:zenmarugothic": {
+        "file": "assets/fonts/zenmarugothic/ZenMaruGothic-Regular.ttf",
+        "bytes": 3832756,
+        "sha256": "a0c0b53543e0993ae2225e629c833f3d51495ad31720694ff112ce4ce11111ef",
+        "kind": "font",
+        "origin": "ofl",
+        "license": "OFL-1.1",
+        "license_file": {
+          "file": "assets/fonts/zenmarugothic/OFL.txt",
+          "bytes": 4402,
+          "sha256": "2a20cf7ce1909d8ee1e949095d340f7d7656705f7c810a2d6faf56800ad0cb3d"
+        },
+        "family": "zenmarugothic",
+        "category": "rounded",
+        "source_download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/zenmarugothic/ZenMaruGothic-Regular.ttf",
+          "file": "assets/fonts/zenmarugothic/ZenMaruGothic-Regular.ttf",
+          "sha256": "a0c0b53543e0993ae2225e629c833f3d51495ad31720694ff112ce4ce11111ef",
+          "bytes": 3832756,
+          "family": "zenmarugothic",
+          "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+          "license": "OFL-1.1"
+        }
+      },
+      "font:kleeone": {
+        "file": "assets/fonts/kleeone/KleeOne-Regular.ttf",
+        "bytes": 8724204,
+        "sha256": "bf4063f030cc2ae6adf0a11424a1888e5c0eb4438f1f6d02f52294af868e9b3a",
+        "kind": "font",
+        "origin": "ofl",
+        "license": "OFL-1.1",
+        "license_file": {
+          "file": "assets/fonts/kleeone/OFL.txt",
+          "bytes": 4479,
+          "sha256": "e376b0df8e8a2345a9533db6f0a5333a1107975569ad9d1973a7ee557161ca38"
+        },
+        "family": "kleeone",
+        "category": "pen",
+        "source_download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/kleeone/KleeOne-Regular.ttf",
+          "file": "assets/fonts/kleeone/KleeOne-Regular.ttf",
+          "sha256": "bf4063f030cc2ae6adf0a11424a1888e5c0eb4438f1f6d02f52294af868e9b3a",
+          "bytes": 8724204,
+          "family": "kleeone",
+          "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+          "license": "OFL-1.1"
+        }
+      },
+      "font:bizudgothic": {
+        "file": "assets/fonts/bizudgothic/BIZUDGothic-Regular.ttf",
+        "bytes": 4667376,
+        "sha256": "709fcd41e3209fb765da750472f55ccdf925653e9fa7e1eb007cb65c8f749c75",
+        "kind": "font",
+        "origin": "ofl",
+        "license": "OFL-1.1",
+        "license_file": {
+          "file": "assets/fonts/bizudgothic/OFL.txt",
+          "bytes": 4408,
+          "sha256": "e753d7155d53c747d037a445e584c8ecfca6dd79846db610417e282a736b28bc"
+        },
+        "family": "bizudgothic",
+        "category": "gothic",
+        "source_download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/bizudgothic/BIZUDGothic-Regular.ttf",
+          "file": "assets/fonts/bizudgothic/BIZUDGothic-Regular.ttf",
+          "sha256": "709fcd41e3209fb765da750472f55ccdf925653e9fa7e1eb007cb65c8f749c75",
+          "bytes": 4667376,
+          "family": "bizudgothic",
+          "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+          "license": "OFL-1.1"
+        }
+      },
+      "font:dotgothic16": {
+        "file": "assets/fonts/dotgothic16/DotGothic16-Regular.ttf",
+        "bytes": 2069236,
+        "sha256": "3ad9af88726d42b40f7f365f0dcac785af73cf20ea6f1d5b44e57cc21150b8f1",
+        "kind": "font",
+        "origin": "ofl",
+        "license": "OFL-1.1",
+        "license_file": {
+          "file": "assets/fonts/dotgothic16/OFL.txt",
+          "bytes": 4492,
+          "sha256": "b6630c61ea078cacd7fabe37d14ffe557a0b45b06683374a9aa9e24262993e33"
+        },
+        "family": "dotgothic16",
+        "category": "pixel",
+        "source_download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/dotgothic16/DotGothic16-Regular.ttf",
+          "file": "assets/fonts/dotgothic16/DotGothic16-Regular.ttf",
+          "sha256": "3ad9af88726d42b40f7f365f0dcac785af73cf20ea6f1d5b44e57cc21150b8f1",
+          "bytes": 2069236,
+          "family": "dotgothic16",
+          "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+          "license": "OFL-1.1"
+        }
+      }
+    },
+    "kanji_policy": {
+      "file": "data/manifests/fl10_kanji_policy_20261011.json",
+      "sha256": "8fc9ea20804cc45876e25b60ed669446dc75fc7f0b6b383d65cc4688e050f763",
+      "provenance": {
+        "jiten": {
+          "url": "https://api.jiten.moe/api/frequency-list/download-kanji?downloadType=csv",
+          "sha256": "bdb0eaef29e5b7bdf52efaa91376dba8935b860a57a56d7ae2203138de918c78",
+          "bytes": 109431,
+          "license": "CC-BY-SA-4.0",
+          "revision": "Jiten (Kanji) 26-08-09",
+          "columns": [
+            "Kanji",
+            "Rank"
+          ]
+        },
+        "similar": {
+          "url": "https://raw.githubusercontent.com/siikamiika/similar-kanji/0edcfebd5204676dec72b6b12fa26c148489bb1c/kanji.tgz_similars.ut8",
+          "sha256": "2f80888f8c0afbf8793327cdf7dad0778f028467594183e53811b2ed461ef026",
+          "bytes": 61910,
+          "revision": "0edcfebd5204676dec72b6b12fa26c148489bb1c",
+          "license": "MIT",
+          "copyright": "Copyright (c) 2017 siikamiika",
+          "license_url": "https://raw.githubusercontent.com/siikamiika/similar-kanji/0edcfebd5204676dec72b6b12fa26c148489bb1c/LICENSE",
+          "license_sha256": "06c3b7d4828de91d21c16b577d7bfad3601a15249fa5577f38b48858dfa1754f"
+        }
+      },
+      "coverage": {
+        "jiten_kanji": 11049,
+        "model_vocabulary": 3500,
+        "model_kanji": 3112,
+        "supported_kanji": 3112,
+        "missing_jiten_kanji": 7937,
+        "model_kanji_outside_jiten": 0,
+        "source_pairs": 5925,
+        "supported_pairs": 5212
+      },
+      "corrective": {
+        "total_training_probability": 0.02,
+        "rank_bands": [
+          {
+            "name": "common",
+            "max_rank": 2000,
+            "probability": 0.85
+          },
+          {
+            "name": "uncommon",
+            "max_rank": 3000,
+            "probability": 0.1
+          },
+          {
+            "name": "rare",
+            "max_rank": 4000,
+            "probability": 0.04
+          },
+          {
+            "name": "very_rare",
+            "max_rank": null,
+            "probability": 0.01
+          }
+        ],
+        "pair_weight": "1 / max(endpoint ranks)",
+        "endpoint_balance": "one rendered context crop per endpoint",
+        "empty_bands": "redistribute to the most common available band",
+        "finite_schedule": "floor rare quotas; assign remaining pairs to common"
+      }
+    },
+    "ordered_vocabulary": {
+      "file": "build/hiragana/vocab.txt",
+      "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8",
+      "nonblank_classes": 3500
+    }
+  },
+  "preparation": {
+    "code_sha256": "4c301e93ac87df741188fc3574dc2e2b60ed3393ecdae5eff1fcf483df7805f4",
+    "assets_manifest_sha256": "9e7548ee3a967c4cf09e3652255363f048ffca5d1213b2050652b0c5b15c230d",
+    "pools_manifest_sha256": "97f9307deb86bfdf1ec9938e87458e37340c86d319ec04be88a598acb637b671",
+    "book_split_policy": "sha256(seed:book_id) uint64 modulo10: dev0,train1..9",
+    "seed": 20261011,
+    "book_intersection": 0,
+    "train_dev_exact_chunk_intersection": 0,
+    "kanji_policy_sha256": "8fc9ea20804cc45876e25b60ed669446dc75fc7f0b6b383d65cc4688e050f763",
+    "vocab_sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8",
+    "statistics": [
+      {
+        "split": "train",
+        "pool": "dialogue",
+        "input_chunks": 50000,
+        "kept_chunks": 50000,
+        "unsafe_whole_chunks_dropped": 0,
+        "cross_role_exact_chunks_dropped": 0
+      },
+      {
+        "split": "train",
+        "pool": "narration",
+        "input_chunks": 75000,
+        "kept_chunks": 75000,
+        "unsafe_whole_chunks_dropped": 0,
+        "cross_role_exact_chunks_dropped": 0
+      },
+      {
+        "split": "dev",
+        "pool": "dialogue",
+        "input_chunks": 10000,
+        "kept_chunks": 9822,
+        "unsafe_whole_chunks_dropped": 0,
+        "cross_role_exact_chunks_dropped": 178
+      },
+      {
+        "split": "dev",
+        "pool": "narration",
+        "input_chunks": 15000,
+        "kept_chunks": 14946,
+        "unsafe_whole_chunks_dropped": 0,
+        "cross_role_exact_chunks_dropped": 54
+      }
+    ],
+    "limitation": "Chunk identity maps to a frozen source pool and its book cohort; original per-chunk book IDs were not retained by that earlier pool builder.",
+    "source_pool_builder_sha256": "5929544b9565a0a7643bc5bed673c11a629511fc7073f91464fc451074df6fc9",
+    "pool_weights": {
+      "dialogue": 0.63,
+      "narration": 0.37
+    },
+    "cohorts": {
+      "train": {
+        "file": "assets/text/train/book_ids.json",
+        "bytes": 129281,
+        "sha256": "942f166d158eef26e4c74cb6b370eb5c9012171c7dd4136e90b664cdfe0b8399",
+        "books": 9225,
+        "split": "train"
+      },
+      "dev": {
+        "file": "assets/text/dev/book_ids.json",
+        "bytes": 14423,
+        "sha256": "0e14a5a0a0fa15f9f618bf6dad9fb0e4ef53d03f1efe46071c9e894661edf321",
+        "books": 1021,
+        "split": "dev"
+      }
+    },
+    "text_pools": {
+      "text:aozora-train-dialogue": {
+        "file": "assets/text/train/dialogue.txt",
+        "bytes": 5937682,
+        "sha256": "472e7bee6ee174f89d39b6ec95e05b750f0e983bbaf8af6d98ebc73b0ba95bb6",
+        "kind": "text",
+        "origin": "non_game",
+        "game_free_reviewed": true,
+        "split": "train",
+        "pool": "dialogue",
+        "source_pool": {
+          "split": "train",
+          "pool": "dialogue",
+          "items": 50000,
+          "seen": 647765,
+          "file": "assets/corpus/dialogue.txt",
+          "sha256": "472e7bee6ee174f89d39b6ec95e05b750f0e983bbaf8af6d98ebc73b0ba95bb6"
+        },
+        "source_book_cohort": {
+          "file": "assets/text/train/book_ids.json",
+          "bytes": 129281,
+          "sha256": "942f166d158eef26e4c74cb6b370eb5c9012171c7dd4136e90b664cdfe0b8399"
+        },
+        "source_index": {
+          "file": "assets/text/train/dialogue.source-index.json",
+          "bytes": 15488893,
+          "sha256": "dbe973ac2f93e693ff145f5645e3640ef42dd26157e79708848d91c0250ee922"
+        },
+        "review": "Pinned Aozora modern-kana literary book corpus only; no visual-novel script text."
+      },
+      "text:aozora-train-narration": {
+        "file": "assets/text/train/narration.txt",
+        "bytes": 14171649,
+        "sha256": "fb61fb9c2bec65df696bebd2b437546c82a98300c5c52a67388faa49a05e53c9",
+        "kind": "text",
+        "origin": "non_game",
+        "game_free_reviewed": true,
+        "split": "train",
+        "pool": "narration",
+        "source_pool": {
+          "split": "train",
+          "pool": "narration",
+          "items": 75000,
+          "seen": 1635115,
+          "file": "assets/corpus/narration.txt",
+          "sha256": "fb61fb9c2bec65df696bebd2b437546c82a98300c5c52a67388faa49a05e53c9"
+        },
+        "source_book_cohort": {
+          "file": "assets/text/train/book_ids.json",
+          "bytes": 129281,
+          "sha256": "942f166d158eef26e4c74cb6b370eb5c9012171c7dd4136e90b664cdfe0b8399"
+        },
+        "source_index": {
+          "file": "assets/text/train/narration.source-index.json",
+          "bytes": 23238893,
+          "sha256": "48f770b649a4743ea3bff9404d1b8cb1a304c74a314f9efb26feb43bb9606069"
+        },
+        "review": "Pinned Aozora modern-kana literary book corpus only; no visual-novel script text."
+      },
+      "text:aozora-dev-dialogue": {
+        "file": "assets/text/dev/dialogue.txt",
+        "bytes": 1213120,
+        "sha256": "f042562d837ed9007c0da06e55c54f7b308ac9420af9f8d63e906f979019b78c",
+        "kind": "text",
+        "origin": "non_game",
+        "game_free_reviewed": true,
+        "split": "dev",
+        "pool": "dialogue",
+        "source_pool": {
+          "split": "dev",
+          "pool": "dialogue",
+          "items": 10000,
+          "seen": 80532,
+          "file": "assets-dev/corpus/dialogue.txt",
+          "sha256": "ee32fbbbddde141cef53452d49a3191b5ba3dd5748cd4ee3a049786e98be3a1a"
+        },
+        "source_book_cohort": {
+          "file": "assets/text/dev/book_ids.json",
+          "bytes": 14423,
+          "sha256": "0e14a5a0a0fa15f9f618bf6dad9fb0e4ef53d03f1efe46071c9e894661edf321"
+        },
+        "source_index": {
+          "file": "assets/text/dev/dialogue.source-index.json",
+          "bytes": 3033900,
+          "sha256": "8a99f65a9bd27018d33e580cd176e2fcfe72a3cba0c9d66d9fd52c9dca7c98f6"
+        },
+        "review": "Pinned Aozora modern-kana literary book corpus only; no visual-novel script text."
+      },
+      "text:aozora-dev-narration": {
+        "file": "assets/text/dev/narration.txt",
+        "bytes": 2891458,
+        "sha256": "f1299c471e9004cd5cff11889e4bc8587bda9d204368a1d39c6601c0ba233142",
+        "kind": "text",
+        "origin": "non_game",
+        "game_free_reviewed": true,
+        "split": "dev",
+        "pool": "narration",
+        "source_pool": {
+          "split": "dev",
+          "pool": "narration",
+          "items": 15000,
+          "seen": 207081,
+          "file": "assets-dev/corpus/narration.txt",
+          "sha256": "8bbf01838c0181994dc1cf110c9ed32776d850d6e04cc51cf151d878e9ccbab4"
+        },
+        "source_book_cohort": {
+          "file": "assets/text/dev/book_ids.json",
+          "bytes": 14423,
+          "sha256": "0e14a5a0a0fa15f9f618bf6dad9fb0e4ef53d03f1efe46071c9e894661edf321"
+        },
+        "source_index": {
+          "file": "assets/text/dev/narration.source-index.json",
+          "bytes": 4622191,
+          "sha256": "1338d38fac255407b73bebc8d6e0e844bd0e439c5bb622a927b4c88d0fabe126"
+        },
+        "review": "Pinned Aozora modern-kana literary book corpus only; no visual-novel script text."
+      }
+    },
+    "pool_identity": "asset IDs and raw pool hashes; source indexes retain original zero-based source line and raw chunk SHA",
+    "unsafe_handling": "reject/drop entire unsafe chunks; never delete disallowed characters inside labels"
+  },
+  "exclusions": {
+    "forbidden_vns_count": 184,
+    "forbidden_vns": [
+      "v10050",
+      "v10091",
+      "v1015",
+      "v10244",
+      "v10272",
+      "v10288",
+      "v10574",
+      "v10606",
+      "v1081",
+      "v10856",
+      "v1099",
+      "v11",
+      "v11029",
+      "v11069",
+      "v11095",
+      "v11109",
+      "v11454",
+      "v11472",
+      "v11504",
+      "v1152",
+      "v11621",
+      "v11639",
+      "v11707",
+      "v11708",
+      "v11709",
+      "v11713",
+      "v1194",
+      "v11960",
+      "v11984",
+      "v12150",
+      "v12155",
+      "v12159",
+      "v12392",
+      "v12449",
+      "v12455",
+      "v12480",
+      "v12570",
+      "v12571",
+      "v12702",
+      "v12775",
+      "v12865",
+      "v12928",
+      "v12935",
+      "v12940",
+      "v12957",
+      "v12984",
+      "v13072",
+      "v13081",
+      "v13238",
+      "v1335",
+      "v1357",
+      "v13766",
+      "v1377",
+      "v13905",
+      "v13994",
+      "v14",
+      "v14345",
+      "v14761",
+      "v14919",
+      "v1560",
+      "v15773",
+      "v15910",
+      "v16128",
+      "v16460",
+      "v16493",
+      "v16566",
+      "v16703",
+      "v16862",
+      "v17100",
+      "v17102",
+      "v17286",
+      "v17345",
+      "v17750",
+      "v17829",
+      "v17964",
+      "v18030",
+      "v18160",
+      "v18163",
+      "v18456",
+      "v18644",
+      "v18670",
+      "v18717",
+      "v18738",
+      "v18852",
+      "v18905",
+      "v18943",
+      "v1914",
+      "v19333",
+      "v19338",
+      "v19339",
+      "v1940",
+      "v19850",
+      "v20",
+      "v2021",
+      "v2022",
+      "v20226",
+      "v2024",
+      "v20326",
+      "v204",
+      "v20577",
+      "v2086",
+      "v21782",
+      "v21789",
+      "v2203",
+      "v22122",
+      "v2251",
+      "v23403",
+      "v23418",
+      "v24312",
+      "v24336",
+      "v250",
+      "v256",
+      "v25643",
+      "v25714",
+      "v25914",
+      "v26075",
+      "v2628",
+      "v2632",
+      "v264",
+      "v28194",
+      "v2857",
+      "v29268",
+      "v2936",
+      "v2945",
+      "v2956",
+      "v3",
+      "v30342",
+      "v32309",
+      "v3396",
+      "v3542",
+      "v3820",
+      "v4",
+      "v40027",
+      "v4147",
+      "v426",
+      "v430",
+      "v4542",
+      "v4602",
+      "v4671",
+      "v4856",
+      "v4936",
+      "v5230",
+      "v5256",
+      "v5297",
+      "v5304",
+      "v5305",
+      "v5386",
+      "v549",
+      "v55138",
+      "v55519",
+      "v562",
+      "v5705",
+      "v5844",
+      "v6006",
+      "v6011",
+      "v609",
+      "v6382",
+      "v6459",
+      "v6572",
+      "v68",
+      "v689",
+      "v7",
+      "v7014",
+      "v7018",
+      "v7302",
+      "v7344",
+      "v7503",
+      "v7568",
+      "v7634",
+      "v7645",
+      "v7721",
+      "v7875",
+      "v8202",
+      "v8462",
+      "v855",
+      "v9",
+      "v9071",
+      "v9197",
+      "v968",
+      "v969",
+      "v9736",
+      "v9845",
+      "v9915",
+      "v9961"
+    ],
+    "exclusion_inputs": {
+      "data/manifests/synth2_bg_exclude.txt": "a6b0bb48cf78b09ec1591f83018ed51bc3bbaaaa78da1974809874f9652f5c1b",
+      "eval/manifests/test_games.json": "d986adff49f1bfcf3df30ae841d658ec8f06f2b89e01fe37990a0bbd53966d39"
+    }
+  },
+  "recipe_common": {
+    "schema": 1,
+    "input_manifest_sha256": "a0ba0e4bb5428dd4f05ec79841685467e37217a43121dd63e5d5b4ad6814c8d6",
+    "vocab_sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8",
+    "input_asset_sha256": {
+      "font:fusionpixel10": {
+        "sha256": "7db8ba41d0d51ee4a8495ba894e3730e837fb42b0cae8489f924597a660bb0ba",
+        "split": null
+      },
+      "font:fusionpixel12": {
+        "sha256": "cb54245a786df7fe302e20a63d3771cecbd9feb6f91bec439d030c218f24a808",
+        "split": null
+      },
+      "font:notosansjp": {
+        "sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f",
+        "split": null
+      },
+      "font:notoserifjp": {
+        "sha256": "2fd527ba12b6a44ec30d796d633360da0aeba6c5d4af1304ce12bb4dc15a7dfc",
+        "split": null
+      },
+      "font:mplus1p": {
+        "sha256": "2f294ad496432b1608f070d310e3aa2adcf1de4af429f4901df97ec4bd361ed1",
+        "split": null
+      },
+      "font:zenmarugothic": {
+        "sha256": "a0c0b53543e0993ae2225e629c833f3d51495ad31720694ff112ce4ce11111ef",
+        "split": null
+      },
+      "font:kleeone": {
+        "sha256": "bf4063f030cc2ae6adf0a11424a1888e5c0eb4438f1f6d02f52294af868e9b3a",
+        "split": null
+      },
+      "font:bizudgothic": {
+        "sha256": "709fcd41e3209fb765da750472f55ccdf925653e9fa7e1eb007cb65c8f749c75",
+        "split": null
+      },
+      "font:dotgothic16": {
+        "sha256": "3ad9af88726d42b40f7f365f0dcac785af73cf20ea6f1d5b44e57cc21150b8f1",
+        "split": null
+      },
+      "text:aozora-train-dialogue": {
+        "sha256": "472e7bee6ee174f89d39b6ec95e05b750f0e983bbaf8af6d98ebc73b0ba95bb6",
+        "split": "train"
+      },
+      "text:aozora-train-narration": {
+        "sha256": "fb61fb9c2bec65df696bebd2b437546c82a98300c5c52a67388faa49a05e53c9",
+        "split": "train"
+      },
+      "text:aozora-dev-dialogue": {
+        "sha256": "f042562d837ed9007c0da06e55c54f7b308ac9420af9f8d63e906f979019b78c",
+        "split": "dev"
+      },
+      "text:aozora-dev-narration": {
+        "sha256": "f1299c471e9004cd5cff11889e4bc8587bda9d204368a1d39c6601c0ba233142",
+        "split": "dev"
+      }
+    },
+    "kanji_policy_sha256": "8fc9ea20804cc45876e25b60ed669446dc75fc7f0b6b383d65cc4688e050f763",
+    "per_shard": 500,
+    "finder": "grad",
+    "invert_dark": true,
+    "crop_edge_jitter": true,
+    "native_probability": 0.0,
+    "code_sha256": {
+      "synth/provenance_producer.py": "9cbbd754f00212e415ae6324d4de20dcad0a4fa870aa63afdc34cb192895b34e",
+      "synth/render.py": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248",
+      "synth/common.py": "6b8ca608c4e1ec60c87dd3bc6fa44a03fbb84fe0387ccc77a4c8aefbdc0c13ca",
+      "synth/native_bitmap_font.py": "cce60a4f038e394ba870bb207d72eda2233c936cd2990eb2a8c8caea2270f9fb",
+      "synth/native_font_manifest.py": "e82ee49fab359939341e4557f50145051419d449185f2444bca69aa6b0aa48a8",
+      "synth/kanji_policy.py": "c98e9516171c2f2a34dcccf47393143266ef3c1dfdd2eabc6baf05980f2ae7ca",
+      "synth/bg_exclude.py": "58dbf9eca7dd86273ef17117b077c9c094dffcd06856f3ca786332c57f8aa752",
+      "synth/mask_finder.py": "7d80b25b1d53d337ab800b89feaf82d0821e0e0d3f67822904b2ce569057f5a5"
+    },
+    "dependency_sha256": "529385fa711e896b05aaba1130e81d0ac3334ae8ddea40b253c8546cbaae9539",
+    "exclusions_sha256": {
+      "data/manifests/synth2_bg_exclude.txt": "a6b0bb48cf78b09ec1591f83018ed51bc3bbaaaa78da1974809874f9652f5c1b",
+      "eval/manifests/test_games.json": "d986adff49f1bfcf3df30ae841d658ec8f06f2b89e01fe37990a0bbd53966d39"
+    },
+    "environment": {
+      "python": "3.11.15",
+      "numpy": "2.4.6",
+      "pillow": "12.3.0",
+      "opencv": "5.0.0",
+      "fonttools": "4.66.1",
+      "freetype": "2.14.3",
+      "opencv_build_sha256": "0ef08003c31127b3b5d34410ab13483c511e73b99e278b1a8abd6ddcb265699a"
+    }
+  },
+  "sets": {
+    "broad-train": {
+      "source": "broad_ofl",
+      "split": "train",
+      "recipe_sha256": "7a30ba581c1ba5fe06e8e7575bd8b21d32ec294eca46d4b40456f855aa66151a",
+      "recipe_overrides": {
+        "split": "train",
+        "source": "broad_ofl",
+        "seed": 20261031,
+        "shards": 32,
+        "broad": true,
+        "target_kana": "",
+        "correction_pattern_id": null,
+        "kanji_pairs": false
+      },
+      "workers": 2,
+      "worker_count_evidence": "execution record supplied by snapshot operator; not a recipe field",
+      "source_manifest": {
+        "file": "broad-train/source-manifest.json",
+        "bytes": 4941789,
+        "sha256": "13e7cbea5bfbea6be6f816da941f678085788c4f61af246b584e370afca832d8"
+      },
+      "asset_registry_rows": 9003,
+      "procedural_assets": {
+        "procedural-background:7a30ba581c1ba5fe06e8e7575bd8b21d32ec294eca46d4b40456f855aa66151a": {
+          "kind": "background",
+          "origin": "procedural",
+          "sha256": "d65cb725344d9a959c55a97eaf6fd818dc4094ee3f520f5500a3477b811d8295",
+          "recipe_sha256": "7a30ba581c1ba5fe06e8e7575bd8b21d32ec294eca46d4b40456f855aa66151a",
+          "generator_sha256": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248"
+        },
+        "procedural-text:7a30ba581c1ba5fe06e8e7575bd8b21d32ec294eca46d4b40456f855aa66151a": {
+          "kind": "text",
+          "origin": "procedural",
+          "sha256": "b10d38e4663a993d5745f40a1ef1ec869c0a4d57d8cac46e290bb93bb91c9e56",
+          "game_free_reviewed": true,
+          "recipe_sha256": "7a30ba581c1ba5fe06e8e7575bd8b21d32ec294eca46d4b40456f855aa66151a",
+          "generator_sha256": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248",
+          "review": "Names use reviewed non-game frequency inputs or Jiten/vocabulary priors only."
+        }
+      },
+      "counts": {
+        "samples": 16000,
+        "characters": 244626,
+        "platform:vita": 9206,
+        "layout:adv": 7013,
+        "fam:mplus1p": 2424,
+        "kind:name": 1649,
+        "crop_edge_jitter_changed": 6339,
+        "ruby": 1244,
+        "partial": 612,
+        "cursor": 745,
+        "kind:dialogue": 12550,
+        "platform:psp2x": 1892,
+        "fam:zenmarugothic": 2766,
+        "fam:notoserifjp": 3254,
+        "layout:band": 2229,
+        "fam:bizudgothic": 2547,
+        "layout:bare": 1805,
+        "platform:psp": 4902,
+        "fam:kleeone": 605,
+        "fam:notosansjp": 2619,
+        "layout:nvl": 2661,
+        "layout:choice": 1801,
+        "kind:choice": 1801,
+        "layout:balloon": 491,
+        "fam:fusionpixel12": 742,
+        "fam:dotgothic16": 706,
+        "fam:fusionpixel10": 337
+      },
+      "shards": [
+        {
+          "file": "broad-train/synth_00000.npz",
+          "sha256": "fbd6f32a48aab79d1022c30bd4a596b366a03330d8f25c7f8beae9fee0206493",
+          "bytes": 3201920,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00001.npz",
+          "sha256": "9b8f5f9fa54fea2a68d1d294561c1719c1d4a69572a794bb1cb6c44c3cf21365",
+          "bytes": 3370521,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00002.npz",
+          "sha256": "3406f1d9110cc01bdd2084914f9b47a7de683cb1aafd5ac7530b6dbcc3300e7d",
+          "bytes": 3648717,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00003.npz",
+          "sha256": "5ae2ed5b1e8d4a18bae915a056e1191b1e81c5cd46c80797712976b4dfcc9109",
+          "bytes": 3558498,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00004.npz",
+          "sha256": "e0a15e32ba2e781fc3edd25d74bd03b76f24506525b29a8c0a9c9f95f2fe9912",
+          "bytes": 3391535,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00005.npz",
+          "sha256": "8f7c0a9daf52b9d17f4f1d9ad38b50ea3f9df35801618482976d406dfc03e198",
+          "bytes": 3494771,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00006.npz",
+          "sha256": "64b748678bcc80ce077a7a11e9dc9e9cfcf9ff60560d53b072feda9ad149af2e",
+          "bytes": 3315699,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00007.npz",
+          "sha256": "5f4e0ddd7def495c182f7c6957c6d57086f2600228521acb427a1432c742dc73",
+          "bytes": 3039795,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00008.npz",
+          "sha256": "daabcab67f710a09bb0ad4373ac0c496ceebfd4d2ba24d75972d7a989fb40208",
+          "bytes": 3680794,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00009.npz",
+          "sha256": "9a318ca960526f1a2c8f93e624689c5cb4fc304c86f25a81f0f7118677241c7b",
+          "bytes": 3478973,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00010.npz",
+          "sha256": "7bdac57182a8e4d8c6e9545300dbad32623b83e9cea282a8cd408060c705b06e",
+          "bytes": 3471578,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00011.npz",
+          "sha256": "f55643970167b2f324e544e08fec961319b3f00f0e146ccbd8d3c71727dcf39e",
+          "bytes": 3541486,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00012.npz",
+          "sha256": "2f11ef9985909fc33a5d5fdd8af447877c6a82c13c7d5f05fb846634ff88f4f1",
+          "bytes": 3835799,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00013.npz",
+          "sha256": "cc42f0b10baf3d65e4a05fd1546fdc531c6471afd87531e97bbdba9b38f36344",
+          "bytes": 3666610,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00014.npz",
+          "sha256": "726a053b207c6eaf218b5883ac37005ad746697aaa470472a03e6ebfe3684a66",
+          "bytes": 3366615,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00015.npz",
+          "sha256": "3d3f10ff31e065ec9a72af0f83b8a553b2105b6a1e52b4e812f5d3abbf3d2295",
+          "bytes": 3664925,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00016.npz",
+          "sha256": "2900bcf18d7f20f98b2f700c642eb8558878a88c874721c4ee05174c111a8885",
+          "bytes": 3594812,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00017.npz",
+          "sha256": "337f2436312b93609e5a1ee3a4b632be47c98a88512343089660933e0f2a8939",
+          "bytes": 3442497,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00018.npz",
+          "sha256": "91eb99530e88f4c6278ddcfffcd934ad5d2b5efb8dd9e393e95da262567bf84b",
+          "bytes": 3496901,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00019.npz",
+          "sha256": "fbe3278e1199481e000ef4fda85e2b748bd811b931b4fb5802c267ff77ed01a3",
+          "bytes": 3436934,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00020.npz",
+          "sha256": "257ccffda23e1cc29c9234b0f82d5eb9227322dea813e1a6734245d4ca89afc2",
+          "bytes": 3712397,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00021.npz",
+          "sha256": "13836e25d7faa6680760b904d624d81abf29af457734f178355fc3147960270a",
+          "bytes": 3516283,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00022.npz",
+          "sha256": "8b760723a902a596e4ada915a6713e2b4a8c17f5c4802b1df7cd901294578d04",
+          "bytes": 3520349,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00023.npz",
+          "sha256": "217c3011953cdfb993353ec8fa52225dcb78f94252a2abeaf8e83178de2db99f",
+          "bytes": 3404183,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00024.npz",
+          "sha256": "548aead7fd1d3806b823f8a456a37889e2224ccf31a389d6d40912e903bbc869",
+          "bytes": 3526263,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00025.npz",
+          "sha256": "98750dcca56e50a6e9eff102425785769ea5e995c9430c5d9a583545df953dc6",
+          "bytes": 3594715,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00026.npz",
+          "sha256": "9cdb6ee3087a21d24d564921b4cacafee2ed317de93267fbffabe6183f6c0a9c",
+          "bytes": 3587247,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00027.npz",
+          "sha256": "c0e7c2bc51a1f8ff7a465226ff3bf2bc10130962e2b7dc2d86bc36673fa0ebc7",
+          "bytes": 3536178,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00028.npz",
+          "sha256": "c0fe6f8ed8360e617f4bf32e0531325a34b238aefcff38b57f8dfd276e19dc24",
+          "bytes": 3473809,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00029.npz",
+          "sha256": "c6e16572ce9acbf1e0f19b85446200b4b7a062be98de7675c3fb1574374d47f0",
+          "bytes": 3644933,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00030.npz",
+          "sha256": "a8fb16aef1b11a23efa688f2759597a2d92ad523e6a25ad9a6bf6587c491b36b",
+          "bytes": 3392761,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        },
+        {
+          "file": "broad-train/synth_00031.npz",
+          "sha256": "c2bb5c8dbf7b1291e73edde4020e195f84d5c1e6ee689f9c580a71ce59f2cd3c",
+          "bytes": 3385126,
+          "samples": 500,
+          "source": "broad_ofl",
+          "split": "train"
+        }
+      ],
+      "total_shard_bytes": 111993624,
+      "standalone_training_policy": {
+        "file": "broad-train/policy.json",
+        "bytes": 4935056,
+        "sha256": "208bb3bd1fd40bc45adfb9873b7b42a3df3a52f22bde4a305a7b3f243e3dcd7a"
+      }
+    },
+    "broad-dev": {
+      "source": "broad_dev",
+      "split": "dev",
+      "recipe_sha256": "e6099ecbfcfacc2919822656e84c51a9d80c384fa1c225f8c401896bbf1799c2",
+      "recipe_overrides": {
+        "split": "dev",
+        "source": "broad_dev",
+        "seed": 20262031,
+        "shards": 2,
+        "broad": true,
+        "target_kana": "",
+        "correction_pattern_id": null,
+        "kanji_pairs": false
+      },
+      "workers": 1,
+      "worker_count_evidence": "execution record supplied by snapshot operator; not a recipe field",
+      "source_manifest": {
+        "file": "broad-dev/source-manifest.json",
+        "bytes": 329280,
+        "sha256": "e2b6df7927b827b046e58138243d5aa0307c5c070f0f7fc7a08059aa7ae7f9a6"
+      },
+      "asset_registry_rows": 596,
+      "procedural_assets": {
+        "procedural-background:e6099ecbfcfacc2919822656e84c51a9d80c384fa1c225f8c401896bbf1799c2": {
+          "kind": "background",
+          "origin": "procedural",
+          "sha256": "152ca3f89b8ef32df0f1fa8f598ab04fa6eda7d288adf676e072bb839bafefdf",
+          "recipe_sha256": "e6099ecbfcfacc2919822656e84c51a9d80c384fa1c225f8c401896bbf1799c2",
+          "generator_sha256": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248"
+        },
+        "procedural-text:e6099ecbfcfacc2919822656e84c51a9d80c384fa1c225f8c401896bbf1799c2": {
+          "kind": "text",
+          "origin": "procedural",
+          "sha256": "d806fd24f546ed40249202f0809e1cec61970211bdf7bab20432e777d744a726",
+          "game_free_reviewed": true,
+          "recipe_sha256": "e6099ecbfcfacc2919822656e84c51a9d80c384fa1c225f8c401896bbf1799c2",
+          "generator_sha256": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248",
+          "review": "Names use reviewed non-game frequency inputs or Jiten/vocabulary priors only."
+        }
+      },
+      "counts": {
+        "samples": 1000,
+        "characters": 14834,
+        "platform:psp": 320,
+        "layout:adv": 432,
+        "fam:mplus1p": 174,
+        "kind:dialogue": 782,
+        "crop_edge_jitter_changed": 409,
+        "ruby": 73,
+        "partial": 48,
+        "cursor": 39,
+        "platform:vita": 595,
+        "layout:band": 163,
+        "fam:bizudgothic": 143,
+        "layout:nvl": 152,
+        "fam:notoserifjp": 232,
+        "layout:balloon": 44,
+        "layout:bare": 99,
+        "fam:fusionpixel12": 38,
+        "fam:notosansjp": 137,
+        "platform:psp2x": 85,
+        "fam:dotgothic16": 48,
+        "kind:name": 108,
+        "fam:kleeone": 44,
+        "fam:zenmarugothic": 176,
+        "layout:choice": 110,
+        "kind:choice": 110,
+        "fam:fusionpixel10": 8
+      },
+      "shards": [
+        {
+          "file": "broad-dev/synth_00000.npz",
+          "sha256": "5321ec423069dbf8f0ceaa7cf1721dee67a1ecb7e30307da0767abce9eeda8a8",
+          "bytes": 3250230,
+          "samples": 500,
+          "source": "broad_dev",
+          "split": "dev"
+        },
+        {
+          "file": "broad-dev/synth_00001.npz",
+          "sha256": "3ae3917a062f94ea6c92e4dcdb97ae698f6c234ba97d18488c144682b82c13fb",
+          "bytes": 3431231,
+          "samples": 500,
+          "source": "broad_dev",
+          "split": "dev"
+        }
+      ],
+      "total_shard_bytes": 6681461
+    },
+    "kana-train": {
+      "source": "kana_corrective",
+      "split": "train",
+      "recipe_sha256": "cac96242e01926a021c1f678147dee78e0b6952490b41ed6874d995684fd392f",
+      "recipe_overrides": {
+        "split": "train",
+        "source": "kana_corrective",
+        "seed": 20261032,
+        "shards": 4,
+        "broad": false,
+        "target_kana": "ずっ",
+        "correction_pattern_id": "kana:ずっ",
+        "kanji_pairs": false
+      },
+      "workers": 1,
+      "worker_count_evidence": "execution record supplied by snapshot operator; not a recipe field",
+      "source_manifest": {
+        "file": "kana-train/source-manifest.json",
+        "bytes": 822929,
+        "sha256": "2742ebe9179b1e414c9948df5857c7a31fdcbd41cfa9828f8cf9e036b6b25e00"
+      },
+      "asset_registry_rows": 1492,
+      "procedural_assets": {
+        "procedural-background:cac96242e01926a021c1f678147dee78e0b6952490b41ed6874d995684fd392f": {
+          "kind": "background",
+          "origin": "procedural",
+          "sha256": "f6d267c574859c1de110472e4d192e1e17b212a3b374386ef784eb9cd3a58473",
+          "recipe_sha256": "cac96242e01926a021c1f678147dee78e0b6952490b41ed6874d995684fd392f",
+          "generator_sha256": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248"
+        },
+        "procedural-text:cac96242e01926a021c1f678147dee78e0b6952490b41ed6874d995684fd392f": {
+          "kind": "text",
+          "origin": "procedural",
+          "sha256": "55343106c029a3d2f51fa331e22cc1468abfce3cc687ff2ecbcaae541725672f",
+          "game_free_reviewed": true,
+          "recipe_sha256": "cac96242e01926a021c1f678147dee78e0b6952490b41ed6874d995684fd392f",
+          "generator_sha256": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248",
+          "review": "Names use reviewed non-game frequency inputs or Jiten/vocabulary priors only."
+        }
+      },
+      "counts": {
+        "samples": 2000,
+        "characters": 39718,
+        "platform:psp": 601,
+        "layout:band": 325,
+        "fam:notoserifjp": 386,
+        "kind:dialogue": 1988,
+        "crop_edge_jitter_changed": 797,
+        "ruby": 203,
+        "partial": 53,
+        "cursor": 105,
+        "platform:vita": 1200,
+        "fam:dotgothic16": 100,
+        "layout:bare": 240,
+        "fam:fusionpixel12": 89,
+        "platform:psp2x": 199,
+        "layout:adv": 968,
+        "fam:zenmarugothic": 358,
+        "fam:mplus1p": 309,
+        "fam:fusionpixel10": 42,
+        "layout:nvl": 409,
+        "fam:kleeone": 93,
+        "fam:notosansjp": 298,
+        "fam:bizudgothic": 325,
+        "layout:balloon": 49,
+        "kind:name": 3,
+        "layout:choice": 9,
+        "kind:choice": 9
+      },
+      "shards": [
+        {
+          "file": "kana-train/synth_00000.npz",
+          "sha256": "4ba4dcba901df686e1c0f3507a30f132d1a056f6bdc7b7494f452bf5d2fde954",
+          "bytes": 4438106,
+          "samples": 500,
+          "source": "kana_corrective",
+          "split": "train"
+        },
+        {
+          "file": "kana-train/synth_00001.npz",
+          "sha256": "5bfbc25e08980637d0c683e78778dcef85c7b4500af3f2a6cbe14e5a1ad1d23f",
+          "bytes": 4374503,
+          "samples": 500,
+          "source": "kana_corrective",
+          "split": "train"
+        },
+        {
+          "file": "kana-train/synth_00002.npz",
+          "sha256": "1c114f45bf27f98ccf3625df560e5e1fa27d9e4a16a43fabd9dcf5143e5c7e61",
+          "bytes": 4310615,
+          "samples": 500,
+          "source": "kana_corrective",
+          "split": "train"
+        },
+        {
+          "file": "kana-train/synth_00003.npz",
+          "sha256": "1c8fc9233623e4da3c33c81266f88624f8e288c2a9207a167c5ddd71b3ef25d3",
+          "bytes": 4671427,
+          "samples": 500,
+          "source": "kana_corrective",
+          "split": "train"
+        }
+      ],
+      "total_shard_bytes": 17794651
+    },
+    "kanji-train": {
+      "source": "kanji_corrective",
+      "split": "train",
+      "recipe_sha256": "52d767c99c19b38c3160f91ee50b188ffa72fc384a6b425a7edd7ff350d50791",
+      "recipe_overrides": {
+        "split": "train",
+        "source": "kanji_corrective",
+        "seed": 20261033,
+        "shards": 4,
+        "broad": false,
+        "target_kana": "",
+        "correction_pattern_id": null,
+        "kanji_pairs": true
+      },
+      "workers": 1,
+      "worker_count_evidence": "execution record supplied by snapshot operator; not a recipe field",
+      "source_manifest": {
+        "file": "kanji-train/source-manifest.json",
+        "bytes": 1077383,
+        "sha256": "4b826f65f8b0788be1e9e8a0abab4b33cedccc9e83d98f1a85e4e0f025df7627"
+      },
+      "asset_registry_rows": 1957,
+      "procedural_assets": {
+        "procedural-background:52d767c99c19b38c3160f91ee50b188ffa72fc384a6b425a7edd7ff350d50791": {
+          "kind": "background",
+          "origin": "procedural",
+          "sha256": "7fcfe973ffe2076c643851f4ba676835192e5aa812071d1a5118200e361a47fd",
+          "recipe_sha256": "52d767c99c19b38c3160f91ee50b188ffa72fc384a6b425a7edd7ff350d50791",
+          "generator_sha256": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248"
+        },
+        "procedural-text:52d767c99c19b38c3160f91ee50b188ffa72fc384a6b425a7edd7ff350d50791": {
+          "kind": "text",
+          "origin": "procedural",
+          "sha256": "fe3a538e80eaee66843d6eb5e47d107085a35b6e6657bc92d8a4b22fad1c905a",
+          "game_free_reviewed": true,
+          "recipe_sha256": "52d767c99c19b38c3160f91ee50b188ffa72fc384a6b425a7edd7ff350d50791",
+          "generator_sha256": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248",
+          "review": "Names use reviewed non-game frequency inputs or Jiten/vocabulary priors only."
+        }
+      },
+      "counts": {
+        "pair_band:common": 1704,
+        "samples": 2000,
+        "characters": 40140,
+        "platform:psp": 588,
+        "layout:adv": 1025,
+        "fam:fusionpixel12": 89,
+        "kind:dialogue": 1997,
+        "crop_edge_jitter_changed": 810,
+        "ruby": 197,
+        "partial": 58,
+        "cursor": 106,
+        "platform:vita": 1204,
+        "layout:nvl": 351,
+        "fam:notosansjp": 317,
+        "pair_band:uncommon": 200,
+        "platform:psp2x": 208,
+        "fam:notoserifjp": 425,
+        "fam:mplus1p": 310,
+        "fam:bizudgothic": 325,
+        "layout:bare": 262,
+        "fam:zenmarugothic": 333,
+        "layout:band": 306,
+        "fam:fusionpixel10": 40,
+        "fam:dotgothic16": 88,
+        "fam:kleeone": 73,
+        "pair_band:rare": 80,
+        "layout:balloon": 53,
+        "pair_band:very_rare": 16,
+        "layout:choice": 3,
+        "kind:choice": 3
+      },
+      "shards": [
+        {
+          "file": "kanji-train/synth_00000.npz",
+          "sha256": "da62a906f8fbb6e90b55498028856738b4fe8d794c9b2625d375ddc410dd02b0",
+          "bytes": 4564685,
+          "samples": 500,
+          "source": "kanji_corrective",
+          "split": "train"
+        },
+        {
+          "file": "kanji-train/synth_00001.npz",
+          "sha256": "7c246ad9a309f3a30bc3e3335224446eac882e1a37ce4af7c684bd54ba8181f2",
+          "bytes": 4763793,
+          "samples": 500,
+          "source": "kanji_corrective",
+          "split": "train"
+        },
+        {
+          "file": "kanji-train/synth_00002.npz",
+          "sha256": "ce19e9019408d64de7540fcb172aa2a25480a9c942f60cbb862b0888bce8dd6f",
+          "bytes": 4839834,
+          "samples": 500,
+          "source": "kanji_corrective",
+          "split": "train"
+        },
+        {
+          "file": "kanji-train/synth_00003.npz",
+          "sha256": "2a420e9984d2de96e499a54342f304c5bec2a6860539b443ee27a28bd9732b63",
+          "bytes": 4796575,
+          "samples": 500,
+          "source": "kanji_corrective",
+          "split": "train"
+        }
+      ],
+      "total_shard_bytes": 18964887
+    }
+  },
+  "artifacts": {
+    "producer-inputs.json": {
+      "file": "producer-inputs.json",
+      "bytes": 17748,
+      "sha256": "a0ba0e4bb5428dd4f05ec79841685467e37217a43121dd63e5d5b4ad6814c8d6"
+    },
+    "input-readiness.json": {
+      "file": "input-readiness.json",
+      "bytes": 496,
+      "sha256": "b5c3d7f385f195d521e8bacb2e7d0b47602801de2c04c0523f9519a0c9aaec2f"
+    },
+    "training-policy.json": {
+      "file": "training-policy.json",
+      "bytes": 6611541,
+      "sha256": "0536fe15712895097070216681539db14fdb8640d743792ef1440f5f6b35458d"
+    },
+    "source-validation.json": {
+      "file": "source-validation.json",
+      "bytes": 806,
+      "sha256": "c381f60e32f82c0727512b73a08761d013349ab45dbb72da255f929cd2a91d55"
+    },
+    "snapshot-audit.json": {
+      "file": "snapshot-audit.json",
+      "bytes": 25636,
+      "sha256": "58074b6deb62363b454e7c0803ffa0f1a14df5765699c05d3be7038106126686"
+    },
+    "prepare_inputs.py": {
+      "file": "prepare_inputs.py",
+      "bytes": 6007,
+      "sha256": "4c301e93ac87df741188fc3574dc2e2b60ed3393ecdae5eff1fcf483df7805f4"
+    },
+    "audit_snapshot.py": {
+      "file": "audit_snapshot.py",
+      "bytes": 7416,
+      "sha256": "3a957254b0b419a7050c666cab48dacfa6c4e853534d109a7e653e7a9ab7d667"
+    }
+  },
+  "audit": {
+    "ocr_model_forwards": 0,
+    "accuracy_measured": false,
+    "train_dev_pixel_intersection": 0,
+    "pixel_identity_modes": [
+      "raw+shape",
+      "inverted_raw+shape",
+      "height32+shape",
+      "inverted_height32+shape"
+    ],
+    "label_oov_or_Jiten_violations": 0,
+    "ctc_infeasible": 0,
+    "clipped_label_core": 0,
+    "training_game_or_unknown_assets": 0,
+    "duplicate_sample_ids": 0,
+    "visual_review": {
+      "operator_reviewed_contacts": 7,
+      "operator_reviewed_samples": 112,
+      "contact_rows_pinned_in": "snapshot-audit.json",
+      "observed_missing_glyph_or_clipped_label_or_label_mismatch": 0,
+      "evidence": "snapshot operator reviewed all seven contact sheets; no OCR scoring",
+      "distractors_observed": [
+        "blur",
+        "low contrast",
+        "finder edge",
+        "cursor",
+        "ruby"
+      ]
+    }
+  },
+  "training": {
+    "actual_training_run": false,
+    "candidate_scoring": false,
+    "actual_forwarded_exposure_measured": false,
+    "exposure_caps_enforced_during_generation": false,
+    "forwarded_prefix_caps": {
+      "game_font_text": [
+        1,
+        20
+      ],
+      "all_game_assets": [
+        1,
+        5
+      ],
+      "correction_pattern": [
+        1,
+        200
+      ],
+      "kanji_corrective": [
+        1,
+        50
+      ]
+    },
+    "fallback_source": "broad_ofl",
+    "caps_basis": "successful model-forwarded rows, counted by the separately pinned consumer ledger",
+    "corrective_pool_size_is_not_training_probability": true,
+    "training_readiness": "not assessed; separately frozen generic real-development preparation and isolation gates remain required"
+  },
+  "limitations": [
+    "Original per-chunk book IDs were lost by the earlier pool builder; only source pool, line/chunk identity and disjoint whole-book cohort can be recovered.",
+    "The private prepared pools, input manifest and preparation/audit scripts are hash-pinned but not distributed here; upstream downloads alone are insufficient for identical snapshot regeneration.",
+    "Visual inspection covers 112 selected samples; automated glyph/core metadata checks do not replace hand checking every crop or real-screenshot CER.",
+    "No OCR model was forwarded or trained and no accuracy, console memory or speed result was measured."
+  ],
+  "dependency_lock": {
+    "file": "requirements-ci.lock",
+    "sha256": "529385fa711e896b05aaba1130e81d0ac3334ae8ddea40b253c8546cbaae9539"
+  }
+}

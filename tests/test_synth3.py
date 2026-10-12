@@ -416,3 +416,169 @@ def test_filter_pools_drops_vns_with_aligned_targets(tmp_path):
     assert list(t["T"]) == [2, 1, 2] and json.loads(str(t["text"])) == [labels[i] for i in keep]
     for j, i in enumerate(keep):
         assert np.array_equal(t["kid"][t["off"][j]:t["off"][j + 1]], kid[toff[i]:toff[i + 1]])
+
+
+# ----------------------------------------------------------------------------- version 3
+
+def test_version_3_cfg_and_calibration_overrides():
+    assert synth3.CFG["version"] == 3
+    for key in ("platform", "layout", "crop"):
+        assert abs(sum(synth3.CFG[key].values()) - 1.0) < 1e-9
+    for group in synth3.CFG["box_alpha"].values():
+        assert set(group) == {"on_dark", "light", "on_colour"}
+    merged = synth3.merge_cfg(synth3.CFG, {"platform": {"vita": 0.5}, "latin_keep": 0.0})
+    assert merged["platform"]["vita"] == 0.5 and merged["platform"]["psp"] == synth3.CFG["platform"]["psp"]
+    assert merged["latin_keep"] == 0.0 and synth3.CFG["latin_keep"] != 0.0       # the base is not modified
+    with pytest.raises(KeyError):
+        synth3.merge_cfg(synth3.CFG, {"platfrom": {}})
+
+
+def test_pages_show_any_page_of_overflowing_text():
+    """Text longer than the box continues on later pages; a render may show any of them (v2 only
+    ever showed the first, so a long utterance never reached its closing 」)."""
+    lines = [f"l{i}" for i in range(7)]
+    assert synth3.paginate(lines[:3], 3, np.random.default_rng(0)) == (lines[:3], 0, 1)
+    seen = set()
+    for seed in range(200):
+        page, k, n = synth3.paginate(lines, 3, np.random.default_rng(seed))
+        assert n == 3 and page == lines[3 * k:3 * k + 3]
+        seen.add(k)
+    assert seen == {0, 1, 2}
+
+
+def test_pool_lines_with_latin_are_mostly_redrawn(assets, tmp_path):
+    synth3.init(assets=assets, font_manifest=assets / "fonts_manifest.json", scenes=False)
+    path = tmp_path / "pool.txt"
+    path.write_text("".join(("ＯＫだよ" if i % 2 else "そうだね") + "\n" for i in range(400)), encoding="utf-8")
+    synth3.R.pools["mixed"] = synth3.TextPool(path)
+    saved = dict(synth3.CFG)
+    try:
+        def latin_share(keep):
+            synth3.CFG["latin_keep"] = keep
+            rng = np.random.default_rng(3)
+            return np.mean([bool(synth3.LATIN.search(synth3.pool_line(rng, "mixed"))) for _ in range(2000)])
+        assert latin_share(1.0) > 0.4
+        assert latin_share(0.0) < 0.01
+        assert 0.1 < latin_share(0.25) < 0.3          # kept 1/4 of the time, else redrawn
+    finally:
+        synth3.CFG.clear()
+        synth3.CFG.update(saved)
+        del synth3.R.pools["mixed"]
+
+
+def test_ui_words_split_by_latin():
+    assert set(synth3.UI_LATIN) | set(synth3.UI_JAPANESE) == set(synth3.UI_WORDS)
+    assert not set(synth3.UI_LATIN) & set(synth3.UI_JAPANESE)
+    assert "SAVE" in synth3.UI_LATIN and "Q.セーブ" in synth3.UI_LATIN and "セーブ" in synth3.UI_JAPANESE
+    assert all(not synth3.LATIN.search(w) for w in synth3.UI_PLACES)
+    assert synth3.LATIN.search("ＣＧ") and synth3.LATIN.search("３") and not synth3.LATIN.search("」")
+
+
+def _region(font, extra):
+    """A one-line region (and its labelled layout); `extra` adds unlabelled text in the same band,
+    which makes the GRAD finder's box wider than the line, so no GRAD crop may be taken."""
+    from PIL import Image, ImageDraw, ImageFont
+    f = ImageFont.truetype(str(font), 24)
+    im = Image.new("RGB", (520, 60), (20, 20, 30))
+    d = ImageDraw.Draw(im)
+    d.text((16, 40), "あいうえお", font=f, fill=(240, 240, 240), anchor="ls")
+    if extra:
+        d.text((150, 40), "かきくけこさしすせそ", font=f, fill=(240, 240, 240), anchor="ls")
+    m = Image.new("L", (520, 60), 0)
+    ImageDraw.Draw(m).text((16, 40), "あいうえお", font=f, fill=255, anchor="ls")
+    ink = np.asarray(m) >= 128
+    cols = np.flatnonzero(ink.any(axis=0))
+    lay = [{"text": "あいうえお", "top": 40 - 0.88 * 24, "fs": 24, "y0": 40 - 0.88 * 24 - 1,
+            "y1": 40 + 0.12 * 24 + 1, "ix0": int(cols[0]), "ix1": int(cols[-1]) + 1, "kind": "dialogue"}]
+    return np.asarray(im), lay, ink
+
+
+def test_grad_mode_falls_back_to_the_gt_crop(font, monkeypatch):
+    """Version 3: a line whose GRAD box fails the one-line check still yields its gt crop (kind
+    "gt"), so lines beside clutter are not dropped from GRAD regions; v2 behaviour without it."""
+    img, lay, ink = _region(font, False)
+    got = synth3.extract(img, lay, ink, np.random.default_rng(0), "grad", 4)
+    assert [(g[1], g[5]) for g in got] == [("あいうえお", "grad")]
+    img, lay, ink = _region(font, True)
+    got = synth3.extract(img, lay, ink, np.random.default_rng(0), "grad", 4)
+    assert [(g[1], g[5]) for g in got] == [("あいうえお", "gt")]
+    x, y, w, h = got[0][2]
+    assert x + w <= lay[0]["ix1"] + 4 + synth3.CFG["pad_extra"]["vita"]["right"] * 24 + 1   # not the merged band
+    monkeypatch.setitem(synth3.CFG, "grad_fallback", False)
+    assert synth3.extract(img, lay, ink, np.random.default_rng(0), "grad", 4) == []
+
+
+def test_gt_box_pads_the_fill_of_outlined_white_text():
+    """eval's and teacher's boxes come from refine(), whose white-text mask finds the glyph fill
+    (+1 px): the outline of white text sits inside the pad. A line flagged fillbox gets that box."""
+    ink = np.zeros((60, 200), bool)
+    ink[10:40, 20:120] = True                 # fill plus a 3 px outline
+    fill = np.zeros_like(ink)
+    fill[13:37, 23:117] = True                # the fill, dilated by 1 px
+    lay = [{"y0": 9, "y1": 41, "fs": 26, "ix0": 20, "ix1": 120, "fillbox": True}]
+    zero = {"p": 0.0, "top": 0, "bottom": 0, "left": 0, "right": 0}
+    box, ib = synth3.gt_box(lay[0], lay, ink, np.zeros_like(ink), 4, np.random.default_rng(0), ink.shape,
+                            extra=zero, fill=fill)
+    assert ib == (23, 13, 117, 37) and box == (19, 9, 102, 32)
+    lay[0]["fillbox"] = False                 # coloured text: refine() keeps the outline
+    box, ib = synth3.gt_box(lay[0], lay, ink, np.zeros_like(ink), 4, np.random.default_rng(0), ink.shape,
+                            extra=zero, fill=fill)
+    assert ib == (20, 10, 120, 40) and box == (16, 6, 108, 38)
+
+
+def test_exclusion_manifest_covers_the_fresh_native_titles():
+    doc = json.loads((ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json").read_text(encoding="utf-8"))
+    protected = set(doc["protected"]["psp"]) | set(doc["protected"]["vita"]) | set(doc["protected"]["reserves"])
+    assert protected == {"v14909", "v25459", "v29454", "v21289", "v21976", "v20519", "v16509", "v19140"}
+    related = {r["id"] for rs in doc["relations"].values() for r in rs}
+    assert protected | related <= set(doc["vns"]) and set(doc["relations"]) == protected
+    hexes = doc["screenshots"]["sha256"] + doc["screenshots"]["pixel_sha256"] + doc["names"]["name_sha256"]
+    assert hexes and all(re.fullmatch(r"[0-9a-f]{64}", h) for h in hexes)
+    assert len(doc["screenshots"]["pixel_sha256"]) == doc["screenshots"]["sources"] == 157
+    assert re.fullmatch(r"[0-9a-f]{40}", doc["source"]["commit"])
+    assert re.fullmatch(r"[0-9a-f]{64}", doc["source"]["sha256"])
+    ex = synth3.load_exclusions([ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json"])
+    assert ex["vns"] == set(doc["vns"]) and len(ex["pixel_sha256"]) == 157
+
+
+def test_excluded_names_are_dropped(assets, tmp_path):
+    """A name whose characters belong to an excluded VN never reaches a crop (by name hash)."""
+    doc = {"kind": "synth3-exclusion", "schema": 1, "vns": ["v999999"],
+           "screenshots": {"sha256": [], "pixel_sha256": []},
+           "names": {"name_sha256": [synth3.name_hash(["佐藤", "花子"])]}}
+    path = tmp_path / "exclude.json"
+    path.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+    r = synth3.Resources(assets=assets, font_manifest=assets / "fonts_manifest.json", scenes=False, exclude=[path])
+    assert r.names_dropped == 1 and ("佐藤", "花子") not in r.names["vndb"] and ("アリス",) in r.names["vndb"]
+    assert r.text_identity["names_dropped_excluded"] == 1
+
+
+def test_pixel_hash_matches_the_fresh_harness_definition(tmp_path):
+    from PIL import Image
+    rgb = np.random.default_rng(0).integers(0, 255, (12, 16, 3), dtype=np.uint8)
+    Image.fromarray(rgb).save(tmp_path / "a.png")
+    import hashlib
+    assert synth3.pixel_sha256(tmp_path / "a.png") == hashlib.sha256(rgb.tobytes()).hexdigest()
+
+
+def test_stats_measure_ink_the_same_way_for_every_source(tmp_path):
+    import synth3_stats as S
+    g = np.full((30, 80), 200, np.uint8)
+    g[8:22, 10:70] = 30                                   # dark "text" 14 px tall
+    assert S.px_ink(g) == (10, 8, 70, 22)
+    busy, edge_ink, tex, tb = S.edge_parts(g)
+    assert edge_ink == 0 and tex == 0 and busy == 0 and tb == 0
+    g2 = g.copy()
+    g2[0, 10:40] = 30                                     # a neighbour's ink in the top row
+    assert S.edge_parts(g2)[1] > 0
+    crops = [g, g2]
+    shapes = np.array([c.shape for c in crops], np.int32)
+    np.savez(tmp_path / "s.npz", data=np.concatenate([c.ravel() for c in crops]),
+             offsets=np.concatenate([[0], np.cumsum(shapes[:, 0] * shapes[:, 1])]), shapes=shapes,
+             labels=np.array(json.dumps(["あいう", "かきく"], ensure_ascii=False)),
+             meta=np.array(json.dumps([{"real": True, "kind": "vita", "target": "vita", "vn": "v1"},
+                                       {"real": True, "kind": "hires", "target": "vita", "vn": "v14909"}])))
+    out = S.measure([str(tmp_path / "s.npz")], 0, np.random.default_rng(0), reserved={"v14909"})
+    assert out["lines"] == 1 and out["reserved_rows_dropped"] == 1
+    assert out["geometry"]["vita:vita"]["px"]["ink_h"][1] == 14 and "vita:hires" not in out["geometry"]
+    assert "v14909" in S.reserved_vns(S.DEFAULT_EXCLUDE)

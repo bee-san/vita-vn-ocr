@@ -595,3 +595,26 @@ def test_stats_measure_ink_the_same_way_for_every_source(tmp_path):
     assert out["lines"] == 1 and out["reserved_rows_dropped"] == 1
     assert out["geometry"]["vita:vita"]["px"]["ink_h"][1] == 14 and "vita:hires" not in out["geometry"]
     assert "v14909" in S.reserved_vns(S.DEFAULT_EXCLUDE)
+
+
+def test_study1b_protocol_copies_study1():
+    """Study 1b (generator version 3 against version 2) keeps study 1's recipe, export, development
+    set, views, metric, bootstrap and decision rule; only the arms differ."""
+    base = json.loads((ROOT / "eval" / "synth3_ablation_protocol.json").read_text(encoding="utf-8"))
+    p = json.loads((ROOT / "eval" / "synth3_study1b_protocol.json").read_text(encoding="utf-8"))
+    for key in ("architecture", "recipe", "checkpoint", "export", "views", "metric", "bootstrap"):
+        assert p[key] == base[key], key
+    assert p["dev"]["teacher_val"]["sha256"] == base["dev"]["sha256"]
+    assert set(p["arms"]) == set(p["arm_sources"]) == {"B_s3", "D_s3v3"}
+    assert p["arms"]["D_s3v3"] == ["D_s3v3_seed1", "D_s3v3_seed2"] and p["seeds"] == base["seeds"]
+    assert p["comparisons"] == {"D_vs_B": ["B_s3", "D_s3v3"]}
+    assert p["sources"]["s3"] == base["sources"]["s3"] and p["sources"]["nv"] == base["sources"]["nv"]
+    for srcs in p["arm_sources"].values():
+        assert abs(sum(srcs.values()) - 1.0) < 1e-9 and set(srcs) <= set(p["sources"])
+    assert all(re.fullmatch(r"[0-9a-f]{64}", f["sha256"]) for f in p["dev"]["devnative"]["files"].values())
+    assert "reported only" in p["dev"]["devnative"]["role"]
+    run = (ROOT / "eval" / "synth3_study1b_run.sh").read_text(encoding="utf-8")
+    old = (ROOT / "eval" / "synth3_run_arm.sh").read_text(encoding="utf-8")
+    tail = lambda s: s[s.index("exec "):].replace('--width "$WIDTH"', "--width 1.0")  # noqa: E731
+    assert tail(run) == tail(old)                      # the same train2.py invocation as study 1
+    assert "synth3-v3/ablation/runs" in run and "synth3_shards_v3.json" in run

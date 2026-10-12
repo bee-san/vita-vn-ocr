@@ -1,0 +1,582 @@
+{
+ "kind": "synth3-text-sources",
+ "schema": 1,
+ "root": "$HERD/shared/artifacts/synth3/text",
+ "note": "Nothing here is committed or redistributed. licence_class: open (attribution/share-alike licences), nc (non-commercial only), grey (no clear licence). synth3.py --profile open uses only open pools.",
+ "sources": [
+  {
+   "source": "aozora",
+   "licence_class": "open",
+   "licence": "CC-BY-4.0 (dataset) / public-domain texts",
+   "url": "https://huggingface.co/datasets/globis-university/aozorabunko-clean",
+   "revision": "$HERD/shared/data/corpus/aozora/aozorabunko-dedupe-clean.jsonl.gz (data/fetch_assets.py corpus)"
+  },
+  {
+   "source": "wiki",
+   "licence_class": "open",
+   "licence": "CC-BY-SA-4.0",
+   "url": "https://huggingface.co/datasets/wikimedia/wikipedia (20231101.ja)",
+   "revision": "$HERD/shared/data/corpus/wiki.txt (synth/build_corpus.py)"
+  },
+  {
+   "source": "tatoeba",
+   "licence_class": "open",
+   "licence": "CC-BY-2.0-FR",
+   "url": "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences.tsv.bz2",
+   "revision": "export of 2026-10-10",
+   "files": [
+    {
+     "file": "raw/tatoeba/jpn_sentences.tsv.bz2",
+     "bytes": 3417875,
+     "sha256": "ba55cb50f7d51f46769a9ab95b1bf40e2e09e75898d02ad1d84d19903af9a0d1"
+    }
+   ]
+  },
+  {
+   "source": "jesc",
+   "licence_class": "open",
+   "licence": "CC-BY-SA-4.0",
+   "url": "https://nlp.stanford.edu/projects/jesc/data/raw.tar.gz",
+   "revision": "2019-05-12",
+   "files": [
+    {
+     "file": "raw/jesc/raw.tar.gz",
+     "bytes": 102198198,
+     "sha256": "4034d62b7ce60f3ec3b3b6c8c347e5a7fd4be5021c8d8987957b670e12f906d5"
+    }
+   ]
+  },
+  {
+   "source": "opensubtitles",
+   "licence_class": "grey",
+   "licence": "no licence stated; OPUS asks for attribution (Lison & Tiedemann 2016)",
+   "url": "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2024/mono/ja.txt.gz",
+   "revision": "v2024",
+   "files": [
+    {
+     "file": "raw/opensubtitles/ja.txt.gz",
+     "bytes": 34644863,
+     "sha256": "df4c8835bd4d044d300e1079bd58c27ed7c1494c33032ad258e962ce0f99c038"
+    }
+   ]
+  },
+  {
+   "source": "jdd",
+   "licence_class": "nc",
+   "licence": "CC-BY-NC-ND-4.0 (do not redistribute)",
+   "url": "https://github.com/jqk09a/japanese-daily-dialogue",
+   "revision": "5e612e02da1228e22d2c8eec6aebe6eaa15b48f9"
+  },
+  {
+   "source": "bsd",
+   "licence_class": "nc",
+   "licence": "CC-BY-NC-SA-4.0",
+   "url": "https://github.com/tsuruoka-lab/BSD",
+   "revision": "050fd4241da458377c1ce26b2c31b0af0a20e444"
+  },
+  {
+   "source": "nucc",
+   "licence_class": "nc",
+   "licence": "CC-BY-NC-ND-4.0",
+   "url": "https://mmsrv.ninjal.ac.jp/nucc/nucc.zip",
+   "revision": "files of 2017-08-04",
+   "files": [
+    {
+     "file": "raw/nucc/nucc.zip",
+     "bytes": 2187379,
+     "sha256": "57c0f0f866059f476db9bf59b4c2fc53490389cfbef45a97dc5fa9b087fb21b1"
+    }
+   ]
+  },
+  {
+   "source": "aratako_dsv3",
+   "licence_class": "open",
+   "licence": "MIT",
+   "url": "https://huggingface.co/datasets/Aratako/Synthetic-Japanese-Roleplay-SFW-DeepSeek-V3-0324-20k",
+   "revision": "dd1e3cdc235b789bebd0e9f70367570f9e4c05d6",
+   "files": [
+    {
+     "file": "raw/aratako_sfw_dsv3/data/train-00000-of-00001.parquet",
+     "bytes": 61412157,
+     "sha256": "bd36e6223db4cf5a6cf7c47ccc578332df5f83f0d5f1a5ab0a4b9832711e8493"
+    }
+   ]
+  },
+  {
+   "source": "aratako_gpt4omini",
+   "licence_class": "nc",
+   "licence": "CC-BY-NC-SA-4.0 + OpenAI terms",
+   "url": "https://huggingface.co/datasets/Aratako/Synthetic-Japanese-Roleplay-gpt-4o-mini-39.6k",
+   "revision": "6a6ffb10f4d10cdde84d7fdcb65c24c494a642f0",
+   "files": [
+    {
+     "file": "raw/aratako_gpt4omini/Synthetic-Japanese-Roleplay-gpt-4o-mini-19.8k.jsonl",
+     "bytes": 63493010,
+     "sha256": "e7575b09b5a84a63169be2664043d2b08a9e214791fdd1fc5b3e10788754bfae"
+    },
+    {
+     "file": "raw/aratako_gpt4omini/Synthetic-Japanese-Roleplay-gpt-4o-mini-19.8k-2.jsonl",
+     "bytes": 124492510,
+     "sha256": "27b52a42bf13583ad2c5eb11521c5a360a26a60f5352004bd8c535d6f06437f8"
+    }
+   ]
+  },
+  {
+   "source": "narikiri",
+   "licence_class": "grey",
+   "licence": "Apache-2.0 as labelled by the uploader; scraped forum posts",
+   "url": "https://huggingface.co/datasets/OmniAICreator/Japanese-Roleplay-Dialogues",
+   "revision": "1e3518b4b51f1394729f6154fc04810a1926e1e2",
+   "files": [
+    {
+     "file": "raw/narikiri_omniai/Japanese-Roleplay-Dialogues-Filtered.jsonl",
+     "bytes": 317182182,
+     "sha256": "9d22fcc8fbfd49b3d6a74feb939f17832de240e15acfd87cf115a31f39ba5c80"
+    }
+   ]
+  },
+  {
+   "source": "wikiquote",
+   "licence_class": "open",
+   "licence": "CC-BY-SA-4.0 / GFDL",
+   "url": "https://dumps.wikimedia.org/jawikiquote/latest/jawikiquote-latest-pages-articles.xml.bz2",
+   "revision": "dump of 2026-10-01",
+   "files": [
+    {
+     "file": "raw/wikiquote/jawikiquote-latest-pages-articles.xml.bz2",
+     "bytes": 2024973,
+     "sha256": "a835b2e92cf9528973d9d9cb8c1c2bc8f16aff3e744db3c2a9721cfb79ac2718"
+    }
+   ]
+  },
+  {
+   "source": "wiktionary",
+   "licence_class": "open",
+   "licence": "CC-BY-SA-4.0 / GFDL",
+   "url": "https://dumps.wikimedia.org/jawiktionary/latest/jawiktionary-latest-pages-articles.xml.bz2",
+   "revision": "dump of 2026-10-01",
+   "files": [
+    {
+     "file": "raw/wiktionary/jawiktionary-latest-pages-articles.xml.bz2",
+     "bytes": 94439126,
+     "sha256": "64e8278703698205d8ab54657848a300108629769b0ff296472a0d3fd3815ce5"
+    }
+   ]
+  },
+  {
+   "source": "vndb",
+   "licence_class": "open",
+   "licence": "ODbL-1.0 (database) / DbCL-1.0 (contents); descriptions not used",
+   "url": "https://dl.vndb.org/dump/vndb-db-2026-10-12.tar.zst",
+   "revision": "TIMESTAMP 2026-10-12 08:00:26+00",
+   "files": [
+    {
+     "file": "raw/vndb/vndb-db-2026-10-12.tar.zst",
+     "bytes": 190763803,
+     "sha256": "c6ada5e33d3163d1de97fc7e6e24b91048506a2a0979172c5205f439376ef4aa"
+    }
+   ]
+  },
+  {
+   "source": "syosetu_names",
+   "licence_class": "open",
+   "licence": "ODC-BY-1.0",
+   "url": "https://huggingface.co/datasets/Sunbread/SyosetuNames-3.5M",
+   "revision": "34ffec39ab8a69e7129b2c7f5601a6bd4b237145",
+   "files": [
+    {
+     "file": "raw/syosetu_names/syosetu-names.parquet",
+     "bytes": 31639440,
+     "sha256": "baa64e1725374d529344c6e12210896547873b9b936f4fb9534438a90084584c"
+    }
+   ]
+  },
+  {
+   "source": "jiten_vn",
+   "licence_class": "open",
+   "licence": "CC-BY-SA-4.0",
+   "url": "https://api.jiten.moe/api/frequency-list/download?downloadType=csv&mediaType=7",
+   "revision": "retrieved 2026-10-12",
+   "files": [
+    {
+     "file": "jiten/frequency_list_visual_novel.csv",
+     "bytes": 8846072,
+     "sha256": "043fd4b24b62089586159edb23c122f5da58cd82a3b59b9452a737117c427372"
+    }
+   ]
+  },
+  {
+   "source": "jiten_kanji",
+   "licence_class": "open",
+   "licence": "CC-BY-SA-4.0",
+   "url": "https://api.jiten.moe/api/frequency-list/download-kanji?downloadType=csv",
+   "revision": "Jiten (Kanji) 26-08-09; the file data/manifests/fl10_kanji_policy_20261011.json pins",
+   "files": [
+    {
+     "file": "jiten/jiten_kanji_freq.csv",
+     "bytes": 109431,
+     "sha256": "bdb0eaef29e5b7bdf52efaa91376dba8935b860a57a56d7ae2203138de918c78"
+    }
+   ]
+  }
+ ],
+ "derived": {
+  "text/vndb_chars.tsv": {
+   "bytes": 8570018,
+   "sha256": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d"
+  },
+  "text/lists.json": {
+   "bytes": 12651,
+   "sha256": "d1a821a4a0b6e56222bbe6ef8d8db6ebd1dfcaf3fad5997f271e19a14a0e2d14"
+  }
+ },
+ "pools": {
+  "salt": "synth3-text-split-v1",
+  "dev_mod": 20,
+  "max_len": 60,
+  "vocab_sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b",
+  "files": {
+   "aozora_dialogue.train": {
+    "file": "aozora_dialogue.train.txt",
+    "lines": 399943,
+    "chars": 11226697,
+    "bytes": 34077984,
+    "sha256": "81c3fe6570d2a6ef1cf30e1da6e1198d805120a49140e801aba6a83ddb6c8ff5",
+    "class": "open"
+   },
+   "aozora_dialogue.dev": {
+    "file": "aozora_dialogue.dev.txt",
+    "lines": 20000,
+    "chars": 552380,
+    "bytes": 1677032,
+    "sha256": "e3f2545ff789132727787611c8cbd7c6eadf62739853247ae96cf681105a2b42",
+    "class": "open"
+   },
+   "aozora_narration.train": {
+    "file": "aozora_narration.train.txt",
+    "lines": 399949,
+    "chars": 15338957,
+    "bytes": 46389215,
+    "sha256": "2b75f33bf57279c23d511b271eb3a65773de601c7b2501f885502454f5cdaa94",
+    "class": "open"
+   },
+   "aozora_narration.dev": {
+    "file": "aozora_narration.dev.txt",
+    "lines": 20000,
+    "chars": 768526,
+    "bytes": 2324894,
+    "sha256": "e237aa80ab3b20e4c973a59af769a24d1a418ee85e34f8397d26152a2e6ae9f2",
+    "class": "open"
+   },
+   "wiki.train": {
+    "file": "wiki.train.txt",
+    "lines": 399993,
+    "chars": 13927398,
+    "bytes": 40318019,
+    "sha256": "9c18dd18fb604bfe7555c7ccd1758a7233f7bcbdde5ecb462a2b047e887ea81b",
+    "class": "open"
+   },
+   "wiki.dev": {
+    "file": "wiki.dev.txt",
+    "lines": 20000,
+    "chars": 696615,
+    "bytes": 2013552,
+    "sha256": "b4ef801c5a38fabc01117f6f0e769692982b3d440ab4764c68c7eac060bfa403",
+    "class": "open"
+   },
+   "tatoeba.train": {
+    "file": "tatoeba.train.txt",
+    "lines": 237530,
+    "chars": 4261371,
+    "bytes": 13006016,
+    "sha256": "5f7322923c2c41d18b9515905a03f61a6d31448b3fe71fefe444e77a444ca6f3",
+    "class": "open"
+   },
+   "tatoeba.dev": {
+    "file": "tatoeba.dev.txt",
+    "lines": 12422,
+    "chars": 222804,
+    "bytes": 680100,
+    "sha256": "8a92c227403c9c0a00f1d70bc100cc8f11110cfdce5e10adf001d1cc42212162",
+    "class": "open"
+   },
+   "jesc.train": {
+    "file": "jesc.train.txt",
+    "lines": 392513,
+    "chars": 5798983,
+    "bytes": 17604355,
+    "sha256": "08c0ec3f4ca2441b5c273df4b7a6135d7940d89f946ef1d1bbdd6e56fed5d22d",
+    "class": "open"
+   },
+   "jesc.dev": {
+    "file": "jesc.dev.txt",
+    "lines": 20000,
+    "chars": 296021,
+    "bytes": 899105,
+    "sha256": "32dd89d5525cb6de47430327e3d693e8e501947dafa0f2e1647d2aeae550c9cb",
+    "class": "open"
+   },
+   "opensubtitles.train": {
+    "file": "opensubtitles.train.txt",
+    "lines": 391948,
+    "chars": 4846937,
+    "bytes": 14822643,
+    "sha256": "efe79bc19565e776f98a79d6003ab5f63bb7a1c96879c6edb62ebbce68f6bbe3",
+    "class": "grey"
+   },
+   "opensubtitles.dev": {
+    "file": "opensubtitles.dev.txt",
+    "lines": 20000,
+    "chars": 247875,
+    "bytes": 757338,
+    "sha256": "6da29195cb67afe564a0e2d6f62f6a08d2cf4fc093a88e7f58cadf9bb27d994e",
+    "class": "grey"
+   },
+   "jdd.train": {
+    "file": "jdd.train.txt",
+    "lines": 39595,
+    "chars": 1082846,
+    "bytes": 3273802,
+    "sha256": "b7612307e69c2f1f3b1445ca41432facfe2d293d7ad6e9056b32d5151c2f469d",
+    "class": "nc"
+   },
+   "jdd.dev": {
+    "file": "jdd.dev.txt",
+    "lines": 1995,
+    "chars": 52863,
+    "bytes": 160030,
+    "sha256": "e8c6ee841daabfc4da53b6c1e6f323cc2da555ab9989b44f60e0a3ede95d3e9e",
+    "class": "nc"
+   },
+   "bsd.train": {
+    "file": "bsd.train.txt",
+    "lines": 20564,
+    "chars": 465297,
+    "bytes": 1408185,
+    "sha256": "7049dadadf69ecd69a367f71cb2d2506f6471d361bd0554d4dae325c8d15617d",
+    "class": "nc"
+   },
+   "bsd.dev": {
+    "file": "bsd.dev.txt",
+    "lines": 1271,
+    "chars": 27497,
+    "bytes": 83127,
+    "sha256": "9420877b0b90755fd3ae18abb88d2d0b06b7af90726c77addf80d98f3053d6dd",
+    "class": "nc"
+   },
+   "nucc.train": {
+    "file": "nucc.train.txt",
+    "lines": 100600,
+    "chars": 1928735,
+    "bytes": 5877084,
+    "sha256": "29115769e61038746bb1c23d99b5d6329fbf71d82e61be1bf7bdf9ce5879d828",
+    "class": "nc"
+   },
+   "nucc.dev": {
+    "file": "nucc.dev.txt",
+    "lines": 3746,
+    "chars": 60635,
+    "bytes": 185371,
+    "sha256": "018f3cc753657265779334139cfa1c042463d2dda3255b436f656c6f81b71a8b",
+    "class": "nc"
+   },
+   "aratako_dsv3.train": {
+    "file": "aratako_dsv3.train.txt",
+    "lines": 399960,
+    "chars": 10534764,
+    "bytes": 31794668,
+    "sha256": "345866dad525db1baf6d780ebbb2361ad2084687dff20ca5b89daca3df253a19",
+    "class": "open"
+   },
+   "aratako_dsv3.dev": {
+    "file": "aratako_dsv3.dev.txt",
+    "lines": 20000,
+    "chars": 529317,
+    "bytes": 1595993,
+    "sha256": "e2dca9dcde9409aff4427741f1a9b1965126a5461dd41b3690e27798502f3945",
+    "class": "open"
+   },
+   "aratako_gpt4omini.train": {
+    "file": "aratako_gpt4omini.train.txt",
+    "lines": 399973,
+    "chars": 12054785,
+    "bytes": 36548977,
+    "sha256": "ae6bb22fe351f2c9e499fa074b53d3c98d0cc97c558526cdf50790bd412ec09d",
+    "class": "nc"
+   },
+   "aratako_gpt4omini.dev": {
+    "file": "aratako_gpt4omini.dev.txt",
+    "lines": 20000,
+    "chars": 605795,
+    "bytes": 1836415,
+    "sha256": "92117133eee92e9a3252da05e780958bc6be8a6422c43c7de3d8c7f9c4fb169d",
+    "class": "nc"
+   },
+   "narikiri.train": {
+    "file": "narikiri.train.txt",
+    "lines": 399832,
+    "chars": 11058636,
+    "bytes": 33472744,
+    "sha256": "c6492a1eaf93c3bb303fe54759b0cb546c5f1616cef1dc161088e2120113b2ba",
+    "class": "grey"
+   },
+   "narikiri.dev": {
+    "file": "narikiri.dev.txt",
+    "lines": 20000,
+    "chars": 532187,
+    "bytes": 1611334,
+    "sha256": "8b1b4857c8b7b4b13ae04b1c8a6ad698369aa89de2bc923450ca9f5d3853778e",
+    "class": "grey"
+   },
+   "wikiquote.train": {
+    "file": "wikiquote.train.txt",
+    "lines": 18637,
+    "chars": 613108,
+    "bytes": 1825825,
+    "sha256": "8c5a52b3692c84db63abb3ff02ed383b935bf45fda4ba1d04f25fdfea2675ff4",
+    "class": "open"
+   },
+   "wikiquote.dev": {
+    "file": "wikiquote.dev.txt",
+    "lines": 814,
+    "chars": 25588,
+    "bytes": 76410,
+    "sha256": "07a67ae0488682ba74e23d5f561545addaa3ca09508a25553ce8a11cc65b57d5",
+    "class": "open"
+   },
+   "wiktionary.train": {
+    "file": "wiktionary.train.txt",
+    "lines": 50774,
+    "chars": 1418047,
+    "bytes": 4244207,
+    "sha256": "2e2fd71b2bd2c76e02bf3a69ed5e3ddeefa51ad67cb8adf5fe13deb9d8368e7a",
+    "class": "open"
+   },
+   "wiktionary.dev": {
+    "file": "wiktionary.dev.txt",
+    "lines": 2692,
+    "chars": 77193,
+    "bytes": 231376,
+    "sha256": "01cdc0e05c2bdc3404d9dc055296b264b5aab56adb97b3b0a998949fa722c5c5",
+    "class": "open"
+   }
+  },
+  "build_stats": {
+   "aozora_dialogue": {
+    "pieces": 1282672,
+    "duplicate": 125558,
+    "rejected": 55034,
+    "train_capped_from": 1062340,
+    "dev_capped_from": 39740,
+    "train_removed_dev_overlap": 57
+   },
+   "aozora_narration": {
+    "pieces": 3365481,
+    "duplicate": 85270,
+    "rejected": 65913,
+    "train_capped_from": 3074361,
+    "dev_capped_from": 139937,
+    "train_removed_dev_overlap": 51
+   },
+   "wiki": {
+    "pieces": 614022,
+    "rejected": 9465,
+    "duplicate": 9964,
+    "train_capped_from": 565630,
+    "dev_capped_from": 28963,
+    "train_removed_dev_overlap": 7
+   },
+   "tatoeba": {
+    "pieces": 250249,
+    "rejected": 207,
+    "duplicate": 12,
+    "train_removed_dev_overlap": 78
+   },
+   "jesc": {
+    "pieces": 2802796,
+    "rejected": 61182,
+    "duplicate": 339126,
+    "train_capped_from": 2288314,
+    "dev_capped_from": 114174,
+    "train_removed_dev_overlap": 7487
+   },
+   "opensubtitles": {
+    "pieces": 3136296,
+    "duplicate": 951837,
+    "rejected": 112873,
+    "train_capped_from": 1975449,
+    "dev_capped_from": 96137,
+    "train_removed_dev_overlap": 8052
+   },
+   "jdd": {
+    "pieces": 43158,
+    "duplicate": 1482,
+    "rejected": 54,
+    "train_removed_dev_overlap": 32
+   },
+   "bsd": {
+    "pieces": 24322,
+    "duplicate": 2387,
+    "rejected": 50,
+    "train_removed_dev_overlap": 50
+   },
+   "nucc": {
+    "pieces": 132649,
+    "rejected": 1158,
+    "duplicate": 27034,
+    "train_removed_dev_overlap": 111
+   },
+   "aratako_dsv3": {
+    "pieces": 481868,
+    "rejected": 18385,
+    "duplicate": 21347,
+    "train_capped_from": 419291,
+    "dev_capped_from": 22845,
+    "train_removed_dev_overlap": 40
+   },
+   "aratako_gpt4omini": {
+    "pieces": 965470,
+    "rejected": 1948,
+    "duplicate": 11894,
+    "train_capped_from": 903610,
+    "dev_capped_from": 48018,
+    "train_removed_dev_overlap": 27
+   },
+   "narikiri": {
+    "pieces": 1334858,
+    "rejected": 57534,
+    "duplicate": 87161,
+    "train_capped_from": 1144893,
+    "dev_capped_from": 45270,
+    "train_removed_dev_overlap": 168
+   },
+   "wikiquote": {
+    "pieces": 24789,
+    "rejected": 4271,
+    "duplicate": 1055,
+    "train_removed_dev_overlap": 12
+   },
+   "wiktionary": {
+    "pieces": 60294,
+    "rejected": 4783,
+    "duplicate": 1986,
+    "train_removed_dev_overlap": 59
+   }
+  }
+ },
+ "names": {
+  "stats": {
+   "vndb_kept": 102536,
+   "vndb_reserved_or_dev": 24331,
+   "vndb_rejected": 942,
+   "syosetu_kept": 300000,
+   "train_rows": 378143,
+   "dev_rows": 20345
+  },
+  "forbidden_vns": 362,
+  "sha256": {
+   "train": "4aa76da50328146dd11e14096b7c1b2d99a54a7f693df1b513da8900cf773d44",
+   "dev": "f74c29cbb50e90f92e9300fc7e7bd697d08d5bd51500a978f1a32f226b7b849f"
+  }
+ }
+}

@@ -1426,6 +1426,8 @@ def render_region(rng, platform=None):
     out = np.clip(img + 0.5, 0, 255).astype(np.uint8)
     ink_f = ink.astype(np.float32)
     core_f = core.astype(np.float32)
+    k3 = np.ones((3, 3), np.uint8)
+    fill_src = cv2.dilate((core_f >= 0.5).astype(np.uint8), k3).astype(np.float32)   # refine(): fill + 1 px
     ruby_f = ruby_m
     k_final = 1.0
     if platform == "psp2x":
@@ -1463,6 +1465,8 @@ def render_region(rng, platform=None):
         ink_f = cv2.resize(ink_f, (W2, H2), interpolation=cv2.INTER_AREA if k_final < 1 else cv2.INTER_LINEAR)
         ruby_f = cv2.resize(ruby_f, (W2, H2), interpolation=cv2.INTER_AREA if k_final < 1 else cv2.INTER_LINEAR)
         core_f = cv2.resize(core_f, (W2, H2), interpolation=cv2.INTER_AREA if k_final < 1 else cv2.INTER_LINEAR)
+        if k_final < 1:     # refine() ran on the source screenshot; its box scales to every row it touches
+            fill_src = cv2.resize(fill_src, (W2, H2), interpolation=cv2.INTER_AREA)
         for L in layout:
             for key in ("top", "x0", "x1"):
                 L[key] *= k_final
@@ -1500,8 +1504,12 @@ def render_region(rng, platform=None):
             "focus": [None if c is None else R.vocab[c] for c in focus],
             "bg": bg_tag, "box_alpha": round(box_alpha, 2) if boxes else None, "page": [page, pages]}
     meta["_ruby_mask"] = ruby_b
-    meta["_fill_mask"] = (cv2.dilate((core_f >= 0.5).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
-                          if any(L.get("fillbox") for L in layout) else None)
+    if not any(L.get("fillbox") for L in layout):
+        meta["_fill_mask"] = None
+    elif k_final < 1:
+        meta["_fill_mask"] = fill_src > 0.01
+    else:                   # refine() runs on the screen as shown (native, or a 2x upscale)
+        meta["_fill_mask"] = cv2.dilate((core_f >= 0.5).astype(np.uint8), k3).astype(bool)
     return out, layout, ink_b, meta
 
 
@@ -1626,16 +1634,11 @@ def line_ink(L, layout, ink, ruby, shape):
 
 
 def fill_ink(L, layout, fill, ruby, shape):
-    """The line's box as refine() finds white or black text: its glyph fill dilated by 1 px
-    (rows and columns of `fill` inside the line's band and ink columns), plus attached furigana."""
-    ib = line_ink(L, layout, fill, ruby, shape)
-    if ib is None:
-        return None
-    x0, top, x1, bot = ib
-    cols = np.flatnonzero((fill[top:bot, x0:x1] & ~ruby[top:bot, x0:x1]).any(axis=0))
-    if not len(cols):
-        return None
-    return x0 + int(cols[0]), top, x0 + int(cols[-1]) + 1, bot
+    """The line's box as refine() finds white or black text, vertically: the rows of its glyph fill
+    dilated by 1 px (`fill`), plus attached furigana, so an outline or shadow above and below sits
+    in the pad. The columns stay the line's full ink columns: a thin glyph whose fill vanishes
+    (。」 at a small size) must never fall outside the crop."""
+    return line_ink(L, layout, fill, ruby, shape)
 
 
 def gt_box(L, layout, ink, ruby, pad, rng, shape, extra=None, fill=None):

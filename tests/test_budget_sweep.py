@@ -138,3 +138,4 @@ def test_tables_from_synthetic_runs(tmp_path):
     assert summary["w100"]["cache_model"]["l22048_w16_lru_r0"]["l2_misses_per_frame"] == 25
     assert summary["w100"]["cache_model"]["l22048_w16_rand_r1"]["l2_misses_per_frame"] == 15
     assert "| w100 | 2048 | 16 | rand | 1 | 1 | 15 |" in text
+    assert "| w100 | 2048 | 16 | lru | 0 | 1 | 25 |" in text

@@ -455,7 +455,7 @@ def tables(sizes, runs):
     model = [k for k in runs if k[2:4] == BASE[1:3] and k[4:6] != BASE[3:5]]
     if model:
         out.append("")
-        out.append("| config | L2 KiB | L2 ways | replacement | run | L1D misses/frame | L2 misses/frame "
+        out.append("| config | L2 KiB | L2 ways | replacement | rep | L1D misses/frame | L2 misses/frame "
                    "| est. ms 333 MHz | 8-way LRU: L1D misses; L2 misses; ms |")
         out.append("|---|---|---|---|---|---|---|---|---|")
         for k in sorted(model, key=lambda k: (rank[k[0]], -k[1], k[4], k[5], k[6])):
@@ -463,7 +463,7 @@ def tables(sizes, runs):
             d = runs.get((k[0], k[1], *BASE[1:]))
             ref = (f"{d['l1d_misses_per_frame']:,.0f}; {d['l2_misses_per_frame']:,.0f}; {_span(_ms(d, 333))}"
                    if d else "-")
-            out.append(f"| {k[0]} | {k[1]} | {k[4]} | {k[5]} | {k[6] or 1} | {r['l1d_misses_per_frame']:,.0f} | "
+            out.append(f"| {k[0]} | {k[1]} | {k[4]} | {k[5]} | {k[6]} | {r['l1d_misses_per_frame']:,.0f} | "
                        f"{r['l2_misses_per_frame']:,.0f} | {_span(_ms(r, 333))} | {ref} |")
             summary[k[0]].setdefault("cache_model", {})[f"l2{k[1]}_w{k[4]}_{k[5]}_r{k[6]}"] = {
                 "l1d_misses_per_frame": r["l1d_misses_per_frame"], "l2_misses_per_frame": r["l2_misses_per_frame"],

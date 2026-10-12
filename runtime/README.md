@@ -257,6 +257,6 @@ make -C runtime size ARM_CC=...                    # code size and stack frames
 
 ## Not done here
 
-- Only FL10 has run on a PCH-1000, inside vita-jp-overlay, without a per-line timing or hardware CER (`docs/vita-memory-budget.md`), and nothing has run on a PSP; the console speed above is an estimate. `vita/` builds it with VitaSDK, checks it bit for bit in the Vita3K emulator and estimates Cortex-A9 cycles from the Vita build's instruction mix (`vita/README.md`); the `psp` agent covers the PSP.
+- Only FL10 has run on a console (a PCH-1001, inside vita-jp-overlay), without a per-line timing or hardware CER (`docs/vita-memory-budget.md`), and nothing has run on a PSP; the console speed above is an estimate. `vita/` builds it with VitaSDK, checks it bit for bit in the Vita3K emulator and estimates Cortex-A9 cycles from the Vita build's instruction mix (`vita/README.md`); the `psp` agent covers the PSP.
 - Parity covered 5,000 of the 10,001 synth-val lines (1-4,000 and 9,001-10,000), not the whole shard, because the `heavy.sh` slots stayed busy. The full shard is one command: `parity.py --ckpt ... --workers 5`.
 - Real-screenshot CER belongs to `eval/`; the CER figures here only show that the runtime reproduces PyTorch, and what int8 and `VOCR_INVERT` change.

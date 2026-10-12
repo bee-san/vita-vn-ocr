@@ -18,13 +18,19 @@ BUDGET_READY weights<=1600000 arena<=262144 ms<=550
 | `vocr_arena_bytes()`, W8I, default tiling | **≤ 262,144** | 241,056 | 182,944 | 124,832 |
 | est. ms per 640-px line, one A9 core at 333 MHz, high bound | **≤ 550** | 311-548 | 219-398 | 124-235 |
 | the same at 444 MHz | ≤ 412 | 234-411 | 164-299 | 93-177 |
-| MACs per CTC frame (a proxy; check the ms) | about 2.2-2.3M | 2,339,232 | 1,564,992 | 824,736 |
+| MACs per CTC frame (a proxy; check the ms) | about 2.0-2.35M, depending on shape | 2,339,232 | 1,564,992 | 824,736 |
 
 - **What the ms limit means.** It is the high end of `vita/a9_cycles.py`'s W8I range for an
   80-frame (640-px) line, which is about the p90 real Vita line. It is taken at 333 MHz, the clock
   games run at by default, with the whole 2 MiB L2.
 - **Checking a model.** All three limits must hold. `vita/budget_sweep.py check BLOB` tests a
   trained blob against them, reading synth-val lines only. Run it through `heavy.sh`.
+- **Margin.** The figure is per 640-px line. For a model at the ceiling, an estimated:
+  - full-width 917-px CLANNAD line (110-115 frames): about 760-790 ms at 333 MHz;
+  - three-line box of 640-px lines: about 1.65 s, before the model load (section 4).
+
+  The published line mix (20 synth-val plus 20 vita-test lines) costs about 0.8% more per frame
+  than `check`'s synth-val lines, so leave a few ms of margin rather than designing to 549 ms.
 - **Headroom.**
   - Memory: about 25× (section 1).
   - L2: weights plus arena stay at 89% or less of it.
@@ -33,11 +39,12 @@ BUDGET_READY weights<=1600000 arena<=262144 ms<=550
 
 What the numbers say:
 
-- **RAM is not the limit.** Inside a game, one OCR job of a ceiling-sized model needs 1.9-2.3 MB of
-  the game's own memory. Two games were measured with 87 and about 56 MiB free.
+- **RAM is not the limit.** Inside a game, one OCR job of a ceiling-sized model needs 2.0-2.4 MB of
+  the game's own memory. Free memory seen: 87 MiB in CLANNAD (measured), about 56 MiB in Stardew
+  Valley (a third-party screenshot).
 - **Speed binds first, then the shared 2 MiB L2.** Up to F20's size, cost grows slightly less than
   linearly with MACs. The knee comes where weights plus arena outgrow the L2, past about 2.0 MB:
-  - from there, the worst-case estimate grows faster than MACs: L2 misses add 10% to width 2.5's
+  - from there, the worst-case estimate grows faster than MACs: L2 misses add 8-10% to width 2.5's
     high bound and 30-36% to width 3.0's;
   - the best-case estimate stays linear;
   - a game that holds part of the L2 moves the knee down.
@@ -45,20 +52,21 @@ What the numbers say:
   - vita-jp-overlay reads and re-hashes the whole weights file on every OCR job, through 8 KiB
     kernel round trips with a 1 ms sleep each.
   - On the console that took 213-359 ms for FL10, more than the recognition itself (36-145 ms).
-  - The load grows with the blob: an estimated 0.37-0.63 s for H15 and 0.51-0.85 s for F20.
+  - The load grows with the blob: an estimated 0.37-0.63 s for H15 and 0.50-0.85 s for F20.
   - It is an integration bug with cheap fixes. See section 5 and
     [vita-jp-overlay #53](https://github.com/bee-san/vita-jp-overlay/issues/53).
-- **None of the overlay's OCR failures came from the recognizer's size.** Every OCR failure on the
-  console was an integration problem: the wrong process, eager or full-frame buffers, the game's
-  file namespace, an error-code ABI bug, or a pool leaked by a test tool (section 2).
+- **None of the overlay's OCR failures came from the recognizer's size.** The failures that stopped
+  OCR on the console were integration problems (section 2): the wrong process, eager or full-frame
+  buffers, the game's file namespace, an error-code ABI bug, or a pool leaked by a test tool. The
+  rest were output quality (FL10, judged by eye) and speed (Meiki, about 8 s per line).
 
-A slightly bigger model than H15 is affordable, up to F20's size and cost. Measured candidates that
-fit the ceiling, alongside plain width 2.0:
-- two blocks per stage at width 1.5 (`w150d2`: 1.29 MB, 240,544 B, 284-508 ms at 333 MHz);
-- a larger head bottleneck (`w150b128`: 1.34 MB, 185,376 B, 238-421 ms);
-- four temporal blocks (`w150c4`: 1.34 MB, 201,376 B, 241-441 ms).
+A slightly bigger model than H15 is affordable, up to F20's size and cost. Shapes from the sweep
+that fit the ceiling, alongside plain width 2.0 (sizes measured, times estimated at 333 MHz):
+- two blocks per stage at width 1.5 (`w150d2`: 1.29 MB, 240,544 B, est. 284-508 ms);
+- a larger head bottleneck (`w150b128`: 1.34 MB, 185,376 B, est. 238-421 ms);
+- four temporal blocks (`w150c4`: 1.34 MB, 201,376 B, est. 241-441 ms).
 
-Width 2.5 and above do not fit (width 2.5: 2.07 MB, 425-789 ms). This ceiling is for the Vita; the
+Width 2.5 and above do not fit (width 2.5: 2.07 MB, est. 425-789 ms). This ceiling is for the Vita; the
 PSP has no NEON and its own budget (`psp/README.md`).
 
 ## 1. Where the OCR runs, and which memory it uses
@@ -82,7 +90,7 @@ Facts, each with its source:
 | a game plugin's memory | taiHEN loads the plugin into the game's process, before the game's own code runs. That its memory counts against the game's budget is an inference; no source states it | taiHEN [plugin.c#L165-L173](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/plugin.c#L165-L173), [hen.c#L345-L380](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/hen.c#L345-L380) |
 | heap | none: the worker links with `-nostdlib`. It allocates one `USER_RW` memblock per job (4 KiB granularity) and frees it when the job ends | [M/vita/CMakeLists.txt#L176](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/vita/CMakeLists.txt#L176), [M/game_ocr/main.c#L146-L151](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L146-L151), [#L118-L127](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L118-L127) |
 | preflight | `sceKernelGetFreeMemorySize` must report free `USER_RW` of at least the workspace plus a 4 MiB reserve, or the job is refused before anything is allocated | [M/game_ocr/main.c#L18](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L18), [#L146-L150](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L146-L150) |
-| free memory seen in games | CLANNAD: 91,226,112 B of free `USER` before a job (one sample). Stardew Valley in +109 MiB mode: 309 of 365 MB used, about 56 MiB free (a PSVshell screenshot) | `notes/27`; [PSVshell README](https://github.com/Electry/PSVshell#readme) |
+| free memory seen in games | CLANNAD: 91,226,112 B of free `USER` before a job (one logged sample). Stardew Valley in +109 MiB mode: 309 of 365 MB used, about 56 MiB free (a third-party PSVshell screenshot, not our measurement) | `notes/27`; [PSVshell README](https://github.com/Electry/PSVshell#readme) |
 | file mapping | VitaSDK has no `mmap`, so the weights must be read into RAM | the pinned SDK headers: no `sys/mman.h`, no map API |
 | how the weights are read | on every job that finds a line. The read goes through the kernel broker, because the game cannot see `ux0:`, in 8 KiB round trips with a 1 ms sleep each. SHA-256 is checked every time | [M/core/vocr_ocr.c#L192-L196](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.c#L192-L196), [#L144-L156](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.c#L144-L156); [M/game_ocr/main.c#L50-L67](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L50-L67); [M/kernel/game_ocr.c#L405-L436](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/kernel/game_ocr.c#L405-L436) |
 | stack | the worker thread has 32 KiB. The runtime and both line finders use 4,316 B of it (measured in Vita3K, section 3) | [M/game_ocr/main.c#L7](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L7) |
@@ -102,7 +110,7 @@ Facts, each with its source:
 **What one job allocates.** The workspace is one block
 ([M/core/vocr_ocr.c#L64-L73](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.c#L64-L73)):
 
-> weights + max(line-finder arena, recognizer arena) + 3,760 B of runtime structs + the grey region (width × height)
+> weights + max(line-finder arena, recognizer arena) + 3,760 B of runtime structs + the grey region (width × height), each part rounded up to 16 B
 
 The finder's arena (83,323 B at 960×544) is smaller than every recognizer arena, so it adds nothing.
 
@@ -113,8 +121,8 @@ The finder's arena (83,323 B at 960×544) is smaller than every recognizer arena
 | F20 | 1,917,472 B | 2,325,072 B | 6.1 MB |
 | width 3.0 | 3,155,744 B | 3,563,344 B | 7.4 MB |
 
-The kernel's capture buffer (region × 4 B, 458,752 B at 917×125) comes from the kernel pool and is
-the same for every model.
+The kernel's capture buffer (region × 4 B: 458,500 B at 917×125, allocated as 458,752 B in 4 KiB
+pages) comes from the kernel pool and is the same for every model.
 
 ## 2. Why the overlay's OCR kept failing
 
@@ -161,9 +169,9 @@ for a full-screen job and an estimated 3-10 s per line.
   - Every console log is FL10. **H15 has never run on a console.**
 - **FL10 has run on a console:** a PCH-1001 on firmware 3.65, inside CLANNAD (`notes/26`, HW02 and
   HW15).
-  - Per job: line finding 34-38 ms, model load 213-359 ms, recognition 36-145 ms.
-  - These are 14 text-bearing jobs over two sessions, logged samples of varying dialogue at an
-    unknown clock.
+  - Per job: model load 213-359 ms and recognition 36-145 ms over 14 text-bearing jobs in two
+    sessions; line finding 34-38 ms in the 7 jobs of the first session (HW02).
+  - These are logged samples of varying dialogue at an unknown clock.
   - Line widths were not logged, so the logs cannot test the estimates below. They hint that the
     high bounds are pessimistic: if any of those lines filled the 917-px box, 145 ms would sit near
     the low bound at 444 MHz. A full line is about 110 frames, an estimated 128-243 ms at 444 MHz.
@@ -184,8 +192,8 @@ Sizes are measured on the host; the A9 times are estimated.
   - Only the L2's size, associativity and replacement policy and the runtime's tiling are changed.
 
 **Checks:**
-- Unmodified `a9_cycles.py` on the same 40 lines gives FL10's counts exactly (517,567-979,622
-  cycles per frame).
+- Unmodified `a9_cycles.py` on the same 40 lines gives FL10's range to the printed precision
+  (517,567-979,622 cycles per frame; L2 misses 18.948 against 18.946 per frame).
 - Random and trained weights of the same shape agree to within 0.005%: FL10, H15 and F20 against
   `w100v3500`, `w150` and `w200`. The kernels have no data-dependent branches, so only the shapes
   matter.
@@ -197,7 +205,7 @@ Sizes are measured on the host; the A9 times are estimated.
   high bound assumes no dual issue and every cache miss at full latency.
 - Defaults unless stated: tile 4, head batch 16, a 2 MiB 8-way LRU L2 (`a9_cycles.py`'s setup).
 
-| config | params | int8 blob B | of which head B | W8I arena B | MACs/frame | est. cycles/frame | cycles/MAC | est. ms, 640-px line, 444 MHz | 333 MHz |
+| config | params | int8 blob B | of which head B | W8I arena B | MACs/frame | est. cycles/frame (444 MHz) | cycles/MAC | est. ms, 640-px line, 444 MHz | 333 MHz |
 |---|---|---|---|---|---|---|---|---|---|
 | w075 | 659,739 | 751,616 | 557,440 | 95,776 | 801,072 | 517,907-975,928 | 0.647-1.218 | 93-176 | 124-234 |
 | w100 (v1) | 759,499 | 859,904 | 557,440 | 124,832 | 1,002,720 | 619,966-1,166,946 | 0.618-1.164 | 112-210 | 149-280 |
@@ -279,8 +287,8 @@ once per 16-frame batch.
 - **Superlinear, but mildly.**
   - A spill never moves the low bound, which assumes the DRAM traffic overlaps the NEON work.
   - It raises the high bound at 333 MHz by 10% (H15) and 26% (F20) with a 1 MiB share.
-  - With the whole L2, L2 misses add 10% to width 2.5's high bound, 30-36% to width 3.0's and 36-41%
-    to width 4.0's (333-444 MHz). Without them, those bounds would follow the trend of the smaller
+  - With the whole L2, L2 misses add 8-10% to width 2.5's high bound, 30-36% to width 3.0's and
+    35-41% to width 4.0's (333-444 MHz). Without them, those bounds would follow the trend of the smaller
     models (0.84-0.91 cycles per MAC).
   - The weights stream in order and every tile reuses them, so a spill costs bandwidth, not a cliff.
 - **The bandwidth bill.**
@@ -290,11 +298,11 @@ once per 16-frame batch.
     unmeasured working figure for one A9 core: no Vita memory benchmark exists.
   - The cost model's DRAM latency (110 ns) and L2-to-L1 rate (8.7 cycles per line) are 7-cpu.com's
     Exynos 4210 figures.
-- **L1 misses are a steady fifth of the high bound.**
+- **L1 misses are a steady share of the high bound.**
   - Weights pass through the 32 KiB L1 once per tile, so L1 misses grow with the weight bytes read
     per frame: 5,836 per frame for FL10, 10,513 for H15, 15,968 for F20, 31,043 at width 3.0.
-  - At 30 cycles each, they make up 17-21% of the high bound in every configuration. That is part
-    of why the high bound sits about twice the low bound everywhere.
+  - At 30 cycles each, they make up 12-22% of the high bound across the grid (18-21% for FL10, H15
+    and F20). That is part of why the high bound sits about twice the low bound everywhere.
 
 The cache model itself (default tiling):
 
@@ -311,13 +319,14 @@ The cache model itself (default tiling):
 
 - **Associativity changes little.** The simulator's L2 has 8 ways and the Vita's PL310 has 16.
   With LRU replacement, 16 ways leave the misses within 1% of the 8-way figures for models that fit,
-  and up to 12% more for models that spill (F20 with a 1 MiB share: 9,744 against 8,742). The
-  estimated ms moves by at most 2%. A weight stream larger than the cache thrashes LRU at any
+  and up to 12-13% more for models that spill (w250 with the whole L2: 4,311 against 3,832; F20
+  with a 1 MiB share: 9,744 against 8,742). The estimated ms moves by at most about 3%. A weight stream larger than the cache thrashes LRU at any
   associativity.
-- **Replacement is the bigger unknown.** The PL310 replaces lines pseudo-randomly, while qemu's
-  simulator defaults to LRU. A cyclic stream slightly larger than the cache makes LRU miss on every
-  line, while random replacement keeps a share of them. LRU is therefore the pessimistic case for
-  models just past the knee.
+- **Replacement is the bigger unknown, and is not simulated here.** The PL310 replaces lines
+  pseudo-randomly (AUX_CTRL bit 25 clear), while every run above uses qemu's default, LRU.
+  *Inference, not measured:* a cyclic stream slightly larger than the cache makes LRU miss on every
+  line, while random replacement keeps a share of them, so LRU should be the pessimistic case for
+  models just past the knee. `budget_sweep.py a9 --evict rand` runs the comparison.
 
 **Bigger tiles keep more of the hot set in the L2.** The runtime's tile and head batch trade arena
 for passes over the weights:
@@ -370,12 +379,12 @@ Code size, VitaSDK gcc 15.2 `-O2` Thumb-2 at `2873b98`: `vocr.o` is 14,583 B wit
 A job runs capture, line finding, model load, then recognition of each detected line, one after
 another on one core.
 
-| model | line finding (FL10, measured) | model load, today's loader | recognition, 3 lines of 640 px, 333 MHz | total today | without the reload, at 444 MHz |
+| model | line finding (FL10, measured) | model load, today's loader | est. recognition, 3 lines of 640 px, 333 MHz | total today (est.) | est. without the reload, at 444 MHz |
 |---|---|---|---|---|---|
 | FL10 | 34-38 ms | 213-359 ms (measured) | 0.37-0.71 s | 0.62-1.10 s | 0.31-0.57 s |
-| H15 | same | 0.37-0.63 s (est.) | 0.66-1.19 s | 1.07-1.86 s | 0.53-0.94 s |
-| F20 | same | 0.51-0.85 s (est.) | 0.93-1.64 s | 1.48-2.53 s | 0.74-1.27 s |
-| width 3.0 | same | 0.87-1.46 s (est.) | 1.68-3.70 s | 2.59-5.20 s | 1.29-2.93 s |
+| H15 | same | 0.37-0.63 s (est.) | 0.66-1.19 s | 1.07-1.86 s | 0.53-0.93 s |
+| F20 | same | 0.50-0.85 s (est.) | 0.93-1.64 s | 1.47-2.53 s | 0.74-1.27 s |
+| width 3.0 | same | 0.87-1.46 s (est.) | 1.68-3.70 s | 2.58-5.20 s | 1.29-2.93 s |
 
 **Load-time estimate.** It scales FL10's measured 213-359 ms by blob bytes. That is plausible,
 because every part of the load grows with the file. Estimated breakdown for FL10:
@@ -402,7 +411,7 @@ In order of value per effort. Items 1-3 are overlay changes; nothing in `runtime
    - keep the verified weights in their own `USER_RW` block while the title is enabled and in the
      foreground (657,664 B for FL10, 1,155,968 B for H15), under the same preflight.
 
-   This saves 0.2-0.36 s per FL10 job today and an estimated 0.5-0.85 s per F20 job. Resident
+   This saves 0.2-0.36 s per FL10 job today and an estimated 0.50-0.85 s per F20 job. Resident
    weights hold 0.7-1.6 MB of the game's memory for the session instead of per job. That is small
    next to the 56-87 MiB seen free.
 2. **Ask for 444 MHz during a job.** Call `scePowerSetArmClockFrequency(444)`, then restore the
@@ -418,12 +427,13 @@ In order of value per effort. Items 1-3 are overlay changes; nothing in `runtime
    - The two threads share one copy of the weights in the L2, but both arenas count against it.
      H15 with two arenas is 1.52 MB and fits. F20 with two is 2.04 MB, 97% of the L2, leaving no
      room for the game.
-   - Not measured. In PSVshell's Stardew Valley screenshot, cores 1 and 2 were 1-3% busy.
+   - Not measured. In PSVshell's README screenshots of Stardew Valley, cores 1 and 2 were 0-3%
+     busy.
 4. **Spend MACs where they pay.** The architecture sweep found width to be the knob that helps on
    real data. The cheapest place to find MACs and bytes is the head:
-   - Bottleneck 64 instead of 96 saves 181 KB and 6-9% of the time at width 1.5. Bottleneck 48
-     measured +0.26 points with real data (CI -0.40 to +0.92), not significantly worse
-     (`docs/arch-sweep.md`).
+   - Bottleneck 64 instead of 96 saves 181 KB and an estimated 6-9% of the time at width 1.5.
+     Accuracy: bottleneck 48 at width 1.0 measured +0.26 points with real data (CI -0.40 to +0.92),
+     not significantly worse (`docs/arch-sweep.md`, `b48_r`).
    - FL10's 3,500-class vocab saves 18% of a width-1.0 model's MACs.
    - Growing the vocab past 5,355 classes is expensive (above).
 5. **Low-rank pointwise layers.** Two pointwise ops (`K→r→N`), as the head already factorises, cut
@@ -473,12 +483,10 @@ $S --l2 1024,512,256 --only FL10,H15,F20,w100,w250,w300,w400,w150v11000,w150b192
 $S --l2 2048,512 --tile 16 --head 64 --only H15,F20,w300,w400
 $S --l2 2048,512 --tile 4 --head 64 --only H15,F20
 $S --l2 2048,1024 --l2-ways 16 --only H15,F20,w250,w300
-$S --l2 2048,1024 --l2-ways 16 --evict rand --rep 1 --only H15,F20,w250,w300
-$S --l2 2048 --l2-ways 16 --evict rand --rep 2 --only F20,w250,w300
 python vita/budget_sweep.py table --dir $D                       # the tables above
 python vita/budget_sweep.py check my_model_w8.vocr               # a trained blob against the ceiling
 python vita/budget_sweep.py ckpt --name w300 --out w300.pt       # for vita/bundle.py --ckpt w300.pt
                                                                  #   --sets synth-val --modes w8i, then run_vita3k.sh
 ```
 
-The scripts that ran these are `$A/vita-budget/run_sweep.sh`, `run_sweep2.sh` and `run_sweep3.sh`.
+The scripts that ran these are `$A/vita-budget/run_sweep.sh` and `run_sweep2.sh`.

@@ -52,6 +52,7 @@ for _p in (ROOT, HERE, ROOT / "synth"):
 import shots as SH  # noqa: E402
 
 from devnative import decide as D  # noqa: E402
+from devnative import gradcheck as GC  # noqa: E402
 from devnative import lines as L  # noqa: E402
 from devnative import paths as P  # noqa: E402
 from devnative import sheets as S  # noqa: E402
@@ -548,6 +549,11 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
                             drops[f"{target}-grad-{g['status'] if g else 'none'}"] += 1
                             continue
                         box = g["box"]
+                        # devnative 0cb084e (build.grad_default): a GRAD box that runs beyond the ink
+                        # crop may hold text the label lacks; without a GRAD check it gets no crop.
+                        if GC.needs_check(box, L.crop_box(ln, target, W, H), L.ink_height(ln)):
+                            drops[f"{target}-grad-unchecked"] += 1
+                            continue
                     img, dark, inverted = L.cut(rgb, box)
                     if img.shape[0] < 4 or img.shape[1] < 4:
                         drops[f"{target}-{crop}-tiny"] += 1
@@ -566,14 +572,28 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
     return files, man, drops, kept
 
 
+def late_exclusions(src_rows, saved_vns=(), current_vns=(), dup_images=(), leak_shots=()):
+    """VNs and shot keys to leave out at build time, whatever was decided earlier: the reserved VNs
+    saved at selection plus those recomputed from today's inputs (test games, fresh native titles,
+    development VNs), screenshots dedupe marked as copies (of a pool image, a fresh native test image
+    or another realplus image) and shots the leak check dropped. Shot keys are "<vn>_<image>"."""
+    vns = set(saved_vns) | set(current_vns)
+    dup = {str(i) for i in dup_images}
+    shots_ = {f"{r['vn']}_{r['image']}" for r in src_rows if str(r["image"]) in dup} | set(leak_shots)
+    return vns, shots_
+
+
 def cmd_build(args):
     labels = jl(OUT / "labels.jsonl")
     shots = load_reads()
-    late_vns = set(json.loads((OUT / "manifests" / "reserved_vns.json").read_text()))
-    late_vns |= SH.devnative_vns() | SH.fresh_native_vns()
+    rows_ = SH.load_shots()
+    saved = json.loads((OUT / "manifests" / "reserved_vns.json").read_text())
+    current = SH.reserved_vns(SH.load_dump())          # recomputed: inputs may have moved since select
     leak = OUT / "manifests" / "leak_drop.json"
-    late_shots = set(json.loads(leak.read_text())) if leak.exists() else set()
-    src = {f"{r['vn']}_{r['image']}": r for r in SH.load_shots()}
+    late_vns, late_shots = late_exclusions(
+        rows_, saved, set(current) | SH.devnative_vns() | SH.fresh_native_vns(), dups(),
+        json.loads(leak.read_text()) if leak.exists() else ())
+    src = {f"{r['vn']}_{r['image']}": r for r in rows_}
     files, man, drops, kept = build_lines(labels, shots, late_vns, late_shots, src)
     counts = {}
     for crop in ("ink", "grad"):

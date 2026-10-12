@@ -161,3 +161,38 @@ def test_ink_mixed_drops_crops_that_take_in_a_neighbour():
     box_a = [41, 429, 287, 457]
     assert PL.ink_mixed(box_a, PL.read_line(a), dets)                  # half of b's glyphs inside
     assert not PL.ink_mixed([41, 496, 403, 524], PL.read_line(c), dets)
+
+
+def test_late_exclusions_take_dedupe_copies_and_recomputed_reserved_vns():
+    rows = [{"vn": "v1", "image": 10}, {"vn": "v2", "image": 20}, {"vn": "v3", "image": 30}]
+    vns, shots = PL.late_exclusions(rows, saved_vns={"v9": "test-vn"}, current_vns={"v2"},
+                                    dup_images={"30": "realplus:31", "77": "pool:teacher"}, leak_shots=["v1_10"])
+    assert vns == {"v9", "v2"}
+    assert shots == {"v3_30", "v1_10"}           # the copy found by dedupe and the leak-check drop
+
+
+def test_grad_box_running_beyond_the_ink_crop_gets_no_crop(tmp_path, monkeypatch):
+    path = _screen(tmp_path)
+    ln = _line(0, [36, 399, 636, 420], ("あいう", "あいう", "あいう", "あいう"))
+    shot = {"shot": "v100_7", "vn": "v100", "kind": "vita", "url": "u", "path": str(path), "lines": [ln],
+            "dets": [{"det": ln["det"]}]}
+    rec = D.decide_line("v100_7_0", ln, None, None, "train", auto_consensus=True)
+    rec.update(shot="v100_7", vn="v100", subset="realplus", kind="vita")
+
+    def fake_grad(extra):
+        def grad_assign(rgb, lines, dets, kind):
+            out = []
+            for x in lines:
+                x0, y0, x1, y1 = x["ink"]
+                out.append({"region": [x0, y0, x1, y1], "box": [x0 - 2, y0 - 2, x1 + 2 + extra, y1 + 2],
+                            "status": "ok", "dark": 0})
+            return out
+        return grad_assign
+
+    monkeypatch.setattr(PL.L, "grad_assign", fake_grad(0))
+    files, _, drops, _ = PL.build_lines([rec], {"v100_7": shot})
+    assert len(files[("vita", "grad")]) == 1 and not drops["vita-grad-unchecked"]
+    monkeypatch.setattr(PL.L, "grad_assign", fake_grad(90))             # runs 90 px past the line
+    files, _, drops, _ = PL.build_lines([rec], {"v100_7": shot})
+    assert not files.get(("vita", "grad")) and drops["vita-grad-unchecked"] == 1
+    assert len(files[("vita", "ink")]) == 1

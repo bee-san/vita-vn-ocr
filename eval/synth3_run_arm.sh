@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # run_arm.sh ARM SEED [WIDTH VOCAB]: one primary run of eval/synth3_ablation_protocol.json (train2.py, 16k steps)
 set -euo pipefail
-ARM=$1; SEED=$2; WIDTH=${3:-1.0}; VOCAB=${4:-/home/skerraut/herd-vita-ocr/shared/artifacts/train2/release/FL10_vocab_3500.txt}
-A=/home/skerraut/herd-vita-ocr/shared/artifacts
-REPO=/home/skerraut/herd-vita-oct12/clones/synth-dataset
+ARM=$1; SEED=$2; WIDTH=${3:-1.0}; VOCAB=${4:-${HERD:-/local/home/skerraut/herd-vita-ocr}/shared/artifacts/train2/release/FL10_vocab_3500.txt}
+A=${HERD:-/local/home/skerraut/herd-vita-ocr}/shared/artifacts
+REPO=$(cd "$(dirname "$0")/.." && pwd)
 OUT=$A/synth3/ablation/runs
 NV="nv:0.5:$A/nvsynth/shards/nv_train_0*.npz:stream=1,pool=3,inv=0.2"
 S2G="$A/synth2/shards/synth_000[0-2]?.npz+$A/synth2/shards/synth_0003[0-8].npz"

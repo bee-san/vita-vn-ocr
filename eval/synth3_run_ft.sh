@@ -3,8 +3,8 @@
 # 5,000 steps from ARM's seed-1 step-16000 checkpoint on nv + ARM's synthetic data + teacher_train + real_train.
 set -euo pipefail
 ARM=$1
-A=/home/skerraut/herd-vita-ocr/shared/artifacts
-REPO=/home/skerraut/herd-vita-oct12/clones/synth-dataset
+A=${HERD:-/local/home/skerraut/herd-vita-ocr}/shared/artifacts
+REPO=$(cd "$(dirname "$0")/.." && pwd)
 OUT=$A/synth3/ablation/runs
 VOCAB=$A/train2/release/FL10_vocab_3500.txt
 NV="nv:0.25:$A/nvsynth/shards/nv_train_0*.npz:stream=1,pool=3,inv=0.2"

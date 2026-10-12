@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "source": {
+    "title": "CLANNAD",
+    "title_id": "PCSG00415",
+    "platform": "psv",
+    "url": "https://www.prot.co.jp/psv/clannad/",
+    "access": "User-owned local game files; no download or redistribution",
+    "role": "synthetic training font source; CLANNAD is already a known training game"
+  },
+  "redistribute": false,
+  "format_evidence": "Measured headers, exact file sizes, code tables, nibble orders and visual glyph inspection. Bank semantics and PRO layout semantics are partly inferred, not an authoritative format specification.",
+  "fonts": [
+    {
+      "family": "clannad_gothp32",
+      "category": "gothic",
+      "fnt": {
+        "file": "gothp32.fnt",
+        "sha256": "e53c2407080e12741cb207a60b97fd8b0624304f5d4aa007e8dd33146d5f72f9",
+        "bytes": 7305136
+      },
+      "pro": {
+        "file": "gothp32.pro",
+        "sha256": "9b02bcea46769a2413b8ab1ae8c9f1ddaf44bcc0b951d203b1943bf7ed9fb81d",
+        "bytes": 24208
+      }
+    },
+    {
+      "family": "clannad_mgothp32",
+      "category": "rounded",
+      "fnt": {
+        "file": "mgothp32.fnt",
+        "sha256": "f9cdd7685a810b14716b1152aded3e6f9f95feb328dacef7cfcde4d8fe1fc94f",
+        "bytes": 7305136
+      },
+      "pro": {
+        "file": "mgothp32.pro",
+        "sha256": "29521b2abfbc9a1a1f90a006764886cb912bd44cf3d7e77782d11dc479b64c7d",
+        "bytes": 24208
+      }
+    },
+    {
+      "family": "clannad_minp32",
+      "category": "mincho",
+      "fnt": {
+        "file": "minp32.fnt",
+        "sha256": "4d03acf8eedbc0a7d6d2238d79916c744d186e632015e2f6e4a65f1427478bd8",
+        "bytes": 7305136
+      },
+      "pro": {
+        "file": "minp32.pro",
+        "sha256": "7136715fcb2ad3418b36eda2384faba3b602e7786bb7c5a9e3d736f97a266e9e",
+        "bytes": 24208
+      }
+    },
+    {
+      "family": "clannad_mdnp32",
+      "category": "mincho",
+      "fnt": {
+        "file": "mdnp32.fnt",
+        "sha256": "2dac2a374005f2b47c891704538b6975ce55429d447ef7e3a1ceea0de93432ce",
+        "bytes": 7305136
+      },
+      "pro": {
+        "file": "mdnp32.pro",
+        "sha256": "1a05ede576d6b5d3b4cf73686b73ec9b5592df1085fc02e29857439bfe0284b7",
+        "bytes": 24208
+      }
+    }
+  ]
+}

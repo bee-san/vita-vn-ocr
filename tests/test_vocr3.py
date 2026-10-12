@@ -20,12 +20,13 @@ def test_candidates_are_study2_runs():
 
 
 def test_sizes_match_study2_and_released_blobs():
-    for size, spec in P["sizes"].items():
+    for size in ("FL10", "H15"):
+        spec = P["sizes"][size]
         assert spec["vocab"]["sha256"] == S2["architectures"][size]["vocab"]["sha256"]
         assert spec["vocab"]["classes"] == S2["architectures"][size]["vocab"]["classes"]
     assert P["sizes"]["FL10"]["expected"] == {"blob_bytes": 657664, "arena_w8i_bytes": 124832}
     assert P["sizes"]["H15"]["expected"] == {"blob_bytes": 1155968, "arena_w8i_bytes": 182944}
-    shas = {b["sha256"] for s in P["sizes"].values() for b in s["baselines"].values()}
+    shas = {b["sha256"] for s in P["sizes"].values() for b in s["baselines"].values() if "sha256" in b}
     assert len(shas) == 3 and all(len(s) == 64 for s in shas)
 
 
@@ -35,3 +36,18 @@ def test_report_pairs_and_gates_name_known_arms():
         assert a in arms and b in arms
     assert ["VOCR3-FL10", "VOCR1"] in P["qualification"]["gates"]
     assert ["VOCR3-H15", "VOCR_H15"] in P["qualification"]["gates"]
+
+
+def test_amendment_1_w20_and_budget():
+    w = P["sizes"]["W20"]
+    assert w["vocab"]["sha256"] == P["sizes"]["H15"]["vocab"]["sha256"] and w["expected"]["blob_bytes"] == 1558016
+    b = P["budget"]
+    assert (b["weights_max_bytes"], b["arena_max_bytes"], b["ms_max_per_640px_line"]) == (1600000, 262144, 550)
+    for spec in P["sizes"].values():
+        assert spec["expected"]["blob_bytes"] <= b["weights_max_bytes"]
+        assert spec["expected"]["arena_w8i_bytes"] <= b["arena_max_bytes"]
+    runs = P["candidates"]["W20"]["runs"]
+    assert sorted(runs) == sorted(f"ft_W20_{a}_seed1" for a in ("A_s2", "B_s3", "C_mix"))
+    assert ["VOCR3-W20", "VOCR_H15"] in P["qualification"]["gates"]
+    script = (ROOT / "eval" / "vocr3_run.sh").read_text(encoding="utf-8")
+    assert "W20)  WIDTH=2.0" in script and "synth3_study2_pools.sha256" in script and "kd=1" not in script

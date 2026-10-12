@@ -1,0 +1,3345 @@
+{
+  "annotation_qualification": "Haitaka58body lines have two independently frozen blind assistant readings;17names have one frozen blind reading plus second-assistant later native source/geometry verification. No human review claim.",
+  "baseline": {
+    "blob_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+    "scores": {
+      "console_balanced_macro": {
+        "all": {
+          "full": {
+            "fraction": "152258869520843/4721772767725728",
+            "percent": 3.2246123862961635
+          },
+          "hira": {
+            "fraction": "534112458547/25938748139370",
+            "percent": 2.059129668391053
+          }
+        },
+        "body": {
+          "full": {
+            "fraction": "4393623758327/191715673570848",
+            "percent": 2.2917394683973757
+          },
+          "hira": {
+            "fraction": "701776642579/47407538252976",
+            "percent": 1.480306019760362
+          }
+        }
+      },
+      "groups": {
+        "psp:v1281": {
+          "all": {
+            "full": {
+              "chars": 1223,
+              "errors": 12
+            },
+            "hira": {
+              "chars": 642,
+              "errors": 3
+            },
+            "lines": 87
+          },
+          "body": {
+            "full": {
+              "chars": 1217,
+              "errors": 12
+            },
+            "hira": {
+              "chars": 642,
+              "errors": 3
+            },
+            "lines": 81
+          },
+          "platform": "psp",
+          "vn": "v1281"
+        },
+        "psp:v2632": {
+          "all": {
+            "full": {
+              "chars": 869,
+              "errors": 29
+            },
+            "hira": {
+              "chars": 458,
+              "errors": 14
+            },
+            "lines": 94
+          },
+          "body": {
+            "full": {
+              "chars": 777,
+              "errors": 25
+            },
+            "hira": {
+              "chars": 419,
+              "errors": 14
+            },
+            "lines": 59
+          },
+          "platform": "psp",
+          "vn": "v2632"
+        },
+        "psp:v5154": {
+          "all": {
+            "full": {
+              "chars": 1682,
+              "errors": 10
+            },
+            "hira": {
+              "chars": 905,
+              "errors": 3
+            },
+            "lines": 131
+          },
+          "body": {
+            "full": {
+              "chars": 1608,
+              "errors": 10
+            },
+            "hira": {
+              "chars": 904,
+              "errors": 3
+            },
+            "lines": 95
+          },
+          "platform": "psp",
+          "vn": "v5154"
+        },
+        "vita:v18161": {
+          "all": {
+            "full": {
+              "chars": 1264,
+              "errors": 51
+            },
+            "hira": {
+              "chars": 740,
+              "errors": 16
+            },
+            "lines": 82
+          },
+          "body": {
+            "full": {
+              "chars": 1264,
+              "errors": 51
+            },
+            "hira": {
+              "chars": 740,
+              "errors": 16
+            },
+            "lines": 82
+          },
+          "platform": "vita",
+          "vn": "v18161"
+        },
+        "vita:v18163": {
+          "all": {
+            "full": {
+              "chars": 663,
+              "errors": 37
+            },
+            "hira": {
+              "chars": 330,
+              "errors": 3
+            },
+            "lines": 48
+          },
+          "body": {
+            "full": {
+              "chars": 588,
+              "errors": 15
+            },
+            "hira": {
+              "chars": 330,
+              "errors": 3
+            },
+            "lines": 30
+          },
+          "platform": "vita",
+          "vn": "v18163"
+        },
+        "vita:v18643": {
+          "all": {
+            "full": {
+              "chars": 913,
+              "errors": 44
+            },
+            "hira": {
+              "chars": 479,
+              "errors": 26
+            },
+            "lines": 75
+          },
+          "body": {
+            "full": {
+              "chars": 855,
+              "errors": 20
+            },
+            "hira": {
+              "chars": 479,
+              "errors": 8
+            },
+            "lines": 58
+          },
+          "platform": "vita",
+          "vn": "v18643"
+        }
+      },
+      "synthetic": {
+        "broad_00000": {
+          "full": {
+            "chars": 7179,
+            "errors": 325
+          },
+          "hira": {
+            "chars": 4184,
+            "errors": 74
+          }
+        },
+        "broad_00001": {
+          "full": {
+            "chars": 7655,
+            "errors": 323
+          },
+          "hira": {
+            "chars": 4541,
+            "errors": 93
+          }
+        }
+      },
+      "totals": {
+        "combined": {
+          "all": {
+            "full": {
+              "chars": 6614,
+              "errors": 183
+            },
+            "hira": {
+              "chars": 3554,
+              "errors": 65
+            }
+          },
+          "body": {
+            "full": {
+              "chars": 6309,
+              "errors": 133
+            },
+            "hira": {
+              "chars": 3514,
+              "errors": 47
+            }
+          }
+        },
+        "psp": {
+          "all": {
+            "full": {
+              "chars": 3774,
+              "errors": 51
+            },
+            "hira": {
+              "chars": 2005,
+              "errors": 20
+            }
+          },
+          "body": {
+            "full": {
+              "chars": 3602,
+              "errors": 47
+            },
+            "hira": {
+              "chars": 1965,
+              "errors": 20
+            }
+          }
+        },
+        "vita": {
+          "all": {
+            "full": {
+              "chars": 2840,
+              "errors": 132
+            },
+            "hira": {
+              "chars": 1549,
+              "errors": 45
+            }
+          },
+          "body": {
+            "full": {
+              "chars": 2707,
+              "errors": 86
+            },
+            "hira": {
+              "chars": 1549,
+              "errors": 27
+            }
+          }
+        }
+      }
+    }
+  },
+  "candidates": [
+    {
+      "blob_sha256": "895e3d4b858d1d57194c26bb66de82f6a4cd0a25f4f867d51891000609bc3f42",
+      "checkpoint_sha256": "eb393681b16427da924f32d5a61d135b4352884746b4566181e41f3dde7e5f07",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count",
+        "psp:v2632/all/hira: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "1586510709023/65580177329524",
+              "percent": 2.419192465813534
+            },
+            "hira": {
+              "fraction": "304425841591/17292498759580",
+              "percent": 1.7604502728233469
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "91539524369/5991114799089",
+              "percent": 1.5279213875674584
+            },
+            "hira": {
+              "fraction": "2455401982823/237037691264880",
+              "percent": 1.0358698524780972
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 27
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 15
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 21
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 3
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 3
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 24
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 6
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 24
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 6
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 27
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 36
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 25
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 5
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 266
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 54
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 275
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 79
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 135
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 54
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 87
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 32
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 48
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 22
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 42
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 20
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 87
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 32
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 45
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 12
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 200
+    },
+    {
+      "blob_sha256": "f2e54afb29bace701af46ac55ceb615634046999e2ac8c5ffc076ed22bf36593",
+      "checkpoint_sha256": "d8207c12fca8ca8801d1418096e38334559fc348d8f4142c3ded87ae6d6762b6",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count",
+        "psp:v5154/all/full: regression or invalid error count",
+        "psp:v5154/body/full: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "7471163218213/277751339277984",
+              "percent": 2.68987477707014
+            },
+            "hira": {
+              "fraction": "1774410196093/103754992557480",
+              "percent": 1.710192591561299
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "1691812102733/106508707539360",
+              "percent": 1.5884260938081476
+            },
+            "hira": {
+              "fraction": "485262454021/47407538252976",
+              "percent": 1.0235976637967228
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 9
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 9
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 25
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 13
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 21
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 14
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 3
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 14
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 3
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 29
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 29
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 34
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 39
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 25
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 9
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 4
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 264
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 55
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 273
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 72
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 150
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 53
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 93
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 32
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 48
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 20
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 44
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 20
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 102
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 33
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 49
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 12
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 400
+    },
+    {
+      "blob_sha256": "86e71e7c5986d0540945b17b7e37a63fc02b63332a319d12f26391ebd476874a",
+      "checkpoint_sha256": "5cce124c05902166a47686a6a3c08053e92f31d2fa92762902ae745d087976a5",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/full: regression or invalid error count",
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/full: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count",
+        "psp:v5154/all/full: regression or invalid error count",
+        "psp:v5154/body/full: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "40725681380573/1573924255908576",
+              "percent": 2.587524858816244
+            },
+            "hira": {
+              "fraction": "549321664685/31126497767244",
+              "percent": 1.7648039583273618
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "14911103750329/958578367854240",
+              "percent": 1.5555435267861542
+            },
+            "hira": {
+              "fraction": "3709855385747/355556536897320",
+              "percent": 1.0433939474493072
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 14
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 14
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 25
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 13
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 21
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 2
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 2
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 23
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 8
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 23
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 8
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 33
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 2
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 12
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 2
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 37
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 25
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 8
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 3
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 261
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 49
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 263
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 71
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 143
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 54
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 89
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 32
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 50
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 19
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 46
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 19
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 93
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 35
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 43
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 13
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 600
+    },
+    {
+      "blob_sha256": "3b427b1cb296bb1ea01a5d9019f8105e9fd1fafed2f71fbc5d3428fa0c0a5ef5",
+      "checkpoint_sha256": "dc6398fb09be1678d0f151048e01a1c7fd606694c88b2e09c69864675f0d0eec",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count",
+        "vita:v18643/all/hira: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "40783151129939/1573924255908576",
+              "percent": 2.5911762257197184
+            },
+            "hira": {
+              "fraction": "5582396221961/311264977672440",
+              "percent": 1.7934546519511232
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "4850865609269/319526122618080",
+              "percent": 1.5181436714853809
+            },
+            "hira": {
+              "fraction": "7375874991913/711113073794640",
+              "percent": 1.0372295579595903
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 24
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 13
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 20
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 9
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 1
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 9
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 1
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 25
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 25
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 36
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 2
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 12
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 2
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 36
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 27
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 9
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 4
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 256
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 53
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 266
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 71
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 141
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 54
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 86
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 31
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 44
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 18
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 40
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 18
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 97
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 36
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 46
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 13
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 800
+    },
+    {
+      "blob_sha256": "b08bac7b5ce5840758d11823c07dd508a6b908b77e93fc49fe6637ab6a2b6de6",
+      "checkpoint_sha256": "ecba095ab6e4b9e57e15d8fa4fbe22f75c8119cf94777746ce8bc0b98f4aa038",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count",
+        "vita:v18163/all/full: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "31575123007489/1180443191931432",
+              "percent": 2.674853243536949
+            },
+            "hira": {
+              "fraction": "1112486893/71654000385",
+              "percent": 1.5525816940053039
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "3717527160727/239644591963560",
+              "percent": 1.5512668699372452
+            },
+            "hira": {
+              "fraction": "4541084447/524419670940",
+              "percent": 0.8659256505119838
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 12
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 12
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 27
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 13
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 23
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 0
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 0
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 20
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 4
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 20
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 4
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 38
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 37
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 24
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 3
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 247
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 47
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 255
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 66
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 144
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 46
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 87
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 25
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 49
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 17
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 45
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 17
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 95
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 29
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 42
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 8
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 1000
+    },
+    {
+      "blob_sha256": "fe1fdeaf28a83c8a86ecb4fa99ce46da11a5cdea1d3b75da7323f2092b4580d9",
+      "checkpoint_sha256": "2060b9abba5a93c37d0d8ab23dd9f29591e7d777772abb0da8fecaca22659819",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "38342379506305/1573924255908576",
+              "percent": 2.4361006803450764
+            },
+            "hira": {
+              "fraction": "81499437725/5187749627874",
+              "percent": 1.570997900266814
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "2824121978401/191715673570848",
+              "percent": 1.473078296520891
+            },
+            "hira": {
+              "fraction": "698757269763/79012563754960",
+              "percent": 0.8843622286830752
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 26
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 13
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 22
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 9
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 1
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 9
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 1
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 19
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 4
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 19
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 4
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 30
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 38
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 24
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 3
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 245
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 45
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 252
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 66
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 133
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 47
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 82
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 26
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 46
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 18
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 42
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 18
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 87
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 29
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 40
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 8
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 1200
+    },
+    {
+      "blob_sha256": "3b665e87631e720005e23100c2a1e5b46bb8f47e6e55e33c60432acba2d79248",
+      "checkpoint_sha256": "06f9301a914a573109e813eb5c89738e280a4f0b84969b26095b9f03472035c4",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count",
+        "psp:v5154/all/full: regression or invalid error count",
+        "psp:v5154/body/full: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "121631348173277/4721772767725728",
+              "percent": 2.5759678442099516
+            },
+            "hira": {
+              "fraction": "5423111922149/311264977672440",
+              "percent": 1.7422814358048393
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "14363840816629/958578367854240",
+              "percent": 1.498452426876917
+            },
+            "hira": {
+              "fraction": "907443771161/88889134224330",
+              "percent": 1.0208714249267847
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 25
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 13
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 21
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 12
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 2
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 12
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 2
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 21
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 21
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 37
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 2
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 12
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 2
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 34
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 25
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 8
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 3
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 245
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 46
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 250
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 64
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 140
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 53
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 85
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 31
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 48
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 19
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 44
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 19
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 92
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 34
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 41
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 12
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 1400
+    },
+    {
+      "blob_sha256": "4d7dc9a21f598c4da3b2af14f0deeff02393b4a7aa4c16c971eac8ab83c5b86f",
+      "checkpoint_sha256": "60746244ce0283a83ce880a1e3ab97db637a01145fba7e05a064971fdd8c6a66",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "60917940733787/2360886383862864",
+              "percent": 2.580299549786616
+            },
+            "hira": {
+              "fraction": "57731140703/3458499751916",
+              "percent": 1.6692538627772662
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "7149886936847/479289183927120",
+              "percent": 1.4917688895592105
+            },
+            "hira": {
+              "fraction": "1123373591669/118518845632440",
+              "percent": 0.9478438518992117
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 27
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 13
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 23
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 2
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 2
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 22
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 6
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 22
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 6
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 35
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 36
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 25
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 8
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 3
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 242
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 44
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 243
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 61
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 140
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 51
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 84
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 29
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 47
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 19
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 43
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 19
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 93
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 32
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 41
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 10
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 1600
+    },
+    {
+      "blob_sha256": "0f963a20fa7b2ab2f802514489d98d4a4cbbcd661e14824f4e56af9272a428de",
+      "checkpoint_sha256": "5aab7bb3ab7855586fa6971d7e811f660d27ac99fa32cc03bfa9a384552d2584",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count",
+        "psp:v5154/all/full: regression or invalid error count",
+        "psp:v5154/body/full: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "19844643216005/786962127954288",
+              "percent": 2.52167703007402
+            },
+            "hira": {
+              "fraction": "1755302462657/103754992557480",
+              "percent": 1.6917763852997887
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "3599782252831/239644591963560",
+              "percent": 1.5021337320136052
+            },
+            "hira": {
+              "fraction": "115006702537/11851884563244",
+              "percent": 0.9703663744217342
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 27
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 13
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 23
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 2
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 2
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 22
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 22
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 33
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 35
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 25
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 8
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 3
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 242
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 44
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 245
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 61
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 138
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 52
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 85
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 30
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 48
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 19
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 44
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 19
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 90
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 33
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 41
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 11
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 1800
+    },
+    {
+      "blob_sha256": "faa275045bc01e8dd431ec1620bb988a3d38ca707a08ebe5655f1922885310e9",
+      "checkpoint_sha256": "70edc583c9c798bcbaffb7ad445455017cf103afaeba0ec6fd31ddf076cb5a6f",
+      "eligible": false,
+      "qualified": false,
+      "reasons": [
+        "psp:v1281/all/hira: regression or invalid error count",
+        "psp:v1281/body/hira: regression or invalid error count",
+        "psp:v5154/all/full: regression or invalid error count",
+        "psp:v5154/body/full: regression or invalid error count"
+      ],
+      "scores": {
+        "console_balanced_macro": {
+          "all": {
+            "full": {
+              "fraction": "20581787641589/786962127954288",
+              "percent": 2.6153466489031003
+            },
+            "hira": {
+              "fraction": "1755302462657/103754992557480",
+              "percent": 1.6917763852997887
+            }
+          },
+          "body": {
+            "full": {
+              "fraction": "1215498866081/79881530654520",
+              "percent": 1.5216269094015193
+            },
+            "hira": {
+              "fraction": "115006702537/11851884563244",
+              "percent": 0.9703663744217342
+            }
+          }
+        },
+        "groups": {
+          "psp:v1281": {
+            "all": {
+              "full": {
+                "chars": 1223,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 87
+            },
+            "body": {
+              "full": {
+                "chars": 1217,
+                "errors": 10
+              },
+              "hira": {
+                "chars": 642,
+                "errors": 4
+              },
+              "lines": 81
+            },
+            "platform": "psp",
+            "vn": "v1281"
+          },
+          "psp:v2632": {
+            "all": {
+              "full": {
+                "chars": 869,
+                "errors": 27
+              },
+              "hira": {
+                "chars": 458,
+                "errors": 13
+              },
+              "lines": 94
+            },
+            "body": {
+              "full": {
+                "chars": 777,
+                "errors": 23
+              },
+              "hira": {
+                "chars": 419,
+                "errors": 13
+              },
+              "lines": 59
+            },
+            "platform": "psp",
+            "vn": "v2632"
+          },
+          "psp:v5154": {
+            "all": {
+              "full": {
+                "chars": 1682,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 905,
+                "errors": 2
+              },
+              "lines": 131
+            },
+            "body": {
+              "full": {
+                "chars": 1608,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 904,
+                "errors": 2
+              },
+              "lines": 95
+            },
+            "platform": "psp",
+            "vn": "v5154"
+          },
+          "vita:v18161": {
+            "all": {
+              "full": {
+                "chars": 1264,
+                "errors": 22
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "body": {
+              "full": {
+                "chars": 1264,
+                "errors": 22
+              },
+              "hira": {
+                "chars": 740,
+                "errors": 7
+              },
+              "lines": 82
+            },
+            "platform": "vita",
+            "vn": "v18161"
+          },
+          "vita:v18163": {
+            "all": {
+              "full": {
+                "chars": 663,
+                "errors": 36
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 48
+            },
+            "body": {
+              "full": {
+                "chars": 588,
+                "errors": 11
+              },
+              "hira": {
+                "chars": 330,
+                "errors": 1
+              },
+              "lines": 30
+            },
+            "platform": "vita",
+            "vn": "v18163"
+          },
+          "vita:v18643": {
+            "all": {
+              "full": {
+                "chars": 913,
+                "errors": 36
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 25
+              },
+              "lines": 75
+            },
+            "body": {
+              "full": {
+                "chars": 855,
+                "errors": 9
+              },
+              "hira": {
+                "chars": 479,
+                "errors": 3
+              },
+              "lines": 58
+            },
+            "platform": "vita",
+            "vn": "v18643"
+          }
+        },
+        "synthetic": {
+          "broad_00000": {
+            "full": {
+              "chars": 7179,
+              "errors": 243
+            },
+            "hira": {
+              "chars": 4184,
+              "errors": 44
+            }
+          },
+          "broad_00001": {
+            "full": {
+              "chars": 7655,
+              "errors": 244
+            },
+            "hira": {
+              "chars": 4541,
+              "errors": 61
+            }
+          }
+        },
+        "totals": {
+          "combined": {
+            "all": {
+              "full": {
+                "chars": 6614,
+                "errors": 142
+              },
+              "hira": {
+                "chars": 3554,
+                "errors": 52
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 6309,
+                "errors": 86
+              },
+              "hira": {
+                "chars": 3514,
+                "errors": 30
+              }
+            }
+          },
+          "psp": {
+            "all": {
+              "full": {
+                "chars": 3774,
+                "errors": 48
+              },
+              "hira": {
+                "chars": 2005,
+                "errors": 19
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 3602,
+                "errors": 44
+              },
+              "hira": {
+                "chars": 1965,
+                "errors": 19
+              }
+            }
+          },
+          "vita": {
+            "all": {
+              "full": {
+                "chars": 2840,
+                "errors": 94
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 33
+              }
+            },
+            "body": {
+              "full": {
+                "chars": 2707,
+                "errors": 42
+              },
+              "hira": {
+                "chars": 1549,
+                "errors": 11
+              }
+            }
+          }
+        }
+      },
+      "status": "scored",
+      "step": 2000
+    }
+  ],
+  "checkout_commit": "d80ca3fba113cdd1b9fccefecc9fb6edf8dd8a80",
+  "chosen": {
+    "blob": "private/released/FL10_w8.vocr",
+    "blob_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+  },
+  "environment": {
+    "host": {
+      "libc": [
+        "glibc",
+        "2.44"
+      ],
+      "machine": "x86_64",
+      "system": "Linux"
+    },
+    "packages": {
+      "Pillow": "12.3.0",
+      "numpy": "2.4.6",
+      "torch": "2.5.1+cpu"
+    },
+    "python": {
+      "executable": "python3.11",
+      "implementation": "CPython",
+      "sha256": "6759dcc6aa5a3fe3377349092f92f6700f1f79017294c1d0085009eb8802cb1e",
+      "version": "3.11.15 (main, May 10 2026, 19:28:18) [Clang 22.1.3 ]"
+    }
+  },
+  "kind": "prospective-general-VN-development-results",
+  "limitations": [
+    "Development line-crop measurements only; no end-to-end candidate result because baseline fallback.",
+    "Historical baseline title exposure is disclosed; no unseen-title claim.",
+    "Historical training shards unavailable; no historical decoded-pixel isolation claim.",
+    "Synthetic book split is source-pool/cohort bound; per-chunk original book IDs were not retained.",
+    "Host execution only; no console timing or device proof."
+  ],
+  "measurement_commands": [
+    {
+      "argv": [
+        "<local>/.venv-ci/bin/python",
+        "<checkout>/train/generic_fl10_train.py",
+        "run",
+        "--prepared",
+        "private/general/training-prepared.json"
+      ],
+      "phase": "training"
+    },
+    {
+      "argv": [
+        "<local>/.venv-ci/bin/python",
+        "<checkout>/train/general_vn_select.py",
+        "select",
+        "--lock",
+        "private/general/protocol.json",
+        "--checkpoints",
+        "private/general/runs/general_ofl_all_s1/ckpt_step*.pt",
+        "--out",
+        "private/general/selection.json"
+      ],
+      "phase": "line_selection"
+    }
+  ],
+  "outcome": "baseline retained; all ten candidates fail per-VN hiragana nonregression",
+  "pins": {
+    "final-cohort/annotation-method-qualification.json": "2966e2e3fede3aab7b8b65f25b6e98dcbd77bc5c6a70c8332373cb0a003ffb4a",
+    "final-cohort/provenance.json": "e421bdd250a1bc679116739d0c1edb873f7021def89ce8c4e606e1f0f3cc6d34",
+    "final-cohort/root-prospective-review.json": "d15a3e6a535f643cc87a90c6259dc6a158e439fd6947d0c53f55caa69c1fcb8f",
+    "final-train-config.json": "f3bd5e53b9a38564106cc56ac6c26c9274937cb424b83c1d7e4bc755d695d6f0",
+    "protocol-candidates.json": "c3efe6a036c9742a14696ee0b1625199e252fd56a9cba387a1044296d2f9747d",
+    "protocol.json": "4ba6297da1158d05368bf2e72bf047db475a252636a576a377a6638223ead2cd",
+    "runs/general_ofl_all_s1/retained-checkpoints.json": "9e026e4d992e1350ed0beb6b28c6860212c43d92c782ffc98bee5264af6f12c1",
+    "selection.json": "0ac687b9e74d960beb0aa400576c483b7ac31347050ae1860a84657052d8e547",
+    "textbox-prepared.json": "6381ebf582a8a56e9bb6ad599c0795e93ebd4d6202088669d24f3da80f8c60ca",
+    "training-completion.json": "30dbc5f40954db2fbdaacfbd4cd737772f3830232dc5d5764695b080d5132681",
+    "training-prepared.json": "02356cae221e6e83b4496635bd38b8d2fe3a5283a5e422d25f5587d5ac02dfa9"
+  },
+  "private_summary_sha256": "403937031bb00f1609ae3c73de3ce69ae829058ef24b13975b02afcc43a592a3",
+  "protected_or_google_candidate_scoring": false,
+  "publication_note": "Aggregate counters unchanged; private absolute input paths replaced with placeholders. Development evidence only. Rejected research weights are not an improved runtime.",
+  "readiness": {
+    "distinct_vns": 6,
+    "groups": {
+      "psp:v1281": {
+        "body_chars": 1217,
+        "body_hiragana": 642,
+        "body_lines": 81,
+        "frames": 50,
+        "platform": "psp",
+        "scored_lines": 87,
+        "vn": "v1281"
+      },
+      "psp:v2632": {
+        "body_chars": 777,
+        "body_hiragana": 419,
+        "body_lines": 59,
+        "frames": 44,
+        "platform": "psp",
+        "scored_lines": 94,
+        "vn": "v2632"
+      },
+      "psp:v5154": {
+        "body_chars": 1608,
+        "body_hiragana": 904,
+        "body_lines": 95,
+        "frames": 50,
+        "platform": "psp",
+        "scored_lines": 131,
+        "vn": "v5154"
+      },
+      "vita:v18161": {
+        "body_chars": 1264,
+        "body_hiragana": 740,
+        "body_lines": 82,
+        "frames": 43,
+        "platform": "vita",
+        "scored_lines": 82,
+        "vn": "v18161"
+      },
+      "vita:v18163": {
+        "body_chars": 588,
+        "body_hiragana": 330,
+        "body_lines": 30,
+        "frames": 21,
+        "platform": "vita",
+        "scored_lines": 48,
+        "vn": "v18163"
+      },
+      "vita:v18643": {
+        "body_chars": 855,
+        "body_hiragana": 479,
+        "body_lines": 58,
+        "frames": 29,
+        "platform": "vita",
+        "scored_lines": 75,
+        "vn": "v18643"
+      }
+    },
+    "minimums": {
+      "body_chars_per_vn": 500,
+      "body_hiragana_per_vn": 200,
+      "frames_per_vn": 5,
+      "vns_per_console": 3
+    },
+    "ready": true,
+    "reasons": [],
+    "vns_per_console": {
+      "psp": 3,
+      "vita": 3
+    }
+  },
+  "runtime": {
+    "argv": [
+      "/usr/bin/gcc",
+      "-std=c99",
+      "-O2",
+      "-ffp-contract=off",
+      "-DVOCR_NO_NEON",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wpedantic",
+      "-Wshadow",
+      "-Wstrict-prototypes",
+      "-Wmissing-prototypes",
+      "-Wcast-align",
+      "-Wpointer-arith",
+      "-fPIC",
+      "-shared",
+      "-o",
+      "private/general/protocol_runtime/libvocr_scalar.building.so",
+      "<checkout>/runtime/vocr.c",
+      "-lm"
+    ],
+    "build_environment": {
+      "LC_ALL": "C",
+      "PATH": "/bin:/usr/bin",
+      "SOURCE_DATE_EPOCH": "0",
+      "TZ": "UTC"
+    },
+    "compiler": {
+      "executable": "/usr/bin/gcc",
+      "sha256": "a5f680ca8b01b1e7a98d531cac90f258875a301d841fab28a8b56d513470f988",
+      "version": "gcc (GCC) 16.2.1 20260810\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+    },
+    "cwd": "<checkout>",
+    "directory": "private/general/protocol_runtime",
+    "library": "private/general/protocol_runtime/libvocr_scalar.so",
+    "library_sha256": "4a5635ba9a0721373f35e8957c0788b74e1725ea8cd96b8200cc5e427536b11b",
+    "source_sha256": {
+      "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+      "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd"
+    }
+  },
+  "runtime_promotion": false,
+  "schema": 1,
+  "split": "dev",
+  "strict_general_dev_improvement": false,
+  "textbox_guard": "not bound or scored because no nonbaseline candidate qualified",
+  "training": {
+    "all_ten_checkpoint_prefix_caps_pass": true,
+    "by_source": {
+      "broad_ofl": 62457,
+      "kana_corrective": 278,
+      "kanji_corrective": 1265
+    },
+    "forwarded": 64000,
+    "game_assets": 0,
+    "journal_tail_sha256": "1c5d96738915d73616e8c39f85efd703d34304be5d12286837144b03d2a29ed1",
+    "optimizer": 64000,
+    "prefetch_draws_separate_from_consumed_rows": true,
+    "steps": 2000
+  }
+}

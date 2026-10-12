@@ -7,7 +7,7 @@
  *   vocr_lines_test --selftest
  *
  * BATCH is a sequence of records, all integers little-endian uint32:
- *   width, height, bpp (1 or 4), finder (0 grad, 1 legacy, 2 textbox), stride, then
+ *   width, height, bpp (1 or 4), finder (0 grad, 1 legacy, 2 textbox, 3 recovery), stride, then
  *   height * stride bytes of pixels.
  * Output per record: "rc count truncated" then "x y w h dark" per line.
  * Every image and the arena get their own exactly-sized heap block, and the arena

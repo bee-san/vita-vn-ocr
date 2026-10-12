@@ -1,0 +1,175 @@
+"""Independent read-only reconstruction and scoring of the one candidate run."""
+
+import hashlib
+import json
+import math
+from pathlib import Path
+
+import numpy as np
+
+import fixed_compare as f
+
+
+def summarize(h, rows):
+    normalized = [(h.norm(reference), h.norm(prediction)) for reference, prediction in rows]
+    denominator = sum(len(reference) for reference, _ in normalized)
+    disagreements = sum(h.lev(reference, prediction) for reference, prediction in normalized)
+    hira = h.score_hiragana([{"text": reference, "pred": prediction} for reference, prediction in rows])
+    hira.pop("confusions")
+    hira["disagreement_rate"] = hira.pop("cer")
+    return {"units": len(rows), "reference_chars": denominator,
+            "edit_disagreements": disagreements,
+            "disagreement_rate": disagreements / denominator if denominator else None,
+            "hiragana": hira}
+
+
+def main():
+    directory = Path(__file__).resolve().parent / "audit"
+    protocol = json.loads((directory / "protocol.json").read_text())
+    paths = {name: Path(value) for name, value in protocol["paths"].items()}
+    session = paths["session"]
+    artifacts = {
+        "lock": session / "lock.json", "original_captures": session / "captures.jsonl",
+        "original_comparisons": session / "comparisons.jsonl", "protocol": directory / "protocol.json",
+        "prepared": directory / "prepared.json", "plan": directory / "plan.json",
+        "candidate_journal": directory / "candidate-comparisons.jsonl",
+        "candidate_result": directory / "public-result.json", "complete": directory / "complete.json",
+        "attempt": directory / "attempt.json", "root_authorization": directory / "root-authorization.json",
+        "driver": Path(f.__file__), "tests": directory.parent / "test_fixed_compare.py",
+        "recognizer_library": paths["recognizer_library"], "finder_library": paths["finder_library"],
+        "released_model": paths["model"], "finder_build": directory.parent / "finder-build.json",
+    }
+    before = {name: f.sha(path) for name, path in artifacts.items()}
+    assert not (directory / "failed.json").exists()
+    assert before["driver"] == protocol["pins"]["driver"]
+    assert before["tests"] == protocol["pins"]["generated_tests"]
+    assert before["lock"] == f.LOCK and before["original_captures"] == f.CAPTURES
+    assert before["original_comparisons"] == f.COMPARISONS
+    assert before["recognizer_library"] == f.RECOGNIZER
+    assert before["finder_library"] == f.FINDER and before["released_model"] == f.CANDIDATE
+    h = f.load_harness(paths["harness"])
+    f.check_sources(paths["harness"], paths["released"])
+    lock, lock_sha = h.validate_lock(session)
+    assert lock_sha == f.LOCK
+    captures = h.read_journal(artifacts["original_captures"])
+    references = h.read_journal(artifacts["original_comparisons"])
+    candidate = h.read_journal(artifacts["candidate_journal"])
+    public = json.loads(artifacts["candidate_result"].read_text())
+    complete = json.loads(artifacts["complete"].read_text())
+    attempt = json.loads(artifacts["attempt"].read_text())
+    approval = json.loads(artifacts["root_authorization"].read_text())
+    assert approval == {"action": "run_once_fixed_released_vocr2_clannad_comparison",
+                        "authorized_by": "root", "protocol_sha256": before["protocol"],
+                        "prepared_sha256": before["prepared"], "driver_sha256": before["driver"],
+                        "allows_real_model_forwards": True}
+    assert attempt["authorization_sha256"] == before["root_authorization"]
+    assert attempt["protocol_sha256"] == complete["protocol_sha256"] == before["protocol"]
+    assert attempt["prepared_sha256"] == complete["prepared_sha256"] == before["prepared"]
+    assert complete["result_sha256"] == before["candidate_result"]
+    assert public["candidate_comparison_journal_sha256"] == before["candidate_journal"]
+    assert public["teacher_requests"] == public["baseline_forward_calls"] == public["original_failures_retried"] == 0
+    assert public["status"] == "completed_fixed_diagnostic"
+    original_pages = [row for row in captures if row["kind"] == "capture"]
+    by_capture = {row["event_sha256"]: row for row in original_pages}
+    by_reference = {row["capture_sha256"]: row for row in references}
+    assert len(original_pages) == len(references) == 2204
+    assert len(by_capture) == len(by_reference) == 2204
+    assert len({row["signature"] for row in original_pages}) == 2204
+    successful = [row for row in original_pages if by_reference[row["event_sha256"]]["ok"] is True]
+    assert len(successful) == len(candidate) == 2177
+    assert sum(not row["ok"] for row in references) == 27
+    assert [row["capture_sha256"] for row in candidate] == [row["event_sha256"] for row in successful]
+    assert len({row["capture_sha256"] for row in candidate}) == 2177
+    base_pairs, base_whole, new_pairs, new_whole = [], [], [], []
+    timings, histogram = [], {}
+    paired_hashes, new_pixel_hashes, blanks_pair, blanks_whole, empty_pages = 0, 0, 0, 0, 0
+    for capture, result in zip(successful, candidate, strict=True):
+        cached = by_reference[capture["event_sha256"]]
+        assert result["kind"] == "released_vocr2_comparison" and result["split"] == "test"
+        assert result["cached_comparison_sha256"] == cached["event_sha256"]
+        assert cached["lock_sha256"] == capture["lock_sha256"] == lock_sha
+        assert len(result["paired"]) == len(capture["lines"]) == len(cached["lines"])
+        for index, (entry, reference, proposed) in enumerate(zip(capture["lines"], cached["lines"], result["paired"], strict=True)):
+            stored = h.verified_image(session, entry)
+            assert stored.ndim == 2 and stored.dtype == np.uint8
+            assert proposed["index"] == index
+            assert proposed["input_sha256"] == reference["input_sha256"] == entry["sha256"]
+            assert proposed["pixels_sha256"] == reference["pixels_sha256"] == entry["pixels_sha256"]
+            assert reference["box"] == entry["box"] and reference["dark"] == entry["dark"]
+            assert isinstance(proposed["text"], str)
+            assert math.isfinite(proposed["host_seconds"]) and proposed["host_seconds"] >= 0
+            base_pairs.append((reference["google"]["text"], reference["vocr"]["text"]))
+            new_pairs.append((reference["google"]["text"], proposed["text"]))
+            timings.append(proposed["host_seconds"])
+            blanks_pair += not h.norm(proposed["text"])
+            paired_hashes += 1
+        rgb = h.verified_image(session, capture["roi"])
+        gray = h.to_gray(rgb)
+        rows = result["whole_roi_lines"]
+        assert 0 <= len(rows) <= 16
+        order = [(row["box"][1], row["box"][0]) for row in rows]
+        assert order == sorted(order)
+        assert math.isfinite(result["finder_host_seconds"]) and result["finder_host_seconds"] >= 0
+        assert result["finder_arena_bytes"] > 0
+        histogram[len(rows)] = histogram.get(len(rows), 0) + 1
+        empty_pages += not rows
+        for index, row in enumerate(rows):
+            assert row["index"] == index and type(row["dark"]) is bool
+            pixels = gray[h.checked_box(row["box"], gray.shape)]
+            if row["dark"]:
+                pixels = 255 - pixels
+            assert row["size"] == list(pixels.shape[::-1])
+            assert row["pixels_sha256"] == hashlib.sha256(pixels.tobytes()).hexdigest()
+            assert isinstance(row["text"], str)
+            assert math.isfinite(row["host_seconds"]) and row["host_seconds"] >= 0
+            blanks_whole += not h.norm(row["text"])
+            new_pixel_hashes += 1
+        base_whole.append((cached["whole_roi_google"]["text"], "".join(row["vocr"]["text"] for row in cached["lines"])))
+        new_whole.append((cached["whole_roi_google"]["text"], "".join(row["text"] for row in rows)))
+    recomputed = {
+        "baseline_cached": {"paired_line_proxy": summarize(h, base_pairs), "whole_roi_vocr_proxy": summarize(h, base_whole)},
+        "candidate_paired_line_proxy": summarize(h, new_pairs),
+        "candidate_whole_roi_proxy": summarize(h, new_whole),
+        "candidate_forward_calls": paired_hashes + new_pixel_hashes,
+        "candidate_blank_paired_lines": blanks_pair,
+        "candidate_blank_whole_roi_lines": blanks_whole,
+        "candidate_whole_roi_empty_pages": empty_pages,
+        "candidate_whole_roi_line_count_histogram": {str(k): v for k, v in histogram.items()},
+        "host_paired_line_seconds": {"samples": len(timings), "median": float(np.median(timings)),
+                                     "p95": float(np.percentile(timings, 95))},
+    }
+    for key, value in recomputed.items():
+        assert value == public[key], key
+    assert paired_hashes == 4271 and new_pixel_hashes == 4345
+    assert recomputed["candidate_forward_calls"] == 8616
+    assert len(new_pairs) == 4271 and len(new_whole) == 2177
+    assert recomputed["candidate_paired_line_proxy"]["reference_chars"] == 36915
+    assert recomputed["candidate_whole_roi_proxy"]["reference_chars"] == 40114
+    after = {name: f.sha(path) for name, path in artifacts.items()}
+    assert before == after
+    report = {"schema": 1, "status": "independent_read_only_audit_passed", "artifact_sha256": before,
+              "original_failed_comparisons_retained_without_retry": 27,
+              "same_successful_roi_pages": 2177, "original_processed_line_inputs_verified": paired_hashes,
+              "new_c3_crop_pixel_hashes_reconstructed_verified": new_pixel_hashes,
+              "candidate_forwards_bound_to_retained_inputs": paired_hashes + new_pixel_hashes,
+              "all_three_journal_hash_chains_valid": True, "all_cached_and_candidate_capture_bindings_valid": True,
+              "exact_root_authorization_and_once_only_completion_receipts_valid": True,
+              "zero_or_blank_outputs_not_filtered": True, "all_aggregate_counters_scores_and_host_quantiles_reproduced": True,
+              "all_original_and_candidate_artifacts_unchanged_during_audit": True,
+              "audit_model_forwards": 0, "audit_native_finder_calls": 0, "audit_teacher_requests": 0,
+              "source_and_model_pins": {"model": f.CANDIDATE, "baseline_model": f.BASELINE,
+                                        "released_runtime_revision": f.RUNTIME, "sources": f.SOURCE_PINS},
+              "recomputed_scores_and_counts": recomputed}
+    serialized = json.dumps(report, indent=2, sort_keys=True) + "\n"
+    for forbidden in ("/home/", "/tmp/", "inputs/", '"text"', '"pred"', '"error"'):
+        assert forbidden not in serialized
+    output = directory / "independent-audit.json"
+    with output.open("x") as stream:
+        stream.write(serialized)
+    print(json.dumps({"audit_sha256": f.sha(output), "candidate_result_sha256": before["candidate_result"],
+                      "candidate_journal_sha256": before["candidate_journal"], "verified_paired_inputs": paired_hashes,
+                      "verified_new_whole_roi_crop_inputs": new_pixel_hashes, "candidate_calls": paired_hashes + new_pixel_hashes}))
+
+
+if __name__ == "__main__":
+    main()

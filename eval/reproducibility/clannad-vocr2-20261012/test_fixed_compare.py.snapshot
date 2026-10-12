@@ -1,0 +1,353 @@
+"""Generated safeguards only: no real recognizer calls or Google requests."""
+
+import copy
+import hashlib
+import json
+import zlib
+from pathlib import Path
+from types import SimpleNamespace
+
+import numpy as np
+import pytest
+
+import fixed_compare as f
+
+
+@pytest.fixture(scope="module")
+def h():
+    return f.load_harness(Path("/tmp/vita-vn-ocr-clannad-longrun"))
+
+
+def page(number=1, text="あ", whole="あ", google_ok=True, vocr_ok=True, signature=None):
+    entry = {"path": "generated.png", "sha256": f"input{number}", "pixels_sha256": f"pixels{number}",
+             "box": [0, 0, 4, 2], "dark": True, "mode": "L", "size": [4, 2]}
+    capture = {"kind": "capture", "split": "test", "event_sha256": f"capture{number}",
+               "signature": signature or f"signature{number}", "lock_sha256": "lock",
+               "roi": {"path": "generated-roi.png"}, "lines": [entry]}
+    result = {"kind": "comparison", "split": "test", "event_sha256": f"comparison{number}",
+              "capture_sha256": capture["event_sha256"], "lock_sha256": "lock",
+              "lines": [{"input_sha256": entry["sha256"], "pixels_sha256": entry["pixels_sha256"],
+                         "box": entry["box"], "dark": entry["dark"],
+                         "google": {"ok": google_ok, "text": text},
+                         "vocr": {"ok": vocr_ok, "text": text}}],
+              "whole_roi_google": {"ok": True, "text": whole},
+              "ok": google_ok and vocr_ok and bool(whole)}
+    return capture, result
+
+
+def test_identical_google_text_does_not_deduplicate_different_pixels(h):
+    c1, r1 = page(1, text="同じ", whole="同じ")
+    c2, r2 = page(2, text="同じ", whole="同じ")
+    successful, excluded = f.bound_cache([c1, c2], [r2, r1], h.norm)
+    assert [c["event_sha256"] for c, _ in successful] == ["capture1", "capture2"]
+    assert not excluded
+
+
+@pytest.mark.parametrize("mutation", ["file", "pixels", "box", "dark", "count", "lock", "role", "ok"])
+def test_cache_misbinding_and_false_success_rejected(h, mutation):
+    capture, result = page()
+    if mutation == "file":
+        result["lines"][0]["input_sha256"] = "wrong"
+    elif mutation == "pixels":
+        result["lines"][0]["pixels_sha256"] = "wrong"
+    elif mutation == "box":
+        result["lines"][0]["box"] = [0, 1, 4, 2]
+    elif mutation == "dark":
+        result["lines"][0]["dark"] = False
+    elif mutation == "count":
+        result["lines"].append(copy.deepcopy(result["lines"][0]))
+    elif mutation == "lock":
+        result["lock_sha256"] = "wrong"
+    elif mutation == "role":
+        capture["split"] = "dev"
+    else:
+        result["whole_roi_google"]["text"] = ""
+    with pytest.raises(ValueError):
+        f.bound_cache([capture], [result], h.norm)
+
+
+def test_pending_retries_unknown_inputs_and_duplicate_masks_rejected(h):
+    c1, r1 = page(1)
+    c2, r2 = page(2)
+    with pytest.raises(ValueError, match="pending"):
+        f.bound_cache([c1, c2], [r1], h.norm)
+    with pytest.raises(ValueError, match="retried"):
+        f.bound_cache([c1, c2], [r1, r1], h.norm)
+    r2["capture_sha256"] = "unknown"
+    with pytest.raises(ValueError, match="unknown"):
+        f.bound_cache([c1, c2], [r1, r2], h.norm)
+    c2["signature"] = c1["signature"]
+    with pytest.raises(ValueError, match="foreground"):
+        f.bound_cache([c1, c2], [r1, r2], h.norm)
+
+
+def test_failed_teacher_and_empty_whole_reference_retained_as_exclusions(h):
+    c1, r1 = page(1, google_ok=False)
+    c2, r2 = page(2, whole="")
+    successful, excluded = f.bound_cache([c1, c2], [r1, r2], h.norm)
+    assert not successful and len(excluded) == 2
+    assert excluded[0][1]["lines"][0]["google"]["ok"] is False
+    assert excluded[1][1]["whole_roi_google"]["ok"] is True
+
+
+def test_blank_successful_line_reference_and_insertions_are_not_filtered(h):
+    capture, result = page(text="", whole="あ")
+    result["lines"][0]["vocr"]["text"] = "あ"
+    successful, excluded = f.bound_cache([capture], [result], h.norm)
+    assert len(successful) == 1 and not excluded
+    value = f.score(h, [{"text": "", "pred": "あ"}])
+    assert value["units"] == 1 and value["reference_chars"] == 0
+    assert value["edit_disagreements"] == 1 and value["hiragana"]["insertions"] == 1
+
+
+def test_small_kana_dakuten_and_similar_kanji_keep_distinct_scores(h):
+    assert h.norm("っつがか未末") == "っつがか未末"
+    value = f.score(h, [{"text": "っが未", "pred": "つか末"}])
+    assert value["reference_chars"] == 3 and value["edit_disagreements"] == 3
+    assert value["hiragana"]["errors"] == 2
+    assert "confusions" not in value["hiragana"] and "cer" not in value["hiragana"]
+    assert h.norm("あ い") == "あい"
+
+
+class Reader:
+    def __init__(self, text=""):
+        self.calls = []
+        self.value = text
+
+    def text(self, pixels, invert):
+        self.calls.append((pixels.copy(), invert))
+        return self.value
+
+
+class FixedFinder:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def crops(self, roi):
+        return self.rows, 80
+
+
+def test_saved_processed_lines_and_new_crops_are_not_double_inverted(h):
+    capture, result = page()
+    pixels = np.array([[0, 10, 20, 250], [255, 80, 90, 100]], dtype=np.uint8)
+    fake_h = SimpleNamespace(verified_image=lambda session, entry: pixels)
+    reader = Reader("あ")
+    out = f.run_page(fake_h, Path("."), capture, result, reader,
+                     FixedFinder([(pixels, [0, 0, 4, 2], True)]))
+    assert len(reader.calls) == 2
+    assert all(np.array_equal(array, pixels) and inverse is False for array, inverse in reader.calls)
+    assert out["paired"][0]["pixels_sha256"] == capture["lines"][0]["pixels_sha256"]
+    assert out["whole_roi_lines"][0]["pixels_sha256"] == hashlib.sha256(pixels.tobytes()).hexdigest()
+
+
+@pytest.mark.parametrize("count", [0, 6, 16])
+def test_all_zero_six_and_sixteen_finder_rows_retained(h, count):
+    capture, cache = page()
+    pixels = np.full((2, 4), 200, np.uint8)
+    fake_h = SimpleNamespace(verified_image=lambda session, entry: pixels)
+    reader = Reader("")
+    rows = [(pixels, [0, i * 2, 4, 2], False) for i in range(count)]
+    out = f.run_page(fake_h, Path("."), capture, cache, reader, FixedFinder(rows))
+    assert len(out["whole_roi_lines"]) == count and len(reader.calls) == 1 + count
+    scored = f.score(h, [{"text": "あ", "pred": "".join(r["text"] for r in out["whole_roi_lines"])}])
+    assert scored["units"] == 1 and scored["reference_chars"] == 1
+    assert scored["edit_disagreements"] == 1 and scored["hiragana"]["deletions"] == 1
+
+
+def test_recognizer_failure_is_fatal_and_never_empty_success():
+    class Broken:
+        def text(self, pixels, invert):
+            raise RuntimeError("generated failure")
+    with pytest.raises(RuntimeError, match="generated failure"):
+        f.recognized(Broken(), np.zeros((2, 4), np.uint8))
+    class NonText:
+        def text(self, pixels, invert):
+            return None
+    with pytest.raises(ValueError, match="non-text"):
+        f.recognized(NonText(), np.zeros((2, 4), np.uint8))
+
+
+class NativeFunction:
+    def __init__(self, callback):
+        self.callback = callback
+
+    def __call__(self, *args):
+        return self.callback(*args)
+
+
+def finder_library(h, count=6, truncated=False, reverse=False, rc=0):
+    calls = []
+    def run(image, mode, arena, size, out):
+        assert mode == 2 and image._obj.bpp == 1
+        calls.append(mode)
+        output = out._obj
+        output.count, output.truncated = count, int(truncated)
+        for i in range(count):
+            j = count - i - 1 if reverse else i
+            line = output.lines[i]
+            line.x, line.y, line.w, line.h, line.dark = 1, 2 * j, 4, 2, i % 2
+        return rc
+    return SimpleNamespace(vocr_lines_arena_bytes=NativeFunction(lambda w, h: 256),
+                           vocr_find_lines=NativeFunction(run), calls=calls)
+
+
+def test_finder_uses_mode2_and_polarity_once_for_every_returned_row(h, monkeypatch):
+    library = finder_library(h)
+    monkeypatch.setattr(f.C, "CDLL", lambda path: library)
+    rgb = np.arange(24 * 8 * 3, dtype=np.uint8).reshape(24, 8, 3)
+    rows, arena = f.Finder(Path("explicit-generated.so"), h).crops(rgb)
+    assert len(rows) == 6 and arena == 256 and library.calls == [2]
+    gray = h.to_gray(rgb)
+    for pixels, box, dark in rows:
+        original = gray[h.checked_box(box, gray.shape)]
+        assert np.array_equal(pixels, 255 - original if dark else original)
+
+
+@pytest.mark.parametrize("options,match", [({"truncated": True}, "truncation"),
+                                         ({"reverse": True}, "reading order"),
+                                         ({"rc": -2}, "finder failure")])
+def test_finder_truncation_error_and_bad_reading_order_fatal(h, monkeypatch, options, match):
+    monkeypatch.setattr(f.C, "CDLL", lambda path: finder_library(h, **options))
+    with pytest.raises(ValueError, match=match):
+        f.Finder(Path("explicit-generated.so"), h).crops(np.zeros((24, 8, 3), np.uint8))
+
+
+def test_frozen_pins_detect_one_byte_source_model_library_or_cache_changes(tmp_path):
+    artifact = tmp_path / "generated.bin"
+    artifact.write_bytes(b"released-C3-model-library-cache")
+    expected = f.sha(artifact)
+    f.pinned(artifact, expected)
+    artifact.write_bytes(artifact.read_bytes() + b"C4")
+    with pytest.raises(ValueError, match="artifact hash"):
+        f.pinned(artifact, expected)
+
+
+def test_authorization_missing_blocks_before_dataset_or_model_access(tmp_path, monkeypatch):
+    (tmp_path / "protocol.json").write_text("{}")
+    (tmp_path / "prepared.json").write_text("{}")
+    accesses = []
+    monkeypatch.setattr(f, "verified_preparation", lambda path: accesses.append("pixels/models"))
+    with pytest.raises(ValueError, match="authorization required"):
+        f.compare(SimpleNamespace(directory=tmp_path, authorization=None))
+    assert accesses == []
+
+
+def test_authorization_binds_exact_driver_protocol_prepared_and_root(tmp_path):
+    path = tmp_path / "root-authorization.json"
+    value = {"action": "run_once_fixed_released_vocr2_clannad_comparison", "authorized_by": "root",
+             "protocol_sha256": "p", "prepared_sha256": "q", "driver_sha256": "r",
+             "allows_real_model_forwards": True}
+    path.write_text(json.dumps(value))
+    assert f.authorization(path, "p", "q", "r") == f.sha(path)
+    for field, wrong in (("protocol_sha256", "changed"), ("prepared_sha256", "changed"),
+                         ("driver_sha256", "changed"), ("authorized_by", "self"),
+                         ("allows_real_model_forwards", False)):
+        modified = dict(value, **{field: wrong})
+        path.write_text(json.dumps(modified))
+        with pytest.raises(ValueError, match="bind exact"):
+            f.authorization(path, "p", "q", "r")
+
+
+def test_attempt_consumed_after_failure_and_outputs_cannot_be_overwritten(tmp_path):
+    with pytest.raises(RuntimeError), f.attempt_guard(tmp_path):
+        f.write_new(tmp_path / "attempt.json", {"once": True})
+        raise RuntimeError("generated inference failure")
+    with pytest.raises(ValueError, match="already consumed"), f.attempt_guard(tmp_path):
+        pytest.fail("must not retry")
+    with pytest.raises(FileExistsError):
+        f.write_new(tmp_path / "attempt.json", {"once": False})
+    assert json.loads((tmp_path / "attempt.json").read_text()) == {"once": True}
+
+
+def test_concurrent_attempt_lock_rejected(tmp_path):
+    with f.attempt_guard(tmp_path), pytest.raises(BlockingIOError), f.attempt_guard(tmp_path):
+        pytest.fail("concurrent forward permission")
+
+
+def test_generated_journal_hashchain_tampering_rejected(h, tmp_path):
+    path = tmp_path / "generated.jsonl"
+    h.append_event(path, {"kind": "comparison", "split": "test", "value": 1})
+    h.append_event(path, {"kind": "comparison", "split": "test", "value": 2})
+    assert len(h.read_journal(path)) == 2
+    rows = path.read_text().splitlines()
+    first = json.loads(rows[0])
+    first["value"] = 9
+    rows[0] = json.dumps(first)
+    path.write_text("\n".join(rows) + "\n")
+    with pytest.raises(ValueError, match="hash corruption"):
+        h.read_journal(path)
+
+
+@pytest.mark.parametrize("ink,paper,dark", [(240, 30, False), (30, 230, True)])
+def test_actual_frozen_c3_library_on_generated_block_rows(h, ink, paper, dark):
+    path = Path(__file__).parent / "libvocr-lines-c3.so"
+    f.pinned(path, f.FINDER)
+    rgb = np.full((80, 320, 3), paper, np.uint8)
+    yy, xx = np.mgrid[0:20, 0:244]
+    cell = xx % 24
+    ys, xs = np.nonzero((cell < 18) & ((cell % 6 < 3) | (yy % 8 < 3)))
+    for top in (12, 46):
+        rgb[top + ys, 16 + xs] = ink
+    rows, arena = f.Finder(path, h).crops(rgb)
+    assert len(rows) == 2 and arena > 0
+    assert all(flag is dark for _, _, flag in rows)
+    gray = h.to_gray(rgb)
+    for pixels, box, flag in rows:
+        expected = gray[h.checked_box(box, gray.shape)]
+        assert np.array_equal(pixels, 255 - expected if flag else expected)
+    blank, _ = f.Finder(path, h).crops(np.full((80, 320, 3), 128, np.uint8))
+    assert blank == []
+
+
+def test_counter_measures_started_calls_and_refuses_second_inversion():
+    reader = Reader("あ")
+    counted = f.ForwardCounter(reader)
+    assert counted.text(np.zeros((2, 4), np.uint8), invert=False) == "あ"
+    assert counted.calls == 1 and len(reader.calls) == 1
+    with pytest.raises(ValueError, match="inverted twice"):
+        counted.text(np.zeros((2, 4), np.uint8), invert=True)
+    assert counted.calls == 1 and len(reader.calls) == 1
+
+
+@pytest.mark.parametrize("mutation,match", [("magic", "identity"), ("size", "identity"),
+                                         ("declared_size", "declared"), ("crc", "CRC"),
+                                         ("classes", "vocabulary")])
+def test_generated_blob_metadata_rejected_before_library_access(tmp_path, monkeypatch, mutation, match):
+    data = bytearray(657664)
+    data[:4] = b"VOCR"
+    data[8:12] = len(data).to_bytes(4, "little")
+    data[24:28] = (3501).to_bytes(4, "little")
+    data[40:44] = zlib.crc32(data[64:]).to_bytes(4, "little")
+    if mutation == "magic":
+        data[:4] = b"C4xx"
+    elif mutation == "size":
+        data.pop()
+    elif mutation == "declared_size":
+        data[8:12] = (1).to_bytes(4, "little")
+    elif mutation == "crc":
+        data[-1] = 1
+    else:
+        data[24:28] = (3500).to_bytes(4, "little")
+    path = tmp_path / "generated.vocr"
+    path.write_bytes(data)
+    monkeypatch.setattr(f, "CANDIDATE", f.sha(path))
+    with pytest.raises(ValueError, match=match):
+        f.model_metadata(path, tmp_path / "never-load-missing-library.so", None)
+
+
+def test_protocol_or_input_plan_mutation_rejected_before_harness_access(tmp_path, monkeypatch):
+    plan = tmp_path / "plan.json"
+    f.write_new(plan, {"fixed": 1})
+    protocol = {"plan_sha256": f.sha(plan)}
+    f.write_new(tmp_path / "protocol.json", protocol)
+    f.write_new(tmp_path / "prepared.json", {"protocol_sha256": f.sha(tmp_path / "protocol.json"),
+                                           "plan_sha256": f.sha(plan)})
+    accesses = []
+    monkeypatch.setattr(f, "load_harness", lambda path: accesses.append(path))
+    plan.write_text('{"fixed":2}\n')
+    with pytest.raises(ValueError, match="plan changed"):
+        f.verified_preparation(tmp_path)
+    (tmp_path / "protocol.json").write_text('{}\n')
+    with pytest.raises(ValueError, match="protocol changed"):
+        f.verified_preparation(tmp_path)
+    assert accesses == []

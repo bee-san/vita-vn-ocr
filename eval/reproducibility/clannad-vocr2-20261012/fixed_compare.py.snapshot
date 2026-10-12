@@ -1,0 +1,436 @@
+#!/usr/bin/env python3
+"""Frozen released VOCR2 diagnostics on cached CLANNAD pixels/references only."""
+
+import argparse
+import ctypes as C
+import fcntl
+import hashlib
+import importlib
+import json
+import os
+import subprocess
+import sys
+import time
+import zlib
+from collections import Counter
+from contextlib import contextmanager
+from pathlib import Path
+
+import numpy as np
+
+HERE = Path(__file__).resolve().parent
+BASELINE = "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+CANDIDATE = "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766"
+RECOGNIZER = "4f9cef809b88025ccaf3b5ee10f0f22eabc07505c6cd118f8a6af814656bfb59"
+FINDER = "e6495076c58f491e0801e68221bc6a4c78afc0a64f12c2b9be68b2722f537f4e"
+CAPTURES = "b6cd582c582d22af883710f202f60f9c44848be23c4a8fe2f726799c7f8f81ed"
+COMPARISONS = "f2754897c8b69f555706b93a3cd4f709b8066c4a7578c03baf828458db584cd9"
+LOCK = "14ba9297269b1cc741a9993425b3f901a1086bed74be4eaad274381a83ac6425"
+HARNESS = "e80690eb6c2f29ee84f5dddf55a1d21d8007c90b"
+RUNTIME = "49ff6f4d1c55804c600d098810574a49d382a009"
+SOURCE_PINS = {
+    "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+    "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+    "runtime/vocr_lines.c": "0752584953d92efa1e7e8195eaae31048bc4b79694da832349c37e1da82fa348",
+    "runtime/vocr_lines.h": "2a5ba01c129608b94b92c28b77057f4e4ddb64a6f58c9c88fb1f8dfa8442d8e6",
+}
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def canonical(value):
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+
+
+def digest(value):
+    return hashlib.sha256(canonical(value)).hexdigest()
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def write_new(path, value):
+    with Path(path).open("x") as stream:
+        stream.write(json.dumps(value, indent=2, sort_keys=True) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def pinned(path, expected):
+    require(sha(path) == expected, f"artifact hash mismatch: {path}")
+
+
+def load_harness(path):
+    path = Path(path).resolve()
+    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=path, text=True).strip()
+    require(revision == HARNESS, "frozen baseline harness revision changed")
+    sys.path.insert(0, str(path / "eval"))
+    h = importlib.import_module("clannad_longrun")
+    require(Path(h.__file__).resolve() == path / "eval/clannad_longrun.py", "wrong imported harness")
+    return h
+
+
+def check_sources(harness, released):
+    for name, expected in SOURCE_PINS.items():
+        pinned(Path(released) / name, expected)
+        committed = subprocess.check_output(["git", "show", f"{RUNTIME}:{name}"], cwd=released)
+        require(hashlib.sha256(committed).hexdigest() == expected, "released commit/source mismatch")
+        if name in ("runtime/vocr.c", "runtime/vocr.h"):
+            pinned(Path(harness) / name, expected)
+
+
+def model_metadata(path, library, h):
+    """Parse/CRC/arena query only; no context initialization or model forwards."""
+    pinned(path, CANDIDATE)
+    data = Path(path).read_bytes()
+    require(len(data) == 657664 and data[:4] == b"VOCR", "candidate blob identity/size")
+    require(int.from_bytes(data[8:12], "little") == len(data), "candidate declared blob size")
+    require(zlib.crc32(data[64:]) == int.from_bytes(data[40:44], "little"), "candidate CRC")
+    require(int.from_bytes(data[24:28], "little") == 3501, "candidate vocabulary class count")
+    pinned(library, RECOGNIZER)
+    p = importlib.import_module("pyvocr")
+    lib = p.load_lib(Path(library))  # explicit immutable library, never the default cache
+    buf = C.create_string_buffer(data)
+    require(lib.vocr_check_crc(buf, len(data)) == 0, "native candidate CRC rejected")
+    model_bytes, context_bytes = C.c_size_t(), C.c_size_t()
+    lib.vocr_sizes(C.byref(model_bytes), C.byref(context_bytes))
+    model = C.create_string_buffer(model_bytes.value)
+    require(lib.vocr_load(model, buf, len(data)) == 0, "native model parse rejected")
+    options = p._Opts(0, 0, 1024, p.MODES["w8i"])
+    arena = lib.vocr_arena_bytes(model, C.byref(options))
+    require(arena == 124832, "candidate recognizer arena mismatch")
+    return {"sha256": CANDIDATE, "blob_bytes": len(data), "classes": 3501,
+            "recognizer_arena_bytes": arena, "mode": "w8i", "max_width": 1024,
+            "crc_python_and_native_valid": True, "model_context_initializations": 0,
+            "model_forwards": 0}
+
+
+def bound_cache(captures, comparisons, norm):
+    pages = [row for row in captures if row.get("kind") == "capture"]
+    require(len({p["event_sha256"] for p in pages}) == len(pages), "duplicate capture events")
+    require(len({p["signature"] for p in pages}) == len(pages), "duplicate foreground signatures")
+    by_capture = {p["event_sha256"]: p for p in pages}
+    require(len(comparisons) == len(pages), "pending or extra comparisons")
+    require(len({r["capture_sha256"] for r in comparisons}) == len(comparisons), "retried comparison")
+    successful, excluded = [], []
+    for result in comparisons:
+        require(result.get("kind") == "comparison" and result.get("split") == "test", "comparison role")
+        require(result["capture_sha256"] in by_capture, "comparison has unknown capture")
+        capture = by_capture[result["capture_sha256"]]
+        require(capture.get("split") == "test", "capture role")
+        require(result["lock_sha256"] == capture["lock_sha256"], "cache protocol mismatch")
+        require(len(result["lines"]) == len(capture["lines"]), "line cache count mismatch")
+        for entry, line in zip(capture["lines"], result["lines"], strict=True):
+            for ek, rk in (("sha256", "input_sha256"), ("pixels_sha256", "pixels_sha256"),
+                           ("box", "box"), ("dark", "dark")):
+                require(entry[ek] == line[rk], "line cache/pixel/geometry/polarity mismatch")
+        whole = result["whole_roi_google"]
+        ok = bool(result["lines"]) and whole.get("ok") is True and bool(norm(whole.get("text"))) and all(
+            line[who].get("ok") is True for line in result["lines"] for who in ("google", "vocr")
+        )
+        require(result["ok"] is bool(ok), "cached success status inconsistent")
+        (successful if ok else excluded).append((capture, result))
+    require({r["capture_sha256"] for r in comparisons} == set(by_capture), "uncompared capture")
+    # Preserve capture order independently of result arrival order.
+    order = {p["event_sha256"]: i for i, p in enumerate(pages)}
+    successful.sort(key=lambda item: order[item[0]["event_sha256"]])
+    excluded.sort(key=lambda item: order[item[0]["event_sha256"]])
+    return successful, excluded
+
+
+def score(h, rows):
+    chars = sum(len(h.norm(row["text"])) for row in rows)
+    errors = sum(h.lev(h.norm(row["text"]), h.norm(row["pred"])) for row in rows)
+    hira = h.score_hiragana(rows)
+    hira.pop("confusions")
+    hira["disagreement_rate"] = hira.pop("cer")
+    return {"units": len(rows), "reference_chars": chars, "edit_disagreements": errors,
+            "disagreement_rate": errors / chars if chars else None, "hiragana": hira}
+
+
+def inspect_dataset(session, h, verify_pixels):
+    for name, expected in (("lock.json", LOCK), ("captures.jsonl", CAPTURES), ("comparisons.jsonl", COMPARISONS)):
+        pinned(session / name, expected)
+    lock, lock_sha = h.validate_lock(session)
+    require(lock_sha == LOCK and lock["runtime"]["model_sha256"] == BASELINE, "baseline protocol/model")
+    captures = h.read_journal(session / "captures.jsonl")
+    comparisons = h.read_journal(session / "comparisons.jsonl")
+    successful, excluded = bound_cache(captures, comparisons, h.norm)
+    require(len(successful) == 2177 and len(excluded) == 27 and len(comparisons) == 2204, "fixed page counts")
+    require(sum(len(c["lines"]) for c, _ in successful) == 4271, "fixed paired-line count")
+    pages, baseline_lines, baseline_roi = [], [], []
+    for capture, result in successful:
+        if verify_pixels:
+            h.verified_image(session, capture["roi"])
+        lines = []
+        for index, (entry, line) in enumerate(zip(capture["lines"], result["lines"], strict=True)):
+            if verify_pixels:
+                h.verified_image(session, entry)
+            lines.append({"index": index, "input": entry,
+                          "cached_reference_sha256": digest(line["google"]["text"]),
+                          "cached_baseline_prediction_sha256": digest(line["vocr"]["text"])})
+            baseline_lines.append({"text": line["google"]["text"], "pred": line["vocr"]["text"]})
+        baseline_roi.append({"text": result["whole_roi_google"]["text"],
+                             "pred": "".join(line["vocr"]["text"] for line in result["lines"])})
+        pages.append({"capture_sha256": capture["event_sha256"], "comparison_sha256": result["event_sha256"],
+                      "signature": capture["signature"], "roi": capture["roi"], "lines": lines,
+                      "cached_roi_reference_sha256": digest(result["whole_roi_google"]["text"])})
+    baseline = {"paired_line_proxy": score(h, baseline_lines), "whole_roi_vocr_proxy": score(h, baseline_roi)}
+    require(baseline["paired_line_proxy"]["reference_chars"] == 36915, "paired reference count changed")
+    require(baseline["whole_roi_vocr_proxy"]["reference_chars"] == 40114, "whole reference count changed")
+    require(baseline["paired_line_proxy"]["edit_disagreements"] == 3176, "cached paired baseline changed")
+    require(baseline["whole_roi_vocr_proxy"]["edit_disagreements"] == 5618, "cached whole baseline changed")
+    plan = {"schema": 1, "pages": pages, "excluded_comparison_sha256s": [r["event_sha256"] for _, r in excluded],
+            "baseline": baseline, "counts": {"captured": 2204, "successful_pages": 2177,
+                                               "excluded_failed_pages": 27, "paired_lines": 4271}}
+    return plan, successful, lock
+
+
+class Finder:
+    def __init__(self, library, h):
+        self.h = h
+        self.lib = C.CDLL(str(Path(library).resolve()))
+        self.lib.vocr_lines_arena_bytes.argtypes = [C.c_uint, C.c_uint]
+        self.lib.vocr_lines_arena_bytes.restype = C.c_size_t
+        self.lib.vocr_find_lines.argtypes = [C.POINTER(h._LinesImage), C.c_int, C.c_void_p,
+                                            C.c_size_t, C.POINTER(h._LineSet)]
+        self.lib.vocr_find_lines.restype = C.c_int
+
+    def crops(self, rgb):
+        gray = np.ascontiguousarray(self.h.to_gray(rgb))
+        height, width = gray.shape
+        arena_bytes = self.lib.vocr_lines_arena_bytes(width, height)
+        require(arena_bytes > 0, "finder arena invalid")
+        arena = C.create_string_buffer(arena_bytes)
+        image = self.h._LinesImage(gray.ctypes.data, width, height, gray.strides[0], 1)
+        result = self.h._LineSet()
+        rc = self.lib.vocr_find_lines(C.byref(image), 2, arena, arena_bytes, C.byref(result))
+        require(rc == 0, f"C3 mode2 finder failure {rc}")
+        require(not result.truncated, "C3 finder truncation is fatal; never slice returned lines")
+        require(result.count <= 16, "finder count exceeds native capacity")
+        entries = []
+        for line in result.lines[:result.count]:
+            box = [line.x, line.y, line.w, line.h]
+            crop = gray[self.h.checked_box(box, gray.shape)].copy()
+            dark = bool(line.dark)
+            entries.append((255 - crop if dark else crop, box, dark))
+        require([box[1:2] + box[:1] for _, box, _ in entries] == sorted(
+            box[1:2] + box[:1] for _, box, _ in entries), "finder reading order changed")
+        return entries, arena_bytes
+
+
+def recognized(reader, pixels):
+    started = time.perf_counter()
+    text = reader.text(pixels, invert=False)  # pixels already carry exact polarity once
+    require(isinstance(text, str), "recognizer returned non-text")
+    return text, time.perf_counter() - started
+
+
+class ForwardCounter:
+    def __init__(self, reader):
+        self.reader, self.calls = reader, 0
+
+    def text(self, pixels, invert):
+        require(invert is False, "prepared pixels must never be inverted twice")
+        self.calls += 1
+        return self.reader.text(pixels, invert=False)
+
+
+def run_page(h, session, capture, cache, reader, finder):
+    paired = []
+    for index, (entry, old) in enumerate(zip(capture["lines"], cache["lines"], strict=True)):
+        pixels = h.verified_image(session, entry)
+        text, elapsed = recognized(reader, pixels)
+        paired.append({"index": index, "input_sha256": entry["sha256"],
+                       "pixels_sha256": entry["pixels_sha256"], "text": text, "host_seconds": elapsed})
+    roi = h.verified_image(session, capture["roi"])
+    started = time.perf_counter()
+    crops, arena = finder.crops(roi)
+    finder_seconds = time.perf_counter() - started
+    whole = []
+    # All returned crops, including >5; zero outputs and blank text remain scored.
+    for index, (pixels, box, dark) in enumerate(crops):
+        text, elapsed = recognized(reader, pixels)
+        whole.append({"index": index, "box": box, "dark": dark,
+                      "pixels_sha256": hashlib.sha256(pixels.tobytes()).hexdigest(),
+                      "size": list(pixels.shape[::-1]), "text": text, "host_seconds": elapsed})
+    return {"kind": "released_vocr2_comparison", "split": "test", "capture_sha256": capture["event_sha256"],
+            "cached_comparison_sha256": cache["event_sha256"], "paired": paired, "whole_roi_lines": whole,
+            "finder_arena_bytes": arena, "finder_host_seconds": finder_seconds}
+
+
+def authorization(path, protocol_sha, prepared_sha, driver_sha):
+    require(path is not None and Path(path).is_file(), "root authorization required before any real forwards")
+    value = json.loads(Path(path).read_text())
+    expected = {"action": "run_once_fixed_released_vocr2_clannad_comparison", "authorized_by": "root",
+                "protocol_sha256": protocol_sha, "prepared_sha256": prepared_sha,
+                "driver_sha256": driver_sha, "allows_real_model_forwards": True}
+    require(value == expected, "root authorization does not bind exact frozen preparation")
+    return sha(path)
+
+
+@contextmanager
+def attempt_guard(directory):
+    with (directory / "comparison.lock").open("a+") as stream:
+        fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        require(not (directory / "attempt.json").exists(), "one comparison attempt already consumed")
+        yield
+
+
+def prepare(args):
+    h = load_harness(args.harness)
+    check_sources(args.harness, args.released)
+    pinned(args.recognizer_library, RECOGNIZER)
+    pinned(args.finder_library, FINDER)
+    build = json.loads((HERE / "finder-build.json").read_text())
+    require(build["library_sha256"] == FINDER and build["released_runtime_revision"] == RUNTIME, "finder build provenance mismatch")
+    plan, _, lock = inspect_dataset(args.session, h, verify_pixels=True)
+    metadata = model_metadata(args.model, args.recognizer_library, h)
+    args.directory.mkdir(parents=True, exist_ok=False)
+    plan_path = args.directory / "plan.json"
+    write_new(plan_path, plan)
+    protocol = {
+        "schema": 1, "purpose": "diagnostic fixed released VOCR2 versus cached baseline/Google; no selection or training",
+        "split": "test", "harness_revision": HARNESS, "released_runtime_revision": RUNTIME,
+        "paths": {k: str(getattr(args, k).resolve()) for k in
+                  ("harness", "released", "session", "model", "recognizer_library", "finder_library")},
+        "pins": {"model": CANDIDATE, "recognizer_library": RECOGNIZER,
+                 "finder_library": FINDER, "finder_build": sha(HERE / "finder-build.json"), "sources": SOURCE_PINS,
+                 "harness_sources": lock["sources"], "host_dependencies": lock["host_dependencies"],
+                 "capture_journal": CAPTURES, "comparison_journal": COMPARISONS, "lock": LOCK,
+                 "driver": sha(__file__), "generated_tests": sha(HERE / "test_fixed_compare.py")},
+        "plan_sha256": sha(plan_path), "model": metadata,
+        "paired": "same 4271 successful original processed PNGs; invert=False; cached same-line Google refs",
+        "whole_roi": "same 2177 successful original RGB ROI PNGs; released C3 mode2 all up to16 rows; cached whole-ROI Google refs",
+        "baseline": "cached original FL10 predictions only; no baseline forwards",
+        "failure_policy": "27 original failed pages excluded equally and retained; new inference or truncation error fatal and attempt consumed; never retry/filter/convert error to blank",
+        "empty_policy": "zero finder rows or blank model text retained as actual empty prediction against nonempty cached ROI reference",
+        "forbidden": ["Google requests", "new capture", "source/model retuning", "training", "model selection", "five-row slicing"],
+        "reference_scope": "Google automated proxy, not hand-checked ground truth/CER; no promotion based on this run",
+    }
+    write_new(args.directory / "protocol.json", protocol)
+    prepared = {"schema": 1, "protocol_sha256": sha(args.directory / "protocol.json"),
+                "plan_sha256": sha(plan_path), "counts": plan["counts"], "baseline": plan["baseline"],
+                "verified_stored_inputs": 4271 + 2177, "real_candidate_finder_calls": 0,
+                "real_candidate_model_forwards": 0, "teacher_calls": 0, "model": metadata}
+    write_new(args.directory / "prepared.json", prepared)
+    print(json.dumps({"protocol_sha256": prepared["protocol_sha256"], "prepared_sha256": sha(args.directory / "prepared.json"),
+                      "plan_sha256": sha(plan_path), "driver_sha256": sha(__file__), "counts": plan["counts"]}))
+
+
+def verified_preparation(directory):
+    protocol = json.loads((directory / "protocol.json").read_text())
+    prepared = json.loads((directory / "prepared.json").read_text())
+    require(prepared["protocol_sha256"] == sha(directory / "protocol.json"), "protocol changed")
+    require(prepared["plan_sha256"] == protocol["plan_sha256"] == sha(directory / "plan.json"), "plan changed")
+    pinned(__file__, protocol["pins"]["driver"])
+    pinned(HERE / "test_fixed_compare.py", protocol["pins"]["generated_tests"])
+    pinned(HERE / "finder-build.json", protocol["pins"]["finder_build"])
+    paths = {k: Path(v) for k, v in protocol["paths"].items()}
+    h = load_harness(paths["harness"])
+    check_sources(paths["harness"], paths["released"])
+    pinned(paths["recognizer_library"], RECOGNIZER)
+    require(protocol["pins"]["finder_library"] == FINDER, "frozen released finder identity")
+    pinned(paths["finder_library"], FINDER)
+    pinned(paths["model"], CANDIDATE)
+    plan, successful, _ = inspect_dataset(paths["session"], h, verify_pixels=True)
+    require(plan == json.loads((directory / "plan.json").read_text()), "prepared cache/input plan changed")
+    require(prepared["counts"] == plan["counts"] and prepared["baseline"] == plan["baseline"], "prepared denominator/baseline changed")
+    return h, paths, successful, protocol, prepared
+
+
+def compare(args):
+    # No model construction, finder call or pixel access before exact approval.
+    proto_sha = sha(args.directory / "protocol.json")
+    prep_sha = sha(args.directory / "prepared.json")
+    auth_sha = authorization(args.authorization, proto_sha, prep_sha, sha(__file__))
+    h, paths, successful, protocol, prepared = verified_preparation(args.directory)
+    with attempt_guard(args.directory):
+        write_new(args.directory / "attempt.json", {"schema": 1, "protocol_sha256": proto_sha,
+                                                   "prepared_sha256": prep_sha, "authorization_sha256": auth_sha,
+                                                   "started_at_unix": time.time(), "one_attempt": True})
+        counted_reader = None
+        try:
+            lib = h.load_lib(paths["recognizer_library"])  # explicit, immutable scalar library
+            reader = h.Vocr(paths["model"], mode="w8i", max_width=1024, lib=lib, check_crc=True)
+            require(reader.n_classes == 3501 and reader.blob_bytes == 657664 and reader.arena_bytes == 124832, "native candidate metadata mismatch")
+            counted_reader = ForwardCounter(reader)
+            finder = Finder(paths["finder_library"], h)
+            results = []
+            for capture, cache in successful:
+                result = run_page(h, paths["session"], capture, cache, counted_reader, finder)
+                results.append(h.append_event(args.directory / "candidate-comparisons.jsonl", result))
+            paired_rows, roi_rows, timing = [], [], []
+            for (capture, cache), result in zip(successful, results, strict=True):
+                for old, new in zip(cache["lines"], result["paired"], strict=True):
+                    paired_rows.append({"text": old["google"]["text"], "pred": new["text"]})
+                    timing.append(new["host_seconds"])
+                roi_rows.append({"text": cache["whole_roi_google"]["text"],
+                                 "pred": "".join(line["text"] for line in result["whole_roi_lines"])})
+            require(len(paired_rows) == 4271 and len(roi_rows) == 2177, "candidate denominator/unit change")
+            paired_score, whole_score = score(h, paired_rows), score(h, roi_rows)
+            require(paired_score["reference_chars"] == 36915 and whole_score["reference_chars"] == 40114, "candidate reference denominator change")
+            expected_calls = 4271 + sum(len(r["whole_roi_lines"]) for r in results)
+            require(counted_reader.calls == expected_calls, "measured recognizer call count differs from retained inputs")
+            # Recheck immutable inputs/sources after all forwards; no result can
+            # be complete if its protocol changed while inference was running.
+            verified_preparation(args.directory)
+            public = {"schema": 1, "status": "completed_fixed_diagnostic", "reference": protocol["reference_scope"],
+                      "released_model_sha256": CANDIDATE, "baseline_model_sha256": BASELINE,
+                      "released_runtime_revision": RUNTIME, "finder_mode": 2, "source_pins": SOURCE_PINS,
+                      "protocol_sha256": proto_sha, "prepared_sha256": prep_sha,
+                      "capture_journal_sha256": CAPTURES, "cached_comparison_journal_sha256": COMPARISONS,
+                      "candidate_comparison_journal_sha256": sha(args.directory / "candidate-comparisons.jsonl"),
+                      "counts": prepared["counts"], "baseline_cached": prepared["baseline"],
+                      "candidate_paired_line_proxy": paired_score, "candidate_whole_roi_proxy": whole_score,
+                      "candidate_forward_calls": counted_reader.calls,
+                      "candidate_whole_roi_line_count_histogram": dict(Counter(len(r["whole_roi_lines"]) for r in results)),
+                      "candidate_whole_roi_empty_pages": sum(not r["whole_roi_lines"] for r in results),
+                      "candidate_blank_paired_lines": sum(not h.norm(r["text"]) for p in results for r in p["paired"]),
+                      "candidate_blank_whole_roi_lines": sum(not h.norm(r["text"]) for p in results for r in p["whole_roi_lines"]),
+                      "host_paired_line_seconds": {"samples": len(timing), "median": float(np.median(timing)), "p95": float(np.percentile(timing, 95))},
+                      "timing_scope": "uncontrolled live x86-64 host calls; not console speed or memory",
+                      "teacher_requests": 0, "baseline_forward_calls": 0, "original_failures_retried": 0,
+                      "training_or_selection_use": False, "promotion_decision": "none; Google proxy alone cannot qualify model"}
+            serialized = json.dumps(public, sort_keys=True)
+            for bad in ("/home/", "/tmp/", "inputs/", '"text"', '"pred"', '"error"'):
+                require(bad not in serialized, "public aggregate leaks private data")
+            write_new(args.directory / "public-result.json", public)
+            write_new(args.directory / "complete.json", {"result_sha256": sha(args.directory / "public-result.json"),
+                                                         "protocol_sha256": proto_sha, "prepared_sha256": prep_sha,
+                                                         "completed_at_unix": time.time()})
+        except BaseException as exc:
+            write_new(args.directory / "failed.json", {"error": f"{type(exc).__name__}: {exc}", "failed_at_unix": time.time(),
+                                                       "retry_allowed": False, "partial_journal_retained": True,
+                                                       "candidate_recognizer_calls_started": counted_reader.calls if counted_reader else 0})
+            raise
+    print(json.dumps(public, indent=2, sort_keys=True))
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    sub = ap.add_subparsers(dest="command", required=True)
+    pre = sub.add_parser("prepare")
+    for name in ("session", "harness", "released", "model", "recognizer-library", "finder-library", "directory"):
+        pre.add_argument("--" + name, type=Path, required=True)
+    check = sub.add_parser("verify")
+    check.add_argument("--directory", type=Path, required=True)
+    run = sub.add_parser("compare")
+    run.add_argument("--directory", type=Path, required=True)
+    run.add_argument("--authorization", type=Path)
+    args = ap.parse_args()
+    if args.command == "prepare":
+        prepare(args)
+    elif args.command == "verify":
+        verified_preparation(args.directory)
+        print("frozen preparation verified; zero model forwards, finder calls or teacher requests")
+    else:
+        compare(args)
+
+
+if __name__ == "__main__":
+    main()

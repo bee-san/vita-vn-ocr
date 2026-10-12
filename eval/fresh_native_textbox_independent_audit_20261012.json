@@ -1,0 +1,1974 @@
+{
+  "all_aggregate_counters_match": true,
+  "all_fixed_gates_match": true,
+  "all_inputs_code_environment_binary_pins_match": true,
+  "all_native_file_RGB_and_variant_pins_match": true,
+  "all_per_case_scores_match": true,
+  "annotations_sha256": "59e354e80f6224eaf70fb362e1b73a91f12490aa0fcec725b4fa84ea6484f613",
+  "domain_caveat": "Trillion is an RPG ordinary story-dialogue title, not a pure-VN domain claim",
+  "exact_identity_order_no_duplicates_or_missing_cases": true,
+  "expected_cases": 1413,
+  "helper_sha256": "1b5ecd6eb1d393e10c31872c5e14003df9df00c638dd030df25c602b4ccf91ab",
+  "independent_case_score_fingerprint": "90f31543d059c90d5152fbca7acb070bc550afae02acc9fd5717532b48ca916a",
+  "kind": "independent-stored-fresh-native-score-audit",
+  "manifest_sha256": "bd407a45156a25340194db8fc2927ffb3fa5f964ce5dd5394c05050f18abfe57",
+  "new_finder_calls": 0,
+  "new_model_forwards": 0,
+  "new_teacher_calls": 0,
+  "normalized_blank_outputs": {
+    "C4": 99,
+    "original_GRAD": 89,
+    "pure_C3": 87
+  },
+  "observed_cases": 1413,
+  "original_training_history": "unknown",
+  "prepared_sha256": "eeae8e7ee40fa9af44a1bdb8101f41ea09879f2665d89cdbdd7b48b362b5f8a9",
+  "private_predictions_sha256": "a667173d1969dd31f9baa9c6a215dc007f97d2f2dec64eb130c6bbf6636bce2c",
+  "protocol_sha256": "a9c42b2548537e1950b9f7318ba12d97ee22a01c7edc8d12c0c6480f75ee7af4",
+  "raw_manifest_sources": 173,
+  "readiness": {
+    "deduplicated_sources": [
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v14909-r01-i007",
+        "source_id": "fresh-psp-v14909-r03-i026"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v25459-r06-i007",
+        "source_id": "fresh-psp-v25459-r06-i056"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v25459-r06-i023",
+        "source_id": "fresh-psp-v25459-r06-i060"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v25459-r06-i063",
+        "source_id": "fresh-psp-v25459-r06-i066"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v25459-r06-i058",
+        "source_id": "fresh-psp-v25459-r06-i067"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v25459-r06-i023",
+        "source_id": "fresh-psp-v25459-r06-i077"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v25459-r06-i011",
+        "source_id": "fresh-psp-v25459-r06-i081"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v29454-r05-i021",
+        "source_id": "fresh-psp-v29454-r05-i030"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v29454-r05-i017",
+        "source_id": "fresh-psp-v29454-r05-i035"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-psp-v29454-r05-i010",
+        "source_id": "fresh-psp-v29454-r05-i039"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-vita-v21289-r07-i001",
+        "source_id": "fresh-vita-v21289-r09-i001"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-vita-v21289-r07-i006",
+        "source_id": "fresh-vita-v21289-r09-i002"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-vita-v21289-r07-i003",
+        "source_id": "fresh-vita-v21289-r09-i003"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-vita-v21289-r07-i002",
+        "source_id": "fresh-vita-v21289-r09-i004"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-vita-v21289-r07-i004",
+        "source_id": "fresh-vita-v21289-r09-i005"
+      },
+      {
+        "reason": "repeated_body",
+        "retained_id": "fresh-vita-v21289-r07-i000",
+        "source_id": "fresh-vita-v21289-r09-i006"
+      }
+    ],
+    "groups": {
+      "psp:v14909": {
+        "body_chars": 515,
+        "body_hiragana": 308,
+        "frames": 21,
+        "platform": "psp",
+        "vn": "v14909"
+      },
+      "psp:v25459": {
+        "body_chars": 952,
+        "body_hiragana": 588,
+        "frames": 43,
+        "platform": "psp",
+        "vn": "v25459"
+      },
+      "psp:v29454": {
+        "body_chars": 601,
+        "body_hiragana": 359,
+        "frames": 25,
+        "platform": "psp",
+        "vn": "v29454"
+      },
+      "vita:v20519": {
+        "body_chars": 522,
+        "body_hiragana": 290,
+        "frames": 17,
+        "platform": "vita",
+        "vn": "v20519"
+      },
+      "vita:v21289": {
+        "body_chars": 797,
+        "body_hiragana": 487,
+        "frames": 26,
+        "platform": "vita",
+        "vn": "v21289"
+      },
+      "vita:v21976": {
+        "body_chars": 526,
+        "body_hiragana": 296,
+        "frames": 25,
+        "platform": "vita",
+        "vn": "v21976"
+      }
+    },
+    "minimums": {
+      "body_chars_per_vn": 500,
+      "body_hiragana_per_vn": 200,
+      "frames_per_vn": 5,
+      "vns_per_console": 3
+    },
+    "ready": true,
+    "reasons": [],
+    "selected_sources": 157
+  },
+  "recomputed_decision": {
+    "body_gain_titles": {
+      "base": {
+        "psp": [
+          "v14909",
+          "v29454"
+        ],
+        "vita": [
+          "v20519"
+        ]
+      },
+      "expanded-4": {
+        "psp": [
+          "v14909",
+          "v29454"
+        ],
+        "vita": [
+          "v20519",
+          "v21289"
+        ]
+      },
+      "expanded-8": {
+        "psp": [
+          "v14909",
+          "v29454"
+        ],
+        "vita": [
+          "v20519",
+          "v21289"
+        ]
+      }
+    },
+    "material_fraction": "9/10",
+    "passed": false,
+    "pooled": {
+      "base": {
+        "all/full": {
+          "C4": {
+            "chars": 4247,
+            "errors": 876
+          },
+          "pure_C3": {
+            "chars": 4247,
+            "errors": 965
+          }
+        },
+        "all/hira": {
+          "C4": {
+            "chars": 2343,
+            "errors": 389
+          },
+          "pure_C3": {
+            "chars": 2343,
+            "errors": 430
+          }
+        },
+        "body/full": {
+          "C4": {
+            "chars": 3933,
+            "errors": 754
+          },
+          "pure_C3": {
+            "chars": 3933,
+            "errors": 832
+          }
+        },
+        "body/hira": {
+          "C4": {
+            "chars": 2343,
+            "errors": 389
+          },
+          "pure_C3": {
+            "chars": 2343,
+            "errors": 430
+          }
+        }
+      },
+      "expanded-4": {
+        "all/full": {
+          "C4": {
+            "chars": 4247,
+            "errors": 996
+          },
+          "pure_C3": {
+            "chars": 4247,
+            "errors": 1039
+          }
+        },
+        "all/hira": {
+          "C4": {
+            "chars": 2343,
+            "errors": 479
+          },
+          "pure_C3": {
+            "chars": 2343,
+            "errors": 498
+          }
+        },
+        "body/full": {
+          "C4": {
+            "chars": 3933,
+            "errors": 854
+          },
+          "pure_C3": {
+            "chars": 3933,
+            "errors": 883
+          }
+        },
+        "body/hira": {
+          "C4": {
+            "chars": 2343,
+            "errors": 479
+          },
+          "pure_C3": {
+            "chars": 2343,
+            "errors": 498
+          }
+        }
+      },
+      "expanded-8": {
+        "all/full": {
+          "C4": {
+            "chars": 4247,
+            "errors": 1024
+          },
+          "pure_C3": {
+            "chars": 4247,
+            "errors": 1146
+          }
+        },
+        "all/hira": {
+          "C4": {
+            "chars": 2343,
+            "errors": 443
+          },
+          "pure_C3": {
+            "chars": 2343,
+            "errors": 506
+          }
+        },
+        "body/full": {
+          "C4": {
+            "chars": 3933,
+            "errors": 859
+          },
+          "pure_C3": {
+            "chars": 3933,
+            "errors": 964
+          }
+        },
+        "body/hira": {
+          "C4": {
+            "chars": 2343,
+            "errors": 443
+          },
+          "pure_C3": {
+            "chars": 2343,
+            "errors": 506
+          }
+        }
+      }
+    },
+    "reasons": [
+      "base/psp:v25459/all/hira: regression versus mode0",
+      "base/psp:v25459/body/hira: regression versus mode0",
+      "base/vita:v21289/all/full: regression versus mode0",
+      "base/vita:v21289/body/full: regression versus mode0",
+      "base/vita: insufficient fresh titles/body gains",
+      "base: less than10 percent pooled full-error reduction versus mode2",
+      "expanded-4/psp:v25459/all/hira: regression versus mode0",
+      "expanded-4/psp:v25459/body/hira: regression versus mode0",
+      "expanded-4: less than10 percent pooled full-error reduction versus mode2",
+      "expanded-8/psp:v25459/all/full: regression versus mode0",
+      "expanded-8/psp:v25459/all/hira: regression versus mode0",
+      "expanded-8/psp:v25459/body/full: regression versus mode0",
+      "expanded-8/psp:v25459/body/hira: regression versus mode0"
+    ],
+    "weights": "consoles 1/2 each; titles equal within console; exact fractions"
+  },
+  "recomputed_results": {
+    "C4": {
+      "base": {
+        "psp:v14909": {
+          "all": {
+            "full": {
+              "chars": 594,
+              "errors": 321
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 177
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 291
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 177
+            }
+          },
+          "detections": 68,
+          "frames": 21,
+          "platform": "psp",
+          "reference_sha256": "3a5c5e570760999cc85b88e79b576aacc45cdd09c9600fdc1d826da403a35d2d",
+          "vn": "v14909",
+          "zero_detection_frames": 0
+        },
+        "psp:v25459": {
+          "all": {
+            "full": {
+              "chars": 952,
+              "errors": 110
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 47
+            }
+          },
+          "blank_outputs": 4,
+          "body": {
+            "full": {
+              "chars": 952,
+              "errors": 110
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 47
+            }
+          },
+          "detections": 94,
+          "frames": 43,
+          "platform": "psp",
+          "reference_sha256": "a751aac8aadfec9e6ab3216454b4735a6365a7e1d41eff869ffb919afc77238f",
+          "vn": "v25459",
+          "zero_detection_frames": 0
+        },
+        "psp:v29454": {
+          "all": {
+            "full": {
+              "chars": 711,
+              "errors": 288
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 110
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 614,
+              "errors": 239
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 110
+            }
+          },
+          "detections": 71,
+          "frames": 25,
+          "platform": "psp",
+          "reference_sha256": "b53f530e9a426524d29e00306e128f5185dc45252a2ecd0a51064124355ab014",
+          "vn": "v29454",
+          "zero_detection_frames": 0
+        },
+        "vita:v20519": {
+          "all": {
+            "full": {
+              "chars": 597,
+              "errors": 33
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 2
+            }
+          },
+          "blank_outputs": 11,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 19
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 2
+            }
+          },
+          "detections": 66,
+          "frames": 17,
+          "platform": "vita",
+          "reference_sha256": "8b6bdc8cfb77d4a0aae0ef96ac471f350b54f4a6230ac16d8894e68c170dab0f",
+          "vn": "v20519",
+          "zero_detection_frames": 0
+        },
+        "vita:v21289": {
+          "all": {
+            "full": {
+              "chars": 867,
+              "errors": 101
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 44
+            }
+          },
+          "blank_outputs": 4,
+          "body": {
+            "full": {
+              "chars": 797,
+              "errors": 72
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 44
+            }
+          },
+          "detections": 76,
+          "frames": 26,
+          "platform": "vita",
+          "reference_sha256": "57accf913e699dbbf9cf3281bbe7feb0905e992c9be9d619f0be75784d1eb812",
+          "vn": "v21289",
+          "zero_detection_frames": 0
+        },
+        "vita:v21976": {
+          "all": {
+            "full": {
+              "chars": 526,
+              "errors": 23
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 9
+            }
+          },
+          "blank_outputs": 0,
+          "body": {
+            "full": {
+              "chars": 526,
+              "errors": 23
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 9
+            }
+          },
+          "detections": 34,
+          "frames": 25,
+          "platform": "vita",
+          "reference_sha256": "654ffc90ef912f3668c8e98387f79e70ff73ef70253805d4ce22d237c88e9655",
+          "vn": "v21976",
+          "zero_detection_frames": 0
+        }
+      },
+      "expanded-4": {
+        "psp:v14909": {
+          "all": {
+            "full": {
+              "chars": 594,
+              "errors": 328
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 175
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 294
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 175
+            }
+          },
+          "detections": 68,
+          "frames": 21,
+          "platform": "psp",
+          "reference_sha256": "3a5c5e570760999cc85b88e79b576aacc45cdd09c9600fdc1d826da403a35d2d",
+          "vn": "v14909",
+          "zero_detection_frames": 0
+        },
+        "psp:v25459": {
+          "all": {
+            "full": {
+              "chars": 952,
+              "errors": 220
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 140
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 952,
+              "errors": 220
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 140
+            }
+          },
+          "detections": 130,
+          "frames": 43,
+          "platform": "psp",
+          "reference_sha256": "a751aac8aadfec9e6ab3216454b4735a6365a7e1d41eff869ffb919afc77238f",
+          "vn": "v25459",
+          "zero_detection_frames": 0
+        },
+        "psp:v29454": {
+          "all": {
+            "full": {
+              "chars": 711,
+              "errors": 291
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 111
+            }
+          },
+          "blank_outputs": 9,
+          "body": {
+            "full": {
+              "chars": 614,
+              "errors": 239
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 111
+            }
+          },
+          "detections": 73,
+          "frames": 25,
+          "platform": "psp",
+          "reference_sha256": "b53f530e9a426524d29e00306e128f5185dc45252a2ecd0a51064124355ab014",
+          "vn": "v29454",
+          "zero_detection_frames": 0
+        },
+        "vita:v20519": {
+          "all": {
+            "full": {
+              "chars": 597,
+              "errors": 69
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 21
+            }
+          },
+          "blank_outputs": 5,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 44
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 21
+            }
+          },
+          "detections": 65,
+          "frames": 17,
+          "platform": "vita",
+          "reference_sha256": "8b6bdc8cfb77d4a0aae0ef96ac471f350b54f4a6230ac16d8894e68c170dab0f",
+          "vn": "v20519",
+          "zero_detection_frames": 0
+        },
+        "vita:v21289": {
+          "all": {
+            "full": {
+              "chars": 867,
+              "errors": 68
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 24
+            }
+          },
+          "blank_outputs": 3,
+          "body": {
+            "full": {
+              "chars": 797,
+              "errors": 37
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 24
+            }
+          },
+          "detections": 77,
+          "frames": 26,
+          "platform": "vita",
+          "reference_sha256": "57accf913e699dbbf9cf3281bbe7feb0905e992c9be9d619f0be75784d1eb812",
+          "vn": "v21289",
+          "zero_detection_frames": 0
+        },
+        "vita:v21976": {
+          "all": {
+            "full": {
+              "chars": 526,
+              "errors": 20
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "blank_outputs": 0,
+          "body": {
+            "full": {
+              "chars": 526,
+              "errors": 20
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "detections": 34,
+          "frames": 25,
+          "platform": "vita",
+          "reference_sha256": "654ffc90ef912f3668c8e98387f79e70ff73ef70253805d4ce22d237c88e9655",
+          "vn": "v21976",
+          "zero_detection_frames": 0
+        }
+      },
+      "expanded-8": {
+        "psp:v14909": {
+          "all": {
+            "full": {
+              "chars": 594,
+              "errors": 328
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 175
+            }
+          },
+          "blank_outputs": 9,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 294
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 175
+            }
+          },
+          "detections": 69,
+          "frames": 21,
+          "platform": "psp",
+          "reference_sha256": "3a5c5e570760999cc85b88e79b576aacc45cdd09c9600fdc1d826da403a35d2d",
+          "vn": "v14909",
+          "zero_detection_frames": 0
+        },
+        "psp:v25459": {
+          "all": {
+            "full": {
+              "chars": 952,
+              "errors": 213
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 112
+            }
+          },
+          "blank_outputs": 9,
+          "body": {
+            "full": {
+              "chars": 952,
+              "errors": 213
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 112
+            }
+          },
+          "detections": 132,
+          "frames": 43,
+          "platform": "psp",
+          "reference_sha256": "a751aac8aadfec9e6ab3216454b4735a6365a7e1d41eff869ffb919afc77238f",
+          "vn": "v25459",
+          "zero_detection_frames": 0
+        },
+        "psp:v29454": {
+          "all": {
+            "full": {
+              "chars": 711,
+              "errors": 283
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 96
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 614,
+              "errors": 228
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 96
+            }
+          },
+          "detections": 75,
+          "frames": 25,
+          "platform": "psp",
+          "reference_sha256": "b53f530e9a426524d29e00306e128f5185dc45252a2ecd0a51064124355ab014",
+          "vn": "v29454",
+          "zero_detection_frames": 0
+        },
+        "vita:v20519": {
+          "all": {
+            "full": {
+              "chars": 597,
+              "errors": 107
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 31
+            }
+          },
+          "blank_outputs": 6,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 64
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 31
+            }
+          },
+          "detections": 66,
+          "frames": 17,
+          "platform": "vita",
+          "reference_sha256": "8b6bdc8cfb77d4a0aae0ef96ac471f350b54f4a6230ac16d8894e68c170dab0f",
+          "vn": "v20519",
+          "zero_detection_frames": 0
+        },
+        "vita:v21289": {
+          "all": {
+            "full": {
+              "chars": 867,
+              "errors": 72
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 21
+            }
+          },
+          "blank_outputs": 4,
+          "body": {
+            "full": {
+              "chars": 797,
+              "errors": 39
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 21
+            }
+          },
+          "detections": 77,
+          "frames": 26,
+          "platform": "vita",
+          "reference_sha256": "57accf913e699dbbf9cf3281bbe7feb0905e992c9be9d619f0be75784d1eb812",
+          "vn": "v21289",
+          "zero_detection_frames": 0
+        },
+        "vita:v21976": {
+          "all": {
+            "full": {
+              "chars": 526,
+              "errors": 21
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "blank_outputs": 0,
+          "body": {
+            "full": {
+              "chars": 526,
+              "errors": 21
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "detections": 34,
+          "frames": 25,
+          "platform": "vita",
+          "reference_sha256": "654ffc90ef912f3668c8e98387f79e70ff73ef70253805d4ce22d237c88e9655",
+          "vn": "v21976",
+          "zero_detection_frames": 0
+        }
+      }
+    },
+    "original_GRAD": {
+      "base": {
+        "psp:v14909": {
+          "all": {
+            "full": {
+              "chars": 594,
+              "errors": 344
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 185
+            }
+          },
+          "blank_outputs": 6,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 306
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 185
+            }
+          },
+          "detections": 59,
+          "frames": 21,
+          "platform": "psp",
+          "reference_sha256": "3a5c5e570760999cc85b88e79b576aacc45cdd09c9600fdc1d826da403a35d2d",
+          "vn": "v14909",
+          "zero_detection_frames": 0
+        },
+        "psp:v25459": {
+          "all": {
+            "full": {
+              "chars": 952,
+              "errors": 114
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 44
+            }
+          },
+          "blank_outputs": 2,
+          "body": {
+            "full": {
+              "chars": 952,
+              "errors": 114
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 44
+            }
+          },
+          "detections": 89,
+          "frames": 43,
+          "platform": "psp",
+          "reference_sha256": "a751aac8aadfec9e6ab3216454b4735a6365a7e1d41eff869ffb919afc77238f",
+          "vn": "v25459",
+          "zero_detection_frames": 0
+        },
+        "psp:v29454": {
+          "all": {
+            "full": {
+              "chars": 711,
+              "errors": 317
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 126
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 614,
+              "errors": 261
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 126
+            }
+          },
+          "detections": 65,
+          "frames": 25,
+          "platform": "psp",
+          "reference_sha256": "b53f530e9a426524d29e00306e128f5185dc45252a2ecd0a51064124355ab014",
+          "vn": "v29454",
+          "zero_detection_frames": 0
+        },
+        "vita:v20519": {
+          "all": {
+            "full": {
+              "chars": 597,
+              "errors": 97
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 38
+            }
+          },
+          "blank_outputs": 11,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 83
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 38
+            }
+          },
+          "detections": 61,
+          "frames": 17,
+          "platform": "vita",
+          "reference_sha256": "8b6bdc8cfb77d4a0aae0ef96ac471f350b54f4a6230ac16d8894e68c170dab0f",
+          "vn": "v20519",
+          "zero_detection_frames": 0
+        },
+        "vita:v21289": {
+          "all": {
+            "full": {
+              "chars": 867,
+              "errors": 100
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 44
+            }
+          },
+          "blank_outputs": 2,
+          "body": {
+            "full": {
+              "chars": 797,
+              "errors": 71
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 44
+            }
+          },
+          "detections": 73,
+          "frames": 26,
+          "platform": "vita",
+          "reference_sha256": "57accf913e699dbbf9cf3281bbe7feb0905e992c9be9d619f0be75784d1eb812",
+          "vn": "v21289",
+          "zero_detection_frames": 0
+        },
+        "vita:v21976": {
+          "all": {
+            "full": {
+              "chars": 526,
+              "errors": 23
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 9
+            }
+          },
+          "blank_outputs": 0,
+          "body": {
+            "full": {
+              "chars": 526,
+              "errors": 23
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 9
+            }
+          },
+          "detections": 34,
+          "frames": 25,
+          "platform": "vita",
+          "reference_sha256": "654ffc90ef912f3668c8e98387f79e70ff73ef70253805d4ce22d237c88e9655",
+          "vn": "v21976",
+          "zero_detection_frames": 0
+        }
+      },
+      "expanded-4": {
+        "psp:v14909": {
+          "all": {
+            "full": {
+              "chars": 594,
+              "errors": 349
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 185
+            }
+          },
+          "blank_outputs": 6,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 311
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 185
+            }
+          },
+          "detections": 60,
+          "frames": 21,
+          "platform": "psp",
+          "reference_sha256": "3a5c5e570760999cc85b88e79b576aacc45cdd09c9600fdc1d826da403a35d2d",
+          "vn": "v14909",
+          "zero_detection_frames": 0
+        },
+        "psp:v25459": {
+          "all": {
+            "full": {
+              "chars": 952,
+              "errors": 221
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 135
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 952,
+              "errors": 221
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 135
+            }
+          },
+          "detections": 128,
+          "frames": 43,
+          "platform": "psp",
+          "reference_sha256": "a751aac8aadfec9e6ab3216454b4735a6365a7e1d41eff869ffb919afc77238f",
+          "vn": "v25459",
+          "zero_detection_frames": 0
+        },
+        "psp:v29454": {
+          "all": {
+            "full": {
+              "chars": 711,
+              "errors": 319
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 126
+            }
+          },
+          "blank_outputs": 8,
+          "body": {
+            "full": {
+              "chars": 614,
+              "errors": 257
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 126
+            }
+          },
+          "detections": 64,
+          "frames": 25,
+          "platform": "psp",
+          "reference_sha256": "b53f530e9a426524d29e00306e128f5185dc45252a2ecd0a51064124355ab014",
+          "vn": "v29454",
+          "zero_detection_frames": 0
+        },
+        "vita:v20519": {
+          "all": {
+            "full": {
+              "chars": 597,
+              "errors": 88
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 30
+            }
+          },
+          "blank_outputs": 5,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 63
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 30
+            }
+          },
+          "detections": 63,
+          "frames": 17,
+          "platform": "vita",
+          "reference_sha256": "8b6bdc8cfb77d4a0aae0ef96ac471f350b54f4a6230ac16d8894e68c170dab0f",
+          "vn": "v20519",
+          "zero_detection_frames": 0
+        },
+        "vita:v21289": {
+          "all": {
+            "full": {
+              "chars": 867,
+              "errors": 104
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 50
+            }
+          },
+          "blank_outputs": 3,
+          "body": {
+            "full": {
+              "chars": 797,
+              "errors": 73
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 50
+            }
+          },
+          "detections": 74,
+          "frames": 26,
+          "platform": "vita",
+          "reference_sha256": "57accf913e699dbbf9cf3281bbe7feb0905e992c9be9d619f0be75784d1eb812",
+          "vn": "v21289",
+          "zero_detection_frames": 0
+        },
+        "vita:v21976": {
+          "all": {
+            "full": {
+              "chars": 526,
+              "errors": 20
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "blank_outputs": 0,
+          "body": {
+            "full": {
+              "chars": 526,
+              "errors": 20
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "detections": 34,
+          "frames": 25,
+          "platform": "vita",
+          "reference_sha256": "654ffc90ef912f3668c8e98387f79e70ff73ef70253805d4ce22d237c88e9655",
+          "vn": "v21976",
+          "zero_detection_frames": 0
+        }
+      },
+      "expanded-8": {
+        "psp:v14909": {
+          "all": {
+            "full": {
+              "chars": 594,
+              "errors": 349
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 184
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 309
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 184
+            }
+          },
+          "detections": 61,
+          "frames": 21,
+          "platform": "psp",
+          "reference_sha256": "3a5c5e570760999cc85b88e79b576aacc45cdd09c9600fdc1d826da403a35d2d",
+          "vn": "v14909",
+          "zero_detection_frames": 0
+        },
+        "psp:v25459": {
+          "all": {
+            "full": {
+              "chars": 952,
+              "errors": 209
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 109
+            }
+          },
+          "blank_outputs": 9,
+          "body": {
+            "full": {
+              "chars": 952,
+              "errors": 209
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 109
+            }
+          },
+          "detections": 128,
+          "frames": 43,
+          "platform": "psp",
+          "reference_sha256": "a751aac8aadfec9e6ab3216454b4735a6365a7e1d41eff869ffb919afc77238f",
+          "vn": "v25459",
+          "zero_detection_frames": 0
+        },
+        "psp:v29454": {
+          "all": {
+            "full": {
+              "chars": 711,
+              "errors": 304
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 110
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 614,
+              "errors": 240
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 110
+            }
+          },
+          "detections": 66,
+          "frames": 25,
+          "platform": "psp",
+          "reference_sha256": "b53f530e9a426524d29e00306e128f5185dc45252a2ecd0a51064124355ab014",
+          "vn": "v29454",
+          "zero_detection_frames": 0
+        },
+        "vita:v20519": {
+          "all": {
+            "full": {
+              "chars": 597,
+              "errors": 216
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 87
+            }
+          },
+          "blank_outputs": 6,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 171
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 87
+            }
+          },
+          "detections": 58,
+          "frames": 17,
+          "platform": "vita",
+          "reference_sha256": "8b6bdc8cfb77d4a0aae0ef96ac471f350b54f4a6230ac16d8894e68c170dab0f",
+          "vn": "v20519",
+          "zero_detection_frames": 0
+        },
+        "vita:v21289": {
+          "all": {
+            "full": {
+              "chars": 867,
+              "errors": 109
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 48
+            }
+          },
+          "blank_outputs": 3,
+          "body": {
+            "full": {
+              "chars": 797,
+              "errors": 76
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 48
+            }
+          },
+          "detections": 74,
+          "frames": 26,
+          "platform": "vita",
+          "reference_sha256": "57accf913e699dbbf9cf3281bbe7feb0905e992c9be9d619f0be75784d1eb812",
+          "vn": "v21289",
+          "zero_detection_frames": 0
+        },
+        "vita:v21976": {
+          "all": {
+            "full": {
+              "chars": 526,
+              "errors": 21
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "blank_outputs": 0,
+          "body": {
+            "full": {
+              "chars": 526,
+              "errors": 21
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "detections": 34,
+          "frames": 25,
+          "platform": "vita",
+          "reference_sha256": "654ffc90ef912f3668c8e98387f79e70ff73ef70253805d4ce22d237c88e9655",
+          "vn": "v21976",
+          "zero_detection_frames": 0
+        }
+      }
+    },
+    "pure_C3": {
+      "base": {
+        "psp:v14909": {
+          "all": {
+            "full": {
+              "chars": 594,
+              "errors": 335
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 181
+            }
+          },
+          "blank_outputs": 6,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 297
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 181
+            }
+          },
+          "detections": 60,
+          "frames": 21,
+          "platform": "psp",
+          "reference_sha256": "3a5c5e570760999cc85b88e79b576aacc45cdd09c9600fdc1d826da403a35d2d",
+          "vn": "v14909",
+          "zero_detection_frames": 0
+        },
+        "psp:v25459": {
+          "all": {
+            "full": {
+              "chars": 952,
+              "errors": 114
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 44
+            }
+          },
+          "blank_outputs": 3,
+          "body": {
+            "full": {
+              "chars": 952,
+              "errors": 114
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 44
+            }
+          },
+          "detections": 90,
+          "frames": 43,
+          "platform": "psp",
+          "reference_sha256": "a751aac8aadfec9e6ab3216454b4735a6365a7e1d41eff869ffb919afc77238f",
+          "vn": "v25459",
+          "zero_detection_frames": 0
+        },
+        "psp:v29454": {
+          "all": {
+            "full": {
+              "chars": 711,
+              "errors": 296
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 114
+            }
+          },
+          "blank_outputs": 6,
+          "body": {
+            "full": {
+              "chars": 614,
+              "errors": 244
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 114
+            }
+          },
+          "detections": 68,
+          "frames": 25,
+          "platform": "psp",
+          "reference_sha256": "b53f530e9a426524d29e00306e128f5185dc45252a2ecd0a51064124355ab014",
+          "vn": "v29454",
+          "zero_detection_frames": 0
+        },
+        "vita:v20519": {
+          "all": {
+            "full": {
+              "chars": 597,
+              "errors": 97
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 38
+            }
+          },
+          "blank_outputs": 11,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 83
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 38
+            }
+          },
+          "detections": 61,
+          "frames": 17,
+          "platform": "vita",
+          "reference_sha256": "8b6bdc8cfb77d4a0aae0ef96ac471f350b54f4a6230ac16d8894e68c170dab0f",
+          "vn": "v20519",
+          "zero_detection_frames": 0
+        },
+        "vita:v21289": {
+          "all": {
+            "full": {
+              "chars": 867,
+              "errors": 100
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 44
+            }
+          },
+          "blank_outputs": 2,
+          "body": {
+            "full": {
+              "chars": 797,
+              "errors": 71
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 44
+            }
+          },
+          "detections": 73,
+          "frames": 26,
+          "platform": "vita",
+          "reference_sha256": "57accf913e699dbbf9cf3281bbe7feb0905e992c9be9d619f0be75784d1eb812",
+          "vn": "v21289",
+          "zero_detection_frames": 0
+        },
+        "vita:v21976": {
+          "all": {
+            "full": {
+              "chars": 526,
+              "errors": 23
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 9
+            }
+          },
+          "blank_outputs": 0,
+          "body": {
+            "full": {
+              "chars": 526,
+              "errors": 23
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 9
+            }
+          },
+          "detections": 34,
+          "frames": 25,
+          "platform": "vita",
+          "reference_sha256": "654ffc90ef912f3668c8e98387f79e70ff73ef70253805d4ce22d237c88e9655",
+          "vn": "v21976",
+          "zero_detection_frames": 0
+        }
+      },
+      "expanded-4": {
+        "psp:v14909": {
+          "all": {
+            "full": {
+              "chars": 594,
+              "errors": 340
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 181
+            }
+          },
+          "blank_outputs": 6,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 302
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 181
+            }
+          },
+          "detections": 61,
+          "frames": 21,
+          "platform": "psp",
+          "reference_sha256": "3a5c5e570760999cc85b88e79b576aacc45cdd09c9600fdc1d826da403a35d2d",
+          "vn": "v14909",
+          "zero_detection_frames": 0
+        },
+        "psp:v25459": {
+          "all": {
+            "full": {
+              "chars": 952,
+              "errors": 220
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 140
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 952,
+              "errors": 220
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 140
+            }
+          },
+          "detections": 130,
+          "frames": 43,
+          "platform": "psp",
+          "reference_sha256": "a751aac8aadfec9e6ab3216454b4735a6365a7e1d41eff869ffb919afc77238f",
+          "vn": "v25459",
+          "zero_detection_frames": 0
+        },
+        "psp:v29454": {
+          "all": {
+            "full": {
+              "chars": 711,
+              "errors": 304
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 115
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 614,
+              "errors": 242
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 115
+            }
+          },
+          "detections": 66,
+          "frames": 25,
+          "platform": "psp",
+          "reference_sha256": "b53f530e9a426524d29e00306e128f5185dc45252a2ecd0a51064124355ab014",
+          "vn": "v29454",
+          "zero_detection_frames": 0
+        },
+        "vita:v20519": {
+          "all": {
+            "full": {
+              "chars": 597,
+              "errors": 88
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 30
+            }
+          },
+          "blank_outputs": 5,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 63
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 30
+            }
+          },
+          "detections": 63,
+          "frames": 17,
+          "platform": "vita",
+          "reference_sha256": "8b6bdc8cfb77d4a0aae0ef96ac471f350b54f4a6230ac16d8894e68c170dab0f",
+          "vn": "v20519",
+          "zero_detection_frames": 0
+        },
+        "vita:v21289": {
+          "all": {
+            "full": {
+              "chars": 867,
+              "errors": 67
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 24
+            }
+          },
+          "blank_outputs": 3,
+          "body": {
+            "full": {
+              "chars": 797,
+              "errors": 36
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 24
+            }
+          },
+          "detections": 75,
+          "frames": 26,
+          "platform": "vita",
+          "reference_sha256": "57accf913e699dbbf9cf3281bbe7feb0905e992c9be9d619f0be75784d1eb812",
+          "vn": "v21289",
+          "zero_detection_frames": 0
+        },
+        "vita:v21976": {
+          "all": {
+            "full": {
+              "chars": 526,
+              "errors": 20
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "blank_outputs": 0,
+          "body": {
+            "full": {
+              "chars": 526,
+              "errors": 20
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "detections": 34,
+          "frames": 25,
+          "platform": "vita",
+          "reference_sha256": "654ffc90ef912f3668c8e98387f79e70ff73ef70253805d4ce22d237c88e9655",
+          "vn": "v21976",
+          "zero_detection_frames": 0
+        }
+      },
+      "expanded-8": {
+        "psp:v14909": {
+          "all": {
+            "full": {
+              "chars": 594,
+              "errors": 342
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 181
+            }
+          },
+          "blank_outputs": 7,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 302
+            },
+            "hira": {
+              "chars": 314,
+              "errors": 181
+            }
+          },
+          "detections": 62,
+          "frames": 21,
+          "platform": "psp",
+          "reference_sha256": "3a5c5e570760999cc85b88e79b576aacc45cdd09c9600fdc1d826da403a35d2d",
+          "vn": "v14909",
+          "zero_detection_frames": 0
+        },
+        "psp:v25459": {
+          "all": {
+            "full": {
+              "chars": 952,
+              "errors": 207
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 111
+            }
+          },
+          "blank_outputs": 9,
+          "body": {
+            "full": {
+              "chars": 952,
+              "errors": 207
+            },
+            "hira": {
+              "chars": 588,
+              "errors": 111
+            }
+          },
+          "detections": 130,
+          "frames": 43,
+          "platform": "psp",
+          "reference_sha256": "a751aac8aadfec9e6ab3216454b4735a6365a7e1d41eff869ffb919afc77238f",
+          "vn": "v25459",
+          "zero_detection_frames": 0
+        },
+        "psp:v29454": {
+          "all": {
+            "full": {
+              "chars": 711,
+              "errors": 289
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 98
+            }
+          },
+          "blank_outputs": 6,
+          "body": {
+            "full": {
+              "chars": 614,
+              "errors": 225
+            },
+            "hira": {
+              "chars": 368,
+              "errors": 98
+            }
+          },
+          "detections": 68,
+          "frames": 25,
+          "platform": "psp",
+          "reference_sha256": "b53f530e9a426524d29e00306e128f5185dc45252a2ecd0a51064124355ab014",
+          "vn": "v29454",
+          "zero_detection_frames": 0
+        },
+        "vita:v20519": {
+          "all": {
+            "full": {
+              "chars": 597,
+              "errors": 216
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 87
+            }
+          },
+          "blank_outputs": 6,
+          "body": {
+            "full": {
+              "chars": 522,
+              "errors": 171
+            },
+            "hira": {
+              "chars": 290,
+              "errors": 87
+            }
+          },
+          "detections": 58,
+          "frames": 17,
+          "platform": "vita",
+          "reference_sha256": "8b6bdc8cfb77d4a0aae0ef96ac471f350b54f4a6230ac16d8894e68c170dab0f",
+          "vn": "v20519",
+          "zero_detection_frames": 0
+        },
+        "vita:v21289": {
+          "all": {
+            "full": {
+              "chars": 867,
+              "errors": 71
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 21
+            }
+          },
+          "blank_outputs": 3,
+          "body": {
+            "full": {
+              "chars": 797,
+              "errors": 38
+            },
+            "hira": {
+              "chars": 487,
+              "errors": 21
+            }
+          },
+          "detections": 75,
+          "frames": 26,
+          "platform": "vita",
+          "reference_sha256": "57accf913e699dbbf9cf3281bbe7feb0905e992c9be9d619f0be75784d1eb812",
+          "vn": "v21289",
+          "zero_detection_frames": 0
+        },
+        "vita:v21976": {
+          "all": {
+            "full": {
+              "chars": 526,
+              "errors": 21
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "blank_outputs": 0,
+          "body": {
+            "full": {
+              "chars": 526,
+              "errors": 21
+            },
+            "hira": {
+              "chars": 296,
+              "errors": 8
+            }
+          },
+          "detections": 34,
+          "frames": 25,
+          "platform": "vita",
+          "reference_sha256": "654ffc90ef912f3668c8e98387f79e70ff73ef70253805d4ce22d237c88e9655",
+          "vn": "v21976",
+          "zero_detection_frames": 0
+        }
+      }
+    }
+  },
+  "reference_fingerprint": "dce0a9e4f74c254515010ea1a032d1dd6406daacc6dd6032739cfe686d7abc08",
+  "rejected_duplicate_sources": 16,
+  "result_sha256": "32669a0d4faf9a4647754cf169ad0bf9d5fe45e20188f79e68092c3022e2a85f",
+  "reviewer_kind": "assistant",
+  "schema": 1,
+  "scope": "Stored-output arithmetic/identity/pin audit only; no new inference or native hardware proof",
+  "scoring_implementation": "Independent two-row DP/ranked byte trace; no harness scorer/gate imported",
+  "selected_sources": 157,
+  "source_code_sha256": {
+    "eval/fresh_native_textbox.py": "9ce7cfc62c5cd9916c3ba61ac0943aabf4315a2bdfd39de6636658bff47219da",
+    "eval/group_metrics.py": "d4d7f5c16f7e64edfbbb427cc66792654394004d958690838d99535eb91923e7",
+    "eval/linefind/cfinder.py": "b3c29dde5ac7f5c234c932782988999846368a312e3a93342c6f04e5ec9e12b8",
+    "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+    "requirements-ci.lock": "529385fa711e896b05aaba1130e81d0ac3334ae8ddea40b253c8546cbaae9539",
+    "requirements.lock": "2fc57d1824fdf25e9d86974ead2f05cde7e29ca9210513604860fd6466d1818e",
+    "runtime/pyvocr.py": "49cd9bf0ac474728f5aae9df9c7a7b7656a57db85f1eec75ec3ba7829b427376",
+    "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+    "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+    "runtime/vocr_lines_test.c": "c1af9976ce7ccc51b1804417b5cb42959fda4b231da0cc1f0e04e2b049eb9c45",
+    "train/general_vn_select.py": "0720ec254d1e73f9ec5b7c31dedb84359d33f89b830dd95ee37e3f0c2c9c1760",
+    "train/general_vn_textbox_guard.py": "637fbe5a3cb06dcfd83399218c1558c6d3c69d4ebba44ab0ca0742f2b89b254e"
+  },
+  "source_fingerprint": "b616aa67bf5c0f1e2cf267597aa1f97495a49e32e57eaccca6a01609ba605d9b",
+  "status": "passed",
+  "successful_prior_forwards": {
+    "C4": 1309,
+    "original_GRAD": 1225,
+    "pure_C3": 1242
+  },
+  "zero_coerced_failures": true,
+  "zero_detection_frames": {
+    "C4": 0,
+    "original_GRAD": 0,
+    "pure_C3": 0
+  }
+}

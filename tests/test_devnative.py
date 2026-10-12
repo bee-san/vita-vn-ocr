@@ -373,3 +373,39 @@ def test_cap_repeats():
                                                                                      "label": "千鶴"}]
     kept, capped = B.cap_repeats(rows)
     assert len(kept) == 3 and len(capped) == 2
+
+
+# ----------------------------------------------------------------------------- GRAD containment
+
+def test_grad_extension_rules():
+    from devnative import gradcheck as GC
+    crop = [100, 50, 300, 70]
+    assert GC.extension([98, 49, 303, 71], crop) == [2, 1, 3, 1]
+    assert not GC.needs_check([98, 49, 303, 71], crop, 16)
+    assert GC.needs_check([60, 49, 303, 71], crop, 16)          # 40 px to the left
+    assert GC.needs_check([98, 30, 303, 71], crop, 16)          # 20 px above (> 0.6 ink heights)
+    assert not GC.needs_check([96, 44, 304, 76], crop, 16)      # within max(3, 0.3 h) and 0.6 h
+    rec = {"status": "ok", "check": True, "label": "あいう"}
+    assert GC.accept(rec, None) == (False, "grad-unchecked")
+    assert GC.accept(rec, {"decision": "pick", "pick": 1}) == (True, "checked")
+    assert GC.accept(rec, {"decision": "text", "text": "あいう"}) == (True, "checked")
+    assert GC.accept(rec, {"decision": "text", "text": "あいう67"}) == (False, "grad-extra-text")
+    assert GC.accept(rec, {"decision": "skip", "skip": "cut"}) == (False, "grad-cut")
+    assert GC.accept({"status": "ok", "check": False}, None) == (True, "inside")
+    assert GC.accept({"status": "mixed"}, None) == (False, "grad-mixed")
+    assert GC.region_member({"decision": "skip", "skip": "cut"}) and not GC.region_member(
+        {"decision": "skip", "skip": "ui"})
+
+
+def test_grad_check_batch(tmp_path):
+    out, _, s, entries = _fake_batch(tmp_path)
+    lid, s, ln, _ = entries[0]
+    from devnative import gradcheck  # noqa: F401  (the mode exists)
+    n = S.make_batch([(lid, s, ln, [{"text": "あいう", "key": "あいう", "engines": []}], [20, 190, 420, 216])],
+                     tmp_path / "g", "grad")
+    assert n == 1
+    readme = (tmp_path / "g" / "README.md").read_text(encoding="utf-8")
+    assert "GRAD-crop check" in readme and '"default"' in readme
+    batch, sheets = D.load_batch(tmp_path / "g")
+    recs = D.parse_decisions('{"sheet": "S001", "default": 1}\n', sheets, "grad", "g")
+    assert recs[0]["decision"] == "pick" and recs[0]["pick"] == 1

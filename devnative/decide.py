@@ -78,8 +78,8 @@ def parse_decisions(text, sheets, mode, batch_name):
             errs.append(f"line {i}: unknown sheet {sid!r}")
             continue
         if "default" in d:
-            if mode != "pass1" or d["default"] != 1:
-                errs.append(f"line {i}: default is only {{'default': 1}} in pass 1")
+            if mode not in ("pass1", "grad") or d["default"] != 1:
+                errs.append(f"line {i}: default is only {{'default': 1}} in pass 1 and the GRAD check")
             defaults.add(sid)
             continue
         n = d.get("n")

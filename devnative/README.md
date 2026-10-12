@@ -18,12 +18,16 @@ $PY devnative/sheets.py make --mode pass1 --out $OUT/review/pass1 --chunk 200
 #   ... decisions.jsonl written in each batch (README.md there has the format)
 $PY devnative/decide.py queue --pass1 $OUT/review/pass1 --out $OUT/review/pass2_queue.json
 $PY devnative/sheets.py make --mode pass2 --lines $OUT/review/pass2_queue.json --out $OUT/review/pass2 --chunk 150
+$PY devnative/gradcheck.py boxes --pass1 $OUT/review/pass1      # GRAD boxes from pass 1's dialogue regions
+$PY devnative/gradcheck.py sheets --out $OUT/review/gradcheck --chunk 60
+#   ... decisions.jsonl in each GRAD-check batch (does the finder's box show exactly the label?)
+$PY devnative/gradcheck.py apply --batch $OUT/review/gradcheck
 $PY devnative/decide.py final --pass1 $OUT/review/pass1 --pass2 $OUT/review/pass2
 $PY devnative/decide.py sample --n 300 --out $OUT/review/blind_ids.json
 $PY devnative/sheets.py make --mode blind --lines $OUT/review/blind_ids.json --out $OUT/review/blind --chunk 150
 $PY devnative/decide.py blind --batch $OUT/review/blind --out $OUT/review/blind_report.json
 $PY devnative/decide.py final --pass1 ... --pass2 ... --resolve $OUT/review/resolutions.jsonl   # third look
-$PY devnative/build.py npz
+$PY devnative/build.py npz --grad $OUT/grad/grad.jsonl
 ```
 
 | stage | file | what it does |
@@ -32,7 +36,8 @@ $PY devnative/build.py npz
 | read | `read.py` | MeikiOCR detection + reading on the whole screen, teacher's geometry (rows merged, ink boxes, furigana), and four readings per line: `meiki` (its own box), `meikiv` (MeikiOCR on the wider view), `v6s` (PP-OCRv6 small on the view), `v6sc` (PP-OCRv6 small on the crop). Pinned engine files, no network |
 | sheets | `sheets.py` | contact sheets of at most 1280 x 1280 px: the framed crop in context, integer zoom, numbered candidates with differences in red; pass 1 shows engine support, pass 2 and the blind re-check shuffle candidates and hide it |
 | decide | `decide.py` | validates `decisions.jsonl`, classifies each pass-1 label (consensus: both engine families read it; single: one; changed: none), queues single and changed labels for the independent second pass, applies the rule, samples and scores the blind re-check |
-| build | `build.py` | ink crops (ink + furigana + 4/2 px) and GRAD crops (the console finder on each dialogue region, kept only when it holds the whole line and nothing else), console polarity, npz files in teacher_val's format, manifests |
+| GRAD check | `gradcheck.py` | the console finder on each dialogue region (the lines pass 1 called dialogue), matched to the lines; a box that holds the whole line and no other detected text is used, and one that runs beyond the reviewed ink crop only after a contact-sheet check that it shows exactly the label (the detector misses some glyphs: card digits, icons, run-on text) |
+| build | `build.py` | ink crops (ink + furigana + 4/2 px) and the checked GRAD crops, console polarity, npz files in teacher_val's format, manifests. Without `--grad` it uses regions of the kept lines and leaves out every GRAD box that runs beyond the ink crop |
 | geometry | `lines.py` | regions, finder matching, crop boxes, polarity (pure numpy; tested in CI) |
 
 ## Rules

@@ -88,9 +88,10 @@ def test_shot_exclusions():
     assert SEL.shot_exclusion(_row(ok[0], sexual=0.5), ctx) == "rating"
     assert SEL.shot_exclusion(_row(ok[0], release="r9"), ctx) == "test-session"
     assert SEL.shot_exclusion(_row(ok[0], release="r8"), ctx) == "label-release"
-    ctx["ref_roles"] = {1000: {"eval-test"}, 1001: {"label-train"}}
+    ctx["ref_roles"] = {1000: {"eval-test"}, 1001: {"label-train"}, 1004: {"eval-linefind", "teacher-val"}}
     assert SEL.shot_exclusion(_row(ok[0], 1000), ctx) == "eval-shot"
     assert SEL.shot_exclusion(_row(ok[0], 1001), ctx) == "label-shot"
+    assert SEL.shot_exclusion(_row(ok[0], 1004), ctx) == "linefind-shot"   # even a teacher_val screenshot
     assert SEL.shot_exclusion(_row(ok[0], 1002), ctx) is None
     ctx["fresh_vns"] = {ok[3]}
     assert SEL.shot_exclusion(_row(ok[3], 1003), ctx) == "fresh-test-vn"
@@ -110,9 +111,11 @@ def test_fresh_native_titles_protected():
 
 def test_subsets():
     ctx, _, ok = _ctx(ref_roles={2000: {"teacher-val", "scene", "eval-linefind"}, 2001: {"eval-general-vn"},
-                                 2002: {"scene"}})
-    sub, flags = SEL.subset_of(_row(ok[0], 2000), ctx)
-    assert sub == "tv_native" and set(flags) == {"bg_shot", "linefind"}
+                                 2002: {"scene"}, 2006: {"teacher-val", "scene", "eval-general-vn"}})
+    # cohort v2: a screenshot of eval/linefind's sets is in no subset, not even tv_native
+    assert SEL.subset_of(_row(ok[0], 2000), ctx) == (None, "linefind-shot")
+    sub, flags = SEL.subset_of(_row(ok[0], 2006), ctx)
+    assert sub == "tv_native" and set(flags) == {"bg_shot", "general_vn_dev"}
     assert SEL.subset_of(_row(ok[0], 2001), ctx) == (None, "other-set-shot")
     assert SEL.subset_of(_row(ok[2], 2002), ctx) == (None, "scene-shot")
     assert SEL.subset_of(_row(ok[2], 2003), ctx) == ("scene_vn", ["scene_vn"])
@@ -373,6 +376,55 @@ def test_cap_repeats():
                                                                                      "label": "千鶴"}]
     kept, capped = B.cap_repeats(rows)
     assert len(kept) == 3 and len(capped) == 2
+
+
+def test_deselect():
+    """Lines of screenshots the selection no longer holds are dropped before the repeat cap."""
+    lab = [{"id": f"v1_{n}_0", "shot": f"v1_{n}", "vn": "v1", "label": "千鶴", "status": "kept"} for n in (1, 2, 3)]
+    lab.append({"id": "v1_4_0", "shot": "v1_4", "vn": "v1", "label": "x", "status": "dropped", "why": "skip-ui"})
+    shots = {"v1_1": {"flags": ["linefind"]}, "v1_2": {"flags": []}, "v1_3": {"flags": []}, "v1_4": {"flags": []}}
+    out = B.deselect(lab, shots, {"v1_2", "v1_3"})
+    assert [(r["status"], r.get("why")) for r in out] == [("dropped", "linefind-shot"), ("kept", None),
+                                                          ("kept", None), ("dropped", "skip-ui")]
+    kept, capped = B.cap_repeats([r for r in out if r["status"] == "kept"])
+    assert len(kept) == 2 and not capped                  # v1_3_0 is no longer a third copy
+    assert B.deselect(lab, {"v1_1": {}}, set())[1]["why"] == "not-selected"
+
+
+def _jl(path):
+    return [json.loads(x) for x in Path(path).read_text(encoding="utf-8").splitlines() if x.strip()]
+
+
+def test_committed_cohort_has_no_eval_screenshot():
+    """The committed cohort (v2) shares no screenshot with eval's test sets or any eval/linefind
+    set, by VNDB id or file sha256 (overlap.py also checks pixels and frames, locally)."""
+    shots = _jl(P.MANIFESTS / "shots.jsonl")
+    lines = _jl(P.MANIFESTS / "lines.jsonl")
+    nums, shas = set(), set()
+    for p in [ROOT / "eval" / "manifests" / f"{k}-test.jsonl" for k in ("vita", "psp")] + \
+            sorted((ROOT / "eval" / "linefind" / "manifests").glob("*.jsonl")):
+        for r in _jl(p):
+            if r.get("url"):
+                nums.add(P.image_num(r["url"]))
+                shas.add(r.get("sha256"))
+    assert len(nums) > 600
+    assert not [s["shot"] for s in shots if P.image_num(s["url"]) in nums or s["sha256"] in shas]
+    assert not [s["shot"] for s in shots if "linefind" in s["flags"]]
+    keys = {s["shot"] for s in shots}
+    assert all(ln["shot"] in keys for ln in lines) and len({ln["id"] for ln in lines}) == len(lines)
+    stats = json.loads((P.MANIFESTS / "stats.json").read_text(encoding="utf-8"))
+    assert stats["kept"] == len(lines)
+    assert sum(f["lines"] for n, f in stats["files"].items() if n.endswith("_ink.npz")) == len(lines)
+    assert sum(1 for ln in lines if ln["grad"]["ok"]) == sum(f["lines"] for n, f in stats["files"].items()
+                                                             if n.endswith("_grad.npz"))
+    ov = json.loads((P.MANIFESTS / "overlap.json").read_text(encoding="utf-8"))
+    assert ov["cohorts"]["v2"]["matching_screenshots"] == 0 and not ov["eval_missing_local"]
+    assert ov["cohorts"]["v2"]["screenshots"] == len(shots) and ov["cohorts"]["v2"]["lines"] == len(lines)
+    v1 = ov["cohorts"]["v1"]
+    assert v1["matching_screenshots"] == 41 and v1["matching_lines"] == 94
+    assert all(h["subset"] == "tv_native" and h["strong"] for h in v1["hits"])
+    v1_ids = {i for h in v1["hits"] for i in h["lines"]}
+    assert len(v1_ids) == 94 and not v1_ids & {ln["id"] for ln in lines}
 
 
 # ----------------------------------------------------------------------------- GRAD containment

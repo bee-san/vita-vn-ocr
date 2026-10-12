@@ -325,6 +325,15 @@ def cmd_sample(args):
     print(f"{len(ids)} of {len(kept)} kept lines -> {args.out}", flush=True)
 
 
+def wilson95(a, n):
+    """Wilson 95% interval of a rate a/n, rounded to 4 places."""
+    import math
+    p, z = a / n, 1.96
+    den = 1 + z * z / n
+    c, h = (p + z * z / (2 * n)) / den, z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
+    return [round(c - h, 4), round(c + h, 4)]
+
+
 def blind_agreement(labels, blind):
     """labels {id: final record}; blind {id: parsed blind decision}. Agreement = the blind pass
     reads the final label's key."""
@@ -341,12 +350,7 @@ def blind_agreement(labels, blind):
             by[k][1] += 1
     summ = {k: {"agree": a, "lines": n, "rate": round(a / n, 4)} for k, (a, n) in sorted(by.items())}
     if rows:
-        import math
-        a, n = by["all"]
-        p, z = a / n, 1.96                      # Wilson 95% interval for the agreement rate
-        den = 1 + z * z / n
-        c, h = (p + z * z / (2 * n)) / den, z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
-        summ["all"]["wilson95"] = [round(c - h, 4), round(c + h, 4)]
+        summ["all"]["wilson95"] = wilson95(*by["all"])
     return summ, [r for r in rows if not r["agree"]]
 
 

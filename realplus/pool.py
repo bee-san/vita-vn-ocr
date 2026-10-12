@@ -842,17 +842,37 @@ def cmd_blind(args):
     order that end up in the built pool (a line can still fail its edge check or a build rule)."""
     labels = jl(OUT / "labels.jsonl")
     boxes = {b["id"]: b for b in jl(EDGE / "boxes.jsonl")}
-    kept = sorted(r["id"] for r in labels if r["status"] == "kept" and r["id"] in boxes)
-    if len(kept) < sum(r["status"] == "kept" for r in labels):
-        sys.exit("edge-boxes first: every kept label needs its final crop")
-    rng = random.Random(args.seed)
-    order = rng.sample(kept, min(args.n, len(kept)))
-    (REVIEW / "blind_ids.json").write_text(json.dumps({"order": order, "seed": args.seed, "from": len(kept),
-                                                       "score": args.score}) + "\n")
+    spec_p = REVIEW / "blind_ids.json"
+    if args.extend:
+        # Continue the same sampling: more lines of the same frozen kept set, in a random order that
+        # follows the registered one (seeded from the registered seed and the extension's number).
+        spec = json.loads(spec_p.read_text())
+        frozen = set(json.loads((REVIEW / "blind_frame.json").read_text())) if (REVIEW / "blind_frame.json").exists() \
+            else None
+        kept = sorted(frozen) if frozen is not None else \
+            sorted(r["id"] for r in labels if r["status"] == "kept" and r["id"] in boxes)
+        drawn = set(spec["order"])
+        ext = spec.setdefault("extensions", [])
+        rng = random.Random(f"{spec['seed']}:{len(ext) + 1}")
+        new = rng.sample([i for i in kept if i not in drawn], args.extend)
+        ext.append({"n": len(new), "seed": f"{spec['seed']}:{len(ext) + 1}"})
+        spec["order"] += new
+        spec_p.write_text(json.dumps(spec) + "\n")
+        order, first = new, len(batch_dirs("blind")) + 1
+    else:
+        kept = sorted(r["id"] for r in labels if r["status"] == "kept" and r["id"] in boxes)
+        if len(kept) < sum(r["status"] == "kept" for r in labels):
+            sys.exit("edge-boxes first: every kept label needs its final crop")
+        rng = random.Random(args.seed)
+        order = rng.sample(kept, min(args.n, len(kept)))
+        spec_p.write_text(json.dumps({"order": order, "seed": args.seed, "from": len(kept), "score": args.score})
+                          + "\n")
+        (REVIEW / "blind_frame.json").write_text(json.dumps(kept) + "\n")
+        first = 1
     shots = load_reads()
     entries = S.review_entries(shots, order, frames={i: boxes[i]["crop"] for i in order})
     for k in range(0, len(entries), args.size):
-        out = REVIEW / "blind" / f"b{k // args.size + 1:04d}"
+        out = REVIEW / "blind" / f"b{first + k // args.size:04d}"
         ns = S.make_batch(entries[k:k + args.size], out, "blind", name=f"realplus/blind/{out.name}")
         with open(out / "README.md", "a", encoding="utf-8") as f:
             f.write(NOTE + BLIND_NOTE)
@@ -1032,6 +1052,7 @@ def main():
     p.add_argument("--score", type=int, default=500, help="lines scored: the first of the order in the pool")
     p.add_argument("--seed", type=int, default=20261013)
     p.add_argument("--size", type=int, default=135)
+    p.add_argument("--extend", type=int, default=0, help="continue the registered order with N more lines")
     sub.add_parser("blind-score")
     args = ap.parse_args()
     {"prep": cmd_prep, "plan": cmd_plan, "batches": cmd_batches, "helpers": cmd_helpers, "status": cmd_status,

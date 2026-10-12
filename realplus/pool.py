@@ -435,9 +435,8 @@ EDGE = OUT / "edge"
 
 
 def cmd_edge_boxes(args):
-    """devnative/edgecheck.py boxes on realplus's crops: the final crop (lines.final_crop) of every kept
-    label on the single-padded crop (read_line), and whether it needs a check (edgecheck.flags:
-    widened by WIDEN px, or ink continuing past it; or a later look called the line cut)."""
+    """devnative/edgecheck.py boxes on realplus's crops: the final crop of every kept label and whether
+    it needs a check (edge_flags; or a later look called the line cut)."""
     from common import to_gray
     from devnative import edgecheck as E
     labels = [r for r in jl(OUT / "labels.jsonl") if r["status"] == "kept"]
@@ -453,7 +452,7 @@ def cmd_edge_boxes(args):
             cache[s["shot"]] = (rgb, to_gray(rgb))
         rgb, gray = cache[s["shot"]]
         H, W = rgb.shape[:2]
-        fc, rc, why = E.flags(gray, read_line(ln), "vita", W, H, r["label"])
+        fc, rc, why = edge_flags(gray, ln, "vita", W, H, r["label"])
         why += ev.get(r["id"], [])
         out.append({"id": r["id"], "shot": s["shot"], "label": r["label"], "crop": fc, "reviewed": rc,
                     "check": bool(why), "why": why})
@@ -523,8 +522,11 @@ def scale_line(ln, fx, fy):
 
 
 def scale_chars(chars, fx, fy):
-    """MeikiOCR character boxes [c, x0, y0, x1, y1, conf] mapped to the PSP-scale screen."""
-    return [[c[0], c[1] * fx, c[2] * fy, c[3] * fx, c[4] * fy, *c[5:]] for c in chars] if chars else chars
+    """MeikiOCR character boxes [c, x0, y0, x1, y1, conf] mapped to the PSP-scale screen, outward to
+    whole pixels (crop boxes index the image)."""
+    import math
+    return [[c[0], math.floor(c[1] * fx), math.floor(c[2] * fy), math.ceil(c[3] * fx), math.ceil(c[4] * fy),
+             *c[5:]] for c in chars] if chars else chars
 
 
 def ink_mixed(box, line, dets):
@@ -543,6 +545,24 @@ def read_line(ln):
     stores the padded crop under "crop" (and the unpadded box under "crop_ink"), so crop_box() on a
     raw reads line pads twice (ink + 8 / 4 px); realplus cuts ink + 4 / 2 px, eval's and teacher's crop."""
     return dict(ln, crop=ln.get("crop_ink") or ln["ink"])
+
+
+def edge_flags(gray, ln, kind, W, H, label):
+    """(final crop, reviewed frame, reasons) for one labelled reads line (raw, as in reads.jsonl).
+
+    The crop realplus cuts is eval's (ink + furigana + PAD, read_line) widened to the labelled
+    characters' boxes (lines.final_crop). Whether it needs an edge check is devnative's rule
+    (edgecheck.flags) applied to what the reviewers saw, the sheet frame (crop_box of the raw line,
+    which read.py pads twice): ink continuing past that frame, or labelled characters beyond it. A
+    border or plate edge between the two paddings is not text the label lacks. A label no MeikiOCR
+    reading spells has no character boxes to widen to: it is checked too ("no-char-boxes")."""
+    from devnative import edgecheck as E
+    chars = L.label_chars(ln, vote.key, label)
+    fc = L.final_crop(read_line(ln), kind, W, H, chars)
+    _, frame, why = E.flags(gray, ln, kind, W, H, label)
+    if not chars:
+        why = why + ["no-char-boxes"]
+    return fc, frame, why
 
 
 def load_vocab():
@@ -594,7 +614,6 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
 
     from common import to_gray
     from devnative import build as B
-    from devnative import edgecheck as E
     src = src or {}
     vocab = load_vocab()
     idx = S.line_index(shots)
@@ -644,7 +663,7 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
                     drops[edge_why] += 1
                     continue
             else:
-                fc_v, _, flags = E.flags(gray_v, lv, "vita", Wv, Hv, r["label"])
+                fc_v, _, flags = edge_flags(gray_v, idx[r["id"]][1], "vita", Wv, Hv, r["label"])
                 edge_why = "unflagged"
                 if flags:
                     drops["edge-unchecked"] += 1

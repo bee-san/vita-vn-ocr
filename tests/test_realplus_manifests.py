@@ -53,7 +53,7 @@ def test_files_are_small():
 
 def test_only_training_side_vns_and_screenshots():
     test_all = set(SH.test_games()["all"])
-    protected = test_all | SH.fresh_native_vns() | FRESH_RELATIONS | SH.CLANNAD | SH.GENERAL_VN_DEV
+    protected = test_all | SH.fresh_native_vns() | FRESH_RELATIONS | SH.CLANNAD | SH.CLANNAD_FAMILY | SH.GENERAL_VN_DEV
     eval_images = set()
     for p in [*(ROOT / "eval").rglob("*.json"), *(ROOT / "eval").rglob("*.jsonl")]:
         eval_images |= {int(x) for x in SH.IMAGE_ID.findall(p.read_text(encoding="utf-8", errors="replace"))}

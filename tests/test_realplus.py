@@ -202,3 +202,12 @@ def test_dedupe_prefers_read_screenshots():
     assert S.dedupe(rows, {"b": {"realdata"}}, {"r4"}) == {"2": "realplus:1", "3": "pool:realdata",
                                                            "4": "pool:fresh-native"}
     assert S.dedupe(rows, {}, set(), read={"v2_2"}) == {"1": "realplus:2"}
+
+
+def test_clannad_family_list_is_reserved_without_dump_relations(tmp_path):
+    a = train_side(1, 100)[0]
+    fam = sorted(S.CLANNAD_FAMILY)
+    write_dump(tmp_path, {a: "ja", **{v: "ja" for v in fam}}, [], {})          # no relations in this dump
+    why = S.reserved_vns(S.load_dump(tmp_path), test_all=set(), fresh=set(), dev=set())
+    assert all(why.get(v) in ("clannad-family", "test-vn") for v in fam) and a not in why
+    assert {"v12", "v4060", "v54298"} <= S.CLANNAD_FAMILY and len(S.CLANNAD_FAMILY) == 11

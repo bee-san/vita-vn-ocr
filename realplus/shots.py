@@ -57,6 +57,9 @@ HIRES_PLATFORMS = {"win", "mac", "lin", "dos", "p98", "p88", "x68", "fmt", "swi"
                    "ps4", "ps5", "psx", "ps1", "xb3", "xbo", "xxs", "sat", "drc", "dvd", "wii", "wiu"}
 FAMILY = {"alt", "orig", "fan", "par", "side", "seq", "preq", "ser"}   # as eval/tools/manifest.py
 CLANNAD = {"v4"}
+# CLANNAD's direct VNDB family (alt/fan/orig/par/preq/seq/ser/side), as the conductor listed it on
+# 2026-10-12 (train2's old pools held 45 such crops). reserved_vns finds them from the dump too.
+CLANNAD_FAMILY = set("v12 v4060 v28752 v27548 v10058 v29951 v23354 v16901 v5698 v7983 v54298".split())
 CLANNAD_TITLE = re.compile(r"clannad|クラナド", re.I)
 # Every VN of the general-VN and CLANNAD development manifests (synth3_text.GENERAL_VN_DEV).
 GENERAL_VN_DEV = set(("v4 v1015 v1281 v2632 v5154 v5297 v10091 v11109 v11454 v12775 v13766 v15773 v16128 "
@@ -262,6 +265,7 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
     """{vn: reason} for every VN off limits to realplus. Reasons, first match wins:
 
       clannad       CLANNAD by id or title
+      clannad-family  CLANNAD_FAMILY, the conductor's list of CLANNAD's direct family
       test-set      eval's test_games.json "all" (set games, their family, release partners)
       test-vn       synth/common.is_test_vn (the 15% of VNs held out for evaluation)
       fresh-native  a title of the fresh native textbox test
@@ -281,9 +285,11 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
     vns = set(d["olang"])
     clannad = set(CLANNAD) | {v for v in vns if any(CLANNAD_TITLE.search(t) for t in d["title"].get(v, []))}
     why = {}
-    for v in vns | test_all | fresh | dev:
+    for v in vns | test_all | fresh | dev | CLANNAD_FAMILY:
         if v in clannad:
             why[v] = "clannad"
+        elif v in CLANNAD_FAMILY:
+            why[v] = "clannad-family"
         elif v in test_all:
             why[v] = "test-set"
         elif is_test_vn(v):

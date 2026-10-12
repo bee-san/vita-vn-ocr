@@ -2,7 +2,7 @@
 """Build the devnative cohort files from the final labels.
 
   build.py npz [--labels $OUT/labels.jsonl] [--reads ...] [--out $OUT] [--prefix devnative]
-               [--manifests devnative/manifests]
+               [--manifests devnative/manifests] [--selection devnative/manifests/shots.jsonl]
 
 For every kept line (decide.py final) two crops are cut from its native screenshot, both as
 grey integer luma (synth/common.to_gray) in the console polarity (a crop whose text
@@ -16,6 +16,9 @@ common.line_dark calls dark is stored inverted, meta dark/inverted):
         dialogue line, boxes that run beyond the ink crop checked on contact sheets); without it,
         regions come from the kept lines and a box that runs beyond the ink crop is left out.
 Identical labels are kept at most twice per VN (teacher's cap: names and UI strings repeat).
+--selection takes select.py's screenshot manifest: a kept line whose screenshot it no longer holds
+(the selection rules changed after the screenshots were read) is dropped before that cap, as
+"linefind-shot" when the screenshot was flagged as one of eval/linefind's, else "not-selected".
 
 Outputs, one file per subset and crop, never pooled (the conductor's decision):
   $OUT/<prefix>_<subset>_<ink|grad>.npz    teacher_val's format: data, offsets, shapes, labels
@@ -149,11 +152,26 @@ def covers(gbox, crop, kind):
     return gbox[0] <= crop[0] + p + 1 and gbox[2] >= crop[2] - p - 1
 
 
-def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devnative", grad=None, edge=None):
+def deselect(labels, shots, selection):
+    """Drop every kept line whose screenshot is not in `selection` (shot keys of select.py's
+    manifest): why "linefind-shot" if the screenshot was read flagged "linefind", else
+    "not-selected". Lines already dropped keep their reason."""
+    out = []
+    for r in labels:
+        if r["status"] == "kept" and r["shot"] not in selection:
+            flags = (shots.get(r["shot"]) or {}).get("flags") or []
+            r = dict(r, status="dropped", why="linefind-shot" if "linefind" in flags else "not-selected")
+        out.append(r)
+    return out
+
+
+def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devnative", grad=None, edge=None,
+          selection=None):
     """Cut, write the npz files and the manifests. tvl: teacher_val's native lines
     (teacher_val_lines(); loaded when a tv_native line is kept and none are given). grad:
     {line id: gradcheck.py apply record}; None = grad_default(). edge: {line id: edgecheck.py
-    apply record}; None = final crops without an edge check."""
+    apply record}; None = final crops without an edge check. selection: shot keys the cohort may
+    use (deselect()); None = every screenshot read."""
     idx = S.line_index(shots)
     labels = list(labels)
     if edge is not None:
@@ -161,6 +179,8 @@ def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devna
             e = edge.get(r["id"])
             if r["status"] == "kept" and (e is None or not e["edge_ok"]):
                 labels[i] = dict(r, status="dropped", why=e["edge_why"] if e else "edge-missing")
+    if selection is not None:
+        labels = deselect(labels, shots, set(selection))
     kept, capped = cap_repeats([r for r in labels if r["status"] == "kept"])
     dropped = [r for r in labels if r["status"] != "kept"] + [dict(r, status="dropped", why="repeat-cap")
                                                                for r in capped]
@@ -274,7 +294,12 @@ def cmd_npz(args):
     if args.edge:
         edge = {r["id"]: r for r in (json.loads(x) for x in Path(args.edge).read_text(encoding="utf-8").splitlines()
                                      if x.strip())}
-    stats = build(labels, shots, args.out, manifests=args.manifests, prefix=args.prefix, grad=grad, edge=edge)
+    selection = None
+    if args.selection:
+        selection = {json.loads(x)["shot"] for x in Path(args.selection).read_text(encoding="utf-8").splitlines()
+                     if x.strip()}
+    stats = build(labels, shots, args.out, manifests=args.manifests, prefix=args.prefix, grad=grad, edge=edge,
+                  selection=selection)
     print(json.dumps(stats, ensure_ascii=False, indent=1), flush=True)
     print("BUILD_DONE", flush=True)
 
@@ -290,6 +315,7 @@ def main():
     p.add_argument("--manifests", default=str(P.MANIFESTS), help="where lines/dropped/stats.json go")
     p.add_argument("--grad", help="gradcheck.py apply output (default: no containment check, see grad_default)")
     p.add_argument("--edge", help="edgecheck.py apply output (default: final crops, no edge check)")
+    p.add_argument("--selection", help="select.py's shots.jsonl: build only lines of the screenshots it holds")
     args = ap.parse_args()
     cmd_npz(args)
 

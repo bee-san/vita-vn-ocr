@@ -80,8 +80,16 @@ def main():
                     "final_why": None if x["id"] in final else dropped.get(x["id"])})
     in_final = [i for i in sample["ids"] if i in final]
     agree_final = sum(1 for i in in_final if D.agrees(blind.get(i), lab_by[i]["label"]))
+    # the measurement as it was made (labels after passes 1 and 2), on the sampled lines whose
+    # screenshot the selection still holds (cohort v2 dropped eval/linefind's screenshots)
+    selected = {r["shot"] for r in jl(P.MANIFESTS / "shots.jsonl")}
+    on_sel = [i for i in sample["ids"] if i.rsplit("_", 1)[0] in selected]
+    dis_sel = sum(1 for x in rep["disagreements"] if x["id"].rsplit("_", 1)[0] in selected)
     out["blind_recheck"] = {"sample": {"n": len(sample["ids"]), "seed": sample["seed"], "from_kept": sample["from"]},
                             "agreement": rep["summary"], "disagreements": dis,
+                            "on_selected_shots": {"lines": len(on_sel), "agree": len(on_sel) - dis_sel,
+                                                  "rate": round((len(on_sel) - dis_sel) / len(on_sel), 4),
+                                                  "wilson95": D.wilson95(len(on_sel) - dis_sel, len(on_sel))},
                             "sampled_lines_in_final": len(in_final), "agree_in_final": agree_final}
     res = jl(out_dir / "review" / "resolutions.jsonl")
     out["third_look"] = [{k: r.get(k) for k in ("id", "keep", "why", "note")} | {"text_changed": bool(r.get("text"))}
@@ -94,7 +102,8 @@ def main():
     out["built"] = json.loads((P.MANIFESTS / "stats.json").read_text(encoding="utf-8"))
     Path(args.out).write_text(json.dumps(out, ensure_ascii=True, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({k: out[k] for k in ("final_labels", "grad", "edge")}, indent=1), flush=True)
-    print(json.dumps({k: out["blind_recheck"][k] for k in ("sampled_lines_in_final", "agree_in_final")}), flush=True)
+    print(json.dumps({k: out["blind_recheck"][k] for k in ("on_selected_shots", "sampled_lines_in_final",
+                                                           "agree_in_final")}), flush=True)
 
 
 if __name__ == "__main__":

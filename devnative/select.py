@@ -22,10 +22,12 @@ No screenshot may be (by VNDB id, file sha256, decoded-pixel sha256, or the same
 re-encoded: thumbnail correlation >= 0.95 and a full-size grey p99 difference < 48):
   * in eval's sets (vita-test, psp-test) or from one of their capture sessions, or one of the
     fresh native textbox test's source images (its file sha256 or RGB pixel sha256),
+  * in eval/linefind's sets (every eval/linefind/manifests/*.jsonl: the research, dev, holdout
+    and candidate sets and the PSP pool), in any subset ("linefind-shot", cohort v2: v1 kept
+    them in tv_native, flagged),
   * a training label screenshot, or from a release (capture session) one was taken from.
-Screenshots of the repo's other sets (linefind's dev, holdout, pool and research sets, the
-general-VN development sources) are kept out of strict and scene_vn; in tv_native they stay,
-flagged (linefind, general_vn_dev).
+Screenshots of the general-VN development sources are kept out of strict and scene_vn; in
+tv_native they stay, flagged (general_vn_dev).
 Every screenshot is in exactly one subset (the conductor's decision of 2026-10-12):
   tv_native  a native screenshot teacher_val already labels: the same lines through the
              console's path (GRAD finder, ink + 4/2 px, console polarity), relabelled here.
@@ -35,8 +37,8 @@ Every screenshot is in exactly one subset (the conductor's decision of 2026-10-1
              themselves excluded; never a teacher_val screenshot.
   strict     a VN in no training pool at all (labels or scenes); never a teacher_val screenshot.
 Near-duplicates that are not the same frame (thumbnail correlation >= 0.95: usually the same
-scene with other dialogue) are kept and flagged with their partner; against eval's sets they
-are dropped.
+scene with other dialogue) are kept and flagged with their partner; against eval's sets and
+linefind's sets they are dropped.
 """
 import argparse
 import hashlib
@@ -357,15 +359,19 @@ def shot_exclusion(row, ctx):
     roles = ctx["ref_roles"].get(P.image_num(row["url"]), set())
     if "eval-test" in roles:
         return "eval-shot"
+    if LINEFIND in roles:
+        return "linefind-shot"
     if "label-train" in roles:
         return "label-shot"
     return None
 
 
-# Screenshots of the repo's other sets: line-finder ground truth and the research's hand sets
-# (eval/linefind/manifests) and the general-VN development sources. Never in strict or
-# scene_vn; in tv_native (teacher_val's own screenshots) they stay, flagged.
-OTHER_SETS = {"eval-linefind": "linefind", "eval-general-vn": "general_vn_dev"}
+# eval/linefind's sets (line-finder ground truth, the research's hand sets, the PSP pool) are eval
+# sets: their screenshots are in no subset (cohort v2; v1 kept them in tv_native, flagged).
+LINEFIND = "eval-linefind"
+# The general-VN development sources: never in strict or scene_vn; in tv_native (teacher_val's
+# own screenshots) they stay, flagged.
+OTHER_SETS = {"eval-general-vn": "general_vn_dev"}
 
 
 def flags_of(roles, vn, ctx):
@@ -380,6 +386,8 @@ def flags_of(roles, vn, ctx):
 def subset_of(row, ctx):
     """(subset, flags) of an eligible listing row, or (None, reason)."""
     roles = ctx["ref_roles"].get(P.image_num(row["url"]), set())
+    if LINEFIND in roles:
+        return None, "linefind-shot"
     flags = flags_of(roles, row["vn"], ctx)
     if "teacher-val" in roles or P.shot_key(row["vn"], row["url"]) in ctx["tv_shots"]:
         return "tv_native", flags
@@ -569,6 +577,8 @@ def cmd_select(args):
         tv = r["subset"] == "tv_native"
         if "eval-test" in roles or any("eval-test" in n["roles"] for n in near):
             reason = "dup-eval"
+        elif LINEFIND in roles or any(LINEFIND in n["roles"] for n in near):
+            reason = "dup-linefind"
         elif "label-train" in roles:
             reason = "dup-label"
         elif not tv and roles & set(OTHER_SETS):

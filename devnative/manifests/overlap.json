@@ -1,0 +1,1439 @@
+{
+ "kind": "devnative-eval-overlap",
+ "rule": {
+  "near": 0.95,
+  "same_p99": 48
+ },
+ "eval_sets": {
+  "vita-test": {
+   "screenshots": 74
+  },
+  "psp-test": {
+   "screenshots": 83
+  },
+  "linefind/psp_dev.candidates": {
+   "screenshots": 98
+  },
+  "linefind/psp_dev": {
+   "screenshots": 78
+  },
+  "linefind/psp_holdout.candidates": {
+   "screenshots": 53
+  },
+  "linefind/psp_holdout": {
+   "screenshots": 42
+  },
+  "linefind/psp_pool": {
+   "screenshots": 252
+  },
+  "linefind/research_a": {
+   "screenshots": 16
+  },
+  "linefind/research_b": {
+   "screenshots": 19
+  },
+  "linefind/vita_dev.candidates": {
+   "screenshots": 134
+  },
+  "linefind/vita_dev": {
+   "screenshots": 111
+  },
+  "linefind/vita_holdout.candidates": {
+   "screenshots": 51
+  },
+  "linefind/vita_holdout": {
+   "screenshots": 26
+  }
+ },
+ "eval_screenshots_local": 610,
+ "eval_missing_local": {},
+ "cohorts": {
+  "v1": {
+   "screenshots": 346,
+   "lines": 645,
+   "matching_screenshots": 41,
+   "matching_lines": 94,
+   "matching_lines_grad": 81,
+   "by_kind": {
+    "tv_native/psp": 19,
+    "tv_native/vita": 22
+   },
+   "lines_by_kind": {
+    "tv_native/psp": 39,
+    "tv_native/vita": 55
+   },
+   "match_kinds": {
+    "file": 41,
+    "id": 41,
+    "pixel": 41,
+    "same": 41
+   },
+   "by_set": {
+    "linefind/psp_dev.candidates|tv_native|psp|strong|lines": 13,
+    "linefind/psp_dev.candidates|tv_native|psp|strong|shots": 7,
+    "linefind/psp_dev|tv_native|psp|strong|lines": 13,
+    "linefind/psp_dev|tv_native|psp|strong|shots": 5,
+    "linefind/psp_holdout.candidates|tv_native|psp|strong|lines": 14,
+    "linefind/psp_holdout.candidates|tv_native|psp|strong|shots": 5,
+    "linefind/psp_holdout|tv_native|psp|strong|lines": 14,
+    "linefind/psp_holdout|tv_native|psp|strong|shots": 5,
+    "linefind/psp_pool|tv_native|psp|strong|lines": 39,
+    "linefind/psp_pool|tv_native|psp|strong|shots": 19,
+    "linefind/research_a|tv_native|vita|strong|lines": 12,
+    "linefind/research_a|tv_native|vita|strong|shots": 3,
+    "linefind/research_b|tv_native|vita|strong|lines": 8,
+    "linefind/research_b|tv_native|vita|strong|shots": 3,
+    "linefind/vita_dev.candidates|tv_native|vita|strong|lines": 24,
+    "linefind/vita_dev.candidates|tv_native|vita|strong|shots": 12,
+    "linefind/vita_dev|tv_native|vita|strong|lines": 24,
+    "linefind/vita_dev|tv_native|vita|strong|shots": 10,
+    "linefind/vita_holdout.candidates|tv_native|vita|strong|lines": 23,
+    "linefind/vita_holdout.candidates|tv_native|vita|strong|shots": 7,
+    "linefind/vita_holdout|tv_native|vita|strong|lines": 8,
+    "linefind/vita_holdout|tv_native|vita|strong|shots": 2
+   },
+   "hits": [
+    {
+     "shot": "v1794_56733",
+     "id": "sf56733",
+     "vn": "v1794",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/33/56733.jpg",
+     "sha256": "39ae0eb9a6d4a98e286c45f73b3e17d6296f7b80663690b0e71e8e1ee76ad3bd",
+     "pixel_sha256": "b4f3c9a49edc6ac1b5fb638ef220963c92f95870873b0a9565b0c01be9882af6",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/psp_dev.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf56733": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [],
+     "lines_grad": 0
+    },
+    {
+     "shot": "v1794_56735",
+     "id": "sf56735",
+     "vn": "v1794",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/35/56735.jpg",
+     "sha256": "0adf2a91e1cd0e7196e5f3e3b8c4c3fc58777dfda0d2083d242dfd1abae9edd0",
+     "pixel_sha256": "cca15d43be8771535a5c9926913ccd229d9f281a892cf3c643b961f1689431dc",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf56735": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [],
+     "lines_grad": 0
+    },
+    {
+     "shot": "v1877_57774",
+     "id": "sf57774",
+     "vn": "v1877",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/74/57774.jpg",
+     "sha256": "38238f5d03440017cd76bd7c06612587dad323b992fdcd2c937c8c3156704889",
+     "pixel_sha256": "62573c751913bd506acfaf5fec342c31099c055223a5b5705a53d662416edf41",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf57774": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v1877_57774_0",
+      "v1877_57774_1",
+      "v1877_57774_2",
+      "v1877_57774_4"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v3333_6777",
+     "id": "sf6777",
+     "vn": "v3333",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/77/6777.jpg",
+     "sha256": "0ec693fa58a020588553ca308229d71f6d072abf5136de99ac7075a63c74120e",
+     "pixel_sha256": "d997f73ce7dd0125a90b9e0c1ff73ffb7782996ad957e1d3dd7bb0f558424b52",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_holdout",
+      "linefind/psp_holdout.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf6777": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v3333_6777_2",
+      "v3333_6777_6"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v6218_21501",
+     "id": "sf21501",
+     "vn": "v6218",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/01/21501.jpg",
+     "sha256": "4416ad15e3c46ebbcace27c7df5b1ef5e60020186b3e9f23bc9afdecb32dba94",
+     "pixel_sha256": "58088424acdd6d7368394e813f44fdd0d6aad9b1aa2098986ca603a04e78a1f6",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_dev",
+      "linefind/psp_dev.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf21501": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v6218_21501_1",
+      "v6218_21501_2"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v6218_21502",
+     "id": "sf21502",
+     "vn": "v6218",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/02/21502.jpg",
+     "sha256": "94ebbd6feb8fcda82a3a1824b0781d8354eb1de00152ea82ae19113f514ce76e",
+     "pixel_sha256": "e377a5bb454d030c090158b6e645c0741699aa2722b93feefdb4264199fc63f9",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_dev",
+      "linefind/psp_dev.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf21502": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v6218_21502_0",
+      "v6218_21502_1",
+      "v6218_21502_2"
+     ],
+     "lines_grad": 3
+    },
+    {
+     "shot": "v6218_21503",
+     "id": "sf21503",
+     "vn": "v6218",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/03/21503.jpg",
+     "sha256": "00ac1adceb6752520850e7fae714e5145b11720100ec863b957d4d63fabd4be6",
+     "pixel_sha256": "ae499ab4884127b6435a2caf1830017553f1666c5b0812883a954df965846a2b",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf21503": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v6218_21503_5",
+      "v6218_21503_6"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v8063_46790",
+     "id": "sf46790",
+     "vn": "v8063",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/90/46790.jpg",
+     "sha256": "10c3f143b3dda4c524119791bb0b658dcde7ca788a9b85fc13778df5e956e0ce",
+     "pixel_sha256": "496cce562c463eefa935f053a5e276d8556d3f3225a73991ca50b0e91b8d230d",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_holdout",
+      "linefind/psp_holdout.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf46790": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v8063_46790_0",
+      "v8063_46790_1",
+      "v8063_46790_2",
+      "v8063_46790_3"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v8063_46791",
+     "id": "sf46791",
+     "vn": "v8063",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/91/46791.jpg",
+     "sha256": "fbd64e720a66e451a36c9b0fc9f9858c08bc7479ec6f1f71da033cd527a00f8e",
+     "pixel_sha256": "983e018647d9d79c28deb0466b528ace74c9e9be3203e2dbf223ca76b3723eb7",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_holdout",
+      "linefind/psp_holdout.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf46791": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v8063_46791_0",
+      "v8063_46791_1",
+      "v8063_46791_2",
+      "v8063_46791_3"
+     ],
+     "lines_grad": 4
+    },
+    {
+     "shot": "v8063_46792",
+     "id": "sf46792",
+     "vn": "v8063",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/92/46792.jpg",
+     "sha256": "d6b549574bb06e37dfc4a531758cf98cb2e1995001f68da681e87b9eddf463e6",
+     "pixel_sha256": "83c242ef1b592f4babf06e854b6ae188d411498d86e0b038524afd0e6e044261",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf46792": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v8063_46792_1"
+     ],
+     "lines_grad": 1
+    },
+    {
+     "shot": "v8410_57140",
+     "id": "sf57140",
+     "vn": "v8410",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/40/57140.jpg",
+     "sha256": "2560b1e639b4b3b87375818ef3a1c1eb3437efe07ea1aaf45e8c4bb7be894ff7",
+     "pixel_sha256": "d57fade178d607d81839ca34d7bdd2b99d273d3051ed286baf655cc078930e17",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_dev.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf57140": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [],
+     "lines_grad": 0
+    },
+    {
+     "shot": "v8410_57141",
+     "id": "sf57141",
+     "vn": "v8410",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/41/57141.jpg",
+     "sha256": "23aa45851a095705d00d9fa5099615b4b3b60a9faa69397919481ab4431ea8a0",
+     "pixel_sha256": "35bc1b91140554a966cabb39d433fd8e887ad33f85dcc37c4df838ce5b185224",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_dev",
+      "linefind/psp_dev.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf57141": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v8410_57141_2",
+      "v8410_57141_4"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v8410_57142",
+     "id": "sf57142",
+     "vn": "v8410",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/42/57142.jpg",
+     "sha256": "4ea085d55380d862c285bde557e4f57d1351d865a94fefd4439dbfc04244ec3b",
+     "pixel_sha256": "790c9283033c7ee3fa0aad75b4e2d762d76d5df7e7bb971c4a84c7c4a0fdc40a",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf57142": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v8410_57142_2",
+      "v8410_57142_3",
+      "v8410_57142_4"
+     ],
+     "lines_grad": 3
+    },
+    {
+     "shot": "v10383_56668",
+     "id": "sf56668",
+     "vn": "v10383",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/68/56668.jpg",
+     "sha256": "c0ca0766f5e058054e5ea8e855af2d036c576319d6b09e4ca4ac43fc9303b7f3",
+     "pixel_sha256": "72ed3c6f079d52cce15904ab079c08990d3d71fd8c03b9ffdfe55ff5ccaa3d50",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/psp_holdout",
+      "linefind/psp_holdout.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf56668": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v10383_56668_1",
+      "v10383_56668_2"
+     ],
+     "lines_grad": 1
+    },
+    {
+     "shot": "v10383_106825",
+     "id": "sf106825",
+     "vn": "v10383",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/25/106825.jpg",
+     "sha256": "dfb50b17004475c15fa1687ffb325a06448b63bbdf9e47217950d07712949442",
+     "pixel_sha256": "712f67a966344ff7c178bea495394a8305b5c8ba2bf234690f50469c38237969",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_holdout",
+      "linefind/vita_holdout.candidates"
+     ],
+     "match": {
+      "sf106825": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v10383_106825_0",
+      "v10383_106825_1",
+      "v10383_106825_2",
+      "v10383_106825_3"
+     ],
+     "lines_grad": 3
+    },
+    {
+     "shot": "v10383_106826",
+     "id": "sf106826",
+     "vn": "v10383",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/26/106826.jpg",
+     "sha256": "74dec57503ec74f9ceafd2721e8aec0405790a6509fd1240fb28d9749159dd0e",
+     "pixel_sha256": "eb73eda0d1e1da00c077103008d20f81132140f41327d98462c5d2d7d94e3ced",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_holdout",
+      "linefind/vita_holdout.candidates"
+     ],
+     "match": {
+      "sf106826": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v10383_106826_0",
+      "v10383_106826_1",
+      "v10383_106826_2",
+      "v10383_106826_3"
+     ],
+     "lines_grad": 3
+    },
+    {
+     "shot": "v11640_57491",
+     "id": "sf57491",
+     "vn": "v11640",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/91/57491.jpg",
+     "sha256": "306e03082db3f71566cd5b3a2b6837355d8c1c15cf0b32a4b038bd0478358ba5",
+     "pixel_sha256": "b897cb9cf9e46a3791e442500da0052d78a5cb88178d3f58ff7d6bfa61b80bde",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf57491": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [],
+     "lines_grad": 0
+    },
+    {
+     "shot": "v11640_57493",
+     "id": "sf57493",
+     "vn": "v11640",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/93/57493.jpg",
+     "sha256": "bec6a4baa70797995746800f2a0153174d058f09088961e4fdf6c1c6c9ea2664",
+     "pixel_sha256": "adb21effe4acf59e2e353322f02649f2688a6feec8d461b85fc232c9b669b6b6",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_holdout",
+      "linefind/psp_holdout.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf57493": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v11640_57493_0",
+      "v11640_57493_1"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v12436_63017",
+     "id": "sf63017",
+     "vn": "v12436",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/17/63017.jpg",
+     "sha256": "7dcbaa227c09856e0dd49ccb65bce6bbc4d233778d8cd37023f58fa1f1ac9db0",
+     "pixel_sha256": "f1f2d40c2bb35f0ab2f7869bc22e383ca727cbcbe9306bea8086863cef1fa09d",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_dev",
+      "linefind/psp_dev.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf63017": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v12436_63017_0",
+      "v12436_63017_1",
+      "v12436_63017_2"
+     ],
+     "lines_grad": 3
+    },
+    {
+     "shot": "v12436_63018",
+     "id": "sf63018",
+     "vn": "v12436",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/18/63018.jpg",
+     "sha256": "3c030e489d3baf3cec7db437b2f96ad40f894d3cbd9b5ec7f7a2bf5c5a0f72ab",
+     "pixel_sha256": "5418b2fadeb7666db5d5c7874ec27623712aeb5408e8c680666db49693ba2aae",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_dev",
+      "linefind/psp_dev.candidates",
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf63018": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v12436_63018_0",
+      "v12436_63018_1",
+      "v12436_63018_2"
+     ],
+     "lines_grad": 1
+    },
+    {
+     "shot": "v12436_63019",
+     "id": "sf63019",
+     "vn": "v12436",
+     "kind": "psp",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/19/63019.jpg",
+     "sha256": "95a19ec0d7bb42dda0ae10d91595cbae7ffddff157eb522aca2532bbe0658825",
+     "pixel_sha256": "fc97b7fa3c759dd14f27acba855f8741ab2725b0816378c318763aa76826eff0",
+     "flags": [
+      "linefind"
+     ],
+     "sets": [
+      "linefind/psp_pool"
+     ],
+     "match": {
+      "sf63019": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v12436_63019_0",
+      "v12436_63019_1"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v12794_86201",
+     "id": "sf86201",
+     "vn": "v12794",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/01/86201.jpg",
+     "sha256": "e57f2b8e146ec888e1e0c2807b4edab5e98a7e26657afad45a79f471408db2cf",
+     "pixel_sha256": "0e2d1f5a30653e09771c19ffdf230c439b6b494d431fffd23e61497ad2b1398a",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/research_a",
+      "linefind/research_b"
+     ],
+     "match": {
+      "sf86201": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v12794_86201_0",
+      "v12794_86201_1"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v15773_139475",
+     "id": "sf139475",
+     "vn": "v15773",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/75/139475.jpg",
+     "sha256": "e628a91a0bc4cdc76eae7129167841467d04a9d2698dda23c0cbc3c6b4bcee77",
+     "pixel_sha256": "9c2fc0ebba7c8057ea10f7064264bdab621c493373d7645f841f9ad1d10fcad4",
+     "flags": [
+      "bg_shot",
+      "general_vn_dev",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_holdout.candidates"
+     ],
+     "match": {
+      "sf139475": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [],
+     "lines_grad": 0
+    },
+    {
+     "shot": "v16128_107824",
+     "id": "sf107824",
+     "vn": "v16128",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/24/107824.jpg",
+     "sha256": "2380c6963b13b3ac60a40be9bfc125dc1b58baf9499f286ff9425ee7cc5f6ae7",
+     "pixel_sha256": "b7e3cf28fe2e03b376cd6b8279f91ddd3720aad4b221fba0a9cdc22234b29b96",
+     "flags": [
+      "bg_shot",
+      "general_vn_dev",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf107824": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v16128_107824_0",
+      "v16128_107824_1",
+      "v16128_107824_2",
+      "v16128_107824_3"
+     ],
+     "lines_grad": 4
+    },
+    {
+     "shot": "v16128_146540",
+     "id": "sf146540",
+     "vn": "v16128",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/40/146540.jpg",
+     "sha256": "d1dd051a6c2fd4eb614e87c21cd46351168384645031b9b68bf0e439b363954b",
+     "pixel_sha256": "12ef5540279df238d8db8719db52084b9f06d6a9b5e407a8dd47e96ec6ce9317",
+     "flags": [
+      "bg_shot",
+      "general_vn_dev",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf146540": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v16128_146540_2",
+      "v16128_146540_5"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v16770_154899",
+     "id": "sf154899",
+     "vn": "v16770",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/99/154899.jpg",
+     "sha256": "992d0becfcc5227632608610ff490f80a41d9f89acbaa0e63aa5fcec341f051a",
+     "pixel_sha256": "8474547af5def4bbcd4cae6811af4553bea0e7c5517146fa1f9c6cd9e2494ff5",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf154899": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v16770_154899_0",
+      "v16770_154899_1",
+      "v16770_154899_2"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v16770_154900",
+     "id": "sf154900",
+     "vn": "v16770",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/00/154900.jpg",
+     "sha256": "061e985efbf6fb14cc0207712035b7399b2842f5f55a2cf33c82a862f473bfcf",
+     "pixel_sha256": "6c8cb7d5768595a377727b1bde631d84bb1b45fda25eeb892db175b890a32712",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf154900": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v16770_154900_0",
+      "v16770_154900_1",
+      "v16770_154900_2"
+     ],
+     "lines_grad": 3
+    },
+    {
+     "shot": "v18161_169605",
+     "id": "sf169605",
+     "vn": "v18161",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/05/169605.jpg",
+     "sha256": "1a880597aefb81d46668f313c441251959ba0b13e26af363c92946306330c184",
+     "pixel_sha256": "0b6c5ea486d444dd036218bfbf484ba00259a21ba027eefc424c89265aafa2df",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf169605": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [],
+     "lines_grad": 0
+    },
+    {
+     "shot": "v18161_169606",
+     "id": "sf169606",
+     "vn": "v18161",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/06/169606.jpg",
+     "sha256": "14d08f8c6c510a8d75bf6067ebe895be6cb280f479d1443cf79aa5af7643c13b",
+     "pixel_sha256": "4e584889685d83c2439a608c1bf7e9e2b2875e35799bae224ce241fa4ec13071",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf169606": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18161_169606_2"
+     ],
+     "lines_grad": 1
+    },
+    {
+     "shot": "v18163_116063",
+     "id": "sf116063",
+     "vn": "v18163",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/63/116063.jpg",
+     "sha256": "2e6e2a661a2f9c109d294cbd08efa404d080d85d4375b1f37ffd516b11c9ab05",
+     "pixel_sha256": "8bd6e4be8b6af1ca5dbbd041d7115623a68ee5ebca0c2fed9bfcc9008ee7d19f",
+     "flags": [
+      "bg_shot",
+      "general_vn_dev",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_holdout.candidates"
+     ],
+     "match": {
+      "sf116063": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18163_116063_1",
+      "v18163_116063_2",
+      "v18163_116063_3"
+     ],
+     "lines_grad": 3
+    },
+    {
+     "shot": "v18163_116064",
+     "id": "sf116064",
+     "vn": "v18163",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/64/116064.jpg",
+     "sha256": "ce1b0ee898e4382f1f1611754fbfb617247f819d1fb43a19c79a18f43392d1ef",
+     "pixel_sha256": "eda1b772a65f7d4031cb436bd45e54dbe1baaa03f07451d5e5bb56b4186664a3",
+     "flags": [
+      "bg_shot",
+      "general_vn_dev",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_holdout.candidates"
+     ],
+     "match": {
+      "sf116064": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18163_116064_1",
+      "v18163_116064_2"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v18163_116065",
+     "id": "sf116065",
+     "vn": "v18163",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/65/116065.jpg",
+     "sha256": "28865a98f2e8819771baead84dc66212227f622b955f95817f6bded138f37027",
+     "pixel_sha256": "44ffa259fff196af57139adc72090a085e96c8b372fd6e8062de4faf38b3cbcb",
+     "flags": [
+      "bg_shot",
+      "general_vn_dev",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/research_b"
+     ],
+     "match": {
+      "sf116065": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18163_116065_1",
+      "v18163_116065_2",
+      "v18163_116065_3"
+     ],
+     "lines_grad": 3
+    },
+    {
+     "shot": "v18432_112853",
+     "id": "sf112853",
+     "vn": "v18432",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/53/112853.jpg",
+     "sha256": "107ce53857469c314349c8104c28b6b71324b92634649f59b1e720b739e9a42d",
+     "pixel_sha256": "1cc29229be6437ded55e2f0d16a55aa02ad0e6fc95847d3515e6b8477ff25712",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf112853": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18432_112853_0",
+      "v18432_112853_1"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v18432_112854",
+     "id": "sf112854",
+     "vn": "v18432",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/54/112854.jpg",
+     "sha256": "9c40c6486e4ae3140a382eff00ec27d3a04009c89a6a50445e97b7f68062b12e",
+     "pixel_sha256": "52486169bdbfc685f5a55dc84caee109a7adeb538abaf9f4bd6566b68773cb2d",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf112854": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18432_112854_0",
+      "v18432_112854_1"
+     ],
+     "lines_grad": 1
+    },
+    {
+     "shot": "v18643_103697",
+     "id": "sf103697",
+     "vn": "v18643",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/97/103697.jpg",
+     "sha256": "aab0a3e568332346028305bd84a059ec4b756e272da962cb84b3bbc9b44f5207",
+     "pixel_sha256": "fd6a1b2059f4475a3fcafcf20e8ce34073a4ed3df8d0fa3d2a4d4ecf9bd91c70",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/research_a",
+      "linefind/vita_holdout.candidates"
+     ],
+     "match": {
+      "sf103697": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18643_103697_0",
+      "v18643_103697_1",
+      "v18643_103697_2",
+      "v18643_103697_3",
+      "v18643_103697_4",
+      "v18643_103697_5",
+      "v18643_103697_6"
+     ],
+     "lines_grad": 7
+    },
+    {
+     "shot": "v18643_103698",
+     "id": "sf103698",
+     "vn": "v18643",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/98/103698.jpg",
+     "sha256": "874e0e421ecaf1596ae8f83a3e0c1ebf422214afa8e0fcd0815ac6bf9c122ca7",
+     "pixel_sha256": "907cf7bd29fc2fb45c41373561feb660c6f79f8d15113faa5cb0d0c21119259a",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/research_a",
+      "linefind/vita_holdout.candidates"
+     ],
+     "match": {
+      "sf103698": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18643_103698_0",
+      "v18643_103698_1",
+      "v18643_103698_2"
+     ],
+     "lines_grad": 3
+    },
+    {
+     "shot": "v18643_103703",
+     "id": "sf103703",
+     "vn": "v18643",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/03/103703.jpg",
+     "sha256": "8b1b42b89cd46a8a2444c01631df5ca7937be22f480efaa95c0ff9a229c98fd2",
+     "pixel_sha256": "ce2d2bb5ea126c19df723efdac3ad444e3601f9cf812d1ba1c8291f8fe3ed4ac",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/research_b"
+     ],
+     "match": {
+      "sf103703": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18643_103703_0",
+      "v18643_103703_1",
+      "v18643_103703_2"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v18857_139290",
+     "id": "sf139290",
+     "vn": "v18857",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/90/139290.jpg",
+     "sha256": "68789d63d5b90b923d3f8347182fe3ed21b31db4ecd733ce5313258d0eabb8c3",
+     "pixel_sha256": "8afd8ca9b9fc63243af4723a177529c671b21b8ab9450aeb2c447ae79344bfc1",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf139290": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v18857_139290_0",
+      "v18857_139290_1"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v18857_139292",
+     "id": "sf139292",
+     "vn": "v18857",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/92/139292.jpg",
+     "sha256": "95e75f6ae4723c3a91695ea02f4ce296501c7413519a19aca0d6d29fffeb2ce7",
+     "pixel_sha256": "243eb6341e10248aa1ec1f089ad6f7cde0317a8da9f56291018b923f90db5d88",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf139292": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [],
+     "lines_grad": 0
+    },
+    {
+     "shot": "v21004_142142",
+     "id": "sf142142",
+     "vn": "v21004",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/42/142142.jpg",
+     "sha256": "e631958153ab9ee9c43b6667af7931834e445578b3aeb4c8ba43d27479328401",
+     "pixel_sha256": "61983593e13c3471b63215775bde600d5b6f1b0a904e576947deb469d1d24314",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf142142": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v21004_142142_0",
+      "v21004_142142_1"
+     ],
+     "lines_grad": 2
+    },
+    {
+     "shot": "v21004_142147",
+     "id": "sf142147",
+     "vn": "v21004",
+     "kind": "vita",
+     "subset": "tv_native",
+     "url": "https://t.vndb.org/sf/47/142147.jpg",
+     "sha256": "791a4a64913023208ef40aaeba557aa15727352f193599fafbaeaab126d54e21",
+     "pixel_sha256": "ef4d4b44b6702a63866f3adc7d2d722d2c729c475e66540bbc29b03c588ae19d",
+     "flags": [
+      "bg_shot",
+      "linefind",
+      "scene_vn"
+     ],
+     "sets": [
+      "linefind/vita_dev",
+      "linefind/vita_dev.candidates"
+     ],
+     "match": {
+      "sf142147": [
+       "file",
+       "id",
+       "pixel",
+       "same"
+      ]
+     },
+     "strong": true,
+     "lines": [
+      "v21004_142147_0",
+      "v21004_142147_1",
+      "v21004_142147_3"
+     ],
+     "lines_grad": 2
+    }
+   ]
+  },
+  "v2": {
+   "screenshots": 305,
+   "lines": 553,
+   "matching_screenshots": 0,
+   "matching_lines": 0,
+   "matching_lines_grad": 0,
+   "by_kind": {},
+   "lines_by_kind": {},
+   "match_kinds": {},
+   "by_set": {},
+   "hits": []
+  }
+ }
+}

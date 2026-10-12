@@ -1,0 +1,104 @@
+{
+ "kind": "synth3-study2-protocol",
+ "schema": 1,
+ "frozen": "2026-10-12, before any study-2 run was trained or scored (commit time in git)",
+ "question": "In train2's full release recipe (pretrain on nvsynth's every-line set plus VN-style synthetic data, then the real fine-tune), does the study-1 mix (synth2 0.25 + synth3 v2 0.25) as the VN-style synthetic source lower real-screenshot CER on the development cohort compared with synth2 alone (0.5), at FL10 size and at H15 size?",
+ "background": {
+  "study1": "eval/synth3_ablation_20261012.json (commit 6803fd9), short recipe (16,000 pretrain steps, nvsynth one-line set, no fine-tune, FL10, seeds 1-2): C_mix - A_s2 = -0.505 points (VN-cluster 95% CI -0.765 to -0.259), C_mix - B_s3 = -0.491 (CI -0.736 to -0.252), B_s3 - A_s2 = -0.015 (CI -0.337 to +0.304). Under study 1's rule the mix is the recommended VN-style synthetic data.",
+  "why_study2": "train2 found that the pretrain does most of the work and the real fine-tune adds -0.4 to -0.9 points on teacher_val. A synthetic-data gain in a short pretrain can shrink or vanish once nvsynth's 12M every-line crops, 2-2.5x more steps and the real fine-tune are added; the released models were trained that way, so the decision that matters for a release is made here.",
+  "arms_chosen": "A (synth2, the released recipe) against study 1's winner C (the mix). B (synth3 alone) is not carried: C beat it in study 1. A version-3 synth3 arm is not included: study 1b (agent synth3-v3) had no committed result when this protocol was committed."
+ },
+ "machine": "dev-dsk-skerraut-main-1a-dc2efe10 (64 AMD EPYC 9R14 cores, the same CPU model as study 1's box). Every study-2 run trains here through heavy.sh with HEAVY_SLOTS=10 (at most 10 concurrent training runs), 5 torch threads per run. A re-run of study 1's B_s3_seed1 on this machine reproduced study 1's logged CTC loss and per-source draw counts at steps 100, 200 and 300 exactly.",
+ "architectures": {
+  "FL10": {
+   "width": 1.0, "bottleneck": 96, "depth": 1, "ctx": 2, "ctx_k": 5, "height": 32,
+   "vocab": {"file": "$HERD/shared/artifacts/train2/release/FL10_vocab_3500.txt", "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8", "classes": 3501},
+   "pretrain_steps": 32000,
+   "note": "the shipped VOCR1 topology (657,664-byte W8I blob, 124,832-byte arena)"
+  },
+  "H15": {
+   "width": 1.5, "bottleneck": 96, "depth": 1, "ctx": 2, "ctx_k": 5, "height": 32,
+   "vocab": {"file": "data/vocab.txt", "sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b", "classes": 5355},
+   "pretrain_steps": 40000,
+   "note": "the overlay default VOCR_H15's topology (1,155,968-byte W8I blob, 182,944-byte arena)"
+  }
+ },
+ "recipe": {
+  "script": "eval/synth3_study2_run.sh ARCH ARM SEED (train/train2.py unchanged)",
+  "pretrain": {"init": "from scratch", "steps": "per architecture", "batch": 96, "lr": 0.002, "warmup": 1000, "final_lr": 0.05, "wd": 0.01, "ema": 0.999, "threads": 5, "eval_every": 4000, "keep_evals": true, "mixture": "nv 0.5 + the arm's VN-style synthetic data 0.5 (stream=1,pool=3,inv=0.2)"},
+  "finetune": {"init": "the pretrain's final checkpoint ckpt_step<pretrain_steps>.pt", "steps": 15000, "batch": 96, "lr": 0.0012, "warmup": 500, "final_lr": 0.05, "wd": 0.01, "ema": 0.999, "threads": 5, "eval_every": 2500, "keep_evals": true, "kd": 0, "mixture": "nv 0.25 + the arm's VN-style synthetic data 0.25 + tt 0.275 + rd 0.125 + ps 0.1; real sources inv=0.5"},
+  "differences_from_the_release": [
+   "every run fine-tunes with hard labels (kd=0), H15's recipe; the released FL10 and F20 used PP-OCRv6-small frame KD, which made F15 worse than H15 on teacher_val (+0.53 points, docs/train2.md)",
+   "the fine-tune starts from the pretrain's final checkpoint; the released FL10 started from pl10's best teacher_val checkpoint (step 28,000), a selection this protocol does not make"
+  ]
+ },
+ "sources": {
+  "nv": {"files": "$HERD/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz + nv_train_04[01]_b*.npz", "what": "nvsynth's every-line set, train sources 000-041 (docs/nvsynth.md), rebuilt on this machine by nvsynth/nv_fetch.py run --per-page 0 at the pinned dataset revision; pinned by nvsynth/manifests/nvsynth_ja_full.json, committed before the first study-2 run trains", "expected": "12,036,035 lines in 597 shards (the build of 2026-10-09)"},
+  "s2": {"files": "$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz + synth_0003[0-8].npz", "shards": 39, "lines": 390000, "note": "exactly train2's and study 1's s2"},
+  "s3": {"files": "$HERD/shared/artifacts/synth3/shards/train_v2/synth3_000??.npz", "shards": 100, "lines": 1000000, "pin": "data/manifests/synth3_shards_v2.json (generator version 2)"},
+  "tt": {"file": "$HERD/shared/artifacts/teacher/teacher_train.npz", "sha256": "3c27c057af9a41574a7704d04599d9d6220faea525536d0d6c6023301ff852df"},
+  "rd": {"file": "$HERD/shared/artifacts/realdata/real_train.npz", "sha256": "10f8b68f99357d6db0d5813fbabf3cd3ac9e154fee2fe10c6b03605950f91324"},
+  "ps": {"files": "$HERD/shared/artifacts/teacher/teacher_distill_train.npz + $HERD/shared/artifacts/realdata/real_unlabelled.npz", "sha256": ["5ba2b8b3921e847d70cbba9a6ed6e6251ea128741cb276b3bbaa311d64bac7bf", "61b5350888b9737e6830efeaf71f594503a6dbf5bd1203d0ebce3b8b73969786"], "labels": "PP-OCRv6 small readings where its lowest character confidence is at least 0.7 (label=teacher,conf=0.7)"},
+  "targets": {"dir": "$HERD/shared/artifacts/train2/targets", "sha256": {"teacher_train.v6s.npz": "4a2950e8b0906c97aef1424eb95011cc2a4414fb58552403bb74c4fcd495703f", "real_train.v6s.npz": "968af1ee650bf3d17e6f08c37adffecba75b17dd66a5c304076b471160788199", "teacher_distill_train.v6s.npz": "e18cc6cfe1a33df75f34519d4b2e380b3fd3f2668e743bd0400473ea5f6aca19", "real_unlabelled.v6s.npz": "6868e2fef573af65992306003d15b4b0498f221bf60a1c860230ff936ec97b47"}}
+ },
+ "arm_sources": {
+  "A_s2": {"pretrain": {"nv": 0.5, "s2": 0.5}, "finetune": {"nv": 0.25, "s2": 0.25, "tt": 0.275, "rd": 0.125, "ps": 0.1}},
+  "C_mix": {"pretrain": {"nv": 0.5, "s2": 0.25, "s3": 0.25}, "finetune": {"nv": 0.25, "s2": 0.125, "s3": 0.125, "tt": 0.275, "rd": 0.125, "ps": 0.1}}
+ },
+ "arms": {
+  "FL10_A_s2": ["ft_FL10_A_s2_seed1", "ft_FL10_A_s2_seed2", "ft_FL10_A_s2_seed3"],
+  "FL10_C_mix": ["ft_FL10_C_mix_seed1", "ft_FL10_C_mix_seed2", "ft_FL10_C_mix_seed3"],
+  "H15_A_s2": ["ft_H15_A_s2_seed1", "ft_H15_A_s2_seed2"],
+  "H15_C_mix": ["ft_H15_C_mix_seed1", "ft_H15_C_mix_seed2"]
+ },
+ "seeds": {"FL10": [1, 2, 3], "H15": [1, 2]},
+ "order": [
+  "FL10 seeds 1-3 of both arms first (the most decision-relevant size: VOCR3-FL10 against VOCR1 and VOCR2), then H15 seed 1 and seed 2 of both arms, then the step curve, then the learning curve; a run starts when a training slot is free (study-1 secondaries and study 1b share the 10 training slots)"
+ ],
+ "checkpoint": "the fine-tune's ckpt_step15000.pt (EMA weights). No checkpoint selection: the in-training teacher_val evaluations are logged for monitoring only.",
+ "export": "eval/synth3_ablation.py export (train/export.py, per-channel int8) -> C runtime W8I through runtime/pyvocr.py, max width 1024",
+ "dev": {
+  "teacher_val": {"role": "primary", "set": "$HERD/shared/artifacts/teacher/teacher_val.npz", "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671", "lines": 1651, "vns": 181},
+  "devnative": {"role": "co-primary if and only if its cohort manifest is committed on origin (devnative.status COHORT_FROZEN <sha>) before the first study-2 development score is computed; otherwise reported only", "subsets": "its strict and tv_native subsets decide; its scene_vn subset (VNs whose other screenshots were synth2 scene backgrounds, which both arms train on) is reported only", "note": "the native Vita/PSP development cohort of agent devnative (VNDB console screenshots, C GRAD finder and ink-box crops, engine readings adjudicated and reviewed by Claude); scored by eval/synth3_ablation.py score unchanged"}
+ },
+ "views": ["rv", "rvn"],
+ "metric": "CER (eval/metrics.norm both sides, Levenshtein over reference characters) over all development lines, both views, errors summed over the arm's seeds",
+ "bootstrap": {"resamples": 10000, "seed": 0, "unit": "VN (cluster); line-level intervals reported alongside"},
+ "comparisons": {
+  "FL10_C_vs_A": ["FL10_A_s2", "FL10_C_mix"],
+  "H15_C_vs_A": ["H15_A_s2", "H15_C_mix"]
+ },
+ "decision": "For each architecture separately, C_mix is better than A_s2 iff (1) on teacher_val the VN-cluster 95% interval of CER(C_mix) - CER(A_s2) lies entirely below 0, (2) CER(C_mix) - CER(A_s2) < 0 on teacher_val for each seed pair (same seed), and (3) when devnative is co-primary, its VN-cluster 95% interval (same runs and views) also lies entirely below 0. A_s2 is better than C_mix under the mirrored rule. Otherwise neither is better and the result is reported as no measured difference. The recommended VN-style synthetic data for that size is the better arm's; with no measured difference it is synth2 (the released recipe), and study 1's result is reported alongside.",
+ "scoring_order": "The FL10 comparison is scored once all six FL10 fine-tunes have ckpt_step15000.pt; the H15 comparison once all four H15 fine-tunes have. The result JSON records each score's UTC time and the devnative commit, if any, that the co-primary rule used.",
+ "reported_not_decided": [
+  "every stratum of eval/synth3_ablation.py with intervals, per-VN better/worse counts and the largest per-VN regressions (no per-VN veto)",
+  "pretrain-only: each run's pretrain final checkpoint exported and scored the same way (C_mix - A_s2 per architecture), comparable with study 1",
+  "fine-tuning gain per arm (fine-tuned - pretrain-only, same seeds)",
+  "the in-training teacher_val, nvsynth and synth2 validation curves",
+  "devnative's subsets when it is not co-primary, and its scene_vn subset always"
+ ],
+ "step_curve": {
+  "status": "reported, not decided; one seed",
+  "runs": ["ft_FL10_C_mix_pre64k_seed1 (eval/synth3_study2_run.sh FL10 C_mix 1 64000)", "ft_FL10_C_mix_pre128k_seed1 (eval/synth3_study2_run.sh FL10 C_mix 1 128000)"],
+  "compare": "each against ft_FL10_C_mix_seed1 (32,000 pretrain steps) and against each other on teacher_val (VN-cluster and line intervals), scored like the primary runs",
+  "why": "train2's pretrains see 32,000-40,000 steps x 96 lines (3-4M samples) of more than 13M available lines; this measures whether longer pretraining pays at FL10 size"
+ },
+ "learning_curve": {
+  "status": "reported, not decided",
+  "recipe": "study 1's B_s3 run exactly (eval/synth3_run_arm.sh: 16,000 steps, nvsynth one-line set 0.5 + synth3 0.5, FL10, seeds 1 and 2), with the synth3 source restricted or extended: eval/synth3_curve_run.sh SIZE SEED",
+  "points": {
+   "0.25M": "train_v2 shards 00000-00024",
+   "0.5M": "train_v2 shards 00000-00049",
+   "1M": "study 1's B_s3_seed1 and B_s3_seed2 (study 1's runs, reused: same recipe, CPU model and seeds; see machine)",
+   "2M": "train_v2 shards 00000-00099 + train_v2_ext shards 00100-00199: the unchanged version-2 generator (its recipe.json, including the code sha256s, equals train_v2's; generator code last changed in 4470d4b; seed 20261012, and each shard is seeded by its index, so shards 100-199 are new crops), pinned by data/manifests/synth3_shards_v2_ext.json, committed before any 2M run trains"
+  },
+  "compare": "each point against the next smaller one with study 1's statistics (VN-cluster interval, per-seed deltas); a later protocol may use these results only as it writes down before its own scoring"
+ },
+ "protected_test": "Only after the decision for an architecture and its result are committed: every study-2 fine-tuned and pretrain-only export of that architecture, and the step-curve exports, are scored once on vita-test and psp-test with eval/run.py (vocr: backend, W8I; console polarity primary, native also) and summarised by eval/synth3_test_report.py. Those numbers are reported and cannot change the decision, the recipe or the dataset. Learning-curve exports are not scored on test sets.",
+ "hygiene": [
+  "the same as study 1 (eval/synth3_ablation_protocol.json hygiene): synth3's text, fonts, scenes and names never read teacher_val, a test set or CLANNAD; calibration and mining used training-side pools only",
+  "no study-2 run, curve or selection reads vita-test, psp-test, the fresh native textbox test or CLANNAD references",
+  "nvsynth/full is synthetic NVIDIA data (CC BY 4.0), rebuilt from the Hub at the pinned revision"
+ ],
+ "amendments": []
+}

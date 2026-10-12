@@ -275,3 +275,30 @@ def test_protocol_is_consistent():
     for srcs in p["arm_sources"].values():
         assert abs(sum(srcs.values()) - 1.0) < 1e-9 and set(srcs) <= set(p["sources"])
     assert p["recipe"]["steps"] == 16000 and p["checkpoint"].startswith("ckpt_step16000.pt")
+
+
+def test_study2_protocol_is_consistent():
+    p = json.loads((ROOT / "eval" / "synth3_study2_protocol.json").read_text(encoding="utf-8"))
+    for arm, runs in p["arms"].items():
+        arch, src = arm.split("_", 1)
+        assert arch in p["architectures"] and src in p["arm_sources"]
+        assert runs == [f"ft_{arch}_{src}_seed{s}" for s in p["seeds"][arch]]
+    for a, b in p["comparisons"].values():
+        assert a in p["arms"] and b in p["arms"] and a.split("_")[0] == b.split("_")[0]
+        assert len(p["arms"][a]) == len(p["arms"][b])
+    for stages in p["arm_sources"].values():
+        for mix in stages.values():
+            assert abs(sum(mix.values()) - 1.0) < 1e-9 and set(mix) <= set(p["sources"]) - {"targets"}
+    assert {a["pretrain_steps"] for a in p["architectures"].values()} == {32000, 40000}
+    assert "ckpt_step15000.pt" in p["checkpoint"] and p["views"] == ["rv", "rvn"]
+    run = (ROOT / "eval" / "synth3_study2_run.sh").read_text(encoding="utf-8")
+    assert 'PRUN=pre_${ARCH}_${ARM}${TAG}_seed${SEED}' in run and 'FRUN=ft_${ARCH}_${ARM}${TAG}_seed${SEED}' in run
+    assert "kd=0" in run and "kd=1" not in run and "--steps 15000" in run
+
+
+@pytest.mark.parametrize("script", ["synth3_study2_run.sh", "synth3_curve_run.sh", "synth3_run_arm.sh",
+                                    "synth3_run_ft.sh"])
+def test_run_scripts_parse(script):
+    import subprocess
+    subprocess.run(["bash", "-n", str(ROOT / "eval" / script)], check=True)
+

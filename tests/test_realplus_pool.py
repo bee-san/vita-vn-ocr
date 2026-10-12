@@ -270,3 +270,9 @@ def test_build_lines_in_a_fork_pool_matches_one_process(tmp_path):
     for key in one[0]:
         assert [(i[1], i[2]["box"]) for i in one[0][key]] == [(i[1], i[2]["box"]) for i in two[0][key]]
         assert all((a[0] == b[0]).all() for a, b in zip(one[0][key], two[0][key]))
+
+
+def test_blind_score_takes_the_first_pool_lines_of_the_registered_order():
+    order = ["a", "b", "c", "d", "e"]
+    assert PL.blind_scored(order, built={"a", "c", "d", "e"}, decided={"a", "b", "c", "e"}, n=2) == ["a", "c"]
+    assert PL.blind_scored(order, built=set(order), decided=set(order), n=9) == order

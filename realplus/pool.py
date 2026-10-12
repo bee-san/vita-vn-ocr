@@ -21,7 +21,8 @@ adds what a training pool of PC / console shots needs on top:
   pool.py edge-batches [--n K]     edge-check batches (sheets mode edge) -> $REALPLUS/review/edge/bNNNN
   pool.py edge-apply               edgecheck.py apply over the decided edge batches -> $REALPLUS/edge/edge.jsonl
   pool.py build                    the npz files (teacher_train's format) and the committed manifests
-  pool.py blind --n 500            a blind re-check sample -> $REALPLUS/review/blind (decide.py blind scores it)
+  pool.py blind [--n 540]          a blind re-check sample, framed on the final crops -> $REALPLUS/review/blind
+  pool.py blind-score              devnative's blind agreement on the first 500 sampled lines in the pool
   pool.py publish                  the committed, text-free manifests: realplus/manifests/shots_NN.jsonl, stats.json
 
 Each PC / console screenshot is read once, scaled to fit the Vita screen (960x544, cv2.INTER_AREA as
@@ -831,26 +832,51 @@ def cmd_build(args):
 # ----------------------------------------------------------------------------- blind re-check
 
 def cmd_blind(args):
-    """A blind re-check sample of the built pool: --n random built lines, each framed on the Vita ink
-    crop the npz holds (the final crop), candidates shuffled and unattributed (sheets mode blind)."""
+    """A blind re-check sample: --n random kept lines of the frozen labels (labels.jsonl), in a
+    pre-registered random order (blind_ids.json "order"), each framed on its final Vita ink crop
+    (edge/boxes.jsonl: the crop the npz holds), candidates shuffled and unattributed (sheets mode
+    blind). It can run while edge checks finish: blind-score keeps the first --score lines of the
+    order that end up in the built pool (a line can still fail its edge check or a build rule)."""
     labels = jl(OUT / "labels.jsonl")
-    man = {m["id"]: m for m in jl(OUT / "manifests" / "lines.jsonl")}
-    if not man:
-        sys.exit("build first: the blind sample is drawn from the built lines")
-    kept = sorted(r["id"] for r in labels
-                  if r["status"] == "kept" and "vita_ink" in man.get(r["id"], {}).get("crops", {}))
+    boxes = {b["id"]: b for b in jl(EDGE / "boxes.jsonl")}
+    kept = sorted(r["id"] for r in labels if r["status"] == "kept" and r["id"] in boxes)
+    if len(kept) < sum(r["status"] == "kept" for r in labels):
+        sys.exit("edge-boxes first: every kept label needs its final crop")
     rng = random.Random(args.seed)
-    ids = sorted(rng.sample(kept, min(args.n, len(kept))))
-    (REVIEW / "blind_ids.json").write_text(json.dumps({"ids": ids, "seed": args.seed, "from": len(kept)}) + "\n")
+    order = rng.sample(kept, min(args.n, len(kept)))
+    (REVIEW / "blind_ids.json").write_text(json.dumps({"order": order, "seed": args.seed, "from": len(kept),
+                                                       "score": args.score}) + "\n")
     shots = load_reads()
-    entries = S.review_entries(shots, ids, frames={i: man[i]["crops"]["vita_ink"] for i in ids})
-    rng.shuffle(entries)                     # batches mix tiers and VNs
+    entries = S.review_entries(shots, order, frames={i: boxes[i]["crop"] for i in order})
     for k in range(0, len(entries), args.size):
         out = REVIEW / "blind" / f"b{k // args.size + 1:04d}"
         ns = S.make_batch(entries[k:k + args.size], out, "blind", name=f"realplus/blind/{out.name}")
         with open(out / "README.md", "a", encoding="utf-8") as f:
             f.write(NOTE + BLIND_NOTE)
         print(f"{out}: {len(entries[k:k + args.size])} lines, {ns} sheets", flush=True)
+
+
+def blind_scored(order, built, decided, n):
+    """The first n ids of the pre-registered order that are in the built pool (with a Vita ink crop)
+    and have a blind decision."""
+    return [i for i in order if i in built and i in decided][:n]
+
+
+def cmd_blind_score(args):
+    """decide.py's blind agreement (devnative.decide.blind_agreement, Wilson 95% interval) on the
+    pre-registered blind sample, restricted to lines of the built pool -> review/blind_report.json."""
+    spec = json.loads((REVIEW / "blind_ids.json").read_text())
+    labels = {r["id"]: r for r in jl(OUT / "labels.jsonl")}
+    built = {m["id"] for m in jl(OUT / "manifests" / "lines.jsonl") if "vita_ink" in m["crops"]}
+    blind = D.collect(batch_dirs("blind"))
+    ids = blind_scored(spec["order"], built, blind, spec.get("score", 500))
+    summ, dis = D.blind_agreement(labels, {i: blind[i] for i in ids})
+    summ["sample"] = {"drawn": len(spec["order"]), "decided": len(blind),
+                      "in_pool": sum(i in built for i in spec["order"]), "scored": len(ids), "seed": spec["seed"],
+                      "from": spec["from"]}
+    (REVIEW / "blind_report.json").write_text(json.dumps({"summary": summ, "disagreements": dis}, ensure_ascii=False,
+                                                         indent=1) + "\n", encoding="utf-8")
+    print(json.dumps(summ, indent=1), flush=True)
 
 
 # ----------------------------------------------------------------------------- publish
@@ -982,14 +1008,16 @@ def main():
     p.add_argument("--commit", default=subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                                                       capture_output=True, text=True).stdout.strip())
     p = sub.add_parser("blind")
-    p.add_argument("--n", type=int, default=500)
+    p.add_argument("--n", type=int, default=540, help="lines drawn (a few may leave the pool at the build)")
+    p.add_argument("--score", type=int, default=500, help="lines scored: the first of the order in the pool")
     p.add_argument("--seed", type=int, default=20261013)
-    p.add_argument("--size", type=int, default=125)
+    p.add_argument("--size", type=int, default=135)
+    sub.add_parser("blind-score")
     args = ap.parse_args()
     {"prep": cmd_prep, "plan": cmd_plan, "batches": cmd_batches, "helpers": cmd_helpers, "status": cmd_status,
      "final": cmd_final, "build": cmd_build, "blind": cmd_blind, "reserve": cmd_reserve,
      "feed": cmd_feed, "edge-boxes": cmd_edge_boxes, "edge-batches": cmd_edge_batches,
-     "edge-apply": cmd_edge_apply, "publish": cmd_publish}[args.cmd](args)
+     "edge-apply": cmd_edge_apply, "publish": cmd_publish, "blind-score": cmd_blind_score}[args.cmd](args)
 
 
 if __name__ == "__main__":

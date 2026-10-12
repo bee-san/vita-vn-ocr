@@ -608,7 +608,124 @@ def screen(s, kind):
     return P.load_screen(dict(s, kind=kind))
 
 
-def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozenset(), src=None, edge=None):
+def cut_shot(s, recs, idx, src=None, edge=None):
+    """Cut one screenshot's kept lines (build_lines' work for one shot): ({line id: (manifest row,
+    [((target, crop), img, meta)])}, drop counts)."""
+    import numpy as np
+
+    from common import to_gray
+    from devnative import build as B
+    src = src or {}
+    drops = collections.Counter()
+    cut = {}
+    sk = s["shot"]
+    recs = sorted(recs, key=lambda r: r["id"])
+    lines_v = [read_line(idx[r["id"]][1]) for r in recs]
+    rgb_v = np.ascontiguousarray(screen(s, "vita"))
+    rgb_p = np.ascontiguousarray(screen(s, "psp"))
+    gray_v = to_gray(rgb_v)
+    Hv, Wv = rgb_v.shape[:2]
+    Hp, Wp = rgb_p.shape[:2]
+    fx, fy = Wp / Wv, Hp / Hv
+    lines_p = [scale_line(ln, fx, fy) for ln in lines_v]
+    dets_v = s.get("dets", [])
+    dets_p = [dict(d, det=[int(round(d["det"][0] * fx)), int(round(d["det"][1] * fy)),
+                           int(round(d["det"][2] * fx)), int(round(d["det"][3] * fy))]) for d in dets_v]
+    grads = {"vita": L.grad_assign(rgb_v, lines_v, dets_v, "vita")}
+    psp_ok = [L.size_ok(ln) for ln in lines_p]
+    grads["psp"] = L.grad_assign(rgb_p, [ln for ln, ok in zip(lines_p, psp_ok) if ok],
+                                 dets_p, "psp") if any(psp_ok) else []
+    gp = iter(grads["psp"])
+    gpsp = [next(gp) if ok else None for ok in psp_ok]
+    m = src.get(sk, {})
+    session, dims = m.get("session") or s.get("session"), m.get("dims")
+    for r, lv, lp, g_v, g_p, pok in zip(recs, lines_v, lines_p, grads["vita"], gpsp, psp_ok):
+        e = (edge or {}).get(r["id"])
+        if e is not None:
+            fc_v, flags, edge_why = e["crop"], e.get("flags") or [], e["edge_why"]
+            if not e["edge_ok"]:
+                drops[edge_why] += 1
+                continue
+        else:
+            fc_v, _, flags = edge_flags(gray_v, idx[r["id"]][1], "vita", Wv, Hv, r["label"])
+            edge_why = "unflagged"
+            if flags:
+                drops["edge-unchecked"] += 1
+                continue
+        chars_v = L.label_chars(lv, vote.key, r["label"])
+        fc_p = L.final_crop(lp, "psp", Wp, Hp, scale_chars(chars_v, fx, fy))
+        fr_v = L.crop_box(idx[r["id"]][1], "vita", Wv, Hv)          # the frame the reviewers saw
+        fr_p = [max(0, int(fr_v[0] * fx)), max(0, int(fr_v[1] * fy)), min(Wp, -int(-fr_v[2] * fx // 1)),
+                min(Hp, -int(-fr_v[3] * fy // 1))]
+        row = {"id": r["id"], "shot": sk, "vn": s["vn"], "image": int(sk.split("_")[1]), "session": session,
+               "release": s.get("release"), "how": r["how"], "support": r["support"], "readers": r["readers"],
+               "pass1": r.get("pass1"), "pass2": r.get("pass2"), "blind": r.get("blind"),
+               "looks": r.get("looks"), "name": r.get("name", False), "edge": {"flags": flags, "why": edge_why},
+               "reviewer_kind": "assistant", "chars": len(vote.key(r["label"])), "crops": {}}
+        out = []
+        for target, ln, g, rgb, W, H, fc, fr in (("vita", lv, g_v, rgb_v, Wv, Hv, fc_v, fr_v),
+                                                 ("psp", lp, g_p, rgb_p, Wp, Hp, fc_p, fr_p)):
+            if target == "psp" and not pok:
+                drops["psp-too-small"] += 1
+                continue
+            dets = dets_v if target == "vita" else dets_p
+            for crop in ("ink", "grad"):
+                if crop == "ink":
+                    box = list(fc)
+                    if ink_mixed(box, ln, dets):
+                        drops[f"{target}-ink-mixed"] += 1
+                        continue
+                else:
+                    if g is None or g["status"] != "ok":
+                        drops[f"{target}-grad-{g['status'] if g else 'none'}"] += 1
+                        continue
+                    box = g["box"]
+                    # devnative build.grad_default (0cb084e): a GRAD box that runs beyond the
+                    # reviewed frame may hold text the label lacks; without a GRAD check it gets no
+                    # crop. build.covers (f523e30): it must hold the final crop's labelled extent.
+                    if GC.needs_check(box, fr, L.ink_height(ln)):
+                        drops[f"{target}-grad-unchecked"] += 1
+                        continue
+                    if not B.covers(box, fc, target):
+                        drops[f"{target}-grad-cuts-label"] += 1
+                        continue
+                img, dark, inverted = L.cut(rgb, box)
+                if img.shape[0] < 4 or img.shape[1] < 4:
+                    drops[f"{target}-{crop}-tiny"] += 1
+                    continue
+                ch, ch_ok = chars_in(lv, r["label"], box, *((1.0, 1.0) if target == "vita" else (fx, fy)))
+                pol = "dark-on-light" if dark else "bright-on-dark"
+                meta = {"real": True, "pool": "realplus", "id": r["id"], "vn": s["vn"],
+                        "session": session, "release": s.get("release"), "kind": "hires",
+                        "target": target, "crop": crop, "box": box, "dark": dark, "inverted": inverted,
+                        "how": r["how"], "pol": pol, "support": r["support"], "readers": r["readers"],
+                        "decision": (r.get("pass1") or {}).get("decision"), "looks": r.get("looks"),
+                        "reviewer_kind": "assistant", "name": r.get("name", False), "chars": ch,
+                        "chars_match": ch_ok, "src_dims": dims, "screen": [W, H]}
+                out.append(((target, crop), img, meta))
+                row["crops"][f"{target}_{crop}"] = box
+        if out:
+            cut[r["id"]] = (row, out)
+        else:
+            drops["no-crop"] += 1
+    return cut, drops
+
+
+_POOL = {}
+
+
+def _cut_chunk(keys):
+    c = _POOL
+    out, drops = {}, collections.Counter()
+    for sk in keys:
+        cut, d = cut_shot(c["shots"][sk], c["by_shot"][sk], c["idx"], c["src"], c["edge"])
+        out.update(cut)
+        drops += d
+    return out, drops
+
+
+def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozenset(), src=None, edge=None,
+                procs=1):
     """Cut every kept line: {(target, crop): [(crop, label, meta)]}, manifest rows, drop counts.
     src: {shot key: shots.py manifest row} for the capture session and source size. edge: {line id:
     edgecheck.py apply record} for lines whose final crop was checked on a contact sheet.
@@ -617,10 +734,6 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
     (lines.final_crop). A line edgecheck.flags flags (widened, or ink continuing past the final
     crop) keeps its label only when an edge check picked it; otherwise it is dropped (edge-unchecked).
     The repeat caps apply after that, so a dropped line does not use up a label's quota."""
-    import numpy as np
-
-    from common import to_gray
-    from devnative import build as B
     src = src or {}
     vocab = load_vocab()
     idx = S.line_index(shots)
@@ -639,95 +752,24 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
     by_shot = collections.defaultdict(list)
     for r in cands:
         by_shot[r["shot"]].append(r)
-    cut = {}                                   # line id: (manifest row, [((target, crop), img, meta)])
-    for sk in sorted(by_shot, key=lambda k: (int(k.split("_")[0][1:]), k)):
-        s = shots[sk]
-        recs = sorted(by_shot[sk], key=lambda r: r["id"])
-        lines_v = [read_line(idx[r["id"]][1]) for r in recs]
-        rgb_v = np.ascontiguousarray(screen(s, "vita"))
-        rgb_p = np.ascontiguousarray(screen(s, "psp"))
-        gray_v = to_gray(rgb_v)
-        Hv, Wv = rgb_v.shape[:2]
-        Hp, Wp = rgb_p.shape[:2]
-        fx, fy = Wp / Wv, Hp / Hv
-        lines_p = [scale_line(ln, fx, fy) for ln in lines_v]
-        dets_v = s.get("dets", [])
-        dets_p = [dict(d, det=[int(round(d["det"][0] * fx)), int(round(d["det"][1] * fy)),
-                               int(round(d["det"][2] * fx)), int(round(d["det"][3] * fy))]) for d in dets_v]
-        grads = {"vita": L.grad_assign(rgb_v, lines_v, dets_v, "vita")}
-        psp_ok = [L.size_ok(ln) for ln in lines_p]
-        grads["psp"] = L.grad_assign(rgb_p, [ln for ln, ok in zip(lines_p, psp_ok) if ok],
-                                     dets_p, "psp") if any(psp_ok) else []
-        gp = iter(grads["psp"])
-        gpsp = [next(gp) if ok else None for ok in psp_ok]
-        m = src.get(sk, {})
-        session, dims = m.get("session") or s.get("session"), m.get("dims")
-        for r, lv, lp, g_v, g_p, pok in zip(recs, lines_v, lines_p, grads["vita"], gpsp, psp_ok):
-            e = (edge or {}).get(r["id"])
-            if e is not None:
-                fc_v, flags, edge_why = e["crop"], e.get("flags") or [], e["edge_why"]
-                if not e["edge_ok"]:
-                    drops[edge_why] += 1
-                    continue
-            else:
-                fc_v, _, flags = edge_flags(gray_v, idx[r["id"]][1], "vita", Wv, Hv, r["label"])
-                edge_why = "unflagged"
-                if flags:
-                    drops["edge-unchecked"] += 1
-                    continue
-            chars_v = L.label_chars(lv, vote.key, r["label"])
-            fc_p = L.final_crop(lp, "psp", Wp, Hp, scale_chars(chars_v, fx, fy))
-            fr_v = L.crop_box(idx[r["id"]][1], "vita", Wv, Hv)          # the frame the reviewers saw
-            fr_p = [max(0, int(fr_v[0] * fx)), max(0, int(fr_v[1] * fy)), min(Wp, -int(-fr_v[2] * fx // 1)),
-                    min(Hp, -int(-fr_v[3] * fy // 1))]
-            row = {"id": r["id"], "shot": sk, "vn": s["vn"], "image": int(sk.split("_")[1]), "session": session,
-                   "release": s.get("release"), "how": r["how"], "support": r["support"], "readers": r["readers"],
-                   "pass1": r.get("pass1"), "pass2": r.get("pass2"), "blind": r.get("blind"),
-                   "looks": r.get("looks"), "name": r.get("name", False), "edge": {"flags": flags, "why": edge_why},
-                   "reviewer_kind": "assistant", "chars": len(vote.key(r["label"])), "crops": {}}
-            out = []
-            for target, ln, g, rgb, W, H, fc, fr in (("vita", lv, g_v, rgb_v, Wv, Hv, fc_v, fr_v),
-                                                     ("psp", lp, g_p, rgb_p, Wp, Hp, fc_p, fr_p)):
-                if target == "psp" and not pok:
-                    drops["psp-too-small"] += 1
-                    continue
-                dets = dets_v if target == "vita" else dets_p
-                for crop in ("ink", "grad"):
-                    if crop == "ink":
-                        box = list(fc)
-                        if ink_mixed(box, ln, dets):
-                            drops[f"{target}-ink-mixed"] += 1
-                            continue
-                    else:
-                        if g is None or g["status"] != "ok":
-                            drops[f"{target}-grad-{g['status'] if g else 'none'}"] += 1
-                            continue
-                        box = g["box"]
-                        # devnative build.grad_default (0cb084e): a GRAD box that runs beyond the
-                        # reviewed frame may hold text the label lacks; without a GRAD check it gets no
-                        # crop. build.covers (f523e30): it must hold the final crop's labelled extent.
-                        if GC.needs_check(box, fr, L.ink_height(ln)):
-                            drops[f"{target}-grad-unchecked"] += 1
-                            continue
-                        if not B.covers(box, fc, target):
-                            drops[f"{target}-grad-cuts-label"] += 1
-                            continue
-                    img, dark, inverted = L.cut(rgb, box)
-                    if img.shape[0] < 4 or img.shape[1] < 4:
-                        drops[f"{target}-{crop}-tiny"] += 1
-                        continue
-                    ch, ch_ok = chars_in(lv, r["label"], box, *((1.0, 1.0) if target == "vita" else (fx, fy)))
-                    pol = "dark-on-light" if dark else "bright-on-dark"
-                    meta = {"real": True, "pool": "realplus", "id": r["id"], "vn": s["vn"],
-                            "session": session, "release": s.get("release"), "kind": "hires",
-                            "target": target, "crop": crop, "box": box, "dark": dark, "inverted": inverted,
-                            "how": r["how"], "pol": pol, "support": r["support"], "readers": r["readers"],
-                            "decision": (r.get("pass1") or {}).get("decision"), "looks": r.get("looks"),
-                            "reviewer_kind": "assistant", "name": r.get("name", False), "chars": ch,
-                            "chars_match": ch_ok, "src_dims": dims, "screen": [W, H]}
-                    out.append(((target, crop), img, meta))
-                    row["crops"][f"{target}_{crop}"] = box
-            cut[r["id"]] = (row, out)
+    keys = sorted(by_shot, key=lambda k: (int(k.split("_")[0][1:]), k))
+    cut = {}
+    if procs > 1 and len(keys) > 1:
+        import multiprocessing as mp
+        _POOL.update(shots=shots, by_shot=by_shot, idx=idx, src=src, edge=edge)
+        chunks = [keys[i::procs * 8] for i in range(procs * 8)]
+        try:
+            with mp.get_context("fork").Pool(procs) as pool:
+                for part, d in pool.imap_unordered(_cut_chunk, chunks):
+                    cut.update(part)
+                    drops += d
+        finally:
+            _POOL.clear()
+    else:
+        for sk in keys:
+            part, d = cut_shot(shots[sk], by_shot[sk], idx, src, edge)
+            cut.update(part)
+            drops += d
     kept, capped = cap_repeats([r for r in cands if r["id"] in cut])
     drops["repeat-cap"] += len(capped)
     files = collections.defaultdict(list)
@@ -765,7 +807,7 @@ def cmd_build(args):
     src = {f"{r['vn']}_{r['image']}": r for r in rows_}
     edge_p = OUT / "edge" / "edge.jsonl"
     edge = {r["id"]: r for r in jl(edge_p)} if edge_p.exists() else None
-    files, man, drops, kept = build_lines(labels, shots, late_vns, late_shots, src, edge)
+    files, man, drops, kept = build_lines(labels, shots, late_vns, late_shots, src, edge, procs=args.procs)
     counts = {}
     for crop in ("ink", "grad"):
         items = files.get(("vita", crop), []) + files.get(("psp", crop), [])
@@ -926,7 +968,9 @@ def main():
     p.add_argument("batch", nargs="+")
     p = sub.add_parser("final")
     p.add_argument("--no-resolve", action="store_true")
-    sub.add_parser("build")
+    p = sub.add_parser("build")
+    p.add_argument("--procs", type=int, default=int(os.environ.get("OMP_NUM_THREADS", "1")),
+                   help="worker processes (default: heavy.sh's 5 threads per slot)")
     sub.add_parser("edge-boxes")
     p = sub.add_parser("edge-batches")
     p.add_argument("--n", type=int, default=1)

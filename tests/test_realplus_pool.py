@@ -249,3 +249,24 @@ def test_write_split_keeps_files_under_the_limit_and_drops_stale_parts(tmp_path)
     assert len(names) > 1 and not (tmp_path / "shots_09.jsonl").exists()
     back = [json.loads(x) for n in names for x in (tmp_path / n).read_text().splitlines()]
     assert back == rows and all((tmp_path / n).stat().st_size <= 1000 for n in names)
+
+
+def test_build_lines_in_a_fork_pool_matches_one_process(tmp_path):
+    path = _screen(tmp_path)
+    shots, labels = {}, []
+    for k in range(3):                                   # three screenshots of the same picture
+        ln = _line(0, [36, 399, 636, 420], ("あいう", "あいう", "あいう", "あいう"))
+        ln2 = _line(1, [36, 444, 636, 465], (f"かき{k}", f"かき{k}", f"かき{k}", f"かき{k}"))
+        sk = f"v10{k}_7"
+        shots[sk] = {"shot": sk, "vn": f"v10{k}", "kind": "vita", "url": "u", "path": str(path),
+                     "lines": [ln, ln2], "dets": [{"det": ln["det"]}, {"det": ln2["det"]}]}
+        for x in (ln, ln2):
+            rec = D.decide_line(f"{sk}_{x['k']}", x, None, None, "train", auto_consensus=True)
+            rec.update(shot=sk, vn=f"v10{k}", subset="realplus", kind="vita")
+            labels.append(rec)
+    one = PL.build_lines(labels, shots)
+    two = PL.build_lines(labels, shots, procs=2)
+    assert len(one[1]) >= 3 and [m["id"] for m in one[1]] == [m["id"] for m in two[1]] and one[2] == two[2]
+    for key in one[0]:
+        assert [(i[1], i[2]["box"]) for i in one[0][key]] == [(i[1], i[2]["box"]) for i in two[0][key]]
+        assert all((a[0] == b[0]).all() for a, b in zip(one[0][key], two[0][key]))

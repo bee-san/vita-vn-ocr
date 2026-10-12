@@ -7,7 +7,7 @@
  *   vocr_lines_test --selftest
  *
  * BATCH is a sequence of records, all integers little-endian uint32:
- *   width, height, bpp (1 or 4), finder (0 grad, 1 legacy), stride, then
+ *   width, height, bpp (1 or 4), finder (0 grad, 1 legacy, 2 textbox), stride, then
  *   height * stride bytes of pixels.
  * Output per record: "rc count truncated" then "x y w h dark" per line.
  * Every image and the arena get their own exactly-sized heap block, and the arena
@@ -213,9 +213,32 @@ static int selftest(void)
         CHECK(out.lines[0].y + out.lines[0].h <= out.lines[1].y);
         CHECK(out.lines[0].x <= 12 && out.lines[0].x + out.lines[0].w >= W - 46);
         CHECK(out.lines[0].dark == (unsigned)!pol && out.lines[1].dark == (unsigned)!pol);
+        rc = vocr_find_lines(&im, VOCR_LINES_TEXTBOX, arena + 1, need, &out);
+        CHECK(rc == VOCR_LINES_OK && out.count == 2 && !out.truncated);
+        CHECK(out.lines[0].y <= 10 && out.lines[0].y + out.lines[0].h >= 30);
+        CHECK(out.lines[1].y <= 44 && out.lines[1].y + out.lines[1].h >= 64);
+        CHECK(out.lines[0].dark == (unsigned)!pol && out.lines[1].dark == (unsigned)!pol);
         rc = vocr_find_lines(&im, VOCR_LINES_LEGACY, arena + 1, need, &out);
         if (pol) CHECK(rc == VOCR_LINES_OK && out.count == 2);   /* bright text: legacy finds it */
         else CHECK(rc == VOCR_LINES_E_REGION);                  /* light box: legacy rejects */
+    }
+    /* TEXTBOX's tighter run minimum reaches its exact scratch bound at 8x8:
+     * 4 runs*12 + 4 components*28 + 2 candidates*20 = 200 bytes after the
+     * 32-byte on-mask. run_one supplies exactly 235 bytes at an odd address. */
+    {
+        unsigned x, y, k;
+        im.width = im.height = 8;
+        im.bpp = VOCR_LINES_RGBA;
+        im.stride = 35;
+        im.pixels = buf;
+        for (y = 0; y < 8; y++)
+            for (x = 0; x < 8; x++)
+                for (k = 0; k < 4; k++) buf[(size_t)y * 35u + x * 4u + k] =
+                    (unsigned char)(((x + y) % 2u) ? 20 : 235);
+        CHECK(vocr_lines_arena_bytes(8, 8) == 235);
+        CHECK(run_one(&im, VOCR_LINES_TEXTBOX, 0, &out) == VOCR_LINES_OK);
+        CHECK(out.count == 1 && !out.truncated && out.lines[0].w == 8 && out.lines[0].h == 8);
+        im.width = W; im.height = H;
     }
     /* the same image as grey gives the same boxes */
     {

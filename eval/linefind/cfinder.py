@@ -28,7 +28,7 @@ class Finder:
     """callable(img) -> [(x, y, w, h)] or None, like common.find_lines."""
 
     def __init__(self, finder="grad", binary=None):
-        self.code = {"grad": 0, "legacy": 1}[finder]
+        self.code = {"grad": 0, "legacy": 1, "textbox": 2}[finder]
         self.bin = Path(binary or os.environ.get("VOCR_LINES_BIN") or build())
         self.last_dark = []
         self.last_truncated = False

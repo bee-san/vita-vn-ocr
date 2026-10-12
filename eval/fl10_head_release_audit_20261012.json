@@ -1,0 +1,119 @@
+{
+  "archive_bytes": 54314189,
+  "archive_identical_to_original": true,
+  "archive_members": [
+    {
+      "bytes": 5273640,
+      "file": "step0200.pt",
+      "sha256": "ed3c9325b138a2dc5cd262fc4be3a4b9988a2887c287b8b83db434596d5fb5b9"
+    },
+    {
+      "bytes": 657664,
+      "file": "step0200.vocr",
+      "sha256": "7c432164b099d7f690e36e2fe3a73503ee5195e3f9bc57ed28276df6e53a77fb"
+    },
+    {
+      "bytes": 5251624,
+      "file": "step0400.pt",
+      "sha256": "88c0a83f8e48f174039b72a8e8f1f7ff25b359eb573a83c7a58b8574baeab204"
+    },
+    {
+      "bytes": 657664,
+      "file": "step0400.vocr",
+      "sha256": "eaa77b11c1fa22608a548cb655ac70f694be21bdd19cf8f8714098bf9e7ac739"
+    },
+    {
+      "bytes": 5229160,
+      "file": "step0600.pt",
+      "sha256": "29aef6d906f555ca505dab27fed01b71d31a457cd94a5b16555fe9bbefdb086c"
+    },
+    {
+      "bytes": 657664,
+      "file": "step0600.vocr",
+      "sha256": "23b8e36832ae43f4ba11cf22b1b560b8e64fcbb67e3d7bf8fe30a0988ffea3e7"
+    },
+    {
+      "bytes": 5281128,
+      "file": "step0800.pt",
+      "sha256": "c28408dbb8a9af58cc49020e8b35f4c0dad6e3f29bcb66a441c4155ef46ed471"
+    },
+    {
+      "bytes": 657664,
+      "file": "step0800.vocr",
+      "sha256": "88c76be82e4592b0f8c8d9da4f71f7fcd62ee81e468fe00d08a99d4c4d60a3d4"
+    },
+    {
+      "bytes": 5259042,
+      "file": "step1000.pt",
+      "sha256": "604c6edac31c90df730552f2150eec07c66048a78be736299f5566082ff27d88"
+    },
+    {
+      "bytes": 657664,
+      "file": "step1000.vocr",
+      "sha256": "5e96f6b44d24f601f5156559762d6d3860c6ad81343f0e93944875dbc38583a1"
+    },
+    {
+      "bytes": 5236066,
+      "file": "step1200.pt",
+      "sha256": "f5c1da5e85bc6bf681f14e9c4d78dc289c74e07567aef6cb9aec190b5a58c9d5"
+    },
+    {
+      "bytes": 657664,
+      "file": "step1200.vocr",
+      "sha256": "c0c822030e125fd1763608306b28dfe67b483107866d52f0ec0811817a9a6893"
+    },
+    {
+      "bytes": 5287138,
+      "file": "step1400.pt",
+      "sha256": "ac5c481008645ec6e88b62f21442ae9eff9082e58dba19231b2cde026f19115b"
+    },
+    {
+      "bytes": 657664,
+      "file": "step1400.vocr",
+      "sha256": "770251591b3e474f14dd6c759f2491feb26803695ecbdb26b515b4edf8e2e30b"
+    },
+    {
+      "bytes": 5263714,
+      "file": "step1600.pt",
+      "sha256": "234c30f47318f024a488e66341473a8bef7467cabe2e99a57ab402ab3ba8b979"
+    },
+    {
+      "bytes": 657664,
+      "file": "step1600.vocr",
+      "sha256": "d749705288c7fca077ebb953a19d66a808de01666abf6e3aa2ff2dda0c85c717"
+    },
+    {
+      "bytes": 5240098,
+      "file": "step1800.pt",
+      "sha256": "cca6b4fda3ae2b2e217bab8a81dd8c35f34dee8b79d70b90f11539468d5a24f4"
+    },
+    {
+      "bytes": 657664,
+      "file": "step1800.vocr",
+      "sha256": "806ab8da527af22fc9c8f09b18bbfbd2a9bbb2cb80274b2a6285d4bdc3b72679"
+    },
+    {
+      "bytes": 5290402,
+      "file": "step2000.pt",
+      "sha256": "2fb155081318d532f080a11aa17ead24d639be4a08343ee2ca7da0b0c513caa1"
+    },
+    {
+      "bytes": 657664,
+      "file": "step2000.vocr",
+      "sha256": "18b96139b00a97583d1d2e0a6e3201067fe5129ca3e18fdfe3478da377649d6d"
+    }
+  ],
+  "archive_sha256": "f3d8f26af16a7db391314d51b32254aff480d10fdff2ae7653beeff823ca1cd8",
+  "crc_and_all_twenty_source_member_bytes_verified": true,
+  "kind": "independent-private-to-public-head-release-audit",
+  "new_model_forwards": 0,
+  "new_teacher_calls": 0,
+  "original_results_sha256": "c8722359499c1d207bc14b389af02b0980806d00c3ad73fe227105074780cc2e",
+  "passed": true,
+  "public_json_exact_whitelist_projection": true,
+  "public_json_has_no_absolute_private_paths": true,
+  "r1_change_only_scope_wording": true,
+  "r1_results_sha256": "3e49f1951f44543b31abce710e133bc72a269abe313e552d82a4702f0e4709a9",
+  "release_artifacts_unchanged_during_audit": true,
+  "schema": 1
+}

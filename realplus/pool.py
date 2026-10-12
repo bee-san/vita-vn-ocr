@@ -1,29 +1,35 @@
 #!/usr/bin/env python3
 """realplus: label the realplus screenshots with devnative's frozen pipeline and build the pool.
 
-The labelling pipeline is devnative's, frozen at 35a86ca (devnative/README.md): MeikiOCR finds and
-reads the lines, PP-OCRv6 small reads them again (four readings per line), Claude adjudicates on
-contact sheets, and the training rule decides (decide.py --mode train). This file only drives it
-over a large pool and adds what a training pool of PC / console shots needs on top:
+The labelling pipeline is devnative's (devnative/README.md; read and sheets frozen at 35a86ca, GRAD
+containment 0cb084e, final crops, edge check and looks f523e30): MeikiOCR finds and reads the lines,
+PP-OCRv6 small reads them again (four readings per line), Claude adjudicates on contact sheets, and
+the training rule decides (decide.py --mode train). This file only drives it over a large pool and
+adds what a training pool of PC / console shots needs on top:
 
   pool.py prep                     shots.py's manifest -> $REALPLUS/reads/shots.jsonl (read.py's input)
   (read)  HEAVY_SLOTS=12 $HERD/heavy.sh timeout 14400 unshare -rn teacher/.venv/bin/python devnative/read.py \\
               run --shots $REALPLUS/reads/shots.jsonl --out $REALPLUS/reads --procs 5
   pool.py plan                     every candidate line: auto (all four readings agree) or a review tier
   pool.py batches [--n K]          the next K pass-1 batches (devnative/sheets.py) -> $REALPLUS/review/pass1/bNNNN
-  pool.py helpers [--max 6]        queue review-rpN helper agents for undecided batches, at most --max at once
+  pool.py helpers [--max 8]        queue review-rpN helper agents for undecided batches, at most --max at once
   pool.py status                   batches made / decided / with a helper
   pool.py reserve DIR...           batches this agent reviews itself (no helper is queued for them)
   pool.py feed [--loop]            keep reads, batches and helpers going (read when idle, --ready batches)
   pool.py final                    decide.py's training rule (--mode train --auto-consensus) -> labels.jsonl
+  pool.py edge-boxes               final crops of the kept labels and which need an edge check
+  pool.py edge-batches [--n K]     edge-check batches (sheets mode edge) -> $REALPLUS/review/edge/bNNNN
+  pool.py edge-apply               edgecheck.py apply over the decided edge batches -> $REALPLUS/edge/edge.jsonl
   pool.py build                    the npz files (teacher_train's format) and the committed manifests
   pool.py blind --n 500            a blind re-check sample -> $REALPLUS/review/blind (decide.py blind scores it)
 
 Each PC / console screenshot is read once, scaled to fit the Vita screen (960x544, cv2.INTER_AREA as
 teacher scales its hires shots, devnative/paths.load_screen). A kept line becomes a Vita crop and,
 when its ink is at least 10 px tall at PSP scale, a PSP crop of the same screenshot scaled to fit
-480x272 (exactly half the Vita scale), each as the ink crop (ink + furigana + 4 / 2 px) and, where
-the console's GRAD finder returns a box holding the whole line and nothing else, as the GRAD crop.
+480x272 (exactly half the Vita scale), each as the ink crop and, where the console's GRAD finder
+returns a box holding the whole line and nothing else, as the GRAD crop. The ink crop is eval's and
+teacher's (ink + furigana + 4 / 2 px; read_line), widened to the labelled characters' boxes
+(lines.final_crop); a line whose final crop edgecheck.flags flags is kept only after an edge check.
 
 Review tiers, in the order batches are made (most labels per sheet first):
   t1  the most supported candidate is read by both engine families (MeikiOCR and PP-OCRv6)
@@ -364,7 +370,7 @@ def cmd_feed(args):
             if len(unassigned(helper_log())) < args.ready:
                 cmd_plan(None)
                 cmd_batches(argparse.Namespace(n=args.ready, size=args.size))
-            cmd_helpers(argparse.Namespace(max=args.max, kinds="pass1", retry=False))
+            cmd_helpers(argparse.Namespace(max=args.max, kinds=args.kinds, retry=False))
         if not args.loop:
             break
         time.sleep(args.every)
@@ -372,7 +378,7 @@ def cmd_feed(args):
 
 def cmd_status(args):
     log, res = helper_log(), results()
-    for kind in ("pass1", "pass2", "blind"):
+    for kind in ("edge", "pass1", "pass2", "blind"):
         bs = batch_dirs(kind)
         if not bs:
             continue
@@ -393,19 +399,104 @@ def done_batches(kind):
     return [b for b in batch_dirs(kind) if batch_state(b)[0] == "done"]
 
 
+def reads_snapshot():
+    """READS without a partial last line (a read may be appending): devnative's loaders need whole
+    lines. Returns the snapshot path."""
+    snap = OUT / "reads" / "reads_snapshot.jsonl"
+    text = READS.read_text(encoding="utf-8")
+    if text and not text.endswith("\n"):
+        text = text[:text.rfind("\n") + 1]
+    snap.write_text(text, encoding="utf-8")
+    return snap
+
+
 def cmd_final(args):
     p1 = done_batches("pass1")
     p2 = done_batches("pass2")
-    cmd = [sys.executable, str(ROOT / "devnative" / "decide.py"), "--reads", str(READS), "final",
+    cmd = [sys.executable, str(ROOT / "devnative" / "decide.py"), "--reads", str(reads_snapshot()), "final",
            "--pass1", *map(str, p1)]
     if p2:
         cmd += ["--pass2", *map(str, p2)]
+    bl = done_batches("blind")
+    if bl:
+        cmd += ["--blind", *map(str, bl)]        # counted in looks; never changes a label
     res = sorted(REVIEW.glob("resolutions*.jsonl"))
     if res and not args.no_resolve:
         cmd += ["--resolve", *map(str, res)]
     cmd += ["--mode", "train", "--auto-consensus", "--out", str(OUT / "labels.jsonl")]
     if not p1:
         sys.exit("no decided pass-1 batch yet")
+    subprocess.run(cmd, check=True)
+
+
+# ----------------------------------------------------------------------------- edge check
+
+EDGE = OUT / "edge"
+
+
+def cmd_edge_boxes(args):
+    """devnative/edgecheck.py boxes on realplus's crops: the final crop (lines.final_crop) of every kept
+    label on the single-padded crop (read_line), and whether it needs a check (edgecheck.flags:
+    widened by WIDEN px, or ink continuing past it; or a later look called the line cut)."""
+    from common import to_gray
+    from devnative import edgecheck as E
+    labels = [r for r in jl(OUT / "labels.jsonl") if r["status"] == "kept"]
+    shots = load_reads()
+    idx = S.line_index(shots)
+    ev = E.evidence(done_batches("blind"))     # a blind look that called the line cut
+    out, cache = [], {}
+    for r in sorted(labels, key=lambda r: (int(r["shot"].split("_")[0][1:]), r["id"])):
+        s, ln = idx[r["id"]]
+        if s["shot"] not in cache:
+            cache.clear()
+            rgb = screen(s, "vita")
+            cache[s["shot"]] = (rgb, to_gray(rgb))
+        rgb, gray = cache[s["shot"]]
+        H, W = rgb.shape[:2]
+        fc, rc, why = E.flags(gray, read_line(ln), "vita", W, H, r["label"])
+        why += ev.get(r["id"], [])
+        out.append({"id": r["id"], "shot": s["shot"], "label": r["label"], "crop": fc, "reviewed": rc,
+                    "check": bool(why), "why": why})
+    EDGE.mkdir(parents=True, exist_ok=True)
+    wjl(EDGE / "boxes.jsonl", out)
+    print(json.dumps({"lines": len(out), "check": sum(x["check"] for x in out),
+                      "why": dict(collections.Counter(w for x in out for w in x["why"]))}), flush=True)
+
+
+def edge_entries(boxes, have, shots):
+    """Sheet entries (sheets.make_batch, mode edge: the frame is the final crop, the one candidate
+    its label) for flagged lines not in any edge batch yet, in review order."""
+    idx = S.line_index(shots)
+    todo = [b for b in boxes if b["check"] and b["id"] not in have and b["id"] in idx]
+    todo.sort(key=lambda b: (vn_rank(b["shot"].split("_")[0]), b["shot"], b["id"]))
+    return [(b["id"], idx[b["id"]][0], idx[b["id"]][1],
+             [{"text": b["label"], "key": vote.key(b["label"]), "engines": []}], b["crop"]) for b in todo]
+
+
+def cmd_edge_batches(args):
+    """Disjoint edge-check batches of --size flagged lines (review/edge/bNNNN)."""
+    boxes = jl(EDGE / "boxes.jsonl")
+    with review_lock():
+        have = batched_ids("edge")
+        entries = edge_entries(boxes, have, load_reads())
+        d = REVIEW / "edge"
+        start = len(batch_dirs("edge"))
+        for k in range(args.n):
+            part = entries[k * args.size:(k + 1) * args.size]
+            if len(part) < (args.min if args.min is not None else args.size):
+                break
+            out = d / f"b{start + k + 1:04d}"
+            n = S.make_batch(part, out, "edge", name=f"realplus/edge/{out.name}")
+            with open(out / "README.md", "a", encoding="utf-8") as f:
+                f.write(NOTE)
+            print(f"{out}: {len(part)} lines, {n} sheets", flush=True)
+
+
+def cmd_edge_apply(args):
+    """edgecheck.py apply over the decided edge batches -> edge/edge.jsonl (build reads it)."""
+    done = done_batches("edge")
+    cmd = [sys.executable, str(ROOT / "devnative" / "edgecheck.py"), "--reads", str(reads_snapshot()), "apply",
+           "--boxes", str(EDGE / "boxes.jsonl"), "--out", str(EDGE / "edge.jsonl"), "--batch", *map(str, done)]
     subprocess.run(cmd, check=True)
 
 
@@ -424,9 +515,16 @@ def scale_line(ln, fx, fy):
         out["crop"] = sb_out(ln["crop_ink"])
     out["det"] = sb(ln["det"])
     out["parts"] = [sb(b) for b in ln.get("parts") or []]
+    if ln.get("view"):
+        out["view"] = sb(ln["view"])
     if ln.get("furi"):
         out["furi"] = [sb_out(b) for b in ln["furi"]]
     return out
+
+
+def scale_chars(chars, fx, fy):
+    """MeikiOCR character boxes [c, x0, y0, x1, y1, conf] mapped to the PSP-scale screen."""
+    return [[c[0], c[1] * fx, c[2] * fy, c[3] * fx, c[4] * fy, *c[5:]] for c in chars] if chars else chars
 
 
 def ink_mixed(box, line, dets):
@@ -441,7 +539,9 @@ def ink_mixed(box, line, dets):
 
 
 def read_line(ln):
-    """A reads.jsonl line in the shape devnative/lines.py expects (crop = ink + furigana)."""
+    """A reads.jsonl line in the shape devnative/lines.py expects: "crop" = ink + furigana. read.py
+    stores the padded crop under "crop" (and the unpadded box under "crop_ink"), so crop_box() on a
+    raw reads line pads twice (ink + 8 / 4 px); realplus cuts ink + 4 / 2 px, eval's and teacher's crop."""
     return dict(ln, crop=ln.get("crop_ink") or ln["ink"])
 
 
@@ -481,15 +581,25 @@ def screen(s, kind):
     return P.load_screen(dict(s, kind=kind))
 
 
-def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozenset(), src=None):
+def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozenset(), src=None, edge=None):
     """Cut every kept line: {(target, crop): [(crop, label, meta)]}, manifest rows, drop counts.
-    src: {shot key: shots.py manifest row} for the capture session and source size."""
+    src: {shot key: shots.py manifest row} for the capture session and source size. edge: {line id:
+    edgecheck.py apply record} for lines whose final crop was checked on a contact sheet.
+
+    devnative f523e30's final crop: the ink crop widened to the labelled characters' boxes
+    (lines.final_crop). A line edgecheck.flags flags (widened, or ink continuing past the final
+    crop) keeps its label only when an edge check picked it; otherwise it is dropped (edge-unchecked).
+    The repeat caps apply after that, so a dropped line does not use up a label's quota."""
     import numpy as np
+
+    from common import to_gray
+    from devnative import build as B
+    from devnative import edgecheck as E
     src = src or {}
     vocab = load_vocab()
     idx = S.line_index(shots)
     drops = collections.Counter()
-    kept = []
+    cands = []
     for r in labels:
         if r["status"] != "kept":
             continue
@@ -499,20 +609,18 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
         if set(vote.key(r["label"])) - vocab or set(r["label"]) - vocab:
             drops["out-of-vocab"] += 1
             continue
-        kept.append(r)
-    kept, capped = cap_repeats(kept)
-    drops["repeat-cap"] += len(capped)
+        cands.append(r)
     by_shot = collections.defaultdict(list)
-    for r in kept:
+    for r in cands:
         by_shot[r["shot"]].append(r)
-    files = collections.defaultdict(list)
-    man = []
+    cut = {}                                   # line id: (manifest row, [((target, crop), img, meta)])
     for sk in sorted(by_shot, key=lambda k: (int(k.split("_")[0][1:]), k)):
         s = shots[sk]
         recs = sorted(by_shot[sk], key=lambda r: r["id"])
         lines_v = [read_line(idx[r["id"]][1]) for r in recs]
         rgb_v = np.ascontiguousarray(screen(s, "vita"))
         rgb_p = np.ascontiguousarray(screen(s, "psp"))
+        gray_v = to_gray(rgb_v)
         Hv, Wv = rgb_v.shape[:2]
         Hp, Wp = rgb_p.shape[:2]
         fx, fy = Wp / Wv, Hp / Hv
@@ -529,18 +637,35 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
         m = src.get(sk, {})
         session, dims = m.get("session") or s.get("session"), m.get("dims")
         for r, lv, lp, g_v, g_p, pok in zip(recs, lines_v, lines_p, grads["vita"], gpsp, psp_ok):
+            e = (edge or {}).get(r["id"])
+            if e is not None:
+                fc_v, flags, edge_why = e["crop"], e.get("flags") or [], e["edge_why"]
+                if not e["edge_ok"]:
+                    drops[edge_why] += 1
+                    continue
+            else:
+                fc_v, _, flags = E.flags(gray_v, lv, "vita", Wv, Hv, r["label"])
+                edge_why = "unflagged"
+                if flags:
+                    drops["edge-unchecked"] += 1
+                    continue
+            chars_v = L.label_chars(lv, vote.key, r["label"])
+            fc_p = L.final_crop(lp, "psp", Wp, Hp, scale_chars(chars_v, fx, fy))
             row = {"id": r["id"], "shot": sk, "vn": s["vn"], "image": int(sk.split("_")[1]), "session": session,
                    "release": s.get("release"), "how": r["how"], "support": r["support"], "readers": r["readers"],
-                   "pass1": r.get("pass1"), "pass2": r.get("pass2"), "name": r.get("name", False),
+                   "pass1": r.get("pass1"), "pass2": r.get("pass2"), "blind": r.get("blind"),
+                   "looks": r.get("looks"), "name": r.get("name", False), "edge": {"flags": flags, "why": edge_why},
                    "reviewer_kind": "assistant", "chars": len(vote.key(r["label"])), "crops": {}}
-            for target, ln, g, rgb, W, H in (("vita", lv, g_v, rgb_v, Wv, Hv), ("psp", lp, g_p, rgb_p, Wp, Hp)):
+            out = []
+            for target, ln, g, rgb, W, H, fc in (("vita", lv, g_v, rgb_v, Wv, Hv, fc_v),
+                                                 ("psp", lp, g_p, rgb_p, Wp, Hp, fc_p)):
                 if target == "psp" and not pok:
                     drops["psp-too-small"] += 1
                     continue
                 dets = dets_v if target == "vita" else dets_p
                 for crop in ("ink", "grad"):
                     if crop == "ink":
-                        box = L.crop_box(ln, target, W, H)
+                        box = list(fc)
                         if ink_mixed(box, ln, dets):
                             drops[f"{target}-ink-mixed"] += 1
                             continue
@@ -549,10 +674,14 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
                             drops[f"{target}-grad-{g['status'] if g else 'none'}"] += 1
                             continue
                         box = g["box"]
-                        # devnative 0cb084e (build.grad_default): a GRAD box that runs beyond the ink
-                        # crop may hold text the label lacks; without a GRAD check it gets no crop.
+                        # devnative build.grad_default (0cb084e): a GRAD box that runs beyond the
+                        # reviewed crop may hold text the label lacks; without a GRAD check it gets no
+                        # crop. build.covers (f523e30): it must hold the final crop's labelled extent.
                         if GC.needs_check(box, L.crop_box(ln, target, W, H), L.ink_height(ln)):
                             drops[f"{target}-grad-unchecked"] += 1
+                            continue
+                        if not B.covers(box, fc, target):
+                            drops[f"{target}-grad-cuts-label"] += 1
                             continue
                     img, dark, inverted = L.cut(rgb, box)
                     if img.shape[0] < 4 or img.shape[1] < 4:
@@ -563,12 +692,23 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
                     meta = {"real": True, "pool": "realplus", "id": r["id"], "vn": s["vn"],
                             "session": session, "release": s.get("release"), "kind": "hires",
                             "target": target, "crop": crop, "box": box, "dark": dark, "inverted": inverted,
-                            "how": r["how"], "pol": pol, "support": r["support"], "reviewer_kind": "assistant",
-                            "name": r.get("name", False), "chars": ch, "chars_match": ch_ok,
-                            "src_dims": dims, "screen": [W, H]}
-                    files[(target, crop)].append((img, r["label"], meta))
+                            "how": r["how"], "pol": pol, "support": r["support"], "readers": r["readers"],
+                            "decision": (r.get("pass1") or {}).get("decision"), "looks": r.get("looks"),
+                            "reviewer_kind": "assistant", "name": r.get("name", False), "chars": ch,
+                            "chars_match": ch_ok, "src_dims": dims, "screen": [W, H]}
+                    out.append(((target, crop), img, meta))
                     row["crops"][f"{target}_{crop}"] = box
-            man.append(row)
+            cut[r["id"]] = (row, out)
+    kept, capped = cap_repeats([r for r in cands if r["id"] in cut])
+    drops["repeat-cap"] += len(capped)
+    files = collections.defaultdict(list)
+    man = []
+    by_id = {r["id"]: r for r in kept}
+    for lid in sorted(by_id, key=lambda i: (int(i.split("_")[0][1:]), i)):
+        row, out = cut[lid]
+        for key, img, meta in out:
+            files[key].append((img, by_id[lid]["label"], meta))
+        man.append(row)
     return files, man, drops, kept
 
 
@@ -594,7 +734,9 @@ def cmd_build(args):
         rows_, saved, set(current) | SH.devnative_vns() | SH.fresh_native_vns(), dups(),
         json.loads(leak.read_text()) if leak.exists() else ())
     src = {f"{r['vn']}_{r['image']}": r for r in rows_}
-    files, man, drops, kept = build_lines(labels, shots, late_vns, late_shots, src)
+    edge_p = OUT / "edge" / "edge.jsonl"
+    edge = {r["id"]: r for r in jl(edge_p)} if edge_p.exists() else None
+    files, man, drops, kept = build_lines(labels, shots, late_vns, late_shots, src, edge)
     counts = {}
     for crop in ("ink", "grad"):
         items = files.get(("vita", crop), []) + files.get(("psp", crop), [])
@@ -644,7 +786,7 @@ def main():
     p.add_argument("--n", type=int, default=1)
     p.add_argument("--size", type=int, default=200)
     p = sub.add_parser("helpers")
-    p.add_argument("--max", type=int, default=6)
+    p.add_argument("--max", type=int, default=8)
     p.add_argument("--kinds", default="pass1")
     p.add_argument("--retry", action="store_true", help="re-queue batches whose helper ended without decisions")
     sub.add_parser("status")
@@ -653,13 +795,20 @@ def main():
     p.add_argument("--every", type=int, default=180)
     p.add_argument("--ready", type=int, default=3)
     p.add_argument("--size", type=int, default=200)
-    p.add_argument("--max", type=int, default=6)
+    p.add_argument("--max", type=int, default=8)
     p.add_argument("--min-new", type=int, default=400)
+    p.add_argument("--kinds", default="edge,pass1", help="batch kinds helpers are queued for, in order")
     p = sub.add_parser("reserve")
     p.add_argument("batch", nargs="+")
     p = sub.add_parser("final")
     p.add_argument("--no-resolve", action="store_true")
     sub.add_parser("build")
+    sub.add_parser("edge-boxes")
+    p = sub.add_parser("edge-batches")
+    p.add_argument("--n", type=int, default=1)
+    p.add_argument("--size", type=int, default=200)
+    p.add_argument("--min", type=int, help="smallest batch to write (default --size)")
+    sub.add_parser("edge-apply")
     p = sub.add_parser("blind")
     p.add_argument("--n", type=int, default=500)
     p.add_argument("--seed", type=int, default=20261013)
@@ -667,7 +816,8 @@ def main():
     args = ap.parse_args()
     {"prep": cmd_prep, "plan": cmd_plan, "batches": cmd_batches, "helpers": cmd_helpers, "status": cmd_status,
      "final": cmd_final, "build": cmd_build, "blind": cmd_blind, "reserve": cmd_reserve,
-     "feed": cmd_feed}[args.cmd](args)
+     "feed": cmd_feed, "edge-boxes": cmd_edge_boxes, "edge-batches": cmd_edge_batches,
+     "edge-apply": cmd_edge_apply}[args.cmd](args)
 
 
 if __name__ == "__main__":

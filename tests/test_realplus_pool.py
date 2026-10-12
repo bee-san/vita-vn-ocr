@@ -196,3 +196,30 @@ def test_grad_box_running_beyond_the_ink_crop_gets_no_crop(tmp_path, monkeypatch
     files, _, drops, _ = PL.build_lines([rec], {"v100_7": shot})
     assert not files.get(("vita", "grad")) and drops["vita-grad-unchecked"] == 1
     assert len(files[("vita", "ink")]) == 1
+
+
+def test_edge_flagged_line_needs_an_edge_check(tmp_path):
+    path = _screen(tmp_path)
+    ln = _line(0, [36, 399, 330, 420], ("あいう", "あいう", "あいう", "あいう"))     # the row runs on to x 627
+    ln["view"] = [20, 392, 700, 428]                                     # read.py's wider view of the line
+    shot = {"shot": "v100_7", "vn": "v100", "kind": "vita", "url": "u", "path": str(path), "lines": [ln],
+            "dets": [{"det": ln["det"]}]}
+    rec = D.decide_line("v100_7_0", ln, None, None, "train", auto_consensus=True)
+    rec.update(shot="v100_7", vn="v100", subset="realplus", kind="vita")
+    files, man, drops, _ = PL.build_lines([rec], {"v100_7": shot})
+    assert not man and drops["edge-unchecked"] == 1
+    checked = {"v100_7_0": {"id": "v100_7_0", "crop": [32, 395, 334, 424], "edge_ok": True,
+                            "edge_why": "checked", "flags": ["ink-right"]}}
+    files, man, drops, _ = PL.build_lines([rec], {"v100_7": shot}, edge=checked)
+    assert len(man) == 1 and man[0]["edge"] == {"flags": ["ink-right"], "why": "checked"}
+    assert files[("vita", "ink")][0][2]["box"] == [32, 395, 334, 424]
+    rejected = {"v100_7_0": dict(checked["v100_7_0"], edge_ok=False, edge_why="edge-cut")}
+    _, man, drops, _ = PL.build_lines([rec], {"v100_7": shot}, edge=rejected)
+    assert not man and drops["edge-cut"] == 1
+
+
+def test_scale_line_maps_view_and_chars_to_psp():
+    ln = {"ink": [100, 200, 301, 223], "det": [100, 200, 300, 222], "view": [88, 190, 320, 232], "parts": []}
+    p = PL.scale_line(ln, 0.5, 0.5)
+    assert p["view"] == [44, 95, 160, 116]
+    assert PL.scale_chars([["あ", 100, 200, 110, 222, 0.9]], 0.5, 0.5) == [["あ", 50.0, 100.0, 55.0, 111.0, 0.9]]

@@ -1,0 +1,2143 @@
+{
+ "checks": [
+  {
+   "check": "resources/VOCR1",
+   "match": true,
+   "published": {
+    "arena_w8f": 118432,
+    "arena_w8i": 124832,
+    "blob_bytes": 657664,
+    "classes": 3501,
+    "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+   },
+   "reproduced": {
+    "arena_w8f": 118432,
+    "arena_w8i": 124832,
+    "blob_bytes": 657664,
+    "classes": 3501,
+    "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+   },
+   "source": "plan appendix A; docs/train2.md; docs/vocr2-qualification.md"
+  },
+  {
+   "check": "resources/VOCR_H15",
+   "match": true,
+   "published": {
+    "arena_w8f": 173472,
+    "arena_w8i": 182944,
+    "blob_bytes": 1155968,
+    "classes": 5355,
+    "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd"
+   },
+   "reproduced": {
+    "arena_w8f": 173472,
+    "arena_w8i": 182944,
+    "blob_bytes": 1155968,
+    "classes": 5355,
+    "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd"
+   },
+   "source": "plan appendix A; docs/train2.md; docs/vocr2-qualification.md"
+  },
+  {
+   "check": "resources/VOCR2",
+   "match": true,
+   "published": {
+    "arena_w8i": 124832,
+    "blob_bytes": 657664,
+    "classes": 3501,
+    "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766"
+   },
+   "reproduced": {
+    "arena_w8i": 124832,
+    "blob_bytes": 657664,
+    "classes": 3501,
+    "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766"
+   },
+   "source": "plan appendix A; docs/train2.md; docs/vocr2-qualification.md"
+  },
+  {
+   "check": "native/VOCR1/vita-test",
+   "match": true,
+   "published": [
+    59,
+    2564,
+    "77.7%"
+   ],
+   "reproduced": [
+    59,
+    2564,
+    "77.7%"
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native/VOCR1/psp-test",
+   "match": true,
+   "published": [
+    130,
+    2510,
+    "69.8%"
+   ],
+   "reproduced": [
+    130,
+    2510,
+    "69.8%"
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native/VOCR_H15/vita-test",
+   "match": true,
+   "published": [
+    40,
+    2564,
+    "83.5%"
+   ],
+   "reproduced": [
+    40,
+    2564,
+    "83.5%"
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native/VOCR_H15/psp-test",
+   "match": true,
+   "published": [
+    66,
+    2510,
+    "82.4%"
+   ],
+   "reproduced": [
+    66,
+    2510,
+    "82.4%"
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native/bar/vita-test",
+   "match": true,
+   "published": [
+    59,
+    2564,
+    "79.1%"
+   ],
+   "reproduced": [
+    59,
+    2564,
+    "79.1%"
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native/bar/psp-test",
+   "match": true,
+   "published": [
+    134,
+    2510,
+    "66.1%"
+   ],
+   "reproduced": [
+    134,
+    2510,
+    "66.1%"
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/vita-test/bright-on-dark (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    2.48,
+    1.79,
+    2.73
+   ],
+   "reproduced": [
+    2.48,
+    1.79,
+    2.73
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/vita-test/coloured (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    5.13,
+    6.67,
+    6.15
+   ],
+   "reproduced": [
+    5.13,
+    6.67,
+    6.15
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/vita-test/coloured-name (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    9.52,
+    14.29,
+    14.29
+   ],
+   "reproduced": [
+    9.52,
+    14.29,
+    14.29
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/vita-test/dark-on-light (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    1.64,
+    0.73,
+    0.73
+   ],
+   "reproduced": [
+    1.64,
+    0.73,
+    0.73
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/vita-test/furigana (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    3.12,
+    0.0,
+    4.69
+   ],
+   "reproduced": [
+    3.12,
+    0.0,
+    4.69
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/vita-test/mincho (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    1.33,
+    0.74,
+    1.48
+   ],
+   "reproduced": [
+    1.33,
+    0.74,
+    1.48
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/vita-test/name (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    4.07,
+    5.23,
+    6.98
+   ],
+   "reproduced": [
+    4.07,
+    5.23,
+    6.98
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/vita-test/outlined (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    3.03,
+    2.12,
+    2.12
+   ],
+   "reproduced": [
+    3.03,
+    2.12,
+    2.12
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/bright-on-dark (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    5.18,
+    2.98,
+    5.39
+   ],
+   "reproduced": [
+    5.18,
+    2.98,
+    5.39
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/coloured (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    7.48,
+    3.74,
+    5.61
+   ],
+   "reproduced": [
+    7.48,
+    3.74,
+    5.61
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/coloured-name (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    8.33,
+    4.17,
+    0.0
+   ],
+   "reproduced": [
+    8.33,
+    4.17,
+    0.0
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/dark-on-light (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    5.54,
+    2.18,
+    4.9
+   ],
+   "reproduced": [
+    5.54,
+    2.18,
+    4.9
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/furigana (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    9.71,
+    14.08,
+    23.3
+   ],
+   "reproduced": [
+    9.71,
+    14.08,
+    23.3
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/mincho (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    4.98,
+    1.93,
+    4.57
+   ],
+   "reproduced": [
+    4.98,
+    1.93,
+    4.57
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/name (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    5.74,
+    9.09,
+    16.75
+   ],
+   "reproduced": [
+    5.74,
+    9.09,
+    16.75
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/no-box (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    5.08,
+    6.78,
+    13.56
+   ],
+   "reproduced": [
+    5.08,
+    6.78,
+    13.56
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/outlined (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    5.0,
+    2.97,
+    4.32
+   ],
+   "reproduced": [
+    5.0,
+    2.97,
+    4.32
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native-style/psp-test/small (bar, H15, FL10 CER %)",
+   "match": true,
+   "published": [
+    5.45,
+    1.54,
+    3.19
+   ],
+   "reproduced": [
+    5.45,
+    1.54,
+    3.19
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "bootstrap/VOCR_H15:bar/vita-test/all",
+   "match": true,
+   "published": [
+    -0.74,
+    -1.44,
+    -0.04
+   ],
+   "reproduced": [
+    -0.74,
+    -1.44,
+    -0.04
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "bootstrap/VOCR_H15:bar/psp-test/all",
+   "match": true,
+   "published": [
+    -2.71,
+    -4.05,
+    -1.36
+   ],
+   "reproduced": [
+    -2.71,
+    -4.05,
+    -1.36
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "bootstrap/VOCR1:bar/psp-test/all",
+   "match": true,
+   "published": [
+    -0.16,
+    -1.66,
+    1.42
+   ],
+   "reproduced": [
+    -0.16,
+    -1.66,
+    1.42
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "bootstrap/VOCR_H15:bar/psp-test/style:name",
+   "match": true,
+   "published": [
+    3.35,
+    -2.36,
+    10.65
+   ],
+   "reproduced": [
+    3.35,
+    -2.36,
+    10.65
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "bootstrap/VOCR1:bar/psp-test/style:name",
+   "match": true,
+   "published": [
+    11.0,
+    4.3,
+    18.3
+   ],
+   "reproduced": [
+    11.0,
+    4.3,
+    18.3
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "bootstrap/VOCR1:bar/psp-test/style:furigana",
+   "match": true,
+   "published": [
+    13.6,
+    1.0,
+    25.9
+   ],
+   "reproduced": [
+    13.6,
+    1.0,
+    25.9
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "native/VOCR1 ties the bar on vita-test (errors)",
+   "match": true,
+   "published": [
+    59,
+    59
+   ],
+   "reproduced": [
+    59,
+    59
+   ],
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "console/VOCR1/vita-test (full, hiragana errors)",
+   "match": true,
+   "published": [
+    61,
+    15
+   ],
+   "reproduced": [
+    61,
+    15
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "console/VOCR1/psp-test (full, hiragana errors)",
+   "match": true,
+   "published": [
+    133,
+    30
+   ],
+   "reproduced": [
+    133,
+    30
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "console/VOCR2/vita-test (full, hiragana errors)",
+   "match": true,
+   "published": [
+    59,
+    13
+   ],
+   "reproduced": [
+    59,
+    13
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "console/VOCR2/psp-test (full, hiragana errors)",
+   "match": true,
+   "published": [
+    119,
+    25
+   ],
+   "reproduced": [
+    119,
+    25
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "gate/VOCR2:VOCR1 fixed-line gate passes",
+   "match": true,
+   "published": true,
+   "reproduced": true,
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "console/VOCR1/vita-test per style and per VN (lines, chars, errors)",
+   "match": true,
+   "published": {
+    "all": [
+     61,
+     2564,
+     15,
+     1417
+    ],
+    "game:v10856": [
+     2,
+     50,
+     0
+    ],
+    "game:v13072": [
+     3,
+     29,
+     0
+    ],
+    "game:v16460": [
+     25,
+     369,
+     4
+    ],
+    "game:v16566": [
+     20,
+     230,
+     0
+    ],
+    "game:v17286": [
+     16,
+     190,
+     2
+    ],
+    "game:v17750": [
+     16,
+     163,
+     1
+    ],
+    "game:v17829": [
+     12,
+     127,
+     12
+    ],
+    "game:v18030": [
+     16,
+     121,
+     2
+    ],
+    "game:v19339": [
+     6,
+     82,
+     2
+    ],
+    "game:v19850": [
+     8,
+     94,
+     3
+    ],
+    "game:v20326": [
+     14,
+     179,
+     5
+    ],
+    "game:v21782": [
+     12,
+     142,
+     14
+    ],
+    "game:v21789": [
+     25,
+     373,
+     6
+    ],
+    "game:v22122": [
+     8,
+     128,
+     1
+    ],
+    "game:v3820": [
+     11,
+     128,
+     7
+    ],
+    "game:v7721": [
+     12,
+     159,
+     2
+    ],
+    "style:bright-on-dark": [
+     163,
+     2016,
+     56
+    ],
+    "style:coloured": [
+     19,
+     195,
+     13
+    ],
+    "style:coloured-name": [
+     8,
+     21,
+     3
+    ],
+    "style:dark-on-light": [
+     43,
+     548,
+     5
+    ],
+    "style:furigana": [
+     3,
+     64,
+     3
+    ],
+    "style:mincho": [
+     47,
+     676,
+     10
+    ],
+    "style:name": [
+     53,
+     172,
+     12
+    ],
+    "style:outlined": [
+     74,
+     989,
+     22
+    ]
+   },
+   "reproduced": {
+    "all": [
+     61,
+     2564,
+     15,
+     1417
+    ],
+    "game:v10856": [
+     2,
+     50,
+     0
+    ],
+    "game:v13072": [
+     3,
+     29,
+     0
+    ],
+    "game:v16460": [
+     25,
+     369,
+     4
+    ],
+    "game:v16566": [
+     20,
+     230,
+     0
+    ],
+    "game:v17286": [
+     16,
+     190,
+     2
+    ],
+    "game:v17750": [
+     16,
+     163,
+     1
+    ],
+    "game:v17829": [
+     12,
+     127,
+     12
+    ],
+    "game:v18030": [
+     16,
+     121,
+     2
+    ],
+    "game:v19339": [
+     6,
+     82,
+     2
+    ],
+    "game:v19850": [
+     8,
+     94,
+     3
+    ],
+    "game:v20326": [
+     14,
+     179,
+     5
+    ],
+    "game:v21782": [
+     12,
+     142,
+     14
+    ],
+    "game:v21789": [
+     25,
+     373,
+     6
+    ],
+    "game:v22122": [
+     8,
+     128,
+     1
+    ],
+    "game:v3820": [
+     11,
+     128,
+     7
+    ],
+    "game:v7721": [
+     12,
+     159,
+     2
+    ],
+    "style:bright-on-dark": [
+     163,
+     2016,
+     56
+    ],
+    "style:coloured": [
+     19,
+     195,
+     13
+    ],
+    "style:coloured-name": [
+     8,
+     21,
+     3
+    ],
+    "style:dark-on-light": [
+     43,
+     548,
+     5
+    ],
+    "style:furigana": [
+     3,
+     64,
+     3
+    ],
+    "style:mincho": [
+     47,
+     676,
+     10
+    ],
+    "style:name": [
+     53,
+     172,
+     12
+    ],
+    "style:outlined": [
+     74,
+     989,
+     22
+    ]
+   },
+   "source": "eval/hiragana_baseline_20261011.json"
+  },
+  {
+   "check": "console/VOCR1/psp-test per style and per VN (lines, chars, errors)",
+   "match": true,
+   "published": {
+    "all": [
+     133,
+     2510,
+     30,
+     1382
+    ],
+    "game:v10856": [
+     13,
+     181,
+     34
+    ],
+    "game:v11095": [
+     20,
+     207,
+     0
+    ],
+    "game:v11504": [
+     24,
+     251,
+     18
+    ],
+    "game:v11708": [
+     11,
+     105,
+     11
+    ],
+    "game:v12155": [
+     21,
+     160,
+     2
+    ],
+    "game:v12865": [
+     22,
+     171,
+     18
+    ],
+    "game:v12940": [
+     16,
+     181,
+     3
+    ],
+    "game:v13072": [
+     14,
+     117,
+     2
+    ],
+    "game:v15910": [
+     24,
+     280,
+     6
+    ],
+    "game:v3396": [
+     24,
+     233,
+     17
+    ],
+    "game:v3542": [
+     11,
+     124,
+     6
+    ],
+    "game:v4147": [
+     7,
+     88,
+     9
+    ],
+    "game:v4671": [
+     18,
+     220,
+     5
+    ],
+    "game:v7634": [
+     20,
+     192,
+     2
+    ],
+    "style:bright-on-dark": [
+     135,
+     1409,
+     74
+    ],
+    "style:coloured": [
+     20,
+     214,
+     13
+    ],
+    "style:coloured-name": [
+     7,
+     24,
+     1
+    ],
+    "style:dark-on-light": [
+     110,
+     1101,
+     59
+    ],
+    "style:furigana": [
+     20,
+     206,
+     48
+    ],
+    "style:mincho": [
+     90,
+     984,
+     46
+    ],
+    "style:name": [
+     62,
+     209,
+     37
+    ],
+    "style:no-box": [
+     4,
+     59,
+     8
+    ],
+    "style:outlined": [
+     69,
+     740,
+     30
+    ],
+    "style:small": [
+     106,
+     973,
+     35
+    ]
+   },
+   "reproduced": {
+    "all": [
+     133,
+     2510,
+     30,
+     1382
+    ],
+    "game:v10856": [
+     13,
+     181,
+     34
+    ],
+    "game:v11095": [
+     20,
+     207,
+     0
+    ],
+    "game:v11504": [
+     24,
+     251,
+     18
+    ],
+    "game:v11708": [
+     11,
+     105,
+     11
+    ],
+    "game:v12155": [
+     21,
+     160,
+     2
+    ],
+    "game:v12865": [
+     22,
+     171,
+     18
+    ],
+    "game:v12940": [
+     16,
+     181,
+     3
+    ],
+    "game:v13072": [
+     14,
+     117,
+     2
+    ],
+    "game:v15910": [
+     24,
+     280,
+     6
+    ],
+    "game:v3396": [
+     24,
+     233,
+     17
+    ],
+    "game:v3542": [
+     11,
+     124,
+     6
+    ],
+    "game:v4147": [
+     7,
+     88,
+     9
+    ],
+    "game:v4671": [
+     18,
+     220,
+     5
+    ],
+    "game:v7634": [
+     20,
+     192,
+     2
+    ],
+    "style:bright-on-dark": [
+     135,
+     1409,
+     74
+    ],
+    "style:coloured": [
+     20,
+     214,
+     13
+    ],
+    "style:coloured-name": [
+     7,
+     24,
+     1
+    ],
+    "style:dark-on-light": [
+     110,
+     1101,
+     59
+    ],
+    "style:furigana": [
+     20,
+     206,
+     48
+    ],
+    "style:mincho": [
+     90,
+     984,
+     46
+    ],
+    "style:name": [
+     62,
+     209,
+     37
+    ],
+    "style:no-box": [
+     4,
+     59,
+     8
+    ],
+    "style:outlined": [
+     69,
+     740,
+     30
+    ],
+    "style:small": [
+     106,
+     973,
+     35
+    ]
+   },
+   "source": "eval/hiragana_baseline_20261011.json"
+  },
+  {
+   "check": "dialogue/psp/base/VOCR1 (all/body x full/hira errors/chars, detections)",
+   "match": true,
+   "published": [
+    [
+     443,
+     2510
+    ],
+    [
+     152,
+     1382
+    ],
+    [
+     328,
+     2301
+    ],
+    [
+     150,
+     1369
+    ],
+    233
+   ],
+   "reproduced": [
+    [
+     443,
+     2510
+    ],
+    [
+     152,
+     1382
+    ],
+    [
+     328,
+     2301
+    ],
+    [
+     150,
+     1369
+    ],
+    233
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "dialogue/psp/base/VOCR2 (all/body x full/hira errors/chars, detections)",
+   "match": true,
+   "published": [
+    [
+     424,
+     2510
+    ],
+    [
+     143,
+     1382
+    ],
+    [
+     314,
+     2301
+    ],
+    [
+     142,
+     1369
+    ],
+    233
+   ],
+   "reproduced": [
+    [
+     424,
+     2510
+    ],
+    [
+     143,
+     1382
+    ],
+    [
+     314,
+     2301
+    ],
+    [
+     142,
+     1369
+    ],
+    233
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "dialogue/psp/expanded-4/VOCR1 (all/body x full/hira errors/chars, detections)",
+   "match": true,
+   "published": [
+    [
+     558,
+     2510
+    ],
+    [
+     198,
+     1382
+    ],
+    [
+     430,
+     2301
+    ],
+    [
+     196,
+     1369
+    ],
+    229
+   ],
+   "reproduced": [
+    [
+     558,
+     2510
+    ],
+    [
+     198,
+     1382
+    ],
+    [
+     430,
+     2301
+    ],
+    [
+     196,
+     1369
+    ],
+    229
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "dialogue/psp/expanded-4/VOCR2 (all/body x full/hira errors/chars, detections)",
+   "match": true,
+   "published": [
+    [
+     552,
+     2510
+    ],
+    [
+     193,
+     1382
+    ],
+    [
+     426,
+     2301
+    ],
+    [
+     191,
+     1369
+    ],
+    229
+   ],
+   "reproduced": [
+    [
+     552,
+     2510
+    ],
+    [
+     193,
+     1382
+    ],
+    [
+     426,
+     2301
+    ],
+    [
+     191,
+     1369
+    ],
+    229
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "dialogue/psp/expanded-8/VOCR1 (all/body x full/hira errors/chars, detections)",
+   "match": true,
+   "published": [
+    [
+     595,
+     2510
+    ],
+    [
+     213,
+     1382
+    ],
+    [
+     448,
+     2301
+    ],
+    [
+     208,
+     1369
+    ],
+    240
+   ],
+   "reproduced": [
+    [
+     595,
+     2510
+    ],
+    [
+     213,
+     1382
+    ],
+    [
+     448,
+     2301
+    ],
+    [
+     208,
+     1369
+    ],
+    240
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "dialogue/psp/expanded-8/VOCR2 (all/body x full/hira errors/chars, detections)",
+   "match": true,
+   "published": [
+    [
+     586,
+     2510
+    ],
+    [
+     208,
+     1382
+    ],
+    [
+     436,
+     2301
+    ],
+    [
+     203,
+     1369
+    ],
+    241
+   ],
+   "reproduced": [
+    [
+     586,
+     2510
+    ],
+    [
+     208,
+     1382
+    ],
+    [
+     436,
+     2301
+    ],
+    [
+     203,
+     1369
+    ],
+    241
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "gate/VOCR2:VOCR1 whole-dialogue guard fails on the same title cells",
+   "match": true,
+   "note": "the published guard also covers the private CLANNAD captures; none of its 19 failed cells is CLANNAD",
+   "published": [
+    [
+     "base",
+     "vita:v17829",
+     "all",
+     "full",
+     19,
+     21,
+     127
+    ],
+    [
+     "base",
+     "vita:v17829",
+     "all",
+     "hira",
+     8,
+     9,
+     86
+    ],
+    [
+     "base",
+     "vita:v17829",
+     "body",
+     "full",
+     15,
+     17,
+     117
+    ],
+    [
+     "base",
+     "vita:v17829",
+     "body",
+     "hira",
+     8,
+     9,
+     82
+    ],
+    [
+     "base",
+     "vita:v22122",
+     "all",
+     "full",
+     5,
+     6,
+     128
+    ],
+    [
+     "expanded-4",
+     "psp:v11504",
+     "all",
+     "full",
+     53,
+     55,
+     251
+    ],
+    [
+     "expanded-4",
+     "psp:v11504",
+     "body",
+     "full",
+     44,
+     45,
+     239
+    ],
+    [
+     "expanded-4",
+     "psp:v12155",
+     "body",
+     "full",
+     44,
+     45,
+     144
+    ],
+    [
+     "expanded-4",
+     "psp:v12865",
+     "all",
+     "full",
+     69,
+     71,
+     171
+    ],
+    [
+     "expanded-4",
+     "psp:v12865",
+     "body",
+     "full",
+     43,
+     45,
+     144
+    ],
+    [
+     "expanded-4",
+     "vita:v22122",
+     "all",
+     "full",
+     7,
+     8,
+     128
+    ],
+    [
+     "expanded-8",
+     "psp:v10856",
+     "all",
+     "full",
+     73,
+     74,
+     181
+    ],
+    [
+     "expanded-8",
+     "psp:v10856",
+     "body",
+     "full",
+     73,
+     74,
+     181
+    ],
+    [
+     "expanded-8",
+     "psp:v3396",
+     "all",
+     "full",
+     36,
+     37,
+     233
+    ],
+    [
+     "expanded-8",
+     "vita:v18030",
+     "all",
+     "full",
+     7,
+     8,
+     121
+    ],
+    [
+     "expanded-8",
+     "vita:v18030",
+     "body",
+     "full",
+     4,
+     5,
+     104
+    ],
+    [
+     "expanded-8",
+     "vita:v20326",
+     "all",
+     "full",
+     19,
+     20,
+     179
+    ],
+    [
+     "expanded-8",
+     "vita:v20326",
+     "body",
+     "full",
+     18,
+     19,
+     168
+    ],
+    [
+     "expanded-8",
+     "vita:v22122",
+     "all",
+     "full",
+     6,
+     8,
+     128
+    ]
+   ],
+   "reproduced": [
+    [
+     "base",
+     "vita:v17829",
+     "all",
+     "full",
+     19,
+     21,
+     127
+    ],
+    [
+     "base",
+     "vita:v17829",
+     "all",
+     "hira",
+     8,
+     9,
+     86
+    ],
+    [
+     "base",
+     "vita:v17829",
+     "body",
+     "full",
+     15,
+     17,
+     117
+    ],
+    [
+     "base",
+     "vita:v17829",
+     "body",
+     "hira",
+     8,
+     9,
+     82
+    ],
+    [
+     "base",
+     "vita:v22122",
+     "all",
+     "full",
+     5,
+     6,
+     128
+    ],
+    [
+     "expanded-4",
+     "psp:v11504",
+     "all",
+     "full",
+     53,
+     55,
+     251
+    ],
+    [
+     "expanded-4",
+     "psp:v11504",
+     "body",
+     "full",
+     44,
+     45,
+     239
+    ],
+    [
+     "expanded-4",
+     "psp:v12155",
+     "body",
+     "full",
+     44,
+     45,
+     144
+    ],
+    [
+     "expanded-4",
+     "psp:v12865",
+     "all",
+     "full",
+     69,
+     71,
+     171
+    ],
+    [
+     "expanded-4",
+     "psp:v12865",
+     "body",
+     "full",
+     43,
+     45,
+     144
+    ],
+    [
+     "expanded-4",
+     "vita:v22122",
+     "all",
+     "full",
+     7,
+     8,
+     128
+    ],
+    [
+     "expanded-8",
+     "psp:v10856",
+     "all",
+     "full",
+     73,
+     74,
+     181
+    ],
+    [
+     "expanded-8",
+     "psp:v10856",
+     "body",
+     "full",
+     73,
+     74,
+     181
+    ],
+    [
+     "expanded-8",
+     "psp:v3396",
+     "all",
+     "full",
+     36,
+     37,
+     233
+    ],
+    [
+     "expanded-8",
+     "vita:v18030",
+     "all",
+     "full",
+     7,
+     8,
+     121
+    ],
+    [
+     "expanded-8",
+     "vita:v18030",
+     "body",
+     "full",
+     4,
+     5,
+     104
+    ],
+    [
+     "expanded-8",
+     "vita:v20326",
+     "all",
+     "full",
+     19,
+     20,
+     179
+    ],
+    [
+     "expanded-8",
+     "vita:v20326",
+     "body",
+     "full",
+     18,
+     19,
+     168
+    ],
+    [
+     "expanded-8",
+     "vita:v22122",
+     "all",
+     "full",
+     6,
+     8,
+     128
+    ]
+   ],
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "gate/VOCR2:VOCR1 gain titles per variant",
+   "match": true,
+   "published": {
+    "base": [
+     "v10856",
+     "v15910",
+     "v16566",
+     "v21782",
+     "v3396",
+     "v3542",
+     "v3820",
+     "v7634"
+    ],
+    "expanded-4": [
+     "v15910",
+     "v17286",
+     "v17829",
+     "v21782",
+     "v3820",
+     "v7634"
+    ],
+    "expanded-8": [
+     "v15910",
+     "v17286",
+     "v21782",
+     "v3820",
+     "v7634"
+    ]
+   },
+   "reproduced": {
+    "base": [
+     "v10856",
+     "v15910",
+     "v16566",
+     "v21782",
+     "v3396",
+     "v3542",
+     "v3820",
+     "v7634"
+    ],
+    "expanded-4": [
+     "v15910",
+     "v17286",
+     "v17829",
+     "v21782",
+     "v3820",
+     "v7634"
+    ],
+    "expanded-8": [
+     "v15910",
+     "v17286",
+     "v21782",
+     "v3820",
+     "v7634"
+    ]
+   },
+   "source": "docs/vocr2-qualification.md + eval/vocr2_candidate_20261012.json"
+  },
+  {
+   "check": "overlay/VOCR1/vita-test",
+   "match": true,
+   "published": {
+    "concat_chars": 2506,
+    "concat_errors": 217,
+    "failed": 0,
+    "lines_read": 207,
+    "refused": 0,
+    "regions": 84,
+    "workspace_peak_max": 914000,
+    "workspace_peak_median": 837056
+   },
+   "reproduced": {
+    "concat_chars": 2506,
+    "concat_errors": 217,
+    "failed": 0,
+    "lines_read": 207,
+    "refused": 0,
+    "regions": 84,
+    "workspace_peak_max": 914000,
+    "workspace_peak_median": 837056
+   },
+   "source": "vita-jp-overlay docs/benchmarks/vocr-release-20261011.json (benchmark_local_ocr.py, FL10 and H15 v0.2.0)"
+  },
+  {
+   "check": "overlay/VOCR1/psp-test",
+   "match": true,
+   "published": {
+    "concat_chars": 2510,
+    "concat_errors": 443,
+    "failed": 0,
+    "lines_read": 233,
+    "refused": 0,
+    "regions": 93,
+    "workspace_peak_max": 827216,
+    "workspace_peak_median": 805440
+   },
+   "reproduced": {
+    "concat_chars": 2510,
+    "concat_errors": 443,
+    "failed": 0,
+    "lines_read": 233,
+    "refused": 0,
+    "regions": 93,
+    "workspace_peak_max": 827216,
+    "workspace_peak_median": 805440
+   },
+   "source": "vita-jp-overlay docs/benchmarks/vocr-release-20261011.json (benchmark_local_ocr.py, FL10 and H15 v0.2.0)"
+  },
+  {
+   "check": "overlay/VOCR_H15/vita-test",
+   "match": true,
+   "published": {
+    "concat_chars": 2506,
+    "concat_errors": 170,
+    "failed": 0,
+    "lines_read": 207,
+    "refused": 0,
+    "regions": 84,
+    "workspace_peak_max": 1470416,
+    "workspace_peak_median": 1393472
+   },
+   "reproduced": {
+    "concat_chars": 2506,
+    "concat_errors": 170,
+    "failed": 0,
+    "lines_read": 207,
+    "refused": 0,
+    "regions": 84,
+    "workspace_peak_max": 1470416,
+    "workspace_peak_median": 1393472
+   },
+   "source": "vita-jp-overlay docs/benchmarks/vocr-release-20261011.json (benchmark_local_ocr.py, FL10 and H15 v0.2.0)"
+  },
+  {
+   "check": "overlay/VOCR_H15/psp-test",
+   "match": true,
+   "published": {
+    "concat_chars": 2510,
+    "concat_errors": 369,
+    "failed": 0,
+    "lines_read": 233,
+    "refused": 0,
+    "regions": 93,
+    "workspace_peak_max": 1383632,
+    "workspace_peak_median": 1361856
+   },
+   "reproduced": {
+    "concat_chars": 2510,
+    "concat_errors": 369,
+    "failed": 0,
+    "lines_read": 233,
+    "refused": 0,
+    "regions": 93,
+    "workspace_peak_max": 1383632,
+    "workspace_peak_median": 1361856
+   },
+   "source": "vita-jp-overlay docs/benchmarks/vocr-release-20261011.json (benchmark_local_ocr.py, FL10 and H15 v0.2.0)"
+  },
+  {
+   "check": "overlay-vs-harness/VOCR1/vita-test (concat errors/chars = dialogue base all-text)",
+   "match": true,
+   "published": [
+    217,
+    2506
+   ],
+   "reproduced": [
+    217,
+    2506
+   ],
+   "source": "this run: overlay vjo-ocr and the harness's whole-dialogue mode"
+  },
+  {
+   "check": "overlay-vs-harness/VOCR_H15/vita-test (concat errors/chars = dialogue base all-text)",
+   "match": true,
+   "published": [
+    170,
+    2506
+   ],
+   "reproduced": [
+    170,
+    2506
+   ],
+   "source": "this run: overlay vjo-ocr and the harness's whole-dialogue mode"
+  },
+  {
+   "check": "overlay-vs-harness/VOCR2/vita-test (concat errors/chars = dialogue base all-text)",
+   "match": true,
+   "published": [
+    205,
+    2506
+   ],
+   "reproduced": [
+    205,
+    2506
+   ],
+   "source": "this run: overlay vjo-ocr and the harness's whole-dialogue mode"
+  },
+  {
+   "check": "overlay-vs-harness/VOCR1/psp-test (concat errors/chars = dialogue base all-text)",
+   "match": true,
+   "published": [
+    443,
+    2510
+   ],
+   "reproduced": [
+    443,
+    2510
+   ],
+   "source": "this run: overlay vjo-ocr and the harness's whole-dialogue mode"
+  },
+  {
+   "check": "overlay-vs-harness/VOCR_H15/psp-test (concat errors/chars = dialogue base all-text)",
+   "match": true,
+   "published": [
+    369,
+    2510
+   ],
+   "reproduced": [
+    369,
+    2510
+   ],
+   "source": "this run: overlay vjo-ocr and the harness's whole-dialogue mode"
+  },
+  {
+   "check": "overlay-vs-harness/VOCR2/psp-test (concat errors/chars = dialogue base all-text)",
+   "match": true,
+   "published": [
+    424,
+    2510
+   ],
+   "reproduced": [
+    424,
+    2510
+   ],
+   "source": "this run: overlay vjo-ocr and the harness's whole-dialogue mode"
+  },
+  {
+   "check": "a9/VOCR1/w8i frames",
+   "match": true,
+   "published": 1828,
+   "reproduced": 1828,
+   "source": "train2 review a9 meta.json"
+  },
+  {
+   "check": "a9/VOCR1/w8i low bound, cycles/frame",
+   "match": true,
+   "published": 521887,
+   "reproduced": 521887,
+   "source": "train2 review a9 report.json"
+  },
+  {
+   "check": "a9/VOCR1/w8i low bound, ms (640 px, 444 MHz)",
+   "match": true,
+   "published": 94,
+   "reproduced": 94,
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "a9/VOCR1/w8i high bound, cycles/frame",
+   "match": false,
+   "note": "+0.85%: the high bound charges every simulated L1 miss, whose count depends on the guest memory layout (the review's run had another executable path and environment); docs/vocr3-harness.md",
+   "published": 986169,
+   "reproduced": 994543,
+   "source": "train2 review a9 report.json"
+  },
+  {
+   "check": "a9/VOCR1/w8i high bound, ms (640 px, 444 MHz)",
+   "match": false,
+   "note": "layout-dependent, as above",
+   "published": 178,
+   "reproduced": 179,
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "a9/VOCR1/w8f frames",
+   "match": true,
+   "published": 1828,
+   "reproduced": 1828,
+   "source": "train2 review a9 meta.json"
+  },
+  {
+   "check": "a9/VOCR1/w8f low bound, cycles/frame",
+   "match": true,
+   "published": 871347,
+   "reproduced": 871347,
+   "source": "train2 review a9 report.json"
+  },
+  {
+   "check": "a9/VOCR1/w8f low bound, ms (640 px, 444 MHz)",
+   "match": true,
+   "published": 157,
+   "reproduced": 157,
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "a9/VOCR1/w8f high bound, cycles/frame",
+   "match": false,
+   "note": "+1.08%: the high bound charges every simulated L1 miss, whose count depends on the guest memory layout (the review's run had another executable path and environment); docs/vocr3-harness.md",
+   "published": 1077864,
+   "reproduced": 1089481,
+   "source": "train2 review a9 report.json"
+  },
+  {
+   "check": "a9/VOCR1/w8f high bound, ms (640 px, 444 MHz)",
+   "match": false,
+   "note": "layout-dependent, as above",
+   "published": 194,
+   "reproduced": 196,
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "a9/VOCR_H15/w8i frames",
+   "match": true,
+   "published": 1828,
+   "reproduced": 1828,
+   "source": "train2 review a9 meta.json"
+  },
+  {
+   "check": "a9/VOCR_H15/w8i low bound, cycles/frame",
+   "match": true,
+   "published": 920390,
+   "reproduced": 920390,
+   "source": "train2 review a9 report.json"
+  },
+  {
+   "check": "a9/VOCR_H15/w8i low bound, ms (640 px, 444 MHz)",
+   "match": true,
+   "published": 166,
+   "reproduced": 166,
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "a9/VOCR_H15/w8i high bound, cycles/frame",
+   "match": false,
+   "note": "-0.05%: the high bound charges every simulated L1 miss, whose count depends on the guest memory layout (the review's run had another executable path and environment); docs/vocr3-harness.md",
+   "published": 1678821,
+   "reproduced": 1677963,
+   "source": "train2 review a9 report.json"
+  },
+  {
+   "check": "a9/VOCR_H15/w8i high bound, ms (640 px, 444 MHz)",
+   "match": true,
+   "note": "layout-dependent, as above",
+   "published": 302,
+   "reproduced": 302,
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "a9/VOCR_H15/w8f frames",
+   "match": true,
+   "published": 1828,
+   "reproduced": 1828,
+   "source": "train2 review a9 meta.json"
+  },
+  {
+   "check": "a9/VOCR_H15/w8f low bound, cycles/frame",
+   "match": true,
+   "published": 1633471,
+   "reproduced": 1633471,
+   "source": "train2 review a9 report.json"
+  },
+  {
+   "check": "a9/VOCR_H15/w8f low bound, ms (640 px, 444 MHz)",
+   "match": true,
+   "published": 294,
+   "reproduced": 294,
+   "source": "docs/train2.md"
+  },
+  {
+   "check": "a9/VOCR_H15/w8f high bound, cycles/frame",
+   "match": false,
+   "note": "+0.11%: the high bound charges every simulated L1 miss, whose count depends on the guest memory layout (the review's run had another executable path and environment); docs/vocr3-harness.md",
+   "published": 2028094,
+   "reproduced": 2030284,
+   "source": "train2 review a9 report.json"
+  },
+  {
+   "check": "a9/VOCR_H15/w8f high bound, ms (640 px, 444 MHz)",
+   "match": false,
+   "note": "layout-dependent, as above",
+   "published": 365,
+   "reproduced": 366,
+   "source": "docs/train2.md"
+  }
+ ],
+ "kind": "vocr3-harness-released-verification",
+ "run": {
+  "a9_sha256": "cbb2d7f2bcbbc20bb15516fe54eafb0ffb50a2130a821160c6d748a509cb2498",
+  "code_sha256": {
+   "eval/backends.py": "fc0cec2b6076658c198f8ea2b3d547208571dcac45b50d5aa565324edf1e9ae4",
+   "eval/group_metrics.py": "d4d7f5c16f7e64edfbbb427cc66792654394004d958690838d99535eb91923e7",
+   "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+   "eval/run.py": "9312d3e667a072b306aba2878ddad437877eecf67f2eb86b9e75214511425a67",
+   "eval/sets.py": "a65154a114c922e8a2bacf621dc96289f2fc74706e1705ab297a5014edb09bce",
+   "eval/vocr3_report.py": "51697d970b79064be78e86b5f637c62db0d65c381817cd0b2a8274aa73dee149",
+   "requirements-ci.lock": "529385fa711e896b05aaba1130e81d0ac3334ae8ddea40b253c8546cbaae9539",
+   "runtime/pyvocr.py": "49cd9bf0ac474728f5aae9df9c7a7b7656a57db85f1eec75ec3ba7829b427376",
+   "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+   "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+   "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+   "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+   "runtime/vocr_lines_test.c": "c1af9976ce7ccc51b1804417b5cb42959fda4b231da0cc1f0e04e2b049eb9c45",
+   "synth/common.py": "6b8ca608c4e1ec60c87dd3bc6fa44a03fbb84fe0387ccc77a4c8aefbdc0c13ca",
+   "train/export.py": "a1bd752814a34f2d2a415532ee401d500c2863a3700ed2492260e62656f727a4",
+   "train/general_vn_textbox_guard.py": "637fbe5a3cb06dcfd83399218c1558c6d3c69d4ebba44ab0ca0742f2b89b254e",
+   "vita/a9_cycles.py": "083abbabe94a740b3c1a7479568496d4e83dfea64e0b7eaefe5848cd7d321a91"
+  },
+  "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+  "git": {
+   "dirty": false,
+   "head": "b1037b999927ad622b58a6b75957aecd304c6953"
+  },
+  "native_library_sha256": "0e033bd8ecc926a3e9e0bbca96ca6f6744f6d58a474cc5e573286fac3f540f90",
+  "overlay_sha256": "1ef50ab4edb3aae263d8c6f06f5bd3810cd7a2e5ea61a8018e76a2d4214ff347",
+  "shared_sha256": "a3c1c34228a7d11f5e87eb49c862ee5240e53dfc9a9d3d6abc1e2ce1f0cc384f"
+ },
+ "schema": 1,
+ "summary": {
+  "checks": 79,
+  "matched": 72,
+  "not_matched": [
+   "a9/VOCR1/w8i high bound, cycles/frame",
+   "a9/VOCR1/w8i high bound, ms (640 px, 444 MHz)",
+   "a9/VOCR1/w8f high bound, cycles/frame",
+   "a9/VOCR1/w8f high bound, ms (640 px, 444 MHz)",
+   "a9/VOCR_H15/w8i high bound, cycles/frame",
+   "a9/VOCR_H15/w8f high bound, cycles/frame",
+   "a9/VOCR_H15/w8f high bound, ms (640 px, 444 MHz)"
+  ]
+ }
+}

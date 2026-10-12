@@ -2,6 +2,7 @@
 """Cortex-A9 cycles per line for runtime/vocr.c as the Vita compiler builds it, as a range.
 
   a9_cycles.py measure --out DIR [--lines 40] [--modes w8i,w8f,f32] [--no-cache]
+                       [--ckpt CKPT | --blob W8I_BLOB (modes w8i,w8f)]
   a9_cycles.py report DIR [--json OUT]
 
 measure:
@@ -14,6 +15,8 @@ measure:
      of every instruction, NEON <-> VFP unit switches) and qemu's cache simulator configured
      like the Vita: 32 KiB 4-way L1 D and I caches with 32-byte lines, and the 2 MiB L2;
   3. keeps the counts, the cache statistics and the disassembly in DIR.
+  The guest always runs with the same memory layout (a fixed-length staging path, relative file
+  names, an empty environment, qemu -seed 0), because the cache statistics depend on it.
 report:
   joins the counts with the disassembly, keeps the runtime's own functions (vocr.c, plus the
   memset/memcpy/libgcc helpers it calls), gives every instruction its Cortex-A9 cost and
@@ -33,9 +36,11 @@ import collections
 import json
 import os
 import re
+import shutil
 import struct
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -57,6 +62,7 @@ DRAM_NS = 110              # L2 miss: DRAM latency on top of the L2 lookup
 REFILL = 8.7               # sequential L2 -> L1 line refill rate
 DRAIN = (3, 10)            # NEON <-> VFP unit switch
 N2C = 11                   # NEON -> ARM register transfer latency (TRM table 3-10)
+QEMU_GUEST_ENV = {}        # the guest's environment (its size moves the guest stack, so the cache sets)
 
 
 # ---------------------------------------------------------------- instruction costs
@@ -223,7 +229,8 @@ def write_pack(path, n, data_dir):
     import fetch
     import numpy as np
     import sets
-    crops = [np.ascontiguousarray(ln.crop_rgb[..., 0]) for ln in sets.load_synth_val(limit=n - n // 2)]
+    crops = [np.ascontiguousarray(ln.crop_rgb[..., 0])
+             for ln in sets.load_synth_val(os.environ.get("VOCR_SYNTH_VAL", sets.SYNTH_VAL), limit=n - n // 2)]
     try:
         real, _ = sets.load("vita-test", fetch.data_dir(data_dir))
         for ln in real[:n // 2]:
@@ -251,12 +258,30 @@ def export_blobs(out, ckpt):
     return paths
 
 
+def given_blob(out, blob, modes):
+    """An existing int8 W8I blob (e.g. a release asset) instead of a checkpoint: w8i and w8f only."""
+    import hashlib
+    sys.path[:0] = [str(ROOT / "train")]
+    import export
+    data = Path(blob).read_bytes()
+    if not export.read_blob(data)["int8"]:
+        raise SystemExit(f"{blob}: --blob needs an int8 blob (use --ckpt for f32)")
+    if "f32" in modes:
+        raise SystemExit("an int8 blob has no float32 weights: drop f32 from --modes or use --ckpt")
+    path = out / "model_w8.vocr"
+    path.write_bytes(data)
+    return {"w8": path}, hashlib.sha256(data).hexdigest()
+
+
 def measure(args):
-    out = args.out
+    out = Path(args.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
     vitasdk = args.vitasdk or os.environ.get("VITASDK")
     if not vitasdk:
         raise SystemExit("set VITASDK (vita/scripts/fetch_vitasdk.sh)")
+    modes = args.modes.split(",")
+    if getattr(args, "blob", None):
+        blobs, blob_sha = given_blob(out, args.blob, modes)
     cli, dis = build_cli(out, vitasdk, args.arm_cc or os.environ.get("ARM_CC") or default_arm_cc())
     rows = parse_dis(dis)
     with open(out / "classes.txt", "w") as f:
@@ -266,24 +291,42 @@ def measure(args):
                 f.write(f"{a:x} {unit}\n")
     pack = out / "lines.bin"
     n_lines = write_pack(pack, args.lines, args.eval_data)
-    blobs = export_blobs(out, args.ckpt)
+    if getattr(args, "blob", None):
+        meta = {"lines": n_lines, "blob": Path(args.blob).name, "blob_sha256": blob_sha, "modes": {}}
+    else:
+        blobs = export_blobs(out, args.ckpt)
+        meta = {"lines": n_lines, "ckpt": str(args.ckpt), "modes": {}}
     q = Path(args.qemu) if args.qemu else default_qemu()
-    meta = {"lines": n_lines, "ckpt": str(args.ckpt), "modes": {}}
-    for mode in args.modes.split(","):
-        blob = blobs["f32" if mode == "f32" else "w8"]
-        plugins = ["-plugin", f"{q}/plugins/libinsn_mix.so,out={out}/counts_{mode}.txt,classes={out}/classes.txt"]
-        if args.cache:
-            plugins += ["-plugin", f"{q}/plugins/libcache.so,{CACHE_ARGS}", "-d", "plugin", "-D",
-                        str(out / f"cache_{mode}.txt")]
-        p = subprocess.run([str(q / "bin/qemu-arm"), "-cpu", "cortex-a9", *plugins, str(cli), str(blob), "--mode", mode,
-                            "--pack", str(pack)], capture_output=True, text=True, stdin=subprocess.DEVNULL,
-                           timeout=7200)
-        if p.returncode:
-            raise SystemExit(f"qemu run failed for {mode}: {p.stderr[-2000:]}")
-        m = re.search(r"(\d+) lines, (\d+) frames", p.stderr)
-        meta["modes"][mode] = {"lines": int(m.group(1)), "frames": int(m.group(2)),
-                               "texts": p.stdout.splitlines()}
-        print(f"{mode}: {m.group(0)}", file=sys.stderr)
+    stage = Path(tempfile.mkdtemp(prefix="vocr-a9-", dir="/tmp"))     # fixed-length real path, see below
+    try:
+        for f in (cli, pack, *{b for b in blobs.values()}):
+            shutil.copy2(f, stage / Path(f).name)
+        for mode in modes:
+            blob = blobs["f32" if mode == "f32" else "w8"]
+            plugins = ["-plugin", f"{q}/plugins/libinsn_mix.so,out={out}/counts_{mode}.txt,classes={out}/classes.txt"]
+            if args.cache:
+                plugins += ["-plugin", f"{q}/plugins/libcache.so,{CACHE_ARGS}", "-d", "plugin", "-D",
+                            str(out / f"cache_{mode}.txt")]
+            # The simulated cache sets depend on the guest's memory layout. qemu-user copies argv and the
+            # environment onto the guest stack, the length of the executable's real path moves the guest
+            # heap (measured: up to 5% more simulated L1D misses for FL10 w8i), and AT_RANDOM is random.
+            # So the guest runs from a fresh /tmp/vocr-a9-XXXXXXXX copy (a real path of fixed length)
+            # with relative file names, an empty environment (QEMU_GUEST_ENV) and seed 0: the same
+            # inputs give the same counts, wherever DIR is and whatever the caller's environment holds.
+            p = subprocess.run([str(q / "bin/qemu-arm"), "-cpu", "cortex-a9", "-seed", "0", *plugins,
+                                f"./{cli.name}", Path(blob).name, "--mode", mode, "--pack", pack.name],
+                               capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=7200,
+                               env=dict(QEMU_GUEST_ENV), cwd=stage)
+            if p.returncode:
+                raise SystemExit(f"qemu run failed for {mode}: {p.stderr[-2000:]}")
+            m = re.search(r"(\d+) lines, (\d+) frames", p.stderr)
+            meta["modes"][mode] = {"lines": int(m.group(1)), "frames": int(m.group(2)),
+                                   "texts": p.stdout.splitlines()}
+            print(f"{mode}: {m.group(0)}", file=sys.stderr)
+        meta["guest"] = {"env": dict(QEMU_GUEST_ENV), "qemu_seed": 0,
+                         "exec_real_path_length": len(os.path.realpath(stage / cli.name))}
+    finally:
+        shutil.rmtree(stage, ignore_errors=True)
     (out / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1))
 
 
@@ -399,6 +442,7 @@ def main():
     m.add_argument("--modes", default=",".join(MODES))
     m.add_argument("--ckpt", type=Path, default=(HERD / "shared/models/v1/ckpt_best.pt") if HERD
                    else ROOT / "models/v1/ckpt_best.pt")
+    m.add_argument("--blob", type=Path, help="an int8 W8I blob instead of --ckpt (modes w8i, w8f)")
     m.add_argument("--eval-data", type=Path)
     m.add_argument("--vitasdk")
     m.add_argument("--arm-cc")

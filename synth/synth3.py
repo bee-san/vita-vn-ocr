@@ -1614,7 +1614,7 @@ def main():
         preview(args)
         return
     args.out.mkdir(parents=True, exist_ok=True)
-    rec = recipe(args)
+    rec = json.loads(json.dumps(recipe(args), ensure_ascii=False))     # canonical (JSON keys are strings)
     rp = args.out / "recipe.json"
     if rp.exists() and json.loads(rp.read_text(encoding="utf-8")) != rec:
         raise SystemExit(f"{rp} holds a different recipe: use a new --out")

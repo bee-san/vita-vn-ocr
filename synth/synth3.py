@@ -63,6 +63,7 @@ FONT_MANIFEST = ROOT / "data" / "manifests" / "synth3_fonts.json"
 
 # Every probability of the generator, recorded verbatim in the shard manifest.
 CFG = {
+    "version": 2,
     "platform": {"vita": 0.46, "psp": 0.30, "psp2x": 0.13, "scaled": 0.11},
     "scaled_to_psp": 0.3,
     "category": {
@@ -340,20 +341,20 @@ class Resources:
         test or development VN, split by VN between train and dev. scenes=False: none (the
         renderer then draws synthetic scenes only, as in CI)."""
         if not scenes:
-            self.bg, self.bg_vns = {"vita": [], "psp": [], "hires": []}, []
+            self.bg, self.bg_vns, self.bg_text = {"vita": [], "psp": [], "hires": []}, [], {}
             return
         forbid = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"])
         forbid |= set((self.assets / "mining" / "exclude_dev_vns.txt").read_text().split())
         bg = json.loads((HERD / "shared" / "artifacts" / "synth2" / "backgrounds.json").read_text())
         rd = HERD / "shared" / "artifacts" / "realdata" / "shots"
         vita = [SHARED_DATA / "vndb" / "shots" / s for s in bg["vita_shots"]] + sorted((rd / "vita").glob("*.jpg"))
-        psp = [HERD / "shared" / "artifacts" / "synth2" / "vndb_psp" / "shots" / s for s in bg["psp_shots"]]
-        psp += sorted((rd / "psp").glob("*.jpg"))
+        psp = sorted((rd / "psp").glob("*.jpg"))
         hires = sorted((rd / "hires").glob("*.jpg"))
+        self.bg_text = scene_text_boxes(rd)
 
-        def ok(p):
+        def ok(p):      # a scene needs a text detection record: its patches must avoid the screen's text
             vn = p.name.split("_")[0]
-            return p.exists() and vn not in forbid and not is_test_vn(vn)
+            return p.exists() and vn not in forbid and not is_test_vn(vn) and p in self.bg_text
         split_dev = self.split.startswith("dev")
 
         def mine(p):        # scenes split by VN between train and synthetic dev
@@ -390,6 +391,33 @@ class Resources:
         k = int(pick[rng.integers(len(pick))]) if pick else int(rng.integers(a, b))
         pool = self.ctx_pool[k]
         return self.pools[pool][int(self.ctx_line[k])], pool
+
+
+def scene_text_boxes(rd):
+    """Text lines already detected on the scene screenshots, in their own pixels: realdata's
+    PP-OCRv5 line boxes (realdata/labels) and linefind's detections on data/vndb/shots. A scene
+    patch that touches any of them is not used, so no real screen text ends up unlabelled
+    inside a synthetic crop (version 2; version 1 cut scene text into 2-5% of crops)."""
+    boxes = {}
+    for f in sorted((rd.parent / "labels").glob("*.jsonl")):
+        with open(f, encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    continue
+                path = rd / r["kind"] / (r["id"].rsplit("_", 1)[0] + ".jpg")
+                boxes.setdefault(path, []).append(tuple(r["ink"]))
+    det = HERD / "shared" / "artifacts" / "linefind" / "det" / "vita_shots_det.jsonl"
+    if det.exists():
+        for line in det.read_text(encoding="utf-8").splitlines():
+            r = json.loads(line)
+            path = SHARED_DATA / "vndb" / "shots" / r["shot"]
+            lst = boxes.setdefault(path, [])
+            for q in r["quads"]:
+                xs, ys = [v[0] for v in q], [v[1] for v in q]
+                lst.append((min(xs), min(ys), max(xs), max(ys)))
+    return {p: np.asarray(v, np.float32).reshape(-1, 4) for p, v in boxes.items()}
 
 
 def init(**kw):
@@ -1224,7 +1252,11 @@ def render_region(rng, platform=None):
         L["y0"] = L["top"] - max(sw, sw2) - 1
         L["y1"] = L["top"] + L["fs"] + max(sw, sw2) + dy + 1
         rows = ink_b[max(int(L["y0"]), 0):max(int(L["y1"]), 0)]
-        cols = np.flatnonzero(rows.any(axis=0)) if rows.size else []
+        # columns of this line's own glyphs (plus outline and shadow): a neighbouring line whose
+        # ink reaches into the band must not widen it (version 1 let 3% of crops span a neighbour)
+        mx = max(sw, sw2) + dy + 2
+        c0, c1 = max(0, int(math.floor(L["x0"] - mx))), max(0, int(math.ceil(L["x1"] + mx)))
+        cols = np.flatnonzero(rows[:, c0:c1].any(axis=0)) + c0 if rows.size else []
         L["ix0"], L["ix1"] = (int(cols[0]), int(cols[-1]) + 1) if len(cols) else (-99, -99)
         L["ruby_top"] = None
         if L.get("ruby"):
@@ -1306,21 +1338,24 @@ def background(rng, w, h, platform, target, up):
             pools = [("vita", 1.0), ("hires", 1.0)]
         kind, base = pools[rng.integers(len(pools))]
         paths = R.bg[kind]
-        if paths:
+        for _ in range(4 if paths else 0):
             p = paths[rng.integers(len(paths))]
             try:
                 z = round(float(rng.uniform(1.0, 1.4)), 1)
-                if kind == "hires":         # realdata's hires shots are full screens of any size
-                    with Image.open(p) as pim:
-                        sw0 = pim.width
-                    im = load_bg(p, round(960 * base * z / sw0, 3))
-                else:
-                    im = load_bg(p, base * z)
+                with Image.open(p) as pim:
+                    sw0 = pim.width
+                scale = round(960 * base * z / sw0, 3) if kind == "hires" else base * z
+                im = load_bg(p, scale)
                 H, W = im.shape[:2]
                 safe_h = int(0.62 * H)
                 if W >= w and safe_h >= h:
                     x0 = int(rng.integers(0, W - w + 1))
                     y0 = int(rng.integers(0, safe_h - h + 1))
+                    k = W / sw0
+                    tb = R.bg_text.get(p, np.zeros((0, 4), np.float32)) * k
+                    if len(tb) and ((tb[:, 0] - 3 < x0 + w) & (tb[:, 2] + 3 > x0) &
+                                    (tb[:, 1] - 3 < y0 + h) & (tb[:, 3] + 3 > y0)).any():
+                        continue            # the patch would carry real, unlabelled screen text
                     arr = im[y0:y0 + h, x0:x0 + w].astype(np.float32)
                     return arr[:, ::-1].copy() if rng.random() < 0.5 else arr
             except OSError:
@@ -1394,12 +1429,52 @@ def gt_box(L, layout, ink, ruby, pad, rng, shape):
     return (bx0, by0, bx1 - bx0, by1 - by0), ib
 
 
+def grad_crops(img, layout):
+    """The console's GRAD finder boxes that each hold exactly one labelled line: the box's band
+    (inside the finder's 3 px pad) overlaps that line's band by at least half and no other
+    labelled line by more than a row, line and box pick each other, the box hugs the line's
+    ink on both sides within 3 px (unless that ink touches the region edge), and it is not
+    taller than 1.6x the line's band plus pad (plus attached furigana). Anything else, such as
+    a band merged with a neighbour or with screen text, yields no crop."""
+    from common import PAD, find_lines_ex
+    r = find_lines_ex(img, "grad")
+    if r is None:
+        return []
+    dets, flags = r[0], r[1]
+    lines = [L for L in layout if L.get("text") and L["ix0"] >= 0]
+    if not dets or not lines:
+        return []
+    H, W = img.shape[:2]
+    rows = [(y + (PAD if y > 0 else 0), y + h - (PAD if y + h < H else 0)) for x, y, w, h in dets]
+    ov = np.array([[min(b, L["y1"]) - max(a, L["y0"]) for L in lines] for a, b in rows], np.float32)
+    grey = to_gray(img)
+    out = []
+    for d, (x, y, w, h) in enumerate(dets):
+        li = int(ov[d].argmax())
+        L = lines[li]
+        band = L["y1"] - L["y0"]
+        if ov[d, li] <= 0 or int(ov[:, li].argmax()) != d or (np.delete(ov[d], li) > 1).any():
+            continue
+        if ov[d, li] < 0.5 * min(rows[d][1] - rows[d][0], band):
+            continue
+        extra = (L["y0"] - L["ruby_top"]) if L.get("ruby_top") is not None else 0
+        if h > 1.6 * (band + 2 * PAD) + extra:
+            continue
+        if L["ix0"] > PAD + 1 and abs(x + PAD - L["ix0"]) > 3:
+            continue
+        if L["ix1"] < W - PAD - 1 and abs(x + w - PAD - L["ix1"]) > 3:
+            continue
+        dark = int(flags[d])
+        g = grey[y:y + h, x:x + w]
+        out.append((255 - g if dark else g.copy(), L["text"], (x, y, w, h), L, dark))
+    return out
+
+
 def extract(img, layout, ink, rng, mode, pad, ruby=None):
     """[(grey crop in console polarity, label, box, line, dark)]."""
     ruby = ruby if ruby is not None else np.zeros_like(ink)
     if mode == "grad":
-        got = S2.extract(img, layout, None, "grad", None, invert=True, edge_jitter=False) or []
-        return [(g, lab, box, L, dark) for g, lab, box, L, dark in got if L.get("text")]
+        return grad_crops(img, layout)
     grey = to_gray(img)
     out = []
     for L in layout:

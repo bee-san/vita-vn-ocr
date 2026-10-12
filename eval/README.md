@@ -189,6 +189,13 @@ schema, sessions and reservations. No network or screenshots needed.
 The local working files (screenshots, readings, decisions) live in
 `$HERD/shared/artifacts/eval/`; only the manifests are committed.
 
+## VOCR3 locked report
+
+`eval/vocr3_report.py` scores any set of W8I blobs on these sets with this file's recognizer mode
+(console and native polarity), plus whole-dialogue regions, paired bootstraps, the VOCR2 gates,
+arenas, A9 estimates and the vita-jp-overlay host cross-check; `eval/vocr3_fresh.py` and
+`eval/vocr3_clannad.py` run the private tests. See [docs/vocr3-harness.md](../docs/vocr3-harness.md).
+
 ## Hiragana and private captures
 
 Every recognizer result includes a `hiragana` table and confusion counts. Text is

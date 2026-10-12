@@ -6,7 +6,7 @@ visual-novel dialogue, names, choices and UI as the PS Vita and PSP show them, i
 no source document with training. It is meant to replace synth2 as the VN-style source in
 train2's mixture. The generator is `synth/synth3.py`.
 
-**Status (2026-10-12 13:50Z): no accuracy result yet.** The frozen ablation
+**Status (2026-10-12 13:35Z): no accuracy result yet.** The frozen ablation
 (`eval/synth3_ablation_protocol.json`) had started when the owner stopped all runs to move to a
 bigger machine; nothing was exported or scored. Generator version 1 was rendered (1,000,000
 crops, `data/manifests/synth3_shards_20261012.json`) and then superseded by version 2 before any

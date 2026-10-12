@@ -139,7 +139,7 @@
  ],
  "amendments": [
   {
-   "date": "2026-10-12T13:45Z",
+   "date": "2026-10-12T13:35:01Z (commit 4470d4b)",
    "before_any_scoring": true,
    "change": "s3 now points to the version-2 render (data/manifests/synth3_shards_v2.json, shards/train_v2) instead of the version-1 render (data/manifests/synth3_shards_20261012.json).",
    "reason": "The teacher-agreement label audit (synth/synth3_audit.py, 1,500 crops) found version-1 crops holding unlabelled text: real screen text from scene screenshots merged into GRAD boxes, and gt boxes widened across a neighbouring line. Metadata over 100,000 version-1 crops: 2.8% of gt crops have an ink box much wider than their label and 4.8% of GRAD crops are over 2.2x their ink height. Version 2 cuts scenes only from screenshots with known text boxes and avoids those boxes, measures each line's ink columns inside its own glyph extent, and keeps a GRAD box only when it holds and hugs exactly one labelled line.",

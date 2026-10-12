@@ -1,0 +1,111 @@
+{
+  "baseline_cached": {
+    "paired_line_proxy": {
+      "disagreement_rate": 0.08603548692943248,
+      "edit_disagreements": 3176,
+      "hiragana": {
+        "chars": 20323,
+        "deletions": 142,
+        "disagreement_rate": 0.04886,
+        "errors": 993,
+        "insertions": 284,
+        "into_hiragana": 142,
+        "substitutions": 567
+      },
+      "reference_chars": 36915,
+      "units": 4271
+    },
+    "whole_roi_vocr_proxy": {
+      "disagreement_rate": 0.14005085506307025,
+      "edit_disagreements": 5618,
+      "hiragana": {
+        "chars": 21729,
+        "deletions": 1428,
+        "disagreement_rate": 0.10037,
+        "errors": 2181,
+        "insertions": 100,
+        "into_hiragana": 261,
+        "substitutions": 653
+      },
+      "reference_chars": 40114,
+      "units": 2177
+    }
+  },
+  "baseline_forward_calls": 0,
+  "baseline_model_sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+  "cached_comparison_journal_sha256": "f2754897c8b69f555706b93a3cd4f709b8066c4a7578c03baf828458db584cd9",
+  "candidate_blank_paired_lines": 566,
+  "candidate_blank_whole_roi_lines": 607,
+  "candidate_comparison_journal_sha256": "664688518e01e065e6f8943d031bae8ced7588bc66b241d4b8e0d30cf25ebc6c",
+  "candidate_forward_calls": 8616,
+  "candidate_paired_line_proxy": {
+    "disagreement_rate": 0.0831369362047948,
+    "edit_disagreements": 3069,
+    "hiragana": {
+      "chars": 20323,
+      "deletions": 70,
+      "disagreement_rate": 0.04566,
+      "errors": 928,
+      "insertions": 298,
+      "into_hiragana": 117,
+      "substitutions": 560
+    },
+    "reference_chars": 36915,
+    "units": 4271
+  },
+  "candidate_whole_roi_empty_pages": 0,
+  "candidate_whole_roi_line_count_histogram": {
+    "1": 483,
+    "2": 1289,
+    "3": 344,
+    "4": 54,
+    "5": 6,
+    "6": 1
+  },
+  "candidate_whole_roi_proxy": {
+    "disagreement_rate": 0.1280849578700703,
+    "edit_disagreements": 5138,
+    "hiragana": {
+      "chars": 21729,
+      "deletions": 1116,
+      "disagreement_rate": 0.08693,
+      "errors": 1889,
+      "insertions": 102,
+      "into_hiragana": 250,
+      "substitutions": 671
+    },
+    "reference_chars": 40114,
+    "units": 2177
+  },
+  "capture_journal_sha256": "b6cd582c582d22af883710f202f60f9c44848be23c4a8fe2f726799c7f8f81ed",
+  "counts": {
+    "captured": 2204,
+    "excluded_failed_pages": 27,
+    "paired_lines": 4271,
+    "successful_pages": 2177
+  },
+  "finder_mode": 2,
+  "host_paired_line_seconds": {
+    "median": 0.0059725589962909,
+    "p95": 0.014173850500810659,
+    "samples": 4271
+  },
+  "original_failures_retried": 0,
+  "prepared_sha256": "5170914a9c693c8cb5549b48d7e05e58e932b8166b323180e024c66306b329d1",
+  "promotion_decision": "none; Google proxy alone cannot qualify model",
+  "protocol_sha256": "105660119aa7d0151500d396b7071715e4e784f3ae904ef7419a13fd656847e8",
+  "reference": "Google automated proxy, not hand-checked ground truth/CER; no promotion based on this run",
+  "released_model_sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766",
+  "released_runtime_revision": "49ff6f4d1c55804c600d098810574a49d382a009",
+  "schema": 1,
+  "source_pins": {
+    "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+    "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+    "runtime/vocr_lines.c": "0752584953d92efa1e7e8195eaae31048bc4b79694da832349c37e1da82fa348",
+    "runtime/vocr_lines.h": "2a5ba01c129608b94b92c28b77057f4e4ddb64a6f58c9c88fb1f8dfa8442d8e6"
+  },
+  "status": "completed_fixed_diagnostic",
+  "teacher_requests": 0,
+  "timing_scope": "uncontrolled live x86-64 host calls; not console speed or memory",
+  "training_or_selection_use": false
+}

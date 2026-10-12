@@ -1,0 +1,129 @@
+{
+  "all_aggregate_counters_scores_and_host_quantiles_reproduced": true,
+  "all_cached_and_candidate_capture_bindings_valid": true,
+  "all_original_and_candidate_artifacts_unchanged_during_audit": true,
+  "all_three_journal_hash_chains_valid": true,
+  "artifact_sha256": {
+    "attempt": "5117d32b5175becf46c0d8018ec7528e95565cf22d37e69221923a9c789b7c6e",
+    "candidate_journal": "664688518e01e065e6f8943d031bae8ced7588bc66b241d4b8e0d30cf25ebc6c",
+    "candidate_result": "b5dda9225fc2187e10cd9964d4c5a3da4d3cfbc4a7f7d0b634b9582d85d2ca60",
+    "complete": "28bbcc20f8251bccc92bcb0e0bd49ca4b1a8238b79cdd53802c6e34058a79689",
+    "driver": "70ba2b7956dcef89d4f22c87d7f280d0189577264a20a16b21a8c672e995de8b",
+    "finder_build": "08796873e3cd957ab4eec335d4821ee2c45b264bb34ba4ee4a50597730ede03b",
+    "finder_library": "e6495076c58f491e0801e68221bc6a4c78afc0a64f12c2b9be68b2722f537f4e",
+    "lock": "14ba9297269b1cc741a9993425b3f901a1086bed74be4eaad274381a83ac6425",
+    "original_captures": "b6cd582c582d22af883710f202f60f9c44848be23c4a8fe2f726799c7f8f81ed",
+    "original_comparisons": "f2754897c8b69f555706b93a3cd4f709b8066c4a7578c03baf828458db584cd9",
+    "plan": "8f3553ae4c9b09cb587631a6fcfe98e38073356576c9cbc870069516b6887c45",
+    "prepared": "5170914a9c693c8cb5549b48d7e05e58e932b8166b323180e024c66306b329d1",
+    "protocol": "105660119aa7d0151500d396b7071715e4e784f3ae904ef7419a13fd656847e8",
+    "recognizer_library": "4f9cef809b88025ccaf3b5ee10f0f22eabc07505c6cd118f8a6af814656bfb59",
+    "released_model": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766",
+    "root_authorization": "19279d81eb035132c80390c984330a92e291dc80ba6ec7e36dc726061c7a03ea",
+    "tests": "8c2c5e60a5a43dc47ef4003f7d4e5a36bc3cd37c1be1f97c3e47d10909ad4a2a"
+  },
+  "audit_model_forwards": 0,
+  "audit_native_finder_calls": 0,
+  "audit_teacher_requests": 0,
+  "candidate_forwards_bound_to_retained_inputs": 8616,
+  "exact_root_authorization_and_once_only_completion_receipts_valid": true,
+  "new_c3_crop_pixel_hashes_reconstructed_verified": 4345,
+  "original_failed_comparisons_retained_without_retry": 27,
+  "original_processed_line_inputs_verified": 4271,
+  "recomputed_scores_and_counts": {
+    "baseline_cached": {
+      "paired_line_proxy": {
+        "disagreement_rate": 0.08603548692943248,
+        "edit_disagreements": 3176,
+        "hiragana": {
+          "chars": 20323,
+          "deletions": 142,
+          "disagreement_rate": 0.04886,
+          "errors": 993,
+          "insertions": 284,
+          "into_hiragana": 142,
+          "substitutions": 567
+        },
+        "reference_chars": 36915,
+        "units": 4271
+      },
+      "whole_roi_vocr_proxy": {
+        "disagreement_rate": 0.14005085506307025,
+        "edit_disagreements": 5618,
+        "hiragana": {
+          "chars": 21729,
+          "deletions": 1428,
+          "disagreement_rate": 0.10037,
+          "errors": 2181,
+          "insertions": 100,
+          "into_hiragana": 261,
+          "substitutions": 653
+        },
+        "reference_chars": 40114,
+        "units": 2177
+      }
+    },
+    "candidate_blank_paired_lines": 566,
+    "candidate_blank_whole_roi_lines": 607,
+    "candidate_forward_calls": 8616,
+    "candidate_paired_line_proxy": {
+      "disagreement_rate": 0.0831369362047948,
+      "edit_disagreements": 3069,
+      "hiragana": {
+        "chars": 20323,
+        "deletions": 70,
+        "disagreement_rate": 0.04566,
+        "errors": 928,
+        "insertions": 298,
+        "into_hiragana": 117,
+        "substitutions": 560
+      },
+      "reference_chars": 36915,
+      "units": 4271
+    },
+    "candidate_whole_roi_empty_pages": 0,
+    "candidate_whole_roi_line_count_histogram": {
+      "1": 483,
+      "2": 1289,
+      "3": 344,
+      "4": 54,
+      "5": 6,
+      "6": 1
+    },
+    "candidate_whole_roi_proxy": {
+      "disagreement_rate": 0.1280849578700703,
+      "edit_disagreements": 5138,
+      "hiragana": {
+        "chars": 21729,
+        "deletions": 1116,
+        "disagreement_rate": 0.08693,
+        "errors": 1889,
+        "insertions": 102,
+        "into_hiragana": 250,
+        "substitutions": 671
+      },
+      "reference_chars": 40114,
+      "units": 2177
+    },
+    "host_paired_line_seconds": {
+      "median": 0.0059725589962909,
+      "p95": 0.014173850500810659,
+      "samples": 4271
+    }
+  },
+  "same_successful_roi_pages": 2177,
+  "schema": 1,
+  "source_and_model_pins": {
+    "baseline_model": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+    "model": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766",
+    "released_runtime_revision": "49ff6f4d1c55804c600d098810574a49d382a009",
+    "sources": {
+      "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+      "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+      "runtime/vocr_lines.c": "0752584953d92efa1e7e8195eaae31048bc4b79694da832349c37e1da82fa348",
+      "runtime/vocr_lines.h": "2a5ba01c129608b94b92c28b77057f4e4ddb64a6f58c9c88fb1f8dfa8442d8e6"
+    }
+  },
+  "status": "independent_read_only_audit_passed",
+  "zero_or_blank_outputs_not_filtered": true
+}

@@ -13,6 +13,8 @@ over a large pool and adds what a training pool of PC / console shots needs on t
   pool.py batches [--n K]          the next K pass-1 batches (devnative/sheets.py) -> $REALPLUS/review/pass1/bNNNN
   pool.py helpers [--max 6]        queue review-rpN helper agents for undecided batches, at most --max at once
   pool.py status                   batches made / decided / with a helper
+  pool.py reserve DIR...           batches this agent reviews itself (no helper is queued for them)
+  pool.py feed [--loop]            keep reads, batches and helpers going (read when idle, --ready batches)
   pool.py final                    decide.py's training rule (--mode train --auto-consensus) -> labels.jsonl
   pool.py build                    the npz files (teacher_train's format) and the committed manifests
   pool.py blind --n 500            a blind re-check sample -> $REALPLUS/review/blind (decide.py blind scores it)
@@ -64,7 +66,11 @@ FAMILY = {"meiki", "v6s"}
 PER_VN_CAP, GLOBAL_CAP = 2, 8          # devnative/build.py's per-VN cap; teacher/build.py's overall cap
 MIN_PSP_INK = L.MIN_INK                # a PSP crop needs 10 px of ink, as a native PSP line
 NOTE = ("\nNote (realplus): these screenshots are PC / home-console visual-novel screenshots scaled to the "
-        "PS Vita\nscreen (960 x 544); decide them exactly as above. Speaker names: add \"name\": true.\n")
+        "PS Vita\nscreen (960 x 544); decide them exactly as above. Speaker names: add \"name\": true.\n"
+        "Images: view ONE sheet per tool call, each sheet once, at most ~60 images per session. Append the\n"
+        "decisions of each sheet to decisions.jsonl in this directory as soon as that sheet is decided, so a\n"
+        "fresh session can resume: if decisions.jsonl already exists, keep it and continue with the first sheet\n"
+        "that has no decisions yet.\n")
 
 
 def jl(path):
@@ -78,6 +84,19 @@ def wjl(path, rows):
     tmp = p.with_name(p.name + ".part")
     tmp.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
     tmp.replace(p)
+
+
+def load_reads(path=READS):
+    """sheets.load_reads, skipping a last line read.py is still writing."""
+    shots = {}
+    for x in Path(path).read_text(encoding="utf-8").splitlines():
+        if x.strip():
+            try:
+                r = json.loads(x)
+            except ValueError:
+                continue
+            shots[r["shot"]] = r
+    return shots
 
 
 # ----------------------------------------------------------------------------- prep
@@ -162,7 +181,7 @@ def plan(shots):
 
 
 def cmd_plan(args):
-    shots = S.load_reads(READS)
+    shots = load_reads()
     lines, order = plan(shots)
     c = collections.Counter(x["tier"] for x in lines.values())
     sk = sum(1 for x in lines.values() if x.get("skip"))
@@ -186,7 +205,7 @@ def batched_ids(kind="pass1"):
 
 
 def cmd_batches(args):
-    shots = S.load_reads(READS)
+    shots = load_reads()
     idx = S.line_index(shots)
     plan_ids = [r["id"] for r in jl(REVIEW / "plan.jsonl")]
     done = batched_ids()
@@ -214,15 +233,30 @@ def helper_log():
     return jl(REVIEW / "helpers.jsonl")
 
 
+class review_lock:
+    """An exclusive lock on $REVIEW/.lock around helpers.jsonl and batch numbering (feed and reserve)."""
+    def __enter__(self):
+        import fcntl
+        REVIEW.mkdir(parents=True, exist_ok=True)
+        self.f = open(REVIEW / ".lock", "w")
+        fcntl.flock(self.f, fcntl.LOCK_EX)
+        return self
+
+    def __exit__(self, *exc):
+        self.f.close()
+
+
 def batch_state(b):
-    """done (decisions parse), bad (decisions.jsonl exists but does not parse) or open."""
+    """done (decisions parse), partial (valid so far, entries still undecided: a helper saves per
+    sheet), bad (decisions.jsonl does not parse) or open."""
     if not (b / "decisions.jsonl").exists():
         return "open", None
     try:
         D.parsed(b)
         return "done", None
     except (D.DecisionError, ValueError, KeyError) as e:
-        return "bad", str(e)[:400]
+        msg = str(e)
+        return ("partial" if msg.split(":", 1)[0].endswith("entries without a decision") else "bad"), msg[:400]
 
 
 def results():
@@ -235,7 +269,7 @@ def outstanding(log, res):
     out = []
     for h in log:
         b = Path(h["batch"])
-        if batch_state(b)[0] == "done":
+        if h["label"].startswith("self") or batch_state(b)[0] == "done":
             continue
         if f" {h['label']} REVIEW_DONE" in res or f" {h['label']} REVIEW_BLOCKED" in res \
                 or f" {h['label']} EXITED" in res or f" {h['label']} GONE" in res:
@@ -247,7 +281,7 @@ def outstanding(log, res):
 def cmd_helpers(args):
     log, res = helper_log(), results()
     busy = outstanding(log, res)
-    n = max([int(h["label"].rsplit("rp", 1)[1].split("-")[0]) for h in log] + [0])
+    n = max([int(h["label"].rsplit("rp", 1)[1].split("-")[0]) for h in log if "-rp" in h["label"]] + [0])
     queued = []
     for kind in args.kinds.split(","):
         for b in batch_dirs(kind):
@@ -272,6 +306,67 @@ def cmd_helpers(args):
             queued.append(rec)
     wjl(REVIEW / "helpers.jsonl", log)
     print(f"{len(busy)} helpers outstanding, {len(queued)} queued now: {[q['label'] for q in queued]}", flush=True)
+
+
+def cmd_reserve(args):
+    """Mark batches as reviewed by this agent itself (no helper is queued for them)."""
+    with review_lock():
+        log = helper_log()
+        for b in args.batch:
+            log.append({"label": f"self-{Path(b).name}", "batch": str(Path(b)), "kind": Path(b).parent.name,
+                        "queued": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
+        wjl(REVIEW / "helpers.jsonl", log)
+
+
+def read_running():
+    pid = OUT / "reads" / "read.pid"
+    if not pid.exists():
+        return False
+    try:
+        os.kill(int(pid.read_text().split()[0]), 0)
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def start_read():
+    """dedupe + prep, then devnative/read.py on the screenshots not read yet, in one heavy.sh slot."""
+    py = str(ROOT / ".venv" / "bin" / "python")
+    subprocess.run([py, str(HERE / "shots.py"), "dedupe"], check=True, stdin=subprocess.DEVNULL)
+    cmd_prep(None)
+    log = OUT / "logs" / f"read_{time.strftime('%H%M%S')}.log"
+    herd = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
+    cmd = (f"HEAVY_SLOTS=12 {herd}/heavy.sh timeout 14400 unshare -rn {ROOT}/teacher/.venv/bin/python "
+           f"{ROOT}/devnative/read.py run --shots {OUT}/reads/shots.jsonl --out {OUT}/reads --procs 5 "
+           f"> {log} 2>&1 < /dev/null")
+    proc = subprocess.Popen(["bash", "-c", cmd], cwd=ROOT, start_new_session=True)
+    (OUT / "reads" / "read.pid").write_text(f"{proc.pid}\n")
+    return log
+
+
+def unassigned(log):
+    have = {h["batch"] for h in log}
+    return [b for b in batch_dirs("pass1") if str(b) not in have and batch_state(b)[0] != "done"]
+
+
+def cmd_feed(args):
+    """One round (or --loop forever): start a read of new screenshots when none runs, keep --ready
+    pass-1 batches without a helper, and queue helpers up to --max."""
+    while True:
+        read = {json.loads(x)["shot"] for x in READS.read_text(encoding="utf-8").splitlines()[:-1] if x.strip()} \
+            if READS.exists() else set()
+        rows = [r for r in SH.load_shots() if r.get("pixel_sha256")]
+        new = sum(1 for r in rows if f"{r['vn']}_{r['image']}" not in read)
+        if not read_running() and new >= args.min_new:
+            print(f"{time.strftime('%H:%M:%S')} reading {new} new screenshots -> {start_read()}", flush=True)
+        with review_lock():
+            if len(unassigned(helper_log())) < args.ready:
+                cmd_plan(None)
+                cmd_batches(argparse.Namespace(n=args.ready, size=args.size))
+            cmd_helpers(argparse.Namespace(max=args.max, kinds="pass1", retry=False))
+        if not args.loop:
+            break
+        time.sleep(args.every)
 
 
 def cmd_status(args):
@@ -331,6 +426,17 @@ def scale_line(ln, fx, fy):
     if ln.get("furi"):
         out["furi"] = [sb_out(b) for b in ln["furi"]]
     return out
+
+
+def ink_mixed(box, line, dets):
+    """True when a quarter or more of another detected text box lies inside the ink crop: the
+    GRAD crops' "mixed" test (devnative/lines.grad_status), applied to the ink crop too. With
+    tight line spacing (common in 640x480 PC games) the padded crop otherwise takes in half of
+    the neighbouring line."""
+    for o in L.others_of(line, dets):
+        if L.area(o) and L.area(L.inter(o, box)) >= L.MIXED * L.area(o):
+            return True
+    return False
 
 
 def read_line(ln):
@@ -430,9 +536,13 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
                 if target == "psp" and not pok:
                     drops["psp-too-small"] += 1
                     continue
+                dets = dets_v if target == "vita" else dets_p
                 for crop in ("ink", "grad"):
                     if crop == "ink":
                         box = L.crop_box(ln, target, W, H)
+                        if ink_mixed(box, ln, dets):
+                            drops[f"{target}-ink-mixed"] += 1
+                            continue
                     else:
                         if g is None or g["status"] != "ok":
                             drops[f"{target}-grad-{g['status'] if g else 'none'}"] += 1
@@ -458,7 +568,7 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
 
 def cmd_build(args):
     labels = jl(OUT / "labels.jsonl")
-    shots = S.load_reads(READS)
+    shots = load_reads()
     late_vns = set(json.loads((OUT / "manifests" / "reserved_vns.json").read_text()))
     late_vns |= SH.devnative_vns() | SH.fresh_native_vns()
     leak = OUT / "manifests" / "leak_drop.json"
@@ -494,7 +604,7 @@ def cmd_blind(args):
     rng = random.Random(args.seed)
     ids = sorted(rng.sample(kept, min(args.n, len(kept))))
     (REVIEW / "blind_ids.json").write_text(json.dumps({"ids": ids, "seed": args.seed, "from": len(kept)}) + "\n")
-    shots = S.load_reads(READS)
+    shots = load_reads()
     entries = S.review_entries(shots, ids)
     rng.shuffle(entries)                     # batches mix tiers and VNs
     for k in range(0, len(entries), args.size):
@@ -518,6 +628,15 @@ def main():
     p.add_argument("--kinds", default="pass1")
     p.add_argument("--retry", action="store_true", help="re-queue batches whose helper ended without decisions")
     sub.add_parser("status")
+    p = sub.add_parser("feed")
+    p.add_argument("--loop", action="store_true")
+    p.add_argument("--every", type=int, default=180)
+    p.add_argument("--ready", type=int, default=3)
+    p.add_argument("--size", type=int, default=200)
+    p.add_argument("--max", type=int, default=6)
+    p.add_argument("--min-new", type=int, default=400)
+    p = sub.add_parser("reserve")
+    p.add_argument("batch", nargs="+")
     p = sub.add_parser("final")
     p.add_argument("--no-resolve", action="store_true")
     sub.add_parser("build")
@@ -527,7 +646,8 @@ def main():
     p.add_argument("--size", type=int, default=125)
     args = ap.parse_args()
     {"prep": cmd_prep, "plan": cmd_plan, "batches": cmd_batches, "helpers": cmd_helpers, "status": cmd_status,
-     "final": cmd_final, "build": cmd_build, "blind": cmd_blind}[args.cmd](args)
+     "final": cmd_final, "build": cmd_build, "blind": cmd_blind, "reserve": cmd_reserve,
+     "feed": cmd_feed}[args.cmd](args)
 
 
 if __name__ == "__main__":

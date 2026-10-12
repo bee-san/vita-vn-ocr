@@ -151,3 +151,13 @@ def test_build_drops_out_of_vocab_and_late_exclusions(tmp_path):
     assert len(man) == 1 and drops["out-of-vocab"] == 1
     _, man, drops, _ = PL.build_lines(labels, {"v100_7": shot}, excluded_vns={"v100"})
     assert not man and drops["excluded-late"] == 2
+
+
+def test_ink_mixed_drops_crops_that_take_in_a_neighbour():
+    a = _line(0, [45, 433, 283, 453], ("あ", "あ", "あ", "あ"))
+    b = _line(1, [45, 447, 399, 469], ("い", "い", "い", "い"))      # glyph rows overlap: tight spacing
+    c = _line(2, [45, 500, 399, 520], ("う", "う", "う", "う"))
+    dets = [{"det": x["det"]} for x in (a, b, c)]
+    box_a = [41, 429, 287, 457]
+    assert PL.ink_mixed(box_a, PL.read_line(a), dets)                  # half of b's glyphs inside
+    assert not PL.ink_mixed([41, 496, 403, 524], PL.read_line(c), dets)

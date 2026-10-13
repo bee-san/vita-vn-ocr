@@ -1000,7 +1000,10 @@ def cmd_publish(args):
     fetched = collections.Counter("ok" if r.get("sha256") else r.get("status", "not-fetched") for r in rows.values())
     dump = SH.realplus_dir() / "vndb" / f"vndb-db-{args.dump_date}.tar.zst"
     labels = jl(OUT / "labels.jsonl")
-    blind = OUT / "review" / "blind_report.json"
+    blind = OUT / "review" / "blind_report_measured.json"      # as scored, before the third looks
+    if not blind.exists():
+        blind = OUT / "review" / "blind_report.json"
+    looks3 = [x for f in sorted(REVIEW.glob("resolutions*.jsonl")) for x in jl(f)]
     stats = {
         "pool": "realplus",
         "pipeline": {"devnative": "f5a1dbd: read and sheets as frozen at 35a86ca, GRAD containment 0cb084e, "
@@ -1028,6 +1031,8 @@ def cmd_publish(args):
         "local_manifests": {n: P.file_sha256(OUT / n) for n in ("manifests/lines.jsonl", "labels.jsonl",
                                                                 "lines_full.jsonl")},
         "blind": json.loads(blind.read_text())["summary"] if blind.exists() else None,
+        "third_looks": {"lines": len(looks3), "kept": sum(bool(x.get("keep")) for x in looks3),
+                        "why": dict(collections.Counter(x.get("why") for x in looks3)), "reviewer_kind": "assistant"},
     }
     (MANIFESTS / "stats.json").write_text(json.dumps(stats, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({"shots": len(shots_), "files": names, "lines": len(man)}), flush=True)

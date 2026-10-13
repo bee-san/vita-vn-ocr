@@ -151,11 +151,11 @@ def conv_bn(cin, cout, k, stride=1, groups=1, pad=None, rep=0):
 
 
 class DS(nn.Module):
-    """Depthwise k x k (3 x 3 by default) + pointwise 1x1, residual when the shape is unchanged."""
+    """Depthwise 3x3 + pointwise 1x1, residual when the shape is unchanged."""
 
-    def __init__(self, cin, cout, stride, rep=0, k=3):
+    def __init__(self, cin, cout, stride, rep=0):
         super().__init__()
-        self.dw = conv_bn(cin, cin, k, stride, groups=cin, rep=rep)
+        self.dw = conv_bn(cin, cin, 3, stride, groups=cin, rep=rep)
         self.pw = cbr(cin, cout, 1)
         self.res = stride == 1 and cin == cout
 

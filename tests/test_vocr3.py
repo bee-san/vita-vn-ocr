@@ -143,3 +143,28 @@ def test_rp_runs_match_their_pretrains():
             list(cands.get("extra", []))
         rp_runs = [r for _, r in spec["decision_pairs"]] + spec["extra_runs"]
         assert sorted("rp_" + b[3:] for b in all_base) == sorted(rp_runs)
+
+
+def test_make_spec_pins_every_arm(tmp_path):
+    sys.path.insert(0, str(ROOT / "eval"))
+    import vocr3_make_spec as MS
+    rel = tmp_path / "rel"
+    rel.mkdir()
+    shas = {}
+    for f in ("FL10_w8.vocr", "VOCR2_FL10_w8.vocr", "H15_w8.vocr", "F20_w8.vocr"):
+        (rel / f).write_bytes(f.encode())
+        shas[f] = MS.sha256(rel / f)
+    proto = json.loads(json.dumps(P))
+    proto["sizes"]["FL10"]["baselines"]["VOCR1"]["sha256"] = shas["FL10_w8.vocr"]
+    proto["sizes"]["FL10"]["baselines"]["VOCR2"]["sha256"] = shas["VOCR2_FL10_w8.vocr"]
+    proto["sizes"]["H15"]["baselines"]["VOCR_H15"]["sha256"] = shas["H15_w8.vocr"]
+    sels = {}
+    for size in ("FL10", "H15", "W20"):
+        b = tmp_path / f"{size}.vocr"
+        b.write_bytes(size.encode() * 3)
+        sels[size] = {"selected": f"ft_{size}_x_seed1", "selected_blob": str(b), "selected_blob_sha256": MS.sha256(b)}
+    spec = MS.build(proto, sels, tmp_path / "blobs", rel, f20_sha=shas["F20_w8.vocr"])
+    names = {a["name"] for a in spec["arms"]}
+    assert names == {"VOCR1", "VOCR2", "VOCR_H15", "F20", "VOCR3_FL10", "VOCR3_FL10_C3", "VOCR3_H15", "VOCR3_W20"}
+    assert {"candidate": "VOCR3_H15", "baseline": "VOCR_H15"} in spec["gates"] and len(spec["pairs"]) == 8
+    assert all((tmp_path / "blobs" / a["file"]).exists() for a in spec["arms"])

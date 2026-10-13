@@ -29,7 +29,9 @@ train2's mixture, or to be mixed with it. The generator is `synth/synth3.py`.
   (C − A −0.07, CI −0.24 to +0.09 on teacher_val; −0.09, CI −0.29 to +0.12 on the native
   cohort devnative), so synth2 stays at FL10 size. The real fine-tune absorbs most of the
   pretrain gap (pretrain-only C − A −0.46). Both arms reach 3.3-3.4% on teacher_val, against the
-  released FL10's 4.05%. H15, the step curve and the learning curve are running.
+  released FL10's 4.05%. H15 (2 seeds per arm): the same, no measured difference (C − A −0.14, CI
+  −0.30 to +0.02), both arms level with the released H15's 2.29%. The step curve and the learning curve
+  are running.
 
 Commit hashes cited in this document, the protocols and the result files refer to the branch's
 history before it was rebased onto main; that history, with its original commit times, is kept at
@@ -479,8 +481,25 @@ Reported only:
   which was trained with frame KD; H15 was not, so the two sizes agree: the gap at FL10 was the
   recipe, not the synthetic data.
 
-Protected test sets: scored once per export after this result was committed; see the H15 test report
-below once it is in.
+Protected test sets (`eval/synth3_study2_H15_test_20261013.json`; each export scored once, after
+the result was committed; reported only):
+
+| pooled vita-test + psp-test | console polarity | native polarity |
+|---|---|---|
+| A_s2 fine-tuned (2 seeds) | 2.10% | 2.11% |
+| C_mix fine-tuned (2 seeds) | 2.08% | 2.09% |
+| C − A, points (VN-cluster CI) | −0.02 (−0.29 to +0.30) | −0.02 (−0.27 to +0.29) |
+| A_s2 pretrain-only | 2.40% | 2.42% |
+| C_mix pretrain-only | 2.00% | 1.98% |
+| pretrain-only C − A | −0.40 (−0.72 to −0.10) | −0.44 (−0.74 to −0.16) |
+| released H15 (v0.2.0) | 2.21% | 2.09% |
+
+Per set (console): vita-test A 1.27%, C 1.11% (C − A −0.16, CI −0.44 to +0.13), released H15 1.56%;
+psp-test A 2.95%, C 3.07% (+0.12, CI −0.35 to +0.70), released H15 2.87%. The fine-tune changes A by
+−0.30 (console, CI −0.52 to −0.07) and C by +0.08 (CI −0.17 to +0.38) on the test sets, so the
+pretrain-only mix is the lowest pooled number here (2.00%), as at FL10 size (3.03%); on the
+development cohorts the fine-tune helps both arms. These numbers cannot change the decision or the
+recipe.
 
 ### Provenance of the runs
 

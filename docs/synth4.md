@@ -21,7 +21,7 @@ under 10 exposures 1,167 → 29, classes drawn by under 5 fonts 575 → 29), and
 toward the measured real distribution, but neither lowered CER at this budget. One signal points the
 other way and is worth a longer study: on **native console crops** — where the 1-bit, contrast and
 font changes land — synth4 is level or slightly better (teacher_val native Vita −0.36 [−1.01, +0.18],
-devnative native Vita −0.40 [−0.68, −0.19], devnative native PSP ink −0.16 [−0.40, +0.10]); the
+devnative native Vita −0.40 [−0.68, −0.19], devnative native ink (tv_native) −0.16 [−0.40, +0.10]); the
 regression is on teacher_val's PC-screenshot majority (hires +0.48 [+0.23, +0.74]) and its short and
 name lines (len 1-4 +0.91, name-like +0.68). The limits section lists why a 16k-step pretrain may
 not show a curriculum's gain, and what study would.
@@ -60,8 +60,8 @@ pinned configuration:
 | contrast p50, all / native Vita / native PSP | 142.5 / 153 / 146 | 153 / 166 / 155 | **160 / 172 / 160** | 167 / 191 / 177 |
 | 1-bit detector, native PSP (obs) | 0.366 | 0.131 | **0.142** | 0.026 |
 | outline, all (obs / Rogan-Gladen est.) | 0.465 / 0.68 | 0.361 / 0.36 | **0.357 / 0.35** | 0.375 / 0.40 |
-| coloured fills / partly coloured | 0.172 / 0.147 | 0.136 / 0.129 | **0.096 / 0.102** | 0.105 / 0.102 |
-| hue of coloured fills r / g / b | .46 / .23 / .31 | .55 / .16 / .29 | **.58 / .12 / .30** | .59 / .09 / .32 |
+| coloured fills (synth3 v3 re-rendered) | 0.168 | 0.136 | **0.096** | 0.104 |
+| hue of coloured fills r / g / b | .51 / .20 / .29 | .55 / .16 / .29 | **.58 / .12 / .30** | .60 / .08 / .32 |
 | ink height p10/50/90, scaled to Vita | 15/23/34 | 14/20/32 | **14/20/32** | 15/21/31 |
 | background texture p50 | 15.8 | 15.9 | **16.4** | 17.6 |
 
@@ -80,11 +80,25 @@ open alternative. Native Vita contrast stays 19 levels short of real.
   `synth/synth4.py` (sha256 `a16fa7f3…`, with synth3.py, render.py, common.py and synth3_text.py at
   main's bytes; every code hash is in the recipe), seed 20261013, `--profile personal`: 317 font
   files in 112 families (307 open, 8 non-commercial, 2 owner), synth3 v3's 14 text pools and
-  scenes, 87 excluded VNs (fresh native 13, CLANNAD family 24, the owner's 50). Rendered 15:58-16:29Z
-  in 4 heavy.sh jobs of 5 workers (about 345 s per 10,000-crop shard per worker), 0 render errors.
+  scenes, 87 excluded VNs (fresh native 13, CLANNAD family 24, the owner's 50; the three synth3
+  exclusion manifests, as synth3 v3). Rendered 15:58-16:29Z in 4 heavy.sh jobs of 5 workers (about
+  345 s per 10,000-crop shard per worker), 0 render errors.
+- **Reserved VNs the render does not exclude (disclosure).** The generator reserves exactly the
+  three synth3 manifests' 87 VNs. Two VNs the fleet reserves only through a shared VNDB release are
+  not among them, as in synth3 v3's own render (synth3-v3 Hygiene; #63's audit accepted the same
+  exposure there): 弟切草 (v661, through 街's release) and Ever 17 (v19373, through the Never 7 pack).
+  Measured on the 100 pinned shards: v661 contributes 2 narration crops holding the title 弟切草 and
+  about 28 name crops of names only its characters produce (公平, 透明人間, アインシュタイン博士,
+  フランケンシュタインの怪物, 怪魚 — all generic strings), 31 of 1,000,000 crops; it has no scene (no
+  v661 screenshot is local). The Never 7 release partners (v13, v17, v247, v19373) add about 29 name
+  crops and two scene VNs, as synth3 v3 does. No protected test reads any of these VNs, and the gap
+  analysis's statistics (#65) do exclude v661 and v19373. The ablation is unaffected (both arms are
+  reserved the same way). A later render should add v661 and the Never 7 partners to synth4's
+  exclusion for consistency with #65's statistics.
 - The protocol was committed and pushed at 15:57:22Z (`8a1a932`), the pin at 16:30:32Z (`304bfeb`),
   before F_s4's first step (16:31Z). Both commits are kept at tag `synth4-history-20261013`; the branch
-  was later rebased onto the corrected gap analysis (`11d379e`, `6b56076`), which changed no file of
+  was later rebased onto the corrected gap analysis (its commits are reachable from the branch tip;
+  the generator, protocol and pin files are unchanged across the rebases), which changed no file of
   the render.
 - Determinism: re-rendering the first 1,000 crops of shards 0 and 57 from the committed code gives
   byte-identical pixels, shapes, labels and metadata.
@@ -111,7 +125,7 @@ Occurrences per vocab class in the 1,000,000 crops (`synth4_gap.py exposures`):
 The quota is not met for every class: a focus draw takes a quota class only 75% of the time and
 only 40% of dialogue lines have a focus character, so 1,336 classes end between their synth3 count
 and K (most of them above 60). The 28 never rendered are the half-width ASCII ! ( ) ? ~, Cyrillic,
-‐ ─ ゕ ゖ and 12 old-form kanji with no pool line, word or name (the pools use full-width forms).
+‐ ─ ゕ ゖ and 13 old-form kanji with no pool line, word or name (the pools use full-width forms).
 By region (a region's crops share its metadata): 61,207 crops (6.1%) come from regions with a Jiten
 word carrier, 6,721 from regions with a name line, and 116,301 (11.6%) from regions whose speaker
 name was drawn to hold a quota class; every other quota line is a natural pool line.
@@ -180,14 +194,16 @@ worse). The decision adds nothing else. Result: `eval/synth4_ablation_20261013.j
 
 | run | rv CER | rvn CER |
 |---|---|---|
-| D_s3v3 seed 1 | 5.14% | 5.19% |
-| D_s3v3 seed 2 | 5.36% | 5.35% |
-| F_s4 seed 1 | 5.43% | 5.43% |
-| F_s4 seed 2 | 5.42% | 5.43% |
+| D_s3v3 seed 1 | 5.16% | 5.21% |
+| D_s3v3 seed 2 | 5.38% | 5.37% |
+| F_s4 seed 1 | 5.55% | 5.40% |
+| F_s4 seed 2 | 5.68% | 5.60% |
 
-Arm CER (both views, both seeds): D_s3v3 5.28%, F_s4 5.56%. **F_s4 − D_s3v3 = +0.279 points, VN-cluster
-95% CI [+0.08, +0.48]**, both seed pairs positive (+0.287, +0.270). The interval is above 0, so synth4
-is not better; it is slightly worse. 19 of the VNs improve under synth4, 19 worsen.
+(These are the final C W8I scores of `eval/synth4_score.sh`; the in-training evaluation logs, which the
+protocol uses for monitoring only, read a little lower.) Arm CER (both views, both seeds): D_s3v3 5.28%,
+F_s4 5.56%. **F_s4 − D_s3v3 = +0.279 points, VN-cluster 95% CI [+0.08, +0.48]**, both seed pairs positive
+(+0.287, +0.270). The interval is above 0, so synth4 is not better; it is slightly worse. Of teacher_val's
+180 VNs, 56 improve under synth4, 83 worsen and 41 are equal.
 
 | stratum | lines | D_s3v3 | F_s4 | F − D, points (VN-cluster 95% CI) |
 |---|---|---|---|---|
@@ -225,7 +241,11 @@ The native-Vita strata favour synth4 (native Vita −0.40 [−0.68, −0.19], in
 PSP ink is flat and PSP GRAD slightly worse. Short and name lines are noisier here (len 1-4 +1.74,
 CI crosses 0).
 
-No protected set was read or scored.
+The in-training evaluations used study 1b's `--val rv/rvn` (the full teacher_val npz, which still
+holds 8 lines of the owner's Memories Off VN v1331); nothing was selected on them (the step-16000
+checkpoint is fixed, no checkpoint selection), but a future run should pass the amendment-8 copy as
+`--val`. The scoring that the decision rests on read only the amendment-8 copies (no v1331); no
+vita-test, psp-test, fresh native, CLANNAD or other protected test was read or scored.
 
 ## Development error profile of the VOCR3 selections (report only)
 
@@ -273,6 +293,15 @@ On devnative the short and name lines are the selections' worst stratum by far (
 - The D_s3v3 runs' development scores were published before this protocol (study 1b, the
   native-frames study); they are a fixed baseline, and nothing was selected or tuned on them.
 - Labels were checked by a teacher-agreement audit and 36 crops read by eye, not by hand at scale.
+- The protocol fixes three curriculum strata (tail-kanji, tail-any, fl10-unk); the result tables show
+  tail-kanji and tail-any but not fl10-unk, because only 4 teacher_val lines carry a character outside
+  FL10's vocab and `compare` drops strata under 5 lines. FL10 reads those 4 lines' out-of-vocab
+  characters as `<unk>` under both arms, so the stratum cannot separate them anyway.
+- synth4's Jiten-word carriers are filtered only by the exclusion manifests' text markers (as synth3's
+  pool lines are), not by the fuller name-pool reservation: 326 of the 54,460 curriculum words are VNDB
+  names of reserved-VN characters (mostly ordinary words; about 7 distinctive names, ~22 crops), in 912
+  Jiten-region crops. A later render should filter the carrier words too. The B2 disclosure above counts
+  the v661 and Never 7 exposure.
 - Nothing here ran on a console.
 
 ## Reproduce

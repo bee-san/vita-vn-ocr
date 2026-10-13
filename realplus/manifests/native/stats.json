@@ -1,0 +1,123 @@
+{
+ "tag": "v1",
+ "build": {
+  "lines": 557,
+  "vns": 186,
+  "dropped": {
+   "known-line": 1333,
+   "resolution-drop": 4,
+   "out-of-vocab": 3,
+   "grad-cuts-label": 34,
+   "grad-missed": 35,
+   "grad-mixed": 39,
+   "edge-cut": 16,
+   "grad-partial": 20,
+   "ink-mixed": 6,
+   "no-crop": 6,
+   "grad-unchecked": 27,
+   "repeat-cap": 5
+  },
+  "files": {
+   "native_train_ink_v1.npz": {
+    "crops": 557,
+    "by_target": {
+     "psp": 435,
+     "vita": 122
+    },
+    "sha256": "ca202a1c680036f0cd38449f692358e919a97eda4aa2bdca764c1cb8c818ff57"
+   },
+   "native_train_grad_v1.npz": {
+    "crops": 411,
+    "by_target": {
+     "psp": 334,
+     "vita": 77
+    },
+    "sha256": "2cf40190bdf61f2cb5e6e0b2246f27c9521cdd4ef0bdc3ad81c8164673e86366"
+   }
+  }
+ },
+ "read_not_selected": {
+  "v1360 owner-test-relation": 6,
+  "v1964 owner-test-series": 10
+ },
+ "luna_agreement": {
+  "lines": 1300,
+  "claude_read": 586,
+  "luna": {
+   "agree": 450,
+   "skip-ui": 27,
+   "disagree": 68,
+   "skip-cut": 40,
+   "unsure": 1
+  },
+  "agree_of_claude_read": [
+   450,
+   586,
+   0.7679
+  ],
+  "agree_of_both_read": [
+   450,
+   518,
+   0.8687
+  ],
+  "disagree_edge_only": 13,
+  "luna_skipped_or_unsure": 68,
+  "claude_skipped_or_unsure": 714,
+  "luna_read_where_claude_skipped": 253,
+  "agree_of_claude_read_wilson95": [
+   0.7321,
+   0.8003
+  ]
+ },
+ "precision_check": {
+  "summary": {
+   "all": {
+    "agree": 156,
+    "lines": 160,
+    "rate": 0.975,
+    "wilson95": [
+     0.9375,
+     0.9902
+    ]
+   },
+   "crop:grad": {
+    "agree": 51,
+    "lines": 52,
+    "rate": 0.9808,
+    "wilson95": [
+     0.8988,
+     0.9966
+    ]
+   },
+   "crop:ink": {
+    "agree": 105,
+    "lines": 108,
+    "rate": 0.9722,
+    "wilson95": [
+     0.9215,
+     0.9905
+    ]
+   },
+   "stratum:auto": {
+    "agree": 38,
+    "lines": 40,
+    "rate": 0.95,
+    "wilson95": [
+     0.835,
+     0.9862
+    ]
+   },
+   "stratum:reviewed": {
+    "agree": 118,
+    "lines": 120,
+    "rate": 0.9833,
+    "wilson95": [
+     0.9413,
+     0.9954
+    ]
+   }
+  },
+  "of": 160,
+  "reviewer_kind": "assistant"
+ }
+}

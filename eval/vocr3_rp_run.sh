@@ -3,7 +3,8 @@
 # (eval/vocr3_protocol.json amendment 4). It is the candidate's own fine-tune (eval/synth3_study2_run.sh /
 # eval/vocr3_run.sh: 15,000 steps, lr 1.2e-3, kd=0, nv 0.25 + the arm's synthetic data 0.25) with the real half
 # re-split as tt 0.2 + rd 0.1 + rp 0.2: tt and rd are the CLANNAD-free copies (eval/synth3_study2_pools.sha256),
-# rp is the realplus pool, ink and GRAD crops (eval/vocr3_realplus.sha256), and there are no PP-OCRv6 pseudo-labels.
+# rp is the realplus pool, ink and GRAD crops, without CLANNAD's relations and fan works (eval/vocr3_realplus.sha256,
+# amendment 5), and there are no PP-OCRv6 pseudo-labels.
 # The pretrain is read from study 2's runs or VOCR3's own; the output is $HERD/shared/artifacts/synth3/vocr3/runs/
 # rp_<ARCH>_<ARM>[_preNk]_seed<SEED>. A run never resumes: a partial directory stops the script.
 set -euo pipefail
@@ -36,7 +37,7 @@ for d in "$A/synth3/study2/runs" "$A/synth3/vocr3/runs"; do
 done
 [ -n "$INIT" ] || { echo "no finished pretrain $PRUN (ckpt_step$PRE.pt)"; exit 4; }
 FP=$A/synth3/study2/pools
-RP=$A/realplus
+RP=$A/synth3/vocr3/pools          # realplus without CLANNAD's relations and fan works (amendment 5)
 VALS=(--val "rv:$A/teacher/teacher_val.npz" --val "rvn:$A/teacher/teacher_val.npz:native=1" --select rv,rvn)
 cd "$REPO"
 echo "git $(git rev-parse HEAD) run $RUN from $INIT"

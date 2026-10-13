@@ -1,0 +1,167 @@
+{
+ "kind": "synth4-gap-colour",
+ "schema": 1,
+ "sources": {
+  "real": {
+   "all": {
+    "crops": 11432,
+    "coloured": 0.1047,
+    "part": 0.1018,
+    "grad": 0.0087,
+    "hue": {
+     "r": 0.594,
+     "b": 0.317,
+     "g": 0.089
+    }
+   },
+   "psp:hires": {
+    "crops": 2261,
+    "coloured": 0.123,
+    "part": 0.1256,
+    "grad": 0.0106,
+    "hue": {
+     "b": 0.388,
+     "r": 0.5,
+     "g": 0.112
+    }
+   },
+   "psp:psp": {
+    "crops": 2377,
+    "coloured": 0.0791,
+    "part": 0.0816,
+    "grad": 0.0042,
+    "hue": {
+     "r": 0.654,
+     "b": 0.218,
+     "g": 0.128
+    }
+   },
+   "vita:hires": {
+    "crops": 5816,
+    "coloured": 0.1071,
+    "part": 0.0989,
+    "grad": 0.011,
+    "hue": {
+     "r": 0.587,
+     "b": 0.334,
+     "g": 0.079
+    }
+   },
+   "vita:vita": {
+    "crops": 978,
+    "coloured": 0.1104,
+    "part": 0.1135,
+    "grad": 0.002,
+    "hue": {
+     "b": 0.204,
+     "r": 0.769,
+     "g": 0.028
+    }
+   }
+  },
+  "s3v3": {
+   "all": {
+    "crops": 6926,
+    "coloured": 0.1725,
+    "part": 0.1467,
+    "grad": 0.011,
+    "hue": {
+     "r": 0.461,
+     "g": 0.227,
+     "b": 0.312
+    },
+    "truth_grad": 0.0936,
+    "truth_coloured": 0.0872,
+    "grad_tpr_fpr": [
+     0.0602,
+     0.0059
+    ]
+   },
+   "psp:hires": {
+    "crops": 1287,
+    "coloured": 0.2012,
+    "part": 0.1725,
+    "grad": 0.0078,
+    "hue": {
+     "r": 0.475,
+     "g": 0.232,
+     "b": 0.293
+    },
+    "truth_grad": 0.0979,
+    "truth_coloured": 0.0824,
+    "grad_tpr_fpr": [
+     0.0397,
+     0.0043
+    ]
+   },
+   "psp:psp": {
+    "crops": 1724,
+    "coloured": 0.1212,
+    "part": 0.1415,
+    "grad": 0.0093,
+    "hue": {
+     "r": 0.502,
+     "g": 0.239,
+     "b": 0.258
+    },
+    "truth_grad": 0.0737,
+    "truth_coloured": 0.0864,
+    "grad_tpr_fpr": [
+     0.063,
+     0.005
+    ]
+   },
+   "vita:hires": {
+    "crops": 1945,
+    "coloured": 0.1959,
+    "part": 0.1501,
+    "grad": 0.0108,
+    "hue": {
+     "g": 0.231,
+     "r": 0.446,
+     "b": 0.323
+    },
+    "truth_grad": 0.0961,
+    "truth_coloured": 0.0895,
+    "grad_tpr_fpr": [
+     0.0481,
+     0.0068
+    ]
+   },
+   "vita:psp2x": {
+    "crops": 329,
+    "coloured": 0.2067,
+    "part": 0.155,
+    "grad": 0.0122,
+    "hue": {
+     "b": 0.397,
+     "g": 0.191,
+     "r": 0.412
+    },
+    "truth_grad": 0.0912,
+    "truth_coloured": 0.1155,
+    "grad_tpr_fpr": [
+     0.0333,
+     0.01
+    ]
+   },
+   "vita:vita": {
+    "crops": 1641,
+    "coloured": 0.1694,
+    "part": 0.1261,
+    "grad": 0.0152,
+    "hue": {
+     "g": 0.216,
+     "r": 0.45,
+     "b": 0.335
+    },
+    "truth_grad": 0.1085,
+    "truth_coloured": 0.0835,
+    "grad_tpr_fpr": [
+     0.0899,
+     0.0062
+    ]
+   }
+  }
+ }
+}

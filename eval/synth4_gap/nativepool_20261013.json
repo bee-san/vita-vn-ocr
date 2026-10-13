@@ -1,0 +1,17 @@
+{
+ "kind": "synth4-minepool",
+ "new_kept": 14,
+ "reserved_dropped": 0,
+ "lines": 12,
+ "drops": {
+  "vita-grad-missed": 6,
+  "psp-too-small": 12,
+  "vita-grad-partial": 4,
+  "edge-unchecked": 2,
+  "vita-grad-mixed": 2,
+  "repeat-cap": 0,
+  "trained-shot": 1910
+ },
+ "files": {},
+ "native": true
+}

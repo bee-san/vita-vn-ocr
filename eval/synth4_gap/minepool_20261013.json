@@ -1,0 +1,47 @@
+{
+ "kind": "synth4-minepool",
+ "new_kept": 4308,
+ "reserved_dropped": 1,
+ "lines": 2890,
+ "drops": {
+  "out-of-vocab": 1,
+  "edge-unchecked": 1363,
+  "vita-grad-cuts-label": 135,
+  "psp-grad-mixed": 424,
+  "psp-grad-unchecked": 77,
+  "vita-grad-unchecked": 118,
+  "psp-grad-missed": 156,
+  "psp-too-small": 1049,
+  "vita-grad-missed": 125,
+  "vita-ink-mixed": 81,
+  "vita-grad-mixed": 133,
+  "psp-ink-mixed": 83,
+  "no-crop": 53,
+  "vita-grad-partial": 89,
+  "psp-grad-partial": 14,
+  "psp-grad-cuts-label": 1,
+  "repeat-cap": 0
+ },
+ "files": {
+  "psp_grad": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/minepool/minepool_psp_grad.npz",
+   "sha256": "30f7af7ff2f84aefc957517505cf5b460f650d1b475e26ded4ba80cc1bebd929",
+   "crops": 1222
+  },
+  "psp_ink": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/minepool/minepool_psp_ink.npz",
+   "sha256": "af9d703fec5b30a90b172b4cf1bda1973b49c70d18c85d14168608f4eeaccb86",
+   "crops": 1811
+  },
+  "vita_grad": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/minepool/minepool_vita_grad.npz",
+   "sha256": "e799895286f7bdd5b24ee71de96ccc83f99e36b8e967e9c911637a3cee380f3e",
+   "crops": 2343
+  },
+  "vita_ink": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/minepool/minepool_vita_ink.npz",
+   "sha256": "1899d05f320d4e989af74b3bec7d70679b8512befb0a62012d0ef91b39b2b486",
+   "crops": 2862
+  }
+ }
+}

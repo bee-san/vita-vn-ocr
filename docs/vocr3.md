@@ -185,14 +185,14 @@ should not be read as met with margin.
 ## Locked report (once, after every selection was committed)
 
 `eval/vocr3_report.py` (#51, verified by reproducing the released blobs' published numbers) ran once,
-16:21-16:49Z on 2026-10-13, after the last selection commit (87641eb at 16:19Z; 37a8eb9 on this branch
-after the rebase). A first start at 16:19:33Z aborted in the same second at spec validation
+16:21-16:49Z on 2026-10-13, after the last selection commit (87641eb at 16:19Z, reachable through tag
+`vocr3-report-runner-9eadb90`; the branch's rebases since then have rewritten its hash). A first start at 16:19:33Z aborted in the same second at spec validation
 (`vocr3_make_spec.py` had written a `selected_runs` field the harness rejects) and wrote nothing. The
 `shared` step (the test-set scoring) then ran from feat/vocr3 at tag `vocr3-report-runner-9eadb90`
 with the spec `eval/vocr3_report_spec_20261013.json` built by `eval/vocr3_make_spec.py` from the three
 committed selections; the `a9`, `overlay` and `render` steps ran from tag `vocr3-report-runner-f978800`
 (the same tree with a reformatted `vocr3_make_spec.py` and a stronger test; `eval/vocr3_report.py` is the
-same blob `f7659ec7` in both and on this branch), which the branch's rebase later replaced by 19139f2. Scalar C W8I runtime (gcc 11.5),
+same blob `f7659ec7` in both and on this branch), which the branch's later rebases rewrote. Scalar C W8I runtime (gcc 11.5),
 vita-test (206 lines, 16 games) and psp-test (245 lines, 14 games): fixed lines (console polarity primary,
 native also; per set, per style, per VN, pooled; full text and hiragana) and whole dialogue (each
 manifest region at its base box and expanded by 4 and 8 native px, the arm's own C finder, crops joined
@@ -322,12 +322,13 @@ for a release asset if the owner wants one.
   its relations, the fresh native textbox test's titles and relations, and every eval screenshot
   (`docs/realplus.md`, `docs/devnative.md`, `eval/synth3_study2_pools.sha256`, `eval/vocr3_realplus.sha256`);
   the owner's titles reserved on 2026-10-13 are in the pinned training pools (Disclosure below).
-- Each amendment was committed before the selection it governs: amendments 1 and 2 before any study-2
-  score, amendments 3-5 after study 2's FL10 scores (teacher_val and devnative at 23:19-23:25Z, its
-  reported-only test report at 23:48Z) but before any VOCR3 selection score, and none of them picks among
-  FL10 candidates by score (3 fixes the devnative version mechanically, 4 applies to every pretrain, 5
-  removes CLANNAD fan works); amendments 2, 4 and 6 list what was known, amendment 3 does not; amendment 7
-  before any W20-class score; amendment 8 before the first selection score.
+- Each amendment was committed before the selection it governs: amendment 1 before any study-2 score;
+  amendments 2-5 (00:17Z-02:17Z on 2026-10-13) after study 2's FL10 scores (teacher_val and devnative at
+  23:19-23:25Z on 2026-10-12, its reported-only test report at 23:48Z) but before any VOCR3 selection
+  score, and none of them picks among FL10 candidates by score (2 adds an H15 candidate, 3 fixes the
+  devnative version mechanically, 4 applies to every pretrain, 5 removes CLANNAD fan works); amendments
+  2, 4 and 6 list what was known, amendment 3 does not; amendment 7 before any W20-class score;
+  amendment 8 before the first selection score.
 
 ## Disclosure: the owner's reserved titles
 
@@ -387,8 +388,8 @@ Provenance, as run (2026-10-13, 64-core EPYC 9R14 box, 5 threads per run through
   realplus` then `base`), outputs under `$HERD/shared/artifacts/synth3/vocr3/select/<SIZE>/`; every
   candidate's development scores (the tables above) are in `eval/vocr3_dev_scores_20261013.json`
   (`dev_scores.py`, reported only); the first H15 pass read the unfiltered cohorts by
-  mistake, was superseded by the amendment-8 pass (commit d8ba6e8, 2994275 on this branch after the rebase) and is kept
-  under `H15_unfiltered_mistake`.
+  mistake, was superseded by the amendment-8 pass (commit d8ba6e8, reachable through tag `vocr3-report-runner-9eadb90`;
+  the branch's rebases rewrite its hash) and is kept under `H15_unfiltered_mistake`.
 - Report: `eval/reproducibility/vocr3-20261013/report.sh`: `eval/vocr3_make_spec.py`, then
   `eval/vocr3_report.py shared | a9 | overlay | render` with the arguments in `docs/vocr3-harness.md` (VitaSDK, qemu-arm plugins, Arm GNU toolchain 14.2, the overlay
   clone and CMake/Ninja of the harness verification); outputs under

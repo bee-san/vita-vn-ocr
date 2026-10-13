@@ -31,13 +31,21 @@ resolution is recorded per file.
 - **Release partners** (1, `owner-test-shared-release`): every VN on one VNDB release with a series VN.
   That is てんたま (v11517).
 
-A relation's own relations and release partners are not reserved, so Never 7's compilation partners
-(Ever17, Remember11, 12RIVEN) stay on the training side. CHAOS;HEAD NOAH is an alternative version of
-Chaos;Head, not a relation of the series, and stays on the training side as the owner asked.
+`owner_test_vns()` does not reserve a relation's own relations or release partners. CHAOS;HEAD NOAH is an
+alternative version of Chaos;Head, not a relation of the series, and stays on the training side as the
+owner asked.
 
-`reserved_vns()` gives these reasons, so realplus, the native pool (`realplus/native.py`) and every
-selection built on it leave the 45 VNs out. Any VN sharing a release with one of them is reserved as
-`shared-release`, as for the other protected titles.
+`reserved_vns()` gives these reasons, so realplus, the native pool and every selection built on it leave
+the 45 VNs out. Its general rule then reserves any VN on a release with one of them as `shared-release`,
+as for the other protected titles. Against main's rules, this PR newly reserves 20 VNs:
+
+- 19 of the set; the other 26 were already reserved for other reasons;
+- Ever 17 - The Out of Infinity (v19373), which shares the Switch Ever17 / Never7 double pack with Never 7.
+  Its rows in existing pools: teacher_train 11, teacher_distill_train 5, real_train 10, real_unlabelled 8,
+  realplus v2 ink / GRAD 3 / 2.
+
+Never 7's other compilation partners (Ever17, Remember11, 12RIVEN) were already reserved. synth3's
+manifest holds the 45 VNs only, so v19373 stays usable for synth3's names and scenes.
 
 `data/manifests/synth3_exclude_owner_games.json` (built by `synth/owner_games.py manifest`) is a synth3
 exclusion manifest. synth3 renders and `synth3_stats.py` calibrations now use it by default, next to

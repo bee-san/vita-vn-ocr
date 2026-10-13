@@ -30,8 +30,10 @@ train2's mixture, or to be mixed with it. The generator is `synth/synth3.py`.
   cohort devnative), so synth2 stays at FL10 size. The real fine-tune absorbs most of the
   pretrain gap (pretrain-only C − A −0.46). Both arms reach 3.3-3.4% on teacher_val, against the
   released FL10's 4.05%. H15 (2 seeds per arm): the same, no measured difference (C − A −0.14, CI
-  −0.30 to +0.02), both arms level with the released H15's 2.29%. The step curve and the learning curve
-  are running.
+  −0.30 to +0.02), both arms level with the released H15's 2.29%.
+- **Pretrain length matters more than the synthetic arm:** FL10 C_mix pretrained 128,000 steps instead
+  of 32,000 reaches 2.60% after the same fine-tune (−0.70, CI −1.03 to −0.40; one seed). **More synth3
+  crops do not:** the learning curve is flat from 0.25M to 2M crops in study 1's recipe (−0.10 points).
 
 Commit hashes cited in this document, the protocols and the result files refer to the branch's
 history before it was rebased onto main; that history, with its original commit times, is kept at
@@ -501,6 +503,46 @@ pretrain-only mix is the lowest pooled number here (2.00%), as at FL10 size (3.0
 development cohorts the fine-tune helps both arms. These numbers cannot change the decision or the
 recipe.
 
+### Pretrain length: longer pretraining pays at FL10 size (reported only, one seed)
+
+`eval/synth3_study2_curves_20261013.json` (the reported-only comparisons of
+`eval/synth3_study2_reported.json`, computed by `eval/synth3_study2.py result`; teacher_val, C W8I, both
+views). FL10 C_mix seed 1 pretrained for 32,000 (study 2's run), 64,000 and 128,000 steps, each followed
+by the same 15,000-step fine-tune:
+
+| pretrain steps | pretrain-only CER | fine-tuned CER | fine-tuned − 32k, points (VN-cluster 95% CI) |
+|---|---|---|---|
+| 32,000 | 4.04% | 3.31% | |
+| 64,000 | 3.42% | 2.81% | −0.50 (−0.75 to −0.26) |
+| 128,000 | 3.18% | 2.60% | −0.70 (−1.03 to −0.40); vs 64k −0.21 (−0.45 to +0.03) |
+
+The gain is broad: every stratum but the two tallest ink bands improves, most on ink under 14 px
+(−1.78, CI −2.82 to −0.89), name-like lines (−1.37, CI −2.47 to −0.32), PSP targets (−1.06, CI −1.67 to
+−0.56) and dark-on-light text (−1.05, CI −1.64 to −0.53). One seed, so the size of the gain is
+uncertain, but its sign is not: at FL10 size, four times the pretraining (12.3M lines seen instead of
+3.1M, from the same 13M available) moves teacher_val by more than any synthetic-data arm did. The
+128k fine-tune, 2.60%, is close to the H15 arms (2.23-2.37%) at 57% of their weight bytes.
+
+### Learning curve: more synth3 crops do not help this recipe (reported only)
+
+Study 1's B_s3 recipe (16,000 steps, nvsynth one-line set 0.5 + synth3 v2 0.5, FL10, seeds 1 and 2),
+with the synth3 source restricted or extended. The 1M point is study 1's runs on the 32-core box; the
+other points trained here.
+
+| synth3 crops | seed 1 / seed 2 CER | arm CER | vs the next smaller point (VN-cluster 95% CI) |
+|---|---|---|---|
+| 0.25M (shards 0-24) | 5.55% / 5.47% | 5.51% | |
+| 0.5M (shards 0-49) | 5.28% / 5.65% | 5.46% | −0.05 (−0.24 to +0.14) |
+| 1M (study 1's B_s3) | 5.64% / 5.70% | 5.67% | +0.21 (+0.01 to +0.41) |
+| 2M (shards 0-99 + the pinned extension 100-199) | 5.48% / 5.33% | 5.41% | −0.26 (−0.52 to −0.03) |
+
+From 0.25M to 2M crops the arm CER moves by −0.10 points, with the two resolved steps pointing in
+opposite directions, so this recipe is saturated: 16,000 steps × 96 × 0.5 see 768,000 synth3 samples,
+about three passes over 0.25M crops and well under one pass over 2M. Rendering more synth3 is not worth
+it for this recipe; the pretrain-length curve above says where the remaining headroom is (seeing more
+samples, not having more distinct ones). The 1M point is the only one from the other machine, which
+confounds its +0.21 step.
+
 ### Provenance of the runs
 
 - The ten FL10/H15 runs were launched from the conductor's clone at commits 0617f72-ebb4dfb
@@ -511,6 +553,10 @@ recipe.
   of `eval/synth3_study2_run.sh` after the pretrain block, in place: bash reads a running script
   from its saved offset, so each run read the new fine-tune block (checked on a test script and
   on all six FL10 fine-tunes' `args.json`; the H15 fine-tunes are checked when they start).
+- The learning-curve runs (`eval/synth3_curve_run.sh`) and the realplus fine-tunes ran from the
+  detached worktree `runner-578821d` (tag `vocr3-runner-578821d`, feat/vocr3's amendment-5 commit)
+  through `study2_queue6.sh`; the step-curve runs are study-2 runs (`eval/synth3_study2_run.sh FL10
+  C_mix 1 64000|128000`).
 - Runs launched after 21:22Z (H15 C_mix seed 2 excepted) run from a detached worktree at
   c464aa8 (tag `vocr3-runner-c464aa8`), whose study-2 scripts are byte-identical to the
   committed ones; the scoring driver is `eval/reproducibility/synth3-20261012/study2_score_when_ready.sh`.

@@ -53,7 +53,7 @@ def load_scores(paths):
             raise SystemExit(f"{p}: holds other lines than {paths[0]}")
         for name, m in s["models"].items():
             models[name] = {"errors": {v: np.asarray(m["errors"][v], float) for v in VIEWS},
-                            "blob_sha256": m["blob_sha256"], "blob_bytes": m["blob_bytes"],
+                            "blob": m.get("blob"), "blob_sha256": m["blob_sha256"], "blob_bytes": m["blob_bytes"],
                             "arena_bytes": m["arena_bytes"]}
     return models, lines
 
@@ -170,7 +170,8 @@ def cmd_base(args):
         t = cer(tv[n], tv_lines)
         d = cer(dn[n], dn_lines) if dn else None
         score = (t + d) / 2 if dn else t
-        rows.append({"run": n, "blob_sha256": tv[n]["blob_sha256"], "teacher_val_cer": round(t, 6),
+        rows.append({"run": n, "blob": tv[n]["blob"], "blob_sha256": tv[n]["blob_sha256"],
+                     "teacher_val_cer": round(t, 6),
                      "devnative_cer": None if d is None else round(d, 6), "score": round(score, 6),
                      "budget": b, "budget_ok": bool(ok)})
     ok_rows = [r for r in rows if r["budget_ok"]]
@@ -183,7 +184,8 @@ def cmd_base(args):
            "devnative": {"files": [str(p) for p in args.dn], "commit": args.dn_commit or None,
                          "lines": len(dn_lines) if dn_lines else 0, "sha256": [sha256(p) for p in args.dn]},
            "realplus_decision": None if rp is None else {"file": str(args.realplus), "adopted": rp["adopted"]},
-           "candidates": rows, "selected": best["run"], "selected_blob_sha256": best["blob_sha256"]}
+           "candidates": rows, "selected": best["run"], "selected_blob": best["blob"],
+           "selected_blob_sha256": best["blob_sha256"]}
     Path(args.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
     for r in sorted(rows, key=lambda r: r["score"]):
         print(f"{r['run']}: score {r['score']:.5f} (teacher_val {r['teacher_val_cer']:.5f}"
@@ -214,6 +216,8 @@ def cmd_variant(args):
         replaces = replaces and not d["ci95"][0] > 0
     res["replaces_base"] = bool(replaces)
     res["selected"] = args.name if replaces else base
+    res["selected_blob"] = tv[args.name]["blob"] if replaces else sel["selected_blob"]
+    res["selected_blob_sha256"] = tv[args.name]["blob_sha256"] if replaces else sel["selected_blob_sha256"]
     Path(args.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(res))
 

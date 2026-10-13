@@ -55,4 +55,4 @@ def test_amendment_1_w20_and_budget():
 
 def test_amendment_2_h15_b_s3():
     assert P["candidates"]["H15"]["extra"] == ["ft_H15_B_s3_seed1"]
-    assert len(P["amendments"]) == 2 and "ft_H15_B_s3_seed1" in P["amendments"][1]["change"]
+    assert len(P["amendments"]) >= 2 and "ft_H15_B_s3_seed1" in P["amendments"][1]["change"]

@@ -59,6 +59,16 @@ def test_amendment_1_w20_and_budget():
     assert "LW)   WIDTH=1.5; CHANS=48,96,192,320,384" in rp_script and '"${CH[@]}"' in rp_script
 
 
+def test_amendment_8_selection_pools_pinned():
+    pins = (ROOT / "eval" / "vocr3_select_pools.sha256").read_text(encoding="utf-8").split("\n")
+    files = {ln.split()[1] for ln in pins if ln.strip()}
+    assert files == {"teacher_val.npz"} | {f"devnative_v3/devnative_{s}_{c}.npz" for s in ("strict", "tv_native")
+                                            for c in ("ink", "grad")}
+    assert all(len(ln.split()[0]) == 64 for ln in pins if ln.strip())
+    assert "owner_series" in P["selection"] and "vocr3_select_pools.sha256" in P["selection"]["owner_series"]
+    assert len(P["amendments"]) >= 8 and "Memories Off" in P["amendments"][7]["change"]
+
+
 def test_amendment_2_h15_b_s3():
     assert P["candidates"]["H15"]["extra"] == ["ft_H15_B_s3_seed1"]
     assert len(P["amendments"]) >= 2 and "ft_H15_B_s3_seed1" in P["amendments"][1]["change"]

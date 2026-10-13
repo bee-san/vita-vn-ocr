@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
-"""The owner's own games (owner 2026-10-13 10:51Z, superseding the 09:25Z / 09:37Z notes).
+"""The owner's own games (owner 2026-10-13 10:51Z, 13:10Z and 13:12Z, superseding the 09:25Z / 09:37Z notes).
 
-Memories Off is a test-only title: the owner's live PSP screenshots of it (shared/private/owner-games/
-memories-off-TEST/) are a fresh native test set. Its whole series is reserved: nothing may be trained,
-tuned, calibrated, selected or rendered from it, no font or render source may come from it, and its frames
-never go to Codex. CHAOS;HEAD NOAH (v22505) is training-eligible; its owner screenshots are private frames
-and never go to Codex either.
+Test-only titles: Memories Off (PSP, v1152, its whole series), Aiyoku no Eustia (Vita, v3770) and 428 (PSP,
+v1299). The owner's live screenshots of them (shared/private/owner-games/*-TEST/) are fresh native test sets:
+nothing may be trained, tuned, calibrated, selected or rendered from these series, no font or render source may
+come from them, and their frames never go to Codex. The training-eligible owner titles are listed in
+realplus/shots.OWNER_TRAINING; their owner frames are private and never go to Codex either.
 
   owner_games.py manifest --dump DB_DIR [--chars vndb_chars.tsv] [--pools DIR] --out JSON
         data/manifests/synth3_exclude_owner_games.json: a synth3 exclusion manifest (synth3.py
-        load_exclusions) with every VN of realplus/shots.owner_test_vns() (the Memories Off series:
-        every VN reachable from v1152 through family relations or titled like the series; their VNDB
-        relations of any kind in either direction; every VN on a release with one of them), the series
-        relations, the name hashes of every VNDB character of those VNs (synth3_text.py's name rows),
-        text markers (titles and character full names) and the file / decoded-RGB sha256 of every local
-        copy of a screenshot of those VNs, plus every file the owner dropped under
-        shared/private/owner-games/*-TEST/.
+        load_exclusions) with every VN of realplus/shots.owner_test_vns() (every VN reachable from a root
+        through family relations, or titled like Memories Off; their VNDB relations of any kind in either
+        direction; every VN on a release with a series VN), the series relations, the name hashes of every
+        VNDB character of those VNs (synth3_text.py's name rows), text markers (titles and character full
+        names) and the file / decoded-RGB sha256 of every local copy of a screenshot of those VNs, plus every
+        file the owner dropped under shared/private/owner-games/*-TEST/.
   owner_games.py exposure --manifest JSON --out JSON
-        counts (no text, no pixels) of rows of those VNs in every existing training, development
-        and evaluation pool, and of synth3 scene candidates, name rows and text-pool lines the
-        manifest's names and markers hit: what existing data already holds of the series.
+        counts (no text, no pixels) of rows of those VNs in every existing training, development and
+        evaluation pool, and of synth3 scene candidates, name rows and text-pool lines the manifest's
+        names and markers hit: what existing data already holds of the series.
 
 The manifest's VN list is recomputed from the dump by realplus/shots.reserved_vns, which reserves the
 same VNs (reasons owner-test-series, owner-test-relation, owner-test-shared-release).

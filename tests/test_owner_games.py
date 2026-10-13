@@ -1,7 +1,7 @@
-"""The owner's test-only series Memories Off (owner 2026-10-13 10:51Z): realplus/shots.reserved_vns
-reserves every VN of the series with its direct relations and release partners, and synth3 never uses
-their names, scenes or text (data/manifests/synth3_exclude_owner_games.json). CHAOS;HEAD NOAH, the
-owner's training-eligible game, stays on the training side. No network, no screenshots: a fake dump."""
+"""The owner's test-only series (owner 2026-10-13 10:51Z and 13:10Z: Memories Off, Aiyoku no Eustia, 428):
+realplus/shots.reserved_vns reserves every VN of them with their direct relations and release partners,
+and synth3 never uses their names, scenes or text (data/manifests/synth3_exclude_owner_games.json). The
+owner's training-eligible games stay on the training side. No network, no screenshots: a fake dump."""
 import hashlib
 import json
 import re
@@ -82,6 +82,8 @@ def test_committed_manifest_excludes_the_series():
     assert doc["kind"] == "synth3-exclusion" and set(doc["protected"]["roots"]) == {"v1152", "v3770", "v1299"}
     vns, series = set(doc["vns"]), set(doc["protected"]["series"])
     assert {"v1152", "v1153", "v1331", "v21964", "v23725", "v3770", "v1299"} <= series <= vns
+    assert {"v1360", "v10856", "v45398"} <= vns                       # 428's relations
+    assert len(doc["training_eligible"]) == len(S.OWNER_TRAINING) == 12
     assert not vns & set(doc["training_eligible"]) and "v22505" in doc["training_eligible"]
     assert {r["id"] for rs in doc["relations"].values() for r in rs} <= vns
     assert {u for us in doc["vns_sharing_a_release"].values() for u in us} <= vns
@@ -93,6 +95,7 @@ def test_committed_manifest_excludes_the_series():
     assert {"Memories Off", "メモリーズオフ"} <= set(m) and "ボタン" not in m
     ex = synth3.load_exclusions([MANIFEST])
     assert ex["vns"] == vns and synth3.marked("メモリーズオフの話", ex["markers"])
+    assert synth3.marked("穢翼のユースティアを遊ぶ", ex["markers"])
     assert MANIFEST in synth3.EXCLUDE_MANIFESTS
     import synth3_stats
     assert {"v1152", "v3770", "v1299"} <= synth3_stats.reserved_vns(synth3_stats.DEFAULT_EXCLUDE)

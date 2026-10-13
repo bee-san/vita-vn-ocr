@@ -118,9 +118,9 @@ def owner_test_vns(d, roots=None, title=OWNER_TEST_TITLE):
     """{vn: reason} for the owner's test series (Memories Off, Aiyoku no Eustia, 428), from a load_dump() dict:
     every VN reachable from a root through FAMILY relations (alternative versions, originals, fan discs,
     parent and side stories, sequels, prequels, same series), or titled like Memories Off
-    (`owner-test-series`); every VNDB
-    relation of any kind of those, in either direction (`owner-test-relation`: crossovers and same-setting
-    titles such as KID Mix Section or Never 7); and every VN on one VNDB release with a series VN
+    (`owner-test-series`); every VNDB relation of any kind of those, in either direction
+    (`owner-test-relation`: crossovers and same-setting titles such as KID Mix Section or Never 7); and every
+    VN on one VNDB release with a series VN
     (`owner-test-shared-release`). A relation's own relations and release partners are not reserved."""
     roots = set(OWNER_TEST_SERIES if roots is None else roots)
     fam = d["relations"]

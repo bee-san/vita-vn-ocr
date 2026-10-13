@@ -12,7 +12,7 @@ from it, no font or render source may come from it, and its frames never go to C
 - **Aiyoku no Eustia** (Vita; v3770).
 - **428** (PSP; v1299).
 
-The last two were reserved at 13:10Z, before any harvest touched them. The owner described them as new
+The owner asked at 13:10Z for the last two to be reserved before any harvest touched them; the reservation takes effect with this change, and no harvest has added rows of them since. The owner described them as new
 and never seen anywhere. Existing pools do hold some of their lines, scaled from PC and other screenshots
 (table below).
 
@@ -65,8 +65,14 @@ reserved:
   Its rows in existing pools: teacher_train 11, teacher_distill_train 5, real_train 10, real_unlabelled 8,
   realplus v2 ink / GRAD 3 / 2.
 
-Never 7's other compilation partners (Ever17, Remember11, 12RIVEN) were already reserved. synth3's
-manifest holds the 50 VNs only, so v19373 stays usable for synth3's names and scenes.
+Never 7's other compilation partners (Ever17, Remember11, 12RIVEN) were already reserved. synth3's manifest
+holds the 50 VNs only, so v19373 and v661 stay usable for synth3's names and scenes. That is 22 name rows of
+v661's characters and no local scene file.
+
+Every pinned synth3 shard set and every pool in the table predates these rules. v3's names and scenes did
+not exclude 428, Eustia or 街: 479 of v3's 1,000,000 train labels hold one of their markers. That is an
+upper bound, since most of them are ordinary given names. Any score on the owner's fresh tests must
+disclose this exposure.
 
 `data/manifests/synth3_exclude_owner_games.json` (built by `synth/owner_games.py manifest`) is a synth3
 exclusion manifest. synth3 renders and `synth3_stats.py` calibrations now use it by default, next to

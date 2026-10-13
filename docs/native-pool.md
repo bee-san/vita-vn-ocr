@@ -75,7 +75,8 @@ line, offline, in one heavy.sh slot. 1,669 were read at 10:0xZ and 15 more after
 
 - 1,668 of them are in the selection now.
 - 16 are of VNs reserved after they were read: 10 of v1964 (Memories Off, 10:51Z) and 6 of 街 (v1360,
-  13:10Z). Their lines are in no batch after the rule and in no build.
+  13:10Z). None of their lines is in any build. Some were still on review sheets after their rule; see
+  Owner rules and Codex.
 
 ## Lines
 
@@ -92,8 +93,9 @@ Lines teacher or realdata already labelled on the same frame are left out of rev
 | of VNs reserved after the read (v1964, 街) | -46 (27 of them also already labelled) |
 | **left for review** | **1,278** (t1 389, t2 80, t3 809): 2,634 minus 1,356 distinct drops |
 
-Pass 1 (`review/pass1/b0001`-`b0008`, 130 sheets) covered all of them. It held 1,300 lines before the
-13:10Z reservation took 街's lines out. These are lines the old pools' engines found hard.
+Pass 1 (`review/pass1/b0001`-`b0008`, 130 sheets) covered all of them. It held 1,300 lines: the 1,278,
+plus 12 of v1964 and 10 of 街 that the later reservations took out. These are lines the old pools'
+engines found hard.
 
 ## Labelling (realplus v3's rule)
 
@@ -151,7 +153,7 @@ family plus a confirm look. It leaves out reserved VNs and leak-dropped frames, 
 
 | | |
 |---|---:|
-| **new native lines** | **557** from 186 VNs (6,406 characters, median 11 per line) |
+| **reviewed native lines** | **557** from 186 VNs (6,406 characters, median 11 per line) |
 | PSP / Vita | 435 / 122 |
 | ink crops (eval's crop, widened to the labelled characters) | 557 |
 | GRAD crops (the console finder's box, holding the line and nothing else) | 411 (334 PSP, 77 Vita) |
@@ -161,22 +163,29 @@ family plus a confirm look. It leaves out reserved VNs and leak-dropped frames, 
 
 ### Overlap with the unlabelled pools
 
-The PR #66 audit measured this overlap with train2's `load_shard` `ps` logic:
+The PR #66 audits measured this overlap. Their rule: same frame, and native.py's `overlaps()` between
+the pool's ink box and the row's box (teacher_distill's meta box, realdata's unlabelled ink box). The `ps`
+rows are train2's own, from `load_shard` with label=teacher, conf=0.7: 5,094 + 5,612 = 10,706.
 
-- 522 of the 557 lines (93.8%) are rows of an unlabelled pool:
-  - 497 overlap a teacher_distill_train row; 491 of them share its line id.
-  - 456 overlap a real_unlabelled row.
-- 417 of the 557 are already a training line of train2's `ps` source. 342 of those carry the same label
-  as this pool and 75 a different one; 123 lines have at least one conflicting `ps` row.
-- 140 lines (98 PSP, 42 Vita) are in no `ps` stream.
+- 514 of the 557 lines (92.3%) are rows of an unlabelled pool:
+  - 496 overlap a teacher_distill_train row; 490 of those share its line id.
+  - 430 overlap a real_unlabelled row.
+- 407 of the 557 are already a training line of train2's `ps` source. 342 of those carry the same label
+  as this pool and 65 a different one. 88 lines have at least one conflicting `ps` row.
+  - The 65 differences are mostly real corrections: the `ps` reading's CER against the pool label has a
+    median of 0.09.
+  - 2 of the 65 are segmentation differences, not corrections.
+- 150 lines (107 PSP, 43 Vita) are in no `ps` stream.
+- The counts are stable: overlap fractions 0.3-0.7, or the GRAD box in place of the ink box, give 342
+  same, 64-67 different and 148-151 in no stream.
 
-So the pool's contribution is reviewed hard labels for lines the release recipe already trains on with
-conf-0.7 PP-OCRv6 pseudo-labels, 75 of which this review corrects. It adds 140 lines no stream trains on
-and one VN new to training (v11179). It is not 557 net-new lines. A recipe that adds the pool should
-drop or override the matching `ps` rows rather than train both labels.
+So the pool's contribution is mostly reviewed hard labels for lines the release recipe already trains on
+with conf-0.7 PP-OCRv6 pseudo-labels, about 65 of which this review corrects. It adds 150 lines no stream
+trains on and one VN new to training (v11179). It is not 557 net-new lines.
 
-A plain check of line ids finds 491 of the pool's ids in teacher_distill_train and 335 in
-real_unlabelled.
+A recipe that adds the pool should drop or override the matching `ps` rows rather than train both labels,
+and it must match them by frame and box, not by line id. real_unlabelled numbers a frame's lines its own
+way: 62 of its ids name another line of the frame than the pool's line with that id.
 
 ### Crops
 
@@ -227,7 +236,9 @@ v1 is the same pool without those 4.
 The owner's rules changed during the run, and each change was applied to the pool:
 
 - **10:51Z** reserved the Memories Off series. The pool held 10 frames of Your Memories Off ~Girl's Style~
-  (v1964). Their lines were dropped from the plan and the labels.
+  (v1964). Their lines were not dropped at the rule: the 11:30Z plan still listed 12 v1964 lines
+  (audit-native-frames, O1). Their labels stayed live until `filter-labels`, which ran after the confirm
+  and edge batches were built.
 - **11:32:02Z, after that rule:** sheet pass1/b0008/S001 sent 7 public VNDB crops to gpt-6-luna.
   - 3 of them are of the reserved v1964 (v1964_52004_1, v1964_52005_0, v1964_52006_1). The other 4 are
     of v19953, which is training-eligible.
@@ -236,6 +247,19 @@ The owner's rules changed during the run, and each change was applied to the poo
   - None of their labels survives.
   - Re-prepping the frame list had dropped those frames from the known-line bookkeeping, so their lines
     came back into the plan. audit-native-frames found this (O1), and the conductor was told.
+  - Reserved lines also went onto Claude-only sheets after their rule:
+
+    | batch | reserved lines | decided |
+    |---|---|---|
+    | pass1/b0008 | 3 v1964 | review-nf-7, 12:07:03Z (and Luna at 11:32:02Z, above) |
+    | confirm/b0002 (built 12:27:50Z) | 4 v1964, all confirmed | review-nf-9, 13:13:01Z |
+    | confirm/b0001 (built 12:27:43Z) | 4 街, all confirmed | review-nf-8, 13:22:23Z, after the 13:10Z rule |
+    | edge/b0002 (built 13:38:51Z) | 3 街, all passed | review-nf-11, 14:39:44Z |
+
+    `filter-labels` dropped all of them before the build, and none is in any npz.
+  - Pass-1 sheets b0002, b0003, b0005 and b0006 were built at 10:24Z, before the rule, and carried 9 more
+    v1964 lines. Their decision files were written at 11:07-12:25Z; file times cannot show whether the
+    helpers viewed those lines before or after 10:51Z.
   - The fix: known lines now come from every frame read, and `filter-plan` and `filter-labels` drop every
     VN `reserved_vns` reserves today.
   - The Luna loop was stopped after pass 1. Pass-1 Luna votes on v1964 lines from the other batches were

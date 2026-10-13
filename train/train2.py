@@ -706,8 +706,7 @@ def main(argv=None, *, execution_context=None):
                          "k x k + 1x1 + identity); checkpoints hold the fused plain model as 'model'")
     ap.add_argument("--guide", choices=("none", "nrtr"), default="none",
                     help="nrtr: add a training-only Transformer-decoder guidance loss on the frame-row "
-                         "features (GTC); never exported, kept as the checkpoint's 'guide'. At weight 1 it "
-                         "hurt in 5k-step proxies (+3.1 points, docs/vocr3-arch-candidates.md)")
+                         "features (GTC); never exported, kept as the checkpoint's 'guide'")
     ap.add_argument("--guide-weight", type=float, default=1.0)
     ap.add_argument("--guide-dim", type=int, default=256)
     ap.add_argument("--guide-layers", type=int, default=2)

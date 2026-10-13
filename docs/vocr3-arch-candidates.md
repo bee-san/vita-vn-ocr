@@ -70,7 +70,12 @@ classes, every other shape 5,355. Measured with `train/arch_candidates.py blobs`
 `vita/budget_sweep.py check` (main's runtime, unchanged since `eab1ab8`; 40 synth-val lines, 2 MiB
 L2) at 2026-10-13T01:06-01:09Z, EW at 05:03-05:06Z and LWa4 at 07:30Z (with main's tiered `check`).
 H15 and F20 reproduce the released blobs' sizes and `docs/vita-memory-budget.md`'s estimates
-exactly (219-398 and 311-548 ms). "tier" is main's `budget_sweep.py` tier (#60).
+exactly (219-398 and 311-548 ms). "tier" is the tier main's `vita/budget_sweep.py check` prints for
+each blob since #60 (`arch_candidates.py table` prints "within the ceiling"; the column was added
+from `check`'s output). LWa4 is not in `arch_candidates.py`'s list: its blob was built with
+`random_model` directly (Reproduce) and uses budget_sweep's 3,500-character stand-in vocab, so with
+FL10's own vocab its blob differs by some tens of bytes (FL10 657,664 B against its random-init
+shape's 657,616 B).
 
 | candidate | train2.py flags | params | int8 blob B | of which head B | W8I arena B | MACs/frame | est. ms per 640-px line, 333 MHz | 444 MHz | tier |
 |---|---|---|---|---|---|---|---|---|---|
@@ -85,7 +90,7 @@ exactly (219-398 and 311-548 ms). "tier" is main's `budget_sweep.py` tier (#60).
 | W175 | `--width 1.75` | 1,217,755 | 1,343,744 | 557,440 | 212,000 | 1,925,616 | 265-474 | 199-356 | preflight |
 | W20b64 | `--width 2.0 --bottleneck 64` | 1,239,851 | 1,374,080 | 385,920 | 238,624 | 2,155,584 | 292-524 | 219-393 | preflight |
 | W2125b64 | `--chans 64,136,272,344,408 --bottleneck 64` | 1,358,403 | 1,496,832 | 385,920 | 252,576 | 2,380,896 | 318-567 | 239-425 | never |
-| LWa4 | `--chans 32,64,128,192,256 --vocab <3500 entries>` | 696,717 | 779,728 | 364,416 | 130,464 | 957,024 | 140-263 | 105-197 | always |
+| LWa4 | `--chans 32,64,128,192,256 --vocab FL10_vocab_3500.txt` | 696,717 | 779,728 | 364,416 | 130,464 | 957,024 | 140-263 | 105-197 | always |
 
 `chans` is (stem, 8-row stage, 4-row stage, 2-row stage, frame row). Where the MACs go (share of
 MACs per CTC frame; "h8" is the 8-row stage):
@@ -103,7 +108,7 @@ MACs per CTC frame; "h8" is the 8-row stage):
   - **LW** (late-wide) keeps H15's three early stages and takes F20's 2-row stage, collapse and frame
     row: all 368K extra MACs go to the low-resolution stages that feed the 5,355-way head. Most
     channels in the last stages is the usual rule for small CNNs and what PaddleOCR's mobile
-    recognizers do (PP-LCNet, arXiv:2109.15099; PP-OCRv6's LCNetV4 rec tiers 48/48/96/160 and
+    recognizers do (PP-LCNet, arXiv:2109.15099v1; PP-OCRv6's LCNetV4 rec tiers 48/48/96/160 and
     96/96/192/384, arXiv:2606.13108v1 Table 2).
   - **EW** (early-wide) is the opposite: F20's stem, 8-row and 4-row stages, H15's 2-row stage and
     frame row.
@@ -128,10 +133,13 @@ the flags in the table and the seed):
 - Training data, all training-side: nvsynth/full train sources 000-041 (0.375), synth2 shards
   0-38 (0.1875), synth3 v2 train shards (0.1875), teacher_train (`tt`, 0.175), realdata's
   real_train (`rd`, 0.075); polarity inversion 0.2 on synthetic and 0.5 on real crops.
-- Round 1: five single-thread runs in one `heavy.sh` slot, 01:10-05:02Z. Round 2: six runs in three
-  slots at once (steered at 04:55Z), 2-3 threads per run, 05:03-07:15Z. Both ran this PR's training
-  code; round 1 before `--guide` was added, which changes no other path (section 7). Thread counts
-  change float summation order, not the recipe.
+- Round 1: five single-thread runs in one `heavy.sh` slot, 01:10-05:02Z, on the training code of this
+  branch's first commit (started from the working tree just before it was committed; pre-rebase hash
+  `d6bfef7`, later `36db2de`). Round 2: six runs in three slots at once (steered at 04:55Z), 2-3
+  threads per run, 05:03-07:15Z, on pre-rebase commit `2e75bd6` (adds `--guide`). Both are
+  reproducible with the merged code: the A/B of section 7 between each of those revisions and this
+  PR's head is identical for every flag set the proxies used. Thread counts change float summation
+  order, not the recipe.
 - Scoring: each run's step-5,000 weights exported to an int8 blob and read through the C runtime
   in W8I (`eval/synth3_ablation.py export` / `score`) on teacher_val's 1,651 lines, twice (as
   stored and in screen polarity, `rv` and `rvn`); CER = edit distance over both views / 34,236
@@ -185,9 +193,9 @@ Reading the table:
 - **Width pays wherever it goes, at this length.** LW (late-wide), EW (early-wide) and F20 all beat
   H15 by about half a point or more: LW - H15 -0.67 (two seeds, CI -0.91 to -0.43), EW - H15 s1
   -0.49 (-0.83 to -0.14), F20 - H15 -0.76 (-1.04 to -0.49). LW and EW, at the same MACs, are level
-  (EW - LW s1 +0.09, CI -0.23 to +0.42), so round 1's "width pays where the head reads it" did not
-  survive EW: the proxies cannot say where width is best spent, only that LW and EW buy most of
-  F20's gain at 85% of its time. LW - F20 is +0.10 (CI -0.12 to +0.31) over two seeds.
+  (EW - LW s1 +0.09, CI -0.23 to +0.42; with EMA weights EW is ahead, -0.36, CI -0.68 to -0.04), so
+  round 1's "width pays where the head reads it" did not survive EW: the proxies cannot say where
+  width is best spent, only that LW and EW buy most of F20's gain at 82-85% of its time. LW - F20 is +0.10 (CI -0.12 to +0.31) over two seeds.
 - **Strata.** Most of every shape's gain is on teacher_val's PC screenshots scaled to console size
   (`kind:hires`, 1,064 lines: LW -0.77, F20 -0.88 against H15). On native captures the intervals
   are wide: native Vita (161 lines) LW -0.73 (CI -1.63 to +0.02), F20 -0.91 (-1.88 to -0.27);
@@ -218,16 +226,16 @@ The full survey, with every table read, is `$HERD/shared/artifacts/arch-research
 
 | technique | evidence | for this recognizer |
 |---|---|---|
-| Attention guidance of CTC (GTC; NRTR head dropped at export) | PP-OCRv6 rec: CTC only 79.08 → CTC + NRTR-384 80.24 (+1.16), arXiv:2606.13108v1 Table 14; PP-OCRv3: +1.8 (74.0 → 75.8), arXiv:2206.03001v2 Table 4; SVTRv2-B: GTC +0.47 on Union14M, arXiv:2411.15858 Table 2; GTC: +3.1 IC15, +5.5 SVTP, AAAI 2020, arXiv:2002.01276 Table 2 | training-only; `--guide nrtr` here; costs training time |
-| Semantic guidance (SVTRv2 SGM) | +2.28 Union14M, +5.11 occluded text, against GTC's +0.47 on the same backbone, arXiv:2411.15858 Table 2 | training-only; not implemented here |
-| Structural re-parameterisation | MobileOne-S0 71.4 vs 69.6 without branches, arXiv:2206.04040 Table 5; DBB on MobileNetV1 +0.99, arXiv:2103.13425 Table 2; ACNet +0.78 on ResNet-18, arXiv:1908.03930 Table 3; PP-OCRv6 RepDWConv (3x3 + 1x1 + identity on the depthwise conv only) +0.06, arXiv:2606.13108v1 Table 12 | training-only; `--rep N` here, on the stem and depthwise convs only, which the runtime keeps in float32 (merged RepVGG weights quantise badly: RepVGG-A0 int8 72.4 → 52.2, arXiv:2212.01593 Table 1) |
-| Width in the late stages | PP-LCNet puts 5x5 depthwise and SE only in the last blocks (+0.91 and +0.82, arXiv:2109.15099 Table 9); LCNetV4 rec tiers widen mostly at stages 3-4 | same ops: LW |
-| Temporal context on the frame row | PP-OCRv6: dw 1x7 before the neck's attention +0.47, no neck -4.83, arXiv:2606.13108v1 Table 14; SVTR: local-only mixing 70.2 vs local + global 74.8 on IC15, arXiv:2205.00159v2 Table 3; BiLSTM +2.5 / +4.5 for +2.7M params, arXiv:1904.01906 Table 2 | dw 1xk up to k = 7 is in the runtime; ctx 4 / k 7 did not separate from width at 5k steps here (`docs/arch-sweep.md`); global attention or LSTM needs new kernels (section 5) |
+| Attention guidance of CTC (GTC; NRTR head dropped at export) | PP-OCRv6 rec: CTC only 79.08 → CTC + NRTR-384 80.24 (+1.16), arXiv:2606.13108v1 Table 14; PP-OCRv3: +1.8 (74.0 → 75.8), arXiv:2206.03001v2 Table 4; SVTRv2-B: GTC +0.47 on Union14M, arXiv:2411.15858v2 Table 2; GTC: +3.1 IC15, +5.5 SVTP, AAAI 2020, arXiv:2002.01276v1 Table 2 | training-only; `--guide nrtr` here; costs training time |
+| Semantic guidance (SVTRv2 SGM) | +2.28 Union14M, +5.11 occluded text, against GTC's +0.47 on the same backbone, arXiv:2411.15858v2 Table 2 | training-only; not implemented here |
+| Structural re-parameterisation | MobileOne-S0 71.4 vs 69.6 without branches, arXiv:2206.04040v2 Table 5; DBB on MobileNetV1 +0.99, arXiv:2103.13425v2 Table 2; ACNet +0.78 on ResNet-18, arXiv:1908.03930v3 Table 3; PP-OCRv6 RepDWConv (3x3 + 1x1 + identity on the depthwise conv only) +0.06, arXiv:2606.13108v1 Table 12 | training-only; `--rep N` here, on the stem and depthwise convs only, which the runtime keeps in float32 (merged RepVGG weights quantise badly: RepVGG-A0 int8 72.4 → 52.2, arXiv:2212.01593v2 Table 1) |
+| Width in the late stages | PP-LCNet puts 5x5 depthwise and SE only in the last blocks (+0.91 and +0.82, arXiv:2109.15099v1 Table 9); LCNetV4 rec tiers widen mostly at stages 3-4 | same ops: LW |
+| Temporal context on the frame row | PP-OCRv6: dw 1x7 before the neck's attention +0.47, no neck -4.83, arXiv:2606.13108v1 Table 14; SVTR: local-only mixing 70.2 vs local + global 74.8 on IC15, arXiv:2205.00159v2 Table 3; BiLSTM +2.5 / +4.5 for +2.7M params, arXiv:1904.01906v4 Table 2 | dw 1xk up to k = 7 is in the runtime; ctx 4 / k 7 did not separate from width at 5k steps here (`docs/arch-sweep.md`); global attention or LSTM needs new kernels (section 5) |
 | Distillation | Frame-level KL from a teacher with different CTC spike timing made the student worse (UniLSTM 15.3 → 17.1 WER), arXiv:1904.08311v2 Table 2; PP-OCRv6 tiny + CTC KL from a vocabulary-matched medium teacher +2.69 (71.83 → 74.52), arXiv:2606.13108v1 Table 14; mutual learning (U-DML) +1.5 on PP-OCRv3, Table 4 | train2's frame KD from PP-OCRv6 small (other architecture, 48-px input, 188 classes without mass) hurt (+0.53, `docs/train2.md`), which the spike-timing result explains. A same-geometry, same-vocabulary teacher (a wide TinyVNOCR trained by the same recipe) avoids every listed cause (untested here) |
 | Data filtering | drop lines a weak model reads at confidence > 0.95 and a strong one < 0.15: +1.2, training 2 weeks → 5 days, PP-OCRv4 doc at v2.7.0 | data, not architecture; for the conductor's pools |
 | Low-rank output layer | factorised final layer saves 30-50% of parameters without significant loss (Sainath et al., ICASSP 2013, doi:10.1109/ICASSP.2013.6638949); PP-OCRv6 tiny: rank 80 before the head, Japanese dropped to keep its 1.1M-parameter head small | the head is already factorised (bottleneck 96); bottleneck 64 above |
-| int4 / mixed precision | ARMv7 NEON has no int4 multiply-accumulate (a new instruction is proposed in arXiv:2008.00638); sub-8-bit packing beats int8 by 1.5x only at 3 bits with custom kernels (ULPPACK, MLSys 2022) | saves bytes only; bytes are not what binds (section 1) |
-| Attention decoders | PARSeq-S 23.8M params, SVTR-T 6.03M, CPPD +2.3M over SVTR-T (arXiv:2207.06966, 2205.00159v2 Table 4, 2307.12270v2 Table VI) | 4-20x the whole budget; out |
+| int4 / mixed precision | ARMv7 NEON has no int4 multiply-accumulate (a new instruction is proposed in arXiv:2008.00638v1); sub-8-bit packing beats int8 by 1.5x only at 3 bits with custom kernels (ULPPACK, MLSys 2022) | saves bytes only; bytes are not what binds (section 1) |
+| Attention decoders | PARSeq-S 23.8M params, SVTR-T 6.03M, CPPD +2.3M over SVTR-T (arXiv:2207.06966v1, 2205.00159v2 Table 4, 2307.12270v2 Table VI) | 4-20x the whole budget; out |
 
 ## 5. The runtime: what it has and what new ops would cost
 
@@ -257,7 +265,7 @@ measured):
 | global self-attention neck at the frame row (LightSVTR-like, D = 96, 1 layer, FFN ratio 2) | matmul, softmax, LayerNorm kernels; the whole line's features before the first output | ~120-145K extra MACs per frame (about +20-35 ms per 640-px line at 333 MHz); the 128-frame feature row plus K and V: about 120 KB in int16 or 250 KB in float, on top of the arena, so H15 (183 KB) lands at about 300 KB, over the 256 KiB ceiling unless the max width or D shrinks | the largest possible gain (no neck -4.83 in PP-OCRv6), the largest runtime change; test in PyTorch first |
 | BiLSTM | LSTM kernel; the backward direction needs the whole line | 4 gates x (in + hidden) x hidden x 2 per frame, sequential, plus sigmoid/tanh | dominated by the attention neck |
 | dilated temporal dw | a dilation field and a larger halo | negligible MACs | small runtime change; untested |
-| blank-skipping head | a 2-class gate per frame and frame compaction in `run_head` | if about 70% of frames are blank (ASR's figure, arXiv:2305.11558 Table 1; not measured on our lines), ~15-23% of the time at F20-H15 widths | approximate (outputs change), needs a trained gate; buys room for width |
+| blank-skipping head | a 2-class gate per frame and frame compaction in `run_head` | if about 70% of frames are blank (ASR's figure, arXiv:2305.11558v1 Table 1; not measured on our lines), ~15-23% of the time at F20-H15 widths | approximate (outputs change), needs a trained gate; buys room for width |
 | NEON block-max filter in the head's argmax | 20 lines in `run_head` | measured below | exact; small win |
 
 **The head's argmax, measured.** `run_head` scans every one of the 5,355 logits of every frame in
@@ -323,9 +331,13 @@ For the conductor, who owns the protocol; nothing here is selected.
   scratch for 6 steps, resumed to 9, then a fine-tune from that checkpoint for 4: all 1,572
   checkpoint tensors (`model`, `model_raw`, optimizer state) equal, the same metrics and log lines,
   at widths 1.0, 1.5 and 2.0. The only difference is two new checkpoint keys, `chans: None` and
-  `rep: 0`. The same A/B between the round-1 training code and this branch's head, with
-  `--chans 48,96,192,320,384` and with `--rep 2`, is identical too (1,572 and 2,872 tensors), so the
-  proxies above are reproducible with the merged code.
+  `rep: 0`. The same A/B against this branch's head is identical for the code each proxy round ran:
+  round 1's (`36db2de`) with `--chans 48,96,192,320,384` and with `--rep 2` (1,572 and 2,872
+  tensors), and round 2's (`2e75bd6`) with EW's `--chans`, `--guide nrtr`, `--rep 2`, `--width 1.5`
+  and `--width 2.0` (checkpoint `model`, `model_raw`, `model_rep`, `guide` and optimizer tensors), so
+  the proxies above are reproducible with the merged code. The audit (`audit-arch`) also loaded one
+  checkpoint of each of the 24 checkpoint formats under `$HERD/shared/artifacts` (480 files) with
+  this branch and got main's int8 blob for every one.
 - The random-init H15 and F20 blobs of section 2 are byte-identical to `docs/vita-memory-budget.md`'s
   `w150` and `w200` blobs, built from main's code (sha256 `87fb00b5…`, `d0aa13d5…`).
 
@@ -345,11 +357,18 @@ For the conductor, who owns the protocol; nothing here is selected.
   `$HERD/shared/artifacts/arch-research/neon_head_argmax_filter.patch`.
 - The guide diagnosis (gradient norms, cosine, clip factor) is from four batches of teacher_train at
   one checkpoint; it explains the slower CTC learning but does not test a fix.
+- **Where `--chans` checkpoints load.** `train/export.py`, `train/model.from_checkpoint`,
+  `eval/backends.py` (so `eval/run.py`) and every blob-based tool read them. `eval/linefind/evaluate.py`,
+  `synth/ab_eval.py` and `train/restore_blob.py` still rebuild a model from `width` alone, as they
+  already did for bottleneck, depth and ctx checkpoints, so they cannot load an LW checkpoint without
+  a change (audit-arch, N1).
 
 ## Reproduce
 
 ```sh
-export HERD=/local/home/skerraut/herd-vita-ocr A=$HERD/shared/artifacts D=$A/arch-research/cands
+export HERD=/local/home/skerraut/herd-vita-ocr
+export A=$HERD/shared/artifacts
+export D=$A/arch-research/cands
 export VITASDK=$A/vita/vitasdk VOCR_SYNTH_VAL=$HERD/shared/data/synth/synth_00039.npz
 export ARM_CC=$A/runtime/tools/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc
 .venv-ci/bin/python train/arch_candidates.py blobs --out $D          # random-init blobs, sizes.json
@@ -357,7 +376,16 @@ HEAVY_SLOTS=12 $HERD/heavy.sh timeout 5400 .venv-ci/bin/python vita/budget_sweep
     --out $D/check --qemu $A/vita/qemu --jobs 5 < /dev/null           # the ceiling, per candidate
 .venv-ci/bin/python vita/budget_sweep.py a9 --dir $D/check --l2 1024 --only H15,F20,LW,EW \
     --qemu $A/vita/qemu --jobs 4                                       # the game holding half the L2 (heavy.sh)
-.venv-ci/bin/python train/arch_candidates.py table --dir $D            # the cost table, with the tier
+.venv-ci/bin/python - <<'PY'                                          # LWa4 (FL10-class late-wide, 3,501 classes)
+import os, sys; sys.path[:0] = ["train", "vita", "eval"]
+import budget_sweep as B, export; from arch_candidates import random_model
+m = random_model(dict(chans=(32, 64, 128, 192, 256)), n_classes=3501)
+blob = export.build_blob(export.model_ops(m, 32), B.vocab_of(3501), 32, int8=True)[0]
+open(os.environ["D"] + "/blobs/LWa4_w8.vocr", "wb").write(blob)
+PY
+.venv-ci/bin/python vita/budget_sweep.py check $D/blobs/LWa4_w8.vocr --out $D/check-tiers \
+    --qemu $A/vita/qemu --jobs 2                                        # prints the tier (heavy.sh)
+.venv-ci/bin/python train/arch_candidates.py table --dir $D            # the cost table
 # proxies (one slot per run group; development data only; see section 3 for the mixture)
 NV="$A/nvsynth/full/train/nv_train_0[0-3]?_b*.npz+$A/nvsynth/full/train/nv_train_04[01]_b*.npz"
 S2="$A/synth2/shards/synth_000[0-2]?.npz+$A/synth2/shards/synth_0003[0-8].npz"
@@ -369,7 +397,7 @@ VALS=(--val "rv:$A/teacher/teacher_val.npz" --val "rvn:$A/teacher/teacher_val.np
       --val "s2v:$A/synth2/shards/synth_00039.npz:n=2000" --val "nvv:$A/nvsynth/shards/nv_val.npz:n=2000"
       --select rv,rvn)
 P=$A/arch-research/proxy
-HEAVY_SLOTS=15 $HERD/heavy.sh timeout 43200 .venv-ci/bin/python train/train2.py --run P_LW_s1 --seed 1 --threads 1 \
+HEAVY_SLOTS=12 $HERD/heavy.sh timeout 43200 .venv-ci/bin/python train/train2.py --run P_LW_s1 --seed 1 --threads 1 \
     --out $P/runs --steps 5000 --batch 96 --lr 2e-3 --warmup 500 --final-lr 0.05 --wd 0.01 --ema 0.999 \
     --eval-every 2500 --chans 48,96,192,320,384 "${SRC[@]}" "${VALS[@]}" < /dev/null
 #   likewise P_H15_s{1,2} (--width 1.5), P_F20_s{1,2} (--width 2.0), P_H15rep_s{1,2} (--width 1.5 --rep 2),

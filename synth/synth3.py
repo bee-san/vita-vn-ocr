@@ -187,6 +187,9 @@ CFG = {
     "length_edges": [0, 2, 4, 6, 9, 13, 18, 24, 31, 41, 200],
     "length_target": [0.0132, 0.2402, 0.154, 0.1029, 0.1199, 0.1419, 0.1216, 0.0867, 0.0191, 0.0003],
     "length_floor": 0.15,
+    # version 4 (docs/synth3-native.md): native console frames. None renders version 3 exactly; the
+    # version-4 patch (data/manifests/synth3_v4_native_cfg.json, --cfg @...) sets it
+    "frames": None,
 }
 LICENCE_PROFILES = {"personal": {"open", "nc", "grey"}, "open": {"open"}}
 CONFUSABLE = ("ばはぱ バハパ ぶふぷ ブフプ べへぺ ベヘペ ぼほぽ ボホポ びひぴ ビヒピ がか ガカ ぎき ギキ ぐく グク "
@@ -954,6 +957,18 @@ def sample_style(rng, platform, effects=None):
         st["shadow"] = {"dx": d, "dy": d, "blur": 0.7 if rng.random() < 0.3 else 0.0,
                         "c": S2.dark_colour(rng, 0.15) if st["on_dark"] else S2.light_colour(rng, 0.1, 0.85),
                         "a": float(rng.uniform(0.55, 1.0))}
+    F = CFG.get("frames")
+    if F and effects is None:
+        # native console frames (version 4): the real native crops' glyph aspect (ink width per
+        # full-width character over ink height) sits where synth3's plain text does, not where its
+        # outlined and shadowed text does (synth/native_calib.py crops), so fewer native lines keep
+        # an outline or a shadow; text without a box keeps its outline more often (legibility)
+        keep = F["effects"]["bare" if st["layout"] == "bare" else con]
+        if st["stroke"] is not None and rng.random() >= keep["stroke"]:
+            st["stroke"] = None
+            st["stroke2"] = None
+        if st["shadow"] is not None and rng.random() >= keep["shadow"]:
+            st["shadow"] = None
     return st
 
 
@@ -1075,6 +1090,13 @@ def render_region(rng, platform=None):
     f = S2.get_font(font.path, em, wght) if mode == "pixel" else None
     f = canvas_font(fs)
     track = 0 if rng.random() < 0.65 else int(rng.integers(-1, 3 if psp else 4))
+    F = CFG.get("frames")
+    if F and platform != "scaled":
+        # version 4: real native lines are spaced a little wider than synth3's plain text (p90 glyph
+        # aspect 1.19-1.20 against 1.13-1.14; native_calib.py crops): extra pitch on some lines
+        p_tr, lo_tr, hi_tr = F["track"][con]
+        if rng.random() < p_tr:
+            track += int(rng.integers(lo_tr, hi_tr + 1))
     sw = int(round((st["stroke"]["w"] if st["stroke"] else 0) * u))
     sw2 = int(round((st["stroke2"]["w"] if st["stroke2"] else 0) * u))
     if st["stroke"]:
@@ -1412,29 +1434,42 @@ def render_region(rng, platform=None):
                           "xs": None, "fillbox": bool(tl.sw) and (min(nfill) >= 200 or max(nfill) <= 70)})
 
     # ---- screen and capture
-    cap = []
-    if platform == "vita" and rng.random() < CFG["subnative"]:
-        s = float(rng.choice([0.75, 2 / 3]))
-        small = cv2.resize(img, (max(8, int(w * s)), max(8, int(h * s))), interpolation=cv2.INTER_AREA)
-        img = cv2.resize(small, (w, h), interpolation=cv2.INTER_LINEAR)
-        cap.append("subnative")
-    if psp and platform != "scaled" and rng.random() < CFG["dither565"]:
-        img = dither565(img)
-        cap.append("rgb565")
-    if rng.random() < CFG["blur"]:
-        img = cv2.GaussianBlur(img, (0, 0), float(rng.uniform(0.3, 0.7)))
-        cap.append("blur")
-    if rng.random() < CFG["noise"]:
-        img = img + rng.normal(0, rng.uniform(1, 4), img.shape).astype(np.float32)
-        cap.append("noise")
-    out = np.clip(img + 0.5, 0, 255).astype(np.uint8)
-    ink_f = ink.astype(np.float32)
-    core_f = core.astype(np.float32)
+    frame_meta = None
     k3 = np.ones((3, 3), np.uint8)
-    fill_src = cv2.dilate((core_f >= 0.5).astype(np.uint8), k3).astype(np.float32)   # refine(): fill + 1 px
-    ruby_f = ruby_m
-    k_final = 1.0
-    if platform == "psp2x":
+    if CFG.get("frames") and platform != "scaled":
+        # version 4: the region is placed in a whole 960x544 / 480x272 console frame and the console's
+        # scaling, the framebuffer's dither and VNDB's JPEG chain act on the frame (frame_capture)
+        got = frame_capture(rng, img, ink, core, ruby_m, layout, platform, lay)
+        if got is None:
+            return None
+        out, ink_f, core_f, ruby_f, cap, frame_meta, sy = got
+        k_final = sy
+        fill_src = None
+        sw, sw2, dy, ruby_space = sw * sy, sw2 * sy, dy * sy, ruby_space * sy
+    else:                   # version 3's region capture, unchanged
+        cap, k_final = [], 1.0
+        if platform == "vita" and rng.random() < CFG["subnative"]:
+            s = float(rng.choice([0.75, 2 / 3]))
+            small = cv2.resize(img, (max(8, int(w * s)), max(8, int(h * s))), interpolation=cv2.INTER_AREA)
+            img = cv2.resize(small, (w, h), interpolation=cv2.INTER_LINEAR)
+            cap.append("subnative")
+        if psp and platform != "scaled" and rng.random() < CFG["dither565"]:
+            img = dither565(img)
+            cap.append("rgb565")
+        if rng.random() < CFG["blur"]:
+            img = cv2.GaussianBlur(img, (0, 0), float(rng.uniform(0.3, 0.7)))
+            cap.append("blur")
+        if rng.random() < CFG["noise"]:
+            img = img + rng.normal(0, rng.uniform(1, 4), img.shape).astype(np.float32)
+            cap.append("noise")
+        out = np.clip(img + 0.5, 0, 255).astype(np.uint8)
+        ink_f = ink.astype(np.float32)
+        core_f = core.astype(np.float32)
+        fill_src = cv2.dilate((core_f >= 0.5).astype(np.uint8), k3).astype(np.float32)   # refine(): fill + 1 px
+        ruby_f = ruby_m
+    if frame_meta is not None:
+        pass
+    elif platform == "psp2x":
         mode2 = choose(rng, {k: v for k, v in CFG["capture"]["psp2x"].items() if k != "jpeg"})
         k_final = 1.995 if mode2 == "x1995" else 2.0
         interp = cv2.INTER_NEAREST if mode2 == "nearest" else cv2.INTER_LINEAR
@@ -1464,7 +1499,7 @@ def render_region(rng, platform=None):
         elif chain == "q90":
             out = jpeg(out, 90, 2, rng)
         cap.append(chain)
-    if k_final != 1.0:
+    if k_final != 1.0 and frame_meta is None:
         H2, W2 = out.shape[:2]
         ink_f = cv2.resize(ink_f, (W2, H2), interpolation=cv2.INTER_AREA if k_final < 1 else cv2.INTER_LINEAR)
         ruby_f = cv2.resize(ruby_f, (W2, H2), interpolation=cv2.INTER_AREA if k_final < 1 else cv2.INTER_LINEAR)
@@ -1507,6 +1542,8 @@ def render_region(rng, platform=None):
             "capture": "+".join(cap), "border": bool(show_border), "pools": sources,
             "focus": [None if c is None else R.vocab[c] for c in focus],
             "bg": bg_tag, "box_alpha": round(box_alpha, 2) if boxes else None, "page": [page, pages]}
+    if frame_meta is not None:
+        meta["frame"] = frame_meta
     meta["_ruby_mask"] = ruby_b
     if not any(L.get("fillbox") for L in layout):
         meta["_fill_mask"] = None
@@ -1563,6 +1600,147 @@ def jpeg(arr, q, subsampling, rng):
 
 def load_bg(path, scale, box=None):
     return S2.load_bg(path, scale, box)
+
+
+# ----------------------------------------------------------------------------- console frames (v4)
+
+FRAME = {"vita": (960, 544), "psp": (480, 272)}
+
+
+def jpeg_frame(arr, q, subsampling):
+    """JPEG round trip of a whole frame: the 8x8 grid starts at the frame's origin, as on the console's
+    and VNDB's encoders (subsampling: 0 4:4:4, 2 4:2:0, PIL's codes)."""
+    buf = io.BytesIO()
+    Image.fromarray(arr).save(buf, "JPEG", quality=int(q), subsampling=int(subsampling))
+    return np.asarray(Image.open(buf).convert("RGB"))
+
+
+def frame_background(rng, fw, fh, kind):
+    """(frame RGB float32, tag): a training-side native screenshot of the console (synth3's scene pools,
+    so never a test, development or excluded VN) covering the whole frame, flipped at random, else
+    synth2's synthetic background. Scene text outside the dialogue region never reaches a crop: only
+    the region's window is cut back out of the frame."""
+    paths = R.bg.get(kind) or []
+    for _ in range(3 if paths else 0):
+        p = paths[rng.integers(len(paths))]
+        try:
+            with Image.open(p) as im:
+                rgb = np.asarray(im.convert("RGB").resize((fw, fh), Image.BILINEAR), dtype=np.float32)
+            return (rgb[:, ::-1].copy() if rng.random() < 0.5 else rgb), f"scene:{kind}"
+        except OSError:
+            continue
+    saved = S2.R
+    S2.R = _NoScenes
+    try:
+        return S2.background(rng, fw, fh, "vita").astype(np.float32), "synthetic"
+    finally:
+        S2.R = saved
+
+
+def frame_place(rng, lay, w, h, fw, fh):
+    """Top-left corner of a w x h dialogue region in a fw x fh frame: ADV boxes and bands near the bottom,
+    choices, menus and NVL pages centred, balloons and bare text anywhere."""
+    jx = int(round((fw - w) / 2 + rng.uniform(-0.5, 0.5) * min(fw - w, 0.2 * fw)))
+    if lay in ("adv", "band"):
+        y = fh - h - int(rng.uniform(0.0, 0.06) * fh)
+    elif lay in ("choice", "ui", "nvl"):
+        y = int(round((fh - h) / 2 + rng.uniform(-0.15, 0.15) * (fh - h)))
+    else:
+        y = int(rng.integers(0, fh - h + 1))
+        jx = int(rng.integers(0, fw - w + 1))
+    return int(np.clip(jx, 0, fw - w)), int(np.clip(y, 0, fh - h))
+
+
+def frame_capture(rng, img, ink, core, ruby, layout, platform, lay):
+    """Version 4's console path for a native region (platform vita, psp or psp2x): the region is placed in
+    a whole console frame, the console's own scaling acts on the frame (CFG frames.port: native, a Vita
+    game rendered below 960x544 and upscaled, a 4:3 picture stretched across the screen), a PSP frame is
+    dithered to 16 bits and, for psp2x, upscaled to the Vita's screen as a PSP game on a Vita; then the
+    frame is captured: clean, or VNDB's chain as measured on training-side native screenshots
+    (native_calib.py jpeg: every one is IJG Q90; Vita frames 94% 4:2:0, PSP frames 84% 4:4:4), the JPEG
+    grid aligned to the frame. The region's window is cut back out; the ink masks and the layout follow
+    every geometric step. Returns (region uint8, ink, core, ruby float masks, capture tags, frame meta,
+    vertical scale) or None when the region does not fit the frame."""
+    F = CFG["frames"]
+    kind = "psp" if platform in ("psp", "psp2x") else "vita"
+    fw, fh = FRAME[kind]
+    h, w = img.shape[:2]
+    port = choose(rng, F["port"][platform])
+    a, s = 1.0, 1.0
+    iw = fw
+    if port == "stretch":
+        a = float(rng.uniform(*F["stretch"]))
+        iw = int(round(fw / a))
+    elif port == "subnative":
+        sc, sp = F["subnative"]
+        s = float(rng.choice(sc, p=np.asarray(sp) / np.sum(sp)))
+    if w > iw or h > fh:
+        return None
+    frame, bg = frame_background(rng, iw, fh, kind)
+    ox, oy = frame_place(rng, lay, w, h, iw, fh)
+    frame[oy:oy + h, ox:ox + w] = img
+    masks = []
+    for m in (ink, core, ruby):
+        full = np.zeros((fh, iw), np.float32)
+        full[oy:oy + h, ox:ox + w] = np.asarray(m, np.float32)
+        masks.append(full)
+    cap = [port]
+    if kind == "psp" and rng.random() < CFG["dither565"]:
+        frame = dither565(frame)
+        cap.append("rgb565")
+    if rng.random() < CFG["blur"]:
+        frame = cv2.GaussianBlur(frame, (0, 0), float(rng.uniform(0.3, 0.7)))
+        cap.append("blur")
+    if rng.random() < CFG["noise"]:
+        frame = frame + rng.normal(0, rng.uniform(1, 4), frame.shape).astype(np.float32)
+        cap.append("noise")
+    out = np.clip(frame + 0.5, 0, 255).astype(np.uint8)
+    sx = sy = 1.0
+    if port == "stretch":                   # the console's bilinear scaler across the 16:9 screen
+        out = cv2.resize(out, (fw, fh), interpolation=cv2.INTER_LINEAR)
+        masks = [cv2.resize(m, (fw, fh), interpolation=cv2.INTER_LINEAR) for m in masks]
+        sx = fw / iw
+        cap.append(f"stretch{a:.2f}")
+    elif port == "subnative":               # rendered at s x the screen, upscaled by the GPU
+        small = cv2.resize(out, (max(8, int(round(fw * s))), max(8, int(round(fh * s)))),
+                           interpolation=cv2.INTER_AREA)
+        out = cv2.resize(small, (fw, fh), interpolation=cv2.INTER_LINEAR)
+        cap.append(f"sub{s:.2f}")
+    if platform == "psp2x":                 # a PSP game on a Vita: the whole frame scaled to the Vita screen
+        mode2 = choose(rng, {k: v for k, v in CFG["capture"]["psp2x"].items() if k != "jpeg"})
+        k = 1.995 if mode2 == "x1995" else 2.0
+        interp = cv2.INTER_NEAREST if mode2 == "nearest" else cv2.INTER_LINEAR
+        W2, H2 = int(round(fw * k)), int(round(fh * k))
+        out = cv2.resize(out, (W2, H2), interpolation=interp)
+        if mode2 == "scanlines":
+            out[1::2] = (out[1::2].astype(np.float32) * 0.72).astype(np.uint8)
+        masks = [cv2.resize(m, (W2, H2), interpolation=cv2.INTER_LINEAR) for m in masks]
+        sx, sy = sx * W2 / fw, H2 / fh
+        cap.append(mode2)
+    chain = choose(rng, F["capture"][platform])
+    sub = None
+    if chain != "clean":
+        if chain == "vndb2":                # the console's own screenshot JPEG, then VNDB's Q90
+            lo, hi = F["console_q"]
+            out = jpeg_frame(out, int(rng.integers(lo, hi)), 2)
+        sub = 2 if rng.random() < F["vndb_420"][platform][chain] else 0
+        out = jpeg_frame(out, 90, sub)
+    cap.append(chain if sub is None else f"{chain}-{'420' if sub == 2 else '444'}")
+    OH, OW = out.shape[:2]
+    x0, y0 = int(math.floor(ox * sx)), int(math.floor(oy * sy))
+    x1, y1 = min(OW, int(math.ceil((ox + w) * sx))), min(OH, int(math.ceil((oy + h) * sy)))
+    out = out[y0:y1, x0:x1].copy()
+    masks = [m[y0:y1, x0:x1].copy() for m in masks]
+    for L in layout:
+        L["top"] = (L["top"] + oy) * sy - y0
+        L["fs"] *= sy
+        for key in ("x0", "x1"):
+            L[key] = (L[key] + ox) * sx - x0
+        if L.get("xs"):
+            L["xs"] = [(v + ox) * sx - x0 for v in L["xs"]]
+    meta = {"port": port, "stretch": round(a, 3), "subnative": round(s, 3), "pos": [ox, oy],
+            "frame": [OW, OH], "chain": chain, "subsampling": sub, "bg": bg}
+    return out, masks[0], masks[1], masks[2], cap, meta, sy
 
 
 def background(rng, w, h, platform, target, up):

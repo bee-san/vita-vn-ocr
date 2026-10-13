@@ -153,3 +153,46 @@ def test_frames_mode_renders_shards_with_frame_meta(assets, v4, tmp_path):  # no
     synth3.run_shard((0, 40, 5, str(again), "synth3"))
     b = np.load(again / "synth3_00000.npz")
     assert np.array_equal(z["data"], b["data"]) and str(z["meta"]) == str(b["meta"])   # deterministic
+
+
+def test_merge_replaces_native_crops_in_place_and_keeps_scaled_ones():
+    import synth3_native_merge as M
+
+    def shard(platforms, base):
+        crops = [np.full((4, 6 + i), base + i, np.uint8) for i in range(len(platforms))]
+        shapes = np.array([c.shape for c in crops], np.int32)
+        return {"data": np.concatenate([c.ravel() for c in crops]),
+                "offsets": np.concatenate([[0], np.cumsum(shapes[:, 0] * shapes[:, 1])]), "shapes": shapes,
+                "labels": [f"{base}-{i}" for i in range(len(platforms))],
+                "meta": [{"platform": p} for p in platforms]}
+    v3 = shard(["scaled", "vita", "psp", "scaled", "psp2x"], 10)
+    nat = shard(["psp", "vita", "psp2x", "vita"], 100)
+    crops, labels, metas, k = M.merge_one(v3, nat)
+    assert k == 3 and labels == ["10-0", "100-0", "100-1", "10-3", "100-2"]
+    assert [m["platform"] for m in metas] == ["scaled", "psp", "vita", "scaled", "psp2x"]
+    assert np.array_equal(crops[0], M.crop(v3, 0)) and np.array_equal(crops[2], M.crop(nat, 1))
+    with pytest.raises(ValueError):
+        M.merge_one(v3, shard(["psp"], 0))
+
+
+def test_native_protocol_copies_study1b_and_lets_devnative_v3_decide():
+    base = json.loads((ROOT / "eval" / "synth3_study1b_protocol.json").read_text(encoding="utf-8"))
+    p = json.loads((ROOT / "eval" / "synth3_native_protocol.json").read_text(encoding="utf-8"))
+    import hashlib
+    assert p["base_protocol"]["sha256"] == hashlib.sha256((ROOT / "eval" / "synth3_study1b_protocol.json")
+                                                          .read_bytes()).hexdigest()
+    for key in ("architecture", "checkpoint", "views", "metric", "bootstrap"):
+        assert p[key] == base[key], key
+    rb, rp = dict(base["recipe"]), dict(p["recipe"])
+    for r in (rb, rp):
+        r.pop("trainer"), r.pop("note")
+    assert rb == rp and p["seeds"] == base["seeds"]
+    assert p["arms"]["D_s3v3"] == base["arms"]["D_s3v3"] and p["comparisons"] == {"E_vs_D": ["D_s3v3", "E_s3nat"]}
+    assert p["dev"]["devnative_v3"]["role"] == "decides" and "reported only" in p["dev"]["teacher_val"]["role"]
+    assert p["sources"]["nv"]["files"] == base["sources"]["nv"]["files"]
+    assert p["sources"]["s3v3"]["files"] == base["sources"]["s3v3"]["files"]
+    run = (ROOT / "eval" / "synth3_native_run.sh").read_text(encoding="utf-8")
+    old = (ROOT / "eval" / "synth3_study1b_run.sh").read_text(encoding="utf-8")
+    tail = lambda s: s[s.index("--steps"):]  # noqa: E731   the train2.py arguments after --run/--out
+    assert tail(run) == tail(old)                         # the same invocation, sources aside
+    assert 's3e:0.5:$S3E:stream=1,pool=3,inv=0.2' in run and "2b132aaba600ab7dbceeeb1f3a71877d3202e853" in run

@@ -1,0 +1,112 @@
+{
+ "kind": "vocr3-selection",
+ "size": "H15",
+ "protocol_sha256": "27fb605c50f35d3096c11fa326e82845b067d009f86802ee1b433e781f99be20",
+ "computed": "2026-10-13T11:56:04Z",
+ "teacher_val": {
+  "files": [
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/teacher_val.json"
+  ],
+  "lines": 1651
+ },
+ "devnative": {
+  "files": [
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_strict_ink.json",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_strict_grad.json",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_tv_native_ink.json",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_tv_native_grad.json"
+  ],
+  "commit": "14ae22d48d5d100bc681763df3beabcc64d38fa7",
+  "lines": 1000,
+  "sha256": [
+   "de5acbd6591c4b4c161cf33b82dc5847656bc47e6d355bc2625cc204dc7b169e",
+   "d106873a4544ba7781b6ce512865ad90a7b7831722ea28fa53bb1c2fba0263ed",
+   "a41981259c6e9f01b3d11be48b64fbd78023d3a0c85827ce9f3e4c11fb55f49a",
+   "1ea36c8ddf1a6ed1e2eb14a34180b3c49f75982378235bac43793d9ec78881c0"
+  ]
+ },
+ "realplus_decision": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/realplus_decision.json",
+  "adopted": true
+ },
+ "candidates": [
+  {
+   "run": "rp_H15_A_s2_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_H15_A_s2_seed1_w8.vocr",
+   "blob_sha256": "7d1132242f3b29e0121b849288b35222bdba0e4d30c3ca714c3f8a6b29461af4",
+   "teacher_val_cer": 0.022228,
+   "devnative_cer": 0.024232,
+   "score": 0.02323,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.1139063857106,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/budget/a9/rp_H15_A_s2_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_H15_A_s2_seed2",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_H15_A_s2_seed2_w8.vocr",
+   "blob_sha256": "2bb3c59cf2627e89b2d9100a48de0d6ad477b269a80db1130143214546452f23",
+   "teacher_val_cer": 0.020651,
+   "devnative_cer": 0.022249,
+   "score": 0.02145,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.11391004844506,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/budget/a9/rp_H15_A_s2_seed2_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_H15_C_mix_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_H15_C_mix_seed1_w8.vocr",
+   "blob_sha256": "a7a9990819d8483695244117524ee5a4424999ade1f38c6d8858d1dfab24acb2",
+   "teacher_val_cer": 0.020884,
+   "devnative_cer": 0.02268,
+   "score": 0.021782,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.11391362332796,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/budget/a9/rp_H15_C_mix_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_H15_C_mix_seed2",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_H15_C_mix_seed2_w8.vocr",
+   "blob_sha256": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c",
+   "teacher_val_cer": 0.020563,
+   "devnative_cer": 0.021775,
+   "score": 0.021169,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.1138755959898,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/budget/a9/rp_H15_C_mix_seed2_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_H15_B_s3_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_H15_B_s3_seed1_w8.vocr",
+   "blob_sha256": "943c42d2e3537ca649e538fdc9f2fd59314f7b81413fa80a4b0d63fc1a2f06cf",
+   "teacher_val_cer": 0.022082,
+   "devnative_cer": 0.033374,
+   "score": 0.027728,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.11372609402656,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/budget/a9/rp_H15_B_s3_seed1_l22048.json"
+   },
+   "budget_ok": true
+  }
+ ],
+ "selected": "rp_H15_C_mix_seed2",
+ "selected_blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_H15_C_mix_seed2_w8.vocr",
+ "selected_blob_sha256": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c"
+}

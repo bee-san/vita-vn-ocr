@@ -396,8 +396,10 @@ def _jl(path):
 
 
 def test_committed_cohort_has_no_eval_screenshot():
-    """The committed cohort (v2) shares no screenshot with eval's test sets or any eval/linefind
-    set, by VNDB id or file sha256 (overlap.py also checks pixels and frames, locally)."""
+    """The committed cohort (v3) shares no screenshot with eval's test sets or any eval/linefind
+    set, by VNDB id or file sha256 (overlap.py also checks pixels and frames, locally), and its
+    ink crops are eval's: the text box is the unpadded ink + furigana box, and the crop pads it
+    by 4 / 2 px (more only sideways, where it widens to the labelled characters)."""
     shots = _jl(P.MANIFESTS / "shots.jsonl")
     lines = _jl(P.MANIFESTS / "lines.jsonl")
     nums, shas = set(), set()
@@ -412,14 +414,20 @@ def test_committed_cohort_has_no_eval_screenshot():
     assert not [s["shot"] for s in shots if "linefind" in s["flags"]]
     keys = {s["shot"] for s in shots}
     assert all(ln["shot"] in keys for ln in lines) and len({ln["id"] for ln in lines}) == len(lines)
+    for ln in lines:
+        p = P.PAD[ln["kind"]]
+        tb, ib = ln["text_box"], ln["ink_box"]
+        assert tb[1] == ln["ink"][1] or ln["ink"][1] - tb[1] > p             # furigana above, or the ink
+        assert (ib[1], ib[3]) == (max(0, tb[1] - p), tb[3] + p)            # one padding, top and bottom
+        assert ib[0] <= tb[0] - p or ib[0] == 0 and ib[2] >= tb[2] + p     # sideways: at least one
     stats = json.loads((P.MANIFESTS / "stats.json").read_text(encoding="utf-8"))
     assert stats["kept"] == len(lines)
     assert sum(f["lines"] for n, f in stats["files"].items() if n.endswith("_ink.npz")) == len(lines)
     assert sum(1 for ln in lines if ln["grad"]["ok"]) == sum(f["lines"] for n, f in stats["files"].items()
                                                              if n.endswith("_grad.npz"))
     ov = json.loads((P.MANIFESTS / "overlap.json").read_text(encoding="utf-8"))
-    assert ov["cohorts"]["v2"]["matching_screenshots"] == 0 and not ov["eval_missing_local"]
-    assert ov["cohorts"]["v2"]["screenshots"] == len(shots) and ov["cohorts"]["v2"]["lines"] == len(lines)
+    assert ov["cohorts"]["v3"]["matching_screenshots"] == 0 and not ov["eval_missing_local"]
+    assert ov["cohorts"]["v3"]["screenshots"] == len(shots) and ov["cohorts"]["v3"]["lines"] == len(lines)
     v1 = ov["cohorts"]["v1"]
     assert v1["matching_screenshots"] == 41 and v1["matching_lines"] == 94
     assert all(h["subset"] == "tv_native" and h["strong"] for h in v1["hits"])
@@ -498,6 +506,60 @@ def test_edge_accept_and_covers():
     assert E.accept(rec, {"decision": "text", "text": "あいう」"}) == (False, "edge-other-text")
     assert B.covers([10, 0, 100, 20], [8, 0, 102, 20], "psp")
     assert not B.covers([10, 0, 100, 20], [8, 0, 110, 20], "psp")
+
+
+def test_eval_line_pads_once():
+    """read.py stores its padded crop under "crop" (unpadded: "crop_ink"): crop_box() on a raw
+    reads line pads twice (the review frame); eval_line() gives eval's ink + 4/2 px crop."""
+    from teacher import vote
+    ink = [100, 200, 300, 222]
+    raw = {"ink": ink, "crop_ink": list(ink), "crop": [96, 196, 304, 226], "view": [60, 190, 340, 232],
+           "reads": {"meiki": ["あいう", [["あ", 100, 200, 120, 222, 0.9], ["う", 280, 200, 300, 222, 0.9]]]}}
+    assert L.crop_box(raw, "vita", 960, 544) == [92, 192, 308, 230]          # 8 px: the review frame
+    ev = L.eval_line(raw)
+    assert L.text_box(ev) == ink and L.crop_box(ev, "vita", 960, 544) == [96, 196, 304, 226]
+    ch = L.label_chars(raw, vote.key, "あいう")
+    assert L.final_crop(ev, "vita", 960, 544, ch) == [96, 196, 304, 226]
+    assert L.eval_line({"ink": ink, "crop": [0, 0, 1, 1]})["crop"] == ink    # no crop_ink: the ink box
+    g = np.full((544, 960), 40, np.uint8)
+    fc, rc, why = __import__("devnative.edgecheck", fromlist=["flags"]).flags(g, raw, "vita", 960, 544, "あいう",
+                                                                               crop="eval")
+    assert fc == [96, 196, 304, 226] and rc == [92, 192, 308, 230] and why == []
+    _, _, why = __import__("devnative.edgecheck", fromlist=["flags"]).flags(g, raw, "vita", 960, 544, "かきく",
+                                                                            crop="eval")
+    assert why == ["no-char-boxes"]                                         # nothing to widen to: checked
+
+
+def test_build_eval_crop_and_prior(tmp_path):
+    out, _, s, entries = _fake_batch(tmp_path)
+    for _, _, ln, _ in entries:                       # as read.py stores it: "crop" padded once
+        ln["crop_ink"] = list(ln["ink"])
+        ln["crop"] = [ln["ink"][0] - 2, ln["ink"][1] - 2, ln["ink"][2] + 2, ln["ink"][3] + 2]
+    shots = {s["shot"]: dict(s, lines=[e[2] for e in entries])}
+    labels = []
+    for lid, _, ln, _ in entries:
+        rec = D.decide_line(lid, ln, _p("pick", S.candidates(ln)[0]["text"]), None, "dev")
+        rec.update(shot=s["shot"], vn=s["vn"], subset=s["subset"], kind=s["kind"])
+        labels.append(rec)
+    st = B.build(labels, shots, tmp_path / "rev", manifests=tmp_path / "m1", tvl={})
+    z = json.loads(str(np.load(tmp_path / "rev" / "devnative_strict_ink.npz")["meta"]))
+    assert [m["box"] for m in z] == [[24, 192, 406, 216]] * 2 and st["kept"] == 2        # padded twice
+    st = B.build(labels, shots, tmp_path / "ev", manifests=tmp_path / "m2", tvl={}, crop="eval")
+    z = json.loads(str(np.load(tmp_path / "ev" / "devnative_strict_ink.npz")["meta"]))
+    assert [m["box"] for m in z] == [[26, 194, 404, 214]] * 2                             # eval: ink + 2 px
+    row = json.loads((tmp_path / "m2" / "lines.jsonl").read_text(encoding="utf-8").splitlines()[0])
+    assert row["text_box"] == [28, 196, 402, 212] and row["reviewed_box"] == [24, 192, 406, 216]
+    ok = {"edge_ok": True, "edge_why": "checked", "crop": [26, 194, 404, 214], "flags": ["ink-right"]}
+    edge = {"v100_5_0": ok, "v100_5_1": ok}
+    prior = {"v100_5_0": {"edge_ok": True, "edge_why": "unflagged"},
+             "v100_5_1": {"edge_ok": False, "edge_why": "edge-cut"}}
+    st = B.build(labels, shots, tmp_path / "pr", manifests=tmp_path / "m3", tvl={}, crop="eval", edge=edge,
+                 edge_prior=[prior])
+    assert st["kept"] == 1 and st["dropped"] == {"edge-cut": 1}                          # the earlier check holds
+    edge["v100_5_0"] = dict(ok, edge_ok=False, edge_why="edge-cut")
+    st = B.build(labels, shots, tmp_path / "pr2", manifests=tmp_path / "m4", tvl={}, crop="eval", edge=edge,
+                 edge_prior=[prior])
+    assert st["kept"] == 0 and st["dropped"] == {"edge-cut": 1, "eval-edge-cut": 1}
 
 
 def test_confirm_reads():

@@ -2,23 +2,29 @@
 """Edge check of the ink crops: does each final crop hold the whole line and exactly its label?
 
   edgecheck.py boxes  [--labels $OUT/labels.jsonl] [--evidence DIR...] [--out $OUT/edge/boxes.jsonl]
+                      [--crop reviewed|eval] [--selection SHOTS]
   edgecheck.py sheets [--boxes ...] --out BATCH [--chunk N]
   edgecheck.py apply  [--boxes ...] --batch DIR... [--out $OUT/edge/edge.jsonl]
 
-The reviewers decided each line on its ink crop (ink + furigana + 4/2 px). MeikiOCR's
+The reviewers decided each line on its review frame, crop_box() of the raw reads line: read.py's
+crop (ink + furigana + 4/2 px) padded again, so ink + furigana + 8/4 px. MeikiOCR's
 detector sometimes leaves an end 。, 」 or 「 out of its box, so (a) a label read off a wider
 view can hold a character that sits outside that crop, and (b) a crop can leave out a bracket
 of its line. The final ink crop is widened to the labelled characters' boxes (lines.final_crop,
-teacher's rule), and a line is checked on a contact sheet (sheets.py mode "edge": the frame is
-the final crop, the one candidate its label) when
-  * the final crop differs from the reviewed one by WIDEN px or more on a side, or
+teacher's rule). --crop reviewed (cohorts v1 and v2) widens the review frame; --crop eval
+(cohort v3) widens eval's crop, ink + furigana + 4/2 px (lines.eval_line), and also checks
+every line whose label no MeikiOCR reading spells (no character boxes to widen to,
+"no-char-boxes"). A line is checked on a contact sheet (sheets.py mode "edge": the frame is the
+final crop, the one candidate its label) when
+  * the final crop reaches WIDEN px or more beyond the review frame on a side, or
   * ink continues the line's rows just beyond the final crop (lines.ink_beyond > max(2, 0.2 ink
     heights) on a side), or
   * a later look (the GRAD check or the blind re-check, --evidence) typed other text or called
     the line cut.
 A checked line keeps its label only when the check picks it (the frame shows the whole line and
 exactly the label); typed text, cut or unsure drops it (why edge-*). Unflagged lines keep the
-reviewed crop's decision. Decisions are the assistant's (reviewer_kind "assistant").
+reviewed crop's decision. --selection (select.py's shots.jsonl) limits the boxes to the lines of
+the screenshots it holds. Decisions are the assistant's (reviewer_kind "assistant").
 """
 import argparse
 import json
@@ -41,10 +47,13 @@ EDGE_DIR = P.OUT / "edge"
 WIDEN = 3
 
 
-def flags(gray, line, kind, W, H, label):
-    """(final crop, reviewed crop, reasons) for one labelled line."""
+def flags(gray, line, kind, W, H, label, crop="reviewed"):
+    """(final crop, review frame, reasons) for one labelled raw reads line. crop "reviewed": the
+    final crop widens the review frame (cohorts v1, v2); "eval": it widens eval's crop
+    (lines.eval_line), and a label without MeikiOCR character boxes is flagged too."""
     rc = L.crop_box(line, kind, W, H)
-    fc = L.final_crop(line, kind, W, H, L.label_chars(line, vote.key, label))
+    chars = L.label_chars(line, vote.key, label)
+    fc = L.final_crop(L.eval_line(line) if crop == "eval" else line, kind, W, H, chars)
     why = []
     if rc[0] - fc[0] >= WIDEN:
         why.append("widened-left")
@@ -56,6 +65,8 @@ def flags(gray, line, kind, W, H, label):
         why.append("ink-left")
     if br > m:
         why.append("ink-right")
+    if crop == "eval" and not chars:
+        why.append("no-char-boxes")
     return fc, rc, why
 
 
@@ -77,16 +88,22 @@ def cmd_boxes(args):
     idx = S.line_index(shots)
     labels = [json.loads(x) for x in Path(args.labels).read_text(encoding="utf-8").splitlines() if x.strip()]
     ev = evidence(args.evidence or [])
+    sel = None
+    if args.selection:
+        sel = {json.loads(x)["shot"] for x in Path(args.selection).read_text(encoding="utf-8").splitlines()
+               if x.strip()}
     out, cache = [], {}
     for r in sorted((r for r in labels if r["status"] == "kept"), key=lambda r: r["id"]):
         s, ln = idx[r["id"]]
+        if sel is not None and s["shot"] not in sel:
+            continue
         if s["shot"] not in cache:
             cache.clear()
             rgb = P.load_screen(s)
             cache[s["shot"]] = (rgb, to_gray(rgb))
         rgb, gray = cache[s["shot"]]
         H, W = rgb.shape[:2]
-        fc, rc, why = flags(gray, ln, s["kind"], W, H, r["label"])
+        fc, rc, why = flags(gray, ln, s["kind"], W, H, r["label"], crop=args.crop)
         why += ev.get(r["id"], [])
         out.append({"id": r["id"], "shot": s["shot"], "label": r["label"], "crop": fc, "reviewed": rc,
                     "check": bool(why), "why": why})
@@ -152,6 +169,9 @@ def main():
     p.add_argument("--labels", default=str(P.OUT / "labels.jsonl"))
     p.add_argument("--evidence", nargs="*", help="batch dirs of later looks (gradcheck, blind)")
     p.add_argument("--out", default=str(EDGE_DIR / "boxes.jsonl"))
+    p.add_argument("--crop", choices=("reviewed", "eval"), default="reviewed",
+                   help="final crop widened from the review frame (v1, v2) or from eval's crop (v3)")
+    p.add_argument("--selection", help="select.py's shots.jsonl: only lines of the screenshots it holds")
     p = sub.add_parser("sheets")
     p.add_argument("--boxes", default=str(EDGE_DIR / "boxes.jsonl"))
     p.add_argument("--out", required=True)

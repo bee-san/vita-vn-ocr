@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Text-free summary of how the devnative cohort was selected and reviewed.
 
-  report.py [--out devnative/manifests/review.json]
+  report.py [--out devnative/manifests/review.json] [--edge-eval $OUT/v3/edge/edge.jsonl]
 
 Collects counts from the local artifacts ($DEVNATIVE_OUT): the selection report, the readings,
 every review stage's parsed decisions (pass 1, pass 2, GRAD check, blind re-check, edge check,
@@ -23,7 +23,7 @@ from devnative import sheets as S  # noqa: E402
 from teacher import vote  # noqa: E402
 
 STAGES = (("pass1", "pass1"), ("pass2", "pass2"), ("gradcheck", "grad"), ("blind", "blind"),
-          ("edgecheck", "edge"), ("confirm", "confirm1"), ("confirm2", "confirm2"))
+          ("edgecheck", "edge"), ("confirm", "confirm1"), ("confirm2", "confirm2"), ("edgecheck_v3", "edge_eval"))
 
 
 def jl(path):
@@ -39,6 +39,7 @@ def decisions_summary(recs):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", default=str(P.MANIFESTS / "review.json"))
+    ap.add_argument("--edge-eval", help="edgecheck.py apply output of the eval-crop check (cohort v3)")
     args = ap.parse_args()
     out_dir = P.OUT
     sel = json.loads((out_dir / "select_report.json").read_text(encoding="utf-8"))
@@ -99,6 +100,11 @@ def main():
                            "kept_by_looks": dict(Counter(str(r.get("looks")) for r in labels if r["status"] == "kept"))}
     out["grad"] = dict(Counter(r["grad_why"] for r in jl(out_dir / "grad" / "grad.jsonl")))
     out["edge"] = dict(Counter(r["edge_why"] for r in jl(out_dir / "edge" / "edge.jsonl")))
+    if args.edge_eval:
+        recs = jl(args.edge_eval)
+        out["edge_eval"] = {"lines": len(recs), "check": sum(bool(r["flags"]) for r in recs),
+                            "flags": dict(Counter(f for r in recs for f in r["flags"])),
+                            "by": dict(Counter(r["edge_why"] for r in recs))}
     out["built"] = json.loads((P.MANIFESTS / "stats.json").read_text(encoding="utf-8"))
     Path(args.out).write_text(json.dumps(out, ensure_ascii=True, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({k: out[k] for k in ("final_labels", "grad", "edge")}, indent=1), flush=True)

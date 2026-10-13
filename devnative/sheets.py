@@ -11,7 +11,9 @@ A batch directory holds README.md (the task and the exact output format), S001.p
 of at most 1280 x 1280 px) and S001.json ... (per entry: its number, line id and numbered
 candidate readings, so text can be copied exactly). The reviewer writes decisions.jsonl there.
 
-Each entry shows the line in context: the crop (ink + furigana + 4/2 px) framed in red, a line
+Each entry shows the line in context: the crop framed in red (crop_box() of the line; on a raw
+reads.jsonl line, whose "crop" read.py already padded, that is ink + furigana + 8/4 px: the
+review frame every devnative label was decided on), a line
 height of the screenshot to its left and right and a third above and below, zoomed by an
 integer factor (nearest neighbour, so small kana and dakuten keep their pixels) to about 44 px
 of ink. Below it, the distinct readings (agreement key = eval's scoring normalisation; written

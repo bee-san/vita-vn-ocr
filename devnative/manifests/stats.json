@@ -19,7 +19,7 @@
     "psp": 38
    },
    "chars": 411,
-   "sha256": "ab2cc6890a0da59f49e9c1b491a0a1bc4e68cb9d7715ac485674b80cf2414f51"
+   "sha256": "a1f0f83e78a0382d8c8efa276d5500162b4a5ebeba6fb1ce958567613f8e2589"
   },
   "devnative_strict_grad.npz": {
    "lines": 26,
@@ -31,27 +31,27 @@
    "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e"
   },
   "devnative_tv_native_ink.npz": {
-   "lines": 515,
+   "lines": 513,
    "vns": 44,
    "by_kind": {
-    "psp": 407,
+    "psp": 405,
     "vita": 108
    },
-   "chars": 5906,
-   "sha256": "79111ea886940aa60786fc9ceb32e19af67473db2db5214ce725602b9a22977b"
+   "chars": 5876,
+   "sha256": "a3d2c9d91f0460c23aeb303ecb4583de3448f634ababdc5f3163eb0f2d95aec5"
   },
   "devnative_tv_native_grad.npz": {
    "lines": 423,
    "vns": 44,
    "by_kind": {
-    "psp": 330,
-    "vita": 93
+    "psp": 329,
+    "vita": 94
    },
-   "chars": 5004,
-   "sha256": "3e9bbe20d02371975576199fd9c75fd57c125aeaaed945a3f848954cbf6d0bef"
+   "chars": 4995,
+   "sha256": "0ed617b97fe3050936c5ca062ec0c7352416a6dc20f92f7efbb18cc4b6ca1782"
   }
  },
- "kept": 553,
+ "kept": 551,
  "dropped": {
   "skip-ui": 304,
   "skip-cut": 27,
@@ -64,11 +64,12 @@
   "confirm-skip": 5,
   "blind-ambiguous-glyph": 2,
   "edge-bad": 2,
+  "eval-edge-cut": 2,
   "pass2-skip": 1,
   "repeat-cap": 2
  },
  "by_subset_kind": {
-  "tv_native/psp": 407,
+  "tv_native/psp": 405,
   "strict/psp": 38,
   "tv_native/vita": 108
  },
@@ -83,7 +84,7 @@
   "tv_native": 194
  },
  "how": {
-  "tv_native:consensus": 439,
+  "tv_native:consensus": 437,
   "tv_native:changed": 8,
   "strict:consensus": 22,
   "strict:single": 16,
@@ -92,12 +93,12 @@
  "grad": {
   "tv_native:grad-mixed": 24,
   "tv_native:grad-missed": 41,
-  "tv_native:inside": 294,
-  "tv_native:checked": 129,
+  "tv_native:inside": 296,
+  "tv_native:checked": 127,
   "strict:grad-missed": 5,
   "strict:inside": 15,
   "strict:checked": 11,
-  "tv_native:grad-cuts-label": 17,
+  "tv_native:grad-cuts-label": 15,
   "tv_native:grad-partial": 8,
   "tv_native:grad-unsure": 1,
   "tv_native:grad-extra-text": 1,
@@ -107,7 +108,7 @@
  },
  "names": 151,
  "tv_overlap": {
-  "lines": 355,
-  "label_agrees": 355
+  "lines": 353,
+  "label_agrees": 353
  }
 }

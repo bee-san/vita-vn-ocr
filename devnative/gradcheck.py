@@ -7,14 +7,16 @@
 
 A screenshot's dialogue regions are built (devnative/lines.regions, eval's rule) from the lines
 pass 1 called dialogue: decided (pick or text), unsure, or cut. Lines skipped as ui or bad stay
-out, as eval leaves UI out of its regions. The console's GRAD finder runs on each region and its
-boxes are matched to the lines (lines.grad_assign). A labelled line gets a GRAD crop only when
-its box holds the whole line and no other detected text (status "ok") and, where the box runs
-more than a little beyond the reviewed ink crop (left/right by more than max(3 px, 0.3 ink
-heights), top/bottom by more than 0.6 ink heights), a containment check on a contact sheet
-confirms that the box shows exactly the label: the detector does not see every glyph (card
-digits, icons, a line that runs on), so text in the extension would make the label wrong for
-that crop. Every decision is the assistant's (reviewer_kind "assistant").
+out, as eval leaves UI out of its regions. (On raw reads lines the rule groups read.py's padded
+boxes, so regions reach 16 / 8 px beyond the text.) The console's GRAD finder runs on each region
+and its boxes are matched to the lines (lines.grad_assign). A labelled line gets a GRAD crop only
+when its box holds the whole line and no other detected text (status "ok") and, where the box
+runs more than a little beyond the review frame (crop_box of the raw reads line, ink + furigana +
+8/4 px: what the labellers saw; left/right by more than max(3 px, 0.3 ink heights), top/bottom by
+more than 0.6 ink heights), a containment check on a contact sheet confirms that the box shows
+exactly the label: the detector does not see every glyph (card digits, icons, a line that runs
+on), so text in the extension would make the label wrong for that crop. Every decision is the
+assistant's (reviewer_kind "assistant").
 """
 import argparse
 import json

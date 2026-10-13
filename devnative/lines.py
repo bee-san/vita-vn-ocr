@@ -5,9 +5,12 @@ Line boxes come from MeikiOCR's detector through teacher/geometry.py (rows merge
 refined to its ink, furigana attached), the conventions eval used to build vita-test and
 psp-test. From a screenshot's kept lines this module derives:
   * regions: lines that sit together (vertical gap <= 1.6 line heights) and their union plus
-    12 px (Vita) / 6 px (PSP), the dialogue box a player would draw (eval/tools/manifest.py);
+    12 px (Vita) / 6 px (PSP), the dialogue box a player would draw (eval/tools/manifest.py).
+    devnative's GRAD crops grouped the raw reads lines, whose "crop" is read.py's padded box, so
+    their regions are 16 / 8 px around the text and the gap is measured between padded boxes;
   * the ink crop: the line's ink box with its furigana, plus 4 px (Vita) / 2 px (PSP), as
-    teacher and eval crop;
+    teacher and eval crop (eval_line(); on a raw reads line crop_box() pads twice, which is the
+    contact sheets' review frame);
   * the GRAD crop: what the console's line finder (synth/common.find_lines_ex, the bit-exact
     twin of runtime/vocr_lines.c) returns for the region, matched one-to-one to the lines
     (eval/finders.match: vertical overlap >= 0.5 of the smaller height, any horizontal
@@ -50,8 +53,17 @@ def union(boxes):
 
 
 def text_box(line):
-    """The line's ink box with its furigana (eval's "box")."""
+    """The line's ink box with its furigana (eval's "box"), from line["crop"]. A raw reads.jsonl
+    line holds read.py's padded crop there (ink + furigana + 4/2 px; the unpadded box is
+    "crop_ink"), so on a raw line this is the padded box and crop_box() pads it again (the sheets'
+    review frame, ink + furigana + 8/4 px). eval_line() gives eval's geometry."""
     return list(line.get("crop") or line["ink"])
+
+
+def eval_line(line):
+    """The line with "crop" = its unpadded ink + furigana box, so text_box() is eval's box and
+    crop_box() / final_crop() pad once (ink + 4/2 px), as eval and teacher crop."""
+    return dict(line, crop=list(line.get("crop_ink") or line["ink"]))
 
 
 def crop_box(line, kind, W, H):

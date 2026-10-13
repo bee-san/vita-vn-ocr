@@ -3,13 +3,18 @@
 
   build.py npz [--labels $OUT/labels.jsonl] [--reads ...] [--out $OUT] [--prefix devnative]
                [--manifests devnative/manifests] [--selection devnative/manifests/shots.jsonl]
+               [--crop reviewed|eval] [--edge-prior EDGE.jsonl ...]
 
 For every kept line (decide.py final) two crops are cut from its native screenshot, both as
 grey integer luma (synth/common.to_gray) in the console polarity (a crop whose text
 common.line_dark calls dark is stored inverted, meta dark/inverted):
   ink   the line's ink box with furigana, widened left and right to the labelled characters' boxes,
-        plus 4 px (Vita) / 2 px (PSP): teacher's and eval's crop (lines.final_crop). --edge takes
-        edgecheck.py's results: the checked final crops, and lines whose check failed are dropped;
+        plus 4 px (Vita) / 2 px (PSP): teacher's and eval's crop (lines.final_crop on
+        lines.eval_line). --edge takes edgecheck.py's results: the checked final crops, and lines
+        whose check failed are dropped. Cohorts v1 and v2 (--crop reviewed, edgecheck.py --crop
+        reviewed) widened the review frame instead, which read.py's padded "crop" makes ink +
+        furigana + 8 / 4 px; --edge-prior drops every line an earlier edge check failed (cohort v3:
+        v2's check);
   grad  the box the console's GRAD finder returns for the line's dialogue region (devnative/
         lines.py), only where it holds the whole line and no other detected text (status "ok") and
         shows exactly the label: --grad takes gradcheck.py's results (regions from every pass-1
@@ -166,21 +171,36 @@ def deselect(labels, shots, selection):
 
 
 def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devnative", grad=None, edge=None,
-          selection=None):
+          selection=None, crop="reviewed", edge_prior=None):
     """Cut, write the npz files and the manifests. tvl: teacher_val's native lines
     (teacher_val_lines(); loaded when a tv_native line is kept and none are given). grad:
     {line id: gradcheck.py apply record}; None = grad_default(). edge: {line id: edgecheck.py
     apply record}; None = final crops without an edge check. selection: shot keys the cohort may
-    use (deselect()); None = every screenshot read."""
+    use (deselect()); None = every screenshot read. crop: "eval" records eval's text box and
+    matches teacher_val on eval's crop (and, without edge, cuts eval's final crop); "reviewed"
+    (cohorts v1, v2) uses the raw reads line. edge_prior: [{line id: edgecheck.py apply record}]
+    of earlier checks; a kept line one of them failed is dropped with its reason."""
     idx = S.line_index(shots)
     labels = list(labels)
+    sel = None if selection is None else set(selection)
+
+    def fails(r, e):         # a kept line its edge record drops (none needed where deselect() drops it)
+        if r["status"] != "kept" or (e is None and sel is not None and r["shot"] not in sel):
+            return False
+        return e is None or not e["edge_ok"]
+    for prior in edge_prior or []:
+        for i, r in enumerate(labels):
+            e = prior.get(r["id"])
+            if fails(r, e):
+                labels[i] = dict(r, status="dropped", why=e["edge_why"] if e else "edge-missing")
     if edge is not None:
         for i, r in enumerate(labels):
             e = edge.get(r["id"])
-            if r["status"] == "kept" and (e is None or not e["edge_ok"]):
-                labels[i] = dict(r, status="dropped", why=e["edge_why"] if e else "edge-missing")
-    if selection is not None:
-        labels = deselect(labels, shots, set(selection))
+            if fails(r, e):
+                why = e["edge_why"] if e else "edge-missing"
+                labels[i] = dict(r, status="dropped", why=f"eval-{why}" if crop == "eval" else why)
+    if sel is not None:
+        labels = deselect(labels, shots, sel)
     kept, capped = cap_repeats([r for r in labels if r["status"] == "kept"])
     dropped = [r for r in labels if r["status"] != "kept"] + [dict(r, status="dropped", why="repeat-cap")
                                                                for r in capped]
@@ -206,12 +226,13 @@ def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devna
                                            "grad_ok": False, "grad_why": "grad-missing"} for r in recs]
         shot_meta = {"url": s["url"], "release": s.get("release")}
         for r, ln, g in zip(recs, lines, grads):
+            geo = L.eval_line(ln) if crop == "eval" else ln
             fc = edge[r["id"]]["crop"] if edge is not None else \
-                L.final_crop(ln, s["kind"], W, H, L.label_chars(ln, vote.key, r["label"]))
+                L.final_crop(geo, s["kind"], W, H, L.label_chars(ln, vote.key, r["label"]))
             if g["grad_ok"] and not covers(g["box"], fc, s["kind"]):
                 g = dict(g, grad_ok=False, grad_why="grad-cuts-label")
             grad_stats[f"{s['subset']}:{g['grad_why']}"] += 1
-            tv = tv_overlap(L.crop_box(ln, s["kind"], W, H), tvl.get(sk, [])) if s["subset"] == "tv_native" else None
+            tv = tv_overlap(L.crop_box(geo, s["kind"], W, H), tvl.get(sk, [])) if s["subset"] == "tv_native" else None
             base = {"real": True, "pool": prefix, "id": r["id"], "vn": s["vn"], "session": s.get("release"),
                     "kind": s["kind"], "target": s["kind"], "how": r["how"], "pol": G.polarity(ln.get("hint", {})),
                     "subset": s["subset"], "flags": s.get("flags", []), "support": r["support"],
@@ -220,7 +241,7 @@ def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devna
             if tv:
                 base["tv_id"] = tv[0]
             row = {"id": r["id"], "shot": sk, "subset": s["subset"], "vn": s["vn"], "kind": s["kind"],
-                   "session": s.get("release"), **shot_meta, "ink": ln["ink"], "text_box": L.text_box(ln),
+                   "session": s.get("release"), **shot_meta, "ink": ln["ink"], "text_box": L.text_box(geo),
                    "reviewed_box": L.crop_box(ln, s["kind"], W, H),
                    "edge": {k: edge[r["id"]][k] for k in ("flags", "edge_why")} if edge is not None else None,
                    "region": g["region"], "grad": {"box": g["box"], "status": g["status"], "dark": g["dark"],
@@ -234,27 +255,27 @@ def build(labels, shots, out_dir, manifests=P.MANIFESTS, tvl=None, prefix="devna
             if tv:
                 row["tv_id"] = tv[0]
                 row["tv_label_agrees"] = vote.key(tv[2]) == vote.key(r["label"])
-            for crop in CROPS:
-                box = fc if crop == "ink" else g["box"]
-                if crop == "grad" and not g["grad_ok"]:
+            for kind_ in CROPS:
+                box = fc if kind_ == "ink" else g["box"]
+                if kind_ == "grad" and not g["grad_ok"]:
                     continue
                 img, dark, inverted = L.cut(rgb, box)
                 ch, ch_ok = chars_in(ln, r["label"], box)
-                meta = dict(base, crop=crop, box=box, dark=dark, inverted=inverted, chars=ch, chars_match=ch_ok)
-                crops, labs, metas = files[(s["subset"], crop)]
+                meta = dict(base, crop=kind_, box=box, dark=dark, inverted=inverted, chars=ch, chars_match=ch_ok)
+                crops, labs, metas = files[(s["subset"], kind_)]
                 crops.append(img)
                 labs.append(r["label"])
                 metas.append(meta)
-                row[f"{crop}_box"] = box
-                row[f"{crop}_dark"] = dark
+                row[f"{kind_}_box"] = box
+                row[f"{kind_}_dark"] = dark
             man.append(row)
             full.append(dict(row, label=r["label"], readings=S.readings(ln),
                              tv_label=tv[2] if tv else None))
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     counts = {}
-    for (sub, crop), (crops, labs, metas) in files.items():
-        name = f"{prefix}_{sub}_{crop}.npz"
+    for (sub, kind_), (crops, labs, metas) in files.items():
+        name = f"{prefix}_{sub}_{kind_}.npz"
         counts[name] = {"lines": len(crops), "vns": len({m["vn"] for m in metas}),
                         "by_kind": dict(Counter(m["kind"] for m in metas)),
                         "chars": sum(len(vote.key(x)) for x in labs)}
@@ -298,8 +319,10 @@ def cmd_npz(args):
     if args.selection:
         selection = {json.loads(x)["shot"] for x in Path(args.selection).read_text(encoding="utf-8").splitlines()
                      if x.strip()}
+    prior = [{r["id"]: r for r in (json.loads(x) for x in Path(p).read_text(encoding="utf-8").splitlines()
+                                   if x.strip())} for p in args.edge_prior or []]
     stats = build(labels, shots, args.out, manifests=args.manifests, prefix=args.prefix, grad=grad, edge=edge,
-                  selection=selection)
+                  selection=selection, crop=args.crop, edge_prior=prior)
     print(json.dumps(stats, ensure_ascii=False, indent=1), flush=True)
     print("BUILD_DONE", flush=True)
 
@@ -316,6 +339,9 @@ def main():
     p.add_argument("--grad", help="gradcheck.py apply output (default: no containment check, see grad_default)")
     p.add_argument("--edge", help="edgecheck.py apply output (default: final crops, no edge check)")
     p.add_argument("--selection", help="select.py's shots.jsonl: build only lines of the screenshots it holds")
+    p.add_argument("--crop", choices=("reviewed", "eval"), default="reviewed",
+                   help="geometry of the text box and teacher_val match: the raw reads line (v1, v2) or eval's (v3)")
+    p.add_argument("--edge-prior", nargs="*", help="earlier edgecheck.py apply outputs; lines they failed are dropped")
     args = ap.parse_args()
     cmd_npz(args)
 

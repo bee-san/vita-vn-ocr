@@ -11,41 +11,58 @@ built. Labels were reviewed by an assistant (Claude Opus 5.5), not by a human.
 
 ## Versions
 
-| version | commit | files | lines | used by |
+| version | commit | files (under `$HERD/shared/artifacts/devnative/`) | lines | used by |
 |---|---|---|---|---|
-| v1 | `f5a1dbd` (tag `devnative-cohort-v1`) | `$HERD/shared/artifacts/devnative/devnative_*.npz` | 645 | study 1b (its protocol pins the four sha256s) and study 2 (its FL10 scoring recorded `COHORT_FROZEN f5a1dbd` and the sha256s at 2026-10-12T22:59:35Z) |
-| v2 | tag `devnative-cohort-v2` | `$HERD/shared/artifacts/devnative/v2/devnative_*.npz` | 553 | any protocol written from now on |
+| v1 | `f5a1dbd` (tag `devnative-cohort-v1`) | `devnative_*.npz` | 645 | study 1b (its protocol pins the four sha256s) and study 2 (its FL10 scoring recorded `COHORT_FROZEN f5a1dbd` and the sha256s at 2026-10-12T22:59:35Z) |
+| v2 | `ef76d1e` (tag `devnative-cohort-v2`) | `v2/devnative_*.npz` | 553 | nothing: v3 replaced it before any protocol used it |
+| v3 | tag `devnative-cohort-v3` | `v3/devnative_*.npz` | 551 | any protocol written from now on |
 
-v1 kept 41 screenshots of eval/linefind's sets in tv_native, flagged `linefind`, on the grounds
-that they were not test sets. That was wrong: `vita_holdout` and `psp_holdout` are the line
-finder's held-out sets ("nothing was tuned on them", `docs/linefind.md`), and the fleet's rule is
-that a new cohort holds no screenshot of any of eval's sets. v2 drops all 41, from every
-eval/linefind manifest (research, dev, holdout and candidate sets, and the PSP pool), so devnative
-can never feed line-finder tuning. Nothing else changed:
-
+**v2: no eval/linefind screenshot.** v1 kept 41 screenshots of eval/linefind's sets in
+tv_native, flagged `linefind`, on the grounds that they were not test sets. That was wrong:
+`vita_holdout` and `psp_holdout` are the line finder's held-out sets ("nothing was tuned on
+them", `docs/linefind.md`), and the fleet's rule is that a new cohort holds no screenshot of any
+of eval's sets. v2 drops all 41, from every eval/linefind manifest (research, dev, holdout and
+candidate sets, and the PSP pool), so devnative can never feed line-finder tuning:
 - tv_native loses 94 lines: 55 Vita and 39 PSP, 81 of them with GRAD crops. It also loses 4 VNs
   (v12794 v18432 v18857 v3333). Vita goes from 163 lines to 108.
 - 2 PSP lines come in, v12436_63023_6 and v8063_46799_0. v1's repeat cap had left them out, and
   their first copies were on dropped screenshots. Both are consensus labels with two looks.
-- Every other crop, label and meta entry is byte-identical to v1's, in the same order. The two
-  strict files are the same files.
+- Every other crop, label and meta entry is byte-identical to v1's, in the same order.
+
+**v3: eval's crop, padded once.** v1's and v2's ink crops were padded twice. read.py stores its
+padded crop (ink + furigana + 4/2 px) under the line's `crop` key, the box `lines.crop_box` takes
+as the text box, so every crop came out at ink + furigana + 8 px (Vita) / 4 px (PSP). The docs said
+4/2 px. realplus found this (PR #52 comment, 2026-10-12 19:30Z). The contact sheets drew their
+frames the same doubled way, so labels and crops agreed with each other, but not with eval's and
+teacher_val's crops, nor with the plan (ink + 4/2 px). v3 cuts eval's crop (`lines.eval_line`):
+ink + furigana + 4/2 px, widened to the labelled characters' boxes plus 4/2 px.
+- A tighter crop can cut a glyph the wider one held, so the edge check ran again on every v3
+  crop (see Lines). A line must pass both checks, v2's and v3's.
+- tv_native ink loses 2 lines (v55136_209480_1, v55136_209481_5): an end 。 sits on the tight
+  crop's right edge. Their GRAD crops leave too.
+- 2 GRAD crops come in (v12451_57128_0, v16770_154904_4). v2's `covers` test measured the GRAD
+  box against the doubled crop, less one padding, and those boxes fell 1-2 px short of it.
+- Median crop height falls from 22 to 18 px on PSP and from 40 to 32 px on Vita.
+- 16 tv_native ink crops change polarity, because `common.line_dark` decides on the crop's own
+  pixels.
+- Labels, selection, GRAD boxes and every other meta field are v2's. strict_grad is v2's file.
 
 The v1 files stay where they are, unchanged: study 1b's committed protocol pins them by path and
 sha256, and study 2's scoring reads them from there. Pick one version in a protocol before
 scoring. Never choose between versions by their scores. teacher_val still holds the 41
 screenshots; devnative does not change it.
 
-## Result (v2)
+## Result (v3)
 
-| file (under `$HERD/shared/artifacts/devnative/v2/`) | lines | VNs | Vita / PSP | chars | sha256 |
+| file (under `$HERD/shared/artifacts/devnative/v3/`) | lines | VNs | Vita / PSP | chars | sha256 |
 |---|---|---|---|---|---|
-| `devnative_tv_native_ink.npz` | 515 | 44 | 108 / 407 | 5,906 | `79111ea886940aa60786fc9ceb32e19af67473db2db5214ce725602b9a22977b` |
-| `devnative_tv_native_grad.npz` | 423 | 44 | 93 / 330 | 5,004 | `3e9bbe20d02371975576199fd9c75fd57c125aeaaed945a3f848954cbf6d0bef` |
-| `devnative_strict_ink.npz` | 38 | 14 | 0 / 38 | 411 | `ab2cc6890a0da59f49e9c1b491a0a1bc4e68cb9d7715ac485674b80cf2414f51` |
+| `devnative_tv_native_ink.npz` | 513 | 44 | 108 / 405 | 5,876 | `a3d2c9d91f0460c23aeb303ecb4583de3448f634ababdc5f3163eb0f2d95aec5` |
+| `devnative_tv_native_grad.npz` | 423 | 44 | 94 / 329 | 4,995 | `0ed617b97fe3050936c5ca062ec0c7352416a6dc20f92f7efbb18cc4b6ca1782` |
+| `devnative_strict_ink.npz` | 38 | 14 | 0 / 38 | 411 | `a1f0f83e78a0382d8c8efa276d5500162b4a5ebeba6fb1ce958567613f8e2589` |
 | `devnative_strict_grad.npz` | 26 | 12 | 0 / 26 | 314 | `94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e` |
 | scene_vn | 0 | 0 | | | (no line survived review) |
 
-v1's files, for the protocols that use them:
+v1's files, for the protocols that use them (padded twice, with the 41 linefind screenshots):
 
 | file (under `$HERD/shared/artifacts/devnative/`) | lines | VNs | Vita / PSP | chars | sha256 |
 |---|---|---|---|---|---|
@@ -54,9 +71,11 @@ v1's files, for the protocols that use them:
 | `devnative_strict_ink.npz` | 38 | 14 | 0 / 38 | 411 | `ab2cc6890a0da59f49e9c1b491a0a1bc4e68cb9d7715ac485674b80cf2414f51` |
 | `devnative_strict_grad.npz` | 26 | 12 | 0 / 26 | 314 | `94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e` |
 
-v2 has 553 lines (6,317 characters) from 44 VNs, 216 screenshots and 46 capture sessions:
-- PSP: 445 lines from 37 VNs, ink height 12/14/20 px (p10/50/90);
-- Vita: 108 lines from 8 VNs, ink height 20/24/28 px;
+v2's files and sha256s are in this document as of tag `devnative-cohort-v2`.
+
+v3 has 551 lines (6,287 characters) from 44 VNs, 216 screenshots and 46 capture sessions:
+- PSP: 443 lines from 37 VNs, ink height 12/14/20 px (p10/50/90), crop height 18 px (median);
+- Vita: 108 lines from 8 VNs, ink height 20/24/28 px, crop height 32 px;
 - 151 of the lines are speaker names.
 
 The plan's target was 3,000+ lines from 60+ VNs. The conductor dropped that minimum on
@@ -67,8 +86,8 @@ Report every file separately unless a protocol pools them, as study 2 pools stri
 same screenshots.
 
 - **tv_native**: teacher_val's own native screenshots, re-cut through the console's path and
-  relabelled here. In v2, 355 of its lines overlap a teacher_val line (crop IoU ≥ 0.3, recorded
-  as `tv_id`), and all 355 have the same agreement key as teacher_val's label. That is a
+  relabelled here. In v3, 353 of its lines overlap a teacher_val line (crop IoU ≥ 0.3, recorded
+  as `tv_id`), and all 353 have the same agreement key as teacher_val's label. That is a
   consistency check, not an independent one: MeikiOCR fed both.
 - **strict**: other screenshots of the same reserved VNs, ones no training pool, scene list,
   eval set or other set contains.
@@ -97,12 +116,12 @@ are grey integer luma (`synth/common.to_gray`) in console polarity: a crop whose
   `decision`, `looks`, `reviewer_kind` (`"assistant"`), `styles`, and `tv_id`.
 
 `eval/synth3_ablation.py`'s `load_dev` reads all four files unchanged. v1's files were checked
-with the scorer as committed in `b3f2757`, unchanged up to `feat/synth3` `ebb4dfb`; v2's with
-`feat/synth3` `002dfc3`, without scoring any model:
+with the scorer as committed in `b3f2757`, unchanged up to `feat/synth3` `ebb4dfb`; v2's and
+v3's with `feat/synth3` `002dfc3`, without scoring any model:
 
 ```sh
 .venv-ci/bin/python eval/synth3_ablation.py score --blob NAME=BLOB.vocr \
-    --dev $HERD/shared/artifacts/devnative/v2/devnative_tv_native_grad.npz --out scores_tv_grad.json
+    --dev $HERD/shared/artifacts/devnative/v3/devnative_tv_native_grad.npz --out scores_tv_grad.json
 ```
 
 ## Selection (`devnative/select.py`)
@@ -137,10 +156,11 @@ with the scorer as committed in `b3f2757`, unchanged up to `feat/synth3` `ebb4df
    PIL-RGB pixel hashes. None of those 8 titles or their relations was in the reserved list or
    the listing, so nothing from them was downloaded or used.
 6. **General-VN development sources.** Their screenshots stay in tv_native only, flagged
-   `general_vn_dev` (72 lines in v2). They are a development set, like teacher_val, not an eval
+   `general_vn_dev` (72 lines in v3). They are a development set, like teacher_val, not an eval
    set.
 
-**Supply.** The listing gives 1,742 screenshots. These were excluded:
+**Supply.** The listing gives 1,742 screenshots. These were excluded (v2 and v3 share this
+selection):
 
 | reason | screenshots |
 |---|---|
@@ -173,7 +193,7 @@ manifests: 610 distinct screenshots, all with local copies. Each pair is compare
 file sha256, decoded-pixel sha256, same frame and near-duplicate thumbnails. The report is
 `devnative/manifests/overlap.json`: ids, hashes and set names, no text.
 
-- v2: no match.
+- v3 (and v2, the same screenshots): no match.
 - v1: 41 screenshots (94 lines), all in tv_native and all flagged `linefind`. Each is the same
   file as a linefind screenshot by all four strong tests. None matches vita-test or psp-test,
   and no screenshot is only a near-duplicate.
@@ -202,38 +222,67 @@ slot):
 - MeikiOCR 0.3.5 detects and reads at native size. teacher's geometry then merges row pieces,
   refines each box to its ink and attaches furigana.
 - Each line gets four readings: MeikiOCR on its own box (`M`), MeikiOCR on a wider view (`m`),
-  PP-OCRv6 small on the view (`V`), and PP-OCRv6 small on the crop (`v`).
+  PP-OCRv6 small on the view (`V`), and PP-OCRv6 small on the crop (`v`). The crop `v` reads is
+  read.py's ink + furigana + 4/2 px.
 
 1,477 lines were read. 1,037 are candidates: 10-72 px ink, not at the screen edge, and at least
 one Japanese reading. Re-running the read with the frozen code gave identical readings for all 346
 screenshots.
 
-**Ink crop.** The ink box plus furigana, widened left and right to the labelled characters'
-boxes (teacher's `crop_of` rule), plus 4 px on Vita or 2 px on PSP.
+**Review frame.** The contact sheets framed each line at ink + furigana + 8 px (Vita) / 4 px
+(PSP): `lines.crop_box` padded read.py's already padded crop again. Every label was decided on
+that frame.
+
+**Ink crop (v3).** eval's crop (`lines.eval_line`, as in `eval/sets.py` and teacher's `crop_of`):
+the ink box plus furigana, widened left and right to the labelled characters' boxes, plus 4 px on
+Vita or 2 px on PSP. It lies inside the review frame, except where the widening reaches past it.
+v1 and v2 widened the review frame instead.
 
 **GRAD crop.** Built as follows:
-1. Dialogue regions are the lines pass 1 kept (decided, unsure or cut; not UI) grouped with
-   eval's rule: vertical gap ≤ 1.6 line heights, plus a 12 px (Vita) or 6 px (PSP) margin.
+1. Dialogue regions are the lines pass 1 kept (decided, unsure or cut; not UI), grouped with
+   eval's rule (vertical gap ≤ 1.6 line heights), plus a 12 px (Vita) or 6 px (PSP) margin. The
+   rule ran on read.py's padded boxes, so a region reaches 16 / 8 px beyond the text, and the
+   gap is measured between padded boxes. v3 keeps these regions and boxes, so the GRAD crops and
+   their review stay valid.
 2. `common.find_lines_ex(region, "grad")`, the bit-exact twin of `runtime/vocr_lines.c`, runs on
    each region. Its boxes are matched one-to-one to the lines (eval's finder match, overlap ≥ 0.5).
 3. A box is used only when it:
    - holds the whole ink line;
    - holds less than a quarter of any other detected text box;
-   - covers the final ink crop's labelled extent.
-4. A box that runs beyond the ink crop (more than max(3 px, 0.3 ink heights) sideways, or 0.6
+   - covers the final ink crop's labelled extent (the crop less its padding), to 1 px.
+4. A box that runs beyond the review frame (more than max(3 px, 0.3 ink heights) sideways, or 0.6
    ink heights vertically) is used only after a contact-sheet check that it shows exactly the
    label. The detector misses some glyphs (card digits, a bracket), and those would make the label
-   wrong for that crop.
+   wrong for that crop. Inside that margin, the box shows nothing the labellers did not see.
 
 Of the 668 lines pass 1 labelled, the finder found none for 53 and merged 27 with other text. Its
-box cut 15 of them and was rejected after the check for 6. Of v2's final lines, 19 more have a
+box cut 15 of them and was rejected after the check for 6. Of v3's final lines, 17 more have a
 GRAD box that does not reach the widened crop's labelled extent, so they get no GRAD crop.
 
-**Edge check.** In the blind re-check, five disagreements came from crop edges: MeikiOCR's box
-had left out an end 。, 」 or 「. So:
-- every line whose final crop changed by ≥ 3 px, or whose row has ink continuing just past the
-  crop, or which a later look called cut, went to an edge check: 178 lines. 169 passed;
+**Edge check (v1, v2).** In the blind re-check, five disagreements came from crop edges:
+MeikiOCR's box had left out an end 。, 」 or 「. So:
+- every line whose final crop (the review frame, widened) changed by ≥ 3 px, or whose row has ink
+  continuing just past the crop, or which a later look called cut, went to an edge check: 178
+  lines. 169 passed;
 - 4 were cut, 2 held parts of two lines, and 2 were unsure. Those 8 were dropped.
+
+**Edge check (v3).** The same rule ran on v3's tighter crops (`edgecheck.py --crop eval`) for
+all 562 kept labels on v2's screenshots. It also flagged every label that no MeikiOCR reading
+spells, because such a label has no character boxes to widen the crop to. 205 lines went to the
+check. A line can carry several reasons:
+
+| reason | lines |
+|---|---|
+| ink beyond the crop, left / right | 71 / 61 |
+| label without character boxes | 66 |
+| crop widened ≥ 3 px past the review frame, left / right | 60 / 17 |
+| a later look typed other text / called the line cut | 3 / 2 |
+
+Five independent sessions checked them on contact sheets framed on the v3 crop, one batch each.
+They passed 201 and cut 4. In each of the 4, an end 。 or 」 sits on or just past the crop's
+right edge. Two of the 4 were already v2 drops; the other two are v3's two losses. A line must pass v2's check as well
+(`build.py --edge-prior`). So the 5 v2 drops that v3's check passed stay out, among them the
+未/末 line.
 
 ## Labels (`sheets.py`, `decide.py`)
 
@@ -251,6 +300,7 @@ was not enforced). Pass 2 sees pass 1's label only as an unmarked candidate.
 | blind re-check (below) | 300 | |
 | edge check | 178 | 169 pass |
 | confirming reads: every kept line not yet read twice independently, blind, on the final crop | 173 + 133 | 298 agree; 5 UI and 3 unsure |
+| edge check on v3's crops | 205 | 201 pass, 4 cut |
 
 **Third look.** I resolved six lines myself:
 - kept 渋澤焔 twice: 焰 is outside CP932 and the vocab;
@@ -259,29 +309,31 @@ was not enforced). Pass 2 sees pass 1's label only as an unmarked candidate.
   and I read ユ at 12×;
 - dropped 厳/嚴 and 橘/橋 as unsettled.
 
-All four kept resolutions are in v2.
+All four kept resolutions are in v3.
 
 **Rule.** A label is kept when:
 - both engine families read it (consensus), or pass 2 agreed;
 - no later look disagreed, except where a third-look resolution kept it;
-- it passed the edge check.
+- it passed the edge check, and in v3 the edge check on its own crop too.
 
-Every kept line has at least two independent agreeing reads: in v2, 512 have two and 41 have
+Every kept line has at least two independent agreeing reads: in v3, 510 have two and 41 have
 three. `devnative/manifests/lines.jsonl` records per line: readers (engine to agreement, no
 text), `how`, `support`, every stage's decision, `looks`, the boxes and `reviewer_kind`.
-`dropped.jsonl` lists the 484 adjudicated lines not kept, with the reason. 94 of them are on
-the 41 linefind screenshots (`linefind-shot`), and 2 are a third copy of the same label in one VN
-(teacher's cap).
+- The boxes are `ink`, `text_box` (v3: ink + furigana, unpadded; v1/v2: read.py's padded box),
+  `reviewed_box` (the review frame), `ink_box` (the crop cut) and the GRAD box.
+- `dropped.jsonl` lists the 486 adjudicated lines not kept, with the reason. 94 of them are on
+  the 41 linefind screenshots (`linefind-shot`) and 2 fail the v3 edge check
+  (`eval-edge-cut`). Another 2 are a third copy of the same label in one VN (teacher's cap).
 
 ## Label quality: blind re-check
 
 Seed 20261012 drew 300 lines at random from the 664 kept after passes 1 and 2 (v1's screenshots).
 Fresh sessions read them with shuffled, unattributed engine candidates; they never saw a decision.
-Agreement is on eval's scoring key. The v2 columns are the same measurement restricted to the
-256 sampled lines whose screenshot v2 keeps. Dropping a screenshot for being in a linefind set
-does not depend on its labels.
+They read them on the review frame. Agreement is on eval's scoring key. The v3 columns are the
+same measurement restricted to the 256 sampled lines whose screenshot v3 (like v2) keeps.
+Dropping a screenshot for being in a linefind set does not depend on its labels.
 
-| | v1: agree / lines | rate | v2: agree / lines | rate |
+| | v1: agree / lines | rate | v3: agree / lines | rate |
 |---|---|---|---|---|
 | all | 291 / 300 | **97.0%** (Wilson 95%: 94.4-98.4%) | 247 / 256 | **96.5%** (93.4-98.1%) |
 | consensus labels | 242 / 251 | 96.4% | 206 / 215 | 95.8% |
@@ -291,16 +343,19 @@ does not depend on its labels.
 | strict | 11 / 12 | 91.7% | 11 / 12 | 91.7% |
 | tv_native | 280 / 288 | 97.2% | 236 / 244 | 96.7% |
 
-All 9 disagreements are on screenshots v2 keeps; the 44 sampled lines on the dropped screenshots
+All 9 disagreements are on screenshots v3 keeps; the 44 sampled lines on the dropped screenshots
 all agreed. The 9 were:
 - 5 crop-edge cases: an end 。 or bracket outside the reviewed crop;
 - 3 glyph variants the re-check could not settle: 焔/焰, 未/末, 厳/嚴;
 - 1 scope call: an item-name plate the re-check called UI. A confirming read and pass 1 kept it.
 
 They led to the final-crop widening, the edge check and the confirming reads above. After those,
-250 of the sampled lines are in v2, and the blind read agrees with the final label on 245
-(98.0%; v1: 287 of 292, 98.3%). Of the other 5, 3 are crop-edge cases the widened crop fixed and
-the edge check re-confirmed, 1 is the scope call, and 1 is 焔.
+248 of the sampled lines are in v3, and the blind read agrees with the final label on 245 (98.8%;
+v2: 245 of 250, 98.0%; v1: 287 of 292, 98.3%). The 2 lines v3 loses to its edge check are two of
+the end-punctuation disagreements. Of the other 3:
+- 1 is a crop-edge case that the widened crop fixed and both edge checks re-confirmed;
+- 1 is the scope call;
+- 1 is 焔.
 
 What this measures: agreement between independent assistant sessions on the same pixels. An
 error every look makes the same way is not caught. The ユ/コ correction, which only the fifth look
@@ -318,15 +373,16 @@ was later rebased onto main and squash-merged, so main has different hashes for 
 | `0cb084e` | the GRAD containment check |
 | `f523e30` | final-crop widening, the edge check, confirming reads and resolutions |
 | `c83ba3f`, `f5a1dbd` | cohort v1, `COHORT_FROZEN f5a1dbd` (tag `devnative-cohort-v1`) |
-| tag `devnative-cohort-v2` | cohort v2: `select.py` excludes eval/linefind screenshots from every subset, `build.py --selection`, `overlap.py` |
+| `6d9e003`, `ef76d1e` (tag `devnative-cohort-v2`) | cohort v2: `select.py` excludes eval/linefind screenshots from every subset, `build.py --selection`, `overlap.py` |
+| tag `devnative-cohort-v3` | cohort v3: eval's single-padded ink crop (`lines.eval_line`, `edgecheck.py --crop eval`, `build.py --crop eval --edge-prior`) and its edge check |
 
 Each amendment came from evidence found during review or audit.
 
-v2 changes no reading or decision, and no crop v1 has. It leaves out the 41 screenshots' lines
-and lets in the 2 lines the repeat cap had held back. `build.py` without `--selection` still
-rebuilds v1 byte for byte: the four sha256s match, and so do `lines.jsonl`, `dropped.jsonl`,
-`stats.json` and `lines_full.jsonl`. So realplus, which reuses `build.py` without `--selection`,
-is unaffected.
+v2 and v3 change no reading or decision. `build.py` keeps every earlier version reproducible:
+- with v1's options it rebuilds v1 byte for byte: the four sha256s, `lines.jsonl`,
+  `dropped.jsonl`, `stats.json` and `lines_full.jsonl`;
+- with v2's options (`--selection`) it rebuilds v2 byte for byte;
+- realplus, which calls these functions on its own single-padded lines, is unaffected.
 
 `build.py` without `--grad` and `--edge` (the realplus default) leaves out any GRAD box that runs
 past the ink crop, and cuts final crops without the edge check.
@@ -334,8 +390,8 @@ past the ink crop, and cuts final crops without the edge check.
 ## Reproduce
 
 `devnative/README.md` lists every command. Screenshots, readings, sheets, decisions and crops stay
-local, under `$HERD/shared/artifacts/devnative/`: v1 at the top level and v2 under `v2/`. v1's
-selection report and manifests are kept under `v1/`.
+local, under `$HERD/shared/artifacts/devnative/`: v1 at the top level, v2 under `v2/` and v3
+under `v3/`. v1's selection report and manifests are kept under `v1/`.
 
 Committed:
 - the code;

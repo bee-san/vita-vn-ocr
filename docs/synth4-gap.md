@@ -25,12 +25,15 @@ on) and turns the gaps into synth4's design inputs. Every number comes from
   than 10, 17 never), 1,229 vocab characters are drawn by fewer than 10 font files, and 66 vocab
   characters are never rendered. Those characters are 0.44% of VN running text. synth4's
   curriculum has to lift them (section 2).
-- **Styles.** Measured with the same detectors on real and synthetic crops (section 3), the
-  largest gap is **1-bit text**: synth3 draws 49% of its native PSP crops and 15% of its native
-  Vita crops without anti-aliasing (pixel fonts and 1-bit raster), while the real native PSP and
-  Vita crops are almost all anti-aliased (2.6% and 15% under the threshold, which is the detector's
-  false-positive rate on anti-aliased synthetic text). I checked this by eye on a contact sheet.
-  synth3 also has more outlined text (truth 68%; real estimates 0-61% by kind), lower-contrast
+- **Styles.** Measured with the same detectors on real and synthetic crops (section 3). synth3
+  draws 49% of its native PSP crops and 15% of its native Vita crops without anti-aliasing (pixel
+  fonts and 1-bit raster). On the edge measure that separates those renders from anti-aliased ones
+  in synth3, the real native crops look like synth3's anti-aliased renders, not its 1-bit ones
+  (2.6% of real PSP crops fall in the 1-bit range, the detector's false-positive rate), but the
+  measure is not validated on real JPEG'd crops: by eye, 39 of 72 random real native PSP crops look
+  hard-edged at 3x, and their edge measure is no lower than that of the rest. **How much real PSP
+  text is 1-bit is not measured here** (between the detector's ~3% and the eye's ~54%; the audit's
+  independent eye check: 10-35%). synth3 also has more outlined text (truth 68%; real estimates 0-61% by kind), lower-contrast
   text (p50 134-153 grey levels against 146-191), and more coloured fills (17% against 10.4%, with
   three times the share of green). Ink heights, stroke weights, furigana and background texture
   are close.
@@ -217,16 +220,28 @@ scenes with halos), so their estimates are coarse; binary and nearest-2x separat
 texture, trends and realplus GRAD crops, is `tables eval/synth4_gap/stylesum_20261013.json`.
 
 What it shows:
-- **1-bit text is over-represented.** synth3 draws 49% of native PSP crops (28% pixel fonts plus
-  1-bit raster on 28% of the rest) and 15% of native Vita crops without anti-aliasing. The real
-  native PSP crops sit almost entirely above the threshold (aa p10 0.48 against synth3's 0.00): 2.6%
-  fall below it, about the detector's false-positive rate on anti-aliased synthetic PSP text (7%),
-  so the estimate is 0. Native Vita: 15% below against a 22% false-positive rate. The development
-  cohorts agree (4-7%). On a contact sheet of the 10 lowest-aa and 10 median-aa crops of 400 random
-  real native PSP crops (3x nearest; not kept), the lowest were crisp bitmap-like text (system
-  menus, a few dialogue fonts) and the median ones anti-aliased glyphs, so the measure reads what
-  it should. Pixel fonts at their native
-  strike do occur in real PSP titles, but rarely.
+- **1-bit text: the measure and the eye disagree.** synth3 draws 49% of native PSP crops (28%
+  pixel fonts plus 1-bit raster on 28% of the rest) and 15% of native Vita crops without
+  anti-aliasing. On the aa measure the real native PSP crops sit almost entirely above the 1-bit
+  range (aa p10 0.48 against synth3's 0.00; p50 0.64, like synth3's anti-aliased PSP renders at
+  0.62-0.66): 2.6% fall below the threshold, about the detector's false-positive rate on
+  anti-aliased synthetic PSP text (7%). The development cohorts agree (4-7%). But the threshold was
+  fitted on synthetic crops, and an eye check says real JPEG'd text is not that simple:
+  - On blind contact sheets (3x nearest, the first 200 px of each crop), I called 39 of 72 random
+    real native PSP training crops hard-edged (54%, Wilson 95% interval 43-65%) and 33 anti-aliased.
+    The same eye, on a sheet of 36 synth3 native PSP crops with known rendering, found 14 of 19
+    1-bit renders (74%) and called 3 of 17 anti-aliased (4-bit) renders hard-edged (18%); corrected
+    for those rates the real share would be about 65%, with a very wide interval.
+  - The real crops called hard-edged have the same aa distribution as the rest (p50 0.61 against
+    0.64): JPEG and hinting give crisp real text intermediate edge pixels that synth3's 1-bit
+    renders, after its own JPEG chains, do not have (p50 0.03-0.26).
+  - The audit's independent eye check (PR #65 review) found 1-bit-looking glyphs (clean staircase
+    diagonals, no grey ramps) in roughly 10-35% of random native PSP crops, many of them names,
+    labels and chapter titles.
+  So real PSP text is mostly crisp, hinted text; whether it is 1-bit or 4-bit anti-aliased cannot be
+  told from these JPEG crops, and the real 1-bit share is not measured (somewhere between the
+  detector's ~3% and the eye's ~54%). A related gap is likely: synth3's 1-bit renders come out of
+  their capture chains crisper than real 1-bit text does from VNDB's JPEGs.
 - **Outlines are over-represented** (synth3 61-73% of crops by kind; real estimates 0-61%,
   realplus 8-33%), with the caveat of a weak detector. Shadows are close.
 - **Text contrast is too low** on every kind: synth3 p50 134-153, real 146-191 grey levels. The
@@ -319,7 +334,7 @@ selection fixed that. The most frequent insertion is ・ (17).
 | gap | measured | synth4 |
 |---|---|---|
 | rare vocab characters | 2,040 VN characters under 50 exposures; 1,229 under 10 fonts | a curriculum: every vocab class at least K times across at least F fonts, in real-word contexts (Jiten VN words, pool lines) |
-| 1-bit text | PSP 49% synthetic against ~0-3% real; Vita 15% against ~0 | 1-bit share cut to a floor (pixel fonts kept for variety, the owner's NDS12 among them, at a far smaller total share) |
+| 1-bit text | PSP 49% synthetic; real share not measured (detector ~3%, eye ~54%, audit eye 10-35%); real crisp text has more grey edge pixels than synthetic 1-bit renders | an open design choice, tested by the ablation rather than decided here: synth4 moves most native PSP text to 4-bit anti-aliased rasters (aa4 52%) and keeps 1-bit at about 12% (pixel fonts for variety, the owner's NDS12 among them) |
 | outlines | 61-73% synthetic against 0-61% real (weak detector) | outline rates lowered toward the real estimates |
 | contrast | p50 134-153 against 146-191 | darker dialogue boxes, lighter light boxes, whiter fills |
 | coloured fills | 17% against 10.4%; green 23% of them against 8% | coloured spans and lines rarer; palette away from green |
@@ -335,8 +350,9 @@ These are inputs; synth4's design and its ablation are in `docs/synth4.md`.
 - Tier costs are extrapolated from measured per-class costs of exported sweep models, not from
   exports of these vocabs.
 - The style detectors were calibrated on synth3's own crops; outline, shadow and furigana are weak
-  (TPR 0.22-0.60), so their real estimates are coarse. The binary measure was checked by eye on one
-  contact sheet.
+  (TPR 0.22-0.60), so their real estimates are coarse. The binary (1-bit) measure separates
+  synthetic renders but disagrees with eye checks on real JPEG'd crops (section 3): the real 1-bit
+  share is not measured.
 - Colour was measured on teacher_train only (its boxes index its screenshots); synth3's side is a
   fresh RGB render of the same generator, not the pinned shards.
 - The mining set is PC shots scaled to the console (no unseen native console lines exist yet), and

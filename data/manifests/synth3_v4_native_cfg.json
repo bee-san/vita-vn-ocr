@@ -86,16 +86,16 @@
   },
   "effects": {
    "vita": {
-    "stroke": 0.2,
-    "shadow": 0.25
+    "stroke": 0.1,
+    "shadow": 0.15
    },
    "psp": {
-    "stroke": 0.15,
-    "shadow": 0.25
+    "stroke": 0.08,
+    "shadow": 0.15
    },
    "bare": {
-    "stroke": 0.5,
-    "shadow": 0.4
+    "stroke": 1.0,
+    "shadow": 1.0
    }
   },
   "track": {
@@ -109,6 +109,7 @@
     1,
     2
    ]
-  }
+  },
+  "thin_min_alpha": 0.6
  }
 }

@@ -677,6 +677,11 @@ def r2_from_batch(work, r1_batch, out):
 def cmd_collect(a):
     work = Path(a.work)
     want = json.loads((work / f"{a.round}.sheets.json").read_text(encoding="utf-8"))
+    if a.round in ("r1", "r2"):                # every line is read in R1 and in R2 (R2 is registered per batch)
+        rows, _ = load_lines(work)
+        if sorted(want["ids"]) != sorted(r["id"] for r in rows):
+            raise SystemExit(f"{a.round}.sheets.json covers {len(want['ids'])} of {len(rows)} lines: "
+                             "build the missing batches first")
     got, files = {}, {}
     for d in batch_dirs(a.batches):
         batch, sheets = load_batch(d)
@@ -920,25 +925,28 @@ def cmd_score(a):
     tag = f".{a.suffix}" if a.suffix else ""
     if a.suffix and not SUFFIX.fullmatch(a.suffix):
         raise SystemExit("bad --suffix")
+    if not a.suffix and (a.pair or a.into):
+        raise SystemExit("--pair and --into go with --suffix")
     into = Path(a.into or work) if a.suffix else work
-    attempt = into / f"score{tag}.attempt.json"
-    write_json(attempt, {"started": now(), "refs_sha256": freeze["refs_sha256"]}, exclusive=True)   # once
-    rows, meta = load_lines(work)
-    arms, ameta = load_arms(work, proto)
-    refs = read_jsonl(work / "refs.jsonl")
     names = [x["name"] for x in proto["arms"]]
     pairs = [tuple(p) for p in proto["pairs"]]
-    extra_meta = None
-    if a.suffix:
+    extra = extra_meta = None
+    if a.suffix:                               # checked before the attempt: a usage mistake never uses it up
         extra, extra_meta = load_extra(into, a.suffix)
         if extra_meta["after_freeze"] != freeze["refs_sha256"]:
             raise SystemExit("the extra arms did not read these frozen references' session")
-        arms = {i: {**arms[i], **extra[i]} for i in arms}
         names += list(extra_meta["arms"])
         pairs = [tuple(p.split(":")) for p in a.pair]
         known = set(names) | {LENS, CACHED}
         if not pairs or any(len(p) != 2 or not set(p) <= known for p in pairs):
             raise SystemExit(f"--pair CAND:BASE over {sorted(known)} is required with --suffix")
+    attempt = into / f"score{tag}.attempt.json"
+    write_json(attempt, {"started": now(), "refs_sha256": freeze["refs_sha256"]}, exclusive=True)   # once
+    rows, meta = load_lines(work)
+    arms, ameta = load_arms(work, proto)
+    refs = read_jsonl(work / "refs.jsonl")
+    if extra is not None:
+        arms = {i: {**arms[i], **extra[i]} for i in arms}
     scores, private = score_all(rows, refs, arms, names, pairs=pairs)
     scored_ids = {x["id"] for x in refs if x["status"] == "ref"}
     result = {"schema": 1, "kind": "clannad-refs-result", "protocol_sha256": sha256_file(PROTOCOL_PATH),
@@ -975,14 +983,19 @@ def cmd_score(a):
     print(md)
 
 
+def decision_kind(r):
+    """A decision's public name: pick, typed, unsure or skip:<kind> (never the field name 'text')."""
+    return {"text": "typed", "skip": f"skip:{r.get('skip')}"}.get(r["decision"], r["decision"])
+
+
 def agreement(work):
     """How often R1 and R2 gave the same key, among lines both read as text."""
     d1, d2 = load_round(work, "r1"), load_round(work, "r2")
     both = [i for i in d1 if outcome(d1[i])[0] == "text" and outcome(d2[i])[0] == "text"]
     same = sum(outcome(d1[i])[1] == outcome(d2[i])[1] for i in both)
     return {"r1_text_r2_text": len(both), "same_key": same, "r1_lines": len(d1),
-            "r1_decisions": dict(collections.Counter(r["decision"] for r in d1.values())),
-            "r2_decisions": dict(collections.Counter(r["decision"] for r in d2.values()))}
+            "r1_decisions": dict(collections.Counter(map(decision_kind, d1.values()))),
+            "r2_decisions": dict(collections.Counter(map(decision_kind, d2.values())))}
 
 
 def markdown(result):

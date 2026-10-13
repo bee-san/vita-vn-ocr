@@ -6,7 +6,7 @@ visual-novel dialogue, names, choices and UI as the PS Vita and PSP show them, i
 no source document with training. It is meant to replace synth2 as the VN-style source in
 train2's mixture, or to be mixed with it. The generator is `synth/synth3.py`.
 
-**Status (2026-10-12 21:30Z).**
+**Status (2026-10-13 00:30Z).**
 - **Study 1 (frozen ablation, short recipe): under the protocol's rule the mix of synth2 and
   synth3 is the recommended VN-style synthetic data.** FL10 models pretrained for 16,000 steps on
   NVIDIA crops plus synth2 (A), synth3 (B) or half of each (C), two seeds per arm, read through the
@@ -25,11 +25,11 @@ train2's mixture, or to be mixed with it. The generator is `synth/synth3.py`.
   H15 width synth3 alone is lower than synth2 in one run per arm (−0.52, CI −0.80 to −0.25; the
   interval covers line sampling only; not replicated), also on the native lines (−0.38, CI −0.70
   to −0.10); the test sets do not resolve it.
-- **Study 2 (full release recipe) is running** under its own frozen protocol
-  (`eval/synth3_study2_protocol.json`): nvsynth's every-line set, train2's pretrain lengths and
-  the real fine-tune (on pools without CLANNAD and its family), A against C at FL10 (3 seeds) and
-  H15 (2 seeds), plus a synth3 learning curve (0.25M to 2M crops) and a pretrain-length curve. No
-  study-2 result yet.
+- **Study 2 (full release recipe), FL10: no measured difference** between the mix and synth2
+  (C − A −0.07, CI −0.24 to +0.09 on teacher_val; −0.09, CI −0.29 to +0.12 on the native
+  cohort devnative), so synth2 stays at FL10 size. The real fine-tune absorbs most of the
+  pretrain gap (pretrain-only C − A −0.46). Both arms reach 3.3-3.4% on teacher_val, against the
+  released FL10's 4.05%. H15, the step curve and the learning curve are running.
 
 Commit hashes cited in this document, the protocols and the result files refer to the branch's
 history before it was rebased onto main; that history, with its original commit times, is kept at
@@ -381,7 +381,7 @@ psp-test): ft A 4.57%, ft B 4.73%, ft C 4.14%; H15 A 3.29%, H15 B
 ft B − ft A +0.16 (CI −0.35 to +0.66), H15 B − H15 A −0.24 (CI −0.98 to +0.39). Native polarity:
 ft A 4.73%, ft B 4.63%, ft C 4.30%; H15 A 3.43%, H15 B 3.07%.
 
-## Study 2: the full release recipe (running)
+## Study 2: the full release recipe
 
 The protocol (`eval/synth3_study2_protocol.json`) was committed before any study-2 run trained.
 - Recipe: train2's release recipe with hard labels: pretrain from scratch on nvsynth's
@@ -390,15 +390,79 @@ The protocol (`eval/synth3_study2_protocol.json`) was committed before any study
   + the arm's synthetic data 0.25 + teacher_train 0.275 + real_train 0.125 + PP-OCRv6
   pseudo-labels 0.1 (kd=0). The fine-tune's final EMA checkpoint is scored; no selection.
 - Arms and seeds: A against C, FL10 seeds 1-3 and H15 seeds 1-2, scored on teacher_val with
-  study 1's statistics and decision rule per architecture. The native development cohort
-  (`devnative`) is co-primary only if it is committed before the first study-2 score.
-- Amendment 1 (before any score): how devnative's subset files are pooled when it is co-primary.
+  study 1's statistics and decision rule per architecture.
+- devnative is co-primary: its cohort was committed (COHORT_FROZEN f5a1dbd, 19:14:50Z) before
+  the first study-2 score (23:12Z). Its decision set is the strict and tv_native subsets, ink and
+  GRAD crops pooled (1,174 crops, 48 VNs, both views). Both architectures use that version. Later
+  versions (v2 drops 41 screenshots that are also in eval/linefind's finder sets; v3 fixes ink
+  crops that v1 padded twice) are reported, not decided on.
+- Amendment 1 (before any score): how devnative's subset files are pooled.
 - Amendment 2 (before any fine-tune step): the four fine-tune pools are copies without CLANNAD
   (v4) and its VNDB family (45 of 42,144 rows: v4, v4060, v12), made by
-  `eval/synth3_filter_pools.py` and pinned in `eval/synth3_study2_pools.sha256`. The released
-  v0.2.0 models and study 1's secondary fine-tunes trained on the unfiltered pools.
-- Also reported: pretrain-only scores, a pretrain-length curve (FL10 C_mix at 64k and 128k
-  pretrain steps) and a synth3 learning curve (study 1's B_s3 at 0.25M, 0.5M, 1M and 2M crops).
+  `eval/synth3_filter_pools.py` and pinned in `eval/synth3_study2_pools.sha256`.
+- Reported only: pretrain-only scores, the fine-tuning gain, a pretrain-length curve (FL10 C_mix
+  at 64k and 128k pretrain steps) and a synth3 learning curve (study 1's B_s3 at 0.25M, 0.5M,
+  1M and 2M crops).
+
+### FL10: no measured difference
+
+`eval/synth3_study2_FL10_20261012.json` (`eval/synth3_study2.py result`, C W8I, both views):
+
+| | teacher_val CER | devnative CER |
+|---|---|---|
+| A_s2 (3 seeds) | 3.41% | 3.99% |
+| C_mix (3 seeds) | 3.33% | 3.90% |
+| C − A, points (VN-cluster 95% CI) | −0.07 (−0.24 to +0.09) | −0.09 (−0.29 to +0.12) |
+| per seed (1, 2, 3) | −0.20, +0.09, −0.11 | +0.07, −0.16, −0.17 |
+
+Neither interval excludes 0, so under the frozen rule neither arm is better and synth2 (the
+released recipe) stays at FL10 size. Reported only:
+- **The real fine-tune absorbs most of the pretrain gap.** Pretrain-only (32k steps), the mix is
+  still ahead as in study 1: C − A −0.46 (CI −0.64 to −0.29) on teacher_val. The fine-tune gains
+  −1.06 (CI −1.45 to −0.72) for A and −0.67 (CI −1.06 to −0.35) for C. On devnative it gains
+  1.30 points for A and 0.80 for C.
+- **Strata (teacher_val):** only 1-4 characters is resolved, −0.91 (CI −1.66 to −0.19); name-like
+  −0.56 (CI −1.27 to +0.13); native Vita −0.20 and native PSP −0.11, neither resolved.
+- **Both arms are far below the released FL10** on teacher_val (3.4% against 4.05%), with the same
+  topology and vocabulary. Possible causes, not separated: hard labels instead of frame KD (train2
+  found KD hurt H15 by 0.53), the fine-tune starting from the final pretrain rather than the best
+  teacher_val checkpoint, and nvsynth rebuilt here.
+
+Protected test sets (`eval/synth3_study2_FL10_test_20261012.json`; each export scored once, after
+the result was committed; reported only):
+
+| pooled vita-test + psp-test | console polarity | native polarity |
+|---|---|---|
+| A_s2 fine-tuned (3 seeds) | 3.40% | 3.38% |
+| C_mix fine-tuned (3 seeds) | 3.13% | 3.18% |
+| C − A, points (VN-cluster CI) | −0.27 (−0.60 to +0.01) | −0.20 (−0.54 to +0.07) |
+| A_s2 pretrain-only | 3.74% | 3.77% |
+| C_mix pretrain-only | 3.03% | 3.06% |
+| pretrain-only C − A | −0.72 (−1.10 to −0.42) | −0.72 (−1.10 to −0.41) |
+| released FL10 (v0.2.0) | 3.82% | 3.72% |
+
+On the test sets the fine-tune changes A by −0.34 (console, CI −0.72 to +0.01) and C by +0.10
+(CI −0.12 to +0.34), neither resolved, and the pretrain-only gap of the mix stays resolved. These
+numbers cannot change the decision or the recipe; the development cohorts, where the fine-tune
+helps both arms, remain the selection evidence.
+
+### H15
+
+Running; its decision is scored when all four H15 fine-tunes have finished.
+
+### Provenance of the runs
+
+- The ten FL10/H15 runs were launched from the conductor's clone at commits 0617f72-ebb4dfb
+  (pre-rebase history, tag `synth3-history-20261012`); their logs record that commit at pretrain
+  start. Amendment 2's files were then in that clone's working tree, byte-identical to the
+  committed ones, and every fine-tune's `args.json` records the CLANNAD-free pools.
+- The fine-tune command of the runs already pretraining was changed by rewriting only the part
+  of `eval/synth3_study2_run.sh` after the pretrain block, in place: bash reads a running script
+  from its saved offset, so each run read the new fine-tune block (checked on a test script and
+  on all six FL10 fine-tunes' `args.json`; the H15 fine-tunes are checked when they start).
+- Runs launched after 21:22Z (H15 C_mix seed 2 excepted) run from a detached worktree at
+  c464aa8 (tag `vocr3-runner-c464aa8`), whose study-2 scripts are byte-identical to the
+  committed ones; the scoring driver is `eval/reproducibility/synth3-20261012/study2_score_when_ready.sh`.
 
 ## Limits
 

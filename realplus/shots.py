@@ -12,7 +12,7 @@ the API's usage terms) instead of thousands of API pages. A screenshot is a cand
   * its VN is a Japanese original and its release is Japanese-only or Japanese + English (no
     Chinese or Korean text on screen), with VNDB flag averages sexual < 0.3, violence < 0.5;
   * it is one of realdata's three kinds: vita (a psv release at 960x544), psp (a psp release
-    at 480x272) or hires (any other release's shot, 4:3 to 16:9, at least 640x400, later
+    at 480x272) or hires (any other release's shot, aspect 1.25-1.85, at least 640x400, later
     scaled to fit 960x544 and 480x272);
   * its VN is on the training side (reserved_vns): not a test game (synth/common.is_test_vn,
     eval/manifests/test_games.json "all"), not CLANNAD or its family, not a fresh native
@@ -238,7 +238,7 @@ def load_dump(base=None):
 
 def kind_of(platforms, w, h):
     """realdata's kinds (realdata/vndb.kind_of), with a wider hires kind: any platform's shot
-    of at least 640x400 (PC-98 and early Windows games are 640x400), 4:3 to 16:9, that is not a
+    of at least 640x400 (PC-98 and early Windows games are 640x400), aspect 1.25-1.85, that is not a
     native Vita or PSP frame. Smaller retro and handheld frames (320x240, 256x192, ...) stay out:
     scaled up they look like nothing the consoles render."""
     p = set(platforms)
@@ -272,6 +272,8 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
       development   synth3's exclude_dev_vns.txt, general-VN / CLANNAD development, devnative
       val-bucket    the repo's validation split, 15 <= md5(vn) % 100 < 25
       fresh-native-relation  any direct VNDB relation (every kind) of a fresh native title
+      clannad-relation  a direct VNDB relation of CLANNAD (v4) of every kind, or a FAMILY relation of
+                    a CLANNAD_FAMILY VN
       family        a direct VNDB relation of kind FAMILY of a CLANNAD, fresh-native or
                     development VN (test-set already holds the set games' family)
       shared-release  on one VNDB release with a test-set, CLANNAD, fresh-native, development or
@@ -309,6 +311,21 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
     for v, rs in anyrel.items():
         if rs & fresh_roots:
             why.setdefault(v, "fresh-native-relation")
+    # CLANNAD (audit of PR #57): CLANNAD's own relations of every kind (char-sharing parodies such
+    # as NETANNAD reuse its characters, names and text), and the FAMILY relations of the
+    # conductor's family list (a sequel of a family member, such as Kyou After 2).
+    for v in sorted(CLANNAD):
+        for u in anyrel.get(v, ()):
+            why.setdefault(u, "clannad-relation")
+    for v, rs in anyrel.items():
+        if rs & CLANNAD:
+            why.setdefault(v, "clannad-relation")
+    for v in sorted(CLANNAD_FAMILY):
+        for u in d["relations"].get(v, ()):
+            why.setdefault(u, "clannad-relation")
+    for v, rs in d["relations"].items():
+        if rs & CLANNAD_FAMILY:
+            why.setdefault(v, "clannad-relation")
     for v in sorted(roots):
         for u in d["relations"].get(v, ()):
             why.setdefault(u, "family")

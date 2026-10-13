@@ -73,7 +73,7 @@ def test_reserved_vns_family_and_shared_releases(tmp_path):
         "r3": (["win"], ["ja"], [test_vn, dd, e]),      # a compilation of unrelated games
         "r4": (["win"], ["ja"], [val_vn, f, g]),       # a compilation, but f is val_vn's sequel
     }
-    write_dump(tmp_path, vns, [], releases, relations=[(a, h, "seq"), (val_vn, f, "fan"), ("v4", g, "char")],
+    write_dump(tmp_path, vns, [], releases, relations=[(a, h, "seq"), (val_vn, f, "fan"), (a, g, "char")],
                titles=[(g, "Some game")])
     d = S.load_dump(tmp_path)
     why = S.reserved_vns(d, test_all=set(), fresh=set(), dev={a})
@@ -211,3 +211,14 @@ def test_clannad_family_list_is_reserved_without_dump_relations(tmp_path):
     why = S.reserved_vns(S.load_dump(tmp_path), test_all=set(), fresh=set(), dev=set())
     assert all(why.get(v) in ("clannad-family", "test-vn") for v in fam) and a not in why
     assert {"v12", "v4060", "v54298"} <= S.CLANNAD_FAMILY and len(S.CLANNAD_FAMILY) == 11
+
+
+def test_clannad_relations_of_every_kind_and_the_family_lists_family_are_reserved(tmp_path):
+    a, b, c, e = train_side(4, 300)
+    fam = sorted(S.CLANNAD_FAMILY)[0]
+    write_dump(tmp_path, {"v4": "ja", a: "ja", b: "ja", c: "ja", e: "ja", fam: "ja"}, [], {},
+               relations=[("v4", a, "char"), (fam, b, "seq"), (fam, e, "char")])
+    why = S.reserved_vns(S.load_dump(tmp_path), test_all=set(), fresh=set(), dev=set())
+    assert why.get(a) == "clannad-relation"           # a parody sharing CLANNAD's characters
+    assert why.get(b) == "clannad-relation"           # a sequel of a family member
+    assert c not in why and e not in why               # a family member's char relation is not reserved

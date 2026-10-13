@@ -276,3 +276,16 @@ def test_blind_score_takes_the_first_pool_lines_of_the_registered_order():
     order = ["a", "b", "c", "d", "e"]
     assert PL.blind_scored(order, built={"a", "c", "d", "e"}, decided={"a", "b", "c", "e"}, n=2) == ["a", "c"]
     assert PL.blind_scored(order, built=set(order), decided=set(order), n=9) == order
+
+
+def test_third_looks_drop_auto_lines():
+    labels = [{"id": "a", "status": "kept", "how": "auto", "pass1": None, "label": "あ"},
+              {"id": "b", "status": "kept", "how": "auto", "pass1": None, "label": "い"},
+              {"id": "c", "status": "kept", "how": "consensus", "pass1": {"decision": "pick"}, "label": "う",
+               "resolution": {"keep": False}}]
+    res = {"a": {"id": "a", "keep": False, "why": "cut"}, "b": {"id": "b", "keep": True, "why": "blind-wrong"},
+           "c": {"id": "c", "keep": False, "why": "cut"}}
+    assert PL.apply_auto_resolutions(labels, res) == 2
+    assert labels[0]["status"] == "dropped" and labels[0]["why"] == "blind-cut" and labels[0]["label"] is None
+    assert labels[1]["status"] == "kept" and labels[1]["resolution"]["keep"] is True
+    assert labels[2]["status"] == "kept"           # reviewed lines: decide.py applied (or kept) it already

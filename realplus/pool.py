@@ -438,6 +438,30 @@ def cmd_final(args):
     if not p1:
         sys.exit("no decided pass-1 batch yet")
     subprocess.run(cmd, check=True)
+    if res and not args.no_resolve:
+        labels = jl(OUT / "labels.jsonl")
+        n = apply_auto_resolutions(labels, {r["id"]: r for f in res for r in jl(f)})
+        wjl(OUT / "labels.jsonl", labels)
+        print(f"third looks applied to {n} auto lines", flush=True)
+
+
+def apply_auto_resolutions(labels, res):
+    """decide.py's --resolve rule for the auto lines: decide_line returns before its resolution block
+    when a line has no pass-1 decision, so a third look on a 4-way auto line would be ignored. Same
+    semantics: keep false drops the line (why blind-<why>); a text replaces the label only with
+    engine support (classify), else the line is dropped. Returns the number of records changed."""
+    n = 0
+    for r in labels:
+        x = res.get(r["id"])
+        if x is None or r["status"] != "kept" or r.get("pass1") is not None or "resolution" in r:
+            continue
+        r["resolution"] = {k: x.get(k) for k in ("keep", "why", "note") if k in x}
+        if not x.get("keep", True):
+            r.update(status="dropped", why=f"blind-{x.get('why') or 'resolved'}", label=None)
+        elif x.get("text"):
+            r.update(status="dropped", why="blind-text-unsupported", label=None)  # auto lines: no engine read it
+        n += 1
+    return n
 
 
 # ----------------------------------------------------------------------------- edge check

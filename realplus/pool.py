@@ -1060,7 +1060,8 @@ def cmd_publish(args):
         "labels": dict(collections.Counter(f"{r['status']}:{r['how'] if r['status'] == 'kept' else r.get('why')}"
                                            for r in labels)),
         "edge_check": dict(collections.Counter(e["edge_why"] for e in jl(EDGE / "edge.jsonl"))),
-        "leakcheck": {name: last_json(OUT / "logs" / f"{name}.log") for name in ("leakcheck", "leakcheck_devnative")},
+        "leakcheck": {name: last_json(OUT / "logs" / f"{name}.log")
+                      for name in ("leakcheck", "leakcheck_devnative", "leakcheck_teacher_val")},
         "leak_dropped_screenshots": len(json.loads((OUT / "manifests" / "leak_drop.json").read_text()))
         if (OUT / "manifests" / "leak_drop.json").exists() else 0,
         "blind_sample": {k: v for k, v in json.loads((REVIEW / "blind_ids.json").read_text()).items() if k != "order"}
@@ -1072,7 +1073,10 @@ def cmd_publish(args):
                                                                 "edge/edge.jsonl", "review/blind_ids.json",
                                                                 "review/resolutions.jsonl",
                                                                 "review/blind_report_measured.json",
-                                                                FROZEN_LABELS,
+                                                                FROZEN_LABELS, "logs/v2_vs_v1.json",
+                                                                "logs/strict_edge.log", "logs/leakcheck.log",
+                                                                "logs/leakcheck_devnative.log",
+                                                                "logs/leakcheck_teacher_val.log",
                                                                 "manifests/dups.json", "manifests/leak_drop.json")
                             if (OUT / n).exists()},
         "batches_used": {k: [b.name for b in done_batches(k)] for k in ("pass1", "pass2", "edge", "blind")},

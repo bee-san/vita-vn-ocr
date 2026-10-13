@@ -214,3 +214,18 @@ def test_dev_filter_drops_only_the_owner_series_rows(tmp_path):
     assert (kept, dropped) == (2, 2) and json.loads(str(z["labels"])) == ["あ", "う"]
     assert [m["id"] for m in json.loads(str(z["meta"]))] == ["x0", "x2"]
     assert np.array_equal(z["data"][z["offsets"][1]:z["offsets"][2]].reshape(z["shapes"][1]), crops[2])
+
+
+def test_native_study_result_applies_the_frozen_rule():
+    r = json.loads((ROOT / "eval" / "synth3_native_20261013.json").read_text(encoding="utf-8"))
+    import hashlib
+    assert r["protocol"]["sha256"] == hashlib.sha256((ROOT / r["protocol"]["file"]).read_bytes()).hexdigest()
+    c = r["devnative_v3_pooled"]["comparisons"]["E_vs_D"]
+    lo, hi = c["all_vn_cluster"]["ci95"]
+    seeds = [v["delta_points"] for v in c["per_seed"].values()]
+    assert r["decision"]["e_better"] == (hi < 0 and all(x < 0 for x in seeds))
+    assert r["decision"]["d_better_mirrored"] == (lo > 0 and all(x > 0 for x in seeds))
+    assert r["decision"]["delta_points"] == c["all_vn_cluster"]["delta_points"]
+    p = json.loads((ROOT / "eval" / "synth3_native_protocol.json").read_text(encoding="utf-8"))
+    files = p["dev"]["devnative_v3"]["files"]
+    assert sum(f["lines"] for f in files.values()) == r["devnative_v3_pooled"]["dev"]["lines"]

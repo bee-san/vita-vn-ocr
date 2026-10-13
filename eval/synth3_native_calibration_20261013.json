@@ -959,6 +959,43 @@
    "platform:psp": 0.0516,
    "platform:psp2x": 0.0601,
    "crop:gt (all platforms)": 0.0393
+  },
+  "v4_final_render_1323": {
+   "all": {
+    "cer": 0.0349,
+    "exact": 0.7967,
+    "lines": 1500
+   },
+   "crop:gt": {
+    "cer": 0.0373,
+    "exact": 0.7874,
+    "lines": 997
+   },
+   "crop:grad": {
+    "cer": 0.0303,
+    "exact": 0.8151,
+    "lines": 503
+   },
+   "platform:vita": {
+    "cer": 0.0265,
+    "exact": 0.8241,
+    "lines": 671
+   },
+   "platform:psp": {
+    "cer": 0.0397,
+    "exact": 0.7898,
+    "lines": 704
+   },
+   "platform:psp2x": {
+    "cer": 0.0644,
+    "exact": 0.688,
+    "lines": 125
+   },
+   "layout:bare": {
+    "cer": 0.0349,
+    "exact": 0.7318,
+    "lines": 179
+   }
   }
  }
 }

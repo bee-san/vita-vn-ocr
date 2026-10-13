@@ -23,6 +23,11 @@ opaque boxes, a little extra letter spacing on some lines, fewer furigana. With 
 version 3 byte for byte. Re-rendering the first 400 crops of pinned v3 shards 0 and 57 with this code
 gave identical pixels, shapes, labels and metadata (`$A/native-frames/checks/v3_identity.py`).
 
+**Result.** Measured with study 1's frozen rule on devnative v3, the native development cohort, version 4
+is not better than version 3: E_s3nat - D_s3v3 is +0.33 points (VN-cluster 95% interval -0.02 to +0.70),
+with native PSP lines slightly worse (+0.44, interval +0.03 to +0.85). Version 3 stays synth3's
+recommended VN-style data. Version 4 stays in the code as an option (`frames=None` by default).
+
 ## Measurements (training-side data only)
 
 `synth/native_calib.py` measured these on data no development or test set shares. The full record is
@@ -103,6 +108,7 @@ The first full render (12:08Z, c3's settings) dropped effects behind any box. It
 | version 3, native strata | Vita 2.5%, PSP 5.2%, PSP-on-Vita 6.0%; gt crops 3.9% |
 | version 4 render of 12:08Z (c3) | 6.0% overall, gt crops 7.5%, text without a box 14% |
 | version 4, c4 (the render's settings) | 4.2% overall, gt crops 4.6%, Vita 2.7%, PSP 5.8%, PSP-on-Vita 5.3% |
+| version 4, the final render (shards 0-99, 13:23Z) | 3.5% overall, gt crops 3.7%, GRAD 3.0%, Vita 2.7%, PSP 4.0%, PSP-on-Vita 6.4% |
 
 The 12:08Z render's worst crops were plain text on translucent boxes over busy scenes, unreadable even by
 eye. It was discarded before any training (protocol amendment 1), and the render was redone with the
@@ -152,7 +158,69 @@ recipe, architecture, steps, seeds, export, views, metric, bootstrap and B-bette
   986 crops of 543 lines from 43 VNs (`eval/synth3_native_dev.py`).
 - **Reported only.** teacher_val and each devnative file.
 
-RESULTS_PLACEHOLDER
+**Result: no measured difference.** On devnative v3 (pooled, without Memories Off After Rain), E_s3nat
+minus D_s3v3 is **+0.33 points**, VN-cluster 95% interval **[-0.02, +0.70]** (CER 6.36% to 6.70%, both
+views, both seeds). The per-seed differences are +0.50 and +0.17.
+
+- Neither the frozen rule nor its mirror holds: the interval only just reaches below 0.
+- Version 3 stays synth3's recommended VN-style data.
+- The point estimate favours version 3. The one subset that separates goes the same way: native PSP
+  lines are worse with version 4.
+
+The runs: E_s3nat seeds 1 and 2 trained 13:28-14:33Z on this machine, at 2b132aa's train2.py, from s3e as
+pinned. D_s3v3 is study 1b's runs. Re-exporting D_s3v3's checkpoints gave blobs byte-identical to study
+1b's (f9ab7324..., 83942944...). Result: `eval/synth3_native_20261013.json`.
+
+| set | lines | D_s3v3 CER (seed 1 / 2) | E_s3nat CER (seed 1 / 2) | E - D, points (VN-cluster 95% CI) |
+|---|---:|---|---|---|
+| **devnative v3 pooled (decides)** | 986 crops | 6.10% / 6.63% | 6.59% / 6.80% | **+0.33 (-0.02 to +0.70)** |
+| tv_native ink | 509 | 2.69% / 3.23% | 3.04% / 3.08% | +0.10 (-0.14 to +0.35) |
+| tv_native GRAD | 420 | 9.79% / 10.14% | 10.41% / 10.90% | +0.69 (-0.01 to +1.37) |
+| strict ink | 34 | 4.05% / 5.48% | 4.18% / 4.18% | -0.59 (-2.03 to +0.69) |
+| strict GRAD | 23 | 14.11% / 16.55% | 16.03% / 14.98% | +0.17 (-2.06 to +2.17) |
+| teacher_val (reported only) | 1,643 | 5.18% / 5.37% | 5.37% / 5.48% | +0.14 (-0.04 to +0.32) |
+
+CERs are the mean of the two views. Strata of the pooled set (VN-cluster intervals):
+
+| stratum | crops | D | E | E - D, points |
+|---|---:|---|---|---|
+| target PSP | 784 | 6.80% | 7.24% | +0.44 (+0.03 to +0.85) |
+| target Vita | 202 | 4.86% | 4.82% | -0.04 (-0.49 to +0.53) |
+| dark-on-light | 319 | 5.71% | 6.35% | +0.64 (+0.17 to +1.22) |
+| ink 14-19 px | 600 | 6.49% | 7.10% | +0.61 (+0.15 to +1.07) |
+| ink under 14 px | 136 | 10.03% | 9.24% | -0.79 (-2.63 to +0.21) |
+| length 5-12 | 271 | 6.99% | 7.72% | +0.73 (+0.29 to +1.20) |
+| dakuten / small kana | 607 | 3.88% | 4.17% | +0.28 (+0.01 to +0.59) |
+
+Version 4 changed four things about native crops at once:
+
+- frame-level capture;
+- fewer outlines, shadows and furigana;
+- more JPEG (25% clean, against version 3's 35-50%), with PSP 4:4:4;
+- some extra letter spacing.
+
+The study measures the sum. Native Vita lines do not move. The PSP, dark-on-light and 14-19 px strata
+lose a little, and so do the GRAD crops, the ones the console finder cuts.
+
+The most likely cause is the thinned outlines and shadows: they make up most of the difference between
+the two native renders, and PSP text at 12-16 px is where a one-pixel outline matters most. This is not
+measured: no arm isolated it.
+
+The calibration matched the glyph-aspect statistic better and the label audit is cleaner. Neither
+predicted accuracy on native frames, a caution for calibrating synthetic data on single statistics.
+
+
+## Limits
+
+- One study, two seeds, 16,000-step pretraining runs without the real fine-tune. A difference that only
+  shows after fine-tuning, or at another size, would not appear here.
+- devnative v3 is small: 986 crops of 543 lines from 43 VNs, 80% PSP. Every devnative VN is a teacher_val
+  VN.
+- Version 4 changes several things at once, so the study cannot say which one moved the PSP stratum.
+- The calibration statistics are proxies. Glyph aspect mixes letter spacing and outline height, and
+  sharpness mixes rendering and capture.
+- D_s3v3's runs trained about nine hours earlier on the same machine and code; E's ran beside other
+  agents' jobs. Wall-clock speed does not enter the result.
 
 ## Hygiene
 
@@ -164,6 +232,9 @@ RESULTS_PLACEHOLDER
   was stopped at 57% when that rule was superseded and is not used anywhere.
 - s3e keeps version 3's scaled crops. Those were rendered before the rule, and their scenes can include
   20 PC screenshots of the series (`docs/owner-games.md`).
+- The final render (12:20-13:23Z) predates the owner's 13:10Z reservation of Aiyoku no Eustia and 428.
+  Its names and scenes can hold a few of their characters and screenshots (estimated under 100 of 550,000
+  crops), as version 3's can. Renders from main now exclude them (#63).
 - The calibration used training-side frames and crops only. It was repeated without the series once
   the series was reserved: the 4:2:0 share of Vita frames is 92% (the patch uses the first
   measurement, 94%), PSP 4:4:4 84%, glyph aspect within 0.003. No setting was tuned on devnative,

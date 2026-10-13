@@ -954,8 +954,9 @@ def cmd_blind_score(args):
                       "in_pool": sum(i in built for i in spec["order"]), "scored": len(ids), "seed": spec["seed"],
                       "from": spec["from"], "scored_from_first_draw": sum(i in set(spec["order"][:first]) for i in ids),
                       "last_position": spec["order"].index(ids[-1]) + 1 if ids else 0}
-    (REVIEW / "blind_report.json").write_text(json.dumps({"summary": summ, "disagreements": dis, "scored_ids": ids},
-                                                         ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    out = REVIEW / (f"blind_report_{args.tag}.json" if args.tag else "blind_report.json")
+    out.write_text(json.dumps({"summary": summ, "disagreements": dis, "scored_ids": ids}, ensure_ascii=False, indent=1)
+                   + "\n", encoding="utf-8")
     print(json.dumps(summ, indent=1), flush=True)
 
 
@@ -1076,6 +1077,13 @@ def cmd_publish(args):
                             if (OUT / n).exists()},
         "batches_used": {k: [b.name for b in done_batches(k)] for k in ("pass1", "pass2", "edge", "blind")},
         "blind": json.loads(blind.read_text())["summary"] if blind.exists() else None,
+        "blind_on_this_build": json.loads((REVIEW / f"blind_report_{args.tag}.json").read_text())["summary"]["all"]
+        if args.tag and (REVIEW / f"blind_report_{args.tag}.json").exists() else None,
+        "build_tag": args.tag,
+        "supersedes": {"build": "untagged", "files": {n: f["sha256"] for n, f in
+                                                      json.loads(build_paths()["stats"].read_text())["files"].items()},
+                       "lines": json.loads(build_paths()["stats"].read_text())["lines"]}
+        if args.tag and build_paths()["stats"].exists() else None,
         "third_looks": {"lines": len(looks3), "kept": sum(bool(x.get("keep")) for x in looks3),
                         "why": dict(collections.Counter(x.get("why") for x in looks3)), "reviewer_kind": "assistant"},
     }

@@ -5,9 +5,9 @@
   "devnative_check": "every devnative function realplus calls has the same body at 14ae22d (edgecheck.flags gained crop=, default unchanged; decide.wilson95 factored out); edge flags recomputed at 14ae22d matched on 2,000 of 2,000 lines",
   "code_sha256": {
    "shots.py": "a1080a1888d8059a88e84f1434c9a82a72cc2d4d0ab01ee19c62f5d3031797e7",
-   "pool.py": "c3520dfae52eda869cfa2047bcf8d45cce50d9509fcd0d92735b29fbfd627ce4"
+   "pool.py": "b0308f9fd8becdc96817be0af62f2da308488a742ab90460e69b53a21d8c9c69"
   },
-  "published_at": "8fd0939"
+  "published_at": "2d0fb28"
  },
  "vndb_dump": {
   "file": "vndb-db-2026-10-12.tar.zst",
@@ -247,6 +247,7 @@
   "review/blind_ids.json": "e6364e776e728b05428cf56d7f6661fe4c551807143b3decdb6a899e5a12661c",
   "review/resolutions.jsonl": "2092cb9511cdb7571a7dc977a8ee9cefcc129df972dd5df333c635bf4e996aa9",
   "review/blind_report_measured.json": "75d5eba9d4fef1f380b256c405f08b591808cebfa895a892002ae4b1cefe61c2",
+  "labels_frozen_2128.jsonl": "8531d8c4196062a7dd602d0e200420c8dba5890fb8818444ccee8d947782279c",
   "manifests/dups.json": "ab69303d50f68a31a0c72225718a97fec311357ac2247179764fea5ccaca07d7",
   "manifests/leak_drop.json": "d7950de84fc312fe8b0511c05806746c4d5838c7dc322105c7b0b1a8250f7ffa"
  },

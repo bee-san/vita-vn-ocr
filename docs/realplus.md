@@ -25,7 +25,9 @@ has 2.2 times as many ink crops and 3.8 times as many crops in all. The goal was
 43,264 distinct lines falls short of it; 124,845 crops is the count in train2's units. The limit was
 review capacity, not screenshots (see Limits).
 
-The files are under `$HERD/shared/artifacts/realplus`. `realplus/manifests/stats.json` pins every
+The files are under `$HERD/shared/artifacts/realplus`. VOCR3 pins the two npz files by sha256
+(`eed888a6…`, `f2a3b7d3…`). `pool.py build` therefore never overwrites a built pool: a new build
+needs `--tag`, which gives every output a new file name. `realplus/manifests/stats.json` pins every
 file's sha256:
 
 - the two npz files;
@@ -264,11 +266,20 @@ these lines before.
 
 Lines drawn and scored:
 
-- 540 lines were drawn first, and 70 more later from the same frozen set. Some lines leave the
-  pool at the build, so the first draw held fewer than 500 pool lines.
-- The first 500 lines of the order that are in the built pool were scored with devnative's
-  `decide.blind_agreement`. A line agrees when the blind reading's scoring key equals the label's;
-  a skip or "unsure" counts as a disagreement.
+- 540 lines were drawn first. Some kept lines leave the pool at the build (an edge check, a
+  per-crop rule, the repeat cap), so only 446 of them were in a preliminary build. That build lacked
+  the last edge decisions; its agreement was 441 of 446.
+- 70 more lines were then drawn from the same frozen set (seed `20261013:1`), continuing the order.
+  The extension was drawn after the first 540 were decided. Its size was fixed by the shortfall
+  before any of its lines was decided, and every one of its lines counts up to the 500th.
+- The first 500 lines of the order that are in the final pool were scored with devnative's
+  `decide.blind_agreement`:
+  - a line agrees when the blind reading's scoring key equals the label's;
+  - a skip or "unsure" counts as a disagreement.
+- The first draw supplied 461 of the 500 lines and agreed on 456 (98.9%, Wilson 97.5-99.5%). The
+  extension supplied 39 lines and agreed on all 39.
+- The five lines dropped by the third looks below still count as in the pool, with their frozen
+  labels (`pool.measured_pool`). So `blind-score` reproduces the measurement after the drops.
 
 | lines | agree | rate | Wilson 95% |
 |---|---:|---:|---|
@@ -287,6 +298,9 @@ A third look (assistant, `review/resolutions.jsonl`) at the five disagreements f
   second ！ after a gap, and a thin 一 that ends at the crop's edge.
 
 All five were dropped from the pool. The 99.0% above was measured before these drops.
+
+The point estimate meets the 99% target. The 95% interval does not exclude a precision as low as
+97.7%: 500 lines cannot show more than that.
 
 devnative's `decide_line` returns before its resolution block when a line has no pass-1 decision.
 So realplus applies third looks to auto lines itself (`pool.apply_auto_resolutions`), with the same

@@ -446,9 +446,41 @@ On the test sets the fine-tune changes A by −0.34 (console, CI −0.72 to +0.0
 numbers cannot change the decision or the recipe; the development cohorts, where the fine-tune
 helps both arms, remain the selection evidence.
 
-### H15
+### H15: no measured difference either
 
-Running; its decision is scored when all four H15 fine-tunes have finished.
+`eval/synth3_study2_H15_20261013.json` (`eval/synth3_study2.py result`, computed 2026-10-13T07:57Z
+when the last H15 fine-tune had finished; C W8I, both views; devnative v1 as for FL10):
+
+| | teacher_val CER | devnative CER |
+|---|---|---|
+| A_s2 (2 seeds) | 2.37% | 2.50% |
+| C_mix (2 seeds) | 2.23% | 2.39% |
+| C − A, points (VN-cluster 95% CI) | −0.14 (−0.30 to +0.02) | −0.11 (−0.30 to +0.08) |
+| per seed (1, 2) | −0.14, −0.14 | −0.14, −0.07 |
+
+Both seed pairs and both cohorts favour the mix, but neither interval excludes 0 (teacher_val's upper
+bound is +0.02), so under the frozen rule neither arm is better and synth2 stays at H15 size as well.
+Reported only:
+- **Pretrain-only, the mix is ahead by less than at FL10 size:** C − A −0.27 (CI −0.44 to −0.11) on
+  teacher_val (FL10: −0.46; study 1, with the one-line nvsynth set: −0.51). The fine-tune gains −0.79
+  (CI −1.17 to −0.48) for A and −0.66 (CI −1.05 to −0.34) for C on teacher_val, and 0.90 and 0.77
+  points on devnative.
+- **Strata (teacher_val):** 1-4 characters −0.91 (CI −1.57 to −0.24) and name-like lines −0.73
+  (CI −1.34 to −0.13) are resolved in the mix's favour, as the short-line stratum was at FL10 size;
+  native Vita −0.27 (CI −0.80 to +0.12) and native PSP −0.10 (CI −0.41 to +0.20) are not; rare kanji
+  +0.31 (CI −0.47 to +1.06).
+- **Strata (devnative):** the native Vita crops (305 of 1,174) favour the mix, −0.36 (CI −0.57 to
+  −0.19), the PSP crops do not, −0.01 (CI −0.25 to +0.23). A stratum of a reported-only cohort cannot
+  decide anything, but it is the first sign in these studies that the synth3 mix helps on native Vita
+  frames.
+- **Level with the released H15.** teacher_val 2.37% (A) and 2.23% (C) against the released H15's
+  2.29% (`docs/train2.md`, train2's own measurement), which was trained with the same hard-label recipe
+  and synth2. At FL10 size the study-2 runs were far below the released FL10 (3.4% against 4.05%),
+  which was trained with frame KD; H15 was not, so the two sizes agree: the gap at FL10 was the
+  recipe, not the synthetic data.
+
+Protected test sets: scored once per export after this result was committed; see the H15 test report
+below once it is in.
 
 ### Provenance of the runs
 

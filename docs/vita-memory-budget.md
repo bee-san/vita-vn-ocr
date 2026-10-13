@@ -4,72 +4,124 @@ Written 2026-10-12 for the agents training the next recognizers. Every console s
 **estimate** from a cycle model. No controlled timing has run on a console, and no engine has a
 hardware CER.
 
-*Corrected 2026-10-13* on where the overlay's memory comes from (marked "correction" below), after
-the SDK documentation and vita-jp-overlay PR [#60](https://github.com/bee-san/vita-jp-overlay/pull/60)
-were read: the recognizer's budget is the game process's main memory only; SceShell's 50 MiB
-partition, not its 5 MiB PAF heap, is the pool that runs out there; and `*ALL` loads the worker
-into SceShell too. The short platform note is [`vita-platform-memory.md`](vita-platform-memory.md);
-the full reference is vita-jp-overlay's
+*Revised 2026-10-13*, after the SDK documentation and vita-jp-overlay PR
+[#60](https://github.com/bee-san/vita-jp-overlay/pull/60) were read: the budget is stated in three
+tiers for a recognizer in the game process only; section 1 gains the SDK's game-budget rules, the
+per-title free-memory table with the preflight rule, and the scheduler facts; and where the
+overlay's memory comes from is corrected (marked "correction"): the recognizer's budget is the game
+process's main memory only; SceShell's 50 MiB partition, not its 5 MiB PAF heap, is the pool that
+runs out there; and `*ALL` loads the worker into SceShell too. The short platform note is
+[`vita-platform-memory.md`](vita-platform-memory.md); the full reference is vita-jp-overlay's
 [`docs/vita-memory.md`](https://github.com/bee-san/vita-jp-overlay/blob/main/docs/vita-memory.md).
 
 ## The answer
 
-The line other agents design to (the fleet's `vita-budget.status`):
+The recognizer runs in the game's own process and nowhere else (section 1). Its budget comes in
+three tiers. Sizes are exact; console times are estimates. The fleet's `vita-budget.status`
+lines, which `vita/budget_sweep.py check` prints after naming a blob's tier:
 
 ```
 BUDGET_READY weights<=1600000 arena<=262144 ms<=550
+BUDGET_TIERS always: weights<=900000 arena<=131072 ms<=300; preflight: weights<=1600000 arena<=262144 ms<=550; never: beyond
 ```
 
-| | ceiling | F20 (width 2.0) | H15 (width 1.5) | FL10 (the overlay's device default) |
-|---|---|---|---|---|
-| int8 W8I blob, bytes | **≤ 1,600,000** | 1,558,016 | 1,155,968 | 657,664 |
-| `vocr_arena_bytes()`, W8I, default tiling | **≤ 262,144** | 241,056 | 182,944 | 124,832 |
-| est. ms per 640-px line, one A9 core at 333 MHz, high bound | **≤ 550** | 311-548 | 219-398 | 124-235 |
-| the same at 444 MHz | ≤ 412 | 234-411 | 164-299 | 93-177 |
-| MACs per CTC frame (a proxy; check the ms) | about 2.0-2.35M, depending on shape | 2,339,232 | 1,564,992 | 824,736 |
+| | always safe | safe with the preflight (the ceiling, unchanged since #53) | never |
+|---|---|---|---|
+| int8 W8I blob, bytes | **≤ 900,000** | **≤ 1,600,000** | more |
+| `vocr_arena_bytes()`, W8I, default tiling | **≤ 131,072** | **≤ 262,144** | more |
+| blob + arena against the 2 MiB L2 the game shares | ≤ 1,031,072 B: fits beside a game that holds half the L2 | ≤ 1,862,144 B (89%): fits an idle L2, spills when the game holds half | past about 2.0 MB it spills even an idle L2 |
+| game memory held between jobs (resident weights, 4 KiB pages) | ≤ 901,120 B | ≤ 1,601,536 B | |
+| game memory at a job's peak (weights + workspace), 917×125 box / 960×544 full screen | ≤ 1.10 / 1.49 MiB | ≤ 1.89 / 2.28 MiB | |
+| free `USER` the first full-screen job needs (peak + the 4 MiB reserve) | 5.5 MiB | 6.3 MiB | |
+| est. ms per 640-px line, one A9 core at 333 MHz, high bound, whole L2 (`check`'s number) | **≤ 300** | **≤ 550** | more |
+| the same with the game holding half (1 MiB) / three quarters (512 KiB) of the L2 | +0-1% / +12% (`w100`: 281 / 314 ms) | +26% / +32% (F20: 688 / 724 ms) | |
+| a full-width 917-px CLANNAD line (about 115 frames), game holding half the L2 | about 0.43 s | about 1.0 s (F20) | |
+| three 640-px lines, same share | about 0.9 s | about 2.1 s (F20) | |
+| at 444 MHz | three quarters of the above | three quarters | |
+| models (section 3) | FL10 (657,664 B, 124,832 B, est. 124-235 ms), v1's shape `w100` (859,904, 124,832, 149-280), `w075` | H15 (1,155,968, 182,944, 219-398), F20 (1,558,016, 241,056, 311-548), `w150b128`, `w150c4`, `w150d2`, `w200h24`, every width-1.5 variant with a 5,355-class head, bottleneck ≤ 128 and one block per stage | width 2.5 and up; `w200b192`, `w150b192` and `w150v11000` (blob bytes); `w150d3` (arena and ms) |
 
+- **What the tiers mean.**
+  - *Always safe* is the class of the fallback model. A job holds at most about 1.5 MiB of the
+    game's memory for a few hundred ms and at most 0.9 MB between jobs. Blob and arena fit half
+    of the L2, so the estimate hardly moves when the game holds the other half (`w100`: 149-280
+    to 149-281 ms; FL10 unchanged), and a 917-px line costs about 0.43 s at the high bound.
+    It still passes through the preflight, which is one syscall, but no measured or inferred game
+    refuses it: the smallest free figure seen in a game is 56 MiB, nearly 40× its peak. A default
+    model from this tier needs no fallback model.
+  - *Safe with the preflight* is the ceiling. It needs what the overlay has had since
+    [#54](https://github.com/bee-san/vita-jp-overlay/pull/54)-[#57](https://github.com/bee-san/vita-jp-overlay/pull/57):
+    free `USER` minus the 4 MiB reserve must cover the job plus the weights unless they are
+    resident, a refusal falls back to an always-safe model, and the resident weights go back to
+    the game when it is not the active one. Its cost is speed, not safety: with the game holding
+    half or three quarters of the L2, F20's high bound is 26-32% above `check`'s figure, about
+    1.0 s for a full-width line and 2.1 s for a three-line box, before any measurement. The
+    owner's goal was under about 1 s per line (`runtime/README.md`).
+  - *Never* is anything that fails a ceiling limit, in any process. Also, at any size: nothing of
+    the recognizer in SceShell (weights, arenas, dictionaries, caches); a heap or newlib in the
+    game; a job that would need more than the 4 MiB reserve itself.
 - **What the ms limit means.** It is the high end of `vita/a9_cycles.py`'s W8I range for an
   80-frame (640-px) line, which is about the p90 real Vita line. It is taken at 333 MHz, the clock
-  games run at by default, with the whole 2 MiB L2.
-- **Checking a model.** All three limits must hold. `vita/budget_sweep.py check BLOB` tests a
-  trained blob against them, reading synth-val lines only. Run it through `heavy.sh`.
+  games run at by default, with the whole 2 MiB L2. The two share rows restate it for a game that
+  keeps half or three quarters of the L2 (section 3); the game's real share is unknown.
+- **Checking a model.** All three limits of a tier must hold. `vita/budget_sweep.py check BLOB`
+  tests a trained blob against the ceiling, names its tier and prints both status lines, reading
+  synth-val lines only. Run it through `heavy.sh`.
 - **Margin.** The figure is per 640-px line. For a model at the ceiling, an estimated:
-  - full-width 917-px CLANNAD line (110-115 frames): about 760-790 ms at 333 MHz;
-  - three-line box of 640-px lines: about 1.65 s, before the model load (section 4).
+  - full-width 917-px CLANNAD line (110-115 frames): about 760-790 ms at 333 MHz with the whole
+    L2, about 1.0 s with half of it;
+  - three-line box of 640-px lines: about 1.65 s with the whole L2, 2.1 s with half, after the
+    one-time model load (section 4).
 
   The published line mix (20 synth-val plus 20 vita-test lines) costs about 0.8% more per frame
   than `check`'s synth-val lines, so leave a few ms of margin rather than designing to 549 ms.
 - **Headroom.**
-  - Memory: about 25× (section 1).
-  - L2: weights plus arena stay at 89% or less of it.
-  - Speed: the ms limit is the pessimistic bound at the slower clock. The owner's earlier goal was
-    under about 1 s per line (`runtime/README.md`).
+  - Memory: no budget-derived worst case exists (section 1); against the free memory measured in
+    games (56-87 MiB) a ceiling job is under 5%, and the preflight refuses what does not fit.
+  - L2: an always-safe model keeps blob plus arena under half of it; a ceiling model under 89%.
+  - Speed: the ms limit is the pessimistic bound at the slower clock.
 
 What the numbers say:
 
-- **RAM is not the limit.** Inside a game, one OCR job of a ceiling-sized model needs 2.0-2.4 MB of
-  the game's own memory. Free memory seen: 87 MiB in CLANNAD (measured), about 56 MiB in Stardew
-  Valley (a third-party screenshot).
+- **The budget is a game-process budget. SceShell has none to give.** SceShell's 50 MiB partition
+  runs within tens of KiB of empty beside a game (28,672 B and 98,304 B free in two console
+  samples), and the overlay's `*main` plugin plus the `*ALL` worker, which taiHEN also loads into
+  SceShell, already hold 540,672 B of it permanently. A 36,864 B growth of that footprint between
+  the build that boots (API 13) and the one that does not (API 16) is the most economical
+  explanation of overlay issue [#59](https://github.com/bee-san/vita-jp-overlay/issues/59):
+  SceShell's own `SceLiveAreaDailyCronJob` died with `0x80024302`, no free page, before any OCR
+  job ran ([PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60)). So every byte above is
+  the game's, and nothing of the recognizer may sit in SceShell at any size
+  ([`vita-platform-memory.md`](vita-platform-memory.md) has the pools in one table).
+- **In the game, RAM does not set the ceiling; the preflight does.** One job of a ceiling-sized
+  model needs 2.0-2.4 MB of the game's memory. Free memory seen: 87 MiB in CLANNAD (measured, a
+  plain 256 MiB title), about 56 MiB in Stardew Valley (a third-party screenshot, a +109 MiB
+  title). No SDK rule reserves memory for a plugin, and some games come close to their whole
+  budget, so the safe allowance per game is a rule rather than a number (section 1).
 - **Speed binds first, then the shared 2 MiB L2.** Up to F20's size, cost grows slightly less than
   linearly with MACs. The knee comes where weights plus arena outgrow the L2, past about 2.0 MB:
   - from there, the worst-case estimate grows faster than MACs: L2 misses add 8-10% to width 2.5's
     high bound and 30-36% to width 3.0's;
   - the best-case estimate stays linear;
-  - a game that holds part of the L2 moves the knee down.
-- **"More memory is slower" is true today, but because of the overlay's loader, not the cache.**
-  - vita-jp-overlay reads and re-hashes the whole weights file on every OCR job, through 8 KiB
-    kernel round trips with a 1 ms sleep each.
-  - On the console that took 213-359 ms for FL10, more than the recognition itself (36-145 ms).
-  - The load grows with the blob: an estimated 0.37-0.63 s for H15 and 0.50-0.85 s for F20.
-  - It is an integration bug with cheap fixes. See section 5 and
-    [vita-jp-overlay #53](https://github.com/bee-san/vita-jp-overlay/issues/53).
+  - a game that holds part of the L2 moves the knee down: with half of it, H15 already spills
+    (+10% on the high bound) and F20 pays +26%; an always-safe model does not spill.
+- **"More memory is slower" was the overlay's loader, not the cache, and #54 fixed it.**
+  - Until [#54](https://github.com/bee-san/vita-jp-overlay/pull/54), vita-jp-overlay read and
+    re-hashed the whole weights file on every OCR job, through 8 KiB kernel round trips with a
+    1 ms sleep each. On the console that took 213-359 ms for FL10, more than the recognition
+    itself (36-145 ms), and it grew with the blob.
+  - Since #54 the verified weights stay resident in their own `USER_RW` block while the title is
+    the active game; the first job of a session reads them in 32 KiB pieces without sleeps (an
+    estimated 0.13-0.15 s for FL10, 0.23-0.26 s for H15, not measured), later jobs pay an open,
+    a stat and a close. The one-time load still grows with the blob (section 4).
 - **None of the overlay's OCR failures came from the recognizer's size.** The failures that stopped
   OCR on the console were integration problems (section 2): the wrong process, eager or full-frame
-  buffers, the game's file namespace, an error-code ABI bug, or a pool leaked by a test tool. The
-  rest were output quality (FL10, judged by eye) and speed (Meiki, about 8 s per line).
+  buffers, the game's file namespace, an error-code ABI bug, a pool leaked by a test tool, and
+  now the Shell plugin's own footprint (#59). The rest were output quality (FL10, judged by eye)
+  and speed (Meiki, about 8 s per line).
 
-A slightly bigger model than H15 is affordable, up to F20's size and cost. Shapes from the sweep
-that fit the ceiling, alongside plain width 2.0 (sizes measured, times estimated at 333 MHz):
+A slightly bigger model than H15 is affordable, up to F20's size and cost, as long as the FL10-class
+fallback stays. Shapes from the sweep that fit the ceiling, alongside plain width 2.0 (sizes
+measured, times estimated at 333 MHz with the whole L2):
 - two blocks per stage at width 1.5 (`w150d2`: 1.29 MB, 240,544 B, est. 284-508 ms);
 - a larger head bottleneck (`w150b128`: 1.34 MB, 185,376 B, est. 238-421 ms);
 - four temporal blocks (`w150c4`: 1.34 MB, 201,376 B, est. 241-441 ms).
@@ -79,67 +131,181 @@ PSP has no NEON and its own budget (`psp/README.md`).
 
 ## 1. Where the OCR runs, and which memory it uses
 
-vita-jp-overlay main is at `1a118ef`; `M` below stands for
-`https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb`. It has
-three parts:
+vita-jp-overlay main is at `599dd9c` (2026-10-13; `#54`-`#58` merged). The line links below, `M`,
+point at `1a118ef`, the main this section was first written against:
+`https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb`; the
+facts that changed since are marked with their PR. The overlay has three parts:
 - a kernel plugin (`*KERNEL`) that captures the screen into a region-sized `KERNEL_RW` buffer and
   brokers the model file;
 - a SceShell plugin (`*main`) for the UI and the disk-backed dictionary;
 - a worker plugin (`VitaJPOverlay_OCR.suprx`) registered under `*ALL`, which runs the line finder
   and the recognizer in the game's own process. Correction: `*ALL` loads it into SceShell and every
-  system application as well, not only into enabled games; its `module_start` finds it is not in a
-  game and starts nothing, but the module stays resident (45,056 B of SceShell's pages, PR #60).
-  The expert's rule, binding in the overlay's `AGENTS.md`, is one `*TITLEID` section per game.
+  system application as well, not only into enabled games (taiHEN matches the `ALL` section for
+  every section but `KERNEL`); there its `module_start` finds no candidate title and starts
+  nothing, but the module stays resident (45,056 B of SceShell's pages,
+  [PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60), section 3.3). The expert's rule,
+  binding in the overlay's `AGENTS.md`, is one `*TITLEID` section per game; #60 plans that move.
 
 Facts, each with its source:
 
 | | value | source |
 |---|---|---|
 | RAM | 512 MiB LPDDR2 main memory, 128 MiB CDRAM | [Physical Memory](https://wiki.henkaku.xyz/index.php?title=Physical_Memory&oldid=21616) |
-| the game's partitions | 256 MiB main (+29, +77 or +109 MiB with `ATTRIBUTE2`), 112 MiB CDRAM, 26 MiB phycont | [Memory budget](https://wiki.henkaku.xyz/index.php?title=Memory_budget&oldid=18995); Vita3K [SceSysmem.cpp#L171-L211](https://github.com/Vita3K/Vita3K/blob/7e152b66e85345f175d3d287fcbd7f8abec7574a/vita3k/modules/SceSysmem/SceSysmem.cpp#L171-L211) |
+| the game's partitions | 256 MiB main (+29, +77 or +109 MiB when the title's `param.sfo` asks for it; fixed per title), 112 MiB CDRAM, 26 MiB phycont | SDK `Programming-Startup_Guide` ("Resources that Can Be Used by an Application"); [Memory budget](https://wiki.henkaku.xyz/index.php?title=Memory_budget&oldid=18995); Vita3K [SceSysmem.cpp#L171-L211](https://github.com/Vita3K/Vita3K/blob/7e152b66e85345f175d3d287fcbd7f8abec7574a/vita3k/modules/SceSysmem/SceSysmem.cpp#L171-L211) (`ATTRIBUTE2 & 0x0C`: 4, 8, 12) |
 | SceShell, kernel drivers | SceShell: 50 MiB main (`ScePhyMemPartShell`) + 16 MiB CDRAM, shared by all of SceShell and every `*main`/`*ALL` plugin; measured free beside a running game: 28,672 B and 98,304 B. Kernel drivers and kernel plugins: 36 MiB (`ScePhyMemPartKD`), free size unmeasured | same Memory budget page; vita-jp-overlay PR #60; `notes/08`, `notes/26` |
-| a game plugin's memory | taiHEN loads the plugin into the game's process (`ksceKernelLoadStartModuleForPid`), before the game's own code runs. Correction: its module pages, thread stacks, TLS and memory blocks are charged to that process's budget. The SDK's Kernel Overview says the memory block service loads modules and allocates stacks, its Kernel Reference that stacks and TLS come from the application's budget, and PR #60 measured the overlay's Shell pages (540,672 B) | taiHEN [plugin.c#L165-L173](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/plugin.c#L165-L173), [hen.c#L345-L380](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/hen.c#L345-L380); vita-jp-overlay `docs/vita-memory.md` sections 3-4 |
-| heap | none: the worker links with `-nostdlib`. It allocates one `USER_RW` memblock per job (4 KiB granularity) and frees it when the job ends | [M/vita/CMakeLists.txt#L176](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/vita/CMakeLists.txt#L176), [M/game_ocr/main.c#L146-L151](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L146-L151), [#L118-L127](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L118-L127) |
-| preflight | `sceKernelGetFreeMemorySize` must report free `USER_RW` of at least the workspace plus a 4 MiB reserve, or the job is refused before anything is allocated | [M/game_ocr/main.c#L18](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L18), [#L146-L150](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L146-L150) |
-| free memory seen in games | CLANNAD: 91,226,112 B of free `USER` before a job (one logged sample). Stardew Valley in +109 MiB mode: 309 of 365 MB used, about 56 MiB free (a third-party PSVshell screenshot, not our measurement) | `notes/27`; [PSVshell README](https://github.com/Electry/PSVshell#readme) |
+| a game plugin's memory | taiHEN loads the plugin into the game's process (`ksceKernelLoadStartModuleForPid`), before the game's own code runs. Correction: its module pages, its thread's stack, at least 4 KiB of TLS and its memory blocks are charged to that process's budget, like the game's own (the SDK's Kernel Overview: the memory block service loads modules and allocates stacks; its Kernel Reference: stacks and TLS come out of the application's budget at thread creation) | taiHEN [plugin.c#L165-L173](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/plugin.c#L165-L173), [hen.c#L345-L380](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/hen.c#L345-L380); SDK `Kernel-Overview` (thread context), `Kernel-Reference` (`sceKernelCreateThread`); the same accounting in SceShell, measured (540,672 B): PR #60; vita-jp-overlay `docs/vita-memory.md` sections 3-4 |
+| heap | none: the worker links with `-nostdlib`. It allocates one `USER_RW` memblock per job (4 KiB granularity) and frees it when the job ends; since #54 the verified weights have a second `USER_RW` block that stays while the title is the active game | [M/vita/CMakeLists.txt#L176](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/vita/CMakeLists.txt#L176); [`game_ocr/main.c`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c) at `599dd9c` (`weights_alloc`, `check_memory`, `cleanup`) |
+| preflight | `sceKernelGetFreeMemorySize` (`sizeMain`, the game's own main-memory budget, minus a system margin, per the SDK) must report free `USER_RW` of at least the page-rounded workspace plus the page-rounded weights, unless they are already resident, plus a 4 MiB reserve, or the job is refused before anything is allocated; a refusal tries the configured fallback model when it is pinned and needs less, and is logged with the free bytes ([#55](https://github.com/bee-san/vita-jp-overlay/pull/55)) | [`game_ocr/main.c#L19`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L19), [`#L196-L205`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L196-L205), [`#L241-L244`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L241-L244); SDK `Kernel-Reference` (`sceKernelGetFreeMemorySize`) |
+| free memory seen in games | CLANNAD (PCSG00415, a plain 256 MiB title: its `param.sfo` has `ATTRIBUTE2=0`): 91,226,112 B of free `USER` before a job (one logged sample). Stardew Valley in +109 MiB mode: 309 of 365 MB used, about 56 MiB free (a third-party PSVshell screenshot, not our measurement) | `notes/27`, `notes/26`; [PSVshell README](https://github.com/Electry/PSVshell#readme), whose [perf.c](https://github.com/Electry/PSVshell/blob/master/src/perf.c) reads the running process's own partition totals |
+| free memory in SceShell beside a game | 98,304 B and 28,672 B of its 50 MiB (two samples, different days). The overlay's `*main` plugin and the `*ALL` worker hold 540,672 B of that partition permanently at API 16 | `notes/26`, `notes/08`; [PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60) |
 | file mapping | VitaSDK has no `mmap`, so the weights must be read into RAM | the pinned SDK headers: no `sys/mman.h`, no map API |
-| how the weights are read | on every job that finds a line. The read goes through the kernel broker, because the game cannot see `ux0:`, in 8 KiB round trips with a 1 ms sleep each. SHA-256 is checked every time | [M/core/vocr_ocr.c#L192-L196](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.c#L192-L196), [#L144-L156](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.c#L144-L156); [M/game_ocr/main.c#L50-L67](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L50-L67); [M/kernel/game_ocr.c#L405-L436](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/kernel/game_ocr.c#L405-L436) |
-| stack | the worker thread has 32 KiB. The runtime and both line finders use 4,316 B of it (measured in Vita3K, section 3) | [M/game_ocr/main.c#L7](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L7) |
-| cores | user threads run on cores 0-2; core 3 is reserved for the system. The worker inherits the game's affinity and runs at the process's default priority (`0x10000100`) | vita-headers [cpu.h#L17-L23](https://github.com/vitasdk/vita-headers/blob/e66ebe90b73d1fa4cce005a5b2072cec27322544/include/psp2/kernel/cpu.h#L17-L23); [M/game_ocr/main.c#L202](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L202) |
+| how the weights are read | once per game session since [#54](https://github.com/bee-san/vita-jp-overlay/pull/54): through the kernel broker, because the game cannot see `ux0:`, in 32 KiB pieces with a bounded in-kernel wait instead of a 1 ms sleep, SHA-256 checked once, then kept in their own `USER_RW` block while the title is the active game (re-read when the file's size or time changes). Before #54: on every job that found a line, in 8 KiB round trips with a 1 ms sleep each | [`include/vjo_game_ocr.h#L13`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/include/vjo_game_ocr.h#L13); before: [M/core/vocr_ocr.c#L192-L196](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.c#L192-L196), [M/game_ocr/main.c#L50-L67](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L50-L67) |
+| stack | the worker thread has 32 KiB (plus at least 4 KiB of TLS, from the game's budget). The runtime and both line finders use 4,316 B of it (measured in Vita3K, section 3) | [`game_ocr/main.c#L8`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L8) |
+| cores and priority | a game may use three of the four A9 cores; the fourth is meant for kernel and system threads. The worker is created with the default priority and the default affinity mask, which for a game process mean priority 160 in the common ready queue and any of the three cores. The scheduler is fixed-priority and not time-sharing (below). The kernel plugin's worker thread runs at priority 60, above every game thread, pinned to core 0 | SDK `Programming-Startup_Guide` (CPU), `Kernel-Overview` (thread priority, CPU affinity mask, thread scheduling); vita-headers [cpu.h#L17-L23](https://github.com/vitasdk/vita-headers/blob/e66ebe90b73d1fa4cce005a5b2072cec27322544/include/psp2/kernel/cpu.h#L17-L23); [`game_ocr/main.c#L345`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L345); [`kernel/main.c#L484`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/kernel/main.c#L484) |
 | clock | 333 MHz by default (the shell's default; a game may ask for more). `scePowerSetArmClockFrequency` allows up to 444 MHz and works from a user plugin inside a game; oclockvita does it. 500 MHz needs kernel code. One clock drives all four cores. The overlay never changes it | [ScePower](https://wiki.henkaku.xyz/index.php?title=ScePower&oldid=21824), [Pervasive](https://wiki.henkaku.xyz/index.php?title=Pervasive&oldid=21701), [oclockvita.c](https://github.com/frangarcj/oclockvita/blob/63aa0442685a45c99bee433c6242032008aec740/oclockvita.c#L20-L21), PSVshell [main.c#L106-L123](https://github.com/Electry/PSVshell/blob/9a47b0eb22c60bdbddd8c7b5c9f1218c7e8a3037/src/main.c#L106-L123) |
 | caches | 32 KiB L1 I and 32 KiB L1 D per core, 32-byte lines. One **2 MiB, 16-way PL310 L2 is shared by all four cores**, with pseudo-random replacement and no L2 data prefetch. The "1 MB L2" sometimes quoted is 7-cpu.com's Exynos 4210, not the Vita | [Main Processor](https://wiki.henkaku.xyz/index.php?title=Main_Processor&oldid=21601) ("a L2 cache of 2 MiB shared by all cores"); [Caches](https://wiki.henkaku.xyz/index.php?title=Caches&oldid=21009): AUX_CTRL `0x60090001` = 16 ways × 128 KB, bits 25 and 28 clear ([Linux cache-l2x0.h#L125-L129](https://github.com/torvalds/linux/blob/v6.7/arch/arm/include/asm/hardware/cache-l2x0.h#L125-L129)) |
 
-**Why the game process is the right place.**
-- **SceShell plugin.** Correction: the pool that runs out is SceShell's 50 MiB partition, measured
-  at 28-98 KiB free beside a running game, from which every page of a `*main` plugin (module,
-  stacks, TLS, `USER_RW` blocks) is taken. The 5 MiB PAF heap, with about 2.4 MiB free beside
-  CLANNAD and as little as 0.19 MiB later, is a pre-mapped sub-pool inside it; exhausting the heap
-  starves the UI, exhausting the partition starves firmware (#59). A Shell plugin's whole budget is
-  genuinely under 2 MiB and SceShell wants that headroom itself (the expert's rule). That is why
-  ncnn, Meiki and VOCR all moved out of it, and why nothing of the recognizer may return.
+**Why the game process is the only place.**
+- **SceShell plugin.** The expert's rule: a plugin that competes with SceShell has a budget of
+  genuinely under 2 MiB, and SceShell wants that headroom itself (screenshots and the like). The
+  console agrees. Correction: the pool that runs out is SceShell's 50 MiB partition
+  (`ScePhyMemPartShell`), from which every page of a `*main` plugin (module, stacks, TLS,
+  `USER_RW` blocks) is taken; it had 28,672 B and 98,304 B free beside a running game. The 5 MiB
+  PAF heap, with about 2.4 MiB free beside CLANNAD and as little as 0.19 MiB later, is a pre-mapped
+  sub-pool inside it: exhausting the heap starves the UI, exhausting the partition starves
+  firmware, as in #59, where a SceShell thread of the firmware's own ran out of pages while our
+  plugins held 540,672 B of the partition
+  ([PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60)). That is why ncnn, Meiki and VOCR
+  all moved out of it, and why no weights, arena, dictionary or cache of the recognizer may go
+  back, at any size.
 - **Kernel plugin.** It would share the 36 MiB kernel-driver pool (`ScePhyMemPartKD`), whose free
   space is unknown. A 2 MiB full-frame capture buffer has already failed there once (section 2).
 - **Separate homebrew app.** It would get a game-sized budget, but only one game-budget app runs
   at a time, so it cannot OCR a game that is running. This is an inference; no source states it
   as a rule.
 
-**What one job allocates.** The workspace is one block
-([M/core/vocr_ocr.c#L64-L73](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.c#L64-L73)):
+**What one job allocates.** Since #54 there are two `USER_RW` blocks, each rounded up to 4 KiB
+pages: the verified weights, which stay while the title is the active game, and the job
+workspace ([`core/vocr_ocr.c`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/core/vocr_ocr.c), `layout`):
 
-> weights + max(line-finder arena, recognizer arena) + 3,760 B of runtime structs + the grey region (width × height), each part rounded up to 16 B
+> workspace = max(line-finder arena, recognizer arena) + 3,760 B of runtime structs + the grey region (width × height), each part rounded up to 16 B
 
 The finder's arena (83,323 B at 960×544) is smaller than every recognizer arena, so it adds nothing.
+The peak is the two blocks together; between jobs only the weights block remains.
 
-| model | 917×125 region (CLANNAD's box) | 960×544, full screen | free `USER` the preflight needs at 917×125 |
+| model | weights block (between jobs) | workspace, 917×125 (CLANNAD's box) / 960×544 | peak, 917×125 / full screen | free `USER` the first full-screen job needs (peak + 4 MiB) |
+|---|---|---|---|---|
+| FL10 | 659,456 B | 245,760 / 651,264 B | 905,216 / 1,310,720 B | 5.3 MiB |
+| always-safe limit (900,000 B, 131,072 B) | 901,120 B | 249,856 / 659,456 B | 1,150,976 / 1,560,576 B | 5.5 MiB |
+| H15 | 1,159,168 B | 303,104 / 712,704 B | 1,462,272 / 1,871,872 B | 5.8 MiB |
+| F20 | 1,560,576 B | 360,448 / 770,048 B | 1,921,024 / 2,330,624 B | 6.2 MiB |
+| ceiling (1,600,000 B, 262,144 B) | 1,601,536 B | 380,928 / 790,528 B | 1,982,464 / 2,392,064 B | 6.3 MiB |
+| width 3.0 | 2,682,880 B | 479,232 / 884,736 B | 3,162,112 / 3,567,616 B | 7.4 MiB |
+
+FL10's 905,216 B peak and 659,456 B resident block are the figures #54 computed for the console;
+the rest follow from the same formula. Before #54, one block held weights and workspace together
+(900,896 B for FL10 at 917×125, logged on the console). The kernel's capture buffer (region × 4 B:
+458,500 B at 917×125, allocated as 458,752 B in 4 KiB pages) comes from the kernel-driver pool
+(`ScePhyMemPartKD`, 36 MiB) and is the same for every model.
+
+### What the SDK gives a game, and what it takes back
+
+In our words, from the SDK's `Programming-Startup_Guide`, `Kernel-Overview`, `Kernel-Reference`,
+`Memory_Management-Tutorial` and `Scream-Overview` (release 3.55 documents):
+
+- A retail game gets 256 MiB of ordinary main memory plus 26 MiB of physically contiguous memory,
+  and up to 112 MiB of CDRAM. A title's `param.sfo` can ask for +29, +77 or +109 MiB more (the
+  "Large Memory Mode" of its application settings; Vita3K reads it as `ATTRIBUTE2 & 0x0C`). The
+  mode is fixed per title and cannot change while it runs; the larger modes also stop other
+  applications from running beside the game. CLANNAD's `param.sfo` has `ATTRIBUTE2=0` (`notes/26`):
+  plain 256 MiB.
+- Before `main()` runs, the system has already taken the game's own program, a 3 MiB kernel
+  reserve, libc (312 KiB), libfios (160 KiB), apputil (44 KiB) and the libc heap the title asked
+  for (256 KiB by default; titles set their own, and the SDK's audio samples set 16 MiB). After that, every
+  thread's stack and at least 4 KiB of TLS, and every PRX loaded through libsysmodule, come out of
+  the same budget. A plugin's module pages, its thread's 32 KiB stack and its TLS are charged to
+  the game in the same way, because taiHEN loads it into the game's process.
+- The SDK tells titles to allocate large blocks at startup and sub-allocate from them, because
+  the kernel allocator is slow and 4 KiB-granular. *Inference:* a title that follows this leaves a
+  free figure that is fixed once it has loaded, which is why one sample per title, at its first
+  dialogue, is informative; a title with per-scene heaps can move during a session.
+- `sceKernelGetFreeMemorySize` returns the free size minus a margin for the system, per pool
+  (main, CDRAM, phycont). It is a total, not a largest block; `USER_RW` blocks are 4 KiB pages
+  mapped into the game's address space, so a block of 1.6 MB fails only when the total is short
+  (*inference*: the SDK requires contiguity only of the PHYCONT types).
+- Limits a plugin shares with its game: 2,048 memory blocks and 128 threads per process. A title
+  that has used them up cannot start the worker thread; the game is unaffected, OCR unavailable.
+
+### What games leave free, and the rule that replaces a worst case
+
+| title | memory mode | free `USER` | source |
 |---|---|---|---|
-| FL10 | 900,896 B (logged on the console) | 1,308,496 B | 5.1 MB |
-| H15 | 1,457,312 B | 1,864,912 B | 5.7 MB |
-| F20 | 1,917,472 B | 2,325,072 B | 6.1 MB |
-| width 3.0 | 3,155,744 B | 3,563,344 B | 7.4 MB |
+| CLANNAD (PCSG00415) | plain 256 MiB (`ATTRIBUTE2=0`) | 91,226,112 B (87 MiB) before a job | `notes/27` (one logged sample), `notes/26` |
+| Stardew Valley | +109 MiB (365 MB shown) | about 56 MiB (309 of 365 MB used) | PSVshell README screenshot; its `perf.c` reads the running process's partition |
+| the 16 vita-test titles: Collar×Malice Unlimited, Sweet Clown, Saekano, BELIEVER!, Kenka Banchou Otome, Kin'iro no Corda 3 AnotherSky and 4, Utsusemi no Meguri, Utawarerumono Itsuwari no Kamen, Naderebo!, Piofiore, Akai Suna Ochiru Tsuki, VARIABLE BARRICADE, Gunka o Haita Neko, Reco Love Gold Beach, Time Travelers | unknown | **unmeasured** | `eval/manifests/vita-test.jsonl` (titles only) |
+| SceShell beside a game, for contrast | 50 MiB partition | 28,672 B; 98,304 B | `notes/08`, `notes/26`, PR #60 |
 
-The kernel's capture buffer (region × 4 B: 458,500 B at 917×125, allocated as 458,752 B in 4 KiB
-pages) comes from the kernel-driver pool (`ScePhyMemPartKD`, 36 MiB) and is the same for every
-model.
+- **No safe worst case follows from the budget.** Nothing in the SDK reserves memory for anyone
+  but the title, and the expert's rule says that a few games come close to the whole 256 MiB
+  (homebrew often does). Two games have been measured; both left more than 50 MiB. Visual novels
+  are 2D and usually light, but that is an expectation, not a figure: the 16 titles above have
+  not been measured, and the per-title number is now free, because since
+  [#55](https://github.com/bee-san/vita-jp-overlay/pull/55) every job, refused or not, logs
+  `game vocr memory: free USER=…`. The first session in each title fills the table.
+- **So the allowance is a rule, not a number.** Per job: free `USER` − 4 MiB reserve ≥ page-rounded
+  workspace + page-rounded weights (0 when they are already resident; another model's resident
+  block counts as free because it is released first). It refuses before anything is allocated,
+  logs the numbers, and tries the configured fallback when that is a pinned model needing less.
+  An always-safe model needs 5.5 MiB free for a full-screen job; a game that cannot spare that
+  gets no OCR, which is the right outcome.
+- **What the rule cannot see** is the game's own later allocations. The harm is bounded: the game
+  loses at most the resident block (≤ 1.6 MB at the ceiling), only while it is the active
+  foreground title, and never the last 4 MiB (more than the kernel's own 3 MiB pre-`main()`
+  reserve, and enough for the late allocations the SDK lists: threads and PRX loads). A title that
+  then fails for want of those bytes had under 1.6 MB of margin at that moment. Releasing the
+  weights after some minutes without a job would shrink the window further; the overlay releases
+  them today when the game is suspended, behind another app or disabled, when the file changes,
+  on a refused preflight, and at stop.
+- **The right structure is the current one:** a default from the ceiling tier with a fallback from
+  the always-safe tier (H15 with FL10 since
+  [#57](https://github.com/bee-san/vita-jp-overlay/pull/57)). A default from the always-safe tier
+  needs no fallback. Both still wait for their first console run (#59).
+
+### Which cores and which priority
+
+From the SDK's `Kernel-Overview` ("Thread Priority", "CPU Affinity Mask of Threads", "Thread
+Scheduling") and `Programming-Startup_Guide` ("CPU"), in our words:
+
+- A game may use three of the four Cortex-A9 cores. Kernel and system threads are meant to run on
+  the fourth, but some system work (system threads, interrupt handling) still lands on the three,
+  so a game may not assume its threads are never preempted.
+- The scheduler is fixed-priority and **not time-sharing**. Priorities run from 64 (highest) to
+  191; a game's default is 160. Priorities 64-127 go to a ready queue per core, 128-191 to one
+  common queue shared by the cores. A running thread is never preempted by a thread of the same or
+  lower priority; a higher-priority thread preempts it at once. The SDK recommends pairing a
+  common-queue priority with the all-cores mask (`SCE_KERNEL_CPU_MASK_USER_ALL`).
+- The worker is created with the defaults (`0x10000100`, mask 0): priority 160 in the common
+  queue, any of the three cores. **Consequence:** while it recognizes a line (up to about 0.7 s
+  for a ceiling model with the game holding half the L2), a game thread at priority 160 that
+  becomes ready cannot take that core; it waits for another core or for the worker to finish. On a
+  visual novel, which rarely keeps three cores busy (PSVshell's Stardew Valley screenshots show
+  cores 1 and 2 at 0-3%), that is invisible; on a title that does, it is a stutter of up to one
+  line.
+- **Recommendation to the overlay, one line:** create the worker at the lowest user priority
+  (`0x10000100 + 31`, which the kernel maps to 191 in a game) with `SCE_KERNEL_CPU_MASK_USER_ALL`,
+  the SDK's recommended pairing. Then every game thread preempts it, the game never waits for OCR,
+  and OCR runs only on cores the game leaves idle. The cost is a longer line on a busy title; the
+  Shell already waits up to 60 s for a job.
+- The kernel plugin's worker thread (`VjoWorker`, priority 60, mask `0x10000`; kernel masks use
+  bits 16-19 for cores 0-3, so this is core 0) outranks every game thread and runs on a game core
+  by the plugin's choice. It serves every 32 KiB model read (36 for H15, once per session since
+  #54) and every capture. Whether it belongs on the system core instead, and what it costs the
+  game, is a measurement question: the CPU3 impact cannot be computed from source. Until matched
+  PSVshell per-core readings exist (baseline against plugin, same clock, same scene, same
+  interval), it is **unmeasured**.
+- The L2 is one PL310 shared by the four cores; the game's share is unknown, and the tier table
+  assumes half. The SDK publishes no ARM clock figure (its power modes A, B and C set the GPU
+  clock), so 333 MHz stays the design clock, and CLANNAD's clock is unknown.
 
 ## 2. Why the overlay's OCR kept failing
 
@@ -165,25 +331,39 @@ VOCR2 and PP-OCRv6 small have never run on a console. PP-OCRv6 small
 ([#52](https://github.com/bee-san/vita-jp-overlay/pull/52), open) needs 23.7 MB of free game memory
 for a full-screen job and an estimated 3-10 s per line.
 
-**Still on main.** Problems that cost time or hide evidence (details and fixes in
-[#53](https://github.com/bee-san/vita-jp-overlay/issues/53)):
-1. **The weights are reloaded and re-hashed on every job.** This is the cost that grows with model
-   size (section 5, item 1).
-2. **A refused preflight hides its numbers.** It is logged as `workspace=0`, without the free
-   `USER` bytes, which are exactly the per-game figure a memory budget needs. The CTC frame count
-   is not logged either; with it, every console job would measure ms per frame.
-3. **Every out-of-memory error at the OCR stage gives the same advice.** It suggests a tighter
-   region and FL10, even when the kernel capture failed and the model is irrelevant
-   ([M/shell/worker.c#L580](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/shell/worker.c#L580)).
+**Fixed since, on the host only** (the three items of
+[#53](https://github.com/bee-san/vita-jp-overlay/issues/53), none yet run on a console):
+1. **The weights were reloaded and re-hashed on every job**, the cost that grew with model size.
+   [#54](https://github.com/bee-san/vita-jp-overlay/pull/54) keeps the verified weights resident
+   and reads them in 32 KiB pieces without sleeps.
+2. **A refused preflight hid its numbers.** [#55](https://github.com/bee-san/vita-jp-overlay/pull/55)
+   logs the free `USER` bytes, the needs and the reserve on every job, and the CTC frames per
+   line, so each console job measures ms per frame and each title reports its budget.
+3. **Every out-of-memory error gave the same advice.**
+   [#56](https://github.com/bee-san/vita-jp-overlay/pull/56) names the stage (kernel capture, game,
+   Shell).
 
-**Two corrections to earlier statements:**
-- **The overlay's device default is FL10, not H15.**
-  - `VJO_VOCR_DEFAULT_MODEL "H15_w8.vocr"`
-    ([M/core/vocr_ocr.h#L24](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.h#L24))
-    is only the host tools' default.
-  - The config default and the release package both set `FL10_w8.vocr`
-    ([M/core/config.c#L93](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/config.c#L93)).
-  - Every console log is FL10. **H15 has never run on a console.**
+**The first console test of that build failed in SceShell, not in the game**
+([#59](https://github.com/bee-san/vita-jp-overlay/issues/59), 2026-10-13). The API 16 build did not
+boot: SceShell's `SceLiveAreaDailyCronJob` died inside ScePaf with `0x80024302`, no free page in
+SceShell's 50 MiB partition. No OCR job had run. The root-cause analysis
+([PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60)) attributes it to the overlay's own
+permanent footprint in that partition: the `*main` plugin's module pages, its two thread stacks and
+TLS, and the `*ALL` worker that taiHEN loads into SceShell as well, 540,672 B in all, 36,864 B more
+than the API 13 build that boots, in a partition measured at 28,672-98,304 B free beside a game.
+The same mechanism explains issue #42 (a 65,544 B static buffer hung the boot). It is the clearest
+statement yet of the rule this document rests on: the recognizer's budget is the game's, and the
+Shell plugin must shrink, not grow. The fix (`NO_RESIDENT` for the worker outside games,
+`--gc-sections`, UI arenas allocated only while open, then the dictionary and the worker leaving
+SceShell for `*TITLEID` sections) is the overlay's work, outside this repo.
+
+**Corrections to earlier statements:**
+- **The overlay's default model is H15 with an automatic FL10 fallback since
+  [#57](https://github.com/bee-san/vita-jp-overlay/pull/57)** (`e759187`). Until then the config
+  default and the release package set `FL10_w8.vocr`
+  ([M/core/config.c#L93](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/config.c#L93));
+  `VJO_VOCR_DEFAULT_MODEL "H15_w8.vocr"` was only the host tools' default. Every console log is
+  still FL10: **H15 has never run on a console** (#59 is that test, and it has not reached a game).
 - **FL10 has run on a console:** a PCH-1001 on firmware 3.65, inside CLANNAD (`notes/26`, HW02 and
   HW15).
   - Per job: model load 213-359 ms and recognition 36-145 ms over 14 text-bearing jobs in two
@@ -393,57 +573,47 @@ Code size, VitaSDK gcc 15.2 `-O2` Thumb-2 at `2873b98`: `vocr.o` is 14,583 B wit
 
 ## 4. What one OCR job costs on the console
 
-A job runs capture, line finding, model load, then recognition of each detected line, one after
-another on one core.
+A job runs capture, line finding, then recognition of each detected line, one after another on
+one core. Since #54 the model load happens once per game session (the first job that finds a
+line), not per job.
 
-| model | line finding (FL10, measured) | model load, today's loader | est. recognition, 3 lines of 640 px, 333 MHz | total today (est.) | est. without the reload, at 444 MHz |
-|---|---|---|---|---|---|
-| FL10 | 34-38 ms | 213-359 ms (measured) | 0.37-0.71 s | 0.62-1.10 s | 0.31-0.57 s |
-| H15 | same | 0.37-0.63 s (est.) | 0.66-1.19 s | 1.07-1.86 s | 0.53-0.93 s |
-| F20 | same | 0.50-0.85 s (est.) | 0.93-1.64 s | 1.47-2.53 s | 0.74-1.27 s |
-| width 3.0 | same | 0.87-1.46 s (est.) | 1.68-3.70 s | 2.58-5.20 s | 1.29-2.93 s |
+| model | line finding (FL10, measured) | first-job load, once per session (est.) | est. recognition, 3 lines of 640 px, 333 MHz, whole L2 | the same, game holding half the L2 | later jobs, 333 MHz, half the L2 (est.) | later jobs, 444 MHz, whole L2 (est.) |
+|---|---|---|---|---|---|---|
+| FL10 | 34-38 ms | 0.13-0.15 s | 0.37-0.71 s | 0.37-0.71 s | 0.41-0.74 s | 0.31-0.57 s |
+| H15 | same | 0.23-0.26 s | 0.66-1.19 s | 0.66-1.31 s | 0.69-1.35 s | 0.53-0.93 s |
+| F20 | same | 0.31-0.36 s | 0.93-1.64 s | 0.93-2.06 s | 0.97-2.10 s | 0.74-1.27 s |
+| width 3.0 | same | 0.53-0.61 s | 1.68-3.70 s | 1.68-3.84 s | 1.71-3.88 s | 1.29-2.93 s |
 
-**Load-time estimate.** It scales FL10's measured 213-359 ms by blob bytes. That is plausible,
-because every part of the load grows with the file. Estimated breakdown for FL10:
-
-| part | for FL10 | how it was estimated |
-|---|---|---|
-| sleeps | at least 81 ms | 81 kernel round trips of 8 KiB, at least 1 ms each |
-| card read | about 86 ms | the official memory card at about 7.6 MB/s, a Digital Foundry figure quoted second-hand |
-| SHA-256 over the whole file | 40-60 ms | 20-30 cycles per byte at 333 MHz; not measured |
-| **total** | **about 210-230 ms** | |
-
-That total matches the low end of the measured 213-359 ms. A median three-line box takes about half
-the recognition column.
+**Load-time estimate.** Before #54 the load was measured at 213-359 ms per FL10 job and estimated
+to be: at least 81 ms of sleeps (81 kernel round trips of 8 KiB, at least 1 ms each), about 86 ms
+of card read (the official memory card at about 7.6 MB/s, a Digital Foundry figure quoted
+second-hand) and 40-60 ms of SHA-256 over the whole file (20-30 cycles per byte at 333 MHz; not
+measured): about 210-230 ms, the low end of the measurement. #54 removes the sleeps and the
+repeat, so the first job of a session pays the read and the hash, about 0.13-0.15 s for FL10
+(#54's own estimate), scaled by blob bytes for the others; later jobs pay an open, a stat and a
+close, a few ms. None of this has been measured since #54 (#59). A median three-line box takes
+about half the recognition columns.
 
 ## 5. Buying capacity cheaply
 
 In order of value per effort. Items 1-3 are overlay changes; nothing in `runtime/` has to change.
 
-1. **Stop reloading the weights on every job** (vita-jp-overlay
-   [#53](https://github.com/bee-san/vita-jp-overlay/issues/53); done in #54: the verified weights
-   now stay resident in their own `USER_RW` block in the game, 659,456 B for FL10 and 1,159,168 B
-   for H15 page-rounded, and the kernel stage is 32 KiB with a wait instead of a 1 ms sleep).
-   Any one of these:
-   - wait on the kernel's completion instead of a 1 ms sleep loop, or raise the 8 KiB kernel stage
-     to the game's 32 KiB read size;
-   - hash once per session;
-   - keep the verified weights in their own `USER_RW` block while the title is enabled and in the
-     foreground (657,664 B for FL10, 1,155,968 B for H15), under the same preflight.
-
-   This saves 0.2-0.36 s per FL10 job today and an estimated 0.50-0.85 s per F20 job. Resident
-   weights hold 0.7-1.6 MB of the game's memory for the session instead of per job. That is small
-   next to the 56-87 MiB seen free.
+1. **Stop reloading the weights on every job.** Done in
+   [#54](https://github.com/bee-san/vita-jp-overlay/pull/54): a bounded in-kernel wait instead of
+   the 1 ms sleep loop, a 32 KiB kernel stage, one hash per session, and the verified weights kept
+   in their own `USER_RW` block while the title is the active game, under the same preflight. It
+   saves 0.2-0.36 s per FL10 job and an estimated 0.5-0.85 s per F20 job, for 0.66-1.6 MB of the
+   game's memory held for the session instead of per job. Not yet run on a console (#59).
 2. **Ask for 444 MHz during a job.** Call `scePowerSetArmClockFrequency(444)`, then restore the
    game's clock afterwards.
    - Compute-bound work gets 1.33× faster, which pays for a model a third bigger at the same
      latency. It costs battery while the job runs.
    - Unknown: whether the L2 then runs at 222 or 444 MHz (the Pervasive table lists both).
-3. **Use a second core for multi-line boxes.** Run one line per thread on cores 1 and 2, below the
-   game's priority.
+3. **Use a second core for multi-line boxes.** Run one line per thread, below the game's priority
+   (section 1: with the default priority a game thread of the same priority would wait behind it).
    - The runtime allows this as it is: one context and arena per thread, one shared model.
    - A box of two or more lines then takes about half as long, for one more arena (183 KB for H15)
-     and 32 KiB of stack.
+     and 32 KiB of stack plus 4 KiB of TLS.
    - The two threads share one copy of the weights in the L2, but both arenas count against it.
      H15 with two arenas is 1.52 MB and fits. F20 with two is 2.04 MB, 97% of the L2, leaving no
      room for the game.
@@ -472,15 +642,25 @@ In order of value per effort. Items 1-3 are overlay changes; nothing in `runtime
 
 ## 6. What would turn these estimates into measurements
 
+- **Run the overlay's console test** ([#59](https://github.com/bee-san/vita-jp-overlay/issues/59),
+  `docs/console-test.md` there), once the boot failure's fix has merged behind its boot-safety
+  guard. Since #55 every job logs `game vocr speed: … us per frame` and
+  `game vocr memory: free USER=…`, so ten pages of CLANNAD give the first on-console ms per frame
+  for H15 and the FL10 fallback, and the first per-title budget line.
+- **Fill the per-title table** (section 1): one session per title of the library, reading the
+  `memory:` line (`sceKernelGetFreeMemorySize().sizeMain` inside the game), with the title's
+  memory mode from its `param.sfo` (`ATTRIBUTE2`). This is the only number that can make RAM the
+  limit for a model; SceShell's figures cannot (`vita-platform-memory.md`). Adrenaline, which runs
+  PSP VNs, is unmeasured too. The tiers change only if a title refuses an always-safe job.
 - **Run `vita/`'s test app on a PCH-1000** (`vita/README.md`, "On a PCH-1000"), with `clock=333`
   and `clock=444`. If ScePerf works on retail firmware, its counters replace the cycle model.
-- **Add two numbers to the overlay's log** (#53): line frames with each job's recognition time, and
-  the free `USER` bytes on every refusal. That gives on-console ms per frame and per-title memory
-  budgets.
-- **Measure free memory in the Japanese VNs that matter**, with PSVshell or
-  `sceKernelGetFreeMemorySize` (`sizeMain`, inside the game). Two samples (CLANNAD, Stardew Valley)
-  are all there is. Adrenaline, which runs PSP VNs, is unmeasured. This is the only number that can
-  make RAM the limit for a model; SceShell's figures cannot (`vita-platform-memory.md`).
+- **Measure the cores**, with PSVshell: per-core busy percentages for a baseline (no overlay) and
+  for the plugin set, at the same clock, scene and interval, during ten pages of auto OCR. That is
+  the only admissible evidence on the kernel worker's cost on core 0 and on the system core; it
+  cannot be computed from source.
+- **Sample SceShell's free memory at boot and at game launch** in both plugin sets (#60's plan):
+  it settles whether the 36,864 B growth was the trigger of #59, and it is the number any future
+  Shell-side change must be checked against.
 - **Still unknown:**
   - the game's share of the L2;
   - DRAM bandwidth and latency on a Vita;
@@ -505,7 +685,7 @@ $S --l2 2048,512 --tile 16 --head 64 --only H15,F20,w300,w400
 $S --l2 2048,512 --tile 4 --head 64 --only H15,F20
 $S --l2 2048,1024 --l2-ways 16 --only H15,F20,w250,w300
 python vita/budget_sweep.py table --dir $D                       # the tables above
-python vita/budget_sweep.py check my_model_w8.vocr               # a trained blob against the ceiling
+python vita/budget_sweep.py check my_model_w8.vocr               # a trained blob against the ceiling, with its tier
 python vita/budget_sweep.py ckpt --name w300 --out w300.pt       # for vita/bundle.py --ckpt w300.pt
                                                                  #   --sets synth-val --modes w8i, then run_vita3k.sh
 ```

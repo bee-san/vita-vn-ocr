@@ -41,7 +41,9 @@ table: the Markdown tables of docs/vita-memory-budget.md from sizes.json and the
 check: the ceiling of docs/vita-memory-budget.md for a trained candidate. The blob bytes, the W8I arena at
   the runtime's default tiling (export.plan_arena) and the high end of the estimated W8I time of an
   80-frame (640-px) line on one 333 MHz Cortex-A9 core, from the same a9 run as above (2 MiB L2, the
-  first --lines synth-val lines, so no protected test line is read). Run it through heavy.sh.
+  first --lines synth-val lines, so no protected test line is read). It also names the blob's tier
+  (TIERS: "always" fits beside a game holding half the L2; "preflight" is the ceiling; "never" is
+  beyond it). Run it through heavy.sh.
 
 Everything about console speed here is an estimate from a cycle model, not a measurement.
 """
@@ -79,9 +81,31 @@ BASE = (2048, DEFAULT_TILE, DEFAULT_HEAD, L2_WAYS, "lru", 0)   # a9_cycles.py's 
 # end of the estimated ms per 640-px line on one Cortex-A9 core at 333 MHz (W8I, 2 MiB L2).
 CEILING = {"weights": 1_600_000, "arena": 262_144, "ms": 550, "mhz": 333}
 
+# The three tiers of docs/vita-memory-budget.md, for a recognizer in the game's process. "always":
+# blob + arena stay under 1 MiB, so they fit beside a game that holds half of the shared 2 MiB L2,
+# and a job holds at most about 1.5 MiB of the game's memory at its peak. "preflight": CEILING,
+# which needs the overlay's free-memory check and a fallback model from the "always" tier. Beyond
+# the ceiling is "never".
+TIERS = (("always", {"weights": 900_000, "arena": 131_072, "ms": 300, "mhz": 333}),
+         ("preflight", CEILING))
+TIER_NEVER = "never"
+
 
 def status_line(c=CEILING):
     return f"BUDGET_READY weights<={c['weights']} arena<={c['arena']} ms<={c['ms']}"
+
+
+def tiers_line():
+    parts = [f"{name}: weights<={c['weights']} arena<={c['arena']} ms<={c['ms']}" for name, c in TIERS]
+    return "BUDGET_TIERS " + "; ".join(parts) + f"; {TIER_NEVER}: beyond"
+
+
+def tier(info, run):
+    """The name of the smallest tier whose three limits a blob meets, or TIER_NEVER."""
+    for name, c in TIERS:
+        if all(r[3] for r in verdict(info, run, c)):
+            return name
+    return TIER_NEVER
 
 
 # name: (width, bottleneck, depth, ctx, ctx_k, classes, height). Classes include the CTC blank.
@@ -357,10 +381,13 @@ def cmd_check(args):
     runs = load_runs(out)
     ok = True
     for name, info in sizes.items():
-        rows = verdict(info, runs[(name, *BASE)])
+        run = runs[(name, *BASE)]
+        rows = verdict(info, run)
         ok &= all(r[3] for r in rows)
-        print(f"{name}: " + "; ".join(f"{w} {v:,} <= {lim:,} {'ok' if good else 'OVER'}" for w, v, lim, good in rows))
+        print(f"{name}: " + "; ".join(f"{w} {v:,} <= {lim:,} {'ok' if good else 'OVER'}" for w, v, lim, good in rows)
+              + f"; tier: {tier(info, run)}")
     print(status_line())
+    print(tiers_line())
     sys.exit(0 if ok else 1)
 
 

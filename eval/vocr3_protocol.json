@@ -57,15 +57,18 @@
    "script": "eval/vocr3_run.sh W20 ARM 1 (study 2's recipe at width 2.0, 32,000 pretrain steps as train2's p20; outputs under $HERD/shared/artifacts/synth3/vocr3/runs)",
    "rule": "all three are candidates and all three must finish before the W20 selection; there is no study-2 decision at this width. B_s3 is included because study 1's H15-width secondary favoured synth3 alone (B - A -0.52, CI -0.80 to -0.25; one seed)",
    "lw": {
-    "run": "ft_LW_<ARM>_seed1 (amendment 6): the late-wide channel layout --chans 48,96,192,320,384 (data/vocab.txt, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32), the W20 recipe (32,000 pretrain steps + the CLANNAD-free 15,000-step fine-tune), ARM = the arm study 2's H15 decision recommends (A_s2 if it finds no measured difference)",
-    "rule": "a W20-class candidate like the three above, selected by the same base rule and budget check; it must finish before the W20-class selection"
-   }
+    "run": "ft_LW_A_s2_seed1 (amendments 6 and 7): the late-wide channel layout --chans 48,96,192,320,384 (data/vocab.txt, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32), the W20 recipe (32,000 pretrain steps + the CLANNAD-free 15,000-step fine-tune), arm A_s2 because study 2's H15 decision found no measured difference (eval/synth3_study2_H15_20261013.json: C - A -0.14, VN-cluster CI -0.30 to +0.02; recommended A_s2); eval/vocr3_run.sh LW A_s2 1",
+    "rule": "a W20-class candidate like the three above (listed in candidates.W20.extra so the selection tool sees it), selected by the same base rule and budget check; it must finish before the W20-class selection",
+    "code": "train2 --chans from PR #58 (bee-san/vita-vn-ocr, head a4b6202; the independent audit reports/audit-arch.md found the default model path bit-identical to main and the --chans path correct), run from a runner commit that merges feat/vocr3 with that head before the PR is merged; valid only if the merged main's train/model.py, train/train2.py, train/export.py and eval/backends.py are byte-identical to a4b6202's (recorded with the W20-class selection); otherwise the run is discarded and redone from main"
+   },
+   "extra": ["ft_LW_A_s2_seed1"],
+   "extra_rule": "amendments 6 and 7: the LW candidate above"
   },
   "realplus": {
    "FL10": {"decision_pairs": [["ft_FL10_A_s2_seed1", "rp_FL10_A_s2_seed1"], ["ft_FL10_A_s2_seed2", "rp_FL10_A_s2_seed2"], ["ft_FL10_A_s2_seed3", "rp_FL10_A_s2_seed3"], ["ft_FL10_C_mix_seed1", "rp_FL10_C_mix_seed1"], ["ft_FL10_C_mix_seed2", "rp_FL10_C_mix_seed2"], ["ft_FL10_C_mix_seed3", "rp_FL10_C_mix_seed3"]], "extra_runs": ["rp_FL10_C_mix_pre64k_seed1", "rp_FL10_C_mix_pre128k_seed1"]},
    "H15": {"decision_pairs": [["ft_H15_A_s2_seed1", "rp_H15_A_s2_seed1"], ["ft_H15_A_s2_seed2", "rp_H15_A_s2_seed2"], ["ft_H15_C_mix_seed1", "rp_H15_C_mix_seed1"], ["ft_H15_C_mix_seed2", "rp_H15_C_mix_seed2"]], "extra_runs": ["rp_H15_B_s3_seed1"]},
-   "W20": {"decision_pairs": [["ft_W20_C_mix_seed1", "rp_W20_C_mix_seed1"], ["ft_W20_A_s2_seed1", "rp_W20_A_s2_seed1"], ["ft_W20_B_s3_seed1", "rp_W20_B_s3_seed1"]], "extra_runs": []},
-   "note": "amendment 4"
+   "W20": {"decision_pairs": [["ft_W20_C_mix_seed1", "rp_W20_C_mix_seed1"], ["ft_W20_A_s2_seed1", "rp_W20_A_s2_seed1"], ["ft_W20_B_s3_seed1", "rp_W20_B_s3_seed1"]], "extra_runs": ["rp_LW_A_s2_seed1"]},
+   "note": "amendment 4; W20's extra run rp_LW_A_s2_seed1 by amendments 6 and 7"
   },
   "variants": {
    "status": "optional; each is trained only if its precondition holds, and enters the candidate list only through the ablation rule below",
@@ -162,6 +165,12 @@
    "date": "2026-10-13 (commit time in git), before any VOCR3 candidate was scored",
    "change": "The largest size class (W20) gets a fourth candidate, LW (candidates.W20.lw): train/train2.py --chans 48,96,192,320,384 (per-stage channels: H15's early stages, F20's later ones), trained with the W20 recipe and the arm study 2's H15 decision recommends, seed 1, from the code that adds --chans once it is merged to main; and its realplus fine-tune rp_LW_<ARM>_seed1 as an extra rp run of the W20 class (amendment 4). Its blob must pass vita/budget_sweep.py check like every candidate (random-init blob of the shape: 1,473,280 B, W8I arena 192,928 B, est. 261-468 ms per 640-px line at 333 MHz).",
    "reason": "Agent arch-research's 5,000-step proxies (train2 from scratch, teacher_val only, raw weights, one seed each): LW 5.55% CER against H15 6.13% / 5.95% (two seeds) and F20 5.44%; LW - H15 seed 1 -0.58 (VN-cluster CI -0.91 to -0.26), LW - F20 +0.11 (CI -0.19 to +0.42), at an estimated 85% of F20's A9 time. Training-only options (--rep re-parameterisation, --guide NRTR) are left for a later round: --rep trains 1.6x slower and --guide had no proxy result. Known before this amendment: study 2's FL10 result and test report; no W20-class or H15 study-2 run had been scored.",
+   "unchanged": "everything else"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before any W20-class candidate was scored",
+   "change": "Amendment 6's LW candidate is resolved: ARM = A_s2 (study 2's H15 decision, eval/synth3_study2_H15_20261013.json computed 2026-10-13T07:57:22Z: no measured difference, C - A -0.14 points, VN-cluster CI -0.30 to +0.02, both seeds negative; devnative -0.11, CI -0.30 to +0.08; recommended A_s2), so the runs are ft_LW_A_s2_seed1 (candidates.W20.extra) and rp_LW_A_s2_seed1 (candidates.realplus.W20.extra_runs). The run may start before PR #58 is merged, from a runner commit that merges feat/vocr3 with the PR's audited head a4b6202 (the independent audit, reports/audit-arch.md, found the default model path bit-identical to main and the --chans path correct; what remains before its merge is documentation), on the condition that the merged main's train/model.py, train/train2.py, train/export.py and eval/backends.py are byte-identical to a4b6202's; the check is recorded with the W20-class selection, and if it fails the run is discarded and redone from main.",
+   "reason": "The W20 class is the last to finish and LW its last run; starting it at the H15 decision instead of after the merge saves about 1.5 h on the path to the locked report without changing what trains. Known before this amendment: study 2's FL10 and H15 results and the FL10 test report; no W20-class or VOCR3 selection score; the audit verdicts on PRs #56 and #58 (#57 merged).",
    "unchanged": "everything else"
   }
  ]

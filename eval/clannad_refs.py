@@ -43,6 +43,7 @@ import datetime
 import hashlib
 import json
 import random
+import re
 import sys
 from pathlib import Path
 
@@ -222,6 +223,8 @@ def cmd_arms(a):
     import vocr3_report as R
     rows, meta = load_lines(a.work)
     work = Path(a.work)
+    if a.extra:
+        return extra_arms(a, rows, meta)
     if (work / "refs.freeze.json").exists():
         raise SystemExit("references are frozen; arms ran before them and never run again")
     arms = protocol_arms(a.blobs)
@@ -246,6 +249,58 @@ def cmd_arms(a):
             "environment": R.environment(), "created": now()}
     write_json(work / "arms.meta.json", info)
     print(json.dumps({"lines": len(out), "cache_check": info["cache_check"], "arms_sha256": sha}))
+
+
+SUFFIX = re.compile(r"[a-z0-9][a-z0-9_-]{0,31}")
+
+
+def parse_extra(text):
+    """NAME=FILE#SHA256 (the sha256 is required: a later model is scored only by its pinned bytes)."""
+    m = re.fullmatch(r"([A-Za-z0-9][A-Za-z0-9_.+-]{0,63})=([^#]+)#([0-9a-f]{64})(?:@(grad|textbox))?", text)
+    if not m:
+        raise SystemExit(f"--extra {text!r}: want NAME=FILE#SHA256[@finder]")
+    return {"name": m.group(1), "file": m.group(2), "sha256": m.group(3), "finder": m.group(4) or "grad"}
+
+
+def extra_arms(a, rows, meta):
+    """Later blobs (for example VOCR4) read the same crops after the references are frozen: they can never be
+    an R2 candidate. Writes arms.<suffix>.jsonl / .meta.json exclusively; the protocol's arms are untouched."""
+    import vocr3_report as R
+    work = Path(a.work)
+    into = Path(a.into or work)            # WORK itself, or another agent's own directory (WORK read-only)
+    if not (work / "refs.freeze.json").exists():
+        raise SystemExit("extra arms run only after refs.freeze.json exists")
+    if not a.suffix or not SUFFIX.fullmatch(a.suffix):
+        raise SystemExit("--suffix [a-z0-9_-]{1,32} is required with --extra")
+    specs = [parse_extra(x) for x in a.extra]
+    taken = {x["name"] for x in protocol()["arms"]} | {LENS, CACHED}
+    if {s["name"] for s in specs} & taken or len({s["name"] for s in specs}) != len(specs):
+        raise SystemExit(f"extra arm names must be unique and differ from {sorted(taken)}")
+    arms = [R.Arm(s, a.blobs) for s in specs]
+    native = R.build_native(into / f"native.{a.suffix}", a.compiler)
+    lib = R.load_library(native)
+    readers = {x.name: R.CReader(x, lib) for x in arms}
+    out = []
+    for r in rows:
+        g = np.ascontiguousarray(load_grey(meta["session"], r["line"]))
+        out.append({"id": r["id"], **{n: rd.text(g, False) for n, rd in readers.items()}})
+    sha = write_jsonl(into / f"arms.{a.suffix}.jsonl", out, exclusive=True)
+    write_json(into / f"arms.{a.suffix}.meta.json", {
+        "suffix": a.suffix, "lines": len(out), "arms_sha256": sha, "lines_sha256": meta["lines_sha256"],
+        "arms": {x.name: x.identity() for x in arms}, "resources": {x.name: R.resources(x, lib) for x in arms},
+        "native": R.public_native(native), "forwards": {n: rd.forwards for n, rd in readers.items()},
+        "after_freeze": json.loads((work / "refs.freeze.json").read_text(encoding="utf-8"))["refs_sha256"],
+        "code_sha256": R.code_identity(R.CODE + ("eval/clannad_refs.py",)), "environment": R.environment(),
+        "created": now()}, exclusive=True)
+    print(json.dumps({"suffix": a.suffix, "lines": len(out), "arms": [x.name for x in arms], "sha256": sha}))
+
+
+def load_extra(into, suffix):
+    work = Path(into)
+    meta = json.loads((work / f"arms.{suffix}.meta.json").read_text(encoding="utf-8"))
+    if sha256_file(work / f"arms.{suffix}.jsonl") != meta["arms_sha256"]:
+        raise ValueError(f"arms.{suffix}.jsonl changed since it was written")
+    return {r["id"]: r for r in read_jsonl(work / f"arms.{suffix}.jsonl")}, meta
 
 
 def load_arms(work, proto=None):
@@ -428,9 +483,11 @@ any repository. You only view the sheets here and write decisions.jsonl in this 
 {intro}
 
 Each sheet `Sxxx.png` (at most 1280 x 1280 px) shows numbered entries. An entry is one text line that the
-console's line finder cut from a CLANNAD screenshot: the red frame marks the crop; around it is a little of the
-screen for context. Under the image are numbered candidate readings; characters that differ from candidate 1 are
-red. `Sxxx.json` lists the same entries with each candidate's exact text, so you can copy it.
+console's line finder cut from a CLANNAD screenshot: the red frame marks the crop, shown at full brightness;
+around it, dimmed, is a little of the screen for context (dimmed pixels are outside the crop). Under the image
+are numbered candidate readings; characters that differ from candidate 1 are red. `Sxxx.json` lists the same
+entries with each candidate's exact text, so you can copy it. A wide frame over the scene art often holds just
+a speaker's name plate: the dialogue line below it, dimmed, is outside the frame (it is its own entry).
 
 Decide what the framed crop says: the characters inside the red frame, left to right. Conventions (the
 benchmark's):
@@ -485,6 +542,17 @@ def native_box(row):
     return [x + rx, y + ry, x + w + rx, y + h + ry]
 
 
+DIM = 0.45      # context outside the frame is drawn at this brightness: what is inside the crop stands out
+
+
+def dimmed(rgb, box):
+    """A copy of the frame with everything outside box darkened (the crop itself unchanged)."""
+    out = (rgb.astype(np.float32) * DIM).astype(np.uint8)
+    x0, y0, x1, y1 = box
+    out[y0:y1, x0:x1] = rgb[y0:y1, x0:x1]
+    return out
+
+
 def make_batch(entries, out, rnd, session, name=None):
     """entries: [(line row, candidates)] numbered 1..N. Writes README, Sxxx.png / Sxxx.json, batch.json."""
     import clannad_longrun as LR
@@ -501,7 +569,8 @@ def make_batch(entries, out, rnd, session, name=None):
             cache.clear()
             cache[src] = LR.verified_image(Path(session), row["source"])
         box = native_box(row)
-        blocks.append(S.render_entry(cache[src], {"ink": box}, "vita", n, cands, False, fonts, frame=box))
+        blocks.append(S.render_entry(dimmed(cache[src], box), {"ink": box}, "vita", n, cands, False, fonts,
+                                     frame=box))
     sheets, sizes = S.pack(blocks)
     index = []
     for si, (members, (w, h)) in enumerate(zip(sheets, sizes), 1):
@@ -560,6 +629,8 @@ def cmd_sheets(a):
     work, out = Path(a.work), Path(a.out)
     if (work / "refs.freeze.json").exists():
         raise SystemExit("references are frozen")
+    if a.round == "r2" and a.batch:
+        return r2_from_batch(work, Path(a.batch), out)
     entries = round_entries(work, a.round)
     _, meta = load_lines(work)
     made = []
@@ -571,6 +642,34 @@ def cmd_sheets(a):
     write_json(work / f"{a.round}.sheets.json", {"round": a.round, "out": str(out), "batches": made,
                                                  "lines": len(entries), "ids": [e[0]["id"] for e in entries],
                                                  "created": now()})
+
+
+def r2_from_batch(work, r1_batch, out):
+    """R2 for the lines of one finished R1 batch (other sessions read it), registered in r2.sheets.json."""
+    batch, sheets = load_batch(r1_batch)
+    if batch.get("round") != "r1":
+        raise SystemExit(f"{r1_batch} is not an R1 batch")
+    d1 = {r["id"]: dict(r, round="r1") for r in parse_decisions(
+        (r1_batch / "decisions.jsonl").read_text(encoding="utf-8"), sheets, r1_batch.name)}
+    rows, meta = load_lines(work)
+    eng = {r["id"]: r for r in read_jsonl(work / "engines.jsonl")}
+    arms, _ = load_arms(work)
+    names = [x["name"] for x in protocol()["arms"]]
+    ids = [x["id"] for x in batch["index"]]
+    by = {r["id"]: r for r in rows}
+    entries = [(by[i], r2_candidates(i, d1[i], eng[i], by[i]["lens"], [arms[i][n] for n in names])) for i in ids]
+    n = make_batch(entries, out, "r2", meta["session"], name=f"clannad-r2/{out.name}")
+    reg_path = work / "r2.sheets.json"
+    reg = json.loads(reg_path.read_text(encoding="utf-8")) if reg_path.exists() else \
+        {"round": "r2", "batches": [], "ids": [], "lines": 0}
+    if set(ids) & set(reg["ids"]):
+        raise SystemExit("some of these lines already have an R2 batch")
+    reg["batches"].append({"batch": out.name, "dir": str(out), "from": str(r1_batch), "lines": len(ids), "sheets": n})
+    reg["ids"] += ids
+    reg["lines"] = len(reg["ids"])
+    reg["updated"] = now()
+    write_json(reg_path, reg)
+    print(f"{out}: {len(ids)} lines, {n} sheets (from {r1_batch.name})")
 
 
 # ----------------------------------------------------------------------------- collect
@@ -641,6 +740,7 @@ def cmd_refs(a):
     rounds = {rnd: json.loads((work / f"{rnd}.collect.json").read_text(encoding="utf-8"))
               for rnd in ROUNDS if (work / f"{rnd}.collect.json").exists()}
     freeze = {"refs_sha256": sha, "lines_sha256": meta["lines_sha256"], "rounds": rounds,
+              "protocol_sha256": sha256_file(PROTOCOL_PATH),
               "counts": dict(collections.Counter(r["why"] for r in refs)),
               "scored_lines": sum(r["status"] == "ref" for r in refs), "frozen": now()}
     write_json(work / "refs.freeze.json", freeze, exclusive=True)
@@ -815,20 +915,37 @@ def cmd_score(a):
     freeze = json.loads((work / "refs.freeze.json").read_text(encoding="utf-8"))
     if sha256_file(work / "refs.jsonl") != freeze["refs_sha256"]:
         raise SystemExit("refs.jsonl differs from the freeze record")
-    attempt = work / "score.attempt.json"
+    if freeze.get("protocol_sha256", sha256_file(PROTOCOL_PATH)) != sha256_file(PROTOCOL_PATH):
+        raise SystemExit(f"{PROTOCOL_PATH.name} differs from the one the references were frozen under")
+    tag = f".{a.suffix}" if a.suffix else ""
+    if a.suffix and not SUFFIX.fullmatch(a.suffix):
+        raise SystemExit("bad --suffix")
+    into = Path(a.into or work) if a.suffix else work
+    attempt = into / f"score{tag}.attempt.json"
     write_json(attempt, {"started": now(), "refs_sha256": freeze["refs_sha256"]}, exclusive=True)   # once
     rows, meta = load_lines(work)
     arms, ameta = load_arms(work, proto)
     refs = read_jsonl(work / "refs.jsonl")
     names = [x["name"] for x in proto["arms"]]
     pairs = [tuple(p) for p in proto["pairs"]]
+    extra_meta = None
+    if a.suffix:
+        extra, extra_meta = load_extra(into, a.suffix)
+        if extra_meta["after_freeze"] != freeze["refs_sha256"]:
+            raise SystemExit("the extra arms did not read these frozen references' session")
+        arms = {i: {**arms[i], **extra[i]} for i in arms}
+        names += list(extra_meta["arms"])
+        pairs = [tuple(p.split(":")) for p in a.pair]
+        known = set(names) | {LENS, CACHED}
+        if not pairs or any(len(p) != 2 or not set(p) <= known for p in pairs):
+            raise SystemExit(f"--pair CAND:BASE over {sorted(known)} is required with --suffix")
     scores, private = score_all(rows, refs, arms, names, pairs=pairs)
     scored_ids = {x["id"] for x in refs if x["status"] == "ref"}
     result = {"schema": 1, "kind": "clannad-refs-result", "protocol_sha256": sha256_file(PROTOCOL_PATH),
               "session": {k: meta[k] for k in ("pages", "excluded_pages", "lines", "lock_sha256", "captures_sha256",
                                                 "comparisons_sha256")},
-              "references": {"freeze": {k: freeze[k] for k in ("refs_sha256", "lines_sha256", "counts",
-                                                               "scored_lines", "frozen")},
+              "references": {"freeze": {k: freeze.get(k) for k in ("refs_sha256", "lines_sha256", "protocol_sha256",
+                                                                   "counts", "scored_lines", "frozen")},
                              "rounds": {k: {"lines": v["lines"], "sha256": v["sha256"],
                                             "decision_files_sha256": v["decision_files_sha256"]}
                                         for k, v in freeze["rounds"].items()},
@@ -842,13 +959,18 @@ def cmd_score(a):
               "environment": {k: ameta["environment"][k] for k in ("python", "system", "machine", "libc", "packages")},
               "lines_sha256": meta["lines_sha256"], "arms_sha256": ameta["arms_sha256"],
               "training_or_selection_use": False, "created": now()}
+    if extra_meta:
+        result.update(kind="clannad-refs-extra-result", suffix=a.suffix, pairs_requested=[":".join(p) for p in pairs],
+                      extra_arms=extra_meta["arms"], extra_resources=extra_meta["resources"],
+                      extra_native=extra_meta["native"], extra_arms_sha256=extra_meta["arms_sha256"],
+                      extra_code_sha256=extra_meta["code_sha256"])
     assert_public(result)
-    write_jsonl(work / "score.private.jsonl", private, exclusive=True)
+    write_jsonl(into / f"score{tag}.private.jsonl", private, exclusive=True)
     write_json(Path(a.out), result, exclusive=True)
     md = markdown(result)
     if a.md:
         Path(a.md).write_text(md + "\n", encoding="utf-8")
-    write_json(attempt.with_name("score.done.json"), {"finished": now(), "result_sha256": sha256_file(a.out)},
+    write_json(into / f"score{tag}.done.json", {"finished": now(), "result_sha256": sha256_file(a.out)},
                exclusive=True)
     print(md)
 
@@ -880,9 +1002,24 @@ def markdown(result):
     return "\n".join(md)
 
 
+def cmd_check(a):
+    """A reviewer's self-check: every entry of the batch decided once, in the README's format."""
+    batch, sheets = load_batch(a.batch)
+    p = Path(a.batch) / "decisions.jsonl"
+    try:
+        recs = parse_decisions(p.read_text(encoding="utf-8") if p.exists() else "", sheets, Path(a.batch).name)
+    except DecisionError as e:
+        print("NOT DONE\n" + str(e))
+        raise SystemExit(1)
+    c = collections.Counter(r["decision"] if r["decision"] != "skip" else "skip:" + r["skip"] for r in recs)
+    print(f"OK: {len(recs)} of {batch['lines']} entries decided {dict(c)}")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("check")
+    p.add_argument("--batch", type=Path, required=True)
     p = sub.add_parser("lines")
     p.add_argument("--session", type=Path, required=True)
     p.add_argument("--work", type=Path, required=True)
@@ -893,11 +1030,16 @@ def main(argv=None):
     p.add_argument("--work", type=Path, required=True)
     p.add_argument("--blobs", type=Path, required=True)
     p.add_argument("--compiler", default="gcc")
+    p.add_argument("--extra", action="append", default=[],
+                   help="NAME=FILE#SHA256[@finder]: a later blob, read after the freeze into arms.<suffix>.jsonl")
+    p.add_argument("--suffix", help="with --extra: the output tag (arms.<suffix>.jsonl)")
+    p.add_argument("--into", type=Path, help="with --extra: write there instead of WORK (WORK is only read)")
     p = sub.add_parser("sheets")
     p.add_argument("--work", type=Path, required=True)
     p.add_argument("--round", choices=ROUNDS, required=True)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--lines-per-batch", type=int, default=LINES_PER_BATCH)
+    p.add_argument("--batch", type=Path, help="R2 only: build the R2 batch of this finished R1 batch's lines")
     p = sub.add_parser("collect")
     p.add_argument("--work", type=Path, required=True)
     p.add_argument("--round", choices=ROUNDS, required=True)
@@ -908,9 +1050,12 @@ def main(argv=None):
     p.add_argument("--work", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--md", type=Path)
+    p.add_argument("--suffix", help="score the extra arms of arms.<suffix>.jsonl (own attempt and output files)")
+    p.add_argument("--pair", action="append", default=[], help="with --suffix: CAND:BASE")
+    p.add_argument("--into", type=Path, help="with --suffix: where the extra arms are and the outputs go")
     a = ap.parse_args(argv)
-    {"lines": cmd_lines, "engines": cmd_engines, "arms": cmd_arms, "sheets": cmd_sheets, "collect": cmd_collect,
-     "refs": cmd_refs, "score": cmd_score}[a.cmd](a)
+    {"check": cmd_check, "lines": cmd_lines, "engines": cmd_engines, "arms": cmd_arms, "sheets": cmd_sheets,
+     "collect": cmd_collect, "refs": cmd_refs, "score": cmd_score}[a.cmd](a)
 
 
 if __name__ == "__main__":

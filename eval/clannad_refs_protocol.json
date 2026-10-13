@@ -170,5 +170,35 @@
   ]
  ],
  "public": "counts, rates, intervals and hashes only (eval/vocr3_report.assert_public); references, readings, crops and sheets stay under shared/private/, never in git, never sent to Codex or any third party",
- "one_attempt": "score runs once on the frozen references; a failure is reported, not retried with changes"
+ "one_attempt": "score runs once on the frozen references; a failure is reported, not retried with changes",
+ "amendments": [
+  {
+   "when": "2026-10-13T21:49Z-21:54Z, before any reviewer session started (the first at 22:14Z)",
+   "what": "R1 sheets of b01-b10 re-rendered with the screen outside the red frame dimmed (x0.45), so a reviewer sees exactly which pixels the crop holds; same lines, ids, order and candidates. b11 and b12, read by the coordinating session from 20:40Z, keep the undimmed render. Every R2 and R3 sheet is dimmed."
+  },
+  {
+   "when": "from 2026-10-13T21:55Z",
+   "what": "R2 is built per finished R1 batch (sheets --round r2 --batch r1/bNN), not after all of R1; r2.sheets.json registers every line in exactly one R2 batch. The R2 candidate rule is unchanged."
+  },
+  {
+   "when": "2026-10-13, before each batch's R2 was built (b12's rebuilt at 21:55Z, b11's built at 22:19Z)",
+   "what": "The R1 reader corrected its own reads on geometry measured on the stored pixels: b12, 15 entries from multi to the name-plate text with name: true (the frame ends 4-5 px above the dialogue line below); b11, 6 entries from cut to notext (no glyph rows inside the frame). b12's R2 batch, first built before the correction, was deleted and rebuilt before any reviewer opened it. Reads may use such measurements of the crop's own pixels (frame against ink rows and columns, glyph sizes for small kana); an R1 batch's reads never change once its R2 batch exists."
+  },
+  {
+   "when": "2026-10-13, during R1 b11 sheet S020 (before 22:13Z)",
+   "what": "Deviation: while measuring frame geometry for b11, the R1 reader printed lines.jsonl rows that include the cached FL10 reading (VOCR1's long-run output) of 5 lines (p03276-0, p03279-0, p03280-0, p03280-1, p03282-0); R1 is meant to see engine candidates only. 4 of them (b11 entries 331, 333, 334, 335) were decided afterwards, following the image (one against that cached reading). They keep their reads; no Lens reading was shown to any R1 read."
+  },
+  {
+   "when": "2026-10-13",
+   "what": "Readers: R1 b11 and b12 by the coordinating session (owner-drive-ingest); R1 b01-b10 and every R2 and R3 batch by separate reviewer sessions, one batch each, all claude-opus-5.5 (pinned per label in the herd's models.txt). The coordinating session opens no R2 or R3 sheet."
+  },
+  {
+   "when": "2026-10-13",
+   "what": "Extra arms after the freeze (such as vocr4-train's VOCR4 candidates): arms --extra NAME=FILE#SHA256[@finder] --suffix S --into DIR runs only once refs.freeze.json exists and writes only into DIR; score --suffix S --into DIR --pair CAND:BASE scores them once per suffix against the same frozen references (kind clannad-refs-extra-result). They are not arms of this protocol, are never a candidate in any read and cannot change the references."
+  },
+  {
+   "when": "2026-10-13",
+   "what": "refs.freeze.json records this file's sha256; score refuses to run if the protocol differs from the one the references were frozen under."
+  }
+ ]
 }

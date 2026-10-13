@@ -54,9 +54,13 @@ owner asked.
 
 `reserved_vns()` gives these reasons, so realplus, the native pool and every selection built on it leave
 the 50 VNs out. Its general rule then reserves any VN on a release with one of them as `shared-release`,
-as for the other protected titles. Against main's rules, this PR newly reserves 20 VNs:
+as for the other protected titles. Against the rules before the owner's notes, 24 VNs are newly
+reserved:
 
-- 19 of the set; the other 26 were already reserved for other reasons;
+- 19 of Memories Off's 45-VN set (16 series VNs, 3 relations); the other 26 were already reserved for
+  other reasons;
+- Aiyoku no Eustia (v3770), 428 (v1299) and 街 (v1360). 428's other two relations were already reserved;
+- 弟切草 (v661), which shares a PlayStation release with 街;
 - Ever 17 - The Out of Infinity (v19373), which shares the Switch Ever17 / Never7 double pack with Never 7.
   Its rows in existing pools: teacher_train 11, teacher_distill_train 5, real_train 10, real_unlabelled 8,
   realplus v2 ink / GRAD 3 / 2.

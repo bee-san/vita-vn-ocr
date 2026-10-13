@@ -77,8 +77,12 @@ SHARED_DATA = HERD / "shared" / "data"
 FONT_MANIFEST = ROOT / "data" / "manifests" / "synth3_fonts.json"
 # Titles protected like eval's test games (the fresh native textbox test, its reserves, CLANNAD,
 # and their VNDB relations): never a name, scene or screenshot of synth3 (version 3 on).
+# The owner's test-only Memories Off series (owner 2026-10-13 10:51Z) with its relations and release partners
+# joined them after version 3's render (synth/owner_games.py); the pinned v3 shards' recipe records the two
+# manifests they used.
 EXCLUDE_MANIFESTS = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
-                     ROOT / "data" / "manifests" / "synth3_exclude_clannad.json")
+                     ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",
+                     ROOT / "data" / "manifests" / "synth3_exclude_owner_games.json")
 LATIN = re.compile(r"[0-9A-Za-z０-９Ａ-Ｚａ-ｚ]")
 
 # Every probability of the generator, recorded verbatim in the shard manifest.

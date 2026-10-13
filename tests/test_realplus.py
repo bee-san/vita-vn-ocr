@@ -17,11 +17,11 @@ from common import is_test_vn  # noqa: E402
 
 
 def train_side(n, start=1):
-    """n VN ids that are neither is_test_vn nor in the val bucket."""
+    """n VN ids that are neither is_test_vn, nor in the val bucket, nor the owner's test series root."""
     out, v = [], start
     while len(out) < n:
         vid = f"v{v}"
-        if not is_test_vn(vid) and not S.val_bucket(vid):
+        if not is_test_vn(vid) and not S.val_bucket(vid) and vid not in S.OWNER_TEST_SERIES:
             out.append(vid)
         v += 1
     return out

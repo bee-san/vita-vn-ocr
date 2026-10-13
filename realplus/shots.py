@@ -100,6 +100,48 @@ FRESH_NATIVE_FILES = ("fresh_native_source_provenance_20261012.json", "fresh_nat
                       "fresh_native_textbox_independent_audit_20261012.json")
 
 
+# The owner's own games (owner 2026-10-13 10:51Z, superseding the 09:25Z / 09:37Z notes). Memories Off is a
+# test-only title: the owner's live PSP screenshots of it are a fresh native test set, never trained, tuned,
+# calibrated or rendered from, and never sent to Codex; its whole series is reserved. CHAOS;HEAD NOAH is
+# training-eligible: the owner's screenshots of it may be labelled for training (never through Codex: they
+# are private frames, not public VNDB images).
+OWNER_TEST_SERIES = {"v1152": "Memories Off"}
+OWNER_TEST_TITLE = re.compile(r"memories\s*off|メモリーズ\s*オフ|秋之回[忆憶]", re.I)
+OWNER_TRAINING = {"v22505": "CHAOS;HEAD NOAH"}
+
+
+def owner_test_vns(d, roots=None, title=OWNER_TEST_TITLE):
+    """{vn: reason} for the owner's test series (Memories Off), from a load_dump() dict: every VN reachable
+    from a root through FAMILY relations (alternative versions, originals, fan discs, parent and side
+    stories, sequels, prequels, same series), or titled like the series (`owner-test-series`); every VNDB
+    relation of any kind of those, in either direction (`owner-test-relation`: crossovers and same-setting
+    titles such as KID Mix Section or Never 7); and every VN on one VNDB release with a series VN
+    (`owner-test-shared-release`). A relation's own relations and release partners are not reserved."""
+    roots = set(OWNER_TEST_SERIES if roots is None else roots)
+    fam = d["relations"]
+    anyrel = d.get("any_relations", fam)
+    series = {v for v, ts in d["title"].items() if any(title.search(t) for t in ts)} | roots
+    todo = list(series)
+    while todo:
+        v = todo.pop()
+        nxt = set(fam.get(v, ())) | {u for u, rs in fam.items() if v in rs}
+        for u in nxt - series:
+            series.add(u)
+            todo.append(u)
+    out = {v: "owner-test-series" for v in series}
+    for v in sorted(series):
+        for u in anyrel.get(v, ()):
+            out.setdefault(u, "owner-test-relation")
+    for v, rs in anyrel.items():
+        if rs & series:
+            out.setdefault(v, "owner-test-relation")
+    for rid, rv in sorted(d["rel_vns"].items()):     # compilations and bundles holding a series VN
+        if rv & series:
+            for u in sorted(rv):
+                out.setdefault(u, "owner-test-shared-release")
+    return out
+
+
 def fresh_native_vns():
     out = set(FRESH_NATIVE)
     for name in FRESH_NATIVE_FILES:
@@ -266,6 +308,7 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
 
       clannad       CLANNAD by id or title
       clannad-family  CLANNAD_FAMILY, the conductor's list of CLANNAD's direct family
+      owner-test-series  owner_test_vns(): the owner's test-only series (Memories Off), every VN of it
       test-set      eval's test_games.json "all" (set games, their family, release partners)
       test-vn       synth/common.is_test_vn (the 15% of VNs held out for evaluation)
       fresh-native  a title of the fresh native textbox test
@@ -274,6 +317,8 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
       fresh-native-relation  any direct VNDB relation (every kind) of a fresh native title
       clannad-relation  a direct VNDB relation of CLANNAD (v4) of every kind, or a FAMILY relation of
                     a CLANNAD_FAMILY VN
+      owner-test-relation, owner-test-shared-release  owner_test_vns(): a VNDB relation of any kind of
+                    a series VN, or a VN on one VNDB release with a series VN or such a relation
       family        a direct VNDB relation of kind FAMILY of a CLANNAD, fresh-native or
                     development VN (test-set already holds the set games' family)
       shared-release  on one VNDB release with a test-set, CLANNAD, fresh-native, development or
@@ -286,12 +331,16 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
     dev = dev_vns() if dev is None else set(dev)
     vns = set(d["olang"])
     clannad = set(CLANNAD) | {v for v in vns if any(CLANNAD_TITLE.search(t) for t in d["title"].get(v, []))}
+    owner = owner_test_vns(d)
+    owner_series = {v for v, r in owner.items() if r == "owner-test-series"}
     why = {}
     for v in vns | test_all | fresh | dev | CLANNAD_FAMILY:
         if v in clannad:
             why[v] = "clannad"
         elif v in CLANNAD_FAMILY:
             why[v] = "clannad-family"
+        elif v in owner_series:
+            why[v] = "owner-test-series"
         elif v in test_all:
             why[v] = "test-set"
         elif is_test_vn(v):
@@ -326,6 +375,9 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
     for v, rs in d["relations"].items():
         if rs & CLANNAD_FAMILY:
             why.setdefault(v, "clannad-relation")
+    # the owner's test series (2026-10-13 10:51Z): relations of every kind and every release partner
+    for v, r in sorted(owner.items()):
+        why.setdefault(v, r)
     for v in sorted(roots):
         for u in d["relations"].get(v, ()):
             why.setdefault(u, "family")

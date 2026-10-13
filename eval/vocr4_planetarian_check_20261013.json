@@ -1,0 +1,98 @@
+{
+ "kind": "vocr4-vn-check",
+ "schema": 1,
+ "vns": [
+  "v27747",
+  "v34",
+  "v5698"
+ ],
+ "releases": 84,
+ "dump": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/native-frames/vndb/dump/db",
+ "sets": {
+  "teacher/teacher_val.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_val.npz",
+   "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671",
+   "rows": 1651,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "select_pools/teacher_val.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/teacher_val.npz",
+   "sha256": "f5c0032041c14b31bff87b52a56381b8f0d3e84e2f6cfd78a3b600e55751f81e",
+   "rows": 1643,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "v3/devnative_strict_grad.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v3/devnative_strict_grad.npz",
+   "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e",
+   "rows": 26,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "v3/devnative_strict_ink.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v3/devnative_strict_ink.npz",
+   "sha256": "a1f0f83e78a0382d8c8efa276d5500162b4a5ebeba6fb1ce958567613f8e2589",
+   "rows": 38,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "v3/devnative_tv_native_grad.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v3/devnative_tv_native_grad.npz",
+   "sha256": "0ed617b97fe3050936c5ca062ec0c7352416a6dc20f92f7efbb18cc4b6ca1782",
+   "rows": 423,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "v3/devnative_tv_native_ink.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v3/devnative_tv_native_ink.npz",
+   "sha256": "a3d2c9d91f0460c23aeb303ecb4583de3448f634ababdc5f3163eb0f2d95aec5",
+   "rows": 513,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "devnative_v3/devnative_strict_grad.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_grad.npz",
+   "sha256": "76bb3329a24866b331b55a8526a82092b3ec084e4e1e7b368c8cf1c835572d3f",
+   "rows": 23,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "devnative_v3/devnative_strict_ink.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_ink.npz",
+   "sha256": "742944e99dd058bdfbce5c298100cec1b85d37bff5378670b301fa61a1e3cde7",
+   "rows": 34,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "devnative_v3/devnative_tv_native_grad.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_grad.npz",
+   "sha256": "2eb847ebf01d76741b1fdd2d1b92debf719b6a8edaacb8e8114d697632a73f3b",
+   "rows": 420,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "devnative_v3/devnative_tv_native_ink.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_ink.npz",
+   "sha256": "baef59f132acd3242b237c9d0d168b3d5202f6c381b716109cb20e0fa044e985",
+   "rows": 509,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "vita-test.jsonl": {
+   "file": "eval/manifests/vita-test.jsonl",
+   "sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+   "rows": 208,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "psp-test.jsonl": {
+   "file": "eval/manifests/psp-test.jsonl",
+   "sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+   "rows": 245,
+   "vn_rows": 0,
+   "session_rows": 0
+  }
+ },
+ "total_hits": 0
+}

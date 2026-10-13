@@ -68,6 +68,17 @@ def wjl(path, rows):
     tmp.replace(p)
 
 
+def reserved_today():
+    """reserved_vns of the dump, by today's rules. In an owner pool (NATIVE_OWNER_POOL=1: the owner's own
+    console captures, shared/private/owner-games/_build/...) a VN the owner explicitly made training data
+    (owner_frames.OWNER_DECISIONS, only for the reservation reasons listed there) is not held back."""
+    r = SH.reserved_vns(SH.load_dump(DUMP))
+    if os.environ.get("NATIVE_OWNER_POOL") == "1":
+        import owner_frames as OF
+        r = {v: w for v, w in r.items() if not OF.owner_allowed(v, w)}
+    return r
+
+
 def native_kind(platforms, w, h):
     """'vita' or 'psp' for a native frame of a release on these platforms, else None."""
     for plat, (kind, dims) in NATIVE.items():
@@ -293,7 +304,7 @@ def cmd_filter_plan(args):
     full = jl(NP / "review" / "plan_all.jsonl") or jl(plan_p)
     wjl(NP / "review" / "plan_all.jsonl", full)
     idx = PL.S.line_index(PL.load_reads())
-    reserved = SH.reserved_vns(SH.load_dump(DUMP))     # today's rules: a VN reserved after its frame was read
+    reserved = reserved_today()     # today's rules: a VN reserved after its frame was read
     known = [r for r in full if r["id"] in idx and is_known(idx[r["id"]][1], kb.get(idx[r["id"]][0]["shot"], []))]
     held = [r for r in full if r["id"] in idx and idx[r["id"]][0]["vn"] in reserved]
     drop = {r["id"] for r in known} | {r["id"] for r in held}
@@ -309,7 +320,7 @@ def cmd_filter_labels(args):
     dump; e.g. the owner's Memories Off series, reserved after this pool's frames were read) is set to
     status "dropped" (reason reserved-vn), so no confirm, edge or check batch shows it and the build skips it."""
     import pool as PL
-    reserved = SH.reserved_vns(SH.load_dump(DUMP))
+    reserved = reserved_today()
     idx = PL.S.line_index(PL.load_reads())
     rows, n = jl(NP / "labels.jsonl"), collections.Counter()
     for r in rows:
@@ -336,7 +347,7 @@ def cmd_edge_boxes(args):
     shots = PL.load_reads()
     idx = PL.S.line_index(shots)
     kb = json.loads((NP / "manifests" / "known.json").read_text())
-    reserved = SH.reserved_vns(SH.load_dump(DUMP))
+    reserved = reserved_today()
     # lines teacher / realdata already labelled, and reserved VNs, never reach the build: no check for them
     labels = [r for r in labels if r["vn"] not in reserved and not is_known(idx[r["id"]][1], kb.get(r["shot"], []))]
     out, cache = [], {}
@@ -357,7 +368,14 @@ def cmd_edge_boxes(args):
                       "why": dict(collections.Counter(w for x in out for w in x["why"]))}), flush=True)
 
 
-def cut_native(s, recs, idx, edge=None):
+def expand_box(box, m, W, H):
+    """A crop box [x0, y0, x1, y1] grown by m px on every side, clamped to the frame (the fresh-native
+    harness's +4 / +8 ROI variants, applied to one line)."""
+    x0, y0, x1, y1 = box
+    return [max(0, x0 - m), max(0, y0 - m), min(W, x1 + m), min(H, y1 + m)]
+
+
+def cut_native(s, recs, idx, edge=None, margins=()):
     """realplus/pool.cut_shot for a native frame: the frame was read at its own size, so the only
     target is its own console (a Vita frame gives Vita crops, a PSP frame PSP crops; neither is scaled).
     Each kept line gives eval's ink crop widened to the labelled characters (lines.final_crop) and, where
@@ -427,6 +445,18 @@ def cut_native(s, recs, idx, edge=None):
                     "luna": r.get("luna"), "confirm": r.get("confirm"), "name": r.get("name", False),
                     "chars": ch, "chars_match": ch_ok, "screen": [W, H], "edge": why}
             out.append((crop, img, meta))
+            if crop == "ink":
+                # multi-margin variants of the ink crop, each kept only when no other detected line enters it
+                # (the base crop's own mixed test)
+                for m in margins:
+                    eb = expand_box(box, m, W, H)
+                    if PL.ink_mixed(eb, ln, dets):
+                        drops[f"ink_m{m}-mixed"] += 1
+                        continue
+                    eimg, edark, einv = L.cut(rgb, eb)
+                    out.append((f"ink_m{m}", eimg, dict(meta, crop=f"ink_m{m}", box=eb, margin=m, dark=edark,
+                                                        inverted=einv,
+                                                        pol="dark-on-light" if edark else "bright-on-dark")))
         if out:
             cut[r["id"]] = out
         else:
@@ -442,7 +472,8 @@ def cmd_build(args):
 
     from devnative import paths as P
     from teacher import vote
-    out = {k: NP / f"native_train_{k}_{args.tag}.npz" for k in ("ink", "grad")}
+    margins = tuple(int(x) for x in args.margins.split(",") if x) if getattr(args, "margins", "") else ()
+    out = {k: NP / f"native_train_{k}_{args.tag}.npz" for k in ("ink", "grad", *(f"ink_m{m}" for m in margins))}
     if any(p.exists() for p in out.values()):
         sys.exit(f"refusing to overwrite {out}: build with a new --tag")
     labels = jl(NP / "labels.jsonl")
@@ -450,7 +481,7 @@ def cmd_build(args):
     shots = PL.load_reads()
     idx = PL.S.line_index(shots)
     kb = json.loads((NP / "manifests" / "known.json").read_text())
-    reserved = SH.reserved_vns(SH.load_dump(args.dump))
+    reserved = reserved_today() if args.dump == DUMP else SH.reserved_vns(SH.load_dump(args.dump))
     leak = set(json.loads((NP / "manifests" / "leak_drop.json").read_text()))
     # third looks: lines the precision check disagreed on are dropped (review/resolutions.jsonl, {id, why})
     resolved = {r["id"]: r.get("why", "resolution") for r in jl(NP / "review" / "resolutions.jsonl")}
@@ -480,7 +511,7 @@ def cmd_build(args):
         by_shot[r["shot"]].append(r)
     cut = {}
     for sk in sorted(by_shot):
-        part, d = cut_native(shots[sk], by_shot[sk], idx, edge)
+        part, d = cut_native(shots[sk], by_shot[sk], idx, edge, margins)
         cut.update(part)
         drops += d
     kept, capped = PL.cap_repeats([r for r in cands if r["id"] in cut])
@@ -613,7 +644,7 @@ def cmd_publish(args):
     wjl(out / f"lines_{args.tag}.jsonl", jl(NP / "manifests" / f"lines_{args.tag}.jsonl"))
     stats = {"tag": args.tag, "build": json.loads((NP / "manifests" / f"build_stats_{args.tag}.json").read_text())}
     # frames read before a later owner rule reserved their VN: none of their lines is in the pool
-    reserved = SH.reserved_vns(SH.load_dump(DUMP))
+    reserved = reserved_today()
     selected = {r["shot"] for r in rows}
     late = collections.Counter((r["vn"], reserved.get(r["vn"], "not-reserved"))
                                for r in jl(NP / "reads" / "reads.jsonl") if r["shot"] not in selected)
@@ -637,6 +668,7 @@ def main():
     p = sub.add_parser("build")
     p.add_argument("--tag", required=True)
     p.add_argument("--dump", type=Path, default=DUMP)
+    p.add_argument("--margins", default="", help="extra ink-crop margins in px, e.g. 4,8 (files ink_m4, ink_m8)")
     p = sub.add_parser("check")
     p.add_argument("--tag", required=True)
     p.add_argument("--seed", type=int, default=20261013)

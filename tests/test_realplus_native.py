@@ -113,3 +113,15 @@ def test_committed_native_manifests_are_text_free_and_consistent():
                for s in shots)
     owner = set(json.loads((ROOT / "data" / "manifests" / "synth3_exclude_owner_games.json").read_text())["vns"])
     assert not owner & ({s["vn"] for s in shots} | {m["vn"] for m in lines})
+
+
+def test_expand_box_clamps_and_owner_decisions_are_narrow():
+    import owner_frames as OF
+    assert N.expand_box([10, 200, 300, 220], 8, 480, 272) == [2, 192, 308, 228]
+    assert N.expand_box([2, 260, 478, 270], 8, 480, 272) == [0, 252, 480, 272]
+    assert OF.owner_allowed("v34", "shared-release")
+    assert not OF.owner_allowed("v34", "test-set") and not OF.owner_allowed("v4", "shared-release")
+    ok = OF.folder_info("psp-planetarian-v34", reserved={"v34": "shared-release"})
+    assert ok["eligible"] and ok["owner_decision"].startswith("owner 2026-10-13 19:21Z")
+    no = OF.folder_info("psp-planetarian-v34", reserved={"v34": "clannad-relation"})
+    assert not no["eligible"]

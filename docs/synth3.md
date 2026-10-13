@@ -558,6 +558,25 @@ it for this recipe; the pretrain-length curve above says where the remaining hea
 samples, not having more distinct ones). The 1M point is the only one from the other machine, which
 confounds its +0.21 step.
 
+### Disclosure: the owner's Memories Off series in the pinned pools
+
+At 10:51Z on 2026-10-13, after every study-2 run had started, the owner reserved the Memories Off
+series (v1152, its sequels, VNDB relations and release partners: 45 ids,
+`data/manifests/synth3_exclude_owner_games.json` from #62) as a fresh native console test set. The
+exposure counts below are `data/manifests/owner_games_exposure_20261013.json`'s. The pinned fine-tune pools hold rows of those
+titles: teacher_train 66 of 12,100, real_train 70 of 9,795, teacher_distill_train 97, real_unlabelled
+86 (ids in `$HERD/shared/artifacts/native-frames/owner_games_rows.json`); teacher_val holds 8 lines and
+devnative v3 14 crops of v1331 (Memories Off: After Rain). At 13:10Z the owner also reserved Aiyoku no
+Eustia (v3770) and 428 (v1299), with 街 (v1360) and 弟切草 (v661) through 428's relations and shared
+releases; the pools hold 428 rows (teacher_train 14, real_train 14, teacher_distill_train 2,
+real_unlabelled 3), Eustia rows (2, 4, 2, 2) and 街 rows (41, 23, 21, 36); teacher_val and devnative v3
+hold none of these four titles. Study 2's runs, scores and decisions are
+reported as they were computed; nothing was re-run or re-scored. Any future test on the owner's
+Memories Off captures must carry this caveat for every model trained on these pools, including the
+released v0.2.0 models (same pools before the CLANNAD filter). Pools built after the rule exclude the
+series (realplus v3, the native-frames pool); VOCR3's selection cohorts are copies without it
+(`eval/vocr3_protocol.json`, amendment 8).
+
 ### Provenance of the runs
 
 - The ten FL10/H15 runs were launched from the conductor's clone at commits 0617f72-ebb4dfb

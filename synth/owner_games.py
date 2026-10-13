@@ -220,14 +220,15 @@ def build_manifest(d, base, chars_tsv=None, dirs=None, private=PRIVATE, dump_inf
         by_src["owner-private" if private and str(p).startswith(str(private)) else p.parent.name] += 1
     doc = {
         "kind": "synth3-exclusion", "schema": 1,
-        "name": "the owner's test-only series Memories Off (v1152 and every VN of its series)",
-        "rule": ("Owner 2026-10-13 10:51Z (superseding 09:25Z / 09:37Z): the owner's live PSP screenshots of "
-                 "Memories Off are a fresh native test set; never train, tune, calibrate, select or render fonts "
-                 "from the series, never send its frames to Codex. 'vns' = every VN reachable from v1152 through "
-                 "VNDB family relations or titled like the series ('series'), every direct VNDB relation of any "
-                 "kind of a series VN in either direction, and every VN sharing a VNDB release with a series VN "
-                 "(realplus/shots.owner_test_vns). synth3 never uses their names, scenes or text markers."),
-        "protected": {"psp": sorted(SH.OWNER_TEST_SERIES), "series": sorted(series, key=lambda v: int(v[1:]))},
+        "name": "the owner's test-only series: Memories Off (v1152), Aiyoku no Eustia (v3770), 428 (v1299)",
+        "rule": ("Owner 2026-10-13 10:51Z and 13:10Z (superseding 09:25Z / 09:37Z): the owner's live screenshots "
+                 "of Memories Off, Aiyoku no Eustia and 428 are fresh native test sets; never train, tune, calibrate, "
+                 "select or render fonts from these series, never send their frames to Codex. 'vns' = every VN "
+                 "reachable from a root through VNDB family relations or titled like Memories Off ('series'), every "
+                 "direct VNDB relation of any kind of a series VN in either direction, and every VN sharing a VNDB "
+                 "release with a series VN (realplus/shots.owner_test_vns). synth3 never uses their names, scenes or "
+                 "text markers."),
+        "protected": {"roots": dict(SH.OWNER_TEST_SERIES), "series": sorted(series, key=lambda v: int(v[1:]))},
         "training_eligible": dict(SH.OWNER_TRAINING),
         "source": dump_info or {},
         "relations": {k: v for k, v in sorted(relations.items())},

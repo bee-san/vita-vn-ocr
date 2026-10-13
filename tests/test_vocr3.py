@@ -141,4 +141,5 @@ def test_rp_runs_match_their_pretrains():
         cands = P["candidates"][size]
         all_base = list(cands.get("study2", [])) + list(cands.get("runs", [])) + list(cands.get("step_curve", [])) + \
             list(cands.get("extra", []))
-        assert sorted("rp_" + b[3:] for b in all_base) == sorted([r for _, r in spec["decision_pairs"]] + spec["extra_runs"])
+        rp_runs = [r for _, r in spec["decision_pairs"]] + spec["extra_runs"]
+        assert sorted("rp_" + b[3:] for b in all_base) == sorted(rp_runs)

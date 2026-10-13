@@ -33,14 +33,26 @@ done
 .venv-ci/bin/python eval/synth3_study2.py merge --scores "${DN[@]}" --out "$AB/scores/devnative_pooled.json"
 .venv-ci/bin/python eval/synth3_ablation.py compare --scores "$AB/scores/devnative_pooled.json" --protocol "$PROTO" \
   --out "$AB/compare/devnative_pooled.json"
+DN2=()
+for f in strict_ink strict_grad tv_native_ink tv_native_grad; do     # devnative v2 (protocol amendment 3)
+  .venv-ci/bin/python eval/synth3_ablation.py score "${BLOBS[@]}" --dev "$A/devnative/v2/devnative_$f.npz" \
+    --out "$AB/scores/devnative_v2_$f.json"
+  .venv-ci/bin/python eval/synth3_ablation.py compare --scores "$AB/scores/devnative_v2_$f.json" --protocol "$PROTO" \
+    --out "$AB/compare/devnative_v2_$f.json"
+  DN2+=("$AB/scores/devnative_v2_$f.json")
+done
+.venv-ci/bin/python eval/synth3_study2.py merge --scores "${DN2[@]}" --out "$AB/scores/devnative_v2_pooled.json"
+.venv-ci/bin/python eval/synth3_ablation.py compare --scores "$AB/scores/devnative_v2_pooled.json" --protocol "$PROTO" \
+  --out "$AB/compare/devnative_v2_pooled.json"
 AB="$AB" PROTO="$PROTO" .venv-ci/bin/python - <<'PY'
 import datetime, hashlib, json, os, subprocess
 from pathlib import Path
 ab, proto = Path(os.environ["AB"]), os.environ["PROTO"]
 load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
 tv = load(ab / "compare" / "teacher_val.json")
-dn = {f: load(ab / "compare" / f"devnative_{f}.json") for f in
-      ("strict_ink", "strict_grad", "tv_native_ink", "tv_native_grad", "pooled")}
+subs = ("strict_ink", "strict_grad", "tv_native_ink", "tv_native_grad", "pooled")
+dn = {f: load(ab / "compare" / f"devnative_{f}.json") for f in subs}
+dn2 = {f: load(ab / "compare" / f"devnative_v2_{f}.json") for f in subs}
 c = tv["comparisons"]["D_vs_B"]
 study1 = load("eval/synth3_ablation_20261012.json")["models"]
 out = {"kind": "synth3-study1b-result",
@@ -54,6 +66,7 @@ out = {"kind": "synth3-study1b-result",
                                               and all(v["delta_points"] > 0 for v in c["per_seed"].values()))},
        "teacher_val": tv,
        "devnative_reported_only": dn,
+       "devnative_v2_reported_only": dn2,
        "study1_B_s3_on_the_32_core_box": {k: v for k, v in study1.items() if k.startswith("B_s3")}}
 Path("eval/synth3_study1b_20261012.json").write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n",
                                                      encoding="utf-8")

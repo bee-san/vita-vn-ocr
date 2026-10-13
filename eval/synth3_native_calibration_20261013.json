@@ -2,18 +2,18 @@
  "kind": "synth3-native-calibration",
  "schema": 1,
  "sources": {
-  "frames": "realplus/native.py's selection: 1,678 training-side native VNDB frames (1,355 PSP, 323 Vita) of realdata's / teacher's pools, measured before 9 of them were dropped as pixel duplicates or linefind near-duplicates",
-  "real_crops": "teacher_train + real_train, kinds vita and psp, reserved and development VNs dropped (synth3_stats.reserved_vns + exclude_dev_vns), at most 12,000 crops per file",
+  "frames": "realplus/native.py's selection under the owner's 10:51Z rule: 1,674 training-side native VNDB frames (1,346 PSP, 328 Vita) of realdata's / teacher's pools, pixel duplicates and linefind near-duplicates dropped; no Memories Off series VN",
+  "real_crops": "teacher_train + real_train, kinds vita and psp; every VN of synth3_stats' default exclusions (fresh native, CLANNAD, the owner's Memories Off series) and of exclude_dev_vns.txt dropped; at most 12,000 crops per file",
   "v3": "synth3 version 3 pinned shards 0-1 (platforms vita, psp, psp2x), at most 12,000 crops per file",
   "calibration_renders": "c1-c3: 5 x 1,000 crops each, seed 3001 (never the training seed), data/manifests/synth3_v4_native_cfg.json at each round"
  },
  "jpeg": {
   "psp": {
-   "frames": 1355,
-   "jpeg": 1355,
-   "exact_ijg_table": 1354,
+   "frames": 1346,
+   "jpeg": 1346,
+   "exact_ijg_table": 1345,
    "quality_hist": {
-    "90": 1354,
+    "90": 1345,
     "95": 1
    },
    "quality_p10_50_90": [
@@ -22,16 +22,16 @@
     90.0
    ],
    "subsampling": {
-    "4:4:4": 1135,
+    "4:4:4": 1126,
     "4:2:0": 220
    }
   },
   "vita": {
-   "frames": 323,
-   "jpeg": 323,
-   "exact_ijg_table": 317,
+   "frames": 328,
+   "jpeg": 328,
+   "exact_ijg_table": 322,
    "quality_hist": {
-    "90": 317,
+    "90": 322,
     "94": 6
    },
    "quality_p10_50_90": [
@@ -40,14 +40,14 @@
     90.0
    ],
    "subsampling": {
-    "4:2:0": 304,
-    "4:4:4": 19
+    "4:2:0": 303,
+    "4:4:4": 25
    }
   }
  },
  "frames": {
   "psp": {
-   "frames": 1355,
+   "frames": 1346,
    "pair_ratio": {
     "p10_50_90": [
      0.947,
@@ -57,58 +57,58 @@
    },
    "x2_f0.5_x": {
     "p10_50_90": [
-     0.35,
-     0.809,
-     1.535
+     0.348,
+     0.807,
+     1.52
     ]
    },
    "x2_f0.5_y": {
     "p10_50_90": [
      0.202,
-     0.642,
+     0.644,
      1.371
     ]
    },
    "x4/3_f0.25_x": {
     "p10_50_90": [
-     1.076,
-     1.747,
-     3.103
+     1.071,
+     1.746,
+     3.085
     ]
    },
    "x4/3_f0.25_y": {
     "p10_50_90": [
      0.783,
-     1.531,
-     3.467
+     1.532,
+     3.455
     ]
    },
    "x3/2_f0.333_x": {
     "p10_50_90": [
      0.734,
-     1.093,
-     1.676
+     1.094,
+     1.689
     ]
    },
    "x3/2_f0.333_y": {
     "p10_50_90": [
-     0.607,
-     0.993,
-     1.478
+     0.606,
+     0.995,
+     1.485
     ]
    },
    "jpeg_f0.125_x": {
     "p10_50_90": [
-     1.914,
-     3.169,
-     5.896
+     1.916,
+     3.173,
+     5.893
     ]
    },
    "jpeg_f0.125_y": {
     "p10_50_90": [
-     1.386,
-     2.684,
-     5.552
+     1.358,
+     2.664,
+     5.541
     ]
    },
    "nearest2x_like (pair_ratio < 0.35)": 0,
@@ -116,68 +116,68 @@
    "x3/2_f0.333_x > 8": 0
   },
   "vita": {
-   "frames": 323,
+   "frames": 328,
    "pair_ratio": {
     "p10_50_90": [
-     0.938,
+     0.937,
      0.982,
      0.996
     ]
    },
    "x2_f0.5_x": {
     "p10_50_90": [
-     0.486,
-     1.081,
-     1.697
+     0.487,
+     1.089,
+     1.707
     ]
    },
    "x2_f0.5_y": {
     "p10_50_90": [
-     0.214,
-     0.65,
-     1.594
+     0.199,
+     0.637,
+     1.59
     ]
    },
    "x4/3_f0.25_x": {
     "p10_50_90": [
-     1.587,
-     2.697,
-     5.736
+     1.581,
+     2.692,
+     5.69
     ]
    },
    "x4/3_f0.25_y": {
     "p10_50_90": [
-     1.18,
-     1.971,
-     5.205
+     1.185,
+     1.954,
+     5.198
     ]
    },
    "x3/2_f0.333_x": {
     "p10_50_90": [
-     0.95,
+     0.946,
      1.293,
-     1.835
+     1.817
     ]
    },
    "x3/2_f0.333_y": {
     "p10_50_90": [
-     0.653,
-     1.056,
+     0.657,
+     1.044,
      1.54
     ]
    },
    "jpeg_f0.125_x": {
     "p10_50_90": [
-     2.367,
-     4.03,
-     7.665
+     2.354,
+     3.986,
+     7.543
     ]
    },
    "jpeg_f0.125_y": {
     "p10_50_90": [
-     1.888,
-     2.861,
-     5.728
+     1.835,
+     2.85,
+     5.69
     ]
    },
    "nearest2x_like (pair_ratio < 0.35)": 0,
@@ -189,23 +189,23 @@
   "real": {
    "psp:psp": {
     "aspect": {
-     "n": 2778,
+     "n": 2745,
      "p10_50_90": [
-      0.694,
-      1.018,
-      1.192
+      0.696,
+      1.02,
+      1.193
      ]
     },
     "sharp": {
-     "n": 4093,
+     "n": 4030,
      "p10_50_90": [
       0.432,
       0.5,
       0.545
      ]
     },
-    "aspect_share_wide (>1.15)": 0.1749,
-    "aspect_share_narrow (<0.80)": 0.2077
+    "aspect_share_wide (>1.15)": 0.177,
+    "aspect_share_narrow (<0.80)": 0.2051
    },
    "vita:vita": {
     "aspect": {
@@ -562,6 +562,229 @@
     ]
    },
    "chosen": true
+  }
+ },
+ "first_measurement": {
+  "note": "measured 09:5x-10:1xZ under the 09:25Z owner rule, before the Memories Off series was reserved (10:51Z); it held 10 frames and some crops of that series. The settings were chosen on it; the measurement below repeats it without the series",
+  "jpeg": {
+   "psp": {
+    "frames": 1355,
+    "jpeg": 1355,
+    "exact_ijg_table": 1354,
+    "quality_hist": {
+     "90": 1354,
+     "95": 1
+    },
+    "quality_p10_50_90": [
+     90.0,
+     90.0,
+     90.0
+    ],
+    "subsampling": {
+     "4:4:4": 1135,
+     "4:2:0": 220
+    }
+   },
+   "vita": {
+    "frames": 323,
+    "jpeg": 323,
+    "exact_ijg_table": 317,
+    "quality_hist": {
+     "90": 317,
+     "94": 6
+    },
+    "quality_p10_50_90": [
+     90.0,
+     90.0,
+     90.0
+    ],
+    "subsampling": {
+     "4:2:0": 304,
+     "4:4:4": 19
+    }
+   }
+  },
+  "frames": {
+   "psp": {
+    "frames": 1355,
+    "pair_ratio": {
+     "p10_50_90": [
+      0.947,
+      0.982,
+      0.997
+     ]
+    },
+    "x2_f0.5_x": {
+     "p10_50_90": [
+      0.35,
+      0.809,
+      1.535
+     ]
+    },
+    "x2_f0.5_y": {
+     "p10_50_90": [
+      0.202,
+      0.642,
+      1.371
+     ]
+    },
+    "x4/3_f0.25_x": {
+     "p10_50_90": [
+      1.076,
+      1.747,
+      3.103
+     ]
+    },
+    "x4/3_f0.25_y": {
+     "p10_50_90": [
+      0.783,
+      1.531,
+      3.467
+     ]
+    },
+    "x3/2_f0.333_x": {
+     "p10_50_90": [
+      0.734,
+      1.093,
+      1.676
+     ]
+    },
+    "x3/2_f0.333_y": {
+     "p10_50_90": [
+      0.607,
+      0.993,
+      1.478
+     ]
+    },
+    "jpeg_f0.125_x": {
+     "p10_50_90": [
+      1.914,
+      3.169,
+      5.896
+     ]
+    },
+    "jpeg_f0.125_y": {
+     "p10_50_90": [
+      1.386,
+      2.684,
+      5.552
+     ]
+    },
+    "nearest2x_like (pair_ratio < 0.35)": 0,
+    "x4/3_f0.25_x > 8": 3,
+    "x3/2_f0.333_x > 8": 0
+   },
+   "vita": {
+    "frames": 323,
+    "pair_ratio": {
+     "p10_50_90": [
+      0.938,
+      0.982,
+      0.996
+     ]
+    },
+    "x2_f0.5_x": {
+     "p10_50_90": [
+      0.486,
+      1.081,
+      1.697
+     ]
+    },
+    "x2_f0.5_y": {
+     "p10_50_90": [
+      0.214,
+      0.65,
+      1.594
+     ]
+    },
+    "x4/3_f0.25_x": {
+     "p10_50_90": [
+      1.587,
+      2.697,
+      5.736
+     ]
+    },
+    "x4/3_f0.25_y": {
+     "p10_50_90": [
+      1.18,
+      1.971,
+      5.205
+     ]
+    },
+    "x3/2_f0.333_x": {
+     "p10_50_90": [
+      0.95,
+      1.293,
+      1.835
+     ]
+    },
+    "x3/2_f0.333_y": {
+     "p10_50_90": [
+      0.653,
+      1.056,
+      1.54
+     ]
+    },
+    "jpeg_f0.125_x": {
+     "p10_50_90": [
+      2.367,
+      4.03,
+      7.665
+     ]
+    },
+    "jpeg_f0.125_y": {
+     "p10_50_90": [
+      1.888,
+      2.861,
+      5.728
+     ]
+    },
+    "nearest2x_like (pair_ratio < 0.35)": 0,
+    "x4/3_f0.25_x > 8": 11,
+    "x3/2_f0.333_x > 8": 0
+   }
+  },
+  "real_crops": {
+   "psp:psp": {
+    "aspect": {
+     "n": 2778,
+     "p10_50_90": [
+      0.694,
+      1.018,
+      1.192
+     ]
+    },
+    "sharp": {
+     "n": 4093,
+     "p10_50_90": [
+      0.432,
+      0.5,
+      0.545
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1749,
+    "aspect_share_narrow (<0.80)": 0.2077
+   },
+   "vita:vita": {
+    "aspect": {
+     "n": 1066,
+     "p10_50_90": [
+      0.779,
+      1.03,
+      1.198
+     ]
+    },
+    "sharp": {
+     "n": 1769,
+     "p10_50_90": [
+      0.428,
+      0.495,
+      0.535
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1754,
+    "aspect_share_narrow (<0.80)": 0.1154
+   }
   }
  }
 }

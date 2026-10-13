@@ -1,7 +1,7 @@
 {
  "kind": "synth4-gap-stylesum",
  "schema": 1,
- "synth_reference": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/r2/styles/s3v3.features.jsonl",
+ "synth_reference": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/r3/styles/s3v3.features.jsonl",
  "detectors": {
   "binary": {
    "feature": "aa",
@@ -609,19 +609,19 @@
      0.111
     ],
     "aa": [
-     0.487,
+     0.488,
      0.691,
      0.847
     ],
     "contrast": [
-     107.0,
+     106.99,
      167.0,
-     224.63
+     225.0
     ],
     "texture": [
-     4.4,
-     17.62,
-     35.39
+     4.38,
+     17.57,
+     35.362
     ],
     "bg_trend": [
      0.002,
@@ -630,29 +630,29 @@
     ],
     "halo": [
      -0.012,
-     0.052,
-     0.347
+     0.051,
+     0.346
     ],
     "shadow": [
      -0.079,
      0.004,
      0.142
     ],
-    "flipped": 0.129,
-    "namelike": 0.3979,
+    "flipped": 0.1297,
+    "namelike": 0.399,
     "binary_obs": 0.0285,
     "binary_est": 0.0,
     "nearest2x_obs": 0.0396,
     "nearest2x_est": 0.0,
-    "outline_obs": 0.3755,
-    "outline_est": 0.4025,
-    "shadow_obs": 0.3375,
-    "shadow_est": 0.3432,
-    "ruby_obs": 0.012,
-    "ruby_est": 0.0348
+    "outline_obs": 0.3757,
+    "outline_est": 0.403,
+    "shadow_obs": 0.3381,
+    "shadow_est": 0.3447,
+    "ruby_obs": 0.0119,
+    "ruby_est": 0.0346
    },
    "namelike": {
-    "crops": 7955,
+    "crops": 7977,
     "ink_h": [
      12.0,
      19.0,
@@ -666,53 +666,53 @@
     "stroke_rel": [
      0.04,
      0.067,
-     0.12
+     0.125
     ],
     "aa": [
      0.467,
      0.691,
-     0.853
+     0.852
     ],
     "contrast": [
      100.0,
      158.0,
-     218.4
+     218.94
     ],
     "texture": [
-     3.01,
-     17.49,
-     36.328
+     2.996,
+     17.4,
+     36.2
     ],
     "bg_trend": [
      0.0,
      0.044,
-     0.248
+     0.247
     ],
     "halo": [
-     -0.029,
+     -0.03,
      0.043,
      0.361
     ],
     "shadow": [
-     -0.126,
+     -0.123,
      0.0,
-     0.137
+     0.136
     ],
-    "flipped": 0.1464,
+    "flipped": 0.1477,
     "namelike": 1.0,
-    "binary_obs": 0.0419,
+    "binary_obs": 0.0417,
     "binary_est": 0.0,
-    "nearest2x_obs": 0.082,
-    "nearest2x_est": 0.0419,
-    "outline_obs": 0.3613,
-    "outline_est": 0.3589,
-    "shadow_obs": 0.3283,
-    "shadow_est": 0.3205,
-    "ruby_obs": 0.0123,
-    "ruby_est": 0.0365
+    "nearest2x_obs": 0.0817,
+    "nearest2x_est": 0.0416,
+    "outline_obs": 0.3605,
+    "outline_est": 0.3566,
+    "shadow_obs": 0.3286,
+    "shadow_est": 0.321,
+    "ruby_obs": 0.0119,
+    "ruby_est": 0.0346
    },
    "psp:hires": {
-    "crops": 4479,
+    "crops": 4457,
     "ink_h": [
      10.0,
      14.0,
@@ -729,50 +729,50 @@
      0.1
     ],
     "aa": [
-     0.625,
-     0.774,
-     0.884
+     0.623,
+     0.773,
+     0.883
     ],
     "contrast": [
-     92.6,
-     145.6,
-     209.68
+     92.66,
+     145.1,
+     210.2
     ],
     "texture": [
-     6.578,
-     20.19,
-     36.184
+     6.476,
+     20.09,
+     36.15
     ],
     "bg_trend": [
      0.001,
-     0.046,
+     0.045,
      0.219
     ],
     "halo": [
      -0.025,
      0.045,
-     0.293
+     0.294
     ],
     "shadow": [
-     -0.091,
+     -0.089,
      0.004,
      0.114
     ],
-    "flipped": 0.1516,
-    "namelike": 0.3512,
+    "flipped": 0.1523,
+    "namelike": 0.3473,
     "binary_obs": 0.0067,
     "binary_est": null,
-    "nearest2x_obs": 0.0563,
-    "nearest2x_est": 0.0128,
-    "outline_obs": 0.3416,
-    "outline_est": 0.382,
-    "shadow_obs": 0.3633,
-    "shadow_est": 0.4901,
-    "ruby_obs": 0.0228,
-    "ruby_est": 0.0853
+    "nearest2x_obs": 0.0561,
+    "nearest2x_est": 0.0126,
+    "outline_obs": 0.3462,
+    "outline_est": 0.3966,
+    "shadow_obs": 0.3617,
+    "shadow_est": 0.485,
+    "ruby_obs": 0.0222,
+    "ruby_est": 0.0827
    },
    "psp:psp": {
-    "crops": 3707,
+    "crops": 3716,
     "ink_h": [
      12.0,
      15.0,
@@ -789,9 +789,9 @@
      0.125
     ],
     "aa": [
-     0.479,
+     0.48,
      0.642,
-     0.791
+     0.792
     ],
     "contrast": [
      123.0,
@@ -799,40 +799,40 @@
      224.0
     ],
     "texture": [
-     4.702,
-     16.07,
-     31.662
+     4.675,
+     16.085,
+     31.625
     ],
     "bg_trend": [
      0.001,
-     0.029,
+     0.028,
      0.144
     ],
     "halo": [
-     0.0,
+     -0.002,
      0.038,
-     0.291
+     0.288
     ],
     "shadow": [
      -0.05,
      0.0,
-     0.115
+     0.113
     ],
-    "flipped": 0.0731,
-    "namelike": 0.3507,
-    "binary_obs": 0.0262,
+    "flipped": 0.0732,
+    "namelike": 0.3498,
+    "binary_obs": 0.0258,
     "binary_est": 0.0,
-    "nearest2x_obs": 0.034,
+    "nearest2x_obs": 0.0339,
     "nearest2x_est": 0.0,
-    "outline_obs": 0.3124,
+    "outline_obs": 0.3105,
     "outline_est": 0.0,
-    "shadow_obs": 0.2806,
-    "shadow_est": 0.1969,
-    "ruby_obs": 0.0119,
-    "ruby_est": 0.0344
+    "shadow_obs": 0.282,
+    "shadow_est": 0.2013,
+    "ruby_obs": 0.0121,
+    "ruby_est": 0.0355
    },
    "vita:hires": {
-    "crops": 10131,
+    "crops": 10160,
     "ink_h": [
      15.0,
      21.0,
@@ -855,46 +855,46 @@
     ],
     "contrast": [
      110.0,
-     167.6,
+     168.0,
      226.0
     ],
     "texture": [
-     4.26,
-     17.89,
-     36.51
+     4.259,
+     17.785,
+     36.442
     ],
     "bg_trend": [
      0.002,
      0.033,
-     0.176
+     0.177
     ],
     "halo": [
      -0.012,
      0.061,
-     0.39
+     0.386
     ],
     "shadow": [
-     -0.098,
+     -0.097,
      0.005,
-     0.176
+     0.181
     ],
-    "flipped": 0.1414,
-    "namelike": 0.423,
-    "binary_obs": 0.0189,
+    "flipped": 0.1419,
+    "namelike": 0.4269,
+    "binary_obs": 0.0192,
     "binary_est": null,
-    "nearest2x_obs": 0.0347,
+    "nearest2x_obs": 0.0353,
     "nearest2x_est": 0.0,
-    "outline_obs": 0.4138,
-    "outline_est": 0.611,
-    "shadow_obs": 0.3692,
-    "shadow_est": 0.5096,
-    "ruby_obs": 0.0083,
-    "ruby_est": 0.0177
+    "outline_obs": 0.4132,
+    "outline_est": 0.6091,
+    "shadow_obs": 0.3697,
+    "shadow_est": 0.5113,
+    "ruby_obs": 0.0084,
+    "ruby_est": 0.018
    },
    "vita:vita": {
-    "crops": 1673,
+    "crops": 1657,
     "ink_h": [
-     18.0,
+     18.6,
      24.0,
      36.0
     ],
@@ -911,50 +911,50 @@
     "aa": [
      0.361,
      0.511,
-     0.723
+     0.722
     ],
     "contrast": [
-     118.1,
-     191.3,
-     235.0
+     118.0,
+     192.0,
+     235.2
     ],
     "texture": [
-     2.552,
-     13.17,
-     31.392
+     2.54,
+     13.15,
+     31.442
     ],
     "bg_trend": [
      0.001,
      0.018,
-     0.115
+     0.113
     ],
     "halo": [
      0.0,
-     0.059,
-     0.336
+     0.058,
+     0.333
     ],
     "shadow": [
      -0.029,
      0.0,
-     0.062
+     0.063
     ],
-    "flipped": 0.1172,
-    "namelike": 0.4764,
-    "binary_obs": 0.1506,
+    "flipped": 0.1207,
+    "namelike": 0.478,
+    "binary_obs": 0.1503,
     "binary_est": 0.0,
-    "nearest2x_obs": 0.0365,
-    "nearest2x_est": 0.0031,
-    "outline_obs": 0.3748,
-    "outline_est": 0.3815,
-    "shadow_obs": 0.2032,
-    "shadow_est": 0.1868,
+    "nearest2x_obs": 0.0344,
+    "nearest2x_est": 0.0007,
+    "outline_obs": 0.3712,
+    "outline_est": 0.3715,
+    "shadow_obs": 0.207,
+    "shadow_est": 0.1996,
     "ruby_obs": 0.0054,
-    "ruby_est": 0.0041
+    "ruby_est": 0.0043
    }
   },
   "realplus_ink": {
    "all": {
-    "crops": 19995,
+    "crops": 19996,
     "ink_h": [
      10.0,
      17.0,
@@ -971,50 +971,50 @@
      0.111
     ],
     "aa": [
-     0.533,
+     0.532,
      0.703,
      0.837
     ],
     "contrast": [
      113.0,
-     175.5,
+     175.6,
      235.0
     ],
     "texture": [
-     1.66,
-     14.36,
-     31.94
+     1.65,
+     14.495,
+     32.305
     ],
     "bg_trend": [
      0.001,
      0.022,
-     0.133
+     0.134
     ],
     "halo": [
      -0.009,
      0.026,
-     0.271
+     0.27
     ],
     "shadow": [
      -0.046,
      0.005,
-     0.164
+     0.162
     ],
-    "flipped": 0.0756,
-    "namelike": 0.3666,
-    "binary_obs": 0.0144,
+    "flipped": 0.0758,
+    "namelike": 0.3693,
+    "binary_obs": 0.0148,
     "binary_est": 0.0,
-    "nearest2x_obs": 0.0659,
-    "nearest2x_est": 0.0237,
-    "outline_obs": 0.2935,
-    "outline_est": 0.1515,
-    "shadow_obs": 0.3594,
-    "shadow_est": 0.3977,
-    "ruby_obs": 0.0045,
-    "ruby_est": 0.0
+    "nearest2x_obs": 0.066,
+    "nearest2x_est": 0.0239,
+    "outline_obs": 0.2923,
+    "outline_est": 0.1477,
+    "shadow_obs": 0.3539,
+    "shadow_est": 0.384,
+    "ruby_obs": 0.0047,
+    "ruby_est": 0.0007
    },
    "namelike": {
-    "crops": 7331,
+    "crops": 7385,
     "ink_h": [
      10.0,
      17.0,
@@ -1031,50 +1031,50 @@
      0.125
     ],
     "aa": [
-     0.497,
-     0.689,
-     0.842
+     0.493,
+     0.687,
+     0.841
     ],
     "contrast": [
-     102.5,
-     166.0,
-     230.3
+     102.0,
+     165.6,
+     230.0
     ],
     "texture": [
-     1.07,
-     12.25,
-     31.25
+     1.06,
+     12.48,
+     31.376
     ],
     "bg_trend": [
      0.0,
      0.025,
-     0.189
+     0.192
     ],
     "halo": [
-     -0.019,
-     0.018,
-     0.29
+     -0.018,
+     0.019,
+     0.292
     ],
     "shadow": [
      -0.085,
      0.004,
-     0.162
+     0.161
     ],
-    "flipped": 0.0963,
+    "flipped": 0.0988,
     "namelike": 1.0,
-    "binary_obs": 0.028,
+    "binary_obs": 0.029,
     "binary_est": 0.0,
-    "nearest2x_obs": 0.1188,
-    "nearest2x_est": 0.0835,
-    "outline_obs": 0.2911,
-    "outline_est": 0.1441,
-    "shadow_obs": 0.3634,
-    "shadow_est": 0.4075,
-    "ruby_obs": 0.0056,
-    "ruby_est": 0.0051
+    "nearest2x_obs": 0.1156,
+    "nearest2x_est": 0.0799,
+    "outline_obs": 0.2937,
+    "outline_est": 0.1521,
+    "shadow_obs": 0.3596,
+    "shadow_est": 0.3982,
+    "ruby_obs": 0.005,
+    "ruby_est": 0.0024
    },
    "psp:hires": {
-    "crops": 7755,
+    "crops": 7739,
     "ink_h": [
      9.0,
      11.0,
@@ -1086,29 +1086,29 @@
      1.0
     ],
     "stroke_rel": [
-     0.067,
+     0.062,
      0.091,
      0.111
     ],
     "aa": [
-     0.618,
+     0.615,
      0.757,
-     0.862
+     0.861
     ],
     "contrast": [
-     103.2,
+     103.0,
      166.0,
-     226.46
+     224.9
     ],
     "texture": [
-     1.26,
-     15.36,
-     32.42
+     1.198,
+     15.57,
+     32.572
     ],
     "bg_trend": [
      0.0,
-     0.024,
-     0.144
+     0.025,
+     0.145
     ],
     "halo": [
      -0.012,
@@ -1116,25 +1116,25 @@
      0.216
     ],
     "shadow": [
-     -0.05,
+     -0.049,
      0.003,
-     0.092
+     0.09
     ],
-    "flipped": 0.0735,
-    "namelike": 0.3292,
-    "binary_obs": 0.0077,
+    "flipped": 0.0731,
+    "namelike": 0.3344,
+    "binary_obs": 0.0087,
     "binary_est": null,
-    "nearest2x_obs": 0.1262,
-    "nearest2x_est": 0.0919,
-    "outline_obs": 0.2455,
-    "outline_est": 0.0772,
-    "shadow_obs": 0.3197,
-    "shadow_est": 0.3467,
-    "ruby_obs": 0.0054,
-    "ruby_est": 0.0043
+    "nearest2x_obs": 0.1292,
+    "nearest2x_est": 0.0953,
+    "outline_obs": 0.2433,
+    "outline_est": 0.0702,
+    "shadow_obs": 0.3127,
+    "shadow_est": 0.3238,
+    "ruby_obs": 0.0047,
+    "ruby_est": 0.0007
    },
    "vita:hires": {
-    "crops": 12240,
+    "crops": 12257,
     "ink_h": [
      15.0,
      20.0,
@@ -1151,24 +1151,24 @@
      0.118
     ],
     "aa": [
-     0.504,
+     0.505,
      0.663,
-     0.808
+     0.809
     ],
     "contrast": [
      121.0,
      181.0,
-     239.71
+     239.32
     ],
     "texture": [
-     1.8,
-     13.72,
-     31.681
+     1.83,
+     13.75,
+     32.15
     ],
     "bg_trend": [
      0.001,
      0.02,
-     0.125
+     0.127
     ],
     "halo": [
      -0.008,
@@ -1178,25 +1178,25 @@
     "shadow": [
      -0.043,
      0.006,
-     0.214
+     0.21
     ],
-    "flipped": 0.077,
-    "namelike": 0.3904,
-    "binary_obs": 0.0185,
+    "flipped": 0.0774,
+    "namelike": 0.3914,
+    "binary_obs": 0.0187,
     "binary_est": null,
-    "nearest2x_obs": 0.0277,
+    "nearest2x_obs": 0.0261,
     "nearest2x_est": 0.0,
-    "outline_obs": 0.3239,
-    "outline_est": 0.3259,
-    "shadow_obs": 0.3846,
-    "shadow_est": 0.5605,
-    "ruby_obs": 0.0038,
-    "ruby_est": 0.0
+    "outline_obs": 0.3232,
+    "outline_est": 0.3235,
+    "shadow_obs": 0.3799,
+    "shadow_est": 0.5451,
+    "ruby_obs": 0.0047,
+    "ruby_est": 0.0007
    }
   },
   "realplus_grad": {
    "all": {
-    "crops": 20000,
+    "crops": 19999,
     "ink_h": [
      10.0,
      19.0,
@@ -1213,50 +1213,50 @@
      0.111
     ],
     "aa": [
-     0.531,
+     0.532,
      0.703,
-     0.841
+     0.842
     ],
     "contrast": [
-     115.0,
+     114.5,
      175.0,
      235.0
     ],
     "texture": [
-     2.68,
-     15.59,
-     33.481
+     2.71,
+     15.39,
+     33.35
     ],
     "bg_trend": [
      0.001,
      0.024,
-     0.144
+     0.143
     ],
     "halo": [
      -0.008,
-     0.033,
+     0.032,
      0.279
     ],
     "shadow": [
-     -0.051,
+     -0.052,
      0.005,
      0.173
     ],
-    "flipped": 0.0809,
-    "namelike": 0.3144,
-    "binary_obs": 0.0151,
+    "flipped": 0.0804,
+    "namelike": 0.3153,
+    "binary_obs": 0.0135,
     "binary_est": 0.0,
-    "nearest2x_obs": 0.035,
+    "nearest2x_obs": 0.036,
     "nearest2x_est": 0.0,
-    "outline_obs": 0.3062,
-    "outline_est": 0.1903,
-    "shadow_obs": 0.3673,
-    "shadow_est": 0.4171,
-    "ruby_obs": 0.0118,
-    "ruby_est": 0.0343
+    "outline_obs": 0.3065,
+    "outline_est": 0.1911,
+    "shadow_obs": 0.3671,
+    "shadow_est": 0.4167,
+    "ruby_obs": 0.0123,
+    "ruby_est": 0.0362
    },
    "namelike": {
-    "crops": 6288,
+    "crops": 6306,
     "ink_h": [
      10.0,
      19.0,
@@ -1268,55 +1268,55 @@
      2.0
     ],
     "stroke_rel": [
-     0.042,
+     0.043,
      0.071,
      0.118
     ],
     "aa": [
-     0.496,
-     0.691,
-     0.846
+     0.499,
+     0.692,
+     0.847
     ],
     "contrast": [
-     107.1,
-     165.75,
-     226.56
+     106.0,
+     164.9,
+     226.65
     ],
     "texture": [
-     1.947,
-     15.36,
-     34.343
+     1.965,
+     15.08,
+     34.13
     ],
     "bg_trend": [
      0.001,
      0.037,
-     0.227
+     0.226
     ],
     "halo": [
-     -0.019,
-     0.027,
-     0.31
+     -0.021,
+     0.028,
+     0.308
     ],
     "shadow": [
-     -0.101,
-     0.005,
-     0.176
+     -0.106,
+     0.004,
+     0.172
     ],
-    "flipped": 0.1089,
+    "flipped": 0.1105,
     "namelike": 1.0,
-    "binary_obs": 0.028,
+    "binary_obs": 0.027,
     "binary_est": 0.0,
-    "nearest2x_obs": 0.0811,
-    "nearest2x_est": 0.0409,
-    "outline_obs": 0.3193,
-    "outline_est": 0.2305,
-    "shadow_obs": 0.3777,
-    "shadow_est": 0.443,
-    "ruby_obs": 0.0148,
-    "ruby_est": 0.048
+    "nearest2x_obs": 0.0837,
+    "nearest2x_est": 0.0439,
+    "outline_obs": 0.32,
+    "outline_est": 0.2326,
+    "shadow_obs": 0.3693,
+    "shadow_est": 0.4222,
+    "ruby_obs": 0.0159,
+    "ruby_est": 0.053
    },
    "psp:hires": {
-    "crops": 7337,
+    "crops": 7360,
     "ink_h": [
      9.0,
      12.0,
@@ -1328,58 +1328,58 @@
      1.0
     ],
     "stroke_rel": [
-     0.045,
+     0.047,
      0.083,
      0.111
     ],
     "aa": [
-     0.622,
-     0.762,
-     0.868
+     0.624,
+     0.763,
+     0.87
     ],
     "contrast": [
-     105.0,
-     162.0,
+     103.59,
+     161.45,
      223.0
     ],
     "texture": [
-     4.456,
-     17.41,
-     34.564
+     4.579,
+     17.355,
+     34.45
     ],
     "bg_trend": [
      0.001,
-     0.031,
-     0.173
+     0.03,
+     0.174
     ],
     "halo": [
      -0.007,
      0.031,
-     0.225
+     0.223
     ],
     "shadow": [
-     -0.061,
+     -0.062,
      0.004,
-     0.097
+     0.096
     ],
-    "flipped": 0.0859,
-    "namelike": 0.2919,
-    "binary_obs": 0.011,
+    "flipped": 0.087,
+    "namelike": 0.2936,
+    "binary_obs": 0.0076,
     "binary_est": null,
-    "nearest2x_obs": 0.0647,
-    "nearest2x_est": 0.0224,
-    "outline_obs": 0.2733,
-    "outline_est": 0.1652,
-    "shadow_obs": 0.3268,
-    "shadow_est": 0.3703,
+    "nearest2x_obs": 0.0643,
+    "nearest2x_est": 0.0219,
+    "outline_obs": 0.2735,
+    "outline_est": 0.1659,
+    "shadow_obs": 0.3299,
+    "shadow_est": 0.3804,
     "ruby_obs": 0.0224,
-    "ruby_est": 0.0833
+    "ruby_est": 0.0836
    },
    "vita:hires": {
-    "crops": 12663,
+    "crops": 12639,
     "ink_h": [
      16.0,
-     21.0,
+     20.0,
      33.0
     ],
     "stroke": [
@@ -1393,47 +1393,47 @@
      0.111
     ],
     "aa": [
-     0.505,
-     0.665,
-     0.812
+     0.504,
+     0.664,
+     0.81
     ],
     "contrast": [
      123.0,
-     183.0,
+     182.5,
      240.0
     ],
     "texture": [
-     2.11,
-     14.44,
-     32.688
+     2.108,
+     14.2,
+     32.462
     ],
     "bg_trend": [
      0.001,
      0.021,
-     0.126
+     0.124
     ],
     "halo": [
      -0.008,
-     0.034,
-     0.308
+     0.033,
+     0.307
     ],
     "shadow": [
      -0.044,
      0.007,
-     0.223
+     0.225
     ],
-    "flipped": 0.0779,
-    "namelike": 0.3274,
-    "binary_obs": 0.0175,
+    "flipped": 0.0765,
+    "namelike": 0.328,
+    "binary_obs": 0.0169,
     "binary_est": null,
-    "nearest2x_obs": 0.0178,
+    "nearest2x_obs": 0.0195,
     "nearest2x_est": 0.0,
-    "outline_obs": 0.3253,
-    "outline_est": 0.3302,
-    "shadow_obs": 0.3907,
-    "shadow_est": 0.5803,
-    "ruby_obs": 0.0058,
-    "ruby_est": 0.0059
+    "outline_obs": 0.3257,
+    "outline_est": 0.3314,
+    "shadow_obs": 0.3888,
+    "shadow_est": 0.5742,
+    "ruby_obs": 0.0063,
+    "ruby_est": 0.0085
    }
   },
   "dev_teacher_val": {

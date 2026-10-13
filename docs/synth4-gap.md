@@ -16,7 +16,8 @@ on) and turns the gaps into synth4's design inputs. Every number comes from
   ordered for VN text: H15 holds 335 kanji that the 2,104 scripts never use (one occurrence in
   773,000 real label characters) while lacking 611 that they do; FL10 lacks VN kanji such as 璧 篭 攣
   丼 芯 and the full-width capitals Ｐ Ｖ Ｅ Ｌ Ｕ. Recommendation (section 1): a VN-ordered vocab of
-  about **4,986 classes for the always-safe tier** (est. 819,652 B blob, 271 ms, 22 times fewer
+  about **4,986 VN-ordered characters for the always-safe tier** (4,987 output classes with the CTC
+  blank; est. 819,652 B blob, 271 ms, 22 times fewer
   missing characters than FL10's) and **5,630 classes for the preflight tier** (est. 1,185,976 B,
   405 ms, every VN-list kanji). A vocab change needs a new head, so it is a recommendation for the
   next model round; synth4 itself renders H15's vocab.
@@ -36,7 +37,7 @@ on) and turns the gaps into synth4's design inputs. Every number comes from
   text is 1-bit is not measured here** (between the detector's ~3% and the eye's ~54%; the audit's
   independent eye check: 10-35%). synth3 also has more outlined text (truth 68%; real estimates 0-61% by kind), lower-contrast
   text (p50 134-153 grey levels against 146-191), and more coloured fills (17% against 10.4%, with
-  three times the share of green). Ink heights, stroke weights, furigana and background texture
+  2.5 times the share of green). Ink heights, stroke weights, furigana and background texture
   are close.
 - **Errors.** On 2,890 realplus v3 lines that no model has trained on (8,238 crops), the VOCR3
   selections read 2.56% (FL10 class) and 2.23% (H15 class) CER through the C runtime. The errors
@@ -54,16 +55,17 @@ Training-side only, as the task and the conductor (14:45Z) require:
 | realplus v2 (`realplus_train_{ink,grad}_v2.npz`, #57) | crops (styles) | 20,000 + 20,000 sampled |
 | realplus v3 (`$HERD/shared/artifacts/realplus-v3/labels.jsonl`, in progress) | kept labels (text, snapshot 16:4xZ); the 4,308 lines kept since v2 as of 15:00Z (mining) | 51,670 |
 | native-frames pool (`native-frames/pool/labels.jsonl`, in progress) | kept labels (text, snapshot 16:4xZ) | 1,828 |
-| teacher_train + real_train | labels (text), crops (styles), RGB cuts of their screenshots (colour) | 15,931 / 20,000 / 11,375 |
+| teacher_train + real_train | labels (text), crops (styles), RGB cuts of teacher_train's screenshots (colour) | 15,931 / 20,000 / 11,375 |
 | Jiten VN word list (`frequency_list_visual_novel.csv`, CC BY-SA 4.0, as synth3) | 249,118 words with ranks | |
-| VNDB character names (`vndb_chars.tsv`, synth3's dump) | 102,931 Japanese names of usable VNs | |
+| VNDB character names (`vndb_chars.tsv`, synth3's dump) | 102,917 Japanese names of usable VNs | |
 | synth3 v3 (`data/manifests/synth3_shards_v3.json`) | all 100 shards' labels and metadata (exposures), shards 0-1 (styles), 3,000 regions rendered again in RGB with seed 4242 (colour) | 1,000,000 |
 
 Every row of a reserved VN is dropped and counted (`reserved_dropped` in each result file): eval's
 test games (`test_games.json` "all"), `is_test_vn`, the fresh native textbox titles, CLANNAD and
 its family, the owner's Memories Off series and his 13:10Z titles (Aiyoku no Eustia, 428, 街 and
-relations: the three synth3 exclusion manifests at main a40fc23, 50 owner VNs, plus 弟切草 v661,
-which the conductor lists with them) and the development VNs (`exclude_dev_vns.txt`: teacher_val's
+relations: the three synth3 exclusion manifests at main a40fc23, 50 owner VNs, plus 弟切草 v661 and
+Ever 17 v19373, which the fleet's shared-release rule reserves through the 街 and Never 7 release
+packs) and the development VNs (`exclude_dev_vns.txt`: teacher_val's
 181 and the 9 general-VN ones).
 
 **Correction (16:4xZ).** The first version of this PR excluded the Memories Off series but not the
@@ -73,7 +75,11 @@ the text and style statistics (94 of the 20,000 sampled crops) and the colour cu
 the native-frames pool and the mining set held none. Every result file here is from the rerun
 without them. The changes are in the last digit (for example real native PSP contrast p50 177 to
 177.5, coloured fills 0.105 to 0.104); the synth4 curriculum rebuilt from the rerun is identical in
-every class's quota, word list and focus target to the one synth4 rendered with.
+every class's quota, word list and focus target to the one synth4 rendered with. The colour file's
+synth3 render was initially left from the first run (it predated #63's render reservation, so it
+drew one Aiyoku no Eustia background and a few 428/Eustia names; audit B3); it has been re-rendered
+at head with the current manifests (3,000 regions, seed 4242), which is the `synth3 v3` colour row
+above (coloured fills 0.168, green a fifth of them).
 
 The development cohorts (teacher_val and devnative v3, the amendment-8 copies the VOCR3 selection
 uses) appear only in section 3's style table, as a check that the training-side measurements
@@ -98,13 +104,13 @@ because every labelling pipeline dropped such lines, so they only measure FL10.
 
 | real training-side labels | lines | VNs | characters | FL10 cannot emit, per 1,000 | lines holding one |
 |---|---|---|---|---|---|
-| realplus v3 (kept) | 51,670 | 9,724 | 583,472 | 0.629 | 344 |
+| realplus v3 (kept) | 51,668 | 9,723 | 583,468 | 0.629 | 344 |
 | native-frames pool (kept) | 1,828 | 225 | 18,403 | 1.195 | 17 |
-| teacher_train | 9,128 | 1,237 | 96,479 | 0.487 | 43 |
-| real_train | 6,803 | 1,195 | 75,126 | 0.652 | 41 |
+| teacher_train | 9,121 | 1,236 | 96,353 | 0.488 | 43 |
+| real_train | 6,797 | 1,194 | 75,045 | 0.653 | 41 |
 
 (Labels are counted once per VN. The native-frames pool, the only native-console source, has the
-highest FL10 gap.) VNDB character names: 1.73% of the 102,931 names hold a character outside
+highest FL10 gap.) VNDB character names: 1.73% of the 102,917 names hold a character outside
 FL10's vocab, 0.46% one outside H15's (鴇 椛 杠 洸 椚 檸 檬 ... lead).
 
 FL10's most frequent misses by VN weight are 膣 璧 篭 攣 咥 猥 芯 丼 痙 腺 痒 軋 茹 炒 and the full-width
@@ -156,12 +162,13 @@ FL10 pretrain at 96 lines and a 0.5 synthetic share streams 768,000 crops, 0.77 
 | < 1 | 17 | 17 | 0.006 | 0 | 0 |
 | < 10 | 774 | 762 | 0.558 | 48 | 0.015 |
 | < 50 | 2,040 | 2,001 | 4.430 | 551 | 2.086 |
-| < 100 | 2,501 | 2,441 | 9.164 | 987 | 6.686 |
-| < 300 | 3,218 | 3,116 | 27.85 | 1,697 | 25.20 |
+| < 100 | 2,502 | 2,441 | 9.164 | 988 | 6.686 |
+| < 300 | 3,219 | 3,116 | 27.85 | 1,698 | 25.20 |
 
 - H15's vocab: exposures p10 / p50 / p90 = 4 / 65 / 2,087; 66 classes never rendered (ASCII ! ( ) ?
-  ~, Greek, Cyrillic, ‐ ⇔ ∀ and old-form kanji); 4,874 of the 5,354 classes occur in VN text.
-- Font variety: 143 classes are drawn by one font file only, 575 by fewer than 5, 1,229 by fewer
+  ~, Greek, Cyrillic, ‐ ⇔ ∀ and old-form kanji); 4,875 of the 5,354 classes occur in VN text.
+- Font variety: 143 classes are drawn by fewer than 2 font files (77 by exactly one, the other 66
+  never rendered), 575 by fewer than 5, 1,229 by fewer
   than 10 (FL10's vocab: 27, 75, 151).
 - synth3's focus sampling (25% of dialogue lines built around a tail-weighted character) can only
   pick a character that a text pool line holds after vocab filtering; the characters below 10
@@ -221,7 +228,7 @@ scenes with halos), so their estimates are coarse; binary and nearest-2x separat
 texture, trends and realplus GRAD crops, is `tables eval/synth4_gap/stylesum_20261013.json`.
 
 What it shows:
-- **1-bit text: the measure and the eye disagree.** synth3 draws 49% of native PSP crops (28%
+- **1-bit text: the measure and the eye disagree.** synth3 draws 49% of native PSP crops (29%
   pixel fonts plus 1-bit raster on 28% of the rest) and 15% of native Vita crops without
   anti-aliasing. On the aa measure the real native PSP crops sit almost entirely above the 1-bit
   range (aa p10 0.48 against synth3's 0.00; p50 0.64, like synth3's anti-aliased PSP renders at
@@ -257,7 +264,7 @@ What it shows:
 - **Background texture** (std outside the text) is close: synth3 p50 15.8, real 17.6 (native
   13-16 both); PC shots scaled to PSP are busier in real crops (20.2 against 16.4).
 - **Names**: 35.4% of synth3 crops are name-like (at most 6 characters, no dialogue punctuation),
-  real 36.7-39.8% (teacher_val 42.9%).
+  real 31.4-39.8% (realplus GRAD 31.4%, teacher_val 42.9%).
 
 ### Colour and gradient fills
 
@@ -272,14 +279,14 @@ HSV saturation exceeds 0.35 at a value above 0.25:
 | real (teacher_train) | 11,375 | 0.104 | 0.101 | 0.009 | .60 / .08 / .32 |
 | real, native PSP | 2,336 | 0.077 | 0.079 | 0.004 | .69 / .08 / .23 |
 | real, native Vita | 978 | 0.110 | 0.114 | 0.002 | .77 / .03 / .20 |
-| synth3 v3 | 6,926 | 0.172 | 0.147 | 0.011 (truth 0.094) | .46 / .23 / .31 |
-| synth3 v3, native PSP | 1,724 | 0.121 | 0.141 | 0.009 | .50 / .24 / .26 |
-| synth3 v3, native Vita | 1,641 | 0.169 | 0.126 | 0.015 | .45 / .22 / .34 |
+| synth3 v3 | 6,956 | 0.168 | 0.141 | 0.010 (truth 0.103) | .51 / .20 / .29 |
+| synth3 v3, native PSP | 1,685 | 0.133 | 0.122 | 0.011 | .50 / .22 / .28 |
+| synth3 v3, native Vita | 1,685 | 0.171 | 0.122 | 0.008 | .58 / .19 / .23 |
 
-synth3 has 1.7 times the real share of coloured fills, and a quarter of them are green against a
-twelfth of the real ones (real coloured text is mostly red/orange/pink and blue). The gradient
-detector finds only 6% of synth3's gradient fills (FPR 0.6%), so its real estimate is about 5%
-(Rogan-Gladen) against synth3's 9.4%: weak evidence of too many gradients.
+synth3 has 1.6 times the real share of coloured fills, and a fifth of them are green against a
+twelfth of the real ones (2.5x; real coloured text is mostly red/orange/pink and blue). The
+gradient detector catches only 5% of synth3's gradient fills (FPR 0.6%), so its real estimate is
+about 7% (Rogan-Gladen) against synth3's measured 10.3%: weak evidence of too many gradients.
 
 ## 4. Errors of the current selections on unseen training-side lines
 
@@ -287,7 +294,9 @@ The mining set is every realplus v3 line kept since v2 (Claude and Luna agree, o
 families do; 4,308 lines) that is not on a reserved VN and does not wait for an edge check, cut by
 main's `realplus/pool.py` exactly as realplus builds its pool: 2,890 lines from 2,217 VNs, as
 2,862 Vita ink, 2,343 Vita GRAD, 1,811 PSP ink and 1,222 PSP GRAD crops (8,238 crops, 126,604
-characters; `minepool_20261013.json`). No VOCR3 candidate trained on these lines: every fine-tune
+characters; `minepool_20261013.json`). No model trained on these **lines**, but 1,696 of them (59%)
+sit on screenshots whose other lines are in realplus v2's training pool, and 84 repeat a trained
+line's VN and label; so the CERs below are for unseen lines, some on partly-seen screenshots. No VOCR3 candidate trained on these lines: every fine-tune
 read realplus v2, which they are not in. They are PC and home-console shots scaled to the console;
 the native-frames pool could not serve, because 1,910 of its 1,924 kept lines sit on screenshots
 that teacher_train, real_train, realplus v2 or the pseudo-label pools already hold
@@ -338,7 +347,7 @@ selection fixed that. The most frequent insertion is ・ (17).
 | 1-bit text | PSP 49% synthetic; real share not measured (detector ~3%, eye ~54%, audit eye 10-35%); real crisp text has more grey edge pixels than synthetic 1-bit renders | an open design choice, tested by the ablation rather than decided here: synth4 moves most native PSP text to 4-bit anti-aliased rasters (aa4 52%) and keeps 1-bit at about 12% (pixel fonts for variety, the owner's NDS12 among them) |
 | outlines | 61-73% synthetic against 0-61% real (weak detector) | outline rates lowered toward the real estimates |
 | contrast | p50 134-153 against 146-191 | darker dialogue boxes, lighter light boxes, whiter fills |
-| coloured fills | 17% against 10.4%; green 23% of them against 8% | coloured spans and lines rarer; palette away from green |
+| coloured fills | 17% against 10.4%; green 20% of them against 8% (2.5x) | coloured spans and lines rarer; palette away from green |
 | short lines, names, furigana, dakuten, 。/、, 』/」, katakana | the selections' worst strata on unseen lines | focus weights from this mining (training-side), name and short-line shares kept or raised |
 
 These are inputs; synth4's design and its ablation are in `docs/synth4.md`.
@@ -363,7 +372,8 @@ These are inputs; synth4's design and its ablation are in `docs/synth4.md`.
 ## Reproduce
 
 ```sh
-A=$HERD/shared/artifacts; G=$A/synth4-design/gap; X="$A/synth3/mining/exclude_dev_vns.txt $A/native-frames/owner_games_vns.json"
+A=$HERD/shared/artifacts; G=$A/synth4-design/gap   # reserved_vns() also builds in test games, the 3 manifests, v661 and v19373
+X="$A/synth3/mining/exclude_dev_vns.txt $A/native-frames/owner_games_vns.json"
 HEAVY_SLOTS=12 $HERD/heavy.sh synth/synth4_gap.py exposures --shards "$A/synth3-v3/shards/train_v3/synth3_000??.npz" --hash --out $G/exposures_s3v3.json
 HEAVY_SLOTS=12 $HERD/heavy.sh synth/synth4_gap.py text --exposures $G/exposures_s3v3.json \
     --jiten-vn $A/synth3/text/jiten/frequency_list_visual_novel.csv --real realplus_v3=$G/r2/inputs/realplus_v3_labels.jsonl \

@@ -55,9 +55,11 @@ from metrics import norm  # noqa: E402
 DEFAULT_EXCLUDE = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
                    ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",
                    ROOT / "data" / "manifests" / "synth3_exclude_owner_games.json")
-# The conductor's note of the owner's 13:10Z reservation lists 弟切草 (v661) with Aiyoku no Eustia, 428 and
-# 街; data/manifests/synth3_exclude_owner_games.json (a40fc23, #63) holds the other three but not v661.
-EXTRA_RESERVED = frozenset({"v661"})
+# Reserved like the owner's titles by the fleet's shared-release rule, but not in the 50-VN owner manifest
+# (data/manifests/synth3_exclude_owner_games.json, a40fc23, #63): v661 (弟切草, through 街's release; the
+# conductor's 13:10Z note names it) and v19373 (Ever 17, through the Ever17/Never7 pack with the reserved
+# Never 7). Added so a design-steering statistic never reads them.
+EXTRA_RESERVED = frozenset({"v661", "v19373"})
 EXPOSURE_BINS = (1, 10, 50, 100, 300, 1000)
 NAME_STOP = set("「」『』。、！？!?…―（）()")
 

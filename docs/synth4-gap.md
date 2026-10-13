@@ -31,7 +31,8 @@ on) and turns the gaps into synth4's design inputs. Every number comes from
   in synth3, the real native crops look like synth3's anti-aliased renders, not its 1-bit ones
   (2.6% of real PSP crops fall in the 1-bit range, the detector's false-positive rate), but the
   measure is not validated on real JPEG'd crops: by eye, 39 of 72 random real native PSP crops look
-  hard-edged at 3x, and their edge measure is no lower than that of the rest. **How much real PSP
+  hard-edged at 3x, and their edge measure is only slightly lower than the rest's (p50 0.61 against
+  0.64). **How much real PSP
   text is 1-bit is not measured here** (between the detector's ~3% and the eye's ~54%; the audit's
   independent eye check: 10-35%). synth3 also has more outlined text (truth 68%; real estimates 0-61% by kind), lower-contrast
   text (p50 134-153 grey levels against 146-191), and more coloured fills (17% against 10.4%, with
@@ -232,9 +233,9 @@ What it shows:
     The same eye, on a sheet of 36 synth3 native PSP crops with known rendering, found 14 of 19
     1-bit renders (74%) and called 3 of 17 anti-aliased (4-bit) renders hard-edged (18%); corrected
     for those rates the real share would be about 65%, with a very wide interval.
-  - The real crops called hard-edged have the same aa distribution as the rest (p50 0.61 against
-    0.64): JPEG and hinting give crisp real text intermediate edge pixels that synth3's 1-bit
-    renders, after its own JPEG chains, do not have (p50 0.03-0.26).
+  - The real crops called hard-edged have nearly the same aa distribution as the rest (p50 0.61
+    against 0.64, p90 0.71 against 0.81): JPEG and hinting give crisp real text intermediate edge
+    pixels that synth3's 1-bit renders, after its own JPEG chains, do not have (p50 0.03-0.26).
   - The audit's independent eye check (PR #65 review) found 1-bit-looking glyphs (clean staircase
     diagonals, no grey ramps) in roughly 10-35% of random native PSP crops, many of them names,
     labels and chapter titles.

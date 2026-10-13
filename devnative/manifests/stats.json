@@ -1,0 +1,114 @@
+{
+ "files": {
+  "devnative_scene_vn_ink.npz": {
+   "lines": 0,
+   "vns": 0,
+   "by_kind": {},
+   "chars": 0
+  },
+  "devnative_scene_vn_grad.npz": {
+   "lines": 0,
+   "vns": 0,
+   "by_kind": {},
+   "chars": 0
+  },
+  "devnative_strict_ink.npz": {
+   "lines": 38,
+   "vns": 14,
+   "by_kind": {
+    "psp": 38
+   },
+   "chars": 411,
+   "sha256": "a1f0f83e78a0382d8c8efa276d5500162b4a5ebeba6fb1ce958567613f8e2589"
+  },
+  "devnative_strict_grad.npz": {
+   "lines": 26,
+   "vns": 12,
+   "by_kind": {
+    "psp": 26
+   },
+   "chars": 314,
+   "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e"
+  },
+  "devnative_tv_native_ink.npz": {
+   "lines": 513,
+   "vns": 44,
+   "by_kind": {
+    "psp": 405,
+    "vita": 108
+   },
+   "chars": 5876,
+   "sha256": "a3d2c9d91f0460c23aeb303ecb4583de3448f634ababdc5f3163eb0f2d95aec5"
+  },
+  "devnative_tv_native_grad.npz": {
+   "lines": 423,
+   "vns": 44,
+   "by_kind": {
+    "psp": 329,
+    "vita": 94
+   },
+   "chars": 4995,
+   "sha256": "0ed617b97fe3050936c5ca062ec0c7352416a6dc20f92f7efbb18cc4b6ca1782"
+  }
+ },
+ "kept": 551,
+ "dropped": {
+  "skip-ui": 304,
+  "skip-cut": 27,
+  "skip-bad": 26,
+  "pass2-unsure": 3,
+  "linefind-shot": 94,
+  "edge-cut": 4,
+  "pass1-unsure": 12,
+  "edge-unsure": 2,
+  "confirm-skip": 5,
+  "blind-ambiguous-glyph": 2,
+  "edge-bad": 2,
+  "eval-edge-cut": 2,
+  "pass2-skip": 1,
+  "repeat-cap": 2
+ },
+ "by_subset_kind": {
+  "tv_native/psp": 405,
+  "strict/psp": 38,
+  "tv_native/vita": 108
+ },
+ "vns": {
+  "scene_vn": 0,
+  "strict": 14,
+  "tv_native": 44
+ },
+ "screenshots": {
+  "scene_vn": 0,
+  "strict": 22,
+  "tv_native": 194
+ },
+ "how": {
+  "tv_native:consensus": 437,
+  "tv_native:changed": 8,
+  "strict:consensus": 22,
+  "strict:single": 16,
+  "tv_native:single": 68
+ },
+ "grad": {
+  "tv_native:grad-mixed": 24,
+  "tv_native:grad-missed": 41,
+  "tv_native:inside": 296,
+  "tv_native:checked": 127,
+  "strict:grad-missed": 5,
+  "strict:inside": 15,
+  "strict:checked": 11,
+  "tv_native:grad-cuts-label": 15,
+  "tv_native:grad-partial": 8,
+  "tv_native:grad-unsure": 1,
+  "tv_native:grad-extra-text": 1,
+  "strict:grad-partial": 3,
+  "strict:grad-mixed": 2,
+  "strict:grad-cuts-label": 2
+ },
+ "names": 151,
+ "tv_overlap": {
+  "lines": 353,
+  "label_agrees": 353
+ }
+}

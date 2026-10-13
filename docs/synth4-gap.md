@@ -17,7 +17,7 @@ on) and turns the gaps into synth4's design inputs. Every number comes from
   773,000 real label characters) while lacking 611 that they do; FL10 lacks VN kanji such as 璧 篭 攣
   丼 芯 and the full-width capitals Ｐ Ｖ Ｅ Ｌ Ｕ. Recommendation (section 1): a VN-ordered vocab of
   about **4,986 VN-ordered characters for the always-safe tier** (4,987 output classes with the CTC
-  blank; est. 819,652 B blob, 271 ms, 22 times fewer
+  blank; est. 819,761 B blob, 271.1 ms, 22 times fewer
   missing characters than FL10's) and **5,630 classes for the preflight tier** (est. 1,185,976 B,
   405 ms, every VN-list kanji). A vocab change needs a new head, so it is a recommendation for the
   next model round; synth4 itself renders H15's vocab.
@@ -36,7 +36,7 @@ on) and turns the gaps into synth4's design inputs. Every number comes from
   0.64). **How much real PSP
   text is 1-bit is not measured here** (between the detector's ~3% and the eye's ~54%; the audit's
   independent eye check: 10-35%). synth3 also has more outlined text (truth 68%; real estimates 0-61% by kind), lower-contrast
-  text (p50 134-153 grey levels against 146-191), and more coloured fills (17% against 10.4%, with
+  text (p50 134-153 grey levels against 145-192), and more coloured fills (17% against 10.4%, with
   2.5 times the share of green). Ink heights, stroke weights, furigana and background texture
   are close.
 - **Errors.** On 2,890 realplus v3 lines that no model has trained on (8,238 crops), the VOCR3
@@ -53,9 +53,9 @@ Training-side only, as the task and the conductor (14:45Z) require:
 | source | what is used | lines |
 |---|---|---|
 | realplus v2 (`realplus_train_{ink,grad}_v2.npz`, #57) | crops (styles) | 20,000 + 20,000 sampled |
-| realplus v3 (`$HERD/shared/artifacts/realplus-v3/labels.jsonl`, in progress) | kept labels (text, snapshot 16:4xZ); the 4,308 lines kept since v2 as of 15:00Z (mining) | 51,670 |
+| realplus v3 (`$HERD/shared/artifacts/realplus-v3/labels.jsonl`, in progress) | kept labels (text, snapshot 16:4xZ); the 4,308 lines kept since v2 as of 15:00Z (mining) | 51,668 |
 | native-frames pool (`native-frames/pool/labels.jsonl`, in progress) | kept labels (text, snapshot 16:4xZ) | 1,828 |
-| teacher_train + real_train | labels (text), crops (styles), RGB cuts of teacher_train's screenshots (colour) | 15,931 / 20,000 / 11,375 |
+| teacher_train + real_train | labels (text), crops (styles), RGB cuts of teacher_train's screenshots (colour) | 15,918 / 20,000 / 11,364 |
 | Jiten VN word list (`frequency_list_visual_novel.csv`, CC BY-SA 4.0, as synth3) | 249,118 words with ranks | |
 | VNDB character names (`vndb_chars.tsv`, synth3's dump) | 102,917 Japanese names of usable VNs | |
 | synth3 v3 (`data/manifests/synth3_shards_v3.json`) | all 100 shards' labels and metadata (exposures), shards 0-1 (styles), 3,000 regions rendered again in RGB with seed 4242 (colour) | 1,000,000 |
@@ -79,7 +79,7 @@ every class's quota, word list and focus target to the one synth4 rendered with.
 synth3 render was initially left from the first run (it predated #63's render reservation, so it
 drew one Aiyoku no Eustia background and a few 428/Eustia names; audit B3); it has been re-rendered
 at head with the current manifests (3,000 regions, seed 4242), which is the `synth3 v3` colour row
-above (coloured fills 0.168, green a fifth of them).
+below (coloured fills 0.168, green a fifth of them).
 
 The development cohorts (teacher_val and devnative v3, the amendment-8 copies the VOCR3 selection
 uses) appear only in section 3's style table, as a check that the training-side measurements
@@ -211,15 +211,15 @@ scenes with halos), so their estimates are coarse; binary and nearest-2x separat
 | source, target:kind | crops | ink h p10/50/90 | contrast p50 | aa p10/50/90 | binary obs (est) | outline obs (est) | shadow obs (est) | nearest 2x obs | furigana obs (est) |
 |---|---|---|---|---|---|---|---|---|---|
 | synth3 v3, native Vita | 4,817 | 19/25/36 | 153 | .22/.52/.79 | .291 (truth .147) | .457 (truth .609) | .282 (truth .455) | .117 | .016 (truth .049) |
-| real, native Vita | 1,673 | 18/24/36 | 191 | .36/.51/.72 | .151 (0) | .375 (.38) | .203 (.19) | .036 | .005 (0) |
+| real, native Vita | 1,657 | 18/24/36 | 192 | .36/.51/.72 | .150 (0) | .371 (.37) | .207 (.20) | .034 | .005 (0) |
 | synth3 v3, native PSP | 4,692 | 11/16/22 | 146 | .00/.52/.81 | .366 (truth .493) | .557 (truth .730) | .371 (truth .470) | .036 | .017 (truth .054) |
-| real, native PSP | 3,707 | 12/15/23 | 178 | .48/.64/.79 | .026 (0) | .312 (0) | .281 (.20) | .034 | .012 (.03) |
+| real, native PSP | 3,716 | 12/15/23 | 178 | .48/.64/.79 | .026 (0) | .310 (0) | .282 (.20) | .034 | .012 (.04) |
 | synth3 v3, PC renders scaled to Vita | 5,748 | 15/23/34 | 138 | .42/.65/.84 | .067 (truth .066) | .465 (truth .676) | .346 (truth .494) | .027 | .015 (truth .064) |
-| real, PC shots scaled to Vita | 10,131 | 15/21/31 | 168 | .51/.69/.84 | .019 | .414 (.61) | .369 (.51) | .035 | .008 (.02) |
-| realplus v2 ink, scaled to Vita | 12,240 | 15/20/29 | 181 | .50/.66/.81 | .018 | .324 (.33) | .385 (.56) | .028 | .004 (0) |
+| real, PC shots scaled to Vita | 10,160 | 15/21/31 | 168 | .51/.69/.84 | .019 | .413 (.61) | .370 (.51) | .035 | .008 (.02) |
+| realplus v2 ink, scaled to Vita | 12,257 | 15/20/29 | 181 | .51/.66/.81 | .019 | .323 (.32) | .380 (.55) | .026 | .005 (0) |
 | synth3 v3, PC renders scaled to PSP | 3,776 | 10/14/21 | 134 | .51/.72/.86 | .022 | .389 (truth .677) | .397 (truth .510) | .073 | .019 (truth .056) |
-| real, PC shots scaled to PSP | 4,479 | 10/14/20 | 146 | .62/.77/.88 | .007 | .342 (.38) | .363 (.49) | .056 | .023 (.09) |
-| realplus v2 ink, scaled to PSP | 7,755 | 9/11/16 | 166 | .62/.76/.86 | .008 | .245 (.08) | .320 (.35) | .126 | .005 (0) |
+| real, PC shots scaled to PSP | 4,457 | 10/14/20 | 145 | .62/.77/.88 | .007 | .346 (.40) | .362 (.48) | .056 | .022 (.08) |
+| realplus v2 ink, scaled to PSP | 7,739 | 9/11/16 | 166 | .61/.76/.86 | .009 | .243 (.07) | .313 (.32) | .129 | .005 (0) |
 | synth3 v3, PSP upscaled on a Vita | 942 | 22/31/43 | 134 | .32/.74/.87 | .118 (truth .468) | .357 | .305 | .455 (truth .331) | .013 |
 | dev: teacher_val, native PSP / Vita | 424 / 161 | 12/14/22, 19/24/31 | 181 / 191 | .44/.63/.80, .40/.54/.74 | .050 / .074 | .290 / .280 | .307 / .329 | .033 / .056 | .007 / .012 |
 | dev: devnative v3, native PSP / Vita | 784 / 202 | 12/14/27, 20/25/34 | 177 / 204 | .48/.65/.80, .42/.53/.74 | .041 / .040 | .305 / .233 | .367 / .272 | .028 / .035 | .006 / .000 |
@@ -242,7 +242,8 @@ What it shows:
     for those rates the real share would be about 65%, with a very wide interval.
   - The real crops called hard-edged have nearly the same aa distribution as the rest (p50 0.61
     against 0.64, p90 0.71 against 0.81): JPEG and hinting give crisp real text intermediate edge
-    pixels that synth3's 1-bit renders, after its own JPEG chains, do not have (p50 0.03-0.26).
+    pixels that synth3's 1-bit renders, after their non-blur capture chains, do not have (p50
+    0.03-0.26); the ~11% of them that pass a blur chain reach aa 0.51-0.68.
   - The audit's independent eye check (PR #65 review) found 1-bit-looking glyphs (clean staircase
     diagonals, no grey ramps) in roughly 10-35% of random native PSP crops, many of them names,
     labels and chapter titles.
@@ -251,20 +252,20 @@ What it shows:
   detector's ~3% and the eye's ~54%). A related gap is likely: synth3's 1-bit renders come out of
   their capture chains crisper than real 1-bit text does from VNDB's JPEGs.
 - **Outlines are over-represented** (synth3 61-73% of crops by kind; real estimates 0-61%,
-  realplus 8-33%), with the caveat of a weak detector. Shadows are close.
-- **Text contrast is too low** on every kind: synth3 p50 134-153, real 146-191 grey levels. The
+  realplus 7-33%), with the caveat of a weak detector. Shadows are close.
+- **Text contrast is too low** on every kind: synth3 p50 134-153, real 145-192 grey levels. The
   translucent boxes, gamma and JPEG chains of v3 together overshoot.
 - **Ink heights match** per kind (synth3's scaled Vita text is 1-2 px taller at the median);
   realplus's PSP-scaled crops are smaller (ink p50 11 px) than teacher's (14 px).
-- **Furigana**: the detector sees it on 1.6% of synth3 and 0.6-2.3% of real crops; with its 22%
-  recall that is about 5% (synth3's truth) against 1-9%: no measured gap.
+- **Furigana**: the detector sees it on 1.6% of synth3 and 0.6-2.2% of real crops; with its 22%
+  recall that is about 5% (synth3's truth) against 1-8%: no measured gap.
 - **Nearest-2x frames** (a PSP game on a Vita) exist only in synth3 (33% of its 5% psp2x share);
   the training-side real crops have none, and the owner's Adrenaline captures, the case they stand
   for, are test-only. Keep them small.
 - **Background texture** (std outside the text) is close: synth3 p50 15.8, real 17.6 (native
-  13-16 both); PC shots scaled to PSP are busier in real crops (20.2 against 16.4).
+  13-16 both); PC shots scaled to PSP are busier in real crops (20.1 against 16.4).
 - **Names**: 35.4% of synth3 crops are name-like (at most 6 characters, no dialogue punctuation),
-  real 31.4-39.8% (realplus GRAD 31.4%, teacher_val 42.9%).
+  real 31.5-39.9% (realplus GRAD 31.5%, teacher_val 42.9%).
 
 ### Colour and gradient fills
 
@@ -276,7 +277,7 @@ HSV saturation exceeds 0.35 at a value above 0.25:
 
 | source | crops | coloured fill | partly coloured | gradient (detector) | hue of coloured fills r / g / b |
 |---|---|---|---|---|---|
-| real (teacher_train) | 11,375 | 0.104 | 0.101 | 0.009 | .60 / .08 / .32 |
+| real (teacher_train) | 11,364 | 0.104 | 0.101 | 0.009 | .60 / .08 / .32 |
 | real, native PSP | 2,336 | 0.077 | 0.079 | 0.004 | .69 / .08 / .23 |
 | real, native Vita | 978 | 0.110 | 0.114 | 0.002 | .77 / .03 / .20 |
 | synth3 v3 | 6,956 | 0.168 | 0.141 | 0.010 (truth 0.103) | .51 / .20 / .29 |
@@ -346,7 +347,7 @@ selection fixed that. The most frequent insertion is ・ (17).
 | rare vocab characters | 2,040 VN characters under 50 exposures; 1,229 under 10 fonts | a curriculum: every vocab class at least K times across at least F fonts, in real-word contexts (Jiten VN words, pool lines) |
 | 1-bit text | PSP 49% synthetic; real share not measured (detector ~3%, eye ~54%, audit eye 10-35%); real crisp text has more grey edge pixels than synthetic 1-bit renders | an open design choice, tested by the ablation rather than decided here: synth4 moves most native PSP text to 4-bit anti-aliased rasters (aa4 52%) and keeps 1-bit at about 12% (pixel fonts for variety, the owner's NDS12 among them) |
 | outlines | 61-73% synthetic against 0-61% real (weak detector) | outline rates lowered toward the real estimates |
-| contrast | p50 134-153 against 146-191 | darker dialogue boxes, lighter light boxes, whiter fills |
+| contrast | p50 134-153 against 145-192 | darker dialogue boxes, lighter light boxes, whiter fills |
 | coloured fills | 17% against 10.4%; green 20% of them against 8% (2.5x) | coloured spans and lines rarer; palette away from green |
 | short lines, names, furigana, dakuten, 。/、, 』/」, katakana | the selections' worst strata on unseen lines | focus weights from this mining (training-side), name and short-line shares kept or raised |
 

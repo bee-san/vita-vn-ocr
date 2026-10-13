@@ -1,13 +1,13 @@
 {
  "kind": "synth4-gap-colour",
  "schema": 1,
- "note": "real: teacher_train cuts with the owner 13:10Z titles excluded (rerun 16:4xZ); s3v3: a fresh RGB render of synth3 v3 at head (owner-games manifests at main a40fc23 + v661), 3,000 regions seed 4242, rerun after audit B3",
+ "note": "real: teacher_train cuts with the owner 13:10Z titles, v661 and v19373 excluded (head reserved_vns, 11,364 crops); s3v3: a fresh RGB render of synth3 v3 at head (synth3's 3 exclusion manifests), 3,000 regions seed 4242",
  "sources": {
   "real": {
    "all": {
-    "crops": 11375,
-    "coloured": 0.1044,
-    "part": 0.1013,
+    "crops": 11364,
+    "coloured": 0.1045,
+    "part": 0.1014,
     "grad": 0.0088,
     "hue": {
      "r": 0.598,
@@ -16,10 +16,10 @@
     }
    },
    "psp:hires": {
-    "crops": 2254,
-    "coloured": 0.1233,
-    "part": 0.1256,
-    "grad": 0.0106,
+    "crops": 2250,
+    "coloured": 0.1236,
+    "part": 0.1258,
+    "grad": 0.0107,
     "hue": {
      "b": 0.388,
      "r": 0.5,
@@ -38,9 +38,9 @@
     }
    },
    "vita:hires": {
-    "crops": 5807,
-    "coloured": 0.1073,
-    "part": 0.0988,
+    "crops": 5800,
+    "coloured": 0.1074,
+    "part": 0.099,
     "grad": 0.011,
     "hue": {
      "r": 0.587,

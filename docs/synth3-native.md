@@ -131,21 +131,26 @@ recipe, architecture, steps, seeds, export, views, metric, bootstrap and B-bette
 
 - **Arms.** D_s3v3 is study 1b's runs, reused; it trained on this machine at 2b132aa. E_s3nat trains
   from a worktree of that commit with s3e in place of s3v3.
-- **Decision.** devnative v3 decides: strict and tv_native, ink and GRAD crops pooled (1,000 crops of
-  551 lines, 44 VNs), with VN-cluster intervals.
+- **Decision.** devnative v3 decides: strict and tv_native, ink and GRAD crops pooled, with VN-cluster
+  intervals. The rows of Memories Off After Rain (v1331), a series title, are removed first, which leaves
+  986 crops of 543 lines from 43 VNs (`eval/synth3_native_dev.py`).
 - **Reported only.** teacher_val and each devnative file.
 
 RESULTS_PLACEHOLDER
 
 ## Hygiene
 
-- Version 4 uses every exclusion version 3 does. It also uses `data/manifests/synth3_exclude_owner_games.json`:
-  STEINS;GATE and planetarian, their VNDB relations and release partners (`docs/owner-games.md`). Against
-  version 3's render it drops 28 more scene screenshots (3 Vita, 7 PSP, 18 PC) and 134 more name rows (586
-  against 452).
-- s3e keeps version 3's scaled crops, which were rendered before that rule (exposure counts in
-  `docs/owner-games.md`).
-- The calibration used training-side frames and crops only. No setting was tuned on devnative,
+- Version 4 uses every exclusion version 3 does. It also uses
+  `data/manifests/synth3_exclude_owner_games.json`, the owner's test-only Memories Off series (45 VNs,
+  `docs/owner-games.md`, owner 2026-10-13 10:51Z). Against version 3's render this drops 34 PSP and 15 PC
+  scene screenshots and 954 more name rows (1,406 against 452).
+- A first version-4 render (10:17Z) used the 09:25Z owner rule (STEINS;GATE and planetarian) instead. It
+  was stopped at 57% when that rule was superseded and is not used anywhere.
+- s3e keeps version 3's scaled crops. Those were rendered before the rule, and their scenes can include
+  20 PC screenshots of the series (`docs/owner-games.md`).
+- The calibration used training-side frames and crops only. It was repeated without the series once
+  the series was reserved: the 4:2:0 share of Vita frames is 92% (the patch uses the first
+  measurement, 94%), PSP 4:4:4 84%, glyph aspect within 0.003. No setting was tuned on devnative,
   teacher_val or a protected set.
 
 ## Reproduce

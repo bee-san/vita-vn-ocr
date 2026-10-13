@@ -196,3 +196,20 @@ def test_native_protocol_copies_study1b_and_lets_devnative_v3_decide():
     tail = lambda s: s[s.index("--steps"):]  # noqa: E731   the train2.py arguments after --run/--out
     assert tail(run) == tail(old)                         # the same invocation, sources aside
     assert 's3e:0.5:$S3E:stream=1,pool=3,inv=0.2' in run and "2b132aaba600ab7dbceeeb1f3a71877d3202e853" in run
+
+
+def test_dev_filter_drops_only_the_owner_series_rows(tmp_path):
+    sys.path.insert(0, str(ROOT / "eval"))
+    import synth3_native_dev as DEV
+    crops = [np.full((4, 5 + i), i, np.uint8) for i in range(4)]
+    shapes = np.array([c.shape for c in crops], np.int32)
+    meta = [{"id": f"x{i}", "vn": vn} for i, vn in enumerate(["v1", "v1331", "v2", "v1331"])]
+    np.savez_compressed(tmp_path / "d.npz", data=np.concatenate([c.ravel() for c in crops]),
+                        offsets=np.concatenate([[0], np.cumsum(shapes[:, 0] * shapes[:, 1])]), shapes=shapes,
+                        labels=np.array(json.dumps(["あ", "い", "う", "え"], ensure_ascii=False)),
+                        meta=np.array(json.dumps(meta)))
+    kept, dropped = DEV.drop_vns(tmp_path / "d.npz", {"v1331"}, tmp_path / "o.npz")
+    z = np.load(tmp_path / "o.npz")
+    assert (kept, dropped) == (2, 2) and json.loads(str(z["labels"])) == ["あ", "う"]
+    assert [m["id"] for m in json.loads(str(z["meta"]))] == ["x0", "x2"]
+    assert np.array_equal(z["data"][z["offsets"][1]:z["offsets"][2]].reshape(z["shapes"][1]), crops[2])

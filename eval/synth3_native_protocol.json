@@ -6,31 +6,103 @@
  "base_protocol": {
   "file": "eval/synth3_study1b_protocol.json",
   "sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
-  "copied_exactly": ["architecture", "recipe", "checkpoint", "export", "views", "metric", "bootstrap", "the comparison's B-better-than-A rule (VN-cluster interval entirely below 0 and every seed pair below 0)"],
+  "copied_exactly": [
+   "architecture",
+   "recipe",
+   "checkpoint",
+   "export",
+   "views",
+   "metric",
+   "bootstrap",
+   "the comparison's B-better-than-A rule (VN-cluster interval entirely below 0 and every seed pair below 0)"
+  ],
   "changed": "the arms (D_s3v3 reused, E_s3nat new) and the deciding development set (devnative v3 instead of teacher_val: the question is about native console frames; teacher_val is two thirds PC screenshots scaled down)"
  },
  "machine": "dev-dsk-skerraut-main-1a-dc2efe10 (64 cores), the machine D_s3v3 trained on (study 1b, 2026-10-13 02:5x-05:02Z)",
- "architecture": {"name": "FL10 (the shipped default's topology)", "width": 1.0, "bottleneck": 96, "depth": 1, "ctx": 2, "ctx_k": 5, "height": 32,
-                  "vocab": {"file": "$HERD/shared/artifacts/train2/release/FL10_vocab_3500.txt", "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8"}},
- "recipe": {"trainer": "train/train2.py at commit 2b132aaba600ab7dbceeeb1f3a71877d3202e853, the commit D_s3v3 seeds 1 and 2 trained at (their logs' first line); E_s3nat runs from a worktree of that commit, which eval/synth3_native_run.sh checks",
-            "init": "from scratch", "steps": 16000, "batch": 96, "lr": 0.002, "warmup": 1000, "final_lr": 0.05, "wd": 0.01, "ema": 0.999, "threads": 5,
-            "eval_every": 4000, "keep_evals": true, "kd": "none",
-            "note": "study 1's recipe exactly (train2's pretraining at 16,000 steps)"},
- "sources": {
-  "nv": {"files": "$HERD/shared/artifacts/nvsynth/shards/nv_train_0*.npz", "shards": 42, "lines": 845519, "opts": "stream=1,pool=3,inv=0.2", "note": "as in study 1b"},
-  "s3v3": {"files": "$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz", "shards": 100, "opts": "stream=1,pool=3,inv=0.2",
-           "pin": {"file": "data/manifests/synth3_shards_v3.json", "sha256": "5f747d59b008e0e006d99e162950e725e9917305e20757b66b34f0553a4c0b71"}},
-  "s3e": {"files": "$HERD/shared/artifacts/native-frames/shards/e_v4/synth3e_000??.npz", "shards": 100, "opts": "stream=1,pool=3,inv=0.2",
-          "construction": "shard i is version 3's pinned shard i with every crop of platform vita, psp or psp2x replaced, in place and in order, by the next crop of version 4's native shard i (generator version 4 = synth/synth3.py with data/manifests/synth3_v4_native_cfg.json, seed 20261012, 100 shards of 5,500 crops, native platforms only, version 3's native length histogram as the length target); version 3's crops of platform 'scaled' (47%) are kept byte for byte. Same 1,000,000 crops per 100 shards, same positions, so both arms stream the same structure and differ only in how their native crops were rendered",
-          "pin": "data/manifests/synth3_shards_e.json (every merged and native shard's sha256, the recipe, the per-shard replacement counts), committed and pushed before E_s3nat trains"}
+ "architecture": {
+  "name": "FL10 (the shipped default's topology)",
+  "width": 1.0,
+  "bottleneck": 96,
+  "depth": 1,
+  "ctx": 2,
+  "ctx_k": 5,
+  "height": 32,
+  "vocab": {
+   "file": "$HERD/shared/artifacts/train2/release/FL10_vocab_3500.txt",
+   "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8"
+  }
  },
- "arm_sources": {"D_s3v3": {"nv": 0.5, "s3v3": 0.5}, "E_s3nat": {"nv": 0.5, "s3e": 0.5}},
- "arms": {"D_s3v3": ["D_s3v3_seed1", "D_s3v3_seed2"], "E_s3nat": ["E_s3nat_seed1", "E_s3nat_seed2"]},
- "seeds": [1, 2],
+ "recipe": {
+  "trainer": "train/train2.py at commit 2b132aaba600ab7dbceeeb1f3a71877d3202e853, the commit D_s3v3 seeds 1 and 2 trained at (their logs' first line); E_s3nat runs from a worktree of that commit, which eval/synth3_native_run.sh checks",
+  "init": "from scratch",
+  "steps": 16000,
+  "batch": 96,
+  "lr": 0.002,
+  "warmup": 1000,
+  "final_lr": 0.05,
+  "wd": 0.01,
+  "ema": 0.999,
+  "threads": 5,
+  "eval_every": 4000,
+  "keep_evals": true,
+  "kd": "none",
+  "note": "study 1's recipe exactly (train2's pretraining at 16,000 steps)"
+ },
+ "sources": {
+  "nv": {
+   "files": "$HERD/shared/artifacts/nvsynth/shards/nv_train_0*.npz",
+   "shards": 42,
+   "lines": 845519,
+   "opts": "stream=1,pool=3,inv=0.2",
+   "note": "as in study 1b"
+  },
+  "s3v3": {
+   "files": "$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz",
+   "shards": 100,
+   "opts": "stream=1,pool=3,inv=0.2",
+   "pin": {
+    "file": "data/manifests/synth3_shards_v3.json",
+    "sha256": "5f747d59b008e0e006d99e162950e725e9917305e20757b66b34f0553a4c0b71"
+   }
+  },
+  "s3e": {
+   "files": "$HERD/shared/artifacts/native-frames/shards/e_v4/synth3e_000??.npz",
+   "shards": 100,
+   "opts": "stream=1,pool=3,inv=0.2",
+   "construction": "shard i is version 3's pinned shard i with every crop of platform vita, psp or psp2x replaced, in place and in order, by the next crop of version 4's native shard i (generator version 4 = synth/synth3.py with data/manifests/synth3_v4_native_cfg.json, seed 20261012, 100 shards of 5,500 crops, native platforms only, version 3's native length histogram as the length target); version 3's crops of platform 'scaled' (47%) are kept byte for byte. Same 1,000,000 crops per 100 shards, same positions, so both arms stream the same structure and differ only in how their native crops were rendered",
+   "pin": "data/manifests/synth3_shards_e.json (every merged and native shard's sha256, the recipe, the per-shard replacement counts), committed and pushed before E_s3nat trains"
+  }
+ },
+ "arm_sources": {
+  "D_s3v3": {
+   "nv": 0.5,
+   "s3v3": 0.5
+  },
+  "E_s3nat": {
+   "nv": 0.5,
+   "s3e": 0.5
+  }
+ },
+ "arms": {
+  "D_s3v3": [
+   "D_s3v3_seed1",
+   "D_s3v3_seed2"
+  ],
+  "E_s3nat": [
+   "E_s3nat_seed1",
+   "E_s3nat_seed2"
+  ]
+ },
+ "seeds": [
+  1,
+  2
+ ],
  "runs": {
   "D_s3v3": "reused, not retrained: study 1b's runs ($HERD/shared/artifacts/synth3-v3/ablation/runs/D_s3v3_seed{1,2}/ckpt_step16000.pt), trained with this recipe on this machine; nothing of them was scored on devnative v3 by this study's agent before this protocol",
-  "E_s3nat": {"script": "eval/synth3_native_run.sh SEED (study 1b's train2.py invocation with source s3e in place of s3v3, writing under $HERD/shared/artifacts/native-frames/study/runs)",
-              "launch": "HEAVY_SLOTS=10 $HERD/heavy.sh timeout 36000 bash eval/synth3_native_run.sh SEED < /dev/null"}
+  "E_s3nat": {
+   "script": "eval/synth3_native_run.sh SEED (study 1b's train2.py invocation with source s3e in place of s3v3, writing under $HERD/shared/artifacts/native-frames/study/runs)",
+   "launch": "HEAVY_SLOTS=10 $HERD/heavy.sh timeout 36000 bash eval/synth3_native_run.sh SEED < /dev/null"
+  }
  },
  "checkpoint": "ckpt_step16000.pt of every run (EMA weights). No checkpoint selection: the in-training teacher_val evaluations are logged for monitoring only.",
  "export": "eval/synth3_ablation.py export (train/export.py, per-channel int8) -> C runtime W8I through runtime/pyvocr.py, max width 1024; all four checkpoints are exported by the same code (eval/synth3_native_score.sh), D_s3v3's again",
@@ -39,25 +111,105 @@
    "role": "decides",
    "frozen": "devnative.status COHORT_V3 14ae22d48d5d100bc681763df3beabcc64d38fa7 (tag devnative-cohort-v3), the version VOCR3 selects on; chosen before any score of this study",
    "files": {
-    "devnative_strict_ink.npz": {"set": "$HERD/shared/artifacts/devnative/v3/devnative_strict_ink.npz", "sha256": "a1f0f83e78a0382d8c8efa276d5500162b4a5ebeba6fb1ce958567613f8e2589", "lines": 38, "vns": 14},
-    "devnative_strict_grad.npz": {"set": "$HERD/shared/artifacts/devnative/v3/devnative_strict_grad.npz", "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e", "lines": 26, "vns": 12},
-    "devnative_tv_native_ink.npz": {"set": "$HERD/shared/artifacts/devnative/v3/devnative_tv_native_ink.npz", "sha256": "a3d2c9d91f0460c23aeb303ecb4583de3448f634ababdc5f3163eb0f2d95aec5", "lines": 513, "vns": 44},
-    "devnative_tv_native_grad.npz": {"set": "$HERD/shared/artifacts/devnative/v3/devnative_tv_native_grad.npz", "sha256": "0ed617b97fe3050936c5ca062ec0c7352416a6dc20f92f7efbb18cc4b6ca1782", "lines": 423, "vns": 44}
+    "devnative_strict_ink.npz": {
+     "set": "$HERD/shared/artifacts/native-frames/study/dev/devnative_strict_ink_noowner.npz",
+     "sha256": "742944e99dd058bdfbce5c298100cec1b85d37bff5378670b301fa61a1e3cde7",
+     "lines": 34,
+     "vns": 13,
+     "from": {
+      "set": "$HERD/shared/artifacts/devnative/v3/devnative_strict_ink.npz",
+      "sha256": "a1f0f83e78a0382d8c8efa276d5500162b4a5ebeba6fb1ce958567613f8e2589",
+      "rows_dropped": 4
+     }
+    },
+    "devnative_strict_grad.npz": {
+     "set": "$HERD/shared/artifacts/native-frames/study/dev/devnative_strict_grad_noowner.npz",
+     "sha256": "76bb3329a24866b331b55a8526a82092b3ec084e4e1e7b368c8cf1c835572d3f",
+     "lines": 23,
+     "vns": 11,
+     "from": {
+      "set": "$HERD/shared/artifacts/devnative/v3/devnative_strict_grad.npz",
+      "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e",
+      "rows_dropped": 3
+     }
+    },
+    "devnative_tv_native_ink.npz": {
+     "set": "$HERD/shared/artifacts/native-frames/study/dev/devnative_tv_native_ink_noowner.npz",
+     "sha256": "baef59f132acd3242b237c9d0d168b3d5202f6c381b716109cb20e0fa044e985",
+     "lines": 509,
+     "vns": 43,
+     "from": {
+      "set": "$HERD/shared/artifacts/devnative/v3/devnative_tv_native_ink.npz",
+      "sha256": "a3d2c9d91f0460c23aeb303ecb4583de3448f634ababdc5f3163eb0f2d95aec5",
+      "rows_dropped": 4
+     }
+    },
+    "devnative_tv_native_grad.npz": {
+     "set": "$HERD/shared/artifacts/native-frames/study/dev/devnative_tv_native_grad_noowner.npz",
+     "sha256": "2eb847ebf01d76741b1fdd2d1b92debf719b6a8edaacb8e8114d697632a73f3b",
+     "lines": 420,
+     "vns": 43,
+     "from": {
+      "set": "$HERD/shared/artifacts/devnative/v3/devnative_tv_native_grad.npz",
+      "sha256": "0ed617b97fe3050936c5ca062ec0c7352416a6dc20f92f7efbb18cc4b6ca1782",
+      "rows_dropped": 3
+     }
+    }
    },
-   "decides_on": "the pooled set: all four files merged by eval/synth3_study2.py merge (strict + tv_native, ink + grad crops; 1,000 crops of 551 lines from 44 VNs), VNs resampled as clusters, as study 2 pools devnative",
-   "note": "native Vita and PSP console frames only (VNDB screenshots of PS Vita and PSP releases), labelled by two local engines and independent Claude reviews; every devnative VN is a teacher_val VN, so it is not independent of teacher_val"
+   "decides_on": "the pooled set: the four filtered files merged by eval/synth3_study2.py merge (strict + tv_native, ink + grad crops; 986 crops of 543 lines from 43 VNs), VNs resampled as clusters, as study 2 pools devnative",
+   "note": "native Vita and PSP console frames only (VNDB screenshots of PS Vita and PSP releases), labelled by two local engines and independent Claude reviews; every devnative VN is a teacher_val VN, so it is not independent of teacher_val",
+   "owner_rule": "the owner's 10:51Z rule reserves the Memories Off series for a fresh native test, so nothing may be selected on it: the deciding files are devnative v3's without the rows of any VN of data/manifests/synth3_exclude_owner_games.json (v1331, Memories Off After Rain: 14 rows), written by eval/synth3_native_dev.py filter; every other row is v3's, unchanged"
   },
-  "teacher_val": {"role": "reported only; it cannot change the decision", "set": "$HERD/shared/artifacts/teacher/teacher_val.npz",
-                  "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671", "lines": 1651, "vns": 181}
+  "teacher_val": {
+   "role": "reported only; it cannot change the decision",
+   "set": "$HERD/shared/artifacts/native-frames/study/dev/teacher_val_noowner.npz",
+   "sha256": "f5c0032041c14b31bff87b52a56381b8f0d3e84e2f6cfd78a3b600e55751f81e",
+   "lines": 1643,
+   "vns": 180,
+   "from": {
+    "set": "$HERD/shared/artifacts/teacher/teacher_val.npz",
+    "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671",
+    "rows_dropped": 8
+   }
+  }
  },
- "views": ["rv", "rvn"],
+ "views": [
+  "rv",
+  "rvn"
+ ],
  "metric": "CER (eval/metrics.norm both sides, Levenshtein over reference characters) over all development lines, both views, errors summed over the arm's two seeds",
- "bootstrap": {"resamples": 10000, "seed": 0, "unit": "VN (cluster); line-level intervals reported alongside"},
- "comparisons": {"E_vs_D": ["D_s3v3", "E_s3nat"]},
- "decision": "E_s3nat is better than D_s3v3 iff the VN-cluster 95% interval of CER(E_s3nat) - CER(D_s3v3) on devnative v3 pooled (both views, errors summed over the arm's two seeds) lies entirely below 0 and CER(E_s3nat) - CER(D_s3v3) < 0 for each seed pair (same seed). D_s3v3 is better under the mirrored rule (interval entirely above 0 and every seed pair above 0). Otherwise there is no measured difference and version 3 stays synth3's recommended VN-style data.",
- "reported_not_decided": ["each devnative v3 file separately, with the same statistics", "teacher_val, both views, with the same statistics", "every stratum of eval/synth3_ablation.py (target, kind, polarity, ink height, length, name-like, dakuten/small kana, rare kanji, Latin/digits)", "per-VN better/worse counts and the largest per-VN regressions (no per-VN veto)", "the in-training teacher_val and synthetic validation curves", "version 4's calibration against training-side real native crops (synth/native_calib.py) and its label audit"],
- "order": ["1. this protocol is committed and pushed", "2. version 4's native shards are rendered, merged into s3e and pinned (data/manifests/synth3_shards_e.json), committed and pushed", "3. E_s3nat seeds 1 and 2 train (heavy.sh slots as the conductor allows: HEAVY_SLOTS=10, from 13:00Z)", "4. no development score of this study is computed before both E_s3nat ckpt_step16000.pt exist", "5. export all four checkpoints, score devnative v3 (four files), merge, compare; then teacher_val; commit the result JSON"],
- "protected_test": "No model of this study is scored on vita-test, psp-test, the fresh native textbox test, CLANNAD or the owner's native test titles (STEINS;GATE, planetarian) by this study's agent; only the conductor may, after this result is committed, and those numbers cannot change the decision, the recipe or the dataset.",
- "hygiene": ["version 4's names, scenes, text and calibration exclude everything version 3 excludes plus the owner's Vita games STEINS;GATE (v2002) and planetarian (v34) with every VNDB relation and release partner (data/manifests/synth3_exclude_owner_games.json, owner 2026-10-13 09:25Z); version 3's scaled crops, kept in s3e, were rendered before that rule (exposure counts in data/manifests/owner_games_exposure_20261013.json)", "version 4's settings were measured on training-side native screenshots and crops only (realdata / teacher native frames of training-side VNs; teacher_train + real_train native crops with reserved and development VNs dropped); never on devnative, teacher_val or a protected set", "devnative v3 holds no eval or linefind screenshot (docs/devnative.md)"],
+ "bootstrap": {
+  "resamples": 10000,
+  "seed": 0,
+  "unit": "VN (cluster); line-level intervals reported alongside"
+ },
+ "comparisons": {
+  "E_vs_D": [
+   "D_s3v3",
+   "E_s3nat"
+  ]
+ },
+ "decision": "E_s3nat is better than D_s3v3 iff the VN-cluster 95% interval of CER(E_s3nat) - CER(D_s3v3) on devnative v3 pooled (the owner's test series removed) (both views, errors summed over the arm's two seeds) lies entirely below 0 and CER(E_s3nat) - CER(D_s3v3) < 0 for each seed pair (same seed). D_s3v3 is better under the mirrored rule (interval entirely above 0 and every seed pair above 0). Otherwise there is no measured difference and version 3 stays synth3's recommended VN-style data.",
+ "reported_not_decided": [
+  "each devnative v3 file separately, with the same statistics",
+  "teacher_val, both views, with the same statistics",
+  "every stratum of eval/synth3_ablation.py (target, kind, polarity, ink height, length, name-like, dakuten/small kana, rare kanji, Latin/digits)",
+  "per-VN better/worse counts and the largest per-VN regressions (no per-VN veto)",
+  "the in-training teacher_val and synthetic validation curves",
+  "version 4's calibration against training-side real native crops (synth/native_calib.py) and its label audit"
+ ],
+ "order": [
+  "1. this protocol is committed and pushed",
+  "2. version 4's native shards are rendered, merged into s3e and pinned (data/manifests/synth3_shards_e.json), committed and pushed",
+  "3. E_s3nat seeds 1 and 2 train (heavy.sh slots as the conductor allows: HEAVY_SLOTS=10, from 13:00Z)",
+  "4. no development score of this study is computed before both E_s3nat ckpt_step16000.pt exist",
+  "5. export all four checkpoints, score devnative v3 (four files), merge, compare; then teacher_val; commit the result JSON"
+ ],
+ "protected_test": "No model of this study is scored on vita-test, psp-test, the fresh native textbox test, CLANNAD or the owner's native test of the Memories Off series by this study's agent; only the conductor may, after this result is committed, and those numbers cannot change the decision, the recipe or the dataset.",
+ "hygiene": [
+  "version 4's names, scenes, text and calibration exclude everything version 3 excludes plus the owner's test-only series Memories Off (v1152 and every VN of its series, their direct relations and release partners: 45 VNs, data/manifests/synth3_exclude_owner_games.json, owner 2026-10-13 10:51Z); version 3's scaled crops, kept in s3e, were rendered before that rule (exposure counts in data/manifests/owner_games_exposure_20261013.json)",
+  "version 4's settings were measured on training-side native screenshots and crops only (realdata / teacher native frames of training-side VNs; teacher_train + real_train native crops with reserved and development VNs dropped), first under the 09:25Z rule and again without the Memories Off series once it was reserved (unchanged within 0.003 of glyph aspect, eval/synth3_native_calibration_20261013.json); never on devnative, teacher_val or a protected set",
+  "devnative v3 holds no eval or linefind screenshot (docs/devnative.md)"
+ ],
  "amendments": []
 }

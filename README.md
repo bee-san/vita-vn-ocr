@@ -24,6 +24,7 @@ setup_env.sh, requirements.*   Python env (uv; CPU torch)
 data/fetch_assets.py           OFL fonts, Aozora/Wikipedia text, VNDB screenshot list
 data/label_real.py             first real-line pseudo-labeller (PP-OCRv5 server + manga-ocr agreement)
 realdata/                      real training lines from Vita, PSP and scaled PC screenshots (4-reader vote)
+devnative/                     native Vita/PSP development cohort from VNDB screenshots, and its labelling pipeline (docs/devnative.md)
 data/vocab.txt                 output character set
 teacher/                       real-screenshot labels: MeikiOCR first, local owocr engines vote (docs/teacher.md)
 synth/                         synthetic dialogue-box renderer and corpus builder

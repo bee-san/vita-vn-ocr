@@ -1,0 +1,93 @@
+{
+ "kind": "vocr3-realplus-decision",
+ "size": "H15",
+ "protocol_sha256": "27fb605c50f35d3096c11fa326e82845b067d009f86802ee1b433e781f99be20",
+ "computed": "2026-10-13T12:15:34Z",
+ "pairs": [
+  [
+   "ft_H15_A_s2_seed1",
+   "rp_H15_A_s2_seed1"
+  ],
+  [
+   "ft_H15_A_s2_seed2",
+   "rp_H15_A_s2_seed2"
+  ],
+  [
+   "ft_H15_C_mix_seed1",
+   "rp_H15_C_mix_seed1"
+  ],
+  [
+   "ft_H15_C_mix_seed2",
+   "rp_H15_C_mix_seed2"
+  ]
+ ],
+ "teacher_val": {
+  "delta_points": -0.192,
+  "ci95": [
+   -0.292,
+   -0.095
+  ],
+  "cer_a": 0.02309,
+  "cer_b": 0.02117
+ },
+ "per_pair": {
+  "ft_H15_A_s2_seed1->rp_H15_A_s2_seed1": {
+   "delta_points": -0.196,
+   "ci95": [
+    -0.357,
+    -0.04
+   ],
+   "cer_a": 0.02428,
+   "cer_b": 0.02232
+  },
+  "ft_H15_A_s2_seed2->rp_H15_A_s2_seed2": {
+   "delta_points": -0.255,
+   "ci95": [
+    -0.448,
+    -0.064
+   ],
+   "cer_a": 0.02328,
+   "cer_b": 0.02073
+  },
+  "ft_H15_C_mix_seed1->rp_H15_C_mix_seed1": {
+   "delta_points": -0.194,
+   "ci95": [
+    -0.369,
+    -0.027
+   ],
+   "cer_a": 0.0229,
+   "cer_b": 0.02097
+  },
+  "ft_H15_C_mix_seed2->rp_H15_C_mix_seed2": {
+   "delta_points": -0.123,
+   "ci95": [
+    -0.316,
+    0.048
+   ],
+   "cer_a": 0.02188,
+   "cer_b": 0.02065
+  }
+ },
+ "devnative": {
+  "delta_points": 0.026,
+  "ci95": [
+   -0.116,
+   0.18
+  ],
+  "cer_a": 0.02222,
+  "cer_b": 0.02248
+ },
+ "devnative_files": [
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_strict_ink.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_strict_grad.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_tv_native_ink.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_tv_native_grad.json"
+ ],
+ "devnative_sha256": [
+  "574c170e1f834f37adff10f120a9c7b6c4bdf84217d026863ccf77a97bc2e985",
+  "8fe4c09c3edc036bda200db6a19d0454d504de6157314941635a5eae855f3049",
+  "29727578b91e5b4e5fcc9d8f0986707fcb19f663537d6a12e26b09c312ac91fd",
+  "dc1390f796709536e338a06da1dcea7d0a43649ab695d8ac2ff326329477bf19"
+ ],
+ "adopted": true
+}

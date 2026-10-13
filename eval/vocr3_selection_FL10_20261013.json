@@ -1,0 +1,157 @@
+{
+ "kind": "vocr3-selection",
+ "size": "FL10",
+ "protocol_sha256": "27fb605c50f35d3096c11fa326e82845b067d009f86802ee1b433e781f99be20",
+ "computed": "2026-10-13T13:32:52Z",
+ "teacher_val": {
+  "files": [
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/teacher_val.json"
+  ],
+  "lines": 1643
+ },
+ "devnative": {
+  "files": [
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/devnative_strict_ink.json",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/devnative_strict_grad.json",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/devnative_tv_native_ink.json",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/devnative_tv_native_grad.json"
+  ],
+  "commit": "14ae22d48d5d100bc681763df3beabcc64d38fa7",
+  "lines": 986,
+  "sha256": [
+   "256053b3abe0e6b8bfe707d76043070141f2357a29a410db3b3c3aac1f7d9a9f",
+   "2683f0591dee0ab83bfc6f04cc74cdc396dff63ea73e78d57daaa9c6bb778754",
+   "d2a61d75679ecab211bae5c980b53fbe58e5ed95ea626122fad3aefa2fd9db81",
+   "a1a4884cb4a2851b314ac04aff90bcfad481e26e32cfac163d34b91b75fa6bff"
+  ]
+ },
+ "realplus_decision": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/realplus_decision.json",
+  "adopted": true
+ },
+ "candidates": [
+  {
+   "run": "rp_FL10_A_s2_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_FL10_A_s2_seed1_w8.vocr",
+   "blob_sha256": "3826b0f3e20b1751716fb4b94a47d2a05a86b3afd3b5a0e883b5bdace046992b",
+   "teacher_val_cer": 0.032757,
+   "devnative_cer": 0.035366,
+   "score": 0.034061,
+   "budget": {
+    "blob_bytes": 657664,
+    "arena_w8i": 124832,
+    "ms_333_high": 235.28901280352085,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/budget/a9/rp_FL10_A_s2_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_FL10_A_s2_seed2",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_FL10_A_s2_seed2_w8.vocr",
+   "blob_sha256": "1bef7ad454fa3a75094517d98e215c75a1759b6b55e3b9997277ac470b1dc18f",
+   "teacher_val_cer": 0.03129,
+   "devnative_cer": 0.035453,
+   "score": 0.033372,
+   "budget": {
+    "blob_bytes": 657664,
+    "arena_w8i": 124832,
+    "ms_333_high": 235.28901063426295,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/budget/a9/rp_FL10_A_s2_seed2_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_FL10_A_s2_seed3",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_FL10_A_s2_seed3_w8.vocr",
+   "blob_sha256": "df8cbe36e4a3ad779365b9b5ecd97e22e7de9a5fae889c51cc4d63e4c0a04c3c",
+   "teacher_val_cer": 0.031144,
+   "devnative_cer": 0.035975,
+   "score": 0.033559,
+   "budget": {
+    "blob_bytes": 657664,
+    "arena_w8i": 124832,
+    "ms_333_high": 235.2889102390717,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/budget/a9/rp_FL10_A_s2_seed3_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_FL10_C_mix_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_FL10_C_mix_seed1_w8.vocr",
+   "blob_sha256": "b44544fdb7269b59f3265b675c67f5683ca0401755cbd292387dd2c430aa2647",
+   "teacher_val_cer": 0.031584,
+   "devnative_cer": 0.031364,
+   "score": 0.031474,
+   "budget": {
+    "blob_bytes": 657664,
+    "arena_w8i": 124832,
+    "ms_333_high": 235.2889894181101,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/budget/a9/rp_FL10_C_mix_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_FL10_C_mix_seed2",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_FL10_C_mix_seed2_w8.vocr",
+   "blob_sha256": "bd6597c22b2377e83787f1e981f116c128419cd00e2bcdde9c1a03a56a931ee4",
+   "teacher_val_cer": 0.030616,
+   "devnative_cer": 0.032495,
+   "score": 0.031556,
+   "budget": {
+    "blob_bytes": 657664,
+    "arena_w8i": 124832,
+    "ms_333_high": 235.28892823062162,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/budget/a9/rp_FL10_C_mix_seed2_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_FL10_C_mix_seed3",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_FL10_C_mix_seed3_w8.vocr",
+   "blob_sha256": "02355f043f4ef47aaf76b26c47f0becf4e7efa1183122d7043c3c378e27baa05",
+   "teacher_val_cer": 0.031848,
+   "devnative_cer": 0.034322,
+   "score": 0.033085,
+   "budget": {
+    "blob_bytes": 657664,
+    "arena_w8i": 124832,
+    "ms_333_high": 235.28900962059106,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/budget/a9/rp_FL10_C_mix_seed3_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_FL10_C_mix_pre64k_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_FL10_C_mix_pre64k_seed1_w8.vocr",
+   "blob_sha256": "af620cecf2a13fe49c4d9845b48cfe95faca5508225cf38881c5abd5401dac49",
+   "teacher_val_cer": 0.026716,
+   "devnative_cer": 0.030059,
+   "score": 0.028387,
+   "budget": {
+    "blob_bytes": 657664,
+    "arena_w8i": 124832,
+    "ms_333_high": 235.2890502553186,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/budget/a9/rp_FL10_C_mix_pre64k_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_FL10_C_mix_pre128k_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_FL10_C_mix_pre128k_seed1_w8.vocr",
+   "blob_sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154",
+   "teacher_val_cer": 0.022551,
+   "devnative_cer": 0.023447,
+   "score": 0.022999,
+   "budget": {
+    "blob_bytes": 657664,
+    "arena_w8i": 124832,
+    "ms_333_high": 235.2890167286837,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/budget/a9/rp_FL10_C_mix_pre128k_seed1_l22048.json"
+   },
+   "budget_ok": true
+  }
+ ],
+ "selected": "rp_FL10_C_mix_pre128k_seed1",
+ "selected_blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_FL10_C_mix_pre128k_seed1_w8.vocr",
+ "selected_blob_sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154"
+}

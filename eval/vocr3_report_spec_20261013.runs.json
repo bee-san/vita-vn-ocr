@@ -1,0 +1,8 @@
+{
+ "kind": "vocr3-report-spec-runs",
+ "selected_runs": {
+  "FL10": "rp_FL10_C_mix_pre128k_seed1",
+  "H15": "rp_H15_C_mix_seed2",
+  "W20": "rp_W20_C_mix_seed1"
+ }
+}

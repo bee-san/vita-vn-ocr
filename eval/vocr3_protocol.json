@@ -1,0 +1,184 @@
+{
+ "kind": "vocr3-protocol",
+ "schema": 1,
+ "frozen": "2026-10-12, before any VOCR3 candidate (every study-2 run included) was scored on any development or test set (commit time in git)",
+ "goal": "VOCR3: console-sized recognizers trained on the best recipe the synth3 studies support, one per size class, each compared head to head with the released models it would replace, in one locked report.",
+ "sizes": {
+  "FL10": {
+   "topology": "FL10's exactly: width 1.0, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32",
+   "vocab": {"file": "$HERD/shared/artifacts/train2/release/FL10_vocab_3500.txt", "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8", "classes": 3501},
+   "expected": {"blob_bytes": 657664, "arena_w8i_bytes": 124832},
+   "baselines": {
+    "VOCR1": {"file": "FL10_w8.vocr", "release": "v0.2.0", "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84", "finder": "grad"},
+    "VOCR2": {"file": "VOCR2_FL10_w8.vocr", "release": "v0.2.3-vocr2.1", "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766", "finder": "textbox (C3), as it ships"}
+   },
+   "replaces": "VOCR1 (the released FL10; VOCR2 is an opt-in trial that did not qualify)"
+  },
+  "H15": {
+   "topology": "width 1.5, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32",
+   "vocab": {"file": "data/vocab.txt", "sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b", "classes": 5355, "note": "5,354 characters + the CTC blank"},
+   "expected": {"blob_bytes": 1155968, "arena_w8i_bytes": 182944},
+   "baselines": {
+    "VOCR_H15": {"file": "H15_w8.vocr", "release": "v0.2.0 (identical to vita-jp-overlay main's default, core/vocr_ocr.c)", "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd", "finder": "grad"}
+   },
+   "replaces": "VOCR_H15 (the overlay default users run; the bar VOCR3-H15 must beat)"
+  },
+  "W20": {
+   "topology": "width 2.0, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32 (train2's F20 size; added by amendment 1)",
+   "vocab": {"file": "data/vocab.txt", "sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b", "classes": 5355},
+   "expected": {"blob_bytes": 1558016, "arena_w8i_bytes": 241056},
+   "baselines": {
+    "VOCR_H15": {"file": "H15_w8.vocr", "release": "v0.2.0 (the overlay default)", "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd", "finder": "grad"},
+    "F20": {"file": "F20_w8.vocr", "release": "v0.2.0", "bytes": 1558016, "finder": "grad", "note": "same size, reference only; its sha256 is pinned in the report spec from the release asset"}
+   },
+   "replaces": "VOCR_H15 if it qualifies against it and fits the budget below"
+  }
+ },
+ "budget": {
+  "source": "docs/vita-memory-budget.md (#53, main db9ca0c): BUDGET_READY weights<=1600000 arena<=262144 ms<=550, the ceiling for a model inside vita-jp-overlay on a PCH-1000; RAM is not the limit, speed is, then the shared 2 MiB L2",
+  "weights_max_bytes": 1600000,
+  "arena_max_bytes": 262144,
+  "ms_max_per_640px_line": 550,
+  "rule": "every candidate's W8I blob is checked with vita/budget_sweep.py check (blob bytes, W8I arena, and the high bound of vita/a9_cycles.py's W8I estimate for a 640-px line on one A9 core at 333 MHz, on synth-val lines only); a candidate that fails any limit is not selectable. The ms figure is a host estimate, never a console measurement. Train2's F20 shape is at 311-548 ms, inside the ceiling with 2 ms to spare; the doc's other in-budget shapes (w150d2, w150b128, w150c4) are not candidates because the architecture sweep found depth, context blocks and a wider head add nothing over plain width once real data is in the mix (docs/arch-sweep.md)"
+ },
+ "candidates": {
+  "rule": "For each size, the candidates are the final fine-tune checkpoints (EMA weights, no checkpoint selection inside a run) of the runs below that use the VN-style synthetic data study 2 recommends for that size (eval/synth3_study2_protocol.json decision). If study 2 finds no measured difference for a size, the runs of both arms are candidates.",
+  "FL10": {
+   "study2": ["ft_FL10_A_s2_seed1", "ft_FL10_A_s2_seed2", "ft_FL10_A_s2_seed3", "ft_FL10_C_mix_seed1", "ft_FL10_C_mix_seed2", "ft_FL10_C_mix_seed3"],
+   "step_curve": ["ft_FL10_C_mix_pre64k_seed1", "ft_FL10_C_mix_pre128k_seed1"]
+  },
+  "H15": {
+   "study2": ["ft_H15_A_s2_seed1", "ft_H15_A_s2_seed2", "ft_H15_C_mix_seed1", "ft_H15_C_mix_seed2"],
+   "extra": ["ft_H15_B_s3_seed1"],
+   "extra_rule": "added by amendment 2: eval/vocr3_run.sh H15 B_s3 1 (study 2's recipe with synth3 v2 alone as the VN-style data); a candidate whatever study 2's H15 decision, and it must finish before the H15 selection"
+  },
+  "W20": {
+   "runs": ["ft_W20_C_mix_seed1", "ft_W20_A_s2_seed1", "ft_W20_B_s3_seed1"],
+   "script": "eval/vocr3_run.sh W20 ARM 1 (study 2's recipe at width 2.0, 32,000 pretrain steps as train2's p20; outputs under $HERD/shared/artifacts/synth3/vocr3/runs)",
+   "rule": "all three are candidates and all three must finish before the W20 selection; there is no study-2 decision at this width. B_s3 is included because study 1's H15-width secondary favoured synth3 alone (B - A -0.52, CI -0.80 to -0.25; one seed)",
+   "lw": {
+    "run": "ft_LW_A_s2_seed1 (amendments 6 and 7): the late-wide channel layout --chans 48,96,192,320,384 (data/vocab.txt, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32), the W20 recipe (32,000 pretrain steps + the CLANNAD-free 15,000-step fine-tune), arm A_s2 because study 2's H15 decision found no measured difference (eval/synth3_study2_H15_20261013.json: C - A -0.14, VN-cluster CI -0.30 to +0.02; recommended A_s2); eval/vocr3_run.sh LW A_s2 1",
+    "rule": "a W20-class candidate like the three above (listed in candidates.W20.extra so the selection tool sees it), selected by the same base rule and budget check; it must finish before the W20-class selection",
+    "code": "train2 --chans from PR #58 (bee-san/vita-vn-ocr, head a4b6202; the independent audit reports/audit-arch.md found the default model path bit-identical to main and the --chans path correct), run from a runner commit that merges feat/vocr3 with that head before the PR is merged; valid only if the merged main's train/model.py, train/train2.py, train/export.py and eval/backends.py are byte-identical to a4b6202's (recorded with the W20-class selection); otherwise the run is discarded and redone from main"
+   },
+   "extra": ["ft_LW_A_s2_seed1"],
+   "extra_rule": "amendments 6 and 7: the LW candidate above"
+  },
+  "realplus": {
+   "FL10": {"decision_pairs": [["ft_FL10_A_s2_seed1", "rp_FL10_A_s2_seed1"], ["ft_FL10_A_s2_seed2", "rp_FL10_A_s2_seed2"], ["ft_FL10_A_s2_seed3", "rp_FL10_A_s2_seed3"], ["ft_FL10_C_mix_seed1", "rp_FL10_C_mix_seed1"], ["ft_FL10_C_mix_seed2", "rp_FL10_C_mix_seed2"], ["ft_FL10_C_mix_seed3", "rp_FL10_C_mix_seed3"]], "extra_runs": ["rp_FL10_C_mix_pre64k_seed1", "rp_FL10_C_mix_pre128k_seed1"]},
+   "H15": {"decision_pairs": [["ft_H15_A_s2_seed1", "rp_H15_A_s2_seed1"], ["ft_H15_A_s2_seed2", "rp_H15_A_s2_seed2"], ["ft_H15_C_mix_seed1", "rp_H15_C_mix_seed1"], ["ft_H15_C_mix_seed2", "rp_H15_C_mix_seed2"]], "extra_runs": ["rp_H15_B_s3_seed1"]},
+   "W20": {"decision_pairs": [["ft_W20_C_mix_seed1", "rp_W20_C_mix_seed1"], ["ft_W20_A_s2_seed1", "rp_W20_A_s2_seed1"], ["ft_W20_B_s3_seed1", "rp_W20_B_s3_seed1"]], "extra_runs": ["rp_LW_A_s2_seed1"]},
+   "note": "amendment 4; W20's extra run rp_LW_A_s2_seed1 by amendments 6 and 7"
+  },
+  "variants": {
+   "status": "optional; each is trained only if its precondition holds, and enters the candidate list only through the ablation rule below",
+   "realplus": {
+    "precondition": "realplus.status POOL_READY <commit>, with its manifest committed and its measured blind-check precision reported",
+    "run": "from the pretrain checkpoint of the size's base selection (below), same seed, the study-2 fine-tune with the real half re-split as tt 0.2 + rd 0.1 + rp 0.2 (tt and rd: the CLANNAD-free copies of amendment 1; the realplus pool, inv=0.5, kd=0; no ps); the synthetic half unchanged",
+    "ablation_rule": "it replaces the base selection iff its teacher_val CER (both views) is lower with the VN-cluster 95% interval of the difference entirely below 0 (and, when devnative is a selection cohort, devnative's interval is not entirely above 0)"
+   },
+   "synth3_v3": {
+    "precondition": "synth3-v3's study 1b result (eval/synth3_study1b_protocol.json) committed with D_s3v3 better than B_s3 under its rule",
+    "run": "only when the size's recommended arm uses synth3: one full study-2 run of that arm with synth3 v3 in place of v2 (same seed as the base selection), FL10 first",
+    "ablation_rule": "as for realplus, against the base selection"
+   },
+   "amendments": "Further variants may be added only by an amendment committed before that variant is scored on any development set; protected sets are never used to add, drop or tune a variant."
+  }
+ },
+ "export": "eval/synth3_ablation.py export (train/export.py, per-channel int8) -> C runtime W8I; blob bytes and arena from runtime/pyvocr.py at max width 1024",
+ "selection": {
+  "owner_series": "amendment 8: the owner's Memories Off series (45 VNDB ids, $HERD/shared/artifacts/native-frames/owner_games_vns.json: v1152's family, titles and relations) is a fresh native TEST set (owner rule 10:51Z). The selection cohorts are copies of teacher_val and devnative v3 without that series' rows (eval/synth3_filter_pools.py; teacher_val 1,651 -> 1,643 lines, devnative v3 strict 38 + 26 -> 34 + 23, tv_native 513 + 423 -> 509 + 420; every other row byte-identical), pinned by eval/vocr3_select_pools.sha256 under $HERD/shared/artifacts/synth3/vocr3/select_pools",
+  "cohorts": {
+   "teacher_val": {"set": "$HERD/shared/artifacts/teacher/teacher_val.npz", "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671", "lines": 1651, "vns": 181, "views": ["rv", "rvn"]},
+   "devnative": "agent devnative's native Vita/PSP cohort (strict and tv_native subsets; scene_vn reported only), a selection cohort if and only if its manifest is committed (COHORT_FROZEN) before the first VOCR3 selection score of that size"
+  },
+  "score": "development CER = errors / reference characters (eval/metrics.norm, Levenshtein) over teacher_val in both views; with devnative as a cohort, the mean of teacher_val's CER and devnative's CER (both views, strict + tv_native lines)",
+  "base_rule": "per size, the candidate with the lowest development score; ties at 5 decimals go to the shorter pretrain, then the lower seed",
+  "commit": "the selection (every candidate's development score, the chosen run, its blob sha256) is committed before the locked report runs"
+ },
+ "locked_report": {
+  "when": "once, after both sizes' selections (including any variant ablation) are committed",
+  "tool": "eval/vocr3_report.py (agent vocr3-harness, verified by reproducing the released blobs' published numbers), the commit recorded in the report",
+  "arms": {
+   "VOCR1": "FL10_w8.vocr + GRAD",
+   "VOCR2": "VOCR2_FL10_w8.vocr + TEXTBOX (C3)",
+   "VOCR_H15": "H15_w8.vocr + GRAD",
+   "VOCR3-FL10": "the FL10 selection + GRAD",
+   "VOCR3-FL10-C3": "the FL10 selection + TEXTBOX (C3): finder-matched to VOCR2, reported only",
+   "VOCR3-H15": "the H15 selection + GRAD",
+   "VOCR3-W20": "the W20 selection + GRAD",
+   "F20": "F20_w8.vocr (v0.2.0) + GRAD, reference"
+  },
+  "sets": {
+   "vita-test, psp-test fixed lines": "eval/run.py's recognizer mode through the scalar C W8I runtime; console polarity primary, native also; per set, per style, per VN, pooled; full text and hiragana",
+   "vita-test, psp-test whole dialogue": "each region at base and +4/+8 native px with the arm's own C finder (the VOCR2 held-out guard's scoring)",
+   "fresh native textbox test": "eval/fresh_native_textbox.py through the harness adapter, only if the owner provides its private inputs and execution authorization before the report runs; reported with the disclosure that synth3 v2's name pool held 39 names unique to its titles (docs/synth3.md, Limits)",
+   "CLANNAD long run": "eval/clannad_longrun.py through the harness adapter on the stored captures, only if the owner provides the private inputs; Google Lens readings are a proxy, not human references"
+  },
+  "pairs": [["VOCR3-FL10", "VOCR1"], ["VOCR3-FL10", "VOCR2"], ["VOCR3-H15", "VOCR_H15"], ["VOCR3-H15", "VOCR1"], ["VOCR3-FL10-C3", "VOCR2"], ["VOCR3-W20", "VOCR_H15"], ["VOCR3-W20", "F20"], ["VOCR3-W20", "VOCR3-H15"]],
+  "statistics": "CAND - BASE in points with paired bootstrap 95% intervals (10,000 resamples, seed 0) over lines and over VN clusters (strata with at least 5 VNs)",
+  "also": ["blob bytes, W8I and W8F arenas", "estimated Vita Cortex-A9 time per line from vita/a9_cycles.py (host estimate, marked as such)", "the overlay host cross-check: vita-jp-overlay's tools/benchmark_local_ocr.py on a read-only clone (no change, no PR there)"]
+ },
+ "qualification": {
+  "gates": [["VOCR3-FL10", "VOCR1"], ["VOCR3-H15", "VOCR_H15"], ["VOCR3-W20", "VOCR_H15"]],
+  "fixed_line_gate": "VOCR2's: in the primary polarity, no set's full-text or hiragana errors increase, and pooled hiragana errors decrease",
+  "dialogue_guard": "VOCR2's held-out whole-dialogue guard: no title/variant all-text or body full/hiragana regression; every variant improves console-balanced hiragana in both scopes and gains on at least two titles",
+  "consequence": "A candidate qualifies to replace its baseline only if every gate passes on every set available; even then the default changes only with the owner's agreement. Nothing is merged. Results are reported whether or not they qualify."
+ },
+ "publication": "draft PR feat/vocr3 (stacked on feat/synth3) with docs/vocr3.md, this protocol, the selection and the report JSON; weights only as a release asset with the owner's agreement",
+ "hygiene": [
+  "no candidate, variant, recipe, checkpoint or threshold is chosen, tuned or dropped on vita-test, psp-test, the fresh native textbox test or CLANNAD",
+  "the locked report runs once; its numbers cannot change the selection",
+  "realplus and devnative exclude every test VN and family, CLANNAD, the fresh native test's titles and relations, and every eval screenshot (their own manifests record it)"
+ ],
+ "amendments": [
+  {
+   "date": "2026-10-12 (commit time in git), before any VOCR3 candidate was scored",
+   "change": "(1) A third size, W20 (width 2.0, data/vocab.txt; train2's F20 size), with three candidate runs (C_mix, A_s2, B_s3, seed 1) from eval/vocr3_run.sh, the same base rule, the report arm VOCR3-W20, the released F20 as a same-size reference, the pairs VOCR3-W20 vs VOCR_H15, F20 and VOCR3-H15, and the gate VOCR3-W20 vs VOCR_H15. (2) The vita-budget ceiling (weights <= 1,600,000 B, W8I arena <= 262,144 B, estimated <= 550 ms per 640-px line) as a selectability rule for every size. (3) Every VOCR3 fine-tune, including study 2's (its amendment 2) and the realplus variant, uses the copies of teacher_train, real_train and the pseudo-label pools without CLANNAD (v4) and its VNDB family (eval/synth3_study2_pools.sha256).",
+   "reason": "The owner allowed a slightly larger model if it fits a PCH-1000 inside vita-jp-overlay, and the vita-budget agent set the ceiling at 20:5xZ; the first synth3 audit (B1) found CLANNAD crops in the inherited pools.",
+   "unchanged": "the FL10 and H15 sizes, their candidates and baselines, the selection cohorts and rule, the locked report's sets and statistics, the qualification gates for FL10 and H15, publication and hygiene"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before any VOCR3 candidate was scored",
+   "change": "One more H15 candidate, ft_H15_B_s3_seed1 (eval/vocr3_run.sh H15 B_s3 1: study 2's H15 recipe with synth3 v2 alone as the VN-style synthetic data, 40,000 pretrain steps, the CLANNAD-free fine-tune).",
+   "reason": "Study 1's H15-width secondary (one run per arm) put synth3 alone below synth2 (B - A -0.52, CI -0.80 to -0.25, line sampling only; not replicated), and study 2 compares only synth2 against the mix. Known before this amendment: study 2's FL10 result (no measured difference) and its FL10 test report; no H15 or W20 study-2 run had been scored.",
+   "unchanged": "everything else"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before any VOCR3 candidate was scored",
+   "change": "Which devnative version selects. devnative keeps fixing its cohort (v1 f5a1dbd, v2 ef76d1e drops 41 screenshots shared with eval/linefind's finder sets, v3 fixes ink crops that v1 and v2 padded twice). VOCR3 uses one version for every size: the latest version whose manifest commit is on origin and is announced in devnative.status (COHORT_FROZEN or COHORT_Vn <sha>) when the first VOCR3 selection score of any size is computed; the sha and the npz sha256s are recorded with the selection. Its selection set is the strict and tv_native subsets with both crops (ink and GRAD) pooled, both views, as study 2's amendment 1; scene_vn is reported only. If no version is announced then, teacher_val alone selects.",
+   "reason": "The protocol named devnative's COHORT_FROZEN commit but not which of its later versions; this fixes it before any score.",
+   "unchanged": "everything else"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before any VOCR3 candidate was scored",
+   "change": "The realplus variant becomes a paired ablation per size, replacing the single run from the base selection's pretrain. Every candidate pretrain of a size gets a second fine-tune, an rp run (eval/vocr3_rp_run.sh ARCH ARM SEED [PRE_STEPS]), identical to its candidate's fine-tune except the real half: tt 0.2 + rd 0.1 + rp 0.2, with tt and rd the CLANNAD-free copies, rp the realplus pool (realplus_train_ink.npz + realplus_train_grad.npz, pinned by eval/vocr3_realplus.sha256: 124,845 crops of 43,264 lines from 9,140 VNs before amendment 5, blind precision 495/500), and no PP-OCRv6 pseudo-labels. Decision per size (candidates.realplus.SIZE.decision_pairs: FL10's six study-2 pretrains, H15's four, W20's three): realplus is adopted iff, on teacher_val (both views, errors summed over the pairs), the VN-cluster 95% interval of CER(rp) - CER(base fine-tune) lies entirely below 0 and every pair's difference is below 0, and, when devnative selects, devnative's interval is not entirely above 0. If adopted, the size's candidates are the rp runs of all its candidate pretrains (the decision pairs' rp runs plus extra_runs) and the base rule picks among them; otherwise its candidates stay as they are and the rp runs are reported only.",
+   "reason": "One fine-tune from the base selection's pretrain gives a one-pair test that covers line sampling only, and the base selection is the luckiest of its candidates, which biases that comparison toward it; pairing over every study-2 pretrain gives several pairs, as in studies 1 and 2. Known before this amendment: study 2's FL10 result and its FL10 test report (neither involves realplus), and realplus's own counts and blind precision; no realplus-trained model existed.",
+   "unchanged": "everything else; the synth3_v3 variant keeps its rule"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before any rp run started and before any VOCR3 candidate was scored",
+   "change": "The rp source is a copy of the realplus pool without the rows of CLANNAD (v4), every direct VNDB relation of v4 of any kind (char and set included: v64642 v12 v4060 v42392 v11057 v28752 v64301 v27548 v10058 v29951 v23354 v869 v16901 v8324 v5698 v7983 v25142 v21002 v54298) and Kyou After 2 (v16902, a sequel of the side story v16901), made by eval/synth3_filter_pools.py into $HERD/shared/artifacts/synth3/vocr3/pools and pinned by eval/vocr3_realplus.sha256 (ink 71,219 -> 71,153 crops, GRAD 53,626 -> 53,566; dropped: v11057 NETANNAD 58, v42392 YAMANNAD 60, v16902 8; every other row byte-identical). eval/vocr3_rp_run.sh reads the copy.",
+   "reason": "The realplus audit (reports/audit-realplus.md, F1) found three CLANNAD fan works in the pool, outside eval's family kinds; they reuse CLANNAD's characters, whose names the CLANNAD long run reads. Known before this amendment: no rp run had started; nothing else changed.",
+   "unchanged": "everything else"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before any VOCR3 candidate was scored",
+   "change": "The largest size class (W20) gets a fourth candidate, LW (candidates.W20.lw): train/train2.py --chans 48,96,192,320,384 (per-stage channels: H15's early stages, F20's later ones), trained with the W20 recipe and the arm study 2's H15 decision recommends, seed 1, from the code that adds --chans once it is merged to main; and its realplus fine-tune rp_LW_<ARM>_seed1 as an extra rp run of the W20 class (amendment 4). Its blob must pass vita/budget_sweep.py check like every candidate (random-init blob of the shape: 1,473,280 B, W8I arena 192,928 B, est. 261-468 ms per 640-px line at 333 MHz).",
+   "reason": "Agent arch-research's 5,000-step proxies (train2 from scratch, teacher_val only, raw weights, one seed each): LW 5.55% CER against H15 6.13% / 5.95% (two seeds) and F20 5.44%; LW - H15 seed 1 -0.58 (VN-cluster CI -0.91 to -0.26), LW - F20 +0.11 (CI -0.19 to +0.42), at an estimated 85% of F20's A9 time. Training-only options (--rep re-parameterisation, --guide NRTR) are left for a later round: --rep trains 1.6x slower and --guide had no proxy result. Known before this amendment: study 2's FL10 result and test report; no W20-class or H15 study-2 run had been scored.",
+   "unchanged": "everything else"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before any W20-class candidate was scored",
+   "change": "Amendment 6's LW candidate is resolved: ARM = A_s2 (study 2's H15 decision, eval/synth3_study2_H15_20261013.json computed 2026-10-13T07:57:22Z: no measured difference, C - A -0.14 points, VN-cluster CI -0.30 to +0.02, both seeds negative; devnative -0.11, CI -0.30 to +0.08; recommended A_s2), so the runs are ft_LW_A_s2_seed1 (candidates.W20.extra) and rp_LW_A_s2_seed1 (candidates.realplus.W20.extra_runs). The run may start before PR #58 is merged, from a runner commit that merges feat/vocr3 with the PR's audited head a4b6202 (the independent audit, reports/audit-arch.md, found the default model path bit-identical to main and the --chans path correct; what remains before its merge is documentation), on the condition that the merged main's train/model.py, train/train2.py, train/export.py and eval/backends.py are byte-identical to a4b6202's; the check is recorded with the W20-class selection, and if it fails the run is discarded and redone from main.",
+   "reason": "The W20 class is the last to finish and LW its last run; starting it at the H15 decision instead of after the merge saves about 1.5 h on the path to the locked report without changing what trains. Known before this amendment: study 2's FL10 and H15 results and the FL10 test report; no W20-class or VOCR3 selection score; the audit verdicts on PRs #56 and #58 (#57 merged).",
+   "unchanged": "everything else"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before the first VOCR3 selection score of any size",
+   "change": "The selection cohorts are copies without the owner's Memories Off series (owner rule 10:51Z: v1152 and every sequel, family relation and release partner, 45 VNDB ids in $HERD/shared/artifacts/native-frames/owner_games_vns.json, are a fresh native console TEST set): teacher_val minus its 8 lines of v1331 (Memories Off: After Rain) and devnative v3 minus its 14 crops of v1331 (strict 4 ink + 3 GRAD, tv_native 4 ink + 3 GRAD), made by eval/synth3_filter_pools.py into $HERD/shared/artifacts/synth3/vocr3/select_pools and pinned by eval/vocr3_select_pools.sha256; the devnative version stays v3 (14ae22d). The owner-series rows in the pinned training pools are disclosed, not removed: teacher_train 66, real_train 70, teacher_distill_train 97, real_unlabelled 86, realplus ink 8 + GRAD 6 (ids in $HERD/shared/artifacts/native-frames/owner_games_rows.json); every candidate trained or trains on the same pinned copies, and the rule postdates them.",
+   "reason": "The owner designated the series as a test set at 10:51Z, after every candidate run had started and before any VOCR3 selection score was computed. Selecting on 8 + 14 lines of a test-series title would break the hygiene rule; the training exposure (about 0.5-1% of the real fine-tune rows) cannot be undone for this round without retraining everything, so it is disclosed here and in docs/vocr3.md, and every pool built from now on excludes the series.",
+   "unchanged": "everything else"
+  }
+ ]
+}

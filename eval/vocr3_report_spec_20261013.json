@@ -1,0 +1,125 @@
+{
+ "schema": 1,
+ "kind": "vocr3-report-spec",
+ "arms": [
+  {
+   "name": "VOCR1",
+   "file": "FL10_w8.vocr",
+   "finder": "grad",
+   "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+   "role": "released baseline"
+  },
+  {
+   "name": "VOCR2",
+   "file": "VOCR2_FL10_w8.vocr",
+   "finder": "textbox",
+   "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766",
+   "role": "released baseline"
+  },
+  {
+   "name": "VOCR_H15",
+   "file": "H15_w8.vocr",
+   "finder": "grad",
+   "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd",
+   "role": "released baseline"
+  },
+  {
+   "name": "F20",
+   "file": "F20_w8.vocr",
+   "finder": "grad",
+   "sha256": "f8c1abe4743a71a742e718523f4206f992d3bd4fb69de321997b2bd6f16779c0",
+   "role": "released baseline"
+  },
+  {
+   "name": "VOCR3_FL10",
+   "file": "VOCR3_FL10_w8.vocr",
+   "finder": "grad",
+   "sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154",
+   "role": "VOCR3-FL10: rp_FL10_C_mix_pre128k_seed1"
+  },
+  {
+   "name": "VOCR3_FL10_C3",
+   "file": "VOCR3_FL10_w8.vocr",
+   "finder": "textbox",
+   "sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154",
+   "role": "VOCR3-FL10 with VOCR2's C3 finder, reported only"
+  },
+  {
+   "name": "VOCR3_H15",
+   "file": "VOCR3_H15_w8.vocr",
+   "finder": "grad",
+   "sha256": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c",
+   "role": "VOCR3-H15: rp_H15_C_mix_seed2"
+  },
+  {
+   "name": "VOCR3_W20",
+   "file": "VOCR3_W20_w8.vocr",
+   "finder": "grad",
+   "sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19",
+   "role": "VOCR3-W20: rp_W20_C_mix_seed1"
+  }
+ ],
+ "pairs": [
+  {
+   "candidate": "VOCR3_FL10",
+   "baseline": "VOCR1"
+  },
+  {
+   "candidate": "VOCR3_FL10",
+   "baseline": "VOCR2"
+  },
+  {
+   "candidate": "VOCR3_H15",
+   "baseline": "VOCR_H15"
+  },
+  {
+   "candidate": "VOCR3_H15",
+   "baseline": "VOCR1"
+  },
+  {
+   "candidate": "VOCR3_FL10_C3",
+   "baseline": "VOCR2"
+  },
+  {
+   "candidate": "VOCR3_W20",
+   "baseline": "VOCR_H15"
+  },
+  {
+   "candidate": "VOCR3_W20",
+   "baseline": "F20"
+  },
+  {
+   "candidate": "VOCR3_W20",
+   "baseline": "VOCR3_H15"
+  }
+ ],
+ "gates": [
+  {
+   "candidate": "VOCR3_FL10",
+   "baseline": "VOCR1"
+  },
+  {
+   "candidate": "VOCR3_H15",
+   "baseline": "VOCR_H15"
+  },
+  {
+   "candidate": "VOCR3_W20",
+   "baseline": "VOCR_H15"
+  }
+ ],
+ "sets": [
+  "vita-test",
+  "psp-test"
+ ],
+ "polarities": [
+  "console",
+  "native"
+ ],
+ "primary_polarity": "console",
+ "bootstrap": {
+  "reps": 10000,
+  "seed": 0,
+  "min_clusters": 5
+ },
+ "dialogue": true
+}

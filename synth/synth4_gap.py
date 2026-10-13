@@ -55,6 +55,9 @@ from metrics import norm  # noqa: E402
 DEFAULT_EXCLUDE = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
                    ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",
                    ROOT / "data" / "manifests" / "synth3_exclude_owner_games.json")
+# The conductor's note of the owner's 13:10Z reservation lists 弟切草 (v661) with Aiyoku no Eustia, 428 and
+# 街; data/manifests/synth3_exclude_owner_games.json (a40fc23, #63) holds the other three but not v661.
+EXTRA_RESERVED = frozenset({"v661"})
 EXPOSURE_BINS = (1, 10, 50, 100, 300, 1000)
 NAME_STOP = set("「」『』。、！？!?…―（）()")
 
@@ -93,7 +96,7 @@ def read_vocab(path):
 def reserved_vns(extra=()):
     """VN ids no statistic may use: eval's test games plus every exclusion manifest's VNs (and
     extra lists: .json with a "vns" list, or whitespace-separated .txt)."""
-    out = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"])
+    out = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"]) | EXTRA_RESERVED
     for p in list(DEFAULT_EXCLUDE) + list(extra):
         p = Path(p)
         if p.suffix == ".json":
@@ -321,7 +324,8 @@ def cmd_text(args):
         cnt = Counter()
         for _, lab in rows:
             cnt.update(lab)
-        real_sets[name] = {"lines": len(rows), "vns": len({v for v, _ in rows}), "dropped_reserved": dropped,
+        real_sets[name] = {"file": spec.partition("=")[2], "sha256": sha256(spec.partition("=")[2]),
+                           "lines": len(rows), "vns": len({v for v, _ in rows}), "dropped_reserved": dropped,
                            "chars": sum(cnt.values()), "distinct": len(cnt),
                            "outside_h15_per_1000": round(1000 * (1 - coverage(cnt, S_h15)), 3),
                            "outside_fl10_per_1000": round(1000 * (1 - coverage(cnt, S_fl10)), 3),

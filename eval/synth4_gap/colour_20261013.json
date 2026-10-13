@@ -4,19 +4,19 @@
  "sources": {
   "real": {
    "all": {
-    "crops": 11432,
-    "coloured": 0.1047,
-    "part": 0.1018,
-    "grad": 0.0087,
+    "crops": 11375,
+    "coloured": 0.1044,
+    "part": 0.1013,
+    "grad": 0.0088,
     "hue": {
-     "r": 0.594,
-     "b": 0.317,
-     "g": 0.089
+     "r": 0.598,
+     "b": 0.319,
+     "g": 0.082
     }
    },
    "psp:hires": {
-    "crops": 2261,
-    "coloured": 0.123,
+    "crops": 2254,
+    "coloured": 0.1233,
     "part": 0.1256,
     "grad": 0.0106,
     "hue": {
@@ -26,20 +26,20 @@
     }
    },
    "psp:psp": {
-    "crops": 2377,
-    "coloured": 0.0791,
-    "part": 0.0816,
-    "grad": 0.0042,
+    "crops": 2336,
+    "coloured": 0.0766,
+    "part": 0.0788,
+    "grad": 0.0043,
     "hue": {
-     "r": 0.654,
-     "b": 0.218,
-     "g": 0.128
+     "r": 0.687,
+     "b": 0.229,
+     "g": 0.084
     }
    },
    "vita:hires": {
-    "crops": 5816,
-    "coloured": 0.1071,
-    "part": 0.0989,
+    "crops": 5807,
+    "coloured": 0.1073,
+    "part": 0.0988,
     "grad": 0.011,
     "hue": {
      "r": 0.587,
@@ -163,5 +163,6 @@
     ]
    }
   }
- }
+ },
+ "note": "real: rerun 2026-10-13T16:4xZ with the owner 13:10Z titles excluded; s3v3: the RGB render of the first run (no real rows)"
 }

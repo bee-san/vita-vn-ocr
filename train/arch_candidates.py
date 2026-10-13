@@ -34,6 +34,7 @@ CANDIDATES = {
     "LW224": dict(chans=(48, 96, 224, 320, 384)),
     "LW256": dict(chans=(48, 96, 256, 320, 384)),
     "LW384b80": dict(chans=(48, 96, 192, 384, 384), bottleneck=80),
+    "EW": dict(chans=(64, 128, 256, 240, 288)),                    # F20's early stages, H15's late ones
     "W175": dict(width=1.75),                                      # uniform, LW's MACs
     "W20b64": dict(width=2.0, bottleneck=64),
     "W2125b64": dict(chans=(64, 136, 272, 344, 408), bottleneck=64),

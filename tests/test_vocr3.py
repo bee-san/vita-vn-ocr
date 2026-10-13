@@ -1,7 +1,10 @@
 """VOCR3's frozen protocol: its candidates, baselines and gates are consistent with study 2's protocol
 and the released blobs' documented sizes. No data, models or network."""
 import json
+import sys
 from pathlib import Path
+
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 P = json.loads((ROOT / "eval" / "vocr3_protocol.json").read_text(encoding="utf-8"))
@@ -56,3 +59,50 @@ def test_amendment_1_w20_and_budget():
 def test_amendment_2_h15_b_s3():
     assert P["candidates"]["H15"]["extra"] == ["ft_H15_B_s3_seed1"]
     assert len(P["amendments"]) >= 2 and "ft_H15_B_s3_seed1" in P["amendments"][1]["change"]
+
+
+def _scores(path, shifts, n=200, vns=20, seed=0, tag=""):
+    rng = np.random.default_rng(seed)
+    lines = [{"id": f"{tag}l{i}", "vn": f"v{i % vns}", "ref": "あいうえお", "tags": []} for i in range(n)]
+    base = rng.integers(0, 3, n)
+    models = {}
+    for run, (shift, sha) in shifts.items():
+        e = np.clip(base + shift * (rng.random(n) < 0.6), 0, None).tolist()
+        models[run] = {"blob": "x", "blob_sha256": sha, "blob_bytes": 1, "arena_bytes": 1,
+                       "errors": {"rv": e, "rvn": e}, "pred": {}, "cer": {}}
+    Path(path).write_text(json.dumps({"dev": {}, "lines": lines, "models": models}))
+    return str(path)
+
+
+def _budget(d, entries):
+    (d / "a9").mkdir(parents=True)
+    sizes = {}
+    for name, (sha, ms) in entries.items():
+        sizes[name] = {"blob_bytes": 1155968, "arena": {"t4h16": {"w8i": 182944}}}
+        (d / "a9" / f"{name}_l22048.json").write_text(json.dumps(
+            {"name": name, "blob_sha256": sha, "tile": 4, "l2_kib": 2048, "ms_640px": {"333": [100.0, ms]}}))
+    (d / "sizes.json").write_text(json.dumps(sizes))
+    return str(d)
+
+
+def test_select_base_rule_budget_and_variant(tmp_path):
+    sys.path.insert(0, str(ROOT / "eval"))
+    import vocr3_select as SEL
+    runs = {"ft_H15_A_s2_seed1": (0, "a1"), "ft_H15_A_s2_seed2": (0, "a2"), "ft_H15_C_mix_seed1": (-1, "c1"),
+            "ft_H15_C_mix_seed2": (0, "c2"), "ft_H15_B_s3_seed1": (-1, "b1"), "rp": (-2, "rp")}
+    tv = _scores(tmp_path / "tv.json", runs)
+    dn = _scores(tmp_path / "dn_strict_ink.json", runs, n=80, seed=1, tag="d")
+    bd = _budget(tmp_path / "budget", {f"m{i}": (sha, 600.0 if sha == "c1" else 400.0)
+                                         for i, (_, sha) in enumerate(runs.values())})
+    out = tmp_path / "sel.json"
+    args = type("A", (), {"protocol": ROOT / "eval" / "vocr3_protocol.json", "size": "H15", "tv": [tv], "dn": [dn],
+                          "dn_commit": "x", "budget_dir": [bd], "only": "", "out": out})()
+    SEL.cmd_base(args)
+    sel = json.loads(out.read_text())
+    over = [r for r in sel["candidates"] if not r["budget_ok"]]
+    assert [r["run"] for r in over] == ["ft_H15_C_mix_seed1"]          # 600 ms > 550: not selectable
+    assert sel["selected"] == "ft_H15_B_s3_seed1" and len(sel["candidates"]) == 5
+    vout = tmp_path / "var.json"
+    SEL.cmd_variant(type("A", (), {"selection": out, "name": "rp", "tv": [tv], "dn": [dn], "out": vout})())
+    v = json.loads(vout.read_text())
+    assert v["base"] == "ft_H15_B_s3_seed1" and v["teacher_val"]["delta_points"] < 0

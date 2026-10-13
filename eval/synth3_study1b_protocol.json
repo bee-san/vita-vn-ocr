@@ -214,7 +214,7 @@
  ],
  "amendments": [
   {
-   "date": "2026-10-12T21:30Z (commit time in git)",
+   "date": "2026-10-12T21:40:53Z (commit d734639, before the rebase onto main 099bda9)",
    "before_any_scoring": true,
    "before_any_D_run": true,
    "change": "s3v3 points to the render of commit 1ba727c instead of ab5db0e/84b555b.",
@@ -222,7 +222,7 @@
    "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparison and decision rule"
   },
   {
-   "date": "2026-10-12T22:57Z (commit time in git)",
+   "date": "2026-10-12T22:56:16Z (commit 9e948b8, before the rebase onto main a32b79b)",
    "before_any_scoring": true,
    "before_any_D_run": true,
    "change": "s3v3 points to the render of commit edb8443; the pin of the 1ba727c render (f62ae57) is superseded.",
@@ -230,11 +230,12 @@
    "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparison and decision rule"
   },
   {
-   "date": "2026-10-13T00:23:15Z (commit 06a998d; this line corrected in the next commit)",
+   "date": "2026-10-13T00:23:15Z (commit 06a998d)",
    "before_any_scoring": true,
    "change": "devnative v2 (tag devnative-cohort-v2) is reported next to v1; v1 stays as pinned. Both are reported only.",
    "reason": "devnative published v2 after this protocol pinned v1: v1 kept 41 screenshots of eval/linefind's sets, which the fleet's cohort rule excludes. Both versions are fixed here before any study-1b score, so neither is chosen by its scores; teacher_val alone decides.",
    "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, teacher_val, metric, bootstrap, comparison and decision rule"
   }
- ]
+ ],
+ "history_note": "This branch was rebased twice with commit times kept: onto the rewritten feat/synth3 (pre-rebase history at tag synth3-v3-history-20261012a) and onto main after #50 was squash-merged (tag synth3-v3-history-20261013). Hashes in this file and in docs/synth3-v3.md before 'rebase' refer to the second tag's history. Map (that history -> main): ebe146a -> ac4c4d3, ab5db0e -> 6344ad4, 0ba3bc0 -> 7bb72b2 (this protocol, frozen 2026-10-12T20:10:20Z), 1ba727c -> e633396, 099bda9 -> d734639, f62ae57 -> 5b67247, edb8443 -> 5ffdabf, a32b79b -> 9e948b8, 6e194d1 -> aa02dcb (the v3 pin, 2026-10-13T00:01:49Z), 567fc7d -> a48246a."
 }

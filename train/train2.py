@@ -39,6 +39,10 @@ Validation CER is eval's: eval/metrics.norm on both sides, Levenshtein over tota
 characters, one forward pass per padded width (identical to one-line inference). The
 checkpoint with the lowest mean CER over --select sets is ckpt_best.pt. With --ema the
 EMA weights are what is evaluated and saved as "model" (the raw ones as "model_raw").
+--chans sets the five channel counts explicitly (checkpoints record "chans"). With --rep N the
+stem and the depthwise convs train with RepCBR's extra branches (train/model.py); every
+evaluation and every checkpoint's "model" is the fused plain model, so export, eval and the
+runtime see an ordinary TinyVNOCR; "model_rep" / "model_raw" keep the branched weights.
 
 Checkpoints are train.py's format (eval/run.py, train/export.py, sweep_eval.py read them).
 A run resumes from <out>/<run>/ckpt_last.pt. Threads: $TORCH_NUM_THREADS (heavy.sh).
@@ -71,7 +75,7 @@ sys.path.insert(0, str(ROOT / "eval"))
 from metrics import lev, norm, score_hiragana  # noqa: E402
 
 from common import DATA, load_vocab  # noqa: E402
-from model import TinyVNOCR, set_weight_quant  # noqa: E402
+from model import TinyVNOCR, fuse_rep, load_plain_into_rep, set_weight_quant  # noqa: E402
 from source_policy import (  # noqa: E402
     CAPS,
     ExposureJournal,
@@ -692,6 +696,12 @@ def main(argv=None, *, execution_context=None):
     ap.add_argument("--depth", type=int, default=1)
     ap.add_argument("--ctx", type=int, default=2)
     ap.add_argument("--ctx-k", type=int, default=5, choices=(3, 5, 7))
+    ap.add_argument("--chans", default="",
+                    help="five explicit channel counts (stem, 8-row, 4-row, 2-row stages, frame row), "
+                         "e.g. 48,96,192,320,384; overrides --width's channels")
+    ap.add_argument("--rep", type=int, default=0,
+                    help="train the stem and depthwise convs with RepCBR's extra branches (N parallel "
+                         "k x k + 1x1 + identity); checkpoints hold the fused plain model as 'model'")
     ap.add_argument("--vocab", type=Path, default=DATA / "vocab.txt")
     ap.add_argument("--kd-weight", type=float, default=1.0)
     ap.add_argument("--kd-tau", type=float, default=1.0)
@@ -766,12 +776,14 @@ def main(argv=None, *, execution_context=None):
     select = [s for s in args.select.split(",") if s] or [v.name for v in vals]
     print(f"data ready in {time.time() - t0:.0f}s", flush=True)
 
-    model = TinyVNOCR(len(vocab) + 1, width=args.width, bottleneck=args.bottleneck,
-                      depth=args.depth, ctx=args.ctx, ctx_k=args.ctx_k)
+    chans = tuple(int(c) for c in args.chans.split(",")) if args.chans else None
+    arch = dict(width=args.width, bottleneck=args.bottleneck, depth=args.depth, ctx=args.ctx,
+                ctx_k=args.ctx_k, chans=chans)
+    model = TinyVNOCR(len(vocab) + 1, **arch, rep=args.rep)
     model = model.to(memory_format=torch.channels_last)
     train_scope(model, args.train_scope)
     print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M, classes {len(vocab) + 1}, "
-          f"threads {args.threads}", flush=True)
+          f"threads {args.threads}" + (f", rep {args.rep} (trained form)" if args.rep else ""), flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.wd)
     step, best, best_step = 0, 1e9, 0
     last = out / "ckpt_last.pt"
@@ -807,12 +819,14 @@ def main(argv=None, *, execution_context=None):
         if ck["vocab"] != vocab:
             raise ValueError("resume vocabulary order differs from checkpoint")
         args.freeze_bn_stats |= ck.get("freeze_bn_stats", False)
+        if int(ck.get("rep") or 0) != args.rep or list(ck.get("chans") or []) != list(chans or []):
+            raise ValueError("resume --rep/--chans differ from checkpoint")
         model.load_state_dict(ck.get("model_raw", ck["model"]))
         opt.load_state_dict(ck["opt"])
         step, best, best_step = ck["step"], ck["best_sel"], ck.get("best_step", 0)
         if args.ema:
             ema = EMA(model, args.ema)
-            ema.shadow = {k: v.clone() for k, v in ck["model"].items()}
+            ema.shadow = {k: v.clone() for k, v in ck.get("model_rep", ck["model"]).items()}
         print(f"resumed at step {step}, best {best:.4f}", flush=True)
         if not policy:
             rng = np.random.default_rng([args.seed, step])
@@ -826,7 +840,14 @@ def main(argv=None, *, execution_context=None):
         if ck["vocab"] != vocab:
             raise ValueError("init vocabulary order differs from checkpoint")
         args.freeze_bn_stats |= ck.get("freeze_bn_stats", False)
-        model.load_state_dict(ck["model"])
+        if list(ck.get("chans") or []) != list(chans or []):
+            raise ValueError("init checkpoint --chans differ")
+        if args.rep and int(ck.get("rep") or 0) == args.rep and "model_rep" in ck:
+            model.load_state_dict(ck["model_rep"])          # a rep pretrain: keep its branches
+        elif args.rep:
+            load_plain_into_rep(model, ck["model"])        # plain weights, extra branches start at 0
+        else:
+            model.load_state_dict(ck["model"])
         print(f"initialised from {args.init} (step {ck.get('step')})", flush=True)
     if policy and "initial_model" not in execution:
         execution["initial_model"] = {"kind": "seeded_random", "seed": args.seed,
@@ -851,8 +872,8 @@ def main(argv=None, *, execution_context=None):
             raise ValueError("source-policy resume training recipe differs from checkpoint")
     (out / "args.json").write_text(json.dumps(cfg, indent=1))
     metrics = open(out / "metrics.jsonl", "a")
-    eval_model = TinyVNOCR(len(vocab) + 1, width=args.width, bottleneck=args.bottleneck,
-                           depth=args.depth, ctx=args.ctx, ctx_k=args.ctx_k).to(memory_format=torch.channels_last)
+    eval_model = TinyVNOCR(len(vocab) + 1, **arch).to(memory_format=torch.channels_last)
+    rep_holder = TinyVNOCR(len(vocab) + 1, **arch, rep=args.rep) if args.rep else None
     if resume_torch_rng is not None:
         torch.set_rng_state(resume_torch_rng)
 
@@ -921,6 +942,11 @@ def main(argv=None, *, execution_context=None):
             t_log, seen, acc = time.time(), 0, {"ctc": 0.0, "kd": 0.0, "n": 0}
         if step % args.eval_every == 0 or step == args.steps:
             sd = ema.shadow if ema is not None else model.state_dict()
+            rep_sd = None
+            if rep_holder is not None:                       # fuse the branches: the deployed model
+                rep_sd = sd
+                rep_holder.load_state_dict(rep_sd)
+                sd = fuse_rep(rep_holder).state_dict()
             eval_model.load_state_dict(sd)
             if qat_from is not None and step >= qat_from:
                 set_weight_quant(eval_model, 8)
@@ -946,6 +972,7 @@ def main(argv=None, *, execution_context=None):
                   "opt": opt.state_dict(), "step": step, "best_sel": best, "best_step": best_step,
                   "vocab": vocab, "width": args.width, "bottleneck": args.bottleneck,
                   "depth": args.depth, "ctx": args.ctx, "ctx_k": args.ctx_k, "height": H, "unk": unk,
+                  "chans": list(chans) if chans else None, "rep": args.rep,
                   "freeze_bn_stats": args.freeze_bn_stats,
                   "qat": {"bits": 8, "from_step": qat_from} if qat_from is not None else None,
                   "args": cfg, "val": {k: list(v) for k, v in res.items()}}
@@ -954,8 +981,10 @@ def main(argv=None, *, execution_context=None):
                 ck["torch_rng"] = torch.get_rng_state()
                 ck["source_policy_execution"] = execution
                 ck["source_policy_journal_sha256"] = journal.tail
-            if ema is not None:
+            if ema is not None or rep_sd is not None:
                 ck["model_raw"] = {k: v.contiguous() for k, v in model.state_dict().items()}
+            if rep_sd is not None:
+                ck["model_rep"] = {k: v.contiguous() for k, v in rep_sd.items()}
             if best_step == step:
                 torch.save(ck, out / "ckpt_best.tmp")
                 (out / "ckpt_best.tmp").replace(out / "ckpt_best.pt")

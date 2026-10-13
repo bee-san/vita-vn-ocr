@@ -1,0 +1,1756 @@
+{
+ "kind": "synth4-gap-text",
+ "schema": 1,
+ "inputs": {
+  "exposures": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/exposures_s3v3.json",
+   "sha256": "c49b6120abd750c13aa6d4efcb3452908beb3cac760a70ea452404ce9b01ecb8",
+   "crops": 1000000
+  },
+  "jiten_vn": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/text/jiten/frequency_list_visual_novel.csv",
+   "sha256": "043fd4b24b62089586159edb23c122f5da58cd82a3b59b9452a737117c427372",
+   "words": 249118
+  },
+  "vocab_h15": {
+   "file": "/local/home/skerraut/herd-synth3/clones/synth4-design/data/vocab.txt",
+   "sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b",
+   "classes": 5354
+  },
+  "vocab_fl10": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/train2/release/FL10_vocab_3500.txt",
+   "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8",
+   "classes": 3500
+  },
+  "real": {
+   "realplus_v3": {
+    "lines": 50526,
+    "vns": 9643,
+    "dropped_reserved": 40,
+    "chars": 565544,
+    "distinct": 2971,
+    "outside_h15_per_1000": 0.025,
+    "outside_fl10_per_1000": 0.626,
+    "lines_outside_fl10": 332,
+    "lines_outside_h15": 12
+   },
+   "native_frames": {
+    "lines": 1839,
+    "vns": 226,
+    "dropped_reserved": 8,
+    "chars": 18571,
+    "distinct": 1383,
+    "outside_h15_per_1000": 0.215,
+    "outside_fl10_per_1000": 1.185,
+    "lines_outside_fl10": 17,
+    "lines_outside_h15": 3
+   },
+   "teacher_train": {
+    "lines": 9178,
+    "vns": 1240,
+    "dropped_reserved": 187,
+    "chars": 97196,
+    "distinct": 2271,
+    "outside_h15_per_1000": 0.0,
+    "outside_fl10_per_1000": 0.504,
+    "lines_outside_fl10": 45,
+    "lines_outside_h15": 0
+   },
+   "real_train": {
+    "lines": 6836,
+    "vns": 1198,
+    "dropped_reserved": 169,
+    "chars": 75583,
+    "distinct": 2151,
+    "outside_h15_per_1000": 0.0,
+    "outside_fl10_per_1000": 0.662,
+    "lines_outside_fl10": 42,
+    "lines_outside_h15": 0
+   }
+  },
+  "reserved_vns": 440,
+  "vndb_chars": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/text/vndb_chars.tsv",
+   "sha256": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
+   "names": 103104
+  }
+ },
+ "stream_share": 0.768,
+ "zipf": {
+  "s": 0.95,
+  "kl_curve": [
+   [
+    0.7,
+    0.2047
+   ],
+   [
+    0.75,
+    0.19395
+   ],
+   [
+    0.8,
+    0.18409
+   ],
+   [
+    0.85,
+    0.17569
+   ],
+   [
+    0.9,
+    0.1694
+   ],
+   [
+    0.95,
+    0.16593
+   ],
+   [
+    1.0,
+    0.16604
+   ],
+   [
+    1.05,
+    0.17051
+   ],
+   [
+    1.1,
+    0.18007
+   ],
+   [
+    1.15,
+    0.19537
+   ],
+   [
+    1.2,
+    0.21697
+   ],
+   [
+    1.25,
+    0.24526
+   ],
+   [
+    1.3,
+    0.2805
+   ],
+   [
+    1.35,
+    0.32279
+   ],
+   [
+    1.4,
+    0.37207
+   ]
+  ]
+ },
+ "vocab_coverage": {
+  "FL10_3500": {
+   "chars_covered": 0.997097,
+   "outside_per_1000_chars": 2.903,
+   "kanji_covered": 0.991965,
+   "outside_per_1000_kanji": 8.035
+  },
+  "H15_5354": {
+   "chars_covered": 0.999776,
+   "outside_per_1000_chars": 0.224,
+   "kanji_covered": 0.999328,
+   "outside_per_1000_kanji": 0.672
+  }
+ },
+ "size_curve": [
+  {
+   "chars_covered": 0.981376,
+   "outside_per_1000_chars": 18.624,
+   "kanji_covered": 0.944125,
+   "outside_per_1000_kanji": 55.875,
+   "kanji": 1500,
+   "classes": 1986
+  },
+  {
+   "chars_covered": 0.992,
+   "outside_per_1000_chars": 8.0,
+   "kanji_covered": 0.975998,
+   "outside_per_1000_kanji": 24.002,
+   "kanji": 2000,
+   "classes": 2486
+  },
+  {
+   "chars_covered": 0.996493,
+   "outside_per_1000_chars": 3.507,
+   "kanji_covered": 0.989479,
+   "outside_per_1000_kanji": 10.521,
+   "kanji": 2500,
+   "classes": 2986
+  },
+  {
+   "chars_covered": 0.998403,
+   "outside_per_1000_chars": 1.597,
+   "kanji_covered": 0.99521,
+   "outside_per_1000_kanji": 4.79,
+   "kanji": 3000,
+   "classes": 3486
+  },
+  {
+   "chars_covered": 0.999284,
+   "outside_per_1000_chars": 0.716,
+   "kanji_covered": 0.997853,
+   "outside_per_1000_kanji": 2.147,
+   "kanji": 3500,
+   "classes": 3986
+  },
+  {
+   "chars_covered": 0.999682,
+   "outside_per_1000_chars": 0.318,
+   "kanji_covered": 0.999045,
+   "outside_per_1000_kanji": 0.955,
+   "kanji": 4000,
+   "classes": 4486
+  },
+  {
+   "chars_covered": 0.999867,
+   "outside_per_1000_chars": 0.133,
+   "kanji_covered": 0.999601,
+   "outside_per_1000_kanji": 0.399,
+   "kanji": 4500,
+   "classes": 4986
+  },
+  {
+   "chars_covered": 0.999973,
+   "outside_per_1000_chars": 0.027,
+   "kanji_covered": 0.999918,
+   "outside_per_1000_kanji": 0.082,
+   "kanji": 5000,
+   "classes": 5486
+  },
+  {
+   "chars_covered": 1.0,
+   "outside_per_1000_chars": 0.0,
+   "kanji_covered": 1.0,
+   "outside_per_1000_kanji": 0.0,
+   "kanji": 5500,
+   "classes": 5630
+  },
+  {
+   "chars_covered": 1.0,
+   "outside_per_1000_chars": 0.0,
+   "kanji_covered": 1.0,
+   "outside_per_1000_kanji": 0.0,
+   "kanji": 6000,
+   "classes": 5630
+  },
+  {
+   "chars_covered": 1.0,
+   "outside_per_1000_chars": 0.0,
+   "kanji_covered": 1.0,
+   "outside_per_1000_kanji": 0.0,
+   "kanji": 7000,
+   "classes": 5630
+  },
+  {
+   "chars_covered": 1.0,
+   "outside_per_1000_chars": 0.0,
+   "kanji_covered": 1.0,
+   "outside_per_1000_kanji": 0.0,
+   "kanji": 8000,
+   "classes": 5630
+  },
+  {
+   "chars_covered": 1.0,
+   "outside_per_1000_chars": 0.0,
+   "kanji_covered": 1.0,
+   "outside_per_1000_kanji": 0.0,
+   "kanji": 10000,
+   "classes": 5630
+  }
+ ],
+ "fl10_missing_top": [
+  {
+   "char": "Ｐ",
+   "per_million": 65.22,
+   "exposures": 132
+  },
+  {
+   "char": "膣",
+   "per_million": 52.88,
+   "exposures": 27
+  },
+  {
+   "char": "Ｖ",
+   "per_million": 33.36,
+   "exposures": 203
+  },
+  {
+   "char": "Ｅ",
+   "per_million": 26.87,
+   "exposures": 474
+  },
+  {
+   "char": "Ｌ",
+   "per_million": 25.43,
+   "exposures": 246
+  },
+  {
+   "char": "璧",
+   "per_million": 22.69,
+   "exposures": 265
+  },
+  {
+   "char": "篭",
+   "per_million": 22.59,
+   "exposures": 38
+  },
+  {
+   "char": "攣",
+   "per_million": 21.59,
+   "exposures": 45
+  },
+  {
+   "char": "咥",
+   "per_million": 19.83,
+   "exposures": 20
+  },
+  {
+   "char": "Ｕ",
+   "per_million": 18.96,
+   "exposures": 105
+  },
+  {
+   "char": "猥",
+   "per_million": 18.22,
+   "exposures": 62
+  },
+  {
+   "char": "芯",
+   "per_million": 17.54,
+   "exposures": 36
+  },
+  {
+   "char": "丼",
+   "per_million": 17.32,
+   "exposures": 57
+  },
+  {
+   "char": "痙",
+   "per_million": 16.58,
+   "exposures": 47
+  },
+  {
+   "char": "腺",
+   "per_million": 15.43,
+   "exposures": 35
+  },
+  {
+   "char": "痒",
+   "per_million": 14.2,
+   "exposures": 48
+  },
+  {
+   "char": "軋",
+   "per_million": 13.35,
+   "exposures": 28
+  },
+  {
+   "char": "茹",
+   "per_million": 13.15,
+   "exposures": 25
+  },
+  {
+   "char": "炒",
+   "per_million": 13.12,
+   "exposures": 45
+  },
+  {
+   "char": "竦",
+   "per_million": 13.04,
+   "exposures": 23
+  },
+  {
+   "char": "腔",
+   "per_million": 12.75,
+   "exposures": 21
+  },
+  {
+   "char": "捌",
+   "per_million": 12.73,
+   "exposures": 38
+  },
+  {
+   "char": "腿",
+   "per_million": 12.47,
+   "exposures": 47
+  },
+  {
+   "char": "捩",
+   "per_million": 12.31,
+   "exposures": 17
+  },
+  {
+   "char": "疼",
+   "per_million": 12.23,
+   "exposures": 36
+  },
+  {
+   "char": "耗",
+   "per_million": 12.1,
+   "exposures": 29
+  },
+  {
+   "char": "淹",
+   "per_million": 11.81,
+   "exposures": 62
+  },
+  {
+   "char": "蠢",
+   "per_million": 11.64,
+   "exposures": 25
+  },
+  {
+   "char": "祓",
+   "per_million": 11.56,
+   "exposures": 51
+  },
+  {
+   "char": "掬",
+   "per_million": 11.5,
+   "exposures": 30
+  },
+  {
+   "char": "蝕",
+   "per_million": 10.67,
+   "exposures": 55
+  },
+  {
+   "char": "抉",
+   "per_million": 10.44,
+   "exposures": 29
+  },
+  {
+   "char": "屁",
+   "per_million": 10.37,
+   "exposures": 29
+  },
+  {
+   "char": "躾",
+   "per_million": 10.1,
+   "exposures": 35
+  },
+  {
+   "char": "呵",
+   "per_million": 9.98,
+   "exposures": 36
+  },
+  {
+   "char": "涎",
+   "per_million": 9.78,
+   "exposures": 19
+  },
+  {
+   "char": "拉",
+   "per_million": 9.47,
+   "exposures": 52
+  },
+  {
+   "char": "襞",
+   "per_million": 9.45,
+   "exposures": 17
+  },
+  {
+   "char": "闊",
+   "per_million": 9.42,
+   "exposures": 38
+  },
+  {
+   "char": "捏",
+   "per_million": 9.35,
+   "exposures": 30
+  },
+  {
+   "char": "Ｗ",
+   "per_million": 9.16,
+   "exposures": 28
+  },
+  {
+   "char": "泌",
+   "per_million": 8.58,
+   "exposures": 39
+  },
+  {
+   "char": "堰",
+   "per_million": 8.39,
+   "exposures": 21
+  },
+  {
+   "char": "孕",
+   "per_million": 8.27,
+   "exposures": 19
+  },
+  {
+   "char": "凸",
+   "per_million": 8.08,
+   "exposures": 33
+  },
+  {
+   "char": "窄",
+   "per_million": 8.06,
+   "exposures": 7
+  },
+  {
+   "char": "躙",
+   "per_million": 7.93,
+   "exposures": 26
+  },
+  {
+   "char": "灼",
+   "per_million": 7.87,
+   "exposures": 53
+  },
+  {
+   "char": "填",
+   "per_million": 7.81,
+   "exposures": 40
+  },
+  {
+   "char": "儚",
+   "per_million": 7.63,
+   "exposures": 38
+  },
+  {
+   "char": "朦",
+   "per_million": 7.46,
+   "exposures": 24
+  },
+  {
+   "char": "謳",
+   "per_million": 7.43,
+   "exposures": 31
+  },
+  {
+   "char": "齧",
+   "per_million": 7.32,
+   "exposures": 18
+  },
+  {
+   "char": "餡",
+   "per_million": 7.18,
+   "exposures": 10
+  },
+  {
+   "char": "贄",
+   "per_million": 7.11,
+   "exposures": 77
+  },
+  {
+   "char": "壷",
+   "per_million": 6.83,
+   "exposures": 9
+  },
+  {
+   "char": "滓",
+   "per_million": 6.75,
+   "exposures": 23
+  },
+  {
+   "char": "滾",
+   "per_million": 6.68,
+   "exposures": 6
+  },
+  {
+   "char": "澱",
+   "per_million": 6.65,
+   "exposures": 16
+  },
+  {
+   "char": "迸",
+   "per_million": 6.63,
+   "exposures": 14
+  }
+ ],
+ "fl10_missing_mass_per_1000": 2.6793,
+ "h15_missing_top": [
+  {
+   "char": "侭",
+   "per_million": 5.94
+  },
+  {
+   "char": "蠕",
+   "per_million": 3.32
+  },
+  {
+   "char": "腟",
+   "per_million": 3.18
+  },
+  {
+   "char": "剝",
+   "per_million": 2.85
+  },
+  {
+   "char": "搔",
+   "per_million": 2.64
+  },
+  {
+   "char": "藹",
+   "per_million": 2.35
+  },
+  {
+   "char": "諤",
+   "per_million": 2.16
+  },
+  {
+   "char": "鬩",
+   "per_million": 2.15
+  },
+  {
+   "char": "嚙",
+   "per_million": 2.03
+  },
+  {
+   "char": "吽",
+   "per_million": 2.03
+  },
+  {
+   "char": "鴇",
+   "per_million": 1.84
+  },
+  {
+   "char": "忸",
+   "per_million": 1.72
+  },
+  {
+   "char": "怩",
+   "per_million": 1.72
+  },
+  {
+   "char": "囓",
+   "per_million": 1.65
+  },
+  {
+   "char": "臑",
+   "per_million": 1.63
+  },
+  {
+   "char": "洸",
+   "per_million": 1.62
+  },
+  {
+   "char": "瘴",
+   "per_million": 1.58
+  },
+  {
+   "char": "恫",
+   "per_million": 1.49
+  },
+  {
+   "char": "鯵",
+   "per_million": 1.33
+  },
+  {
+   "char": "蛻",
+   "per_million": 1.27
+  },
+  {
+   "char": "狢",
+   "per_million": 1.2
+  },
+  {
+   "char": "繚",
+   "per_million": 1.16
+  },
+  {
+   "char": "饐",
+   "per_million": 1.14
+  },
+  {
+   "char": "侃",
+   "per_million": 1.1
+  },
+  {
+   "char": "繫",
+   "per_million": 1.09
+  },
+  {
+   "char": "剔",
+   "per_million": 1.09
+  },
+  {
+   "char": "嶌",
+   "per_million": 1.03
+  },
+  {
+   "char": "吶",
+   "per_million": 1.0
+  },
+  {
+   "char": "痞",
+   "per_million": 0.96
+  },
+  {
+   "char": "螻",
+   "per_million": 0.95
+  },
+  {
+   "char": "鎹",
+   "per_million": 0.92
+  },
+  {
+   "char": "吞",
+   "per_million": 0.9
+  },
+  {
+   "char": "澳",
+   "per_million": 0.9
+  },
+  {
+   "char": "蛯",
+   "per_million": 0.89
+  },
+  {
+   "char": "呱",
+   "per_million": 0.83
+  },
+  {
+   "char": "鑚",
+   "per_million": 0.82
+  },
+  {
+   "char": "蜉",
+   "per_million": 0.8
+  },
+  {
+   "char": "蝣",
+   "per_million": 0.8
+  },
+  {
+   "char": "潅",
+   "per_million": 0.8
+  },
+  {
+   "char": "滂",
+   "per_million": 0.8
+  },
+  {
+   "char": "沱",
+   "per_million": 0.8
+  },
+  {
+   "char": "蛎",
+   "per_million": 0.8
+  },
+  {
+   "char": "椛",
+   "per_million": 0.79
+  },
+  {
+   "char": "猖",
+   "per_million": 0.79
+  },
+  {
+   "char": "獗",
+   "per_million": 0.79
+  },
+  {
+   "char": "垓",
+   "per_million": 0.78
+  },
+  {
+   "char": "跏",
+   "per_million": 0.76
+  },
+  {
+   "char": "栢",
+   "per_million": 0.76
+  },
+  {
+   "char": "檸",
+   "per_million": 0.75
+  },
+  {
+   "char": "檬",
+   "per_million": 0.75
+  },
+  {
+   "char": "啾",
+   "per_million": 0.75
+  },
+  {
+   "char": "筺",
+   "per_million": 0.75
+  },
+  {
+   "char": "覡",
+   "per_million": 0.75
+  },
+  {
+   "char": "覯",
+   "per_million": 0.74
+  },
+  {
+   "char": "痼",
+   "per_million": 0.74
+  },
+  {
+   "char": "枸",
+   "per_million": 0.74
+  },
+  {
+   "char": "儺",
+   "per_million": 0.73
+  },
+  {
+   "char": "皴",
+   "per_million": 0.73
+  },
+  {
+   "char": "礒",
+   "per_million": 0.72
+  },
+  {
+   "char": "燠",
+   "per_million": 0.71
+  },
+  {
+   "char": "晧",
+   "per_million": 0.71
+  },
+  {
+   "char": "摑",
+   "per_million": 0.7
+  },
+  {
+   "char": "蝟",
+   "per_million": 0.69
+  },
+  {
+   "char": "椚",
+   "per_million": 0.68
+  },
+  {
+   "char": "隗",
+   "per_million": 0.67
+  },
+  {
+   "char": "猊",
+   "per_million": 0.64
+  },
+  {
+   "char": "鴬",
+   "per_million": 0.64
+  },
+  {
+   "char": "嵜",
+   "per_million": 0.63
+  },
+  {
+   "char": "鬆",
+   "per_million": 0.61
+  },
+  {
+   "char": "烝",
+   "per_million": 0.6
+  },
+  {
+   "char": "頰",
+   "per_million": 0.59
+  },
+  {
+   "char": "楪",
+   "per_million": 0.58
+  },
+  {
+   "char": "薀",
+   "per_million": 0.56
+  },
+  {
+   "char": "醂",
+   "per_million": 0.56
+  },
+  {
+   "char": "糀",
+   "per_million": 0.55
+  },
+  {
+   "char": "琺",
+   "per_million": 0.55
+  },
+  {
+   "char": "瑯",
+   "per_million": 0.55
+  },
+  {
+   "char": "趺",
+   "per_million": 0.55
+  },
+  {
+   "char": "坏",
+   "per_million": 0.54
+  },
+  {
+   "char": "哂",
+   "per_million": 0.53
+  }
+ ],
+ "h15_missing_kanji": 611,
+ "h15_kanji_not_in_vn_list": {
+  "count": 335,
+  "examples": "亂伃佼俛傚傴僂僞僣僮儉兩兮册冐决况刄刪剩劑劬勞勸匀匆匇卷卻厲厶叮叺吩呀呶咐咜咯咼啻嚀嚏囘圈圍埔堊塋塢塲墅墮墻壓壞奎姙娵嫂嫖孩寃寔寢專屆岨崕嵬巒幢并廐廚廢廳廼弴彅"
+ },
+ "names": {
+  "FL10_3500": {
+   "names": 103104,
+   "with_char_outside": 1777,
+   "share": 0.0172
+  },
+  "H15_5354": {
+   "names": 103104,
+   "with_char_outside": 478,
+   "share": 0.0046
+  }
+ },
+ "name_missing_top": [
+  {
+   "char": "鴇",
+   "names": 21
+  },
+  {
+   "char": "椛",
+   "names": 15
+  },
+  {
+   "char": "杠",
+   "names": 12
+  },
+  {
+   "char": "洸",
+   "names": 11
+  },
+  {
+   "char": "椚",
+   "names": 10
+  },
+  {
+   "char": "檸",
+   "names": 8
+  },
+  {
+   "char": "檬",
+   "names": 8
+  },
+  {
+   "char": "楪",
+   "names": 7
+  },
+  {
+   "char": "瑶",
+   "names": 6
+  },
+  {
+   "char": "烝",
+   "names": 6
+  },
+  {
+   "char": "栢",
+   "names": 6
+  },
+  {
+   "char": "簸",
+   "names": 6
+  },
+  {
+   "char": "嶌",
+   "names": 6
+  },
+  {
+   "char": "神",
+   "names": 5
+  },
+  {
+   "char": "蛯",
+   "names": 4
+  },
+  {
+   "char": "杰",
+   "names": 4
+  },
+  {
+   "char": "覡",
+   "names": 4
+  },
+  {
+   "char": "乂",
+   "names": 4
+  },
+  {
+   "char": "澳",
+   "names": 3
+  },
+  {
+   "char": "壟",
+   "names": 3
+  },
+  {
+   "char": "枋",
+   "names": 3
+  },
+  {
+   "char": "隆",
+   "names": 3
+  },
+  {
+   "char": "迩",
+   "names": 3
+  },
+  {
+   "char": "晄",
+   "names": 3
+  },
+  {
+   "char": "穐",
+   "names": 3
+  },
+  {
+   "char": "儁",
+   "names": 3
+  },
+  {
+   "char": "峪",
+   "names": 3
+  },
+  {
+   "char": "薺",
+   "names": 3
+  },
+  {
+   "char": "袮",
+   "names": 3
+  },
+  {
+   "char": "黑",
+   "names": 3
+  },
+  {
+   "char": "玫",
+   "names": 3
+  },
+  {
+   "char": "惺",
+   "names": 3
+  },
+  {
+   "char": "弌",
+   "names": 2
+  },
+  {
+   "char": "鴬",
+   "names": 2
+  },
+  {
+   "char": "菘",
+   "names": 2
+  },
+  {
+   "char": "淦",
+   "names": 2
+  },
+  {
+   "char": "吽",
+   "names": 2
+  },
+  {
+   "char": "菲",
+   "names": 2
+  },
+  {
+   "char": "瀨",
+   "names": 2
+  },
+  {
+   "char": "羽",
+   "names": 2
+  },
+  {
+   "char": "蛎",
+   "names": 2
+  },
+  {
+   "char": "晟",
+   "names": 2
+  },
+  {
+   "char": "祺",
+   "names": 2
+  },
+  {
+   "char": "圷",
+   "names": 2
+  },
+  {
+   "char": "鶴",
+   "names": 2
+  },
+  {
+   "char": "犂",
+   "names": 2
+  },
+  {
+   "char": "杦",
+   "names": 2
+  },
+  {
+   "char": "驪",
+   "names": 2
+  },
+  {
+   "char": "郞",
+   "names": 2
+  },
+  {
+   "char": "枸",
+   "names": 2
+  },
+  {
+   "char": "椹",
+   "names": 2
+  },
+  {
+   "char": "滉",
+   "names": 2
+  },
+  {
+   "char": "舉",
+   "names": 2
+  },
+  {
+   "char": "墹",
+   "names": 2
+  },
+  {
+   "char": "姬",
+   "names": 2
+  },
+  {
+   "char": "娟",
+   "names": 2
+  },
+  {
+   "char": "宫",
+   "names": 2
+  },
+  {
+   "char": "甃",
+   "names": 1
+  },
+  {
+   "char": "錏",
+   "names": 1
+  },
+  {
+   "char": "緇",
+   "names": 1
+  }
+ ],
+ "exposure_tail": {
+  "H15_5354": {
+   "vocab": 5354,
+   "vn_chars_in_vocab": 4874,
+   "tail": {
+    "<1": {
+     "chars": 17,
+     "kanji": 17,
+     "vn_text_per_1000": 0.006,
+     "real_label_per_1000": 0.0
+    },
+    "<10": {
+     "chars": 774,
+     "kanji": 762,
+     "vn_text_per_1000": 0.558,
+     "real_label_per_1000": 0.0595
+    },
+    "<50": {
+     "chars": 2040,
+     "kanji": 2001,
+     "vn_text_per_1000": 4.4301,
+     "real_label_per_1000": 1.0556
+    },
+    "<100": {
+     "chars": 2501,
+     "kanji": 2441,
+     "vn_text_per_1000": 9.1643,
+     "real_label_per_1000": 2.9581
+    },
+    "<300": {
+     "chars": 3218,
+     "kanji": 3116,
+     "vn_text_per_1000": 27.8489,
+     "real_label_per_1000": 12.8169
+    },
+    "<1000": {
+     "chars": 3966,
+     "kanji": 3821,
+     "vn_text_per_1000": 82.1931,
+     "real_label_per_1000": 48.8695
+    }
+   },
+   "never_rendered": 66,
+   "never_rendered_examples": "!()?~Δλаеинот‐⇔∀─┃〒ゕゖ佚刪勵勸卻咼圍壞壹嫋屆屬怱恤慍戞搜擴梏歐毆滯潛焜痾祕穩窗羸莖蕋藥蟆裙覽誥謠贊踐",
+   "exposure_p10_50_90": [
+    4,
+    65,
+    2087
+   ],
+   "fonts_lt": {
+    "<2": 143,
+    "<5": 575,
+    "<10": 1229,
+    "<20": 1899
+   },
+   "families_lt": {
+    "<2": 144,
+    "<5": 585,
+    "<10": 1256,
+    "<20": 1947
+   },
+   "lowest_vn_weight": [
+    {
+     "char": "佚",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.787
+    },
+    {
+     "char": "怱",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.577
+    },
+    {
+     "char": "痾",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.502
+    },
+    {
+     "char": "嫋",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.501
+    },
+    {
+     "char": "鑰",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.464
+    },
+    {
+     "char": "梏",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.352
+    },
+    {
+     "char": "焜",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.324
+    },
+    {
+     "char": "蟆",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.314
+    },
+    {
+     "char": "輳",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.31
+    },
+    {
+     "char": "窗",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.289
+    },
+    {
+     "char": "蕋",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.279
+    },
+    {
+     "char": "壹",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.247
+    },
+    {
+     "char": "勵",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.223
+    },
+    {
+     "char": "擴",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.223
+    },
+    {
+     "char": "屬",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "歐",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.202
+    },
+    {
+     "char": "羸",
+     "exposures": 0,
+     "fonts": 0,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "筅",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.789
+    },
+    {
+     "char": "熄",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.592
+    },
+    {
+     "char": "胯",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.457
+    },
+    {
+     "char": "躪",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.434
+    },
+    {
+     "char": "觸",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.313
+    },
+    {
+     "char": "吁",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.289
+    },
+    {
+     "char": "偖",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.26
+    },
+    {
+     "char": "蔚",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.246
+    },
+    {
+     "char": "悚",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "效",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "譽",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "艙",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.202
+    },
+    {
+     "char": "峭",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.2
+    },
+    {
+     "char": "圖",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.196
+    },
+    {
+     "char": "轅",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.196
+    },
+    {
+     "char": "嫗",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "抔",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "營",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "礑",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "粱",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "鑄",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "驥",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "鞴",
+     "exposures": 2,
+     "fonts": 2,
+     "vn_per_million": 1.466
+    }
+   ]
+  },
+  "FL10_3500": {
+   "vocab": 3500,
+   "vn_chars_in_vocab": 3352,
+   "tail": {
+    "<1": {
+     "chars": 0,
+     "kanji": 0,
+     "vn_text_per_1000": 0.0,
+     "real_label_per_1000": 0.0
+    },
+    "<10": {
+     "chars": 48,
+     "kanji": 47,
+     "vn_text_per_1000": 0.015,
+     "real_label_per_1000": 0.0053
+    },
+    "<50": {
+     "chars": 551,
+     "kanji": 538,
+     "vn_text_per_1000": 2.0863,
+     "real_label_per_1000": 0.5641
+    },
+    "<100": {
+     "chars": 987,
+     "kanji": 957,
+     "vn_text_per_1000": 6.6857,
+     "real_label_per_1000": 2.3808
+    },
+    "<300": {
+     "chars": 1697,
+     "kanji": 1629,
+     "vn_text_per_1000": 25.1965,
+     "real_label_per_1000": 12.2131
+    },
+    "<1000": {
+     "chars": 2444,
+     "kanji": 2334,
+     "vn_text_per_1000": 79.5138,
+     "real_label_per_1000": 48.2657
+    }
+   },
+   "never_rendered": 16,
+   "never_rendered_examples": "!()?‐ゕゖ圍屆搜祕藥覽辯黨〓",
+   "exposure_p10_50_90": [
+    26,
+    266,
+    3575
+   ],
+   "fonts_lt": {
+    "<2": 27,
+    "<5": 75,
+    "<10": 151,
+    "<20": 267
+   },
+   "families_lt": {
+    "<2": 27,
+    "<5": 78,
+    "<10": 157,
+    "<20": 291
+   },
+   "lowest_vn_weight": [
+    {
+     "char": "觸",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.313
+    },
+    {
+     "char": "圖",
+     "exposures": 1,
+     "fonts": 1,
+     "vn_per_million": 0.196
+    },
+    {
+     "char": "錢",
+     "exposures": 2,
+     "fonts": 2,
+     "vn_per_million": 0.386
+    },
+    {
+     "char": "醫",
+     "exposures": 2,
+     "fonts": 2,
+     "vn_per_million": 0.272
+    },
+    {
+     "char": "豐",
+     "exposures": 2,
+     "fonts": 2,
+     "vn_per_million": 0.269
+    },
+    {
+     "char": "飮",
+     "exposures": 2,
+     "fonts": 2,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "盡",
+     "exposures": 2,
+     "fonts": 2,
+     "vn_per_million": 0.196
+    },
+    {
+     "char": "絲",
+     "exposures": 3,
+     "fonts": 3,
+     "vn_per_million": 0.702
+    },
+    {
+     "char": "舍",
+     "exposures": 3,
+     "fonts": 3,
+     "vn_per_million": 0.386
+    },
+    {
+     "char": "齒",
+     "exposures": 3,
+     "fonts": 3,
+     "vn_per_million": 0.374
+    },
+    {
+     "char": "寫",
+     "exposures": 3,
+     "fonts": 3,
+     "vn_per_million": 0.218
+    },
+    {
+     "char": "價",
+     "exposures": 3,
+     "fonts": 3,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "乘",
+     "exposures": 4,
+     "fonts": 4,
+     "vn_per_million": 0.315
+    },
+    {
+     "char": "隨",
+     "exposures": 4,
+     "fonts": 4,
+     "vn_per_million": 0.25
+    },
+    {
+     "char": "狹",
+     "exposures": 4,
+     "fonts": 4,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "稻",
+     "exposures": 4,
+     "fonts": 4,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "￥",
+     "exposures": 4,
+     "fonts": 4,
+     "vn_per_million": 0.0
+    },
+    {
+     "char": "孃",
+     "exposures": 5,
+     "fonts": 5,
+     "vn_per_million": 0.25
+    },
+    {
+     "char": "懷",
+     "exposures": 5,
+     "fonts": 3,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "續",
+     "exposures": 5,
+     "fonts": 5,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "遲",
+     "exposures": 5,
+     "fonts": 5,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "疊",
+     "exposures": 5,
+     "fonts": 5,
+     "vn_per_million": 0.199
+    },
+    {
+     "char": "怎",
+     "exposures": 5,
+     "fonts": 5,
+     "vn_per_million": 0.196
+    },
+    {
+     "char": "數",
+     "exposures": 5,
+     "fonts": 5,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "號",
+     "exposures": 6,
+     "fonts": 6,
+     "vn_per_million": 0.426
+    },
+    {
+     "char": "發",
+     "exposures": 6,
+     "fonts": 6,
+     "vn_per_million": 0.299
+    },
+    {
+     "char": "髮",
+     "exposures": 6,
+     "fonts": 6,
+     "vn_per_million": 0.252
+    },
+    {
+     "char": "轉",
+     "exposures": 6,
+     "fonts": 5,
+     "vn_per_million": 0.229
+    },
+    {
+     "char": "帶",
+     "exposures": 6,
+     "fonts": 6,
+     "vn_per_million": 0.217
+    },
+    {
+     "char": "假",
+     "exposures": 6,
+     "fonts": 6,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "讀",
+     "exposures": 6,
+     "fonts": 5,
+     "vn_per_million": 0.19
+    },
+    {
+     "char": "奧",
+     "exposures": 7,
+     "fonts": 7,
+     "vn_per_million": 1.743
+    },
+    {
+     "char": "諷",
+     "exposures": 7,
+     "fonts": 7,
+     "vn_per_million": 0.722
+    },
+    {
+     "char": "兒",
+     "exposures": 7,
+     "fonts": 7,
+     "vn_per_million": 0.517
+    },
+    {
+     "char": "淺",
+     "exposures": 7,
+     "fonts": 7,
+     "vn_per_million": 0.389
+    },
+    {
+     "char": "歸",
+     "exposures": 7,
+     "fonts": 7,
+     "vn_per_million": 0.196
+    },
+    {
+     "char": "賣",
+     "exposures": 7,
+     "fonts": 7,
+     "vn_per_million": 0.0
+    },
+    {
+     "char": "鐵",
+     "exposures": 8,
+     "fonts": 8,
+     "vn_per_million": 0.66
+    },
+    {
+     "char": "辨",
+     "exposures": 8,
+     "fonts": 8,
+     "vn_per_million": 0.607
+    },
+    {
+     "char": "滿",
+     "exposures": 8,
+     "fonts": 8,
+     "vn_per_million": 0.407
+    }
+   ]
+  }
+ }
+}

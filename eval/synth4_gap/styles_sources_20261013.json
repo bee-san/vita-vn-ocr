@@ -1,0 +1,98 @@
+{
+ "kind": "synth4-gap-styles",
+ "schema": 1,
+ "sources": {
+  "s3v3": {
+   "files": [
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_00000.npz",
+     "sha256": "65f124173580955897834c7dcf16247a6b833ffe2e9bd2603266473763c17567"
+    },
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_00001.npz",
+     "sha256": "aba91968fb4709e29aaf1a98b88534c94d51590d075c0386382c8544338d334e"
+    }
+   ],
+   "rows": 20000,
+   "measured": 19975,
+   "reserved_dropped": 0,
+   "synthetic": true
+  },
+  "real_tt_rt": {
+   "files": [
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_train.npz",
+     "sha256": "3c27c057af9a41574a7704d04599d9d6220faea525536d0d6c6023301ff852df"
+    },
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realdata/real_train.npz",
+     "sha256": "10f8b68f99357d6db0d5813fbabf3cd3ac9e154fee2fe10c6b03605950f91324"
+    }
+   ],
+   "rows": 20000,
+   "measured": 19989,
+   "reserved_dropped": 356,
+   "synthetic": false
+  },
+  "realplus_ink": {
+   "files": [
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realplus/realplus_train_ink_v2.npz",
+     "sha256": "e11467b2f81d5437b966fbe9faa9cf5d8e6c9912ccf76f97ee1747e815f7163d"
+    }
+   ],
+   "rows": 20000,
+   "measured": 19995,
+   "reserved_dropped": 8,
+   "synthetic": false
+  },
+  "realplus_grad": {
+   "files": [
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realplus/realplus_train_grad_v2.npz",
+     "sha256": "1b5419dcd22091bc63d82c19a225283a0fcf7dc4b0bb45df448b8454e9c7135f"
+    }
+   ],
+   "rows": 20000,
+   "measured": 20000,
+   "reserved_dropped": 6,
+   "synthetic": false
+  },
+  "dev_teacher_val": {
+   "files": [
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/teacher_val.npz",
+     "sha256": "f5c0032041c14b31bff87b52a56381b8f0d3e84e2f6cfd78a3b600e55751f81e"
+    }
+   ],
+   "rows": 0,
+   "measured": 0,
+   "reserved_dropped": 1643,
+   "synthetic": false
+  },
+  "dev_devnative": {
+   "files": [
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_grad.npz",
+     "sha256": "76bb3329a24866b331b55a8526a82092b3ec084e4e1e7b368c8cf1c835572d3f"
+    },
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_ink.npz",
+     "sha256": "742944e99dd058bdfbce5c298100cec1b85d37bff5378670b301fa61a1e3cde7"
+    },
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_grad.npz",
+     "sha256": "2eb847ebf01d76741b1fdd2d1b92debf719b6a8edaacb8e8114d697632a73f3b"
+    },
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_ink.npz",
+     "sha256": "baef59f132acd3242b237c9d0d168b3d5202f6c381b716109cb20e0fa044e985"
+    }
+   ],
+   "rows": 0,
+   "measured": 0,
+   "reserved_dropped": 986,
+   "synthetic": false
+  }
+ }
+}

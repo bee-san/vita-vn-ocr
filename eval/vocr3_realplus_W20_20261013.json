@@ -1,0 +1,80 @@
+{
+ "kind": "vocr3-realplus-decision",
+ "size": "W20",
+ "protocol_sha256": "27fb605c50f35d3096c11fa326e82845b067d009f86802ee1b433e781f99be20",
+ "computed": "2026-10-13T16:18:43Z",
+ "pairs": [
+  [
+   "ft_W20_C_mix_seed1",
+   "rp_W20_C_mix_seed1"
+  ],
+  [
+   "ft_W20_A_s2_seed1",
+   "rp_W20_A_s2_seed1"
+  ],
+  [
+   "ft_W20_B_s3_seed1",
+   "rp_W20_B_s3_seed1"
+  ]
+ ],
+ "teacher_val": {
+  "delta_points": -0.177,
+  "ci95": [
+   -0.274,
+   -0.081
+  ],
+  "cer_a": 0.0197,
+  "cer_b": 0.01793
+ },
+ "per_pair": {
+  "ft_W20_C_mix_seed1->rp_W20_C_mix_seed1": {
+   "delta_points": -0.135,
+   "ci95": [
+    -0.29,
+    0.026
+   ],
+   "cer_a": 0.01874,
+   "cer_b": 0.01739
+  },
+  "ft_W20_A_s2_seed1->rp_W20_A_s2_seed1": {
+   "delta_points": -0.255,
+   "ci95": [
+    -0.413,
+    -0.102
+   ],
+   "cer_a": 0.02079,
+   "cer_b": 0.01824
+  },
+  "ft_W20_B_s3_seed1->rp_W20_B_s3_seed1": {
+   "delta_points": -0.141,
+   "ci95": [
+    -0.285,
+    0.009
+   ],
+   "cer_a": 0.01956,
+   "cer_b": 0.01815
+  }
+ },
+ "devnative": {
+  "delta_points": 0.144,
+  "ci95": [
+   -0.089,
+   0.385
+  ],
+  "cer_a": 0.02127,
+  "cer_b": 0.02271
+ },
+ "devnative_files": [
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/devnative_strict_ink.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/devnative_strict_grad.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/devnative_tv_native_ink.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/devnative_tv_native_grad.json"
+ ],
+ "devnative_sha256": [
+  "ea448f874a38da88d4ee25a9633f855ba72277bb92140d012b1279b3d88c1e25",
+  "9670423d4eadee2c7cb11a5f27684d25e57fca1b364610f6272220c86805f167",
+  "860e9630c1674a1e5ad9fa97d91496d2b0c8f983535fa7c0b9fde4474c64a151",
+  "28dcd7bfd3a88afc5ad3960c37435db68b43f65265f3a1e643c97cbfb2f83cf7"
+ ],
+ "adopted": true
+}

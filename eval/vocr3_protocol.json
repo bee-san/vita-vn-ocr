@@ -48,7 +48,9 @@
    "step_curve": ["ft_FL10_C_mix_pre64k_seed1", "ft_FL10_C_mix_pre128k_seed1"]
   },
   "H15": {
-   "study2": ["ft_H15_A_s2_seed1", "ft_H15_A_s2_seed2", "ft_H15_C_mix_seed1", "ft_H15_C_mix_seed2"]
+   "study2": ["ft_H15_A_s2_seed1", "ft_H15_A_s2_seed2", "ft_H15_C_mix_seed1", "ft_H15_C_mix_seed2"],
+   "extra": ["ft_H15_B_s3_seed1"],
+   "extra_rule": "added by amendment 2: eval/vocr3_run.sh H15 B_s3 1 (study 2's recipe with synth3 v2 alone as the VN-style data); a candidate whatever study 2's H15 decision, and it must finish before the H15 selection"
   },
   "W20": {
    "runs": ["ft_W20_C_mix_seed1", "ft_W20_A_s2_seed1", "ft_W20_B_s3_seed1"],
@@ -121,6 +123,12 @@
    "change": "(1) A third size, W20 (width 2.0, data/vocab.txt; train2's F20 size), with three candidate runs (C_mix, A_s2, B_s3, seed 1) from eval/vocr3_run.sh, the same base rule, the report arm VOCR3-W20, the released F20 as a same-size reference, the pairs VOCR3-W20 vs VOCR_H15, F20 and VOCR3-H15, and the gate VOCR3-W20 vs VOCR_H15. (2) The vita-budget ceiling (weights <= 1,600,000 B, W8I arena <= 262,144 B, estimated <= 550 ms per 640-px line) as a selectability rule for every size. (3) Every VOCR3 fine-tune, including study 2's (its amendment 2) and the realplus variant, uses the copies of teacher_train, real_train and the pseudo-label pools without CLANNAD (v4) and its VNDB family (eval/synth3_study2_pools.sha256).",
    "reason": "The owner allowed a slightly larger model if it fits a PCH-1000 inside vita-jp-overlay, and the vita-budget agent set the ceiling at 20:5xZ; the first synth3 audit (B1) found CLANNAD crops in the inherited pools.",
    "unchanged": "the FL10 and H15 sizes, their candidates and baselines, the selection cohorts and rule, the locked report's sets and statistics, the qualification gates for FL10 and H15, publication and hygiene"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before any VOCR3 candidate was scored",
+   "change": "One more H15 candidate, ft_H15_B_s3_seed1 (eval/vocr3_run.sh H15 B_s3 1: study 2's H15 recipe with synth3 v2 alone as the VN-style synthetic data, 40,000 pretrain steps, the CLANNAD-free fine-tune).",
+   "reason": "Study 1's H15-width secondary (one run per arm) put synth3 alone below synth2 (B - A -0.52, CI -0.80 to -0.25, line sampling only; not replicated), and study 2 compares only synth2 against the mix. Known before this amendment: study 2's FL10 result (no measured difference) and its FL10 test report; no H15 or W20 study-2 run had been scored.",
+   "unchanged": "everything else"
   }
  ]
 }

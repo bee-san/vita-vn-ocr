@@ -1,0 +1,115 @@
+{
+ "version": 4,
+ "platform": {
+  "vita": 0.24,
+  "psp": 0.24,
+  "psp2x": 0.05,
+  "scaled": 0.0
+ },
+ "length_target": [
+  0.0134,
+  0.2378,
+  0.1567,
+  0.109,
+  0.1328,
+  0.159,
+  0.1182,
+  0.0641,
+  0.0089,
+  0.0002
+ ],
+ "ruby": {
+  "vita": 0.05,
+  "psp": 0.05
+ },
+ "frames": {
+  "port": {
+   "vita": {
+    "native": 0.94,
+    "subnative": 0.03,
+    "stretch": 0.03
+   },
+   "psp": {
+    "native": 0.97,
+    "stretch": 0.03
+   },
+   "psp2x": {
+    "native": 1.0
+   }
+  },
+  "stretch": [
+   1.12,
+   1.33
+  ],
+  "subnative": [
+   [
+    0.75,
+    0.6667,
+    0.8333
+   ],
+   [
+    0.6,
+    0.2,
+    0.2
+   ]
+  ],
+  "capture": {
+   "vita": {
+    "clean": 0.25,
+    "vndb2": 0.75
+   },
+   "psp": {
+    "clean": 0.25,
+    "q90": 0.63,
+    "vndb2": 0.12
+   },
+   "psp2x": {
+    "clean": 0.25,
+    "vndb2": 0.75
+   }
+  },
+  "console_q": [
+   82,
+   95
+  ],
+  "vndb_420": {
+   "vita": {
+    "vndb2": 0.94
+   },
+   "psp": {
+    "q90": 0.0,
+    "vndb2": 1.0
+   },
+   "psp2x": {
+    "vndb2": 0.94
+   }
+  },
+  "effects": {
+   "vita": {
+    "stroke": 0.1,
+    "shadow": 0.15
+   },
+   "psp": {
+    "stroke": 0.08,
+    "shadow": 0.15
+   },
+   "bare": {
+    "stroke": 1.0,
+    "shadow": 1.0
+   }
+  },
+  "track": {
+   "vita": [
+    0.5,
+    1,
+    3
+   ],
+   "psp": [
+    0.55,
+    1,
+    2
+   ]
+  },
+  "thin_min_alpha": 0.6
+ }
+}

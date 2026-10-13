@@ -1,0 +1,1001 @@
+{
+ "kind": "synth3-native-calibration",
+ "schema": 1,
+ "sources": {
+  "frames": "realplus/native.py's selection under the owner's 10:51Z rule: 1,674 training-side native VNDB frames (1,346 PSP, 328 Vita) of realdata's / teacher's pools, pixel duplicates and linefind near-duplicates dropped; no Memories Off series VN",
+  "real_crops": "teacher_train + real_train, kinds vita and psp; every VN of synth3_stats' default exclusions (fresh native, CLANNAD, the owner's Memories Off series) and of exclude_dev_vns.txt dropped; at most 12,000 crops per file",
+  "v3": "synth3 version 3 pinned shards 0-1 (platforms vita, psp, psp2x), at most 12,000 crops per file",
+  "calibration_renders": "c1-c3: 5 x 1,000 crops each, seed 3001 (never the training seed), data/manifests/synth3_v4_native_cfg.json at each round"
+ },
+ "jpeg": {
+  "psp": {
+   "frames": 1346,
+   "jpeg": 1346,
+   "exact_ijg_table": 1345,
+   "quality_hist": {
+    "90": 1345,
+    "95": 1
+   },
+   "quality_p10_50_90": [
+    90.0,
+    90.0,
+    90.0
+   ],
+   "subsampling": {
+    "4:4:4": 1126,
+    "4:2:0": 220
+   }
+  },
+  "vita": {
+   "frames": 328,
+   "jpeg": 328,
+   "exact_ijg_table": 322,
+   "quality_hist": {
+    "90": 322,
+    "94": 6
+   },
+   "quality_p10_50_90": [
+    90.0,
+    90.0,
+    90.0
+   ],
+   "subsampling": {
+    "4:2:0": 303,
+    "4:4:4": 25
+   }
+  }
+ },
+ "frames": {
+  "psp": {
+   "frames": 1346,
+   "pair_ratio": {
+    "p10_50_90": [
+     0.947,
+     0.982,
+     0.997
+    ]
+   },
+   "x2_f0.5_x": {
+    "p10_50_90": [
+     0.348,
+     0.807,
+     1.52
+    ]
+   },
+   "x2_f0.5_y": {
+    "p10_50_90": [
+     0.202,
+     0.644,
+     1.371
+    ]
+   },
+   "x4/3_f0.25_x": {
+    "p10_50_90": [
+     1.071,
+     1.746,
+     3.085
+    ]
+   },
+   "x4/3_f0.25_y": {
+    "p10_50_90": [
+     0.783,
+     1.532,
+     3.455
+    ]
+   },
+   "x3/2_f0.333_x": {
+    "p10_50_90": [
+     0.734,
+     1.094,
+     1.689
+    ]
+   },
+   "x3/2_f0.333_y": {
+    "p10_50_90": [
+     0.606,
+     0.995,
+     1.485
+    ]
+   },
+   "jpeg_f0.125_x": {
+    "p10_50_90": [
+     1.916,
+     3.173,
+     5.893
+    ]
+   },
+   "jpeg_f0.125_y": {
+    "p10_50_90": [
+     1.358,
+     2.664,
+     5.541
+    ]
+   },
+   "nearest2x_like (pair_ratio < 0.35)": 0,
+   "x4/3_f0.25_x > 8": 3,
+   "x3/2_f0.333_x > 8": 0
+  },
+  "vita": {
+   "frames": 328,
+   "pair_ratio": {
+    "p10_50_90": [
+     0.937,
+     0.982,
+     0.996
+    ]
+   },
+   "x2_f0.5_x": {
+    "p10_50_90": [
+     0.487,
+     1.089,
+     1.707
+    ]
+   },
+   "x2_f0.5_y": {
+    "p10_50_90": [
+     0.199,
+     0.637,
+     1.59
+    ]
+   },
+   "x4/3_f0.25_x": {
+    "p10_50_90": [
+     1.581,
+     2.692,
+     5.69
+    ]
+   },
+   "x4/3_f0.25_y": {
+    "p10_50_90": [
+     1.185,
+     1.954,
+     5.198
+    ]
+   },
+   "x3/2_f0.333_x": {
+    "p10_50_90": [
+     0.946,
+     1.293,
+     1.817
+    ]
+   },
+   "x3/2_f0.333_y": {
+    "p10_50_90": [
+     0.657,
+     1.044,
+     1.54
+    ]
+   },
+   "jpeg_f0.125_x": {
+    "p10_50_90": [
+     2.354,
+     3.986,
+     7.543
+    ]
+   },
+   "jpeg_f0.125_y": {
+    "p10_50_90": [
+     1.835,
+     2.85,
+     5.69
+    ]
+   },
+   "nearest2x_like (pair_ratio < 0.35)": 0,
+   "x4/3_f0.25_x > 8": 11,
+   "x3/2_f0.333_x > 8": 0
+  }
+ },
+ "crops": {
+  "real": {
+   "psp:psp": {
+    "aspect": {
+     "n": 2745,
+     "p10_50_90": [
+      0.696,
+      1.02,
+      1.193
+     ]
+    },
+    "sharp": {
+     "n": 4030,
+     "p10_50_90": [
+      0.432,
+      0.5,
+      0.545
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.177,
+    "aspect_share_narrow (<0.80)": 0.2051
+   },
+   "vita:vita": {
+    "aspect": {
+     "n": 1066,
+     "p10_50_90": [
+      0.779,
+      1.03,
+      1.198
+     ]
+    },
+    "sharp": {
+     "n": 1769,
+     "p10_50_90": [
+      0.428,
+      0.495,
+      0.535
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1754,
+    "aspect_share_narrow (<0.80)": 0.1154
+   }
+  },
+  "v3": {
+   "psp:psp": {
+    "aspect": {
+     "n": 3061,
+     "p10_50_90": [
+      0.599,
+      0.839,
+      1.103
+     ]
+    },
+    "sharp": {
+     "n": 4688,
+     "p10_50_90": [
+      0.423,
+      0.508,
+      0.675
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.0516,
+    "aspect_share_narrow (<0.80)": 0.4309
+   },
+   "vita:psp2x": {
+    "aspect": {
+     "n": 607,
+     "p10_50_90": [
+      0.644,
+      0.867,
+      1.082
+     ]
+    },
+    "sharp": {
+     "n": 942,
+     "p10_50_90": [
+      0.26,
+      0.37,
+      0.484
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.0461,
+    "aspect_share_narrow (<0.80)": 0.3888
+   },
+   "vita:vita": {
+    "aspect": {
+     "n": 3030,
+     "p10_50_90": [
+      0.633,
+      0.917,
+      1.121
+     ]
+    },
+    "sharp": {
+     "n": 4818,
+     "p10_50_90": [
+      0.386,
+      0.488,
+      0.532
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.0667,
+    "aspect_share_narrow (<0.80)": 0.3545
+   }
+  },
+  "c1": {
+   "vita:psp2x": {
+    "aspect": {
+     "n": 315,
+     "p10_50_90": [
+      0.658,
+      0.89,
+      1.139
+     ]
+    },
+    "sharp": {
+     "n": 496,
+     "p10_50_90": [
+      0.233,
+      0.356,
+      0.478
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.0857,
+    "aspect_share_narrow (<0.80)": 0.3333
+   },
+   "vita:vita": {
+    "aspect": {
+     "n": 1441,
+     "p10_50_90": [
+      0.673,
+      0.975,
+      1.176
+     ]
+    },
+    "sharp": {
+     "n": 2228,
+     "p10_50_90": [
+      0.369,
+      0.481,
+      0.525
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1325,
+    "aspect_share_narrow (<0.80)": 0.27
+   },
+   "psp:psp": {
+    "aspect": {
+     "n": 1483,
+     "p10_50_90": [
+      0.643,
+      0.909,
+      1.171
+     ]
+    },
+    "sharp": {
+     "n": 2257,
+     "p10_50_90": [
+      0.383,
+      0.501,
+      0.669
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.122,
+    "aspect_share_narrow (<0.80)": 0.3014
+   }
+  },
+  "c2": {
+   "vita:psp2x": {
+    "aspect": {
+     "n": 305,
+     "p10_50_90": [
+      0.7,
+      0.939,
+      1.152
+     ]
+    },
+    "sharp": {
+     "n": 474,
+     "p10_50_90": [
+      0.224,
+      0.347,
+      0.484
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1049,
+    "aspect_share_narrow (<0.80)": 0.2361
+   },
+   "psp:psp": {
+    "aspect": {
+     "n": 1397,
+     "p10_50_90": [
+      0.68,
+      0.925,
+      1.171
+     ]
+    },
+    "sharp": {
+     "n": 2167,
+     "p10_50_90": [
+      0.372,
+      0.497,
+      0.665
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1317,
+    "aspect_share_narrow (<0.80)": 0.2742
+   },
+   "vita:vita": {
+    "aspect": {
+     "n": 1579,
+     "p10_50_90": [
+      0.694,
+      0.975,
+      1.188
+     ]
+    },
+    "sharp": {
+     "n": 2344,
+     "p10_50_90": [
+      0.338,
+      0.476,
+      0.523
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1571,
+    "aspect_share_narrow (<0.80)": 0.2742
+   }
+  },
+  "c3": {
+   "vita:psp2x": {
+    "aspect": {
+     "n": 355,
+     "p10_50_90": [
+      0.703,
+      0.903,
+      1.174
+     ]
+    },
+    "sharp": {
+     "n": 526,
+     "p10_50_90": [
+      0.221,
+      0.34,
+      0.45
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1211,
+    "aspect_share_narrow (<0.80)": 0.2535
+   },
+   "psp:psp": {
+    "aspect": {
+     "n": 1483,
+     "p10_50_90": [
+      0.676,
+      0.938,
+      1.184
+     ]
+    },
+    "sharp": {
+     "n": 2236,
+     "p10_50_90": [
+      0.364,
+      0.497,
+      0.664
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1416,
+    "aspect_share_narrow (<0.80)": 0.2481
+   },
+   "vita:vita": {
+    "aspect": {
+     "n": 1467,
+     "p10_50_90": [
+      0.712,
+      0.99,
+      1.2
+     ]
+    },
+    "sharp": {
+     "n": 2215,
+     "p10_50_90": [
+      0.337,
+      0.473,
+      0.521
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1766,
+    "aspect_share_narrow (<0.80)": 0.2263
+   }
+  },
+  "c4": {
+   "vita:psp2x": {
+    "aspect": {
+     "n": 295,
+     "p10_50_90": [
+      0.661,
+      0.919,
+      1.177
+     ]
+    },
+    "sharp": {
+     "n": 475,
+     "p10_50_90": [
+      0.272,
+      0.368,
+      0.472
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1254,
+    "aspect_share_narrow (<0.80)": 0.3051
+   },
+   "psp:psp": {
+    "aspect": {
+     "n": 1443,
+     "p10_50_90": [
+      0.654,
+      0.901,
+      1.17
+     ]
+    },
+    "sharp": {
+     "n": 2195,
+     "p10_50_90": [
+      0.41,
+      0.504,
+      0.67
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1199,
+    "aspect_share_narrow (<0.80)": 0.3229
+   },
+   "vita:vita": {
+    "aspect": {
+     "n": 1514,
+     "p10_50_90": [
+      0.674,
+      0.975,
+      1.197
+     ]
+    },
+    "sharp": {
+     "n": 2310,
+     "p10_50_90": [
+      0.378,
+      0.483,
+      0.527
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1592,
+    "aspect_share_narrow (<0.80)": 0.2741
+   }
+  }
+ },
+ "rounds": {
+  "c1": {
+   "effects keep": {
+    "vita": [
+     0.5,
+     0.5
+    ],
+    "psp": [
+     0.35,
+     0.4
+    ]
+   },
+   "bare": "kept",
+   "ruby": 0.08,
+   "track": {
+    "vita": [
+     0.35,
+     1,
+     3
+    ],
+    "psp": [
+     0.4,
+     1,
+     2
+    ]
+   }
+  },
+  "c2": {
+   "effects keep": {
+    "vita": [
+     0.3,
+     0.3
+    ],
+    "psp": [
+     0.25,
+     0.3
+    ],
+    "bare": [
+     0.7,
+     0.5
+    ]
+   },
+   "ruby": 0.05,
+   "track": {
+    "vita": [
+     0.5,
+     1,
+     3
+    ],
+    "psp": [
+     0.55,
+     1,
+     2
+    ]
+   }
+  },
+  "c3": {
+   "effects keep": {
+    "vita": [
+     0.2,
+     0.25
+    ],
+    "psp": [
+     0.15,
+     0.25
+    ],
+    "bare": [
+     0.5,
+     0.4
+    ]
+   },
+   "ruby": 0.05,
+   "track": {
+    "vita": [
+     0.5,
+     1,
+     3
+    ],
+    "psp": [
+     0.55,
+     1,
+     2
+    ]
+   },
+   "chosen": false,
+   "note": "rendered in full at 12:08Z; its label audit found illegible gt crops (7.5% teacher CER) and it was superseded"
+  },
+  "c4": {
+   "effects keep": {
+    "vita": [
+     0.1,
+     0.15
+    ],
+    "psp": [
+     0.08,
+     0.15
+    ]
+   },
+   "bare": "never thinned",
+   "thin_min_alpha": 0.6,
+   "ruby": 0.05,
+   "track": {
+    "vita": [
+     0.5,
+     1,
+     3
+    ],
+    "psp": [
+     0.55,
+     1,
+     2
+    ]
+   },
+   "chosen": true
+  }
+ },
+ "first_measurement": {
+  "note": "measured 09:5x-10:1xZ under the 09:25Z owner rule, before the Memories Off series was reserved (10:51Z); it held 10 frames and some crops of that series. The settings were chosen on it; the measurement below repeats it without the series",
+  "jpeg": {
+   "psp": {
+    "frames": 1355,
+    "jpeg": 1355,
+    "exact_ijg_table": 1354,
+    "quality_hist": {
+     "90": 1354,
+     "95": 1
+    },
+    "quality_p10_50_90": [
+     90.0,
+     90.0,
+     90.0
+    ],
+    "subsampling": {
+     "4:4:4": 1135,
+     "4:2:0": 220
+    }
+   },
+   "vita": {
+    "frames": 323,
+    "jpeg": 323,
+    "exact_ijg_table": 317,
+    "quality_hist": {
+     "90": 317,
+     "94": 6
+    },
+    "quality_p10_50_90": [
+     90.0,
+     90.0,
+     90.0
+    ],
+    "subsampling": {
+     "4:2:0": 304,
+     "4:4:4": 19
+    }
+   }
+  },
+  "frames": {
+   "psp": {
+    "frames": 1355,
+    "pair_ratio": {
+     "p10_50_90": [
+      0.947,
+      0.982,
+      0.997
+     ]
+    },
+    "x2_f0.5_x": {
+     "p10_50_90": [
+      0.35,
+      0.809,
+      1.535
+     ]
+    },
+    "x2_f0.5_y": {
+     "p10_50_90": [
+      0.202,
+      0.642,
+      1.371
+     ]
+    },
+    "x4/3_f0.25_x": {
+     "p10_50_90": [
+      1.076,
+      1.747,
+      3.103
+     ]
+    },
+    "x4/3_f0.25_y": {
+     "p10_50_90": [
+      0.783,
+      1.531,
+      3.467
+     ]
+    },
+    "x3/2_f0.333_x": {
+     "p10_50_90": [
+      0.734,
+      1.093,
+      1.676
+     ]
+    },
+    "x3/2_f0.333_y": {
+     "p10_50_90": [
+      0.607,
+      0.993,
+      1.478
+     ]
+    },
+    "jpeg_f0.125_x": {
+     "p10_50_90": [
+      1.914,
+      3.169,
+      5.896
+     ]
+    },
+    "jpeg_f0.125_y": {
+     "p10_50_90": [
+      1.386,
+      2.684,
+      5.552
+     ]
+    },
+    "nearest2x_like (pair_ratio < 0.35)": 0,
+    "x4/3_f0.25_x > 8": 3,
+    "x3/2_f0.333_x > 8": 0
+   },
+   "vita": {
+    "frames": 323,
+    "pair_ratio": {
+     "p10_50_90": [
+      0.938,
+      0.982,
+      0.996
+     ]
+    },
+    "x2_f0.5_x": {
+     "p10_50_90": [
+      0.486,
+      1.081,
+      1.697
+     ]
+    },
+    "x2_f0.5_y": {
+     "p10_50_90": [
+      0.214,
+      0.65,
+      1.594
+     ]
+    },
+    "x4/3_f0.25_x": {
+     "p10_50_90": [
+      1.587,
+      2.697,
+      5.736
+     ]
+    },
+    "x4/3_f0.25_y": {
+     "p10_50_90": [
+      1.18,
+      1.971,
+      5.205
+     ]
+    },
+    "x3/2_f0.333_x": {
+     "p10_50_90": [
+      0.95,
+      1.293,
+      1.835
+     ]
+    },
+    "x3/2_f0.333_y": {
+     "p10_50_90": [
+      0.653,
+      1.056,
+      1.54
+     ]
+    },
+    "jpeg_f0.125_x": {
+     "p10_50_90": [
+      2.367,
+      4.03,
+      7.665
+     ]
+    },
+    "jpeg_f0.125_y": {
+     "p10_50_90": [
+      1.888,
+      2.861,
+      5.728
+     ]
+    },
+    "nearest2x_like (pair_ratio < 0.35)": 0,
+    "x4/3_f0.25_x > 8": 11,
+    "x3/2_f0.333_x > 8": 0
+   }
+  },
+  "real_crops": {
+   "psp:psp": {
+    "aspect": {
+     "n": 2778,
+     "p10_50_90": [
+      0.694,
+      1.018,
+      1.192
+     ]
+    },
+    "sharp": {
+     "n": 4093,
+     "p10_50_90": [
+      0.432,
+      0.5,
+      0.545
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1749,
+    "aspect_share_narrow (<0.80)": 0.2077
+   },
+   "vita:vita": {
+    "aspect": {
+     "n": 1066,
+     "p10_50_90": [
+      0.779,
+      1.03,
+      1.198
+     ]
+    },
+    "sharp": {
+     "n": 1769,
+     "p10_50_90": [
+      0.428,
+      0.495,
+      0.535
+     ]
+    },
+    "aspect_share_wide (>1.15)": 0.1754,
+    "aspect_share_narrow (<0.80)": 0.1154
+   }
+  }
+ },
+ "label_audit": {
+  "note": "synth3_audit.py: PP-OCRv6 small reads 1,500 crops (seed 1); teacher-vs-label CER, not label error",
+  "v4_render_1208_c3_settings": {
+   "all": {
+    "cer": 0.0599,
+    "exact": 0.7593,
+    "lines": 1500
+   },
+   "crop:gt": {
+    "cer": 0.0752,
+    "exact": 0.7252,
+    "lines": 1088
+   },
+   "crop:grad": {
+    "cer": 0.0236,
+    "exact": 0.8495,
+    "lines": 412
+   },
+   "platform:vita": {
+    "cer": 0.0382,
+    "exact": 0.8179,
+    "lines": 670
+   },
+   "platform:psp": {
+    "cer": 0.0758,
+    "exact": 0.7226,
+    "lines": 685
+   },
+   "platform:psp2x": {
+    "cer": 0.1013,
+    "exact": 0.6621,
+    "lines": 145
+   },
+   "layout:bare": {
+    "cer": 0.1397,
+    "exact": 0.5674,
+    "lines": 178
+   }
+  },
+  "c4": {
+   "all": {
+    "cer": 0.0424,
+    "exact": 0.7793,
+    "lines": 1500
+   },
+   "crop:gt": {
+    "cer": 0.0464,
+    "exact": 0.7737,
+    "lines": 1003
+   },
+   "crop:grad": {
+    "cer": 0.0352,
+    "exact": 0.7907,
+    "lines": 497
+   },
+   "platform:vita": {
+    "cer": 0.0269,
+    "exact": 0.8283,
+    "lines": 693
+   },
+   "platform:psp": {
+    "cer": 0.0584,
+    "exact": 0.7462,
+    "lines": 658
+   },
+   "platform:psp2x": {
+    "cer": 0.0532,
+    "exact": 0.698,
+    "lines": 149
+   },
+   "layout:bare": {
+    "cer": 0.0555,
+    "exact": 0.6608,
+    "lines": 171
+   }
+  },
+  "v3_native_strata": {
+   "platform:vita": 0.025,
+   "platform:psp": 0.0516,
+   "platform:psp2x": 0.0601,
+   "crop:gt (all platforms)": 0.0393
+  },
+  "v4_final_render_1323": {
+   "all": {
+    "cer": 0.0349,
+    "exact": 0.7967,
+    "lines": 1500
+   },
+   "crop:gt": {
+    "cer": 0.0373,
+    "exact": 0.7874,
+    "lines": 997
+   },
+   "crop:grad": {
+    "cer": 0.0303,
+    "exact": 0.8151,
+    "lines": 503
+   },
+   "platform:vita": {
+    "cer": 0.0265,
+    "exact": 0.8241,
+    "lines": 671
+   },
+   "platform:psp": {
+    "cer": 0.0397,
+    "exact": 0.7898,
+    "lines": 704
+   },
+   "platform:psp2x": {
+    "cer": 0.0644,
+    "exact": 0.688,
+    "lines": 125
+   },
+   "layout:bare": {
+    "cer": 0.0349,
+    "exact": 0.7318,
+    "lines": 179
+   }
+  }
+ }
+}

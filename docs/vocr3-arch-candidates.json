@@ -1,0 +1,1276 @@
+{
+ "kind": "vocr3-arch-candidates",
+ "note": "Design candidates inside the Vita ceiling. Sizes exact (random-init blobs); A9 times are estimates (vita/budget_sweep.py check, 40 synth-val lines, 2 MiB L2); proxies are 5,000-step train2.py runs from scratch scored through the C runtime in W8I on teacher_val (development data only); no protected set was read.",
+ "ceiling": {
+  "weights": 1600000,
+  "arena": 262144,
+  "ms": 550,
+  "mhz": 333
+ },
+ "candidates": {
+  "H15": {
+   "params": 1038507,
+   "blob_bytes": 1155968,
+   "head_weight_bytes": 557440,
+   "arena_w8i": 182944,
+   "macs_per_frame": 1564992,
+   "ms_333": [
+    219.2862234949436,
+    398.10661831676964
+   ],
+   "ms_444": [
+    164.4646676212077,
+    298.639212120137
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--width 1.5",
+   "sha256": "87fb00b5906bfceb1878fce39b13aded84729ace28b1bf151b5f332ce18f257d"
+  },
+  "F20": {
+   "params": 1423499,
+   "blob_bytes": 1558016,
+   "head_weight_bytes": 557440,
+   "arena_w8i": 241056,
+   "macs_per_frame": 2339232,
+   "ms_333": [
+    311.3705925334618,
+    548.1913139885315
+   ],
+   "ms_444": [
+    233.52794440009632,
+    411.21803485848716
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--width 2.0",
+   "sha256": "d0aa13d5d7866fe24ffff0ef487bf548a24fc7dd53c170918007e34c9780ec48"
+  },
+  "LW": {
+   "params": 1346827,
+   "blob_bytes": 1473280,
+   "head_weight_bytes": 557440,
+   "arena_w8i": 192928,
+   "macs_per_frame": 1933472,
+   "ms_333": [
+    260.9295410741262,
+    467.74912936565255
+   ],
+   "ms_444": [
+    195.6971558055946,
+    350.88197782592727
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--chans 48,96,192,320,384",
+   "sha256": "ae5cd6baaf00facf1f14445de52545cb9187c9469674002ba3129ae1fa447ed6"
+  },
+  "LWb64": {
+   "params": 1163179,
+   "blob_bytes": 1289344,
+   "head_weight_bytes": 385920,
+   "arena_w8i": 190496,
+   "macs_per_frame": 1749824,
+   "ms_333": [
+    241.67126192296374,
+    444.0763770679259
+   ],
+   "ms_444": [
+    181.2534464422228,
+    333.1211818164156
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--chans 48,96,192,320,384 --bottleneck 64",
+   "sha256": "9ddad3cfcd226dbc538acc1104256c63ae463ed017691cd35726159beb629556"
+  },
+  "LW224": {
+   "params": 1374155,
+   "blob_bytes": 1502976,
+   "head_weight_bytes": 557440,
+   "arena_w8i": 199072,
+   "macs_per_frame": 2021216,
+   "ms_333": [
+    270.88253203977536,
+    483.7254552904522
+   ],
+   "ms_444": [
+    203.16189902983152,
+    362.8654207692925
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--chans 48,96,224,320,384",
+   "sha256": "27abacbc9db8fc0df3682d78dbd6cc898d74f814f20cd29ba902451f7d37d34f"
+  },
+  "LW256": {
+   "params": 1403531,
+   "blob_bytes": 1534720,
+   "head_weight_bytes": 557440,
+   "arena_w8i": 205216,
+   "macs_per_frame": 2117152,
+   "ms_333": [
+    281.6349859845781,
+    500.32980168016115
+   ],
+   "ms_444": [
+    211.22623948843358,
+    375.3199254748419
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--chans 48,96,256,320,384",
+   "sha256": "de7a665e757dd5494c2ee8241c49b6a2b56fa08c0ed8b6366f49621cc14d2566"
+  },
+  "LW384b80": {
+   "params": 1362267,
+   "blob_bytes": 1491392,
+   "head_weight_bytes": 471680,
+   "arena_w8i": 194784,
+   "macs_per_frame": 2006640,
+   "ms_333": [
+    269.1769265749575,
+    484.6116674559228
+   ],
+   "ms_444": [
+    201.88269493121814,
+    363.5294682665788
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--chans 48,96,192,384,384 --bottleneck 80",
+   "sha256": "db21fab9f9e8025378750a3eede10176f7c04f6e6727e74dde05e0457ea5f661"
+  },
+  "EW": {
+   "params": 1110059,
+   "blob_bytes": 1235584,
+   "head_weight_bytes": 557440,
+   "arena_w8i": 231072,
+   "macs_per_frame": 1960512,
+   "ms_333": [
+    268.6598083878534,
+    477.1057580888906
+   ],
+   "ms_444": [
+    201.49485629089006,
+    357.8927431330064
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--chans 64,128,256,240,288",
+   "sha256": "27d656b5cd86855ac746c00692633c045c041fc33185f711533d3ee1503a58b2"
+  },
+  "W175": {
+   "params": 1217755,
+   "blob_bytes": 1343744,
+   "head_weight_bytes": 557440,
+   "arena_w8i": 212000,
+   "macs_per_frame": 1925616,
+   "ms_333": [
+    265.33969964338456,
+    474.20317981103466
+   ],
+   "ms_444": [
+    199.00477473253844,
+    355.71869118738994
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--width 1.75",
+   "sha256": "0b163a789b5fe1c0a1d277e998a0df08e0fa0e5cd5c4c08e332e430280dfea80"
+  },
+  "W20b64": {
+   "params": 1239851,
+   "blob_bytes": 1374080,
+   "head_weight_bytes": 385920,
+   "arena_w8i": 238624,
+   "macs_per_frame": 2155584,
+   "ms_333": [
+    292.11231450860146,
+    524.3420809906953
+   ],
+   "ms_444": [
+    219.0842358814511,
+    393.3247493974988
+   ],
+   "within_ceiling": true,
+   "train2_flags": "--width 2.0 --bottleneck 64",
+   "sha256": "93fb83246bad952ada74409b5a6994f12edfb6ae8bc51cee665d5ad7425ee9e0"
+  },
+  "W2125b64": {
+   "params": 1358403,
+   "blob_bytes": 1496832,
+   "head_weight_bytes": 385920,
+   "arena_w8i": 252576,
+   "macs_per_frame": 2380896,
+   "ms_333": [
+    318.4213217999997,
+    566.8002481817965
+   ],
+   "ms_444": [
+    238.81599134999976,
+    425.1730831827609
+   ],
+   "within_ceiling": false,
+   "train2_flags": "--chans 64,136,272,344,408 --bottleneck 64",
+   "sha256": "3643005ac8eea4b26c9f0d7c07d8936d3903f5730a3ee91f895959da1ae72395"
+  }
+ },
+ "proxy": {
+  "scoring": "raw (non-EMA) step-5000 weights primary, EMA for reference; CER over rv + rvn; paired bootstrap, 10,000 resamples, VN clusters (and lines)",
+  "arms": {
+   "H15_s1": [
+    "R_H15_s1"
+   ],
+   "H15_s2": [
+    "R_H15_s2"
+   ],
+   "H15": [
+    "R_H15_s1",
+    "R_H15_s2"
+   ],
+   "LW_s1": [
+    "R_LW_s1"
+   ],
+   "LW": [
+    "R_LW_s1",
+    "R_LW_s2"
+   ],
+   "F20_s1": [
+    "R_F20_s1"
+   ],
+   "H15rep_s1": [
+    "R_H15rep_s1"
+   ],
+   "GTC_s1": [
+    "R_H15gtc_s1"
+   ],
+   "GTC": [
+    "R_H15gtc_s1",
+    "R_H15gtc_s2"
+   ],
+   "F20": [
+    "R_F20_s1",
+    "R_F20_s2"
+   ],
+   "H15rep": [
+    "R_H15rep_s1",
+    "R_H15rep_s2"
+   ],
+   "EW_s1": [
+    "R_EW_s1"
+   ]
+  },
+  "runs": {
+   "P_F20_s1": {
+    "raw": 0.054360000000000006,
+    "ema": 0.058505,
+    "s2v": 0.09312015175637682,
+    "nvv": 0.11539987305617265,
+    "threads": "1",
+    "lines_per_s": 44.0,
+    "seed": "1",
+    "flags": "--width 2.0"
+   },
+   "P_H15_s1": {
+    "raw": 0.06128,
+    "ema": 0.07164999999999999,
+    "s2v": 0.1167982114427018,
+    "nvv": 0.14070929863535386,
+    "threads": "1",
+    "lines_per_s": 56.0,
+    "seed": "1",
+    "flags": "--width 1.5"
+   },
+   "P_H15_s2": {
+    "raw": 0.059469999999999995,
+    "ema": 0.06636500000000001,
+    "s2v": 0.10785542495172928,
+    "nvv": 0.13400507775309425,
+    "threads": "1",
+    "lines_per_s": 56.0,
+    "seed": "2",
+    "flags": "--width 1.5"
+   },
+   "P_H15rep_s1": {
+    "raw": 0.055325,
+    "ema": 0.06312000000000001,
+    "s2v": 0.09877714169574202,
+    "nvv": 0.13590923516344017,
+    "threads": "1",
+    "lines_per_s": 35.0,
+    "seed": "1",
+    "flags": "--width 1.5 --rep 2"
+   },
+   "P_LW_s1": {
+    "raw": 0.055465,
+    "ema": 0.06554499999999999,
+    "s2v": 0.10524711222519563,
+    "nvv": 0.1264677880038083,
+    "threads": "1",
+    "lines_per_s": 54.0,
+    "seed": "1",
+    "flags": "--chans 48,96,192,320,384"
+   }
+  },
+  "comparisons": {
+   "seed_noise_H15": {
+    "a": "H15_s1",
+    "b": "H15_s2",
+    "raw": {
+     "delta_points": -0.181,
+     "ci95": [
+      -0.538,
+      0.185
+     ],
+     "cer_a": 0.06128,
+     "cer_b": 0.05947
+    },
+    "raw_line_ci95": [
+     -0.52,
+     0.168
+    ],
+    "vns_better": 67,
+    "vns_worse": 63,
+    "ema": {
+     "delta_points": -0.529,
+     "ci95": [
+      -0.884,
+      -0.189
+     ],
+     "cer_a": 0.07165,
+     "cer_b": 0.06636
+    },
+    "per_seed": {
+     "R_H15_s1->R_H15_s2": -0.181
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.284,
+      "ci95": [
+       -0.607,
+       0.06
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": -0.127,
+      "ci95": [
+       -0.592,
+       0.346
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": -0.194,
+      "ci95": [
+       -0.775,
+       0.352
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": 0.237,
+      "ci95": [
+       -2.73,
+       3.375
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": -0.309,
+      "ci95": [
+       -1.145,
+       0.584
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": -0.258,
+      "ci95": [
+       -0.704,
+       0.201
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": -0.077,
+      "ci95": [
+       -0.762,
+       0.594
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": 0.125,
+      "ci95": [
+       -0.959,
+       1.842
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": -0.998,
+      "ci95": [
+       -3.286,
+       2.221
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -0.057,
+      "ci95": [
+       -1.493,
+       1.52
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": -0.31,
+      "ci95": [
+       -0.676,
+       0.059
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": 0.182,
+      "ci95": [
+       -0.609,
+       0.973
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": 0.338,
+      "ci95": [
+       -1.142,
+       1.836
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.4,
+      "ci95": [
+       -0.892,
+       0.084
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": 0.177,
+      "ci95": [
+       -0.373,
+       0.785
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 0.856,
+      "ci95": [
+       -1.364,
+       3.032
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": -0.328,
+      "ci95": [
+       -0.886,
+       0.262
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": -0.079,
+      "ci95": [
+       -0.523,
+       0.366
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "F20_vs_H15_s1": {
+    "a": "H15_s1",
+    "b": "F20_s1",
+    "raw": {
+     "delta_points": -0.692,
+     "ci95": [
+      -1.052,
+      -0.354
+     ],
+     "cer_a": 0.06128,
+     "cer_b": 0.05436
+    },
+    "raw_line_ci95": [
+     -0.995,
+     -0.39
+    ],
+    "vns_better": 79,
+    "vns_worse": 45,
+    "ema": {
+     "delta_points": -1.314,
+     "ci95": [
+      -1.685,
+      -0.966
+     ],
+     "cer_a": 0.07165,
+     "cer_b": 0.05851
+    },
+    "per_seed": {
+     "R_H15_s1->R_F20_s1": -0.692
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.848,
+      "ci95": [
+       -1.171,
+       -0.538
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": -0.478,
+      "ci95": [
+       -0.938,
+       -0.07
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": -0.431,
+      "ci95": [
+       -0.859,
+       -0.013
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": -0.948,
+      "ci95": [
+       -2.861,
+       0.189
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": -1.356,
+      "ci95": [
+       -2.252,
+       -0.497
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": -0.809,
+      "ci95": [
+       -1.262,
+       -0.355
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": -0.321,
+      "ci95": [
+       -0.899,
+       0.252
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": -0.75,
+      "ci95": [
+       -1.3,
+       -0.391
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": -1.291,
+      "ci95": [
+       -3.55,
+       1.682
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -0.766,
+      "ci95": [
+       -2.132,
+       0.616
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": -0.726,
+      "ci95": [
+       -1.053,
+       -0.402
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": -0.545,
+      "ci95": [
+       -1.281,
+       0.169
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": -0.677,
+      "ci95": [
+       -1.957,
+       0.586
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.65,
+      "ci95": [
+       -1.083,
+       -0.243
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": -0.762,
+      "ci95": [
+       -1.276,
+       -0.236
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 0.117,
+      "ci95": [
+       -1.384,
+       1.568
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": -0.764,
+      "ci95": [
+       -1.308,
+       -0.253
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": -0.643,
+      "ci95": [
+       -1.077,
+       -0.252
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "LW_vs_H15_s1": {
+    "a": "H15_s1",
+    "b": "LW_s1",
+    "raw": {
+     "delta_points": -0.581,
+     "ci95": [
+      -0.907,
+      -0.262
+     ],
+     "cer_a": 0.06128,
+     "cer_b": 0.05547
+    },
+    "raw_line_ci95": [
+     -0.888,
+     -0.274
+    ],
+    "vns_better": 75,
+    "vns_worse": 47,
+    "ema": {
+     "delta_points": -0.61,
+     "ci95": [
+      -0.992,
+      -0.23
+     ],
+     "cer_a": 0.07165,
+     "cer_b": 0.06555
+    },
+    "per_seed": {
+     "R_H15_s1->R_LW_s1": -0.581
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.642,
+      "ci95": [
+       -0.969,
+       -0.309
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": -0.465,
+      "ci95": [
+       -0.907,
+       -0.057
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": -0.366,
+      "ci95": [
+       -0.778,
+       0.025
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": -0.829,
+      "ci95": [
+       -2.632,
+       1.878
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": -1.011,
+      "ci95": [
+       -1.792,
+       -0.231
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": -0.761,
+      "ci95": [
+       -1.176,
+       -0.345
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": -0.064,
+      "ci95": [
+       -0.565,
+       0.453
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": -0.531,
+      "ci95": [
+       -1.078,
+       0.124
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": -1.232,
+      "ci95": [
+       -3.006,
+       0.748
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -0.482,
+      "ci95": [
+       -1.717,
+       0.848
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": -0.56,
+      "ci95": [
+       -0.907,
+       -0.214
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": -0.699,
+      "ci95": [
+       -1.406,
+       -0.045
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": -0.085,
+      "ci95": [
+       -1.183,
+       1.048
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.659,
+      "ci95": [
+       -1.078,
+       -0.272
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": -0.454,
+      "ci95": [
+       -0.954,
+       0.077
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 0.156,
+      "ci95": [
+       -0.848,
+       1.212
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": -0.614,
+      "ci95": [
+       -1.154,
+       -0.092
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": -0.559,
+      "ci95": [
+       -0.944,
+       -0.195
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "LW_vs_F20_s1": {
+    "a": "F20_s1",
+    "b": "LW_s1",
+    "raw": {
+     "delta_points": 0.111,
+     "ci95": [
+      -0.189,
+      0.424
+     ],
+     "cer_a": 0.05436,
+     "cer_b": 0.05547
+    },
+    "raw_line_ci95": [
+     -0.187,
+     0.409
+    ],
+    "vns_better": 63,
+    "vns_worse": 59,
+    "ema": {
+     "delta_points": 0.704,
+     "ci95": [
+      0.411,
+      1.003
+     ],
+     "cer_a": 0.05851,
+     "cer_b": 0.06555
+    },
+    "per_seed": {
+     "R_F20_s1->R_LW_s1": 0.111
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": 0.206,
+      "ci95": [
+       -0.12,
+       0.561
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": 0.013,
+      "ci95": [
+       -0.353,
+       0.369
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": 0.065,
+      "ci95": [
+       -0.373,
+       0.52
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": 0.118,
+      "ci95": [
+       -1.121,
+       2.778
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": 0.345,
+      "ci95": [
+       -0.404,
+       1.155
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": 0.047,
+      "ci95": [
+       -0.368,
+       0.471
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": 0.257,
+      "ci95": [
+       -0.142,
+       0.671
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": 0.219,
+      "ci95": [
+       -0.452,
+       1.11
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": 0.059,
+      "ci95": [
+       -2.337,
+       2.481
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": 0.284,
+      "ci95": [
+       -0.853,
+       1.388
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": 0.166,
+      "ci95": [
+       -0.196,
+       0.537
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": -0.154,
+      "ci95": [
+       -0.782,
+       0.463
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": 0.592,
+      "ci95": [
+       -0.414,
+       1.502
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.009,
+      "ci95": [
+       -0.39,
+       0.387
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": 0.308,
+      "ci95": [
+       -0.208,
+       0.844
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 0.039,
+      "ci95": [
+       -1.315,
+       1.501
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": 0.15,
+      "ci95": [
+       -0.304,
+       0.614
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": 0.084,
+      "ci95": [
+       -0.257,
+       0.432
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "rep_vs_H15_s1": {
+    "a": "H15_s1",
+    "b": "H15rep_s1",
+    "raw": {
+     "delta_points": -0.596,
+     "ci95": [
+      -0.927,
+      -0.261
+     ],
+     "cer_a": 0.06128,
+     "cer_b": 0.05532
+    },
+    "raw_line_ci95": [
+     -0.901,
+     -0.299
+    ],
+    "vns_better": 81,
+    "vns_worse": 43,
+    "ema": {
+     "delta_points": -0.853,
+     "ci95": [
+      -1.239,
+      -0.488
+     ],
+     "cer_a": 0.07165,
+     "cer_b": 0.06312
+    },
+    "per_seed": {
+     "R_H15_s1->R_H15rep_s1": -0.596
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.696,
+      "ci95": [
+       -1.019,
+       -0.361
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": -0.484,
+      "ci95": [
+       -0.944,
+       -0.039
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": -0.883,
+      "ci95": [
+       -1.369,
+       -0.423
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": -0.711,
+      "ci95": [
+       -2.817,
+       0.89
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": -0.476,
+      "ci95": [
+       -1.327,
+       0.42
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": -0.632,
+      "ci95": [
+       -1.051,
+       -0.187
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": -0.54,
+      "ci95": [
+       -1.118,
+       0.032
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": -0.468,
+      "ci95": [
+       -1.031,
+       0.126
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": -0.411,
+      "ci95": [
+       -2.396,
+       2.647
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -1.021,
+      "ci95": [
+       -2.364,
+       0.37
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": -0.743,
+      "ci95": [
+       -1.091,
+       -0.39
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": 0.098,
+      "ci95": [
+       -0.607,
+       0.836
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": -0.571,
+      "ci95": [
+       -1.765,
+       0.537
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.786,
+      "ci95": [
+       -1.148,
+       -0.437
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": -0.285,
+      "ci95": [
+       -0.891,
+       0.35
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": -0.078,
+      "ci95": [
+       -1.293,
+       1.02
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": -0.707,
+      "ci95": [
+       -1.241,
+       -0.159
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": -0.519,
+      "ci95": [
+       -0.903,
+       -0.141
+      ],
+      "lines": 972
+     }
+    }
+   }
+  }
+ },
+ "neon_head_argmax_filter_experiment": {
+  "note": "scratch worktree, not in this PR; [main, with the filter]",
+  "shapes": {
+   "H15": {
+    "insns_per_frame": [
+     1161598,
+     1081556
+    ],
+    "ms_640px_333": [
+     [
+      219.3,
+      398.1
+     ],
+     [
+      216.6,
+      386.5
+     ]
+    ],
+    "texts_identical": true,
+    "lines": 40,
+    "frames": 2133
+   },
+   "F20": {
+    "insns_per_frame": [
+     1589644,
+     1509187
+    ],
+    "ms_640px_333": [
+     [
+      311.4,
+      548.2
+     ],
+     [
+      308.6,
+      536.5
+     ]
+    ],
+    "texts_identical": true,
+    "lines": 40,
+    "frames": 2133
+   },
+   "LW": {
+    "insns_per_frame": [
+     1347693,
+     1266774
+    ],
+    "ms_640px_333": [
+     [
+      260.9,
+      467.7
+     ],
+     [
+      258.2,
+      455.9
+     ]
+    ],
+    "texts_identical": true,
+    "lines": 40,
+    "frames": 2133
+   },
+   "W20b64": {
+    "insns_per_frame": [
+     1505752,
+     1425133
+    ],
+    "ms_640px_333": [
+     [
+      292.1,
+      524.3
+     ],
+     [
+      289.4,
+      512.6
+     ]
+    ],
+    "texts_identical": true,
+    "lines": 40,
+    "frames": 2133
+   }
+  }
+ }
+}

@@ -285,8 +285,8 @@ predicted accuracy on native frames, a caution for calibrating synthetic data on
 
 ## Commit history
 
-The branch was rebased onto main twice, after #62 and #63 were squash-merged. The protocol's amendment
-cites the pre-rebase commits:
+The branch was rebased onto main three times, after #62, #63 and #55 were squash-merged. The protocol's
+amendment cites the pre-rebase commits:
 
 - 8dbc1e3, the superseded s3e pin, pushed at 12:13:35Z;
 - 314a0b4, the render's synth3.py.

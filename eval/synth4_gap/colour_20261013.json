@@ -1,0 +1,168 @@
+{
+ "kind": "synth4-gap-colour",
+ "schema": 1,
+ "note": "real: teacher_train cuts with the owner 13:10Z titles, v661 and v19373 excluded (head reserved_vns, 11,364 crops); s3v3: a fresh RGB render of synth3 v3 at head (synth3's 3 exclusion manifests), 3,000 regions seed 4242",
+ "sources": {
+  "real": {
+   "all": {
+    "crops": 11364,
+    "coloured": 0.1045,
+    "part": 0.1014,
+    "grad": 0.0088,
+    "hue": {
+     "r": 0.598,
+     "b": 0.319,
+     "g": 0.082
+    }
+   },
+   "psp:hires": {
+    "crops": 2250,
+    "coloured": 0.1236,
+    "part": 0.1258,
+    "grad": 0.0107,
+    "hue": {
+     "b": 0.388,
+     "r": 0.5,
+     "g": 0.112
+    }
+   },
+   "psp:psp": {
+    "crops": 2336,
+    "coloured": 0.0766,
+    "part": 0.0788,
+    "grad": 0.0043,
+    "hue": {
+     "r": 0.687,
+     "b": 0.229,
+     "g": 0.084
+    }
+   },
+   "vita:hires": {
+    "crops": 5800,
+    "coloured": 0.1074,
+    "part": 0.099,
+    "grad": 0.011,
+    "hue": {
+     "r": 0.587,
+     "b": 0.334,
+     "g": 0.079
+    }
+   },
+   "vita:vita": {
+    "crops": 978,
+    "coloured": 0.1104,
+    "part": 0.1135,
+    "grad": 0.002,
+    "hue": {
+     "b": 0.204,
+     "r": 0.769,
+     "g": 0.028
+    }
+   }
+  },
+  "s3v3": {
+   "all": {
+    "crops": 6956,
+    "coloured": 0.1683,
+    "part": 0.141,
+    "grad": 0.0101,
+    "hue": {
+     "r": 0.507,
+     "b": 0.292,
+     "g": 0.201
+    },
+    "truth_grad": 0.1032,
+    "truth_coloured": 0.0927,
+    "grad_tpr_fpr": [
+     0.0501,
+     0.0055
+    ]
+   },
+   "psp:hires": {
+    "crops": 1298,
+    "coloured": 0.2049,
+    "part": 0.1641,
+    "grad": 0.0154,
+    "hue": {
+     "b": 0.335,
+     "r": 0.459,
+     "g": 0.207
+    },
+    "truth_grad": 0.0901,
+    "truth_coloured": 0.077,
+    "grad_tpr_fpr": [
+     0.0855,
+     0.0085
+    ]
+   },
+   "psp:psp": {
+    "crops": 1685,
+    "coloured": 0.1329,
+    "part": 0.1223,
+    "grad": 0.0113,
+    "hue": {
+     "r": 0.5,
+     "g": 0.219,
+     "b": 0.281
+    },
+    "truth_grad": 0.1098,
+    "truth_coloured": 0.0896,
+    "grad_tpr_fpr": [
+     0.0541,
+     0.006
+    ]
+   },
+   "vita:hires": {
+    "crops": 1930,
+    "coloured": 0.1689,
+    "part": 0.1606,
+    "grad": 0.0083,
+    "hue": {
+     "r": 0.472,
+     "b": 0.34,
+     "g": 0.187
+    },
+    "truth_grad": 0.1083,
+    "truth_coloured": 0.099,
+    "grad_tpr_fpr": [
+     0.0478,
+     0.0035
+    ]
+   },
+   "vita:psp2x": {
+    "crops": 358,
+    "coloured": 0.1872,
+    "part": 0.1285,
+    "grad": 0.0056,
+    "hue": {
+     "r": 0.582,
+     "b": 0.209,
+     "g": 0.209
+    },
+    "truth_grad": 0.095,
+    "truth_coloured": 0.0838,
+    "grad_tpr_fpr": [
+     0.0,
+     0.0062
+    ]
+   },
+   "vita:vita": {
+    "crops": 1685,
+    "coloured": 0.1709,
+    "part": 0.1223,
+    "grad": 0.0077,
+    "hue": {
+     "r": 0.58,
+     "b": 0.226,
+     "g": 0.194
+    },
+    "truth_grad": 0.1027,
+    "truth_coloured": 0.1027,
+    "grad_tpr_fpr": [
+     0.0347,
+     0.0046
+    ]
+   }
+  }
+ }
+}

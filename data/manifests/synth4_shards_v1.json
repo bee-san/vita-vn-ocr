@@ -1,0 +1,1379 @@
+{
+ "kind": "synth3-shards",
+ "schema": 1,
+ "sets": {
+  "train_v1": {
+   "kind": "synth4-recipe",
+   "schema": 1,
+   "split": "train",
+   "seed": 20261013,
+   "profile": "personal",
+   "per_shard": 10000,
+   "cfg": {
+    "version": 3,
+    "platform": {
+     "vita": 0.24,
+     "psp": 0.24,
+     "psp2x": 0.05,
+     "scaled": 0.47
+    },
+    "scaled_to_psp": 0.4,
+    "category": {
+     "vita": {
+      "gothic": 0.42,
+      "rounded": 0.21,
+      "mincho": 0.19,
+      "pen": 0.06,
+      "display": 0.08,
+      "pixel": 0.04
+     },
+     "psp": {
+      "gothic": 0.45,
+      "rounded": 0.18,
+      "mincho": 0.17,
+      "pen": 0.05,
+      "display": 0.07,
+      "pixel": 0.08
+     }
+    },
+    "raster": {
+     "vita": {
+      "aa8": 0.38,
+      "aa4": 0.25,
+      "atlas": 0.27,
+      "ss2": 0.08,
+      "mono": 0.02
+     },
+     "psp": {
+      "aa8": 0.24,
+      "aa4": 0.52,
+      "atlas": 0.16,
+      "ss2": 0.04,
+      "mono": 0.04
+     }
+    },
+    "gamma": {
+     "p": 0.5,
+     "lo": 0.7,
+     "hi": 1.45
+    },
+    "layout": {
+     "adv": 0.5,
+     "band": 0.12,
+     "nvl": 0.09,
+     "balloon": 0.04,
+     "choice": 0.08,
+     "bare": 0.12,
+     "ui": 0.05
+    },
+    "ui": {
+     "lines": [
+      2,
+      5
+     ],
+     "latin_word": 0.08,
+     "places": 0.45
+    },
+    "short": 0.15,
+    "narration": 0.18,
+    "narrate_nvl": 0.4,
+    "focus": 0.4,
+    "focus_exponent": 0.6,
+    "focus_hard_gain": 4.0,
+    "focus_prior_exponent": 0.35,
+    "reference_pools": [
+     "wiktionary",
+     "wikiquote"
+    ],
+    "brackets": {
+     "named": 0.7,
+     "unnamed": 0.35,
+     "double": 0.03
+    },
+    "dressing": {
+     "interjection": 0.08,
+     "stammer": 0.03,
+     "ending": 0.15,
+     "terminal": 0.75,
+     "dots": 0.06,
+     "elongation": 0.03,
+     "alnum": 0.012
+    },
+    "latin_keep": 0.22,
+    "latin_redraws": 8,
+    "pages": {
+     "wrap_lines": 48
+    },
+    "terminal": {
+     "。": 0.45,
+     "！": 0.17,
+     "？": 0.13,
+     "……": 0.12,
+     "っ！": 0.04,
+     "！？": 0.03,
+     "～": 0.04,
+     "♪": 0.02
+    },
+    "names": {
+     "vndb": 0.6,
+     "syosetu": 0.3,
+     "generated": 0.1,
+     "honorific": 0.2,
+     "brackets": 0.1,
+     "unknown": 0.03,
+     "role": 0.03,
+     "space": 0.3
+    },
+    "name_mode": {
+     "vita": {
+      "tab": 0.58,
+      "inline": 0.06,
+      "line": 0.24,
+      "null": 0.12
+     },
+     "psp": {
+      "tab": 0.55,
+      "inline": 0.08,
+      "line": 0.25,
+      "null": 0.12
+     }
+    },
+    "nvl_name": 0.3,
+    "name_coloured": 0.3,
+    "ruby": {
+     "vita": 0.15,
+     "psp": 0.2
+    },
+    "cursor": 0.33,
+    "partial": {
+     "p": 0.08,
+     "ramp": 0.5
+    },
+    "join": 0.35,
+    "drop_aside": 0.8,
+    "coloured": {
+     "span": 0.08,
+     "line": 0.06
+    },
+    "outline": {
+     "vita": {
+      "light_on_dark": 0.2,
+      "dark_on_light": 0.06,
+      "on_colour": 0.5
+     },
+     "psp": {
+      "light_on_dark": 0.25,
+      "dark_on_light": 0.08,
+      "on_colour": 0.5
+     },
+     "scaled": {
+      "light_on_dark": 0.35,
+      "dark_on_light": 0.1,
+      "on_colour": 0.6
+     }
+    },
+    "shadow": {
+     "vita": 0.3,
+     "psp": 0.25,
+     "scaled": 0.5
+    },
+    "psp_sizes": [
+     [
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      20
+     ],
+     [
+      0.04,
+      0.1,
+      0.17,
+      0.21,
+      0.19,
+      0.12,
+      0.1,
+      0.07
+     ]
+    ],
+    "capture": {
+     "vita": {
+      "clean": 0.5,
+      "vndb2": 0.5
+     },
+     "psp": {
+      "clean": 0.35,
+      "q90": 0.35,
+      "vndb2": 0.3
+     },
+     "psp2x": {
+      "bilinear": 0.6,
+      "nearest": 0.3,
+      "x1995": 0.05,
+      "scanlines": 0.05,
+      "jpeg": 0.1
+     },
+     "scaled": {
+      "q90": 0.85,
+      "clean": 0.15
+     }
+    },
+    "dither565": 0.45,
+    "blur": 0.1,
+    "noise": 0.15,
+    "subnative": 0.03,
+    "crop": {
+     "gt": 0.25,
+     "grad": 0.75
+    },
+    "grad_fallback": true,
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "pad_extra": {
+     "vita": {
+      "p": 1.0,
+      "top": 0.04,
+      "bottom": 0.06,
+      "left": 0.12,
+      "right": 0.04
+     },
+     "psp": {
+      "p": 1.0,
+      "top": 0.0,
+      "bottom": 0.02,
+      "left": 0.2,
+      "right": 0.0
+     }
+    },
+    "scaled_em": {
+     "vita": [
+      19.0,
+      3.3,
+      13,
+      30
+     ],
+     "psp": [
+      13.5,
+      2.0,
+      9,
+      19
+     ]
+    },
+    "background": {
+     "scene": 0.92
+    },
+    "scene_zoom": [
+     1.0,
+     1.2
+    ],
+    "box_alpha": {
+     "vita": {
+      "on_dark": [
+       0.55,
+       [
+        0.3,
+        0.7
+       ],
+       [
+        0.7,
+        0.93
+       ]
+      ],
+      "light": [
+       0.3,
+       [
+        0.65,
+        0.88
+       ],
+       [
+        0.88,
+        1.0
+       ]
+      ],
+      "on_colour": [
+       0.7,
+       0.97
+      ]
+     },
+     "psp": {
+      "on_dark": [
+       0.7,
+       [
+        0.2,
+        0.65
+       ],
+       [
+        0.65,
+        0.9
+       ]
+      ],
+      "light": [
+       0.5,
+       [
+        0.5,
+        0.82
+       ],
+       [
+        0.82,
+        1.0
+       ]
+      ],
+      "on_colour": [
+       0.6,
+       0.95
+      ]
+     },
+     "scaled": {
+      "on_dark": [
+       0.8,
+       [
+        0.15,
+        0.6
+       ],
+       [
+        0.6,
+        0.85
+       ]
+      ],
+      "light": [
+       0.65,
+       [
+        0.4,
+        0.75
+       ],
+       [
+        0.75,
+        0.95
+       ]
+      ],
+      "on_colour": [
+       0.5,
+       0.9
+      ]
+     }
+    },
+    "pitch": [
+     1.12,
+     1.8
+    ],
+    "dialogue_pools": {
+     "aozora_dialogue": 0.16,
+     "narikiri": 0.2,
+     "aratako_dsv3": 0.07,
+     "aratako_gpt4omini": 0.09,
+     "opensubtitles": 0.09,
+     "jesc": 0.09,
+     "tatoeba": 0.07,
+     "nucc": 0.03,
+     "jdd": 0.02,
+     "bsd": 0.01,
+     "templates": 0.07,
+     "wiktionary": 0.01,
+     "wikiquote": 0.01
+    },
+    "narration_pools": {
+     "aozora_narration": 0.85,
+     "wiki": 0.15
+    },
+    "length_edges": [
+     0,
+     2,
+     4,
+     6,
+     9,
+     13,
+     18,
+     24,
+     31,
+     41,
+     200
+    ],
+    "length_target": [
+     0.0132,
+     0.2402,
+     0.154,
+     0.1029,
+     0.1199,
+     0.1419,
+     0.1216,
+     0.0867,
+     0.0191,
+     0.0003
+    ],
+    "length_floor": 0.15
+   },
+   "code_sha256": {
+    "synth3.py": "793d8099c7d169cfcad9c8214d57fcaf54dd1340ab5e8f143ea67b8d9eac5f62",
+    "render.py": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248",
+    "common.py": "6b8ca608c4e1ec60c87dd3bc6fa44a03fbb84fe0387ccc77a4c8aefbdc0c13ca",
+    "synth3_text.py": "22833c4476efd4538344683827c190de7d1415558aa7915f9fcd361fe90af951",
+    "synth4.py": "a16fa7f3648114c9a81b098f53d535fa21972fe3d23379ea183707e49a83e495"
+   },
+   "font_manifest_sha256": "5f387f5f55dd8a63f2962a5ee2ac0eed0944fd0c735411ea6913ff1d1ddb4feb",
+   "vocab_sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b",
+   "fonts": 317,
+   "font_families": 112,
+   "text": {
+    "pools": {
+     "aozora_dialogue": {
+      "file": "aozora_dialogue.train.txt",
+      "sha256": "81c3fe6570d2a6ef1cf30e1da6e1198d805120a49140e801aba6a83ddb6c8ff5",
+      "lines": 399943,
+      "class": "open"
+     },
+     "narikiri": {
+      "file": "narikiri.train.txt",
+      "sha256": "c6492a1eaf93c3bb303fe54759b0cb546c5f1616cef1dc161088e2120113b2ba",
+      "lines": 399832,
+      "class": "grey"
+     },
+     "aratako_dsv3": {
+      "file": "aratako_dsv3.train.txt",
+      "sha256": "345866dad525db1baf6d780ebbb2361ad2084687dff20ca5b89daca3df253a19",
+      "lines": 399960,
+      "class": "open"
+     },
+     "aratako_gpt4omini": {
+      "file": "aratako_gpt4omini.train.txt",
+      "sha256": "ae6bb22fe351f2c9e499fa074b53d3c98d0cc97c558526cdf50790bd412ec09d",
+      "lines": 399973,
+      "class": "nc"
+     },
+     "opensubtitles": {
+      "file": "opensubtitles.train.txt",
+      "sha256": "efe79bc19565e776f98a79d6003ab5f63bb7a1c96879c6edb62ebbce68f6bbe3",
+      "lines": 391948,
+      "class": "grey"
+     },
+     "jesc": {
+      "file": "jesc.train.txt",
+      "sha256": "08c0ec3f4ca2441b5c273df4b7a6135d7940d89f946ef1d1bbdd6e56fed5d22d",
+      "lines": 392513,
+      "class": "open"
+     },
+     "tatoeba": {
+      "file": "tatoeba.train.txt",
+      "sha256": "5f7322923c2c41d18b9515905a03f61a6d31448b3fe71fefe444e77a444ca6f3",
+      "lines": 237530,
+      "class": "open"
+     },
+     "nucc": {
+      "file": "nucc.train.txt",
+      "sha256": "29115769e61038746bb1c23d99b5d6329fbf71d82e61be1bf7bdf9ce5879d828",
+      "lines": 100600,
+      "class": "nc"
+     },
+     "jdd": {
+      "file": "jdd.train.txt",
+      "sha256": "b7612307e69c2f1f3b1445ca41432facfe2d293d7ad6e9056b32d5151c2f469d",
+      "lines": 39595,
+      "class": "nc"
+     },
+     "bsd": {
+      "file": "bsd.train.txt",
+      "sha256": "7049dadadf69ecd69a367f71cb2d2506f6471d361bd0554d4dae325c8d15617d",
+      "lines": 20564,
+      "class": "nc"
+     },
+     "wiktionary": {
+      "file": "wiktionary.train.txt",
+      "sha256": "2e2fd71b2bd2c76e02bf3a69ed5e3ddeefa51ad67cb8adf5fe13deb9d8368e7a",
+      "lines": 50774,
+      "class": "open"
+     },
+     "wikiquote": {
+      "file": "wikiquote.train.txt",
+      "sha256": "8c5a52b3692c84db63abb3ff02ed383b935bf45fda4ba1d04f25fdfea2675ff4",
+      "lines": 18637,
+      "class": "open"
+     },
+     "aozora_narration": {
+      "file": "aozora_narration.train.txt",
+      "sha256": "2b75f33bf57279c23d511b271eb3a65773de601c7b2501f885502454f5cdaa94",
+      "lines": 399949,
+      "class": "open"
+     },
+     "wiki": {
+      "file": "wiki.train.txt",
+      "sha256": "9c18dd18fb604bfe7555c7ccd1758a7233f7bcbdde5ecb462a2b047e887ea81b",
+      "lines": 399993,
+      "class": "open"
+     }
+    },
+    "contexts": "16f15ae70d3339c421d3748971de62a6df5c2cbd288b2dcec4d0fa5d5546bfc2",
+    "names": "4aa76da50328146dd11e14096b7c1b2d99a54a7f693df1b513da8900cf773d44",
+    "names_dropped_excluded": 2003,
+    "targets": "21044589c903f3dbfce781acdb4aee3684bf62a4267d6238725ba8977f0e1afc",
+    "lists": "d1a821a4a0b6e56222bbe6ef8d8db6ebd1dfcaf3fad5997f271e19a14a0e2d14"
+   },
+   "background_vns": 1163,
+   "background_shots": {
+    "vita": 946,
+    "psp": 1270,
+    "hires": 2945
+   },
+   "exclusions": [
+    {
+     "file": "synth3_exclude_fresh_native.json",
+     "sha256": "a2e50bd08a13a82e274cac1a694a8345e14fcae0357a4794e05643f41c6ffb26",
+     "vns": 13
+    },
+    {
+     "file": "synth3_exclude_clannad.json",
+     "sha256": "1143db8610b16757242994fa2b8fa232c4af8a8b04183290bfa1a2dfa38ff136",
+     "vns": 24
+    },
+    {
+     "file": "synth3_exclude_owner_games.json",
+     "sha256": "550bab94b63738768e07d4e9632106c995ff834b784c6c81eb362b6ba5314fd9",
+     "vns": 50
+    }
+   ],
+   "scenes_dropped": {
+    "excluded_vn": 114,
+    "excluded_hash": 0
+   },
+   "scene_hashes_sha256": "ec823887de2c2067eb0ee96ad77f074538a75952829562e3e5eade45f7b69a74",
+   "versions": {
+    "numpy": "2.4.6",
+    "opencv": "5.0.0",
+    "pillow": "12.3.0",
+    "freetype": "2.14.3"
+   },
+   "cfg4": {
+    "generator": "synth4",
+    "version": 1,
+    "curriculum": {
+     "k_vn": 80,
+     "k_other": 25,
+     "shards": 100,
+     "quota_share": 0.75
+    },
+    "contexts": {
+     "word": 0.35,
+     "name": 0.15
+    },
+    "name_focus": 0.3,
+    "stroke_drop": 0.45,
+    "grad_keep": 0.5,
+    "contrast": {
+     "dark_box": [
+      0.3,
+      0.75
+     ],
+     "light_box": [
+      0.3,
+      0.7
+     ],
+     "white_fill": 0.75,
+     "dark_fill": [
+      0.2,
+      0.7
+     ]
+    },
+    "accent_fill_drop": 0.4,
+    "green_band": [
+     0.17,
+     0.55
+    ],
+    "green_redraw": 0.85,
+    "pixel_vita_min_em": 10,
+    "hard_blend": 0.5
+   },
+   "cfg_patch": {
+    "category": {
+     "vita": {
+      "gothic": 0.42,
+      "rounded": 0.21,
+      "mincho": 0.19,
+      "pen": 0.06,
+      "display": 0.08,
+      "pixel": 0.04
+     },
+     "psp": {
+      "gothic": 0.45,
+      "rounded": 0.18,
+      "mincho": 0.17,
+      "pen": 0.05,
+      "display": 0.07,
+      "pixel": 0.08
+     }
+    },
+    "raster": {
+     "vita": {
+      "aa8": 0.38,
+      "aa4": 0.25,
+      "atlas": 0.27,
+      "ss2": 0.08,
+      "mono": 0.02
+     },
+     "psp": {
+      "aa8": 0.24,
+      "aa4": 0.52,
+      "atlas": 0.16,
+      "ss2": 0.04,
+      "mono": 0.04
+     }
+    },
+    "focus": 0.4,
+    "outline": {
+     "vita": {
+      "light_on_dark": 0.2,
+      "dark_on_light": 0.06,
+      "on_colour": 0.5
+     },
+     "psp": {
+      "light_on_dark": 0.25,
+      "dark_on_light": 0.08,
+      "on_colour": 0.5
+     },
+     "scaled": {
+      "light_on_dark": 0.35,
+      "dark_on_light": 0.1,
+      "on_colour": 0.6
+     }
+    },
+    "coloured": {
+     "span": 0.08,
+     "line": 0.06
+    },
+    "name_coloured": 0.3,
+    "scaled_em": {
+     "vita": [
+      19.0,
+      3.3,
+      13,
+      30
+     ],
+     "psp": [
+      13.5,
+      2.0,
+      9,
+      19
+     ]
+    },
+    "blur": 0.1
+   },
+   "curriculum": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/curriculum/curriculum_v1.json",
+    "sha256": "2b3662520e89d67c497b9bc8ccca9b50644de0b270a70fcb3dad6f434e36d8b8",
+    "deficit": 144288
+   },
+   "targets_sha256": "21044589c903f3dbfce781acdb4aee3684bf62a4267d6238725ba8977f0e1afc",
+   "fonts_by_licence": {
+    "nc": 8,
+    "open": 307,
+    "owner": 2
+   }
+  }
+ },
+ "shards": [
+  {
+   "set": "train_v1",
+   "file": "synth4_00000.npz",
+   "bytes": 47358571,
+   "sha256": "f3c2913a6c536d04fecc563d7ed67466bb4b7d36e8a7b5819bdcb4140bac1768",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00001.npz",
+   "bytes": 46811646,
+   "sha256": "7de312062724b68ea65779bde602cdb97726d9f9cc938e359d3d580b9e4f1bc5",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00002.npz",
+   "bytes": 46823489,
+   "sha256": "9e36e561cf05c92b9e44759d7e6c29931a030640ee3f1c3fa75b592cebf0784e",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00003.npz",
+   "bytes": 47230487,
+   "sha256": "468b1691408c09730eddab312c4d3013be496ea9730868b3a66632ce066dda55",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00004.npz",
+   "bytes": 46358815,
+   "sha256": "c2d46b4886f9f88e645400dd7dac681b69299c45edd47f7cd9bd5fcbf3249602",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00005.npz",
+   "bytes": 47886737,
+   "sha256": "29f7c2a8230a155e00f979a2c15b4bc8875b968c0f8dcdb567bbf9d1eacc5ba5",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00006.npz",
+   "bytes": 46922953,
+   "sha256": "c3d87c273c3590435a7c2cdb7b44c52aab3622c2158d7ccaa06899fe93dcbb2e",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00007.npz",
+   "bytes": 47027318,
+   "sha256": "889fddca3508bb469c9bad7edcefa839902cef4a72e8017c83f6e41cc743a0ad",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00008.npz",
+   "bytes": 46599425,
+   "sha256": "bfde1c38faf276d1550b9d6bc6355a35763c6efb01a01c1b8d187608e21a8770",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00009.npz",
+   "bytes": 46961671,
+   "sha256": "6f3c72279a1e75c45470a70dbab57026eac774500a75c7f6cb7bfeb5339ac71c",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00010.npz",
+   "bytes": 46917473,
+   "sha256": "ee7fb9856df977df81d0f97ca50a1e6e36e62a3f23cebbdff53763e84f16e778",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00011.npz",
+   "bytes": 47286974,
+   "sha256": "026823583bac13047190cdb76c023e1b1b334a78fbda83951fed1558026d765f",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00012.npz",
+   "bytes": 46496137,
+   "sha256": "7ff50cba66037f2d370a00049114ec711de023e2cdf9a057f31b8835a986d82c",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00013.npz",
+   "bytes": 47128252,
+   "sha256": "9f942f49f2e31db406123331bb14f5570edc070d2e01f7d7e20f99d29e3cf1bc",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00014.npz",
+   "bytes": 46590353,
+   "sha256": "c59f29140903588ac7a1d679abb736a6fbf5e2d371052116910740c444f75411",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00015.npz",
+   "bytes": 46511092,
+   "sha256": "8d29f795f62baaa3319c44ce8fbc340828423c1452342dcc525f591cae267f72",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00016.npz",
+   "bytes": 46447338,
+   "sha256": "1b8ef0b4c77519127145bb04c4d20d916ac03df277056921643271299a10d0b3",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00017.npz",
+   "bytes": 46907441,
+   "sha256": "ad53ef185e955fdbd0a59cb69ea2675bb8c4371593559f6deb3d87312d11d371",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00018.npz",
+   "bytes": 46734927,
+   "sha256": "731b49a8bb7b23644ea06fa91f64b28583aadace89d2524408805e80f4324f8d",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00019.npz",
+   "bytes": 47124426,
+   "sha256": "bb1174ca14184bd8930e3a83f4081ab5d27029249bd8a40fab21be9a138c5be6",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00020.npz",
+   "bytes": 46624846,
+   "sha256": "d6e0f75136ff7ef605a5763cda26271b903d8fa79e4e55dc783ccbbc0586e097",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00021.npz",
+   "bytes": 46655195,
+   "sha256": "443160eb9cad2bd617edcacdbc42097d1c5c667d076c0f28fc912ae4cbee177b",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00022.npz",
+   "bytes": 47389542,
+   "sha256": "ad66564fde1cb48d99c668b128177c42d1341e0daba2b43e564f994cb3cd6ed9",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00023.npz",
+   "bytes": 46524651,
+   "sha256": "0509bd0b421452c5cc8ce541f4db71119b26294e44dcd08a09d8ccb152f80015",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00024.npz",
+   "bytes": 47223359,
+   "sha256": "ac041fa22e2a180592696c1cd4e3dd912a255668d1f0c51802bb0fac7b6d597f",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00025.npz",
+   "bytes": 46518073,
+   "sha256": "04cdd12ec872b04606704575eafb97630d3814fdfdc29ea0aaf40e4451e06ff9",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00026.npz",
+   "bytes": 46843186,
+   "sha256": "751d254a87b72b9176bf47776622ff501b93726cee3e60c28d0f66f9561893be",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00027.npz",
+   "bytes": 46389011,
+   "sha256": "0f2f239c55701b106f041fa4e06fd784e5a58cee82923eddab5392f2614a500d",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00028.npz",
+   "bytes": 46462960,
+   "sha256": "0ac58f74a20ad178c39e9b2f0305a04534cb601ba679c1e778f4cd0bcb5d0c03",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00029.npz",
+   "bytes": 46031981,
+   "sha256": "d11a8791cde33a18aa0f17a9ea85f442eda25d2d0af2d7bf16cd683ec10608c8",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00030.npz",
+   "bytes": 46122363,
+   "sha256": "cb6c2ae1bbd2b1907c5267ef2741c7947c38db9399332b3c9f7a3cdebad31607",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00031.npz",
+   "bytes": 47073477,
+   "sha256": "555e12acb92c43107e3684ae2ad47e5b51738f5cf036aa84182e6733714f63f1",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00032.npz",
+   "bytes": 46544310,
+   "sha256": "b4b259dd07326e30aa54f35153b0130aea0147a7944c1f48f560686052b9edb5",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00033.npz",
+   "bytes": 45981171,
+   "sha256": "7ab1382e1ab2a127d1f2cd6837b8af18254446c61965f7a817cd8872f9e037e4",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00034.npz",
+   "bytes": 46886826,
+   "sha256": "d56b5c8d241d619eb6ad68197c1d6b7e6db847d0b8c492d164a5b51c8e99f45b",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00035.npz",
+   "bytes": 45819969,
+   "sha256": "a6b8c53ee690bb5a096da3c6da340ad5f0c0c64340de2b5cb04b47fb066e0ab0",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00036.npz",
+   "bytes": 46619131,
+   "sha256": "7e5e20cdc212251cb48cd94922840d88517369fa5cae70c3ccc91481031d949c",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00037.npz",
+   "bytes": 46254408,
+   "sha256": "eeb2be17c7f22f62ecf4b74f5d8b383cc7be51f2f945e4629807fbded91b51d1",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00038.npz",
+   "bytes": 46912250,
+   "sha256": "2c50ba2b4a80265958351c85fc0d4613b8978d008c233b3f689268719e02c7a4",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00039.npz",
+   "bytes": 46978068,
+   "sha256": "200f925d18f6eda0b41fab5c510dc28a613a39348652b97ee702df097113ae12",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00040.npz",
+   "bytes": 46739431,
+   "sha256": "1dcd0ac4069d6aec491985309a9dc708f6ff76e444dd3ea89b008c354bcc60cd",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00041.npz",
+   "bytes": 46950338,
+   "sha256": "e4355aa988b27c96aaf87a90eb32bbb079aae920c8616e45c1dced3ac9234c6a",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00042.npz",
+   "bytes": 46226331,
+   "sha256": "47fe82ffc27af79854463196496ee066a3081d220a294641bfef7af6dbb9ccb2",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00043.npz",
+   "bytes": 46295406,
+   "sha256": "321f1515058956d9e2dbf2adc9d954c27c9a77934e28115abae1727fb464fcc0",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00044.npz",
+   "bytes": 46639889,
+   "sha256": "adba6807fdb81f6fb91114f783390ce9394f9354e8c0faedbf5b217512f786d8",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00045.npz",
+   "bytes": 46935343,
+   "sha256": "3a50aa20678a5fbd691fccebbde9f68c016395ba577a64fc78744067930490a3",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00046.npz",
+   "bytes": 46962989,
+   "sha256": "9ae614f499a89cc4a1632829c5106e181dd3dd090cf675755801f1fdacc5b7a3",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00047.npz",
+   "bytes": 46911979,
+   "sha256": "2a603b82460b2c2c8c0116e67d786862f642680e8bee65bc4a2b943f3bb3147a",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00048.npz",
+   "bytes": 46255096,
+   "sha256": "a1845a92ed93201742c957098ffc00634fd9d42305dd930c5be3451d937c989a",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00049.npz",
+   "bytes": 47084204,
+   "sha256": "a3d1e969572637a9f2da75e5f06eff696a1756581720951ada6af24f42ed085f",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00050.npz",
+   "bytes": 46125879,
+   "sha256": "ca560f9a3240a48c85b8182361d6538b200a5962b5420bb9d3ee24b0ebc626d8",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00051.npz",
+   "bytes": 47023596,
+   "sha256": "384ba1cd7fdd34a7bba30fb0d316bf28f53bf01029f2d4e83b5a1634fe3cb8f8",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00052.npz",
+   "bytes": 46190866,
+   "sha256": "22b0e886e2451bf23dda42bacbc94cc9dab2790cf51ea189668112defa6c324f",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00053.npz",
+   "bytes": 46670458,
+   "sha256": "eb656b9e51c1a769e84637102d010ad89cd36c58c25437ee4b9696ec248ee848",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00054.npz",
+   "bytes": 46521440,
+   "sha256": "37ff713438ce29f14600905d4ec271f410c67a825b041afa2118fd4c03ebc5d8",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00055.npz",
+   "bytes": 47517056,
+   "sha256": "d4edc03bdaf822c54202e284f2410b9cfbb0e8cc2bdb58757dfe259cec7cd0fc",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00056.npz",
+   "bytes": 47007180,
+   "sha256": "43efe9670844c71a03b9a809886ef6df8ad865bf00c9a53a46201969e3b0b3ca",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00057.npz",
+   "bytes": 47186935,
+   "sha256": "d4db22922e217794713639f98ffcc830a3c56bb2060620a700261de08295de6b",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00058.npz",
+   "bytes": 46868790,
+   "sha256": "fc1040afe22efa5227acbbefdf44159d58c997873144239dd4748a1b3e8fc2f9",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00059.npz",
+   "bytes": 46799427,
+   "sha256": "714b1bf7ea0f967311436f7aa8a3ff55cf5c07443f8f9af7a39e97e0f0b52e9a",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00060.npz",
+   "bytes": 46592937,
+   "sha256": "122dd9b16155f9c6e2deae29d1580b4fdf2610bae3d22bde0e9a7e72bd1bf62c",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00061.npz",
+   "bytes": 47948723,
+   "sha256": "6d7648895a8b493426545be430a0003ac3be075b41086b708f18f2266060628a",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00062.npz",
+   "bytes": 47052306,
+   "sha256": "4a183e0c7fbec310ab613046f5af86114b1be6d94589759719c8f535c8706eb1",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00063.npz",
+   "bytes": 45651479,
+   "sha256": "40beb5e403573cf19f3ab72806907785e30fa54c436a2716059aa331ec2f44ee",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00064.npz",
+   "bytes": 47122282,
+   "sha256": "67a4f75a854b0aaa3677fb7ac19900d8deffc01ab407b45e039098426717d6bc",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00065.npz",
+   "bytes": 47625513,
+   "sha256": "44e8769e90a437f757f528691b94ecdbfcfbd03b51105045298f2c9b52a9fa55",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00066.npz",
+   "bytes": 46812731,
+   "sha256": "d86269b3f0318518956fa70ef7cc4674b4d77c869e77802fadc4737e9afd8fe2",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00067.npz",
+   "bytes": 46309247,
+   "sha256": "e684fe30095ee7d8972781989fc801fb93e15715fe30810b7d89526b15ca8913",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00068.npz",
+   "bytes": 46261450,
+   "sha256": "ca8d4b80b2dda92fc56b4f5b97f2941e869b9480cee08e3d1bde7653ecee948d",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00069.npz",
+   "bytes": 46005695,
+   "sha256": "e90111430ddfb30b657005558c88ad6dd12078bb9a91fbdc7ae77a92c75f50e5",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00070.npz",
+   "bytes": 46903293,
+   "sha256": "ce620638ca3230a553a28b699d2e18adbe6fec84607f762dcd2b4b6e4ab1e355",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00071.npz",
+   "bytes": 46801482,
+   "sha256": "4716549ad00824de5f504dff4e43a424a69d1b2669b08404b24cf67aa6df3a65",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00072.npz",
+   "bytes": 46215684,
+   "sha256": "e558a8ea62d47bb75efe9099eeb3fe849ef1051e69f7006ffa5b7045ab4181ad",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00073.npz",
+   "bytes": 46228343,
+   "sha256": "2b953410796bedaaaf0ebf4f97bf4dca162564d8a4b4a20d8e4514fdff5796df",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00074.npz",
+   "bytes": 47293562,
+   "sha256": "d051ac094786e0c77f8f21e6e32b80e970150e83e88200e4b69b441af498a78c",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00075.npz",
+   "bytes": 47078713,
+   "sha256": "f94f6b50f93ed43a2071fbb8e6e389fbac2f26386bd384dbf07aa06f03813122",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00076.npz",
+   "bytes": 46846441,
+   "sha256": "744cb258dacbfcb1304e52151331cd78bf1ee8d6895c09a8e7924b2bc3e4eb1c",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00077.npz",
+   "bytes": 47029611,
+   "sha256": "86aa79a115310be5a8796ab62c209eb88ddc856ca6637e91144192ab0be544bd",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00078.npz",
+   "bytes": 46685558,
+   "sha256": "bc7ef564ef7fff21b91d0c4776638d2d2c070d81b2cbdf0dd78cd248483bf2b1",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00079.npz",
+   "bytes": 46850753,
+   "sha256": "7b55eef1b93d8f693d87c0937f42e9c99b12a7842fb9b4a543829f8715e6312e",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00080.npz",
+   "bytes": 46791250,
+   "sha256": "6ab2873e9e4df8645015b7665cc772a595f707514b6fa5a82269dc4f79e8ac60",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00081.npz",
+   "bytes": 47641923,
+   "sha256": "4ccc07d67e929621060021787053c9a2e4bc4b3a5e030a8c806d0c270df6beed",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00082.npz",
+   "bytes": 46523509,
+   "sha256": "1e2899255827a2df75d338e2387e936174231adb13e0cf41e37948f00ab896cf",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00083.npz",
+   "bytes": 47397745,
+   "sha256": "30e68b6c72c9902ba8a9bd8beb54d3758e060db38321e273232eebc8ea1ab30e",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00084.npz",
+   "bytes": 46295067,
+   "sha256": "1daed0a99e8c8b91672bcc12d62a4a2be16d5f7bb770d4afd419ac75b97522a9",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00085.npz",
+   "bytes": 46782515,
+   "sha256": "82401ed0d03e4a95191db0c3ed530032c1f434e38e217dcd970c957071efb41f",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00086.npz",
+   "bytes": 46811717,
+   "sha256": "88262411d7adbddc103f6091c157464b0e60e12ed3808568848e53f598977162",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00087.npz",
+   "bytes": 47901646,
+   "sha256": "68ab23d9e5be26c0753a14d48f09107b9461bed5dc4b6257e16a9ac835bdd92b",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00088.npz",
+   "bytes": 47059670,
+   "sha256": "fe3078f094b4cf6fbb6965ffdb84842b7d428032dab588740371f06958758e3c",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00089.npz",
+   "bytes": 45595557,
+   "sha256": "44419c5e7a3bce1fbfd09652b222c6f4ce503c6b74b4eaeed0ed7382329a1fdc",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00090.npz",
+   "bytes": 47406063,
+   "sha256": "cf9a3cc23c74861bd576a8f18a4478687f93bf801cd0575e6119ec1fc0dca5f0",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00091.npz",
+   "bytes": 46900715,
+   "sha256": "cedb6c63d9a40cc50d4bf0d94a1feed9e9c1de65deab2e921c229a0ad7614c62",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00092.npz",
+   "bytes": 46554646,
+   "sha256": "261c5e6282c11f7f46f03dd9a17d1fc1af41265c8627099b8049a01b94fa177d",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00093.npz",
+   "bytes": 46257567,
+   "sha256": "5f6bb089b3cf127c27bad0dcaba5bbbce19adcc0a8ce11e4925966ccf6abfa70",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00094.npz",
+   "bytes": 46409227,
+   "sha256": "a689480263ee644e5af7bdc3a10fd3d80bb91188e0c751dc43d0c55363c3ab62",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00095.npz",
+   "bytes": 46948843,
+   "sha256": "b5c6c79de9331c198661724de928aa9238b3ce544293db02ab9ca45cdc654c15",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00096.npz",
+   "bytes": 46678343,
+   "sha256": "bd2fe8a2f0078632da01a228f42a74af06ae6fcfe57867c1d1a4a8b25857ecd4",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00097.npz",
+   "bytes": 47073533,
+   "sha256": "215ec91997cbb562fff2486642c67bb6a26632b4860b021696d9e1844bc40163",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00098.npz",
+   "bytes": 47644395,
+   "sha256": "356ec2384cddbe6ade5a2146b0f010f18463b46fcc7a52b9f0d1600999dea253",
+   "samples": 10000
+  },
+  {
+   "set": "train_v1",
+   "file": "synth4_00099.npz",
+   "bytes": 47854648,
+   "sha256": "490b0b39f4664a565d477102ccaddb4a7ee10efb1d55848fa8e67984e23e3ca9",
+   "samples": 10000
+  }
+ ],
+ "samples": 1000000,
+ "bytes": 4678737317
+}

@@ -1,0 +1,1906 @@
+{
+ "kind": "synth4-ablation-result",
+ "protocol": {
+  "file": "eval/synth4_protocol.json",
+  "sha256": "5a14d5c3753d616117767225007056999bf562cf9d3e7f037cd511549ceff3e3"
+ },
+ "comparison": "F_vs_D",
+ "decision": {
+  "teacher_val_better": false,
+  "devnative_not_worse": true,
+  "devnative_better": false,
+  "synth4_better": false,
+  "synth4_better_on_both": false
+ },
+ "rule": "F_s4 (synth4) is better than D_s3v3 (synth3 v3) iff (1) on teacher_val the VN-cluster 95% interval of CER(F_s4) - CER(D_s3v3) (both views, errors summed over both seeds) lies entirely below 0 and CER(F_s4) - CER(D_s3v3) < 0 for each seed pair (same seed), and (2) on devnative v3 pooled (both views, both seeds) the VN-cluster 95% interval of the same difference does not lie entirely above 0. If (1) and (2) hold and the devnative interval also lies entirely below 0, synth4 is better on both cohorts. Otherwise synth4 is not measured better and synth3 version 3 stays the recommended VN-style synthetic data; the result is reported as no measured improvement.",
+ "teacher_val": {
+  "dev": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/teacher_val.npz",
+   "sha256": "f5c0032041c14b31bff87b52a56381b8f0d3e84e2f6cfd78a3b600e55751f81e",
+   "lines": 1643,
+   "chars": 17050,
+   "vns": 180
+  },
+  "models": {
+   "D_s3v3_seed1": {
+    "blob_sha256": "f9ab73241e942dd2da04951df85395e13c692e45aede871c54566c39c436db2f",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832,
+    "cer": {
+     "rv": 0.05161,
+     "rvn": 0.05208
+    }
+   },
+   "D_s3v3_seed2": {
+    "blob_sha256": "83942944a216c054af73e7e424cd76ad04d7870101e5228b1abb536d3e2c8a4a",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832,
+    "cer": {
+     "rv": 0.05378,
+     "rvn": 0.05367
+    }
+   },
+   "F_s4_seed1": {
+    "blob_sha256": "e7aa39b3580fd43d118cc0c9c47c58062c6405827d41cd90a7ec3f01a499f06e",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832,
+    "cer": {
+     "rv": 0.05548,
+     "rvn": 0.05396
+    }
+   },
+   "F_s4_seed2": {
+    "blob_sha256": "3e16cee63477c2053c887f40e69dbf2615ae3001017e6ca5cb10e0e0723e8939",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832,
+    "cer": {
+     "rv": 0.05683,
+     "rvn": 0.05601
+    }
+   }
+  },
+  "result": {
+   "a": "D_s3v3",
+   "b": "F_s4",
+   "runs_a": [
+    "D_s3v3_seed1",
+    "D_s3v3_seed2"
+   ],
+   "runs_b": [
+    "F_s4_seed1",
+    "F_s4_seed2"
+   ],
+   "all_vn_cluster": {
+    "delta_points": 0.279,
+    "ci95": [
+     0.08,
+     0.481
+    ],
+    "cer_a": 0.05279,
+    "cer_b": 0.05557
+   },
+   "all_line": {
+    "delta_points": 0.279,
+    "ci95": [
+     0.065,
+     0.486
+    ],
+    "cer_a": 0.05279,
+    "cer_b": 0.05557
+   },
+   "per_view": {
+    "rv": {
+     "delta_points": 0.346,
+     "ci95": [
+      0.136,
+      0.561
+     ],
+     "cer_a": 0.0527,
+     "cer_b": 0.05616
+    },
+    "rvn": {
+     "delta_points": 0.211,
+     "ci95": [
+      0.006,
+      0.419
+     ],
+     "cer_a": 0.05287,
+     "cer_b": 0.05499
+    }
+   },
+   "per_seed": {
+    "D_s3v3_seed1->F_s4_seed1": {
+     "delta_points": 0.287,
+     "ci95": [
+      -0.003,
+      0.582
+     ],
+     "cer_a": 0.05185,
+     "cer_b": 0.05472
+    },
+    "D_s3v3_seed2->F_s4_seed2": {
+     "delta_points": 0.27,
+     "ci95": [
+      -0.009,
+      0.552
+     ],
+     "cer_a": 0.05372,
+     "cer_b": 0.05642
+    }
+   },
+   "strata": {
+    "dakuten-smallkana": {
+     "delta_points": 0.261,
+     "ci95": [
+      0.033,
+      0.492
+     ],
+     "cer_a": 0.04156,
+     "cer_b": 0.04417,
+     "lines": 829
+    },
+    "ink:14-19": {
+     "delta_points": 0.188,
+     "ci95": [
+      -0.079,
+      0.479
+     ],
+     "cer_a": 0.03296,
+     "cer_b": 0.03485,
+     "lines": 757
+    },
+    "ink:20-27": {
+     "delta_points": 0.13,
+     "ci95": [
+      -0.198,
+      0.473
+     ],
+     "cer_a": 0.02852,
+     "cer_b": 0.02982,
+     "lines": 361
+    },
+    "ink:28+": {
+     "delta_points": -0.474,
+     "ci95": [
+      -1.617,
+      0.584
+     ],
+     "cer_a": 0.04028,
+     "cer_b": 0.03555,
+     "lines": 44
+    },
+    "ink:<14": {
+     "delta_points": 0.688,
+     "ci95": [
+      0.184,
+      1.218
+     ],
+     "cer_a": 0.11797,
+     "cer_b": 0.12485,
+     "lines": 481
+    },
+    "kind:hires": {
+     "delta_points": 0.482,
+     "ci95": [
+      0.226,
+      0.74
+     ],
+     "cer_a": 0.06311,
+     "cer_b": 0.06793,
+     "lines": 1058
+    },
+    "kind:psp": {
+     "delta_points": -0.064,
+     "ci95": [
+      -0.458,
+      0.329
+     ],
+     "cer_a": 0.03159,
+     "cer_b": 0.03094,
+     "lines": 424
+    },
+    "kind:vita": {
+     "delta_points": -0.359,
+     "ci95": [
+      -1.014,
+      0.184
+     ],
+     "cer_a": 0.02951,
+     "cer_b": 0.02592,
+     "lines": 161
+    },
+    "latin-digits": {
+     "delta_points": -0.587,
+     "ci95": [
+      -2.534,
+      0.666
+     ],
+     "cer_a": 0.10945,
+     "cer_b": 0.10358,
+     "lines": 62
+    },
+    "len:1-4": {
+     "delta_points": 0.912,
+     "ci95": [
+      -0.101,
+      1.928
+     ],
+     "cer_a": 0.13982,
+     "cer_b": 0.14895,
+     "lines": 604
+    },
+    "len:13+": {
+     "delta_points": 0.224,
+     "ci95": [
+      0.024,
+      0.441
+     ],
+     "cer_a": 0.03799,
+     "cer_b": 0.04023,
+     "lines": 588
+    },
+    "len:5-12": {
+     "delta_points": 0.148,
+     "ci95": [
+      -0.343,
+      0.631
+     ],
+     "cer_a": 0.0587,
+     "cer_b": 0.06018,
+     "lines": 451
+    },
+    "namelike": {
+     "delta_points": 0.679,
+     "ci95": [
+      -0.15,
+      1.497
+     ],
+     "cer_a": 0.13434,
+     "cer_b": 0.14113,
+     "lines": 706
+    },
+    "pol:bright-on-dark": {
+     "delta_points": 0.083,
+     "ci95": [
+      -0.179,
+      0.338
+     ],
+     "cer_a": 0.0418,
+     "cer_b": 0.04263,
+     "lines": 1042
+    },
+    "pol:dark-on-light": {
+     "delta_points": 0.596,
+     "ci95": [
+      0.258,
+      0.957
+     ],
+     "cer_a": 0.07062,
+     "cer_b": 0.07658,
+     "lines": 601
+    },
+    "rare-kanji": {
+     "delta_points": 0.253,
+     "ci95": [
+      -0.683,
+      1.071
+     ],
+     "cer_a": 0.06479,
+     "cer_b": 0.06732,
+     "lines": 116
+    },
+    "tail-any": {
+     "delta_points": 0.447,
+     "ci95": [
+      0.028,
+      0.861
+     ],
+     "cer_a": 0.04368,
+     "cer_b": 0.04815,
+     "lines": 268
+    },
+    "tail-kanji": {
+     "delta_points": 0.529,
+     "ci95": [
+      -0.894,
+      1.618
+     ],
+     "cer_a": 0.07899,
+     "cer_b": 0.08428,
+     "lines": 40
+    },
+    "target:psp": {
+     "delta_points": 0.255,
+     "ci95": [
+      -0.092,
+      0.63
+     ],
+     "cer_a": 0.06702,
+     "cer_b": 0.06957,
+     "lines": 675
+    },
+    "target:vita": {
+     "delta_points": 0.295,
+     "ci95": [
+      0.054,
+      0.554
+     ],
+     "cer_a": 0.04295,
+     "cer_b": 0.0459,
+     "lines": 968
+    }
+   },
+   "per_vn": {
+    "vns": 180,
+    "better": 56,
+    "worse": 83,
+    "equal": 41,
+    "largest_regressions": [
+     {
+      "vn": "v20598",
+      "delta_points": 6.82,
+      "chars": 22
+     },
+     {
+      "vn": "v18141",
+      "delta_points": 5.14,
+      "chars": 73
+     },
+     {
+      "vn": "v961",
+      "delta_points": 4.76,
+      "chars": 21
+     },
+     {
+      "vn": "v3066",
+      "delta_points": 4.62,
+      "chars": 65
+     },
+     {
+      "vn": "v30118",
+      "delta_points": 4.51,
+      "chars": 144
+     },
+     {
+      "vn": "v10304",
+      "delta_points": 4.5,
+      "chars": 50
+     },
+     {
+      "vn": "v17823",
+      "delta_points": 3.85,
+      "chars": 52
+     },
+     {
+      "vn": "v17972",
+      "delta_points": 3.8,
+      "chars": 79
+     },
+     {
+      "vn": "v2835",
+      "delta_points": 3.62,
+      "chars": 69
+     },
+     {
+      "vn": "v311",
+      "delta_points": 3.24,
+      "chars": 85
+     }
+    ]
+   },
+   "decision": {
+    "b_better": false,
+    "ci_upper_below_zero": false,
+    "every_seed_below_zero": false,
+    "rule": "F_s4 (synth4) is better than D_s3v3 (synth3 v3) iff (1) on teacher_val the VN-cluster 95% interval of CER(F_s4) - CER(D_s3v3) (both views, errors summed over both seeds) lies entirely below 0 and CER(F_s4) - CER(D_s3v3) < 0 for each seed pair (same seed), and (2) on devnative v3 pooled (both views, both seeds) the VN-cluster 95% interval of the same difference does not lie entirely above 0. If (1) and (2) hold and the devnative interval also lies entirely below 0, synth4 is better on both cohorts. Otherwise synth4 is not measured better and synth3 version 3 stays the recommended VN-style synthetic data; the result is reported as no measured improvement."
+   }
+  }
+ },
+ "devnative_pooled": {
+  "dev": {
+   "merged": [
+    {
+     "name": "devnative_strict_ink",
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_ink.npz",
+     "sha256": "742944e99dd058bdfbce5c298100cec1b85d37bff5378670b301fa61a1e3cde7",
+     "lines": 34,
+     "chars": 383,
+     "vns": 13
+    },
+    {
+     "name": "devnative_strict_grad",
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_grad.npz",
+     "sha256": "76bb3329a24866b331b55a8526a82092b3ec084e4e1e7b368c8cf1c835572d3f",
+     "lines": 23,
+     "chars": 287,
+     "vns": 11
+    },
+    {
+     "name": "devnative_tv_native_ink",
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_ink.npz",
+     "sha256": "baef59f132acd3242b237c9d0d168b3d5202f6c381b716109cb20e0fa044e985",
+     "lines": 509,
+     "chars": 5845,
+     "vns": 43
+    },
+    {
+     "name": "devnative_tv_native_grad",
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_grad.npz",
+     "sha256": "2eb847ebf01d76741b1fdd2d1b92debf719b6a8edaacb8e8114d697632a73f3b",
+     "lines": 420,
+     "chars": 4979,
+     "vns": 43
+    }
+   ],
+   "lines": 986,
+   "chars": 11494,
+   "vns": 43
+  },
+  "models": {
+   "D_s3v3_seed1": {
+    "blob_sha256": "f9ab73241e942dd2da04951df85395e13c692e45aede871c54566c39c436db2f",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832,
+    "cer": {
+     "rv": 0.06055,
+     "rvn": 0.06142
+    }
+   },
+   "D_s3v3_seed2": {
+    "blob_sha256": "83942944a216c054af73e7e424cd76ad04d7870101e5228b1abb536d3e2c8a4a",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832,
+    "cer": {
+     "rv": 0.06638,
+     "rvn": 0.06621
+    }
+   },
+   "F_s4_seed1": {
+    "blob_sha256": "e7aa39b3580fd43d118cc0c9c47c58062c6405827d41cd90a7ec3f01a499f06e",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832,
+    "cer": {
+     "rv": 0.06299,
+     "rvn": 0.06473
+    }
+   },
+   "F_s4_seed2": {
+    "blob_sha256": "3e16cee63477c2053c887f40e69dbf2615ae3001017e6ca5cb10e0e0723e8939",
+    "blob_bytes": 657664,
+    "arena_bytes": 124832,
+    "cer": {
+     "rv": 0.06699,
+     "rvn": 0.06647
+    }
+   }
+  },
+  "result": {
+   "a": "D_s3v3",
+   "b": "F_s4",
+   "runs_a": [
+    "D_s3v3_seed1",
+    "D_s3v3_seed2"
+   ],
+   "runs_b": [
+    "F_s4_seed1",
+    "F_s4_seed2"
+   ],
+   "all_vn_cluster": {
+    "delta_points": 0.165,
+    "ci95": [
+     -0.111,
+     0.47
+    ],
+    "cer_a": 0.06364,
+    "cer_b": 0.06529
+   },
+   "all_line": {
+    "delta_points": 0.165,
+    "ci95": [
+     -0.123,
+     0.455
+    ],
+    "cer_a": 0.06364,
+    "cer_b": 0.06529
+   },
+   "per_view": {
+    "rv": {
+     "delta_points": 0.152,
+     "ci95": [
+      -0.123,
+      0.45
+     ],
+     "cer_a": 0.06347,
+     "cer_b": 0.06499
+    },
+    "rvn": {
+     "delta_points": 0.178,
+     "ci95": [
+      -0.111,
+      0.508
+     ],
+     "cer_a": 0.06382,
+     "cer_b": 0.0656
+    }
+   },
+   "per_seed": {
+    "D_s3v3_seed1->F_s4_seed1": {
+     "delta_points": 0.287,
+     "ci95": [
+      -0.161,
+      0.775
+     ],
+     "cer_a": 0.06099,
+     "cer_b": 0.06386
+    },
+    "D_s3v3_seed2->F_s4_seed2": {
+     "delta_points": 0.044,
+     "ci95": [
+      -0.339,
+      0.435
+     ],
+     "cer_a": 0.0663,
+     "cer_b": 0.06673
+    }
+   },
+   "strata": {
+    "dakuten-smallkana": {
+     "delta_points": 0.074,
+     "ci95": [
+      -0.178,
+      0.34
+     ],
+     "cer_a": 0.03884,
+     "cer_b": 0.03958,
+     "lines": 607
+    },
+    "ink:14-19": {
+     "delta_points": 0.454,
+     "ci95": [
+      0.069,
+      0.899
+     ],
+     "cer_a": 0.06492,
+     "cer_b": 0.06946,
+     "lines": 600
+    },
+    "ink:20-27": {
+     "delta_points": -0.445,
+     "ci95": [
+      -0.817,
+      -0.066
+     ],
+     "cer_a": 0.05199,
+     "cer_b": 0.04754,
+     "lines": 204
+    },
+    "ink:28+": {
+     "delta_points": 0.0,
+     "ci95": [
+      -0.199,
+      2.381
+     ],
+     "cer_a": 0.0399,
+     "cer_b": 0.0399,
+     "lines": 46
+    },
+    "ink:<14": {
+     "delta_points": -0.223,
+     "ci95": [
+      -1.605,
+      1.036
+     ],
+     "cer_a": 0.10035,
+     "cer_b": 0.09812,
+     "lines": 136
+    },
+    "kind:psp": {
+     "delta_points": 0.328,
+     "ci95": [
+      0.0,
+      0.69
+     ],
+     "cer_a": 0.06798,
+     "cer_b": 0.07125,
+     "lines": 784
+    },
+    "kind:vita": {
+     "delta_points": -0.399,
+     "ci95": [
+      -0.681,
+      -0.189
+     ],
+     "cer_a": 0.04858,
+     "cer_b": 0.04459,
+     "lines": 202
+    },
+    "latin-digits": {
+     "delta_points": -1.887,
+     "ci95": [
+      -4.493,
+      -0.663
+     ],
+     "cer_a": 0.05189,
+     "cer_b": 0.03302,
+     "lines": 12
+    },
+    "len:1-4": {
+     "delta_points": 1.735,
+     "ci95": [
+      -0.541,
+      4.229
+     ],
+     "cer_a": 0.47521,
+     "cer_b": 0.49256,
+     "lines": 247
+    },
+    "len:13+": {
+     "delta_points": 0.074,
+     "ci95": [
+      -0.136,
+      0.302
+     ],
+     "cer_a": 0.02759,
+     "cer_b": 0.02833,
+     "lines": 468
+    },
+    "len:5-12": {
+     "delta_points": 0.022,
+     "ci95": [
+      -0.585,
+      0.666
+     ],
+     "cer_a": 0.06989,
+     "cer_b": 0.07011,
+     "lines": 271
+    },
+    "namelike": {
+     "delta_points": 1.72,
+     "ci95": [
+      -0.46,
+      4.06
+     ],
+     "cer_a": 0.43263,
+     "cer_b": 0.44983,
+     "lines": 273
+    },
+    "pol:bright-on-dark": {
+     "delta_points": 0.168,
+     "ci95": [
+      -0.167,
+      0.536
+     ],
+     "cer_a": 0.06702,
+     "cer_b": 0.0687,
+     "lines": 666
+    },
+    "pol:dark-on-light": {
+     "delta_points": 0.16,
+     "ci95": [
+      -0.29,
+      0.735
+     ],
+     "cer_a": 0.05709,
+     "cer_b": 0.05869,
+     "lines": 319
+    },
+    "rare-kanji": {
+     "delta_points": -0.687,
+     "ci95": [
+      -2.278,
+      0.909
+     ],
+     "cer_a": 0.16718,
+     "cer_b": 0.16031,
+     "lines": 79
+    },
+    "tail-any": {
+     "delta_points": -0.048,
+     "ci95": [
+      -0.691,
+      0.672
+     ],
+     "cer_a": 0.03687,
+     "cer_b": 0.03639,
+     "lines": 186
+    },
+    "tail-kanji": {
+     "delta_points": -1.562,
+     "ci95": [
+      -2.0,
+      0.0
+     ],
+     "cer_a": 0.05,
+     "cer_b": 0.03438,
+     "lines": 10
+    },
+    "target:psp": {
+     "delta_points": 0.328,
+     "ci95": [
+      0.0,
+      0.69
+     ],
+     "cer_a": 0.06798,
+     "cer_b": 0.07125,
+     "lines": 784
+    },
+    "target:vita": {
+     "delta_points": -0.399,
+     "ci95": [
+      -0.681,
+      -0.189
+     ],
+     "cer_a": 0.04858,
+     "cer_b": 0.04459,
+     "lines": 202
+    }
+   },
+   "per_vn": {
+    "vns": 43,
+    "better": 19,
+    "worse": 19,
+    "equal": 5,
+    "largest_regressions": [
+     {
+      "vn": "v8502",
+      "delta_points": 2.99,
+      "chars": 318
+     },
+     {
+      "vn": "v8063",
+      "delta_points": 2.53,
+      "chars": 296
+     },
+     {
+      "vn": "v5706",
+      "delta_points": 1.57,
+      "chars": 127
+     },
+     {
+      "vn": "v4597",
+      "delta_points": 1.37,
+      "chars": 328
+     },
+     {
+      "vn": "v11454",
+      "delta_points": 1.33,
+      "chars": 226
+     },
+     {
+      "vn": "v12436",
+      "delta_points": 1.32,
+      "chars": 341
+     },
+     {
+      "vn": "v1877",
+      "delta_points": 1.3,
+      "chars": 231
+     },
+     {
+      "vn": "v6135",
+      "delta_points": 1.2,
+      "chars": 291
+     },
+     {
+      "vn": "v3549",
+      "delta_points": 1.09,
+      "chars": 46
+     },
+     {
+      "vn": "v14267",
+      "delta_points": 0.74,
+      "chars": 68
+     }
+    ]
+   },
+   "decision": {
+    "b_better": false,
+    "ci_upper_below_zero": false,
+    "every_seed_below_zero": false,
+    "rule": "F_s4 (synth4) is better than D_s3v3 (synth3 v3) iff (1) on teacher_val the VN-cluster 95% interval of CER(F_s4) - CER(D_s3v3) (both views, errors summed over both seeds) lies entirely below 0 and CER(F_s4) - CER(D_s3v3) < 0 for each seed pair (same seed), and (2) on devnative v3 pooled (both views, both seeds) the VN-cluster 95% interval of the same difference does not lie entirely above 0. If (1) and (2) hold and the devnative interval also lies entirely below 0, synth4 is better on both cohorts. Otherwise synth4 is not measured better and synth3 version 3 stays the recommended VN-style synthetic data; the result is reported as no measured improvement."
+   }
+  }
+ },
+ "devnative_files": {
+  "strict_ink": {
+   "dev": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_ink.npz",
+    "sha256": "742944e99dd058bdfbce5c298100cec1b85d37bff5378670b301fa61a1e3cde7",
+    "lines": 34,
+    "chars": 383,
+    "vns": 13
+   },
+   "result": {
+    "a": "D_s3v3",
+    "b": "F_s4",
+    "runs_a": [
+     "D_s3v3_seed1",
+     "D_s3v3_seed2"
+    ],
+    "runs_b": [
+     "F_s4_seed1",
+     "F_s4_seed2"
+    ],
+    "all_vn_cluster": {
+     "delta_points": -0.849,
+     "ci95": [
+      -2.61,
+      1.037
+     ],
+     "cer_a": 0.04765,
+     "cer_b": 0.03916
+    },
+    "all_line": {
+     "delta_points": -0.849,
+     "ci95": [
+      -2.25,
+      0.676
+     ],
+     "cer_a": 0.04765,
+     "cer_b": 0.03916
+    },
+    "per_view": {
+     "rv": {
+      "delta_points": -0.783,
+      "ci95": [
+       -2.601,
+       1.223
+      ],
+      "cer_a": 0.047,
+      "cer_b": 0.03916
+     },
+     "rvn": {
+      "delta_points": -0.914,
+      "ci95": [
+       -2.632,
+       0.854
+      ],
+      "cer_a": 0.0483,
+      "cer_b": 0.03916
+     }
+    },
+    "per_seed": {
+     "D_s3v3_seed1->F_s4_seed1": {
+      "delta_points": 0.131,
+      "ci95": [
+       -1.445,
+       1.433
+      ],
+      "cer_a": 0.04047,
+      "cer_b": 0.04178
+     },
+     "D_s3v3_seed2->F_s4_seed2": {
+      "delta_points": -1.828,
+      "ci95": [
+       -4.381,
+       0.926
+      ],
+      "cer_a": 0.05483,
+      "cer_b": 0.03655
+     }
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -1.447,
+      "ci95": [
+       -3.049,
+       -0.195
+      ],
+      "cer_a": 0.0418,
+      "cer_b": 0.02733,
+      "lines": 20
+     },
+     "ink:14-19": {
+      "delta_points": -0.192,
+      "ci95": [
+       -0.885,
+       0.528
+      ],
+      "cer_a": 0.02874,
+      "cer_b": 0.02682,
+      "lines": 20
+     },
+     "ink:20-27": {
+      "delta_points": -2.381,
+      "ci95": [
+       -7.353,
+       5.882
+      ],
+      "cer_a": 0.1131,
+      "cer_b": 0.08929,
+      "lines": 10
+     },
+     "kind:psp": {
+      "delta_points": -0.849,
+      "ci95": [
+       -2.61,
+       1.037
+      ],
+      "cer_a": 0.04765,
+      "cer_b": 0.03916,
+      "lines": 34
+     },
+     "len:1-4": {
+      "delta_points": 7.759,
+      "ci95": [
+       -4.762,
+       20.0
+      ],
+      "cer_a": 0.07759,
+      "cer_b": 0.15517,
+      "lines": 11
+     },
+     "len:13+": {
+      "delta_points": -1.475,
+      "ci95": [
+       -3.146,
+       -0.19
+      ],
+      "cer_a": 0.04754,
+      "cer_b": 0.03279,
+      "lines": 18
+     },
+     "len:5-12": {
+      "delta_points": -2.041,
+      "ci95": [
+       -3.704,
+       0.0
+      ],
+      "cer_a": 0.03061,
+      "cer_b": 0.0102,
+      "lines": 5
+     },
+     "namelike": {
+      "delta_points": 7.759,
+      "ci95": [
+       -4.762,
+       20.0
+      ],
+      "cer_a": 0.07759,
+      "cer_b": 0.15517,
+      "lines": 11
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -1.045,
+      "ci95": [
+       -2.892,
+       1.013
+      ],
+      "cer_a": 0.05373,
+      "cer_b": 0.04328,
+      "lines": 30
+     },
+     "rare-kanji": {
+      "delta_points": 1.786,
+      "ci95": [
+       0.0,
+       25.0
+      ],
+      "cer_a": 0.05357,
+      "cer_b": 0.07143,
+      "lines": 5
+     },
+     "tail-any": {
+      "delta_points": -3.6,
+      "ci95": [
+       -5.882,
+       -1.681
+      ],
+      "cer_a": 0.072,
+      "cer_b": 0.036,
+      "lines": 8
+     },
+     "target:psp": {
+      "delta_points": -0.849,
+      "ci95": [
+       -2.61,
+       1.037
+      ],
+      "cer_a": 0.04765,
+      "cer_b": 0.03916,
+      "lines": 34
+     }
+    },
+    "per_vn": {
+     "vns": 13,
+     "better": 5,
+     "worse": 2,
+     "equal": 6,
+     "largest_regressions": [
+      {
+       "vn": "v2817",
+       "delta_points": 7.0,
+       "chars": 25
+      },
+      {
+       "vn": "v12451",
+       "delta_points": 3.23,
+       "chars": 31
+      }
+     ]
+    },
+    "decision": {
+     "b_better": false,
+     "ci_upper_below_zero": false,
+     "every_seed_below_zero": false,
+     "rule": "F_s4 (synth4) is better than D_s3v3 (synth3 v3) iff (1) on teacher_val the VN-cluster 95% interval of CER(F_s4) - CER(D_s3v3) (both views, errors summed over both seeds) lies entirely below 0 and CER(F_s4) - CER(D_s3v3) < 0 for each seed pair (same seed), and (2) on devnative v3 pooled (both views, both seeds) the VN-cluster 95% interval of the same difference does not lie entirely above 0. If (1) and (2) hold and the devnative interval also lies entirely below 0, synth4 is better on both cohorts. Otherwise synth4 is not measured better and synth3 version 3 stays the recommended VN-style synthetic data; the result is reported as no measured improvement."
+    }
+   }
+  },
+  "strict_grad": {
+   "dev": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_grad.npz",
+    "sha256": "76bb3329a24866b331b55a8526a82092b3ec084e4e1e7b368c8cf1c835572d3f",
+    "lines": 23,
+    "chars": 287,
+    "vns": 11
+   },
+   "result": {
+    "a": "D_s3v3",
+    "b": "F_s4",
+    "runs_a": [
+     "D_s3v3_seed1",
+     "D_s3v3_seed2"
+    ],
+    "runs_b": [
+     "F_s4_seed1",
+     "F_s4_seed2"
+    ],
+    "all_vn_cluster": {
+     "delta_points": 0.697,
+     "ci95": [
+      -2.222,
+      3.953
+     ],
+     "cer_a": 0.15331,
+     "cer_b": 0.16028
+    },
+    "all_line": {
+     "delta_points": 0.697,
+     "ci95": [
+      -1.954,
+      3.697
+     ],
+     "cer_a": 0.15331,
+     "cer_b": 0.16028
+    },
+    "per_view": {
+     "rv": {
+      "delta_points": 0.523,
+      "ci95": [
+       -2.444,
+       3.872
+      ],
+      "cer_a": 0.15157,
+      "cer_b": 0.15679
+     },
+     "rvn": {
+      "delta_points": 0.871,
+      "ci95": [
+       -2.053,
+       4.044
+      ],
+      "cer_a": 0.15505,
+      "cer_b": 0.16376
+     }
+    },
+    "per_seed": {
+     "D_s3v3_seed1->F_s4_seed1": {
+      "delta_points": 2.265,
+      "ci95": [
+       -1.636,
+       7.509
+      ],
+      "cer_a": 0.14111,
+      "cer_b": 0.16376
+     },
+     "D_s3v3_seed2->F_s4_seed2": {
+      "delta_points": -0.871,
+      "ci95": [
+       -3.798,
+       3.266
+      ],
+      "cer_a": 0.16551,
+      "cer_b": 0.15679
+     }
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.2,
+      "ci95": [
+       -2.029,
+       2.489
+      ],
+      "cer_a": 0.066,
+      "cer_b": 0.064,
+      "lines": 16
+     },
+     "ink:14-19": {
+      "delta_points": 0.0,
+      "ci95": [
+       -2.273,
+       3.261
+      ],
+      "cer_a": 0.11853,
+      "cer_b": 0.11853,
+      "lines": 17
+     },
+     "kind:psp": {
+      "delta_points": 0.697,
+      "ci95": [
+       -2.222,
+       3.953
+      ],
+      "cer_a": 0.15331,
+      "cer_b": 0.16028,
+      "lines": 23
+     },
+     "len:1-4": {
+      "delta_points": 7.5,
+      "ci95": [
+       -12.5,
+       27.778
+      ],
+      "cer_a": 1.275,
+      "cer_b": 1.35,
+      "lines": 6
+     },
+     "len:13+": {
+      "delta_points": 0.837,
+      "ci95": [
+       -0.99,
+       3.286
+      ],
+      "cer_a": 0.05649,
+      "cer_b": 0.06485,
+      "lines": 14
+     },
+     "namelike": {
+      "delta_points": 7.5,
+      "ci95": [
+       -12.5,
+       27.778
+      ],
+      "cer_a": 1.275,
+      "cer_b": 1.35,
+      "lines": 6
+     },
+     "pol:bright-on-dark": {
+      "delta_points": 1.674,
+      "ci95": [
+       -1.471,
+       4.528
+      ],
+      "cer_a": 0.14854,
+      "cer_b": 0.16527,
+      "lines": 19
+     },
+     "tail-any": {
+      "delta_points": 1.974,
+      "ci95": [
+       0.0,
+       4.412
+      ],
+      "cer_a": 0.06579,
+      "cer_b": 0.08553,
+      "lines": 5
+     },
+     "target:psp": {
+      "delta_points": 0.697,
+      "ci95": [
+       -2.222,
+       3.953
+      ],
+      "cer_a": 0.15331,
+      "cer_b": 0.16028,
+      "lines": 23
+     }
+    },
+    "per_vn": {
+     "vns": 11,
+     "better": 4,
+     "worse": 4,
+     "equal": 3,
+     "largest_regressions": [
+      {
+       "vn": "v12858",
+       "delta_points": 6.67,
+       "chars": 45
+      },
+      {
+       "vn": "v12436",
+       "delta_points": 6.06,
+       "chars": 33
+      },
+      {
+       "vn": "v6135",
+       "delta_points": 5.88,
+       "chars": 17
+      },
+      {
+       "vn": "v6218",
+       "delta_points": 2.63,
+       "chars": 19
+      }
+     ]
+    },
+    "decision": {
+     "b_better": false,
+     "ci_upper_below_zero": false,
+     "every_seed_below_zero": false,
+     "rule": "F_s4 (synth4) is better than D_s3v3 (synth3 v3) iff (1) on teacher_val the VN-cluster 95% interval of CER(F_s4) - CER(D_s3v3) (both views, errors summed over both seeds) lies entirely below 0 and CER(F_s4) - CER(D_s3v3) < 0 for each seed pair (same seed), and (2) on devnative v3 pooled (both views, both seeds) the VN-cluster 95% interval of the same difference does not lie entirely above 0. If (1) and (2) hold and the devnative interval also lies entirely below 0, synth4 is better on both cohorts. Otherwise synth4 is not measured better and synth3 version 3 stays the recommended VN-style synthetic data; the result is reported as no measured improvement."
+    }
+   }
+  },
+  "tv_native_ink": {
+   "dev": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_ink.npz",
+    "sha256": "baef59f132acd3242b237c9d0d168b3d5202f6c381b716109cb20e0fa044e985",
+    "lines": 509,
+    "chars": 5845,
+    "vns": 43
+   },
+   "result": {
+    "a": "D_s3v3",
+    "b": "F_s4",
+    "runs_a": [
+     "D_s3v3_seed1",
+     "D_s3v3_seed2"
+    ],
+    "runs_b": [
+     "F_s4_seed1",
+     "F_s4_seed2"
+    ],
+    "all_vn_cluster": {
+     "delta_points": -0.163,
+     "ci95": [
+      -0.398,
+      0.102
+     ],
+     "cer_a": 0.0296,
+     "cer_b": 0.02797
+    },
+    "all_line": {
+     "delta_points": -0.163,
+     "ci95": [
+      -0.463,
+      0.123
+     ],
+     "cer_a": 0.0296,
+     "cer_b": 0.02797
+    },
+    "per_view": {
+     "rv": {
+      "delta_points": -0.128,
+      "ci95": [
+       -0.376,
+       0.142
+      ],
+      "cer_a": 0.02934,
+      "cer_b": 0.02806
+     },
+     "rvn": {
+      "delta_points": -0.197,
+      "ci95": [
+       -0.446,
+       0.074
+      ],
+      "cer_a": 0.02985,
+      "cer_b": 0.02789
+     }
+    },
+    "per_seed": {
+     "D_s3v3_seed1->F_s4_seed1": {
+      "delta_points": 0.034,
+      "ci95": [
+       -0.307,
+       0.425
+      ],
+      "cer_a": 0.02695,
+      "cer_b": 0.02729
+     },
+     "D_s3v3_seed2->F_s4_seed2": {
+      "delta_points": -0.359,
+      "ci95": [
+       -0.719,
+       0.0
+      ],
+      "cer_a": 0.03225,
+      "cer_b": 0.02866
+     }
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.005,
+      "ci95": [
+       -0.281,
+       0.28
+      ],
+      "cer_a": 0.02426,
+      "cer_b": 0.02421,
+      "lines": 305
+     },
+     "ink:14-19": {
+      "delta_points": -0.028,
+      "ci95": [
+       -0.389,
+       0.394
+      ],
+      "cer_a": 0.02905,
+      "cer_b": 0.02877,
+      "lines": 305
+     },
+     "ink:20-27": {
+      "delta_points": -0.413,
+      "ci95": [
+       -0.854,
+       0.129
+      ],
+      "cer_a": 0.02786,
+      "cer_b": 0.02372,
+      "lines": 108
+     },
+     "ink:28+": {
+      "delta_points": -0.068,
+      "ci95": [
+       -1.818,
+       0.186
+      ],
+      "cer_a": 0.03117,
+      "cer_b": 0.03049,
+      "lines": 26
+     },
+     "ink:<14": {
+      "delta_points": -0.487,
+      "ci95": [
+       -1.281,
+       0.414
+      ],
+      "cer_a": 0.03704,
+      "cer_b": 0.03216,
+      "lines": 70
+     },
+     "kind:psp": {
+      "delta_points": -0.061,
+      "ci95": [
+       -0.364,
+       0.258
+      ],
+      "cer_a": 0.03038,
+      "cer_b": 0.02977,
+      "lines": 401
+     },
+     "kind:vita": {
+      "delta_points": -0.499,
+      "ci95": [
+       -0.729,
+       -0.298
+      ],
+      "cer_a": 0.027,
+      "cer_b": 0.022,
+      "lines": 108
+     },
+     "latin-digits": {
+      "delta_points": -2.108,
+      "ci95": [
+       -6.061,
+       0.258
+      ],
+      "cer_a": 0.04518,
+      "cer_b": 0.0241,
+      "lines": 5
+     },
+     "len:1-4": {
+      "delta_points": -2.135,
+      "ci95": [
+       -4.445,
+       0.079
+      ],
+      "cer_a": 0.13567,
+      "cer_b": 0.11433,
+      "lines": 130
+     },
+     "len:13+": {
+      "delta_points": 0.131,
+      "ci95": [
+       -0.149,
+       0.44
+      ],
+      "cer_a": 0.0199,
+      "cer_b": 0.02121,
+      "lines": 232
+     },
+     "len:5-12": {
+      "delta_points": -0.569,
+      "ci95": [
+       -1.168,
+       -0.033
+      ],
+      "cer_a": 0.0314,
+      "cer_b": 0.02571,
+      "lines": 147
+     },
+     "namelike": {
+      "delta_points": -2.566,
+      "ci95": [
+       -4.495,
+       -0.709
+      ],
+      "cer_a": 0.11736,
+      "cer_b": 0.0917,
+      "lines": 145
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.106,
+      "ci95": [
+       -0.337,
+       0.153
+      ],
+      "cer_a": 0.02803,
+      "cer_b": 0.02697,
+      "lines": 338
+     },
+     "pol:dark-on-light": {
+      "delta_points": -0.267,
+      "ci95": [
+       -0.738,
+       0.309
+      ],
+      "cer_a": 0.03249,
+      "cer_b": 0.02983,
+      "lines": 170
+     },
+     "rare-kanji": {
+      "delta_points": -1.179,
+      "ci95": [
+       -2.707,
+       0.241
+      ],
+      "cer_a": 0.05425,
+      "cer_b": 0.04245,
+      "lines": 38
+     },
+     "tail-any": {
+      "delta_points": -0.096,
+      "ci95": [
+       -0.707,
+       0.529
+      ],
+      "cer_a": 0.02389,
+      "cer_b": 0.02294,
+      "lines": 94
+     },
+     "tail-kanji": {
+      "delta_points": -0.625,
+      "ci95": [
+       -1.087,
+       0.0
+      ],
+      "cer_a": 0.0375,
+      "cer_b": 0.03125,
+      "lines": 5
+     },
+     "target:psp": {
+      "delta_points": -0.061,
+      "ci95": [
+       -0.364,
+       0.258
+      ],
+      "cer_a": 0.03038,
+      "cer_b": 0.02977,
+      "lines": 401
+     },
+     "target:vita": {
+      "delta_points": -0.499,
+      "ci95": [
+       -0.729,
+       -0.298
+      ],
+      "cer_a": 0.027,
+      "cer_b": 0.022,
+      "lines": 108
+     }
+    },
+    "per_vn": {
+     "vns": 43,
+     "better": 20,
+     "worse": 13,
+     "equal": 10,
+     "largest_regressions": [
+      {
+       "vn": "v8063",
+       "delta_points": 2.26,
+       "chars": 166
+      },
+      {
+       "vn": "v5706",
+       "delta_points": 2.05,
+       "chars": 73
+      },
+      {
+       "vn": "v6218",
+       "delta_points": 1.88,
+       "chars": 80
+      },
+      {
+       "vn": "v3278",
+       "delta_points": 1.12,
+       "chars": 89
+      },
+      {
+       "vn": "v10231",
+       "delta_points": 1.09,
+       "chars": 46
+      },
+      {
+       "vn": "v8502",
+       "delta_points": 0.94,
+       "chars": 159
+      },
+      {
+       "vn": "v14267",
+       "delta_points": 0.74,
+       "chars": 34
+      },
+      {
+       "vn": "v9178",
+       "delta_points": 0.69,
+       "chars": 72
+      },
+      {
+       "vn": "v10091",
+       "delta_points": 0.68,
+       "chars": 74
+      },
+      {
+       "vn": "v1971",
+       "delta_points": 0.6,
+       "chars": 83
+      }
+     ]
+    },
+    "decision": {
+     "b_better": false,
+     "ci_upper_below_zero": false,
+     "every_seed_below_zero": false,
+     "rule": "F_s4 (synth4) is better than D_s3v3 (synth3 v3) iff (1) on teacher_val the VN-cluster 95% interval of CER(F_s4) - CER(D_s3v3) (both views, errors summed over both seeds) lies entirely below 0 and CER(F_s4) - CER(D_s3v3) < 0 for each seed pair (same seed), and (2) on devnative v3 pooled (both views, both seeds) the VN-cluster 95% interval of the same difference does not lie entirely above 0. If (1) and (2) hold and the devnative interval also lies entirely below 0, synth4 is better on both cohorts. Otherwise synth4 is not measured better and synth3 version 3 stays the recommended VN-style synthetic data; the result is reported as no measured improvement."
+    }
+   }
+  },
+  "tv_native_grad": {
+   "dev": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_grad.npz",
+    "sha256": "2eb847ebf01d76741b1fdd2d1b92debf719b6a8edaacb8e8114d697632a73f3b",
+    "lines": 420,
+    "chars": 4979,
+    "vns": 43
+   },
+   "result": {
+    "a": "D_s3v3",
+    "b": "F_s4",
+    "runs_a": [
+     "D_s3v3_seed1",
+     "D_s3v3_seed2"
+    ],
+    "runs_b": [
+     "F_s4_seed1",
+     "F_s4_seed2"
+    ],
+    "all_vn_cluster": {
+     "delta_points": 0.598,
+     "ci95": [
+      0.057,
+      1.186
+     ],
+     "cer_a": 0.09967,
+     "cer_b": 0.10564
+    },
+    "all_line": {
+     "delta_points": 0.598,
+     "ci95": [
+      0.071,
+      1.143
+     ],
+     "cer_a": 0.09967,
+     "cer_b": 0.10564
+    },
+    "per_view": {
+     "rv": {
+      "delta_points": 0.532,
+      "ci95": [
+       0.0,
+       1.113
+      ],
+      "cer_a": 0.09972,
+      "cer_b": 0.10504
+     },
+     "rvn": {
+      "delta_points": 0.663,
+      "ci95": [
+       0.086,
+       1.308
+      ],
+      "cer_a": 0.09962,
+      "cer_b": 0.10625
+     }
+    },
+    "per_seed": {
+     "D_s3v3_seed1->F_s4_seed1": {
+      "delta_points": 0.482,
+      "ci95": [
+       -0.323,
+       1.382
+      ],
+      "cer_a": 0.09791,
+      "cer_b": 0.10273
+     },
+     "D_s3v3_seed2->F_s4_seed2": {
+      "delta_points": 0.713,
+      "ci95": [
+       0.023,
+       1.384
+      ],
+      "cer_a": 0.10143,
+      "cer_b": 0.10856
+     }
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": 0.3,
+      "ci95": [
+       -0.177,
+       0.79
+      ],
+      "cer_a": 0.0536,
+      "cer_b": 0.0566,
+      "lines": 266
+     },
+     "ink:14-19": {
+      "delta_points": 1.086,
+      "ci95": [
+       0.357,
+       1.911
+      ],
+      "cer_a": 0.1046,
+      "cer_b": 0.11545,
+      "lines": 258
+     },
+     "ink:20-27": {
+      "delta_points": -0.35,
+      "ci95": [
+       -0.998,
+       0.355
+      ],
+      "cer_a": 0.07229,
+      "cer_b": 0.0688,
+      "lines": 83
+     },
+     "ink:28+": {
+      "delta_points": 0.08,
+      "ci95": [
+       -0.638,
+       10.0
+      ],
+      "cer_a": 0.05016,
+      "cer_b": 0.05096,
+      "lines": 20
+     },
+     "ink:<14": {
+      "delta_points": -0.228,
+      "ci95": [
+       -2.766,
+       1.132
+      ],
+      "cer_a": 0.16667,
+      "cer_b": 0.16438,
+      "lines": 59
+     },
+     "kind:psp": {
+      "delta_points": 0.884,
+      "ci95": [
+       0.201,
+       1.625
+      ],
+      "cer_a": 0.10842,
+      "cer_b": 0.11726,
+      "lines": 326
+     },
+     "kind:vita": {
+      "delta_points": -0.288,
+      "ci95": [
+       -0.792,
+       0.1
+      ],
+      "cer_a": 0.07257,
+      "cer_b": 0.0697,
+      "lines": 94
+     },
+     "latin-digits": {
+      "delta_points": -2.711,
+      "ci95": [
+       -7.87,
+       0.347
+      ],
+      "cer_a": 0.06928,
+      "cer_b": 0.04217,
+      "lines": 5
+     },
+     "len:1-4": {
+      "delta_points": 5.527,
+      "ci95": [
+       0.581,
+       10.57
+      ],
+      "cer_a": 0.87925,
+      "cer_b": 0.93452,
+      "lines": 100
+     },
+     "len:13+": {
+      "delta_points": 0.088,
+      "ci95": [
+       -0.265,
+       0.447
+      ],
+      "cer_a": 0.03281,
+      "cer_b": 0.03368,
+      "lines": 204
+     },
+     "len:5-12": {
+      "delta_points": 1.052,
+      "ci95": [
+       -0.17,
+       2.444
+      ],
+      "cer_a": 0.1191,
+      "cer_b": 0.12962,
+      "lines": 116
+     },
+     "namelike": {
+      "delta_points": 6.301,
+      "ci95": [
+       1.786,
+       10.938
+      ],
+      "cer_a": 0.81027,
+      "cer_b": 0.87329,
+      "lines": 111
+     },
+     "pol:bright-on-dark": {
+      "delta_points": 0.502,
+      "ci95": [
+       -0.187,
+       1.241
+      ],
+      "cer_a": 0.10796,
+      "cer_b": 0.11298,
+      "lines": 279
+     },
+     "pol:dark-on-light": {
+      "delta_points": 0.774,
+      "ci95": [
+       0.053,
+       1.675
+      ],
+      "cer_a": 0.08429,
+      "cer_b": 0.09203,
+      "lines": 141
+     },
+     "rare-kanji": {
+      "delta_points": -1.678,
+      "ci95": [
+       -4.614,
+       1.273
+      ],
+      "cer_a": 0.26767,
+      "cer_b": 0.25088,
+      "lines": 32
+     },
+     "tail-any": {
+      "delta_points": 0.274,
+      "ci95": [
+       -0.834,
+       1.564
+      ],
+      "cer_a": 0.04635,
+      "cer_b": 0.04909,
+      "lines": 79
+     },
+     "tail-kanji": {
+      "delta_points": -2.5,
+      "ci95": [
+       -4.0,
+       0.0
+      ],
+      "cer_a": 0.0625,
+      "cer_b": 0.0375,
+      "lines": 5
+     },
+     "target:psp": {
+      "delta_points": 0.884,
+      "ci95": [
+       0.201,
+       1.625
+      ],
+      "cer_a": 0.10842,
+      "cer_b": 0.11726,
+      "lines": 326
+     },
+     "target:vita": {
+      "delta_points": -0.288,
+      "ci95": [
+       -0.792,
+       0.1
+      ],
+      "cer_a": 0.07257,
+      "cer_b": 0.0697,
+      "lines": 94
+     }
+    },
+    "per_vn": {
+     "vns": 43,
+     "better": 16,
+     "worse": 24,
+     "equal": 3,
+     "largest_regressions": [
+      {
+       "vn": "v12436",
+       "delta_points": 6.79,
+       "chars": 81
+      },
+      {
+       "vn": "v1315",
+       "delta_points": 5.68,
+       "chars": 44
+      },
+      {
+       "vn": "v8502",
+       "delta_points": 5.03,
+       "chars": 159
+      },
+      {
+       "vn": "v6135",
+       "delta_points": 3.66,
+       "chars": 82
+      },
+      {
+       "vn": "v4597",
+       "delta_points": 3.35,
+       "chars": 164
+      },
+      {
+       "vn": "v8063",
+       "delta_points": 2.88,
+       "chars": 130
+      },
+      {
+       "vn": "v1877",
+       "delta_points": 2.88,
+       "chars": 104
+      },
+      {
+       "vn": "v11454",
+       "delta_points": 2.65,
+       "chars": 113
+      },
+      {
+       "vn": "v3549",
+       "delta_points": 2.17,
+       "chars": 23
+      },
+      {
+       "vn": "v12188",
+       "delta_points": 1.76,
+       "chars": 170
+      }
+     ]
+    },
+    "decision": {
+     "b_better": false,
+     "ci_upper_below_zero": false,
+     "every_seed_below_zero": false,
+     "rule": "F_s4 (synth4) is better than D_s3v3 (synth3 v3) iff (1) on teacher_val the VN-cluster 95% interval of CER(F_s4) - CER(D_s3v3) (both views, errors summed over both seeds) lies entirely below 0 and CER(F_s4) - CER(D_s3v3) < 0 for each seed pair (same seed), and (2) on devnative v3 pooled (both views, both seeds) the VN-cluster 95% interval of the same difference does not lie entirely above 0. If (1) and (2) hold and the devnative interval also lies entirely below 0, synth4 is better on both cohorts. Otherwise synth4 is not measured better and synth3 version 3 stays the recommended VN-style synthetic data; the result is reported as no measured improvement."
+    }
+   }
+  }
+ }
+}

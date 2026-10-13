@@ -154,3 +154,36 @@ def test_nds12_is_pixel_exact_at_its_10_ppem_strike():
     h, w = small.shape
     pooled = big[:h * 4, :w * 4].reshape(h, 4, w, 4).mean(axis=(1, 3)) > 0.5
     assert (pooled != small).mean() < 0.002                      # every brick is one pixel at 10 ppem
+
+
+def test_ablation_decision_and_curriculum_tags():
+    import sys
+    sys.path.insert(0, str(ROOT / "eval"))
+    import synth4_ablation as AB
+    tail = {"鬱", "璽"}
+    fl = {"あ", "鬱"}
+    assert AB.curriculum_tags("あ鬱", tail, fl) == ["tail-kanji", "tail-any"]
+    assert AB.curriculum_tags("あ璽", tail, fl) == ["tail-kanji", "tail-any", "fl10-unk"]
+    assert AB.curriculum_tags("ああ", tail, fl) == []
+    better = {"all_vn_cluster": {"ci95": [-0.8, -0.2]}, "per_seed": {"a": {"delta_points": -0.5},
+                                                                     "b": {"delta_points": -0.3}}}
+    guard_ok = {"all_vn_cluster": {"ci95": [-0.4, 0.2]}}
+    d = AB.decide(better, guard_ok)
+    assert d["synth4_better"] and not d["synth4_better_on_both"]
+    worse = {"all_vn_cluster": {"ci95": [0.1, 0.5]}, "per_seed": {"a": {"delta_points": 0.3}}}
+    assert not AB.decide(worse, guard_ok)["synth4_better"]
+    guard_bad = {"all_vn_cluster": {"ci95": [0.1, 0.5]}}
+    assert not AB.decide(better, guard_bad)["devnative_not_worse"]
+    both = {"all_vn_cluster": {"ci95": [-0.5, -0.1]}}
+    assert AB.decide(better, both)["synth4_better_on_both"]
+
+
+def test_committed_ablation_result_holds_no_prediction_text():
+    f = ROOT / "eval" / "synth4_ablation_20261013.json"
+    if not f.exists():
+        return
+    import json
+    r = json.loads(f.read_text(encoding="utf-8"))
+    assert r["kind"] == "synth4-ablation-result"
+    assert "pred" not in json.dumps(r) and "lines" not in r["teacher_val"]
+    assert set(r["decision"]) >= {"teacher_val_better", "devnative_not_worse", "synth4_better"}

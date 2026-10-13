@@ -97,16 +97,19 @@ open alternative. Native Vita contrast stays 19 levels short of real.
   - v661: 29 name crops of names only its characters produce (公平 10 exact + 10 in a longer label,
     透明人間 4, アインシュタイン博 3, フランケンシュタインの怪物 1, 怪魚 1 — all generic strings) plus
     2 name+dialogue crops, and 2 crops holding the title 弟切草 (1 narration, 1 dialogue, a wiki line);
-    31 crops of 1,000,000 by the title + exact-name count; no scene (no v661 screenshot is local);
+    31 crops of 1,000,000 (29 name + 2 title; 33 with the 2 name+dialogue crops); no scene (no v661
+    screenshot is local);
   - the Never 7 release partners: 19 distinct name crops (exact rows) + 4 name+dialogue crops, over
     v17 10, v19373 10, v13 7, v247 2 (which sum to 29 because some labels match more than one VN's
     character); v247 and v19373 are also scene VNs.
 
   No protected test reads any of these VNs, and 0 of the 1,643 scored teacher_val lines and 0 of the
   986 scored devnative lines come from the owner-50, v661, the Never 7 partners or v34, so the
-  ablation stands. (The arms are not reserved identically — D_s3v3 is synth3 v3, whose render dropped
-  the owner 50 but, like synth4, not v661 or the Never 7 partners; the gap analysis #65 does exclude
-  v661 and v19373 from its statistics.) **Before any further
+  ablation stands. (The arms are not reserved identically — D_s3v3 is synth3 v3, whose render loaded
+  only the first two manifests, so it also drew the owner's 50 as names and text, `docs/owner-games.md`;
+  v3's pinned shards hold 241 name and 40 name+dialogue crops of names only owner-50 characters
+  produce, which synth4 drops. Neither arm dropped v661 or the Never 7 partners. The gap analysis #65
+  excludes the owner 50, v661 and v19373 from its statistics.) **Before any further
   synth4 render**, keep `synth3_exclude_owner_games.json` in the generator's exclusions (it is already
   there) and add v661 and the Never 7 partners.
 - The protocol was committed and pushed at 15:57:22Z (`8a1a932`), the pin at 16:30:32Z (`304bfeb`),
@@ -115,7 +118,7 @@ open alternative. Native Vita contrast stays 19 levels short of real.
   the generator, protocol and pin files are unchanged across the rebases), which changed no file of
   the render.
 - #64 later changed `synth/synth3.py` on main; the pin records the a40fc23 bytes synth4 rendered
-  with, and a re-render of shard 33 under #64's synth3.py is byte-identical, so the change does not
+  with, and a re-render of the first 300 crops of shard 33 under #64's synth3.py is byte-identical, so the change does not
   affect synth4's output and the pin stands.
 - Determinism: re-rendering the first 1,000 crops of shards 0 and 57 from the committed code gives
   byte-identical pixels, shapes, labels and metadata.

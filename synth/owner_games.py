@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
-"""The owner's own PS Vita games (STEINS;GATE v2002, planetarian v34): test-only titles.
+"""The owner's own games (owner 2026-10-13 10:51Z, superseding the 09:25Z / 09:37Z notes).
 
-Owner, 2026-10-13 09:25Z: the owner supplies both games; their frames are a fresh native console test
-set and on-console overlay test material only. Never train, tune, calibrate or render fonts from
-them, and never send their frames to Codex. "Exclude both, and their VNDB relations and shared
-releases, from your harvest and from any font or render source."
+Memories Off is a test-only title: the owner's live PSP screenshots of it (shared/private/owner-games/
+memories-off-TEST/) are a fresh native test set. Its whole series is reserved: nothing may be trained,
+tuned, calibrated, selected or rendered from it, no font or render source may come from it, and its frames
+never go to Codex. CHAOS;HEAD NOAH (v22505) is training-eligible; its owner screenshots are private frames
+and never go to Codex either.
 
   owner_games.py manifest --dump DB_DIR [--chars vndb_chars.tsv] [--pools DIR] --out JSON
         data/manifests/synth3_exclude_owner_games.json: a synth3 exclusion manifest (synth3.py
-        load_exclusions) with every VN of realplus/shots.owner_games_vns() (the two games, their VNDB
-        relations of any kind in either direction, every VN on a release with one of them or with
-        such a relation), the relations themselves, the name hashes of every VNDB character of those
-        VNs (synth3_text.py's name rows), text markers (titles and character full names) and the
-        file / decoded-RGB sha256 of every local copy of a screenshot of those VNs, plus every file
-        the owner dropped under shared/private/owner-games/.
+        load_exclusions) with every VN of realplus/shots.owner_test_vns() (the Memories Off series:
+        every VN reachable from v1152 through family relations or titled like the series; their VNDB
+        relations of any kind in either direction; every VN on a release with one of them), the series
+        relations, the name hashes of every VNDB character of those VNs (synth3_text.py's name rows),
+        text markers (titles and character full names) and the file / decoded-RGB sha256 of every local
+        copy of a screenshot of those VNs, plus every file the owner dropped under
+        shared/private/owner-games/*-TEST/.
   owner_games.py exposure --manifest JSON --out JSON
         counts (no text, no pixels) of rows of those VNs in every existing training, development
         and evaluation pool, and of synth3 scene candidates, name rows and text-pool lines the
-        manifest's names and markers hit: what existing data already holds of these titles.
+        manifest's names and markers hit: what existing data already holds of the series.
 
-The manifest's VN list is recomputed from today's dump by realplus/shots.reserved_vns, which
-reserves the same VNs (reasons owner-game, owner-game-relation, owner-game-shared-release).
+The manifest's VN list is recomputed from the dump by realplus/shots.reserved_vns, which reserves the
+same VNs (reasons owner-test-series, owner-test-relation, owner-test-shared-release).
 """
 import argparse
 import collections
@@ -111,9 +113,9 @@ def characters(chars_tsv, vns):
 def marker_candidates(titles, chars, roots_chars=()):
     """(always, if_rare): titles (>= 5 Latin or >= 3 Japanese characters) and every character's full
     name of two or more parts (norm_vn of the parts joined, >= MIN_MARKER characters, Japanese
-    script) are always markers. A one-part name, and the given name of a character of the owner's
-    games themselves (`roots_chars`), is a marker only if it is rare in the text pools (if_rare):
-    ボタン, ポテト or 謎の少女 are VNDB character names too, and common words."""
+    script) are always markers. A one-part name, and the given name of a character of the series itself
+    (`roots_chars`), is a marker only if it is rare in the text pools (if_rare): ボタン, ポテト or 謎の
+    少女 are VNDB character names too, and common words."""
     always, rare = set(), set()
     for t in titles:
         t = unicodedata.normalize("NFC", t or "").strip()
@@ -171,7 +173,7 @@ SHOT_VN = re.compile(r"^(v\d+)_\d+\.(?:jpg|jpeg|png)$", re.I)
 
 def owner_files(vns, dirs=None, private=PRIVATE):
     """Image files of these VNs in the local screenshot dirs (by the <vn>_<id> file name) and every
-    image the owner dropped under shared/private/owner-games/."""
+    image the owner dropped in a test folder (shared/private/owner-games/*-TEST/)."""
     found = []
     for d in dirs if dirs is not None else local_screenshot_dirs():
         for p in sorted(Path(d).rglob("*")):
@@ -179,30 +181,31 @@ def owner_files(vns, dirs=None, private=PRIVATE):
             if m and m.group(1) in vns and p.is_file():
                 found.append(p)
     if private and Path(private).exists():
-        found += sorted(p for p in Path(private).rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_EXT)
+        found += sorted(p for t in sorted(Path(private).glob("*-TEST")) for p in t.rglob("*")
+                        if p.is_file() and p.suffix.lower() in IMAGE_EXT)
     return list(dict.fromkeys(found))
 
 
 def build_manifest(d, base, chars_tsv=None, dirs=None, private=PRIVATE, dump_info=None, pools=None):
-    owner = SH.owner_games_vns(d)
+    owner = SH.owner_test_vns(d)
     vns = set(owner)
+    series = {v for v, r in owner.items() if r == "owner-test-series"}
     rels = relation_rows(base)
     title = {v: (d["title"].get(v) or ["?"])[0] for v in vns}
     relations = collections.defaultdict(list)
     for a, b, kind, official in sorted(rels):
-        if a in SH.OWNER_GAMES:
+        if a in series:
             relations[a].append({"id": b, "relation": kind, "official": official, "title": title.get(b, "?")})
     sharing = collections.defaultdict(set)
     for rid, rv in sorted(d["rel_vns"].items()):
-        for v in rv & vns:
-            if owner.get(v) in ("owner-game", "owner-game-relation"):
-                sharing[v] |= rv - {v}
+        for v in rv & series:
+            sharing[v] |= rv - {v}
     chars = characters(chars_tsv, vns) if chars_tsv and Path(chars_tsv).exists() else []
     hashes = set()
     for _, _, name, _ in chars:
         hashes |= name_hashes(name)
     titles = [t for v in sorted(vns) for t in d["title"].get(v, [])]
-    roots_chars = {c[0] for c in chars if set(c[3]) & set(SH.OWNER_GAMES)}
+    roots_chars = {c[0] for c in chars if set(c[3]) & series}
     count = pool_counter(pools) if pools and Path(pools).exists() else None
     markers, common = markers_of(titles, chars, roots_chars, count)
     files = owner_files(vns, dirs, private)
@@ -217,13 +220,15 @@ def build_manifest(d, base, chars_tsv=None, dirs=None, private=PRIVATE, dump_inf
         by_src["owner-private" if private and str(p).startswith(str(private)) else p.parent.name] += 1
     doc = {
         "kind": "synth3-exclusion", "schema": 1,
-        "name": "the owner's own PS Vita games (STEINS;GATE v2002, planetarian v34): test only",
-        "rule": ("Owner 2026-10-13 09:25Z: never train, tune, calibrate, select or render fonts from these titles; "
-                 "their frames are a fresh native console test set and on-console overlay test material only, never "
-                 "sent to Codex. 'vns' = the two games, every direct VNDB relation of any kind in either direction, "
-                 "and every VN sharing a VNDB release with one of them or with such a relation "
-                 "(realplus/shots.owner_games_vns). synth3 never uses their names, scenes or text markers."),
-        "protected": {"vita": sorted(SH.OWNER_GAMES)},
+        "name": "the owner's test-only series Memories Off (v1152 and every VN of its series)",
+        "rule": ("Owner 2026-10-13 10:51Z (superseding 09:25Z / 09:37Z): the owner's live PSP screenshots of "
+                 "Memories Off are a fresh native test set; never train, tune, calibrate, select or render fonts "
+                 "from the series, never send its frames to Codex. 'vns' = every VN reachable from v1152 through "
+                 "VNDB family relations or titled like the series ('series'), every direct VNDB relation of any "
+                 "kind of a series VN in either direction, and every VN sharing a VNDB release with a series VN "
+                 "(realplus/shots.owner_test_vns). synth3 never uses their names, scenes or text markers."),
+        "protected": {"psp": sorted(SH.OWNER_TEST_SERIES), "series": sorted(series, key=lambda v: int(v[1:]))},
+        "training_eligible": dict(SH.OWNER_TRAINING),
         "source": dump_info or {},
         "relations": {k: v for k, v in sorted(relations.items())},
         "vns_sharing_a_release": {k: sorted(v) for k, v in sorted(sharing.items())},
@@ -243,7 +248,7 @@ def build_manifest(d, base, chars_tsv=None, dirs=None, private=PRIVATE, dump_inf
                          "rule": ("a text-pool line (or focus context) holding any of these strings is never used: "
                                   "every title of these VNs (>= 5 Latin or >= 3 Japanese characters), every "
                                   f"character's full name of two or more parts (>= {MIN_MARKER} characters), and "
-                                  "one-part names and the given names of the two games' own characters when they "
+                                  "one-part names and the given names of the series' own characters when they "
                                   f"hit at most {MAX_RARE_HITS} text-pool lines (more: a common word, listed under "
                                   "'common_words_not_markers'). Lines that name no character or title cannot be "
                                   "identified and remain."),

@@ -1,252 +1,285 @@
 {
  "kind": "owner-games-exposure",
  "schema": 1,
- "vns": 28,
+ "vns": 45,
  "pools": {
   "teacher/teacher_train.npz": {
    "rows": 12115,
-   "owner_rows": 72,
+   "owner_rows": 66,
    "by_vn": {
-    "v12": 1,
-    "v14018": 5,
-    "v2002": 12,
-    "v27747": 4,
-    "v3091": 8,
-    "v33": 14,
-    "v36": 7,
-    "v4": 4,
-    "v5": 17
+    "v1153": 8,
+    "v1170": 8,
+    "v1171": 6,
+    "v1173": 3,
+    "v1325": 5,
+    "v1326": 3,
+    "v1646": 1,
+    "v1949": 9,
+    "v1964": 3,
+    "v21964": 3,
+    "v23725": 5,
+    "v248": 2,
+    "v5690": 10
    }
   },
   "teacher/teacher_val.npz": {
    "rows": 1651,
-   "owner_rows": 0,
-   "by_vn": {}
+   "owner_rows": 8,
+   "by_vn": {
+    "v1331": 8
+   }
   },
   "teacher/teacher_distill_train.npz": {
    "rows": 9044,
-   "owner_rows": 65,
+   "owner_rows": 97,
    "by_vn": {
-    "v12": 2,
-    "v14018": 2,
-    "v2002": 8,
-    "v22505": 8,
-    "v3091": 6,
-    "v33": 4,
-    "v36": 6,
-    "v5883": 12,
-    "v5": 17
+    "v1153": 6,
+    "v1170": 11,
+    "v1171": 5,
+    "v1173": 7,
+    "v1325": 3,
+    "v1326": 7,
+    "v1646": 5,
+    "v1949": 4,
+    "v1964": 11,
+    "v21964": 9,
+    "v23725": 12,
+    "v248": 6,
+    "v5690": 11
    }
   },
   "teacher/teacher_distill_val.npz": {
    "rows": 1261,
-   "owner_rows": 0,
-   "by_vn": {}
+   "owner_rows": 10,
+   "by_vn": {
+    "v1331": 10
+   }
   },
   "realdata/real_train.npz": {
    "rows": 9811,
-   "owner_rows": 52,
+   "owner_rows": 70,
    "by_vn": {
-    "v12": 3,
-    "v14018": 2,
-    "v22505": 6,
-    "v27747": 3,
-    "v3091": 2,
-    "v33": 10,
-    "v36": 5,
-    "v4": 4,
-    "v5": 17
+    "v1153": 5,
+    "v1170": 10,
+    "v1171": 8,
+    "v1325": 4,
+    "v1326": 4,
+    "v1949": 3,
+    "v1964": 5,
+    "v21964": 8,
+    "v23725": 12,
+    "v248": 2,
+    "v5690": 9
    }
   },
   "realdata/real_val.npz": {
    "rows": 1495,
-   "owner_rows": 0,
-   "by_vn": {}
+   "owner_rows": 12,
+   "by_vn": {
+    "v1331": 12
+   }
   },
   "realdata/real_unlabelled.npz": {
    "rows": 11174,
-   "owner_rows": 69,
+   "owner_rows": 86,
    "by_vn": {
-    "v14018": 2,
-    "v2002": 12,
-    "v22505": 2,
-    "v27747": 4,
-    "v3091": 6,
-    "v33": 4,
-    "v36": 6,
-    "v5883": 9,
-    "v5": 24
+    "v1153": 5,
+    "v1170": 12,
+    "v1171": 1,
+    "v1173": 6,
+    "v1325": 4,
+    "v1326": 4,
+    "v1646": 4,
+    "v1949": 10,
+    "v1964": 5,
+    "v21964": 10,
+    "v23725": 8,
+    "v248": 4,
+    "v5690": 13
    }
   },
   "realplus/realplus_train_ink.npz": {
    "rows": 71219,
-   "owner_rows": 6,
+   "owner_rows": 8,
    "by_vn": {
-    "v22505": 6
+    "v23725": 8
    }
   },
   "realplus/realplus_train_grad.npz": {
    "rows": 53626,
    "owner_rows": 6,
    "by_vn": {
-    "v22505": 6
+    "v23725": 6
    }
   },
   "realplus/realplus_train_ink_v2.npz": {
    "rows": 71153,
-   "owner_rows": 6,
+   "owner_rows": 8,
    "by_vn": {
-    "v22505": 6
+    "v23725": 8
    }
   },
   "realplus/realplus_train_grad_v2.npz": {
    "rows": 53566,
    "owner_rows": 6,
    "by_vn": {
-    "v22505": 6
+    "v23725": 6
    }
   },
   "devnative/devnative_tv_native_ink.npz": {
    "rows": 607,
-   "owner_rows": 0,
-   "by_vn": {}
+   "owner_rows": 4,
+   "by_vn": {
+    "v1331": 4
+   }
   },
   "devnative/devnative_strict_ink.npz": {
    "rows": 38,
-   "owner_rows": 0,
-   "by_vn": {}
+   "owner_rows": 4,
+   "by_vn": {
+    "v1331": 4
+   }
   },
   "devnative/v3/devnative_tv_native_ink.npz": {
    "rows": 513,
-   "owner_rows": 0,
-   "by_vn": {}
+   "owner_rows": 4,
+   "by_vn": {
+    "v1331": 4
+   }
   },
   "devnative/v3/devnative_tv_native_grad.npz": {
    "rows": 423,
-   "owner_rows": 0,
-   "by_vn": {}
+   "owner_rows": 3,
+   "by_vn": {
+    "v1331": 3
+   }
   },
   "devnative/v3/devnative_strict_ink.npz": {
    "rows": 38,
-   "owner_rows": 0,
-   "by_vn": {}
+   "owner_rows": 4,
+   "by_vn": {
+    "v1331": 4
+   }
   },
   "devnative/v3/devnative_strict_grad.npz": {
    "rows": 26,
-   "owner_rows": 0,
-   "by_vn": {}
+   "owner_rows": 3,
+   "by_vn": {
+    "v1331": 3
+   }
   }
  },
  "scenes": {
   "synth2 backgrounds.json vita_shots": {
    "files": 650,
-   "owner_files": {
-    "v6618": 3
-   }
+   "owner_files": {}
   },
   "synth2 backgrounds.json psp_shots": {
    "files": 469,
    "owner_files": {
-    "v3091": 8,
-    "v6618": 7
+    "v1646": 5,
+    "v1949": 5,
+    "v5690": 3
    }
   },
   "realdata/shots/vita (synth3 scene candidates)": {
-   "owner_files": {
-    "v36": 1
-   }
+   "owner_files": {}
   },
   "realdata/shots/psp (synth3 scene candidates)": {
    "owner_files": {
-    "v3091": 9
+    "v1153": 6,
+    "v1170": 3,
+    "v1171": 6,
+    "v1173": 5,
+    "v1325": 5,
+    "v1326": 4,
+    "v1331": 4,
+    "v1646": 5,
+    "v1949": 5,
+    "v1964": 10,
+    "v5690": 3
    }
   },
   "realdata/shots/hires (synth3 scene candidates)": {
    "owner_files": {
-    "v12": 1,
-    "v14018": 3,
-    "v2002": 4,
-    "v22505": 4,
-    "v33": 4,
-    "v27747": 3,
-    "v36": 4,
-    "v4": 2,
-    "v5883": 4,
-    "v5": 4
+    "v1153": 1,
+    "v1170": 4,
+    "v1331": 4,
+    "v21964": 3,
+    "v248": 1,
+    "v23725": 4,
+    "v5690": 3
    }
   },
   "shared/data/vndb/shots (synth2 / synth3 scene candidates)": {
-   "owner_files": {
-    "v36": 1,
-    "v6618": 3
-   }
+   "owner_files": {}
   }
  },
  "names": {
   "names.train.tsv": {
    "rows": 378143,
-   "owner_name_rows": 158
+   "owner_name_rows": 202
   },
   "names.dev.tsv": {
    "rows": 20345,
-   "owner_name_rows": 23
+   "owner_name_rows": 9
   }
  },
  "text_pools": {
-  "aozora_dialogue.dev.txt": 1,
-  "aozora_dialogue.train.txt": 8,
-  "aozora_narration.dev.txt": 1,
-  "aozora_narration.train.txt": 21,
-  "aratako_dsv3.dev.txt": 0,
-  "aratako_dsv3.train.txt": 13,
+  "aozora_dialogue.dev.txt": 0,
+  "aozora_dialogue.train.txt": 75,
+  "aozora_narration.dev.txt": 5,
+  "aozora_narration.train.txt": 115,
+  "aratako_dsv3.dev.txt": 1,
+  "aratako_dsv3.train.txt": 60,
   "aratako_gpt4omini.dev.txt": 0,
-  "aratako_gpt4omini.train.txt": 6,
+  "aratako_gpt4omini.train.txt": 18,
   "bsd.dev.txt": 0,
   "bsd.train.txt": 0,
-  "jdd.dev.txt": 0,
-  "jdd.train.txt": 0,
-  "jesc.dev.txt": 1,
-  "jesc.train.txt": 30,
-  "narikiri.dev.txt": 0,
-  "narikiri.train.txt": 12,
+  "jdd.dev.txt": 1,
+  "jdd.train.txt": 2,
+  "jesc.dev.txt": 2,
+  "jesc.train.txt": 50,
+  "narikiri.dev.txt": 6,
+  "narikiri.train.txt": 103,
   "nucc.dev.txt": 0,
-  "nucc.train.txt": 0,
-  "opensubtitles.dev.txt": 2,
-  "opensubtitles.train.txt": 7,
+  "nucc.train.txt": 9,
+  "opensubtitles.dev.txt": 1,
+  "opensubtitles.train.txt": 8,
   "tatoeba.dev.txt": 0,
-  "tatoeba.train.txt": 1,
-  "wiki.dev.txt": 2,
-  "wiki.train.txt": 62,
+  "tatoeba.train.txt": 4,
+  "wiki.dev.txt": 6,
+  "wiki.train.txt": 192,
   "wikiquote.dev.txt": 0,
-  "wikiquote.train.txt": 3,
+  "wikiquote.train.txt": 5,
   "wiktionary.dev.txt": 0,
-  "wiktionary.train.txt": 2
+  "wiktionary.train.txt": 7
  },
  "text_markers_top": {
-  "かがり": 37,
-  "謎の少女": 16,
-  "ゆめみ": 15,
-  "ドルジ": 14,
-  "まゆり": 11,
-  "功一": 11,
-  "アマデウス": 9,
-  "ゲンさん": 8,
-  "倫太郎": 7,
-  "君島コウ": 6,
-  "八百比丘尼": 4,
-  "仁科りえ": 2,
-  "八汐海翔": 2,
-  "古河渚": 2,
-  "坂上智代": 2,
-  "岡崎朋也": 2,
-  "CLANNAD": 2,
-  "planetarian": 2,
-  "幸孝": 2,
-  "倉田佐祐理": 1,
-  "大徳淳和": 1,
-  "天王寺綯": 1,
-  "春原芽衣": 1,
-  "春原陽平": 1,
-  "瀬乃宮あき穂": 1
+  "ねね": 48,
+  "りかの": 43,
+  "源さん": 43,
+  "俊子": 38,
+  "織姫": 36,
+  "柚莉": 36,
+  "一蹴": 34,
+  "いのり": 32,
+  "香菜": 32,
+  "香月": 30,
+  "香里": 29,
+  "沙子": 28,
+  "孝明": 25,
+  "神崎美咲": 22,
+  "いちこ": 21,
+  "アイネ": 21,
+  "とおこ": 19,
+  "幸蔵": 16,
+  "麻尋": 14,
+  "龍三": 13,
+  "美海": 12,
+  "康生": 12,
+  "純也": 9,
+  "正巳": 7,
+  "朋美": 7
  }
 }

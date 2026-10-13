@@ -78,26 +78,35 @@ open alternative. Native Vita contrast stays 19 levels short of real.
 
 - `data/manifests/synth4_shards_v1.json` pins 1,000,000 crops in 100 shards (4,678,737,317 bytes) of
   `synth/synth4.py` (sha256 `a16fa7f3…`, with synth3.py, render.py, common.py and synth3_text.py at
-  main's bytes; every code hash is in the recipe), seed 20261013, `--profile personal`: 317 font
-  files in 112 families (307 open, 8 non-commercial, 2 owner), synth3 v3's 14 text pools and
-  scenes, 87 excluded VNs (fresh native 13, CLANNAD family 24, the owner's 50; the three synth3
-  exclusion manifests, as synth3 v3). Rendered 15:58-16:29Z in 4 heavy.sh jobs of 5 workers (about
-  345 s per 10,000-crop shard per worker), 0 render errors.
+  main a40fc23's bytes; every code hash is in the recipe), seed 20261013, `--profile personal`: 317
+  font files in 112 families (307 open, 8 non-commercial, 2 owner), synth3 v3's 14 text pools and
+  scenes, and 87 excluded VNs from all three synth3 exclusion manifests (fresh native 13, CLANNAD
+  family 24, the owner's 50 — mostly the Memories Off series). synth3 v3's own render
+  (`synth3_shards_v3.json`) loaded only the first two (37 VNs), so synth4 reserves strictly more.
+  Rendered 15:58-16:29Z in 4 heavy.sh jobs of 5 workers (about 345 s per 10,000-crop shard per
+  worker), 0 render errors.
 - **Reserved VNs the render does not exclude (disclosure; conductor accepted 2026-10-13 19:40Z).**
   The generator loads the three synth3 exclusion manifests — `synth3_exclude_fresh_native.json` (13),
   `synth3_exclude_clannad.json` (24) and `synth3_exclude_owner_games.json` (the owner's 50) = 87 VNs
   (recipe `exclusions`) — so #63's 50-VN owner set (Aiyoku no Eustia, 428, 街 and relations) **is**
   reserved. **Cause:** two VNs the fleet reserves only through a shared VNDB release are in none of
   those manifests, so they are not dropped: 弟切草 (v661, through 街's PS1 release) and Ever 17
-  (v19373, through the Never 7 pack). synth3 v3's own render has the same exposure (synth3-v3
-  Hygiene), which #63's audit accepted. Measured on the 100 pinned shards:
-  - v661: 2 narration crops holding the title 弟切草, and about 28 name crops of names only its
-    characters produce (公平, 透明人間, アインシュタイン博士, フランケンシュタインの怪物, 怪魚 — all
-    generic strings); 31 of 1,000,000 crops; no scene (no v661 screenshot is local);
-  - the Never 7 release partners (v13, v17, v247, v19373): about 29 name crops and two scene VNs.
+  (v19373, through the Never 7 pack). The fleet reserves them only for realplus by its shared-release
+  rule (`docs/owner-games.md`; #63's audit accepted the same exposure). Measured on the 100 pinned
+  shards:
+  - v661: 29 name crops of names only its characters produce (公平 10 exact + 10 in a longer label,
+    透明人間 4, アインシュタイン博 3, フランケンシュタインの怪物 1, 怪魚 1 — all generic strings) plus
+    2 name+dialogue crops, and 2 crops holding the title 弟切草 (1 narration, 1 dialogue, a wiki line);
+    31 crops of 1,000,000 by the title + exact-name count; no scene (no v661 screenshot is local);
+  - the Never 7 release partners: 19 distinct name crops (exact rows) + 4 name+dialogue crops, over
+    v17 10, v19373 10, v13 7, v247 2 (which sum to 29 because some labels match more than one VN's
+    character); v247 and v19373 are also scene VNs.
 
-  No protected test reads any of these VNs; the gap analysis (#65) excludes v661 and v19373 from its
-  statistics; and both arms are reserved identically, so the ablation stands. **Before any further
+  No protected test reads any of these VNs, and 0 of the 1,643 scored teacher_val lines and 0 of the
+  986 scored devnative lines come from the owner-50, v661, the Never 7 partners or v34, so the
+  ablation stands. (The arms are not reserved identically — D_s3v3 is synth3 v3, whose render dropped
+  the owner 50 but, like synth4, not v661 or the Never 7 partners; the gap analysis #65 does exclude
+  v661 and v19373 from its statistics.) **Before any further
   synth4 render**, keep `synth3_exclude_owner_games.json` in the generator's exclusions (it is already
   there) and add v661 and the Never 7 partners.
 - The protocol was committed and pushed at 15:57:22Z (`8a1a932`), the pin at 16:30:32Z (`304bfeb`),
@@ -205,7 +214,7 @@ worse). The decision adds nothing else. Result: `eval/synth4_ablation_20261013.j
 | F_s4 seed 2 | 5.68% | 5.60% |
 
 (These are the final C W8I scores of `eval/synth4_score.sh`; the in-training evaluation logs, which the
-protocol uses for monitoring only, read a little lower.) Arm CER (both views, both seeds): D_s3v3 5.28%,
+protocol uses for monitoring only, read a little lower on 7 of the 8 cells.) Arm CER (both views, both seeds): D_s3v3 5.28%,
 F_s4 5.56%. **F_s4 − D_s3v3 = +0.279 points, VN-cluster 95% CI [+0.08, +0.48]**, both seed pairs positive
 (+0.287, +0.270). The interval is above 0, so synth4 is not better; it is slightly worse. Of teacher_val's
 180 VNs, 56 improve under synth4, 83 worsen and 41 are equal.

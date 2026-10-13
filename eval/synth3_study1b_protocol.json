@@ -1,0 +1,241 @@
+{
+ "kind": "synth3-study1b-protocol",
+ "schema": 1,
+ "frozen": "2026-10-12, committed and pushed before any study-1b run trained or was scored (commit time in git)",
+ "question": "Used as the VN-style synthetic source of train2's pretraining mixture, does synth3 generator version 3 (calibrated to the training-side real crops, docs/synth3-v3.md) lower real-screenshot CER on the development cohort compared with version 2, at study 1's fixed architecture, recipe, step count and seeds?",
+ "base_protocol": {
+  "file": "eval/synth3_ablation_protocol.json",
+  "sha256": "8604061330b1b5959625591accc8558cf90b72f5e1e026526e4e106e8b8edcc0",
+  "copied_exactly": [
+   "architecture",
+   "recipe",
+   "checkpoint",
+   "export",
+   "views",
+   "metric",
+   "bootstrap",
+   "decision rule (the comparison's Y-better-than-X rule)"
+  ],
+  "changed": "the arms only: B_s3 (version 2, as in study 1) rerun on this machine, and D_s3v3"
+ },
+ "machine": "dev-dsk-skerraut-main-1a-dc2efe10 (64 cores). Study 1's B_s3 trained on the 32-core box, so B_s3 is rerun here and both arms of this study train on one machine type",
+ "architecture": {
+  "name": "FL10 (the shipped default's topology)",
+  "width": 1.0,
+  "bottleneck": 96,
+  "depth": 1,
+  "ctx": 2,
+  "ctx_k": 5,
+  "height": 32,
+  "vocab": {
+   "file": "$HERD/shared/artifacts/train2/release/FL10_vocab_3500.txt",
+   "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8"
+  }
+ },
+ "recipe": {
+  "trainer": "train/train2.py (unchanged)",
+  "init": "from scratch",
+  "steps": 16000,
+  "batch": 96,
+  "lr": 0.002,
+  "warmup": 1000,
+  "final_lr": 0.05,
+  "wd": 0.01,
+  "ema": 0.999,
+  "threads": 5,
+  "eval_every": 4000,
+  "keep_evals": true,
+  "kd": "none",
+  "note": "train2's pretraining recipe (docs/train2.md) at 16,000 instead of 32,000-40,000 steps"
+ },
+ "sources": {
+  "nv": {
+   "files": "$HERD/shared/artifacts/nvsynth/shards/nv_train_0*.npz",
+   "shards": 42,
+   "lines": 845519,
+   "opts": "stream=1,pool=3,inv=0.2",
+   "note": "nvsynth's one-line-per-page set (docs/nvsynth.md). train2's every-line set (nvsynth/full) was deleted from the shared disk on 2026-10-12 09:48Z by a disk clean-up, so every arm uses this set instead."
+  },
+  "s3": {
+   "files": "$HERD/shared/artifacts/synth3/shards/train_v2/synth3_000??.npz",
+   "shards": 100,
+   "opts": "stream=1,pool=3,inv=0.2",
+   "note": "pinned by data/manifests/synth3_shards_v2.json (generator version 2), committed before the first synth3 arm trains; see amendments"
+  },
+  "s3v3": {
+   "files": "$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz",
+   "shards": 100,
+   "opts": "stream=1,pool=3,inv=0.2",
+   "note": "generator version 3 (synth/synth3.py at edb8443), seed 20261012, 100 x 10,000 crops; pinned by data/manifests/synth3_shards_v3.json as re-pinned after that render, committed and pushed before D_s3v3 trains"
+  }
+ },
+ "arm_sources": {
+  "B_s3": {
+   "nv": 0.5,
+   "s3": 0.5
+  },
+  "D_s3v3": {
+   "nv": 0.5,
+   "s3v3": 0.5
+  }
+ },
+ "arms": {
+  "B_s3": [
+   "B_s3_seed1",
+   "B_s3_seed2"
+  ],
+  "D_s3v3": [
+   "D_s3v3_seed1",
+   "D_s3v3_seed2"
+  ]
+ },
+ "seeds": [
+  1,
+  2
+ ],
+ "runs": {
+  "script": "eval/synth3_study1b_run.sh ARM SEED (study 1's eval/synth3_run_arm.sh with these arms, writing under $HERD/shared/artifacts/synth3-v3/ablation/runs)",
+  "launch": "HEAVY_SLOTS=10 $HERD/heavy.sh timeout 36000 bash eval/synth3_study1b_run.sh ARM SEED < /dev/null"
+ },
+ "checkpoint": "ckpt_step16000.pt of every run (EMA weights). No checkpoint selection: the in-training teacher_val evaluations are logged for monitoring only.",
+ "export": "eval/synth3_ablation.py export (train/export.py, per-channel int8) -> C runtime W8I through runtime/pyvocr.py, max width 1024",
+ "dev": {
+  "teacher_val": {
+   "role": "decides",
+   "set": "$HERD/shared/artifacts/teacher/teacher_val.npz",
+   "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671",
+   "lines": 1651,
+   "vns": 181,
+   "note": "train2's selection set: no VN, release or screenshot shared with any training pool or with eval's test sets; synth3 excluded all of its VNs from names and scenes"
+  },
+  "devnative": {
+   "role": "reported only; it cannot change the decision",
+   "frozen": "devnative.status COHORT_FROZEN f5a1dbd0ad15317e73e1b1e030eb88acf3d79861 (origin/feat/devnative, docs/devnative.md), written before this protocol and before any study-1b score",
+   "files": {
+    "devnative_strict_ink.npz": {
+     "set": "$HERD/shared/artifacts/devnative/devnative_strict_ink.npz",
+     "sha256": "ab2cc6890a0da59f49e9c1b491a0a1bc4e68cb9d7715ac485674b80cf2414f51",
+     "lines": 38,
+     "vns": 14
+    },
+    "devnative_strict_grad.npz": {
+     "set": "$HERD/shared/artifacts/devnative/devnative_strict_grad.npz",
+     "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e",
+     "lines": 26,
+     "vns": 12
+    },
+    "devnative_tv_native_ink.npz": {
+     "set": "$HERD/shared/artifacts/devnative/devnative_tv_native_ink.npz",
+     "sha256": "7fb36fc291ff7213d06bf023f0e7cb6fb391a88524d411d02b43d15c1c984d32",
+     "lines": 607,
+     "vns": 48
+    },
+    "devnative_tv_native_grad.npz": {
+     "set": "$HERD/shared/artifacts/devnative/devnative_tv_native_grad.npz",
+     "sha256": "f810690caec0164f47224b29ad537efa3500f41b1cc08653a49abdf6f6f94747",
+     "lines": 503,
+     "vns": 48
+    }
+   },
+   "reported": "every file separately (devnative's docs: report each file, never pool tv_native with teacher_val), and study 2's pooled devnative set (strict + tv_native, ink + grad crops, eval/synth3_study2.py merge; VNs resampled as clusters)",
+   "note": "native Vita and PSP console frames only; every devnative VN is a teacher_val VN and 421 tv_native lines overlap a teacher_val line, so it is not independent of teacher_val"
+  },
+  "devnative_v2": {
+   "role": "reported only; it cannot change the decision",
+   "frozen": "tag devnative-cohort-v2 (ef76d1e, 2026-10-12T23:28:06Z), before any study-1b score",
+   "files": {
+    "devnative_strict_ink.npz": {
+     "set": "$HERD/shared/artifacts/devnative/v2/devnative_strict_ink.npz",
+     "sha256": "ab2cc6890a0da59f49e9c1b491a0a1bc4e68cb9d7715ac485674b80cf2414f51",
+     "lines": 38,
+     "vns": 14
+    },
+    "devnative_strict_grad.npz": {
+     "set": "$HERD/shared/artifacts/devnative/v2/devnative_strict_grad.npz",
+     "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e",
+     "lines": 26,
+     "vns": 12
+    },
+    "devnative_tv_native_ink.npz": {
+     "set": "$HERD/shared/artifacts/devnative/v2/devnative_tv_native_ink.npz",
+     "sha256": "79111ea886940aa60786fc9ceb32e19af67473db2db5214ce725602b9a22977b",
+     "lines": 515,
+     "vns": 44
+    },
+    "devnative_tv_native_grad.npz": {
+     "set": "$HERD/shared/artifacts/devnative/v2/devnative_tv_native_grad.npz",
+     "sha256": "3e9bbe20d02371975576199fd9c75fd57c125aeaaed945a3f848954cbf6d0bef",
+     "lines": 423,
+     "vns": 44
+    }
+   },
+   "reported": "like devnative (v1): each file separately and the pooled set",
+   "note": "v2 is v1 without the 41 screenshots of eval/linefind's sets (94 tv_native lines) plus 2 PSP lines; every other crop is byte-identical (docs/devnative.md). devnative reports that v1's and v2's ink crops carry the 4 / 2 px pad twice (a v3 is in progress); the GRAD files are unaffected"
+  }
+ },
+ "views": [
+  "rv",
+  "rvn"
+ ],
+ "metric": "CER (eval/metrics.norm both sides, Levenshtein over reference characters) over all development lines, both views, errors summed over the arm's two seeds",
+ "bootstrap": {
+  "resamples": 10000,
+  "seed": 0,
+  "unit": "VN (cluster); line-level intervals reported alongside"
+ },
+ "comparisons": {
+  "D_vs_B": [
+   "B_s3",
+   "D_s3v3"
+  ]
+ },
+ "decision": "D_s3v3 is better than B_s3 iff the VN-cluster 95% interval of CER(D_s3v3) - CER(B_s3) on teacher_val (both views, errors summed over the arm's two seeds) lies entirely below 0 and CER(D_s3v3) - CER(B_s3) < 0 for each seed pair (same seed). Otherwise version 3 is not measured better: version 2 stays synth3's VN-style data and the result is reported as no measured improvement (study 1's rule).",
+ "reported_not_decided": [
+  "the mirrored reading (B_s3 better than D_s3v3: interval entirely above 0 and every seed pair above 0)",
+  "every stratum of eval/synth3_ablation.py (target, kind, polarity, ink height, length, name-like, dakuten/small kana, rare kanji, Latin/digits) with intervals, on teacher_val",
+  "devnative: each file and the pooled set, with the same statistics",
+  "per-VN better/worse counts and the largest per-VN regressions (no per-VN veto)",
+  "the in-training teacher_val and synthetic validation curves",
+  "study 1's B_s3 scores (32-core box) next to this rerun, for machine-to-machine variation"
+ ],
+ "order": [
+  "1. this protocol is committed and pushed",
+  "2. B_s3 seeds 1 and 2 may start (the version-2 shards are pinned since study 1)",
+  "3. D_s3v3 seeds 1 and 2 start only after data/manifests/synth3_shards_v3.json is committed and pushed",
+  "4. no development score is computed before all four ckpt_step16000.pt exist",
+  "5. export, score teacher_val, then devnative; compare; commit the result"
+ ],
+ "protected_test": "No study-1b model is scored on vita-test, psp-test, the fresh native textbox test or CLANNAD by this study's agent; only the conductor may, after this result is committed, and those numbers cannot change the decision, the recipe or the dataset.",
+ "hygiene": [
+  "version 3's names, scenes, calibration rows and mining exclude eval's test games, every is_test_vn VN, teacher_val's and the general-VN development VNs (exclude_dev_vns.txt), the fresh native textbox titles, their reserves and VNDB relations (data/manifests/synth3_exclude_fresh_native.json) and CLANNAD with its relations and release siblings (data/manifests/synth3_exclude_clannad.json)",
+  "version 3's focus targets come from training-side real labels and a re-mined error report that refuse the same VNs (docs/synth3-v3.md)",
+  "version 2 (B_s3) is used exactly as pinned for study 1 and is not re-rendered; its VNDB name pool (names.train.tsv) holds 124 rows whose name equals the name of a character of the 13 fresh-native VNs (version 3 drops them, docs/synth3-v3.md)",
+  "neither arm uses synth2, so the 110 teacher_val screenshots among synth2's scene backgrounds (study 1 audit F5) touch neither arm"
+ ],
+ "amendments": [
+  {
+   "date": "2026-10-12T21:40:53Z (commit d734639, before the rebase onto main 099bda9)",
+   "before_any_scoring": true,
+   "before_any_D_run": true,
+   "change": "s3v3 points to the render of commit 1ba727c instead of ab5db0e/84b555b.",
+   "reason": "The subtitle pools hold CLANNAD anime dialogue (e.g. 朋也くんも、食べたいですか). 1ba727c redraws every text line that names CLANNAD's characters or the title (data/manifests/synth3_exclude_clannad.json, text_markers). The 84b555b render was discarded before it was pinned; no run trained on it.",
+   "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparison and decision rule"
+  },
+  {
+   "date": "2026-10-12T22:56:16Z (commit 9e948b8, before the rebase onto main a32b79b)",
+   "before_any_scoring": true,
+   "before_any_D_run": true,
+   "change": "s3v3 points to the render of commit edb8443; the pin of the 1ba727c render (f62ae57) is superseded.",
+   "reason": "The label audit's worst crops showed gt crops of outlined or shadowed white or black text with thin glyphs cut off (label す。」 on a crop showing す): 2.9% of gt crops had ink touching a side edge, version 2 0.23%. edb8443 keeps the line's full-ink columns and takes only rows from the fill; a 20,000-crop check render has 0.28%. D_s3v3 seeds 1 and 2 had been queued after the f62ae57 pin and were stopped while still waiting for a slot: no step was trained and nothing was scored.",
+   "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparison and decision rule"
+  },
+  {
+   "date": "2026-10-13T00:23:15Z (commit 06a998d)",
+   "before_any_scoring": true,
+   "change": "devnative v2 (tag devnative-cohort-v2) is reported next to v1; v1 stays as pinned. Both are reported only.",
+   "reason": "devnative published v2 after this protocol pinned v1: v1 kept 41 screenshots of eval/linefind's sets, which the fleet's cohort rule excludes. Both versions are fixed here before any study-1b score, so neither is chosen by its scores; teacher_val alone decides.",
+   "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, teacher_val, metric, bootstrap, comparison and decision rule"
+  }
+ ],
+ "history_note": "This branch was rebased twice with commit times kept: onto the rewritten feat/synth3 (pre-rebase history at tag synth3-v3-history-20261012a) and onto main after #50 was squash-merged (tag synth3-v3-history-20261013). Hashes in this file and in docs/synth3-v3.md before 'rebase' refer to the second tag's history. Map (that history -> main): ebe146a -> ac4c4d3, ab5db0e -> 6344ad4, 0ba3bc0 -> 7bb72b2 (this protocol, frozen 2026-10-12T20:10:20Z), 1ba727c -> e633396, 099bda9 -> d734639, f62ae57 -> 5b67247, edb8443 -> 5ffdabf, a32b79b -> 9e948b8, 6e194d1 -> aa02dcb (the v3 pin, 2026-10-13T00:01:49Z), 567fc7d -> a48246a."
+}

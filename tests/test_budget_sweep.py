@@ -109,6 +109,32 @@ def test_ceiling_status_line_is_the_documented_one():
     assert line in (ROOT / "docs/vita-memory-budget.md").read_text(encoding="utf-8")
 
 
+def test_tiers_line_is_the_documented_one():
+    line = BS.tiers_line()
+    assert line == ("BUDGET_TIERS always: weights<=900000 arena<=131072 ms<=300; "
+                    "preflight: weights<=1600000 arena<=262144 ms<=550; never: beyond")
+    assert line in (ROOT / "docs/vita-memory-budget.md").read_text(encoding="utf-8")
+    assert dict(BS.TIERS)["preflight"] is BS.CEILING
+    # the "always" hot set (blob + arena) fits half of the 2 MiB L2
+    always = dict(BS.TIERS)["always"]
+    assert always["weights"] + always["arena"] < 1024 * 1024
+
+
+@pytest.mark.parametrize("name, blob, arena, cyc_hi, expected", [
+    ("FL10", 657_664, 124_832, 979_622, "always"),              # section 3's table: 124-235 ms
+    ("w100", 859_904, 124_832, 1_166_946, "always"),            # 149-280 ms
+    ("w150v2500", 844_672, 182_944, 1_369_092, "preflight"),    # bytes fit "always", the arena does not
+    ("H15", 1_155_968, 182_944, 1_657_479, "preflight"),        # 219-398 ms
+    ("F20", 1_558_016, 241_056, 2_282_290, "preflight"),        # 311-548 ms
+    ("w150d3", 1_414_784, 304_288, 2_575_176, "never"),         # bytes fit; arena and 619 ms do not
+    ("w150b192", 1_698_560, 190_240, 1_949_529, "never"),       # 468 ms fits; 1.70 MB of blob does not
+    ("w250", 2_066_048, 299_168, 3_331_051, "never"),
+])
+def test_tier_sorts_the_documented_models(name, blob, arena, cyc_hi, expected):
+    info = {"blob_bytes": blob, "arena": {"t4h16": {"w8i": arena}}}
+    assert BS.tier(info, _run(name, 2048, [1, cyc_hi], 1)) == expected
+
+
 def test_verdict_checks_all_three_limits():
     info = {"blob_bytes": 1_558_016, "arena": {"t4h16": {"w8i": 241_056}}}
     run = _run("F20", 2048, [1_296_081, 2_282_290], 34)

@@ -127,6 +127,51 @@ def test_late_wide_rep_model_exports_and_the_c_runtime_matches(tmp_path):
     assert (c_logits.argmax(1) == t_logits.argmax(1)).mean() > 0.95
 
 
+@pytest.mark.parametrize("variant", ["lowrank_pw_pair", "dw5x5_3x5"])
+def test_runtime_already_runs_lowrank_pointwise_pairs_and_wide_depthwise_kernels(variant, tmp_path):
+    """Op lists train/model.py does not build yet, but runtime/vocr.c accepts unchanged: a
+    pointwise pair c -> 8 -> c on the frame row, and 5x5 / 3x5 depthwise kernels in the late stages.
+    The C logits equal tests/vocr_ref.py's bit for bit in every mode, across several tiles."""
+    import copy
+
+    if not (shutil.which("cc") or shutil.which("gcc")):
+        pytest.skip("no C compiler")
+    sys.path[:0] = [str(ROOT / "runtime"), str(ROOT / "runtime/tests")]
+    import vocr_ref
+    from pyvocr import Vocr
+    torch.manual_seed(0)
+    rng = np.random.default_rng(0)
+    vocab = [chr(0x3042 + i) for i in range(30)]
+    ops = export.model_ops(TinyVNOCR(31, width=0.5, bottleneck=16).eval(), 32)
+    if variant == "lowrank_pw_pair":
+        i = max(k for k, op in enumerate(ops) if op["type"] == export.T_PW and op["res"])
+        c, r = ops[i]["cin"], 8
+        a = dict(ops[i], cout=r, res=False, relu=False, w=rng.normal(0, 0.2, (r, c)), bias=rng.normal(0, 0.1, r))
+        b = dict(ops[i], cin=r, res=False, w=rng.normal(0, 0.2, (c, r)))
+        ops = ops[:i] + [a, b] + ops[i + 1:]
+    else:
+        ops = copy.deepcopy(ops)
+        dws = [k for k, op in enumerate(ops) if op["type"] == export.T_DW and op["kh"] == 3]
+        for k, (kh, kw) in zip(dws[-2:], [(5, 5), (3, 5)]):
+            op = ops[k]
+            op.update(kh=kh, kw=kw, ph=kh // 2, pw=kw // 2, w=rng.normal(0, 0.3, (op["cout"], kh * kw)))
+            op["h_out"] = (op["h_in"] + 2 * op["ph"] - kh) // op["sh"] + 1
+    for int8, modes in ((False, ("f32",)), (True, ("w8f", "w8i"))):
+        path = tmp_path / f"{variant}_{int(int8)}.vocr"
+        path.write_bytes(export.build_blob(ops, vocab, 32, int8=int8)[0])
+        blob = export.read_blob(path)
+        for mode in modes:
+            try:
+                rt = Vocr(str(path), mode=mode)
+            except OSError as e:
+                pytest.skip(f"libvocr.so unavailable: {e}")
+            crop = rng.integers(0, 256, (32, 520), dtype=np.uint8)
+            _, c_logits = rt.run(crop, logits=True)
+            padded, _ = rt.preprocess(crop)
+            ref = np.asarray(vocr_ref.forward(blob, padded.astype(np.float32) / 127.5 - 1.0, mode), np.float32)
+            assert ref.shape == c_logits.shape and np.array_equal(ref, c_logits), (variant, mode)
+
+
 def write_shard(path, crops, labels):
     np.savez(path, data=np.concatenate([c.ravel() for c in crops]).astype(np.uint8),
              offsets=np.cumsum([0] + [c.size for c in crops]).astype(np.int64),

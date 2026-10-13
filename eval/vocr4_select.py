@@ -86,7 +86,13 @@ def compare(cohorts, runs_x, runs_y, n_boot=N_BOOT):
 
 
 def load_cohorts(tv, dn):
-    return {"teacher_val": load_scores(tv), "devnative": pool_cohorts([[p] for p in dn])}
+    """teacher_val's score files (all on its lines) and devnative's (any number per subset file: they are grouped
+    by the cohort file each was scored on, then the subsets are pooled)."""
+    groups = {}
+    for p in dn:
+        key = json.loads(Path(p).read_text(encoding="utf-8"))["dev"]["file"]
+        groups.setdefault(key, []).append(p)
+    return {"teacher_val": load_scores(tv), "devnative": pool_cohorts([groups[k] for k in sorted(groups)])}
 
 
 def decide(proto, size, kind, cohorts, real=None, n_boot=N_BOOT):

@@ -147,7 +147,7 @@ def test_check_flags_hits(tmp_path):
     assert n == 4 and hits == {"test-screenshot": 1, "dev-vn": 1, "dev-screenshot": 1, "excluded-vn": 1}
 
 
-def _scores(path, shifts, n=240, vns=24, seed=0, tag=""):
+def _scores(path, shifts, n=240, vns=24, seed=0, tag="", cohort=""):
     rng = np.random.default_rng(seed)
     lines = [{"id": f"{tag}l{i}", "vn": f"{tag}v{i % vns}", "ref": "あいうえお", "tags": []} for i in range(n)]
     base = rng.integers(0, 3, n)
@@ -156,7 +156,7 @@ def _scores(path, shifts, n=240, vns=24, seed=0, tag=""):
         e = np.clip(base + shift * (rng.random(n) < 0.6), 0, None).tolist()
         models[run] = {"blob": f"{run}.vocr", "blob_sha256": sha, "blob_bytes": 1, "arena_bytes": 1,
                        "errors": {"rv": e, "rvn": e}, "pred": {}, "cer": {}}
-    Path(path).write_text(json.dumps({"dev": {}, "lines": lines, "models": models}))
+    Path(path).write_text(json.dumps({"dev": {"file": cohort or f"{tag}cohort.npz"}, "lines": lines, "models": models}))
     return str(path)
 
 
@@ -205,3 +205,19 @@ def test_decision_needs_every_pair(tmp_path):
     dn = _scores(tmp_path / "dn.json", runs, n=120, vns=12, seed=5, tag="d")
     real = SEL.decide(P, "H15", "real", SEL.load_cohorts([tv], [dn]), n_boot=2000)
     assert not real["rule"]["every_pair_below_zero"] and not real["adopted"] and real["adopted_arm"] == "C"
+
+
+def test_devnative_scores_in_batches(tmp_path):
+    """Score files of one devnative subset written in two batches (different runs) pool into one cohort."""
+    runs = _runs("W20", {"C": (0, 0), "A": (-1, -1), "M": (0, 0)})
+    ca = {k: v for k, v in runs.items() if not k.startswith("v4m")}
+    m = {k: v for k, v in runs.items() if k.startswith("v4m")}
+    tv = [_scores(tmp_path / "tv_ca.json", ca, seed=6), _scores(tmp_path / "tv_m.json", m, seed=6)]
+    dn = [_scores(tmp_path / "dn1_ca.json", ca, n=60, vns=6, seed=7, tag="a", cohort="strict.npz"),
+          _scores(tmp_path / "dn1_m.json", m, n=60, vns=6, seed=7, tag="a", cohort="strict.npz"),
+          _scores(tmp_path / "dn2_ca.json", ca, n=80, vns=8, seed=8, tag="b", cohort="tv_native.npz"),
+          _scores(tmp_path / "dn2_m.json", m, n=80, vns=8, seed=8, tag="b", cohort="tv_native.npz")]
+    c = SEL.load_cohorts(tv, dn)
+    models, lines = c["devnative"]
+    assert len(lines) == 140 and set(models) == set(runs)
+    assert len(c["teacher_val"][1]) == 240 and set(c["teacher_val"][0]) == set(runs)

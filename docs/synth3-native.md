@@ -33,15 +33,26 @@ recommended VN-style data. Version 4 stays in the code as an option (`frames=Non
 `synth/native_calib.py` measured these on data no development or test set shares. The full record is
 `eval/synth3_native_calibration_20261013.json`.
 
-- **Frames**: 1,678 native VNDB screenshots of training-side VNs (1,355 PSP, 323 Vita). These are the
-  frames of realdata's and teacher's pools that `realplus/native.py` selects for the native pool. None is
-  an eval, linefind, devnative, teacher_val, CLANNAD or owner-game frame.
-- **Crops**: teacher_train and real_train native crops, with reserved and development VNs dropped.
+- **Frames**: native VNDB screenshots of training-side VNs, the frames of realdata's and teacher's pools
+  that `realplus/native.py` selects for the native pool. None is an eval, linefind, devnative, teacher_val
+  or CLANNAD frame. There were two measurements:
+  - **First** (09:5x-10:1xZ): 1,678 frames (1,355 PSP, 323 Vita). The settings were chosen on it, and
+    this section's tables are from it. The record keeps it as `first_measurement`.
+  - **Re-measurement** (11:08Z, after the 10:51Z Memories Off rule): 1,674 frames (1,346 PSP, 328 Vita).
+    The record's `jpeg`, `frames` and `crops` are from it.
+  - Owner-game frames: the first list held 10 frames of v1964, a Memories Off series VN. Both lists hold
+    6 PSP frames of 街 (v1360), which #63 reserved after the render with 428 (13:10Z).
+- **Crops**: teacher_train and real_train native crops, with reserved and development VNs dropped. The
+  4,030 native PSP crops include 64 of 街. Without them, PSP aspect p10 / p50 moves from 0.696 / 1.020
+  to 0.713 / 1.024 (re-measured by the PR #64 audit).
 
 ### VNDB's JPEG
 
-Every native frame is a JPEG whose luma table is exactly IJG quality 90: 1,354 of 1,355 PSP frames and
-317 of 323 Vita frames. The others fit Q95 / Q94. Chroma subsampling splits by console:
+All but 7 native frames are JPEGs whose luma table is exactly IJG quality 90. In the first
+measurement that is 1,354 of 1,355 PSP frames and 317 of 323 Vita frames; in the re-measurement,
+1,345 / 1,346 and 322 / 328. The others fit Q95 / Q94. Chroma subsampling splits by console. The
+re-measurement gives PSP 84% 4:4:4 and Vita 92% 4:2:0; the patch uses the first measurement's 94%.
+First measurement:
 
 | frames | Q90 table | 4:2:0 | 4:4:4 |
 |---|---:|---:|---:|
@@ -80,23 +91,29 @@ characters, measured the same way for every source (`synth3_stats.px_ink`).
 |---|---|---|---|---|
 | real native (training side) | 0.69 / 1.02 / 1.19 | 21% / 17% | 0.78 / 1.03 / 1.20 | 12% / 18% |
 | synth3 v3 native renders | 0.60 / 0.84 / 1.10 | 43% / 5% | 0.63 / 0.92 / 1.12 | 35% / 7% |
-| v3, plain text only (no outline, shadow, furigana) | 0.74 / 0.97 / 1.13 | | 0.75 / 1.02 / 1.14 | |
+| v3, plain text only (no outline, shadow, furigana; not in the record) | 0.74 / 0.97 / 1.13 | | 0.75 / 1.02 / 1.14 | |
 | version 4, c3 (effects dropped everywhere; superseded) | 0.68 / 0.94 / 1.18 | 25% / 14% | 0.71 / 0.99 / 1.20 | 23% / 18% |
 | version 4, c4 (the render's settings) | 0.65 / 0.90 / 1.17 | 32% / 12% | 0.67 / 0.98 / 1.20 | 27% / 16% |
 
-MeikiOCR's character boxes on the real crops show what causes the gap. Real kanji are square: w/h
+MeikiOCR's character boxes on the real crops show what causes the gap. This was an ad-hoc check,
+and neither its numbers nor its code are in the record. Real kanji are square: w/h
 p10 / p50 / p90 0.88 / 1.00 / 1.09 on PSP and 0.92 / 1.00 / 1.10 on Vita. Their pitch is one kanji
 height: p50 1.00 on PSP and 1.03 on Vita, p90 1.13. So real native text is neither stretched (3% of kanji
 boxes are over 1.15 wide) nor widely spaced.
 
 Version 3's plain text matches the real crops. Its outlined and shadowed lines do not: outline alone
 gives a median of 0.84, outline plus shadow 0.80, and furigana 0.58-0.70. About 78% of its native PSP
-lines carry an outline, a shadow or both, against 14% plain.
+lines carry an outline, a shadow or both, against 14% plain. This breakdown is not in the record either.
+The PR #64 audit re-measured it with native_calib's measure on v3 shards 0-1 and got consistent numbers:
+79.8% and 14.8%, outline 0.841, outline plus shadow 0.800, furigana 0.60-0.69, and plain p50 0.973 (PSP)
+and 1.028 (Vita).
 
 Version 4 therefore drops most sampled outlines and shadows of native lines, but only where plain text
 stays legible:
 
-- An outline is kept on 8% of PSP and 10% of Vita lines, a shadow on 15%.
+- Within the thinning branch, an outline is kept on 8% of PSP and 10% of Vita lines, a shadow on 15%.
+  Across the final render, 58% of native PSP lines and 45% of Vita lines still carry an outline or a
+  shadow, against version 3's 80% and 73% (shards 0-1, measured by the PR #64 audit).
 - The drop happens only when the box behind the text has alpha 0.6 or more. Text without a box keeps
   its effects.
 - Furigana goes from 15-20% of lines to 5%, and some lines get 1-3 px of extra pitch.
@@ -164,8 +181,13 @@ views, both seeds). The per-seed differences are +0.50 and +0.17.
 
 - Neither the frozen rule nor its mirror holds: the interval only just reaches below 0.
 - Version 3 stays synth3's recommended VN-style data.
-- The point estimate favours version 3. The one subset that separates goes the same way: native PSP
-  lines are worse with version 4.
+- The point estimate favours version 3. Five of the 17 reported strata have VN-cluster intervals
+  entirely above 0, all in the same direction: version 4 is worse. They are target PSP, dark-on-light,
+  ink 14-19 px, length 5-12 and dakuten / small kana; kind PSP and target PSP are the same lines. The
+  intervals are not corrected for multiplicity.
+- "No measured difference" is the frozen rule's outcome label, not evidence that the two are
+  equivalent. The line-level interval, [+0.06, +0.61], excludes 0, and every seed and both views are
+  positive.
 
 The runs: E_s3nat seeds 1 and 2 trained 13:28-14:33Z on this machine, at 2b132aa's train2.py, from s3e as
 pinned. D_s3v3 is study 1b's runs. Re-exporting D_s3v3's checkpoints gave blobs byte-identical to study
@@ -178,7 +200,7 @@ pinned. D_s3v3 is study 1b's runs. Re-exporting D_s3v3's checkpoints gave blobs 
 | tv_native GRAD | 420 | 9.79% / 10.14% | 10.41% / 10.90% | +0.69 (-0.01 to +1.37) |
 | strict ink | 34 | 4.05% / 5.48% | 4.18% / 4.18% | -0.59 (-2.03 to +0.69) |
 | strict GRAD | 23 | 14.11% / 16.55% | 16.03% / 14.98% | +0.17 (-2.06 to +2.17) |
-| teacher_val (reported only) | 1,643 | 5.18% / 5.37% | 5.37% / 5.48% | +0.14 (-0.04 to +0.32) |
+| teacher_val (reported only) | 1,643 | 5.18% / 5.37% | 5.37% / 5.47% | +0.14 (-0.04 to +0.32) |
 
 CERs are the mean of the two views. Strata of the pooled set (VN-cluster intervals):
 
@@ -225,20 +247,32 @@ predicted accuracy on native frames, a caution for calibrating synthetic data on
 ## Hygiene
 
 - Version 4 uses every exclusion version 3 does. It also uses
-  `data/manifests/synth3_exclude_owner_games.json`, the owner's test-only Memories Off series (45 VNs,
-  `docs/owner-games.md`, owner 2026-10-13 10:51Z). Against version 3's render this drops 34 PSP and 15 PC
-  scene screenshots and 954 more name rows (1,406 against 452).
+  `data/manifests/synth3_exclude_owner_games.json` (`docs/owner-games.md`). The trained render used #62's
+  version of it: the owner's test-only Memories Off series, 45 VNs (owner 2026-10-13 10:51Z). Against
+  version 3's render this drops 34 PSP and 15 PC scene screenshots and 954 more name rows (1,406 against
+  452). Code at this head reads #63's version, which holds all 50 VNs.
 - A first version-4 render (10:17Z) used the 09:25Z owner rule (STEINS;GATE and planetarian) instead. It
   was stopped at 57% when that rule was superseded and is not used anywhere.
 - s3e keeps version 3's scaled crops. Those were rendered before the rule, and their scenes can include
   20 PC screenshots of the series (`docs/owner-games.md`).
-- The final render (12:20-13:23Z) predates the owner's 13:10Z reservation of Aiyoku no Eustia and 428.
-  Its names and scenes can hold a few of their characters and screenshots (estimated under 100 of 550,000
-  crops), as version 3's can. Renders from main now exclude them (#63).
-- The calibration used training-side frames and crops only. It was repeated without the series once
-  the series was reserved: the 4:2:0 share of Vita frames is 92% (the patch uses the first
-  measurement, 94%), PSP 4:4:4 84%, glyph aspect within 0.003. No setting was tuned on devnative,
-  teacher_val or a protected set.
+- The final render (12:20-13:23Z) predates the owner's 13:10Z reservation of Aiyoku no Eustia (v3770),
+  428 (v1299) and 428's relation 街 (v1360), which #63 put in the manifest. The PR #64 audit re-rendered
+  all 100 shards byte-identically and counted the exposure:
+  - 265 of the 550,000 crops have a region background cut from a screenshot of these VNs: Eustia 253,
+    街 9, 428 3. That is 9 distinct screenshots.
+  - 223 labels hold a text marker #63 added, 214 of them inside s3e. 188 of those are name plates, 160
+    of them drawn from the VNDB name pool (mostly ordinary given names such as 留美 or 千晶).
+  - Together that is at most 488 crops. Version 3's data carries the same kind of exposure. Renders
+    from main exclude all 50 VNs.
+- The calibration used training-side frames and crops only.
+  - It was repeated without the Memories Off series once the series was reserved: the 4:2:0 share of
+    Vita frames is 92% (the patch uses the first measurement, 94%), PSP 4:4:4 84%, glyph aspect within
+    0.003.
+  - Both measurements include 街's 6 PSP frames and 64 crops (Measurements, above). The first also
+    includes v1964's 10 frames.
+  - No setting was tuned on devnative, teacher_val or a protected set.
+- The final render's label audit (3.5%) ran at 13:48Z, after E's training started at 13:28Z. It is
+  reported only. Amendment 1 rested on the c4 calibration render's audit (4.2%).
 
 ## Commit history
 
@@ -256,8 +290,9 @@ commits.
 
 ```sh
 A=$HERD/shared/artifacts; V3=$A/synth3-v3; NF=$A/native-frames
-.venv-ci/bin/python synth/native_calib.py jpeg   --shots $NF/pool/reads/shots.jsonl --out jpeg.json
-.venv-ci/bin/python synth/native_calib.py frames --shots $NF/pool/reads/shots.jsonl --out frames.json
+# the record's re-measurement (1,674 frames); the first measurement's list is $NF/pool/manifests/shots_0925rule.jsonl
+.venv-ci/bin/python synth/native_calib.py jpeg   --shots $NF/calib/shots_calib_1051rule.jsonl --out jpeg.json
+.venv-ci/bin/python synth/native_calib.py frames --shots $NF/calib/shots_calib_1051rule.jsonl --out frames.json
 .venv-ci/bin/python synth/native_calib.py crops --real $A/teacher/teacher_train.npz+$A/realdata/real_train.npz \
     --synth "$V3/shards/train_v3/synth3_0000[0-1].npz" --exclude $A/synth3/mining/exclude_dev_vns.txt --limit 12000 --out crops.json
 HEAVY_SLOTS=12 $HERD/heavy.sh timeout 14400 .venv-ci/bin/python synth/synth3.py shards --out $NF/shards/native_v4 \

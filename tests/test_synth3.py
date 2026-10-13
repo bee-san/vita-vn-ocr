@@ -416,3 +416,23 @@ def test_filter_pools_drops_vns_with_aligned_targets(tmp_path):
     assert list(t["T"]) == [2, 1, 2] and json.loads(str(t["text"])) == [labels[i] for i in keep]
     for j, i in enumerate(keep):
         assert np.array_equal(t["kid"][t["off"][j]:t["off"][j + 1]], kid[toff[i]:toff[i + 1]])
+
+
+def test_test_report_spec_and_arm_filter(tmp_path):
+    import synth3_test_report as TR
+    vns = [f"v{i % 10}" for i in range(40)]
+    base = np.random.default_rng(2).integers(0, 3, 40)
+    for run, shift in (("a1", 0), ("b1", 1), ("p1", 0), ("q1", 0)):
+        for pol in ("console", "native"):
+            (tmp_path / f"{run}_{pol}.json").write_text(json.dumps(_run_json(base + shift, vns)))
+    proto = {"bootstrap": {"resamples": 200, "seed": 0}, "arms": {"A": ["a1"], "B": ["b1"], "Z": ["zz"]},
+             "comparisons": {"B_vs_A": ["A", "B"], "Z_vs_A": ["A", "Z"]}}
+    spec = {"arms": {"P": ["p1"], "Q": ["q1"]}, "comparisons": {"Q_vs_P": ["P", "Q"]}}
+    (tmp_path / "p.json").write_text(json.dumps(proto))
+    (tmp_path / "s.json").write_text(json.dumps(spec))
+    args = type("A", (), {"protocol": tmp_path / "p.json", "dir": tmp_path, "pair": [], "ref": [],
+                          "spec": tmp_path / "s.json", "arms": "A,B,P,Q"})()
+    res = TR.build(args)
+    s = res["polarities"]["console"]["sets"]["pooled"]
+    assert set(s["arms"]) == {"A", "B", "P", "Q"} and set(s["comparisons"]) == {"B_vs_A", "Q_vs_P"}
+    assert s["comparisons"]["Q_vs_P"]["vn_cluster"]["delta_points"] == 0

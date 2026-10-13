@@ -303,3 +303,12 @@ def test_build_never_overwrites_a_built_pool(tmp_path, monkeypatch):
     with pytest.raises(SystemExit, match="refusing to overwrite"):
         PL.cmd_build(argparse.Namespace(tag=None, procs=1))
     assert PL.build_paths()["ink"].read_bytes() == b"pinned"
+
+
+def test_measured_pool_keeps_third_look_drops_with_their_frozen_labels():
+    labels = {"a": {"id": "a", "status": "kept", "label": "あ"},
+              "b": {"id": "b", "status": "dropped", "why": "blind-cut", "label": None},
+              "c": {"id": "c", "status": "dropped", "why": "edge-unchecked", "label": None}}
+    frozen = {"b": {"id": "b", "status": "kept", "label": "い"}, "c": {"id": "c", "status": "kept", "label": "う"}}
+    pool, labs = PL.measured_pool({"a"}, labels, frozen)
+    assert pool == {"a", "b"} and labs["b"]["label"] == "い" and labs["c"]["label"] is None

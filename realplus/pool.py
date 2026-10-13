@@ -467,6 +467,7 @@ def apply_auto_resolutions(labels, res):
 # ----------------------------------------------------------------------------- edge check
 
 EDGE = OUT / "edge"
+FROZEN_LABELS = "labels_frozen_2128.jsonl"      # labels.jsonl at the freeze: the blind sample's frame
 
 
 def cmd_edge_boxes(args):
@@ -923,20 +924,38 @@ def blind_scored(order, built, decided, n):
     return [i for i in order if i in built and i in decided][:n]
 
 
+def measured_pool(built, labels, frozen):
+    """The pool as the blind check measured it: the built lines plus those a third look dropped
+    afterwards (why "blind-*"), which take their label from the frozen labels the sample was drawn
+    from. Re-scoring after the third looks then reproduces the measurement instead of replacing
+    each dropped disagreement with the next line of the order."""
+    pool, labs = set(built), dict(labels)
+    for lid, r in labels.items():
+        if r["status"] == "dropped" and str(r.get("why") or "").startswith("blind-") and lid in frozen:
+            pool.add(lid)
+            labs[lid] = frozen[lid]
+    return pool, labs
+
+
 def cmd_blind_score(args):
     """decide.py's blind agreement (devnative.decide.blind_agreement, Wilson 95% interval) on the
-    pre-registered blind sample, restricted to lines of the built pool -> review/blind_report.json."""
+    pre-registered blind sample, restricted to lines of the pool as measured (measured_pool) ->
+    review/blind_report.json."""
     spec = json.loads((REVIEW / "blind_ids.json").read_text())
     labels = {r["id"]: r for r in jl(OUT / "labels.jsonl")}
+    frozen = {r["id"]: r for r in jl(OUT / FROZEN_LABELS)} if (OUT / FROZEN_LABELS).exists() else {}
     built = {m["id"] for m in jl(build_paths(args.tag)["lines"]) if "vita_ink" in m["crops"]}
+    built, labels = measured_pool(built, labels, frozen)
     blind = D.collect(batch_dirs("blind"))
     ids = blind_scored(spec["order"], built, blind, spec.get("score", 500))
     summ, dis = D.blind_agreement(labels, {i: blind[i] for i in ids})
+    first = len(spec["order"]) - sum(e["n"] for e in spec.get("extensions", []))
     summ["sample"] = {"drawn": len(spec["order"]), "decided": len(blind),
                       "in_pool": sum(i in built for i in spec["order"]), "scored": len(ids), "seed": spec["seed"],
-                      "from": spec["from"]}
-    (REVIEW / "blind_report.json").write_text(json.dumps({"summary": summ, "disagreements": dis}, ensure_ascii=False,
-                                                         indent=1) + "\n", encoding="utf-8")
+                      "from": spec["from"], "scored_from_first_draw": sum(i in set(spec["order"][:first]) for i in ids),
+                      "last_position": spec["order"].index(ids[-1]) + 1 if ids else 0}
+    (REVIEW / "blind_report.json").write_text(json.dumps({"summary": summ, "disagreements": dis, "scored_ids": ids},
+                                                         ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(summ, indent=1), flush=True)
 
 
@@ -1052,6 +1071,7 @@ def cmd_publish(args):
                                                                 "edge/edge.jsonl", "review/blind_ids.json",
                                                                 "review/resolutions.jsonl",
                                                                 "review/blind_report_measured.json",
+                                                                FROZEN_LABELS,
                                                                 "manifests/dups.json", "manifests/leak_drop.json")
                             if (OUT / n).exists()},
         "batches_used": {k: [b.name for b in done_batches(k)] for k in ("pass1", "pass2", "edge", "blind")},

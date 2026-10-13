@@ -307,6 +307,11 @@ On devnative the short and name lines are the selections' worst stratum by far (
   names of reserved-VN characters (mostly ordinary words; about 7 distinctive names, ~22 crops), in 912
   Jiten-region crops. A later render should filter the carrier words too. The B2 disclosure above counts
   the v661 and Never 7 exposure.
+- Owner update 2026-10-13 20:47Z (planetarian v34 is now training data, to be removed from the eval
+  and development sets in a new manifest version): it does not affect this work. synth4 reserved v34
+  through the CLANNAD-family exclusion, so no synth4 crop renders it, and v34 has 0 lines in the
+  amendment-8 teacher_val and devnative copies the ablation scored. Re-versioning the shared eval and
+  development sets, and rescoring the released models, is a separate conductor/eval task.
 - Nothing here ran on a console.
 
 ## Reproduce

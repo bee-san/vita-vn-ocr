@@ -9,7 +9,8 @@
 Only training-side real crops may be measured here (teacher_train, real_train): never the
 selection set and never eval's test sets. Rows of a reserved VN are dropped and counted
 (eval's test games, synth/common.is_test_vn, and every VN of the exclusion manifests, by default
-data/manifests/synth3_exclude_fresh_native.json and synth3_exclude_clannad.json; add the
+data/manifests/synth3_exclude_fresh_native.json, synth3_exclude_clannad.json and
+synth3_exclude_owner_games.json; add the
 development VNs with --exclude ... exclude_dev_vns.txt). Statistics per source:
 
   text      label length histogram, script shares (hiragana/katakana/kanji/latin/punct),
@@ -50,7 +51,8 @@ PUNCT = {"……": "…", "――": "―", "「": "「", "」": "」", "『": "�
          "、": "、", "。": "。", "～": "~", "♪": "♪", "（": "(", "ー": "ー", "っ": "っ"}
 NAME_STOP = set("「」『』。、！？!?…―（）()")
 DEFAULT_EXCLUDE = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
-                   ROOT / "data" / "manifests" / "synth3_exclude_clannad.json")
+                   ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",
+                   ROOT / "data" / "manifests" / "synth3_exclude_owner_games.json")
 KIND_OF_PLATFORM = {"vita": "vita", "psp": "psp", "psp2x": "psp2x", "scaled": "hires"}
 
 

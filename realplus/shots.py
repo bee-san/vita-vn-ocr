@@ -100,6 +100,34 @@ FRESH_NATIVE_FILES = ("fresh_native_source_provenance_20261012.json", "fresh_nat
                       "fresh_native_textbox_independent_audit_20261012.json")
 
 
+# The owner's own PS Vita games (owner, 2026-10-13 09:25Z): STEINS;GATE and planetarian. Their frames
+# are a fresh native console TEST set and on-console overlay test material only: never train, tune,
+# calibrate, select or render fonts from them. Every VNDB relation of any kind (both directions) and
+# every VN sharing a VNDB release with one of them or with such a relation is reserved with them.
+OWNER_GAMES = {"v2002": "STEINS;GATE", "v34": "planetarian"}
+
+
+def owner_games_vns(d, roots=None):
+    """{vn: reason} for the owner's games (`owner-game`), their VNDB relations of any kind in either
+    direction (`owner-game-relation`) and every VN on a release with a root or a relation
+    (`owner-game-shared-release`), from a load_dump() dict."""
+    roots = set(OWNER_GAMES if roots is None else roots)
+    anyrel = d.get("any_relations", d["relations"])
+    out = {v: "owner-game" for v in roots}
+    for v in sorted(roots):
+        for u in anyrel.get(v, ()):
+            out.setdefault(u, "owner-game-relation")
+    for v, rs in anyrel.items():
+        if rs & roots:
+            out.setdefault(v, "owner-game-relation")
+    core = set(out)
+    for rid, rv in sorted(d["rel_vns"].items()):
+        if rv & core:
+            for u in sorted(rv):
+                out.setdefault(u, "owner-game-shared-release")
+    return out
+
+
 def fresh_native_vns():
     out = set(FRESH_NATIVE)
     for name in FRESH_NATIVE_FILES:
@@ -266,6 +294,7 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
 
       clannad       CLANNAD by id or title
       clannad-family  CLANNAD_FAMILY, the conductor's list of CLANNAD's direct family
+      owner-game    OWNER_GAMES, the owner's Vita games kept for testing (STEINS;GATE, planetarian)
       test-set      eval's test_games.json "all" (set games, their family, release partners)
       test-vn       synth/common.is_test_vn (the 15% of VNs held out for evaluation)
       fresh-native  a title of the fresh native textbox test
@@ -274,6 +303,8 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
       fresh-native-relation  any direct VNDB relation (every kind) of a fresh native title
       clannad-relation  a direct VNDB relation of CLANNAD (v4) of every kind, or a FAMILY relation of
                     a CLANNAD_FAMILY VN
+      owner-game-relation, owner-game-shared-release  owner_games_vns(): a VNDB relation of any kind
+                    of an owner game, or a VN on one VNDB release with an owner game or such a relation
       family        a direct VNDB relation of kind FAMILY of a CLANNAD, fresh-native or
                     development VN (test-set already holds the set games' family)
       shared-release  on one VNDB release with a test-set, CLANNAD, fresh-native, development or
@@ -286,12 +317,15 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
     dev = dev_vns() if dev is None else set(dev)
     vns = set(d["olang"])
     clannad = set(CLANNAD) | {v for v in vns if any(CLANNAD_TITLE.search(t) for t in d["title"].get(v, []))}
+    owner = owner_games_vns(d)
     why = {}
-    for v in vns | test_all | fresh | dev | CLANNAD_FAMILY:
+    for v in vns | test_all | fresh | dev | CLANNAD_FAMILY | set(OWNER_GAMES):
         if v in clannad:
             why[v] = "clannad"
         elif v in CLANNAD_FAMILY:
             why[v] = "clannad-family"
+        elif v in OWNER_GAMES:
+            why[v] = "owner-game"
         elif v in test_all:
             why[v] = "test-set"
         elif is_test_vn(v):
@@ -326,6 +360,9 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
     for v, rs in d["relations"].items():
         if rs & CLANNAD_FAMILY:
             why.setdefault(v, "clannad-relation")
+    # the owner's games (2026-10-13 09:25Z): relations of every kind and every release partner
+    for v, r in sorted(owner.items()):
+        why.setdefault(v, r)
     for v in sorted(roots):
         for u in d["relations"].get(v, ()):
             why.setdefault(u, "family")

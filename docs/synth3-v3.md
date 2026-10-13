@@ -11,7 +11,7 @@ VNDB families.
 Study 1b compared version 3 with version 2 under study 1's frozen recipe and decision rule
 (`eval/synth3_study1b_protocol.json`).
 
-**Result:** version 3 **lowers teacher_val CER against version 2** under study 1's frozen rule: 5.67% -> 5.26% (both views, both seeds), D - B -0.41 points, VN-cluster 95% interval [-0.65, -0.18], and below 0 for both seed pairs (-0.48, -0.34). devnative (native console frames, reported only) shows no measured difference. So version 3 is the recommended VN-style synthetic data for the next studies.
+**Result:** version 3 **lowers teacher_val CER against version 2** under study 1's frozen rule: 5.67% -> 5.26% (both views, both seeds), D - B -0.41 points, VN-cluster 95% interval [-0.65, -0.18], and below 0 for both seed pairs (-0.48, -0.34). devnative (native console frames, reported only) does not confirm it: pooled it shows no measured difference, and its tv_native ink subset is slightly worse for version 3 (see Study 1b). By the frozen rule teacher_val decides, so version 3 is the recommended VN-style synthetic data for the next studies, with that caveat on native crops recorded.
 
 ## What was behind each gap
 
@@ -293,13 +293,26 @@ separate on their own, as in study 1.
 ### devnative (native console frames, reported only, cannot change the decision)
 
 Pooled (strict + tv_native, ink + grad), D - B VN-cluster: cohort v1 +0.14 points [-0.13, +0.41],
-cohort v2 +0.26 [-0.05, +0.58]. Neither interval excludes 0; the point estimate slightly favours
-version 2. By file, the strict subsets (native screenshots of the reserved VNs, no overlap with
-teacher_val, 38 + 26 lines) move the other way (strict_ink -0.61, strict_grad -0.95) but their
-intervals are wide; tv_native (teacher_val's own native screenshots, re-cut) is near 0 or slightly
-positive. These are 553-645 lines from 44-48 VNs, almost all PSP; the gap between this and the
-teacher_val gain is why devnative is reported, not decisive. Full tables for every subset and both
-cohorts are in the result JSON.
+cohort v2 +0.26 [-0.05, +0.58]. Neither pooled interval excludes 0, and the point estimate
+slightly favours version 2. By file the result is mixed, and one subset reaches significance
+against version 3:
+
+| file | lines | D - B, points (VN-cluster 95% CI), cohort v1 | cohort v2 |
+|---|---|---|---|
+| strict_ink | 38 | -0.61 (-2.73 to +1.03) | -0.61 (same file) |
+| strict_grad | 26 | -0.95 (-2.37 to +0.38) | -0.95 (same file) |
+| tv_native_ink | 607 / 515 | **+0.34 (+0.01 to +0.69)** | **+0.43 (+0.07 to +0.85)** |
+| tv_native_grad | 503 / 423 | +0.03 (-0.52 to +0.55) | +0.22 (-0.39 to +0.81) |
+
+The strict subsets (native screenshots of the reserved VNs, no overlap with teacher_val, 38 + 26
+lines) favour version 3 but with wide intervals. tv_native_ink (teacher_val's own native
+screenshots re-cut, ink + 4/2 px boxes) is **worse** for version 3, its interval entirely above 0
+in both cohorts and both seed pairs positive; tv_native_grad is flat. So on native console crops
+version 3 is not an improvement, and on the largest native subset it is a small regression. These
+are 553-645 lines from 44-48 VNs, almost all PSP, and devnative itself reports that its ink crops
+carry the pad twice (docs/devnative.md); the GRAD files do not. teacher_val decides under the
+frozen rule, so this does not change the decision, but it is the main caveat on the result. Full
+tables for every subset and both cohorts are in the result JSON.
 
 ## Limits
 
@@ -312,8 +325,12 @@ cohorts are in the result JSON.
   rose to 15.6 (real 14.8). Paging makes them roughly symmetric, while the real crops have more
   closing than opening lines.
 - The calibration matches distributions of training-side crops, 73% of which are PC shots;
-  matching them is not evidence of better accuracy on native console text. Study 1b and
-  devnative are.
+  matching them is not evidence of better accuracy on native console text.
+- The teacher_val gain is on PC screenshots scaled down. On the native-console development cohort
+  (devnative, reported only) version 3 is not better: pooled it does not separate, and its largest
+  subset (tv_native_ink) is a small regression (+0.34 / +0.43 points, interval above 0). The
+  frozen rule decides on teacher_val, so this is a caveat, not a reversal; the next study should
+  weigh native crops (study 2 makes devnative co-primary if committed before scoring).
 - Hygiene limits are listed under Hygiene (unnamed anime lines, the Jiten list).
 - Every probability not listed above is version 2's. Labels were checked by a teacher-agreement
   audit, not by hand.

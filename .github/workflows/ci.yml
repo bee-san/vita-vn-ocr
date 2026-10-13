@@ -1,9 +1,15 @@
 # CI for vita-vn-ocr. Every action is pinned to a full commit SHA, with its tag in the comment.
-# ci/README.md lists the local command for each job.
+# ci/README.md lists the local command for each job and when each job runs.
+#
+# Minutes: this is a private repo, so every job minute is billed. The ruff job also runs the repo
+# policy test and ci/changed.py, which gates the other jobs on the paths the change touched:
+# documentation-only changes run nothing else, and the training smoke, the C runtime and the
+# VitaSDK build run only when something they read changed (full compiler matrix on main).
 name: CI
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
   workflow_dispatch:
@@ -24,38 +30,46 @@ env:
 
 jobs:
   ruff:
-    name: ruff
+    name: ruff + policy
+    # Draft pull requests get no CI; marking one ready (ready_for_review) runs it.
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      runtime: ${{ steps.layout.outputs.runtime }}
+      pytest: ${{ steps.changed.outputs.pytest }}
+      smoke: ${{ steps.changed.outputs.smoke }}
+      runtime: ${{ steps.changed.outputs.runtime }}
+      cc: ${{ steps.changed.outputs.cc }}
+      vita: ${{ steps.changed.outputs.vita }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Is there a runtime/ to build? (gates the runtime jobs)
-        id: layout
-        run: |
-          if [ -d runtime ]; then
-            echo "runtime=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "runtime=false" >> "$GITHUB_OUTPUT"
-            echo "::notice title=runtime jobs skipped::runtime/ does not exist yet, so the C build and parity jobs are skipped."
-          fi
+      - name: Which jobs does this change need? (ci/changed.py gates the jobs below)
+        id: changed
+        env:
+          # The base branch tip for a pull request, the previous tip for a push to main;
+          # empty for workflow_dispatch, which runs everything.
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 ci/changed.py --base "$CI_BASE_SHA"
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: "0.11.28"
           enable-cache: false
-      - name: Install ruff (version and hashes from requirements-ci.lock)
+      - name: Install ruff and pytest (versions and hashes from requirements-ci.lock)
         run: |
-          sed -n '/^ruff==/,/^    # via/p' requirements-ci.lock > "$RUNNER_TEMP/ruff.txt"
+          sed -n -E '/^(ruff|pytest|pluggy|iniconfig|packaging|pygments)==/,/^    # via/p' requirements-ci.lock > "$RUNNER_TEMP/lint.txt"
           uv venv "$RUNNER_TEMP/lint"
-          uv pip install --python "$RUNNER_TEMP/lint/bin/python" --require-hashes --no-deps -r "$RUNNER_TEMP/ruff.txt"
+          uv pip install --python "$RUNNER_TEMP/lint/bin/python" --require-hashes --no-deps -r "$RUNNER_TEMP/lint.txt"
       - name: ruff check
         run: '"$RUNNER_TEMP/lint/bin/ruff" check --output-format=github .'
+      - name: Repo policy on every tracked file (tests/test_repo_policy.py; runs even when pytest is skipped)
+        run: '"$RUNNER_TEMP/lint/bin/python" -m pytest -q -p no:cacheprovider tests/test_repo_policy.py tests/test_ci_changed.py'
 
   pytest:
     name: pytest
+    needs: ruff
+    if: ${{ needs.ruff.outputs.pytest == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -71,6 +85,8 @@ jobs:
 
   train-smoke:
     name: training smoke (50 steps)
+    needs: ruff
+    if: ${{ needs.ruff.outputs.smoke == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -82,17 +98,18 @@ jobs:
         run: python ci/train_smoke.py --workdir "$RUNNER_TEMP/smoke" --threads "$(nproc)"
 
   runtime:
-    # Runs once runtime/ exists (see the ruff job); the contract with runtime/ is in ci/runtime.sh.
-    # GitHub appends the matrix value to the name: "runtime (gcc)", "runtime (clang)".
+    # The contract with runtime/ is in ci/runtime.sh. GitHub appends the matrix value to the
+    # name: "runtime (gcc)", "runtime (clang)". Pull requests that leave runtime/ alone build with
+    # gcc only; C changes, pushes to main and manual runs use both compilers (ci/changed.py).
     name: runtime
     needs: ruff
-    if: ${{ !cancelled() && needs.ruff.outputs.runtime == 'true' }}
+    if: ${{ needs.ruff.outputs.runtime == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        cc: [gcc, clang]
+        cc: ${{ fromJSON(needs.ruff.outputs.cc) }}
     env:
       CC_UNDER_TEST: ${{ matrix.cc }}
     steps:
@@ -119,6 +136,8 @@ jobs:
     # runtime/ and the vocr_test app built with the pinned VitaSDK (vita/README.md). The VPK is
     # uploaded so it can be installed on a PS Vita without installing the SDK.
     name: vita (VitaSDK build)
+    needs: ruff
+    if: ${{ needs.ruff.outputs.vita == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

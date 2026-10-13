@@ -1,0 +1,131 @@
+{
+ "kind": "vocr4-protocol",
+ "schema": 1,
+ "frozen": "2026-10-13 (commit time in git), before any VOCR4 run started and before any VOCR4 run was scored on any development or test set",
+ "goal": "VOCR4: the three console-sized recognizers of VOCR3 (FL10, H15, W20) trained again with the real data that arrived after VOCR3 (realplus v3 interim, native pool v1, the owner's native console frames) and with synth3 version 3 (synth4 measured no gain, PR #69), selected on development data only, then scored once through the plain-C W8I runtime on the protected sets against VOCR1, VOCR2, VOCR_H15, F20 and VOCR3.",
+ "known_before_freezing": [
+  "VOCR3 (PR #67, main 1c5c766): selections rp_FL10_C_mix_pre128k_seed1 (development score 2.30%), rp_H15_C_mix_seed2 (2.11%), rp_W20_C_mix_seed1 (1.81%); locked report pooled fixed-line CER 2.13% / 1.73% / 1.62%; none qualified (each fails the whole-dialogue guard). realplus in the fine-tune helped at every size (-0.18 to -0.23 points on teacher_val).",
+  "synth4 (PR #69, open): F_s4 - D_s3v3 on teacher_val +0.279 points (VN-cluster CI +0.08 to +0.48), devnative +0.165 (-0.11 to +0.47): not better than synth3 v3 at 16k FL10 pretraining steps; level or slightly better on native console crops.",
+  "study 1b (PR #56): synth3 v3 better than synth3 v2 on teacher_val at FL10 / 16k steps, worse on devnative's native Vita ink crops; synth3 v3 never trained in VOCR3.",
+  "realplus-v3 built the interim snapshot v3i at 21:55Z on request (reports/realplus-v3-interim.txt): 48,479 lines (v2 + 5,310 new, 59 v2 lines left), Claude + Luna agreed; precision of the new lines not measured yet. Only its counts and hashes were read; no model has read it.",
+  "native pool v1 (PR #66, open; audits NOT_OK on documentation only): 557 ink + 411 GRAD native crops of 186 VNs; 522 of its 557 lines are relabelled rows of the unlabelled pools teacher_distill_train / real_unlabelled, which no realplus fine-tune reads.",
+  "the owner's frames (native-frames, 20:22Z and 21:41Z): 577 frames of planetarian (v34), Sharin no Kuni (v57) and CHAOS;CHILD (v14018) read, 946 lines (398 automatic, 548 for review); pass 1 review running, owner pool ETA about 02:30Z.",
+  "the planetarian rule (owner 20:47Z): eval/vocr4_planetarian_check_20261013.json finds 0 rows of v34 or its relations (v27747, v5698) by VN id or by any of their 84 releases in teacher_val, devnative v3 (both their originals and the amendment-8 copies), vita-test and psp-test, so no set changes.",
+  "no VOCR4 run exists; no model trained on any VOCR4 pool has been scored anywhere."
+ ],
+ "sizes": {
+  "FL10": {"topology": "width 1.0, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32 (FL10's)",
+           "vocab": {"file": "$HERD/shared/artifacts/train2/release/FL10_vocab_3500.txt", "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8", "classes": 3501},
+           "expected": {"blob_bytes": 657664, "arena_w8i_bytes": 124832},
+           "pretrain_reused": "synth3/study2/runs/pre_FL10_C_mix_pre128k_seed1/ckpt_step128000.pt (VOCR3-FL10's pretrain)",
+           "pretrain_steps": 128000, "replaces": "VOCR1 (v0.2.0 FL10_w8.vocr)", "tier": "always safe"},
+  "H15": {"topology": "width 1.5, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32",
+          "vocab": {"file": "data/vocab.txt", "sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b", "classes": 5355},
+          "expected": {"blob_bytes": 1155968, "arena_w8i_bytes": 182944},
+          "pretrain_reused": "synth3/study2/runs/pre_H15_C_mix_seed2/ckpt_step40000.pt (VOCR3-H15's pretrain)",
+          "pretrain_steps": 40000, "replaces": "VOCR_H15 (v0.2.0 H15_w8.vocr, vita-jp-overlay's default)", "tier": "safe with preflight"},
+  "W20": {"topology": "width 2.0, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32 (train2's F20 shape)",
+          "vocab": {"file": "data/vocab.txt", "sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b", "classes": 5355},
+          "expected": {"blob_bytes": 1558016, "arena_w8i_bytes": 241056},
+          "pretrain_reused": "synth3/vocr3/runs/pre_W20_C_mix_seed1/ckpt_step32000.pt (VOCR3-W20's pretrain)",
+          "pretrain_steps": 32000, "replaces": "VOCR_H15, if it fits the budget and qualifies (F20 is the same-size reference)", "tier": "safe with preflight"}
+ },
+ "budget": {
+  "source": "docs/vita-memory-budget.md (#53, #60): the ceiling weights <= 1,600,000 B, W8I arena <= 262,144 B, <= 550 ms estimated per 640-px line on one 333 MHz Cortex-A9; tiers: always safe <= 900,000 B / 131,072 B / 300 ms, safe with the overlay's free-memory preflight up to the ceiling",
+  "weights_max_bytes": 1600000, "arena_max_bytes": 262144, "ms_max_per_640px_line": 550,
+  "rule": "every scored blob goes through vita/budget_sweep.py check (synth-val lines only); a blob outside any limit is not selectable; the ms figure is a host estimate, never a console measurement"
+ },
+ "data": {
+  "inputs_pin": "eval/vocr4_inputs.sha256: the three reused pretrain checkpoints (paths relative to $HERD/shared/artifacts); eval/vocr4_run.sh checks them before every run",
+  "synthetic": {
+   "nvsynth": "$HERD/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz + nv_train_04[01]_b*.npz (597 shards; VOCR3's)",
+   "synth2": "$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz + synth_0003[0-8].npz (39 shards; VOCR3's)",
+   "synth3_v2": "$HERD/shared/artifacts/synth3/shards/train_v2/synth3_000??.npz (data/manifests/synth3_shards_v2.json; VOCR3's)",
+   "synth3_v3": "$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz, every shard checked against data/manifests/synth3_shards_v3.json (sha256 5f747d59...) before an M run starts"
+  },
+  "exclusion_rule": "eval/vocr4_pools.py exclusions on the 2026-10-13 VNDB dump ($HERD/shared/artifacts/native-frames/vndb/dump/db) with the owner's test set ($HERD/shared/artifacts/native-frames/owner_games_vns.json, 50 VNs, sha256 6f0397c0...), the development cohorts' VNs (teacher_val, devnative v3) and --allow v34: every VN that realplus/shots.reserved_vns() reserves for a protected or development reason (CLANNAD, its family and relations; the owner's test series, relations and release partners; eval's test games (test_games.json all) and is_test_vn; the fresh native titles and relations; the development VNs), every VN reserved as family or shared-release whose link (a VNDB release shared with another VN, or a FAMILY relation) reaches a CLANNAD, owner-test, test-set or fresh-native VN, every VN of the owner's test set and every development-cohort VN. Kept: val-bucket VNs and family / shared-release VNs whose links reach only development or hash-held-out (test-vn) VNs, as in the pools every released model trained on; planetarian v34 (owner 2026-10-13 20:47Z: training data). The list (10,487 VNs) is $HERD/shared/artifacts/vocr4-train/pools/exclusions.json (sha256 f99c7c04..., pinned in eval/vocr4_pools_c.sha256).",
+  "pools": {
+   "tt": {"source": "VOCR3's teacher_train copy (synth3/study2/pools/teacher_train.npz, eval/synth3_study2_pools.sha256)", "built": "12,100 -> 11,153 rows"},
+   "rd": {"source": "VOCR3's real_train copy (synth3/study2/pools/real_train.npz)", "built": "9,795 -> 9,005 rows"},
+   "rp2": {"source": "VOCR3's realplus v2 copies (synth3/vocr3/pools/realplus_train_{ink,grad}.npz, eval/vocr3_realplus.sha256)", "built": "71,153 -> 71,142 ink, 53,566 -> 53,558 GRAD"},
+   "rp3i": {"source": "realplus v3 interim v3i (realplus-v3, cutoff 2026-10-13T21:36:01Z, code 52e20b2 of feat/realplus-v3; its hygiene HYGIENE_OK and leak checks applied): $HERD/shared/artifacts/realplus-v3/realplus_train_ink_v3i.npz (sha256 770c4dbc4da105237fb0102053dea2be2e6976a4fcbaf4b98161104ad35b11f3, 79,644 crops) and realplus_train_grad_v3i.npz (09f847bef5c97002ac56ba55405b20441cb681fb6180b897342032aa9db126cd, 58,735 crops): 48,479 lines of 9,499 VNs, v2 + 5,310 new lines; later refreshes (v3i2, ...) are not VOCR4's", "dedupe": "after nat and own"},
+   "nat": {"source": "native pool v1: $HERD/shared/artifacts/native-frames/pool/native_train_ink_v1.npz (sha256 ca202a1c...) and native_train_grad_v1.npz (2cf40190...), PR #66's files", "dedupe": "against tt and rd"},
+   "own": {"source": "the owner's native frames of training-eligible titles (planetarian, Sharin no Kuni, CHAOS;CHILD and any other owner training title labelled by then), the ink and GRAD npz files native-frames names in /local/home/skerraut/herd-synth3/reports/native-owner-pool.txt; private: never committed, never sent to Codex or any third party", "dedupe": "after nat"},
+   "build": "eval/vocr4_pools.py build: every pool without the excluded VNs' rows; rp3i, nat and own (--new, in the order nat, own, rp3i) also without any row whose screenshot or line id an earlier group (tt, rd, then the new pools in that order) already holds; eval/vocr4_pools.py check must print CHECK_OK for every pool (no excluded VN, no development VN or screenshot, no test-set screenshot or session) before it is pinned",
+   "pin_c": "eval/vocr4_pools_c.sha256 (tt, rd, rp2 and the exclusion list), committed with this protocol",
+   "pin_a": "eval/vocr4_pools_a.sha256 (nat, own, rp3i), committed and pushed before the first A or M fine-tune starts and before any VOCR4 score; pinned as soon as realplus v3i and the owner pool are published, at 2026-10-14T06:00Z at the latest with whatever is published by then",
+   "fallbacks": "rp3i not published by the cutoff: A uses rp2 in its place (same weight); own not published: nat takes own's weight (0.05). The pin file decides; eval/vocr4_run.sh applies it. No other change to a pool after its pin."
+  }
+ },
+ "arms": {
+  "C": {"what": "the control: VOCR3's realplus fine-tune (eval/vocr3_rp_run.sh) on VOCR4's cleaned pools, from the reused pretrain",
+        "fine_tune": "nv 0.25 + synth2 0.125 + synth3 v2 0.125 + tt 0.2 + rd 0.1 + rp2 (ink + GRAD) 0.2",
+        "runs": {"FL10": ["v4c_FL10_seed1", "v4c_FL10_seed2"], "H15": ["v4c_H15_seed1", "v4c_H15_seed2"], "W20": ["v4c_W20_seed1", "v4c_W20_seed2"]}},
+  "A": {"what": "the new real pools: C with the real half re-split, from the same reused pretrain",
+        "fine_tune": "nv 0.25 + synth2 0.125 + synth3 v2 0.125 + tt 0.175 + rd 0.1 + rp3i (ink + GRAD) 0.175 + nat (ink + GRAD) 0.025 + own (ink + GRAD) 0.025",
+        "runs": {"FL10": ["v4a_FL10_seed1", "v4a_FL10_seed2"], "H15": ["v4a_H15_seed1", "v4a_H15_seed2"], "W20": ["v4a_W20_seed1", "v4a_W20_seed2"]}},
+  "M": {"what": "synth3 v3 in place of synth3 v2: a new pretrain from scratch, then A's fine-tune",
+        "pretrain": "pre_<SIZE>_M3_seed<S>: nv 0.5 + synth2 0.25 + synth3 v3 0.25; the size's pretrain steps (FL10 128,000, H15 40,000, W20 32,000); batch 96, lr 2e-3, warmup 1,000, cosine to 0.05, wd 0.01, EMA 0.999 (VOCR3's pretrain recipe)",
+        "fine_tune": "nv 0.25 + synth2 0.125 + synth3 v3 0.125 + A's real sources and weights",
+        "runs": {"FL10": ["v4m_FL10_seed1", "v4m_FL10_seed2"], "H15": ["v4m_H15_seed1", "v4m_H15_seed2"], "W20": ["v4m_W20_seed1", "v4m_W20_seed2"]}},
+  "recipe": "every fine-tune: 15,000 steps, batch 96, lr 1.2e-3, warmup 500, cosine to 0.05, wd 0.01, EMA 0.999, kd 0, real sources inv=0.5, synthetic stream=1,pool=3,inv=0.2 (VOCR3's); the size's topology and vocab; --seed S (C and A from the one reused pretrain, so their seeds vary the fine-tune only; M's seed also seeds its pretrain); the final EMA checkpoint (ckpt_step15000.pt) is the run; train2's in-run evaluations (the amendment-8 teacher_val, logged) select nothing",
+  "script": "eval/vocr4_run.sh SIZE ARM SEED through HEAVY_SLOTS=10 $HERD/heavy.sh (5 threads); outputs $HERD/shared/artifacts/vocr4-train/runs/<run>/",
+  "order": "M pretrains first (they need no pool): FL10 seeds 1 and 2, then H15, then W20; C fine-tunes as slots allow (FL10 first); A fine-tunes as soon as pin_a is committed (FL10 first); M fine-tunes after their pretrains and pin_a. At most 8 VOCR4 training runs at once on the shared box, fewer if synth4-design asks for slots",
+  "failures": "a run that dies is deleted and restarted from scratch with the same arguments (runs never resume; train2's resume reseeds the batch stream); every restart is reported"
+ },
+ "cohorts": {
+  "teacher_val": {"file": "$HERD/shared/artifacts/synth3/vocr3/select_pools/teacher_val.npz", "sha256": "f5c0032041c14b31bff87b52a56381b8f0d3e84e2f6cfd78a3b600e55751f81e", "lines": 1643, "note": "VOCR3's amendment-8 copy (no Memories Off series); the planetarian rule removes nothing (eval/vocr4_planetarian_check_20261013.json), so it is also the planetarian-free version"},
+  "devnative": {"files": {"devnative_strict_ink.npz": "742944e99dd058bdfbce5c298100cec1b85d37bff5378670b301fa61a1e3cde7", "devnative_strict_grad.npz": "76bb3329a24866b331b55a8526a82092b3ec084e4e1e7b368c8cf1c835572d3f", "devnative_tv_native_ink.npz": "baef59f132acd3242b237c9d0d168b3d5202f6c381b716109cb20e0fa044e985", "devnative_tv_native_grad.npz": "2eb847ebf01d76741b1fdd2d1b92debf719b6a8edaacb8e8114d697632a73f3b"},
+                "dir": "$HERD/shared/artifacts/synth3/vocr3/select_pools/devnative_v3", "crops": 986, "version": "v3 (14ae22d), amendment-8 copies; strict + tv_native, ink and GRAD pooled; scene_vn has no line", "note": "planetarian-free as is (0 rows)"},
+  "planetarian": "the owner's 20:47Z rule removes planetarian lines from teacher_val, devnative, vita-test and psp-test going forward. None exist (eval/vocr4_planetarian_check_20261013.json: v34 and its relations v27747 and v5698, by VN id and by their 84 releases), so the new versions equal the old byte for byte; every development and test score is reported under both names with that note, and docs/vocr4.md records the check"
+ },
+ "score": "eval/synth3_ablation.py score (the C runtime W8I, views rv and rvn) on teacher_val and on devnative's four files; a run's development score is the mean of its teacher_val CER (both views) and its devnative CER (the four files pooled, both views)",
+ "decisions": {
+  "real": "per size, C -> A over the seed pairs (v4c_<SIZE>_seedS, v4a_<SIZE>_seedS), S = 1, 2: eval/vocr4_select.py decide --decision real. A is adopted iff the stratified VN-cluster 95% interval (10,000 resamples; teacher_val's and devnative's VNs resampled independently, seeds 0 and 1) of the development-score difference lies entirely below 0, both pairs' development-score differences are below 0, and neither cohort's own interval lies entirely above 0",
+  "synth": "per size, X -> M over the seed pairs, X being the real decision's adopted arm (A, or C when A is not adopted): eval/vocr4_select.py decide --decision synth, the same rule",
+  "order": "a size's real decision is computed once all four of its C and A runs are scored; its synth decision once its M runs are scored too; each decision file is committed before that size's selection"
+ },
+ "selection": {
+  "rule": "per size, the candidates are the two runs of the arm the decisions end on (M if the synth decision adopts it, otherwise the real decision's arm); the lowest development score wins; ties at 5 decimals go to the lower seed; a blob outside the budget is not selectable (eval/vocr4_select.py select)",
+  "reported": "every run of the size is scored and listed; only candidates can be selected",
+  "commit": "each size's selection (every run's scores, the decisions, the selected run and blob sha256) is committed and pushed before the locked report runs"
+ },
+ "locked_report": {
+  "when": "once, after the three selections are committed",
+  "tool": "eval/vocr3_report.py (shared, a9, overlay, render) with the spec from eval/vocr4_make_spec.py; the commit is recorded",
+  "arms": {
+   "VOCR1": "FL10_w8.vocr (v0.2.0, 500e0b84...) + GRAD",
+   "VOCR2": "VOCR2_FL10_w8.vocr (v0.2.3-vocr2.1, d3adc52e...) + TEXTBOX (C3), as it ships",
+   "VOCR_H15": "H15_w8.vocr (v0.2.0, 316ebc37..., vita-jp-overlay's default) + GRAD",
+   "F20": "F20_w8.vocr (v0.2.0, f8c1abe4...) + GRAD",
+   "VOCR3_FL10": "87fb4d0c... + GRAD", "VOCR3_H15": "cb3c61a8... + GRAD", "VOCR3_W20": "2cedeb01... + GRAD",
+   "VOCR4_FL10": "the FL10 selection + GRAD", "VOCR4_H15": "the H15 selection + GRAD", "VOCR4_W20": "the W20 selection + GRAD"
+  },
+  "pairs": [["VOCR4_FL10", "VOCR3_FL10"], ["VOCR4_FL10", "VOCR1"], ["VOCR4_FL10", "VOCR_H15"],
+            ["VOCR4_H15", "VOCR3_H15"], ["VOCR4_H15", "VOCR_H15"],
+            ["VOCR4_W20", "VOCR3_W20"], ["VOCR4_W20", "VOCR_H15"], ["VOCR4_W20", "F20"], ["VOCR4_W20", "VOCR4_H15"]],
+  "sets": {
+   "vita-test, psp-test fixed lines": "eval/run.py's recognizer mode through the scalar C W8I runtime; console polarity primary, native also; per set, per style, per VN, pooled; full text and hiragana",
+   "vita-test, psp-test whole dialogue": "each region at base and +4 / +8 native px with the arm's own C finder (VOCR2's held-out guard scoring)",
+   "planetarian": "the old and the new manifests are identical (no planetarian line in either set), so the report's numbers are both; docs/vocr4.md shows the two columns with that note",
+   "CLANNAD": "owner-drive-ingest's CLANNAD long-run references (eval/clannad_refs.py, branch feat/owner-drive-ingest; protocol eval/clannad_refs_protocol.json; Claude references read twice, frozen in refs.freeze.json before any score): once frozen (REFS_FROZEN in owner-drive-ingest.status), the three VOCR4 selections are read once through its extra-arms path (`arms --extra NAME=FILE#SHA256 --suffix vocr4 --into DIR`: the C runtime W8I on the 4,271 stored line crops, invert=False) and scored once (`score --suffix vocr4`) with page-bootstrap intervals, beside its VOCR1 / VOCR2 / VOCR_H15 / F20 / VOCR3 arms and the cached Google Lens readings on the same references; pairs VOCR4_<SIZE> - VOCR3_<SIZE>, VOCR4_FL10 - VOCR1, VOCR4_H15 - VOCR_H15, VOCR4_W20 - VOCR_H15 and each VOCR4 arm - Lens. If the references are frozen only after the rest of the report, this part runs once then, as an addendum; nothing can change a selection. Disclosure: arms A and M train on planetarian's PSP frames (Key / Prototype, like CLANNAD's Vita port)",
+   "fresh native textbox test": "not on this machine (private inputs); not in the report"
+  },
+  "statistics": "CAND - BASE in points with paired bootstrap 95% intervals (10,000 resamples, seed 0) over lines and over VN clusters (strata with at least 5 VNs)",
+  "also": ["blob bytes, W8I and W8F arenas", "estimated Cortex-A9 time per line (vita/a9_cycles.py; a host estimate)", "the overlay host cross-check (vita-jp-overlay tools/benchmark_local_ocr.py on a read-only clone)"]
+ },
+ "qualification": {
+  "gates": [["VOCR4_FL10", "VOCR1"], ["VOCR4_H15", "VOCR_H15"], ["VOCR4_W20", "VOCR_H15"]],
+  "fixed_line_gate": "VOCR2's: in the primary polarity, no set's full-text or hiragana errors increase, and pooled hiragana errors decrease",
+  "dialogue_guard": "VOCR2's held-out whole-dialogue guard: no title/variant all-text or body full/hiragana regression; every variant improves console-balanced hiragana in both scopes and gains on at least two titles",
+  "consequence": "a candidate qualifies to replace a released default only if every gate passes; even then the default changes only with the owner's agreement. The blobs go on a pre-release whatever the result"
+ },
+ "publication": "branch feat/vocr4: docs/vocr4.md, this protocol, the pool pins, the decisions, the selections and the report JSON (counts and hashes only); the three VOCR4 blobs as assets of the pre-release v0.2.5-vocr4.1 (sha256s in the notes; NVIDIA OCR-Synthetic-Multilingual-v1 attribution, CC BY 4.0); a normal PR to main, audited by audit-vocr4, merged on its MERGE_OK with the full CI run locally",
+ "hygiene": [
+  "no arm, run, recipe, weight, checkpoint, threshold or pool is chosen, tuned, dropped or changed on vita-test, psp-test, the fresh native textbox test or CLANNAD; the locked report runs once and cannot change a selection",
+  "every training pool follows the exclusion rule above and passes eval/vocr4_pools.py check; the owner's -TEST folders and every reserved owner title never train; planetarian (v34) is the only reserved VN released for training (owner 20:47Z)",
+  "the owner's frames and CLANNAD data stay local: never committed, never sent to Codex or any other service; committed files hold counts, ids and hashes only",
+  "the reused pretrains and synth3's shards predate the owner's 10:51Z and 13:10Z reservations and hold some of that material (docs/owner-games.md, docs/vocr3.md Disclosure); every VOCR4 model carries that caveat for tests on the owner's titles"
+ ],
+ "amendments": []
+}

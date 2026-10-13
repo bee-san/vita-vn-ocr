@@ -38,7 +38,7 @@ not show a curriculum's gain, and what study would.
 | owner fonts | none | cinecaption 2.26 (category pen) and NDS12 (pixel, 10 ppem, 1x on PSP, 2x nearest on Vita), licence class `owner`, `--profile personal` only | owner, 14:28Z |
 | outlines | synth2's own outline (34% of light-on-dark, 16% of dark-on-light schemes) plus synth3's rates (Vita .40/.12/.7, PSP .60/.20/.8, scaled .55/.2/.8) | synth2's own outline dropped on 45% of the schemes that do not need one; synth3's rates .20/.06/.5, .25/.08/.5, .35/.10/.6 | synth3 61-73% of crops outlined; real estimates 0-60% (weak detector) |
 | contrast | synth2's palette | dialogue boxes darker (x U(0.3, 0.75)), light boxes lighter (distance to white x U(0.3, 0.7)), 75% of plain light fills pure white, dark fills darker (x U(0.2, 0.7)) | synth3 p50 contrast 134-153 grey levels against real 145-191: text dimmer (fill p50 226-235 vs 242-252) and boxes lighter (p10 35-39 vs 10-15) |
-| colour | coloured spans 14%, lines 10%, names 65%; synth2's accents | spans 8%, lines 6%, names 30%; 40% of accent-coloured fills plain; green and cyan accents (hue 0.17-0.55) redrawn once with p 0.85; half the gradient fills | synth3 17% coloured fills, 23% of them green; real 10.5%, 9% green; gradients 9.4% vs ~5% |
+| colour | coloured spans 14%, lines 10%, names 65%; synth2's accents | spans 8%, lines 6%, names 30%; 40% of accent-coloured fills plain; green and cyan accents (hue 0.17-0.55) redrawn once with p 0.85; half the gradient fills | synth3 17% coloured fills, a fifth green; real 10.4%, 8% green (2.5x); gradients 10.3% vs ~7% |
 | scaled text | Vita scaled em N(20.5, 3.3) | N(19.0, 3.3) | synth3's scaled Vita ink 1-2 px taller than real |
 | blur | 15% | 10% | contrast |
 
@@ -149,7 +149,7 @@ and development VN dropped, 454 rows) and the gap analysis's style measures on s
 | text contrast p50, all / native Vita / native PSP | 167 / 191 / 178 | 142.5 / 153 / 146 | 158 / 173 / 161 |
 | 1-bit detector, native PSP (obs) | 0.026 | 0.366 | 0.146 |
 | outlined (obs / est.) | 0.376 / 0.40 | 0.465 / 0.68 | 0.357 / 0.35 |
-| coloured fills; hue r / g / b | 0.104; .60 / .08 / .32 | 0.172; .46 / .23 / .31 | 0.109; .58 / .13 / .28 |
+| coloured fills; hue r / g / b | 0.104; .60 / .08 / .32 | 0.168; .51 / .20 / .29 | 0.109; .58 / .13 / .28 |
 
 The character KL rises because the curriculum oversamples the tail on purpose (the curriculum
 classes are 0.5% of real-like text and 1.9% of synth4's characters).

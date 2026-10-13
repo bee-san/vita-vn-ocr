@@ -69,7 +69,7 @@
    "files": "$HERD/shared/artifacts/native-frames/shards/e_v4/synth3e_000??.npz",
    "shards": 100,
    "opts": "stream=1,pool=3,inv=0.2",
-   "construction": "shard i is version 3's pinned shard i with every crop of platform vita, psp or psp2x replaced, in place and in order, by the next crop of version 4's native shard i (generator version 4 = synth/synth3.py with data/manifests/synth3_v4_native_cfg.json, seed 20261012, 100 shards of 5,500 crops, native platforms only, version 3's native length histogram as the length target); version 3's crops of platform 'scaled' (47%) are kept byte for byte. Same 1,000,000 crops per 100 shards, same positions, so both arms stream the same structure and differ only in how their native crops were rendered",
+   "construction": "shard i is version 3's pinned shard i with every crop of platform vita, psp or psp2x replaced, in place and in order, by the next crop of version 4's native shard i (generator version 4 = synth/synth3.py at 314a0b4 with data/manifests/synth3_v4_native_cfg.json, seed 20261012, 100 shards of 5,500 crops, native platforms only, version 3's native length histogram as the length target); version 3's crops of platform 'scaled' (47%) are kept byte for byte. Same 1,000,000 crops per 100 shards, same positions, so both arms stream the same structure and differ only in how their native crops were rendered",
    "pin": "data/manifests/synth3_shards_e.json (every merged and native shard's sha256, the recipe, the per-shard replacement counts), committed and pushed before E_s3nat trains"
   }
  },
@@ -211,5 +211,14 @@
   "version 4's settings were measured on training-side native screenshots and crops only (realdata / teacher native frames of training-side VNs; teacher_train + real_train native crops with reserved and development VNs dropped), first under the 09:25Z rule and again without the Memories Off series once it was reserved (unchanged within 0.003 of glyph aspect, eval/synth3_native_calibration_20261013.json); never on devnative, teacher_val or a protected set",
   "devnative v3 holds no eval or linefind screenshot (docs/devnative.md)"
  ],
- "amendments": []
+ "amendments": [
+  {
+   "date": "2026-10-13T12:2xZ (committed with the new pin, before any E_s3nat step trained and before any score)",
+   "before_any_scoring": true,
+   "before_any_E_run": true,
+   "change": "s3e points to the merge of version 4's render of commit 314a0b4 (synth3.py with legibility-gated effect thinning); the s3e pin of 8dbc1e3 (render of 12:08Z) is superseded and was never trained on.",
+   "reason": "The label audit of the 12:08Z render (synth3_audit.py, PP-OCRv6 small, 1,500 crops, seed 1) read 7.5% CER on its gt crops against version 3's 3.9%: plain native text on translucent boxes over scenes had lost the outline that kept it legible. 314a0b4 drops a sampled outline or shadow only behind a box with alpha >= 0.6 and never on text without a box; its calibration render c4 audits at 4.2% CER (gt 4.6%, version 3's native strata 2.5-6.0%).",
+   "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparison and decision rule"
+  }
+ ]
 }

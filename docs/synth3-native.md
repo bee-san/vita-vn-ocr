@@ -18,8 +18,8 @@ native regions inside a whole console frame:
 5. The region's window is cut back out. The ink, fill and furigana masks and the line layout follow every
    geometric step, and the crop path is version 3's: the gt crop, or the console's GRAD finder box.
 
-Native lines also get version 4's style settings for native platforms: fewer outlines and shadows, a
-little extra letter spacing on some lines, fewer furigana. With `CFG["frames"] = None` the code renders
+Native lines also get version 4's style settings for native platforms: fewer outlines and shadows behind
+opaque boxes, a little extra letter spacing on some lines, fewer furigana. With `CFG["frames"] = None` the code renders
 version 3 byte for byte. Re-rendering the first 400 crops of pinned v3 shards 0 and 57 with this code
 gave identical pixels, shapes, labels and metadata (`$A/native-frames/checks/v3_identity.py`).
 
@@ -76,7 +76,8 @@ characters, measured the same way for every source (`synth3_stats.px_ink`).
 | real native (training side) | 0.69 / 1.02 / 1.19 | 21% / 17% | 0.78 / 1.03 / 1.20 | 12% / 18% |
 | synth3 v3 native renders | 0.60 / 0.84 / 1.10 | 43% / 5% | 0.63 / 0.92 / 1.12 | 35% / 7% |
 | v3, plain text only (no outline, shadow, furigana) | 0.74 / 0.97 / 1.13 | | 0.75 / 1.02 / 1.14 | |
-| version 4 (calibration render c3) | 0.68 / 0.94 / 1.18 | 25% / 14% | 0.71 / 0.99 / 1.20 | 23% / 18% |
+| version 4, c3 (effects dropped everywhere; superseded) | 0.68 / 0.94 / 1.18 | 25% / 14% | 0.71 / 0.99 / 1.20 | 23% / 18% |
+| version 4, c4 (the render's settings) | 0.65 / 0.90 / 1.17 | 32% / 12% | 0.67 / 0.98 / 1.20 | 27% / 16% |
 
 MeikiOCR's character boxes on the real crops show what causes the gap. Real kanji are square: w/h
 p10 / p50 / p90 0.88 / 1.00 / 1.09 on PSP and 0.92 / 1.00 / 1.10 on Vita. Their pitch is one kanji
@@ -87,14 +88,29 @@ Version 3's plain text matches the real crops. Its outlined and shadowed lines d
 gives a median of 0.84, outline plus shadow 0.80, and furigana 0.58-0.70. About 78% of its native PSP
 lines carry an outline, a shadow or both, against 14% plain.
 
-Version 4 therefore keeps a sampled outline on 15% of PSP and 20% of Vita native lines, and a shadow on
-25%. Text without a box keeps its outline on 50%. Furigana goes from 15-20% of lines to 5%, and some
-lines get 1-3 px of extra pitch.
+Version 4 therefore drops most sampled outlines and shadows of native lines, but only where plain text
+stays legible:
 
-Three calibration rounds (c1-c3, seed 3001, 5,000 crops each) moved the median from 0.84 to 0.94 on PSP
-and from 0.92 to 0.99 on Vita. The gap that remains is the narrow tail: 25% / 23% of lines below 0.80
-against the real 21% / 12%. Text without a box, NVL narration and close neighbour lines account for
-most of it.
+- An outline is kept on 8% of PSP and 10% of Vita lines, a shadow on 15%.
+- The drop happens only when the box behind the text has alpha 0.6 or more. Text without a box keeps
+  its effects.
+- Furigana goes from 15-20% of lines to 5%, and some lines get 1-3 px of extra pitch.
+
+The first full render (12:08Z, c3's settings) dropped effects behind any box. Its label audit failed:
+
+| crops | teacher-vs-label CER (PP-OCRv6 small, 1,500 crops) |
+|---|---|
+| version 3, native strata | Vita 2.5%, PSP 5.2%, PSP-on-Vita 6.0%; gt crops 3.9% |
+| version 4 render of 12:08Z (c3) | 6.0% overall, gt crops 7.5%, text without a box 14% |
+| version 4, c4 (the render's settings) | 4.2% overall, gt crops 4.6%, Vita 2.7%, PSP 5.8%, PSP-on-Vita 5.3% |
+
+The 12:08Z render's worst crops were plain text on translucent boxes over busy scenes, unreadable even by
+eye. It was discarded before any training (protocol amendment 1), and the render was redone with the
+legibility gate.
+
+Four calibration rounds (c1-c4, seed 3001, 5,000 crops each) moved the median from 0.84 to 0.90 on PSP
+and from 0.92 to 0.98 on Vita. The rest of the gap, mostly a narrow tail, comes from three groups:
+outlined text on translucent boxes, text without a box, and NVL narration with close neighbour lines.
 
 ### Sharpness
 
@@ -104,7 +120,7 @@ p90 gradient over the crop's contrast, inside the ink box:
 |---|---|---|
 | real native | 0.43 / 0.50 / 0.55 | 0.43 / 0.50 / 0.54 |
 | v3 | 0.42 / 0.51 / 0.68 | 0.39 / 0.49 / 0.53 |
-| version 4 (c3) | 0.36 / 0.50 / 0.66 | 0.34 / 0.47 / 0.52 |
+| version 4 (c4) | 0.41 / 0.50 / 0.67 | 0.38 / 0.48 / 0.53 |
 
 The medians match. The crisp PSP tail (p90 0.66) comes from clean captures of 1-bit and pixel fonts. The
 soft Vita tail comes from the double JPEG with 4:2:0 and from blur. Version 4 does not tune either.

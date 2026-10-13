@@ -2,7 +2,7 @@
 """The synth3 protocols' locked test report: arms and runs on vita-test and psp-test.
 
   synth3_test_report.py --protocol eval/synth3_ablation_protocol.json --dir RESULTS_DIR \
-      [--pair X=Y ...] [--ref NAME ...] --out result.json
+      [--spec SPEC.json] [--arms A,B,...] [--pair X=Y ...] [--ref NAME ...] --out result.json
 
 RESULTS_DIR holds one `eval/run.py --out` file per run and polarity, NAME_console.json and
 NAME_native.json, each scored once on vita-test and psp-test through the C runtime (vocr:
@@ -13,7 +13,9 @@ pooled), it reports every run's and every arm's CER and exact-line rate with int
 denominators (an arm's errors are summed over its seeds), the protocol's comparisons as paired
 bootstraps of CER(Y) - CER(X) in points (VNs resampled as clusters, and lines), per eval style
 tag, and any extra single-run pairs (--pair X=Y, e.g. the protocol's secondary runs). --ref adds
-reference runs (released blobs) to the tables without comparing them.
+reference runs (released blobs) to the tables without comparing them. --spec adds the arms and
+comparisons of a reported-only spec (eval/synth3_study2_reported.json); --arms keeps only the named
+arms, and only the comparisons between two kept arms (one architecture of study 2, say).
 
 These numbers are reported only: the protocols fix that the test sets cannot change any
 decision, recipe or dataset.
@@ -105,6 +107,15 @@ def build(args):
     proto = json.loads(Path(args.protocol).read_text(encoding="utf-8"))
     n_boot, seed = proto["bootstrap"]["resamples"], proto["bootstrap"]["seed"]
     arms = {a: rs for a, rs in proto["arms"].items()}
+    comparisons = dict(proto["comparisons"])
+    if getattr(args, "spec", ""):
+        spec = json.loads(Path(args.spec).read_text(encoding="utf-8"))
+        arms.update(spec["arms"])
+        comparisons.update(spec["comparisons"])
+    keep = [a for a in getattr(args, "arms", "").split(",") if a]
+    if keep:
+        arms = {a: arms[a] for a in keep}
+        comparisons = {k: v for k, v in comparisons.items() if v[0] in arms and v[1] in arms}
     pairs = [p.split("=", 1) for p in args.pair]
     names = sorted({r for rs in arms.values() for r in rs} | {x for p in pairs for x in p} | set(args.ref))
     res = {"kind": "synth3-test-report", "protocol": Path(args.protocol).name,
@@ -128,7 +139,7 @@ def build(args):
                 for t in sorted({t for st in styles for t in st}):
                     m = np.array([t in st for st in styles])
                     S["styles"][a][t] = summary(e[m], x[m], chars[m], len(rs))
-            for cname, (a, b) in proto["comparisons"].items():
+            for cname, (a, b) in comparisons.items():
                 S["comparisons"][cname] = {"a": a, "b": b, **compare(runs, arms[a], arms[b], s, n_boot, seed)}
             for a, b in pairs:
                 S["pairs"][f"{a}->{b}"] = {"a": a, "b": b, **compare(runs, [a], [b], s, n_boot, seed)}
@@ -171,6 +182,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--protocol", required=True)
     ap.add_argument("--dir", required=True, help="eval/run.py --out files, NAME_console.json / NAME_native.json")
+    ap.add_argument("--spec", default="", help="reported-only spec whose arms and comparisons are added")
+    ap.add_argument("--arms", default="", help="comma list: keep only these arms and their comparisons")
     ap.add_argument("--pair", action="append", default=[], help="extra single-run comparison X=Y (Y - X)")
     ap.add_argument("--ref", action="append", default=[], help="reference run reported without comparisons")
     ap.add_argument("--out", required=True)

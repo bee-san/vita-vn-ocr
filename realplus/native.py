@@ -536,6 +536,9 @@ def cmd_build(args):
     print(json.dumps(stats, indent=1), flush=True)
 
 
+OWNER_NOTE = ("\nThese are the owner's own live console captures: PRIVATE and copyrighted. Never send any sheet,\n"
+              "crop, frame or transcription from this batch to Codex, gpt-6-luna or any other model or third\n"
+              "party. View one image per tool call, at most 1280 px.\n")
 CHECK_STRATA = {"auto": 40, "reviewed": 120}      # pre-registered here before any check sheet existed
 CHECK_NOTE = ("\nThis is a label-precision check (native-frames): no candidate reading is shown.\n"
               "Type exactly the text inside the red frame as {\"text\": ...}, whatever it is (dialogue,\n"
@@ -590,7 +593,7 @@ def cmd_check(args):
         out = NP / "review" / "check" / f"b{k // args.size + 1:04d}"
         n = S.make_batch(entries[k:k + args.size], out, "blind", name=f"native/check/{out.name}")
         with open(out / "README.md", "a", encoding="utf-8") as f:
-            f.write(CHECK_NOTE)
+            f.write(CHECK_NOTE + (OWNER_NOTE if os.environ.get("NATIVE_OWNER_POOL") == "1" else ""))
         print(f"{out}: {len(entries[k:k + args.size])} entries, {n} sheets", flush=True)
 
 

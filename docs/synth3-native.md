@@ -45,7 +45,8 @@ recommended VN-style data. Version 4 stays in the code as an option (`frames=Non
 - **Crops**: teacher_train and real_train native crops, with reserved and development VNs dropped. The
   4,030 native PSP crops include 64 of 街. Without them, PSP aspect p10 / p50 moves from 0.696 / 1.020
   to 0.713 / 1.024 (re-measured by the PR #64 audit). The first measurement's 4,093 crops also held
-  about 63 native PSP crops of the Memories Off series.
+  73 native PSP crops of the Memories Off series. It lacked 10 crops of v3091, which the 09:25Z rule
+  reserved and the 10:51Z rule does not.
 
 ### VNDB's JPEG
 
@@ -261,16 +262,18 @@ predicted accuracy on native frames, a caution for calibrating synthetic data on
   all 100 shards byte-identically to the pins and counted three exposure channels:
   - **Region backgrounds**: 265 of the 550,000 crops have one cut from a screenshot of these VNs: Eustia
     253, 街 9, 428 3. That is 9 distinct screenshots.
-  - **Console-frame backdrops**: 2,052 crops (1,987 in s3e) are cut from a console frame whose backdrop
-    is one of 街's 9 PSP screenshots. That is 1,862 regions: PSP 1,681, PSP-on-Vita 371.
+  - **Console-frame backdrops**: 2,052 crops (1,987 in s3e; PSP 1,681, PSP-on-Vita 371) are cut from a
+    console frame whose backdrop is one of 街's 9 PSP screenshots. They come from 1,345 regions (PSP 1,107,
+    PSP-on-Vita 238); 1,862 regions were drawn on such a frame, and 517 of them kept no crop.
     - Only the region's window is cut back out.
     - In 552 of these crops (531 in s3e), the backdrop's pixels still reach the crop through the frame's
-      JPEG, blur or resampling, by up to 64 grey levels (median 3).
+      JPEG, blur or resampling: inverting the backdrop changes them by up to 64 grey levels (median 3).
+      A black or white backdrop changes 4 more, by 1 grey level.
   - **Text**: 223 labels hold a marker #63 added, 214 of them in s3e. 188 are name plates, 160 of those
     from the VNDB name pool, mostly ordinary given names such as 留美 or 千晶. 2 of these crops also sit
     on a 街 frame.
-  - **Total**: at most 2,538 crops, or at most 1,040 counting only crops that carry the screenshots'
-    pixels. They come from 13 screenshots: Eustia 3, 428 1, 街 9.
+  - **Total**: 2,538 crops (2,456 in s3e), or 1,043 counting from the backdrop channel only the 556 crops
+    its pixels reach. They come from 13 screenshots: Eustia 3, 428 1, 街 9.
   - Version 3's data carries the same kind of exposure, without the frames. Renders from main exclude all
     50 VNs from both scene draws.
 - The calibration used training-side frames and crops only.

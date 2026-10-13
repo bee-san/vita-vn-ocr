@@ -962,13 +962,11 @@ def sample_style(rng, platform, effects=None):
         # native console frames (version 4): the real native crops' glyph aspect (ink width per
         # full-width character over ink height) sits where synth3's plain text does, not where its
         # outlined and shadowed text does (synth/native_calib.py crops), so fewer native lines keep
-        # an outline or a shadow; text without a box keeps its outline more often (legibility)
+        # an outline or a shadow. The draw is made here; render_region drops the effect only behind a
+        # box opaque enough to keep the text legible (frames.thin_min_alpha), never on bare text
         keep = F["effects"]["bare" if st["layout"] == "bare" else con]
-        if st["stroke"] is not None and rng.random() >= keep["stroke"]:
-            st["stroke"] = None
-            st["stroke2"] = None
-        if st["shadow"] is not None and rng.random() >= keep["shadow"]:
-            st["shadow"] = None
+        st["thin_stroke"] = st["stroke"] is not None and rng.random() >= keep["stroke"]
+        st["thin_shadow"] = st["shadow"] is not None and rng.random() >= keep["shadow"]
     return st
 
 
@@ -1308,6 +1306,19 @@ def render_region(rng, platform=None):
                                "border": border if rng.random() < 0.5 else None}, st)
         tab["c"] = tab_c
 
+    F = CFG.get("frames")
+    if F and platform != "scaled" and boxes and (st.get("thin_stroke") or st.get("thin_shadow")):
+        # version 4: an outline or shadow sample_style marked for dropping goes only where the box
+        # behind the text is opaque enough for plain text to stay legible (the label audit of the first
+        # version-4 render found illegible gt crops of plain text on translucent boxes over scenes)
+        eff = min(min(b["alpha"]) if isinstance(b["alpha"], tuple) else b["alpha"] for b in boxes)
+        if eff >= F["thin_min_alpha"]:
+            if st.get("thin_stroke"):
+                st["stroke"] = st["stroke2"] = None
+                sw = sw2 = 0
+            if st.get("thin_shadow"):
+                st["shadow"] = sh = None
+                dy = 0
     # ---- text
     layer = Layer3(w, h, ck, aa, n_fill, sw, sw2, resample, integer)
     layer.cursor_k = cursor_k

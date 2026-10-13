@@ -57,6 +57,12 @@
    "script": "eval/vocr3_run.sh W20 ARM 1 (study 2's recipe at width 2.0, 32,000 pretrain steps as train2's p20; outputs under $HERD/shared/artifacts/synth3/vocr3/runs)",
    "rule": "all three are candidates and all three must finish before the W20 selection; there is no study-2 decision at this width. B_s3 is included because study 1's H15-width secondary favoured synth3 alone (B - A -0.52, CI -0.80 to -0.25; one seed)"
   },
+  "realplus": {
+   "FL10": {"decision_pairs": [["ft_FL10_A_s2_seed1", "rp_FL10_A_s2_seed1"], ["ft_FL10_A_s2_seed2", "rp_FL10_A_s2_seed2"], ["ft_FL10_A_s2_seed3", "rp_FL10_A_s2_seed3"], ["ft_FL10_C_mix_seed1", "rp_FL10_C_mix_seed1"], ["ft_FL10_C_mix_seed2", "rp_FL10_C_mix_seed2"], ["ft_FL10_C_mix_seed3", "rp_FL10_C_mix_seed3"]], "extra_runs": ["rp_FL10_C_mix_pre64k_seed1", "rp_FL10_C_mix_pre128k_seed1"]},
+   "H15": {"decision_pairs": [["ft_H15_A_s2_seed1", "rp_H15_A_s2_seed1"], ["ft_H15_A_s2_seed2", "rp_H15_A_s2_seed2"], ["ft_H15_C_mix_seed1", "rp_H15_C_mix_seed1"], ["ft_H15_C_mix_seed2", "rp_H15_C_mix_seed2"]], "extra_runs": ["rp_H15_B_s3_seed1"]},
+   "W20": {"decision_pairs": [["ft_W20_C_mix_seed1", "rp_W20_C_mix_seed1"], ["ft_W20_A_s2_seed1", "rp_W20_A_s2_seed1"], ["ft_W20_B_s3_seed1", "rp_W20_B_s3_seed1"]], "extra_runs": []},
+   "note": "amendment 4"
+  },
   "variants": {
    "status": "optional; each is trained only if its precondition holds, and enters the candidate list only through the ablation rule below",
    "realplus": {
@@ -135,6 +141,12 @@
    "change": "Which devnative version selects. devnative keeps fixing its cohort (v1 f5a1dbd, v2 ef76d1e drops 41 screenshots shared with eval/linefind's finder sets, v3 fixes ink crops that v1 and v2 padded twice). VOCR3 uses one version for every size: the latest version whose manifest commit is on origin and is announced in devnative.status (COHORT_FROZEN or COHORT_Vn <sha>) when the first VOCR3 selection score of any size is computed; the sha and the npz sha256s are recorded with the selection. Its selection set is the strict and tv_native subsets with both crops (ink and GRAD) pooled, both views, as study 2's amendment 1; scene_vn is reported only. If no version is announced then, teacher_val alone selects.",
    "reason": "The protocol named devnative's COHORT_FROZEN commit but not which of its later versions; this fixes it before any score.",
    "unchanged": "everything else"
+  },
+  {
+   "date": "2026-10-13 (commit time in git), before any VOCR3 candidate was scored",
+   "change": "The realplus variant becomes a paired ablation per size, replacing the single run from the base selection's pretrain. Every candidate pretrain of a size gets a second fine-tune, an rp run (eval/vocr3_rp_run.sh ARCH ARM SEED [PRE_STEPS]), identical to its candidate's fine-tune except the real half: tt 0.2 + rd 0.1 + rp 0.2, with tt and rd the CLANNAD-free copies, rp the realplus pool (realplus_train_ink.npz + realplus_train_grad.npz, pinned by eval/vocr3_realplus.sha256: 124,845 crops of 43,264 lines from 9,140 VNs, blind precision 495/500), and no PP-OCRv6 pseudo-labels. Decision per size (candidates.realplus.SIZE.decision_pairs: FL10's six study-2 pretrains, H15's four, W20's three): realplus is adopted iff, on teacher_val (both views, errors summed over the pairs), the VN-cluster 95% interval of CER(rp) - CER(base fine-tune) lies entirely below 0 and every pair's difference is below 0, and, when devnative selects, devnative's interval is not entirely above 0. If adopted, the size's candidates are the rp runs of all its candidate pretrains (the decision pairs' rp runs plus extra_runs) and the base rule picks among them; otherwise its candidates stay as they are and the rp runs are reported only.",
+   "reason": "One fine-tune from the base selection's pretrain gives a one-pair test that covers line sampling only, and the base selection is the luckiest of its candidates, which biases that comparison toward it; pairing over every study-2 pretrain gives several pairs, as in studies 1 and 2. Known before this amendment: study 2's FL10 result and its FL10 test report (neither involves realplus), and realplus's own counts and blind precision; no realplus-trained model existed.",
+   "unchanged": "everything else; the synth3_v3 variant keeps its rule"
   }
  ]
 }

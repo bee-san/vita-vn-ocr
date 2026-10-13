@@ -188,7 +188,7 @@ class TinyTorch(Recognizer):
         self.vocab = [c if len(c) == 1 else UNK for c in ck["vocab"]]
         self.H = int(ck.get("height") or TinyTorch.H)
         accepted = inspect.signature(TinyVNOCR).parameters
-        kw = {k: ck[k] for k in ("width", "bottleneck", "depth", "ctx", "ctx_k")
+        kw = {k: ck[k] for k in ("width", "bottleneck", "depth", "ctx", "ctx_k", "chans")
               if ck.get(k) is not None and k in accepted}
         self.model = TinyVNOCR(len(self.vocab) + 1, **kw)
         self.model.load_state_dict(ck["model"])

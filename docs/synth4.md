@@ -114,6 +114,9 @@ open alternative. Native Vita contrast stays 19 levels short of real.
   was later rebased onto the corrected gap analysis (its commits are reachable from the branch tip;
   the generator, protocol and pin files are unchanged across the rebases), which changed no file of
   the render.
+- #64 later changed `synth/synth3.py` on main; the pin records the a40fc23 bytes synth4 rendered
+  with, and a re-render of shard 33 under #64's synth3.py is byte-identical, so the change does not
+  affect synth4's output and the pin stands.
 - Determinism: re-rendering the first 1,000 crops of shards 0 and 57 from the committed code gives
   byte-identical pixels, shapes, labels and metadata.
 - Crop count per licence: open 990,793, non-commercial 5,616, owner 3,591 (cinecaption 3,538,

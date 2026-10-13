@@ -5,9 +5,9 @@
   "devnative_check": "every devnative function realplus calls has the same body at 14ae22d (edgecheck.flags gained crop=, default unchanged; decide.wilson95 factored out); edge flags recomputed at 14ae22d matched on 2,000 of 2,000 lines",
   "code_sha256": {
    "shots.py": "a1080a1888d8059a88e84f1434c9a82a72cc2d4d0ab01ee19c62f5d3031797e7",
-   "pool.py": "905ce2524ff1d0ba53a781c62a29241a017da58607abcb807cd2cb8e8e111758"
+   "pool.py": "b59c400ea5709b2840b9aa0b712358d66a035f20da221ed58307fee1af6ec088"
   },
-  "published_at": "b4bf233"
+  "published_at": "f356535"
  },
  "vndb_dump": {
   "file": "vndb-db-2026-10-12.tar.zst",
@@ -241,7 +241,66 @@
  "local_manifests": {
   "manifests/lines.jsonl": "90b720291afd864835f5b472040574e9c5eca8af62c67ee60f0f6b8d4c222315",
   "labels.jsonl": "bdf7346db16696f4b5d35f5b09639d934863867d23d03cde70164e4dec9c2de2",
-  "lines_full.jsonl": "0f891be8262efefd38cce29d662581b1660391e4f2e8d570a0fea86aae4d0051"
+  "lines_full.jsonl": "0f891be8262efefd38cce29d662581b1660391e4f2e8d570a0fea86aae4d0051",
+  "edge/boxes.jsonl": "c2126c9b292488cbac1b8c2f77928405b3699bf7b64d9825d8e81e4a3612880e",
+  "edge/edge.jsonl": "a07e820270d5973f53fd6ee4d61c34838b90366a43b1bcd462cbb4d76e85cf0e",
+  "review/blind_ids.json": "e6364e776e728b05428cf56d7f6661fe4c551807143b3decdb6a899e5a12661c",
+  "review/resolutions.jsonl": "2092cb9511cdb7571a7dc977a8ee9cefcc129df972dd5df333c635bf4e996aa9",
+  "review/blind_report_measured.json": "75d5eba9d4fef1f380b256c405f08b591808cebfa895a892002ae4b1cefe61c2",
+  "manifests/dups.json": "ab69303d50f68a31a0c72225718a97fec311357ac2247179764fea5ccaca07d7",
+  "manifests/leak_drop.json": "d7950de84fc312fe8b0511c05806746c4d5838c7dc322105c7b0b1a8250f7ffa"
+ },
+ "batches_used": {
+  "pass1": [
+   "b0001",
+   "b0002",
+   "b0003",
+   "b0004",
+   "b0005",
+   "b0006",
+   "b0007",
+   "b0008",
+   "b0009",
+   "b0010",
+   "b0011",
+   "b0012",
+   "b0013",
+   "b0014",
+   "b0015",
+   "b0016",
+   "b0017"
+  ],
+  "pass2": [
+   "b01"
+  ],
+  "edge": [
+   "b0001",
+   "b0002",
+   "b0003",
+   "b0004",
+   "b0005",
+   "b0006",
+   "b0007",
+   "b0008",
+   "b0009",
+   "b0010",
+   "b0011",
+   "b0012",
+   "b0013",
+   "b0014",
+   "b0015",
+   "b0016",
+   "b0017",
+   "b0018",
+   "b0019"
+  ],
+  "blind": [
+   "b0001",
+   "b0002",
+   "b0003",
+   "b0004",
+   "b0005"
+  ]
  },
  "blind": {
   "all": {

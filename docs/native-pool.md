@@ -46,9 +46,16 @@ The counts:
 | CLANNAD | 5 |
 
 VNDB holds no native frame the training side has not already used. realplus v2 found the same on the
-2026-10-12 dump. The native supply that is still reachable is the lines realdata and teacher left
-unlabelled on their own native frames: their engines disagreed (teacher_distill: 1,426 PSP and 501 Vita
-lines on these frames), or their rules never considered the lines.
+2026-10-12 dump. The native supply still reachable is the lines realdata and teacher never gave a
+reviewed label on their own native frames.
+
+- Many of these lines are not untrained. teacher_distill_train holds 1,645 rows on the 1,677 selected
+  frames (1,285 PSP, 360 Vita), and real_unlabelled holds 1,892 (1,458 PSP, 434 Vita).
+- train2's release recipe trains on both files as its `ps` source. A row is hard-labelled with
+  PP-OCRv6 small's reading where that reading's lowest character confidence is 0.7 or more
+  (`docs/train2.md`).
+- So this pool mostly replaces pseudo-labels with reviewed labels. It adds few unseen lines (see
+  Overlap with the unlabelled pools, below).
 
 ## Frames (`native.py select`, `prep`)
 
@@ -82,8 +89,8 @@ Lines teacher or realdata already labelled on the same frame are left out of rev
 |---|---:|
 | in the plan | 2,634 (t1 1,574, t2 106, t3 954) |
 | already labelled by teacher or realdata | -1,337 |
-| of VNs reserved after the read (v1964, 街) | -46 |
-| **new, reviewed** | **1,278** (t1 389, t2 80, t3 809) |
+| of VNs reserved after the read (v1964, 街) | -46 (27 of them also already labelled) |
+| **left for review** | **1,278** (t1 389, t2 80, t3 809): 2,634 minus 1,356 distinct drops |
 
 Pass 1 (`review/pass1/b0001`-`b0008`, 130 sheets) covered all of them. It held 1,300 lines before the
 13:10Z reservation took 街's lines out. These are lines the old pools' engines found hard.
@@ -118,8 +125,15 @@ call:
 | confirm looks (blind, final crop) | 321 | single-family labels and lines Luna skipped: 314 confirmed, 7 dropped |
 | edge checks (final crop) | 370 | 354 passed, 16 cut |
 
-Under the rule, 437 lines are kept by Claude + Luna agreement and 51 by a confirm look after Luna skipped.
-35 Luna disagreements and the confirm drops are out.
+Under the rule, 437 lines were kept by Claude + Luna agreement and 51 by a confirm look after Luna
+skipped. Those counts are from `pool.py final`, before `filter-labels` dropped the later-reserved VNs.
+The 35 Luna disagreements and the confirm drops are out. After filter-labels and the build, v1 holds:
+
+- 410 Claude + Luna agreements;
+- 42 lines Luna skipped (19 ui, 23 cut) that a confirm look re-read the same;
+- 105 auto lines.
+
+No line was kept on a Luna disagreement.
 
 ## Pool (`native.py build --tag v1`)
 
@@ -144,6 +158,27 @@ family plus a confirm look. It leaves out reserved VNs and leak-dropped frames, 
 | how | 105 auto (all four readings), 182 both engine families, 270 one family plus a Claude confirm look |
 | tier | auto 105, t1 184, t2 46, t3 222 |
 | files | `native_train_ink_v1.npz` sha256 ca202a1c..., `native_train_grad_v1.npz` 2cf40190... |
+
+### Overlap with the unlabelled pools
+
+The PR #66 audit measured this overlap with train2's `load_shard` `ps` logic:
+
+- 522 of the 557 lines (93.8%) are rows of an unlabelled pool:
+  - 497 overlap a teacher_distill_train row; 491 of them share its line id.
+  - 456 overlap a real_unlabelled row.
+- 417 of the 557 are already a training line of train2's `ps` source. 342 of those carry the same label
+  as this pool and 75 a different one; 123 lines have at least one conflicting `ps` row.
+- 140 lines (98 PSP, 42 Vita) are in no `ps` stream.
+
+So the pool's contribution is reviewed hard labels for lines the release recipe already trains on with
+conf-0.7 PP-OCRv6 pseudo-labels, 75 of which this review corrects. It adds 140 lines no stream trains on
+and one VN new to training (v11179). It is not 557 net-new lines. A recipe that adds the pool should
+drop or override the matching `ps` rows rather than train both labels.
+
+A plain check of line ids finds 491 of the pool's ids in teacher_distill_train and 335 in
+real_unlabelled.
+
+### Crops
 
 Every line has an ink crop; 411 also have a GRAD crop. A GRAD crop is dropped, while its line is kept,
 when the finder's box misses the line, mixes it with another, cuts its label, or needs a check nobody
@@ -180,22 +215,34 @@ The 4 disagreements:
 All 4 lines were dropped from v1 (`review/resolutions.jsonl`). The rate is measured on the pre-build;
 v1 is the same pool without those 4.
 
+### Notes
+
+- Every npz meta row records `reviewer_kind: "assistant"`, the 105 auto lines included, and
+  `session: null`. Auto lines had no review, so their provenance is `how: "auto"`, `luna: null`.
+- Auto lines bypass the UI filter. At least one is a kana name-entry grid row (v19288_154790_5): its text
+  is right, but it is not dialogue.
+
 ## Owner rules and Codex
 
 The owner's rules changed during the run, and each change was applied to the pool:
 
 - **10:51Z** reserved the Memories Off series. The pool held 10 frames of Your Memories Off ~Girl's Style~
   (v1964). Their lines were dropped from the plan and the labels.
-- **11:32:02Z, after that rule:** 3 public VNDB crops of v1964 were sent to gpt-6-luna (sheet
-  pass1/b0008/S001: v1964_52004_1, v1964_52005_0, v1964_52006_1). Re-prepping the frame list had dropped
-  those frames from the known-line bookkeeping, so their lines came back into the plan. audit-native-frames
-  found this (O1), and the conductor was told.
+- **11:32:02Z, after that rule:** sheet pass1/b0008/S001 sent 7 public VNDB crops to gpt-6-luna.
+  - 3 of them are of the reserved v1964 (v1964_52004_1, v1964_52005_0, v1964_52006_1). The other 4 are
+    of v19953, which is training-eligible.
+  - Sheet S002 sent 7 more at 11:32:04Z, all of v19953 and v3091 (training-eligible).
+  - A Claude helper (review-nf-7) also decided the 3 v1964 lines at 12:07:03Z.
+  - None of their labels survives.
+  - Re-prepping the frame list had dropped those frames from the known-line bookkeeping, so their lines
+    came back into the plan. audit-native-frames found this (O1), and the conductor was told.
   - The fix: known lines now come from every frame read, and `filter-plan` and `filter-labels` drop every
     VN `reserved_vns` reserves today.
   - The Luna loop was stopped after pass 1. Pass-1 Luna votes on v1964 lines from the other batches were
     sent 10:25-10:41Z, before the rule.
-- **13:10Z** reserved 428 and 街 (v1360, a 428 relation). The pool held 6 frames of 街. Its 19 kept labels
-  were dropped before the build; their Luna votes date from 10:25-10:41Z.
+- **13:10Z** reserved 428 and 街 (v1360, a 428 relation). The pool held 6 frames of 街. `filter-labels`
+  dropped 19 kept labels before the build: 11 of 街 and 8 of v1964. 街's Luna votes date from
+  10:25-10:41Z.
 - The owner's own frames (`shared/private/owner-games/`) never enter this pool and never go to Codex.
 
 ## Owner frames (`realplus/owner_frames.py`)

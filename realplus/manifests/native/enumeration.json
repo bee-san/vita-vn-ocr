@@ -1,0 +1,143 @@
+{
+ "kind": "native-enumeration",
+ "dump": "2026-10-13 08:00:26+00",
+ "releases": {
+  "psp_or_psv": 3474,
+  "by_console": {
+   "psp": 1695,
+   "psp+psv": 28,
+   "psv": 1751
+  },
+  "console_only_releases": {
+   "console-only": 3350,
+   "with-other": 124
+  }
+ },
+ "titles": {
+  "with_psp_or_psv_release": 1243,
+  "by_group": {
+   "multi-platform": 1005,
+   "psp+vita": 19,
+   "psp-only": 157,
+   "vita-only": 62
+  }
+ },
+ "screenshots": {
+  "on_psp_or_psv_releases": 4089,
+  "vns": 498,
+  "native": 3959,
+  "native_by_kind": {
+   "vita": 856,
+   "psp": 3103
+  },
+  "dims_not_native": {
+   "psv 960x540": 23,
+   "psp 480x270": 12,
+   "psp 960x544": 10,
+   "psp 272x480": 9,
+   "psv 640x362": 9,
+   "psv 1728x972": 7,
+   "psp 474x266": 6,
+   "psv 774x439": 6,
+   "psv 3840x2160": 6,
+   "psv 1920x1080": 5,
+   "psp 853x480": 4,
+   "psv 1906x1080": 4,
+   "psv 2880x2160": 3,
+   "psv 640x363": 3,
+   "psp 950x539": 3,
+   "psp+psv 640x480": 3,
+   "psv 1280x720": 3,
+   "psv 800x460": 3,
+   "psv 1140x641": 2,
+   "psv 750x425": 2
+  }
+ },
+ "why": {
+  "pooled": 1671,
+  "vn:test-set": 642,
+  "vn:development": 492,
+  "set:linefind": 304,
+  "vn:shared-release": 278,
+  "vn:family": 196,
+  "not-native-size": 130,
+  "rating": 125,
+  "vn:owner-test-series": 67,
+  "set:eval-candidates": 64,
+  "language": 54,
+  "vn:val-bucket": 35,
+  "vn:owner-test-relation": 10,
+  "vn:test-vn": 10,
+  "pooled-other:synth2": 6,
+  "vn:clannad": 5
+ },
+ "why_by_group": {
+  "psp-only": {
+   "pooled": 606,
+   "vn:test-set": 189,
+   "vn:development": 166,
+   "set:linefind": 65,
+   "vn:family": 56,
+   "rating": 50,
+   "vn:shared-release": 39,
+   "not-native-size": 29,
+   "language": 21
+  },
+  "vita-only": {
+   "pooled": 145,
+   "set:linefind": 60,
+   "vn:test-set": 34,
+   "vn:development": 28,
+   "not-native-size": 26,
+   "set:eval-candidates": 16,
+   "language": 11,
+   "rating": 7
+  },
+  "psp+vita": {
+   "pooled": 96,
+   "vn:test-set": 28,
+   "vn:development": 20,
+   "vn:family": 20,
+   "set:linefind": 12,
+   "rating": 8,
+   "not-native-size": 2
+  },
+  "multi-platform": {
+   "pooled": 824,
+   "vn:test-set": 391,
+   "vn:development": 278,
+   "vn:shared-release": 239,
+   "set:linefind": 167,
+   "vn:family": 120,
+   "not-native-size": 73,
+   "vn:owner-test-series": 67,
+   "rating": 60,
+   "set:eval-candidates": 48,
+   "vn:val-bucket": 35,
+   "language": 22,
+   "vn:owner-test-relation": 10,
+   "vn:test-vn": 10,
+   "pooled-other:synth2": 6,
+   "vn:clannad": 5
+  }
+ },
+ "new": {
+  "screenshots": 0,
+  "vns": 0
+ },
+ "pooled": {
+  "screenshots": 1671,
+  "vns": 235
+ },
+ "reserved_vn_reasons": {
+  "test-set": 642,
+  "shared-release": 278,
+  "family": 196,
+  "development": 492,
+  "owner-test-series": 67,
+  "owner-test-relation": 10,
+  "val-bucket": 35,
+  "test-vn": 10,
+  "clannad": 5
+ }
+}

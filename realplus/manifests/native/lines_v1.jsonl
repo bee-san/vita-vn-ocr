@@ -1,0 +1,557 @@
+{"id": "v95_24092_0", "shot": "v95_24092", "vn": "v95", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [36, 159, 81, 179], "grad": [39, 157, 82, 180]}}
+{"id": "v95_24092_1", "shot": "v95_24092", "vn": "v95", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [20, 196, 266, 216], "grad": [18, 194, 267, 218]}}
+{"id": "v95_57686_1", "shot": "v95_57686", "vn": "v95", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [17, 197, 296, 216]}}
+{"id": "v95_57689_1", "shot": "v95_57689", "vn": "v95", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [20, 197, 170, 218], "grad": [18, 195, 170, 218]}}
+{"id": "v387_57228_1", "shot": "v387_57228", "vn": "v387", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [135, 205, 336, 223], "grad": [133, 203, 338, 225]}}
+{"id": "v675_57611_0", "shot": "v675_57611", "vn": "v675", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [61, 187, 104, 204]}}
+{"id": "v732_55734_1", "shot": "v732_55734", "vn": "v732", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [16, 208, 454, 228]}}
+{"id": "v732_55741_1", "shot": "v732_55741", "vn": "v732", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [20, 208, 463, 228]}}
+{"id": "v799_57633_2", "shot": "v799_57633", "vn": "v799", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [222, 225, 383, 244], "grad": [220, 224, 386, 245]}}
+{"id": "v802_57699_1", "shot": "v802_57699", "vn": "v802", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [108, 175, 311, 198]}}
+{"id": "v802_80144_0", "shot": "v802_80144", "vn": "v802", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [109, 191, 337, 208], "grad": [112, 189, 339, 210]}}
+{"id": "v802_80144_2", "shot": "v802_80144", "vn": "v802", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [116, 225, 324, 242], "grad": [118, 223, 326, 244]}}
+{"id": "v850_56615_11", "shot": "v850_56615", "vn": "v850", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [107, 187, 128, 202]}}
+{"id": "v850_56617_1", "shot": "v850_56617", "vn": "v850", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [18, 208, 458, 228], "grad": [16, 204, 460, 232]}}
+{"id": "v850_56618_0", "shot": "v850_56618", "vn": "v850", "kind": "psp", "how": "single", "luna": "skip-ui", "tier": "t3", "crops": {"ink": [1, 180, 29, 204], "grad": [0, 176, 32, 208]}}
+{"id": "v850_56620_1", "shot": "v850_56620", "vn": "v850", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [17, 208, 402, 228], "grad": [16, 204, 404, 232]}}
+{"id": "v852_57641_1", "shot": "v852_57641", "vn": "v852", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [111, 178, 336, 196], "grad": [108, 176, 338, 200]}}
+{"id": "v852_57645_0", "shot": "v852_57645", "vn": "v852", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [104, 178, 409, 196], "grad": [101, 176, 411, 200]}}
+{"id": "v854_57890_2", "shot": "v854_57890", "vn": "v854", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [30, 206, 378, 223], "grad": [28, 204, 380, 226]}}
+{"id": "v1011_56607_5", "shot": "v1011_56607", "vn": "v1011", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [201, 51, 230, 66]}}
+{"id": "v1011_56607_6", "shot": "v1011_56607", "vn": "v1011", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [391, 51, 426, 67]}}
+{"id": "v1011_56607_8", "shot": "v1011_56607", "vn": "v1011", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [195, 119, 231, 137], "grad": [191, 115, 235, 141]}}
+{"id": "v1011_56611_1", "shot": "v1011_56611", "vn": "v1011", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [18, 208, 338, 228], "grad": [16, 204, 340, 230]}}
+{"id": "v1011_56612_1", "shot": "v1011_56612", "vn": "v1011", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [15, 208, 475, 228], "grad": [16, 204, 479, 232]}}
+{"id": "v1300_57617_1", "shot": "v1300_57617", "vn": "v1300", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [102, 204, 271, 223]}}
+{"id": "v1347_57759_2", "shot": "v1347_57759", "vn": "v1347", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [91, 204, 342, 224], "grad": [87, 200, 346, 228]}}
+{"id": "v1347_57760_1", "shot": "v1347_57760", "vn": "v1347", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [112, 187, 228, 205], "grad": [113, 184, 230, 207]}}
+{"id": "v1347_57765_1", "shot": "v1347_57765", "vn": "v1347", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [112, 186, 275, 205], "grad": [112, 183, 279, 209]}}
+{"id": "v1347_57766_1", "shot": "v1347_57766", "vn": "v1347", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [112, 186, 360, 205]}}
+{"id": "v1347_57766_2", "shot": "v1347_57766", "vn": "v1347", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [91, 204, 291, 226], "grad": [87, 202, 293, 230]}}
+{"id": "v1347_57767_1", "shot": "v1347_57767", "vn": "v1347", "kind": "psp", "how": "single", "luna": "agree", "tier": "t1", "crops": {"ink": [99, 186, 377, 205]}}
+{"id": "v1347_57767_2", "shot": "v1347_57767", "vn": "v1347", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [91, 204, 406, 226], "grad": [87, 202, 406, 226]}}
+{"id": "v1347_57767_3", "shot": "v1347_57767", "vn": "v1347", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [93, 222, 189, 242]}}
+{"id": "v1348_56570_1", "shot": "v1348_56570", "vn": "v1348", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [5, 223, 38, 243]}}
+{"id": "v1348_56573_0", "shot": "v1348_56573", "vn": "v1348", "kind": "psp", "how": "single", "luna": "skip-ui", "tier": "t2", "crops": {"ink": [52, 175, 79, 194]}}
+{"id": "v1415_56400_1", "shot": "v1415_56400", "vn": "v1415", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [145, 234, 350, 251], "grad": [143, 232, 352, 253]}}
+{"id": "v1415_56403_4", "shot": "v1415_56403", "vn": "v1415", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [34, 219, 182, 236], "grad": [34, 217, 184, 238]}}
+{"id": "v1502_56441_2", "shot": "v1502_56441", "vn": "v1502", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [34, 237, 281, 255], "grad": [32, 233, 285, 257]}}
+{"id": "v1629_155352_6", "shot": "v1629_155352", "vn": "v1629", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [243, 357, 380, 394], "grad": [239, 352, 388, 394]}}
+{"id": "v1640_56854_0", "shot": "v1640_56854", "vn": "v1640", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [49, 164, 110, 181], "grad": [49, 162, 112, 184]}}
+{"id": "v1641_56842_1", "shot": "v1641_56842", "vn": "v1641", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [16, 209, 160, 225], "grad": [16, 207, 162, 227]}}
+{"id": "v1641_56850_2", "shot": "v1641_56850", "vn": "v1641", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [17, 209, 187, 225], "grad": [16, 206, 189, 227]}}
+{"id": "v1641_56850_3", "shot": "v1641_56850", "vn": "v1641", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [11, 225, 230, 242], "grad": [9, 223, 232, 243]}}
+{"id": "v1678_55573_9", "shot": "v1678_55573", "vn": "v1678", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [130, 205, 371, 222], "grad": [130, 202, 373, 224]}}
+{"id": "v1707_56859_0", "shot": "v1707_56859", "vn": "v1707", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [38, 195, 349, 213]}}
+{"id": "v1739_170312_0", "shot": "v1739_170312", "vn": "v1739", "kind": "psp", "how": "single", "luna": "skip-ui", "tier": "t3", "crops": {"ink": [59, 158, 158, 181], "grad": [58, 154, 162, 185]}}
+{"id": "v1739_170314_2", "shot": "v1739_170314", "vn": "v1739", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [61, 214, 329, 243], "grad": [59, 210, 333, 247]}}
+{"id": "v1739_170317_1", "shot": "v1739_170317", "vn": "v1739", "kind": "psp", "how": "single", "luna": "agree", "tier": "t1", "crops": {"ink": [69, 193, 340, 214], "grad": [67, 189, 342, 218]}}
+{"id": "v1739_170320_0", "shot": "v1739_170320", "vn": "v1739", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [56, 158, 158, 181]}}
+{"id": "v1739_170320_1", "shot": "v1739_170320", "vn": "v1739", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [66, 186, 295, 212]}}
+{"id": "v1739_170322_0", "shot": "v1739_170322", "vn": "v1739", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [57, 160, 107, 176]}}
+{"id": "v1739_170322_1", "shot": "v1739_170322", "vn": "v1739", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [69, 184, 340, 209], "grad": [67, 185, 344, 213]}}
+{"id": "v1751_52750_2", "shot": "v1751_52750", "vn": "v1751", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [77, 127, 350, 144], "grad": [78, 125, 352, 147]}}
+{"id": "v1805_55652_0", "shot": "v1805_55652", "vn": "v1805", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [19, 170, 109, 188], "grad": [20, 168, 111, 190]}}
+{"id": "v1805_55655_1", "shot": "v1805_55655", "vn": "v1805", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [43, 201, 234, 219], "grad": [42, 199, 236, 222]}}
+{"id": "v1805_55660_0", "shot": "v1805_55660", "vn": "v1805", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [33, 201, 389, 220], "grad": [30, 197, 393, 222]}}
+{"id": "v1805_55661_0", "shot": "v1805_55661", "vn": "v1805", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [17, 166, 65, 185], "grad": [13, 162, 69, 189]}}
+{"id": "v1806_81465_7", "shot": "v1806_81465", "vn": "v1806", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [48, 201, 257, 220], "grad": [49, 199, 259, 222]}}
+{"id": "v1872_56492_1", "shot": "v1872_56492", "vn": "v1872", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [168, 20, 348, 38]}}
+{"id": "v1872_56493_1", "shot": "v1872_56493", "vn": "v1872", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [52, 210, 121, 229]}}
+{"id": "v1872_56497_1", "shot": "v1872_56497", "vn": "v1872", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [56, 209, 311, 230], "grad": [56, 207, 312, 231]}}
+{"id": "v1890_57840_2", "shot": "v1890_57840", "vn": "v1890", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [16, 163, 77, 182], "grad": [12, 159, 81, 186]}}
+{"id": "v1890_57841_1", "shot": "v1890_57841", "vn": "v1890", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [28, 163, 62, 182], "grad": [26, 159, 66, 186]}}
+{"id": "v1890_57843_3", "shot": "v1890_57843", "vn": "v1890", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [27, 163, 63, 182], "grad": [26, 159, 67, 186]}}
+{"id": "v1892_57425_3", "shot": "v1892_57425", "vn": "v1892", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [169, 102, 302, 122]}}
+{"id": "v1892_57425_4", "shot": "v1892_57425", "vn": "v1892", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [163, 129, 310, 147], "grad": [159, 119, 314, 151]}}
+{"id": "v1892_57425_6", "shot": "v1892_57425", "vn": "v1892", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [39, 197, 377, 214], "grad": [39, 195, 379, 216]}}
+{"id": "v1892_57428_0", "shot": "v1892_57428", "vn": "v1892", "kind": "psp", "how": "consensus", "luna": "skip-ui", "tier": "t1", "crops": {"ink": [53, 161, 90, 179], "grad": [56, 160, 91, 180]}}
+{"id": "v1919_55619_1", "shot": "v1919_55619", "vn": "v1919", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [386, 213, 421, 229], "grad": [385, 210, 425, 232]}}
+{"id": "v1919_55621_1", "shot": "v1919_55621", "vn": "v1919", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [36, 172, 91, 187], "grad": [39, 169, 93, 188]}}
+{"id": "v1919_55621_2", "shot": "v1919_55621", "vn": "v1919", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [36, 199, 283, 218]}}
+{"id": "v2061_36438_0", "shot": "v2061_36438", "vn": "v2061", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [113, 183, 163, 203]}}
+{"id": "v2061_55484_4", "shot": "v2061_55484", "vn": "v2061", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [114, 227, 274, 243], "grad": [111, 223, 275, 247]}}
+{"id": "v2170_57363_3", "shot": "v2170_57363", "vn": "v2170", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [146, 224, 304, 241], "grad": [143, 222, 306, 245]}}
+{"id": "v2170_57369_1", "shot": "v2170_57369", "vn": "v2170", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [121, 198, 223, 220]}}
+{"id": "v2377_3675_0", "shot": "v2377_3675", "vn": "v2377", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [1, 157, 64, 175]}}
+{"id": "v2377_3675_1", "shot": "v2377_3675", "vn": "v2377", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [5, 185, 307, 203], "grad": [3, 182, 309, 205]}}
+{"id": "v2377_3676_2", "shot": "v2377_3676", "vn": "v2377", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [13, 207, 361, 225], "grad": [11, 204, 363, 227]}}
+{"id": "v2377_3678_0", "shot": "v2377_3678", "vn": "v2377", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [2, 157, 64, 175]}}
+{"id": "v2377_3678_1", "shot": "v2377_3678", "vn": "v2377", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [5, 184, 451, 203], "grad": [3, 182, 453, 205]}}
+{"id": "v2913_57990_0", "shot": "v2913_57990", "vn": "v2913", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [1, 190, 473, 209], "grad": [0, 186, 477, 213]}}
+{"id": "v2913_57991_0", "shot": "v2913_57991", "vn": "v2913", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [6, 190, 474, 209], "grad": [3, 186, 478, 213]}}
+{"id": "v2960_57175_0", "shot": "v2960_57175", "vn": "v2960", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [103, 129, 153, 149], "grad": [101, 127, 157, 151]}}
+{"id": "v2960_57178_1", "shot": "v2960_57178", "vn": "v2960", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [54, 193, 240, 217], "grad": [50, 189, 244, 221]}}
+{"id": "v2960_57180_2", "shot": "v2960_57180", "vn": "v2960", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [58, 217, 339, 237], "grad": [58, 215, 341, 239]}}
+{"id": "v3091_18560_2", "shot": "v3091_18560", "vn": "v3091", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [19, 242, 293, 262], "grad": [17, 240, 294, 263]}}
+{"id": "v3091_18564_1", "shot": "v3091_18564", "vn": "v3091", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [94, 67, 315, 84], "grad": [90, 64, 317, 86]}}
+{"id": "v3091_18564_2", "shot": "v3091_18564", "vn": "v3091", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [107, 86, 172, 103]}}
+{"id": "v3360_7432_0", "shot": "v3360_7432", "vn": "v3360", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [13, 218, 174, 240]}}
+{"id": "v3360_7433_0", "shot": "v3360_7433", "vn": "v3360", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [13, 218, 118, 240]}}
+{"id": "v3430_58096_0", "shot": "v3430_58096", "vn": "v3430", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [35, 30, 426, 53], "grad": [34, 28, 427, 56]}}
+{"id": "v3430_58096_1", "shot": "v3430_58096", "vn": "v3430", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [24, 58, 415, 80], "grad": [23, 57, 416, 84]}}
+{"id": "v3430_58098_1", "shot": "v3430_58098", "vn": "v3430", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [21, 58, 89, 80], "grad": [23, 57, 89, 82]}}
+{"id": "v3556_57170_3", "shot": "v3556_57170", "vn": "v3556", "kind": "psp", "how": "single", "luna": "skip-ui", "tier": "t3", "crops": {"ink": [312, 232, 367, 258], "grad": [313, 228, 371, 260]}}
+{"id": "v3696_57335_1", "shot": "v3696_57335", "vn": "v3696", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [36, 198, 211, 219], "grad": [34, 194, 212, 220]}}
+{"id": "v3696_57338_0", "shot": "v3696_57338", "vn": "v3696", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [149, 100, 331, 124]}}
+{"id": "v3696_57339_4", "shot": "v3696_57339", "vn": "v3696", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [32, 120, 447, 143]}}
+{"id": "v3699_57917_1", "shot": "v3699_57917", "vn": "v3699", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [5, 154, 63, 176]}}
+{"id": "v3699_57917_2", "shot": "v3699_57917", "vn": "v3699", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [7, 188, 463, 214], "grad": [6, 184, 464, 216]}}
+{"id": "v3699_57920_2", "shot": "v3699_57920", "vn": "v3699", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [7, 188, 453, 214], "grad": [3, 184, 454, 218]}}
+{"id": "v4059_57996_1", "shot": "v4059_57996", "vn": "v4059", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [113, 204, 243, 221], "grad": [113, 200, 246, 225]}}
+{"id": "v4059_57999_1", "shot": "v4059_57999", "vn": "v4059", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [116, 204, 426, 221]}}
+{"id": "v4091_13545_2", "shot": "v4091_13545", "vn": "v4091", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [7, 218, 167, 242], "grad": [3, 216, 170, 245]}}
+{"id": "v4091_13546_2", "shot": "v4091_13546", "vn": "v4091", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [4, 194, 201, 222], "grad": [2, 190, 205, 226]}}
+{"id": "v4091_57563_1", "shot": "v4091_57563", "vn": "v4091", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [7, 197, 252, 221], "grad": [5, 195, 256, 222]}}
+{"id": "v4091_57565_2", "shot": "v4091_57565", "vn": "v4091", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [5, 198, 270, 222], "grad": [2, 195, 271, 226]}}
+{"id": "v4091_57566_0", "shot": "v4091_57566", "vn": "v4091", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [0, 141, 55, 162], "grad": [2, 139, 57, 164]}}
+{"id": "v4091_57566_2", "shot": "v4091_57566", "vn": "v4091", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [6, 195, 320, 217], "grad": [4, 193, 321, 219]}}
+{"id": "v4137_14482_0", "shot": "v4137_14482", "vn": "v4137", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [9, 3, 83, 31], "grad": [8, 1, 87, 35]}}
+{"id": "v4137_55488_2", "shot": "v4137_55488", "vn": "v4137", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [32, 197, 419, 217], "grad": [28, 193, 423, 221]}}
+{"id": "v4137_55491_0", "shot": "v4137_55491", "vn": "v4137", "kind": "psp", "how": "single", "luna": "skip-ui", "tier": "t3", "crops": {"ink": [38, 33, 104, 59], "grad": [34, 29, 108, 63]}}
+{"id": "v4137_55494_3", "shot": "v4137_55494", "vn": "v4137", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [39, 218, 125, 236], "grad": [37, 216, 127, 238]}}
+{"id": "v4185_10818_1", "shot": "v4185_10818", "vn": "v4185", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [17, 219, 343, 249], "grad": [13, 215, 347, 253]}}
+{"id": "v4355_184490_2", "shot": "v4355_184490", "vn": "v4355", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [35, 233, 126, 253], "grad": [31, 232, 130, 257]}}
+{"id": "v4540_57292_0", "shot": "v4540_57292", "vn": "v4540", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [27, 204, 356, 224], "grad": [27, 202, 358, 226]}}
+{"id": "v4540_57294_0", "shot": "v4540_57294", "vn": "v4540", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [29, 179, 124, 197], "grad": [31, 175, 128, 199]}}
+{"id": "v4540_69912_0", "shot": "v4540_69912", "vn": "v4540", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [51, 181, 109, 201], "grad": [49, 177, 110, 205]}}
+{"id": "v4540_69913_2", "shot": "v4540_69913", "vn": "v4540", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [26, 220, 255, 247]}}
+{"id": "v4594_56518_1", "shot": "v4594_56518", "vn": "v4594", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [67, 228, 161, 246], "grad": [68, 225, 162, 249]}}
+{"id": "v4594_56519_4", "shot": "v4594_56519", "vn": "v4594", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [66, 227, 265, 246]}}
+{"id": "v4594_56522_10", "shot": "v4594_56522", "vn": "v4594", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [142, 197, 239, 219]}}
+{"id": "v4594_56525_15", "shot": "v4594_56525", "vn": "v4594", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [72, 179, 118, 196], "grad": [70, 175, 122, 199]}}
+{"id": "v4633_56414_1", "shot": "v4633_56414", "vn": "v4633", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [17, 176, 73, 195], "grad": [19, 173, 74, 199]}}
+{"id": "v4633_56414_4", "shot": "v4633_56414", "vn": "v4633", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [32, 221, 305, 240], "grad": [35, 219, 307, 242]}}
+{"id": "v4633_56415_1", "shot": "v4633_56415", "vn": "v4633", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [17, 177, 72, 195], "grad": [19, 175, 74, 198]}}
+{"id": "v4633_56417_2", "shot": "v4633_56417", "vn": "v4633", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [46, 202, 330, 221], "grad": [44, 200, 332, 223]}}
+{"id": "v4633_56417_3", "shot": "v4633_56417", "vn": "v4633", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [36, 220, 269, 240], "grad": [34, 218, 271, 242]}}
+{"id": "v4633_56418_3", "shot": "v4633_56418", "vn": "v4633", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [43, 202, 296, 221], "grad": [44, 200, 298, 223]}}
+{"id": "v4633_56419_3", "shot": "v4633_56419", "vn": "v4633", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [46, 202, 330, 220], "grad": [44, 200, 332, 222]}}
+{"id": "v4633_56419_5", "shot": "v4633_56419", "vn": "v4633", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [32, 240, 304, 259], "grad": [34, 238, 306, 261]}}
+{"id": "v4697_57960_5", "shot": "v4697_57960", "vn": "v4697", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [98, 223, 211, 242], "grad": [99, 220, 214, 244]}}
+{"id": "v5218_57149_0", "shot": "v5218_57149", "vn": "v5218", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [8, 212, 308, 232]}}
+{"id": "v5218_57153_0", "shot": "v5218_57153", "vn": "v5218", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [9, 212, 427, 232]}}
+{"id": "v5218_57153_1", "shot": "v5218_57153", "vn": "v5218", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [13, 226, 413, 249]}}
+{"id": "v5912_58018_1", "shot": "v5912_58018", "vn": "v5912", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [31, 216, 151, 233], "grad": [29, 214, 153, 235]}}
+{"id": "v6032_45856_3", "shot": "v6032_45856", "vn": "v6032", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [27, 177, 302, 194], "grad": [29, 175, 304, 196]}}
+{"id": "v6032_45861_3", "shot": "v6032_45861", "vn": "v6032", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [27, 119, 302, 137], "grad": [29, 117, 304, 139]}}
+{"id": "v6032_45862_0", "shot": "v6032_45862", "vn": "v6032", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [30, 108, 362, 125], "grad": [29, 106, 364, 127]}}
+{"id": "v6032_45862_1", "shot": "v6032_45862", "vn": "v6032", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [29, 142, 167, 159], "grad": [29, 140, 169, 161]}}
+{"id": "v6032_98123_2", "shot": "v6032_98123", "vn": "v6032", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [37, 67, 242, 89], "grad": [35, 63, 246, 93]}}
+{"id": "v6723_36394_2", "shot": "v6723_36394", "vn": "v6723", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [83, 202, 233, 223]}}
+{"id": "v7019_56629_0", "shot": "v7019_56629", "vn": "v7019", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [96, 175, 163, 195], "grad": [92, 171, 167, 199]}}
+{"id": "v7225_57588_17", "shot": "v7225_57588", "vn": "v7225", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [98, 232, 144, 249], "grad": [97, 228, 148, 251]}}
+{"id": "v7225_57590_1", "shot": "v7225_57590", "vn": "v7225", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [23, 191, 82, 211], "grad": [19, 192, 86, 213]}}
+{"id": "v7249_19542_0", "shot": "v7249_19542", "vn": "v7249", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [89, 197, 190, 223], "grad": [85, 193, 194, 227]}}
+{"id": "v7249_19544_0", "shot": "v7249_19544", "vn": "v7249", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [88, 198, 175, 223], "grad": [84, 194, 179, 227]}}
+{"id": "v7366_57375_1", "shot": "v7366_57375", "vn": "v7366", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [42, 188, 368, 206], "grad": [40, 186, 370, 208]}}
+{"id": "v7366_57375_2", "shot": "v7366_57375", "vn": "v7366", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [41, 211, 345, 231], "grad": [40, 209, 347, 233]}}
+{"id": "v7366_57378_1", "shot": "v7366_57378", "vn": "v7366", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [51, 188, 274, 206], "grad": [51, 186, 276, 208]}}
+{"id": "v7557_151421_1", "shot": "v7557_151421", "vn": "v7557", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [67, 412, 675, 443], "grad": [68, 412, 675, 443]}}
+{"id": "v7639_47991_3", "shot": "v7639_47991", "vn": "v7639", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [103, 230, 369, 246], "grad": [101, 227, 372, 249]}}
+{"id": "v7647_57968_1", "shot": "v7647_57968", "vn": "v7647", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [24, 192, 328, 211], "grad": [23, 190, 329, 213]}}
+{"id": "v7713_56975_0", "shot": "v7713_56975", "vn": "v7713", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [48, 164, 73, 181], "grad": [44, 163, 75, 182]}}
+{"id": "v7713_56978_2", "shot": "v7713_56978", "vn": "v7713", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [54, 211, 204, 233], "grad": [51, 214, 206, 236]}}
+{"id": "v7714_21838_0", "shot": "v7714_21838", "vn": "v7714", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [88, 159, 147, 182], "grad": [84, 155, 151, 186]}}
+{"id": "v7714_21844_0", "shot": "v7714_21844", "vn": "v7714", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [88, 160, 147, 183]}}
+{"id": "v7714_21845_3", "shot": "v7714_21845", "vn": "v7714", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [101, 200, 231, 222], "grad": [99, 203, 231, 225]}}
+{"id": "v7714_98417_5", "shot": "v7714_98417", "vn": "v7714", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [195, 96, 283, 112], "grad": [194, 92, 287, 116]}}
+{"id": "v7770_49206_3", "shot": "v7770_49206", "vn": "v7770", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [10, 247, 216, 266], "grad": [13, 245, 218, 268]}}
+{"id": "v7770_49207_1", "shot": "v7770_49207", "vn": "v7770", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [14, 225, 284, 244], "grad": [14, 223, 286, 245]}}
+{"id": "v7770_49207_2", "shot": "v7770_49207", "vn": "v7770", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [11, 247, 169, 267], "grad": [13, 245, 170, 268]}}
+{"id": "v7770_49209_1", "shot": "v7770_49209", "vn": "v7770", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [13, 226, 242, 245], "grad": [13, 223, 243, 246]}}
+{"id": "v7770_49209_2", "shot": "v7770_49209", "vn": "v7770", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [13, 247, 185, 267], "grad": [13, 245, 186, 268]}}
+{"id": "v7770_49210_1", "shot": "v7770_49210", "vn": "v7770", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [2, 203, 167, 221]}}
+{"id": "v7770_49213_2", "shot": "v7770_49213", "vn": "v7770", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [26, 67, 119, 84]}}
+{"id": "v7815_57307_1", "shot": "v7815_57307", "vn": "v7815", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [39, 201, 335, 222], "grad": [38, 199, 336, 223]}}
+{"id": "v7835_55721_1", "shot": "v7835_55721", "vn": "v7835", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [81, 206, 119, 222], "grad": [84, 204, 121, 224]}}
+{"id": "v7835_55725_1", "shot": "v7835_55725", "vn": "v7835", "kind": "psp", "how": "consensus", "luna": "skip-cut", "tier": "t1", "crops": {"ink": [73, 188, 413, 205]}}
+{"id": "v7835_55731_0", "shot": "v7835_55731", "vn": "v7835", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [73, 188, 413, 205]}}
+{"id": "v7835_55731_1", "shot": "v7835_55731", "vn": "v7835", "kind": "psp", "how": "consensus", "luna": "skip-cut", "tier": "t1", "crops": {"ink": [83, 206, 419, 222], "grad": [83, 203, 421, 224]}}
+{"id": "v7835_55732_5", "shot": "v7835_55732", "vn": "v7835", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [77, 188, 418, 205], "grad": [77, 184, 419, 208]}}
+{"id": "v7867_55507_4", "shot": "v7867_55507", "vn": "v7867", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [349, 53, 401, 68], "grad": [350, 49, 405, 72]}}
+{"id": "v7899_56596_1", "shot": "v7899_56596", "vn": "v7899", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [36, 194, 116, 213], "grad": [33, 193, 117, 215]}}
+{"id": "v7899_56600_2", "shot": "v7899_56600", "vn": "v7899", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [27, 175, 116, 194]}}
+{"id": "v7899_56600_4", "shot": "v7899_56600", "vn": "v7899", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [35, 212, 196, 231], "grad": [34, 210, 200, 235]}}
+{"id": "v7955_56487_14", "shot": "v7955_56487", "vn": "v7955", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [329, 255, 398, 271], "grad": [327, 252, 400, 272]}}
+{"id": "v7955_56487_8", "shot": "v7955_56487", "vn": "v7955", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [8, 30, 425, 50], "grad": [9, 26, 426, 54]}}
+{"id": "v8043_135551_0", "shot": "v8043_135551", "vn": "v8043", "kind": "psp", "how": "consensus", "luna": "skip-ui", "tier": "t1", "crops": {"ink": [137, 161, 170, 176], "grad": [137, 158, 174, 180]}}
+{"id": "v8043_56288_2", "shot": "v8043_56288", "vn": "v8043", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [91, 222, 143, 242], "grad": [87, 218, 144, 246]}}
+{"id": "v8043_56293_3", "shot": "v8043_56293", "vn": "v8043", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [90, 240, 140, 262], "grad": [86, 236, 142, 266]}}
+{"id": "v8044_57283_3", "shot": "v8044_57283", "vn": "v8044", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [89, 162, 147, 180], "grad": [91, 158, 149, 184]}}
+{"id": "v8044_57283_5", "shot": "v8044_57283", "vn": "v8044", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [102, 203, 421, 221], "grad": [100, 199, 423, 223]}}
+{"id": "v8044_57285_0", "shot": "v8044_57285", "vn": "v8044", "kind": "psp", "how": "consensus", "luna": "skip-ui", "tier": "t1", "crops": {"ink": [95, 164, 138, 180], "grad": [97, 160, 139, 184]}}
+{"id": "v8044_57286_0", "shot": "v8044_57286", "vn": "v8044", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [82, 162, 159, 184]}}
+{"id": "v8044_57286_1", "shot": "v8044_57286", "vn": "v8044", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [106, 187, 190, 206]}}
+{"id": "v8044_57286_3", "shot": "v8044_57286", "vn": "v8044", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [102, 222, 165, 240]}}
+{"id": "v8044_57288_0", "shot": "v8044_57288", "vn": "v8044", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [93, 159, 145, 180], "grad": [89, 155, 149, 184]}}
+{"id": "v8044_57288_2", "shot": "v8044_57288", "vn": "v8044", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [101, 205, 405, 223], "grad": [99, 201, 407, 226]}}
+{"id": "v8092_57101_0", "shot": "v8092_57101", "vn": "v8092", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [23, 189, 386, 216], "grad": [19, 185, 390, 220]}}
+{"id": "v8092_57104_0", "shot": "v8092_57104", "vn": "v8092", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [73, 167, 132, 187], "grad": [75, 163, 134, 191]}}
+{"id": "v8092_57106_0", "shot": "v8092_57106", "vn": "v8092", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [76, 167, 132, 188], "grad": [75, 163, 134, 192]}}
+{"id": "v8092_92736_0", "shot": "v8092_92736", "vn": "v8092", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [60, 167, 143, 188]}}
+{"id": "v8092_92736_1", "shot": "v8092_92736", "vn": "v8092", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [24, 193, 167, 213], "grad": [22, 191, 169, 217]}}
+{"id": "v8092_92737_4", "shot": "v8092_92737", "vn": "v8092", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [32, 193, 339, 213], "grad": [31, 191, 341, 215]}}
+{"id": "v8203_49248_0", "shot": "v8203_49248", "vn": "v8203", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [205, 192, 428, 207], "grad": [205, 189, 430, 210]}}
+{"id": "v8243_47974_3", "shot": "v8243_47974", "vn": "v8243", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [102, 251, 141, 266]}}
+{"id": "v8243_47977_0", "shot": "v8243_47977", "vn": "v8243", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [156, 180, 203, 199]}}
+{"id": "v8243_47977_1", "shot": "v8243_47977", "vn": "v8243", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [103, 214, 451, 230]}}
+{"id": "v8243_47978_0", "shot": "v8243_47978", "vn": "v8243", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [134, 180, 226, 200], "grad": [130, 176, 230, 204]}}
+{"id": "v8243_47979_1", "shot": "v8243_47979", "vn": "v8243", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [107, 214, 460, 230], "grad": [105, 210, 461, 232]}}
+{"id": "v8243_47979_2", "shot": "v8243_47979", "vn": "v8243", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [108, 232, 447, 248], "grad": [106, 230, 449, 250]}}
+{"id": "v8408_57415_2", "shot": "v8408_57415", "vn": "v8408", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [97, 202, 194, 221], "grad": [99, 198, 198, 223]}}
+{"id": "v8408_57420_1", "shot": "v8408_57420", "vn": "v8408", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [108, 183, 314, 203]}}
+{"id": "v8408_57420_2", "shot": "v8408_57420", "vn": "v8408", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [101, 202, 196, 222], "grad": [100, 201, 196, 224]}}
+{"id": "v8408_57422_0", "shot": "v8408_57422", "vn": "v8408", "kind": "psp", "how": "consensus", "luna": "skip-cut", "tier": "t1", "crops": {"ink": [99, 184, 410, 203], "grad": [100, 182, 410, 205]}}
+{"id": "v8766_57088_0", "shot": "v8766_57088", "vn": "v8766", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [15, 189, 428, 215]}}
+{"id": "v8789_57550_2", "shot": "v8789_57550", "vn": "v8789", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [23, 231, 139, 256], "grad": [19, 228, 143, 258]}}
+{"id": "v9910_56424_4", "shot": "v9910_56424", "vn": "v9910", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [385, 122, 453, 139], "grad": [386, 120, 455, 141]}}
+{"id": "v9910_56426_0", "shot": "v9910_56426", "vn": "v9910", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [30, 168, 132, 187], "grad": [29, 166, 136, 191]}}
+{"id": "v9910_56428_0", "shot": "v9910_56428", "vn": "v9910", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [52, 38, 176, 54], "grad": [53, 36, 178, 56]}}
+{"id": "v9910_56429_0", "shot": "v9910_56429", "vn": "v9910", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [373, 20, 450, 36], "grad": [373, 18, 452, 38]}}
+{"id": "v9910_56430_1", "shot": "v9910_56430", "vn": "v9910", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [82, 200, 251, 219]}}
+{"id": "v9910_56433_0", "shot": "v9910_56433", "vn": "v9910", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [29, 168, 66, 187], "grad": [30, 167, 68, 188]}}
+{"id": "v10035_55547_1", "shot": "v10035_55547", "vn": "v10035", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [205, 132, 249, 149], "grad": [203, 130, 251, 151]}}
+{"id": "v10035_55549_1", "shot": "v10035_55549", "vn": "v10035", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [44, 197, 333, 215], "grad": [44, 195, 335, 217]}}
+{"id": "v10035_55550_2", "shot": "v10035_55550", "vn": "v10035", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [47, 217, 381, 235]}}
+{"id": "v10035_55551_0", "shot": "v10035_55551", "vn": "v10035", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [31, 173, 96, 187], "grad": [27, 169, 97, 191]}}
+{"id": "v10045_57004_1", "shot": "v10045_57004", "vn": "v10045", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [21, 210, 347, 226], "grad": [24, 208, 349, 229]}}
+{"id": "v10045_57008_8", "shot": "v10045_57008", "vn": "v10045", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [306, 168, 359, 185], "grad": [304, 166, 359, 186]}}
+{"id": "v10045_57011_0", "shot": "v10045_57011", "vn": "v10045", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [43, 182, 80, 200], "grad": [46, 180, 81, 202]}}
+{"id": "v10046_52206_1", "shot": "v10046_52206", "vn": "v10046", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [28, 196, 370, 217], "grad": [27, 194, 372, 219]}}
+{"id": "v10104_38878_0", "shot": "v10104_38878", "vn": "v10104", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [113, 194, 260, 218], "grad": [111, 192, 262, 220]}}
+{"id": "v10104_56662_2", "shot": "v10104_56662", "vn": "v10104", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [102, 210, 135, 227], "grad": [103, 208, 137, 229]}}
+{"id": "v10109_56382_0", "shot": "v10109_56382", "vn": "v10109", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [32, 188, 70, 209], "grad": [34, 187, 72, 211]}}
+{"id": "v10109_56386_0", "shot": "v10109_56386", "vn": "v10109", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [40, 189, 63, 210]}}
+{"id": "v10109_56386_1", "shot": "v10109_56386", "vn": "v10109", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [55, 210, 344, 230], "grad": [55, 208, 346, 232]}}
+{"id": "v10162_56952_0", "shot": "v10162_56952", "vn": "v10162", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [126, 176, 212, 196], "grad": [124, 172, 216, 200]}}
+{"id": "v10162_56953_3", "shot": "v10162_56953", "vn": "v10162", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [124, 242, 279, 260], "grad": [125, 238, 283, 264]}}
+{"id": "v10162_56955_6", "shot": "v10162_56955", "vn": "v10162", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [294, 255, 365, 269], "grad": [292, 251, 368, 272]}}
+{"id": "v10255_49228_1", "shot": "v10255_49228", "vn": "v10255", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [113, 190, 429, 207], "grad": [111, 188, 429, 209]}}
+{"id": "v10255_49228_3", "shot": "v10255_49228", "vn": "v10255", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [99, 221, 321, 237], "grad": [102, 218, 323, 239]}}
+{"id": "v10255_49234_1", "shot": "v10255_49234", "vn": "v10255", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [111, 190, 429, 208], "grad": [113, 186, 429, 212]}}
+{"id": "v10289_56988_0", "shot": "v10289_56988", "vn": "v10289", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [50, 185, 176, 204]}}
+{"id": "v10418_40573_2", "shot": "v10418_40573", "vn": "v10418", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [36, 213, 360, 232]}}
+{"id": "v10418_40574_11", "shot": "v10418_40574", "vn": "v10418", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [130, 242, 166, 261], "grad": [130, 240, 168, 263]}}
+{"id": "v10418_40576_0", "shot": "v10418_40576", "vn": "v10418", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [39, 195, 302, 214], "grad": [38, 193, 304, 216]}}
+{"id": "v10418_40577_2", "shot": "v10418_40577", "vn": "v10418", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [43, 214, 306, 232], "grad": [41, 211, 308, 234]}}
+{"id": "v10418_40580_3", "shot": "v10418_40580", "vn": "v10418", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [34, 231, 270, 250]}}
+{"id": "v10475_73873_0", "shot": "v10475_73873", "vn": "v10475", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [73, 188, 110, 204]}}
+{"id": "v10475_73873_1", "shot": "v10475_73873", "vn": "v10475", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [86, 214, 198, 230], "grad": [84, 212, 200, 232]}}
+{"id": "v10541_58076_1", "shot": "v10541_58076", "vn": "v10541", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [30, 208, 423, 227], "grad": [29, 206, 426, 231]}}
+{"id": "v10541_58077_1", "shot": "v10541_58077", "vn": "v10541", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [30, 208, 253, 227], "grad": [29, 206, 255, 229]}}
+{"id": "v10541_58083_1", "shot": "v10541_58083", "vn": "v10541", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [31, 208, 307, 227], "grad": [29, 206, 310, 229]}}
+{"id": "v10577_57109_3", "shot": "v10577_57109", "vn": "v10577", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [63, 229, 297, 246], "grad": [61, 227, 301, 249]}}
+{"id": "v10577_57114_1", "shot": "v10577_57114", "vn": "v10577", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [58, 210, 285, 227], "grad": [56, 208, 287, 229]}}
+{"id": "v10577_57117_2", "shot": "v10577_57117", "vn": "v10577", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [63, 229, 303, 246], "grad": [61, 227, 305, 248]}}
+{"id": "v10623_56458_1", "shot": "v10623_56458", "vn": "v10623", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [63, 199, 357, 219], "grad": [65, 195, 358, 221]}}
+{"id": "v10623_56464_2", "shot": "v10623_56464", "vn": "v10623", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [120, 57, 356, 83], "grad": [119, 53, 360, 87]}}
+{"id": "v10631_52772_4", "shot": "v10631_52772", "vn": "v10631", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [40, 213, 338, 230], "grad": [40, 211, 340, 232]}}
+{"id": "v10631_52773_1", "shot": "v10631_52773", "vn": "v10631", "kind": "psp", "how": "consensus", "luna": "skip-cut", "tier": "t1", "crops": {"ink": [42, 214, 278, 230], "grad": [42, 212, 280, 232]}}
+{"id": "v10631_56445_2", "shot": "v10631_56445", "vn": "v10631", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [36, 230, 314, 247]}}
+{"id": "v10951_56508_0", "shot": "v10951_56508", "vn": "v10951", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [106, 198, 413, 215]}}
+{"id": "v11108_45532_2", "shot": "v11108_45532", "vn": "v11108", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [28, 225, 311, 244], "grad": [28, 222, 313, 246]}}
+{"id": "v11108_45534_9", "shot": "v11108_45534", "vn": "v11108", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [357, 255, 397, 269], "grad": [354, 252, 400, 271]}}
+{"id": "v11132_73962_3", "shot": "v11132_73962", "vn": "v11132", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [100, 238, 166, 256], "grad": [98, 240, 168, 260]}}
+{"id": "v11132_73967_1", "shot": "v11132_73967", "vn": "v11132", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [108, 191, 212, 208], "grad": [109, 189, 214, 210]}}
+{"id": "v11173_55389_0", "shot": "v11173_55389", "vn": "v11173", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [39, 408, 183, 440], "grad": [41, 408, 183, 440]}}
+{"id": "v11173_55390_0", "shot": "v11173_55390", "vn": "v11173", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [39, 408, 183, 440], "grad": [41, 408, 183, 440]}}
+{"id": "v11179_48014_0", "shot": "v11179_48014", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [50, 198, 261, 215], "grad": [50, 196, 263, 217]}}
+{"id": "v11179_48014_1", "shot": "v11179_48014", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [58, 220, 262, 235], "grad": [58, 217, 263, 237]}}
+{"id": "v11179_48014_2", "shot": "v11179_48014", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [57, 239, 271, 256], "grad": [58, 237, 273, 258]}}
+{"id": "v11179_48015_0", "shot": "v11179_48015", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [58, 198, 254, 216], "grad": [59, 196, 256, 218]}}
+{"id": "v11179_48015_1", "shot": "v11179_48015", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [57, 218, 280, 236], "grad": [57, 216, 282, 238]}}
+{"id": "v11179_92713_1", "shot": "v11179_92713", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [55, 28, 181, 48], "grad": [53, 24, 185, 52]}}
+{"id": "v11179_92713_2", "shot": "v11179_92713", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [217, 194, 408, 212], "grad": [217, 192, 410, 214]}}
+{"id": "v11179_92713_3", "shot": "v11179_92713", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [177, 212, 449, 229], "grad": [176, 209, 451, 231]}}
+{"id": "v11179_92713_4", "shot": "v11179_92713", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [218, 228, 408, 245], "grad": [218, 226, 410, 247]}}
+{"id": "v11179_92714_1", "shot": "v11179_92714", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [50, 35, 164, 49], "grad": [49, 31, 166, 51]}}
+{"id": "v11179_92714_2", "shot": "v11179_92714", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [210, 196, 441, 213]}}
+{"id": "v11179_92714_3", "shot": "v11179_92714", "vn": "v11179", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [57, 203, 152, 237]}}
+{"id": "v11179_92714_4", "shot": "v11179_92714", "vn": "v11179", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [197, 213, 454, 230]}}
+{"id": "v11179_92714_5", "shot": "v11179_92714", "vn": "v11179", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [219, 229, 428, 246]}}
+{"id": "v11186_49255_2", "shot": "v11186_49255", "vn": "v11186", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [28, 220, 224, 238], "grad": [31, 218, 226, 240]}}
+{"id": "v11186_49257_0", "shot": "v11186_49257", "vn": "v11186", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [364, 176, 407, 194]}}
+{"id": "v11186_49262_0", "shot": "v11186_49262", "vn": "v11186", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [367, 176, 407, 194], "grad": [369, 174, 406, 195]}}
+{"id": "v11186_49262_2", "shot": "v11186_49262", "vn": "v11186", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [194, 220, 446, 238], "grad": [192, 218, 450, 242]}}
+{"id": "v11239_55818_3", "shot": "v11239_55818", "vn": "v11239", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [122, 162, 184, 179], "grad": [118, 160, 186, 183]}}
+{"id": "v11239_55818_5", "shot": "v11239_55818", "vn": "v11239", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [101, 207, 375, 223], "grad": [97, 205, 377, 225]}}
+{"id": "v11239_55818_6", "shot": "v11239_55818", "vn": "v11239", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [97, 223, 276, 239], "grad": [97, 220, 278, 241]}}
+{"id": "v11239_55820_2", "shot": "v11239_55820", "vn": "v11239", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [97, 190, 277, 208]}}
+{"id": "v11239_55821_0", "shot": "v11239_55821", "vn": "v11239", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [122, 162, 185, 180], "grad": [118, 160, 187, 184]}}
+{"id": "v11239_55821_2", "shot": "v11239_55821", "vn": "v11239", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [95, 206, 425, 223]}}
+{"id": "v11239_55821_3", "shot": "v11239_55821", "vn": "v11239", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [96, 223, 123, 239]}}
+{"id": "v11239_55822_0", "shot": "v11239_55822", "vn": "v11239", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [62, 115, 87, 138]}}
+{"id": "v11239_55822_5", "shot": "v11239_55822", "vn": "v11239", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [221, 241, 258, 262], "grad": [220, 239, 260, 264]}}
+{"id": "v11239_55825_2", "shot": "v11239_55825", "vn": "v11239", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [102, 207, 426, 223], "grad": [100, 204, 427, 225]}}
+{"id": "v11239_55825_3", "shot": "v11239_55825", "vn": "v11239", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [98, 222, 276, 239], "grad": [100, 221, 278, 241]}}
+{"id": "v11239_55827_0", "shot": "v11239_55827", "vn": "v11239", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [96, 190, 425, 207], "grad": [96, 186, 426, 209]}}
+{"id": "v11239_55827_2", "shot": "v11239_55827", "vn": "v11239", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [102, 221, 424, 239], "grad": [96, 219, 426, 241]}}
+{"id": "v11264_56396_2", "shot": "v11264_56396", "vn": "v11264", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [20, 155, 81, 174], "grad": [19, 151, 85, 177]}}
+{"id": "v11342_53487_0", "shot": "v11342_53487", "vn": "v11342", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [30, 173, 96, 188], "grad": [26, 169, 100, 192]}}
+{"id": "v11342_53489_2", "shot": "v11342_53489", "vn": "v11342", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [54, 217, 342, 235], "grad": [52, 215, 345, 237]}}
+{"id": "v11342_53490_4", "shot": "v11342_53490", "vn": "v11342", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [52, 218, 293, 235], "grad": [52, 215, 296, 237]}}
+{"id": "v11342_53496_1", "shot": "v11342_53496", "vn": "v11342", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [52, 217, 221, 235], "grad": [52, 215, 223, 237]}}
+{"id": "v11459_38914_0", "shot": "v11459_38914", "vn": "v11459", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [26, 154, 76, 177]}}
+{"id": "v11459_38914_1", "shot": "v11459_38914", "vn": "v11459", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [8, 186, 119, 212]}}
+{"id": "v11469_52188_1", "shot": "v11469_52188", "vn": "v11469", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [116, 205, 432, 222], "grad": [114, 202, 434, 224]}}
+{"id": "v11469_52192_1", "shot": "v11469_52192", "vn": "v11469", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [115, 204, 437, 222], "grad": [114, 202, 441, 224]}}
+{"id": "v11469_52193_0", "shot": "v11469_52193", "vn": "v11469", "kind": "psp", "how": "consensus", "luna": "skip-ui", "tier": "t1", "crops": {"ink": [150, 182, 186, 198], "grad": [153, 179, 187, 200]}}
+{"id": "v11469_52194_0", "shot": "v11469_52194", "vn": "v11469", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [166, 66, 315, 83], "grad": [164, 64, 317, 86]}}
+{"id": "v11469_52195_0", "shot": "v11469_52195", "vn": "v11469", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [109, 205, 434, 221], "grad": [107, 202, 436, 224]}}
+{"id": "v11502_57607_1", "shot": "v11502_57607", "vn": "v11502", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [36, 223, 276, 241], "grad": [36, 221, 280, 243]}}
+{"id": "v11641_56809_0", "shot": "v11641_56809", "vn": "v11641", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [106, 187, 165, 201], "grad": [107, 185, 167, 203]}}
+{"id": "v11641_56810_6", "shot": "v11641_56810", "vn": "v11641", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [115, 235, 306, 251]}}
+{"id": "v11641_56812_1", "shot": "v11641_56812", "vn": "v11641", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [80, 206, 261, 222]}}
+{"id": "v11641_56817_0", "shot": "v11641_56817", "vn": "v11641", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [101, 186, 158, 201], "grad": [101, 184, 160, 203]}}
+{"id": "v11688_56541_1", "shot": "v11688_56541", "vn": "v11688", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [68, 208, 233, 229], "grad": [69, 206, 235, 230]}}
+{"id": "v11699_57896_1", "shot": "v11699_57896", "vn": "v11699", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [110, 125, 298, 144], "grad": [106, 121, 302, 148]}}
+{"id": "v11699_57896_5", "shot": "v11699_57896", "vn": "v11699", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [69, 210, 259, 226], "grad": [66, 208, 261, 228]}}
+{"id": "v11699_57897_3", "shot": "v11699_57897", "vn": "v11699", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [68, 192, 138, 209], "grad": [67, 191, 140, 211]}}
+{"id": "v11699_57899_2", "shot": "v11699_57899", "vn": "v11699", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [109, 106, 315, 124], "grad": [105, 102, 319, 128]}}
+{"id": "v11734_57450_1", "shot": "v11734_57450", "vn": "v11734", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [31, 196, 372, 217], "grad": [29, 195, 374, 219]}}
+{"id": "v11735_57469_1", "shot": "v11735_57469", "vn": "v11735", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [31, 196, 419, 217], "grad": [29, 192, 420, 221]}}
+{"id": "v11735_57470_1", "shot": "v11735_57470", "vn": "v11735", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [39, 197, 425, 216], "grad": [40, 193, 428, 220]}}
+{"id": "v11879_56284_2", "shot": "v11879_56284", "vn": "v11879", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [98, 209, 264, 226], "grad": [94, 205, 266, 230]}}
+{"id": "v11879_56287_0", "shot": "v11879_56287", "vn": "v11879", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [117, 168, 192, 185], "grad": [115, 164, 196, 189]}}
+{"id": "v11879_56287_3", "shot": "v11879_56287", "vn": "v11879", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [98, 226, 236, 243], "grad": [94, 224, 238, 247]}}
+{"id": "v11943_55578_2", "shot": "v11943_55578", "vn": "v11943", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [118, 200, 228, 218], "grad": [121, 198, 228, 220]}}
+{"id": "v11943_55582_2", "shot": "v11943_55582", "vn": "v11943", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [120, 201, 392, 218], "grad": [121, 199, 394, 220]}}
+{"id": "v11971_56322_0", "shot": "v11971_56322", "vn": "v11971", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [12, 200, 83, 216], "grad": [12, 197, 86, 220]}}
+{"id": "v11971_56324_0", "shot": "v11971_56324", "vn": "v11971", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [20, 200, 78, 216], "grad": [18, 198, 82, 220]}}
+{"id": "v11971_56328_0", "shot": "v11971_56328", "vn": "v11971", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [21, 199, 73, 218]}}
+{"id": "v11985_52752_9", "shot": "v11985_52752", "vn": "v11985", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [129, 246, 392, 263], "grad": [129, 244, 394, 267]}}
+{"id": "v11985_52753_1", "shot": "v11985_52753", "vn": "v11985", "kind": "psp", "how": "consensus", "luna": "skip-cut", "tier": "t1", "crops": {"ink": [113, 224, 313, 241]}}
+{"id": "v11985_53471_7", "shot": "v11985_53471", "vn": "v11985", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [114, 202, 295, 219]}}
+{"id": "v11985_53471_8", "shot": "v11985_53471", "vn": "v11985", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [118, 224, 351, 241], "grad": [117, 222, 352, 243]}}
+{"id": "v12125_73879_0", "shot": "v12125_73879", "vn": "v12125", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [221, 160, 276, 177]}}
+{"id": "v12126_57577_1", "shot": "v12126_57577", "vn": "v12126", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [26, 197, 189, 217], "grad": [25, 195, 190, 219]}}
+{"id": "v12126_57577_2", "shot": "v12126_57577", "vn": "v12126", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [29, 220, 189, 236], "grad": [31, 217, 191, 238]}}
+{"id": "v12126_57579_2", "shot": "v12126_57579", "vn": "v12126", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [31, 218, 173, 237], "grad": [31, 216, 175, 239]}}
+{"id": "v12141_55479_0", "shot": "v12141_55479", "vn": "v12141", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [77, 163, 108, 182]}}
+{"id": "v12171_56500_1", "shot": "v12171_56500", "vn": "v12171", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [115, 196, 431, 213], "grad": [113, 194, 433, 215]}}
+{"id": "v12171_56507_0", "shot": "v12171_56507", "vn": "v12171", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [143, 170, 209, 187], "grad": [145, 166, 207, 189]}}
+{"id": "v12178_127146_0", "shot": "v12178_127146", "vn": "v12178", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [94, 427, 804, 463], "grad": [99, 419, 812, 471]}}
+{"id": "v12178_127147_2", "shot": "v12178_127147", "vn": "v12178", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [107, 465, 356, 500], "grad": [107, 457, 364, 508]}}
+{"id": "v12178_127148_1", "shot": "v12178_127148", "vn": "v12178", "kind": "vita", "how": "consensus", "luna": "skip-cut", "tier": "t1", "crops": {"ink": [97, 428, 819, 462], "grad": [99, 428, 819, 463]}}
+{"id": "v12178_127148_2", "shot": "v12178_127148", "vn": "v12178", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [108, 465, 259, 501]}}
+{"id": "v12219_55881_3", "shot": "v12219_55881", "vn": "v12219", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [22, 219, 377, 237], "grad": [21, 216, 379, 240]}}
+{"id": "v12219_55883_1", "shot": "v12219_55883", "vn": "v12219", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [32, 194, 344, 213], "grad": [30, 192, 346, 216]}}
+{"id": "v12219_55884_1", "shot": "v12219_55884", "vn": "v12219", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [27, 195, 270, 213]}}
+{"id": "v12219_55885_1", "shot": "v12219_55885", "vn": "v12219", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [32, 194, 270, 213], "grad": [30, 190, 272, 216]}}
+{"id": "v12282_157059_5", "shot": "v12282_157059", "vn": "v12282", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [228, 402, 422, 437], "grad": [220, 402, 422, 437]}}
+{"id": "v12282_157062_2", "shot": "v12282_157062", "vn": "v12282", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [217, 402, 869, 437]}}
+{"id": "v12282_157062_3", "shot": "v12282_157062", "vn": "v12282", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [238, 441, 870, 476], "grad": [238, 441, 870, 476]}}
+{"id": "v12282_157065_2", "shot": "v12282_157065", "vn": "v12282", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [208, 441, 338, 474], "grad": [210, 441, 338, 474]}}
+{"id": "v12287_55838_2", "shot": "v12287_55838", "vn": "v12287", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [142, 186, 227, 204], "grad": [143, 182, 229, 208]}}
+{"id": "v12287_55839_1", "shot": "v12287_55839", "vn": "v12287", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [149, 214, 407, 230], "grad": [148, 212, 409, 232]}}
+{"id": "v12287_55843_1", "shot": "v12287_55843", "vn": "v12287", "kind": "psp", "how": "single", "luna": "skip-ui", "tier": "t2", "crops": {"ink": [115, 121, 309, 142], "grad": [115, 118, 312, 145]}}
+{"id": "v12287_55843_2", "shot": "v12287_55843", "vn": "v12287", "kind": "psp", "how": "single", "luna": "skip-ui", "tier": "t2", "crops": {"ink": [150, 183, 361, 206], "grad": [149, 181, 363, 208]}}
+{"id": "v12287_55846_0", "shot": "v12287_55846", "vn": "v12287", "kind": "psp", "how": "single", "luna": "skip-ui", "tier": "t3", "crops": {"ink": [142, 182, 233, 204], "grad": [143, 178, 237, 208]}}
+{"id": "v12287_55847_1", "shot": "v12287_55847", "vn": "v12287", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [149, 214, 347, 230], "grad": [148, 212, 349, 232]}}
+{"id": "v12369_54771_1", "shot": "v12369_54771", "vn": "v12369", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [138, 202, 432, 218], "grad": [138, 200, 434, 220]}}
+{"id": "v12369_54772_0", "shot": "v12369_54772", "vn": "v12369", "kind": "psp", "how": "single", "luna": "skip-ui", "tier": "t3", "crops": {"ink": [124, 168, 236, 186], "grad": [121, 164, 238, 190]}}
+{"id": "v12369_54773_0", "shot": "v12369_54773", "vn": "v12369", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [121, 164, 196, 186], "grad": [122, 160, 200, 187]}}
+{"id": "v12369_54774_0", "shot": "v12369_54774", "vn": "v12369", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [124, 168, 210, 186], "grad": [120, 164, 214, 190]}}
+{"id": "v12457_57473_1", "shot": "v12457_57473", "vn": "v12457", "kind": "psp", "how": "consensus", "luna": "skip-cut", "tier": "t1", "crops": {"ink": [25, 197, 420, 216], "grad": [27, 193, 420, 220]}}
+{"id": "v12457_57477_1", "shot": "v12457_57477", "vn": "v12457", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [31, 197, 418, 217], "grad": [30, 193, 420, 218]}}
+{"id": "v12472_65069_1", "shot": "v12472_65069", "vn": "v12472", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [41, 197, 218, 221]}}
+{"id": "v12472_73897_2", "shot": "v12472_73897", "vn": "v12472", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [36, 212, 233, 235]}}
+{"id": "v12714_74046_1", "shot": "v12714_74046", "vn": "v12714", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [61, 204, 213, 222], "grad": [61, 201, 215, 224]}}
+{"id": "v12714_74049_0", "shot": "v12714_74049", "vn": "v12714", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [53, 185, 148, 205]}}
+{"id": "v12714_74049_1", "shot": "v12714_74049", "vn": "v12714", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [63, 204, 215, 221], "grad": [61, 202, 217, 223]}}
+{"id": "v12776_57160_24", "shot": "v12776_57160", "vn": "v12776", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [366, 217, 449, 232], "grad": [364, 213, 453, 234]}}
+{"id": "v12776_57160_27", "shot": "v12776_57160", "vn": "v12776", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [43, 251, 251, 267]}}
+{"id": "v12776_57164_0", "shot": "v12776_57164", "vn": "v12776", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [15, 184, 101, 208], "grad": [11, 180, 105, 212]}}
+{"id": "v12776_57165_0", "shot": "v12776_57165", "vn": "v12776", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [56, 201, 137, 217]}}
+{"id": "v12776_57165_1", "shot": "v12776_57165", "vn": "v12776", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [63, 220, 237, 237], "grad": [61, 218, 239, 240]}}
+{"id": "v12807_64544_1", "shot": "v12807_64544", "vn": "v12807", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [28, 175, 62, 196], "grad": [24, 171, 66, 200]}}
+{"id": "v12807_69907_1", "shot": "v12807_69907", "vn": "v12807", "kind": "psp", "how": "consensus", "luna": "skip-ui", "tier": "t1", "crops": {"ink": [23, 179, 75, 196]}}
+{"id": "v12807_69907_2", "shot": "v12807_69907", "vn": "v12807", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [34, 202, 354, 218], "grad": [37, 200, 356, 220]}}
+{"id": "v12900_55458_3", "shot": "v12900_55458", "vn": "v12900", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [100, 218, 277, 237], "grad": [100, 216, 279, 239]}}
+{"id": "v12900_55460_3", "shot": "v12900_55460", "vn": "v12900", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [59, 218, 159, 236], "grad": [62, 216, 161, 238]}}
+{"id": "v12934_53391_8", "shot": "v12934_53391", "vn": "v12934", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [28, 146, 223, 163]}}
+{"id": "v12934_53394_4", "shot": "v12934_53394", "vn": "v12934", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [109, 199, 181, 216]}}
+{"id": "v13039_74069_1", "shot": "v13039_74069", "vn": "v13039", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [109, 193, 215, 209], "grad": [112, 191, 217, 212]}}
+{"id": "v13039_74069_3", "shot": "v13039_74069", "vn": "v13039", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [121, 229, 212, 244], "grad": [119, 227, 214, 246]}}
+{"id": "v13127_73980_0", "shot": "v13127_73980", "vn": "v13127", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [446, 2, 478, 20], "grad": [444, 0, 480, 24]}}
+{"id": "v13127_73980_1", "shot": "v13127_73980", "vn": "v13127", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [20, 173, 85, 195], "grad": [17, 169, 86, 196]}}
+{"id": "v13127_73981_2", "shot": "v13127_73981", "vn": "v13127", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [37, 219, 238, 242], "grad": [37, 221, 240, 244]}}
+{"id": "v13127_73987_0", "shot": "v13127_73987", "vn": "v13127", "kind": "psp", "how": "consensus", "luna": "skip-ui", "tier": "t1", "crops": {"ink": [15, 171, 85, 192], "grad": [17, 167, 89, 195]}}
+{"id": "v13308_145164_2", "shot": "v13308_145164", "vn": "v13308", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [87, 445, 460, 475], "grad": [89, 445, 459, 475]}}
+{"id": "v13419_89400_0", "shot": "v13419_89400", "vn": "v13419", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [68, 161, 131, 186], "grad": [64, 163, 135, 190]}}
+{"id": "v13419_89405_1", "shot": "v13419_89405", "vn": "v13419", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [42, 197, 189, 215], "grad": [44, 195, 191, 217]}}
+{"id": "v13419_89408_0", "shot": "v13419_89408", "vn": "v13419", "kind": "psp", "how": "consensus", "luna": "skip-ui", "tier": "t1", "crops": {"ink": [49, 160, 159, 187], "grad": [45, 156, 163, 191]}}
+{"id": "v13729_56579_0", "shot": "v13729_56579", "vn": "v13729", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [38, 186, 81, 205], "grad": [40, 183, 84, 208]}}
+{"id": "v13729_56579_1", "shot": "v13729_56579", "vn": "v13729", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [75, 214, 271, 232]}}
+{"id": "v13850_80080_0", "shot": "v13850_80080", "vn": "v13850", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [19, 159, 115, 186], "grad": [15, 155, 115, 189]}}
+{"id": "v13879_89392_2", "shot": "v13879_89392", "vn": "v13879", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [128, 217, 315, 235], "grad": [131, 215, 317, 237]}}
+{"id": "v13879_89395_1", "shot": "v13879_89395", "vn": "v13879", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [113, 217, 396, 235]}}
+{"id": "v13879_89398_1", "shot": "v13879_89398", "vn": "v13879", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [122, 198, 247, 217], "grad": [123, 197, 246, 218]}}
+{"id": "v13911_74012_0", "shot": "v13911_74012", "vn": "v13911", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [119, 192, 285, 216], "grad": [118, 190, 287, 218]}}
+{"id": "v13911_74013_1", "shot": "v13911_74013", "vn": "v13911", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [115, 192, 432, 209], "grad": [111, 188, 434, 211]}}
+{"id": "v13911_74013_2", "shot": "v13911_74013", "vn": "v13911", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [118, 209, 240, 226], "grad": [119, 208, 242, 230]}}
+{"id": "v13919_74023_0", "shot": "v13919_74023", "vn": "v13919", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [18, 5, 290, 22], "grad": [16, 3, 292, 24]}}
+{"id": "v13919_74026_0", "shot": "v13919_74026", "vn": "v13919", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [77, 184, 117, 215], "grad": [73, 180, 121, 219]}}
+{"id": "v13919_74028_1", "shot": "v13919_74028", "vn": "v13919", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [86, 215, 237, 232], "grad": [89, 213, 239, 234]}}
+{"id": "v13919_74030_0", "shot": "v13919_74030", "vn": "v13919", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [86, 215, 432, 232]}}
+{"id": "v14340_80029_1", "shot": "v14340_80029", "vn": "v14340", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [116, 196, 345, 213], "grad": [114, 194, 348, 215]}}
+{"id": "v14340_80031_2", "shot": "v14340_80031", "vn": "v14340", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [117, 214, 353, 230], "grad": [120, 212, 355, 232]}}
+{"id": "v14415_106272_0", "shot": "v14415_106272", "vn": "v14415", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [97, 407, 418, 439], "grad": [102, 407, 418, 440]}}
+{"id": "v14415_106278_1", "shot": "v14415_106278", "vn": "v14415", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [114, 443, 611, 476], "grad": [117, 443, 611, 476]}}
+{"id": "v14534_75324_1", "shot": "v14534_75324", "vn": "v14534", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [872, 8, 930, 39]}}
+{"id": "v14534_75324_3", "shot": "v14534_75324", "vn": "v14534", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [638, 80, 919, 106], "grad": [630, 72, 927, 114]}}
+{"id": "v14534_75325_3", "shot": "v14534_75325", "vn": "v14534", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [98, 424, 701, 454], "grad": [101, 423, 701, 455]}}
+{"id": "v14534_75327_2", "shot": "v14534_75327", "vn": "v14534", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [864, 20, 922, 51]}}
+{"id": "v14652_93694_1", "shot": "v14652_93694", "vn": "v14652", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [285, 359, 437, 396]}}
+{"id": "v14652_93694_3", "shot": "v14652_93694", "vn": "v14652", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [262, 428, 575, 457]}}
+{"id": "v14652_93695_3", "shot": "v14652_93695", "vn": "v14652", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [320, 360, 446, 397], "grad": [312, 359, 454, 398]}}
+{"id": "v14652_93695_6", "shot": "v14652_93695", "vn": "v14652", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [179, 457, 486, 488], "grad": [174, 449, 486, 496]}}
+{"id": "v14652_93696_1", "shot": "v14652_93696", "vn": "v14652", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [284, 359, 435, 396]}}
+{"id": "v14652_93697_1", "shot": "v14652_93697", "vn": "v14652", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [285, 359, 411, 396]}}
+{"id": "v14652_93698_2", "shot": "v14652_93698", "vn": "v14652", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [266, 398, 569, 427]}}
+{"id": "v14652_93699_12", "shot": "v14652_93699", "vn": "v14652", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [367, 273, 440, 301], "grad": [359, 274, 439, 300]}}
+{"id": "v14652_93699_4", "shot": "v14652_93699", "vn": "v14652", "kind": "vita", "how": "single", "luna": "skip-ui", "tier": "t3", "crops": {"ink": [367, 65, 540, 93]}}
+{"id": "v14652_93699_7", "shot": "v14652_93699", "vn": "v14652", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [316, 140, 474, 172], "grad": [308, 132, 471, 174]}}
+{"id": "v14652_93699_8", "shot": "v14652_93699", "vn": "v14652", "kind": "vita", "how": "single", "luna": "skip-ui", "tier": "t3", "crops": {"ink": [367, 169, 444, 197]}}
+{"id": "v14811_80045_1", "shot": "v14811_80045", "vn": "v14811", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [102, 213, 254, 230], "grad": [103, 209, 258, 232]}}
+{"id": "v14811_80049_2", "shot": "v14811_80049", "vn": "v14811", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [102, 213, 387, 229], "grad": [104, 209, 389, 231]}}
+{"id": "v14811_80053_3", "shot": "v14811_80053", "vn": "v14811", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [100, 228, 361, 245], "grad": [96, 224, 363, 247]}}
+{"id": "v14813_78851_1", "shot": "v14813_78851", "vn": "v14813", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [214, 356, 309, 387]}}
+{"id": "v14813_78855_1", "shot": "v14813_78855", "vn": "v14813", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [215, 355, 313, 387], "grad": [219, 356, 313, 388]}}
+{"id": "v14813_78864_4", "shot": "v14813_78864", "vn": "v14813", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [167, 419, 474, 451]}}
+{"id": "v14869_116049_19", "shot": "v14869_116049", "vn": "v14869", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [171, 508, 212, 530], "grad": [163, 504, 212, 534]}}
+{"id": "v14869_116049_6", "shot": "v14869_116049", "vn": "v14869", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [69, 109, 130, 129], "grad": [70, 109, 129, 129]}}
+{"id": "v14869_116059_16", "shot": "v14869_116059", "vn": "v14869", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [133, 518, 411, 543], "grad": [134, 518, 410, 542]}}
+{"id": "v14911_80123_0", "shot": "v14911_80123", "vn": "v14911", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [141, 170, 170, 184], "grad": [140, 166, 174, 188]}}
+{"id": "v14911_80123_2", "shot": "v14911_80123", "vn": "v14911", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [102, 211, 308, 227], "grad": [98, 207, 310, 231]}}
+{"id": "v14911_80124_1", "shot": "v14911_80124", "vn": "v14911", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [105, 195, 393, 212]}}
+{"id": "v14911_80124_2", "shot": "v14911_80124", "vn": "v14911", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [104, 211, 365, 227], "grad": [103, 208, 367, 229]}}
+{"id": "v14911_80124_3", "shot": "v14911_80124", "vn": "v14911", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [102, 227, 240, 242], "grad": [105, 225, 242, 244]}}
+{"id": "v14911_80125_0", "shot": "v14911_80125", "vn": "v14911", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [130, 170, 179, 184], "grad": [130, 166, 181, 188]}}
+{"id": "v14911_80125_2", "shot": "v14911_80125", "vn": "v14911", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [102, 211, 414, 227], "grad": [98, 207, 416, 231]}}
+{"id": "v14911_80126_0", "shot": "v14911_80126", "vn": "v14911", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [128, 165, 170, 183]}}
+{"id": "v14911_80126_1", "shot": "v14911_80126", "vn": "v14911", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [114, 191, 386, 208]}}
+{"id": "v14911_80128_0", "shot": "v14911_80128", "vn": "v14911", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [137, 165, 164, 183]}}
+{"id": "v14911_80128_1", "shot": "v14911_80128", "vn": "v14911", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [112, 191, 282, 208], "grad": [112, 189, 284, 210]}}
+{"id": "v14917_79135_1", "shot": "v14917_79135", "vn": "v14917", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [94, 406, 221, 444], "grad": [94, 406, 221, 444]}}
+{"id": "v14917_79136_3", "shot": "v14917_79136", "vn": "v14917", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [109, 482, 781, 521]}}
+{"id": "v15104_80146_1", "shot": "v15104_80146", "vn": "v15104", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [91, 200, 227, 220], "grad": [89, 198, 229, 222]}}
+{"id": "v15104_80147_2", "shot": "v15104_80147", "vn": "v15104", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [98, 222, 342, 241], "grad": [95, 219, 344, 243]}}
+{"id": "v15111_80110_2", "shot": "v15111_80110", "vn": "v15111", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [120, 231, 157, 250], "grad": [118, 230, 159, 251]}}
+{"id": "v15111_80113_0", "shot": "v15111_80113", "vn": "v15111", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [112, 198, 352, 215], "grad": [112, 194, 354, 217]}}
+{"id": "v15111_80114_2", "shot": "v15111_80114", "vn": "v15111", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [105, 213, 438, 229], "grad": [104, 209, 442, 232]}}
+{"id": "v15111_80116_2", "shot": "v15111_80116", "vn": "v15111", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [102, 213, 390, 229], "grad": [104, 209, 392, 231]}}
+{"id": "v15111_80118_2", "shot": "v15111_80118", "vn": "v15111", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [102, 212, 344, 230], "grad": [104, 210, 345, 231]}}
+{"id": "v15140_80087_1", "shot": "v15140_80087", "vn": "v15140", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [109, 192, 239, 210], "grad": [112, 189, 241, 210]}}
+{"id": "v15140_80088_2", "shot": "v15140_80088", "vn": "v15140", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [119, 208, 408, 226], "grad": [118, 207, 409, 229]}}
+{"id": "v15361_69916_5", "shot": "v15361_69916", "vn": "v15361", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [189, 217, 255, 235], "grad": [188, 215, 257, 239]}}
+{"id": "v15361_69916_7", "shot": "v15361_69916", "vn": "v15361", "kind": "psp", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [435, 254, 465, 270], "grad": [437, 252, 466, 272]}}
+{"id": "v15577_157073_1", "shot": "v15577_157073", "vn": "v15577", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [877, 35, 934, 67], "grad": [879, 35, 934, 67]}}
+{"id": "v15772_91536_1", "shot": "v15772_91536", "vn": "v15772", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [259, 432, 802, 465]}}
+{"id": "v15816_80130_0", "shot": "v15816_80130", "vn": "v15816", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [115, 191, 430, 208], "grad": [113, 189, 432, 210]}}
+{"id": "v15816_80130_1", "shot": "v15816_80130", "vn": "v15816", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [115, 209, 156, 225], "grad": [118, 207, 158, 227]}}
+{"id": "v15816_80132_1", "shot": "v15816_80132", "vn": "v15816", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [114, 191, 211, 208], "grad": [112, 189, 213, 210]}}
+{"id": "v15816_80134_0", "shot": "v15816_80134", "vn": "v15816", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [121, 168, 180, 183]}}
+{"id": "v15816_80134_1", "shot": "v15816_80134", "vn": "v15816", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [109, 192, 309, 208], "grad": [112, 190, 311, 210]}}
+{"id": "v15816_80134_3", "shot": "v15816_80134", "vn": "v15816", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [101, 226, 281, 243], "grad": [103, 224, 282, 245]}}
+{"id": "v15816_80135_1", "shot": "v15816_80135", "vn": "v15816", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [114, 191, 212, 208], "grad": [112, 189, 214, 210]}}
+{"id": "v15816_80137_3", "shot": "v15816_80137", "vn": "v15816", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [105, 226, 210, 242], "grad": [103, 224, 212, 246]}}
+{"id": "v15816_80138_1", "shot": "v15816_80138", "vn": "v15816", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [114, 192, 314, 208], "grad": [112, 190, 316, 210]}}
+{"id": "v16049_148054_1", "shot": "v16049_148054", "vn": "v16049", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [139, 456, 633, 487]}}
+{"id": "v16057_80068_0", "shot": "v16057_80068", "vn": "v16057", "kind": "psp", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [21, 167, 60, 187], "grad": [23, 163, 64, 191]}}
+{"id": "v16060_83850_3", "shot": "v16060_83850", "vn": "v16060", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [854, 509, 957, 539], "grad": [848, 509, 957, 539]}}
+{"id": "v16060_83855_1", "shot": "v16060_83855", "vn": "v16060", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [854, 509, 957, 539], "grad": [848, 509, 957, 539]}}
+{"id": "v16238_76603_1", "shot": "v16238_76603", "vn": "v16238", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [24, 197, 408, 217], "grad": [22, 195, 410, 219]}}
+{"id": "v16238_76607_1", "shot": "v16238_76607", "vn": "v16238", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [15, 218, 449, 238], "grad": [13, 216, 451, 240]}}
+{"id": "v16416_83145_2", "shot": "v16416_83145", "vn": "v16416", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [99, 210, 289, 227], "grad": [97, 208, 291, 229]}}
+{"id": "v16416_83150_0", "shot": "v16416_83150", "vn": "v16416", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [124, 168, 161, 185]}}
+{"id": "v16416_83150_1", "shot": "v16416_83150", "vn": "v16416", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [96, 193, 239, 209], "grad": [99, 191, 242, 211]}}
+{"id": "v16468_154677_0", "shot": "v16468_154677", "vn": "v16468", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [115, 360, 229, 389], "grad": [107, 353, 229, 397]}}
+{"id": "v16608_104670_0", "shot": "v16608_104670", "vn": "v16608", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [44, 367, 196, 395], "grad": [46, 365, 194, 395]}}
+{"id": "v16608_104677_3", "shot": "v16608_104677", "vn": "v16608", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [135, 490, 542, 516]}}
+{"id": "v17608_91394_0", "shot": "v17608_91394", "vn": "v17608", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [336, 33, 608, 62]}}
+{"id": "v17608_91396_2", "shot": "v17608_91396", "vn": "v17608", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [193, 427, 682, 456], "grad": [193, 427, 681, 457]}}
+{"id": "v17641_99844_0", "shot": "v17641_99844", "vn": "v17641", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [213, 373, 337, 404], "grad": [208, 365, 338, 405]}}
+{"id": "v17641_99845_0", "shot": "v17641_99845", "vn": "v17641", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [213, 372, 340, 404], "grad": [208, 364, 341, 412]}}
+{"id": "v17935_91763_2", "shot": "v17935_91763", "vn": "v17935", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [125, 452, 622, 488], "grad": [125, 452, 622, 488]}}
+{"id": "v17976_120888_2", "shot": "v17976_120888", "vn": "v17976", "kind": "psp", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [40, 214, 436, 236], "grad": [37, 210, 440, 238]}}
+{"id": "v17976_120889_2", "shot": "v17976_120889", "vn": "v17976", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [39, 215, 266, 236], "grad": [38, 212, 268, 238]}}
+{"id": "v17976_120893_1", "shot": "v17976_120893", "vn": "v17976", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [40, 193, 195, 215], "grad": [38, 190, 197, 217]}}
+{"id": "v17976_120895_2", "shot": "v17976_120895", "vn": "v17976", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [40, 214, 420, 235], "grad": [38, 210, 424, 238]}}
+{"id": "v18162_103860_1", "shot": "v18162_103860", "vn": "v18162", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [222, 423, 707, 457]}}
+{"id": "v18162_103864_0", "shot": "v18162_103864", "vn": "v18162", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [210, 369, 401, 404], "grad": [210, 369, 402, 404]}}
+{"id": "v18162_103868_1", "shot": "v18162_103868", "vn": "v18162", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [223, 424, 819, 459]}}
+{"id": "v18212_137128_7", "shot": "v18212_137128", "vn": "v18212", "kind": "vita", "how": "consensus", "luna": "skip-ui", "tier": "t1", "crops": {"ink": [253, 207, 334, 231], "grad": [257, 207, 334, 231]}}
+{"id": "v18212_137130_10", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [857, 46, 910, 69]}}
+{"id": "v18212_137130_12", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [465, 94, 533, 117], "grad": [468, 94, 532, 117]}}
+{"id": "v18212_137130_14", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [721, 94, 789, 117]}}
+{"id": "v18212_137130_26", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [209, 238, 280, 261], "grad": [212, 238, 280, 261]}}
+{"id": "v18212_137130_32", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [465, 286, 536, 309], "grad": [468, 286, 536, 309]}}
+{"id": "v18212_137130_34", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [721, 286, 792, 309]}}
+{"id": "v18212_137130_38", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [601, 334, 655, 357], "grad": [604, 334, 655, 357]}}
+{"id": "v18212_137130_40", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [856, 334, 911, 357]}}
+{"id": "v18212_137130_41", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [216, 382, 272, 405], "grad": [220, 382, 271, 405]}}
+{"id": "v18212_137130_43", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [601, 382, 655, 405]}}
+{"id": "v18212_137130_9", "shot": "v18212_137130", "vn": "v18212", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [729, 46, 781, 69], "grad": [732, 46, 780, 69]}}
+{"id": "v18457_108874_8", "shot": "v18457_108874", "vn": "v18457", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [892, 266, 943, 292]}}
+{"id": "v18457_99921_1", "shot": "v18457_99921", "vn": "v18457", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [67, 73, 210, 101], "grad": [70, 72, 210, 101]}}
+{"id": "v18457_99928_3", "shot": "v18457_99928", "vn": "v18457", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [130, 493, 300, 525], "grad": [133, 493, 300, 525]}}
+{"id": "v18695_147940_0", "shot": "v18695_147940", "vn": "v18695", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [114, 57, 268, 94], "grad": [114, 56, 268, 94]}}
+{"id": "v18695_147948_0", "shot": "v18695_147948", "vn": "v18695", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [188, 357, 331, 395], "grad": [193, 357, 331, 396]}}
+{"id": "v18838_99911_0", "shot": "v18838_99911", "vn": "v18838", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [111, 382, 266, 417]}}
+{"id": "v18838_99911_1", "shot": "v18838_99911", "vn": "v18838", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [125, 426, 520, 463]}}
+{"id": "v18838_99912_2", "shot": "v18838_99912", "vn": "v18838", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [154, 153, 280, 187], "grad": [157, 153, 280, 187]}}
+{"id": "v18838_99912_6", "shot": "v18838_99912", "vn": "v18838", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [158, 338, 256, 372], "grad": [157, 338, 256, 372]}}
+{"id": "v18838_99912_8", "shot": "v18838_99912", "vn": "v18838", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [151, 440, 327, 474]}}
+{"id": "v18838_99912_9", "shot": "v18838_99912", "vn": "v18838", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [159, 492, 639, 525], "grad": [157, 491, 638, 525]}}
+{"id": "v18838_99916_1", "shot": "v18838_99916", "vn": "v18838", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [128, 427, 728, 463], "grad": [126, 427, 728, 463]}}
+{"id": "v18838_99917_1", "shot": "v18838_99917", "vn": "v18838", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [126, 427, 442, 463], "grad": [126, 419, 442, 463]}}
+{"id": "v19012_100496_0", "shot": "v19012_100496", "vn": "v19012", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [190, 351, 256, 388], "grad": [185, 352, 255, 387]}}
+{"id": "v19012_100503_0", "shot": "v19012_100503", "vn": "v19012", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [181, 351, 257, 389], "grad": [173, 351, 265, 387]}}
+{"id": "v19288_154790_0", "shot": "v19288_154790", "vn": "v19288", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [546, 158, 727, 186], "grad": [549, 158, 727, 186]}}
+{"id": "v19288_154790_2", "shot": "v19288_154790", "vn": "v19288", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [505, 271, 727, 300], "grad": [507, 271, 727, 300]}}
+{"id": "v19288_154790_5", "shot": "v19288_154790", "vn": "v19288", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [545, 398, 723, 427]}}
+{"id": "v19441_103392_1", "shot": "v19441_103392", "vn": "v19441", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [117, 427, 648, 457], "grad": [117, 426, 648, 457]}}
+{"id": "v19441_125258_1", "shot": "v19441_125258", "vn": "v19441", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [118, 427, 724, 457], "grad": [118, 426, 724, 458]}}
+{"id": "v19643_101622_4", "shot": "v19643_101622", "vn": "v19643", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [519, 466, 803, 497], "grad": [513, 465, 803, 505]}}
+{"id": "v19851_115943_1", "shot": "v19851_115943", "vn": "v19851", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [205, 218, 736, 255], "grad": [205, 218, 736, 255]}}
+{"id": "v19851_115944_2", "shot": "v19851_115944", "vn": "v19851", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [119, 390, 753, 436], "grad": [117, 390, 753, 437]}}
+{"id": "v19851_115946_2", "shot": "v19851_115946", "vn": "v19851", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [123, 402, 694, 437], "grad": [117, 402, 693, 436]}}
+{"id": "v19851_115947_4", "shot": "v19851_115947", "vn": "v19851", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [258, 411, 330, 438]}}
+{"id": "v19851_115947_5", "shot": "v19851_115947", "vn": "v19851", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [110, 413, 192, 441]}}
+{"id": "v19853_142545_23", "shot": "v19853_142545", "vn": "v19853", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [388, 415, 436, 441], "grad": [391, 414, 436, 441]}}
+{"id": "v19853_154786_1", "shot": "v19853_154786", "vn": "v19853", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [102, 418, 438, 454], "grad": [102, 420, 437, 453]}}
+{"id": "v19953_168191_0", "shot": "v19953_168191", "vn": "v19953", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [161, 402, 764, 432], "grad": [162, 403, 762, 431]}}
+{"id": "v19953_168196_0", "shot": "v19953_168196", "vn": "v19953", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [161, 402, 793, 432], "grad": [162, 402, 793, 431]}}
+{"id": "v19953_168199_0", "shot": "v19953_168199", "vn": "v19953", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [161, 402, 798, 432], "grad": [162, 402, 797, 431]}}
+{"id": "v20634_154622_8", "shot": "v20634_154622", "vn": "v20634", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [506, 518, 544, 537]}}
+{"id": "v20747_137686_4", "shot": "v20747_137686", "vn": "v20747", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [214, 471, 342, 499]}}
+{"id": "v20747_137691_28", "shot": "v20747_137691", "vn": "v20747", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [204, 513, 243, 535], "grad": [198, 511, 243, 538]}}
+{"id": "v20747_137693_21", "shot": "v20747_137693", "vn": "v20747", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [138, 513, 177, 535]}}
+{"id": "v21024_148039_1", "shot": "v21024_148039", "vn": "v21024", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [213, 406, 700, 440]}}
+{"id": "v21024_148044_3", "shot": "v21024_148044", "vn": "v21024", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [227, 478, 477, 512], "grad": [228, 478, 477, 512]}}
+{"id": "v21261_119891_0", "shot": "v21261_119891", "vn": "v21261", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [122, 425, 330, 454]}}
+{"id": "v21261_119897_3", "shot": "v21261_119897", "vn": "v21261", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [122, 425, 774, 454], "grad": [124, 425, 773, 455]}}
+{"id": "v21261_119897_4", "shot": "v21261_119897", "vn": "v21261", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [135, 464, 628, 493]}}
+{"id": "v21261_119899_0", "shot": "v21261_119899", "vn": "v21261", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [124, 425, 397, 455], "grad": [124, 425, 398, 455]}}
+{"id": "v21261_119899_2", "shot": "v21261_119899", "vn": "v21261", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [126, 503, 724, 533]}}
+{"id": "v21787_115564_1", "shot": "v21787_115564", "vn": "v21787", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [231, 387, 614, 419], "grad": [231, 386, 614, 419]}}
+{"id": "v21922_115911_1", "shot": "v21922_115911", "vn": "v21922", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [116, 437, 597, 466], "grad": [117, 436, 597, 466]}}
+{"id": "v21922_115914_3", "shot": "v21922_115914", "vn": "v21922", "kind": "vita", "how": "single", "luna": "skip-cut", "tier": "t3", "crops": {"ink": [248, 375, 316, 398], "grad": [248, 375, 316, 398]}}
+{"id": "v24216_154685_3", "shot": "v24216_154685", "vn": "v24216", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [57, 195, 298, 214], "grad": [55, 193, 300, 216]}}
+{"id": "v24216_154685_4", "shot": "v24216_154685", "vn": "v24216", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [54, 217, 165, 237], "grad": [53, 215, 166, 239]}}
+{"id": "v24216_154687_2", "shot": "v24216_154687", "vn": "v24216", "kind": "psp", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [39, 164, 77, 187], "grad": [40, 162, 81, 191]}}
+{"id": "v24291_151384_1", "shot": "v24291_151384", "vn": "v24291", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [263, 81, 382, 116]}}
+{"id": "v24291_151384_2", "shot": "v24291_151384", "vn": "v24291", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [267, 144, 533, 176]}}
+{"id": "v25227_237189_1", "shot": "v25227_237189", "vn": "v25227", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [163, 357, 279, 389], "grad": [155, 357, 279, 388]}}
+{"id": "v25227_237189_3", "shot": "v25227_237189", "vn": "v25227", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [139, 430, 638, 468], "grad": [143, 422, 637, 471]}}
+{"id": "v25227_237189_4", "shot": "v25227_237189", "vn": "v25227", "kind": "vita", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [129, 469, 508, 507]}}
+{"id": "v25227_237190_1", "shot": "v25227_237190", "vn": "v25227", "kind": "vita", "how": "single", "luna": "agree", "tier": "t2", "crops": {"ink": [106, 389, 778, 427]}}
+{"id": "v25227_237191_1", "shot": "v25227_237191", "vn": "v25227", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [164, 356, 254, 388]}}
+{"id": "v25227_237191_2", "shot": "v25227_237191", "vn": "v25227", "kind": "vita", "how": "single", "luna": "agree", "tier": "t3", "crops": {"ink": [128, 390, 572, 426], "grad": [128, 389, 572, 426]}}
+{"id": "v25227_237192_2", "shot": "v25227_237192", "vn": "v25227", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [106, 429, 635, 466], "grad": [99, 421, 635, 474]}}
+{"id": "v28235_154576_2", "shot": "v28235_154576", "vn": "v28235", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [197, 60, 306, 93]}}
+{"id": "v28235_154576_29", "shot": "v28235_154576", "vn": "v28235", "kind": "vita", "how": "auto", "luna": null, "tier": "auto", "crops": {"ink": [577, 370, 688, 402], "grad": [569, 369, 696, 410]}}
+{"id": "v30990_148653_3", "shot": "v30990_148653", "vn": "v30990", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [13, 226, 82, 241], "grad": [12, 224, 83, 245]}}
+{"id": "v30990_148655_2", "shot": "v30990_148655", "vn": "v30990", "kind": "psp", "how": "consensus", "luna": "agree", "tier": "t1", "crops": {"ink": [21, 228, 72, 246]}}

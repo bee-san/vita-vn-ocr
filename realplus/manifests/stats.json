@@ -1,0 +1,295 @@
+{
+ "pool": "realplus",
+ "pipeline": {
+  "devnative": "f5a1dbd: read and sheets as frozen at 35a86ca, GRAD containment 0cb084e, final crops, edge check and looks f523e30",
+  "realplus": "7231977"
+ },
+ "vndb_dump": {
+  "file": "vndb-db-2026-10-12.tar.zst",
+  "sha256": "c6ada5e33d3163d1de97fc7e6e24b91048506a2a0979172c5205f439376ef4aa",
+  "bytes": 190763803,
+  "timestamp": "2026-10-12 08:00:26+00"
+ },
+ "selection": {
+  "kinds": {
+   "vita": {
+    "screenshots": 0,
+    "vns": 0
+   },
+   "psp": {
+    "screenshots": 0,
+    "vns": 0
+   },
+   "hires": {
+    "screenshots": 43198,
+    "vns": 10436
+   }
+  },
+  "screenshots": 43198,
+  "vns": 10436,
+  "dropped": {
+   "not-japanese-original": 59199,
+   "rating": 39558,
+   "vn:test-vn": 18758,
+   "vn:val-bucket": 12587,
+   "vn:shared-release": 11017,
+   "language": 4112,
+   "in-pool:realdata+teacher": 3046,
+   "kind": 1789,
+   "vn:development": 1732,
+   "vn:test-set": 1426,
+   "vn:family": 1081,
+   "in-pool:realdata": 510,
+   "in-pool:data-vndb+realdata+synth2+teacher": 258,
+   "in-pool:realdata+synth2+teacher": 119,
+   "in-pool:data-vndb+linefind+realdata+synth2+teacher": 110,
+   "in-pool:linefind+realdata+teacher": 99,
+   "in-pool:data-vndb+realdata+synth2": 68,
+   "in-pool:realdata+synth2": 54,
+   "in-pool:data-vndb+eval-candidates+synth2": 52,
+   "vn:fresh-native": 34,
+   "in-pool:linefind+realdata": 31,
+   "in-pool:linefind+realdata+synth2+teacher": 28,
+   "vn:fresh-native-relation": 27,
+   "vn:clannad": 23,
+   "in-pool:data-vndb+synth2": 19,
+   "in-pool:synth2": 14,
+   "in-pool:data-vndb+linefind+realdata+synth2": 12,
+   "in-pool:data-vndb+linefind+realdata+teacher": 9,
+   "in-pool:data-vndb+fresh-synthetic+linefind+realdata+synth2+teacher": 7,
+   "in-pool:fresh-synthetic+realdata+synth2+teacher": 6,
+   "in-pool:data-vndb+linefind+synth2": 5,
+   "in-pool:linefind+realdata+synth2": 4,
+   "in-pool:data-vndb+fresh-synthetic+realdata+synth2+teacher": 3,
+   "in-pool:data-vndb+eval-candidates+fresh-synthetic+synth2": 2,
+   "in-pool:fresh-synthetic+linefind+realdata+synth2+teacher": 1,
+   "in-pool:data-vndb+fresh-synthetic+linefind+realdata+synth2": 1,
+   "hires-cap": 0
+  },
+  "reserved_vns": {
+   "val-bucket": 6623,
+   "test-vn": 9816,
+   "test-set": 172,
+   "development": 189,
+   "fresh-native": 8,
+   "clannad": 7,
+   "fresh-native-relation": 4,
+   "family": 146,
+   "shared-release": 1840
+  },
+  "reserved_screenshots": 8459
+ },
+ "fetch": {
+  "ok": 43198
+ },
+ "duplicates": 2,
+ "read": {
+  "screenshots": 43196
+ },
+ "review": {
+  "pass1": {
+   "pick": 2122,
+   "text": 32,
+   "skip-ui": 941,
+   "skip-bad": 78,
+   "skip-cut": 221,
+   "unsure": 6
+  },
+  "edge": {
+   "skip-cut": 111,
+   "pick": 3643,
+   "skip-bad": 36,
+   "text": 9,
+   "unsure": 1
+  },
+  "pass2": {
+   "pick": 60,
+   "text": 2,
+   "skip-cut": 1,
+   "unsure": 2,
+   "skip-bad": 1
+  },
+  "reviewer_kind": "assistant"
+ },
+ "labels": {
+  "dropped:undecided": 81709,
+  "kept:auto": 48747,
+  "kept:consensus": 2057,
+  "dropped:skip-cut": 221,
+  "kept:single": 60,
+  "dropped:skip-ui": 941,
+  "dropped:no-engine-support": 32,
+  "dropped:blind-unsure": 1,
+  "dropped:skip-bad": 78,
+  "dropped:pass1-unsure": 6,
+  "dropped:blind-cut": 2,
+  "dropped:pass2-disagree": 5,
+  "dropped:blind-label-wrong": 2
+ },
+ "edge_check": {
+  "unflagged": 44981,
+  "edge-cut": 111,
+  "checked": 3643,
+  "edge-unchecked": 2093,
+  "edge-bad": 36,
+  "edge-other-text": 9,
+  "edge-unsure": 1
+ },
+ "leakcheck": {
+  "leakcheck": {
+   "tests": 157,
+   "pool": 43198,
+   "min_corr": 0.95,
+   "pairs": 2,
+   "same-vn": 0,
+   "cross-vn": 2,
+   "test_shots_hit": 1
+  },
+  "leakcheck_devnative": {
+   "tests": 346,
+   "pool": 43198,
+   "min_corr": 0.95,
+   "pairs": 0,
+   "same-vn": 0,
+   "cross-vn": 0,
+   "test_shots_hit": 0
+  }
+ },
+ "leak_dropped_screenshots": 2,
+ "blind_sample": {
+  "seed": 20261013,
+  "from": 50874,
+  "score": 500,
+  "extensions": [
+   {
+    "n": 70,
+    "seed": "20261013:1"
+   }
+  ]
+ },
+ "build": {
+  "lines": 43264,
+  "vns": 9140,
+  "screenshots": 25325,
+  "how": {
+   "auto": 41218,
+   "consensus": 1990,
+   "single": 56
+  },
+  "names": 374,
+  "files": {
+   "realplus_train_ink.npz": {
+    "crops": 71219,
+    "lines": 43146,
+    "vns": 9130,
+    "by_target": {
+     "vita": 43139,
+     "psp": 28080
+    },
+    "chars": 796220,
+    "sha256": "eed888a6f06034ddd99b4b610c9867ff2366b19f77b548cbdebe3c78c5a6e9d8"
+   },
+   "realplus_train_grad.npz": {
+    "crops": 53626,
+    "lines": 35355,
+    "vns": 8899,
+    "by_target": {
+     "vita": 33759,
+     "psp": 19867
+    },
+    "chars": 649128,
+    "sha256": "f2a3b7d33b2a8678f047493cb962d48c5f923c4809296c0edd319d162363351f"
+   }
+  },
+  "dropped_at_build": {
+   "out-of-vocab": 15,
+   "excluded-late": 1,
+   "vita-grad-missed": 5545,
+   "psp-grad-missed": 3782,
+   "vita-grad-mixed": 2371,
+   "psp-grad-mixed": 3957,
+   "edge-unchecked": 2093,
+   "vita-grad-unchecked": 2645,
+   "psp-too-small": 18033,
+   "vita-grad-partial": 1418,
+   "psp-grad-unchecked": 1713,
+   "vita-ink-mixed": 507,
+   "psp-ink-mixed": 472,
+   "no-crop": 375,
+   "psp-grad-partial": 197,
+   "vita-grad-cuts-label": 774,
+   "edge-other-text": 9,
+   "edge-bad": 36,
+   "edge-cut": 110,
+   "psp-grad-cuts-label": 20,
+   "edge-unsure": 1,
+   "repeat-cap": 4960
+  }
+ },
+ "screenshot_manifests": [
+  "shots_01.jsonl",
+  "shots_02.jsonl",
+  "shots_03.jsonl",
+  "shots_04.jsonl",
+  "shots_05.jsonl"
+ ],
+ "local_manifests": {
+  "manifests/lines.jsonl": "90b720291afd864835f5b472040574e9c5eca8af62c67ee60f0f6b8d4c222315",
+  "labels.jsonl": "bdf7346db16696f4b5d35f5b09639d934863867d23d03cde70164e4dec9c2de2",
+  "lines_full.jsonl": "0f891be8262efefd38cce29d662581b1660391e4f2e8d570a0fea86aae4d0051"
+ },
+ "blind": {
+  "all": {
+   "agree": 495,
+   "lines": 500,
+   "rate": 0.99,
+   "wilson95": [
+    0.9768,
+    0.9957
+   ]
+  },
+  "how:auto": {
+   "agree": 476,
+   "lines": 481,
+   "rate": 0.9896
+  },
+  "how:consensus": {
+   "agree": 18,
+   "lines": 18,
+   "rate": 1.0
+  },
+  "how:single": {
+   "agree": 1,
+   "lines": 1,
+   "rate": 1.0
+  },
+  "kind:vita": {
+   "agree": 495,
+   "lines": 500,
+   "rate": 0.99
+  },
+  "subset:realplus": {
+   "agree": 495,
+   "lines": 500,
+   "rate": 0.99
+  },
+  "sample": {
+   "drawn": 610,
+   "decided": 610,
+   "in_pool": 519,
+   "scored": 500,
+   "seed": 20261013,
+   "from": 50874
+  }
+ },
+ "third_looks": {
+  "lines": 5,
+  "kept": 0,
+  "why": {
+   "unsure": 1,
+   "cut": 2,
+   "label-wrong": 2
+  },
+  "reviewer_kind": "assistant"
+ }
+}

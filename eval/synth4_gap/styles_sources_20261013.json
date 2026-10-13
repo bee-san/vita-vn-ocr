@@ -31,7 +31,7 @@
    ],
    "rows": 20000,
    "measured": 19990,
-   "reserved_dropped": 454,
+   "reserved_dropped": 475,
    "synthetic": false
   },
   "realplus_ink": {
@@ -42,8 +42,8 @@
     }
    ],
    "rows": 20000,
-   "measured": 19995,
-   "reserved_dropped": 8,
+   "measured": 19996,
+   "reserved_dropped": 11,
    "synthetic": false
   },
   "realplus_grad": {
@@ -54,8 +54,8 @@
     }
    ],
    "rows": 20000,
-   "measured": 20000,
-   "reserved_dropped": 6,
+   "measured": 19999,
+   "reserved_dropped": 8,
    "synthetic": false
   }
  }

@@ -133,6 +133,7 @@ def test_reserved_vns_hold_the_test_games():
     test = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"])
     assert test <= res
     assert not G.usable("v4", res)          # CLANNAD (exclusion manifest)
+    assert not G.usable("v661", res) and not G.usable("v19373", res)   # owner shared-release reserves
     assert not G.usable(None, res)
 
 

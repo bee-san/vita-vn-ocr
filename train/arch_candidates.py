@@ -42,6 +42,7 @@ CANDIDATES = {
     "W175": dict(width=1.75),                                      # uniform, LW's MACs
     "W20b64": dict(width=2.0, bottleneck=64),
     "W2125b64": dict(chans=(64, 136, 272, 344, 408), bottleneck=64),
+    "LWa4": dict(chans=(32, 64, 128, 192, 256), classes=3501),   # FL10-class late-wide, 3,500 + <unk>
 }
 
 
@@ -55,6 +56,8 @@ def flags(kw):
     for k in ("bottleneck", "depth", "ctx", "ctx_k"):
         if k in kw:
             out.append(f"--{k.replace('_', '-')} {kw[k]}")
+    if kw.get("classes", 5355) != 5355:
+        out.append(f"--vocab <{kw['classes'] - 1} entries>")
     return " ".join(out)
 
 
@@ -102,6 +105,19 @@ def cmd_blobs(args):
     sizes_path.write_text(json.dumps(sizes, indent=1))
 
 
+# docs/vita-memory-budget.md's tiers (main's vita/budget_sweep.TIERS since #60), used when budget_sweep lacks them
+TIERS = (("always", {"weights": 900_000, "arena": 131_072, "ms": 300, "mhz": 333}),
+         ("preflight", {"weights": 1_600_000, "arena": 262_144, "ms": 550, "mhz": 333}))
+
+
+def tier_of(B, info, run):
+    """The smallest tier whose three limits a blob meets ("never" beyond the ceiling)."""
+    for name, c in getattr(B, "TIERS", TIERS):
+        if all(v[3] for v in B.verdict(info, run, c)):
+            return name
+    return "never"
+
+
 def cmd_table(args):
     import budget_sweep as B
     d = Path(args.dir)
@@ -109,24 +125,26 @@ def cmd_table(args):
     runs = B.load_runs(d / "check") if (d / "check").exists() else {}
     rows, summary = [], {}
     rows.append("| candidate | train2.py flags | params | int8 blob B | of which head B | W8I arena B | MACs/frame "
-                "| est. ms per 640-px line, 333 MHz | 444 MHz | within the ceiling |")
+                "| est. ms per 640-px line, 333 MHz | 444 MHz | tier |")
     rows.append("|---|---|---|---|---|---|---|---|---|---|")
     for name in [n for n in CANDIDATES if n in sizes]:
         s = sizes[name]
         r = runs.get((name, *B.BASE))
         ms3 = B._ms(r, 333) if r else None
         ms4 = B._ms(r, 444) if r else None
-        ok = None
+        ok = tier = None
         if r:
             ok = all(v[3] for v in B.verdict(s, r))
+            tier = tier_of(B, s, r)
         summary[name] = {"params": s["params"], "blob_bytes": s["blob_bytes"],
                          "head_weight_bytes": s["head_weight_bytes"],
                          "arena_w8i": s["arena"]["t4h16"]["w8i"], "macs_per_frame": s["macs_per_frame"],
-                         "ms_333": ms3, "ms_444": ms4, "within_ceiling": ok, "train2_flags": s.get("train2_flags"),
+                         "ms_333": ms3, "ms_444": ms4, "within_ceiling": ok, "tier": tier,
+                         "train2_flags": s.get("train2_flags"),
                          "sha256": s.get("sha256")}
         rows.append(f"| {name} | `{s.get('train2_flags', '')}` | {s['params']:,} | {s['blob_bytes']:,} | "
                     f"{s['head_weight_bytes']:,} | {s['arena']['t4h16']['w8i']:,} | {s['macs_per_frame']:,} | "
-                    + (f"{B._span(ms3)} | {B._span(ms4)} | {'yes' if ok else 'no'} |" if r else "- | - | - |"))
+                    + (f"{B._span(ms3)} | {B._span(ms4)} | {tier} |" if r else "- | - | - |"))
     sys.stdout.write("\n".join(rows) + "\n")
     if args.json:
         Path(args.json).write_text(json.dumps({"ceiling": B.CEILING, "candidates": summary}, indent=1))

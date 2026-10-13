@@ -23,6 +23,7 @@
     298.639212120137
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--width 1.5",
    "sha256": "87fb00b5906bfceb1878fce39b13aded84729ace28b1bf151b5f332ce18f257d"
   },
@@ -41,6 +42,7 @@
     411.21803485848716
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--width 2.0",
    "sha256": "d0aa13d5d7866fe24ffff0ef487bf548a24fc7dd53c170918007e34c9780ec48"
   },
@@ -59,6 +61,7 @@
     350.88197782592727
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--chans 48,96,192,320,384",
    "sha256": "ae5cd6baaf00facf1f14445de52545cb9187c9469674002ba3129ae1fa447ed6"
   },
@@ -77,6 +80,7 @@
     333.1211818164156
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--chans 48,96,192,320,384 --bottleneck 64",
    "sha256": "9ddad3cfcd226dbc538acc1104256c63ae463ed017691cd35726159beb629556"
   },
@@ -95,6 +99,7 @@
     362.8654207692925
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--chans 48,96,224,320,384",
    "sha256": "27abacbc9db8fc0df3682d78dbd6cc898d74f814f20cd29ba902451f7d37d34f"
   },
@@ -113,6 +118,7 @@
     375.3199254748419
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--chans 48,96,256,320,384",
    "sha256": "de7a665e757dd5494c2ee8241c49b6a2b56fa08c0ed8b6366f49621cc14d2566"
   },
@@ -131,6 +137,7 @@
     363.5294682665788
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--chans 48,96,192,384,384 --bottleneck 80",
    "sha256": "db21fab9f9e8025378750a3eede10176f7c04f6e6727e74dde05e0457ea5f661"
   },
@@ -149,6 +156,7 @@
     357.8927431330064
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--chans 64,128,256,240,288",
    "sha256": "27d656b5cd86855ac746c00692633c045c041fc33185f711533d3ee1503a58b2"
   },
@@ -167,6 +175,7 @@
     355.71869118738994
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--width 1.75",
    "sha256": "0b163a789b5fe1c0a1d277e998a0df08e0fa0e5cd5c4c08e332e430280dfea80"
   },
@@ -185,6 +194,7 @@
     393.3247493974988
    ],
    "within_ceiling": true,
+   "tier": "preflight",
    "train2_flags": "--width 2.0 --bottleneck 64",
    "sha256": "93fb83246bad952ada74409b5a6994f12edfb6ae8bc51cee665d5ad7425ee9e0"
   },
@@ -203,8 +213,28 @@
     425.1730831827609
    ],
    "within_ceiling": false,
+   "tier": "never",
    "train2_flags": "--chans 64,136,272,344,408 --bottleneck 64",
    "sha256": "3643005ac8eea4b26c9f0d7c07d8936d3903f5730a3ee91f895959da1ae72395"
+  },
+  "LWa4": {
+   "params": 696717,
+   "blob_bytes": 779728,
+   "head_weight_bytes": 364416,
+   "arena_w8i": 130464,
+   "macs_per_frame": 957024,
+   "ms_333": [
+    139.79960123273767,
+    262.9842537671286
+   ],
+   "ms_444": [
+    104.84970092455325,
+    197.28384058319924
+   ],
+   "within_ceiling": true,
+   "tier": "always",
+   "train2_flags": "--chans 32,64,128,192,256 --vocab <3500 entries>",
+   "sha256": "73644f06ae9e7d4f0b98e2ffac1faf140ab4e5aaca84a17742db04be636f928a"
   }
  },
  "proxy": {
@@ -253,6 +283,16 @@
    ]
   },
   "runs": {
+   "P_EW_s1": {
+    "raw": 0.0564,
+    "ema": 0.061985,
+    "s2v": 0.10358727685376512,
+    "nvv": 0.12702316724849255,
+    "threads": "2",
+    "lines_per_s": 72.0,
+    "seed": "1",
+    "flags": "--chans 64,128,256,240,288"
+   },
    "P_F20_s1": {
     "raw": 0.054360000000000006,
     "ema": 0.058505,
@@ -261,6 +301,16 @@
     "threads": "1",
     "lines_per_s": 44.0,
     "seed": "1",
+    "flags": "--width 2.0"
+   },
+   "P_F20_s2": {
+    "raw": 0.051175,
+    "ema": 0.055875,
+    "s2v": 0.09152806476745368,
+    "nvv": 0.11393208505236432,
+    "threads": "2",
+    "lines_per_s": 67.0,
+    "seed": "2",
     "flags": "--width 2.0"
    },
    "P_H15_s1": {
@@ -283,6 +333,26 @@
     "seed": "2",
     "flags": "--width 1.5"
    },
+   "P_H15gtc_s1": {
+    "raw": 0.090665,
+    "ema": 0.09539500000000001,
+    "s2v": 0.15297584770163614,
+    "nvv": 0.17867343700412566,
+    "threads": "3",
+    "lines_per_s": 69.0,
+    "seed": "1",
+    "flags": "--width 1.5 --guide nrtr"
+   },
+   "P_H15gtc_s2": {
+    "raw": 0.09165999999999999,
+    "ema": 0.10033500000000001,
+    "s2v": 0.1502997865925951,
+    "nvv": 0.17867343700412566,
+    "threads": "3",
+    "lines_per_s": 69.0,
+    "seed": "2",
+    "flags": "--width 1.5 --guide nrtr"
+   },
    "P_H15rep_s1": {
     "raw": 0.055325,
     "ema": 0.06312000000000001,
@@ -293,6 +363,16 @@
     "seed": "1",
     "flags": "--width 1.5 --rep 2"
    },
+   "P_H15rep_s2": {
+    "raw": 0.055555,
+    "ema": 0.064815,
+    "s2v": 0.1077876765692219,
+    "nvv": 0.13817042208822597,
+    "threads": "3",
+    "lines_per_s": 70.0,
+    "seed": "2",
+    "flags": "--width 1.5 --rep 2"
+   },
    "P_LW_s1": {
     "raw": 0.055465,
     "ema": 0.06554499999999999,
@@ -301,6 +381,16 @@
     "threads": "1",
     "lines_per_s": 54.0,
     "seed": "1",
+    "flags": "--chans 48,96,192,320,384"
+   },
+   "P_LW_s2": {
+    "raw": 0.051995,
+    "ema": 0.060579999999999995,
+    "s2v": 0.09884489007824938,
+    "nvv": 0.12341320215804506,
+    "threads": "2",
+    "lines_per_s": 86.0,
+    "seed": "2",
     "flags": "--chans 48,96,192,320,384"
    }
   },
@@ -1189,8 +1279,1675 @@
       "lines": 972
      }
     }
+   },
+   "GTC_vs_H15_s1": {
+    "a": "H15_s1",
+    "b": "GTC_s1",
+    "raw": {
+     "delta_points": 2.938,
+     "ci95": [
+      2.471,
+      3.456
+     ],
+     "cer_a": 0.06128,
+     "cer_b": 0.09066
+    },
+    "raw_line_ci95": [
+     2.557,
+     3.33
+    ],
+    "vns_better": 14,
+    "vns_worse": 130,
+    "ema": {
+     "delta_points": 2.375,
+     "ci95": [
+      1.973,
+      2.8
+     ],
+     "cer_a": 0.07165,
+     "cer_b": 0.0954
+    },
+    "per_seed": {
+     "R_H15_s1->R_H15gtc_s1": 2.938
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": 2.275,
+      "ci95": [
+       1.791,
+       2.829
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": 2.146,
+      "ci95": [
+       1.546,
+       2.772
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": 2.672,
+      "ci95": [
+       1.965,
+       3.462
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": 1.896,
+      "ci95": [
+       -1.587,
+       5.207
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": 4.816,
+      "ci95": [
+       3.825,
+       5.962
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": 3.067,
+      "ci95": [
+       2.475,
+       3.688
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": 2.557,
+      "ci95": [
+       1.668,
+       3.568
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": 2.936,
+      "ci95": [
+       1.53,
+       4.848
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": 4.812,
+      "ci95": [
+       3.055,
+       7.08
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": 7.487,
+      "ci95": [
+       5.893,
+       9.198
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": 2.348,
+      "ci95": [
+       1.821,
+       2.936
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": 2.642,
+      "ci95": [
+       1.795,
+       3.479
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": 6.49,
+      "ci95": [
+       5.112,
+       7.943
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": 2.359,
+      "ci95": [
+       1.909,
+       2.844
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": 3.885,
+      "ci95": [
+       2.942,
+       4.972
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 5.37,
+      "ci95": [
+       3.682,
+       7.072
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": 3.391,
+      "ci95": [
+       2.66,
+       4.216
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": 2.625,
+      "ci95": [
+       2.077,
+       3.232
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "LW_vs_H15": {
+    "a": "H15",
+    "b": "LW",
+    "raw": {
+     "delta_points": -0.665,
+     "ci95": [
+      -0.912,
+      -0.431
+     ],
+     "cer_a": 0.06038,
+     "cer_b": 0.05373
+    },
+    "raw_line_ci95": [
+     -0.883,
+     -0.449
+    ],
+    "vns_better": 90,
+    "vns_worse": 43,
+    "ema": {
+     "delta_points": -0.594,
+     "ci95": [
+      -0.851,
+      -0.346
+     ],
+     "cer_a": 0.06901,
+     "cer_b": 0.06306
+    },
+    "per_seed": {
+     "R_H15_s1->R_LW_s1": -0.581,
+     "R_H15_s2->R_LW_s2": -0.748
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.657,
+      "ci95": [
+       -0.913,
+       -0.409
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": -0.525,
+      "ci95": [
+       -0.881,
+       -0.212
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": -0.523,
+      "ci95": [
+       -0.849,
+       -0.209
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": -1.363,
+      "ci95": [
+       -2.825,
+       0.372
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": -1.011,
+      "ci95": [
+       -1.572,
+       -0.482
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": -0.77,
+      "ci95": [
+       -1.071,
+       -0.471
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": -0.321,
+      "ci95": [
+       -0.69,
+       0.024
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": -0.734,
+      "ci95": [
+       -1.628,
+       0.022
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": -1.35,
+      "ci95": [
+       -2.545,
+       -0.395
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -0.808,
+      "ci95": [
+       -1.852,
+       0.202
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": -0.626,
+      "ci95": [
+       -0.894,
+       -0.374
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": -0.72,
+      "ci95": [
+       -1.2,
+       -0.257
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": -0.803,
+      "ci95": [
+       -1.663,
+       0.09
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.612,
+      "ci95": [
+       -0.885,
+       -0.355
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": -0.75,
+      "ci95": [
+       -1.143,
+       -0.352
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": -0.389,
+      "ci95": [
+       -1.405,
+       0.688
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": -0.7,
+      "ci95": [
+       -1.067,
+       -0.361
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": -0.64,
+      "ci95": [
+       -0.93,
+       -0.365
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "GTC_vs_H15": {
+    "a": "H15",
+    "b": "GTC",
+    "raw": {
+     "delta_points": 3.079,
+     "ci95": [
+      2.674,
+      3.502
+     ],
+     "cer_a": 0.06038,
+     "cer_b": 0.09116
+    },
+    "raw_line_ci95": [
+     2.774,
+     3.394
+    ],
+    "vns_better": 6,
+    "vns_worse": 152,
+    "ema": {
+     "delta_points": 2.886,
+     "ci95": [
+      2.526,
+      3.268
+     ],
+     "cer_a": 0.06901,
+     "cer_b": 0.09786
+    },
+    "per_seed": {
+     "R_H15_s1->R_H15gtc_s1": 2.938,
+     "R_H15_s2->R_H15gtc_s2": 3.219
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": 2.487,
+      "ci95": [
+       2.076,
+       2.935
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": 2.436,
+      "ci95": [
+       1.925,
+       2.978
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": 2.613,
+      "ci95": [
+       2.08,
+       3.204
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": 2.37,
+      "ci95": [
+       0.362,
+       3.869
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": 4.863,
+      "ci95": [
+       4.017,
+       5.793
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": 3.28,
+      "ci95": [
+       2.755,
+       3.822
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": 2.569,
+      "ci95": [
+       1.897,
+       3.336
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": 2.858,
+      "ci95": [
+       1.999,
+       3.946
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": 4.519,
+      "ci95": [
+       3.165,
+       5.962
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": 7.019,
+      "ci95": [
+       5.855,
+       8.188
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": 2.524,
+      "ci95": [
+       2.078,
+       3.004
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": 2.963,
+      "ci95": [
+       2.258,
+       3.698
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": 6.089,
+      "ci95": [
+       5.071,
+       7.192
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": 2.621,
+      "ci95": [
+       2.249,
+       3.011
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": 3.827,
+      "ci95": [
+       3.07,
+       4.672
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 5.253,
+      "ci95": [
+       3.546,
+       7.361
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": 3.463,
+      "ci95": [
+       2.871,
+       4.117
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": 2.813,
+      "ci95": [
+       2.337,
+       3.32
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "F20_vs_H15": {
+    "a": "H15",
+    "b": "F20",
+    "raw": {
+     "delta_points": -0.761,
+     "ci95": [
+      -1.044,
+      -0.49
+     ],
+     "cer_a": 0.06038,
+     "cer_b": 0.05277
+    },
+    "raw_line_ci95": [
+     -0.987,
+     -0.535
+    ],
+    "vns_better": 90,
+    "vns_worse": 45,
+    "ema": {
+     "delta_points": -1.182,
+     "ci95": [
+      -1.485,
+      -0.892
+     ],
+     "cer_a": 0.06901,
+     "cer_b": 0.05719
+    },
+    "per_seed": {
+     "R_H15_s1->R_F20_s1": -0.692,
+     "R_H15_s2->R_F20_s2": -0.83
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.764,
+      "ci95": [
+       -1.036,
+       -0.507
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": -0.576,
+      "ci95": [
+       -0.955,
+       -0.252
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": -0.469,
+      "ci95": [
+       -0.791,
+       -0.161
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": -1.54,
+      "ci95": [
+       -3.283,
+       -0.427
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": -1.35,
+      "ci95": [
+       -2.064,
+       -0.698
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": -0.875,
+      "ci95": [
+       -1.246,
+       -0.527
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": -0.36,
+      "ci95": [
+       -0.736,
+       0.053
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": -0.906,
+      "ci95": [
+       -1.884,
+       -0.27
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": -1.673,
+      "ci95": [
+       -2.795,
+       -0.447
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -1.319,
+      "ci95": [
+       -2.57,
+       -0.015
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": -0.696,
+      "ci95": [
+       -0.962,
+       -0.437
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": -0.699,
+      "ci95": [
+       -1.28,
+       -0.143
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": -1.469,
+      "ci95": [
+       -2.61,
+       -0.251
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.678,
+      "ci95": [
+       -0.998,
+       -0.381
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": -0.896,
+      "ci95": [
+       -1.336,
+       -0.494
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": -0.739,
+      "ci95": [
+       -1.624,
+       0.23
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": -0.757,
+      "ci95": [
+       -1.156,
+       -0.391
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": -0.764,
+      "ci95": [
+       -1.125,
+       -0.439
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "rep_vs_H15": {
+    "a": "H15",
+    "b": "H15rep",
+    "raw": {
+     "delta_points": -0.494,
+     "ci95": [
+      -0.735,
+      -0.255
+     ],
+     "cer_a": 0.06038,
+     "cer_b": 0.05544
+    },
+    "raw_line_ci95": [
+     -0.708,
+     -0.274
+    ],
+    "vns_better": 87,
+    "vns_worse": 49,
+    "ema": {
+     "delta_points": -0.504,
+     "ci95": [
+      -0.773,
+      -0.245
+     ],
+     "cer_a": 0.06901,
+     "cer_b": 0.06397
+    },
+    "per_seed": {
+     "R_H15_s1->R_H15rep_s1": -0.596,
+     "R_H15_s2->R_H15rep_s2": -0.391
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.583,
+      "ci95": [
+       -0.849,
+       -0.323
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": -0.389,
+      "ci95": [
+       -0.7,
+       -0.085
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": -0.571,
+      "ci95": [
+       -0.953,
+       -0.224
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": -0.415,
+      "ci95": [
+       -1.842,
+       0.386
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": -0.612,
+      "ci95": [
+       -1.246,
+       0.049
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": -0.546,
+      "ci95": [
+       -0.85,
+       -0.232
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": -0.385,
+      "ci95": [
+       -0.723,
+       -0.047
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": -0.375,
+      "ci95": [
+       -1.21,
+       0.271
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": -1.086,
+      "ci95": [
+       -2.182,
+       0.427
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -0.624,
+      "ci95": [
+       -1.727,
+       0.463
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": -0.567,
+      "ci95": [
+       -0.845,
+       -0.28
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": -0.189,
+      "ci95": [
+       -0.742,
+       0.36
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": -0.634,
+      "ci95": [
+       -1.539,
+       0.295
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.572,
+      "ci95": [
+       -0.84,
+       -0.312
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": -0.365,
+      "ci95": [
+       -0.819,
+       0.112
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 0.019,
+      "ci95": [
+       -1.046,
+       1.177
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": -0.557,
+      "ci95": [
+       -0.938,
+       -0.174
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": -0.45,
+      "ci95": [
+       -0.721,
+       -0.178
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "LW_vs_F20": {
+    "a": "F20",
+    "b": "LW",
+    "raw": {
+     "delta_points": 0.096,
+     "ci95": [
+      -0.115,
+      0.311
+     ],
+     "cer_a": 0.05277,
+     "cer_b": 0.05373
+    },
+    "raw_line_ci95": [
+     -0.107,
+     0.305
+    ],
+    "vns_better": 67,
+    "vns_worse": 74,
+    "ema": {
+     "delta_points": 0.587,
+     "ci95": [
+      0.387,
+      0.789
+     ],
+     "cer_a": 0.05719,
+     "cer_b": 0.06306
+    },
+    "per_seed": {
+     "R_F20_s1->R_LW_s1": 0.111,
+     "R_F20_s2->R_LW_s2": 0.082
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": 0.107,
+      "ci95": [
+       -0.113,
+       0.331
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": 0.051,
+      "ci95": [
+       -0.235,
+       0.322
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": -0.054,
+      "ci95": [
+       -0.393,
+       0.262
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": 0.178,
+      "ci95": [
+       -0.633,
+       1.628
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": 0.339,
+      "ci95": [
+       -0.203,
+       0.909
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": 0.105,
+      "ci95": [
+       -0.161,
+       0.374
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": 0.039,
+      "ci95": [
+       -0.409,
+       0.419
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": 0.172,
+      "ci95": [
+       -0.272,
+       0.617
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": 0.323,
+      "ci95": [
+       -1.2,
+       1.576
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": 0.51,
+      "ci95": [
+       -0.382,
+       1.308
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": 0.07,
+      "ci95": [
+       -0.136,
+       0.271
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": -0.021,
+      "ci95": [
+       -0.573,
+       0.524
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": 0.666,
+      "ci95": [
+       -0.2,
+       1.447
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": 0.066,
+      "ci95": [
+       -0.2,
+       0.326
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": 0.146,
+      "ci95": [
+       -0.19,
+       0.496
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 0.35,
+      "ci95": [
+       -0.541,
+       1.27
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": 0.057,
+      "ci95": [
+       -0.297,
+       0.407
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": 0.124,
+      "ci95": [
+       -0.126,
+       0.392
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "EW_vs_H15_s1": {
+    "a": "H15_s1",
+    "b": "EW_s1",
+    "raw": {
+     "delta_points": -0.488,
+     "ci95": [
+      -0.833,
+      -0.145
+     ],
+     "cer_a": 0.06128,
+     "cer_b": 0.0564
+    },
+    "raw_line_ci95": [
+     -0.797,
+     -0.19
+    ],
+    "vns_better": 71,
+    "vns_worse": 58,
+    "ema": {
+     "delta_points": -0.967,
+     "ci95": [
+      -1.317,
+      -0.636
+     ],
+     "cer_a": 0.07165,
+     "cer_b": 0.06198
+    },
+    "per_seed": {
+     "R_H15_s1->R_EW_s1": -0.488
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": -0.455,
+      "ci95": [
+       -0.751,
+       -0.147
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": -0.299,
+      "ci95": [
+       -0.803,
+       0.184
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": -0.356,
+      "ci95": [
+       -0.834,
+       0.065
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": -0.474,
+      "ci95": [
+       -2.532,
+       1.143
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": -0.987,
+      "ci95": [
+       -1.738,
+       -0.266
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": -0.787,
+      "ci95": [
+       -1.203,
+       -0.372
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": 0.141,
+      "ci95": [
+       -0.57,
+       0.887
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": 0.156,
+      "ci95": [
+       -0.393,
+       0.733
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": -0.998,
+      "ci95": [
+       -2.578,
+       1.035
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -1.787,
+      "ci95": [
+       -3.514,
+       -0.068
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": -0.378,
+      "ci95": [
+       -0.687,
+       -0.053
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": -0.21,
+      "ci95": [
+       -0.891,
+       0.456
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": -1.416,
+      "ci95": [
+       -2.859,
+       -0.043
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.749,
+      "ci95": [
+       -1.232,
+       -0.297
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": -0.062,
+      "ci95": [
+       -0.508,
+       0.364
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 0.35,
+      "ci95": [
+       -0.904,
+       1.714
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": -0.414,
+      "ci95": [
+       -0.965,
+       0.132
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": -0.539,
+      "ci95": [
+       -0.976,
+       -0.161
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "EW_vs_F20_s1": {
+    "a": "F20_s1",
+    "b": "EW_s1",
+    "raw": {
+     "delta_points": 0.204,
+     "ci95": [
+      -0.113,
+      0.51
+     ],
+     "cer_a": 0.05436,
+     "cer_b": 0.0564
+    },
+    "raw_line_ci95": [
+     -0.097,
+     0.506
+    ],
+    "vns_better": 58,
+    "vns_worse": 68,
+    "ema": {
+     "delta_points": 0.348,
+     "ci95": [
+      0.051,
+      0.64
+     ],
+     "cer_a": 0.05851,
+     "cer_b": 0.06198
+    },
+    "per_seed": {
+     "R_F20_s1->R_EW_s1": 0.204
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": 0.393,
+      "ci95": [
+       0.1,
+       0.702
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": 0.178,
+      "ci95": [
+       -0.203,
+       0.586
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": 0.075,
+      "ci95": [
+       -0.409,
+       0.542
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": 0.474,
+      "ci95": [
+       -0.693,
+       1.695
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": 0.369,
+      "ci95": [
+       -0.437,
+       1.201
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": 0.022,
+      "ci95": [
+       -0.368,
+       0.415
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": 0.462,
+      "ci95": [
+       -0.113,
+       1.083
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": 0.906,
+      "ci95": [
+       0.27,
+       1.689
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": 0.293,
+      "ci95": [
+       -2.626,
+       3.356
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -1.021,
+      "ci95": [
+       -2.354,
+       0.275
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": 0.348,
+      "ci95": [
+       0.022,
+       0.693
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": 0.335,
+      "ci95": [
+       -0.462,
+       1.103
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": -0.74,
+      "ci95": [
+       -1.83,
+       0.288
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.099,
+      "ci95": [
+       -0.461,
+       0.283
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": 0.7,
+      "ci95": [
+       0.163,
+       1.215
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 0.233,
+      "ci95": [
+       -1.329,
+       1.942
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": 0.35,
+      "ci95": [
+       -0.173,
+       0.885
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": 0.104,
+      "ci95": [
+       -0.23,
+       0.42
+      ],
+      "lines": 972
+     }
+    }
+   },
+   "EW_vs_LW_s1": {
+    "a": "LW_s1",
+    "b": "EW_s1",
+    "raw": {
+     "delta_points": 0.093,
+     "ci95": [
+      -0.225,
+      0.415
+     ],
+     "cer_a": 0.05547,
+     "cer_b": 0.0564
+    },
+    "raw_line_ci95": [
+     -0.215,
+     0.403
+    ],
+    "vns_better": 55,
+    "vns_worse": 68,
+    "ema": {
+     "delta_points": -0.356,
+     "ci95": [
+      -0.676,
+      -0.038
+     ],
+     "cer_a": 0.06555,
+     "cer_b": 0.06198
+    },
+    "per_seed": {
+     "R_LW_s1->R_EW_s1": 0.093
+    },
+    "strata": {
+     "dakuten-smallkana": {
+      "delta_points": 0.187,
+      "ci95": [
+       -0.152,
+       0.528
+      ],
+      "lines": 831
+     },
+     "ink:14-19": {
+      "delta_points": 0.166,
+      "ci95": [
+       -0.222,
+       0.581
+      ],
+      "lines": 760
+     },
+     "ink:20-27": {
+      "delta_points": 0.011,
+      "ci95": [
+       -0.444,
+       0.42
+      ],
+      "lines": 363
+     },
+     "ink:28+": {
+      "delta_points": 0.355,
+      "ci95": [
+       -2.313,
+       1.957
+      ],
+      "lines": 44
+     },
+     "ink:<14": {
+      "delta_points": 0.024,
+      "ci95": [
+       -0.774,
+       0.841
+      ],
+      "lines": 484
+     },
+     "kind:hires": {
+      "delta_points": -0.026,
+      "ci95": [
+       -0.438,
+       0.392
+      ],
+      "lines": 1064
+     },
+     "kind:psp": {
+      "delta_points": 0.206,
+      "ci95": [
+       -0.317,
+       0.793
+      ],
+      "lines": 426
+     },
+     "kind:vita": {
+      "delta_points": 0.687,
+      "ci95": [
+       0.296,
+       0.983
+      ],
+      "lines": 161
+     },
+     "latin-digits": {
+      "delta_points": 0.235,
+      "ci95": [
+       -1.885,
+       2.914
+      ],
+      "lines": 62
+     },
+     "len:1-4": {
+      "delta_points": -1.305,
+      "ci95": [
+       -2.544,
+       -0.031
+      ],
+      "lines": 608
+     },
+     "len:13+": {
+      "delta_points": 0.183,
+      "ci95": [
+       -0.178,
+       0.569
+      ],
+      "lines": 590
+     },
+     "len:5-12": {
+      "delta_points": 0.489,
+      "ci95": [
+       -0.225,
+       1.233
+      ],
+      "lines": 453
+     },
+     "namelike": {
+      "delta_points": -1.332,
+      "ci95": [
+       -2.455,
+       -0.169
+      ],
+      "lines": 710
+     },
+     "pol:bright-on-dark": {
+      "delta_points": -0.089,
+      "ci95": [
+       -0.482,
+       0.317
+      ],
+      "lines": 1050
+     },
+     "pol:dark-on-light": {
+      "delta_points": 0.392,
+      "ci95": [
+       -0.157,
+       0.911
+      ],
+      "lines": 601
+     },
+     "rare-kanji": {
+      "delta_points": 0.195,
+      "ci95": [
+       -1.082,
+       1.656
+      ],
+      "lines": 116
+     },
+     "target:psp": {
+      "delta_points": 0.2,
+      "ci95": [
+       -0.316,
+       0.738
+      ],
+      "lines": 679
+     },
+     "target:vita": {
+      "delta_points": 0.02,
+      "ci95": [
+       -0.341,
+       0.354
+      ],
+      "lines": 972
+     }
+    }
    }
   }
+ },
+ "l2_1mib_share": {
+  "note": "budget_sweep.py a9 --l2 1024 (the game holding half of the 2 MiB L2), W8I, 40 synth-val lines; estimates",
+  "shapes": {
+   "H15": {
+    "ms_640px_333": [
+     219.3,
+     437.9
+    ],
+    "l2_misses_per_frame": 2513,
+    "weight_bytes_per_frame": 177496
+   },
+   "LW": {
+    "ms_640px_333": [
+     260.9,
+     558.7
+    ],
+    "l2_misses_per_frame": 5712,
+    "weight_bytes_per_frame": 256824
+   },
+   "EW": {
+    "ms_640px_333": [
+     268.7,
+     521.4
+    ],
+    "l2_misses_per_frame": 2794,
+    "weight_bytes_per_frame": 197400
+   },
+   "F20": {
+    "ms_640px_333": [
+     311.4,
+     687.6
+    ],
+    "l2_misses_per_frame": 8741,
+    "weight_bytes_per_frame": 278008
+   }
+  }
+ },
+ "blank_frames": {
+  "note": "share of CTC frames whose W8I argmax is the blank, teacher_val as stored, raw-weight seed-1 proxies",
+  "runs": {
+   "R_H15_s1": {
+    "lines": 1651,
+    "frames": 52095,
+    "blank_share": 0.65273058834821,
+    "repeat_share": 0.02084653037719551
+   },
+   "R_LW_s1": {
+    "lines": 1651,
+    "frames": 52095,
+    "blank_share": 0.6508878011325463,
+    "repeat_share": 0.022574143391880217
+   },
+   "R_F20_s1": {
+    "lines": 1651,
+    "frames": 52095,
+    "blank_share": 0.647202226701219,
+    "repeat_share": 0.02620213072271811
+   }
+  }
+ },
+ "guide_diagnosis": {
+  "note": "P_H15gtc_s1 raw step-5000 weights, 4 batches of 96 teacher_train lines; encoder gradient norms and the joint clip at 5.0",
+  "ctc_loss": 0.895,
+  "ctc_encoder_grad": 4.365,
+  "guide_loss": 3.659,
+  "guide_encoder_grad": 7.02,
+  "cosine_encoder": 0.109,
+  "clip_factor": 0.606
  },
  "neon_head_argmax_filter_experiment": {
   "note": "scratch worktree, not in this PR; [main, with the filter]",

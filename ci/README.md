@@ -1,14 +1,28 @@
 # CI
 
-`.github/workflows/ci.yml` runs on every pull request and every push to `main`, on `ubuntu-24.04`, with each action pinned to a commit SHA. Python is 3.11.15 with the hash-checked `requirements-ci.lock`: CPU torch 2.5.1 and the same numpy, OpenCV, Pillow, fontTools and PyArrow versions as `requirements.lock`, plus pytest and ruff. Nothing copyrighted is downloaded. The one data download is the OFL font M+ 1p from google/fonts at a pinned commit, checked against its sha256.
+`.github/workflows/ci.yml` runs on every non-draft pull request (and when a draft is marked ready), every push to `main` and by hand, on `ubuntu-24.04`, with each action pinned to a commit SHA. Python is 3.11.15 with the hash-checked `requirements-ci.lock`: CPU torch 2.5.1 and the same numpy, OpenCV, Pillow, fontTools and PyArrow versions as `requirements.lock`, plus pytest and ruff. Nothing copyrighted is downloaded. The one data download is the OFL font M+ 1p from google/fonts at a pinned commit, checked against its sha256.
 
 | Job | Checks | Local command |
 |---|---|---|
-| ruff | lint (`ruff.toml`: E, F, W, I) | `.venv-ci/bin/ruff check .` |
+| ruff + policy | lint (`ruff.toml`: E, F, W, I), the repo policy tests (`tests/test_repo_policy.py`: data policy on every tracked file, action pinning, `ubuntu-24.04`), and `ci/changed.py`, which decides which jobs below run | `.venv-ci/bin/ruff check . && .venv-ci/bin/python -m pytest tests/test_repo_policy.py` |
 | pytest | `tests/`: vocab, model shape and op set, `train.py` helpers, renderer smoke, CI fixtures, repo data policy, action pinning | `.venv-ci/bin/python -m pytest` |
 | training smoke (50 steps) | renders 2 × 160 lines from the pinned font and `ci/fixtures/corpus`, trains exactly 50 CTC steps with `train/train.py`, then checks the checkpoint, the metrics and that the loss fell | `.venv-ci/bin/python ci/train_smoke.py --threads 2` |
 | runtime (gcc), runtime (clang) | `runtime/` as C99 with `-Wall -Wextra -Werror` plus ASan and UBSan, then its parity test against PyTorch. Skipped until `runtime/` exists | `PYTHON=.venv-ci/bin/python ci/runtime.sh gcc` |
 | vita (VitaSDK build) | `runtime/` and the `vita/` test app built for the PS Vita with the pinned VitaSDK and `-Werror`; uploads `vocr_test.vpk` and the code-size report as the `vocr_test-vpk` artifact | `vita/scripts/fetch_vitasdk.sh && VITASDK=$PWD/vita/tools/vitasdk vita/scripts/build.sh` |
+
+## When each job runs
+
+This is a private repository, so every job minute counts against the GitHub Actions quota, and each job is billed rounded up to the minute. `ruff + policy` runs on every event. `ci/changed.py` (tested by `tests/test_ci_changed.py`) diffs the change against the base branch (pull request) or the previous tip (push to `main`) and gates the rest on the paths it touched; a manual run, or any diff that cannot be computed, runs everything:
+
+| Changed paths | pytest | training smoke | runtime | vita |
+|---|---|---|---|---|
+| only `*.md`, `docs/`, `notes/`, `LICENSE`, `.gitignore` | – | – | – | – |
+| anything else (`tests/`, `eval/`, `realplus/`, ...) | ✓ | – | – | – |
+| `train/`, `synth/`, `data/`, `ci/`, `requirements-ci.*`, `.github/` | ✓ | ✓ | ✓ gcc on a pull request, gcc + clang on `main` | – |
+| `runtime/` | ✓ | – | ✓ gcc + clang | ✓ |
+| `vita/` | ✓ | – | – | ✓ |
+
+Skipped jobs show as skipped, not failed, so `gh pr checks` still answers "is CI green". When a job starts reading a new directory, add it to the matching set in `ci/changed.py` and to the table above.
 
 Make the env once (a separate `.venv-ci`, because `uv pip sync` removes packages that aren't in the lock):
 

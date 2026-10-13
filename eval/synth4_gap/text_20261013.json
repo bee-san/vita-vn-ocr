@@ -24,55 +24,63 @@
   },
   "real": {
    "realplus_v3": {
-    "lines": 50526,
-    "vns": 9643,
-    "dropped_reserved": 40,
-    "chars": 565544,
-    "distinct": 2971,
-    "outside_h15_per_1000": 0.025,
-    "outside_fl10_per_1000": 0.626,
-    "lines_outside_fl10": 332,
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/r2/inputs/realplus_v3_labels.jsonl",
+    "sha256": "7a45e81e6caa94faaaf659b5f5f451b367ec535823ff084b0c7f51c11386edfb",
+    "lines": 51670,
+    "vns": 9724,
+    "dropped_reserved": 41,
+    "chars": 583472,
+    "distinct": 2987,
+    "outside_h15_per_1000": 0.024,
+    "outside_fl10_per_1000": 0.629,
+    "lines_outside_fl10": 344,
     "lines_outside_h15": 12
    },
    "native_frames": {
-    "lines": 1839,
-    "vns": 226,
-    "dropped_reserved": 8,
-    "chars": 18571,
-    "distinct": 1383,
-    "outside_h15_per_1000": 0.215,
-    "outside_fl10_per_1000": 1.185,
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/r2/inputs/native_frames_labels.jsonl",
+    "sha256": "67e485a02e1a91f350b92139fed2435dec1a63ca3f251214bdebeac18cc39263",
+    "lines": 1828,
+    "vns": 225,
+    "dropped_reserved": 0,
+    "chars": 18403,
+    "distinct": 1372,
+    "outside_h15_per_1000": 0.217,
+    "outside_fl10_per_1000": 1.195,
     "lines_outside_fl10": 17,
     "lines_outside_h15": 3
    },
    "teacher_train": {
-    "lines": 9178,
-    "vns": 1240,
-    "dropped_reserved": 187,
-    "chars": 97196,
-    "distinct": 2271,
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_train.npz",
+    "sha256": "3c27c057af9a41574a7704d04599d9d6220faea525536d0d6c6023301ff852df",
+    "lines": 9128,
+    "vns": 1237,
+    "dropped_reserved": 244,
+    "chars": 96479,
+    "distinct": 2264,
     "outside_h15_per_1000": 0.0,
-    "outside_fl10_per_1000": 0.504,
-    "lines_outside_fl10": 45,
+    "outside_fl10_per_1000": 0.487,
+    "lines_outside_fl10": 43,
     "lines_outside_h15": 0
    },
    "real_train": {
-    "lines": 6836,
-    "vns": 1198,
-    "dropped_reserved": 169,
-    "chars": 75583,
-    "distinct": 2151,
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realdata/real_train.npz",
+    "sha256": "10f8b68f99357d6db0d5813fbabf3cd3ac9e154fee2fe10c6b03605950f91324",
+    "lines": 6803,
+    "vns": 1195,
+    "dropped_reserved": 210,
+    "chars": 75126,
+    "distinct": 2143,
     "outside_h15_per_1000": 0.0,
-    "outside_fl10_per_1000": 0.662,
-    "lines_outside_fl10": 42,
+    "outside_fl10_per_1000": 0.652,
+    "lines_outside_fl10": 41,
     "lines_outside_h15": 0
    }
   },
-  "reserved_vns": 440,
+  "reserved_vns": 445,
   "vndb_chars": {
    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/text/vndb_chars.tsv",
    "sha256": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
-   "names": 103104
+   "names": 102931
   }
  },
  "stream_share": 0.768,
@@ -81,63 +89,63 @@
   "kl_curve": [
    [
     0.7,
-    0.2047
+    0.20501
    ],
    [
     0.75,
-    0.19395
+    0.19419
    ],
    [
     0.8,
-    0.18409
+    0.18427
    ],
    [
     0.85,
-    0.17569
+    0.17581
    ],
    [
     0.9,
-    0.1694
+    0.16944
    ],
    [
     0.95,
-    0.16593
+    0.1659
    ],
    [
     1.0,
-    0.16604
+    0.16593
    ],
    [
     1.05,
-    0.17051
+    0.17032
    ],
    [
     1.1,
-    0.18007
+    0.17979
    ],
    [
     1.15,
-    0.19537
+    0.19501
    ],
    [
     1.2,
-    0.21697
+    0.21652
    ],
    [
     1.25,
-    0.24526
+    0.24473
    ],
    [
     1.3,
-    0.2805
+    0.27989
    ],
    [
     1.35,
-    0.32279
+    0.32209
    ],
    [
     1.4,
-    0.37207
+    0.37129
    ]
   ]
  },
@@ -893,12 +901,12 @@
  },
  "names": {
   "FL10_3500": {
-   "names": 103104,
-   "with_char_outside": 1777,
-   "share": 0.0172
+   "names": 102931,
+   "with_char_outside": 1776,
+   "share": 0.0173
   },
   "H15_5354": {
-   "names": 103104,
+   "names": 102931,
    "with_char_outside": 478,
    "share": 0.0046
   }
@@ -925,11 +933,11 @@
    "names": 10
   },
   {
-   "char": "檸",
+   "char": "檬",
    "names": 8
   },
   {
-   "char": "檬",
+   "char": "檸",
    "names": 8
   },
   {
@@ -1148,7 +1156,7 @@
  "exposure_tail": {
   "H15_5354": {
    "vocab": 5354,
-   "vn_chars_in_vocab": 4874,
+   "vn_chars_in_vocab": 4875,
    "tail": {
     "<1": {
      "chars": 17,
@@ -1160,31 +1168,31 @@
      "chars": 774,
      "kanji": 762,
      "vn_text_per_1000": 0.558,
-     "real_label_per_1000": 0.0595
+     "real_label_per_1000": 0.0608
     },
     "<50": {
      "chars": 2040,
      "kanji": 2001,
      "vn_text_per_1000": 4.4301,
-     "real_label_per_1000": 1.0556
+     "real_label_per_1000": 1.055
     },
     "<100": {
-     "chars": 2501,
+     "chars": 2502,
      "kanji": 2441,
      "vn_text_per_1000": 9.1643,
-     "real_label_per_1000": 2.9581
+     "real_label_per_1000": 2.9658
     },
     "<300": {
-     "chars": 3218,
+     "chars": 3219,
      "kanji": 3116,
      "vn_text_per_1000": 27.8489,
-     "real_label_per_1000": 12.8169
+     "real_label_per_1000": 12.8122
     },
     "<1000": {
-     "chars": 3966,
+     "chars": 3967,
      "kanji": 3821,
      "vn_text_per_1000": 82.1931,
-     "real_label_per_1000": 48.8695
+     "real_label_per_1000": 48.7576
     }
    },
    "never_rendered": 66,
@@ -1451,7 +1459,7 @@
   },
   "FL10_3500": {
    "vocab": 3500,
-   "vn_chars_in_vocab": 3352,
+   "vn_chars_in_vocab": 3353,
    "tail": {
     "<1": {
      "chars": 0,
@@ -1463,31 +1471,31 @@
      "chars": 48,
      "kanji": 47,
      "vn_text_per_1000": 0.015,
-     "real_label_per_1000": 0.0053
+     "real_label_per_1000": 0.0052
     },
     "<50": {
      "chars": 551,
      "kanji": 538,
      "vn_text_per_1000": 2.0863,
-     "real_label_per_1000": 0.5641
+     "real_label_per_1000": 0.5624
     },
     "<100": {
-     "chars": 987,
+     "chars": 988,
      "kanji": 957,
      "vn_text_per_1000": 6.6857,
-     "real_label_per_1000": 2.3808
+     "real_label_per_1000": 2.3879
     },
     "<300": {
-     "chars": 1697,
+     "chars": 1698,
      "kanji": 1629,
      "vn_text_per_1000": 25.1965,
-     "real_label_per_1000": 12.2131
+     "real_label_per_1000": 12.2085
     },
     "<1000": {
-     "chars": 2444,
+     "chars": 2445,
      "kanji": 2334,
      "vn_text_per_1000": 79.5138,
-     "real_label_per_1000": 48.2657
+     "real_label_per_1000": 48.1538
     }
    },
    "never_rendered": 16,

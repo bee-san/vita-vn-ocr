@@ -212,6 +212,15 @@ def test_train2_trains_resumes_and_saves_the_fused_rep_model(tmp_path, monkeypat
     x = torch.randn(1, 1, 32, 64)
     with torch.no_grad():
         assert (rep.eval()(x) - model(x)).abs().max() < 1e-4
+    # the raw (non-EMA) weights, fused, as a checkpoint export.load_checkpoint reads (proxy scoring)
+    import arch_candidates
+    raw_rep = TinyVNOCR(len(vocab) + 1, chans=LATE_WIDE, bottleneck=16, rep=2)
+    raw_rep.load_state_dict(ck["model_raw"])
+    torch.save(arch_candidates.raw_checkpoint(ck), tmp_path / "raw.pt")
+    raw_model, _, _ = export.load_checkpoint(tmp_path / "raw.pt")
+    with torch.no_grad():
+        assert (raw_rep.eval()(x) - raw_model(x)).abs().max() < 1e-4
+        assert (raw_model(x) - model(x)).abs().max() > 0          # EMA and raw weights differ
     # a plain fine-tune can start from the rep checkpoint's fused weights, and a rep one from either
     with pytest.raises(Exited):
         train2.main(["--run", "ft", "--init", str(tmp_path / "runs/r/ckpt_last.pt")] + argv[2:] + ["--steps", "1"])

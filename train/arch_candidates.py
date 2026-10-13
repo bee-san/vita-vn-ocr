@@ -5,6 +5,10 @@
   arch_candidates.py table --dir DIR [--json OUT]       the doc's cost table, joining DIR/sizes.json
                                                          with `vita/budget_sweep.py check ... --out
                                                          DIR/check` (run that through heavy.sh)
+  arch_candidates.py rawckpt CKPT OUT                    CKPT with "model" = its raw (non-EMA) weights,
+                                                         fused for a --rep run (for proxy scoring)
+  arch_candidates.py proxies --dir PROXY_DIR [--json OUT]  the doc's proxy table from
+                                                         synth3_ablation.py compare outputs
 
 Every candidate is a train/model.py TinyVNOCR built from the runtime's existing op set (3x3 stem,
 k x k depthwise, pointwise, the 2x1 row collapse, 1 x k temporal depthwise, ReLU, residual adds,
@@ -184,6 +188,27 @@ def cmd_proxies(args):
         Path(args.json).write_text(json.dumps(out, indent=1) + "\n")
 
 
+def raw_checkpoint(ck):
+    """A train2.py checkpoint dict with "model" replaced by the raw (non-EMA) weights, fused into the plain
+    TinyVNOCR when the run used --rep, so export.load_checkpoint / synth3_ablation.py export read it."""
+    import torch  # noqa: F401  (the state tensors are torch tensors)
+
+    from model import TinyVNOCR, fuse_rep
+    raw = ck.get("model_raw", ck["model"])
+    if int(ck.get("rep") or 0):
+        arch = {k: ck[k] for k in ("width", "bottleneck", "depth", "ctx", "ctx_k")}
+        m = TinyVNOCR(len(ck["vocab"]) + 1, **arch, chans=ck.get("chans"), rep=int(ck["rep"]))
+        m.load_state_dict(raw)
+        raw = fuse_rep(m.eval()).state_dict()
+    return {**ck, "model": raw}
+
+
+def cmd_rawckpt(args):
+    import torch
+    ck = torch.load(args.ckpt, map_location="cpu", weights_only=False)
+    torch.save(raw_checkpoint(ck), args.out)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -196,8 +221,11 @@ def main():
     p = sub.add_parser("proxies")
     p.add_argument("--dir", required=True, help="the proxy directory: runs/, logs/, compare_raw.json, compare.json")
     p.add_argument("--json")
+    r = sub.add_parser("rawckpt")
+    r.add_argument("ckpt")
+    r.add_argument("out")
     args = ap.parse_args()
-    {"blobs": cmd_blobs, "table": cmd_table, "proxies": cmd_proxies}[args.cmd](args)
+    {"blobs": cmd_blobs, "table": cmd_table, "proxies": cmd_proxies, "rawckpt": cmd_rawckpt}[args.cmd](args)
 
 
 if __name__ == "__main__":

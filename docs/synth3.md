@@ -29,8 +29,8 @@ train2's mixture, or to be mixed with it. The generator is `synth/synth3.py`.
   (C − A −0.07, CI −0.24 to +0.09 on teacher_val; −0.09, CI −0.29 to +0.12 on the native
   cohort devnative), so synth2 stays at FL10 size. The real fine-tune absorbs most of the
   pretrain gap (pretrain-only C − A −0.46). Both arms reach 3.3-3.4% on teacher_val, against the
-  released FL10's 4.05%. H15 (2 seeds per arm): the same, no measured difference (C − A −0.14, CI
-  −0.30 to +0.02), both arms level with the released H15's 2.29%.
+  released FL10's 4.08% scored the same way (C W8I). H15 (2 seeds per arm): the same, no measured
+  difference (C − A −0.14, CI −0.30 to +0.02), both arms level with the released H15's 2.28%.
 - **Pretrain length matters more than the synthetic arm:** FL10 C_mix pretrained 128,000 steps instead
   of 32,000 reaches 2.60% after the same fine-tune (−0.70, CI −1.03 to −0.40; one seed). **More synth3
   crops do not:** the learning curve is flat from 0.25M to 2M crops in study 1's recipe (−0.11 points, CI −0.31 to +0.09).
@@ -474,8 +474,9 @@ Reported only:
   (CI −1.34 to −0.13) are resolved in the mix's favour, as the short-line stratum was at FL10 size;
   native Vita −0.27 (CI −0.80 to +0.12) and native PSP −0.10 (CI −0.42 to +0.20) are not; rare kanji
   +0.31 (CI −0.47 to +1.06).
-- **Strata (devnative, the co-primary cohort; every stratum is reported only):** three of the 17
-  strata have intervals that exclude 0: the native Vita crops (305 of 1,174, from only 11 VNs) favour
+- **Strata (devnative, the co-primary cohort; every stratum is reported only):** three of the 15
+  distinct strata (`kind:vita` = `target:vita` and `kind:psp` = `target:psp` on this cohort) have
+  intervals that exclude 0: the native Vita crops (305 of 1,174, from only 11 VNs) favour
   the mix, −0.36 (CI −0.57 to −0.19), as does ink 20-27 px (299 crops, 30 VNs), −0.39 (CI −0.68 to
   −0.07); ink 28 px and taller (54 crops, 9 VNs) goes against it, +0.41 (CI +0.18 to +2.13). The PSP
   crops do not separate, −0.01 (CI −0.25 to +0.23), and the FL10 runs on the same 305 Vita crops gave
@@ -484,7 +485,9 @@ Reported only:
 - **Level with the released H15.** teacher_val 2.37% (A) and 2.23% (C) against the released H15
   scored the same way (C W8I, both views): 2.28%; A − released +0.09 (CI −0.06 to +0.24), C − released
   −0.05 (CI −0.22 to +0.13) (`$S3/study2/scores/released_vs_arms.json`). The released H15 was trained
-  with the same hard-label recipe and synth2 from its pretrain's final checkpoint, like these runs. At
+  with the same hard-label recipe and synth2 from its pretrain's final checkpoint, like these runs; its
+  fine-tune checkpoint, like the released FL10's, was chosen on teacher_val itself (`docs/train2.md`),
+  which favours the released models in these comparisons. At
   FL10 size the study-2 arms are far below the released FL10 scored the same way, 4.08%: A −0.67 (CI
   −0.92 to −0.45), C −0.74 (CI −0.98 to −0.53). The released FL10 differs from these runs in its frame
   KD and in starting from pl10's best teacher_val checkpoint rather than the final one; H15's agreement
@@ -575,8 +578,14 @@ native console test set. The ten FL10/H15 runs and both decisions predate the ru
 trainings do not: the learning-curve run `B_s3_2M_seed2` started at 10:59:36Z on synth3 v2 (whose scene
 candidates and name pool hold series material: 56 PSP + 20 PC scene files, 202 name rows), and the
 step-curve fine-tune `ft_FL10_C_mix_pre128k_seed1` ran 12:06-13:02Z on the pinned pools (its pretrain
-ended 12:05Z); the curves result (13:14Z) scored teacher_val with its 8 v1331 lines. The exposure counts
-below are `data/manifests/owner_games_exposure_20261013.json`'s. The pinned fine-tune pools hold rows of those
+ended 12:05Z); four more learning-curve runs (`B_s3_025M_seed2`, `B_s3_050M_seed1`, `B_s3_050M_seed2`,
+`B_s3_2M_seed1`) were training on synth3 v2 at 10:51Z and ended 11-34 minutes later; the curves result
+(13:14Z) scored teacher_val with its 8 v1331 lines. The exposure counts
+below are those of #62's `data/manifests/owner_games_exposure_20261013.json` (commit c5e2ef0; the
+Memories Off series alone) and of `$HERD/shared/artifacts/native-frames/owner_games_rows.json`; #63
+rebuilt that manifest for the 50-VN owner set (teacher_train 123, real_train 111,
+teacher_distill_train 122, real_unlabelled 127 rows in all), which adds the titles of the 13:10Z rule
+listed below. The pinned fine-tune pools hold rows of those
 titles: teacher_train 66 of 12,100, real_train 70 of 9,795, teacher_distill_train 97, real_unlabelled
 86 (ids in `$HERD/shared/artifacts/native-frames/owner_games_rows.json`); teacher_val holds 8 lines of
 v1331 (Memories Off: After Rain), and devnative v1 (study 2's co-primary cohort) 14 crops of it (strict
@@ -604,8 +613,9 @@ series (realplus v3, the native-frames pool); VOCR3's selection cohorts are copi
 - The learning-curve runs (`eval/synth3_curve_run.sh`) ran from two detached worktrees: `B_s3_025M_seed1`
   from `runner-c464aa8` (`study2_queue2.sh`, 00:00Z), the other five from `runner-578821d` (tag
   `vocr3-runner-578821d`, feat/vocr3's amendment-5 commit) through `study2_queue6.sh`, as did the
-  realplus fine-tunes; `train/`, `eval/synth3_curve_run.sh` and `eval/synth3_study2_run.sh` are
-  identical across eff8aa0, c464aa8, 578821d and this branch. The step-curve runs are study-2 runs
+  realplus fine-tunes; `train/` is identical at eff8aa0, c464aa8 and 578821d (this branch adds #58's
+  training options, which no study-2 run used), and the two run scripts are identical at c464aa8,
+  578821d and this branch. The step-curve runs are study-2 runs
   (`eval/synth3_study2_run.sh FL10 C_mix 1 64000|128000`) from `runner-c464aa8`.
 - Runs launched after 21:22Z (H15 C_mix seed 2 and the five queue6 runs above excepted) run from a detached worktree at
   c464aa8 (tag `vocr3-runner-c464aa8`), whose study-2 scripts are byte-identical to the
@@ -717,9 +727,10 @@ $HERD/heavy.sh synth/synth3.py shards --out $S3/shards/train_v2_ext --split trai
 #   (and --first 125, 150, 175), then synth/synth3.py manifest --dir $S3/shards/train_v2_ext --out data/manifests/synth3_shards_v2_ext.json
 HEAVY_SLOTS=10 $HERD/heavy.sh eval/synth3_study2_run.sh FL10 C_mix 1        # ARCH ARM SEED [PRETRAIN_STEPS]
 HEAVY_SLOTS=10 $HERD/heavy.sh eval/synth3_curve_run.sh 025M 1               # SIZE SEED
-# study 2's scoring and reports, verbatim: eval/reproducibility/synth3-20261012/study2_score_when_ready.sh ARCH (result),
-#   study2_run_test.sh NAME=BLOB ... (each export once per polarity into $S3/study2/test), study2_test_report.sh (the three
-#   test reports), study2_curves.sh (the learning and step curves' exports, scores and eval/synth3_study2.py result)
+# study 2's scoring and reports: eval/reproducibility/synth3-20261012/study2_score_when_ready.sh ARCH (result; as run),
+#   study2_run_test.sh NAME=BLOB ... (as run: each export once per polarity into $S3/study2/test), study2_curves.sh (as run),
+#   study2_test_report.sh (the three test-report commands, reconstructed; reproduce the committed JSONs byte for byte),
+#   study2_released.sh (the released blobs' W8I teacher_val scores, the released-vs-arm intervals and the 0.25M-2M curve span)
 ```
 
 ## Sources

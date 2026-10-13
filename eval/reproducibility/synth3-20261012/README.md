@@ -1,7 +1,7 @@
 # synth3, 2026-10-12: the scripts behind the reported numbers
 
-The shell scripts and snapshots here are the exact files that produced the study-1, secondary and
-protected-test results in `docs/synth3.md` (paths are the shared box's; `$S3` =
+The shell scripts and snapshots here are the files that produced the study-1, secondary and
+protected-test results in `docs/synth3.md` (`study2_test_report.sh` and `study2_released.sh` are reconstructions that reproduce the committed numbers) (paths are the shared box's; `$S3` =
 `$HERD/shared/artifacts/synth3`). They are kept verbatim, not maintained.
 
 | file | what it produced |
@@ -12,7 +12,8 @@ protected-test results in `docs/synth3.md` (paths are the shared box's; `$S3` =
 | `study2_queue.sh`, `study2_queue2.sh`, `study2_queue3.sh`, `study2_queue4.sh`, `study2_queue5.sh`, `study2_queue6.sh`, `study2_score_arch.sh` | study 2's run order (`study2_queue.sh` launched the ten FL10/H15 runs; from 21:22Z `study2_queue2.sh` runs the rest after VOCR3's width-2.0 runs; `study2_queue3.sh` and `study2_queue4.sh` put VOCR3's H15 B_s3 run and study 1b's runs ahead of the learning curve; `study2_queue5.sh` adds VOCR3's realplus fine-tunes, also ahead of it, and `study2_queue6.sh` replaced it before it launched anything, to run them from the commit of VOCR3's amendment 5) and its export and scoring |
 | `study2_score_when_ready.sh` | study 2's scoring trigger: waits for an architecture's fine-tunes, records devnative's status, scores and runs `eval/synth3_study2.py result` |
 | `study2_run_test.sh` | study 2's protected-test scoring (each export once per polarity into `$S3/study2/test`; study 1's `run_test.sh` with `T=$S3/study2/test`) |
-| `study2_test_report.sh` | the three study-2 test reports: FL10, H15 and the step-curve exports (`eval/synth3_test_report.py --spec --arms --ref`) |
+| `study2_test_report.sh` | the three study-2 test reports: FL10, H15 and the step-curve exports (`eval/synth3_test_report.py --spec --arms --ref`); a reconstruction of the three calls (heavy.log records only the FL10 one), which reproduces the committed JSONs byte for byte |
+| `study2_released.sh` | the released FL10/H15 blobs scored W8I on teacher_val, the released-vs-arm paired intervals (`$S3/study2/scores/released_vs_arms.json`) and the 0.25M-2M learning-curve interval cited in the doc (computed with `eval/synth3_ablation.bootstrap`; the reported spec itself compares adjacent points only) |
 | `study2_curves.sh` | the learning-curve and step-curve exports, their teacher_val scores and `eval/synth3_study2.py result --reported` into `$S3/study2/FL10_curves_result.json` (`eval/synth3_study2_curves_20261013.json`) |
 | `meta_check.py.snapshot` | the metadata-fault table (100,000 crops of version 1 and version 2) |
 | `fresh_names.py.snapshot` | the first count of fresh-native names in the name pool (single names only; see docs/synth3.md, Limits) |

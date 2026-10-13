@@ -1035,6 +1035,9 @@ def _synth_colour(task):
     import synth3 as S3
     seed, idx, n_regions = task
     rng = np.random.default_rng([seed, idx])
+    if _SYN.get("synth4"):
+        import synth4 as S4
+        S3.R.quota_t = S4.shard_targets(idx, seed, S4.R4["deficit"], S4.CFG4["curriculum"]["shards"])
     out = []
     for _ in range(n_regions):
         try:
@@ -1071,12 +1074,19 @@ def cmd_colour(args):
                 rows.extend(("real", f) for f in part)
     if args.synth_regions:
         import synth3 as S3
-        S3.init(scene_hashes=args.scene_hashes, targets=args.targets)
+        if args.synth4_curriculum:
+            import synth4 as S4
+            S4.init4(args.synth4_curriculum, scene_hashes=args.scene_hashes, targets=args.targets,
+                     font_cache=S4.S4_ART / "fonts" / "coverage_cache.json")
+            _SYN["synth4"] = True
+        else:
+            S3.init(scene_hashes=args.scene_hashes, targets=args.targets)
         per = 50
         tasks = [(args.seed, k, per) for k in range(max(1, args.synth_regions // per))]
+        name = args.synth_name
         with mp.get_context("fork").Pool(args.workers) as pool:
             for part in pool.imap_unordered(_synth_colour, tasks):
-                rows.extend(("s3v3", f) for f in part)
+                rows.extend((name, f) for f in part)
     groups = defaultdict(list)
     for src, f in rows:
         groups[(src, "all")].append(f)
@@ -1254,6 +1264,8 @@ def main():
     co.add_argument("--scene-hashes")
     co.add_argument("--targets")
     co.add_argument("--seed", type=int, default=4242)
+    co.add_argument("--synth4-curriculum", help="render synth4 (this curriculum) instead of synth3")
+    co.add_argument("--synth-name", default="s3v3")
     co.add_argument("--workers", type=int, default=5)
     co.add_argument("--exclude", nargs="*", default=[])
     co.add_argument("--out", required=True)

@@ -145,7 +145,8 @@ def test_frames_mode_renders_shards_with_frame_meta(assets, v4, tmp_path):  # no
     labels = json.loads(str(z["labels"]))
     assert all(m["platform"] in ("vita", "psp", "psp2x") and "frame" in m for m in meta)
     for m, lab, (h, w) in zip(meta, labels, z["shapes"]):
-        assert lab and m["frame"]["frame"] == ([480, 272] if m["platform"] == "psp" else [960, 544])
+        fw, fh = m["frame"]["frame"]                  # a PSP frame on a Vita may be 1.995x: 958 x 543
+        assert lab and ((fw, fh) == (480, 272) if m["platform"] == "psp" else abs(fw - 960) <= 2 and abs(fh - 544) <= 1)
         x0, y0, x1, y1 = m["ink_box"]
         assert 0 <= x0 < x1 <= w and 0 <= y0 < y1 <= h
     again = tmp_path / "again"

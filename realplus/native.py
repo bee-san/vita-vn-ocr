@@ -436,7 +436,8 @@ def cut_native(s, recs, idx, edge=None, margins=()):
                 drops[f"{crop}-tiny"] += 1
                 continue
             ch, ch_ok = PL.chars_in(ln, r["label"], box)
-            meta = {"real": True, "pool": "native", "id": r["id"], "vn": s["vn"], "session": s.get("session"),
+            meta = {"real": True, "pool": "owner" if os.environ.get("NATIVE_OWNER_POOL") == "1" else "native",
+                    "id": r["id"], "vn": s["vn"], "session": s.get("session"),
                     "release": s.get("release"), "kind": kind, "target": kind, "crop": crop, "box": box,
                     "dark": dark, "inverted": inverted, "pol": "dark-on-light" if dark else "bright-on-dark",
                     "how": r["how"], "support": r["support"], "readers": r["readers"],

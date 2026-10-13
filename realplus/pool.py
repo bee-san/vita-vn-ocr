@@ -822,7 +822,21 @@ def late_exclusions(src_rows, saved_vns=(), current_vns=(), dup_images=(), leak_
     return vns, shots_
 
 
+def build_paths(tag=None):
+    """The build's outputs. Built files are pinned by their users (VOCR3 pins the npz sha256s), so a
+    build never replaces one: a new build needs a new --tag, whose files carry it in their names."""
+    sfx = f"_{tag}" if tag else ""
+    return {"ink": OUT / f"realplus_train_ink{sfx}.npz", "grad": OUT / f"realplus_train_grad{sfx}.npz",
+            "lines": OUT / "manifests" / f"lines{sfx}.jsonl", "full": OUT / f"lines_full{sfx}.jsonl",
+            "stats": OUT / "manifests" / f"build_stats{sfx}.json"}
+
+
 def cmd_build(args):
+    out = build_paths(args.tag)
+    there = [str(v) for v in out.values() if v.exists()]
+    if there:
+        sys.exit(f"refusing to overwrite a built pool ({', '.join(there)}): its files are pinned; "
+                 "build with a new --tag (new file names) and tell the conductor")
     labels = jl(OUT / "labels.jsonl")
     shots = load_reads()
     rows_ = SH.load_shots()
@@ -839,19 +853,19 @@ def cmd_build(args):
     counts = {}
     for crop in ("ink", "grad"):
         items = files.get(("vita", crop), []) + files.get(("psp", crop), [])
-        name = f"realplus_train_{crop}.npz"
-        save_npz(OUT / name, [i[0] for i in items], [i[1] for i in items], [i[2] for i in items])
+        name = out[crop].name
+        save_npz(out[crop], [i[0] for i in items], [i[1] for i in items], [i[2] for i in items])
         counts[name] = {"crops": len(items), "lines": len({i[2]["id"] for i in items}),
                         "vns": len({i[2]["vn"] for i in items}),
                         "by_target": dict(collections.Counter(i[2]["target"] for i in items)),
-                        "chars": sum(len(vote.key(i[1])) for i in items), "sha256": P.file_sha256(OUT / name)}
-    wjl(OUT / "manifests" / "lines.jsonl", man)
+                        "chars": sum(len(vote.key(i[1])) for i in items), "sha256": P.file_sha256(out[crop])}
+    wjl(out["lines"], man)
     full = {r["id"]: r for r in kept}
-    wjl(OUT / "lines_full.jsonl", [dict(m, label=full[m["id"]]["label"]) for m in man])
+    wjl(out["full"], [dict(m, label=full[m["id"]]["label"]) for m in man])
     stats = {"lines": len(man), "vns": len({m["vn"] for m in man}), "screenshots": len({m["shot"] for m in man}),
              "how": dict(collections.Counter(m["how"] for m in man)), "names": sum(m["name"] for m in man),
              "files": counts, "dropped_at_build": dict(drops)}
-    (OUT / "manifests" / "build_stats.json").write_text(json.dumps(stats, indent=1) + "\n")
+    out["stats"].write_text(json.dumps(stats, indent=1) + "\n")
     print(json.dumps(stats, indent=1), flush=True)
     print("BUILD_DONE", flush=True)
 
@@ -914,7 +928,7 @@ def cmd_blind_score(args):
     pre-registered blind sample, restricted to lines of the built pool -> review/blind_report.json."""
     spec = json.loads((REVIEW / "blind_ids.json").read_text())
     labels = {r["id"]: r for r in jl(OUT / "labels.jsonl")}
-    built = {m["id"] for m in jl(OUT / "manifests" / "lines.jsonl") if "vita_ink" in m["crops"]}
+    built = {m["id"] for m in jl(build_paths(args.tag)["lines"]) if "vita_ink" in m["crops"]}
     blind = D.collect(batch_dirs("blind"))
     ids = blind_scored(spec["order"], built, blind, spec.get("score", 500))
     summ, dis = D.blind_agreement(labels, {i: blind[i] for i in ids})
@@ -980,10 +994,11 @@ def cmd_publish(args):
     built line comes from: URL, file and pixel sha256, VN, release, capture session, line and crop
     counts) and realplus/manifests/stats.json (counts at every stage, npz and local-manifest hashes,
     the blind re-check). Labels and crop boxes stay in the local lines manifests, pinned by hash."""
-    man = jl(OUT / "manifests" / "lines.jsonl")
+    bp = build_paths(args.tag)
+    man = jl(bp["lines"])
     if not man:
         sys.exit("build first")
-    build = json.loads((OUT / "manifests" / "build_stats.json").read_text())
+    build = json.loads(bp["stats"].read_text())
     rows = {f"{r['vn']}_{r['image']}": r for r in SH.load_shots()}
     nl, nc = collections.Counter(), collections.Counter()
     for m in man:
@@ -1032,8 +1047,8 @@ def cmd_publish(args):
         if (REVIEW / "blind_ids.json").exists() else None,
         "build": build,
         "screenshot_manifests": names,
-        "local_manifests": {n: P.file_sha256(OUT / n) for n in ("manifests/lines.jsonl", "labels.jsonl",
-                                                                "lines_full.jsonl", "edge/boxes.jsonl",
+        "local_manifests": {n: P.file_sha256(OUT / n) for n in (str(bp["lines"].relative_to(OUT)), "labels.jsonl",
+                                                                bp["full"].name, "edge/boxes.jsonl",
                                                                 "edge/edge.jsonl", "review/blind_ids.json",
                                                                 "review/resolutions.jsonl",
                                                                 "review/blind_report_measured.json",
@@ -1076,6 +1091,7 @@ def main():
     p = sub.add_parser("build")
     p.add_argument("--procs", type=int, default=int(os.environ.get("OMP_NUM_THREADS", "1")),
                    help="worker processes (default: heavy.sh's 5 threads per slot)")
+    p.add_argument("--tag", help="a new build's name suffix: built files are never overwritten")
     sub.add_parser("edge-boxes")
     p = sub.add_parser("edge-batches")
     p.add_argument("--n", type=int, default=1)
@@ -1084,6 +1100,7 @@ def main():
     sub.add_parser("edge-apply")
     p = sub.add_parser("publish")
     p.add_argument("--dump-date", default="2026-10-12")
+    p.add_argument("--tag", help="publish this tagged build")
     p.add_argument("--commit", default=subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                                                       capture_output=True, text=True).stdout.strip())
     p = sub.add_parser("blind")
@@ -1092,7 +1109,8 @@ def main():
     p.add_argument("--seed", type=int, default=20261013)
     p.add_argument("--size", type=int, default=135)
     p.add_argument("--extend", type=int, default=0, help="continue the registered order with N more lines")
-    sub.add_parser("blind-score")
+    p = sub.add_parser("blind-score")
+    p.add_argument("--tag", help="score against this tagged build")
     args = ap.parse_args()
     {"prep": cmd_prep, "plan": cmd_plan, "batches": cmd_batches, "helpers": cmd_helpers, "status": cmd_status,
      "final": cmd_final, "build": cmd_build, "blind": cmd_blind, "reserve": cmd_reserve,

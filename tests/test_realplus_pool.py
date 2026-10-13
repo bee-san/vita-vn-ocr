@@ -289,3 +289,17 @@ def test_third_looks_drop_auto_lines():
     assert labels[0]["status"] == "dropped" and labels[0]["why"] == "blind-cut" and labels[0]["label"] is None
     assert labels[1]["status"] == "kept" and labels[1]["resolution"]["keep"] is True
     assert labels[2]["status"] == "kept"           # reviewed lines: decide.py applied (or kept) it already
+
+
+def test_build_never_overwrites_a_built_pool(tmp_path, monkeypatch):
+    monkeypatch.setattr(PL, "OUT", tmp_path)
+    assert PL.build_paths()["ink"].name == "realplus_train_ink.npz"
+    assert PL.build_paths("v2")["ink"].name == "realplus_train_ink_v2.npz"
+    assert PL.build_paths("v2")["lines"].name == "lines_v2.jsonl"
+    PL.build_paths()["ink"].write_bytes(b"pinned")
+    import argparse
+
+    import pytest
+    with pytest.raises(SystemExit, match="refusing to overwrite"):
+        PL.cmd_build(argparse.Namespace(tag=None, procs=1))
+    assert PL.build_paths()["ink"].read_bytes() == b"pinned"

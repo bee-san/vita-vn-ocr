@@ -1,0 +1,174 @@
+{
+ "schema": 1,
+ "kind": "clannad-refs-protocol",
+ "what": "v1, v2 (v0.2.0 FL10, H15, F20; VOCR2_FL10) and v3 (the vocr3 selections) through the C runtime W8I, and the cached Google Lens readings, scored against the same Claude references on the CLANNAD long run's paired line crops (owner request 2026-10-13 19:21Z).",
+ "split": "test",
+ "use": "report only: no model, checkpoint, threshold, finder or recipe is chosen, tuned, calibrated or dropped on this set; nothing here can qualify or promote a model; the references and crops never enter any training, development or calibration pool",
+ "session": {
+  "source": "the owner's Google Drive drop vn-ocr-dataset-20261013.zip (sha256 d2443837d339c2b69e34b29eea343007be76716eb6250ff664badd7b7e7b446e), vita/CLANNAD/training-data/",
+  "pins": "eval/vocr3_clannad.py PUBLISHED: lock 14ba9297..., captures b6cd582c..., comparisons f2754897..., baseline model 500e0b84...; published counts (2,204 captures, 2,177 successful pages, 27 excluded, 4,271 paired lines)",
+  "units": "every line of every successful page (eval/vocr3_clannad.bound_session): the stored processed line PNG (grey, the C GRAD finder's crop, dark text inverted once), the pixels Google Lens and the cached FL10 read in the long run",
+  "excluded_pages": "the 27 originally failed pages, for every arm, never retried"
+ },
+ "arms": [
+  {
+   "name": "v1",
+   "file": "v1_w8.vocr",
+   "sha256": "23da2a2aaf844b1f9a622f9d16a5b587cd75b76e680a253eaed4f922b3d64914",
+   "finder": "grad",
+   "role": "v1: the v0.1.0-baseline checkpoint (synthetic only) exported int8 (runtime/blobs/v1_w8.vocr)"
+  },
+  {
+   "name": "VOCR1",
+   "file": "FL10_w8.vocr",
+   "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+   "finder": "grad",
+   "role": "v2: v0.2.0 FL10 (the long run's cached baseline)"
+  },
+  {
+   "name": "VOCR_H15",
+   "file": "H15_w8.vocr",
+   "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd",
+   "finder": "grad",
+   "role": "v2: v0.2.0 H15, vita-jp-overlay's default"
+  },
+  {
+   "name": "F20",
+   "file": "F20_w8.vocr",
+   "sha256": "f8c1abe4743a71a742e718523f4206f992d3bd4fb69de321997b2bd6f16779c0",
+   "finder": "grad",
+   "role": "v2: v0.2.0 F20, the like-for-like reference for VOCR3_W20"
+  },
+  {
+   "name": "VOCR2",
+   "file": "VOCR2_FL10_w8.vocr",
+   "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766",
+   "finder": "textbox",
+   "role": "v2: VOCR2_FL10 (v0.2.3-vocr2.1)"
+  },
+  {
+   "name": "VOCR3_FL10",
+   "file": "VOCR3_FL10_w8.vocr",
+   "sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154",
+   "finder": "grad",
+   "role": "v3: synth3/vocr3/select/FL10/selection.json (rp_FL10_C_mix_pre128k_seed1)"
+  },
+  {
+   "name": "VOCR3_H15",
+   "file": "VOCR3_H15_w8.vocr",
+   "sha256": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c",
+   "finder": "grad",
+   "role": "v3: synth3/vocr3/select/H15/selection.json (rp_H15_C_mix_seed2)"
+  },
+  {
+   "name": "VOCR3_W20",
+   "file": "VOCR3_W20_w8.vocr",
+   "sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19",
+   "finder": "grad",
+   "role": "v3: synth3/vocr3/select/W20/selection.json (rp_W20_C_mix_seed1)"
+  }
+ ],
+ "lens": "the cached Google Lens reading (owocr 1.26.7, comparisons.jsonl lines[i].google.text) of the same line pixels; one request per line in the long run, nothing re-requested",
+ "runtime": "eval/vocr3_report.build_native: runtime/vocr.c compiled now as the scalar library (-std=c99 -O2 -ffp-contract=off -DVOCR_NO_NEON), each arm a CReader in deployment W8I, max width 1024, the stored crop with invert=False (polarity already applied), exactly as eval/vocr3_clannad.py's paired-line mode",
+ "references": {
+  "reader": "Claude Opus 5.5 (reviewer_kind assistant) on contact sheets (<= 1280 px; the framed crop in the native frame's context); no human checked them",
+  "r1": "every line, once: candidates are the distinct plausible readings (eval/clannad_refs.plausible: at most half ASCII letters or digits) of the two local labelling engines on the same crop (MeikiOCR's recognizer, PP-OCRv6 small; teacher/engines, pinned files, offline), never Lens or any compared arm; pick, type the text, unsure, or skip (notext / multi / cut / ui / bad)",
+  "r2": "every line, an independent second read in other sessions: candidates are the distinct plausible readings of R1's decision, both engines, Lens and every arm, shuffled per line and unattributed (no counts, no sources); same choices",
+  "r3": "every line where R1 and R2 do not give the same agreement key (teacher/vote.key, eval's scoring normalisation): a third read, candidates as in R2 plus R2's decision, shuffled again",
+  "rule": "the reference is the text that at least two of the reads give (same key); a line two reads skip or mark unsure, or where no two reads agree, is excluded for every arm and counted",
+  "flags": "every scored line whose reference key differs from Lens's reading is flagged lens-disagree (counts public, the lines private)",
+  "conventions": "eval's labelling conventions: the framed text only, left to right; never furigana, cursor icons or button glyphs; full-width ！？～, … per cell of dots, ― for a long dash",
+  "frozen": "refs.jsonl is hashed into refs.freeze.json before any score is computed; arm predictions are produced before R2 (as R2's unattributed candidates) but no score is computed until the freeze",
+  "skips": "notext: no text in the frame (scene art, box edges, a cursor); multi: more than one text line inside the frame; cut: the frame cuts through a character; ui: menus and system text; bad: anything else that is not one readable horizontal line"
+ },
+ "metrics": {
+  "normalisation": "eval/metrics.norm (NFKC, whitespace removed, ellipses / dashes / tildes folded; small kana, dakuten, ー/一 and lookalike kanji distinct)",
+  "cer": "sum of Levenshtein distances / sum of reference characters over the scored lines",
+  "exact": "share of scored lines whose normalised prediction equals the normalised reference",
+  "hiragana": "eval/metrics.score_hiragana counts",
+  "intervals": "95% percentile intervals from 10,000 bootstrap resamples of whole screens (pages; numpy default_rng(0), sorted page ids); one title, so no VN clusters",
+  "pairs": "CAND - BASE in points with the paired page bootstrap (eval/vocr3_report.paired_bootstrap for CER; the same resamples for exact)",
+  "secondary": "each arm's edit disagreement with Lens on the same lines (the long run's proxy), for comparison with the published proxy numbers; never CER",
+  "notext": "on the crops at least two reads skip as notext: per system, the lines with any output and the characters written (a finder false positive's cost, reported, never in CER)"
+ },
+ "pairs": [
+  [
+   "VOCR1",
+   "v1"
+  ],
+  [
+   "VOCR2",
+   "VOCR1"
+  ],
+  [
+   "VOCR_H15",
+   "VOCR1"
+  ],
+  [
+   "F20",
+   "VOCR_H15"
+  ],
+  [
+   "VOCR3_FL10",
+   "VOCR1"
+  ],
+  [
+   "VOCR3_FL10",
+   "VOCR2"
+  ],
+  [
+   "VOCR3_H15",
+   "VOCR_H15"
+  ],
+  [
+   "VOCR3_H15",
+   "VOCR3_FL10"
+  ],
+  [
+   "VOCR3_W20",
+   "VOCR_H15"
+  ],
+  [
+   "VOCR3_W20",
+   "F20"
+  ],
+  [
+   "VOCR3_W20",
+   "VOCR3_H15"
+  ],
+  [
+   "v1",
+   "Lens"
+  ],
+  [
+   "VOCR1",
+   "Lens"
+  ],
+  [
+   "VOCR_H15",
+   "Lens"
+  ],
+  [
+   "F20",
+   "Lens"
+  ],
+  [
+   "VOCR2",
+   "Lens"
+  ],
+  [
+   "VOCR3_FL10",
+   "Lens"
+  ],
+  [
+   "VOCR3_H15",
+   "Lens"
+  ],
+  [
+   "VOCR3_W20",
+   "Lens"
+  ]
+ ],
+ "public": "counts, rates, intervals and hashes only (eval/vocr3_report.assert_public); references, readings, crops and sheets stay under shared/private/, never in git, never sent to Codex or any third party",
+ "one_attempt": "score runs once on the frozen references; a failure is reported, not retried with changes"
+}

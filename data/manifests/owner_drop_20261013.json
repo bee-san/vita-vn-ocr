@@ -1,0 +1,339 @@
+{
+ "kind": "owner-drop-summary",
+ "schema": 1,
+ "archive": {
+  "name": "vn-ocr-dataset-20261013.zip",
+  "sha256": "d2443837d339c2b69e34b29eea343007be76716eb6250ff664badd7b7e7b446e",
+  "bytes": 2819705393
+ },
+ "frames": 3421,
+ "by_role": {
+  "test": 2843,
+  "training": 578
+ },
+ "games": [
+  {
+   "platform": "psp",
+   "drop_title": "Amagami",
+   "vn": "v1281",
+   "title": "アマガミ (Amagami)",
+   "release": "r9959 エビコレ＋アマガミ (ULJS-00339)",
+   "frames": 113,
+   "dims": {
+    "480x272": 113
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 113
+   },
+   "reserved_vns": "development",
+   "release_vns_reserved": {},
+   "sets": {
+    "development_vns": true
+   },
+   "role": "test",
+   "why": "reserved: development",
+   "leak_max": {
+    "eval-vita": 0.8102,
+    "eval-psp": 0.8308,
+    "devnative": 0.8132,
+    "teacher_val": 0.8453
+   },
+   "leak_frames": 0,
+   "folder": "psp-amagami-v1281-TEST"
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Corpse-Party-Blood-Covered",
+   "vn": "v2632",
+   "title": "Corpse Party BloodCovered",
+   "release": "r9521 (ULJM-05704)",
+   "frames": 0,
+   "dims": {},
+   "source_resolution": [],
+   "collections": {},
+   "reserved_vns": "development",
+   "release_vns_reserved": {},
+   "sets": {
+    "development_vns": true
+   },
+   "role": "test",
+   "why": "reserved: development",
+   "leak_max": {},
+   "leak_frames": 0,
+   "folder": null
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Grisaia-no-Kajitsu",
+   "vn": "v5154",
+   "title": "グリザイアの果実",
+   "release": "r15389 (ULJM-06232)",
+   "frames": 0,
+   "dims": {},
+   "source_resolution": [],
+   "collections": {},
+   "reserved_vns": "development",
+   "release_vns_reserved": {},
+   "sets": {
+    "development_vns": true
+   },
+   "role": "test",
+   "why": "reserved: development",
+   "leak_max": {},
+   "leak_frames": 0,
+   "folder": null
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Narcissu-Portable",
+   "vn": "v10",
+   "title": "ナルキッソス Portable (narcissu)",
+   "release": "r7480 (ULJM-05674)",
+   "frames": 200,
+   "dims": {
+    "480x272": 200
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 200
+   },
+   "reserved_vns": "shared-release",
+   "release_vns_reserved": {
+    "v70": "shared-release",
+    "v1542": "shared-release",
+    "v18736": "shared-release",
+    "v18738": "test-set"
+   },
+   "sets": {},
+   "role": "test",
+   "why": "reserved: shared-release",
+   "leak_max": {
+    "eval-vita": 0.7502,
+    "eval-psp": 0.6056,
+    "devnative": 0.6696,
+    "teacher_val": 0.9371
+   },
+   "leak_frames": 0,
+   "folder": "psp-narcissu-portable-v10-TEST"
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Planetarian",
+   "vn": "v34",
+   "title": "planetarian ～ちいさなほしのゆめ～",
+   "release": "r6626 (ULJM-05383)",
+   "frames": 202,
+   "dims": {
+    "480x272": 202
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 202
+   },
+   "reserved_vns": "shared-release",
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "owner 2026-10-13 19:21Z: training (reserved_vns: shared-release)",
+   "leak_max": {
+    "eval-vita": 0.941,
+    "eval-psp": 0.8126,
+    "devnative": 0.9097,
+    "teacher_val": 0.9097
+   },
+   "leak_frames": 0,
+   "folder": "psp-planetarian-v34"
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Sharin-no-Kuni",
+   "vn": "v57",
+   "title": "車輪の国、向日葵の少女",
+   "release": "r4693 UMD-PG Edition or r17721 (ULJM-06022, with v84)",
+   "frames": 217,
+   "dims": {
+    "480x272": 217
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 217
+   },
+   "reserved_vns": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "eval-vita": 0.7898,
+    "eval-psp": 0.7998,
+    "devnative": 0.8027,
+    "teacher_val": 0.8792
+   },
+   "leak_frames": 0,
+   "folder": "psp-sharin-no-kuni-v57"
+  },
+  {
+   "platform": "vita",
+   "drop_title": "CLANNAD",
+   "vn": "v4",
+   "title": "CLANNAD",
+   "release": "r33730 (VLJM-35124, PCSG00415)",
+   "frames": 2206,
+   "dims": {
+    "960x544": 2206
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "existing-training-data": 2204,
+    "japanese-vns-20261013": 2
+   },
+   "reserved_vns": "clannad",
+   "release_vns_reserved": {},
+   "sets": {
+    "development_vns": true
+   },
+   "role": "test",
+   "why": "protected: CLANNAD (clannad), test only (owner)",
+   "leak_max": {
+    "eval-vita": 0.882,
+    "eval-psp": 0.7985,
+    "devnative": 0.8985,
+    "teacher_val": 0.8985
+   },
+   "leak_frames": 0,
+   "folder": "vita-clannad-v4-TEST"
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Chaos-Child",
+   "vn": "v14018",
+   "title": "CHAOS;CHILD",
+   "release": "r39462 (VLJM-35209, PCSG00555)",
+   "frames": 159,
+   "dims": {
+    "960x544": 159
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 159
+   },
+   "reserved_vns": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "eval-vita": 0.7286,
+    "eval-psp": 0.7993,
+    "devnative": 0.8261,
+    "teacher_val": 0.8261
+   },
+   "leak_frames": 0,
+   "folder": "vita-chaos-child-v14018"
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Danganronpa-V3",
+   "vn": "v18334",
+   "title": "NEWダンガンロンパV3",
+   "release": "r47935 (VLJS-05097, PCSG00936)",
+   "frames": 84,
+   "dims": {
+    "960x544": 84
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 84
+   },
+   "reserved_vns": "shared-release",
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "test",
+   "why": "reserved: shared-release",
+   "leak_max": {
+    "eval-vita": 0.647,
+    "eval-psp": 0.6685,
+    "devnative": 0.7042,
+    "teacher_val": 0.7999
+   },
+   "leak_frames": 0,
+   "folder": "vita-danganronpa-v3-v18334-TEST"
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Iwaihime-Matsuri",
+   "vn": "v17863",
+   "title": "祝姫 -祀-",
+   "release": "r51223 (VLJM-38010, PCSG01083)",
+   "frames": 240,
+   "dims": {
+    "960x544": 240
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 240
+   },
+   "reserved_vns": "development",
+   "release_vns_reserved": {},
+   "sets": {
+    "teacher_val": 5,
+    "development_vns": true
+   },
+   "role": "test",
+   "why": "reserved: development",
+   "leak_max": {
+    "eval-vita": 0.9518,
+    "eval-psp": 0.8351,
+    "devnative": 0.911,
+    "teacher_val": 0.936
+   },
+   "leak_frames": 1,
+   "folder": "vita-iwaihime-matsuri-v17863-TEST"
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Rewrite",
+   "vn": "v751",
+   "title": "Rewrite",
+   "release": "r27566 (VLJM-35125, PCSG00414)",
+   "frames": 0,
+   "dims": {},
+   "source_resolution": [],
+   "collections": {},
+   "reserved_vns": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {},
+   "leak_frames": 0,
+   "folder": null
+  }
+ ],
+ "owner_decisions": {
+  "v34": {
+   "role": "training",
+   "by": "owner 2026-10-13 19:21Z",
+   "note": "planetarian (Key) is training data; reserved_vns reserves it only as shared-release (the Key 10th Memorial BOX, r3748, a PC compilation with CLANNAD and Tomoyo After). Its PSP port and CLANNAD's Vita port are both Key/Prototype releases: a CLANNAD score of any model trained on these frames must disclose that exposure."
+  }
+ },
+ "min_corr": 0.95,
+ "note": "counts, ids and reasons only: no frame, no text, no per-frame hash"
+}

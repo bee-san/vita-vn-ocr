@@ -179,7 +179,12 @@ def test_make_spec_pins_every_arm(tmp_path):
         b = tmp_path / f"{size}.vocr"
         b.write_bytes(size.encode() * 3)
         sels[size] = {"selected": f"ft_{size}_x_seed1", "selected_blob": str(b), "selected_blob_sha256": MS.sha256(b)}
-    spec = MS.build(proto, sels, tmp_path / "blobs", rel, f20_sha=shas["F20_w8.vocr"])
+    spec, roles = MS.build(proto, sels, tmp_path / "blobs", rel, f20_sha=shas["F20_w8.vocr"])
+    assert roles == {s: f"ft_{s}_x_seed1" for s in ("FL10", "H15", "W20")}
+    import vocr3_report as VR
+    (tmp_path / "spec.json").write_text(json.dumps(spec))
+    loaded = VR.build_spec(spec_path=tmp_path / "spec.json")    # raises on fields the harness does not know
+    assert [a["name"] for a in loaded["arms"]] == [a["name"] for a in spec["arms"]]
     names = {a["name"] for a in spec["arms"]}
     assert names == {"VOCR1", "VOCR2", "VOCR_H15", "F20", "VOCR3_FL10", "VOCR3_FL10_C3", "VOCR3_H15", "VOCR3_W20"}
     assert {"candidate": "VOCR3_H15", "baseline": "VOCR_H15"} in spec["gates"] and len(spec["pairs"]) == 8

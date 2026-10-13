@@ -83,18 +83,23 @@ open alternative. Native Vita contrast stays 19 levels short of real.
   scenes, 87 excluded VNs (fresh native 13, CLANNAD family 24, the owner's 50; the three synth3
   exclusion manifests, as synth3 v3). Rendered 15:58-16:29Z in 4 heavy.sh jobs of 5 workers (about
   345 s per 10,000-crop shard per worker), 0 render errors.
-- **Reserved VNs the render does not exclude (disclosure).** The generator reserves exactly the
-  three synth3 manifests' 87 VNs. Two VNs the fleet reserves only through a shared VNDB release are
-  not among them, as in synth3 v3's own render (synth3-v3 Hygiene; #63's audit accepted the same
-  exposure there): 弟切草 (v661, through 街's release) and Ever 17 (v19373, through the Never 7 pack).
-  Measured on the 100 pinned shards: v661 contributes 2 narration crops holding the title 弟切草 and
-  about 28 name crops of names only its characters produce (公平, 透明人間, アインシュタイン博士,
-  フランケンシュタインの怪物, 怪魚 — all generic strings), 31 of 1,000,000 crops; it has no scene (no
-  v661 screenshot is local). The Never 7 release partners (v13, v17, v247, v19373) add about 29 name
-  crops and two scene VNs, as synth3 v3 does. No protected test reads any of these VNs, and the gap
-  analysis's statistics (#65) do exclude v661 and v19373. The ablation is unaffected (both arms are
-  reserved the same way). A later render should add v661 and the Never 7 partners to synth4's
-  exclusion for consistency with #65's statistics.
+- **Reserved VNs the render does not exclude (disclosure; conductor accepted 2026-10-13 19:40Z).**
+  The generator loads the three synth3 exclusion manifests — `synth3_exclude_fresh_native.json` (13),
+  `synth3_exclude_clannad.json` (24) and `synth3_exclude_owner_games.json` (the owner's 50) = 87 VNs
+  (recipe `exclusions`) — so #63's 50-VN owner set (Aiyoku no Eustia, 428, 街 and relations) **is**
+  reserved. **Cause:** two VNs the fleet reserves only through a shared VNDB release are in none of
+  those manifests, so they are not dropped: 弟切草 (v661, through 街's PS1 release) and Ever 17
+  (v19373, through the Never 7 pack). synth3 v3's own render has the same exposure (synth3-v3
+  Hygiene), which #63's audit accepted. Measured on the 100 pinned shards:
+  - v661: 2 narration crops holding the title 弟切草, and about 28 name crops of names only its
+    characters produce (公平, 透明人間, アインシュタイン博士, フランケンシュタインの怪物, 怪魚 — all
+    generic strings); 31 of 1,000,000 crops; no scene (no v661 screenshot is local);
+  - the Never 7 release partners (v13, v17, v247, v19373): about 29 name crops and two scene VNs.
+
+  No protected test reads any of these VNs; the gap analysis (#65) excludes v661 and v19373 from its
+  statistics; and both arms are reserved identically, so the ablation stands. **Before any further
+  synth4 render**, keep `synth3_exclude_owner_games.json` in the generator's exclusions (it is already
+  there) and add v661 and the Never 7 partners.
 - The protocol was committed and pushed at 15:57:22Z (`8a1a932`), the pin at 16:30:32Z (`304bfeb`),
   before F_s4's first step (16:31Z). Both commits are kept at tag `synth4-history-20261013`; the branch
   was later rebased onto the corrected gap analysis (its commits are reachable from the branch tip;

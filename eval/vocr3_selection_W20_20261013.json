@@ -1,0 +1,97 @@
+{
+ "kind": "vocr3-selection",
+ "size": "W20",
+ "protocol_sha256": "27fb605c50f35d3096c11fa326e82845b067d009f86802ee1b433e781f99be20",
+ "computed": "2026-10-13T16:18:43Z",
+ "teacher_val": {
+  "files": [
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/teacher_val.json"
+  ],
+  "lines": 1643
+ },
+ "devnative": {
+  "files": [
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/devnative_strict_ink.json",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/devnative_strict_grad.json",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/devnative_tv_native_ink.json",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/devnative_tv_native_grad.json"
+  ],
+  "commit": "14ae22d48d5d100bc681763df3beabcc64d38fa7",
+  "lines": 986,
+  "sha256": [
+   "ea448f874a38da88d4ee25a9633f855ba72277bb92140d012b1279b3d88c1e25",
+   "9670423d4eadee2c7cb11a5f27684d25e57fca1b364610f6272220c86805f167",
+   "860e9630c1674a1e5ad9fa97d91496d2b0c8f983535fa7c0b9fde4474c64a151",
+   "28dcd7bfd3a88afc5ad3960c37435db68b43f65265f3a1e643c97cbfb2f83cf7"
+  ]
+ },
+ "realplus_decision": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/realplus_decision.json",
+  "adopted": true
+ },
+ "candidates": [
+  {
+   "run": "rp_W20_C_mix_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_W20_C_mix_seed1_w8.vocr",
+   "blob_sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19",
+   "teacher_val_cer": 0.01739,
+   "devnative_cer": 0.018792,
+   "score": 0.018091,
+   "budget": {
+    "blob_bytes": 1558016,
+    "arena_w8i": 241056,
+    "ms_333_high": 548.1981125147651,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/budget/a9/rp_W20_C_mix_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_W20_A_s2_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_W20_A_s2_seed1_w8.vocr",
+   "blob_sha256": "a17091f6acd2792b5279cc9a90ce9205ed4aceaaa4558edee379113703774600",
+   "teacher_val_cer": 0.01824,
+   "devnative_cer": 0.019662,
+   "score": 0.018951,
+   "budget": {
+    "blob_bytes": 1558016,
+    "arena_w8i": 241056,
+    "ms_333_high": 548.198210123485,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/budget/a9/rp_W20_A_s2_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_W20_B_s3_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_W20_B_s3_seed1_w8.vocr",
+   "blob_sha256": "4badcd4d125629c1ba44dbefb7bcf2759b3bc361d524a67961b960d210c6acad",
+   "teacher_val_cer": 0.018152,
+   "devnative_cer": 0.029668,
+   "score": 0.02391,
+   "budget": {
+    "blob_bytes": 1558016,
+    "arena_w8i": 241056,
+    "ms_333_high": 548.1981866795065,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/budget/a9/rp_W20_B_s3_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "rp_LW_A_s2_seed1",
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_LW_A_s2_seed1_w8.vocr",
+   "blob_sha256": "cea3b58e8b6dd16a8d50a5fcd3e70af5e58e4bc0be2e847a79d891ed72610a1f",
+   "teacher_val_cer": 0.021261,
+   "devnative_cer": 0.023621,
+   "score": 0.022441,
+   "budget": {
+    "blob_bytes": 1473280,
+    "arena_w8i": 192928,
+    "ms_333_high": 467.7576445373644,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/W20/budget/a9/rp_LW_A_s2_seed1_l22048.json"
+   },
+   "budget_ok": true
+  }
+ ],
+ "selected": "rp_W20_C_mix_seed1",
+ "selected_blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/blobs/rp_W20_C_mix_seed1_w8.vocr",
+ "selected_blob_sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19"
+}

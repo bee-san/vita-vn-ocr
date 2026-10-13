@@ -240,6 +240,18 @@ predicted accuracy on native frames, a caution for calibrating synthetic data on
   measurement, 94%), PSP 4:4:4 84%, glyph aspect within 0.003. No setting was tuned on devnative,
   teacher_val or a protected set.
 
+## Commit history
+
+The branch was rebased onto main twice, after #62 and #63 were squash-merged. The protocol's amendment
+cites the pre-rebase commits:
+
+- 8dbc1e3, the superseded s3e pin, pushed at 12:13:35Z;
+- 314a0b4, the render's synth3.py.
+
+Tag `synth3-native-history-20261013a` keeps both reachable. The render's code is also identified by its
+file sha256 in the shard manifest's recipe (`synth3.py` 2033c522...), the same file at every one of those
+commits.
+
 ## Reproduce
 
 ```sh

@@ -96,7 +96,7 @@ def test_select_base_rule_budget_and_variant(tmp_path):
                                          for i, (_, sha) in enumerate(runs.values())})
     out = tmp_path / "sel.json"
     args = type("A", (), {"protocol": ROOT / "eval" / "vocr3_protocol.json", "size": "H15", "tv": [tv], "dn": [dn],
-                          "dn_commit": "x", "budget_dir": [bd], "only": "", "out": out})()
+                          "dn_commit": "x", "budget_dir": [bd], "only": "", "out": out, "realplus": ""})()
     SEL.cmd_base(args)
     sel = json.loads(out.read_text())
     over = [r for r in sel["candidates"] if not r["budget_ok"]]
@@ -106,3 +106,39 @@ def test_select_base_rule_budget_and_variant(tmp_path):
     SEL.cmd_variant(type("A", (), {"selection": out, "name": "rp", "tv": [tv], "dn": [dn], "out": vout})())
     v = json.loads(vout.read_text())
     assert v["base"] == "ft_H15_B_s3_seed1" and v["teacher_val"]["delta_points"] < 0
+
+
+def test_realplus_decision_and_rp_candidates(tmp_path):
+    sys.path.insert(0, str(ROOT / "eval"))
+    import vocr3_select as SEL
+    pairs = P["candidates"]["realplus"]["W20"]["decision_pairs"]
+    runs = {}
+    for i, (a, b) in enumerate(pairs):
+        runs[a] = (0, f"a{i}")
+        runs[b] = (-1, f"b{i}")
+    tv = _scores(tmp_path / "tv.json", runs)
+    dn = _scores(tmp_path / "dn.json", runs, n=80, seed=3, tag="d")
+    out = tmp_path / "rp.json"
+    SEL.cmd_realplus(type("A", (), {"protocol": ROOT / "eval" / "vocr3_protocol.json", "size": "W20", "tv": [tv],
+                                    "dn": [dn], "out": out})())
+    r = json.loads(out.read_text())
+    assert r["adopted"] and r["teacher_val"]["ci95"][1] < 0 and len(r["per_pair"]) == 3
+    names = SEL.candidate_names(P, "W20", r)
+    assert names == [b for _, b in pairs]
+    assert SEL.candidate_names(P, "W20", {**r, "adopted": False}) == P["candidates"]["W20"]["runs"]
+
+
+def test_rp_runs_match_their_pretrains():
+    rp = P["candidates"]["realplus"]
+    script = (ROOT / "eval" / "vocr3_rp_run.sh").read_text(encoding="utf-8")
+    assert 'RUN=rp_${ARCH}_${ARM}${TAG}_seed${SEED}' in script and "vocr3_realplus.sha256" in script
+    assert '"tt:0.2:' in script and '"rd:0.1:' in script and '"rp:0.2:' in script and '"ps:' not in script
+    for size, spec in rp.items():
+        if size == "note":
+            continue
+        for base, run in spec["decision_pairs"]:
+            assert base.startswith("ft_") and run == "rp_" + base[3:]
+        cands = P["candidates"][size]
+        all_base = list(cands.get("study2", [])) + list(cands.get("runs", [])) + list(cands.get("step_curve", [])) + \
+            list(cands.get("extra", []))
+        assert sorted("rp_" + b[3:] for b in all_base) == sorted([r for _, r in spec["decision_pairs"]] + spec["extra_runs"])

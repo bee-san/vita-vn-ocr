@@ -317,11 +317,14 @@ semantics.
   is set only on reviewed lines.
 - The edge check was not finished. 2,093 flagged lines had no edge check at the freeze and
   were dropped; the 11 remaining edge batches were withdrawn.
-- devnative's edge rule misses some cut lines:
-  - ink after a gap wider than 0.6 ink heights, such as a second ！;
-  - a thin stroke one or two pixels tall, such as 一.
-  The blind check found two such lines. A stricter rule (any ink within one ink height) would flag
-  40% of the unflagged lines, which is too many to check, so the rule was left as devnative froze it.
+- devnative's edge rule misses some cut lines. `lines.ink_beyond` looks for ink only inside the
+  line's read view, which ends a few pixels past the detected ink. It also needs more than
+  max(2 px, 0.2 ink heights) of it. So it misses:
+  - a second ！ about 10 px past the view;
+  - a thin 一 that enters the frame by 1 px.
+  The blind check found these two lines. A stricter rule (any ink within one ink height, outside
+  the view too) would flag 40% of the unflagged lines, which is too many to check, so the rule was
+  left as devnative froze it.
 - All reviews are Claude's, recorded as reviewer_kind "assistant", not a human's. This covers
   pass 1, pass 2, the edge check, the blind check and the third looks.
 - The blind check uses helper agents of the same model as pass 1. They run in separate sessions

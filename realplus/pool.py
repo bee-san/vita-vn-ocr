@@ -1008,7 +1008,11 @@ def cmd_publish(args):
         "pool": "realplus",
         "pipeline": {"devnative": "f5a1dbd: read and sheets as frozen at 35a86ca, GRAD containment 0cb084e, "
                                   "final crops, edge check and looks f523e30",
-                     "realplus": args.commit},
+                     "devnative_check": "every devnative function realplus calls has the same body at 14ae22d "
+                                        "(edgecheck.flags gained crop=, default unchanged; decide.wilson95 factored "
+                                        "out); edge flags recomputed at 14ae22d matched on 2,000 of 2,000 lines",
+                     "code_sha256": {n: P.file_sha256(HERE / n) for n in ("shots.py", "pool.py")},
+                     "published_at": args.commit},
         "vndb_dump": {"file": dump.name, "sha256": P.file_sha256(dump) if dump.exists() else None,
                       "bytes": dump.stat().st_size if dump.exists() else None, "timestamp": sel["dump"]},
         "selection": {k: sel[k] for k in ("kinds", "screenshots", "vns", "dropped", "reserved_vns",

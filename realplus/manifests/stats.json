@@ -2,7 +2,12 @@
  "pool": "realplus",
  "pipeline": {
   "devnative": "f5a1dbd: read and sheets as frozen at 35a86ca, GRAD containment 0cb084e, final crops, edge check and looks f523e30",
-  "realplus": "7231977"
+  "devnative_check": "every devnative function realplus calls has the same body at 14ae22d (edgecheck.flags gained crop=, default unchanged; decide.wilson95 factored out); edge flags recomputed at 14ae22d matched on 2,000 of 2,000 lines",
+  "code_sha256": {
+   "shots.py": "a1080a1888d8059a88e84f1434c9a82a72cc2d4d0ab01ee19c62f5d3031797e7",
+   "pool.py": "905ce2524ff1d0ba53a781c62a29241a017da58607abcb807cd2cb8e8e111758"
+  },
+  "published_at": "b4bf233"
  },
  "vndb_dump": {
   "file": "vndb-db-2026-10-12.tar.zst",

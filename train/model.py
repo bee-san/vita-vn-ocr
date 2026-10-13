@@ -217,11 +217,14 @@ class TinyVNOCR(nn.Module):
         self.bottleneck = QConv2d(c192, bottleneck, 1, bias=False)
         self.head = QConv2d(bottleneck, n_classes, 1)
 
-    def forward(self, x):
-        """x: N x 1 x H x W (H = 32 or 24), values in [-1, 1]. Returns logits T x N x C."""
-        f = self.head(self.bottleneck(self.drop(self.features(x))))
+    def forward(self, x, return_features=False):
+        """x: N x 1 x H x W (H = 32 or 24), values in [-1, 1]. Returns logits T x N x C (and,
+        with return_features, the N x C192 x 1 x T frame-row features the head reads)."""
+        feats = self.features(x)
+        f = self.head(self.bottleneck(self.drop(feats)))
         assert f.shape[2] == 1, f"input height {x.shape[2]} does not collapse to 1 row"
-        return f.squeeze(2).permute(2, 0, 1)
+        logits = f.squeeze(2).permute(2, 0, 1)
+        return (logits, feats) if return_features else logits
 
 
 ARCH_KEYS = {"width": 1.0, "bottleneck": 96, "depth": 1, "ctx": 2, "ctx_k": 5}

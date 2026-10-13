@@ -43,6 +43,8 @@ EMA weights are what is evaluated and saved as "model" (the raw ones as "model_r
 stem and the depthwise convs train with RepCBR's extra branches (train/model.py); every
 evaluation and every checkpoint's "model" is the fused plain model, so export, eval and the
 runtime see an ordinary TinyVNOCR; "model_rep" / "model_raw" keep the branched weights.
+--guide nrtr adds a training-only Transformer-decoder guidance loss (GTC; train/guide.py) on the
+frame-row features; the decoder is saved as "guide" and never exported.
 
 Checkpoints are train.py's format (eval/run.py, train/export.py, sweep_eval.py read them).
 A run resumes from <out>/<run>/ckpt_last.pt. Threads: $TORCH_NUM_THREADS (heavy.sh).
@@ -702,6 +704,12 @@ def main(argv=None, *, execution_context=None):
     ap.add_argument("--rep", type=int, default=0,
                     help="train the stem and depthwise convs with RepCBR's extra branches (N parallel "
                          "k x k + 1x1 + identity); checkpoints hold the fused plain model as 'model'")
+    ap.add_argument("--guide", choices=("none", "nrtr"), default="none",
+                    help="nrtr: add a training-only Transformer-decoder guidance loss on the frame-row "
+                         "features (GTC); never exported, kept as the checkpoint's 'guide'")
+    ap.add_argument("--guide-weight", type=float, default=1.0)
+    ap.add_argument("--guide-dim", type=int, default=256)
+    ap.add_argument("--guide-layers", type=int, default=2)
     ap.add_argument("--vocab", type=Path, default=DATA / "vocab.txt")
     ap.add_argument("--kd-weight", type=float, default=1.0)
     ap.add_argument("--kd-tau", type=float, default=1.0)
@@ -784,7 +792,16 @@ def main(argv=None, *, execution_context=None):
     train_scope(model, args.train_scope)
     print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M, classes {len(vocab) + 1}, "
           f"threads {args.threads}" + (f", rep {args.rep} (trained form)" if args.rep else ""), flush=True)
-    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.wd)
+    guide = None
+    if args.guide == "nrtr":
+        if args.train_scope != "all":
+            raise ValueError("--guide trains the encoder; it needs --train-scope all")
+        from guide import NRTRGuide
+        guide = NRTRGuide(model.bottleneck.in_channels, len(vocab) + 1, d=args.guide_dim, layers=args.guide_layers)
+        print(f"guide nrtr: {sum(p.numel() for p in guide.parameters()) / 1e6:.3f}M training-only params, "
+              f"weight {args.guide_weight}", flush=True)
+    params = list(model.parameters()) + (list(guide.parameters()) if guide is not None else [])
+    opt = torch.optim.AdamW(params, lr=args.lr, weight_decay=args.wd)
     step, best, best_step = 0, 1e9, 0
     last = out / "ckpt_last.pt"
     ema = None
@@ -821,6 +838,10 @@ def main(argv=None, *, execution_context=None):
         args.freeze_bn_stats |= ck.get("freeze_bn_stats", False)
         if int(ck.get("rep") or 0) != args.rep or list(ck.get("chans") or []) != list(chans or []):
             raise ValueError("resume --rep/--chans differ from checkpoint")
+        if (guide is not None) != ("guide" in ck):
+            raise ValueError("resume cannot add or remove --guide")
+        if guide is not None:
+            guide.load_state_dict(ck["guide"])
         model.load_state_dict(ck.get("model_raw", ck["model"]))
         opt.load_state_dict(ck["opt"])
         step, best, best_step = ck["step"], ck["best_sel"], ck.get("best_step", 0)
@@ -842,6 +863,8 @@ def main(argv=None, *, execution_context=None):
         args.freeze_bn_stats |= ck.get("freeze_bn_stats", False)
         if list(ck.get("chans") or []) != list(chans or []):
             raise ValueError("init checkpoint --chans differ")
+        if guide is not None and "guide" in ck:
+            guide.load_state_dict(ck["guide"])              # continue a guided pretrain's decoder
         if args.rep and int(ck.get("rep") or 0) == args.rep and "model_rep" in ck:
             model.load_state_dict(ck["model_rep"])          # a rep pretrain: keep its branches
         elif args.rep:
@@ -882,7 +905,7 @@ def main(argv=None, *, execution_context=None):
         prog = min(1.0, max(0, s - args.warmup) / max(1, args.steps - args.warmup))
         return args.lr * warm * (args.final_lr + (1 - args.final_lr) * 0.5 * (1 + math.cos(math.pi * prog)))
 
-    t_log, seen, acc = time.time(), 0, {"ctc": 0.0, "kd": 0.0, "n": 0}
+    t_log, seen, acc = time.time(), 0, {"ctc": 0.0, "kd": 0.0, "guide": 0.0, "n": 0}
     model.train()
     if args.freeze_bn_stats:
         from restore_blob import freeze_bn_stats
@@ -897,7 +920,10 @@ def main(argv=None, *, execution_context=None):
         x, in_len, lab, tgt, tgt_len, kd = make_batch(items, rng, src_opts)
         if policy:
             journal.append("intent", mixer.ledger)
-        logits = model(x)                                    # T x N x C
+        if guide is not None:
+            logits, feats = model(x, return_features=True)  # T x N x C, N x C192 x 1 x T
+        else:
+            logits = model(x)                                # T x N x C
         if policy:
             mixer.record_forward(items)
             journal.append("forward", mixer.ledger)
@@ -912,6 +938,10 @@ def main(argv=None, *, execution_context=None):
             c = (c / tgt_len.clamp_min(1)).mean()
             loss = loss + c
             acc["ctc"] += float(c)
+            if guide is not None and args.guide_weight > 0:
+                gl = guide.loss(feats[lab], in_len[lab], [items[int(j)].ids for j in lab])
+                loss = loss + args.guide_weight * gl
+                acc["guide"] += float(gl)
         if kd is not None and args.kd_weight > 0:
             k = kd_loss(logits, kd, args.kd_tau)
             loss = loss + args.kd_weight * k
@@ -922,7 +952,7 @@ def main(argv=None, *, execution_context=None):
             raise ValueError("nonfinite training loss; forwarded exposure was journaled, run aborted")
         opt.zero_grad(set_to_none=True)
         loss.backward()
-        nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+        nn.utils.clip_grad_norm_(params, 5.0)
         opt.step()
         if policy:
             mixer.record_optimizer(items)
@@ -937,9 +967,10 @@ def main(argv=None, *, execution_context=None):
             mix = " ".join(f"{s.name}={c}" for s, c in zip(sources, mixer.counts))
             if policy:
                 mix += f" forwarded={mixer.ledger.forwarded} optimizer_rows={mixer.ledger.optimizer}"
-            print(f"step {step}/{args.steps} ctc {acc['ctc'] / acc['n']:.4f} kd {acc['kd'] / acc['n']:.4f} "
+            gtxt = f" guide {acc['guide'] / acc['n']:.4f}" if guide is not None else ""
+            print(f"step {step}/{args.steps} ctc {acc['ctc'] / acc['n']:.4f} kd {acc['kd'] / acc['n']:.4f}{gtxt} "
                   f"lr {lr:.2e} {seen / dt:.0f} lines/s [{mix}]", flush=True)
-            t_log, seen, acc = time.time(), 0, {"ctc": 0.0, "kd": 0.0, "n": 0}
+            t_log, seen, acc = time.time(), 0, {"ctc": 0.0, "kd": 0.0, "guide": 0.0, "n": 0}
         if step % args.eval_every == 0 or step == args.steps:
             sd = ema.shadow if ema is not None else model.state_dict()
             rep_sd = None
@@ -985,6 +1016,10 @@ def main(argv=None, *, execution_context=None):
                 ck["model_raw"] = {k: v.contiguous() for k, v in model.state_dict().items()}
             if rep_sd is not None:
                 ck["model_rep"] = {k: v.contiguous() for k, v in rep_sd.items()}
+            if guide is not None:                            # training-only; never exported
+                ck["guide"] = {k: v.contiguous() for k, v in guide.state_dict().items()}
+                ck["guide_cfg"] = {"kind": "nrtr", "dim": args.guide_dim, "layers": args.guide_layers,
+                                   "weight": args.guide_weight}
             if best_step == step:
                 torch.save(ck, out / "ckpt_best.tmp")
                 (out / "ckpt_best.tmp").replace(out / "ckpt_best.pt")

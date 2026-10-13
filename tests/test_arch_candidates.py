@@ -170,3 +170,68 @@ def test_train2_trains_resumes_and_saves_the_fused_rep_model(tmp_path, monkeypat
     # a plain fine-tune can start from the rep checkpoint's fused weights, and a rep one from either
     with pytest.raises(Exited):
         train2.main(["--run", "ft", "--init", str(tmp_path / "runs/r/ckpt_last.pt")] + argv[2:] + ["--steps", "1"])
+
+
+def test_guide_targets_and_gradients_reach_the_encoder():
+    from guide import NRTRGuide
+    torch.manual_seed(0)
+    g = NRTRGuide(72, 4, d=32, layers=1, heads=2)          # 3 characters + blank
+    inp, tgt = g.targets([np.array([1, 2]), np.array([3])])
+    assert inp.tolist() == [[4, 1, 2], [4, 3, 0]] and tgt.tolist() == [[1, 2, 5], [3, 5, 0]]
+    m = TinyVNOCR(4, chans=LATE_WIDE, bottleneck=16)
+    _, feats = m(torch.randn(2, 1, 32, 64), return_features=True)
+    assert feats.shape == (2, 72, 1, 8)
+    loss = g.loss(feats, torch.tensor([8, 5]), [np.array([1, 2]), np.array([3])])
+    loss.backward()
+    assert torch.isfinite(loss) and m.features[0][0].weight.grad.abs().sum() > 0
+    assert m.head.weight.grad is None                        # the guide skips the CTC head
+
+
+def test_guide_learns_a_tiny_set():
+    """The teacher-forced decoder can fit two fixed lines (the loss falls well below its start)."""
+    from guide import NRTRGuide
+    torch.manual_seed(1)
+    feats = torch.randn(2, 16, 1, 6)
+    g = NRTRGuide(16, 6, d=32, layers=1, heads=2, dropout=0.0)
+    opt = torch.optim.Adam(g.parameters(), lr=3e-3)
+    ids = [np.array([1, 2, 3]), np.array([4, 4])]
+    first = None
+    for _ in range(150):
+        loss = g.loss(feats, torch.tensor([6, 4]), ids, smoothing=0.0)
+        first = first if first is not None else float(loss)
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+    assert float(loss) < 0.1 * first
+    assert g.eval().greedy(feats, torch.tensor([6, 4])) == [[1, 2, 3], [4, 4]]
+
+
+def test_train2_guide_is_saved_apart_and_never_exported(tmp_path, monkeypatch):
+    import train2
+    vocab = ["あ", "い", "う"]
+    (tmp_path / "vocab.txt").write_text("\n".join(vocab) + "\n", encoding="utf-8")
+    rng = np.random.default_rng(0)
+    write_shard(tmp_path / "s.npz", [rng.integers(0, 256, (32, 64), dtype=np.uint8) for _ in range(8)],
+                ["あい", "う", "いう", "あ"] * 2)
+
+    def boom(code=0):
+        raise Exited(code)
+
+    monkeypatch.setattr(os, "_exit", boom)
+    argv = ["--run", "g", "--out", str(tmp_path / "runs"), "--src", f"a:1:{tmp_path / 's.npz'}",
+            "--val", f"v:{tmp_path / 's.npz'}", "--batch", "4", "--warmup", "1", "--threads", "1",
+            "--vocab", str(tmp_path / "vocab.txt"), "--width", "0.25", "--bottleneck", "16",
+            "--guide", "nrtr", "--guide-dim", "32", "--guide-layers", "1", "--eval-every", "2", "--log-every", "1"]
+    with pytest.raises(Exited):
+        train2.main(argv + ["--steps", "2"])
+    with pytest.raises(Exited):
+        train2.main(argv + ["--steps", "3"])                 # resumes the guide with the run
+    ck = torch.load(tmp_path / "runs/g/ckpt_last.pt", map_location="cpu", weights_only=False)
+    assert ck["step"] == 3 and ck["guide_cfg"]["kind"] == "nrtr" and "guide" in ck
+    assert not any(k.startswith(("guide", "dec.", "proj.", "embed.")) for k in ck["model"])
+    model, _, height = export.load_checkpoint(tmp_path / "runs/g/ckpt_last.pt")
+    blob, _ = export.build_blob(export.model_ops(model, height), vocab, height, int8=True)
+    plain = TinyVNOCR(len(vocab) + 1, width=0.25, bottleneck=16).eval()
+    plain.load_state_dict(ck["model"])
+    ref, _ = export.build_blob(export.model_ops(plain, 32), vocab, 32, int8=True)
+    assert blob == ref

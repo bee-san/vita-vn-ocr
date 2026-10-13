@@ -54,6 +54,9 @@ def test_amendment_1_w20_and_budget():
     assert ["VOCR3-W20", "VOCR_H15"] in P["qualification"]["gates"]
     script = (ROOT / "eval" / "vocr3_run.sh").read_text(encoding="utf-8")
     assert "W20)  WIDTH=2.0" in script and "synth3_study2_pools.sha256" in script and "kd=1" not in script
+    assert "LW)   WIDTH=1.5; CHANS=48,96,192,320,384" in script          # amendment 6's shape through train2 --chans
+    rp_script = (ROOT / "eval" / "vocr3_rp_run.sh").read_text(encoding="utf-8")
+    assert "LW)   WIDTH=1.5; CHANS=48,96,192,320,384" in rp_script and '"${CH[@]}"' in rp_script
 
 
 def test_amendment_2_h15_b_s3():
@@ -124,8 +127,11 @@ def test_realplus_decision_and_rp_candidates(tmp_path):
     r = json.loads(out.read_text())
     assert r["adopted"] and r["teacher_val"]["ci95"][1] < 0 and len(r["per_pair"]) == 3
     names = SEL.candidate_names(P, "W20", r)
-    assert names == [b for _, b in pairs]
-    assert SEL.candidate_names(P, "W20", {**r, "adopted": False}) == P["candidates"]["W20"]["runs"]
+    assert names == [b for _, b in pairs] + P["candidates"]["realplus"]["W20"]["extra_runs"]   # + rp_LW (am. 6-7)
+    w20 = P["candidates"]["W20"]
+    assert SEL.candidate_names(P, "W20", {**r, "adopted": False}) == w20["runs"] + w20["extra"]
+    assert w20["extra"] == ["ft_LW_A_s2_seed1"] and w20["lw"]["run"].startswith("ft_LW_A_s2_seed1")
+    assert P["candidates"]["realplus"]["W20"]["extra_runs"] == ["rp_LW_A_s2_seed1"]
 
 
 def test_rp_runs_match_their_pretrains():

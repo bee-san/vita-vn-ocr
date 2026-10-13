@@ -51,3 +51,8 @@ def test_amendment_1_w20_and_budget():
     assert ["VOCR3-W20", "VOCR_H15"] in P["qualification"]["gates"]
     script = (ROOT / "eval" / "vocr3_run.sh").read_text(encoding="utf-8")
     assert "W20)  WIDTH=2.0" in script and "synth3_study2_pools.sha256" in script and "kd=1" not in script
+
+
+def test_amendment_2_h15_b_s3():
+    assert P["candidates"]["H15"]["extra"] == ["ft_H15_B_s3_seed1"]
+    assert len(P["amendments"]) == 2 and "ft_H15_B_s3_seed1" in P["amendments"][1]["change"]

@@ -523,6 +523,21 @@ uncertain, but its sign is not: at FL10 size, four times the pretraining (12.3M 
 3.1M, from the same 13M available) moves teacher_val by more than any synthetic-data arm did. The
 128k fine-tune, 2.60%, is close to the H15 arms (2.23-2.37%) at 57% of their weight bytes.
 
+Protected test sets (`eval/synth3_study2_FL10_step_test_20261013.json`; each step-curve export scored
+once, after the curves result was committed; reported only):
+
+| FL10 C_mix seed 1 | vita-test (console) | psp-test (console) | pooled console | pooled native |
+|---|---|---|---|---|
+| 32k pretrain, fine-tuned | 1.72% | 4.54% | 3.11% | 3.15% |
+| 64k pretrain, fine-tuned | 1.56% | 3.82% | 2.68% | 2.60% |
+| 128k pretrain, fine-tuned | 1.40% | 3.23% | 2.31% | 2.33% |
+| released FL10 (v0.2.0) | 2.38% | 5.30% | 3.82% | 3.72% |
+
+128k − 32k, pooled console −0.81 (−1.32 to −0.34); vita-test
+−0.31 (−0.62 to −0.04), psp-test −1.31 (−2.23 to −0.46);
+128k − 64k −0.37 (−0.80 to +0.02). The test sets agree with teacher_val on the
+direction and the size of the gain; they cannot change any decision or recipe.
+
 ### Learning curve: more synth3 crops do not help this recipe (reported only)
 
 Study 1's B_s3 recipe (16,000 steps, nvsynth one-line set 0.5 + synth3 v2 0.5, FL10, seeds 1 and 2),

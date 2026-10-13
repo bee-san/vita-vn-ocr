@@ -1,0 +1,1084 @@
+{
+ "kind": "synth3-shards",
+ "schema": 1,
+ "sets": {
+  "train": {
+   "kind": "synth3-recipe",
+   "schema": 1,
+   "split": "train",
+   "seed": 20261012,
+   "profile": "personal",
+   "per_shard": 10000,
+   "cfg": {
+    "platform": {
+     "vita": 0.46,
+     "psp": 0.3,
+     "psp2x": 0.13,
+     "scaled": 0.11
+    },
+    "scaled_to_psp": 0.3,
+    "category": {
+     "vita": {
+      "gothic": 0.4,
+      "rounded": 0.2,
+      "mincho": 0.18,
+      "pen": 0.05,
+      "display": 0.07,
+      "pixel": 0.1
+     },
+     "psp": {
+      "gothic": 0.36,
+      "rounded": 0.14,
+      "mincho": 0.14,
+      "pen": 0.03,
+      "display": 0.05,
+      "pixel": 0.28
+     }
+    },
+    "raster": {
+     "vita": {
+      "aa8": 0.36,
+      "aa4": 0.24,
+      "atlas": 0.26,
+      "ss2": 0.08,
+      "mono": 0.06
+     },
+     "psp": {
+      "aa8": 0.18,
+      "aa4": 0.4,
+      "atlas": 0.12,
+      "ss2": 0.02,
+      "mono": 0.28
+     }
+    },
+    "gamma": {
+     "p": 0.5,
+     "lo": 0.7,
+     "hi": 1.45
+    },
+    "layout": {
+     "adv": 0.5,
+     "band": 0.12,
+     "nvl": 0.09,
+     "balloon": 0.04,
+     "choice": 0.08,
+     "bare": 0.12,
+     "ui": 0.05
+    },
+    "short": 0.15,
+    "narration": 0.18,
+    "narrate_nvl": 0.4,
+    "focus": 0.25,
+    "focus_exponent": 0.6,
+    "focus_hard_gain": 4.0,
+    "focus_prior_exponent": 0.35,
+    "reference_pools": [
+     "wiktionary",
+     "wikiquote"
+    ],
+    "brackets": {
+     "named": 0.6,
+     "unnamed": 0.3,
+     "double": 0.03
+    },
+    "dressing": {
+     "interjection": 0.08,
+     "stammer": 0.03,
+     "ending": 0.15,
+     "terminal": 0.75,
+     "dots": 0.06,
+     "elongation": 0.03,
+     "alnum": 0.04
+    },
+    "terminal": {
+     "。": 0.45,
+     "！": 0.17,
+     "？": 0.13,
+     "……": 0.12,
+     "っ！": 0.04,
+     "！？": 0.03,
+     "～": 0.04,
+     "♪": 0.02
+    },
+    "names": {
+     "vndb": 0.6,
+     "syosetu": 0.3,
+     "generated": 0.1,
+     "honorific": 0.2,
+     "brackets": 0.1,
+     "unknown": 0.03,
+     "role": 0.03,
+     "space": 0.3
+    },
+    "name_mode": {
+     "vita": {
+      "tab": 0.54,
+      "inline": 0.18,
+      "line": 0.18,
+      "null": 0.1
+     },
+     "psp": {
+      "tab": 0.49,
+      "inline": 0.22,
+      "line": 0.19,
+      "null": 0.1
+     }
+    },
+    "nvl_name": 0.3,
+    "name_coloured": 0.65,
+    "ruby": {
+     "vita": 0.15,
+     "psp": 0.2
+    },
+    "cursor": 0.33,
+    "partial": {
+     "p": 0.08,
+     "ramp": 0.5
+    },
+    "join": 0.35,
+    "drop_aside": 0.8,
+    "coloured": {
+     "span": 0.14,
+     "line": 0.1
+    },
+    "outline": {
+     "vita": {
+      "light_on_dark": 0.4,
+      "dark_on_light": 0.12,
+      "on_colour": 0.7
+     },
+     "psp": {
+      "light_on_dark": 0.6,
+      "dark_on_light": 0.2,
+      "on_colour": 0.8
+     }
+    },
+    "shadow": {
+     "vita": 0.3,
+     "psp": 0.25
+    },
+    "capture": {
+     "vita": {
+      "clean": 0.5,
+      "vndb2": 0.5
+     },
+     "psp": {
+      "clean": 0.35,
+      "q90": 0.35,
+      "vndb2": 0.3
+     },
+     "psp2x": {
+      "bilinear": 0.6,
+      "nearest": 0.3,
+      "x1995": 0.05,
+      "scanlines": 0.05,
+      "jpeg": 0.1
+     },
+     "scaled": {
+      "q90": 0.85,
+      "clean": 0.15
+     }
+    },
+    "dither565": 0.45,
+    "blur": 0.15,
+    "noise": 0.15,
+    "subnative": 0.03,
+    "crop": {
+     "gt": 0.5,
+     "grad": 0.5
+    },
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "pad_extra": {
+     "p": 0.55,
+     "top": 0.12,
+     "bottom": 0.2,
+     "left": 0.16,
+     "right": 0.24
+    },
+    "scaled_em": {
+     "vita": [
+      21.0,
+      2.5,
+      16,
+      27
+     ],
+     "psp": [
+      11.5,
+      1.5,
+      9,
+      15
+     ]
+    },
+    "background": {
+     "scene": 0.82
+    },
+    "dialogue_pools": {
+     "aozora_dialogue": 0.16,
+     "narikiri": 0.2,
+     "aratako_dsv3": 0.07,
+     "aratako_gpt4omini": 0.09,
+     "opensubtitles": 0.09,
+     "jesc": 0.09,
+     "tatoeba": 0.07,
+     "nucc": 0.03,
+     "jdd": 0.02,
+     "bsd": 0.01,
+     "templates": 0.07,
+     "wiktionary": 0.01,
+     "wikiquote": 0.01
+    },
+    "narration_pools": {
+     "aozora_narration": 0.85,
+     "wiki": 0.15
+    },
+    "length_edges": [
+     0,
+     2,
+     4,
+     6,
+     9,
+     13,
+     18,
+     24,
+     31,
+     41,
+     200
+    ],
+    "length_target": [
+     0.0132,
+     0.2402,
+     0.154,
+     0.1029,
+     0.1199,
+     0.1419,
+     0.1216,
+     0.0867,
+     0.0191,
+     0.0003
+    ],
+    "length_floor": 0.15
+   },
+   "code_sha256": {
+    "synth3.py": "87fc12789c31e001522b9d804eab5b46cd50cb7a2e690266cb640b1b98623c7a",
+    "render.py": "b5c6509643cd783c9bf918308cde6d3a9a26ae20bc057e5e7b8134ab44c33248",
+    "common.py": "6b8ca608c4e1ec60c87dd3bc6fa44a03fbb84fe0387ccc77a4c8aefbdc0c13ca",
+    "synth3_text.py": "cb11b437647c16b706c8d4d2f68af461e8d78b8a5c923d4788a57e5753ae7145"
+   },
+   "font_manifest_sha256": "2a6e21ec74bf1f916b613e00d13ccfcb54803ddbb9c31ec05ca0e0ffc5220413",
+   "vocab_sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b",
+   "fonts": 315,
+   "font_families": 110,
+   "text": {
+    "pools": {
+     "aozora_dialogue": {
+      "file": "aozora_dialogue.train.txt",
+      "sha256": "81c3fe6570d2a6ef1cf30e1da6e1198d805120a49140e801aba6a83ddb6c8ff5",
+      "lines": 399943,
+      "class": "open"
+     },
+     "narikiri": {
+      "file": "narikiri.train.txt",
+      "sha256": "c6492a1eaf93c3bb303fe54759b0cb546c5f1616cef1dc161088e2120113b2ba",
+      "lines": 399832,
+      "class": "grey"
+     },
+     "aratako_dsv3": {
+      "file": "aratako_dsv3.train.txt",
+      "sha256": "345866dad525db1baf6d780ebbb2361ad2084687dff20ca5b89daca3df253a19",
+      "lines": 399960,
+      "class": "open"
+     },
+     "aratako_gpt4omini": {
+      "file": "aratako_gpt4omini.train.txt",
+      "sha256": "ae6bb22fe351f2c9e499fa074b53d3c98d0cc97c558526cdf50790bd412ec09d",
+      "lines": 399973,
+      "class": "nc"
+     },
+     "opensubtitles": {
+      "file": "opensubtitles.train.txt",
+      "sha256": "efe79bc19565e776f98a79d6003ab5f63bb7a1c96879c6edb62ebbce68f6bbe3",
+      "lines": 391948,
+      "class": "grey"
+     },
+     "jesc": {
+      "file": "jesc.train.txt",
+      "sha256": "08c0ec3f4ca2441b5c273df4b7a6135d7940d89f946ef1d1bbdd6e56fed5d22d",
+      "lines": 392513,
+      "class": "open"
+     },
+     "tatoeba": {
+      "file": "tatoeba.train.txt",
+      "sha256": "5f7322923c2c41d18b9515905a03f61a6d31448b3fe71fefe444e77a444ca6f3",
+      "lines": 237530,
+      "class": "open"
+     },
+     "nucc": {
+      "file": "nucc.train.txt",
+      "sha256": "29115769e61038746bb1c23d99b5d6329fbf71d82e61be1bf7bdf9ce5879d828",
+      "lines": 100600,
+      "class": "nc"
+     },
+     "jdd": {
+      "file": "jdd.train.txt",
+      "sha256": "b7612307e69c2f1f3b1445ca41432facfe2d293d7ad6e9056b32d5151c2f469d",
+      "lines": 39595,
+      "class": "nc"
+     },
+     "bsd": {
+      "file": "bsd.train.txt",
+      "sha256": "7049dadadf69ecd69a367f71cb2d2506f6471d361bd0554d4dae325c8d15617d",
+      "lines": 20564,
+      "class": "nc"
+     },
+     "wiktionary": {
+      "file": "wiktionary.train.txt",
+      "sha256": "2e2fd71b2bd2c76e02bf3a69ed5e3ddeefa51ad67cb8adf5fe13deb9d8368e7a",
+      "lines": 50774,
+      "class": "open"
+     },
+     "wikiquote": {
+      "file": "wikiquote.train.txt",
+      "sha256": "8c5a52b3692c84db63abb3ff02ed383b935bf45fda4ba1d04f25fdfea2675ff4",
+      "lines": 18637,
+      "class": "open"
+     },
+     "aozora_narration": {
+      "file": "aozora_narration.train.txt",
+      "sha256": "2b75f33bf57279c23d511b271eb3a65773de601c7b2501f885502454f5cdaa94",
+      "lines": 399949,
+      "class": "open"
+     },
+     "wiki": {
+      "file": "wiki.train.txt",
+      "sha256": "9c18dd18fb604bfe7555c7ccd1758a7233f7bcbdde5ecb462a2b047e887ea81b",
+      "lines": 399993,
+      "class": "open"
+     }
+    },
+    "contexts": "16f15ae70d3339c421d3748971de62a6df5c2cbd288b2dcec4d0fa5d5546bfc2",
+    "names": "4aa76da50328146dd11e14096b7c1b2d99a54a7f693df1b513da8900cf773d44",
+    "targets": "15bd0f42ba2db5016d55af5e9a7409967ebed7e08475b7684d472297c99253bb",
+    "lists": "d1a821a4a0b6e56222bbe6ef8d8db6ebd1dfcaf3fad5997f271e19a14a0e2d14"
+   },
+   "background_vns": 1185,
+   "background_shots": {
+    "vita": 986,
+    "psp": 2102,
+    "hires": 3172
+   },
+   "versions": {
+    "numpy": "2.4.6",
+    "opencv": "5.0.0",
+    "pillow": "12.3.0",
+    "freetype": "2.14.3"
+   }
+  }
+ },
+ "shards": [
+  {
+   "set": "train",
+   "file": "synth3_00000.npz",
+   "bytes": 58409209,
+   "sha256": "673f23107559b76d8a18d0fd1b923528a667a641b8313be2f074cfe28f98bf2f",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00001.npz",
+   "bytes": 59321186,
+   "sha256": "3fae5c1f404bab9d4d398e98e46793feaa6b75635388463b1a8af2fb8662a990",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00002.npz",
+   "bytes": 59241496,
+   "sha256": "5e6a9198fe677df033d2b41236757ace565c878cb4d828166a28688454250e61",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00003.npz",
+   "bytes": 60605154,
+   "sha256": "5f3c757f4f8b98c5bfcc7384a8dad99546ea006bb21fee546d2619534455fe84",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00004.npz",
+   "bytes": 59743711,
+   "sha256": "e59244395e842cf83997a87b2260d3088962631a07a567fa5315d613c401d065",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00005.npz",
+   "bytes": 59999317,
+   "sha256": "9c94f5acfcaf82f1767fc2359a211f798151e78e0f685d46dbdbdac87a286380",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00006.npz",
+   "bytes": 59048053,
+   "sha256": "7d9beafd33dab766571a7b5afcb04f04b9ebdfaea43235d29ae498f7ec2ec929",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00007.npz",
+   "bytes": 58761416,
+   "sha256": "364fdf8b115703fb6c929b5f75540388a57fe8d57aab263d20f8f9da7f60571f",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00008.npz",
+   "bytes": 59323322,
+   "sha256": "7d1c50fb0accf2dd3f0e12c27240b8ef06d000a02f8f4ec679103ceca07f26f7",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00009.npz",
+   "bytes": 60238697,
+   "sha256": "2fd66df85c153c7d12d6db45796bb4bbb6c1a23943ce5671ee4006f9d3424072",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00010.npz",
+   "bytes": 58481797,
+   "sha256": "5a1af4a1ddbfd99583cb929e7db39c3db4757060e99740b92f1acb463176eafb",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00011.npz",
+   "bytes": 59814430,
+   "sha256": "53c28c5b32c4e5ec2bc80714f9f228ee558a8cb4ad2d2d2932e1612f698a7b81",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00012.npz",
+   "bytes": 60146988,
+   "sha256": "7d51e1a861ba10bc5f2f898842db023348e50e1c2f2081f196b5c0e0b3859075",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00013.npz",
+   "bytes": 59492071,
+   "sha256": "42d45dc66f71b6845cd5607346812813fb8cb2e77225f3025575725903932086",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00014.npz",
+   "bytes": 60123826,
+   "sha256": "41afd8333cc6f68961f702e14db8a89a1ba14958f3633c1778001b7248140d55",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00015.npz",
+   "bytes": 59046944,
+   "sha256": "5b28e06fada5a61a19ab6decf76fca9e5d90643c0afd9e19e334089f8f82599a",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00016.npz",
+   "bytes": 59574508,
+   "sha256": "1c2a35d91ca069883e00969ff3fd6d9889ac4daa36b318e68184b4d1f112f8ef",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00017.npz",
+   "bytes": 58783176,
+   "sha256": "9a6d489efa14e459112c958381068f720f9308686bbe5f21a2c836b5b614e4a4",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00018.npz",
+   "bytes": 59173075,
+   "sha256": "1f0e94e965ee335fd636721f821d5e5a1b9e498381c62a074e1efd629fa52e2a",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00019.npz",
+   "bytes": 59146568,
+   "sha256": "35cd76ecd47ceb710f8be41e8ecf1e621ac5de3b144053504f9f9002a78b57bd",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00020.npz",
+   "bytes": 60128541,
+   "sha256": "389e86565312b0df284d2dc7c5cabf6b5174658a5e0fade555dd2a115f7612c5",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00021.npz",
+   "bytes": 59556757,
+   "sha256": "15068230d3cfbf2797137a22e7904efac8f079f6e936a65cb10443e9351564ed",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00022.npz",
+   "bytes": 58885690,
+   "sha256": "e175b9af7d971aaa53665a2af56a0d2baeeee9af68844ea992c0c84c326e1a5f",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00023.npz",
+   "bytes": 59711387,
+   "sha256": "50b08a28873a531241049e65dd99d7193118a8b6322432c72818e3a27694d700",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00024.npz",
+   "bytes": 60431378,
+   "sha256": "e42a1485b65789ba14e93df44f8f972b4be83d84bd5c345e5afb7ea6ab5c102c",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00025.npz",
+   "bytes": 59255344,
+   "sha256": "4af95bb9454ca00bb358a7296aeff840ab7901c4d13af80d3e4ed5796baec7ff",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00026.npz",
+   "bytes": 59601422,
+   "sha256": "c4b2aa073e8198a7825dbf628c7d97b5fdfbecea905992da432214085d4b505e",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00027.npz",
+   "bytes": 59305494,
+   "sha256": "090d64fadc368f6f969ea9734c2ca618dcbeac0f0283feabc005940e260710fe",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00028.npz",
+   "bytes": 58479978,
+   "sha256": "a064bd5ab829cf35f02f8a27249803bbb774561a80c59a3b2a2d1bfc80fa9844",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00029.npz",
+   "bytes": 59197698,
+   "sha256": "2e5db3e77d085c91223faca2d236014b327714260c091474c352140519a25e04",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00030.npz",
+   "bytes": 59212852,
+   "sha256": "7c7f1310f0f79ae6239bb84d6c9c712c92bfe2c554c828e1e9beba499306f7bc",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00031.npz",
+   "bytes": 58926892,
+   "sha256": "950a64db13e0a04ed1f1bf3fc54fa6b89610bf8afc6365712e35c30c24cabae5",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00032.npz",
+   "bytes": 59051152,
+   "sha256": "e757496d725bb980a022890b0a620767f59088e529ab32d495604ff6887169ad",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00033.npz",
+   "bytes": 58998672,
+   "sha256": "aa47ae59a5dc161baeb354519fd145e24c44263592e64917cc7f70d174ea35e4",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00034.npz",
+   "bytes": 58774165,
+   "sha256": "012d186d8241151b10603b96b447b2ee0b011e462927a9c65b93350b6374f7d9",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00035.npz",
+   "bytes": 59920198,
+   "sha256": "4eadb965b01041389b4a45ff6a7b08e275f24a4f26773516ba3c33dbe002fad1",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00036.npz",
+   "bytes": 60256301,
+   "sha256": "12f7c66da6dd5f064b67d567ef7545093514910820b686347c7e505a69314836",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00037.npz",
+   "bytes": 60066664,
+   "sha256": "6932d1b531d8edabad4df4d25684c2b489e7362ed3baa7149519ce1f0f065de6",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00038.npz",
+   "bytes": 59234330,
+   "sha256": "2a66f614ffb3e1484a385bcc914d74c2e9497ed03daa0254830156403f600caa",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00039.npz",
+   "bytes": 58886080,
+   "sha256": "26fba6b1d7e86d16ed852d13baf0443c23f47039466dad655f09da1562b80383",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00040.npz",
+   "bytes": 58937031,
+   "sha256": "f33b99b738bd7259d02860532352289d6eb0a455149743aab0df6c07e38ac4bb",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00041.npz",
+   "bytes": 58384969,
+   "sha256": "86647c0fe28214498cb7a9218d40e1c97b8ab56c21cb5d92b307e5f4a95a73d8",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00042.npz",
+   "bytes": 60218345,
+   "sha256": "66cba4942ef58cf81237d6017c7c16d7494c355bdc8baad5d0d9ef472f782217",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00043.npz",
+   "bytes": 60382590,
+   "sha256": "d1185b80891e532aa490f8637ddf2c6285903b116dc92fd1d134d87d5472227b",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00044.npz",
+   "bytes": 58674437,
+   "sha256": "c9ccccd05454cdf5458afb9a395a8c12187e5768ebc00475ffd8bf4bfcca7d2a",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00045.npz",
+   "bytes": 59807444,
+   "sha256": "b205ff9d6f2574a4ab5852d41fb94de0d8e6031eb2c900fa7d87429f90ae8462",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00046.npz",
+   "bytes": 59014981,
+   "sha256": "71b51ac01b938ad66a36826f99cb14d7fc73ee658aeb7a866d75600e3f297bd7",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00047.npz",
+   "bytes": 59381875,
+   "sha256": "147050103555281c1e478fe1bbb11624474ec7bbcad02164984fdedc7a13d936",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00048.npz",
+   "bytes": 59766269,
+   "sha256": "005a159de6f8c3d35a5e5f1aa57e49e08afdb919d6a050f7fa2f4eeab5bab547",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00049.npz",
+   "bytes": 58421734,
+   "sha256": "1a0712a7f64d98934af6218a836f4d1a661e6ecdbe8a1a05af73d6d7d68d0ed2",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00050.npz",
+   "bytes": 59501279,
+   "sha256": "9c78338815faf792b3a369c59a04aea96352796a593c1edee7083e7bf0660fa0",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00051.npz",
+   "bytes": 60125093,
+   "sha256": "8f62655e750b0f94dfcd206cd19903f6df783e0d8afd0044529f8c79e21b21be",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00052.npz",
+   "bytes": 60031837,
+   "sha256": "1b8dd8d7ee5da768c221d98c9fd8a1e0cb0cb688102b99b461fae451a56e184a",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00053.npz",
+   "bytes": 60548717,
+   "sha256": "ce9f9af8297e6beda3e660615a783c0a792e82b089f6fef8d6689043b37c7e60",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00054.npz",
+   "bytes": 59214381,
+   "sha256": "c4c0f8937c2f93e198ffe6c8c1922b37826cfede7cd15658712dcf8a4f4a9898",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00055.npz",
+   "bytes": 58993238,
+   "sha256": "b4d623bbbea56f3a0747bb9aa03cf2b928d33a4fe9a0652f1936aaf64fc06927",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00056.npz",
+   "bytes": 58460788,
+   "sha256": "dd74736207c32993effba0098c30aa97ec76ee1a4d05d11470b85eb7644685f7",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00057.npz",
+   "bytes": 58961610,
+   "sha256": "c7d6ac5f6656edbf2d5edfccdc8217329d547e37bfd75ad523f60b8224c9c90b",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00058.npz",
+   "bytes": 59711029,
+   "sha256": "2cd426ec4e8e7ac50655217cc58b8b719940cfa6236af0f433666f53bb956327",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00059.npz",
+   "bytes": 60555465,
+   "sha256": "9e1e4f120888332def0b765da3554529121dd91ed345aff4f9e13a44cd757282",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00060.npz",
+   "bytes": 59249392,
+   "sha256": "1aeec85fa759d452940a36fa10305ba56dd58f6ed9ebb0ee09521f4eb101a01c",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00061.npz",
+   "bytes": 60196808,
+   "sha256": "8777bcfa2af5ec322b9b51da379c8d46f1580988836dda777e9e168f06f2bfb1",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00062.npz",
+   "bytes": 59558286,
+   "sha256": "5fd6f30a77be1968bf4243d192e074eb249e474cca0a06add5307a425b9dda1a",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00063.npz",
+   "bytes": 58081912,
+   "sha256": "62067d7927aac0ac6aebaf570949fde8f4cada53b9dcbfff237e2aa2164702d3",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00064.npz",
+   "bytes": 60582440,
+   "sha256": "275b637c50fb8c9d10750df776941c864e58c765e147cac42f502b2f2ab63cd9",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00065.npz",
+   "bytes": 60204256,
+   "sha256": "34ef331532f7d77c73afb4a9a550143136392ac3625b126a7a89a8a511776de6",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00066.npz",
+   "bytes": 58390437,
+   "sha256": "16fde1d7c1ab538866fe01946432837879e44e3e8468b1ecbb8b5725dee320a9",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00067.npz",
+   "bytes": 58158595,
+   "sha256": "7343dd29ed7b5abef7d4fc18f23eba0b7b32b4e1bade1ae10914d674238fe850",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00068.npz",
+   "bytes": 59864907,
+   "sha256": "8ddc8d236ecbd4d11d0bc5347fd94e7fe36a6812403c55b0aaeb3c56e611d890",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00069.npz",
+   "bytes": 60183046,
+   "sha256": "edef998cf13aab13fa42dde84be4adaaee7f413ebb847d714064345302e331eb",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00070.npz",
+   "bytes": 59373942,
+   "sha256": "f64d7ffeaed9f6839bf066234b14cad379b93059a2f707bb4cfd7a89bfe4d872",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00071.npz",
+   "bytes": 59678416,
+   "sha256": "3d64b7837a4063254702656c1063e1c48f45fec14850a0edf2e42e73fd76eb1a",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00072.npz",
+   "bytes": 59389571,
+   "sha256": "971b26c299868a8070a753db11888dac886f7c3eadcd4ea0dac1116551028b4b",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00073.npz",
+   "bytes": 58846398,
+   "sha256": "5fb7a47a42b2e4baec9f3ff575fecb592558722aa7e0642d0f17e3fbc37965e8",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00074.npz",
+   "bytes": 60036822,
+   "sha256": "b9432f7d324a63c94c6206feb86be7049a3dc97973a2184e115330ca2b021e54",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00075.npz",
+   "bytes": 60463718,
+   "sha256": "a91e6d1ef2b3977f4d1c8b6895858a09355248f023e4477fdbbb8a9434d9b201",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00076.npz",
+   "bytes": 60067951,
+   "sha256": "ac67b39345fc67b828b0f1ad2e1679e2075690e9517ac2577f2dabd184747772",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00077.npz",
+   "bytes": 61342037,
+   "sha256": "bbde9a015da96647ddc92c7d1a817cf9bd7715d21de2f2f01a3b42de297d2c78",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00078.npz",
+   "bytes": 58183225,
+   "sha256": "0cb7ec7c9cb7b9b93f300a00b800d17e475a34f3c618ed72cc3f7cf83e38cda8",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00079.npz",
+   "bytes": 58112710,
+   "sha256": "c7ad096652d6f5df010e7bfab69e8b8a6e1ab671a4c0b083a5b839948ed4b1e9",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00080.npz",
+   "bytes": 59525850,
+   "sha256": "5119d57c28f630e0655c593dfa0605cc7e4da1db26fc60e600528bdde704d908",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00081.npz",
+   "bytes": 58712430,
+   "sha256": "76f71d10552f68adcfeb267198b49a9f257f6b76524773a06f7554b9c6594a8d",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00082.npz",
+   "bytes": 59873460,
+   "sha256": "b1a6dfbedd60baaa57f4a4a2cd851af5e43e248165123fb187215a7fd8ce277d",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00083.npz",
+   "bytes": 60158736,
+   "sha256": "354e7b369aef0adf7b4f079e60e3667b9ea7a277a6e897ec4d086a005c790532",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00084.npz",
+   "bytes": 59602783,
+   "sha256": "e983e9acdf4f21d1530b9e3de510903bc0deb420c445ef1923288d3e0c82b78e",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00085.npz",
+   "bytes": 60431598,
+   "sha256": "f7d55e985fa92724dc92e4e9be69a65761550527a305926f857a89a5530a0282",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00086.npz",
+   "bytes": 58934329,
+   "sha256": "fc749f9bbb1ba017137386f36ee11bb7a64ca9482687e0429d75fb7ea52865e5",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00087.npz",
+   "bytes": 59837741,
+   "sha256": "126ad4d5f3d25467585a7393030b2500d3910c199fbb2cdbc0b115395baea399",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00088.npz",
+   "bytes": 60369554,
+   "sha256": "3516262d8ae18b5cafc8a7ff958032822231a3d0b8c07aeb208f946a786ad674",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00089.npz",
+   "bytes": 58813608,
+   "sha256": "b4ee12fe3b7358db911156810bdb86e344e459666afb260a216042bb0b0b393b",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00090.npz",
+   "bytes": 58617775,
+   "sha256": "4978603afe3fb7db09ece9e9ebf21e360c90e41145ac4033cbb5ec0433e191a3",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00091.npz",
+   "bytes": 59659988,
+   "sha256": "a3bfff8372a5bb3aaadc25423ebf1db317251236daa5cd4e603d05e571b020ed",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00092.npz",
+   "bytes": 59267195,
+   "sha256": "4d9cfed522a0e1c235f1e872c6afe3caf31810562f7895fdc6a770213f63b651",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00093.npz",
+   "bytes": 59400417,
+   "sha256": "29659fea85820516fe9cbfdd73bfb12264d2398d173b3be9bf30ea2ce9f8c0d1",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00094.npz",
+   "bytes": 59919082,
+   "sha256": "67a630d81aa50cbae16d9a2e6a7f2516bb41ce143e681dedca8258232ed67536",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00095.npz",
+   "bytes": 60103644,
+   "sha256": "8699921bf06e8211dc67841427b1befb8f7aded0fc7b1265d5c8ddeaff3a2dc6",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00096.npz",
+   "bytes": 59784689,
+   "sha256": "a79b71d633ceee4856024e0ad603022eda8fc11fb0b68380f09ae8e8cc047bf2",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00097.npz",
+   "bytes": 59501409,
+   "sha256": "911d5a79f0acc0d9a8958cb6dd7fc2e49bcbe08f093554fbf1809c05dfd2894d",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00098.npz",
+   "bytes": 60761130,
+   "sha256": "5135affd78646ce3c64eb285bb89a278bdf086ef668439996d30cdc075c97c89",
+   "samples": 10000
+  },
+  {
+   "set": "train",
+   "file": "synth3_00099.npz",
+   "bytes": 58964743,
+   "sha256": "de24486f3858cdc2c9fb362f1c8e090f4fbd55fc5442eeca87c2c0341496588a",
+   "samples": 10000
+  }
+ ],
+ "samples": 1000000,
+ "bytes": 5947654081
+}

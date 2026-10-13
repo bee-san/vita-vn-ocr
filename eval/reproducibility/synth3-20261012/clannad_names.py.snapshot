@@ -1,0 +1,30 @@
+import csv, glob, json
+from collections import Counter
+from concurrent.futures import ProcessPoolExecutor
+import numpy as np
+S3 = '/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3'
+FAM = {'v12','v4060','v28752','v27548','v10058','v29951','v23354','v16901','v5698','v7983','v54298'}
+rows = list(csv.DictReader(open(f'{S3}/text/vndb_chars.tsv', encoding='utf-8'), delimiter='\t'))
+fam = [r for r in rows if set(r['vn_ids'].split(',')) & FAM and 'v4' not in r['vn_ids'].split(',')]
+parts = set()
+for r in fam:
+    for x in r['name'].split():
+        if len(x) >= 1: parts.add(x)
+train = [l.rstrip('\n').split('\t') for l in open(f'{S3}/text/pools3/names.train.tsv', encoding='utf-8')]
+vndb_rows = [t for t in train if t[0] == 'vndb']
+pool_parts = {x for t in vndb_rows for x in t[2:] if x}
+inpool = sorted(p for p in parts if p in pool_parts)
+print('family character rows', len(fam), 'name parts', len(parts), 'in names.train.tsv (vndb rows):', len(inpool), inpool)
+full = {r['name'].replace(' ', '') for r in fam if ' ' in r['name']}
+def scan(p):
+    z = np.load(p); labs = json.loads(str(z['labels'])); c = Counter(); n = 0
+    for lab in labs:
+        hit = [x for x in inpool if len(x) >= 2 and x in lab] + [x for x in full if x in lab]
+        if hit: n += 1; c.update(set(hit))
+    return n, c
+files = sorted(glob.glob(f'{S3}/shards/train_v2/synth3_000??.npz'))
+with ProcessPoolExecutor(5) as ex: res = list(ex.map(scan, files))
+print('v2 crops with a >=2-char family name part or full name:', sum(r[0] for r in res))
+tot = Counter()
+for _, c in res: tot.update(c)
+print(tot.most_common(20))

@@ -128,6 +128,62 @@ def cmd_table(args):
         Path(args.json).write_text(json.dumps({"ceiling": B.CEILING, "candidates": summary}, indent=1))
 
 
+def cmd_proxies(args):
+    """The proxy table: C W8I teacher_val CER (rv + rvn) of each run's raw and EMA step-5000 weights
+    (synth3_ablation.py compare outputs), the synthetic held-out CERs train2 logged (EMA, fp32) and
+    the training rate, plus every comparison's delta with its VN-cluster interval."""
+    d = Path(args.dir)
+    raw = json.loads((d / "compare_raw.json").read_text())
+    ema = json.loads((d / "compare.json").read_text()) if (d / "compare.json").exists() else {"models": {}}
+    rows = ["| run | shape (train2.py flags) | seed | threads | lines/s | teacher_val CER, raw | EMA "
+            "| s2v / nvv CER (EMA, fp32) |", "|---|---|---|---|---|---|---|---|"]
+    out = {"runs": {}, "comparisons": {}}
+    for name in sorted(raw["models"]):
+        run = "P_" + name[2:]
+        rd = d / "runs" / run
+        a = json.loads((rd / "args.json").read_text()) if (rd / "args.json").exists() else {}
+        last = [json.loads(x) for x in (rd / "metrics.jsonl").read_text().splitlines() if x.strip()][-1] \
+            if (rd / "metrics.jsonl").exists() else {}
+        rates = []
+        log = d / "logs" / f"{run}.log"
+        for line in log.read_text().splitlines() if log.exists() else []:
+            if line.startswith("step ") and " lines/s" in line:
+                rates.append(float(line.split(" lines/s")[0].rsplit(" ", 1)[1]))
+        rate = sorted(rates)[len(rates) // 2] if rates else None
+        c_raw = raw["models"][name]["cer"]
+        c_ema = ema["models"].get(run, {}).get("cer")
+        flags = f"--chans {a['chans']}" if a.get("chans") else f"--width {a.get('width', '?')}"
+        if a.get("rep", "0") != "0":
+            flags += f" --rep {a['rep']}"
+        if a.get("guide", "none") != "none":
+            flags += f" --guide {a['guide']}"
+        mean = lambda c: (c["rv"] + c["rvn"]) / 2 if c else None  # noqa: E731
+        out["runs"][run] = {"raw": mean(c_raw), "ema": mean(c_ema), "s2v": last.get("s2v_cer"),
+                            "nvv": last.get("nvv_cer"), "threads": a.get("threads"), "lines_per_s": rate,
+                            "seed": a.get("seed"), "flags": flags}
+        rows.append(f"| {run} | `{flags}` | {a.get('seed', '-')} | {a.get('threads', '-')} | "
+                    f"{rate if rate is not None else '-'} | {100 * mean(c_raw):.2f}% | "
+                    + (f"{100 * mean(c_ema):.2f}%" if c_ema else "-") + " | "
+                    + (f"{100 * last['s2v_cer']:.2f}% / {100 * last['nvv_cer']:.2f}%" if last else "-") + " |")
+    rows += ["", "| comparison (B - A) | raw: delta, points [VN-cluster 95% CI] | line CI | VNs better / worse "
+             "| EMA: delta [VN CI] |", "|---|---|---|---|---|"]
+    for name, c in raw["comparisons"].items():
+        v, ln = c["all_vn_cluster"], c["all_line"]
+        e = ema.get("comparisons", {}).get(name, {}).get("all_vn_cluster")
+        out["comparisons"][name] = {"a": c["a"], "b": c["b"], "raw": v, "raw_line_ci95": ln["ci95"],
+                                    "vns_better": c["per_vn"]["better"], "vns_worse": c["per_vn"]["worse"], "ema": e,
+                                    "per_seed": {k: x["delta_points"] for k, x in c["per_seed"].items()},
+                                    "strata": {k: {kk: x[kk] for kk in ("delta_points", "ci95", "lines")}
+                                               for k, x in c["strata"].items()}}
+        rows.append(f"| {c['b']} - {c['a']} | {v['delta_points']:+.2f} [{v['ci95'][0]:+.2f}, {v['ci95'][1]:+.2f}] | "
+                    f"[{ln['ci95'][0]:+.2f}, {ln['ci95'][1]:+.2f}] | {c['per_vn']['better']} / {c['per_vn']['worse']}"
+                    " | "
+                    + (f"{e['delta_points']:+.2f} [{e['ci95'][0]:+.2f}, {e['ci95'][1]:+.2f}]" if e else "-") + " |")
+    sys.stdout.write("\n".join(rows) + "\n")
+    if args.json:
+        Path(args.json).write_text(json.dumps(out, indent=1) + "\n")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -137,8 +193,11 @@ def main():
     t = sub.add_parser("table")
     t.add_argument("--dir", required=True)
     t.add_argument("--json")
+    p = sub.add_parser("proxies")
+    p.add_argument("--dir", required=True, help="the proxy directory: runs/, logs/, compare_raw.json, compare.json")
+    p.add_argument("--json")
     args = ap.parse_args()
-    {"blobs": cmd_blobs, "table": cmd_table}[args.cmd](args)
+    {"blobs": cmd_blobs, "table": cmd_table, "proxies": cmd_proxies}[args.cmd](args)
 
 
 if __name__ == "__main__":

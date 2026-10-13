@@ -1,0 +1,93 @@
+{
+ "kind": "vocr3-realplus-decision",
+ "size": "H15",
+ "protocol_sha256": "27fb605c50f35d3096c11fa326e82845b067d009f86802ee1b433e781f99be20",
+ "computed": "2026-10-13T11:56:04Z",
+ "pairs": [
+  [
+   "ft_H15_A_s2_seed1",
+   "rp_H15_A_s2_seed1"
+  ],
+  [
+   "ft_H15_A_s2_seed2",
+   "rp_H15_A_s2_seed2"
+  ],
+  [
+   "ft_H15_C_mix_seed1",
+   "rp_H15_C_mix_seed1"
+  ],
+  [
+   "ft_H15_C_mix_seed2",
+   "rp_H15_C_mix_seed2"
+  ]
+ ],
+ "teacher_val": {
+  "delta_points": -0.191,
+  "ci95": [
+   -0.288,
+   -0.096
+  ],
+  "cer_a": 0.02299,
+  "cer_b": 0.02108
+ },
+ "per_pair": {
+  "ft_H15_A_s2_seed1->rp_H15_A_s2_seed1": {
+   "delta_points": -0.196,
+   "ci95": [
+    -0.352,
+    -0.038
+   ],
+   "cer_a": 0.02419,
+   "cer_b": 0.02223
+  },
+  "ft_H15_A_s2_seed2->rp_H15_A_s2_seed2": {
+   "delta_points": -0.254,
+   "ci95": [
+    -0.446,
+    -0.061
+   ],
+   "cer_a": 0.02319,
+   "cer_b": 0.02065
+  },
+  "ft_H15_C_mix_seed1->rp_H15_C_mix_seed1": {
+   "delta_points": -0.193,
+   "ci95": [
+    -0.366,
+    -0.029
+   ],
+   "cer_a": 0.02281,
+   "cer_b": 0.02088
+  },
+  "ft_H15_C_mix_seed2->rp_H15_C_mix_seed2": {
+   "delta_points": -0.123,
+   "ci95": [
+    -0.309,
+    0.046
+   ],
+   "cer_a": 0.02179,
+   "cer_b": 0.02056
+  }
+ },
+ "devnative": {
+  "delta_points": 0.03,
+  "ci95": [
+   -0.112,
+   0.186
+  ],
+  "cer_a": 0.02243,
+  "cer_b": 0.02273
+ },
+ "devnative_files": [
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_strict_ink.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_strict_grad.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_tv_native_ink.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/H15/devnative_tv_native_grad.json"
+ ],
+ "devnative_sha256": [
+  "de5acbd6591c4b4c161cf33b82dc5847656bc47e6d355bc2625cc204dc7b169e",
+  "d106873a4544ba7781b6ce512865ad90a7b7831722ea28fa53bb1c2fba0263ed",
+  "a41981259c6e9f01b3d11be48b64fbd78023d3a0c85827ce9f3e4c11fb55f49a",
+  "1ea36c8ddf1a6ed1e2eb14a34180b3c49f75982378235bac43793d9ec78881c0"
+ ],
+ "adopted": true
+}

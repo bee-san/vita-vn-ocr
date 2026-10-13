@@ -16,9 +16,11 @@ case $ARCH in
   FL10) WIDTH=1.0; VOCAB=$A/train2/release/FL10_vocab_3500.txt; DEF=32000 ;;
   H15)  WIDTH=1.5; VOCAB=$REPO/data/vocab.txt; DEF=40000 ;;
   W20)  WIDTH=2.0; VOCAB=$REPO/data/vocab.txt; DEF=32000 ;;
+  LW)   WIDTH=1.5; CHANS=48,96,192,320,384; VOCAB=$REPO/data/vocab.txt; DEF=32000 ;;   # amendment 6: late-wide, train2 --chans
   *) echo "unknown arch $ARCH"; exit 2 ;;
 esac
 PRE=${4:-$DEF}
+CH=(); [ -n "${CHANS:-}" ] && CH=(--chans "$CHANS")   # explicit per-stage channels (train/train2.py --chans, PR #58)
 NVG="$A/nvsynth/full/train/nv_train_0[0-3]?_b*.npz+$A/nvsynth/full/train/nv_train_04[01]_b*.npz"
 S2G="$A/synth2/shards/synth_000[0-2]?.npz+$A/synth2/shards/synth_0003[0-8].npz"
 S3G="$A/synth3/shards/train_v2/synth3_000??.npz"
@@ -46,7 +48,7 @@ echo "git $(git rev-parse HEAD) run $RUN from $INIT"
 if [ -s "$OUT/$RUN/ckpt_step15000.pt" ]; then echo "$RUN is complete"; exit 0; fi
 if [ -e "$OUT/$RUN" ]; then echo "$OUT/$RUN is partial: delete it and restart (runs never resume)"; exit 3; fi
 exec .venv-ci/bin/python train/train2.py --run "$RUN" --out "$OUT" --init "$INIT" \
-  --steps 15000 --batch 96 --lr 1.2e-3 --warmup 500 --final-lr 0.05 --wd 0.01 --ema 0.999 --width "$WIDTH" \
+  --steps 15000 --batch 96 --lr 1.2e-3 --warmup 500 --final-lr 0.05 --wd 0.01 --ema 0.999 --width "$WIDTH" "${CH[@]}" \
   --vocab "$VOCAB" --seed "$SEED" --threads 5 --eval-every 2500 --keep-evals \
   --src "nv:0.25:$NVG:stream=1,pool=3,inv=0.2" "${FSYN[@]}" \
   --src "tt:0.2:$FP/teacher_train.npz:targets=$FP/targets,kd=0,inv=0.5" \

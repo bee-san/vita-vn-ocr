@@ -97,8 +97,9 @@ same screenshots.
   line, and review dropped it.
 
 Every devnative VN is a teacher_val VN, because the reserved list is teacher_val's 181 VNs plus
-the 9 general-VN and CLANNAD development VNs (synth3's `GENERAL_VN_DEV`). All 14 strict VNs also
-appear in tv_native. strict differs from teacher_val by screenshot, not by game.
+the 9 VNs of synth3's `GENERAL_VN_DEV` (the 16 VNs of the general-VN and CLANNAD development
+manifests) that teacher_val lacks. All 14 strict VNs also appear in tv_native. strict differs
+from teacher_val by screenshot, not by game.
 
 **Scene backgrounds in tv_native.** devnative's task listed synth2's `backgrounds.json` and
 `data/vndb/shots` among the training pools whose VNs the cohort leaves out. The conductor's
@@ -304,7 +305,8 @@ crop (the review frame, widened) changed by ≥ 3 px, whose row has ink continui
 crop, or which a later look called cut. That was 178 lines:
 - 169 passed, one of them by typing its label (the ユリウス correction);
 - 8 were dropped: 4 cut, 2 holding parts of two lines, 2 unsure;
-- 1, v8063_46795_0, had already been dropped by the third look before the check was applied.
+- 1, v8063_46795_0, passed the edge check, but the third look dropped it (厳/嚴 unsettled), and
+  that drop takes precedence in the build.
 
 **Edge check (v3).** The same rule ran on v3's tighter crops (`edgecheck.py --crop eval`) for
 all 562 kept labels on v2's screenshots. It also flagged every label that no MeikiOCR reading

@@ -44,7 +44,8 @@ recommended VN-style data. Version 4 stays in the code as an option (`frames=Non
     6 PSP frames of 街 (v1360), which #63 reserved after the render with 428 (13:10Z).
 - **Crops**: teacher_train and real_train native crops, with reserved and development VNs dropped. The
   4,030 native PSP crops include 64 of 街. Without them, PSP aspect p10 / p50 moves from 0.696 / 1.020
-  to 0.713 / 1.024 (re-measured by the PR #64 audit).
+  to 0.713 / 1.024 (re-measured by the PR #64 audit). The first measurement's 4,093 crops also held
+  about 63 native PSP crops of the Memories Off series.
 
 ### VNDB's JPEG
 
@@ -256,14 +257,22 @@ predicted accuracy on native frames, a caution for calibrating synthetic data on
 - s3e keeps version 3's scaled crops. Those were rendered before the rule, and their scenes can include
   20 PC screenshots of the series (`docs/owner-games.md`).
 - The final render (12:20-13:23Z) predates the owner's 13:10Z reservation of Aiyoku no Eustia (v3770),
-  428 (v1299) and 428's relation 街 (v1360), which #63 put in the manifest. The PR #64 audit re-rendered
-  all 100 shards byte-identically and counted the exposure:
-  - 265 of the 550,000 crops have a region background cut from a screenshot of these VNs: Eustia 253,
-    街 9, 428 3. That is 9 distinct screenshots.
-  - 223 labels hold a text marker #63 added, 214 of them inside s3e. 188 of those are name plates, 160
-    of them drawn from the VNDB name pool (mostly ordinary given names such as 留美 or 千晶).
-  - Together that is at most 488 crops. Version 3's data carries the same kind of exposure. Renders
-    from main exclude all 50 VNs.
+  428 (v1299) and 428's relation 街 (v1360), which #63 put in the manifest. The PR #64 audits re-rendered
+  all 100 shards byte-identically to the pins and counted three exposure channels:
+  - **Region backgrounds**: 265 of the 550,000 crops have one cut from a screenshot of these VNs: Eustia
+    253, 街 9, 428 3. That is 9 distinct screenshots.
+  - **Console-frame backdrops**: 2,052 crops (1,987 in s3e) are cut from a console frame whose backdrop
+    is one of 街's 9 PSP screenshots. That is 1,862 regions: PSP 1,681, PSP-on-Vita 371.
+    - Only the region's window is cut back out.
+    - In 552 of these crops (531 in s3e), the backdrop's pixels still reach the crop through the frame's
+      JPEG, blur or resampling, by up to 64 grey levels (median 3).
+  - **Text**: 223 labels hold a marker #63 added, 214 of them in s3e. 188 are name plates, 160 of those
+    from the VNDB name pool, mostly ordinary given names such as 留美 or 千晶. 2 of these crops also sit
+    on a 街 frame.
+  - **Total**: at most 2,538 crops, or at most 1,040 counting only crops that carry the screenshots'
+    pixels. They come from 13 screenshots: Eustia 3, 428 1, 街 9.
+  - Version 3's data carries the same kind of exposure, without the frames. Renders from main exclude all
+    50 VNs from both scene draws.
 - The calibration used training-side frames and crops only.
   - It was repeated without the Memories Off series once the series was reserved: the 4:2:0 share of
     Vita frames is 92% (the patch uses the first measurement, 94%), PSP 4:4:4 84%, glyph aspect within
@@ -283,8 +292,8 @@ cites the pre-rebase commits:
 - 314a0b4, the render's synth3.py.
 
 Tag `synth3-native-history-20261013a` keeps both reachable. The render's code is also identified by its
-file sha256 in the shard manifest's recipe (`synth3.py` 2033c522...), the same file at every one of those
-commits.
+file sha256 in the shard manifest's recipe (`synth3.py` 2033c522...): the file at 314a0b4 and at the tag's
+head. 8dbc1e3's superseded 12:08Z render used 06d66472..., which that commit's own pin records.
 
 ## Reproduce
 
@@ -295,6 +304,8 @@ A=$HERD/shared/artifacts; V3=$A/synth3-v3; NF=$A/native-frames
 .venv-ci/bin/python synth/native_calib.py frames --shots $NF/calib/shots_calib_1051rule.jsonl --out frames.json
 .venv-ci/bin/python synth/native_calib.py crops --real $A/teacher/teacher_train.npz+$A/realdata/real_train.npz \
     --synth "$V3/shards/train_v3/synth3_0000[0-1].npz" --exclude $A/synth3/mining/exclude_dev_vns.txt --limit 12000 --out crops.json
+# (at this head synth3_stats' default exclusions hold all 50 owner VNs: crops gives 3,966 native PSP crops, the
+#  "without 街" figures above, not the record's 4,030)
 HEAVY_SLOTS=12 $HERD/heavy.sh timeout 14400 .venv-ci/bin/python synth/synth3.py shards --out $NF/shards/native_v4 \
     --split train --shards 100 --per-shard 5500 --workers 5 --seed 20261012 --cfg @data/manifests/synth3_v4_native_cfg.json \
     --scene-hashes $V3/exclude/scene_hashes.json --targets $V3/text/targets_v3/targets.json

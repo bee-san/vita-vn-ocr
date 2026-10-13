@@ -4,10 +4,10 @@
   "devnative": "f5a1dbd: read and sheets as frozen at 35a86ca, GRAD containment 0cb084e, final crops, edge check and looks f523e30",
   "devnative_check": "every devnative function realplus calls has the same body at 14ae22d (edgecheck.flags gained crop=, default unchanged; decide.wilson95 factored out); edge flags recomputed at 14ae22d matched on 2,000 of 2,000 lines",
   "code_sha256": {
-   "shots.py": "a1080a1888d8059a88e84f1434c9a82a72cc2d4d0ab01ee19c62f5d3031797e7",
-   "pool.py": "b0308f9fd8becdc96817be0af62f2da308488a742ab90460e69b53a21d8c9c69"
+   "shots.py": "e48b2dab2f05f8f509ddb17b5dc8eb07594d3e8fca43e8f46768f49755c0090b",
+   "pool.py": "7fe6ae62ad7043d3dac8cbf59db5d5ffcc02c577701705dec4c3412d94416021"
   },
-  "published_at": "2d0fb28"
+  "published_at": "b621b5c"
  },
  "vndb_dump": {
   "file": "vndb-db-2026-10-12.tar.zst",
@@ -158,6 +158,15 @@
    "same-vn": 0,
    "cross-vn": 0,
    "test_shots_hit": 0
+  },
+  "leakcheck_teacher_val": {
+   "tests": 646,
+   "pool": 43198,
+   "min_corr": 0.95,
+   "pairs": 1,
+   "same-vn": 0,
+   "cross-vn": 1,
+   "test_shots_hit": 1
   }
  },
  "leak_dropped_screenshots": 2,
@@ -173,62 +182,62 @@
   ]
  },
  "build": {
-  "lines": 43264,
-  "vns": 9140,
-  "screenshots": 25325,
+  "lines": 43228,
+  "vns": 9137,
+  "screenshots": 25314,
   "how": {
-   "auto": 41218,
+   "auto": 41182,
    "consensus": 1990,
    "single": 56
   },
   "names": 374,
   "files": {
-   "realplus_train_ink.npz": {
-    "crops": 71219,
-    "lines": 43146,
-    "vns": 9130,
+   "realplus_train_ink_v2.npz": {
+    "crops": 71153,
+    "lines": 43110,
+    "vns": 9127,
     "by_target": {
-     "vita": 43139,
-     "psp": 28080
+     "vita": 43103,
+     "psp": 28050
     },
-    "chars": 796220,
-    "sha256": "eed888a6f06034ddd99b4b610c9867ff2366b19f77b548cbdebe3c78c5a6e9d8"
+    "chars": 795282,
+    "sha256": "e11467b2f81d5437b966fbe9faa9cf5d8e6c9912ccf76f97ee1747e815f7163d"
    },
-   "realplus_train_grad.npz": {
-    "crops": 53626,
-    "lines": 35355,
-    "vns": 8899,
+   "realplus_train_grad_v2.npz": {
+    "crops": 53566,
+    "lines": 35322,
+    "vns": 8896,
     "by_target": {
-     "vita": 33759,
-     "psp": 19867
+     "vita": 33726,
+     "psp": 19840
     },
-    "chars": 649128,
-    "sha256": "f2a3b7d33b2a8678f047493cb962d48c5f923c4809296c0edd319d162363351f"
+    "chars": 648263,
+    "sha256": "1b5419dcd22091bc63d82c19a225283a0fcf7dc4b0bb45df448b8454e9c7135f"
    }
   },
   "dropped_at_build": {
    "out-of-vocab": 15,
-   "excluded-late": 1,
-   "vita-grad-missed": 5545,
-   "psp-grad-missed": 3782,
+   "excluded-late": 40,
+   "psp-too-small": 18026,
+   "edge-unchecked": 2091,
+   "edge-cut": 110,
+   "vita-grad-missed": 5542,
+   "psp-grad-missed": 3780,
    "vita-grad-mixed": 2371,
-   "psp-grad-mixed": 3957,
-   "edge-unchecked": 2093,
-   "vita-grad-unchecked": 2645,
-   "psp-too-small": 18033,
+   "psp-grad-mixed": 3956,
    "vita-grad-partial": 1418,
+   "vita-grad-unchecked": 2644,
    "psp-grad-unchecked": 1713,
+   "vita-grad-cuts-label": 774,
    "vita-ink-mixed": 507,
    "psp-ink-mixed": 472,
    "no-crop": 375,
    "psp-grad-partial": 197,
-   "vita-grad-cuts-label": 774,
-   "edge-other-text": 9,
    "edge-bad": 36,
-   "edge-cut": 110,
    "psp-grad-cuts-label": 20,
+   "edge-other-text": 9,
    "edge-unsure": 1,
-   "repeat-cap": 4960
+   "repeat-cap": 4959
   }
  },
  "screenshot_manifests": [
@@ -239,15 +248,20 @@
   "shots_05.jsonl"
  ],
  "local_manifests": {
-  "manifests/lines.jsonl": "90b720291afd864835f5b472040574e9c5eca8af62c67ee60f0f6b8d4c222315",
+  "manifests/lines_v2.jsonl": "1c4f401393cedf62df7b2024e41520cdbf6abae4b49443d385af9cbb9fbcd36f",
   "labels.jsonl": "bdf7346db16696f4b5d35f5b09639d934863867d23d03cde70164e4dec9c2de2",
-  "lines_full.jsonl": "0f891be8262efefd38cce29d662581b1660391e4f2e8d570a0fea86aae4d0051",
+  "lines_full_v2.jsonl": "8dd41a6faa0484061662cc5e7744f63a8ceb8410f9c4ddc6dbe0494507f28bb2",
   "edge/boxes.jsonl": "c2126c9b292488cbac1b8c2f77928405b3699bf7b64d9825d8e81e4a3612880e",
   "edge/edge.jsonl": "a07e820270d5973f53fd6ee4d61c34838b90366a43b1bcd462cbb4d76e85cf0e",
   "review/blind_ids.json": "e6364e776e728b05428cf56d7f6661fe4c551807143b3decdb6a899e5a12661c",
   "review/resolutions.jsonl": "2092cb9511cdb7571a7dc977a8ee9cefcc129df972dd5df333c635bf4e996aa9",
   "review/blind_report_measured.json": "75d5eba9d4fef1f380b256c405f08b591808cebfa895a892002ae4b1cefe61c2",
   "labels_frozen_2128.jsonl": "8531d8c4196062a7dd602d0e200420c8dba5890fb8818444ccee8d947782279c",
+  "logs/v2_vs_v1.json": "e787d40c8c2c3a96083b04baf21196ef7f6a077b227789372fb940ba287df275",
+  "logs/strict_edge.log": "7283d552896119e09cd7b6798dadde180f97cfcf0ffd7d73a6a598ea29153f83",
+  "logs/leakcheck.log": "c47d9eaf4f59bc30365f981c660f61aa34d350488ddd8d293ad8f092c2e981e7",
+  "logs/leakcheck_devnative.log": "262f5326b9470c8c0782fe78ff38913873cb98f7d3aece0c51c777e4246b46ad",
+  "logs/leakcheck_teacher_val.log": "d4ea4e6a4fe4ef368bfcc957449fda1f8e137bf02cf997e48aaefe3c1e69585c",
   "manifests/dups.json": "ab69303d50f68a31a0c72225718a97fec311357ac2247179764fea5ccaca07d7",
   "manifests/leak_drop.json": "d7950de84fc312fe8b0511c05806746c4d5838c7dc322105c7b0b1a8250f7ffa"
  },
@@ -346,6 +360,24 @@
    "seed": 20261013,
    "from": 50874
   }
+ },
+ "blind_on_this_build": {
+  "agree": 495,
+  "lines": 500,
+  "rate": 0.99,
+  "wilson95": [
+   0.9768,
+   0.9957
+  ]
+ },
+ "build_tag": "v2",
+ "supersedes": {
+  "build": "untagged",
+  "files": {
+   "realplus_train_ink.npz": "eed888a6f06034ddd99b4b610c9867ff2366b19f77b548cbdebe3c78c5a6e9d8",
+   "realplus_train_grad.npz": "f2a3b7d33b2a8678f047493cb962d48c5f923c4809296c0edd319d162363351f"
+  },
+  "lines": 43264
  },
  "third_looks": {
   "lines": 5,

@@ -22,6 +22,9 @@ HEX64 = re.compile(r"^[0-9a-f]{64}$")
 URL = re.compile(r"^https://t\.vndb\.org/sf/(\d\d)/(\d+)\.jpg$")
 # Every VNDB relation of the fresh native textbox titles (any relation kind, from the 2026-10-12 dump).
 FRESH_RELATIONS = {"v15053", "v52836", "v25385", "v28146", "v57035"}
+# CLANNAD's relations of every kind and the FAMILY relations of shots.CLANNAD_FAMILY (2026-10-12 dump):
+# parodies sharing its characters (NETANNAD, YAMANNAD), Kyou After 2, ... (audit of PR #57, F1).
+CLANNAD_RELATIONS = set("v869 v8324 v11057 v16902 v21002 v25142 v42392 v64301 v64642".split())
 
 pytestmark = pytest.mark.skipif(not SHOT_FILES, reason="no committed realplus manifest yet")
 
@@ -53,7 +56,8 @@ def test_files_are_small():
 
 def test_only_training_side_vns_and_screenshots():
     test_all = set(SH.test_games()["all"])
-    protected = test_all | SH.fresh_native_vns() | FRESH_RELATIONS | SH.CLANNAD | SH.CLANNAD_FAMILY | SH.GENERAL_VN_DEV
+    protected = (test_all | SH.fresh_native_vns() | FRESH_RELATIONS | SH.CLANNAD | SH.CLANNAD_FAMILY
+                 | CLANNAD_RELATIONS | SH.GENERAL_VN_DEV)
     eval_images = set()
     for p in [*(ROOT / "eval").rglob("*.json"), *(ROOT / "eval").rglob("*.jsonl")]:
         eval_images |= {int(x) for x in SH.IMAGE_ID.findall(p.read_text(encoding="utf-8", errors="replace"))}
@@ -65,7 +69,10 @@ def test_only_training_side_vns_and_screenshots():
 def test_stats_pin_the_npz_files_and_the_local_manifests():
     stats = json.loads((MAN / "stats.json").read_text(encoding="utf-8"))
     files = stats["build"]["files"]
-    assert {"realplus_train_ink.npz", "realplus_train_grad.npz"} <= set(files)
+    sfx = f"_{stats['build_tag']}" if stats.get("build_tag") else ""
+    assert {f"realplus_train_ink{sfx}.npz", f"realplus_train_grad{sfx}.npz"} <= set(files)
+    if stats.get("supersedes"):                          # the build a tagged one replaces stays pinned
+        assert all(HEX64.match(v) for v in stats["supersedes"]["files"].values())
     for f in files.values():
         assert HEX64.match(f["sha256"]) and f["crops"] >= f["lines"] > 0
     assert all(HEX64.match(v) for v in stats["local_manifests"].values())

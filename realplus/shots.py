@@ -112,6 +112,12 @@ OWNER_TRAINING = {"v22505": "CHAOS;HEAD NOAH", "v14018": "CHAOS;CHILD", "v751": 
                   "v57": "Sharin no Kuni", "v4137": "Toradora! Portable", "v183": "Kikokugai",
                   "v12369": "Fate/EXTRA CCC", "v434": "Togainu no Chi", "v195": "Otome wa Boku ni Koishiteru",
                   "v1552": "Mashiro-iro Symphony", "v4028": "Koi to Senkyo to Chocolate"}
+# Owner decisions that make a VN training data in all its releases although a relation or a shared release would
+# reserve it (owner 2026-10-13 19:21Z and 20:47Z: planetarian, v34, which shares the PC Key 10th Memorial BOX
+# r3748 with CLANNAD). reserved_vns never gives these VNs a derived reason (relations, release partners); a
+# direct one (CLANNAD, a test or development set, is_test_vn, the val bucket) would still apply, and planetarian
+# has none (it is in no eval or development set).
+OWNER_ALLOWED = {"v34": "planetarian (owner 2026-10-13 19:21Z, 20:47Z: training data in all releases)"}
 
 
 def owner_test_vns(d, roots=None, title=OWNER_TEST_TITLE):
@@ -331,6 +337,9 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
                     family VN; or with a test-vn or val-bucket VN when the release links just the
                     two of them (one game filed twice, or a game and its fandisc) or the two are
                     FAMILY relations. Larger compilations of unrelated games don't count there.
+
+    OWNER_ALLOWED VNs (planetarian, v34: owner 2026-10-13 19:21Z and 20:47Z) never get a derived reason (the
+    relation, family and shared-release ones); the direct reasons above still apply to them.
     """
     test_all = set(test_games()["all"] if test_all is None else test_all)
     fresh = fresh_native_vns() if fresh is None else set(fresh)
@@ -360,43 +369,50 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
     roots = {v for v, r in why.items() if r in ("clannad", "fresh-native", "development")}
     fresh_roots = {v for v, r in why.items() if r == "fresh-native"}
     anyrel = d.get("any_relations", d["relations"])
+
+    def derive(u, reason):                     # a derived reason, never for an owner-allowed VN
+        if u not in OWNER_ALLOWED:
+            why.setdefault(u, reason)
     for v in sorted(fresh_roots):              # the fresh native titles: relations of every kind
         for u in anyrel.get(v, ()):
-            why.setdefault(u, "fresh-native-relation")
+            derive(u, "fresh-native-relation")
     for v, rs in anyrel.items():
         if rs & fresh_roots:
-            why.setdefault(v, "fresh-native-relation")
+            derive(v, "fresh-native-relation")
     # CLANNAD (audit of PR #57): CLANNAD's own relations of every kind (char-sharing parodies such
     # as NETANNAD reuse its characters, names and text), and the FAMILY relations of the
     # conductor's family list (a sequel of a family member, such as Kyou After 2).
     for v in sorted(CLANNAD):
         for u in anyrel.get(v, ()):
-            why.setdefault(u, "clannad-relation")
+            derive(u, "clannad-relation")
     for v, rs in anyrel.items():
         if rs & CLANNAD:
-            why.setdefault(v, "clannad-relation")
+            derive(v, "clannad-relation")
     for v in sorted(CLANNAD_FAMILY):
         for u in d["relations"].get(v, ()):
-            why.setdefault(u, "clannad-relation")
+            derive(u, "clannad-relation")
     for v, rs in d["relations"].items():
         if rs & CLANNAD_FAMILY:
-            why.setdefault(v, "clannad-relation")
+            derive(v, "clannad-relation")
     # the owner's test series (2026-10-13 10:51Z): relations of every kind and every release partner
     for v, r in sorted(owner.items()):
-        why.setdefault(v, r)
+        if r == "owner-test-series":           # direct: a series VN itself
+            why.setdefault(v, r)
+        else:
+            derive(v, r)
     for v in sorted(roots):
         for u in d["relations"].get(v, ()):
-            why.setdefault(u, "family")
+            derive(u, "family")
     for v, rs in d["relations"].items():       # relations are listed both ways, but be safe
         if rs & roots:
-            why.setdefault(v, "family")
+            derive(v, "family")
     strict = {v for v, r in why.items() if r not in ("test-vn", "val-bucket")}
     loose = set(why) - strict
     for rid, rv in sorted(d["rel_vns"].items()):
         if len(rv) < 2:
             continue
         for u in sorted(rv):
-            if u in why:
+            if u in why or u in OWNER_ALLOWED:
                 continue
             others = rv - {u}
             if others & strict or (others & loose and (len(rv) == 2 or d["relations"].get(u, set()) & others)):

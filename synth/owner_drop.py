@@ -84,11 +84,13 @@ GAMES = {
 }
 # Owner decisions that override the VNDB check pattern. They never override an eval or development set.
 OWNER_DECISIONS = {
-    "v34": {"role": "training", "by": "owner 2026-10-13 19:21Z",
-            "note": "planetarian (Key) is training data; reserved_vns reserves it only as shared-release (the "
-                    "Key 10th Memorial BOX, r3748, a PC compilation with CLANNAD and Tomoyo After). Its PSP port "
-                    "and CLANNAD's Vita port are both Key/Prototype releases: a CLANNAD score of any model "
-                    "trained on these frames must disclose that exposure."},
+    "v34": {"role": "training", "by": "owner 2026-10-13 19:21Z and 20:47Z",
+            "note": "planetarian (Key, all releases) is training data, allowed even where it overlaps an eval set "
+                    "(realplus/shots.OWNER_ALLOWED). Without that exemption reserved_vns reserves it only as "
+                    "shared-release (the Key 10th Memorial BOX, r3748, a PC compilation with CLANNAD and Tomoyo "
+                    "After); it has no rows in vita-test, psp-test, teacher_val or devnative. Its PSP port and "
+                    "CLANNAD's Vita port are both Key/Prototype releases: a CLANNAD score of any model trained on "
+                    "these frames must disclose that exposure."},
 }
 CLANNAD_REASONS = {"clannad", "clannad-family", "clannad-relation"}
 
@@ -239,12 +241,18 @@ def leak_scores(frames, groups):
 
 # ----------------------------------------------------------------------------- check
 
-def check(drop, dump=DUMP, leak=False, owner_games=OWNER_GAMES, why=None, sets=None):
+def check(drop, dump=DUMP, leak=False, owner_games=OWNER_GAMES, why=None, sets=None, why_strict=None):
     drop = Path(drop)
     samples = read_samples(drop)
     if why is None:
         d = SH.load_dump(dump)
         why = SH.reserved_vns(d)
+        allowed, SH.OWNER_ALLOWED = SH.OWNER_ALLOWED, {}
+        try:
+            why_strict = SH.reserved_vns(d)                 # what the owner's exemptions lifted
+        finally:
+            SH.OWNER_ALLOWED = allowed
+    why_strict = why if why_strict is None else why_strict
     test_all = set(SH.test_games()["all"])
     dev, fresh = SH.dev_vns(), SH.fresh_native_vns()
     sets = set_rows() if sets is None else sets
@@ -281,7 +289,8 @@ def check(drop, dump=DUMP, leak=False, owner_games=OWNER_GAMES, why=None, sets=N
                       "frames": len(fs), "dims": {f"{a}x{b}": n for (a, b), n in sorted(dims.items())},
                       "source_resolution": sorted({f["source_resolution"] for f in fs}),
                       "collections": dict(collections.Counter(f["collection"] for f in fs)),
-                      "reserved_vns": why.get(vn), "sets": hit, "role": role, "why": reason,
+                      "reserved_vns": why.get(vn), "reserved_without_owner_allowed": why_strict.get(vn),
+                      "sets": hit, "role": role, "why": reason,
                       "owner_decision": OWNER_DECISIONS.get(vn), "leak_frames": n_leak,
                       "leak_max": {k: max(f["leak"][k] for f in fs) for k in (fs[0].get("leak") or {})} if fs else {},
                       "folder": folder_name(key[0], g["slug"], vn, role, existing) if fs else None})
@@ -342,7 +351,8 @@ def sort(plan, dest=OWNER_GAMES, link=True):
 
 def public(plan, archive=None):
     keep = ("platform", "drop_title", "vn", "title", "release", "frames", "dims", "source_resolution", "collections",
-            "reserved_vns", "release_vns_reserved", "sets", "role", "why", "leak_max", "leak_frames", "folder")
+            "reserved_vns", "reserved_without_owner_allowed", "release_vns_reserved", "sets", "role", "why",
+            "leak_max", "leak_frames", "folder")
     out = {"kind": "owner-drop-summary", "schema": 1, "archive": archive or {},
            "frames": sum(g["frames"] for g in plan["games"]),
            "by_role": dict(collections.Counter(g["role"] for g in plan["games"] for _ in range(g["frames"]))),

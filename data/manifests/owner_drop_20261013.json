@@ -29,6 +29,7 @@
     "japanese-vns-20261013": 113
    },
    "reserved_vns": "development",
+   "reserved_without_owner_allowed": "development",
    "release_vns_reserved": {},
    "sets": {
     "development_vns": true
@@ -55,6 +56,7 @@
    "source_resolution": [],
    "collections": {},
    "reserved_vns": "development",
+   "reserved_without_owner_allowed": "development",
    "release_vns_reserved": {},
    "sets": {
     "development_vns": true
@@ -76,6 +78,7 @@
    "source_resolution": [],
    "collections": {},
    "reserved_vns": "development",
+   "reserved_without_owner_allowed": "development",
    "release_vns_reserved": {},
    "sets": {
     "development_vns": true
@@ -103,6 +106,7 @@
     "japanese-vns-20261013": 200
    },
    "reserved_vns": "shared-release",
+   "reserved_without_owner_allowed": "shared-release",
    "release_vns_reserved": {
     "v70": "shared-release",
     "v1542": "shared-release",
@@ -137,11 +141,12 @@
    "collections": {
     "japanese-vns-20261013": 202
    },
-   "reserved_vns": "shared-release",
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": "shared-release",
    "release_vns_reserved": {},
    "sets": {},
    "role": "training",
-   "why": "owner 2026-10-13 19:21Z: training (reserved_vns: shared-release)",
+   "why": "owner 2026-10-13 19:21Z and 20:47Z: training (reserved_vns: not reserved)",
    "leak_max": {
     "eval-vita": 0.941,
     "eval-psp": 0.8126,
@@ -168,6 +173,7 @@
     "japanese-vns-20261013": 217
    },
    "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
    "release_vns_reserved": {},
    "sets": {},
    "role": "training",
@@ -199,6 +205,7 @@
     "japanese-vns-20261013": 2
    },
    "reserved_vns": "clannad",
+   "reserved_without_owner_allowed": "clannad",
    "release_vns_reserved": {},
    "sets": {
     "development_vns": true
@@ -231,6 +238,7 @@
     "japanese-vns-20261013": 159
    },
    "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
    "release_vns_reserved": {},
    "sets": {},
    "role": "training",
@@ -261,6 +269,7 @@
     "japanese-vns-20261013": 84
    },
    "reserved_vns": "shared-release",
+   "reserved_without_owner_allowed": "shared-release",
    "release_vns_reserved": {},
    "sets": {},
    "role": "test",
@@ -291,6 +300,7 @@
     "japanese-vns-20261013": 240
    },
    "reserved_vns": "development",
+   "reserved_without_owner_allowed": "development",
    "release_vns_reserved": {},
    "sets": {
     "teacher_val": 5,
@@ -318,6 +328,7 @@
    "source_resolution": [],
    "collections": {},
    "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
    "release_vns_reserved": {},
    "sets": {},
    "role": "training",
@@ -330,8 +341,8 @@
  "owner_decisions": {
   "v34": {
    "role": "training",
-   "by": "owner 2026-10-13 19:21Z",
-   "note": "planetarian (Key) is training data; reserved_vns reserves it only as shared-release (the Key 10th Memorial BOX, r3748, a PC compilation with CLANNAD and Tomoyo After). Its PSP port and CLANNAD's Vita port are both Key/Prototype releases: a CLANNAD score of any model trained on these frames must disclose that exposure."
+   "by": "owner 2026-10-13 19:21Z and 20:47Z",
+   "note": "planetarian (Key, all releases) is training data, allowed even where it overlaps an eval set (realplus/shots.OWNER_ALLOWED). Without that exemption reserved_vns reserves it only as shared-release (the Key 10th Memorial BOX, r3748, a PC compilation with CLANNAD and Tomoyo After); it has no rows in vita-test, psp-test, teacher_val or devnative. Its PSP port and CLANNAD's Vita port are both Key/Prototype releases: a CLANNAD score of any model trained on these frames must disclose that exposure."
   }
  },
  "min_corr": 0.95,

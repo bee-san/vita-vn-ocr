@@ -230,7 +230,7 @@
    "unchanged": "arms, recipe, steps, seeds, checkpoint rule, export, development sets, metric, bootstrap, comparison and decision rule"
   },
   {
-   "date": "2026-10-13T00:35Z (commit time in git)",
+   "date": "2026-10-13T00:23:15Z (commit 06a998d; this line corrected in the next commit)",
    "before_any_scoring": true,
    "change": "devnative v2 (tag devnative-cohort-v2) is reported next to v1; v1 stays as pinned. Both are reported only.",
    "reason": "devnative published v2 after this protocol pinned v1: v1 kept 41 screenshots of eval/linefind's sets, which the fleet's cohort rule excludes. Both versions are fixed here before any study-1b score, so neither is chosen by its scores; teacher_val alone decides.",

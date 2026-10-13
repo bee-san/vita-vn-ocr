@@ -119,8 +119,12 @@ wins) when it is:
   listed it (`shots.CLANNAD_FAMILY`): v12, v4060, v28752, v27548, v10058, v29951, v23354, v16901,
   v5698, v7983, v54298. All 11 were already reserved, by title or by relation; none was selected,
   downloaded or read;
-- related to CLANNAD by any VNDB relation kind, or by a FAMILY relation to one of the 11
-  (`clannad-relation`: v869, v8324, v11057, v16902, v21002, v25142, v42392, v64301, v64642).
+- related to CLANNAD by any VNDB relation kind, or by a FAMILY relation to one of the 11. In the
+  2026-10-12 dump that is 9 VNs:
+  - v869, v8324, v11057, v16902, v21002, v25142, v42392 and v64301 get the reason
+    `clannad-relation`;
+  - v64642 *QUIZ de CLANNAD* is reserved first as `clannad`, by its title.
+
   This rule was added after the audit (see "Versions"); v1 still holds three of these VNs;
 - in `eval/manifests/test_games.json` "all";
 - a test VN (`synth/common.is_test_vn`);
@@ -139,10 +143,11 @@ wins) when it is:
 - sharing a release with any of the above. For test and validation VNs, this applies only when the
   release holds two VNs or the partner is family.
 
-9,816 test VNs, 6,623 validation VNs, 172 test-set VNs, 189 development VNs, 8 fresh native titles,
-4 more fresh-native relations, 7 CLANNAD entries, 146 family VNs and 1,840 shared-release VNs were
-reserved. Separately, 8,459 screenshot ids of existing pools and sets were reserved, along with eval's
-31 test capture sessions.
+At selection, 9,816 test VNs, 6,623 validation VNs, 172 test-set VNs, 189 development VNs, 8 fresh
+native titles, 4 more fresh-native relations, 7 CLANNAD entries, 146 family VNs and 1,840
+shared-release VNs were reserved. With the later CLANNAD rules, the same dump gives 6 clannad-family,
+140 family and 8 clannad-relation VNs. Separately, 8,459 screenshot ids of existing pools and sets
+were reserved, along with eval's 31 test capture sessions.
 
 The fresh native textbox titles were added to the exclusions on 2026-10-12, before any labelling.
 None of the 8 titles or their 5 relations was ever selected, and no screenshot of them was
@@ -159,7 +164,7 @@ native test records. Two pairs of realplus screenshots were pixel-identical copi
 image ids; for each pair, the copy not yet read was dropped.
 
 `eval/tools/leakcheck.py` compares 32x18 grey thumbnails and flags pairs that correlate at 0.95 or
-more. It ran in two passes:
+more. It ran in three passes:
 
 - Against vita-test and psp-test (157 screenshots): it found two cross-VN pairs at 0.955, both with
   the same vita-test screenshot (v20326_144968). Both pool screenshots were dropped
@@ -169,9 +174,13 @@ more. It ran in two passes:
   (v17012_144281 ~ v56110_242656). The audit compared the two by eye: their text is unrelated, so
   they are not the same frame and nothing was removed.
 
-The leak check ran after the download and before every build; each build applies
-`leak_drop.json`. To run it, eval's test screenshots were fetched into the artifacts directory with
-`eval/fetch.py` (sha256-checked against the manifests); nothing was trained, tuned or scored on them.
+The vita-test / psp-test and devnative passes ran after the download and before the first build
+(20:57-21:13Z), and every build applies their `leak_drop.json`. The teacher_val pass ran later
+(02:10Z, after the v2 build). It removed nothing, so no build depends on it.
+
+For the vita-test / psp-test pass, eval's test screenshots were fetched into the artifacts directory
+with `eval/fetch.py` (sha256-checked against the manifests). Nothing was trained, tuned or scored on
+them.
 
 The fresh native test's frames are not stored locally. They are covered by VN id, by relation and by
 the hashes the test records.
@@ -255,8 +264,8 @@ A dark-on-light crop is inverted, and meta `dark` / `inverted` record it.
 The npz files use teacher_train's shard format (`teacher/render.py`: data, offsets, shapes, labels,
 meta), one file per crop kind, with Vita and PSP crops together (meta `target`):
 
-- `realplus_train_ink.npz`
-- `realplus_train_grad.npz`
+- `realplus_train_ink_v2.npz` (v1: `realplus_train_ink.npz`)
+- `realplus_train_grad_v2.npz` (v1: `realplus_train_grad.npz`)
 
 Meta per crop:
 
@@ -425,9 +434,26 @@ semantics.
 
 ## Reproduce
 
-The order the pool was made in. Every command runs at this commit. The run itself built twice
-without a tag, before the overwrite guard existed: once to score the re-check, then after the third
-looks. Here the first of those builds is tagged `pre`.
+The commands below run at this commit, in the order the pool was made, and produce v2. The run
+itself differed in three ways:
+
+- **Builds.** It built four times without a tag, before the overwrite guard existed:
+
+  | time | build | lines |
+  |---|---|---:|
+  | 22:22Z | preliminary | 41,757 |
+  | 00:09Z | final | 43,269 |
+  | 00:13Z | final, rebuilt | 43,269 |
+  | 00:18Z | after the third looks: v1, which VOCR3 pinned | 43,264 |
+
+  v2 was then built with `--tag v2` at 02:06Z. Below, the build used for scoring is tagged `pre`.
+- **CLANNAD rule.** v1 was cut by the code before d8776fb, which added the `clannad-relation` rule;
+  the cutting code itself has not changed since. At this commit `select` and every build apply that
+  rule, so any build gives v2's content. To rebuild v1, check out 27b7a8d (d8776fb's parent) and
+  build there without a tag.
+- **Pass 2.** Its queue and sheets were made at 20:58-20:59Z from pass-1 batches b0001-b0017, as
+  step 4 does. b0017's decisions were revised at 21:24Z (v2219_37672_5 became a skip "cut"), so
+  re-running step 4 now queues 65 single-family lines, not 66.
 
 ```sh
 HERD=/local/home/skerraut/herd-vita-ocr; R=$HERD/shared/artifacts/realplus; PY=.venv/bin/python
@@ -439,31 +465,33 @@ $PY realplus/shots.py fetch --workers 2 --delay 0.5
 $PY realplus/shots.py dedupe
 # 2. reads, pass-1 batches and review helpers (the read itself goes through heavy.sh)
 $PY realplus/pool.py feed --loop --max 8 --kinds edge,pass1
-# 3. leak checks, after the download and before any build
-$PY eval/fetch.py --set all --data $R/evaldata                   # vita-test + psp-test, sha256-checked
+# 3. leak checks against vita-test / psp-test and devnative, before any build
+$PY eval/fetch.py --set all --data $R/evaldata                   # sha256-checked
 env $H $PY eval/tools/leakcheck.py $R/shots --data $R/evaldata
 env $H $PY eval/tools/leakcheck.py $R/shots --test $HERD/shared/artifacts/devnative/shots --keep-reserved
-#   teacher_val's 646 screenshots (named in teacher_val.npz's meta) linked into $R/tvdata, then
-env $H $PY eval/tools/leakcheck.py $R/shots --test $R/tvdata --keep-reserved
 #   every pool screenshot of a pair at >= 0.95 -> $R/manifests/leak_drop.json (a list of shot keys)
-# 4. the freeze
+# 4. pass 2 of the single-family labels (pass-1 batches b0001-b0017)
+$PY devnative/decide.py --reads $R/reads/reads.jsonl queue --pass1 $R/review/pass1/b00{01..17} \
+    --out $R/review/pass2_queue_all.json
+#   keep the ids whose pass-1 label one engine family supports (decide.classify == "single"),
+#   with their "extra" texts -> $R/review/pass2_queue.json, then
+$PY devnative/sheets.py make --mode pass2 --reads $R/reads/reads.jsonl \
+    --lines $R/review/pass2_queue.json --out $R/review/pass2 --chunk 150
+# 5. the freeze
 $PY realplus/pool.py final && cp $R/labels.jsonl $R/labels_frozen_2128.jsonl
-# 5. pass 2 of the single-family labels
-$PY devnative/decide.py --reads $R/reads/reads.jsonl queue --pass1 $R/review/pass1/b* --out $R/review/pass2_queue_all.json
-#   ... its single-family ids -> $R/review/pass2_queue.json, then
-$PY devnative/sheets.py make --mode pass2 --lines $R/review/pass2_queue.json --out $R/review/pass2 --chunk 150
 # 6. edge check and the re-check sample
 $PY realplus/pool.py edge-boxes && $PY realplus/pool.py edge-batches --n 99 --size 200 --min 1
 $PY realplus/pool.py blind                                       # 540 lines
 $PY realplus/pool.py feed --loop --ready 0 --max 8 --kinds blind,pass2,edge
 $PY realplus/pool.py blind --extend 70 --size 70                 # after the shortfall showed
 $PY realplus/pool.py edge-apply && $PY realplus/pool.py final
-# 7. score, third looks, v1
+# 7. score, third looks, the pool
 env $H $PY realplus/pool.py build --tag pre --procs 5
 $PY realplus/pool.py blind-score --tag pre && cp $R/review/blind_report_pre.json $R/review/blind_report_measured.json
 #   third looks at the disagreements -> $R/review/resolutions.jsonl, then
-$PY realplus/pool.py final && env $H $PY realplus/pool.py build --procs 5        # v1 (VOCR3 pins it)
-# 8. v2: the CLANNAD relation rule (reserved_vns recomputed at build time)
-env $H $PY realplus/pool.py build --tag v2 --procs 5
+$PY realplus/pool.py final && env $H $PY realplus/pool.py build --tag v2 --procs 5
 $PY realplus/pool.py blind-score --tag v2 && $PY realplus/pool.py publish --tag v2
+# 8. leak check against teacher_val (run after the v2 build; it removed nothing):
+#   teacher_val's 646 screenshots (named in teacher_val.npz's meta) linked into $R/tvdata, then
+env $H $PY eval/tools/leakcheck.py $R/shots --test $R/tvdata --keep-reserved
 ```

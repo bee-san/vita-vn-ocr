@@ -9,7 +9,8 @@ sha256). The selected blobs are copied into --blob-dir as VOCR3_<SIZE>_w8.vocr a
 selection's sha256; the released baselines are copied from --release-dir and checked against the protocol's
 hashes (F20's against the hash given with --f20-sha256). The arms, pairs and gates are the protocol's
 (amendment 1 included), with the protocol's names written with underscores (VOCR3-FL10 -> VOCR3_FL10) for
-eval/vocr3_report.py.
+eval/vocr3_report.py; the selected run behind each VOCR3 arm goes to <out>.runs.json (the harness rejects
+spec fields it does not know).
 """
 import argparse
 import hashlib
@@ -64,7 +65,7 @@ def build(proto, selections, blob_dir, release_dir, f20_sha=F20_SHA256):
             raise SystemExit(f"unknown arm in {p}")
     return {"schema": 1, "kind": "vocr3-report-spec", "arms": arms, "pairs": pairs, "gates": gates,
             "sets": ["vita-test", "psp-test"], "polarities": ["console", "native"], "primary_polarity": "console",
-            "bootstrap": {"reps": 10000, "seed": 0, "min_clusters": 5}, "dialogue": True, "selected_runs": roles}
+            "bootstrap": {"reps": 10000, "seed": 0, "min_clusters": 5}, "dialogue": True}, roles
 
 
 def main():
@@ -81,8 +82,11 @@ def main():
     for s in args.selection:
         size, _, path = s.partition("=")
         sels[size] = json.loads(Path(path).read_text(encoding="utf-8"))
-    spec = build(proto, sels, args.blob_dir, args.release_dir, args.f20_sha256)
+    spec, roles = build(proto, sels, args.blob_dir, args.release_dir, args.f20_sha256)
     Path(args.out).write_text(json.dumps(spec, indent=1) + "\n", encoding="utf-8")
+    # which run each VOCR3 arm is: a sidecar, because eval/vocr3_report.py rejects fields it does not know
+    Path(args.out).with_suffix(".runs.json").write_text(json.dumps({"kind": "vocr3-report-spec-runs", "selected_runs": roles},
+                                                                   indent=1) + "\n", encoding="utf-8")
     print(json.dumps({a["name"]: a["sha256"][:12] for a in spec["arms"]}))
 
 

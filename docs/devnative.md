@@ -116,8 +116,9 @@ are grey integer luma (`synth/common.to_gray`) in console polarity: a crop whose
   `decision`, `looks`, `reviewer_kind` (`"assistant"`), `styles`, and `tv_id`.
 
 `eval/synth3_ablation.py`'s `load_dev` reads all four files unchanged. v1's files were checked
-with the scorer as committed in `b3f2757`, unchanged up to `feat/synth3` `ebb4dfb`; v2's and
-v3's with `feat/synth3` `002dfc3`, without scoring any model:
+with the scorer as committed in `b3f2757`, unchanged up to `feat/synth3` `ebb4dfb`. v2's and
+v3's were checked with `feat/synth3` `002dfc3`, and v3's again with main's copy after synth3
+merged (`eab1ab8`, #50). No model was scored:
 
 ```sh
 .venv-ci/bin/python eval/synth3_ablation.py score --blob NAME=BLOB.vocr \
@@ -364,8 +365,9 @@ noticed, shows such errors can exist.
 ## Pipeline history
 
 The hashes below are the commits on `feat/devnative` as they were when each status was written
-and each protocol cited them. They stay reachable from the tag `devnative-cohort-v1`. The branch
-was later rebased onto main and squash-merged, so main has different hashes for the same content.
+and each protocol cited them. They stay reachable from the tags `devnative-cohort-v1`,
+`devnative-cohort-v2` and `devnative-cohort-v3`. The branch was rebased onto main after some of
+them and then squash-merged, so main has different hashes for the same content.
 
 | commit | what |
 |---|---|

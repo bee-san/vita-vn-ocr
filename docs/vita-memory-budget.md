@@ -4,6 +4,14 @@ Written 2026-10-12 for the agents training the next recognizers. Every console s
 **estimate** from a cycle model. No controlled timing has run on a console, and no engine has a
 hardware CER.
 
+*Corrected 2026-10-13* on where the overlay's memory comes from (marked "correction" below), after
+the SDK documentation and vita-jp-overlay PR [#60](https://github.com/bee-san/vita-jp-overlay/pull/60)
+were read: the recognizer's budget is the game process's main memory only; SceShell's 50 MiB
+partition, not its 5 MiB PAF heap, is the pool that runs out there; and `*ALL` loads the worker
+into SceShell too. The short platform note is [`vita-platform-memory.md`](vita-platform-memory.md);
+the full reference is vita-jp-overlay's
+[`docs/vita-memory.md`](https://github.com/bee-san/vita-jp-overlay/blob/main/docs/vita-memory.md).
+
 ## The answer
 
 The line other agents design to (the fleet's `vita-budget.status`):
@@ -77,8 +85,11 @@ three parts:
 - a kernel plugin (`*KERNEL`) that captures the screen into a region-sized `KERNEL_RW` buffer and
   brokers the model file;
 - a SceShell plugin (`*main`) for the UI and the disk-backed dictionary;
-- a worker plugin loaded into every enabled game (`*ALL`, `VitaJPOverlay_OCR.suprx`), which runs the
-  line finder and the recognizer in the game's own process.
+- a worker plugin (`VitaJPOverlay_OCR.suprx`) registered under `*ALL`, which runs the line finder
+  and the recognizer in the game's own process. Correction: `*ALL` loads it into SceShell and every
+  system application as well, not only into enabled games; its `module_start` finds it is not in a
+  game and starts nothing, but the module stays resident (45,056 B of SceShell's pages, PR #60).
+  The expert's rule, binding in the overlay's `AGENTS.md`, is one `*TITLEID` section per game.
 
 Facts, each with its source:
 
@@ -86,8 +97,8 @@ Facts, each with its source:
 |---|---|---|
 | RAM | 512 MiB LPDDR2 main memory, 128 MiB CDRAM | [Physical Memory](https://wiki.henkaku.xyz/index.php?title=Physical_Memory&oldid=21616) |
 | the game's partitions | 256 MiB main (+29, +77 or +109 MiB with `ATTRIBUTE2`), 112 MiB CDRAM, 26 MiB phycont | [Memory budget](https://wiki.henkaku.xyz/index.php?title=Memory_budget&oldid=18995); Vita3K [SceSysmem.cpp#L171-L211](https://github.com/Vita3K/Vita3K/blob/7e152b66e85345f175d3d287fcbd7f8abec7574a/vita3k/modules/SceSysmem/SceSysmem.cpp#L171-L211) |
-| SceShell, kernel drivers | 50 MiB main + 16 MiB CDRAM; 36 MiB shared by every kernel driver | same Memory budget page |
-| a game plugin's memory | taiHEN loads the plugin into the game's process, before the game's own code runs. That its memory counts against the game's budget is an inference; no source states it | taiHEN [plugin.c#L165-L173](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/plugin.c#L165-L173), [hen.c#L345-L380](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/hen.c#L345-L380) |
+| SceShell, kernel drivers | SceShell: 50 MiB main (`ScePhyMemPartShell`) + 16 MiB CDRAM, shared by all of SceShell and every `*main`/`*ALL` plugin; measured free beside a running game: 28,672 B and 98,304 B. Kernel drivers and kernel plugins: 36 MiB (`ScePhyMemPartKD`), free size unmeasured | same Memory budget page; vita-jp-overlay PR #60; `notes/08`, `notes/26` |
+| a game plugin's memory | taiHEN loads the plugin into the game's process (`ksceKernelLoadStartModuleForPid`), before the game's own code runs. Correction: its module pages, thread stacks, TLS and memory blocks are charged to that process's budget. The SDK's Kernel Overview says the memory block service loads modules and allocates stacks, its Kernel Reference that stacks and TLS come from the application's budget, and PR #60 measured the overlay's Shell pages (540,672 B) | taiHEN [plugin.c#L165-L173](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/plugin.c#L165-L173), [hen.c#L345-L380](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/hen.c#L345-L380); vita-jp-overlay `docs/vita-memory.md` sections 3-4 |
 | heap | none: the worker links with `-nostdlib`. It allocates one `USER_RW` memblock per job (4 KiB granularity) and frees it when the job ends | [M/vita/CMakeLists.txt#L176](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/vita/CMakeLists.txt#L176), [M/game_ocr/main.c#L146-L151](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L146-L151), [#L118-L127](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L118-L127) |
 | preflight | `sceKernelGetFreeMemorySize` must report free `USER_RW` of at least the workspace plus a 4 MiB reserve, or the job is refused before anything is allocated | [M/game_ocr/main.c#L18](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L18), [#L146-L150](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L146-L150) |
 | free memory seen in games | CLANNAD: 91,226,112 B of free `USER` before a job (one logged sample). Stardew Valley in +109 MiB mode: 309 of 365 MB used, about 56 MiB free (a third-party PSVshell screenshot, not our measurement) | `notes/27`; [PSVshell README](https://github.com/Electry/PSVshell#readme) |
@@ -99,10 +110,15 @@ Facts, each with its source:
 | caches | 32 KiB L1 I and 32 KiB L1 D per core, 32-byte lines. One **2 MiB, 16-way PL310 L2 is shared by all four cores**, with pseudo-random replacement and no L2 data prefetch. The "1 MB L2" sometimes quoted is 7-cpu.com's Exynos 4210, not the Vita | [Main Processor](https://wiki.henkaku.xyz/index.php?title=Main_Processor&oldid=21601) ("a L2 cache of 2 MiB shared by all cores"); [Caches](https://wiki.henkaku.xyz/index.php?title=Caches&oldid=21009): AUX_CTRL `0x60090001` = 16 ways × 128 KB, bits 25 and 28 clear ([Linux cache-l2x0.h#L125-L129](https://github.com/torvalds/linux/blob/v6.7/arch/arm/include/asm/hardware/cache-l2x0.h#L125-L129)) |
 
 **Why the game process is the right place.**
-- **SceShell plugin.** Its PAF heap is 5 MiB, with about 2.4 MiB free beside CLANNAD and as
-  little as 0.19 MiB later. That is why ncnn, Meiki and VOCR all moved out of it.
-- **Kernel plugin.** It would share the 36 MiB kernel-driver pool, whose free space is unknown. A
-  2 MiB full-frame capture buffer has already failed there once (section 2).
+- **SceShell plugin.** Correction: the pool that runs out is SceShell's 50 MiB partition, measured
+  at 28-98 KiB free beside a running game, from which every page of a `*main` plugin (module,
+  stacks, TLS, `USER_RW` blocks) is taken. The 5 MiB PAF heap, with about 2.4 MiB free beside
+  CLANNAD and as little as 0.19 MiB later, is a pre-mapped sub-pool inside it; exhausting the heap
+  starves the UI, exhausting the partition starves firmware (#59). A Shell plugin's whole budget is
+  genuinely under 2 MiB and SceShell wants that headroom itself (the expert's rule). That is why
+  ncnn, Meiki and VOCR all moved out of it, and why nothing of the recognizer may return.
+- **Kernel plugin.** It would share the 36 MiB kernel-driver pool (`ScePhyMemPartKD`), whose free
+  space is unknown. A 2 MiB full-frame capture buffer has already failed there once (section 2).
 - **Separate homebrew app.** It would get a game-sized budget, but only one game-budget app runs
   at a time, so it cannot OCR a game that is running. This is an inference; no source states it
   as a rule.
@@ -122,7 +138,8 @@ The finder's arena (83,323 B at 960×544) is smaller than every recognizer arena
 | width 3.0 | 3,155,744 B | 3,563,344 B | 7.4 MB |
 
 The kernel's capture buffer (region × 4 B: 458,500 B at 917×125, allocated as 458,752 B in 4 KiB
-pages) comes from the kernel pool and is the same for every model.
+pages) comes from the kernel-driver pool (`ScePhyMemPartKD`, 36 MiB) and is the same for every
+model.
 
 ## 2. Why the overlay's OCR kept failing
 
@@ -133,8 +150,8 @@ is `$HERD/shared/artifacts/vita-budget/research/overlay-failures.md`; the device
 | when | engine, where it ran | what failed | class (memory pool) | fix |
 |---|---|---|---|---|
 | 10-08 | ncnn PP-OCRv5 mobile, SceShell | Needed a 64 MiB block (32-42 MiB used; 13.4 MiB even trimmed to int8) against a 5 MiB Shell PAF heap. Never ran on a console | out of memory by design (SceShell) | dropped ([#18](https://github.com/bee-san/vita-jp-overlay/pull/18), [#19](https://github.com/bee-san/vita-jp-overlay/pull/19)) |
-| 10-10 | none (the overlay's result arenas), SceShell | An eager 786,432 B result allocation failed in CLANNAD with `0x80024302`, "no free physical page" | out of memory (SceShell `USER_RW`) | lazy, smaller arenas ([#11](https://github.com/bee-san/vita-jp-overlay/pull/11)); checked on the console (E07, E31) |
-| 10-10 | Google Lens, kernel capture | The 2,088,960 B full-frame `KERNEL_RW` capture buffer failed with `0x80024302`. The UI said "unexpected response (-108)" | out of memory (kernel pool), plus error mapping | region-sized capture ([#14](https://github.com/bee-san/vita-jp-overlay/pull/14)); error encoding ([#27](https://github.com/bee-san/vita-jp-overlay/pull/27)) |
+| 10-10 | none (the overlay's result arenas), SceShell | An eager 786,432 B result allocation failed in CLANNAD with `0x80024302`, "no free physical page" | out of memory: SceShell's 50 MiB partition had no free page for a `USER_RW` block (correction: the partition, not the PAF heap) | lazy, smaller arenas ([#11](https://github.com/bee-san/vita-jp-overlay/pull/11)); checked on the console (E07, E31) |
+| 10-10 | Google Lens, kernel capture | The 2,088,960 B full-frame `KERNEL_RW` capture buffer failed with `0x80024302`. The UI said "unexpected response (-108)" | out of memory (kernel-driver pool `ScePhyMemPartKD`), plus error mapping | region-sized capture ([#14](https://github.com/bee-san/vita-jp-overlay/pull/14)); error encoding ([#27](https://github.com/bee-san/vita-jp-overlay/pull/27)) |
 | 10-10 | Meiki, SceShell | Its 5,392,856 B model alone is larger than the whole 5,242,880 B Shell PAF heap | out of memory (SceShell PAF) | inference moved into the game |
 | 10-11 | VOCR FL10/H15, SceShell | Moved out before any console run: about 2.4 MiB PAF free minus the 1.5 MiB reserve is less than H15's 1.4 MiB workspace | out of memory, predicted | game-process worker ([#21](https://github.com/bee-san/vita-jp-overlay/pull/21)) |
 | 10-11 | VOCR FL10, game | The game cannot open `ux0:` (`0x80010013`). The UI told the user to re-download the weights | integration (file namespace) | model read through the kernel ([#24](https://github.com/bee-san/vita-jp-overlay/pull/24), [#25](https://github.com/bee-san/vita-jp-overlay/pull/25)); checked |
@@ -142,7 +159,7 @@ is `$HERD/shared/artifacts/vita-budget/research/overlay-failures.md`; the device
 | 10-11 | VOCR FL10 in the game, dictionary in SceShell | Six OCR jobs succeeded, then dictionary arenas failed at 355-441 KB of PAF free. A test tool had left a 2,187,264 B JPEG pool allocated | out of memory (SceShell PAF, leaked by an outside tool) | reboot; one 64 KiB arena ([#30](https://github.com/bee-san/vita-jp-overlay/pull/30)); checked (HW15) |
 | 10-11 | VOCR FL10, game | **Works**: 14 text-bearing jobs with rc=0. The user then reported poor OCR quality | poor output (qualitative) | led to the Meiki trial |
 | 10-11 | Meiki, game | Fitted easily (21.4 MB requested, 91 MB free), but took 7.9-8.0 s per line and needed a copy of its engine in every game | too slow; packaging | removed ([#50](https://github.com/bee-san/vita-jp-overlay/pull/50)) |
-| 10-11 | VOCR, dictionary in SceShell | Shell PAF free fell to 190 KiB, and a static 64 KiB buffer in the Shell plugin hung the boot | out of memory (SceShell PAF, cause unknown); hang (a plugin's static budget) | [issue #42](https://github.com/bee-san/vita-jp-overlay/issues/42), closed unfixed |
+| 10-11 | VOCR, dictionary in SceShell | Shell PAF free fell to 190 KiB, and a static 64 KiB buffer in the Shell plugin hung the boot | out of memory (SceShell PAF, cause unknown); hang: correction, the 65,544 B of `.bss` are 16 pages of SceShell's 50 MiB partition, the same pool that failed in #59 (PR #60) | [issue #42](https://github.com/bee-san/vita-jp-overlay/issues/42), closed unfixed |
 
 VOCR2 and PP-OCRv6 small have never run on a console. PP-OCRv6 small
 ([#52](https://github.com/bee-san/vita-jp-overlay/pull/52), open) needs 23.7 MB of free game memory
@@ -404,7 +421,10 @@ the recognition column.
 In order of value per effort. Items 1-3 are overlay changes; nothing in `runtime/` has to change.
 
 1. **Stop reloading the weights on every job** (vita-jp-overlay
-   [#53](https://github.com/bee-san/vita-jp-overlay/issues/53)). Any one of these:
+   [#53](https://github.com/bee-san/vita-jp-overlay/issues/53); done in #54: the verified weights
+   now stay resident in their own `USER_RW` block in the game, 659,456 B for FL10 and 1,159,168 B
+   for H15 page-rounded, and the kernel stage is 32 KiB with a wait instead of a 1 ms sleep).
+   Any one of these:
    - wait on the kernel's completion instead of a 1 ms sleep loop, or raise the 8 KiB kernel stage
      to the game's 32 KiB read size;
    - hash once per session;
@@ -458,8 +478,9 @@ In order of value per effort. Items 1-3 are overlay changes; nothing in `runtime
   the free `USER` bytes on every refusal. That gives on-console ms per frame and per-title memory
   budgets.
 - **Measure free memory in the Japanese VNs that matter**, with PSVshell or
-  `sceKernelGetFreeMemorySize`. Two samples (CLANNAD, Stardew Valley) are all there is. Adrenaline,
-  which runs PSP VNs, is unmeasured.
+  `sceKernelGetFreeMemorySize` (`sizeMain`, inside the game). Two samples (CLANNAD, Stardew Valley)
+  are all there is. Adrenaline, which runs PSP VNs, is unmeasured. This is the only number that can
+  make RAM the limit for a model; SceShell's figures cannot (`vita-platform-memory.md`).
 - **Still unknown:**
   - the game's share of the L2;
   - DRAM bandwidth and latency on a Vita;

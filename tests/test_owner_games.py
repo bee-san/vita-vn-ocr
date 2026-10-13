@@ -1,7 +1,7 @@
-"""The owner's test-only series Memories Off (owner 2026-10-13 10:51Z): realplus/shots.reserved_vns
-reserves every VN of the series with its direct relations and release partners, and synth3 never uses
-their names, scenes or text (data/manifests/synth3_exclude_owner_games.json). CHAOS;HEAD NOAH, the
-owner's training-eligible game, stays on the training side. No network, no screenshots: a fake dump."""
+"""The owner's test-only series (owner 2026-10-13 10:51Z and 13:10Z: Memories Off, Aiyoku no Eustia, 428):
+realplus/shots.reserved_vns reserves every VN of them with their direct relations and release partners,
+and synth3 never uses their names, scenes or text (data/manifests/synth3_exclude_owner_games.json). The
+owner's training-eligible games stay on the training side. No network, no screenshots: a fake dump."""
 import hashlib
 import json
 import re
@@ -53,7 +53,9 @@ def test_reserved_vns_reserves_the_series_and_keeps_chaos_head_noah_eligible(tmp
     assert v["other"] not in why
     rows, _ = S.select(d, why, {}, set())
     assert [r["vn"] for r in rows] == [v["other"]]           # the series' PSP frame is never selected
-    assert S.OWNER_TRAINING == {"v22505": "CHAOS;HEAD NOAH"} and "v22505" not in S.OWNER_TEST_SERIES
+    assert {"v22505", "v14018", "v751", "v27448", "v57", "v4137", "v183"} <= set(S.OWNER_TRAINING)
+    assert not set(S.OWNER_TRAINING) & set(S.OWNER_TEST_SERIES)
+    assert {"v1152", "v3770", "v1299"} == set(S.OWNER_TEST_SERIES)
 
 
 def test_name_hashes_match_synth3_name_rows():
@@ -77,10 +79,12 @@ def test_markers_keep_full_names_and_rare_names_only():
 
 def test_committed_manifest_excludes_the_series():
     doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    assert doc["kind"] == "synth3-exclusion" and doc["protected"]["psp"] == ["v1152"]
+    assert doc["kind"] == "synth3-exclusion" and set(doc["protected"]["roots"]) == {"v1152", "v3770", "v1299"}
     vns, series = set(doc["vns"]), set(doc["protected"]["series"])
-    assert {"v1152", "v1153", "v1331", "v21964", "v23725"} <= series <= vns
-    assert "v22505" not in vns and doc["training_eligible"] == {"v22505": "CHAOS;HEAD NOAH"}
+    assert {"v1152", "v1153", "v1331", "v21964", "v23725", "v3770", "v1299"} <= series <= vns
+    assert {"v1360", "v10856", "v45398"} <= vns                       # 428's relations
+    assert len(doc["training_eligible"]) == len(S.OWNER_TRAINING) == 12
+    assert not vns & set(doc["training_eligible"]) and "v22505" in doc["training_eligible"]
     assert {r["id"] for rs in doc["relations"].values() for r in rs} <= vns
     assert {u for us in doc["vns_sharing_a_release"].values() for u in us} <= vns
     assert set(doc["reasons"]) == vns
@@ -91,6 +95,7 @@ def test_committed_manifest_excludes_the_series():
     assert {"Memories Off", "メモリーズオフ"} <= set(m) and "ボタン" not in m
     ex = synth3.load_exclusions([MANIFEST])
     assert ex["vns"] == vns and synth3.marked("メモリーズオフの話", ex["markers"])
+    assert synth3.marked("穢翼のユースティアを遊ぶ", ex["markers"])
     assert MANIFEST in synth3.EXCLUDE_MANIFESTS
     import synth3_stats
-    assert "v1152" in synth3_stats.reserved_vns(synth3_stats.DEFAULT_EXCLUDE)
+    assert {"v1152", "v3770", "v1299"} <= synth3_stats.reserved_vns(synth3_stats.DEFAULT_EXCLUDE)

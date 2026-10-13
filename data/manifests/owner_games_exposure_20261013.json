@@ -1,24 +1,27 @@
 {
  "kind": "owner-games-exposure",
  "schema": 1,
- "vns": 45,
+ "vns": 50,
  "pools": {
   "teacher/teacher_train.npz": {
    "rows": 12115,
-   "owner_rows": 66,
+   "owner_rows": 123,
    "by_vn": {
     "v1153": 8,
     "v1170": 8,
     "v1171": 6,
     "v1173": 3,
+    "v1299": 14,
     "v1325": 5,
     "v1326": 3,
+    "v1360": 41,
     "v1646": 1,
     "v1949": 9,
     "v1964": 3,
     "v21964": 3,
     "v23725": 5,
     "v248": 2,
+    "v3770": 2,
     "v5690": 10
    }
   },
@@ -31,20 +34,23 @@
   },
   "teacher/teacher_distill_train.npz": {
    "rows": 9044,
-   "owner_rows": 97,
+   "owner_rows": 122,
    "by_vn": {
     "v1153": 6,
     "v1170": 11,
     "v1171": 5,
     "v1173": 7,
+    "v1299": 2,
     "v1325": 3,
     "v1326": 7,
+    "v1360": 21,
     "v1646": 5,
     "v1949": 4,
     "v1964": 11,
     "v21964": 9,
     "v23725": 12,
     "v248": 6,
+    "v3770": 2,
     "v5690": 11
    }
   },
@@ -57,18 +63,21 @@
   },
   "realdata/real_train.npz": {
    "rows": 9811,
-   "owner_rows": 70,
+   "owner_rows": 111,
    "by_vn": {
     "v1153": 5,
     "v1170": 10,
     "v1171": 8,
+    "v1299": 14,
     "v1325": 4,
     "v1326": 4,
+    "v1360": 23,
     "v1949": 3,
     "v1964": 5,
     "v21964": 8,
     "v23725": 12,
     "v248": 2,
+    "v3770": 4,
     "v5690": 9
    }
   },
@@ -81,20 +90,23 @@
   },
   "realdata/real_unlabelled.npz": {
    "rows": 11174,
-   "owner_rows": 86,
+   "owner_rows": 127,
    "by_vn": {
     "v1153": 5,
     "v1170": 12,
     "v1171": 1,
     "v1173": 6,
+    "v1299": 3,
     "v1325": 4,
     "v1326": 4,
+    "v1360": 36,
     "v1646": 4,
     "v1949": 10,
     "v1964": 5,
     "v21964": 10,
     "v23725": 8,
     "v248": 4,
+    "v3770": 2,
     "v5690": 13
    }
   },
@@ -194,6 +206,7 @@
     "v1325": 5,
     "v1326": 4,
     "v1331": 4,
+    "v1360": 9,
     "v1646": 5,
     "v1949": 5,
     "v1964": 10,
@@ -204,82 +217,86 @@
    "owner_files": {
     "v1153": 1,
     "v1170": 4,
+    "v1299": 4,
     "v1331": 4,
     "v21964": 3,
     "v248": 1,
     "v23725": 4,
+    "v3770": 4,
     "v5690": 3
    }
   },
   "shared/data/vndb/shots (synth2 / synth3 scene candidates)": {
-   "owner_files": {}
+   "owner_files": {
+    "v10856": 2
+   }
   }
  },
  "names": {
   "names.train.tsv": {
    "rows": 378143,
-   "owner_name_rows": 202
+   "owner_name_rows": 437
   },
   "names.dev.tsv": {
    "rows": 20345,
-   "owner_name_rows": 9
+   "owner_name_rows": 15
   }
  },
  "text_pools": {
-  "aozora_dialogue.dev.txt": 0,
-  "aozora_dialogue.train.txt": 75,
+  "aozora_dialogue.dev.txt": 11,
+  "aozora_dialogue.train.txt": 93,
   "aozora_narration.dev.txt": 5,
-  "aozora_narration.train.txt": 115,
-  "aratako_dsv3.dev.txt": 1,
-  "aratako_dsv3.train.txt": 60,
-  "aratako_gpt4omini.dev.txt": 0,
-  "aratako_gpt4omini.train.txt": 18,
+  "aozora_narration.train.txt": 129,
+  "aratako_dsv3.dev.txt": 3,
+  "aratako_dsv3.train.txt": 105,
+  "aratako_gpt4omini.dev.txt": 1,
+  "aratako_gpt4omini.train.txt": 61,
   "bsd.dev.txt": 0,
-  "bsd.train.txt": 0,
+  "bsd.train.txt": 2,
   "jdd.dev.txt": 1,
-  "jdd.train.txt": 2,
-  "jesc.dev.txt": 2,
-  "jesc.train.txt": 50,
+  "jdd.train.txt": 3,
+  "jesc.dev.txt": 3,
+  "jesc.train.txt": 82,
   "narikiri.dev.txt": 6,
-  "narikiri.train.txt": 103,
+  "narikiri.train.txt": 120,
   "nucc.dev.txt": 0,
-  "nucc.train.txt": 9,
-  "opensubtitles.dev.txt": 1,
-  "opensubtitles.train.txt": 8,
-  "tatoeba.dev.txt": 0,
-  "tatoeba.train.txt": 4,
-  "wiki.dev.txt": 6,
-  "wiki.train.txt": 192,
+  "nucc.train.txt": 18,
+  "opensubtitles.dev.txt": 3,
+  "opensubtitles.train.txt": 43,
+  "tatoeba.dev.txt": 1,
+  "tatoeba.train.txt": 10,
+  "wiki.dev.txt": 17,
+  "wiki.train.txt": 469,
   "wikiquote.dev.txt": 0,
-  "wikiquote.train.txt": 5,
-  "wiktionary.dev.txt": 0,
-  "wiktionary.train.txt": 7
+  "wikiquote.train.txt": 8,
+  "wiktionary.dev.txt": 2,
+  "wiktionary.train.txt": 21
  },
  "text_markers_top": {
   "ねね": 48,
+  "慎也": 47,
+  "都知事": 46,
+  "義男": 44,
   "りかの": 43,
   "源さん": 43,
+  "カナン": 39,
   "俊子": 38,
+  "留美": 38,
   "織姫": 36,
   "柚莉": 36,
   "一蹴": 34,
+  "行徳": 33,
+  "スケルトン": 33,
   "いのり": 32,
   "香菜": 32,
+  "タナベ": 30,
   "香月": 30,
   "香里": 29,
   "沙子": 28,
   "孝明": 25,
+  "彩矢": 24,
+  "ミーちゃん": 23,
   "神崎美咲": 22,
-  "いちこ": 21,
-  "アイネ": 21,
-  "とおこ": 19,
-  "幸蔵": 16,
-  "麻尋": 14,
-  "龍三": 13,
-  "美海": 12,
-  "康生": 12,
-  "純也": 9,
-  "正巳": 7,
-  "朋美": 7
+  "いちこ": 21
  }
 }

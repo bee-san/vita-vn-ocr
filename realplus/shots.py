@@ -100,22 +100,27 @@ FRESH_NATIVE_FILES = ("fresh_native_source_provenance_20261012.json", "fresh_nat
                       "fresh_native_textbox_independent_audit_20261012.json")
 
 
-# The owner's own games (owner 2026-10-13 10:51Z, superseding the 09:25Z / 09:37Z notes). Memories Off is a
-# test-only title: the owner's live PSP screenshots of it are a fresh native test set, never trained, tuned,
-# calibrated or rendered from, and never sent to Codex; its whole series is reserved. CHAOS;HEAD NOAH is
-# training-eligible: the owner's screenshots of it may be labelled for training (never through Codex: they
-# are private frames, not public VNDB images).
-OWNER_TEST_SERIES = {"v1152": "Memories Off"}
-OWNER_TEST_TITLE = re.compile(r"memories\s*off|メモリーズ\s*オフ|秋之回[忆憶]", re.I)
-OWNER_TRAINING = {"v22505": "CHAOS;HEAD NOAH"}
+# The owner's own games (owner 2026-10-13 10:51Z and 13:10Z / 13:12Z, superseding the 09:25Z / 09:37Z notes).
+# Test-only titles: the owner's live screenshots of them are fresh native test sets, never trained, tuned,
+# calibrated or rendered from, and never sent to Codex; each is reserved with its series. Memories Off (PSP,
+# its whole series), Aiyoku no Eustia (Vita) and 428 (PSP) were reserved before any harvest touched the last two.
+# Training-eligible titles: the owner's screenshots of them may be labelled for training (never through Codex:
+# they are private frames, not public VNDB images); each is re-checked against reserved_vns at ingest.
+OWNER_TEST_SERIES = {"v1152": "Memories Off", "v3770": "Aiyoku no Eustia", "v1299": "428"}
+OWNER_TEST_TITLE = re.compile(r"memories\s*off|メモリーズ\s*オフ|秋之回[忆憶]", re.I)   # Memories Off's titles
+OWNER_TRAINING = {"v22505": "CHAOS;HEAD NOAH", "v14018": "CHAOS;CHILD", "v751": "Rewrite", "v27448": "ATRI",
+                  "v57": "Sharin no Kuni", "v4137": "Toradora! Portable", "v183": "Kikokugai",
+                  "v12369": "Fate/EXTRA CCC", "v434": "Togainu no Chi", "v195": "Otome wa Boku ni Koishiteru",
+                  "v1552": "Mashiro-iro Symphony", "v4028": "Koi to Senkyo to Chocolate"}
 
 
 def owner_test_vns(d, roots=None, title=OWNER_TEST_TITLE):
-    """{vn: reason} for the owner's test series (Memories Off), from a load_dump() dict: every VN reachable
-    from a root through FAMILY relations (alternative versions, originals, fan discs, parent and side
-    stories, sequels, prequels, same series), or titled like the series (`owner-test-series`); every VNDB
-    relation of any kind of those, in either direction (`owner-test-relation`: crossovers and same-setting
-    titles such as KID Mix Section or Never 7); and every VN on one VNDB release with a series VN
+    """{vn: reason} for the owner's test series (Memories Off, Aiyoku no Eustia, 428), from a load_dump() dict:
+    every VN reachable from a root through FAMILY relations (alternative versions, originals, fan discs,
+    parent and side stories, sequels, prequels, same series), or titled like Memories Off
+    (`owner-test-series`); every VNDB relation of any kind of those, in either direction
+    (`owner-test-relation`: crossovers and same-setting titles such as KID Mix Section or Never 7); and every
+    VN on one VNDB release with a series VN
     (`owner-test-shared-release`). A relation's own relations and release partners are not reserved."""
     roots = set(OWNER_TEST_SERIES if roots is None else roots)
     fam = d["relations"]
@@ -308,7 +313,8 @@ def reserved_vns(d, test_all=None, fresh=None, dev=None):
 
       clannad       CLANNAD by id or title
       clannad-family  CLANNAD_FAMILY, the conductor's list of CLANNAD's direct family
-      owner-test-series  owner_test_vns(): the owner's test-only series (Memories Off), every VN of it
+      owner-test-series  owner_test_vns(): the owner's test-only series (Memories Off, Aiyoku no Eustia,
+                    428), every VN of them
       test-set      eval's test_games.json "all" (set games, their family, release partners)
       test-vn       synth/common.is_test_vn (the 15% of VNs held out for evaluation)
       fresh-native  a title of the fresh native textbox test

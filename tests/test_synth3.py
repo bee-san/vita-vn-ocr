@@ -613,8 +613,10 @@ def test_study1b_protocol_copies_study1():
     assert p["sources"]["s3"] == base["sources"]["s3"] and p["sources"]["nv"] == base["sources"]["nv"]
     for srcs in p["arm_sources"].values():
         assert abs(sum(srcs.values()) - 1.0) < 1e-9 and set(srcs) <= set(p["sources"])
-    assert all(re.fullmatch(r"[0-9a-f]{64}", f["sha256"]) for f in p["dev"]["devnative"]["files"].values())
-    assert "reported only" in p["dev"]["devnative"]["role"]
+    for dn in ("devnative", "devnative_v2"):
+        assert all(re.fullmatch(r"[0-9a-f]{64}", f["sha256"]) for f in p["dev"][dn]["files"].values())
+        assert "reported only" in p["dev"][dn]["role"]
+    assert all(a["before_any_scoring"] for a in p["amendments"])
     run = (ROOT / "eval" / "synth3_study1b_run.sh").read_text(encoding="utf-8")
     old = (ROOT / "eval" / "synth3_run_arm.sh").read_text(encoding="utf-8")
     tail = lambda s: s[s.index("exec "):].replace('--width "$WIDTH"', "--width 1.0")  # noqa: E731

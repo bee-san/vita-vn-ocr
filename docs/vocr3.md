@@ -2,23 +2,28 @@
 
 Three recognizers were selected on development data only and then scored once on the protected test
 sets through the plain-C W8I runtime. **All three beat the model they would replace on the hand-checked
-lines, by resolved margins:** VOCR3-FL10 (657,664 B) 2.13% pooled CER against VOCR1's 3.82% (−1.69
+lines, by margins that are resolved on the pooled full-text intervals** (the psp-test intervals of the
+two larger sizes and their pooled hiragana intervals include 0): VOCR3-FL10 (657,664 B) 2.13% pooled CER against VOCR1's 3.82% (−1.69
 points, VN-cluster 95% CI −2.52 to −0.96) and VOCR2's 3.51%; VOCR3-H15 (1,155,968 B) 1.73% against
 VOCR_H15's 2.21% (−0.47, CI −0.89 to −0.10), the model users run; VOCR3-W20 (1,558,016 B) 1.62% against
-VOCR_H15 (−0.59, CI −1.14 to −0.12) and F20 (−0.57). The 657 KB VOCR3-FL10 is below the released 1.16 MB
-H15 on these lines. **None qualifies under the repo's gates:** every candidate passes the fixed-line gate
+VOCR_H15 (−0.59, CI −1.14 to −0.12) and F20 (−0.57). The 657 KB VOCR3-FL10 makes fewer errors than the released
+1.16 MB H15 on these lines in console polarity (108 against 112; a point estimate without an interval,
+since the pair is not in the protocol, and reversed in native polarity, 109 against 106, and on whole
+dialogue). **None qualifies under the repo's gates:** every candidate passes the fixed-line gate
 and fails VOCR2's whole-dialogue guard, which forbids any per-title regression; on whole dialogue
 VOCR3-FL10 is still clearly better than VOCR1 (−1.44 points, CI −2.31 to −0.59), VOCR3-W20 is level with
-VOCR_H15, and VOCR3-H15 is slightly behind it (+0.30, CI −0.49 to +1.06), so the fixed-line gains do not
-all carry over to finder-cut regions. What made the difference, in order: the realplus pool in the
-fine-tune (adopted at every size, −0.18 to −0.23 points on development data), four times longer
-pretraining at FL10 size (the FL10 winner), and the study-2 recipe itself (hard labels) over the
-released FL10's. Nothing has run on a console; the A9 times are estimates.
+VOCR_H15 at the base region (−0.26, CI −0.97 to +0.40) and fails the guard's console-balanced hiragana
+condition at +8 px, and VOCR3-H15 is slightly behind it (+0.30, CI −0.49 to +1.06), so the fixed-line
+gains do not all carry over to finder-cut regions. What made the difference, by measured size: at FL10, four times longer pretraining (the winner's
+128k-step pretrain is −0.85 development points below the same arm and seed at 32k steps), then the
+study-2 recipe over the released FL10's (about −0.7 points on teacher_val; most likely its frame KD
+and/or best-checkpoint init, not separated here), then the realplus pool in the fine-tune (adopted at
+every size, −0.18 to −0.23 points on development data). Nothing has run on a console; the A9 times are estimates.
 
 Machine-readable: the protocol `eval/vocr3_protocol.json` (frozen before any candidate was scored, with
-its amendments), the selections `eval/vocr3_selection_<SIZE>_2026101x.json`, the realplus decisions
-`eval/vocr3_realplus_<SIZE>_2026101x.json`, and the once-only locked report
-`eval/vocr3_report_2026101x.json`. Every number below is a host evaluation of real native screenshots
+its amendments), the selections `eval/vocr3_selection_<SIZE>_20261013.json`, the realplus decisions
+`eval/vocr3_realplus_<SIZE>_20261013.json`, and the once-only locked report
+`eval/vocr3_report_20261013.json`. Every number below is a host evaluation of real native screenshots
 through the plain-C W8I runtime, or a development-cohort score; nothing has run on a console.
 
 ## What VOCR3 is
@@ -40,7 +45,7 @@ ceiling and added tiers: always safe (≤ 900,000 B, ≤ 131,072 B, ≤ 300 ms: 
 safe-with-preflight (the ceiling: the H15 and W20 classes, which need the overlay's free-memory check
 and an always-safe fallback; the cost is speed, not safety). Everything about the recognizer must live in
 the game process: SceShell has tens of KiB of headroom (`docs/vita-platform-memory.md`;
-vita-jp-overlay #60-#69 moved the overlay's worker out of SceShell for that reason).
+vita-jp-overlay #68 moved the overlay's worker out of SceShell for that reason).
 
 ## Recipe and candidates
 
@@ -113,10 +118,11 @@ runs. `eval/vocr3_realplus_FL10_20261013.json`, `eval/vocr3_selection_FL10_20261
 | ft_FL10_A_s2_seed1 | 3.52% | 3.61% | 3.56% | 657,664 / 124,832 / 235 (always) |
 
 **Selected: `rp_FL10_C_mix_pre128k_seed1`** (blob sha256 `87fb4d0c…`), development score 2.30%
-(teacher_val 2.26%, devnative 2.35%). The 128,000-step pretrain is study 2's step-curve run (one seed):
+(teacher_val 2.26%, devnative 2.34%). The 128,000-step pretrain is study 2's step-curve run (one seed):
 pretrain length moved FL10 by more than any data arm (the pre64k rp is next, 2.84%; the 32k-pretrain rp
 runs are at 3.15-3.41%). The study-2 recipe at 32k steps already puts every FL10 candidate far below
-the released FL10's 4.05% teacher_val (`docs/train2.md`), which was trained with frame KD.
+the released FL10, 4.08% on teacher_val scored the same way (C W8I; `docs/synth3.md`), most likely
+because of the release recipe's frame KD and/or best-checkpoint init.
 
 ### H15: realplus adopted; `rp_H15_C_mix_seed2`
 
@@ -141,10 +147,8 @@ the five rp runs (study 2's four pretrains and amendment 2's synth3-only pretrai
 **Selected: `rp_H15_C_mix_seed2`** (blob sha256 `cb3c61a8…`), development score 2.11% (teacher_val
 2.06%, devnative 2.15%); the A_s2 seed-2 rp run is 0.02 points behind, the synth3-only pretrain's rp run
 last (its devnative 3.31% is the worst of the class, while its teacher_val is ordinary: synth3 alone
-transfers worse to native frames than the mix or synth2). The released H15 is at 2.29% on teacher_val
-(`docs/train2.md`).
-
-### W20 class
+transfers worse to native frames than the mix or synth2). The released H15 is at 2.28% on teacher_val scored the same
+way (C W8I; `docs/synth3.md`).
 
 ### W20 class: realplus adopted; `rp_W20_C_mix_seed1`; the late-wide LW shape loses
 
@@ -172,15 +176,23 @@ synth3-only pretrain is again last on devnative (2.60-2.97%). Amendment 7's cond
 #58 (fab5d3f) has `train/model.py` c21b9d85, `train/train2.py` cf72081e, `train/export.py` 421376ae and
 `eval/backends.py` b42d0591, byte-identical to the audited PR head a4b6202 and to the LW runner commit
 704ed0e (tag `vocr3-runner-lw-704ed0e`), so the LW runs are valid candidates. The W20 blobs sit at the
-budget's edge: an estimated 548 ms per 640-px line at 333 MHz (high bound) against the 550 ms ceiling.
+budget's edge: `vita/budget_sweep.py check` (the protocol's selectability tool, 2,133 synth-val frames)
+estimates 311-548 ms per 640-px line at 333 MHz, inside the 550 ms ceiling, while the locked report's own
+A9 estimate of the same blob (1,828 frames) is 314-554 ms, over it; the ceiling lies inside the spread of
+the two estimators, and so does F20's. The selection stands by the protocol's tool; a 550 ms ceiling
+should not be read as met with margin.
 
 ## Locked report (once, after every selection was committed)
 
 `eval/vocr3_report.py` (#51, verified by reproducing the released blobs' published numbers) ran once,
-16:21-16:49Z on 2026-10-13, from feat/vocr3 at tag `vocr3-report-runner-9eadb90` (the branch head was
-amended afterwards for a make_spec sidecar; the report tool, protocol and selections are identical), with
-the spec `eval/vocr3_report_spec_20261013.json` built by `eval/vocr3_make_spec.py` from the three
-committed selections, after the last selection commit (87641eb, 16:19Z). Scalar C W8I runtime (gcc 11.5),
+16:21-16:49Z on 2026-10-13, after the last selection commit (87641eb at 16:19Z; 37a8eb9 on this branch
+after the rebase). A first start at 16:19:33Z aborted in the same second at spec validation
+(`vocr3_make_spec.py` had written a `selected_runs` field the harness rejects) and wrote nothing. The
+`shared` step (the test-set scoring) then ran from feat/vocr3 at tag `vocr3-report-runner-9eadb90`
+with the spec `eval/vocr3_report_spec_20261013.json` built by `eval/vocr3_make_spec.py` from the three
+committed selections; the `a9`, `overlay` and `render` steps ran from tag `vocr3-report-runner-f978800`
+(the same tree with a reformatted `vocr3_make_spec.py` and a stronger test; `eval/vocr3_report.py` is the
+same blob `f7659ec7` in both and on this branch), which the branch's rebase later replaced by 19139f2. Scalar C W8I runtime (gcc 11.5),
 vita-test (206 lines, 16 games) and psp-test (245 lines, 14 games): fixed lines (console polarity primary,
 native also; per set, per style, per VN, pooled; full text and hiragana) and whole dialogue (each
 manifest region at its base box and expanded by 4 and 8 native px, the arm's own C finder, crops joined
@@ -221,7 +233,8 @@ vita-test, coloured text goes from 6.7% (VOCR1 and VOCR_H15) to 4.1% (VOCR3-H15)
 names from 7.0% / 5.2% to 2.3-2.9% for the two larger VOCR3 sizes. VOCR3-H15 is behind VOCR_H15 on
 psp-test's small text (2.4% against 1.6%, 23 against 16 errors), on psp-test mincho by one error (24
 against 23) and on vita-test's three furigana lines (2 errors against 0); no other style of the H15 size
-regresses.
+regresses on full text, and three psp-test styles regress by one or two hiragana errors (dark-on-light
+9 against 7, mincho 7 against 5, small 9 against 8).
 
 ### Whole dialogue (finder-cut regions, joined; all text)
 
@@ -241,9 +254,13 @@ regresses.
 | VOCR3-H15 − VOCR_H15 | +0.30 (−0.49 to +1.06) | +0.38 (−0.37 to +1.11) | +0.46 (−0.28 to +1.22) |
 | VOCR3-W20 − VOCR_H15 | −0.26 (−0.97 to +0.40) | −0.02 (−0.72 to +0.67) | +0.10 (−0.55 to +0.67) |
 | VOCR3-W20 − F20 | −0.08 (−0.81 to +0.62) | +0.10 (−0.60 to +0.84) | +0.52 (−0.20 to +1.27) |
+| VOCR3-FL10-C3 − VOCR2 (finder-matched: both C3) | −0.82 (−1.66 to +0.02) | −1.30 (−2.28 to −0.31) | −1.06 (−2.13 to +0.08) |
+| VOCR3-W20 − VOCR3-H15 | −0.56 (−0.99 to −0.09) | −0.40 (−0.99 to +0.19) | −0.36 (−0.93 to +0.21) |
 
-The fixed-line gains carry over for the FL10 size (VOCR3-FL10 beats VOCR1 on whole dialogue by −1.44 to
-−1.75 points, resolved) but not for the H15 size: VOCR3-H15 makes 554 all-text errors on the base regions
+On the fixed lines the finder-matched VOCR3-FL10-C3 row equals the VOCR3-FL10 row by construction (same
+blob; fixed lines use no finder); on whole dialogue the C3 finder separates them. The fixed-line gains
+carry over for the FL10 size (VOCR3-FL10 beats VOCR1 on whole dialogue by −1.44 to −1.75 points,
+resolved) but not for the H15 size: VOCR3-H15 makes 554 all-text errors on the base regions
 against VOCR_H15's 539 (+0.30 points, CI −0.49 to +1.06; equal hiragana errors, 177), and is behind on
 both expansions; VOCR3-W20 is level with VOCR_H15 (526 against 539 at base, 743 against 738 at +8 px).
 The whole-dialogue scoring reads every crop the GRAD finder returns in a region, name plates and
@@ -263,8 +280,9 @@ shape because the kernels have no data-dependent branches. The overlay host cros
 reads every region of both sets with each blob: its all-text errors equal this harness's base-region
 whole-dialogue errors for every arm (12 of 16 cells equal exactly; the other 4 are the VOCR3-FL10 blob,
 which the overlay table ran twice because two arms share it, giving exactly twice the errors over twice
-the characters: 388/5012 and 788/5020 against 194/2506 and 394/2510). The overlay's workspace peak was
-0.9 MiB for the FL10 blobs, 1.4 MiB for H15 and 1.8 MiB for W20, in the game process.
+the characters: 388/5012 and 788/5020 against 194/2506 and 394/2510). The overlay's workspace peak, as the
+host benchmark measures what the overlay would allocate in the game process, was 0.9 MiB for the FL10
+blobs, 1.4 MiB for H15 and 1.8 MiB for W20.
 
 ## Qualification
 
@@ -282,9 +300,12 @@ gains on at least two titles).
 No candidate qualifies: each passes the fixed-line gate and fails the whole-dialogue guard, as VOCR2 did
 (`docs/vocr2-qualification.md`). The guard is strict by design (any of 30 titles × 3 variants × 2 scopes
 × 2 metrics regressing by one error fails it), and the three candidates regress 69-126 of its 360 cells.
-For VOCR3-FL10 the regressions sit beside a resolved overall gain; for VOCR3-H15 they go with a small
-overall loss. The released defaults therefore stay; VOCR3-FL10 and VOCR3-W20 are candidates for an opt-in
-trial, and the owner decides. Weights are not committed; they are at
+VOCR3-W20 also fails the guard's second condition: at +8 px its console-balanced hiragana gets worse than
+VOCR_H15's (0.0974 → 0.1003 all text, 0.0952 → 0.0989 body), so it is not "level" there. For VOCR3-FL10
+the regressions sit beside a resolved overall gain; for VOCR3-H15 they go with a small overall loss. The
+released defaults therefore stay. VOCR3-FL10 is the candidate for an opt-in trial (it beats VOCR1 on
+whole dialogue by a resolved margin and VOCR2 by −0.82 to −1.30 points); VOCR3-W20 would need the guard's
+hiragana condition and its A9 estimate looked at first; the owner decides. Weights are not committed; they are at
 `$HERD/shared/artifacts/synth3/vocr3/report/blobs/` (sha256s in `eval/vocr3_report_spec_20261013.json`)
 for a release asset if the owner wants one.
 
@@ -292,36 +313,53 @@ for a release asset if the owner wants one.
 
 - No candidate, variant, recipe, checkpoint or threshold was chosen, tuned or dropped on vita-test,
   psp-test, the fresh native textbox test or CLANNAD; the locked report ran once and could not change the
-  selection (its outputs are dated after the selection commits).
-- Every training pool and selection cohort excludes the test VNs and families, CLANNAD and its relations,
-  the fresh native titles and relations, and every eval screenshot (`docs/realplus.md`, `docs/devnative.md`,
-  `eval/synth3_study2_pools.sha256`, `eval/vocr3_realplus.sha256`).
-- Amendments 1-6 were committed before any candidate of the size they touch was scored; each states what
-  was known at the time.
+  selection (its outputs are dated after the selection commits). Before it, study 2's own protocol had
+  scored the base fine-tunes (the `ft_` candidates, not the rp runs or any selected model) on vita-test and
+  psp-test as reported-only test reports: FL10 at 23:48Z on 2026-10-12, H15 at 08:04Z, the step-curve runs
+  at 13:35Z (after the FL10 selection was pushed at 13:33Z); `docs/synth3.md`. No rp blob was scored on a
+  protected set outside the locked report.
+- Every training pool and selection cohort excludes the test VNs and families of `eval/`, CLANNAD and
+  its relations, the fresh native textbox test's titles and relations, and every eval screenshot
+  (`docs/realplus.md`, `docs/devnative.md`, `eval/synth3_study2_pools.sha256`, `eval/vocr3_realplus.sha256`);
+  the owner's titles reserved on 2026-10-13 are in the pinned training pools (Disclosure below).
+- Each amendment was committed before the selection it governs: amendments 1 and 2 before any study-2
+  score, amendments 3-5 after study 2's FL10 scores (teacher_val and devnative at 23:19-23:25Z, its
+  reported-only test report at 23:48Z) but before any VOCR3 selection score, and none of them picks among
+  FL10 candidates by score (3 fixes the devnative version mechanically, 4 applies to every pretrain, 5
+  removes CLANNAD fan works); amendments 2, 4 and 6 list what was known, amendment 3 does not; amendment 7
+  before any W20-class score; amendment 8 before the first selection score.
 
 ## Disclosure: the owner's reserved titles
 
 On 2026-10-13 the owner reserved, as fresh native console test sets, the Memories Off series (10:51Z;
-45 VNDB ids, `data/manifests/synth3_exclude_owner_games.json`, #62) and Aiyoku no Eustia and 428 with
-their relations (13:10Z; 50 ids, #63), after every VOCR3 run had started. The pinned fine-tune pools hold
-rows of those titles: Memories Off series, teacher_train 66, real_train 70, teacher_distill_train 97,
+45 VNDB ids, `data/manifests/synth3_exclude_owner_games.json` as of #62, commit c5e2ef0) and Aiyoku no
+Eustia and 428 with their relations (13:10Z; 5 more ids, 50 in the manifest #63 rebuilt). Every pretrain
+and most fine-tunes had started before the first rule, but four fine-tunes started after it, from jobs
+queued before the rules (queue6 at 02:17Z, the LW waiter at 09:12Z) and not stopped: the step-curve
+fine-tune `ft_FL10_C_mix_pre128k_seed1` (12:06-13:02Z), **the selected VOCR3-FL10 `rp_FL10_C_mix_pre128k_seed1`
+(12:08-13:08Z)**, and the LW pair `ft_LW_A_s2_seed1` and `rp_LW_A_s2_seed1` (14:06/14:08-15:50/15:54Z, after
+both rules); four rp runs that were training at 10:51Z ended between 10:54Z and 12:05Z, and the 128k and
+LW pretrains ran until 12:05Z and 14:05Z on synthetic data whose scene lists and name pools hold series
+material (`docs/owner-games.md`). Amendment 8's reason, written at 11:16Z, said "after every candidate
+run had started": that was wrong when written (erratum, 2026-10-13 19:00Z). The pinned fine-tune pools
+hold rows of those titles: Memories Off series, teacher_train 66, real_train 70, teacher_distill_train 97,
 real_unlabelled 86, realplus 8 ink + 6 GRAD (v23725); 428, 14 / 14 / 2 / 3; Eustia, 2 / 4 / 2 / 2;
 街, 41 / 23 / 21 / 36 (ids in `$HERD/shared/artifacts/native-frames/owner_games_rows.json`). Every
 candidate trained on the same pinned copies, so the comparisons here are unaffected, but any test on
 the owner's captures of those titles must carry this caveat for every model trained on these pools (the
 released v0.2.0 models included). The selection cohorts were cleaned before any selection score
 (amendment 8: teacher_val's 8 lines and devnative v3's 14 crops of v1331; they held nothing of the
-13:10Z titles). Pools built after the rules (realplus v3, the native-frames pool) exclude the titles.
+13:10Z titles). The native-frames pool (#66) excludes the titles and realplus v3 is being built to exclude them.
 
 ## Limits
 
 - One machine and one seed for most candidates (the W20 class has one seed per arm; the FL10 winner's
   128k pretrain is a single seed): the development ranking inside a class is noisy at the 0.02-0.1
   point level; only the realplus decisions and the pretrain-length gain are resolved by intervals.
-- teacher_val is 64% scaled PC screenshots; devnative v3 is 986 native crops from 44 VNs, assistant-
+- teacher_val is 64% scaled PC screenshots; devnative v3 is 986 native crops from 43 VNs after amendment 8, assistant-
   reviewed. realplus's labels are engine-plus-assistant agreed, blind precision 495/500 (#57).
-- Cortex-A9 times are host estimates from a cycle model; no console has run any of these models. The
-  owner's #59 fix moved the overlay's worker out of SceShell; the preflight tier's free-memory check and
+- Cortex-A9 times are host estimates from a cycle model; no console has run any of these models. vita-jp-
+  overlay #68 (the fix for its issue #59) moved the overlay's worker out of SceShell; the preflight tier's free-memory check and
   fallback are the overlay's job, not this repo's.
 - The fresh native textbox test and the CLANNAD long run need private inputs that are not on this
   machine; the locked report covers vita-test and psp-test only.
@@ -343,13 +381,16 @@ Provenance, as run (2026-10-13, 64-core EPYC 9R14 box, 5 threads per run through
   `vocr3-runner-578821d`; the LW run from `vocr3-runner-lw-704ed0e` = feat/vocr3 e18c9a9 + PR #58's head
   a4b6202); rp runs from `vocr3-runner-578821d` through `study2_queue6.sh` and by hand for H15 B_s3 and
   LW; every run's `args.json` records its sources.
-- Selection: the conductor's driver (export with `eval/synth3_ablation.py export`, scores with
-  `eval/synth3_ablation.py score` on the amendment-8 cohorts, `vita/budget_sweep.py check` from main
-  fab5d3f, `eval/vocr3_select.py realplus` then `base`), outputs under
-  `$HERD/shared/artifacts/synth3/vocr3/select/<SIZE>/`; the first H15 pass read the unfiltered cohorts by
-  mistake, was superseded by the amendment-8 pass (commit d8ba6e8) and is kept under `H15_unfiltered_mistake`.
-- Report: `eval/vocr3_make_spec.py`, then `eval/vocr3_report.py shared | a9 | overlay | render` with the
-  arguments in `docs/vocr3-harness.md` (VitaSDK, qemu-arm plugins, Arm GNU toolchain 14.2, the overlay
+- Selection: the conductor's driver `eval/reproducibility/vocr3-20261013/select_size.sh` (export with
+  `eval/synth3_ablation.py export`, scores with `eval/synth3_ablation.py score` on the amendment-8
+  cohorts, `budget_check.sh` = `vita/budget_sweep.py check` from main fab5d3f, `eval/vocr3_select.py
+  realplus` then `base`), outputs under `$HERD/shared/artifacts/synth3/vocr3/select/<SIZE>/`; every
+  candidate's development scores (the tables above) are in `eval/vocr3_dev_scores_20261013.json`
+  (`dev_scores.py`, reported only); the first H15 pass read the unfiltered cohorts by
+  mistake, was superseded by the amendment-8 pass (commit d8ba6e8, 2994275 on this branch after the rebase) and is kept
+  under `H15_unfiltered_mistake`.
+- Report: `eval/reproducibility/vocr3-20261013/report.sh`: `eval/vocr3_make_spec.py`, then
+  `eval/vocr3_report.py shared | a9 | overlay | render` with the arguments in `docs/vocr3-harness.md` (VitaSDK, qemu-arm plugins, Arm GNU toolchain 14.2, the overlay
   clone and CMake/Ninja of the harness verification); outputs under
   `$HERD/shared/artifacts/synth3/vocr3/report/out/`.
 - The pre-rebase history of feat/vocr3 (amendments 1-7 with their original commit times) is at tag

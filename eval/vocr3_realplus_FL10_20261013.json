@@ -1,0 +1,119 @@
+{
+ "kind": "vocr3-realplus-decision",
+ "size": "FL10",
+ "protocol_sha256": "27fb605c50f35d3096c11fa326e82845b067d009f86802ee1b433e781f99be20",
+ "computed": "2026-10-13T13:32:51Z",
+ "pairs": [
+  [
+   "ft_FL10_A_s2_seed1",
+   "rp_FL10_A_s2_seed1"
+  ],
+  [
+   "ft_FL10_A_s2_seed2",
+   "rp_FL10_A_s2_seed2"
+  ],
+  [
+   "ft_FL10_A_s2_seed3",
+   "rp_FL10_A_s2_seed3"
+  ],
+  [
+   "ft_FL10_C_mix_seed1",
+   "rp_FL10_C_mix_seed1"
+  ],
+  [
+   "ft_FL10_C_mix_seed2",
+   "rp_FL10_C_mix_seed2"
+  ],
+  [
+   "ft_FL10_C_mix_seed3",
+   "rp_FL10_C_mix_seed3"
+  ]
+ ],
+ "teacher_val": {
+  "delta_points": -0.227,
+  "ci95": [
+   -0.339,
+   -0.122
+  ],
+  "cer_a": 0.03381,
+  "cer_b": 0.03154
+ },
+ "per_pair": {
+  "ft_FL10_A_s2_seed1->rp_FL10_A_s2_seed1": {
+   "delta_points": -0.243,
+   "ci95": [
+    -0.427,
+    -0.052
+   ],
+   "cer_a": 0.03519,
+   "cer_b": 0.03276
+  },
+  "ft_FL10_A_s2_seed2->rp_FL10_A_s2_seed2": {
+   "delta_points": -0.194,
+   "ci95": [
+    -0.388,
+    0.006
+   ],
+   "cer_a": 0.03323,
+   "cer_b": 0.03129
+  },
+  "ft_FL10_A_s2_seed3->rp_FL10_A_s2_seed3": {
+   "delta_points": -0.296,
+   "ci95": [
+    -0.546,
+    -0.055
+   ],
+   "cer_a": 0.03411,
+   "cer_b": 0.03114
+  },
+  "ft_FL10_C_mix_seed1->rp_FL10_C_mix_seed1": {
+   "delta_points": -0.155,
+   "ci95": [
+    -0.357,
+    0.041
+   ],
+   "cer_a": 0.03314,
+   "cer_b": 0.03158
+  },
+  "ft_FL10_C_mix_seed2->rp_FL10_C_mix_seed2": {
+   "delta_points": -0.364,
+   "ci95": [
+    -0.561,
+    -0.171
+   ],
+   "cer_a": 0.03425,
+   "cer_b": 0.03062
+  },
+  "ft_FL10_C_mix_seed3->rp_FL10_C_mix_seed3": {
+   "delta_points": -0.111,
+   "ci95": [
+    -0.338,
+    0.113
+   ],
+   "cer_a": 0.03296,
+   "cer_b": 0.03185
+  }
+ },
+ "devnative": {
+  "delta_points": 0.041,
+  "ci95": [
+   -0.095,
+   0.192
+  ],
+  "cer_a": 0.03376,
+  "cer_b": 0.03416
+ },
+ "devnative_files": [
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/devnative_strict_ink.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/devnative_strict_grad.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/devnative_tv_native_ink.json",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select/FL10/devnative_tv_native_grad.json"
+ ],
+ "devnative_sha256": [
+  "256053b3abe0e6b8bfe707d76043070141f2357a29a410db3b3c3aac1f7d9a9f",
+  "2683f0591dee0ab83bfc6f04cc74cdc396dff63ea73e78d57daaa9c6bb778754",
+  "d2a61d75679ecab211bae5c980b53fbe58e5ed95ea626122fad3aefa2fd9db81",
+  "a1a4884cb4a2851b314ac04aff90bcfad481e26e32cfac163d34b91b75fa6bff"
+ ],
+ "adopted": true
+}

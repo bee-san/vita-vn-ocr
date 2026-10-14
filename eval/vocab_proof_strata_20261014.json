@@ -1,0 +1,184 @@
+{
+ "kind": "vocab-proof-strata",
+ "protocol_sha256": "ca8de1e5b6fe9ebedfc2a7a55fc8dadc18205bf11ff4223209fa3177206d9c09",
+ "files": {
+  "teacher_val.json": {
+   "lines": 1643,
+   "line_tags": {
+    "line-added": 4,
+    "line-shared": 1639
+   },
+   "arms": {
+    "F_s4": {
+     "added": {
+      "correct": 0,
+      "total": 20,
+      "recall": 0.0
+     },
+     "shared": {
+      "correct": 64539,
+      "total": 68180,
+      "recall": 0.9466
+     }
+    },
+    "G_v4987": {
+     "added": {
+      "correct": 20,
+      "total": 20,
+      "recall": 1.0
+     },
+     "shared": {
+      "correct": 64653,
+      "total": 68180,
+      "recall": 0.9483
+     }
+    }
+   }
+  },
+  "devnative_pooled.json": {
+   "lines": 986,
+   "line_tags": {
+    "line-added": 2,
+    "line-shared": 984
+   },
+   "arms": {
+    "F_s4": {
+     "added": {
+      "correct": 0,
+      "total": 8,
+      "recall": 0.0
+     },
+     "shared": {
+      "correct": 43852,
+      "total": 45968,
+      "recall": 0.954
+     }
+    },
+    "G_v4987": {
+     "added": {
+      "correct": 7,
+      "total": 8,
+      "recall": 0.875
+     },
+     "shared": {
+      "correct": 43884,
+      "total": 45968,
+      "recall": 0.9547
+     }
+    }
+   }
+  },
+  "devnative_strict_grad.json": {
+   "lines": 23,
+   "line_tags": {
+    "line-added": 0,
+    "line-shared": 23
+   },
+   "arms": {
+    "F_s4": {
+     "shared": {
+      "correct": 1011,
+      "total": 1148,
+      "recall": 0.8807
+     }
+    },
+    "G_v4987": {
+     "shared": {
+      "correct": 1024,
+      "total": 1148,
+      "recall": 0.892
+     }
+    }
+   }
+  },
+  "devnative_strict_ink.json": {
+   "lines": 34,
+   "line_tags": {
+    "line-added": 0,
+    "line-shared": 34
+   },
+   "arms": {
+    "F_s4": {
+     "shared": {
+      "correct": 1484,
+      "total": 1532,
+      "recall": 0.9687
+     }
+    },
+    "G_v4987": {
+     "shared": {
+      "correct": 1472,
+      "total": 1532,
+      "recall": 0.9608
+     }
+    }
+   }
+  },
+  "devnative_tv_native_grad.json": {
+   "lines": 420,
+   "line_tags": {
+    "line-added": 1,
+    "line-shared": 419
+   },
+   "arms": {
+    "F_s4": {
+     "added": {
+      "correct": 0,
+      "total": 4,
+      "recall": 0.0
+     },
+     "shared": {
+      "correct": 18578,
+      "total": 19912,
+      "recall": 0.933
+     }
+    },
+    "G_v4987": {
+     "added": {
+      "correct": 3,
+      "total": 4,
+      "recall": 0.75
+     },
+     "shared": {
+      "correct": 18633,
+      "total": 19912,
+      "recall": 0.9358
+     }
+    }
+   }
+  },
+  "devnative_tv_native_ink.json": {
+   "lines": 509,
+   "line_tags": {
+    "line-added": 1,
+    "line-shared": 508
+   },
+   "arms": {
+    "F_s4": {
+     "added": {
+      "correct": 0,
+      "total": 4,
+      "recall": 0.0
+     },
+     "shared": {
+      "correct": 22779,
+      "total": 23376,
+      "recall": 0.9745
+     }
+    },
+    "G_v4987": {
+     "added": {
+      "correct": 4,
+      "total": 4,
+      "recall": 1.0
+     },
+     "shared": {
+      "correct": 22755,
+      "total": 23376,
+      "recall": 0.9734
+     }
+    }
+   }
+  }
+ }
+}

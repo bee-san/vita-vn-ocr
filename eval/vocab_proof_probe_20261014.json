@@ -1,0 +1,332 @@
+{
+ "kind": "vocab-proof-probe",
+ "protocol_sha256": "ca8de1e5b6fe9ebedfc2a7a55fc8dadc18205bf11ff4223209fa3177206d9c09",
+ "crops": 15000,
+ "chars": 161409,
+ "exposures": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/gap/exposures_s4v1.json",
+  "sha256": "ee5d7ebf26d974cee626d6320ce054098c6f483ea576d93d0ba51e4ed8413f8d"
+ },
+ "runs": {
+  "F_s4_seed1": {
+   "blob_sha256": "e7aa39b3580fd43d118cc0c9c47c58062c6405827d41cd90a7ec3f01a499f06e",
+   "cer": 0.11016,
+   "groups": {
+    "added": {
+     "correct": 0,
+     "total": 2364,
+     "recall": 0.0
+    },
+    "dropped": {
+     "correct": 13,
+     "total": 52,
+     "recall": 0.25
+    },
+    "other": {
+     "correct": 0,
+     "total": 175,
+     "recall": 0.0
+    },
+    "shared": {
+     "correct": 143828,
+     "total": 158818,
+     "recall": 0.9056
+    }
+   },
+   "by_exposure": {
+    "added exposures 0-50": {
+     "classes": 17,
+     "chars": 23,
+     "recall": 0.0
+    },
+    "added exposures 50-100": {
+     "classes": 1040,
+     "chars": 2056,
+     "recall": 0.0
+    },
+    "added exposures 100-300": {
+     "classes": 100,
+     "chars": 270,
+     "recall": 0.0
+    },
+    "added exposures 300-1000": {
+     "classes": 1,
+     "chars": 15,
+     "recall": 0.0
+    },
+    "added exposures 1000-inf": {
+     "classes": 0,
+     "chars": 0,
+     "recall": null
+    },
+    "shared exposures 0-50": {
+     "classes": 20,
+     "chars": 3165,
+     "recall": 0.9368
+    },
+    "shared exposures 50-100": {
+     "classes": 621,
+     "chars": 1195,
+     "recall": 0.477
+    },
+    "shared exposures 100-300": {
+     "classes": 788,
+     "chars": 2345,
+     "recall": 0.5876
+    },
+    "shared exposures 300-1000": {
+     "classes": 793,
+     "chars": 6958,
+     "recall": 0.7387
+    },
+    "shared exposures 1000-inf": {
+     "classes": 896,
+     "chars": 145155,
+     "recall": 0.9216
+    }
+   },
+   "added_classes_seen": 1158,
+   "added_classes_learned": 0
+  },
+  "G_v4987_seed1": {
+   "blob_sha256": "e73b266edcc12750cc9d2517bdb339e98cca43dbb9d6aadc437b62041d07acfb",
+   "cer": 0.10017,
+   "groups": {
+    "added": {
+     "correct": 1289,
+     "total": 2364,
+     "recall": 0.5453
+    },
+    "dropped": {
+     "correct": 0,
+     "total": 52,
+     "recall": 0.0
+    },
+    "other": {
+     "correct": 0,
+     "total": 175,
+     "recall": 0.0
+    },
+    "shared": {
+     "correct": 144182,
+     "total": 158818,
+     "recall": 0.9078
+    }
+   },
+   "by_exposure": {
+    "added exposures 0-50": {
+     "classes": 17,
+     "chars": 23,
+     "recall": 0.1304
+    },
+    "added exposures 50-100": {
+     "classes": 1040,
+     "chars": 2056,
+     "recall": 0.5433
+    },
+    "added exposures 100-300": {
+     "classes": 100,
+     "chars": 270,
+     "recall": 0.6259
+    },
+    "added exposures 300-1000": {
+     "classes": 1,
+     "chars": 15,
+     "recall": 0.0
+    },
+    "added exposures 1000-inf": {
+     "classes": 0,
+     "chars": 0,
+     "recall": null
+    },
+    "shared exposures 0-50": {
+     "classes": 20,
+     "chars": 3165,
+     "recall": 0.9352
+    },
+    "shared exposures 50-100": {
+     "classes": 621,
+     "chars": 1195,
+     "recall": 0.5397
+    },
+    "shared exposures 100-300": {
+     "classes": 788,
+     "chars": 2345,
+     "recall": 0.6316
+    },
+    "shared exposures 300-1000": {
+     "classes": 793,
+     "chars": 6958,
+     "recall": 0.7552
+    },
+    "shared exposures 1000-inf": {
+     "classes": 896,
+     "chars": 145155,
+     "recall": 0.9221
+    }
+   },
+   "added_classes_seen": 1158,
+   "added_classes_learned": 814
+  },
+  "F_s4_seed2": {
+   "blob_sha256": "3e16cee63477c2053c887f40e69dbf2615ae3001017e6ca5cb10e0e0723e8939",
+   "cer": 0.11129,
+   "groups": {
+    "added": {
+     "correct": 0,
+     "total": 2364,
+     "recall": 0.0
+    },
+    "dropped": {
+     "correct": 19,
+     "total": 52,
+     "recall": 0.3654
+    },
+    "other": {
+     "correct": 0,
+     "total": 175,
+     "recall": 0.0
+    },
+    "shared": {
+     "correct": 143677,
+     "total": 158818,
+     "recall": 0.9047
+    }
+   },
+   "by_exposure": {
+    "added exposures 0-50": {
+     "classes": 17,
+     "chars": 23,
+     "recall": 0.0
+    },
+    "added exposures 50-100": {
+     "classes": 1040,
+     "chars": 2056,
+     "recall": 0.0
+    },
+    "added exposures 100-300": {
+     "classes": 100,
+     "chars": 270,
+     "recall": 0.0
+    },
+    "added exposures 300-1000": {
+     "classes": 1,
+     "chars": 15,
+     "recall": 0.0
+    },
+    "added exposures 1000-inf": {
+     "classes": 0,
+     "chars": 0,
+     "recall": null
+    },
+    "shared exposures 0-50": {
+     "classes": 20,
+     "chars": 3165,
+     "recall": 0.9387
+    },
+    "shared exposures 50-100": {
+     "classes": 621,
+     "chars": 1195,
+     "recall": 0.4837
+    },
+    "shared exposures 100-300": {
+     "classes": 788,
+     "chars": 2345,
+     "recall": 0.5706
+    },
+    "shared exposures 300-1000": {
+     "classes": 793,
+     "chars": 6958,
+     "recall": 0.734
+    },
+    "shared exposures 1000-inf": {
+     "classes": 896,
+     "chars": 145155,
+     "recall": 0.921
+    }
+   },
+   "added_classes_seen": 1158,
+   "added_classes_learned": 0
+  },
+  "G_v4987_seed2": {
+   "blob_sha256": "b1ef10dbf1bafe72dcef1105e20eae8990685692b4002bdb3de400095191f674",
+   "cer": 0.0998,
+   "groups": {
+    "added": {
+     "correct": 1345,
+     "total": 2364,
+     "recall": 0.569
+    },
+    "dropped": {
+     "correct": 0,
+     "total": 52,
+     "recall": 0.0
+    },
+    "other": {
+     "correct": 0,
+     "total": 175,
+     "recall": 0.0
+    },
+    "shared": {
+     "correct": 144184,
+     "total": 158818,
+     "recall": 0.9079
+    }
+   },
+   "by_exposure": {
+    "added exposures 0-50": {
+     "classes": 17,
+     "chars": 23,
+     "recall": 0.0435
+    },
+    "added exposures 50-100": {
+     "classes": 1040,
+     "chars": 2056,
+     "recall": 0.5686
+    },
+    "added exposures 100-300": {
+     "classes": 100,
+     "chars": 270,
+     "recall": 0.6481
+    },
+    "added exposures 300-1000": {
+     "classes": 1,
+     "chars": 15,
+     "recall": 0.0
+    },
+    "added exposures 1000-inf": {
+     "classes": 0,
+     "chars": 0,
+     "recall": null
+    },
+    "shared exposures 0-50": {
+     "classes": 20,
+     "chars": 3165,
+     "recall": 0.927
+    },
+    "shared exposures 50-100": {
+     "classes": 621,
+     "chars": 1195,
+     "recall": 0.554
+    },
+    "shared exposures 100-300": {
+     "classes": 788,
+     "chars": 2345,
+     "recall": 0.623
+    },
+    "shared exposures 300-1000": {
+     "classes": 793,
+     "chars": 6958,
+     "recall": 0.7541
+    },
+    "shared exposures 1000-inf": {
+     "classes": 896,
+     "chars": 145155,
+     "recall": 0.9223
+    }
+   },
+   "added_classes_seen": 1158,
+   "added_classes_learned": 847
+  }
+ }
+}

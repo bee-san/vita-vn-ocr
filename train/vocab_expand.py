@@ -41,7 +41,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-for _p in (HERE, ROOT / "synth", ROOT / "eval", ROOT / "realdata", ROOT / "vita"):
+for _p in (HERE, ROOT / "synth", ROOT / "eval", ROOT / "realdata", ROOT / "vita", ROOT / "runtime"):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 from metrics import align_text, norm  # noqa: E402

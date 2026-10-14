@@ -11,9 +11,10 @@ psp_dev.jsonl, never the holdout or any test set), as vita-jp-overlay's game wor
      lines: runtime/tests/test_vocr_lines_rows.c);
   3. each found line's grey crop, inverted (255 - v) when the finder calls it dark. Inverting the source crop is
      exactly VOCR_INVERT, which reads every source pixel as 255 - grey before the resize (runtime/vocr.h).
-Rows of protected sets are refused: every VN of eval/manifests/test_games.json ("all", "vita-test",
-"psp-test" and their "family" members) and CLANNAD (v4). The dev manifests hold none of them today; the check
-stays so a future manifest cannot slip one in.
+Rows of protected sets are refused: every VN of eval/manifests/test_games.json ("all": the test games and
+every VN on a release with one of them, "vita-test", "psp-test", their "family" members) and CLANNAD (v4).
+Since #81's reservation list (2026-10-14) that refuses the 5 rows of v1267, a shared-release VN, from the dev
+manifests.
 
 The pack holds crops of copyrighted screenshots: write it outside the repository and never commit or share
 it. --index writes a pixel-free JSON sidecar (region id, box, dark flag, size, CTC frames per line).
@@ -46,6 +47,19 @@ def protected_vns():
     return vns
 
 
+def dev_rows(manifests):
+    """(kept rows of the dev manifests, refused rows): the rows dev_pack reads."""
+    bad, kept, refused = protected_vns(), [], 0
+    for name in DEV_MANIFESTS:
+        for line in (Path(manifests) / name).read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            if row["vn"] in bad or str(row.get("set", "")).lower() in ("vita-test", "psp-test", "clannad"):
+                refused += 1
+            else:
+                kept.append((name, row))
+    return kept, refused
+
+
 def frames(w, h):
     """CTC frames vocr_run runs for a w x h crop (vocr_resized_width, padded to the stride)."""
     num = w * HEIGHT
@@ -73,31 +87,26 @@ def main(argv=None):
     ap.add_argument("--index", type=Path, help="pixel-free JSON sidecar")
     ap.add_argument("--limit", type=int, default=0, help="at most this many regions (0: all)")
     args = ap.parse_args(argv)
-    bad = protected_vns()
     finder = cfinder.Finder("grad")
-    crops, index, refused = [], [], 0
-    for name in DEV_MANIFESTS:
-        for line in (args.manifests / name).read_text(encoding="utf-8").splitlines():
-            row = json.loads(line)
-            if row["vn"] in bad or str(row.get("set", "")).lower() in ("vita-test", "psp-test", "clannad"):
-                refused += 1
-                continue
-            if args.limit and len(index) >= args.limit:
-                break
-            shot = next((d / row["shot"] for d in args.shots if (d / row["shot"]).exists()), None)
-            if shot is None:
-                raise SystemExit(f"{row['shot']} not found in {args.shots}")
-            x0, y0, x1, y1 = row["region"]
-            g = load_grey(shot, row.get("mask"))[y0:y1, x0:x1]
-            boxes = finder(np.ascontiguousarray(g)) or []
-            lines = []
-            for (x, y, w, h), dark in zip(boxes, finder.last_dark):
-                c = np.ascontiguousarray(g[y:y + h, x:x + w])
-                if dark:
-                    c = 255 - c
-                crops.append(c)
-                lines.append({"box": [x, y, w, h], "dark": int(dark), "frames": frames(w, h)})
-            index.append({"manifest": name, "id": row["id"], "region": [x1 - x0, y1 - y0], "lines": lines})
+    crops, index = [], []
+    kept, refused = dev_rows(args.manifests)
+    for name, row in kept:
+        if args.limit and len(index) >= args.limit:
+            break
+        shot = next((d / row["shot"] for d in args.shots if (d / row["shot"]).exists()), None)
+        if shot is None:
+            raise SystemExit(f"{row['shot']} not found in {args.shots}")
+        x0, y0, x1, y1 = row["region"]
+        g = load_grey(shot, row.get("mask"))[y0:y1, x0:x1]
+        boxes = finder(np.ascontiguousarray(g)) or []
+        lines = []
+        for (x, y, w, h), dark in zip(boxes, finder.last_dark):
+            c = np.ascontiguousarray(g[y:y + h, x:x + w])
+            if dark:
+                c = 255 - c
+            crops.append(c)
+            lines.append({"box": [x, y, w, h], "dark": int(dark), "frames": frames(w, h)})
+        index.append({"manifest": name, "id": row["id"], "region": [x1 - x0, y1 - y0], "lines": lines})
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with open(args.out, "wb") as f:
         f.write(struct.pack("<I", len(crops)))

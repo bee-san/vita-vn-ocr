@@ -3,7 +3,7 @@
 The owner's v0.8.0-test.1 console logs (vita-jp-overlay #81) are the ground truth: VOCR3-H15 ran
 **4,941-5,238 µs per CTC frame** (mean about 5.07 ms) on 70-96-frame CLANNAD lines, 0.2-0.4 s per
 textbox line. This change makes the same arithmetic cheaper on the Cortex-A9. Every logit is
-bit-identical to `main`'s (W8I and W8F, five builds, three released models, 900 development lines).
+bit-identical to `main`'s (W8I and W8F, five builds, three released models, 895 development lines).
 
 **Estimated effect (calibrated to the console, see below): VOCR3-H15 5.07 → 2.88 ms per frame at 333
 MHz (1.76x), VOCR3-FL10 3.00 → 1.68 (1.78x), VOCR4-W20 6.98 → 4.09 (1.71x).** A 3-line box of 640-px
@@ -91,9 +91,9 @@ build's to equal every other build's.
 
 | blob | mode | lines | frames | logit bytes per build | builds | equal to main | equal across builds |
 |---|---|---:|---:|---:|---:|:-:|:-:|
-| VOCR3-FL10 | w8i, w8f | 900 | 32,120 | 449,815,680 | 5 | yes | yes |
-| VOCR3-H15 | w8i, w8f | 900 | 32,120 | 688,017,600 | 5 | yes | yes |
-| VOCR4-W20 | w8i, w8f | 900 | 32,120 | 688,017,600 | 5 | yes | yes |
+| VOCR3-FL10 | w8i, w8f | 895 | 31,965 | CLEAN_FL10 | 5 | yes | yes |
+| VOCR3-H15 | w8i, w8f | 895 | 31,965 | CLEAN_H15 | 5 | yes | yes |
+| VOCR4-W20 | w8i, w8f | 895 | 31,965 | CLEAN_W20 | 5 | yes | yes |
 
 The hashes are in the PR body. `runtime/tests/test_vocr.c` gains a head-argmax test (a 21-class head:
 two full lane blocks and a partial one) on ties within and across blocks, -0 against +0 in both
@@ -105,12 +105,14 @@ mutations of the new argmax and of the leftover-position kernel each fail it. Th
 ## The development pack
 
 `vita/dev_pack.py` writes what the overlay's game worker hands the recognizer on the console: for
-every region of `eval/linefind/manifests/vita_dev.jsonl` and `psp_dev.jsonl` (372 regions, never the
-holdout or a test set), the region's grey rows with the display hook's `(77 R + 150 G + 29 B) >> 8`,
+every region of `eval/linefind/manifests/vita_dev.jsonl` and `psp_dev.jsonl` (367 regions after the
+reservation check, never the holdout or a test set), the region's grey rows with the display hook's `(77 R + 150 G + 29 B) >> 8`,
 the GRAD finder (`runtime/vocr_lines.c`, which gives the same lines as the worker's row finder), and
-every found line's crop, inverted when the finder calls it dark (exactly `VOCR_INVERT`). 900 lines,
-32,120 CTC frames (36 per line on average; 60-100-frame lines are the console's textbox lines). It
-refuses any row of a VN in `eval/manifests/test_games.json` or CLANNAD; the dev manifests hold none.
+every found line's crop, inverted when the finder calls it dark (exactly `VOCR_INVERT`). 895 lines,
+31,965 CTC frames (36 per line on average; 60-100-frame lines are the console's textbox lines). It
+refuses every row of a VN `eval/manifests/test_games.json` reserves, and CLANNAD: since #81 that is the 5
+rows of v1267 (a shared release). The 24 timing lines are the same before and after that change (the
+subset's sha256 `3162151a…` both times).
 The pack holds crops of copyrighted screenshots: it stays in `$HERD/shared/artifacts/ocr-speed/`.
 
 ## What these speeds allow (model-size ceilings)

@@ -127,5 +127,13 @@
   "the owner's frames and CLANNAD data stay local: never committed, never sent to Codex or any other service; committed files hold counts, ids and hashes only",
   "the reused pretrains and synth3's shards predate the owner's 10:51Z and 13:10Z reservations and hold some of that material (docs/owner-games.md, docs/vocr3.md Disclosure); every VOCR4 model carries that caveat for tests on the owner's titles"
  ],
- "amendments": []
+ "amendments": [
+  {
+   "date": "2026-10-14 (commit time in git), before eval/vocr4_pools_a.sha256, before any A or M fine-tune and before any VOCR4 run was scored",
+   "change": "Deduplication of the new pools (data.pools.build) is by line, not by screenshot: a row of rp3i, nat or own is dropped iff another group (tt, rd, or a new pool earlier in the order nat, own, rp3i) holds a row of the same screenshot (VNDB image id) with the same normalised label (eval/metrics.norm). Other lines of a screenshot that tt or rd hold stay, and line ids are not compared.",
+   "reason": "A dry run of the frozen rule (eval/vocr4_pools.py build into a scratch directory, counts only) dropped 456 of native pool v1's 557 ink rows and 343 of its 411 GRAD rows: they sit on screenshots teacher_train / real_train hold, but they are other lines of those screenshots (the lines those pools' labelling left out, as the #66 audit found: 522 of the 557 are rows of the unlabelled pools), not duplicates. Line ids are no duplicate key across pipelines either: 59 native-pool ids equal a tt/rd id, and 58 of those carry a different label (each pipeline numbers a screenshot's lines its own way). Under the line rule native pool v1 keeps 542 ink and 402 GRAD rows (15 and 9 dropped: lines tt/rd hold with the same label); rp3i has no duplicate under either rule.",
+   "known": "the dry-run counts above only; no model has read an A pool, and no VOCR4 run (C fine-tunes v4c_FL10_seed1/2 done, the others running) has been scored or had its in-run evaluations read",
+   "unchanged": "everything else: the exclusion list, the order nat, own, rp3i, the weights, the pin and cutoff rules, the arms, decisions, selection and report"
+  }
+ ]
 }

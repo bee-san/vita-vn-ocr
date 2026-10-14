@@ -85,7 +85,7 @@ A candidate is passed over in five cases:
 - it shares a two-VN release with a VN of a training pool (21 VNs, such as v1762, whose twin entry v1763 is in
   teacher_train).
 
-The 100 VNs hold 486 devnative lines (378 PSP, 108 Vita), 847 teacher_val lines (160 Vita, 366 PSP, 281 scaled PC)
+The 100 VNs hold 486 devnative lines (378 PSP, 108 Vita), 847 teacher_val lines (160 Vita, 366 PSP, 321 scaled PC)
 and 659 real_val lines; with their release partners, 853 teacher_val and 663 real_val lines.
 
 The sample is kept out of the training pools of any round that selects on it. Every gate below reads
@@ -131,7 +131,7 @@ linefind's holdout uses its own hash (`eval/linefind/build_gt.py:231-232`) and i
   `synth3.py:463-489`, `synth3_text.py:376-392`, `synth3_mine.py:92`, `synth3_real_labels.py:43`,
   `synth3_stats.py:141-173`, `synth4_gap.py:98-113` and, through them, `native_calib.py` and `synth4.py`. The
   default exclusion manifests shrink to the CLANNAD one; fresh native and the owner series are `RETIRED_MANIFESTS`.
-  `synth/bg_exclude.py` rewrote `data/manifests/synth2_bg_exclude.txt`: 71 test VNs, 121 sample VNs (with partners)
+  `synth/bg_exclude.py` rewrote `data/manifests/synth2_bg_exclude.txt`: 71 test VNs, 113 sample VNs (with partners)
   and the 106 test-session screenshots. It had 172 old-list VNs plus 28 research screenshots of synth2's
   provisional A/B;
 - other gates: `data/fresh_backgrounds.py:76`, `train/vocab.py:91`, `teacher/build.py:90-93` (and `teacher/label.py`
@@ -153,7 +153,7 @@ names `test-vn`, so a VOCR5 pool must not reuse it unchanged).
 | source | freed | notes |
 |---|---:|---|
 | realplus (VNDB, 2026-10-13 dump) | 20,867 screenshots of 4,883 VNs | 20,572 scaled PC (4,847 VNs) and 295 PSP (41 VNs). The old rules had dropped them as `test-vn` 9,468, `val-bucket` 6,126, `shared-release` 4,228, `test-set` 752, `family` 242, fresh native 36; 15 are new in the later dump. All pass the rating, language and kind filters |
-| native pool (PSP/Vita frames) | 1,217 frames of 245 VNs | 1,026 PSP, 191 Vita. 886 are already on disk and read (realdata/teacher, lines unlabelled), 295 are new (the same 295 PSP shots as above), 36 are in other pools. They had been dropped as `test-set` 295, linefind 299, `shared-release` 245, `family` 142, owner series 74, `development` 53, `val-bucket` 24, eval candidates 15 |
+| native pool (PSP/Vita frames) | 1,217 frames of 245 VNs | 1,026 PSP, 191 Vita. 886 are already on disk and read (realdata/teacher, lines unlabelled), 295 are new (the same 295 PSP shots as above), 36 are in other pools. They had been dropped as linefind 299, `test-set` 295, `shared-release` 245, `family` 176, `development` 89, owner series 74, `val-bucket` 24, eval candidates 15 |
 | both lists, distinct | 21,789 screenshots of 5,077 VNs | |
 | synthetic names | 22,189 VNDB characters | synth3's name gate dropped 24,331 of 127,809; it now drops 2,361 |
 | synthetic scenes on disk | 388 screenshots | 28 Vita, 80 PSP, 280 scaled PC of synth3's current candidates. Every freed VNDB screenshot can become a scene once fetched and text-detected |
@@ -181,9 +181,17 @@ directories. It extends the checks of realplus-v3's `realplus/hygiene.py` (branc
   (titles, relations and release partners of a newer dump count);
 - it blocks a row whose release is a test session or lists a test VN;
 - it blocks a vita-test or psp-test screenshot by id, URL or sha256, and by decoded pixels with `--pixels`. The
-  pixel check compares against the 2,363 protected images on disk: the set screenshots and the owner's CLANNAD frames;
+  pixel and file-hash checks compare against the 2,363 protected images on disk: the set screenshots and the owner's
+  CLANNAD frames;
 - it blocks a development-sample VN (`--dev-sample info` reports instead);
 - it reports the old hash splits, the set games' family and the former reservations as information.
+
+Pool rows (npz meta, line manifests) carry no screenshot hashes. The check joins each row's shot key
+(`<vn>_<image>`, the line id less its index) to the screenshot manifests of the pools: realplus, the reclaim tier,
+the native and owner pools, devnative, realdata and teacher. With `--pixels` it decodes a local copy when no pixel
+hash is known. Each pool reports how many rows were hash-checked (`hash_coverage`) and warns when none were;
+`--require-hashes` makes an unhashed row a blocker. An audit of this PR found the first version checked hashes only
+on rows that carried them, which was 1 pool of 25. The join fixed that; the results are below.
 
 Run on the 2026-10-13 dump with `--pixels`, the check gave **RESERVE_OK** on 25 training pools and lists:
 
@@ -219,6 +227,21 @@ its `exclusions.json` lists them as `clannad`, `clannad-family`, `shared-release
 Recipes that read the files directly saw them; that was not re-checked per recipe here. The cleaned copies are
 `pools/{teacher_train,teacher_distill_train,real_train,real_unlabelled}_train.npz` (12,029, 8,994, 9,733 and
 11,113 rows). A new round should use those copies or run `reserve_check.py` on its own pools.
+
+## Limits and follow-ups
+
+- The sample's VNs have no lines in any labelled training pool. 19 of them, however, have screenshots that the old
+  gate allowed as synth2 backgrounds (11 in `data/vndb/shots`, 9 in the pinned `synth2_psp_shots.jsonl`), so pinned
+  synth2 shards may hold their scenes. teacher_val had the same exposure. New renders leave them out.
+- `data/manifests/synth3_exclude_clannad.json` is now synth3's only default exclusion manifest. It predates this
+  policy: it lists planetarian (v34, training data), so v34's names and scenes stay out of synth3, and it lacks
+  v16902, a CLANNAD relation. v16902 is still kept out by VN id wherever the code asks `is_reserved_vn`, but its
+  character names are not hashed into the manifest. The next synth render should rebuild the manifest from
+  `reserved.json`; the file is pinned by the v3 and synth4 shard recipes.
+- `realplus/shots.py dedupe` no longer drops copies of fresh-native test images; they are training data now.
+- realplus-v3's branch has its own narrower `reserved_vns_final`. It lacks the r23905 compilation partners, the
+  Key-box partners and the development sample. Its build must switch to this reservation before it merges (see the
+  hand-off).
 
 ## Past reports
 

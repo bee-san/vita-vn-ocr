@@ -529,7 +529,8 @@ def dev_sample(d, test, counts=None, size=DEV_SAMPLE_SIZE, seed=DEV_SAMPLE_SEED,
     A VN is a candidate only when it is not in the test reservation, not an owner game (owner_vns()), shares no
     VNDB release with an owner game (their screenshots all train, owner 2026-10-14 13:25Z), is in no training pool
     built so far (training_pool_vns) and shares no two-VN release (one game filed twice, a game and its fan disc)
-    with a VN of one, so the sample's games were never trained on. Returns (rows, why):
+    with a VN of one, so no labelled training pool holds the sample's games (pinned synth2 backgrounds may:
+    docs/reservations.md). Returns (rows, why):
     one row per chosen VN (tier, lines by source and kind) and the count of every reason a candidate was passed over."""
     counts = dev_line_counts() if counts is None else counts
     owner = owner_vns() if owner is None else set(owner)
@@ -936,7 +937,7 @@ def cmd_dedupe(args):
                 read.add(json.loads(x)["shot"])
             except (ValueError, KeyError):
                 continue
-    out = dedupe(rows_, pools, fresh_native_hashes(), read)
+    out = dedupe(rows_, pools, set(), read)      # fresh native images train since 2026-10-14 (docs/reservations.md)
     p = realplus_dir() / "manifests" / "dups.json"
     p.write_text(json.dumps(out, indent=0, sort_keys=True) + "\n")
     why = collections.Counter(v.split(":")[0] if v.startswith("realplus") else v for v in out.values())

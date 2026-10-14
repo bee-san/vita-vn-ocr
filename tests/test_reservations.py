@@ -181,4 +181,34 @@ def test_background_exclusions_follow_the_reservation():
     ex = bg_exclude.load_exclusions()
     assert set(RES["test"]) <= ex and set(RES["dev_sample"]) <= ex
     listed = (ROOT / "data" / "manifests" / "synth2_bg_exclude.txt").read_text(encoding="utf-8")
-    assert "research-real" not in listed and listed.count("  eval-test") == len(RES["test"])
+    rows = [x.split() for x in listed.splitlines() if x.strip() and not x.startswith("#")]
+    assert "research-real" not in listed
+    assert {v for v, tag in rows if tag == "eval-test"} == set(RES["test"])
+    assert {v for v, tag in rows if tag == "dev-sample"} == set(RES["dev_sample"]) - set(RES["test"])
+
+
+def test_reserve_check_joins_screenshot_hashes_and_reports_coverage(tmp_path):
+    """Pool rows carry no hashes: the leak check finds them through the shot key in the screenshot manifests, or
+    decodes a local copy, and reports how many rows it could hash-check (audit F1)."""
+    from PIL import Image
+    a = np.arange(6 * 8 * 3, dtype=np.uint8).reshape(6, 8, 3)
+    Image.fromarray(a).save(tmp_path / "v7_70.png")
+    Image.fromarray(a).save(tmp_path / "copy.png", compress_level=1)           # same pixels, other bytes
+    pix = S.pixel_sha256(tmp_path / "v7_70.png")
+    man = tmp_path / "shots.jsonl"
+    man.write_text(json.dumps({"shot": "v5_50", "vn": "v5", "sha256": "f" * 64}) + "\n" +
+                   json.dumps({"vn": "v6", "url": "https://t.vndb.org/sf/60/60.jpg", "sha256": "e" * 64}) + "\n" +
+                   json.dumps({"shot": "v8_owner0001", "vn": "v8", "path": str(tmp_path / "copy.png")}) + "\n",
+                   encoding="utf-8")
+    idx = RC.shot_index(sources=[(man, "rows")])
+    assert set(idx) == {"v5_50", "v6_60", "v8_owner0001"} and idx["v5_50"]["file"] == {"f" * 64}
+    assert RC.shot_key({"id": "v8_owner0001_3"}) == "v8_owner0001" and RC.shot_key({"id": "v1_2_0"}) == "v1_2"
+    prot = {"test": {}, "dev": {}, "sessions": set(), "images": set(), "urls": set(), "sha256": {"e" * 64}}
+    rows = [{"id": "v5_50_0", "vn": "v5"}, {"id": "v6_60_1", "vn": "v6"}, {"id": "v8_owner0001_0", "vn": "v8"},
+            {"id": "v9_90_0", "vn": "v9"}]
+    r = RC.check_pool(rows, prot, pixels={pix: {"owner-clannad:x"}}, index=idx)
+    assert r["checks"]["test screenshot"]["vn_list"] == ["v6"]                # by file sha256, through the join
+    assert r["checks"]["test pixels"]["vn_list"] == ["v8"]                    # by decoded pixels of the local copy
+    assert r["hash_coverage"] == {"rows": 4, "hash_checked": 3, "pixel_checked": 1, "share": 0.75}
+    strict = RC.check_pool(rows, prot, pixels={}, index=idx, require=True)
+    assert strict["checks"]["hash coverage"]["vn_list"] == ["v9"] and "hash coverage" in strict["blockers"]

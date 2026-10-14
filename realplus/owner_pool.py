@@ -15,6 +15,8 @@ pool-prep and devnative/read.py:
   owner_pool.py helpers [--max 6] [--kinds check,confirm,edge,pass1] [--retry]
                                                     queue Claude review helpers (review-o2-N) for undecided batches
   owner_pool.py status                              batches made / decided / with a helper
+  owner_pool.py cycle [--loop]                      final -> edge-boxes -> confirm / edge batches -> helpers, every
+                                                    --every s (closes finished helpers, keeps them ahead in the queue)
   owner_pool.py merge --tag v2 --old DIR:TAG        one set of files: an earlier owner pool's lines plus this one's
   owner_pool.py publish --tag v2 [--check pre]      realplus/manifests/owner/stats_v2.json (aggregate only)
 
@@ -65,6 +67,8 @@ CONFIRM_NOTE = ("This is a confirmation look (owner pool v2, AGREEMENT.md rule 3
                 "above; unsure when you cannot tell.\n")
 CONFIRM_RULE = "AGREEMENT.md rule 3: a pass-1 label is kept only with an agreeing confirm look"
 KINDS = ("check", "confirm", "edge", "pass1")
+MAX_TRIES = 3                      # helper sessions per batch (a re-queued one continues from decisions.jsonl)
+HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 
 
 def jl(path):
@@ -156,36 +160,81 @@ def confirm_rule(labels):
 
 
 def cmd_final(args):
+    """decide.py final (devnative's training rule, --mode train --auto-consensus, the confirm looks and any third
+    looks), run in-process so it also works before the first pass-1 batch is decided (auto lines only), then
+    CONFIRM_RULE."""
+    from devnative import decide as D
     p1, conf = PL.done_batches("pass1"), PL.done_batches("confirm")
-    if not p1:
-        sys.exit("no decided pass-1 batch yet")
-    cmd = [sys.executable, str(ROOT / "devnative" / "decide.py"), "--reads", str(PL.reads_snapshot()), "final",
-           "--pass1", *map(str, p1)]
-    if conf:
-        cmd += ["--confirm", *map(str, conf)]
     res = sorted(REVIEW.glob("resolutions*.jsonl"))
-    if res:
-        cmd += ["--resolve", *map(str, res)]
-    cmd += ["--mode", "train", "--auto-consensus", "--out", str(OUT / "labels.jsonl")]
-    subprocess.run(cmd, check=True, stdin=subprocess.DEVNULL)
+    D.cmd_final(argparse.Namespace(reads=str(PL.reads_snapshot()), pass1=[str(b) for b in p1], pass2=[],
+                                   resolve=[str(r) for r in res], blind=[], confirm=[str(b) for b in conf],
+                                   mode="train", auto_consensus=True, out=str(OUT / "labels.jsonl")))
     labels = jl(OUT / "labels.jsonl")
     if res:
         n = PL.apply_auto_resolutions(labels, {r["id"]: r for f in res for r in jl(f)})
         print(f"third looks applied to {n} auto lines", flush=True)
     c = confirm_rule(labels)
     wjl(OUT / "labels.jsonl", labels)
-    print(json.dumps({"rule": CONFIRM_RULE, "by": c}, indent=1), flush=True)
+    print(json.dumps({"rule": CONFIRM_RULE, "pass1_batches": len(p1), "confirm_batches": len(conf), "by": c},
+                     indent=1), flush=True)
 
 
 # ----------------------------------------------------------------------------- confirm looks and edge checks
 
+class CapCount:
+    """Lines per (VN, key) and per key against realplus's repeat caps (pool.PER_VN_CAP, GLOBAL_CAP): the build keeps at
+    most that many copies of a label, so a look at a further copy cannot add a line."""
+    def __init__(self, rows=()):
+        self.vn, self.all = collections.Counter(), collections.Counter()
+        for vn, label in rows:
+            self.add(vn, label)
+
+    def full(self, vn, label):
+        k = vote.key(label)
+        return self.vn[(vn, k)] >= PL.PER_VN_CAP or self.all[k] >= PL.GLOBAL_CAP
+
+    def add(self, vn, label):
+        k = vote.key(label)
+        self.vn[(vn, k)] += 1
+        self.all[k] += 1
+
+
 def confirm_entries(labels, boxes, have, shots):
-    """Blind sheet entries (candidates shuffled, unattributed; framed on the final crop) of the pending labels
-    that need a confirm look and are in no confirm batch yet, VNs interleaved (pool.vn_rank)."""
-    ids = [r["id"] for r in labels if r["status"] == "pending" and r.get("why") == "confirm-missing"
-           and r["id"] not in have and r["id"] in boxes]
-    ids.sort(key=lambda i: (PL.vn_rank(i.split("_")[0]), i))
+    """Blind sheet entries (candidates shuffled, unattributed; framed on the final crop) of the pending labels that
+    need a confirm look and are in no confirm batch yet, VNs interleaved (pool.vn_rank). A label whose copies already
+    fill the repeat caps (kept lines plus copies waiting in a confirm batch) is left for later: if a look drops a
+    copy, the next run takes another."""
+    pend = {r["id"]: r for r in labels if r["status"] == "pending" and r.get("why") == "confirm-missing"}
+    cap = CapCount((r["vn"], r["label"]) for r in labels
+                   if r["status"] == "kept" or (r["id"] in have and r["id"] in pend))
+    ids = []
+    for i in sorted((i for i in pend if i not in have and i in boxes), key=lambda i: (PL.vn_rank(i.split("_")[0]), i)):
+        r = pend[i]
+        if cap.full(r["vn"], r["label"]):
+            continue
+        cap.add(r["vn"], r["label"])
+        ids.append(i)
     return S.review_entries(shots, ids, frames={i: boxes[i]["crop"] for i in ids})
+
+
+def edge_todo(boxes, labels, have):
+    """The flagged final crops of kept labels that need an edge check and are in no edge batch yet. A flagged line
+    is skipped when unflagged kept copies of its label already fill the repeat caps (the build keeps those and drops
+    the unchecked one); a pending label waits for its confirm look."""
+    status = {r["id"]: r for r in labels}
+    kept = [b for b in boxes if (status.get(b["id"]) or {}).get("status") == "kept"]
+    # unflagged kept copies plus flagged copies already in an edge batch: what the build can keep of each label
+    cap = CapCount((status[b["id"]]["vn"], b["label"]) for b in kept if not b["check"] or b["id"] in have)
+    out = []
+    for b in sorted(kept, key=lambda b: (PL.vn_rank(b["shot"].split("_")[0]), b["shot"], b["id"])):
+        if not b["check"] or b["id"] in have:
+            continue
+        vn = status[b["id"]]["vn"]
+        if cap.full(vn, b["label"]):
+            continue
+        cap.add(vn, b["label"])
+        out.append(b)
+    return out
 
 
 def cmd_confirm_batches(args):
@@ -205,10 +254,14 @@ def cmd_confirm_batches(args):
 
 
 def cmd_edge_batches(args):
-    """pool.py's edge-check batches (final crop framed, the label the one candidate) with the owner note."""
+    """pool.py's edge-check batches (final crop framed, the label the one candidate) with the owner note, for the
+    flagged kept lines edge_todo picks."""
     boxes = jl(PL.EDGE / "boxes.jsonl")
+    labels = jl(OUT / "labels.jsonl")
     with PL.review_lock():
-        entries = PL.edge_entries(boxes, PL.batched_ids("edge"), PL.load_reads())
+        have = PL.batched_ids("edge")
+        todo = {b["id"] for b in edge_todo(boxes, labels, have)}
+        entries = PL.edge_entries([b for b in boxes if b["id"] in todo], have, PL.load_reads())
         start = len(PL.batch_dirs("edge"))
         for k in range(args.n):
             part = entries[k * args.size:(k + 1) * args.size]
@@ -253,7 +306,7 @@ def cmd_helpers(args):
                 if PL.batch_state(b)[0] == "done":
                     continue
                 prior = [h for h in log if h.get("batch") == str(b)]
-                if prior and (any(h in busy for h in prior) or not args.retry):
+                if prior and (any(h in busy for h in prior) or not args.retry or len(prior) >= MAX_TRIES):
                     continue
                 n += 1
                 label = f"{HELPER}{n}"
@@ -266,6 +319,116 @@ def cmd_helpers(args):
                 queued.append(rec)
         wjl(REVIEW / "helpers.jsonl", log)
     print(f"{len(busy)} helpers outstanding, {len(queued)} queued now: {[q['label'] for q in queued]}", flush=True)
+
+
+# ----------------------------------------------------------------------------- the cycle (one loop keeps it moving)
+
+def close_finished(log, res, herd_dir=PL.HERD_DIR):
+    """Helpers of this pool whose batch parses as done but whose tab is still open and idle: close the tab and record
+    REVIEW_DONE in results.txt and closed.txt (the orchestrator's format). A narrow pane can wrap the marker over two
+    lines; the orchestrator then never sees it and resumes the finished session (realplus v3's monitor does the
+    same for its helpers)."""
+    H = Path(herd_dir)
+    agents = {x.split()[0]: x.split()[1:] for x in (H / "agents.txt").read_text().splitlines() if x.strip()}
+    closed = {x.strip() for x in (H / "closed.txt").read_text().splitlines()} if (H / "closed.txt").exists() else set()
+    try:
+        out = subprocess.run(["timeout", "20", "herdr", "pane", "list"], capture_output=True, text=True).stdout
+        st = {q.get("label"): q["agent_status"] for q in json.loads(out)["result"]["panes"] if q.get("label")}
+    except (ValueError, KeyError, OSError):
+        return []
+    done = []
+    for h in log:
+        lab = h["label"]
+        if not lab.startswith(HELPER) or lab not in agents or lab in closed or f" {lab} REVIEW_DONE" in res:
+            continue
+        if st.get(lab) not in ("done", "idle") or PL.batch_state(Path(h["batch"]))[0] != "done":
+            continue
+        tab = agents[lab][1] if len(agents[lab]) > 1 else None
+        if tab:
+            subprocess.run(["timeout", "20", "herdr", "tab", "close", tab], capture_output=True)
+        with open(H / "results.txt", "a", encoding="utf-8") as f:
+            f.write(f"{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())} {lab} REVIEW_DONE {h['batch']} "
+                    "(finished; marker missed by the orchestrator; tab closed by owner_pool.py cycle)\n")
+        with open(H / "closed.txt", "a", encoding="utf-8") as f:
+            f.write(lab + "\n")
+        done.append(lab)
+    return done
+
+
+def queue_front(path=PL.HERD_DIR / "queue.tsv"):
+    """Move this pool's queued helpers (HELPER*) to just before the first realplus-v3 review helper (review-v3-*),
+    keeping every other line and its order. The orchestrator starts the queue's first line when a slot frees."""
+    before = Path(path).read_text(encoding="utf-8") if Path(path).exists() else ""
+    lines = [x for x in before.splitlines() if x.strip()]
+    mine = [x for x in lines if x.split("\t", 1)[0].startswith(HELPER)]
+    rest = [x for x in lines if not x.split("\t", 1)[0].startswith(HELPER)]
+    i = next((k for k, x in enumerate(rest) if x.split("\t", 1)[0].startswith("review-v3-")), len(rest))
+    new = rest[:i] + mine + rest[i:]
+    if new == lines:
+        return False
+    tmp = Path(str(path) + ".o2tmp")
+    tmp.write_text("\n".join(new) + "\n", encoding="utf-8")
+    if Path(path).read_text(encoding="utf-8") != before:
+        tmp.unlink()
+        return False
+    os.replace(tmp, path)
+    return True
+
+
+def heavy(cmd, secs=3600):
+    """One CPU-heavy step through heavy.sh (HEAVY_SLOTS=12), blocking until a slot is free."""
+    return subprocess.run(["bash", "-c", f"HEAVY_SLOTS=12 {HERD}/heavy.sh timeout {secs} {cmd} < /dev/null"],
+                          cwd=ROOT, env=dict(os.environ), capture_output=True, text=True)
+
+
+def pass1_complete():
+    """Every plan line is in a pass-1 batch and every pass-1 batch is decided."""
+    drop = leak_drop()
+    idx = S.line_index(PL.load_reads())
+    have = PL.batched_ids()
+    left = [r["id"] for r in jl(REVIEW / "plan.jsonl")
+            if r["id"] in idx and idx[r["id"]][0]["shot"] not in drop and r["id"] not in have]
+    return not left and all(PL.batch_state(b)[0] == "done" for b in PL.batch_dirs("pass1"))
+
+
+def cmd_cycle(args):
+    """One round (or --loop): close finished helpers; when a batch was decided since the last round, final ->
+    native.py edge-boxes (heavy.sh) -> confirm batches (and edge batches of flagged kept crops) of at least --min
+    lines, every line once pass 1 (and, for edge, the confirm looks) is complete; queue helpers up to --max (kinds in
+    --kinds order, a stalled batch re-queued up to MAX_TRIES times); keep them ahead of realplus-v3's queue."""
+    state_p = OUT / "logs" / "cycle_state.json"
+    state_p.parent.mkdir(parents=True, exist_ok=True)
+    while True:
+        log, res = PL.helper_log(), PL.results()
+        closed = close_finished(log, res)
+        done = {k: len(PL.done_batches(k)) for k in KINDS}
+        last = json.loads(state_p.read_text()) if state_p.exists() else {}
+        made = []
+        if done != last.get("done") or args.force:
+            cmd_final(argparse.Namespace())
+            r = heavy(f"{ROOT}/.venv-ci/bin/python {HERE}/native.py edge-boxes")
+            print(r.stdout.strip()[-400:], r.stderr.strip()[-400:], flush=True)
+            p1 = pass1_complete()
+            with PL.review_lock():
+                n0 = len(PL.batch_dirs("confirm"))
+            cmd_confirm_batches(argparse.Namespace(n=10, size=args.size, min=1 if p1 else args.min))
+            labels = jl(OUT / "labels.jsonl")
+            have = PL.batched_ids("confirm")
+            waiting = [x for x in labels if x["status"] == "pending" and x.get("why") == "confirm-missing"
+                       and x["id"] in have]
+            conf_done = p1 and all(PL.batch_state(b)[0] == "done" for b in PL.batch_dirs("confirm")) and not waiting
+            n1 = len(PL.batch_dirs("edge"))
+            cmd_edge_batches(argparse.Namespace(n=10, size=args.size, min=1 if conf_done else args.min))
+            made = [f"confirm+{len(PL.batch_dirs('confirm')) - n0}", f"edge+{len(PL.batch_dirs('edge')) - n1}"]
+            state_p.write_text(json.dumps({"done": done, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}))
+        cmd_helpers(argparse.Namespace(max=args.max, kinds=args.kinds, retry=True))
+        moved = queue_front()
+        lab = collections.Counter(x["status"] for x in jl(OUT / "labels.jsonl"))
+        print(f"{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())} done={done} made={made} closed={closed} "
+              f"queue_moved={moved} labels={dict(lab)}", flush=True)
+        if not args.loop:
+            break
+        time.sleep(args.every)
 
 
 def cmd_status(args):
@@ -448,6 +611,14 @@ def main():
     p.add_argument("--kinds", default="check,confirm,edge,pass1")
     p.add_argument("--retry", action="store_true")
     sub.add_parser("status")
+    p = sub.add_parser("cycle")
+    p.add_argument("--loop", action="store_true")
+    p.add_argument("--every", type=int, default=600)
+    p.add_argument("--size", type=int, default=300)
+    p.add_argument("--min", type=int, default=150, help="smallest confirm / edge batch before pass 1 is complete")
+    p.add_argument("--max", type=int, default=6)
+    p.add_argument("--kinds", default="check,confirm,edge,pass1")
+    p.add_argument("--force", action="store_true", help="run final and make batches even if nothing new was decided")
     p = sub.add_parser("merge")
     p.add_argument("--tag", required=True)
     p.add_argument("--old", required=True, help="an earlier owner pool's DIR:TAG (its native_train_<crop>_TAG.npz)")
@@ -456,7 +627,8 @@ def main():
     p.add_argument("--check", default="pre", help="the build tag the precision sample was drawn from")
     a = ap.parse_args()
     {"batches": cmd_batches, "final": cmd_final, "leak-drop": cmd_leak_drop, "confirm-batches": cmd_confirm_batches,
-     "edge-batches": cmd_edge_batches, "helpers": cmd_helpers, "status": cmd_status, "merge": cmd_merge,
+     "edge-batches": cmd_edge_batches, "helpers": cmd_helpers, "status": cmd_status, "cycle": cmd_cycle,
+     "merge": cmd_merge,
      "publish": cmd_publish}[a.cmd](a)
 
 

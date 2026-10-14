@@ -1,0 +1,701 @@
+{
+ "arm_a": {
+  "arms": {
+   "MeikiOCR": {
+    "call": "run_recognition(conf_threshold=0.1, punct_conf_factor=1.0)",
+    "commit": "52aa607ecdc1038c7bf390f37cd9a8b306e8a08a",
+    "engine": "meikiocr 0.3.5",
+    "finder": "grad (stored crop)",
+    "input": "stored GRAD line crop, grey as three identical channels",
+    "models": {
+     "rec": {
+      "bytes": 18593254,
+      "file": "meiki.text.rec.v0.960x32.onnx",
+      "repo": "rtr46/meiki.txt.recognition.v0",
+      "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+      "sha256": "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000"
+     },
+     "vrec": {
+      "bytes": 12872961,
+      "file": "meiki.text.rec.v0.vertical.32x480.onnx",
+      "repo": "rtr46/meiki.txt.recognition.v0",
+      "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+      "sha256": "2c2a83a23bc3b7e6c63962175f507ecc6c5e85cc174f17bdec37d9bbd0bf895a"
+     }
+    },
+    "name": "MeikiOCR"
+   }
+  },
+  "arms_sha256": "3c3595ffeb6657ab892695622963c95410b5cb5b01475faca27b1c5effbfb8c1",
+  "calls": {
+   "note": "5 concurrent single-thread processes; not the speed measurement",
+   "time": {
+    "calls": 4271,
+    "mean_ms": 22.383,
+    "median_ms": 22.196,
+    "p10_ms": 21.211,
+    "p90_ms": 23.571,
+    "total_s": 95.6
+   },
+   "vertical": 26
+  }
+ },
+ "arm_b": {
+  "arm": {
+   "call": "run_ocr(det_threshold=0.5, rec_threshold=0.1, punct_conf_factor=1.0)",
+   "commit": "52aa607ecdc1038c7bf390f37cd9a8b306e8a08a",
+   "engine": "meikiocr 0.3.5",
+   "input": "stored native frame, RGB to BGR",
+   "models": {
+    "det": {
+     "bytes": 14503825,
+     "file": "meiki.text.detect.v0.1.960x544.onnx",
+     "repo": "rtr46/meiki.text.detect.v0",
+     "revision": "a9cffa4f60cbf72ddb87edf19c6f98a01cd042e6",
+     "sha256": "40b6a016667745cae7d3055929ae3b8b1e7716aac795f5904cd3c2c7c3b8404b"
+    },
+    "rec": {
+     "bytes": 18593254,
+     "file": "meiki.text.rec.v0.960x32.onnx",
+     "repo": "rtr46/meiki.txt.recognition.v0",
+     "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+     "sha256": "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000"
+    },
+    "vrec": {
+     "bytes": 12872961,
+     "file": "meiki.text.rec.v0.vertical.32x480.onnx",
+     "repo": "rtr46/meiki.txt.recognition.v0",
+     "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+     "sha256": "2c2a83a23bc3b7e6c63962175f507ecc6c5e85cc174f17bdec37d9bbd0bf895a"
+    }
+   },
+   "name": "MeikiOCR_screen"
+  },
+  "pages": 2177,
+  "screens_sha256": "55c0d7081ff54af7235ed127b939b17a5c79a2ad49b0c37e1bee0b4e254e7bd9",
+  "time": {
+   "calls": 2177,
+   "mean_ms": 215.011,
+   "median_ms": 218.423,
+   "p10_ms": 158.673,
+   "p90_ms": 253.049,
+   "total_s": 468.08
+  },
+  "time_note": "5 concurrent single-thread processes; not the speed measurement"
+ },
+ "arms_sha256": "9da4a029ef21920d2d2b77ecb67f16f8c8ec50a3652175e412106b92ffe7dcfe",
+ "code_sha256": {
+  "eval/clannad_longrun.py": "6ba8a7efb1f34c953338d43744bfe4de21276133994d52a5a03a4da5f1b4beec",
+  "eval/clannad_meiki.py": "e0df9ebc9081f65e823c07241032d190b7632d699e7caf33a25d02d6c15ba450",
+  "eval/clannad_meiki_protocol.json": "5bbd1422cf838a6c98fc52db955ec6918578033db8c7f6303aed9c67f02b3931",
+  "eval/clannad_meiki_requirements.lock": "6449d5ae1d00b3288bbabd15775b85dc54a85405b1a79a6baa398c24725d46b1",
+  "eval/clannad_refs.py": "a7bdf56cf49a9211e62627ab474da6d2f0368f5f59e71e212b5b9331e4b5fd67",
+  "eval/clannad_refs_protocol.json": "3b86ca54b6cf88099950c89cbae1e9bd9eca8e5333316d6729fd62ca2be8d5a0",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "eval/vocr3_report.py": "51697d970b79064be78e86b5f637c62db0d65c381817cd0b2a8274aa73dee149",
+  "teacher/vote.py": "49848356431e6b98636cdd2294319f4b7cb3ff41393c010d97e2b63141a6dad9",
+  "train/general_vn_textbox_guard.py": "637fbe5a3cb06dcfd83399218c1558c6d3c69d4ebba44ab0ca0742f2b89b254e"
+ },
+ "created": "2026-10-14T08:29:14Z",
+ "empty_screens_output": {
+  "F20": {
+   "output_chars": 42,
+   "screens": 91,
+   "screens_with_output": 27
+  },
+  "Lens": {
+   "output_chars": 2,
+   "screens": 91,
+   "screens_with_output": 1
+  },
+  "MeikiOCR": {
+   "output_chars": 1425,
+   "screens": 91,
+   "screens_with_output": 91
+  },
+  "MeikiOCR_screen": {
+   "output_chars": 1065,
+   "screens": 91,
+   "screens_with_output": 89
+  },
+  "VOCR1": {
+   "output_chars": 59,
+   "screens": 91,
+   "screens_with_output": 47
+  },
+  "VOCR2": {
+   "output_chars": 68,
+   "screens": 91,
+   "screens_with_output": 51
+  },
+  "VOCR3_FL10": {
+   "output_chars": 221,
+   "screens": 91,
+   "screens_with_output": 84
+  },
+  "VOCR3_H15": {
+   "output_chars": 186,
+   "screens": 91,
+   "screens_with_output": 70
+  },
+  "VOCR3_W20": {
+   "output_chars": 124,
+   "screens": 91,
+   "screens_with_output": 52
+  },
+  "VOCR_H15": {
+   "output_chars": 85,
+   "screens": 91,
+   "screens_with_output": 46
+  },
+  "v1": {
+   "output_chars": 937,
+   "screens": 91,
+   "screens_with_output": 91
+  }
+ },
+ "engine": {
+  "commit": "52aa607ecdc1038c7bf390f37cd9a8b306e8a08a",
+  "defaults": {
+   "det_threshold": 0.5,
+   "max_batch_size": 8,
+   "punct_conf_factor": 1.0,
+   "rec_threshold": 0.1
+  },
+  "installed_files_match_record": true,
+  "lock_pins_wheel": true,
+  "lock_sha256": "6449d5ae1d00b3288bbabd15775b85dc54a85405b1a79a6baa398c24725d46b1",
+  "models": {
+   "det": {
+    "bytes": 14503825,
+    "file": "meiki.text.detect.v0.1.960x544.onnx",
+    "repo": "rtr46/meiki.text.detect.v0",
+    "revision": "a9cffa4f60cbf72ddb87edf19c6f98a01cd042e6",
+    "sha256": "40b6a016667745cae7d3055929ae3b8b1e7716aac795f5904cd3c2c7c3b8404b"
+   },
+   "rec": {
+    "bytes": 18593254,
+    "file": "meiki.text.rec.v0.960x32.onnx",
+    "repo": "rtr46/meiki.txt.recognition.v0",
+    "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+    "sha256": "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000"
+   },
+   "vrec": {
+    "bytes": 12872961,
+    "file": "meiki.text.rec.v0.vertical.32x480.onnx",
+    "repo": "rtr46/meiki.txt.recognition.v0",
+    "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+    "sha256": "2c2a83a23bc3b7e6c63962175f507ecc6c5e85cc174f17bdec37d9bbd0bf895a"
+   }
+  },
+  "modules": {
+   "__init__.py": {
+    "bytes": 78,
+    "crlf": 4,
+    "git_blob_sha1_lf": "ad94604546562f32428428450fecc24b931bdd66",
+    "matches_commit": true,
+    "sha256": "55fe01000623e4c32e1b357d4eea0e6ea28a2946630375d358164f3aabea631f"
+   },
+   "cli.py": {
+    "bytes": 3016,
+    "crlf": 78,
+    "git_blob_sha1_lf": "d8234e41628dd76785cc8771b207d1e3a31476b7",
+    "matches_commit": true,
+    "sha256": "b06fe95161a9535b0b7b6e653d2c72b3f3f97e180a1a4fe541a79ae99de58708"
+   },
+   "ocr.py": {
+    "bytes": 21826,
+    "crlf": 490,
+    "git_blob_sha1_lf": "2fd63c6716fdc6b64b0c76a8ea3852abf9b49427",
+    "matches_commit": true,
+    "sha256": "8cc59b6fa1da61664407194064362a45ca006c7ae53e33a4d7e717e801eb8831"
+   }
+  },
+  "modules_match_commit": true,
+  "package": "meikiocr",
+  "sessions": {
+   "graph_optimization": "ORT_ENABLE_ALL",
+   "inter_op_spinning": 0,
+   "inter_op_threads": 1,
+   "intra_op_spinning": 0,
+   "intra_op_threads": 1,
+   "provider": "CPUExecutionProvider"
+  },
+  "version": "0.3.5",
+  "wheel_sha256_pinned": "5d1ede4bcf46ecf17ef9a59db26edbc3e622aa3ed3c27bb64317077abbe2fccb"
+ },
+ "engines_sha256": "55f3b02e40fe293db9dd1b88bfec61629e56b64e6af049897d45a5c5630e69ac",
+ "entanglement": {
+  "arm_a_equals_r1_meiki": 3830,
+  "lens_disagree_lines": 76,
+  "lens_disagree_ref_key_equals_r1_meiki": 45,
+  "lens_disagree_ref_key_equals_r1_v6s": 31,
+  "lines": 4271,
+  "note": "R1's MeikiOCR candidate is teacher/engines.Meiki (punct_conf_factor 0.2, owocr's setting); arm (a) is meikiocr's default (1.0); keys are teacher/vote.key",
+  "scored_arm_a_equals_r1_meiki": 2803,
+  "scored_lines": 3048,
+  "scored_ref_key_equals_r1_meiki": 2382,
+  "scored_ref_key_equals_r1_v6s": 2263
+ },
+ "environment": {
+  "git": {
+   "dirty": false,
+   "head": "649447109ac60d22f8805bc42a560163d39860d5"
+  },
+  "machine": "x86_64",
+  "python": "3.11.15",
+  "system": "Linux"
+ },
+ "kind": "clannad-meiki-screens-result",
+ "lines_sha256": "a6be0300b651a2cdf3ae58f9705b6f100263b66b7030365b119e6a0a2323ffd1",
+ "meiki_screen_detections": {
+  "all_pages": 2177,
+  "detections": 10342,
+  "in_roi": 3917,
+  "outside_roi": 6425,
+  "scored_screens": {
+   "chars_outside_crops": 1478,
+   "chars_written": 33400,
+   "detections_outside_crops": 471,
+   "kept_detections": 3332,
+   "screens": 1837,
+   "screens_without_detection": 0,
+   "vertical": 0
+  },
+  "vertical_in_roi": 0
+ },
+ "protocol_sha256": "5bbd1422cf838a6c98fc52db955ec6918578033db8c7f6303aed9c67f02b3931",
+ "references": {
+  "frozen": "2026-10-14T03:04:39Z",
+  "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+  "reviewer_kind": "assistant",
+  "scored_lines": 3048
+ },
+ "refs_protocol_sha256": "3b86ca54b6cf88099950c89cbae1e9bd9eca8e5333316d6729fd62ca2be8d5a0",
+ "run_environment": {
+  "cpu": "AMD EPYC 9R14",
+  "git": {
+   "dirty": false,
+   "head": "649447109ac60d22f8805bc42a560163d39860d5"
+  },
+  "packages": {
+   "meikiocr": "0.3.5",
+   "numpy": "2.4.6",
+   "onnx": "1.18.0",
+   "onnxruntime": "1.30.0",
+   "opencv-python-headless": "5.0.0.93",
+   "pillow": "12.3.0"
+  },
+  "python": "3.11.15"
+ },
+ "schema": 1,
+ "scores": {
+  "bootstrap": {
+   "reps": 10000,
+   "screens": 1837,
+   "seed": 0,
+   "unit": "screen"
+  },
+  "pairs": {
+   "MeikiOCR_screen:Lens": {
+    "cer": {
+     "baseline_errors": 536,
+     "candidate_errors": 2454,
+     "chars": 32535,
+     "ci95": [
+      4.967004,
+      6.800376
+     ],
+     "delta": 5.89519
+    },
+    "dialogue_cer": {
+     "baseline_errors": 536,
+     "candidate_errors": 2454,
+     "chars": 30436,
+     "ci95": [
+      5.303824,
+      7.272154
+     ],
+     "delta": 6.301748
+    },
+    "exact": {
+     "ci95": [
+      -54.7632,
+      -49.9183
+     ],
+     "delta": -52.368
+    }
+   },
+   "MeikiOCR_screen:MeikiOCR": {
+    "cer": {
+     "baseline_errors": 13182,
+     "candidate_errors": 2454,
+     "chars": 32535,
+     "ci95": [
+      -35.152343,
+      -30.913915
+     ],
+     "delta": -32.973721
+    },
+    "dialogue_cer": {
+     "baseline_errors": 12940,
+     "candidate_errors": 2454,
+     "chars": 30436,
+     "ci95": [
+      -36.725957,
+      -32.288559
+     ],
+     "delta": -34.452622
+    },
+    "exact": {
+     "ci95": [
+      -0.7077,
+      4.8449
+     ],
+     "delta": 2.0142
+    }
+   },
+   "MeikiOCR_screen:VOCR3_W20": {
+    "cer": {
+     "baseline_errors": 1580,
+     "candidate_errors": 2454,
+     "chars": 32535,
+     "ci95": [
+      2.099139,
+      3.290113
+     ],
+     "delta": 2.686338
+    },
+    "dialogue_cer": {
+     "baseline_errors": 1478,
+     "candidate_errors": 2454,
+     "chars": 30436,
+     "ci95": [
+      2.567475,
+      3.861957
+     ],
+     "delta": 3.206729
+    },
+    "exact": {
+     "ci95": [
+      -18.3996,
+      -12.7926
+     ],
+     "delta": -15.6233
+    }
+   }
+  },
+  "systems": {
+   "F20": {
+    "cer": 3.5654,
+    "cer_ci95": [
+     3.3401,
+     3.7983
+    ],
+    "chars": 32535,
+    "dialogue_cer": 3.3217,
+    "dialogue_cer_ci95": [
+     3.0889,
+     3.5608
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 1011,
+    "errors": 1160,
+    "exact": 55.6342,
+    "exact_ci95": [
+     53.3478,
+     57.8674
+    ],
+    "exact_screens": 1022,
+    "hiragana_cer": 3.0742,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 562,
+    "screens": 1837
+   },
+   "Lens": {
+    "cer": 1.6475,
+    "cer_ci95": [
+     0.9987,
+     2.3819
+    ],
+    "chars": 32535,
+    "dialogue_cer": 1.7611,
+    "dialogue_cer_ci95": [
+     1.0687,
+     2.5438
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 536,
+    "errors": 536,
+    "exact": 95.3729,
+    "exact_ci95": [
+     94.393,
+     96.2983
+    ],
+    "exact_screens": 1752,
+    "hiragana_cer": 0.5415,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 99,
+    "screens": 1837
+   },
+   "MeikiOCR": {
+    "cer": 40.5164,
+    "cer_ci95": [
+     38.2566,
+     42.8581
+    ],
+    "chars": 32535,
+    "dialogue_cer": 42.5154,
+    "dialogue_cer_ci95": [
+     40.1351,
+     44.9717
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 12940,
+    "errors": 13182,
+    "exact": 40.9907,
+    "exact_ci95": [
+     38.7044,
+     43.2226
+    ],
+    "exact_screens": 753,
+    "hiragana_cer": 1.3128,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 240,
+    "screens": 1837
+   },
+   "MeikiOCR_screen": {
+    "cer": 7.5426,
+    "cer_ci95": [
+     6.9266,
+     8.1883
+    ],
+    "chars": 32535,
+    "dialogue_cer": 8.0628,
+    "dialogue_cer_ci95": [
+     7.398,
+     8.7623
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 2454,
+    "errors": 2454,
+    "exact": 43.0049,
+    "exact_ci95": [
+     40.773,
+     45.2912
+    ],
+    "exact_screens": 790,
+    "hiragana_cer": 3.5009,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 640,
+    "screens": 1837
+   },
+   "VOCR1": {
+    "cer": 5.972,
+    "cer_ci95": [
+     5.6492,
+     6.3038
+    ],
+    "chars": 32535,
+    "dialogue_cer": 5.7531,
+    "dialogue_cer_ci95": [
+     5.432,
+     6.0849
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 1751,
+    "errors": 1943,
+    "exact": 42.2972,
+    "exact_ci95": [
+     40.0109,
+     44.5305
+    ],
+    "exact_screens": 777,
+    "hiragana_cer": 4.3871,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 802,
+    "screens": 1837
+   },
+   "VOCR2": {
+    "cer": 5.7138,
+    "cer_ci95": [
+     5.3923,
+     6.0516
+    ],
+    "chars": 32535,
+    "dialogue_cer": 5.4869,
+    "dialogue_cer_ci95": [
+     5.164,
+     5.8234
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 1670,
+    "errors": 1859,
+    "exact": 43.9303,
+    "exact_ci95": [
+     41.5895,
+     46.2167
+    ],
+    "exact_screens": 807,
+    "hiragana_cer": 4.0589,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 742,
+    "screens": 1837
+   },
+   "VOCR3_FL10": {
+    "cer": 7.3859,
+    "cer_ci95": [
+     6.926,
+     7.8637
+    ],
+    "chars": 32535,
+    "dialogue_cer": 7.6817,
+    "dialogue_cer_ci95": [
+     7.1982,
+     8.1822
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 2338,
+    "errors": 2403,
+    "exact": 46.0533,
+    "exact_ci95": [
+     43.767,
+     48.2852
+    ],
+    "exact_screens": 846,
+    "hiragana_cer": 3.3259,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 608,
+    "screens": 1837
+   },
+   "VOCR3_H15": {
+    "cer": 5.8675,
+    "cer_ci95": [
+     5.5017,
+     6.2498
+    ],
+    "chars": 32535,
+    "dialogue_cer": 5.7268,
+    "dialogue_cer_ci95": [
+     5.3638,
+     6.1076
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 1743,
+    "errors": 1909,
+    "exact": 49.3195,
+    "exact_ci95": [
+     47.0876,
+     51.5514
+    ],
+    "exact_screens": 906,
+    "hiragana_cer": 3.0305,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 554,
+    "screens": 1837
+   },
+   "VOCR3_W20": {
+    "cer": 4.8563,
+    "cer_ci95": [
+     4.5109,
+     5.2255
+    ],
+    "chars": 32535,
+    "dialogue_cer": 4.8561,
+    "dialogue_cer_ci95": [
+     4.4948,
+     5.2392
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 1478,
+    "errors": 1580,
+    "exact": 58.6282,
+    "exact_ci95": [
+     56.4507,
+     60.8057
+    ],
+    "exact_screens": 1077,
+    "hiragana_cer": 3.1563,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 577,
+    "screens": 1837
+   },
+   "VOCR_H15": {
+    "cer": 3.5685,
+    "cer_ci95": [
+     3.3269,
+     3.8235
+    ],
+    "chars": 32535,
+    "dialogue_cer": 3.2297,
+    "dialogue_cer_ci95": [
+     2.9869,
+     3.4875
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 983,
+    "errors": 1161,
+    "exact": 57.975,
+    "exact_ci95": [
+     55.7431,
+     60.2069
+    ],
+    "exact_screens": 1065,
+    "hiragana_cer": 2.5382,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 464,
+    "screens": 1837
+   },
+   "v1": {
+    "cer": 30.8744,
+    "cer_ci95": [
+     29.255,
+     32.535
+    ],
+    "chars": 32535,
+    "dialogue_cer": 30.8549,
+    "dialogue_cer_ci95": [
+     29.2058,
+     32.5471
+    ],
+    "dialogue_chars": 30436,
+    "dialogue_errors": 9391,
+    "errors": 10045,
+    "exact": 27.9804,
+    "exact_ci95": [
+     25.9118,
+     29.9946
+    ],
+    "exact_screens": 514,
+    "hiragana_cer": 8.0138,
+    "hiragana_chars": 18281,
+    "hiragana_errors": 1465,
+    "screens": 1837
+   }
+  }
+ },
+ "screens": {
+  "crops": 3531,
+  "empty": 91,
+  "empty_crops": 705,
+  "excluded": 249,
+  "excluded_pages_by_reason": {
+   "no two reads agree": 10,
+   "r1,r2 skip:bad+skip:notext": 1,
+   "r1,r2 skip:cut": 167,
+   "r1,r2 skip:cut+skip:notext": 1,
+   "r1,r2 skip:cut+skip:ui": 1,
+   "r1,r2 skip:cut+unsure": 12,
+   "r1,r2 skip:multi": 13,
+   "r1,r2 skip:ui": 2,
+   "r1,r2 skip:ui+unsure": 1,
+   "r1,r2 unsure": 13,
+   "two of three non-text": 51
+  },
+  "excluded_reference_lines": 222,
+  "pages": 2177,
+  "reference_lines": 2826,
+  "scored": 1837
+ },
+ "training_or_selection_use": false
+}

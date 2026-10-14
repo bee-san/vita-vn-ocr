@@ -125,3 +125,30 @@ def test_expand_box_clamps_and_owner_decisions_are_narrow():
     assert ok["eligible"] and ok["owner_decision"].startswith("owner 2026-10-13 19:21Z")
     no = OF.folder_info("psp-planetarian-v34", reserved={"v34": "clannad-relation"})
     assert not no["eligible"]
+
+
+def test_owner_publish_writes_aggregates_only(tmp_path, monkeypatch):
+    import argparse
+    import json
+
+    import owner_frames as OF
+    out, pool = tmp_path / "build", tmp_path / "build" / "pool"
+    (pool / "manifests").mkdir(parents=True)
+    (pool / "logs").mkdir()
+    (pool / "reads").mkdir()
+    (out / "summary.json").write_text(json.dumps({"psp-x-v57": {"role": "training", "vn": "v57", "eligible": True,
+                                                                 "why_not": None, "files": 2, "unique": 2}}))
+    (pool / "logs" / "leak_test_sets.log").write_text('header\n{"tests": 3, "pool": 2, "pairs": 0}\n')
+    (pool / "reads" / "reads.jsonl").write_text('{"shot": "v57_owner0000"}\n{"shot": "v57_owner0001"}\n')
+    (pool / "labels.jsonl").write_text(json.dumps({"id": "v57_owner0000_0", "status": "kept", "how": "auto",
+                                                   "label": "「秘密の台詞」"}) + "\n")
+    (pool / "manifests" / "build_stats_t.json").write_text(json.dumps({"lines": 1}))
+    (pool / "manifests" / "lines_t.jsonl").write_text(json.dumps({"id": "v57_owner0000_0", "vn": "v57",
+                                                                  "crops": {"ink": [0, 0, 9, 9]}}) + "\n")
+    monkeypatch.setattr(OF, "ROOT", tmp_path)
+    OF.cmd_publish(argparse.Namespace(out=str(out), pool=str(pool), tag="t", check="pre"))
+    text = (tmp_path / "realplus" / "manifests" / "owner" / "stats.json").read_text(encoding="utf-8")
+    d = json.loads(text)
+    assert d["frames_read"] == 2 and d["lines_by_vn"] == {"v57": {"lines": 1, "ink": 1}}
+    assert d["labels_by_vn"] == {"v57": {"kept:auto": 1}} and d["leak"]["test_sets"]["pairs"] == 0
+    assert "秘密" not in text and "v57_owner0000" not in text          # no label text, no frame or line id

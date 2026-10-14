@@ -251,6 +251,53 @@ def cmd_pool_prep(args):
                      indent=1), flush=True)
 
 
+def cmd_publish(args):
+    """The committed, aggregate-only record of an owner pool (realplus/manifests/owner/stats.json): per-folder
+    eligibility and sizes, leak-check pair counts, candidate / label / build counts per VN and the npz sha256.
+    No file name, hash, box, text or pixel of a private frame."""
+    out, pool = Path(args.out), Path(args.pool)
+
+    def jl(p):
+        p = Path(p)
+        return [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()] if p.exists() else []
+    summary = json.loads((out / "summary.json").read_text())
+    folders = {k: {f: v.get(f) for f in ("role", "vn", "eligible", "why_not", "owner_decision", "files", "unique",
+                                          "dims", "console", "upscale")} for k, v in summary.items()}
+    leak = {}
+    for lp in sorted((pool / "logs").glob("leak_*.log")):
+        last = [x for x in lp.read_text().splitlines() if x.startswith("{")]
+        if last:
+            d = json.loads(last[-1])
+            leak[lp.stem[5:]] = {k: d.get(k) for k in ("tests", "pool", "min_corr", "pairs", "same-vn", "cross-vn")}
+    vn = lambda lid: lid.split("_")[0]  # noqa: E731
+    labels = jl(pool / "labels.jsonl")
+    by_vn = collections.defaultdict(lambda: collections.Counter())
+    for r in labels:
+        by_vn[vn(r["id"])][f"{r['status']}:{r['how'] if r['status'] == 'kept' else r['why']}"] += 1
+    build = json.loads((pool / "manifests" / f"build_stats_{args.tag}.json").read_text())
+    man = jl(pool / "manifests" / f"lines_{args.tag}.jsonl")
+    lines_vn = collections.defaultdict(lambda: collections.Counter())
+    for m in man:
+        lines_vn[m["vn"]]["lines"] += 1
+        for c in m["crops"]:
+            lines_vn[m["vn"]][c] += 1
+    doc = {"kind": "owner-pool-stats", "tag": args.tag, "private_dir": "shared/private/owner-games/_build/owner-pool",
+           "codex": "none: private frames; Claude + MeikiOCR / PP-OCRv6 agreement only",
+           "folders": folders, "leak": leak,
+           "frames_read": len(jl(pool / "reads" / "reads.jsonl")),
+           "candidates_by_vn": dict(collections.Counter(vn(r["id"]) for r in labels)),
+           "labels_by_vn": {k: dict(v) for k, v in sorted(by_vn.items())},
+           "build": build, "lines_by_vn": {k: dict(v) for k, v in sorted(lines_vn.items())}}
+    cp = pool / "review" / f"check_report_{args.check}.json"
+    if cp.exists():
+        d = json.loads(cp.read_text())
+        doc["precision_check"] = {k: v for k, v in d.items() if k not in ("disagreements", "batches")}
+    dst = ROOT / "realplus" / "manifests" / "owner"
+    dst.mkdir(parents=True, exist_ok=True)
+    (dst / "stats.json").write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"published {dst / 'stats.json'}", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", default=str(PRIVATE))
@@ -264,8 +311,12 @@ def main():
     p = sub.add_parser("pool-prep")
     p.add_argument("--pool", required=True, help="the owner pool directory (under shared/private)")
     p.add_argument("--folder", action="append", help="only these training folders (default: all)")
+    p = sub.add_parser("publish")
+    p.add_argument("--pool", required=True)
+    p.add_argument("--tag", required=True)
+    p.add_argument("--check", default="pre", help="the build tag the precision sample was drawn from")
     a = ap.parse_args()
-    {"inventory": cmd_inventory, "prep": cmd_prep, "pool-prep": cmd_pool_prep}[a.cmd](a)
+    {"inventory": cmd_inventory, "prep": cmd_prep, "pool-prep": cmd_pool_prep, "publish": cmd_publish}[a.cmd](a)
 
 
 if __name__ == "__main__":

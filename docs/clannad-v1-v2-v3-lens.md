@@ -7,9 +7,10 @@ each), VOCR2 (4.14%), FL10 (4.56%, the long run's model) and v1 (13.67%).
 
 - **Dialogue.** The three v3 models' CER is below Lens's (1.17-1.46% against 1.53%), but the intervals
   overlap. Lens still reads 96.5% of dialogue lines exactly, against VOCR3_W20's 85.3%: all 526 of its errors
-  sit on 77 lines, and 10 of those lines hold 346. Our errors are spread over 584 lines or more.
-- **Names.** Our models lose most on speaker names. The finder's name-plate crop takes in scene art, and at
-  least half of our models' name errors are characters beyond the reference's length.
+  sit on 77 lines, and 10 of those lines hold 346. Our errors are spread over 584 lines (VOCR3_W20) or more.
+- **Names.** Our models lose most on speaker names. The finder's name-plate crop takes in scene art, and for
+  most of our models (all but F20, at 46.5%) over half their name errors are characters beyond the
+  reference's length.
 - **Crops with no text.** The v3 models write more than v0.2.0 on them.
 
 VOCR3_W20 beats both v0.2.0 H15 and F20, and VOCR3_FL10 beats FL10. VOCR3_H15 has a higher CER than v0.2.0
@@ -101,8 +102,9 @@ The reads, in numbers:
 
 Of the 3,048 scored lines, 996 are speaker names (2,209 reference characters) and 24 are inverted (dark text).
 
-Every scored line whose reference differs from Lens's reading is flagged `lens_disagree`: 76 of the 3,048
-(2.5%; 64 settled by R1 = R2 and 12 by R3; 5 are names). R1 never saw Lens, and on none of the 76 did it
+Every scored line whose reference's scoring key differs from Lens's reading is flagged `lens_disagree`: 76 of
+the 3,048 (2.5%; 64 settled by R1 = R2 and 12 by R3; 5 are names). R1 never saw Lens, and on none of the 76
+did it
 give Lens's reading. The flagged lines are listed privately for the owner (`clannad-compare/lens_disagree.jsonl`
 under `shared/private/`), never here.
 
@@ -189,13 +191,15 @@ characters) and 2,052 dialogue lines (33,485 characters).
 In this game the GRAD finder's crop of a name plate is often much wider than the name. Of the 996 name
 crops, 449 are over 500 px wide, up to 896 px (the whole dialogue-box region), where a tight name crop is
 about 70-100 px. Those wide crops take in the scene art beside the plate, and our recognizers write
-characters for the art. On name lines, 51% (H15) to 82% (v1) of their errors are characters beyond the
-reference's length, which is a lower bound on insertions; Lens reads only the name.
+characters for the art. On name lines, the share of each model's errors that are characters beyond the
+reference's length (a lower bound on insertions) runs from 46.5% (F20) to 89.5% (VOCR3_FL10); Lens reads
+only the name.
 
 On dialogue the three v3 models have the lowest CER point estimates of all systems, Lens included, though
 their intervals overlap Lens's. Lens still reads far more lines exactly. Its errors are few and
-concentrated: 77 lines hold all 526 of them, and 10 lines hold 346. Our errors are spread thin, over 584
-lines (VOCR3_W20) to 1,120 (FL10). Only 24 scored lines are inverted (92 characters), too few to report.
+concentrated: 77 lines hold all 526 of them, and 10 lines hold 346. Our errors are spread thin: among the
+v2/v3 recognizers compared with Lens, over 584 lines (VOCR3_W20) to 1,120 (FL10); v1, far behind, has
+errors on 1,277. Only 24 scored lines are inverted (92 characters), too few to report.
 
 **Crops with no text.** Two reads found 904 crops empty (scene art, box edges): line-finder false positives.
 They are not in CER. This is what each system writes on them:

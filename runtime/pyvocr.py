@@ -84,6 +84,8 @@ def load_lib(path=None):
     lib.vocr_sizes.argtypes = [C.POINTER(sz), C.POINTER(sz)]
     lib.vocr_class_text.argtypes = [vp, u, C.POINTER(u)]
     lib.vocr_class_text.restype = vp
+    if not hasattr(lib, "vocr_lm_load"):     # a library built from vocr.c alone (eval/vocr3_report.py): no decoder
+        return lib
     lib.vocr_lm_check_crc.argtypes = [vp, sz]
     lib.vocr_lm_load.argtypes = [vp, vp, sz]
     lib.vocr_lm_workspace_bytes.argtypes = [vp, vp, C.POINTER(_LMOpts)]

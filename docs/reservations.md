@@ -152,7 +152,7 @@ names `test-vn`, so a VOCR5 pool must not reuse it unchanged).
 
 | source | freed | notes |
 |---|---:|---|
-| realplus (VNDB, 2026-10-13 dump) | 20,867 screenshots of 4,883 VNs | 20,572 scaled PC (4,847 VNs) and 295 PSP (41 VNs). The old rules had dropped them as `test-vn` 9,468, `val-bucket` 6,126, `shared-release` 4,228, `test-set` 752, `family` 242, fresh native 36; 15 are new in the later dump. All pass the rating, language and kind filters |
+| realplus (VNDB, 2026-10-13 dump) | 20,867 screenshots of 4,883 VNs (fetched 2026-10-14: 20,867 of 20,867, with hashes; 5 pixel copies within the tier and 2 of realplus v2 screenshots, so 20,860 new) | 20,572 scaled PC (4,847 VNs) and 295 PSP (41 VNs). The old rules had dropped them as `test-vn` 9,468, `val-bucket` 6,126, `shared-release` 4,228, `test-set` 752, `family` 242, fresh native 36; 15 are new in the later dump. All pass the rating, language and kind filters |
 | native pool (PSP/Vita frames) | 1,217 frames of 245 VNs | 1,026 PSP, 191 Vita. 886 are already on disk and read (realdata/teacher, lines unlabelled), 295 are new (the same 295 PSP shots as above), 36 are in other pools. They had been dropped as linefind 299, `test-set` 295, `shared-release` 245, `family` 176, `development` 89, owner series 74, `val-bucket` 24, eval candidates 15 |
 | both lists, distinct | 21,789 screenshots of 5,077 VNs | |
 | synthetic names | 22,189 VNDB characters | synth3's name gate dropped 24,331 of 127,809; it now drops 2,361 |
@@ -193,7 +193,8 @@ hash is known. Each pool reports how many rows were hash-checked (`hash_coverage
 `--require-hashes` makes an unhashed row a blocker. An audit of this PR found the first version checked hashes only
 on rows that carried them, which was 1 pool of 25. The join fixed that; the results are below.
 
-Run on the 2026-10-13 dump with `--pixels`, the check gave **RESERVE_OK** on 25 training pools and lists:
+Run on the 2026-10-13 dump with `--pixels`, the check gave **RESERVE_OK** on 25 training pools and lists, every row
+hash-checked (435,783 rows, all with a pixel hash):
 
 - realplus v2 (ink, GRAD, lines);
 - realplus v3i3 (ink, GRAD, lines);
@@ -201,7 +202,7 @@ Run on the 2026-10-13 dump with `--pixels`, the check gave **RESERVE_OK** on 25 
 - owner pool v2 (ink, GRAD) and the 1,215 owner training frames;
 - teacher_train, teacher_distill_train, real_train and real_unlabelled, cleaned as below;
 - the train parts of teacher_val, teacher_distill_val, real_val and devnative;
-- both reclaim lists.
+- both reclaim lists (the realplus tier after its fetch).
 
 As negative controls, vita-test, psp-test, the sample parts and the original teacher_train fail.
 

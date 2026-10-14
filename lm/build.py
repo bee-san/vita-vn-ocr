@@ -30,12 +30,24 @@ same bytes (the tests build a small model twice). Steps:
 Held-out text for the profile choice is never development data: by default it is the realplus v2 labels
 (real VN lines of training-side VNs, the recognizer's training pool; the LM is not trained on them), never
 teacher_val, devnative, the owner pool or any protected set.
+
+Protected titles (always applied, before step 1): the VNs of eval/manifests/test_games.json ("all": vita-test,
+psp-test, their families and release partners) and data/manifests/synth3_exclude_clannad.json (the CLANNAD
+family), plus any --exclude-vns list. Their VNDB character names and titles (synth3's pinned VNDB extracts) become
+text markers by synth's rule (synth/owner_games.marker_candidates): every title (>= 3 Japanese or >= 5 Latin
+characters) and every full name of two or more parts (joined, >= 3 characters) always; a one-part name of >= 3
+characters only when it hits at most 50 corpus pieces (more: a common word). A corpus piece holding a marker is
+dropped. A Jiten word is dropped when it is a marker, or a protected character's full name or name part (>= 2
+characters) that hits at most 50 corpus pieces. The counts go into the manifest.
 """
 import argparse
+import bisect
 import hashlib
 import json
 import os
+import re
 import sys
+import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -45,6 +57,10 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "synth"))
 import vlm  # noqa: E402
+
+JP = re.compile(r"[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9fff\u3400-\u4dbf\u3005]")
+MIN_MARKER = 3           # synth/owner_games.MIN_MARKER
+MAX_RARE_HITS = 50       # synth/owner_games.MAX_RARE_HITS: a name hitting more corpus pieces is a common word
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 SOURCES = HERE / "sources.json"
@@ -130,6 +146,84 @@ def jiten_words(path, vocab):
             if rank < best.get(w, 1 << 30):
                 best[w] = rank
     return best
+
+
+def protected(src, extra_vns=()):
+    """(VN ids, [name parts] per character, titles) of the protected titles and any extra VNs."""
+    from synth3_text import norm_vn
+    ex = src["exclusions"]
+    vns = set(json.loads(checked(ex["test_games"]).read_text(encoding="utf-8"))["all"])
+    vns |= set(json.loads(checked(ex["clannad"]).read_text(encoding="utf-8"))["vns"])
+    vns |= set(extra_vns)
+    chars, titles = [], []
+    with open(checked(ex["vndb_chars"]), encoding="utf-8") as f:
+        col = {k: i for i, k in enumerate(f.readline().rstrip("\n").split("\t"))}
+        for line in f:
+            r = line.rstrip("\n").split("\t")
+            if set(r[col["vn_ids"]].split(",")) & vns:
+                chars.append([norm_vn(x) for x in r[col["name"]].split(" ") if x])
+    with open(checked(ex["vndb_titles"]), encoding="utf-8") as f:
+        col = {k: i for i, k in enumerate(f.readline().rstrip("\n").split("\t"))}
+        for line in f:
+            r = line.rstrip("\n").split("\t")
+            if r[col["vn_id"]] in vns:
+                titles.append(r[col["title"]])
+    return vns, chars, titles
+
+
+def hit_lines(text, starts, s, cap=None):
+    """Indices of the pieces of `text` (start offsets `starts`) holding s; stops after cap + 1 when cap is set."""
+    out, j = set(), text.find(s)
+    while j >= 0:
+        out.add(bisect.bisect_right(starts, j) - 1)
+        if cap is not None and len(out) > cap:
+            break
+        j = text.find(s, j + 1)
+    return out
+
+
+def exclude_protected(corpus_lines, jiten, vns, chars, titles):
+    """Drop the corpus pieces and the Jiten words that name a protected title or character (module docstring).
+    Returns (kept pieces, filtered jiten, stats)."""
+    always, rare = set(), set()
+    for t in titles:
+        t = unicodedata.normalize("NFC", t or "").strip()
+        if t and (JP.search(t) and len(t) >= 3 or not JP.search(t) and len(t) >= 5):
+            always.add(t)
+            full = unicodedata.normalize("NFKC", t)
+            if full != t and len(full) >= 3:
+                always.add(full)
+    words = set()
+    for parts in chars:
+        s = "".join(parts)
+        if len(s) >= MIN_MARKER and JP.search(s):
+            (always if len(parts) >= 2 else rare).add(s)
+        words |= {w for w in (s, *parts) if len(w) >= 2 and JP.search(w)}
+    rare -= always
+    text = "\n".join(corpus_lines)
+    starts, pos = [0], text.find("\n")
+    while pos >= 0:
+        starts.append(pos + 1)
+        pos = text.find("\n", pos + 1)
+    drop, hits = set(), {}
+    for m in sorted(always):
+        drop |= hit_lines(text, starts, m)
+    for m in sorted((rare | words) - always):
+        h = hit_lines(text, starts, m, MAX_RARE_HITS)
+        hits[m] = len(h)
+        if m in rare and len(h) <= MAX_RARE_HITS:
+            drop |= h
+    markers = always | {m for m in rare if hits[m] <= MAX_RARE_HITS}
+    bad = markers | {w for w in words if hits.get(w, 0) <= MAX_RARE_HITS}
+    kept = [x for i, x in enumerate(corpus_lines) if i not in drop]
+    out, jdrop = {}, {}
+    for name, (wd, share) in jiten.items():
+        out[name] = ({w: r for w, r in wd.items() if w not in bad}, share)
+        jdrop[name] = len(wd) - len(out[name][0])
+    stats = {"vns": len(vns), "characters": len(chars), "titles": len(titles), "markers": len(markers),
+             "common_names_not_markers": len(rare) - len(markers & rare),
+             "corpus_pieces_dropped": len(drop), "jiten_words_dropped": jdrop}
+    return kept, out, stats
 
 
 def sequences(corpus_lines, vocab, jiten, corpus_chars):
@@ -478,6 +572,15 @@ def build(args):
         jmeta.append({"name": name, "url": e["url"], "sha256": e["sha256"], "licence": e["licence"],
                       "attribution": e["attribution"], "share": float(share)})
         paths[f"jiten_{name}"] = e["path"]
+    extra = []
+    for path in args.exclude_vns:
+        extra += [v.strip() for v in Path(path).read_text(encoding="utf-8").split() if v.strip()]
+    vns, chars, titles = protected(src, extra)
+    corpus_lines, jiten, xstats = exclude_protected(corpus_lines, jiten, vns, chars, titles)
+    xstats["extra_vns"] = len(set(extra))
+    xstats["extra_vns_sha256"] = hashlib.sha256("\n".join(sorted(set(extra))).encode()).hexdigest() if extra else None
+    corpus_chars = sum(map(len, corpus_lines))
+    print(f"exclusion: {xstats}", flush=True)
     seqs, mult, jstats = sequences(corpus_lines, vocab, jiten, corpus_chars)
     for m in jmeta:
         m.update(jstats.get(m["name"], {}))
@@ -522,6 +625,8 @@ def build(args):
     manifest = {"kind": "volm-build", "version": vlm.VERSION, "order": args.order, "budget_bytes": args.bytes,
                 "vocab": {"sha256": src["vocab"]["sha256"], "tokens": vocab.V},
                 "corpora": corpora, "jiten": jmeta, "heldout_lines": len(held), "heldout_text_sha256": held_sha,
+                "exclusion": dict(xstats, sources={k: v["sha256"] for k, v in src["exclusions"].items()},
+                                  corpus_chars_kept=corpus_chars),
                 "ngrams_counted": [int(len(c[0])) for c in counts], "profiles": tried,
                 "chosen_thresholds": [int(x) for x in th],
                 "builder": {"script": "lm/build.py", "numpy": np.__version__}}
@@ -550,6 +655,8 @@ def main():
     ap.add_argument("--heldout", default="realplus")
     ap.add_argument("--heldout-lines", type=int, default=3000)
     ap.add_argument("--limit", type=int, default=0, help="read at most this many lines per corpus (tests)")
+    ap.add_argument("--exclude-vns", action="append", default=[],
+                    help="a file of VN ids (whitespace-separated) excluded like the protected titles (ablations)")
     build(ap.parse_args())
 
 

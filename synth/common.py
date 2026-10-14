@@ -12,7 +12,9 @@ the grey line crops the recognizer reads, inverting dark-text lines by default s
 recognizer always sees light text on a dark ground. docs/linefind.md describes the
 method and its evaluation.
 """
+import functools
 import hashlib
+import json
 from pathlib import Path
 
 import numpy as np
@@ -276,6 +278,44 @@ def load_vocab(path=DATA / "vocab.txt"):
 
 
 def is_test_vn(vn_id):
-    """Deterministic VN-level split: about 15% of VNs are held out for evaluation,
-    so no screenshot of a test VN is ever used for training or as a background."""
+    """FROZEN history: the old VN hash split, md5(vn) % 100 < 15 (about 15% of VNDB, ~9,800 VNs).
+
+    eval's candidate rule (eval/tools/collect.py) and reports written before 2026-10-14 used it, so it
+    stays to rebuild those manifests. It reserves nothing any more and must not keep data out of
+    training (owner 2026-10-14 13:25Z, docs/reservations.md): use is_reserved_vn()."""
     return int(hashlib.md5(vn_id.encode()).hexdigest(), 16) % 100 < 15
+
+
+# The reservation (docs/reservations.md; owner 2026-10-14 13:25Z). The only test sets are vita-test, psp-test
+# and the CLANNAD family: their VNs and every VN that shares a VNDB release with one ("test"). A fixed ~100-VN
+# development sample carved from the training pool ("dev_sample") is kept out of the training pools of any round
+# that selects on it. Everything else is training data. realplus/shots.py reserve builds the file from a VNDB dump.
+RESERVED = ROOT / "eval" / "manifests" / "reserved.json"
+
+
+@functools.lru_cache(maxsize=None)
+def reservation(path=RESERVED):
+    """The committed reservation: {"test": {vn: reason}, "dev_sample": {vn: reason}, "sessions": [...], ...}."""
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def test_set_vns(path=RESERVED):
+    """{vn: reason} of the test reservation only (vita-test, psp-test, the CLANNAD family, release partners)."""
+    return dict(reservation(path)["test"])
+
+
+def dev_sample_vns(path=RESERVED):
+    """{vn: reason} of the development sample (and its release partners)."""
+    return dict(reservation(path)["dev_sample"])
+
+
+def reserved_sessions(path=RESERVED):
+    """The test capture sessions: VNDB release ids of vita-test's and psp-test's screenshots."""
+    return set(reservation(path)["sessions"])
+
+
+def is_reserved_vn(vn_id, dev=True, path=RESERVED):
+    """True when a VN may not be used for training (or as a synthetic scene, name or calibration source):
+    a test VN, or (dev=True, the default) a development-sample VN. Everything else is training data."""
+    r = reservation(path)
+    return vn_id in r["test"] or (dev and vn_id in r["dev_sample"])

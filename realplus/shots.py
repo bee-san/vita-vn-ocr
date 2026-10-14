@@ -5,6 +5,7 @@
   shots.py select  [--per-vn-hires K]           -> $REALPLUS/manifests/shots.jsonl, selection.json
   shots.py fetch   [--workers N] [--delay S]    -> $REALPLUS/shots/<kind>/<vn>_<id>.jpg (sha256, pixel sha256)
   shots.py dedupe                               pixel duplicates of every existing pool and set -> dups.json
+  shots.py reserve [--dump DB] [--test-games]   the reservation -> eval/manifests/reserved.json (docs/reservations.md)
 
 The listing comes from the near-complete database dump (https://vndb.org/d14, one file a day,
 the API's usage terms) instead of thousands of API pages. A screenshot is a candidate when
@@ -14,17 +15,14 @@ the API's usage terms) instead of thousands of API pages. A screenshot is a cand
   * it is one of realdata's three kinds: vita (a psv release at 960x544), psp (a psp release
     at 480x272) or hires (any other release's shot, aspect 1.25-1.85, at least 640x400, later
     scaled to fit 960x544 and 480x272);
-  * its VN is on the training side (reserved_vns): not a test game (synth/common.is_test_vn,
-    eval/manifests/test_games.json "all"), not CLANNAD or its family, not a fresh native
-    textbox title (FRESH_NATIVE) or any of its VNDB relations, not a development VN (synth3's
-    exclude_dev_vns.txt, the general-VN / CLANNAD development VNs, devnative's cohort) or its
-    family, not in the
-    validation bucket of the repo's split (15 <= md5(vn) % 100 < 25), and sharing no VNDB
-    release with any of those;
+  * its VN is on the training side (reserved_vns, docs/reservations.md; owner 2026-10-14 13:25Z): not
+    in the test reservation (a vita-test or psp-test game, the CLANNAD family, or a VN on one VNDB
+    release with one of them) and not in the development sample (eval/manifests/reserved.json,
+    "dev_sample"). The old hash splits (synth/common.is_test_vn, val_bucket) reserve nothing any more;
   * its release is not one of eval's test capture sessions, and the screenshot (VNDB image id)
-    is in no existing pool or evaluation set (realdata/teacher, synth2/synth3 scenes, the
-    data/vndb shots, linefind, eval's sets and candidates, fresh-synthetic backgrounds,
-    general-VN development, devnative).
+    is in no existing pool (realdata/teacher, synth2/synth3 scenes, the data/vndb shots,
+    fresh-synthetic backgrounds, general-VN development, devnative) and is not a vita-test or
+    psp-test screenshot. eval's unchosen candidates and linefind's finder sets are training-side.
 
 `dedupe`, after `fetch`, also drops every screenshot whose decoded pixels (pixel_sha256) equal
 those of a screenshot in any of those pools or sets that is on disk, or an earlier realplus
@@ -45,7 +43,6 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT / "synth"))
-from common import is_test_vn  # noqa: E402
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 ART = HERD / "shared" / "artifacts"
@@ -79,7 +76,8 @@ def dump_dir():
 # ---------------------------------------------------------------- reserved VNs and screenshots
 
 def val_bucket(vn):
-    """realdata/teacher's validation bucket (build.split_of): 15 <= md5(vn) % 100 < 25."""
+    """FROZEN history: realdata/teacher's validation bucket (build.split_of), 15 <= md5(vn) % 100 < 25. teacher_val
+    and real_val were built from it; it reserves nothing since 2026-10-14 (docs/reservations.md)."""
     return 15 <= int(hashlib.md5(vn.encode()).hexdigest(), 16) % 100 < 25
 
 
@@ -171,8 +169,9 @@ def fresh_native_hashes():
 
 
 def dev_vns():
-    """Development VNs: synth3's reservation (teacher_val's VNs and the general-VN / CLANNAD
-    development VNs), the general-VN development manifests, and devnative's cohort."""
+    """The old development reservation (information only since 2026-10-14; docs/reservations.md): synth3's list
+    (teacher_val's VNs and the general-VN / CLANNAD development VNs), the general-VN development manifests, and
+    devnative's cohort. These VNs are training data now, apart from the development sample in reserved_vns()."""
     out = set(GENERAL_VN_DEV)
     p = ART / "synth3" / "mining" / "exclude_dev_vns.txt"
     if p.exists():
@@ -221,6 +220,21 @@ def screenshot_sources():
     return src
 
 
+# Sets that no longer protect their screenshots (docs/reservations.md): eval's unchosen candidates and linefind's
+# finder sets are training-side. Their vita-test / psp-test screenshots stay protected as "eval-test".
+UNRESERVED_SETS = {"eval-candidates", "linefind"}
+
+
+def eval_test_images(repo=ROOT):
+    """VNDB image ids of vita-test's and psp-test's screenshots."""
+    out = set()
+    for s in ("vita-test", "psp-test"):
+        p = repo / "eval" / "manifests" / f"{s}.jsonl"
+        if p.exists():
+            out |= image_ids_in(p)
+    return out
+
+
 def screenshot_dirs():
     """(name, dir) of every local copy of an existing pool's or set's screenshots."""
     return [("realdata", ART / "realdata" / "shots"), ("data-vndb", HERD / "shared" / "data" / "vndb" / "shots"),
@@ -238,18 +252,25 @@ def image_ids_in(path):
 
 
 def reserved_screenshots():
-    """{VNDB image id: [pool or set names]} over every existing pool and set, by file and by id."""
+    """{VNDB image id: [pool or set names]} over every existing pool and set, by file and by id. Sets in
+    UNRESERVED_SETS count only for their vita-test / psp-test screenshots (named "eval-test")."""
     out = collections.defaultdict(set)
+    test_img = eval_test_images()
     for name, path in screenshot_sources():
         if Path(path).exists():
             for i in image_ids_in(path):
-                out[i].add(name)
+                if name not in UNRESERVED_SETS:
+                    out[i].add(name)
+                elif i in test_img:
+                    out[i].add("eval-test")
     for name, d in screenshot_dirs():
         if d.exists():
             for p in d.rglob("*"):
                 m = SHOT_FILE.match(p.name)
-                if m:
+                if m and name not in UNRESERVED_SETS:
                     out[int(m.group(1))].add(name)
+                elif m and int(m.group(1)) in test_img:
+                    out[int(m.group(1))].add("eval-test")
     return out
 
 
@@ -314,110 +335,305 @@ def langs_ok(langs):
     return set(langs or ()) in LANGS_OK
 
 
-def reserved_vns(d, test_all=None, fresh=None, dev=None):
-    """{vn: reason} for every VN off limits to realplus. Reasons, first match wins:
+def release_partners(d, vns, close=False):
+    """{partner: [release ids]}: every VN listed on one VNDB release with a VN of vns (compilations, bundles, one
+    game filed under two VN entries), the VNs of vns themselves left out. close=True: only a release that links
+    just the two VNs (one game filed twice, a game and its fan disc on one disc); compilations don't count."""
+    vns = set(vns)
+    out = collections.defaultdict(set)
+    for rid, rv in d["rel_vns"].items():
+        if len(rv) > 1 and rv & vns:
+            for u in rv - vns:
+                if not close or len(rv) == 2:
+                    out[u].add(rid)
+    return {u: sorted(rs, key=lambda r: (int(r[1:]) if r[1:].isdigit() else 1 << 62, r)) for u, rs in out.items()}
 
-      clannad       CLANNAD by id or title
-      clannad-family  CLANNAD_FAMILY, the conductor's list of CLANNAD's direct family
-      owner-test-series  owner_test_vns(): the owner's test-only series (Memories Off, Aiyoku no Eustia,
-                    428), every VN of them
-      test-set      eval's test_games.json "all" (set games, their family, release partners)
-      test-vn       synth/common.is_test_vn (the 15% of VNs held out for evaluation)
-      fresh-native  a title of the fresh native textbox test
-      development   synth3's exclude_dev_vns.txt, general-VN / CLANNAD development, devnative
-      val-bucket    the repo's validation split, 15 <= md5(vn) % 100 < 25
-      fresh-native-relation  any direct VNDB relation (every kind) of a fresh native title
-      clannad-relation  a direct VNDB relation of CLANNAD (v4) of every kind, or a FAMILY relation of
-                    a CLANNAD_FAMILY VN
-      owner-test-relation, owner-test-shared-release  owner_test_vns(): a VNDB relation of any kind of
-                    a series VN, or a VN on one VNDB release with a series VN or such a relation
-      family        a direct VNDB relation of kind FAMILY of a CLANNAD, fresh-native or
-                    development VN (test-set already holds the set games' family)
-      shared-release  on one VNDB release with a test-set, CLANNAD, fresh-native, development or
-                    family VN; or with a test-vn or val-bucket VN when the release links just the
-                    two of them (one game filed twice, or a game and its fandisc) or the two are
-                    FAMILY relations. Larger compilations of unrelated games don't count there.
 
-    OWNER_ALLOWED VNs (planetarian, v34: owner 2026-10-13 19:21Z and 20:47Z) never get a derived reason (the
-    relation, family and shared-release ones); the direct reasons above still apply to them.
-    """
-    test_all = set(test_games()["all"] if test_all is None else test_all)
-    fresh = fresh_native_vns() if fresh is None else set(fresh)
-    dev = dev_vns() if dev is None else set(dev)
-    vns = set(d["olang"])
-    clannad = set(CLANNAD) | {v for v in vns if any(CLANNAD_TITLE.search(t) for t in d["title"].get(v, []))}
-    owner = owner_test_vns(d)
-    owner_series = {v for v, r in owner.items() if r == "owner-test-series"}
-    why = {}
-    for v in vns | test_all | fresh | dev | CLANNAD_FAMILY:
-        if v in clannad:
-            why[v] = "clannad"
-        elif v in CLANNAD_FAMILY:
-            why[v] = "clannad-family"
-        elif v in owner_series:
-            why[v] = "owner-test-series"
-        elif v in test_all:
-            why[v] = "test-set"
-        elif is_test_vn(v):
-            why[v] = "test-vn"
-        elif v in fresh:
-            why[v] = "fresh-native"
-        elif v in dev:
-            why[v] = "development"
-        elif val_bucket(v):
-            why[v] = "val-bucket"
-    roots = {v for v, r in why.items() if r in ("clannad", "fresh-native", "development")}
-    fresh_roots = {v for v, r in why.items() if r == "fresh-native"}
-    anyrel = d.get("any_relations", d["relations"])
-
-    def derive(u, reason):                     # a derived reason, never for an owner-allowed VN
-        if u not in OWNER_ALLOWED:
-            why.setdefault(u, reason)
-    for v in sorted(fresh_roots):              # the fresh native titles: relations of every kind
-        for u in anyrel.get(v, ()):
-            derive(u, "fresh-native-relation")
-    for v, rs in anyrel.items():
-        if rs & fresh_roots:
-            derive(v, "fresh-native-relation")
-    # CLANNAD (audit of PR #57): CLANNAD's own relations of every kind (char-sharing parodies such
-    # as NETANNAD reuse its characters, names and text), and the FAMILY relations of the
-    # conductor's family list (a sequel of a family member, such as Kyou After 2).
-    for v in sorted(CLANNAD):
-        for u in anyrel.get(v, ()):
-            derive(u, "clannad-relation")
-    for v, rs in anyrel.items():
-        if rs & CLANNAD:
-            derive(v, "clannad-relation")
+def clannad_vns(d):
+    """{vn: reason} of the CLANNAD family as the repo protects it: CLANNAD (v4) and every VN titled CLANNAD
+    (`clannad`), the conductor's family list (`clannad-family`), CLANNAD's direct VNDB relations of every kind and
+    the FAMILY relations of the family list (`clannad-relation`: char-sharing parodies such as NETANNAD, sequels of
+    family members such as Kyou After 2). OWNER_ALLOWED VNs never get the derived relation reason."""
+    vns = set(d["olang"]) | set(d["title"])
+    why = {v: "clannad" for v in set(CLANNAD) | {v for v in vns if any(CLANNAD_TITLE.search(t)
+                                                                         for t in d["title"].get(v, []))}}
     for v in sorted(CLANNAD_FAMILY):
-        for u in d["relations"].get(v, ()):
-            derive(u, "clannad-relation")
-    for v, rs in d["relations"].items():
-        if rs & CLANNAD_FAMILY:
-            derive(v, "clannad-relation")
-    # the owner's test series (2026-10-13 10:51Z): relations of every kind and every release partner
-    for v, r in sorted(owner.items()):
-        if r == "owner-test-series":           # direct: a series VN itself
-            why.setdefault(v, r)
-        else:
-            derive(v, r)
-    for v in sorted(roots):
-        for u in d["relations"].get(v, ()):
-            derive(u, "family")
-    for v, rs in d["relations"].items():       # relations are listed both ways, but be safe
-        if rs & roots:
-            derive(v, "family")
-    strict = {v for v, r in why.items() if r not in ("test-vn", "val-bucket")}
-    loose = set(why) - strict
-    for rid, rv in sorted(d["rel_vns"].items()):
-        if len(rv) < 2:
-            continue
-        for u in sorted(rv):
-            if u in why or u in OWNER_ALLOWED:
-                continue
-            others = rv - {u}
-            if others & strict or (others & loose and (len(rv) == 2 or d["relations"].get(u, set()) & others)):
-                why[u] = "shared-release"
+        why.setdefault(v, "clannad-family")
+    anyrel = d.get("any_relations", d["relations"])
+    rel = set()
+    for v in CLANNAD:
+        rel |= set(anyrel.get(v, ()))
+    rel |= {v for v, rs in anyrel.items() if rs & CLANNAD}
+    for v in CLANNAD_FAMILY:
+        rel |= set(d["relations"].get(v, ()))
+    rel |= {v for v, rs in d["relations"].items() if rs & CLANNAD_FAMILY}
+    for v in sorted(rel - set(OWNER_ALLOWED)):
+        why.setdefault(v, "clannad-relation")
     return why
+
+
+def set_games(tg=None):
+    """The games of the two scored test sets: vita-test's 16 and psp-test's 14 (28 VNs; two are in both)."""
+    tg = test_games() if tg is None else tg
+    return set(tg["vita-test"]) | set(tg["psp-test"])
+
+
+def test_reservation(d, sets=None):
+    """{vn: reason} of the test reservation (owner 2026-10-14 13:25Z: the only test sets are vita-test, psp-test
+    and the CLANNAD family, "with those exact VNs plus their shared releases"), first reason wins:
+
+      clannad, clannad-family, clannad-relation   clannad_vns(): the CLANNAD family
+      test-set                 a vita-test or psp-test game
+      clannad-shared-release   on one VNDB release with a CLANNAD-family VN (the Key boxes: Kanon, AIR, Little Busters!)
+      test-shared-release      on one VNDB release with a test-set game (compilations, an original and its fan disc
+                               on one disc, bundles of a series)
+
+    OWNER_ALLOWED VNs (planetarian, v34, on the Key 10th Memorial BOX with CLANNAD: owner 2026-10-13 19:21Z and
+    20:47Z) never get a shared-release reason. Nothing else is reserved: not the old hash splits (synth/common.
+    is_test_vn, val_bucket), not the set games' other VNDB relations, not teacher_val, devnative, the fresh native
+    textbox titles or the owner's former test series."""
+    sets = set_games() if sets is None else set(sets)
+    why = clannad_vns(d)
+    for v in sorted(sets, key=lambda v: int(v[1:])):
+        why.setdefault(v, "test-set")
+    croot = {v for v, r in why.items() if r.startswith("clannad")}
+    for u in sorted(release_partners(d, croot)):
+        if u not in OWNER_ALLOWED:
+            why.setdefault(u, "clannad-shared-release")
+    for u in sorted(release_partners(d, sets)):
+        if u not in OWNER_ALLOWED:
+            why.setdefault(u, "test-shared-release")
+    return why
+
+
+def committed_reservation(path=None):
+    """eval/manifests/reserved.json ({"test": {...}, "dev_sample": {...}, ...}), or None before it exists."""
+    p = Path(path or ROOT / "eval" / "manifests" / "reserved.json")
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
+def reserved_vns(d, sets=None, dev=None, committed=None):
+    """{vn: reason} for every VN off limits to the training pools (docs/reservations.md):
+
+      the test reservation    test_reservation(d): the CLANNAD family, the vita-test and psp-test games, their
+                              release partners
+      dev-sample              a VN of the development sample (eval/manifests/reserved.json "dev_sample"), kept out
+                              of the training pools of any round that selects on it
+      dev-sample-shared-release  on a two-VN release with a dev-sample VN (release_partners close=True: one game
+                              filed twice, a game and its fan disc; OWNER_ALLOWED and owner-game VNs never)
+
+    dev: the development sample's VNs (default: the committed file's). committed: the committed reservation
+    (default: eval/manifests/reserved.json), unioned in so that a later dump never shrinks the reservation; pass
+    False to compute from d alone. Everything else is training data."""
+    why = test_reservation(d, sets)
+    com = committed_reservation() if committed is None else (committed or None)
+    if dev is None:
+        dev = {v for v, r in (com or {}).get("dev_sample", {}).items() if r == "dev-sample"}
+    for v in sorted(dev, key=lambda v: int(v[1:])):
+        why.setdefault(v, "dev-sample")
+    keep = set(OWNER_ALLOWED) | owner_vns()
+    for u in sorted(release_partners(d, dev, close=True)):
+        if u not in keep:
+            why.setdefault(u, "dev-sample-shared-release")
+    for part in ("test", "dev_sample"):
+        for v, r in sorted((com or {}).get(part, {}).items()):
+            why.setdefault(v, r)
+    return why
+
+
+# ---------------------------------------------------------------- the development sample
+
+DEV_SAMPLE_SIZE = 100
+DEV_SAMPLE_SEED = "dev-sample-20261014"
+OWNER_GAMES = Path(os.environ.get("OWNER_GAMES") or HERD / "shared" / "private" / "owner-games")
+
+
+def owner_vns():
+    """Every VN the owner supplied screenshots of or named (owner 2026-10-13/14): OWNER_TRAINING, OWNER_ALLOWED, the
+    former test series roots, the games of the owner's Drive drop and the owner-games folders (…-v123[-TEST]).
+    All of their screenshots are training data (owner 13:25Z), so none of them is ever in the development sample."""
+    out = set(OWNER_TRAINING) | set(OWNER_ALLOWED) | set(OWNER_TEST_SERIES)
+    drop = ROOT / "data" / "manifests" / "owner_drop_20261013.json"
+    if drop.exists():
+        out |= {g["vn"] for g in json.loads(drop.read_text(encoding="utf-8")).get("games", []) if g.get("vn")}
+    if OWNER_GAMES.exists():
+        out |= {m.group(1) for p in OWNER_GAMES.iterdir() for m in [re.search(r"-(v\d+)(?:-TEST)?$", p.name)] if m}
+    return {v for v in out if re.fullmatch(r"v\d+", v)}
+
+
+def dev_line_counts(repo=ROOT):
+    """{vn: Counter} of the labelled development lines that exist today, by source and kind: devnative's reviewed
+    native lines (devnative/manifests/lines.jsonl), teacher_val's lines (teacher/manifests/lines_*.jsonl, split val)
+    and realdata's real_val lines (realdata/manifests/lines_*.jsonl, split val)."""
+    out = collections.defaultdict(collections.Counter)
+    p = repo / "devnative" / "manifests" / "lines.jsonl"
+    if p.exists():
+        for x in p.read_text(encoding="utf-8").splitlines():
+            if x.strip():
+                r = json.loads(x)
+                out[r["vn"]][f"devnative:{r['kind']}"] += 1
+    for src, name in (("teacher_val", "teacher"), ("real_val", "realdata")):
+        for kind in KINDS:
+            p = repo / name / "manifests" / f"lines_{kind}.jsonl"
+            if not p.exists():
+                continue
+            for x in p.read_text(encoding="utf-8").splitlines():
+                if x.strip():
+                    r = json.loads(x)
+                    if r.get("split") == "val":
+                        out[r["id"].split("_")[0]][f"{src}:{kind}"] += 1
+    return out
+
+
+def training_pool_vns(repo=ROOT):
+    """{vn: {pool names}} of the training pools built so far, from their committed manifests: teacher's and
+    realdata's train splits and realdata's unlabelled pool, realplus's screenshots (v2 and v3 label the same ones),
+    the native pool v1 and the owner's Drive-drop training games."""
+    out = collections.defaultdict(set)
+
+    def add(name, path, key="vn", where=lambda r: True):
+        p = Path(path)
+        if not p.exists():
+            return
+        for x in p.read_text(encoding="utf-8").splitlines():
+            if x.strip():
+                r = json.loads(x)
+                if where(r):
+                    out[r[key] if key != "id" else r["id"].split("_")[0]].add(name)
+    for kind in KINDS:
+        add("teacher_train", repo / "teacher" / "manifests" / f"lines_{kind}.jsonl", "id",
+            lambda r: r.get("split") == "train")
+        add("real_train", repo / "realdata" / "manifests" / f"lines_{kind}.jsonl", "id",
+            lambda r: r.get("split") == "train")
+        add("real_unlabelled", repo / "realdata" / "manifests" / f"unlabelled_{kind}.jsonl", "id")
+    for p in sorted((repo / "realplus" / "manifests").glob("shots_*.jsonl")):
+        add("realplus", p)
+    add("native_v1", repo / "realplus" / "manifests" / "native" / "lines_v1.jsonl")
+    drop = repo / "data" / "manifests" / "owner_drop_20261013.json"
+    if drop.exists():
+        for g in json.loads(drop.read_text(encoding="utf-8")).get("games", []):
+            if g.get("role") == "training" and g.get("vn"):
+                out[g["vn"]].add("owner")
+    return out
+
+
+def dev_sample(d, test, counts=None, size=DEV_SAMPLE_SIZE, seed=DEV_SAMPLE_SEED, owner=None, pools=None):
+    """The development sample: `size` VNs that already have labelled development lines, chosen by tier and, inside a
+    tier, by a seeded hash of the VN id (stable_rank), so the choice of one VN never depends on another:
+
+      tier 1  VNs with devnative's reviewed native console lines
+      tier 2  VNs with native (Vita or PSP) teacher_val lines
+      tier 3  VNs with scaled PC (hires) teacher_val lines
+      tier 4  VNs with real_val lines only (realdata's 4-reader labels; teacher left them out as linked VNs)
+
+    A VN is a candidate only when it is not in the test reservation, not an owner game (owner_vns()), shares no
+    VNDB release with an owner game (their screenshots all train, owner 2026-10-14 13:25Z), is in no training pool
+    built so far (training_pool_vns) and shares no two-VN release (one game filed twice, a game and its fan disc)
+    with a VN of one, so the sample's games were never trained on. Returns (rows, why):
+    one row per chosen VN (tier, lines by source and kind) and the count of every reason a candidate was passed over."""
+    counts = dev_line_counts() if counts is None else counts
+    owner = owner_vns() if owner is None else set(owner)
+    near_owner = set(release_partners(d, owner))
+    pools = training_pool_vns() if pools is None else pools
+    near_pool = set(release_partners(d, set(pools), close=True))
+    why = collections.Counter()
+
+    def tier(c):
+        if any(k.startswith("devnative:") for k in c):
+            return 1
+        if c["teacher_val:vita"] or c["teacher_val:psp"]:
+            return 2
+        return 3 if c["teacher_val:hires"] else 4
+
+    cands = []
+    for v, c in counts.items():
+        if v in test:
+            why["test"] += 1
+        elif v in owner:
+            why["owner-game"] += 1
+        elif v in near_owner:
+            why["owner-shared-release"] += 1
+        elif v in pools:
+            why["in-training-pool"] += 1
+        elif v in near_pool:
+            why["two-vn-release-with-a-training-pool-vn"] += 1
+        else:
+            cands.append((tier(c), stable_rank(seed, v), v))
+    cands.sort()
+    rows = [{"vn": v, "tier": t, "title": (d["title"].get(v) or [None])[0], "lines": dict(sorted(counts[v].items()))}
+            for t, _, v in cands[:size]]
+    why["not-drawn"] = max(0, len(cands) - size)
+    return rows, why
+
+
+def cmd_reserve(args):
+    """eval/manifests/reserved.json (the test reservation, the development sample, the test sessions) from a dump,
+    and test_games.json's "all" (the test-set games and their release partners)."""
+    d = load_dump(Path(args.dump) if args.dump else None)
+    stamp_file = (Path(args.dump) if args.dump else dump_dir()).parent / "TIMESTAMP"
+    stamp = stamp_file.read_text().strip() if stamp_file.exists() else None
+    tg = test_games()
+    test = test_reservation(d)
+    rows, passed = dev_sample(d, test)
+    dev = {r["vn"]: "dev-sample" for r in rows}
+    keep = set(OWNER_ALLOWED) | owner_vns()
+    for u, rs in sorted(release_partners(d, dev, close=True).items()):
+        if u not in test and u not in keep:
+            dev.setdefault(u, "dev-sample-shared-release")
+    partners = {u: rs for u, rs in release_partners(d, set_games(tg) | {v for v, r in test.items()
+                                                                       if r.startswith("clannad")}).items()
+                if u in test}
+    total = collections.Counter()
+    for r in rows:
+        for k, n in r["lines"].items():
+            total[k] += n
+    out = {
+        "kind": "vita-vn-ocr-reservation", "schema": 1,
+        "policy": "owner 2026-10-14 13:25Z (docs/reservations.md)",
+        "rule": ("The only test sets are vita-test, psp-test and the CLANNAD family. 'test' holds their VNs and every "
+                 "VN on one VNDB release with one of them (planetarian, v34, excepted by the owner): never train, "
+                 "tune, calibrate, select, label-tune on them or render synthetic scenes or names from them. "
+                 "'sessions' are vita-test's and psp-test's capture sessions (VNDB release ids): no screenshot of "
+                 "theirs is ever used. 'dev_sample' is the fixed development sample model selection uses, with its "
+                 "release partners: keep it out of the training pools of any round that selects on it. Every "
+                 "other VN is training data, including the old hash splits (synth/common.is_test_vn, "
+                 "realplus/shots.val_bucket), teacher_val, devnative, the fresh native textbox titles, the owner's "
+                 "former test series and every owner screenshot."),
+        "dump": stamp, "code": "realplus/shots.py reserve",
+        "test": dict(sorted(test.items(), key=lambda kv: int(kv[0][1:]))),
+        "dev_sample": dict(sorted(dev.items(), key=lambda kv: int(kv[0][1:]))),
+        "sessions": sorted(tg["sessions"], key=lambda r: int(r[1:])),
+        "test_shared_releases": {u: partners[u] for u in sorted(partners, key=lambda v: int(v[1:]))},
+        "counts": {"test": dict(collections.Counter(test.values())), "dev_sample": dict(collections.Counter(
+            dev.values())), "dev_sample_lines": dict(sorted(total.items())),
+                   "dev_sample_tiers": dict(collections.Counter(r["tier"] for r in rows)),
+                   "dev_candidates_passed_over": dict(passed)},
+        "dev_sample_size": DEV_SAMPLE_SIZE, "dev_sample_seed": DEV_SAMPLE_SEED,
+        "dev_sample_vns": rows,
+    }
+    path = Path(args.out)
+    path.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    if args.test_games:
+        tgp = ROOT / "eval" / "manifests" / "test_games.json"
+        doc = json.loads(tgp.read_text(encoding="utf-8"))
+        doc.setdefault("all_20261012", doc["all"])
+        doc["all"] = sorted({v for v, r in test.items() if r in ("test-set", "test-shared-release")},
+                            key=lambda v: int(v[1:]))
+        doc["rule"] = TEST_GAMES_RULE
+        order = ("rule", "all", "sessions", "family", "vita-test", "psp-test", "all_20261012")
+        doc = {k: doc[k] for k in order if k in doc} | {k: v for k, v in doc.items() if k not in order}
+        tgp.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"dump": stamp, "test": len(test), "dev_sample": len(dev), **out["counts"]}, indent=1))
+
+
+TEST_GAMES_RULE = (
+    "Owner 2026-10-14 13:25Z (docs/reservations.md): a VN is a test game of these sets when its id is in 'all', the "
+    "vita-test and psp-test games and every VN on one VNDB release with one of them; a screenshot is from a test "
+    "capture session when its VNDB release id is in 'sessions'. Never train, tune, calibrate, select or render "
+    "synthetic scenes or names from a test game or a test session, on any platform. The CLANNAD family is the other "
+    "test set (eval/manifests/reserved.json). 'family' lists the set games' other VNDB relations for information: "
+    "they are training data. 'all_20261012' is the old list (the set games, every synth/common.is_test_vn game with "
+    "Vita or PSP screenshots, session partners and the family), kept as history; it reserves nothing.")
 
 
 SESSION_GAP = 50
@@ -664,17 +880,25 @@ def pool_pixel_hashes(cache):
     cache = Path(cache)
     old = json.loads(cache.read_text()) if cache.exists() else {}
     new, out = {}, collections.defaultdict(set)
+    test_img = eval_test_images()
     for name, d in screenshot_dirs():
         if not d.exists():
             continue
         for p in sorted(d.rglob("*")):
             if p.suffix.lower() not in (".jpg", ".jpeg", ".png") or not p.is_file():
                 continue
+            if name in UNRESERVED_SETS:                 # only their vita-test / psp-test screenshots protect
+                m = SHOT_FILE.match(p.name)
+                if not (m and int(m.group(1)) in test_img):
+                    continue
+                name_ = "eval-test"
+            else:
+                name_ = name
             st = p.stat()
             key = f"{p}|{st.st_size}|{int(st.st_mtime)}"
             h = old.get(key) or pixel_sha256(p)
             new[key] = h
-            out[h].add(name)
+            out[h].add(name_)
     cache.parent.mkdir(parents=True, exist_ok=True)
     cache.write_text(json.dumps(new))
     return out
@@ -747,8 +971,13 @@ def main():
     p.add_argument("--kind", choices=KINDS)
     p.add_argument("--limit", type=int, default=0)
     sub.add_parser("dedupe")
+    p = sub.add_parser("reserve", help="write eval/manifests/reserved.json (docs/reservations.md)")
+    p.add_argument("--dump", help="the dump's db directory (default: $REALPLUS/vndb/dump/db)")
+    p.add_argument("--out", default=str(ROOT / "eval" / "manifests" / "reserved.json"))
+    p.add_argument("--test-games", action="store_true", help="also rewrite test_games.json's 'all'")
     args = ap.parse_args()
-    {"dump": cmd_dump, "select": cmd_select, "fetch": cmd_fetch, "dedupe": cmd_dedupe}[args.cmd](args)
+    {"dump": cmd_dump, "select": cmd_select, "fetch": cmd_fetch, "dedupe": cmd_dedupe,
+     "reserve": cmd_reserve}[args.cmd](args)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,8 @@ n-gram language model, in plain C on the console: `runtime/vocr_lm.c`, no malloc
 **Everything here is development data or an estimate.** The tuning and every score below read only teacher_val,
 devnative v3 and the owner pool (the owner's 2026-10-14 13:25Z rule: only CLANNAD, vita-test and psp-test are test
 sets; none of them was read). Dialogue CER is the primary metric and names a secondary column (13:57Z). Console
-times are `vita/a9_cycles.py` estimates; nothing has run on a console.
+times are `vita/a9_cycles.py` estimates, calibrated to one console measurement (VOCR3-H15's network time per frame,
+owner 18:09Z); nothing of the decoder has run on a console.
 
 Machine-readable: `docs/ctc-lm-decode.json`, generated whole by `eval/ctclm.py summary`; every table below is
 `eval/ctclm.py tables --doc docs/ctc-lm-decode.md` of it. API: `runtime/README.md` ("Top-K, confidence and the
@@ -24,9 +25,9 @@ beam + LM decoder").
   zero at every size, and the 2-fold VN cross-validated CER (settings chosen on one half of the VNs, scored on the
   other) is within 0.05 points of the in-sample one. With the 1 MB LM, VOCR3-W20 reads dialogue at 0.42 % (0.72 %
   greedy; 0.43 % cross-validated) and VOCR4-FL10, the Small model, at 0.71 % (1.13 %; 0.74 %).
-- **Counting each crop once changes little:** the dialogue view scores 241 crops twice (devnative's copies of
-  teacher_val's own native crops). Without the second copies the pooled CER is 1.01 % greedy → 0.71 / 0.64 / 0.61 /
-  0.60 % (30–41 % fewer errors).
+- **Counting each crop once changes little:** the dialogue view scores 241 crops twice (237 devnative copies of
+  teacher_val's own native crops, 4 repeated owner-pool lines). Without the second copies the pooled CER is 1.01 %
+  greedy → 0.71 / 0.64 / 0.61 / 0.60 % (30–41 % fewer errors).
 - **The families the task named shrink most** (4 MB, six models summed): kanji↔kanji substitutions 527 → 307,
   dakuten 197 → 58, small kana 54 → 26, ー/一 and other dash pairs 16 → 5, deletions 238 → 139. Punctuation pairs
   stay level (79 → 75) once the decoder pairs brackets; insertions rise (44 → 80), the price of the per-character
@@ -42,8 +43,8 @@ beam + LM decoder").
   psp-test, their families and CLANNAD's: 206 VNs, 2,316 characters) unless the name is also a common word or
   surname; the Jiten VN list does count CLANNAD's script among its 2,162, so its ordinary word frequencies still
   carry that script's share (Limits). Dropping the 183 development VNs' names too leaves the result where it was
-  (1,054 against 1,048 errors at 1 MB), and an LM without the Jiten lists is 4–5 % worse up to 2 MB and level at
-  4 MB (ablation table).
+  (1,054 against 1,048 errors at 1 MB), and an LM without the Jiten lists has about 4 % more errors up to 2 MB and
+  is level at 4 MB (ablation table).
 - **One setting serves all six models** at each LM size: beam 8, top-8 candidates per frame, LM weight 0.5, an
   end-of-line term, a gate and a bracket-pairing cost of 8 nats each, and a per-character bonus of 3–3.5 nats.
 - **Cost (estimates calibrated to the console):** every A9 estimate is scaled to the owner's measured
@@ -104,7 +105,7 @@ Change in dialogue CER, points, with the 95% VN-cluster bootstrap interval (in-s
 <!-- /table:delta -->
 
 <!-- table:distinct -->
-Each crop once (the dialogue view without the second copy of each devnative crop that is teacher_val's own crop of the line, i.e. the same reference and the same runtime output; dialogue CER, greedy → beam + LM):
+Each crop once (the dialogue view without second copies: a line whose reference and runtime output repeat an earlier line's, i.e. devnative's copies of teacher_val's own crops and a few repeated owner-pool lines; dialogue CER, greedy → beam + LM):
 
 | model | lines | chars | greedy | 0.5MB | 1MB | 2MB | 4MB |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -445,7 +446,8 @@ development lines under seven settings.
 
 - **Text.** synth3's pinned text pools (`synth/synth3_text.py`'s display form, pieces of at most 60 characters,
   every character in `data/vocab.txt`): Aozora Bunko dialogue and narration, Aratako's synthetic role-play
-  dialogue (MIT), JESC subtitles and Tatoeba, 1,829,895 pieces and 47.2 M characters. Each piece is `<s> … </s>`.
+  dialogue (MIT), JESC subtitles and Tatoeba, 1,829,895 pieces and 47.2 M characters (46.7 M after the
+  protected-title filter below). Each piece is `<s> … </s>`.
 - **Jiten.** The Jiten frequency lists of visual novels (2,162 VN scripts, 241,004 usable words) and novels (3,161
   novels, 317,051 words) (CC BY-SA 4.0): each word of at least two in-vocabulary characters is counted as a
   boundary-delimited pseudo-sentence `max(1, round(S / rank))` times, with S set so the VN list carries 40 % and
@@ -454,18 +456,19 @@ development lines under seven settings.
 - **Protected titles.** Before counting, the builder drops every corpus piece and every Jiten word that names a
   protected VN's character or title: the VNs of `eval/manifests/test_games.json` (its "all", the vita-test and
   psp-test games with their release partners under today's reservation (`docs/reservations.md`), together with
-  "all_20261012", the earlier rule's wider list with their families) and of `data/manifests/synth3_exclude_clannad.json`
-  (the CLANNAD family): 206 VNs with 2,316 VNDB characters and 234 titles (synth3's pinned VNDB extracts). The markers start from synth's rule
-  (`synth/owner_games.marker_candidates`) and go further: always every title of ≥ 3 Japanese or ≥ 5 Latin
-  characters, every full name of two or more parts and the CLANNAD manifest's 41 curated markers; and every other
-  full name or name part of ≥ 2 characters that occurs in at most 50 corpus pieces. A piece or Jiten word holding a
-  marker is dropped: 14,126 of 1,829,895 pieces and 1,350 + 1,331 Jiten words (4,003 markers). 524 name parts occur
-  in more pieces and stay as ordinary words or surnames (岡崎, 伊吹, 坂上, but also 世界 or 太陽). Of CLANNAD's main
+  "all_20261012", the earlier rule's wider list with their families) and of
+  `data/manifests/synth3_exclude_clannad.json` (the CLANNAD family): 206 VNs with 2,316 VNDB characters and 234
+  titles (synth3's pinned VNDB extracts). The markers start from synth's rule (`synth/owner_games.marker_candidates`)
+  and go further: always every title of ≥ 3 Japanese or ≥ 5 Latin characters, every full name of two or more parts
+  and the CLANNAD manifest's 41 curated markers; and every other full name or name part of ≥ 2 characters that
+  occurs in at most 50 corpus pieces. A corpus piece holding a marker is dropped, and so is a Jiten word that is
+  one: 14,126 of 1,829,895 pieces and 1,350 + 1,331 Jiten words (4,003 markers). 524 name parts occur in more
+  pieces and stay as ordinary words or surnames (岡崎, 伊吹, 坂上, but also 世界 or 太陽). Of CLANNAD's main
   names, 春原, 朋也, 古河, 藤林, 風子, 智代, 一ノ瀬, 陽平 and 芽衣 leave the corpus and the Jiten lists; the 4 MB
   tier still holds the bigrams 智代 and 芽衣 from other words that contain them (美智代, 芽衣子). On development data
   the filter costs nothing measurable (1,044 → 1,048 dialogue errors at 1 MB).
 - **Model.** Character 3-grams, interpolated modified Kneser-Ney (Chen and Goodman 1998), pruned by count to fit
-  the byte budget (bigram and trigram thresholds searched; every kept trigram's context is kept: 1/132/132 at
+  the byte budget (bigram and trigram thresholds searched; every kept trigram's context is kept: 1/130/130 at
   0.5 MB, 1/49/49 at 1 MB, 1/18/18 at 2 MB, 1/7/7 at 4 MB), backoff weights recomputed over what is kept,
   log-probabilities and backoffs quantised to 256 levels per order (Q10 nats). Order 3 beat orders 4 and 5 at
   every size (recipe table): at a fixed budget the 4-gram entries cost more bigrams than they bring.
@@ -550,18 +553,22 @@ the overlay's free-memory preflight has to fit (Small with the 0.5 MB LM holds 6
 conductor decides whether the tiers should budget it. The owner's ceilings of 2026-10-14 18:09Z (int8 weights:
 Small < 1 MB, Normal ≤ 1.6 MB, Large ≤ 2.5 MB; time per 3-line box: < 1 / < 2 / < 3 s) come from console time, and
 the LM barely changes a box's time; its size shows in the first box of a session (calibrated table above). Advice,
-from that table:
+from that table (its FL10 row is VOCR3-FL10's run, the same shape as VOCR4-FL10; the W20 rows are VOCR3's and
+VOCR4's):
 
-- **Small** (VOCR4-FL10): the 1 MB LM (first box 0.83–0.92 s, later boxes 0.70–0.76 s); the 0.5 MB LM if memory is
+- **Small** (FL10): the 1 MB LM (first box 0.83–0.92 s, later boxes 0.70–0.76 s); the 0.5 MB LM if memory is
   short. The 2 MB LM's first box (0.96–1.07 s) reaches the 1 s limit.
 - **Normal** (VOCR4-W20 or H15, ≤ 1.6 MB): the 1 MB LM (W20's first box 1.87–1.92 s); the 2 MB LM's first box is at
   1.99–2.08 s.
 - **Large** (≤ 2.5 MB, < 3 s): any tier; W20 with the 4 MB LM is 2.23–2.39 s in the first box.
 - Loading the LM together with the recognizer's weights (once per session, not in a job), or skipping
-  `vocr_lm_check_crc()` when the file is verified another way, takes the load out of the first box and lets every
-  LM tier fit every recognizer tier on time. Pin each tier by its size and sha256 (memory table); verify the
-file's sha256 at load instead of `vocr_lm_check_crc()` if the job's first-use time matters (the CRC is 89–95 % of
-it). The settings per tier are the first table above (`docs/ctc-lm-decode.json` `tiers.*.config`).
+  `vocr_lm_check_crc()` when the file is verified another way, takes most of the load out of the first box (the
+  CRC is 89–95 % of it; reading the file is not counted here) and lets every LM tier fit every recognizer tier on
+  time.
+
+Pin each tier by its size and sha256 (memory table) and verify the file's sha256 as it is read, instead of
+`vocr_lm_check_crc()`. The settings per tier are the first table above (`docs/ctc-lm-decode.json`
+`tiers.*.config`).
 
 ## Reproduce
 
@@ -572,15 +579,18 @@ A=$HERD/shared/artifacts; ART=$A/ctc-lm-decode
     --blob v3H15=$A/synth3/vocr3/blobs/rp_H15_C_mix_seed2_w8.vocr --blob v3W20=$A/synth3/vocr3/blobs/rp_W20_C_mix_seed1_w8.vocr \
     --blob v4FL10=$A/vocr4-train/blobs/v4c_FL10_seed1_w8.vocr --blob v4H15=$A/vocr4-train/blobs/v4c_H15_seed1_w8.vocr \
     --blob v4W20=$A/vocr4-train/blobs/v4m_W20_seed2_w8.vocr --out $ART/extract
-# 2. the LM tiers, about 10 minutes each
+# 2. the LM tiers, about 10 minutes each (round 7 tuned the same bytes as $ART/lm/p_o3j2_<size>.vlm)
 for b in 500000 1000000 2000000 4000000; do .venv-ci/bin/python lm/build.py --out $ART/release2/vocr_lm_o3_${b%000}k.vlm \
     --manifest $ART/release2/vocr_lm_o3_${b%000}k.json --bytes $b --order 3 --jiten vn=0.4,novel=0.2 \
     --corpora aozora_dialogue,aozora_narration,aratako_dsv3,jesc,tatoeba; done
-# (the ablations: --jiten "" for no Jiten; --exclude-vns $ART/lm/dev_vns.txt for the development titles too)
+# (the ablations p_o3nj_*: --jiten ""; p_o3j2dev_*: --exclude-vns $ART/lm/dev_vns.txt, the development VNs too)
 # 3. round 7 for each model and tier (--in-sample-own for v4W20), then selection, report, ablation, gate sweep
 GRID='{"alpha":[400,500,600],"beta":[2500,3000,3500,4000],"gate":[3500,5000,8000,12000],"flags":[2],"bracket":[0,1000,2000,3000,5000,8000,12000,20000,64000]}'
-.venv-ci/bin/python eval/ctclm.py tune --extract $ART/extract/v3W20.npz --lm $ART/lm/o3j2_1000k.vlm --grid "$GRID" \
-    --out $ART/tune/r7_v3W20_p_o3j2_1000k.npz        # p_o3j2_* = the release tiers (step 2), plus the ablations
+.venv-ci/bin/python eval/ctclm.py tune --extract $ART/extract/v3W20.npz --lm $ART/lm/p_o3j2_1000k.vlm --grid "$GRID" \
+    --out $ART/tune/r7_v3W20_p_o3j2_1000k.npz        # every model x LM (VOCR_LIB: the build that tuned)
+.venv-ci/bin/python eval/ctclm.py tune --extract $ART/extract/v3W20.npz --lm $ART/lm/p_o3j2_1000k.vlm \
+    --grid '{"alpha":[500],"beta":[3500],"gate":[500,1000,1500,2000,2500,3500,5000,8000,12000,20000,64000],"flags":[2],"bracket":[8000]}' \
+    --out $ART/tune/gs7_v3W20_p_o3j2_1000k.npz       # the gate sweep, every model
 .venv-ci/bin/python eval/ctclm.py select --extract $ART/extract --tune $ART/tune --prefix r7_ --lm-dir $ART/lm \
     --lms p_o3j2_500k,p_o3j2_1000k,p_o3j2_2000k,p_o3j2_4000k --out $ART/select/final_r7.json
 .venv-ci/bin/python eval/ctclm.py report --extract $ART/extract --select $ART/select/final_r7.json --lm-dir $ART/lm \
@@ -588,10 +598,12 @@ GRID='{"alpha":[400,500,600],"beta":[2500,3000,3500,4000],"gate":[3500,5000,8000
 .venv-ci/bin/python eval/ctclm.py ablate --extract $ART/extract --select $ART/select/final_r7.json --tier 1MB \
     --lm-dir $ART/lm --out $ART/select/ablate_r7_1MB.json     # and --tier 4MB
 # 4. A9: the development pack, then base, --topk 8 and each tier's settings on it and on it twice
+#    (FL10, both W20s; H15 base only, the calibration reference: $ART/a9/run_final.sh wraps measure + report)
 .venv-ci/bin/python eval/ctclm.py pack --out $ART/a9/devp40   # devp40.bin, devp40x2.bin, devp40.json
 .venv-ci/bin/python vita/a9_cycles.py measure --out $ART/a9/f_v3W20_lm1MB_devp40 --modes w8i --blob BLOB \
     --pack $ART/a9/devp40.bin --cli-args "--lm LM.vlm --beam 8 --topk 8 --alpha 500 --beta 3500 --gate 8000 --lm-flags 2 --bracket 8000"
-.venv-ci/bin/python eval/ctclm.py a9 --dir $ART/a9 --packs devp40,devp40x2 --out $ART/select/a9.json
+.venv-ci/bin/python eval/ctclm.py a9 --dir $ART/a9 --packs devp40,devp40x2 --calibrate v3H15:5.0:5.2 \
+    --out $ART/select/a9.json
 # 5. the JSON and this doc's tables
 $ART/select/summary_args.sh docs/ctc-lm-decode.json $ART/select/a9.json
 .venv-ci/bin/python eval/ctclm.py tables --doc docs/ctc-lm-decode.md
@@ -608,19 +620,19 @@ they hold development text).
   reading development errors (the bracket state and folding, order 3, the Jiten share).
 - teacher_val and devnative share all 43 devnative VNs and 348 line ids, and 349 of devnative's 543 ink crops are
   pixel-identical to one of teacher_val's own native Vita/PSP crops (344 under the same line id; both sets were cut
-  from the same native screenshots): the dialogue view scores 241 crops twice (the same reference and runtime
-  output) and the names view about 100. teacher_val itself cuts 251 lines twice, at Vita and at PSP scale
-  (different crops of one line). The VN-cluster bootstrap keeps them together; the
-  pooled CER counts them twice. The "each crop once" table drops the second copies: 1.01 % greedy → 0.71 / 0.64 /
-  0.61 / 0.60 %.
+  from the same native screenshots): the dialogue view scores 237 such crops twice (the same reference and
+  runtime output), the owner pool repeats 4 dialogue lines, and the names view holds about 100 copies. teacher_val
+  itself cuts 251 lines twice, at Vita and at PSP scale (different crops of one line). The VN-cluster bootstrap
+  keeps them together; the pooled CER counts them twice. The "each crop once" table drops the second copies:
+  1.01 % greedy → 0.71 / 0.64 / 0.61 / 0.60 %.
 - **Exposure to protected titles (disclose with any protected-set score).** The Jiten VN list is built from 2,162
   VN scripts and includes CLANNAD (one of Jiten's VN decks), and may include vita-test or psp-test titles. The
   builder removes their character names and titles from the Jiten lists and the corpora (above) unless a name is
   also a common word or surname (> 50 corpus pieces), and longer words that contain a name keep its n-grams (the
   4 MB tier holds 智代 and 芽衣 that way); the frequencies of ordinary words still carry those scripts' share.
-  JESC's subtitles include CLANNAD's anime, of which only the lines naming a character or title are removed. Any score of a model
-  decoded with one of these LMs on a protected set (CLANNAD, vita-test, psp-test) must disclose this; the conductor
-  decides whether such a score is admissible. An LM built without the Jiten lists (`--jiten ""`, ablation table)
+  JESC's subtitles include CLANNAD's anime, of which only the lines naming a character or title are removed. Any
+  score of a model decoded with one of these LMs on a protected set (CLANNAD, vita-test, psp-test) must disclose
+  this; the conductor decides whether such a score is admissible. An LM built without the Jiten lists (`--jiten ""`, ablation table)
   removes the Jiten part of the exposure and is level with the released recipe at 4 MB.
 - Every console time is an estimate: the Vita build's instruction mix under qemu-arm with a simulated 2 MiB L2
   to ourselves, calibrated to one console measurement (VOCR3-H15's network time per frame). The decoder's own code

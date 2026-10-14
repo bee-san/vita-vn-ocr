@@ -961,9 +961,9 @@ def cmd_tables(args):
     p.append("| pooled | " + " | ".join(_ci(pd[t]) for t in tiers) + " | |")
     p.key = "distinct"
     if all("pooled_dialogue_distinct" in j["tiers"][t] for t in tiers):
-        p.append("Each crop once (the dialogue view without the second copy of each devnative crop that is "
-                 "teacher_val's own crop of the line, i.e. the same reference and the same runtime output; "
-                 "dialogue CER, greedy → beam + LM):\n")
+        p.append("Each crop once (the dialogue view without second copies: a line whose reference and runtime "
+                 "output repeat an earlier line's, i.e. devnative's copies of teacher_val's own crops and a few "
+                 "repeated owner-pool lines; dialogue CER, greedy → beam + LM):\n")
         p.append("| model | lines | chars | greedy | " + " | ".join(tiers) + " |")
         p.append("|---|---:|---:|---:|" + "---:|" * len(tiers))
         for m in MODELS:

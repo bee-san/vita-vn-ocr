@@ -12,6 +12,12 @@
  *       --logits OUT.bin   per line: u32 frames, u32 classes, float32 logits
  *       --input-out OUT.bin  per line: u32 height, u32 padded width, u32 width, then the
  *                          preprocessed grey input (height x padded width bytes)
+ *       --topk K           keep each frame's K largest logits (vocr_extra.topk; the text does not change)
+ *       --conf             per line, "conf_min conf_mean" of the greedy text on stderr (needs --topk)
+ *       --lm LM.vlm        decode with vocr_lm.h's CTC prefix beam search and this character LM; prints the
+ *                          beam text. --beam N (8), --alpha A, --beta B, --gate G (1/1000 nat; defaults 0),
+ *                          --lm-flags F (1 <s>, 2 </s>), --bracket C (1/1000 nat); --topk defaults to 8.
+ *                          --lm none: beam search without an LM (alpha must be 0)
  *       --repeat N         run every line N times (timing)
  *       --arena W[,W...]   print arena bytes for these max widths and exit
  *       --crc              verify the blob CRC first
@@ -21,6 +27,7 @@
  */
 #define _POSIX_C_SOURCE 200112L
 #include "../vocr.h"
+#include "../vocr_lm.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +35,9 @@
 #include <time.h>
 
 static int invert_flag; /* VOCR_INVERT or 0, from --invert, for every crop */
+static unsigned topk_n;  /* --topk */
+static int conf_flag;    /* --conf */
+static vocr_lm_ctx *lm_dec; /* --lm: the beam decoder, or NULL */
 
 static double now(void)
 {
@@ -98,9 +108,10 @@ static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px,
                     double *t_total, unsigned long *frames)
 {
     vocr_image img;
-    vocr_extra ex;
-    char text[4096];
-    float *logits = NULL;
+    vocr_extra ex, ex2;
+    char text[4096], beam_text[4096];
+    float *logits = NULL, *tv = NULL, *bl = NULL;
+    uint16_t *tc = NULL;
     int rc = 0, r;
     unsigned cap = (unsigned)vocr_resized_width(m, w, h) / m->stride + 1u;
     img.pixels = px;
@@ -129,11 +140,31 @@ static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px,
         logits = (float *)malloc((size_t)cap * m->n_classes * sizeof(float));
         if (!logits) return VOCR_E_ARG;
         ex.logits = logits;
-        ex.cap_frames = cap;
     }
+    ex.cap_frames = cap;
+    if (topk_n) {
+        tv = (float *)malloc((size_t)cap * topk_n * sizeof(float));
+        tc = (uint16_t *)malloc((size_t)cap * topk_n * sizeof(uint16_t));
+        bl = (float *)malloc((size_t)cap * sizeof(float));
+        if (!tv || !tc || !bl) {
+            free(tv);
+            free(tc);
+            free(bl);
+            free(logits);
+            return VOCR_E_ARG;
+        }
+        ex.topk = topk_n;
+        ex.topk_logit = tv;
+        ex.topk_class = tc;
+        ex.blank_logit = bl;
+    }
+    ex2 = ex;            /* the timing repeats: the same extras without the logits */
+    ex2.logits = NULL;
     for (r = 0; r < (repeat > 0 ? repeat : 1) + (repeat > 0 ? 1 : 0); r++) {
         double t0 = now();
-        rc = vocr_run(ctx, &img, text, sizeof text, r == 0 ? &ex : NULL);
+        vocr_extra *e = r == 0 ? &ex : &ex2;
+        rc = vocr_run(ctx, &img, text, sizeof text, (r == 0 || topk_n) ? e : NULL);
+        if (lm_dec && (!rc || rc == VOCR_E_TEXT)) rc = vocr_lm_decode(lm_dec, e, beam_text, sizeof beam_text, NULL);
         if (r > 0 || repeat <= 0) *t_total += now() - t0;
         if (rc && rc != VOCR_E_TEXT) break;
     }
@@ -141,9 +172,16 @@ static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px,
     if (rc && rc != VOCR_E_TEXT) {
         fprintf(stderr, "vocr_run: %s\n", vocr_strerror(rc));
         free(logits);
+        free(tv);
+        free(tc);
+        free(bl);
         return rc;
     }
-    printf("%s\n", text);
+    printf("%s\n", lm_dec ? beam_text : text);
+    if (conf_flag) fprintf(stderr, "conf %.6f %.6f\n", (double)ex.conf_min, (double)ex.conf_mean);
+    free(tv);
+    free(tc);
+    free(bl);
     if (logits_out) {
         unsigned hdr[2];
         hdr[0] = ex.frames;
@@ -246,7 +284,12 @@ int main(int argc, char **argv)
     size_t blob_n = 0, need;
     void *blob = NULL, *arena = NULL;
     const char *pack = NULL, *logits_path = NULL, *arena_list = NULL, *input_path = NULL;
-    const char *mode_name = "auto";
+    const char *mode_name = "auto", *lm_path = NULL;
+    void *lm_blob = NULL, *lm_ws = NULL;
+    size_t lm_n = 0;
+    vocr_lm lm;
+    vocr_lm_ctx lmc;
+    vocr_lm_opts lo;
     FILE *lf = NULL, *inf = NULL;
     int i, rc, status = 1, repeat = 0, crc = 0, use_stdin = 0;
     unsigned long lines = 0, frames = 0;
@@ -256,6 +299,8 @@ int main(int argc, char **argv)
         return 2;
     }
     memset(&o, 0, sizeof o);
+    memset(&lo, 0, sizeof lo);
+    lo.beam = 8;
     for (i = 2; i < argc; i++) { /* options first; image paths are read in a second pass */
         const char *a = argv[i];
         int has = i + 1 < argc;
@@ -264,6 +309,15 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--head") && has) o.head_frames = (unsigned)atoi(argv[++i]);
         else if (!strcmp(a, "--max-width") && has) o.max_width = (unsigned)atoi(argv[++i]);
         else if (!strcmp(a, "--logits") && has) logits_path = argv[++i];
+        else if (!strcmp(a, "--topk") && has) topk_n = (unsigned)atoi(argv[++i]);
+        else if (!strcmp(a, "--lm") && has) lm_path = argv[++i];
+        else if (!strcmp(a, "--beam") && has) lo.beam = (unsigned)atoi(argv[++i]);
+        else if (!strcmp(a, "--alpha") && has) lo.alpha = atoi(argv[++i]);
+        else if (!strcmp(a, "--beta") && has) lo.beta = atoi(argv[++i]);
+        else if (!strcmp(a, "--gate") && has) lo.gate = atoi(argv[++i]);
+        else if (!strcmp(a, "--lm-flags") && has) lo.flags = (unsigned)atoi(argv[++i]);
+        else if (!strcmp(a, "--bracket") && has) lo.bracket = atoi(argv[++i]);
+        else if (!strcmp(a, "--conf")) conf_flag = 1;
         else if (!strcmp(a, "--input-out") && has) input_path = argv[++i];
         else if (!strcmp(a, "--repeat") && has) repeat = atoi(argv[++i]);
         else if (!strcmp(a, "--pack") && has) pack = argv[++i];
@@ -309,6 +363,33 @@ int main(int argc, char **argv)
         status = 0;
         goto done;
     }
+    if (lm_path) {
+        size_t ws_n;
+        if (!topk_n) topk_n = 8;
+        lo.topk = topk_n;
+        if (strcmp(lm_path, "none")) {
+            lm_blob = read_file(lm_path, &lm_n, 16);
+            if (!lm_blob || vocr_lm_check_crc(lm_blob, lm_n) || vocr_lm_load(&lm, lm_blob, lm_n)) {
+                fprintf(stderr, "cannot load the LM %s\n", lm_path);
+                goto done;
+            }
+        }
+        ws_n = vocr_lm_workspace_bytes(&m, lm_blob ? &lm : NULL, &lo);
+        if (!ws_n || posix_memalign(&lm_ws, 16, ws_n)) lm_ws = NULL;
+        if (!lm_ws || vocr_lm_init(&lmc, &m, lm_blob ? &lm : NULL, &lo, lm_ws, ws_n)) {
+            fprintf(stderr, "invalid --lm options (beam %u, topk %u, alpha %d, beta %d, gate %d, flags %u, bracket %d)\n",
+                    lo.beam, lo.topk, lo.alpha, lo.beta, lo.gate, lo.flags, lo.bracket);
+            goto done;
+        }
+        lm_dec = &lmc;
+        fprintf(stderr, "lm %lu bytes, workspace %lu bytes, beam %u, topk %u, alpha %d, beta %d, gate %d, flags %u, "
+                "bracket %d\n", (unsigned long)lm_n, (unsigned long)ws_n, lo.beam, lo.topk, lo.alpha, lo.beta,
+                lo.gate, lo.flags, lo.bracket);
+    }
+    if (topk_n > VOCR_TOPK_MAX || (conf_flag && !topk_n)) {
+        fprintf(stderr, "--topk must be 1..%d (and --conf needs it)\n", VOCR_TOPK_MAX);
+        goto done;
+    }
     need = vocr_arena_bytes(&m, &o);
     if (!need) {
         fprintf(stderr, "invalid options for this model\n");
@@ -333,7 +414,7 @@ int main(int argc, char **argv)
     if (pack && run_pack(&ctx, &m, pack, repeat, lf, inf, &t_total, &frames, &lines)) goto done;
     for (i = 2; i < argc; i++) {
         const char *a = argv[i];
-        if (!strcmp(a, "--crc") || !strcmp(a, "--stdin") || !strcmp(a, "--invert")) continue;
+        if (!strcmp(a, "--crc") || !strcmp(a, "--stdin") || !strcmp(a, "--invert") || !strcmp(a, "--conf")) continue;
         if (a[0] == '-' && a[1] == '-') {
             i++; /* option value */
             continue;
@@ -352,5 +433,7 @@ done:
     if (inf && fclose(inf)) status = 1;
     free(arena);
     free(blob);
+    free(lm_ws);
+    free(lm_blob);
     return status;
 }

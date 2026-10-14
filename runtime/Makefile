@@ -1,6 +1,6 @@
 # runtime/Makefile - host builds, tests and ARM cross builds of the vocr runtime.
 #
-#   make                  build/vocr_cli and build/libvocr.so (release flags)
+#   make                  build/vocr_cli and build/libvocr.so (release flags; vocr.c + vocr_lm.c)
 #   make check            the line finder's checks (check-lines, vocr_lines.mk), then the
 #                         recognizer's: C unit tests and the PyTorch parity test through a
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan)
@@ -42,7 +42,8 @@ ARM_FLAGS = -O2 -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard
 TOOLS ?= $(abspath scripts/tools)
 QEMU ?= $(TOOLS)/bin/qemu-arm
 
-SRC = vocr.c vocr.h
+SRC = vocr.c vocr.h vocr_lm.c vocr_lm.h
+LIBSRC = vocr.c vocr_lm.c
 CLI = tools/vocr_cli.c
 
 .PHONY: all check check-vocr check-all arm size parity-arm clean
@@ -54,10 +55,10 @@ $(OUT):
 
 # ---- release builds (no sanitizers; libvocr.so is what tests/parity.py loads by default)
 $(OUT)/vocr_cli: $(SRC) $(CLI) | $(OUT)
-	$(CC) $(WARN) $(OPT) -o $@ vocr.c $(CLI) $(LDLIBS)
+	$(CC) $(WARN) $(OPT) -o $@ $(LIBSRC) $(CLI) $(LDLIBS)
 
 $(OUT)/libvocr.so: $(SRC) | $(OUT)
-	$(CC) $(WARN) $(OPT) -fPIC -shared -o $@ vocr.c $(LDLIBS)
+	$(CC) $(WARN) $(OPT) -fPIC -shared -o $@ $(LIBSRC) $(LDLIBS)
 
 # ---- check programs: $(CC) $(CFLAGS) ... $(LDFLAGS); rebuilt whenever CC or the flags change
 #      (CFLAGS are kept and extended with $(WARN), which must come last: -ffp-contract=off)
@@ -68,15 +69,19 @@ $(shell mkdir -p $(OUT)/arm; echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)' | cmp
 $(OUT)/test_vocr_check: $(SRC) tests/test_vocr.c $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ vocr.c tests/test_vocr.c $(LDFLAGS) $(LDLIBS)
 
+$(OUT)/test_vocr_lm_check: $(SRC) tests/test_vocr_lm.c $(FLAGS_STAMP) | $(OUT)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) tests/test_vocr_lm.c $(LDFLAGS) $(LDLIBS)
+
 $(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ vocr.c $(CLI) $(LDFLAGS) $(LDLIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) $(CLI) $(LDFLAGS) $(LDLIBS)
 
 check: check-lines check-vocr
 
 include vocr_lines.mk
 
-check-vocr: $(OUT)/test_vocr_check $(OUT)/vocr_cli_check
+check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_check
+	$(SAN_ENV) ./$(OUT)/test_vocr_lm_check
 	$(PYTHON) tests/parity.py $(if $(VOCR_CKPT),--ckpt "$(VOCR_CKPT)",--fixture) \
 	    $(if $(VOCR_SHARD),--shard "$(VOCR_SHARD)") $(PARITY_ARGS) \
 	    --cli "$(SAN_ENV) ./$(OUT)/vocr_cli_check" --report "$(VOCR_REPORT)"
@@ -84,16 +89,16 @@ check-vocr: $(OUT)/test_vocr_check $(OUT)/vocr_cli_check
 check-all:
 	$(MAKE) --no-print-directory clean
 	$(MAKE) --no-print-directory CC=gcc all
-	$(CLANG) $(WARN) $(OPT) -o $(OUT)/vocr_cli_clang vocr.c $(CLI) $(LDLIBS)
+	$(CLANG) $(WARN) $(OPT) -o $(OUT)/vocr_cli_clang $(LIBSRC) $(CLI) $(LDLIBS)
 	$(MAKE) --no-print-directory CC=gcc OUT=$(OUT)/gcc check
 	$(MAKE) --no-print-directory CC=$(CLANG) OUT=$(OUT)/clang check SAN_ENV=
 
 # ---- ARM (Cortex-A9, as on the PS Vita), run under qemu-arm
 $(OUT)/arm/vocr_cli_neon: $(SRC) $(CLI) | $(OUT)
-	$(ARM_CC) $(WARN) $(ARM_FLAGS) -static -o $@ vocr.c $(CLI) $(LDLIBS)
+	$(ARM_CC) $(WARN) $(ARM_FLAGS) -static -o $@ $(LIBSRC) $(CLI) $(LDLIBS)
 
 $(OUT)/arm/vocr_cli_scalar: $(SRC) $(CLI) | $(OUT)
-	$(ARM_CC) $(WARN) $(ARM_FLAGS) -DVOCR_NO_NEON -static -o $@ vocr.c $(CLI) $(LDLIBS)
+	$(ARM_CC) $(WARN) $(ARM_FLAGS) -DVOCR_NO_NEON -static -o $@ $(LIBSRC) $(CLI) $(LDLIBS)
 
 arm: $(OUT)/arm/vocr_cli_neon $(OUT)/arm/vocr_cli_scalar
 
@@ -106,9 +111,11 @@ parity-arm: arm
 
 size: | $(OUT)
 	$(ARM_CC) $(WARN) $(ARM_FLAGS) -fstack-usage -c -o $(OUT)/arm/vocr_neon.o vocr.c
+	$(ARM_CC) $(WARN) $(ARM_FLAGS) -fstack-usage -c -o $(OUT)/arm/vocr_lm.o vocr_lm.c
 	$(ARM_CC) $(WARN) $(ARM_FLAGS) -fstack-usage -DVOCR_NO_NEON -c -o $(OUT)/arm/vocr_scalar.o vocr.c
-	$(ARM_CC:gcc=size) $(OUT)/arm/vocr_neon.o $(OUT)/arm/vocr_scalar.o
+	$(ARM_CC:gcc=size) $(OUT)/arm/vocr_neon.o $(OUT)/arm/vocr_scalar.o $(OUT)/arm/vocr_lm.o
 	sort -t'	' -k2 -n -r $(OUT)/arm/vocr_neon.su | head -5
+	sort -t'	' -k2 -n -r $(OUT)/arm/vocr_lm.su | head -5
 
 clean:
 	rm -rf $(OUT)

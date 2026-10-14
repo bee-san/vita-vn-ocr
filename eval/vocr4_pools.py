@@ -21,12 +21,13 @@ VNDB dump decides, with these changes:
     20:47Z); never applied to a VN of the owner's test set or to CLANNAD itself.
   A reason of the form `shared-release:clannad+testset` names the protected classes a link reaches.
 build: each NAME=POOL.npz (teacher's npz format) is copied to DIR/NAME.npz without the rows of excluded VNs. A pool
-  named with --new is also deduplicated by screenshot: a row whose screenshot (its own `screen_id`, else the VNDB
-  image id in its line id "<vn>_<image>_<k>") or line id is already held by another group (a --ref pool, or a pool
-  earlier on the command line) is dropped. NAME_ink and NAME_grad are one group (the same lines, two crops) and
-  never deduplicate against each other. Every other row is kept in order, byte for byte
-  (eval/synth3_filter_pools.keep_rows). DIR/pools_record_TAG.json records input and output sha256, rows dropped
-  per reason and per VN, and the duplicates.
+  named with --new is also deduplicated by line (protocol amendment 1): a row is dropped when another group (a --ref
+  pool, or a pool earlier on the command line) holds a row of the same screenshot (its own `screen_id`, else the
+  VNDB image id in its line id "<vn>_<image>_<k>") with the same normalised label (eval/metrics.norm). Other lines
+  of a screenshot stay, and line ids are not compared: the pipelines number a screenshot's lines differently.
+  NAME_ink and NAME_grad are one group (the same lines, two crops) and never deduplicate against each other.
+  Every other row is kept in order, byte for byte (eval/synth3_filter_pools.keep_rows). DIR/pools_record_TAG.json
+  records input and output sha256, rows dropped per reason and per VN, and the duplicates.
 check: no row of a pool is on an excluded VN, on a screenshot or VN of a development cohort, or on a screenshot or
   capture session of eval's test sets (vita-test, psp-test: their screenshot ids and sessions, test_games.json
   "sessions"); exit status 1 on any hit.
@@ -49,6 +50,7 @@ ROOT = HERE.parent
 for _p in (HERE, ROOT / "realplus", ROOT):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
+from metrics import norm  # noqa: E402
 from synth3_filter_pools import keep_rows, save  # noqa: E402
 
 # reserved_vns() reasons that always exclude (the VN itself is protected, a test game, or a development VN)
@@ -175,40 +177,37 @@ def cmd_build(args):
     ex = json.loads(Path(args.exclusions).read_text(encoding="utf-8"))["vns"]
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    seen = collections.defaultdict(lambda: (set(), set()))     # group -> (screenshots, line ids)
+    seen = collections.defaultdict(set)                         # group -> {(screenshot, normalised label)}
     refs = []
     for spec in args.ref:                                       # already-built pools: deduplication only
         name, _, path = spec.partition("=")
-        imgs, ids = seen[group_of(name)]
-        for m in json.loads(str(np.load(path)["meta"])):
-            ids.add(m["id"])
+        z = np.load(path)
+        for m, lab in zip(json.loads(str(z["meta"])), json.loads(str(z["labels"]))):
             if screenshot_of(m):
-                imgs.add(screenshot_of(m))
+                seen[group_of(name)].add((screenshot_of(m), norm(lab or "")))
         refs.append({"name": name, "pool": str(path), "sha256": sha256(path)})
     recs = []
     for spec in args.pools:
         name, _, path = spec.partition("=")
         g = group_of(name)
-        other_img = set().union(*(v[0] for k, v in seen.items() if k != g))
-        other_id = set().union(*(v[1] for k, v in seen.items() if k != g))
+        other = set().union(*(v for k, v in seen.items() if k != g))
         z = np.load(path)
-        meta = json.loads(str(z["meta"]))
+        meta, labels = json.loads(str(z["meta"])), json.loads(str(z["labels"]))
         keep = np.ones(len(meta), bool)
         dropped, dup = collections.Counter(), collections.Counter()
-        imgs, ids = seen[g]
         for i, m in enumerate(meta):
             img = screenshot_of(m)
+            key = (img, norm(labels[i] or "")) if img else None
             if m["vn"] in ex:
                 keep[i] = False
                 dropped[ex[m["vn"]]] += 1
                 continue
-            if name in args.new and ((img and img in other_img) or m["id"] in other_id):
+            if name in args.new and key in other:
                 keep[i] = False
                 dup[m["vn"]] += 1
                 continue
-            if img:
-                imgs.add(img)
-            ids.add(m["id"])
+            if key:
+                seen[g].add(key)
         dst = out / f"{name}.npz"
         save(dst, keep_rows(z, keep), compressed=True)
         by_vn = collections.Counter(m["vn"] for m, k in zip(meta, keep) if not k and m["vn"] in ex)
@@ -315,7 +314,7 @@ def main():
     b = sub.add_parser("build")
     b.add_argument("--exclusions", required=True)
     b.add_argument("--out", required=True)
-    b.add_argument("--new", nargs="*", default=[], help="pools deduplicated by screenshot against earlier ones")
+    b.add_argument("--new", nargs="*", default=[], help="pools deduplicated by line against the other groups")
     b.add_argument("--ref", action="append", default=[],
                    help="NAME=POOL.npz already built: its screenshots count for deduplication; not written")
     b.add_argument("--tag", default="build", help="the record is DIR/pools_record_TAG.json")

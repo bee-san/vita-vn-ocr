@@ -101,12 +101,13 @@ def test_exclusion_rule():
 
 
 def _pool(path, rows):
-    """A teacher-format npz: rows of (vn, image id, line index)."""
+    """A teacher-format npz: rows of (vn, image id, line index[, label])."""
     imgs = [np.full((4, 3 + i), i, np.uint8) for i in range(len(rows))]
     offs = np.concatenate([[0], np.cumsum([g.size for g in imgs])]).astype(np.int64)
-    meta = [{"id": f"{vn}_{img}_{k}", "vn": vn, "session": f"{vn}/r{img}/0"} for vn, img, k in rows]
+    meta = [{"id": f"{r[0]}_{r[1]}_{r[2]}", "vn": r[0], "session": f"{r[0]}/r{r[1]}/0"} for r in rows]
+    labels = [r[3] if len(r) > 3 else "あ" for r in rows]
     np.savez(path, data=np.concatenate([g.ravel() for g in imgs]), offsets=offs,
-             shapes=np.array([g.shape for g in imgs]), labels=np.array(json.dumps(["あ"] * len(rows))),
+             shapes=np.array([g.shape for g in imgs]), labels=np.array(json.dumps(labels, ensure_ascii=False)),
              meta=np.array(json.dumps(meta)))
     return str(path)
 
@@ -114,19 +115,21 @@ def _pool(path, rows):
 def test_build_excludes_and_dedupes_by_group(tmp_path):
     ex = tmp_path / "ex.json"
     ex.write_text(json.dumps({"vns": {"v9": "test-set"}}))
-    tt = _pool(tmp_path / "tt_src.npz", [("v1", 100, 0), ("v9", 101, 0), ("v1", 102, 1)])
-    ink = _pool(tmp_path / "nat_ink_src.npz", [("v2", 200, 0), ("v2", 102, 0), ("v3", 201, 0)])
-    grad = _pool(tmp_path / "nat_grad_src.npz", [("v2", 200, 0), ("v3", 201, 0)])
-    rp = _pool(tmp_path / "rp_src.npz", [("v5", 200, 3), ("v5", 300, 0)])
+    tt = _pool(tmp_path / "tt_src.npz", [("v1", 100, 0, "あ"), ("v9", 101, 0, "あ"), ("v1", 102, 1, "い")])
+    ink = _pool(tmp_path / "nat_ink_src.npz", [("v2", 200, 0, "う"), ("v2", 102, 0, "い"), ("v2", 102, 1, "え"),
+                                              ("v1", 100, 0, "お")])
+    grad = _pool(tmp_path / "nat_grad_src.npz", [("v2", 200, 0, "う"), ("v1", 100, 0, "お")])
+    rp = _pool(tmp_path / "rp_src.npz", [("v5", 200, 3, "う"), ("v5", 300, 0, "か")])
     out = tmp_path / "out"
     args = type("A", (), {"exclusions": ex, "out": out, "new": ["nat_ink", "nat_grad", "rp"], "ref": [],
                           "tag": "t", "pools": [f"tt={tt}", f"nat_ink={ink}", f"nat_grad={grad}", f"rp={rp}"]})()
     POOLS.cmd_build(args)
     rec = {r["name"]: r for r in json.loads((out / "pools_record_t.json").read_text())["pools"]}
     assert rec["tt"]["out_rows"] == 2 and rec["tt"]["dropped_by_reason"] == {"test-set": 1}
-    assert rec["nat_ink"]["out_rows"] == 2 and rec["nat_ink"]["duplicates_dropped"] == 1    # screenshot 102 in tt
+    # screenshot 102 + label い is tt's line; another line of 102 and a same-id line with another label stay
+    assert rec["nat_ink"]["out_rows"] == 3 and rec["nat_ink"]["duplicates_dropped"] == 1
     assert rec["nat_grad"]["out_rows"] == 2                     # same group as nat_ink: never deduplicated against it
-    assert rec["rp"]["out_rows"] == 1 and rec["rp"]["duplicates_dropped"] == 1              # screenshot 200 in nat
+    assert rec["rp"]["out_rows"] == 1 and rec["rp"]["duplicates_dropped"] == 1              # nat's line on 200
     z, src = np.load(out / "tt.npz"), np.load(tt)
     kept = [0, 2]
     for j, i in enumerate(kept):

@@ -36,8 +36,10 @@ Everything else trains:
 - teacher_val, real_val and devnative outside the development sample;
 - the fresh native textbox titles and their relations;
 - the owner's former test series (Memories Off, Aiyoku no Eustia, 428);
-- every owner screenshot, apart from the CLANNAD frames. Four former `-TEST` folders become training data: Amagami
-  (113 frames), Narcissu (200), Danganronpa V3 (84) and Iwaihime (240).
+- every owner screenshot except those of a test game. CLANNAD's 2,206 frames stay test, and so do the second drop's
+  408 frames of four test games (Time Travelers v10856, Utawarerumono v3, Collar x Malice v18160, Sweet Clown v16460).
+  Four former `-TEST` folders of the first drop become training data: Amagami (113 frames), Narcissu (200),
+  Danganronpa V3 (84) and Iwaihime (240).
 
 `eval/manifests/reserved.json` holds the list. `realplus/shots.py reserve` builds it from a VNDB dump; this file
 used the 2026-10-13 dump. It contains `test` and `dev_sample` (VN → reason), `sessions`, the release ids behind every
@@ -240,9 +242,10 @@ Recipes that read the files directly saw them; that was not re-checked per recip
 
 ## Limits and follow-ups
 
-- The sample's VNs have no lines in any labelled training pool. 19 of them, however, have screenshots that the old
-  gate allowed as synth2 backgrounds (11 in `data/vndb/shots`, 9 in the pinned `synth2_psp_shots.jsonl`), so pinned
-  synth2 shards may hold their scenes. teacher_val had the same exposure. New renders leave them out.
+- The sample's VNs have no lines in any labelled training pool. 17 of them, however, have screenshots that the old
+  gate allowed as synth2 backgrounds (10 in `data/vndb/shots`, 8 in the pinned `synth2_psp_shots.jsonl`; the first
+  carve had 19 = 11 + 9, before v15773 and v11677 left for the owner games), so pinned synth2 shards may hold their
+  scenes. teacher_val had the same exposure. New renders leave them out.
 - `data/manifests/synth3_exclude_clannad.json` is now synth3's only default exclusion manifest. It predates this
   policy: it lists planetarian (v34, training data), so v34's names and scenes stay out of synth3, and it lacks
   v16902, a CLANNAD relation. v16902 is still kept out by VN id wherever the code asks `is_reserved_vn`, but its
@@ -271,8 +274,11 @@ What moved with it:
 - the labelled-set cuts (table above, re-cut under `owner-drive-ingest-2/reclaim/pools/`): the 7 entering VNs' rows
   go to the `*_dev` side (65 teacher_val, 63 real_val, 38 teacher_distill_val in the first cut's train parts) and the
   7 leaving VNs' to `*_train` (the 4 devnative games among them give devnative's train side 127 lines instead of 65);
-- the realplus reclaim list loses the 18 screenshots of the 3 new partners (20,867 to 20,849; none was labelled), and
-  the native reclaim list gains 38 pooled frames of 5 leaving VNs (1,217 to 1,255);
+- the realplus reclaim list loses the 18 screenshots of the 3 new partners (20,867 to 20,849). realplus-v3's working
+  labels (`$HERD/shared/artifacts/realplus-v3/labels.jsonl`) hold 70 rows from 16 of those 18 shots, 16 of them
+  auto-kept (v1372 3, v21894 4, v4827 9); realplus-v3 already filters them out of its reads and build (it unions the
+  new partners into its exclusions), and none of the checked pools holds them. The native reclaim list gains 38
+  pooled frames of 5 leaving VNs (1,217 to 1,255);
 - `data/manifests/synth2_bg_exclude.txt` lists the new sample (its test and session lines are unchanged).
 
 Before this change the test of the sample scanned the live owner-games folders (`owner_vns()`), so it failed on any

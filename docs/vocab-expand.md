@@ -3,7 +3,8 @@
 The owner (2026-10-14 06:18Z) worried that 5,354 characters (H15; FL10 has 3,500) is too small for VN
 dialogue, and asked for a deep analysis against [Jiten's frequency dictionaries](https://jiten.moe/frequency-dictionaries)
 and our own OCR data, then a decision. This document extends `docs/synth4-gap.md` section 1: it measures
-coverage from occurrence-weighted word lists (not the single Zipf estimate of the gap analysis), measures
+coverage from Jiten's aggregate word and kanji lists (a refit rank-frequency model, cross-checked against a
+per-deck occurrence sample), measures
 what the labelling pipelines hid, measures what a bigger head costs on the console under the owner's
 three tiers, proves on a trained model that a bigger VN-ordered head costs no accuracy and reads the extra
 characters, and recommends a vocabulary per tier with the exact files and a render plan for `vocr4-train`.
@@ -83,7 +84,7 @@ order from the per-deck occurrences **with and without** the 426 reserved decks 
 Σ log(1+occ)) changes **no tier membership** for any of the 379 vita-test, 372 psp-test or 998 CLANNAD
 reference kanji — all are in every tier file, and the one kanji near a cut (浬, vita-test, rank 4,958 of
 4,985) has 0% reserved share and moves further inside without the reserved decks
-(`agg/order.json`; the auditor's `reserved_flip_check.py`). The 80%-reserved-dominated kanji (section 1) have
+(`agg/order.json`; the audit's `$A/audit-vocab-expand/scripts/reserved_flip_check.py`, output `evidence/reserved_flip_check.txt`). The 80%-reserved-dominated kanji (section 1) have
 0 reference characters in vita-test, psp-test, CLANNAD or devnative. CLANNAD, vita-test, psp-test and
 devnative are read for their OOV rate only — character counts, nothing selected, nothing sent to Codex. This
 matches how `docs/synth3-v3.md` treats the same list.
@@ -113,8 +114,8 @@ list (`vocab_expand.py tables agg.json`; `agg/agg.json`):
   twenty times less than FL10 and below H15. At 5,631 the VN list is essentially covered; 6,459 covers it and
   the other media too (Novel 0.001, Global 0.003 per 1,000).
 - H15's own vocab is close to right for VN text, but **poorly ordered**: it holds 335 kanji the VN list never
-  uses while a VN-ordered 4,987-class head already beats it. This is the gap analysis's point, now measured on
-  occurrences rather than a Zipf fit.
+  uses while a VN-ordered 4,987-class head already beats it. This is the gap analysis's point, re-derived from
+  the aggregate lists (and confirmed by the per-deck sample).
 - Past 6,459 the VN list and the Kanji list's Japanese-context kanji are both covered, so nothing changes on
   any list (the committed curve is flat beyond 6,459, as the plot shows); a Large VN head stops there
   (section 4), before the Kanji list's Chinese-only tail.
@@ -135,9 +136,9 @@ worst case. On the per-deck sample (below) each VN title's own rate: FL10 misses
 
 ### The per-VN tail: the per-deck sample
 
-Jiten also serves each title's own word-occurrence CSV. `data/jiten_fetch.py` fetched 270 of the 2,162 VN
-decks before the owner's 10:00Z instruction to stop reached the agent, then the rest to a complete **2,162**
-VN decks by 10:39Z (plus 92 Novel decks, unused) when the fetch was stopped. That full VN set is used **only**
+Jiten also serves each title's own word-occurrence CSV. `data/jiten_fetch.py` finished all **2,162** VN decks
+(1,892 before 10:00Z, the last 270 by 10:29Z) before the owner's 10:00Z stop reached the agent (~10:31Z); it
+was on the Novel decks (92 fetched, unused) when it stopped at 10:39Z. That full VN set is used **only**
 for the per-VN tail above and the reserved-title check below — it enters no curve and no ordering, which come
 from the aggregate list. The per-title numbers are on a word-form basis (each form's characters times its
 occurrences); this is the direct **occurrence-weighted** measurement, and it runs 1.8-40× below the
@@ -195,7 +196,7 @@ story: 47 and 41 FL10-OOV lines, 2 each for H15, 0-1 for the VN-ordered heads.
 
 Per 1,000 dialogue lines, how many contain at least one character the model cannot emit. The model treats
 each content character of a line as an independent draw at the vocab's per-character miss rate, over the
-content-length distribution of real VN dialogue lines (78,915 realplus v3 kept labels, p10/50/90 = 2/7/23,
+content-length distribution of real VN dialogue lines (66,225 realplus v3 kept labels, p10/50/90 = 2/7/23,
 mean 9.9). As a check, the independence model matches the directly measured per-line OOV rate on vita-test,
 psp-test and CLANNAD to the third digit (`lines.json`); those sets hold only 0-5 single-character OOV lines
 each, so this checks the arithmetic, not independence on rare multi-OOV lines. (`vocab_expand.py lines`.)
@@ -289,21 +290,22 @@ The proof vocab is a subset of `data/vocab.txt`, so every class already has synt
 - **The added characters are read.** Character-level recall by group (`eval/vocab_proof_strata_20261014.json`):
   on the few development lines holding a character outside FL10's vocab (4 teacher_val lines / 5 reference
   characters, 2 devnative lines / 2 characters, and tv_native re-cuts teacher_val's screenshots), FL10 recalls
-  **0%** (it emits `<unk>` or a lookalike), the 4,987 head reads all of them; the shared-vocab recall is
-  unchanged (0.948 vs 0.947). The real-data n is tiny, so the learnability evidence rests on the synthetic
-  probe below.
+  **0%** (it emits `<unk>` or a lookalike), the 4,987 head reads 20/20 on teacher_val and 7/8 on devnative;
+  the shared-vocab recall is unchanged (0.948 vs 0.947). The real-data n is tiny, so the learnability evidence
+  rests on the synthetic probe below.
 - **Learnability by exposure.** A synthetic probe (synth4's held-out calibration render, 15,000 crops,
   `eval/vocab_proof_probe_20261014.json`) reads the added classes at **55-57%** overall against FL10's 0%,
   with shared recall unchanged and overall CER slightly lower (0.100 vs 0.110). By the class's exposures in
-  synth4's render: 50-100 exposures → 0.54-0.57, 100-300 → 0.63, under 50 → 0.04-0.13; about 0.92 needs 1,000+
+  synth4's render: 50-100 exposures → 0.54-0.57, 100-300 → 0.63-0.65, under 50 → 0.04-0.13; about 0.92 needs 1,000+
   exposures. So **K = 80 (synth4's VN quota) gives roughly half recall in-distribution**, not full recall:
   it is enough to read a rare class much of the time, well above FL10's 0%, and the model learns 814-847 of
   the 1,158 probed added classes at all. Real-screenshot recall of these rare classes is not measured here.
 
 The proof is FL10-width, 16k steps, two seeds, synthetic + NVIDIA only (no real fine-tune), so it bounds the
 cost at the always-safe tier; the release recipe and the wider tiers are `vocr4-train`'s to measure. It shows
-the direction clearly: a VN-ordered head of ~4,987 classes reads 2.28× more of VN text than FL10's vocab at
-no measured accuracy cost on the shared classes, for 162 KB more weights.
+the direction clearly: a VN-ordered head of ~4,987 classes misses about 12× fewer VN characters than FL10's
+vocab by the rank model (0.19 vs 2.28 per 1,000; ~30× by the sample, 0.041 vs 1.24) at no measured accuracy
+cost on the shared classes, for 162 KB more weights.
 
 ## 6. Recommendation per tier, and the hand-off to vocr4-train
 
@@ -314,13 +316,13 @@ vocab_vn_6459`, and the proof vocab ⊂ `vocab_vn_5631`), and share `data/vocab.
 
 | tier | file | classes | VN miss /1,000 chars (lines) | new kanji vs vocab.txt | int8 blob | box @444 | adopt |
 |---|---|---|---|---|---|---|---|
-| **Small** (now) | `data/vocab_4987_proof.txt` | 4,987 | 0.19 (1.9) | 0 (subset of H15) | 820 KB | 0.32-0.61 s | now — trained and proven |
+| **Small** (now) | `data/vocab_4987_proof.txt` | 4,987 | 0.19 (1.9) | 0 (subset of H15) | 820 KB | 0.32-0.61 s | now — trained, no measured cost |
 | **Small** (next) | `data/vocab_vn_4987.txt` | 4,987 | 0.11 (1.1) | 240 | 820 KB | 0.32-0.61 s | next round (needs a render) |
 | **Normal** | `data/vocab_vn_5631.txt` | 5,631 | 0.000 (0.002) | 610 | 2.10 MB (w2.5) | 0.96-1.82 s | next round |
 | **Large** | `data/vocab_vn_6459.txt` | 6,459 | 0.000 (0.000) | 1,214 | 3.48 MB (w3.0, t16) | 1.45-2.79 s | next round |
 
 Why these sizes: 4,987 is the knee of the VN curve (twenty times fewer misses than FL10, below H15, no
-accuracy cost proven) and fits Small with room; 5,631 covers the VN list completely; 6,459 is where the
+measured accuracy cost in the proof) and fits Small with room; 5,631 covers the VN list completely; 6,459 is where the
 Kanji list's **Japanese-context** kanji run out (every kanji in a Jiten global-list word or a VNDB character
 name, in JIS X 0213) — beyond it the list ranks Chinese-only characters from Chinese text in a few titles,
 which VN OCR does not need (the real labels use exactly 1 character beyond this limit). The order puts the
@@ -329,7 +331,8 @@ before the non-Japanese tail. All three are nested, so **one render of the 6,459
 tier's head**.
 
 **Which Small to ship.** If `vocr4-train` wants a bigger Small head this round, `data/vocab_4987_proof.txt`
-is ready: it is trained, proven (−0.20 teacher_val / −0.31 devnative points), and a subset of today's vocab
+is ready: it is trained (teacher_val no measured difference −0.20, CI touches 0; devnative better by the rule
+−0.31, seed spread −0.02/−0.61) and a subset of today's vocab
 so synth3 v3, synth4 and nvsynth already cover it — no new render. `data/vocab_vn_4987.txt` is marginally
 better on VN coverage (0.11 vs 0.19 per 1,000) because, against the proof vocab, it swaps its 240 lowest VN
 kanji for the 240 highest-weight VN kanji the proof vocab lacks; against H15 the full 4,987 head drops 609
@@ -368,8 +371,9 @@ get read.
 
 - Jiten's lists give ranks, so the per-list rates are a frequency model (s = 1.0 fitted to our real kanji),
   over dictionary word forms, not surface forms or counts; names may be under-counted by the parser. The
-  per-VN tail is the occurrence-weighted measurement on a complete fetch of the 2,162 VN decks (270 fetched
-  before the owner's 10:00Z stop reached the agent at ~10:31Z, the rest by 10:39Z), used only for the tail.
+  per-VN tail is the occurrence-weighted measurement on a complete fetch of the 2,162 VN decks (all finished
+  before the 10:00Z stop reached the agent at ~10:31Z; the fetch was on the unused Novel decks when stopped),
+  used only for the tail.
 - The proof is FL10-width, 16k steps, two seeds, synthetic + NVIDIA (no real fine-tune), on the 4,987-class
   vocab only; it bounds the Small tier. Whether the gain holds through the release recipe or at the Normal and
   Large widths is `vocr4-train`'s to measure. The synthetic probe reads synth4's own render, so it measures
@@ -394,24 +398,27 @@ A=$HERD/shared/artifacts; V=$A/vocab-expand; L=$V/jiten/lists; PY=.venv-ci/bin/p
 S=$V/inputs    # the pinned real-label snapshots (realplus_v3 6026e882…, native_frames 67e485a0…)
 R="--real realplus_v3=$S/realplus_v3_labels_20261014.jsonl --real native_frames=$S/native_frames_labels_20261014.jsonl \
    --real teacher_train=$A/teacher/teacher_train.npz --real real_train=$A/realdata/real_train.npz"
-VF="--vocab-file Small_next=data/vocab_vn_4987.txt --vocab-file Normal=data/vocab_vn_5631.txt --vocab-file Large=data/vocab_vn_6459.txt"
+VF="--vocab-file 'Small next (vn_4987)=data/vocab_vn_4987.txt' --vocab-file 'Normal (vn_5631)=data/vocab_vn_5631.txt' \
+    --vocab-file 'Large (vn_6459)=data/vocab_vn_6459.txt'"       # the committed result keys
+CL=$HERD/shared/private/owner-drive-20261013/clannad-compare/refs.jsonl
 P="--protected vita-test=eval/manifests/vita-test.jsonl --protected psp-test=eval/manifests/psp-test.jsonl \
-   --protected CLANNAD=$HERD/shared/private/owner-drive-20261013/clannad-compare/refs.jsonl \
-   --protected devnative=$A/devnative/labels.jsonl"
+   --protected 'CLANNAD refs=$CL' --protected 'devnative (kept)=$A/devnative/labels.jsonl'"
 $PY train/vocab_expand.py agg --lists $L $R $VF --out $V/agg/agg.json --order-out $V/agg/order.json
 for n in 4987 5631 6459; do $PY train/vocab_expand.py build --order $V/agg/order.json --size $n --out data/vocab_vn_$n.txt; done
 $PY train/vocab_expand.py sample --jiten $V/jiten --out $V/agg/sample_vn.npz     # through heavy.sh
 $PY train/vocab_expand.py tail --sample $V/agg/sample_vn.npz --order $V/agg/order.json $VF \
-    --check Small_next Normal Large $P --out $V/agg/tail.json
+    --check 'Small next (vn_4987)' 'Normal (vn_5631)' 'Large (vn_6459)' $P --out $V/agg/tail.json
 $PY train/vocab_expand.py bias --vocab-file 'Small (proof)=data/vocab_4987_proof.txt' $VF --out $V/agg/bias.json
 $PY train/vocab_expand.py lines --agg $V/agg/agg.json --tail $V/agg/tail.json --lengths $S/realplus_v3_labels_20261014.jsonl \
-    --set vita-test=eval/manifests/vita-test.jsonl --set psp-test=eval/manifests/psp-test.jsonl --out $V/agg/lines.json
+    --set vita-test=eval/manifests/vita-test.jsonl --set psp-test=eval/manifests/psp-test.jsonl \
+    --set "CLANNAD=$CL" --out $V/agg/lines.json
 $PY train/vocab_expand.py fonts --lists $L $VF --out $V/agg/fonts.json
 # cost: random-init blobs + the A9 estimate (through heavy.sh; VITASDK, qemu, ARM_CC and
 #   VOCR_SYNTH_VAL=$HERD/shared/data/synth/synth_00039.npz as docs/vita-memory-budget.md)
 $PY train/vocab_expand.py blobs --out $V/budget --vocab-file 't_w100v4987:1.0:96=data/vocab_vn_4987.txt' \
     --vocab-file 't_w250v5631:2.5:96=data/vocab_vn_5631.txt' --vocab-file 't_w300v6459b192:3.0:192=data/vocab_vn_6459.txt'
 $PY vita/budget_sweep.py a9 --dir $V/budget --l2 2048 --qemu $A/vita/qemu            # and --tile 16 --head 64 for Normal/Large
+# tier_rows() gives the t4 owner_tier; the t16h64/owner_tier_t16 fields were merged from the --tile 16 run (one-off)
 # the proof (protocol committed before training; F_s4 reused from synth4's ablation):
 TRAIN_REPO=$V/train_wt HEAVY_SLOTS=12 $HERD/heavy.sh timeout 36000 bash eval/vocab_proof_run.sh 1   # and 2
 HEAVY_SLOTS=12 $HERD/heavy.sh timeout 7200 bash eval/vocab_proof_score.sh

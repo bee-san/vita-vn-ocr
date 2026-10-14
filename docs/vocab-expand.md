@@ -6,7 +6,7 @@ and our own OCR data, then a decision. This document extends `docs/synth4-gap.md
 coverage from Jiten's aggregate word and kanji lists (a refit rank-frequency model, cross-checked against a
 per-deck occurrence sample), measures
 what the labelling pipelines hid, measures what a bigger head costs on the console under the owner's
-three tiers, proves on a trained model that a bigger VN-ordered head costs no accuracy and reads the extra
+three tiers, shows on a trained model that a bigger VN-ordered head costs no measured accuracy and reads the extra
 characters, and recommends a vocabulary per tier with the exact files and a render plan for `vocr4-train`.
 
 Every number is produced by `train/vocab_expand.py` (and the proof by `eval/vocab_proof_*.sh`); the result
@@ -44,7 +44,7 @@ is an **estimate** from the cycle model (`docs/vita-memory-budget.md`); nothing 
   head): **Small `data/vocab_vn_4987.txt`** (4,987 classes), **Normal `data/vocab_vn_5631.txt`** (5,631),
   **Large `data/vocab_vn_6459.txt`** (6,459). The files nest, so one render of the Large vocab serves all
   three. The already-trained **`data/vocab_4987_proof.txt`** is an immediate drop-in for Small if `vocr4-train`
-  wants the proven head now. Section 6 has the render plan and the hand-off.
+  wants the already-trained head now. Section 6 has the render plan and the hand-off.
 
 ## Data and method
 
@@ -364,7 +364,7 @@ Normal and Large files (anything beyond `data/vocab.txt`):
 
 Until that render exists, train Normal/Large with H15's 5,354 classes (every class has data now) or with the
 VN file limited to `data/vocab.txt` — but then the new kanji read as `<unk>`, which is the gap this
-recommendation closes. The proof shows the full render is worth it: no accuracy cost, and the new characters
+recommendation closes. The proof shows the full render is worth it: no measured accuracy cost, and the new characters
 get read.
 
 ## Limits

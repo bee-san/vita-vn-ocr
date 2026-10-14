@@ -104,6 +104,9 @@ vocr_refine_lines_rows(&src, VOCR_REFINE_DEFAULT, arena, need, &set, &rows);   /
   the finder's arena alone, 22% of them fit one pass (37.2 rows per box).
 - Return codes: `VOCR_LINES_E_ARG` (bad image, unknown flags, a line outside the image),
   `VOCR_LINES_E_ARENA`, `VOCR_LINES_E_SOURCE` (a row could not be read). On any error the set is unchanged.
+- Integer ranges: row counts are 16-bit and band masses 32-bit (`unsigned long` on the Vita), so the C equals
+  the twin for boxes up to 65,535 px wide and about 42 million pixels (any console region); a larger box could
+  wrap a comparison (never a memory access).
 
 ## 3. Development data
 

@@ -34,11 +34,11 @@ teacher_val, devnative, the owner pool or any protected set.
 Protected titles (always applied, before step 1): the VNs of eval/manifests/test_games.json ("all": vita-test,
 psp-test, their families and release partners) and data/manifests/synth3_exclude_clannad.json (the CLANNAD
 family), plus any --exclude-vns list. Their VNDB character names and titles (synth3's pinned VNDB extracts) become
-text markers by synth's rule (synth/owner_games.marker_candidates): every title (>= 3 Japanese or >= 5 Latin
-characters) and every full name of two or more parts (joined, >= 3 characters) always; a one-part name of >= 3
-characters only when it hits at most 50 corpus pieces (more: a common word). A corpus piece holding a marker is
-dropped. A Jiten word is dropped when it is a marker, or a protected character's full name or name part (>= 2
-characters) that hits at most 50 corpus pieces. The counts go into the manifest.
+text markers, after synth's rule (synth/owner_games.marker_candidates) but stricter: always every title (>= 3
+Japanese or >= 5 Latin characters), every full name of two or more parts (joined, >= 3 characters) and the
+CLANNAD manifest's own curated markers; and every other full name or name part of >= 2 characters (Japanese script)
+that occurs in at most 50 corpus pieces (more: a common word or surname, such as 岡崎, which stays). A corpus piece
+holding a marker is dropped, and so is a Jiten word that is one. The counts go into the manifest.
 """
 import argparse
 import bisect
@@ -149,12 +149,13 @@ def jiten_words(path, vocab):
 
 
 def protected(src, extra_vns=()):
-    """(VN ids, [name parts] per character, titles) of the protected titles and any extra VNs."""
+    """(VN ids, [name parts] per character, titles and curated markers) of the protected titles and extra VNs."""
     from synth3_text import norm_vn
     ex = src["exclusions"]
     vns = set(json.loads(checked(ex["test_games"]).read_text(encoding="utf-8"))["all"])
     vns |= set(json.loads(checked(ex["clannad"]).read_text(encoding="utf-8"))["vns"])
     vns |= set(extra_vns)
+    curated = list(json.loads(checked(ex["clannad"]).read_text(encoding="utf-8"))["text_markers"]["strings"])
     chars, titles = [], []
     with open(checked(ex["vndb_chars"]), encoding="utf-8") as f:
         col = {k: i for i, k in enumerate(f.readline().rstrip("\n").split("\t"))}
@@ -168,7 +169,7 @@ def protected(src, extra_vns=()):
             r = line.rstrip("\n").split("\t")
             if r[col["vn_id"]] in vns:
                 titles.append(r[col["title"]])
-    return vns, chars, titles
+    return vns, chars, titles + curated
 
 
 def hit_lines(text, starts, s, cap=None):
@@ -193,12 +194,11 @@ def exclude_protected(corpus_lines, jiten, vns, chars, titles):
             full = unicodedata.normalize("NFKC", t)
             if full != t and len(full) >= 3:
                 always.add(full)
-    words = set()
     for parts in chars:
         s = "".join(parts)
-        if len(s) >= MIN_MARKER and JP.search(s):
-            (always if len(parts) >= 2 else rare).add(s)
-        words |= {w for w in (s, *parts) if len(w) >= 2 and JP.search(w)}
+        if len(s) >= MIN_MARKER and JP.search(s) and len(parts) >= 2:
+            always.add(s)
+        rare |= {w for w in (s, *parts) if len(w) >= 2 and JP.search(w)}
     rare -= always
     text = "\n".join(corpus_lines)
     starts, pos = [0], text.find("\n")
@@ -208,19 +208,18 @@ def exclude_protected(corpus_lines, jiten, vns, chars, titles):
     drop, hits = set(), {}
     for m in sorted(always):
         drop |= hit_lines(text, starts, m)
-    for m in sorted((rare | words) - always):
+    for m in sorted(rare):
         h = hit_lines(text, starts, m, MAX_RARE_HITS)
         hits[m] = len(h)
-        if m in rare and len(h) <= MAX_RARE_HITS:
+        if len(h) <= MAX_RARE_HITS:
             drop |= h
     markers = always | {m for m in rare if hits[m] <= MAX_RARE_HITS}
-    bad = markers | {w for w in words if hits.get(w, 0) <= MAX_RARE_HITS}
     kept = [x for i, x in enumerate(corpus_lines) if i not in drop]
     out, jdrop = {}, {}
     for name, (wd, share) in jiten.items():
-        out[name] = ({w: r for w, r in wd.items() if w not in bad}, share)
+        out[name] = ({w: r for w, r in wd.items() if w not in markers}, share)
         jdrop[name] = len(wd) - len(out[name][0])
-    stats = {"vns": len(vns), "characters": len(chars), "titles": len(titles), "markers": len(markers),
+    stats = {"vns": len(vns), "characters": len(chars), "titles_and_curated": len(titles), "markers": len(markers),
              "common_names_not_markers": len(rare) - len(markers & rare),
              "corpus_pieces_dropped": len(drop), "jiten_words_dropped": jdrop}
     return kept, out, stats

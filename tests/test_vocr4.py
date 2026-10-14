@@ -238,3 +238,24 @@ def test_strata_report_only(tmp_path):
     s = SEL.strata(P, "FL10", SEL.load_cohorts([tv], [dn]), "C", "A", n_boot=500)
     assert s["report_only"] and set(s["strata"]["teacher_val"]) == {"kind:psp", "kind:hires"}
     assert all(r["delta_points"] < 0 for r in s["strata"]["teacher_val"].values())
+
+
+def test_committed_decisions_selections_and_spec_agree():
+    spec = json.loads((ROOT / "eval" / "vocr4_report_spec_20261014.json").read_text(encoding="utf-8"))
+    runs = json.loads((ROOT / "eval" / "vocr4_report_spec_20261014.runs.json").read_text(encoding="utf-8"))
+    assert {a["name"] for a in spec["arms"]} == set(P["locked_report"]["arms"])
+    assert [[p["candidate"], p["baseline"]] for p in spec["pairs"]] == P["locked_report"]["pairs"]
+    assert [[g["candidate"], g["baseline"]] for g in spec["gates"]] == P["qualification"]["gates"]
+    shas = {a["name"]: a["sha256"] for a in spec["arms"]}
+    for size in SIZES:
+        real = json.loads((ROOT / "eval" / f"vocr4_real_{size}_20261014.json").read_text(encoding="utf-8"))
+        synth = json.loads((ROOT / "eval" / f"vocr4_synth_{size}_20261014.json").read_text(encoding="utf-8"))
+        sel = json.loads((ROOT / "eval" / f"vocr4_selection_{size}_20261014.json").read_text(encoding="utf-8"))
+        assert (real["x"], real["y"]) == ("C", "A") and synth["x"] == real["adopted_arm"] and synth["y"] == "M"
+        assert sel["final_arm"] == synth["adopted_arm"]
+        assert sel["candidates"] == sorted(P["arms"][sel["final_arm"]]["runs"][size])
+        assert sel["selected"] in sel["candidates"]
+        cands = [r for r in sel["runs"] if r["candidate"] and r["budget_ok"]]
+        assert sel["selected"] == min(cands, key=lambda r: (round(r["score"], 5), r["run"][-1]))["run"]
+        assert shas[f"VOCR4_{size}"] == sel["selected_blob_sha256"]
+        assert runs["selected_runs"][f"VOCR4_{size}"] == sel["selected"]

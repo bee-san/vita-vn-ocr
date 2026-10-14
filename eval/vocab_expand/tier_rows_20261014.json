@@ -32,7 +32,8 @@
    0.25,
    0.5
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b64c4987": {
   "classes": 4987,
@@ -67,7 +68,8 @@
    0.29,
    0.56
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b64c5630": {
   "classes": 5630,
@@ -102,7 +104,8 @@
    0.3,
    0.59
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b64c6500": {
   "classes": 6500,
@@ -137,7 +140,8 @@
    0.32,
    0.63
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b64c7500": {
   "classes": 7500,
@@ -172,7 +176,8 @@
    0.34,
    0.68
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
  },
  "w100b96c3501": {
   "classes": 3501,
@@ -207,7 +212,8 @@
    0.28,
    0.53
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b96c4987": {
   "classes": 4987,
@@ -242,7 +248,8 @@
    0.32,
    0.61
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b96c5630": {
   "classes": 5630,
@@ -277,7 +284,8 @@
    0.34,
    0.65
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b96c6500": {
   "classes": 6500,
@@ -312,7 +320,8 @@
    0.37,
    0.69
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
  },
  "w100b96c7500": {
   "classes": 7500,
@@ -347,7 +356,8 @@
    0.4,
    0.75
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w100b128c3501": {
   "classes": 3501,
@@ -382,7 +392,8 @@
    0.31,
    0.56
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b128c4987": {
   "classes": 4987,
@@ -417,7 +428,8 @@
    0.36,
    0.66
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
  },
  "w100b128c5630": {
   "classes": 5630,
@@ -452,7 +464,8 @@
    0.39,
    0.7
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w100b128c6500": {
   "classes": 6500,
@@ -487,7 +500,8 @@
    0.42,
    0.76
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w100b128c7500": {
   "classes": 7500,
@@ -522,7 +536,8 @@
    0.46,
    0.82
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b64c3501": {
   "classes": 3501,
@@ -557,7 +572,8 @@
    0.41,
    0.76
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
  },
  "w150b64c4987": {
   "classes": 4987,
@@ -592,7 +608,8 @@
    0.44,
    0.83
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
  },
  "w150b64c5630": {
   "classes": 5630,
@@ -627,7 +644,8 @@
    0.46,
    0.86
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
  },
  "w150b64c6500": {
   "classes": 6500,
@@ -662,7 +680,8 @@
    0.48,
    0.9
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b64c7500": {
   "classes": 7500,
@@ -697,7 +716,8 @@
    0.5,
    0.94
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b96c3501": {
   "classes": 3501,
@@ -732,7 +752,8 @@
    0.44,
    0.79
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
  },
  "w150b96c4987": {
   "classes": 4987,
@@ -767,7 +788,8 @@
    0.48,
    0.88
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b96c5630": {
   "classes": 5630,
@@ -802,7 +824,8 @@
    0.5,
    0.91
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b96c6500": {
   "classes": 6500,
@@ -837,7 +860,8 @@
    0.53,
    0.96
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b96c7500": {
   "classes": 7500,
@@ -872,7 +896,8 @@
    0.56,
    1.01
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b128c3501": {
   "classes": 3501,
@@ -907,7 +932,8 @@
    0.47,
    0.83
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b128c4987": {
   "classes": 4987,
@@ -942,7 +968,8 @@
    0.52,
    0.92
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b128c5630": {
   "classes": 5630,
@@ -977,7 +1004,8 @@
    0.55,
    0.97
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b128c6500": {
   "classes": 6500,
@@ -1012,7 +1040,8 @@
    0.58,
    1.02
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "w150b128c7500": {
   "classes": 7500,
@@ -1047,7 +1076,8 @@
    0.62,
    1.08
   ],
-  "tier": "never"
+  "tier_budget_doc": "never",
+  "owner_tier": "Normal"
  },
  "w100b48c3501": {
   "classes": 3501,
@@ -1082,7 +1112,8 @@
    0.24,
    0.48
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b48c4987": {
   "classes": 4987,
@@ -1117,7 +1148,8 @@
    0.27,
    0.54
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b48c5630": {
   "classes": 5630,
@@ -1152,7 +1184,8 @@
    0.28,
    0.57
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b48c6500": {
   "classes": 6500,
@@ -1187,7 +1220,8 @@
    0.29,
    0.6
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "w100b48c7500": {
   "classes": 7500,
@@ -1222,7 +1256,8 @@
    0.31,
    0.64
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "FL10": {
   "classes": 3501,
@@ -1249,7 +1284,8 @@
    0.28,
    0.53
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "H15": {
   "classes": 5355,
@@ -1276,7 +1312,8 @@
    0.49,
    0.9
   ],
-  "tier": "preflight"
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
  },
  "t_w100proof": {
   "classes": 4987,
@@ -1311,7 +1348,8 @@
    0.32,
    0.61
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "t_w100v4987": {
   "classes": 4987,
@@ -1346,7 +1384,8 @@
    0.32,
    0.61
   ],
-  "tier": "always"
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
  },
  "t_w250v5631": {
   "classes": 5631,
@@ -1381,7 +1420,8 @@
    0.96,
    1.82
   ],
-  "tier": "never",
+  "tier_budget_doc": "never",
+  "owner_tier": "Normal",
   "t16h64": {
    "ms_333": [
     425.4,
@@ -1400,7 +1440,8 @@
     1.83
    ],
    "arena_w8i": 960896
-  }
+  },
+  "owner_tier_t16": "Normal"
  },
  "t_w300v7501b192": {
   "classes": 7501,
@@ -1435,7 +1476,8 @@
    1.51,
    3.38
   ],
-  "tier": "never",
+  "tier_budget_doc": "never",
+  "owner_tier": "none",
   "t16h64": {
    "ms_333": [
     666.5,
@@ -1454,7 +1496,8 @@
     2.88
    ],
    "arena_w8i": 1176832
-  }
+  },
+  "owner_tier_t16": "Large"
  },
  "t_w300v6459b192": {
   "classes": 6459,
@@ -1489,7 +1532,8 @@
    1.45,
    3.27
   ],
-  "tier": "never",
+  "tier_budget_doc": "never",
+  "owner_tier": "none",
   "t16h64": {
    "ms_333": [
     642.3,
@@ -1508,6 +1552,7 @@
     2.79
    ],
    "arena_w8i": 1176832
-  }
+  },
+  "owner_tier_t16": "Large"
  }
 }

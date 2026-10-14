@@ -954,6 +954,20 @@ def cmd_blobs(args):
     sizes_p.write_text(json.dumps(sizes, indent=1, ensure_ascii=False))
 
 
+def owner_tier(blob_bytes, box3_hi_444):
+    """The owner's tier (06:33-07:33Z): weights ceiling and the high bound of the 3-line 640-px box at 444 MHz.
+    Small < 1 MB and <= 1 s; Normal <= 4 MB and <= 2 s; Large <= 9 MB and <= 3 s; else none."""
+    if box3_hi_444 is None:
+        return None
+    if blob_bytes < 1_000_000 and box3_hi_444 <= 1.0:
+        return "Small"
+    if blob_bytes <= 4_000_000 and box3_hi_444 <= 2.0:
+        return "Normal"
+    if blob_bytes <= 9_000_000 and box3_hi_444 <= 3.0:
+        return "Large"
+    return "none"
+
+
 def tier_rows(sizes_dir):
     """Blob size, arena, MACs and the estimated ms of every blob with an a9 run (2 MiB L2, default tiling)."""
     import budget_sweep as BS
@@ -971,7 +985,8 @@ def tier_rows(sizes_dir):
                 lo, hi = BS._ms(r, mhz)
                 row[f"ms_{mhz}"] = [round(lo, 1), round(hi, 1)]
                 row[f"box3_s_{mhz}"] = [round(3 * lo / 1000, 2), round(3 * hi / 1000, 2)]
-            row["tier"] = BS.tier(s, r)
+            row["tier_budget_doc"] = BS.tier(s, r)          # the always/preflight/never scheme (superseded)
+            row["owner_tier"] = owner_tier(s["blob_bytes"], row["box3_s_444"][1])
         out[name] = row
     return out
 

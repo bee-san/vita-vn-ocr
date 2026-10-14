@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # vocab_proof_score.sh: eval/vocab_proof_protocol.json's scoring, run once both G_v4987 ckpt_step16000.pt exist.
-# Exports G_v4987's two EMA step-16000 checkpoints, re-exports F_s4's two (checked byte-for-byte against the
+# Exports G_v4987's two EMA step-16000 checkpoints, and reuses F_s4's two published blobs (hash-checked against the
 # published blobs), reads teacher_val and devnative v3 (the VOCR3 selection's amendment-8 copies) through the
 # C runtime W8I, compares G against F with eval/synth3_ablation.py (the synth4 ablation's machinery), and adds
 # the character strata and the synthetic probe (train/vocab_expand.py proof).

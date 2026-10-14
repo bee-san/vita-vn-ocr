@@ -82,7 +82,7 @@
     "observed_per_1000_lines": 4.082,
     "independence_per_1000_lines": 4.088
    },
-   "CLANNAD refs": {
+   "CLANNAD": {
     "observed_per_1000_lines": 1.64,
     "independence_per_1000_lines": 1.639
    }
@@ -96,7 +96,7 @@
     "observed_per_1000_lines": 0.0,
     "independence_per_1000_lines": 0.0
    },
-   "CLANNAD refs": {
+   "CLANNAD": {
     "observed_per_1000_lines": 0.0,
     "independence_per_1000_lines": 0.0
    }

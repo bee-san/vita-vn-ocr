@@ -20,8 +20,11 @@ reproduces the published 8.60%, and against the references FL10's CER is 4.56%.
 
 This is a report on a protected test title. Nothing here chose, tuned, calibrated, qualified or dropped a
 model, threshold, finder or recipe, and the references and crops never enter any training, development or
-calibration pool. The protocol (`eval/clannad_refs_protocol.json`) was committed in `991d71c` before any arm
-read a CLANNAD crop.
+calibration pool. The protocol (`eval/clannad_refs_protocol.json`) was committed as `991d71c` and pushed at
+2026-10-13T20:34:43Z (GitHub's activity log for `feat/owner-drive-ingest`), before any arm read a CLANNAD
+crop; the arm outputs were written at 20:56:04Z. Its amendments were committed at 22:24:36Z, before the
+references were frozen at 03:04:39Z on 2026-10-14. The branch was rebased onto main later, which changed
+the commit ids but not the author dates; `991d71c` itself is still on GitHub.
 
 ## What was compared
 

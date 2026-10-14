@@ -274,7 +274,7 @@
  "tiers": {
   "0.5MB": {
    "lm": "p_o3j2_500k",
-   "lm_bytes": 497456,
+   "lm_bytes": 499824,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -286,41 +286,41 @@
    },
    "candidates": 432,
    "pooled_dialogue": {
-    "delta_points": -0.282,
+    "delta_points": -0.284,
     "ci95": [
-     -0.454,
-     -0.175
+     -0.456,
+     -0.177
     ],
     "cer_a": 0.00934,
-    "cer_b": 0.00652,
+    "cer_b": 0.00651,
     "errors_a": 1656,
-    "errors_b": 1156,
+    "errors_b": 1153,
     "chars": 177247,
     "vns": 174
    },
    "pooled_names": {
-    "delta_points": -0.491,
+    "delta_points": -0.526,
     "ci95": [
-     -0.853,
-     -0.123
+     -0.917,
+     -0.135
     ],
     "cer_a": 0.05675,
-    "cer_b": 0.05184,
+    "cer_b": 0.05149,
     "errors_a": 960,
-    "errors_b": 877,
+    "errors_b": 871,
     "chars": 16916,
     "vns": 153
    },
    "pooled_dialogue_distinct": {
-    "delta_points": -0.3,
+    "delta_points": -0.302,
     "ci95": [
-     -0.5,
-     -0.182
+     -0.503,
+     -0.183
     ],
     "cer_a": 0.01008,
-    "cer_b": 0.00708,
+    "cer_b": 0.00706,
     "errors_a": 1574,
-    "errors_b": 1106,
+    "errors_b": 1103,
     "chars": 156139,
     "vns": 174
    },
@@ -330,20 +330,20 @@
    },
    "gate_curve": {
     "3500": {
-     "dialogue": 1162,
-     "names": 880
+     "dialogue": 1159,
+     "names": 874
     },
     "5000": {
-     "dialogue": 1161,
-     "names": 877
+     "dialogue": 1158,
+     "names": 871
     },
     "8000": {
-     "dialogue": 1156,
-     "names": 877
+     "dialogue": 1153,
+     "names": 871
     },
     "12000": {
-     "dialogue": 1156,
-     "names": 877
+     "dialogue": 1153,
+     "names": 871
     }
    },
    "cv_folds": {
@@ -375,28 +375,28 @@
    "per_model": {
     "v3FL10": {
      "dialogue": {
-      "delta_points": -0.262,
+      "delta_points": -0.268,
       "ci95": [
-       -0.472,
-       -0.134
+       -0.483,
+       -0.139
       ],
       "cer_a": 0.01033,
-      "cer_b": 0.00772,
+      "cer_b": 0.00765,
       "errors_a": 324,
-      "errors_b": 242,
+      "errors_b": 240,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.851,
+      "delta_points": -0.922,
       "ci95": [
-       -1.509,
-       -0.203
+       -1.585,
+       -0.252
       ],
       "cer_a": 0.06381,
-      "cer_b": 0.0553,
+      "cer_b": 0.05459,
       "errors_a": 180,
-      "errors_b": 156,
+      "errors_b": 154,
       "chars": 2821,
       "vns": 153
      },
@@ -414,15 +414,15 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.295,
+      "delta_points": -0.302,
       "ci95": [
-       -0.538,
-       -0.163
+       -0.552,
+       -0.167
       ],
       "cer_a": 0.0111,
-      "cer_b": 0.00816,
+      "cer_b": 0.00808,
       "errors_a": 309,
-      "errors_b": 227,
+      "errors_b": 225,
       "chars": 27831,
       "vns": 174
      },
@@ -440,15 +440,15 @@
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.497,
+      "delta_points": -0.51,
       "ci95": [
-       -0.725,
-       -0.296
+       -0.737,
+       -0.31
       ],
       "cer_a": 0.01579,
-      "cer_b": 0.01082,
+      "cer_b": 0.01068,
       "errors_a": 232,
-      "errors_b": 159,
+      "errors_b": 157,
       "chars": 14694,
       "vns": 171
      },
@@ -490,15 +490,15 @@
        "bracket": 1000
       },
       "dialogue": {
-       "delta_points": -0.297,
+       "delta_points": -0.3,
        "ci95": [
-        -0.502,
-        -0.179
+        -0.507,
+        -0.181
        ],
        "cer_a": 0.01033,
-       "cer_b": 0.00737,
+       "cer_b": 0.00734,
        "errors_a": 324,
-       "errors_b": 231,
+       "errors_b": 230,
        "chars": 31356,
        "vns": 174
       }
@@ -519,15 +519,15 @@
       "vns": 174
      },
      "names": {
-      "delta_points": -0.354,
+      "delta_points": -0.39,
       "ci95": [
-       -0.96,
-       0.237
+       -1.008,
+       0.219
       ],
       "cer_a": 0.05388,
-      "cer_b": 0.05034,
+      "cer_b": 0.04998,
       "errors_a": 152,
-      "errors_b": 142,
+      "errors_b": 141,
       "chars": 2821,
       "vns": 153
      },
@@ -621,15 +621,15 @@
        "bracket": 1000
       },
       "dialogue": {
-       "delta_points": -0.322,
+       "delta_points": -0.325,
        "ci95": [
-        -0.515,
-        -0.201
+        -0.52,
+        -0.205
        ],
        "cer_a": 0.00934,
-       "cer_b": 0.00612,
+       "cer_b": 0.00609,
        "errors_a": 293,
-       "errors_b": 192,
+       "errors_b": 191,
        "chars": 31356,
        "vns": 174
       }
@@ -650,28 +650,28 @@
       "vns": 174
      },
      "names": {
-      "delta_points": -0.284,
+      "delta_points": -0.319,
       "ci95": [
-       -0.883,
-       0.262
+       -0.918,
+       0.225
       ],
       "cer_a": 0.05069,
-      "cer_b": 0.04786,
+      "cer_b": 0.0475,
       "errors_a": 143,
-      "errors_b": 135,
+      "errors_b": 134,
       "chars": 2821,
       "vns": 153
      },
      "grad": {
-      "delta_points": -0.428,
+      "delta_points": -0.407,
       "ci95": [
-       -0.947,
-       0.019
+       -0.921,
+       0.023
       ],
       "cer_a": 0.01527,
-      "cer_b": 0.01099,
+      "cer_b": 0.0112,
       "errors_a": 75,
-      "errors_b": 54,
+      "errors_b": 55,
       "chars": 4912,
       "vns": 43
      },
@@ -781,28 +781,28 @@
       "vns": 174
      },
      "names": {
-      "delta_points": -0.603,
+      "delta_points": -0.638,
       "ci95": [
-       -1.182,
+       -1.257,
        0.0
       ],
       "cer_a": 0.06345,
-      "cer_b": 0.05743,
+      "cer_b": 0.05707,
       "errors_a": 179,
-      "errors_b": 162,
+      "errors_b": 161,
       "chars": 2821,
       "vns": 153
      },
      "grad": {
-      "delta_points": -0.529,
+      "delta_points": -0.509,
       "ci95": [
-       -0.805,
-       -0.288
+       -0.79,
+       -0.267
       ],
       "cer_a": 0.02015,
-      "cer_b": 0.01486,
+      "cer_b": 0.01507,
       "errors_a": 99,
-      "errors_b": 73,
+      "errors_b": 74,
       "chars": 4912,
       "vns": 43
      },
@@ -820,15 +820,15 @@
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.316,
+      "delta_points": -0.309,
       "ci95": [
-       -0.535,
-       -0.186
+       -0.526,
+       -0.18
       ],
       "cer_a": 0.01129,
-      "cer_b": 0.00813,
+      "cer_b": 0.0082,
       "errors_a": 354,
-      "errors_b": 255,
+      "errors_b": 257,
       "chars": 31356,
       "vns": 174
      },
@@ -899,28 +899,28 @@
     },
     "v4H15": {
      "dialogue": {
-      "delta_points": -0.249,
+      "delta_points": -0.252,
       "ci95": [
-       -0.419,
-       -0.147
+       -0.423,
+       -0.15
       ],
       "cer_a": 0.00874,
-      "cer_b": 0.00625,
+      "cer_b": 0.00622,
       "errors_a": 274,
-      "errors_b": 196,
+      "errors_b": 195,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.567,
+      "delta_points": -0.603,
       "ci95": [
-       -1.089,
-       -0.076
+       -1.128,
+       -0.108
       ],
       "cer_a": 0.05636,
-      "cer_b": 0.05069,
+      "cer_b": 0.05034,
       "errors_a": 159,
-      "errors_b": 143,
+      "errors_b": 142,
       "chars": 2821,
       "vns": 153
      },
@@ -938,28 +938,28 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.273,
+      "delta_points": -0.277,
       "ci95": [
-       -0.473,
-       -0.163
+       -0.479,
+       -0.166
       ],
       "cer_a": 0.00945,
-      "cer_b": 0.00672,
+      "cer_b": 0.00668,
       "errors_a": 263,
-      "errors_b": 187,
+      "errors_b": 186,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.23,
+      "delta_points": -0.233,
       "ci95": [
-       -0.397,
+       -0.406,
        -0.131
       ],
       "cer_a": 0.00874,
-      "cer_b": 0.00644,
+      "cer_b": 0.00641,
       "errors_a": 274,
-      "errors_b": 202,
+      "errors_b": 201,
       "chars": 31356,
       "vns": 174
      },
@@ -977,15 +977,15 @@
       "vns": 171
      },
      "dialogue_dn_ink": {
-      "delta_points": -0.173,
+      "delta_points": -0.191,
       "ci95": [
-       -0.37,
-       0.0
+       -0.383,
+       -0.016
       ],
       "cer_a": 0.00606,
-      "cer_b": 0.00433,
+      "cer_b": 0.00416,
       "errors_a": 35,
-      "errors_b": 25,
+      "errors_b": 24,
       "chars": 5773,
       "vns": 43
      },
@@ -1014,15 +1014,15 @@
        "bracket": 5000
       },
       "dialogue": {
-       "delta_points": -0.277,
+       "delta_points": -0.287,
        "ci95": [
-        -0.467,
-        -0.165
+        -0.487,
+        -0.168
        ],
        "cer_a": 0.00874,
-       "cer_b": 0.00596,
+       "cer_b": 0.00587,
        "errors_a": 274,
-       "errors_b": 187,
+       "errors_b": 184,
        "chars": 31356,
        "vns": 174
       }
@@ -1162,8 +1162,8 @@
    },
    "release": {
     "file": "vocr_lm_o3_500k.vlm",
-    "bytes": 497456,
-    "sha256": "637b56f23dee9ea0e0efad3bfddc81ae699e9a960daece1991cb0fcac35a413a",
+    "bytes": 499824,
+    "sha256": "38ea94e0c4ec93863454387e7c2c469d209aaf21f2f6ee5d040e75a09d00d286",
     "tuned_as": "p_o3j2_500k",
     "manifest": {
      "kind": "volm-build",
@@ -1224,9 +1224,9 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten visual-novel frequency list (https://jiten.moe/frequency-dictionaries, 2,162 VN scripts; CC BY-SA 4.0); retrieved 2026-10-12 and again 2026-10-14 with the same bytes",
        "share": 0.4,
-       "words": 239721,
-       "scale": 688994.4298298949,
-       "weighted_chars": 18637288
+       "words": 239654,
+       "scale": 688672.6899030447,
+       "weighted_chars": 18628694
       },
       {
        "name": "novel",
@@ -1235,38 +1235,38 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten novel frequency list (https://jiten.moe/frequency-dictionaries, 3,161 novels; CC BY-SA 4.0); retrieved 2026-10-14",
        "share": 0.2,
-       "words": 315796,
-       "scale": 338254.3726358023,
-       "weighted_chars": 9276366
+       "words": 315720,
+       "scale": 338098.3636584522,
+       "weighted_chars": 9271065
       }
      ],
      "heldout_lines": 3000,
      "heldout_text_sha256": "e0f54c272756906e625ee787cc787559ba1e8a6ac8eb8d4ee46482e99bd48079",
      "exclusion": {
-      "vns": 196,
-      "characters": 2177,
-      "titles_and_curated": 266,
-      "markers": 3782,
-      "common_names_not_markers": 499,
-      "corpus_pieces_dropped": 13358,
+      "vns": 206,
+      "characters": 2316,
+      "titles_and_curated": 275,
+      "markers": 4003,
+      "common_names_not_markers": 524,
+      "corpus_pieces_dropped": 14126,
       "jiten_words_dropped": {
-       "vn": 1283,
-       "novel": 1255
+       "vn": 1350,
+       "novel": 1331
       },
       "extra_vns": 0,
       "extra_vns_sha256": null,
       "sources": {
-       "test_games": "d986adff49f1bfcf3df30ae841d658ec8f06f2b89e01fe37990a0bbd53966d39",
+       "test_games": "c24d67e7697da2a8ebbcc940449ded4ccc839c25acc2bae3a5ef85eec4fcce9b",
        "clannad": "1143db8610b16757242994fa2b8fa232c4af8a8b04183290bfa1a2dfa38ff136",
        "vndb_chars": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
        "vndb_titles": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0"
       },
-      "corpus_chars_kept": 46696791
+      "corpus_chars_kept": 46672036
      },
      "ngrams_counted": [
       5279,
-      643967,
-      4923817
+      643722,
+      4921040
      ],
      "profiles": [
       {
@@ -1276,16 +1276,16 @@
        ],
        "thresholds": [
         1,
-        131,
-        131
+        130,
+        130
        ],
-       "bytes": 497456,
+       "bytes": 499824,
        "entries": [
         5357,
-        37194,
-        47821
+        37370,
+        48144
        ],
-       "heldout_nats_per_char": 4.085559535693009
+       "heldout_nats_per_char": 4.08466149459141
       },
       {
        "profile": [
@@ -1297,13 +1297,13 @@
         103,
         206
        ],
-       "bytes": 498464,
+       "bytes": 498288,
        "entries": [
         5357,
-        43837,
-        30448
+        43816,
+        30434
        ],
-       "heldout_nats_per_char": 4.122987415239772
+       "heldout_nats_per_char": 4.12296837974925
       },
       {
        "profile": [
@@ -1312,34 +1312,34 @@
        ],
        "thresholds": [
         1,
-        114,
-        171
+        112,
+        168
        ],
-       "bytes": 494048,
+       "bytes": 499840,
        "entries": [
         5357,
-        40889,
-        36832
+        41360,
+        37508
        ],
-       "heldout_nats_per_char": 4.10769697444475
+       "heldout_nats_per_char": 4.103948996181188
       }
      ],
      "chosen_thresholds": [
       1,
-      131,
-      131
+      130,
+      130
      ],
      "builder": {
       "script": "lm/build.py",
       "numpy": "2.4.6"
      },
-     "bytes": 497456,
-     "sha256": "637b56f23dee9ea0e0efad3bfddc81ae699e9a960daece1991cb0fcac35a413a",
-     "manifest_sha256_prefix": "7ca80954e34964ae136762bf49347851",
+     "bytes": 499824,
+     "sha256": "38ea94e0c4ec93863454387e7c2c469d209aaf21f2f6ee5d040e75a09d00d286",
+     "manifest_sha256_prefix": "1a5d4770802f86e991ef4e6ac5a8c8bb",
      "entries": [
       5357,
-      37194,
-      47821
+      37370,
+      48144
      ],
      "heldout": "realplus"
     }
@@ -1347,7 +1347,7 @@
   },
   "1MB": {
    "lm": "p_o3j2_1000k",
-   "lm_bytes": 988080,
+   "lm_bytes": 987600,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -1359,41 +1359,41 @@
    },
    "candidates": 432,
    "pooled_dialogue": {
-    "delta_points": -0.344,
+    "delta_points": -0.343,
     "ci95": [
      -0.533,
-     -0.226
+     -0.225
     ],
     "cer_a": 0.00934,
     "cer_b": 0.00591,
     "errors_a": 1656,
-    "errors_b": 1047,
+    "errors_b": 1048,
     "chars": 177247,
     "vns": 174
    },
    "pooled_names": {
-    "delta_points": -0.644,
+    "delta_points": -0.656,
     "ci95": [
-     -1.071,
-     -0.249
+     -1.079,
+     -0.26
     ],
     "cer_a": 0.05675,
-    "cer_b": 0.05031,
+    "cer_b": 0.05019,
     "errors_a": 960,
-    "errors_b": 851,
+    "errors_b": 849,
     "chars": 16916,
     "vns": 153
    },
    "pooled_dialogue_distinct": {
     "delta_points": -0.366,
     "ci95": [
-     -0.594,
+     -0.591,
      -0.233
     ],
     "cer_a": 0.01008,
     "cer_b": 0.00642,
     "errors_a": 1574,
-    "errors_b": 1002,
+    "errors_b": 1003,
     "chars": 156139,
     "vns": 174
    },
@@ -1403,20 +1403,20 @@
    },
    "gate_curve": {
     "3500": {
-     "dialogue": 1062,
-     "names": 853
+     "dialogue": 1063,
+     "names": 851
     },
     "5000": {
-     "dialogue": 1054,
-     "names": 851
+     "dialogue": 1055,
+     "names": 849
     },
     "8000": {
-     "dialogue": 1047,
-     "names": 851
+     "dialogue": 1048,
+     "names": 849
     },
     "12000": {
-     "dialogue": 1047,
-     "names": 851
+     "dialogue": 1048,
+     "names": 849
     }
    },
    "cv_folds": {
@@ -1579,15 +1579,15 @@
     },
     "v3H15": {
      "dialogue": {
-      "delta_points": -0.354,
+      "delta_points": -0.351,
       "ci95": [
-       -0.553,
-       -0.236
+       -0.548,
+       -0.232
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.0058,
+      "cer_b": 0.00584,
       "errors_a": 293,
-      "errors_b": 182,
+      "errors_b": 183,
       "chars": 31356,
       "vns": 174
      },
@@ -1618,41 +1618,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.359,
+      "delta_points": -0.356,
       "ci95": [
-       -0.588,
-       -0.234
+       -0.582,
+       -0.231
       ],
       "cer_a": 0.00985,
-      "cer_b": 0.00625,
+      "cer_b": 0.00629,
       "errors_a": 274,
-      "errors_b": 174,
+      "errors_b": 175,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.341,
+      "delta_points": -0.338,
       "ci95": [
-       -0.538,
-       -0.224
+       -0.535,
+       -0.221
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.00593,
+      "cer_b": 0.00596,
       "errors_a": 293,
-      "errors_b": 186,
+      "errors_b": 187,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.585,
+      "delta_points": -0.578,
       "ci95": [
-       -0.781,
-       -0.405
+       -0.776,
+       -0.398
       ],
       "cer_a": 0.01524,
-      "cer_b": 0.00939,
+      "cer_b": 0.00946,
       "errors_a": 224,
-      "errors_b": 138,
+      "errors_b": 139,
       "chars": 14694,
       "vns": 171
      },
@@ -1841,28 +1841,28 @@
     },
     "v4FL10": {
      "dialogue": {
-      "delta_points": -0.418,
+      "delta_points": -0.415,
       "ci95": [
-       -0.701,
-       -0.25
+       -0.696,
+       -0.249
       ],
       "cer_a": 0.01129,
-      "cer_b": 0.00711,
+      "cer_b": 0.00714,
       "errors_a": 354,
-      "errors_b": 223,
+      "errors_b": 224,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.674,
+      "delta_points": -0.744,
       "ci95": [
-       -1.321,
-       0.0
+       -1.405,
+       -0.042
       ],
       "cer_a": 0.06345,
-      "cer_b": 0.05672,
+      "cer_b": 0.05601,
       "errors_a": 179,
-      "errors_b": 160,
+      "errors_b": 158,
       "chars": 2821,
       "vns": 153
      },
@@ -1880,15 +1880,15 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.435,
+      "delta_points": -0.431,
       "ci95": [
-       -0.777,
-       -0.252
+       -0.769,
+       -0.249
       ],
       "cer_a": 0.012,
-      "cer_b": 0.00765,
+      "cer_b": 0.00769,
       "errors_a": 334,
-      "errors_b": 213,
+      "errors_b": 214,
       "chars": 27831,
       "vns": 174
      },
@@ -1906,15 +1906,15 @@
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.701,
+      "delta_points": -0.694,
       "ci95": [
-       -1.003,
-       -0.426
+       -0.996,
+       -0.42
       ],
       "cer_a": 0.01722,
-      "cer_b": 0.01021,
+      "cer_b": 0.01028,
       "errors_a": 253,
-      "errors_b": 150,
+      "errors_b": 151,
       "chars": 14694,
       "vns": 171
      },
@@ -1956,15 +1956,15 @@
        "bracket": 0
       },
       "dialogue": {
-       "delta_points": -0.418,
+       "delta_points": -0.415,
        "ci95": [
-        -0.698,
-        -0.252
+        -0.693,
+        -0.251
        ],
        "cer_a": 0.01129,
-       "cer_b": 0.00711,
+       "cer_b": 0.00714,
        "errors_a": 354,
-       "errors_b": 223,
+       "errors_b": 224,
        "chars": 31356,
        "vns": 174
       }
@@ -1972,15 +1972,15 @@
     },
     "v4H15": {
      "dialogue": {
-      "delta_points": -0.3,
+      "delta_points": -0.303,
       "ci95": [
-       -0.489,
-       -0.187
+       -0.494,
+       -0.189
       ],
       "cer_a": 0.00874,
-      "cer_b": 0.00574,
+      "cer_b": 0.00571,
       "errors_a": 274,
-      "errors_b": 180,
+      "errors_b": 179,
       "chars": 31356,
       "vns": 174
      },
@@ -2011,15 +2011,15 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.327,
+      "delta_points": -0.331,
       "ci95": [
-       -0.551,
-       -0.202
+       -0.556,
+       -0.205
       ],
       "cer_a": 0.00945,
-      "cer_b": 0.00618,
+      "cer_b": 0.00614,
       "errors_a": 263,
-      "errors_b": 172,
+      "errors_b": 171,
       "chars": 27831,
       "vns": 174
      },
@@ -2037,15 +2037,15 @@
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.517,
+      "delta_points": -0.524,
       "ci95": [
-       -0.721,
-       -0.327
+       -0.729,
+       -0.333
       ],
       "cer_a": 0.01429,
-      "cer_b": 0.00912,
+      "cer_b": 0.00905,
       "errors_a": 210,
-      "errors_b": 134,
+      "errors_b": 133,
       "chars": 14694,
       "vns": 171
      },
@@ -2081,21 +2081,21 @@
        "beam": 8,
        "topk": 8,
        "alpha": 600,
-       "beta": 3000,
-       "gate": 3500,
+       "beta": 3500,
+       "gate": 5000,
        "flags": 2,
-       "bracket": 3000
+       "bracket": 5000
       },
       "dialogue": {
-       "delta_points": -0.325,
+       "delta_points": -0.328,
        "ci95": [
-        -0.545,
-        -0.197
+        -0.544,
+        -0.199
        ],
        "cer_a": 0.00874,
-       "cer_b": 0.00549,
+       "cer_b": 0.00545,
        "errors_a": 274,
-       "errors_b": 172,
+       "errors_b": 171,
        "chars": 31356,
        "vns": 174
       }
@@ -2235,8 +2235,8 @@
    },
    "release": {
     "file": "vocr_lm_o3_1000k.vlm",
-    "bytes": 988080,
-    "sha256": "535538e82e265625f3149286f5684e6fd0da75bf5149cf1b26defc1afaa8024a",
+    "bytes": 987600,
+    "sha256": "993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9",
     "tuned_as": "p_o3j2_1000k",
     "manifest": {
      "kind": "volm-build",
@@ -2297,9 +2297,9 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten visual-novel frequency list (https://jiten.moe/frequency-dictionaries, 2,162 VN scripts; CC BY-SA 4.0); retrieved 2026-10-12 and again 2026-10-14 with the same bytes",
        "share": 0.4,
-       "words": 239721,
-       "scale": 688994.4298298949,
-       "weighted_chars": 18637288
+       "words": 239654,
+       "scale": 688672.6899030447,
+       "weighted_chars": 18628694
       },
       {
        "name": "novel",
@@ -2308,38 +2308,38 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten novel frequency list (https://jiten.moe/frequency-dictionaries, 3,161 novels; CC BY-SA 4.0); retrieved 2026-10-14",
        "share": 0.2,
-       "words": 315796,
-       "scale": 338254.3726358023,
-       "weighted_chars": 9276366
+       "words": 315720,
+       "scale": 338098.3636584522,
+       "weighted_chars": 9271065
       }
      ],
      "heldout_lines": 3000,
      "heldout_text_sha256": "e0f54c272756906e625ee787cc787559ba1e8a6ac8eb8d4ee46482e99bd48079",
      "exclusion": {
-      "vns": 196,
-      "characters": 2177,
-      "titles_and_curated": 266,
-      "markers": 3782,
-      "common_names_not_markers": 499,
-      "corpus_pieces_dropped": 13358,
+      "vns": 206,
+      "characters": 2316,
+      "titles_and_curated": 275,
+      "markers": 4003,
+      "common_names_not_markers": 524,
+      "corpus_pieces_dropped": 14126,
       "jiten_words_dropped": {
-       "vn": 1283,
-       "novel": 1255
+       "vn": 1350,
+       "novel": 1331
       },
       "extra_vns": 0,
       "extra_vns_sha256": null,
       "sources": {
-       "test_games": "d986adff49f1bfcf3df30ae841d658ec8f06f2b89e01fe37990a0bbd53966d39",
+       "test_games": "c24d67e7697da2a8ebbcc940449ded4ccc839c25acc2bae3a5ef85eec4fcce9b",
        "clannad": "1143db8610b16757242994fa2b8fa232c4af8a8b04183290bfa1a2dfa38ff136",
        "vndb_chars": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
        "vndb_titles": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0"
       },
-      "corpus_chars_kept": 46696791
+      "corpus_chars_kept": 46672036
      },
      "ngrams_counted": [
       5279,
-      643967,
-      4923817
+      643722,
+      4921040
      ],
      "profiles": [
       {
@@ -2352,13 +2352,13 @@
         49,
         49
        ],
-       "bytes": 988080,
+       "bytes": 987600,
        "entries": [
         5357,
-        70850,
-        121602
+        70817,
+        121536
        ],
-       "heldout_nats_per_char": 3.9375409733703948
+       "heldout_nats_per_char": 3.937762731605441
       },
       {
        "profile": [
@@ -2370,13 +2370,13 @@
         36,
         72
        ],
-       "bytes": 995440,
+       "bytes": 995008,
        "entries": [
         5357,
-        85537,
-        84896
+        85500,
+        84855
        ],
-       "heldout_nats_per_char": 3.9658195542180974
+       "heldout_nats_per_char": 3.966295833695914
       },
       {
        "profile": [
@@ -2388,13 +2388,13 @@
         42,
         63
        ],
-       "bytes": 968528,
+       "bytes": 968080,
        "entries": [
         5357,
-        77898,
-        96299
+        77857,
+        96255
        ],
-       "heldout_nats_per_char": 3.955530662409968
+       "heldout_nats_per_char": 3.9558389170772195
       }
      ],
      "chosen_thresholds": [
@@ -2406,13 +2406,13 @@
       "script": "lm/build.py",
       "numpy": "2.4.6"
      },
-     "bytes": 988080,
-     "sha256": "535538e82e265625f3149286f5684e6fd0da75bf5149cf1b26defc1afaa8024a",
-     "manifest_sha256_prefix": "3bb361bbc15991209393d8b6407f30c6",
+     "bytes": 987600,
+     "sha256": "993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9",
+     "manifest_sha256_prefix": "f9c469ffe59d9260214902eab36cc34c",
      "entries": [
       5357,
-      70850,
-      121602
+      70817,
+      121536
      ],
      "heldout": "realplus"
     }
@@ -2420,7 +2420,7 @@
   },
   "2MB": {
    "lm": "p_o3j2_2000k",
-   "lm_bytes": 1972416,
+   "lm_bytes": 1971568,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -2445,15 +2445,15 @@
     "vns": 174
    },
    "pooled_names": {
-    "delta_points": -0.899,
+    "delta_points": -0.904,
     "ci95": [
-     -1.474,
-     -0.377
+     -1.482,
+     -0.383
     ],
     "cer_a": 0.05675,
-    "cer_b": 0.04777,
+    "cer_b": 0.04771,
     "errors_a": 960,
-    "errors_b": 808,
+    "errors_b": 807,
     "chars": 16916,
     "vns": 153
    },
@@ -2477,19 +2477,19 @@
    "gate_curve": {
     "3500": {
      "dialogue": 1015,
-     "names": 814
+     "names": 813
     },
     "5000": {
      "dialogue": 1004,
-     "names": 810
+     "names": 809
     },
     "8000": {
      "dialogue": 1000,
-     "names": 808
+     "names": 807
     },
     "12000": {
      "dialogue": 1000,
-     "names": 808
+     "names": 807
     }
    },
    "cv_folds": {
@@ -2534,28 +2534,28 @@
       "vns": 174
      },
      "names": {
-      "delta_points": -1.134,
+      "delta_points": -1.17,
       "ci95": [
-       -1.841,
-       -0.456
+       -1.887,
+       -0.476
       ],
       "cer_a": 0.06381,
-      "cer_b": 0.05246,
+      "cer_b": 0.05211,
       "errors_a": 180,
-      "errors_b": 148,
+      "errors_b": 147,
       "chars": 2821,
       "vns": 153
      },
      "grad": {
-      "delta_points": -0.387,
+      "delta_points": -0.366,
       "ci95": [
-       -0.733,
-       -0.08
+       -0.722,
+       -0.038
       ],
       "cer_a": 0.0171,
-      "cer_b": 0.01323,
+      "cer_b": 0.01344,
       "errors_a": 84,
-      "errors_b": 65,
+      "errors_b": 66,
       "chars": 4912,
       "vns": 43
      },
@@ -3071,15 +3071,15 @@
       "vns": 153
      },
      "grad": {
-      "delta_points": -0.428,
+      "delta_points": -0.448,
       "ci95": [
-       -0.853,
-       -0.036
+       -0.874,
+       -0.05
       ],
       "cer_a": 0.01893,
-      "cer_b": 0.01466,
+      "cer_b": 0.01445,
       "errors_a": 93,
-      "errors_b": 72,
+      "errors_b": 71,
       "chars": 4912,
       "vns": 43
      },
@@ -3308,8 +3308,8 @@
    },
    "release": {
     "file": "vocr_lm_o3_2000k.vlm",
-    "bytes": 1972416,
-    "sha256": "73c15579486b993b525e4a9cd220eeb75e47d601db0f28ff0a82c6d88e2147de",
+    "bytes": 1971568,
+    "sha256": "ac33e461bd346617aae27168aee47230a758f4b301d78b59eb55ca25a21bcb34",
     "tuned_as": "p_o3j2_2000k",
     "manifest": {
      "kind": "volm-build",
@@ -3370,9 +3370,9 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten visual-novel frequency list (https://jiten.moe/frequency-dictionaries, 2,162 VN scripts; CC BY-SA 4.0); retrieved 2026-10-12 and again 2026-10-14 with the same bytes",
        "share": 0.4,
-       "words": 239721,
-       "scale": 688994.4298298949,
-       "weighted_chars": 18637288
+       "words": 239654,
+       "scale": 688672.6899030447,
+       "weighted_chars": 18628694
       },
       {
        "name": "novel",
@@ -3381,38 +3381,38 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten novel frequency list (https://jiten.moe/frequency-dictionaries, 3,161 novels; CC BY-SA 4.0); retrieved 2026-10-14",
        "share": 0.2,
-       "words": 315796,
-       "scale": 338254.3726358023,
-       "weighted_chars": 9276366
+       "words": 315720,
+       "scale": 338098.3636584522,
+       "weighted_chars": 9271065
       }
      ],
      "heldout_lines": 3000,
      "heldout_text_sha256": "e0f54c272756906e625ee787cc787559ba1e8a6ac8eb8d4ee46482e99bd48079",
      "exclusion": {
-      "vns": 196,
-      "characters": 2177,
-      "titles_and_curated": 266,
-      "markers": 3782,
-      "common_names_not_markers": 499,
-      "corpus_pieces_dropped": 13358,
+      "vns": 206,
+      "characters": 2316,
+      "titles_and_curated": 275,
+      "markers": 4003,
+      "common_names_not_markers": 524,
+      "corpus_pieces_dropped": 14126,
       "jiten_words_dropped": {
-       "vn": 1283,
-       "novel": 1255
+       "vn": 1350,
+       "novel": 1331
       },
       "extra_vns": 0,
       "extra_vns_sha256": null,
       "sources": {
-       "test_games": "d986adff49f1bfcf3df30ae841d658ec8f06f2b89e01fe37990a0bbd53966d39",
+       "test_games": "c24d67e7697da2a8ebbcc940449ded4ccc839c25acc2bae3a5ef85eec4fcce9b",
        "clannad": "1143db8610b16757242994fa2b8fa232c4af8a8b04183290bfa1a2dfa38ff136",
        "vndb_chars": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
        "vndb_titles": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0"
       },
-      "corpus_chars_kept": 46696791
+      "corpus_chars_kept": 46672036
      },
      "ngrams_counted": [
       5279,
-      643967,
-      4923817
+      643722,
+      4921040
      ],
      "profiles": [
       {
@@ -3425,13 +3425,13 @@
         18,
         18
        ],
-       "bytes": 1972416,
+       "bytes": 1971568,
        "entries": [
         5357,
-        128014,
-        297291
+        127951,
+        297182
        ],
-       "heldout_nats_per_char": 3.8520075068862454
+       "heldout_nats_per_char": 3.852675108732395
       },
       {
        "profile": [
@@ -3443,13 +3443,13 @@
         13,
         26
        ],
-       "bytes": 1934560,
+       "bytes": 1933632,
        "entries": [
         5357,
-        153910,
-        215610
+        153829,
+        215519
        ],
-       "heldout_nats_per_char": 3.863055674207789
+       "heldout_nats_per_char": 3.863613638949877
       },
       {
        "profile": [
@@ -3461,13 +3461,13 @@
         16,
         24
        ],
-       "bytes": 1846912,
+       "bytes": 1846048,
        "entries": [
         5357,
-        137071,
-        231309
+        136997,
+        231204
        ],
-       "heldout_nats_per_char": 3.8612374187958527
+       "heldout_nats_per_char": 3.8620783534258862
       }
      ],
      "chosen_thresholds": [
@@ -3479,13 +3479,13 @@
       "script": "lm/build.py",
       "numpy": "2.4.6"
      },
-     "bytes": 1972416,
-     "sha256": "73c15579486b993b525e4a9cd220eeb75e47d601db0f28ff0a82c6d88e2147de",
-     "manifest_sha256_prefix": "750db0420654336be16209cea6c2f35a",
+     "bytes": 1971568,
+     "sha256": "ac33e461bd346617aae27168aee47230a758f4b301d78b59eb55ca25a21bcb34",
+     "manifest_sha256_prefix": "1464e93f9221c551a6fb1181c0e4567f",
      "entries": [
       5357,
-      128014,
-      297291
+      127951,
+      297182
      ],
      "heldout": "realplus"
     }
@@ -3493,7 +3493,7 @@
   },
   "4MB": {
    "lm": "p_o3j2_4000k",
-   "lm_bytes": 3782688,
+   "lm_bytes": 3781072,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -3505,15 +3505,15 @@
    },
    "candidates": 432,
    "pooled_dialogue": {
-    "delta_points": -0.387,
+    "delta_points": -0.388,
     "ci95": [
-     -0.599,
-     -0.254
+     -0.6,
+     -0.255
     ],
     "cer_a": 0.00934,
     "cer_b": 0.00547,
     "errors_a": 1656,
-    "errors_b": 970,
+    "errors_b": 969,
     "chars": 177247,
     "vns": 174
    },
@@ -3531,7 +3531,7 @@
     "vns": 153
    },
    "pooled_dialogue_distinct": {
-    "delta_points": -0.41,
+    "delta_points": -0.411,
     "ci95": [
      -0.663,
      -0.261
@@ -3539,7 +3539,7 @@
     "cer_a": 0.01008,
     "cer_b": 0.00598,
     "errors_a": 1574,
-    "errors_b": 934,
+    "errors_b": 933,
     "chars": 156139,
     "vns": 174
    },
@@ -3549,19 +3549,19 @@
    },
    "gate_curve": {
     "3500": {
-     "dialogue": 985,
+     "dialogue": 986,
      "names": 816
     },
     "5000": {
-     "dialogue": 973,
+     "dialogue": 972,
      "names": 816
     },
     "8000": {
-     "dialogue": 970,
+     "dialogue": 969,
      "names": 816
     },
     "12000": {
-     "dialogue": 970,
+     "dialogue": 969,
      "names": 816
     }
    },
@@ -3725,15 +3725,15 @@
     },
     "v3H15": {
      "dialogue": {
-      "delta_points": -0.383,
+      "delta_points": -0.389,
       "ci95": [
-       -0.592,
-       -0.255
+       -0.608,
+       -0.258
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.00552,
+      "cer_b": 0.00545,
       "errors_a": 293,
-      "errors_b": 173,
+      "errors_b": 171,
       "chars": 31356,
       "vns": 174
      },
@@ -3764,41 +3764,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.384,
+      "delta_points": -0.392,
       "ci95": [
-       -0.621,
-       -0.251
+       -0.639,
+       -0.254
       ],
       "cer_a": 0.00985,
-      "cer_b": 0.006,
+      "cer_b": 0.00593,
       "errors_a": 274,
-      "errors_b": 167,
+      "errors_b": 165,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.373,
+      "delta_points": -0.38,
       "ci95": [
-       -0.573,
-       -0.251
+       -0.589,
+       -0.254
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.00561,
+      "cer_b": 0.00555,
       "errors_a": 293,
-      "errors_b": 176,
+      "errors_b": 174,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.633,
+      "delta_points": -0.647,
       "ci95": [
-       -0.823,
-       -0.451
+       -0.846,
+       -0.455
       ],
       "cer_a": 0.01524,
-      "cer_b": 0.00892,
+      "cer_b": 0.00878,
       "errors_a": 224,
-      "errors_b": 131,
+      "errors_b": 129,
       "chars": 14694,
       "vns": 171
      },
@@ -3856,15 +3856,15 @@
     },
     "v3W20": {
      "dialogue": {
-      "delta_points": -0.354,
+      "delta_points": -0.351,
       "ci95": [
-       -0.607,
-       -0.206
+       -0.599,
+       -0.205
       ],
       "cer_a": 0.00721,
-      "cer_b": 0.00367,
+      "cer_b": 0.0037,
       "errors_a": 226,
-      "errors_b": 115,
+      "errors_b": 116,
       "chars": 31356,
       "vns": 174
      },
@@ -3895,41 +3895,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.374,
+      "delta_points": -0.37,
       "ci95": [
-       -0.676,
-       -0.211
+       -0.669,
+       -0.209
       ],
       "cer_a": 0.00776,
-      "cer_b": 0.00402,
+      "cer_b": 0.00406,
       "errors_a": 216,
-      "errors_b": 112,
+      "errors_b": 113,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.344,
+      "delta_points": -0.341,
       "ci95": [
-       -0.59,
-       -0.2
+       -0.583,
+       -0.199
       ],
       "cer_a": 0.00721,
-      "cer_b": 0.00376,
+      "cer_b": 0.0038,
       "errors_a": 226,
-      "errors_b": 118,
+      "errors_b": 119,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.612,
+      "delta_points": -0.606,
       "ci95": [
-       -0.828,
-       -0.412
+       -0.816,
+       -0.409
       ],
       "cer_a": 0.01211,
-      "cer_b": 0.00599,
+      "cer_b": 0.00606,
       "errors_a": 178,
-      "errors_b": 88,
+      "errors_b": 89,
       "chars": 14694,
       "vns": 171
      },
@@ -3971,15 +3971,15 @@
        "bracket": 8000
       },
       "dialogue": {
-       "delta_points": -0.354,
+       "delta_points": -0.351,
        "ci95": [
-        -0.597,
-        -0.211
+        -0.59,
+        -0.21
        ],
        "cer_a": 0.00721,
-       "cer_b": 0.00367,
+       "cer_b": 0.0037,
        "errors_a": 226,
-       "errors_b": 115,
+       "errors_b": 116,
        "chars": 31356,
        "vns": 174
       }
@@ -4381,8 +4381,8 @@
    },
    "release": {
     "file": "vocr_lm_o3_4000k.vlm",
-    "bytes": 3782688,
-    "sha256": "55f99dec37b7fbb694e7a7492755b245fc4284793c657aaf1388a4110d0a7039",
+    "bytes": 3781072,
+    "sha256": "01f49be1691a1aab5a6d33414ce7d17c3e5b2daf97dfccb0d341a380a68e5898",
     "tuned_as": "p_o3j2_4000k",
     "manifest": {
      "kind": "volm-build",
@@ -4443,9 +4443,9 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten visual-novel frequency list (https://jiten.moe/frequency-dictionaries, 2,162 VN scripts; CC BY-SA 4.0); retrieved 2026-10-12 and again 2026-10-14 with the same bytes",
        "share": 0.4,
-       "words": 239721,
-       "scale": 688994.4298298949,
-       "weighted_chars": 18637288
+       "words": 239654,
+       "scale": 688672.6899030447,
+       "weighted_chars": 18628694
       },
       {
        "name": "novel",
@@ -4454,38 +4454,38 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten novel frequency list (https://jiten.moe/frequency-dictionaries, 3,161 novels; CC BY-SA 4.0); retrieved 2026-10-14",
        "share": 0.2,
-       "words": 315796,
-       "scale": 338254.3726358023,
-       "weighted_chars": 9276366
+       "words": 315720,
+       "scale": 338098.3636584522,
+       "weighted_chars": 9271065
       }
      ],
      "heldout_lines": 3000,
      "heldout_text_sha256": "e0f54c272756906e625ee787cc787559ba1e8a6ac8eb8d4ee46482e99bd48079",
      "exclusion": {
-      "vns": 196,
-      "characters": 2177,
-      "titles_and_curated": 266,
-      "markers": 3782,
-      "common_names_not_markers": 499,
-      "corpus_pieces_dropped": 13358,
+      "vns": 206,
+      "characters": 2316,
+      "titles_and_curated": 275,
+      "markers": 4003,
+      "common_names_not_markers": 524,
+      "corpus_pieces_dropped": 14126,
       "jiten_words_dropped": {
-       "vn": 1283,
-       "novel": 1255
+       "vn": 1350,
+       "novel": 1331
       },
       "extra_vns": 0,
       "extra_vns_sha256": null,
       "sources": {
-       "test_games": "d986adff49f1bfcf3df30ae841d658ec8f06f2b89e01fe37990a0bbd53966d39",
+       "test_games": "c24d67e7697da2a8ebbcc940449ded4ccc839c25acc2bae3a5ef85eec4fcce9b",
        "clannad": "1143db8610b16757242994fa2b8fa232c4af8a8b04183290bfa1a2dfa38ff136",
        "vndb_chars": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
        "vndb_titles": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0"
       },
-      "corpus_chars_kept": 46696791
+      "corpus_chars_kept": 46672036
      },
      "ngrams_counted": [
       5279,
-      643967,
-      4923817
+      643722,
+      4921040
      ],
      "profiles": [
       {
@@ -4498,13 +4498,13 @@
         7,
         7
        ],
-       "bytes": 3782688,
+       "bytes": 3781072,
        "entries": [
         5357,
-        216559,
-        664596
+        216465,
+        664296
        ],
-       "heldout_nats_per_char": 3.8069277785122364
+       "heldout_nats_per_char": 3.807520937993668
       },
       {
        "profile": [
@@ -4516,13 +4516,13 @@
         5,
         10
        ],
-       "bytes": 3597280,
+       "bytes": 3595664,
        "entries": [
         5357,
-        258216,
-        491703
+        258109,
+        491449
        ],
-       "heldout_nats_per_char": 3.814585667447052
+       "heldout_nats_per_char": 3.815201523090259
       },
       {
        "profile": [
@@ -4534,13 +4534,13 @@
         6,
         9
        ],
-       "bytes": 3550000,
+       "bytes": 3548304,
        "entries": [
         5357,
-        235110,
-        537556
+        235006,
+        537279
        ],
-       "heldout_nats_per_char": 3.809561683774901
+       "heldout_nats_per_char": 3.8102549103198298
       }
      ],
      "chosen_thresholds": [
@@ -4552,13 +4552,13 @@
       "script": "lm/build.py",
       "numpy": "2.4.6"
      },
-     "bytes": 3782688,
-     "sha256": "55f99dec37b7fbb694e7a7492755b245fc4284793c657aaf1388a4110d0a7039",
-     "manifest_sha256_prefix": "cdc688a9a633a2b4868b168ded7407b4",
+     "bytes": 3781072,
+     "sha256": "01f49be1691a1aab5a6d33414ce7d17c3e5b2daf97dfccb0d341a380a68e5898",
+     "manifest_sha256_prefix": "81a96c88e717771a27c2e6e4f5d0d121",
      "entries": [
       5357,
-      216559,
-      664596
+      216465,
+      664296
      ],
      "heldout": "realplus"
     }
@@ -4572,12 +4572,12 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 324,
-     "errors_beam": 242,
-     "lines_changed": 153,
-     "chars_fixed": 119,
+     "errors_beam": 240,
+     "lines_changed": 155,
+     "chars_fixed": 121,
      "chars_introduced": 37,
      "guard": {
-      "lines_better": 97,
+      "lines_better": 99,
       "rare_kanji_line": 6,
       "katakana_line": 6,
       "latin_digit_line": 7,
@@ -4587,9 +4587,9 @@
       "hiragana": {
        "chars": 17844,
        "greedy_correct": 17774,
-       "beam_correct": 17807,
+       "beam_correct": 17808,
        "broke": 6,
-       "fixed": 39
+       "fixed": 40
       },
       "kanji_common": {
        "chars": 7558,
@@ -4629,9 +4629,9 @@
       "punct": {
        "chars": 3576,
        "greedy_correct": 3535,
-       "beam_correct": 3537,
+       "beam_correct": 3538,
        "broke": 11,
-       "fixed": 13
+       "fixed": 14
       }
      },
      "families_greedy": {
@@ -4648,11 +4648,11 @@
      },
      "families_beam": {
       "kanji_kanji": 73,
-      "dakuten": 20,
+      "dakuten": 19,
       "small_kana": 8,
       "hira_kata": 3,
       "dash_like": 1,
-      "punct_punct": 22,
+      "punct_punct": 21,
       "punct_other": 6,
       "other_sub": 58,
       "insertion": 7,
@@ -4663,16 +4663,16 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 180,
-     "errors_beam": 156,
-     "lines_changed": 78,
-     "chars_fixed": 40,
+     "errors_beam": 154,
+     "lines_changed": 80,
+     "chars_fixed": 42,
      "chars_introduced": 16,
      "guard": {
       "rare_kanji_line": 5,
       "katakana_line": 1,
       "latin_digit_line": 1,
       "lines_worse": 16,
-      "lines_better": 36
+      "lines_better": 38
      },
      "by_class": {
       "hiragana": {
@@ -4685,9 +4685,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1340,
-       "beam_correct": 1357,
+       "beam_correct": 1359,
        "broke": 7,
-       "fixed": 24
+       "fixed": 26
       },
       "kanji_rare": {
        "chars": 94,
@@ -4731,7 +4731,7 @@
       "deletion": 18
      },
      "families_beam": {
-      "kanji_kanji": 82,
+      "kanji_kanji": 80,
       "dakuten": 7,
       "small_kana": 0,
       "hira_kata": 0,
@@ -4840,16 +4840,16 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 152,
-     "errors_beam": 142,
-     "lines_changed": 58,
-     "chars_fixed": 28,
+     "errors_beam": 141,
+     "lines_changed": 59,
+     "chars_fixed": 29,
      "chars_introduced": 18,
      "guard": {
       "rare_kanji_line": 7,
       "katakana_line": 4,
       "latin_digit_line": 0,
       "lines_worse": 17,
-      "lines_better": 26
+      "lines_better": 27
      },
      "by_class": {
       "hiragana": {
@@ -4862,9 +4862,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1358,
-       "beam_correct": 1373,
+       "beam_correct": 1374,
        "broke": 5,
-       "fixed": 20
+       "fixed": 21
       },
       "kanji_rare": {
        "chars": 94,
@@ -4908,7 +4908,7 @@
       "deletion": 17
      },
      "families_beam": {
-      "kanji_kanji": 82,
+      "kanji_kanji": 81,
       "dakuten": 5,
       "small_kana": 0,
       "hira_kata": 2,
@@ -5017,12 +5017,12 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 143,
-     "errors_beam": 135,
-     "lines_changed": 45,
-     "chars_fixed": 18,
+     "errors_beam": 134,
+     "lines_changed": 46,
+     "chars_fixed": 19,
      "chars_introduced": 10,
      "guard": {
-      "lines_better": 16,
+      "lines_better": 17,
       "rare_kanji_line": 0,
       "katakana_line": 3,
       "latin_digit_line": 0,
@@ -5039,9 +5039,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1363,
-       "beam_correct": 1368,
+       "beam_correct": 1369,
        "broke": 4,
-       "fixed": 9
+       "fixed": 10
       },
       "kanji_rare": {
        "chars": 94,
@@ -5085,7 +5085,7 @@
       "deletion": 14
      },
      "families_beam": {
-      "kanji_kanji": 82,
+      "kanji_kanji": 81,
       "dakuten": 5,
       "small_kana": 0,
       "hira_kata": 0,
@@ -5194,12 +5194,12 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 179,
-     "errors_beam": 162,
-     "lines_changed": 83,
-     "chars_fixed": 36,
+     "errors_beam": 161,
+     "lines_changed": 84,
+     "chars_fixed": 37,
      "chars_introduced": 19,
      "guard": {
-      "lines_better": 35,
+      "lines_better": 36,
       "rare_kanji_line": 2,
       "katakana_line": 1,
       "latin_digit_line": 3,
@@ -5216,9 +5216,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1340,
-       "beam_correct": 1353,
+       "beam_correct": 1354,
        "broke": 11,
-       "fixed": 24
+       "fixed": 25
       },
       "kanji_rare": {
        "chars": 94,
@@ -5262,7 +5262,7 @@
       "deletion": 21
      },
      "families_beam": {
-      "kanji_kanji": 84,
+      "kanji_kanji": 83,
       "dakuten": 7,
       "small_kana": 1,
       "hira_kata": 0,
@@ -5280,15 +5280,15 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 274,
-     "errors_beam": 196,
-     "lines_changed": 150,
+     "errors_beam": 195,
+     "lines_changed": 149,
      "chars_fixed": 115,
-     "chars_introduced": 37,
+     "chars_introduced": 36,
      "guard": {
       "rare_kanji_line": 2,
-      "katakana_line": 9,
+      "katakana_line": 8,
       "latin_digit_line": 6,
-      "lines_worse": 37,
+      "lines_worse": 36,
       "lines_better": 101
      },
      "by_class": {
@@ -5363,7 +5363,7 @@
       "punct_punct": 12,
       "punct_other": 6,
       "other_sub": 53,
-      "insertion": 15,
+      "insertion": 14,
       "deletion": 30
      }
     },
@@ -5371,16 +5371,16 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 159,
-     "errors_beam": 143,
-     "lines_changed": 49,
-     "chars_fixed": 28,
+     "errors_beam": 142,
+     "lines_changed": 50,
+     "chars_fixed": 29,
      "chars_introduced": 12,
      "guard": {
       "rare_kanji_line": 3,
       "katakana_line": 3,
       "latin_digit_line": 0,
       "lines_worse": 12,
-      "lines_better": 25
+      "lines_better": 26
      },
      "by_class": {
       "hiragana": {
@@ -5393,9 +5393,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1351,
-       "beam_correct": 1365,
+       "beam_correct": 1366,
        "broke": 5,
-       "fixed": 19
+       "fixed": 20
       },
       "kanji_rare": {
        "chars": 94,
@@ -5439,7 +5439,7 @@
       "deletion": 12
      },
      "families_beam": {
-      "kanji_kanji": 84,
+      "kanji_kanji": 83,
       "dakuten": 7,
       "small_kana": 0,
       "hira_kata": 2,
@@ -5813,16 +5813,16 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 293,
-     "errors_beam": 182,
-     "lines_changed": 157,
+     "errors_beam": 183,
+     "lines_changed": 158,
      "chars_fixed": 141,
-     "chars_introduced": 30,
+     "chars_introduced": 31,
      "guard": {
       "lines_better": 115,
       "rare_kanji_line": 2,
       "katakana_line": 4,
       "latin_digit_line": 3,
-      "lines_worse": 29
+      "lines_worse": 30
      },
      "by_class": {
       "hiragana": {
@@ -5849,8 +5849,8 @@
       "katakana": {
        "chars": 1987,
        "greedy_correct": 1947,
-       "beam_correct": 1966,
-       "broke": 2,
+       "beam_correct": 1965,
+       "broke": 3,
        "fixed": 21
       },
       "latin_digit": {
@@ -5892,7 +5892,7 @@
       "dakuten": 11,
       "small_kana": 6,
       "hira_kata": 0,
-      "dash_like": 0,
+      "dash_like": 1,
       "punct_punct": 11,
       "punct_other": 6,
       "other_sub": 56,
@@ -6167,12 +6167,12 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 354,
-     "errors_beam": 223,
+     "errors_beam": 224,
      "lines_changed": 178,
-     "chars_fixed": 165,
+     "chars_fixed": 164,
      "chars_introduced": 34,
      "guard": {
-      "lines_better": 127,
+      "lines_better": 126,
       "rare_kanji_line": 9,
       "katakana_line": 8,
       "latin_digit_line": 8,
@@ -6189,9 +6189,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7434,
-       "beam_correct": 7487,
+       "beam_correct": 7486,
        "broke": 4,
-       "fixed": 57
+       "fixed": 56
       },
       "kanji_rare": {
        "chars": 136,
@@ -6242,7 +6242,7 @@
       "deletion": 49
      },
      "families_beam": {
-      "kanji_kanji": 73,
+      "kanji_kanji": 74,
       "dakuten": 19,
       "small_kana": 7,
       "hira_kata": 4,
@@ -6258,12 +6258,12 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 179,
-     "errors_beam": 160,
-     "lines_changed": 81,
-     "chars_fixed": 38,
+     "errors_beam": 158,
+     "lines_changed": 82,
+     "chars_fixed": 40,
      "chars_introduced": 19,
      "guard": {
-      "lines_better": 37,
+      "lines_better": 38,
       "rare_kanji_line": 2,
       "katakana_line": 2,
       "latin_digit_line": 3,
@@ -6280,9 +6280,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1340,
-       "beam_correct": 1359,
+       "beam_correct": 1361,
        "broke": 8,
-       "fixed": 27
+       "fixed": 29
       },
       "kanji_rare": {
        "chars": 94,
@@ -6326,7 +6326,7 @@
       "deletion": 21
      },
      "families_beam": {
-      "kanji_kanji": 83,
+      "kanji_kanji": 81,
       "dakuten": 7,
       "small_kana": 2,
       "hira_kata": 0,
@@ -6344,9 +6344,9 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 274,
-     "errors_beam": 180,
+     "errors_beam": 179,
      "lines_changed": 153,
-     "chars_fixed": 126,
+     "chars_fixed": 127,
      "chars_introduced": 32,
      "guard": {
       "lines_better": 109,
@@ -6366,9 +6366,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7460,
-       "beam_correct": 7486,
+       "beam_correct": 7487,
        "broke": 7,
-       "fixed": 33
+       "fixed": 34
       },
       "kanji_rare": {
        "chars": 136,
@@ -6419,7 +6419,7 @@
       "deletion": 37
      },
      "families_beam": {
-      "kanji_kanji": 60,
+      "kanji_kanji": 59,
       "dakuten": 7,
       "small_kana": 7,
       "hira_kata": 0,
@@ -6791,16 +6791,16 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 180,
-     "errors_beam": 148,
-     "lines_changed": 86,
-     "chars_fixed": 47,
+     "errors_beam": 147,
+     "lines_changed": 87,
+     "chars_fixed": 48,
      "chars_introduced": 15,
      "guard": {
       "rare_kanji_line": 4,
       "katakana_line": 2,
       "latin_digit_line": 2,
       "lines_worse": 15,
-      "lines_better": 41
+      "lines_better": 42
      },
      "by_class": {
       "hiragana": {
@@ -6827,9 +6827,9 @@
       "katakana": {
        "chars": 761,
        "greedy_correct": 736,
-       "beam_correct": 745,
+       "beam_correct": 746,
        "broke": 0,
-       "fixed": 9
+       "fixed": 10
       },
       "latin_digit": {
        "chars": 33,
@@ -6861,7 +6861,7 @@
      "families_beam": {
       "kanji_kanji": 74,
       "dakuten": 5,
-      "small_kana": 1,
+      "small_kana": 0,
       "hira_kata": 0,
       "dash_like": 0,
       "punct_punct": 1,
@@ -7666,10 +7666,10 @@
       "hira_kata": 1,
       "dash_like": 1,
       "punct_punct": 5,
-      "punct_other": 3,
+      "punct_other": 2,
       "other_sub": 31,
       "insertion": 5,
-      "deletion": 19
+      "deletion": 20
      }
     },
     "names": {
@@ -7941,16 +7941,16 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 293,
-     "errors_beam": 173,
+     "errors_beam": 171,
      "lines_changed": 169,
-     "chars_fixed": 155,
-     "chars_introduced": 35,
+     "chars_fixed": 156,
+     "chars_introduced": 34,
      "guard": {
-      "lines_better": 127,
+      "lines_better": 128,
       "rare_kanji_line": 4,
       "katakana_line": 3,
       "latin_digit_line": 2,
-      "lines_worse": 33
+      "lines_worse": 32
      },
      "by_class": {
       "hiragana": {
@@ -7963,8 +7963,8 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7447,
-       "beam_correct": 7500,
-       "broke": 7,
+       "beam_correct": 7501,
+       "broke": 6,
        "fixed": 60
       },
       "kanji_rare": {
@@ -8023,8 +8023,8 @@
       "dash_like": 1,
       "punct_punct": 12,
       "punct_other": 4,
-      "other_sub": 56,
-      "insertion": 15,
+      "other_sub": 55,
+      "insertion": 14,
       "deletion": 24
      }
     },
@@ -8118,9 +8118,9 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 226,
-     "errors_beam": 115,
+     "errors_beam": 116,
      "lines_changed": 121,
-     "chars_fixed": 126,
+     "chars_fixed": 125,
      "chars_introduced": 15,
      "guard": {
       "lines_better": 99,
@@ -8140,8 +8140,8 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7468,
-       "beam_correct": 7512,
-       "broke": 3,
+       "beam_correct": 7511,
+       "broke": 4,
        "fixed": 47
       },
       "kanji_rare": {
@@ -8193,7 +8193,7 @@
       "deletion": 31
      },
      "families_beam": {
-      "kanji_kanji": 36,
+      "kanji_kanji": 37,
       "dakuten": 10,
       "small_kana": 3,
       "hira_kata": 0,
@@ -9579,73 +9579,73 @@
      "beam": 4,
      "topk": 2,
      "dialogue": 1176,
-     "names": 898
+     "names": 896
     },
     {
      "beam": 4,
      "topk": 4,
      "dialogue": 1103,
-     "names": 869
+     "names": 867
     },
     {
      "beam": 4,
      "topk": 8,
-     "dialogue": 1078,
-     "names": 862
+     "dialogue": 1079,
+     "names": 860
     },
     {
      "beam": 4,
      "topk": 16,
      "dialogue": 1074,
-     "names": 862
+     "names": 860
     },
     {
      "beam": 8,
      "topk": 2,
      "dialogue": 1173,
-     "names": 900
+     "names": 898
     },
     {
      "beam": 8,
      "topk": 4,
      "dialogue": 1080,
-     "names": 868
+     "names": 866
     },
     {
      "beam": 8,
      "topk": 8,
-     "dialogue": 1047,
-     "names": 851
+     "dialogue": 1048,
+     "names": 849
     },
     {
      "beam": 8,
      "topk": 16,
      "dialogue": 1039,
-     "names": 851
+     "names": 849
     },
     {
      "beam": 16,
      "topk": 2,
      "dialogue": 1173,
-     "names": 900
+     "names": 898
     },
     {
      "beam": 16,
      "topk": 4,
      "dialogue": 1079,
-     "names": 868
+     "names": 866
     },
     {
      "beam": 16,
      "topk": 8,
      "dialogue": 1040,
-     "names": 851
+     "names": 849
     },
     {
      "beam": 16,
      "topk": 16,
      "dialogue": 1031,
-     "names": 847
+     "names": 845
     }
    ]
   },
@@ -9664,25 +9664,25 @@
     {
      "beam": 1,
      "topk": 2,
-     "dialogue": 1459,
+     "dialogue": 1458,
      "names": 933
     },
     {
      "beam": 1,
      "topk": 4,
-     "dialogue": 1447,
+     "dialogue": 1446,
      "names": 903
     },
     {
      "beam": 1,
      "topk": 8,
-     "dialogue": 1433,
+     "dialogue": 1432,
      "names": 894
     },
     {
      "beam": 1,
      "topk": 16,
-     "dialogue": 1429,
+     "dialogue": 1428,
      "names": 893
     },
     {
@@ -9694,91 +9694,91 @@
     {
      "beam": 2,
      "topk": 4,
-     "dialogue": 1115,
+     "dialogue": 1116,
      "names": 854
     },
     {
      "beam": 2,
      "topk": 8,
-     "dialogue": 1092,
+     "dialogue": 1093,
      "names": 842
     },
     {
      "beam": 2,
      "topk": 16,
-     "dialogue": 1090,
+     "dialogue": 1091,
      "names": 841
     },
     {
      "beam": 4,
      "topk": 2,
-     "dialogue": 1116,
+     "dialogue": 1117,
      "names": 881
     },
     {
      "beam": 4,
      "topk": 4,
-     "dialogue": 1031,
+     "dialogue": 1032,
      "names": 840
     },
     {
      "beam": 4,
      "topk": 8,
-     "dialogue": 1005,
+     "dialogue": 1006,
      "names": 822
     },
     {
      "beam": 4,
      "topk": 16,
-     "dialogue": 1001,
+     "dialogue": 1002,
      "names": 820
     },
     {
      "beam": 8,
      "topk": 2,
-     "dialogue": 1110,
+     "dialogue": 1111,
      "names": 883
     },
     {
      "beam": 8,
      "topk": 4,
-     "dialogue": 1006,
+     "dialogue": 1008,
      "names": 837
     },
     {
      "beam": 8,
      "topk": 8,
-     "dialogue": 970,
+     "dialogue": 969,
      "names": 816
     },
     {
      "beam": 8,
      "topk": 16,
-     "dialogue": 964,
+     "dialogue": 963,
      "names": 815
     },
     {
      "beam": 16,
      "topk": 2,
-     "dialogue": 1110,
+     "dialogue": 1111,
      "names": 883
     },
     {
      "beam": 16,
      "topk": 4,
-     "dialogue": 999,
+     "dialogue": 1000,
      "names": 837
     },
     {
      "beam": 16,
      "topk": 8,
-     "dialogue": 963,
+     "dialogue": 964,
      "names": 813
     },
     {
      "beam": 16,
      "topk": 16,
-     "dialogue": 954,
+     "dialogue": 955,
      "names": 807
     }
    ]
@@ -10037,7 +10037,7 @@
  "ablations": [
   {
    "lm": "p_o3j2_500k",
-   "bytes": 497456,
+   "bytes": 499824,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10052,10 +10052,10 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 4.085559535693009,
-   "dialogue_errors": 1156,
-   "dialogue_errors_cv": 1186,
-   "names_errors": 877,
+   "heldout_nats_per_char": 4.08466149459141,
+   "dialogue_errors": 1153,
+   "dialogue_errors_cv": 1187,
+   "names_errors": 871,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10068,7 +10068,7 @@
   },
   {
    "lm": "p_o3nj_500k",
-   "bytes": 498752,
+   "bytes": 498528,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10080,9 +10080,9 @@
     "tatoeba"
    ],
    "jiten_share": {},
-   "heldout_nats_per_char": 4.100212601327381,
-   "dialogue_errors": 1201,
-   "dialogue_errors_cv": 1202,
+   "heldout_nats_per_char": 4.100206378186249,
+   "dialogue_errors": 1202,
+   "dialogue_errors_cv": 1203,
    "names_errors": 901,
    "config": {
     "beam": 8,
@@ -10096,7 +10096,7 @@
   },
   {
    "lm": "p_o3j2_1000k",
-   "bytes": 988080,
+   "bytes": 987600,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10111,10 +10111,10 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.9375409733703948,
-   "dialogue_errors": 1047,
-   "dialogue_errors_cv": 1070,
-   "names_errors": 851,
+   "heldout_nats_per_char": 3.937762731605441,
+   "dialogue_errors": 1048,
+   "dialogue_errors_cv": 1071,
+   "names_errors": 849,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10127,7 +10127,7 @@
   },
   {
    "lm": "p_o3nj_1000k",
-   "bytes": 994016,
+   "bytes": 993568,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10139,7 +10139,7 @@
     "tatoeba"
    ],
    "jiten_share": {},
-   "heldout_nats_per_char": 3.93404126706082,
+   "heldout_nats_per_char": 3.934367929674949,
    "dialogue_errors": 1094,
    "dialogue_errors_cv": 1095,
    "names_errors": 874,
@@ -10155,7 +10155,7 @@
   },
   {
    "lm": "p_o3j2dev_1000k",
-   "bytes": 993360,
+   "bytes": 993024,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 183,
@@ -10170,7 +10170,7 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.938665740760884,
+   "heldout_nats_per_char": 3.9388743205794152,
    "dialogue_errors": 1054,
    "dialogue_errors_cv": 1073,
    "names_errors": 852,
@@ -10186,7 +10186,7 @@
   },
   {
    "lm": "p_o3j2_2000k",
-   "bytes": 1972416,
+   "bytes": 1971568,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10201,10 +10201,10 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.8520075068862454,
+   "heldout_nats_per_char": 3.852675108732395,
    "dialogue_errors": 1000,
    "dialogue_errors_cv": 1006,
-   "names_errors": 808,
+   "names_errors": 807,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10217,7 +10217,7 @@
   },
   {
    "lm": "p_o3nj_2000k",
-   "bytes": 1917936,
+   "bytes": 1916944,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10229,10 +10229,10 @@
     "tatoeba"
    ],
    "jiten_share": {},
-   "heldout_nats_per_char": 3.831671693639887,
-   "dialogue_errors": 1039,
-   "dialogue_errors_cv": 1053,
-   "names_errors": 854,
+   "heldout_nats_per_char": 3.8322433336038744,
+   "dialogue_errors": 1040,
+   "dialogue_errors_cv": 1054,
+   "names_errors": 855,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10245,7 +10245,7 @@
   },
   {
    "lm": "p_o3j2_4000k",
-   "bytes": 3782688,
+   "bytes": 3781072,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10260,9 +10260,9 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.8069277785122364,
-   "dialogue_errors": 970,
-   "dialogue_errors_cv": 992,
+   "heldout_nats_per_char": 3.807520937993668,
+   "dialogue_errors": 969,
+   "dialogue_errors_cv": 991,
    "names_errors": 816,
    "config": {
     "beam": 8,
@@ -10276,7 +10276,7 @@
   },
   {
    "lm": "p_o3nj_4000k",
-   "bytes": 3893312,
+   "bytes": 3891184,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10288,10 +10288,10 @@
     "tatoeba"
    ],
    "jiten_share": {},
-   "heldout_nats_per_char": 3.7728276060214068,
-   "dialogue_errors": 963,
-   "dialogue_errors_cv": 967,
-   "names_errors": 829,
+   "heldout_nats_per_char": 3.77365988577869,
+   "dialogue_errors": 964,
+   "dialogue_errors_cv": 980,
+   "names_errors": 828,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10304,7 +10304,7 @@
   },
   {
    "lm": "p_o3j2dev_4000k",
-   "bytes": 3743984,
+   "bytes": 3742880,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 183,
@@ -10319,9 +10319,9 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.81100908704114,
+   "heldout_nats_per_char": 3.8115968601062975,
    "dialogue_errors": 973,
-   "dialogue_errors_cv": 995,
+   "dialogue_errors_cv": 996,
    "names_errors": 831,
    "config": {
     "beam": 8,
@@ -10354,49 +10354,49 @@
     },
     "components": {
      "lm0.5MB": {
-      "insns_per_frame": 1887.244228432564,
+      "insns_per_frame": 1889.456865127582,
       "l1d_misses_per_frame": 0.0,
-      "l2_misses_per_frame": 0.006075334143377886,
+      "l2_misses_per_frame": 0.014580801944106925,
       "cache_signed_per_frame": {
-       "data_accesses": 647.9696233292831,
-       "l1d_misses": -329.7411907654921,
-       "insn_accesses": 1887.5471850951803,
-       "l1i_misses": 0.35479951397326853,
-       "l2_accesses": -329.38639125151883,
-       "l2_misses": 0.006075334143377886
+       "data_accesses": 648.485621709194,
+       "l1d_misses": -329.7347104090725,
+       "insn_accesses": 1889.7262049412718,
+       "l1i_misses": 0.35682462535439446,
+       "l2_accesses": -329.3778857837181,
+       "l2_misses": 0.014580801944106925
       },
       "ms_per_dev_line": {
        "444": [
-        0.13203023648648649,
-        0.2725849436936937
+        0.13218403716216218,
+        0.27299477702702707
        ],
        "333": [
-        0.17604031531531533,
-        0.3634328415915916
+        0.17624538288288288,
+        0.36396003603603605
        ]
       },
       "ms_640px": {
        "444": [
-        0.17112059811938304,
-        0.35328951795051433
+        0.17131993475857388,
+        0.3538206911650411
        ],
        "333": [
-        0.22816079749251073,
-        0.4710348696205318
+        0.2284265796780985,
+        0.4717181512010188
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1279.3045767517212
+        1280.2559740785744
        ],
        [
         "vocr_lm_score",
-        483.1778047792629
+        484.34507897934384
        ],
        [
         "memcpy",
-        118.6913730255164
+        118.79303361684893
        ],
        [
         "vocr_class_text",
@@ -10404,72 +10404,72 @@
        ],
        [
         "__udivsi3",
-        0.01660591332523289
+        0.01539084649655731
        ],
        [
         "__aeabi_uidivmod",
-        0.012960712839206157
+        0.0064803564196030785
        ]
       ],
       "load_ms": {
        "444": [
-        27.73725900900901,
-        58.63109054054054
+        27.861722972972974,
+        58.889962252252246
        ],
        "333": [
-        36.98301201201201,
-        77.57510405405405
+        37.148963963963965,
+        77.918213003003
        ]
       },
       "load_cycles_444": [
-       12315343.0,
-       26032204.2
+       12370605.0,
+       26147143.24
       ],
-      "load_insns": 24462890,
-      "load_insns_crc": 22382679,
+      "load_insns": 24573414,
+      "load_insns_crc": 22489239,
       "cycles_per_frame_444": [
-       949.719319562576,
-       1960.7568246253543
+       950.8256379100851,
+       1963.7048359659782
       ],
       "calibrated_ms_640px": [
-       0.4193765189479059,
-       0.4946318689493653
+       0.41986504637687333,
+       0.4953755513585163
       ],
       "calibrated_load_ms": [
-       67.97752728890812,
-       82.08793190594803
+       68.28255932196149,
+       82.45037175223868
       ]
      },
      "lm1MB": {
-      "insns_per_frame": 1928.7399756986633,
+      "insns_per_frame": 1929.7974888618874,
       "l1d_misses_per_frame": 0.0,
-      "l2_misses_per_frame": 0.010935601458080195,
+      "l2_misses_per_frame": 0.011340623734305387,
       "cache_signed_per_frame": {
-       "data_accesses": 652.4309437019036,
-       "l1d_misses": -329.2191170514378,
-       "insn_accesses": 1928.9141352774402,
-       "l1i_misses": 0.35277440259214254,
-       "l2_accesses": -328.86634264884566,
-       "l2_misses": 0.010935601458080195
+       "data_accesses": 652.5447549615229,
+       "l1d_misses": -329.2442284325638,
+       "insn_accesses": 1930.014580801944,
+       "l1i_misses": 0.353584447144593,
+       "l2_accesses": -328.8906439854192,
+       "l2_misses": 0.011340623734305387
       },
       "ms_per_dev_line": {
        "444": [
-        0.13491461148648648,
-        0.2784114684684685
+        0.13498811936936936,
+        0.2785629234234234
        ],
        "333": [
-        0.17988614864864866,
-        0.37119054129129125
+        0.17998415915915916,
+        0.3713915645645645
        ]
       },
       "ms_640px": {
        "444": [
-        0.17485895372894159,
-        0.36084110939615194
+        0.17495422518508788,
+        0.3610374058140765
        ],
        "333": [
-        0.23314527163858878,
-        0.48108940143059215
+        0.23327230024678383,
+        0.48134994192248143
        ]
       },
       "top_functions": [
@@ -10479,7 +10479,7 @@
        ],
        [
         "vocr_lm_score",
-        522.1887403807209
+        523.2183070068854
        ],
        [
         "memcpy",
@@ -10491,82 +10491,82 @@
        ],
        [
         "__aeabi_uidivmod",
-        -0.012960712839206157
+        -0.0064803564196030785
        ],
        [
         "__udivsi3",
-        -0.04495747266099635
+        -0.023491292021061157
        ]
       ],
       "load_ms": {
        "444": [
-        53.62922635135135,
-        113.19218198198197
+        53.60358108108108,
+        113.13840549549549
        ],
        "333": [
-        71.50563513513514,
-        149.74975930930933
+        71.47144144144144,
+        149.67857066066065
        ]
       },
       "load_cycles_444": [
-       23811376.5,
-       50257328.8
+       23799990.0,
+       50233452.04
       ],
-      "load_insns": 47454957,
-      "load_insns_crc": 44460759,
+      "load_insns": 47432184,
+      "load_insns_crc": 44439159,
       "cycles_per_frame_444": [
-       970.4671931956258,
-       2002.668157148643
+       970.9959497772378,
+       2003.7576022681246
       ],
       "calibrated_ms_640px": [
-       0.4285383532294356,
-       0.5052046643494852
+       0.4287718412611094,
+       0.5054794940829835
       ],
       "calibrated_load_ms": [
-       131.4326767687441,
-       158.47755928056372
+       131.36982621602502,
+       158.40226815907604
       ]
      },
      "lm2MB": {
-      "insns_per_frame": 1961.0627784528149,
+      "insns_per_frame": 1960.7942486836776,
       "l1d_misses_per_frame": 0.0,
-      "l2_misses_per_frame": 0.03928716079384366,
+      "l2_misses_per_frame": 0.02551640340218712,
       "cache_signed_per_frame": {
-       "data_accesses": 654.1891454029972,
-       "l1d_misses": -328.7010935601458,
-       "insn_accesses": 1961.356014580802,
-       "l1i_misses": 0.3580396921830701,
-       "l2_accesses": -328.34305386796274,
-       "l2_misses": 0.03928716079384366
+       "data_accesses": 654.1356824625354,
+       "l1d_misses": -328.67598217901985,
+       "insn_accesses": 1960.9522073714054,
+       "l1i_misses": 0.3552045362494937,
+       "l2_accesses": -328.32077764277034,
+       "l2_misses": 0.02551640340218712
       },
       "ms_per_dev_line": {
        "444": [
-        0.13716137387387387,
-        0.2831943400900901
+        0.13714270833333334,
+        0.28300607657657656
        ],
        "333": [
-        0.18288183183183185,
-        0.3775035367867868
+        0.18285694444444445,
+        0.3772836854354355
        ]
       },
       "ms_640px": {
        "444": [
-        0.1777709179410273,
-        0.36704005195961453
+        0.17774672606993386,
+        0.3667960490259397
        ],
        "333": [
-        0.2370278905880364,
-        0.4892714936078242
+        0.2369956347599118,
+        0.4889865505846065
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1278.2766302146617
+        1278.2729850141757
        ],
        [
         "vocr_lm_score",
-        558.1830700688538
+        557.9878493317133
        ],
        [
         "memcpy",
@@ -10577,79 +10577,83 @@
         6.040907249898744
        ],
        [
+        "__aeabi_uidivmod",
+        -0.019441069258809233
+       ],
+       [
         "__udivsi3",
-        -0.008100445524503848
+        -0.0583232077764277
        ]
       ],
       "load_ms": {
        "444": [
-        105.59963738738739,
-        223.07725594594595
+        105.55488400900902,
+        222.99023513513515
        ],
        "333": [
-        140.79951651651652,
-        295.0357379279279
+        140.73984534534534,
+        294.91919684684683
        ]
       },
       "load_cycles_444": [
-       46886239.0,
-       99046301.64
+       46866368.5,
+       99007664.4
       ],
-      "load_insns": 93604682,
-      "load_insns_crc": 88755879,
+      "load_insns": 93564941,
+      "load_insns_crc": 88717719,
       "cycles_per_frame_444": [
-       986.6285945727014,
-       2037.0722883758608
+       986.4943296881329,
+       2035.7180720939652
       ],
       "calibrated_ms_640px": [
-       0.4356748956912227,
-       0.5138836496855426
+       0.4356156070795798,
+       0.5135420272456444
       ],
       "calibrated_load_ms": [
-       258.7999856030618,
-       312.32491886185755
+       258.6903055514389,
+       312.203083188559
       ]
      },
      "lm4MB": {
-      "insns_per_frame": 1990.7262049412718,
+      "insns_per_frame": 1989.9793438639126,
       "l1d_misses_per_frame": 0.0,
-      "l2_misses_per_frame": 0.08707978938841636,
+      "l2_misses_per_frame": 0.0955852571891454,
       "cache_signed_per_frame": {
-       "data_accesses": 655.8631024706359,
-       "l1d_misses": -328.1846901579587,
-       "insn_accesses": 1990.9987849331712,
-       "l1i_misses": 0.3531794248683678,
-       "l2_accesses": -327.83151073309034,
-       "l2_misses": 0.08707978938841636
+       "data_accesses": 655.7752126366951,
+       "l1d_misses": -328.1462130417173,
+       "insn_accesses": 1990.2227622519238,
+       "l1i_misses": 0.35277440259214254,
+       "l2_accesses": -327.79343863912516,
+       "l2_misses": 0.0955852571891454
       },
       "ms_per_dev_line": {
        "444": [
-        0.13922328265765765,
-        0.28781833333333334
+        0.13917136824324325,
+        0.2878077274774775
        ],
        "333": [
-        0.18563104354354354,
-        0.38356069444444446
+        0.18556182432432433,
+        0.3835273033033032
        ]
       },
       "ms_640px": {
        "444": [
-        0.18044329870575312,
-        0.37303307681922504
+        0.18037601392400907,
+        0.37301933087400885
        ],
        "333": [
-        0.24059106494100418,
-        0.49712200171009413
+        0.24050135189867877,
+        0.4970787244109236
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1275.8262454434994
+        1275.8205751316323
        ],
        [
         "vocr_lm_score",
-        590.5844471445929
+        589.8631024706359
        ],
        [
         "memcpy",
@@ -10661,40 +10665,36 @@
        ],
        [
         "__udivsi3",
-        0.009315512353179425
-       ],
-       [
-        "__aeabi_uidivmod",
-        0.0064803564196030785
+        -0.004050222762251924
        ]
       ],
       "load_ms": {
        "444": [
-        201.2139876126126,
-        439.8066123423423
+        201.12826013513512,
+        439.6072792792793
        ],
        "333": [
-        268.2853168168168,
-        578.7424764564564
+        268.1710135135135,
+        578.4824557057057
        ]
       },
       "load_cycles_444": [
-       89339010.5,
-       195274135.88
+       89300947.5,
+       195185632.0
       ],
-      "load_insns": 178510225,
-      "load_insns_crc": 170218119,
+      "load_insns": 178434099,
+      "load_insns_crc": 170145399,
       "cycles_per_frame_444": [
-       1001.4603078169299,
-       2070.333576346699
+       1001.0868772782503,
+       2070.2572863507494
       ],
       "calibrated_ms_640px": [
-       0.4422242752208114,
-       0.5222743347649237
+       0.442059375975156,
+       0.5222550894088425
       ],
       "calibrated_load_ms": [
-       493.12837037732515,
-       615.7623014155014
+       492.9182724026932,
+       615.4832201506559
       ]
      },
      "topk8": {
@@ -10814,45 +10814,45 @@
     },
     "components": {
      "lm0.5MB": {
-      "insns_per_frame": 1618.848926690968,
-      "l1d_misses_per_frame": 7.567436208991494,
-      "l2_misses_per_frame": 2.5046577561765897,
+      "insns_per_frame": 1619.642365330093,
+      "l1d_misses_per_frame": 26.60348319157554,
+      "l2_misses_per_frame": 2.572701498582422,
       "cache_signed_per_frame": {
-       "data_accesses": 558.8238153098421,
-       "l1d_misses": 7.567436208991494,
-       "insn_accesses": 1619.1725394896719,
-       "l1i_misses": 0.3552045362494937,
-       "l2_accesses": 7.922640745240988,
-       "l2_misses": 2.5046577561765897
+       "data_accesses": 558.8861887403807,
+       "l1d_misses": 26.60348319157554,
+       "insn_accesses": 1619.9489671931956,
+       "l1i_misses": 0.3560145808019441,
+       "l2_accesses": 26.959497772377482,
+       "l2_misses": 2.572701498582422
       },
       "ms_per_dev_line": {
        "444": [
-        0.11337404279279278,
-        0.2928842657657658
+        0.11342919481981982,
+        0.3731322454954955
        ],
        "333": [
-        0.15116539039039037,
-        0.3848436876876877
+        0.15123892642642642,
+        0.491686993993994
        ]
       },
       "ms_640px": {
        "444": [
-        0.14694084120572576,
-        0.3795988863711829
+        0.1470123221642055,
+        0.4836059884915292
        ],
        "333": [
-        0.19592112160763436,
-        0.4987848524101258
+        0.19601642955227402,
+        0.6372613935928638
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1109.6695018226003
+        1109.6771972458484
        ],
        [
         "vocr_lm_score",
-        402.9882543539895
+        403.76589712434185
        ],
        [
         "memcpy",
@@ -10864,7 +10864,7 @@
        ],
        [
         "__udivsi3",
-        0.02875658161198866
+        0.036857027136492505
        ],
        [
         "__aeabi_uidivmod",
@@ -10873,73 +10873,73 @@
       ],
       "load_ms": {
        "444": [
-        28.551065315315316,
-        62.42982882882883
+        28.675522522522524,
+        62.392831081081084
        ],
        "333": [
-        38.068087087087086,
-        82.64393843843844
+        38.23403003003003,
+        82.59002477477478
        ]
       },
       "load_cycles_444": [
-       12676673.0,
-       27718844.0
+       12731932.0,
+       27702417.0
       ],
-      "load_insns": 25096558,
-      "load_insns_crc": 22382679,
+      "load_insns": 25207076,
+      "load_insns_crc": 22489239,
       "cycles_per_frame_444": [
-       815.521668691778,
-       2106.773819360065
+       815.9183880113407,
+       2684.013236127987
       ],
       "calibrated_ms_640px": [
-       0.36011759632316354,
-       0.5314669614488137
+       0.36029277941548415,
+       0.6770847188174327
       ],
       "calibrated_load_ms": [
-       69.97197599693851,
-       87.40645092141663
+       70.27699147076314,
+       87.35465129480572
       ]
      },
      "lm1MB": {
-      "insns_per_frame": 1641.944106925881,
-      "l1d_misses_per_frame": 8.022276225192385,
-      "l2_misses_per_frame": 2.971243418388011,
+      "insns_per_frame": 1642.3118671526934,
+      "l1d_misses_per_frame": 7.999594977723775,
+      "l2_misses_per_frame": 3.0417172944511948,
       "cache_signed_per_frame": {
-       "data_accesses": 559.0336168489267,
-       "l1d_misses": 8.022276225192385,
-       "insn_accesses": 1642.3033616848927,
+       "data_accesses": 559.0631834750911,
+       "l1d_misses": 7.999594977723775,
+       "insn_accesses": 1642.6500607533414,
        "l1i_misses": 0.35844471445929527,
-       "l2_accesses": 8.380720939651681,
-       "l2_misses": 2.971243418388011
+       "l2_accesses": 8.35803969218307,
+       "l2_misses": 3.0417172944511948
       },
       "ms_per_dev_line": {
        "444": [
-        0.1149793918918919,
-        0.3030518153153153
+        0.11500495495495497,
+        0.3037807657657658
        ],
        "333": [
-        0.15330585585585585,
-        0.39734442042042034
+        0.15333993993993994,
+        0.39815685435435433
        ]
       },
       "ms_640px": {
        "444": [
-        0.14902148807373594,
-        0.39277675537019396
+        0.14905461962570105,
+        0.39372152711642383
        ],
        "333": [
-        0.19869531743164792,
-        0.5149866931329872
+        0.19873949283426806,
+        0.5160396654248416
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1104.1231267719725
+        1104.1194815714864
        ],
        [
         "vocr_lm_score",
-        432.26447954637507
+        432.6699068448765
        ],
        [
         "memcpy",
@@ -10951,82 +10951,82 @@
        ],
        [
         "__udivsi3",
-        0.07047387606318348
+        0.04293236127987039
        ],
        [
         "__aeabi_uidivmod",
-        0.019441069258809233
+        0.012960712839206157
        ]
       ],
       "load_ms": {
        "444": [
-        54.442326576576576,
-        118.93240081081082
+        54.41721396396397,
+        118.87176207207207
        ],
        "333": [
-        72.58976876876876,
-        157.37133774774773
+        72.55628528528528,
+        157.29195276276278
        ]
       },
       "load_cycles_444": [
-       24172393.0,
-       52805985.96
+       24161243.0,
+       52779062.36
       ],
-      "load_insns": 48087998,
-      "load_insns_crc": 44460759,
+      "load_insns": 48065698,
+      "load_insns_crc": 44439159,
       "cycles_per_frame_444": [
-       827.0692588092345,
-       2179.9109923045767
+       827.2531389226408,
+       2185.1544754961524
       ],
       "calibrated_ms_640px": [
-       0.36521677462347085,
-       0.5499169681446358
+       0.36529797229974814,
+       0.5512397195732068
       ],
       "calibrated_load_ms": [
-       133.42539503737018,
-       166.51429692269113
+       133.36384990385085,
+       166.42939813246642
       ]
      },
      "lm2MB": {
-      "insns_per_frame": 1676.37019036047,
-      "l1d_misses_per_frame": 8.484001620089105,
-      "l2_misses_per_frame": 3.86269744835966,
+      "insns_per_frame": 1676.3260429323614,
+      "l1d_misses_per_frame": 8.486026731470231,
+      "l2_misses_per_frame": 3.6480356419603077,
       "cache_signed_per_frame": {
-       "data_accesses": 562.9562575941677,
-       "l1d_misses": 8.484001620089105,
-       "insn_accesses": 1676.599027946537,
-       "l1i_misses": 0.3556095585257189,
+       "data_accesses": 562.9866342648845,
+       "l1d_misses": 8.486026731470231,
+       "insn_accesses": 1676.6476306196842,
+       "l1i_misses": 0.353584447144593,
        "l2_accesses": 8.839611178614824,
-       "l2_misses": 3.86269744835966
+       "l2_misses": 3.6480356419603077
       },
       "ms_per_dev_line": {
        "444": [
-        0.1173723536036036,
-        0.31955208783783784
+        0.11736928490990992,
+        0.31720162612612607
        ],
        "333": [
-        0.15649647147147147,
-        0.41732720045045046
+        0.15649237987987988,
+        0.4146790848348348
        ]
       },
       "ms_640px": {
        "444": [
-        0.15212293703180702,
-        0.41416228476349987
+        0.1521189597860315,
+        0.4111159188349953
        ],
        "333": [
-        0.202830582709076,
-        0.5408858005028115
+        0.20282527971470862,
+        0.5374536538969102
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1106.5714864317538
+        1106.5678412312677
        ],
        [
         "vocr_lm_score",
-        464.09234507897935
+        463.9582827055488
        ],
        [
         "memcpy",
@@ -11037,83 +11037,83 @@
         6.040907249898744
        ],
        [
-        "__aeabi_uidivmod",
-        -0.0064803564196030785
+        "__udivsi3",
+        0.05224787363304982
        ],
        [
-        "__udivsi3",
-        -0.01539084649655731
+        "__aeabi_uidivmod",
+        0.019441069258809233
        ]
       ],
       "load_ms": {
        "444": [
-        106.41344932432432,
-        231.8875800900901
+        106.36809797297298,
+        231.78361657657658
        ],
        "333": [
-        141.8845990990991,
-        306.85019345345347
+        141.82413063063063,
+        306.7132254354354
        ]
       },
       "load_cycles_444": [
-       47247571.5,
-       102958085.56
+       47227435.5,
+       102911925.76
       ],
-      "load_insns": 94238355,
-      "load_insns_crc": 88755879,
+      "load_insns": 94198083,
+      "load_insns_crc": 88717719,
       "cycles_per_frame_444": [
-       844.282300526529,
-       2298.600680437424
+       844.2602268124747,
+       2281.693349534224
       ],
       "calibrated_ms_640px": [
-       0.3728176998307509,
-       0.579858316061344
+       0.3728079525326075,
+       0.5755931748778149
       ],
       "calibrated_load_ms": [
-       260.7944481104495,
-       324.66003461266837
+       260.6833025670822,
+       324.51447788262425
       ]
      },
      "lm4MB": {
-      "insns_per_frame": 1689.746456055083,
-      "l1d_misses_per_frame": 8.964763061968409,
-      "l2_misses_per_frame": 4.68408262454435,
+      "insns_per_frame": 1688.9068448764683,
+      "l1d_misses_per_frame": 9.001215066828676,
+      "l2_misses_per_frame": 4.714054272985014,
       "cache_signed_per_frame": {
-       "data_accesses": 560.5581206966383,
-       "l1d_misses": 8.964763061968409,
-       "insn_accesses": 1689.9659781287971,
-       "l1i_misses": 0.3564196030781693,
-       "l2_accesses": 9.321182665046578,
-       "l2_misses": 4.68408262454435
+       "data_accesses": 560.4597002835156,
+       "l1d_misses": 9.001215066828676,
+       "insn_accesses": 1689.0955852571892,
+       "l1i_misses": 0.3580396921830701,
+       "l2_accesses": 9.359254759011746,
+       "l2_misses": 4.714054272985014
       },
       "ms_per_dev_line": {
        "444": [
-        0.11830213963963965,
-        0.3323462049549549
+        0.11824377815315316,
+        0.33271000900900904
        ],
        "333": [
-        0.15773618618618618,
-        0.43252702327327325
+        0.15765837087087087,
+        0.4329442620120121
        ]
       },
       "ms_640px": {
        "444": [
-        0.15332800601330374,
-        0.43074437256211245
+        0.15325236536658166,
+        0.4312158885495459
        ],
        "333": [
-        0.20443734135107164,
-        0.5605858543841533
+        0.2043364871554422,
+        0.5611266255319719
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1097.147428108546
+        1097.1437829080598
        ],
        [
         "vocr_lm_score",
-        487.90562980963955
+        487.1073309031997
        ],
        [
         "memcpy",
@@ -11125,40 +11125,40 @@
        ],
        [
         "__aeabi_uidivmod",
-        -0.0064803564196030785
+        -0.019441069258809233
        ],
        [
         "__udivsi3",
-        -0.013365735115431349
+        -0.038072093965168086
        ]
       ],
       "load_ms": {
        "444": [
-        202.02801576576576,
-        454.5824648648649
+        201.94219819819818,
+        454.3709481081081
        ],
        "333": [
-        269.3706876876877,
-        598.6204198198199
+        269.25626426426425,
+        598.3444841441442
        ]
       },
       "load_cycles_444": [
-       89700439.0,
-       201834614.4
+       89662336.0,
+       201740700.96
       ],
-      "load_insns": 179144090,
-      "load_insns_crc": 170218119,
+      "load_insns": 179067884,
+      "load_insns_crc": 170145399,
       "cycles_per_frame_444": [
-       850.9704333738356,
-       2390.6312677197243
+       850.5506277845282,
+       2393.2481814499797
       ],
       "calibrated_ms_640px": [
-       0.37577104174345044,
-       0.6030744848469095
+       0.37558566422921835,
+       0.6037346426558835
       ],
       "calibrated_load_ms": [
-       495.12336278003283,
-       636.4496051060662
+       494.9130440156842,
+       636.153465754648
       ]
      },
      "topk8": {
@@ -11250,45 +11250,45 @@
     },
     "components": {
      "lm0.5MB": {
-      "insns_per_frame": 1581.0481976508709,
-      "l1d_misses_per_frame": 7.442689347914135,
-      "l2_misses_per_frame": 2.4823815309842043,
+      "insns_per_frame": 1582.002025111381,
+      "l1d_misses_per_frame": 26.462130417172943,
+      "l2_misses_per_frame": 2.5002025111381125,
       "cache_signed_per_frame": {
-       "data_accesses": 546.5650060753342,
-       "l1d_misses": 7.442689347914135,
-       "insn_accesses": 1581.3191575536655,
-       "l1i_misses": 0.35479951397326853,
-       "l2_accesses": 7.797488861887404,
-       "l2_misses": 2.4823815309842043
+       "data_accesses": 546.6273795058728,
+       "l1d_misses": 26.462130417172943,
+       "insn_accesses": 1582.2766302146617,
+       "l1i_misses": 0.353584447144593,
+       "l2_accesses": 26.81571486431754,
+       "l2_misses": 2.5002025111381125
       },
       "ms_per_dev_line": {
        "444": [
-        0.11074650900900901,
-        0.28672400675675674
+        0.11081280968468468,
+        0.3663745675675676
        ],
        "333": [
-        0.147662012012012,
-        0.3766804256756756
+        0.1477504129129129,
+        0.48284084009009015
        ]
       },
       "ms_640px": {
        "444": [
-        0.14353537012103232,
-        0.3716147515680931
+        0.1436213005228801,
+        0.47484755618315766
        ],
        "333": [
-        0.19138049349470976,
-        0.4882046829332369
+        0.19149506736384017,
+        0.6257961475448717
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1090.481976508708
+        1090.487646820575
        ],
        [
         "vocr_lm_score",
-        386.70352369380316
+        387.63791008505467
        ],
        [
         "memcpy",
@@ -11300,82 +11300,82 @@
        ],
        [
         "__udivsi3",
-        0.01539084649655731
+        0.022681247468610773
        ],
        [
         "__aeabi_uidivmod",
-        0.0064803564196030785
+        0.012960712839206157
        ]
       ],
       "load_ms": {
        "444": [
-        28.551101351351353,
-        62.43465603603604
+        28.675527027027027,
+        62.397738198198205
        ],
        "333": [
-        38.06813513513514,
-        82.64883471471472
+        38.23403603603604,
+        82.5951375975976
        ]
       },
       "load_cycles_444": [
-       12676689.0,
-       27720987.28
+       12731934.0,
+       27704595.76
       ],
-      "load_insns": 25096590,
-      "load_insns_crc": 22382679,
+      "load_insns": 25207080,
+      "load_insns_crc": 22489239,
       "cycles_per_frame_444": [
-       796.6213041717294,
-       2062.4618712029164
+       797.0982179019846,
+       2635.403936816525
       ],
       "calibrated_ms_640px": [
-       0.35177158406881115,
-       0.520288572849837
+       0.3519821793635609,
+       0.6648222555355101
       ],
       "calibrated_load_ms": [
-       69.97206431282518,
-       87.41320937419088
+       70.27700251024896,
+       87.36152162745775
       ]
      },
      "lm1MB": {
-      "insns_per_frame": 1610.7533414337788,
-      "l1d_misses_per_frame": 7.87525313892264,
-      "l2_misses_per_frame": 2.8772782503037666,
+      "insns_per_frame": 1611.4896719319563,
+      "l1d_misses_per_frame": 7.840826245443499,
+      "l2_misses_per_frame": 2.914540299716484,
       "cache_signed_per_frame": {
-       "data_accesses": 548.5690562980964,
-       "l1d_misses": 7.87525313892264,
-       "insn_accesses": 1610.927906034832,
-       "l1i_misses": 0.3560145808019441,
-       "l2_accesses": 8.231267719724585,
-       "l2_misses": 2.8772782503037666
+       "data_accesses": 548.67274200081,
+       "l1d_misses": 7.840826245443499,
+       "insn_accesses": 1611.7845281490481,
+       "l1i_misses": 0.3564196030781693,
+       "l2_accesses": 8.19724584852167,
+       "l2_misses": 2.914540299716484
       },
       "ms_per_dev_line": {
        "444": [
-        0.11281131756756758,
-        0.29696786936936936
+        0.11286249999999999,
+        0.2973350585585586
        ],
        "333": [
-        0.1504150900900901,
-        0.3894451591591591
+        0.15048333333333333,
+        0.38985041141141136
        ]
       },
       "ms_640px": {
        "444": [
-        0.1462115092005736,
-        0.3848915277367282
+        0.1462778452814905,
+        0.38536743110060245
        ],
        "333": [
-        0.19494867893409815,
-        0.5047486874480799
+        0.1950371270419873,
+        0.5052739232549682
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1088.967598217902
+        1088.973268529769
        ],
        [
         "vocr_lm_score",
-        418.24787363304984
+        418.90076954232484
        ],
        [
         "memcpy",
@@ -11387,82 +11387,82 @@
        ],
        [
         "__aeabi_uidivmod",
-        -0.012960712839206157
+        0.0064803564196030785
        ],
        [
         "__udivsi3",
-        -0.06115836371000405
+        -0.0028351559335763467
        ]
       ],
       "load_ms": {
        "444": [
-        54.443041666666666,
-        118.95873612612614
+        54.417341216216215,
+        118.89483171171172
        ],
        "333": [
-        72.59072222222223,
-        157.40069483483484
+        72.55645495495496,
+        157.3176522822823
        ]
       },
       "load_cycles_444": [
-       24172710.5,
-       52817678.84
+       24161299.5,
+       52789305.28
       ],
-      "load_insns": 48088633,
-      "load_insns_crc": 44460759,
+      "load_insns": 48065811,
+      "load_insns_crc": 44439159,
       "cycles_per_frame_444": [
-       811.4738760631835,
-       2136.1479789388413
+       811.8420413122722,
+       2138.7892426083436
       ],
       "calibrated_ms_640px": [
-       0.35833017434802167,
-       0.538877057014358
+       0.3584927485500833,
+       0.5395433574799874
       ],
       "calibrated_load_ms": [
-       133.42714755574616,
-       166.55116834279258
+       133.36416176932562,
+       166.4616973612608
       ]
      },
      "lm2MB": {
-      "insns_per_frame": 1632.764277035237,
-      "l1d_misses_per_frame": 8.309842041312272,
-      "l2_misses_per_frame": 3.7816929931146213,
+      "insns_per_frame": 1632.7359254759012,
+      "l1d_misses_per_frame": 8.314702308626975,
+      "l2_misses_per_frame": 3.5735115431348725,
       "cache_signed_per_frame": {
-       "data_accesses": 548.9716484406642,
-       "l1d_misses": 8.309842041312272,
-       "insn_accesses": 1633.0652085864722,
-       "l1i_misses": 0.35682462535439446,
-       "l2_accesses": 8.666666666666666,
-       "l2_misses": 3.7816929931146213
+       "data_accesses": 548.974888618874,
+       "l1d_misses": 8.314702308626975,
+       "insn_accesses": 1633.057513163224,
+       "l1i_misses": 0.3564196030781693,
+       "l2_accesses": 8.671121911705145,
+       "l2_misses": 3.5735115431348725
       },
       "ms_per_dev_line": {
        "444": [
-        0.11434130067567568,
-        0.311726018018018
+        0.11433932995495495,
+        0.3094606036036036
        ],
        "333": [
-        0.15245506756756758,
-        0.407075774024024
+        0.15245243993993993,
+        0.4045263881381381
        ]
       },
       "ms_640px": {
        "444": [
-        0.1481944763718761,
-        0.40401914040407355
+        0.14819192217734137,
+        0.4010830018353712
        ],
        "333": [
-        0.19759263516250147,
-        0.5275992210922952
+        0.1975892295697885,
+        0.524295035253966
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1084.6982584042123
+        1084.7019036046981
        ],
        [
         "vocr_lm_score",
-        444.8485216686918
+        444.8104495747266
        ],
        [
         "memcpy",
@@ -11473,73 +11473,73 @@
         6.033211826650466
        ],
        [
-        "__aeabi_uidivmod",
-        0.012960712839206157
+        "__udivsi3",
+        0.01863102470635885
        ],
        [
-        "__udivsi3",
-        0.012555690562980963
+        "__aeabi_uidivmod",
+        0.012960712839206157
        ]
       ],
       "load_ms": {
        "444": [
-        106.41334459459459,
-        231.88591873873875
+        106.36830292792793,
+        231.79567378378377
        ],
        "333": [
-        141.88445945945946,
-        306.84783165165163
+        141.8244039039039,
+        306.72618504504504
        ]
       },
       "load_cycles_444": [
-       47247525.0,
-       102957347.92
+       47227526.5,
+       102917279.16
       ],
-      "load_insns": 94238262,
-      "load_insns_crc": 88755879,
+      "load_insns": 94198265,
+      "load_insns_crc": 88717719,
       "cycles_per_frame_444": [
-       822.4793438639125,
-       2242.3062292426084
+       822.4651680842446,
+       2226.0106601863104
       ],
       "calibrated_ms_640px": [
-       0.3631899625829169,
-       0.5656571518699145
+       0.3631837028501643,
+       0.5615463372718573
       ],
       "calibrated_load_ms": [
-       260.79419144240387,
-       324.6577085959536
+       260.6838048636876,
+       324.5313588786125
       ]
      },
      "lm4MB": {
-      "insns_per_frame": 1663.1368975293642,
-      "l1d_misses_per_frame": 8.771162413932766,
-      "l2_misses_per_frame": 4.451194815714865,
+      "insns_per_frame": 1662.580801944107,
+      "l1d_misses_per_frame": 8.79870392871608,
+      "l2_misses_per_frame": 4.501822600243013,
       "cache_signed_per_frame": {
-       "data_accesses": 552.7671121911706,
-       "l1d_misses": 8.771162413932766,
-       "insn_accesses": 1663.4840016200892,
-       "l1i_misses": 0.3576346699068449,
-       "l2_accesses": 9.128797083839611,
-       "l2_misses": 4.451194815714865
+       "data_accesses": 552.6771972458486,
+       "l1d_misses": 8.79870392871608,
+       "insn_accesses": 1662.8063993519643,
+       "l1i_misses": 0.3556095585257189,
+       "l2_accesses": 9.154313487241799,
+       "l2_misses": 4.501822600243013
       },
       "ms_per_dev_line": {
        "444": [
-        0.11645250563063063,
-        0.3252227815315315
+        0.11641385135135135,
+        0.32581523648648647
        ],
        "333": [
-        0.1552700075075075,
-        0.4235562087087087
+        0.15521846846846846,
+        0.42423156531531536
        ]
       },
       "ms_640px": {
        "444": [
-        0.1509307484884642,
-        0.421511908019806
+        0.15088064978708962,
+        0.4222797718739395
        ],
        "333": [
-        0.2012409979846189,
-        0.5489590392336443
+        0.2011741997161195,
+        0.5498343495378732
        ]
       },
       "top_functions": [
@@ -11549,7 +11549,7 @@
        ],
        [
         "vocr_lm_score",
-        471.81085459700284
+        471.334548400162
        ],
        [
         "memcpy",
@@ -11561,40 +11561,36 @@
        ],
        [
         "__udivsi3",
-        0.050222762251923854
-       ],
-       [
-        "__aeabi_uidivmod",
-        0.019441069258809233
+        -0.01012555690562981
        ]
       ],
       "load_ms": {
        "444": [
-        202.02751126126125,
-        454.59681477477477
+        201.94200563063063,
+        454.3786337837838
        ],
        "333": [
-        269.37001501501504,
-        598.6357396996997
+        269.2560075075075,
+        598.3523117117118
        ]
       },
       "load_cycles_444": [
-       89700215.0,
-       201840985.76
+       89662250.5,
+       201744113.4
       ],
-      "load_insns": 179143642,
-      "load_insns_crc": 170218119,
+      "load_insns": 179067713,
+      "load_insns_crc": 170145399,
       "cycles_per_frame_444": [
-       837.6656541109761,
-       2339.391089509923
+       837.3876063183475,
+       2343.652733900364
       ],
       "calibrated_ms_640px": [
-       0.3698959248560755,
-       0.5901483408218567
+       0.36977314466937,
+       0.5912234079098135
       ],
       "calibrated_load_ms": [
-       495.12212635761955,
-       636.4696960580965
+       494.91257207766483,
+       636.1642262780443
       ]
      },
      "topk8": {
@@ -11709,7 +11705,7 @@
   "rows": [
    {
     "gate": 500,
-    "dialogue": 1457,
+    "dialogue": 1456,
     "names": 915
    },
    {
@@ -11719,54 +11715,54 @@
    },
    {
     "gate": 1500,
-    "dialogue": 1200,
+    "dialogue": 1201,
     "names": 880
    },
    {
     "gate": 2000,
-    "dialogue": 1124,
-    "names": 868
+    "dialogue": 1125,
+    "names": 866
    },
    {
     "gate": 2500,
-    "dialogue": 1100,
-    "names": 857
+    "dialogue": 1101,
+    "names": 855
    },
    {
     "gate": 3500,
-    "dialogue": 1062,
-    "names": 853
+    "dialogue": 1063,
+    "names": 851
    },
    {
     "gate": 5000,
-    "dialogue": 1054,
-    "names": 851
+    "dialogue": 1055,
+    "names": 849
    },
    {
     "gate": 8000,
-    "dialogue": 1047,
-    "names": 851
+    "dialogue": 1048,
+    "names": 849
    },
    {
     "gate": 12000,
-    "dialogue": 1047,
-    "names": 851
+    "dialogue": 1048,
+    "names": 849
    },
    {
     "gate": 20000,
-    "dialogue": 1047,
-    "names": 851
+    "dialogue": 1048,
+    "names": 849
    },
    {
     "gate": 64000,
-    "dialogue": 1047,
-    "names": 851
+    "dialogue": 1048,
+    "names": 849
    }
   ]
  },
  "memory": {
   "0.5MB": {
-   "lm_bytes": 497456,
+   "lm_bytes": 499824,
    "workspace": {
     "v3FL10": 35248,
     "v3H15": 40816,
@@ -11785,7 +11781,7 @@
    }
   },
   "1MB": {
-   "lm_bytes": 988080,
+   "lm_bytes": 987600,
    "workspace": {
     "v3FL10": 35248,
     "v3H15": 40816,
@@ -11804,7 +11800,7 @@
    }
   },
   "2MB": {
-   "lm_bytes": 1972416,
+   "lm_bytes": 1971568,
    "workspace": {
     "v3FL10": 35248,
     "v3H15": 40816,
@@ -11823,7 +11819,7 @@
    }
   },
   "4MB": {
-   "lm_bytes": 3782688,
+   "lm_bytes": 3781072,
    "workspace": {
     "v3FL10": 35248,
     "v3H15": 40816,

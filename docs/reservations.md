@@ -6,9 +6,10 @@ training data. Model selection may use a small development sample of about 100 V
 Old reports may stop reproducing; the goal is the best OCR, not the best test set.
 
 Before this change the repo held back 18,805 VNs (`reserved_vns.json` on the 2026-10-12 dump). 16,439 of them came
-from two random md5 splits that no scorer reads outside the sets below. Now 184 VNs are held back: 71 test VNs and
-the 113-VN development sample. The change frees 21,789 VNDB screenshots of 5,077 VNs, 1,065 labelled development
-lines, 637 owner frames and 22,189 VNDB character names for training.
+from two random md5 splits that no scorer reads outside the sets below. Now 187 VNs are held back: 71 test VNs and
+the 116-VN development sample, re-carved on 2026-10-14 after the owner's second Drive drop (below; the first carve held
+113). The change frees 21,809 VNDB screenshots of 5,079 VNs, 1,184 labelled development lines, 637 owner frames and
+22,163 VNDB character names for training.
 
 ## The policy
 
@@ -20,8 +21,8 @@ lines, 637 owner frames and 22,189 VNDB character names for training.
 | `clannad-shared-release` | 3 | on one VNDB release with a CLANNAD-family VN: Kanon (v33), AIR (v36), Little Busters! (v5), through the Key boxes. planetarian (v34) is excepted by the owner's decision of 2026-10-13 |
 | **test, total** | **71** | never train, tune, calibrate, select or label-tune on them, and never use them as synthetic scenes or names |
 | `dev-sample` | 100 | the development sample (below) |
-| `dev-sample-shared-release` | 13 | on a two-VN release with a sample VN: one game filed under two VN entries, or a game and its fan disc. Counting every release partner would hold out 176 more VNs, mostly compilations of unrelated games; counting same-series VNs on compilations would hold out 30 more |
-| **held out, total** | **184** | |
+| `dev-sample-shared-release` | 16 | on a two-VN release with a sample VN: one game filed under two VN entries, or a game and its fan disc. Counting every release partner would hold out 170 more VNs, mostly compilations of unrelated games (176 for the first carve); counting same-series VNs on compilations would have held out 30 more (first carve) |
+| **held out, total** | **187** | |
 
 The 31 capture sessions of vita-test and psp-test (VNDB release ids, `test_games.json` "sessions") stay protected
 too: no screenshot of those releases is used, and neither is any vita-test or psp-test screenshot by image id, URL,
@@ -35,8 +36,10 @@ Everything else trains:
 - teacher_val, real_val and devnative outside the development sample;
 - the fresh native textbox titles and their relations;
 - the owner's former test series (Memories Off, Aiyoku no Eustia, 428);
-- every owner screenshot, apart from the CLANNAD frames. Four former `-TEST` folders become training data: Amagami
-  (113 frames), Narcissu (200), Danganronpa V3 (84) and Iwaihime (240).
+- every owner screenshot except those of a test game. CLANNAD's 2,206 frames stay test, and so do the second drop's
+  408 frames of four test games (Time Travelers v10856, Utawarerumono v3, Collar x Malice v18160, Sweet Clown v16460).
+  Four former `-TEST` folders of the first drop become training data: Amagami (113 frames), Narcissu (200),
+  Danganronpa V3 (84) and Iwaihime (240).
 
 `eval/manifests/reserved.json` holds the list. `realplus/shots.py reserve` builds it from a VNDB dump; this file
 used the 2026-10-13 dump. It contains `test` and `dev_sample` (VN → reason), `sessions`, the release ids behind every
@@ -71,22 +74,25 @@ another's.
 
 | tier | VNs | what they bring |
 |---|---:|---|
-| 1 | 38 | devnative's reviewed native console lines (full Claude review plus a second pass) |
-| 2 | 8 | native Vita/PSP teacher_val lines |
-| 3 | 54 | scaled PC teacher_val lines |
+| 1 | 34 | devnative's reviewed native console lines (full Claude review plus a second pass) |
+| 2 | 7 | native Vita/PSP teacher_val lines |
+| 3 | 59 | scaled PC teacher_val lines |
 
 A candidate is passed over in five cases:
 
 - it is in the test reservation;
-- it is an owner game (1 VN), because every owner screenshot trains;
-- it shares a release with an owner game (4 VNs: Memories Off After Rain v1331, Corpse Party v10231 and v12794,
-  Owaru Sekai to Birthday v9196);
+- it is an owner game (8 VNs: v3278, v3333, v7833, v10271, v11677, v15773, v16386, v17863), because every owner
+  screenshot trains;
+- it shares a release with an owner game (7 VNs: Memories Off After Rain v1331, Corpse Party v10231 and v12794,
+  Owaru Sekai to Birthday v9196, Natsuzora Kanata v701, World Election v18141, Ripkiss v18458);
 - it is already in a training pool (none were);
 - it shares a two-VN release with a VN of a training pool (21 VNs, such as v1762, whose twin entry v1763 is in
   teacher_train).
 
-The 100 VNs hold 486 devnative lines (378 PSP, 108 Vita), 847 teacher_val lines (160 Vita, 366 PSP, 321 scaled PC)
-and 659 real_val lines; with their release partners, 853 teacher_val and 663 real_val lines.
+The 100 VNs hold 424 devnative lines (344 PSP, 80 Vita), 824 teacher_val lines (138 Vita, 336 PSP, 350 scaled PC)
+and 625 real_val lines; with their release partners, 830 teacher_val and 629 real_val lines. (The first carve held 486
+devnative lines: four of its devnative games are owner games now, and their replacements are scaled-PC teacher_val
+VNs.)
 
 The sample is kept out of the training pools of any round that selects on it. Every gate below reads
 `is_reserved_vn`, which counts it by default. A final refit that trains on the sample on purpose, after selection,
@@ -103,8 +109,8 @@ tools.
 | set | bucket | reported where | now |
 |---|---|---|---|
 | vita-test, psp-test | `eval/tools/collect.py:45` drew candidates from `is_test_vn` games: 26 of the 28 set VNs are in that bucket, and the other two are hand-added (`collect.py:31-35`) | README, `docs/results.md`, `docs/train2.md:217-223`, every VOCR report | test sets, unchanged |
-| teacher_val | the val bucket (`teacher/build.py:63-64`), 181 VNs | the selection metric of train2, VOCR3 and VOCR4 (`docs/train2.md:217-235`, `docs/vocr3.md:121,147-175`, `docs/vocr4.md:160-168`, `docs/synth3*.md`, `docs/synth4.md:14`) | 101 VNs in the sample (957 crops), 80 VNs train (694 crops) |
-| devnative | its 47 VNs are all val-bucket teacher_val VNs (`devnative/select.py:73,89-94`; `docs/devnative.md:99-101`) | `docs/vocr3.md`, `docs/vocr4.md`, `docs/synth3-native.md:200` | 38 VNs in the sample; 65 lines train |
+| teacher_val | the val bucket (`teacher/build.py:63-64`), 181 VNs | the selection metric of train2, VOCR3 and VOCR4 (`docs/train2.md:217-235`, `docs/vocr3.md:121,147-175`, `docs/vocr4.md:160-168`, `docs/synth3*.md`, `docs/synth4.md:14`) | 101 VNs in the sample (959 crops), 80 VNs train (692 crops) |
+| devnative | its 47 VNs are all val-bucket teacher_val VNs (`devnative/select.py:73,89-94`; `docs/devnative.md:99-101`) | `docs/vocr3.md`, `docs/vocr4.md`, `docs/synth3-native.md:200` | 34 VNs in the sample; 127 lines train |
 | synth2's provisional A/B | `is_test_vn` lines of `data/real` (`synth/ab_eval.py:58-62`, `data/label_real.py:233`) | `docs/synth2.md:269-276`, labelled provisional | history |
 | teacher's 2-fold acceptance rule | `teacher/measure.py:231-232`, by game over the set games | `docs/teacher.md:76` | history |
 
@@ -131,7 +137,7 @@ linefind's holdout uses its own hash (`eval/linefind/build_gt.py:231-232`) and i
   `synth3.py:463-489`, `synth3_text.py:376-392`, `synth3_mine.py:92`, `synth3_real_labels.py:43`,
   `synth3_stats.py:141-173`, `synth4_gap.py:98-113` and, through them, `native_calib.py` and `synth4.py`. The
   default exclusion manifests shrink to the CLANNAD one; fresh native and the owner series are `RETIRED_MANIFESTS`.
-  `synth/bg_exclude.py` rewrote `data/manifests/synth2_bg_exclude.txt`: 71 test VNs, 113 sample VNs (with partners)
+  `synth/bg_exclude.py` rewrote `data/manifests/synth2_bg_exclude.txt`: 71 test VNs, 116 sample VNs (with partners)
   and the 106 test-session screenshots. It had 172 old-list VNs plus 28 research screenshots of synth2's
   provisional A/B;
 - other gates: `data/fresh_backgrounds.py:76`, `train/vocab.py:91`, `teacher/build.py:90-93` (and `teacher/label.py`
@@ -152,25 +158,25 @@ names `test-vn`, so a VOCR5 pool must not reuse it unchanged).
 
 | source | freed | notes |
 |---|---:|---|
-| realplus (VNDB, 2026-10-13 dump) | 20,867 screenshots of 4,883 VNs (fetched 2026-10-14: 20,867 of 20,867, with hashes; 5 pixel copies within the tier and 2 of realplus v2 screenshots, so 20,860 new) | 20,572 scaled PC (4,847 VNs) and 295 PSP (41 VNs). The old rules had dropped them as `test-vn` 9,468, `val-bucket` 6,126, `shared-release` 4,228, `test-set` 752, `family` 242, fresh native 36; 15 are new in the later dump. All pass the rating, language and kind filters |
-| native pool (PSP/Vita frames) | 1,217 frames of 245 VNs | 1,026 PSP, 191 Vita. 886 are already on disk and read (realdata/teacher, lines unlabelled), 295 are new (the same 295 PSP shots as above), 36 are in other pools. They had been dropped as linefind 299, `test-set` 295, `shared-release` 245, `family` 176, `development` 89, owner series 74, `val-bucket` 24, eval candidates 15 |
-| both lists, distinct | 21,789 screenshots of 5,077 VNs | |
-| synthetic names | 22,189 VNDB characters | synth3's name gate dropped 24,331 of 127,809; it now drops 2,361 |
-| synthetic scenes on disk | 388 screenshots | 28 Vita, 80 PSP, 280 scaled PC of synth3's current candidates. Every freed VNDB screenshot can become a scene once fetched and text-detected |
-| labelled lines (teacher_val, real_val, devnative) | 1,065 lines of 86 VNs | teacher_val 545, real_val 455, devnative 65 (the sample and its partners keep the rest) |
-| owner frames | 637 | Amagami, Narcissu, Danganronpa V3, Iwaihime; CLANNAD's 2,206 stay test |
+| realplus (VNDB, 2026-10-13 dump) | 20,849 screenshots of 4,880 VNs (the first carve's 20,867 were fetched on 2026-10-14, with hashes; the re-carve takes out the 18 of its 3 new sample partners. 5 pixel copies within the tier and 2 of realplus v2 screenshots, so 20,842 new) | 20,554 scaled PC (4,844 VNs) and 295 PSP (41 VNs). The old rules had dropped them as `test-vn` 9,461, `val-bucket` 6,126, `shared-release` 4,223, `test-set` 752, `family` 236, fresh native 36; 15 are new in the later dump. All pass the rating, language and kind filters |
+| native pool (PSP/Vita frames) | 1,255 frames of 250 VNs | 1,054 PSP, 201 Vita. 924 are already on disk and read (realdata/teacher, lines unlabelled), 295 are new (the same 295 PSP shots as above), 36 are in other pools. They had been dropped as linefind 299, `test-set` 295, `shared-release` 245, `family` 176, `development` 127, owner series 74, `val-bucket` 24, eval candidates 15 |
+| both lists, distinct | 21,809 screenshots of 5,079 VNs | |
+| synthetic names | 22,163 VNDB characters | synth3's name gate dropped 24,331 of 127,809; it now drops 2,388 |
+| synthetic scenes on disk | 416 screenshots | 48 Vita, 108 PSP, 260 scaled PC of synth3's current candidates. Every freed VNDB screenshot can become a scene once fetched and text-detected |
+| labelled lines (teacher_val, real_val, devnative) | 1,184 lines of 86 VNs | teacher_val 568, real_val 489, devnative 127 (the sample and its partners keep the rest) |
+| owner frames | 637 | Amagami, Narcissu, Danganronpa V3, Iwaihime; CLANNAD's 2,206 stay test. The second drop (2026-10-14) is training data too, apart from its 408 frames of 4 test games (Time Travelers, Utawarerumono, Collar x Malice, Sweet Clown) |
 
-The labelled sets are cut by VN under `$HERD/shared/artifacts/reserve-policy/reclaim/pools/`, in teacher_val's npz
-format (`reclaim.py --split`). For each set there is a `*_train.npz` (training data now) and a `*_dev.npz` (the
-sample).
+The labelled sets are cut by VN under `$HERD/shared/artifacts/owner-drive-ingest-2/reclaim/pools/` (the re-carve's
+cut; the first carve's, under `reserve-policy/reclaim/pools/`, are superseded), in teacher_val's npz format
+(`reclaim.py --split`). For each set there is a `*_train.npz` (training data now) and a `*_dev.npz` (the sample).
 
 | set | train crops (VNs) | sample crops (VNs) |
 |---|---:|---:|
-| teacher_val | 694 (80) | 957 (101) |
-| teacher_distill_val (unlabelled) | 511 (76) | 750 (96) |
-| real_val | 681 (86) | 814 (98) |
-| devnative v3, tv_native ink / GRAD | 60 / 50 (6) | 453 / 373 (38) |
-| devnative v3, strict ink / GRAD | 5 / 3 | 33 / 23 |
+| teacher_val | 692 (80) | 959 (101) |
+| teacher_distill_val (unlabelled) | 522 (77) | 739 (95) |
+| real_val | 688 (85) | 807 (99) |
+| devnative v3, tv_native ink / GRAD | 121 / 104 (10) | 392 / 319 (34) |
+| devnative v3, strict ink / GRAD | 6 / 4 | 32 / 22 |
 
 ## Leak check
 
@@ -206,6 +212,11 @@ hash-checked (435,783 rows, all with a pixel hash):
 
 As negative controls, vita-test, psp-test, the sample parts and the original teacher_train fail.
 
+Re-run with the re-carved sample (below) on the same 25 pools, with the re-cut train parts, the reclaim lists of the
+re-carve and all 4,994 owner training frames of both drops in place of the first 1,215: **RESERVE_OK**, 439,715 rows,
+every one pixel-checked. The first carve's cuts now fail as they should: its teacher_val train part on 65 rows of the 7
+VNs that entered the sample, its realplus reclaim list on the 18 screenshots of the 3 new partners.
+
 The check also found an older exposure. It comes from the old rules, not from this change. The train2-era files hold
 rows of 8 VNs that the test reservation now covers:
 
@@ -231,9 +242,10 @@ Recipes that read the files directly saw them; that was not re-checked per recip
 
 ## Limits and follow-ups
 
-- The sample's VNs have no lines in any labelled training pool. 19 of them, however, have screenshots that the old
-  gate allowed as synth2 backgrounds (11 in `data/vndb/shots`, 9 in the pinned `synth2_psp_shots.jsonl`), so pinned
-  synth2 shards may hold their scenes. teacher_val had the same exposure. New renders leave them out.
+- The sample's VNs have no lines in any labelled training pool. 17 of them, however, have screenshots that the old
+  gate allowed as synth2 backgrounds (10 in `data/vndb/shots`, 8 in the pinned `synth2_psp_shots.jsonl`; the first
+  carve had 19 = 11 + 9, before v15773 and v11677 left for the owner games), so pinned synth2 shards may hold their
+  scenes. teacher_val had the same exposure. New renders leave them out.
 - `data/manifests/synth3_exclude_clannad.json` is now synth3's only default exclusion manifest. It predates this
   policy: it lists planetarian (v34, training data), so v34's names and scenes stay out of synth3, and it lacks
   v16902, a CLANNAD relation. v16902 is still kept out by VN id wherever the code asks `is_reserved_vn`, but its
@@ -243,6 +255,35 @@ Recipes that read the files directly saw them; that was not re-checked per recip
 - realplus-v3's branch has its own narrower `reserved_vns_final`. It lacks the r23905 compilation partners, the
   Key-box partners and the development sample. Its build must switch to this reservation before it merges (see the
   hand-off).
+
+## The re-carve after the owner's second drop (2026-10-14)
+
+The owner's second Google Drive drop (2026-10-14, 5,050 frames of 87 games) was sorted into
+`shared/private/owner-games/` at 18:14:43Z, adding 79 VN folders. Five of its games were sample VNs, and two sample
+VNs share a release with one of its games. Every owner screenshot trains, so `shots.py reserve` was run again on the
+same dump with the folders as they are now:
+
+- out of the sample: the owner games v3278 (No Fate!), v3333 (Disgaea Infinite), v11677 (Hanasaku Manimani), v15773
+  (Hyakka Yakou) and v16386 (MISSING PARTS), and v701 and v18458, which share a release with owner games;
+- into it, by the same tiers and seeded order: v566, v933, v5000, v5349, v7290, v13999, v20062 (all tier 3, scaled-PC
+  teacher_val VNs), with three new two-VN partners, v1372, v4827 and v21894;
+- the test reservation, the sessions and `test_games.json` are unchanged. 187 VNs are held back (116 in the sample).
+
+What moved with it:
+
+- the labelled-set cuts (table above, re-cut under `owner-drive-ingest-2/reclaim/pools/`): the 7 entering VNs' rows
+  go to the `*_dev` side (65 teacher_val, 63 real_val, 38 teacher_distill_val in the first cut's train parts) and the
+  7 leaving VNs' to `*_train` (the 4 devnative games among them give devnative's train side 127 lines instead of 65);
+- the realplus reclaim list loses the 18 screenshots of the 3 new partners (20,867 to 20,849). realplus-v3's working
+  labels (`$HERD/shared/artifacts/realplus-v3/labels.jsonl`) hold 70 rows from 16 of those 18 shots, 16 of them
+  auto-kept (v1372 3, v21894 4, v4827 9); realplus-v3 already filters them out of its reads and build (it unions the
+  new partners into its exclusions), and none of the checked pools holds them. The native reclaim list gains 38
+  pooled frames of 5 leaving VNs (1,217 to 1,255);
+- `data/manifests/synth2_bg_exclude.txt` lists the new sample (its test and session lines are unchanged).
+
+Before this change the test of the sample scanned the live owner-games folders (`owner_vns()`), so it failed on any
+box where a later drop had been sorted. `reserve` now pins the owner list it carved with (`reserved.json`
+`owner_vns`, 102 VNs), and the test checks the sample against that pin and the committed owner drop tables.
 
 ## Past reports
 
@@ -262,11 +303,15 @@ Old reports not reproducing under the new rules is accepted (owner, 13:25Z).
 D=$HERD/shared/artifacts/native-frames/vndb/dump/db        # VNDB dump 2026-10-13 08:00:26+00
 .venv-ci/bin/python realplus/shots.py reserve --dump $D --test-games    # eval/manifests/reserved.json, test_games.json
 .venv-ci/bin/python synth/bg_exclude.py                                 # needs data/vndb (and data/vndb_psp) locally
-$HERD/heavy.sh .venv-ci/bin/python realplus/reclaim.py --dump $D --manifest realplus/manifests/reclaim_20261014.json
-$HERD/heavy.sh .venv-ci/bin/python realplus/reclaim.py --split teacher_val=$A/teacher/teacher_val.npz ...
+R=$HERD/shared/artifacts/owner-drive-ingest-2/reclaim                    # the re-carve's lists and cuts
+$HERD/heavy.sh .venv-ci/bin/python realplus/reclaim.py --dump $D --out $R --manifest realplus/manifests/reclaim_20261014.json
+$HERD/heavy.sh .venv-ci/bin/python realplus/reclaim.py --out $R --split teacher_val=$A/teacher/teacher_val.npz ...
+cp $R/pools/split.json realplus/manifests/reclaim_20261014_splits.json
 $HERD/heavy.sh .venv-ci/bin/python eval/tools/reserve_check.py --dump $D --pixels NAME=POOL ...
 ```
 
 A rebuild on a newer dump can only grow the reservation, because `reserved_vns()` unions the committed file. The
-sample changes only when `reserve` is run again. Run it again when an owner drop names a sample VN; `owner_vns()`
-then leaves that VN out of the sample.
+sample changes only when `reserve` is run again. Run it again when an owner drop names a sample VN or a release
+partner of one; `owner_vns()` then leaves that VN out of the sample. `reserve` pins the owner list it carved with in
+`reserved.json` (`owner_vns`), and the tests check the sample against that pin (and the committed drop tables), never
+against the live owner-games folders, which grow with every drop.

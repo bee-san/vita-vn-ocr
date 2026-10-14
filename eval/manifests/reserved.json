@@ -86,10 +86,12 @@
   "v400": "dev-sample",
   "v418": "dev-sample",
   "v454": "dev-sample",
+  "v566": "dev-sample",
   "v604": "dev-sample",
-  "v701": "dev-sample",
+  "v933": "dev-sample",
   "v961": "dev-sample",
   "v1315": "dev-sample",
+  "v1372": "dev-sample-shared-release",
   "v1794": "dev-sample",
   "v1795": "dev-sample-shared-release",
   "v1877": "dev-sample",
@@ -99,13 +101,14 @@
   "v2817": "dev-sample",
   "v2835": "dev-sample",
   "v3066": "dev-sample",
-  "v3278": "dev-sample",
-  "v3333": "dev-sample",
   "v3371": "dev-sample",
   "v3496": "dev-sample",
   "v3549": "dev-sample",
   "v3902": "dev-sample",
   "v4597": "dev-sample",
+  "v4827": "dev-sample-shared-release",
+  "v5000": "dev-sample",
+  "v5349": "dev-sample",
   "v5381": "dev-sample",
   "v5706": "dev-sample",
   "v5837": "dev-sample",
@@ -114,6 +117,7 @@
   "v6656": "dev-sample",
   "v6985": "dev-sample",
   "v7204": "dev-sample",
+  "v7290": "dev-sample",
   "v7321": "dev-sample",
   "v7716": "dev-sample",
   "v8063": "dev-sample",
@@ -128,7 +132,6 @@
   "v10972": "dev-sample",
   "v11454": "dev-sample",
   "v11640": "dev-sample",
-  "v11677": "dev-sample",
   "v11857": "dev-sample",
   "v12188": "dev-sample",
   "v12436": "dev-sample",
@@ -143,15 +146,14 @@
   "v13758": "dev-sample",
   "v13833": "dev-sample",
   "v13849": "dev-sample",
+  "v13999": "dev-sample",
   "v14240": "dev-sample",
   "v14267": "dev-sample",
   "v14520": "dev-sample",
   "v15076": "dev-sample-shared-release",
   "v15708": "dev-sample",
-  "v15773": "dev-sample",
   "v16082": "dev-sample",
   "v16128": "dev-sample",
-  "v16386": "dev-sample",
   "v16770": "dev-sample",
   "v17012": "dev-sample",
   "v17153": "dev-sample",
@@ -160,12 +162,12 @@
   "v18161": "dev-sample",
   "v18163": "dev-sample",
   "v18432": "dev-sample",
-  "v18458": "dev-sample",
   "v18643": "dev-sample",
   "v18857": "dev-sample",
   "v19848": "dev-sample-shared-release",
   "v19849": "dev-sample-shared-release",
   "v19982": "dev-sample",
+  "v20062": "dev-sample",
   "v20170": "dev-sample",
   "v20524": "dev-sample",
   "v20598": "dev-sample",
@@ -175,6 +177,7 @@
   "v21185": "dev-sample",
   "v21321": "dev-sample",
   "v21766": "dev-sample",
+  "v21894": "dev-sample-shared-release",
   "v22114": "dev-sample-shared-release",
   "v23154": "dev-sample",
   "v24328": "dev-sample",
@@ -322,28 +325,28 @@
   },
   "dev_sample": {
    "dev-sample": 100,
-   "dev-sample-shared-release": 13
+   "dev-sample-shared-release": 16
   },
   "dev_sample_lines": {
-   "devnative:psp": 378,
-   "devnative:vita": 108,
-   "real_val:hires": 249,
-   "real_val:psp": 254,
-   "real_val:vita": 156,
-   "teacher_val:hires": 321,
-   "teacher_val:psp": 366,
-   "teacher_val:vita": 160
+   "devnative:psp": 344,
+   "devnative:vita": 80,
+   "real_val:hires": 276,
+   "real_val:psp": 226,
+   "real_val:vita": 123,
+   "teacher_val:hires": 350,
+   "teacher_val:psp": 336,
+   "teacher_val:vita": 138
   },
   "dev_sample_tiers": {
-   "1": 38,
-   "2": 8,
-   "3": 54
+   "1": 34,
+   "2": 7,
+   "3": 59
   },
   "dev_candidates_passed_over": {
-   "owner-shared-release": 4,
+   "owner-shared-release": 7,
    "two-vn-release-with-a-training-pool-vn": 21,
-   "owner-game": 1,
-   "not-drawn": 61
+   "owner-game": 8,
+   "not-drawn": 51
   }
  },
  "dev_sample_size": 100,
@@ -400,16 +403,6 @@
     "devnative:psp": 10,
     "real_val:psp": 7,
     "teacher_val:psp": 10
-   }
-  },
-  {
-   "vn": "v11677",
-   "tier": 1,
-   "title": "花咲くまにまに",
-   "lines": {
-    "devnative:psp": 7,
-    "real_val:psp": 3,
-    "teacher_val:psp": 7
    }
   },
   {
@@ -483,16 +476,6 @@
    }
   },
   {
-   "vn": "v16386",
-   "tier": 1,
-   "title": "MISSING PARTS the TANTEI stories",
-   "lines": {
-    "devnative:psp": 20,
-    "real_val:psp": 20,
-    "teacher_val:psp": 16
-   }
-  },
-  {
    "vn": "v12858",
    "tier": 1,
    "title": "死神所業～怪談ロマンス～",
@@ -555,16 +538,6 @@
     "devnative:psp": 11,
     "real_val:psp": 6,
     "teacher_val:psp": 15
-   }
-  },
-  {
-   "vn": "v15773",
-   "tier": 1,
-   "title": "百華夜光",
-   "lines": {
-    "devnative:vita": 28,
-    "real_val:vita": 33,
-    "teacher_val:vita": 22
    }
   },
   {
@@ -658,16 +631,6 @@
    }
   },
   {
-   "vn": "v3278",
-   "tier": 1,
-   "title": "のーふぇいと！～only the power of will～",
-   "lines": {
-    "devnative:psp": 7,
-    "real_val:psp": 4,
-    "teacher_val:psp": 5
-   }
-  },
-  {
    "vn": "v6656",
    "tier": 1,
    "title": "死神と少女",
@@ -735,15 +698,6 @@
     "devnative:vita": 11,
     "real_val:vita": 24,
     "teacher_val:vita": 28
-   }
-  },
-  {
-   "vn": "v3333",
-   "tier": 2,
-   "title": "ディスガイア インフィニット",
-   "lines": {
-    "real_val:psp": 1,
-    "teacher_val:psp": 2
    }
   },
   {
@@ -981,14 +935,6 @@
    }
   },
   {
-   "vn": "v18458",
-   "tier": 3,
-   "title": "リプキス",
-   "lines": {
-    "teacher_val:hires": 2
-   }
-  },
-  {
    "vn": "v24328",
    "tier": 3,
    "title": "Yumeutsutsu Re:Master",
@@ -1058,15 +1004,6 @@
    "lines": {
     "real_val:hires": 7,
     "teacher_val:hires": 8
-   }
-  },
-  {
-   "vn": "v701",
-   "tier": 3,
-   "title": "夏空カナタ",
-   "lines": {
-    "real_val:hires": 6,
-    "teacher_val:hires": 7
    }
   },
   {
@@ -1293,6 +1230,173 @@
     "real_val:hires": 7,
     "teacher_val:hires": 5
    }
+  },
+  {
+   "vn": "v5349",
+   "tier": 3,
+   "title": "BLOODY†RONDO",
+   "lines": {
+    "real_val:hires": 5,
+    "teacher_val:hires": 9
+   }
+  },
+  {
+   "vn": "v13999",
+   "tier": 3,
+   "title": "天秤のLa DEA。 ～戦女神MEMORIA～",
+   "lines": {
+    "real_val:hires": 1,
+    "teacher_val:hires": 1
+   }
+  },
+  {
+   "vn": "v7290",
+   "tier": 3,
+   "title": "ツインズストーリー きみにつたえたくて・・・",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 10
+   }
+  },
+  {
+   "vn": "v5000",
+   "tier": 3,
+   "title": "Root Double -Before Crime * After Days-",
+   "lines": {
+    "real_val:hires": 16,
+    "teacher_val:hires": 13
+   }
+  },
+  {
+   "vn": "v566",
+   "tier": 3,
+   "title": "よつのは",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 1
+   }
+  },
+  {
+   "vn": "v20062",
+   "tier": 3,
+   "title": "リアルエロゲシチュエーション！",
+   "lines": {
+    "real_val:hires": 1,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v933",
+   "tier": 3,
+   "title": "ゴア・スクリーミング・ショウ",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 2
+   }
   }
+ ],
+ "owner_vns": [
+  "v3",
+  "v4",
+  "v10",
+  "v34",
+  "v57",
+  "v183",
+  "v195",
+  "v264",
+  "v266",
+  "v434",
+  "v683",
+  "v689",
+  "v727",
+  "v728",
+  "v751",
+  "v1080",
+  "v1152",
+  "v1170",
+  "v1171",
+  "v1281",
+  "v1299",
+  "v1322",
+  "v1325",
+  "v1552",
+  "v1646",
+  "v2002",
+  "v2063",
+  "v2113",
+  "v2632",
+  "v2923",
+  "v2954",
+  "v3091",
+  "v3278",
+  "v3333",
+  "v3770",
+  "v3992",
+  "v4028",
+  "v4091",
+  "v4137",
+  "v4185",
+  "v4540",
+  "v5154",
+  "v5386",
+  "v5883",
+  "v6572",
+  "v6618",
+  "v7014",
+  "v7018",
+  "v7301",
+  "v7602",
+  "v7803",
+  "v7809",
+  "v7833",
+  "v7967",
+  "v10271",
+  "v10561",
+  "v10623",
+  "v10641",
+  "v10680",
+  "v10856",
+  "v11108",
+  "v11173",
+  "v11660",
+  "v11677",
+  "v11713",
+  "v12369",
+  "v12630",
+  "v13059",
+  "v13865",
+  "v14018",
+  "v14787",
+  "v14909",
+  "v14919",
+  "v15231",
+  "v15773",
+  "v16386",
+  "v16460",
+  "v16467",
+  "v16468",
+  "v16607",
+  "v16610",
+  "v17102",
+  "v17285",
+  "v17863",
+  "v17902",
+  "v17936",
+  "v18160",
+  "v18334",
+  "v18777",
+  "v18872",
+  "v19010",
+  "v19100",
+  "v19119",
+  "v19441",
+  "v19743",
+  "v19851",
+  "v21259",
+  "v21899",
+  "v22174",
+  "v22505",
+  "v24957",
+  "v27448"
  ]
 }

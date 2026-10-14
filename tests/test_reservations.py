@@ -49,7 +49,15 @@ def test_development_sample_is_small_fixed_and_off_the_owner_games_and_pools():
     assert len(core) == S.DEV_SAMPLE_SIZE == RES["dev_sample_size"] == 100
     assert set(dev.values()) <= {"dev-sample", "dev-sample-shared-release"}
     assert not set(dev) & set(RES["test"])
-    assert not set(dev) & S.owner_vns()                         # every owner screenshot trains
+    # every owner screenshot trains: the carve's owner list is pinned in the file (the live owner-games folders grow
+    # with every drop, so they are never read here), and it holds every owner VN the repo names
+    owner = RES["owner_vns"]
+    assert owner == sorted(set(owner), key=lambda v: int(v[1:])) and all(v.startswith("v") for v in owner)
+    named = set(S.OWNER_TRAINING) | set(S.OWNER_ALLOWED) | set(S.OWNER_TEST_SERIES)
+    for drop in sorted((ROOT / "data" / "manifests").glob("owner_drop_*.json")):
+        named |= {g["vn"] for g in json.loads(drop.read_text(encoding="utf-8"))["games"]}
+    assert named <= set(owner)
+    assert not set(dev) & set(owner)
     assert not set(core) & set(S.training_pool_vns())          # never trained on so far
     rows = RES["dev_sample_vns"]
     assert {r["vn"] for r in rows} == set(core) and len(rows) == len(core)
@@ -170,7 +178,9 @@ def test_committed_reclaim_manifests_add_up():
     assert na["frames"] == sum(na["by_kind"].values()) == sum(na["by_new_class"].values())
     assert doc["distinct_vndb_screenshots"]["realplus_or_native"] <= rp["screenshots"] + na["frames"]
     assert doc["owner_frames"]["vita-clannad-v4-TEST"]["role"] == "test"
-    assert all(v["role"] == "training" for k, v in doc["owner_frames"].items() if "clannad" not in k)
+    # an owner folder is test-only exactly when its VN is a test VN (the 2026-10-14 drop brought four non-CLANNAD
+    # ones: Time Travelers, Utawarerumono, Collar x Malice, Sweet Clown); every other owner frame trains
+    assert all((v["role"] == "test") == (v["vn"] in RES["test"]) for v in doc["owner_frames"].values())
     splits = json.loads((ROOT / "realplus" / "manifests" / "reclaim_20261014_splits.json").read_text(encoding="utf-8"))
     assert set(splits["sets"]["teacher_train"]["dropped_test"]) <= set(RES["test"])
     assert all(not v["dropped_test"] for k, v in splits["sets"].items() if k.endswith("_val") or "devnative" in k)

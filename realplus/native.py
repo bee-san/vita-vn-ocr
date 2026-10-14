@@ -73,11 +73,13 @@ def wjl(path, rows):
 def reserved_today():
     """reserved_vns of the dump, by today's rules. In an owner pool (NATIVE_OWNER_POOL=1: the owner's own
     console captures, shared/private/owner-games/_build/...) a VN the owner explicitly made training data
-    (owner_frames.OWNER_DECISIONS, only for the reservation reasons listed there) is not held back."""
+    (owner_frames.OWNER_DECISIONS, only for the reservation reasons listed there) is not held back, and neither is
+    a development-sample VN: every owner screenshot trains unless its VN is a test VN (owner 2026-10-14 13:25Z,
+    docs/reservations.md), and shots.py reserve leaves owner games out of the sample."""
     r = SH.reserved_vns(SH.load_dump(DUMP))
     if os.environ.get("NATIVE_OWNER_POOL") == "1":
         import owner_frames as OF
-        r = {v: w for v, w in r.items() if not OF.owner_allowed(v, w)}
+        r = {v: w for v, w in r.items() if not OF.owner_allowed(v, w) and not w.startswith("dev-sample")}
     return r
 
 
@@ -575,6 +577,17 @@ CHECK_NOTE = ("\nThis is a label-precision check (native-frames): no candidate r
               "skip \"cut\" or \"bad\" only as defined above.\n")
 
 
+def parse_strata(text):
+    """"auto:60,reviewed:140" -> {"auto": 60, "reviewed": 140} (a pool's own pre-registered sample sizes)."""
+    out = {}
+    for part in text.split(","):
+        k, n = part.split(":")
+        if k not in CHECK_STRATA:
+            raise ValueError(f"unknown stratum {k!r}")
+        out[k] = int(n)
+    return out
+
+
 def check_sample(man, seed, strata=CHECK_STRATA):
     """[{id, crop, stratum}]: strata[s] built lines drawn at random from each stratum (auto: all four readings
     agreed; reviewed: Claude + Luna), each shown as one of the crops the npz holds for it, chosen at random."""
@@ -605,8 +618,9 @@ def cmd_check(args):
     spec_p = NP / "review" / f"check_spec_{args.tag}.json"
     if spec_p.exists():
         sys.exit(f"{spec_p} exists: the sample is drawn once")
-    sample = check_sample(man, args.seed)
-    spec_p.write_text(json.dumps({"tag": args.tag, "seed": args.seed, "strata": CHECK_STRATA, "from": len(man),
+    strata = parse_strata(args.strata) if getattr(args, "strata", None) else CHECK_STRATA
+    sample = check_sample(man, args.seed, strata)
+    spec_p.write_text(json.dumps({"tag": args.tag, "seed": args.seed, "strata": strata, "from": len(man),
                                   "entries": sample}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     shots, rows = PL.load_reads(), {m["id"]: m for m in man}
     idx = PL.S.line_index(shots)
@@ -704,6 +718,7 @@ def main():
     p.add_argument("--tag", required=True)
     p.add_argument("--seed", type=int, default=20261013)
     p.add_argument("--size", type=int, default=160)
+    p.add_argument("--strata", help="sample sizes per stratum, e.g. auto:60,reviewed:140 (default 40 / 120)")
     p = sub.add_parser("check-score")
     p.add_argument("--tag", required=True)
     p = sub.add_parser("publish")

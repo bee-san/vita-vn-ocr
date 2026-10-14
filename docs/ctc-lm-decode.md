@@ -19,39 +19,40 @@ beam + LM decoder").
 ## Answers first
 
 - **Dialogue errors fall by 30–42 % pooled over the six recognizers** (VOCR3 and VOCR4 FL10/H15/W20): from 1,656
-  to 1,155 / 1,044 / 995 / 965 with the 0.5 / 1 / 2 / 4 MB LM (CER 0.93 % → 0.65 / 0.59 / 0.56 / 0.54 %). **Per model
-  the drop is 26–49 %**, and from the 1 MB LM on at least 32 % for every model. Every model's interval lies below
+  to 1,156 / 1,047 / 1,000 / 970 with the 0.5 / 1 / 2 / 4 MB LM (CER 0.93 % → 0.65 / 0.59 / 0.56 / 0.55 %). **Per model
+  the drop is 25–49 %**, and from the 1 MB LM on at least 32 % for every model. Every model's interval lies below
   zero at every size, and the 2-fold VN cross-validated CER (settings chosen on one half of the VNs, scored on the
   other) is within 0.05 points of the in-sample one. With the 1 MB LM, VOCR3-W20 reads dialogue at 0.42 % (0.72 %
-  greedy; 0.43 % cross-validated) and VOCR4-FL10, the Small model, at 0.71 % (1.13 %; 0.73 %).
+  greedy; 0.43 % cross-validated) and VOCR4-FL10, the Small model, at 0.71 % (1.13 %; 0.74 %).
 - **Counting each crop once changes little:** the dialogue view scores 241 crops twice (devnative's copies of
   teacher_val's own native crops). Without the second copies the pooled CER is 1.01 % greedy → 0.71 / 0.64 / 0.61 /
   0.60 % (30–41 % fewer errors).
-- **The families the task named shrink most** (4 MB, six models summed): kanji↔kanji substitutions 527 → 300,
+- **The families the task named shrink most** (4 MB, six models summed): kanji↔kanji substitutions 527 → 306,
   dakuten 197 → 58, small kana 54 → 26, ー/一 and other dash pairs 16 → 5, deletions 238 → 139. Punctuation pairs
   stay level (79 → 75) once the decoder pairs brackets; insertions rise (44 → 81), the price of the per-character
   bonus that cuts the deletions.
-- **Names improve too (secondary):** name errors fall at every size and for every model (pooled 960 → 848 at
+- **Names improve too (secondary):** name errors fall at every size and for every model (pooled 960 → 851 at
   1 MB). A tighter gate protects nothing: at 0.5 nat both dialogue and names are worse than at 8 nats (gate sweep).
   What the LM does break is listed below: per character it fixes about 4.6 for each one it breaks in dialogue and
-  3.4 in names. Rare kanji (Jiten rank > 2,000) come out slightly worse (dialogue: 695 → 694 of 762 read right;
-  names: 516 → 512 of 564), and ＝ between katakana (a name separator) turns into ー (12 of the 20 symbols the beam
+  3.3 in names. Rare kanji (Jiten rank > 2,000) come out slightly worse (dialogue: 695 → 694 of 762 read right;
+  names: 516 → 511 of 564), and ＝ between katakana (a name separator) turns into ー (12 of the 20 symbols the beam
   breaks in dialogue at 1 MB; the other 8 are /).
-- **No protected title is in the LMs' names, and the development titles' names do not carry the gain.** The builder
-  drops every corpus piece and Jiten word that names a character or title of a protected VN (vita-test, psp-test,
-  their families and CLANNAD's: 196 VNs, 2,177 characters); the Jiten VN list does count CLANNAD's script among its
-  2,162, so its ordinary word frequencies still carry that script's share (Limits). Dropping the 183 development
-  VNs' names too leaves the result where it was (1,046 against 1,044 errors at 1 MB), and an LM without the Jiten
-  lists is 4–5 % worse up to 2 MB and level at 4 MB (ablation table).
+- **The protected titles' names are filtered out, and the development titles' names do not carry the gain.** The
+  builder drops every corpus piece and Jiten word that names a character or title of a protected VN (vita-test,
+  psp-test, their families and CLANNAD's: 196 VNs, 2,177 characters) unless the name is also a common word or
+  surname; the Jiten VN list does count CLANNAD's script among its 2,162, so its ordinary word frequencies still
+  carry that script's share (Limits). Dropping the 183 development VNs' names too leaves the result where it was
+  (1,054 against 1,047 errors at 1 MB), and an LM without the Jiten lists is 4–5 % worse up to 2 MB and level at
+  4 MB (ablation table).
 - **One setting serves all six models** at each LM size: beam 8, top-8 candidates per frame, LM weight 0.5, an
   end-of-line term, a gate and a bracket-pairing cost of 8 nats each, and a per-character bonus of 3–3.5 nats.
 - **Cost (estimates calibrated to the console):** every A9 estimate is scaled to the owner's measured
   VOCR3-H15 time on the console (5.0–5.2 ms per CTC frame, v0.8.0-test.1 logs). On that scale the beam + LM search
-  costs 0.4–0.8 ms per 640-px line and the top-8 tracking in the output head 6–10 ms, against the network's
+  costs 0.4–0.6 ms per 640-px line and the top-8 tracking in the output head 6–10 ms, against the network's
   227–246 ms (FL10), 400–416 ms (H15) and 568–573 ms (W20): a 3-line textbox goes from 0.68–0.74 to 0.70–0.76 s
   (FL10, Small < 1 s) and from 1.71–1.72 to 1.73–1.75 s (W20, Normal < 2 s). What the LM's size costs is its
-  one-time load in a session (68–88 / 132–168 / 261–327 / 497–641 ms for the 0.5 / 1 / 2 / 4 MB tier, 89–95 % of it
-  the optional CRC check) and its resident memory (498,128 / 995,328 / 1,987,824 / 3,811,616 B), plus a
+  one-time load in a session (68–87 / 131–167 / 259–325 / 493–636 ms for the 0.5 / 1 / 2 / 4 MB tier, 89–95 % of it
+  the optional CRC check) and its resident memory (497,456 / 988,080 / 1,972,416 / 3,782,688 B), plus a
   35–41 KB workspace and 6.6 KB of top-K buffers per job. With the load in a session's first box, the 0.5 and 1 MB
   tiers keep FL10 under 1 s and W20 under 2 s; the 2 MB tier is at the limit and the 4 MB tier over it for that
   first box only (tier advice below).
@@ -66,10 +67,10 @@ The recommended settings (`vocr_lm_opts`; alpha in 1/1000, beta, gate and bracke
 
 | tier | LM file | bytes | beam | top-K | alpha | beta | gate | bracket | flags |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| 0.5MB | `vocr_lm_o3_500k.vlm` | 498,128 | 8 | 8 | 500 | 3000 | 8000 | 8000 | VOCR_LM_EOS |
-| 1MB | `vocr_lm_o3_1000k.vlm` | 995,328 | 8 | 8 | 500 | 3500 | 8000 | 8000 | VOCR_LM_EOS |
-| 2MB | `vocr_lm_o3_2000k.vlm` | 1,987,824 | 8 | 8 | 500 | 3000 | 8000 | 8000 | VOCR_LM_EOS |
-| 4MB | `vocr_lm_o3_4000k.vlm` | 3,811,616 | 8 | 8 | 500 | 3500 | 8000 | 8000 | VOCR_LM_EOS |
+| 0.5MB | `vocr_lm_o3_500k.vlm` | 497,456 | 8 | 8 | 500 | 3000 | 8000 | 8000 | VOCR_LM_EOS |
+| 1MB | `vocr_lm_o3_1000k.vlm` | 988,080 | 8 | 8 | 500 | 3500 | 8000 | 8000 | VOCR_LM_EOS |
+| 2MB | `vocr_lm_o3_2000k.vlm` | 1,972,416 | 8 | 8 | 500 | 3000 | 8000 | 8000 | VOCR_LM_EOS |
+| 4MB | `vocr_lm_o3_4000k.vlm` | 3,782,688 | 8 | 8 | 500 | 3500 | 8000 | 8000 | VOCR_LM_EOS |
 <!-- /table:settings -->
 
 ### Dialogue (primary)
@@ -79,13 +80,13 @@ Dialogue CER, greedy → beam + LM (2-fold VN cross-validated in brackets):
 
 | model | dialogue chars | greedy | 0.5MB LM | 1MB LM | 2MB LM | 4MB LM |
 |---|---:|---:|---:|---:|---:|---:|
-| VOCR3-FL10 | 31,356 | 1.03% | 0.77% (0.76%) | 0.65% (0.67%) | 0.63% (0.63%) | 0.61% (0.63%) |
-| VOCR3-H15 | 31,356 | 0.93% | 0.62% (0.65%) | 0.58% (0.59%) | 0.56% (0.56%) | 0.56% (0.56%) |
-| VOCR3-W20 | 31,356 | 0.72% | 0.46% (0.50%) | 0.42% (0.43%) | 0.38% (0.38%) | 0.37% (0.38%) |
-| VOCR4-FL10 | 31,356 | 1.13% | 0.81% (0.81%) | 0.71% (0.73%) | 0.69% (0.69%) | 0.63% (0.63%) |
-| VOCR4-H15 | 31,356 | 0.87% | 0.62% (0.64%) | 0.57% (0.59%) | 0.55% (0.55%) | 0.55% (0.58%) |
+| VOCR3-FL10 | 31,356 | 1.03% | 0.77% (0.76%) | 0.65% (0.67%) | 0.63% (0.63%) | 0.62% (0.64%) |
+| VOCR3-H15 | 31,356 | 0.93% | 0.62% (0.64%) | 0.58% (0.59%) | 0.56% (0.56%) | 0.55% (0.56%) |
+| VOCR3-W20 | 31,356 | 0.72% | 0.46% (0.50%) | 0.42% (0.43%) | 0.38% (0.39%) | 0.37% (0.38%) |
+| VOCR4-FL10 | 31,356 | 1.13% | 0.82% (0.81%) | 0.71% (0.74%) | 0.69% (0.69%) | 0.64% (0.64%) |
+| VOCR4-H15 | 31,356 | 0.87% | 0.62% (0.64%) | 0.57% (0.58%) | 0.55% (0.56%) | 0.56% (0.59%) |
 | VOCR4-W20 | 20,467 | 0.90% | 0.61% (0.66%) | 0.61% (0.61%) | 0.58% (0.58%) | 0.56% (0.56%) |
-| pooled (six models) | 177,247 | 0.93% | 0.65% | 0.59% | 0.56% | 0.54% |
+| pooled (six models) | 177,247 | 0.93% | 0.65% | 0.59% | 0.56% | 0.55% |
 <!-- /table:dialogue -->
 
 <!-- table:delta -->
@@ -93,13 +94,13 @@ Change in dialogue CER, points, with the 95% VN-cluster bootstrap interval (in-s
 
 | model | 0.5MB | 1MB | 2MB | 4MB | 4MB CV |
 |---|---|---|---|---|---|
-| VOCR3-FL10 | -0.27 (-0.48 to -0.14) | -0.38 (-0.62 to -0.23) | -0.41 (-0.67 to -0.25) | -0.42 (-0.70 to -0.26) | -0.41 (-0.66 to -0.26) |
-| VOCR3-H15 | -0.31 (-0.51 to -0.19) | -0.35 (-0.55 to -0.24) | -0.38 (-0.59 to -0.25) | -0.38 (-0.59 to -0.25) | -0.37 (-0.57 to -0.25) |
-| VOCR3-W20 | -0.26 (-0.46 to -0.14) | -0.30 (-0.53 to -0.17) | -0.34 (-0.59 to -0.20) | -0.35 (-0.60 to -0.20) | -0.34 (-0.58 to -0.20) |
-| VOCR4-FL10 | -0.32 (-0.55 to -0.18) | -0.42 (-0.70 to -0.25) | -0.44 (-0.73 to -0.27) | -0.50 (-0.82 to -0.31) | -0.50 (-0.82 to -0.31) |
-| VOCR4-H15 | -0.25 (-0.42 to -0.15) | -0.30 (-0.49 to -0.19) | -0.33 (-0.55 to -0.20) | -0.32 (-0.53 to -0.20) | -0.29 (-0.48 to -0.17) |
+| VOCR3-FL10 | -0.26 (-0.47 to -0.13) | -0.38 (-0.62 to -0.23) | -0.41 (-0.67 to -0.25) | -0.41 (-0.69 to -0.26) | -0.40 (-0.65 to -0.25) |
+| VOCR3-H15 | -0.32 (-0.51 to -0.19) | -0.35 (-0.55 to -0.24) | -0.38 (-0.58 to -0.25) | -0.38 (-0.59 to -0.26) | -0.37 (-0.57 to -0.25) |
+| VOCR3-W20 | -0.26 (-0.46 to -0.14) | -0.30 (-0.52 to -0.17) | -0.34 (-0.59 to -0.19) | -0.35 (-0.61 to -0.21) | -0.34 (-0.59 to -0.20) |
+| VOCR4-FL10 | -0.31 (-0.55 to -0.17) | -0.42 (-0.70 to -0.25) | -0.44 (-0.73 to -0.27) | -0.49 (-0.81 to -0.31) | -0.49 (-0.81 to -0.30) |
+| VOCR4-H15 | -0.25 (-0.42 to -0.15) | -0.30 (-0.49 to -0.19) | -0.32 (-0.54 to -0.19) | -0.32 (-0.53 to -0.19) | -0.29 (-0.48 to -0.17) |
 | VOCR4-W20 | -0.30 (-0.49 to -0.14) | -0.29 (-0.49 to -0.14) | -0.33 (-0.52 to -0.18) | -0.35 (-0.53 to -0.20) | -0.34 (-0.52 to -0.20) |
-| pooled | -0.28 (-0.45 to -0.18) | -0.34 (-0.54 to -0.23) | -0.37 (-0.58 to -0.24) | -0.39 (-0.60 to -0.26) | |
+| pooled | -0.28 (-0.45 to -0.17) | -0.34 (-0.53 to -0.23) | -0.37 (-0.57 to -0.24) | -0.39 (-0.60 to -0.25) | |
 <!-- /table:delta -->
 
 <!-- table:distinct -->
@@ -107,13 +108,13 @@ Each crop once (the dialogue view without the second copy of each devnative crop
 
 | model | lines | chars | greedy | 0.5MB | 1MB | 2MB | 4MB |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| VOCR3-FL10 | 1683 | 27,831 | 1.11% | 0.81% | 0.70% | 0.67% | 0.65% |
+| VOCR3-FL10 | 1683 | 27,831 | 1.11% | 0.82% | 0.70% | 0.67% | 0.66% |
 | VOCR3-H15 | 1683 | 27,831 | 0.98% | 0.67% | 0.62% | 0.60% | 0.60% |
-| VOCR3-W20 | 1683 | 27,831 | 0.78% | 0.50% | 0.46% | 0.42% | 0.41% |
-| VOCR4-FL10 | 1683 | 27,831 | 1.20% | 0.88% | 0.76% | 0.74% | 0.68% |
-| VOCR4-H15 | 1683 | 27,831 | 0.95% | 0.67% | 0.61% | 0.59% | 0.60% |
+| VOCR3-W20 | 1683 | 27,831 | 0.78% | 0.50% | 0.46% | 0.42% | 0.40% |
+| VOCR4-FL10 | 1683 | 27,831 | 1.20% | 0.89% | 0.77% | 0.75% | 0.69% |
+| VOCR4-H15 | 1683 | 27,831 | 0.95% | 0.67% | 0.62% | 0.60% | 0.60% |
 | VOCR4-W20 | 1096 | 16,984 | 1.05% | 0.70% | 0.71% | 0.67% | 0.65% |
-| pooled | | 156,139 | 1.01% | 0.71% (29.8% fewer errors) | 0.64% (36.5% fewer errors) | 0.61% (39.4% fewer errors) | 0.60% (41.0% fewer errors) |
+| pooled | | 156,139 | 1.01% | 0.71% (29.7% fewer errors) | 0.64% (36.3% fewer errors) | 0.61% (39.1% fewer errors) | 0.60% (40.7% fewer errors) |
 <!-- /table:distinct -->
 
 ### Names and the console finder's crops (secondary)
@@ -123,12 +124,12 @@ Secondary views: names (CER) and the console finder's GRAD crops of devnative's 
 
 | model | names greedy | names 0.5MB | names 1MB | names 2MB | names 4MB | GRAD greedy | GRAD 4MB |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| VOCR3-FL10 | 6.38% | 5.53% | 5.50% | 5.21% | 5.21% | 1.71% | 1.30% |
-| VOCR3-H15 | 5.39% | 5.03% | 4.82% | 4.43% | 4.40% | 1.93% | 1.47% |
-| VOCR3-W20 | 5.07% | 4.79% | 4.68% | 4.29% | 4.50% | 1.53% | 1.12% |
-| VOCR4-FL10 | 6.35% | 5.78% | 5.60% | 5.64% | 5.50% | 2.02% | 1.43% |
+| VOCR3-FL10 | 6.38% | 5.53% | 5.53% | 5.25% | 5.28% | 1.71% | 1.30% |
+| VOCR3-H15 | 5.39% | 5.03% | 4.82% | 4.50% | 4.50% | 1.93% | 1.47% |
+| VOCR3-W20 | 5.07% | 4.79% | 4.68% | 4.32% | 4.54% | 1.53% | 1.12% |
+| VOCR4-FL10 | 6.35% | 5.74% | 5.67% | 5.64% | 5.53% | 2.02% | 1.47% |
 | VOCR4-H15 | 5.64% | 5.07% | 4.75% | 4.71% | 4.75% | 1.89% | 1.38% |
-| VOCR4-W20 | 5.23% | 4.87% | 4.73% | 4.23% | 4.23% | 1.22% | 1.12% |
+| VOCR4-W20 | 5.23% | 4.95% | 4.73% | 4.23% | 4.34% | 1.22% | 1.12% |
 <!-- /table:secondary -->
 
 ### Confusion families
@@ -138,17 +139,17 @@ Confusion families on dialogue lines, summed over the six models (eval/model_gap
 
 | family | greedy | 0.5MB | 1MB | 2MB | 4MB |
 |---|---:|---:|---:|---:|---:|
-| kanji_kanji | 527 | 369 | 339 | 307 | 300 |
-| dakuten | 197 | 83 | 67 | 61 | 58 |
-| small_kana | 54 | 36 | 31 | 30 | 26 |
+| kanji_kanji | 527 | 370 | 342 | 313 | 306 |
+| dakuten | 197 | 83 | 67 | 60 | 58 |
+| small_kana | 54 | 36 | 31 | 31 | 26 |
 | hira_kata | 15 | 10 | 9 | 6 | 4 |
 | dash_like | 16 | 10 | 3 | 5 | 5 |
-| punct_punct | 79 | 78 | 75 | 73 | 75 |
+| punct_punct | 79 | 76 | 74 | 73 | 75 |
 | punct_other | 36 | 35 | 32 | 28 | 20 |
-| other_sub | 450 | 293 | 260 | 257 | 257 |
-| insertion | 44 | 55 | 81 | 52 | 81 |
-| deletion | 238 | 186 | 147 | 176 | 139 |
-| **all** | 1656 | 1155 | 1044 | 995 | 965 |
+| other_sub | 450 | 293 | 260 | 257 | 256 |
+| insertion | 44 | 55 | 82 | 52 | 81 |
+| deletion | 238 | 188 | 147 | 175 | 139 |
+| **all** | 1656 | 1156 | 1047 | 1000 | 970 |
 <!-- /table:families -->
 
 <!-- table:families_model -->
@@ -156,11 +157,11 @@ Per model at the 1MB tier (greedy → beam):
 
 | model | kanji_kanji | dakuten | small_kana | punct_punct | dash_like | other_sub | deletion | insertion |
 |---|---|---|---|---|---|---|---|---|
-| VOCR3-FL10 | 94 → 65 | 40 → 13 | 9 → 5 | 17 → 22 | 5 → 0 | 86 → 50 | 54 → 31 | 8 → 11 |
+| VOCR3-FL10 | 94 → 66 | 40 → 13 | 9 → 5 | 17 → 21 | 5 → 0 | 86 → 50 | 54 → 31 | 8 → 11 |
 | VOCR3-H15 | 96 → 52 | 37 → 11 | 12 → 6 | 15 → 11 | 1 → 0 | 79 → 56 | 40 → 27 | 8 → 13 |
-| VOCR3-W20 | 77 → 44 | 26 → 10 | 12 → 5 | 7 → 7 | 1 → 0 | 58 → 32 | 31 → 15 | 6 → 11 |
-| VOCR4-FL10 | 108 → 72 | 43 → 19 | 9 → 7 | 17 → 19 | 6 → 2 | 98 → 46 | 49 → 34 | 9 → 14 |
-| VOCR4-H15 | 82 → 59 | 29 → 7 | 9 → 7 | 18 → 10 | 1 → 0 | 83 → 45 | 37 → 23 | 8 → 23 |
+| VOCR3-W20 | 77 → 44 | 26 → 10 | 12 → 5 | 7 → 7 | 1 → 0 | 58 → 32 | 31 → 15 | 6 → 12 |
+| VOCR4-FL10 | 108 → 73 | 43 → 19 | 9 → 7 | 17 → 19 | 6 → 2 | 98 → 46 | 49 → 34 | 9 → 14 |
+| VOCR4-H15 | 82 → 60 | 29 → 7 | 9 → 7 | 18 → 10 | 1 → 0 | 83 → 45 | 37 → 23 | 8 → 23 |
 | VOCR4-W20 | 70 → 47 | 22 → 7 | 3 → 1 | 5 → 6 | 2 → 1 | 46 → 31 | 27 → 17 | 5 → 9 |
 <!-- /table:families_model -->
 
@@ -177,10 +178,10 @@ What the LM changes, dialogue lines summed over the six models (characters fixed
 
 | tier | lines changed | chars fixed | chars introduced | lines better | lines worse | rare kanji | katakana | Latin/digits |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| 0.5MB | 853 | 700 | 199 | 576 | 191 | 21 | 31 | 40 |
-| 1MB | 893 | 785 | 173 | 636 | 165 | 22 | 28 | 31 |
-| 2MB | 898 | 818 | 157 | 662 | 155 | 19 | 32 | 30 |
-| 4MB | 929 | 852 | 161 | 683 | 158 | 21 | 32 | 28 |
+| 0.5MB | 851 | 700 | 200 | 576 | 192 | 21 | 32 | 40 |
+| 1MB | 893 | 783 | 174 | 635 | 166 | 22 | 28 | 31 |
+| 2MB | 895 | 813 | 157 | 659 | 155 | 19 | 31 | 30 |
+| 4MB | 931 | 850 | 164 | 682 | 161 | 21 | 32 | 27 |
 <!-- /table:changes -->
 
 <!-- table:names_changes -->
@@ -188,10 +189,10 @@ The same for name lines:
 
 | tier | lines changed | chars fixed | chars introduced | lines better | lines worse |
 |---|---:|---:|---:|---:|---:|
-| 0.5MB | 356 | 167 | 83 | 155 | 80 |
-| 1MB | 376 | 195 | 83 | 181 | 81 |
-| 2MB | 414 | 233 | 77 | 209 | 75 |
-| 4MB | 420 | 241 | 87 | 218 | 83 |
+| 0.5MB | 357 | 166 | 83 | 154 | 80 |
+| 1MB | 376 | 193 | 84 | 180 | 82 |
+| 2MB | 407 | 230 | 78 | 206 | 76 |
+| 4MB | 423 | 235 | 91 | 213 | 87 |
 <!-- /table:names_changes -->
 
 <!-- table:by_class -->
@@ -200,15 +201,15 @@ Reference characters by class, summed over the six models at the 1MB tier: read 
 | view | class | chars | greedy correct | beam correct | broke | fixed |
 |---|---|---:|---:|---:|---:|---:|
 | dialogue | hiragana | 100,874 | 100,488 | 100,717 | 36 | 265 |
-| dialogue | kanji_common | 42,482 | 41,865 | 42,098 | 42 | 275 |
+| dialogue | kanji_common | 42,482 | 41,865 | 42,095 | 42 | 272 |
 | dialogue | kanji_rare | 762 | 695 | 694 | 5 | 4 |
 | dialogue | katakana | 11,301 | 11,095 | 11,208 | 16 | 129 |
 | dialogue | latin_digit | 1,350 | 1,231 | 1,248 | 19 | 36 |
 | dialogue | other | 64 | 51 | 31 | 20 | 0 |
-| dialogue | punct | 20,414 | 20,210 | 20,288 | 42 | 120 |
+| dialogue | punct | 20,414 | 20,210 | 20,289 | 42 | 121 |
 | names | hiragana | 2,352 | 2,298 | 2,310 | 4 | 16 |
-| names | kanji_common | 8,762 | 8,095 | 8,202 | 32 | 139 |
-| names | kanji_rare | 564 | 516 | 512 | 9 | 5 |
+| names | kanji_common | 8,762 | 8,095 | 8,200 | 32 | 137 |
+| names | kanji_rare | 564 | 516 | 511 | 10 | 5 |
 | names | katakana | 4,566 | 4,421 | 4,449 | 10 | 38 |
 | names | latin_digit | 198 | 188 | 186 | 2 | 0 |
 | names | punct | 474 | 474 | 472 | 2 | 0 |
@@ -219,8 +220,8 @@ The gate from 0.5 to 64 nats at the p_o3j2_1000k settings otherwise (pooled erro
 
 | gate (nat) | 0.5 | 1 | 1.5 | 2 | 2.5 | 3.5 | 5 | 8 | 12 | 20 | 64 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dialogue errors | 1458 | 1288 | 1197 | 1120 | 1096 | 1058 | 1051 | 1044 | 1044 | 1044 | 1044 |
-| name errors | 915 | 894 | 879 | 865 | 854 | 850 | 848 | 848 | 848 | 848 | 848 |
+| dialogue errors | 1457 | 1288 | 1200 | 1124 | 1100 | 1062 | 1054 | 1047 | 1047 | 1047 | 1047 |
+| name errors | 915 | 893 | 880 | 868 | 857 | 853 | 851 | 851 | 851 | 851 | 851 |
 <!-- /table:gate_sweep -->
 
 <!-- table:gate_tiers -->
@@ -228,10 +229,10 @@ The gate at each tier's other settings, pooled errors over the six models (dialo
 
 | tier | gate 3.5 nat | gate 5 nat | gate 8 nat | gate 12 nat |
 |---|---|---|---|---|
-| 0.5MB | 1161 / 879 | 1160 / 876 | 1155 / 876 | 1155 / 876 |
-| 1MB | 1058 / 850 | 1051 / 848 | 1044 / 848 | 1044 / 848 |
-| 2MB | 1009 / 810 | 999 / 806 | 995 / 804 | 995 / 804 |
-| 4MB | 980 / 808 | 968 / 806 | 965 / 806 | 965 / 806 |
+| 0.5MB | 1162 / 880 | 1161 / 877 | 1156 / 877 | 1156 / 877 |
+| 1MB | 1062 / 853 | 1054 / 851 | 1047 / 851 | 1047 / 851 |
+| 2MB | 1015 / 814 | 1004 / 810 | 1000 / 808 | 1000 / 808 |
+| 4MB | 985 / 816 | 973 / 816 | 970 / 816 | 970 / 816 |
 <!-- /table:gate_tiers -->
 
 ### Beam width and candidates per frame
@@ -245,21 +246,21 @@ Beam width × top-K at the 1MB tier's other settings (pooled dialogue errors, si
 
 | beam | top-2 | top-4 | top-8 | top-16 |
 |---|---:|---:|---:|---:|
-| 1 | 1493 | 1494 | 1485 | 1485 |
-| 2 | 1199 | 1178 | 1168 | 1167 |
-| 4 | 1174 | 1100 | 1074 | 1070 |
-| 8 | 1171 | 1078 | 1044 | 1035 |
-| 16 | 1171 | 1076 | 1037 | 1028 |
+| 1 | 1491 | 1492 | 1483 | 1483 |
+| 2 | 1202 | 1181 | 1166 | 1165 |
+| 4 | 1176 | 1103 | 1078 | 1074 |
+| 8 | 1173 | 1080 | 1047 | 1039 |
+| 16 | 1173 | 1079 | 1040 | 1031 |
 
 Beam width × top-K at the 4MB tier's other settings (pooled dialogue errors, six models):
 
 | beam | top-2 | top-4 | top-8 | top-16 |
 |---|---:|---:|---:|---:|
-| 1 | 1454 | 1443 | 1429 | 1426 |
-| 2 | 1144 | 1112 | 1089 | 1087 |
-| 4 | 1112 | 1027 | 1000 | 996 |
-| 8 | 1107 | 1003 | 965 | 959 |
-| 16 | 1105 | 995 | 959 | 950 |
+| 1 | 1459 | 1447 | 1433 | 1429 |
+| 2 | 1148 | 1115 | 1092 | 1090 |
+| 4 | 1116 | 1031 | 1005 | 1001 |
+| 8 | 1110 | 1006 | 970 | 964 |
+| 16 | 1110 | 999 | 963 | 954 |
 <!-- /table:ablation -->
 
 <!-- table:oracle -->
@@ -280,7 +281,7 @@ Greedy dialogue substitutions whose reference character is among the emitting fr
 Three LM recipes at each size, all with the protected-name filter and round 7's grid: the released recipe, the same
 without the Jiten lists, and (1 and 4 MB) the same with the 183 development VNs' character names and titles removed
 too (teacher_val's, devnative's and the owner pool's titles, by the same rule as the protected ones: 378 VNs, 4,882
-characters, 4,273 corpus pieces and 2,689 + 2,570 Jiten words dropped). Removing the development titles' names
+characters, 26,348 corpus pieces and 2,690 + 2,570 Jiten words dropped). Removing the development titles' names
 changes nothing beyond noise, so the LM does not win on development data by knowing its characters' names; the
 Jiten lists help most at the small sizes, where the corpus' n-grams are pruned hardest.
 
@@ -289,16 +290,16 @@ Where the gain comes from (round 7's grid, every LM with the protected-name filt
 
 | LM | bytes | Jiten | development VNs' names removed too | held-out nats/char | dialogue | CV | names |
 |---|---:|---|---|---:|---:|---:|---:|
-| p_o3j2_500k | 498,128 | vn 0.4, novel 0.2 | no | 4.085 | 1155 | 1187 | 876 |
-| p_o3nj_500k | 498,496 | none | no | 4.100 | 1206 | 1207 | 898 |
-| p_o3j2_1000k | 995,328 | vn 0.4, novel 0.2 | no | 3.935 | 1044 | 1069 | 848 |
-| p_o3nj_1000k | 982,752 | none | no | 3.936 | 1098 | 1105 | 871 |
-| p_o3j2dev_1000k | 993,200 | vn 0.4, novel 0.2 | yes | 3.936 | 1046 | 1069 | 850 |
-| p_o3j2_2000k | 1,987,824 | vn 0.4, novel 0.2 | no | 3.848 | 995 | 996 | 804 |
-| p_o3nj_2000k | 1,935,104 | none | no | 3.826 | 1037 | 1048 | 845 |
-| p_o3j2_4000k | 3,811,616 | vn 0.4, novel 0.2 | no | 3.801 | 965 | 989 | 806 |
-| p_o3nj_4000k | 3,933,264 | none | no | 3.765 | 960 | 964 | 816 |
-| p_o3j2dev_4000k | 3,803,584 | vn 0.4, novel 0.2 | yes | 3.803 | 968 | 990 | 820 |
+| p_o3j2_500k | 497,456 | vn 0.4, novel 0.2 | no | 4.086 | 1156 | 1186 | 877 |
+| p_o3nj_500k | 498,752 | none | no | 4.100 | 1201 | 1202 | 901 |
+| p_o3j2_1000k | 988,080 | vn 0.4, novel 0.2 | no | 3.938 | 1047 | 1070 | 851 |
+| p_o3nj_1000k | 994,016 | none | no | 3.934 | 1094 | 1095 | 874 |
+| p_o3j2dev_1000k | 993,360 | vn 0.4, novel 0.2 | yes | 3.939 | 1054 | 1073 | 852 |
+| p_o3j2_2000k | 1,972,416 | vn 0.4, novel 0.2 | no | 3.852 | 1000 | 1006 | 808 |
+| p_o3nj_2000k | 1,917,936 | none | no | 3.832 | 1039 | 1053 | 854 |
+| p_o3j2_4000k | 3,782,688 | vn 0.4, novel 0.2 | no | 3.807 | 970 | 992 | 816 |
+| p_o3nj_4000k | 3,893,312 | none | no | 3.773 | 963 | 967 | 829 |
+| p_o3j2dev_4000k | 3,743,984 | vn 0.4, novel 0.2 | yes | 3.811 | 973 | 995 | 831 |
 <!-- /table:ablations -->
 
 ### Cost and memory (estimates)
@@ -308,33 +309,33 @@ Calibrated to the console (owner 2026-10-14 18:09Z): every estimate scaled so th
 
 | model | network (greedy) | + top-8 | + beam + 0.5MB LM | + beam + 1MB LM | + beam + 2MB LM | + beam + 4MB LM | LM load, once |
 |---|---|---|---|---|---|---|---|
-| VOCR3-FL10 | 226.8–246.3 | 5.9–6.8 | 0.4–0.5 | 0.4–0.5 | 0.4–0.5 | 0.4–0.5 | 0.5MB 68.1–82.2; 1MB 132.4–159.6; 2MB 260.8–314.7; 4MB 496.9–620.4 ms |
+| VOCR3-FL10 | 226.8–246.3 | 5.9–6.8 | 0.4–0.5 | 0.4–0.5 | 0.4–0.5 | 0.4–0.5 | 0.5MB 68.0–82.1; 1MB 131.4–158.5; 2MB 258.8–312.3; 4MB 493.1–615.8 ms |
 | VOCR3-H15 (calibration reference) | 400.0–416.0 | – | – | – | – | – | – |
-| VOCR3-W20 | 568.3–572.9 | 8.9–10.2 | 0.4–0.5 | 0.4–0.6 | 0.4–0.6 | 0.4–0.8 | 0.5MB 70.1–87.5; 1MB 134.4–167.7; 2MB 262.8–327.1; 4MB 498.9–640.8 ms |
-| VOCR4-W20 | 568.3–572.9 | 8.9–10.2 | 0.4–0.5 | 0.4–0.5 | 0.4–0.6 | 0.4–0.7 | 0.5MB 70.1–87.5; 1MB 134.4–167.7; 2MB 262.8–327.1; 4MB 498.9–640.9 ms |
+| VOCR3-W20 | 568.3–572.9 | 8.9–10.2 | 0.4–0.5 | 0.4–0.5 | 0.4–0.6 | 0.4–0.6 | 0.5MB 70.0–87.4; 1MB 133.4–166.5; 2MB 260.8–324.7; 4MB 495.1–636.4 ms |
+| VOCR4-W20 | 568.3–572.9 | 8.9–10.2 | 0.4–0.5 | 0.4–0.5 | 0.4–0.6 | 0.4–0.6 | 0.5MB 70.0–87.4; 1MB 133.4–166.6; 2MB 260.8–324.7; 4MB 495.1–636.5 ms |
 
 Per typical full textbox (3 lines of about 640 px), calibrated, against the tier limits (Small < 1 s, Normal < 2 s, Large < 3 s); the first-box columns add the LM's one-time load (CRC check, parse, class map; file reading not counted) to a session's first box:
 
 | model | greedy box | beam + LM box (any tier) | first box, 0.5MB LM | first box, 1MB LM | first box, 2MB LM | first box, 4MB LM |
 |---|---|---|---|---|---|---|
-| VOCR3-FL10 | 0.68–0.74 s | 0.70–0.76 s | 0.77–0.84 s | 0.83–0.92 s | 0.96–1.08 s | 1.20–1.38 s |
+| VOCR3-FL10 | 0.68–0.74 s | 0.70–0.76 s | 0.77–0.84 s | 0.83–0.92 s | 0.96–1.07 s | 1.19–1.38 s |
 | VOCR3-H15 | 1.20–1.25 s | – | – | – | – | – |
-| VOCR3-W20 | 1.71–1.72 s | 1.73–1.75 s | 1.80–1.84 s | 1.87–1.92 s | 2.00–2.08 s | 2.23–2.39 s |
-| VOCR4-W20 | 1.71–1.72 s | 1.73–1.75 s | 1.80–1.84 s | 1.87–1.92 s | 2.00–2.08 s | 2.23–2.39 s |
+| VOCR3-W20 | 1.71–1.72 s | 1.73–1.75 s | 1.80–1.84 s | 1.87–1.92 s | 1.99–2.08 s | 2.23–2.39 s |
+| VOCR4-W20 | 1.71–1.72 s | 1.73–1.75 s | 1.80–1.84 s | 1.87–1.92 s | 1.99–2.08 s | 2.23–2.39 s |
 
 The uncalibrated estimate (vita/a9_cycles.py's cost model on the Vita build, development lines), ms per 640-px line at 444 MHz, low–high (333 MHz in brackets):
 
 | model | network (greedy) | + top-8 | + beam + 0.5MB LM | + beam + 1MB LM | + beam + 2MB LM | + beam + 4MB LM | LM load, once |
 |---|---|---|---|---|---|---|---|
-| VOCR3-FL10 | 92.5–175.9 (123.4–234.5) | 2.4–4.9 (3.2–6.5) | 0.2–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.5) | 0.5MB 28–59; 1MB 54–114; 2MB 106–225; 4MB 203–443 (CRC ≤ 95%) ms |
-| VOCR3-W20 | 231.9–409.2 (309.2–545.5) | 3.6–7.3 (4.8–9.7) | 0.1–0.4 (0.2–0.5) | 0.1–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.5) | 0.2–0.5 (0.2–0.7) | 0.5MB 29–63; 1MB 55–120; 2MB 107–234; 4MB 204–458 (CRC ≤ 95%) ms |
-| VOCR4-W20 | 231.9–409.2 (309.2–545.5) | 3.6–7.3 (4.8–9.7) | 0.1–0.4 (0.2–0.5) | 0.1–0.4 (0.2–0.5) | 0.1–0.4 (0.2–0.5) | 0.2–0.5 (0.2–0.7) | 0.5MB 29–63; 1MB 55–120; 2MB 107–234; 4MB 204–458 (CRC ≤ 95%) ms |
+| VOCR3-FL10 | 92.5–175.9 (123.4–234.5) | 2.4–4.9 (3.2–6.5) | 0.2–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.5) | 0.5MB 28–59; 1MB 54–113; 2MB 106–223; 4MB 201–440 (CRC ≤ 95%) ms |
+| VOCR3-W20 | 231.9–409.2 (309.2–545.5) | 3.6–7.3 (4.8–9.7) | 0.1–0.4 (0.2–0.5) | 0.1–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.6) | 0.5MB 29–62; 1MB 54–119; 2MB 106–232; 4MB 202–455 (CRC ≤ 95%) ms |
+| VOCR4-W20 | 231.9–409.2 (309.2–545.5) | 3.6–7.3 (4.8–9.7) | 0.1–0.4 (0.2–0.5) | 0.1–0.4 (0.2–0.5) | 0.1–0.4 (0.2–0.5) | 0.2–0.4 (0.2–0.5) | 0.5MB 29–62; 1MB 54–119; 2MB 106–232; 4MB 202–455 (CRC ≤ 95%) ms |
 
 The same per typical full textbox (3 lines of about 640 px), uncalibrated; the last column adds the LM's one-time load to a session's first box (4 MB tier, file reading not counted):
 
 | model | greedy, 444 MHz | greedy, 333 MHz | beam + LM (any tier), 444 MHz | beam + LM, 333 MHz | first box with the 4MB LM, 444 MHz |
 |---|---|---|---|---|---|
-| VOCR3-FL10 | 0.28–0.53 s | 0.37–0.70 s | 0.29–0.54 s | 0.38–0.72 s | 0.49–0.99 s |
+| VOCR3-FL10 | 0.28–0.53 s | 0.37–0.70 s | 0.29–0.54 s | 0.38–0.72 s | 0.49–0.98 s |
 | VOCR3-W20 | 0.70–1.23 s | 0.93–1.64 s | 0.71–1.25 s | 0.94–1.67 s | 0.91–1.71 s |
 | VOCR4-W20 | 0.70–1.23 s | 0.93–1.64 s | 0.71–1.25 s | 0.94–1.67 s | 0.91–1.71 s |
 <!-- /table:a9 -->
@@ -368,10 +369,10 @@ Memory per tier: the LM blob (resident while the game runs, read-only), the deco
 
 | tier | LM file | LM bytes | sha256 | workspace (FL10 / H15, W20) | top-8 buffers |
 |---|---|---:|---|---|---:|
-| 0.5MB | `vocr_lm_o3_500k.vlm` | 498,128 | `adf128dbf240831c…` | 35,248 / 40,816 B | 6,656 B |
-| 1MB | `vocr_lm_o3_1000k.vlm` | 995,328 | `6081ccb8d58bc2e2…` | 35,248 / 40,816 B | 6,656 B |
-| 2MB | `vocr_lm_o3_2000k.vlm` | 1,987,824 | `fd889f1c0e26a4c5…` | 35,248 / 40,816 B | 6,656 B |
-| 4MB | `vocr_lm_o3_4000k.vlm` | 3,811,616 | `62d3e1c14c91d168…` | 35,248 / 40,816 B | 6,656 B |
+| 0.5MB | `vocr_lm_o3_500k.vlm` | 497,456 | `637b56f23dee9ea0…` | 35,248 / 40,816 B | 6,656 B |
+| 1MB | `vocr_lm_o3_1000k.vlm` | 988,080 | `535538e82e265625…` | 35,248 / 40,816 B | 6,656 B |
+| 2MB | `vocr_lm_o3_2000k.vlm` | 1,972,416 | `73c15579486b993b…` | 35,248 / 40,816 B | 6,656 B |
+| 4MB | `vocr_lm_o3_4000k.vlm` | 3,782,688 | `55f99dec37b7fbb6…` | 35,248 / 40,816 B | 6,656 B |
 <!-- /table:memory -->
 
 ### The greedy path's confidence
@@ -453,12 +454,15 @@ development lines under seven settings.
 - **Protected titles.** Before counting, the builder drops every corpus piece and every Jiten word that names a
   protected VN's character or title: the VNs of `eval/manifests/test_games.json` ("all": vita-test, psp-test, their
   families and release partners) and of `data/manifests/synth3_exclude_clannad.json` (the CLANNAD family), 196 VNs
-  with 2,177 VNDB characters and 225 titles (synth3's pinned VNDB extracts). The markers follow synth's rule
-  (`synth/owner_games.marker_candidates`): every title of ≥ 3 Japanese or ≥ 5 Latin characters and every full name
-  of two or more parts always, a one-part name only when it is rare in the corpus (≤ 50 pieces); a Jiten word goes
-  when it is a marker or a protected character's name part that is that rare. 1,622 of 1,829,895 corpus pieces and
-  1,282 + 1,255 Jiten words are dropped (春原, 朋也, 古河 …; common words such as 世界 or 太陽 stay). On development
-  data the filter changes nothing measurable (1,044 dialogue errors at 1 MB either way).
+  with 2,177 VNDB characters and 225 titles (synth3's pinned VNDB extracts). The markers start from synth's rule
+  (`synth/owner_games.marker_candidates`) and go further: always every title of ≥ 3 Japanese or ≥ 5 Latin
+  characters, every full name of two or more parts and the CLANNAD manifest's 41 curated markers; and every other
+  full name or name part of ≥ 2 characters that occurs in at most 50 corpus pieces. A piece or Jiten word holding a
+  marker is dropped: 13,358 of 1,829,895 pieces and 1,283 + 1,255 Jiten words (3,782 markers). 499 name parts occur
+  in more pieces and stay as ordinary words or surnames (岡崎, 伊吹, 坂上, but also 世界 or 太陽). Of CLANNAD's main
+  names, 春原, 朋也, 古河, 藤林, 風子, 智代, 一ノ瀬, 陽平 and 芽衣 leave the corpus and the Jiten lists; the 4 MB
+  tier still holds the bigrams 智代 and 芽衣 from other words that contain them (美智代, 芽衣子). On development data
+  the filter costs nothing measurable (1,044 → 1,047 dialogue errors at 1 MB).
 - **Model.** Character 3-grams, interpolated modified Kneser-Ney (Chen and Goodman 1998), pruned by count to fit
   the byte budget (bigram and trigram thresholds searched; every kept trigram's context is kept: 1/132/132 at
   0.5 MB, 1/49/49 at 1 MB, 1/18/18 at 2 MB, 1/7/7 at 4 MB), backoff weights recomputed over what is kept,
@@ -523,8 +527,10 @@ LM recipes (rounds 2–3, LMs built before the protected-name filter; pooled dia
   and rounds 2–3 23 (24 recipes in all: the recipe table plus round 1's Aozora-only `mixa_1000k`); the recipe was
   then fixed to order 3 with the 2× Jiten share at every size, the best or within noise of it at each. Rounds 4–6
   added the bracket state and folding and extended the grid past its edges. Round 7, after the first audit, runs
-  round 6's grid on the LMs rebuilt with the protected-name filter, and on the ablations; it is final. Five more
-  LMs were built during the exploration and never tuned.
+  round 6's grid on the LMs rebuilt with the protected-name filter, and on the ablations; it is final. It ran first
+  with a looser filter (synth's rule as is, which keeps two-character given names such as 朋也) and was repeated
+  after checking CLANNAD's names in the blobs; the looser runs are archived and changed nothing measurable either.
+  Five more LMs were built during the exploration and never tuned.
 - **Selection.** At each LM size, the one setting with the fewest dialogue errors summed over the six models
   (first minimum in grid order). It is in-sample; the cross-validated column re-selects on the VNs of one fold
   (sha256 of the VN id, two folds) and scores the other, so it carries the selection's own optimism.
@@ -539,16 +545,16 @@ has its own character vocabulary, and `vocr_lm_init()` maps the model's classes 
 memory; the blob stays resident like the weights (`USER_RW`, read-only after load), and the workspace (≤ 41 KB)
 and the top-K buffers (6.6 KB) belong to the job. This document assumes the LM does not count against a
 recognizer tier's weight ceiling (`docs/model-tiers.md`: Small < 1 MB of int8 weights): it is a separate block
-the overlay's free-memory preflight has to fit (Small with the 0.5 MB LM holds 657,664 + 498,128 B resident); the
+the overlay's free-memory preflight has to fit (Small with the 0.5 MB LM holds 657,664 + 497,456 B resident); the
 conductor decides whether the tiers should budget it. The owner's ceilings of 2026-10-14 18:09Z (int8 weights:
 Small < 1 MB, Normal ≤ 1.6 MB, Large ≤ 2.5 MB; time per 3-line box: < 1 / < 2 / < 3 s) come from console time, and
 the LM barely changes a box's time; its size shows in the first box of a session (calibrated table above). Advice,
 from that table:
 
 - **Small** (VOCR4-FL10): the 1 MB LM (first box 0.83–0.92 s, later boxes 0.70–0.76 s); the 0.5 MB LM if memory is
-  short. The 2 MB LM's first box (0.96–1.08 s) reaches the 1 s limit.
+  short. The 2 MB LM's first box (0.96–1.07 s) reaches the 1 s limit.
 - **Normal** (VOCR4-W20 or H15, ≤ 1.6 MB): the 1 MB LM (W20's first box 1.87–1.92 s); the 2 MB LM's first box is at
-  2.00–2.08 s.
+  1.99–2.08 s.
 - **Large** (≤ 2.5 MB, < 3 s): any tier; W20 with the 4 MB LM is 2.23–2.39 s in the first box.
 - Loading the LM together with the recognizer's weights (once per session, not in a job), or skipping
   `vocr_lm_check_crc()` when the file is verified another way, takes the load out of the first box and lets every
@@ -608,9 +614,10 @@ they hold development text).
   0.61 / 0.60 %.
 - **Exposure to protected titles (disclose with any protected-set score).** The Jiten VN list is built from 2,162
   VN scripts and includes CLANNAD (one of Jiten's VN decks), and may include vita-test or psp-test titles. The
-  builder removes their character names and titles from the Jiten lists and the corpora (above), so no protected
-  title's names are in these LMs, but the frequencies of ordinary words still carry those scripts' share. JESC's
-  subtitles include CLANNAD's anime, of which only the lines naming a character are removed. Any score of a model
+  builder removes their character names and titles from the Jiten lists and the corpora (above) unless a name is
+  also a common word or surname (> 50 corpus pieces), and longer words that contain a name keep its n-grams (the
+  4 MB tier holds 智代 and 芽衣 that way); the frequencies of ordinary words still carry those scripts' share.
+  JESC's subtitles include CLANNAD's anime, of which only the lines naming a character or title are removed. Any score of a model
   decoded with one of these LMs on a protected set (CLANNAD, vita-test, psp-test) must disclose this; the conductor
   decides whether such a score is admissible. An LM built without the Jiten lists (`--jiten ""`, ablation table)
   removes the Jiten part of the exposure and is level with the released recipe at 4 MB.

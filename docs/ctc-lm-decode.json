@@ -274,7 +274,7 @@
  "tiers": {
   "0.5MB": {
    "lm": "p_o3j2_500k",
-   "lm_bytes": 498128,
+   "lm_bytes": 497456,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -286,28 +286,28 @@
    },
    "candidates": 432,
    "pooled_dialogue": {
-    "delta_points": -0.283,
+    "delta_points": -0.282,
     "ci95": [
      -0.454,
-     -0.176
+     -0.175
     ],
     "cer_a": 0.00934,
     "cer_b": 0.00652,
     "errors_a": 1656,
-    "errors_b": 1155,
+    "errors_b": 1156,
     "chars": 177247,
     "vns": 174
    },
    "pooled_names": {
-    "delta_points": -0.497,
+    "delta_points": -0.491,
     "ci95": [
-     -0.86,
-     -0.129
+     -0.853,
+     -0.123
     ],
     "cer_a": 0.05675,
-    "cer_b": 0.05179,
+    "cer_b": 0.05184,
     "errors_a": 960,
-    "errors_b": 876,
+    "errors_b": 877,
     "chars": 16916,
     "vns": 153
    },
@@ -320,7 +320,7 @@
     "cer_a": 0.01008,
     "cer_b": 0.00708,
     "errors_a": 1574,
-    "errors_b": 1105,
+    "errors_b": 1106,
     "chars": 156139,
     "vns": 174
    },
@@ -330,20 +330,20 @@
    },
    "gate_curve": {
     "3500": {
-     "dialogue": 1161,
-     "names": 879
+     "dialogue": 1162,
+     "names": 880
     },
     "5000": {
-     "dialogue": 1160,
-     "names": 876
+     "dialogue": 1161,
+     "names": 877
     },
     "8000": {
-     "dialogue": 1155,
-     "names": 876
+     "dialogue": 1156,
+     "names": 877
     },
     "12000": {
-     "dialogue": 1155,
-     "names": 876
+     "dialogue": 1156,
+     "names": 877
     }
    },
    "cv_folds": {
@@ -375,15 +375,15 @@
    "per_model": {
     "v3FL10": {
      "dialogue": {
-      "delta_points": -0.265,
+      "delta_points": -0.262,
       "ci95": [
-       -0.477,
-       -0.137
+       -0.472,
+       -0.134
       ],
       "cer_a": 0.01033,
-      "cer_b": 0.00769,
+      "cer_b": 0.00772,
       "errors_a": 324,
-      "errors_b": 241,
+      "errors_b": 242,
       "chars": 31356,
       "vns": 174
      },
@@ -414,15 +414,15 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.298,
+      "delta_points": -0.295,
       "ci95": [
-       -0.546,
-       -0.165
+       -0.538,
+       -0.163
       ],
       "cer_a": 0.0111,
-      "cer_b": 0.00812,
+      "cer_b": 0.00816,
       "errors_a": 309,
-      "errors_b": 226,
+      "errors_b": 227,
       "chars": 27831,
       "vns": 174
      },
@@ -440,15 +440,15 @@
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.504,
+      "delta_points": -0.497,
       "ci95": [
-       -0.732,
-       -0.303
+       -0.725,
+       -0.296
       ],
       "cer_a": 0.01579,
-      "cer_b": 0.01075,
+      "cer_b": 0.01082,
       "errors_a": 232,
-      "errors_b": 158,
+      "errors_b": 159,
       "chars": 14694,
       "vns": 171
      },
@@ -492,7 +492,7 @@
       "dialogue": {
        "delta_points": -0.297,
        "ci95": [
-        -0.501,
+        -0.502,
         -0.179
        ],
        "cer_a": 0.01033,
@@ -506,15 +506,15 @@
     },
     "v3H15": {
      "dialogue": {
-      "delta_points": -0.313,
+      "delta_points": -0.316,
       "ci95": [
-       -0.507,
+       -0.513,
        -0.194
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.00622,
+      "cer_b": 0.00619,
       "errors_a": 293,
-      "errors_b": 195,
+      "errors_b": 194,
       "chars": 31356,
       "vns": 174
      },
@@ -545,28 +545,28 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.313,
+      "delta_points": -0.316,
       "ci95": [
-       -0.527,
-       -0.19
+       -0.534,
+       -0.192
       ],
       "cer_a": 0.00985,
-      "cer_b": 0.00672,
+      "cer_b": 0.00668,
       "errors_a": 274,
-      "errors_b": 187,
+      "errors_b": 186,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.287,
+      "delta_points": -0.293,
       "ci95": [
-       -0.47,
-       -0.171
+       -0.482,
+       -0.174
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.00647,
+      "cer_b": 0.00641,
       "errors_a": 293,
-      "errors_b": 203,
+      "errors_b": 201,
       "chars": 31356,
       "vns": 174
      },
@@ -584,15 +584,15 @@
       "vns": 171
      },
      "dialogue_dn_ink": {
-      "delta_points": -0.208,
+      "delta_points": -0.225,
       "ci95": [
-       -0.446,
-       0.021
+       -0.481,
+       0.017
       ],
       "cer_a": 0.00624,
-      "cer_b": 0.00416,
+      "cer_b": 0.00398,
       "errors_a": 36,
-      "errors_b": 24,
+      "errors_b": 23,
       "chars": 5773,
       "vns": 43
      },
@@ -621,15 +621,15 @@
        "bracket": 1000
       },
       "dialogue": {
-       "delta_points": -0.319,
+       "delta_points": -0.322,
        "ci95": [
-        -0.51,
-        -0.199
+        -0.515,
+        -0.201
        ],
        "cer_a": 0.00934,
-       "cer_b": 0.00616,
+       "cer_b": 0.00612,
        "errors_a": 293,
-       "errors_b": 193,
+       "errors_b": 192,
        "chars": 31356,
        "vns": 174
       }
@@ -665,8 +665,8 @@
      "grad": {
       "delta_points": -0.428,
       "ci95": [
-       -0.942,
-       0.0
+       -0.947,
+       0.019
       ],
       "cer_a": 0.01527,
       "cer_b": 0.01099,
@@ -752,15 +752,15 @@
        "bracket": 0
       },
       "dialogue": {
-       "delta_points": -0.271,
+       "delta_points": -0.265,
        "ci95": [
-        -0.475,
-        -0.153
+        -0.462,
+        -0.15
        ],
        "cer_a": 0.00721,
-       "cer_b": 0.0045,
+       "cer_b": 0.00456,
        "errors_a": 226,
-       "errors_b": 141,
+       "errors_b": 143,
        "chars": 31356,
        "vns": 174
       }
@@ -768,28 +768,28 @@
     },
     "v4FL10": {
      "dialogue": {
-      "delta_points": -0.316,
+      "delta_points": -0.313,
       "ci95": [
-       -0.549,
-       -0.179
+       -0.547,
+       -0.175
       ],
       "cer_a": 0.01129,
-      "cer_b": 0.00813,
+      "cer_b": 0.00816,
       "errors_a": 354,
-      "errors_b": 255,
+      "errors_b": 256,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.567,
+      "delta_points": -0.603,
       "ci95": [
-       -1.149,
-       0.037
+       -1.182,
+       0.0
       ],
       "cer_a": 0.06345,
-      "cer_b": 0.05778,
+      "cer_b": 0.05743,
       "errors_a": 179,
-      "errors_b": 163,
+      "errors_b": 162,
       "chars": 2821,
       "vns": 153
      },
@@ -807,28 +807,28 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.316,
+      "delta_points": -0.313,
       "ci95": [
-       -0.588,
-       -0.167
+       -0.587,
+       -0.163
       ],
       "cer_a": 0.012,
-      "cer_b": 0.00884,
+      "cer_b": 0.00887,
       "errors_a": 334,
-      "errors_b": 246,
+      "errors_b": 247,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.319,
+      "delta_points": -0.316,
       "ci95": [
        -0.535,
-       -0.19
+       -0.186
       ],
       "cer_a": 0.01129,
-      "cer_b": 0.0081,
+      "cer_b": 0.00813,
       "errors_a": 354,
-      "errors_b": 254,
+      "errors_b": 255,
       "chars": 31356,
       "vns": 174
      },
@@ -859,15 +859,15 @@
       "vns": 43
      },
      "dialogue_own": {
-      "delta_points": -0.037,
+      "delta_points": -0.028,
       "ci95": [
-       -0.086,
+       -0.069,
        0.021
       ],
       "cer_a": 0.00459,
-      "cer_b": 0.00422,
+      "cer_b": 0.00432,
       "errors_a": 50,
-      "errors_b": 46,
+      "errors_b": 47,
       "chars": 10889,
       "vns": 3
      },
@@ -883,15 +883,15 @@
        "bracket": 0
       },
       "dialogue": {
-       "delta_points": -0.348,
+       "delta_points": -0.344,
        "ci95": [
-        -0.566,
-        -0.219
+        -0.565,
+        -0.214
        ],
        "cer_a": 0.01129,
-       "cer_b": 0.00781,
+       "cer_b": 0.00785,
        "errors_a": 354,
-       "errors_b": 245,
+       "errors_b": 246,
        "chars": 31356,
        "vns": 174
       }
@@ -925,15 +925,15 @@
       "vns": 153
      },
      "grad": {
-      "delta_points": -0.55,
+      "delta_points": -0.57,
       "ci95": [
-       -0.94,
-       -0.213
+       -0.968,
+       -0.227
       ],
       "cer_a": 0.01893,
-      "cer_b": 0.01344,
+      "cer_b": 0.01323,
       "errors_a": 93,
-      "errors_b": 66,
+      "errors_b": 65,
       "chars": 4912,
       "vns": 43
      },
@@ -953,8 +953,8 @@
      "dialogue_cv": {
       "delta_points": -0.23,
       "ci95": [
-       -0.401,
-       -0.128
+       -0.397,
+       -0.131
       ],
       "cer_a": 0.00874,
       "cer_b": 0.00644,
@@ -1014,15 +1014,15 @@
        "bracket": 5000
       },
       "dialogue": {
-       "delta_points": -0.271,
+       "delta_points": -0.277,
        "ci95": [
-        -0.461,
-        -0.159
+        -0.467,
+        -0.165
        ],
        "cer_a": 0.00874,
-       "cer_b": 0.00603,
+       "cer_b": 0.00596,
        "errors_a": 274,
-       "errors_b": 189,
+       "errors_b": 187,
        "chars": 31356,
        "vns": 174
       }
@@ -1043,15 +1043,15 @@
       "vns": 171
      },
      "names": {
-      "delta_points": -0.356,
+      "delta_points": -0.285,
       "ci95": [
-       -0.775,
-       0.074
+       -0.68,
+       0.12
       ],
       "cer_a": 0.05229,
-      "cer_b": 0.04874,
+      "cer_b": 0.04945,
       "errors_a": 147,
-      "errors_b": 137,
+      "errors_b": 139,
       "chars": 2811,
       "vns": 152
      },
@@ -1162,8 +1162,8 @@
    },
    "release": {
     "file": "vocr_lm_o3_500k.vlm",
-    "bytes": 498128,
-    "sha256": "adf128dbf240831c05b0b03f7702982ec0c02ebd39679b6ea3a9219e67fec587",
+    "bytes": 497456,
+    "sha256": "637b56f23dee9ea0e0efad3bfddc81ae699e9a960daece1991cb0fcac35a413a",
     "tuned_as": "p_o3j2_500k",
     "manifest": {
      "kind": "volm-build",
@@ -1224,9 +1224,9 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten visual-novel frequency list (https://jiten.moe/frequency-dictionaries, 2,162 VN scripts; CC BY-SA 4.0); retrieved 2026-10-12 and again 2026-10-14 with the same bytes",
        "share": 0.4,
-       "words": 239722,
-       "scale": 695121.179677803,
-       "weighted_chars": 18790795
+       "words": 239721,
+       "scale": 688994.4298298949,
+       "weighted_chars": 18637288
       },
       {
        "name": "novel",
@@ -1236,8 +1236,8 @@
        "attribution": "Jiten novel frequency list (https://jiten.moe/frequency-dictionaries, 3,161 novels; CC BY-SA 4.0); retrieved 2026-10-14",
        "share": 0.2,
        "words": 315796,
-       "scale": 341262.4719417339,
-       "weighted_chars": 9352027
+       "scale": 338254.3726358023,
+       "weighted_chars": 9276366
       }
      ],
      "heldout_lines": 3000,
@@ -1245,12 +1245,12 @@
      "exclusion": {
       "vns": 196,
       "characters": 2177,
-      "titles": 225,
-      "markers": 2154,
-      "common_names_not_markers": 37,
-      "corpus_pieces_dropped": 1622,
+      "titles_and_curated": 266,
+      "markers": 3782,
+      "common_names_not_markers": 499,
+      "corpus_pieces_dropped": 13358,
       "jiten_words_dropped": {
-       "vn": 1282,
+       "vn": 1283,
        "novel": 1255
       },
       "extra_vns": 0,
@@ -1261,12 +1261,12 @@
        "vndb_chars": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
        "vndb_titles": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0"
       },
-      "corpus_chars_kept": 47112066
+      "corpus_chars_kept": 46696791
      },
      "ngrams_counted": [
       5279,
-      649240,
-      4975618
+      643967,
+      4923817
      ],
      "profiles": [
       {
@@ -1276,16 +1276,16 @@
        ],
        "thresholds": [
         1,
-        132,
-        132
+        131,
+        131
        ],
-       "bytes": 498128,
+       "bytes": 497456,
        "entries": [
         5357,
-        37275,
-        47827
+        37194,
+        47821
        ],
-       "heldout_nats_per_char": 4.085322664115214
+       "heldout_nats_per_char": 4.085559535693009
       },
       {
        "profile": [
@@ -1294,16 +1294,16 @@
        ],
        "thresholds": [
         1,
-        104,
-        208
+        103,
+        206
        ],
-       "bytes": 498432,
+       "bytes": 498464,
        "entries": [
         5357,
-        43851,
-        30396
+        43837,
+        30448
        ],
-       "heldout_nats_per_char": 4.1237187127657435
+       "heldout_nats_per_char": 4.122987415239772
       },
       {
        "profile": [
@@ -1315,31 +1315,31 @@
         114,
         171
        ],
-       "bytes": 497552,
+       "bytes": 494048,
        "entries": [
         5357,
-        41210,
-        37144
+        40889,
+        36832
        ],
-       "heldout_nats_per_char": 4.1065065241529
+       "heldout_nats_per_char": 4.10769697444475
       }
      ],
      "chosen_thresholds": [
       1,
-      132,
-      132
+      131,
+      131
      ],
      "builder": {
       "script": "lm/build.py",
       "numpy": "2.4.6"
      },
-     "bytes": 498128,
-     "sha256": "adf128dbf240831c05b0b03f7702982ec0c02ebd39679b6ea3a9219e67fec587",
-     "manifest_sha256_prefix": "6467d4cfe28f01418da364d6634764ed",
+     "bytes": 497456,
+     "sha256": "637b56f23dee9ea0e0efad3bfddc81ae699e9a960daece1991cb0fcac35a413a",
+     "manifest_sha256_prefix": "7ca80954e34964ae136762bf49347851",
      "entries": [
       5357,
-      37275,
-      47827
+      37194,
+      47821
      ],
      "heldout": "realplus"
     }
@@ -1347,7 +1347,7 @@
   },
   "1MB": {
    "lm": "p_o3j2_1000k",
-   "lm_bytes": 995328,
+   "lm_bytes": 988080,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -1359,41 +1359,41 @@
    },
    "candidates": 432,
    "pooled_dialogue": {
-    "delta_points": -0.345,
+    "delta_points": -0.344,
     "ci95": [
-     -0.536,
-     -0.227
+     -0.533,
+     -0.226
     ],
     "cer_a": 0.00934,
-    "cer_b": 0.00589,
+    "cer_b": 0.00591,
     "errors_a": 1656,
-    "errors_b": 1044,
+    "errors_b": 1047,
     "chars": 177247,
     "vns": 174
    },
    "pooled_names": {
-    "delta_points": -0.662,
+    "delta_points": -0.644,
     "ci95": [
-     -1.082,
-     -0.266
+     -1.071,
+     -0.249
     ],
     "cer_a": 0.05675,
-    "cer_b": 0.05013,
+    "cer_b": 0.05031,
     "errors_a": 960,
-    "errors_b": 848,
+    "errors_b": 851,
     "chars": 16916,
     "vns": 153
    },
    "pooled_dialogue_distinct": {
-    "delta_points": -0.368,
+    "delta_points": -0.366,
     "ci95": [
-     -0.596,
-     -0.234
+     -0.594,
+     -0.233
     ],
     "cer_a": 0.01008,
-    "cer_b": 0.0064,
+    "cer_b": 0.00642,
     "errors_a": 1574,
-    "errors_b": 999,
+    "errors_b": 1002,
     "chars": 156139,
     "vns": 174
    },
@@ -1403,20 +1403,20 @@
    },
    "gate_curve": {
     "3500": {
-     "dialogue": 1058,
-     "names": 850
+     "dialogue": 1062,
+     "names": 853
     },
     "5000": {
-     "dialogue": 1051,
-     "names": 848
+     "dialogue": 1054,
+     "names": 851
     },
     "8000": {
-     "dialogue": 1044,
-     "names": 848
+     "dialogue": 1047,
+     "names": 851
     },
     "12000": {
-     "dialogue": 1044,
-     "names": 848
+     "dialogue": 1047,
+     "names": 851
     }
    },
    "cv_folds": {
@@ -1450,8 +1450,8 @@
      "dialogue": {
       "delta_points": -0.38,
       "ci95": [
-       -0.624,
-       -0.234
+       -0.625,
+       -0.235
       ],
       "cer_a": 0.01033,
       "cer_b": 0.00654,
@@ -1461,28 +1461,28 @@
       "vns": 174
      },
      "names": {
-      "delta_points": -0.886,
+      "delta_points": -0.851,
       "ci95": [
-       -1.561,
-       -0.215
+       -1.529,
+       -0.18
       ],
       "cer_a": 0.06381,
-      "cer_b": 0.05495,
+      "cer_b": 0.0553,
       "errors_a": 180,
-      "errors_b": 155,
+      "errors_b": 156,
       "chars": 2821,
       "vns": 153
      },
      "grad": {
-      "delta_points": -0.305,
+      "delta_points": -0.326,
       "ci95": [
-       -0.651,
-       0.036
+       -0.667,
+       0.0
       ],
       "cer_a": 0.0171,
-      "cer_b": 0.01405,
+      "cer_b": 0.01384,
       "errors_a": 84,
-      "errors_b": 69,
+      "errors_b": 68,
       "chars": 4912,
       "vns": 43
      },
@@ -1500,15 +1500,15 @@
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.367,
+      "delta_points": -0.364,
       "ci95": [
-       -0.607,
-       -0.226
+       -0.602,
+       -0.224
       ],
       "cer_a": 0.01033,
-      "cer_b": 0.00667,
+      "cer_b": 0.0067,
       "errors_a": 324,
-      "errors_b": 209,
+      "errors_b": 210,
       "chars": 31356,
       "vns": 174
      },
@@ -1516,7 +1516,7 @@
       "delta_points": -0.687,
       "ci95": [
        -0.954,
-       -0.445
+       -0.446
       ],
       "cer_a": 0.01579,
       "cer_b": 0.00892,
@@ -1565,7 +1565,7 @@
       "dialogue": {
        "delta_points": -0.386,
        "ci95": [
-        -0.626,
+        -0.627,
         -0.245
        ],
        "cer_a": 0.01033,
@@ -1631,15 +1631,15 @@
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.344,
+      "delta_points": -0.341,
       "ci95": [
-       -0.544,
-       -0.226
+       -0.538,
+       -0.224
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.0059,
+      "cer_b": 0.00593,
       "errors_a": 293,
-      "errors_b": 185,
+      "errors_b": 186,
       "chars": 31356,
       "vns": 174
      },
@@ -1694,15 +1694,15 @@
        "bracket": 1000
       },
       "dialogue": {
-       "delta_points": -0.38,
+       "delta_points": -0.376,
        "ci95": [
-        -0.596,
-        -0.249
+        -0.59,
+        -0.248
        ],
        "cer_a": 0.00934,
-       "cer_b": 0.00555,
+       "cer_b": 0.00558,
        "errors_a": 293,
-       "errors_b": 174,
+       "errors_b": 175,
        "chars": 31356,
        "vns": 174
       }
@@ -1710,15 +1710,15 @@
     },
     "v3W20": {
      "dialogue": {
-      "delta_points": -0.303,
+      "delta_points": -0.3,
       "ci95": [
-       -0.526,
-       -0.174
+       -0.521,
+       -0.172
       ],
       "cer_a": 0.00721,
-      "cer_b": 0.00418,
+      "cer_b": 0.00421,
       "errors_a": 226,
-      "errors_b": 131,
+      "errors_b": 132,
       "chars": 31356,
       "vns": 174
      },
@@ -1749,15 +1749,15 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.32,
+      "delta_points": -0.316,
       "ci95": [
-       -0.588,
-       -0.177
+       -0.581,
+       -0.174
       ],
       "cer_a": 0.00776,
-      "cer_b": 0.00456,
+      "cer_b": 0.0046,
       "errors_a": 216,
-      "errors_b": 127,
+      "errors_b": 128,
       "chars": 27831,
       "vns": 174
      },
@@ -1775,15 +1775,15 @@
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.531,
+      "delta_points": -0.524,
       "ci95": [
-       -0.725,
-       -0.351
+       -0.718,
+       -0.345
       ],
       "cer_a": 0.01211,
-      "cer_b": 0.00681,
+      "cer_b": 0.00687,
       "errors_a": 178,
-      "errors_b": 100,
+      "errors_b": 101,
       "chars": 14694,
       "vns": 171
      },
@@ -1841,28 +1841,28 @@
     },
     "v4FL10": {
      "dialogue": {
-      "delta_points": -0.421,
+      "delta_points": -0.418,
       "ci95": [
-       -0.705,
-       -0.252
+       -0.701,
+       -0.25
       ],
       "cer_a": 0.01129,
-      "cer_b": 0.00708,
+      "cer_b": 0.00711,
       "errors_a": 354,
-      "errors_b": 222,
+      "errors_b": 223,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.744,
+      "delta_points": -0.674,
       "ci95": [
-       -1.405,
-       -0.042
+       -1.321,
+       0.0
       ],
       "cer_a": 0.06345,
-      "cer_b": 0.05601,
+      "cer_b": 0.05672,
       "errors_a": 179,
-      "errors_b": 158,
+      "errors_b": 160,
       "chars": 2821,
       "vns": 153
      },
@@ -1880,41 +1880,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.438,
+      "delta_points": -0.435,
       "ci95": [
-       -0.781,
-       -0.254
+       -0.777,
+       -0.252
       ],
       "cer_a": 0.012,
-      "cer_b": 0.00762,
+      "cer_b": 0.00765,
       "errors_a": 334,
-      "errors_b": 212,
+      "errors_b": 213,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.395,
+      "delta_points": -0.392,
       "ci95": [
-       -0.658,
-       -0.239
+       -0.653,
+       -0.237
       ],
       "cer_a": 0.01129,
-      "cer_b": 0.00734,
+      "cer_b": 0.00737,
       "errors_a": 354,
-      "errors_b": 230,
+      "errors_b": 231,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.708,
+      "delta_points": -0.701,
       "ci95": [
-       -1.009,
-       -0.431
+       -1.003,
+       -0.426
       ],
       "cer_a": 0.01722,
-      "cer_b": 0.01014,
+      "cer_b": 0.01021,
       "errors_a": 253,
-      "errors_b": 149,
+      "errors_b": 150,
       "chars": 14694,
       "vns": 171
      },
@@ -1956,15 +1956,15 @@
        "bracket": 0
       },
       "dialogue": {
-       "delta_points": -0.421,
+       "delta_points": -0.418,
        "ci95": [
-        -0.702,
-        -0.255
+        -0.698,
+        -0.252
        ],
        "cer_a": 0.01129,
-       "cer_b": 0.00708,
+       "cer_b": 0.00711,
        "errors_a": 354,
-       "errors_b": 222,
+       "errors_b": 223,
        "chars": 31356,
        "vns": 174
       }
@@ -1972,15 +1972,15 @@
     },
     "v4H15": {
      "dialogue": {
-      "delta_points": -0.303,
+      "delta_points": -0.3,
       "ci95": [
-       -0.494,
-       -0.189
+       -0.489,
+       -0.187
       ],
       "cer_a": 0.00874,
-      "cer_b": 0.00571,
+      "cer_b": 0.00574,
       "errors_a": 274,
-      "errors_b": 179,
+      "errors_b": 180,
       "chars": 31356,
       "vns": 174
      },
@@ -2011,41 +2011,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.331,
+      "delta_points": -0.327,
       "ci95": [
-       -0.556,
-       -0.205
+       -0.551,
+       -0.202
       ],
       "cer_a": 0.00945,
-      "cer_b": 0.00614,
+      "cer_b": 0.00618,
       "errors_a": 263,
-      "errors_b": 171,
+      "errors_b": 172,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.284,
+      "delta_points": -0.29,
       "ci95": [
-       -0.462,
-       -0.177
+       -0.473,
+       -0.181
       ],
       "cer_a": 0.00874,
-      "cer_b": 0.0059,
+      "cer_b": 0.00584,
       "errors_a": 274,
-      "errors_b": 185,
+      "errors_b": 183,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.524,
+      "delta_points": -0.517,
       "ci95": [
-       -0.729,
-       -0.333
+       -0.721,
+       -0.327
       ],
       "cer_a": 0.01429,
-      "cer_b": 0.00905,
+      "cer_b": 0.00912,
       "errors_a": 210,
-      "errors_b": 133,
+      "errors_b": 134,
       "chars": 14694,
       "vns": 171
      },
@@ -2235,8 +2235,8 @@
    },
    "release": {
     "file": "vocr_lm_o3_1000k.vlm",
-    "bytes": 995328,
-    "sha256": "6081ccb8d58bc2e269e09531e04aea6d4de32d9ba7c50b5a2323a9145acdc249",
+    "bytes": 988080,
+    "sha256": "535538e82e265625f3149286f5684e6fd0da75bf5149cf1b26defc1afaa8024a",
     "tuned_as": "p_o3j2_1000k",
     "manifest": {
      "kind": "volm-build",
@@ -2297,9 +2297,9 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten visual-novel frequency list (https://jiten.moe/frequency-dictionaries, 2,162 VN scripts; CC BY-SA 4.0); retrieved 2026-10-12 and again 2026-10-14 with the same bytes",
        "share": 0.4,
-       "words": 239722,
-       "scale": 695121.179677803,
-       "weighted_chars": 18790795
+       "words": 239721,
+       "scale": 688994.4298298949,
+       "weighted_chars": 18637288
       },
       {
        "name": "novel",
@@ -2309,8 +2309,8 @@
        "attribution": "Jiten novel frequency list (https://jiten.moe/frequency-dictionaries, 3,161 novels; CC BY-SA 4.0); retrieved 2026-10-14",
        "share": 0.2,
        "words": 315796,
-       "scale": 341262.4719417339,
-       "weighted_chars": 9352027
+       "scale": 338254.3726358023,
+       "weighted_chars": 9276366
       }
      ],
      "heldout_lines": 3000,
@@ -2318,12 +2318,12 @@
      "exclusion": {
       "vns": 196,
       "characters": 2177,
-      "titles": 225,
-      "markers": 2154,
-      "common_names_not_markers": 37,
-      "corpus_pieces_dropped": 1622,
+      "titles_and_curated": 266,
+      "markers": 3782,
+      "common_names_not_markers": 499,
+      "corpus_pieces_dropped": 13358,
       "jiten_words_dropped": {
-       "vn": 1282,
+       "vn": 1283,
        "novel": 1255
       },
       "extra_vns": 0,
@@ -2334,12 +2334,12 @@
        "vndb_chars": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
        "vndb_titles": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0"
       },
-      "corpus_chars_kept": 47112066
+      "corpus_chars_kept": 46696791
      },
      "ngrams_counted": [
       5279,
-      649240,
-      4975618
+      643967,
+      4923817
      ],
      "profiles": [
       {
@@ -2352,13 +2352,13 @@
         49,
         49
        ],
-       "bytes": 995328,
+       "bytes": 988080,
        "entries": [
         5357,
-        71399,
-        122568
+        70850,
+        121602
        ],
-       "heldout_nats_per_char": 3.9350266674671333
+       "heldout_nats_per_char": 3.9375409733703948
       },
       {
        "profile": [
@@ -2367,16 +2367,16 @@
        ],
        "thresholds": [
         1,
-        37,
-        74
+        36,
+        72
        ],
-       "bytes": 985472,
+       "bytes": 995440,
        "entries": [
         5357,
-        84843,
-        83427
+        85537,
+        84896
        ],
-       "heldout_nats_per_char": 3.966526848199703
+       "heldout_nats_per_char": 3.9658195542180974
       },
       {
        "profile": [
@@ -2388,13 +2388,13 @@
         42,
         63
        ],
-       "bytes": 976096,
+       "bytes": 968528,
        "entries": [
         5357,
-        78571,
-        97027
+        77898,
+        96299
        ],
-       "heldout_nats_per_char": 3.952755664418108
+       "heldout_nats_per_char": 3.955530662409968
       }
      ],
      "chosen_thresholds": [
@@ -2406,13 +2406,13 @@
       "script": "lm/build.py",
       "numpy": "2.4.6"
      },
-     "bytes": 995328,
-     "sha256": "6081ccb8d58bc2e269e09531e04aea6d4de32d9ba7c50b5a2323a9145acdc249",
-     "manifest_sha256_prefix": "67583971d665e1549fa2bd4e69b6d424",
+     "bytes": 988080,
+     "sha256": "535538e82e265625f3149286f5684e6fd0da75bf5149cf1b26defc1afaa8024a",
+     "manifest_sha256_prefix": "3bb361bbc15991209393d8b6407f30c6",
      "entries": [
       5357,
-      71399,
-      122568
+      70850,
+      121602
      ],
      "heldout": "realplus"
     }
@@ -2420,7 +2420,7 @@
   },
   "2MB": {
    "lm": "p_o3j2_2000k",
-   "lm_bytes": 1987824,
+   "lm_bytes": 1972416,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -2432,41 +2432,41 @@
    },
    "candidates": 432,
    "pooled_dialogue": {
-    "delta_points": -0.373,
+    "delta_points": -0.37,
     "ci95": [
-     -0.579,
-     -0.243
+     -0.575,
+     -0.241
     ],
     "cer_a": 0.00934,
-    "cer_b": 0.00561,
+    "cer_b": 0.00564,
     "errors_a": 1656,
-    "errors_b": 995,
+    "errors_b": 1000,
     "chars": 177247,
     "vns": 174
    },
    "pooled_names": {
-    "delta_points": -0.922,
+    "delta_points": -0.899,
     "ci95": [
-     -1.494,
-     -0.398
+     -1.474,
+     -0.377
     ],
     "cer_a": 0.05675,
-    "cer_b": 0.04753,
+    "cer_b": 0.04777,
     "errors_a": 960,
-    "errors_b": 804,
+    "errors_b": 808,
     "chars": 16916,
     "vns": 153
    },
    "pooled_dialogue_distinct": {
-    "delta_points": -0.397,
+    "delta_points": -0.394,
     "ci95": [
-     -0.645,
-     -0.252
+     -0.639,
+     -0.249
     ],
     "cer_a": 0.01008,
-    "cer_b": 0.00611,
+    "cer_b": 0.00614,
     "errors_a": 1574,
-    "errors_b": 954,
+    "errors_b": 959,
     "chars": 156139,
     "vns": 174
    },
@@ -2476,20 +2476,20 @@
    },
    "gate_curve": {
     "3500": {
-     "dialogue": 1009,
-     "names": 810
+     "dialogue": 1015,
+     "names": 814
     },
     "5000": {
-     "dialogue": 999,
-     "names": 806
+     "dialogue": 1004,
+     "names": 810
     },
     "8000": {
-     "dialogue": 995,
-     "names": 804
+     "dialogue": 1000,
+     "names": 808
     },
     "12000": {
-     "dialogue": 995,
-     "names": 804
+     "dialogue": 1000,
+     "names": 808
     }
    },
    "cv_folds": {
@@ -2511,7 +2511,7 @@
       "beam": 8,
       "topk": 8,
       "alpha": 500,
-      "beta": 3000,
+      "beta": 3500,
       "gate": 8000,
       "flags": 2,
       "bracket": 8000
@@ -2523,8 +2523,8 @@
      "dialogue": {
       "delta_points": -0.405,
       "ci95": [
-       -0.668,
-       -0.252
+       -0.669,
+       -0.251
       ],
       "cer_a": 0.01033,
       "cer_b": 0.00628,
@@ -2534,35 +2534,35 @@
       "vns": 174
      },
      "names": {
-      "delta_points": -1.17,
+      "delta_points": -1.134,
       "ci95": [
-       -1.876,
-       -0.483
+       -1.841,
+       -0.456
       ],
       "cer_a": 0.06381,
-      "cer_b": 0.05211,
+      "cer_b": 0.05246,
       "errors_a": 180,
-      "errors_b": 147,
+      "errors_b": 148,
       "chars": 2821,
       "vns": 153
      },
      "grad": {
-      "delta_points": -0.366,
+      "delta_points": -0.387,
       "ci95": [
-       -0.676,
-       -0.073
+       -0.733,
+       -0.08
       ],
       "cer_a": 0.0171,
-      "cer_b": 0.01344,
+      "cer_b": 0.01323,
       "errors_a": 84,
-      "errors_b": 66,
+      "errors_b": 65,
       "chars": 4912,
       "vns": 43
      },
      "dialogue_distinct": {
       "delta_points": -0.442,
       "ci95": [
-       -0.758,
+       -0.759,
        -0.271
       ],
       "cer_a": 0.0111,
@@ -2573,23 +2573,23 @@
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.405,
+      "delta_points": -0.402,
       "ci95": [
-       -0.668,
-       -0.252
+       -0.664,
+       -0.248
       ],
       "cer_a": 0.01033,
-      "cer_b": 0.00628,
+      "cer_b": 0.00631,
       "errors_a": 324,
-      "errors_b": 197,
+      "errors_b": 198,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
       "delta_points": -0.715,
       "ci95": [
-       -0.996,
-       -0.465
+       -0.997,
+       -0.463
       ],
       "cer_a": 0.01579,
       "cer_b": 0.00864,
@@ -2639,7 +2639,7 @@
        "delta_points": -0.411,
        "ci95": [
         -0.67,
-        -0.262
+        -0.261
        ],
        "cer_a": 0.01033,
        "cer_b": 0.00622,
@@ -2652,28 +2652,28 @@
     },
     "v3H15": {
      "dialogue": {
-      "delta_points": -0.38,
+      "delta_points": -0.376,
       "ci95": [
-       -0.586,
-       -0.253
+       -0.58,
+       -0.251
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.00555,
+      "cer_b": 0.00558,
       "errors_a": 293,
-      "errors_b": 174,
+      "errors_b": 175,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.957,
+      "delta_points": -0.886,
       "ci95": [
-       -1.68,
-       -0.269
+       -1.616,
+       -0.161
       ],
       "cer_a": 0.05388,
-      "cer_b": 0.04431,
+      "cer_b": 0.04502,
       "errors_a": 152,
-      "errors_b": 125,
+      "errors_b": 127,
       "chars": 2821,
       "vns": 153
      },
@@ -2691,67 +2691,67 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.384,
+      "delta_points": -0.381,
       "ci95": [
-       -0.621,
-       -0.253
+       -0.612,
+       -0.249
       ],
       "cer_a": 0.00985,
-      "cer_b": 0.006,
+      "cer_b": 0.00604,
       "errors_a": 274,
-      "errors_b": 167,
+      "errors_b": 168,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.38,
+      "delta_points": -0.37,
       "ci95": [
-       -0.586,
-       -0.253
+       -0.572,
+       -0.247
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.00555,
+      "cer_b": 0.00564,
       "errors_a": 293,
-      "errors_b": 174,
+      "errors_b": 177,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.619,
+      "delta_points": -0.612,
       "ci95": [
-       -0.82,
-       -0.428
+       -0.816,
+       -0.422
       ],
       "cer_a": 0.01524,
-      "cer_b": 0.00905,
+      "cer_b": 0.00912,
       "errors_a": 224,
-      "errors_b": 133,
+      "errors_b": 134,
       "chars": 14694,
       "vns": 171
      },
      "dialogue_dn_ink": {
-      "delta_points": -0.208,
+      "delta_points": -0.191,
       "ci95": [
-       -0.449,
-       0.049
+       -0.433,
+       0.07
       ],
       "cer_a": 0.00624,
-      "cer_b": 0.00416,
+      "cer_b": 0.00433,
       "errors_a": 36,
-      "errors_b": 24,
+      "errors_b": 25,
       "chars": 5773,
       "vns": 43
      },
      "dialogue_own": {
-      "delta_points": -0.147,
+      "delta_points": -0.156,
       "ci95": [
        -0.256,
        -0.064
       ],
       "cer_a": 0.00303,
-      "cer_b": 0.00156,
+      "cer_b": 0.00147,
       "errors_a": 33,
-      "errors_b": 17,
+      "errors_b": 16,
       "chars": 10889,
       "vns": 3
      },
@@ -2767,15 +2767,15 @@
        "bracket": 1000
       },
       "dialogue": {
-       "delta_points": -0.395,
+       "delta_points": -0.392,
        "ci95": [
-        -0.617,
-        -0.263
+        -0.614,
+        -0.26
        ],
        "cer_a": 0.00934,
-       "cer_b": 0.00539,
+       "cer_b": 0.00542,
        "errors_a": 293,
-       "errors_b": 169,
+       "errors_b": 170,
        "chars": 31356,
        "vns": 174
       }
@@ -2783,28 +2783,28 @@
     },
     "v3W20": {
      "dialogue": {
-      "delta_points": -0.341,
+      "delta_points": -0.338,
       "ci95": [
-       -0.59,
-       -0.196
+       -0.586,
+       -0.193
       ],
       "cer_a": 0.00721,
-      "cer_b": 0.0038,
+      "cer_b": 0.00383,
       "errors_a": 226,
-      "errors_b": 119,
+      "errors_b": 120,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.78,
+      "delta_points": -0.744,
       "ci95": [
-       -1.511,
-       -0.14
+       -1.479,
+       -0.106
       ],
       "cer_a": 0.05069,
-      "cer_b": 0.04289,
+      "cer_b": 0.04325,
       "errors_a": 143,
-      "errors_b": 121,
+      "errors_b": 122,
       "chars": 2821,
       "vns": 153
      },
@@ -2822,41 +2822,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.359,
+      "delta_points": -0.356,
       "ci95": [
-       -0.658,
-       -0.198
+       -0.65,
+       -0.196
       ],
       "cer_a": 0.00776,
-      "cer_b": 0.00417,
+      "cer_b": 0.0042,
       "errors_a": 216,
-      "errors_b": 116,
+      "errors_b": 117,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.338,
+      "delta_points": -0.332,
       "ci95": [
-       -0.585,
-       -0.193
+       -0.576,
+       -0.189
       ],
       "cer_a": 0.00721,
-      "cer_b": 0.00383,
+      "cer_b": 0.00389,
       "errors_a": 226,
-      "errors_b": 120,
+      "errors_b": 122,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.599,
+      "delta_points": -0.592,
       "ci95": [
-       -0.8,
-       -0.405
+       -0.793,
+       -0.402
       ],
       "cer_a": 0.01211,
-      "cer_b": 0.00612,
+      "cer_b": 0.00619,
       "errors_a": 178,
-      "errors_b": 90,
+      "errors_b": 91,
       "chars": 14694,
       "vns": 171
      },
@@ -2898,15 +2898,15 @@
        "bracket": 8000
       },
       "dialogue": {
-       "delta_points": -0.341,
+       "delta_points": -0.338,
        "ci95": [
-        -0.59,
-        -0.196
+        -0.586,
+        -0.193
        ],
        "cer_a": 0.00721,
-       "cer_b": 0.0038,
+       "cer_b": 0.00383,
        "errors_a": 226,
-       "errors_b": 119,
+       "errors_b": 120,
        "chars": 31356,
        "vns": 174
       }
@@ -2914,23 +2914,23 @@
     },
     "v4FL10": {
      "dialogue": {
-      "delta_points": -0.44,
+      "delta_points": -0.437,
       "ci95": [
-       -0.733,
-       -0.269
+       -0.726,
+       -0.266
       ],
       "cer_a": 0.01129,
-      "cer_b": 0.00689,
+      "cer_b": 0.00692,
       "errors_a": 354,
-      "errors_b": 216,
+      "errors_b": 217,
       "chars": 31356,
       "vns": 174
      },
      "names": {
       "delta_points": -0.709,
       "ci95": [
-       -1.41,
-       -0.036
+       -1.421,
+       0.0
       ],
       "cer_a": 0.06345,
       "cer_b": 0.05636,
@@ -2953,23 +2953,23 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.456,
+      "delta_points": -0.453,
       "ci95": [
-       -0.804,
-       -0.266
+       -0.799,
+       -0.263
       ],
       "cer_a": 0.012,
-      "cer_b": 0.00744,
+      "cer_b": 0.00747,
       "errors_a": 334,
-      "errors_b": 207,
+      "errors_b": 208,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
       "delta_points": -0.44,
       "ci95": [
-       -0.733,
-       -0.269
+       -0.73,
+       -0.27
       ],
       "cer_a": 0.01129,
       "cer_b": 0.00689,
@@ -2979,15 +2979,15 @@
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.749,
+      "delta_points": -0.742,
       "ci95": [
-       -1.039,
-       -0.482
+       -1.035,
+       -0.475
       ],
       "cer_a": 0.01722,
-      "cer_b": 0.00973,
+      "cer_b": 0.0098,
       "errors_a": 253,
-      "errors_b": 143,
+      "errors_b": 144,
       "chars": 14694,
       "vns": 171
      },
@@ -3022,8 +3022,8 @@
       "config": {
        "beam": 8,
        "topk": 8,
-       "alpha": 400,
-       "beta": 3000,
+       "alpha": 500,
+       "beta": 3500,
        "gate": 5000,
        "flags": 2,
        "bracket": 0
@@ -3031,8 +3031,8 @@
       "dialogue": {
        "delta_points": -0.446,
        "ci95": [
-        -0.728,
-        -0.282
+        -0.736,
+        -0.278
        ],
        "cer_a": 0.01129,
        "cer_b": 0.00682,
@@ -3045,15 +3045,15 @@
     },
     "v4H15": {
      "dialogue": {
-      "delta_points": -0.328,
+      "delta_points": -0.322,
       "ci95": [
-       -0.549,
-       -0.197
+       -0.539,
+       -0.193
       ],
       "cer_a": 0.00874,
-      "cer_b": 0.00545,
+      "cer_b": 0.00552,
       "errors_a": 274,
-      "errors_b": 171,
+      "errors_b": 173,
       "chars": 31356,
       "vns": 174
      },
@@ -3084,41 +3084,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.356,
+      "delta_points": -0.349,
       "ci95": [
-       -0.621,
-       -0.211
+       -0.608,
+       -0.206
       ],
       "cer_a": 0.00945,
-      "cer_b": 0.00589,
+      "cer_b": 0.00596,
       "errors_a": 263,
-      "errors_b": 164,
+      "errors_b": 166,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.328,
+      "delta_points": -0.316,
       "ci95": [
-       -0.549,
-       -0.197
+       -0.525,
+       -0.192
       ],
       "cer_a": 0.00874,
-      "cer_b": 0.00545,
+      "cer_b": 0.00558,
       "errors_a": 274,
-      "errors_b": 171,
+      "errors_b": 175,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.585,
+      "delta_points": -0.572,
       "ci95": [
-       -0.817,
-       -0.368
+       -0.8,
+       -0.359
       ],
       "cer_a": 0.01429,
-      "cer_b": 0.00844,
+      "cer_b": 0.00857,
       "errors_a": 210,
-      "errors_b": 124,
+      "errors_b": 126,
       "chars": 14694,
       "vns": 171
      },
@@ -3153,22 +3153,22 @@
       "config": {
        "beam": 8,
        "topk": 8,
-       "alpha": 600,
-       "beta": 3000,
-       "gate": 3500,
+       "alpha": 500,
+       "beta": 2500,
+       "gate": 5000,
        "flags": 2,
-       "bracket": 3000
+       "bracket": 5000
       },
       "dialogue": {
-       "delta_points": -0.338,
+       "delta_points": -0.335,
        "ci95": [
-        -0.578,
-        -0.194
+        -0.565,
+        -0.198
        ],
        "cer_a": 0.00874,
-       "cer_b": 0.00536,
+       "cer_b": 0.00539,
        "errors_a": 274,
-       "errors_b": 168,
+       "errors_b": 169,
        "chars": 31356,
        "vns": 174
       }
@@ -3191,8 +3191,8 @@
      "names": {
       "delta_points": -0.996,
       "ci95": [
-       -1.758,
-       -0.332
+       -1.768,
+       -0.318
       ],
       "cer_a": 0.05229,
       "cer_b": 0.04233,
@@ -3291,15 +3291,15 @@
        "bracket": 1000
       },
       "dialogue": {
-       "delta_points": -0.337,
+       "delta_points": -0.342,
        "ci95": [
-        -0.514,
-        -0.194
+        -0.521,
+        -0.197
        ],
        "cer_a": 0.00904,
-       "cer_b": 0.00567,
+       "cer_b": 0.00562,
        "errors_a": 185,
-       "errors_b": 116,
+       "errors_b": 115,
        "chars": 20467,
        "vns": 171
       }
@@ -3308,8 +3308,8 @@
    },
    "release": {
     "file": "vocr_lm_o3_2000k.vlm",
-    "bytes": 1987824,
-    "sha256": "fd889f1c0e26a4c5e7bf50fc3f2194e7ab98e45cc0c413176484cf86add5e1d8",
+    "bytes": 1972416,
+    "sha256": "73c15579486b993b525e4a9cd220eeb75e47d601db0f28ff0a82c6d88e2147de",
     "tuned_as": "p_o3j2_2000k",
     "manifest": {
      "kind": "volm-build",
@@ -3370,9 +3370,9 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten visual-novel frequency list (https://jiten.moe/frequency-dictionaries, 2,162 VN scripts; CC BY-SA 4.0); retrieved 2026-10-12 and again 2026-10-14 with the same bytes",
        "share": 0.4,
-       "words": 239722,
-       "scale": 695121.179677803,
-       "weighted_chars": 18790795
+       "words": 239721,
+       "scale": 688994.4298298949,
+       "weighted_chars": 18637288
       },
       {
        "name": "novel",
@@ -3382,8 +3382,8 @@
        "attribution": "Jiten novel frequency list (https://jiten.moe/frequency-dictionaries, 3,161 novels; CC BY-SA 4.0); retrieved 2026-10-14",
        "share": 0.2,
        "words": 315796,
-       "scale": 341262.4719417339,
-       "weighted_chars": 9352027
+       "scale": 338254.3726358023,
+       "weighted_chars": 9276366
       }
      ],
      "heldout_lines": 3000,
@@ -3391,12 +3391,12 @@
      "exclusion": {
       "vns": 196,
       "characters": 2177,
-      "titles": 225,
-      "markers": 2154,
-      "common_names_not_markers": 37,
-      "corpus_pieces_dropped": 1622,
+      "titles_and_curated": 266,
+      "markers": 3782,
+      "common_names_not_markers": 499,
+      "corpus_pieces_dropped": 13358,
       "jiten_words_dropped": {
-       "vn": 1282,
+       "vn": 1283,
        "novel": 1255
       },
       "extra_vns": 0,
@@ -3407,12 +3407,12 @@
        "vndb_chars": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
        "vndb_titles": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0"
       },
-      "corpus_chars_kept": 47112066
+      "corpus_chars_kept": 46696791
      },
      "ngrams_counted": [
       5279,
-      649240,
-      4975618
+      643967,
+      4923817
      ],
      "profiles": [
       {
@@ -3425,13 +3425,13 @@
         18,
         18
        ],
-       "bytes": 1987824,
+       "bytes": 1972416,
        "entries": [
         5357,
-        129088,
-        299568
+        128014,
+        297291
        ],
-       "heldout_nats_per_char": 3.847534323499585
+       "heldout_nats_per_char": 3.8520075068862454
       },
       {
        "profile": [
@@ -3443,13 +3443,13 @@
         13,
         26
        ],
-       "bytes": 1950032,
+       "bytes": 1934560,
        "entries": [
         5357,
-        155240,
-        217223
+        153910,
+        215610
        ],
-       "heldout_nats_per_char": 3.858264038569669
+       "heldout_nats_per_char": 3.863055674207789
       },
       {
        "profile": [
@@ -3461,13 +3461,13 @@
         16,
         24
        ],
-       "bytes": 1862064,
+       "bytes": 1846912,
        "entries": [
         5357,
-        138289,
-        233092
+        137071,
+        231309
        ],
-       "heldout_nats_per_char": 3.856573200665029
+       "heldout_nats_per_char": 3.8612374187958527
       }
      ],
      "chosen_thresholds": [
@@ -3479,13 +3479,13 @@
       "script": "lm/build.py",
       "numpy": "2.4.6"
      },
-     "bytes": 1987824,
-     "sha256": "fd889f1c0e26a4c5e7bf50fc3f2194e7ab98e45cc0c413176484cf86add5e1d8",
-     "manifest_sha256_prefix": "5abea0b9e55c3ae9004d16a800aab501",
+     "bytes": 1972416,
+     "sha256": "73c15579486b993b525e4a9cd220eeb75e47d601db0f28ff0a82c6d88e2147de",
+     "manifest_sha256_prefix": "750db0420654336be16209cea6c2f35a",
      "entries": [
       5357,
-      129088,
-      299568
+      128014,
+      297291
      ],
      "heldout": "realplus"
     }
@@ -3493,7 +3493,7 @@
   },
   "4MB": {
    "lm": "p_o3j2_4000k",
-   "lm_bytes": 3811616,
+   "lm_bytes": 3782688,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -3505,41 +3505,41 @@
    },
    "candidates": 432,
    "pooled_dialogue": {
-    "delta_points": -0.39,
+    "delta_points": -0.387,
     "ci95": [
-     -0.603,
-     -0.257
+     -0.599,
+     -0.254
     ],
     "cer_a": 0.00934,
-    "cer_b": 0.00544,
+    "cer_b": 0.00547,
     "errors_a": 1656,
-    "errors_b": 965,
+    "errors_b": 970,
     "chars": 177247,
     "vns": 174
    },
    "pooled_names": {
-    "delta_points": -0.91,
+    "delta_points": -0.851,
     "ci95": [
-     -1.468,
-     -0.404
+     -1.399,
+     -0.337
     ],
     "cer_a": 0.05675,
-    "cer_b": 0.04765,
+    "cer_b": 0.04824,
     "errors_a": 960,
-    "errors_b": 806,
+    "errors_b": 816,
     "chars": 16916,
     "vns": 153
    },
    "pooled_dialogue_distinct": {
-    "delta_points": -0.413,
+    "delta_points": -0.41,
     "ci95": [
-     -0.668,
-     -0.264
+     -0.663,
+     -0.261
     ],
     "cer_a": 0.01008,
-    "cer_b": 0.00595,
+    "cer_b": 0.00598,
     "errors_a": 1574,
-    "errors_b": 929,
+    "errors_b": 934,
     "chars": 156139,
     "vns": 174
    },
@@ -3549,20 +3549,20 @@
    },
    "gate_curve": {
     "3500": {
-     "dialogue": 980,
-     "names": 808
+     "dialogue": 985,
+     "names": 816
     },
     "5000": {
-     "dialogue": 968,
-     "names": 806
+     "dialogue": 973,
+     "names": 816
     },
     "8000": {
-     "dialogue": 965,
-     "names": 806
+     "dialogue": 970,
+     "names": 816
     },
     "12000": {
-     "dialogue": 965,
-     "names": 806
+     "dialogue": 970,
+     "names": 816
     }
    },
    "cv_folds": {
@@ -3594,28 +3594,28 @@
    "per_model": {
     "v3FL10": {
      "dialogue": {
-      "delta_points": -0.424,
+      "delta_points": -0.415,
       "ci95": [
-       -0.701,
-       -0.263
+       -0.688,
+       -0.256
       ],
       "cer_a": 0.01033,
-      "cer_b": 0.00609,
+      "cer_b": 0.00619,
       "errors_a": 324,
-      "errors_b": 191,
+      "errors_b": 194,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -1.17,
+      "delta_points": -1.099,
       "ci95": [
-       -1.897,
-       -0.474
+       -1.839,
+       -0.394
       ],
       "cer_a": 0.06381,
-      "cer_b": 0.05211,
+      "cer_b": 0.05282,
       "errors_a": 180,
-      "errors_b": 147,
+      "errors_b": 149,
       "chars": 2821,
       "vns": 153
      },
@@ -3633,41 +3633,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.456,
+      "delta_points": -0.446,
       "ci95": [
-       -0.787,
-       -0.278
+       -0.771,
+       -0.272
       ],
       "cer_a": 0.0111,
-      "cer_b": 0.00654,
+      "cer_b": 0.00665,
       "errors_a": 309,
-      "errors_b": 182,
+      "errors_b": 185,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.405,
+      "delta_points": -0.399,
       "ci95": [
-       -0.659,
-       -0.256
+       -0.651,
+       -0.251
       ],
       "cer_a": 0.01033,
-      "cer_b": 0.00628,
+      "cer_b": 0.00635,
       "errors_a": 324,
-      "errors_b": 197,
+      "errors_b": 199,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.749,
+      "delta_points": -0.728,
       "ci95": [
-       -1.048,
-       -0.48
+       -1.027,
+       -0.464
       ],
       "cer_a": 0.01579,
-      "cer_b": 0.0083,
+      "cer_b": 0.00851,
       "errors_a": 232,
-      "errors_b": 122,
+      "errors_b": 125,
       "chars": 14694,
       "vns": 171
      },
@@ -3709,15 +3709,15 @@
        "bracket": 1000
       },
       "dialogue": {
-       "delta_points": -0.431,
+       "delta_points": -0.421,
        "ci95": [
-        -0.7,
-        -0.273
+        -0.689,
+        -0.267
        ],
        "cer_a": 0.01033,
-       "cer_b": 0.00603,
+       "cer_b": 0.00612,
        "errors_a": 324,
-       "errors_b": 189,
+       "errors_b": 192,
        "chars": 31356,
        "vns": 174
       }
@@ -3725,28 +3725,28 @@
     },
     "v3H15": {
      "dialogue": {
-      "delta_points": -0.38,
+      "delta_points": -0.383,
       "ci95": [
-       -0.588,
-       -0.252
+       -0.592,
+       -0.255
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.00555,
+      "cer_b": 0.00552,
       "errors_a": 293,
-      "errors_b": 174,
+      "errors_b": 173,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.993,
+      "delta_points": -0.886,
       "ci95": [
-       -1.696,
-       -0.325
+       -1.61,
+       -0.157
       ],
       "cer_a": 0.05388,
-      "cer_b": 0.04396,
+      "cer_b": 0.04502,
       "errors_a": 152,
-      "errors_b": 124,
+      "errors_b": 127,
       "chars": 2821,
       "vns": 153
      },
@@ -3764,41 +3764,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.381,
+      "delta_points": -0.384,
       "ci95": [
-       -0.617,
-       -0.249
+       -0.621,
+       -0.251
       ],
       "cer_a": 0.00985,
-      "cer_b": 0.00604,
+      "cer_b": 0.006,
       "errors_a": 274,
-      "errors_b": 168,
+      "errors_b": 167,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.37,
+      "delta_points": -0.373,
       "ci95": [
-       -0.57,
-       -0.249
+       -0.573,
+       -0.251
       ],
       "cer_a": 0.00934,
-      "cer_b": 0.00564,
+      "cer_b": 0.00561,
       "errors_a": 293,
-      "errors_b": 177,
+      "errors_b": 176,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.626,
+      "delta_points": -0.633,
       "ci95": [
-       -0.818,
-       -0.443
+       -0.823,
+       -0.451
       ],
       "cer_a": 0.01524,
-      "cer_b": 0.00898,
+      "cer_b": 0.00892,
       "errors_a": 224,
-      "errors_b": 132,
+      "errors_b": 131,
       "chars": 14694,
       "vns": 171
      },
@@ -3840,15 +3840,15 @@
        "bracket": 1000
       },
       "dialogue": {
-       "delta_points": -0.411,
+       "delta_points": -0.408,
        "ci95": [
-        -0.636,
-        -0.276
+        -0.631,
+        -0.274
        ],
        "cer_a": 0.00934,
-       "cer_b": 0.00523,
+       "cer_b": 0.00526,
        "errors_a": 293,
-       "errors_b": 164,
+       "errors_b": 165,
        "chars": 31356,
        "vns": 174
       }
@@ -3856,28 +3856,28 @@
     },
     "v3W20": {
      "dialogue": {
-      "delta_points": -0.351,
+      "delta_points": -0.354,
       "ci95": [
-       -0.599,
-       -0.205
+       -0.607,
+       -0.206
       ],
       "cer_a": 0.00721,
-      "cer_b": 0.0037,
+      "cer_b": 0.00367,
       "errors_a": 226,
-      "errors_b": 116,
+      "errors_b": 115,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.567,
+      "delta_points": -0.532,
       "ci95": [
-       -1.297,
-       0.14
+       -1.234,
+       0.145
       ],
       "cer_a": 0.05069,
-      "cer_b": 0.04502,
+      "cer_b": 0.04537,
       "errors_a": 143,
-      "errors_b": 127,
+      "errors_b": 128,
       "chars": 2821,
       "vns": 153
      },
@@ -3895,41 +3895,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.37,
+      "delta_points": -0.374,
       "ci95": [
-       -0.669,
-       -0.209
+       -0.676,
+       -0.211
       ],
       "cer_a": 0.00776,
-      "cer_b": 0.00406,
+      "cer_b": 0.00402,
       "errors_a": 216,
-      "errors_b": 113,
+      "errors_b": 112,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.341,
+      "delta_points": -0.344,
       "ci95": [
-       -0.583,
-       -0.199
+       -0.59,
+       -0.2
       ],
       "cer_a": 0.00721,
-      "cer_b": 0.0038,
+      "cer_b": 0.00376,
       "errors_a": 226,
-      "errors_b": 119,
+      "errors_b": 118,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.606,
+      "delta_points": -0.612,
       "ci95": [
-       -0.816,
-       -0.409
+       -0.828,
+       -0.412
       ],
       "cer_a": 0.01211,
-      "cer_b": 0.00606,
+      "cer_b": 0.00599,
       "errors_a": 178,
-      "errors_b": 89,
+      "errors_b": 88,
       "chars": 14694,
       "vns": 171
      },
@@ -3965,21 +3965,21 @@
        "beam": 8,
        "topk": 8,
        "alpha": 500,
-       "beta": 3500,
+       "beta": 2500,
        "gate": 8000,
        "flags": 2,
        "bracket": 8000
       },
       "dialogue": {
-       "delta_points": -0.351,
+       "delta_points": -0.354,
        "ci95": [
-        -0.599,
-        -0.205
+        -0.597,
+        -0.211
        ],
        "cer_a": 0.00721,
-       "cer_b": 0.0037,
+       "cer_b": 0.00367,
        "errors_a": 226,
-       "errors_b": 116,
+       "errors_b": 115,
        "chars": 31356,
        "vns": 174
       }
@@ -3987,80 +3987,80 @@
     },
     "v4FL10": {
      "dialogue": {
-      "delta_points": -0.501,
+      "delta_points": -0.494,
       "ci95": [
-       -0.821,
-       -0.314
+       -0.812,
+       -0.31
       ],
       "cer_a": 0.01129,
-      "cer_b": 0.00628,
+      "cer_b": 0.00635,
       "errors_a": 354,
-      "errors_b": 197,
+      "errors_b": 199,
       "chars": 31356,
       "vns": 174
      },
      "names": {
-      "delta_points": -0.851,
+      "delta_points": -0.815,
       "ci95": [
-       -1.545,
-       -0.172
+       -1.521,
+       -0.119
       ],
       "cer_a": 0.06345,
-      "cer_b": 0.05495,
+      "cer_b": 0.0553,
       "errors_a": 179,
-      "errors_b": 155,
+      "errors_b": 156,
       "chars": 2821,
       "vns": 153
      },
      "grad": {
-      "delta_points": -0.59,
+      "delta_points": -0.55,
       "ci95": [
-       -0.936,
-       -0.305
+       -0.914,
+       -0.228
       ],
       "cer_a": 0.02015,
-      "cer_b": 0.01425,
+      "cer_b": 0.01466,
       "errors_a": 99,
-      "errors_b": 70,
+      "errors_b": 72,
       "chars": 4912,
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.517,
+      "delta_points": -0.51,
       "ci95": [
-       -0.896,
-       -0.313
+       -0.887,
+       -0.308
       ],
       "cer_a": 0.012,
-      "cer_b": 0.00683,
+      "cer_b": 0.0069,
       "errors_a": 334,
-      "errors_b": 190,
+      "errors_b": 192,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.498,
+      "delta_points": -0.491,
       "ci95": [
-       -0.821,
-       -0.308
+       -0.813,
+       -0.302
       ],
       "cer_a": 0.01129,
-      "cer_b": 0.00631,
+      "cer_b": 0.00638,
       "errors_a": 354,
-      "errors_b": 198,
+      "errors_b": 200,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.83,
+      "delta_points": -0.817,
       "ci95": [
-       -1.137,
-       -0.547
+       -1.125,
+       -0.534
       ],
       "cer_a": 0.01722,
-      "cer_b": 0.00892,
+      "cer_b": 0.00905,
       "errors_a": 253,
-      "errors_b": 131,
+      "errors_b": 133,
       "chars": 14694,
       "vns": 171
      },
@@ -4102,15 +4102,15 @@
        "bracket": 0
       },
       "dialogue": {
-       "delta_points": -0.501,
+       "delta_points": -0.494,
        "ci95": [
-        -0.817,
-        -0.317
+        -0.81,
+        -0.312
        ],
        "cer_a": 0.01129,
-       "cer_b": 0.00628,
+       "cer_b": 0.00635,
        "errors_a": 354,
-       "errors_b": 197,
+       "errors_b": 199,
        "chars": 31356,
        "vns": 174
       }
@@ -4118,23 +4118,23 @@
     },
     "v4H15": {
      "dialogue": {
-      "delta_points": -0.322,
+      "delta_points": -0.316,
       "ci95": [
-       -0.533,
-       -0.195
+       -0.525,
+       -0.19
       ],
       "cer_a": 0.00874,
-      "cer_b": 0.00552,
+      "cer_b": 0.00558,
       "errors_a": 274,
-      "errors_b": 173,
+      "errors_b": 175,
       "chars": 31356,
       "vns": 174
      },
      "names": {
       "delta_points": -0.886,
       "ci95": [
-       -1.651,
-       -0.161
+       -1.667,
+       -0.154
       ],
       "cer_a": 0.05636,
       "cer_b": 0.0475,
@@ -4157,41 +4157,41 @@
       "vns": 43
      },
      "dialogue_distinct": {
-      "delta_points": -0.349,
+      "delta_points": -0.341,
       "ci95": [
-       -0.601,
-       -0.208
+       -0.589,
+       -0.204
       ],
       "cer_a": 0.00945,
-      "cer_b": 0.00596,
+      "cer_b": 0.00604,
       "errors_a": 263,
-      "errors_b": 166,
+      "errors_b": 168,
       "chars": 27831,
       "vns": 174
      },
      "dialogue_cv": {
-      "delta_points": -0.29,
+      "delta_points": -0.287,
       "ci95": [
-       -0.485,
-       -0.173
+       -0.483,
+       -0.171
       ],
       "cer_a": 0.00874,
-      "cer_b": 0.00584,
+      "cer_b": 0.00587,
       "errors_a": 274,
-      "errors_b": 183,
+      "errors_b": 184,
       "chars": 31356,
       "vns": 174
      },
      "dialogue_tv": {
-      "delta_points": -0.572,
+      "delta_points": -0.558,
       "ci95": [
-       -0.794,
-       -0.367
+       -0.778,
+       -0.356
       ],
       "cer_a": 0.01429,
-      "cer_b": 0.00857,
+      "cer_b": 0.00871,
       "errors_a": 210,
-      "errors_b": 126,
+      "errors_b": 128,
       "chars": 14694,
       "vns": 171
      },
@@ -4235,8 +4235,8 @@
       "dialogue": {
        "delta_points": -0.348,
        "ci95": [
-        -0.578,
-        -0.209
+        -0.582,
+        -0.208
        ],
        "cer_a": 0.00874,
        "cer_b": 0.00526,
@@ -4262,15 +4262,15 @@
       "vns": 171
      },
      "names": {
-      "delta_points": -0.996,
+      "delta_points": -0.889,
       "ci95": [
-       -1.768,
-       -0.367
+       -1.577,
+       -0.296
       ],
       "cer_a": 0.05229,
-      "cer_b": 0.04233,
+      "cer_b": 0.0434,
       "errors_a": 147,
-      "errors_b": 119,
+      "errors_b": 122,
       "chars": 2811,
       "vns": 152
      },
@@ -4381,8 +4381,8 @@
    },
    "release": {
     "file": "vocr_lm_o3_4000k.vlm",
-    "bytes": 3811616,
-    "sha256": "62d3e1c14c91d168944e2ed19bec733c0c991fa96e4bcc5f0c0e377bbda28632",
+    "bytes": 3782688,
+    "sha256": "55f99dec37b7fbb694e7a7492755b245fc4284793c657aaf1388a4110d0a7039",
     "tuned_as": "p_o3j2_4000k",
     "manifest": {
      "kind": "volm-build",
@@ -4443,9 +4443,9 @@
        "licence": "CC BY-SA 4.0",
        "attribution": "Jiten visual-novel frequency list (https://jiten.moe/frequency-dictionaries, 2,162 VN scripts; CC BY-SA 4.0); retrieved 2026-10-12 and again 2026-10-14 with the same bytes",
        "share": 0.4,
-       "words": 239722,
-       "scale": 695121.179677803,
-       "weighted_chars": 18790795
+       "words": 239721,
+       "scale": 688994.4298298949,
+       "weighted_chars": 18637288
       },
       {
        "name": "novel",
@@ -4455,8 +4455,8 @@
        "attribution": "Jiten novel frequency list (https://jiten.moe/frequency-dictionaries, 3,161 novels; CC BY-SA 4.0); retrieved 2026-10-14",
        "share": 0.2,
        "words": 315796,
-       "scale": 341262.4719417339,
-       "weighted_chars": 9352027
+       "scale": 338254.3726358023,
+       "weighted_chars": 9276366
       }
      ],
      "heldout_lines": 3000,
@@ -4464,12 +4464,12 @@
      "exclusion": {
       "vns": 196,
       "characters": 2177,
-      "titles": 225,
-      "markers": 2154,
-      "common_names_not_markers": 37,
-      "corpus_pieces_dropped": 1622,
+      "titles_and_curated": 266,
+      "markers": 3782,
+      "common_names_not_markers": 499,
+      "corpus_pieces_dropped": 13358,
       "jiten_words_dropped": {
-       "vn": 1282,
+       "vn": 1283,
        "novel": 1255
       },
       "extra_vns": 0,
@@ -4480,12 +4480,12 @@
        "vndb_chars": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
        "vndb_titles": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0"
       },
-      "corpus_chars_kept": 47112066
+      "corpus_chars_kept": 46696791
      },
      "ngrams_counted": [
       5279,
-      649240,
-      4975618
+      643967,
+      4923817
      ],
      "profiles": [
       {
@@ -4498,13 +4498,13 @@
         7,
         7
        ],
-       "bytes": 3811616,
+       "bytes": 3782688,
        "entries": [
         5357,
-        218204,
-        669841
+        216559,
+        664596
        ],
-       "heldout_nats_per_char": 3.8012290546849896
+       "heldout_nats_per_char": 3.8069277785122364
       },
       {
        "profile": [
@@ -4516,13 +4516,13 @@
         5,
         10
        ],
-       "bytes": 3623216,
+       "bytes": 3597280,
        "entries": [
         5357,
-        259983,
-        495647
+        258216,
+        491703
        ],
-       "heldout_nats_per_char": 3.808486675365816
+       "heldout_nats_per_char": 3.814585667447052
       },
       {
        "profile": [
@@ -4534,13 +4534,13 @@
         6,
         9
        ],
-       "bytes": 3577056,
+       "bytes": 3550000,
        "entries": [
         5357,
-        236860,
-        541912
+        235110,
+        537556
        ],
-       "heldout_nats_per_char": 3.804217626696878
+       "heldout_nats_per_char": 3.809561683774901
       }
      ],
      "chosen_thresholds": [
@@ -4552,13 +4552,13 @@
       "script": "lm/build.py",
       "numpy": "2.4.6"
      },
-     "bytes": 3811616,
-     "sha256": "62d3e1c14c91d168944e2ed19bec733c0c991fa96e4bcc5f0c0e377bbda28632",
-     "manifest_sha256_prefix": "33f99ab12d3ac2a369a824b2aa92ce31",
+     "bytes": 3782688,
+     "sha256": "55f99dec37b7fbb694e7a7492755b245fc4284793c657aaf1388a4110d0a7039",
+     "manifest_sha256_prefix": "cdc688a9a633a2b4868b168ded7407b4",
      "entries": [
       5357,
-      218204,
-      669841
+      216559,
+      664596
      ],
      "heldout": "realplus"
     }
@@ -4572,12 +4572,12 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 324,
-     "errors_beam": 241,
-     "lines_changed": 156,
-     "chars_fixed": 120,
+     "errors_beam": 242,
+     "lines_changed": 153,
+     "chars_fixed": 119,
      "chars_introduced": 37,
      "guard": {
-      "lines_better": 98,
+      "lines_better": 97,
       "rare_kanji_line": 6,
       "katakana_line": 6,
       "latin_digit_line": 7,
@@ -4587,9 +4587,9 @@
       "hiragana": {
        "chars": 17844,
        "greedy_correct": 17774,
-       "beam_correct": 17808,
+       "beam_correct": 17807,
        "broke": 6,
-       "fixed": 40
+       "fixed": 39
       },
       "kanji_common": {
        "chars": 7558,
@@ -4648,15 +4648,15 @@
      },
      "families_beam": {
       "kanji_kanji": 73,
-      "dakuten": 19,
+      "dakuten": 20,
       "small_kana": 8,
       "hira_kata": 3,
       "dash_like": 1,
-      "punct_punct": 24,
+      "punct_punct": 22,
       "punct_other": 6,
       "other_sub": 58,
       "insertion": 7,
-      "deletion": 42
+      "deletion": 44
      }
     },
     "names": {
@@ -4749,12 +4749,12 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 293,
-     "errors_beam": 195,
-     "lines_changed": 159,
-     "chars_fixed": 135,
+     "errors_beam": 194,
+     "lines_changed": 160,
+     "chars_fixed": 136,
      "chars_introduced": 37,
      "guard": {
-      "lines_better": 111,
+      "lines_better": 112,
       "rare_kanji_line": 2,
       "katakana_line": 4,
       "latin_digit_line": 7,
@@ -4785,9 +4785,9 @@
       "katakana": {
        "chars": 1987,
        "greedy_correct": 1947,
-       "beam_correct": 1960,
+       "beam_correct": 1961,
        "broke": 4,
-       "fixed": 17
+       "fixed": 18
       },
       "latin_digit": {
        "chars": 244,
@@ -4825,7 +4825,7 @@
      },
      "families_beam": {
       "kanji_kanji": 59,
-      "dakuten": 13,
+      "dakuten": 12,
       "small_kana": 6,
       "hira_kata": 1,
       "dash_like": 1,
@@ -5103,16 +5103,16 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 354,
-     "errors_beam": 255,
+     "errors_beam": 256,
      "lines_changed": 175,
      "chars_fixed": 143,
-     "chars_introduced": 44,
+     "chars_introduced": 45,
      "guard": {
       "lines_better": 115,
       "rare_kanji_line": 7,
-      "katakana_line": 7,
+      "katakana_line": 8,
       "latin_digit_line": 8,
-      "lines_worse": 41
+      "lines_worse": 42
      },
      "by_class": {
       "hiragana": {
@@ -5125,8 +5125,8 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7434,
-       "beam_correct": 7475,
-       "broke": 5,
+       "beam_correct": 7474,
+       "broke": 6,
        "fixed": 46
       },
       "kanji_rare": {
@@ -5178,7 +5178,7 @@
       "deletion": 49
      },
      "families_beam": {
-      "kanji_kanji": 81,
+      "kanji_kanji": 82,
       "dakuten": 23,
       "small_kana": 7,
       "hira_kata": 3,
@@ -5194,12 +5194,12 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 179,
-     "errors_beam": 163,
-     "lines_changed": 82,
-     "chars_fixed": 35,
+     "errors_beam": 162,
+     "lines_changed": 83,
+     "chars_fixed": 36,
      "chars_introduced": 19,
      "guard": {
-      "lines_better": 34,
+      "lines_better": 35,
       "rare_kanji_line": 2,
       "katakana_line": 1,
       "latin_digit_line": 3,
@@ -5216,9 +5216,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1340,
-       "beam_correct": 1352,
+       "beam_correct": 1353,
        "broke": 11,
-       "fixed": 23
+       "fixed": 24
       },
       "kanji_rare": {
        "chars": 94,
@@ -5271,7 +5271,7 @@
       "punct_other": 6,
       "other_sub": 30,
       "insertion": 9,
-      "deletion": 25
+      "deletion": 24
      }
     }
    },
@@ -5548,12 +5548,12 @@
      "lines": 853,
      "chars": 2811,
      "errors_greedy": 147,
-     "errors_beam": 137,
+     "errors_beam": 139,
      "lines_changed": 44,
-     "chars_fixed": 18,
+     "chars_fixed": 16,
      "chars_introduced": 8,
      "guard": {
-      "lines_better": 18,
+      "lines_better": 16,
       "rare_kanji_line": 1,
       "katakana_line": 5,
       "latin_digit_line": 0,
@@ -5570,8 +5570,8 @@
       "kanji_common": {
        "chars": 1452,
        "greedy_correct": 1343,
-       "beam_correct": 1353,
-       "broke": 2,
+       "beam_correct": 1351,
+       "broke": 4,
        "fixed": 12
       },
       "kanji_rare": {
@@ -5616,7 +5616,7 @@
       "deletion": 14
      },
      "families_beam": {
-      "kanji_kanji": 83,
+      "kanji_kanji": 85,
       "dakuten": 3,
       "small_kana": 0,
       "hira_kata": 0,
@@ -5658,9 +5658,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7444,
-       "beam_correct": 7492,
+       "beam_correct": 7491,
        "broke": 9,
-       "fixed": 57
+       "fixed": 56
       },
       "kanji_rare": {
        "chars": 136,
@@ -5693,9 +5693,9 @@
       "punct": {
        "chars": 3576,
        "greedy_correct": 3535,
-       "beam_correct": 3543,
+       "beam_correct": 3544,
        "broke": 9,
-       "fixed": 17
+       "fixed": 18
       }
      },
      "families_greedy": {
@@ -5711,12 +5711,12 @@
       "deletion": 54
      },
      "families_beam": {
-      "kanji_kanji": 65,
+      "kanji_kanji": 66,
       "dakuten": 13,
       "small_kana": 5,
       "hira_kata": 3,
       "dash_like": 0,
-      "punct_punct": 22,
+      "punct_punct": 21,
       "punct_other": 5,
       "other_sub": 50,
       "insertion": 11,
@@ -5727,15 +5727,15 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 180,
-     "errors_beam": 155,
-     "lines_changed": 82,
+     "errors_beam": 156,
+     "lines_changed": 83,
      "chars_fixed": 42,
-     "chars_introduced": 17,
+     "chars_introduced": 18,
      "guard": {
-      "rare_kanji_line": 4,
+      "rare_kanji_line": 5,
       "katakana_line": 2,
       "latin_digit_line": 1,
-      "lines_worse": 17,
+      "lines_worse": 18,
       "lines_better": 38
      },
      "by_class": {
@@ -5756,8 +5756,8 @@
       "kanji_rare": {
        "chars": 94,
        "greedy_correct": 84,
-       "beam_correct": 82,
-       "broke": 3,
+       "beam_correct": 81,
+       "broke": 4,
        "fixed": 1
       },
       "katakana": {
@@ -5795,7 +5795,7 @@
       "deletion": 18
      },
      "families_beam": {
-      "kanji_kanji": 83,
+      "kanji_kanji": 84,
       "dakuten": 7,
       "small_kana": 1,
       "hira_kata": 0,
@@ -5990,16 +5990,16 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 226,
-     "errors_beam": 131,
-     "lines_changed": 127,
+     "errors_beam": 132,
+     "lines_changed": 128,
      "chars_fixed": 116,
-     "chars_introduced": 21,
+     "chars_introduced": 22,
      "guard": {
       "lines_better": 97,
       "rare_kanji_line": 1,
       "katakana_line": 3,
       "latin_digit_line": 5,
-      "lines_worse": 21
+      "lines_worse": 22
      },
      "by_class": {
       "hiragana": {
@@ -6073,7 +6073,7 @@
       "punct_punct": 7,
       "punct_other": 7,
       "other_sub": 32,
-      "insertion": 11,
+      "insertion": 12,
       "deletion": 15
      }
     },
@@ -6167,12 +6167,12 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 354,
-     "errors_beam": 222,
-     "lines_changed": 179,
-     "chars_fixed": 166,
+     "errors_beam": 223,
+     "lines_changed": 178,
+     "chars_fixed": 165,
      "chars_introduced": 34,
      "guard": {
-      "lines_better": 128,
+      "lines_better": 127,
       "rare_kanji_line": 9,
       "katakana_line": 8,
       "latin_digit_line": 8,
@@ -6189,9 +6189,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7434,
-       "beam_correct": 7488,
+       "beam_correct": 7487,
        "broke": 4,
-       "fixed": 58
+       "fixed": 57
       },
       "kanji_rare": {
        "chars": 136,
@@ -6242,7 +6242,7 @@
       "deletion": 49
      },
      "families_beam": {
-      "kanji_kanji": 72,
+      "kanji_kanji": 73,
       "dakuten": 19,
       "small_kana": 7,
       "hira_kata": 4,
@@ -6258,12 +6258,12 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 179,
-     "errors_beam": 158,
-     "lines_changed": 82,
-     "chars_fixed": 40,
+     "errors_beam": 160,
+     "lines_changed": 81,
+     "chars_fixed": 38,
      "chars_introduced": 19,
      "guard": {
-      "lines_better": 38,
+      "lines_better": 37,
       "rare_kanji_line": 2,
       "katakana_line": 2,
       "latin_digit_line": 3,
@@ -6280,9 +6280,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1340,
-       "beam_correct": 1361,
+       "beam_correct": 1359,
        "broke": 8,
-       "fixed": 29
+       "fixed": 27
       },
       "kanji_rare": {
        "chars": 94,
@@ -6326,7 +6326,7 @@
       "deletion": 21
      },
      "families_beam": {
-      "kanji_kanji": 81,
+      "kanji_kanji": 83,
       "dakuten": 7,
       "small_kana": 2,
       "hira_kata": 0,
@@ -6344,9 +6344,9 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 274,
-     "errors_beam": 179,
+     "errors_beam": 180,
      "lines_changed": 153,
-     "chars_fixed": 127,
+     "chars_fixed": 126,
      "chars_introduced": 32,
      "guard": {
       "lines_better": 109,
@@ -6366,9 +6366,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7460,
-       "beam_correct": 7487,
+       "beam_correct": 7486,
        "broke": 7,
-       "fixed": 34
+       "fixed": 33
       },
       "kanji_rare": {
        "chars": 136,
@@ -6419,7 +6419,7 @@
       "deletion": 37
      },
      "families_beam": {
-      "kanji_kanji": 59,
+      "kanji_kanji": 60,
       "dakuten": 7,
       "small_kana": 7,
       "hira_kata": 0,
@@ -6716,8 +6716,8 @@
        "chars": 17844,
        "greedy_correct": 17774,
        "beam_correct": 17812,
-       "broke": 6,
-       "fixed": 44
+       "broke": 5,
+       "fixed": 43
       },
       "kanji_common": {
        "chars": 7558,
@@ -6776,13 +6776,13 @@
      },
      "families_beam": {
       "kanji_kanji": 60,
-      "dakuten": 14,
+      "dakuten": 13,
       "small_kana": 5,
       "hira_kata": 2,
       "dash_like": 0,
       "punct_punct": 19,
       "punct_other": 5,
-      "other_sub": 49,
+      "other_sub": 50,
       "insertion": 6,
       "deletion": 37
      }
@@ -6791,16 +6791,16 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 180,
-     "errors_beam": 147,
-     "lines_changed": 88,
-     "chars_fixed": 48,
+     "errors_beam": 148,
+     "lines_changed": 86,
+     "chars_fixed": 47,
      "chars_introduced": 15,
      "guard": {
       "rare_kanji_line": 4,
       "katakana_line": 2,
       "latin_digit_line": 2,
       "lines_worse": 15,
-      "lines_better": 42
+      "lines_better": 41
      },
      "by_class": {
       "hiragana": {
@@ -6813,9 +6813,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1340,
-       "beam_correct": 1366,
+       "beam_correct": 1365,
        "broke": 5,
-       "fixed": 31
+       "fixed": 30
       },
       "kanji_rare": {
        "chars": 94,
@@ -6859,16 +6859,16 @@
       "deletion": 18
      },
      "families_beam": {
-      "kanji_kanji": 72,
+      "kanji_kanji": 74,
       "dakuten": 5,
       "small_kana": 1,
       "hira_kata": 0,
       "dash_like": 0,
       "punct_punct": 1,
-      "punct_other": 3,
-      "other_sub": 32,
+      "punct_other": 4,
+      "other_sub": 31,
       "insertion": 10,
-      "deletion": 23
+      "deletion": 22
      }
     }
    },
@@ -6877,14 +6877,14 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 293,
-     "errors_beam": 174,
-     "lines_changed": 164,
-     "chars_fixed": 150,
+     "errors_beam": 175,
+     "lines_changed": 163,
+     "chars_fixed": 149,
      "chars_introduced": 31,
      "guard": {
-      "lines_better": 124,
+      "lines_better": 123,
       "rare_kanji_line": 4,
-      "katakana_line": 4,
+      "katakana_line": 3,
       "latin_digit_line": 4,
       "lines_worse": 31
      },
@@ -6892,16 +6892,16 @@
       "hiragana": {
        "chars": 17844,
        "greedy_correct": 17773,
-       "beam_correct": 17815,
-       "broke": 8,
+       "beam_correct": 17814,
+       "broke": 9,
        "fixed": 50
       },
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7447,
-       "beam_correct": 7498,
+       "beam_correct": 7497,
        "broke": 6,
-       "fixed": 57
+       "fixed": 56
       },
       "kanji_rare": {
        "chars": 136,
@@ -6934,8 +6934,8 @@
       "punct": {
        "chars": 3576,
        "greedy_correct": 3539,
-       "beam_correct": 3552,
-       "broke": 10,
+       "beam_correct": 3553,
+       "broke": 9,
        "fixed": 23
       }
      },
@@ -6952,31 +6952,31 @@
       "deletion": 40
      },
      "families_beam": {
-      "kanji_kanji": 47,
+      "kanji_kanji": 48,
       "dakuten": 10,
-      "small_kana": 7,
+      "small_kana": 8,
       "hira_kata": 0,
       "dash_like": 1,
       "punct_punct": 11,
       "punct_other": 4,
       "other_sub": 51,
       "insertion": 10,
-      "deletion": 33
+      "deletion": 32
      }
     },
     "names": {
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 152,
-     "errors_beam": 125,
-     "lines_changed": 66,
+     "errors_beam": 127,
+     "lines_changed": 67,
      "chars_fixed": 39,
-     "chars_introduced": 12,
+     "chars_introduced": 14,
      "guard": {
-      "rare_kanji_line": 3,
+      "rare_kanji_line": 6,
       "katakana_line": 2,
       "latin_digit_line": 0,
-      "lines_worse": 11,
+      "lines_worse": 13,
       "lines_better": 37
      },
      "by_class": {
@@ -6990,15 +6990,15 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1358,
-       "beam_correct": 1384,
-       "broke": 4,
-       "fixed": 30
+       "beam_correct": 1382,
+       "broke": 5,
+       "fixed": 29
       },
       "kanji_rare": {
        "chars": 94,
        "greedy_correct": 88,
-       "beam_correct": 86,
-       "broke": 3,
+       "beam_correct": 85,
+       "broke": 4,
        "fixed": 1
       },
       "katakana": {
@@ -7036,15 +7036,15 @@
       "deletion": 17
      },
      "families_beam": {
-      "kanji_kanji": 71,
+      "kanji_kanji": 73,
       "dakuten": 4,
       "small_kana": 0,
       "hira_kata": 1,
       "dash_like": 0,
       "punct_punct": 0,
       "punct_other": 4,
-      "other_sub": 24,
-      "insertion": 8,
+      "other_sub": 25,
+      "insertion": 7,
       "deletion": 13
      }
     }
@@ -7054,12 +7054,12 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 226,
-     "errors_beam": 119,
-     "lines_changed": 125,
-     "chars_fixed": 124,
+     "errors_beam": 120,
+     "lines_changed": 124,
+     "chars_fixed": 123,
      "chars_introduced": 17,
      "guard": {
-      "lines_better": 100,
+      "lines_better": 99,
       "rare_kanji_line": 0,
       "katakana_line": 2,
       "latin_digit_line": 5,
@@ -7076,9 +7076,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7468,
-       "beam_correct": 7510,
+       "beam_correct": 7509,
        "broke": 3,
-       "fixed": 45
+       "fixed": 44
       },
       "kanji_rare": {
        "chars": 136,
@@ -7129,7 +7129,7 @@
       "deletion": 31
      },
      "families_beam": {
-      "kanji_kanji": 37,
+      "kanji_kanji": 38,
       "dakuten": 9,
       "small_kana": 3,
       "hira_kata": 0,
@@ -7145,12 +7145,12 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 143,
-     "errors_beam": 121,
-     "lines_changed": 53,
-     "chars_fixed": 31,
+     "errors_beam": 122,
+     "lines_changed": 52,
+     "chars_fixed": 30,
      "chars_introduced": 9,
      "guard": {
-      "lines_better": 26,
+      "lines_better": 25,
       "rare_kanji_line": 0,
       "katakana_line": 2,
       "latin_digit_line": 0,
@@ -7167,9 +7167,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1363,
-       "beam_correct": 1379,
+       "beam_correct": 1378,
        "broke": 4,
-       "fixed": 20
+       "fixed": 19
       },
       "kanji_rare": {
        "chars": 94,
@@ -7213,7 +7213,7 @@
       "deletion": 14
      },
      "families_beam": {
-      "kanji_kanji": 71,
+      "kanji_kanji": 72,
       "dakuten": 6,
       "small_kana": 0,
       "hira_kata": 0,
@@ -7231,12 +7231,12 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 354,
-     "errors_beam": 216,
-     "lines_changed": 184,
-     "chars_fixed": 169,
+     "errors_beam": 217,
+     "lines_changed": 183,
+     "chars_fixed": 168,
      "chars_introduced": 31,
      "guard": {
-      "lines_better": 132,
+      "lines_better": 131,
       "rare_kanji_line": 6,
       "katakana_line": 9,
       "latin_digit_line": 7,
@@ -7253,9 +7253,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7434,
-       "beam_correct": 7488,
+       "beam_correct": 7487,
        "broke": 6,
-       "fixed": 60
+       "fixed": 59
       },
       "kanji_rare": {
        "chars": 136,
@@ -7306,7 +7306,7 @@
       "deletion": 49
      },
      "families_beam": {
-      "kanji_kanji": 69,
+      "kanji_kanji": 70,
       "dakuten": 15,
       "small_kana": 6,
       "hira_kata": 3,
@@ -7344,8 +7344,8 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1340,
-       "beam_correct": 1358,
-       "broke": 9,
+       "beam_correct": 1357,
+       "broke": 10,
        "fixed": 27
       },
       "kanji_rare": {
@@ -7390,7 +7390,7 @@
       "deletion": 21
      },
      "families_beam": {
-      "kanji_kanji": 81,
+      "kanji_kanji": 82,
       "dakuten": 6,
       "small_kana": 2,
       "hira_kata": 0,
@@ -7398,7 +7398,7 @@
       "punct_punct": 1,
       "punct_other": 5,
       "other_sub": 30,
-      "insertion": 10,
+      "insertion": 9,
       "deletion": 24
      }
     }
@@ -7408,9 +7408,9 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 274,
-     "errors_beam": 171,
+     "errors_beam": 173,
      "lines_changed": 157,
-     "chars_fixed": 136,
+     "chars_fixed": 134,
      "chars_introduced": 33,
      "guard": {
       "rare_kanji_line": 2,
@@ -7430,9 +7430,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7460,
-       "beam_correct": 7493,
+       "beam_correct": 7490,
        "broke": 6,
-       "fixed": 39
+       "fixed": 36
       },
       "kanji_rare": {
        "chars": 136,
@@ -7451,9 +7451,9 @@
       "latin_digit": {
        "chars": 244,
        "greedy_correct": 223,
-       "beam_correct": 230,
+       "beam_correct": 231,
        "broke": 1,
-       "fixed": 8
+       "fixed": 9
       },
       "other": {
        "chars": 11,
@@ -7483,14 +7483,14 @@
       "deletion": 37
      },
      "families_beam": {
-      "kanji_kanji": 50,
+      "kanji_kanji": 53,
       "dakuten": 7,
       "small_kana": 6,
       "hira_kata": 0,
       "dash_like": 0,
       "punct_punct": 12,
       "punct_other": 4,
-      "other_sub": 49,
+      "other_sub": 48,
       "insertion": 15,
       "deletion": 28
      }
@@ -7677,15 +7677,15 @@
      "chars": 2811,
      "errors_greedy": 147,
      "errors_beam": 119,
-     "lines_changed": 57,
-     "chars_fixed": 34,
-     "chars_introduced": 6,
+     "lines_changed": 52,
+     "chars_fixed": 33,
+     "chars_introduced": 5,
      "guard": {
-      "lines_better": 28,
+      "lines_better": 27,
       "rare_kanji_line": 1,
       "katakana_line": 4,
       "latin_digit_line": 0,
-      "lines_worse": 6
+      "lines_worse": 5
      },
      "by_class": {
       "hiragana": {
@@ -7698,9 +7698,9 @@
       "kanji_common": {
        "chars": 1452,
        "greedy_correct": 1343,
-       "beam_correct": 1371,
+       "beam_correct": 1369,
        "broke": 1,
-       "fixed": 29
+       "fixed": 27
       },
       "kanji_rare": {
        "chars": 94,
@@ -7744,7 +7744,7 @@
       "deletion": 14
      },
      "families_beam": {
-      "kanji_kanji": 64,
+      "kanji_kanji": 68,
       "dakuten": 3,
       "small_kana": 0,
       "hira_kata": 0,
@@ -7752,8 +7752,8 @@
       "punct_punct": 0,
       "punct_other": 1,
       "other_sub": 19,
-      "insertion": 13,
-      "deletion": 19
+      "insertion": 11,
+      "deletion": 17
      }
     }
    }
@@ -7764,16 +7764,16 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 324,
-     "errors_beam": 191,
-     "lines_changed": 185,
-     "chars_fixed": 164,
-     "chars_introduced": 31,
+     "errors_beam": 194,
+     "lines_changed": 187,
+     "chars_fixed": 163,
+     "chars_introduced": 33,
      "guard": {
       "lines_better": 129,
       "rare_kanji_line": 4,
       "katakana_line": 7,
       "latin_digit_line": 7,
-      "lines_worse": 31
+      "lines_worse": 33
      },
      "by_class": {
       "hiragana": {
@@ -7786,9 +7786,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7444,
-       "beam_correct": 7498,
-       "broke": 7,
-       "fixed": 61
+       "beam_correct": 7495,
+       "broke": 9,
+       "fixed": 60
       },
       "kanji_rare": {
        "chars": 136,
@@ -7839,7 +7839,7 @@
       "deletion": 54
      },
      "families_beam": {
-      "kanji_kanji": 60,
+      "kanji_kanji": 63,
       "dakuten": 11,
       "small_kana": 4,
       "hira_kata": 2,
@@ -7855,16 +7855,16 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 180,
-     "errors_beam": 147,
+     "errors_beam": 149,
      "lines_changed": 85,
-     "chars_fixed": 48,
-     "chars_introduced": 15,
+     "chars_fixed": 47,
+     "chars_introduced": 16,
      "guard": {
-      "lines_better": 43,
+      "lines_better": 42,
       "rare_kanji_line": 4,
       "katakana_line": 2,
       "latin_digit_line": 1,
-      "lines_worse": 15
+      "lines_worse": 16
      },
      "by_class": {
       "hiragana": {
@@ -7877,9 +7877,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1340,
-       "beam_correct": 1368,
+       "beam_correct": 1367,
        "broke": 4,
-       "fixed": 32
+       "fixed": 31
       },
       "kanji_rare": {
        "chars": 94,
@@ -7923,7 +7923,7 @@
       "deletion": 18
      },
      "families_beam": {
-      "kanji_kanji": 77,
+      "kanji_kanji": 78,
       "dakuten": 5,
       "small_kana": 0,
       "hira_kata": 0,
@@ -7931,7 +7931,7 @@
       "punct_punct": 0,
       "punct_other": 4,
       "other_sub": 30,
-      "insertion": 13,
+      "insertion": 14,
       "deletion": 18
      }
     }
@@ -7941,16 +7941,16 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 293,
-     "errors_beam": 174,
-     "lines_changed": 170,
+     "errors_beam": 173,
+     "lines_changed": 169,
      "chars_fixed": 155,
-     "chars_introduced": 36,
+     "chars_introduced": 35,
      "guard": {
       "lines_better": 127,
       "rare_kanji_line": 4,
       "katakana_line": 3,
-      "latin_digit_line": 3,
-      "lines_worse": 34
+      "latin_digit_line": 2,
+      "lines_worse": 33
      },
      "by_class": {
       "hiragana": {
@@ -7984,8 +7984,8 @@
       "latin_digit": {
        "chars": 244,
        "greedy_correct": 227,
-       "beam_correct": 227,
-       "broke": 3,
+       "beam_correct": 228,
+       "broke": 2,
        "fixed": 3
       },
       "other": {
@@ -8023,7 +8023,7 @@
       "dash_like": 1,
       "punct_punct": 12,
       "punct_other": 4,
-      "other_sub": 57,
+      "other_sub": 56,
       "insertion": 15,
       "deletion": 24
      }
@@ -8032,16 +8032,16 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 152,
-     "errors_beam": 124,
-     "lines_changed": 66,
-     "chars_fixed": 39,
-     "chars_introduced": 11,
+     "errors_beam": 127,
+     "lines_changed": 68,
+     "chars_fixed": 38,
+     "chars_introduced": 13,
      "guard": {
-      "rare_kanji_line": 3,
+      "rare_kanji_line": 5,
       "katakana_line": 4,
       "latin_digit_line": 0,
-      "lines_worse": 11,
-      "lines_better": 37
+      "lines_worse": 13,
+      "lines_better": 36
      },
      "by_class": {
       "hiragana": {
@@ -8054,9 +8054,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1358,
-       "beam_correct": 1387,
-       "broke": 1,
-       "fixed": 30
+       "beam_correct": 1384,
+       "broke": 3,
+       "fixed": 29
       },
       "kanji_rare": {
        "chars": 94,
@@ -8100,14 +8100,14 @@
       "deletion": 17
      },
      "families_beam": {
-      "kanji_kanji": 68,
+      "kanji_kanji": 70,
       "dakuten": 3,
       "small_kana": 1,
       "hira_kata": 1,
       "dash_like": 0,
       "punct_punct": 0,
       "punct_other": 4,
-      "other_sub": 24,
+      "other_sub": 25,
       "insertion": 10,
       "deletion": 13
      }
@@ -8118,9 +8118,9 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 226,
-     "errors_beam": 116,
+     "errors_beam": 115,
      "lines_changed": 121,
-     "chars_fixed": 125,
+     "chars_fixed": 126,
      "chars_introduced": 15,
      "guard": {
       "lines_better": 99,
@@ -8140,8 +8140,8 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7468,
-       "beam_correct": 7511,
-       "broke": 4,
+       "beam_correct": 7512,
+       "broke": 3,
        "fixed": 47
       },
       "kanji_rare": {
@@ -8193,7 +8193,7 @@
       "deletion": 31
      },
      "families_beam": {
-      "kanji_kanji": 37,
+      "kanji_kanji": 36,
       "dakuten": 10,
       "small_kana": 3,
       "hira_kata": 0,
@@ -8209,12 +8209,12 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 143,
-     "errors_beam": 127,
-     "lines_changed": 57,
-     "chars_fixed": 30,
+     "errors_beam": 128,
+     "lines_changed": 55,
+     "chars_fixed": 29,
      "chars_introduced": 14,
      "guard": {
-      "lines_better": 24,
+      "lines_better": 23,
       "rare_kanji_line": 0,
       "katakana_line": 5,
       "latin_digit_line": 1,
@@ -8231,9 +8231,9 @@
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1363,
-       "beam_correct": 1379,
+       "beam_correct": 1378,
        "broke": 4,
-       "fixed": 20
+       "fixed": 19
       },
       "kanji_rare": {
        "chars": 94,
@@ -8284,7 +8284,7 @@
       "dash_like": 0,
       "punct_punct": 0,
       "punct_other": 2,
-      "other_sub": 20,
+      "other_sub": 21,
       "insertion": 13,
       "deletion": 13
      }
@@ -8295,16 +8295,16 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 354,
-     "errors_beam": 197,
+     "errors_beam": 199,
      "lines_changed": 190,
-     "chars_fixed": 183,
-     "chars_introduced": 26,
+     "chars_fixed": 182,
+     "chars_introduced": 27,
      "guard": {
-      "lines_better": 142,
+      "lines_better": 141,
       "rare_kanji_line": 6,
       "katakana_line": 9,
       "latin_digit_line": 6,
-      "lines_worse": 26
+      "lines_worse": 27
      },
      "by_class": {
       "hiragana": {
@@ -8317,9 +8317,9 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7434,
-       "beam_correct": 7495,
-       "broke": 5,
-       "fixed": 66
+       "beam_correct": 7493,
+       "broke": 6,
+       "fixed": 65
       },
       "kanji_rare": {
        "chars": 136,
@@ -8370,7 +8370,7 @@
       "deletion": 49
      },
      "families_beam": {
-      "kanji_kanji": 64,
+      "kanji_kanji": 66,
       "dakuten": 16,
       "small_kana": 5,
       "hira_kata": 1,
@@ -8386,31 +8386,31 @@
      "lines": 856,
      "chars": 2821,
      "errors_greedy": 179,
-     "errors_beam": 155,
-     "lines_changed": 85,
+     "errors_beam": 156,
+     "lines_changed": 87,
      "chars_fixed": 45,
-     "chars_introduced": 21,
+     "chars_introduced": 22,
      "guard": {
       "rare_kanji_line": 2,
       "katakana_line": 2,
       "latin_digit_line": 2,
-      "lines_worse": 19,
+      "lines_worse": 20,
       "lines_better": 44
      },
      "by_class": {
       "hiragana": {
        "chars": 392,
        "greedy_correct": 384,
-       "beam_correct": 381,
-       "broke": 4,
+       "beam_correct": 380,
+       "broke": 5,
        "fixed": 1
       },
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1340,
        "beam_correct": 1365,
-       "broke": 7,
-       "fixed": 32
+       "broke": 8,
+       "fixed": 33
       },
       "kanji_rare": {
        "chars": 94,
@@ -8463,7 +8463,7 @@
       "punct_other": 5,
       "other_sub": 32,
       "insertion": 14,
-      "deletion": 16
+      "deletion": 17
      }
     }
    },
@@ -8472,15 +8472,15 @@
      "lines": 1924,
      "chars": 31356,
      "errors_greedy": 274,
-     "errors_beam": 173,
-     "lines_changed": 161,
-     "chars_fixed": 136,
-     "chars_introduced": 35,
+     "errors_beam": 175,
+     "lines_changed": 162,
+     "chars_fixed": 135,
+     "chars_introduced": 36,
      "guard": {
       "rare_kanji_line": 3,
       "katakana_line": 8,
       "latin_digit_line": 5,
-      "lines_worse": 35,
+      "lines_worse": 36,
       "lines_better": 115
      },
      "by_class": {
@@ -8494,8 +8494,8 @@
       "kanji_common": {
        "chars": 7558,
        "greedy_correct": 7460,
-       "beam_correct": 7496,
-       "broke": 6,
+       "beam_correct": 7494,
+       "broke": 8,
        "fixed": 42
       },
       "kanji_rare": {
@@ -8547,7 +8547,7 @@
       "deletion": 37
      },
      "families_beam": {
-      "kanji_kanji": 50,
+      "kanji_kanji": 52,
       "dakuten": 6,
       "small_kana": 6,
       "hira_kata": 0,
@@ -8564,7 +8564,7 @@
      "chars": 2821,
      "errors_greedy": 159,
      "errors_beam": 134,
-     "lines_changed": 66,
+     "lines_changed": 67,
      "chars_fixed": 42,
      "chars_introduced": 17,
      "guard": {
@@ -8578,15 +8578,15 @@
       "hiragana": {
        "chars": 392,
        "greedy_correct": 384,
-       "beam_correct": 385,
-       "broke": 1,
+       "beam_correct": 386,
+       "broke": 0,
        "fixed": 2
       },
       "kanji_common": {
        "chars": 1462,
        "greedy_correct": 1351,
-       "beam_correct": 1381,
-       "broke": 4,
+       "beam_correct": 1380,
+       "broke": 5,
        "fixed": 34
       },
       "kanji_rare": {
@@ -8631,14 +8631,14 @@
       "deletion": 12
      },
      "families_beam": {
-      "kanji_kanji": 72,
+      "kanji_kanji": 73,
       "dakuten": 6,
       "small_kana": 1,
       "hira_kata": 1,
       "dash_like": 0,
       "punct_punct": 0,
       "punct_other": 4,
-      "other_sub": 28,
+      "other_sub": 27,
       "insertion": 10,
       "deletion": 12
      }
@@ -8740,12 +8740,12 @@
      "lines": 853,
      "chars": 2811,
      "errors_greedy": 147,
-     "errors_beam": 119,
+     "errors_beam": 122,
      "lines_changed": 61,
-     "chars_fixed": 37,
+     "chars_fixed": 34,
      "chars_introduced": 9,
      "guard": {
-      "lines_better": 32,
+      "lines_better": 30,
       "rare_kanji_line": 1,
       "katakana_line": 7,
       "latin_digit_line": 0,
@@ -8762,9 +8762,9 @@
       "kanji_common": {
        "chars": 1452,
        "greedy_correct": 1343,
-       "beam_correct": 1374,
+       "beam_correct": 1371,
        "broke": 1,
-       "fixed": 32
+       "fixed": 29
       },
       "kanji_rare": {
        "chars": 94,
@@ -8808,14 +8808,14 @@
       "deletion": 14
      },
      "families_beam": {
-      "kanji_kanji": 66,
+      "kanji_kanji": 68,
       "dakuten": 4,
       "small_kana": 0,
       "hira_kata": 0,
       "dash_like": 0,
       "punct_punct": 0,
       "punct_other": 1,
-      "other_sub": 24,
+      "other_sub": 25,
       "insertion": 14,
       "deletion": 10
      }
@@ -9530,122 +9530,122 @@
     {
      "beam": 1,
      "topk": 2,
-     "dialogue": 1493,
-     "names": 956
+     "dialogue": 1491,
+     "names": 955
     },
     {
      "beam": 1,
      "topk": 4,
-     "dialogue": 1494,
-     "names": 937
+     "dialogue": 1492,
+     "names": 936
     },
     {
      "beam": 1,
      "topk": 8,
-     "dialogue": 1485,
-     "names": 932
+     "dialogue": 1483,
+     "names": 931
     },
     {
      "beam": 1,
      "topk": 16,
-     "dialogue": 1485,
-     "names": 932
+     "dialogue": 1483,
+     "names": 931
     },
     {
      "beam": 2,
      "topk": 2,
-     "dialogue": 1199,
+     "dialogue": 1202,
      "names": 897
     },
     {
      "beam": 2,
      "topk": 4,
-     "dialogue": 1178,
-     "names": 878
+     "dialogue": 1181,
+     "names": 879
     },
     {
      "beam": 2,
      "topk": 8,
-     "dialogue": 1168,
-     "names": 873
-    },
-    {
-     "beam": 2,
-     "topk": 16,
-     "dialogue": 1167,
+     "dialogue": 1166,
      "names": 874
     },
     {
+     "beam": 2,
+     "topk": 16,
+     "dialogue": 1165,
+     "names": 876
+    },
+    {
      "beam": 4,
      "topk": 2,
-     "dialogue": 1174,
-     "names": 896
+     "dialogue": 1176,
+     "names": 898
     },
     {
      "beam": 4,
      "topk": 4,
-     "dialogue": 1100,
-     "names": 866
+     "dialogue": 1103,
+     "names": 869
     },
     {
      "beam": 4,
      "topk": 8,
-     "dialogue": 1074,
-     "names": 858
-    },
-    {
-     "beam": 4,
-     "topk": 16,
-     "dialogue": 1070,
-     "names": 858
-    },
-    {
-     "beam": 8,
-     "topk": 2,
-     "dialogue": 1171,
-     "names": 898
-    },
-    {
-     "beam": 8,
-     "topk": 4,
      "dialogue": 1078,
-     "names": 865
+     "names": 862
+    },
+    {
+     "beam": 4,
+     "topk": 16,
+     "dialogue": 1074,
+     "names": 862
+    },
+    {
+     "beam": 8,
+     "topk": 2,
+     "dialogue": 1173,
+     "names": 900
+    },
+    {
+     "beam": 8,
+     "topk": 4,
+     "dialogue": 1080,
+     "names": 868
     },
     {
      "beam": 8,
      "topk": 8,
-     "dialogue": 1044,
-     "names": 848
+     "dialogue": 1047,
+     "names": 851
     },
     {
      "beam": 8,
      "topk": 16,
-     "dialogue": 1035,
-     "names": 848
+     "dialogue": 1039,
+     "names": 851
     },
     {
      "beam": 16,
      "topk": 2,
-     "dialogue": 1171,
-     "names": 898
+     "dialogue": 1173,
+     "names": 900
     },
     {
      "beam": 16,
      "topk": 4,
-     "dialogue": 1076,
-     "names": 865
+     "dialogue": 1079,
+     "names": 868
     },
     {
      "beam": 16,
      "topk": 8,
-     "dialogue": 1037,
-     "names": 848
+     "dialogue": 1040,
+     "names": 851
     },
     {
      "beam": 16,
      "topk": 16,
-     "dialogue": 1028,
-     "names": 844
+     "dialogue": 1031,
+     "names": 847
     }
    ]
   },
@@ -9664,122 +9664,122 @@
     {
      "beam": 1,
      "topk": 2,
-     "dialogue": 1454,
-     "names": 932
+     "dialogue": 1459,
+     "names": 933
     },
     {
      "beam": 1,
      "topk": 4,
-     "dialogue": 1443,
-     "names": 902
+     "dialogue": 1447,
+     "names": 903
     },
     {
      "beam": 1,
      "topk": 8,
+     "dialogue": 1433,
+     "names": 894
+    },
+    {
+     "beam": 1,
+     "topk": 16,
      "dialogue": 1429,
      "names": 893
     },
     {
-     "beam": 1,
-     "topk": 16,
-     "dialogue": 1426,
-     "names": 892
-    },
-    {
      "beam": 2,
      "topk": 2,
-     "dialogue": 1144,
-     "names": 879
+     "dialogue": 1148,
+     "names": 882
     },
     {
      "beam": 2,
      "topk": 4,
-     "dialogue": 1112,
-     "names": 853
+     "dialogue": 1115,
+     "names": 854
     },
     {
      "beam": 2,
      "topk": 8,
-     "dialogue": 1089,
-     "names": 839
+     "dialogue": 1092,
+     "names": 842
     },
     {
      "beam": 2,
      "topk": 16,
-     "dialogue": 1087,
+     "dialogue": 1090,
+     "names": 841
+    },
+    {
+     "beam": 4,
+     "topk": 2,
+     "dialogue": 1116,
+     "names": 881
+    },
+    {
+     "beam": 4,
+     "topk": 4,
+     "dialogue": 1031,
+     "names": 840
+    },
+    {
+     "beam": 4,
+     "topk": 8,
+     "dialogue": 1005,
+     "names": 822
+    },
+    {
+     "beam": 4,
+     "topk": 16,
+     "dialogue": 1001,
+     "names": 820
+    },
+    {
+     "beam": 8,
+     "topk": 2,
+     "dialogue": 1110,
+     "names": 883
+    },
+    {
+     "beam": 8,
+     "topk": 4,
+     "dialogue": 1006,
      "names": 837
     },
     {
-     "beam": 4,
-     "topk": 2,
-     "dialogue": 1112,
-     "names": 873
-    },
-    {
-     "beam": 4,
-     "topk": 4,
-     "dialogue": 1027,
-     "names": 832
-    },
-    {
-     "beam": 4,
-     "topk": 8,
-     "dialogue": 1000,
-     "names": 811
-    },
-    {
-     "beam": 4,
-     "topk": 16,
-     "dialogue": 996,
-     "names": 809
-    },
-    {
-     "beam": 8,
-     "topk": 2,
-     "dialogue": 1107,
-     "names": 875
-    },
-    {
-     "beam": 8,
-     "topk": 4,
-     "dialogue": 1003,
-     "names": 829
-    },
-    {
      "beam": 8,
      "topk": 8,
-     "dialogue": 965,
-     "names": 806
+     "dialogue": 970,
+     "names": 816
     },
     {
      "beam": 8,
      "topk": 16,
-     "dialogue": 959,
-     "names": 805
+     "dialogue": 964,
+     "names": 815
     },
     {
      "beam": 16,
      "topk": 2,
-     "dialogue": 1105,
-     "names": 875
+     "dialogue": 1110,
+     "names": 883
     },
     {
      "beam": 16,
      "topk": 4,
-     "dialogue": 995,
-     "names": 829
+     "dialogue": 999,
+     "names": 837
     },
     {
      "beam": 16,
      "topk": 8,
-     "dialogue": 959,
-     "names": 803
+     "dialogue": 963,
+     "names": 813
     },
     {
      "beam": 16,
      "topk": 16,
-     "dialogue": 950,
-     "names": 797
+     "dialogue": 954,
+     "names": 807
     }
    ]
   }
@@ -10037,7 +10037,7 @@
  "ablations": [
   {
    "lm": "p_o3j2_500k",
-   "bytes": 498128,
+   "bytes": 497456,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10052,10 +10052,10 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 4.085322664115214,
-   "dialogue_errors": 1155,
-   "dialogue_errors_cv": 1187,
-   "names_errors": 876,
+   "heldout_nats_per_char": 4.085559535693009,
+   "dialogue_errors": 1156,
+   "dialogue_errors_cv": 1186,
+   "names_errors": 877,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10068,7 +10068,7 @@
   },
   {
    "lm": "p_o3nj_500k",
-   "bytes": 498496,
+   "bytes": 498752,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10080,10 +10080,10 @@
     "tatoeba"
    ],
    "jiten_share": {},
-   "heldout_nats_per_char": 4.100305765410798,
-   "dialogue_errors": 1206,
-   "dialogue_errors_cv": 1207,
-   "names_errors": 898,
+   "heldout_nats_per_char": 4.100212601327381,
+   "dialogue_errors": 1201,
+   "dialogue_errors_cv": 1202,
+   "names_errors": 901,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10096,7 +10096,7 @@
   },
   {
    "lm": "p_o3j2_1000k",
-   "bytes": 995328,
+   "bytes": 988080,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10111,10 +10111,10 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.9350266674671333,
-   "dialogue_errors": 1044,
-   "dialogue_errors_cv": 1069,
-   "names_errors": 848,
+   "heldout_nats_per_char": 3.9375409733703948,
+   "dialogue_errors": 1047,
+   "dialogue_errors_cv": 1070,
+   "names_errors": 851,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10127,7 +10127,7 @@
   },
   {
    "lm": "p_o3nj_1000k",
-   "bytes": 982752,
+   "bytes": 994016,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10139,10 +10139,10 @@
     "tatoeba"
    ],
    "jiten_share": {},
-   "heldout_nats_per_char": 3.935626860666903,
-   "dialogue_errors": 1098,
-   "dialogue_errors_cv": 1105,
-   "names_errors": 871,
+   "heldout_nats_per_char": 3.93404126706082,
+   "dialogue_errors": 1094,
+   "dialogue_errors_cv": 1095,
+   "names_errors": 874,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10155,7 +10155,7 @@
   },
   {
    "lm": "p_o3j2dev_1000k",
-   "bytes": 993200,
+   "bytes": 993360,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 183,
@@ -10170,10 +10170,10 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.9357505652076417,
-   "dialogue_errors": 1046,
-   "dialogue_errors_cv": 1069,
-   "names_errors": 850,
+   "heldout_nats_per_char": 3.938665740760884,
+   "dialogue_errors": 1054,
+   "dialogue_errors_cv": 1073,
+   "names_errors": 852,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10186,7 +10186,7 @@
   },
   {
    "lm": "p_o3j2_2000k",
-   "bytes": 1987824,
+   "bytes": 1972416,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10201,10 +10201,10 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.847534323499585,
-   "dialogue_errors": 995,
-   "dialogue_errors_cv": 996,
-   "names_errors": 804,
+   "heldout_nats_per_char": 3.8520075068862454,
+   "dialogue_errors": 1000,
+   "dialogue_errors_cv": 1006,
+   "names_errors": 808,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10217,7 +10217,7 @@
   },
   {
    "lm": "p_o3nj_2000k",
-   "bytes": 1935104,
+   "bytes": 1917936,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10229,10 +10229,10 @@
     "tatoeba"
    ],
    "jiten_share": {},
-   "heldout_nats_per_char": 3.8257978328407813,
-   "dialogue_errors": 1037,
-   "dialogue_errors_cv": 1048,
-   "names_errors": 845,
+   "heldout_nats_per_char": 3.831671693639887,
+   "dialogue_errors": 1039,
+   "dialogue_errors_cv": 1053,
+   "names_errors": 854,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10245,7 +10245,7 @@
   },
   {
    "lm": "p_o3j2_4000k",
-   "bytes": 3811616,
+   "bytes": 3782688,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10260,10 +10260,10 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.8012290546849896,
-   "dialogue_errors": 965,
-   "dialogue_errors_cv": 989,
-   "names_errors": 806,
+   "heldout_nats_per_char": 3.8069277785122364,
+   "dialogue_errors": 970,
+   "dialogue_errors_cv": 992,
+   "names_errors": 816,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10276,7 +10276,7 @@
   },
   {
    "lm": "p_o3nj_4000k",
-   "bytes": 3933264,
+   "bytes": 3893312,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 0,
@@ -10288,10 +10288,10 @@
     "tatoeba"
    ],
    "jiten_share": {},
-   "heldout_nats_per_char": 3.7646319644793564,
-   "dialogue_errors": 960,
-   "dialogue_errors_cv": 964,
-   "names_errors": 816,
+   "heldout_nats_per_char": 3.7728276060214068,
+   "dialogue_errors": 963,
+   "dialogue_errors_cv": 967,
+   "names_errors": 829,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10304,7 +10304,7 @@
   },
   {
    "lm": "p_o3j2dev_4000k",
-   "bytes": 3803584,
+   "bytes": 3743984,
    "order": 3,
    "protected_filter": true,
    "extra_vns_excluded": 183,
@@ -10319,10 +10319,10 @@
     "vn": 0.4,
     "novel": 0.2
    },
-   "heldout_nats_per_char": 3.8026236919898655,
-   "dialogue_errors": 968,
-   "dialogue_errors_cv": 990,
-   "names_errors": 820,
+   "heldout_nats_per_char": 3.81100908704114,
+   "dialogue_errors": 973,
+   "dialogue_errors_cv": 995,
+   "names_errors": 831,
    "config": {
     "beam": 8,
     "topk": 8,
@@ -10354,136 +10354,136 @@
     },
     "components": {
      "lm0.5MB": {
-      "insns_per_frame": 1888.7484811664642,
+      "insns_per_frame": 1887.244228432564,
       "l1d_misses_per_frame": 0.0,
-      "l2_misses_per_frame": 0.0064803564196030785,
+      "l2_misses_per_frame": 0.006075334143377886,
       "cache_signed_per_frame": {
-       "data_accesses": 648.3993519643581,
-       "l1d_misses": -329.7201296071284,
-       "insn_accesses": 1888.9696233292832,
-       "l1i_misses": 0.3556095585257189,
-       "l2_accesses": -329.3645200486027,
-       "l2_misses": 0.0064803564196030785
+       "data_accesses": 647.9696233292831,
+       "l1d_misses": -329.7411907654921,
+       "insn_accesses": 1887.5471850951803,
+       "l1i_misses": 0.35479951397326853,
+       "l2_accesses": -329.38639125151883,
+       "l2_misses": 0.006075334143377886
       },
       "ms_per_dev_line": {
        "444": [
-        0.1321347972972973,
-        0.2728075135135135
+        0.13203023648648649,
+        0.2725849436936937
        ],
        "333": [
-        0.17617972972972973,
-        0.36372868468468467
+        0.17604031531531533,
+        0.3634328415915916
        ]
       },
       "ms_640px": {
        "444": [
-        0.1712561163836984,
-        0.3535779843026502
+        0.17112059811938304,
+        0.35328951795051433
        ],
        "333": [
-        0.22834148851159786,
-        0.4714183033580361
+        0.22816079749251073,
+        0.4710348696205318
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1280.2575941676791
+        1279.3045767517212
        ],
        [
         "vocr_lm_score",
-        483.6836776022681
+        483.1778047792629
        ],
        [
         "memcpy",
-        118.80437424058323
+        118.6913730255164
        ],
        [
         "vocr_class_text",
         6.040907249898744
        ],
        [
-        "__aeabi_uidivmod",
-        -0.0064803564196030785
+        "__udivsi3",
+        0.01660591332523289
        ],
        [
-        "__udivsi3",
-        -0.031591737545565005
+        "__aeabi_uidivmod",
+        0.012960712839206157
        ]
       ],
       "load_ms": {
        "444": [
-        27.773153153153153,
-        58.706962882882884
+        27.73725900900901,
+        58.63109054054054
        ],
        "333": [
-        37.03087087087087,
-        77.67542384384384
+        36.98301201201201,
+        77.57510405405405
        ]
       },
       "load_cycles_444": [
-       12331280.0,
-       26065891.52
+       12315343.0,
+       26032204.2
       ],
-      "load_insns": 24494764,
-      "load_insns_crc": 22412919,
+      "load_insns": 24462890,
+      "load_insns_crc": 22382679,
       "cycles_per_frame_444": [
-       950.4714459295261,
-       1962.3578128797085
+       949.719319562576,
+       1960.7568246253543
       ],
       "calibrated_ms_640px": [
-       0.41970864248281065,
-       0.4950357435157937
+       0.4193765189479059,
+       0.4946318689493653
       ],
       "calibrated_load_ms": [
-       68.06549543176888,
-       82.19415888576918
+       67.97752728890812,
+       82.08793190594803
       ]
      },
      "lm1MB": {
-      "insns_per_frame": 1929.9870392871608,
+      "insns_per_frame": 1928.7399756986633,
       "l1d_misses_per_frame": 0.0,
-      "l2_misses_per_frame": 0.01012555690562981,
+      "l2_misses_per_frame": 0.010935601458080195,
       "cache_signed_per_frame": {
-       "data_accesses": 652.5706763872013,
-       "l1d_misses": -329.19400567031187,
-       "insn_accesses": 1930.1664641555285,
-       "l1i_misses": 0.35479951397326853,
-       "l2_accesses": -328.8392061563386,
-       "l2_misses": 0.01012555690562981
+       "data_accesses": 652.4309437019036,
+       "l1d_misses": -329.2191170514378,
+       "insn_accesses": 1928.9141352774402,
+       "l1i_misses": 0.35277440259214254,
+       "l2_accesses": -328.86634264884566,
+       "l2_misses": 0.010935601458080195
       },
       "ms_per_dev_line": {
        "444": [
-        0.13500129504504504,
-        0.27857595720720724
+        0.13491461148648648,
+        0.2784114684684685
        ],
        "333": [
-        0.1800017267267267,
-        0.37141169294294296
+        0.17988614864864866,
+        0.37119054129129125
        ]
       },
       "ms_640px": {
        "444": [
-        0.17497130179997739,
-        0.3610542985269595
+        0.17485895372894159,
+        0.36084110939615194
        ],
        "333": [
-        0.2332950690666365,
-        0.4813760297356895
+        0.23314527163858878,
+        0.48108940143059215
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1281.6650465775617
+        1281.7116241393276
        ],
        [
         "vocr_lm_score",
-        523.4831915755367
+        522.1887403807209
        ],
        [
         "memcpy",
-        118.85581206966383
+        118.85662211421628
        ],
        [
         "vocr_class_text",
@@ -10500,164 +10500,77 @@
       ],
       "load_ms": {
        "444": [
-        54.011361486486486,
-        114.00348963963964
+        53.62922635135135,
+        113.19218198198197
        ],
        "333": [
-        72.01514864864865,
-        150.8217861861862
+        71.50563513513514,
+        149.74975930930933
        ]
       },
       "load_cycles_444": [
-       23981044.5,
-       50617549.4
+       23811376.5,
+       50257328.8
       ],
-      "load_insns": 47794305,
-      "load_insns_crc": 44786919,
+      "load_insns": 47454957,
+      "load_insns_crc": 44460759,
       "cycles_per_frame_444": [
-       971.0907249898744,
-       2003.8513568246253
+       970.4671931956258,
+       2002.668157148643
       ],
       "calibrated_ms_640px": [
-       0.4288136920457985,
-       0.5055031451502255
+       0.4285383532294356,
+       0.5052046643494852
       ],
       "calibrated_load_ms": [
-       132.36920050990622,
-       159.61345095753205
+       131.4326767687441,
+       158.47755928056372
       ]
      },
      "lm2MB": {
-      "insns_per_frame": 1962.8092345078978,
+      "insns_per_frame": 1961.0627784528149,
       "l1d_misses_per_frame": 0.0,
-      "l2_misses_per_frame": 0.04090724989874443,
+      "l2_misses_per_frame": 0.03928716079384366,
       "cache_signed_per_frame": {
-       "data_accesses": 654.9396516808424,
-       "l1d_misses": -328.68286755771567,
-       "insn_accesses": 1963.012555690563,
-       "l1i_misses": 0.35439449169704335,
-       "l2_accesses": -328.3284730660186,
-       "l2_misses": 0.04090724989874443
+       "data_accesses": 654.1891454029972,
+       "l1d_misses": -328.7010935601458,
+       "insn_accesses": 1961.356014580802,
+       "l1i_misses": 0.3580396921830701,
+       "l2_accesses": -328.34305386796274,
+       "l2_misses": 0.03928716079384366
       },
       "ms_per_dev_line": {
        "444": [
-        0.13728277027027028,
-        0.28346952927927926
+        0.13716137387387387,
+        0.2831943400900901
        ],
        "333": [
-        0.1830436936936937,
-        0.37786678903903903
+        0.18288183183183185,
+        0.3775035367867868
        ]
       },
       "ms_640px": {
        "444": [
-        0.17792825632436812,
-        0.36739671676536806
+        0.1777709179410273,
+        0.36704005195961453
        ],
        "333": [
-        0.2372376750991575,
-        0.4897422944207877
+        0.2370278905880364,
+        0.4892714936078242
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1279.9546375050627
+        1278.2766302146617
        ],
        [
         "vocr_lm_score",
-        558.1085459700283
+        558.1830700688538
        ],
        [
         "memcpy",
-        118.76103685702714
-       ],
-       [
-        "vocr_class_text",
-        6.040907249898744
-       ],
-       [
-        "__aeabi_uidivmod",
-        -0.012960712839206157
-       ],
-       [
-        "__udivsi3",
-        -0.04293236127987039
-       ]
-      ],
-      "load_ms": {
-       "444": [
-        106.412625,
-        224.80622036036036
-       ],
-       "333": [
-        141.8835,
-        297.31975714714713
-       ]
-      },
-      "load_cycles_444": [
-       47247205.5,
-       99813961.84
-      ],
-      "load_insns": 94326615,
-      "load_insns_crc": 89449239,
-      "cycles_per_frame_444": [
-       987.501822600243,
-       2039.0517780477926
-      ],
-      "calibrated_ms_640px": [
-       0.43606049522878587,
-       0.5143830072110127
-      ],
-      "calibrated_load_ms": [
-       260.79242788454206,
-       314.74559894489516
-      ]
-     },
-     "lm4MB": {
-      "insns_per_frame": 1991.8817334953421,
-      "l1d_misses_per_frame": 0.0,
-      "l2_misses_per_frame": 0.07249898744430944,
-      "cache_signed_per_frame": {
-       "data_accesses": 656.0534629404617,
-       "l1d_misses": -328.1676792223572,
-       "insn_accesses": 1992.1287970838396,
-       "l1i_misses": 0.3552045362494937,
-       "l2_accesses": -327.81247468610775,
-       "l2_misses": 0.07249898744430944
-      },
-      "ms_per_dev_line": {
-       "444": [
-        0.1393036036036036,
-        0.2878214166666667
-       ],
-       "333": [
-        0.18573813813813814,
-        0.3835978055555555
-       ]
-      },
-      "ms_640px": {
-       "444": [
-        0.180547400377291,
-        0.3730370730390172
-       ],
-       "333": [
-        0.24072986716972133,
-        0.4971701003555195
-       ]
-      },
-      "top_functions": [
-       [
-        "vocr_lm_decode",
-        1276.055893074119
-       ],
-       [
-        "vocr_lm_score",
-        591.5083029566626
-       ],
-       [
-        "memcpy",
-        118.28473066018631
+        118.57027136492508
        ],
        [
         "vocr_class_text",
@@ -10670,31 +10583,118 @@
       ],
       "load_ms": {
        "444": [
-        202.74145945945946,
-        443.14957063063065
+        105.59963738738739,
+        223.07725594594595
        ],
        "333": [
-        270.32194594594597,
-        583.1402808408409
+        140.79951651651652,
+        295.0357379279279
        ]
       },
       "load_cycles_444": [
-       90017208.0,
-       196758409.36
+       46886239.0,
+       99046301.64
       ],
-      "load_insns": 179866620,
-      "load_insns_crc": 171519879,
+      "load_insns": 93604682,
+      "load_insns_crc": 88755879,
       "cycles_per_frame_444": [
-       1002.0380720939652,
-       2070.3557553665455
+       986.6285945727014,
+       2037.0722883758608
       ],
       "calibrated_ms_640px": [
-       0.4424794040428587,
-       0.5222799297728821
+       0.4356748956912227,
+       0.5138836496855426
       ],
       "calibrated_load_ms": [
-       496.87184622395966,
-       620.4426941867
+       258.7999856030618,
+       312.32491886185755
+      ]
+     },
+     "lm4MB": {
+      "insns_per_frame": 1990.7262049412718,
+      "l1d_misses_per_frame": 0.0,
+      "l2_misses_per_frame": 0.08707978938841636,
+      "cache_signed_per_frame": {
+       "data_accesses": 655.8631024706359,
+       "l1d_misses": -328.1846901579587,
+       "insn_accesses": 1990.9987849331712,
+       "l1i_misses": 0.3531794248683678,
+       "l2_accesses": -327.83151073309034,
+       "l2_misses": 0.08707978938841636
+      },
+      "ms_per_dev_line": {
+       "444": [
+        0.13922328265765765,
+        0.28781833333333334
+       ],
+       "333": [
+        0.18563104354354354,
+        0.38356069444444446
+       ]
+      },
+      "ms_640px": {
+       "444": [
+        0.18044329870575312,
+        0.37303307681922504
+       ],
+       "333": [
+        0.24059106494100418,
+        0.49712200171009413
+       ]
+      },
+      "top_functions": [
+       [
+        "vocr_lm_decode",
+        1275.8262454434994
+       ],
+       [
+        "vocr_lm_score",
+        590.5844471445929
+       ],
+       [
+        "memcpy",
+        118.2588092345079
+       ],
+       [
+        "vocr_class_text",
+        6.040907249898744
+       ],
+       [
+        "__udivsi3",
+        0.009315512353179425
+       ],
+       [
+        "__aeabi_uidivmod",
+        0.0064803564196030785
+       ]
+      ],
+      "load_ms": {
+       "444": [
+        201.2139876126126,
+        439.8066123423423
+       ],
+       "333": [
+        268.2853168168168,
+        578.7424764564564
+       ]
+      },
+      "load_cycles_444": [
+       89339010.5,
+       195274135.88
+      ],
+      "load_insns": 178510225,
+      "load_insns_crc": 170218119,
+      "cycles_per_frame_444": [
+       1001.4603078169299,
+       2070.333576346699
+      ],
+      "calibrated_ms_640px": [
+       0.4422242752208114,
+       0.5222743347649237
+      ],
+      "calibrated_load_ms": [
+       493.12837037732515,
+       615.7623014155014
       ]
      },
      "topk8": {
@@ -10814,45 +10814,45 @@
     },
     "components": {
      "lm0.5MB": {
-      "insns_per_frame": 1618.5309842041313,
-      "l1d_misses_per_frame": 7.566626164439044,
-      "l2_misses_per_frame": 2.777237748076144,
+      "insns_per_frame": 1618.848926690968,
+      "l1d_misses_per_frame": 7.567436208991494,
+      "l2_misses_per_frame": 2.5046577561765897,
       "cache_signed_per_frame": {
-       "data_accesses": 558.6897529364115,
-       "l1d_misses": 7.566626164439044,
-       "insn_accesses": 1618.6824625354395,
-       "l1i_misses": 0.3560145808019441,
+       "data_accesses": 558.8238153098421,
+       "l1d_misses": 7.567436208991494,
+       "insn_accesses": 1619.1725394896719,
+       "l1i_misses": 0.3552045362494937,
        "l2_accesses": 7.922640745240988,
-       "l2_misses": 2.777237748076144
+       "l2_misses": 2.5046577561765897
       },
       "ms_per_dev_line": {
        "444": [
-        0.11335194256756756,
-        0.29582426126126127
+        0.11337404279279278,
+        0.2928842657657658
        ],
        "333": [
-        0.1511359234234234,
-        0.38814676501501505
+        0.15116539039039037,
+        0.3848436876876877
        ]
       },
       "ms_640px": {
        "444": [
-        0.1469121977384432,
-        0.3834093301077505
+        0.14694084120572576,
+        0.3795988863711829
        ],
        "333": [
-        0.19588293031792423,
-        0.503065876082644
+        0.19592112160763436,
+        0.4987848524101258
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1109.661806399352
+        1109.6695018226003
        ],
        [
         "vocr_lm_score",
-        402.7974888618874
+        402.9882543539895
        ],
        [
         "memcpy",
@@ -10863,83 +10863,83 @@
         6.040907249898744
        ],
        [
-        "__aeabi_uidivmod",
-        -0.019441069258809233
+        "__udivsi3",
+        0.02875658161198866
        ],
        [
-        "__udivsi3",
-        -0.0583232077764277
+        "__aeabi_uidivmod",
+        0.012960712839206157
        ]
       ],
       "load_ms": {
        "444": [
-        28.58709234234234,
-        62.52778558558559
+        28.551065315315316,
+        62.42982882882883
        ],
        "333": [
-        38.116123123123124,
-        82.77014744744746
+        38.068087087087086,
+        82.64393843843844
        ]
       },
       "load_cycles_444": [
-       12692669.0,
-       27762336.8
+       12676673.0,
+       27718844.0
       ],
-      "load_insns": 25128550,
-      "load_insns_crc": 22412919,
+      "load_insns": 25096558,
+      "load_insns_crc": 22382679,
       "cycles_per_frame_444": [
-       815.3626974483597,
-       2127.9217820980152
+       815.521668691778,
+       2106.773819360065
       ],
       "calibrated_ms_640px": [
-       0.3600473978915803,
-       0.5368018689713426
+       0.36011759632316354,
+       0.5314669614488137
       ],
       "calibrated_load_ms": [
-       70.06026980463135,
-       87.54359774069363
+       69.97197599693851,
+       87.40645092141663
       ]
      },
      "lm1MB": {
-      "insns_per_frame": 1642.473066018631,
-      "l1d_misses_per_frame": 8.047792628594573,
-      "l2_misses_per_frame": 3.056703118671527,
+      "insns_per_frame": 1641.944106925881,
+      "l1d_misses_per_frame": 8.022276225192385,
+      "l2_misses_per_frame": 2.971243418388011,
       "cache_signed_per_frame": {
-       "data_accesses": 559.097205346294,
-       "l1d_misses": 8.047792628594573,
-       "insn_accesses": 1642.8659376265693,
-       "l1i_misses": 0.3556095585257189,
-       "l2_accesses": 8.403402187120292,
-       "l2_misses": 3.056703118671527
+       "data_accesses": 559.0336168489267,
+       "l1d_misses": 8.022276225192385,
+       "insn_accesses": 1642.3033616848927,
+       "l1i_misses": 0.35844471445929527,
+       "l2_accesses": 8.380720939651681,
+       "l2_misses": 2.971243418388011
       },
       "ms_per_dev_line": {
        "444": [
-        0.11501615990990992,
-        0.30416843918918923
+        0.1149793918918919,
+        0.3030518153153153
        ],
        "333": [
-        0.1533548798798799,
-        0.3986398355855855
+        0.15330585585585585,
+        0.39734442042042034
        ]
       },
       "ms_640px": {
        "444": [
-        0.14906914204605579,
-        0.39422397950806215
+        0.14902148807373594,
+        0.39277675537019396
        ],
        "333": [
-        0.19875885606140772,
-        0.516665643529313
+        0.19869531743164792,
+        0.5149866931329872
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1104.147428108546
+        1104.1231267719725
        ],
        [
         "vocr_lm_score",
-        432.7513163223977
+        432.26447954637507
        ],
        [
         "memcpy",
@@ -10951,86 +10951,86 @@
        ],
        [
         "__udivsi3",
-        0.08181449979748887
+        0.07047387606318348
        ],
        [
         "__aeabi_uidivmod",
-        0.025921425678412314
+        0.019441069258809233
        ]
       ],
       "load_ms": {
        "444": [
-        54.82439527027027,
-        119.78188207207208
+        54.442326576576576,
+        118.93240081081082
        ],
        "333": [
-        73.09919369369369,
-        158.49198942942942
+        72.58976876876876,
+        157.37133774774773
        ]
       },
       "load_cycles_444": [
-       24342031.5,
-       53183155.64
+       24172393.0,
+       52805985.96
       ],
-      "load_insns": 48427287,
-      "load_insns_crc": 44786919,
+      "load_insns": 48087998,
+      "load_insns_crc": 44460759,
       "cycles_per_frame_444": [
-       827.3337383556095,
-       2187.943086269745
+       827.0692588092345,
+       2179.9109923045767
       ],
       "calibrated_ms_640px": [
-       0.3653335633516846,
-       0.5519431906724228
+       0.36521677462347085,
+       0.5499169681446358
       ],
       "calibrated_load_ms": [
-       134.36175594611623,
-       167.70363451281455
+       133.42539503737018,
+       166.51429692269113
       ]
      },
      "lm2MB": {
-      "insns_per_frame": 1676.334548400162,
-      "l1d_misses_per_frame": 8.491292021061158,
-      "l2_misses_per_frame": 3.8942891859052247,
+      "insns_per_frame": 1676.37019036047,
+      "l1d_misses_per_frame": 8.484001620089105,
+      "l2_misses_per_frame": 3.86269744835966,
       "cache_signed_per_frame": {
-       "data_accesses": 562.9963547995139,
-       "l1d_misses": 8.491292021061158,
-       "insn_accesses": 1676.5362494937222,
-       "l1i_misses": 0.3560145808019441,
-       "l2_accesses": 8.847306601863103,
-       "l2_misses": 3.8942891859052247
+       "data_accesses": 562.9562575941677,
+       "l1d_misses": 8.484001620089105,
+       "insn_accesses": 1676.599027946537,
+       "l1i_misses": 0.3556095585257189,
+       "l2_accesses": 8.839611178614824,
+       "l2_misses": 3.86269744835966
       },
       "ms_per_dev_line": {
        "444": [
-        0.11736987612612612,
-        0.3199249211711711
+        0.1173723536036036,
+        0.31955208783783784
        ],
        "333": [
-        0.15649316816816816,
-        0.4177528115615616
+        0.15649647147147147,
+        0.41732720045045046
        ]
       },
       "ms_640px": {
        "444": [
-        0.1521197260443919,
-        0.4146455033405216
+        0.15212293703180702,
+        0.41416228476349987
        ],
        "333": [
-        0.20282630139252253,
-        0.5414374228420401
+        0.202830582709076,
+        0.5408858005028115
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1106.6326447954636
+        1106.5714864317538
        ],
        [
         "vocr_lm_score",
-        463.9886593762657
+        464.09234507897935
        ],
        [
         "memcpy",
-        99.70028351559336
+        99.68732280275415
        ],
        [
         "vocr_class_text",
@@ -11042,78 +11042,78 @@
        ],
        [
         "__udivsi3",
-        -0.021466180639935196
+        -0.01539084649655731
        ]
       ],
       "load_ms": {
        "444": [
-        107.22632094594594,
-        233.65416873873875
+        106.41344932432432,
+        231.8875800900901
        ],
        "333": [
-        142.96842792792793,
-        309.187164984985
+        141.8845990990991,
+        306.85019345345347
        ]
       },
       "load_cycles_444": [
-       47608486.5,
-       103742450.92
+       47247571.5,
+       102958085.56
       ],
-      "load_insns": 94960185,
-      "load_insns_crc": 89449239,
+      "load_insns": 94238355,
+      "load_insns_crc": 88755879,
       "cycles_per_frame_444": [
-       844.264479546375,
-       2301.2825435398945
+       844.282300526529,
+       2298.600680437424
       ],
       "calibrated_ms_640px": [
-       0.37280983045243327,
-       0.5805348583749961
+       0.3728176998307509,
+       0.579858316061344
       ],
       "calibrated_load_ms": [
-       262.7866061251695,
-       327.1333914504679
+       260.7944481104495,
+       324.66003461266837
       ]
      },
      "lm4MB": {
-      "insns_per_frame": 1691.5078979343864,
-      "l1d_misses_per_frame": 28.044957472660997,
-      "l2_misses_per_frame": 4.834345889023896,
+      "insns_per_frame": 1689.746456055083,
+      "l1d_misses_per_frame": 8.964763061968409,
+      "l2_misses_per_frame": 4.68408262454435,
       "cache_signed_per_frame": {
-       "data_accesses": 560.7521263669502,
-       "l1d_misses": 28.044957472660997,
-       "insn_accesses": 1691.7565816119886,
-       "l1i_misses": 0.35439449169704335,
-       "l2_accesses": 28.39935196435804,
-       "l2_misses": 4.834345889023896
+       "data_accesses": 560.5581206966383,
+       "l1d_misses": 8.964763061968409,
+       "insn_accesses": 1689.9659781287971,
+       "l1i_misses": 0.3564196030781693,
+       "l2_accesses": 9.321182665046578,
+       "l2_misses": 4.68408262454435
       },
       "ms_per_dev_line": {
        "444": [
-        0.11842457770270269,
-        0.41381403378378373
+        0.11830213963963965,
+        0.3323462049549549
        ],
        "333": [
-        0.15789943693693692,
-        0.5408107117117117
+        0.15773618618618618,
+        0.43252702327327325
        ]
       },
       "ms_640px": {
        "444": [
-        0.15348669447089858,
-        0.5363324860705176
+        0.15332800601330374,
+        0.43074437256211245
        ],
        "333": [
-        0.2046489259611981,
-        0.70092923348622
+        0.20443734135107164,
+        0.5605858543841533
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1097.1863102470636
+        1097.147428108546
        ],
        [
         "vocr_lm_score",
-        489.61036857027136
+        487.90562980963955
        ],
        [
         "memcpy",
@@ -11124,37 +11124,41 @@
         6.040907249898744
        ],
        [
+        "__aeabi_uidivmod",
+        -0.0064803564196030785
+       ],
+       [
         "__udivsi3",
-        -0.002025111381125962
+        -0.013365735115431349
        ]
       ],
       "load_ms": {
        "444": [
-        203.5553490990991,
-        457.7213872072073
+        202.02801576576576,
+        454.5824648648649
        ],
        "333": [
-        271.4071321321321,
-        602.7477896096096
+        269.3706876876877,
+        598.6204198198199
        ]
       },
       "load_cycles_444": [
-       90378575.0,
-       203228295.92000002
+       89700439.0,
+       201834614.4
       ],
-      "load_insns": 180500362,
-      "load_insns_crc": 171519879,
+      "load_insns": 179144090,
+      "load_insns_crc": 170218119,
       "cycles_per_frame_444": [
-       851.8511543134872,
-       2976.645297691373
+       850.9704333738356,
+       2390.6312677197243
       ],
       "calibrated_ms_640px": [
-       0.37615994999689706,
-       0.7509057769454646
+       0.37577104174345044,
+       0.6030744848469095
       ],
       "calibrated_load_ms": [
-       498.86649916247796,
-       640.8443322230399
+       495.12336278003283,
+       636.4496051060662
       ]
      },
      "topk8": {
@@ -11246,227 +11250,53 @@
     },
     "components": {
      "lm0.5MB": {
-      "insns_per_frame": 1576.573916565411,
-      "l1d_misses_per_frame": 7.437019036046983,
-      "l2_misses_per_frame": 2.686107735925476,
+      "insns_per_frame": 1581.0481976508709,
+      "l1d_misses_per_frame": 7.442689347914135,
+      "l2_misses_per_frame": 2.4823815309842043,
       "cache_signed_per_frame": {
-       "data_accesses": 544.9821790198461,
-       "l1d_misses": 7.437019036046983,
-       "insn_accesses": 1576.872417982989,
-       "l1i_misses": 0.35439449169704335,
-       "l2_accesses": 7.791413527744026,
-       "l2_misses": 2.686107735925476
+       "data_accesses": 546.5650060753342,
+       "l1d_misses": 7.442689347914135,
+       "insn_accesses": 1581.3191575536655,
+       "l1i_misses": 0.35479951397326853,
+       "l2_accesses": 7.797488861887404,
+       "l2_misses": 2.4823815309842043
       },
       "ms_per_dev_line": {
        "444": [
-        0.11043550112612611,
-        0.28829323648648647
+        0.11074650900900901,
+        0.28672400675675674
        ],
        "333": [
-        0.14724733483483482,
-        0.3783116486486487
+        0.147662012012012,
+        0.3766804256756756
        ]
       },
       "ms_640px": {
        "444": [
-        0.14313228173495487,
-        0.37364858515867017
+        0.14353537012103232,
+        0.3716147515680931
        ],
        "333": [
-        0.19084304231327315,
-        0.4903188641861789
+        0.19138049349470976,
+        0.4882046829332369
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1087.3191575536655
+        1090.481976508708
        ],
        [
         "vocr_lm_score",
-        385.6630214661806
+        386.70352369380316
        ],
        [
         "memcpy",
-        97.51518833535845
+        97.79991899554476
        ],
        [
         "vocr_class_text",
         6.040907249898744
-       ],
-       [
-        "__udivsi3",
-        0.022681247468610773
-       ],
-       [
-        "__aeabi_uidivmod",
-        0.012960712839206157
-       ]
-      ],
-      "load_ms": {
-       "444": [
-        28.586597972972974,
-        62.528102792792794
-       ],
-       "333": [
-        38.11546396396396,
-        82.76961705705706
-       ]
-      },
-      "load_cycles_444": [
-       12692449.5,
-       27762477.64
-      ],
-      "load_insns": 25128111,
-      "load_insns_crc": 22412919,
-      "cycles_per_frame_444": [
-       794.3841636289995,
-       2073.7496476306196
-      ],
-      "calibrated_ms_640px": [
-       0.3507837088156896,
-       0.5231360926853393
-      ],
-      "calibrated_load_ms": [
-       70.05905822106118,
-       87.54404185461655
-      ]
-     },
-     "lm1MB": {
-      "insns_per_frame": 1611.1773997569867,
-      "l1d_misses_per_frame": 7.891049007695424,
-      "l2_misses_per_frame": 2.9971648440664236,
-      "cache_signed_per_frame": {
-       "data_accesses": 548.681652490887,
-       "l1d_misses": 7.891049007695424,
-       "insn_accesses": 1611.4017820980155,
-       "l1i_misses": 0.35439449169704335,
-       "l2_accesses": 8.245443499392467,
-       "l2_misses": 2.9971648440664236
-      },
-      "ms_per_dev_line": {
-       "444": [
-        0.11284079391891892,
-        0.29840895270270273
-       ],
-       "333": [
-        0.1504543918918919,
-        0.3910952702702703
-       ]
-      },
-      "ms_640px": {
-       "444": [
-        0.14624971265311484,
-        0.3867592744627981
-       ],
-       "333": [
-        0.1949996168708198,
-        0.5068873490744693
-       ]
-      },
-      "top_functions": [
-       [
-        "vocr_lm_decode",
-        1089.0765492102066
-       ],
-       [
-        "vocr_lm_score",
-        418.4900769542325
-       ],
-       [
-        "memcpy",
-        97.59781287970839
-       ],
-       [
-        "vocr_class_text",
-        6.040907249898744
-       ],
-       [
-        "__aeabi_uidivmod",
-        -0.0064803564196030785
-       ],
-       [
-        "__udivsi3",
-        -0.021466180639935196
-       ]
-      ],
-      "load_ms": {
-       "444": [
-        54.825003378378376,
-        119.78717774774775
-       ],
-       "333": [
-        73.10000450450451,
-        158.49751033033033
-       ]
-      },
-      "load_cycles_444": [
-       24342301.5,
-       53185506.92
-      ],
-      "load_insns": 48427827,
-      "load_insns_crc": 44786919,
-      "cycles_per_frame_444": [
-       811.6859052247873,
-       2146.5139732685298
-      ],
-      "calibrated_ms_640px": [
-       0.3584238020650505,
-       0.5414920427608907
-      ],
-      "calibrated_load_ms": [
-       134.3632462767037,
-       167.71104885664224
-      ]
-     },
-     "lm2MB": {
-      "insns_per_frame": 1632.897124341839,
-      "l1d_misses_per_frame": 8.293641150263264,
-      "l2_misses_per_frame": 3.8246253543944917,
-      "cache_signed_per_frame": {
-       "data_accesses": 549.0830295666261,
-       "l1d_misses": 8.293641150263264,
-       "insn_accesses": 1633.188740380721,
-       "l1i_misses": 0.3572296476306197,
-       "l2_accesses": 8.650870797893884,
-       "l2_misses": 3.8246253543944917
-      },
-      "ms_per_dev_line": {
-       "444": [
-        0.1143505349099099,
-        0.31214972522522527
-       ],
-       "333": [
-        0.15246737987987988,
-        0.40754355030030026
-       ]
-      },
-      "ms_640px": {
-       "444": [
-        0.1482064445976961,
-        0.40456829514812515
-       ],
-       "333": [
-        0.19760859279692816,
-        0.5282054924912761
-       ]
-      },
-      "top_functions": [
-       [
-        "vocr_lm_decode",
-        1084.882948562171
-       ],
-       [
-        "vocr_lm_score",
-        444.7735925475901
-       ],
-       [
-        "memcpy",
-        97.18550020251114
-       ],
-       [
-        "vocr_class_text",
-        6.033211826650466
        ],
        [
         "__udivsi3",
@@ -11479,73 +11309,247 @@
       ],
       "load_ms": {
        "444": [
-        107.22619256756757,
-        233.65711927927927
+        28.551101351351353,
+        62.43465603603604
        ],
        "333": [
-        142.96825675675674,
-        309.18996237237235
+        38.06813513513514,
+        82.64883471471472
        ]
       },
       "load_cycles_444": [
-       47608429.5,
-       103743760.96
+       12676689.0,
+       27720987.28
       ],
-      "load_insns": 94960071,
-      "load_insns_crc": 89449239,
+      "load_insns": 25096590,
+      "load_insns_crc": 22382679,
       "cycles_per_frame_444": [
-       822.5457675172134,
-       2245.354038072094
+       796.6213041717294,
+       2062.4618712029164
       ],
       "calibrated_ms_640px": [
-       0.36321929390210084,
-       0.5664260097714123
+       0.35177158406881115,
+       0.520288572849837
       ],
       "calibrated_load_ms": [
-       262.7862914998233,
-       327.1375224289086
+       69.97206431282518,
+       87.41320937419088
       ]
      },
-     "lm4MB": {
-      "insns_per_frame": 1664.7144592952613,
-      "l1d_misses_per_frame": 27.81895504252734,
-      "l2_misses_per_frame": 4.658566221142163,
+     "lm1MB": {
+      "insns_per_frame": 1610.7533414337788,
+      "l1d_misses_per_frame": 7.87525313892264,
+      "l2_misses_per_frame": 2.8772782503037666,
       "cache_signed_per_frame": {
-       "data_accesses": 552.9214256784123,
-       "l1d_misses": 27.81895504252734,
-       "insn_accesses": 1665.0676387201297,
-       "l1i_misses": 0.3576346699068449,
-       "l2_accesses": 28.176589712434183,
-       "l2_misses": 4.658566221142163
+       "data_accesses": 548.5690562980964,
+       "l1d_misses": 7.87525313892264,
+       "insn_accesses": 1610.927906034832,
+       "l1i_misses": 0.3560145808019441,
+       "l2_accesses": 8.231267719724585,
+       "l2_misses": 2.8772782503037666
       },
       "ms_per_dev_line": {
        "444": [
-        0.11656216216216216,
-        0.4071558378378378
+        0.11281131756756758,
+        0.29696786936936936
        ],
        "333": [
-        0.1554162162162162,
-        0.5323309504504503
+        0.1504150900900901,
+        0.3894451591591591
        ]
       },
       "ms_640px": {
        "444": [
-        0.1510728711700765,
-        0.5277029895022605
+        0.1462115092005736,
+        0.3848915277367282
        ],
        "333": [
-        0.20143049489343534,
-        0.6899388584209969
+        0.19494867893409815,
+        0.5047486874480799
        ]
       },
       "top_functions": [
        [
         "vocr_lm_decode",
-        1087.7889833940867
+        1088.967598217902
        ],
        [
         "vocr_lm_score",
-        473.4163628999595
+        418.24787363304984
+       ],
+       [
+        "memcpy",
+        97.57108140947751
+       ],
+       [
+        "vocr_class_text",
+        6.040907249898744
+       ],
+       [
+        "__aeabi_uidivmod",
+        -0.012960712839206157
+       ],
+       [
+        "__udivsi3",
+        -0.06115836371000405
+       ]
+      ],
+      "load_ms": {
+       "444": [
+        54.443041666666666,
+        118.95873612612614
+       ],
+       "333": [
+        72.59072222222223,
+        157.40069483483484
+       ]
+      },
+      "load_cycles_444": [
+       24172710.5,
+       52817678.84
+      ],
+      "load_insns": 48088633,
+      "load_insns_crc": 44460759,
+      "cycles_per_frame_444": [
+       811.4738760631835,
+       2136.1479789388413
+      ],
+      "calibrated_ms_640px": [
+       0.35833017434802167,
+       0.538877057014358
+      ],
+      "calibrated_load_ms": [
+       133.42714755574616,
+       166.55116834279258
+      ]
+     },
+     "lm2MB": {
+      "insns_per_frame": 1632.764277035237,
+      "l1d_misses_per_frame": 8.309842041312272,
+      "l2_misses_per_frame": 3.7816929931146213,
+      "cache_signed_per_frame": {
+       "data_accesses": 548.9716484406642,
+       "l1d_misses": 8.309842041312272,
+       "insn_accesses": 1633.0652085864722,
+       "l1i_misses": 0.35682462535439446,
+       "l2_accesses": 8.666666666666666,
+       "l2_misses": 3.7816929931146213
+      },
+      "ms_per_dev_line": {
+       "444": [
+        0.11434130067567568,
+        0.311726018018018
+       ],
+       "333": [
+        0.15245506756756758,
+        0.407075774024024
+       ]
+      },
+      "ms_640px": {
+       "444": [
+        0.1481944763718761,
+        0.40401914040407355
+       ],
+       "333": [
+        0.19759263516250147,
+        0.5275992210922952
+       ]
+      },
+      "top_functions": [
+       [
+        "vocr_lm_decode",
+        1084.6982584042123
+       ],
+       [
+        "vocr_lm_score",
+        444.8485216686918
+       ],
+       [
+        "memcpy",
+        97.15876873228028
+       ],
+       [
+        "vocr_class_text",
+        6.033211826650466
+       ],
+       [
+        "__aeabi_uidivmod",
+        0.012960712839206157
+       ],
+       [
+        "__udivsi3",
+        0.012555690562980963
+       ]
+      ],
+      "load_ms": {
+       "444": [
+        106.41334459459459,
+        231.88591873873875
+       ],
+       "333": [
+        141.88445945945946,
+        306.84783165165163
+       ]
+      },
+      "load_cycles_444": [
+       47247525.0,
+       102957347.92
+      ],
+      "load_insns": 94238262,
+      "load_insns_crc": 88755879,
+      "cycles_per_frame_444": [
+       822.4793438639125,
+       2242.3062292426084
+      ],
+      "calibrated_ms_640px": [
+       0.3631899625829169,
+       0.5656571518699145
+      ],
+      "calibrated_load_ms": [
+       260.79419144240387,
+       324.6577085959536
+      ]
+     },
+     "lm4MB": {
+      "insns_per_frame": 1663.1368975293642,
+      "l1d_misses_per_frame": 8.771162413932766,
+      "l2_misses_per_frame": 4.451194815714865,
+      "cache_signed_per_frame": {
+       "data_accesses": 552.7671121911706,
+       "l1d_misses": 8.771162413932766,
+       "insn_accesses": 1663.4840016200892,
+       "l1i_misses": 0.3576346699068449,
+       "l2_accesses": 9.128797083839611,
+       "l2_misses": 4.451194815714865
+      },
+      "ms_per_dev_line": {
+       "444": [
+        0.11645250563063063,
+        0.3252227815315315
+       ],
+       "333": [
+        0.1552700075075075,
+        0.4235562087087087
+       ]
+      },
+      "ms_640px": {
+       "444": [
+        0.1509307484884642,
+        0.421511908019806
+       ],
+       "333": [
+        0.2012409979846189,
+        0.5489590392336443
+       ]
+      },
+      "top_functions": [
+       [
+        "vocr_lm_decode",
+        1087.8047792628595
+       ],
+       [
+        "vocr_lm_score",
+        471.81085459700284
        ],
        [
         "memcpy",
@@ -11557,7 +11561,7 @@
        ],
        [
         "__udivsi3",
-        0.038072093965168086
+        0.050222762251923854
        ],
        [
         "__aeabi_uidivmod",
@@ -11566,31 +11570,31 @@
       ],
       "load_ms": {
        "444": [
-        203.55496734234234,
-        457.7352723423424
+        202.02751126126125,
+        454.59681477477477
        ],
        "333": [
-        271.4066231231231,
-        602.7626364564564
+        269.37001501501504,
+        598.6357396996997
        ]
       },
       "load_cycles_444": [
-       90378405.5,
-       203234460.92000002
+       89700215.0,
+       201840985.76
       ],
-      "load_insns": 180500023,
-      "load_insns_crc": 171519879,
+      "load_insns": 179143642,
+      "load_insns_crc": 170218119,
       "cycles_per_frame_444": [
-       838.4544349939247,
-       2928.7515917375454
+       837.6656541109761,
+       2339.391089509923
       ],
       "calibrated_ms_640px": [
-       0.3702442342713836,
-       0.7388238333870738
+       0.3698959248560755,
+       0.5901483408218567
       ],
       "calibrated_load_ms": [
-       498.8655635660536,
-       640.8637724554656
+       495.12212635761955,
+       636.4696960580965
       ]
      },
      "topk8": {
@@ -11705,64 +11709,64 @@
   "rows": [
    {
     "gate": 500,
-    "dialogue": 1458,
+    "dialogue": 1457,
     "names": 915
    },
    {
     "gate": 1000,
     "dialogue": 1288,
-    "names": 894
+    "names": 893
    },
    {
     "gate": 1500,
-    "dialogue": 1197,
-    "names": 879
+    "dialogue": 1200,
+    "names": 880
    },
    {
     "gate": 2000,
-    "dialogue": 1120,
-    "names": 865
+    "dialogue": 1124,
+    "names": 868
    },
    {
     "gate": 2500,
-    "dialogue": 1096,
-    "names": 854
+    "dialogue": 1100,
+    "names": 857
    },
    {
     "gate": 3500,
-    "dialogue": 1058,
-    "names": 850
+    "dialogue": 1062,
+    "names": 853
    },
    {
     "gate": 5000,
-    "dialogue": 1051,
-    "names": 848
+    "dialogue": 1054,
+    "names": 851
    },
    {
     "gate": 8000,
-    "dialogue": 1044,
-    "names": 848
+    "dialogue": 1047,
+    "names": 851
    },
    {
     "gate": 12000,
-    "dialogue": 1044,
-    "names": 848
+    "dialogue": 1047,
+    "names": 851
    },
    {
     "gate": 20000,
-    "dialogue": 1044,
-    "names": 848
+    "dialogue": 1047,
+    "names": 851
    },
    {
     "gate": 64000,
-    "dialogue": 1044,
-    "names": 848
+    "dialogue": 1047,
+    "names": 851
    }
   ]
  },
  "memory": {
   "0.5MB": {
-   "lm_bytes": 498128,
+   "lm_bytes": 497456,
    "workspace": {
     "v3FL10": 35248,
     "v3H15": 40816,
@@ -11781,7 +11785,7 @@
    }
   },
   "1MB": {
-   "lm_bytes": 995328,
+   "lm_bytes": 988080,
    "workspace": {
     "v3FL10": 35248,
     "v3H15": 40816,
@@ -11800,7 +11804,7 @@
    }
   },
   "2MB": {
-   "lm_bytes": 1987824,
+   "lm_bytes": 1972416,
    "workspace": {
     "v3FL10": 35248,
     "v3H15": 40816,
@@ -11819,7 +11823,7 @@
    }
   },
   "4MB": {
-   "lm_bytes": 3811616,
+   "lm_bytes": 3782688,
    "workspace": {
     "v3FL10": 35248,
     "v3H15": 40816,

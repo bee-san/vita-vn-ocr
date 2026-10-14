@@ -1,0 +1,266 @@
+{
+ "kind": "vocab-proof-protocol",
+ "schema": 1,
+ "frozen": "2026-10-14, committed and pushed on feat/vocab-expand before G_v4987's first training step and before any score of this study is computed (commit time in git)",
+ "question": "At FL10's topology (width 1.0, bottleneck 96, the always-safe tier's shape) and synth4's 16,000-step pretraining recipe, does a VN-ordered 4,987-class head (data/vocab_4987_proof.txt: data/vocab.txt's 486 non-kanji plus its 4,499 kanji with the most weight in Jiten's visual-novel word list, plus <unk>) cost accuracy against FL10's 3,500-class vocab, and does it learn the 1,554 classes FL10 lacks?",
+ "base_protocol": {
+  "file": "eval/synth4_protocol.json",
+  "sha256": "5a14d5c3753d616117767225007056999bf562cf9d3e7f037cd511549ceff3e3",
+  "copied_exactly": [
+   "architecture except the vocab",
+   "recipe",
+   "sources",
+   "arm_sources of F_s4",
+   "seeds",
+   "checkpoint",
+   "export",
+   "dev",
+   "views",
+   "metric",
+   "bootstrap"
+  ],
+  "changed": "the arms: F_s4 (reused, FL10's vocab) against G_v4987 (new, the proof vocab); the decision is two-sided (worse / better / no measured difference); character-level strata and a synthetic probe are added, report only"
+ },
+ "machine": "dev-dsk-skerraut-main-1a-dc2efe10 (64 cores), the machine D_s3v3 trained on (study 1b, 2026-10-13 02:5x-05:02Z)",
+ "architecture": {
+  "name": "FL10 (the shipped default's topology)",
+  "width": 1.0,
+  "bottleneck": 96,
+  "depth": 1,
+  "ctx": 2,
+  "ctx_k": 5,
+  "height": 32
+ },
+ "recipe": {
+  "trainer": "train/train2.py at commit 2b132aaba600ab7dbceeeb1f3a71877d3202e853, the commit D_s3v3 seeds 1 and 2 trained at (their logs' first line); F_s4 runs from a worktree of that commit, which eval/synth4_run.sh checks, with this clone's .venv-ci (requirements-ci.lock unchanged since that commit)",
+  "init": "from scratch",
+  "steps": 16000,
+  "batch": 96,
+  "lr": 0.002,
+  "warmup": 1000,
+  "final_lr": 0.05,
+  "wd": 0.01,
+  "ema": 0.999,
+  "threads": 5,
+  "eval_every": 4000,
+  "keep_evals": true,
+  "kd": "none",
+  "note": "study 1's recipe exactly (train2's pretraining at 16,000 steps); the in-training teacher_val evaluations are monitoring only"
+ },
+ "sources": {
+  "nv": {
+   "files": "$HERD/shared/artifacts/nvsynth/shards/nv_train_0*.npz",
+   "shards": 42,
+   "lines": 845519,
+   "opts": "stream=1,pool=3,inv=0.2",
+   "note": "as in study 1b"
+  },
+  "s4": {
+   "files": "$HERD/shared/artifacts/synth4-design/shards/train_v1/synth4_000??.npz",
+   "shards": 100,
+   "opts": "stream=1,pool=3,inv=0.2",
+   "generator": "synth/synth4.py shards --shards 100 --per-shard 10000 --seed 20261013 --profile personal, with data/manifests/synth4_fonts.json, the curriculum $HERD/shared/artifacts/synth4-design/curriculum/curriculum_v1.json and targets targets_s4.json (sha256s in the shard manifest's recipe), synth3 v3's text pools, scenes and scene hashes; 1,000,000 crops like s3v3, so both arms stream the same number of crops",
+   "pin": "data/manifests/synth4_shards_v1.json (every shard's sha256 and the recipe: code sha256s, CFG, CFG4, curriculum, targets and font-manifest sha256s), committed and pushed before F_s4 trains"
+  }
+ },
+ "arm_sources": {
+  "F_s4": {
+   "nv": 0.5,
+   "s4": 0.5
+  },
+  "G_v4987": {
+   "nv": 0.5,
+   "s4": 0.5
+  }
+ },
+ "arms": {
+  "F_s4": [
+   "F_s4_seed1",
+   "F_s4_seed2"
+  ],
+  "G_v4987": [
+   "G_v4987_seed1",
+   "G_v4987_seed2"
+  ]
+ },
+ "arms_detail": {
+  "F_s4": {
+   "vocab": {
+    "file": "$HERD/shared/artifacts/train2/release/FL10_vocab_3500.txt",
+    "sha256": "7f1cb2eb073ddae5f6c39bdd49562cd3bd3ac757f5ac8c0eca4bd98beda4fed8"
+   },
+   "reused": "not retrained: synth4's ablation runs (eval/synth4_protocol.json), whose development scores are published in docs/synth4.md; this study computed none of them",
+   "checkpoints": {
+    "F_s4_seed1": {
+     "ckpt": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/runs/F_s4_seed1/ckpt_step16000.pt",
+     "ckpt_sha256": "980cf194d97bbf1a6402e1f8eb54dbfc9e6dbc1d185a1fa51c95392bcb5f60ec",
+     "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/blobs/F_s4_seed1_w8.vocr",
+     "blob_sha256": "e7aa39b3580fd43d118cc0c9c47c58062c6405827d41cd90a7ec3f01a499f06e"
+    },
+    "F_s4_seed2": {
+     "ckpt": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/runs/F_s4_seed2/ckpt_step16000.pt",
+     "ckpt_sha256": "bb20729667b62cb8321ceb4c529ad7f2fd80094a82e6545717dc00edcda00b92",
+     "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/blobs/F_s4_seed2_w8.vocr",
+     "blob_sha256": "3e16cee63477c2053c887f40e69dbf2615ae3001017e6ca5cb10e0e0723e8939"
+    }
+   },
+   "scores": {
+    "files": {
+     "devnative_pooled.json": {
+      "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/scores/devnative_pooled.json",
+      "sha256": "1261a95b9ae7af5ba873cedb6f5df3d2247229187249b5e84818594933e9fbfd"
+     },
+     "devnative_strict_grad.json": {
+      "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/scores/devnative_strict_grad.json",
+      "sha256": "ed8e071bddf730896264bcef4b182df560eb945e50215f5258c7bbb87185b2ee"
+     },
+     "devnative_strict_ink.json": {
+      "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/scores/devnative_strict_ink.json",
+      "sha256": "9b73921db0fe61488bb9b2c4ff788260f8074da5b68bf492e7e65ae0a5c5edd2"
+     },
+     "devnative_tv_native_grad.json": {
+      "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/scores/devnative_tv_native_grad.json",
+      "sha256": "fa1e495bbb15f69ab3f0bf9e7cba34ff5f230a77f170fed3b9b37cd4b19fc5c0"
+     },
+     "devnative_tv_native_ink.json": {
+      "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/scores/devnative_tv_native_ink.json",
+      "sha256": "bcc5ae8a4711f30ee90944cbfeffcfd610269645e7dc5f029998c39bb526c27d"
+     },
+     "teacher_val.json": {
+      "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/ablation/scores/teacher_val.json",
+      "sha256": "3bec946aab9d65dd889f5a0031285c1608a4eaa64bfb19ce95009eca67868329"
+     }
+    },
+    "note": "synth4's score files (C runtime W8I, same development files) are reused for F_s4; the blob check re-exports both checkpoints and requires the published blob bytes"
+   }
+  },
+  "G_v4987": {
+   "vocab": {
+    "file": "data/vocab_4987_proof.txt",
+    "sha256": "4a1e7cb77c627a217ae57c7ed427f0695c732dfb85158c674ec4d14994a4e04c",
+    "entries": 4986,
+    "classes": 4987,
+    "built": "data/vocab.txt's 486 non-kanji in its order, then its kanji ordered by Jiten visual-novel word-list weight (a word of rank r weighs r^-0.95 and so does each of its characters, docs/synth4-gap.md section 1; list fetched 2026-10-14, same words and ranks as synth3's 2026-10-12 copy), the first 4,499, then <unk> (〓). Restricted to data/vocab.txt so every class has synthetic and NVIDIA renders (synth4 and nvsynth render only that vocab)",
+    "vs_fl10": {
+     "added": 1554,
+     "added_kanji": 1454,
+     "added_non_kanji": 100,
+     "fl10_chars_not_in_proof": 68
+    }
+   },
+   "script": "eval/vocab_proof_run.sh SEED (eval/synth4_run.sh's train2.py invocation with --vocab data/vocab_4987_proof.txt, writing under $HERD/shared/artifacts/vocab-expand/proof/runs)",
+   "launch": "TRAIN_REPO=<worktree at 2b132aa> HEAVY_SLOTS=12 $HERD/heavy.sh timeout 36000 bash eval/vocab_proof_run.sh SEED < /dev/null"
+  }
+ },
+ "seeds": [
+  1,
+  2
+ ],
+ "checkpoint": "ckpt_step16000.pt of every run (EMA weights). No checkpoint selection.",
+ "export": "eval/synth3_ablation.py export (train/export.py, per-channel int8) -> C runtime W8I through runtime/pyvocr.py, max width 1024; all four checkpoints are exported by the same code (eval/synth4_score.sh)",
+ "dev": {
+  "teacher_val": {
+   "role": "decides",
+   "files": {
+    "teacher_val.npz": {
+     "set": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/teacher_val.npz",
+     "sha256": "f5c0032041c14b31bff87b52a56381b8f0d3e84e2f6cfd78a3b600e55751f81e",
+     "lines": 1643,
+     "vns": 180
+    }
+   },
+   "note": "the VOCR3 selection's amendment-8 copy of teacher_val (its 8 lines of the owner's reserved v1331 dropped)"
+  },
+  "devnative_v3": {
+   "role": "guard: the pooled VN-cluster interval must not lie entirely above 0",
+   "frozen": "devnative.status COHORT_V3 14ae22d48d5d100bc681763df3beabcc64d38fa7 (tag devnative-cohort-v3), as the VOCR3 selection's amendment-8 copies",
+   "files": {
+    "devnative_strict_ink.npz": {
+     "set": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_ink.npz",
+     "sha256": "742944e99dd058bdfbce5c298100cec1b85d37bff5378670b301fa61a1e3cde7",
+     "lines": 34,
+     "vns": 13
+    },
+    "devnative_strict_grad.npz": {
+     "set": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_strict_grad.npz",
+     "sha256": "76bb3329a24866b331b55a8526a82092b3ec084e4e1e7b368c8cf1c835572d3f",
+     "lines": 23,
+     "vns": 11
+    },
+    "devnative_tv_native_ink.npz": {
+     "set": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_ink.npz",
+     "sha256": "baef59f132acd3242b237c9d0d168b3d5202f6c381b716109cb20e0fa044e985",
+     "lines": 509,
+     "vns": 43
+    },
+    "devnative_tv_native_grad.npz": {
+     "set": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/vocr3/select_pools/devnative_v3/devnative_tv_native_grad.npz",
+     "sha256": "2eb847ebf01d76741b1fdd2d1b92debf719b6a8edaacb8e8114d697632a73f3b",
+     "lines": 420,
+     "vns": 43
+    }
+   },
+   "pooled": "eval/synth3_study2.py merge of the four score files (lines prefixed by file), VN clusters across files; never pooled with teacher_val (tv_native re-cuts teacher_val's native screenshots)"
+  }
+ },
+ "views": [
+  "rv",
+  "rvn"
+ ],
+ "metric": "CER (eval/metrics.norm both sides, Levenshtein over reference characters) over all development lines, both views, errors summed over the arm's two seeds",
+ "bootstrap": {
+  "resamples": 10000,
+  "seed": 0,
+  "unit": "VN (cluster); line-level intervals reported alongside"
+ },
+ "comparisons": {
+  "G_vs_F": [
+   "F_s4",
+   "G_v4987"
+  ]
+ },
+ "decision": "On teacher_val, with D = CER(G_v4987) - CER(F_s4) (both views, errors summed over both seeds): the 4,987 head COSTS accuracy iff the VN-cluster 95% interval of D lies entirely above 0 and D > 0 for each seed pair; it is BETTER iff the interval lies entirely below 0 and D < 0 for each seed pair; otherwise there is NO MEASURED DIFFERENCE. devnative v3 pooled is reported with the same rule as a guard; if teacher_val shows no measured difference but devnative v3 pooled shows a cost, the result is reported as a cost on native console text.",
+ "strata": {
+  "line": "eval/synth3_ablation.py's line strata plus synth4's (eval/synth4_ablation.py tag); and two line strata this protocol fixes, from references only: line-added (the line holds a character in the proof vocab but not FL10's) and line-shared (every character of the line is in both vocabs)",
+  "character": "per reference character after eval's norm, read correctly when an optimal Levenshtein alignment (substitution before deletion before insertion on ties, scanning from the end) aligns it to the same predicted character: recall per class group, both views, both seeds. Groups: added (in the proof vocab, not FL10's), shared (in both), dropped (in FL10's, not the proof vocab), other",
+  "role": "reported, no multiplicity control; they cannot change the decision"
+ },
+ "probe": {
+  "role": "learnability, report only",
+  "set": {
+   "files": {
+    "synth4_00000.npz": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/calib/c2/synth4_00000.npz",
+     "sha256": "d76d0a85c90e1736bee5cabef9c44a0d953c32264f98c0496d6edbbd4813e3f2"
+    },
+    "synth4_00001.npz": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/calib/c2/synth4_00001.npz",
+     "sha256": "3eab18312c24627b6ab540c5a903705eaead1b1789c150cad7f5ae84e577236f"
+    },
+    "synth4_00002.npz": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/calib/c2/synth4_00002.npz",
+     "sha256": "1c3e352514fc2d63abed9b2e9085f26ed05d52ca612cec76943747795fea0643"
+    },
+    "synth4_00003.npz": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/calib/c2/synth4_00003.npz",
+     "sha256": "9f623b82e62ec407dacda2720592036e74ed86a646f9891038ded685897dde64"
+    },
+    "synth4_00004.npz": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth4-design/calib/c2/synth4_00004.npz",
+     "sha256": "534eb359ac4bf026b21847c4e0c82eed6fc0a6f40bddfa35f71e27ac9e9237c2"
+    }
+   },
+   "crops": 15000,
+   "what": "synth4's calibration render c2 (the pinned configuration, seed 3001, never a training seed; text from the training split of the pools, so line texts can repeat training lines)"
+  },
+  "read": "every crop as stored through the C runtime W8I (the training polarity of 80% of the stream), one view",
+  "measure": "per-class recall (the character alignment above) of the added classes by G_v4987, against the recall of FL10-vocab classes by both arms, binned by the class's occurrences in synth4's 1,000,000 pinned crops (<50, 50-99, 100-299, 300-999, 1000+)"
+ },
+ "order": "1. this protocol and the run script are committed and pushed; 2. G_v4987 seeds 1 and 2 train; 3. F_s4's blobs are checked against the published bytes, G's checkpoints are exported; 4. the development files are scored for G (F_s4's scores reused), compared and decided; 5. the probe is scored for all four runs.",
+ "protected_test": "none: no vita-test, psp-test, fresh native, CLANNAD or owner test frame is read or scored by this study's models",
+ "hygiene": [
+  "synth4's names, scenes and calibration exclude eval's test games, every is_test_vn VN, teacher_val's and the general-VN development VNs, the fresh native textbox titles with their relations, CLANNAD with its family, and the owner's reserved titles (the three synth3 exclusion manifests at main a40fc23, 50 owner VNs)",
+  "synth4's curriculum and hard-example weights come from training-side data only: synth3 v3's exposures, the Jiten VN word list, real training-side labels (realplus v3, native-frames pool, teacher_train, real_train; reserved and development VNs dropped) and the selections' errors on 2,890 realplus v3 lines no model trained on (docs/synth4-gap.md); no development or test line informed them",
+  "the owner's fonts (cinecaption 2.26, NDS12) are licence class owner: only in --profile personal (both arms use personal), never redistributed, nor their renders"
+ ]
+}

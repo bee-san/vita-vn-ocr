@@ -161,8 +161,8 @@ files are byte-identical to v1's, the files VOCR4 pins.
   - A line whose base crop another box already overlaps gets no variant: 17 lines.
   - All 577 + 577 variants hold at most 1 px of another line's ink box.
   - v1's margin files used only the base crop's 25%-of-area mixed test. Under it, a short last line under
-    a long one kept the line above: 6 of v1's 431 `ink_m8` crops held two whole lines, and about 30 more
-    held readable fragments (audit-owner-pool, B1). Those files are renamed
+    a long one kept the line above: 6 of v1's 431 `ink_m8` crops held two whole lines, and 21 more held
+    7 px or more of a neighbouring line (audit-owner-pool, B1). Those files are renamed
     `*_v1_superseded_neighbour_lines.npz` and must not be used.
 
 `train2.load_shard` loads every row of all four files (0 dropped). `realplus/manifests/owner/stats.json`

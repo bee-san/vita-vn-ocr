@@ -1,0 +1,3439 @@
+{
+ "kind": "owner-drop-summary",
+ "schema": 1,
+ "archive": {
+  "name": "VN-Screenshots-SFW-2026-10-14-5050.zip",
+  "sha256": "6b4643776cbf1529f8d730db29753934bfa44f1eab6a7027caab67f05a3c7f5c",
+  "bytes": 1489453834
+ },
+ "frames": 5050,
+ "by_role": {
+  "training": 4642,
+  "test": 408
+ },
+ "games": [
+  {
+   "platform": "psp",
+   "drop_title": "Amagami",
+   "vn": "v1281",
+   "title": "アマガミ",
+   "release": "r9959 (ULJS-00339); r10974 (ULJS-00349)",
+   "frames": 110,
+   "dims": {
+    "480x272": 110
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 110
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "development_vns": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.8102,
+    "psp-test": 0.7749,
+    "clannad": 0.7945,
+    "drop-test": 0.7584
+   },
+   "leak_frames": 0,
+   "folder": "psp-amagami-v1281-TEST",
+   "slot": "psp-amagami",
+   "categories": {
+    "dialogue": 110
+   },
+   "duplicates": 110,
+   "duplicates_of_owner_games": 110,
+   "new_frames": 0
+  },
+  {
+   "platform": "psp",
+   "drop_title": "BlazBlue-Continuum-Shift-Extend",
+   "vn": "v6572",
+   "title": "BLAZBLUE CONTINUUM SHIFT",
+   "release": "NPJH50582: r15206 (ULJM-05850); r21483 (ULJM-06061)",
+   "frames": 32,
+   "dims": {
+    "480x272": 32
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 32
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "is_test_vn": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6512,
+    "psp-test": 0.5907,
+    "clannad": 0.6096,
+    "drop-test": 0.5981
+   },
+   "leak_frames": 0,
+   "folder": "psp-blazblue-cs-extend-v6572",
+   "slot": "psp-npjh50582",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 30
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 32
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Chaos-Head-NOAH",
+   "vn": "v22505",
+   "title": "CHAOS;HEAD NOAH",
+   "release": "NPJH50551: r125603",
+   "frames": 1,
+   "dims": {
+    "480x272": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5798,
+    "psp-test": 0.6551,
+    "clannad": 0.4772,
+    "drop-test": 0.7604
+   },
+   "leak_frames": 0,
+   "folder": "chaos-head-noah-v22505",
+   "slot": "psp-npjh50551",
+   "categories": {
+    "dialogue": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Custom-Drive",
+   "vn": "v10623",
+   "title": "カスタムドライブ",
+   "release": "NPJH50649: r34123 (NPJH-50649)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5504,
+    "psp-test": 0.6498,
+    "clannad": 0.6868,
+    "drop-test": 0.4864
+   },
+   "leak_frames": 0,
+   "folder": "psp-custom-drive-v10623",
+   "slot": "psp-npjh50649",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 148
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Da-Capo-II-Plus-Situation",
+   "vn": "v266",
+   "title": "D.C.II ～ダ・カーポII～",
+   "release": "NPJH50732: r9781 (ULJM-05718~9) with v264; r10620 (KAD-015) with v264",
+   "frames": 37,
+   "dims": {
+    "480x272": 37
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 37
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.8181,
+    "psp-test": 0.6834,
+    "clannad": 0.7853,
+    "drop-test": 0.7825
+   },
+   "leak_frames": 0,
+   "folder": "psp-da-capo-ii-plus-situation-v266",
+   "slot": "psp-npjh50732",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 35
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 37
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Da-Capo-Plus-Situation",
+   "vn": "v264",
+   "title": "D.C.～ダ・カーポ～",
+   "release": "NPJH50731: r166234",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "is_test_vn": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6231,
+    "psp-test": 0.6617,
+    "clannad": 0.7071,
+    "drop-test": 0.7002
+   },
+   "leak_frames": 0,
+   "folder": "psp-da-capo-plus-situation-v264",
+   "slot": "psp-npjh50731",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Danganronpa-1-PSP",
+   "vn": "v7014",
+   "title": "ダンガンロンパ 希望の学園と絶望の高校生",
+   "release": "NPJH50515: r21230 (NPJH-90164); r13888 (ULJS-00337)",
+   "frames": 38,
+   "dims": {
+    "480x272": 38
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-variety-150-20261013": 38
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "is_test_vn": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7759,
+    "psp-test": 0.7818,
+    "clannad": 0.8115,
+    "drop-test": 0.7426
+   },
+   "leak_frames": 0,
+   "folder": "psp-danganronpa-v7014",
+   "slot": "psp-npjh50515",
+   "categories": {
+    "dialogue": 38
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 38
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Disgaea-Infinite",
+   "vn": "v3333",
+   "title": "ディスガイア インフィニット",
+   "release": "NPJH00010: r6511 (NPJH-00010)",
+   "frames": 1,
+   "dims": {
+    "480x272": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": "dev-sample",
+   "reserved_without_owner_allowed": "dev-sample",
+   "release_vns_reserved": {},
+   "sets": {
+    "teacher_val": 2,
+    "devnative": 8,
+    "development_vns": true
+   },
+   "role": "training",
+   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "leak_max": {
+    "vita-test": 0.6005,
+    "psp-test": 0.439,
+    "clannad": 0.5691,
+    "drop-test": 0.5781
+   },
+   "leak_frames": 0,
+   "folder": "psp-disgaea-infinite-v3333",
+   "slot": "psp-npjh00010",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Dunamis15",
+   "vn": "v7018",
+   "title": "DUNAMIS15",
+   "release": "NPJH50641: r20183 (FVGK-0062); r21545 (ULJM-06119)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "is_test_vn": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.8456,
+    "psp-test": 0.8154,
+    "clannad": 0.8341,
+    "drop-test": 0.8358
+   },
+   "leak_frames": 0,
+   "folder": "psp-dunamis15-v7018",
+   "slot": "psp-npjh50641",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Fate-Extra",
+   "vn": "v7602",
+   "title": "フェイト/エクストラ",
+   "release": "NPJH50247: r15247 (ULJS-00254); r24358 (ULJS-00253)",
+   "frames": 24,
+   "dims": {
+    "480x272": 24
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 24
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5709,
+    "psp-test": 0.6498,
+    "clannad": 0.6864,
+    "drop-test": 0.6588
+   },
+   "leak_frames": 0,
+   "folder": "psp-fate-extra-v7602",
+   "slot": "psp-npjh50247",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 22
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 24
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Fate-Extra-CCC",
+   "vn": "v12369",
+   "title": "Fate/EXTRA CCC",
+   "release": "NPJH50505: r55779; r117809 (ULJS-19089)",
+   "frames": 44,
+   "dims": {
+    "480x272": 44
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 44
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.8909,
+    "psp-test": 0.8022,
+    "clannad": 0.7949,
+    "drop-test": 0.8684
+   },
+   "leak_frames": 0,
+   "folder": "psp-fate-extra-ccc-v12369",
+   "slot": "psp-npjh50505",
+   "categories": {
+    "title_screen": 1,
+    "dialogue": 43
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 44
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Hakuisei-Renai-Shoukougun-RE-Therapy",
+   "vn": "v7301",
+   "title": "白衣性恋愛症候群",
+   "release": "NPJH00140: r14490 (CF00-20050); r14491 (ULJM-05935)",
+   "frames": 100,
+   "dims": {
+    "480x272": 100
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 100
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.8443,
+    "psp-test": 0.8341,
+    "clannad": 0.7922,
+    "drop-test": 0.8591
+   },
+   "leak_frames": 0,
+   "folder": "psp-hakuisei-renai-re-therapy-v7301",
+   "slot": "psp-npjh00140",
+   "categories": {
+    "dialogue": 100
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 100
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Hayarigami-2-Portable-Keishichou-Kaii-Jiken-File",
+   "vn": "v21259",
+   "title": "流行り神2 警視庁怪異事件ファイル",
+   "release": "NPJH50002: r51746; r51751",
+   "frames": 1,
+   "dims": {
+    "480x272": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3955,
+    "psp-test": 0.356,
+    "clannad": 0.3239,
+    "drop-test": 0.428
+   },
+   "leak_frames": 0,
+   "folder": "psp-hayarigami-2-portable-v21259",
+   "slot": "psp-npjh50002",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Hayarigami-Portable-Keishichou-Kaii-Jiken-File",
+   "vn": "v2063",
+   "title": "流行り神 警視庁怪異事件ファイル",
+   "release": "NPJH50001: r43386 (ULJS-00035); r51750",
+   "frames": 2,
+   "dims": {
+    "480x272": 2
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 2
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6341,
+    "psp-test": 0.5664,
+    "clannad": 0.5202,
+    "drop-test": 0.5496
+   },
+   "leak_frames": 0,
+   "folder": "psp-hayarigami-portable-v2063",
+   "slot": "psp-npjh50001",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 2
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Juusei-to-Diamond",
+   "vn": "v14909",
+   "title": "銃声とダイヤモンド",
+   "release": "NPJG00016: r129019 (NPJG-90040); r33053",
+   "frames": 149,
+   "dims": {
+    "480x272": 149
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 149
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "fresh_native": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.723,
+    "psp-test": 0.7018,
+    "clannad": 0.707,
+    "drop-test": 0.6797
+   },
+   "leak_frames": 0,
+   "folder": "psp-juusei-to-diamond-v14909",
+   "slot": "psp-npjg00016",
+   "categories": {
+    "title_screen": 1,
+    "dialogue": 148
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 149
+  },
+  {
+   "platform": "psp",
+   "drop_title": "MagusTale-Eternity",
+   "vn": "v689",
+   "title": "MagusTale ～世界樹と恋する魔法使い～",
+   "release": "NPJH50835: r7521 (P-00013); r7522 (ULJM-05577)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "is_test_vn": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.9376,
+    "psp-test": 0.8375,
+    "clannad": 0.903,
+    "drop-test": 0.9665
+   },
+   "leak_frames": 1,
+   "folder": "psp-magustale-eternity-v689",
+   "slot": "psp-npjh50835",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 148
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 149
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Memories-Off-5-Togireta-Film",
+   "vn": "v1325",
+   "title": "Memories Off #5 とぎれたフィルム",
+   "release": "NPJH50130: r2926 (FVGK-0014); r2927 (ULJM-05394)",
+   "frames": 3,
+   "dims": {
+    "480x272": 3
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 3
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6513,
+    "psp-test": 0.5597,
+    "clannad": 0.6357,
+    "drop-test": 0.6028
+   },
+   "leak_frames": 0,
+   "folder": "psp-memories-off-5-v1325",
+   "slot": "psp-npjh50130",
+   "categories": {
+    "dialogue": 3
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 3
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Memories-Off-6-T-Wave",
+   "vn": "v1646",
+   "title": "メモリーズオフ6 ～T-wave～",
+   "release": "NPJH50382: r3225 (ULJM-05467); r3226 (FVGK-0027)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7088,
+    "psp-test": 0.6746,
+    "clannad": 0.7398,
+    "drop-test": 0.7623
+   },
+   "leak_frames": 0,
+   "folder": "psp-memories-off-6-v1646",
+   "slot": "psp-npjh50382",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Memories-Off-Sorekara",
+   "vn": "v1171",
+   "title": "Memories Off ～それから～",
+   "release": "NPJH50132: r2423 (ULJM-05350); r2424 (FVGK-0010)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6777,
+    "psp-test": 0.7391,
+    "clannad": 0.7697,
+    "drop-test": 0.7044
+   },
+   "leak_frames": 0,
+   "folder": "psp-memories-off-sorekara-v1171",
+   "slot": "psp-npjh50132",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Misshitsu-no-Sacrifice",
+   "vn": "v4185",
+   "title": "密室のサクリファイス",
+   "release": "NPJH50224: r8096; r8097 (ULJS-00251)",
+   "frames": 1,
+   "dims": {
+    "480x272": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3634,
+    "psp-test": 0.3726,
+    "clannad": 0.2971,
+    "drop-test": 0.3279
+   },
+   "leak_frames": 0,
+   "folder": "psp-misshitsu-no-sacrifice-v4185",
+   "slot": "psp-npjh50224",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Missingparts-Complete",
+   "vn": "v16386",
+   "title": "MISSING PARTS the TANTEI stories",
+   "release": "NPJH50689: r37496",
+   "frames": 49,
+   "dims": {
+    "480x272": 49
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 49
+   },
+   "reserved_vns": "dev-sample",
+   "reserved_without_owner_allowed": "dev-sample",
+   "release_vns_reserved": {},
+   "sets": {
+    "teacher_val": 16,
+    "devnative": 154,
+    "development_vns": true
+   },
+   "role": "training",
+   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "leak_max": {
+    "vita-test": 0.6911,
+    "psp-test": 0.6161,
+    "clannad": 0.6057,
+    "drop-test": 0.5792
+   },
+   "leak_frames": 0,
+   "folder": "psp-missing-parts-complete-v16386",
+   "slot": "psp-npjh50689",
+   "categories": {
+    "dialogue": 49
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 49
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Narcissu-Portable",
+   "vn": "v10",
+   "title": "narcissu",
+   "release": "r7480 (ULJM-05674) and r7145 (KAD-014), each with v70, v1542, v18736, v18738",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5721,
+    "psp-test": 0.5893,
+    "clannad": 0.6223,
+    "drop-test": 0.732
+   },
+   "leak_frames": 0,
+   "folder": "psp-narcissu-portable-v10-TEST",
+   "slot": "psp-narcissu",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 150,
+   "duplicates_of_owner_games": 150,
+   "new_frames": 0
+  },
+  {
+   "platform": "psp",
+   "drop_title": "No-Fate",
+   "vn": "v3278",
+   "title": "のーふぇいと！～only the power of will～",
+   "release": "NPJH50360: r6399 (ALCH-00026); r6400 (ULJM-05610)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": "dev-sample",
+   "reserved_without_owner_allowed": "dev-sample",
+   "release_vns_reserved": {},
+   "sets": {
+    "teacher_val": 5,
+    "devnative": 58,
+    "development_vns": true
+   },
+   "role": "training",
+   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "leak_max": {
+    "vita-test": 0.7812,
+    "psp-test": 0.7938,
+    "clannad": 0.8379,
+    "drop-test": 0.889
+   },
+   "leak_frames": 0,
+   "folder": "psp-no-fate-v3278",
+   "slot": "psp-npjh50360",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Omoide-ni-Kawaru-Kimi-Memories-Off",
+   "vn": "v1170",
+   "title": "想い出にかわる君 ～メモリーズオフ～",
+   "release": "NPJH50129: r2221 (ULJM-05349); r10678 (FVGK-0009)",
+   "frames": 6,
+   "dims": {
+    "480x272": 6
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 6
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.8243,
+    "psp-test": 0.8186,
+    "clannad": 0.7953,
+    "drop-test": 0.8263
+   },
+   "leak_frames": 0,
+   "folder": "psp-omoide-ni-kawaru-kimi-v1170",
+   "slot": "psp-npjh50129",
+   "categories": {
+    "dialogue": 6
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 6
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Pastel-Chime-Continue",
+   "vn": "v1080",
+   "title": "ぱすてるチャイムContinue",
+   "release": "NPJH50550: r11532 (ULJM-05788); r11533 (FVGK-0045)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7125,
+    "psp-test": 0.7554,
+    "clannad": 0.7792,
+    "drop-test": 0.7124
+   },
+   "leak_frames": 0,
+   "folder": "psp-pastel-chime-continue-v1080",
+   "slot": "psp-npjh50550",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 148
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Planetarian",
+   "vn": "v34",
+   "title": "planetarian ～ちいさなほしのゆめ～",
+   "release": "r6626 (ULJM-05383); r13787 (ULJM-05383)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": "clannad-shared-release",
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "owner 2026-10-13 19:21Z and 20:47Z: training (reserved_vns: not reserved)",
+   "leak_max": {
+    "vita-test": 0.9408,
+    "psp-test": 0.8038,
+    "clannad": 0.9513,
+    "drop-test": 0.9522
+   },
+   "leak_frames": 2,
+   "folder": "psp-planetarian-v34",
+   "slot": "psp-planetarian",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 150,
+   "duplicates_of_owner_games": 150,
+   "new_frames": 0
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Princess-Maker-4-Portable",
+   "vn": "v727",
+   "title": "プリンセスメーカー4",
+   "release": "NPJH50069: r114338 (NPJH-50069)",
+   "frames": 2,
+   "dims": {
+    "480x272": 2
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 2
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6038,
+    "psp-test": 0.6182,
+    "clannad": 0.565,
+    "drop-test": 0.5815
+   },
+   "leak_frames": 0,
+   "folder": "psp-princess-maker-4-portable-v727",
+   "slot": "psp-npjh50069",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 2
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Princess-Maker-5-Portable",
+   "vn": "v728",
+   "title": "プリンセスメーカー5",
+   "release": "NPJH50070: r114349 (NPJH-50070)",
+   "frames": 10,
+   "dims": {
+    "480x272": 10
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 10
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6823,
+    "psp-test": 0.6424,
+    "clannad": 0.6043,
+    "drop-test": 0.6006
+   },
+   "leak_frames": 0,
+   "folder": "psp-princess-maker-5-portable-v728",
+   "slot": "psp-npjh50070",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 8
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 10
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Second-Novel",
+   "vn": "v4091",
+   "title": "セカンドノベル ～彼女の夏、15分の記憶～",
+   "release": "NPJH50279: r7967 (ULJS-00304); r7968",
+   "frames": 2,
+   "dims": {
+    "480x272": 2
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 2
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7076,
+    "psp-test": 0.7527,
+    "clannad": 0.7642,
+    "drop-test": 0.6876
+   },
+   "leak_frames": 0,
+   "folder": "psp-second-novel-v4091",
+   "slot": "psp-npjh50279",
+   "categories": {
+    "dialogue": 2
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 2
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Sharin-no-Kuni",
+   "vn": "v57",
+   "title": "車輪の国、向日葵の少女",
+   "release": "r4693 (PLCE-0001); r17721 (ULJM-06022) with v84",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7898,
+    "psp-test": 0.693,
+    "clannad": 0.8036,
+    "drop-test": 0.8835
+   },
+   "leak_frames": 0,
+   "folder": "psp-sharin-no-kuni-v57",
+   "slot": "psp-sharin",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 150,
+   "duplicates_of_owner_games": 150,
+   "new_frames": 0
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Solfege-Sweet-Harmony",
+   "vn": "v2113",
+   "title": "ソルフェージュ",
+   "release": "NPJH50095: r4133 (ULJM-05367); r11618 (GWS-0002)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.4381,
+    "psp-test": 0.3677,
+    "clannad": 0.3053,
+    "drop-test": 0.4268
+   },
+   "leak_frames": 0,
+   "folder": "psp-solfege-sweet-harmony-v2113",
+   "slot": "psp-npjh50095",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Suzukaze-no-Melt",
+   "vn": "v3992",
+   "title": "涼風のメルト -Where wishes are drawn to each other-",
+   "release": "NPJH50801: r21074 (P-00039); r21895 (ULJM-06053)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6545,
+    "psp-test": 0.6659,
+    "clannad": 0.7202,
+    "drop-test": 0.6725
+   },
+   "leak_frames": 0,
+   "folder": "psp-suzukaze-no-melt-v3992",
+   "slot": "psp-npjh50801",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 148
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Tantei-Jinguuji-Saburo-Hai-to-Diamond",
+   "vn": "v19010",
+   "title": "探偵 神宮寺三郎 灰とダイヤモンド",
+   "release": "NPJH50079: r8815 (ULJM-05529)",
+   "frames": 11,
+   "dims": {
+    "480x272": 11
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 11
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7244,
+    "psp-test": 0.7344,
+    "clannad": 0.7092,
+    "drop-test": 0.6986
+   },
+   "leak_frames": 0,
+   "folder": "psp-jinguuji-saburo-hai-to-diamond-v19010",
+   "slot": "psp-npjh50079",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 9
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 11
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Tenshin-Ranman-Happy-Go-Lucky",
+   "vn": "v1322",
+   "title": "天神乱漫 LUCKY or UNLUCKY!?",
+   "release": "NPJH50297: r5724 (ULJM-05634); r73326 (ULJM-05633)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6096,
+    "psp-test": 0.665,
+    "clannad": 0.8372,
+    "drop-test": 0.7089
+   },
+   "leak_frames": 0,
+   "folder": "psp-tenshin-ranman-v1322",
+   "slot": "psp-npjh50297",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 148
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Time-Travelers-PSP",
+   "vn": "v10856",
+   "title": "タイムトラベラーズ",
+   "release": "NPJH50597: r22079 (ULJM-06085)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": "test-set",
+   "reserved_without_owner_allowed": "test-set",
+   "release_vns_reserved": {},
+   "sets": {
+    "vita-test": 2,
+    "psp-test": 13,
+    "test_games_all": true,
+    "is_test_vn": true
+   },
+   "role": "test",
+   "why": "reserved: test-set",
+   "leak_max": {},
+   "leak_frames": 0,
+   "folder": "psp-time-travelers-v10856-TEST",
+   "slot": "psp-npjh50597",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Trick-Logic",
+   "vn": "v11713",
+   "title": "Trick x Logic Season 1",
+   "release": "NPJG00025: r24291 (UCJS-10097)",
+   "frames": 48,
+   "dims": {
+    "480x272": 48
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 48
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "is_test_vn": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.4181,
+    "psp-test": 0.4167,
+    "clannad": 0.4206,
+    "drop-test": 0.455
+   },
+   "leak_frames": 0,
+   "folder": "psp-trick-logic-v11713",
+   "slot": "psp-npjg00025",
+   "categories": {
+    "dialogue": 48
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 48
+  },
+  {
+   "platform": "psp",
+   "drop_title": "Utawarerumono-Portable",
+   "vn": "v3",
+   "title": "うたわれるもの",
+   "release": "NPJH50882: r117205 (NPJH-50882)",
+   "frames": 150,
+   "dims": {
+    "480x272": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": "test-shared-release",
+   "reserved_without_owner_allowed": "test-shared-release",
+   "release_vns_reserved": {},
+   "sets": {
+    "test_games_all": true
+   },
+   "role": "test",
+   "why": "reserved: test-shared-release",
+   "leak_max": {},
+   "leak_frames": 0,
+   "folder": "psp-utawarerumono-portable-v3-TEST",
+   "slot": "psp-npjh50882",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 148
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "vita",
+   "drop_title": "5-nin-no-Koi-Prince",
+   "vn": "v16607",
+   "title": "5人の恋プリンス ~ヒミツの契約結婚~",
+   "release": "PCSG00590: r38581 (PCSG-00590)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3931,
+    "psp-test": 0.4417,
+    "clannad": 0.4327,
+    "drop-test": 0.3741
+   },
+   "leak_frames": 0,
+   "folder": "vita-5-nin-no-koi-prince-v16607",
+   "slot": "vita-pcsg00590",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "AMNESIA-V-Edition",
+   "vn": "v7803",
+   "title": "AMNESIA",
+   "release": "PCSG00203: r70114 (PCSG-00203)",
+   "frames": 119,
+   "dims": {
+    "960x544": 119
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 119
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6789,
+    "psp-test": 0.6132,
+    "clannad": 0.5679,
+    "drop-test": 0.6323
+   },
+   "leak_frames": 0,
+   "folder": "vita-amnesia-v-edition-v7803",
+   "slot": "vita-pcsg00203",
+   "categories": {
+    "dialogue": 119
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 119
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Abunai-Koi-no-Sousashitsu-Eternal-Happiness",
+   "vn": "v16467",
+   "title": "アブナイ恋の捜査室 ~Eternal Happiness~",
+   "release": "PCSG00591: r39882 (PCSG-00591)",
+   "frames": 2,
+   "dims": {
+    "960x544": 2
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 2
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.608,
+    "psp-test": 0.6766,
+    "clannad": 0.6805,
+    "drop-test": 0.6456
+   },
+   "leak_frames": 0,
+   "folder": "vita-abunai-koi-no-sousashitsu-v16467",
+   "slot": "vita-pcsg00591",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 2
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Anoko-wa-Ore-Kara-Hanarenai",
+   "vn": "v10271",
+   "title": "彼女はオレからはなれない",
+   "release": "PCSG00342: r31028 (TGCS-00004); r31029 (VLJM-30078)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "teacher_val": 6,
+    "development_vns": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.2624,
+    "psp-test": 0.2102,
+    "clannad": 0.2025,
+    "drop-test": 0.2043
+   },
+   "leak_frames": 0,
+   "folder": "vita-anoko-wa-ore-kara-hanarenai-v10271",
+   "slot": "vita-pcsg00342",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Azayaka-na-Irodori-no-Naka-de-Kimi-Rashiku-3-61-3-67",
+   "vn": "v21899",
+   "title": "あざやかな彩りの中で、君らしく",
+   "release": "PCSG01175: r54733",
+   "frames": 2,
+   "dims": {
+    "960x544": 2
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 2
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.4954,
+    "psp-test": 0.4968,
+    "clannad": 0.3515,
+    "drop-test": 0.5319
+   },
+   "leak_frames": 0,
+   "folder": "vita-azayaka-na-irodori-v21899",
+   "slot": "vita-pcsg01175",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 2
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Binary-Star",
+   "vn": "v14787",
+   "title": "Binary Star",
+   "release": "PCSG00389: r33986 (PCSG-00389)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3031,
+    "psp-test": 0.3901,
+    "clannad": 0.2618,
+    "drop-test": 0.3758
+   },
+   "leak_frames": 0,
+   "folder": "vita-binary-star-v14787",
+   "slot": "vita-pcsg00389",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "CHAOS-HEAD-Love-Chu-Chu",
+   "vn": "v3091",
+   "title": "カオスヘッド らぶChu☆Chu!",
+   "release": "PCSG00435: r38137 (VLJM-35126) with v22505; r38138 (FVGK-0117) with v22505",
+   "frames": 10,
+   "dims": {
+    "960x544": 10
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 10
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3732,
+    "psp-test": 0.384,
+    "clannad": 0.3986,
+    "drop-test": 0.3781
+   },
+   "leak_frames": 0,
+   "folder": "vita-chaos-head-love-chu-chu-v3091",
+   "slot": "vita-pcsg00435",
+   "categories": {
+    "settings_screen": 1,
+    "dialogue": 9
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 10
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Chaos-Child",
+   "vn": "v14018",
+   "title": "CHAOS;CHILD",
+   "release": "PCSG00555: r39462 (VLJM-35209); r49779 (FVGK-0128)",
+   "frames": 150,
+   "dims": {
+    "960x544": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7286,
+    "psp-test": 0.6864,
+    "clannad": 0.7861,
+    "drop-test": 0.7558
+   },
+   "leak_frames": 0,
+   "folder": "vita-chaos-child-v14018",
+   "slot": "vita-pcsg00555",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 150,
+   "duplicates_of_owner_games": 150,
+   "new_frames": 0
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Chouchou-Jiken-Rhapsodic",
+   "vn": "v19851",
+   "title": "蝶々事件ラブソディック",
+   "release": "PCSG01066: r52575 (PCSG-01066)",
+   "frames": 4,
+   "dims": {
+    "960x544": 4
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 4
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.4466,
+    "psp-test": 0.4526,
+    "clannad": 0.4831,
+    "drop-test": 0.6412
+   },
+   "leak_frames": 0,
+   "folder": "vita-chouchou-jiken-rhapsodic-v19851",
+   "slot": "vita-pcsg01066",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 2
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 4
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Collar-x-Malice",
+   "vn": "v18160",
+   "title": "Collar x Malice",
+   "release": "PCSG00866: r45942 (PCSG-00866)",
+   "frames": 107,
+   "dims": {
+    "960x544": 107
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 107
+   },
+   "reserved_vns": "test-shared-release",
+   "reserved_without_owner_allowed": "test-shared-release",
+   "release_vns_reserved": {},
+   "sets": {
+    "test_games_all": true
+   },
+   "role": "test",
+   "why": "reserved: test-shared-release",
+   "leak_max": {},
+   "leak_frames": 0,
+   "folder": "vita-collar-x-malice-v18160-TEST",
+   "slot": "vita-pcsg00866",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 105
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 107
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Cross-Ange-Tenshi-to-Ryuu-no-Rondo-tr",
+   "vn": "v19100",
+   "title": "クロスアンジュ 天使と竜の輪舞tr.",
+   "release": "PCSG00597: r45366 (VLJS-00110)",
+   "frames": 13,
+   "dims": {
+    "960x544": 13
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 13
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5956,
+    "psp-test": 0.5021,
+    "clannad": 0.6676,
+    "drop-test": 0.6084
+   },
+   "leak_frames": 0,
+   "folder": "vita-cross-ange-v19100",
+   "slot": "vita-pcsg00597",
+   "categories": {
+    "dialogue": 13
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 13
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Cure-Mate-Club",
+   "vn": "v2923",
+   "title": "Cure Mate Club",
+   "release": "PCSG00169: r25515",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5671,
+    "psp-test": 0.6224,
+    "clannad": 0.4929,
+    "drop-test": 0.4906
+   },
+   "leak_frames": 0,
+   "folder": "vita-cure-mate-club-v2923",
+   "slot": "vita-pcsg00169",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Fate-Extella-3-61-3-61",
+   "vn": "v19119",
+   "title": "Fate/EXTELLA",
+   "release": "PCSG00600: r45447 (VLJM-30158); r51550 (PLJM-80176)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3053,
+    "psp-test": 0.256,
+    "clannad": 0.3328,
+    "drop-test": 0.5209
+   },
+   "leak_frames": 0,
+   "folder": "vita-fate-extella-v19119",
+   "slot": "vita-pcsg00600",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Hakuisei-Aijou-Izonshou",
+   "vn": "v16610",
+   "title": "白衣性愛情依存症",
+   "release": "PCSG00577: r38048; r45123",
+   "frames": 150,
+   "dims": {
+    "960x544": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.782,
+    "psp-test": 0.743,
+    "clannad": 0.8824,
+    "drop-test": 0.8762
+   },
+   "leak_frames": 0,
+   "folder": "vita-hakuisei-aijou-izonshou-v16610",
+   "slot": "vita-pcsg00577",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Hanasaku-Manimani",
+   "vn": "v11677",
+   "title": "花咲くまにまに",
+   "release": "PCSG00366: r35839 (PCSG-00366)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": "dev-sample",
+   "reserved_without_owner_allowed": "dev-sample",
+   "release_vns_reserved": {},
+   "sets": {
+    "teacher_val": 7,
+    "devnative": 58,
+    "development_vns": true
+   },
+   "role": "training",
+   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "leak_max": {
+    "vita-test": 0.4603,
+    "psp-test": 0.4485,
+    "clannad": 0.2725,
+    "drop-test": 0.3963
+   },
+   "leak_frames": 0,
+   "folder": "vita-hanasaku-manimani-v11677",
+   "slot": "vita-pcsg00366",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Hotchkiss",
+   "vn": "v7967",
+   "title": "ホチキス",
+   "release": "PCSG00200: r48635",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.2305,
+    "psp-test": 0.2762,
+    "clannad": 0.1783,
+    "drop-test": 0.2591
+   },
+   "leak_frames": 0,
+   "folder": "vita-hotchkiss-v7967",
+   "slot": "vita-pcsg00200",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Hyakka-Yakou",
+   "vn": "v15773",
+   "title": "百華夜光",
+   "release": "PCSG00477: r35966 (PCSG-00477)",
+   "frames": 79,
+   "dims": {
+    "960x544": 79
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 79
+   },
+   "reserved_vns": "dev-sample",
+   "reserved_without_owner_allowed": "dev-sample",
+   "release_vns_reserved": {},
+   "sets": {
+    "teacher_val": 22,
+    "devnative": 202,
+    "development_vns": true
+   },
+   "role": "training",
+   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "leak_max": {
+    "vita-test": 0.725,
+    "psp-test": 0.666,
+    "clannad": 0.6532,
+    "drop-test": 0.6897
+   },
+   "leak_frames": 0,
+   "folder": "vita-hyakka-yakou-v15773",
+   "slot": "vita-pcsg00477",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 77
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 79
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Ikemen-Bakumatsu-Unmei-no-Koi-3-61-3-63",
+   "vn": "v18777",
+   "title": "イケメン幕末◆運命の恋",
+   "release": "PCSG01020: r49890",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3211,
+    "psp-test": 0.2203,
+    "clannad": 0.3367,
+    "drop-test": 0.3331
+   },
+   "leak_frames": 0,
+   "folder": "vita-ikemen-bakumatsu-v18777",
+   "slot": "vita-pcsg01020",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Infinite-Stratos-2-Ignition-Hearts",
+   "vn": "v13865",
+   "title": "IS＜インフィニット・ストラトス＞2 イグニッション・ハーツ",
+   "release": "PCSG00270: r30207 (FVGK-0102); r38969 (VLJM-30065)",
+   "frames": 2,
+   "dims": {
+    "960x544": 2
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 2
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3597,
+    "psp-test": 0.4545,
+    "clannad": 0.4183,
+    "drop-test": 0.5305
+   },
+   "leak_frames": 0,
+   "folder": "vita-infinite-stratos-2-v13865",
+   "slot": "vita-pcsg00270",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 2
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Iwaihime-Matsuri",
+   "vn": "v17863",
+   "title": "祝姫",
+   "release": "PCSG01083: r51223 (VLJM-38010)",
+   "frames": 150,
+   "dims": {
+    "960x544": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "japanese-vns-20261013": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "teacher_val": 5,
+    "development_vns": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.8057,
+    "psp-test": 0.8245,
+    "clannad": 0.8246,
+    "drop-test": 0.7798
+   },
+   "leak_frames": 0,
+   "folder": "vita-iwaihime-matsuri-v17863-TEST",
+   "slot": "vita-pcsg01083",
+   "categories": {
+    "title_screen": 1,
+    "dialogue": 149
+   },
+   "duplicates": 149,
+   "duplicates_of_owner_games": 149,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "KissBell",
+   "vn": "v10641",
+   "title": "キスベル",
+   "release": "PCSG00413: r34134",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5171,
+    "psp-test": 0.4993,
+    "clannad": 0.5046,
+    "drop-test": 0.5859
+   },
+   "leak_frames": 0,
+   "folder": "vita-kissbell-v10641",
+   "slot": "vita-pcsg00413",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Mikagami-Sumika-no-Seifuku-Katsudou-3-61-3-67",
+   "vn": "v22174",
+   "title": "見鏡澄香の制服活動",
+   "release": "PCSG01193: r55634",
+   "frames": 52,
+   "dims": {
+    "960x544": 52
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 52
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.9203,
+    "psp-test": 0.7625,
+    "clannad": 0.9565,
+    "drop-test": 0.9417
+   },
+   "leak_frames": 3,
+   "folder": "vita-mikagami-sumika-v22174",
+   "slot": "vita-pcsg01193",
+   "categories": {
+    "dialogue": 52
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 49
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Moujuutsukai-to-Oujisama",
+   "vn": "v4540",
+   "title": "猛獣使いと王子様",
+   "release": "PCSG00244: r70291 (PCSG-00244)",
+   "frames": 2,
+   "dims": {
+    "960x544": 2
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 2
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5156,
+    "psp-test": 0.4528,
+    "clannad": 0.6158,
+    "drop-test": 0.5461
+   },
+   "leak_frames": 0,
+   "folder": "vita-moujuutsukai-to-oujisama-v4540",
+   "slot": "vita-pcsg00244",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 2
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Otoko-Yuukaku",
+   "vn": "v15231",
+   "title": "逆転 吉原",
+   "release": "PCSG00487: r37386 (PCSG-00487)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.4092,
+    "psp-test": 0.5115,
+    "clannad": 0.3688,
+    "drop-test": 0.4722
+   },
+   "leak_frames": 0,
+   "folder": "vita-otoko-yuukaku-v15231",
+   "slot": "vita-pcsg00487",
+   "categories": {
+    "settings_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Ozmafia-Vivace",
+   "vn": "v7833",
+   "title": "OZMAFIA!!",
+   "release": "PCSG00496: r70035 (PCSG-00496)",
+   "frames": 76,
+   "dims": {
+    "960x544": 76
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 76
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "teacher_val": 5,
+    "development_vns": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7743,
+    "psp-test": 0.7699,
+    "clannad": 0.8479,
+    "drop-test": 0.8979
+   },
+   "leak_frames": 0,
+   "folder": "vita-ozmafia-vivace-v7833",
+   "slot": "vita-pcsg00496",
+   "categories": {
+    "title_screen": 1,
+    "dialogue": 75
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 76
+  },
+  {
+   "platform": "vita",
+   "drop_title": "PCSG00641",
+   "vn": "v17902",
+   "title": "クロガネ回姫譚 -一期一会-",
+   "release": "PCSG00641: r41222 (PCSG-00641)",
+   "frames": 2,
+   "dims": {
+    "960x544": 2
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 2
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3532,
+    "psp-test": 0.4118,
+    "clannad": 0.4608,
+    "drop-test": 0.424
+   },
+   "leak_frames": 0,
+   "folder": "vita-kurogane-kaikitan-v17902",
+   "slot": "vita-pcsg00641",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 2
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Parfait",
+   "vn": "v683",
+   "title": "パルフェ ～ショコラ second brew～",
+   "release": "PCSG00549: r48636",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3445,
+    "psp-test": 0.2314,
+    "clannad": 0.257,
+    "drop-test": 0.3223
+   },
+   "leak_frames": 0,
+   "folder": "vita-parfait-v683",
+   "slot": "vita-pcsg00549",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Plastic-Memories",
+   "vn": "v19441",
+   "title": "プラスティック・メモリーズ",
+   "release": "PCSG00931: r46361 (VLJM-30201); r95013",
+   "frames": 3,
+   "dims": {
+    "960x544": 3
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 3
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7513,
+    "psp-test": 0.7054,
+    "clannad": 0.8611,
+    "drop-test": 0.8592
+   },
+   "leak_frames": 0,
+   "folder": "vita-plastic-memories-v19441",
+   "slot": "vita-pcsg00931",
+   "categories": {
+    "title_screen": 1,
+    "dialogue": 2
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 3
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Present-for-you",
+   "vn": "v5386",
+   "title": "Present for you ～わたしをあ・げ・る～",
+   "release": "PCSG00123: r25513 (PCSG-00123)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "is_test_vn": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.4014,
+    "psp-test": 0.3759,
+    "clannad": 0.3634,
+    "drop-test": 0.3785
+   },
+   "leak_frames": 0,
+   "folder": "vita-present-for-you-v5386",
+   "slot": "vita-pcsg00123",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Princess-Arthur",
+   "vn": "v11108",
+   "title": "Princess Arthur",
+   "release": "PCSG00271: r70290 (PCSG-00271)",
+   "frames": 53,
+   "dims": {
+    "960x544": 53
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 53
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6631,
+    "psp-test": 0.6943,
+    "clannad": 0.7708,
+    "drop-test": 0.7167
+   },
+   "leak_frames": 0,
+   "folder": "vita-princess-arthur-v11108",
+   "slot": "vita-pcsg00271",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 51
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 53
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Ray-Gigant",
+   "vn": "v24957",
+   "title": "レイギガント",
+   "release": "PCSG00552: r61259 (VLJS-00111); r97382",
+   "frames": 2,
+   "dims": {
+    "960x544": 2
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 2
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5493,
+    "psp-test": 0.7151,
+    "clannad": 0.5186,
+    "drop-test": 0.5674
+   },
+   "leak_frames": 0,
+   "folder": "vita-ray-gigant-v24957",
+   "slot": "vita-pcsg00552",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 2
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Reine-des-Fleurs",
+   "vn": "v14919",
+   "title": "レンドフルール",
+   "release": "PCSG00405: r33247 (PCSG-00405)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "is_test_vn": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.4988,
+    "psp-test": 0.5262,
+    "clannad": 0.3348,
+    "drop-test": 0.3468
+   },
+   "leak_frames": 0,
+   "folder": "vita-reine-des-fleurs-v14919",
+   "slot": "vita-pcsg00405",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Robotics-Notes-Elite",
+   "vn": "v5883",
+   "title": "ROBOTICS;NOTES",
+   "release": "PCSG00352: r32892; r32893",
+   "frames": 86,
+   "dims": {
+    "960x544": 86
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 86
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.8069,
+    "psp-test": 0.7356,
+    "clannad": 0.6352,
+    "drop-test": 0.6505
+   },
+   "leak_frames": 0,
+   "folder": "vita-robotics-notes-elite-v5883",
+   "slot": "vita-pcsg00352",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 84
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 86
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Sakura-Sou-no-Pet-na-Kanojo",
+   "vn": "v11173",
+   "title": "さくら荘のペットな彼女",
+   "release": "PCSG00129: r22795 (VLJS-05017); r24450 (VLJS-05016)",
+   "frames": 38,
+   "dims": {
+    "960x544": 38
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 38
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5922,
+    "psp-test": 0.5524,
+    "clannad": 0.558,
+    "drop-test": 0.6625
+   },
+   "leak_frames": 0,
+   "folder": "vita-sakura-sou-no-pet-na-kanojo-v11173",
+   "slot": "vita-pcsg00129",
+   "categories": {
+    "title_screen": 1,
+    "dialogue": 37
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 38
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Shin-Kamaitachi-no-Yoru-11-Ninme-no-Suspect",
+   "vn": "v10561",
+   "title": "真かまいたちの夜 11人目の訪問者（サスペクト）",
+   "release": "PCSG00010: r21357 (VLJS-00006); r123647 (VLJS-50002)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5813,
+    "psp-test": 0.6474,
+    "clannad": 0.3287,
+    "drop-test": 0.5093
+   },
+   "leak_frames": 0,
+   "folder": "vita-shin-kamaitachi-no-yoru-v10561",
+   "slot": "vita-pcsg00010",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Side-Kicks",
+   "vn": "v19743",
+   "title": "Side Kicks!",
+   "release": "PCSG01001: r48560 (PCSG-01001)",
+   "frames": 63,
+   "dims": {
+    "960x544": 63
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 63
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7563,
+    "psp-test": 0.7395,
+    "clannad": 0.8648,
+    "drop-test": 0.8025
+   },
+   "leak_frames": 0,
+   "folder": "vita-side-kicks-v19743",
+   "slot": "vita-pcsg01001",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 61
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 63
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Steins-Gate",
+   "vn": "v2002",
+   "title": "STEINS;GATE",
+   "release": "PCSG00147: r88732 (PCSG-00147)",
+   "frames": 150,
+   "dims": {
+    "960x544": 150
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 150
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7545,
+    "psp-test": 0.6899,
+    "clannad": 0.7566,
+    "drop-test": 0.7171
+   },
+   "leak_frames": 0,
+   "folder": "vita-steins-gate-v2002",
+   "slot": "vita-pcsg00147",
+   "categories": {
+    "dialogue": 150
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 150
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Steins-Gate-0",
+   "vn": "v17102",
+   "title": "STEINS;GATE 0",
+   "release": "PCSG00673: r40964 (VLJM-35259); r124594",
+   "frames": 48,
+   "dims": {
+    "960x544": 48
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 48
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {
+    "is_test_vn": true
+   },
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.9323,
+    "psp-test": 0.8191,
+    "clannad": 0.8796,
+    "drop-test": 0.8977
+   },
+   "leak_frames": 0,
+   "folder": "vita-steins-gate-0-v17102",
+   "slot": "vita-pcsg00673",
+   "categories": {
+    "dialogue": 48
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 48
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Steins-Gate-Hiyoku-Renri-no-Darling",
+   "vn": "v6618",
+   "title": "STEINS;GATE 比翼恋理のだーりん",
+   "release": "PCSG00146: r55781 (PCSG-00146)",
+   "frames": 104,
+   "dims": {
+    "960x544": 104
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 104
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7722,
+    "psp-test": 0.6833,
+    "clannad": 0.745,
+    "drop-test": 0.761
+   },
+   "leak_frames": 0,
+   "folder": "vita-steins-gate-darling-v6618",
+   "slot": "vita-pcsg00146",
+   "categories": {
+    "dialogue": 104
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 104
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Steins-Gate-Senkei-Kousoku-no-Phenogram",
+   "vn": "v11660",
+   "title": "STEINS;GATE 線形拘束のフェノグラム",
+   "release": "PCSG00250: r28561 (VLJM-30061); r28562 (FVGK-0103)",
+   "frames": 27,
+   "dims": {
+    "960x544": 27
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 27
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6874,
+    "psp-test": 0.7109,
+    "clannad": 0.7184,
+    "drop-test": 0.7137
+   },
+   "leak_frames": 0,
+   "folder": "vita-steins-gate-phenogram-v11660",
+   "slot": "vita-pcsg00250",
+   "categories": {
+    "title_screen": 1,
+    "dialogue": 26
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 27
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Sweet-Clown",
+   "vn": "v16460",
+   "title": "SWEET CLOWN ~午前三時のオカシな道化師~",
+   "release": "PCSG00528: r50738 (PCSG-00528)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": "test-set",
+   "reserved_without_owner_allowed": "test-set",
+   "release_vns_reserved": {},
+   "sets": {
+    "vita-test": 25,
+    "test_games_all": true,
+    "is_test_vn": true
+   },
+   "role": "test",
+   "why": "reserved: test-set",
+   "leak_max": {},
+   "leak_frames": 0,
+   "folder": "vita-sweet-clown-v16460-TEST",
+   "slot": "vita-pcsg00528",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Teikoku-Kaigun-Koi-Bojou",
+   "vn": "v17285",
+   "title": "帝国海軍恋慕情 ～明治横須賀行進曲～",
+   "release": "PCSG00547: r39996 (PCSG-00547)",
+   "frames": 88,
+   "dims": {
+    "960x544": 88
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 88
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.9203,
+    "psp-test": 0.8319,
+    "clannad": 0.8874,
+    "drop-test": 0.9435
+   },
+   "leak_frames": 0,
+   "folder": "vita-teikoku-kaigun-koi-bojou-v17285",
+   "slot": "vita-pcsg00547",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 86
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 88
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Tokyo-Ghoul-Jail",
+   "vn": "v17936",
+   "title": "東京喰種 JAIL",
+   "release": "PCSG00615: r41299 (VLJS-00113); r58179",
+   "frames": 120,
+   "dims": {
+    "960x544": 120
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 120
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6151,
+    "psp-test": 0.4657,
+    "clannad": 0.6644,
+    "drop-test": 0.893
+   },
+   "leak_frames": 0,
+   "folder": "vita-tokyo-ghoul-jail-v17936",
+   "slot": "vita-pcsg00615",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 118
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 120
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Tsuki-ni-Yori-Sou-Otome-no-Sahou",
+   "vn": "v10680",
+   "title": "月に寄りそう乙女の作法",
+   "release": "PCSG00648: r40209 (VLJM-35249)",
+   "frames": 116,
+   "dims": {
+    "960x544": 116
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 116
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6254,
+    "psp-test": 0.691,
+    "clannad": 0.5616,
+    "drop-test": 0.7852
+   },
+   "leak_frames": 0,
+   "folder": "vita-tsuki-ni-yorisou-otome-no-sahou-v10680",
+   "slot": "vita-pcsg00648",
+   "categories": {
+    "title_screen": 1,
+    "dialogue": 115
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 116
+  },
+  {
+   "platform": "vita",
+   "drop_title": "VA-11-HALL-A",
+   "vn": "v18872",
+   "title": "VA-11 HALL-A",
+   "release": "PCSG01072: r54063; r54496",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.4671,
+    "psp-test": 0.3614,
+    "clannad": 0.3979,
+    "drop-test": 0.3955
+   },
+   "leak_frames": 0,
+   "folder": "vita-va-11-hall-a-v18872",
+   "slot": "vita-pcsg01072",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Vamwolf-Cross-Limited-Edition",
+   "vn": "v16468",
+   "title": "Vamwolf Cross†",
+   "release": "PCSG00467: r37753 (PCSG-00467)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3905,
+    "psp-test": 0.3777,
+    "clannad": 0.3691,
+    "drop-test": 0.3891
+   },
+   "leak_frames": 0,
+   "folder": "vita-vamwolf-cross-v16468",
+   "slot": "vita-pcsg00467",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  },
+  {
+   "platform": "vita",
+   "drop_title": "XBlaze-Code-Embryo",
+   "vn": "v13059",
+   "title": "XBLAZE CODE:EMBRYO",
+   "release": "PCSG00136: r50886 (VLJS-00047)",
+   "frames": 33,
+   "dims": {
+    "960x544": 33
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 33
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.7895,
+    "psp-test": 0.6666,
+    "clannad": 0.8757,
+    "drop-test": 0.7944
+   },
+   "leak_frames": 0,
+   "folder": "vita-xblaze-code-embryo-v13059",
+   "slot": "vita-pcsg00136",
+   "categories": {
+    "title_screen": 1,
+    "settings_screen": 1,
+    "dialogue": 31
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 33
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Yahari-Game-demo-Ore-no-Seishun-Love-Come-wa-Machigatteiru",
+   "vn": "v12630",
+   "title": "やはりゲームでも俺の青春ラブコメはまちがっている。",
+   "release": "PCSG00215: r26993 (VLJM-30052); r48631 (FVGK-0090)",
+   "frames": 8,
+   "dims": {
+    "960x544": 8
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 8
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.6601,
+    "psp-test": 0.6545,
+    "clannad": 0.7168,
+    "drop-test": 0.7477
+   },
+   "leak_frames": 0,
+   "folder": "vita-oregairu-v12630",
+   "slot": "vita-pcsg00215",
+   "categories": {
+    "dialogue": 8
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 8
+  },
+  {
+   "platform": "vita",
+   "drop_title": "Zero-Escape-Virtue-s-Last-Reward",
+   "vn": "v7809",
+   "title": "極限脱出ADV 善人シボウデス",
+   "release": "PCSG00020: r15652 (VLJS-00009); r19906",
+   "frames": 102,
+   "dims": {
+    "960x544": 102
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 102
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.5911,
+    "psp-test": 0.6605,
+    "clannad": 0.6221,
+    "drop-test": 0.585
+   },
+   "leak_frames": 0,
+   "folder": "vita-zero-escape-vlr-v7809",
+   "slot": "vita-pcsg00020",
+   "categories": {
+    "title_screen": 1,
+    "dialogue": 101
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 102
+  },
+  {
+   "platform": "vita",
+   "drop_title": "bitter-smile",
+   "vn": "v2954",
+   "title": "Bitter Smile.",
+   "release": "PCSG00242: r28766 (TGCS-00003); r28767 (VLJM-30059)",
+   "frames": 1,
+   "dims": {
+    "960x544": 1
+   },
+   "source_resolution": [
+    "native"
+   ],
+   "collections": {
+    "vn-wide-100-20261014": 1
+   },
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
+   "release_vns_reserved": {},
+   "sets": {},
+   "role": "training",
+   "why": "not reserved, in no eval or development set",
+   "leak_max": {
+    "vita-test": 0.3967,
+    "psp-test": 0.3316,
+    "clannad": 0.3932,
+    "drop-test": 0.4375
+   },
+   "leak_frames": 0,
+   "folder": "vita-bitter-smile-v2954",
+   "slot": "vita-pcsg00242",
+   "categories": {
+    "title_screen": 1
+   },
+   "duplicates": 0,
+   "duplicates_of_owner_games": 0,
+   "new_frames": 1
+  }
+ ],
+ "owner_decisions": {
+  "v34": {
+   "role": "training",
+   "by": "owner 2026-10-13 19:21Z and 20:47Z",
+   "note": "planetarian (Key, all releases) is training data, allowed even where it overlaps an eval set (realplus/shots.OWNER_ALLOWED). Without that exemption reserved_vns reserves it only as shared-release (the Key 10th Memorial BOX, r3748, a PC compilation with CLANNAD and Tomoyo After); it has no rows in vita-test, psp-test, teacher_val or devnative. Its PSP port and CLANNAD's Vita port are both Key/Prototype releases: a CLANNAD score of any model trained on these frames must disclose that exposure."
+  }
+ },
+ "min_corr": 0.95,
+ "note": "counts, ids and reasons only: no frame, no text, no per-frame hash",
+ "new_frames_by_role": {
+  "training": 3779,
+  "test": 408
+ },
+ "duplicates": 859,
+ "leak_frames": 6
+}

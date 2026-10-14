@@ -5,6 +5,7 @@
                          --tv TV.json [TV2.json ...] --dn DN.json [DN.json ...] [--real REAL.json] --out DECISION.json
   vocr4_select.py select --protocol eval/vocr4_protocol.json --size SIZE --tv TV.json ... --dn DN.json ... \
                          --budget-dir DIR [--budget-dir DIR2] --real REAL.json --synth SYNTH.json --out SELECTION.json
+  vocr4_select.py strata --protocol eval/vocr4_protocol.json --size SIZE --tv ... --dn ... --x C --y A --out S.json
 
 Scores are eval/synth3_ablation.py score outputs (C runtime W8I; views rv and rvn) on teacher_val (--tv) and on
 devnative's files (--dn: strict and tv_native, ink and GRAD; pooled into one cohort). A run's development score is
@@ -20,6 +21,9 @@ select: the candidates are the runs of the arm the decisions end on (M if the sy
 real decision's arm); every candidate's blob must pass the budget (vita/budget_sweep.py check outputs, as
 eval/vocr3_select.py reads them); the lowest development score wins (ties at 5 decimals: the lower seed). Every
 run of the size is scored and listed; only the candidates can be selected.
+strata: report only (decides nothing): Y - X per cohort and per line tag (eval/synth3_ablation.py's strata: capture
+kind and target, polarity, ink height, length, name-like, dakuten / small kana, rare kanji, Latin), tags with at
+least 20 lines, VN-cluster intervals.
 """
 import argparse
 import datetime
@@ -158,6 +162,29 @@ def select(proto, size, cohorts, budget_dirs, real, synth):
             "selected": best["run"], "selected_blob": best["blob"], "selected_blob_sha256": best["blob_sha256"]}
 
 
+def strata(proto, size, cohorts, x, y, n_boot=N_BOOT, min_lines=20):
+    """Report only: Y - X (points, VN-cluster interval) per cohort and per line tag (synth3_ablation's strata)."""
+    rx, ry = arm_runs(proto, size, x), arm_runs(proto, size, y)
+    out = {}
+    for name, (models, lines) in cohorts.items():
+        chars, vns = cohort_arrays(lines)
+        ea, eb = errors(models, rx), errors(models, ry)
+        scale = len(rx) * len(VIEWS)
+        tags = sorted({t for ln in lines for t in ln.get("tags", [])})
+        rows = {}
+        for t in tags:
+            m = np.array([t in ln.get("tags", []) for ln in lines])
+            if m.sum() < min_lines:
+                continue
+            p, r = replicates(ea[m], eb[m], chars[m], vns[m], n_boot, SEEDS[name], scale)
+            rows[t] = {**summary(p, r), "lines": int(m.sum()), "vns": int(len(set(vns[m]))),
+                       "cer_x": round(float(ea[m].sum() / (chars[m].sum() * scale)), 5),
+                       "cer_y": round(float(eb[m].sum() / (chars[m].sum() * scale)), 5)}
+        out[name] = rows
+    return {"kind": "vocr4-strata", "size": size, "x": x, "y": y, "runs_x": rx, "runs_y": ry, "report_only": True,
+            "strata": out}
+
+
 def stamp(doc, args, files):
     doc.update(protocol_sha256=sha256(args.protocol),
                computed=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -168,7 +195,7 @@ def stamp(doc, args, files):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    for name in ("decide", "select"):
+    for name in ("decide", "select", "strata"):
         p = sub.add_parser(name)
         p.add_argument("--protocol", required=True)
         p.add_argument("--size", required=True, choices=("FL10", "H15", "W20"))
@@ -178,6 +205,9 @@ def main():
         p.add_argument("--out", required=True)
         if name == "decide":
             p.add_argument("--decision", required=True, choices=("real", "synth"))
+        elif name == "strata":
+            p.add_argument("--x", required=True, choices=ARMS)
+            p.add_argument("--y", required=True, choices=ARMS)
         else:
             p.add_argument("--synth", required=True)
             p.add_argument("--budget-dir", action="append", required=True)
@@ -186,7 +216,12 @@ def main():
     cohorts = load_cohorts(args.tv, args.dn)
     real = json.loads(Path(args.real).read_text(encoding="utf-8")) if args.real else None
     files = list(args.tv) + list(args.dn) + ([args.real] if args.real else [])
-    if args.cmd == "decide":
+    if args.cmd == "strata":
+        doc = stamp(strata(proto, args.size, cohorts, args.x, args.y), args, files)
+        for name, rows in doc["strata"].items():
+            for t, r in rows.items():
+                print(f"{name} {t}: {r['delta_points']:+.3f} {r['ci95']} ({r['lines']} lines, {r['vns']} VNs)")
+    elif args.cmd == "decide":
         doc = stamp(decide(proto, args.size, args.decision, cohorts, real), args, files)
         t = doc["total"]
         print(f"{args.size} {args.decision}: {doc['x']} -> {doc['y']}: development score "

@@ -24,8 +24,13 @@ def test_decide_roles():
     assert role == "training" and "owner 2026-10-13" in why and "not reserved" in why
     role, why = OD.decide("v34", "shared-release", {"vita-test": 3})
     assert role == "blocked" and "vita-test" in why                                  # never over an eval set
-    assert OD.decide("v57", "shared-release", {}) == ("test", "reserved: shared-release")
-    assert OD.decide("v57", None, {"teacher_val": 5}) == ("test", "in teacher_val")
+    assert OD.decide("v57", "test-shared-release", {}) == ("test", "reserved: test-shared-release")
+    assert OD.decide("v57", None, {"psp-test": 5}) == ("test", "in psp-test")
+    # owner 2026-10-14 13:25Z (docs/reservations.md): teacher_val, devnative, the old hash split and the old
+    # development lists no longer make an owner game test-only, and a dev-sample VN's owner frames train
+    assert OD.decide("v57", None, {"teacher_val": 5, "devnative": 2, "is_test_vn": True})[0] == "training"
+    role, why = OD.decide("v57", "dev-sample", {})
+    assert role == "training" and "re-run realplus/shots.py reserve" in why
     assert OD.decide("v57", None, {}) == ("training", "not reserved, in no eval or development set")
     assert OD.decide("v57", None, {}, leak_frames=2)[0] == "blocked"
     assert OD.decide("v34", None, {}, leak_frames=1)[0] == "blocked"                 # the owner's too
@@ -66,17 +71,17 @@ def test_owner_allowed_lifts_only_derived_reasons(tmp_path, monkeypatch):
     releases = {"rbox": (["win"], ["ja"], ["v4", "v34", a])}       # a compilation with CLANNAD (r3748's pattern)
     write_dump(tmp_path, vns, [], releases, relations=[("v34", b, "char")])
     d = S.load_dump(tmp_path)
-    why = S.reserved_vns(d, test_all=set(), fresh=set(), dev=set())
-    assert why["v4"] == "clannad" and why[a] == "shared-release" and "v34" not in why
-    assert why.get(b) != "family"                                  # nothing derives from v34 either
-    assert S.reserved_vns(d, test_all=set(), fresh=set(), dev={"v34"})["v34"] == "development"   # direct: kept
+    why = S.reserved_vns(d, sets=set(), dev=set(), committed=False)
+    assert why["v4"] == "clannad" and why[a] == "clannad-shared-release" and "v34" not in why
+    assert b not in why                                            # nothing derives from v34 either
+    assert S.reserved_vns(d, sets=set(), dev={"v34"}, committed=False)["v34"] == "dev-sample"   # direct: kept
     monkeypatch.setattr(S, "OWNER_ALLOWED", {})
-    assert S.reserved_vns(d, test_all=set(), fresh=set(), dev=set())["v34"] == "shared-release"
+    assert S.reserved_vns(d, sets=set(), dev=set(), committed=False)["v34"] == "clannad-shared-release"
 
 
 def test_owner_allowed_ignores_clannad_relations(tmp_path, monkeypatch):
     write_dump(tmp_path, {"v4": "ja", "v34": "ja"}, [], {}, relations=[("v4", "v34", "char")])
     d = S.load_dump(tmp_path)
-    assert "v34" not in S.reserved_vns(d, test_all=set(), fresh=set(), dev=set())
+    assert "v34" not in S.reserved_vns(d, sets=set(), dev=set(), committed=False)
     monkeypatch.setattr(S, "OWNER_ALLOWED", {})
-    assert S.reserved_vns(d, test_all=set(), fresh=set(), dev=set())["v34"] == "clannad-relation"
+    assert S.reserved_vns(d, sets=set(), dev=set(), committed=False)["v34"] == "clannad-relation"

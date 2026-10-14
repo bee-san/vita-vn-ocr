@@ -219,12 +219,17 @@ def test_text_normalisation_and_document_split():
 
 def test_names_drop_reserved_and_development_vns(tmp_path):
     reserved = json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"][0]
-    allowed = next(f"v{i}" for i in range(100000, 101000) if not T.is_test_vn(f"v{i}"))
+    allowed = next(f"v{i}" for i in range(100000, 101000) if not T.is_reserved_vn(f"v{i}"))
+    from common import is_test_vn
+    hashed = next(f"v{i}" for i in range(101000, 102000) if is_test_vn(f"v{i}")
+                  and not T.is_reserved_vn(f"v{i}"))
     tsv = tmp_path / "chars.tsv"
     tsv.write_text("char_id\tlang\tname\tlatin\tsex\tvn_ids\troles\tmain_role\thas_kana\n"
                    f"c1\tja\t佐藤 花子\t\tf\t{allowed}\tprimary\tprimary\t0\n"
                    f"c2\tja\t鈴木 一郎\t\tm\t{allowed},{reserved}\tprimary\tprimary\t0\n"
-                   f"c3\tja\t田中 太郎\t\tm\tv777777\tside\tside\t0\n", encoding="utf-8")
+                   f"c3\tja\t田中 太郎\t\tm\tv777777\tside\tside\t0\n"
+                   f"c4\tja\t高橋 次郎\t\tm\t{hashed}\tside\tside\t0\n"
+                   "c5\tja\t岡崎 朋也\t\tm\tv4\tprimary\tprimary\t0\n", encoding="utf-8")
     dev = tmp_path / "dev.txt"
     dev.write_text("v777777\n")
     T.cmd_names(type("A", (), {"vocab": ROOT / "data" / "vocab.txt", "vndb_chars": tsv, "syosetu": None,
@@ -232,6 +237,7 @@ def test_names_drop_reserved_and_development_vns(tmp_path):
     rows = (tmp_path / "names.train.tsv").read_text(encoding="utf-8") + \
         (tmp_path / "names.dev.tsv").read_text(encoding="utf-8")
     assert "佐藤\t花子" in rows and "鈴木" not in rows and "田中" not in rows
+    assert "高橋\t次郎" in rows and "岡崎" not in rows      # the old hash split trains; CLANNAD never (2026-10-14)
 
 
 def test_font_manifest_pins_every_file():
@@ -553,7 +559,8 @@ def test_clannad_is_excluded_as_a_title():
     assert all(re.fullmatch(r"[0-9a-f]{64}", h) for h in doc["names"]["name_sha256"])
     assert set(synth3.EXCLUDE_MANIFESTS) >= {ROOT / "data" / "manifests" / "synth3_exclude_clannad.json"}
     import synth3_stats as S
-    assert "v4" in S.reserved_vns(S.DEFAULT_EXCLUDE) and "v14909" in S.reserved_vns(S.DEFAULT_EXCLUDE)
+    assert "v4" in S.reserved_vns(S.DEFAULT_EXCLUDE) and "v14909" not in S.reserved_vns(S.DEFAULT_EXCLUDE)
+    assert synth3.EXCLUDE_MANIFESTS == (ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",)
 
 
 def test_excluded_names_are_dropped(assets, tmp_path):
@@ -596,7 +603,7 @@ def test_stats_measure_ink_the_same_way_for_every_source(tmp_path):
     out = S.measure([str(tmp_path / "s.npz")], 0, np.random.default_rng(0), reserved={"v14909"})
     assert out["lines"] == 1 and out["reserved_rows_dropped"] == 1
     assert out["geometry"]["vita:vita"]["px"]["ink_h"][1] == 14 and "vita:hires" not in out["geometry"]
-    assert "v14909" in S.reserved_vns(S.DEFAULT_EXCLUDE)
+    assert "v14909" not in S.reserved_vns(S.DEFAULT_EXCLUDE)        # fresh native trains since 2026-10-14
 
 
 def test_study1b_protocol_copies_study1():

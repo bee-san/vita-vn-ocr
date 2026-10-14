@@ -18,7 +18,7 @@ from hiragana_native import native_inputs  # noqa: E402
 @pytest.fixture
 def inputs(tmp_path, monkeypatch):
     monkeypatch.setattr(FB, "exclusion_sets", lambda: (set(), set()))
-    monkeypatch.setattr(FB, "is_test_vn", lambda _: False)
+    monkeypatch.setattr(FB, "is_reserved_vn", lambda _: False)
     csv, graph, vocab, policy = [tmp_path / name for name in ("kanji.csv", "graph.txt", "vocab.txt", "policy.json")]
     csv.write_text("Kanji,Rank\n人,1\n入,2\n")
     graph.write_text("人/入/\n")

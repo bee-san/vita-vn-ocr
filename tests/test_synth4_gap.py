@@ -133,7 +133,8 @@ def test_reserved_vns_hold_the_test_games():
     test = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"])
     assert test <= res
     assert not G.usable("v4", res)          # CLANNAD (exclusion manifest)
-    assert not G.usable("v661", res) and not G.usable("v19373", res)   # owner shared-release reserves
+    assert G.usable("v661", res) and G.usable("v19373", res)   # training data since 2026-10-14
+    assert not G.usable("v3396", res) and not G.usable("v33", res)   # a psp-test game; Kanon (on CLANNAD's box)
     assert not G.usable(None, res)
 
 

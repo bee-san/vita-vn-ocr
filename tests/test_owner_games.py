@@ -46,13 +46,14 @@ def test_owner_test_vns_reserve_the_whole_series(tmp_path):
     assert v["crossmate"] not in got and v["other"] not in got     # a relation's own partners stay free
 
 
-def test_reserved_vns_reserves_the_series_and_keeps_chaos_head_noah_eligible(tmp_path):
+def test_owner_series_is_training_data_since_20261014(tmp_path):
+    """Owner 2026-10-14 13:25Z (docs/reservations.md): Memories Off, Aiyoku no Eustia and 428 are training data;
+    owner_test_vns() still lists the series for information."""
     d, v = fake(tmp_path)
-    why = S.reserved_vns(d, test_all=[], fresh=[], dev=[])
-    assert why["v1152"] == why[v["seq2"]] == "owner-test-series" and why[v["cross"]] == "owner-test-relation"
-    assert v["other"] not in why
+    why = S.reserved_vns(d, sets=[], dev=[], committed=False)
+    assert not {"v1152", v["seq2"], v["cross"], v["other"]} & set(why)
     rows, _ = S.select(d, why, {}, set())
-    assert [r["vn"] for r in rows] == [v["other"]]           # the series' PSP frame is never selected
+    assert v["other"] in [r["vn"] for r in rows]
     assert {"v22505", "v14018", "v751", "v27448", "v57", "v4137", "v183"} <= set(S.OWNER_TRAINING)
     assert not set(S.OWNER_TRAINING) & set(S.OWNER_TEST_SERIES)
     assert {"v1152", "v3770", "v1299"} == set(S.OWNER_TEST_SERIES)
@@ -96,6 +97,6 @@ def test_committed_manifest_excludes_the_series():
     ex = synth3.load_exclusions([MANIFEST])
     assert ex["vns"] == vns and synth3.marked("メモリーズオフの話", ex["markers"])
     assert synth3.marked("穢翼のユースティアを遊ぶ", ex["markers"])
-    assert MANIFEST in synth3.EXCLUDE_MANIFESTS
+    assert MANIFEST in synth3.RETIRED_MANIFESTS and MANIFEST not in synth3.EXCLUDE_MANIFESTS
     import synth3_stats
-    assert {"v1152", "v3770", "v1299"} <= synth3_stats.reserved_vns(synth3_stats.DEFAULT_EXCLUDE)
+    assert not {"v1152", "v3770", "v1299"} & synth3_stats.reserved_vns(synth3_stats.DEFAULT_EXCLUDE)

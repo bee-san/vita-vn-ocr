@@ -312,7 +312,13 @@ def test_test_games_reservations():
         for vn, g in games.get(name, {}).items():
             assert vn in reserved and set(g["sessions"]) <= set(games["sessions"]), vn
     for vn, ids in games.get("family", {}).items():
-        assert vn in reserved and set(ids) <= reserved, vn
+        assert vn in reserved, vn            # the set games' other relations are training data (2026-10-14)
+    # 'all' is the vita-test / psp-test part of the reservation (docs/reservations.md): the set games and their
+    # VNDB release partners, never a VN of the old hash split alone; the old list stays as history
+    res = json.loads((EVAL / "manifests" / "reserved.json").read_text(encoding="utf-8"))
+    sets = set(games.get("vita-test", {})) | set(games.get("psp-test", {}))
+    assert reserved == sets | set(res["test_shared_releases"]) and reserved <= set(res["test"])
+    assert set(games["all_20261012"]) >= sets and set(res["sessions"]) == set(games["sessions"])
     # A game may be in both sets (its Vita and PSP releases are separate captures, and both sets
     # are held out), but one capture session may not be split across them.
     sess = {k: {s for g in v.values() for s in g["sessions"]} for k, v in games.items() if k.endswith("-test")}

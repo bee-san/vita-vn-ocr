@@ -394,12 +394,14 @@ def manifests():
 
 
 def test_manifests_hold_no_test_games():
-    """No detector-built region and no PSP pool screenshot is from one of eval's test games:
-    is_test_vn, plus eval/manifests/test_games.json once eval has merged (the shared copy
-    is not in CI). research_a/b are the tuning sets and hold test games by design
-    (docs/linefind.md). When eval's list grows, rerun eval/linefind/build_gt.py finalize."""
+    """No detector-built region and no PSP pool screenshot is from one of eval's test games under the rules the
+    sets were built with: is_test_vn plus eval's list (test_games.json all_20261012, the pre-2026-10-14 list).
+    research_a/b are the tuning sets and hold test games by design (docs/linefind.md). The sets are frozen; the
+    2026-10-14 reservation (docs/reservations.md) adds release partners of two set games, and psp_dev holds one
+    of them (v1267, on the r23905 compilation with psp-test's v4147), recorded there."""
     path = ROOT / "eval" / "manifests" / "test_games.json"
-    listed = set(json.loads(path.read_text())["all"]) if path.exists() else set()
+    tg = json.loads(path.read_text()) if path.exists() else {}
+    listed = set(tg.get("all_20261012", tg.get("all", [])))
     for name, rows in manifests().items():
         if name.startswith("research_"):
             continue

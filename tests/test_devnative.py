@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "synth"))
 
-from common import is_test_vn  # noqa: E402
+from common import is_reserved_vn, is_test_vn  # noqa: E402
 from devnative import build as B  # noqa: E402
 from devnative import decide as D  # noqa: E402
 from devnative import lines as L  # noqa: E402
@@ -52,8 +52,9 @@ def test_thumb_unit_norm():
 # ----------------------------------------------------------------------------- selection rules
 
 def _ctx(**kw):
-    test_vn = next(f"v{i}" for i in range(1, 10000) if is_test_vn(f"v{i}"))
-    ok = [f"v{i}" for i in range(100, 10000) if not is_test_vn(f"v{i}")][:6]
+    test_vn = "v3396"                     # a psp-test game: reserved (the old is_test_vn split trains, 2026-10-14)
+    assert is_reserved_vn(test_vn) and not is_reserved_vn(next(f"v{i}" for i in range(1, 100) if is_test_vn(f"v{i}")))
+    ok = [f"v{i}" for i in range(100, 10000) if not is_test_vn(f"v{i}") and not is_reserved_vn(f"v{i}")][:6]
     ctx = {"reserved": set(ok) | {test_vn, "v4"}, "test_vns": set(), "test_sessions": {"r9"},
            "clannad": {"v4"}, "label_vns": {ok[1]}, "label_releases": {"r8"}, "scene_vns": {ok[2]},
            "ref_roles": {}, "tv_shots": {}}

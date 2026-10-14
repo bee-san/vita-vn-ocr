@@ -194,7 +194,9 @@ def test_build_decide_and_render_end_to_end(tmp_path):
     (out / "inputs" / "eval").mkdir(parents=True)
     vns = [f"v{i}" for i in range(1, 200)]
     train_vn = next(v for v in vns if build.split_of(v) == "train")
-    test_vn = next(v for v in vns if build.is_test_vn(v))
+    test_vn = "v4"                       # a reserved VN (CLANNAD); the old is_test_vn split trains since 2026-10-14
+    assert build.is_reserved_vn(test_vn) and not build.is_reserved_vn(next(v for v in vns if build.is_test_vn(v)
+                                                                            and v not in ("v3", "v5")))
     rows, shots = [], []
     for vn in (train_vn, test_vn):
         url = f"https://t.vndb.org/sf/00/{vn[1:]}.jpg"

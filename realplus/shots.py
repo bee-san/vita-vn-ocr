@@ -450,11 +450,11 @@ OWNER_GAMES = Path(os.environ.get("OWNER_GAMES") or HERD / "shared" / "private" 
 
 def owner_vns():
     """Every VN the owner supplied screenshots of or named (owner 2026-10-13/14): OWNER_TRAINING, OWNER_ALLOWED, the
-    former test series roots, the games of the owner's Drive drop and the owner-games folders (…-v123[-TEST]).
+    former test series roots, the games of the owner's Drive drops (data/manifests/owner_drop_*.json) and the
+    owner-games folders (…-v123[-TEST]). reserve pins the list it carved with in reserved.json ("owner_vns").
     All of their screenshots are training data (owner 13:25Z), so none of them is ever in the development sample."""
     out = set(OWNER_TRAINING) | set(OWNER_ALLOWED) | set(OWNER_TEST_SERIES)
-    drop = ROOT / "data" / "manifests" / "owner_drop_20261013.json"
-    if drop.exists():
+    for drop in sorted((ROOT / "data" / "manifests").glob("owner_drop_*.json")):       # every committed drop table
         out |= {g["vn"] for g in json.loads(drop.read_text(encoding="utf-8")).get("games", []) if g.get("vn")}
     if OWNER_GAMES.exists():
         out |= {m.group(1) for p in OWNER_GAMES.iterdir() for m in [re.search(r"-(v\d+)(?:-TEST)?$", p.name)] if m}
@@ -509,8 +509,7 @@ def training_pool_vns(repo=ROOT):
     for p in sorted((repo / "realplus" / "manifests").glob("shots_*.jsonl")):
         add("realplus", p)
     add("native_v1", repo / "realplus" / "manifests" / "native" / "lines_v1.jsonl")
-    drop = repo / "data" / "manifests" / "owner_drop_20261013.json"
-    if drop.exists():
+    for drop in sorted((repo / "data" / "manifests").glob("owner_drop_*.json")):
         for g in json.loads(drop.read_text(encoding="utf-8")).get("games", []):
             if g.get("role") == "training" and g.get("vn"):
                 out[g["vn"]].add("owner")
@@ -575,9 +574,10 @@ def cmd_reserve(args):
     stamp = stamp_file.read_text().strip() if stamp_file.exists() else None
     tg = test_games()
     test = test_reservation(d)
-    rows, passed = dev_sample(d, test)
+    owner = owner_vns()                      # pinned below: the carve's input, so tests never scan live folders
+    rows, passed = dev_sample(d, test, owner=owner)
     dev = {r["vn"]: "dev-sample" for r in rows}
-    keep = set(OWNER_ALLOWED) | owner_vns()
+    keep = set(OWNER_ALLOWED) | owner
     for u, rs in sorted(release_partners(d, dev, close=True).items()):
         if u not in test and u not in keep:
             dev.setdefault(u, "dev-sample-shared-release")
@@ -611,6 +611,9 @@ def cmd_reserve(args):
                    "dev_candidates_passed_over": dict(passed)},
         "dev_sample_size": DEV_SAMPLE_SIZE, "dev_sample_seed": DEV_SAMPLE_SEED,
         "dev_sample_vns": rows,
+        # the owner games the carve left out (owner_vns() when it ran: the named lists, the committed drop tables and
+        # the owner-games folders). Tests check the sample against this list, never against the live folders.
+        "owner_vns": sorted(owner, key=lambda v: int(v[1:])),
     }
     path = Path(args.out)
     path.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

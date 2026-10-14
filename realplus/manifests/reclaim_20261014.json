@@ -16,14 +16,14 @@
    "clannad": 7,
    "fresh-native-relation": 4
   },
-  "after": 184,
+  "after": 187,
   "after_test": 71,
-  "after_dev_sample": 113,
+  "after_dev_sample": 116,
   "after_by_reason": {
    "dev-sample": 100,
    "test-set": 28,
    "test-shared-release": 19,
-   "dev-sample-shared-release": 13,
+   "dev-sample-shared-release": 16,
    "clannad-relation": 8,
    "clannad": 7,
    "clannad-family": 6,
@@ -39,15 +39,15 @@
    "v8324": "clannad-relation",
    "v869": "clannad-relation"
   },
-  "freed_vns": 18629
+  "freed_vns": 18626
  },
  "distinct_vndb_screenshots": {
-  "realplus_or_native": 21789,
-  "vns": 5077
+  "realplus_or_native": 21809,
+  "vns": 5079
  },
  "realplus": {
-  "screenshots": 20867,
-  "vns": 4883,
+  "screenshots": 20849,
+  "vns": 4880,
   "by_kind": {
    "vita": {
     "screenshots": 0,
@@ -58,42 +58,42 @@
     "vns": 41
    },
    "hires": {
-    "screenshots": 20572,
-    "vns": 4847
+    "screenshots": 20554,
+    "vns": 4844
    }
   },
   "by_old_why": {
-   "vn:test-vn": 9468,
+   "vn:test-vn": 9461,
    "vn:val-bucket": 6126,
-   "vn:shared-release": 4228,
+   "vn:shared-release": 4223,
    "vn:test-set": 752,
-   "vn:family": 242,
+   "vn:family": 236,
    "vn:fresh-native-relation": 22,
    "not-in-old-selection": 15,
    "vn:fresh-native": 14
   },
   "new_selection_dropped": {
    "not-japanese-original": 59205,
-   "rating": 58328,
+   "rating": 58316,
    "language": 6573,
    "in-pool:realdata+teacher": 4421,
    "kind": 2495,
-   "vn:dev-sample": 918,
+   "vn:dev-sample": 915,
    "in-pool:realdata": 704,
-   "in-pool:devnative": 427,
+   "in-pool:devnative": 412,
    "in-pool:data-vndb+realdata+synth2+teacher": 378,
-   "in-pool:devnative+realdata+teacher": 281,
+   "in-pool:devnative+realdata+teacher": 280,
    "vn:test-set": 257,
    "in-pool:realdata+synth2+teacher": 237,
    "vn:test-shared-release": 151,
    "in-pool:realdata+synth2": 91,
+   "vn:dev-sample-shared-release": 90,
    "in-pool:data-vndb+synth2": 87,
    "in-pool:data-vndb+realdata+synth2": 86,
-   "vn:dev-sample-shared-release": 60,
    "vn:clannad-family": 42,
    "in-pool:synth2": 37,
-   "in-pool:devnative+realdata+synth2+teacher": 32,
-   "in-pool:devnative+realdata": 31,
+   "in-pool:devnative+realdata+synth2+teacher": 36,
+   "in-pool:devnative+realdata": 32,
    "vn:clannad-shared-release": 30,
    "vn:clannad-relation": 27,
    "vn:clannad": 23,
@@ -101,9 +101,10 @@
    "in-pool:fresh-synthetic+realdata+synth2+teacher": 12,
    "in-pool:data-vndb+fresh-synthetic+realdata+synth2+teacher": 11,
    "in-pool:devnative+general-vn-dev+realdata": 9,
+   "in-pool:data-vndb+devnative+general-vn-dev+realdata+synth2+teacher": 9,
+   "in-pool:devnative+realdata+synth2": 8,
    "in-pool:data-vndb": 6,
    "in-pool:data-vndb+devnative+realdata+synth2": 5,
-   "in-pool:devnative+realdata+synth2": 4,
    "in-pool:data-vndb+devnative+realdata+synth2+teacher": 4,
    "in-pool:data-vndb+fresh-synthetic+synth2": 4,
    "in-pool:data-vndb+devnative+synth2": 3,
@@ -115,20 +116,21 @@
    "in-pool:fresh-synthetic+synth2": 1,
    "in-pool:devnative+general-vn-dev+realdata+teacher": 1,
    "in-pool:data-vndb+fresh-synthetic+realdata+synth2": 1,
+   "in-pool:data-vndb+devnative+general-vn-dev+realdata+synth2": 1,
    "hires-cap": 0
   },
   "file": "realplus_shots.jsonl",
-  "sha256": "c515519cc000f17a408ca5f299f4b4e298eeb29417314c82e7d659ae70de2621"
+  "sha256": "1d8c9822c04c7a8c920462febe803af27f7c051ff277875a70602ef8aaacbc4b"
  },
  "native": {
-  "frames": 1217,
-  "vns": 245,
+  "frames": 1255,
+  "vns": 250,
   "by_kind": {
-   "psp": 1026,
-   "vita": 191
+   "psp": 1054,
+   "vita": 201
   },
   "by_new_class": {
-   "pooled": 886,
+   "pooled": 924,
    "new": 295,
    "pooled-other:synth2": 18,
    "pooled-other:data-vndb+synth2": 14,
@@ -141,19 +143,19 @@
    "vn:test-set": 295,
    "vn:shared-release": 245,
    "vn:family": 176,
-   "vn:development": 89,
+   "vn:development": 127,
    "vn:owner-test-series": 65,
    "vn:val-bucket": 24,
    "set:eval-candidates": 15,
    "vn:owner-test-relation": 9
   },
   "enumeration_now": {
-   "pooled": 2557,
-   "vn:dev-sample": 383,
+   "pooled": 2595,
+   "vn:dev-sample": 335,
    "new": 295,
    "vn:test-set": 244,
-   "rating": 190,
-   "language": 167,
+   "rating": 193,
+   "language": 174,
    "not-native-size": 130,
    "vn:test-shared-release": 65,
    "pooled-other:synth2": 24,
@@ -166,59 +168,60 @@
    "pooled-other:data-vndb": 1
   },
   "file": "native_rows.jsonl",
-  "sha256": "fb5855f850069483613b2c4d90a4c0aa6bb8d2486abb422acf5a4f435e82a248"
+  "sha256": "c68447c96492847962fda2006b0a21ae0c9edd975fe7b1a2ee2738f7c2d79fa7"
  },
  "synth": {
   "names": {
    "ja_characters": 127809,
    "dropped_old": 24331,
-   "dropped_new": 2361,
-   "reclaimed": 22189
+   "dropped_new": 2388,
+   "reclaimed": 22163
   },
   "scene_candidates_on_disk": {
    "vita": {
     "candidates": 1224,
     "dropped_old": 166,
-    "dropped_new": 139,
-    "reclaimed": 28
+    "dropped_new": 119,
+    "reclaimed": 48
    },
    "psp": {
     "candidates": 2354,
     "dropped_old": 362,
-    "dropped_new": 300,
-    "reclaimed": 80
+    "dropped_new": 272,
+    "reclaimed": 108
    },
    "hires": {
     "candidates": 4004,
     "dropped_old": 496,
-    "dropped_new": 232,
-    "reclaimed": 280
+    "dropped_new": 252,
+    "reclaimed": 260
    }
   }
  },
  "labelled": {
   "dev_sample": {
    "lines": {
-    "devnative:psp": 378,
-    "devnative:vita": 108,
-    "real_val:hires": 253,
-    "real_val:psp": 254,
-    "real_val:vita": 156,
-    "teacher_val:hires": 327,
-    "teacher_val:psp": 366,
-    "teacher_val:vita": 160
+    "devnative:psp": 344,
+    "devnative:vita": 80,
+    "real_val:hires": 280,
+    "real_val:psp": 226,
+    "real_val:vita": 123,
+    "teacher_val:hires": 356,
+    "teacher_val:psp": 336,
+    "teacher_val:vita": 138
    },
    "vns": 101
   },
   "training": {
    "lines": {
-    "devnative:psp": 65,
-    "real_val:hires": 394,
-    "real_val:psp": 60,
-    "real_val:vita": 1,
-    "teacher_val:hires": 484,
-    "teacher_val:psp": 60,
-    "teacher_val:vita": 1
+    "devnative:psp": 99,
+    "devnative:vita": 28,
+    "real_val:hires": 367,
+    "real_val:psp": 88,
+    "real_val:vita": 34,
+    "teacher_val:hires": 455,
+    "teacher_val:psp": 90,
+    "teacher_val:vita": 23
    },
    "vns": 86
   }
@@ -226,7 +229,7 @@
  "owner_frames": {
   "chaos-head-noah-v22505": {
    "vn": "v22505",
-   "frames": 0,
+   "frames": 1,
    "role": "training",
    "reason": null,
    "was_test_only": false
@@ -245,9 +248,100 @@
    "reason": null,
    "was_test_only": true
   },
+  "psp-blazblue-cs-extend-v6572": {
+   "vn": "v6572",
+   "frames": 32,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-custom-drive-v10623": {
+   "vn": "v10623",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-da-capo-ii-plus-situation-v266": {
+   "vn": "v266",
+   "frames": 37,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-da-capo-plus-situation-v264": {
+   "vn": "v264",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-danganronpa-v7014": {
+   "vn": "v7014",
+   "frames": 38,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-disgaea-infinite-v3333": {
+   "vn": "v3333",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-dunamis15-v7018": {
+   "vn": "v7018",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
   "psp-fate-extra-ccc-v12369": {
    "vn": "v12369",
-   "frames": 0,
+   "frames": 44,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-fate-extra-v7602": {
+   "vn": "v7602",
+   "frames": 24,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-hakuisei-renai-re-therapy-v7301": {
+   "vn": "v7301",
+   "frames": 100,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-hayarigami-2-portable-v21259": {
+   "vn": "v21259",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-hayarigami-portable-v2063": {
+   "vn": "v2063",
+   "frames": 2,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-jinguuji-saburo-hai-to-diamond-v19010": {
+   "vn": "v19010",
+   "frames": 11,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-juusei-to-diamond-v14909": {
+   "vn": "v14909",
+   "frames": 149,
    "role": "training",
    "reason": null,
    "was_test_only": false
@@ -266,9 +360,51 @@
    "reason": null,
    "was_test_only": false
   },
+  "psp-magustale-eternity-v689": {
+   "vn": "v689",
+   "frames": 149,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
   "psp-mashiroiro-symphony-v1552": {
    "vn": "v1552",
    "frames": 0,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-memories-off-5-v1325": {
+   "vn": "v1325",
+   "frames": 3,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-memories-off-6-v1646": {
+   "vn": "v1646",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-memories-off-sorekara-v1171": {
+   "vn": "v1171",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-misshitsu-no-sacrifice-v4185": {
+   "vn": "v4185",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-missing-parts-complete-v16386": {
+   "vn": "v16386",
+   "frames": 49,
    "role": "training",
    "reason": null,
    "was_test_only": false
@@ -280,9 +416,30 @@
    "reason": null,
    "was_test_only": true
   },
+  "psp-no-fate-v3278": {
+   "vn": "v3278",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-omoide-ni-kawaru-kimi-v1170": {
+   "vn": "v1170",
+   "frames": 6,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
   "psp-otoboku-v195": {
    "vn": "v195",
    "frames": 0,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-pastel-chime-continue-v1080": {
+   "vn": "v1080",
+   "frames": 150,
    "role": "training",
    "reason": null,
    "was_test_only": false
@@ -294,12 +451,61 @@
    "reason": null,
    "was_test_only": false
   },
+  "psp-princess-maker-4-portable-v727": {
+   "vn": "v727",
+   "frames": 2,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-princess-maker-5-portable-v728": {
+   "vn": "v728",
+   "frames": 10,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-second-novel-v4091": {
+   "vn": "v4091",
+   "frames": 2,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
   "psp-sharin-no-kuni-v57": {
    "vn": "v57",
    "frames": 217,
    "role": "training",
    "reason": null,
    "was_test_only": false
+  },
+  "psp-solfege-sweet-harmony-v2113": {
+   "vn": "v2113",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-suzukaze-no-melt-v3992": {
+   "vn": "v3992",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-tenshin-ranman-v1322": {
+   "vn": "v1322",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-time-travelers-v10856-TEST": {
+   "vn": "v10856",
+   "frames": 150,
+   "role": "test",
+   "reason": "test-set",
+   "was_test_only": true
   },
   "psp-togainu-no-chi-v434": {
    "vn": "v434",
@@ -315,6 +521,34 @@
    "reason": null,
    "was_test_only": false
   },
+  "psp-trick-logic-v11713": {
+   "vn": "v11713",
+   "frames": 48,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "psp-utawarerumono-portable-v3-TEST": {
+   "vn": "v3",
+   "frames": 150,
+   "role": "test",
+   "reason": "test-shared-release",
+   "was_test_only": true
+  },
+  "vita-5-nin-no-koi-prince-v16607": {
+   "vn": "v16607",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-abunai-koi-no-sousashitsu-v16467": {
+   "vn": "v16467",
+   "frames": 2,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
   "vita-aiyoku-no-eustia-v3770-TEST": {
    "vn": "v3770",
    "frames": 0,
@@ -322,9 +556,44 @@
    "reason": null,
    "was_test_only": true
   },
+  "vita-amnesia-v-edition-v7803": {
+   "vn": "v7803",
+   "frames": 119,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-anoko-wa-ore-kara-hanarenai-v10271": {
+   "vn": "v10271",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
   "vita-atri-v27448": {
    "vn": "v27448",
    "frames": 0,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-azayaka-na-irodori-v21899": {
+   "vn": "v21899",
+   "frames": 2,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-binary-star-v14787": {
+   "vn": "v14787",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-bitter-smile-v2954": {
+   "vn": "v2954",
+   "frames": 1,
    "role": "training",
    "reason": null,
    "was_test_only": false
@@ -336,12 +605,47 @@
    "reason": null,
    "was_test_only": false
   },
+  "vita-chaos-head-love-chu-chu-v3091": {
+   "vn": "v3091",
+   "frames": 10,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-chouchou-jiken-rhapsodic-v19851": {
+   "vn": "v19851",
+   "frames": 4,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
   "vita-clannad-v4-TEST": {
    "vn": "v4",
    "frames": 2206,
    "role": "test",
    "reason": "clannad",
    "was_test_only": true
+  },
+  "vita-collar-x-malice-v18160-TEST": {
+   "vn": "v18160",
+   "frames": 107,
+   "role": "test",
+   "reason": "test-shared-release",
+   "was_test_only": true
+  },
+  "vita-cross-ange-v19100": {
+   "vn": "v19100",
+   "frames": 13,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-cure-mate-club-v2923": {
+   "vn": "v2923",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
   },
   "vita-danganronpa-v3-v18334-TEST": {
    "vn": "v18334",
@@ -350,16 +654,268 @@
    "reason": null,
    "was_test_only": true
   },
+  "vita-fate-extella-v19119": {
+   "vn": "v19119",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-hakuisei-aijou-izonshou-v16610": {
+   "vn": "v16610",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-hanasaku-manimani-v11677": {
+   "vn": "v11677",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-hotchkiss-v7967": {
+   "vn": "v7967",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-hyakka-yakou-v15773": {
+   "vn": "v15773",
+   "frames": 79,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-ikemen-bakumatsu-v18777": {
+   "vn": "v18777",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-infinite-stratos-2-v13865": {
+   "vn": "v13865",
+   "frames": 2,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
   "vita-iwaihime-matsuri-v17863-TEST": {
    "vn": "v17863",
-   "frames": 240,
+   "frames": 241,
    "role": "training",
    "reason": null,
    "was_test_only": true
   },
+  "vita-kissbell-v10641": {
+   "vn": "v10641",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-kurogane-kaikitan-v17902": {
+   "vn": "v17902",
+   "frames": 2,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-mikagami-sumika-v22174": {
+   "vn": "v22174",
+   "frames": 49,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-moujuutsukai-to-oujisama-v4540": {
+   "vn": "v4540",
+   "frames": 2,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-oregairu-v12630": {
+   "vn": "v12630",
+   "frames": 8,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-otoko-yuukaku-v15231": {
+   "vn": "v15231",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-ozmafia-vivace-v7833": {
+   "vn": "v7833",
+   "frames": 76,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-parfait-v683": {
+   "vn": "v683",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-plastic-memories-v19441": {
+   "vn": "v19441",
+   "frames": 3,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-present-for-you-v5386": {
+   "vn": "v5386",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-princess-arthur-v11108": {
+   "vn": "v11108",
+   "frames": 53,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-ray-gigant-v24957": {
+   "vn": "v24957",
+   "frames": 2,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-reine-des-fleurs-v14919": {
+   "vn": "v14919",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
   "vita-rewrite-v751": {
    "vn": "v751",
    "frames": 0,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-robotics-notes-elite-v5883": {
+   "vn": "v5883",
+   "frames": 86,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-sakura-sou-no-pet-na-kanojo-v11173": {
+   "vn": "v11173",
+   "frames": 38,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-shin-kamaitachi-no-yoru-v10561": {
+   "vn": "v10561",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-side-kicks-v19743": {
+   "vn": "v19743",
+   "frames": 63,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-steins-gate-0-v17102": {
+   "vn": "v17102",
+   "frames": 48,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-steins-gate-darling-v6618": {
+   "vn": "v6618",
+   "frames": 104,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-steins-gate-phenogram-v11660": {
+   "vn": "v11660",
+   "frames": 27,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-steins-gate-v2002": {
+   "vn": "v2002",
+   "frames": 150,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-sweet-clown-v16460-TEST": {
+   "vn": "v16460",
+   "frames": 1,
+   "role": "test",
+   "reason": "test-set",
+   "was_test_only": true
+  },
+  "vita-teikoku-kaigun-koi-bojou-v17285": {
+   "vn": "v17285",
+   "frames": 88,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-tokyo-ghoul-jail-v17936": {
+   "vn": "v17936",
+   "frames": 120,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-tsuki-ni-yorisou-otome-no-sahou-v10680": {
+   "vn": "v10680",
+   "frames": 116,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-va-11-hall-a-v18872": {
+   "vn": "v18872",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-vamwolf-cross-v16468": {
+   "vn": "v16468",
+   "frames": 1,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-xblaze-code-embryo-v13059": {
+   "vn": "v13059",
+   "frames": 33,
+   "role": "training",
+   "reason": null,
+   "was_test_only": false
+  },
+  "vita-zero-escape-vlr-v7809": {
+   "vn": "v7809",
+   "frames": 102,
    "role": "training",
    "reason": null,
    "was_test_only": false

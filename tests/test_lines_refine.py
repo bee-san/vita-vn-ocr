@@ -156,6 +156,23 @@ def test_c_arena_fits_in_the_finders(driver):
         assert 0 < refine <= finder
 
 
+def test_per_line_on_a_strip_equals_the_whole_set():
+    """The overlay refines each box on the strip it already fetched (box made strip-relative), not the whole
+    region. That must give the same lines, since the refinement reads only the box's own pixels."""
+    for img in lines_refine_parity.make_cases(6, 80):
+        b, d, _ = find_lines_ex(img, "grad")
+        whole = R.refine_lines(img, b, d, R.DEFAULT)
+        per_b, per_d, per_o = [], [], []
+        for i, ((x, y, w, h), dk) in enumerate(zip(b, d)):
+            strip = img[y:y + h]                       # the rows the recognizer holds for this line
+            rb, rd, _ = R.refine_lines(strip, [(x, 0, w, h)], [dk], R.DEFAULT)
+            for (xx, yy, ww, hh), ddk in zip(rb, rd):
+                per_b.append((xx, yy + y, ww, hh))
+                per_d.append(ddk)
+                per_o.append(i)
+        assert (per_b, per_d, per_o) == whole
+
+
 def test_frozen_sources_match_the_protocol():
     """The committed results are for this code: a changed refinement needs a new protocol and new results."""
     import hashlib

@@ -78,6 +78,8 @@ callback) refines the finder's `VocrLineSet` in place. For each box, using only 
    crossing the line, not scenery above text), or when it is 1.5 band heights wide and 60% filled.
    Cuts keep half a band height of margin and never pass the middle of the gap.
 
+Refining a box reads only that box's own pixels, so a caller can refine each line on the strip it already holds (the box made strip-relative), one `vocr_refine_lines` call per line, with the same result as one call over the whole region (checked on every development region and in both test drivers). The overlay takes that form, so the refinement adds no framebuffer read.
+
 A box without a text band is kept as it is; boxes never grow, keep their dark flag and stay in order; split
 lines take their box's place (only while the set stays within 16 lines). No line is dropped, so the overlay's
 own blank-line rejection does not overlap with it. `VOCR_REFINE_DEFAULT` is all five steps.

@@ -153,6 +153,33 @@ static int region(unsigned w, unsigned h, unsigned bpp, unsigned pad)
     src.width = w; src.height = h; src.bpp = bpp; src.row = source_row; src.user = &s;
     rc = vocr_find_lines(&im, below(2) ? VOCR_LINES_GRAD : VOCR_LINES_TEXTBOX, arena, need, &found);
     REQUIRE(rc == VOCR_LINES_OK);
+    /* The overlay refines each box on the strip it already holds (box made strip-relative), not the whole
+     * region: that must give the same lines, since the refinement reads only the box's own pixels. */
+    {
+        VocrLineSet whole = found, per;
+        unsigned ki;
+        REQUIRE(vocr_refine_lines(&im, VOCR_REFINE_DEFAULT, arena, big, &whole, NULL) == VOCR_LINES_OK);
+        per.count = 0;
+        per.truncated = whole.truncated;
+        for (ki = 0; ki < found.count && per.count <= VOCR_LINES_MAX; ki++) {
+            VocrLinesImage strip = im;
+            VocrLineSet one;
+            unsigned j;
+            strip.pixels = im.pixels + (size_t)found.lines[ki].y * im.stride;  /* rows [y, y + h) */
+            strip.height = found.lines[ki].h;
+            one.count = 1;
+            one.truncated = 0;
+            one.lines[0] = found.lines[ki];
+            one.lines[0].y = 0;
+            if (vocr_refine_lines(&strip, VOCR_REFINE_DEFAULT, arena, big, &one, NULL) != VOCR_LINES_OK) break;
+            for (j = 0; j < one.count && per.count < VOCR_LINES_MAX; j++) {
+                per.lines[per.count] = one.lines[j];
+                per.lines[per.count].y += found.lines[ki].y;
+                per.count++;
+            }
+        }
+        if (ki == found.count) REQUIRE(same_set(&whole, &per));
+    }
     /* flags 0: untouched, and nothing read */
     a = found;
     REQUIRE(vocr_refine_lines(&im, 0, arena, need, &a, &ra_rows) == VOCR_LINES_OK && same_set(&a, &found) && !ra_rows);

@@ -1,0 +1,56 @@
+{
+ "kind": "vocab-expand-fonts",
+ "schema": 1,
+ "font_files": 319,
+ "smooth_files": 245,
+ "vocabs": {
+  "Small next (vn_4987)": {
+   "entries": 4986,
+   "new_classes": 240,
+   "new_kanji": 240,
+   "fonts_p10_50": [
+    270,
+    307
+   ],
+   "smooth_fonts_lt5": 0,
+   "smooth_fonts_lt20": 0,
+   "no_font": "",
+   "with_vn_word": 240,
+   "with_global_word": 240,
+   "with_vndb_name": 62,
+   "no_context": ""
+  },
+  "Normal (vn_5631)": {
+   "entries": 5630,
+   "new_classes": 610,
+   "new_kanji": 610,
+   "fonts_p10_50": [
+    270,
+    290
+   ],
+   "smooth_fonts_lt5": 0,
+   "smooth_fonts_lt20": 0,
+   "no_font": "",
+   "with_vn_word": 610,
+   "with_global_word": 610,
+   "with_vndb_name": 102,
+   "no_context": ""
+  },
+  "Large (vn_6459)": {
+   "entries": 6458,
+   "new_classes": 1214,
+   "new_kanji": 1214,
+   "fonts_p10_50": [
+    141,
+    271
+   ],
+   "smooth_fonts_lt5": 0,
+   "smooth_fonts_lt20": 0,
+   "no_font": "",
+   "with_vn_word": 611,
+   "with_global_word": 1170,
+   "with_vndb_name": 180,
+   "no_context": ""
+  }
+ }
+}

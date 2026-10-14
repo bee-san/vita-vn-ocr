@@ -2,7 +2,7 @@
 """Small PNG curves for docs/vocab-expand.md (<100 KB each). Needs matplotlib (a throwaway venv; not a
 repo dependency): see docs/vocab-expand.md's Reproduce. Only the generated PNGs are committed.
 
-  vocab_expand_plots.py coverage --curves curves.json --out docs/benchmarks/vocab-coverage.png
+  vocab_expand_plots.py coverage --agg agg.json --tail tail.json --out docs/benchmarks/vocab-coverage.png
   vocab_expand_plots.py cost     --tiers tier_rows.json --out docs/benchmarks/vocab-cost.png
 """
 import argparse
@@ -14,7 +14,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-TIERS = (3501, 4987, 5630, 6500, 7500)
+TIERS = {"Small": 4987, "Normal": 5631, "Large": 6459}
+LISTS = ("VN", "Novel", "Anime", "Drama", "Video game", "Global")
 
 
 def save(fig, out):
@@ -27,45 +28,58 @@ def save(fig, out):
 
 
 def cmd_coverage(args):
-    d = json.loads(Path(args.curves).read_text(encoding="utf-8"))
-    cur = d["curve"]
+    d = json.loads(Path(args.agg).read_text(encoding="utf-8"))
+    cur = [r for r in d["curve"] if 3000 <= r["classes"] <= 8000]
     x = [r["classes"] for r in cur]
-    fig, ax = plt.subplots(figsize=(5.4, 3.4))
-    for g, style in (("VN design", "-"), ("VN held out", "--")):
-        ax.plot(x, [r[g]["corpus"] for r in cur], style, label=f"{g} (corpus)")
-        ax.plot(x, [r[g]["p95"] for r in cur], style, alpha=0.45, label=f"{g} (p95 title)")
+    fig, ax = plt.subplots(figsize=(6.0, 3.6))
+    for name in LISTS:
+        ax.plot(x, [max(r[name]["chars"], 1e-4) for r in cur], "-", lw=2.2 if name == "VN" else 1.0,
+                label=f"{name} list (aggregate, s = {d['zipf']['s']})")
+    if args.tail:
+        t = json.loads(Path(args.tail).read_text(encoding="utf-8"))
+        pts = [(int(k.split()[1]), v["design"]["p95"]) for k, v in t["vocabs"].items() if k.startswith("VN ")]
+        pts = sorted((n, max(p, 1e-4)) for n, p in pts if 3000 <= n <= 8000)
+        ax.plot([n for n, _ in pts], [p for _, p in pts], "k:", marker="v", ms=4,
+                label="95th-percentile VN title (per-deck sample)")
     for name, mk in (("FL10", "o"), ("H15", "s")):
         r = d["fixed"][name]
-        ax.scatter([r["classes"]], [r["VN design"]["corpus"]], marker=mk, zorder=5, label=f"{name} {r['classes']}")
-    for t in TIERS:
-        ax.axvline(t, color="0.85", lw=0.8, zorder=0)
+        ax.scatter([r["classes"]], [r["VN"]["chars"]], marker=mk, color="k", zorder=5, label=f"{name} (VN list)")
+    for t, n in TIERS.items():
+        ax.axvline(n, color="0.85", lw=0.8, zorder=0)
+        ax.text(n, 4.5, t, fontsize=7, rotation=90, va="top", ha="right", color="0.4")
     ax.set_xlabel("output classes (CTC blank included)")
-    ax.set_ylabel("VN chars missed per 1,000")
-    ax.set_yscale("symlog", linthresh=0.05)
-    ax.set_title("Visual-novel coverage vs vocabulary size (Jiten, occurrence-weighted)")
-    ax.legend(fontsize=7, ncol=2)
+    ax.set_ylabel("characters missed per 1,000")
+    ax.set_yscale("log")
+    ax.set_ylim(1e-4, 6)
+    ax.set_title("Characters a VN-ordered vocab cannot emit, by Jiten list", fontsize=10)
+    ax.legend(fontsize=6.5, ncol=2, loc="lower left")
     ax.grid(True, alpha=0.3)
     save(fig, args.out)
 
 
 def cmd_cost(args):
     rows = json.loads(Path(args.tiers).read_text(encoding="utf-8"))
-    fig, ax = plt.subplots(figsize=(5.4, 3.4))
-    for w, label, mk in ((100, "width 1.0 (FL10 shape)", "o"), (150, "width 1.5 (H15 shape)", "s")):
-        pts = sorted((r["config"]["classes"], r["blob_bytes"] / 1e6, r)
-                     for n, r in rows.items() if r.get("config") and r["config"]["width"] == w / 100
-                     and r["config"]["bottleneck"] == 96)
-        ax.plot([c for c, _, _ in pts], [b for _, b, _ in pts], f"{mk}-", label=label)
-    ax.axhspan(0, 1.0, color="tab:green", alpha=0.08)
-    ax.axhspan(1.0, 4.0, color="tab:orange", alpha=0.07)
-    ax.text(3600, 0.5, "Small < 1 MB", fontsize=7, color="tab:green")
-    ax.text(3600, 2.3, "Normal \u2264 4 MB", fontsize=7, color="tab:orange")
-    for t in TIERS:
-        ax.axvline(t, color="0.9", lw=0.8, zorder=0)
+    fig, ax = plt.subplots(figsize=(6.0, 3.4))
+    for w, label, mk in ((1.0, "width 1.0, bottleneck 96 (FL10's shape)", "o"),
+                         (1.0, "width 1.0, bottleneck 64", "^"), (1.5, "width 1.5, bottleneck 96 (H15's shape)", "s")):
+        b = 64 if "64" in label else 96
+        pts = sorted((r["config"]["classes"], r["blob_bytes"] / 1e6) for n, r in rows.items()
+                     if r.get("config") and r["config"]["width"] == w and r["config"]["bottleneck"] == b
+                     and not n.startswith("t_"))
+        ax.plot([c for c, _ in pts], [v for _, v in pts], f"{mk}-", ms=4, label=label)
+    for n, r in rows.items():
+        if n.startswith("t_") and r.get("config") and r["config"]["width"] >= 2.5:
+            ax.scatter([r["classes"]], [r["blob_bytes"] / 1e6], marker="*", s=60, color="k", zorder=5)
+            ax.annotate(n[2:], (r["classes"], r["blob_bytes"] / 1e6), fontsize=6.5, xytext=(4, -3),
+                        textcoords="offset points")
+    ax.axhline(1.0, color="tab:green", lw=0.8, ls="--")
+    ax.axhline(4.0, color="tab:orange", lw=0.8, ls="--")
+    ax.text(3050, 1.05, "Small < 1 MB", fontsize=7, color="tab:green")
+    ax.text(3050, 3.75, "Normal \u2264 4 MB (Large \u2264 9 MB)", fontsize=7, color="tab:orange")
     ax.set_xlabel("output classes")
     ax.set_ylabel("int8 blob (MB)")
-    ax.set_title("Head cost vs vocabulary size (exact export)")
-    ax.legend(fontsize=8)
+    ax.set_title("Blob size against vocabulary size (exact random-init exports)", fontsize=10)
+    ax.legend(fontsize=7, loc="center right")
     ax.grid(True, alpha=0.3)
     save(fig, args.out)
 
@@ -74,7 +88,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("coverage")
-    c.add_argument("--curves", required=True)
+    c.add_argument("--agg", required=True)
+    c.add_argument("--tail")
     c.add_argument("--out", required=True)
     k = sub.add_parser("cost")
     k.add_argument("--tiers", required=True)

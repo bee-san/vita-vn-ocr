@@ -2,30 +2,44 @@
 """Is the vocabulary too small? VN characters each vocab cannot emit, what the labelling pipelines hid,
 what a bigger head costs on the console, and the vocab per tier (docs/vocab-expand.md).
 
-  vocab_expand.py jiten  --jiten DIR --out chars.npz          per-deck character counts from Jiten's deck CSVs
-  vocab_expand.py order  --chars chars.npz --out order.json   the VN-weighted character order (design decks only)
-  vocab_expand.py curves --chars chars.npz --order order.json --out curves.json
-  vocab_expand.py lines  --chars chars.npz --order order.json --out lines.json
-  vocab_expand.py bias   --out bias.json                      lines the labelling pipelines dropped or never kept
-  vocab_expand.py blobs  --out DIR                            random-init int8 blobs of every head option
-                                                             (DIR/sizes.json; then vita/budget_sweep.py a9 --dir DIR)
-  vocab_expand.py build  --order order.json --size N ... --out FILE
-  vocab_expand.py proof  strata|probe ...                     the proof study's report-only measures
-  vocab_expand.py tables FILE.json                            the markdown tables of docs/vocab-expand.md
+  vocab_expand.py agg    --lists DIR --real NAME=FILE ... --out agg.json --order-out order.json
+                         the aggregate Jiten lists: frequency expansion, the VN-first kanji order, coverage
+                         curves per list, the Kanji CSV check, VNDB names
+  vocab_expand.py build  --order order.json --size N --out FILE        a vocab file of N output classes
+  vocab_expand.py sample --jiten DIR --out sample.npz                  character counts of the per-deck VN sample
+  vocab_expand.py tail   --sample sample.npz --order order.json --out tail.json
+                         the per-VN distribution (the sample): mean, p95, worst titles, reserved-title check
+  vocab_expand.py lines  --agg agg.json --tail tail.json --out lines.json
+  vocab_expand.py bias   --out bias.json                                lines the labelling pipelines dropped
+  vocab_expand.py fonts  --vocab-file NAME=FILE ... --out fonts.json   fonts and contexts for the new classes
+  vocab_expand.py blobs  --out DIR                                      random-init int8 blobs of every head option
+                                                                        (then vita/budget_sweep.py a9 --dir DIR)
+  vocab_expand.py proof  strata|probe ...                               the proof study's report-only measures
+  vocab_expand.py tables FILE.json                                      markdown tables of docs/vocab-expand.md
 
-Emittable. Every count here uses eval's scoring normalisation (eval/metrics.norm: NFKC, folded dashes,
-tildes and ellipses): a reference character is emittable by a vocab when every character of its norm()
-is produced by some class's norm(). So a vocab with ASCII 'P' emits 'Ｐ', and FL10 lacking full-width
-capitals costs nothing on the score (the realdata/vote.canon label convention writes them as ASCII).
+Sources. Jiten (https://jiten.moe/frequency-dictionaries, CC BY-SA 4.0; data/jiten_fetch.py) publishes word
+lists per media type and a kanji list. Both carry ranks, not counts: a word's rank orders
+log(1 + its occurrences) x the number of titles that use it, a kanji's the same over the raw text of all
+titles (Jiten.Core/JitenHelper.cs at Sirush/Jiten 7eac4d4, ApplyAggregatesAndRank and
+ComputeKanjiFrequencies). So a list gives character frequencies only through a model: a word of rank r
+weighs r^-s and so does each character of its form (docs/synth4-gap.md section 1), s fitted so that the kanji
+distribution it implies is closest (KL) to the kanji of the training-side real labels. The rates are per
+1,000 characters of the list's expanded word forms (dictionary spellings, no punctuation).
 
-Jiten (https://jiten.moe, CC BY-SA 4.0; data/jiten_fetch.py) gives, per title, the occurrences of every
-dictionary word form its parser found. A form's characters are counted with its occurrences; the
-denominator is the title's characterCount (kana, kanji in U+4E00-9FAF, 々 and full-width Latin and
-digits; punctuation is not counted), so "per 1,000 characters" is per 1,000 content characters. JMnedict
-entries (word ids 5,000,000-5,999,999) are names. Titles linked to a reserved VNDB VN (eval's test
-games, is_test_vn, every synth3 exclusion manifest including CLANNAD and the owner's test titles, the
-development VNs) are held out of every design statistic: the order is built from the other titles and
-the held-out titles are reported separately (character counts only).
+Order (owner 10:02Z: the Kanji CSV is the primary kanji source; where it and the VN counts disagree, VN wins
+for ordering): data/vocab.txt's 486 non-kanji (kana, punctuation, ASCII and full-width Latin and digits:
+every one has renders), then the kanji by VN-list weight, ties by Kanji CSV rank; then the kanji the VN list
+never uses, by Kanji CSV rank; then data/vocab.txt's remaining kanji. A vocab of N classes (CTC blank
+included) is the first N - 2 characters of that order plus <unk> (〓).
+
+Emittable. A reference character is emittable when every character of its eval/metrics.norm() (NFKC, folded
+dashes, tildes and ellipses) is produced by some class's norm(): the score's own rule. The training labels
+follow realdata/vote.canon (full-width Latin and digits written as ASCII), so an ASCII class reads both.
+
+The per-deck VN sample (2,162 decks fetched 2026-10-14 06:35-10:29Z before the owner stopped the per-deck
+fetch; data/jiten_fetch.py) is used only for the per-VN tail (`tail`): each title's own rate, its percentiles,
+and two checks (the aggregate model against the sample's measured rate; titles of reserved VNs against the
+rest). It enters no curve and no ordering.
 """
 import argparse
 import csv
@@ -49,14 +63,16 @@ from metrics import align_text, norm  # noqa: E402
 HERD = Path("/local/home/skerraut/herd-vita-ocr")
 A = HERD / "shared" / "artifacts"
 FL10_VOCAB = A / "train2" / "release" / "FL10_vocab_3500.txt"
+H15_VOCAB = ROOT / "data" / "vocab.txt"
+PROOF_VOCAB = ROOT / "data" / "vocab_4987_proof.txt"
 UNK = "〓"
-NAME_IDS = (5_000_000, 6_000_000)          # JMnedict entry ids in Jiten's word table
-TYPES = ("VisualNovel", "Novel", "WebNovel", "Anime", "Drama", "Movie", "VideoGame", "Manga", "NonFiction",
-         "YouTube", "Audio")
-LIST_GROUPS = {"VN": ("VisualNovel",), "Novel": ("Novel", "WebNovel"), "Anime/Drama": ("Anime", "Drama", "Movie"),
-               "Game": ("VideoGame",), "Manga": ("Manga",)}
+NAME_IDS = (5_000_000, 6_000_000)          # JMnedict entry ids in Jiten's word table: names
+LISTS = {"VN": "VisualNovel", "Novel": "Novel", "Anime": "Anime", "Drama": "Drama", "Video game": "VideoGame",
+         "Global": "global"}
 SIZE_GRID = tuple(range(3000, 8001, 100))   # output classes, CTC blank included
-TIER_SIZES = (3501, 4987, 5630, 6500, 7500)
+TIER_SIZES = (3501, 4987, 5631, 6459, 7501)
+COST_SIZES = (3501, 4987, 5630, 6500, 7500)  # the class counts of the random-init cost grid (`blobs`)
+S_GRID = tuple(round(0.70 + 0.05 * i, 2) for i in range(15))
 
 
 # ----------------------------------------------------------------------------- basics
@@ -119,7 +135,274 @@ def pct(xs, qs=(50, 90, 95, 99)):
     return {f"p{q}": round(float(np.percentile(xs, q)), 4) for q in qs} if len(xs) else {}
 
 
-# ----------------------------------------------------------------------------- jiten
+def named_vocabs(specs):
+    """NAME=FILE specs -> {name: vocab}."""
+    out = {}
+    for spec in specs or []:
+        name, _, p = spec.partition("=")
+        out[name] = read_vocab(p)
+    return out
+
+
+# ----------------------------------------------------------------------------- aggregate lists
+
+def load_list(path):
+    """(word form, rank) rows of a Jiten word list CSV (Word,Form,Rank)."""
+    rows = []
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        r = csv.reader(f)
+        head = next(r)
+        iw, ir = head.index("Word"), head.index("Rank")
+        for row in r:
+            if len(row) > max(iw, ir) and row[ir].strip().isdigit() and row[iw].strip():
+                rows.append((row[iw].strip(), int(row[ir])))
+    return rows
+
+
+def load_kanji_csv(path):
+    """{kanji: rank} of Jiten's kanji list CSV (Kanji,Rank); a repeated kanji keeps its best rank."""
+    out = {}
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        r = csv.reader(f)
+        head = next(r)
+        ik, ir = head.index("Kanji"), head.index("Rank")
+        for row in r:
+            if len(row) > max(ik, ir) and row[ir].strip().isdigit() and is_kanji(row[ik].strip()[:1] or " "):
+                k = row[ik].strip()
+                out[k] = min(out.get(k, 10 ** 9), int(row[ir]))
+    return out
+
+
+def char_weights(rows, s):
+    """Character weights of running text implied by a list's ranks: a word of rank r weighs r^-s, and so does
+    each character of its form (synth4_gap.jiten_char_weights)."""
+    w = Counter()
+    for word, rank in rows:
+        x = rank ** -s
+        for c in word:
+            w[c] += x
+    return w
+
+
+def missed_rate(w, es, kanji_only=False):
+    """Per 1,000 characters (or kanji) of w: the weight of characters the emit set cannot produce."""
+    tot = miss = 0.0
+    for c, x in w.items():
+        if kanji_only and not is_kanji(c):
+            continue
+        tot += x
+        if not emittable(c, es):
+            miss += x
+    return 1000 * miss / tot if tot else None
+
+
+def jis_x0213(c):
+    """True for a character of JIS X 0213 (which contains JIS X 0208): the Japanese kanji sets."""
+    try:
+        c.encode("euc_jis_2004")
+        return True
+    except UnicodeEncodeError:
+        return False
+
+
+def build_order(w_vn, kanji_rank, h15, japanese=None):
+    """(non-kanji block, kanji order, counts): VN-list weight first (ties: Kanji CSV rank), then the Kanji CSV's
+    other kanji: those with a Japanese context (`japanese`: the kanji of Jiten's global word list and of VNDB
+    character names) and in JIS X 0213 first, by rank (the all-media list also ranks Chinese-only characters
+    from Chinese text in some titles), then data/vocab.txt's remaining kanji in its order."""
+    vn_k = sorted((c for c in w_vn if is_kanji(c)), key=lambda c: (-w_vn[c], kanji_rank.get(c, 10 ** 9), c))
+    seen = set(vn_k)
+    jp = japanese if japanese is not None else set(kanji_rank)
+    rest = sorted((c for c in kanji_rank if c not in seen),
+                  key=lambda c: (0 if c in jp and jis_x0213(c) else 1 if jis_x0213(c) else 2, kanji_rank[c], c))
+    seen |= set(rest)
+    left = [c for c in h15 if is_kanji(c) and c not in seen]
+    idx = {c: i for i, c in enumerate(h15)}
+    nk = sorted((c for c in h15 if not is_kanji(c)), key=lambda c: (-w_vn.get(c, 0.0), idx[c]))
+    return nk, vn_k + rest + left, {"vn_list": len(vn_k), "kanji_csv_only": len(rest),
+                                    "kanji_csv_only_not_jis": sum(1 for c in rest if not jis_x0213(c)),
+                                    "kanji_csv_only_japanese": sum(1 for c in rest if c in jp and jis_x0213(c)),
+                                    "vn_list_not_jis": "".join(c for c in vn_k if not jis_x0213(c)),
+                                    "vocab_txt_only": len(left)}
+
+
+def vocab_of_size(order, n_classes, unk=True, h15=None):
+    """A vocab of n_classes output classes (CTC blank included): the order's first characters, then <unk>.
+    (h15 is accepted for older callers; the order already holds data/vocab.txt's characters.)"""
+    n = n_classes - 1 - (1 if unk else 0)
+    pool = list(order["non_kanji"]) + list(order["kanji"])
+    if n > len(pool):
+        raise ValueError(f"only {len(pool)} ordered characters for {n_classes} classes")
+    out = pool[:n] + ([UNK] if unk else [])
+    assert len(out) == len(set(out))
+    return out
+
+
+def sized(order, sizes):
+    """[(n, vocab)] for the sizes the order can fill (a small order skips the larger ones)."""
+    out = []
+    for n in sizes:
+        try:
+            out.append((n, vocab_of_size(order, n)))
+        except ValueError:
+            pass
+    return out
+
+
+def spearman(a, b):
+    """Spearman rank correlation of two equal-length sequences (average ranks for ties)."""
+    def ranks(x):
+        x = np.asarray(x, np.float64)
+        order = np.argsort(x, kind="mergesort")
+        r = np.empty(len(x))
+        r[order] = np.arange(len(x))
+        _, inv, cnt = np.unique(x, return_inverse=True, return_counts=True)
+        sums = np.bincount(inv, weights=r)
+        return (sums / cnt)[inv]
+    ra, rb = ranks(a), ranks(b)
+    return float(np.corrcoef(ra, rb)[0, 1])
+
+
+def list_manifest(lists_dir):
+    """{list name: record} from data/jiten_fetch.py's fetch_log.jsonl (URL, sha256, retrieval time)."""
+    log = Path(lists_dir).parent / "fetch_log.jsonl"
+    recs = {}
+    if log.exists():
+        for line in log.read_text(encoding="utf-8").splitlines():
+            r = json.loads(line)
+            if r.get("kind") == "list" and r.get("file"):
+                recs[r["name"]] = {k: r.get(k) for k in ("url", "sha256", "bytes", "rows", "retrieved", "http_date")}
+    return recs
+
+
+def cmd_agg(args):
+    import synth4_gap
+    ld = Path(args.lists)
+    h15 = read_vocab(args.vocab)
+    reserved = reserved_vns(args.exclude if args.exclude is not None else default_extra())
+    man = list_manifest(ld)
+    lists = {name: load_list(ld / f"jiten_freq_{f}.csv") for name, f in LISTS.items()}
+    kanji_rank = load_kanji_csv(ld / "jiten_freq_kanji.csv")
+    for name, f in LISTS.items():
+        rec = man.get(f, {})
+        if rec.get("sha256") and rec["sha256"] != sha256(ld / f"jiten_freq_{f}.csv"):
+            raise SystemExit(f"{f}: file differs from its fetch record")
+    # the Zipf exponent: the kanji of the real training-side labels (VN screenshot text, deduplicated per VN)
+    real = Counter()
+    real_inputs = {}
+    for spec in args.real:
+        name, rows, dropped = synth4_gap.load_real_labels(spec, reserved)
+        for _, lab in rows:
+            real.update(lab)
+        p = spec.partition("=")[2]
+        real_inputs[name] = {"file": p, "sha256": sha256(p), "lines": len(rows), "dropped_reserved": dropped}
+    real_kanji = {c: v for c, v in real.items() if is_kanji(c)}
+    s, kl_curve = synth4_gap.fit_exponent(lists["VN"], real_kanji, S_GRID)
+    W = {name: char_weights(rows, s) for name, rows in lists.items()}
+    names = synth4_gap.vndb_names(args.vndb_chars, reserved) if args.vndb_chars and Path(args.vndb_chars).exists() \
+        else []
+    japanese = {c for w, _ in lists["Global"] for c in w if is_kanji(c)} | {c for nm in names for c in nm
+                                                                          if is_kanji(c)}
+    nk, korder, counts = build_order(W["VN"], kanji_rank, h15, japanese)
+    order = {"kind": "vocab-expand-order", "schema": 1, "zipf_s": s, "non_kanji": nk, "kanji": korder,
+             "counts": counts,
+             "kanji_weights": {c: [round(1e6 * W["VN"].get(c, 0.0) / sum(W["VN"].values()), 4),
+                                   kanji_rank.get(c)] for c in korder}}
+    Path(args.order_out).write_text(json.dumps(order, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    fixed = {"FL10": read_vocab(FL10_VOCAB), "H15": h15, "proof (Small)": read_vocab(PROOF_VOCAB)}
+    fixed.update(named_vocabs(args.vocab_file))
+    out = {"kind": "vocab-expand-agg", "schema": 1,
+           "inputs": {"lists": {f: dict(man.get(f, {}), file=str(ld / f"jiten_freq_{f}.csv"),
+                                    sha256=sha256(ld / f"jiten_freq_{f}.csv"))
+                                for f in list(LISTS.values()) + ["kanji"]},
+                      "real": real_inputs, "reserved_vns": len(reserved),
+                      "vocab_txt": sha256(args.vocab),
+                      "order": {"file": args.order_out, "sha256": sha256(args.order_out)}},
+           "licence": "Jiten frequency lists, CC BY-SA 4.0 (https://jiten.moe/frequency-dictionaries); "
+                      "derived counts only",
+           "zipf": {"s": s, "kl_curve": kl_curve, "real_kanji": int(sum(real_kanji.values()))},
+           "lists": {name: {"rows": len(rows), "distinct_chars": len(W[name]),
+                            "kanji": sum(1 for c in W[name] if is_kanji(c))} for name, rows in lists.items()},
+           "kanji_csv": {"kanji": len(kanji_rank)}, "order_counts": counts, "fixed": {}, "curve": []}
+
+    def rates(vocab, ws=W):
+        es = emit_set(vocab)
+        return {name: {"chars": round(missed_rate(w, es), 4), "kanji": round(missed_rate(w, es, True), 4)}
+                for name, w in ws.items()}
+    for name, v in fixed.items():
+        out["fixed"][name] = {"classes": len(v) + 1, **rates(v)}
+    for n, v in sized(order, sorted(set(SIZE_GRID) | set(TIER_SIZES))):
+        out["curve"].append({"classes": n, **rates(v)})
+    # exact membership (no norm folding) for FL10 and H15: the full-width Latin synth4-gap counted
+    out["exact_membership"] = {name: round(1000 * sum(x for c, x in W["VN"].items() if c not in set(v))
+                                           / sum(W["VN"].values()), 4) for name, v in (("FL10", fixed["FL10"]),
+                                                                                       ("H15", h15))}
+    # the most frequent VN-list characters each tier vocab misses
+    out["missed_top"] = {}
+    totv = sum(W["VN"].values())
+    tiers = [(f"VN {n}", v_) for n, v_ in sized(order, TIER_SIZES[1:])]
+    for name, v in [("FL10", fixed["FL10"]), ("H15", h15)] + tiers:
+        es = emit_set(v)
+        miss = sorted(((c, x) for c, x in W["VN"].items() if not emittable(c, es)), key=lambda t: -t[1])
+        out["missed_top"][name] = [[c, round(1e6 * x / totv, 2)] for c, x in miss[:40]]
+        out["missed_top"][name + " (count)"] = len(miss)
+    # the Kanji CSV against the VN-derived counts
+    vn_k = [c for c in korder if W["VN"].get(c, 0) > 0]
+    # Jiten's kanji test leaves out the iteration mark 々 (in every vocab here): put it first in the Kanji CSV order
+    k_k = ["々"] + sorted((c for c in kanji_rank if c != "々"), key=lambda c: (kanji_rank[c], c))
+    wk = {c: x for c, x in W["VN"].items() if is_kanji(c)}
+    totk = sum(wk.values())
+    chk = []
+    for n in (1000, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 7000):
+        tv, tk = set(vn_k[:n]), set(k_k[:n])
+        chk.append({"kanji": n, "vn_order_missed_per_1000_kanji": round(1000 * (1 - sum(wk.get(c, 0) for c in tv)
+                                                                               / totk), 4),
+                    "kanji_csv_order_missed_per_1000_kanji": round(1000 * (1 - sum(wk.get(c, 0) for c in tk) / totk),
+                                                                   4),
+                    "overlap": round(len(tv & tk) / n, 4)})
+    both = [c for c in vn_k if c in kanji_rank]
+    vr = {c: i + 1 for i, c in enumerate(vn_k)}
+    out["kanji_csv_check"] = {
+        "curve": chk, "vn_kanji": len(vn_k), "vn_kanji_in_kanji_csv": len(both),
+        "vn_kanji_not_in_kanji_csv": "".join(c for c in vn_k if c not in kanji_rank)[:80],
+        "spearman_vn_vs_kanji_csv": round(spearman([vr[c] for c in both], [kanji_rank[c] for c in both]), 4),
+        "vn_heavy_csv_low": [[c, vr[c], kanji_rank.get(c)] for c in vn_k[:3000]
+                             if kanji_rank.get(c, 10 ** 9) > 5000][:30],
+        "csv_heavy_vn_low": [[c, kanji_rank.get(c), vr.get(c)] for c in k_k[:3000] if vr.get(c, 10 ** 9) > 5000][:30]}
+    # sensitivity to the exponent: rates and the order's top kanji
+    sens = {}
+    base_top = set(korder[:4499])
+    for ds in (-0.15, 0.15):
+        s2 = round(s + ds, 2)
+        w2 = {"VN": char_weights(lists["VN"], s2)}
+        nk2, ko2, _ = build_order(w2["VN"], kanji_rank, h15, japanese)
+        o2 = {"non_kanji": nk2, "kanji": ko2}
+        sens[str(s2)] = {"overlap_top4499_kanji": round(len(set(ko2[:4499]) & base_top) / 4499, 4),
+                         **{name: rates(v, w2)["VN"] for name, v in fixed.items()},
+                         **{f"VN {n}": rates(v_, w2)["VN"] for n, v_ in sized(o2, TIER_SIZES[1:])}}
+    out["sensitivity"] = sens
+    # VNDB character names (usable VNs only): names holding a character a vocab cannot emit
+    if names:
+        nrow = {}
+        for name, v in list(fixed.items()) + [(f"VN {n}", v_) for n, v_ in sized(order, TIER_SIZES[1:])]:
+            es = emit_set(v)
+            bad = [nm for nm in names if not all(emittable(c, es) for c in nm)]
+            nrow[name] = {"names": len(names), "with_char_outside": len(bad), "share": round(len(bad) / len(names), 5)}
+        out["names"] = {"file": args.vndb_chars, "sha256": sha256(args.vndb_chars), "rows": nrow}
+    Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"s = {s}; order: {counts}; FL10 {out['fixed']['FL10']['VN']}, H15 {out['fixed']['H15']['VN']} "
+          f"per 1,000 VN chars / kanji", flush=True)
+
+
+def cmd_build(args):
+    order = json.loads(Path(args.order).read_text(encoding="utf-8"))
+    v = vocab_of_size(order, args.size, unk=not args.no_unk)
+    Path(args.out).write_text("\n".join(v) + "\n", encoding="utf-8")
+    print(f"{args.out}: {len(v)} entries, {len(v) + 1} classes, sha256 {sha256(args.out)}", flush=True)
+
+
+# ----------------------------------------------------------------------------- the per-deck VN sample
 
 def read_deck_csv(path):
     """(form, occurrences, word id) rows of one Jiten deck CSV export (gzip or plain)."""
@@ -160,21 +443,19 @@ def vndb_ids(deck):
     return sorted(set(out))
 
 
-def cmd_jiten(args):
+def cmd_sample(args, types=("VisualNovel",)):
     jd = Path(args.jiten)
     reserved = reserved_vns(args.exclude if args.exclude is not None else default_extra())
     chars, cidx = [], {}
     rows, cols, vals, nvals = [], [], [], []
     decks = []
-    for t in TYPES:
-        meta_p = jd / "decks" / f"decks_{t}.json"
-        wdir = jd / "words" / t
+    for t in types:
+        meta_p, wdir = jd / "decks" / f"decks_{t}.json", jd / "words" / t
         if not meta_p.exists() or not wdir.exists():
             continue
         meta = {d["deckId"]: d for d in json.loads(meta_p.read_text(encoding="utf-8"))}
         for p in sorted(wdir.glob("*.csv.gz"), key=lambda p: int(p.name.split(".")[0])):
-            did = int(p.name.split(".")[0])
-            d = meta.get(did)
+            d = meta.get(int(p.name.split(".")[0]))
             if d is None:
                 continue
             cnt, names, tot = deck_counts(p)
@@ -182,9 +463,9 @@ def cmd_jiten(args):
                 continue
             vn = vndb_ids(d)
             i = len(decks)
-            decks.append({"deck": did, "type": t, "content": int(d.get("characterCount") or 0), "wordform": tot,
-                          "vndb": vn, "reserved": bool(vn) and is_reserved(vn, reserved),
-                          "unique_kanji": d.get("uniqueKanjiCount")})
+            decks.append({"deck": d["deckId"], "type": t, "title": d.get("originalTitle"),
+                          "content": int(d.get("characterCount") or 0), "wordform": tot, "vndb": vn,
+                          "reserved": bool(vn) and is_reserved(vn, reserved)})
             for c, n in cnt.items():
                 j = cidx.get(c)
                 if j is None:
@@ -198,13 +479,12 @@ def cmd_jiten(args):
                         vals=np.asarray(vals, np.int64), names=np.asarray(nvals, np.int64),
                         chars=np.asarray(json.dumps(chars, ensure_ascii=False)),
                         decks=np.asarray(json.dumps(decks, ensure_ascii=False)))
-    by = Counter((d["type"], d["reserved"]) for d in decks)
-    print(f"{len(decks)} decks, {len(chars)} distinct characters, {len(vals)} entries; "
-          + ", ".join(f"{t}{' reserved' if r else ''} {n}" for (t, r), n in sorted(by.items())), flush=True)
+    by = Counter(d["reserved"] for d in decks)
+    print(f"{len(decks)} decks ({by[True]} of reserved VNs), {len(chars)} distinct characters", flush=True)
 
 
 class Chars:
-    """Per-deck character counts (cmd_jiten's npz)."""
+    """Per-deck character counts (cmd_sample's npz)."""
 
     def __init__(self, path):
         z = np.load(path)
@@ -212,6 +492,7 @@ class Chars:
         self.chars = json.loads(str(z["chars"]))
         self.decks = json.loads(str(z["decks"]))
         self.content = np.asarray([max(1, d["content"]) for d in self.decks], np.float64)
+        self.wordform = np.asarray([max(1, d.get("wordform", 0)) for d in self.decks], np.float64)
         self.path = str(path)
 
     def select(self, types=None, reserved=None):
@@ -223,80 +504,10 @@ class Chars:
         m = mask[self.rows]
         v = self.vals[m].astype(np.float64)
         if weight == "deck":
-            v = v / self.content[self.rows[m]] / max(1, mask.sum())
+            v = v / self.wordform[self.rows[m]] / max(1, mask.sum())
         w = np.bincount(self.cols[m], weights=v, minlength=len(self.chars))
         return {self.chars[i]: float(x) for i, x in enumerate(w) if x > 0}
 
-    def doc_freq(self, mask):
-        m = mask[self.rows]
-        return np.bincount(self.cols[m], minlength=len(self.chars))
-
-
-# ----------------------------------------------------------------------------- order
-
-def load_real_text(paths):
-    """Characters of training-side real labels (canonical label convention): {char: count}."""
-    cnt = Counter()
-    for p in paths:
-        p = Path(p)
-        if not p.exists():
-            continue
-        for line in p.read_text(encoding="utf-8").splitlines():
-            r = json.loads(line)
-            if r.get("status") == "kept" and r.get("label"):
-                cnt.update(r["label"])
-    return cnt
-
-
-def cmd_order(args):
-    """The VN-weighted order: kanji by mean per-title share over the design VN titles (each title weighs
-    the same, so a kanji one title leans on counts as much as one spread thin over many), ties by the
-    number of titles using it; then the non-kanji block."""
-    ch = Chars(args.chars)
-    design = ch.select(("VisualNovel",), reserved=False)
-    w_deck = ch.per_char(design, "deck")
-    w_corp = ch.per_char(design, "corpus")
-    df = ch.doc_freq(design)
-    dfc = {ch.chars[i]: int(x) for i, x in enumerate(df) if x}
-    kanji = sorted((c for c in w_deck if is_kanji(c)), key=lambda c: (-w_deck[c], -dfc.get(c, 0), c))
-    h15 = read_vocab(args.vocab)
-    real = load_real_text(args.real)
-    # non-kanji: H15's (every one has renders and real or NVIDIA labels), ordered by real VN-label use, then
-    # the non-kanji the real training-side labels use at least --min-real times that H15 lacks
-    nk_h15 = [c for c in h15 if not is_kanji(c)]
-    extra = sorted((c for c, n in real.items() if n >= args.min_real and not is_kanji(c) and c not in set(h15)
-                    and norm(c) and c != UNK and not c.isspace()), key=lambda c: (-real[c], c))
-    nk = sorted(nk_h15, key=lambda c: (-real.get(c, 0), -w_corp.get(c, 0), h15.index(c))) + extra
-    h15_k = [c for c in h15 if is_kanji(c)]
-    # kanji outside the parser's range (Jiten strips them: Ext A, compatibility ideographs): H15's, kept
-    outside = [c for c in h15_k if not (0x4E00 <= ord(c) <= 0x9FAF or c == "々") and c not in w_deck]
-    out = {"kind": "vocab-expand-order", "schema": 1,
-           "inputs": {"chars": {"file": args.chars, "sha256": sha256(args.chars)}, "vocab_h15": sha256(args.vocab),
-                      "real": [{"file": str(p), "sha256": sha256(p)} for p in args.real if Path(p).exists()]},
-           "design_titles": int(design.sum()), "held_out_titles": int(ch.select(("VisualNovel",), True).sum()),
-           "non_kanji": nk, "non_kanji_extra": extra, "kanji": kanji, "kanji_outside_jiten": outside,
-           "weights": {c: [round(1e6 * w_deck[c], 4), dfc.get(c, 0)] for c in kanji}}
-    Path(args.out).write_text(json.dumps(out, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"{len(kanji)} VN kanji over {int(design.sum())} design titles; "
-          f"{len(nk)} non-kanji ({len(extra)} beyond H15)", flush=True)
-
-
-def vocab_of_size(order, n_classes, unk=True, h15=None):
-    """A vocab of n_classes output classes (CTC blank included): the non-kanji block, the compatibility
-    kanji Jiten cannot see, then kanji in VN order, then the H15 kanji the VN titles never use (H15's order),
-    then <unk>."""
-    n = n_classes - 1 - (1 if unk else 0)
-    base = list(order["non_kanji"]) + list(order.get("kanji_outside_jiten", []))
-    tail = [c for c in (h15 or []) if is_kanji(c) and c not in set(order["kanji"]) and c not in set(base)]
-    pool = base + list(order["kanji"]) + tail
-    if n > len(pool):
-        raise ValueError(f"only {len(pool)} ordered characters for {n_classes} classes")
-    out = pool[:n] + ([UNK] if unk else [])
-    assert len(out) == len(set(out))
-    return out
-
-
-# ----------------------------------------------------------------------------- curves
 
 def deck_missed(ch, vocab_es):
     """Per deck: occurrences of characters the vocab cannot emit, and of those in name entries."""
@@ -307,102 +518,72 @@ def deck_missed(ch, vocab_es):
     return n, nn
 
 
-def cover_row(ch, mask, missed, names=None):
-    """Missed per 1,000 content characters over the decks in mask: corpus-weighted, per-title mean and
-    percentiles; titles with any miss."""
+def tail_row(ch, mask, missed, names):
+    """The per-title distribution over the decks in mask (word-form basis, as the aggregate curves), the
+    corpus rate, and the content-character rates the line model needs."""
     if not mask.any():
         return None
-    per = 1000 * missed[mask] / ch.content[mask]
-    r = {"titles": int(mask.sum()), "corpus": round(float(1000 * missed[mask].sum() / ch.content[mask].sum()), 4),
-         "title_mean": round(float(per.mean()), 4), **pct(per), "max": round(float(per.max()), 3),
-         "titles_with_miss": round(float((missed[mask] > 0).mean()), 4)}
-    if names is not None:
-        r["name_share"] = round(float(names[mask].sum() / max(1e-9, missed[mask].sum())), 4)
-    return r
+    per = 1000 * missed[mask] / ch.wordform[mask]
+    per_c = 1000 * missed[mask] / ch.content[mask]
+    return {"titles": int(mask.sum()), "corpus": round(float(1000 * missed[mask].sum() / ch.wordform[mask].sum()), 4),
+            "title_mean": round(float(per.mean()), 4), **pct(per), "max": round(float(per.max()), 3),
+            "titles_with_miss": round(float((missed[mask] > 0).mean()), 4),
+            "name_share": round(float(names[mask].sum() / max(1e-9, missed[mask].sum())), 4),
+            "content_basis": {"corpus": round(float(1000 * missed[mask].sum() / ch.content[mask].sum()), 4),
+                              **pct(per_c)}}
 
 
-def mixture(rows, ch):
-    """Jiten's global list as a mixture: each media type's corpus-weighted rate, weighted by the type's
-    total characters on Jiten (all its titles, sampled or not)."""
-    return None if not rows else rows
-
-
-def cmd_curves(args):
-    ch = Chars(args.chars)
+def cmd_tail(args):
+    ch = Chars(args.sample)
     order = json.loads(Path(args.order).read_text(encoding="utf-8"))
-    h15 = read_vocab(args.vocab)
-    jd = Path(args.jiten) if args.jiten else None
-    type_chars = {}
-    if jd:
-        for t in TYPES:
-            p = jd / "decks" / f"decks_{t}.json"
-            if p.exists():
-                type_chars[t] = sum(int(d.get("characterCount") or 0) for d in json.loads(p.read_text(encoding="utf-8"))
-                                    if d.get("parentDeckId") is None)
-    groups = {"VN design": ch.select(("VisualNovel",), False), "VN held out": ch.select(("VisualNovel",), True)}
-    for g, ts in LIST_GROUPS.items():
-        if g != "VN":
-            groups[g] = ch.select(ts)
-    fixed = {"FL10": read_vocab(FL10_VOCAB), "H15": h15}
-    for spec in args.vocab_file or []:
-        name, _, p = spec.partition("=")
-        fixed[name] = read_vocab(p)
-    out = {"kind": "vocab-expand-curves", "schema": 1,
-           "inputs": {"chars": {"file": args.chars, "sha256": sha256(args.chars)},
-                      "order": {"file": args.order, "sha256": sha256(args.order)}},
-           "type_chars": type_chars, "fixed": {}, "curve": [], "global_weights": {}}
-
-    def evaluate(vocab):
-        missed, names = deck_missed(ch, emit_set(vocab))
-        res = {g: cover_row(ch, m, missed, names) for g, m in groups.items()}
-        per_type = {}
-        for t in TYPES:
-            m = ch.select((t,))
-            if m.any():
-                per_type[t] = float(missed[m].sum() / ch.content[m].sum())
-        if type_chars:
-            tot = sum(type_chars[t] for t in per_type)
-            res["global (mixture)"] = {"corpus": round(1000 * sum(per_type[t] * type_chars[t] for t in per_type) / tot,
-                                                       4), "types": len(per_type)}
-        return res, missed, names
-    for name, v in fixed.items():
-        res, missed, names = evaluate(v)
-        out["fixed"][name] = {"classes": len(v) + 1, **res}
-    for n in SIZE_GRID:
-        try:
-            v = vocab_of_size(order, n, unk=True, h15=h15)
-        except ValueError:
-            break
-        res, _, _ = evaluate(v)
-        out["curve"].append({"classes": n, **res})
-        print(f"{n}: VN design {res['VN design']['title_mean']:.3f} p95 {res['VN design']['p95']:.3f}; "
-              f"held out {res['VN held out']['title_mean'] if res['VN held out'] else '-'}", flush=True)
-    # where the misses sit at the tier sizes: names, the concentration over titles, per-kanji spread
-    vn = ch.select(("VisualNovel",))
-    out["concentration"] = {}
-    for n in TIER_SIZES:
-        try:
-            v = vocab_of_size(order, n, unk=True, h15=h15) if n != 3501 else fixed["FL10"]
-        except ValueError:
-            continue
-        es = emit_set(v)
-        ok = np.asarray([emittable(c, es) for c in ch.chars], bool)
-        miss = (~ok[ch.cols]) & vn[ch.rows]
-        per_deck = np.bincount(ch.rows[miss], weights=ch.vals[miss].astype(np.float64), minlength=len(ch.decks))[vn]
-        s = np.sort(per_deck)[::-1]
-        tot = s.sum()
-        top = {f"top{k}pct_titles": round(float(s[:max(1, int(len(s) * k / 100))].sum() / max(tot, 1e-9)), 4)
-               for k in (1, 5, 10)}
-        per_char_titles = Counter(ch.chars[c] for c in ch.cols[miss])
-        tops = Counter()
-        for c, val in zip(ch.cols[miss], ch.vals[miss]):
-            tops[ch.chars[c]] += int(val)
-        out["concentration"][str(n)] = {**top, "missed_kanji_types": len(per_char_titles),
-                                        "titles_per_missed_char": pct(list(per_char_titles.values()), (50, 90)),
-                                        "name_share": round(float(ch.names[miss].sum()
-                                                                   / max(1, ch.vals[miss].sum())), 4),
-                                        "top_missed": [[c, k, per_char_titles[c]] for c, k in tops.most_common(40)]}
+    vocabs = {"FL10": read_vocab(FL10_VOCAB), "H15": read_vocab(H15_VOCAB), "proof (Small)": read_vocab(PROOF_VOCAB)}
+    vocabs.update(named_vocabs(args.vocab_file))
+    for n, v in sized(order, (3000, 3501, 4000, 4987, 5631, 6459, 7501, 8001)):
+        vocabs[f"VN {n}"] = v
+    design, held = ch.select(reserved=False), ch.select(reserved=True)
+    out = {"kind": "vocab-expand-tail", "schema": 1,
+           "sample": {"file": args.sample, "sha256": sha256(args.sample), "decks": len(ch.decks),
+                      "of": args.of, "design_titles": int(design.sum()), "reserved_titles": int(held.sum()),
+                      "note": "a sample: the VN decks fetched before the owner stopped the per-deck fetch (10:00Z); "
+                              "word-form basis (each form's characters x its occurrences)"},
+           "order": {"file": args.order, "sha256": sha256(args.order)}, "vocabs": {}}
+    wf_ratio = float(ch.wordform[design].sum() / ch.content[design].sum())
+    out["wordform_per_content_char"] = round(wf_ratio, 4)
+    for name, v in vocabs.items():
+        missed, names = deck_missed(ch, emit_set(v))
+        r = {"classes": len(v) + 1, "design": tail_row(ch, design, missed, names),
+             "reserved (OOV rate only)": tail_row(ch, held, missed, names)}
+        per = 1000 * missed / ch.wordform
+        worst = np.argsort(-np.where(design, per, -1))[:5]
+        r["worst_design_titles"] = [[ch.decks[i]["title"], round(float(per[i]), 3)] for i in worst if design[i]]
+        out["vocabs"][name] = r
+    # reserved-title check: kanji of each tier vocab whose sample occurrences come mostly from reserved titles
+    m_res = held[ch.rows]
+    occ = np.bincount(ch.cols, weights=ch.vals.astype(np.float64), minlength=len(ch.chars))
+    occ_res = np.bincount(ch.cols[m_res], weights=ch.vals[m_res].astype(np.float64), minlength=len(ch.chars))
+    idx = {c: i for i, c in enumerate(ch.chars)}
+    out["reserved_dominated"] = {}
+    prot = {}
+    for spec in args.protected or []:
+        pname, _, pp = spec.partition("=")
+        if Path(pp).exists():
+            prot[pname] = load_line_set(pp)
+    for name in [k for k in vocabs if k.startswith("VN ") or k.startswith("proof") or k in (args.check or [])]:
+        ks = [c for c in vocabs[name] if is_kanji(c) and c in idx]
+        dom = [c for c in ks if occ[idx[c]] > 0 and occ_res[idx[c]] / occ[idx[c]] >= 0.8]
+        out["reserved_dominated"][name] = {"kanji_in_vocab_seen_in_sample": len(ks), "80pct_from_reserved": len(dom),
+                                           "examples": "".join(sorted(dom, key=lambda c: -occ[idx[c]])[:30])}
+        # their reach into the protected and development sets: reference characters only (counts, nothing selected)
+        dset = set(dom)
+        for sname, lines in prot.items():
+            cs = [c for t in lines for c in norm(t)]
+            out["reserved_dominated"][name].setdefault("protected_chars", {})[sname] = [
+                sum(1 for c in cs if c in dset), len(cs)]
     Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    for name in ("FL10", "H15", "proof (Small)", "VN 5631", "VN 7501"):
+        d = out["vocabs"][name]["design"]
+        print(f"{name}: sample corpus {d['corpus']}, title mean {d['title_mean']}, p95 {d['p95']}, "
+              f"max {d['max']} per 1,000", flush=True)
 
 
 # ----------------------------------------------------------------------------- lines
@@ -435,55 +616,6 @@ def predicted_line_share(q, lengths):
     return float(np.mean(1 - (1 - q) ** L))
 
 
-def cmd_lines(args):
-    ch = Chars(args.chars)
-    order = json.loads(Path(args.order).read_text(encoding="utf-8"))
-    h15 = read_vocab(args.vocab)
-    vocabs = {"FL10": read_vocab(FL10_VOCAB), "H15": h15}
-    for n in TIER_SIZES[1:]:
-        try:
-            vocabs[f"VN{n}"] = vocab_of_size(order, n, unk=True, h15=h15)
-        except ValueError:
-            continue
-    for spec in args.vocab_file or []:
-        name, _, p = spec.partition("=")
-        vocabs[name] = read_vocab(p)
-    # the content-length distribution of real VN dialogue lines: training-side realplus v3 kept labels
-    rows = (json.loads(x) for x in Path(args.lengths).read_text(encoding="utf-8").splitlines())
-    lens = [content_len(r["label"]) for r in rows if r.get("status") == "kept" and r.get("label")]
-    lens = [x for x in lens if x > 0]
-    sets = {}
-    for spec in args.set or []:
-        name, _, p = spec.partition("=")
-        sets[name] = load_line_set(p)
-    out = {"kind": "vocab-expand-lines", "schema": 1, "lengths": {"file": args.lengths, "lines": len(lens),
-                                                                  **pct(lens, (10, 50, 90))},
-           "vocabs": {k: len(v) + 1 for k, v in vocabs.items()}, "measured": {}, "modelled": {}, "calibration": {}}
-    vn_design, vn_held = ch.select(("VisualNovel",), False), ch.select(("VisualNovel",), True)
-    for name, v in vocabs.items():
-        es = emit_set(v)
-        missed, _ = deck_missed(ch, es)
-        q = missed / ch.content
-        for tag, m in (("VN design", vn_design), ("VN held out", vn_held)):
-            if not m.any():
-                continue
-            per = np.asarray([predicted_line_share(x, lens) for x in q[m]])
-            out["modelled"].setdefault(name, {})[tag] = {
-                "title_mean_per_1000_lines": round(1000 * float(per.mean()), 3),
-                **{k: round(1000 * v_, 3) for k, v_ in pct(per).items()}}
-        for sname, lines in sets.items():
-            out["measured"].setdefault(name, {})[sname] = line_hits(lines, es)
-            # the independence model checked on the same set: its own per-character miss rate q applied to
-            # its own content-length distribution, against the observed per-1,000-line rate
-            hit = out["measured"][name][sname]
-            qq = hit["per_1000_chars"] / 1000
-            ln = [content_len(s) for s in lines if content_len(s) > 0]
-            out["calibration"].setdefault(name, {})[sname] = {
-                "observed_per_1000_lines": hit["per_1000_lines"],
-                "independence_per_1000_lines": round(1000 * predicted_line_share(qq, ln), 3)}
-    Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-
-
 def load_line_set(path):
     """Reference texts of one line set: a labels.jsonl (kept rows), an eval manifest (scored rows), a CLANNAD
     refs.jsonl (status ref) or an npz with labels."""
@@ -502,6 +634,105 @@ def load_line_set(path):
         if t:
             out.append(t)
     return out
+
+
+def cmd_lines(args):
+    """Per 1,000 dialogue lines: lines holding at least one character a tier's vocab cannot emit. The model
+    treats each content character of a line as an independent draw at the vocab's per-character miss rate,
+    over the content-length distribution of real VN dialogue lines (training-side realplus v3 labels)."""
+    agg = json.loads(Path(args.agg).read_text(encoding="utf-8"))
+    tail = json.loads(Path(args.tail).read_text(encoding="utf-8")) if args.tail else None
+    rows = (json.loads(x) for x in Path(args.lengths).read_text(encoding="utf-8").splitlines())
+    lens = [content_len(r["label"]) for r in rows if r.get("status") == "kept" and r.get("label")]
+    lens = [x for x in lens if x > 0]
+    out = {"kind": "vocab-expand-lines", "schema": 1,
+           "lengths": {"file": args.lengths, "sha256": sha256(args.lengths), "lines": len(lens),
+                       "mean": round(float(np.mean(lens)), 2), **pct(lens, (10, 50, 90))}, "vocabs": {}}
+    curve = {r["classes"]: r for r in agg["curve"]}
+    names = {"FL10": ("fixed", "FL10"), "H15": ("fixed", "H15"), "proof (Small)": ("fixed", "proof (Small)")}
+    for n in TIER_SIZES[1:]:
+        names[f"VN {n}"] = ("curve", n)
+    for k in agg["fixed"]:
+        names.setdefault(k, ("fixed", k))
+    for name, (kind, key) in names.items():
+        a = agg["fixed"][key] if kind == "fixed" else curve[key]
+        q = a["VN"]["chars"] / 1000
+        r = {"aggregate_model": round(1000 * predicted_line_share(q, lens), 3)}
+        t = tail["vocabs"].get(name) if tail else None
+        if t and t.get("design"):
+            cb = t["design"]["content_basis"]
+            r["sample_corpus"] = round(1000 * predicted_line_share(cb["corpus"] / 1000, lens), 3)
+            r["sample_p50_title"] = round(1000 * predicted_line_share(cb["p50"] / 1000, lens), 3)
+            r["sample_p95_title"] = round(1000 * predicted_line_share(cb["p95"] / 1000, lens), 3)
+        out["vocabs"][name] = r
+    sets = {}
+    for spec in args.set or []:
+        name, _, p = spec.partition("=")
+        sets[name] = load_line_set(p)
+    if sets:
+        out["calibration"] = {}
+        for name, v in (("FL10", read_vocab(FL10_VOCAB)), ("H15", read_vocab(H15_VOCAB))):
+            es = emit_set(v)
+            for sname, lines in sets.items():
+                hit = line_hits(lines, es)
+                ln = [content_len(s) for s in lines if content_len(s) > 0]
+                q = hit["per_1000_chars"] / 1000 * sum(len(norm(s)) for s in lines) / max(1, sum(ln))
+                out["calibration"].setdefault(name, {})[sname] = {
+                    "observed_per_1000_lines": hit["per_1000_lines"],
+                    "independence_per_1000_lines": round(1000 * predicted_line_share(q, ln), 3)}
+    Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+
+# ----------------------------------------------------------------------------- fonts and contexts
+
+def font_files():
+    """(path, category) of every font file of synth4's manifest (data/manifests/synth4_fonts.json)."""
+    d = json.loads((ROOT / "data" / "manifests" / "synth4_fonts.json").read_text(encoding="utf-8"))
+    roots = {k: v.replace("$HERD", str(HERD)) for k, v in d["roots"].items()}
+    return [(Path(roots[f["root"]]) / x["file"], x.get("category") or f.get("category"), f["licence_class"])
+            for f in d["families"] for x in f["files"]]
+
+
+def cmd_fonts(args):
+    """For the classes of each vocab file outside data/vocab.txt (the classes no render or NVIDIA crop holds
+    yet): how many of synth4's font files draw them, and whether a context exists for the curriculum (a Jiten
+    VN or global word whose characters are all in the vocab, or a VNDB character name)."""
+    from fontTools.ttLib import TTFont
+
+    import synth4_gap
+    cmaps = []
+    for path, cat, lic in font_files():
+        try:
+            cm = TTFont(str(path), lazy=True, fontNumber=0).getBestCmap() or {}
+        except Exception:
+            cm = {}
+        cmaps.append((set(cm), cat, lic))
+    h15 = set(read_vocab(H15_VOCAB))
+    ld = Path(args.lists)
+    vn_words = [w for w, _ in load_list(ld / "jiten_freq_VisualNovel.csv")]
+    gl_words = [w for w, _ in load_list(ld / "jiten_freq_global.csv")]
+    reserved = reserved_vns(default_extra())
+    names = synth4_gap.vndb_names(args.vndb_chars, reserved) if args.vndb_chars else []
+    out = {"kind": "vocab-expand-fonts", "schema": 1, "font_files": len(cmaps),
+           "smooth_files": sum(1 for _, cat, _ in cmaps if cat != "pixel"), "vocabs": {}}
+    for name, v in named_vocabs(args.vocab_file).items():
+        vs = set(v)
+        new = [c for c in v if c not in h15 and c != UNK]
+        ctx_vn = {c for w in vn_words if set(w) <= vs for c in w}
+        ctx_gl = {c for w in gl_words if set(w) <= vs for c in w}
+        ctx_nm = {c for nm in names for c in nm}
+        nf = np.asarray([sum(1 for cm, _, _ in cmaps if ord(c) in cm) for c in new])
+        ns = np.asarray([sum(1 for cm, cat, _ in cmaps if cat != "pixel" and ord(c) in cm) for c in new])
+        out["vocabs"][name] = {
+            "entries": len(v), "new_classes": len(new), "new_kanji": sum(1 for c in new if is_kanji(c)),
+            "fonts_p10_50": [int(np.percentile(nf, 10)), int(np.percentile(nf, 50))] if len(new) else None,
+            "smooth_fonts_lt5": int((ns < 5).sum()), "smooth_fonts_lt20": int((ns < 20).sum()),
+            "no_font": "".join(c for c, k in zip(new, nf) if k == 0)[:60],
+            "with_vn_word": sum(1 for c in new if c in ctx_vn), "with_global_word": sum(1 for c in new if c in ctx_gl),
+            "with_vndb_name": sum(1 for c in new if c in ctx_nm),
+            "no_context": "".join(c for c in new if c not in ctx_vn | ctx_gl | ctx_nm)[:60]}
+        print(name, json.dumps(out["vocabs"][name], ensure_ascii=False), flush=True)
+    Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
 # ----------------------------------------------------------------------------- bias
@@ -668,8 +899,8 @@ def realdata_oov(vocabs, ok_vn):
 
 # Head options at the always tier's and the H15 topology's widths (the model-tiers study covers the other
 # widths): bottleneck 48-128, the classes of each vocab candidate.
-BLOB_GRID = [(w, b, c) for w in (1.0, 1.5) for b in (64, 96, 128) for c in TIER_SIZES] + \
-            [(1.0, 48, c) for c in TIER_SIZES]
+BLOB_GRID = [(w, b, c) for w in (1.0, 1.5) for b in (64, 96, 128) for c in COST_SIZES] + \
+            [(1.0, 48, c) for c in COST_SIZES]
 
 
 def blob_name(width, bottleneck, classes):
@@ -744,15 +975,6 @@ def tier_rows(sizes_dir):
         out[name] = row
     return out
 
-
-# ----------------------------------------------------------------------------- build
-
-def cmd_build(args):
-    order = json.loads(Path(args.order).read_text(encoding="utf-8"))
-    h15 = read_vocab(args.vocab)
-    v = vocab_of_size(order, args.size, unk=not args.no_unk, h15=h15)
-    Path(args.out).write_text("\n".join(v) + "\n", encoding="utf-8")
-    print(f"{args.out}: {len(v)} entries, {len(v) + 1} classes, sha256 {sha256(args.out)}", flush=True)
 
 
 # ----------------------------------------------------------------------------- proof (report-only measures)
@@ -871,30 +1093,51 @@ def cmd_proof_probe(args):
 
 # ----------------------------------------------------------------------------- tables
 
-def fmt(x, nd=3):
-    return "-" if x is None else f"{x:,.{nd}f}" if isinstance(x, float) else f"{x:,}"
-
-
 def cmd_tables(args):
     d = json.loads(Path(args.json).read_text(encoding="utf-8"))
     k = d.get("kind")
-    if k == "vocab-expand-curves":
-        groups = [g for g in d["curve"][0] if g not in ("classes",) and isinstance(d["curve"][0][g], dict)]
-        print("| vocab | classes | " + " | ".join(f"{g}: per 1,000 (corpus / title mean / p95)" for g in groups[:2])
-              + " | " + " | ".join(f"{g} corpus" for g in groups[2:]) + " |")
-        print("|---|---|" + "---|" * len(groups))
-        rows = [(n, r) for n, r in d["fixed"].items()] + [(f"VN-ordered {r['classes']:,}", r) for r in d["curve"]
-                                                          if r["classes"] in (3000, 3500, 4000, 4500, 4987, 5000, 5630,
-                                                                              6000, 6500, 7000, 7500, 8000)]
+    if k == "vocab-expand-agg":
+        names = list(LISTS)
+        print(f"Zipf s = {d['zipf']['s']}")
+        print("| vocab | classes | " + " | ".join(f"{n}" for n in names) + " | VN kanji |")
+        print("|---|---|" + "---|" * len(names) + "---|")
+        rows = list(d["fixed"].items()) + [(f"VN-ordered {r['classes']:,}", r) for r in d["curve"]
+                                           if r["classes"] in (3000, 3501, 4000, 4500, 4987, 5000, 5631, 6000, 6501,
+                                                               7000, 7501, 8000)]
         for name, r in rows:
-            cells = []
-            for g in groups[:2]:
-                x = r.get(g)
-                cells.append("-" if not x else f"{x['corpus']:.3f} / {x['title_mean']:.3f} / {x['p95']:.3f}")
-            for g in groups[2:]:
-                x = r.get(g)
-                cells.append("-" if not x else f"{x['corpus']:.3f}")
-            print(f"| {name} | {r['classes']:,} | " + " | ".join(cells) + " |")
+            print(f"| {name} | {r['classes']:,} | " + " | ".join(f"{r[n]['chars']:.3f}" for n in names)
+                  + f" | {r['VN']['kanji']:.3f} |")
+        print()
+        print("| kanji | VN order: VN kanji missed / 1,000 | Kanji CSV order | overlap |")
+        print("|---|---|---|---|")
+        for r in d["kanji_csv_check"]["curve"]:
+            print(f"| {r['kanji']:,} | {r['vn_order_missed_per_1000_kanji']:.3f} | "
+                  f"{r['kanji_csv_order_missed_per_1000_kanji']:.3f} | {r['overlap']:.3f} |")
+        print()
+        for s, r in d["sensitivity"].items():
+            print(f"s = {s}: top-4,499 overlap {r['overlap_top4499_kanji']}; "
+                  + ", ".join(f"{n} {v['chars']}" for n, v in r.items() if isinstance(v, dict)))
+        if d.get("names"):
+            print()
+            print("| vocab | VNDB names with a character it cannot emit |")
+            print("|---|---|")
+            for n, r in d["names"]["rows"].items():
+                print(f"| {n} | {r['with_char_outside']:,} of {r['names']:,} ({100 * r['share']:.2f}%) |")
+    elif k == "vocab-expand-tail":
+        print("| vocab | classes | sample corpus | title mean | p50 | p90 | p95 | p99 | max | titles with a miss "
+              "| name share | reserved titles: mean / p95 |")
+        print("|---|---|---|---|---|---|---|---|---|---|---|---|")
+        for n, r in d["vocabs"].items():
+            x, y = r["design"], r["reserved (OOV rate only)"]
+            print(f"| {n} | {r['classes']:,} | {x['corpus']:.3f} | {x['title_mean']:.3f} | {x['p50']:.3f} | "
+                  f"{x['p90']:.3f} | {x['p95']:.3f} | {x['p99']:.3f} | {x['max']:.2f} | {x['titles_with_miss']:.2f} | "
+                  f"{x['name_share']:.2f} | {y['title_mean']:.3f} / {y['p95']:.3f} |")
+    elif k == "vocab-expand-lines":
+        print("| vocab | aggregate model | sample corpus | median title | p95 title |")
+        print("|---|---|---|---|---|")
+        for n, r in d["vocabs"].items():
+            print(f"| {n} | {r['aggregate_model']} | {r.get('sample_corpus', '-')} | {r.get('sample_p50_title', '-')} "
+                  f"| {r.get('sample_p95_title', '-')} |")
     elif k == "vocab-expand-bias":
         print("| source | kept lines | VNs | H15 cannot emit: lines / VNs | FL10 cannot emit: lines / VNs |")
         print("|---|---|---|---|---|")
@@ -906,11 +1149,11 @@ def cmd_tables(args):
             print(f"| {name} | {n:,} | {r.get('kept_vns', r.get('accepted_vns')):,} | {o['H15']['lines']} / "
                   f"{o['H15']['vns']} | {o['FL10']['lines']} / {o['FL10']['vns']} |")
         print()
-        print("| set | lines | H15: per 1,000 lines / chars | FL10: per 1,000 lines / chars |")
-        print("|---|---|---|---|")
+        print("| set | lines | " + " | ".join(f"{v}: per 1,000 lines / chars" for v in d["protected"][
+            next(iter(d["protected"]))] if v != "sha256") + " |")
         for name, r in d["protected"].items():
-            print(f"| {name} | {r['H15']['lines']:,} | {r['H15']['per_1000_lines']} / {r['H15']['per_1000_chars']} | "
-                  f"{r['FL10']['per_1000_lines']} / {r['FL10']['per_1000_chars']} |")
+            print(f"| {name} | {r['H15']['lines']:,} | " + " | ".join(
+                f"{x['per_1000_lines']} / {x['per_1000_chars']}" for v, x in r.items() if v != "sha256") + " |")
     else:
         print(json.dumps(d, ensure_ascii=False, indent=1)[:4000])
 
@@ -920,45 +1163,50 @@ def cmd_tables(args):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    j = sub.add_parser("jiten")
-    j.add_argument("--jiten", required=True)
-    j.add_argument("--exclude", nargs="*", default=None)
-    j.add_argument("--out", required=True)
-    o = sub.add_parser("order")
-    o.add_argument("--chars", required=True)
-    o.add_argument("--vocab", default=str(ROOT / "data" / "vocab.txt"))
-    o.add_argument("--real", nargs="*", default=[str(A / "realplus-v3" / "labels.jsonl"),
-                                                 str(A / "native-frames" / "pool" / "labels.jsonl")])
-    o.add_argument("--min-real", type=int, default=3)
-    o.add_argument("--out", required=True)
-    c = sub.add_parser("curves")
-    c.add_argument("--chars", required=True)
-    c.add_argument("--order", required=True)
-    c.add_argument("--jiten")
-    c.add_argument("--vocab", default=str(ROOT / "data" / "vocab.txt"))
-    c.add_argument("--vocab-file", action="append", help="NAME=FILE: also report this vocab")
-    c.add_argument("--out", required=True)
-    ln = sub.add_parser("lines")
-    ln.add_argument("--chars", required=True)
-    ln.add_argument("--order", required=True)
-    ln.add_argument("--vocab", default=str(ROOT / "data" / "vocab.txt"))
-    ln.add_argument("--vocab-file", action="append")
-    ln.add_argument("--lengths", default=str(A / "realplus-v3" / "labels.jsonl"))
-    ln.add_argument("--set", action="append", help="NAME=FILE: a line set measured directly")
-    ln.add_argument("--out", required=True)
-    b = sub.add_parser("bias")
-    b.add_argument("--vocab", default=str(ROOT / "data" / "vocab.txt"))
-    b.add_argument("--vocab-file", action="append")
-    b.add_argument("--out", required=True)
-    bl = sub.add_parser("blobs")
-    bl.add_argument("--out", required=True)
-    bl.add_argument("--vocab-file", action="append", help="NAME[:WIDTH:BOTTLENECK]=FILE: an exact blob of a vocab")
+    g = sub.add_parser("agg")
+    g.add_argument("--lists", required=True, help="data/jiten_fetch.py's lists directory")
+    g.add_argument("--real", action="append", required=True, help="NAME=labels.jsonl|labels.npz (fits s)")
+    g.add_argument("--vocab", default=str(H15_VOCAB))
+    g.add_argument("--vocab-file", action="append", help="NAME=FILE: also report this vocab")
+    g.add_argument("--vndb-chars", default=str(A / "synth3" / "text" / "vndb_chars.tsv"))
+    g.add_argument("--exclude", nargs="*", default=None)
+    g.add_argument("--out", required=True)
+    g.add_argument("--order-out", required=True)
     bu = sub.add_parser("build")
     bu.add_argument("--order", required=True)
-    bu.add_argument("--vocab", default=str(ROOT / "data" / "vocab.txt"))
     bu.add_argument("--size", type=int, required=True, help="output classes, CTC blank included")
     bu.add_argument("--no-unk", action="store_true")
     bu.add_argument("--out", required=True)
+    sm = sub.add_parser("sample")
+    sm.add_argument("--jiten", required=True)
+    sm.add_argument("--exclude", nargs="*", default=None)
+    sm.add_argument("--out", required=True)
+    tl = sub.add_parser("tail")
+    tl.add_argument("--sample", required=True)
+    tl.add_argument("--order", required=True)
+    tl.add_argument("--of", type=int, default=2162, help="titles of the population the sample is drawn from")
+    tl.add_argument("--vocab-file", action="append")
+    tl.add_argument("--check", nargs="*", help="also run the reserved-title check on these named vocabs")
+    tl.add_argument("--protected", action="append", help="NAME=FILE: count reserved-dominated kanji in this set")
+    tl.add_argument("--out", required=True)
+    ln = sub.add_parser("lines")
+    ln.add_argument("--agg", required=True)
+    ln.add_argument("--tail")
+    ln.add_argument("--lengths", default=str(A / "realplus-v3" / "labels.jsonl"))
+    ln.add_argument("--set", action="append", help="NAME=FILE: a line set for the independence check")
+    ln.add_argument("--out", required=True)
+    b = sub.add_parser("bias")
+    b.add_argument("--vocab", default=str(H15_VOCAB))
+    b.add_argument("--vocab-file", action="append")
+    b.add_argument("--out", required=True)
+    fo = sub.add_parser("fonts")
+    fo.add_argument("--lists", required=True)
+    fo.add_argument("--vocab-file", action="append", required=True)
+    fo.add_argument("--vndb-chars", default=str(A / "synth3" / "text" / "vndb_chars.tsv"))
+    fo.add_argument("--out", required=True)
+    bl = sub.add_parser("blobs")
+    bl.add_argument("--out", required=True)
+    bl.add_argument("--vocab-file", action="append", help="NAME[:WIDTH:BOTTLENECK]=FILE: an exact blob of a vocab")
     pr = sub.add_parser("proof")
     psub = pr.add_subparsers(dest="what", required=True)
     ps = psub.add_parser("strata")
@@ -977,8 +1225,8 @@ def main():
     if args.cmd == "proof":
         {"strata": cmd_proof_strata, "probe": cmd_proof_probe}[args.what](args)
         return
-    {"jiten": cmd_jiten, "order": cmd_order, "curves": cmd_curves, "lines": cmd_lines, "bias": cmd_bias,
-     "blobs": cmd_blobs, "build": cmd_build, "tables": cmd_tables}[args.cmd](args)
+    {"agg": cmd_agg, "build": cmd_build, "sample": cmd_sample, "tail": cmd_tail, "lines": cmd_lines,
+     "bias": cmd_bias, "fonts": cmd_fonts, "blobs": cmd_blobs, "tables": cmd_tables}[args.cmd](args)
 
 
 if __name__ == "__main__":

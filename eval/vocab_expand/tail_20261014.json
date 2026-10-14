@@ -1,0 +1,1180 @@
+{
+ "kind": "vocab-expand-tail",
+ "schema": 1,
+ "sample": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/agg/sample_vn.npz",
+  "sha256": "9da04796a4050049ac2b38e8789bdf64ad0a9f5e22c0ccdfeb6ba7b14c768ed7",
+  "decks": 2162,
+  "of": 2162,
+  "design_titles": 1736,
+  "reserved_titles": 426,
+  "note": "a sample: the VN decks fetched before the owner stopped the per-deck fetch (10:00Z); word-form basis (each form's characters x its occurrences)"
+ },
+ "order": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/agg/order.json",
+  "sha256": "9ddafa3460c1d9fc8bfef89f2a221b8c8e360596491bc789c2f9c5b966b8c9f9"
+ },
+ "vocabs": {
+  "FL10": {
+   "classes": 3501,
+   "design": {
+    "titles": 1736,
+    "corpus": 1.2424,
+    "title_mean": 1.1741,
+    "p50": 0.8382,
+    "p90": 2.5764,
+    "p95": 3.4015,
+    "p99": 5.3075,
+    "max": 8.797,
+    "titles_with_miss": 0.9942,
+    "name_share": 0.0921,
+    "content_basis": {
+     "corpus": 1.0697,
+     "p50": 0.7252,
+     "p90": 2.1834,
+     "p95": 2.866,
+     "p99": 4.4987
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 1.1998,
+    "title_mean": 1.1669,
+    "p50": 0.8499,
+    "p90": 2.5554,
+    "p95": 3.4497,
+    "p99": 5.2806,
+    "max": 8.668,
+    "titles_with_miss": 1.0,
+    "name_share": 0.102,
+    "content_basis": {
+     "corpus": 1.0331,
+     "p50": 0.7347,
+     "p90": 2.1435,
+     "p95": 2.7922,
+     "p99": 4.3452
+    }
+   },
+   "worst_design_titles": [
+    [
+     "Pritanism ～プリたんの戦火の勇気～",
+     8.797
+    ],
+    [
+     "真・恋姫†英雄譚5～乙女艶乱☆三国志演義［魏］～",
+     7.991
+    ],
+    [
+     "鬼哭街 The Cyber Slayer",
+     7.197
+    ],
+    [
+     "Maggot baits",
+     7.131
+    ],
+    [
+     "鏖呪ノ嶼",
+     7.01
+    ]
+   ]
+  },
+  "H15": {
+   "classes": 5355,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0412,
+    "title_mean": 0.0366,
+    "p50": 0.0059,
+    "p90": 0.0492,
+    "p95": 0.1174,
+    "p99": 0.7254,
+    "max": 3.07,
+    "titles_with_miss": 0.7091,
+    "name_share": 0.4841,
+    "content_basis": {
+     "corpus": 0.0354,
+     "p50": 0.0051,
+     "p90": 0.0423,
+     "p95": 0.1036,
+     "p99": 0.6265
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0392,
+    "title_mean": 0.0336,
+    "p50": 0.0056,
+    "p90": 0.0561,
+    "p95": 0.155,
+    "p99": 0.6411,
+    "max": 1.373,
+    "titles_with_miss": 0.7113,
+    "name_share": 0.4878,
+    "content_basis": {
+     "corpus": 0.0338,
+     "p50": 0.0049,
+     "p90": 0.0484,
+     "p95": 0.131,
+     "p99": 0.5466
+    }
+   },
+   "worst_design_titles": [
+    [
+     "夏空あすてりずむ",
+     3.07
+    ],
+    [
+     "沙耶の唄",
+     2.622
+    ],
+    [
+     "真・恋姫†英雄譚5～乙女艶乱☆三国志演義［魏］～",
+     2.311
+    ],
+    [
+     "少女神域∽少女天獄 -The Garden of Fifth Zoa-",
+     1.991
+    ],
+    [
+     "漏れなつ。",
+     1.828
+    ]
+   ]
+  },
+  "proof (Small)": {
+   "classes": 4987,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0412,
+    "title_mean": 0.0367,
+    "p50": 0.0059,
+    "p90": 0.0492,
+    "p95": 0.1174,
+    "p99": 0.7254,
+    "max": 3.07,
+    "titles_with_miss": 0.7091,
+    "name_share": 0.4838,
+    "content_basis": {
+     "corpus": 0.0355,
+     "p50": 0.0051,
+     "p90": 0.0423,
+     "p95": 0.1036,
+     "p99": 0.6265
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0392,
+    "title_mean": 0.0337,
+    "p50": 0.0056,
+    "p90": 0.0561,
+    "p95": 0.155,
+    "p99": 0.6411,
+    "max": 1.373,
+    "titles_with_miss": 0.7113,
+    "name_share": 0.4879,
+    "content_basis": {
+     "corpus": 0.0338,
+     "p50": 0.0049,
+     "p90": 0.0484,
+     "p95": 0.131,
+     "p99": 0.5466
+    }
+   },
+   "worst_design_titles": [
+    [
+     "夏空あすてりずむ",
+     3.07
+    ],
+    [
+     "沙耶の唄",
+     2.622
+    ],
+    [
+     "真・恋姫†英雄譚5～乙女艶乱☆三国志演義［魏］～",
+     2.311
+    ],
+    [
+     "少女神域∽少女天獄 -The Garden of Fifth Zoa-",
+     1.991
+    ],
+    [
+     "漏れなつ。",
+     1.828
+    ]
+   ]
+  },
+  "Small next (vn_4987)": {
+   "classes": 4987,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0027,
+    "title_mean": 0.0028,
+    "p50": 0.0,
+    "p90": 0.0027,
+    "p95": 0.0089,
+    "p99": 0.0564,
+    "max": 0.374,
+    "titles_with_miss": 0.1417,
+    "name_share": 0.609,
+    "content_basis": {
+     "corpus": 0.0024,
+     "p50": 0.0,
+     "p90": 0.0024,
+     "p95": 0.0078,
+     "p99": 0.0491
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0018,
+    "title_mean": 0.0028,
+    "p50": 0.0,
+    "p90": 0.0028,
+    "p95": 0.0086,
+    "p99": 0.0697,
+    "max": 0.181,
+    "titles_with_miss": 0.1714,
+    "name_share": 0.2846,
+    "content_basis": {
+     "corpus": 0.0015,
+     "p50": 0.0,
+     "p90": 0.0025,
+     "p95": 0.0075,
+     "p99": 0.0591
+    }
+   },
+   "worst_design_titles": [
+    [
+     "十三支演義~偃月三国伝~",
+     0.374
+    ],
+    [
+     "ときめきメモリアル",
+     0.315
+    ],
+    [
+     "しごカレ ～エッチな女子大生とドキ×２ラブレッスン！！～",
+     0.233
+    ],
+    [
+     "幻月のパンドオラ",
+     0.19
+    ],
+    [
+     "スタディ§ステディ2",
+     0.177
+    ]
+   ]
+  },
+  "Normal (vn_5631)": {
+   "classes": 5631,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.01,
+    "titles_with_miss": 0.0023,
+    "name_share": 0.3333,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.002,
+    "titles_with_miss": 0.0047,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "worst_design_titles": [
+    [
+     "どんちゃんがきゅ～",
+     0.01
+    ],
+    [
+     "あいかぎ～ひだまりと彼女の部屋着～",
+     0.003
+    ],
+    [
+     "BALDR BRINGER",
+     0.002
+    ],
+    [
+     "輝光翼戦記 天空のユミナ",
+     0.001
+    ],
+    [
+     "MUSICUS!",
+     0.0
+    ]
+   ]
+  },
+  "Large (vn_6459)": {
+   "classes": 6459,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "titles_with_miss": 0.0,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "titles_with_miss": 0.0,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "worst_design_titles": [
+    [
+     "巨乳ファンタジー2",
+     0.0
+    ],
+    [
+     "ユズリハの詩 -異能力組織犯罪対策部 特殊機動隊 第二課-",
+     0.0
+    ],
+    [
+     "古色迷宮輪舞曲  ～HISTOIRE DE DESTIN～",
+     0.0
+    ],
+    [
+     "俺(♂)はメイド(♀)にさせられて、可憐なキューピッドに弄ばれる",
+     0.0
+    ],
+    [
+     "ドラクリウス",
+     0.0
+    ]
+   ]
+  },
+  "VN 3000": {
+   "classes": 3000,
+   "design": {
+    "titles": 1736,
+    "corpus": 1.397,
+    "title_mean": 1.3163,
+    "p50": 0.6937,
+    "p90": 3.1996,
+    "p95": 4.7061,
+    "p99": 8.3423,
+    "max": 12.909,
+    "titles_with_miss": 0.9988,
+    "name_share": 0.4404,
+    "content_basis": {
+     "corpus": 1.2027,
+     "p50": 0.5991,
+     "p90": 2.7934,
+     "p95": 4.0729,
+     "p99": 7.1294
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 1.4197,
+    "title_mean": 1.3491,
+    "p50": 0.7087,
+    "p90": 3.1211,
+    "p95": 4.3039,
+    "p99": 8.3066,
+    "max": 11.693,
+    "titles_with_miss": 1.0,
+    "name_share": 0.4646,
+    "content_basis": {
+     "corpus": 1.2225,
+     "p50": 0.6146,
+     "p90": 2.7545,
+     "p95": 3.6242,
+     "p99": 7.0358
+    }
+   },
+   "worst_design_titles": [
+    [
+     "刹那にかける恋はなびSS 小鞠とワンルーム",
+     12.909
+    ],
+    [
+     "フリフレ2",
+     12.456
+    ],
+    [
+     "エルフを狩るモノたちⅡ",
+     12.234
+    ],
+    [
+     "泡沫のユークロニア -trail-",
+     11.079
+    ],
+    [
+     "十三支演義～偃月三国伝～２",
+     11.006
+    ]
+   ]
+  },
+  "VN 3501": {
+   "classes": 3501,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.4797,
+    "title_mean": 0.4215,
+    "p50": 0.1071,
+    "p90": 1.1152,
+    "p95": 1.9747,
+    "p99": 4.4493,
+    "max": 12.07,
+    "titles_with_miss": 0.9643,
+    "name_share": 0.5104,
+    "content_basis": {
+     "corpus": 0.413,
+     "p50": 0.0936,
+     "p90": 0.97,
+     "p95": 1.7417,
+     "p99": 3.902
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.4826,
+    "title_mean": 0.4294,
+    "p50": 0.112,
+    "p90": 1.135,
+    "p95": 1.7923,
+    "p99": 4.1995,
+    "max": 8.175,
+    "titles_with_miss": 0.9789,
+    "name_share": 0.5288,
+    "content_basis": {
+     "corpus": 0.4155,
+     "p50": 0.0978,
+     "p90": 0.9964,
+     "p95": 1.5919,
+     "p99": 3.3837
+    }
+   },
+   "worst_design_titles": [
+    [
+     "フリフレ2",
+     12.07
+    ],
+    [
+     "真・恋姫†英雄譚5～乙女艶乱☆三国志演義［魏］～",
+     9.087
+    ],
+    [
+     "十三支演義~偃月三国伝~",
+     7.748
+    ],
+    [
+     "十三支演義～偃月三国伝～２",
+     7.633
+    ],
+    [
+     "鬼哭街 The Cyber Slayer",
+     6.935
+    ]
+   ]
+  },
+  "VN 4000": {
+   "classes": 4000,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.114,
+    "title_mean": 0.1016,
+    "p50": 0.0094,
+    "p90": 0.1887,
+    "p95": 0.471,
+    "p99": 2.0273,
+    "max": 4.225,
+    "titles_with_miss": 0.784,
+    "name_share": 0.5234,
+    "content_basis": {
+     "corpus": 0.0982,
+     "p50": 0.0081,
+     "p90": 0.1605,
+     "p95": 0.4167,
+     "p99": 1.7583
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.12,
+    "title_mean": 0.1241,
+    "p50": 0.0095,
+    "p90": 0.1938,
+    "p95": 0.631,
+    "p99": 1.9709,
+    "max": 8.175,
+    "titles_with_miss": 0.7793,
+    "name_share": 0.5397,
+    "content_basis": {
+     "corpus": 0.1033,
+     "p50": 0.0081,
+     "p90": 0.1685,
+     "p95": 0.5548,
+     "p99": 1.5947
+    }
+   },
+   "worst_design_titles": [
+    [
+     "沙耶の唄",
+     4.225
+    ],
+    [
+     "エーデルヴァイス",
+     3.899
+    ],
+    [
+     "GUN-KATANA - Non-Human-Killer",
+     3.63
+    ],
+    [
+     "真・恋姫†英雄譚5～乙女艶乱☆三国志演義［魏］～",
+     3.348
+    ],
+    [
+     "つくとり",
+     3.302
+    ]
+   ]
+  },
+  "VN 4987": {
+   "classes": 4987,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0027,
+    "title_mean": 0.0028,
+    "p50": 0.0,
+    "p90": 0.0027,
+    "p95": 0.0089,
+    "p99": 0.0564,
+    "max": 0.374,
+    "titles_with_miss": 0.1417,
+    "name_share": 0.609,
+    "content_basis": {
+     "corpus": 0.0024,
+     "p50": 0.0,
+     "p90": 0.0024,
+     "p95": 0.0078,
+     "p99": 0.0491
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0018,
+    "title_mean": 0.0028,
+    "p50": 0.0,
+    "p90": 0.0028,
+    "p95": 0.0086,
+    "p99": 0.0697,
+    "max": 0.181,
+    "titles_with_miss": 0.1714,
+    "name_share": 0.2846,
+    "content_basis": {
+     "corpus": 0.0015,
+     "p50": 0.0,
+     "p90": 0.0025,
+     "p95": 0.0075,
+     "p99": 0.0591
+    }
+   },
+   "worst_design_titles": [
+    [
+     "十三支演義~偃月三国伝~",
+     0.374
+    ],
+    [
+     "ときめきメモリアル",
+     0.315
+    ],
+    [
+     "しごカレ ～エッチな女子大生とドキ×２ラブレッスン！！～",
+     0.233
+    ],
+    [
+     "幻月のパンドオラ",
+     0.19
+    ],
+    [
+     "スタディ§ステディ2",
+     0.177
+    ]
+   ]
+  },
+  "VN 5631": {
+   "classes": 5631,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.01,
+    "titles_with_miss": 0.0023,
+    "name_share": 0.3333,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.002,
+    "titles_with_miss": 0.0047,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "worst_design_titles": [
+    [
+     "どんちゃんがきゅ～",
+     0.01
+    ],
+    [
+     "あいかぎ～ひだまりと彼女の部屋着～",
+     0.003
+    ],
+    [
+     "BALDR BRINGER",
+     0.002
+    ],
+    [
+     "輝光翼戦記 天空のユミナ",
+     0.001
+    ],
+    [
+     "MUSICUS!",
+     0.0
+    ]
+   ]
+  },
+  "VN 6459": {
+   "classes": 6459,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "titles_with_miss": 0.0,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "titles_with_miss": 0.0,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "worst_design_titles": [
+    [
+     "巨乳ファンタジー2",
+     0.0
+    ],
+    [
+     "ユズリハの詩 -異能力組織犯罪対策部 特殊機動隊 第二課-",
+     0.0
+    ],
+    [
+     "古色迷宮輪舞曲  ～HISTOIRE DE DESTIN～",
+     0.0
+    ],
+    [
+     "俺(♂)はメイド(♀)にさせられて、可憐なキューピッドに弄ばれる",
+     0.0
+    ],
+    [
+     "ドラクリウス",
+     0.0
+    ]
+   ]
+  },
+  "VN 7501": {
+   "classes": 7501,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "titles_with_miss": 0.0,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "titles_with_miss": 0.0,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "worst_design_titles": [
+    [
+     "巨乳ファンタジー2",
+     0.0
+    ],
+    [
+     "ユズリハの詩 -異能力組織犯罪対策部 特殊機動隊 第二課-",
+     0.0
+    ],
+    [
+     "古色迷宮輪舞曲  ～HISTOIRE DE DESTIN～",
+     0.0
+    ],
+    [
+     "俺(♂)はメイド(♀)にさせられて、可憐なキューピッドに弄ばれる",
+     0.0
+    ],
+    [
+     "ドラクリウス",
+     0.0
+    ]
+   ]
+  },
+  "VN 8001": {
+   "classes": 8001,
+   "design": {
+    "titles": 1736,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "titles_with_miss": 0.0,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "reserved (OOV rate only)": {
+    "titles": 426,
+    "corpus": 0.0,
+    "title_mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "titles_with_miss": 0.0,
+    "name_share": 0.0,
+    "content_basis": {
+     "corpus": 0.0,
+     "p50": 0.0,
+     "p90": 0.0,
+     "p95": 0.0,
+     "p99": 0.0
+    }
+   },
+   "worst_design_titles": [
+    [
+     "巨乳ファンタジー2",
+     0.0
+    ],
+    [
+     "ユズリハの詩 -異能力組織犯罪対策部 特殊機動隊 第二課-",
+     0.0
+    ],
+    [
+     "古色迷宮輪舞曲  ～HISTOIRE DE DESTIN～",
+     0.0
+    ],
+    [
+     "俺(♂)はメイド(♀)にさせられて、可憐なキューピッドに弄ばれる",
+     0.0
+    ],
+    [
+     "ドラクリウス",
+     0.0
+    ]
+   ]
+  }
+ },
+ "wordform_per_content_char": 0.8609,
+ "reserved_dominated": {
+  "proof (Small)": {
+   "kanji_in_vocab_seen_in_sample": 4499,
+   "80pct_from_reserved": 67,
+   "examples": "磐孟蓼絃諷壽惟霖竺彌驍輛巽睿躅躑蕋聯疋齊豁穎倚喙襠蟆翫寶崔瀋",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "Small next (vn_4987)": {
+   "kanji_in_vocab_seen_in_sample": 4499,
+   "80pct_from_reserved": 53,
+   "examples": "磐孟蓼絃諷壽惟滉霖竺彌驍輛巽鎹睿躑躅蕋聯疋亰齊豁穎倚喙襠繧繝",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "Normal (vn_5631)": {
+   "kanji_in_vocab_seen_in_sample": 5143,
+   "80pct_from_reserved": 138,
+   "examples": "磐孟蓼絃諷壽惟滉霖竺彌驍輛巽鎹睿躑躅蕋聯疋亰齊豁穎倚喙襠繧繝",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "Large (vn_6459)": {
+   "kanji_in_vocab_seen_in_sample": 5149,
+   "80pct_from_reserved": 140,
+   "examples": "磐孟蓼絃諷壽惟滉霖竺彌驍輛巽鎹睿躑躅蕋聯疋亰齊豁穎倚喙襠繧繝",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "VN 3000": {
+   "kanji_in_vocab_seen_in_sample": 2512,
+   "80pct_from_reserved": 0,
+   "examples": "",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "VN 3501": {
+   "kanji_in_vocab_seen_in_sample": 3013,
+   "80pct_from_reserved": 1,
+   "examples": "磐",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "VN 4000": {
+   "kanji_in_vocab_seen_in_sample": 3512,
+   "80pct_from_reserved": 8,
+   "examples": "磐孟蓼絃惟竺彌聯",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "VN 4987": {
+   "kanji_in_vocab_seen_in_sample": 4499,
+   "80pct_from_reserved": 53,
+   "examples": "磐孟蓼絃諷壽惟滉霖竺彌驍輛巽鎹睿躑躅蕋聯疋亰齊豁穎倚喙襠繧繝",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "VN 5631": {
+   "kanji_in_vocab_seen_in_sample": 5143,
+   "80pct_from_reserved": 138,
+   "examples": "磐孟蓼絃諷壽惟滉霖竺彌驍輛巽鎹睿躑躅蕋聯疋亰齊豁穎倚喙襠繧繝",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "VN 6459": {
+   "kanji_in_vocab_seen_in_sample": 5149,
+   "80pct_from_reserved": 140,
+   "examples": "磐孟蓼絃諷壽惟滉霖竺彌驍輛巽鎹睿躑躅蕋聯疋亰齊豁穎倚喙襠繧繝",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "VN 7501": {
+   "kanji_in_vocab_seen_in_sample": 5149,
+   "80pct_from_reserved": 140,
+   "examples": "磐孟蓼絃諷壽惟滉霖竺彌驍輛巽鎹睿躑躅蕋聯疋亰齊豁穎倚喙襠繧繝",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  },
+  "VN 8001": {
+   "kanji_in_vocab_seen_in_sample": 5149,
+   "80pct_from_reserved": 140,
+   "examples": "磐孟蓼絃諷壽惟滉霖竺彌驍輛巽鎹睿躑躅蕋聯疋亰齊豁穎倚喙襠繧繝",
+   "protected_chars": {
+    "vita-test": [
+     0,
+     2564
+    ],
+    "psp-test": [
+     0,
+     2510
+    ],
+    "CLANNAD refs": [
+     0,
+     35694
+    ],
+    "devnative": [
+     0,
+     7518
+    ]
+   }
+  }
+ }
+}

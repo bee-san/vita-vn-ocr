@@ -1,0 +1,2654 @@
+{
+ "kind": "vocab-expand-agg",
+ "schema": 1,
+ "inputs": {
+  "lists": {
+   "VisualNovel": {
+    "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=VisualNovel&downloadType=csv",
+    "sha256": "043fd4b24b62089586159edb23c122f5da58cd82a3b59b9452a737117c427372",
+    "bytes": 8846072,
+    "rows": 249118,
+    "retrieved": "2026-10-14T06:33:26Z",
+    "http_date": "Wed, 14 Oct 2026 06:33:26 GMT",
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/jiten/lists/jiten_freq_VisualNovel.csv"
+   },
+   "Novel": {
+    "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=Novel&downloadType=csv",
+    "sha256": "c33ce86d72b749a083bc3b79d76bf2eb652d0ffb1a708a5710e768404162b007",
+    "bytes": 11644252,
+    "rows": 327635,
+    "retrieved": "2026-10-14T06:33:07Z",
+    "http_date": "Wed, 14 Oct 2026 06:33:07 GMT",
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/jiten/lists/jiten_freq_Novel.csv"
+   },
+   "Anime": {
+    "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=Anime&downloadType=csv",
+    "sha256": "5b8a6bb73fbd96050f53ed6a9b5d46a51f940ae841cf89c8ce1db39da4b98c59",
+    "bytes": 7404816,
+    "rows": 211920,
+    "retrieved": "2026-10-14T06:32:47Z",
+    "http_date": "Wed, 14 Oct 2026 06:32:47 GMT",
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/jiten/lists/jiten_freq_Anime.csv"
+   },
+   "Drama": {
+    "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=Drama&downloadType=csv",
+    "sha256": "da20fcc4f0df5d7a5ff0aacfbad1f7c29629583ff6b3ff8ff0c497cef450e13c",
+    "bytes": 7802753,
+    "rows": 222564,
+    "retrieved": "2026-10-14T06:32:54Z",
+    "http_date": "Wed, 14 Oct 2026 06:32:54 GMT",
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/jiten/lists/jiten_freq_Drama.csv"
+   },
+   "VideoGame": {
+    "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=VideoGame&downloadType=csv",
+    "sha256": "35932f35a54d2218d54a90bfec4c495e862066a4bdbb9a6ad8945bf8b22ece5c",
+    "bytes": 6563105,
+    "rows": 186475,
+    "retrieved": "2026-10-14T06:33:20Z",
+    "http_date": "Wed, 14 Oct 2026 06:33:20 GMT",
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/jiten/lists/jiten_freq_VideoGame.csv"
+   },
+   "global": {
+    "url": "https://api.jiten.moe/api/frequency-list/download?downloadType=csv",
+    "sha256": "aff679f1ae21dbf7b1c3525c2fd0389d90f6837b4a62b79e1a4ac4a577081004",
+    "bytes": 16248480,
+    "rows": 456692,
+    "retrieved": "2026-10-14T06:32:41Z",
+    "http_date": "Wed, 14 Oct 2026 06:32:41 GMT",
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/jiten/lists/jiten_freq_global.csv"
+   },
+   "kanji": {
+    "url": "https://api.jiten.moe/api/frequency-list/download-kanji?downloadType=csv",
+    "sha256": "bdb0eaef29e5b7bdf52efaa91376dba8935b860a57a56d7ae2203138de918c78",
+    "bytes": 109431,
+    "rows": 11049,
+    "retrieved": "2026-10-14T06:33:59Z",
+    "http_date": "Wed, 14 Oct 2026 06:33:59 GMT",
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/jiten/lists/jiten_freq_kanji.csv"
+   }
+  },
+  "real": {
+   "realplus_v3": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/inputs/realplus_v3_labels_20261014.jsonl",
+    "sha256": "6026e882afd6f15b7827c28e196082ef71d84e944f54e5b4678e3990e3f9e27b",
+    "lines": 61169,
+    "dropped_reserved": 45
+   },
+   "native_frames": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/inputs/native_frames_labels_20261014.jsonl",
+    "sha256": "67e485a02e1a91f350b92139fed2435dec1a63ca3f251214bdebeac18cc39263",
+    "lines": 1828,
+    "dropped_reserved": 0
+   },
+   "teacher_train": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_train.npz",
+    "sha256": "3c27c057af9a41574a7704d04599d9d6220faea525536d0d6c6023301ff852df",
+    "lines": 9121,
+    "dropped_reserved": 255
+   },
+   "real_train": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realdata/real_train.npz",
+    "sha256": "10f8b68f99357d6db0d5813fbabf3cd3ac9e154fee2fe10c6b03605950f91324",
+    "lines": 6797,
+    "dropped_reserved": 220
+   }
+  },
+  "reserved_vns": 446,
+  "vocab_txt": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b",
+  "order": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/agg/order_check.json",
+   "sha256": "9ddafa3460c1d9fc8bfef89f2a221b8c8e360596491bc789c2f9c5b966b8c9f9"
+  }
+ },
+ "licence": "Jiten frequency lists, CC BY-SA 4.0 (https://jiten.moe/frequency-dictionaries); derived counts only",
+ "zipf": {
+  "s": 1.0,
+  "kl_curve": [
+   [
+    0.7,
+    0.20552
+   ],
+   [
+    0.75,
+    0.19431
+   ],
+   [
+    0.8,
+    0.18396
+   ],
+   [
+    0.85,
+    0.17502
+   ],
+   [
+    0.9,
+    0.16816
+   ],
+   [
+    0.95,
+    0.16409
+   ],
+   [
+    1.0,
+    0.16358
+   ],
+   [
+    1.05,
+    0.16739
+   ],
+   [
+    1.1,
+    0.17628
+   ],
+   [
+    1.15,
+    0.19091
+   ],
+   [
+    1.2,
+    0.21181
+   ],
+   [
+    1.25,
+    0.23942
+   ],
+   [
+    1.3,
+    0.27397
+   ],
+   [
+    1.35,
+    0.31557
+   ],
+   [
+    1.4,
+    0.36417
+   ]
+  ],
+  "real_kanji": 237419
+ },
+ "lists": {
+  "VN": {
+   "rows": 249118,
+   "distinct_chars": 5375,
+   "kanji": 5144
+  },
+  "Novel": {
+   "rows": 327635,
+   "distinct_chars": 5961,
+   "kanji": 5727
+  },
+  "Anime": {
+   "rows": 211920,
+   "distinct_chars": 4853,
+   "kanji": 4625
+  },
+  "Drama": {
+   "rows": 222564,
+   "distinct_chars": 4728,
+   "kanji": 4495
+  },
+  "Video game": {
+   "rows": 186475,
+   "distinct_chars": 5406,
+   "kanji": 5184
+  },
+  "Global": {
+   "rows": 456692,
+   "distinct_chars": 6188,
+   "kanji": 5951
+  }
+ },
+ "kanji_csv": {
+  "kanji": 11049
+ },
+ "order_counts": {
+  "vn_list": 5144,
+  "kanji_csv_only": 5906,
+  "kanji_csv_only_not_jis": 2639,
+  "kanji_csv_only_japanese": 827,
+  "vn_list_not_jis": "髙閒內悅",
+  "vocab_txt_only": 0
+ },
+ "fixed": {
+  "FL10": {
+   "classes": 3501,
+   "VN": {
+    "chars": 2.2813,
+    "kanji": 7.3063
+   },
+   "Novel": {
+    "chars": 3.1352,
+    "kanji": 9.0521
+   },
+   "Anime": {
+    "chars": 1.3344,
+    "kanji": 4.6731
+   },
+   "Drama": {
+    "chars": 1.2566,
+    "kanji": 3.9725
+   },
+   "Video game": {
+    "chars": 1.7987,
+    "kanji": 6.1681
+   },
+   "Global": {
+    "chars": 2.6285,
+    "kanji": 8.1355
+   }
+  },
+  "H15": {
+   "classes": 5355,
+   "VN": {
+    "chars": 0.1823,
+    "kanji": 0.5838
+   },
+   "Novel": {
+    "chars": 0.5229,
+    "kanji": 1.5097
+   },
+   "Anime": {
+    "chars": 0.1126,
+    "kanji": 0.3945
+   },
+   "Drama": {
+    "chars": 0.0989,
+    "kanji": 0.3126
+   },
+   "Video game": {
+    "chars": 0.2385,
+    "kanji": 0.818
+   },
+   "Global": {
+    "chars": 0.3752,
+    "kanji": 1.1612
+   }
+  },
+  "proof (Small)": {
+   "classes": 4987,
+   "VN": {
+    "chars": 0.1874,
+    "kanji": 0.6002
+   },
+   "Novel": {
+    "chars": 0.6048,
+    "kanji": 1.7462
+   },
+   "Anime": {
+    "chars": 0.1295,
+    "kanji": 0.4537
+   },
+   "Drama": {
+    "chars": 0.1162,
+    "kanji": 0.3675
+   },
+   "Video game": {
+    "chars": 0.2721,
+    "kanji": 0.933
+   },
+   "Global": {
+    "chars": 0.442,
+    "kanji": 1.3681
+   }
+  },
+  "Small next (vn_4987)": {
+   "classes": 4987,
+   "VN": {
+    "chars": 0.1066,
+    "kanji": 0.3415
+   },
+   "Novel": {
+    "chars": 0.389,
+    "kanji": 1.123
+   },
+   "Anime": {
+    "chars": 0.1106,
+    "kanji": 0.3872
+   },
+   "Drama": {
+    "chars": 0.1038,
+    "kanji": 0.328
+   },
+   "Video game": {
+    "chars": 0.2347,
+    "kanji": 0.8047
+   },
+   "Global": {
+    "chars": 0.3393,
+    "kanji": 1.0501
+   }
+  },
+  "Normal (vn_5631)": {
+   "classes": 5631,
+   "VN": {
+    "chars": 0.0002,
+    "kanji": 0.0005
+   },
+   "Novel": {
+    "chars": 0.1837,
+    "kanji": 0.5304
+   },
+   "Anime": {
+    "chars": 0.0385,
+    "kanji": 0.1349
+   },
+   "Drama": {
+    "chars": 0.0347,
+    "kanji": 0.1097
+   },
+   "Video game": {
+    "chars": 0.0842,
+    "kanji": 0.2888
+   },
+   "Global": {
+    "chars": 0.1508,
+    "kanji": 0.4667
+   }
+  },
+  "Large (vn_6459)": {
+   "classes": 6459,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  }
+ },
+ "curve": [
+  {
+   "classes": 3000,
+   "VN": {
+    "chars": 2.868,
+    "kanji": 9.1853
+   },
+   "Novel": {
+    "chars": 4.5787,
+    "kanji": 13.2199
+   },
+   "Anime": {
+    "chars": 2.2265,
+    "kanji": 7.7976
+   },
+   "Drama": {
+    "chars": 2.4953,
+    "kanji": 7.888
+   },
+   "Video game": {
+    "chars": 2.5384,
+    "kanji": 8.7049
+   },
+   "Global": {
+    "chars": 4.0989,
+    "kanji": 12.6869
+   }
+  },
+  {
+   "classes": 3100,
+   "VN": {
+    "chars": 2.4439,
+    "kanji": 7.827
+   },
+   "Novel": {
+    "chars": 4.0041,
+    "kanji": 11.5607
+   },
+   "Anime": {
+    "chars": 1.8961,
+    "kanji": 6.6402
+   },
+   "Drama": {
+    "chars": 2.1091,
+    "kanji": 6.6671
+   },
+   "Video game": {
+    "chars": 2.175,
+    "kanji": 7.4586
+   },
+   "Global": {
+    "chars": 3.5649,
+    "kanji": 11.0343
+   }
+  },
+  {
+   "classes": 3200,
+   "VN": {
+    "chars": 2.0833,
+    "kanji": 6.672
+   },
+   "Novel": {
+    "chars": 3.4902,
+    "kanji": 10.0769
+   },
+   "Anime": {
+    "chars": 1.6092,
+    "kanji": 5.6355
+   },
+   "Drama": {
+    "chars": 1.7523,
+    "kanji": 5.5392
+   },
+   "Video game": {
+    "chars": 1.8589,
+    "kanji": 6.3748
+   },
+   "Global": {
+    "chars": 3.078,
+    "kanji": 9.5271
+   }
+  },
+  {
+   "classes": 3300,
+   "VN": {
+    "chars": 1.7762,
+    "kanji": 5.6884
+   },
+   "Novel": {
+    "chars": 3.0791,
+    "kanji": 8.8901
+   },
+   "Anime": {
+    "chars": 1.38,
+    "kanji": 4.8329
+   },
+   "Drama": {
+    "chars": 1.462,
+    "kanji": 4.6217
+   },
+   "Video game": {
+    "chars": 1.6205,
+    "kanji": 5.5573
+   },
+   "Global": {
+    "chars": 2.6966,
+    "kanji": 8.3466
+   }
+  },
+  {
+   "classes": 3400,
+   "VN": {
+    "chars": 1.5142,
+    "kanji": 4.8493
+   },
+   "Novel": {
+    "chars": 2.7232,
+    "kanji": 7.8626
+   },
+   "Anime": {
+    "chars": 1.1753,
+    "kanji": 4.116
+   },
+   "Drama": {
+    "chars": 1.2447,
+    "kanji": 3.9347
+   },
+   "Video game": {
+    "chars": 1.3912,
+    "kanji": 4.7709
+   },
+   "Global": {
+    "chars": 2.3739,
+    "kanji": 7.3477
+   }
+  },
+  {
+   "classes": 3500,
+   "VN": {
+    "chars": 1.2879,
+    "kanji": 4.1246
+   },
+   "Novel": {
+    "chars": 2.3428,
+    "kanji": 6.7643
+   },
+   "Anime": {
+    "chars": 0.998,
+    "kanji": 3.4951
+   },
+   "Drama": {
+    "chars": 1.0427,
+    "kanji": 3.2961
+   },
+   "Video game": {
+    "chars": 1.2054,
+    "kanji": 4.1336
+   },
+   "Global": {
+    "chars": 2.0473,
+    "kanji": 6.337
+   }
+  },
+  {
+   "classes": 3501,
+   "VN": {
+    "chars": 1.2858,
+    "kanji": 4.118
+   },
+   "Novel": {
+    "chars": 2.3402,
+    "kanji": 6.7567
+   },
+   "Anime": {
+    "chars": 0.9969,
+    "kanji": 3.4912
+   },
+   "Drama": {
+    "chars": 1.0398,
+    "kanji": 3.2869
+   },
+   "Video game": {
+    "chars": 1.2031,
+    "kanji": 4.1258
+   },
+   "Global": {
+    "chars": 2.0449,
+    "kanji": 6.3293
+   }
+  },
+  {
+   "classes": 3600,
+   "VN": {
+    "chars": 1.0943,
+    "kanji": 3.5045
+   },
+   "Novel": {
+    "chars": 2.0702,
+    "kanji": 5.9771
+   },
+   "Anime": {
+    "chars": 0.8438,
+    "kanji": 2.9549
+   },
+   "Drama": {
+    "chars": 0.8741,
+    "kanji": 2.7633
+   },
+   "Video game": {
+    "chars": 1.0608,
+    "kanji": 3.6379
+   },
+   "Global": {
+    "chars": 1.7883,
+    "kanji": 5.5351
+   }
+  },
+  {
+   "classes": 3700,
+   "VN": {
+    "chars": 0.929,
+    "kanji": 2.9753
+   },
+   "Novel": {
+    "chars": 1.8057,
+    "kanji": 5.2135
+   },
+   "Anime": {
+    "chars": 0.7218,
+    "kanji": 2.5277
+   },
+   "Drama": {
+    "chars": 0.7392,
+    "kanji": 2.3368
+   },
+   "Video game": {
+    "chars": 0.926,
+    "kanji": 3.1756
+   },
+   "Global": {
+    "chars": 1.5627,
+    "kanji": 4.837
+   }
+  },
+  {
+   "classes": 3800,
+   "VN": {
+    "chars": 0.7885,
+    "kanji": 2.5252
+   },
+   "Novel": {
+    "chars": 1.5948,
+    "kanji": 4.6047
+   },
+   "Anime": {
+    "chars": 0.6147,
+    "kanji": 2.1529
+   },
+   "Drama": {
+    "chars": 0.6238,
+    "kanji": 1.9718
+   },
+   "Video game": {
+    "chars": 0.8171,
+    "kanji": 2.8021
+   },
+   "Global": {
+    "chars": 1.3724,
+    "kanji": 4.248
+   }
+  },
+  {
+   "classes": 3900,
+   "VN": {
+    "chars": 0.6706,
+    "kanji": 2.1477
+   },
+   "Novel": {
+    "chars": 1.4047,
+    "kanji": 4.0556
+   },
+   "Anime": {
+    "chars": 0.5244,
+    "kanji": 1.8364
+   },
+   "Drama": {
+    "chars": 0.5368,
+    "kanji": 1.6968
+   },
+   "Video game": {
+    "chars": 0.7304,
+    "kanji": 2.5046
+   },
+   "Global": {
+    "chars": 1.2078,
+    "kanji": 3.7386
+   }
+  },
+  {
+   "classes": 4000,
+   "VN": {
+    "chars": 0.5704,
+    "kanji": 1.8269
+   },
+   "Novel": {
+    "chars": 1.2488,
+    "kanji": 3.6055
+   },
+   "Anime": {
+    "chars": 0.4468,
+    "kanji": 1.5647
+   },
+   "Drama": {
+    "chars": 0.4468,
+    "kanji": 1.4125
+   },
+   "Video game": {
+    "chars": 0.6496,
+    "kanji": 2.2277
+   },
+   "Global": {
+    "chars": 1.068,
+    "kanji": 3.3056
+   }
+  },
+  {
+   "classes": 4100,
+   "VN": {
+    "chars": 0.4861,
+    "kanji": 1.5568
+   },
+   "Novel": {
+    "chars": 1.1088,
+    "kanji": 3.2013
+   },
+   "Anime": {
+    "chars": 0.3894,
+    "kanji": 1.3636
+   },
+   "Drama": {
+    "chars": 0.3841,
+    "kanji": 1.2141
+   },
+   "Video game": {
+    "chars": 0.5822,
+    "kanji": 1.9964
+   },
+   "Global": {
+    "chars": 0.9473,
+    "kanji": 2.9322
+   }
+  },
+  {
+   "classes": 4200,
+   "VN": {
+    "chars": 0.4139,
+    "kanji": 1.3257
+   },
+   "Novel": {
+    "chars": 0.9785,
+    "kanji": 2.8251
+   },
+   "Anime": {
+    "chars": 0.3362,
+    "kanji": 1.1773
+   },
+   "Drama": {
+    "chars": 0.3275,
+    "kanji": 1.0353
+   },
+   "Video game": {
+    "chars": 0.5187,
+    "kanji": 1.7789
+   },
+   "Global": {
+    "chars": 0.8396,
+    "kanji": 2.5987
+   }
+  },
+  {
+   "classes": 4300,
+   "VN": {
+    "chars": 0.3518,
+    "kanji": 1.1268
+   },
+   "Novel": {
+    "chars": 0.8788,
+    "kanji": 2.5372
+   },
+   "Anime": {
+    "chars": 0.2919,
+    "kanji": 1.0223
+   },
+   "Drama": {
+    "chars": 0.2812,
+    "kanji": 0.889
+   },
+   "Video game": {
+    "chars": 0.468,
+    "kanji": 1.6049
+   },
+   "Global": {
+    "chars": 0.7506,
+    "kanji": 2.3233
+   }
+  },
+  {
+   "classes": 4400,
+   "VN": {
+    "chars": 0.2978,
+    "kanji": 0.9538
+   },
+   "Novel": {
+    "chars": 0.7701,
+    "kanji": 2.2235
+   },
+   "Anime": {
+    "chars": 0.2474,
+    "kanji": 0.8665
+   },
+   "Drama": {
+    "chars": 0.2395,
+    "kanji": 0.7571
+   },
+   "Video game": {
+    "chars": 0.4262,
+    "kanji": 1.4614
+   },
+   "Global": {
+    "chars": 0.6579,
+    "kanji": 2.0364
+   }
+  },
+  {
+   "classes": 4500,
+   "VN": {
+    "chars": 0.2513,
+    "kanji": 0.8049
+   },
+   "Novel": {
+    "chars": 0.6656,
+    "kanji": 1.9217
+   },
+   "Anime": {
+    "chars": 0.2185,
+    "kanji": 0.7653
+   },
+   "Drama": {
+    "chars": 0.2054,
+    "kanji": 0.6493
+   },
+   "Video game": {
+    "chars": 0.3863,
+    "kanji": 1.3248
+   },
+   "Global": {
+    "chars": 0.5784,
+    "kanji": 1.7904
+   }
+  },
+  {
+   "classes": 4600,
+   "VN": {
+    "chars": 0.2122,
+    "kanji": 0.6795
+   },
+   "Novel": {
+    "chars": 0.5999,
+    "kanji": 1.732
+   },
+   "Anime": {
+    "chars": 0.1936,
+    "kanji": 0.6779
+   },
+   "Drama": {
+    "chars": 0.1812,
+    "kanji": 0.5728
+   },
+   "Video game": {
+    "chars": 0.3561,
+    "kanji": 1.221
+   },
+   "Global": {
+    "chars": 0.5196,
+    "kanji": 1.6084
+   }
+  },
+  {
+   "classes": 4700,
+   "VN": {
+    "chars": 0.1787,
+    "kanji": 0.5722
+   },
+   "Novel": {
+    "chars": 0.5399,
+    "kanji": 1.5587
+   },
+   "Anime": {
+    "chars": 0.1717,
+    "kanji": 0.6012
+   },
+   "Drama": {
+    "chars": 0.156,
+    "kanji": 0.4932
+   },
+   "Video game": {
+    "chars": 0.3208,
+    "kanji": 1.1002
+   },
+   "Global": {
+    "chars": 0.4639,
+    "kanji": 1.4358
+   }
+  },
+  {
+   "classes": 4800,
+   "VN": {
+    "chars": 0.1492,
+    "kanji": 0.4778
+   },
+   "Novel": {
+    "chars": 0.467,
+    "kanji": 1.3483
+   },
+   "Anime": {
+    "chars": 0.1495,
+    "kanji": 0.5237
+   },
+   "Drama": {
+    "chars": 0.137,
+    "kanji": 0.4331
+   },
+   "Video game": {
+    "chars": 0.2861,
+    "kanji": 0.981
+   },
+   "Global": {
+    "chars": 0.4109,
+    "kanji": 1.272
+   }
+  },
+  {
+   "classes": 4900,
+   "VN": {
+    "chars": 0.1249,
+    "kanji": 0.4
+   },
+   "Novel": {
+    "chars": 0.4228,
+    "kanji": 1.2208
+   },
+   "Anime": {
+    "chars": 0.1254,
+    "kanji": 0.439
+   },
+   "Drama": {
+    "chars": 0.1187,
+    "kanji": 0.3752
+   },
+   "Video game": {
+    "chars": 0.2569,
+    "kanji": 0.8809
+   },
+   "Global": {
+    "chars": 0.372,
+    "kanji": 1.1514
+   }
+  },
+  {
+   "classes": 4987,
+   "VN": {
+    "chars": 0.1066,
+    "kanji": 0.3415
+   },
+   "Novel": {
+    "chars": 0.389,
+    "kanji": 1.123
+   },
+   "Anime": {
+    "chars": 0.1106,
+    "kanji": 0.3872
+   },
+   "Drama": {
+    "chars": 0.1038,
+    "kanji": 0.328
+   },
+   "Video game": {
+    "chars": 0.2347,
+    "kanji": 0.8047
+   },
+   "Global": {
+    "chars": 0.3393,
+    "kanji": 1.0501
+   }
+  },
+  {
+   "classes": 5000,
+   "VN": {
+    "chars": 0.1041,
+    "kanji": 0.3333
+   },
+   "Novel": {
+    "chars": 0.3797,
+    "kanji": 1.0962
+   },
+   "Anime": {
+    "chars": 0.1074,
+    "kanji": 0.3761
+   },
+   "Drama": {
+    "chars": 0.0998,
+    "kanji": 0.3156
+   },
+   "Video game": {
+    "chars": 0.2312,
+    "kanji": 0.7928
+   },
+   "Global": {
+    "chars": 0.3307,
+    "kanji": 1.0236
+   }
+  },
+  {
+   "classes": 5100,
+   "VN": {
+    "chars": 0.085,
+    "kanji": 0.2721
+   },
+   "Novel": {
+    "chars": 0.3513,
+    "kanji": 1.0144
+   },
+   "Anime": {
+    "chars": 0.0983,
+    "kanji": 0.3442
+   },
+   "Drama": {
+    "chars": 0.0882,
+    "kanji": 0.2788
+   },
+   "Video game": {
+    "chars": 0.2064,
+    "kanji": 0.7077
+   },
+   "Global": {
+    "chars": 0.3022,
+    "kanji": 0.9355
+   }
+  },
+  {
+   "classes": 5200,
+   "VN": {
+    "chars": 0.0673,
+    "kanji": 0.2156
+   },
+   "Novel": {
+    "chars": 0.3157,
+    "kanji": 0.9114
+   },
+   "Anime": {
+    "chars": 0.0817,
+    "kanji": 0.2863
+   },
+   "Drama": {
+    "chars": 0.0719,
+    "kanji": 0.2273
+   },
+   "Video game": {
+    "chars": 0.1805,
+    "kanji": 0.6191
+   },
+   "Global": {
+    "chars": 0.2684,
+    "kanji": 0.8307
+   }
+  },
+  {
+   "classes": 5300,
+   "VN": {
+    "chars": 0.0505,
+    "kanji": 0.1617
+   },
+   "Novel": {
+    "chars": 0.291,
+    "kanji": 0.8401
+   },
+   "Anime": {
+    "chars": 0.0735,
+    "kanji": 0.2574
+   },
+   "Drama": {
+    "chars": 0.0641,
+    "kanji": 0.2026
+   },
+   "Video game": {
+    "chars": 0.1548,
+    "kanji": 0.5308
+   },
+   "Global": {
+    "chars": 0.2435,
+    "kanji": 0.7537
+   }
+  },
+  {
+   "classes": 5400,
+   "VN": {
+    "chars": 0.0351,
+    "kanji": 0.1124
+   },
+   "Novel": {
+    "chars": 0.2345,
+    "kanji": 0.6771
+   },
+   "Anime": {
+    "chars": 0.0532,
+    "kanji": 0.1862
+   },
+   "Drama": {
+    "chars": 0.0484,
+    "kanji": 0.1531
+   },
+   "Video game": {
+    "chars": 0.1325,
+    "kanji": 0.4545
+   },
+   "Global": {
+    "chars": 0.1997,
+    "kanji": 0.6182
+   }
+  },
+  {
+   "classes": 5500,
+   "VN": {
+    "chars": 0.02,
+    "kanji": 0.0639
+   },
+   "Novel": {
+    "chars": 0.2018,
+    "kanji": 0.5827
+   },
+   "Anime": {
+    "chars": 0.0433,
+    "kanji": 0.1516
+   },
+   "Drama": {
+    "chars": 0.0395,
+    "kanji": 0.125
+   },
+   "Video game": {
+    "chars": 0.1089,
+    "kanji": 0.3735
+   },
+   "Global": {
+    "chars": 0.171,
+    "kanji": 0.5292
+   }
+  },
+  {
+   "classes": 5600,
+   "VN": {
+    "chars": 0.0048,
+    "kanji": 0.0155
+   },
+   "Novel": {
+    "chars": 0.1849,
+    "kanji": 0.534
+   },
+   "Anime": {
+    "chars": 0.0385,
+    "kanji": 0.1349
+   },
+   "Drama": {
+    "chars": 0.0352,
+    "kanji": 0.1114
+   },
+   "Video game": {
+    "chars": 0.0897,
+    "kanji": 0.3077
+   },
+   "Global": {
+    "chars": 0.1542,
+    "kanji": 0.4773
+   }
+  },
+  {
+   "classes": 5631,
+   "VN": {
+    "chars": 0.0002,
+    "kanji": 0.0005
+   },
+   "Novel": {
+    "chars": 0.1837,
+    "kanji": 0.5304
+   },
+   "Anime": {
+    "chars": 0.0385,
+    "kanji": 0.1349
+   },
+   "Drama": {
+    "chars": 0.0347,
+    "kanji": 0.1097
+   },
+   "Video game": {
+    "chars": 0.0842,
+    "kanji": 0.2888
+   },
+   "Global": {
+    "chars": 0.1508,
+    "kanji": 0.4667
+   }
+  },
+  {
+   "classes": 5700,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.1385,
+    "kanji": 0.3998
+   },
+   "Anime": {
+    "chars": 0.03,
+    "kanji": 0.1052
+   },
+   "Drama": {
+    "chars": 0.0271,
+    "kanji": 0.0858
+   },
+   "Video game": {
+    "chars": 0.0772,
+    "kanji": 0.2649
+   },
+   "Global": {
+    "chars": 0.1195,
+    "kanji": 0.3698
+   }
+  },
+  {
+   "classes": 5800,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.1071,
+    "kanji": 0.3093
+   },
+   "Anime": {
+    "chars": 0.0228,
+    "kanji": 0.0797
+   },
+   "Drama": {
+    "chars": 0.0195,
+    "kanji": 0.0616
+   },
+   "Video game": {
+    "chars": 0.0652,
+    "kanji": 0.2235
+   },
+   "Global": {
+    "chars": 0.0939,
+    "kanji": 0.2907
+   }
+  },
+  {
+   "classes": 5900,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.082,
+    "kanji": 0.2368
+   },
+   "Anime": {
+    "chars": 0.0161,
+    "kanji": 0.0565
+   },
+   "Drama": {
+    "chars": 0.0126,
+    "kanji": 0.0399
+   },
+   "Video game": {
+    "chars": 0.0557,
+    "kanji": 0.1912
+   },
+   "Global": {
+    "chars": 0.0724,
+    "kanji": 0.2242
+   }
+  },
+  {
+   "classes": 6000,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0613,
+    "kanji": 0.1769
+   },
+   "Anime": {
+    "chars": 0.0108,
+    "kanji": 0.0378
+   },
+   "Drama": {
+    "chars": 0.0076,
+    "kanji": 0.024
+   },
+   "Video game": {
+    "chars": 0.0435,
+    "kanji": 0.1491
+   },
+   "Global": {
+    "chars": 0.0545,
+    "kanji": 0.1686
+   }
+  },
+  {
+   "classes": 6100,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0429,
+    "kanji": 0.124
+   },
+   "Anime": {
+    "chars": 0.0056,
+    "kanji": 0.0198
+   },
+   "Drama": {
+    "chars": 0.0051,
+    "kanji": 0.0161
+   },
+   "Video game": {
+    "chars": 0.0344,
+    "kanji": 0.118
+   },
+   "Global": {
+    "chars": 0.0391,
+    "kanji": 0.121
+   }
+  },
+  {
+   "classes": 6200,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0275,
+    "kanji": 0.0795
+   },
+   "Anime": {
+    "chars": 0.0033,
+    "kanji": 0.0114
+   },
+   "Drama": {
+    "chars": 0.0028,
+    "kanji": 0.0088
+   },
+   "Video game": {
+    "chars": 0.0252,
+    "kanji": 0.0864
+   },
+   "Global": {
+    "chars": 0.0261,
+    "kanji": 0.0809
+   }
+  },
+  {
+   "classes": 6300,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0152,
+    "kanji": 0.044
+   },
+   "Anime": {
+    "chars": 0.0015,
+    "kanji": 0.0053
+   },
+   "Drama": {
+    "chars": 0.0011,
+    "kanji": 0.0035
+   },
+   "Video game": {
+    "chars": 0.0174,
+    "kanji": 0.0598
+   },
+   "Global": {
+    "chars": 0.0158,
+    "kanji": 0.0489
+   }
+  },
+  {
+   "classes": 6400,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0054,
+    "kanji": 0.0155
+   },
+   "Anime": {
+    "chars": 0.0006,
+    "kanji": 0.002
+   },
+   "Drama": {
+    "chars": 0.0005,
+    "kanji": 0.0017
+   },
+   "Video game": {
+    "chars": 0.0078,
+    "kanji": 0.0269
+   },
+   "Global": {
+    "chars": 0.0069,
+    "kanji": 0.0215
+   }
+  },
+  {
+   "classes": 6459,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 6500,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 6600,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 6700,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 6800,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 6900,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7000,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7100,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7200,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7300,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7400,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7500,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7501,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7600,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7700,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7800,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 7900,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  },
+  {
+   "classes": 8000,
+   "VN": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Novel": {
+    "chars": 0.0011,
+    "kanji": 0.003
+   },
+   "Anime": {
+    "chars": 0.0002,
+    "kanji": 0.0007
+   },
+   "Drama": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "Video game": {
+    "chars": 0.0055,
+    "kanji": 0.0189
+   },
+   "Global": {
+    "chars": 0.0027,
+    "kanji": 0.0085
+   }
+  }
+ ],
+ "exact_membership": {
+  "FL10": 2.469,
+  "H15": 0.1823
+ },
+ "missed_top": {
+  "FL10": [
+   [
+    "膣",
+    49.51
+   ],
+   [
+    "璧",
+    22.39
+   ],
+   [
+    "攣",
+    20.25
+   ],
+   [
+    "篭",
+    19.12
+   ],
+   [
+    "咥",
+    18.72
+   ],
+   [
+    "猥",
+    16.43
+   ],
+   [
+    "芯",
+    16.15
+   ],
+   [
+    "痙",
+    15.93
+   ],
+   [
+    "丼",
+    14.66
+   ],
+   [
+    "腺",
+    12.94
+   ],
+   [
+    "痒",
+    12.48
+   ],
+   [
+    "軋",
+    12.29
+   ],
+   [
+    "疼",
+    11.55
+   ],
+   [
+    "竦",
+    11.43
+   ],
+   [
+    "腔",
+    11.35
+   ],
+   [
+    "炒",
+    11.16
+   ],
+   [
+    "茹",
+    11.11
+   ],
+   [
+    "蠢",
+    11.02
+   ],
+   [
+    "捌",
+    11.0
+   ],
+   [
+    "腿",
+    10.95
+   ],
+   [
+    "耗",
+    10.93
+   ],
+   [
+    "淹",
+    10.93
+   ],
+   [
+    "捩",
+    10.62
+   ],
+   [
+    "掬",
+    9.95
+   ],
+   [
+    "祓",
+    9.7
+   ],
+   [
+    "抉",
+    9.52
+   ],
+   [
+    "蝕",
+    9.26
+   ],
+   [
+    "躾",
+    9.05
+   ],
+   [
+    "屁",
+    8.86
+   ],
+   [
+    "涎",
+    8.83
+   ],
+   [
+    "襞",
+    8.63
+   ],
+   [
+    "呵",
+    8.55
+   ],
+   [
+    "闊",
+    8.54
+   ],
+   [
+    "拉",
+    8.15
+   ],
+   [
+    "捏",
+    8.1
+   ],
+   [
+    "孕",
+    7.68
+   ],
+   [
+    "泌",
+    7.54
+   ],
+   [
+    "堰",
+    7.32
+   ],
+   [
+    "躙",
+    7.28
+   ],
+   [
+    "儚",
+    7.17
+   ]
+  ],
+  "FL10 (count)": 2098,
+  "H15": [
+   [
+    "侭",
+    5.06
+   ],
+   [
+    "蠕",
+    2.93
+   ],
+   [
+    "腟",
+    2.62
+   ],
+   [
+    "剝",
+    2.28
+   ],
+   [
+    "搔",
+    2.12
+   ],
+   [
+    "藹",
+    2.01
+   ],
+   [
+    "鬩",
+    1.8
+   ],
+   [
+    "諤",
+    1.77
+   ],
+   [
+    "吽",
+    1.72
+   ],
+   [
+    "嚙",
+    1.64
+   ],
+   [
+    "鴇",
+    1.51
+   ],
+   [
+    "忸",
+    1.46
+   ],
+   [
+    "怩",
+    1.46
+   ],
+   [
+    "囓",
+    1.44
+   ],
+   [
+    "瘴",
+    1.38
+   ],
+   [
+    "臑",
+    1.33
+   ],
+   [
+    "洸",
+    1.32
+   ],
+   [
+    "恫",
+    1.32
+   ],
+   [
+    "鯵",
+    1.09
+   ],
+   [
+    "蛻",
+    1.03
+   ],
+   [
+    "狢",
+    1.02
+   ],
+   [
+    "饐",
+    0.97
+   ],
+   [
+    "繚",
+    0.96
+   ],
+   [
+    "侃",
+    0.89
+   ],
+   [
+    "繫",
+    0.88
+   ],
+   [
+    "剔",
+    0.88
+   ],
+   [
+    "吶",
+    0.84
+   ],
+   [
+    "嶌",
+    0.84
+   ],
+   [
+    "螻",
+    0.78
+   ],
+   [
+    "痞",
+    0.78
+   ],
+   [
+    "鎹",
+    0.76
+   ],
+   [
+    "蛯",
+    0.72
+   ],
+   [
+    "吞",
+    0.72
+   ],
+   [
+    "澳",
+    0.72
+   ],
+   [
+    "滂",
+    0.68
+   ],
+   [
+    "沱",
+    0.68
+   ],
+   [
+    "鑚",
+    0.67
+   ],
+   [
+    "呱",
+    0.66
+   ],
+   [
+    "蜉",
+    0.65
+   ],
+   [
+    "蝣",
+    0.65
+   ]
+  ],
+  "H15 (count)": 611,
+  "VN 4987": [
+   [
+    "舛",
+    0.2
+   ],
+   [
+    "柝",
+    0.2
+   ],
+   [
+    "崟",
+    0.2
+   ],
+   [
+    "懍",
+    0.2
+   ],
+   [
+    "收",
+    0.2
+   ],
+   [
+    "渙",
+    0.2
+   ],
+   [
+    "敖",
+    0.2
+   ],
+   [
+    "乕",
+    0.2
+   ],
+   [
+    "臺",
+    0.2
+   ],
+   [
+    "沮",
+    0.2
+   ],
+   [
+    "誄",
+    0.2
+   ],
+   [
+    "雕",
+    0.2
+   ],
+   [
+    "粁",
+    0.2
+   ],
+   [
+    "骭",
+    0.2
+   ],
+   [
+    "繃",
+    0.2
+   ],
+   [
+    "讖",
+    0.2
+   ],
+   [
+    "丗",
+    0.2
+   ],
+   [
+    "蔚",
+    0.2
+   ],
+   [
+    "喞",
+    0.2
+   ],
+   [
+    "薑",
+    0.2
+   ],
+   [
+    "鵐",
+    0.2
+   ],
+   [
+    "齷",
+    0.2
+   ],
+   [
+    "齪",
+    0.2
+   ],
+   [
+    "劃",
+    0.2
+   ],
+   [
+    "怺",
+    0.2
+   ],
+   [
+    "廿",
+    0.2
+   ],
+   [
+    "鞜",
+    0.2
+   ],
+   [
+    "澎",
+    0.2
+   ],
+   [
+    "湃",
+    0.2
+   ],
+   [
+    "甑",
+    0.2
+   ],
+   [
+    "氓",
+    0.2
+   ],
+   [
+    "莠",
+    0.2
+   ],
+   [
+    "菘",
+    0.19
+   ],
+   [
+    "鮴",
+    0.19
+   ],
+   [
+    "黶",
+    0.19
+   ],
+   [
+    "墹",
+    0.19
+   ],
+   [
+    "邵",
+    0.19
+   ],
+   [
+    "瓩",
+    0.19
+   ],
+   [
+    "晢",
+    0.19
+   ],
+   [
+    "菴",
+    0.19
+   ]
+  ],
+  "VN 4987 (count)": 645,
+  "VN 5631": [
+   [
+    "龝",
+    0.15
+   ]
+  ],
+  "VN 5631 (count)": 1,
+  "VN 6459": [],
+  "VN 6459 (count)": 0,
+  "VN 7501": [],
+  "VN 7501 (count)": 0
+ },
+ "kanji_csv_check": {
+  "curve": [
+   {
+    "kanji": 1000,
+    "vn_order_missed_per_1000_kanji": 120.1574,
+    "kanji_csv_order_missed_per_1000_kanji": 127.8521,
+    "overlap": 0.916
+   },
+   {
+    "kanji": 2000,
+    "vn_order_missed_per_1000_kanji": 21.6789,
+    "kanji_csv_order_missed_per_1000_kanji": 23.5944,
+    "overlap": 0.956
+   },
+   {
+    "kanji": 2500,
+    "vn_order_missed_per_1000_kanji": 9.3635,
+    "kanji_csv_order_missed_per_1000_kanji": 10.395,
+    "overlap": 0.9548
+   },
+   {
+    "kanji": 3000,
+    "vn_order_missed_per_1000_kanji": 4.2054,
+    "kanji_csv_order_missed_per_1000_kanji": 4.7292,
+    "overlap": 0.96
+   },
+   {
+    "kanji": 3500,
+    "vn_order_missed_per_1000_kanji": 1.862,
+    "kanji_csv_order_missed_per_1000_kanji": 2.1788,
+    "overlap": 0.9631
+   },
+   {
+    "kanji": 4000,
+    "vn_order_missed_per_1000_kanji": 0.8215,
+    "kanji_csv_order_missed_per_1000_kanji": 1.0814,
+    "overlap": 0.953
+   },
+   {
+    "kanji": 4500,
+    "vn_order_missed_per_1000_kanji": 0.3409,
+    "kanji_csv_order_missed_per_1000_kanji": 0.6079,
+    "overlap": 0.9338
+   },
+   {
+    "kanji": 5000,
+    "vn_order_missed_per_1000_kanji": 0.0698,
+    "kanji_csv_order_missed_per_1000_kanji": 0.3499,
+    "overlap": 0.919
+   },
+   {
+    "kanji": 5500,
+    "vn_order_missed_per_1000_kanji": 0.0,
+    "kanji_csv_order_missed_per_1000_kanji": 0.206,
+    "overlap": 0.8713
+   },
+   {
+    "kanji": 6000,
+    "vn_order_missed_per_1000_kanji": 0.0,
+    "kanji_csv_order_missed_per_1000_kanji": 0.1219,
+    "overlap": 0.8208
+   },
+   {
+    "kanji": 7000,
+    "vn_order_missed_per_1000_kanji": 0.0,
+    "kanji_csv_order_missed_per_1000_kanji": 0.0486,
+    "overlap": 0.722
+   }
+  ],
+  "vn_kanji": 5144,
+  "vn_kanji_in_kanji_csv": 5143,
+  "vn_kanji_not_in_kanji_csv": "々",
+  "spearman_vn_vs_kanji_csv": 0.9804,
+  "vn_heavy_csv_low": [
+   [
+    "々",
+    62,
+    null
+   ]
+  ],
+  "csv_heavy_vn_low": [
+   [
+    "塡",
+    2803,
+    null
+   ],
+   [
+    "蠟",
+    2821,
+    null
+   ],
+   [
+    "顚",
+    2902,
+    null
+   ],
+   [
+    "繡",
+    2906,
+    null
+   ],
+   [
+    "组",
+    2926,
+    null
+   ],
+   [
+    "诸",
+    2961,
+    null
+   ]
+  ]
+ },
+ "sensitivity": {
+  "0.85": {
+   "overlap_top4499_kanji": 1.0,
+   "FL10": {
+    "chars": 3.4534,
+    "kanji": 9.4621
+   },
+   "H15": {
+    "chars": 0.3144,
+    "kanji": 0.8613
+   },
+   "proof (Small)": {
+    "chars": 0.3238,
+    "kanji": 0.8872
+   },
+   "Small next (vn_4987)": {
+    "chars": 0.1933,
+    "kanji": 0.5297
+   },
+   "Normal (vn_5631)": {
+    "chars": 0.0003,
+    "kanji": 0.0008
+   },
+   "Large (vn_6459)": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "VN 4987": {
+    "chars": 0.1933,
+    "kanji": 0.5297
+   },
+   "VN 5631": {
+    "chars": 0.0003,
+    "kanji": 0.0008
+   },
+   "VN 6459": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "VN 7501": {
+    "chars": 0.0,
+    "kanji": 0.0
+   }
+  },
+  "1.15": {
+   "overlap_top4499_kanji": 1.0,
+   "FL10": {
+    "chars": 1.2039,
+    "kanji": 5.1784
+   },
+   "H15": {
+    "chars": 0.0823,
+    "kanji": 0.3539
+   },
+   "proof (Small)": {
+    "chars": 0.0844,
+    "kanji": 0.3632
+   },
+   "Small next (vn_4987)": {
+    "chars": 0.0455,
+    "kanji": 0.1956
+   },
+   "Normal (vn_5631)": {
+    "chars": 0.0001,
+    "kanji": 0.0003
+   },
+   "Large (vn_6459)": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "VN 4987": {
+    "chars": 0.0455,
+    "kanji": 0.1956
+   },
+   "VN 5631": {
+    "chars": 0.0001,
+    "kanji": 0.0003
+   },
+   "VN 6459": {
+    "chars": 0.0,
+    "kanji": 0.0
+   },
+   "VN 7501": {
+    "chars": 0.0,
+    "kanji": 0.0
+   }
+  }
+ },
+ "names": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3/text/vndb_chars.tsv",
+  "sha256": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
+  "rows": {
+   "FL10": {
+    "names": 102917,
+    "with_char_outside": 1692,
+    "share": 0.01644
+   },
+   "H15": {
+    "names": 102917,
+    "with_char_outside": 414,
+    "share": 0.00402
+   },
+   "proof (Small)": {
+    "names": 102917,
+    "with_char_outside": 468,
+    "share": 0.00455
+   },
+   "Small next (vn_4987)": {
+    "names": 102917,
+    "with_char_outside": 352,
+    "share": 0.00342
+   },
+   "Normal (vn_5631)": {
+    "names": 102917,
+    "with_char_outside": 222,
+    "share": 0.00216
+   },
+   "Large (vn_6459)": {
+    "names": 102917,
+    "with_char_outside": 86,
+    "share": 0.00084
+   },
+   "VN 4987": {
+    "names": 102917,
+    "with_char_outside": 352,
+    "share": 0.00342
+   },
+   "VN 5631": {
+    "names": 102917,
+    "with_char_outside": 222,
+    "share": 0.00216
+   },
+   "VN 6459": {
+    "names": 102917,
+    "with_char_outside": 86,
+    "share": 0.00084
+   },
+   "VN 7501": {
+    "names": 102917,
+    "with_char_outside": 86,
+    "share": 0.00084
+   }
+  }
+ }
+}

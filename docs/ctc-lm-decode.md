@@ -18,7 +18,7 @@ beam + LM decoder").
 
 ## Answers first
 
-- **Dialogue errors fall by 30–42 % pooled over the six recognizers** (VOCR3 and VOCR4 FL10/H15/W20): from 1,656
+- **Dialogue errors fall by 30–41 % pooled over the six recognizers** (VOCR3 and VOCR4 FL10/H15/W20): from 1,656
   to 1,156 / 1,047 / 1,000 / 970 with the 0.5 / 1 / 2 / 4 MB LM (CER 0.93 % → 0.65 / 0.59 / 0.56 / 0.55 %). **Per model
   the drop is 25–49 %**, and from the 1 MB LM on at least 32 % for every model. Every model's interval lies below
   zero at every size, and the 2-fold VN cross-validated CER (settings chosen on one half of the VNs, scored on the

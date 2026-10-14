@@ -189,6 +189,14 @@ def shot_index(sources=None, extra=()):
             local = r.get("path") or (rd / r.get("kind", "") / f"{k}.jpg" if kind == "realdata" else None)
             if local and not e["path"] and Path(local).exists():
                 e["path"] = str(local)
+    if sources is None:                     # local copies in the pools' screenshot directories (shots.screenshot_dirs)
+        for _, d in [*SH.screenshot_dirs(), ("reclaim", SH.ART / "reserve-policy" / "realplus" / "shots")]:
+            for f in sorted(Path(d).rglob("*")) if Path(d).exists() else ():
+                m = SH.SHOT_FILE.match(f.name)
+                if m:
+                    e = idx.setdefault(f"{f.name.split('_')[0]}_{m.group(1)}", {"file": set(), "pixel": set(),
+                                                                                 "path": None})
+                    e["path"] = e["path"] or str(f)
     return idx
 
 

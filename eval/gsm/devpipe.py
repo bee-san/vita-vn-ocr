@@ -4,8 +4,11 @@
 Runs the real console path on devnative v3 regions: the C GRAD finder cuts each
 labelled dialogue region into line crops, an optional crop post-processor runs,
 then the C W8I recognizer reads each crop. Detections are matched to the
-hand-labelled lines (vertical overlap >= 0.5, one-to-one, greedy), exactly as
-eval/linefind does, and CER is reported per stratum.
+hand-labelled lines (vertical overlap >= 0.5 and any horizontal overlap,
+one-to-one, greedy per detection -- the eval/linefind overlap rule; the greedy
+per-detection order can pair one of 222 regions differently from
+eval.finders.match's global order, with the same 490 total pairs), and CER is
+reported per stratum.
 
 Strata:
   names    -- labelled lines tagged 'name'
@@ -14,9 +17,8 @@ Strata:
               scene art / plate decoration): the hallucination surface. Scored as
               characters written (lower is better; there is no reference).
 
-NEVER touches a protected set. Reads only devnative v3 (and teacher_val for a
-separate recognizer-only false-rejection sanity check). v1331 (owner Memories
-Off) is excluded.
+NEVER touches a protected set. Reads only devnative v3 (lines_full + shots); v1331
+(owner Memories Off) is excluded.
 """
 import argparse
 import json
@@ -27,9 +29,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-ROOT = Path(__file__).resolve()
-# repo clone passed on the command line; default to the gsm-research clone
-REPO = Path("/local/home/skerraut/herd-synth3/clones/gsm-research")
+# default repo = the checkout this script lives in (eval/gsm/devpipe.py -> repo root)
+REPO = Path(__file__).resolve().parents[2]
 A = Path("/local/home/skerraut/herd-vita-ocr/shared/artifacts")
 
 

@@ -263,6 +263,7 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--tile") && has) o.tile_frames = (unsigned)atoi(argv[++i]);
         else if (!strcmp(a, "--head") && has) o.head_frames = (unsigned)atoi(argv[++i]);
         else if (!strcmp(a, "--max-width") && has) o.max_width = (unsigned)atoi(argv[++i]);
+        else if (!strcmp(a, "--tail-conf") && has) o.tail_conf = (unsigned)atoi(argv[++i]);
         else if (!strcmp(a, "--logits") && has) logits_path = argv[++i];
         else if (!strcmp(a, "--input-out") && has) input_path = argv[++i];
         else if (!strcmp(a, "--repeat") && has) repeat = atoi(argv[++i]);

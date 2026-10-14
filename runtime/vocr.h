@@ -89,7 +89,8 @@ typedef struct {
     unsigned head_frames;    /* frames per output-head batch (0: default 16) */
     unsigned max_width;      /* widest resized line in pixels (0: the model's clamp) */
     int mode;                /* VOCR_MODE_*; AUTO = F32 for float blobs, W8F for int8 */
-    unsigned tail_conf;      /* trailing low-confidence trim, in 1/1000 (0: off). A char
+    unsigned tail_conf;      /* trailing low-confidence trim, in 1/1000, 0..1000 (0: off;
+                                vocr_init/vocr_arena_bytes reject > 1000). A char
                                 at the end of the line whose emitting CTC frame has a
                                 softmax-max confidence below tail_conf/1000 is dropped,
                                 and so is every char after it; interior characters are

@@ -284,6 +284,7 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     c->tile = F;
     c->head = hb;
     c->acc_frames = hb + F - 1;
+    if (o->tail_conf > 1000) return VOCR_E_ARG; /* threshold is tail_conf/1000 in [0,1] */
     c->tail_conf = o->tail_conf;
     for (f = 0; f < L && (m->op[f].type == T_CONV || m->op[f].type == T_DW); f++) {
     }
@@ -1223,8 +1224,40 @@ static void ctc_push(const vocr_model *m, out_t *o, unsigned tok, float conf)
 
 /* Output head over the nf accumulated frames: argmax (first maximum) and CTC.
  * When c->tail_conf is set, also accumulate the softmax denominator per frame
- * (running-max rescaled, so it is numerically stable and class-order independent)
- * and pass each emitted frame's softmax-max confidence to ctc_push. */
+ * (running-max rescaled, so it is numerically stable) and pass each emitted
+ * frame's softmax-max confidence to ctc_push. The !conf path below is byte-for-byte
+ * main's head loop, so a default (tail_conf == 0) run is unchanged in output and
+ * instruction count. */
+
+/* exp(x) for x <= 0, in float only, no libm: exp(x) = 2^(x/ln2), the integer part
+ * built from the float exponent bits, the fractional part from a degree-6 minimax
+ * polynomial on [0,1). Deterministic on every platform (no FMA, -ffp-contract=off).
+ * Only the softmax denominator uses it, so a tiny error cannot move a decoded glyph;
+ * it only shifts the trailing-trim confidence by < 1e-5. x > 0 never occurs here
+ * (arguments are logit - max <= 0); it is clamped for safety. */
+static float vexpf_nonpos(float x)
+{
+    float t, f, p;
+    int32_t e;
+    union { float f; uint32_t u; } bits;
+    if (x > 0.0f) x = 0.0f;
+    if (x < -87.0f) return 0.0f; /* underflows float */
+    t = x * 1.4426950408889634f; /* x / ln2 */
+    e = (int32_t)t;
+    if ((float)e > t) e--;       /* floor */
+    f = t - (float)e;            /* fractional part in [0,1) */
+    /* 2^f, minimax degree-6 on [0,1) */
+    p = 0.0001877576168f;
+    p = p * f + 0.0013878698224f;
+    p = p * f + 0.0083714417686f;
+    p = p * f + 0.0416631084953f;
+    p = p * f + 0.1660249243744f;
+    p = p * f + 0.6931471805599f;
+    p = p * f + 1.0f;
+    bits.u = (uint32_t)((e + 127) & 0xFF) << 23; /* 2^e */
+    return p * bits.f;
+}
+
 static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
 {
     const vocr_model *m = c->model;
@@ -1234,8 +1267,8 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     const float *x = at(c, c->acc_off);
     float *bestv = at(c, c->bestv_off);
     uint32_t *besti = (uint32_t *)(void *)(c->arena + c->besti_off);
-    float *sumv = at(c, c->sumv_off);
     const int conf = c->tail_conf != 0;
+    float *sumv = conf ? at(c, c->sumv_off) : NULL;
     unsigned char *scr = c->arena + c->op[L - 1].scr_off;
     int16_t *qx = (int16_t *)(void *)scr;
     float *sx = (float *)(void *)(scr + al16((size_t)nf * K * 2u));
@@ -1245,7 +1278,7 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     for (f = 0; f < nf; f++) {
         bestv[f] = -INFINITY;
         besti[f] = 0;
-        sumv[f] = 0.0f;
+        if (conf) sumv[f] = 0.0f;
     }
     if (c->mode == VOCR_MODE_W8I) quant16(x, K, K, nf, qx, sx);
     for (nb = 0; nb < op->cout_pad / 8u; nb++) {
@@ -1262,23 +1295,33 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
             else
                 mm_i16(op->q + wo, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn, tmp,
                        8, NULL, 0, 0);
-            for (q = 0; q < pn; q++) {
-                const unsigned frame = o->frame + f0 + q;
-                for (j = 0; j < 8 && nb * 8 + j < N; j++) {
-                    const float v = tmp[q * 8 + j];
-                    if (ex && ex->logits && frame < ex->cap_frames)
-                        ex->logits[(size_t)frame * N + nb * 8 + j] = v;
-                    if (conf) {
+            if (conf) {
+                for (q = 0; q < pn; q++) {
+                    const unsigned frame = o->frame + f0 + q;
+                    for (j = 0; j < 8 && nb * 8 + j < N; j++) {
+                        const float v = tmp[q * 8 + j];
+                        if (ex && ex->logits && frame < ex->cap_frames)
+                            ex->logits[(size_t)frame * N + nb * 8 + j] = v;
                         if (v > bestv[f0 + q]) {
-                            sumv[f0 + q] = sumv[f0 + q] * expf(bestv[f0 + q] - v) + 1.0f;
+                            sumv[f0 + q] = sumv[f0 + q] * vexpf_nonpos(bestv[f0 + q] - v) + 1.0f;
                             bestv[f0 + q] = v;
                             besti[f0 + q] = nb * 8 + j;
                         } else {
-                            sumv[f0 + q] += expf(v - bestv[f0 + q]);
+                            sumv[f0 + q] += vexpf_nonpos(v - bestv[f0 + q]);
                         }
-                    } else if (v > bestv[f0 + q]) {
-                        bestv[f0 + q] = v;
-                        besti[f0 + q] = nb * 8 + j;
+                    }
+                }
+            } else {
+                for (q = 0; q < pn; q++) {
+                    const unsigned frame = o->frame + f0 + q;
+                    for (j = 0; j < 8 && nb * 8 + j < N; j++) {
+                        const float v = tmp[q * 8 + j];
+                        if (ex && ex->logits && frame < ex->cap_frames)
+                            ex->logits[(size_t)frame * N + nb * 8 + j] = v;
+                        if (v > bestv[f0 + q]) {
+                            bestv[f0 + q] = v;
+                            besti[f0 + q] = nb * 8 + j;
+                        }
                     }
                 }
             }

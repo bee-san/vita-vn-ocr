@@ -58,8 +58,14 @@ release-partner rule:
 | real_train | 9,795 | 9,005 | 570 test-game links, 137 owner test set, 51 development, 32 CLANNAD release partners |
 | realplus v2, ink / GRAD | 71,153 / 53,566 | 71,142 / 53,558 | owner test set |
 
-The new pools (rp3i, nat, own) are cleaned the same way and also deduplicated by screenshot against
-teacher_train, real_train and each other (native pool first, then the owner frames, then realplus).
+The new pools (rp3i, nat, own) are cleaned the same way and also deduplicated against teacher_train,
+real_train and each other (native pool first, then the owner frames, then realplus): a line goes when one of
+those already holds the same screenshot's line with the same label. That is amendment 1. The frozen rule
+dropped every line of a screenshot those pools hold, which would have cut native pool v1 from 557 lines to
+101, although its other 456 are lines those pools' labelling left out, not duplicates; line ids could not
+serve either, since each pipeline numbers a screenshot's lines its own way (58 of 59 shared ids carry
+different text). The amendment came from the build's dry-run counts, before any A pool was pinned or any
+VOCR4 run scored; native pool v1 keeps 542 of 557 ink lines and 402 of 411 GRAD crops.
 `eval/vocr4_pools.py check` must pass on every pool before it is pinned: no excluded VN, no development
 VN or screenshot, no test-set screenshot or capture session. The control's pools are pinned with the protocol
 (`eval/vocr4_pools_c.sha256`); the new pools are pinned in `eval/vocr4_pools_a.sha256` before the first A or

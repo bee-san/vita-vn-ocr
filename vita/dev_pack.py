@@ -11,10 +11,11 @@ psp_dev.jsonl, never the holdout or any test set), as vita-jp-overlay's game wor
      lines: runtime/tests/test_vocr_lines_rows.c);
   3. each found line's grey crop, inverted (255 - v) when the finder calls it dark. Inverting the source crop is
      exactly VOCR_INVERT, which reads every source pixel as 255 - grey before the resize (runtime/vocr.h).
-Rows of protected sets are refused: every VN of eval/manifests/test_games.json ("all": the test games and
-every VN on a release with one of them, "vita-test", "psp-test", their "family" members) and CLANNAD (v4).
-Since #81's reservation list (2026-10-14) that refuses the 5 rows of v1267, a shared-release VN, from the dev
-manifests.
+Rows of protected sets are refused: every VN of the committed test reservation eval/manifests/reserved.json
+"test" (the CLANNAD family, vita-test, psp-test and their shared releases, docs/reservations.md), every VN of
+eval/manifests/test_games.json ("all", "vita-test", "psp-test", their "family" members) and CLANNAD (v4).
+On the dev manifests of 2026-10-14 that refuses 9 regions (v1267, v4060, v36: shared releases and the
+CLANNAD family).
 
 The pack holds crops of copyrighted screenshots: write it outside the repository and never commit or share
 it. --index writes a pixel-free JSON sidecar (region id, box, dark flag, size, CTC frames per line).
@@ -41,6 +42,9 @@ MAX_WIDTH = 1024
 def protected_vns():
     t = json.loads((ROOT / "eval/manifests/test_games.json").read_text(encoding="utf-8"))
     vns = set(t["all"]) | set(t["vita-test"]) | set(t["psp-test"]) | {"v4"}
+    reserved = ROOT / "eval/manifests/reserved.json"
+    if reserved.exists():   # the committed test reservation (#81): the CLANNAD family and the shared releases
+        vns |= set(json.loads(reserved.read_text(encoding="utf-8"))["test"])
     for k, members in t.get("family", {}).items():
         if k in vns or vns.intersection(members):
             vns |= {k, *members}

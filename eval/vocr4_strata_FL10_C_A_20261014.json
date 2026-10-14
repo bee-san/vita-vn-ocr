@@ -1,0 +1,419 @@
+{
+ "kind": "vocr4-strata",
+ "size": "FL10",
+ "x": "C",
+ "y": "A",
+ "runs_x": [
+  "v4c_FL10_seed1",
+  "v4c_FL10_seed2"
+ ],
+ "runs_y": [
+  "v4a_FL10_seed1",
+  "v4a_FL10_seed2"
+ ],
+ "report_only": true,
+ "strata": {
+  "teacher_val": {
+   "dakuten-smallkana": {
+    "delta_points": 0.02,
+    "ci95": [
+     -0.071,
+     0.11
+    ],
+    "lines": 829,
+    "vns": 164,
+    "cer_x": 0.01864,
+    "cer_y": 0.01884
+   },
+   "ink:14-19": {
+    "delta_points": -0.042,
+    "ci95": [
+     -0.151,
+     0.063
+    ],
+    "lines": 757,
+    "vns": 152,
+    "cer_x": 0.01191,
+    "cer_y": 0.0115
+   },
+   "ink:20-27": {
+    "delta_points": 0.049,
+    "ci95": [
+     -0.094,
+     0.192
+    ],
+    "lines": 361,
+    "vns": 93,
+    "cer_x": 0.01337,
+    "cer_y": 0.01385
+   },
+   "ink:28+": {
+    "delta_points": -0.237,
+    "ci95": [
+     -0.652,
+     0.114
+    ],
+    "lines": 44,
+    "vns": 15,
+    "cer_x": 0.016,
+    "cer_y": 0.01363
+   },
+   "ink:<14": {
+    "delta_points": -0.072,
+    "ci95": [
+     -0.347,
+     0.22
+    ],
+    "lines": 481,
+    "vns": 114,
+    "cer_x": 0.05872,
+    "cer_y": 0.058
+   },
+   "kind:hires": {
+    "delta_points": -0.039,
+    "ci95": [
+     -0.156,
+     0.08
+    ],
+    "lines": 1058,
+    "vns": 133,
+    "cer_x": 0.02934,
+    "cer_y": 0.02895
+   },
+   "kind:psp": {
+    "delta_points": -0.019,
+    "ci95": [
+     -0.179,
+     0.15
+    ],
+    "lines": 424,
+    "vns": 41,
+    "cer_x": 0.01244,
+    "cer_y": 0.01225
+   },
+   "kind:vita": {
+    "delta_points": 0.016,
+    "ci95": [
+     -0.149,
+     0.175
+    ],
+    "lines": 161,
+    "vns": 12,
+    "cer_x": 0.01218,
+    "cer_y": 0.01234
+   },
+   "latin-digits": {
+    "delta_points": -0.411,
+    "ci95": [
+     -0.969,
+     0.046
+    ],
+    "lines": 62,
+    "vns": 30,
+    "cer_x": 0.05135,
+    "cer_y": 0.04724
+   },
+   "len:1-4": {
+    "delta_points": -0.2,
+    "ci95": [
+     -0.692,
+     0.325
+    ],
+    "lines": 604,
+    "vns": 150,
+    "cer_x": 0.06956,
+    "cer_y": 0.06756
+   },
+   "len:13+": {
+    "delta_points": -0.015,
+    "ci95": [
+     -0.101,
+     0.072
+    ],
+    "lines": 588,
+    "vns": 149,
+    "cer_x": 0.01638,
+    "cer_y": 0.01623
+   },
+   "len:5-12": {
+    "delta_points": 0.007,
+    "ci95": [
+     -0.198,
+     0.204
+    ],
+    "lines": 451,
+    "vns": 125,
+    "cer_x": 0.02615,
+    "cer_y": 0.02622
+   },
+   "namelike": {
+    "delta_points": -0.202,
+    "ci95": [
+     -0.62,
+     0.257
+    ],
+    "lines": 706,
+    "vns": 151,
+    "cer_x": 0.06653,
+    "cer_y": 0.06452
+   },
+   "pol:bright-on-dark": {
+    "delta_points": -0.028,
+    "ci95": [
+     -0.136,
+     0.081
+    ],
+    "lines": 1042,
+    "vns": 147,
+    "cer_x": 0.01836,
+    "cer_y": 0.01808
+   },
+   "pol:dark-on-light": {
+    "delta_points": -0.031,
+    "ci95": [
+     -0.205,
+     0.144
+    ],
+    "lines": 601,
+    "vns": 111,
+    "cer_x": 0.03285,
+    "cer_y": 0.03254
+   },
+   "rare-kanji": {
+    "delta_points": -0.058,
+    "ci95": [
+     -0.393,
+     0.236
+    ],
+    "lines": 116,
+    "vns": 56,
+    "cer_x": 0.03074,
+    "cer_y": 0.03016
+   },
+   "target:psp": {
+    "delta_points": -0.014,
+    "ci95": [
+     -0.176,
+     0.153
+    ],
+    "lines": 675,
+    "vns": 120,
+    "cer_x": 0.03193,
+    "cer_y": 0.03179
+   },
+   "target:vita": {
+    "delta_points": -0.04,
+    "ci95": [
+     -0.15,
+     0.069
+    ],
+    "lines": 968,
+    "vns": 144,
+    "cer_x": 0.01832,
+    "cer_y": 0.01793
+   }
+  },
+  "devnative": {
+   "dakuten-smallkana": {
+    "delta_points": -0.016,
+    "ci95": [
+     -0.167,
+     0.126
+    ],
+    "lines": 607,
+    "vns": 43,
+    "cer_x": 0.01547,
+    "cer_y": 0.0153
+   },
+   "ink:14-19": {
+    "delta_points": 0.003,
+    "ci95": [
+     -0.192,
+     0.199
+    ],
+    "lines": 600,
+    "vns": 37,
+    "cer_x": 0.02413,
+    "cer_y": 0.02417
+   },
+   "ink:20-27": {
+    "delta_points": -0.223,
+    "ci95": [
+     -0.484,
+     -0.009
+    ],
+    "lines": 204,
+    "vns": 26,
+    "cer_x": 0.02546,
+    "cer_y": 0.02324
+   },
+   "ink:28+": {
+    "delta_points": 0.183,
+    "ci95": [
+     -0.111,
+     2.744
+    ],
+    "lines": 46,
+    "vns": 7,
+    "cer_x": 0.01428,
+    "cer_y": 0.01611
+   },
+   "ink:<14": {
+    "delta_points": -0.074,
+    "ci95": [
+     -0.998,
+     0.439
+    ],
+    "lines": 136,
+    "vns": 18,
+    "cer_x": 0.04881,
+    "cer_y": 0.04807
+   },
+   "kind:psp": {
+    "delta_points": -0.003,
+    "ci95": [
+     -0.181,
+     0.179
+    ],
+    "lines": 784,
+    "vns": 36,
+    "cer_x": 0.02722,
+    "cer_y": 0.0272
+   },
+   "kind:vita": {
+    "delta_points": -0.185,
+    "ci95": [
+     -0.282,
+     -0.026
+    ],
+    "lines": 202,
+    "vns": 8,
+    "cer_x": 0.02181,
+    "cer_y": 0.01996
+   },
+   "len:1-4": {
+    "delta_points": -0.885,
+    "ci95": [
+     -2.148,
+     0.465
+    ],
+    "lines": 247,
+    "vns": 39,
+    "cer_x": 0.21317,
+    "cer_y": 0.20432
+   },
+   "len:13+": {
+    "delta_points": 0.027,
+    "ci95": [
+     -0.064,
+     0.119
+    ],
+    "lines": 468,
+    "vns": 41,
+    "cer_x": 0.00975,
+    "cer_y": 0.01001
+   },
+   "len:5-12": {
+    "delta_points": -0.043,
+    "ci95": [
+     -0.336,
+     0.231
+    ],
+    "lines": 271,
+    "vns": 43,
+    "cer_x": 0.02839,
+    "cer_y": 0.02796
+   },
+   "namelike": {
+    "delta_points": -0.143,
+    "ci95": [
+     -1.312,
+     1.042
+    ],
+    "lines": 273,
+    "vns": 40,
+    "cer_x": 0.19237,
+    "cer_y": 0.19094
+   },
+   "pol:bright-on-dark": {
+    "delta_points": -0.069,
+    "ci95": [
+     -0.273,
+     0.144
+    ],
+    "lines": 666,
+    "vns": 36,
+    "cer_x": 0.02743,
+    "cer_y": 0.02674
+   },
+   "pol:dark-on-light": {
+    "delta_points": 0.006,
+    "ci95": [
+     -0.208,
+     0.211
+    ],
+    "lines": 319,
+    "vns": 25,
+    "cer_x": 0.02326,
+    "cer_y": 0.02332
+   },
+   "rare-kanji": {
+    "delta_points": -0.534,
+    "ci95": [
+     -1.045,
+     0.0
+    ],
+    "lines": 79,
+    "vns": 24,
+    "cer_x": 0.06565,
+    "cer_y": 0.06031
+   },
+   "target:psp": {
+    "delta_points": -0.003,
+    "ci95": [
+     -0.181,
+     0.179
+    ],
+    "lines": 784,
+    "vns": 36,
+    "cer_x": 0.02722,
+    "cer_y": 0.0272
+   },
+   "target:vita": {
+    "delta_points": -0.185,
+    "ci95": [
+     -0.282,
+     -0.026
+    ],
+    "lines": 202,
+    "vns": 8,
+    "cer_x": 0.02181,
+    "cer_y": 0.01996
+   }
+  }
+ },
+ "protocol_sha256": "c0f64bd6004f3f9f65ce36920ca6c5525b86f3165e871078233a15a442d93839",
+ "computed": "2026-10-14T04:59:09Z",
+ "inputs": {
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/tv_v4c_FL10_seed1.json": "74ce815da4372dec3c7fd10cf7a4d828c8ca12577ee9d6a8752d6912eeb14981",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/tv_v4c_FL10_seed2.json": "13d7ba5a47358272b7cf78c465d7ffd25aa03e5aff5415d6f3826b99d3810062",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/tv_v4a_FL10_seed1.json": "d7a1a4645a108bd27972b8bd784a16aea8815ac93a7940d8ffca864ee4fba170",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/tv_v4a_FL10_seed2.json": "44fafa51d7d61bbdb36e866458aa08aa98f28daa439c935fe711045c0566a037",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_strict_ink_v4c_FL10_seed1.json": "2c4c8faa38ee705436c9101e43ff1d9450c7124b1d3b10b80d5b6d299ef92196",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_strict_grad_v4c_FL10_seed1.json": "f5768fe8ea24c93b25026d65cf5b224d33cc85569fd9fc11de77dfac128fee8b",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_tv_native_ink_v4c_FL10_seed1.json": "10d7ee4860560d02594a5e51d5c69ea7231f29f6ddf5d2de58be4b86ab73fe81",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_tv_native_grad_v4c_FL10_seed1.json": "b78efde4cc91f1dffcb703d1b6400ee9920de9ba18d6f5c47b8a326e9042a5bd",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_strict_ink_v4c_FL10_seed2.json": "30e0fb2c0fb2f5e1b9c534bb5f0e082d16ecb8975b69f288f8929646df6b27bf",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_strict_grad_v4c_FL10_seed2.json": "39e37ad0f89c0e8e00225e9e35c8b8a804f3fa745977ea95e435e5d1492cb959",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_tv_native_ink_v4c_FL10_seed2.json": "cc8edb5072efbe119151ffc7d912bc6e890d49adee4474f542beeffae0df5462",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_tv_native_grad_v4c_FL10_seed2.json": "35716803bc42c59c07d5f9c81388b8734b9d852b95a31544c915fb3062db3d51",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_strict_ink_v4a_FL10_seed1.json": "681907ed25b2209faf3060a1597d5956f9d7300977e3b33529987914fabcba85",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_strict_grad_v4a_FL10_seed1.json": "ac50c077e40878b0ec3ffbf3bbaa787feb9148035d0e2188870bd2ece0b6e096",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_tv_native_ink_v4a_FL10_seed1.json": "7dbeed25ca7a5d19cf6385156dfd58361863ac104acc2be0547e0dfe419be976",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_tv_native_grad_v4a_FL10_seed1.json": "d8f4a5a66b7bb2b539d8106532536c8fbd816bd889675a13a16f42a785a86cd1",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_strict_ink_v4a_FL10_seed2.json": "56ec7b65ce35c80b007531f82b975710acf79d9ece2e3698b309a587e10dbdad",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_strict_grad_v4a_FL10_seed2.json": "7c1438dcd32067749b85748b310c0bcdcc184068c473e256aacf3b500fb8d3f0",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_tv_native_ink_v4a_FL10_seed2.json": "e18878c7a28cdb4570859c153935d8b4b73155ca3b27c65be27a037342cd3e85",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/FL10/scores/dn_tv_native_grad_v4a_FL10_seed2.json": "b7b85584c793130afaf6013822995280b78748e0898714bb5d09ef9d2b3f7792"
+ }
+}

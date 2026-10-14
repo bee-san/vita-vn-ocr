@@ -1,0 +1,419 @@
+{
+ "kind": "vocr4-strata",
+ "size": "H15",
+ "x": "C",
+ "y": "A",
+ "runs_x": [
+  "v4c_H15_seed1",
+  "v4c_H15_seed2"
+ ],
+ "runs_y": [
+  "v4a_H15_seed1",
+  "v4a_H15_seed2"
+ ],
+ "report_only": true,
+ "strata": {
+  "teacher_val": {
+   "dakuten-smallkana": {
+    "delta_points": 0.094,
+    "ci95": [
+     -0.01,
+     0.195
+    ],
+    "lines": 829,
+    "vns": 164,
+    "cer_x": 0.01595,
+    "cer_y": 0.01689
+   },
+   "ink:14-19": {
+    "delta_points": 0.022,
+    "ci95": [
+     -0.094,
+     0.137
+    ],
+    "lines": 757,
+    "vns": 152,
+    "cer_x": 0.00885,
+    "cer_y": 0.00907
+   },
+   "ink:20-27": {
+    "delta_points": 0.0,
+    "ci95": [
+     -0.135,
+     0.14
+    ],
+    "lines": 361,
+    "vns": 93,
+    "cer_x": 0.0105,
+    "cer_y": 0.0105
+   },
+   "ink:28+": {
+    "delta_points": 0.118,
+    "ci95": [
+     0.0,
+     0.568
+    ],
+    "lines": 44,
+    "vns": 15,
+    "cer_x": 0.00889,
+    "cer_y": 0.01007
+   },
+   "ink:<14": {
+    "delta_points": 0.431,
+    "ci95": [
+     0.093,
+     0.76
+    ],
+    "lines": 481,
+    "vns": 114,
+    "cer_x": 0.05543,
+    "cer_y": 0.05973
+   },
+   "kind:hires": {
+    "delta_points": 0.201,
+    "ci95": [
+     0.063,
+     0.336
+    ],
+    "lines": 1058,
+    "vns": 133,
+    "cer_x": 0.0256,
+    "cer_y": 0.02761
+   },
+   "kind:psp": {
+    "delta_points": -0.064,
+    "ci95": [
+     -0.245,
+     0.114
+    ],
+    "lines": 424,
+    "vns": 41,
+    "cer_x": 0.01057,
+    "cer_y": 0.00993
+   },
+   "kind:vita": {
+    "delta_points": -0.031,
+    "ci95": [
+     -0.176,
+     0.1
+    ],
+    "lines": 161,
+    "vns": 12,
+    "cer_x": 0.00999,
+    "cer_y": 0.00968
+   },
+   "latin-digits": {
+    "delta_points": 0.704,
+    "ci95": [
+     0.377,
+     1.102
+    ],
+    "lines": 62,
+    "vns": 30,
+    "cer_x": 0.04343,
+    "cer_y": 0.05047
+   },
+   "len:1-4": {
+    "delta_points": 0.328,
+    "ci95": [
+     -0.166,
+     0.842
+    ],
+    "lines": 604,
+    "vns": 150,
+    "cer_x": 0.05801,
+    "cer_y": 0.06129
+   },
+   "len:13+": {
+    "delta_points": 0.06,
+    "ci95": [
+     -0.048,
+     0.159
+    ],
+    "lines": 588,
+    "vns": 149,
+    "cer_x": 0.0132,
+    "cer_y": 0.0138
+   },
+   "len:5-12": {
+    "delta_points": 0.211,
+    "ci95": [
+     -0.022,
+     0.455
+    ],
+    "lines": 451,
+    "vns": 125,
+    "cer_x": 0.02714,
+    "cer_y": 0.02925
+   },
+   "namelike": {
+    "delta_points": 0.287,
+    "ci95": [
+     -0.143,
+     0.723
+    ],
+    "lines": 706,
+    "vns": 151,
+    "cer_x": 0.059,
+    "cer_y": 0.06186
+   },
+   "pol:bright-on-dark": {
+    "delta_points": 0.092,
+    "ci95": [
+     -0.026,
+     0.208
+    ],
+    "lines": 1042,
+    "vns": 147,
+    "cer_x": 0.01564,
+    "cer_y": 0.01656
+   },
+   "pol:dark-on-light": {
+    "delta_points": 0.162,
+    "ci95": [
+     -0.025,
+     0.355
+    ],
+    "lines": 601,
+    "vns": 111,
+    "cer_x": 0.02896,
+    "cer_y": 0.03058
+   },
+   "rare-kanji": {
+    "delta_points": -0.195,
+    "ci95": [
+     -0.574,
+     0.137
+    ],
+    "lines": 116,
+    "vns": 56,
+    "cer_x": 0.02588,
+    "cer_y": 0.02393
+   },
+   "target:psp": {
+    "delta_points": 0.215,
+    "ci95": [
+     0.007,
+     0.432
+    ],
+    "lines": 675,
+    "vns": 120,
+    "cer_x": 0.02917,
+    "cer_y": 0.03132
+   },
+   "target:vita": {
+    "delta_points": 0.052,
+    "ci95": [
+     -0.047,
+     0.157
+    ],
+    "lines": 968,
+    "vns": 144,
+    "cer_x": 0.01488,
+    "cer_y": 0.0154
+   }
+  },
+  "devnative": {
+   "dakuten-smallkana": {
+    "delta_points": -0.068,
+    "ci95": [
+     -0.216,
+     0.069
+    ],
+    "lines": 607,
+    "vns": 43,
+    "cer_x": 0.01355,
+    "cer_y": 0.01287
+   },
+   "ink:14-19": {
+    "delta_points": -0.107,
+    "ci95": [
+     -0.323,
+     0.097
+    ],
+    "lines": 600,
+    "vns": 37,
+    "cer_x": 0.02452,
+    "cer_y": 0.02344
+   },
+   "ink:20-27": {
+    "delta_points": -0.145,
+    "ci95": [
+     -0.386,
+     0.041
+    ],
+    "lines": 204,
+    "vns": 26,
+    "cer_x": 0.01578,
+    "cer_y": 0.01433
+   },
+   "ink:28+": {
+    "delta_points": 0.037,
+    "ci95": [
+     -1.22,
+     0.135
+    ],
+    "lines": 46,
+    "vns": 7,
+    "cer_x": 0.00549,
+    "cer_y": 0.00586
+   },
+   "ink:<14": {
+    "delta_points": -0.396,
+    "ci95": [
+     -1.398,
+     0.145
+    ],
+    "lines": 136,
+    "vns": 18,
+    "cer_x": 0.04361,
+    "cer_y": 0.03964
+   },
+   "kind:psp": {
+    "delta_points": -0.165,
+    "ci95": [
+     -0.389,
+     0.034
+    ],
+    "lines": 784,
+    "vns": 36,
+    "cer_x": 0.0268,
+    "cer_y": 0.02515
+   },
+   "kind:vita": {
+    "delta_points": -0.019,
+    "ci95": [
+     -0.206,
+     0.153
+    ],
+    "lines": 202,
+    "vns": 8,
+    "cer_x": 0.01022,
+    "cer_y": 0.01003
+   },
+   "len:1-4": {
+    "delta_points": -1.558,
+    "ci95": [
+     -3.355,
+     0.156
+    ],
+    "lines": 247,
+    "vns": 39,
+    "cer_x": 0.18237,
+    "cer_y": 0.16678
+   },
+   "len:13+": {
+    "delta_points": -0.08,
+    "ci95": [
+     -0.188,
+     0.02
+    ],
+    "lines": 468,
+    "vns": 41,
+    "cer_x": 0.00812,
+    "cer_y": 0.00733
+   },
+   "len:5-12": {
+    "delta_points": 0.108,
+    "ci95": [
+     -0.318,
+     0.517
+    ],
+    "lines": 271,
+    "vns": 43,
+    "cer_x": 0.02925,
+    "cer_y": 0.03032
+   },
+   "namelike": {
+    "delta_points": -1.118,
+    "ci95": [
+     -2.814,
+     0.527
+    ],
+    "lines": 273,
+    "vns": 40,
+    "cer_x": 0.17058,
+    "cer_y": 0.1594
+   },
+   "pol:bright-on-dark": {
+    "delta_points": -0.165,
+    "ci95": [
+     -0.379,
+     0.03
+    ],
+    "lines": 666,
+    "vns": 36,
+    "cer_x": 0.02401,
+    "cer_y": 0.02236
+   },
+   "pol:dark-on-light": {
+    "delta_points": -0.07,
+    "ci95": [
+     -0.374,
+     0.211
+    ],
+    "lines": 319,
+    "vns": 25,
+    "cer_x": 0.02134,
+    "cer_y": 0.02063
+   },
+   "rare-kanji": {
+    "delta_points": -0.344,
+    "ci95": [
+     -1.253,
+     0.374
+    ],
+    "lines": 79,
+    "vns": 24,
+    "cer_x": 0.04466,
+    "cer_y": 0.04122
+   },
+   "target:psp": {
+    "delta_points": -0.165,
+    "ci95": [
+     -0.389,
+     0.034
+    ],
+    "lines": 784,
+    "vns": 36,
+    "cer_x": 0.0268,
+    "cer_y": 0.02515
+   },
+   "target:vita": {
+    "delta_points": -0.019,
+    "ci95": [
+     -0.206,
+     0.153
+    ],
+    "lines": 202,
+    "vns": 8,
+    "cer_x": 0.01022,
+    "cer_y": 0.01003
+   }
+  }
+ },
+ "protocol_sha256": "c0f64bd6004f3f9f65ce36920ca6c5525b86f3165e871078233a15a442d93839",
+ "computed": "2026-10-14T04:59:10Z",
+ "inputs": {
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4c_H15_seed1.json": "a249644b1b3cc82c9651086ff57bae5e2c9fc6c478cc968883552ea456ae6baa",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4c_H15_seed2.json": "cb7a0f97074c2d5e4c3c7f14421974de28c3b2ed6179fe18698c1da43be6387f",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4a_H15_seed1.json": "ff8911b9f37045ca947c2f3f4e80eaad148672e145b4e7605ed588b7a5eed09d",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4a_H15_seed2.json": "7543d74cc732531d059a10c37155f697363bc478ed9fcbfed9d994bd7a5a7c39",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4c_H15_seed1.json": "4683af6ec0b6b127ad8764c98b06c9f2c1ca17806092bfa165c9efbb1c8923e3",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4c_H15_seed1.json": "fad5df4bf1da9a2c6ff0ad51f43430bd098e531214bf24ebb4a2b19ab5139ac7",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4c_H15_seed1.json": "faa82dd2ea435fc3c35b983df556e62f74fd7bbae43f31251c613af560e851a0",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4c_H15_seed1.json": "a82f308140cb7b13dfb11dbc6bcbd11fbed544b957819750db3ee5616d68d30a",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4c_H15_seed2.json": "20eb55584cd18e454c787fd420278eb51ba09b8bf8616e68974c061e7d8f7ecb",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4c_H15_seed2.json": "d9623dfdf1ddb05f6eb30b61ad1a3355d8b088a5a2cfa1a273827a49a4e36f81",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4c_H15_seed2.json": "1e29e4e877c9d147c961aa7e68093417d80acf0f805fa7f55aebc035d45147c2",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4c_H15_seed2.json": "cb0eaa074070aa86b3cdba3e3a14fda5c79882f16eac44c28d53e44427272f07",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4a_H15_seed1.json": "3efbb592852d90bb6c1c3547b4739a0ceb846a3e2994bf084823fdd7b72aa7ff",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4a_H15_seed1.json": "0a9cb48b4f9aac9af65ac46d1e6226c3302a8ae522d52940e64dbfaa5a972402",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4a_H15_seed1.json": "6309f742665ddc86d606083980c71ded8458f15f3ccd281adcd460630748c82f",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4a_H15_seed1.json": "9cb1876e438de00da0589973a45b05710b69704e340e39b22832c37901d0ef32",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4a_H15_seed2.json": "d125a430f778f34e586cf440f183727aebb1f5e36724a982d69b8c8a92d727b1",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4a_H15_seed2.json": "fb6ed97e1678af7f7551d35c5de1429f2355406c7aee8f868763099fe21b7d4b",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4a_H15_seed2.json": "451f7eca1a126a77d9fa70d45b157825e8f2d259e492e6429bbc5ae3cb5f8fe6",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4a_H15_seed2.json": "0d9a767f65980a5aa679da384bf41b4c17c413a20230a643e2dad0b34f38d874"
+ }
+}

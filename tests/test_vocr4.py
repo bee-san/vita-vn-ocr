@@ -224,3 +224,17 @@ def test_devnative_scores_in_batches(tmp_path):
     models, lines = c["devnative"]
     assert len(lines) == 140 and set(models) == set(runs)
     assert len(c["teacher_val"][1]) == 240 and set(c["teacher_val"][0]) == set(runs)
+
+
+def test_strata_report_only(tmp_path):
+    runs = _runs("FL10", {"C": (0, 0), "A": (-1, -1), "M": (0, 0)})
+    tv = _scores(tmp_path / "tv.json", runs, seed=9)
+    dn = _scores(tmp_path / "dn.json", runs, n=120, vns=12, seed=10, tag="d")
+    for p in (tv, dn):                                     # give every line a tag
+        d = json.loads(Path(p).read_text())
+        for i, ln in enumerate(d["lines"]):
+            ln["tags"] = ["kind:psp" if i % 2 else "kind:hires"]
+        Path(p).write_text(json.dumps(d))
+    s = SEL.strata(P, "FL10", SEL.load_cohorts([tv], [dn]), "C", "A", n_boot=500)
+    assert s["report_only"] and set(s["strata"]["teacher_val"]) == {"kind:psp", "kind:hires"}
+    assert all(r["delta_points"] < 0 for r in s["strata"]["teacher_val"].values())

@@ -10,7 +10,8 @@ request), in two arms kept apart. On the same stored line crops its recognizer r
 CER [0.65, 0.93] — below every system here, Lens included — but its overall line CER is 14.21%, because on
 the finder's wide name-plate crops it reads the scene art and writes far past the name (names 217.75% CER;
 94.9% of those errors are characters beyond the name's length, 4,690 of 4,810 on crops over 500 px). On the
-full screens its own detector drops almost all those name plates, and whole dialogue per screen comes to
+full screens its own detector isolates most of those name plates from the scene art, and whole dialogue per
+screen comes to
 7.54% CER [6.93, 8.19], between VOCR3_W20 (4.86%) and VOCR2/VOCR3_FL10. MeikiOCR is **not a Vita candidate**:
 its three fp32 ONNX models are 46 MB, and even the project's int8 MNN conversion of the recognizer alone is
 5.4 MB (notes/27 measured about 8 s per line on the console). It also helped build the references (its
@@ -320,7 +321,7 @@ whole screens. The screens whose every crop is a reference or a two-read empty c
 
 | system | screen CER % [95% CI] | dialogue CER % [95% CI] | exact screens % [95% CI] |
 |---|---|---|---:|
-| MeikiOCR_screen (its own det + rec) | 7.54 [6.93, 8.19] | 8.06 [7.40, 8.76] | 43.0 [40.8, 43.2] |
+| MeikiOCR_screen (its own det + rec) | 7.54 [6.93, 8.19] | 8.06 [7.40, 8.76] | 43.0 [40.8, 45.3] |
 | VOCR3_W20 (GRAD crops) | 4.86 [4.51, 5.23] | 4.86 [4.49, 5.24] | 58.6 [56.5, 60.8] |
 | VOCR_H15 (GRAD crops) | 3.57 [3.33, 3.82] | 3.23 [2.99, 3.49] | 58.0 [55.7, 60.2] |
 | Lens (GRAD crops) | 1.65 [1.00, 2.38] | 1.76 [1.07, 2.54] | 95.4 [94.4, 96.3] |

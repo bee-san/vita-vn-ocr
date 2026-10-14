@@ -2,6 +2,8 @@
 
 A [rejected horizontal-padding experiment](dialogue-padding.md) is archived with its frozen source revision and aggregate results. Its runtime change is excluded; the original preprocessing remains the default.
 
+An optional post-finder refinement, `runtime/vocr_lines_refine.c` (separate from this frozen file), cuts each GRAD box back to its text band, drops frame rows, splits merged rows and trims cursors and portrait edges. It is a gain on PSP-sized text and on the development cohorts, not on native Vita text in the protected sets: see [finder-tighten](finder-tighten.md).
+
 The recognizer reads one line at a time, so something has to cut the user's region into lines. The finder v1 was trained with is vita-jp-overlay's bright-pixel row projection (`vjo_ocr_find_lines`). It only sees near-white text. Dark text on a light box, light text on a light bar, outlined text and pale-yellow names make it reject the region or find nothing. On the research campaign's 16 real regions it rejects 4, and the pipeline CER is 28.4%.
 
 `runtime/vocr_lines.c` replaces it with a polarity-agnostic finder. It is plain C99 with no allocation (the caller passes an arena), integer-only and bit-exact with a Python twin, `synth/common.py find_lines()`, so the training crops are the crops the console sees. The legacy finder is kept behind a flag (`VOCR_LINES_LEGACY`, `find_lines(img, "legacy")`) for comparison and to reproduce v1's data.

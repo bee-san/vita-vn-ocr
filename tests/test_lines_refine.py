@@ -154,3 +154,29 @@ def test_c_arena_fits_in_the_finders(driver):
         refine, finder = map(int, subprocess.run([str(driver), "--arena", str(w), str(h)], check=True,
                                                  capture_output=True, text=True).stdout.split())
         assert 0 < refine <= finder
+
+
+def test_frozen_sources_match_the_protocol():
+    """The committed results are for this code: a changed refinement needs a new protocol and new results."""
+    import hashlib
+    import json
+    proto = json.loads((ROOT / "eval" / "finder_tighten_protocol.json").read_text())
+    for f in ("runtime/vocr_lines_refine.c", "runtime/vocr_lines_refine.h", "synth/lines_refine.py"):
+        assert hashlib.sha256((ROOT / f).read_bytes()).hexdigest() == proto["refinement"]["source_sha256"][f], f
+    assert proto["refinement"]["flags_default"] == R.DEFAULT
+
+
+def test_committed_results_hold_no_text():
+    import json
+    forbidden = {"text", "pred", "preds", "ref", "reference_text", "label", "lens", "readings"}
+
+    def walk(v, where):
+        if isinstance(v, dict):
+            for k, x in v.items():
+                assert k not in forbidden, f"{where}.{k}"
+                walk(x, f"{where}.{k}")
+        elif isinstance(v, list):
+            for i, x in enumerate(v):
+                walk(x, f"{where}[{i}]")
+    for name in ("dev", "protected", "clannad", "a9"):
+        walk(json.loads((ROOT / "eval" / f"finder_tighten_{name}_20261014.json").read_text()), name)

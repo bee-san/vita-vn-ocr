@@ -1,0 +1,382 @@
+{
+ "kind": "finder-tighten-clannad",
+ "flags": 31,
+ "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+ "scored_lines": 3048,
+ "matched_finder_boxes": 3048,
+ "unmatched": 0,
+ "pages": 2044,
+ "native": {
+  "driver": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/finder-tighten/clannad/build/vocr_lines_refine_test",
+  "driver_sha256": "04a82fb48a0188a519b01538efde00a8a049511847bec08c774b70171d4d122a",
+  "library": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/finder-tighten/clannad/build/libvocr_scalar.so",
+  "library_sha256": "0e033bd8ecc926a3e9e0bbca96ca6f6744f6d58a474cc5e573286fac3f540f90",
+  "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+  "finder_flags": [
+   "-std=c99",
+   "-O2",
+   "-ffp-contract=off",
+   "-DVOCR_NO_NEON",
+   "-Wall",
+   "-Wextra",
+   "-Werror"
+  ],
+  "scalar_flags": [
+   "-std=c99",
+   "-O2",
+   "-ffp-contract=off",
+   "-DVOCR_NO_NEON",
+   "-Wall",
+   "-Wextra",
+   "-Werror",
+   "-Wpedantic",
+   "-Wshadow",
+   "-Wstrict-prototypes",
+   "-Wmissing-prototypes",
+   "-Wcast-align",
+   "-Wpointer-arith",
+   "-fPIC",
+   "-shared"
+  ]
+ },
+ "code_sha256": {
+  "eval/finder_tighten.py": "a01ac2e8a8b136b5ea677fbc3f7a7226f158620af6eea7b928e939b5f57148f4",
+  "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+  "synth/common.py": "6b8ca608c4e1ec60c87dd3bc6fa44a03fbb84fe0387ccc77a4c8aefbdc0c13ca",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "train/general_vn_textbox_guard.py": "637fbe5a3cb06dcfd83399218c1558c6d3c69d4ebba44ab0ca0742f2b89b254e",
+  "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+  "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+  "runtime/pyvocr.py": "49cd9bf0ac474728f5aae9df9c7a7b7656a57db85f1eec75ec3ba7829b427376",
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+  "runtime/vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465",
+  "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+  "runtime/vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+  "runtime/vocr_lines_refine_test.c": "c97012482f166e072db42ed15b4475051b0b4ca6f0f3eab115d4bd324ae3926a"
+ },
+ "arms": {
+  "VOCR3-FL10": {
+   "sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154"
+  },
+  "VOCR3-H15": {
+   "sha256": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c"
+  },
+  "VOCR3-W20": {
+   "sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19"
+  },
+  "VOCR4-FL10": {
+   "sha256": "d7c4c08a34ab5349cab30a81ac87c3dd436dd2ea7b69d022537bd78337c181a2"
+  },
+  "VOCR4-H15": {
+   "sha256": "d380d1a4cf4c3c76e4e4b0f9a73fd1619cc1068c4f070d0da07e5e4d05254b9b"
+  },
+  "VOCR4-W20": {
+   "sha256": "2745e69699ad7b2aba3092f83e5ddc1912f405f54b9df8a2e55be82c385b716e"
+  }
+ },
+ "systems": {
+  "VOCR3-FL10/grad": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 1155,
+   "exact_lines": 2289,
+   "cer": 3.2358,
+   "cer_ci95": [
+    2.9646,
+    3.5124
+   ],
+   "exact": 75.0984,
+   "exact_ci95": [
+    73.5564,
+    76.5881
+   ],
+   "hiragana_errors": 477,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 2.3708
+  },
+  "VOCR3-FL10/refine": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 1225,
+   "exact_lines": 2265,
+   "cer": 3.4319,
+   "cer_ci95": [
+    3.1583,
+    3.7174
+   ],
+   "exact": 74.311,
+   "exact_ci95": [
+    72.778,
+    75.8138
+   ],
+   "hiragana_errors": 459,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 2.2813
+  },
+  "VOCR3-H15/grad": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 1155,
+   "exact_lines": 2358,
+   "cer": 3.2358,
+   "cer_ci95": [
+    2.9574,
+    3.5218
+   ],
+   "exact": 77.3622,
+   "exact_ci95": [
+    75.9132,
+    78.7701
+   ],
+   "hiragana_errors": 375,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 1.8638
+  },
+  "VOCR3-H15/refine": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 1203,
+   "exact_lines": 2302,
+   "cer": 3.3703,
+   "cer_ci95": [
+    3.0873,
+    3.662
+   ],
+   "exact": 75.5249,
+   "exact_ci95": [
+    74.0157,
+    76.9659
+   ],
+   "hiragana_errors": 396,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 1.9682
+  },
+  "VOCR3-W20/grad": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 834,
+   "exact_lines": 2464,
+   "cer": 2.3365,
+   "cer_ci95": [
+    2.1278,
+    2.5518
+   ],
+   "exact": 80.8399,
+   "exact_ci95": [
+    79.4333,
+    82.243
+   ],
+   "hiragana_errors": 299,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 1.4861
+  },
+  "VOCR3-W20/refine": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 813,
+   "exact_lines": 2458,
+   "cer": 2.2777,
+   "cer_ci95": [
+    2.0671,
+    2.4936
+   ],
+   "exact": 80.643,
+   "exact_ci95": [
+    79.1948,
+    82.0994
+   ],
+   "hiragana_errors": 299,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 1.4861
+  },
+  "VOCR4-FL10/grad": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 1088,
+   "exact_lines": 2318,
+   "cer": 3.0481,
+   "cer_ci95": [
+    2.7945,
+    3.3158
+   ],
+   "exact": 76.0499,
+   "exact_ci95": [
+    74.5354,
+    77.5271
+   ],
+   "hiragana_errors": 456,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 2.2664
+  },
+  "VOCR4-FL10/refine": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 1152,
+   "exact_lines": 2275,
+   "cer": 3.2274,
+   "cer_ci95": [
+    2.9626,
+    3.5037
+   ],
+   "exact": 74.6391,
+   "exact_ci95": [
+    73.1174,
+    76.1827
+   ],
+   "hiragana_errors": 460,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 2.2863
+  },
+  "VOCR4-H15/grad": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 995,
+   "exact_lines": 2427,
+   "cer": 2.7876,
+   "cer_ci95": [
+    2.5178,
+    3.0619
+   ],
+   "exact": 79.626,
+   "exact_ci95": [
+    78.1854,
+    81.051
+   ],
+   "hiragana_errors": 452,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 2.2465
+  },
+  "VOCR4-H15/refine": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 1021,
+   "exact_lines": 2374,
+   "cer": 2.8604,
+   "cer_ci95": [
+    2.5972,
+    3.1329
+   ],
+   "exact": 77.8871,
+   "exact_ci95": [
+    76.3953,
+    79.3449
+   ],
+   "hiragana_errors": 449,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 2.2316
+  },
+  "VOCR4-W20/grad": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 645,
+   "exact_lines": 2589,
+   "cer": 1.807,
+   "cer_ci95": [
+    1.6229,
+    2.0015
+   ],
+   "exact": 84.9409,
+   "exact_ci95": [
+    83.6321,
+    86.2001
+   ],
+   "hiragana_errors": 241,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 1.1978
+  },
+  "VOCR4-W20/refine": {
+   "pages": 2044,
+   "lines": 3048,
+   "chars": 35694,
+   "errors": 800,
+   "exact_lines": 2532,
+   "cer": 2.2413,
+   "cer_ci95": [
+    2.0177,
+    2.4731
+   ],
+   "exact": 83.0709,
+   "exact_ci95": [
+    81.7225,
+    84.3954
+   ],
+   "hiragana_errors": 268,
+   "hiragana_chars": 20120,
+   "hiragana_cer": 1.332
+  }
+ },
+ "pairs": {
+  "VOCR3-FL10/refine:VOCR3-FL10/grad": {
+   "cer_delta": 0.196111,
+   "cer_ci95": [
+    0.068264,
+    0.326473
+   ],
+   "candidate_errors": 1225,
+   "baseline_errors": 1155,
+   "chars": 35694
+  },
+  "VOCR3-H15/refine:VOCR3-H15/grad": {
+   "cer_delta": 0.134476,
+   "cer_ci95": [
+    0.013839,
+    0.255976
+   ],
+   "candidate_errors": 1203,
+   "baseline_errors": 1155,
+   "chars": 35694
+  },
+  "VOCR3-W20/refine:VOCR3-W20/grad": {
+   "cer_delta": -0.058833,
+   "cer_ci95": [
+    -0.194231,
+    0.072661
+   ],
+   "candidate_errors": 813,
+   "baseline_errors": 834,
+   "chars": 35694
+  },
+  "VOCR4-FL10/refine:VOCR4-FL10/grad": {
+   "cer_delta": 0.179302,
+   "cer_ci95": [
+    0.060821,
+    0.30118
+   ],
+   "candidate_errors": 1152,
+   "baseline_errors": 1088,
+   "chars": 35694
+  },
+  "VOCR4-H15/refine:VOCR4-H15/grad": {
+   "cer_delta": 0.072841,
+   "cer_ci95": [
+    -0.061101,
+    0.207444
+   ],
+   "candidate_errors": 1021,
+   "baseline_errors": 995,
+   "chars": 35694
+  },
+  "VOCR4-W20/refine:VOCR4-W20/grad": {
+   "cer_delta": 0.434247,
+   "cer_ci95": [
+    0.309144,
+    0.563815
+   ],
+   "candidate_errors": 800,
+   "baseline_errors": 645,
+   "chars": 35694
+  }
+ }
+}

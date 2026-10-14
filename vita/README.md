@@ -66,7 +66,7 @@ Each case carries the host build's result for every mode: the text, the CRC-32 o
 
 You need a PS Vita that runs homebrew (HENkaku, h-encore or Ensō) and VitaShell.
 
-1. **Get the VPK and a bundle.** Take `vocr_test.vpk` from CI's `vocr_test-vpk` artifact or build it (above). Write a bundle on a PC with `vita/bundle.py`.
+1. **Get the VPK and a bundle.** Take `vocr_test.vpk` from CI's `vocr_test-vpk` artifact (a `main` run's is kept 30 days, a pull request's 7) or build it (above). Write a bundle on a PC with `vita/bundle.py`.
 2. **Copy the files.** In VitaShell, start FTP (SELECT) or USB. Put `vocr_test.vpk` anywhere on `ux0:`, and copy the bundle folder's contents to `ux0:data/vocr/`.
 3. **Install.** Install the VPK in VitaShell with X. A bubble called "vita-vn-ocr test" (title ID VVOC00001) appears.
 4. **Run it.** Close other apps first, then start it from the LiveArea.

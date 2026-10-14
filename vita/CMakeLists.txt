@@ -5,7 +5,7 @@
 #   cmake --build build/vita
 #
 # Builds, with arm-vita-eabi-gcc:
-#   libvocr.a       runtime/vocr.c + runtime/vocr_lines.c, NEON, the runtime's own -Werror flags
+#   libvocr.a       runtime/vocr.c + runtime/vocr_lm.c + runtime/vocr_lines.c, NEON, the runtime's own -Werror flags
 #   vocr_test       the test app (app/main.c, app/screen.c) -> eboot.bin -> vocr_test.vpk
 # Nothing built here is committed: the VPK is a build product (vita/README.md).
 cmake_minimum_required(VERSION 3.16)
@@ -31,7 +31,7 @@ set(VOCR_ARCH -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard)
 set(VOCR_WARN -std=c99 -ffp-contract=off -Wall -Wextra -Werror -Wpedantic -Wshadow
     -Wstrict-prototypes -Wmissing-prototypes -Wcast-align -Wpointer-arith)
 
-add_library(vocr STATIC ${RT}/vocr.c ${RT}/vocr_lines.c)
+add_library(vocr STATIC ${RT}/vocr.c ${RT}/vocr_lm.c ${RT}/vocr_lines.c)
 target_compile_options(vocr PRIVATE ${VOCR_ARCH} -O2 ${VOCR_WARN})
 # runtime/vocr_lines.mk compiles the line finder with these on top
 set_source_files_properties(${RT}/vocr_lines.c PROPERTIES COMPILE_OPTIONS "-Wconversion;-Wsign-conversion")

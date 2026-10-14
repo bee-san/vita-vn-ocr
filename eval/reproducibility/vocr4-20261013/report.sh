@@ -37,7 +37,7 @@ render)
   ls -la "$R/out/report.json" "$R/out/report_summary.json" "$R/out/report.md" ;;
 clannad)
   # owner-drive-ingest's extra-arms path (read-only on its WORK; refuses before its references are frozen)
-  CR=${CLANNAD_REPO:?set CLANNAD_REPO to a checkout of feat/owner-drive-ingest (or main once merged)}
+  CR=${CLANNAD_REPO:-$REPO}                       # main has eval/clannad_refs.py since #73 (1c6a350)
   WORK=$HERD/shared/private/owner-drive-20261013/clannad-compare; C=$V4/clannad; mkdir -p "$C"
   EX=(); for s in FL10 H15 W20; do EX+=(--extra "VOCR4_$s=VOCR4_${s}_w8.vocr#$(sha256sum "$R/blobs/VOCR4_${s}_w8.vocr" | cut -c1-64)"); done
   (cd "$CR" && .venv-ci/bin/python eval/clannad_refs.py arms --work "$WORK" --blobs "$R/blobs" "${EX[@]}" --suffix vocr4 --into "$C")

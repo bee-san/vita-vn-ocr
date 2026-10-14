@@ -8,6 +8,7 @@
 #   real    eval/vocr4_select.py decide --decision real -> real_decision.json (needs C and A scored)
 #   synth   eval/vocr4_select.py decide --decision synth -> synth_decision.json (needs M scored too)
 #   select  eval/vocr4_select.py select -> selection.json
+#   strata X Y  report only: eval/vocr4_select.py strata (arm X -> arm Y per tag) -> strata_X_Y.json
 set -euo pipefail
 SIZE=$1; STEP=$2
 HERD=/local/home/skerraut/herd-vita-ocr; A=$HERD/shared/artifacts; export HERD
@@ -56,7 +57,7 @@ budget)
     "${ALL[@]}" --out "$SEL/budget" --qemu "$A/vita/qemu" --vitasdk "$A/vita/vitasdk" \
     --arm-cc "$A/runtime/tools/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc" \
     2>&1 | tail -n $((${#ALL[@]} + 4)) ;;
-real|synth|select)
+real|synth|select|strata)
   TV=(); DNS=()
   for r in "${RUNS[@]}"; do
     [ -s "$SEL/scores/tv_$r.json" ] || continue
@@ -68,6 +69,8 @@ real|synth|select)
            --tv "${TV[@]}" --dn "${DNS[@]}" --out "$SEL/real_decision.json" ;;
   synth) $PY eval/vocr4_select.py decide --protocol eval/vocr4_protocol.json --size "$SIZE" --decision synth \
            --tv "${TV[@]}" --dn "${DNS[@]}" --real "$SEL/real_decision.json" --out "$SEL/synth_decision.json" ;;
+  strata) $PY eval/vocr4_select.py strata --protocol eval/vocr4_protocol.json --size "$SIZE" --tv "${TV[@]}" \
+           --dn "${DNS[@]}" --x "$3" --y "$4" --out "$SEL/strata_$3_$4.json" | grep -E "kind:|target:|namelike|rare|len:" ;;
   select) $PY eval/vocr4_select.py select --protocol eval/vocr4_protocol.json --size "$SIZE" --tv "${TV[@]}" \
            --dn "${DNS[@]}" --real "$SEL/real_decision.json" --synth "$SEL/synth_decision.json" \
            --budget-dir "$SEL/budget" --out "$SEL/selection.json" ;;

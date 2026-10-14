@@ -3,7 +3,9 @@
  * Builds a tiny valid blob in memory (stem, depthwise, pointwise, 2x1 collapse,
  * 1x5 temporal depthwise with a residual pointwise, head), then checks loading and
  * validation, arena sizing, tile invariance, text overflow, cancellation and error
- * paths. Run under ASan/UBSan by `make check`.
+ * paths, and the head's argmax on ties, signed zeros, NaN and -inf (a 21-class head:
+ * two full 8-class blocks and a partial one). Run under ASan/UBSan by `make check`, and
+ * as Cortex-A9 NEON and scalar builds under qemu-arm by `make check-arm`.
  */
 #include "../vocr.h"
 
@@ -486,6 +488,147 @@ static void test_limits(void)
     CHECK(strcmp(vocr_strerror(VOCR_E_ARENA), "arena too small") == 0);
 }
 
+
+/* The head's argmax is the first maximum of a frame's logits, as the scalar scan
+ * `if (v > best) best = v` gives it: on ties the lower class, -0 equal to +0, a NaN never
+ * chosen, all -inf (or NaN) the blank. A 21-class head with zero weights makes every
+ * frame's logits its biases, so each case sets them directly; in W8I exactly, sign of zero
+ * included: 0 * (scale * sx) is -0 with a negative scale, and -0 + bias is bias. NEON's W8I
+ * path keeps that scan in vector lanes (vocr.c lanes_argmax) and must agree. */
+enum { HCLASSES = 21 };
+
+static size_t build_head_blob(const float *bias, int int8)
+{
+    unsigned char vocab[2 * (HCLASSES + 1) + HCLASSES];
+    unsigned i, pos = 0, n_ops = 7, cout_pad = (HCLASSES + 7u) & ~7u, n;
+    uint32_t off, w_off, s_off = 0, b_off;
+    float bpad[24];
+    memset(blob_buf, 0, sizeof blob_buf);
+    blob_pos = 64 + 64 * n_ops;
+    lcg = 12345u;
+    off = put_floats(9 * 8, 0.6f);
+    op_rec(0, 1, 1 | 4, 3, 3, 2, 2, 1, 1, 1, 8, 8, 4, off, 9 * 8 * 4, put_floats(8, 0.1f), 0, 9, 8);
+    off = put_floats(9 * 8, 0.6f);
+    op_rec(1, 2, 1 | 4, 3, 3, 2, 2, 1, 1, 8, 8, 4, 2, off, 9 * 8 * 4, put_floats(8, 0.1f), 0, 9, 8);
+    mat_op(2, 3, 1 | 4, 1, 8, 16, 2, 2, int8);
+    mat_op(3, 3, 1 | 4 | 16, 2, 16, 16, 2, 1, int8);
+    off = put_floats(5 * 16, 0.6f);
+    op_rec(4, 2, 1 | 4, 1, 5, 1, 1, 0, 2, 16, 16, 1, 1, off, 5 * 16 * 4, put_floats(16, 0.1f), 0, 5, 16);
+    mat_op(5, 3, 1 | 2 | 4, 1, 16, 16, 1, 1, int8);
+    /* the head: zero weights, the given biases */
+    n = cout_pad * 16u;
+    w_off = (uint32_t)blob_pos;
+    memset(blob_buf + blob_pos, 0, (size_t)n * (int8 ? 1u : 4u));
+    blob_pos = (blob_pos + (size_t)n * (int8 ? 1u : 4u) + 15u) & ~(size_t)15u;
+    if (int8) {
+        s_off = (uint32_t)blob_pos;
+        for (i = 0; i < cout_pad; i++) {
+            const float sc = -0.01f;
+            memcpy(blob_buf + blob_pos + 4u * i, &sc, sizeof sc);
+        }
+        blob_pos = (blob_pos + 4u * cout_pad + 15u) & ~(size_t)15u;
+    }
+    memset(bpad, 0, sizeof bpad);
+    memcpy(bpad, bias, HCLASSES * sizeof(float));
+    b_off = put(bpad, 4u * cout_pad);
+    op_rec(6, 4, 4 | (int8 ? 8 : 0), 1, 1, 1, 1, 0, 0, 16, HCLASSES, 1, 1, w_off, n * (int8 ? 1u : 4u), b_off,
+           s_off, 16, cout_pad);
+    wr16(vocab, 0);
+    wr16(vocab + 2, 0);
+    for (i = 1; i < HCLASSES; i++) {
+        vocab[2 * (HCLASSES + 1) + pos++] = (unsigned char)('A' + i - 1);
+        wr16(vocab + 2 * (i + 1), pos);
+    }
+    off = put(vocab, 2 * (HCLASSES + 1) + pos);
+    memcpy(blob_buf, "VOCR", 4);
+    wr16(blob_buf + 4, 1);
+    wr16(blob_buf + 6, 64);
+    wr32(blob_buf + 8, (uint32_t)blob_pos);
+    wr32(blob_buf + 12, int8 ? 1u : 0u);
+    wr16(blob_buf + 16, 8);
+    wr16(blob_buf + 18, 256);
+    wr16(blob_buf + 20, 4);
+    wr16(blob_buf + 22, n_ops);
+    wr32(blob_buf + 24, HCLASSES);
+    wr32(blob_buf + 28, 64);
+    wr32(blob_buf + 32, off);
+    wr32(blob_buf + 36, pos);
+    wr32(blob_buf + 40, crc32_ref(blob_buf + 64, blob_pos - 64));
+    return blob_pos;
+}
+
+static void test_head_argmax(void)
+{
+    const float ninf = -INFINITY, nan_ = NAN, low = -5.0f;
+    struct {
+        unsigned expect;
+        unsigned n;            /* (class, value) pairs; every other class is `low` */
+        unsigned cls[4];
+        float val[4];
+        int all_ninf;          /* every other class -inf instead */
+    } cases[] = {
+        {9, 2, {9, 17}, {3.0f, 3.0f}, 0},            /* a tie across a full and the partial block */
+        {3, 2, {3, 5}, {2.0f, 2.0f}, 0},             /* a tie inside a block */
+        {2, 3, {12, 4, 2}, {1.0f, 1.0f, 1.0f}, 0},   /* lanes 4 and 2 of blocks 0 and 1 */
+        {12, 3, {12, 20, 4}, {1.5f, 1.5f, 1.0f}, 0}, /* the first of two maxima, in block 1 */
+        {20, 1, {20}, {4.0f}, 0},                    /* the partial block's last class */
+        {1, 2, {1, 3}, {0.0f, -0.0f}, 0},            /* +0 then -0: equal, the first */
+        {1, 2, {1, 3}, {-0.0f, 0.0f}, 0},            /* -0 then +0: equal, the first */
+        {10, 2, {5, 10}, {0.0f, 1.0f}, 0},           /* a NaN is never chosen (set below) */
+        {0, 1, {0}, {0.0f}, 1},                      /* all -inf: the blank */
+        {0, 2, {0, 7}, {0.0f, 0.0f}, 1},             /* NaN and -inf only: the blank (set below) */
+        {16, 1, {16}, {0.5f}, 0},                    /* the partial block's first class */
+    };
+    const int modes[3] = {VOCR_MODE_W8I, VOCR_MODE_W8F, VOCR_MODE_F32};
+    unsigned ci, f;
+    int mi;
+    make_image(201, 19, 0);
+    for (ci = 0; ci < sizeof cases / sizeof cases[0]; ci++)
+        for (mi = 0; mi < 3; mi++) {
+            float bias[HCLASSES];
+            uint16_t best[80];
+            vocr_model m;
+            vocr_opts o;
+            vocr_ctx c;
+            vocr_image im;
+            vocr_extra ex;
+            char text[64], want[2] = {0, 0};
+            unsigned j;
+            for (j = 0; j < HCLASSES; j++) bias[j] = cases[ci].all_ninf ? ninf : low;
+            for (j = 0; j < cases[ci].n; j++) bias[cases[ci].cls[j]] = cases[ci].val[j];
+            if (ci == 7) bias[5] = nan_;
+            if (ci == 9) {
+                bias[0] = nan_;
+                bias[7] = nan_;
+            }
+            CHECK(vocr_load(&m, blob_buf, build_head_blob(bias, mi < 2)) == VOCR_OK);
+            memset(&o, 0, sizeof o);
+            o.mode = modes[mi];
+            o.head_frames = ci % 2 ? 16u : 5u;  /* lane and partial batches of 4 and of 1-3 frames */
+            CHECK(vocr_init(&c, &m, &o, arena_a, vocr_arena_bytes(&m, &o)) == VOCR_OK);
+            im.pixels = img_px;
+            im.width = 201;
+            im.height = 19;
+            im.stride = 201;
+            im.format = VOCR_GREY8;
+            memset(&ex, 0, sizeof ex);
+            memset(best, 0xFF, sizeof best);
+            ex.best = best;
+            ex.cap_frames = 80;
+            CHECK(vocr_run(&c, &im, text, sizeof text, &ex) == VOCR_OK);
+            CHECK(ex.frames > 20 && ex.frames <= 80);
+            for (f = 0; f < ex.frames; f++)
+                if (best[f] != cases[ci].expect) {
+                    fprintf(stderr, "head case %u mode %d frame %u: class %u, want %u\n", ci, modes[mi], f,
+                            best[f], cases[ci].expect);
+                    failures++;
+                    break;
+                }
+            if (cases[ci].expect) want[0] = (char)('A' + cases[ci].expect - 1);
+            CHECK(strcmp(text, want) == 0);
+        }
+}
+
 int main(void)
 {
     test_load(0);
@@ -496,6 +639,7 @@ int main(void)
     test_run(1, 272);
     test_invert();
     test_limits();
+    test_head_argmax();
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

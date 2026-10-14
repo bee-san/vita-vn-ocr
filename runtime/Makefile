@@ -6,6 +6,7 @@
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan)
 #   make check-all        check with gcc and clang, plus strict release builds of both
 #   make arm              static Cortex-A9 CLIs for qemu-arm: NEON and scalar
+#   make check-arm        the C unit tests as Cortex-A9 NEON and scalar builds, under qemu-arm
 #   make size             ARM code size of vocr.o (NEON and scalar)
 #
 # `check` follows CI's contract (ci/runtime.sh): CFLAGS / LDFLAGS given on the command
@@ -45,7 +46,7 @@ QEMU ?= $(TOOLS)/bin/qemu-arm
 SRC = vocr.c vocr.h
 CLI = tools/vocr_cli.c
 
-.PHONY: all check check-vocr check-all arm size parity-arm clean
+.PHONY: all check check-vocr check-all arm check-arm size parity-arm clean
 
 all: $(OUT)/vocr_cli $(OUT)/libvocr.so
 
@@ -96,6 +97,16 @@ $(OUT)/arm/vocr_cli_scalar: $(SRC) $(CLI) | $(OUT)
 	$(ARM_CC) $(WARN) $(ARM_FLAGS) -DVOCR_NO_NEON -static -o $@ vocr.c $(CLI) $(LDLIBS)
 
 arm: $(OUT)/arm/vocr_cli_neon $(OUT)/arm/vocr_cli_scalar
+
+$(OUT)/arm/test_vocr_neon: $(SRC) tests/test_vocr.c | $(OUT)
+	$(ARM_CC) $(WARN) $(ARM_FLAGS) -static -o $@ vocr.c tests/test_vocr.c $(LDLIBS)
+
+$(OUT)/arm/test_vocr_scalar: $(SRC) tests/test_vocr.c | $(OUT)
+	$(ARM_CC) $(WARN) $(ARM_FLAGS) -DVOCR_NO_NEON -static -o $@ vocr.c tests/test_vocr.c $(LDLIBS)
+
+check-arm: $(OUT)/arm/test_vocr_neon $(OUT)/arm/test_vocr_scalar
+	$(QEMU) -cpu cortex-a9 ./$(OUT)/arm/test_vocr_neon
+	$(QEMU) -cpu cortex-a9 ./$(OUT)/arm/test_vocr_scalar
 
 parity-arm: arm
 	for v in neon scalar; do \

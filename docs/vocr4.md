@@ -355,8 +355,8 @@ CER on these references; Lens's lead in exact lines (97.5% against 84.9%) is sti
 | 09:59:41Z to 10:29Z | locked report (spec, shared, a9, overlay, render); CLANNAD 10:35-10:36Z |
 
 - The branch was rebased onto main after these commits, so their hashes changed. The original commits are
-  kept at tags `vocr4-runner-1d8110c`, `vocr4-runner-d67ae32`, `vocr4-history-20261014a` and
-  `vocr4-report-runner-a13a31e`, and the author dates are the times above.
+  kept at tags `vocr4-runner-1d8110c`, `vocr4-runner-d67ae32`, `vocr4-history-20261014a`,
+  `vocr4-report-runner-a13a31e` and `vocr4-history-20261014b`, and the author dates are the times above.
 - No arm, run, weight, checkpoint, threshold or pool was chosen, tuned or dropped on vita-test, psp-test, the fresh
   native textbox test or CLANNAD. Each was scored once, after every selection was committed. train2's in-run
   evaluations (teacher_val, logged) selected nothing and were not read before the new pools were pinned.

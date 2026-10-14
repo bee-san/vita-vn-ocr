@@ -31,9 +31,10 @@ Held-out text for the profile choice is never development data: by default it is
 (real VN lines of training-side VNs, the recognizer's training pool; the LM is not trained on them), never
 teacher_val, devnative, the owner pool or any protected set.
 
-Protected titles (always applied, before step 1): the VNs of eval/manifests/test_games.json ("all": vita-test,
-psp-test, their families and release partners) and data/manifests/synth3_exclude_clannad.json (the CLANNAD
-family), plus any --exclude-vns list. Their VNDB character names and titles (synth3's pinned VNDB extracts) become
+Protected titles (always applied, before step 1): the VNs of eval/manifests/test_games.json (its "all", the
+vita-test and psp-test games and their release partners, together with "all_20261012", the wider list of the
+earlier reservation rule) and data/manifests/synth3_exclude_clannad.json (the CLANNAD family), plus any
+--exclude-vns list. Their VNDB character names and titles (synth3's pinned VNDB extracts) become
 text markers, after synth's rule (synth/owner_games.marker_candidates) but stricter: always every title (>= 3
 Japanese or >= 5 Latin characters), every full name of two or more parts (joined, >= 3 characters) and the
 CLANNAD manifest's own curated markers; and every other full name or name part of >= 2 characters (Japanese script)
@@ -152,7 +153,8 @@ def protected(src, extra_vns=()):
     """(VN ids, [name parts] per character, titles and curated markers) of the protected titles and extra VNs."""
     from synth3_text import norm_vn
     ex = src["exclusions"]
-    vns = set(json.loads(checked(ex["test_games"]).read_text(encoding="utf-8"))["all"])
+    tg = json.loads(checked(ex["test_games"]).read_text(encoding="utf-8"))
+    vns = set(tg["all"]) | set(tg.get("all_20261012", []))      # today's reservation and the 2026-10-12 one
     vns |= set(json.loads(checked(ex["clannad"]).read_text(encoding="utf-8"))["vns"])
     vns |= set(extra_vns)
     curated = list(json.loads(checked(ex["clannad"]).read_text(encoding="utf-8"))["text_markers"]["strings"])

@@ -69,7 +69,7 @@
  "exclusions": {
   "test_games": {
    "path": "eval/manifests/test_games.json",
-   "sha256": "d986adff49f1bfcf3df30ae841d658ec8f06f2b89e01fe37990a0bbd53966d39"
+   "sha256": "c24d67e7697da2a8ebbcc940449ded4ccc839c25acc2bae3a5ef85eec4fcce9b"
   },
   "clannad": {
    "path": "data/manifests/synth3_exclude_clannad.json",

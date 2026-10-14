@@ -122,6 +122,15 @@ Setup: x86-64, one thread pinned to one core, the first 100 synth-val lines (5,7
 - On the Vita the NEON kernels are explicit, so none of this decides speed there.
 - The table predates the register-blocked scalar kernels (`psp/README.md`). With them, gcc 11.5 `-O2` on one core of the same loaded host, over psp-test, went from 36.9 to 12.6 ms per line in f32, 39.1 to 15.5 in w8f and 27.4 to 14.3 in w8i (median of 3 interleaved runs each), with identical logits.
 
+### Console speed (VOCR3-H15, 2026-10-14)
+
+On the owner's console (vita-jp-overlay #81, v0.8.0-test.1) VOCR3-H15 ran 4,941-5,238 µs per CTC frame,
+which is `vita/a9_cycles.py`'s high bound x 1.03 at 333 MHz. The W8I kernels have since been rewritten for
+the Cortex-A9 (8-k NEON passes in `mm_i16` with a prefetched weight stream, the head's argmax in NEON
+lanes, pointer-stepped depthwise taps), bit for bit: the estimate is 2.88 ms per frame for H15 at 333 MHz
+(1.76x; 1.5x if the prefetch does not help). Per layer, calibration and parity: `docs/ocr-speed.md`.
+`make check-arm` runs the C unit tests as Cortex-A9 NEON and scalar builds under qemu-arm.
+
 ## API
 
 ```c

@@ -19,13 +19,52 @@
 #pragma STDC FP_CONTRACT OFF
 #endif
 
+/* Phase markers for the per-layer cycle profile (vita/a9_layers.py): built with
+ * -DVOCR_PROF=name, vocr_run() calls name(id) as each phase starts: id = the op's index for its
+ * step (the head's for run_head), VOCR_PROF_SRC for the input columns, VOCR_PROF_RUN for the
+ * rest. Without VOCR_PROF they compile to nothing, so the console build has none. */
+#ifdef VOCR_PROF
+void VOCR_PROF(unsigned id);
+#define VOCR_MARK(id) VOCR_PROF(id)
+#else
+#define VOCR_MARK(id) ((void)0)
+#endif
+enum { VOCR_PROF_RUN = 100, VOCR_PROF_SRC = 101 };
+
 enum { T_CONV = 1, T_DW = 2, T_PW = 3, T_HEAD = 4 };
+/* VOCR_PREFETCH(p): a cache hint for the line at p (PLD on ARM), which never changes a result:
+ * the int8 weights stream through the L1 once per tile (a layer's matrix is larger than the
+ * L1, or evicted by the layers between), so the matrix kernel asks for them two passes ahead. */
+#if defined(__GNUC__) && !defined(VOCR_NO_PREFETCH)
+#define VOCR_PREFETCH(p) __builtin_prefetch(p)
+#else
+#define VOCR_PREFETCH(p) ((void)(p))
+#endif
+/* The kernels stay out of step_op: inlined, their loop state spills to the stack (gcc 14/15). */
+#if defined(__GNUC__)
+#define VOCR_NOINLINE __attribute__((noinline))
+#else
+#define VOCR_NOINLINE
+#endif
 enum { F_RELU = 1, F_RES = 2, F_BIAS = 4, F_INT8 = 8, F_COLLAPSE = 16 };
 enum { DST_RING = 1, DST_TRANS = 2, DST_ACC = 3 };
 #define HEADER_BYTES 64u
 #define OP_BYTES 64u
 #define MIN_WIDTH 8u
 #define W8I_CHUNK 512u /* int32 sums of at most 512 int8 x int16 products: 512 * 127 * 32767 < 2^31 */
+#ifdef VOCR_NEON
+#define VOCR_HEAD_CHUNK 32u /* head frames per mm_i16 call on the NEON W8I path (1 KB of stack) */
+/* run_head keeps its lanes (int32 keys, uint32 blocks) in the float accumulator region once
+ * quant16 has read it. may_alias keeps those accesses ordered against the region's float ones,
+ * should quant16 or step_op ever be inlined into run_head. */
+#if defined(__GNUC__)
+typedef int32_t vocr_lane_i32 __attribute__((may_alias));
+typedef uint32_t vocr_lane_u32 __attribute__((may_alias));
+#else
+typedef int32_t vocr_lane_i32;
+typedef uint32_t vocr_lane_u32;
+#endif
+#endif
 
 static unsigned rd16(const unsigned char *p) { return (unsigned)p[0] | (unsigned)p[1] << 8; }
 static uint32_t rd32(const unsigned char *p)
@@ -566,7 +605,7 @@ static float relu_f(float v) { return v > 0.0f ? v : 0.0f; }
 
 /* CONV with one input channel (the stem). win: [col][h_in]; output column t reads
  * window columns t * sw + dx. Writes output columns [t0, t1) to out. */
-static void k_conv1(const vocr_op *op, const float *win, float *out, unsigned t0, unsigned t1)
+static VOCR_NOINLINE void k_conv1(const vocr_op *op, const float *win, float *out, unsigned t0, unsigned t1)
 {
     const unsigned C = op->cout, kw = op->kw, Ho = op->h_out, Hi = op->h_in;
     const int relu = (op->flags & F_RELU) != 0;
@@ -589,15 +628,21 @@ static void k_conv1(const vocr_op *op, const float *win, float *out, unsigned t0
                 } else {
                     a0 = a1 = a2 = a3 = z;
                 }
-                for (dy = dy0; dy < dy1; dy++)
-                    for (dx = 0; dx < kw; dx++) {
-                        const float x = win[(size_t)(t * op->sw + dx) * Hi + (unsigned)(r0 + (int)dy)];
-                        const float *wt = op->w + (size_t)(dy * kw + dx) * C + c0;
-                        a0 = vmlaq_n_f32(a0, vld1q_f32(wt), x);
-                        a1 = vmlaq_n_f32(a1, vld1q_f32(wt + 4), x);
-                        a2 = vmlaq_n_f32(a2, vld1q_f32(wt + 8), x);
-                        a3 = vmlaq_n_f32(a3, vld1q_f32(wt + 12), x);
+                /* the same taps in the same order, the input value loaded straight into a NEON
+                 * lane (VLD1 to all lanes) instead of through an ARM register, and the tap's
+                 * input and weights by stepping pointers */
+                for (dy = dy0; dy < dy1; dy++) {
+                    const float *xp = win + (size_t)(t * op->sw) * Hi + (unsigned)(r0 + (int)dy);
+                    const float *wt = op->w + (size_t)(dy * kw) * C + c0;
+                    for (dx = 0; dx < kw; dx++, xp += Hi, wt += C) {
+                        const float32x2_t x = vld1_dup_f32(xp);
+                        const float32x4x2_t wa = vld1q_f32_x2(wt), wb = vld1q_f32_x2(wt + 8);
+                        a0 = vmlaq_lane_f32(a0, wa.val[0], x, 0);
+                        a1 = vmlaq_lane_f32(a1, wa.val[1], x, 0);
+                        a2 = vmlaq_lane_f32(a2, wb.val[0], x, 0);
+                        a3 = vmlaq_lane_f32(a3, wb.val[1], x, 0);
                     }
+                }
                 if (relu) {
                     a0 = vmaxq_f32(a0, z);
                     a1 = vmaxq_f32(a1, z);
@@ -651,7 +696,7 @@ static void k_conv1(const vocr_op *op, const float *win, float *out, unsigned t0
 }
 
 /* Depthwise kh x kw. win: [col][h_in][C]. */
-static void k_dw(const vocr_op *op, const float *win, float *out, unsigned t0, unsigned t1)
+static VOCR_NOINLINE void k_dw(const vocr_op *op, const float *win, float *out, unsigned t0, unsigned t1)
 {
     const unsigned C = op->cout, kw = op->kw, Ho = op->h_out, Hi = op->h_in;
     const int relu = (op->flags & F_RELU) != 0;
@@ -674,15 +719,30 @@ static void k_dw(const vocr_op *op, const float *win, float *out, unsigned t0, u
                 } else {
                     a0 = a1 = a2 = a3 = z;
                 }
-                for (dy = dy0; dy < dy1; dy++)
-                    for (dx = 0; dx < kw; dx++) {
-                        const float *x = win + ((size_t)(t * op->sw + dx) * Hi + (unsigned)(r0 + (int)dy)) * C + c0;
-                        const float *wt = op->w + (size_t)(dy * kw + dx) * C + c0;
-                        a0 = vmlaq_f32(a0, vld1q_f32(wt), vld1q_f32(x));
-                        a1 = vmlaq_f32(a1, vld1q_f32(wt + 4), vld1q_f32(x + 4));
-                        a2 = vmlaq_f32(a2, vld1q_f32(wt + 8), vld1q_f32(x + 8));
-                        a3 = vmlaq_f32(a3, vld1q_f32(wt + 12), vld1q_f32(x + 12));
+                /* the same taps in the same order, by stepping pointers: one input column is
+                 * Hi * C floats, one tap row of weights kw * C */
+#define VOCR_DWTAP(X, W)                                                                     \
+    do {                                                                                     \
+        const float32x4x2_t xa_ = vld1q_f32_x2(X), wa_ = vld1q_f32_x2(W);                    \
+        const float32x4x2_t xb_ = vld1q_f32_x2((X) + 8), wb_ = vld1q_f32_x2((W) + 8);        \
+        a0 = vmlaq_f32(a0, wa_.val[0], xa_.val[0]);                                          \
+        a1 = vmlaq_f32(a1, wa_.val[1], xa_.val[1]);                                          \
+        a2 = vmlaq_f32(a2, wb_.val[0], xb_.val[0]);                                          \
+        a3 = vmlaq_f32(a3, wb_.val[1], xb_.val[1]);                                          \
+    } while (0)
+                for (dy = dy0; dy < dy1; dy++) {
+                    const size_t cs = (size_t)Hi * C;
+                    const float *x = win + ((size_t)(t * op->sw) * Hi + (unsigned)(r0 + (int)dy)) * C + c0;
+                    const float *wt = op->w + (size_t)(dy * kw) * C + c0;
+                    if (kw == 3) {
+                        VOCR_DWTAP(x, wt);
+                        VOCR_DWTAP(x + cs, wt + C);
+                        VOCR_DWTAP(x + 2 * cs, wt + 2 * C);
+                    } else {
+                        for (dx = 0; dx < kw; dx++, x += cs, wt += C) VOCR_DWTAP(x, wt);
                     }
+                }
+#undef VOCR_DWTAP
                 if (relu) {
                     a0 = vmaxq_f32(a0, z);
                     a1 = vmaxq_f32(a1, z);
@@ -1032,79 +1092,191 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
 {
     unsigned p = 0, q = 0, j, k, k0;
 #ifdef VOCR_NEON
-    const float32x4_t z = vdupq_n_f32(0.0f), sl = vld1q_f32(scale), sh = vld1q_f32(scale + 4);
-    const float32x4_t bl = bias ? vld1q_f32(bias) : z, bh = bias ? vld1q_f32(bias + 4) : z;
+    /* NEON: 4 positions x 8 outputs per pass, the 32 int32 sums in eight named accumulators
+     * (not an array: with int32x4_t a[8], gcc 14 and 15 store all eight to the stack on every
+     * pass of the k loop). Each pass reads 8 k of every position's input (one 128-bit load
+     * each) and the 8 weight rows of those k in four 128-bit loads, so 64 VMLAL share 8 loads;
+     * nothing else is live in the loop (15 of the 16 Q registers), so nothing spills. The
+     * integer sums are exact in any order and the float steps are the scalar code's, in its
+     * order, so the bits are the scalar code's. With one chunk (K <= 512, every layer of the
+     * VOCR models but the widest collapse) S = 0 + float(c_0) is float(c_0) itself: float()
+     * of an int is never -0. */
+#define VOCR_IROW(W, X0, X1, X2, X3, LANE)                                                   \
+    do {                                                                                     \
+        const int16x8_t wv_ = (W);                                                           \
+        const int16x4_t wl_ = vget_low_s16(wv_), wh_ = vget_high_s16(wv_);                   \
+        a0 = vmlal_lane_s16(a0, wl_, X0, LANE);                                              \
+        a1 = vmlal_lane_s16(a1, wh_, X0, LANE);                                              \
+        a2 = vmlal_lane_s16(a2, wl_, X1, LANE);                                              \
+        a3 = vmlal_lane_s16(a3, wh_, X1, LANE);                                              \
+        a4 = vmlal_lane_s16(a4, wl_, X2, LANE);                                              \
+        a5 = vmlal_lane_s16(a5, wh_, X2, LANE);                                              \
+        a6 = vmlal_lane_s16(a6, wl_, X3, LANE);                                              \
+        a7 = vmlal_lane_s16(a7, wh_, X3, LANE);                                              \
+    } while (0)
+#define VOCR_IHALF(W8A, W8B, H)                                                              \
+    do {                                                                                     \
+        const int16x4_t h0_ = H(v0), h1_ = H(v1), h2_ = H(v2), h3_ = H(v3);                  \
+        VOCR_IROW(vmovl_s8(vget_low_s8(W8A)), h0_, h1_, h2_, h3_, 0);                        \
+        VOCR_IROW(vmovl_s8(vget_high_s8(W8A)), h0_, h1_, h2_, h3_, 1);                       \
+        VOCR_IROW(vmovl_s8(vget_low_s8(W8B)), h0_, h1_, h2_, h3_, 2);                        \
+        VOCR_IROW(vmovl_s8(vget_high_s8(W8B)), h0_, h1_, h2_, h3_, 3);                       \
+    } while (0)
+    /* the int32 sums of k in [K0, K1) of the 4 positions at P0 x0..x3 */
+#define VOCR_ISUMS4(K0, K1)                                                                  \
+    do {                                                                                     \
+        const int16_t *p0_ = x0 + (K0), *p1_ = x1 + (K0), *p2_ = x2 + (K0), *p3_ = x3 + (K0); \
+        const int8_t *wk_ = qw + (size_t)(K0) * 8;                                           \
+        a0 = a1 = a2 = a3 = a4 = a5 = a6 = a7 = vdupq_n_s32(0);                              \
+        for (k = (K0); k + 8 <= (K1); k += 8, wk_ += 64, p0_ += 8, p1_ += 8, p2_ += 8, p3_ += 8) { \
+            int16x8_t v0, v1, v2, v3;                                                        \
+            int8x16x2_t w_;                                                                  \
+            VOCR_PREFETCH(wk_ + 128);                                                        \
+            VOCR_PREFETCH(wk_ + 160);                                                        \
+            v0 = vld1q_s16(p0_), v1 = vld1q_s16(p1_), v2 = vld1q_s16(p2_), v3 = vld1q_s16(p3_); \
+            w_ = vld1q_s8_x2(wk_);                                                           \
+            VOCR_IHALF(w_.val[0], w_.val[1], vget_low_s16);                                  \
+            w_ = vld1q_s8_x2(wk_ + 32);                                                      \
+            VOCR_IHALF(w_.val[0], w_.val[1], vget_high_s16);                                 \
+        }                                                                                    \
+        for (; k < (K1); k++, wk_ += 8) {                                                    \
+            const int16x8_t wv_ = vmovl_s8(vld1_s8(wk_));                                    \
+            const int16x4_t wl_ = vget_low_s16(wv_), wh_ = vget_high_s16(wv_);               \
+            a0 = vmlal_n_s16(a0, wl_, x0[k]);                                                \
+            a1 = vmlal_n_s16(a1, wh_, x0[k]);                                                \
+            a2 = vmlal_n_s16(a2, wl_, x1[k]);                                                \
+            a3 = vmlal_n_s16(a3, wh_, x1[k]);                                                \
+            a4 = vmlal_n_s16(a4, wl_, x2[k]);                                                \
+            a5 = vmlal_n_s16(a5, wh_, x2[k]);                                                \
+            a6 = vmlal_n_s16(a6, wl_, x3[k]);                                                \
+            a7 = vmlal_n_s16(a7, wh_, x3[k]);                                                \
+        }                                                                                    \
+    } while (0)
+    /* position P's 8 outputs from its float sums LO / HI, S the position's scale as a lane of
+     * SXH (a D register): the scalar code's steps, in order (scale[j] * sx[p], times S, + bias,
+     * relu, + res); a multiply by a lane is the multiply by that scalar, bit for bit. */
+#define VOCR_IOUT(P, LO, HI, SXH, LANE)                                                      \
+    do {                                                                                     \
+        float32x4_t lo_ = vmulq_f32(LO, vmulq_lane_f32(vld1q_f32(scale), SXH, LANE));        \
+        float32x4_t hi_ = vmulq_f32(HI, vmulq_lane_f32(vld1q_f32(scale + 4), SXH, LANE));    \
+        if (bias) {                                                                          \
+            lo_ = vaddq_f32(lo_, vld1q_f32(bias));                                           \
+            hi_ = vaddq_f32(hi_, vld1q_f32(bias + 4));                                       \
+        }                                                                                    \
+        if (relu) {                                                                          \
+            lo_ = vmaxq_f32(lo_, vdupq_n_f32(0.0f));                                         \
+            hi_ = vmaxq_f32(hi_, vdupq_n_f32(0.0f));                                         \
+        }                                                                                    \
+        if (res) {                                                                           \
+            lo_ = vaddq_f32(lo_, vld1q_f32(res + (P) * rs));                                 \
+            hi_ = vaddq_f32(hi_, vld1q_f32(res + (P) * rs + 4));                             \
+        }                                                                                    \
+        vst1q_f32(y + (P) * ys, lo_);                                                        \
+        vst1q_f32(y + (P) * ys + 4, hi_);                                                    \
+    } while (0)
     for (; p + 4 <= P; p += 4) {
         const int16_t *x0 = qx + (size_t)p * K, *x1 = x0 + K, *x2 = x1 + K, *x3 = x2 + K;
-        float32x4_t f[8];
-        for (q = 0; q < 8; q++) f[q] = z;
-        for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
-            const unsigned k1 = umin(K, k0 + W8I_CHUNK);
-            /* Eight named accumulators, not an array: with int32x4_t a[8], gcc 14 and 15 store
-             * all eight to the stack on every pass of the k loop (16 VSTR per 32 VMLAL). */
-            int32x4_t a0 = vdupq_n_s32(0), a1 = a0, a2 = a0, a3 = a0, a4 = a0, a5 = a0, a6 = a0, a7 = a0;
-            for (k = k0; k + 4 <= k1; k += 4) {
-                const int16x4_t v0 = vld1_s16(x0 + k), v1 = vld1_s16(x1 + k);
-                const int16x4_t v2 = vld1_s16(x2 + k), v3 = vld1_s16(x3 + k);
-#define VOCR_ISTEP(LANE)                                                                     \
-    do {                                                                                     \
-        const int16x8_t wv = vmovl_s8(vld1_s8(qw + (size_t)(k + (LANE)) * 8));               \
-        const int16x4_t wl = vget_low_s16(wv), wh = vget_high_s16(wv);                       \
-        a0 = vmlal_lane_s16(a0, wl, v0, LANE);                                               \
-        a1 = vmlal_lane_s16(a1, wh, v0, LANE);                                               \
-        a2 = vmlal_lane_s16(a2, wl, v1, LANE);                                               \
-        a3 = vmlal_lane_s16(a3, wh, v1, LANE);                                               \
-        a4 = vmlal_lane_s16(a4, wl, v2, LANE);                                               \
-        a5 = vmlal_lane_s16(a5, wh, v2, LANE);                                               \
-        a6 = vmlal_lane_s16(a6, wl, v3, LANE);                                               \
-        a7 = vmlal_lane_s16(a7, wh, v3, LANE);                                               \
-    } while (0)
-                VOCR_ISTEP(0);
-                VOCR_ISTEP(1);
-                VOCR_ISTEP(2);
-                VOCR_ISTEP(3);
-#undef VOCR_ISTEP
+        int32x4_t a0, a1, a2, a3, a4, a5, a6, a7;
+        if (K <= W8I_CHUNK) {
+            VOCR_ISUMS4(0u, K);
+            {
+                const float32x4_t sxv = vld1q_f32(sx + p);
+                VOCR_IOUT(p, vcvtq_f32_s32(a0), vcvtq_f32_s32(a1), vget_low_f32(sxv), 0);
+                VOCR_IOUT(p + 1, vcvtq_f32_s32(a2), vcvtq_f32_s32(a3), vget_low_f32(sxv), 1);
+                VOCR_IOUT(p + 2, vcvtq_f32_s32(a4), vcvtq_f32_s32(a5), vget_high_f32(sxv), 0);
+                VOCR_IOUT(p + 3, vcvtq_f32_s32(a6), vcvtq_f32_s32(a7), vget_high_f32(sxv), 1);
             }
-            for (; k < k1; k++) {
-                const int16x8_t wv = vmovl_s8(vld1_s8(qw + (size_t)k * 8));
-                const int16x4_t wl = vget_low_s16(wv), wh = vget_high_s16(wv);
-                a0 = vmlal_n_s16(a0, wl, x0[k]);
-                a1 = vmlal_n_s16(a1, wh, x0[k]);
-                a2 = vmlal_n_s16(a2, wl, x1[k]);
-                a3 = vmlal_n_s16(a3, wh, x1[k]);
-                a4 = vmlal_n_s16(a4, wl, x2[k]);
-                a5 = vmlal_n_s16(a5, wh, x2[k]);
-                a6 = vmlal_n_s16(a6, wl, x3[k]);
-                a7 = vmlal_n_s16(a7, wh, x3[k]);
+        } else {
+            float32x4_t fs[8]; /* the float sums of the chunks so far: S = 0 + float(c_0) + ... */
+            for (q = 0; q < 8; q++) fs[q] = vdupq_n_f32(0.0f);
+            for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
+                const unsigned k1 = umin(K, k0 + W8I_CHUNK);
+                VOCR_ISUMS4(k0, k1);
+                fs[0] = vaddq_f32(fs[0], vcvtq_f32_s32(a0));
+                fs[1] = vaddq_f32(fs[1], vcvtq_f32_s32(a1));
+                fs[2] = vaddq_f32(fs[2], vcvtq_f32_s32(a2));
+                fs[3] = vaddq_f32(fs[3], vcvtq_f32_s32(a3));
+                fs[4] = vaddq_f32(fs[4], vcvtq_f32_s32(a4));
+                fs[5] = vaddq_f32(fs[5], vcvtq_f32_s32(a5));
+                fs[6] = vaddq_f32(fs[6], vcvtq_f32_s32(a6));
+                fs[7] = vaddq_f32(fs[7], vcvtq_f32_s32(a7));
             }
-            f[0] = vaddq_f32(f[0], vcvtq_f32_s32(a0));
-            f[1] = vaddq_f32(f[1], vcvtq_f32_s32(a1));
-            f[2] = vaddq_f32(f[2], vcvtq_f32_s32(a2));
-            f[3] = vaddq_f32(f[3], vcvtq_f32_s32(a3));
-            f[4] = vaddq_f32(f[4], vcvtq_f32_s32(a4));
-            f[5] = vaddq_f32(f[5], vcvtq_f32_s32(a5));
-            f[6] = vaddq_f32(f[6], vcvtq_f32_s32(a6));
-            f[7] = vaddq_f32(f[7], vcvtq_f32_s32(a7));
-        }
-        for (q = 0; q < 4; q++) {
-            float32x4_t lo = vmulq_f32(f[2 * q], vmulq_n_f32(sl, sx[p + q]));
-            float32x4_t hi = vmulq_f32(f[2 * q + 1], vmulq_n_f32(sh, sx[p + q]));
-            if (bias) {
-                lo = vaddq_f32(lo, bl);
-                hi = vaddq_f32(hi, bh);
+            {
+                const float32x4_t sxv = vld1q_f32(sx + p);
+                VOCR_IOUT(p, fs[0], fs[1], vget_low_f32(sxv), 0);
+                VOCR_IOUT(p + 1, fs[2], fs[3], vget_low_f32(sxv), 1);
+                VOCR_IOUT(p + 2, fs[4], fs[5], vget_high_f32(sxv), 0);
+                VOCR_IOUT(p + 3, fs[6], fs[7], vget_high_f32(sxv), 1);
             }
-            if (relu) {
-                lo = vmaxq_f32(lo, z);
-                hi = vmaxq_f32(hi, z);
-            }
-            if (res) {
-                lo = vaddq_f32(lo, vld1q_f32(res + (p + q) * rs));
-                hi = vaddq_f32(hi, vld1q_f32(res + (p + q) * rs + 4));
-            }
-            vst1q_f32(y + (p + q) * ys, lo);
-            vst1q_f32(y + (p + q) * ys + 4, hi);
         }
     }
+    /* The last 1-3 positions (head batches and line ends): one position x 8 outputs, four
+     * accumulators (two per k parity), added at the end of each chunk (exact). */
+    for (; p < P; p++) {
+        const int16_t *xp = qx + (size_t)p * K;
+        float32x4_t f0 = vdupq_n_f32(0.0f), f1 = f0;
+        for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
+            const unsigned k1 = umin(K, k0 + W8I_CHUNK);
+            const int8_t *wk = qw + (size_t)k0 * 8;
+            const int16_t *xk = xp + k0;
+            int32x4_t a0 = vdupq_n_s32(0), a1 = a0, a2 = a0, a3 = a0;
+            for (k = k0; k + 8 <= k1; k += 8, wk += 64, xk += 8) {
+                const int16x8_t v = vld1q_s16(xk);
+                const int16x4_t vl = vget_low_s16(v), vh = vget_high_s16(v);
+                int8x16x2_t w2 = vld1q_s8_x2(wk);
+                int8x16_t wa = w2.val[0], wb = w2.val[1];
+                int16x8_t w;
+                VOCR_PREFETCH(wk + 128);
+                VOCR_PREFETCH(wk + 160);
+                w = vmovl_s8(vget_low_s8(wa));
+                a0 = vmlal_lane_s16(a0, vget_low_s16(w), vl, 0);
+                a1 = vmlal_lane_s16(a1, vget_high_s16(w), vl, 0);
+                w = vmovl_s8(vget_high_s8(wa));
+                a2 = vmlal_lane_s16(a2, vget_low_s16(w), vl, 1);
+                a3 = vmlal_lane_s16(a3, vget_high_s16(w), vl, 1);
+                w = vmovl_s8(vget_low_s8(wb));
+                a0 = vmlal_lane_s16(a0, vget_low_s16(w), vl, 2);
+                a1 = vmlal_lane_s16(a1, vget_high_s16(w), vl, 2);
+                w = vmovl_s8(vget_high_s8(wb));
+                a2 = vmlal_lane_s16(a2, vget_low_s16(w), vl, 3);
+                a3 = vmlal_lane_s16(a3, vget_high_s16(w), vl, 3);
+                w2 = vld1q_s8_x2(wk + 32);
+                wa = w2.val[0];
+                wb = w2.val[1];
+                w = vmovl_s8(vget_low_s8(wa));
+                a0 = vmlal_lane_s16(a0, vget_low_s16(w), vh, 0);
+                a1 = vmlal_lane_s16(a1, vget_high_s16(w), vh, 0);
+                w = vmovl_s8(vget_high_s8(wa));
+                a2 = vmlal_lane_s16(a2, vget_low_s16(w), vh, 1);
+                a3 = vmlal_lane_s16(a3, vget_high_s16(w), vh, 1);
+                w = vmovl_s8(vget_low_s8(wb));
+                a0 = vmlal_lane_s16(a0, vget_low_s16(w), vh, 2);
+                a1 = vmlal_lane_s16(a1, vget_high_s16(w), vh, 2);
+                w = vmovl_s8(vget_high_s8(wb));
+                a2 = vmlal_lane_s16(a2, vget_low_s16(w), vh, 3);
+                a3 = vmlal_lane_s16(a3, vget_high_s16(w), vh, 3);
+            }
+            for (; k < k1; k++, wk += 8) {
+                const int16x8_t wv = vmovl_s8(vld1_s8(wk));
+                a0 = vmlal_n_s16(a0, vget_low_s16(wv), xp[k]);
+                a1 = vmlal_n_s16(a1, vget_high_s16(wv), xp[k]);
+            }
+            a0 = vaddq_s32(a0, a2);
+            a1 = vaddq_s32(a1, a3);
+            if (!k0) {
+                f0 = vcvtq_f32_s32(a0);
+                f1 = vcvtq_f32_s32(a1);
+            } else {
+                f0 = vaddq_f32(f0, vcvtq_f32_s32(a0));
+                f1 = vaddq_f32(f1, vcvtq_f32_s32(a1));
+            }
+        }
+        VOCR_IOUT(p, f0, f1, vld1_dup_f32(sx + p), 0);
+    }
+#undef VOCR_IOUT
+#undef VOCR_ISUMS4
+#undef VOCR_IHALF
+#undef VOCR_IROW
 #endif
     /* Scalar: one position x 8 outputs per pass, the 8 int32 sums in registers (see mm_f32;
      * two positions would need more integer registers than MIPS has). Integer sums are
@@ -1244,17 +1416,74 @@ static void ctc_push(const vocr_model *m, out_t *o, unsigned tok)
     o->last = tok;
 }
 
+#ifdef VOCR_NEON
+/* The head's argmax in NEON without a float compare: gcc lowers vcgtq_f32 to one VFP compare per
+ * lane when it may not flush denormals, as NEON does. A key in int32 orders the values as the
+ * scalar `v > best` does, exactly: the value's magnitude bits for v >= 0, their negation for
+ * v < 0 (so -0 and +0 are equal), and INT32_MIN for a NaN (never greater, never kept). This
+ * matches `v > best` under IEEE compares (FPSCR.FZ = 0); a VFP that flushed denormals to zero
+ * would see a denormal logit as 0 where the key does not, and logits are never denormal. */
+static int32x4_t fkey(float32x4_t v)
+{
+    const int32x4_t b = vreinterpretq_s32_f32(v);
+    const int32x4_t m = vandq_s32(b, vdupq_n_s32(0x7FFFFFFF));
+    const int32x4_t sgn = vshrq_n_s32(b, 31);
+    const int32x4_t key = vsubq_s32(veorq_s32(m, sgn), sgn);
+    return vbslq_s32(vcgtq_s32(m, vdupq_n_s32(0x7F800000)), vdupq_n_s32(INT32_MIN), key);
+}
+
+/* The first maximum of each frame from its lanes: lane j of frame f holds the key (fkey) of the
+ * largest logit of the classes nb * 8 + j and the first block nb that had it. The frame's first
+ * maximum is the largest key; of the lanes that hold it, the smallest class. With every logit
+ * -inf or NaN all lanes still hold -inf's key and block 0, which gives class 0, as the scan.
+ * bestv gets the value back (-0 as +0, which compares the same). */
+static void lanes_argmax(const vocr_lane_i32 *lk, const vocr_lane_u32 *li, unsigned nf, float *bestv,
+                         uint32_t *besti)
+{
+    unsigned f, j;
+    for (f = 0; f < nf; f++) {
+        const vocr_lane_i32 *v = lk + (size_t)f * 8;
+        const vocr_lane_u32 *ix = li + (size_t)f * 8;
+        int32_t bk = v[0];
+        uint32_t bi = ix[0] * 8u, bits;
+        for (j = 1; j < 8; j++) {
+            const uint32_t cls = ix[j] * 8u + j;
+            if (v[j] > bk || (v[j] == bk && cls < bi)) {
+                bk = v[j];
+                bi = cls;
+            }
+        }
+        bits = bk >= 0 ? (uint32_t)bk : 0x80000000u | (uint32_t)-bk;
+        memcpy(&bestv[f], &bits, sizeof bits);
+        besti[f] = bi;
+    }
+}
+#define VOCR_HEAD_STEP step
+#else
+#define VOCR_HEAD_STEP 4u
+#endif
+
 /* Output head over the nf accumulated frames: argmax (first maximum) and CTC. With o->topk, also the
  * K largest logits of every frame, straight into the caller's topk_* buffers (inserted with strict
  * comparisons, so equal logits keep the lower class first and [0] is the argmax), the blank's logit,
- * and the confidence of every frame that emits a character. The !topk loop is main's, unchanged. */
+ * and the confidence of every frame that emits a character.
+ * W8I with NEON and no top-K: once quant16 has read the accumulated frames, their memory is not read
+ * again, so it holds each frame's argmax per lane (lanes_argmax) instead of a scalar compare per
+ * class: the logits are mm_i16's, the same bits, and only the scan's bookkeeping moves to NEON. A
+ * last block of fewer than 8 classes goes through the scalar scan after the lanes, in class order.
+ * The top-K path needs every class's value in order, so it keeps the per-class loop, as do the
+ * builds without NEON, whose run_head is main's token for token. */
 static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
 {
     const vocr_model *m = c->model;
     const unsigned L = m->n_ops, N = m->n_classes;
     const vocr_op *op = &m->op[L - 1];
     const unsigned K = op->k;
+#ifdef VOCR_NEON
+    float *const x = at(c, c->acc_off);
+#else
     const float *x = at(c, c->acc_off);
+#endif
     float *bestv = at(c, c->bestv_off);
     uint32_t *besti = (uint32_t *)(void *)(c->arena + c->besti_off);
     unsigned char *scr = c->arena + c->op[L - 1].scr_off;
@@ -1264,6 +1493,13 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     vocr_extra *ex = o->ex;
     const unsigned TK = o->topk;
     unsigned f, nb, f0, q, j;
+#ifdef VOCR_NEON
+    /* frames per mm_* call: 4, or VOCR_HEAD_CHUNK on the lane path (one call per block) */
+    unsigned n_lanes = 0, step = 4;
+    float tmp[VOCR_HEAD_CHUNK * 8];
+    vocr_lane_i32 *lk = (vocr_lane_i32 *)(void *)x;              /* nf x 8 lane maxima (keys) ... */
+    vocr_lane_u32 *li = (vocr_lane_u32 *)(void *)(x + (size_t)nf * 8u); /* ... and blocks: 16 nf <= K nf */
+#endif
     for (f = 0; f < nf; f++) {
         bestv[f] = -INFINITY;
         besti[f] = 0;
@@ -1278,13 +1514,28 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
             }
         }
     if (c->mode == VOCR_MODE_W8I) quant16(x, K, K, nf, qx, sx);
+#ifdef VOCR_NEON
+    if (c->mode == VOCR_MODE_W8I && K >= 16u && !TK) {
+        n_lanes = N / 8u;
+        step = VOCR_HEAD_CHUNK;
+        for (f = 0; f < nf * 8u; f++) {
+            lk[f] = -0x7F800000; /* fkey(-inf) */
+            li[f] = 0;
+        }
+    }
+#endif
     for (nb = 0; nb < op->cout_pad / 8u; nb++) {
         const float *b = op->bias ? op->bias + nb * 8 : NULL;
         const size_t wo = (size_t)nb * K * 8;
+#ifdef VOCR_NEON
+        if (n_lanes && nb == n_lanes) lanes_argmax(lk, li, nf, bestv, besti);
+#endif
         if (c->mode == VOCR_MODE_W8F) dequant8(op->q + wo, op->scale + nb * 8, K, wf);
-        for (f0 = 0; f0 < nf; f0 += 4) {
-            const unsigned pn = umin(4u, nf - f0);
+        for (f0 = 0; f0 < nf; f0 += VOCR_HEAD_STEP) {
+            const unsigned pn = umin(VOCR_HEAD_STEP, nf - f0);
+#ifndef VOCR_NEON
             float tmp[4 * 8];
+#endif
             if (c->mode == VOCR_MODE_F32)
                 mm_f32(op->w + wo, b, x + (size_t)f0 * K, K, K, pn, tmp, 8, NULL, 0, 0);
             else if (c->mode == VOCR_MODE_W8F)
@@ -1292,6 +1543,29 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
             else
                 mm_i16(op->q + wo, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn, tmp,
                        8, NULL, 0, 0);
+#ifdef VOCR_NEON
+            if (nb < n_lanes) {
+                const uint32x4_t vnb = vdupq_n_u32(nb);
+                for (q = 0; q < pn; q++) {
+                    vocr_lane_i32 *sk = lk + (size_t)(f0 + q) * 8;
+                    vocr_lane_u32 *si = li + (size_t)(f0 + q) * 8;
+                    const int32x4_t kl = fkey(vld1q_f32(tmp + q * 8)), kh = fkey(vld1q_f32(tmp + q * 8 + 4));
+                    const int32x4_t ol = vld1q_s32(sk), oh = vld1q_s32(sk + 4);
+                    const uint32x4_t ml = vcgtq_s32(kl, ol), mh = vcgtq_s32(kh, oh);
+                    vst1q_s32(sk, vbslq_s32(ml, kl, ol));
+                    vst1q_s32(sk + 4, vbslq_s32(mh, kh, oh));
+                    vst1q_u32(si, vbslq_u32(ml, vnb, vld1q_u32(si)));
+                    vst1q_u32(si + 4, vbslq_u32(mh, vnb, vld1q_u32(si + 4)));
+                }
+                if (ex && ex->logits)
+                    for (q = 0; q < pn; q++) {
+                        const unsigned frame = o->frame + f0 + q;
+                        if (frame < ex->cap_frames)
+                            memcpy(ex->logits + (size_t)frame * N + nb * 8, tmp + q * 8, 8 * sizeof(float));
+                    }
+                continue;
+            }
+#endif
             if (TK) {
                 for (q = 0; q < pn; q++) {
                     const unsigned frame = o->frame + f0 + q;
@@ -1334,6 +1608,9 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
             }
         }
     }
+#ifdef VOCR_NEON
+    if (n_lanes && n_lanes == op->cout_pad / 8u) lanes_argmax(lk, li, nf, bestv, besti);
+#endif
     for (f = 0; f < nf; f++, o->frame++) {
         if (ex && ex->best && o->frame < ex->cap_frames) ex->best[o->frame] = (uint16_t)besti[f];
         if (TK && besti[f] && besti[f] != o->last) {
@@ -1345,15 +1622,20 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
         ctc_push(m, o, besti[f]);
     }
 }
+#undef VOCR_HEAD_STEP
 
 /* Keep the last `halo` columns of a ring as its first ones. The ranges can overlap
  * (fewer new columns than halo), so copy forwards: the destination is below the source. */
 static void ring_shift(float *ring, unsigned cap, unsigned halo, unsigned col)
 {
     const float *src = ring + (size_t)(cap - halo) * col;
-    size_t i, n = (size_t)halo * col;
+    size_t i = 0, n = (size_t)halo * col;
     if (!halo || src == ring) return;
-    for (i = 0; i < n; i++) ring[i] = src[i];
+#ifdef VOCR_NEON
+    /* 4 floats at a time, still forwards: each load comes before the store that could reach it */
+    for (; i + 4 <= n; i += 4) vst1q_f32(ring + i, vld1q_f32(src + i));
+#endif
+    for (; i < n; i++) ring[i] = src[i];
 }
 
 /* Compute output columns [j0, j0 + n) of op i (wout of them exist) into its
@@ -1440,6 +1722,7 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         }
     }
     for (i = 0, u = ln.padded; i < L; i++) wout[i] = u /= m->op[i].sw;
+    VOCR_MARK(VOCR_PROF_RUN);
     memset(c->arena + c->ring_off, 0, c->ring_end - c->ring_off);
     n_front = c->op[f].n_tile;
     ntiles = ((long)T + c->op[L - 1].lag + (long)c->tile - 1) / (long)c->tile;
@@ -1452,21 +1735,32 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
             const long g = k * (long)n_front + (long)u;
             const vocr_plan_op *p0 = &c->op[0];
             float *ring0 = at(c, p0->in_off);
+            VOCR_MARK(VOCR_PROF_SRC);
             ring_shift(ring0, p0->cap, p0->halo, p0->in_col);
             src_cols(&ln, m->height, g * (long)c->n_src, c->n_src, ring0 + (size_t)p0->halo * p0->in_col);
-            for (i = 0; i <= f; i++)
+            for (i = 0; i <= f; i++) {
+                VOCR_MARK(i);
                 step_op(c, i, g * (long)c->op[i].n_step - c->op[i].lag, c->op[i].n_step, wout[i],
                         i == f ? u : 0u, &acc_fill);
+            }
         }
-        for (i = f + 1; i + 1 < L; i++)
+        for (i = f + 1; i + 1 < L; i++) {
+            VOCR_MARK(i);
             step_op(c, i, k * (long)c->op[i].n_tile - c->op[i].lag, c->op[i].n_tile, wout[i], 0u,
                     &acc_fill);
+        }
         if (acc_fill >= c->head) {
+            VOCR_MARK(L - 1);
             run_head(c, acc_fill, &o);
             acc_fill = 0;
         }
+        VOCR_MARK(VOCR_PROF_RUN);
     }
-    if (acc_fill) run_head(c, acc_fill, &o);
+    if (acc_fill) {
+        VOCR_MARK(L - 1);
+        run_head(c, acc_fill, &o);
+        VOCR_MARK(VOCR_PROF_RUN);
+    }
     if (ex) {
         ex->chars = o.chars;
         if (o.conf_n) {

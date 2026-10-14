@@ -23,8 +23,10 @@ or a host estimate of console time. Nothing ran on a console.
     0). The gain is all PSP (−2.19 to −2.90); Vita is level or worse (−0.13 to +0.50, intervals include 0).
   - **CLANNAD long run: worse for five of six models**, +0.07 to +0.43 points (VOCR4-W20 1.81% → 2.24%, page
     interval +0.31 to +0.56); VOCR3-W20 −0.06 (interval includes 0).
-- **Cost**: about 0.5-1.1 ms per finder line on one 444 MHz Cortex-A9 core (estimate), under 1% of recognizing
-  a 640-px line; no new memory (its arena fits inside the finder's); one extra read of each finder box.
+- **Cost**: about 0.5-1.1 ms per finder line on one 444 MHz Cortex-A9 core (estimate; the same method brackets
+  the finder's measured console time), under 1% of recognizing a 640-px line; no new memory (its arena fits
+  inside the finder's). Its pixel reads matter more on the console (11-26 ms per framebuffer strip): refined
+  from the strip the recognizer reads anyway, it needs none (§6).
 
 So the refinement is a clear gain on PSP-sized text and on the scaled and native development frames, and **not
 a gain on 960×544 Vita text in the protected sets**. The default the overlay ships should follow that (below).

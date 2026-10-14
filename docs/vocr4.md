@@ -34,9 +34,10 @@ evaluation or a host estimate; nothing has run on a console.
   CI −0.92 to +0.47, at the base region); VOCR4-FL10 is behind it (+0.86, CI +0.18 to +1.54).
 
 The owner's final tiers (2026-10-14 06:21Z to 07:33Z) set each limit per typical full textbox (3 lines of about
-640 px, one A9 core at 444 MHz, estimated): Small < 1 MB of int8 weights and ≤ 1 s; Normal ≤ 4 MB, W8I arena
-≤ 262,144 B and ≤ 2 s; Large ≤ 9 MB and ≤ 3 s. Arenas and memory needs are in model-tiers' `docs/model-tiers.md`
-(PR #74 at `14ccc27`, still open). The VOCR4 models fit them as follows:
+640 px, one A9 core at 444 MHz, estimated): Small < 1 MB of int8 weights and ≤ 1 s; Normal ≤ 4 MB and ≤ 2 s;
+Large ≤ 9 MB and ≤ 3 s. model-tiers (`docs/model-tiers.md`, PR #74 at `14ccc27`, still open) adds W8I arena
+ceilings of 131,072, 262,144 and 1,310,720 B and the memory each tier needs. The VOCR4 models fit them as
+follows:
 
 | model | int8 weights | W8I arena | est. ms per 640-px line, 444 / 333 MHz | est. per 3-line box, 444 MHz | fits |
 |---|---:|---:|---|---|---|
@@ -359,11 +360,11 @@ the tables above.
 | VOCR4-H15 − Lens | +1.31 [+0.63, +1.94] | −17.8 [−19.3, −16.4] |
 | VOCR4-W20 − Lens | +0.33 [−0.34, +0.94] | −12.5 [−13.9, −11.3] |
 
-**Disclosure.** VOCR4-W20 (arm M) trained on the owner's planetarian PSP frames. Every arm and every earlier
-model also trained on 7 scaled-PC lines of planetarian ~Snow Globe~ (v27747, a VNDB relation of planetarian that
-no rule reserves) in teacher_train and real_train. planetarian's PSP release and
+**Disclosure.** VOCR4-W20 (arm M) trained on the owner's planetarian PSP frames. planetarian's PSP release and
 CLANNAD's Vita release are both Key / Prototype ports, so that model's CLANNAD number carries this exposure.
-VOCR4-FL10 and VOCR4-H15 (arm C) never read the owner's frames. VOCR4-W20 is the only recognizer here below 2%
+VOCR4-FL10 and VOCR4-H15 (arm C) never read the owner's frames. Every arm and every earlier model did train on 7
+scaled-PC lines of planetarian ~Snow Globe~ (v27747, a VNDB relation of planetarian that no rule reserves) in
+teacher_train and real_train. VOCR4-W20 is the only recognizer here below 2%
 CER on these references; Lens's lead in exact lines (97.5% against 84.9%) is still large.
 
 ## Hygiene and timeline (2026-10-13 to 14, UTC)
@@ -384,9 +385,10 @@ CER on these references; Lens's lead in exact lines (97.5% against 84.9%) is sti
   `vocr4-report-runner-a13a31e` and `vocr4-history-20261014b`, and the author dates are the times above.
 - The protocol asks for each decision file to be committed before its size's selection. Five of the six were
   committed together with it instead: H15's two in `8f9b212`, W20's two in `e02acd4` and FL10's synth decision in
-  `a13a31e`; only FL10's real decision was committed earlier. Each decision was computed one to three minutes
-  before its selection (the `computed` fields), each selection records the sha256 of the decision files it read,
-  and the selection is a deterministic function of them, which the audit reproduced.
+  `a13a31e`; only FL10's real decision was committed earlier. Four of those five were computed under three minutes
+  before their selection (the `computed` fields). H15's real decision was computed at 04:57:31Z, 1 h 41 min before
+  H15's selection (06:38:04Z), and committed with it. Each selection records the sha256 of the decision files it
+  read, and the selection is a deterministic function of them, which the audit reproduced.
 - No arm, run, weight, checkpoint, threshold or pool was chosen, tuned or dropped on vita-test, psp-test, the fresh
   native textbox test or CLANNAD. Each was scored once, after every selection was committed. train2's in-run
   evaluations (teacher_val, logged) selected nothing and were not read before the new pools were pinned.
@@ -413,10 +415,11 @@ CER on these references; Lens's lead in exact lines (97.5% against 84.9%) is sti
 The owner's final deliverable is three models, one per tier. model-tiers' hand-off (`docs/model-tiers.md`, PR #74
 at `14ccc27`, still open) says which are trained now and which shapes would use the room above them:
 
-- **Small:** VOCR4-FL10 now. Next: the FL10 shape with a VN-ordered 4,987-class head (`s_w100v4987`, 819,792 B,
-  est. 0.32-0.61 s per box). vocab-expand (#79) ships that vocab (`data/vocab_vn_4987.txt`). It is a subset of
-  `data/vocab.txt`, so no new render is needed. Its 16k-step proof: teacher_val −0.20 points (CI −0.40 to +0.01),
-  devnative −0.31 (CI −0.60 to −0.04).
+- **Small:** VOCR4-FL10 now. Next: the FL10 shape with a 4,987-class head (`s_w100v4987`, 819,792 B, est.
+  0.32-0.61 s per box). vocab-expand (#79, open, at `080484e`) has two 4,987-class files:
+  - `data/vocab_4987_proof.txt`, a subset of `data/vocab.txt`, so no new render is needed. Its 16k-step proof gave
+    teacher_val −0.20 points (CI −0.40 to +0.01) and devnative −0.31 (CI −0.60 to −0.04).
+  - The next-round `data/vocab_vn_4987.txt`, which adds 240 kanji and needs the render below.
 - **Normal:** VOCR4-W20 now (within Normal's 4 MB, 262,144 B arena and 2 s). Next: the late-wide `n_lw300v5631`
   (width 2.0 early, 3.0 late; 2,473,696 B, arena 261,024 B, est. 0.97-1.95 s per box).
 - **Large:** VOCR4-W20 now. Next: one of four shapes at about the same estimated box time with 16-frame tiles:
@@ -425,8 +428,9 @@ at `14ccc27`, still open) says which are trained now and which shapes would use 
   - the parameter-heavy, compute-light `l_w300v7501b128` and `l_w300v7501b192` (3.17 and 3.69 MB, est. 2.70 and
     2.88 s per box).
 
-  vocab-expand's final vocabs for Normal and Large are `data/vocab_vn_5631.txt` and `data/vocab_vn_6459.txt`. They
-  need one render with the 6,459-class vocab first, since the synthetic and real pools only cover `data/vocab.txt`.
+  vocab-expand's final vocabs for Normal and Large are `data/vocab_vn_5631.txt` and `data/vocab_vn_6459.txt`. The
+  three VN-ordered files nest, so one render with the 6,459-class vocab serves all three tiers. It is needed
+  first, since the synthetic and real pools only cover `data/vocab.txt`.
 
 VOCR4's evidence for that round:
 

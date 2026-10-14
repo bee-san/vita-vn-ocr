@@ -9,6 +9,10 @@
                                                        duplicates -> OUT/inventory.jsonl, summary.json
   owner_frames.py prep --folder NAME [--out DIR]       devnative/read.py's input for one folder's unique frames
                                                        -> OUT/NAME/reads/shots.jsonl
+  owner_frames.py pool-prep --pool DIR [--folder NAME ...]
+                                                       read.py's input for an owner training pool: the unique,
+                                                       eligible frames of every training folder (or the named
+                                                       ones) -> DIR/reads/shots.jsonl, DIR/manifests/frames.jsonl
 
 Folders (shared/private/owner-games/): `memories-off-TEST` (test only: a fresh native test set, never trained
 on, never sent to Codex) and `chaos-head-noah-v22505` (training-eligible; private frames, so never sent to
@@ -38,6 +42,21 @@ PRIVATE = SH.HERD / "shared" / "private" / "owner-games"
 # names no id (its series' root is v1152).
 FOLDER_VN = re.compile(r"-v(\d+)(?:-TEST)?$")
 NAMED = {"memories-off-TEST": "v1152"}
+# The owner's explicit decisions for a training title reserved_vns reserves. Each one is allowed only for the
+# listed reservation reasons, so a test, development or CLANNAD reservation can never be overridden here.
+OWNER_DECISIONS = {
+    "v34": {"role": "training", "by": "owner 2026-10-13 19:21Z", "allowed": ("shared-release",),
+            "note": "planetarian (Key) is training data. reserved_vns reserves it only as a shared-release partner "
+                    "(the PC Key 10th Memorial BOX, r3748, with CLANNAD). It has no row in vita-test, psp-test, "
+                    "teacher_val or devnative. Disclose that planetarian PSP and CLANNAD Vita are both "
+                    "Key/Prototype ports whenever a model trained on it is scored on CLANNAD."},
+}
+
+
+def owner_allowed(vn, reason):
+    """The owner decision that lets a reserved VN's owner frames train, or None."""
+    d = OWNER_DECISIONS.get(vn)
+    return d if d and d["role"] == "training" and reason in d["allowed"] else None
 
 
 def folder_info(name, reserved=None):
@@ -53,6 +72,9 @@ def folder_info(name, reserved=None):
         ok = vn in SH.OWNER_TEST_SERIES
         return {"vn": vn, "role": role, "eligible": ok, "why": None if ok else "not an owner test title"}
     r = (reserved or {}).get(vn)
+    if r is not None and owner_allowed(vn, r):
+        return {"vn": vn, "role": role, "eligible": True, "why": None,
+                "owner_decision": f"{OWNER_DECISIONS[vn]['by']} (reserved_vns: {r})"}
     return {"vn": vn, "role": role, "eligible": r is None, "why": None if r is None else f"reserved: {r}"}
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
@@ -118,7 +140,7 @@ def frame_row(path, folder, info=None):
     info = info or folder_info(folder)
     rgb = P.read_rgb(path)
     row = {"folder": folder, "file": Path(path).name, "role": info["role"], "vn": info["vn"],
-           "eligible": info["eligible"], "why_not": info["why"],
+           "eligible": info["eligible"], "why_not": info["why"], "owner_decision": info.get("owner_decision"),
            "bytes": Path(path).stat().st_size, "sha256": file_sha256(path)}
     if rgb is None:
         return dict(row, error="undecodable")
@@ -159,7 +181,8 @@ def cmd_inventory(args):
     for folder in sorted({r["folder"] for r in rows}):
         rs = [r for r in rows if r["folder"] == folder]
         summary[folder] = {"role": rs[0]["role"], "vn": rs[0]["vn"], "eligible": rs[0]["eligible"],
-                           "why_not": rs[0]["why_not"], "files": len(rs),
+                           "why_not": rs[0]["why_not"], "owner_decision": rs[0].get("owner_decision"),
+                           "files": len(rs),
                            "unique": sum("duplicate_of" not in r and "error" not in r for r in rs),
                            "dims": dict(collections.Counter("x".join(map(str, r.get("dims", []))) for r in rs)),
                            "console": dict(collections.Counter(r.get("console") for r in rs)),
@@ -189,6 +212,92 @@ def cmd_prep(args):
     print(f"{len(reads)} unique frames of {args.folder} -> {p}", flush=True)
 
 
+def cmd_pool_prep(args):
+    """read.py's input for the owner training pool: every unique, eligible frame of the training folders.
+    A frame whose pixels another folder already holds is dropped (first folder in name order wins)."""
+    out, pool = Path(args.out), Path(args.pool)
+    rows = [json.loads(x) for x in (out / "inventory.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()]
+    want = set(args.folder or ())
+    reads, frames, refused = [], [], collections.Counter()
+    for folder in sorted({r["folder"] for r in rows}):
+        rs = [r for r in rows if r["folder"] == folder]
+        if (want and folder not in want) or rs[0]["role"] != "training":
+            continue
+        if not rs[0]["eligible"]:
+            refused[f"{folder}: {rs[0]['why_not']}"] += len(rs)
+            continue
+        keep = [r for r in rs if "duplicate_of" not in r and "error" not in r]
+        for i, r in enumerate(keep):
+            kind = "psp" if r["source"] == "480x272" and r["dims"] == [480, 272] else (
+                "vita" if r["dims"] == [960, 544] and r["source"] == "960x544" else None)
+            if kind is None:
+                refused[f"{folder}: not a native frame ({r['source']}, {r['dims']})"] += 1
+                continue
+            shot = f"{r['vn']}_owner{i:04d}"
+            reads.append({"shot": shot, "vn": r["vn"], "kind": kind, "url": f"owner:{folder}/{r['file']}",
+                          "path": str(Path(args.root) / folder / r["file"]), "release": None,
+                          "session": f"owner/{folder}", "subset": "native", "flags": [], "source_kind": kind,
+                          "dims": r["dims"]})
+            frames.append({"shot": shot, "vn": r["vn"], "kind": kind, "folder": folder, "file": r["file"],
+                           "sha256": r["sha256"], "pixel_sha256": r["pixel_sha256"], "rgb_sha256": r["rgb_sha256"],
+                           "dims": r["dims"], "source": r["source"], "upscale": r.get("upscale"),
+                           "owner_decision": r.get("owner_decision")})
+    for name, rows_ in (("reads/shots.jsonl", reads), ("manifests/frames.jsonl", frames)):
+        p = pool / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows_), encoding="utf-8")
+    print(json.dumps({"frames": len(reads), "by_vn": dict(collections.Counter(r["vn"] for r in reads)),
+                      "by_kind": dict(collections.Counter(r["kind"] for r in reads)), "refused": dict(refused)},
+                     indent=1), flush=True)
+
+
+def cmd_publish(args):
+    """The committed, aggregate-only record of an owner pool (realplus/manifests/owner/stats.json): per-folder
+    eligibility and sizes, leak-check pair counts, candidate / label / build counts per VN and the npz sha256.
+    No file name, hash, box, text or pixel of a private frame."""
+    out, pool = Path(args.out), Path(args.pool)
+
+    def jl(p):
+        p = Path(p)
+        return [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()] if p.exists() else []
+    summary = json.loads((out / "summary.json").read_text())
+    folders = {k: {f: v.get(f) for f in ("role", "vn", "eligible", "why_not", "owner_decision", "files", "unique",
+                                          "dims", "console", "upscale")} for k, v in summary.items()}
+    leak = {}
+    for lp in sorted((pool / "logs").glob("leak_*.log")):
+        last = [x for x in lp.read_text().splitlines() if x.startswith("{")]
+        if last:
+            d = json.loads(last[-1])
+            leak[lp.stem[5:]] = {k: d.get(k) for k in ("tests", "pool", "min_corr", "pairs", "same-vn", "cross-vn")}
+    vn = lambda lid: lid.split("_")[0]  # noqa: E731
+    labels = jl(pool / "labels.jsonl")
+    by_vn = collections.defaultdict(lambda: collections.Counter())
+    for r in labels:
+        by_vn[vn(r["id"])][f"{r['status']}:{r['how'] if r['status'] == 'kept' else r['why']}"] += 1
+    build = json.loads((pool / "manifests" / f"build_stats_{args.tag}.json").read_text())
+    man = jl(pool / "manifests" / f"lines_{args.tag}.jsonl")
+    lines_vn = collections.defaultdict(lambda: collections.Counter())
+    for m in man:
+        lines_vn[m["vn"]]["lines"] += 1
+        for c in m["crops"]:
+            lines_vn[m["vn"]][c] += 1
+    doc = {"kind": "owner-pool-stats", "tag": args.tag, "private_dir": "shared/private/owner-games/_build/owner-pool",
+           "codex": "none: private frames; Claude + MeikiOCR / PP-OCRv6 agreement only",
+           "folders": folders, "leak": leak,
+           "frames_read": len(jl(pool / "reads" / "reads.jsonl")),
+           "candidates_by_vn": dict(collections.Counter(vn(r["id"]) for r in labels)),
+           "labels_by_vn": {k: dict(v) for k, v in sorted(by_vn.items())},
+           "build": build, "lines_by_vn": {k: dict(v) for k, v in sorted(lines_vn.items())}}
+    cp = pool / "review" / f"check_report_{args.check}.json"
+    if cp.exists():
+        d = json.loads(cp.read_text())
+        doc["precision_check"] = {k: v for k, v in d.items() if k not in ("disagreements", "batches")}
+    dst = ROOT / "realplus" / "manifests" / "owner"
+    dst.mkdir(parents=True, exist_ok=True)
+    (dst / "stats.json").write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"published {dst / 'stats.json'}", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", default=str(PRIVATE))
@@ -199,8 +308,15 @@ def main():
     sub.add_parser("inventory")
     p = sub.add_parser("prep")
     p.add_argument("--folder", required=True)
+    p = sub.add_parser("pool-prep")
+    p.add_argument("--pool", required=True, help="the owner pool directory (under shared/private)")
+    p.add_argument("--folder", action="append", help="only these training folders (default: all)")
+    p = sub.add_parser("publish")
+    p.add_argument("--pool", required=True)
+    p.add_argument("--tag", required=True)
+    p.add_argument("--check", default="pre", help="the build tag the precision sample was drawn from")
     a = ap.parse_args()
-    {"inventory": cmd_inventory, "prep": cmd_prep}[a.cmd](a)
+    {"inventory": cmd_inventory, "prep": cmd_prep, "pool-prep": cmd_pool_prep, "publish": cmd_publish}[a.cmd](a)
 
 
 if __name__ == "__main__":

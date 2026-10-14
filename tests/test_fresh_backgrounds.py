@@ -15,7 +15,7 @@ import fresh_backgrounds as FB  # noqa: E402
 
 @pytest.fixture(autouse=True)
 def deterministic_holdout(monkeypatch):
-    monkeypatch.setattr(FB, "is_test_vn", lambda _: False)
+    monkeypatch.setattr(FB, "is_reserved_vn", lambda _: False)
 
 
 def jpeg(platform="psp", fill=70, dims=None):
@@ -59,7 +59,7 @@ def test_only_native_console_nonreserved_screenshots_are_eligible(change):
 
 def test_filename_and_deterministic_benchmark_holdout_are_excluded(monkeypatch):
     assert not FB.eligible(row(), "psp", {"v10_10.jpg"}, set())
-    monkeypatch.setattr(FB, "is_test_vn", lambda _: True)
+    monkeypatch.setattr(FB, "is_reserved_vn", lambda _: True)
     assert not FB.eligible(row(), "psp", set(), set())
 
 

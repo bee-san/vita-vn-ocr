@@ -814,9 +814,9 @@ def build_lines(labels, shots, excluded_vns=frozenset(), excluded_shots=frozense
 
 def late_exclusions(src_rows, saved_vns=(), current_vns=(), dup_images=(), leak_shots=()):
     """VNs and shot keys to leave out at build time, whatever was decided earlier: the reserved VNs
-    saved at selection plus those recomputed from today's inputs (test games, fresh native titles,
-    development VNs), screenshots dedupe marked as copies (of a pool image, a fresh native test image
-    or another realplus image) and shots the leak check dropped. Shot keys are "<vn>_<image>"."""
+    given (cmd_build: the reservation recomputed from today's inputs, shots.reserved_vns), screenshots
+    dedupe marked as copies (of a pool image, a fresh native test image or another realplus image) and
+    shots the leak check dropped. Shot keys are "<vn>_<image>"."""
     vns = set(saved_vns) | set(current_vns)
     dup = {str(i) for i in dup_images}
     shots_ = {f"{r['vn']}_{r['image']}" for r in src_rows if str(r["image"]) in dup} | set(leak_shots)
@@ -841,12 +841,13 @@ def cmd_build(args):
     labels = jl(OUT / "labels.jsonl")
     shots = load_reads()
     rows_ = SH.load_shots()
-    saved = json.loads((OUT / "manifests" / "reserved_vns.json").read_text())
-    current = SH.reserved_vns(SH.load_dump())          # recomputed: inputs may have moved since select
+    # The reservation recomputed from today's dump and the committed eval/manifests/reserved.json (docs/
+    # reservations.md). A reserved_vns.json saved at selection under the old rules (hash splits, development, fresh
+    # native, owner test series) no longer excludes anything; select under the new rules rewrites it.
+    current = SH.reserved_vns(SH.load_dump())
     leak = OUT / "manifests" / "leak_drop.json"
     late_vns, late_shots = late_exclusions(
-        rows_, saved, set(current) | SH.devnative_vns() | SH.fresh_native_vns(), dups(),
-        json.loads(leak.read_text()) if leak.exists() else ())
+        rows_, (), set(current), dups(), json.loads(leak.read_text()) if leak.exists() else ())
     src = {f"{r['vn']}_{r['image']}": r for r in rows_}
     edge_p = OUT / "edge" / "edge.jsonl"
     edge = {r["id"]: r for r in jl(edge_p)} if edge_p.exists() else None

@@ -21,12 +21,13 @@ REALPLUS=$NATIVE_POOL).
   native.py filter-plan             drop known lines from pool.py plan's review order
 
 A frame is a native frame when it belongs to a psv release at 960x544 or a psp release at 480x272
-(realdata's kinds). A VN is used only on the training side (realplus/shots.reserved_vns: no test,
-development, validation-bucket, fresh-native, CLANNAD or owner-game VN, none of their families or
-release partners); a frame only when it is in no evaluation set (eval's test and candidate sets,
-linefind's sets), no development set (general-VN development, devnative) and no test capture
-session. The order is console exclusives first: titles released only for PSP, then only for PS
-Vita, then for both, then multi-platform titles.
+(realdata's kinds). A VN is used only on the training side (realplus/shots.reserved_vns, docs/
+reservations.md: not a vita-test / psp-test game, not the CLANNAD family, no release partner of those, not
+in the development sample); a frame only when it is not a vita-test / psp-test screenshot and not from a
+test capture session. Frames of another labelled pool (devnative, general-VN development) are left to
+that pool's labels ("pooled-other"); eval's unchosen candidates and linefind's sets are training-side.
+The order is console exclusives first: titles released only for PSP, then only for PS Vita, then for
+both, then multi-platform titles.
 """
 import argparse
 import collections
@@ -48,8 +49,9 @@ NP = Path(os.environ.get("NATIVE_POOL") or ART / "native-frames" / "pool")
 DUMP = Path(os.environ.get("NATIVE_DUMP") or ART / "native-frames" / "vndb" / "dump" / "db")
 NATIVE = {"psv": ("vita", (960, 544)), "psp": ("psp", (480, 272))}
 CONSOLES = {"psp", "psv"}
-# Screenshot sets a training pool must never take a frame from (reserved_screenshots' names).
-FORBIDDEN_SETS = {"eval-test", "eval-candidates", "linefind", "general-vn-dev", "devnative"}
+# Screenshot sets a training pool must never take a frame from (reserved_screenshots' names): only the test sets'
+# screenshots since 2026-10-14 (docs/reservations.md).
+FORBIDDEN_SETS = {"eval-test"}
 # Sets whose frames this pool may relabel: realdata's and teacher's training-side native frames.
 POOLED_SETS = {"realdata", "teacher"}
 GROUP_ORDER = ("psp-only", "vita-only", "psp+vita", "multi-platform")

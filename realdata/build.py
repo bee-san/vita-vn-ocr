@@ -9,9 +9,9 @@
 `decide` applies the voting rule (vote.RULES) to every line read by label.py, lets a
 hand-checked truth (manifests/handcheck.jsonl) override the vote, and keeps a label only
 if it is Japanese and inside data/vocab.txt. A label is kept at most twice per VN and
-eight times overall (UI strings like セーブ repeat on every screenshot). Test games
-(synth/common.is_test_vn, eval's reserved list) and eval's test capture sessions (VNDB
-release ids) are dropped again here in case the lists changed after selection, as are
+eight times overall (UI strings like セーブ repeat on every screenshot). Reserved VNs
+(synth/common.is_reserved_vn, eval's reserved list; docs/reservations.md) and eval's test capture
+sessions (VNDB release ids) are dropped again here in case the lists changed after selection, as are
 lines of screenshots that `vndb.py prune` removed. Split by VN: 15 <= md5(vn) % 100 < 25
 is validation (about 10% of VNs; < 15 is the test hash), everything else train.
 
@@ -48,7 +48,7 @@ import vote  # noqa: E402
 from vndb import KINDS, excluded_sessions, excluded_vns, load_shots, realdata_dir, shot_key, shot_path  # noqa: E402
 
 sys.path.insert(0, str(ROOT / "synth"))
-from common import is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
+from common import is_reserved_vn, line_dark, load_vocab, to_gray  # noqa: E402
 
 MAN = HERE / "manifests"
 LINES = {k: MAN / f"lines_{k}.jsonl" for k in KINDS}
@@ -164,7 +164,7 @@ def decide(args):
         s = shots.get(r["url"])
         # test games and test capture sessions again (eval's lists grow); a screenshot that
         # `vndb.py prune` removed from the shots manifests is gone for good
-        reason = ("test-game" if is_test_vn(r["vn"]) or r["vn"] in extra else
+        reason = ("test-game" if is_reserved_vn(r["vn"]) or r["vn"] in extra else
                   "unselected" if s is None else
                   "test-session" if s["release"] in sessions else None)
         if reason:

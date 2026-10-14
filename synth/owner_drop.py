@@ -15,14 +15,17 @@ check   per full frame: the decoded size (the source resolution; every frame of 
         decoded RGB as the fresh-native harness hashes it, devnative's). Per game: its VNDB id (GAMES:
         identified on VNDB's 2026-10-13 dump by title, platform and the Japanese console release),
         realplus/shots.reserved_vns's reason on the dump, the VN's rows in eval's and the development sets
-        (vita-test, psp-test, test_games.json "all", is_test_vn, teacher_val, devnative) and, with --leak, each
-        frame's best thumbnail correlation (eval/tools/leakcheck.thumb) with every screenshot of eval's
-        candidates, devnative's cohort and teacher_val. decide() gives each game a role:
-          test      CLANNAD and its family (protected, owner); else any reserved VN (the VNDB check pattern);
-          training  an unreserved VN, or an owner decision (OWNER_DECISIONS) that is in no eval or
-                    development set;
-          blocked   an owner decision whose VN is in an eval or development set, or a training game with a
-                    frame at or above MIN_CORR against a protected screenshot.
+        (vita-test, psp-test, test_games.json "all", is_test_vn, teacher_val, devnative: information, apart from
+        the two test sets) and, with --leak, each frame's best thumbnail correlation (eval/tools/leakcheck.thumb)
+        with every screenshot of eval's candidates, devnative's cohort and teacher_val. decide() gives each game a
+        role (owner 2026-10-14 13:25Z, docs/reservations.md: all owner screenshots train unless the game is a test
+        game):
+          test      CLANNAD and its family; else a VN of the test reservation (a vita-test or psp-test game or a
+                    release partner of one) or a VN with rows in vita-test or psp-test;
+          training  everything else, including a development-sample VN (then re-run realplus/shots.py reserve,
+                    which leaves owner games out of the sample) and an owner decision (OWNER_DECISIONS);
+          blocked   an owner decision whose VN is in vita-test or psp-test, or a training game with a frame at or
+                    above MIN_CORR against a protected screenshot.
 sort    hardlinks each game's frames into owner-games/<platform>-<slug>-v<id>[-TEST]/ (an existing folder of
         the same VN and role is reused) with manifest.jsonl (per frame: file, drop path, hashes, size, source
         resolution, sequence) and ingest.json (the decision). It never overwrites or removes a file.
@@ -173,7 +176,9 @@ def eval_membership(vn, sets, test_all, dev, fresh):
     return hit
 
 
-EVAL_KEYS = ("vita-test", "psp-test", "teacher_val", "devnative", "test_games_all", "fresh_native")
+# The sets that make a game test-only (docs/reservations.md); the other memberships eval_membership reports
+# (test_games_all, is_test_vn, development_vns, fresh_native, teacher_val, devnative) are information only.
+EVAL_KEYS = ("vita-test", "psp-test")
 
 
 def decide(vn, reason, sets_hit, owner=OWNER_DECISIONS, leak_frames=0):
@@ -186,6 +191,9 @@ def decide(vn, reason, sets_hit, owner=OWNER_DECISIONS, leak_frames=0):
         if in_eval:
             return "blocked", f"{o['by']} says {o['role']}, but the VN is in {', '.join(in_eval)}: stopped"
         role, why = o["role"], f"{o['by']}: {o['role']} (reserved_vns: {reason or 'not reserved'})"
+    elif reason and reason.startswith("dev-sample"):
+        role, why = "training", (f"reserved: {reason}, but owner screenshots train (owner 2026-10-14 13:25Z): "
+                                 "re-run realplus/shots.py reserve so the development sample leaves this game out")
     elif reason:
         role, why = "test", f"reserved: {reason}"
     elif in_eval:

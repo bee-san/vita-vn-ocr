@@ -15,8 +15,8 @@ and at most MAX_LEN characters. Train/dev assignment is by source document (Aozo
 Tatoeba sentence id, subtitle block, roleplay conversation, wiki page), hashed with SPLIT_SALT:
 1 in 20 documents is dev. Train lines that also occur in any dev pool are removed, so the
 synthetic dev shards share no line with training. Names exclude every character that appears in
-a reserved test VN (eval/manifests/test_games.json "all", synth/common.is_test_vn) or a
-development VN (--dev-vns), by VNDB VN id.
+a reserved VN (eval/manifests/test_games.json "all", synth/common.is_reserved_vn: the test sets and
+the development sample, docs/reservations.md) or any extra VN given with --dev-vns, by VNDB VN id.
 
 Output (POOLS/): <pool>.<split>.txt (one line per utterance), <pool>.<split>.json (counts,
 sha256, licence class), names.<split>.tsv, contexts.<split>.npz, targets.json.
@@ -41,7 +41,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
-from common import DATA, is_test_vn, load_vocab  # noqa: E402
+from common import DATA, is_reserved_vn, load_vocab  # noqa: E402
 
 MAX_LEN = 60          # one utterance; render-time wrapping makes 1-4 line boxes from it
 SPLIT_SALT = "synth3-text-split-v1"
@@ -388,7 +388,7 @@ def cmd_names(args):
             if p[col["lang"]] != "ja":
                 continue
             vns = p[col["vn_ids"]].split(",")
-            if any(v in forbid or is_test_vn(v) for v in vns):
+            if any(v in forbid or is_reserved_vn(v) for v in vns):
                 stats["vndb_reserved_or_dev"] += 1
                 continue
             parts = [norm_vn(x) for x in p[col["name"]].split(" ") if x]

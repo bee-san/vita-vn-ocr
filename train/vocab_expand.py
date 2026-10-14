@@ -115,19 +115,22 @@ def emittable(c, es):
 
 
 def reserved_vns(extra=()):
-    """synth4_gap.reserved_vns(): test games, the exclusion manifests, v661 and v19373, plus extra lists."""
+    """synth4_gap.reserved_vns(): the test games, the reservation (docs/reservations.md), the CLANNAD exclusion
+    manifest, plus extra lists."""
     import synth4_gap
     return synth4_gap.reserved_vns(extra)
 
 
 def is_reserved(vns, reserved):
-    from common import is_test_vn
-    return any(v in reserved or is_test_vn(v) for v in vns)
+    from common import is_reserved_vn
+    return any(v in reserved or is_reserved_vn(v) for v in vns)
 
 
 def default_extra():
-    return [p for p in (A / "synth3" / "mining" / "exclude_dev_vns.txt", A / "native-frames" / "owner_games_vns.json")
-            if p.exists()]
+    """No extra lists since 2026-10-14 (owner 13:25Z, docs/reservations.md): the development sample is in
+    common.is_reserved_vn; the old development list (exclude_dev_vns.txt) and the owner's former test series
+    (owner_games_vns.json) are training data. Pass --exclude to add lists."""
+    return []
 
 
 def pct(xs, qs=(50, 90, 95, 99)):
@@ -759,8 +762,8 @@ def oov_stats(rows, vocabs):
 def cmd_bias(args):
     """What the labelling pipelines dropped for being out of H15's vocab, and what they never kept."""
     reserved = reserved_vns(default_extra())
-    from common import is_test_vn
-    ok_vn = lambda v: bool(v) and v not in reserved and not is_test_vn(v)  # noqa: E731
+    from common import is_reserved_vn
+    ok_vn = lambda v: bool(v) and v not in reserved and not is_reserved_vn(v)  # noqa: E731
     h15, fl10 = read_vocab(args.vocab), read_vocab(FL10_VOCAB)
     vocabs = {"H15": emit_set(h15), "FL10": emit_set(fl10)}
     for spec in args.vocab_file or []:

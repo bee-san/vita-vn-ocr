@@ -15,7 +15,7 @@ different VNs peak at 0.78 (Vita) and 0.74 (PSP). Each pair at or above
 screenshot's best match. A same-vn pair means the pool holds a test game; a
 cross-vn pair is one capture filed under two ids (or a shared stock image) and
 needs a look. Pool images of reserved games (manifests/test_games.json "all", or
-synth/common.py is_test_vn) are skipped first, as training must skip them;
+synth/common.py is_reserved_vn: docs/reservations.md) are skipped first, as training must skip them;
 --keep-reserved audits the raw pool. Training-data agents can run it on their pools.
 """
 import argparse
@@ -32,7 +32,7 @@ sys.path.insert(0, str(HERE.parents[1] / "synth"))
 import sets  # noqa: E402
 from fetch import data_dir, shot_path  # noqa: E402
 
-from common import is_test_vn  # noqa: E402
+from common import is_reserved_vn  # noqa: E402
 
 EXTS = {".jpg", ".jpeg", ".png"}
 VN = re.compile(r"^(v\d+)_")
@@ -77,7 +77,7 @@ def main():
     n_raw = len(pool)
     if not args.keep_reserved:
         reserved = set(json.loads((sets.MANIFESTS / "test_games.json").read_text(encoding="utf-8"))["all"])
-        pool = [p for p in pool if not (vn_of(p) and (vn_of(p) in reserved or is_test_vn(vn_of(p))))]
+        pool = [p for p in pool if not (vn_of(p) and (vn_of(p) in reserved or is_reserved_vn(vn_of(p))))]
     print(f"{len(tests)} test screenshots, {len(pool)} pool images ({n_raw - len(pool)} of reserved games skipped)")
     if not tests or not pool:
         return

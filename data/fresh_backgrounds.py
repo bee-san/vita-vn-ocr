@@ -28,7 +28,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from synth.bg_exclude import load_exclusions  # noqa: E402
-from synth.common import is_test_vn  # noqa: E402
+from synth.common import is_reserved_vn  # noqa: E402
 
 API = "https://api.vndb.org/kana/vn"
 FIELDS = ("id,title,screenshots.url,screenshots.dims,screenshots.sexual,"
@@ -73,7 +73,7 @@ def eligible(row, platform, excluded, sessions):
             or not re.fullmatch(r"/sf/[0-9]{2}/[0-9]+\.jpg", parsed.path)
             or parsed.query or parsed.fragment):
         return False
-    return (vn != "v4" and vn not in excluded and not is_test_vn(vn)
+    return (vn != "v4" and vn not in excluded and not is_reserved_vn(vn)
             and filename(row) not in excluded and release not in sessions
             and platform in (row.get("release_platforms") or [])
             and tuple(row.get("dims") or []) == PLATFORMS[platform][0]
@@ -215,7 +215,7 @@ def create_manifest(session, out, train=16, dev=4):
     excluded, sessions = exclusion_sets()
     pins = [json.loads(line) for line in PSP_MANIFEST.read_text(encoding="utf-8").splitlines() if line]
     pin_map = {(r["vn"], r["url"], r["release"]): r for r in pins}
-    ids = sorted({r["vn"] for r in pins if r["vn"] not in excluded and not is_test_vn(r["vn"])
+    ids = sorted({r["vn"] for r in pins if r["vn"] not in excluded and not is_reserved_vn(r["vn"])
                   and r["release"] not in sessions}, key=lambda v: int(v[1:]))
     if len(ids) > 100:
         raise ValueError("PSP source exceeds this deliberately small selection query")

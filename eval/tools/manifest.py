@@ -16,11 +16,13 @@ unit of capture: VNDB links every screenshot to exactly one release, and
 screenshots taken in one sitting are uploaded together under one release. It is
 the conservative choice, since one release can hold several sittings.
 
-test_games.json reserves, besides the set games and every is_test_vn() game: any
-VN that shares a release with a set screenshot (compilations), and each set
-game's direct VNDB relations of the kinds in FAMILY (alternative versions,
-originals, fandiscs, sequels, prequels, side and parent stories, series), which
-reuse its scenes, UI and fonts. Relations come from tools/relations.py.
+test_games.json's "all" reserves (owner 2026-10-14 13:25Z, docs/reservations.md) the set games and
+every VN that shares a VNDB release with one: the VNs on a set screenshot's release and the release
+partners eval/manifests/reserved.json records ("test_shared_releases", from the VNDB dump by
+realplus/shots.py reserve). "family" lists each set game's direct VNDB relations of the kinds in
+FAMILY for information; they are training data. Until 2026-10-14 "all" also held every is_test_vn()
+game with Vita or PSP screenshots and that family; "all_20261012" keeps that list as history.
+Relations come from tools/relations.py.
 """
 import json
 import sys
@@ -132,17 +134,13 @@ def main(which):
     tg[f"{which}-test"] = {vn: {"title": g["title"], "lines": g["lines"], "screenshots": len(g["shots"]),
                                 "sessions": sorted(g["sessions"], key=lambda x: int(x[1:]))}
                            for vn, g in sorted(games.items(), key=lambda kv: int(kv[0][1:]))}
-    # Every VN reserved for eval: the games in the sets plus every is_test_vn() game that
-    # has native-size screenshots on VNDB (they are test games by rule anyway).
-    sys.path.insert(0, str(EVAL.parent / "synth"))
-    from common import is_test_vn
+    # Every VN reserved for eval: the games in the sets and every VN sharing a release with one.
     listing = []
     for plat in ("psv", "psp"):
         for name in (f"vndb_{plat}.jsonl", f"vndb_{plat}_any.jsonl"):
             p = data / "vndb" / name
             if p.exists():
                 listing += [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
-    hashed = {x["vn"] for x in listing if is_test_vn(x["vn"])}
     used = set(tg.get("vita-test", {})) | set(tg.get("psp-test", {}))
     sessions = {s for k in ("vita-test", "psp-test") for g in tg.get(k, {}).values() for s in g["sessions"]}
     # A release (session) can belong to several VNs (compilations): reserve all of them.
@@ -156,20 +154,20 @@ def main(which):
         sys.exit(f"no relations for {missing}: run eval/tools/relations.py {' '.join(missing)}")
     family = {vn: sorted({x["id"] for x in relations[vn] if x["relation"] in FAMILY}, key=lambda v: int(v[1:]))
               for vn in sorted(used, key=lambda v: int(v[1:]))}
-    related = {v for ids in family.values() for v in ids}
-    tg["rule"] = ("A VN is a test game if synth/common.py is_test_vn(id) is true or its id is in 'all'; a "
-                  "screenshot is from a test capture session if its VNDB release id is in 'sessions'. Never "
-                  "train, calibrate or render synthetic backgrounds from a test game or a test session, on any "
-                  "platform. 'all' holds the set games, every is_test_vn() game with Vita or PSP screenshots, "
-                  "any VN sharing a release with a set screenshot, and each set game's direct VNDB relations "
-                  "of kinds " + ", ".join(sorted(FAMILY)) + " ('family').")
-    tg["all"] = sorted(used | hashed | sharing | related, key=lambda v: int(v[1:]))
+    reserved = EVAL / "manifests" / "reserved.json"
+    partners = set(json.loads(reserved.read_text(encoding="utf-8")).get("test_shared_releases", {})) \
+        if reserved.exists() else set()
+    sys.path.insert(0, str(EVAL.parent / "realplus"))
+    from shots import TEST_GAMES_RULE
+    tg["rule"] = TEST_GAMES_RULE
+    tg["all"] = sorted(used | sharing | partners, key=lambda v: int(v[1:]))
     tg["sessions"] = sorted(sessions, key=lambda x: int(x[1:]))
     tg["family"] = {vn: ids for vn, ids in family.items() if ids}
-    tg = {k: tg[k] for k in ("rule", "all", "sessions", "family", "vita-test", "psp-test") if k in tg}
+    keys = ("rule", "all", "sessions", "family", "vita-test", "psp-test", "all_20261012")
+    tg = {k: tg[k] for k in keys if k in tg}
     tg_path.write_text(json.dumps(tg, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"{tg_path}: {len(tg['all'])} reserved VN ids ({len(used)} in the sets, "
-          f"{len(sharing - used)} more sharing a session, {len(related - used - hashed)} more as family), "
+          f"{len((sharing | partners) - used)} more sharing a release), "
           f"{len(sessions)} reserved sessions")
 
 

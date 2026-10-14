@@ -62,34 +62,48 @@ def test_url_and_image_ids(tmp_path):
     assert S.image_ids_in(p) == {112044, 777}
 
 
-def test_reserved_vns_family_and_shared_releases(tmp_path):
-    a, b, c, dd, e, f, g, h = train_side(8, 1000)
+def test_reservation_is_the_test_sets_clannad_and_their_release_partners(tmp_path):
+    """docs/reservations.md (owner 2026-10-14 13:25Z): only the set games, the CLANNAD family and every VN on one
+    VNDB release with one of them are test; the development sample adds its two-VN release partners; nothing else
+    (the old hash splits, the set games' family) is reserved."""
+    st, p, u1, u2, h, dv, twin, x, y = train_side(9, 1000)
     test_vn = next(f"v{i}" for i in range(1, 500) if is_test_vn(f"v{i}"))
     val_vn = next(f"v{i}" for i in range(1, 500) if S.val_bucket(f"v{i}") and not is_test_vn(f"v{i}"))
-    vns = {v: "ja" for v in (a, b, c, dd, e, f, g, h, test_vn, val_vn, "v4")}
+    vns = {v: "ja" for v in (st, p, u1, u2, h, dv, twin, x, y, test_vn, val_vn, "v4", "v5", "v34")}
     releases = {
-        "r1": (["win"], ["ja"], [a, b]),               # b on a release with a development VN
-        "r2": (["win"], ["ja"], [test_vn, c]),         # a pair with an is_test_vn VN
-        "r3": (["win"], ["ja"], [test_vn, dd, e]),      # a compilation of unrelated games
-        "r4": (["win"], ["ja"], [val_vn, f, g]),       # a compilation, but f is val_vn's sequel
+        "r1": (["win"], ["ja"], [st, p]),                 # a set game's two-VN release
+        "r2": (["win"], ["ja"], [st, u1, u2]),            # a compilation with a set game: every VN
+        "r3": (["win"], ["ja"], ["v4", "v5", "v34"]),     # the Key box: Little Busters!, planetarian (owner: allowed)
+        "r4": (["win"], ["ja"], [dv, twin]),              # a development-sample VN filed twice
+        "r5": (["win"], ["ja"], [dv, x, y]),              # a compilation with a dev VN: not reserved
+        "r6": (["win"], ["ja"], [test_vn, val_vn]),       # the old hash splits: training data now
     }
-    write_dump(tmp_path, vns, [], releases, relations=[(a, h, "seq"), (val_vn, f, "fan"), (a, g, "char")],
-               titles=[(g, "Some game")])
+    write_dump(tmp_path, vns, [], releases, relations=[(st, h, "seq")])
     d = S.load_dump(tmp_path)
-    why = S.reserved_vns(d, test_all=set(), fresh=set(), dev={a})
-    assert why[a] == "development" and why["v4"] == "clannad"
-    assert why[h] == "family"                       # a's sequel
-    assert why[b] == "shared-release"               # any release shared with a development VN
-    assert why[c] == "shared-release"               # a two-VN release with a test VN
-    assert dd not in why and e not in why            # an unrelated compilation with a test VN: allowed
-    assert why[f] == "shared-release" and g not in why   # ("char" is not a FAMILY relation)
-    assert why[test_vn] == "test-vn" and why[val_vn] == "val-bucket"
+    why = S.reserved_vns(d, sets={st}, dev={dv}, committed=False)
+    assert why[st] == "test-set" and why["v4"] == "clannad"
+    assert why[p] == why[u1] == why[u2] == "test-shared-release"
+    assert why["v5"] == "clannad-shared-release" and "v34" not in why
+    assert why[dv] == "dev-sample" and why[twin] == "dev-sample-shared-release"
+    assert x not in why and y not in why                      # compilations don't count for the dev sample
+    assert h not in why                                       # a set game's sequel is training data
+    assert test_vn not in why and val_vn not in why           # the hash splits reserve nothing
+    assert set(S.test_reservation(d, sets={st})) == {st, p, u1, u2, "v4", "v5"} | S.CLANNAD_FAMILY
+
+
+def test_release_partners_close_means_two_vn_releases(tmp_path):
+    a, b, c, e = train_side(4, 1500)
+    write_dump(tmp_path, {v: "ja" for v in (a, b, c, e)}, [],
+               {"r1": (["win"], ["ja"], [a, b]), "r2": (["win"], ["ja"], [a, c, e])}, relations=[(a, c, "fan")])
+    d = S.load_dump(tmp_path)
+    assert S.release_partners(d, {a}) == {b: ["r1"], c: ["r2"], e: ["r2"]}
+    assert S.release_partners(d, {a}, close=True) == {b: ["r1"]}
 
 
 def test_clannad_by_title(tmp_path):
     a, b = train_side(2, 100)
     write_dump(tmp_path, {a: "ja", b: "ja"}, [], {}, titles=[(a, "CLANNAD Side Stories"), (b, "Other")])
-    why = S.reserved_vns(S.load_dump(tmp_path), test_all=set(), fresh=set(), dev=set())
+    why = S.reserved_vns(S.load_dump(tmp_path), sets=set(), dev=set(), committed=False)
     assert why[a] == "clannad" and b not in why
 
 
@@ -155,29 +169,31 @@ def test_pixel_sha256_ignores_encoding(tmp_path):
 
 
 def test_reserved_sets_cover_the_repo_sets():
-    """Every committed eval/linefind/realdata/teacher screenshot is reserved, and the protected
-    VN lists include CLANNAD, the fresh native titles and the development VNs."""
+    """Every committed vita-test / psp-test screenshot and every realdata / teacher pool screenshot is held out of
+    selection (as eval-test, or as already in a pool); linefind's finder sets are training-side since 2026-10-14
+    (docs/reservations.md) apart from any test-set screenshot. The old development and fresh-native lists stay
+    readable for information."""
     ids = S.reserved_screenshots()
     for path in [ROOT / "eval" / "manifests" / "vita-test.jsonl", ROOT / "eval" / "manifests" / "psp-test.jsonl",
-                 *sorted((ROOT / "eval" / "linefind" / "manifests").glob("*.jsonl")),
                  *[ROOT / "realdata" / "manifests" / f"shots_{k}.jsonl" for k in S.KINDS]]:
         assert S.image_ids_in(path) <= set(ids), path
+    test_img = S.eval_test_images()
+    assert test_img and all("eval-test" in ids[i] for i in test_img)
+    assert not any(n in S.UNRESERVED_SETS for names in ids.values() for n in names)
     assert {"v14909", "v20519"} <= S.fresh_native_vns()
     assert S.GENERAL_VN_DEV <= S.dev_vns() and "v4" in S.dev_vns()
     tg = json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())
     assert tg["all"] and tg["sessions"]
 
 
-def test_fresh_native_titles_and_all_their_relations(tmp_path):
+def test_fresh_native_titles_are_training_data_now(tmp_path):
     a, b, c = train_side(3, 2000)
     fresh = "v14909"
     vns = {v: "ja" for v in (a, b, c, fresh)}
     write_dump(tmp_path, vns, [], {"r9": (["win"], ["ja"], [fresh, c, b, a])},
                relations=[(fresh, a, "char"), (fresh, b, "set")])
-    why = S.reserved_vns(S.load_dump(tmp_path), test_all=set(), fresh=None, dev=set())
-    assert why[fresh] == "fresh-native"
-    assert why[a] == why[b] == "fresh-native-relation"      # every relation kind, not only FAMILY
-    assert why[c] == "shared-release"                         # any release shared with a fresh title
+    why = S.reserved_vns(S.load_dump(tmp_path), sets=set(), dev=set(), committed=False)
+    assert not {fresh, a, b, c} & set(why)                   # training data since 2026-10-14
     assert S.FRESH_NATIVE == set("v14909 v25459 v29454 v21289 v21976 v20519 v16509 v19140".split())
     assert S.FRESH_NATIVE <= S.fresh_native_vns()
 
@@ -208,8 +224,8 @@ def test_clannad_family_list_is_reserved_without_dump_relations(tmp_path):
     a = train_side(1, 100)[0]
     fam = sorted(S.CLANNAD_FAMILY)
     write_dump(tmp_path, {a: "ja", **{v: "ja" for v in fam}}, [], {})          # no relations in this dump
-    why = S.reserved_vns(S.load_dump(tmp_path), test_all=set(), fresh=set(), dev=set())
-    assert all(why.get(v) in ("clannad-family", "test-vn") for v in fam) and a not in why
+    why = S.reserved_vns(S.load_dump(tmp_path), sets=set(), dev=set(), committed=False)
+    assert all(why.get(v) in ("clannad-family", "clannad") for v in fam) and a not in why
     assert {"v12", "v4060", "v54298"} <= S.CLANNAD_FAMILY and len(S.CLANNAD_FAMILY) == 11
 
 
@@ -218,7 +234,7 @@ def test_clannad_relations_of_every_kind_and_the_family_lists_family_are_reserve
     fam = sorted(S.CLANNAD_FAMILY)[0]
     write_dump(tmp_path, {"v4": "ja", a: "ja", b: "ja", c: "ja", e: "ja", fam: "ja"}, [], {},
                relations=[("v4", a, "char"), (fam, b, "seq"), (fam, e, "char")])
-    why = S.reserved_vns(S.load_dump(tmp_path), test_all=set(), fresh=set(), dev=set())
+    why = S.reserved_vns(S.load_dump(tmp_path), sets=set(), dev=set(), committed=False)
     assert why.get(a) == "clannad-relation"           # a parody sharing CLANNAD's characters
     assert why.get(b) == "clannad-relation"           # a sequel of a family member
     assert c not in why and e not in why               # a family member's char relation is not reserved

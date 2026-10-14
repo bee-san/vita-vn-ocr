@@ -11,8 +11,8 @@
 Only training-side data is read for anything that steers synth4: realplus (v2 crops, v3 labels),
 the native-frames pool's labels, teacher_train / real_train, the Jiten visual-novel word list and
 VNDB character names. Rows of every reserved VN are dropped and counted: eval's test games,
-`common.is_test_vn`, every synth3 exclusion manifest (fresh native, CLANNAD + family, the owner's
-test series) and any extra list given with --exclude (the development VNs, the owner's 13:10Z set).
+`common.is_reserved_vn` (the test sets and the development sample, docs/reservations.md), the CLANNAD
+exclusion manifest and any extra list given with --exclude.
 The development cohorts (teacher_val, devnative) are measured only by `styles` (reported, never a
 design input) and never by `mine`.
 
@@ -52,14 +52,12 @@ for _p in (HERE, ROOT, ROOT / "eval"):
         sys.path.insert(0, str(_p))
 from metrics import norm  # noqa: E402
 
-DEFAULT_EXCLUDE = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
-                   ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",
-                   ROOT / "data" / "manifests" / "synth3_exclude_owner_games.json")
-# Reserved like the owner's titles by the fleet's shared-release rule, but not in the 50-VN owner manifest
-# (data/manifests/synth3_exclude_owner_games.json, a40fc23, #63): v661 (弟切草, through 街's release; the
-# conductor's 13:10Z note names it) and v19373 (Ever 17, through the Ever17/Never7 pack with the reserved
-# Never 7). Added so a design-steering statistic never reads them.
-EXTRA_RESERVED = frozenset({"v661", "v19373"})
+# The CLANNAD manifest only since 2026-10-14 (docs/reservations.md): fresh native and the owner's former test
+# series are training data.
+DEFAULT_EXCLUDE = (ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",)
+# v661 (弟切草) and v19373 (Ever 17) were reserved here like the owner's former test series (a40fc23, #63); since
+# 2026-10-14 (docs/reservations.md) they are training data.
+EXTRA_RESERVED = frozenset()
 EXPOSURE_BINS = (1, 10, 50, 100, 300, 1000)
 NAME_STOP = set("「」『』。、！？!?…―（）()")
 
@@ -98,7 +96,9 @@ def read_vocab(path):
 def reserved_vns(extra=()):
     """VN ids no statistic may use: eval's test games plus every exclusion manifest's VNs (and
     extra lists: .json with a "vns" list, or whitespace-separated .txt)."""
+    from common import reservation
     out = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"]) | EXTRA_RESERVED
+    out |= set(reservation()["test"]) | set(reservation()["dev_sample"])
     for p in list(DEFAULT_EXCLUDE) + list(extra):
         p = Path(p)
         if p.suffix == ".json":
@@ -109,8 +109,8 @@ def reserved_vns(extra=()):
 
 
 def usable(vn, reserved):
-    from common import is_test_vn
-    return bool(vn) and vn not in reserved and not is_test_vn(vn)
+    from common import is_reserved_vn
+    return bool(vn) and vn not in reserved and not is_reserved_vn(vn)
 
 
 def expand(spec):

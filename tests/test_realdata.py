@@ -17,8 +17,9 @@ import build  # noqa: E402
 import lines as L  # noqa: E402
 import vndb  # noqa: E402
 import vote  # noqa: E402
+from common import is_reserved_vn, is_test_vn  # noqa: E402  (synth/common.py, on the path through build)
 
-is_test_vn, load_vocab = build.is_test_vn, build.load_vocab      # synth/common.py
+load_vocab = build.load_vocab
 
 
 @pytest.mark.parametrize("raw, label", [
@@ -165,11 +166,26 @@ def test_val_split_is_disjoint_from_the_test_hash():
     assert 0.08 < len(val) / len(vns) < 0.12
 
 
+def frozen_lists():
+    """The lists realdata's committed pools were built under (before 2026-10-14, docs/reservations.md): eval's old
+    'all' (test_games.json all_20261012) and the provisional copy realdata/eval_exclude.json."""
+    tg = json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text(encoding="utf-8"))
+    ex = json.loads((ROOT / "realdata" / "eval_exclude.json").read_text(encoding="utf-8"))
+    return set(tg["all_20261012"]) | set(ex["all"])
+
+
+def known_exposure(*names):
+    """VNs of the test reservation the frozen train2-era pools hold, as reclaim.py --split recorded them."""
+    doc = json.loads((ROOT / "realplus" / "manifests" / "reclaim_20261014_splits.json").read_text(encoding="utf-8"))
+    return set().union(*(doc["sets"][n]["dropped_test"] for n in names))
+
+
 def test_exclusion_covers_test_games_and_test_sessions():
-    vn = next(f"v{i}" for i in range(1, 100) if not is_test_vn(f"v{i}"))
-    tvn = next(f"v{i}" for i in range(1, 100) if is_test_vn(f"v{i}"))
+    vn = next(f"v{i}" for i in range(1, 100) if not is_test_vn(f"v{i}") and not is_reserved_vn(f"v{i}"))
+    tvn = next(f"v{i}" for i in range(1, 100) if is_test_vn(f"v{i}") and not is_reserved_vn(f"v{i}"))
     assert vndb.exclusion({"vn": vn, "release": "r1"}, set(), {"r9"}) is None
-    assert vndb.exclusion({"vn": tvn, "release": "r1"}, set(), set()) == "test-game"
+    assert vndb.exclusion({"vn": tvn, "release": "r1"}, set(), set()) is None     # the old hash split trains now
+    assert vndb.exclusion({"vn": "v4", "release": "r1"}, set(), set()) == "test-game"   # CLANNAD
     assert vndb.exclusion({"vn": vn, "release": "r1"}, {vn}, set()) == "test-game"
     assert vndb.exclusion({"vn": vn, "release": "r9"}, set(), {"r9"}) == "test-session"
 
@@ -203,13 +219,17 @@ def test_kind_of():
 def test_committed_manifests_are_consistent():
     shots = {vndb.shot_key(s): s for s in vndb.load_shots()}
     assert shots, "no shots manifests"
-    extra, sessions = vndb.excluded_vns(), vndb.excluded_sessions()
-    assert sessions, "eval's test capture sessions are missing (eval_exclude.json 'sessions')"
+    extra, sessions = frozen_lists(), vndb.excluded_sessions()
+    assert sessions, "eval's test capture sessions are missing (test_games.json 'sessions')"
     for s in shots.values():
         assert len(s["sha256"] or "") == 64, s
         assert s["sexual"] < vndb.SEXUAL_MAX and s["violence"] < vndb.VIOLENCE_MAX, s
-        assert not is_test_vn(s["vn"]) and s["vn"] not in extra, s
+        assert not is_test_vn(s["vn"]) and s["vn"] not in extra, s       # the rules it was built under
         assert s["release"] not in sessions, s
+    # what the 2026-10-14 reservation adds (CLANNAD's family and Key-box partners, two set games' release partners)
+    # is exactly what reclaim.py --split drops from real_train / real_unlabelled (docs/reservations.md)
+    exposed = {s["vn"] for s in shots.values() if is_reserved_vn(s["vn"], dev=False)}
+    assert exposed <= known_exposure("real_train", "real_unlabelled", "real_val"), sorted(exposed)
     rows = build.load_lines()
     vocab = set(load_vocab())
     for r in rows:
@@ -227,7 +247,7 @@ def test_unlabelled_pool_manifests_are_consistent():
     training-split games only, none of them labelled, each in its kind's file."""
     shots = {vndb.shot_key(s): s for s in vndb.load_shots()}
     labelled = {r["id"] for r in build.load_lines()}
-    extra, sessions = vndb.excluded_vns(), vndb.excluded_sessions()
+    extra, sessions = frozen_lists(), vndb.excluded_sessions()
     seen = set()
     for kind, path in build.UNLABELLED.items():
         for line in path.read_text(encoding="utf-8").splitlines():
@@ -235,7 +255,8 @@ def test_unlabelled_pool_manifests_are_consistent():
             s = shots[u["id"].rsplit("_", 1)[0]]
             assert s["kind"] == kind and u["id"] not in labelled and u["id"] not in seen, u["id"]
             seen.add(u["id"])
-            assert build.split_of(s["vn"]) == "train" and vndb.exclusion(s, extra, sessions) is None, u["id"]
+            assert build.split_of(s["vn"]) == "train" and s["vn"] not in extra, u["id"]
+            assert not is_test_vn(s["vn"]) and s["release"] not in sessions, u["id"]
             assert set(u["targets"]) <= {"vita", "psp"} and u["targets"] and len(u["ink"]) == 4, u
             assert set(u["reads"]) <= {"v5s", "v6s", "manga", "meiki"} and u["reads"], u
     assert len(seen) == len(build.load_unlabelled()) > 0

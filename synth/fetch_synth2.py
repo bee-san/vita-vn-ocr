@@ -12,8 +12,8 @@ By default each step fetches exactly what its committed manifest in data/manifes
 lists (synth2_fonts.json, synth2_psp_shots.jsonl) and checks every file's sha256
 against it, local copies included; a mismatch is an error. --refresh rebuilds a
 manifest instead: the fonts from the pinned release, the PSP pick from the local VNDB
-screenshot list (data/vndb/screenshots.jsonl), skipping every is_test_vn() game and
-every VN eval reserves (bg_exclude.load_exclusions). The fonts and screenshots
+screenshot list (data/vndb/screenshots.jsonl), skipping every reserved VN (synth/common.
+is_reserved_vn, docs/reservations.md) and every VN eval reserves (bg_exclude.load_exclusions). The fonts and screenshots
 themselves are never committed; screenshots are copyrighted game images, so keep
 them local. Requests carry a User-Agent; screenshots are fetched 1 per second.
 """
@@ -29,7 +29,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 from bg_exclude import load_exclusions  # noqa: E402
-from common import DATA, is_test_vn  # noqa: E402
+from common import DATA, is_reserved_vn  # noqa: E402
 
 UA = "vita-vn-ocr-synth2/0.1 (synthetic VN OCR training data; github.com/bee-san/vita-vn-ocr)"
 MANIFESTS = HERE.parent / "data" / "manifests"
@@ -122,7 +122,7 @@ def psp_pick(per_vn):
     rows = [json.loads(x) for x in (DATA / "vndb" / "screenshots.jsonl").read_text().splitlines()]
     reserved = load_exclusions()
     keep = [x for x in rows if "psp" in x["platforms"] and x["dims"] == [480, 272]
-            and x["sexual"] < 0.3 and x["violence"] < 0.5 and not is_test_vn(x["vn"])
+            and x["sexual"] < 0.3 and x["violence"] < 0.5 and not is_reserved_vn(x["vn"])
             and x["vn"] not in reserved]
     by_vn = {}
     for x in keep:

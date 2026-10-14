@@ -69,19 +69,18 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 import render as S2  # noqa: E402
-from common import DATA, is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
+from common import DATA, is_reserved_vn, line_dark, load_vocab, reservation, to_gray  # noqa: E402
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 ASSETS = HERD / "shared" / "artifacts" / "synth3"
 SHARED_DATA = HERD / "shared" / "data"
 FONT_MANIFEST = ROOT / "data" / "manifests" / "synth3_fonts.json"
-# Titles protected like eval's test games (the fresh native textbox test, its reserves, CLANNAD,
-# and their VNDB relations): never a name, scene or screenshot of synth3 (version 3 on).
-# The owner's test-only series (owner 2026-10-13 10:51Z and 13:10Z: Memories Off, Aiyoku no Eustia, 428) with
-# their relations and release partners joined them after version 3's render (synth/owner_games.py); the pinned
-# v3 shards' recipe records the two manifests they used.
-EXCLUDE_MANIFESTS = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
-                     ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",
+# CLANNAD and its VNDB relations, a test set: never a name, scene or screenshot of synth3 (version 3 on). The
+# fresh native textbox titles and the owner's former test series (Memories Off, Aiyoku no Eustia, 428) had
+# manifests here too; since 2026-10-14 (owner 13:25Z, docs/reservations.md) they are training data, so a new
+# render reads only the CLANNAD manifest (the pinned v3 shards' and synth4 v1's recipes record what they used).
+EXCLUDE_MANIFESTS = (ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",)
+RETIRED_MANIFESTS = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
                      ROOT / "data" / "manifests" / "synth3_exclude_owner_games.json")
 LATIN = re.compile(r"[0-9A-Za-z０-９Ａ-Ｚａ-ｚ]")
 
@@ -456,16 +455,17 @@ class Resources:
     # ---- scenes
     def _backgrounds(self, scenes=True, scene_hashes=None):
         """Training-side screenshots for scenes (synth2's list plus realdata's shots), never a
-        test, development or excluded VN, and never a screenshot whose file or RGB-pixel sha256 an
-        exclusion manifest lists; split by VN between train and dev. scenes=False: none (the
-        renderer then draws synthetic scenes only, as in CI). scene_hashes: a scene-hashes file
+        reserved VN (eval/manifests/reserved.json: the test sets and the development sample) or an
+        excluded one, and never a screenshot whose file or RGB-pixel sha256 an exclusion manifest lists;
+        split by VN between train and dev. scenes=False: none (the renderer then draws synthetic scenes
+        only, as in CI). scene_hashes: a scene-hashes file
         (file sha256 -> pixel sha256), so the pixels need not be decoded here."""
         self.scene_dropped = {"excluded_vn": 0, "excluded_hash": 0}
         if not scenes:
             self.bg, self.bg_vns, self.bg_text = {"vita": [], "psp": [], "hires": []}, [], {}
             return
         forbid = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"])
-        forbid |= set((self.assets / "mining" / "exclude_dev_vns.txt").read_text().split())
+        forbid |= set(reservation()["test"]) | set(reservation()["dev_sample"])
         excluded = self.exclusions["vns"]
         vita, psp, hires = scene_candidates()
         self.bg_text = scene_text_boxes(HERD / "shared" / "artifacts" / "realdata" / "shots")
@@ -486,7 +486,7 @@ class Resources:
             if vn in excluded:
                 self.scene_dropped["excluded_vn"] += 1
                 return False
-            return p.exists() and vn not in forbid and not is_test_vn(vn) and p in self.bg_text
+            return p.exists() and vn not in forbid and not is_reserved_vn(vn) and p in self.bg_text
         split_dev = self.split.startswith("dev")
 
         def mine(p):        # scenes split by VN between train and synthetic dev

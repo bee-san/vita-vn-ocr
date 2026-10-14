@@ -69,16 +69,17 @@ scored. UI labels, system menus, logos, vertical and rotated text are not in the
 sets. In-story choice options are, since the player reads them like dialogue
 (e.g. v16566_148766, v17286_92108, v19850_122862, v21789_116091).
 
-**Test games.** A test game is never used for training, calibration or as a
-synthetic background. The rule is: every VNDB VN with
-`synth/common.is_test_vn(id)` true, plus the ids listed in
-`manifests/test_games.json` (`all`). Check against both before adding data.
+**Test games.** A test game is never used for training, calibration, selection or as a
+synthetic background or name. Since 2026-10-14 (owner 13:25Z, [docs/reservations.md](../docs/reservations.md))
+the only test sets are vita-test, psp-test and the CLANNAD family: `manifests/reserved.json` lists every
+reserved VN (`test`, plus the small `dev_sample` model selection uses), and code asks
+`synth/common.is_reserved_vn(id)`. Check against it before adding data; `tools/reserve_check.py` checks a pool.
 
-`all` holds the set games, every `is_test_vn` game with Vita or PSP screenshots,
-any VN that shares a VNDB release with a set screenshot, and each set game's
-direct VNDB relations that reuse its scenes, UI and fonts (`family`: alternative
-versions, originals, fandiscs, sequels, prequels, side and parent stories,
-series). The split is by game **and** capture session: every line records its
+`test_games.json` `all` holds the set games and every VN that shares a VNDB release with
+one. `family` lists each set game's other direct VNDB relations for information: they are
+training data now, as is every `synth/common.is_test_vn` game (that hash split reserves
+nothing; `all_20261012` keeps the old list, which held every `is_test_vn` game with Vita
+or PSP screenshots and the family). The split is by game **and** capture session: every line records its
 session (the VNDB release its screenshot was uploaded under), and
 `test_games.json` lists them all in `sessions`. Never use a screenshot from a
 listed session. A game can be in both sets (v10856 and v13072 are, from their

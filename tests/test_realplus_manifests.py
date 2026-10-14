@@ -55,15 +55,17 @@ def test_files_are_small():
 
 
 def test_only_training_side_vns_and_screenshots():
-    test_all = set(SH.test_games()["all"])
-    protected = (test_all | SH.fresh_native_vns() | FRESH_RELATIONS | SH.CLANNAD | SH.CLANNAD_FAMILY
-                 | CLANNAD_RELATIONS | SH.GENERAL_VN_DEV)
-    eval_images = set()
-    for p in [*(ROOT / "eval").rglob("*.json"), *(ROOT / "eval").rglob("*.jsonl")]:
-        eval_images |= {int(x) for x in SH.IMAGE_ID.findall(p.read_text(encoding="utf-8", errors="replace"))}
-    bad = [r["shot"] for r in rows() if r["vn"] in protected or is_test_vn(r["vn"])
-           or int(r["shot"].split("_")[1]) in eval_images]
+    """No realplus screenshot is of a reserved VN (eval/manifests/reserved.json: the test sets with their release
+    partners, the CLANNAD family, the development sample; docs/reservations.md), from a test capture session, or
+    one of vita-test's / psp-test's screenshots. The old hash split trains since 2026-10-14."""
+    import common
+    res = common.reservation()
+    held = set(res["test"]) | set(res["dev_sample"]) | SH.CLANNAD | SH.CLANNAD_FAMILY | CLANNAD_RELATIONS
+    test_img, sessions = SH.eval_test_images(), set(res["sessions"])
+    bad = [r["shot"] for r in rows() if r["vn"] in held or int(r["shot"].split("_")[1]) in test_img
+           or r.get("release") in sessions]
     assert not bad, bad[:20]
+    assert not any(is_test_vn(r["vn"]) for r in rows())       # v2 was built under the old rules (history)
 
 
 def test_stats_pin_the_npz_files_and_the_local_manifests():

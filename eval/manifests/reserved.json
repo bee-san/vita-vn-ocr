@@ -1,0 +1,1298 @@
+{
+ "kind": "vita-vn-ocr-reservation",
+ "schema": 1,
+ "policy": "owner 2026-10-14 13:25Z (docs/reservations.md)",
+ "rule": "The only test sets are vita-test, psp-test and the CLANNAD family. 'test' holds their VNs and every VN on one VNDB release with one of them (planetarian, v34, excepted by the owner): never train, tune, calibrate, select, label-tune on them or render synthetic scenes or names from them. 'sessions' are vita-test's and psp-test's capture sessions (VNDB release ids): no screenshot of theirs is ever used. 'dev_sample' is the fixed development sample model selection uses, with its release partners: keep it out of the training pools of any round that selects on it. Every other VN is training data, including the old hash splits (synth/common.is_test_vn, realplus/shots.val_bucket), teacher_val, devnative, the fresh native textbox titles, the owner's former test series and every owner screenshot.",
+ "dump": "2026-10-13 08:00:26+00",
+ "code": "realplus/shots.py reserve",
+ "test": {
+  "v3": "test-shared-release",
+  "v4": "clannad",
+  "v5": "clannad-shared-release",
+  "v12": "clannad-family",
+  "v33": "clannad-shared-release",
+  "v36": "clannad-shared-release",
+  "v172": "test-shared-release",
+  "v869": "clannad-relation",
+  "v1038": "test-shared-release",
+  "v1267": "test-shared-release",
+  "v2028": "test-shared-release",
+  "v2389": "test-shared-release",
+  "v3297": "test-shared-release",
+  "v3396": "test-set",
+  "v3542": "test-set",
+  "v3820": "test-set",
+  "v4060": "clannad",
+  "v4147": "test-set",
+  "v4671": "test-set",
+  "v5698": "clannad",
+  "v5721": "test-shared-release",
+  "v7495": "test-shared-release",
+  "v7634": "test-set",
+  "v7721": "test-set",
+  "v7983": "clannad",
+  "v8040": "test-shared-release",
+  "v8324": "clannad-relation",
+  "v9915": "test-shared-release",
+  "v10058": "clannad-family",
+  "v10606": "test-shared-release",
+  "v10856": "test-set",
+  "v11057": "clannad-relation",
+  "v11095": "test-set",
+  "v11504": "test-set",
+  "v11639": "test-shared-release",
+  "v11706": "test-shared-release",
+  "v11707": "test-shared-release",
+  "v11708": "test-set",
+  "v11709": "test-shared-release",
+  "v12155": "test-set",
+  "v12865": "test-set",
+  "v12940": "test-set",
+  "v13072": "test-set",
+  "v15910": "test-set",
+  "v16460": "test-set",
+  "v16566": "test-set",
+  "v16901": "clannad-family",
+  "v16902": "clannad-relation",
+  "v17286": "test-set",
+  "v17750": "test-set",
+  "v17829": "test-set",
+  "v18030": "test-set",
+  "v18160": "test-shared-release",
+  "v18717": "test-shared-release",
+  "v19339": "test-set",
+  "v19850": "test-set",
+  "v20226": "test-shared-release",
+  "v20326": "test-set",
+  "v21002": "clannad-relation",
+  "v21782": "test-set",
+  "v21789": "test-set",
+  "v22122": "test-set",
+  "v23354": "clannad-family",
+  "v25142": "clannad-relation",
+  "v27548": "clannad-family",
+  "v28752": "clannad-family",
+  "v29951": "clannad",
+  "v42392": "clannad-relation",
+  "v54298": "clannad",
+  "v64301": "clannad-relation",
+  "v64642": "clannad"
+ },
+ "dev_sample": {
+  "v23": "dev-sample",
+  "v24": "dev-sample-shared-release",
+  "v218": "dev-sample",
+  "v238": "dev-sample",
+  "v400": "dev-sample",
+  "v418": "dev-sample",
+  "v454": "dev-sample",
+  "v604": "dev-sample",
+  "v701": "dev-sample",
+  "v961": "dev-sample",
+  "v1315": "dev-sample",
+  "v1794": "dev-sample",
+  "v1795": "dev-sample-shared-release",
+  "v1877": "dev-sample",
+  "v1971": "dev-sample",
+  "v2153": "dev-sample",
+  "v2306": "dev-sample",
+  "v2817": "dev-sample",
+  "v2835": "dev-sample",
+  "v3066": "dev-sample",
+  "v3278": "dev-sample",
+  "v3333": "dev-sample",
+  "v3371": "dev-sample",
+  "v3496": "dev-sample",
+  "v3549": "dev-sample",
+  "v3902": "dev-sample",
+  "v4597": "dev-sample",
+  "v5381": "dev-sample",
+  "v5706": "dev-sample",
+  "v5837": "dev-sample",
+  "v6135": "dev-sample",
+  "v6218": "dev-sample",
+  "v6656": "dev-sample",
+  "v6985": "dev-sample",
+  "v7204": "dev-sample",
+  "v7321": "dev-sample",
+  "v7716": "dev-sample",
+  "v8063": "dev-sample",
+  "v8410": "dev-sample",
+  "v8502": "dev-sample",
+  "v9178": "dev-sample",
+  "v9409": "dev-sample",
+  "v9684": "dev-sample",
+  "v10091": "dev-sample",
+  "v10304": "dev-sample",
+  "v10383": "dev-sample",
+  "v10972": "dev-sample",
+  "v11454": "dev-sample",
+  "v11640": "dev-sample",
+  "v11677": "dev-sample",
+  "v11857": "dev-sample",
+  "v12188": "dev-sample",
+  "v12436": "dev-sample",
+  "v12451": "dev-sample",
+  "v12705": "dev-sample",
+  "v12796": "dev-sample",
+  "v12830": "dev-sample",
+  "v12858": "dev-sample",
+  "v13188": "dev-sample",
+  "v13627": "dev-sample",
+  "v13636": "dev-sample",
+  "v13758": "dev-sample",
+  "v13833": "dev-sample",
+  "v13849": "dev-sample",
+  "v14240": "dev-sample",
+  "v14267": "dev-sample",
+  "v14520": "dev-sample",
+  "v15076": "dev-sample-shared-release",
+  "v15708": "dev-sample",
+  "v15773": "dev-sample",
+  "v16082": "dev-sample",
+  "v16128": "dev-sample",
+  "v16386": "dev-sample",
+  "v16770": "dev-sample",
+  "v17012": "dev-sample",
+  "v17153": "dev-sample",
+  "v17823": "dev-sample-shared-release",
+  "v17972": "dev-sample",
+  "v18161": "dev-sample",
+  "v18163": "dev-sample",
+  "v18432": "dev-sample",
+  "v18458": "dev-sample",
+  "v18643": "dev-sample",
+  "v18857": "dev-sample",
+  "v19848": "dev-sample-shared-release",
+  "v19849": "dev-sample-shared-release",
+  "v19982": "dev-sample",
+  "v20170": "dev-sample",
+  "v20524": "dev-sample",
+  "v20598": "dev-sample",
+  "v20604": "dev-sample",
+  "v21004": "dev-sample",
+  "v21047": "dev-sample",
+  "v21185": "dev-sample",
+  "v21321": "dev-sample",
+  "v21766": "dev-sample",
+  "v22114": "dev-sample-shared-release",
+  "v23154": "dev-sample",
+  "v24328": "dev-sample",
+  "v24702": "dev-sample",
+  "v25583": "dev-sample",
+  "v25684": "dev-sample",
+  "v25796": "dev-sample",
+  "v26001": "dev-sample-shared-release",
+  "v26592": "dev-sample-shared-release",
+  "v27385": "dev-sample",
+  "v27449": "dev-sample",
+  "v33205": "dev-sample-shared-release",
+  "v43753": "dev-sample-shared-release",
+  "v49261": "dev-sample",
+  "v52773": "dev-sample-shared-release",
+  "v53298": "dev-sample-shared-release",
+  "v55136": "dev-sample"
+ },
+ "sessions": [
+  "r6862",
+  "r8936",
+  "r14071",
+  "r14940",
+  "r15325",
+  "r22078",
+  "r22079",
+  "r22565",
+  "r23774",
+  "r24273",
+  "r25701",
+  "r27758",
+  "r28150",
+  "r28151",
+  "r32662",
+  "r36141",
+  "r38965",
+  "r39726",
+  "r39811",
+  "r41582",
+  "r42978",
+  "r46027",
+  "r46369",
+  "r47530",
+  "r49097",
+  "r50738",
+  "r53397",
+  "r53403",
+  "r55234",
+  "r56156",
+  "r66412"
+ ],
+ "test_shared_releases": {
+  "v3": [
+   "r54416",
+   "r56234",
+   "r117202",
+   "r117203",
+   "r127618",
+   "r129152",
+   "r131533"
+  ],
+  "v172": [
+   "r23905"
+  ],
+  "v1038": [
+   "r23905"
+  ],
+  "v1267": [
+   "r23905"
+  ],
+  "v2028": [
+   "r23905"
+  ],
+  "v2389": [
+   "r23905"
+  ],
+  "v3297": [
+   "r23905"
+  ],
+  "v5721": [
+   "r23905"
+  ],
+  "v7495": [
+   "r23905"
+  ],
+  "v8040": [
+   "r23905"
+  ],
+  "v9915": [
+   "r24757"
+  ],
+  "v10606": [
+   "r69956"
+  ],
+  "v11639": [
+   "r46383",
+   "r50297",
+   "r53267",
+   "r69951",
+   "r69952",
+   "r69953"
+  ],
+  "v11706": [
+   "r129040"
+  ],
+  "v11707": [
+   "r129040"
+  ],
+  "v11709": [
+   "r129040"
+  ],
+  "v18160": [
+   "r57056",
+   "r64104",
+   "r69311",
+   "r69312"
+  ],
+  "v18717": [
+   "r54416",
+   "r56234",
+   "r117186",
+   "r117202",
+   "r117203",
+   "r127618",
+   "r129152",
+   "r131533"
+  ],
+  "v20226": [
+   "r104817",
+   "r104818",
+   "r125553",
+   "r127649",
+   "r131316",
+   "r157248"
+  ]
+ },
+ "counts": {
+  "test": {
+   "clannad": 7,
+   "clannad-family": 6,
+   "clannad-relation": 8,
+   "test-set": 28,
+   "clannad-shared-release": 3,
+   "test-shared-release": 19
+  },
+  "dev_sample": {
+   "dev-sample": 100,
+   "dev-sample-shared-release": 13
+  },
+  "dev_sample_lines": {
+   "devnative:psp": 378,
+   "devnative:vita": 108,
+   "real_val:hires": 249,
+   "real_val:psp": 254,
+   "real_val:vita": 156,
+   "teacher_val:hires": 321,
+   "teacher_val:psp": 366,
+   "teacher_val:vita": 160
+  },
+  "dev_sample_tiers": {
+   "1": 38,
+   "2": 8,
+   "3": 54
+  },
+  "dev_candidates_passed_over": {
+   "owner-shared-release": 4,
+   "two-vn-release-with-a-training-pool-vn": 21,
+   "owner-game": 1,
+   "not-drawn": 61
+  }
+ },
+ "dev_sample_size": 100,
+ "dev_sample_seed": "dev-sample-20261014",
+ "dev_sample_vns": [
+  {
+   "vn": "v5837",
+   "tier": 1,
+   "title": "カエル畑DEつかまえて・夏 千木良参戦!",
+   "lines": {
+    "devnative:psp": 16,
+    "real_val:psp": 17,
+    "teacher_val:psp": 18
+   }
+  },
+  {
+   "vn": "v8410",
+   "tier": 1,
+   "title": "氷の墓標 一柳和、3度目の受難",
+   "lines": {
+    "devnative:psp": 4,
+    "real_val:psp": 15,
+    "teacher_val:psp": 23
+   }
+  },
+  {
+   "vn": "v7321",
+   "tier": 1,
+   "title": "ノゾミカナエタマエ ～Daydream Reconstruct～",
+   "lines": {
+    "devnative:psp": 10,
+    "real_val:hires": 5,
+    "real_val:psp": 1,
+    "teacher_val:hires": 5,
+    "teacher_val:psp": 8
+   }
+  },
+  {
+   "vn": "v14267",
+   "tier": 1,
+   "title": "Flowers -Le volume sur printemps-",
+   "lines": {
+    "devnative:psp": 2,
+    "real_val:hires": 2,
+    "teacher_val:hires": 1,
+    "teacher_val:psp": 2
+   }
+  },
+  {
+   "vn": "v11454",
+   "tier": 1,
+   "title": "恋花デイズ",
+   "lines": {
+    "devnative:psp": 10,
+    "real_val:psp": 7,
+    "teacher_val:psp": 10
+   }
+  },
+  {
+   "vn": "v11677",
+   "tier": 1,
+   "title": "花咲くまにまに",
+   "lines": {
+    "devnative:psp": 7,
+    "real_val:psp": 3,
+    "teacher_val:psp": 7
+   }
+  },
+  {
+   "vn": "v6135",
+   "tier": 1,
+   "title": "大正野球娘。～乙女達乃青春日記～",
+   "lines": {
+    "devnative:psp": 19,
+    "real_val:psp": 2,
+    "teacher_val:psp": 7
+   }
+  },
+  {
+   "vn": "v3549",
+   "tier": 1,
+   "title": "Girlish Love Revolution",
+   "lines": {
+    "devnative:psp": 2,
+    "real_val:psp": 3,
+    "teacher_val:psp": 5
+   }
+  },
+  {
+   "vn": "v8502",
+   "tier": 1,
+   "title": "いつか天魔の黒ウサギ Portable",
+   "lines": {
+    "devnative:psp": 13,
+    "real_val:psp": 7,
+    "teacher_val:psp": 16
+   }
+  },
+  {
+   "vn": "v6218",
+   "tier": 1,
+   "title": "つくものがたり",
+   "lines": {
+    "devnative:psp": 9,
+    "real_val:psp": 11,
+    "teacher_val:psp": 19
+   }
+  },
+  {
+   "vn": "v5706",
+   "tier": 1,
+   "title": "乃木坂春香の秘密 同人誌はじめました♥",
+   "lines": {
+    "devnative:psp": 9,
+    "real_val:psp": 4,
+    "teacher_val:psp": 6
+   }
+  },
+  {
+   "vn": "v16770",
+   "tier": 1,
+   "title": "もし、この世界に神様がいるとするならば。",
+   "lines": {
+    "devnative:vita": 22,
+    "real_val:vita": 21,
+    "teacher_val:vita": 20
+   }
+  },
+  {
+   "vn": "v1315",
+   "tier": 1,
+   "title": "こんねこ",
+   "lines": {
+    "devnative:psp": 7,
+    "real_val:psp": 5,
+    "teacher_val:psp": 4
+   }
+  },
+  {
+   "vn": "v16386",
+   "tier": 1,
+   "title": "MISSING PARTS the TANTEI stories",
+   "lines": {
+    "devnative:psp": 20,
+    "real_val:psp": 20,
+    "teacher_val:psp": 16
+   }
+  },
+  {
+   "vn": "v12858",
+   "tier": 1,
+   "title": "死神所業～怪談ロマンス～",
+   "lines": {
+    "devnative:psp": 17,
+    "real_val:psp": 7,
+    "teacher_val:psp": 8
+   }
+  },
+  {
+   "vn": "v2817",
+   "tier": 1,
+   "title": "MEDICAL91",
+   "lines": {
+    "devnative:psp": 12,
+    "real_val:hires": 1,
+    "real_val:psp": 3,
+    "teacher_val:hires": 3,
+    "teacher_val:psp": 6
+   }
+  },
+  {
+   "vn": "v8063",
+   "tier": 1,
+   "title": "神なる君と",
+   "lines": {
+    "devnative:psp": 15,
+    "real_val:psp": 13,
+    "teacher_val:psp": 11
+   }
+  },
+  {
+   "vn": "v12705",
+   "tier": 1,
+   "title": "ハヤテのごとく！！ナイトメアパラダイス",
+   "lines": {
+    "devnative:psp": 24,
+    "real_val:psp": 21,
+    "teacher_val:psp": 19
+   }
+  },
+  {
+   "vn": "v10383",
+   "tier": 1,
+   "title": "薄桜鬼　黎明録",
+   "lines": {
+    "devnative:psp": 3,
+    "devnative:vita": 3,
+    "real_val:psp": 4,
+    "real_val:vita": 11,
+    "teacher_val:psp": 4,
+    "teacher_val:vita": 7
+   }
+  },
+  {
+   "vn": "v9178",
+   "tier": 1,
+   "title": "恋は校則に縛られない！",
+   "lines": {
+    "devnative:psp": 11,
+    "real_val:psp": 6,
+    "teacher_val:psp": 15
+   }
+  },
+  {
+   "vn": "v15773",
+   "tier": 1,
+   "title": "百華夜光",
+   "lines": {
+    "devnative:vita": 28,
+    "real_val:vita": 33,
+    "teacher_val:vita": 22
+   }
+  },
+  {
+   "vn": "v12451",
+   "tier": 1,
+   "title": "この部室は帰宅しない部が占拠しました。 ぽーたぶる 学園ドッグ・イヤー編",
+   "lines": {
+    "devnative:psp": 7,
+    "real_val:psp": 1,
+    "teacher_val:psp": 3
+   }
+  },
+  {
+   "vn": "v13627",
+   "tier": 1,
+   "title": "ブラック・コード",
+   "lines": {
+    "devnative:psp": 19,
+    "real_val:psp": 8,
+    "teacher_val:psp": 11
+   }
+  },
+  {
+   "vn": "v10091",
+   "tier": 1,
+   "title": "エルクローネのアトリエ ~Dear for Otomate~",
+   "lines": {
+    "devnative:psp": 9,
+    "real_val:psp": 5,
+    "teacher_val:psp": 13
+   }
+  },
+  {
+   "vn": "v16128",
+   "tier": 1,
+   "title": "KLAP!! ~Kind Love And Punish~",
+   "lines": {
+    "devnative:vita": 14,
+    "real_val:vita": 25,
+    "teacher_val:vita": 27
+   }
+  },
+  {
+   "vn": "v12188",
+   "tier": 1,
+   "title": "華ヤカ哉、我ガ一族 黄昏ポウラスタ",
+   "lines": {
+    "devnative:psp": 18,
+    "real_val:psp": 12,
+    "teacher_val:psp": 14
+   }
+  },
+  {
+   "vn": "v4597",
+   "tier": 1,
+   "title": "STORM LOVER",
+   "lines": {
+    "devnative:psp": 14,
+    "real_val:psp": 10,
+    "teacher_val:psp": 17
+   }
+  },
+  {
+   "vn": "v18643",
+   "tier": 1,
+   "title": "Psychedelica of the Ashen Hawk",
+   "lines": {
+    "devnative:vita": 9,
+    "real_val:vita": 16,
+    "teacher_val:vita": 20
+   }
+  },
+  {
+   "vn": "v1971",
+   "tier": 1,
+   "title": "Lucian Bee's: Resurrection Supernova",
+   "lines": {
+    "devnative:psp": 10,
+    "real_val:psp": 3,
+    "teacher_val:psp": 10
+   }
+  },
+  {
+   "vn": "v55136",
+   "tier": 1,
+   "title": "楽園",
+   "lines": {
+    "devnative:psp": 16,
+    "real_val:psp": 9,
+    "teacher_val:psp": 15
+   }
+  },
+  {
+   "vn": "v3278",
+   "tier": 1,
+   "title": "のーふぇいと！～only the power of will～",
+   "lines": {
+    "devnative:psp": 7,
+    "real_val:psp": 4,
+    "teacher_val:psp": 5
+   }
+  },
+  {
+   "vn": "v6656",
+   "tier": 1,
+   "title": "死神と少女",
+   "lines": {
+    "devnative:psp": 28,
+    "real_val:psp": 23,
+    "teacher_val:psp": 21
+   }
+  },
+  {
+   "vn": "v11640",
+   "tier": 1,
+   "title": "楽園男子 ～誰も知らない もう一つの楽園～",
+   "lines": {
+    "devnative:psp": 9,
+    "real_val:psp": 11,
+    "teacher_val:psp": 10
+   }
+  },
+  {
+   "vn": "v12436",
+   "tier": 1,
+   "title": "Jewelic Nightmare",
+   "lines": {
+    "devnative:psp": 21,
+    "real_val:psp": 8,
+    "teacher_val:psp": 11
+   }
+  },
+  {
+   "vn": "v21004",
+   "tier": 1,
+   "title": "ツキトモ。-TSUKIUTA. 12 memories-",
+   "lines": {
+    "devnative:vita": 11,
+    "real_val:vita": 19,
+    "teacher_val:vita": 19
+   }
+  },
+  {
+   "vn": "v18161",
+   "tier": 1,
+   "title": "数乱digit",
+   "lines": {
+    "devnative:vita": 10,
+    "real_val:vita": 6,
+    "teacher_val:vita": 11
+   }
+  },
+  {
+   "vn": "v1877",
+   "tier": 1,
+   "title": "怪盗アプリコット",
+   "lines": {
+    "devnative:psp": 10,
+    "real_val:psp": 4,
+    "teacher_val:psp": 6
+   }
+  },
+  {
+   "vn": "v18163",
+   "tier": 1,
+   "title": "ニル・アドミラリの天秤 帝都幻惑綺譚",
+   "lines": {
+    "devnative:vita": 11,
+    "real_val:vita": 24,
+    "teacher_val:vita": 28
+   }
+  },
+  {
+   "vn": "v3333",
+   "tier": 2,
+   "title": "ディスガイア インフィニット",
+   "lines": {
+    "real_val:psp": 1,
+    "teacher_val:psp": 2
+   }
+  },
+  {
+   "vn": "v18432",
+   "tier": 2,
+   "title": "Dance with Devils",
+   "lines": {
+    "real_val:vita": 1,
+    "teacher_val:vita": 3
+   }
+  },
+  {
+   "vn": "v2835",
+   "tier": 2,
+   "title": "あまつみそらに！",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 7,
+    "teacher_val:vita": 1
+   }
+  },
+  {
+   "vn": "v13758",
+   "tier": 2,
+   "title": "雀聖学園 クロノ★マジック",
+   "lines": {
+    "real_val:psp": 1,
+    "teacher_val:psp": 2
+   }
+  },
+  {
+   "vn": "v18857",
+   "tier": 2,
+   "title": "おそ松さん THE GAME はちゃめちゃ就職アドバイス -デッド オア ワーク-",
+   "lines": {
+    "teacher_val:vita": 2
+   }
+  },
+  {
+   "vn": "v7204",
+   "tier": 2,
+   "title": "TOKYOヤマノテBOYS SUPER MINT DISC",
+   "lines": {
+    "real_val:psp": 2,
+    "teacher_val:hires": 1,
+    "teacher_val:psp": 8
+   }
+  },
+  {
+   "vn": "v7716",
+   "tier": 2,
+   "title": "月華繚乱ROMANCE",
+   "lines": {
+    "teacher_val:psp": 1
+   }
+  },
+  {
+   "vn": "v1794",
+   "tier": 2,
+   "title": "遙かなる時空の中で",
+   "lines": {
+    "real_val:psp": 3,
+    "teacher_val:psp": 13
+   }
+  },
+  {
+   "vn": "v27385",
+   "tier": 3,
+   "title": "Nightmare x Sisters - Sacrifice of Lust-Hell",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 3
+   }
+  },
+  {
+   "vn": "v3066",
+   "tier": 3,
+   "title": "大帝国",
+   "lines": {
+    "real_val:hires": 3,
+    "teacher_val:hires": 6
+   }
+  },
+  {
+   "vn": "v24702",
+   "tier": 3,
+   "title": "アオナツライン",
+   "lines": {
+    "real_val:hires": 1,
+    "teacher_val:hires": 3
+   }
+  },
+  {
+   "vn": "v21185",
+   "tier": 3,
+   "title": "百奇繚乱の館",
+   "lines": {
+    "real_val:hires": 6,
+    "teacher_val:hires": 3
+   }
+  },
+  {
+   "vn": "v454",
+   "tier": 3,
+   "title": "ツイ☆てる",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v10972",
+   "tier": 3,
+   "title": "彼女と俺と恋人と。",
+   "lines": {
+    "real_val:hires": 3,
+    "teacher_val:hires": 9
+   }
+  },
+  {
+   "vn": "v10304",
+   "tier": 3,
+   "title": "Saku Saku: Love Blooms with the Cherry Blossoms",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 3
+   }
+  },
+  {
+   "vn": "v6985",
+   "tier": 3,
+   "title": "Rance Quest",
+   "lines": {
+    "real_val:hires": 5,
+    "teacher_val:hires": 27
+   }
+  },
+  {
+   "vn": "v9684",
+   "tier": 3,
+   "title": "ヤキモチやきな義妹は、いつでもどこでも発情中♥",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 3
+   }
+  },
+  {
+   "vn": "v16082",
+   "tier": 3,
+   "title": "巨乳人妻女教師催眠・携帯アプリでセックス中毒！",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 7
+   }
+  },
+  {
+   "vn": "v5381",
+   "tier": 3,
+   "title": "BLAZBLUE CALAMITY TRIGGER",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v20170",
+   "tier": 3,
+   "title": "いつまでも僕だけのママのままでいて！ ～ああ、良いよママ！もっともっとしゃぶらせて！！デリバリーママがストライクゾーン過ぎて僕の股間はもう限界！！！～",
+   "lines": {
+    "real_val:hires": 3,
+    "teacher_val:hires": 3
+   }
+  },
+  {
+   "vn": "v3902",
+   "tier": 3,
+   "title": "まじかるプリンセス　モニカ",
+   "lines": {
+    "real_val:hires": 3,
+    "teacher_val:hires": 6
+   }
+  },
+  {
+   "vn": "v19982",
+   "tier": 3,
+   "title": "巨乳大家族催眠「家族みんなでイキまくるセックスがやめられないのぉ」",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v3496",
+   "tier": 3,
+   "title": "おっぱいハート～彼女はケダモノ発情期ッ!?～",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 6
+   }
+  },
+  {
+   "vn": "v11857",
+   "tier": 3,
+   "title": "Magical Charming!",
+   "lines": {
+    "real_val:hires": 3,
+    "teacher_val:hires": 4
+   }
+  },
+  {
+   "vn": "v238",
+   "tier": 3,
+   "title": "Tears to Tiara",
+   "lines": {
+    "real_val:hires": 6,
+    "teacher_val:hires": 1
+   }
+  },
+  {
+   "vn": "v17972",
+   "tier": 3,
+   "title": "通心ぼ ～ママにもナイショの時間割～",
+   "lines": {
+    "real_val:hires": 6,
+    "teacher_val:hires": 7
+   }
+  },
+  {
+   "vn": "v604",
+   "tier": 3,
+   "title": "遥かに仰ぎ、麗しの",
+   "lines": {
+    "real_val:hires": 10,
+    "teacher_val:hires": 8
+   }
+  },
+  {
+   "vn": "v18458",
+   "tier": 3,
+   "title": "リプキス",
+   "lines": {
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v24328",
+   "tier": 3,
+   "title": "Yumeutsutsu Re:Master",
+   "lines": {
+    "real_val:hires": 1,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v21766",
+   "tier": 3,
+   "title": "Imouto Paradise 3",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v12830",
+   "tier": 3,
+   "title": "MeltyMoment ～メルティモーメント～",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 9
+   }
+  },
+  {
+   "vn": "v20524",
+   "tier": 3,
+   "title": "ワガママハイスペック OC",
+   "lines": {
+    "real_val:hires": 7,
+    "teacher_val:hires": 5
+   }
+  },
+  {
+   "vn": "v49261",
+   "tier": 3,
+   "title": "Putrika 1st.cut:The Reason She Must Perish",
+   "lines": {
+    "real_val:hires": 5,
+    "teacher_val:hires": 5
+   }
+  },
+  {
+   "vn": "v25684",
+   "tier": 3,
+   "title": "妻の肉穴にホームステイするマッチョ留学生２軒目 ～元巨乳グラドルの妻は、ダニーズ・ブートキャンプで汁だくメス子宮に開発されていた～",
+   "lines": {
+    "real_val:hires": 3,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v13849",
+   "tier": 3,
+   "title": "鳥籠のマリアージュ",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 5
+   }
+  },
+  {
+   "vn": "v21321",
+   "tier": 3,
+   "title": "The Expression Amrilato",
+   "lines": {
+    "real_val:hires": 7,
+    "teacher_val:hires": 8
+   }
+  },
+  {
+   "vn": "v701",
+   "tier": 3,
+   "title": "夏空カナタ",
+   "lines": {
+    "real_val:hires": 6,
+    "teacher_val:hires": 7
+   }
+  },
+  {
+   "vn": "v3371",
+   "tier": 3,
+   "title": "クラ☆クラ CLASSY☆CRANBERRY’S",
+   "lines": {
+    "real_val:hires": 1,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v2306",
+   "tier": 3,
+   "title": "Armored Warrior Iris",
+   "lines": {
+    "real_val:hires": 6,
+    "teacher_val:hires": 8
+   }
+  },
+  {
+   "vn": "v12796",
+   "tier": 3,
+   "title": "巨乳家族催眠「家族なんだから、セックスするのは当たり前よね……」",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 4
+   }
+  },
+  {
+   "vn": "v13188",
+   "tier": 3,
+   "title": "戦国†恋姫～乙女絢爛☆戦国絵巻～",
+   "lines": {
+    "real_val:hires": 10,
+    "teacher_val:hires": 11
+   }
+  },
+  {
+   "vn": "v23",
+   "tier": 3,
+   "title": "いつか、届く、あの空に。",
+   "lines": {
+    "real_val:hires": 12,
+    "teacher_val:hires": 12
+   }
+  },
+  {
+   "vn": "v20598",
+   "tier": 3,
+   "title": "真剣で私に恋しなさい！A-1",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v25796",
+   "tier": 3,
+   "title": "Death end re;Quest",
+   "lines": {
+    "real_val:hires": 11,
+    "teacher_val:hires": 9
+   }
+  },
+  {
+   "vn": "v17153",
+   "tier": 3,
+   "title": "Everybody Wants My Girl",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v15708",
+   "tier": 3,
+   "title": "Senmomo: Through Billows of Blades, A Peachbloom Princess",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 5
+   }
+  },
+  {
+   "vn": "v21047",
+   "tier": 3,
+   "title": "この素晴らしい世界に祝福を！ -この欲深いゲームに審判を！-",
+   "lines": {
+    "real_val:hires": 8,
+    "teacher_val:hires": 7
+   }
+  },
+  {
+   "vn": "v14520",
+   "tier": 3,
+   "title": "Re;Lord 1 ~The witch of Hertfort and stuffed animals~",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 4
+   }
+  },
+  {
+   "vn": "v418",
+   "tier": 3,
+   "title": "R.U.R.U.R 〜ル・ル・ル・ル〜 このこのために、せめてきれいな星空を",
+   "lines": {
+    "real_val:hires": 1,
+    "teacher_val:hires": 1
+   }
+  },
+  {
+   "vn": "v23154",
+   "tier": 3,
+   "title": "Breeding Village",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v27449",
+   "tier": 3,
+   "title": "ハミダシクリエイティブ",
+   "lines": {
+    "real_val:hires": 7,
+    "teacher_val:hires": 9
+   }
+  },
+  {
+   "vn": "v20604",
+   "tier": 3,
+   "title": "真剣で私に恋しなさい！Ａ プラスディスク",
+   "lines": {
+    "real_val:hires": 1,
+    "teacher_val:hires": 1
+   }
+  },
+  {
+   "vn": "v13833",
+   "tier": 3,
+   "title": "ヴァルプルガの詩",
+   "lines": {
+    "real_val:hires": 5,
+    "teacher_val:hires": 8
+   }
+  },
+  {
+   "vn": "v13636",
+   "tier": 3,
+   "title": "戦極姫５ ～戦禍断つ覇王の系譜～",
+   "lines": {
+    "real_val:hires": 6,
+    "teacher_val:hires": 19
+   }
+  },
+  {
+   "vn": "v961",
+   "tier": 3,
+   "title": "We Love Master!",
+   "lines": {
+    "real_val:hires": 3,
+    "teacher_val:hires": 2
+   }
+  },
+  {
+   "vn": "v2153",
+   "tier": 3,
+   "title": "Umineko When They Cry - Answer Arcs",
+   "lines": {
+    "real_val:hires": 4,
+    "teacher_val:hires": 5
+   }
+  },
+  {
+   "vn": "v9409",
+   "tier": 3,
+   "title": "VenusBlood FRONTIER",
+   "lines": {
+    "real_val:hires": 3,
+    "teacher_val:hires": 10
+   }
+  },
+  {
+   "vn": "v218",
+   "tier": 3,
+   "title": "慟哭 そして…",
+   "lines": {
+    "real_val:hires": 10,
+    "teacher_val:hires": 7
+   }
+  },
+  {
+   "vn": "v400",
+   "tier": 3,
+   "title": "塵骸魔京",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 5
+   }
+  },
+  {
+   "vn": "v17012",
+   "tier": 3,
+   "title": "The Shell Part III: Paradiso",
+   "lines": {
+    "real_val:hires": 6,
+    "teacher_val:hires": 9
+   }
+  },
+  {
+   "vn": "v14240",
+   "tier": 3,
+   "title": "Beauty Kaleidoscope 2.5: The Girl You Were Once",
+   "lines": {
+    "real_val:hires": 2,
+    "teacher_val:hires": 3
+   }
+  },
+  {
+   "vn": "v25583",
+   "tier": 3,
+   "title": "幻想牢獄のカレイドスコープ",
+   "lines": {
+    "real_val:hires": 7,
+    "teacher_val:hires": 5
+   }
+  }
+ ]
+}

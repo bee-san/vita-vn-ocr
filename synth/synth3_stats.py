@@ -8,10 +8,9 @@
 
 Only training-side real crops may be measured here (teacher_train, real_train): never the
 selection set and never eval's test sets. Rows of a reserved VN are dropped and counted
-(eval's test games, synth/common.is_test_vn, and every VN of the exclusion manifests, by default
-data/manifests/synth3_exclude_fresh_native.json, synth3_exclude_clannad.json and
-synth3_exclude_owner_games.json; add the
-development VNs with --exclude ... exclude_dev_vns.txt). Statistics per source:
+(eval's test games, synth/common.is_reserved_vn: the test sets and the development sample, docs/
+reservations.md, and every VN of the exclusion manifests, by default
+data/manifests/synth3_exclude_clannad.json; add more with --exclude). Statistics per source:
 
   text      label length histogram, script shares (hiragana/katakana/kanji/latin/punct),
             VN punctuation per 1,000 characters, name-like line share, distinct characters,
@@ -50,9 +49,9 @@ from metrics import norm  # noqa: E402
 PUNCT = {"……": "…", "――": "―", "「": "「", "」": "」", "『": "『", "』": "』", "！": "!", "？": "?",
          "、": "、", "。": "。", "～": "~", "♪": "♪", "（": "(", "ー": "ー", "っ": "っ"}
 NAME_STOP = set("「」『』。、！？!?…―（）()")
-DEFAULT_EXCLUDE = (ROOT / "data" / "manifests" / "synth3_exclude_fresh_native.json",
-                   ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",
-                   ROOT / "data" / "manifests" / "synth3_exclude_owner_games.json")
+# The CLANNAD manifest only since 2026-10-14 (docs/reservations.md): fresh native and the owner's former test
+# series are training data.
+DEFAULT_EXCLUDE = (ROOT / "data" / "manifests" / "synth3_exclude_clannad.json",)
 KIND_OF_PLATFORM = {"vita": "vita", "psp": "psp", "psp2x": "psp2x", "scaled": "hires"}
 
 
@@ -139,8 +138,11 @@ def edge_parts(g):
 
 
 def reserved_vns(paths):
-    """VN ids no statistic may use: eval's test games plus every exclusion manifest's VNs."""
+    """VN ids no statistic may use: eval's test games, the reservation (test sets and development sample)
+    and every exclusion manifest's VNs."""
+    from common import reservation
     out = set(json.loads((ROOT / "eval" / "manifests" / "test_games.json").read_text())["all"])
+    out |= set(reservation()["test"]) | set(reservation()["dev_sample"])
     for p in paths:
         p = Path(p)
         if p.suffix == ".json":
@@ -159,7 +161,7 @@ def kind_of(m):
 
 
 def measure(paths, limit, rng, reserved=frozenset()):
-    from common import is_test_vn
+    from common import is_reserved_vn
     rows, dropped = [], 0
     for p in paths:
         z = np.load(p)
@@ -169,7 +171,7 @@ def measure(paths, limit, rng, reserved=frozenset()):
             if not labels[i]:
                 continue
             vn = meta[i].get("vn")
-            if vn and (vn in reserved or is_test_vn(vn)):
+            if vn and (vn in reserved or is_reserved_vn(vn)):
                 dropped += 1
                 continue
             rows.append((p, i, labels[i], meta[i]))

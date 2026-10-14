@@ -294,7 +294,7 @@ class Producer:
                 continue  # broad resources cannot access game/unknown/native/screenshot bytes
             if broad and owner["kind"] == "font" and row.get("format", "truetype") != "truetype":
                 raise ValueError("broad constructor cannot load a native bitmap font")
-            if owner["origin"] == "game" and (owner["vn"] in forbidden or render.is_test_vn(owner["vn"])):
+            if owner["origin"] == "game" and (owner["vn"] in forbidden or render.is_reserved_vn(owner["vn"])):
                 raise ValueError("reserved test VN is not a producer asset")
             path, content = self.checked_input(row)
             if owner["kind"] == "font":

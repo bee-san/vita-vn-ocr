@@ -37,11 +37,14 @@ def test_native_kind_and_title_groups(tmp_path):
 
 def test_classify_reasons_and_selection_order(tmp_path):
     d, (a, b, c, dd, e) = fake(tmp_path)
-    rows = N.classify(d, {}, {3: {"realdata", "teacher"}, 4: {"linefind", "realdata"}}, set())
+    rows = N.classify(d, {}, {3: {"realdata", "teacher"}, 4: {"eval-test", "realdata"}}, set())
     why = {r["image"]: r["why"] for r in rows}
     assert 5 not in why                                        # PC release: not a console screenshot at all
     assert why[1] == "new" and why[2] == "not-native-size" and why[3] == "pooled"
-    assert why[4] == "set:linefind" and why[6] == "rating" and why[7] == "not-japanese-original"
+    assert why[4] == "set:eval-test" and why[6] == "rating" and why[7] == "not-japanese-original"
+    assert N.FORBIDDEN_SETS == {"eval-test"}                   # only the test sets' screenshots (2026-10-14)
+    rows3 = N.classify(d, {}, {4: {"linefind", "realdata"}}, set())
+    assert {r["image"]: r["why"] for r in rows3}[4] == "pooled"   # linefind's sets are training-side now
     files = {f"{b}_3": Path("/x/b3.jpg")}
     keep = N.select_rows(rows, files)
     assert [r["image"] for r in keep] == [1, 3]                # PSP-only titles first
@@ -86,14 +89,22 @@ def test_upscale_2x_tells_adrenaline_captures_from_native_frames():
 
 def test_owner_folders_map_to_test_and_training_titles():
     import owner_frames as OF
-    assert OF.folder_info("memories-off-TEST") == {"vn": "v1152", "role": "test", "eligible": True, "why": None}
-    assert OF.folder_info("psp-428-v1299-TEST")["eligible"]
-    assert OF.folder_info("vita-aiyoku-no-eustia-v3770-TEST")["role"] == "test"
-    assert not OF.folder_info("psp-kanon-v33-TEST")["eligible"]                     # not an owner test title
+    # owner 2026-10-14 13:25Z (docs/reservations.md): every owner frame trains unless its VN is a test VN; the
+    # folder's -TEST suffix no longer decides
+    assert OF.folder_info("memories-off-TEST") == {"vn": "v1152", "role": "training", "eligible": True, "why": None,
+                                                   "was_test_folder": True}
+    assert OF.folder_info("psp-428-v1299-TEST")["role"] == "training"
+    assert OF.folder_info("vita-aiyoku-no-eustia-v3770-TEST")["role"] == "training"
+    assert OF.folder_info("vita-iwaihime-matsuri-v17863-TEST")["role"] == "training"
+    clannad = OF.folder_info("vita-clannad-v4-TEST")
+    assert clannad["role"] == "test" and clannad["why"] == "test reservation: clannad"
+    kanon = OF.folder_info("psp-kanon-v33-TEST")                                   # on the Key box with CLANNAD
+    assert kanon["role"] == "test" and kanon["why"] == "test reservation: clannad-shared-release"
     ok = OF.folder_info("vita-chaos-child-v14018", reserved={})
     assert ok["role"] == "training" and ok["eligible"] and ok["vn"] == "v14018"
-    no = OF.folder_info("psp-kanon-v33", reserved={"v33": "clannad-relation"})
-    assert not no["eligible"] and no["why"] == "reserved: clannad-relation"
+    no = OF.folder_info("psp-x-v99999999", reserved={"v99999999": "clannad-relation"})
+    assert no["role"] == "test" and no["why"] == "test reservation: clannad-relation"
+    assert OF.folder_info("psp-y-v99999998", reserved={"v99999998": "dev-sample"})["role"] == "training"
     assert not OF.folder_info("loose-shots")["eligible"]
 
 
@@ -119,12 +130,13 @@ def test_expand_box_clamps_and_owner_decisions_are_narrow():
     import owner_frames as OF
     assert N.expand_box([10, 200, 300, 220], 8, 480, 272) == [2, 192, 308, 228]
     assert N.expand_box([2, 260, 478, 270], 8, 480, 272) == [0, 252, 480, 272]
-    assert OF.owner_allowed("v34", "shared-release")
+    assert OF.owner_allowed("v34", "shared-release") and OF.owner_allowed("v34", "clannad-shared-release")
     assert not OF.owner_allowed("v34", "test-set") and not OF.owner_allowed("v4", "shared-release")
-    ok = OF.folder_info("psp-planetarian-v34", reserved={"v34": "shared-release"})
-    assert ok["eligible"] and ok["owner_decision"].startswith("owner 2026-10-13 19:21Z")
+    ok = OF.folder_info("psp-planetarian-v34", reserved={"v34": "clannad-shared-release"})
+    assert ok["role"] == "training" and ok["owner_decision"].startswith("owner 2026-10-13 19:21Z")
+    assert OF.folder_info("psp-planetarian-v34")["role"] == "training"          # never reserved (reserved.json)
     no = OF.folder_info("psp-planetarian-v34", reserved={"v34": "clannad-relation"})
-    assert not no["eligible"]
+    assert no["role"] == "test"
 
 
 def test_owner_publish_writes_aggregates_only(tmp_path, monkeypatch):

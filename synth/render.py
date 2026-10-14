@@ -65,7 +65,7 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 from bg_exclude import load_exclusions  # noqa: E402
-from common import DATA, find_lines, find_lines_ex, is_test_vn, line_dark, load_vocab, to_gray  # noqa: E402
+from common import DATA, find_lines, find_lines_ex, is_reserved_vn, line_dark, load_vocab, to_gray  # noqa: E402
 from kanji_policy import allowed_label, load_policy, name_weights, sample_pair  # noqa: E402
 from mask_finder import find_lines_mask  # noqa: E402
 from native_font_manifest import load_manifest as load_native_fonts  # noqa: E402
@@ -169,12 +169,13 @@ class Resources:
         self.by_cat = {c: fs for c, fs in self.by_cat.items() if fs}
         # Backgrounds: training-side screenshots only. The exclusions hold VN ids (eval's
         # reserved test games, from the manifest and from eval/manifests/test_games.json)
-        # and single screenshots (hand-labelled real sets).
+        # and single screenshots (test capture sessions); is_reserved_vn adds the CLANNAD family
+        # and the development sample (docs/reservations.md).
         exclude = load_exclusions()
 
         def usable(p):
             vn = p.name.split("_")[0]
-            return not is_test_vn(vn) and vn not in exclude and p.name not in exclude
+            return not is_reserved_vn(vn) and vn not in exclude and p.name not in exclude
         self.bg_vita = [p for p in sorted((DATA / "vndb" / "shots").glob("*.jpg")) if usable(p)]
         self.bg_psp = [p for p in sorted((DATA / "vndb_psp" / "shots").glob("*.jpg")) if usable(p)]
         self.bg_boxes = {}

@@ -1,0 +1,227 @@
+{
+ "kind": "reserve-policy-splits",
+ "dev_sample": "eval/manifests/reserved.json dev_sample (with its release partners)",
+ "test": "eval/manifests/reserved.json test: rows dropped",
+ "sets": {
+  "teacher_val": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_val.npz",
+   "source_sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671",
+   "train": {
+    "rows": 694,
+    "vns": 80,
+    "file": "teacher_val_train.npz",
+    "sha256": "37901e4c719d4aa7122ee000ad76d25100271899906881d58a83a78b55263974"
+   },
+   "dev": {
+    "rows": 957,
+    "vns": 101,
+    "file": "teacher_val_dev.npz",
+    "sha256": "eb6fbe449b3a70a345ac32f0c839da1288647678ed7aa3758ecf1a0d2c76f526"
+   },
+   "dropped_test": {}
+  },
+  "teacher_distill_val": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_distill_val.npz",
+   "source_sha256": "ebfc699cf565340d30b726b0fa6cb873a93516cc710238b27ecc41b25b30ba67",
+   "train": {
+    "rows": 511,
+    "vns": 76,
+    "file": "teacher_distill_val_train.npz",
+    "sha256": "d1ccbe0068e029e6f989af0865472af7725960e66c1d6999889b973ea005ac62"
+   },
+   "dev": {
+    "rows": 750,
+    "vns": 96,
+    "file": "teacher_distill_val_dev.npz",
+    "sha256": "2aee4f3ef6f70ec4a0c9eec8027f556cc44a2b898a5d3fec9d7a26f51f9b2eec"
+   },
+   "dropped_test": {}
+  },
+  "real_val": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realdata/real_val.npz",
+   "source_sha256": "a35296ba63bf7494c6523e080a7c63fd679044c1e1bc248ba0db465cb8a2906f",
+   "train": {
+    "rows": 681,
+    "vns": 86,
+    "file": "real_val_train.npz",
+    "sha256": "59a84ebb35e00875a87779175584fa32e6c19b20b8f10eca7c8406e14cc303a8"
+   },
+   "dev": {
+    "rows": 814,
+    "vns": 98,
+    "file": "real_val_dev.npz",
+    "sha256": "95cc0320d27a8a3dd4583c00b74186576351e31c7d1255505c0c5d50f699ffe2"
+   },
+   "dropped_test": {}
+  },
+  "devnative_strict_ink": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v3/devnative_strict_ink.npz",
+   "source_sha256": "a1f0f83e78a0382d8c8efa276d5500162b4a5ebeba6fb1ce958567613f8e2589",
+   "train": {
+    "rows": 5,
+    "vns": 2,
+    "file": "devnative_strict_ink_train.npz",
+    "sha256": "d73486b5297b6a75b295138564004088856fedd271b6e3cdbdc4190df386f50b"
+   },
+   "dev": {
+    "rows": 33,
+    "vns": 12,
+    "file": "devnative_strict_ink_dev.npz",
+    "sha256": "5ec7ac7fa850a8e49e6d721c2cce3f046e729271605319b5122298557d861213"
+   },
+   "dropped_test": {}
+  },
+  "devnative_strict_grad": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v3/devnative_strict_grad.npz",
+   "source_sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e",
+   "train": {
+    "rows": 3,
+    "vns": 1,
+    "file": "devnative_strict_grad_train.npz",
+    "sha256": "c9eb1e2b6599da21e71685837c88b0b8af792c258b1b1e1053033d4ca3be185e"
+   },
+   "dev": {
+    "rows": 23,
+    "vns": 11,
+    "file": "devnative_strict_grad_dev.npz",
+    "sha256": "76bb3329a24866b331b55a8526a82092b3ec084e4e1e7b368c8cf1c835572d3f"
+   },
+   "dropped_test": {}
+  },
+  "devnative_tv_native_ink": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v3/devnative_tv_native_ink.npz",
+   "source_sha256": "a3d2c9d91f0460c23aeb303ecb4583de3448f634ababdc5f3163eb0f2d95aec5",
+   "train": {
+    "rows": 60,
+    "vns": 6,
+    "file": "devnative_tv_native_ink_train.npz",
+    "sha256": "498fbd790a37ad472d71ffe1401c9b4606faadeb23f2b2855416b8e6549121da"
+   },
+   "dev": {
+    "rows": 453,
+    "vns": 38,
+    "file": "devnative_tv_native_ink_dev.npz",
+    "sha256": "ef9aae9cc7682ee4c288002e8cf7dc3d6ee5b69b28f498162defdfe2d6192ec2"
+   },
+   "dropped_test": {}
+  },
+  "devnative_tv_native_grad": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v3/devnative_tv_native_grad.npz",
+   "source_sha256": "0ed617b97fe3050936c5ca062ec0c7352416a6dc20f92f7efbb18cc4b6ca1782",
+   "train": {
+    "rows": 50,
+    "vns": 6,
+    "file": "devnative_tv_native_grad_train.npz",
+    "sha256": "efd6c2f2cd5cd170c9dedf9f4b32b8f7a1cab940dd2a85c208aeb702940948c5"
+   },
+   "dev": {
+    "rows": 373,
+    "vns": 38,
+    "file": "devnative_tv_native_grad_dev.npz",
+    "sha256": "bb2476fff87a0ba3080462cd3fb1b496c6b51d948a59f753ba2e939a87ee699a"
+   },
+   "dropped_test": {}
+  },
+  "teacher_train": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_train.npz",
+   "source_sha256": "3c27c057af9a41574a7704d04599d9d6220faea525536d0d6c6023301ff852df",
+   "train": {
+    "rows": 12029,
+    "vns": 1257,
+    "file": "teacher_train_train.npz",
+    "sha256": "1217a97ecc7a3605438814547d168c756646c13039edb7c0f7172146f83c3ec1"
+   },
+   "dev": {
+    "rows": 0,
+    "vns": 0,
+    "file": "teacher_train_dev.npz",
+    "sha256": "e6ad94cd7f2de04f2a5d520983118b3820effde1867d6c62ad8646ebb08dff5f"
+   },
+   "dropped_test": {
+    "v11706": 10,
+    "v12": 1,
+    "v1267": 23,
+    "v33": 14,
+    "v36": 7,
+    "v4": 4,
+    "v4060": 10,
+    "v5": 17
+   }
+  },
+  "teacher_distill_train": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_distill_train.npz",
+   "source_sha256": "5ba2b8b3921e847d70cbba9a6ed6e6251ea128741cb276b3bbaa311d64bac7bf",
+   "train": {
+    "rows": 8994,
+    "vns": 1197,
+    "file": "teacher_distill_train_train.npz",
+    "sha256": "a89537ba92ba3e67a3a87cbe4c9ce84e01735de30f09437338be6caa64c03b6f"
+   },
+   "dev": {
+    "rows": 0,
+    "vns": 0,
+    "file": "teacher_distill_train_dev.npz",
+    "sha256": "e6ad94cd7f2de04f2a5d520983118b3820effde1867d6c62ad8646ebb08dff5f"
+   },
+   "dropped_test": {
+    "v11706": 4,
+    "v12": 2,
+    "v1267": 10,
+    "v33": 4,
+    "v36": 6,
+    "v4060": 7,
+    "v5": 17
+   }
+  },
+  "real_train": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realdata/real_train.npz",
+   "source_sha256": "10f8b68f99357d6db0d5813fbabf3cd3ac9e154fee2fe10c6b03605950f91324",
+   "train": {
+    "rows": 9733,
+    "vns": 1213,
+    "file": "real_train_train.npz",
+    "sha256": "dd72f4db63113a81786a8e05897f3e19dedc191c23e6eb8594520c2033cda7f1"
+   },
+   "dev": {
+    "rows": 0,
+    "vns": 0,
+    "file": "real_train_dev.npz",
+    "sha256": "e6ad94cd7f2de04f2a5d520983118b3820effde1867d6c62ad8646ebb08dff5f"
+   },
+   "dropped_test": {
+    "v11706": 6,
+    "v12": 3,
+    "v1267": 24,
+    "v33": 10,
+    "v36": 5,
+    "v4": 4,
+    "v4060": 9,
+    "v5": 17
+   }
+  },
+  "real_unlabelled": {
+   "source": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realdata/real_unlabelled.npz",
+   "source_sha256": "61b5350888b9737e6830efeaf71f594503a6dbf5bd1203d0ebce3b8b73969786",
+   "train": {
+    "rows": 11113,
+    "vns": 1217,
+    "file": "real_unlabelled_train.npz",
+    "sha256": "3baf344622c63a40adb7ffaf31162f48673526e13f8dfd07bdb0afec3ad7ecd4"
+   },
+   "dev": {
+    "rows": 0,
+    "vns": 0,
+    "file": "real_unlabelled_dev.npz",
+    "sha256": "e6ad94cd7f2de04f2a5d520983118b3820effde1867d6c62ad8646ebb08dff5f"
+   },
+   "dropped_test": {
+    "v11706": 5,
+    "v1267": 17,
+    "v33": 4,
+    "v36": 6,
+    "v4060": 5,
+    "v5": 24
+   }
+  }
+ }
+}

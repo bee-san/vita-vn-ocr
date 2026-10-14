@@ -1,0 +1,368 @@
+{
+ "kind": "owner-pool-stats",
+ "tag": "v1",
+ "private_dir": "shared/private/owner-games/_build/owner-pool",
+ "codex": "none: private frames; Claude + MeikiOCR / PP-OCRv6 agreement only",
+ "folders": {
+  "psp-amagami-v1281-TEST": {
+   "role": "test",
+   "vn": "v1281",
+   "eligible": false,
+   "why_not": "not an owner test title",
+   "owner_decision": null,
+   "files": 113,
+   "unique": 113,
+   "dims": {
+    "480x272": 113
+   },
+   "console": {
+    "psp": 113
+   },
+   "upscale": {
+    "None": 113
+   }
+  },
+  "psp-narcissu-portable-v10-TEST": {
+   "role": "test",
+   "vn": "v10",
+   "eligible": false,
+   "why_not": "not an owner test title",
+   "owner_decision": null,
+   "files": 200,
+   "unique": 200,
+   "dims": {
+    "480x272": 200
+   },
+   "console": {
+    "psp": 200
+   },
+   "upscale": {
+    "None": 200
+   }
+  },
+  "psp-planetarian-v34": {
+   "role": "training",
+   "vn": "v34",
+   "eligible": true,
+   "why_not": null,
+   "owner_decision": "owner 2026-10-13 19:21Z (reserved_vns: shared-release)",
+   "files": 202,
+   "unique": 202,
+   "dims": {
+    "480x272": 202
+   },
+   "console": {
+    "psp": 202
+   },
+   "upscale": {
+    "None": 202
+   }
+  },
+  "psp-sharin-no-kuni-v57": {
+   "role": "training",
+   "vn": "v57",
+   "eligible": true,
+   "why_not": null,
+   "owner_decision": null,
+   "files": 217,
+   "unique": 217,
+   "dims": {
+    "480x272": 217
+   },
+   "console": {
+    "psp": 217
+   },
+   "upscale": {
+    "None": 217
+   }
+  },
+  "vita-chaos-child-v14018": {
+   "role": "training",
+   "vn": "v14018",
+   "eligible": true,
+   "why_not": null,
+   "owner_decision": null,
+   "files": 159,
+   "unique": 159,
+   "dims": {
+    "960x544": 159
+   },
+   "console": {
+    "vita": 158,
+    "psp-on-vita": 1
+   },
+   "upscale": {
+    "None": 158,
+    "smooth": 1
+   }
+  },
+  "vita-clannad-v4-TEST": {
+   "role": "test",
+   "vn": "v4",
+   "eligible": false,
+   "why_not": "not an owner test title",
+   "owner_decision": null,
+   "files": 2206,
+   "unique": 2206,
+   "dims": {
+    "960x544": 2206
+   },
+   "console": {
+    "vita": 2206
+   },
+   "upscale": {
+    "None": 2206
+   }
+  },
+  "vita-danganronpa-v3-v18334-TEST": {
+   "role": "test",
+   "vn": "v18334",
+   "eligible": false,
+   "why_not": "not an owner test title",
+   "owner_decision": null,
+   "files": 84,
+   "unique": 84,
+   "dims": {
+    "960x544": 84
+   },
+   "console": {
+    "vita": 84
+   },
+   "upscale": {
+    "None": 84
+   }
+  },
+  "vita-iwaihime-matsuri-v17863-TEST": {
+   "role": "test",
+   "vn": "v17863",
+   "eligible": false,
+   "why_not": "not an owner test title",
+   "owner_decision": null,
+   "files": 240,
+   "unique": 240,
+   "dims": {
+    "960x544": 240
+   },
+   "console": {
+    "vita": 240
+   },
+   "upscale": {
+    "None": 240
+   }
+  }
+ },
+ "leak": {
+  "devnative": {
+   "tests": 346,
+   "pool": 577,
+   "min_corr": 0.95,
+   "pairs": 0,
+   "same-vn": 0,
+   "cross-vn": 0
+  },
+  "linefind": {
+   "tests": 264,
+   "pool": 577,
+   "min_corr": 0.95,
+   "pairs": 0,
+   "same-vn": 0,
+   "cross-vn": 0
+  },
+  "owner_test": {
+   "tests": 2843,
+   "pool": 577,
+   "min_corr": 0.95,
+   "pairs": 28,
+   "same-vn": 0,
+   "cross-vn": 28
+  },
+  "teacher_val": {
+   "tests": 646,
+   "pool": 577,
+   "min_corr": 0.95,
+   "pairs": 0,
+   "same-vn": 0,
+   "cross-vn": 0
+  },
+  "test_sets": {
+   "tests": 157,
+   "pool": 577,
+   "min_corr": 0.95,
+   "pairs": 0,
+   "same-vn": 0,
+   "cross-vn": 0
+  }
+ },
+ "frames_read": 577,
+ "candidates_by_vn": {
+  "v14018": 241,
+  "v34": 325,
+  "v57": 380
+ },
+ "labels_by_vn": {
+  "v14018": {
+   "kept:single": 22,
+   "kept:auto": 143,
+   "kept:consensus": 63,
+   "dropped:skip-cut": 10,
+   "dropped:skip-ui": 1,
+   "dropped:no-engine-support": 2
+  },
+  "v34": {
+   "kept:consensus": 81,
+   "kept:auto": 190,
+   "kept:single": 54
+  },
+  "v57": {
+   "dropped:skip-cut": 224,
+   "kept:consensus": 79,
+   "kept:single": 10,
+   "kept:auto": 65,
+   "dropped:no-engine-support": 1,
+   "dropped:pass2-disagree": 1
+  }
+ },
+ "build": {
+  "lines": 595,
+  "vns": 3,
+  "dropped": {
+   "grad-cuts-label": 38,
+   "grad-partial": 4,
+   "grad-missed": 42,
+   "ink-mixed": 6,
+   "grad-mixed": 12,
+   "no-crop": 5,
+   "ink_m8-mixed": 163,
+   "ink_m4-mixed": 9,
+   "grad-unchecked": 6,
+   "edge-cut": 3,
+   "repeat-cap": 104
+  },
+  "files": {
+   "native_train_ink_v1.npz": {
+    "crops": 594,
+    "by_target": {
+     "psp": 368,
+     "vita": 226
+    },
+    "sha256": "a2f621d910602cf70dbea623d06ca81fcda662fe44333e970f7452710d66a61a"
+   },
+   "native_train_ink_m4_v1.npz": {
+    "crops": 585,
+    "by_target": {
+     "psp": 359,
+     "vita": 226
+    },
+    "sha256": "ffc638ef3ff860b00633d8bb277fac1f2b916de09b5f9a30b9f4eef126c46041"
+   },
+   "native_train_ink_m8_v1.npz": {
+    "crops": 431,
+    "by_target": {
+     "psp": 205,
+     "vita": 226
+    },
+    "sha256": "9c17464cc62376151bfc908c210ff3aa22e27a0cbe708464fa695a5dc574c895"
+   },
+   "native_train_grad_v1.npz": {
+    "crops": 540,
+    "by_target": {
+     "psp": 331,
+     "vita": 209
+    },
+    "sha256": "90f1675aef4c9203904329757934e2b4b07a5d46ac71999d9a445d969d476883"
+   }
+  }
+ },
+ "lines_by_vn": {
+  "v14018": {
+   "lines": 227,
+   "ink": 226,
+   "ink_m4": 226,
+   "ink_m8": 226,
+   "grad": 209
+  },
+  "v34": {
+   "lines": 323,
+   "ink": 323,
+   "ink_m4": 321,
+   "ink_m8": 170,
+   "grad": 305
+  },
+  "v57": {
+   "lines": 45,
+   "ink": 45,
+   "ink_m4": 38,
+   "grad": 26,
+   "ink_m8": 35
+  }
+ },
+ "precision_check": {
+  "summary": {
+   "all": {
+    "agree": 160,
+    "lines": 160,
+    "rate": 1.0,
+    "wilson95": [
+     0.9766,
+     1.0
+    ]
+   },
+   "crop:grad": {
+    "agree": 39,
+    "lines": 39,
+    "rate": 1.0,
+    "wilson95": [
+     0.9103,
+     1.0
+    ]
+   },
+   "crop:ink": {
+    "agree": 38,
+    "lines": 38,
+    "rate": 1.0,
+    "wilson95": [
+     0.9082,
+     1.0
+    ]
+   },
+   "crop:ink_m4": {
+    "agree": 55,
+    "lines": 55,
+    "rate": 1.0,
+    "wilson95": [
+     0.9347,
+     1.0
+    ]
+   },
+   "crop:ink_m8": {
+    "agree": 28,
+    "lines": 28,
+    "rate": 1.0,
+    "wilson95": [
+     0.8794,
+     1.0
+    ]
+   },
+   "stratum:auto": {
+    "agree": 40,
+    "lines": 40,
+    "rate": 1.0,
+    "wilson95": [
+     0.9124,
+     1.0
+    ]
+   },
+   "stratum:reviewed": {
+    "agree": 120,
+    "lines": 120,
+    "rate": 1.0,
+    "wilson95": [
+     0.969,
+     1.0
+    ]
+   }
+  },
+  "of": 160,
+  "reviewer_kind": "assistant"
+ }
+}

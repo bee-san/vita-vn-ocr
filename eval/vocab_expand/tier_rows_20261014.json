@@ -1,0 +1,1558 @@
+{
+ "w100b64c3501": {
+  "classes": 3501,
+  "blob_bytes": 539424,
+  "head_bytes": 252288,
+  "arena_w8i": 122400,
+  "macs_per_frame": 706560,
+  "head_macs_per_frame": 224064,
+  "params": 461485,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 3501,
+   "height": 32
+  },
+  "ms_333": [
+   111.9,
+   220.5
+  ],
+  "box3_s_333": [
+   0.34,
+   0.66
+  ],
+  "ms_444": [
+   83.9,
+   165.4
+  ],
+  "box3_s_444": [
+   0.25,
+   0.5
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b64c4987": {
+  "classes": 4987,
+  "blob_bytes": 654000,
+  "head_bytes": 359424,
+  "arena_w8i": 122400,
+  "macs_per_frame": 801664,
+  "head_macs_per_frame": 319168,
+  "params": 558075,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 4987,
+   "height": 32
+  },
+  "ms_333": [
+   126.7,
+   250.6
+  ],
+  "box3_s_333": [
+   0.38,
+   0.75
+  ],
+  "ms_444": [
+   95.0,
+   188.0
+  ],
+  "box3_s_444": [
+   0.29,
+   0.56
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b64c5630": {
+  "classes": 5630,
+  "blob_bytes": 703296,
+  "head_bytes": 405504,
+  "arena_w8i": 122400,
+  "macs_per_frame": 842816,
+  "head_macs_per_frame": 360320,
+  "params": 599870,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 5630,
+   "height": 32
+  },
+  "ms_333": [
+   133.0,
+   263.5
+  ],
+  "box3_s_333": [
+   0.4,
+   0.79
+  ],
+  "ms_444": [
+   99.8,
+   197.7
+  ],
+  "box3_s_444": [
+   0.3,
+   0.59
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b64c6500": {
+  "classes": 6500,
+  "blob_bytes": 770432,
+  "head_bytes": 468288,
+  "arena_w8i": 122400,
+  "macs_per_frame": 898496,
+  "head_macs_per_frame": 416000,
+  "params": 656420,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 6500,
+   "height": 32
+  },
+  "ms_333": [
+   141.7,
+   281.2
+  ],
+  "box3_s_333": [
+   0.43,
+   0.84
+  ],
+  "ms_444": [
+   106.3,
+   210.9
+  ],
+  "box3_s_444": [
+   0.32,
+   0.63
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b64c7500": {
+  "classes": 7500,
+  "blob_bytes": 847424,
+  "head_bytes": 540288,
+  "arena_w8i": 122400,
+  "macs_per_frame": 962496,
+  "head_macs_per_frame": 480000,
+  "params": 721420,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 7500,
+   "height": 32
+  },
+  "ms_333": [
+   151.6,
+   301.4
+  ],
+  "box3_s_333": [
+   0.45,
+   0.9
+  ],
+  "ms_444": [
+   113.7,
+   226.1
+  ],
+  "box3_s_444": [
+   0.34,
+   0.68
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
+ },
+ "w100b96c3501": {
+  "classes": 3501,
+  "blob_bytes": 657824,
+  "head_bytes": 364416,
+  "arena_w8i": 124832,
+  "macs_per_frame": 824736,
+  "head_macs_per_frame": 336096,
+  "params": 579661,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 3501,
+   "height": 32
+  },
+  "ms_333": [
+   124.3,
+   235.3
+  ],
+  "box3_s_333": [
+   0.37,
+   0.71
+  ],
+  "ms_444": [
+   93.3,
+   176.5
+  ],
+  "box3_s_444": [
+   0.28,
+   0.53
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b96c4987": {
+  "classes": 4987,
+  "blob_bytes": 820016,
+  "head_bytes": 519168,
+  "arena_w8i": 124832,
+  "macs_per_frame": 967392,
+  "head_macs_per_frame": 478752,
+  "params": 723803,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 4987,
+   "height": 32
+  },
+  "ms_333": [
+   144.1,
+   271.4
+  ],
+  "box3_s_333": [
+   0.43,
+   0.81
+  ],
+  "ms_444": [
+   108.0,
+   203.6
+  ],
+  "box3_s_444": [
+   0.32,
+   0.61
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b96c5630": {
+  "classes": 5630,
+  "blob_bytes": 889792,
+  "head_bytes": 585728,
+  "arena_w8i": 124832,
+  "macs_per_frame": 1029120,
+  "head_macs_per_frame": 540480,
+  "params": 786174,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 5630,
+   "height": 32
+  },
+  "ms_333": [
+   152.6,
+   286.9
+  ],
+  "box3_s_333": [
+   0.46,
+   0.86
+  ],
+  "ms_444": [
+   114.4,
+   215.2
+  ],
+  "box3_s_444": [
+   0.34,
+   0.65
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b96c6500": {
+  "classes": 6500,
+  "blob_bytes": 984832,
+  "head_bytes": 676416,
+  "arena_w8i": 124832,
+  "macs_per_frame": 1112640,
+  "head_macs_per_frame": 624000,
+  "params": 870564,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 6500,
+   "height": 32
+  },
+  "ms_333": [
+   164.1,
+   308.0
+  ],
+  "box3_s_333": [
+   0.49,
+   0.92
+  ],
+  "ms_444": [
+   123.1,
+   231.1
+  ],
+  "box3_s_444": [
+   0.37,
+   0.69
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
+ },
+ "w100b96c7500": {
+  "classes": 7500,
+  "blob_bytes": 1093824,
+  "head_bytes": 780416,
+  "arena_w8i": 124832,
+  "macs_per_frame": 1208640,
+  "head_macs_per_frame": 720000,
+  "params": 967564,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 7500,
+   "height": 32
+  },
+  "ms_333": [
+   177.4,
+   332.3
+  ],
+  "box3_s_333": [
+   0.53,
+   1.0
+  ],
+  "ms_444": [
+   133.0,
+   249.3
+  ],
+  "box3_s_444": [
+   0.4,
+   0.75
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w100b128c3501": {
+  "classes": 3501,
+  "blob_bytes": 776224,
+  "head_bytes": 476544,
+  "arena_w8i": 127264,
+  "macs_per_frame": 942912,
+  "head_macs_per_frame": 448128,
+  "params": 697837,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 3501,
+   "height": 32
+  },
+  "ms_333": [
+   136.8,
+   250.9
+  ],
+  "box3_s_333": [
+   0.41,
+   0.75
+  ],
+  "ms_444": [
+   102.6,
+   188.2
+  ],
+  "box3_s_444": [
+   0.31,
+   0.56
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b128c4987": {
+  "classes": 4987,
+  "blob_bytes": 986032,
+  "head_bytes": 678912,
+  "arena_w8i": 127264,
+  "macs_per_frame": 1133120,
+  "head_macs_per_frame": 638336,
+  "params": 889531,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 4987,
+   "height": 32
+  },
+  "ms_333": [
+   161.5,
+   293.0
+  ],
+  "box3_s_333": [
+   0.48,
+   0.88
+  ],
+  "ms_444": [
+   121.1,
+   219.8
+  ],
+  "box3_s_444": [
+   0.36,
+   0.66
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
+ },
+ "w100b128c5630": {
+  "classes": 5630,
+  "blob_bytes": 1076288,
+  "head_bytes": 765952,
+  "arena_w8i": 127264,
+  "macs_per_frame": 1215424,
+  "head_macs_per_frame": 720640,
+  "params": 972478,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 5630,
+   "height": 32
+  },
+  "ms_333": [
+   172.1,
+   311.1
+  ],
+  "box3_s_333": [
+   0.52,
+   0.93
+  ],
+  "ms_444": [
+   129.1,
+   233.4
+  ],
+  "box3_s_444": [
+   0.39,
+   0.7
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w100b128c6500": {
+  "classes": 6500,
+  "blob_bytes": 1199232,
+  "head_bytes": 884544,
+  "arena_w8i": 127264,
+  "macs_per_frame": 1326784,
+  "head_macs_per_frame": 832000,
+  "params": 1084708,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 6500,
+   "height": 32
+  },
+  "ms_333": [
+   186.5,
+   335.7
+  ],
+  "box3_s_333": [
+   0.56,
+   1.01
+  ],
+  "ms_444": [
+   139.9,
+   251.9
+  ],
+  "box3_s_444": [
+   0.42,
+   0.76
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w100b128c7500": {
+  "classes": 7500,
+  "blob_bytes": 1340224,
+  "head_bytes": 1020544,
+  "arena_w8i": 127264,
+  "macs_per_frame": 1454784,
+  "head_macs_per_frame": 960000,
+  "params": 1213708,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 7500,
+   "height": 32
+  },
+  "ms_333": [
+   203.1,
+   364.0
+  ],
+  "box3_s_333": [
+   0.61,
+   1.09
+  ],
+  "ms_444": [
+   152.3,
+   273.1
+  ],
+  "box3_s_444": [
+   0.46,
+   0.82
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b64c3501": {
+  "classes": 3501,
+  "blob_bytes": 832416,
+  "head_bytes": 252288,
+  "arena_w8i": 180512,
+  "macs_per_frame": 1265760,
+  "head_macs_per_frame": 224064,
+  "params": 737421,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 3501,
+   "height": 32
+  },
+  "ms_333": [
+   181.9,
+   337.1
+  ],
+  "box3_s_333": [
+   0.55,
+   1.01
+  ],
+  "ms_444": [
+   136.5,
+   252.9
+  ],
+  "box3_s_444": [
+   0.41,
+   0.76
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
+ },
+ "w150b64c4987": {
+  "classes": 4987,
+  "blob_bytes": 946992,
+  "head_bytes": 359424,
+  "arena_w8i": 180512,
+  "macs_per_frame": 1360864,
+  "head_macs_per_frame": 319168,
+  "params": 834011,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 4987,
+   "height": 32
+  },
+  "ms_333": [
+   196.7,
+   367.2
+  ],
+  "box3_s_333": [
+   0.59,
+   1.1
+  ],
+  "ms_444": [
+   147.5,
+   275.4
+  ],
+  "box3_s_444": [
+   0.44,
+   0.83
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
+ },
+ "w150b64c5630": {
+  "classes": 5630,
+  "blob_bytes": 996288,
+  "head_bytes": 405504,
+  "arena_w8i": 180512,
+  "macs_per_frame": 1402016,
+  "head_macs_per_frame": 360320,
+  "params": 875806,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 5630,
+   "height": 32
+  },
+  "ms_333": [
+   203.0,
+   380.2
+  ],
+  "box3_s_333": [
+   0.61,
+   1.14
+  ],
+  "ms_444": [
+   152.3,
+   285.2
+  ],
+  "box3_s_444": [
+   0.46,
+   0.86
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
+ },
+ "w150b64c6500": {
+  "classes": 6500,
+  "blob_bytes": 1063424,
+  "head_bytes": 468288,
+  "arena_w8i": 180512,
+  "macs_per_frame": 1457696,
+  "head_macs_per_frame": 416000,
+  "params": 932356,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 6500,
+   "height": 32
+  },
+  "ms_333": [
+   211.7,
+   397.8
+  ],
+  "box3_s_333": [
+   0.64,
+   1.19
+  ],
+  "ms_444": [
+   158.8,
+   298.4
+  ],
+  "box3_s_444": [
+   0.48,
+   0.9
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b64c7500": {
+  "classes": 7500,
+  "blob_bytes": 1140416,
+  "head_bytes": 540288,
+  "arena_w8i": 180512,
+  "macs_per_frame": 1521696,
+  "head_macs_per_frame": 480000,
+  "params": 997356,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 64,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 7500,
+   "height": 32
+  },
+  "ms_333": [
+   221.6,
+   417.9
+  ],
+  "box3_s_333": [
+   0.66,
+   1.25
+  ],
+  "ms_444": [
+   166.2,
+   313.5
+  ],
+  "box3_s_444": [
+   0.5,
+   0.94
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b96c3501": {
+  "classes": 3501,
+  "blob_bytes": 953888,
+  "head_bytes": 364416,
+  "arena_w8i": 182944,
+  "macs_per_frame": 1387008,
+  "head_macs_per_frame": 336096,
+  "params": 858669,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 3501,
+   "height": 32
+  },
+  "ms_333": [
+   194.7,
+   353.1
+  ],
+  "box3_s_333": [
+   0.58,
+   1.06
+  ],
+  "ms_444": [
+   146.0,
+   264.9
+  ],
+  "box3_s_444": [
+   0.44,
+   0.79
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Small"
+ },
+ "w150b96c4987": {
+  "classes": 4987,
+  "blob_bytes": 1116080,
+  "head_bytes": 519168,
+  "arena_w8i": 182944,
+  "macs_per_frame": 1529664,
+  "head_macs_per_frame": 478752,
+  "params": 1002811,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 4987,
+   "height": 32
+  },
+  "ms_333": [
+   214.4,
+   389.2
+  ],
+  "box3_s_333": [
+   0.64,
+   1.17
+  ],
+  "ms_444": [
+   160.8,
+   291.9
+  ],
+  "box3_s_444": [
+   0.48,
+   0.88
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b96c5630": {
+  "classes": 5630,
+  "blob_bytes": 1185856,
+  "head_bytes": 585728,
+  "arena_w8i": 182944,
+  "macs_per_frame": 1591392,
+  "head_macs_per_frame": 540480,
+  "params": 1065182,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 5630,
+   "height": 32
+  },
+  "ms_333": [
+   222.9,
+   404.5
+  ],
+  "box3_s_333": [
+   0.67,
+   1.21
+  ],
+  "ms_444": [
+   167.2,
+   303.5
+  ],
+  "box3_s_444": [
+   0.5,
+   0.91
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b96c6500": {
+  "classes": 6500,
+  "blob_bytes": 1280896,
+  "head_bytes": 676416,
+  "arena_w8i": 182944,
+  "macs_per_frame": 1674912,
+  "head_macs_per_frame": 624000,
+  "params": 1149572,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 6500,
+   "height": 32
+  },
+  "ms_333": [
+   234.5,
+   425.9
+  ],
+  "box3_s_333": [
+   0.7,
+   1.28
+  ],
+  "ms_444": [
+   175.8,
+   319.5
+  ],
+  "box3_s_444": [
+   0.53,
+   0.96
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b96c7500": {
+  "classes": 7500,
+  "blob_bytes": 1389888,
+  "head_bytes": 780416,
+  "arena_w8i": 182944,
+  "macs_per_frame": 1770912,
+  "head_macs_per_frame": 720000,
+  "params": 1246572,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 7500,
+   "height": 32
+  },
+  "ms_333": [
+   247.7,
+   449.9
+  ],
+  "box3_s_333": [
+   0.74,
+   1.35
+  ],
+  "ms_444": [
+   185.8,
+   337.5
+  ],
+  "box3_s_444": [
+   0.56,
+   1.01
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b128c3501": {
+  "classes": 3501,
+  "blob_bytes": 1075360,
+  "head_bytes": 476544,
+  "arena_w8i": 185376,
+  "macs_per_frame": 1508256,
+  "head_macs_per_frame": 448128,
+  "params": 979917,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 3501,
+   "height": 32
+  },
+  "ms_333": [
+   207.4,
+   369.0
+  ],
+  "box3_s_333": [
+   0.62,
+   1.11
+  ],
+  "ms_444": [
+   155.6,
+   276.8
+  ],
+  "box3_s_444": [
+   0.47,
+   0.83
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b128c4987": {
+  "classes": 4987,
+  "blob_bytes": 1285168,
+  "head_bytes": 678912,
+  "arena_w8i": 185376,
+  "macs_per_frame": 1698464,
+  "head_macs_per_frame": 638336,
+  "params": 1171611,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 4987,
+   "height": 32
+  },
+  "ms_333": [
+   232.1,
+   410.9
+  ],
+  "box3_s_333": [
+   0.7,
+   1.23
+  ],
+  "ms_444": [
+   174.1,
+   308.2
+  ],
+  "box3_s_444": [
+   0.52,
+   0.92
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b128c5630": {
+  "classes": 5630,
+  "blob_bytes": 1375424,
+  "head_bytes": 765952,
+  "arena_w8i": 185376,
+  "macs_per_frame": 1780768,
+  "head_macs_per_frame": 720640,
+  "params": 1254558,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 5630,
+   "height": 32
+  },
+  "ms_333": [
+   242.7,
+   429.0
+  ],
+  "box3_s_333": [
+   0.73,
+   1.29
+  ],
+  "ms_444": [
+   182.1,
+   321.8
+  ],
+  "box3_s_444": [
+   0.55,
+   0.97
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b128c6500": {
+  "classes": 6500,
+  "blob_bytes": 1498368,
+  "head_bytes": 884544,
+  "arena_w8i": 185376,
+  "macs_per_frame": 1892128,
+  "head_macs_per_frame": 832000,
+  "params": 1366788,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 6500,
+   "height": 32
+  },
+  "ms_333": [
+   257.2,
+   453.6
+  ],
+  "box3_s_333": [
+   0.77,
+   1.36
+  ],
+  "ms_444": [
+   192.9,
+   340.3
+  ],
+  "box3_s_444": [
+   0.58,
+   1.02
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "w150b128c7500": {
+  "classes": 7500,
+  "blob_bytes": 1639360,
+  "head_bytes": 1020544,
+  "arena_w8i": 185376,
+  "macs_per_frame": 2020128,
+  "head_macs_per_frame": 960000,
+  "params": 1495788,
+  "config": {
+   "width": 1.5,
+   "bottleneck": 128,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 7500,
+   "height": 32
+  },
+  "ms_333": [
+   273.8,
+   482.1
+  ],
+  "box3_s_333": [
+   0.82,
+   1.45
+  ],
+  "ms_444": [
+   205.3,
+   361.6
+  ],
+  "box3_s_444": [
+   0.62,
+   1.08
+  ],
+  "tier_budget_doc": "never",
+  "owner_tier": "Normal"
+ },
+ "w100b48c3501": {
+  "classes": 3501,
+  "blob_bytes": 480224,
+  "head_bytes": 196224,
+  "arena_w8i": 121184,
+  "macs_per_frame": 647472,
+  "head_macs_per_frame": 168048,
+  "params": 402397,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 48,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 3501,
+   "height": 32
+  },
+  "ms_333": [
+   105.7,
+   212.4
+  ],
+  "box3_s_333": [
+   0.32,
+   0.64
+  ],
+  "ms_444": [
+   79.3,
+   159.3
+  ],
+  "box3_s_444": [
+   0.24,
+   0.48
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b48c4987": {
+  "classes": 4987,
+  "blob_bytes": 570992,
+  "head_bytes": 279552,
+  "arena_w8i": 121184,
+  "macs_per_frame": 718800,
+  "head_macs_per_frame": 239376,
+  "params": 475211,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 48,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 4987,
+   "height": 32
+  },
+  "ms_333": [
+   118.0,
+   239.5
+  ],
+  "box3_s_333": [
+   0.35,
+   0.72
+  ],
+  "ms_444": [
+   88.5,
+   179.7
+  ],
+  "box3_s_444": [
+   0.27,
+   0.54
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b48c5630": {
+  "classes": 5630,
+  "blob_bytes": 610048,
+  "head_bytes": 315392,
+  "arena_w8i": 121184,
+  "macs_per_frame": 749664,
+  "head_macs_per_frame": 270240,
+  "params": 506718,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 48,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 5630,
+   "height": 32
+  },
+  "ms_333": [
+   123.3,
+   251.2
+  ],
+  "box3_s_333": [
+   0.37,
+   0.75
+  ],
+  "ms_444": [
+   92.4,
+   188.4
+  ],
+  "box3_s_444": [
+   0.28,
+   0.57
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b48c6500": {
+  "classes": 6500,
+  "blob_bytes": 663232,
+  "head_bytes": 364224,
+  "arena_w8i": 121184,
+  "macs_per_frame": 791424,
+  "head_macs_per_frame": 312000,
+  "params": 549348,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 48,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 6500,
+   "height": 32
+  },
+  "ms_333": [
+   130.5,
+   267.1
+  ],
+  "box3_s_333": [
+   0.39,
+   0.8
+  ],
+  "ms_444": [
+   97.8,
+   200.3
+  ],
+  "box3_s_444": [
+   0.29,
+   0.6
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "w100b48c7500": {
+  "classes": 7500,
+  "blob_bytes": 724224,
+  "head_bytes": 420224,
+  "arena_w8i": 121184,
+  "macs_per_frame": 839424,
+  "head_macs_per_frame": 360000,
+  "params": 598348,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 48,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 7500,
+   "height": 32
+  },
+  "ms_333": [
+   138.7,
+   285.3
+  ],
+  "box3_s_333": [
+   0.42,
+   0.86
+  ],
+  "ms_444": [
+   104.0,
+   214.0
+  ],
+  "box3_s_444": [
+   0.31,
+   0.64
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "FL10": {
+  "classes": 3501,
+  "blob_bytes": 657664,
+  "head_bytes": 364416,
+  "arena_w8i": 124832,
+  "macs_per_frame": 824736,
+  "head_macs_per_frame": 336096,
+  "params": 579661,
+  "config": null,
+  "ms_333": [
+   124.3,
+   235.3
+  ],
+  "box3_s_333": [
+   0.37,
+   0.71
+  ],
+  "ms_444": [
+   93.3,
+   176.5
+  ],
+  "box3_s_444": [
+   0.28,
+   0.53
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "H15": {
+  "classes": 5355,
+  "blob_bytes": 1155968,
+  "head_bytes": 557440,
+  "arena_w8i": 182944,
+  "macs_per_frame": 1564992,
+  "head_macs_per_frame": 514080,
+  "params": 1038507,
+  "config": null,
+  "ms_333": [
+   219.3,
+   398.1
+  ],
+  "box3_s_333": [
+   0.66,
+   1.19
+  ],
+  "ms_444": [
+   164.5,
+   298.6
+  ],
+  "box3_s_444": [
+   0.49,
+   0.9
+  ],
+  "tier_budget_doc": "preflight",
+  "owner_tier": "Normal"
+ },
+ "t_w100proof": {
+  "classes": 4987,
+  "blob_bytes": 819792,
+  "head_bytes": 519168,
+  "arena_w8i": 124832,
+  "macs_per_frame": 967392,
+  "head_macs_per_frame": 478752,
+  "params": 723803,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 4987,
+   "height": 32
+  },
+  "ms_333": [
+   144.1,
+   271.4
+  ],
+  "box3_s_333": [
+   0.43,
+   0.81
+  ],
+  "ms_444": [
+   108.0,
+   203.6
+  ],
+  "box3_s_444": [
+   0.32,
+   0.61
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "t_w100v4987": {
+  "classes": 4987,
+  "blob_bytes": 819792,
+  "head_bytes": 519168,
+  "arena_w8i": 124832,
+  "macs_per_frame": 967392,
+  "head_macs_per_frame": 478752,
+  "params": 723803,
+  "config": {
+   "width": 1.0,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 4987,
+   "height": 32
+  },
+  "ms_333": [
+   144.1,
+   271.4
+  ],
+  "box3_s_333": [
+   0.43,
+   0.81
+  ],
+  "ms_444": [
+   108.0,
+   203.6
+  ],
+  "box3_s_444": [
+   0.32,
+   0.61
+  ],
+  "tier_budget_doc": "always",
+  "owner_tier": "Small"
+ },
+ "t_w250v5631": {
+  "classes": 5631,
+  "blob_bytes": 2095712,
+  "head_bytes": 585728,
+  "arena_w8i": 299168,
+  "macs_per_frame": 3351936,
+  "head_macs_per_frame": 540576,
+  "params": 1941247,
+  "config": {
+   "width": 2.5,
+   "bottleneck": 96,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 5631,
+   "height": 32
+  },
+  "ms_333": [
+   428.4,
+   797.2
+  ],
+  "box3_s_333": [
+   1.29,
+   2.39
+  ],
+  "ms_444": [
+   321.3,
+   606.7
+  ],
+  "box3_s_444": [
+   0.96,
+   1.82
+  ],
+  "tier_budget_doc": "never",
+  "owner_tier": "Normal",
+  "t16h64": {
+   "ms_333": [
+    425.4,
+    798.6
+   ],
+   "ms_444": [
+    319.0,
+    609.4
+   ],
+   "box3_s_333": [
+    1.28,
+    2.4
+   ],
+   "box3_s_444": [
+    0.96,
+    1.83
+   ],
+   "arena_w8i": 960896
+  },
+  "owner_tier_t16": "Normal"
+ },
+ "t_w300v7501b192": {
+  "classes": 7501,
+  "blob_bytes": 3689840,
+  "head_bytes": 1500800,
+  "arena_w8i": 364576,
+  "macs_per_frame": 5505024,
+  "head_macs_per_frame": 1440192,
+  "params": 3494989,
+  "config": {
+   "width": 3.0,
+   "bottleneck": 192,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 7501,
+   "height": 32
+  },
+  "ms_333": [
+   670.1,
+   1441.7
+  ],
+  "box3_s_333": [
+   2.01,
+   4.33
+  ],
+  "ms_444": [
+   502.6,
+   1128.3
+  ],
+  "box3_s_444": [
+   1.51,
+   3.38
+  ],
+  "tier_budget_doc": "never",
+  "owner_tier": "none",
+  "t16h64": {
+   "ms_333": [
+    666.5,
+    1253.2
+   ],
+   "ms_444": [
+    499.9,
+    959.3
+   ],
+   "box3_s_333": [
+    2.0,
+    3.76
+   ],
+   "box3_s_444": [
+    1.5,
+    2.88
+   ],
+   "arena_w8i": 1176832
+  },
+  "owner_tier_t16": "Large"
+ },
+ "t_w300v6459b192": {
+  "classes": 6459,
+  "blob_bytes": 3476624,
+  "head_bytes": 1292800,
+  "arena_w8i": 364576,
+  "macs_per_frame": 5304960,
+  "head_macs_per_frame": 1240128,
+  "params": 3293883,
+  "config": {
+   "width": 3.0,
+   "bottleneck": 192,
+   "depth": 1,
+   "ctx": 2,
+   "ctx_k": 5,
+   "classes": 6459,
+   "height": 32
+  },
+  "ms_333": [
+   645.9,
+   1393.0
+  ],
+  "box3_s_333": [
+   1.94,
+   4.18
+  ],
+  "ms_444": [
+   484.4,
+   1090.2
+  ],
+  "box3_s_444": [
+   1.45,
+   3.27
+  ],
+  "tier_budget_doc": "never",
+  "owner_tier": "none",
+  "t16h64": {
+   "ms_333": [
+    642.3,
+    1214.1
+   ],
+   "ms_444": [
+    481.7,
+    929.6
+   ],
+   "box3_s_333": [
+    1.93,
+    3.64
+   ],
+   "box3_s_444": [
+    1.45,
+    2.79
+   ],
+   "arena_w8i": 1176832
+  },
+  "owner_tier_t16": "Large"
+ }
+}

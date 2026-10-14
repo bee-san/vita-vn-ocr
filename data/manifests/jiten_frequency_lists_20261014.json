@@ -1,0 +1,291 @@
+{
+ "kind": "jiten-frequency-lists",
+ "schema": 1,
+ "licence": {
+  "name": "CC BY-SA 4.0",
+  "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://jiten.moe/frequency-dictionaries"
+ },
+ "api": "https://api.jiten.moe/api",
+ "user_agent": "vita-vn-ocr-vocab-study/1.0 (character-frequency research; one request at a time)",
+ "jiten_source": {
+  "repo": "https://github.com/Sirush/Jiten",
+  "commit": "7eac4d44ef10ee3cf0044b333ce7f6a5bb524f85"
+ },
+ "retrieved": "2026-10-14",
+ "files": [
+  {
+   "kind": "decks",
+   "type": "Anime",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/Anime",
+   "file": "decks/decks_Anime.json",
+   "sha256": "bd9f7e1c82da973f89d99dff1b5e00e62b4bfdd68067eaef5a4cb2b921e0e431",
+   "bytes": 8453247,
+   "decks": 3795,
+   "retrieved": "2026-10-14T06:33:59Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:59 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "Audio",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/Audio",
+   "file": "decks/decks_Audio.json",
+   "sha256": "a348cc901bac80270710737c54ef54ee5751789edb697d1fdded9dd39ebf53a2",
+   "bytes": 32181,
+   "decks": 15,
+   "retrieved": "2026-10-14T06:34:12Z",
+   "http_date": "Wed, 14 Oct 2026 06:34:12 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "Drama",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/Drama",
+   "file": "decks/decks_Drama.json",
+   "sha256": "9277e7b5e5e44e93124e31cdf7b9fd200fece67fd7ecaf8147b1e23aa5a5a79d",
+   "bytes": 6039364,
+   "decks": 3084,
+   "retrieved": "2026-10-14T06:34:01Z",
+   "http_date": "Wed, 14 Oct 2026 06:34:01 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "Manga",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/Manga",
+   "file": "decks/decks_Manga.json",
+   "sha256": "33bdd7c5d62a1e13895f1c1cdc1c36b9d499668082be843afb55c1b3bc269514",
+   "bytes": 2642073,
+   "decks": 1267,
+   "retrieved": "2026-10-14T06:34:11Z",
+   "http_date": "Wed, 14 Oct 2026 06:34:11 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "Movie",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/Movie",
+   "file": "decks/decks_Movie.json",
+   "sha256": "f24cbf9eb3c2e6e9bb94f7a11de64a9c29063185c31659a967acf3d88c40395a",
+   "bytes": 7352188,
+   "decks": 3671,
+   "retrieved": "2026-10-14T06:34:02Z",
+   "http_date": "Wed, 14 Oct 2026 06:34:02 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "NonFiction",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/NonFiction",
+   "file": "decks/decks_NonFiction.json",
+   "sha256": "0eb4910c087a68ae819aa14bc2b98449af5536c5c6c70e0b50a0f0c5973f321f",
+   "bytes": 260547,
+   "decks": 112,
+   "retrieved": "2026-10-14T06:34:05Z",
+   "http_date": "Wed, 14 Oct 2026 06:34:05 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "Novel",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/Novel",
+   "file": "decks/decks_Novel.json",
+   "sha256": "6f35c3254164407b601fb98065a173dae554e2bbc55de4acfdbc15c22fe88f78",
+   "bytes": 6697106,
+   "decks": 3161,
+   "retrieved": "2026-10-14T06:34:04Z",
+   "http_date": "Wed, 14 Oct 2026 06:34:03 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "VideoGame",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/VideoGame",
+   "file": "decks/decks_VideoGame.json",
+   "sha256": "49e09ba2cafd91dc8ab6ed91adc51466a1ea52feabceae3a043e05d2609b1955",
+   "bytes": 639266,
+   "decks": 293,
+   "retrieved": "2026-10-14T06:34:06Z",
+   "http_date": "Wed, 14 Oct 2026 06:34:06 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "VisualNovel",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/VisualNovel",
+   "file": "decks/decks_VisualNovel.json",
+   "sha256": "566566a10887769076a844ca3cc9e594eae10d1ef73ecf0428be5c7455bfca42",
+   "bytes": 5174287,
+   "decks": 2162,
+   "retrieved": "2026-10-14T06:34:08Z",
+   "http_date": "Wed, 14 Oct 2026 06:28:20 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "WebNovel",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/WebNovel",
+   "file": "decks/decks_WebNovel.json",
+   "sha256": "ff872dbff11dc0dbdbad8e89d60652522a0d2940282cdb331b57da3883cc5014",
+   "bytes": 89506,
+   "decks": 35,
+   "retrieved": "2026-10-14T06:34:09Z",
+   "http_date": "Wed, 14 Oct 2026 06:34:09 GMT"
+  },
+  {
+   "kind": "decks",
+   "type": "YouTube",
+   "url": "https://api.jiten.moe/api/media-deck/get-media-decks-by-type/YouTube",
+   "file": "decks/decks_YouTube.json",
+   "sha256": "f8d62a5e146e18eac87242a108ab69df5adae1d254010fb6b7b1294e78958ab5",
+   "bytes": 108385,
+   "decks": 47,
+   "retrieved": "2026-10-14T06:34:14Z",
+   "http_date": "Wed, 14 Oct 2026 06:34:14 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "Anime",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=Anime&downloadType=csv",
+   "file": "lists/jiten_freq_Anime.csv",
+   "sha256": "5b8a6bb73fbd96050f53ed6a9b5d46a51f940ae841cf89c8ce1db39da4b98c59",
+   "bytes": 7404816,
+   "rows": 211920,
+   "retrieved": "2026-10-14T06:32:47Z",
+   "http_date": "Wed, 14 Oct 2026 06:32:47 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "Audio",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=Audio&downloadType=csv",
+   "file": "lists/jiten_freq_Audio.csv",
+   "sha256": "2fe44264f06a7f9e9da778ac4577a8354973c40664d6e6dd0951f538c2650500",
+   "bytes": 433580,
+   "rows": 14560,
+   "retrieved": "2026-10-14T06:33:46Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:46 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "Drama",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=Drama&downloadType=csv",
+   "file": "lists/jiten_freq_Drama.csv",
+   "sha256": "da20fcc4f0df5d7a5ff0aacfbad1f7c29629583ff6b3ff8ff0c497cef450e13c",
+   "bytes": 7802753,
+   "rows": 222564,
+   "retrieved": "2026-10-14T06:32:54Z",
+   "http_date": "Wed, 14 Oct 2026 06:32:54 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "Manga",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=Manga&downloadType=csv",
+   "file": "lists/jiten_freq_Manga.csv",
+   "sha256": "c4c613eb03b9725937decdd519497f91db20355c5572a8a1170ee4de286b9083",
+   "bytes": 9259048,
+   "rows": 272567,
+   "retrieved": "2026-10-14T06:33:39Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:39 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "Movie",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=Movie&downloadType=csv",
+   "file": "lists/jiten_freq_Movie.csv",
+   "sha256": "f2eff205b3f71b27d578d51dd5c09c36532e4b52a80a8bc444c8af4e7c5fa84c",
+   "bytes": 5050905,
+   "rows": 148771,
+   "retrieved": "2026-10-14T06:33:00Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:00 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "NonFiction",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=NonFiction&downloadType=csv",
+   "file": "lists/jiten_freq_NonFiction.csv",
+   "sha256": "6765ba4f98fd2c6da90cb499b1a0158f506b1695800c59ac43d2aa1bd3590141",
+   "bytes": 3905444,
+   "rows": 114832,
+   "retrieved": "2026-10-14T06:33:13Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:13 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "Novel",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=Novel&downloadType=csv",
+   "file": "lists/jiten_freq_Novel.csv",
+   "sha256": "c33ce86d72b749a083bc3b79d76bf2eb652d0ffb1a708a5710e768404162b007",
+   "bytes": 11644252,
+   "rows": 327635,
+   "retrieved": "2026-10-14T06:33:07Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:07 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "VideoGame",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=VideoGame&downloadType=csv",
+   "file": "lists/jiten_freq_VideoGame.csv",
+   "sha256": "35932f35a54d2218d54a90bfec4c495e862066a4bdbb9a6ad8945bf8b22ece5c",
+   "bytes": 6563105,
+   "rows": 186475,
+   "retrieved": "2026-10-14T06:33:20Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:20 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "VisualNovel",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=VisualNovel&downloadType=csv",
+   "file": "lists/jiten_freq_VisualNovel.csv",
+   "sha256": "043fd4b24b62089586159edb23c122f5da58cd82a3b59b9452a737117c427372",
+   "bytes": 8846072,
+   "rows": 249118,
+   "retrieved": "2026-10-14T06:33:26Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:26 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "WebNovel",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=WebNovel&downloadType=csv",
+   "file": "lists/jiten_freq_WebNovel.csv",
+   "sha256": "56a28a19605846aa47e9af8064a0f9503158b407f3f999a4b5b00c0af5a88a5e",
+   "bytes": 3675633,
+   "rows": 108237,
+   "retrieved": "2026-10-14T06:33:33Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:33 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "YouTube",
+   "url": "https://api.jiten.moe/api/frequency-list/download?mediaType=YouTube&downloadType=csv",
+   "file": "lists/jiten_freq_YouTube.csv",
+   "sha256": "d3171735499ec854222e3d3d60666b559ce791f8aed06a82ad6f0d64f91bff81",
+   "bytes": 3418841,
+   "rows": 99531,
+   "retrieved": "2026-10-14T06:33:52Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:52 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "global",
+   "url": "https://api.jiten.moe/api/frequency-list/download?downloadType=csv",
+   "file": "lists/jiten_freq_global.csv",
+   "sha256": "aff679f1ae21dbf7b1c3525c2fd0389d90f6837b4a62b79e1a4ac4a577081004",
+   "bytes": 16248480,
+   "rows": 456692,
+   "retrieved": "2026-10-14T06:32:41Z",
+   "http_date": "Wed, 14 Oct 2026 06:32:41 GMT"
+  },
+  {
+   "kind": "list",
+   "name": "kanji",
+   "url": "https://api.jiten.moe/api/frequency-list/download-kanji?downloadType=csv",
+   "file": "lists/jiten_freq_kanji.csv",
+   "sha256": "bdb0eaef29e5b7bdf52efaa91376dba8935b860a57a56d7ae2203138de918c78",
+   "bytes": 109431,
+   "rows": 11049,
+   "retrieved": "2026-10-14T06:33:59Z",
+   "http_date": "Wed, 14 Oct 2026 06:33:59 GMT"
+  }
+ ],
+ "per_deck_sample": {
+  "kind": "per_deck_sample",
+  "note": "local only (never committed): per-title word-occurrence CSVs used only for the per-VN tail; stopped per owner 10:00Z",
+  "counts": {
+   "Novel": 92,
+   "VisualNovel": 2162
+  },
+  "example_url": "https://api.jiten.moe/api/media-deck/{deckId}/download (POST, format Csv, type Full, excludeExampleSentences)"
+ }
+}

@@ -1,0 +1,714 @@
+{
+ "kind": "vocab-expand-bias",
+ "schema": 1,
+ "sources": {
+  "realplus v2": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realplus/labels.jsonl",
+   "sha256": "bdf7346db16696f4b5d35f5b09639d934863867d23d03cde70164e4dec9c2de2",
+   "rows": 133861,
+   "kept": 50823,
+   "kept_vns": 9336,
+   "kept_chars": 516761,
+   "dropped_why": {
+    "undecided": 81709,
+    "skip-ui": 941,
+    "skip-cut": 221,
+    "skip-bad": 78,
+    "no-engine-support": 32,
+    "pass1-unsure": 6,
+    "pass2-disagree": 5,
+    "blind-cut": 2,
+    "blind-label-wrong": 2,
+    "blind-unsure": 1
+   },
+   "kept_outside": {
+    "H15": {
+     "lines": 13,
+     "chars": 15,
+     "vns": 10,
+     "top": "洸迩覡^鷗鴇蟬蠟"
+    },
+    "FL10": {
+     "lines": 310,
+     "chars": 331,
+     "vns": 268,
+     "top": "璧墟儚杞咥肇咆哮箋紘跪棘猥肛瞥柘凸腔翡洸軋琢琳灼侑"
+    },
+    "Small (proof)": {
+     "lines": 13,
+     "chars": 15,
+     "vns": 10,
+     "top": "洸迩覡^鷗鴇蟬蠟"
+    },
+    "Small next (vn_4987)": {
+     "lines": 5,
+     "chars": 7,
+     "vns": 5,
+     "top": "^鷗蟬冰蠟"
+    },
+    "Normal (vn_5631)": {
+     "lines": 4,
+     "chars": 6,
+     "vns": 4,
+     "top": "^鷗蟬蠟"
+    },
+    "Large (vn_6459)": {
+     "lines": 1,
+     "chars": 2,
+     "vns": 1,
+     "top": "^"
+    }
+   },
+   "engines": {
+    "H15": {
+     "kept": {
+      "lines": 50823,
+      "both_engines_per_1000": 0.256,
+      "either_engine_per_1000": 1.869,
+      "both_lines": 13
+     },
+     "not_kept": {
+      "lines": 82973,
+      "both_engines_per_1000": 0.205,
+      "either_engine_per_1000": 53.704,
+      "both_lines": 17,
+      "both_vns": 12
+     }
+    },
+    "FL10": {
+     "kept": {
+      "lines": 50823,
+      "both_engines_per_1000": 6.06,
+      "either_engine_per_1000": 7.811,
+      "both_lines": 308
+     },
+     "not_kept": {
+      "lines": 82973,
+      "both_engines_per_1000": 5.532,
+      "either_engine_per_1000": 70.71,
+      "both_lines": 459,
+      "both_vns": 393
+     }
+    },
+    "Small (proof)": {
+     "kept": {
+      "lines": 50823,
+      "both_engines_per_1000": 0.256,
+      "either_engine_per_1000": 1.869,
+      "both_lines": 13
+     },
+     "not_kept": {
+      "lines": 82973,
+      "both_engines_per_1000": 0.205,
+      "either_engine_per_1000": 56.549,
+      "both_lines": 17,
+      "both_vns": 12
+     }
+    },
+    "Small next (vn_4987)": {
+     "kept": {
+      "lines": 50823,
+      "both_engines_per_1000": 0.098,
+      "either_engine_per_1000": 1.712,
+      "both_lines": 5
+     },
+     "not_kept": {
+      "lines": 82973,
+      "both_engines_per_1000": 0.133,
+      "either_engine_per_1000": 57.621,
+      "both_lines": 11,
+      "both_vns": 7
+     }
+    },
+    "Normal (vn_5631)": {
+     "kept": {
+      "lines": 50823,
+      "both_engines_per_1000": 0.079,
+      "either_engine_per_1000": 1.672,
+      "both_lines": 4
+     },
+     "not_kept": {
+      "lines": 82973,
+      "both_engines_per_1000": 0.108,
+      "either_engine_per_1000": 54.644,
+      "both_lines": 9,
+      "both_vns": 5
+     }
+    },
+    "Large (vn_6459)": {
+     "kept": {
+      "lines": 50823,
+      "both_engines_per_1000": 0.02,
+      "either_engine_per_1000": 1.594,
+      "both_lines": 1
+     },
+     "not_kept": {
+      "lines": 82973,
+      "both_engines_per_1000": 0.084,
+      "either_engine_per_1000": 47.365,
+      "both_lines": 7,
+      "both_vns": 4
+     }
+    }
+   }
+  },
+  "realplus v3": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realplus-v3/labels.jsonl",
+   "sha256": "6026e882afd6f15b7827c28e196082ef71d84e944f54e5b4678e3990e3f9e27b",
+   "rows": 133861,
+   "kept": 66183,
+   "kept_vns": 9907,
+   "kept_chars": 746731,
+   "dropped_why": {
+    "undecided": 56109,
+    "skip-ui": 8133,
+    "skip-cut": 1694,
+    "skip-bad": 540,
+    "luna-disagree": 406,
+    "no-engine-support": 244,
+    "luna-unconfirmed": 235,
+    "pass1-unsure": 91,
+    "confirm-skip": 88,
+    "luna-missing": 45,
+    "confirm-disagree": 18,
+    "confirm-unsure": 10,
+    "confirm-missing": 10,
+    "pass2-disagree": 5,
+    "blind-cut": 2,
+    "blind-label-wrong": 2,
+    "blind-unsure": 1
+   },
+   "kept_outside": {
+    "H15": {
+     "lines": 17,
+     "chars": 19,
+     "vns": 14,
+     "top": "洸迩覡鴇^鷗瘴蟬蠟"
+    },
+    "FL10": {
+     "lines": 430,
+     "chars": 455,
+     "vns": 376,
+     "top": "璧墟儚猥淹瞥琢紘杞肛咥軋跪棘峙柘腔翡肇洸咆哮箋疼膣"
+    },
+    "Small (proof)": {
+     "lines": 17,
+     "chars": 19,
+     "vns": 14,
+     "top": "洸迩覡鴇^鷗瘴蟬蠟"
+    },
+    "Small next (vn_4987)": {
+     "lines": 5,
+     "chars": 7,
+     "vns": 5,
+     "top": "^鷗蟬冰蠟"
+    },
+    "Normal (vn_5631)": {
+     "lines": 4,
+     "chars": 6,
+     "vns": 4,
+     "top": "^鷗蟬蠟"
+    },
+    "Large (vn_6459)": {
+     "lines": 1,
+     "chars": 2,
+     "vns": 1,
+     "top": "^"
+    }
+   },
+   "engines": {
+    "H15": {
+     "kept": {
+      "lines": 66183,
+      "both_engines_per_1000": 0.242,
+      "either_engine_per_1000": 2.674,
+      "both_lines": 16
+     },
+     "not_kept": {
+      "lines": 67613,
+      "both_engines_per_1000": 0.207,
+      "either_engine_per_1000": 64.692,
+      "both_lines": 14,
+      "both_vns": 9
+     }
+    },
+    "FL10": {
+     "kept": {
+      "lines": 66183,
+      "both_engines_per_1000": 6.316,
+      "either_engine_per_1000": 9.519,
+      "both_lines": 418
+     },
+     "not_kept": {
+      "lines": 67613,
+      "both_engines_per_1000": 5.162,
+      "either_engine_per_1000": 83.327,
+      "both_lines": 349,
+      "both_vns": 296
+     }
+    },
+    "Small (proof)": {
+     "kept": {
+      "lines": 66183,
+      "both_engines_per_1000": 0.242,
+      "either_engine_per_1000": 2.69,
+      "both_lines": 16
+     },
+     "not_kept": {
+      "lines": 67613,
+      "both_engines_per_1000": 0.207,
+      "either_engine_per_1000": 68.167,
+      "both_lines": 14,
+      "both_vns": 9
+     }
+    },
+    "Small next (vn_4987)": {
+     "kept": {
+      "lines": 66183,
+      "both_engines_per_1000": 0.076,
+      "either_engine_per_1000": 2.584,
+      "both_lines": 5
+     },
+     "not_kept": {
+      "lines": 67613,
+      "both_engines_per_1000": 0.163,
+      "either_engine_per_1000": 69.469,
+      "both_lines": 11,
+      "both_vns": 7
+     }
+    },
+    "Normal (vn_5631)": {
+     "kept": {
+      "lines": 66183,
+      "both_engines_per_1000": 0.06,
+      "either_engine_per_1000": 2.418,
+      "both_lines": 4
+     },
+     "not_kept": {
+      "lines": 67613,
+      "both_engines_per_1000": 0.133,
+      "either_engine_per_1000": 65.949,
+      "both_lines": 9,
+      "both_vns": 5
+     }
+    },
+    "Large (vn_6459)": {
+     "kept": {
+      "lines": 66183,
+      "both_engines_per_1000": 0.015,
+      "either_engine_per_1000": 2.236,
+      "both_lines": 1
+     },
+     "not_kept": {
+      "lines": 67613,
+      "both_engines_per_1000": 0.104,
+      "either_engine_per_1000": 57.134,
+      "both_lines": 7,
+      "both_vns": 4
+     }
+    }
+   }
+  },
+  "native-frames pool": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/native-frames/pool/labels.jsonl",
+   "sha256": "67e485a02e1a91f350b92139fed2435dec1a63ca3f251214bdebeac18cc39263",
+   "rows": 4089,
+   "kept": 1924,
+   "kept_vns": 225,
+   "kept_chars": 18744,
+   "dropped_why": {
+    "undecided": 1334,
+    "skip-ui": 584,
+    "skip-cut": 80,
+    "no-engine-support": 56,
+    "luna-disagree": 35,
+    "skip-bad": 34,
+    "pass1-unsure": 16,
+    "reserved-vn:owner-test-relation": 11,
+    "reserved-vn:owner-test-series": 8,
+    "confirm-disagree": 3,
+    "confirm-unsure": 2,
+    "confirm-skip": 2
+   },
+   "kept_outside": {
+    "H15": {
+     "lines": 3,
+     "chars": 4,
+     "vns": 3,
+     "top": "杰ê嗯嗎"
+    },
+    "FL10": {
+     "lines": 13,
+     "chars": 16,
+     "vns": 13,
+     "top": "惇閨謁坦跪紘杰炸槐ê抉竦嗯什麼嗎"
+    },
+    "Small (proof)": {
+     "lines": 3,
+     "chars": 4,
+     "vns": 3,
+     "top": "杰ê嗯嗎"
+    },
+    "Small next (vn_4987)": {
+     "lines": 3,
+     "chars": 4,
+     "vns": 3,
+     "top": "杰ê嗯嗎"
+    },
+    "Normal (vn_5631)": {
+     "lines": 2,
+     "chars": 2,
+     "vns": 2,
+     "top": "ê嗯"
+    },
+    "Large (vn_6459)": {
+     "lines": 2,
+     "chars": 2,
+     "vns": 2,
+     "top": "ê嗯"
+    }
+   }
+  },
+  "owner pool": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/private/owner-games/_build/owner-pool/labels.jsonl",
+   "sha256": "2a7274d8108d3416a1a13bdd6211a9e66d07e6a011ffffda08f5b5bea9df4764",
+   "rows": 946,
+   "kept": 707,
+   "kept_vns": 3,
+   "kept_chars": 11353,
+   "dropped_why": {
+    "skip-cut": 234,
+    "no-engine-support": 3,
+    "skip-ui": 1,
+    "pass2-disagree": 1
+   },
+   "kept_outside": {
+    "H15": {
+     "lines": 0,
+     "chars": 0,
+     "vns": 0,
+     "top": ""
+    },
+    "FL10": {
+     "lines": 13,
+     "chars": 13,
+     "vns": 2,
+     "top": "墟戮沌耗瞥填疼擱扁睫"
+    },
+    "Small (proof)": {
+     "lines": 0,
+     "chars": 0,
+     "vns": 0,
+     "top": ""
+    },
+    "Small next (vn_4987)": {
+     "lines": 0,
+     "chars": 0,
+     "vns": 0,
+     "top": ""
+    },
+    "Normal (vn_5631)": {
+     "lines": 0,
+     "chars": 0,
+     "vns": 0,
+     "top": ""
+    },
+    "Large (vn_6459)": {
+     "lines": 0,
+     "chars": 0,
+     "vns": 0,
+     "top": ""
+    }
+   }
+  },
+  "teacher (raw reads)": {
+   "files": [
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/reads/train.0of5.jsonl",
+     "sha256": "beb03a7477bf375e870245d828653f95b17fe60df8d391f311c4b9989ab8e7f0"
+    },
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/reads/train.1of5.jsonl",
+     "sha256": "db781e89bc21047183ca9a9ad1f47cc7727030a8bcdc674678627c01bb39fd9b"
+    },
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/reads/train.2of5.jsonl",
+     "sha256": "cece7640c99cd3aeea1772bdffadc1619702dae1cf64a1cc8955387c35f44823"
+    },
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/reads/train.3of5.jsonl",
+     "sha256": "c7bf09285a07af35a3dfce99fac585a30e9e07035cefd9df83c48e0a1c64a144"
+    },
+    {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/reads/train.4of5.jsonl",
+     "sha256": "738cc45b07fb0f94af79c714b67997d87b3b693ccde5cde307b968c9988b4521"
+    }
+   ],
+   "accepted": 10049,
+   "accepted_vns": 1241,
+   "accepted_outside": {
+    "H15": {
+     "lines": 2,
+     "chars": 2,
+     "vns": 2,
+     "top": "鴇洸"
+    },
+    "FL10": {
+     "lines": 47,
+     "chars": 51,
+     "vns": 43,
+     "top": "蕊翅灼甜蠢裔閨芻岱抉祢峙曼荼痢筧禽鎬晰侑紘燎睫丼鴇"
+    },
+    "Small (proof)": {
+     "lines": 2,
+     "chars": 2,
+     "vns": 2,
+     "top": "鴇洸"
+    },
+    "Small next (vn_4987)": {
+     "lines": 0,
+     "chars": 0,
+     "vns": 0,
+     "top": ""
+    },
+    "Normal (vn_5631)": {
+     "lines": 0,
+     "chars": 0,
+     "vns": 0,
+     "top": ""
+    },
+    "Large (vn_6459)": {
+     "lines": 0,
+     "chars": 0,
+     "vns": 0,
+     "top": ""
+    }
+   }
+  },
+  "realdata (raw reads)": {
+   "files": 10,
+   "accepted": 7109,
+   "accepted_vns": 1199,
+   "accepted_outside": {
+    "H15": {
+     "lines": 2,
+     "chars": 2,
+     "vns": 2,
+     "top": "鴇洸"
+    },
+    "FL10": {
+     "lines": 41,
+     "chars": 47,
+     "vns": 37,
+     "top": "蕊櫂蠢稟贄奄峙捩禽裔侑朶拮鄙蛟甜酎芻抉灼祢曼荼痢鎬"
+    },
+    "Small (proof)": {
+     "lines": 3,
+     "chars": 3,
+     "vns": 3,
+     "top": "賣鴇洸"
+    },
+    "Small next (vn_4987)": {
+     "lines": 1,
+     "chars": 1,
+     "vns": 1,
+     "top": "賣"
+    },
+    "Normal (vn_5631)": {
+     "lines": 1,
+     "chars": 1,
+     "vns": 1,
+     "top": "賣"
+    },
+    "Large (vn_6459)": {
+     "lines": 0,
+     "chars": 0,
+     "vns": 0,
+     "top": ""
+    }
+   }
+  }
+ },
+ "protected": {
+  "vita-test": {
+   "sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+   "H15": {
+    "lines": 206,
+    "per_1000_lines": 4.854,
+    "lines_with_miss": 1,
+    "chars": 2564,
+    "per_1000_chars": 0.39
+   },
+   "FL10": {
+    "lines": 206,
+    "per_1000_lines": 14.563,
+    "lines_with_miss": 3,
+    "chars": 2564,
+    "per_1000_chars": 1.17
+   },
+   "Small (proof)": {
+    "lines": 206,
+    "per_1000_lines": 4.854,
+    "lines_with_miss": 1,
+    "chars": 2564,
+    "per_1000_chars": 0.39
+   },
+   "Small next (vn_4987)": {
+    "lines": 206,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 2564,
+    "per_1000_chars": 0.0
+   },
+   "Normal (vn_5631)": {
+    "lines": 206,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 2564,
+    "per_1000_chars": 0.0
+   },
+   "Large (vn_6459)": {
+    "lines": 206,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 2564,
+    "per_1000_chars": 0.0
+   }
+  },
+  "psp-test": {
+   "sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+   "H15": {
+    "lines": 245,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 2510,
+    "per_1000_chars": 0.0
+   },
+   "FL10": {
+    "lines": 245,
+    "per_1000_lines": 4.082,
+    "lines_with_miss": 1,
+    "chars": 2510,
+    "per_1000_chars": 0.3984
+   },
+   "Small (proof)": {
+    "lines": 245,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 2510,
+    "per_1000_chars": 0.0
+   },
+   "Small next (vn_4987)": {
+    "lines": 245,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 2510,
+    "per_1000_chars": 0.0
+   },
+   "Normal (vn_5631)": {
+    "lines": 245,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 2510,
+    "per_1000_chars": 0.0
+   },
+   "Large (vn_6459)": {
+    "lines": 245,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 2510,
+    "per_1000_chars": 0.0
+   }
+  },
+  "CLANNAD refs": {
+   "sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+   "H15": {
+    "lines": 3048,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 35694,
+    "per_1000_chars": 0.0
+   },
+   "FL10": {
+    "lines": 3048,
+    "per_1000_lines": 1.64,
+    "lines_with_miss": 5,
+    "chars": 35694,
+    "per_1000_chars": 0.1401
+   },
+   "Small (proof)": {
+    "lines": 3048,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 35694,
+    "per_1000_chars": 0.0
+   },
+   "Small next (vn_4987)": {
+    "lines": 3048,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 35694,
+    "per_1000_chars": 0.0
+   },
+   "Normal (vn_5631)": {
+    "lines": 3048,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 35694,
+    "per_1000_chars": 0.0
+   },
+   "Large (vn_6459)": {
+    "lines": 3048,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 35694,
+    "per_1000_chars": 0.0
+   }
+  },
+  "devnative (kept)": {
+   "sha256": "e6393986e9a7f82ce3add37239d9ffc77bdb40e3ab05fa9de6129d2d81fa11b0",
+   "H15": {
+    "lines": 657,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 7518,
+    "per_1000_chars": 0.0
+   },
+   "FL10": {
+    "lines": 657,
+    "per_1000_lines": 1.522,
+    "lines_with_miss": 1,
+    "chars": 7518,
+    "per_1000_chars": 0.133
+   },
+   "Small (proof)": {
+    "lines": 657,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 7518,
+    "per_1000_chars": 0.0
+   },
+   "Small next (vn_4987)": {
+    "lines": 657,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 7518,
+    "per_1000_chars": 0.0
+   },
+   "Normal (vn_5631)": {
+    "lines": 657,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 7518,
+    "per_1000_chars": 0.0
+   },
+   "Large (vn_6459)": {
+    "lines": 657,
+    "per_1000_lines": 0.0,
+    "lines_with_miss": 0,
+    "chars": 7518,
+    "per_1000_chars": 0.0
+   }
+  }
+ }
+}

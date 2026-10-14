@@ -54,6 +54,8 @@ Game screenshots, rendered shards, downloaded corpora, fonts and checkpoints sta
 
 Pretraining uses line crops cut from the Japanese subset of [OCR-Synthetic-Multilingual-v1](https://huggingface.co/datasets/nvidia/OCR-Synthetic-Multilingual-v1) by NVIDIA Corporation (Chesler, 2026), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), at revision `69696a1cc543ef3a0f8e9892a89c17293e915263`. The crops are modified: single horizontal text lines are cut from the pages, converted to grey and resized to height 32, and lines with characters outside `data/vocab.txt` are dropped (`nvsynth/`, `docs/nvsynth.md`). Neither the dataset nor the crops are redistributed here; `nvsynth/nv_fetch.py` rebuilds them from the Hub. Model weights trained on them carry the same attribution in their release notes.
 
+The character-set analysis and the VN-ordered vocabularies (`docs/vocab-expand.md`, `data/vocab_vn_*.txt`) are derived from [Jiten](https://jiten.moe/frequency-dictionaries)'s word and kanji frequency lists, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Only the pinned list manifest (`data/manifests/jiten_frequency_lists_20261014.json`: URLs + sha256), the derived vocab files and small result tables are committed; the Jiten CSVs stay local. CC BY-SA 4.0 is one-way compatible with this repository's GPL-3.0-or-later.
+
 ## License
 
 GPL-3.0-or-later, matching vita-jp-overlay.

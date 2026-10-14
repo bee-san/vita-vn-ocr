@@ -1,0 +1,105 @@
+{
+ "kind": "vocab-expand-lines",
+ "schema": 1,
+ "lengths": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocab-expand/inputs/realplus_v3_labels_20261014.jsonl",
+  "sha256": "6026e882afd6f15b7827c28e196082ef71d84e944f54e5b4678e3990e3f9e27b",
+  "lines": 66225,
+  "mean": 9.92,
+  "p10": 2.0,
+  "p50": 7.0,
+  "p90": 23.0
+ },
+ "vocabs": {
+  "FL10": {
+   "aggregate_model": 22.217,
+   "sample_corpus": 10.518,
+   "sample_p50_title": 7.15,
+   "sample_p95_title": 27.784
+  },
+  "H15": {
+   "aggregate_model": 1.805,
+   "sample_corpus": 0.351,
+   "sample_p50_title": 0.051,
+   "sample_p95_title": 1.026
+  },
+  "proof (Small)": {
+   "aggregate_model": 1.856,
+   "sample_corpus": 0.352,
+   "sample_p50_title": 0.051,
+   "sample_p95_title": 1.026
+  },
+  "VN 4987": {
+   "aggregate_model": 1.056,
+   "sample_corpus": 0.024,
+   "sample_p50_title": 0.0,
+   "sample_p95_title": 0.077
+  },
+  "VN 5631": {
+   "aggregate_model": 0.002,
+   "sample_corpus": 0.0,
+   "sample_p50_title": 0.0,
+   "sample_p95_title": 0.0
+  },
+  "VN 6459": {
+   "aggregate_model": 0.0,
+   "sample_corpus": 0.0,
+   "sample_p50_title": 0.0,
+   "sample_p95_title": 0.0
+  },
+  "VN 7501": {
+   "aggregate_model": 0.0,
+   "sample_corpus": 0.0,
+   "sample_p50_title": 0.0,
+   "sample_p95_title": 0.0
+  },
+  "Small next (vn_4987)": {
+   "aggregate_model": 1.056,
+   "sample_corpus": 0.024,
+   "sample_p50_title": 0.0,
+   "sample_p95_title": 0.077
+  },
+  "Normal (vn_5631)": {
+   "aggregate_model": 0.002,
+   "sample_corpus": 0.0,
+   "sample_p50_title": 0.0,
+   "sample_p95_title": 0.0
+  },
+  "Large (vn_6459)": {
+   "aggregate_model": 0.0,
+   "sample_corpus": 0.0,
+   "sample_p50_title": 0.0,
+   "sample_p95_title": 0.0
+  }
+ },
+ "calibration": {
+  "FL10": {
+   "vita-test": {
+    "observed_per_1000_lines": 14.563,
+    "independence_per_1000_lines": 14.426
+   },
+   "psp-test": {
+    "observed_per_1000_lines": 4.082,
+    "independence_per_1000_lines": 4.088
+   },
+   "CLANNAD": {
+    "observed_per_1000_lines": 1.64,
+    "independence_per_1000_lines": 1.639
+   }
+  },
+  "H15": {
+   "vita-test": {
+    "observed_per_1000_lines": 4.854,
+    "independence_per_1000_lines": 4.839
+   },
+   "psp-test": {
+    "observed_per_1000_lines": 0.0,
+    "independence_per_1000_lines": 0.0
+   },
+   "CLANNAD": {
+    "observed_per_1000_lines": 0.0,
+    "independence_per_1000_lines": 0.0
+   }
+  }
+ }
+}

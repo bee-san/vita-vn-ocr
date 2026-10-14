@@ -1157,9 +1157,47 @@ typedef struct {
     int overflow;
     unsigned last, chars, frame;
     vocr_extra *ex;
+    unsigned topk;           /* ex->topk, or 0 */
+    unsigned conf_n;         /* characters whose confidence is in conf_min / conf_sum */
+    float conf_min, conf_sum;
 } out_t;
 
 static float *at(const vocr_ctx *c, uint32_t off) { return (float *)(void *)(c->arena + off); }
+
+/* exp(x) for x <= 0 in float arithmetic only (no libm): 2^(x / ln 2), the integer part from the float
+ * exponent bits, 2^f for f in [0, 1) from its degree-6 Taylor polynomial (relative error < 2e-5).
+ * x is clamped at -30, so every value stays a normal float. Only the confidence uses it: nothing that
+ * decides a character does. lm/vlm.py's exp_neg is the same arithmetic. */
+static float exp_neg(float x)
+{
+    union { float f; uint32_t u; } p2;
+    float t, f, p;
+    int32_t e;
+    if (!(x > -30.0f)) x = -30.0f; /* also NaN */
+    if (x > 0.0f) x = 0.0f;
+    t = x * 1.44269504f;
+    e = (int32_t)t;
+    if ((float)e > t) e--;
+    f = t - (float)e;
+    p = 0.000154035304f;
+    p = p * f + 0.00133335581f;
+    p = p * f + 0.00961812911f;
+    p = p * f + 0.0555041087f;
+    p = p * f + 0.240226507f;
+    p = p * f + 0.693147181f;
+    p = p * f + 1.0f;
+    p2.u = (uint32_t)(e + 127) << 23;
+    return p * p2.f;
+}
+
+/* softmax-max probability over one frame's top-K logits (v[0] is the largest) */
+static float topk_conf(const float *v, unsigned k)
+{
+    float s = 1.0f;
+    unsigned j;
+    for (j = 1; j < k; j++) s += exp_neg(v[j] - v[0]);
+    return 1.0f / s;
+}
 
 /* PW over P positions of x (row stride K) into y (row stride cout). */
 static void run_pw(const vocr_ctx *c, unsigned i, const float *x, unsigned P, float *y, const float *res)
@@ -1206,7 +1244,10 @@ static void ctc_push(const vocr_model *m, out_t *o, unsigned tok)
     o->last = tok;
 }
 
-/* Output head over the nf accumulated frames: argmax (first maximum) and CTC. */
+/* Output head over the nf accumulated frames: argmax (first maximum) and CTC. With o->topk, also the
+ * K largest logits of every frame, straight into the caller's topk_* buffers (inserted with strict
+ * comparisons, so equal logits keep the lower class first and [0] is the argmax), the blank's logit,
+ * and the confidence of every frame that emits a character. The !topk loop is main's, unchanged. */
 static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
 {
     const vocr_model *m = c->model;
@@ -1221,11 +1262,21 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     float *sx = (float *)(void *)(scr + al16((size_t)nf * K * 2u));
     float *wf = (float *)(void *)scr;
     vocr_extra *ex = o->ex;
+    const unsigned TK = o->topk;
     unsigned f, nb, f0, q, j;
     for (f = 0; f < nf; f++) {
         bestv[f] = -INFINITY;
         besti[f] = 0;
     }
+    if (TK)
+        for (f = 0; f < nf; f++) {
+            float *tv = ex->topk_logit + (size_t)(o->frame + f) * TK;
+            uint16_t *tc = ex->topk_class + (size_t)(o->frame + f) * TK;
+            for (j = 0; j < TK; j++) {
+                tv[j] = -INFINITY;
+                tc[j] = 0;
+            }
+        }
     if (c->mode == VOCR_MODE_W8I) quant16(x, K, K, nf, qx, sx);
     for (nb = 0; nb < op->cout_pad / 8u; nb++) {
         const float *b = op->bias ? op->bias + nb * 8 : NULL;
@@ -1241,15 +1292,43 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
             else
                 mm_i16(op->q + wo, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn, tmp,
                        8, NULL, 0, 0);
-            for (q = 0; q < pn; q++) {
-                const unsigned frame = o->frame + f0 + q;
-                for (j = 0; j < 8 && nb * 8 + j < N; j++) {
-                    const float v = tmp[q * 8 + j];
-                    if (ex && ex->logits && frame < ex->cap_frames)
-                        ex->logits[(size_t)frame * N + nb * 8 + j] = v;
-                    if (v > bestv[f0 + q]) {
-                        bestv[f0 + q] = v;
-                        besti[f0 + q] = nb * 8 + j;
+            if (TK) {
+                for (q = 0; q < pn; q++) {
+                    const unsigned frame = o->frame + f0 + q;
+                    float *tv = ex->topk_logit + (size_t)frame * TK;
+                    uint16_t *tc = ex->topk_class + (size_t)frame * TK;
+                    for (j = 0; j < 8 && nb * 8 + j < N; j++) {
+                        const float v = tmp[q * 8 + j];
+                        if (ex->logits && frame < ex->cap_frames)
+                            ex->logits[(size_t)frame * N + nb * 8 + j] = v;
+                        if (v > bestv[f0 + q]) {
+                            bestv[f0 + q] = v;
+                            besti[f0 + q] = nb * 8 + j;
+                        }
+                        if (v > tv[TK - 1]) {
+                            unsigned p = TK - 1;
+                            while (p && v > tv[p - 1]) {
+                                tv[p] = tv[p - 1];
+                                tc[p] = tc[p - 1];
+                                p--;
+                            }
+                            tv[p] = v;
+                            tc[p] = (uint16_t)(nb * 8 + j);
+                        }
+                    }
+                    if (!nb && ex->blank_logit) ex->blank_logit[frame] = tmp[q * 8];
+                }
+            } else {
+                for (q = 0; q < pn; q++) {
+                    const unsigned frame = o->frame + f0 + q;
+                    for (j = 0; j < 8 && nb * 8 + j < N; j++) {
+                        const float v = tmp[q * 8 + j];
+                        if (ex && ex->logits && frame < ex->cap_frames)
+                            ex->logits[(size_t)frame * N + nb * 8 + j] = v;
+                        if (v > bestv[f0 + q]) {
+                            bestv[f0 + q] = v;
+                            besti[f0 + q] = nb * 8 + j;
+                        }
                     }
                 }
             }
@@ -1257,6 +1336,12 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     }
     for (f = 0; f < nf; f++, o->frame++) {
         if (ex && ex->best && o->frame < ex->cap_frames) ex->best[o->frame] = (uint16_t)besti[f];
+        if (TK && besti[f] && besti[f] != o->last) {
+            const float p = topk_conf(ex->topk_logit + (size_t)o->frame * TK, TK);
+            if (!o->conf_n || p < o->conf_min) o->conf_min = p;
+            o->conf_sum += p;
+            o->conf_n++;
+        }
         ctc_push(m, o, besti[f]);
     }
 }
@@ -1346,6 +1431,13 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         ex->width = ln.nw;
         ex->frames = T;
         ex->chars = 0;
+        if (ex->topk) {
+            if (ex->topk > VOCR_TOPK_MAX || ex->topk > m->n_classes || !ex->topk_logit ||
+                !ex->topk_class || ex->cap_frames < T)
+                return VOCR_E_ARG;
+            o.topk = ex->topk;
+            ex->conf_min = ex->conf_mean = 1.0f;
+        }
     }
     for (i = 0, u = ln.padded; i < L; i++) wout[i] = u /= m->op[i].sw;
     memset(c->arena + c->ring_off, 0, c->ring_end - c->ring_off);
@@ -1375,7 +1467,13 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         }
     }
     if (acc_fill) run_head(c, acc_fill, &o);
-    if (ex) ex->chars = o.chars;
+    if (ex) {
+        ex->chars = o.chars;
+        if (o.conf_n) {
+            ex->conf_min = o.conf_min;
+            ex->conf_mean = o.conf_sum / (float)o.conf_n;
+        }
+    }
     if (o.frame != T) {
         text[0] = 0;
         return VOCR_E_FORMAT; /* cannot happen for a validated blob */

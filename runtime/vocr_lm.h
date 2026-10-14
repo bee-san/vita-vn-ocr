@@ -5,7 +5,8 @@
  * exact size vocr_lm_workspace_bytes() reports. Every score is an int32 in Q10 nats (1/1024 nat), so the
  * result is the same on every platform, bit for bit, and equals lm/vlm.py's reference decoder.
  *
- *   vocr_lm lm;  vocr_lm_ctx dc;  vocr_lm_opts lo = {8, 8, 0, 300, 0, 3000, 0};   // beam, topk, ...
+ *   vocr_lm lm;  vocr_lm_ctx dc;
+ *   vocr_lm_opts lo = {8, 8, 0, 500, 3500, 8000, VOCR_LM_EOS, 8000};   // docs/ctc-lm-decode.md, per LM tier
  *   vocr_lm_load(&lm, lm_blob, lm_bytes);                          // blob 16-byte aligned, kept alive
  *   size_t ws_need = vocr_lm_workspace_bytes(&model, &lm, &lo);
  *   vocr_lm_init(&dc, &model, &lm, &lo, ws, ws_need);              // ws 16-byte aligned
@@ -95,7 +96,11 @@ typedef struct {               /* a planned decoder; private */
 
 /* Check a VOLM blob's CRC-32 (optional; vocr_lm_load checks structure, not content). */
 int vocr_lm_check_crc(const void *blob, size_t bytes);
-/* Parse and validate a VOLM blob already in memory (16-byte aligned). Nothing is copied. */
+/* Parse and validate a VOLM blob already in memory (16-byte aligned). Nothing is copied. It checks what keeps
+ * every later read inside the blob: the header, each section's bounds and alignment, the child ranges (non-
+ * decreasing, ending at the next order's size) and every token id below n_tokens. It does not check the order
+ * of the tokens within a range: a damaged blob can score wrongly but cannot make the decoder read outside it.
+ * vocr_lm_check_crc() detects the damage. */
 int vocr_lm_load(vocr_lm *lm, const void *blob, size_t bytes);
 /* Exact workspace bytes for vocr_lm_init (0 if the options are invalid). lm may be NULL when alpha = 0. */
 size_t vocr_lm_workspace_bytes(const vocr_model *m, const vocr_lm *lm, const vocr_lm_opts *o);
@@ -106,11 +111,13 @@ int vocr_lm_init(vocr_lm_ctx *c, const vocr_model *m, const vocr_lm *lm, const v
  * ex->topk_logit, ex->topk_class and ex->blank_logit (NULL: the blank is a candidate only when it is in
  * the top-K). Polls ex->cancel(ex->user) every 8 frames (VOCR_E_CANCELLED). text gets NUL-terminated
  * UTF-8 (VOCR_E_TEXT if it does not fit: whole characters only); *chars (may be NULL) its characters.
- * VOCR_E_WIDTH if the line has more frames than the workspace was planned for. */
+ * VOCR_E_WIDTH if ex->frames is above the planned max_frames or above ex->cap_frames. */
 int vocr_lm_decode(vocr_lm_ctx *c, const vocr_extra *ex, char *text, size_t text_cap, unsigned *chars);
 /* LM token of one code point (0 = <unk>). */
 unsigned vocr_lm_token(const vocr_lm *lm, uint32_t cp);
-/* log P(token | state) in Q10. state: order - 1 entries (vocr_lm_initial), next: the state after it. */
+/* log P(token | state) in Q10. state: order - 1 entries from vocr_lm_initial() or a previous vocr_lm_score();
+ * token < lm->n_tokens. Neither is checked (the decoder only passes valid ones). next (may be NULL): the state
+ * after the token. */
 int32_t vocr_lm_score(const vocr_lm *lm, const int32_t *state, unsigned token, int32_t *next);
 /* The context state of a line's start (flags & VOCR_LM_BOS: after <s>). state: order - 1 entries. */
 void vocr_lm_initial(const vocr_lm *lm, unsigned flags, int32_t *state);

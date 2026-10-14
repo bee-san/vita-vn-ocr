@@ -183,12 +183,12 @@ python eval/run.py --model 'cmd:runtime/build/vocr_cli v1_w8.vocr --mode w8i --s
 ```c
 #include "vocr_lm.h"
 
-static vocr_lm lm;             /* 368 B on x86-64; points into the LM blob */
-static vocr_lm_ctx dec;        /* 136 B */
+static vocr_lm lm;             /* 188 B on 32-bit ARM (368 on x86-64); points into the LM blob */
+static vocr_lm_ctx dec;        /* 120 B (136) */
 vocr_lm_opts lo = {0};
 lo.beam = 8; lo.topk = 8;                         /* the recommended settings for each LM tier: */
 lo.alpha = 500; lo.beta = 3500; lo.gate = 8000;   /* docs/ctc-lm-decode.md (1/1000 nat; alpha 1/1000) */
-lo.flags = VOCR_LM_EOS; lo.bracket = 5000;
+lo.flags = VOCR_LM_EOS; lo.bracket = 8000;
 rc = vocr_lm_load(&lm, lm_blob, lm_bytes);        /* 16-byte aligned, used in place, any memory type */
 size_t ws_need = vocr_lm_workspace_bytes(&model, &lm, &lo);   /* exact; ~35-41 KB at these settings */
 rc = vocr_lm_init(&dec, &model, &lm, &lo, ws, ws_need);       /* ws 16-byte aligned; maps classes once */
@@ -203,8 +203,8 @@ rc = vocr_lm_decode(&dec, &ex, text, sizeof text, &chars);     /* the beam + LM 
 
 - The search keeps `beam` prefixes per frame (Viterbi: max over alignments). A prefix scores its frames' logit margins to each frame's top-1, plus `alpha` × the LM's log-probability of each character, plus `beta` per character, plus (with `VOCR_LM_EOS`) `alpha` × log P(end of line). A frame's candidates are its top-1 and the other top-K classes and the blank within `gate` nat of it: a frame whose top-1/top-2 margin is at least `gate` keeps its top-1, the guard for confidently read names and rare words. A closing bracket that does not match the line's innermost open bracket costs `bracket`; the LM reads every bracket pair as 「」, so the picture picks the style.
 - With `alpha = beta = bracket = 0` the output is `vocr_run()`'s greedy text bit for bit, for any beam, top-K and gate (every non-top-1 candidate costs at least 1/1024 nat). `lm` may then be NULL.
-- `vocr_lm_decode()` needs `ex->frames <= max_frames` (default: the model's 1,024 px / 8 = 128 frames; at most 1,024), else `VOCR_E_WIDTH`. It polls `ex->cancel` every 8 frames (`VOCR_E_CANCELLED`, empty text) and writes whole characters only on `VOCR_E_TEXT`.
-- One decoder context per thread; the LM blob and the model can be shared. `vocr_lm_check_crc()` checks the blob's CRC-32; `vocr_lm_load()` checks its structure (sections inside the blob, child ranges, tokens).
+- `vocr_lm_decode()` needs `ex->frames <= max_frames` (default: the model's 1,024 px / 8 = 128 frames; at most 1,024) and `<= ex->cap_frames`, else `VOCR_E_WIDTH`. It polls `ex->cancel` every 8 frames (`VOCR_E_CANCELLED`, empty text) and writes whole characters only on `VOCR_E_TEXT`.
+- One decoder context per thread; the LM blob and the model can be shared. `vocr_lm_check_crc()` checks the blob's CRC-32; `vocr_lm_load()` checks what keeps every read inside the blob (sections, child ranges, token ids), not the order of the tokens within a range: a damaged blob can score wrongly but never makes the decoder read outside it, and the CRC catches the damage.
 - Code: `vocr_lm.o` is 4,817 B (VitaSDK gcc 15.2, Thumb-2) and 7,821 B (pspdev, Allegrex `-O2 -G0`); it needs only `memcpy`, `memset`, `vocr_class_text` (and libgcc's `__aeabi_uidiv` on ARM, once per init). The top-K branch grows `vocr.o` from 14,583 to 15,555 B (NEON) and from 12,455 to 13,403 B (scalar). The decoder has run on the host (gcc, clang, ASan/UBSan) and under qemu-arm for the cycle estimate; not on a console or in PPSSPP.
 - `lm/vlm.py` is the specification: its reference decoder and scorer give the C code's output bit for bit (`tests/test_ctclm.py`).
 

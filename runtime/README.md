@@ -150,6 +150,7 @@ rc = vocr_run(&ctx, &img, text, sizeof text, NULL);    /* NUL-terminated UTF-8 *
 - `vocr_extra` is optional. It can return the logits and per-frame argmax, and takes a cancel callback that is polled once per tile.
 - Errors are negative `VOCR_E_*` codes; `vocr_strerror()` describes them. On `VOCR_E_TEXT` the text holds whole characters only.
 - `vocr_preprocess()` returns the exact grey network input, and `vocr_check_crc()` checks a blob's CRC-32.
+- `opts.tail_conf` (1/1000, 0 = off) drops the trailing run of low-confidence characters: a character at the end of the line whose emitting CTC frame has softmax-max confidence below `tail_conf/1000` is dropped, and so is every character after it; interior characters are kept. `tail_conf = 0` reproduces the untrimmed output bit-for-bit and allocates no extra arena. It targets the finder's wide speaker-name crops, where the recognizer appends glyphs read off the plate art after the name (`docs/confidence-trim.md`).
 - `VOCR_INVERT`, or'ed into `vocr_image.format`, reads every source pixel as `255 − grey` before the resize. Training does exactly this for dark text (`synth/common.line_crops`), so set it whenever the line finder reports `VocrLine.dark = 1` (the polarity contract in `docs/linefind.md`). It needs no copy of the crop. Inverting after the resize would not be the same: on 500 random crops, `cv2.resize(255 − g)` and `255 − cv2.resize(g)` differ on 25% of the pixels, by 1.
 
 From Python (host tests, evaluation), `pyvocr.py` wraps `build/libvocr.so` with ctypes:

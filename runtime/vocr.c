@@ -263,7 +263,7 @@ static size_t op_scratch(const vocr_ctx *c, const vocr_op *op, unsigned n_tile)
 
 static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
 {
-    static const vocr_opts defaults = {0, 0, 0, VOCR_MODE_AUTO};
+    static const vocr_opts defaults = {0, 0, 0, VOCR_MODE_AUTO, 0};
     unsigned L, S, i, f, t_max, F, hb, s = 1, s_out[VOCR_MAX_OPS];
     size_t off, base, R = 0, tin[VOCR_MAX_OPS], tout[VOCR_MAX_OPS], scr[VOCR_MAX_OPS];
     int prev = 0, mode, in_top = 0;
@@ -284,6 +284,7 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     c->tile = F;
     c->head = hb;
     c->acc_frames = hb + F - 1;
+    c->tail_conf = o->tail_conf;
     for (f = 0; f < L && (m->op[f].type == T_CONV || m->op[f].type == T_DW); f++) {
     }
     if (f < L && (m->op[f].flags & F_RES)) f--;
@@ -333,6 +334,9 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     off += al16((size_t)c->acc_frames * sizeof(float));
     c->besti_off = (uint32_t)off;
     off += al16((size_t)c->acc_frames * sizeof(uint32_t));
+    c->sumv_off = (uint32_t)off;
+    if (c->tail_conf) /* only the confidence-trim path needs the softmax denominator */
+        off += al16((size_t)c->acc_frames * sizeof(float));
     base = off;
     for (i = 0; i < L; i++) {
         const vocr_op *op = &m->op[i];
@@ -1156,6 +1160,9 @@ typedef struct {
     size_t cap, used;
     int overflow;
     unsigned last, chars, frame;
+    size_t used_hi;          /* text length up to and incl. the last kept char */
+    unsigned chars_hi;       /* char count up to and incl. the last kept char */
+    float tail_thr;          /* trailing-trim threshold in [0,1]; 0 = disabled */
     vocr_extra *ex;
 } out_t;
 
@@ -1189,7 +1196,7 @@ static void run_pw(const vocr_ctx *c, unsigned i, const float *x, unsigned P, fl
     }
 }
 
-static void ctc_push(const vocr_model *m, out_t *o, unsigned tok)
+static void ctc_push(const vocr_model *m, out_t *o, unsigned tok, float conf)
 {
     if (tok && tok != o->last) {
         unsigned n;
@@ -1199,6 +1206,14 @@ static void ctc_push(const vocr_model *m, out_t *o, unsigned tok)
             o->used += n;
             o->text[o->used] = 0;
             o->chars++;
+            /* Advance the trailing-trim watermark through this char only when it is
+             * confident enough. A later confident char pulls the watermark past any
+             * low-confidence chars between them, so only a trailing run is dropped;
+             * with tail_thr == 0 the watermark always advances (no trim). */
+            if (conf >= o->tail_thr) {
+                o->used_hi = o->used;
+                o->chars_hi = o->chars;
+            }
         } else {
             o->overflow = 1;
         }
@@ -1206,7 +1221,10 @@ static void ctc_push(const vocr_model *m, out_t *o, unsigned tok)
     o->last = tok;
 }
 
-/* Output head over the nf accumulated frames: argmax (first maximum) and CTC. */
+/* Output head over the nf accumulated frames: argmax (first maximum) and CTC.
+ * When c->tail_conf is set, also accumulate the softmax denominator per frame
+ * (running-max rescaled, so it is numerically stable and class-order independent)
+ * and pass each emitted frame's softmax-max confidence to ctc_push. */
 static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
 {
     const vocr_model *m = c->model;
@@ -1216,6 +1234,8 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     const float *x = at(c, c->acc_off);
     float *bestv = at(c, c->bestv_off);
     uint32_t *besti = (uint32_t *)(void *)(c->arena + c->besti_off);
+    float *sumv = at(c, c->sumv_off);
+    const int conf = c->tail_conf != 0;
     unsigned char *scr = c->arena + c->op[L - 1].scr_off;
     int16_t *qx = (int16_t *)(void *)scr;
     float *sx = (float *)(void *)(scr + al16((size_t)nf * K * 2u));
@@ -1225,6 +1245,7 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     for (f = 0; f < nf; f++) {
         bestv[f] = -INFINITY;
         besti[f] = 0;
+        sumv[f] = 0.0f;
     }
     if (c->mode == VOCR_MODE_W8I) quant16(x, K, K, nf, qx, sx);
     for (nb = 0; nb < op->cout_pad / 8u; nb++) {
@@ -1247,7 +1268,15 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
                     const float v = tmp[q * 8 + j];
                     if (ex && ex->logits && frame < ex->cap_frames)
                         ex->logits[(size_t)frame * N + nb * 8 + j] = v;
-                    if (v > bestv[f0 + q]) {
+                    if (conf) {
+                        if (v > bestv[f0 + q]) {
+                            sumv[f0 + q] = sumv[f0 + q] * expf(bestv[f0 + q] - v) + 1.0f;
+                            bestv[f0 + q] = v;
+                            besti[f0 + q] = nb * 8 + j;
+                        } else {
+                            sumv[f0 + q] += expf(v - bestv[f0 + q]);
+                        }
+                    } else if (v > bestv[f0 + q]) {
                         bestv[f0 + q] = v;
                         besti[f0 + q] = nb * 8 + j;
                     }
@@ -1257,7 +1286,8 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     }
     for (f = 0; f < nf; f++, o->frame++) {
         if (ex && ex->best && o->frame < ex->cap_frames) ex->best[o->frame] = (uint16_t)besti[f];
-        ctc_push(m, o, besti[f]);
+        /* softmax-max confidence = exp(max - max) / sum_j exp(logit_j - max) = 1/sumv */
+        ctc_push(m, o, besti[f], conf ? (sumv[f] > 0.0f ? 1.0f / sumv[f] : 1.0f) : 1.0f);
     }
 }
 
@@ -1342,6 +1372,7 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
     o.text = text;
     o.cap = text_cap;
     o.ex = ex;
+    o.tail_thr = c->tail_conf ? (float)c->tail_conf / 1000.0f : 0.0f;
     if (ex) {
         ex->width = ln.nw;
         ex->frames = T;
@@ -1375,11 +1406,17 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         }
     }
     if (acc_fill) run_head(c, acc_fill, &o);
-    if (ex) ex->chars = o.chars;
     if (o.frame != T) {
         text[0] = 0;
         return VOCR_E_FORMAT; /* cannot happen for a validated blob */
     }
+    if (o.tail_thr > 0.0f && !o.overflow) {
+        /* Drop the trailing run of low-confidence characters. */
+        o.used = o.used_hi;
+        o.chars = o.chars_hi;
+        o.text[o.used] = 0;
+    }
+    if (ex) ex->chars = o.chars;
     return o.overflow ? VOCR_E_TEXT : VOCR_OK;
 }
 

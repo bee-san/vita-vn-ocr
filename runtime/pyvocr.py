@@ -23,7 +23,7 @@ GREY8, RGBA8, INVERT = 1, 4, 0x100
 
 class _Opts(C.Structure):
     _fields_ = [("tile_frames", C.c_uint), ("head_frames", C.c_uint), ("max_width", C.c_uint),
-                ("mode", C.c_int)]
+                ("mode", C.c_int), ("tail_conf", C.c_uint)]
 
 
 class _Image(C.Structure):
@@ -92,7 +92,7 @@ class Vocr:
                                     source_sha=hashlib.sha256(Path(ckpt).read_bytes()).digest())
         return cls(blob, **kw)
 
-    def __init__(self, blob, mode="auto", tile=0, head=0, max_width=0, lib=None, check_crc=True):
+    def __init__(self, blob, mode="auto", tile=0, head=0, max_width=0, lib=None, check_crc=True, tail_conf=0):
         self.lib = lib if lib is not None else load_lib()
         data = Path(blob).read_bytes() if isinstance(blob, (str, Path)) else bytes(blob)
         self._blob = _aligned(len(data))
@@ -104,7 +104,7 @@ class Vocr:
         if check_crc:
             self._check(self.lib.vocr_check_crc(self._blob.ctypes.data, len(data)), "vocr_check_crc")
         self._check(self.lib.vocr_load(self._model, self._blob.ctypes.data, len(data)), "vocr_load")
-        self.opts = _Opts(tile, head, max_width, MODES[mode] if isinstance(mode, str) else mode)
+        self.opts = _Opts(tile, head, max_width, MODES[mode] if isinstance(mode, str) else mode, tail_conf)
         self.arena_bytes = self.lib.vocr_arena_bytes(self._model, C.byref(self.opts))
         if not self.arena_bytes:
             raise ValueError(f"invalid options {mode=} {tile=} {head=} {max_width=} for this blob")

@@ -486,6 +486,109 @@ static void test_limits(void)
     CHECK(strcmp(vocr_strerror(VOCR_E_ARENA), "arena too small") == 0);
 }
 
+/* ------------------------------------------------------------ trailing conf trim */
+
+/* Independent reference: CTC-collapse `best` into chars, record each char's frame
+ * softmax-max confidence from `logits`, then drop the trailing run below thr. */
+static void ref_trim(const vocr_model *m, const uint16_t *best, const float *logits,
+                     unsigned frames, unsigned nclasses, float thr, char *out, size_t cap)
+{
+    size_t used = 0, used_hi = 0;
+    unsigned f, last = 0;
+    out[0] = 0;
+    for (f = 0; f < frames; f++) {
+        unsigned tok = best[f];
+        if (tok && tok != last) {
+            unsigned n, j;
+            const char *s = vocr_class_text(m, tok, &n);
+            double mx = -1e30, sum = 0.0;
+            float conf;
+            for (j = 0; j < nclasses; j++)
+                if (logits[(size_t)f * nclasses + j] > mx) mx = logits[(size_t)f * nclasses + j];
+            for (j = 0; j < nclasses; j++) sum += exp((double)logits[(size_t)f * nclasses + j] - mx);
+            conf = (float)(1.0 / sum);
+            if (used + n < cap) {
+                memcpy(out + used, s, n);
+                used += n;
+                out[used] = 0;
+                if (conf >= thr) used_hi = used;
+            }
+        }
+        last = tok;
+    }
+    out[used_hi] = 0;
+}
+
+static void test_tail_conf(int int8)
+{
+    vocr_model m;
+    vocr_ctx c;
+    vocr_image im;
+    vocr_extra ex;
+    vocr_opts o;
+    size_t n = build_blob(int8), need;
+    char t0[256], tN[256], tref[256];
+    float logits[300 * CLASSES];
+    uint16_t best[300];
+    unsigned trc;
+    CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK);
+    make_image(220, 8, 1);
+
+    /* tail_conf = 0 is bit-identical to the plain default output, and captures logits. */
+    memset(&o, 0, sizeof o);
+    o.mode = int8 ? VOCR_MODE_W8I : VOCR_MODE_F32;
+    need = vocr_arena_bytes(&m, &o);
+    CHECK(need != 0 && vocr_init(&c, &m, &o, arena_a, need) == VOCR_OK);
+    im.pixels = img_px;
+    im.width = 220;
+    im.height = 8;
+    im.stride = 220;
+    im.format = VOCR_GREY8;
+    memset(&ex, 0, sizeof ex);
+    ex.logits = logits;
+    ex.best = best;
+    ex.cap_frames = 300;
+    CHECK(vocr_run(&c, &im, t0, sizeof t0, &ex) == VOCR_OK);
+    trc = ex.frames;
+    CHECK(trc > 0 && trc <= 300);
+
+    /* Over a sweep of thresholds, the C trim must equal the independent reference,
+     * stay a prefix of the untrimmed output (trailing-only), and never grow it. */
+    {
+        const unsigned thrs[] = {300, 500, 700, 900, 999};
+        unsigned ti;
+        for (ti = 0; ti < sizeof thrs / sizeof thrs[0]; ti++) {
+            vocr_opts ot = o;
+            ot.tail_conf = thrs[ti];
+            CHECK(vocr_arena_bytes(&m, &ot) >= need);
+            CHECK(vocr_init(&c, &m, &ot, arena_b, vocr_arena_bytes(&m, &ot)) == VOCR_OK);
+            CHECK(vocr_run(&c, &im, tN, sizeof tN, &ex) == VOCR_OK);
+            ref_trim(&m, best, logits, trc, m.n_classes, (float)thrs[ti] / 1000.0f, tref,
+                     sizeof tref);
+            CHECK(strcmp(tN, tref) == 0);
+            CHECK(strlen(tN) <= strlen(t0));
+            CHECK(strncmp(tN, t0, strlen(tN)) == 0); /* a prefix of the untrimmed text */
+            {
+                unsigned cc = 0;
+                const char *p = tN;
+                while (*p) {
+                    p += (*p & 0x80) ? ((*p & 0x20) ? 3 : 2) : 1;
+                    cc++;
+                }
+                CHECK(ex.chars == cc);
+            }
+        }
+    }
+    /* tail_conf above every confidence empties the line; just below the minimum keeps it. */
+    {
+        vocr_opts ot = o;
+        ot.tail_conf = 1000;
+        CHECK(vocr_init(&c, &m, &ot, arena_b, vocr_arena_bytes(&m, &ot)) == VOCR_OK);
+        CHECK(vocr_run(&c, &im, tN, sizeof tN, &ex) == VOCR_OK);
+        CHECK(strlen(tN) <= strlen(t0));
+    }
+}
+
 int main(void)
 {
     test_load(0);
@@ -496,6 +599,8 @@ int main(void)
     test_run(1, 272);
     test_invert();
     test_limits();
+    test_tail_conf(0);
+    test_tail_conf(1);
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

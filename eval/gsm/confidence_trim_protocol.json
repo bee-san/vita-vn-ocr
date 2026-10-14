@@ -1,0 +1,54 @@
+{
+  "kind": "gsm-confidence-trim-protocol",
+  "schema": 1,
+  "frozen": "2026-10-14, before the locked dev scoring of the trailing-confidence trim",
+  "question": "Does a trailing low-confidence CTC trim in the recognizer (runtime/vocr.c vocr_opts.tail_conf) lower CER on speaker-name lines, without raising CER on dialogue, measured on the development cohort through the plain-C W8I runtime?",
+  "origin": "GameSentenceMiner / owocr / meikiocr survey (docs/confidence-trim.md). meikiocr applies a per-character rec_threshold (meikiocr/ocr.py run_ocr, rec_threshold=0.1) and owocr/GSM filter by recognition confidence. Reimplemented from the idea for our greedy-CTC runtime as a trailing-only trim; no third-party code copied.",
+  "data_policy": "DEVELOPMENT ONLY. devnative v3 is a development cohort (docs/devnative.md). No protected set (vita-test, psp-test, the fresh native textbox test, CLANNAD + family, the owner Memories Off series) is read, trained on, tuned on or scored here. v1331 (owner Memories Off) is excluded.",
+  "cohort": {
+    "name": "devnative v3 (lines_full), native Vita/PSP console frames",
+    "lines_full": {
+      "path": "$HERD/shared/artifacts/devnative/v3/lines_full.jsonl",
+      "sha256": "69840f9bc031b9c3ef78d503ab8cabfd6438dc3086cf5d92095eeeaac1c37bb6"
+    },
+    "shots": {
+      "path": "$HERD/shared/artifacts/devnative/shots.jsonl",
+      "sha256": "02206b145597149faffb815dce884de68c54bf8fb4f1c6ec925cf51cfba88390"
+    },
+    "excluded_vns": [
+      "v1331"
+    ],
+    "lines_after_exclude": 543
+  },
+  "pipeline": {
+    "finder": "runtime/vocr_lines.c GRAD (eval/linefind/cfinder.Finder('grad')), unchanged and frozen (eval/fresh_native_textbox.py FINDER_SHA)",
+    "recognizer": "runtime/vocr.c W8I through runtime/pyvocr.Vocr(mode='w8i')",
+    "harness": "eval/gsm/devpipe.py: GRAD finder on each labelled region -> recognizer on each detection -> greedy one-to-one match to the labelled ink lines by vertical overlap >= 0.5 and any horizontal overlap (eval/linefind rule)",
+    "strata": {
+      "names": "matched detections whose labelled line is tagged 'name'",
+      "dialogue": "matched detections whose labelled line is not tagged 'name'",
+      "notext": "detections matching no labelled line (finder false positives on scene art / plate decoration); scored as characters written, lower is better, no reference"
+    },
+    "metric": "CER = total NFKC-normalised Levenshtein distance / total reference characters (eval/metrics.norm); exact = share of lines whose normalised prediction equals the reference"
+  },
+  "candidate": {
+    "runtime_change": "runtime/vocr.c + vocr.h: vocr_opts.tail_conf (1/1000). A character at the end of the line whose emitting CTC frame has softmax-max confidence < tail_conf/1000 is dropped, and so is every character after it; interior characters are never dropped. tail_conf = 0 reproduces the untrimmed output bit-for-bit (verified: 0 mismatches on the dev crops).",
+    "threshold": "tail_conf = 500 (confidence 0.5). SELECTED ON THIS DEVELOPMENT COHORT by a small sweep over {0.50, 0.55, 0.60, 0.65, 0.70}; 0.50 is the lowest threshold that already captures the names gain while leaving dialogue flat, so it is the most conservative choice. This selection used development data only; it is disclosed, not hidden."
+  },
+  "blobs": {
+    "VOCR3_FL10": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154",
+    "VOCR3_H15": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c",
+    "VOCR3_W20": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19"
+  },
+  "decision_rule": "The trim ships only if, on this cohort and for every one of the three tiers, names CER strictly decreases and dialogue CER does not increase by more than 0.1 points. notext characters written must not increase.",
+  "runtime_vocr_c_sha256_at_freeze": "e4f353219e59e1b4a36e06cb9a85120e270a4c3e71fcae13bb8b103e12cb4716",
+  "reproduce": [
+    "for b in VOCR3_FL10_w8 VOCR3_H15_w8 VOCR3_W20_w8; do",
+    "  .venv-ci/bin/python eval/gsm/devpipe.py --blob $b.vocr --tail 0",
+    "  .venv-ci/bin/python eval/gsm/devpipe.py --blob $b.vocr --tail 500",
+    "done"
+  ],
+  "harness_sha256": {
+    "eval/gsm/devpipe.py": "6eb8eb727ecf1dcff8f4eac7886af4651e7dcf6ff1f8add8d740642dbde8d7d7"
+  }
+}

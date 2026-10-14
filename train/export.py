@@ -310,7 +310,7 @@ def macs_per_frame(blob):
 
 # ---------------------------------------------------------------- arena plan (mirror of C)
 
-def plan_arena(blob, max_width=0, tile=0, head=0, mode=0):
+def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, tail_conf=0):
     """Exact arena bytes vocr_arena_bytes() returns. tile/head in frames (0 = defaults 4
     and 16; tile >= max_width / 8 = whole line); mode 0 = the blob's default (f32 for
     float blobs, w8f for int8)."""
@@ -359,7 +359,10 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0):
             persistent += _align((n_prev + halo) * op["h_in"] * cin * 4)
     k_head = ops[-1]["k"]
     acc_frames = hb + F - 1
+    # acc, then bestv / besti; sumv (the tail_conf softmax denominator) only when enabled
     persistent += _align(acc_frames * k_head * 4) + _align(acc_frames * 4) * 2
+    if tail_conf:
+        persistent += _align(acc_frames * 4)
     trans = []                               # transient bytes in and out of each op
     for i, op in enumerate(ops):
         tin = n_tile[i - 1] * ops[i - 1]["h_out"] * ops[i - 1]["cout"] * 4 \

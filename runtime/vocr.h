@@ -89,9 +89,17 @@ typedef struct {
     unsigned head_frames;    /* frames per output-head batch (0: default 16) */
     unsigned max_width;      /* widest resized line in pixels (0: the model's clamp) */
     int mode;                /* VOCR_MODE_*; AUTO = F32 for float blobs, W8F for int8 */
+    unsigned tail_conf;      /* trailing low-confidence trim, in 1/1000 (0: off). A char
+                                at the end of the line whose emitting CTC frame has a
+                                softmax-max confidence below tail_conf/1000 is dropped,
+                                and so is every char after it; interior characters are
+                                never dropped. 0 reproduces the untrimmed output exactly.
+                                Targets the finder's wide name-plate crops, where the
+                                recognizer appends low-confidence glyphs read off the
+                                plate art after the name (docs/confidence-trim.md). */
 } vocr_opts;
 /* A zeroed vocr_opts gives the defaults. Larger tiles and head batches trade arena
- * bytes for speed; the output does not change. */
+ * bytes for speed; the output does not change (tail_conf 0 is the default). */
 
 typedef struct {
     const unsigned char *pixels;   /* top-left pixel of the line crop */
@@ -123,7 +131,8 @@ typedef struct {             /* a planned arena; private apart from the first fi
     int mode;
     unsigned tile, head, max_width;
     unsigned front, n_src, acc_frames;
-    uint32_t rows_off, ring_off, ring_end, acc_off, bestv_off, besti_off;
+    unsigned tail_conf;
+    uint32_t rows_off, ring_off, ring_end, acc_off, bestv_off, besti_off, sumv_off;
     vocr_plan_op op[VOCR_MAX_OPS];
 } vocr_ctx;
 

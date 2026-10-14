@@ -298,6 +298,8 @@ def decode(lm, cmap, topv, topc, blank, beam=8, topk=8, alpha=0, beta=0, gate=0,
     T = len(topv)
     if T > MAX_FRAMES:
         raise ValueError(f"{T} frames: the decoder takes at most {MAX_FRAMES}")
+    if T and int(np.max(np.asarray(topc)[:, :topk])) >= len(cmap):
+        raise ValueError("a top-K class is not below the model's class count (vocr_lm_decode: VOCR_E_ARG)")
     a, b, g, br = milli_to_q10(alpha), milli_to_q10(beta), milli_to_q10(gate), milli_to_q10(bracket)
     use_lm = a != 0 and lm is not None
     # nodes: parent, class, length, hash, LM state; node 0 is the empty prefix

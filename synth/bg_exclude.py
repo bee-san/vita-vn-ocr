@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """Write data/manifests/synth2_bg_exclude.txt: screenshots render.py and calibrate.py must not use.
 
-  - every VN id in eval's test_games.json "all": the reserved test games, every is_test_vn()
-    game with screenshots, VNs sharing a release with a set screenshot, and the set games'
-    VNDB relations. Both the committed eval/manifests/test_games.json and eval's working copy
-    ($HERD/shared/artifacts/eval/test_games.json, ahead of main while a set is in review) are read.
+  - every VN of the reservation (eval/manifests/reserved.json, docs/reservations.md): the test
+    sets' VNs (vita-test, psp-test and their release partners: test_games.json "all"; the CLANNAD
+    family) and the development sample, tagged eval-test and dev-sample
   - every local screenshot whose VNDB release id is in "sessions" (test capture sessions)
-  - the screenshots of the research's hand-transcribed real lines (the provisional A/B set),
-    matched to data/vndb/shots by sha256
 
-is_test_vn() games are excluded in code as well, and so is every VN in the committed
-eval/manifests/test_games.json (load_exclusions), so a stale manifest cannot let a reserved
-game through; tests/test_synth2.py fails when the manifest no longer covers that list.
-Eval's list only grows: re-run this before every render.
+The reserved VNs are excluded in code as well (synth/common.is_reserved_vn, load_exclusions reads
+the committed test_games.json and reserved.json), so a stale manifest cannot let a reserved game
+through; tests/test_synth2.py fails when the manifest no longer covers that list. Until 2026-10-14
+the list also held every is_test_vn() game with screenshots, the set games' VNDB relations and the
+research's 28 hand-transcribed screenshots of synth2's provisional A/B; those are training-side now.
 
   bg_exclude.py [--eval-games PATH ...]
 """
@@ -29,8 +27,10 @@ from common import DATA  # noqa: E402
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 EVAL_GAMES_COMMITTED = HERE.parent / "eval" / "manifests" / "test_games.json"
-EVAL_GAMES = [EVAL_GAMES_COMMITTED, HERD / "shared" / "artifacts" / "eval" / "test_games.json"]
-RESEARCH = HERD / "shared" / "research" / "scratch" / "real"
+# eval's working copy ($HERD/shared/artifacts/eval/test_games.json) still holds the pre-2026-10-14 list; only the
+# committed file counts now.
+EVAL_GAMES = [EVAL_GAMES_COMMITTED]
+RESERVED = HERE.parent / "eval" / "manifests" / "reserved.json"
 OUT = HERE.parent / "data" / "manifests" / "synth2_bg_exclude.txt"
 
 
@@ -42,24 +42,14 @@ def load_exclusions(path=OUT):
         out = {x.split()[0] for x in path.read_text().splitlines() if x.strip() and x[0] != "#"}
     if EVAL_GAMES_COMMITTED.exists():
         out |= set(json.loads(EVAL_GAMES_COMMITTED.read_text(encoding="utf-8"))["all"])
+    if RESERVED.exists():
+        r = json.loads(RESERVED.read_text(encoding="utf-8"))
+        out |= set(r["test"]) | set(r["dev_sample"])
     return out
 
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
-
-
-def research_shots():
-    """data/vndb/shots names of the screenshots behind the research's hand-transcribed lines."""
-    by_sha = {sha(p): p.name for p in (DATA / "vndb" / "shots").glob("*.jpg")}
-    files = [next((RESEARCH / "shots").glob(f"{it['shot']}.*"))
-             for it in json.loads((RESEARCH / "gt_real.json").read_text(encoding="utf-8"))]
-    files += [RESEARCH / "q5_run_a" / "raw" / Path(it["file"]).name
-              for it in json.loads((RESEARCH / "q5_run_a" / "gt.json").read_text(encoding="utf-8"))]
-    names = {by_sha.get(sha(f)) for f in files}
-    if None in names:
-        raise SystemExit("a research screenshot is not in data/vndb/shots")
-    return sorted(names)
 
 
 def session_shots(sessions):
@@ -88,14 +78,17 @@ def main():
             used.append(str(path))
     if not used:
         raise SystemExit("no eval test_games.json found")
+    res = json.loads(RESERVED.read_text(encoding="utf-8"))
+    vns |= set(res["test"])
+    dev = sorted(set(res["dev_sample"]) - vns, key=lambda v: int(v[1:]))
     vns = sorted(vns, key=lambda v: int(v[1:]))
     lines = ["# synth2 background exclusions (written by synth/bg_exclude.py): a VNDB VN id (every",
-             "# screenshot of that VN) or a screenshot file name. Source: eval's test_games.json",
-             f"# ({len(vns)} reserved VN ids, {len(sessions)} test capture sessions) and the research's",
-             "# hand-transcribed real sets."]
+             "# screenshot of that VN) or a screenshot file name. Source: eval/manifests/reserved.json",
+             f"# ({len(vns)} test VN ids, {len(dev)} development-sample VN ids; docs/reservations.md)",
+             f"# and test_games.json ({len(sessions)} test capture sessions)."]
     lines += [f"{v}  eval-test" for v in vns]
+    lines += [f"{v}  dev-sample" for v in dev]
     lines += [f"{n}  eval-session" for n in session_shots(sessions)]
-    lines += [f"{n}  research-real" for n in research_shots()]
     OUT.write_text("\n".join(lines) + "\n")
     print(f"wrote {OUT}: {len(lines) - 4} entries from {', '.join(used)}", flush=True)
 

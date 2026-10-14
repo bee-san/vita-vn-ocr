@@ -10,7 +10,8 @@ Only native console screenshots count: a psv release at 960x544 (Vita) or a psp 
 480x272 (PSP), the release Japanese-only, VNDB flags sexual < 0.3 and violence < 0.5 (the
 repo's filters). Only VNs reserved from synth3's names and scenes may appear
 ($HERD/shared/artifacts/synth3/mining/exclude_dev_vns.txt), and of those never:
-  * a test VN: eval/manifests/test_games.json "all", or synth/common.is_test_vn(),
+  * a test VN: eval/manifests/test_games.json "all", or synth/common.is_reserved_vn(dev=False) (docs/
+    reservations.md; the cohort was selected under the old is_test_vn rule, which removed nothing from it),
   * a title of the fresh native textbox test (eval/fresh_native_source_provenance_20261012.json:
     PSP v14909 v25459 v29454, Vita v21289 v21976 v20519, reserves v16509 v19140) or any VN VNDB
     relates to one of them (any relation kind), protected like vita-test and psp-test,
@@ -53,7 +54,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "synth"))
-from common import is_test_vn  # noqa: E402
+from common import is_reserved_vn  # noqa: E402
 from devnative import paths as P  # noqa: E402
 
 API = "https://api.vndb.org/kana/vn"
@@ -330,7 +331,7 @@ def vn_exclusion(vn, ctx):
     """Why VN `vn` can't be in the cohort, or None."""
     if vn not in ctx["reserved"]:
         return "not-reserved"
-    if is_test_vn(vn) or vn in ctx["test_vns"]:
+    if (is_reserved_vn(vn, dev=False) and vn not in ctx["clannad"]) or vn in ctx["test_vns"]:
         return "test-vn"
     if vn in ctx.get("fresh_vns", ()):
         return "fresh-test-vn"

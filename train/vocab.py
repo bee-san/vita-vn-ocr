@@ -13,9 +13,9 @@
       renderer's weights (dialogue 0.45, narration 0.35, wiki 0.20), 5% the kanji of
       VNDB character names (VN scripts repeat their cast's names, which use kanji
       that literary and encyclopedic text rarely does: 葵, 杏, 椎, 隼, 皐...). A name
-      is left out if any of its VNs is one of eval's test games (eval's
-      manifests/test_games.json "all", or synth/common.is_test_vn): the test sets'
-      games never inform the ranking. The
+      is left out if any of its VNs is reserved (eval's manifests/test_games.json
+      "all", or synth/common.is_reserved_vn: the test sets and the development sample,
+      docs/reservations.md): the test sets' games never inform the ranking. The
       top size - 1 characters are kept and the <unk> token 〓 is appended. Only
       characters of the full vocab (data/vocab.txt) are eligible, so a reduced vocab
       is a subset of v1's. --size 0 keeps every eligible character (v1's vocab plus
@@ -47,7 +47,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "synth"))
-from common import DATA, is_test_vn, load_vocab  # noqa: E402
+from common import DATA, is_reserved_vn, load_vocab  # noqa: E402
 
 UNK = "〓"
 POOL_WEIGHT = {"dialogue": 0.45, "narration": 0.35, "wiki": 0.20}   # synth/render.py
@@ -73,7 +73,7 @@ def rel_freq(text):
 
 
 def reserved_vns(path=TEST_GAMES):
-    """eval's reserved test games (test_games.json "all"); is_test_vn() adds the rest."""
+    """eval's reserved test games (test_games.json "all"); is_reserved_vn() adds the rest."""
     if not Path(path).exists():
         raise SystemExit(f"{path} missing: the vocab ranking must exclude eval's test games")
     return set(json.loads(Path(path).read_text(encoding="utf-8"))["all"])
@@ -88,7 +88,7 @@ def load_names(path=NAMES, reserved=None):
         c = json.loads(line)
         if not c.get("original"):
             continue
-        if any(v in reserved or is_test_vn(v) for v in c.get("vns", [])):
+        if any(v in reserved or is_reserved_vn(v) for v in c.get("vns", [])):
             dropped += 1
             continue
         names.append(c["original"])

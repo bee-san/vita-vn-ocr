@@ -14,9 +14,11 @@
                                                        eligible frames of every training folder (or the named
                                                        ones) -> DIR/reads/shots.jsonl, DIR/manifests/frames.jsonl
 
-Folders (shared/private/owner-games/): `memories-off-TEST` (test only: a fresh native test set, never trained
-on, never sent to Codex) and `chaos-head-noah-v22505` (training-eligible; private frames, so never sent to
-Codex either). Everything stays under shared/private/: frames, readings, crops, labels, manifests.
+Folders (shared/private/owner-games/): <console>-<title>-v<id>[-TEST]. Since 2026-10-14 (owner 13:25Z, docs/
+reservations.md) every owner frame is training data unless its VN is in the test reservation (the CLANNAD family,
+the vita-test and psp-test games and their release partners: eval/manifests/reserved.json "test"); the -TEST
+suffix no longer decides (it is recorded as was_test_folder). Owner frames are private: never sent to Codex.
+Everything stays under shared/private/: frames, readings, crops, labels, manifests.
 """
 import argparse
 import collections
@@ -45,7 +47,8 @@ NAMED = {"memories-off-TEST": "v1152"}
 # The owner's explicit decisions for a training title reserved_vns reserves. Each one is allowed only for the
 # listed reservation reasons, so a test, development or CLANNAD reservation can never be overridden here.
 OWNER_DECISIONS = {
-    "v34": {"role": "training", "by": "owner 2026-10-13 19:21Z", "allowed": ("shared-release",),
+    "v34": {"role": "training", "by": "owner 2026-10-13 19:21Z",
+            "allowed": ("shared-release", "clannad-shared-release"),
             "note": "planetarian (Key) is training data. reserved_vns reserves it only as a shared-release partner "
                     "(the PC Key 10th Memorial BOX, r3748, with CLANNAD). It has no row in vita-test, psp-test, "
                     "teacher_val or devnative. Disclose that planetarian PSP and CLANNAD Vita are both "
@@ -60,22 +63,26 @@ def owner_allowed(vn, reason):
 
 
 def folder_info(name, reserved=None):
-    """{vn, role, eligible, why} of an owner folder. A test folder's VN must be an owner test title
-    (shots.OWNER_TEST_SERIES); a training folder's VN must be on the training side today (not in
-    reserved_vns), else its frames are refused (eligible False)."""
+    """{vn, role, eligible, why, was_test_folder} of an owner folder (docs/reservations.md): role "test" when its VN
+    is in the test reservation (reserved: reserved_vns of a dump, else the committed eval/manifests/reserved.json),
+    "training" otherwise, whatever the folder's -TEST suffix says (owner 2026-10-14 13:25Z: all owner screenshots
+    train). Every folder with a VNDB id is eligible for its role; the owner never had a development-sample VN."""
     m = FOLDER_VN.search(name)
     vn = NAMED.get(name) or (f"v{m.group(1)}" if m else None)
-    role = "test" if name.endswith("-TEST") else "training"
+    was_test = name.endswith("-TEST")
     if vn is None:
-        return {"vn": None, "role": role, "eligible": False, "why": "no VNDB id in the folder name"}
-    if role == "test":
-        ok = vn in SH.OWNER_TEST_SERIES
-        return {"vn": vn, "role": role, "eligible": ok, "why": None if ok else "not an owner test title"}
-    r = (reserved or {}).get(vn)
+        return {"vn": None, "role": "test" if was_test else "training", "eligible": False,
+                "why": "no VNDB id in the folder name", "was_test_folder": was_test}
+    from common import test_set_vns
+    test = {v: r for v, r in (reserved or {}).items() if not r.startswith("dev-sample")} | test_set_vns()
+    r = test.get(vn)
     if r is not None and owner_allowed(vn, r):
-        return {"vn": vn, "role": role, "eligible": True, "why": None,
+        return {"vn": vn, "role": "training", "eligible": True, "why": None, "was_test_folder": was_test,
                 "owner_decision": f"{OWNER_DECISIONS[vn]['by']} (reserved_vns: {r})"}
-    return {"vn": vn, "role": role, "eligible": r is None, "why": None if r is None else f"reserved: {r}"}
+    if r is not None:
+        return {"vn": vn, "role": "test", "eligible": True, "why": f"test reservation: {r}",
+                "was_test_folder": was_test}
+    return {"vn": vn, "role": "training", "eligible": True, "why": None, "was_test_folder": was_test}
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
 

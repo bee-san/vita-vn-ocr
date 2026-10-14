@@ -122,7 +122,7 @@ def verify_backgrounds(root, manifest, fetch=False):
     from PIL import Image
 
     from bg_exclude import load_exclusions
-    from common import is_test_vn
+    from common import is_reserved_vn
 
     sys.path.insert(0, str(REPO))
     from data.fresh_backgrounds import validate_manifest
@@ -148,7 +148,7 @@ def verify_backgrounds(root, manifest, fetch=False):
         dest = (root / row["file"]).resolve()
         if dest.parent != expected_dir or not dest.name.startswith(row["vn"] + "_"):
             raise ValueError("background path differs from its role/platform/VN")
-        if row["vn"] in reserved or is_test_vn(row["vn"]):
+        if row["vn"] in reserved or is_reserved_vn(row["vn"]):
             raise ValueError(f"reserved evaluation background: {row['vn']}")
         if fetch:
             download(row["url"], dest, row["sha256"], row["bytes"])

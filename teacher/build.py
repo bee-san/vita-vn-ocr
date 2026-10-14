@@ -7,9 +7,10 @@
 decide applies vote.accept() with the rule chosen on eval's hand-checked sets
 (teacher/rule.json, written from measure.py's report) to every line label.py read, and keeps
 a label only if every character is in data/vocab.txt. Test games are dropped again here, in
-case eval's list changed after the screenshots were selected: every VN with
-synth/common.is_test_vn() true, every id in eval's test_games.json ("all"), and every
-screenshot (URL or sha256) of eval's manifests. A label is kept at most twice per VN and 8
+case eval's list changed after the screenshots were selected: every reserved VN
+(synth/common.is_reserved_vn, docs/reservations.md), every id in eval's test_games.json ("all"), and
+every screenshot (URL or sha256) of eval's manifests. (Before 2026-10-14 the is_test_vn hash split was
+dropped here too; the committed pools were built that way.) A label is kept at most twice per VN and 8
 times in all (UI strings repeat on every screenshot of a game).
 
 Split by game, as realdata: a VN is validation when 15 <= md5(vn) % 100 < 25, otherwise
@@ -52,12 +53,21 @@ RULE = HERE / "rule.json"
 PER_VN_CAP, GLOBAL_CAP = 2, 8
 LINE_FIELDS = ("id", "crop", "label", "how", "targets", "split")
 DISTILL_FIELDS = ("id", "crop", "targets", "split", "why")
-EVAL_GAMES = [ROOT / "eval" / "manifests" / "test_games.json", ROOT / "realdata" / "eval_exclude.json",
-              OUT / "inputs" / "eval" / "test_games.json", OUT / "inputs" / "realdata_eval_exclude.json"]
+# The committed test games only: the provisional copies this read while eval was in review (realdata/
+# eval_exclude.json, $TEACHER_OUT/inputs/...) still hold the pre-2026-10-14 lists (docs/reservations.md).
+EVAL_GAMES = [ROOT / "eval" / "manifests" / "test_games.json"]
 
 
 def is_test_vn(vn):
+    """FROZEN history: synth/common.is_test_vn's hash split; it reserves nothing since 2026-10-14."""
     return int(hashlib.md5(vn.encode()).hexdigest(), 16) % 100 < 15
+
+
+def is_reserved_vn(vn):
+    """synth/common.is_reserved_vn: the test sets and the development sample (docs/reservations.md)."""
+    sys.path.insert(0, str(ROOT / "synth"))
+    from common import is_reserved_vn as reserved
+    return reserved(vn)
 
 
 def split_of(vn):
@@ -89,7 +99,7 @@ def eval_exclusions():
 
 def excluded(r, ex):
     vns, rels, urls, shas = ex
-    return (is_test_vn(r["vn"]) or r["vn"] in vns or r.get("release") in rels or r["url"] in urls
+    return (is_reserved_vn(r["vn"]) or r["vn"] in vns or r.get("release") in rels or r["url"] in urls
             or r.get("sha256") in shas)
 
 

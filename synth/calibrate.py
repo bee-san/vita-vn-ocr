@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Calibrate synthetic crops against real VN screenshots (synth2).
 
-Real calibration crops come only from training-side games: screenshots of VNs with
-is_test_vn() False that are not in data/manifests/synth2_bg_exclude.txt (eval's
-reserved test games and the hand-labelled real sets used for the A/B). Sources:
+Real calibration crops come only from training-side games: screenshots of VNs that
+synth/common.is_reserved_vn() does not reserve (docs/reservations.md) and that are not in
+data/manifests/synth2_bg_exclude.txt (eval's test games and test sessions). Sources:
 
   vita-det   linefind's text-line detections on data/vndb/shots
              ($HERD/shared/artifacts/linefind/det/vita_shots_det.jsonl), horizontal
@@ -38,7 +38,7 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 from bg_exclude import load_exclusions  # noqa: E402
-from common import DATA, find_lines, is_test_vn, to_gray  # noqa: E402
+from common import DATA, find_lines, is_reserved_vn, to_gray  # noqa: E402
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 DET = HERD / "shared" / "artifacts" / "linefind" / "det" / "vita_shots_det.jsonl"
@@ -50,7 +50,7 @@ def excluded():
 
 def usable(name, ex):
     vn = name.split("_")[0]
-    return not is_test_vn(vn) and vn not in ex and name not in ex
+    return not is_reserved_vn(vn) and vn not in ex and name not in ex
 
 
 def grad_recut(rgb, box, pad=6):

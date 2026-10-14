@@ -20,7 +20,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
-from common import is_test_vn  # noqa: E402
+from common import is_reserved_vn  # noqa: E402
 
 
 def forbidden(paths):
@@ -40,7 +40,7 @@ def keep_labels(paths, forbid):
         for lab, m in zip(json.loads(str(z["labels"])), json.loads(str(z["meta"]))):
             if not lab:
                 continue
-            if m.get("vn") in forbid or is_test_vn(m.get("vn", "")):
+            if m.get("vn") in forbid or is_reserved_vn(m.get("vn", "")):
                 dropped += 1
                 continue
             labels.append(lab)

@@ -14,8 +14,9 @@ where session (assign_sessions) groups screenshots of one release uploaded toget
 
   * its VNDB flag averages are sexual < 0.3 and violence < 0.5 (the repo's filters),
   * its release is Japanese-only (so no English or Chinese text on screen),
-  * the VN is not a test game: synth/common.is_test_vn(v), or listed in the eval
-    agent's reserved list (realdata/eval_exclude.json, a copy of eval's test_games.json),
+  * the VN is not reserved: synth/common.is_reserved_vn(v) (docs/reservations.md), or listed in
+    eval's test games (eval/manifests/test_games.json "all"; before 2026-10-14 also the is_test_vn
+    hash split and realdata/eval_exclude.json, a provisional copy of eval's list),
   * its release is not one of eval's test capture sessions (test_games.json "sessions":
     VNDB release ids),
   * and it falls into one of three kinds:
@@ -44,7 +45,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT / "synth"))
-from common import is_test_vn  # noqa: E402
+from common import is_reserved_vn  # noqa: E402
 
 API = "https://api.vndb.org/kana/vn"
 UA = "vita-vn-ocr-realdata/0.1 (training-line listing, low volume; github.com/bee-san/vita-vn-ocr)"
@@ -53,9 +54,9 @@ FIELDS = ("id,title,alttitle,votecount,screenshots.url,screenshots.dims,screensh
           "screenshots.release.platforms,screenshots.release.languages.lang")
 KINDS = ("vita", "psp", "hires")
 MANIFESTS = {k: HERE / "manifests" / f"shots_{k}.jsonl" for k in KINDS}
-# The eval agent's reserved test games: its merged manifest once it exists, plus the
-# provisional copy taken while eval was in review. The union is excluded.
-EVAL_EXCLUDE = [ROOT / "eval" / "manifests" / "test_games.json", HERE / "eval_exclude.json"]
+# eval's test games: the committed manifest. The provisional copy taken while eval was in review
+# (eval_exclude.json) holds the pre-2026-10-14 list and is history (docs/reservations.md).
+EVAL_EXCLUDE = [ROOT / "eval" / "manifests" / "test_games.json"]
 SEXUAL_MAX, VIOLENCE_MAX = 0.3, 0.5
 # PC and home consoles whose screenshots are rescaled; handhelds and phones are left out
 # (odd aspect ratios, and psv/psp are used natively).
@@ -77,7 +78,7 @@ def _eval_lists(key):
 
 
 def excluded_vns():
-    """Test games of the eval sets: the reserved ids, on top of the is_test_vn() rule."""
+    """Test games of the eval sets: the reserved ids, on top of the is_reserved_vn() rule."""
     return _eval_lists("all")
 
 
@@ -88,7 +89,7 @@ def excluded_sessions():
 
 
 def is_excluded(vn, extra):
-    return is_test_vn(vn) or vn in extra
+    return is_reserved_vn(vn) or vn in extra
 
 
 def exclusion(row, vns, sessions):

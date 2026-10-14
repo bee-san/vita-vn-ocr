@@ -15,8 +15,8 @@ released models get wrong against that consensus. It steers synth3's style and c
 weights; it is not an accuracy measurement (the references are machine consensus, and part of
 the pool was a pseudo-label source in train2's fine-tune).
 
-Every VN of eval's reserved list and every is_test_vn VN is refused, and so is any VN given with
---forbid-vns (the development cohort): mining never sees a selection or test game.
+Every VN of eval's reserved list and every reserved VN (synth/common.is_reserved_vn) is refused, and so
+is any VN given with --forbid-vns (the development cohort): mining never sees a selection or test game.
 """
 import argparse
 import hashlib
@@ -35,7 +35,7 @@ sys.path.insert(0, str(ROOT / "eval"))
 sys.path.insert(0, str(ROOT / "runtime"))
 from metrics import align_text, lev, norm  # noqa: E402
 
-from common import is_test_vn  # noqa: E402
+from common import is_reserved_vn  # noqa: E402
 
 READERS = ("meiki", "meikiv", "manga", "screenai", "v5s")
 
@@ -89,7 +89,7 @@ def load_pool(path, targets, conf_min, forbid):
     rows, skipped = [], Counter()
     for i, m in enumerate(meta):
         vn = m.get("vn", "")
-        if vn in forbid or is_test_vn(vn):
+        if vn in forbid or is_reserved_vn(vn):
             skipped["forbidden_vn"] += 1
             continue
         v6 = norm(ttext[i]) if i < len(ttext) else ""

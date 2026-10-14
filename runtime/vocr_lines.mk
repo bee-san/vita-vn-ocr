@@ -22,7 +22,7 @@ LINES_STRICT = -std=c99 -pedantic -Wall -Wextra -Werror -Wshadow -Wconversion -W
                -Wstrict-prototypes -Wmissing-prototypes -Wcast-align
 LINES_CASES ?= 400
 LINES_ROWS_CASES ?= 300
-REFINE_CASES ?= 200
+REFINE_CASES ?= 1000
 LINES_OUT = $(abspath $(OUT))/lines
 
 .PHONY: check-lines

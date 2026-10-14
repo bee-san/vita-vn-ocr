@@ -142,7 +142,7 @@ static int region(unsigned w, unsigned h, unsigned bpp, unsigned pad)
     VocrLinesImage im;
     VocrLinesRows src;
     Source s;
-    VocrLineSet found, a, b, c, d;
+    VocrLineSet found, a, b, c, d, e;
     unsigned f, i;
     unsigned long ra_rows = 0, rb_rows = 0, rc_rows = 0;
     int rc;
@@ -174,6 +174,10 @@ static int region(unsigned w, unsigned h, unsigned bpp, unsigned pad)
             for (i = 0; i < found.count; i++) sum += found.lines[i].h;
             REQUIRE(ra_rows == sum && s.passes <= found.count);
         }
+        /* the minimum arena, both forms on the very same bytes: the same lines and the same rows read (a box
+         * is read once or twice by whether its grey pixels fit, so rows depend on the arena's size) */
+        e = found;
+        REQUIRE(vocr_refine_lines(&im, flags, arena2, small, &e, &rc_rows) == VOCR_LINES_OK && same_set(&a, &e));
         memset(&s, 0, sizeof(s));
         s.im = &im; s.slot[0] = slots; s.slot[1] = slots + (size_t)w * bpp;
         REQUIRE(vocr_refine_lines_rows(&src, flags, arena2, small, &d, &rb_rows) == VOCR_LINES_OK);
@@ -218,8 +222,12 @@ static int selftest(unsigned cases)
     REQUIRE(vocr_refine_lines(NULL, 1, NULL, 0, NULL, NULL) == VOCR_LINES_E_ARG);
     REQUIRE(vocr_refine_lines_rows(NULL, 1, NULL, 0, NULL, NULL) == VOCR_LINES_E_ARG);
     for (current = 0; current < cases; current++) {
+        /* one draw per statement: argument evaluation order is unspecified, and the cases must not depend on
+         * the compiler */
         unsigned rw = 8u + below(current % 5u == 0 ? 953u : 400u), rh = 8u + below(current % 7u == 0 ? 537u : 120u);
-        if (region(rw, rh, below(2) ? VOCR_LINES_RGBA : VOCR_LINES_GREY, below(3) * 4u)) return 1;
+        unsigned bpp = below(2) ? VOCR_LINES_RGBA : VOCR_LINES_GREY;
+        unsigned pad = below(3) * 4u;
+        if (region(rw, rh, bpp, pad)) return 1;
     }
     printf("REFINE_SELFTEST_OK %u regions\n", cases);
     return 0;

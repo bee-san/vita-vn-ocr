@@ -244,6 +244,17 @@ and with the default, the difference is the refinement (99.99% of it in the refi
 - Against recognition (`docs/vocr4.md`): FL10 94-179 ms, W20 235-416 ms per 640-px line at 444 MHz, so under 1%.
 - Host: 36.7 µs per region on the 1,236 regions (Xeon, gcc -O2, best of 20, three repeats within 0.3%).
 
+### Changed after the protected run (test code only)
+
+A longer self-test (5,000 regions) found that one assertion in `runtime/vocr_lines_refine_test.c` compared the
+rows read by two runs on arenas of different sizes; whether a box is read once or twice depends on the arena, so
+the counts can legitimately differ (the lines were identical). The assertion now compares the two forms on the
+same arena bytes, the self-test's random cases no longer depend on the compiler's argument evaluation order, and
+`make check-lines` runs 1,000 self-test regions instead of 200. The driver's batch mode, which produced every
+result here, and the refinement itself (`vocr_lines_refine.c/.h`, `synth/lines_refine.py`: their sha256 are the
+protocol's, `tests/test_lines_refine.py` checks it) are unchanged; the protocol's sha256 of the driver is the
+pre-fix file.
+
 ## 7. Limits
 
 - Development labels are engine-plus-assistant agreed, not hand-checked; the protected references are Claude's.

@@ -289,7 +289,6 @@ def main():
             "by_kind": {k: {"screenshots": sum(r["kind"] == k for r in rp_rows),
                             "vns": len({r["vn"] for r in rp_rows if r["kind"] == k})} for k in SH.KINDS},
             "by_old_why": dict(collections.Counter(r["old_why"] for r in rp_rows).most_common()),
-            "new_selection_total": sum(rp_why.values()) and None,
             "new_selection_dropped": dict(rp_why.most_common()),
             "file": "realplus_shots.jsonl", "sha256": sha256(out / "realplus_shots.jsonl")},
         "native": {
@@ -304,7 +303,6 @@ def main():
         "labelled": labelled_reclaim(dev),
         "owner_frames": owner_reclaim(reserved),
     }
-    summary["realplus"].pop("new_selection_total")
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     if args.manifest:
         Path(args.manifest).write_text(json.dumps(summary, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

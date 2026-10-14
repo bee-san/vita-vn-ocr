@@ -65,7 +65,8 @@ def is_test_vn(vn):
 
 def is_reserved_vn(vn):
     """synth/common.is_reserved_vn: the test sets and the development sample (docs/reservations.md)."""
-    sys.path.insert(0, str(ROOT / "synth"))
+    if str(ROOT / "synth") not in sys.path:
+        sys.path.insert(0, str(ROOT / "synth"))
     from common import is_reserved_vn as reserved
     return reserved(vn)
 

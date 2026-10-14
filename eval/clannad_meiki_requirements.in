@@ -1,0 +1,13 @@
+# MeikiOCR for eval/clannad_meiki.py (the CLANNAD comparison), CPU only, run offline.
+# The engine and the packages it shares with teacher/requirements.lock keep the teacher's versions
+# (the env that read R1's candidates). onnx only counts the models' parameters.
+# Resolved with hashes into eval/clannad_meiki_requirements.lock:
+#   uv pip compile eval/clannad_meiki_requirements.in -o eval/clannad_meiki_requirements.lock \
+#     --python-version 3.11 --python-platform x86_64-manylinux_2_28 --generate-hashes -c teacher/requirements.lock
+meikiocr==0.3.5
+onnxruntime==1.30.0
+numpy==2.4.6
+opencv-python-headless==5.0.0.93
+huggingface-hub==0.36.2
+pillow==12.3.0
+onnx==1.18.0

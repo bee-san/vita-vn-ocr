@@ -1,0 +1,416 @@
+{
+ "arm_a_models": [
+  "rec",
+  "vrec"
+ ],
+ "arm_b_models": [
+  "det",
+  "rec",
+  "vrec"
+ ],
+ "cited": {
+  "console": "notes/27-Meiki-hardware-and-project-lessons.md: two CLANNAD jobs on a PCH-1001 in the game process, 7,904 / 8,043 ms end to end, recognition 3,483 / 3,478 ms, model load 2,153 / 2,149 ms (int8 MNN recognizer, one 864x44 line; not measured here)",
+  "int8_mnn_recognizer": {
+   "bytes": 5392856,
+   "filename": "meiki-stream-int8.mnn",
+   "sha256": "b7ba3219cd1bfeef5cb6b42ef6686683b991c6561b7ad3b1c41d32817deba21e"
+  },
+  "int8_mnn_source": "ports/meiki/dependencies.json (converted; not measured here)"
+ },
+ "created": "2026-10-14T08:32:05Z",
+ "engine": {
+  "commit": "52aa607ecdc1038c7bf390f37cd9a8b306e8a08a",
+  "defaults": {
+   "det_threshold": 0.5,
+   "max_batch_size": 8,
+   "punct_conf_factor": 1.0,
+   "rec_threshold": 0.1
+  },
+  "installed_files_match_record": true,
+  "lock_pins_wheel": true,
+  "lock_sha256": "6449d5ae1d00b3288bbabd15775b85dc54a85405b1a79a6baa398c24725d46b1",
+  "models": {
+   "det": {
+    "bytes": 14503825,
+    "file": "meiki.text.detect.v0.1.960x544.onnx",
+    "repo": "rtr46/meiki.text.detect.v0",
+    "revision": "a9cffa4f60cbf72ddb87edf19c6f98a01cd042e6",
+    "sha256": "40b6a016667745cae7d3055929ae3b8b1e7716aac795f5904cd3c2c7c3b8404b"
+   },
+   "rec": {
+    "bytes": 18593254,
+    "file": "meiki.text.rec.v0.960x32.onnx",
+    "repo": "rtr46/meiki.txt.recognition.v0",
+    "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+    "sha256": "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000"
+   },
+   "vrec": {
+    "bytes": 12872961,
+    "file": "meiki.text.rec.v0.vertical.32x480.onnx",
+    "repo": "rtr46/meiki.txt.recognition.v0",
+    "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+    "sha256": "2c2a83a23bc3b7e6c63962175f507ecc6c5e85cc174f17bdec37d9bbd0bf895a"
+   }
+  },
+  "modules": {
+   "__init__.py": {
+    "bytes": 78,
+    "crlf": 4,
+    "git_blob_sha1_lf": "ad94604546562f32428428450fecc24b931bdd66",
+    "matches_commit": true,
+    "sha256": "55fe01000623e4c32e1b357d4eea0e6ea28a2946630375d358164f3aabea631f"
+   },
+   "cli.py": {
+    "bytes": 3016,
+    "crlf": 78,
+    "git_blob_sha1_lf": "d8234e41628dd76785cc8771b207d1e3a31476b7",
+    "matches_commit": true,
+    "sha256": "b06fe95161a9535b0b7b6e653d2c72b3f3f97e180a1a4fe541a79ae99de58708"
+   },
+   "ocr.py": {
+    "bytes": 21826,
+    "crlf": 490,
+    "git_blob_sha1_lf": "2fd63c6716fdc6b64b0c76a8ea3852abf9b49427",
+    "matches_commit": true,
+    "sha256": "8cc59b6fa1da61664407194064362a45ca006c7ae53e33a4d7e717e801eb8831"
+   }
+  },
+  "modules_match_commit": true,
+  "package": "meikiocr",
+  "sessions": {
+   "graph_optimization": "ORT_ENABLE_ALL",
+   "inter_op_spinning": 0,
+   "inter_op_threads": 1,
+   "intra_op_spinning": 0,
+   "intra_op_threads": 1,
+   "provider": "CPUExecutionProvider"
+  },
+  "version": "0.3.5",
+  "wheel_sha256_pinned": "5d1ede4bcf46ecf17ef9a59db26edbc3e622aa3ed3c27bb64317077abbe2fccb"
+ },
+ "kind": "clannad-meiki-resources",
+ "models": {
+  "det": {
+   "bytes": 14503825,
+   "dtype_note": "fp32 ONNX as published",
+   "file": "meiki.text.detect.v0.1.960x544.onnx",
+   "inputs": [
+    {
+     "name": "images",
+     "shape": [
+      "N",
+      3,
+      544,
+      960
+     ]
+    },
+    {
+     "name": "orig_target_sizes",
+     "shape": [
+      "unk__340",
+      2
+     ]
+    }
+   ],
+   "nodes": 950,
+   "opset": [
+    {
+     "domain": "ai.onnx",
+     "version": 16
+    }
+   ],
+   "params": 3547383,
+   "params_by_dtype": {
+    "FLOAT": 3547297,
+    "INT64": 86
+   },
+   "repo": "rtr46/meiki.text.detect.v0",
+   "revision": "a9cffa4f60cbf72ddb87edf19c6f98a01cd042e6",
+   "sha256": "40b6a016667745cae7d3055929ae3b8b1e7716aac795f5904cd3c2c7c3b8404b"
+  },
+  "rec": {
+   "bytes": 18593254,
+   "dtype_note": "fp32 ONNX as published",
+   "file": "meiki.text.rec.v0.960x32.onnx",
+   "inputs": [
+    {
+     "name": "images",
+     "shape": [
+      "N",
+      3,
+      32,
+      960
+     ]
+    },
+    {
+     "name": "orig_target_sizes",
+     "shape": [
+      "unk__342",
+      2
+     ]
+    }
+   ],
+   "nodes": 1016,
+   "opset": [
+    {
+     "domain": "ai.onnx",
+     "version": 16
+    }
+   ],
+   "params": 4567437,
+   "params_by_dtype": {
+    "FLOAT": 4562917,
+    "INT32": 4372,
+    "INT64": 148
+   },
+   "repo": "rtr46/meiki.txt.recognition.v0",
+   "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+   "sha256": "3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000"
+  },
+  "vrec": {
+   "bytes": 12872961,
+   "dtype_note": "fp32 ONNX as published",
+   "file": "meiki.text.rec.v0.vertical.32x480.onnx",
+   "inputs": [
+    {
+     "name": "images",
+     "shape": [
+      "N",
+      3,
+      480,
+      32
+     ]
+    },
+    {
+     "name": "orig_target_sizes",
+     "shape": [
+      "unk__300",
+      2
+     ]
+    }
+   ],
+   "nodes": 865,
+   "opset": [
+    {
+     "domain": "ai.onnx",
+     "version": 16
+    }
+   ],
+   "params": 3151989,
+   "params_by_dtype": {
+    "FLOAT": 3147499,
+    "INT32": 4372,
+    "INT64": 118
+   },
+   "repo": "rtr46/meiki.txt.recognition.v0",
+   "revision": "a28cf5874dc2438ebb1c86336be26bcec51e3375",
+   "sha256": "2c2a83a23bc3b7e6c63962175f507ecc6c5e85cc174f17bdec37d9bbd0bf895a"
+  }
+ },
+ "protocol_sha256": "5bbd1422cf838a6c98fc52db955ec6918578033db8c7f6303aed9c67f02b3931",
+ "schema": 1,
+ "speed": {
+  "environment": {
+   "meiki": {
+    "cpu": "AMD EPYC 9R14",
+    "packages": {
+     "meikiocr": "0.3.5",
+     "numpy": "2.4.6",
+     "onnx": "1.18.0",
+     "onnxruntime": "1.30.0",
+     "opencv-python-headless": "5.0.0.93",
+     "pillow": "12.3.0"
+    },
+    "python": "3.11.15"
+   },
+   "vocr": {
+    "cpu": "AMD EPYC 9R14",
+    "python": "3.11.15"
+   }
+  },
+  "meiki": {
+   "det_per_screen": {
+    "calls": 150,
+    "items": 50,
+    "mean_ms": 117.479,
+    "median_ms": 117.004,
+    "p10_ms": 114.186,
+    "p90_ms": 121.768,
+    "repeat_medians_ms": [
+     119.078,
+     115.938,
+     116.582
+    ],
+    "repeats": 3,
+    "total_s": 17.622,
+    "warmup": 2
+   },
+   "model_load_ms": 577.5,
+   "ocr_per_screen": {
+    "calls": 150,
+    "items": 50,
+    "mean_ms": 203.1,
+    "median_ms": 211.346,
+    "p10_ms": 147.763,
+    "p90_ms": 232.77,
+    "repeat_medians_ms": [
+     212.075,
+     210.814,
+     211.313
+    ],
+    "repeats": 3,
+    "total_s": 30.465,
+    "warmup": 2
+   },
+   "rec_per_line": {
+    "calls": 600,
+    "items": 200,
+    "mean_ms": 20.695,
+    "median_ms": 20.629,
+    "p10_ms": 20.187,
+    "p90_ms": 21.277,
+    "repeat_medians_ms": [
+     20.531,
+     20.766,
+     20.651
+    ],
+    "repeats": 3,
+    "total_s": 12.417,
+    "warmup": 5
+   },
+   "sample": {
+    "line_ids_sha256": "9d983ee3a1c43a7f46b8856c610a5cd9117709fc3b20efbecd91133282ecb169",
+    "line_widths_px": {
+     "max": 896,
+     "median": 433
+    },
+    "lines": 200,
+    "page_ids_sha256": "84f7309babef5688a985524d9de7a2cf02ecabdb6e5e704c924e6efaa33272af",
+    "pages": 50,
+    "seed": 0
+   },
+   "threads": 1
+  },
+  "note": "host wall times on this box, one thread each, never a console measurement; the VOCR library is the arms' scalar C build (-DVOCR_NO_NEON), onnxruntime uses its own vectorised CPU kernels",
+  "same_sample": true,
+  "vocr": {
+   "arms": {
+    "VOCR3_W20": {
+     "arena_w8i": 241056,
+     "blob_bytes": 1558016,
+     "model_load_ms": 14.5,
+     "per_line": {
+      "calls": 600,
+      "items": 200,
+      "mean_ms": 41.338,
+      "median_ms": 41.859,
+      "p10_ms": 10.076,
+      "p90_ms": 72.748,
+      "repeat_medians_ms": [
+       41.862,
+       41.859,
+       41.857
+      ],
+      "repeats": 3,
+      "total_s": 24.803,
+      "warmup": 5
+     },
+     "sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19"
+    },
+    "VOCR_H15": {
+     "arena_w8i": 182944,
+     "blob_bytes": 1155968,
+     "model_load_ms": 11.8,
+     "per_line": {
+      "calls": 600,
+      "items": 200,
+      "mean_ms": 27.991,
+      "median_ms": 28.279,
+      "p10_ms": 6.812,
+      "p90_ms": 49.109,
+      "repeat_medians_ms": [
+       28.292,
+       28.277,
+       28.276
+      ],
+      "repeats": 3,
+      "total_s": 16.795,
+      "warmup": 5
+     },
+     "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd"
+    }
+   },
+   "native": {
+    "compiler": {
+     "executable": "/usr/bin/gcc",
+     "sha256": "8bffae62fd101725fa713a76b6a5d24efe1dea5d6ab24b902aa2e58e7976eaec",
+     "version": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)"
+    },
+    "finder": {
+     "argv": [
+      "/usr/bin/gcc",
+      "-std=c99",
+      "-O2",
+      "-ffp-contract=off",
+      "-DVOCR_NO_NEON",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "runtime/vocr_lines.c",
+      "runtime/vocr_lines_test.c",
+      "-o",
+      "vocr_lines_driver"
+     ],
+     "name": "vocr_lines_driver",
+     "sha256": "9a81c224564787a7c771fc06d05b9eb64ab9794e866b0752a2cd73651e26aca1"
+    },
+    "library": {
+     "argv": [
+      "/usr/bin/gcc",
+      "-std=c99",
+      "-O2",
+      "-ffp-contract=off",
+      "-DVOCR_NO_NEON",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wpedantic",
+      "-Wshadow",
+      "-Wstrict-prototypes",
+      "-Wmissing-prototypes",
+      "-Wcast-align",
+      "-Wpointer-arith",
+      "-fPIC",
+      "-shared",
+      "-o",
+      "libvocr_scalar.so",
+      "runtime/vocr.c",
+      "-lm"
+     ],
+     "name": "libvocr_scalar.so",
+     "sha256": "0e033bd8ecc926a3e9e0bbca96ca6f6744f6d58a474cc5e573286fac3f540f90"
+    },
+    "sources": {
+     "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+     "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+     "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+     "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+     "runtime/vocr_lines_test.c": "c1af9976ce7ccc51b1804417b5cb42959fda4b231da0cc1f0e04e2b049eb9c45"
+    }
+   },
+   "sample": {
+    "line_ids_sha256": "9d983ee3a1c43a7f46b8856c610a5cd9117709fc3b20efbecd91133282ecb169",
+    "line_widths_px": {
+     "max": 896,
+     "median": 433
+    },
+    "lines": 200,
+    "page_ids_sha256": "84f7309babef5688a985524d9de7a2cf02ecabdb6e5e704c924e6efaa33272af",
+    "pages": 50,
+    "seed": 0
+   },
+   "threads": 1
+  }
+ },
+ "verify_ok": true
+}

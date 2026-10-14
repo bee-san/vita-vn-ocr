@@ -3,7 +3,7 @@
 The owner's v0.8.0-test.1 console logs (vita-jp-overlay #81) are the ground truth: VOCR3-H15 ran
 **4,941-5,238 µs per CTC frame** (mean about 5.07 ms) on 70-96-frame CLANNAD lines, 0.2-0.4 s per
 textbox line. This change makes the same arithmetic cheaper on the Cortex-A9. Every logit is
-bit-identical to `main`'s (W8I and W8F, five builds, three released models, 895 development lines).
+bit-identical to `main`'s (W8I and W8F, five builds, three released models, 884 development lines).
 
 **Estimated effect (calibrated to the console, see below): VOCR3-H15 5.07 → 2.88 ms per frame at 333
 MHz (1.76x), VOCR3-FL10 3.00 → 1.68 (1.78x), VOCR4-W20 6.98 → 4.09 (1.71x).** A 3-line box of 640-px
@@ -91,9 +91,9 @@ build's to equal every other build's.
 
 | blob | mode | lines | frames | logit bytes per build | builds | equal to main | equal across builds |
 |---|---|---:|---:|---:|---:|:-:|:-:|
-| VOCR3-FL10 | w8i, w8f | 895 | 31,965 | CLEAN_FL10 | 5 | yes | yes |
-| VOCR3-H15 | w8i, w8f | 895 | 31,965 | CLEAN_H15 | 5 | yes | yes |
-| VOCR4-W20 | w8i, w8f | 895 | 31,965 | CLEAN_W20 | 5 | yes | yes |
+| VOCR3-FL10 | w8i, w8f | 884 | 31,479 | @BYTES_FL10@ | 5 | yes | yes |
+| VOCR3-H15 | w8i, w8f | 884 | 31,479 | @BYTES_H15@ | 5 | yes | yes |
+| VOCR4-W20 | w8i, w8f | 884 | 31,479 | @BYTES_W20@ | 5 | yes | yes |
 
 The hashes are in the PR body. `runtime/tests/test_vocr.c` gains a head-argmax test (a 21-class head:
 two full lane blocks and a partial one) on ties within and across blocks, -0 against +0 in both
@@ -105,39 +105,49 @@ mutations of the new argmax and of the leftover-position kernel each fail it. Th
 ## The development pack
 
 `vita/dev_pack.py` writes what the overlay's game worker hands the recognizer on the console: for
-every region of `eval/linefind/manifests/vita_dev.jsonl` and `psp_dev.jsonl` (367 regions after the
+every region of `eval/linefind/manifests/vita_dev.jsonl` and `psp_dev.jsonl` (363 regions after the
 reservation check, never the holdout or a test set), the region's grey rows with the display hook's `(77 R + 150 G + 29 B) >> 8`,
 the GRAD finder (`runtime/vocr_lines.c`, which gives the same lines as the worker's row finder), and
-every found line's crop, inverted when the finder calls it dark (exactly `VOCR_INVERT`). 895 lines,
-31,965 CTC frames (36 per line on average; 60-100-frame lines are the console's textbox lines). It
-refuses every row of a VN `eval/manifests/test_games.json` reserves, and CLANNAD: since #81 that is the 5
-rows of v1267 (a shared release). The 24 timing lines are the same before and after that change (the
-subset's sha256 `3162151a…` both times).
+every found line's crop, inverted when the finder calls it dark (exactly `VOCR_INVERT`). 884 lines,
+31,479 CTC frames (36 per line on average; 60-100-frame lines are the console's textbox lines). It
+refuses every row of a VN the committed test reservation (`eval/manifests/reserved.json` "test": the
+CLANNAD family, vita-test, psp-test and their shared releases) or `eval/manifests/test_games.json`
+names: on the 2026-10-14 dev manifests the 9 regions of v1267, v4060 and v36. The 24 timing lines are
+the same with and without them (the subset's sha256 `3162151a…` either way; none of the 24 is from
+those VNs).
 The pack holds crops of copyrighted screenshots: it stays in `$HERD/shared/artifacts/ocr-speed/`.
 
 ## What these speeds allow (model-size ceilings)
 
-Random-init blobs of `vita/model_tiers.py`'s shapes on the same 24 lines with this runtime, calibrated
-the same way; the time per 3-line box of 640-px lines (240 frames), recognition only, on one core.
-Time follows MACs closely: 1.68-2.04 ms per frame per million MACs at 333 MHz (about 1.8; `main`:
-2.98-3.55).
+Random-init blobs of `vita/model_tiers.py`'s shapes (and three wider ones of the same family) on the same
+24 lines, `main`'s runtime and this one, calibrated the same way. "No prefetch credit" charges this PR's
+instructions with `main`'s cache misses (the bound if `PLD` does not help on the A9); box = 3 x 80 frames
+of recognition plus 0.1 s for the finder and the strips, one core.
 
-| shape | int8 B | MMAC/frame | ms/frame @333 | box @333 | ms/frame @444 | box @444 |
+| shape | int8 B | MMAC/frame | `main` ms/frame @333 | this PR @333 (with prefetch credit - without) | this PR @444 (with - without) | box @333, 1 core |
 |---|---:|---:|---:|---:|---:|---:|
-| `s_w100v4987` | 819,792 | 0.97 | 1.89 | 0.45 s | 1.42 | 0.34 s |
-| `n_w200v5631` | 1,587,680 | 2.37 | 4.13 | 0.99 s | 3.10 | 0.74 s |
-| `n_w250v5631` | 2,095,712 | 3.35 | 5.69 | 1.37 s | 4.28 | 1.03 s |
-| `n_w300v5631` | 2,709,728 | 4.55 | 8.00 | 1.92 s | 6.08 | 1.46 s |
-| `l_w300v6459b128` | 3,025,808 | 4.85 | 8.42 | 2.02 s | 6.40 | 1.54 s |
-| `l_w325v5631` | 3,056,480 | 5.23 | 9.46 | 2.27 s | 7.20 | 1.73 s |
-| `l_w300v6459b192` | 3,476,624 | 5.30 | 8.93 | 2.14 s | 6.79 | 1.63 s |
-| `l_w350v5631` | 3,429,728 | 5.96 | 10.65 | 2.56 s | 8.11 | 1.95 s |
-| `l_w400v5631` | 4,255,712 | 7.58 | 13.60 | 3.26 s | 10.34 | 2.48 s |
+| `s_w100v3500` | 657,616 | 0.82 | 3.00 | 1.68-1.92 | 1.26-1.44 | 0.50-0.56 s |
+| `s_w120v4987b64` | 761,168 | 1.01 | 3.85 | 2.17-2.48 | 1.63-1.86 | 0.62-0.69 s |
+| `s_w100v4987` | 819,792 | 0.97 | 3.45 | 1.89-2.16 | 1.42-1.62 | 0.55-0.62 s |
+| `n_w200v5631` | 1,587,680 | 2.37 | 7.07 | 4.13-4.90 | 3.10-3.68 | 1.09-1.28 s |
+| `n_w250v5631` | 2,095,712 | 3.35 | 10.18 | 5.69-7.54 | 4.28-5.77 | 1.47-1.91 s |
+| `n_lw300v5631` | 2,473,696 | 3.40 | 10.88 | 5.71-8.33 | 4.31-6.44 | 1.47-2.10 s |
+| `n_w300v5631` | 2,709,728 | 4.55 | 15.92 | 8.00-12.77 | 6.08-10.09 | 2.02-3.16 s |
+| `l_w300v6459b128` | 3,025,808 | 4.85 | 16.76 | 8.42-13.41 | 6.40-10.60 | 2.12-3.32 s |
+| `l_w325v5631` | 3,056,480 | 5.23 | 18.59 | 9.46-15.18 | 7.20-12.02 | 2.37-3.74 s |
+| `l_w350v5631` | 3,429,728 | 5.96 | 21.00 | 10.65-17.26 | 8.11-13.69 | 2.66-4.24 s |
+| `l_w300v6459b192` | 3,476,624 | 5.30 | 17.78 | 8.93-14.29 | 6.79-11.30 | 2.24-3.53 s |
+| `l_w375v5631` | 3,829,472 | 6.74 | 23.82 | 12.26-19.78 | 9.33-15.68 | 3.04-4.85 s |
+| `l_w400v5631` | 4,255,712 | 7.58 | 26.48 | 13.60-22.09 | 10.34-17.51 | 3.36-5.40 s |
+| `l_w450v5631` | 5,187,680 | 9.42 | 32.75 | 17.05-27.71 | 12.95-21.95 | 4.19-6.75 s |
+| `l_w500v5631` | 6,225,632 | 11.46 | 39.42 | 20.47-33.60 | 15.54-26.62 | 5.01-8.16 s |
 
-The ceilings per tier, with the overlay's further gains (parallel lines, the clock flag) and the
-finder's time, are in the report to the training conductor (vita-jp-overlay `docs/ocr-speed.md`).
-`main`'s `l_w325v5631` took 18.59 ms per frame: its 3 MB of weights miss the L2, which the prefetch
-now hides (1.97x).
+Time follows MACs closely on this runtime: 1.7-1.8 ms per frame per million MACs at 333 MHz with the
+prefetch credit (`main`: 3.0-3.5, rising once the weights outgrow the 2 MiB L2). The tier ceilings that
+follow (1 core and 2, 333 and 444 MHz) and the safe numbers for VOCR5 are in the overlay's
+`docs/ocr-speed.md` (vita-jp-overlay, branch perf/ocr-speed): with the clock off and one core, Normal
+2.1-2.7 MB and Large 2.6-3.8 MB of int8 weights (before: 1.7 and 2.3 MB by the same method; the
+owner's 18:09Z ceilings were 1.6 and 2.5 MB). All estimates.
 
 ## Reproduce
 

@@ -95,8 +95,11 @@ def test_dev_pack_frames_match_the_runtime(tmp_path):
 def test_dev_pack_refuses_protected_vns():
     bad = dev_pack.protected_vns()
     t = json.loads((ROOT / "eval/manifests/test_games.json").read_text(encoding="utf-8"))
+    reserved = json.loads((ROOT / "eval/manifests/reserved.json").read_text(encoding="utf-8"))
     assert "v4" in bad                                    # CLANNAD
     assert set(t["vita-test"]) <= bad and set(t["psp-test"]) <= bad and set(t["all"]) <= bad
+    assert set(reserved["test"]) <= bad                   # the committed test reservation (CLANNAD family, partners)
+    assert {"v4060", "v36", "v1267"} <= bad               # the three reserved VNs the dev manifests hold
     kept, refused = dev_pack.dev_rows(ROOT / "eval/linefind/manifests")
     rows = [json.loads(ln) for name in dev_pack.DEV_MANIFESTS
             for ln in (ROOT / "eval/linefind/manifests" / name).read_text().splitlines()]

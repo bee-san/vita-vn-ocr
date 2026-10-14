@@ -540,14 +540,16 @@ def test_set_shots(art=ART, root=ROOT, owner_games=OWNER_GAMES, test=None):
     return out
 
 
-def owner_pixels(owner_games=OWNER_GAMES):
+def owner_pixels(owner_games=OWNER_GAMES, skip_prefix=None):
     """{decoded-pixel sha256: "folder/file"} of every frame already in owner-games (PIL's RGB hash and devnative's,
-    first file in name order wins): what a later drop's frames are deduplicated against."""
+    first file in name order wins): what a later drop's frames are deduplicated against. skip_prefix leaves out that
+    drop's own frames (d<date>_...), so a check re-run after its sort gives the same answer."""
     out = {}
     for d in sorted(Path(owner_games).iterdir()) if Path(owner_games).exists() else ():
         if not d.is_dir() or d.name.startswith("_"):
             continue
-        for p in sorted(x for x in d.iterdir() if x.is_file() and x.suffix.lower() in IMAGE_EXT):
+        for p in sorted(x for x in d.iterdir() if x.is_file() and x.suffix.lower() in IMAGE_EXT
+                        and not (skip_prefix and x.name.startswith(skip_prefix))):
             _, _, rgb, dn = frame_facts(p)
             out.setdefault(rgb, f"{d.name}/{p.name}")
             out.setdefault(dn, f"{d.name}/{p.name}")
@@ -589,7 +591,7 @@ def check(drop, dump=DUMP, leak=False, owner_games=OWNER_GAMES, why=None, sets=N
         frames.append(f)
     if lay == "games":
         # pixel copies of a frame already in owner-games (the first drop) or of an earlier frame of this drop
-        known = owner_pixels(owner_games) if known is None else known
+        known = owner_pixels(owner_games, skip_prefix=f"d{tag}_") if known is None else known
         seen = {}
         for f in frames:
             dup = known.get(f["pixel_sha256"]) or known.get(f["dn_pixel_sha256"]) or seen.get(f["pixel_sha256"])

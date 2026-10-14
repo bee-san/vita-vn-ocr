@@ -308,8 +308,8 @@
    "collections": {
     "vn-wide-100-20261014": 1
    },
-   "reserved_vns": "dev-sample",
-   "reserved_without_owner_allowed": "dev-sample",
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
    "release_vns_reserved": {},
    "sets": {
     "teacher_val": 2,
@@ -317,7 +317,7 @@
     "development_vns": true
    },
    "role": "training",
-   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "why": "not reserved, in no eval or development set",
    "leak_max": {
     "vita-test": 0.6005,
     "psp-test": 0.439,
@@ -819,8 +819,8 @@
    "collections": {
     "vn-wide-100-20261014": 49
    },
-   "reserved_vns": "dev-sample",
-   "reserved_without_owner_allowed": "dev-sample",
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
    "release_vns_reserved": {},
    "sets": {
     "teacher_val": 16,
@@ -828,7 +828,7 @@
     "development_vns": true
    },
    "role": "training",
-   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "why": "not reserved, in no eval or development set",
    "leak_max": {
     "vita-test": 0.6911,
     "psp-test": 0.6161,
@@ -899,8 +899,8 @@
    "collections": {
     "vn-wide-100-20261014": 150
    },
-   "reserved_vns": "dev-sample",
-   "reserved_without_owner_allowed": "dev-sample",
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
    "release_vns_reserved": {},
    "sets": {
     "teacher_val": 5,
@@ -908,7 +908,7 @@
     "development_vns": true
    },
    "role": "training",
-   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "why": "not reserved, in no eval or development set",
    "leak_max": {
     "vita-test": 0.7812,
     "psp-test": 0.7938,
@@ -2024,8 +2024,8 @@
    "collections": {
     "vn-wide-100-20261014": 1
    },
-   "reserved_vns": "dev-sample",
-   "reserved_without_owner_allowed": "dev-sample",
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
    "release_vns_reserved": {},
    "sets": {
     "teacher_val": 7,
@@ -2033,7 +2033,7 @@
     "development_vns": true
    },
    "role": "training",
-   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "why": "not reserved, in no eval or development set",
    "leak_max": {
     "vita-test": 0.4603,
     "psp-test": 0.4485,
@@ -2104,8 +2104,8 @@
    "collections": {
     "vn-wide-100-20261014": 79
    },
-   "reserved_vns": "dev-sample",
-   "reserved_without_owner_allowed": "dev-sample",
+   "reserved_vns": null,
+   "reserved_without_owner_allowed": null,
    "release_vns_reserved": {},
    "sets": {
     "teacher_val": 22,
@@ -2113,7 +2113,7 @@
     "development_vns": true
    },
    "role": "training",
-   "why": "reserved: dev-sample, but owner screenshots train (owner 2026-10-14 13:25Z): re-run realplus/shots.py reserve so the development sample leaves this game out",
+   "why": "not reserved, in no eval or development set",
    "leak_max": {
     "vita-test": 0.725,
     "psp-test": 0.666,

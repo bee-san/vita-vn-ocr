@@ -73,13 +73,13 @@ def wjl(path, rows):
 def reserved_today():
     """reserved_vns of the dump, by today's rules. In an owner pool (NATIVE_OWNER_POOL=1: the owner's own
     console captures, shared/private/owner-games/_build/...) a VN the owner explicitly made training data
-    (owner_frames.OWNER_DECISIONS, only for the reservation reasons listed there) is not held back, and neither is
-    a development-sample VN: every owner screenshot trains unless its VN is a test VN (owner 2026-10-14 13:25Z,
-    docs/reservations.md), and shots.py reserve leaves owner games out of the sample."""
+    (owner_frames.OWNER_DECISIONS, only for the reservation reasons listed there) is not held back. A
+    development-sample VN is: shots.py reserve keeps owner games out of the sample, so an owner game held back here
+    means the sample needs a re-carve (docs/reservations.md) before the pool is built."""
     r = SH.reserved_vns(SH.load_dump(DUMP))
     if os.environ.get("NATIVE_OWNER_POOL") == "1":
         import owner_frames as OF
-        r = {v: w for v, w in r.items() if not OF.owner_allowed(v, w) and not w.startswith("dev-sample")}
+        r = {v: w for v, w in r.items() if not OF.owner_allowed(v, w)}
     return r
 
 

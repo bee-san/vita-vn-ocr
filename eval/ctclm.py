@@ -25,6 +25,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -622,10 +623,9 @@ def _a9_diff(a, b, c, d):
     if len({x[5] for x in (a, b, c, d) if len(x) > 5}) > 1:
         raise SystemExit("A9 runs from different vocr_cli builds cannot be differenced")
     keys = set(a[0]) | set(b[0]) | set(c[0]) | set(d[0])
+    # signed: the top-K head loop runs at other addresses than the plain one, so a difference is negative at
+    # the code a run leaves out and positive at the code it adds; the cost model sums the net mix
     counts = {k: a[0].get(k, 0) - b[0].get(k, 0) - c[0].get(k, 0) + d[0].get(k, 0) for k in keys}
-    bad = {k: v for k, v in counts.items() if v < 0}
-    if bad:
-        raise SystemExit(f"negative differential counts at {len(bad)} addresses: the runs do not line up")
     ex = {k: a[1].get(k, 0) - b[1].get(k, 0) - c[1].get(k, 0) + d[1].get(k, 0) for k in a[1]}
     cache = {k: max(0, a[2][k] - b[2][k] - c[2][k] + d[2][k]) for k in a[2]}
     return {k: v for k, v in counts.items() if v}, ex, cache
@@ -683,6 +683,8 @@ def cmd_a9(args):
                 lc, lex, lca = _a9_diff(r40, ref40, (c, ex, ca), zero[:3])   # once: (lm - topk at N) - N lines
                 load = _a9_cost(d / f"f_{m}_{name}_dev40", lc, lex, lca, 1)
                 comp["load_ms"] = {str(k): [x / (k * 1000) for x in load["cycles_per_frame"][k]] for k in clocks}
+                comp["load_insns"] = int(load["insns_per_frame"])
+                comp["load_insns_crc"] = int(dict(load["top_functions"]).get("vocr_lm_check_crc", 0))
             comps[name] = comp
         res["components"] = comps
         out["models"][m] = res
@@ -857,12 +859,33 @@ def _ci(r):
     return f"{r['delta_points']:+.2f} ({r['ci95'][0]:+.2f} to {r['ci95'][1]:+.2f})"
 
 
+class Chunks:
+    """Table lines grouped by key (the doc's <!-- table:KEY --> blocks)."""
+
+    def __init__(self):
+        self.key, self.chunks = "head", {}
+
+    def append(self, line):
+        self.chunks.setdefault(self.key, []).append(line)
+
+
 def cmd_tables(args):
     """The markdown tables of docs/ctc-lm-decode.md, from docs/ctc-lm-decode.json."""
     j = json.loads(Path(args.json).read_text(encoding="utf-8"))
     tiers = list(j["tiers"])
-    p = []
-    p.append("Dialogue CER, greedy → beam + LM (2-fold VN cross-validated in brackets):\n")
+    p = Chunks()
+    p.key = "settings"
+    p.append("The recommended settings (`vocr_lm_opts`; alpha in 1/1000, beta, gate and bracket in 1/1000 nat), one "
+             "per LM tier, shared by all six models:\n")
+    p.append("| tier | LM file | bytes | beam | top-K | alpha | beta | gate | bracket | flags |")
+    p.append("|---|---|---:|---:|---:|---:|---:|---:|---:|---|")
+    for t in tiers:
+        c, rel = j["tiers"][t]["config"], j["tiers"][t]["release"]
+        fl = " \\| ".join(n for b, n in ((1, "BOS"), (2, "EOS")) if c["flags"] & b) or "0"
+        p.append(f"| {t} | `{rel['file']}` | {rel['bytes']:,} | {c['beam']} | {c['topk']} | {c['alpha']} | "
+                 f"{c['beta']} | {c['gate']} | {c.get('bracket', 0)} | VOCR_LM_{fl} |")
+    p.key = "dialogue"
+    p.append("\nDialogue CER, greedy → beam + LM (2-fold VN cross-validated in brackets):\n")
     p.append("| model | dialogue chars | greedy | " + " | ".join(f"{t} LM" for t in tiers) + " |")
     p.append("|---|---:|---:|" + "---:|" * len(tiers))
     for m in MODELS:
@@ -873,6 +896,7 @@ def cmd_tables(args):
     pd = {t: j["tiers"][t]["pooled_dialogue"] for t in tiers}
     p.append(f"| pooled (six models) | {pd[tiers[0]]['chars']:,} | {_pct(pd[tiers[0]]['cer_a'])} | "
              + " | ".join(_pct(pd[t]["cer_b"]) for t in tiers) + " |")
+    p.key = "delta"
     p.append("\nChange in dialogue CER, points, with the 95% VN-cluster bootstrap interval (in-sample selection; "
              "cross-validated):\n")
     p.append("| model | " + " | ".join(f"{t}" for t in tiers) + " | "
@@ -883,6 +907,7 @@ def cmd_tables(args):
         p.append(f"| {NAMES[m]} | " + " | ".join(_ci(pm[t]["dialogue"]) for t in tiers) + " | "
                  + _ci(pm[tiers[-1]]["dialogue_cv"]) + " |")
     p.append("| pooled | " + " | ".join(_ci(pd[t]) for t in tiers) + " | |")
+    p.key = "secondary"
     p.append("\nSecondary views: names (CER) and the console finder's GRAD crops of devnative's dialogue lines:\n")
     p.append("| model | names greedy | " + " | ".join(f"names {t}" for t in tiers) + " | GRAD greedy | GRAD "
              + tiers[-1] + " |")
@@ -893,6 +918,7 @@ def cmd_tables(args):
                  + " | ".join(_pct(pm[t]["names"]["cer_b"]) for t in tiers)
                  + f" | {_pct(pm[tiers[0]]['grad']['cer_a'])} | {_pct(pm[tiers[-1]]['grad']['cer_b'])} |")
     # families, pooled over the models
+    p.key = "families"
     p.append("\nConfusion families on dialogue lines, summed over the six models (eval/model_gaps.py's pair_kind; "
              "substitutions, then insertions and deletions):\n")
     p.append("| family | greedy | " + " | ".join(tiers) + " |")
@@ -904,6 +930,7 @@ def cmd_tables(args):
     tot = {t: sum(j["families"][t][m]["dialogue"]["errors_beam"] for m in MODELS) for t in tiers}
     g = sum(j["families"][tiers[0]][m]["dialogue"]["errors_greedy"] for m in MODELS)
     p.append(f"| **all** | {g} | " + " | ".join(str(tot[t]) for t in tiers) + " |")
+    p.key = "families_model"
     p.append("\nPer model at the 1MB tier (greedy → beam):\n")
     fams = ("kanji_kanji", "dakuten", "small_kana", "punct_punct", "dash_like", "other_sub", "deletion", "insertion")
     p.append("| model | " + " | ".join(fams) + " |")
@@ -913,6 +940,7 @@ def cmd_tables(args):
         p.append(f"| {NAMES[m]} | " + " | ".join(f"{f['families_greedy'][k]} → {f['families_beam'][k]}" for k in fams)
                  + " |")
     # guard
+    p.key = "changes"
     p.append("\nWhat the LM changes, dialogue lines summed over the six models (characters fixed and introduced, "
              "lines better and worse; the last three columns: introduced-error lines with a rare kanji (Jiten rank > "
              "2,000), mostly katakana, or Latin/digits in the reference):\n")
@@ -926,6 +954,7 @@ def cmd_tables(args):
         p.append(f"| {t} | {sum(x['lines_changed'] for x in f)} | {sum(x['chars_fixed'] for x in f)} | "
                  f"{sum(x['chars_introduced'] for x in f)} | {gs['lines_better']} | {gs['lines_worse']} | "
                  f"{gs['rare_kanji_line']} | {gs['katakana_line']} | {gs['latin_digit_line']} |")
+    p.key = "by_class"
     p.append("\nReference characters by class, summed over the six models at the 1MB tier: read correctly by the "
              "greedy text and by the beam, and the characters the beam broke (greedy right, beam wrong) and fixed:\n")
     p.append("| view | class | chars | greedy correct | beam correct | broke | fixed |")
@@ -937,6 +966,7 @@ def cmd_tables(args):
             n = {k: sum(x.get(k, 0) for x in v) for k in ("chars", "greedy_correct", "beam_correct", "broke", "fixed")}
             p.append(f"| {view} | {g} | {n['chars']:,} | {n['greedy_correct']:,} | {n['beam_correct']:,} | "
                      f"{n['broke']} | {n['fixed']} |")
+    p.key = "names_changes"
     p.append("\nThe same for name lines:\n")
     p.append("| tier | lines changed | chars fixed | chars introduced | lines better | lines worse |")
     p.append("|---|---:|---:|---:|---:|---:|")
@@ -945,6 +975,7 @@ def cmd_tables(args):
         p.append(f"| {t} | {sum(x['lines_changed'] for x in f)} | {sum(x['chars_fixed'] for x in f)} | "
                  f"{sum(x['chars_introduced'] for x in f)} | {sum(x['guard'].get('lines_better', 0) for x in f)} | "
                  f"{sum(x['guard'].get('lines_worse', 0) for x in f)} |")
+    p.key = "gate_tiers"
     gp = j["tiers"][tiers[0]]["greedy_pooled"]
     p.append("\nThe gate at each tier's other settings, pooled errors over the six models (dialogue / names; "
              f"greedy {gp['dialogue']} / {gp['names']}):\n")
@@ -955,6 +986,7 @@ def cmd_tables(args):
         gc = j["tiers"][t]["gate_curve"]
         p.append(f"| {t} | " + " | ".join(f"{gc[str(g)]['dialogue']} / {gc[str(g)]['names']}" if str(g) in gc else "–"
                                           for g in gates) + " |")
+    p.key = "gate_sweep"
     if j.get("gate_sweep"):
         g = j["gate_sweep"]
         p.append(f"\nThe gate from 0.5 to 64 nats at the {g['lm']} settings otherwise (pooled errors over the six "
@@ -963,6 +995,7 @@ def cmd_tables(args):
         p.append("|---|" + "---:|" * len(g["rows"]))
         p.append("| dialogue errors | " + " | ".join(str(r["dialogue"]) for r in g["rows"]) + " |")
         p.append("| name errors | " + " | ".join(str(r["names"]) for r in g["rows"]) + " |")
+    p.key = "ablation"
     for t, a in j["ablation"].items():
         beams = sorted({r["beam"] for r in a["rows"]})
         ks = sorted({r["topk"] for r in a["rows"]})
@@ -972,6 +1005,7 @@ def cmd_tables(args):
         for b in beams:
             p.append(f"| {b} | " + " | ".join(str(next(r["dialogue"] for r in a["rows"] if r["beam"] == b
                                                         and r["topk"] == k)) for k in ks) + " |")
+    p.key = "recipes"
     if j.get("recipes"):
         p.append("\nLM recipes (round 2's grid; pooled dialogue errors at each LM's best shared configuration, "
                  "cross-validated, names; held-out cross-entropy on realplus v2 labels):\n")
@@ -983,6 +1017,7 @@ def cmd_tables(args):
                 "Aozora + Aratako + JESC + Tatoeba" if len(r["corpora"]) == 5 else "+".join(r["corpora"])
             p.append(f"| {r['lm']} | {r['bytes']:,} | {r['order']} | {cor} | {js} | {r['heldout_nats_per_char']:.3f} "
                      f"| {r['dialogue_errors']} | {r['dialogue_errors_cv']} | {r['names_errors']} |")
+    p.key = "a9"
     if j.get("a9"):
         a9 = j["a9"]["models"]
         p.append("\nEstimated Cortex-A9 cost (vita/a9_cycles.py on the Vita build, development lines), ms per 640-px "
@@ -998,6 +1033,9 @@ def cmd_tables(args):
             comps = r["components"]
             loads = "; ".join(f"{t} {comps['lm' + t]['load_ms']['444'][0]:.0f}–"
                               f"{comps['lm' + t]['load_ms']['444'][1]:.0f}" for t in tiers if "lm" + t in comps)
+            crc = max(comps["lm" + t]["load_insns_crc"] / comps["lm" + t]["load_insns"] for t in tiers
+                      if "lm" + t in comps)
+            loads += f" (CRC ≤ {100 * crc:.0f}%)"
             p.append(f"| {NAMES.get(m, m)} | {cell(r['network_ms_640px'])} | {cell(comps['topk8']['ms_640px'])} | "
                      + " | ".join(cell(comps["lm" + t]["ms_640px"]) if "lm" + t in comps else "–" for t in tiers)
                      + f" | {loads} ms |")
@@ -1020,6 +1058,7 @@ def cmd_tables(args):
                 cells.append(f"{lo:.2f}–{hi:.2f} s")
             p.append(f"| {NAMES.get(m, m)} | {3 * net[0] / 1000:.2f}–{3 * net[1] / 1000:.2f} s | "
                      + " | ".join(cells) + " |")
+    p.key = "memory"
     p.append("\nMemory per tier: the LM blob (resident while the game runs, read-only), the decoder workspace "
              "(vocr_lm_workspace_bytes, a 1,024-px line) and the caller's top-K buffers:\n")
     p.append("| tier | LM file | LM bytes | sha256 | workspace (FL10 / H15, W20) | top-8 buffers |")
@@ -1030,6 +1069,7 @@ def cmd_tables(args):
         p.append(f"| {t} | `{rel['file']}` | {rel['bytes']:,} | `{rel['sha256'][:16]}…` | "
                  f"{mm['workspace']['v3FL10']:,} / {mm['workspace']['v3W20']:,} B | "
                  f"{mm['topk_buffers']['v3W20']:,} B |")
+    p.key = "oracle"
     if j.get("oracle"):
         o = j["oracle"]
         p.append("\nGreedy dialogue substitutions whose reference character is among the emitting frame's top 8 (the "
@@ -1039,6 +1079,7 @@ def cmd_tables(args):
         for m, r in o.items():
             p.append(f"| {NAMES[m]} | {r['substitutions']} | {r['reference_in_top8']} "
                      f"({100 * r['reference_in_top8'] / max(1, r['substitutions']):.0f}%) |")
+    p.key = "confidence"
     p.append("\nThe greedy path's confidence (vocr_extra.conf_min over top-8) as a flag for a dialogue line with an "
              "error (greedy; AUROC, and the share of lines flagged / errors caught at three thresholds):\n")
     p.append("| model | lines (with an error) | AUROC | < 0.5 | < 0.7 | < 0.9 |")
@@ -1048,7 +1089,17 @@ def cmd_tables(args):
         cell = lambda r: f"{100 * r['flagged']:.0f}% / {100 * r['recall']:.0f}%"  # noqa: E731
         p.append(f"| {NAMES[m]} | {c['lines']:,} ({c['lines_with_error']}) | {c['auroc']:.3f} | {cell(rows[0.5])} | "
                  f"{cell(rows[0.7])} | {cell(rows[0.9])} |")
-    print("\n".join(p))
+    if args.doc:
+        doc = Path(args.doc).read_text(encoding="utf-8")
+        for k, lines in p.chunks.items():
+            pat = re.compile(f"(<!-- table:{k} -->)(.*?)(<!-- /table:{k} -->)", re.S)
+            if not pat.search(doc):
+                raise SystemExit(f"{args.doc}: no <!-- table:{k} --> block")
+            body = "\n".join(lines).strip("\n")
+            doc = pat.sub(lambda mt: mt.group(1) + "\n" + body + "\n" + mt.group(3), doc)
+        Path(args.doc).write_text(doc, encoding="utf-8")
+    else:
+        print("\n".join(x for v in p.chunks.values() for x in v))
 
 
 def main():
@@ -1112,6 +1163,7 @@ def main():
     y.add_argument("--out", required=True)
     w = sub.add_parser("tables")
     w.add_argument("--json", default=str(ROOT / "docs" / "ctc-lm-decode.json"))
+    w.add_argument("--doc", help="rewrite the <!-- table:KEY --> blocks of this markdown file in place")
     args = ap.parse_args()
     {"extract": cmd_extract, "tune": cmd_tune, "select": cmd_select, "ablate": cmd_ablate,
      "report": cmd_report, "a9": cmd_a9, "summary": cmd_summary, "tables": cmd_tables}[args.cmd](args)

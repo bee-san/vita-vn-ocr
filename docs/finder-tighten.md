@@ -244,6 +244,22 @@ and with the default, the difference is the refinement (99.99% of it in the refi
 - Against recognition (`docs/vocr4.md`): FL10 94-179 ms, W20 235-416 ms per 640-px line at 444 MHz, so under 1%.
 - Host: 36.7 µs per region on the 1,236 regions (Xeon, gcc -O2, best of 20, three repeats within 0.3%).
 
+**Against the console** (the owner's v0.8.0-test.1 collect logs, 2026-10-14, private: 21 OCR jobs in one Vita game
+with VOCR3-H15 and VOCR3-FL10; aggregate timings only). The refinement itself has not run on a console; these
+measure its neighbours and calibrate the estimate:
+
+- The finder's compute (job "find" time minus its strip capture, on the jobs that found no line) was 23-24 ms for
+  an 883×112 region. The same qemu method puts the finder at 15-32 ms (444 MHz) and 20-42 ms (333 MHz) for that
+  region: inside the range.
+- H15 recognized at 5.0-5.2 ms per CTC frame, the top of `docs/vocr4.md`'s 333-MHz estimate (221-403 ms per 80
+  frames). So the refinement's own console time is likely near the top of its 333-MHz range, about 1-1.5 ms per
+  finder line.
+- Reading the framebuffer costs more than either: the overlay's 64-row strips of that region took 11-26 ms each
+  (4 strips in 43-105 ms). Run right after the finder over all boxes, the refinement can add about one strip read
+  per box when recognition later reads the lines again. Refining each box from the strip the recognizer fetches
+  for it (`vocr_refine_lines` on that strip, a one-line set) gives the same lines with no extra read: the
+  refinement reads only the box's own pixels (the single difference is the 16-line cap on splits).
+
 ### Changed after the protected run (test code only)
 
 A longer self-test (5,000 regions) found that one assertion in `runtime/vocr_lines_refine_test.c` compared the

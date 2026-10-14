@@ -20,7 +20,7 @@ lines, 637 owner frames and 22,189 VNDB character names for training.
 | `clannad-shared-release` | 3 | on one VNDB release with a CLANNAD-family VN: Kanon (v33), AIR (v36), Little Busters! (v5), through the Key boxes. planetarian (v34) is excepted by the owner's decision of 2026-10-13 |
 | **test, total** | **71** | never train, tune, calibrate, select or label-tune on them, and never use them as synthetic scenes or names |
 | `dev-sample` | 100 | the development sample (below) |
-| `dev-sample-shared-release` | 13 | on a two-VN release with a sample VN: one game filed under two VN entries, or a game and its fan disc |
+| `dev-sample-shared-release` | 13 | on a two-VN release with a sample VN: one game filed under two VN entries, or a game and its fan disc. Counting every release partner would hold out 176 more VNs, mostly compilations of unrelated games; counting same-series VNs on compilations would hold out 30 more |
 | **held out, total** | **184** | |
 
 The 31 capture sessions of vita-test and psp-test (VNDB release ids, `test_games.json` "sessions") stay protected

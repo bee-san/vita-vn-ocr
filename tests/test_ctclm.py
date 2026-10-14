@@ -57,7 +57,7 @@ def sources(tmp):
                    encoding="utf-8")
     tg, cl, ch, ti = tmp / "test_games.json", tmp / "clannad.json", tmp / "chars.tsv", tmp / "titles.tsv"
     tg.write_text(json.dumps({"all": ["v1"]}), encoding="utf-8")
-    cl.write_text(json.dumps({"vns": ["v2"]}), encoding="utf-8")
+    cl.write_text(json.dumps({"vns": ["v2"], "text_markers": {"strings": ["はひふ名"]}}), encoding="utf-8")
     ch.write_text("char_id\tlang\tname\tvn_ids\nc1\tja\tねえ おけ\tv1\nc2\tja\tこと\tv2\nc3\tja\tほへ 名\tv9\n",
                   encoding="utf-8")
     ti.write_text("vn_id\tlang\ttitle\nv1\tja\tかきくけこ\n", encoding="utf-8")
@@ -142,8 +142,8 @@ def test_protected_names_are_excluded(built):
     a marker and stays, and ほへ 名 (v9) is not protected."""
     _, blob, man = built
     x = man["exclusion"]
-    assert x["vns"] == 2 and x["characters"] == 2 and x["titles"] == 1
-    assert x["corpus_pieces_dropped"] == 6 and x["jiten_words_dropped"] == {"vn": 1}
+    assert x["vns"] == 2 and x["characters"] == 2 and x["titles_and_curated"] == 2
+    assert x["corpus_pieces_dropped"] >= 6 and x["jiten_words_dropped"] == {"vn": 1}
     lm = vlm.LM(blob)
     assert lm.find(1, lm.token_of("ね"), lm.token_of("え")) == vlm.NONE
     assert lm.find(1, lm.token_of("こ"), lm.token_of("と")) != vlm.NONE

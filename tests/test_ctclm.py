@@ -23,6 +23,7 @@ import vlm  # noqa: E402
 import vocr3_fixtures as F  # noqa: E402
 
 WORDS = ["あいう", "かきく", "さしす", "たちつ", "なにぬ", "はひふ", "漢字", "名", "そう", "こと", "ほへ", "せそ"]
+PROTECTED = "ねえおけ"         # a protected title's character (name parts ねえ おけ; no corpus word forms ねえ)
 
 
 def sha(path):
@@ -32,10 +33,12 @@ def sha(path):
 def corpus(tmp, n=3000, seed=0):
     rng = np.random.default_rng(seed)
     lines = []
-    for _ in range(n):
+    for i in range(n):
         k = int(rng.integers(1, 6))
         w = "".join(WORDS[int(i)] for i in rng.choice(len(WORDS), k, p=np.linspace(2, 1, len(WORDS)) / 18))
         lines.append(w + ("！" if rng.random() < 0.5 else "？"))
+        if i % 500 == 7:
+            lines.append("そう" + PROTECTED + "こと！")
     p = tmp / "corpus.txt"
     p.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return p
@@ -50,12 +53,20 @@ def sources(tmp):
     held.write_text("\n".join(corpus(tmp / "..", 200, seed=1).read_text(encoding="utf-8").split("\n")[:200]),
                     encoding="utf-8")
     jit = tmp / "jiten.csv"
-    jit.write_text("Word,Form,Rank\nこと,こと,1\n漢字,かんじ,2\nそう,そう,3\nの,の,4\nほへと,ほへと,5\n",
+    jit.write_text("Word,Form,Rank\nこと,こと,1\n漢字,かんじ,2\nそう,そう,3\nの,の,4\nほへと,ほへと,5\nねえ,ねえ,6\n",
                    encoding="utf-8")
+    tg, cl, ch, ti = tmp / "test_games.json", tmp / "clannad.json", tmp / "chars.tsv", tmp / "titles.tsv"
+    tg.write_text(json.dumps({"all": ["v1"]}), encoding="utf-8")
+    cl.write_text(json.dumps({"vns": ["v2"]}), encoding="utf-8")
+    ch.write_text("char_id\tlang\tname\tvn_ids\nc1\tja\tねえ おけ\tv1\nc2\tja\tこと\tv2\nc3\tja\tほへ 名\tv9\n",
+                  encoding="utf-8")
+    ti.write_text("vn_id\tlang\ttitle\nv1\tja\tかきくけこ\n", encoding="utf-8")
     meta = {"licence": "test", "attribution": "generated"}
     src = {"vocab": {"path": str(voc), "sha256": sha(voc)},
            "corpora": {"gen": {"path": str(cor), "sha256": sha(cor), **meta}},
-           "jiten": {"vn": {"path": str(jit), "url": "test", "sha256": sha(jit), **meta}}}
+           "jiten": {"vn": {"path": str(jit), "url": "test", "sha256": sha(jit), **meta}},
+           "exclusions": {k: {"path": str(f), "sha256": sha(f)} for k, f in
+                          (("test_games", tg), ("clannad", cl), ("vndb_chars", ch), ("vndb_titles", ti))}}
     p = tmp / "sources.json"
     p.write_text(json.dumps(src), encoding="utf-8")
     return p, held
@@ -123,6 +134,19 @@ def test_build_is_deterministic_and_fits(built, tmp_path):
     assert [c["name"] for c in man["corpora"]] == ["gen"] and man["jiten"][0]["name"] == "vn"
     hashed = json.dumps({k: v for k, v in man.items() if k not in ("paths", "heldout")}, ensure_ascii=False)
     assert "paths" in man and str(d) not in hashed and str(tmp_path) not in hashed
+
+
+def test_protected_names_are_excluded(built):
+    """A protected title's character (v1: ねえ おけ) is a marker: its corpus pieces are dropped, and its name part
+    ねえ leaves the Jiten list, so the bigram ねえ is gone; こと (a one-part name of v2) hits too many pieces to be
+    a marker and stays, and ほへ 名 (v9) is not protected."""
+    _, blob, man = built
+    x = man["exclusion"]
+    assert x["vns"] == 2 and x["characters"] == 2 and x["titles"] == 1
+    assert x["corpus_pieces_dropped"] == 6 and x["jiten_words_dropped"] == {"vn": 1}
+    lm = vlm.LM(blob)
+    assert lm.find(1, lm.token_of("ね"), lm.token_of("え")) == vlm.NONE
+    assert lm.find(1, lm.token_of("こ"), lm.token_of("と")) != vlm.NONE
 
 
 def test_distributions_are_normalised(built):
@@ -257,6 +281,19 @@ def test_topk_extras_match_the_logits(model):
                 if emit:
                     assert abs(out["conf_min"] - p[emit].min()) < 1e-4
                     assert abs(out["conf_mean"] - p[emit].mean()) < 1e-4
+
+
+def test_foreign_classes_are_refused(built, model):
+    from pyvocr import VocrError, VocrLM
+    _, blob, _ = built
+    lm = vlm.LM(blob)
+    vocab = [model.class_text(c) for c in range(model.n_classes)]
+    v, c, b = random_line(np.random.default_rng(2), 12, 8, model.n_classes)
+    c[5, 3] = model.n_classes                                   # a class this model does not have
+    with pytest.raises(VocrError):
+        VocrLM(model, blob, alpha=500).decode(v, c, b)
+    with pytest.raises(ValueError):
+        vlm.decode(lm, vlm.class_map(lm, vocab), v, c, b, alpha=500)
 
 
 def test_lm_blob_rejects_damage(built, model):

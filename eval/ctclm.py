@@ -283,10 +283,22 @@ class Dev:
         prim = ("tv", "dn_ink") + (() if in_sample_own else ("own",))
         self.views = {
             "dialogue": [i for i, x in enumerate(L) if x["set"] in prim and not x["name"]],
-            "names": [i for i, x in enumerate(L) if x["set"] in ("tv", "dn_ink", "own") and x["name"]],
+            "names": [i for i, x in enumerate(L) if x["set"] in prim and x["name"]],
             "grad": [i for i, x in enumerate(L) if x["set"] == "dn_grad" and not x["name"]],
             "own": [i for i, x in enumerate(L) if x["set"] == "own" and not x["name"]],
         }
+        # devnative's ink crops include crops identical to teacher_val's own crops of the same line (both sets
+        # were cut from the same native screenshots; devnative sometimes numbers the line differently): the same
+        # input scored twice. A line repeats when its reference and the runtime's whole top-K output repeat
+        # (teacher_val's Vita- and PSP-scale cuts of one line are different crops and both stay)
+        seen, dedup = set(), []
+        for i in self.views["dialogue"]:
+            tv, tc, bl = self.arrays(i)
+            key = (L[i]["ref"], hashlib.sha256(tv.tobytes() + tc.tobytes() + bl.tobytes()).hexdigest())
+            if key not in seen:
+                seen.add(key)
+                dedup.append(i)
+        self.views["dialogue_distinct"] = dedup
         self.ref = [x["ref"] for x in L]
         self.greedy = [norm(x["greedy"]) for x in L]
         self.greedy_err = np.array([lev(p, r) for p, r in zip(self.greedy, self.ref)], np.int32)
@@ -462,7 +474,7 @@ def cmd_select(args):
         res["cv"]["folds"] = {str(f): {"lm": sp.cands[c][0], "config": sp.cands[c][1]} for f, c in cvj.items()}
         for m, d in devs.items():
             r = {}
-            for view in ("dialogue", "names", "grad"):
+            for view in ("dialogue", "names", "grad", "dialogue_distinct"):
                 ix = np.array(d.views[view])
                 r[view] = cluster_boot(sp.greedy[m][ix], sp.E[m][j][ix], d.chars[ix], d.vn[ix])
             ix = np.array(d.views["dialogue"])
@@ -481,7 +493,7 @@ def cmd_select(args):
                              "dialogue": cluster_boot(sp.greedy[m][ix], sp.E[m][jm][ix], d.chars[ix], d.vn[ix])}
             res["per_model"][m] = r
         # pooled over the models (each model's own lines; VN clusters across models share their VN)
-        for view in ("dialogue", "names"):
+        for view in ("dialogue", "names", "dialogue_distinct"):
             ga = np.concatenate([sp.greedy[m][devs[m].views[view]] for m in devs])
             gb = np.concatenate([sp.E[m][j][devs[m].views[view]] for m in devs])
             ch = np.concatenate([devs[m].chars[devs[m].views[view]] for m in devs])
@@ -627,7 +639,11 @@ def _a9_diff(a, b, c, d):
     # the code a run leaves out and positive at the code it adds; the cost model sums the net mix
     counts = {k: a[0].get(k, 0) - b[0].get(k, 0) - c[0].get(k, 0) + d[0].get(k, 0) for k in keys}
     ex = {k: a[1].get(k, 0) - b[1].get(k, 0) - c[1].get(k, 0) + d[1].get(k, 0) for k in a[1]}
-    cache = {k: max(0, a[2][k] - b[2][k] - c[2][k] + d[2][k]) for k in a[2]}
+    # cache misses differ with the memory layout too, so a difference can be negative; the cost model takes
+    # the clamped value (a component never gets cheaper than its instructions), the signed one is reported
+    raw = {k: a[2][k] - b[2][k] - c[2][k] + d[2][k] for k in a[2]}
+    cache = {k: max(0, v) for k, v in raw.items()}
+    cache["signed"] = raw
     return {k: v for k, v in counts.items() if v}, ex, cache
 
 
@@ -657,39 +673,70 @@ def cmd_a9(args):
             name, pack = p.name[len(f"f_{m}_"):].rsplit("_", 1)
             if (p / "meta.json").exists():
                 runs[(name, pack)] = _a9_run(p)
-        if ("base", "dev40") not in runs:
+        one, two = args.packs.split(",")
+        if ("base", one) not in runs:
             continue
-        b40, b80 = runs[("base", "dev40")], runs[("base", "dev80")]
+        b40, b80 = runs[("base", one)], runs[("base", two)]
         n_lines, frames = b40[4], b40[3]
         if b80[4] != 2 * n_lines or b80[3] != 2 * frames:
             raise SystemExit(f"{m}: the 2N pack is not the N pack twice")
-        net = _a9_cost(d / f"f_{m}_base_dev40", b40[0], b40[1], b40[2], frames)
+        net = _a9_cost(d / f"f_{m}_base_{one}", b40[0], b40[1], b40[2], frames)
         res = {"lines": n_lines, "frames": frames, "frames_per_line": frames / n_lines,
                "network_ms_640px": {str(c): [x * 80 / (c * 1000) for x in net["cycles_per_frame"][c]] for c in clocks}}
         zero = ({}, {k: 0 for k in b40[1]}, {k: 0 for k in b40[2]}, 0, 0)
         comps = {}
         for name in sorted({n for n, _ in runs if n != "base"}):
-            ref40, ref80 = (b40, b80) if name == "topk8" else (runs[("topk8", "dev40")], runs[("topk8", "dev80")])
-            r40, r80 = runs[(name, "dev40")], runs[(name, "dev80")]
+            ref40, ref80 = (b40, b80) if name == "topk8" else (runs[("topk8", one)], runs[("topk8", two)])
+            r40, r80 = runs[(name, one)], runs[(name, two)]
             c, ex, ca = _a9_diff(r80, r40, ref80, ref40)          # per-line work of N lines
-            cost = _a9_cost(d / f"f_{m}_{name}_dev40", c, ex, ca, frames)
-            comp = {"insns_per_frame": cost["insns_per_frame"], "l1d_misses_per_frame": cost["l1d_misses_per_frame"],
+            cost = _a9_cost(d / f"f_{m}_{name}_{one}", c, ex, ca, frames)
+            comp = {"_cyc": cost["cycles_per_frame"][444],
+                    "insns_per_frame": cost["insns_per_frame"], "l1d_misses_per_frame": cost["l1d_misses_per_frame"],
                     "l2_misses_per_frame": cost["l2_misses_per_frame"],
+                    "cache_signed_per_frame": {k: v / frames for k, v in ca["signed"].items()},
                     "ms_per_dev_line": {str(k): [x * frames / n_lines / (k * 1000) for x in cost["cycles_per_frame"][k]]
                                         for k in clocks},
                     "ms_640px": {str(k): [x * 80 / (k * 1000) for x in cost["cycles_per_frame"][k]] for k in clocks},
                     "top_functions": cost["top_functions"]}
             if name != "topk8":
                 lc, lex, lca = _a9_diff(r40, ref40, (c, ex, ca), zero[:3])   # once: (lm - topk at N) - N lines
-                load = _a9_cost(d / f"f_{m}_{name}_dev40", lc, lex, lca, 1)
+                load = _a9_cost(d / f"f_{m}_{name}_{one}", lc, lex, lca, 1)
                 comp["load_ms"] = {str(k): [x / (k * 1000) for x in load["cycles_per_frame"][k]] for k in clocks}
+                comp["load_cycles_444"] = load["cycles_per_frame"][444]
                 comp["load_insns"] = int(load["insns_per_frame"])
                 comp["load_insns_crc"] = int(dict(load["top_functions"]).get("vocr_lm_check_crc", 0))
             comps[name] = comp
         res["components"] = comps
+        res["network_cycles_per_frame_444"] = net["cycles_per_frame"][444]
+        for k, v in comps.items():
+            v["cycles_per_frame_444"] = v.get("_cyc", None)
         out["models"][m] = res
         print(m, json.dumps({k: {kk: [round(x, 2) for x in vv] for kk, vv in v["ms_640px"].items()}
                              for k, v in comps.items()}), flush=True)
+    # The owner (2026-10-14 18:09Z): calibrate every estimate to the console's measured VOCR3-H15 time. Each bound of
+    # the cycle range is scaled so that the reference model's network estimate equals the measured ms per CTC
+    # frame (the low bound to the low measurement, the high to the high): ms = cycles x measured / reference cycles.
+    ref, lo_ms, hi_ms = args.calibrate.split(":")
+    lo_ms, hi_ms = float(lo_ms), float(hi_ms)
+    if ref in out["models"]:
+        rc = out["models"][ref]["network_cycles_per_frame_444"]
+        f = (lo_ms / rc[0], hi_ms / rc[1])                    # ms per estimated cycle, per bound
+        out["calibration"] = {"reference_model": ref, "measured_ms_per_frame": [lo_ms, hi_ms],
+                              "reference_cycles_per_frame_444": rc, "ms_per_cycle": list(f),
+                              "equivalent_clock_mhz": [1 / f[0] / 1000, 1 / f[1] / 1000],
+                              "source": "owner 2026-10-14 18:09Z, vita-jp-overlay v0.8.0-test.1 console logs: "
+                                        "VOCR3-H15 (cb3c61a8...) about 5.0-5.2 ms per CTC frame"}
+        cal = lambda c: [c[0] * f[0], c[1] * f[1]]  # noqa: E731
+        for m, r in out["models"].items():
+            r["calibrated_network_ms_per_frame"] = cal(r["network_cycles_per_frame_444"])
+            r["calibrated_network_ms_640px"] = [x * 80 for x in r["calibrated_network_ms_per_frame"]]
+            for k, v in r["components"].items():
+                v["calibrated_ms_640px"] = [x * 80 for x in cal(v["cycles_per_frame_444"])]
+                if "load_cycles_444" in v:
+                    v["calibrated_load_ms"] = cal(v["load_cycles_444"])
+    for r in out["models"].values():
+        for v in r["components"].values():
+            v.pop("_cyc", None)
     Path(args.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
 
 
@@ -732,7 +779,9 @@ def recipe_table(devs, tune_dir, prefix, lm_dir, lms):
         f = {x: sp.best(keep=lambda d, i, x=x: d.fold[i] != x) for x in (0, 1)}
         cv = sum(int(sp.E[m][f[int(d.fold[i])]][i]) for m, d in devs.items() for i in d.views["dialogue"])
         man = json.loads((Path(lm_dir) / f"{lm}.json").read_text(encoding="utf-8"))
+        ex = man.get("exclusion")
         rows.append({"lm": lm, "bytes": man["bytes"], "order": man["order"],
+                     "protected_filter": bool(ex), "extra_vns_excluded": (ex or {}).get("extra_vns", 0),
                      "corpora": [c["name"] for c in man["corpora"]],
                      "jiten_share": {x["name"]: x["share"] for x in man["jiten"]},
                      "heldout_nats_per_char": min(x["heldout_nats_per_char"] for x in man["profiles"]),
@@ -788,6 +837,7 @@ def cmd_summary(args):
                            "bootstrap": "10,000 VN-cluster resamples, seed 20261014, 95% percentile interval"},
            "models": {m: {"blob_sha256": d.meta["blob_sha256"], "n_classes": d.meta["n_classes"],
                           "in_sample_own": d.in_sample_own} for m, d in devs.items()},
+           "models_views": {m: {v: len(ix) for v, ix in d.views.items()} for m, d in devs.items()},
            "selection": {"rule": "per LM tier, the (configuration) with the fewest pooled development dialogue errors "
                                  "over the six models (first minimum in grid order); 2-fold VN cross-validation "
                                  "re-selects on one fold and scores the other",
@@ -796,7 +846,7 @@ def cmd_summary(args):
            "oracle": topk_oracle(devs)}
     for tier, s in sel["tiers"].items():
         t = {k: s[k] for k in ("lm", "lm_bytes", "config", "candidates", "pooled_dialogue", "pooled_names",
-                               "greedy_pooled", "gate_curve")}
+                               "pooled_dialogue_distinct", "greedy_pooled", "gate_curve")}
         t["cv_folds"] = s["cv"]["folds"]
         t["per_model"] = s["per_model"]
         rel = dict(x.split("=") for x in args.release_map.split(","))[tier]
@@ -818,6 +868,8 @@ def cmd_summary(args):
         out["ablation"][a["tier"]] = {"lm": a["lm"], "config": a["config"], "rows": a["rows"]}
     if args.recipes:
         out["recipes"] = recipe_table(devs, args.tune, args.recipe_prefix, args.lm_dir, args.recipes.split(","))
+    if args.ablations:
+        out["ablations"] = recipe_table(devs, args.tune, args.ablation_prefix, args.lm_dir, args.ablations.split(","))
     if args.a9:
         out["a9"] = json.loads(Path(args.a9).read_text(encoding="utf-8"))
     if args.gate_sweep:
@@ -907,6 +959,23 @@ def cmd_tables(args):
         p.append(f"| {NAMES[m]} | " + " | ".join(_ci(pm[t]["dialogue"]) for t in tiers) + " | "
                  + _ci(pm[tiers[-1]]["dialogue_cv"]) + " |")
     p.append("| pooled | " + " | ".join(_ci(pd[t]) for t in tiers) + " | |")
+    p.key = "distinct"
+    if all("pooled_dialogue_distinct" in j["tiers"][t] for t in tiers):
+        p.append("Each crop once (the dialogue view without the second copy of each devnative crop that is "
+                 "teacher_val's own crop of the line, i.e. the same reference and the same runtime output; "
+                 "dialogue CER, greedy → beam + LM):\n")
+        p.append("| model | lines | chars | greedy | " + " | ".join(tiers) + " |")
+        p.append("|---|---:|---:|---:|" + "---:|" * len(tiers))
+        for m in MODELS:
+            r0 = j["tiers"][tiers[0]]["per_model"][m]["dialogue_distinct"]
+            n = j["models_views"][m]["dialogue_distinct"] if "models_views" in j else ""
+            p.append(f"| {NAMES[m]} | {n} | {r0['chars']:,} | {_pct(r0['cer_a'])} | "
+                     + " | ".join(_pct(j["tiers"][t]["per_model"][m]["dialogue_distinct"]["cer_b"]) for t in tiers)
+                     + " |")
+        pdd = {t: j["tiers"][t]["pooled_dialogue_distinct"] for t in tiers}
+        p.append(f"| pooled | | {pdd[tiers[0]]['chars']:,} | {_pct(pdd[tiers[0]]['cer_a'])} | "
+                 + " | ".join(f"{_pct(pdd[t]['cer_b'])} ({100 * (1 - pdd[t]['errors_b'] / pdd[t]['errors_a']):.1f}% "
+                              "fewer errors)" for t in tiers) + " |")
     p.key = "secondary"
     p.append("\nSecondary views: names (CER) and the console finder's GRAD crops of devnative's dialogue lines:\n")
     p.append("| model | names greedy | " + " | ".join(f"names {t}" for t in tiers) + " | GRAD greedy | GRAD "
@@ -1005,10 +1074,23 @@ def cmd_tables(args):
         for b in beams:
             p.append(f"| {b} | " + " | ".join(str(next(r["dialogue"] for r in a["rows"] if r["beam"] == b
                                                         and r["topk"] == k)) for k in ks) + " |")
+    p.key = "ablations"
+    if j.get("ablations"):
+        p.append("Where the gain comes from (round 7's grid, every LM with the protected-name filter; pooled errors "
+                 "over the six models at each LM's best shared setting, 2-fold cross-validated, names):\n")
+        p.append("| LM | bytes | Jiten | development VNs' names removed too | held-out nats/char | dialogue | CV | "
+                 "names |")
+        p.append("|---|---:|---|---|---:|---:|---:|---:|")
+        for r in j["ablations"]:
+            js = ", ".join(f"{k} {v:g}" for k, v in r["jiten_share"].items()) or "none"
+            p.append(f"| {r['lm']} | {r['bytes']:,} | {js} | {'yes' if r['extra_vns_excluded'] else 'no'} | "
+                     f"{r['heldout_nats_per_char']:.3f} | {r['dialogue_errors']} | {r['dialogue_errors_cv']} | "
+                     f"{r['names_errors']} |")
     p.key = "recipes"
     if j.get("recipes"):
-        p.append("\nLM recipes (round 2's grid; pooled dialogue errors at each LM's best shared configuration, "
-                 "cross-validated, names; held-out cross-entropy on realplus v2 labels):\n")
+        p.append("\nLM recipes (rounds 2–3, LMs built before the protected-name filter; pooled dialogue errors at "
+                 "each LM's best shared configuration, cross-validated, names; held-out cross-entropy on realplus v2 "
+                 "labels):\n")
         p.append("| LM | bytes | order | corpora | Jiten share | held-out nats/char | dialogue | CV | names |")
         p.append("|---|---:|---:|---|---|---:|---:|---:|---:|")
         for r in j["recipes"]:
@@ -1018,10 +1100,55 @@ def cmd_tables(args):
             p.append(f"| {r['lm']} | {r['bytes']:,} | {r['order']} | {cor} | {js} | {r['heldout_nats_per_char']:.3f} "
                      f"| {r['dialogue_errors']} | {r['dialogue_errors_cv']} | {r['names_errors']} |")
     p.key = "a9"
+    if j.get("a9") and j["a9"].get("calibration"):
+        a9, cb = j["a9"]["models"], j["a9"]["calibration"]
+        ms = cb["measured_ms_per_frame"]
+        fmt2 = lambda x: f"{x[0]:.1f}–{x[1]:.1f}"  # noqa: E731
+        p.append(f"Calibrated to the console (owner 2026-10-14 18:09Z): every estimate scaled so that "
+                 f"{NAMES.get(cb['reference_model'], cb['reference_model'])}'s network costs the measured "
+                 f"{ms[0]:.1f}–{ms[1]:.1f} ms per CTC frame (equivalent to an A9 at "
+                 f"{cb['equivalent_clock_mhz'][0]:.0f}–{cb['equivalent_clock_mhz'][1]:.0f} MHz under the cost "
+                 "model's low and high bounds). ms per 640-px line (80 CTC frames), low–high:\n")
+        p.append("| model | network (greedy) | + top-8 | " + " | ".join(f"+ beam + {t} LM" for t in tiers)
+                 + " | LM load, once |")
+        p.append("|---|---|---|" + "---|" * len(tiers) + "---|")
+        for m, r in a9.items():
+            comps = r["components"]
+            if not comps:
+                p.append(f"| {NAMES.get(m, m)} (calibration reference) | {fmt2(r['calibrated_network_ms_640px'])} | "
+                         + " | ".join("–" for _ in range(len(tiers) + 2)) + " |")
+                continue
+            loads = "; ".join(f"{t} {fmt2(comps['lm' + t]['calibrated_load_ms'])}" for t in tiers if "lm" + t in comps)
+            p.append(f"| {NAMES.get(m, m)} | {fmt2(r['calibrated_network_ms_640px'])} | "
+                     f"{fmt2(comps['topk8']['calibrated_ms_640px'])} | "
+                     + " | ".join(fmt2(comps["lm" + t]["calibrated_ms_640px"]) for t in tiers) + f" | {loads} ms |")
+        p.append("\nPer typical full textbox (3 lines of about 640 px), calibrated, against the tier limits (Small "
+                 "< 1 s, Normal < 2 s, Large < 3 s); the first-box columns add the LM's one-time load (CRC check, "
+                 "parse, class map; file reading not counted) to a session's first box:\n")
+        p.append("| model | greedy box | beam + LM box (any tier) | " + " | ".join(f"first box, {t} LM" for t in tiers)
+                 + " |")
+        p.append("|---|---|---|" + "---|" * len(tiers))
+        for m, r in a9.items():
+            comps = r["components"]
+            net = r["calibrated_network_ms_640px"]
+            if not comps:
+                p.append(f"| {NAMES.get(m, m)} | {3 * net[0] / 1000:.2f}–{3 * net[1] / 1000:.2f} s | – | "
+                         + " | ".join("–" for _ in tiers) + " |")
+                continue
+            tk = comps["topk8"]["calibrated_ms_640px"]
+            lo = min(3 * (net[0] + tk[0] + comps["lm" + t]["calibrated_ms_640px"][0]) for t in tiers) / 1000
+            hi = max(3 * (net[1] + tk[1] + comps["lm" + t]["calibrated_ms_640px"][1]) for t in tiers) / 1000
+
+            def first(t):
+                c = comps["lm" + t]
+                return [(3 * (net[k] + tk[k] + c["calibrated_ms_640px"][k]) + c["calibrated_load_ms"][k]) / 1000
+                        for k in (0, 1)]
+            p.append(f"| {NAMES.get(m, m)} | {3 * net[0] / 1000:.2f}–{3 * net[1] / 1000:.2f} s | {lo:.2f}–{hi:.2f} s | "
+                     + " | ".join(f"{first(t)[0]:.2f}–{first(t)[1]:.2f} s" for t in tiers) + " |")
     if j.get("a9"):
-        a9 = j["a9"]["models"]
-        p.append("\nEstimated Cortex-A9 cost (vita/a9_cycles.py on the Vita build, development lines), ms per 640-px "
-                 "line (80 CTC frames) at 444 MHz, low–high (333 MHz in brackets):\n")
+        a9 = {m: r for m, r in j["a9"]["models"].items() if r["components"]}
+        p.append("\nThe uncalibrated estimate (vita/a9_cycles.py's cost model on the Vita build, development lines), "
+                 "ms per 640-px line at 444 MHz, low–high (333 MHz in brackets):\n")
         p.append("| model | network (greedy) | + top-8 | " + " | ".join(f"+ beam + {t} LM" for t in tiers)
                  + " | LM load, once |")
         p.append("|---|---|---|" + "---|" * len(tiers) + "---|")
@@ -1039,25 +1166,27 @@ def cmd_tables(args):
             p.append(f"| {NAMES.get(m, m)} | {cell(r['network_ms_640px'])} | {cell(comps['topk8']['ms_640px'])} | "
                      + " | ".join(cell(comps["lm" + t]["ms_640px"]) if "lm" + t in comps else "–" for t in tiers)
                      + f" | {loads} ms |")
-        p.append("\nPer typical full textbox (3 lines of about 640 px) at 444 MHz, the network plus top-K plus "
-                 "beam + LM, estimated, against the tier limits (Small ≤ 1 s, Normal ≤ 2 s, Large ≤ 3 s):\n")
-        p.append("| model | greedy box | " + " | ".join(f"with the {t} LM" for t in tiers) + " |")
-        p.append("|---|---|" + "---|" * len(tiers))
+        p.append("\nThe same per typical full textbox (3 lines of about 640 px), uncalibrated; the last column adds "
+                 "the LM's one-time load to a session's first box (4 MB tier, file reading not counted):\n")
+        p.append("| model | greedy, 444 MHz | greedy, 333 MHz | beam + LM (any tier), 444 MHz | beam + LM, 333 MHz | "
+                 "first box with the 4MB LM, 444 MHz |")
+        p.append("|---|---|---|---|---|---|")
         for m, r in a9.items():
             comps = r["components"]
-            net = r["network_ms_640px"]["444"]
-            tk = comps["topk8"]["ms_640px"]["444"]
-            cells = []
-            for t in tiers:
-                c = comps.get("lm" + t)
-                if not c:
-                    cells.append("–")
-                    continue
-                lo = 3 * (net[0] + tk[0] + c["ms_640px"]["444"][0]) / 1000
-                hi = 3 * (net[1] + tk[1] + c["ms_640px"]["444"][1]) / 1000
-                cells.append(f"{lo:.2f}–{hi:.2f} s")
-            p.append(f"| {NAMES.get(m, m)} | {3 * net[0] / 1000:.2f}–{3 * net[1] / 1000:.2f} s | "
-                     + " | ".join(cells) + " |")
+
+            def box(mhz, with_lm):
+                net, tk = r["network_ms_640px"][mhz], comps["topk8"]["ms_640px"][mhz]
+                if not with_lm:
+                    return 3 * net[0] / 1000, 3 * net[1] / 1000
+                los = [3 * (net[0] + tk[0] + comps["lm" + t]["ms_640px"][mhz][0]) / 1000 for t in tiers]
+                his = [3 * (net[1] + tk[1] + comps["lm" + t]["ms_640px"][mhz][1]) / 1000 for t in tiers]
+                return min(los), max(his)
+            g4, g3, b4, b3 = box("444", 0), box("333", 0), box("444", 1), box("333", 1)
+            big = comps["lm" + tiers[-1]]
+            net, tk = r["network_ms_640px"]["444"], comps["topk8"]["ms_640px"]["444"]
+            f = [(3 * (net[k] + tk[k] + big["ms_640px"]["444"][k]) + big["load_ms"]["444"][k]) / 1000 for k in (0, 1)]
+            fmt = lambda x: f"{x[0]:.2f}–{x[1]:.2f} s"  # noqa: E731
+            p.append(f"| {NAMES.get(m, m)} | {fmt(g4)} | {fmt(g3)} | {fmt(b4)} | {fmt(b3)} | {fmt(f)} |")
     p.key = "memory"
     p.append("\nMemory per tier: the LM blob (resident while the game runs, read-only), the decoder workspace "
              "(vocr_lm_workspace_bytes, a 1,024-px line) and the caller's top-K buffers:\n")
@@ -1102,6 +1231,49 @@ def cmd_tables(args):
         print("\n".join(x for v in p.chunks.values() for x in v))
 
 
+def cmd_pack(args):
+    """The A9 pack: `per_set` dialogue lines of at least 10 characters from teacher_val and from devnative ink,
+    distinct by line id and by crop pixels, in sha256(id) order; vocr_cli's pack format (as stored, grey),
+    written once (OUT.bin) and twice in a row (OUT2.bin, for the per-line slopes), with OUT.json listing them."""
+    import struct
+    rows, seen_id, seen_px = [], set(), set()
+    for s in ("tv", "dn_ink"):
+        cand = [r for r in load_set(s) if not r["name"] and len(r["ref"]) >= 10]
+        cand.sort(key=lambda r: hashlib.sha256(r["id"].encode()).hexdigest())
+        n = 0
+        for r in cand:
+            px = hashlib.sha256(np.ascontiguousarray(r["img"]).tobytes() + repr(r["img"].shape).encode()).hexdigest()
+            if r["id"] in seen_id or px in seen_px:
+                continue
+            seen_id.add(r["id"])
+            seen_px.add(px)
+            rows.append(r)
+            n += 1
+            if n == args.per_set:
+                break
+    out = Path(args.out)
+
+    def write(path, reps):
+        with open(path, "wb") as f:
+            f.write(struct.pack("<I", len(rows) * reps))
+            for _ in range(reps):
+                for r in rows:
+                    g = np.ascontiguousarray(r["img"])
+                    f.write(struct.pack("<III", g.shape[0], g.shape[1], 1))
+                    f.write(g.tobytes())
+    write(out.with_suffix(".bin"), 1)
+    write(out.parent / (out.stem + "x2.bin"), 2)
+    widths = [round(r["img"].shape[1] * 32 / r["img"].shape[0]) for r in rows]
+    meta = {"kind": "ctclm-a9-pack", "lines": len(rows), "per_set": args.per_set,
+            "mean_width_at_height_32": round(float(np.mean(widths)), 1),
+            "rows": [{"set": r["set"], "id": r["id"], "vn": r["vn"], "chars": len(r["ref"]),
+                      "shape": list(r["img"].shape)} for r in rows],
+            "sha256": sha256(out.with_suffix(".bin")), "sha256_x2": sha256(out.parent / (out.stem + "x2.bin"))}
+    out.with_suffix(".json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
+    print(f"{len(rows)} lines, mean width {meta['mean_width_at_height_32']} px at height 32 -> "
+          f"{out.with_suffix('.bin')}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1144,7 +1316,10 @@ def main():
     r.add_argument("--out", required=True)
     q = sub.add_parser("a9")
     q.add_argument("--dir", required=True, help="the directory of a9/run_final.sh's runs")
-    q.add_argument("--models", default="v3FL10,v3W20,v4W20")
+    q.add_argument("--packs", default="devp40,devp40x2", help="the N-line and 2N-line pack names (run suffixes)")
+    q.add_argument("--calibrate", default="v3H15:5.0:5.2",
+                   help="MODEL:LO:HI, the console's measured ms per CTC frame of MODEL's network (owner 18:09Z)")
+    q.add_argument("--models", dest="models", default="v3FL10,v3H15,v3W20,v4W20")
     q.add_argument("--out", required=True)
     y = sub.add_parser("summary")
     y.add_argument("--extract", required=True)
@@ -1160,13 +1335,18 @@ def main():
     y.add_argument("--recipe-prefix", default="r2_")
     y.add_argument("--grids", default="")
     y.add_argument("--gate-sweep", default="", help="PREFIX:LM of tune files that vary the gate only")
+    y.add_argument("--ablations", default="", help="LM names tuned with --ablation-prefix (the ablation table)")
+    y.add_argument("--ablation-prefix", default="r7_")
     y.add_argument("--out", required=True)
+    k = sub.add_parser("pack")
+    k.add_argument("--out", required=True, help="OUT (OUT.bin, OUTx2.bin, OUT.json)")
+    k.add_argument("--per-set", type=int, default=20)
     w = sub.add_parser("tables")
     w.add_argument("--json", default=str(ROOT / "docs" / "ctc-lm-decode.json"))
     w.add_argument("--doc", help="rewrite the <!-- table:KEY --> blocks of this markdown file in place")
     args = ap.parse_args()
     {"extract": cmd_extract, "tune": cmd_tune, "select": cmd_select, "ablate": cmd_ablate,
-     "report": cmd_report, "a9": cmd_a9, "summary": cmd_summary, "tables": cmd_tables}[args.cmd](args)
+     "report": cmd_report, "a9": cmd_a9, "summary": cmd_summary, "tables": cmd_tables, "pack": cmd_pack}[args.cmd](args)
 
 
 if __name__ == "__main__":

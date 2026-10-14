@@ -438,6 +438,11 @@ int vocr_lm_decode(vocr_lm_ctx *c, const vocr_extra *ex, char *text, size_t text
             return VOCR_E_CANCELLED;
         }
         /* candidates: the top-1 at 0, then the top-K classes and the blank within the gate */
+        for (j = 0; j < K; j++)
+            if (tc[j] >= m->n_classes) { /* not from this model's vocr_run() */
+                text[0] = 0;
+                return VOCR_E_ARG;
+            }
         cc[0] = tc[0];
         cq[0] = 0;
         has_blank = tc[0] == 0;

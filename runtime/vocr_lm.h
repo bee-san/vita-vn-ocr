@@ -111,7 +111,8 @@ int vocr_lm_init(vocr_lm_ctx *c, const vocr_model *m, const vocr_lm *lm, const v
  * ex->topk_logit, ex->topk_class and ex->blank_logit (NULL: the blank is a candidate only when it is in
  * the top-K). Polls ex->cancel(ex->user) every 8 frames (VOCR_E_CANCELLED). text gets NUL-terminated
  * UTF-8 (VOCR_E_TEXT if it does not fit: whole characters only); *chars (may be NULL) its characters.
- * VOCR_E_WIDTH if ex->frames is above the planned max_frames or above ex->cap_frames. */
+ * VOCR_E_WIDTH if ex->frames is above the planned max_frames or above ex->cap_frames; VOCR_E_ARG if a top-K
+ * class is not below the model's n_classes (extras from another model). */
 int vocr_lm_decode(vocr_lm_ctx *c, const vocr_extra *ex, char *text, size_t text_cap, unsigned *chars);
 /* LM token of one code point (0 = <unk>). */
 unsigned vocr_lm_token(const vocr_lm *lm, uint32_t cp);

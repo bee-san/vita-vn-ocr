@@ -10,7 +10,9 @@
  */
 #include "../vocr_lm.h"
 
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static int failures;
@@ -142,7 +144,24 @@ static void fake_model(vocr_model *m)
     m->height = 32;
 }
 
-static unsigned char ws[1 << 18] __attribute__((aligned(16)));
+/* Each decoder gets a heap block of exactly vocr_lm_workspace_bytes(), so ASan reports any access past it
+ * (the sizes are multiples of 16 and malloc's blocks 16-byte aligned on the hosts the tests run on). */
+static unsigned char *ws_block;
+static size_t ws_size;
+
+static int init_exact(vocr_lm_ctx *c, const vocr_model *m, const vocr_lm *lm, const vocr_lm_opts *o)
+{
+    const size_t need = vocr_lm_workspace_bytes(m, lm, o);
+    if (!need) return VOCR_E_ARG;
+    free(ws_block);
+    ws_block = (unsigned char *)malloc(need);
+    ws_size = need;
+    if (!ws_block) return VOCR_E_ARENA;
+    if ((uintptr_t)ws_block & 15u) fprintf(stderr, "note: malloc block not 16-byte aligned\n");
+    return vocr_lm_init(c, m, lm, o, ws_block, need);
+}
+
+static unsigned char ws[1 << 18] __attribute__((aligned(16))); /* for the error-path tests */
 
 static void test_load(void)
 {
@@ -293,7 +312,7 @@ static void test_greedy_equivalence(void)
         vocr_extra ex;
         char g[64], t[64];
         unsigned chars = 99, k = 1 + urand(TK);
-        size_t need;
+        const vocr_lm *use = NULL;
         make_line(&ex, 1 + urand(FR), k);
         if (urand(3) == 0) ex.blank_logit = NULL;
         memset(&o, 0, sizeof o);
@@ -301,9 +320,8 @@ static void test_greedy_equivalence(void)
         o.topk = 1 + urand(TK + 2);
         o.gate = (int)urand(VOCR_LM_MAX_GATE + 1);
         o.flags = urand(4);
-        need = vocr_lm_workspace_bytes(&m, urand(2) ? &lm : NULL, &o);
-        CHECK(need > 0 && need <= sizeof ws);
-        CHECK(vocr_lm_init(&c, &m, urand(2) ? &lm : NULL, &o, ws, need) == VOCR_OK);
+        if (urand(2)) use = &lm;
+        CHECK(init_exact(&c, &m, use, &o) == VOCR_OK);
         CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, &chars) == VOCR_OK);
         greedy_text(&m, &ex, g);
         CHECK(strcmp(t, g) == 0);
@@ -334,26 +352,26 @@ static void test_lm_and_gate(void)
     ex.topk_logit = (float *)(void *)v;
     ex.topk_class = (uint16_t *)(void *)cl;
     ex.blank_logit = (float *)(void *)b;
-    CHECK(vocr_lm_init(&c, &m, &lm, &o, ws, sizeof ws) == VOCR_OK);
+    CHECK(init_exact(&c, &m, &lm, &o) == VOCR_OK);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, &chars) == VOCR_OK);
     CHECK(strcmp(t, "ac") == 0 && chars == 2);
     o.gate = 150; /* 0.15 nat: the 0.2 nat frame is confident, the LM may not touch it */
-    CHECK(vocr_lm_init(&c, &m, &lm, &o, ws, sizeof ws) == VOCR_OK);
+    CHECK(init_exact(&c, &m, &lm, &o) == VOCR_OK);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_OK);
     CHECK(strcmp(t, "ad") == 0);
     o.gate = 3000;
     o.alpha = 500; /* 0.5 * 270 = 135 < 205 */
-    CHECK(vocr_lm_init(&c, &m, &lm, &o, ws, sizeof ws) == VOCR_OK);
+    CHECK(init_exact(&c, &m, &lm, &o) == VOCR_OK);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_OK);
     CHECK(strcmp(t, "ad") == 0);
     o.alpha = 1000;
     o.topk = 1; /* no alternatives at all */
-    CHECK(vocr_lm_init(&c, &m, &lm, &o, ws, sizeof ws) == VOCR_OK);
+    CHECK(init_exact(&c, &m, &lm, &o) == VOCR_OK);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_OK);
     CHECK(strcmp(t, "ad") == 0);
     /* the same input twice gives the same text: nothing carries over between lines */
     o.topk = 3;
-    CHECK(vocr_lm_init(&c, &m, &lm, &o, ws, sizeof ws) == VOCR_OK);
+    CHECK(init_exact(&c, &m, &lm, &o) == VOCR_OK);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_OK && strcmp(t, "ac") == 0);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_OK && strcmp(t, "ac") == 0);
     /* text overflow keeps whole characters only; cancellation empties the text */
@@ -412,17 +430,17 @@ static void test_brackets(void)
     char t[64];
     fake_model(&m);
     bracket_line(&ex, t1, a1, m1, 3);
-    CHECK(vocr_lm_init(&c, &m, NULL, &o, ws, sizeof ws) == VOCR_OK);
+    CHECK(init_exact(&c, &m, NULL, &o) == VOCR_OK);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_OK && strcmp(t, "\xe3\x80\x8e" "a\xe3\x80\x8d") == 0);
     o.bracket = 2000;
     CHECK(vocr_lm_workspace_bytes(&m, NULL, &o) > 0);
-    CHECK(vocr_lm_init(&c, &m, NULL, &o, ws, sizeof ws) == VOCR_OK);
+    CHECK(init_exact(&c, &m, NULL, &o) == VOCR_OK);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_OK && strcmp(t, "\xe3\x80\x8e" "a\xe3\x80\x8f") == 0);
     o.bracket = 400; /* below the 0.5-nat margin: the picture wins */
-    CHECK(vocr_lm_init(&c, &m, NULL, &o, ws, sizeof ws) == VOCR_OK);
+    CHECK(init_exact(&c, &m, NULL, &o) == VOCR_OK);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_OK && strcmp(t, "\xe3\x80\x8e" "a\xe3\x80\x8d") == 0);
     o.bracket = 2000;
-    CHECK(vocr_lm_init(&c, &m, NULL, &o, ws, sizeof ws) == VOCR_OK);
+    CHECK(init_exact(&c, &m, NULL, &o) == VOCR_OK);
     bracket_line(&ex, t2, a2, m2, 2);
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_OK && strcmp(t, "a\xe3\x80\x8d") == 0);
     bracket_line(&ex, t3, a3, m3, 5);
@@ -487,6 +505,9 @@ static void test_errors(void)
     ex.topk = 0;
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_E_ARG);
     ex.topk = 4;
+    tcl[4 * 3 + 2] = 10; /* a class this model does not have */
+    CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_E_ARG && t[0] == 0);
+    tcl[4 * 3 + 2] = 9;
     ex.topk_class = NULL;
     CHECK(vocr_lm_decode(&c, &ex, t, sizeof t, NULL) == VOCR_E_ARG);
     CHECK(vocr_lm_decode(NULL, &ex, t, sizeof t, NULL) == VOCR_E_ARG);
@@ -507,6 +528,7 @@ int main(void)
     test_lm_and_gate();
     test_brackets();
     test_errors();
+    free(ws_block);
     if (failures) {
         fprintf(stderr, "test_vocr_lm: %d failure(s)\n", failures);
         return 1;

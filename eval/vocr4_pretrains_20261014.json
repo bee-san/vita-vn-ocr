@@ -1,0 +1,56 @@
+{
+ "kind": "vocr4-pretrains",
+ "note": "the init checkpoints of every VOCR4 fine-tune: the three reused VOCR3 pretrains (C and A; pinned in eval/vocr4_inputs.sha256) and VOCR4's six M pretrains (paths relative to $HERD/shared/artifacts)",
+ "reused": [
+  {
+   "checkpoint": "synth3/study2/runs/pre_FL10_C_mix_pre128k_seed1/ckpt_step128000.pt",
+   "sha256": "8aba1ad7b45e970024cbbd0d6fb153335ec725f18d9412a443b41d7471371d64"
+  },
+  {
+   "checkpoint": "synth3/study2/runs/pre_H15_C_mix_seed2/ckpt_step40000.pt",
+   "sha256": "1fbb1c00fc75bc0d447ef9a3256d773682bae9a54bb8cbcf30006e2459b262d4"
+  },
+  {
+   "checkpoint": "synth3/vocr3/runs/pre_W20_C_mix_seed1/ckpt_step32000.pt",
+   "sha256": "d24fc83495f5c5726338c759263ceb30eb615be9b86711aa48059c4bd316d2ed"
+  }
+ ],
+ "m_pretrains": [
+  {
+   "run": "pre_FL10_M3_seed1",
+   "checkpoint": "vocr4-train/runs/pre_FL10_M3_seed1/ckpt_step128000.pt",
+   "sha256": "4e394ab7e38b39804735c0460f8b9f1b67ae6c5c1b432eb68d835d125b1e9795",
+   "bytes": 9510792
+  },
+  {
+   "run": "pre_FL10_M3_seed2",
+   "checkpoint": "vocr4-train/runs/pre_FL10_M3_seed2/ckpt_step128000.pt",
+   "sha256": "0b15399afd98d5bab939b19b08822e48368daeaf61b53ec1db58a9a32afc3748",
+   "bytes": 9510792
+  },
+  {
+   "run": "pre_H15_M3_seed1",
+   "checkpoint": "vocr4-train/runs/pre_H15_M3_seed1/ckpt_step40000.pt",
+   "sha256": "d0f94412afac22a732ff1b549fe19086f0b51e94df8392fbe249598800574581",
+   "bytes": 16912571
+  },
+  {
+   "run": "pre_H15_M3_seed2",
+   "checkpoint": "vocr4-train/runs/pre_H15_M3_seed2/ckpt_step40000.pt",
+   "sha256": "47d466a35e8fd91ff7782d14005fa2b0cd0b9a4f0c054a345c2330df0fac82da",
+   "bytes": 16912571
+  },
+  {
+   "run": "pre_W20_M3_seed1",
+   "checkpoint": "vocr4-train/runs/pre_W20_M3_seed1/ckpt_step32000.pt",
+   "sha256": "d0b360e07321ddbedd9e9f20af97a9d9f922aadf17840d5e878c506219bd04c2",
+   "bytes": 23109051
+  },
+  {
+   "run": "pre_W20_M3_seed2",
+   "checkpoint": "vocr4-train/runs/pre_W20_M3_seed2/ckpt_step32000.pt",
+   "sha256": "e49bc2446f520700ae529d773ff9c356eac6e94a292e10d5848c741936765400",
+   "bytes": 23109051
+  }
+ ]
+}

@@ -1,0 +1,152 @@
+{
+ "kind": "vocr4-selection",
+ "size": "H15",
+ "final_arm": "C",
+ "candidates": [
+  "v4c_H15_seed1",
+  "v4c_H15_seed2"
+ ],
+ "runs": [
+  {
+   "run": "v4c_H15_seed1",
+   "arm": "C",
+   "candidate": true,
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/blobs/v4c_H15_seed1_w8.vocr",
+   "blob_sha256": "d380d1a4cf4c3c76e4e4b0f9a73fd1619cc1068c4f070d0da07e5e4d05254b9b",
+   "teacher_val_cer": 0.020704,
+   "devnative_cer": 0.022142,
+   "score": 0.021423,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.11379938701003,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/budget/a9/v4c_H15_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "v4c_H15_seed2",
+   "arm": "C",
+   "candidate": true,
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/blobs/v4c_H15_seed2_w8.vocr",
+   "blob_sha256": "3e908089eb7e11ad7ac0b02fcde8cc2ab7891ce26165cde116bd7f8746688147",
+   "teacher_val_cer": 0.020733,
+   "devnative_cer": 0.024056,
+   "score": 0.022395,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.1137838440409,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/budget/a9/v4c_H15_seed2_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "v4a_H15_seed1",
+   "arm": "A",
+   "candidate": false,
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/blobs/v4a_H15_seed1_w8.vocr",
+   "blob_sha256": "ce21fe067ba309370254774770c93f20bc766dce01b7ea59691fe0e6da5017ed",
+   "teacher_val_cer": 0.021584,
+   "devnative_cer": 0.021315,
+   "score": 0.02145,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.113820252883,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/budget/a9/v4a_H15_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "v4a_H15_seed2",
+   "arm": "A",
+   "candidate": false,
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/blobs/v4a_H15_seed2_w8.vocr",
+   "blob_sha256": "1464cd512dc6e66f95f64de40fd6acf812c13e66c3f0f8bf997eeb5d8ffe6fee",
+   "teacher_val_cer": 0.022229,
+   "devnative_cer": 0.022229,
+   "score": 0.022229,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.1138857912765,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/budget/a9/v4a_H15_seed2_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "v4m_H15_seed1",
+   "arm": "M",
+   "candidate": false,
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/blobs/v4m_H15_seed1_w8.vocr",
+   "blob_sha256": "452ce9da44144eb5c1adaae76129e87810dbd8384da3be0d585ca1cf478a5c8f",
+   "teacher_val_cer": 0.02217,
+   "devnative_cer": 0.024143,
+   "score": 0.023157,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.11387341434266,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/budget/a9/v4m_H15_seed1_l22048.json"
+   },
+   "budget_ok": true
+  },
+  {
+   "run": "v4m_H15_seed2",
+   "arm": "M",
+   "candidate": false,
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/blobs/v4m_H15_seed2_w8.vocr",
+   "blob_sha256": "68407f78729cb304067d16114ab4c149f10702e9d3007f7d3743c4b67bcfc8b0",
+   "teacher_val_cer": 0.019501,
+   "devnative_cer": 0.021141,
+   "score": 0.020321,
+   "budget": {
+    "blob_bytes": 1155968,
+    "arena_w8i": 182944,
+    "ms_333_high": 398.1138871552284,
+    "check": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/budget/a9/v4m_H15_seed2_l22048.json"
+   },
+   "budget_ok": true
+  }
+ ],
+ "selected": "v4c_H15_seed1",
+ "selected_blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/blobs/v4c_H15_seed1_w8.vocr",
+ "selected_blob_sha256": "d380d1a4cf4c3c76e4e4b0f9a73fd1619cc1068c4f070d0da07e5e4d05254b9b",
+ "protocol_sha256": "c0f64bd6004f3f9f65ce36920ca6c5525b86f3165e871078233a15a442d93839",
+ "computed": "2026-10-14T06:38:04Z",
+ "inputs": {
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4c_H15_seed1.json": "a249644b1b3cc82c9651086ff57bae5e2c9fc6c478cc968883552ea456ae6baa",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4c_H15_seed2.json": "cb7a0f97074c2d5e4c3c7f14421974de28c3b2ed6179fe18698c1da43be6387f",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4a_H15_seed1.json": "ff8911b9f37045ca947c2f3f4e80eaad148672e145b4e7605ed588b7a5eed09d",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4a_H15_seed2.json": "7543d74cc732531d059a10c37155f697363bc478ed9fcbfed9d994bd7a5a7c39",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4m_H15_seed1.json": "b81885f207d9cda043ebc9d70a16474b2f63742a88224da5886979edecf74868",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/tv_v4m_H15_seed2.json": "cc20678131f739b2faa27e721e1817a7475f6aa1439b3b8b03db85debdb6d850",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4c_H15_seed1.json": "4683af6ec0b6b127ad8764c98b06c9f2c1ca17806092bfa165c9efbb1c8923e3",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4c_H15_seed1.json": "fad5df4bf1da9a2c6ff0ad51f43430bd098e531214bf24ebb4a2b19ab5139ac7",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4c_H15_seed1.json": "faa82dd2ea435fc3c35b983df556e62f74fd7bbae43f31251c613af560e851a0",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4c_H15_seed1.json": "a82f308140cb7b13dfb11dbc6bcbd11fbed544b957819750db3ee5616d68d30a",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4c_H15_seed2.json": "20eb55584cd18e454c787fd420278eb51ba09b8bf8616e68974c061e7d8f7ecb",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4c_H15_seed2.json": "d9623dfdf1ddb05f6eb30b61ad1a3355d8b088a5a2cfa1a273827a49a4e36f81",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4c_H15_seed2.json": "1e29e4e877c9d147c961aa7e68093417d80acf0f805fa7f55aebc035d45147c2",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4c_H15_seed2.json": "cb0eaa074070aa86b3cdba3e3a14fda5c79882f16eac44c28d53e44427272f07",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4a_H15_seed1.json": "3efbb592852d90bb6c1c3547b4739a0ceb846a3e2994bf084823fdd7b72aa7ff",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4a_H15_seed1.json": "0a9cb48b4f9aac9af65ac46d1e6226c3302a8ae522d52940e64dbfaa5a972402",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4a_H15_seed1.json": "6309f742665ddc86d606083980c71ded8458f15f3ccd281adcd460630748c82f",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4a_H15_seed1.json": "9cb1876e438de00da0589973a45b05710b69704e340e39b22832c37901d0ef32",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4a_H15_seed2.json": "d125a430f778f34e586cf440f183727aebb1f5e36724a982d69b8c8a92d727b1",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4a_H15_seed2.json": "fb6ed97e1678af7f7551d35c5de1429f2355406c7aee8f868763099fe21b7d4b",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4a_H15_seed2.json": "451f7eca1a126a77d9fa70d45b157825e8f2d259e492e6429bbc5ae3cb5f8fe6",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4a_H15_seed2.json": "0d9a767f65980a5aa679da384bf41b4c17c413a20230a643e2dad0b34f38d874",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4m_H15_seed1.json": "e2da49ad1c9bb87d5e9b3cebd0cdd8087536c0e2e5839892fc5cbc0c96418f37",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4m_H15_seed1.json": "3b6dee9c0b35e719dfc0d0bb28a0552313bf5ada6989c67c84d69b4ce19cdd0a",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4m_H15_seed1.json": "b454630ecd8e242880870845fb4700b3d13a6f1cf138c658545483b50df64861",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4m_H15_seed1.json": "335847ce5dd5a782de0041ca27c8c51d0376dbc09134f6cef78e1686281dc689",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_ink_v4m_H15_seed2.json": "02eaed20870c5effd2ca7d2f52bb936278d7aa9ed863b24fee5bca41dd52b0ca",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_strict_grad_v4m_H15_seed2.json": "ceb4101705ca9832fa2fa4d00c3733138a69e7e6388fb53d38cbdce05cac55a7",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_ink_v4m_H15_seed2.json": "fbe7c58f6906c2415c2d025039fd89e813809b086d82bb6dbf6bcf2de6a4516a",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/scores/dn_tv_native_grad_v4m_H15_seed2.json": "bffaf80e846b05658bb67eb6b4a11c6e074a85028f0a55b375f9bfdf346b04b8",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/real_decision.json": "5c601c2da4582c0d4ae35fdc44ec3dee692fe82e3d1d091078723276be05a43a",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/H15/synth_decision.json": "48886b4a9b0c8d2b8fbfd3a9049e5016a8a5554cde2fdc4eab05cbf1132b49b0"
+ }
+}

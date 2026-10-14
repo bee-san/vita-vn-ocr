@@ -1,0 +1,429 @@
+{
+ "kind": "vocr4-strata",
+ "size": "W20",
+ "x": "C",
+ "y": "A",
+ "runs_x": [
+  "v4c_W20_seed1",
+  "v4c_W20_seed2"
+ ],
+ "runs_y": [
+  "v4a_W20_seed1",
+  "v4a_W20_seed2"
+ ],
+ "report_only": true,
+ "strata": {
+  "teacher_val": {
+   "dakuten-smallkana": {
+    "delta_points": 0.072,
+    "ci95": [
+     -0.008,
+     0.157
+    ],
+    "lines": 829,
+    "vns": 164,
+    "cer_x": 0.01309,
+    "cer_y": 0.01381
+   },
+   "ink:14-19": {
+    "delta_points": -0.064,
+    "ci95": [
+     -0.183,
+     0.049
+    ],
+    "lines": 757,
+    "vns": 152,
+    "cer_x": 0.00843,
+    "cer_y": 0.00779
+   },
+   "ink:20-27": {
+    "delta_points": 0.07,
+    "ci95": [
+     -0.043,
+     0.181
+    ],
+    "lines": 361,
+    "vns": 93,
+    "cer_x": 0.00877,
+    "cer_y": 0.00947
+   },
+   "ink:28+": {
+    "delta_points": -0.059,
+    "ci95": [
+     -0.389,
+     0.431
+    ],
+    "lines": 44,
+    "vns": 15,
+    "cer_x": 0.01066,
+    "cer_y": 0.01007
+   },
+   "ink:<14": {
+    "delta_points": 0.203,
+    "ci95": [
+     -0.042,
+     0.48
+    ],
+    "lines": 481,
+    "vns": 114,
+    "cer_x": 0.04646,
+    "cer_y": 0.04849
+   },
+   "kind:hires": {
+    "delta_points": 0.093,
+    "ci95": [
+     -0.009,
+     0.199
+    ],
+    "lines": 1058,
+    "vns": 133,
+    "cer_x": 0.02187,
+    "cer_y": 0.02279
+   },
+   "kind:psp": {
+    "delta_points": -0.122,
+    "ci95": [
+     -0.343,
+     0.081
+    ],
+    "lines": 424,
+    "vns": 41,
+    "cer_x": 0.00948,
+    "cer_y": 0.00825
+   },
+   "kind:vita": {
+    "delta_points": 0.031,
+    "ci95": [
+     -0.151,
+     0.234
+    ],
+    "lines": 161,
+    "vns": 12,
+    "cer_x": 0.00968,
+    "cer_y": 0.00999
+   },
+   "latin-digits": {
+    "delta_points": 0.0,
+    "ci95": [
+     -0.59,
+     0.482
+    ],
+    "lines": 62,
+    "vns": 30,
+    "cer_x": 0.03668,
+    "cer_y": 0.03668
+   },
+   "len:1-4": {
+    "delta_points": -0.043,
+    "ci95": [
+     -0.518,
+     0.47
+    ],
+    "lines": 604,
+    "vns": 150,
+    "cer_x": 0.05231,
+    "cer_y": 0.05188
+   },
+   "len:13+": {
+    "delta_points": 0.055,
+    "ci95": [
+     -0.021,
+     0.136
+    ],
+    "lines": 588,
+    "vns": 149,
+    "cer_x": 0.01129,
+    "cer_y": 0.01184
+   },
+   "len:5-12": {
+    "delta_points": 0.021,
+    "ci95": [
+     -0.251,
+     0.316
+    ],
+    "lines": 451,
+    "vns": 125,
+    "cer_x": 0.02278,
+    "cer_y": 0.02299
+   },
+   "namelike": {
+    "delta_points": -0.011,
+    "ci95": [
+     -0.434,
+     0.417
+    ],
+    "lines": 706,
+    "vns": 151,
+    "cer_x": 0.05327,
+    "cer_y": 0.05316
+   },
+   "pol:bright-on-dark": {
+    "delta_points": 0.055,
+    "ci95": [
+     -0.061,
+     0.172
+    ],
+    "lines": 1042,
+    "vns": 147,
+    "cer_x": 0.01275,
+    "cer_y": 0.01329
+   },
+   "pol:dark-on-light": {
+    "delta_points": 0.012,
+    "ci95": [
+     -0.156,
+     0.178
+    ],
+    "lines": 601,
+    "vns": 111,
+    "cer_x": 0.02627,
+    "cer_y": 0.02638
+   },
+   "rare-kanji": {
+    "delta_points": -0.331,
+    "ci95": [
+     -0.729,
+     0.0
+    ],
+    "lines": 116,
+    "vns": 56,
+    "cer_x": 0.01829,
+    "cer_y": 0.01498
+   },
+   "target:psp": {
+    "delta_points": 0.025,
+    "ci95": [
+     -0.145,
+     0.204
+    ],
+    "lines": 675,
+    "vns": 120,
+    "cer_x": 0.02343,
+    "cer_y": 0.02368
+   },
+   "target:vita": {
+    "delta_points": 0.047,
+    "ci95": [
+     -0.055,
+     0.149
+    ],
+    "lines": 968,
+    "vns": 144,
+    "cer_x": 0.01408,
+    "cer_y": 0.01456
+   }
+  },
+  "devnative": {
+   "dakuten-smallkana": {
+    "delta_points": -0.011,
+    "ci95": [
+     -0.136,
+     0.103
+    ],
+    "lines": 607,
+    "vns": 43,
+    "cer_x": 0.01109,
+    "cer_y": 0.01098
+   },
+   "ink:14-19": {
+    "delta_points": -0.017,
+    "ci95": [
+     -0.186,
+     0.138
+    ],
+    "lines": 600,
+    "vns": 37,
+    "cer_x": 0.0196,
+    "cer_y": 0.01943
+   },
+   "ink:20-27": {
+    "delta_points": -0.136,
+    "ci95": [
+     -0.421,
+     0.158
+    ],
+    "lines": 204,
+    "vns": 26,
+    "cer_x": 0.01472,
+    "cer_y": 0.01336
+   },
+   "ink:28+": {
+    "delta_points": 0.037,
+    "ci95": [
+     -0.199,
+     1.25
+    ],
+    "lines": 46,
+    "vns": 7,
+    "cer_x": 0.00842,
+    "cer_y": 0.00878
+   },
+   "ink:<14": {
+    "delta_points": 0.025,
+    "ci95": [
+     -0.417,
+     0.418
+    ],
+    "lines": 136,
+    "vns": 18,
+    "cer_x": 0.03964,
+    "cer_y": 0.03989
+   },
+   "kind:psp": {
+    "delta_points": 0.028,
+    "ci95": [
+     -0.124,
+     0.174
+    ],
+    "lines": 784,
+    "vns": 36,
+    "cer_x": 0.02193,
+    "cer_y": 0.02221
+   },
+   "kind:vita": {
+    "delta_points": -0.263,
+    "ci95": [
+     -0.577,
+     -0.077
+    ],
+    "lines": 202,
+    "vns": 8,
+    "cer_x": 0.01149,
+    "cer_y": 0.00886
+   },
+   "len:1-4": {
+    "delta_points": -0.248,
+    "ci95": [
+     -1.912,
+     1.22
+    ],
+    "lines": 247,
+    "vns": 39,
+    "cer_x": 0.15935,
+    "cer_y": 0.15687
+   },
+   "len:13+": {
+    "delta_points": 0.003,
+    "ci95": [
+     -0.125,
+     0.121
+    ],
+    "lines": 468,
+    "vns": 41,
+    "cer_x": 0.00641,
+    "cer_y": 0.00644
+   },
+   "len:5-12": {
+    "delta_points": -0.118,
+    "ci95": [
+     -0.415,
+     0.256
+    ],
+    "lines": 271,
+    "vns": 43,
+    "cer_x": 0.02516,
+    "cer_y": 0.02398
+   },
+   "namelike": {
+    "delta_points": -0.373,
+    "ci95": [
+     -1.751,
+     0.951
+    ],
+    "lines": 273,
+    "vns": 40,
+    "cer_x": 0.14622,
+    "cer_y": 0.14249
+   },
+   "pol:bright-on-dark": {
+    "delta_points": -0.023,
+    "ci95": [
+     -0.174,
+     0.12
+    ],
+    "lines": 666,
+    "vns": 36,
+    "cer_x": 0.02052,
+    "cer_y": 0.02029
+   },
+   "pol:dark-on-light": {
+    "delta_points": -0.064,
+    "ci95": [
+     -0.322,
+     0.154
+    ],
+    "lines": 319,
+    "vns": 25,
+    "cer_x": 0.01781,
+    "cer_y": 0.01717
+   },
+   "rare-kanji": {
+    "delta_points": -0.153,
+    "ci95": [
+     -1.471,
+     1.024
+    ],
+    "lines": 79,
+    "vns": 24,
+    "cer_x": 0.04198,
+    "cer_y": 0.04046
+   },
+   "target:psp": {
+    "delta_points": 0.028,
+    "ci95": [
+     -0.124,
+     0.174
+    ],
+    "lines": 784,
+    "vns": 36,
+    "cer_x": 0.02193,
+    "cer_y": 0.02221
+   },
+   "target:vita": {
+    "delta_points": -0.263,
+    "ci95": [
+     -0.577,
+     -0.077
+    ],
+    "lines": 202,
+    "vns": 8,
+    "cer_x": 0.01149,
+    "cer_y": 0.00886
+   }
+  }
+ },
+ "protocol_sha256": "c0f64bd6004f3f9f65ce36920ca6c5525b86f3165e871078233a15a442d93839",
+ "computed": "2026-10-14T09:06:46Z",
+ "inputs": {
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/tv_v4c_W20_seed1.json": "a53ebad7e3770a0434fd72db1487034166736c44b4ca9199f6a3e06bbf5a3e65",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/tv_v4c_W20_seed2.json": "d92d10c0f38da967fbaa19d1863ea1b2227de5fa80c7071abba2c6157ba4d065",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/tv_v4a_W20_seed1.json": "e97f8909370e400d3560fcec2e91532601efc0c51cd22dff707da1608f768b28",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/tv_v4a_W20_seed2.json": "158bda8763e51c22863cfc4c46f3bc6347e55bc91817ffe276c42bd244b7d8ef",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/tv_v4m_W20_seed1.json": "677f51cc2b5e9d816ab6f0c2341817cf3493c9d64731cf9de5474963868f5c33",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/tv_v4m_W20_seed2.json": "2a7dcdacb669a9e37e8ef35c2e5f7a20526b0adf0bd5bc2e21ca696984374a6e",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_ink_v4c_W20_seed1.json": "8535324a02d65486f9f6870bedd2b145c9da6e5038686d6ece4c5bf881bb0c22",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_grad_v4c_W20_seed1.json": "e74ad6d6491ebfec8502ded6cf217b4694421479b0162a9f5f6de931306ed3a5",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_ink_v4c_W20_seed1.json": "9c30247239bc89577ce02e48fd2bf6a02772cd4938ef4605d5501f7287d2745d",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_grad_v4c_W20_seed1.json": "4f2d56364d5adedd9eb6aa932358d297c5f83010dc932e369002cefbbb67d40e",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_ink_v4c_W20_seed2.json": "202c18c9d4525ca3da68fa7d1ee66a67214a8e55a3eb82a331bf25c1d5af646e",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_grad_v4c_W20_seed2.json": "2ce2370a527563222bbc8e85de345e6c560eafda8aea28266caa8b7e70d12c60",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_ink_v4c_W20_seed2.json": "338166836f4aa278c6ea36ccc92b4f2405928fe4a7addc72d81cb74b6e5f0a73",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_grad_v4c_W20_seed2.json": "4874a977809b8ae389cea8bafe7b9da20978aa74ccea0d7a044c9bb98962df35",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_ink_v4a_W20_seed1.json": "5368acfe3ea36630f09daf4cce1edf8469a45022c7c8c9423cfcb01cc52f21b1",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_grad_v4a_W20_seed1.json": "54095fcc8405f0c4aa515af56cbb04949bbe8998e550453328624adbab044b98",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_ink_v4a_W20_seed1.json": "2a3a340c58e65f9904564c50d3473e1a16e43b657ab0f699fb1cba10a22f394b",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_grad_v4a_W20_seed1.json": "edcc389355cb12cb237ea2e63a5a9e0328bf5fc8a057eee6137834c9c1701271",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_ink_v4a_W20_seed2.json": "f10c48520909be0ef4516381ee34e9c35f8ef90d8b7c7a301b8e70d887b87a82",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_grad_v4a_W20_seed2.json": "a7560f3bd0e099006bddd3f0c342d43dc127824b89a518abac1ef387068cd4a5",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_ink_v4a_W20_seed2.json": "3db193b8a26a619b6b5b37cd9882e423ab1a09d3dc5f0d43718a010e91368f07",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_grad_v4a_W20_seed2.json": "cc3c151d0c5b0ff25c62b426e5cfa62d030efb76c28cd115702f4360cc1a46b6",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_ink_v4m_W20_seed1.json": "46e42b2dd66627eecc8b97681a1ef2a278a32cfff19472f0071e6879c3b465c5",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_grad_v4m_W20_seed1.json": "870fa1c06ad0307585dfd751ea7999dc100c2c1b9cf4858b4765d3751a620564",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_ink_v4m_W20_seed1.json": "b37c9e86a262e2d919fa74cd9bc687053814c6e15b032716cadda406f332e859",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_grad_v4m_W20_seed1.json": "4a5b5208983b54190a08e30a2792b9bd57f8a3b09cd42537b91842f18066400c",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_ink_v4m_W20_seed2.json": "a558718265a0da1898cc0c49b7b925820ae3aa9a7877e49aab7ab310585f6e00",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_strict_grad_v4m_W20_seed2.json": "4dd4244be573e4b149ca8f92dee2eb68edbe4942cdd71f15a401bedbc1609052",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_ink_v4m_W20_seed2.json": "66487b5f3a374d18e8a5302bd81ac3598ddd37061657cb57f9ca978bd47132b7",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr4-train/select/W20/scores/dn_tv_native_grad_v4m_W20_seed2.json": "c23b7abe5b654eebb88fca2d5829968802c9516c56def2fe9d242ea9b8a65484"
+ }
+}

@@ -1,6 +1,6 @@
 {
  "kind": "owner-pool-stats",
- "tag": "v1",
+ "tag": "v2",
  "private_dir": "shared/private/owner-games/_build/owner-pool",
  "codex": "none: private frames; Claude + MeikiOCR / PP-OCRv6 agreement only",
  "folders": {
@@ -232,14 +232,14 @@
    "ink-mixed": 6,
    "grad-mixed": 12,
    "no-crop": 5,
-   "ink_m8-mixed": 163,
-   "ink_m4-mixed": 9,
+   "ink_m4-overlap": 17,
+   "ink_m8-overlap": 17,
    "grad-unchecked": 6,
    "edge-cut": 3,
    "repeat-cap": 104
   },
   "files": {
-   "native_train_ink_v1.npz": {
+   "native_train_ink_v2.npz": {
     "crops": 594,
     "by_target": {
      "psp": 368,
@@ -247,23 +247,23 @@
     },
     "sha256": "a2f621d910602cf70dbea623d06ca81fcda662fe44333e970f7452710d66a61a"
    },
-   "native_train_ink_m4_v1.npz": {
-    "crops": 585,
+   "native_train_ink_m4_v2.npz": {
+    "crops": 577,
     "by_target": {
-     "psp": 359,
-     "vita": 226
+     "psp": 354,
+     "vita": 223
     },
-    "sha256": "ffc638ef3ff860b00633d8bb277fac1f2b916de09b5f9a30b9f4eef126c46041"
+    "sha256": "ab124a58b620fe68063aab4b9f2ed666409111331c980125a277267c2fc1a226"
    },
-   "native_train_ink_m8_v1.npz": {
-    "crops": 431,
+   "native_train_ink_m8_v2.npz": {
+    "crops": 577,
     "by_target": {
-     "psp": 205,
-     "vita": 226
+     "psp": 354,
+     "vita": 223
     },
-    "sha256": "9c17464cc62376151bfc908c210ff3aa22e27a0cbe708464fa695a5dc574c895"
+    "sha256": "ec70cc3fffddd70b577627d96741c966b36e9a73bc368ca9a867a48e63611011"
    },
-   "native_train_grad_v1.npz": {
+   "native_train_grad_v2.npz": {
     "crops": 540,
     "by_target": {
      "psp": 331,
@@ -277,23 +277,23 @@
   "v14018": {
    "lines": 227,
    "ink": 226,
-   "ink_m4": 226,
-   "ink_m8": 226,
+   "ink_m4": 223,
+   "ink_m8": 223,
    "grad": 209
   },
   "v34": {
    "lines": 323,
    "ink": 323,
-   "ink_m4": 321,
-   "ink_m8": 170,
+   "ink_m4": 323,
+   "ink_m8": 323,
    "grad": 305
   },
   "v57": {
    "lines": 45,
    "ink": 45,
-   "ink_m4": 38,
-   "grad": 26,
-   "ink_m8": 35
+   "ink_m4": 31,
+   "ink_m8": 31,
+   "grad": 26
   }
  },
  "precision_check": {

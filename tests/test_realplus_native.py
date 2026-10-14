@@ -152,3 +152,15 @@ def test_owner_publish_writes_aggregates_only(tmp_path, monkeypatch):
     assert d["frames_read"] == 2 and d["lines_by_vn"] == {"v57": {"lines": 1, "ink": 1}}
     assert d["labels_by_vn"] == {"v57": {"kept:auto": 1}} and d["leak"]["test_sets"]["pairs"] == 0
     assert "秘密" not in text and "v57_owner0000" not in text          # no label text, no frame or line id
+
+
+def test_margin_variants_never_take_in_a_neighbouring_line():
+    long_above = [10, 20, 300, 34]                         # a long line just above a short last line
+    short = [10, 40, 60, 54]
+    g = N.clamp_margin(short, 8, 480, 272, [long_above])
+    assert g == [2, 33, 68, 62]                            # grown below and sideways, at most 1 px into the line
+    assert min(g[3], long_above[3]) - max(g[1], long_above[1]) <= 1
+    assert N.clamp_margin(short, 8, 480, 272, [[40, 44, 90, 50]]) is None      # a box overlapping the line
+    assert N.clamp_margin(short, 4, 480, 272, []) == N.expand_box(short, 4, 480, 272)
+    name_left = [0, 38, 8, 56]                             # a box on the same row, to the left
+    assert N.clamp_margin(short, 8, 480, 272, [name_left])[0] == 7

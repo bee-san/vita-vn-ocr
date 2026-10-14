@@ -375,6 +375,29 @@ def expand_box(box, m, W, H):
     return [max(0, x0 - m), max(0, y0 - m), min(W, x1 + m), min(H, y1 + m)]
 
 
+def clamp_margin(box, m, W, H, others):
+    """The crop box [x0, y0, x1, y1] grown by m px on every side and clamped to the frame, then shrunk on the
+    side of every other text box that enters it, so that none enters by more than 1 px (a short last line under
+    a long one keeps its margin below, not the line above). None when another box already overlaps the box
+    itself."""
+    x0, y0, x1, y1 = box
+    g = [max(0, x0 - m), max(0, y0 - m), min(W, x1 + m), min(H, y1 + m)]
+    for ox0, oy0, ox1, oy1 in others:
+        if min(g[2], ox1) - max(g[0], ox0) <= 1 or min(g[3], oy1) - max(g[1], oy0) <= 1:
+            continue
+        if min(x1, ox1) - max(x0, ox0) > 1 and min(y1, oy1) - max(y0, oy0) > 1:
+            return None
+        if oy1 <= y0 + 1:
+            g[1] = max(g[1], oy1 - 1)
+        elif oy0 >= y1 - 1:
+            g[3] = min(g[3], oy0 + 1)
+        elif ox1 <= x0 + 1:
+            g[0] = max(g[0], ox1 - 1)
+        else:
+            g[2] = min(g[2], ox0 + 1)
+    return g
+
+
 def cut_native(s, recs, idx, edge=None, margins=()):
     """realplus/pool.cut_shot for a native frame: the frame was read at its own size, so the only
     target is its own console (a Vita frame gives Vita crops, a PSP frame PSP crops; neither is scaled).
@@ -447,12 +470,14 @@ def cut_native(s, recs, idx, edge=None, margins=()):
                     "chars": ch, "chars_match": ch_ok, "screen": [W, H], "edge": why}
             out.append((crop, img, meta))
             if crop == "ink":
-                # multi-margin variants of the ink crop, each kept only when no other detected line enters it
-                # (the base crop's own mixed test)
+                # multi-margin variants of the ink crop: grown by m px, then clamped so that no other read line's
+                # ink box or detected text box enters by more than 1 px
+                others = L.others_of(ln, dets) + [list(o["ink"]) for o in s.get("lines", [])
+                                                  if o.get("ink") and list(o["ink"]) != list(raw["ink"])]
                 for m in margins:
-                    eb = expand_box(box, m, W, H)
-                    if PL.ink_mixed(eb, ln, dets):
-                        drops[f"ink_m{m}-mixed"] += 1
+                    eb = clamp_margin(box, m, W, H, others)
+                    if eb is None:
+                        drops[f"ink_m{m}-overlap"] += 1
                         continue
                     eimg, edark, einv = L.cut(rgb, eb)
                     out.append((f"ink_m{m}", eimg, dict(meta, crop=f"ink_m{m}", box=eb, margin=m, dark=edark,

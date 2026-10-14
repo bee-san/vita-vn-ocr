@@ -125,9 +125,11 @@ the text box could recover them in a later round.
 
 ## Pool (`native.py build`, `NATIVE_OWNER_POOL=1`)
 
-`native.py build --tag v1 --margins 4,8` cuts each kept line from its native frame. The npz files use
-teacher_train's shard format, in console polarity, with `pool: "owner"` and `session: "owner/<folder>"`
-in the meta.
+`native.py build --margins 4,8` cuts each kept line from its native frame. The npz files use
+teacher_train's shard format, in console polarity, with `pool: "owner"` in the meta.
+
+`session` is null in every row, as in the native pool: devnative's `read.py` does not carry it over from
+the read input. Every frame's session is `owner/<folder>`, one folder per VN.
 
 | | |
 |---|---:|
@@ -140,18 +142,28 @@ The crop files:
 
 | file | crops | PSP / Vita | sha256 |
 |---|---:|---|---|
-| `native_train_ink_v1.npz` | 594 | 368 / 226 | `a2f621d910602cf70dbea623d06ca81fcda662fe44333e970f7452710d66a61a` |
-| `native_train_grad_v1.npz` | 540 | 331 / 209 | `90f1675aef4c9203904329757934e2b4b07a5d46ac71999d9a445d969d476883` |
-| `native_train_ink_m4_v1.npz` | 585 | 359 / 226 | `ffc638ef3ff860b00633d8bb277fac1f2b916de09b5f9a30b9f4eef126c46041` |
-| `native_train_ink_m8_v1.npz` | 431 | 205 / 226 | `9c17464cc62376151bfc908c210ff3aa22e27a0cbe708464fa695a5dc574c895` |
+| `native_train_ink_v1.npz` (= `_v2`) | 594 | 368 / 226 | `a2f621d910602cf70dbea623d06ca81fcda662fe44333e970f7452710d66a61a` |
+| `native_train_grad_v1.npz` (= `_v2`) | 540 | 331 / 209 | `90f1675aef4c9203904329757934e2b4b07a5d46ac71999d9a445d969d476883` |
+| `native_train_ink_m4_v2.npz` | 577 | 354 / 223 | `ab124a58b620fe68063aab4b9f2ed666409111331c980125a277267c2fc1a226` |
+| `native_train_ink_m8_v2.npz` | 577 | 354 / 223 | `ec70cc3fffddd70b577627d96741c966b36e9a73bc368ca9a867a48e63611011` |
+
+v1 and v2 hold the same lines. v2 rebuilt only the margin files, with the clamp below. Its ink and grad
+files are byte-identical to v1's, the files VOCR4 pins.
 
 - **ink**: eval's crop widened to the labelled characters, as in the native pool. One line has no ink crop:
   another detected line enters it.
 - **grad**: the console GRAD finder's box, holding the line and nothing else.
 - **ink_m4 / ink_m8**: the ink crop grown by 4 or 8 px on every side and clamped to the frame. This is the
-  fresh-native harness's multi-margin idea, applied to one line. A variant is kept only when no other
-  detected line enters it, by the base crop's own mixed test; 9 and 163 were dropped that way, mostly
-  PSP lines with tight line spacing. The variants carry the same labels and are optional augmentation.
+  fresh-native harness's multi-margin idea, applied to one line. The variants carry the same labels and
+  are optional augmentation.
+  - The grown box is then shrunk on the side of every other read line's ink box or detected text box that
+    enters it, so none enters by more than 1 px (`native.clamp_margin`).
+  - A line whose base crop another box already overlaps gets no variant: 17 lines.
+  - All 577 + 577 variants hold at most 1 px of another line's ink box.
+  - v1's margin files used only the base crop's 25%-of-area mixed test. Under it, a short last line under
+    a long one kept the line above: 6 of v1's 431 `ink_m8` crops held two whole lines, and about 30 more
+    held readable fragments (audit-owner-pool, B1). Those files are renamed
+    `*_v1_superseded_neighbour_lines.npz` and must not be used.
 
 `train2.load_shard` loads every row of all four files (0 dropped). `realplus/manifests/owner/stats.json`
 is the committed, aggregate-only record: per-folder eligibility, leak pair counts, label and build
@@ -161,7 +173,8 @@ private frame.
 ### Precision
 
 The check is independent and blind (`native.py check`, `check-score`, `CHECK_STRATA` 40 auto + 120
-reviewed, seed 20261013, drawn from the pre-build before v1). A Claude helper that labelled none of the
+reviewed, seed 20261013, drawn from the pre-build before v1). Its margin crops came from the pre-build,
+before the clamp. The labels it checks are the same in v2. A Claude helper that labelled none of the
 lines (review-nf-15) typed the framed text of each crop with no candidate shown. The crop for each line
 was drawn at random from the files that hold it, so the margin variants are covered too.
 
@@ -171,7 +184,8 @@ was drawn at random from the files that hold it, so the margin variants are cove
 | auto / reviewed | 40 / 40, 120 / 120 | 100% (91.2-100%), 100% (96.9-100%) |
 | ink / grad / ink_m4 / ink_m8 | 38 / 38, 39 / 39, 55 / 55, 28 / 28 | |
 
-v1 is the pre-build with the meta's `pool` set to `"owner"`: same lines, crops and labels.
+v1 is the pre-build with the meta's `pool` set to `"owner"`: same lines, crops and labels. v2 is v1 with
+the clamped margin files.
 
 ## Limits
 
@@ -201,5 +215,5 @@ export REALPLUS=$OP NATIVE_POOL=$OP NATIVE_OWNER_POOL=1
 .venv-ci/bin/python realplus/native.py build --tag pre --margins 4,8
 .venv-ci/bin/python realplus/native.py check --tag pre      # blind sheets; a Claude helper decides them
 .venv-ci/bin/python realplus/native.py check-score --tag pre
-.venv-ci/bin/python realplus/native.py build --tag v1 --margins 4,8
+.venv-ci/bin/python realplus/native.py build --tag v2 --margins 4,8     # ink, grad byte-equal to v1's
 ```

@@ -155,4 +155,7 @@ jobs:
             ${{ runner.temp }}/build-vita/vocr_test.vpk
             ${{ runner.temp }}/build-vita/size.txt
           if-no-files-found: error
-          retention-days: 30
+          # Artifacts of a private repo count against the account's shared storage quota, by the
+          # hour. A pull request's VPK is only needed while it is reviewed; the VPK a console
+          # test takes (vita/README.md) comes from a push to main or a manual run.
+          retention-days: ${{ github.event_name == 'pull_request' && 7 || 30 }}

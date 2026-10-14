@@ -8,7 +8,7 @@
 | pytest | `tests/`: vocab, model shape and op set, `train.py` helpers, renderer smoke, CI fixtures, repo data policy, action pinning | `.venv-ci/bin/python -m pytest` |
 | training smoke (50 steps) | renders 2 × 160 lines from the pinned font and `ci/fixtures/corpus`, trains exactly 50 CTC steps with `train/train.py`, then checks the checkpoint, the metrics and that the loss fell | `.venv-ci/bin/python ci/train_smoke.py --threads 2` |
 | runtime (gcc), runtime (clang) | `runtime/` as C99 with `-Wall -Wextra -Werror` plus ASan and UBSan, then its parity test against PyTorch. Skipped until `runtime/` exists | `PYTHON=.venv-ci/bin/python ci/runtime.sh gcc` |
-| vita (VitaSDK build) | `runtime/` and the `vita/` test app built for the PS Vita with the pinned VitaSDK and `-Werror`; uploads `vocr_test.vpk` and the code-size report as the `vocr_test-vpk` artifact | `vita/scripts/fetch_vitasdk.sh && VITASDK=$PWD/vita/tools/vitasdk vita/scripts/build.sh` |
+| vita (VitaSDK build) | `runtime/` and the `vita/` test app built for the PS Vita with the pinned VitaSDK and `-Werror`; uploads `vocr_test.vpk` and the code-size report as the `vocr_test-vpk` artifact, kept 7 days for a pull request and 30 days for `main` and manual runs | `vita/scripts/fetch_vitasdk.sh && VITASDK=$PWD/vita/tools/vitasdk vita/scripts/build.sh` |
 
 ## When each job runs
 

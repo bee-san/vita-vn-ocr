@@ -201,26 +201,26 @@
    "lines": {
     "devnative:psp": 378,
     "devnative:vita": 108,
-    "real_val:hires": 249,
+    "real_val:hires": 253,
     "real_val:psp": 254,
     "real_val:vita": 156,
-    "teacher_val:hires": 321,
+    "teacher_val:hires": 327,
     "teacher_val:psp": 366,
     "teacher_val:vita": 160
    },
-   "vns": 100
+   "vns": 101
   },
   "training": {
    "lines": {
     "devnative:psp": 65,
-    "real_val:hires": 398,
+    "real_val:hires": 394,
     "real_val:psp": 60,
     "real_val:vita": 1,
-    "teacher_val:hires": 490,
+    "teacher_val:hires": 484,
     "teacher_val:psp": 60,
     "teacher_val:vita": 1
    },
-   "vns": 87
+   "vns": 86
   }
  },
  "owner_frames": {

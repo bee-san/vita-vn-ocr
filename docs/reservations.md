@@ -7,7 +7,7 @@ Old reports may stop reproducing; the goal is the best OCR, not the best test se
 
 Before this change the repo held back 18,805 VNs (`reserved_vns.json` on the 2026-10-12 dump). 16,439 of them came
 from two random md5 splits that no scorer reads outside the sets below. Now 184 VNs are held back: 71 test VNs and
-the 113-VN development sample. The change frees 21,789 VNDB screenshots of 5,077 VNs, 1,075 labelled development
+the 113-VN development sample. The change frees 21,789 VNDB screenshots of 5,077 VNs, 1,065 labelled development
 lines, 637 owner frames and 22,189 VNDB character names for training.
 
 ## The policy
@@ -85,8 +85,8 @@ A candidate is passed over in five cases:
 - it shares a two-VN release with a VN of a training pool (21 VNs, such as v1762, whose twin entry v1763 is in
   teacher_train).
 
-The sample holds 486 devnative lines (378 PSP, 108 Vita), 847 teacher_val lines (160 Vita, 366 PSP, 281 scaled PC)
-and 659 real_val lines.
+The 100 VNs hold 486 devnative lines (378 PSP, 108 Vita), 847 teacher_val lines (160 Vita, 366 PSP, 281 scaled PC)
+and 659 real_val lines; with their release partners, 853 teacher_val and 663 real_val lines.
 
 The sample is kept out of the training pools of any round that selects on it. Every gate below reads
 `is_reserved_vn`, which counts it by default. A final refit that trains on the sample on purpose, after selection,
@@ -157,7 +157,7 @@ names `test-vn`, so a VOCR5 pool must not reuse it unchanged).
 | both lists, distinct | 21,789 screenshots of 5,077 VNs | |
 | synthetic names | 22,189 VNDB characters | synth3's name gate dropped 24,331 of 127,809; it now drops 2,361 |
 | synthetic scenes on disk | 388 screenshots | 28 Vita, 80 PSP, 280 scaled PC of synth3's current candidates. Every freed VNDB screenshot can become a scene once fetched and text-detected |
-| labelled lines (teacher_val, real_val, devnative) | 1,075 lines of 87 VNs | teacher_val 551, real_val 459, devnative 65 |
+| labelled lines (teacher_val, real_val, devnative) | 1,065 lines of 86 VNs | teacher_val 545, real_val 455, devnative 65 (the sample and its partners keep the rest) |
 | owner frames | 637 | Amagami, Narcissu, Danganronpa V3, Iwaihime; CLANNAD's 2,206 stay test |
 
 The labelled sets are cut by VN under `$HERD/shared/artifacts/reserve-policy/reclaim/pools/`, in teacher_val's npz

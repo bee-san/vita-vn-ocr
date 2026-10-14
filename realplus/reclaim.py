@@ -270,7 +270,7 @@ def main():
     def new_forbidden(v):
         return v in reserved
 
-    dev = {v for v, r in reserved.items() if r == "dev-sample"}
+    dev = {v for v, r in reserved.items() if r.startswith("dev-sample")}      # the sample with its partners
     both = {r["image"] for r in rp_rows} | {r["image"] for r in na_rows}
     summary = {
         "kind": "reserve-policy-reclaim", "tier": TIER, "dump": stamp, "code": "realplus/reclaim.py",

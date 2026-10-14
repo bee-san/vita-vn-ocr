@@ -1,7 +1,8 @@
 # The owner's games: test-only series and training-eligible titles
 
 The owner captures live screenshots of games on a PS Vita (owner, 2026-10-13 10:51Z, 13:10Z and 13:12Z).
-This supersedes the 09:25Z and 09:37Z notes; STEINS;GATE, planetarian and Ao no Kanata are not coming.
+This supersedes the 09:25Z and 09:37Z notes; STEINS;GATE and Ao no Kanata are not coming. planetarian did
+come, in the owner's Google Drive drop (19:21Z), and is training data (see "The Drive drop of 2026-10-13").
 The owner's folders are under `shared/private/owner-games/`. A `-TEST` suffix means test only.
 
 **Test only.** The owner's frames of these titles go to new fresh native test sets and to on-console
@@ -29,6 +30,47 @@ reserved title (the popular PSP titles the owner listed are) are never accepted 
 
 Some frames may be Adrenaline captures: a PSP game upscaled to 960x544 on the Vita. The source
 resolution is recorded per file.
+
+## The Drive drop of 2026-10-13
+
+The owner shared `vn-ocr-dataset-20261013.zip` on Google Drive at 19:21Z (2,819,705,393 bytes, sha256
+`d2443837d339c2b69e34b29eea343007be76716eb6250ff664badd7b7e7b446e`; fetched with gdown 6.4.2, all 11,376
+files verified by the drop's own `tools/verify_dataset.py`). It stays under `shared/private/` and never goes
+to Codex or any third party. `synth/owner_drop.py` identified each game on the 2026-10-13 VNDB dump, checked
+it (`reserved_vns`, the eval and development sets by VN and by release session, and a thumbnail leak check
+against every protected screenshot) and hardlinked its frames into `owner-games/` with a per-frame
+`manifest.jsonl` and the decision in `ingest.json`. The public table, without any frame name or hash, is
+`data/manifests/owner_drop_20261013.json`.
+
+All 3,421 full frames are native captures (960x544 Vita, 480x272 PSP; no Adrenaline upscale). None is a
+pixel duplicate of another, of the realplus pool, of the fresh-native sets or of an eval manifest.
+
+| folder | VN | frames | role | why |
+|---|---|---:|---|---|
+| psp-planetarian-v34 | v34 | 202 | training | owner 19:21Z and 20:47Z (below) |
+| psp-sharin-no-kuni-v57 | v57 | 217 | training | not reserved; existing folder |
+| vita-chaos-child-v14018 | v14018 | 159 | training | not reserved; existing folder |
+| psp-amagami-v1281-TEST | v1281 | 113 | test | development VN |
+| psp-narcissu-portable-v10-TEST | v10 | 200 | test | shares a release (ULJM-05674) with test-set VN v18738 |
+| vita-clannad-v4-TEST | v4 | 2,206 | test | CLANNAD, protected; 2,204 of them are the CLANNAD long run |
+| vita-danganronpa-v3-v18334-TEST | v18334 | 84 | test | shares a release with test-set VN v7014 |
+| vita-iwaihime-matsuri-v17863-TEST | v17863 | 240 | test | development VN (5 teacher_val rows) |
+
+That is 578 training frames and 2,843 test frames. No training frame reaches the leak threshold (0.95)
+against a protected screenshot; the highest is planetarian's 0.941. Corpse Party BloodCovered (v2632) and
+Grisaia no Kajitsu (v5154), both development VNs, have no full frames in the drop; Rewrite (v751) has two
+quarantined intro images and no folder.
+
+**planetarian (v34).** The owner made it training data in all its releases, even where it overlaps an eval
+set (19:21Z, restated 20:47Z). `realplus/shots.OWNER_ALLOWED` keeps `reserved_vns` from giving it a derived
+reason: it was reserved only as `shared-release`, through the PC Key 10th Memorial BOX (r3748) that also
+holds CLANNAD. Direct reasons would still apply, and it has none. On the dump the only change is v34 itself
+(18,846 to 18,845 reserved VNs). It has no rows in vita-test, psp-test, teacher_val, teacher_distill_val,
+real_val or devnative v1-v3 (by VN and by release session), so no eval set needed a new version and every
+existing score is unchanged. Its PSP port and CLANNAD's Vita port are both Key/Prototype releases, and VNDB
+lists a character relation between planetarian and v5698 (CLANNAD: Lost "Winter", on the CLANNAD family
+list; `reserved_vns` reserves a family member's family relations, not its character relations). A CLANNAD
+score of any model trained on these frames must disclose that exposure.
 
 ## What is reserved
 

@@ -7,7 +7,7 @@ evaluation or a host estimate; nothing has run on a console.
 
 **Results.**
 
-- **W20 (the Large tier) improves.** synth3 version 3 in the pretrain was adopted at W20 (development score
+- **W20 improves; it serves both Normal and Large.** synth3 version 3 in the pretrain was adopted at W20 (development score
   −0.137 points, stratified VN-cluster 95% CI −0.257 to −0.022, both seed pairs better).
   - Fixed lines (vita-test and psp-test pooled, console polarity): **1.40% CER** (71/5074) against VOCR3-W20's
     1.62% (−0.22 points, VN-cluster CI −0.53 to +0.09: better, not resolved).
@@ -15,13 +15,14 @@ evaluation or a host estimate; nothing has run on a console.
     lowest of every model measured here.
   - CLANNAD long run (3,048 lines with Claude references): **1.81%** against VOCR3-W20's 2.34% (−0.53, page CI
     −0.71 to −0.35), level with the cached Google Lens readings (1.47%; +0.33, CI −0.34 to +0.94).
-- **FL10 and H15 (Small, Normal) stay on VOCR3's recipe.** Neither the new real pools nor synth3 v3 passed the
+- **FL10 (Small) and H15 stay on VOCR3's recipe.** Neither the new real pools nor synth3 v3 passed the
   decision rule at these sizes, so both selections are control runs: VOCR3's fine-tune on VOCR4's
   more strictly cleaned pools.
   - Fixed lines: FL10 **2.15%** (VOCR3-FL10 2.13%, +0.02, CI −0.18 to +0.26) and H15 **1.83%** (VOCR3-H15
     1.73%, +0.10, CI −0.11 to +0.34), level within the intervals.
   - CLANNAD: FL10 3.05% (−0.19 against VOCR3-FL10, CI −0.32 to −0.06) and H15 2.79% (−0.45, CI −0.61 to −0.29).
-  - The 657 KB FL10 is level with the released 1.16 MB H15 on the fixed lines (−0.06, CI −0.37 to +0.26).
+  - The 657 KB FL10 is level with the released 1.16 MB H15 on the fixed lines (−0.06, CI −0.37 to +0.26), but
+    behind it on whole dialogue (+0.86 points at the base region, CI +0.18 to +1.54).
 - **The new real data gave no resolved gain at any size.** Development score with realplus v3i, native pool v1
   and the owner's frames: FL10 −0.036 points, H15 −0.007, W20 +0.001. It trades the scaled PC screenshots for
   native console text. At H15, teacher_val got worse (+0.12, CI +0.01 to +0.23) and devnative better (−0.13,
@@ -29,26 +30,33 @@ evaluation or a host estimate; nothing has run on a console.
   report-only strata).
 - **None qualifies under the repo's gates.** Each fails VOCR2's whole-dialogue guard, as VOCR3's did, and
   VOCR4-H15 also fails the fixed-line gate's hiragana condition (pooled 21 → 22 errors). The released defaults
-  stay. On whole dialogue, VOCR4-W20 is level with VOCR_H15 (−0.24 points at the base region, CI −0.92 to
-  +0.47).
+  stay. On whole dialogue, VOCR4-H15 and VOCR4-W20 are level with VOCR_H15 (+0.16, CI −0.42 to +0.74, and −0.24,
+  CI −0.92 to +0.47, at the base region); VOCR4-FL10 is behind it (+0.86, CI +0.18 to +1.54).
 
-All three fit the owner's final tiers (2026-10-14 06:21Z to 07:33Z; ceilings in model-tiers' PR #74, all
-estimates). Each tier's limit is per typical full textbox (3 lines of about 640 px, one A9 core at 444 MHz):
+The owner's final tiers (2026-10-14 06:21Z to 07:33Z) set each limit per typical full textbox (3 lines of about
+640 px, one A9 core at 444 MHz, estimated): Small < 1 MB of int8 weights and ≤ 1 s; Normal ≤ 4 MB, W8I arena
+≤ 262,144 B and ≤ 2 s; Large ≤ 9 MB and ≤ 3 s. Arenas and memory needs are in model-tiers' `docs/model-tiers.md`
+(PR #74 at `14ccc27`, still open). The VOCR4 models fit them as follows:
 
-| tier | ceiling | VOCR4 model | int8 weights | W8I arena | est. ms per 640-px line, 444 / 333 MHz | est. per 3-line box, 444 MHz |
-|---|---|---|---:|---:|---|---|
-| Small | < 1 MB, ≤ 1 s per box | VOCR4-FL10 | 657,664 B | 124,832 B | 94-179 / 125-239 | 0.28-0.54 s |
-| Normal | ≤ 4 MB, ≤ 2 s per box | VOCR4-H15 | 1,155,968 B | 182,944 B | 166-302 / 221-403 | 0.50-0.91 s |
-| Large | ≤ 9 MB, ≤ 3 s per box | VOCR4-W20 | 1,558,016 B | 241,056 B | 235-416 / 314-554 | 0.71-1.25 s |
+| model | int8 weights | W8I arena | est. ms per 640-px line, 444 / 333 MHz | est. per 3-line box, 444 MHz | fits |
+|---|---:|---:|---|---|---|
+| VOCR4-FL10 | 657,664 B | 124,832 B | 94-179 / 125-239 | 0.28-0.54 s | Small (and every tier) |
+| VOCR4-H15 | 1,155,968 B | 182,944 B | 166-302 / 221-403 | 0.50-0.91 s | Normal, Large |
+| VOCR4-W20 | 1,558,016 B | 241,056 B | 235-416 / 314-554 | 0.71-1.25 s | Normal, Large |
 
-They use under half of each tier's time. The section "The final round" below has the larger models the tiers
-allow.
+So the trained models give Small = VOCR4-FL10, and VOCR4-W20 for both Normal and Large: it is the most accurate
+model that fits either tier. model-tiers' hand-off (#74) recommends the same; VOCR4-H15 is the lighter Normal
+alternative. A distinct Large needs a new shape (the section "The final round" below). The 550 ms at 333 MHz
+in the frozen protocol is close for W20: `vita/budget_sweep.py check`, the protocol's selectability tool,
+estimates 548.2 ms, inside it, while the locked report's own A9 estimate of the same blob (1,828 frames) is
+313.9-554.2 ms, over it. As for VOCR3-W20, the ceiling lies inside the spread of the two estimators; the owner's
+per-box tiers leave it a wide margin.
 
 Machine-readable outputs:
 
 - `eval/vocr4_protocol.json`: the protocol, with its one amendment.
-- Pins: `eval/vocr4_inputs.sha256`, `eval/vocr4_pools_c.sha256`, `eval/vocr4_pools_a.sha256` and
-  `eval/vocr4_pools_20261014.json`.
+- Pins: `eval/vocr4_inputs.sha256`, `eval/vocr4_pools_c.sha256`, `eval/vocr4_pools_a.sha256`,
+  `eval/vocr4_pools_20261014.json`, and every init checkpoint's sha256 in `eval/vocr4_pretrains_20261014.json`.
 - Decisions: `eval/vocr4_{real,synth}_<SIZE>_20261014.json`.
 - Selections: `eval/vocr4_selection_<SIZE>_20261014.json`.
 - Report-only strata: `eval/vocr4_strata_*_20261014.json`.
@@ -84,6 +92,10 @@ Every fine-tune is VOCR3's: 15,000 steps, batch 96, lr 1.2e-3, EMA 0.999, hard l
 is the run. C and A start from one pretrain, so their seed varies the fine-tune only. Every run went through
 `heavy.sh` at 5 threads, at most 8 at once, from detached worktrees: tag `vocr4-runner-1d8110c` (the C runs and
 the M pretrains) and `vocr4-runner-d67ae32` (the A runs and the M fine-tunes). None failed or was restarted.
+Before the queue started, two 30-step smoke runs of the run script (C and M at FL10, 22:18-22:19Z, an uncommitted
+copy writing to a scratch directory) checked that every source loads. Their output was deleted, and they are not
+VOCR4 runs. The init checkpoints' sha256 are in `eval/vocr4_pretrains_20261014.json`: the three reused VOCR3
+pretrains and VOCR4's six M pretrains.
 
 ## Pools and hygiene
 
@@ -136,7 +148,13 @@ by VN id and by any of their 84 releases, in:
 - vita-test and psp-test.
 
 So the planetarian-free versions of these sets are the current ones byte for byte, and every development and
-test score in this document is both the old and the new score.
+test score in this document is both the old and the new score. Side by side, as the rule asks:
+
+| model | pooled fixed-line CER, old manifests | new manifests (planetarian removed) | development score, old cohorts | new cohorts |
+|---|---|---|---|---|
+| VOCR4-FL10 | 2.15% (109/5074) | 2.15% (109/5074) | 2.48% | 2.48% |
+| VOCR4-H15 | 1.83% (93/5074) | 1.83% (93/5074) | 2.14% | 2.14% |
+| VOCR4-W20 | 1.40% (71/5074) | 1.40% (71/5074) | 1.72% | 1.72% |
 
 ## Selection (development data only)
 
@@ -199,7 +217,8 @@ arm, so these runs were never candidates.
 - then `a9`, `overlay` and `render`.
 
 The spec (`eval/vocr4_report_spec_20261014.json`, from `eval/vocr4_make_spec.py`) has the protocol's ten arms,
-nine pairs and three gates. It ran the scalar C W8I runtime (gcc 11.5) on vita-test (206 lines, 16 games) and
+nine pairs and three gates. The fresh native textbox test is not in the report: its private inputs are not on
+this machine, as the protocol records. It ran the scalar C W8I runtime (gcc 11.5) on vita-test (206 lines, 16 games) and
 psp-test (245 lines, 14 games), with paired bootstrap 95% intervals (10,000 resamples, seed 0) over lines and
 VN clusters.
 
@@ -263,12 +282,16 @@ against 24).
 |---|---|---|---|
 | VOCR4-FL10 − VOCR1 | −1.56 (−2.40 to −0.78) | −1.40 (−2.39 to −0.40) | −1.24 (−2.24 to −0.26) |
 | VOCR4-FL10 − VOCR3-FL10 | −0.12 (−0.48 to +0.22) | +0.36 (+0.00 to +0.73) | +0.26 (−0.19 to +0.70) |
+| VOCR4-FL10 − VOCR_H15 | +0.86 (+0.18 to +1.54) | +1.04 (+0.35 to +1.78) | +1.32 (+0.52 to +2.18) |
+| VOCR4-W20 − VOCR4-H15 | −0.40 (−0.91 to +0.11) | −0.52 (−0.92 to −0.15) | −0.42 (−0.96 to +0.18) |
+| VOCR4-W20 − F20 | −0.06 (−0.73 to +0.65) | −0.20 (−0.73 to +0.37) | +0.68 (−0.13 to +1.60) |
+| VOCR4-H15 − VOCR3-H15 | −0.14 (−0.55 to +0.30) | −0.18 (−0.64 to +0.31) | +0.22 (−0.25 to +0.69) |
 | VOCR4-H15 − VOCR_H15 | +0.16 (−0.42 to +0.74) | +0.20 (−0.36 to +0.76) | +0.68 (−0.08 to +1.51) |
 | VOCR4-W20 − VOCR_H15 | −0.24 (−0.92 to +0.47) | −0.32 (−0.95 to +0.32) | +0.26 (−0.51 to +1.05) |
 | VOCR4-W20 − VOCR3-W20 | +0.02 (−0.55 to +0.61) | −0.30 (−0.76 to +0.16) | +0.16 (−0.44 to +0.82) |
 
-As in VOCR3, the fixed-line gains do not carry over to the finder-cut regions. On whole dialogue every model
-from H15 up is level with VOCR_H15. The selection cohorts are hand-cut lines, so this gap remains the open
+As in VOCR3, the fixed-line gains do not carry over to the finder-cut regions. On whole dialogue VOCR4-H15 and
+VOCR4-W20 are level with VOCR_H15, and VOCR4-FL10 is behind it at every variant. The selection cohorts are hand-cut lines, so this gap remains the open
 question; a whole-dialogue development cohort is needed to select for the overlay's actual reading path.
 
 ### Gates
@@ -336,7 +359,9 @@ the tables above.
 | VOCR4-H15 − Lens | +1.31 [+0.63, +1.94] | −17.8 [−19.3, −16.4] |
 | VOCR4-W20 − Lens | +0.33 [−0.34, +0.94] | −12.5 [−13.9, −11.3] |
 
-**Disclosure.** VOCR4-W20 (arm M) trained on the owner's planetarian PSP frames. planetarian's PSP release and
+**Disclosure.** VOCR4-W20 (arm M) trained on the owner's planetarian PSP frames. Every arm and every earlier
+model also trained on 7 scaled-PC lines of planetarian ~Snow Globe~ (v27747, a VNDB relation of planetarian that
+no rule reserves) in teacher_train and real_train. planetarian's PSP release and
 CLANNAD's Vita release are both Key / Prototype ports, so that model's CLANNAD number carries this exposure.
 VOCR4-FL10 and VOCR4-H15 (arm C) never read the owner's frames. VOCR4-W20 is the only recognizer here below 2%
 CER on these references; Lens's lead in exact lines (97.5% against 84.9%) is still large.
@@ -350,13 +375,18 @@ CER on these references; Lens's lead in exact lines (97.5% against 84.9%) is sti
 | 00:28:40Z | amendment 1 (`7e710ae`): new pools deduplicated by line; from the build's dry-run counts only |
 | 01:27:12Z | the new pools pinned (`d67ae32`, tag `vocr4-runner-d67ae32`) |
 | 01:28:54Z / 01:29:02Z | first A run / first score file |
-| 02:47Z, 04:57Z, 06:35Z, about 09:00Z, 09:56Z | decisions: FL10 real, H15 real, H15 synth, W20 real and synth, FL10 synth |
+| 02:47Z, 04:57Z, 06:35Z, 09:04Z, 09:58Z | decisions computed: FL10 real, H15 real, H15 synth, W20 real and synth, FL10 synth |
 | 06:38Z, 09:06Z, 09:59Z | selections committed: H15, W20, FL10 (pushed 09:59Z) |
 | 09:59:41Z to 10:29Z | locked report (spec, shared, a9, overlay, render); CLANNAD 10:35-10:36Z |
 
 - The branch was rebased onto main after these commits, so their hashes changed. The original commits are
   kept at tags `vocr4-runner-1d8110c`, `vocr4-runner-d67ae32`, `vocr4-history-20261014a`,
   `vocr4-report-runner-a13a31e` and `vocr4-history-20261014b`, and the author dates are the times above.
+- The protocol asks for each decision file to be committed before its size's selection. Five of the six were
+  committed together with it instead: H15's two in `8f9b212`, W20's two in `e02acd4` and FL10's synth decision in
+  `a13a31e`; only FL10's real decision was committed earlier. Each decision was computed one to three minutes
+  before its selection (the `computed` fields), each selection records the sha256 of the decision files it read,
+  and the selection is a deterministic function of them, which the audit reproduced.
 - No arm, run, weight, checkpoint, threshold or pool was chosen, tuned or dropped on vita-test, psp-test, the fresh
   native textbox test or CLANNAD. Each was scored once, after every selection was committed. train2's in-run
   evaluations (teacher_val, logged) selected nothing and were not read before the new pools were pinned.
@@ -380,26 +410,32 @@ CER on these references; Lens's lead in exact lines (97.5% against 84.9%) is sti
 
 ## The final round: three tiers within the owner's ceilings
 
-The owner's final deliverable is three models: Small (< 1 MB weights, ≤ 1 s per 3-line box), Normal (≤ 4 MB,
-≤ 2 s) and Large (≤ 9 MB, ≤ 3 s). Each box is about 640 px a line, one A9 core at 444 MHz, estimated.
-model-tiers (#74) maps VOCR4 onto them as Small = FL10, Normal = H15, Large = W20, and proposes one larger shape
-per tier, with exact export sizes:
+The owner's final deliverable is three models, one per tier. model-tiers' hand-off (`docs/model-tiers.md`, PR #74
+at `14ccc27`, still open) says which are trained now and which shapes would use the room above them:
 
-| tier | shape | int8 weights | est. per box, 444 MHz | what it adds |
-|---|---|---:|---|---|
-| Small | `s_w100v4987`: FL10 with a 4,987-class VN-ordered head | 819,792 B | 0.32-0.61 s | 22× fewer missing VN characters than FL10's 3,500 classes (#65) |
-| Normal | `n_w250v5631`: width 2.5 with a 5,631-class head | 2,095,712 B | 0.96-1.82 s | width, every VN-list kanji |
-| Large | `l_w300v7501b192`: width 3.0, bottleneck 192, 7,501 classes, 16-frame tiles | 3,689,840 B | 1.5-2.9 s | width and a parameter-heavy head; plain width ≥ 3.25 would be compute-bound |
+- **Small:** VOCR4-FL10 now. Next: the FL10 shape with a VN-ordered 4,987-class head (`s_w100v4987`, 819,792 B,
+  est. 0.32-0.61 s per box). vocab-expand (#79) ships that vocab (`data/vocab_vn_4987.txt`). It is a subset of
+  `data/vocab.txt`, so no new render is needed. Its 16k-step proof: teacher_val −0.20 points (CI −0.40 to +0.01),
+  devnative −0.31 (CI −0.60 to −0.04).
+- **Normal:** VOCR4-W20 now (within Normal's 4 MB, 262,144 B arena and 2 s). Next: the late-wide `n_lw300v5631`
+  (width 2.0 early, 3.0 late; 2,473,696 B, arena 261,024 B, est. 0.97-1.95 s per box).
+- **Large:** VOCR4-W20 now. Next: one of four shapes at about the same estimated box time with 16-frame tiles:
+  - `l_w325v5631` (plain width 3.25, 3.06 MB);
+  - `l_w300c4v5631` (width 3.0 with 4 temporal blocks, 3.41 MB);
+  - the parameter-heavy, compute-light `l_w300v7501b128` and `l_w300v7501b192` (3.17 and 3.69 MB, est. 2.70 and
+    2.88 s per box).
+
+  vocab-expand's final vocabs for Normal and Large are `data/vocab_vn_5631.txt` and `data/vocab_vn_6459.txt`. They
+  need one render with the 6,459-class vocab first, since the synthetic and real pools only cover `data/vocab.txt`.
 
 VOCR4's evidence for that round:
 
-- Use synth3 version 3 in the pretrain at the larger sizes: it was the only resolved gain here, at W20.
-- Keep VOCR3's real mix, with the new native data as a test arm only: no size showed a resolved gain from it,
+- Use synth3 version 3 in the pretrain of the wide models: it was the only resolved gain here, at W20. At FL10
+  and H15 it was not adopted.
+- Keep VOCR3's real mix, and test the new native data only as an arm: no size showed a resolved gain from it,
   and at H15 it cost scaled-PC accuracy.
-- A new vocabulary needs synthetic data rendered with it and a real-pool relabel (the pools were filtered to
-  H15's vocab). vocab-expand's study decides that.
-- Each shape needs its own pre-registered protocol and new pretrains; the larger ones are roughly 13 to 40 h
-  per run on this box at 5 threads.
+- Each shape needs its own pre-registered protocol and new pretrains. At 5 threads on this box the larger ones
+  are roughly 13 to 40 h per run.
 
 ## Reproduce
 

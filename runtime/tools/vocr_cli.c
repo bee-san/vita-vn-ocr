@@ -8,6 +8,7 @@
  * --stdin fits eval/run.py: --model 'cmd:runtime/build/vocr_cli MODEL.vocr --stdin'.
  *
  * opts: --mode auto|f32|w8f|w8i  --tile N  --head N  --max-width N
+ *       --tail-conf N      trailing low-confidence trim, in 1/1000 (0 off; 0..1000)
  *       --invert           read every crop as 255 - grey (VOCR_INVERT: dark text)
  *       --logits OUT.bin   per line: u32 frames, u32 classes, float32 logits
  *       --input-out OUT.bin  per line: u32 height, u32 padded width, u32 width, then the

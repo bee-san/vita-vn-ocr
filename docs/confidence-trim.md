@@ -61,8 +61,9 @@ In `runtime/vocr.c`:
   array (80 bytes at the default tiling, for every blob) **only** when the trim is on.
 
 No heap, no recursion, C99, **no libm**: the softmax term uses `vexpf_nonpos`, a
-runtime-local float `exp` for x ≤ 0 (a 2^x exponent-bit construction plus a degree-6
-minimax polynomial on `[0,1)`). The Vita object's undefined symbols are exactly
+runtime-local float `exp` for x ≤ 0 (a 2^x exponent-bit construction plus the
+degree-7 Taylor series of 2^f on `[0,1)`; max relative error vs `expf` ≈ 7e-7,
+asserted < 2e-5 by `test_vexpf_accuracy`). The Vita object's undefined symbols are exactly
 main's (`__aeabi_idiv`, `__aeabi_uidiv`, `__aeabi_uidivmod`, `memcpy`, `memset`), so
 a `-nostdlib` plugin links it unchanged, and the same code runs on host, Vita and
 PSP. `tail_conf` outside `[0, 1000]` is rejected by `vocr_init` / `vocr_arena_bytes`.
@@ -74,14 +75,18 @@ path only. Measured ARM instruction counts (`vocr.c` built with `arm-vita-eabi-g
 15.2` and the Vita flags, run under the repo's plugin qemu-arm with
 `vita/qemu/insn_mix`, on three 670-728 px dev lines, W8I):
 
-| model | tail 0 → 500 instructions/line | overhead | default (tail 0) vs main |
+| model | tail 0 → 500 instructions/line (3 lines, 614-728 px) | overhead | default (tail 0) vs main |
 |---|---:|---:|---:|
-| VOCR3-FL10 | 38.5M → 46.3M | **+20.3 %** | +0.17 % (within noise) |
-| VOCR3-W20 | 89.5M → 101.5M | **+13.4 %** | — |
+| VOCR3-FL10 | 38.5M → 47.7M | **+23.8 %** | +0.1 % |
+| VOCR3-W20 | 89.5M → 103.6M | **+15.7 %** | — |
+
+(`run_head` itself is about +0.9 % at tail 0, from the hoisted `conf` flag and the
+watermark stores; the per-class inner loop's source is unchanged. The counts are
+total over the three lines divided by three.)
 
 Through `vita/a9_cycles.py`'s A9 cost model (as the model-tiers and VOCR3 docs do),
-that is roughly **+18-26 ms per 640-px line on FL10 and +27-40 ms on W20 at 444 MHz**
-(≈ +35-53 ms on W20 at 333 MHz), about **+50-120 ms per typical 3-line textbox**.
+that is roughly **+21-28 ms per 640-px line on FL10 and +33-43 ms on W20 at 444 MHz**
+(≈ +43-57 ms on W20 at 333 MHz), about **+60-130 ms per typical 3-line textbox**.
 Estimates; nothing has run on a console. They stay within the per-textbox speed
 limits (`docs/model-tiers.md`: Small ≤ 1 s, Normal ≤ 2 s, Large ≤ 3 s at 444 MHz).
 The overhead is real — one `exp` per class per frame over a 3,500-5,355-class head.
@@ -108,32 +113,29 @@ decoration), lower is better.
 | model | names CER | names exact | dialogue CER | dialogue exact | notext chars |
 |---|---:|---:|---:|---:|---:|
 | VOCR3-FL10, off | 51.55 | 31.97 | 8.42 | 77.45 | 1081 |
-| VOCR3-FL10, tail 0.5 | **43.04** | 36.07 | 8.33 | 77.45 | 1002 |
+| VOCR3-FL10, tail 0.5 | **42.53** | 36.07 | 8.33 | 77.45 | 1002 |
 | VOCR3-H15, off | 43.81 | 41.80 | 8.07 | 81.25 | 1172 |
-| VOCR3-H15, tail 0.5 | **40.98** | 42.62 | 8.09 | 81.25 | 1100 |
+| VOCR3-H15, tail 0.5 | **40.98** | 42.62 | 8.09 | 81.25 | 1098 |
 | VOCR3-W20, off | 41.49 | 38.52 | 7.72 | 80.43 | 1144 |
-| VOCR3-W20, tail 0.5 | **36.34** | 45.08 | 7.70 | 80.98 | 1092 |
+| VOCR3-W20, tail 0.5 | **35.57** | 45.90 | 7.70 | 80.98 | 1090 |
 
 Name CER drops on every tier and name exact-match rises; dialogue is flat
 (±0.1 points); the no-text count falls. A paired bootstrap over lines (10,000
-resamples) gives name-CER changes of −9.0 points for FL10 [−14.5, −4.4] and −5.9
-for W20 [−9.5, −2.9], both clear of zero, but **−2.8 for H15 [−5.9, 0.0], which
-cannot be told apart from zero** on its 122 name lines. Dialogue changes are within
+resamples) gives name-CER changes of −9.02 points for FL10 [−14.57, −4.23] and
+−5.93 for W20 [−9.51, −2.78], both clear of zero, but **−2.84 for H15 [−5.93, 0.00],
+which cannot be told apart from zero** on its 122 name lines. Dialogue changes are within
 noise on all three. The protocol's decision rule (names down, dialogue up ≤ 0.1
 points, no-text not up) holds for all three; H15's names gain is within noise.
 
-W20 threshold sweep on the cohort (names / dialogue CER): 0.50 → 36.34 / 7.70;
-0.55 → 35.31 / 7.78; 0.60 → 34.54 / 7.74; 0.65 → 34.28 / 7.87; 0.70 → 34.54 / 7.94.
+W20 threshold sweep on the cohort (names / dialogue CER): 0.50 → 35.57 / 7.70;
+0.55 → 35.57 / 7.78; 0.60 → 34.79 / 7.74; 0.65 → 34.28 / 7.87; 0.70 → 34.54 / 7.94.
 Higher thresholds trade a little more names gain for a slowly rising dialogue CER;
 0.50 is the knee where dialogue is still flat.
 
-At 0.5 the trim empties a few whole lines (per tier, 7-13 of 368 dialogue and 4-7 of
+At 0.5 the trim empties a few whole lines (per tier, 7-13 of 368 dialogue and 4-6 of
 122 name lines) — all already misread, but on the console such a line now shows
 nothing instead of a wrong guess.
 
-(The numbers shifted by ≤ 0.8 points from an earlier `expf` draft when `expf` was
-replaced by the libm-free `vexpf_nonpos`; the gains and dialogue-safety are
-unchanged.)
 
 ### Why not a geometry name-crop
 
@@ -169,7 +171,9 @@ done
 
 The crops are devnative v3 under `$HERD/shared/artifacts/devnative/` (never
 committed). `runtime/tests/test_vocr.c::test_tail_conf` checks the C trim against
-an independent reference built from the captured per-frame logits, that
+a reference built from the captured per-frame logits (it shares the vexpf and the
+running-max order with the runtime, so it checks the watermark logic; a separate
+`test_vexpf_accuracy` pins vexpf against libm `expf` to < 2e-5), that
 `tail_conf = 0` is bit-identical to the untrimmed output, and that the trimmed
 text is always a prefix of it.
 

@@ -5,6 +5,7 @@
  * validation, arena sizing, tile invariance, text overflow, cancellation and error
  * paths. Run under ASan/UBSan by `make check`.
  */
+#define _POSIX_C_SOURCE 200112L  /* posix_memalign for the exact-arena test */
 #include "../vocr.h"
 
 #include <math.h>
@@ -495,21 +496,37 @@ static float test_vexpf_nonpos(float x)
     float t, f, p;
     int32_t e;
     union { float f; uint32_t u; } bits;
+    if (!(x >= -87.0f)) return 0.0f;
     if (x > 0.0f) x = 0.0f;
-    if (x < -87.0f) return 0.0f;
     t = x * 1.4426950408889634f;
     e = (int32_t)t;
     if ((float)e > t) e--;
     f = t - (float)e;
-    p = 0.0001877576168f;
-    p = p * f + 0.0013878698224f;
-    p = p * f + 0.0083714417686f;
-    p = p * f + 0.0416631084953f;
-    p = p * f + 0.1660249243744f;
+    p = 0.0000152527338f;
+    p = p * f + 0.0001540353039f;
+    p = p * f + 0.0013333558146f;
+    p = p * f + 0.0096181291076f;
+    p = p * f + 0.0555041086648f;
+    p = p * f + 0.2402265069591f;
     p = p * f + 0.6931471805599f;
     p = p * f + 1.0f;
     bits.u = (uint32_t)((e + 127) & 0xFF) << 23;
     return p * bits.f;
+}
+
+/* vexpf_nonpos must match libm's expf closely (the comment and doc claim ~7e-7, and
+ * the test asserts < 2e-5): a mutant with the wrong polynomial fails here. */
+static void test_vexpf_accuracy(void)
+{
+    int i;
+    float worst = 0.0f;
+    for (i = 0; i <= 8700; i++) {
+        float x = -87.0f * (float)i / 8700.0f; /* grid over [-87, 0] */
+        float a = test_vexpf_nonpos(x), b = expf(x);
+        float rel = b > 0.0f ? fabsf(a / b - 1.0f) : fabsf(a - b);
+        if (rel > worst) worst = rel;
+    }
+    CHECK(worst < 2.0e-5f);
 }
 
 /* Independent reference: CTC-collapse `best` into chars, record each char's frame
@@ -573,12 +590,12 @@ static void test_tail_conf(int int8)
     char t0[256], tz[256], tN[256], tref[256];
     float logits[300 * CLASSES];
     float logits0[300 * CLASSES];
-    uint16_t best[300];
+    uint16_t best[300], best0[300];
     unsigned trc, w, any_partial = 0, any_interior = 0, nchecked = 0;
     const unsigned thrs[] = {205, 225, 245, 255, 260, 262, 265, 285, 305};
     CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK);
 
-    /* tail_conf = 0: bit-identical output AND logits to a zeroed-opts run. */
+    /* tail_conf = 0 captures the baseline text, logits and argmax. */
     memset(&o, 0, sizeof o);
     o.mode = int8 ? VOCR_MODE_W8I : VOCR_MODE_F32;
     make_image(220, 8, 1);
@@ -591,22 +608,28 @@ static void test_tail_conf(int int8)
     CHECK(need != 0 && vocr_init(&c, &m, &o, arena_a, need) == VOCR_OK);
     memset(&ex, 0, sizeof ex);
     ex.logits = logits0;
-    ex.best = best;
+    ex.best = best0;
     ex.cap_frames = 300;
     CHECK(vocr_run(&c, &im, tz, sizeof tz, &ex) == VOCR_OK);
     trc = ex.frames;
     {
-        vocr_opts o0 = o;
-        o0.tail_conf = 0;
-        CHECK(vocr_init(&c, &m, &o0, arena_b, vocr_arena_bytes(&m, &o0)) == VOCR_OK);
-        CHECK(vocr_arena_bytes(&m, &o0) == need); /* disabled path does not grow the arena */
+        /* The enabled path (tail_conf = 1, i.e. threshold 0.001) trims nothing on this
+         * fixture — every emitted char's softmax-max exceeds 1/6 — so its text, logits
+         * and argmax must equal the tail_conf = 0 run exactly. This checks that turning
+         * the trim on perturbs neither the logits nor the argmax. */
+        vocr_opts o1 = o;
+        o1.tail_conf = 1;
+        CHECK(vocr_arena_bytes(&m, &o) == need); /* disabled path does not grow the arena */
+        CHECK(vocr_init(&c, &m, &o1, arena_b, vocr_arena_bytes(&m, &o1)) == VOCR_OK);
         memset(&ex, 0, sizeof ex);
         ex.logits = logits;
         ex.best = best;
         ex.cap_frames = 300;
         CHECK(vocr_run(&c, &im, t0, sizeof t0, &ex) == VOCR_OK);
         CHECK(strcmp(t0, tz) == 0);
+        CHECK(ex.frames == trc);
         CHECK(memcmp(logits, logits0, (size_t)trc * m.n_classes * sizeof(float)) == 0);
+        CHECK(memcmp(best, best0, (size_t)trc * sizeof(uint16_t)) == 0);
     }
 
     /* Over several widths and a threshold sweep, the C trim must equal the reference,
@@ -663,6 +686,50 @@ static void test_tail_conf(int int8)
     }
 }
 
+/* B1 regression: run on an arena of exactly vocr_arena_bytes() from the heap, so ASan
+ * sees any write that leaves the plan's bytes. Covers tail_conf 0 and 500 in F32 at
+ * tile 1 / head 64 (the case that exposed the original out-of-bounds sumv write), and
+ * the default tiling in W8I and W8F. make check runs this under ASan in both CI jobs. */
+static void test_tail_conf_heap_arena(void)
+{
+    static const int modes[3] = {VOCR_MODE_F32, VOCR_MODE_W8I, VOCR_MODE_W8F};
+    unsigned mi, ti;
+    const unsigned tails[2] = {0, 500};
+    char text[256];
+    make_image(200, 8, 1);
+    for (mi = 0; mi < 3; mi++) {
+        int int8 = modes[mi] != VOCR_MODE_F32;   /* W8I/W8F need an int8 blob, F32 a float one */
+        size_t n = build_blob(int8);
+        vocr_model m;
+        CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK);
+        for (ti = 0; ti < 2; ti++) {
+            vocr_opts o;
+            vocr_ctx c;
+            vocr_image im;
+            size_t need;
+            void *arena = NULL;
+            memset(&o, 0, sizeof o);
+            o.mode = modes[mi];
+            o.tail_conf = tails[ti];
+            if (modes[mi] == VOCR_MODE_F32) {   /* the tile-1/head-64 case from the probe */
+                o.tile_frames = 1;
+                o.head_frames = 64;
+            }
+            need = vocr_arena_bytes(&m, &o);
+            CHECK(need != 0);
+            CHECK(posix_memalign(&arena, 16, need) == 0 && arena != NULL);
+            CHECK(vocr_init(&c, &m, &o, arena, need) == VOCR_OK);
+            im.pixels = img_px;
+            im.width = 200;
+            im.height = 8;
+            im.stride = 200;
+            im.format = VOCR_GREY8;
+            CHECK(vocr_run(&c, &im, text, sizeof text, NULL) == VOCR_OK);
+            free(arena);
+        }
+    }
+}
+
 int main(void)
 {
     test_load(0);
@@ -673,8 +740,10 @@ int main(void)
     test_run(1, 272);
     test_invert();
     test_limits();
+    test_vexpf_accuracy();
     test_tail_conf(0);
     test_tail_conf(1);
+    test_tail_conf_heap_arena();
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

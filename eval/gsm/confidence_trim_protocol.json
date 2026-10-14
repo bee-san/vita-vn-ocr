@@ -32,7 +32,7 @@
     "metric": "CER = total NFKC-normalised Levenshtein distance / total reference characters (eval/metrics.norm); exact = share of lines whose normalised prediction equals the reference"
   },
   "candidate": {
-    "runtime_change": "runtime/vocr.c + vocr.h: vocr_opts.tail_conf (1/1000, 0..1000). A character at the end of the line whose emitting CTC frame has softmax-max confidence < tail_conf/1000 is dropped, and so is every character after it; interior characters are never dropped. The confidence uses a runtime-local float exp (vexpf_nonpos, no libm), so the Vita object's undefined symbols match main's. The if(conf) branch is hoisted out of the per-class loop, so tail_conf=0 is byte-for-byte main's head loop (verified: 0 output/arena mismatches on the dev crops; +0.17% ARM instructions, within noise). Arena grows by one acc_frames-float array only when enabled.",
+    "runtime_change": "runtime/vocr.c + vocr.h: vocr_opts.tail_conf (1/1000, 0..1000). A character at the end of the line whose emitting CTC frame has softmax-max confidence < tail_conf/1000 is dropped, and so is every character after it; interior characters are never dropped. The confidence uses a runtime-local float exp (vexpf_nonpos, degree-7 2^f Taylor, max rel err ~7e-7 vs expf, no libm), so the Vita object's undefined symbols match main's. The if(conf) branch is hoisted out of the per-class loop, so tail_conf=0 is byte-for-byte main's head loop (verified: 0 output/arena mismatches on the dev crops; +0.17% ARM instructions, within noise). Arena grows by one acc_frames-float array only when enabled.",
     "threshold": "tail_conf = 500 (confidence 0.5). SELECTED ON THIS DEVELOPMENT COHORT by a sweep over {0.50,0.55,0.60,0.65,0.70}; 0.50 is the lowest threshold that captures the names gain while leaving dialogue flat. The locked table is therefore the IN-SAMPLE result of that selection. Development data only; disclosed."
   },
   "blobs": {
@@ -41,7 +41,7 @@
     "VOCR3_W20": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19"
   },
   "decision_rule": "The trim ships only if, on this cohort and for every one of the three tiers, names CER strictly decreases and dialogue CER does not increase by more than 0.1 points. notext characters written must not increase.",
-  "runtime_vocr_c_sha256_at_freeze": "f2820d77784ff452e16dba4701c996849daf365e000ad60fe1fa432722109ea4",
+  "runtime_vocr_c_sha256_at_freeze": "ee4d13b9da5533daeaaedc1d4b46d10b45bd46dd48cf6e567fb28e9861c810be",
   "reproduce": [
     "for b in VOCR3_FL10_w8 VOCR3_H15_w8 VOCR3_W20_w8; do",
     "  .venv-ci/bin/python eval/gsm/devpipe.py --blob $b.vocr --tail 0",
@@ -52,11 +52,15 @@
     "eval/gsm/devpipe.py": "f68e8b4338e2628e096e4315d726b07e1c2c926fc82ea6666ef87d3984650f31"
   },
   "results_locked": {
-    "note": "frozen with this change; in-sample (threshold selected on this cohort). libm-free vexpf.",
+    "note": "frozen with this change; in-sample (threshold selected on this cohort); libm-free vexpf_nonpos (degree-7).",
     "VOCR3_FL10": {
       "names_cer": [
         51.55,
-        43.04
+        42.53
+      ],
+      "names_exact": [
+        31.97,
+        36.07
       ],
       "dialogue_cer": [
         8.42,
@@ -72,19 +76,27 @@
         43.81,
         40.98
       ],
+      "names_exact": [
+        41.8,
+        42.62
+      ],
       "dialogue_cer": [
         8.07,
         8.09
       ],
       "notext_chars": [
         1172,
-        1100
+        1098
       ]
     },
     "VOCR3_W20": {
       "names_cer": [
         41.49,
-        36.34
+        35.57
+      ],
+      "names_exact": [
+        38.52,
+        45.9
       ],
       "dialogue_cer": [
         7.72,
@@ -92,26 +104,31 @@
       ],
       "notext_chars": [
         1144,
-        1092
+        1090
       ]
     },
-    "paired_bootstrap_names_cer_delta_points": {
+    "paired_bootstrap_names_cer_delta_points_10000_seed0": {
       "FL10": [
-        -9.0,
-        -14.5,
-        -4.4
+        -9.02,
+        -14.57,
+        -4.23
       ],
       "W20": [
-        -5.9,
-        -9.5,
-        -2.9
+        -5.93,
+        -9.51,
+        -2.78
       ],
       "H15": [
-        -2.8,
-        -5.9,
+        -2.84,
+        -5.93,
         0.0
       ]
     },
-    "a9_estimate": "ARM insn/line delta +20.3% FL10, +13.4% W20 (qemu insn_mix, Vita build); ~+18-40 ms/line @444MHz; within per-textbox budgets. Estimate; no console run."
-  }
+    "a9_estimate": "ARM insn/line delta +23.8% FL10, +15.7% W20 (qemu insn_mix, corrected degree-7 build); ~+21-28 ms/line FL10, +33-43 ms/line W20 @444MHz; within per-textbox budgets. Estimate; no console run."
+  },
+  "amendments": [
+    "d8b16df (first PR head): expf-based, had the B1 default-path OOB write; superseded.",
+    "bd6aced (round-1 fix): libm-free vexpf but with wrong 2^f coefficients (-4.46% exp err), which shifted the table (FL10 43.04, W20 36.34).",
+    "final head: vexpf_nonpos uses the correct degree-7 2^f Taylor coefficients (err ~7e-7); the table returns to the accurate values above. Threshold 0.5 kept; not re-selected."
+  ]
 }

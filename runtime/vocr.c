@@ -1230,28 +1230,30 @@ static void ctc_push(const vocr_model *m, out_t *o, unsigned tok, float conf)
  * instruction count. */
 
 /* exp(x) for x <= 0, in float only, no libm: exp(x) = 2^(x/ln2), the integer part
- * built from the float exponent bits, the fractional part from a degree-6 minimax
- * polynomial on [0,1). Deterministic on every platform (no FMA, -ffp-contract=off).
- * Only the softmax denominator uses it, so a tiny error cannot move a decoded glyph;
- * it only shifts the trailing-trim confidence by < 1e-5. x > 0 never occurs here
- * (arguments are logit - max <= 0); it is clamped for safety. */
+ * built from the float exponent bits, the fractional part from the degree-7 Taylor
+ * series of 2^f on [0,1) (coefficients (ln2)^k/k!). Deterministic on every platform
+ * (no FMA, -ffp-contract=off). Max relative error vs exp is about 7e-7 (well under
+ * the 2e-5 the accuracy test asserts). Only the softmax denominator uses it, so this
+ * cannot move a decoded glyph. x > 0 never occurs here (arguments are logit - max
+ * <= 0); x > 0, NaN and x < -87 (float underflow) are all handled up front. */
 static float vexpf_nonpos(float x)
 {
     float t, f, p;
     int32_t e;
     union { float f; uint32_t u; } bits;
+    if (!(x >= -87.0f)) return 0.0f; /* NaN or <= -87 (underflow): also rejects -inf */
     if (x > 0.0f) x = 0.0f;
-    if (x < -87.0f) return 0.0f; /* underflows float */
     t = x * 1.4426950408889634f; /* x / ln2 */
     e = (int32_t)t;
     if ((float)e > t) e--;       /* floor */
     f = t - (float)e;            /* fractional part in [0,1) */
-    /* 2^f, minimax degree-6 on [0,1) */
-    p = 0.0001877576168f;
-    p = p * f + 0.0013878698224f;
-    p = p * f + 0.0083714417686f;
-    p = p * f + 0.0416631084953f;
-    p = p * f + 0.1660249243744f;
+    /* 2^f, degree-7 Taylor: coefficients (ln2)^k / k! */
+    p = 0.0000152527338f;
+    p = p * f + 0.0001540353039f;
+    p = p * f + 0.0013333558146f;
+    p = p * f + 0.0096181291076f;
+    p = p * f + 0.0555041086648f;
+    p = p * f + 0.2402265069591f;
     p = p * f + 0.6931471805599f;
     p = p * f + 1.0f;
     bits.u = (uint32_t)((e + 127) & 0xFF) << 23; /* 2^e */

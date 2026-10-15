@@ -1,0 +1,2182 @@
+{
+ "kind": "owner-pool-stats",
+ "tag": "v2",
+ "pool": "owner pool v2",
+ "private_dir": "shared/private/owner-games/_build2/owner-pool-2",
+ "codex": "none: private frames; Claude (pass 1 + an independent confirm look) and MeikiOCR / PP-OCRv6 only",
+ "rule_sha256": "0b1ca439760f1a8a22b84239d789d6221bd54fb24d2bd5d478f705f22e313b9a",
+ "rule": "AGREEMENT.md rule 3: a pass-1 label is kept only with an agreeing confirm look",
+ "frames_read": 4414,
+ "frames_by_kind": {
+  "psp": 2523,
+  "vita": 1891
+ },
+ "labels": {
+  "dropped:skip-ui": 670,
+  "kept:auto": 4237,
+  "pending:confirm-missing": 757,
+  "kept:single": 1451,
+  "kept:consensus": 2324,
+  "dropped:no-engine-support": 366,
+  "dropped:confirm-disagree": 12,
+  "dropped:skip-cut": 223,
+  "dropped:confirm-skip": 2,
+  "dropped:skip-bad": 53,
+  "dropped:confirm-unsure": 2,
+  "dropped:undecided": 1,
+  "dropped:pass1-unsure": 4,
+  "dropped:blind-wrong-label": 1
+ },
+ "build": {
+  "lines": 6594,
+  "vns": 71,
+  "dropped": {
+   "out-of-vocab": 2,
+   "excluded-late": 1,
+   "grad-partial": 193,
+   "ink_m4-overlap": 530,
+   "ink_m8-overlap": 530,
+   "grad-missed": 689,
+   "grad-mixed": 367,
+   "grad-unchecked": 592,
+   "grad-cuts-label": 273,
+   "edge-bad": 78,
+   "ink-mixed": 152,
+   "no-crop": 145,
+   "edge-unchecked": 221,
+   "edge-cut": 12,
+   "edge-other-text": 1,
+   "repeat-cap": 958
+  },
+  "files": {
+   "native_train_ink_v2.npz": {
+    "crops": 6587,
+    "by_target": {
+     "psp": 3814,
+     "vita": 2773
+    },
+    "sha256": "fc6addb5d170018d5ce2b716f96cf5507c3f87a2180d0f2a426a32c120158466"
+   },
+   "native_train_ink_m4_v2.npz": {
+    "crops": 6064,
+    "by_target": {
+     "psp": 3514,
+     "vita": 2550
+    },
+    "sha256": "3366d882e92e7ac387deb7de10f7acd293e94ee280924e3ed27ad9c0272aca46"
+   },
+   "native_train_ink_m8_v2.npz": {
+    "crops": 6064,
+    "by_target": {
+     "psp": 3514,
+     "vita": 2550
+    },
+    "sha256": "d698f1b431307f2970f4d673cad919aeeecd7098d85d573331601ec65535e27a"
+   },
+   "native_train_grad_v2.npz": {
+    "crops": 5084,
+    "by_target": {
+     "psp": 2911,
+     "vita": 2173
+    },
+    "sha256": "c639dc621dc346ce11b01ab2399458e07092e0a37b0c5fb035d0dba7385f2001"
+   }
+  }
+ },
+ "lines": 6594,
+ "dialogue_lines": 6426,
+ "name_lines": 168,
+ "name_rule": "a speaker name: a line a Claude look flagged (\"name\": true in pass 1, a confirm look, an edge check or the precision check), or a line whose label has the key of a flagged line of the same VN",
+ "name_lines_pass1_flag": 84,
+ "per_game": {
+  "v10": {
+   "platform": "psp",
+   "folders": [
+    "psp-narcissu-portable-v10-TEST"
+   ],
+   "title": "narcissu",
+   "frames": 200,
+   "candidates": 312,
+   "kept_labels": 257,
+   "lines": 222,
+   "dialogue_lines": 222,
+   "crops_ink": 222,
+   "crops_ink_m4": 116,
+   "crops_ink_m8": 116,
+   "crops_grad": 125
+  },
+  "v264": {
+   "platform": "psp",
+   "folders": [
+    "psp-da-capo-plus-situation-v264"
+   ],
+   "title": "D.C.～ダ・カーポ～",
+   "frames": 150,
+   "candidates": 275,
+   "kept_labels": 236,
+   "lines": 125,
+   "dialogue_lines": 124,
+   "crops_ink": 124,
+   "crops_ink_m4": 89,
+   "crops_ink_m8": 89,
+   "crops_grad": 77
+  },
+  "v266": {
+   "platform": "psp",
+   "folders": [
+    "psp-da-capo-ii-plus-situation-v266"
+   ],
+   "title": "D.C.II ～ダ・カーポII～",
+   "frames": 37,
+   "candidates": 53,
+   "kept_labels": 39,
+   "lines": 37,
+   "dialogue_lines": 36,
+   "crops_ink": 37,
+   "crops_ink_m4": 36,
+   "crops_ink_m8": 36,
+   "crops_grad": 35
+  },
+  "v683": {
+   "platform": "vita",
+   "folders": [
+    "vita-parfait-v683"
+   ],
+   "title": "パルフェ ～ショコラ second brew～",
+   "frames": 1,
+   "candidates": 1,
+   "kept_labels": 0
+  },
+  "v689": {
+   "platform": "psp",
+   "folders": [
+    "psp-magustale-eternity-v689"
+   ],
+   "title": "MagusTale ～世界樹と恋する魔法使い～",
+   "frames": 149,
+   "candidates": 332,
+   "kept_labels": 269,
+   "lines": 230,
+   "dialogue_lines": 228,
+   "crops_ink": 230,
+   "crops_ink_m4": 230,
+   "crops_ink_m8": 230,
+   "crops_grad": 186
+  },
+  "v727": {
+   "platform": "psp",
+   "folders": [
+    "psp-princess-maker-4-portable-v727"
+   ],
+   "title": "プリンセスメーカー4",
+   "frames": 2,
+   "candidates": 9,
+   "kept_labels": 3,
+   "lines": 3,
+   "dialogue_lines": 3,
+   "crops_ink": 3,
+   "crops_ink_m4": 3,
+   "crops_ink_m8": 3
+  },
+  "v728": {
+   "platform": "psp",
+   "folders": [
+    "psp-princess-maker-5-portable-v728"
+   ],
+   "title": "プリンセスメーカー5",
+   "frames": 10,
+   "candidates": 41,
+   "kept_labels": 35,
+   "lines": 27,
+   "dialogue_lines": 27,
+   "crops_ink": 27,
+   "crops_ink_m4": 27,
+   "crops_ink_m8": 27,
+   "crops_grad": 13
+  },
+  "v1080": {
+   "platform": "psp",
+   "folders": [
+    "psp-pastel-chime-continue-v1080"
+   ],
+   "title": "ぱすてるチャイムContinue",
+   "frames": 150,
+   "candidates": 267,
+   "kept_labels": 238,
+   "lines": 138,
+   "dialogue_lines": 138,
+   "crops_ink": 137,
+   "crops_ink_m4": 88,
+   "crops_ink_m8": 88,
+   "crops_grad": 82
+  },
+  "v1170": {
+   "platform": "psp",
+   "folders": [
+    "psp-omoide-ni-kawaru-kimi-v1170"
+   ],
+   "title": "想い出にかわる君 ～メモリーズオフ～",
+   "frames": 6,
+   "candidates": 13,
+   "kept_labels": 12,
+   "lines": 11,
+   "dialogue_lines": 11,
+   "crops_ink": 11,
+   "crops_ink_m4": 10,
+   "crops_ink_m8": 10,
+   "crops_grad": 8
+  },
+  "v1171": {
+   "platform": "psp",
+   "folders": [
+    "psp-memories-off-sorekara-v1171"
+   ],
+   "title": "Memories Off ～それから～",
+   "frames": 150,
+   "candidates": 238,
+   "kept_labels": 234,
+   "lines": 164,
+   "dialogue_lines": 162,
+   "crops_ink": 164,
+   "crops_ink_m4": 164,
+   "crops_ink_m8": 164,
+   "crops_grad": 156
+  },
+  "v1281": {
+   "platform": "psp",
+   "folders": [
+    "psp-amagami-v1281-TEST"
+   ],
+   "title": "アマガミ",
+   "frames": 113,
+   "candidates": 197,
+   "kept_labels": 177,
+   "lines": 177,
+   "dialogue_lines": 177,
+   "crops_ink": 177,
+   "crops_ink_m4": 177,
+   "crops_ink_m8": 177,
+   "crops_grad": 143
+  },
+  "v1322": {
+   "platform": "psp",
+   "folders": [
+    "psp-tenshin-ranman-v1322"
+   ],
+   "title": "天神乱漫 LUCKY or UNLUCKY!?",
+   "frames": 150,
+   "candidates": 310,
+   "kept_labels": 279,
+   "lines": 222,
+   "dialogue_lines": 211,
+   "crops_ink": 222,
+   "crops_ink_m4": 222,
+   "crops_ink_m8": 222,
+   "crops_grad": 188
+  },
+  "v1325": {
+   "platform": "psp",
+   "folders": [
+    "psp-memories-off-5-v1325"
+   ],
+   "title": "Memories Off #5 とぎれたフィルム",
+   "frames": 3,
+   "candidates": 5,
+   "kept_labels": 5,
+   "lines": 5,
+   "dialogue_lines": 3,
+   "crops_ink": 5,
+   "crops_ink_m4": 4,
+   "crops_ink_m8": 4,
+   "crops_grad": 4
+  },
+  "v1646": {
+   "platform": "psp",
+   "folders": [
+    "psp-memories-off-6-v1646"
+   ],
+   "title": "メモリーズオフ6 ～T-wave～",
+   "frames": 150,
+   "candidates": 238,
+   "kept_labels": 201,
+   "lines": 179,
+   "dialogue_lines": 175,
+   "crops_ink": 179,
+   "crops_ink_m4": 179,
+   "crops_ink_m8": 179,
+   "crops_grad": 137
+  },
+  "v2002": {
+   "platform": "vita",
+   "folders": [
+    "vita-steins-gate-v2002"
+   ],
+   "title": "STEINS;GATE",
+   "frames": 150,
+   "candidates": 359,
+   "kept_labels": 185,
+   "lines": 183,
+   "dialogue_lines": 181,
+   "crops_ink": 183,
+   "crops_ink_m4": 183,
+   "crops_ink_m8": 183,
+   "crops_grad": 151
+  },
+  "v2063": {
+   "platform": "psp",
+   "folders": [
+    "psp-hayarigami-portable-v2063"
+   ],
+   "title": "流行り神 警視庁怪異事件ファイル",
+   "frames": 2,
+   "candidates": 15,
+   "kept_labels": 6,
+   "lines": 5,
+   "dialogue_lines": 5,
+   "crops_ink": 5,
+   "crops_ink_m4": 5,
+   "crops_ink_m8": 5,
+   "crops_grad": 3
+  },
+  "v2113": {
+   "platform": "psp",
+   "folders": [
+    "psp-solfege-sweet-harmony-v2113"
+   ],
+   "title": "ソルフェージュ",
+   "frames": 150,
+   "candidates": 705,
+   "kept_labels": 480,
+   "lines": 393,
+   "dialogue_lines": 380,
+   "crops_ink": 393,
+   "crops_ink_m4": 393,
+   "crops_ink_m8": 393,
+   "crops_grad": 316
+  },
+  "v2923": {
+   "platform": "vita",
+   "folders": [
+    "vita-cure-mate-club-v2923"
+   ],
+   "title": "Cure Mate Club",
+   "frames": 1,
+   "candidates": 5,
+   "kept_labels": 4,
+   "lines": 3,
+   "dialogue_lines": 3,
+   "crops_ink": 3,
+   "crops_ink_m4": 3,
+   "crops_ink_m8": 3,
+   "crops_grad": 1
+  },
+  "v2954": {
+   "platform": "vita",
+   "folders": [
+    "vita-bitter-smile-v2954"
+   ],
+   "title": "Bitter Smile.",
+   "frames": 1,
+   "candidates": 5,
+   "kept_labels": 2,
+   "lines": 2,
+   "dialogue_lines": 2,
+   "crops_ink": 2,
+   "crops_ink_m4": 1,
+   "crops_ink_m8": 1,
+   "crops_grad": 1
+  },
+  "v3091": {
+   "platform": "vita",
+   "folders": [
+    "vita-chaos-head-love-chu-chu-v3091"
+   ],
+   "title": "カオスヘッド らぶChu☆Chu!",
+   "frames": 10,
+   "candidates": 29,
+   "kept_labels": 10,
+   "lines": 10,
+   "dialogue_lines": 10,
+   "crops_ink": 10,
+   "crops_ink_m4": 10,
+   "crops_ink_m8": 10,
+   "crops_grad": 10
+  },
+  "v3278": {
+   "platform": "psp",
+   "folders": [
+    "psp-no-fate-v3278"
+   ],
+   "title": "のーふぇいと！～only the power of will～",
+   "frames": 150,
+   "candidates": 299,
+   "kept_labels": 265,
+   "lines": 238,
+   "dialogue_lines": 227,
+   "crops_ink": 238,
+   "crops_ink_m4": 238,
+   "crops_ink_m8": 238,
+   "crops_grad": 209
+  },
+  "v3333": {
+   "platform": "psp",
+   "folders": [
+    "psp-disgaea-infinite-v3333"
+   ],
+   "title": "ディスガイア インフィニット",
+   "frames": 1,
+   "candidates": 4,
+   "kept_labels": 2,
+   "lines": 1,
+   "dialogue_lines": 1,
+   "crops_grad": 1
+  },
+  "v3992": {
+   "platform": "psp",
+   "folders": [
+    "psp-suzukaze-no-melt-v3992"
+   ],
+   "title": "涼風のメルト -Where wishes are drawn to each other-",
+   "frames": 150,
+   "candidates": 327,
+   "kept_labels": 301,
+   "lines": 236,
+   "dialogue_lines": 232,
+   "crops_ink": 236,
+   "crops_ink_m4": 222,
+   "crops_ink_m8": 222,
+   "crops_grad": 176
+  },
+  "v4091": {
+   "platform": "psp",
+   "folders": [
+    "psp-second-novel-v4091"
+   ],
+   "title": "セカンドノベル ～彼女の夏、15分の記憶～",
+   "frames": 2,
+   "candidates": 2,
+   "kept_labels": 1,
+   "lines": 1,
+   "dialogue_lines": 1,
+   "crops_ink": 1,
+   "crops_ink_m4": 1,
+   "crops_ink_m8": 1,
+   "crops_grad": 1
+  },
+  "v4185": {
+   "platform": "psp",
+   "folders": [
+    "psp-misshitsu-no-sacrifice-v4185"
+   ],
+   "title": "密室のサクリファイス",
+   "frames": 1,
+   "candidates": 3,
+   "kept_labels": 1,
+   "lines": 1,
+   "dialogue_lines": 1,
+   "crops_ink": 1,
+   "crops_ink_m4": 1,
+   "crops_ink_m8": 1,
+   "crops_grad": 1
+  },
+  "v4540": {
+   "platform": "vita",
+   "folders": [
+    "vita-moujuutsukai-to-oujisama-v4540"
+   ],
+   "title": "猛獣使いと王子様",
+   "frames": 2,
+   "candidates": 8,
+   "kept_labels": 2,
+   "lines": 2,
+   "dialogue_lines": 2,
+   "crops_ink": 2,
+   "crops_ink_m4": 2,
+   "crops_ink_m8": 2,
+   "crops_grad": 2
+  },
+  "v5386": {
+   "platform": "vita",
+   "folders": [
+    "vita-present-for-you-v5386"
+   ],
+   "title": "Present for you ～わたしをあ・げ・る～",
+   "frames": 1,
+   "candidates": 4,
+   "kept_labels": 2,
+   "lines": 2,
+   "dialogue_lines": 2,
+   "crops_ink": 2,
+   "crops_ink_m4": 2,
+   "crops_ink_m8": 2,
+   "crops_grad": 1
+  },
+  "v5883": {
+   "platform": "vita",
+   "folders": [
+    "vita-robotics-notes-elite-v5883"
+   ],
+   "title": "ROBOTICS;NOTES",
+   "frames": 86,
+   "candidates": 126,
+   "kept_labels": 66,
+   "lines": 66,
+   "dialogue_lines": 66,
+   "crops_ink": 66,
+   "crops_ink_m4": 66,
+   "crops_ink_m8": 66,
+   "crops_grad": 55
+  },
+  "v6572": {
+   "platform": "psp",
+   "folders": [
+    "psp-blazblue-cs-extend-v6572"
+   ],
+   "title": "BLAZBLUE CONTINUUM SHIFT",
+   "frames": 32,
+   "candidates": 52,
+   "kept_labels": 35,
+   "lines": 35,
+   "dialogue_lines": 31,
+   "crops_ink": 35,
+   "crops_ink_m4": 35,
+   "crops_ink_m8": 35,
+   "crops_grad": 31
+  },
+  "v6618": {
+   "platform": "vita",
+   "folders": [
+    "vita-steins-gate-darling-v6618"
+   ],
+   "title": "STEINS;GATE 比翼恋理のだーりん",
+   "frames": 104,
+   "candidates": 283,
+   "kept_labels": 120,
+   "lines": 120,
+   "dialogue_lines": 112,
+   "crops_ink": 120,
+   "crops_ink_m4": 117,
+   "crops_ink_m8": 117,
+   "crops_grad": 98
+  },
+  "v7014": {
+   "platform": "psp",
+   "folders": [
+    "psp-danganronpa-v7014"
+   ],
+   "title": "ダンガンロンパ 希望の学園と絶望の高校生",
+   "frames": 38,
+   "candidates": 122,
+   "kept_labels": 67,
+   "lines": 67,
+   "dialogue_lines": 63,
+   "crops_ink": 67,
+   "crops_ink_m4": 67,
+   "crops_ink_m8": 67,
+   "crops_grad": 66
+  },
+  "v7018": {
+   "platform": "psp",
+   "folders": [
+    "psp-dunamis15-v7018"
+   ],
+   "title": "DUNAMIS15",
+   "frames": 150,
+   "candidates": 248,
+   "kept_labels": 174,
+   "lines": 173,
+   "dialogue_lines": 168,
+   "crops_ink": 173,
+   "crops_ink_m4": 173,
+   "crops_ink_m8": 173,
+   "crops_grad": 131
+  },
+  "v7301": {
+   "platform": "psp",
+   "folders": [
+    "psp-hakuisei-renai-re-therapy-v7301"
+   ],
+   "title": "白衣性恋愛症候群",
+   "frames": 100,
+   "candidates": 181,
+   "kept_labels": 166,
+   "lines": 155,
+   "dialogue_lines": 153,
+   "crops_ink": 155,
+   "crops_ink_m4": 147,
+   "crops_ink_m8": 147,
+   "crops_grad": 152
+  },
+  "v7602": {
+   "platform": "psp",
+   "folders": [
+    "psp-fate-extra-v7602"
+   ],
+   "title": "フェイト/エクストラ",
+   "frames": 24,
+   "candidates": 85,
+   "kept_labels": 76,
+   "lines": 61,
+   "dialogue_lines": 61,
+   "crops_ink": 61,
+   "crops_ink_m4": 60,
+   "crops_ink_m8": 60,
+   "crops_grad": 25
+  },
+  "v7803": {
+   "platform": "vita",
+   "folders": [
+    "vita-amnesia-v-edition-v7803"
+   ],
+   "title": "AMNESIA",
+   "frames": 119,
+   "candidates": 371,
+   "kept_labels": 369,
+   "lines": 279,
+   "dialogue_lines": 279,
+   "crops_ink": 279,
+   "crops_ink_m4": 279,
+   "crops_ink_m8": 279,
+   "crops_grad": 268
+  },
+  "v7809": {
+   "platform": "vita",
+   "folders": [
+    "vita-zero-escape-vlr-v7809"
+   ],
+   "title": "極限脱出ADV 善人シボウデス",
+   "frames": 102,
+   "candidates": 203,
+   "kept_labels": 193,
+   "lines": 100,
+   "dialogue_lines": 100,
+   "crops_ink": 100,
+   "crops_ink_m4": 100,
+   "crops_ink_m8": 100,
+   "crops_grad": 54
+  },
+  "v7833": {
+   "platform": "vita",
+   "folders": [
+    "vita-ozmafia-vivace-v7833"
+   ],
+   "title": "OZMAFIA!!",
+   "frames": 76,
+   "candidates": 88,
+   "kept_labels": 79,
+   "lines": 79,
+   "dialogue_lines": 76,
+   "crops_ink": 78,
+   "crops_ink_m4": 77,
+   "crops_ink_m8": 77,
+   "crops_grad": 65
+  },
+  "v7967": {
+   "platform": "vita",
+   "folders": [
+    "vita-hotchkiss-v7967"
+   ],
+   "title": "ホチキス",
+   "frames": 1,
+   "candidates": 3,
+   "kept_labels": 1,
+   "lines": 1,
+   "dialogue_lines": 1,
+   "crops_ink": 1,
+   "crops_ink_m4": 1,
+   "crops_ink_m8": 1
+  },
+  "v10271": {
+   "platform": "vita",
+   "folders": [
+    "vita-anoko-wa-ore-kara-hanarenai-v10271"
+   ],
+   "title": "彼女はオレからはなれない",
+   "frames": 1,
+   "candidates": 4,
+   "kept_labels": 1,
+   "lines": 1,
+   "dialogue_lines": 1,
+   "crops_ink": 1,
+   "crops_ink_m4": 1,
+   "crops_ink_m8": 1
+  },
+  "v10561": {
+   "platform": "vita",
+   "folders": [
+    "vita-shin-kamaitachi-no-yoru-v10561"
+   ],
+   "title": "真かまいたちの夜 11人目の訪問者（サスペクト）",
+   "frames": 1,
+   "candidates": 7,
+   "kept_labels": 5,
+   "lines": 5,
+   "dialogue_lines": 5,
+   "crops_ink": 5,
+   "crops_ink_m4": 2,
+   "crops_ink_m8": 2
+  },
+  "v10623": {
+   "platform": "psp",
+   "folders": [
+    "psp-custom-drive-v10623"
+   ],
+   "title": "カスタムドライブ",
+   "frames": 150,
+   "candidates": 465,
+   "kept_labels": 362,
+   "lines": 324,
+   "dialogue_lines": 307,
+   "crops_ink": 324,
+   "crops_ink_m4": 321,
+   "crops_ink_m8": 321,
+   "crops_grad": 236
+  },
+  "v10641": {
+   "platform": "vita",
+   "folders": [
+    "vita-kissbell-v10641"
+   ],
+   "title": "キスベル",
+   "frames": 1,
+   "candidates": 4,
+   "kept_labels": 1,
+   "lines": 1,
+   "dialogue_lines": 1,
+   "crops_ink": 1,
+   "crops_ink_m4": 1,
+   "crops_ink_m8": 1,
+   "crops_grad": 1
+  },
+  "v10680": {
+   "platform": "vita",
+   "folders": [
+    "vita-tsuki-ni-yorisou-otome-no-sahou-v10680"
+   ],
+   "title": "月に寄りそう乙女の作法",
+   "frames": 116,
+   "candidates": 505,
+   "kept_labels": 429,
+   "lines": 272,
+   "dialogue_lines": 266,
+   "crops_ink": 272,
+   "crops_ink_m4": 272,
+   "crops_ink_m8": 272,
+   "crops_grad": 233
+  },
+  "v11108": {
+   "platform": "vita",
+   "folders": [
+    "vita-princess-arthur-v11108"
+   ],
+   "title": "Princess Arthur",
+   "frames": 53,
+   "candidates": 123,
+   "kept_labels": 107,
+   "lines": 86,
+   "dialogue_lines": 84,
+   "crops_ink": 86,
+   "crops_ink_m4": 86,
+   "crops_ink_m8": 86,
+   "crops_grad": 63
+  },
+  "v11173": {
+   "platform": "vita",
+   "folders": [
+    "vita-sakura-sou-no-pet-na-kanojo-v11173"
+   ],
+   "title": "さくら荘のペットな彼女",
+   "frames": 38,
+   "candidates": 86,
+   "kept_labels": 65,
+   "lines": 65,
+   "dialogue_lines": 61,
+   "crops_ink": 65,
+   "crops_ink_m4": 63,
+   "crops_ink_m8": 63,
+   "crops_grad": 52
+  },
+  "v11660": {
+   "platform": "vita",
+   "folders": [
+    "vita-steins-gate-phenogram-v11660"
+   ],
+   "title": "STEINS;GATE 線形拘束のフェノグラム",
+   "frames": 27,
+   "candidates": 68,
+   "kept_labels": 27,
+   "lines": 24,
+   "dialogue_lines": 20,
+   "crops_ink": 24,
+   "crops_ink_m4": 24,
+   "crops_ink_m8": 24,
+   "crops_grad": 12
+  },
+  "v11677": {
+   "platform": "vita",
+   "folders": [
+    "vita-hanasaku-manimani-v11677"
+   ],
+   "title": "花咲くまにまに",
+   "frames": 1
+  },
+  "v11713": {
+   "platform": "psp",
+   "folders": [
+    "psp-trick-logic-v11713"
+   ],
+   "title": "Trick x Logic Season 1",
+   "frames": 48,
+   "candidates": 98,
+   "kept_labels": 83,
+   "lines": 53,
+   "dialogue_lines": 49,
+   "crops_ink": 53,
+   "crops_ink_m4": 53,
+   "crops_ink_m8": 53,
+   "crops_grad": 47
+  },
+  "v12369": {
+   "platform": "psp",
+   "folders": [
+    "psp-fate-extra-ccc-v12369"
+   ],
+   "title": "Fate/EXTRA CCC",
+   "frames": 44,
+   "candidates": 128,
+   "kept_labels": 104,
+   "lines": 98,
+   "dialogue_lines": 97,
+   "crops_ink": 98,
+   "crops_ink_m4": 97,
+   "crops_ink_m8": 97,
+   "crops_grad": 87
+  },
+  "v12630": {
+   "platform": "vita",
+   "folders": [
+    "vita-oregairu-v12630"
+   ],
+   "title": "やはりゲームでも俺の青春ラブコメはまちがっている。",
+   "frames": 8,
+   "candidates": 17,
+   "kept_labels": 14,
+   "lines": 13,
+   "dialogue_lines": 9,
+   "crops_ink": 13,
+   "crops_ink_m4": 13,
+   "crops_ink_m8": 13,
+   "crops_grad": 10
+  },
+  "v13059": {
+   "platform": "vita",
+   "folders": [
+    "vita-xblaze-code-embryo-v13059"
+   ],
+   "title": "XBLAZE CODE:EMBRYO",
+   "frames": 33,
+   "candidates": 60,
+   "kept_labels": 37,
+   "lines": 27,
+   "dialogue_lines": 20,
+   "crops_ink": 27,
+   "crops_ink_m4": 27,
+   "crops_ink_m8": 27,
+   "crops_grad": 24
+  },
+  "v13865": {
+   "platform": "vita",
+   "folders": [
+    "vita-infinite-stratos-2-v13865"
+   ],
+   "title": "IS＜インフィニット・ストラトス＞2 イグニッション・ハーツ",
+   "frames": 2,
+   "candidates": 10,
+   "kept_labels": 2,
+   "lines": 2,
+   "dialogue_lines": 2,
+   "crops_ink": 2,
+   "crops_ink_m4": 2,
+   "crops_ink_m8": 2
+  },
+  "v14787": {
+   "platform": "vita",
+   "folders": [
+    "vita-binary-star-v14787"
+   ],
+   "title": "Binary Star",
+   "frames": 1,
+   "candidates": 1,
+   "kept_labels": 0
+  },
+  "v14909": {
+   "platform": "psp",
+   "folders": [
+    "psp-juusei-to-diamond-v14909"
+   ],
+   "title": "銃声とダイヤモンド",
+   "frames": 149,
+   "candidates": 599,
+   "kept_labels": 465,
+   "lines": 341,
+   "dialogue_lines": 323,
+   "crops_ink": 341,
+   "crops_ink_m4": 261,
+   "crops_ink_m8": 261,
+   "crops_grad": 187
+  },
+  "v14919": {
+   "platform": "vita",
+   "folders": [
+    "vita-reine-des-fleurs-v14919"
+   ],
+   "title": "レンドフルール",
+   "frames": 1
+  },
+  "v15231": {
+   "platform": "vita",
+   "folders": [
+    "vita-otoko-yuukaku-v15231"
+   ],
+   "title": "逆転 吉原",
+   "frames": 1,
+   "candidates": 27,
+   "kept_labels": 19,
+   "lines": 19,
+   "dialogue_lines": 19,
+   "crops_ink": 19,
+   "crops_ink_m4": 19,
+   "crops_ink_m8": 19,
+   "crops_grad": 2
+  },
+  "v15773": {
+   "platform": "vita",
+   "folders": [
+    "vita-hyakka-yakou-v15773"
+   ],
+   "title": "百華夜光",
+   "frames": 79,
+   "candidates": 166,
+   "kept_labels": 155,
+   "lines": 143,
+   "dialogue_lines": 140,
+   "crops_ink": 143,
+   "crops_ink_m4": 138,
+   "crops_ink_m8": 138,
+   "crops_grad": 120
+  },
+  "v16386": {
+   "platform": "psp",
+   "folders": [
+    "psp-missing-parts-complete-v16386"
+   ],
+   "title": "MISSING PARTS the TANTEI stories",
+   "frames": 49,
+   "candidates": 112,
+   "kept_labels": 90,
+   "lines": 76,
+   "dialogue_lines": 72,
+   "crops_ink": 76,
+   "crops_ink_m4": 76,
+   "crops_ink_m8": 76,
+   "crops_grad": 70
+  },
+  "v16467": {
+   "platform": "vita",
+   "folders": [
+    "vita-abunai-koi-no-sousashitsu-v16467"
+   ],
+   "title": "アブナイ恋の捜査室 ~Eternal Happiness~",
+   "frames": 2,
+   "candidates": 3,
+   "kept_labels": 1,
+   "lines": 1,
+   "dialogue_lines": 1,
+   "crops_ink": 1,
+   "crops_ink_m4": 1,
+   "crops_ink_m8": 1,
+   "crops_grad": 1
+  },
+  "v16468": {
+   "platform": "vita",
+   "folders": [
+    "vita-vamwolf-cross-v16468"
+   ],
+   "title": "Vamwolf Cross†",
+   "frames": 1
+  },
+  "v16607": {
+   "platform": "vita",
+   "folders": [
+    "vita-5-nin-no-koi-prince-v16607"
+   ],
+   "title": "5人の恋プリンス ~ヒミツの契約結婚~",
+   "frames": 1,
+   "candidates": 1,
+   "kept_labels": 0
+  },
+  "v16610": {
+   "platform": "vita",
+   "folders": [
+    "vita-hakuisei-aijou-izonshou-v16610"
+   ],
+   "title": "白衣性愛情依存症",
+   "frames": 150,
+   "candidates": 363,
+   "kept_labels": 297,
+   "lines": 250,
+   "dialogue_lines": 246,
+   "crops_ink": 247,
+   "crops_grad": 146,
+   "crops_ink_m4": 39,
+   "crops_ink_m8": 39
+  },
+  "v17102": {
+   "platform": "vita",
+   "folders": [
+    "vita-steins-gate-0-v17102"
+   ],
+   "title": "STEINS;GATE 0",
+   "frames": 48,
+   "candidates": 67,
+   "kept_labels": 57,
+   "lines": 49,
+   "dialogue_lines": 47,
+   "crops_ink": 49,
+   "crops_ink_m4": 49,
+   "crops_ink_m8": 49,
+   "crops_grad": 43
+  },
+  "v17285": {
+   "platform": "vita",
+   "folders": [
+    "vita-teikoku-kaigun-koi-bojou-v17285"
+   ],
+   "title": "帝国海軍恋慕情 ～明治横須賀行進曲～",
+   "frames": 88,
+   "candidates": 207,
+   "kept_labels": 192,
+   "lines": 151,
+   "dialogue_lines": 149,
+   "crops_ink": 151,
+   "crops_ink_m4": 151,
+   "crops_ink_m8": 151,
+   "crops_grad": 116
+  },
+  "v17863": {
+   "platform": "vita",
+   "folders": [
+    "vita-iwaihime-matsuri-v17863-TEST"
+   ],
+   "title": "祝姫",
+   "frames": 241,
+   "candidates": 408,
+   "kept_labels": 340,
+   "lines": 304,
+   "dialogue_lines": 302,
+   "crops_ink": 304,
+   "crops_ink_m4": 304,
+   "crops_ink_m8": 304,
+   "crops_grad": 221
+  },
+  "v17902": {
+   "platform": "vita",
+   "folders": [
+    "vita-kurogane-kaikitan-v17902"
+   ],
+   "title": "クロガネ回姫譚 -一期一会-",
+   "frames": 2,
+   "candidates": 39,
+   "kept_labels": 25,
+   "lines": 15,
+   "dialogue_lines": 15,
+   "crops_ink": 15,
+   "crops_ink_m4": 15,
+   "crops_ink_m8": 15,
+   "crops_grad": 5
+  },
+  "v17936": {
+   "platform": "vita",
+   "folders": [
+    "vita-tokyo-ghoul-jail-v17936"
+   ],
+   "title": "東京喰種 JAIL",
+   "frames": 120,
+   "candidates": 176,
+   "kept_labels": 141,
+   "lines": 140,
+   "dialogue_lines": 140,
+   "crops_ink": 140,
+   "crops_ink_m4": 140,
+   "crops_ink_m8": 140,
+   "crops_grad": 116
+  },
+  "v18334": {
+   "platform": "vita",
+   "folders": [
+    "vita-danganronpa-v3-v18334-TEST"
+   ],
+   "title": "NEWダンガンロンパV3",
+   "frames": 84,
+   "candidates": 179,
+   "kept_labels": 121,
+   "lines": 121,
+   "dialogue_lines": 118,
+   "crops_ink": 121,
+   "crops_ink_m4": 121,
+   "crops_ink_m8": 121,
+   "crops_grad": 112
+  },
+  "v18777": {
+   "platform": "vita",
+   "folders": [
+    "vita-ikemen-bakumatsu-v18777"
+   ],
+   "title": "イケメン幕末◆運命の恋",
+   "frames": 1,
+   "candidates": 1,
+   "kept_labels": 0
+  },
+  "v19010": {
+   "platform": "psp",
+   "folders": [
+    "psp-jinguuji-saburo-hai-to-diamond-v19010"
+   ],
+   "title": "探偵 神宮寺三郎 灰とダイヤモンド",
+   "frames": 11,
+   "candidates": 33,
+   "kept_labels": 17,
+   "lines": 17,
+   "dialogue_lines": 17,
+   "crops_ink": 17,
+   "crops_ink_m4": 17,
+   "crops_ink_m8": 17,
+   "crops_grad": 16
+  },
+  "v19100": {
+   "platform": "vita",
+   "folders": [
+    "vita-cross-ange-v19100"
+   ],
+   "title": "クロスアンジュ 天使と竜の輪舞tr.",
+   "frames": 13,
+   "candidates": 38,
+   "kept_labels": 37,
+   "lines": 29,
+   "dialogue_lines": 29,
+   "crops_ink": 29,
+   "crops_ink_m4": 29,
+   "crops_ink_m8": 29,
+   "crops_grad": 25
+  },
+  "v19119": {
+   "platform": "vita",
+   "folders": [
+    "vita-fate-extella-v19119"
+   ],
+   "title": "Fate/EXTELLA",
+   "frames": 1,
+   "candidates": 1,
+   "kept_labels": 0
+  },
+  "v19441": {
+   "platform": "vita",
+   "folders": [
+    "vita-plastic-memories-v19441"
+   ],
+   "title": "プラスティック・メモリーズ",
+   "frames": 3,
+   "candidates": 3,
+   "kept_labels": 2,
+   "lines": 2,
+   "dialogue_lines": 2,
+   "crops_ink": 2,
+   "crops_ink_m4": 2,
+   "crops_ink_m8": 2,
+   "crops_grad": 2
+  },
+  "v19743": {
+   "platform": "vita",
+   "folders": [
+    "vita-side-kicks-v19743"
+   ],
+   "title": "Side Kicks!",
+   "frames": 63,
+   "candidates": 122,
+   "kept_labels": 110,
+   "lines": 110,
+   "dialogue_lines": 108,
+   "crops_ink": 110,
+   "crops_ink_m4": 110,
+   "crops_ink_m8": 110,
+   "crops_grad": 89
+  },
+  "v19851": {
+   "platform": "vita",
+   "folders": [
+    "vita-chouchou-jiken-rhapsodic-v19851"
+   ],
+   "title": "蝶々事件ラブソディック",
+   "frames": 4,
+   "candidates": 31,
+   "kept_labels": 15,
+   "lines": 14,
+   "dialogue_lines": 14,
+   "crops_ink": 14,
+   "crops_ink_m4": 14,
+   "crops_ink_m8": 14,
+   "crops_grad": 5
+  },
+  "v21259": {
+   "platform": "psp",
+   "folders": [
+    "psp-hayarigami-2-portable-v21259"
+   ],
+   "title": "流行り神2 警視庁怪異事件ファイル",
+   "frames": 1,
+   "candidates": 6,
+   "kept_labels": 0
+  },
+  "v21899": {
+   "platform": "vita",
+   "folders": [
+    "vita-azayaka-na-irodori-v21899"
+   ],
+   "title": "あざやかな彩りの中で、君らしく",
+   "frames": 2,
+   "candidates": 21,
+   "kept_labels": 11,
+   "lines": 11,
+   "dialogue_lines": 11,
+   "crops_ink": 11,
+   "crops_ink_m4": 11,
+   "crops_ink_m8": 11,
+   "crops_grad": 5
+  },
+  "v22174": {
+   "platform": "vita",
+   "folders": [
+    "vita-mikagami-sumika-v22174"
+   ],
+   "title": "見鏡澄香の制服活動",
+   "frames": 48,
+   "candidates": 83,
+   "kept_labels": 74,
+   "lines": 64,
+   "dialogue_lines": 64,
+   "crops_ink": 64,
+   "crops_ink_m4": 64,
+   "crops_ink_m8": 64,
+   "crops_grad": 59
+  },
+  "v22505": {
+   "platform": "psp",
+   "folders": [
+    "chaos-head-noah-v22505"
+   ],
+   "title": "CHAOS;HEAD NOAH",
+   "frames": 1,
+   "candidates": 2,
+   "kept_labels": 2,
+   "lines": 2,
+   "dialogue_lines": 2,
+   "crops_ink": 2,
+   "crops_ink_m4": 2,
+   "crops_ink_m8": 2,
+   "crops_grad": 2
+  },
+  "v24957": {
+   "platform": "vita",
+   "folders": [
+    "vita-ray-gigant-v24957"
+   ],
+   "title": "レイギガント",
+   "frames": 2,
+   "candidates": 21,
+   "kept_labels": 12,
+   "lines": 11,
+   "dialogue_lines": 11,
+   "crops_ink": 11,
+   "crops_ink_m4": 11,
+   "crops_ink_m8": 11,
+   "crops_grad": 5
+  }
+ },
+ "batches_pass1": 17,
+ "batches_confirm": 10,
+ "batches_edge": 7,
+ "batches_check": 2,
+ "leak": {
+  "min_corr": 0.95,
+  "logs": {
+   "leak_test_sets": {
+    "summary": {
+     "tests": 157,
+     "pool": 4414,
+     "min_corr": 0.95,
+     "pairs": 1,
+     "same-vn": 0,
+     "cross-vn": 1,
+     "test_shots_hit": 1
+    },
+    "pool_frames_dropped": 1,
+    "by_kind": {
+     "cross-vn": 1
+    }
+   },
+   "leak_owner_test": {
+    "summary": {
+     "tests": 2614,
+     "pool": 4414,
+     "min_corr": 0.95,
+     "pairs": 2,
+     "same-vn": 0,
+     "cross-vn": 2,
+     "test_shots_hit": 2
+    },
+    "pool_frames_dropped": 1,
+    "by_kind": {
+     "cross-vn": 2
+    }
+   }
+  },
+  "dropped": 1
+ },
+ "hygiene": {
+  "tool": "eval/tools/reserve_check.py --dump <2026-10-13 VNDB dump> --pixels --require-hashes --shots manifests/frames.jsonl",
+  "verdict": "RESERVE_OK",
+  "policy": "owner 2026-10-14 13:25Z (docs/reservations.md)",
+  "pixels": {
+   "protected_images": 4726,
+   "distinct": 4726
+  },
+  "dev_sample_mode": "block",
+  "pools": {
+   "owner2_ink_v2": {
+    "file": "native_train_ink_v2.npz",
+    "rows": 6587,
+    "vns": 70,
+    "hash_coverage": {
+     "rows": 6587,
+     "hash_checked": 6587,
+     "pixel_checked": 6587,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 1017,
+      "vns": 7,
+      "vn_list": [
+       "v10271",
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 341,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 733,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 1192,
+      "vns": 8,
+      "vn_list": [
+       "v10271",
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner2_grad_v2": {
+    "file": "native_train_grad_v2.npz",
+    "rows": 5084,
+    "vns": 66,
+    "hash_coverage": {
+     "rows": 5084,
+     "hash_checked": 5084,
+     "pixel_checked": 5084,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 829,
+      "vns": 7,
+      "vn_list": [
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 187,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 582,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 878,
+      "vns": 8,
+      "vn_list": [
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner2_ink_m4_v2": {
+    "file": "native_train_ink_m4_v2.npz",
+    "rows": 6064,
+    "vns": 70,
+    "hash_coverage": {
+     "rows": 6064,
+     "hash_checked": 6064,
+     "pixel_checked": 6064,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 1011,
+      "vns": 7,
+      "vn_list": [
+       "v10271",
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 261,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 698,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 1106,
+      "vns": 8,
+      "vn_list": [
+       "v10271",
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner2_ink_m8_v2": {
+    "file": "native_train_ink_m8_v2.npz",
+    "rows": 6064,
+    "vns": 70,
+    "hash_coverage": {
+     "rows": 6064,
+     "hash_checked": 6064,
+     "pixel_checked": 6064,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 1011,
+      "vns": 7,
+      "vn_list": [
+       "v10271",
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 261,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 698,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 1106,
+      "vns": 8,
+      "vn_list": [
+       "v10271",
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner_merged_ink_v2": {
+    "file": "owner_train_ink_v2.npz",
+    "rows": 7179,
+    "vns": 73,
+    "hash_coverage": {
+     "rows": 7179,
+     "hash_checked": 7179,
+     "pixel_checked": 7179,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 1017,
+      "vns": 7,
+      "vn_list": [
+       "v10271",
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 341,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 733,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 1192,
+      "vns": 8,
+      "vn_list": [
+       "v10271",
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner_merged_grad_v2": {
+    "file": "owner_train_grad_v2.npz",
+    "rows": 5624,
+    "vns": 69,
+    "hash_coverage": {
+     "rows": 5624,
+     "hash_checked": 5624,
+     "pixel_checked": 5624,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 829,
+      "vns": 7,
+      "vn_list": [
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 187,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 582,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 878,
+      "vns": 8,
+      "vn_list": [
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner_merged_ink_m4_v2": {
+    "file": "owner_train_ink_m4_v2.npz",
+    "rows": 6639,
+    "vns": 73,
+    "hash_coverage": {
+     "rows": 6639,
+     "hash_checked": 6639,
+     "pixel_checked": 6639,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 1011,
+      "vns": 7,
+      "vn_list": [
+       "v10271",
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 261,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 698,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 1106,
+      "vns": 8,
+      "vn_list": [
+       "v10271",
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner_merged_ink_m8_v2": {
+    "file": "owner_train_ink_m8_v2.npz",
+    "rows": 6639,
+    "vns": 73,
+    "hash_coverage": {
+     "rows": 6639,
+     "hash_checked": 6639,
+     "pixel_checked": 6639,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 1011,
+      "vns": 7,
+      "vn_list": [
+       "v10271",
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 261,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 698,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 1106,
+      "vns": 8,
+      "vn_list": [
+       "v10271",
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner2_lines_v2": {
+    "file": "lines_v2.jsonl",
+    "rows": 6594,
+    "vns": 71,
+    "hash_coverage": {
+     "rows": 6594,
+     "hash_checked": 6594,
+     "pixel_checked": 6594,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 1019,
+      "vns": 8,
+      "vn_list": [
+       "v10271",
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 341,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 734,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 1194,
+      "vns": 9,
+      "vn_list": [
+       "v10271",
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner2_frames": {
+    "file": "frames.jsonl",
+    "rows": 4414,
+    "vns": 80,
+    "hash_coverage": {
+     "rows": 4414,
+     "hash_checked": 4414,
+     "pixel_checked": 4414,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 711,
+      "vns": 9,
+      "vn_list": [
+       "v10271",
+       "v11677",
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 149,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 617,
+      "vns": 9,
+      "vn_list": [
+       "v11713",
+       "v14919",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 749,
+      "vns": 10,
+      "vn_list": [
+       "v10271",
+       "v11677",
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     }
+    }
+   },
+   "owner2_labels": {
+    "file": "labels.jsonl",
+    "rows": 10103,
+    "vns": 77,
+    "hash_coverage": {
+     "rows": 10103,
+     "hash_checked": 10103,
+     "pixel_checked": 10103,
+     "share": 1.0
+    },
+    "blockers": [],
+    "checks": {
+     "info: former development VNs (teacher_val, devnative, general-VN)": {
+      "rows": 1278,
+      "vns": 8,
+      "vn_list": [
+       "v10271",
+       "v1281",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     },
+     "info: former fresh native titles": {
+      "rows": 599,
+      "vns": 1,
+      "vn_list": [
+       "v14909"
+      ]
+     },
+     "info: old is_test_vn split": {
+      "rows": 1198,
+      "vns": 8,
+      "vn_list": [
+       "v11713",
+       "v17102",
+       "v264",
+       "v5386",
+       "v6572",
+       "v689",
+       "v7014",
+       "v7018"
+      ]
+     },
+     "info: old val bucket": {
+      "rows": 1701,
+      "vns": 9,
+      "vn_list": [
+       "v10271",
+       "v14909",
+       "v15773",
+       "v16386",
+       "v17863",
+       "v24957",
+       "v3278",
+       "v3333",
+       "v7833"
+      ]
+     }
+    }
+   }
+  }
+ },
+ "merged": {
+  "tag": "v2",
+  "old": {
+   "dir": "owner-pool",
+   "tag": "v2"
+  },
+  "new": {
+   "dir": "owner-pool-2",
+   "tag": "v2"
+  },
+  "files": {
+   "owner_train_ink_v2.npz": {
+    "crops": 7179,
+    "by_pool": {
+     "owner-pool": 594,
+     "owner-pool-2": 6585
+    },
+    "by_target": {
+     "psp": 4182,
+     "vita": 2997
+    },
+    "capped_lines": 2,
+    "sha256": "b877056375ff4d5275414c740be2f68925de6778643818aa721354d44fc08679"
+   },
+   "owner_train_grad_v2.npz": {
+    "crops": 5624,
+    "by_pool": {
+     "owner-pool": 540,
+     "owner-pool-2": 5084
+    },
+    "by_target": {
+     "psp": 3242,
+     "vita": 2382
+    },
+    "capped_lines": 0,
+    "sha256": "a42db74342c459c732e1720e436869f2387efa2a132be75c8afaed29d28d343e"
+   },
+   "owner_train_ink_m4_v2.npz": {
+    "crops": 6639,
+    "by_pool": {
+     "owner-pool": 577,
+     "owner-pool-2": 6062
+    },
+    "by_target": {
+     "psp": 3868,
+     "vita": 2771
+    },
+    "capped_lines": 2,
+    "sha256": "659f0c82c69049ef9d0244107b7be7caff0bc9319d4d87e57a9c417e2cf9dc9a"
+   },
+   "owner_train_ink_m8_v2.npz": {
+    "crops": 6639,
+    "by_pool": {
+     "owner-pool": 577,
+     "owner-pool-2": 6062
+    },
+    "by_target": {
+     "psp": 3868,
+     "vita": 2771
+    },
+    "capped_lines": 2,
+    "sha256": "fcea192e6b248ce794d0878aab2f2533e94ea7c3d3bb13975ce61e3904ac696e"
+   }
+  }
+ },
+ "precision_check": {
+  "summary": {
+   "all": {
+    "agree": 199,
+    "lines": 200,
+    "rate": 0.995,
+    "wilson95": [
+     0.9722,
+     0.9991
+    ]
+   },
+   "crop:grad": {
+    "agree": 40,
+    "lines": 41,
+    "rate": 0.9756,
+    "wilson95": [
+     0.874,
+     0.9957
+    ]
+   },
+   "crop:ink": {
+    "agree": 68,
+    "lines": 68,
+    "rate": 1.0,
+    "wilson95": [
+     0.9465,
+     1.0
+    ]
+   },
+   "crop:ink_m4": {
+    "agree": 48,
+    "lines": 48,
+    "rate": 1.0,
+    "wilson95": [
+     0.9259,
+     1.0
+    ]
+   },
+   "crop:ink_m8": {
+    "agree": 43,
+    "lines": 43,
+    "rate": 1.0,
+    "wilson95": [
+     0.918,
+     1.0
+    ]
+   },
+   "stratum:auto": {
+    "agree": 59,
+    "lines": 60,
+    "rate": 0.9833,
+    "wilson95": [
+     0.9114,
+     0.9971
+    ]
+   },
+   "stratum:reviewed": {
+    "agree": 140,
+    "lines": 140,
+    "rate": 1.0,
+    "wilson95": [
+     0.9733,
+     1.0
+    ]
+   }
+  },
+  "of": 200,
+  "reviewer_kind": "assistant"
+ }
+}

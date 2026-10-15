@@ -240,7 +240,7 @@ def build_curriculum(vocab, exposures, jw, real, words_by_char, mined, base_targ
 
 def cmd_curriculum(args):
     import synth4_gap as G
-    vocab = S3.load_vocab()
+    vocab = [c for c in S3.load_vocab(args.vocab) if c != S3.UNK]     # the <unk> class is never a quota class
     vset = set(vocab)
     exp = json.loads(Path(args.exposures).read_text(encoding="utf-8"))
     E = {c: d["occ"] for c, d in exp["chars_by"].items()}
@@ -280,7 +280,7 @@ def cmd_curriculum(args):
                            "real": [{"spec": r} for r in args.real],
                            "mine": {"file": args.mine, "sha256": sha256(args.mine)},
                            "targets_out_sha256": sha256(args.targets_out),
-                           "vocab_sha256": sha256(S3.DATA / "vocab.txt")}})
+                           "vocab": str(args.vocab), "vocab_sha256": sha256(args.vocab)}})
     Path(args.out).write_text(json.dumps(cur, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"curriculum: {cur['totals']} -> {args.out}; targets -> {args.targets_out}", flush=True)
 
@@ -477,12 +477,13 @@ def patch():
 
 
 def init4(curriculum, **kw):
-    """synth3's resources with synth4's fonts, then the curriculum's per-class state."""
+    """synth3's resources with synth4's fonts, then the curriculum's per-class state. kw["vocab"] (default
+    data/vocab.txt) is the vocab the render labels with; the curriculum must have been built for it."""
     patch()
     kw.setdefault("font_manifest", FONT_MANIFEST4)
     R = S3.init(**kw)
     cur = json.loads(Path(curriculum).read_text(encoding="utf-8"))
-    if cur.get("inputs", {}).get("vocab_sha256") not in (None, sha256(S3.DATA / "vocab.txt")):
+    if cur.get("inputs", {}).get("vocab_sha256") not in (None, sha256(R.vocab_path)):
         raise SystemExit("the curriculum was built for another vocab")
     R4.clear()
     R4["file"] = str(curriculum)
@@ -518,6 +519,8 @@ def recipe4(args):
     rec["font_manifest_sha256"] = sha256(FONT_MANIFEST4)
     rec["curriculum"] = {"file": R4["file"], "sha256": R4["sha256"], "deficit": int(R4["deficit"].sum())}
     rec["targets_sha256"] = sha256(args.targets) if args.targets else None
+    if S3.R.vocab_path != S3.DATA / "vocab.txt":     # recorded only for a non-default vocab (old recipes unchanged)
+        rec["vocab"] = str(S3.R.vocab_path)
     lic = sorted({f.licence for f in S3.R.fonts})
     rec["fonts_by_licence"] = {k: sum(1 for f in S3.R.fonts if f.licence == k) for k in lic}
     return rec
@@ -551,6 +554,8 @@ def main():
     ap.add_argument("--base-targets")
     ap.add_argument("--targets-out")
     ap.add_argument("--exclude", nargs="*", default=[])
+    ap.add_argument("--vocab", type=Path, default=S3.DATA / "vocab.txt",
+                    help="the label vocab (curriculum, preview, shards); a reduced vocab's last entry 〓 is <unk>")
     ap.set_defaults(split="train")
     args = ap.parse_args()
     if args.mode == "fonts":
@@ -564,7 +569,8 @@ def main():
     import cv2
     cv2.setNumThreads(1)
     init4(args.curriculum, assets=args.assets, split="train", profile=args.profile, font_cache=args.font_cache,
-          scene_hashes=args.scene_hashes, targets=args.targets)
+          scene_hashes=args.scene_hashes, targets=args.targets,
+          vocab=None if args.vocab == S3.DATA / "vocab.txt" else args.vocab)
     R = S3.R
     print(f"fonts {len(R.fonts)} files / {len({f.fam for f in R.fonts})} families "
           f"{ {c: len(v) for c, v in R.by_cat.items()} }; licences "

@@ -133,10 +133,13 @@ static void mat_op(unsigned i, unsigned type, unsigned flags, unsigned kh, unsig
 /* height 8, stride 4: stem 3x3/2 (1->8, 8->4 rows), dw 3x3/2 (4->2), pw 8->C1,
  * collapse 2x1 (C1->16, 2->1), dw 1x5, pw residual, head 16->6. C1 = 16, or 272 when
  * wide, which makes the collapse's reduction length K = 544 > 512 (the w8i chunk). */
-static size_t build_blob_c1(int int8, unsigned c1);
+static size_t build_blob_sc(int int8, unsigned s, unsigned c1);
+static size_t build_blob_c1(int int8, unsigned c1) { return build_blob_sc(int8, 8, c1); }
 static size_t build_blob(int int8) { return build_blob_c1(int8, 16); }
 
-static size_t build_blob_c1(int int8, unsigned c1)
+/* s: the stem's and the first depthwise layer's channels: 8, or 32 so that their NEON paths
+ * (16 channels a pass) run twice per position */
+static size_t build_blob_sc(int int8, unsigned s, unsigned c1)
 {
     unsigned char vocab[64];
     const char *chars[CLASSES - 1] = {"a", "\xe3\x81\x82", "b", "\xe3\x83\xbc", "!"};
@@ -145,11 +148,11 @@ static size_t build_blob_c1(int int8, unsigned c1)
     memset(blob_buf, 0, sizeof blob_buf);
     blob_pos = 64 + 64 * n_ops;
     lcg = 12345u;
-    off = put_floats(9 * 8, 0.6f);
-    op_rec(0, 1, 1 | 4, 3, 3, 2, 2, 1, 1, 1, 8, 8, 4, off, 9 * 8 * 4, put_floats(8, 0.1f), 0, 9, 8);
-    off = put_floats(9 * 8, 0.6f);
-    op_rec(1, 2, 1 | 4, 3, 3, 2, 2, 1, 1, 8, 8, 4, 2, off, 9 * 8 * 4, put_floats(8, 0.1f), 0, 9, 8);
-    mat_op(2, 3, 1 | 4, 1, 8, c1, 2, 2, int8);
+    off = put_floats(9 * s, 0.6f);
+    op_rec(0, 1, 1 | 4, 3, 3, 2, 2, 1, 1, 1, s, 8, 4, off, 9 * s * 4, put_floats(s, 0.1f), 0, 9, s);
+    off = put_floats(9 * s, 0.6f);
+    op_rec(1, 2, 1 | 4, 3, 3, 2, 2, 1, 1, s, s, 4, 2, off, 9 * s * 4, put_floats(s, 0.1f), 0, 9, s);
+    mat_op(2, 3, 1 | 4, 1, s, c1, 2, 2, int8);
     mat_op(3, 3, 1 | 4 | 16, 2, c1, 16, 2, 1, int8);
     off = put_floats(5 * 16, 0.6f);
     op_rec(4, 2, 1 | 4, 1, 5, 1, 1, 0, 2, 16, 16, 1, 1, off, 5 * 16 * 4, put_floats(16, 0.1f), 0, 5, 16);
@@ -213,7 +216,7 @@ static int run_once(const vocr_model *m, vocr_opts o, unsigned char *arena, unsi
     im.pixels = img_px;
     im.width = w;
     im.height = h;
-    im.stride = (size_t)w * (fmt == VOCR_RGBA8 ? 4u : 1u);
+    im.stride = (size_t)w * ((fmt & ~VOCR_INVERT) == VOCR_RGBA8 ? 4u : 1u);
     im.format = fmt;
     memset(&ex, 0, sizeof ex);
     ex.logits = logits;
@@ -353,14 +356,17 @@ static void test_load(int int8)
     CHECK(vocr_check_crc(blob_buf, n) == VOCR_OK);
 }
 
-static void test_run(int int8, unsigned c1)
+static void test_run_sc(int int8, unsigned sc, unsigned c1);
+static void test_run(int int8, unsigned c1) { test_run_sc(int8, 8, c1); }
+
+static void test_run_sc(int int8, unsigned sc, unsigned c1)
 {
     vocr_model m;
     vocr_opts o;
     char ref[256], text[256];
     float lref[80 * CLASSES], lcur[80 * CLASSES], lw8f[80 * CLASSES];
     vocr_extra ex;
-    size_t n = build_blob_c1(int8, c1);
+    size_t n = build_blob_sc(int8, sc, c1);
     const int modes_i8[2] = {VOCR_MODE_W8F, VOCR_MODE_W8I};
     int mi, nmodes = int8 ? 2 : 1, fmt;
     unsigned tiles[5][2] = {{1, 1}, {2, 3}, {3, 1}, {5, 7}, {64, 64}};
@@ -638,6 +644,8 @@ static size_t build_head_blob(const float *bias, int int8)
     return blob_pos;
 }
 
+static float hlogits[80 * HCLASSES];
+
 static void test_head_argmax(void)
 {
     const float ninf = -INFINITY, nan_ = NAN, low = -5.0f;
@@ -694,10 +702,24 @@ static void test_head_argmax(void)
             im.format = VOCR_GREY8;
             memset(&ex, 0, sizeof ex);
             memset(best, 0xFF, sizeof best);
+            for (j = 0; j < 80 * HCLASSES; j++) hlogits[j] = 12345.0f;
             ex.best = best;
+            ex.logits = hlogits;
             ex.cap_frames = 80;
             CHECK(vocr_run(&c, &im, text, sizeof text, &ex) == VOCR_OK);
             CHECK(ex.frames > 20 && ex.frames <= 80);
+            /* every logit is its class's bias (NEON W8I copies them out of its lane path) */
+            for (f = 0; f < ex.frames; f++)
+                for (j = 0; j < HCLASSES; j++) {
+                    const float v = hlogits[f * HCLASSES + j], b = bias[j];
+                    if (!(v == b || (isnan(v) && isnan(b)))) {
+                        fprintf(stderr, "head case %u mode %d frame %u class %u: logit %g, bias %g\n", ci,
+                                modes[mi], f, j, (double)v, (double)b);
+                        failures++;
+                        f = ex.frames;
+                        break;
+                    }
+                }
             for (f = 0; f < ex.frames; f++)
                 if (best[f] != cases[ci].expect) {
                     fprintf(stderr, "head case %u mode %d frame %u: class %u, want %u\n", ci, modes[mi], f,
@@ -720,6 +742,8 @@ int main(void)
     test_run(1, 272);
     test_topk(0);
     test_topk(1);
+    test_run_sc(0, 32, 16);
+    test_run_sc(1, 32, 272);
     test_invert();
     test_limits();
     test_head_argmax();

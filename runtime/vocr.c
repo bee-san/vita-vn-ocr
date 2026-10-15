@@ -40,8 +40,9 @@ enum { T_CONV = 1, T_DW = 2, T_PW = 3, T_HEAD = 4 };
 #else
 #define VOCR_PREFETCH(p) ((void)(p))
 #endif
-/* The kernels stay out of step_op: inlined, their loop state spills to the stack (gcc 14/15). */
-#if defined(__GNUC__)
+/* The NEON kernels stay out of step_op: inlined, their loop state spills to the stack (gcc 14/15).
+ * Other builds (the PSP's, the scalar ones) inline them as before. */
+#if defined(__GNUC__) && defined(VOCR_NEON)
 #define VOCR_NOINLINE __attribute__((noinline))
 #else
 #define VOCR_NOINLINE

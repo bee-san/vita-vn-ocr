@@ -33,7 +33,7 @@ A 3-line box of 640-px lines (240 frames) of H15 with the LM goes from 1.22 s to
 
 Only the NEON builds change. `VOCR_NOINLINE` (the kernels kept out of `step_op`, whose loop state gcc 14/15 would
 otherwise spill) applies to NEON builds only, and `run_head`'s lane and top-K paths are under `VOCR_NEON`, so every
-other build compiles `main`'s code token for token: the `.text` of host gcc 11.5 and clang 18.1.8, Arm GNU 14.2
+other build compiles to `main`'s exact machine code: the `.text` of host gcc 11.5 and clang 18.1.8, Arm GNU 14.2
 `-DVOCR_NO_NEON` and psp-gcc 15.2 (VFPU 0 and 1) objects is byte-identical to `main`'s (a540027). With the Vita
 compiler (arm-vita-eabi-gcc 15.2, the flags of `vita/CMakeLists.txt`, with or without `-mthumb`), `vocr.o`'s
 `.text` goes from 15,284 to 17,948 B. `run_head`'s frame grows from 376 to 1,328 B (the 32-frame logit block), so
@@ -58,6 +58,10 @@ supported by the console landing on the high bound at that clock. The factor com
 game; FL10, W20 and the sweep's shapes below get it by assumption, which holds best where their code is H15's
 kind (the released shapes, all inside the 2 MiB L2) and least for weights beyond the L2. The jobs' rate (5,068 µs)
 would give about 1.026: a textbox job of one line spends nothing outside `vocr_run`, the five-line full screen 5 %.
+The ten calibration lines are two regimes: the seven one-line textbox jobs ran at a frame-weighted 5,044 µs
+(x1.021), the three lines of the five-line full-screen job at 4,751 µs (x0.962: lines back to back, warm caches,
+as the 24 timing lines run in the model). The overlay's common case, a textbox job, is therefore about 2 % above the
+ms given here: inside the stated uncertainty, and below the margin of the figures without the prefetch model.
 
 | phase | shape | MACs/frame | before cycles/frame (low-high) | after | before ms/frame @333 | after | speed-up |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -101,8 +105,8 @@ of the gain (the sweep below): `l_w325v5631` has 22,672 L2 misses per frame with
 The 444 MHz column scales the cycles (the DRAM term in nanoseconds stays): a 444 MHz run is the overlay's opt-in
 clock flag (vita-jp-overlay), off by default.
 
-Larger tiles (`--tile 8 --head 32`, arena 318,528 B instead of 182,944 B for H15) give another 7 % (3.07 instead of
-3.29 ms per frame at that point of the work); not taken: the arena grows by 74 % and the overlay pins the default
+Larger tiles (`--tile 8 --head 32`, arena 318,528 B instead of 182,944 B for H15) give another 7 % (2.99 instead of
+3.21 ms per frame at that point of the work); not taken: the arena grows by 74 % and the overlay pins the default
 tiling.
 
 ## Bit-identity
@@ -173,17 +177,18 @@ model. Box = 3 x 80 frames of recognition plus 0.1 s for the finder and the stri
 | `n_w250v5631` | 2,095,712 | 3.35 | 10.08 | 5.67 (7.47) | 4.27 (5.71) | 1.35x | 1.46 s (1.89) |
 | `n_lw300v5631` | 2,473,696 | 3.40 | 10.75 | 5.69 (8.24) | 4.29 (6.36) | 1.30x | 1.47 s (2.08) |
 | `n_w300v5631` | 2,709,728 | 4.55 | 15.66 | 7.91 (12.56) | 6.01 (9.92) | 1.25x | 2.00 s (3.11) |
-| `l_w300v6459b128` | 3,025,808 | 4.85 | 16.48 | 8.31 (13.18) | 6.32 (10.42) | 1.25x | 2.09 s (3.26) |
+| `l_w300v6459b128` | 3,025,808 | 4.85 | 16.48 | 8.31 (13.18) | 6.32 (10.42) | 1.25x | 2.10 s (3.26) |
 | `l_w325v5631` | 3,056,480 | 5.23 | 18.25 | 9.32 (14.89) | 7.10 (11.79) | 1.23x | 2.34 s (3.67) |
 | `l_w350v5631` | 3,429,728 | 5.96 | 20.63 | 10.50 (16.95) | 8.00 (13.43) | 1.22x | 2.62 s (4.17) |
 | `l_w300v6459b192` | 3,476,624 | 5.30 | 17.49 | 8.83 (14.05) | 6.71 (11.11) | 1.24x | 2.22 s (3.47) |
 | `l_w375v5631` | 3,829,472 | 6.74 | 23.34 | 12.04 (19.37) | 9.16 (15.35) | 1.21x | 2.99 s (4.75) |
 | `l_w400v5631` | 4,255,712 | 7.58 | 25.92 | 13.32 (21.61) | 10.13 (17.12) | 1.20x | 3.30 s (5.29) |
-| `l_w450v5631` | 5,187,680 | 9.42 | 32.08 | 16.73 (27.13) | 12.71 (21.48) | 1.18x | 4.12 s (6.61) |
-| `l_w500v5631` | 6,225,632 | 11.46 | 38.73 | 20.22 (33.02) | 15.35 (26.16) | 1.17x | 4.95 s (8.02) |
+| `l_w450v5631` | 5,187,680 | 9.42 | 32.08 | 16.73 (27.13) | 12.71 (21.48) | 1.18x | 4.11 s (6.61) |
+| `l_w500v5631` | 6,225,632 | 11.46 | 38.73 | 20.22 (33.02) | 15.35 (26.16) | 1.17x | 4.95 s (8.03) |
 
 Inside the L2 this runtime takes 1.7-2.1 ms per frame per million MACs at 333 MHz (`main`: 3.0-3.8; the shapes with
-few MACs per class at the high end), and 2.1-2.4 without the prefetch model. Beyond the 2 MiB L2 (`n_w250v5631` and up) the shapes are bound by the weight
+few MACs per class at the high end), and 2.1-2.4 without the prefetch model. Once the weights and the arena outgrow
+the 2 MiB L2 (from `n_w250v5631`, whose weights are 1,440 B under 2 MiB, up), the shapes are bound by the weight
 stream's DRAM misses: with the prefetch model this PR halves their time, without it the gain falls to 1.17-1.35x.
 Which of the two the console gives is unmeasured; the overlay's next test build logs ms per frame per line, which
 settles it for H15 (inside the L2) but not for a shape beyond it.

@@ -43,10 +43,11 @@ def test_phase_cost_is_a9_cycles_model_for_one_phase():
 
 def test_calibration_maps_the_summed_high_bound_onto_the_console():
     class A:
-        console_ms, console_mhz, scale = 5.07, 333, 0.0
+        console_ms, console_mhz, scale = 4.9417, 333, 0.0
     res = {0: {"high": 1000.0}, 1: {"high": 3000.0}}
-    # 4,000 cycles over 2 frames = 2,000 per frame; the console's 5.07 ms at 333 MHz is 1,688,310
-    assert a9_layers.calib_scale(res, 2, A) == pytest.approx(5.07 * 333 * 1000 / 2000)
+    # 4,000 cycles over 2 frames = 2,000 per frame; the console's 4.9417 ms per frame (H15's lines of 60-100
+    # frames, docs/ocr-speed.md) at 333 MHz is 1,645,586 cycles
+    assert a9_layers.calib_scale(res, 2, A) == pytest.approx(4.9417 * 333 * 1000 / 2000)
     A.scale = 1.5                                         # a fixed factor (another model, the same console)
     assert a9_layers.calib_scale(res, 2, A) == 1.5
     A.console_ms, A.scale = 0.0, 0.0

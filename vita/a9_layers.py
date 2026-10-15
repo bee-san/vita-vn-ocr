@@ -2,23 +2,27 @@
 """Cortex-A9 cycles per layer of runtime/vocr.c as the Vita compiler builds it, calibrated to the console.
 
   a9_layers.py measure --blob BLOB --pack PACK --out DIR [--mode w8i] [--min-frames F] [--max-frames F]
-                       [--limit N] [--cli-opts '--tile 8'] [--runtime DIR] [--plain]
-  a9_layers.py report DIR [--json OUT] [--console-ms 5.07 --console-mhz 333]
-  a9_layers.py compare BEFORE_DIR AFTER_DIR [--console-ms 5.07 --console-mhz 333]
+                       [--limit N] [--cli-opts '--tile 8'] [--runtime DIR] [--plain] [--no-pld]
+  a9_layers.py report DIR [--json OUT] [--scale 1.000676 | --console-ms 4.9417 --console-mhz 333]
+  a9_layers.py compare BEFORE_DIR AFTER_DIR [--scale 1.000676 | --console-ms 4.9417 --console-mhz 333]
 
 measure: compiles runtime/vocr.c (or --runtime DIR/vocr.c) with VitaSDK's arm-vita-eabi-gcc and the Vita
   flags (vita/a9_cycles.py), plus -DVOCR_PROF=vocr_prof_mark, which makes vocr_run() call the marker of
   vita/qemu/prof_mark.c as each phase starts (an op's step, the head, the input columns, the rest), and runs
   it under qemu-arm with vita/qemu/insn_mix.c's per-phase counts (marker=, layers=) and its data cache model
   (l1d=on: 32 KiB 4-way L1, 2 MiB 8-way L2, 32-byte lines, LRU). --plain also builds and runs the same code
-  without the markers, to check that they do not change the runtime's own instruction count. The lines are a
-  vocr_cli pack (vita/dev_pack.py), optionally only those of [--min-frames, --max-frames] CTC frames.
+  without the markers, to check that they do not change the runtime's own instruction count; --no-pld leaves
+  the PLD fills out of the cache model (the bound if PLD does nothing). The lines are a vocr_cli pack
+  (vita/dev_pack.py), optionally only those of [--min-frames, --max-frames] CTC frames.
 report: per phase, vita/a9_cycles.py's cost model (the Cortex-A9 NEON MPE TRM's issue cycles, the same low and
-  high bounds), per CTC frame. The console calibration: VOCR3-H15 ran 4,941-5,238 us per frame on the console
-  (vita-jp-overlay #81's v0.8.0-test.1 logs, 70-96-frame lines), mean 5.07 ms; at 333 MHz that is 1.69 M
-  cycles per frame. --console-ms/--console-mhz give that figure; the report then scales every phase's high
-  bound by the one factor that makes their sum equal it (for the model the console figure belongs to). All
-  of it is an estimate except the console figure itself.
+  high bounds), per CTC frame. The console calibration (docs/ocr-speed.md): VOCR3-H15's lines of 60-100 CTC
+  frames ran at a frame-weighted 4,942 us per frame in vita-jp-overlay #81's v0.8.0-test.1 log (10 lines;
+  the 11 jobs' 5,068 us is recognize time over frames, strip reads included); at an assumed 333 MHz (the log
+  does not record the clock) that is 1.646 M cycles per frame, 1.0007 x the high bound of the code the console
+  ran (vita-vn-ocr a5d5aad) on 60-100-frame development lines. --console-ms/--console-mhz scale every phase's
+  high bound by the one factor that makes their sum equal such a figure (for the model and code it belongs
+  to); --scale gives the factor directly, e.g. 1.000676 for any model on this runtime. All of it is an
+  estimate except the console figure itself.
 compare: the per-phase table of two measurements of the same pack, before -> after.
 """
 import argparse

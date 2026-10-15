@@ -1477,7 +1477,7 @@ static void lanes_argmax(const vocr_lane_i32 *lk, const vocr_lane_u32 *li, unsig
  *    while the classes are inserted in order, and the argmax is never below it (it is [0]), so a
  *    block with none above it is one the per-class loop would leave as it is.
  * A last block of fewer than 8 classes goes through the per-class loop after the full ones. The
- * builds without NEON compile main's run_head token for token. */
+ * builds without NEON compile to main's exact machine code. */
 static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
 {
     const vocr_model *m = c->model;

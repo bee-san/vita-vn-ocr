@@ -1,0 +1,506 @@
+{
+ "kind": "vocr5-protocol",
+ "schema": 1,
+ "frozen": "2026-10-15 (commit time in git), before any VOCR5 run started and before any VOCR5 run was scored on any development or test set. The 1,000-step speed probes of the three shapes (12:24-12:50Z, $HERD/shared/artifacts/vocr5-train/probe, output deleted) are not VOCR5 runs: they measured seconds per step only and no checkpoint of theirs was kept or scored.",
+ "goal": "VOCR5, the final OCR round: three recognizers, Small / Normal / Large, one per tier of the owner's ceilings, trained on everything the owner's 2026-10-14 13:25Z policy allows (all owner drops, the reclaimed VNDB pool in realplus v3, the train parts of the old development sets), with vocab-expand's tier vocabularies and model-tiers' shapes as the final sizing allows, made robust to what the console's line finder hands the recognizer (finder-tighten), selected on the fixed development sample only with dialogue CER primary, each replacing its tier's VOCR4 incumbent only under the paired rule below; then scored once through the plain-C W8I runtime on vita-test, psp-test and the CLANNAD long run, and released.",
+ "instructions": {
+  "task": "/local/home/skerraut/herd-synth3/prompts/vocr5-train.md (VOCR3/VOCR4 protocol style; reuse VOCR4's tools by copying them to vocr5 names)",
+  "owner_2026-10-14_13:25Z": "the only test sets are vita-test, psp-test and the CLANNAD family (eval/manifests/reserved.json 'test'); everything else trains, except a fixed development sample of about 100 VNs (reserved.json 'dev_sample') used for selection",
+  "owner_2026-10-14_13:26Z": "VOCR5 is the final OCR: train on everything allowed, adopt the tier vocabs and shapes, fold in the merged gsm-research post-processing, enough seeds and steps, a full release, an overlay PR making VOCR5 the default with tier selection from free game memory",
+  "owner_2026-10-14_13:57Z": "dialogue CER is the primary metric for selection and reports; names a secondary column",
+  "conductor_2026-10-15_10:07Z_10:21Z": "final sizing (int8 weights): Small < 1,000,000 B; Normal about 1.26 MB, at most 1,300,000 B (a 1 s 3-line box at 333 MHz on one core with #85's runtime and no prefetch credit; it may go to 1.6 MB only if test.3 confirms the 444 MHz boost on the console BEFORE VOCR5 training starts: it has not, #85 and overlay #93 are open and no test.3 exists at freezing, so Normal stays at most 1.3 MB); Large at most 2,500,000 B (the 3 s box ceiling at 333 MHz is 2.65 MB); the time ceilings (Small < 1 s, Normal < 2 s, Large < 3 s per box) always apply; every A9 estimate calibrated to VOCR3-H15's measured console rate",
+  "finder-tighten": "augment so the model is robust to the GRAD crop and its refinement; keep the real pools' GRAD crops and add their refined copies; train on tight and loose crops of native Vita text",
+  "owner-drive-ingest-2": "owner pool v1 + v2 merged files; select on owner-drive-ingest-2/reclaim/pools/*_dev.npz (they supersede reserve-policy's); planetarian disclosure for CLANNAD",
+  "gsm-research": "nothing of gsm-research is merged: its one change, tail_conf (#75), was closed unmerged (a names-only gain, dialogue flat; names are secondary since 13:57Z). The merged runtime post-processing is the CTC beam + character LM (#82, vocr_lm), which the overlay ships (1 MB LM by default); VOCR5 changes no decoder: selection reads greedy CTC as VOCR3/VOCR4 did, and the locked report adds the deployed beam + LM decode as a report-only table"
+ },
+ "known_before_freezing": [
+  "VOCR4 (PR #78, main f022ab8): selections v4c_FL10_seed1 (d7c4c08a...), v4c_H15_seed1 (d380d1a4...), v4m_W20_seed2 (2745e696...); locked report pooled fixed-line CER 2.15% / 1.83% / 1.40%; synth3 v3 in the pretrain the only resolved gain (W20, -0.137); the new real pools not adopted at any size (scaled-PC vs native trade); no model passes VOCR2's whole-dialogue guard; CLANNAD 3.05% / 2.79% / 1.81% (Lens 1.47%)",
+  "VOCR3: FL10's pretrain 32k -> 128k steps gave -0.85 development points, more than any data arm",
+  "vocab-expand (#79): VN-ordered tier vocabs; the 4,987-class proof (data/vocab_4987_proof.txt, a subset of data/vocab.txt) at FL10's width: teacher_val -0.195 (CI -0.40..+0.01), devnative -0.313 (CI -0.60..-0.04) at 16k steps",
+  "model-tiers (#74): shapes and the selection rule; the capacity curve FL10 -> H15 2.13 points/MB, H15 -> W20 0.80",
+  "finder-tighten (#83): GRAD -> refined closes 38-69% of the GRAD-vs-ink gap on development dialogue lines; whole dialogue -1.44 to -1.67 points on development data; on the protected sets PSP gains, Vita is level, CLANNAD worse for five of six models",
+  "ocr-speed (#85 open, ocr-speed-resume ceilings4.json): ms per CTC frame on the console's code calibrated to VOCR3-H15's 4,941.7 us/frame (test.1, 333 MHz assumed); 1 s box at 333 MHz, one core, no prefetch credit: 1.26 MB",
+  "the speed probes (8 at once, 5 threads each, 2026-10-15 12:24-12:50Z, $HERD/shared/artifacts/vocr5-train/probe/rates.json): Small 0.38 s/step, Normal 0.54 s/step, Large 0.75 s/step while all eight ran (0.66-0.70 once the others had finished); the pretrain steps are about 22.5 h at those rates",
+  "VOCR4's fine-tune pools (tt, rd, rp2, rp3i, nat, own) hold 0 rows of any dev_sample VN (checked at freezing): the incumbents, like the candidates, never trained on the development sample's VNs",
+  "the task's 'every pool and cohort exactly as VOCR4' predates the 13:25Z policy; reserve-policy (14:45Z) and owner-drive-ingest-2 supersede it: select on the re-carved development sample, train on everything else, re-check every pool with eval/tools/reserve_check.py"
+ ],
+ "tiers": {
+  "Small": {
+   "shape": "s_w100v4987: width 1.0, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32, stride 8 (FL10's topology)",
+   "train2_args": "--width 1.0",
+   "vocab": {
+    "file": "data/vocab_4987_proof.txt",
+    "sha256": "4a1e7cb77c627a217ae57c7ed427f0695c732dfb85158c674ec4d14994a4e04c",
+    "classes": 4987,
+    "why": "vocab-expand's trained proof, a subset of data/vocab.txt, so every class has real and synthetic data with no render; data/vocab_vn_4987.txt would miss 0.107 instead of 0.187 per 1,000 VN characters (0.008% CER) but trades 240 kanji the real pools hold for 240 they never show"
+   },
+   "expected": {
+    "blob_bytes": 819792,
+    "arena_w8i_bytes": 124832,
+    "macs_per_frame": 967392
+   },
+   "limits": {
+    "weights_lt": 1000000,
+    "arena_le": 131072,
+    "box_s_le": 1.0
+   },
+   "incumbent": {
+    "name": "VOCR4-FL10",
+    "run": "v4c_FL10_seed1",
+    "blob": "$HERD/shared/artifacts/vocr4-train/report/blobs/VOCR4_FL10_w8.vocr",
+    "sha256": "d7c4c08a34ab5349cab30a81ac87c3dd436dd2ea7b69d022537bd78337c181a2",
+    "blob_bytes": 657664
+   },
+   "recipe": "C",
+   "pretrain_steps": 216000,
+   "seeds": [
+    1,
+    2
+   ]
+  },
+  "Normal": {
+   "shape": "n_w150v5631: width 1.5, bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32, stride 8 (H15's topology)",
+   "train2_args": "--width 1.5",
+   "vocab": {
+    "file": "data/vocab_vn_5631.txt",
+    "sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+    "classes": 5631,
+    "why": "vocab-expand's Normal file (0.000 per 1,000 VN characters missed); needs the s4v5631 render (data.render)"
+   },
+   "expected": {
+    "blob_bytes": 1185632,
+    "arena_w8i_bytes": 182944,
+    "macs_per_frame": 1591488
+   },
+   "limits": {
+    "weights_le": 1300000,
+    "arena_le": 262144,
+    "box_s_target": "about 1 s at 333 MHz, one core, #85's runtime, no prefetch credit",
+    "box_s_le": 2.0
+   },
+   "why_this_shape": "the widest of model-tiers' family that keeps a 1 s box at 333 MHz without prefetch credit inside 1.3 MB: width 1.6 (1,254,560 B, 1,732,480 MACs/frame) is at the 1 s edge of the estimate; the late-wide n_lw300v5631 and every Normal shape of #74 are over 1.3 MB under the final sizing",
+   "incumbent": {
+    "name": "VOCR4-H15",
+    "run": "v4c_H15_seed1",
+    "blob": "$HERD/shared/artifacts/vocr4-train/report/blobs/VOCR4_H15_w8.vocr",
+    "sha256": "d380d1a4cf4c3c76e4e4b0f9a73fd1619cc1068c4f070d0da07e5e4d05254b9b",
+    "blob_bytes": 1155968,
+    "why": "VOCR4-W20 (1,558,016 B), the task's Normal incumbent, is over the final 1.3 MB Normal ceiling; VOCR4-H15 is the most accurate VOCR4 model inside it (the task names it the lighter Normal alternative)"
+   },
+   "recipe": "M",
+   "pretrain_steps": 150000,
+   "seeds": [
+    1,
+    2,
+    3
+   ]
+  },
+  "Large": {
+   "shape": "l_lw300v5631: late-wide, channels 64, 128, 256, 480, 576 (width 2.0 early, 3.0 late), bottleneck 96, depth 1, ctx 2, ctx_k 5, height 32, stride 8 (#74's n_lw300v5631)",
+   "train2_args": "--width 2.0 --chans 64,128,256,480,576",
+   "vocab": {
+    "file": "data/vocab_vn_5631.txt",
+    "sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+    "classes": 5631,
+    "why": "vocab-expand's Large file data/vocab_vn_6459.txt makes this shape 2,564,368 B, over the 2.5 MB cap, and covers nothing on VN text that 5,631 misses (0.000 per 1,000 VN characters either way, docs/vocab-expand.md sections 1 and 3)"
+   },
+   "expected": {
+    "blob_bytes": 2473696,
+    "arena_w8i_bytes": 261024,
+    "macs_per_frame": 3402720
+   },
+   "limits": {
+    "weights_le": 2500000,
+    "arena_le": 1310720,
+    "box_s_le": 3.0
+   },
+   "why_this_shape": "the parameter-heavy, compute-light kind the owner prefers within 2.5 MB: the late stages carry the extra width, so it has 2.47 MB of weights for 3.40 M MACs/frame, against plain width 2.75 (2,389,472 B, 3.92 M) or 2.5 (2,095,712 B, 3.35 M); the four Large shapes of #74 are all over 2.5 MB under the final sizing",
+   "incumbent": {
+    "name": "VOCR4-W20",
+    "run": "v4m_W20_seed2",
+    "blob": "$HERD/shared/artifacts/vocr4-train/report/blobs/VOCR4_W20_w8.vocr",
+    "sha256": "2745e69699ad7b2aba3092f83e5ddc1912f405f54b9df8a2e55be82c385b716e",
+    "blob_bytes": 1558016
+   },
+   "recipe": "M",
+   "pretrain_steps": 108000,
+   "seeds": [
+    1,
+    2,
+    3
+   ]
+  }
+ },
+ "estimates": {
+  "rule": "every A9 figure is an estimate and labelled one; sizes and arenas are exact (train/export.py). Reported for every candidate shape at 333 and 444 MHz with MACs per frame: (a) ocr-speed-resume's method, vita/a9_layers.py measure at #85's head 8d21908 on ocr-speed's 24 development lines of 60-100 frames (pack dev_res.bin), --topk 8 (the LM path), on ocr-speed-resume's two runtime copies (main's code and #85's code at 521f35e, sha256 recorded), with and without --no-pld, every phase's high bound scaled by 1.0006759 (VOCR3-H15's console rate, 4,941.7 us/frame at an assumed 333 MHz, over the high bound of the console's code); a 3-line box = 240 frames + 0.1 s for the finder; (b) VOCR4's vita/budget_sweep.py check (vita/a9_cycles.py, main's tool) on the selected blobs, calibrated the same way",
+  "selectability": "a blob is selectable for its tier iff its exact weights and W8I arena meet the tier's limits and its shape's box estimate (a, #85 no-PLD at 333 MHz for Normal's 1 s target; main's runtime at 444 MHz and #85 no-PLD at 333 MHz must both stay under the tier's box_s_le) does; the kernels have no data-dependent branches, so a shape's estimate holds for every blob of that shape",
+  "table": {
+   "source": "$HERD/shared/artifacts/vocr5-train/est/estimates.json (random-init blobs of the exact shapes; the method reproduces ceilings4.json's own figures for s_w100v4987, n_lw300v5631 and VOCR3-H15 to the third decimal)",
+   "columns": "ms per CTC frame / est. seconds per 3-line box (240 frames + 0.1 s finder), top-8; main = main's code, #85 = #85's code at 521f35e with the PLD model, #85 no-PLD = without it",
+   "s_w100v4987": {
+    "bytes": 819792,
+    "macs_per_frame": 967392,
+    "main": {
+     "333": [
+      3.498,
+      0.94
+     ],
+     "444": [
+      2.624,
+      0.73
+     ]
+    },
+    "#85": {
+     "333": [
+      1.952,
+      0.569
+     ],
+     "444": [
+      1.465,
+      0.452
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      2.213,
+      0.631
+     ],
+     "444": [
+      1.661,
+      0.499
+     ]
+    }
+   },
+   "n_w150v5631": {
+    "bytes": 1185632,
+    "macs_per_frame": 1591488,
+    "main": {
+     "333": [
+      5.161,
+      1.339
+     ],
+     "444": [
+      3.872,
+      1.029
+     ]
+    },
+    "#85": {
+     "333": [
+      2.95,
+      0.808
+     ],
+     "444": [
+      2.213,
+      0.631
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      3.423,
+      0.921
+     ],
+     "444": [
+      2.568,
+      0.716
+     ]
+    }
+   },
+   "l_lw300v5631": {
+    "bytes": 2473696,
+    "macs_per_frame": 3402720,
+    "main": {
+     "333": [
+      10.749,
+      2.68
+     ],
+     "444": [
+      8.247,
+      2.079
+     ]
+    },
+    "#85": {
+     "333": [
+      5.688,
+      1.465
+     ],
+     "444": [
+      4.289,
+      1.129
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      8.239,
+      2.077
+     ],
+     "444": [
+      6.364,
+      1.627
+     ]
+    }
+   },
+   "VOCR3-H15 (the calibration model, 1,155,968 B)": {
+    "main": {
+     "333": [
+      5.071,
+      1.317
+     ],
+     "444": [
+      3.804,
+      1.013
+     ]
+    },
+    "#85": {
+     "333": [
+      2.897,
+      0.795
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      3.365,
+      0.908
+     ]
+    }
+   },
+   "reading": "every shape meets its tier on every column; Normal's about 1 s box at 333 MHz holds with #85's runtime (0.81-0.92 s), not with main's (1.34 s: 1.03 s at 444 MHz), which is why the conductor's sizing is provisional on #85"
+  }
+ },
+ "data": {
+  "synthetic": {
+   "nv": "$HERD/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz + nv_train_04[01]_b*.npz (597 shards; VOCR3's and VOCR4's). Not re-cut for the new vocab: a line was dropped only for characters outside data/vocab.txt, and the new vocab's extra kanji are about 0.01% of NVIDIA's characters (nvsynth/oov_report.md), so a re-cut would add about 1% of the lines and a handful of exposures per new class for a re-download of about 400 GB; the s4v5631 render gives the new classes their exposures instead",
+   "s2": "$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz + synth_0003[0-8].npz (39 shards)",
+   "s3": "synth3 v2: $HERD/shared/artifacts/synth3/shards/train_v2/synth3_000??.npz (data/manifests/synth3_shards_v2.json sha256 02800738...)",
+   "s3v3": "synth3 v3: $HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz, every shard checked against data/manifests/synth3_shards_v3.json (sha256 5f747d59...) before a run that reads it",
+   "s4v5631": "data.render"
+  },
+  "render": {
+   "what": "s4v5631: synth4 (#69's generator and pinned configuration, --profile personal) with a --vocab data/vocab_vn_5631.txt override, its curriculum rebuilt for that vocab (every class at least K = 80 exposures per 1,000,000 crops if VN text uses it, 25 otherwise), 1,000,000 crops in 100 shards, seed 20261015; no material of a reserved.json VN (test or dev_sample); made by the helper vocr5-render (prompts/vocr5-render.md) on branch feat/vocr5-render",
+   "pin": "data/manifests/synth4_shards_v5631.json (file, sha256, crops per shard), committed and pushed before the first Normal or Large pretrain starts; eval/vocr5_run.sh checks every shard against it",
+   "cutoff_and_fallback": "if the render is not pinned by 2026-10-15T20:00Z, Normal and Large train with data/vocab.txt's 5,355 classes (the task's rule until the render exists) and without s4v5631 (its weight goes to s3v3), and the protocol records it as amendment"
+  },
+  "real_pools": {
+   "sources": {
+    "tt": "teacher_train train part: $HERD/shared/artifacts/owner-drive-ingest-2/reclaim/pools/teacher_train_train.npz (sha256 1217a97e..., 12,029 rows; the cleaned train2-era copy: the 8 now-test VNs' rows dropped)",
+    "tvt": "teacher_val train part: .../reclaim/pools/teacher_val_train.npz (4f77a469..., 692)",
+    "rd": "real_train train part: .../reclaim/pools/real_train_train.npz (dd72f4db..., 9,733)",
+    "rvt": "real_val train part: .../reclaim/pools/real_val_train.npz (d78b1098..., 688)",
+    "dn": "devnative v3 train parts: .../reclaim/pools/devnative_tv_native_ink_train.npz (9b6c3a54..., 121), devnative_tv_native_grad_train.npz (f789db1e..., 104), devnative_strict_ink_train.npz (7360ee70..., 6), devnative_strict_grad_train.npz (ea89bed9..., 4)",
+    "nat": "native pool v1 (#66): $HERD/shared/artifacts/native-frames/pool/native_train_ink_v1.npz (557), native_train_grad_v1.npz (411)",
+    "own": "owner pool v1 + v2 merged (#86; private, never committed, never sent to Codex): $HERD/shared/private/owner-games/_build2/owner-pool-2/owner_train_ink_v2.npz (7,179), owner_train_grad_v2.npz (5,624), owner_train_ink_m4_v2.npz (6,639), owner_train_ink_m8_v2.npz (6,639); menu and name lines kept (training text either way)",
+    "rp3": "realplus v3: the newest snapshot realplus-v3 publishes with RESERVE_OK (reports/realplus-v3-interim.txt or its final v3) before the fine-tune pin; at freezing that is v3i6 (cutoff 2026-10-15T11:58:05Z; ink 135,689 crops sha256 689eb260..., GRAD 97,089 sha256 fdf50286...), which holds 23,895 lines of the reclaimed VNDB tier"
+   },
+   "exclusion": "a row is dropped when its VN is in eval/manifests/reserved.json 'test' or 'dev_sample' (synth/common.is_reserved_vn), when its screenshot is a screenshot of a development cohort (cohorts below) or of vita-test / psp-test, or its capture session is one of test_games.json's sessions. eval/vocr4_pools.py's STRICT rule is not reused (it drops test-vn and development VNs the 13:25Z policy trains on). The planetarian rule stands (v34 trains)",
+   "dedupe": "by line and crop style (amendment 1 of VOCR4, extended): a row of dn, nat, own or rp3 is dropped when an earlier group (tt+tvt, rd+rvt, then dn, nat, own, rp3 in that order) holds a row of the same screenshot (screen_id, else the VNDB image id of the line id) with the same normalised label (eval/metrics.norm) AND the same crop style (ink: hand-cut or margin crops; grad: the console finder's GRAD crop; ref: a refined copy). tt+tvt and rd+rvt are not deduplicated against each other, as in VOCR3 and VOCR4 (two labellers of the same screenshots)",
+   "build": "eval/vocr5_pools.py (a copy of eval/vocr4_pools.py under the rules above) into $HERD/shared/artifacts/vocr5-train/pools/ (the owner pool's copies under $HERD/shared/private/vocr5-train/pools/); eval/vocr5_pools.py check must print CHECK_OK and eval/tools/reserve_check.py --dump $HERD/shared/artifacts/native-frames/vndb/dump/db --pixels RESERVE_OK for every pool before it is pinned",
+   "refined_copies": "for arm F only: every GRAD pool's refined copy (eval/vocr5_refine.py by the helper vocr5-aug: synth/lines_refine.py, VOCR_REFINE_DEFAULT, on the stored crop as the finder box; kept iff the refinement returns one line that differs from the crop and is at least 8 px tall; the label is unchanged), rows checked as above",
+   "pin": "eval/vocr5_pools.sha256 (every pool and refined copy) and the per-source weights it implies, committed and pushed before the first fine-tune starts and before any VOCR5 score; pinned by 2026-10-16T12:00Z at the latest with the newest RESERVE_OK realplus-v3 snapshot published by then"
+  },
+  "finder_augmentation": "fa=P (train2 source option, arm F only; train/finder_aug.py by the helper vocr5-aug, prompts/vocr5-aug.md part A, the spec frozen here): with probability P an item's crop gets the finder's extra rows before train2's usual augmentation: 10-60% of the line height added above and below, each side's rows holding with p 0.35 a 1-3 px frame line across 60-100% of the width, p 0.35 a neighbour line's half-cut glyphs (another item of the batch), p 0.15 a furigana fragment (top only), p 0.20 scenery (gradient + noise); with p 0.5 line-end clutter: a trailing next-page cursor 0.5-2 line heights after the text (p 0.6: blob, triangle or star, 0.3-0.7 line heights) or a portrait / ornament edge 0.5-3 line heights wide at either end; the crop is resized back to height 32 keeping its aspect ratio; the label never changes; fa=0 is bit-identical to today's train2"
+ },
+ "arms": {
+  "P": "the plain fine-tune on every pool: no finder augmentation, no refined copies",
+  "F": "the finder-robust fine-tune: P's sources and weights, with fa=0.3 on the real ink sources (tt+tvt, rd+rvt, rp3 ink, own ink+m4+m8, dn+nat ink) and fa=0.15 on nv and s2 (not on s3 / s3v3 / s4v5631, whose crops are 75% GRAD already, nor on the GRAD sources), and each GRAD source sampling its refined copies together with the GRAD crops (same source weight)"
+ },
+ "runs": {
+  "pretrains": {
+   "Small": [
+    "pre5_S_seed1",
+    "pre5_S_seed2"
+   ],
+   "Normal": [
+    "pre5_N_seed1",
+    "pre5_N_seed2",
+    "pre5_N_seed3"
+   ],
+   "Large": [
+    "pre5_L_seed1",
+    "pre5_L_seed2",
+    "pre5_L_seed3"
+   ]
+  },
+  "fine_tunes": {
+   "Small": {
+    "P": [
+     "v5p_S_seed1",
+     "v5p_S_seed2"
+    ],
+    "F": [
+     "v5f_S_seed1",
+     "v5f_S_seed2"
+    ]
+   },
+   "Normal": {
+    "P": [
+     "v5p_N_seed1",
+     "v5p_N_seed2",
+     "v5p_N_seed3"
+    ],
+    "F": [
+     "v5f_N_seed1",
+     "v5f_N_seed2",
+     "v5f_N_seed3"
+    ]
+   },
+   "Large": {
+    "P": [
+     "v5p_L_seed1",
+     "v5p_L_seed2",
+     "v5p_L_seed3"
+    ],
+    "F": [
+     "v5f_L_seed1",
+     "v5f_L_seed2",
+     "v5f_L_seed3"
+    ]
+   }
+  },
+  "pairing": "v5p_<T>_seedS and v5f_<T>_seedS fine-tune the same pretrain pre5_<T>_seedS with the same fine-tune seed S, so a seed pair differs only by the arm"
+ },
+ "recipe": {
+  "pretrain": "from scratch, batch 96, lr 2e-3, warmup 1,000, cosine to 0.05, wd 0.01, EMA 0.999, the tier's steps, seed S, 5 threads, eval every 4,000 (logged only: rv/rvn on teacher_val_dev, nvv, s2v), --keep-evals; the final EMA checkpoint (ckpt_step<steps>.pt) is the pretrain. Sources: C (Small) nv 0.5 + s2 0.25 + s3 0.25 (VOCR3/VOCR4-FL10's C_mix pretrain, longer); M (Normal, Large) nv 0.45 + s2 0.225 + s3v3 0.225 + s4v5631 0.1 (VOCR4's M pretrain with one tenth for the new vocab's render); synthetic sources stream=1, pool=3, inv=0.2",
+  "fine_tune": "15,000 steps, batch 96, lr 1.2e-3, warmup 500, cosine to 0.05, wd 0.01, EMA 0.999, kd 0 (hard labels), from the tier's pretrain of the same seed, fine-tune seed S, 5 threads, eval every 2,500 (logged only), --keep-evals; the final EMA checkpoint (ckpt_step15000.pt) is the run. Synthetic half 0.5: C nv 0.25 + s2 0.125 + s3 0.125; M nv 0.225 + s2 0.1125 + s3v3 0.1125 + s4v5631 0.05 (stream=1, pool=3, inv=0.2). Real half 0.5 (inv=0.5, kd=0): tt+tvt 0.15, rd+rvt 0.075, rp3 0.175, own 0.075, dn+nat 0.025; rp3, own and dn+nat are split into an ink source and a GRAD source with weights proportional to their pinned row counts (the split eval/vocr5_pools.sha256 records), the same in both arms",
+  "script": "eval/vocr5_run.sh TIER ARM SEED (a copy of eval/vocr4_run.sh) through HEAVY_SLOTS=10 $HERD/heavy.sh (5 threads); outputs $HERD/shared/artifacts/vocr5-train/runs/<run>/; from detached runner worktrees tagged vocr5-runner-<sha>",
+  "order": "the slowest first: the Small pretrains at freezing (no render needed), the Normal and Large pretrains when the render is pinned; at most 8 VOCR5 training runs at once (fewer if another training agent asks for slots); fine-tunes when their pretrain and the pool pin exist, Large first",
+  "failures": "a pretrain that dies after its first checkpoint resumes from ckpt_last.pt (train2's resume; it reseeds the batch stream: recorded); any other run that dies is deleted and restarted from scratch with the same arguments; every restart or resume is reported"
+ },
+ "cohorts": {
+  "rule": "the fixed development sample only (eval/manifests/reserved.json dev_sample, 116 VNs: 100 drawn + 16 release partners), the re-carved files of #84 / owner-drive-ingest-2",
+  "tv": {
+   "file": "$HERD/shared/artifacts/owner-drive-ingest-2/reclaim/pools/teacher_val_dev.npz",
+   "sha256": "e2f0300fd9f417b6c3c01e1dab36641bfd72749e2cac5db896226ef0d29b65dd",
+   "lines": 959,
+   "vns": 101
+  },
+  "dn": {
+   "dir": "$HERD/shared/artifacts/owner-drive-ingest-2/reclaim/pools",
+   "files": {
+    "devnative_tv_native_ink_dev.npz": "c198c9ea147620e2f75b929dbb676eda30cd10137b2b3c14eae17f28204bc0c4",
+    "devnative_tv_native_grad_dev.npz": "4bda0139ae52f6d472513e96d2f79d30cc25be96dbc2d2316b3bce22f5e4702a",
+    "devnative_strict_ink_dev.npz": "ad4207cdfc6f3e667ffe776a80ac3f97fe58fc3e27dab6285a621e35e24c7645",
+    "devnative_strict_grad_dev.npz": "5e5b147254f9e65ccd9d904d79db68224b8fd26e902a0b167dff005b725891a1"
+   },
+   "crops": 765,
+   "vns": 34
+  },
+  "wd": {
+   "what": "whole dialogue: finder-tighten's tv_dlg and dn_dlg cohorts (#83, $HERD/shared/artifacts/finder-tighten/cohorts, sha256 831f5de9... and 3a279ea8...) restricted to dev_sample VNs: the dialogue region a player draws (labelled non-name lines, eval's grouping, +12/+6 px), at base, +4 and +8 px",
+   "dir": "$HERD/shared/artifacts/vocr5-train/cohorts",
+   "files": {
+    "tv_dlg.pkl": "f1007ab4e943012330b229cc2630f3fc9d33aa94d6dac03130bc5ea5126c1af3",
+    "dn_dlg.pkl": "c6dfd35293e7716bc3772fffc88c8d8aeba62c8fa20f97c0d5041b4f1dbc1e1f"
+   },
+   "cases": {
+    "tv_dlg": 1008,
+    "dn_dlg": 507
+   },
+   "regions": {
+    "tv_dlg": 336,
+    "dn_dlg": 169
+   },
+   "vns": {
+    "tv_dlg": 92,
+    "dn_dlg": 34
+   },
+   "pooling": "tv_dlg plus the dn_dlg frames teacher_val's regions do not hold (finder-tighten's pooled_dialogue: devnative's tv_native frames are teacher_val's own)"
+  },
+  "report_only": "real_val_dev.npz (88a2d4a0..., 807 lines: realdata's labels of teacher_val's screenshots, so not a separate cohort) and every names stratum",
+  "planetarian": "v34 is an owner game and in no dev_sample cohort by construction; eval/vocr5_planetarian_check JSON (vocr4_pools.py vncheck) re-counts it before the first score"
+ },
+ "score": {
+  "tool": "C runtime W8I only. tv and dn: eval/synth3_ablation.py score (pyvocr, views rv = console polarity as stored and rvn = screen polarity), per line; wd: eval/finder_tighten.py score --cohorts $HERD/shared/artifacts/vocr5-train/cohorts (the C GRAD finder, flags 0, and the C refinement, VOCR_REFINE_DEFAULT, each line read with the finder's dark flag as VOCR_INVERT, joined and scored with the textbox guard's transcript_score)",
+  "dialogue": "a line is a name, and leaves the primary score, when devnative tags it 'name' (dn) or when it is name-like in teacher_val (eval/synth3_ablation.strata 'namelike': at most 6 characters after metrics.norm and no dialogue punctuation); wd regions hold no name by construction",
+  "components": "tv = teacher_val's dialogue errors over its dialogue reference characters, both views summed; dn = the same over devnative's four files pooled, both views; wd = the pooled whole-dialogue errors over reference characters, both finder modes and the three region variants summed",
+  "dev_score": "0.5 x (tv + dn) / 2 + 0.5 x wd, in CER points: the fixed-line half is VOCR4's development score restricted to dialogue, the other half the overlay's own reading path",
+  "names": "the same tv and dn rates on name lines: a secondary column, deciding nothing"
+ },
+ "decisions": {
+  "bootstrap": "paired, stratified VN-cluster: 10,000 resamples (numpy default_rng seed 0); tv's, dn's and wd's VNs resampled independently (each component its own strata), the dev score recomputed per resample; the interval is the 2.5-97.5 percentiles of the mean over the seed pairs of the dev-score difference",
+  "arm": "per tier, P -> F over the seed pairs (v5p_<T>_seedS, v5f_<T>_seedS): F is adopted iff the interval of the dev-score difference lies entirely below 0, every seed pair's difference is below 0, and none of the three components' own intervals lies entirely above 0; otherwise P",
+  "replace": "per tier, X -> the incumbent, X the adopted arm: the incumbent's blob is scored once on the same cohorts; X replaces it iff the interval of mean over seeds of (X_seedS - incumbent) lies entirely below 0, every seed's difference is below 0, and no component's interval lies entirely above 0. If X does not, the other arm is not tried and the incumbent stays the tier's model",
+  "order": "a tier's arm decision once its 2 x seeds fine-tunes are scored, then its replace decision; each decision file is committed before that tier's selection"
+ },
+ "selection": {
+  "rule": "per tier, if X replaces the incumbent: the run of X with the lowest dev score (ties at 5 decimals to the lower seed), among the blobs that are selectable (estimates.selectability); otherwise the incumbent",
+  "reported": "every run of the tier is scored and listed with every component, the names column and the budget check",
+  "commit": "each tier's selection (scores, decisions, the selected run, its blob sha256) is committed and pushed before the locked report runs"
+ },
+ "locked_report": {
+  "when": "once, after the three selections are committed",
+  "tool": "eval/vocr3_report.py (shared, a9, overlay, render) with the spec of eval/vocr5_make_spec.py (a copy of eval/vocr4_make_spec.py); the commit is recorded",
+  "arms": {
+   "VOCR1": "FL10_w8.vocr (v0.2.0, 500e0b84...)",
+   "VOCR2": "VOCR2_FL10_w8.vocr (d3adc52e...) + TEXTBOX, as it ships",
+   "VOCR_H15": "H15_w8.vocr (v0.2.0, 316ebc37...)",
+   "F20": "F20_w8.vocr (f8c1abe4...)",
+   "VOCR3_FL10": "87fb4d0c...",
+   "VOCR3_H15": "cb3c61a8...",
+   "VOCR3_W20": "2cedeb01...",
+   "VOCR4_FL10": "d7c4c08a...",
+   "VOCR4_H15": "d380d1a4...",
+   "VOCR4_W20": "2745e696...",
+   "VOCR5_S": "the Small selection",
+   "VOCR5_N": "the Normal selection",
+   "VOCR5_L": "the Large selection"
+  },
+  "pairs": [
+   [
+    "VOCR5_S",
+    "VOCR4_FL10"
+   ],
+   [
+    "VOCR5_S",
+    "VOCR1"
+   ],
+   [
+    "VOCR5_N",
+    "VOCR4_H15"
+   ],
+   [
+    "VOCR5_N",
+    "VOCR_H15"
+   ],
+   [
+    "VOCR5_N",
+    "VOCR4_W20"
+   ],
+   [
+    "VOCR5_N",
+    "VOCR5_S"
+   ],
+   [
+    "VOCR5_L",
+    "VOCR4_W20"
+   ],
+   [
+    "VOCR5_L",
+    "VOCR5_N"
+   ],
+   [
+    "VOCR5_L",
+    "F20"
+   ]
+  ],
+  "sets": {
+   "fixed lines": "vita-test and psp-test through the scalar C W8I runtime, console polarity primary, native also; per set, per style, per VN, pooled; dialogue (lines without the 'name' style) primary, all text and names also; hiragana",
+   "whole dialogue": "each region at base, +4 and +8 px with the arm's C finder (VOCR2's held-out guard scoring); body (dialogue) text primary",
+   "deployed decode (report only)": "the VOCR4 and VOCR5 models' fixed lines with vocr_cli --lm and the overlay's default 1 MB LM (vocr_lm_o3_1000k.vlm, v0.2.6-ctclm.2) at docs/ctc-lm-decode.json's settings for that tier, through eval/run.py's cmd: backend"
+  },
+  "statistics": "CAND - BASE in points, paired bootstrap 95% intervals (10,000 resamples, seed 0) over lines and VN clusters (strata with at least 5 VNs)",
+  "gates": "VOCR2's fixed-line gate and whole-dialogue guard for VOCR5_S vs VOCR1, VOCR5_N vs VOCR_H15 and VOCR5_L vs VOCR_H15, reported. The owner's 13:26Z instruction makes VOCR5 the overlay's default whatever they say; the report states each gate's result",
+  "also": [
+   "blob bytes, W8I and W8F arenas",
+   "estimated Cortex-A9 time per line and per 3-line box at 333 and 444 MHz with MACs per frame (estimates.rule), labelled estimates",
+   "the overlay host cross-check (vita-jp-overlay tools/benchmark_local_ocr.py on a read-only clone)"
+  ]
+ },
+ "clannad": "once, after the locked report: owner-drive-ingest's frozen references (eval/clannad_refs.py, refs_sha256 35411688..., eval/clannad_refs_protocol.json), the three VOCR5 selections read through its extra-arms path (arms --extra NAME=FILE#SHA256 --suffix vocr5, one attempt per suffix), scored with page-bootstrap pairs against VOCR4's three and Lens. Disclosure: every VOCR5 model trained on the owner's frames, which hold planetarian (v34) PSP lines, a Key / Prototype port like CLANNAD's Vita release",
+ "publication": "branch feat/vocr5: docs/vocr5.md, this protocol, the pins, the decisions, the selections, the report JSON (counts and hashes only); the three selected blobs as assets of a FULL release (not a pre-release) with SHA256SUMS, clear notes and the NVIDIA OCR-Synthetic-Multilingual-v1 attribution (CC BY 4.0; and Jiten's CC BY-SA 4.0 for the VN-ordered vocabs); a normal PR to main, audited by audit-vocr5 (enqueued by the conductor, modelled on prompts/audit-vocr4.md), merged on its MERGE_OK with the full local CI; then a vita-jp-overlay PR making the VOCR5 models the Small / Normal / Large tiers (Normal the default; tier selection from free game memory as overlay #108 implements it)",
+ "hygiene": [
+  "no arm, run, recipe, weight, checkpoint, threshold, pool, augmentation parameter or vocab is chosen, tuned, dropped or changed on vita-test, psp-test or CLANNAD; the locked report and the CLANNAD score run once and cannot change a selection",
+  "every training pool follows data.real_pools.exclusion and passes eval/vocr5_pools.py check and eval/tools/reserve_check.py; no dev_sample VN trains",
+  "the owner's frames and every CLANNAD reading stay under shared/private; committed files hold counts, ids and hashes only",
+  "in-run evaluations (teacher_val_dev, logged) select nothing; the final checkpoint is the run"
+ ],
+ "amendments": []
+}

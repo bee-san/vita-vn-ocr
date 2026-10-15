@@ -184,7 +184,10 @@ def cmd_final(args):
 
 class CapCount:
     """Lines per (VN, key) and per key against realplus's repeat caps (pool.PER_VN_CAP, GLOBAL_CAP): the build keeps at
-    most that many copies of a label, so a look at a further copy cannot add a line."""
+    most that many copies of a label, so a look at a further copy cannot add a line. Note: add() counts every copy
+    toward the global cap, while the build's pool.cap_repeats counts a copy toward it only once it passes the per-VN
+    cap, so a label repeated in one VN also holds back its copies in other VNs. In owner pool v2 that held back 70
+    confirm looks and 12 edge looks the build had room for (docs/owner-pool.md, Version 2, Labelling)."""
     def __init__(self, rows=()):
         self.vn, self.all = collections.Counter(), collections.Counter()
         for vn, label in rows:

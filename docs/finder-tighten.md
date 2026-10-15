@@ -215,11 +215,12 @@ By platform, the development gain is mostly PSP. Pooled whole dialogue, all vari
 points (101 VNs; every VN interval below 0, upper bounds −0.68 to −0.93), Vita frames −0.39 to −0.61 (134 VNs;
 every VN interval includes 0, upper bounds +0.01 to +0.22). On teacher_val's Vita frames (scaled and native) the
 point estimate improves by 0.64-0.94 points (e.g. VOCR3-W20 4.80% → 4.16%), but every VN interval includes 0
-(upper bounds +0.03 to +0.29, 133 VNs). devnative's native Vita frames are level (2.45-2.92% → 2.53-2.92%,
-−0.11 to +0.08 points) and so is the owner's CHAOS;CHILD (0.24-0.61% → 0.17-0.65%); devnative's Vita pairs are
-level or better except VOCR4-W20 (0.26% → 0.43%, 2 errors more on 1,153 characters). These platform splits use
-the same stored per-unit counts and the same VN-cluster bootstrap as the table (`pooled_dialogue` and `compare`
-on the units of one platform; no new recognition).
+(upper bounds +0.03 to +0.29, 133 VNs). devnative's native Vita frames are level or slightly worse (2.45-2.92% →
+2.53-2.92%, −0.11 to +0.08 points: VOCR4-H15 and VOCR4-W20 make 3 errors more each with no region better, so their
+intervals start at 0.00) and the owner's CHAOS;CHILD is level (0.24-0.61% → 0.17-0.65%); devnative's Vita pairs
+are level or better except VOCR4-W20 (0.26% → 0.43%, 2 errors more on 1,153 characters). These platform splits
+use the same stored per-unit counts and the same VN-cluster bootstrap as the table (`pooled_dialogue` and
+`compare` on the units of one platform; no new recognition).
 
 ## 5. The protected sets: once, report only
 
@@ -268,17 +269,18 @@ on the development pairs' Vita dialogue lines the GRAD box's median height is 1 
 and level (the owner's frames), against 4 rows on PSP. Why the tighter Vita crop reads worse on CLANNAD was not
 tested. One hypothesis: the recognizers were fine-tuned on GRAD crops too (the real pools hold GRAD crops), so a
 tighter crop moves them off what they learned. The development cohorts hold few native Vita frames (devnative: 8
-Vita VNs; the owner's: CHAOS;CHILD only), and there the refinement is level. **Recommendation for the overlay**
-(made after seeing the protected sets, so it is a deployment caution, not a selection): apply `VOCR_REFINE_DEFAULT`
-where the captured text is PSP-sized, and keep flags 0 for native Vita titles until a Vita development cohort shows
-a gain, with A/B logging in the test build. Whether that covers PSP titles under Adrenaline is **untested**: every
-PSP frame measured here is at the PSP's 480×272 (native captures, or PC screenshots scaled to fit it), and none is
-an Adrenaline capture (the owner's frames hold no Adrenaline upscale, `docs/owner-games.md`). Adrenaline can show a
-PSP game 2× on the Vita's 960×544 (nearest or smoothed, `docs/native-pool.md`), and vita-jp-overlay's notes say its
-display hook receives a PSP game's 480×272 frame shown 2× through the emulator's bilinear filter (its
-`docs/vita-vn-ocr.md`, on blank lines). That puts the text at about twice PSP's pixel size, like native Vita text,
-where the protected sets show no gain. So decide it by the text size the overlay captures, and check it in the A/B
-logs before it becomes a default. The refinement and its default are unchanged.
+Vita VNs; the owner's: CHAOS;CHILD only), and there the refinement is level or slightly worse (§4).
+**Recommendation for the overlay** (made after seeing the protected sets, so it is a deployment caution, not a
+selection): apply `VOCR_REFINE_DEFAULT` where the captured text is PSP-sized, and keep flags 0 for native Vita
+titles until a Vita development cohort shows a gain, with A/B logging in the test build. Whether that covers PSP
+titles under Adrenaline is **untested**: every PSP frame measured here is at the PSP's 480×272 (native captures, or
+PC screenshots scaled to fit it), and none is an Adrenaline capture (the owner's frames hold no Adrenaline upscale,
+`docs/owner-games.md`). Adrenaline can show a PSP game 2× on the Vita's 960×544 (nearest or smoothed,
+`docs/native-pool.md`), and vita-jp-overlay's notes say its display hook receives a PSP game's 480×272 frame shown
+2× through the emulator's bilinear filter (its `docs/vita-vn-ocr.md`, on blank lines). That puts the text at about
+twice PSP's pixel size, like native Vita text, where the protected sets show no gain. So decide it by the text size
+the overlay captures, and check it in the A/B logs before it becomes a default. The refinement and its default are
+unchanged.
 
 ## 6. Cost
 

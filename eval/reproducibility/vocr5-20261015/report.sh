@@ -38,11 +38,15 @@ render)
   ls -la "$R/out/report.json" "$R/out/report_summary.json" "$R/out/report.md" ;;
 lm)
   # report only: the deployed decode (beam + the overlay's default 1 MB LM) on the fixed lines, VOCR4 and VOCR5
+  # vocr_lm_o3_1000k.vlm of v0.2.6-ctclm.2 (sha256 99300061..., the overlay's pinned 1 MB tier) and its
+  # docs/ctc-lm-decode.json "tiers" 1MB config: beam 8, top-8, alpha 500, beta 3500, gate 8000, flags 2, bracket 8000
   LM=$A/ctc-lm-decode/release_pub2/vocr_lm_o3_1000k.vlm; mkdir -p "$R/lm"
+  [ "$(sha256sum "$LM" | cut -c1-16)" = 993000611555171d ] || { echo "$LM is not the pinned 1 MB LM"; exit 4; }
+  OPTS="--topk 8 --beam 8 --alpha 500 --beta 3500 --gate 8000 --lm-flags 2 --bracket 8000 --lm $LM"
   make -C runtime build/vocr_cli >/dev/null
   for arm in VOCR4_FL10 VOCR4_H15 VOCR4_W20 VOCR5_S VOCR5_N VOCR5_L; do
     for s in vita-test psp-test; do
-      $PY eval/run.py --model "cmd:runtime/build/vocr_cli $R/blobs/${arm}_w8.vocr $(cat "$R/lm_opts.txt") --lm $LM" \
+      $PY eval/run.py --model "cmd:runtime/build/vocr_cli $R/blobs/${arm}_w8.vocr $OPTS" \
         --set "$s" --data "$A/eval" --polarity console --out "$R/lm/${arm}_${s}.json" 2>&1 | tail -n 2
     done
   done ;;

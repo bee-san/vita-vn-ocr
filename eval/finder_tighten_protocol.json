@@ -1,0 +1,146 @@
+{
+ "schema": 1,
+ "kind": "finder-tighten-protocol",
+ "purpose": "a post-finder refinement of the GRAD line finder's boxes (runtime/vocr_lines_refine.c) to close the gap between the console finder's crop and the hand-cut ink crop on dialogue; no retraining",
+ "refinement": {
+  "api": [
+   "vocr_refine_lines(im, flags, arena, bytes, set, rows_read)",
+   "vocr_refine_lines_rows(src, flags, arena, bytes, set, rows_read)"
+  ],
+  "flags_default": 31,
+  "flags_default_names": "TIGHTEN|FRAMES|SPLIT|CURSOR|PORTRAIT",
+  "off": "flags 0 returns the finder's set unchanged (bit-identical; tested)",
+  "arena": "vocr_refine_arena_bytes(w, h) <= vocr_lines_arena_bytes(w, h): the finder's arena serves both",
+  "constants": {
+   "R_DMIN": 16,
+   "R_FLIP": 4,
+   "R_MINROW": 2,
+   "R_MINRUNS": 2,
+   "R_SPLIT_H": 80,
+   "R_SPLIT_M": 25,
+   "R_SPLIT_MINH": 6,
+   "R_SPLIT_G": 70,
+   "R_MARGIN": 16,
+   "R_CUR_GAP": 15,
+   "R_CUR_W": 15,
+   "R_POR_GAP": 10,
+   "R_POR_SPAN": 19,
+   "R_POR_EXT": 5,
+   "R_POR_W": 15,
+   "R_SOLID": 6,
+   "R_XMARGIN": 50
+  },
+  "twin": "synth/lines_refine.py, bit-exact (tests/lines_refine_parity.py; every development region)",
+  "source_sha256": {
+   "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+   "runtime/vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+   "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+   "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+   "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+   "runtime/vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465",
+   "runtime/vocr_lines_refine_test.c": "c97012482f166e072db42ed15b4475051b0b4ca6f0f3eab115d4bd324ae3926a",
+   "eval/finder_tighten.py": "a01ac2e8a8b136b5ea677fbc3f7a7226f158620af6eea7b928e939b5f57148f4"
+  }
+ },
+ "selection": {
+  "data": "development only: the five cohorts below; no protected set was read before this freeze",
+  "how": "about 80 configurations of 10 prototypes (scratch, not committed) were compared on all five cohorts with all six arms; the frozen rule is the configuration with the lowest mean pairs-dialogue CER among those no worse on mean whole-dialogue CER at any variant; ablation of its flags recorded in docs/finder-tighten.md",
+  "frozen_before": [
+   "the C-path development report (eval/finder_tighten.py score/report)",
+   "every protected-set score (vita-test, psp-test, CLANNAD)"
+  ]
+ },
+ "cohorts": {
+  "dn_dlg": {
+   "regions": 215,
+   "lines": 388,
+   "chars": 5678,
+   "vns": 43,
+   "sha256": "3a279ea891ed6f724a08c8052b0707193d02a1fe54617475f1f1a4defc8aed18"
+  },
+  "dn_pairs": {
+   "lines": 443,
+   "dialogue_lines": 333,
+   "chars": 5266,
+   "vns": 43,
+   "sha256": "553e415340237b12ead91eba5b38534f891010ca6a7fb6ee95648c0ce1e13d87"
+  },
+  "own_dlg": {
+   "regions": 420,
+   "lines": 629,
+   "chars": 10870,
+   "vns": 3,
+   "sha256": "9b01e3a455a8075c33e347ffa030370c8661bcb6ba3b06f1648f8ac4b0dfe7bc"
+  },
+  "own_pairs": {
+   "lines": 539,
+   "dialogue_lines": 538,
+   "chars": 10214,
+   "vns": 3,
+   "sha256": "d93e823b079ee10f5c0c449682ddee4b3efce7d2b3ed68f7ed8987574aed7bd8"
+  },
+  "tv_dlg": {
+   "regions": 601,
+   "lines": 865,
+   "chars": 13575,
+   "vns": 168,
+   "sha256": "831f5de9f51dfdbfdfa7bc6cca54851692b8a12a8ecb5ea2143af0fb3d8e611a"
+  }
+ },
+ "cohort_rules": "eval/finder_tighten.py cohorts (module docstring): pairs = devnative v3 select-pool and owner pool v2 lines with a clean GRAD crop and an ink crop; whole dialogue = labelled non-name lines grouped (gap <= 1.6 line heights) + 12/6 px, then +0/+4/+8 px, other text boxes kept out",
+ "arms": {
+  "VOCR3-FL10": {
+   "file": "VOCR3_FL10_w8.vocr",
+   "sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154"
+  },
+  "VOCR3-H15": {
+   "file": "VOCR3_H15_w8.vocr",
+   "sha256": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c"
+  },
+  "VOCR3-W20": {
+   "file": "VOCR3_W20_w8.vocr",
+   "sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19"
+  },
+  "VOCR4-FL10": {
+   "file": "VOCR4_FL10_w8.vocr",
+   "sha256": "d7c4c08a34ab5349cab30a81ac87c3dd436dd2ea7b69d022537bd78337c181a2"
+  },
+  "VOCR4-H15": {
+   "file": "VOCR4_H15_w8.vocr",
+   "sha256": "d380d1a4cf4c3c76e4e4b0f9a73fd1619cc1068c4f070d0da07e5e4d05254b9b"
+  },
+  "VOCR4-W20": {
+   "file": "VOCR4_W20_w8.vocr",
+   "sha256": "2745e69699ad7b2aba3092f83e5ddc1912f405f54b9df8a2e55be82c385b716e"
+  }
+ },
+ "metrics": {
+  "primary": [
+   "pairs dialogue CER: dn_pairs + own_pairs non-name lines, GRAD crop vs refined crop (ink crop as the floor); dn_pairs alone gives the 'gap closed' share",
+   "whole-dialogue CER: tv_dlg + own_dlg + dn_dlg frames not in teacher_val (never pooled twice), per variant and pooled over base/+4/+8"
+  ],
+  "secondary": [
+   "names (pairs name lines)",
+   "each cohort separately",
+   "hiragana",
+   "detections per region"
+  ],
+  "scoring": "metrics.norm, Levenshtein; whole dialogue by train/general_vn_textbox_guard.transcript_score (all text; the regions hold no name); C finder + C refinement + C runtime W8I (scalar build)",
+  "intervals": "paired bootstrap over units and over VN clusters (eval/vocr3_report), 10,000 reps, seed 0, at least 5 VNs"
+ },
+ "protected": {
+  "once": true,
+  "report_only": true,
+  "sets": {
+   "vita-test, psp-test": "eval's whole-dialogue regions (vocr3_report.dialogue_regions; regions with an uncertain line left out whole) at base/+4/+8: GRAD vs GRAD + refinement, all six arms; body (dialogue) scope primary, all text secondary; fixed lines use no finder and are unchanged",
+   "CLANNAD": "owner-drive-ingest's frozen Claude references (refs_sha256 35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b): each page's ROI from its native frame, the C finder, every scored line's finder box read as it is and refined (its refined lines joined), all six arms; clannad_refs scoring and whole-page bootstraps"
+  },
+  "commands": [
+   "eval/finder_tighten.py protected --data $HERD/shared/artifacts/eval --arm NAME=BLOB ... --out DIR",
+   "eval/finder_tighten.py clannad --work $HERD/shared/private/owner-drive-20261013/clannad-compare --arm NAME=BLOB ... --out DIR"
+  ],
+  "attempt_records": "protected.attempt.json and clannad.attempt.json, created exclusively (a second run refuses)",
+  "disclosure": "VOCR4-W20 (arm M) trained on the owner's planetarian PSP frames (Key/Prototype, like CLANNAD's Vita port): its CLANNAD numbers carry that exposure (owner rule 2026-10-13; docs/vocr4.md)",
+  "no_change_after": "nothing in the refinement or its default is changed after a protected score"
+ }
+}

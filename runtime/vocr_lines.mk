@@ -8,6 +8,10 @@
 #        LINES_CASES procedural regions, both finders
 #     4. vocr_lines_rows.c (the row-callback form) strict, then tests/test_vocr_lines_rows: it
 #        against vocr_lines.c on LINES_ROWS_CASES procedural regions, every finder, same flags
+#     5. vocr_lines_refine.c (the post-finder refinement) strict, then vocr_lines_refine_test, its
+#        driver, built with the same flags: --selftest on REFINE_CASES procedural regions (flags 0
+#        is the identity, in-memory and row-callback forms and both arena sizes agree), then
+#        tests/lines_refine_parity.py against its Python twin (synth/lines_refine.py), both forms
 #
 # Uses CC, CPPFLAGS, CFLAGS, LDFLAGS, PYTHON, OUT and SAN_ENV from the including Makefile.
 # SAN_ENV also prefixes the Python parity driver, whose child is the sanitized driver, so it
@@ -18,6 +22,7 @@ LINES_STRICT = -std=c99 -pedantic -Wall -Wextra -Werror -Wshadow -Wconversion -W
                -Wstrict-prototypes -Wmissing-prototypes -Wcast-align
 LINES_CASES ?= 400
 LINES_ROWS_CASES ?= 300
+REFINE_CASES ?= 1000
 LINES_OUT = $(abspath $(OUT))/lines
 
 .PHONY: check-lines
@@ -33,3 +38,10 @@ check-lines:
 	$(CC) $(CPPFLAGS) -std=c99 -Wall -Wextra -Werror $(CFLAGS) -o $(LINES_OUT)/test_vocr_lines_rows \
 	    vocr_lines.c vocr_lines_rows.c tests/test_vocr_lines_rows.c $(LDFLAGS)
 	$(SAN_ENV) $(LINES_OUT)/test_vocr_lines_rows $(LINES_ROWS_CASES)
+	$(CC) $(LINES_STRICT) -O2 -c vocr_lines_refine.c -o $(LINES_OUT)/vocr_lines_refine_strict.o
+	$(CC) $(CPPFLAGS) -std=c99 -Wall -Wextra -Werror $(CFLAGS) -o $(LINES_OUT)/vocr_lines_refine_test \
+	    vocr_lines.c vocr_lines_refine.c vocr_lines_refine_test.c $(LDFLAGS)
+	$(SAN_ENV) $(LINES_OUT)/vocr_lines_refine_test --selftest $(REFINE_CASES)
+	$(SAN_ENV) $(PYTHON) ../tests/lines_refine_parity.py --bin $(LINES_OUT)/vocr_lines_refine_test --cases $(LINES_CASES)
+	$(SAN_ENV) $(PYTHON) ../tests/lines_refine_parity.py --bin $(LINES_OUT)/vocr_lines_refine_test \
+	    --cases $(REFINE_CASES) --seed 2 --rows

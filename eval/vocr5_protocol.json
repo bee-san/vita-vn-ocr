@@ -502,5 +502,12 @@
   "the owner's frames and every CLANNAD reading stay under shared/private; committed files hold counts, ids and hashes only",
   "in-run evaluations (teacher_val_dev, logged) select nothing; the final checkpoint is the run"
  ],
- "amendments": []
+ "amendments": [
+  {
+   "date": "2026-10-15 (commit time in git), before eval/vocr5_pools.sha256, before any fine-tune started and before any VOCR5 run was scored",
+   "change": "data.real_pools.refined_copies: a GRAD crop's refined copy is kept only when the refinement changed its rows alone (the refined box's columns equal the crop's); copies whose columns the refinement cut (its CURSOR or PORTRAIT step) are skipped, like split lines (eval/vocr5_refine.py --rows-only)",
+   "why": "the label of a refined copy is the GRAD crop's label unchanged, so a copy is a correct training crop only if it still shows the whole line. The helper vocr5-aug read 40 of the 168 column-cut copies of realplus v3i6 on a contact sheet (public VNDB crops): about 38 had lost real glyphs (a first or last word, a surname, half the sentence) and 2 a real icon; 40 random row-only copies all kept the whole line. The conductor viewed the same sheet and agrees. The rule was chosen on the correctness of training labels only: no model was scored, and no development or protected set was read",
+   "effect": "kept copies: rp3 v3i6 83,811 -> 83,643, own 4,658 -> 4,656, dntv 87 -> 85; nat 357 and dnst 4 unchanged (the helper's counts)"
+  }
+ ]
 }

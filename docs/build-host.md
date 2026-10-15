@@ -21,8 +21,8 @@ internal cloud desktops' host-name prefix, the corporate domain (so a public lin
 too) or an EC2-internal DNS name, and when code (`.py`, `.sh`, C/C++, make, CMake, workflow YAML) uses one of the
 usual ways to read the machine's network name: `platform.node()`/`uname()`, `socket.gethostname()`/`getfqdn()`,
 `os.uname()`, `gethostname()`, `/etc/hostname`, `$HOSTNAME`, `$(hostname)`, `uname -n`/`-a`, and similar. It is a
-guard against the usual forms, not a proof: a name assembled at run time passes. `tests/test_hostinfo.py` checks
-what each writer records.
+guard against the usual forms, not a proof: code that assembles the name or the call at run time (string
+concatenation, `__import__`) passes. `tests/test_hostinfo.py` checks what each writer records.
 
 ## The 2026-10-15 scrub
 

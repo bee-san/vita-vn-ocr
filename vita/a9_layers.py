@@ -85,14 +85,25 @@ def build(out, vitasdk, arm_cc, runtime, prof):
     for line in dis.splitlines():
         if line.endswith("<vocr_prof_mark>:"):
             marker = int(line.split()[0], 16)
-    # PLD sites for the plugin's cache model: "address reg offset" (qemu runs PLD as a no-op)
-    regs = {**{f"r{i}": i for i in range(13)}, "sb": 9, "sl": 10, "fp": 11, "ip": 12, "sp": 13, "lr": 14}
     with open(out / f"pld_{tag}.txt", "w") as f:
-        for a, (_, mn, ops) in sorted(A9.parse_dis(dis).items()):
-            m = re.match(r"\[(\w+)(?:,\s*#(-?\d+))?\]$", ops.strip()) if mn.startswith("pld") else None
-            if m and m.group(1) in regs:
-                f.write(f"{a:x} {regs[m.group(1)]} {int(m.group(2) or 0)}\n")
+        for a, reg, off in pld_sites(A9.parse_dis(dis)):
+            f.write(f"{a:x} {reg} {off}\n")
     return cli, marker
+
+
+PLD_REGS = {**{f"r{i}": i for i in range(13)}, "sb": 9, "sl": 10, "fp": 11, "ip": 12, "sp": 13, "lr": 14}
+
+
+def pld_sites(rows):
+    """The PLD sites for the plugin's cache model (qemu runs PLD as a no-op): (address, base register, offset)
+    for every `pld [reg]` / `pld [reg, #imm]` of a parsed disassembly ({address: (function, mnemonic, operands)}),
+    in address order. A register-offset form ([r1, r2]) is not modelled."""
+    out = []
+    for a, (_, mn, ops) in sorted(rows.items()):
+        m = re.match(r"\[(\w+)(?:,\s*#(-?\d+))?\]$", ops.strip()) if mn.startswith("pld") else None
+        if m and m.group(1) in PLD_REGS:
+            out.append((a, PLD_REGS[m.group(1)], int(m.group(2) or 0)))
+    return out
 
 
 def subset_pack(src, dst, lo, hi, limit):
@@ -136,7 +147,7 @@ def measure(args):
                 "pack_sha256": hashlib.sha256(pack.read_bytes()).hexdigest(), "lines": n_lines,
                 "frames_expected": n_frames, "mode": args.mode, "cli_opts": args.cli_opts,
                 "runtime": str(runtime), "vocr_c_sha256": hashlib.sha256((runtime / "vocr.c").read_bytes()).hexdigest(),
-                "runs": {}}
+                "pld_model": not args.no_pld, "runs": {}}
         for prof in ([True, False] if args.plain else [True]):
             tag = "prof" if prof else "plain"
             cli, marker = build(out, vitasdk, arm_cc, runtime, prof)
@@ -145,7 +156,9 @@ def measure(args):
             if prof:
                 if marker is None:
                     raise SystemExit("no vocr_prof_mark in the profiling build")
-                opts += [f"marker={marker:x}", f"layers={out}/layers.txt", "l1d=on", f"pld={out}/pld_{tag}.txt"]
+                opts += [f"marker={marker:x}", f"layers={out}/layers.txt", "l1d=on"]
+                if not args.no_pld:      # --no-pld: the cache model sees demand accesses only (PLD does nothing)
+                    opts.append(f"pld={out}/pld_{tag}.txt")
             p = subprocess.run([str(q / "bin/qemu-arm"), "-cpu", "cortex-a9", "-seed", "0",
                                 "-plugin", f"{plugins}/libinsn_mix.so," + ",".join(opts),
                                 f"./{cli.name}", blob.name, "--mode", args.mode, "--pack", pack.name,
@@ -340,6 +353,9 @@ def main():
     m.add_argument("--cli-opts", default="")
     m.add_argument("--runtime", help="directory with the vocr.c to measure (default: this checkout's runtime/)")
     m.add_argument("--plain", action="store_true", help="also run the build without markers")
+    m.add_argument("--no-pld", action="store_true",
+                   help="no PLD model: the cache model sees only demand accesses, the bound if the A9's PLD does "
+                        "nothing (by default every PLD fills its line into L1 and L2 at once, the best case)")
     m.add_argument("--vitasdk")
     m.add_argument("--arm-cc")
     m.add_argument("--qemu")

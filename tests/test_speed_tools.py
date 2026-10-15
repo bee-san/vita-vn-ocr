@@ -107,15 +107,11 @@ def test_dev_pack_refuses_protected_vns():
     assert refused == sum(r["vn"] in bad for r in rows) and len(kept) + refused == len(rows)
 
 
-def test_pld_sites_parse(tmp_path):
-    """build() writes 'address reg offset' for the PLD instructions of a disassembly."""
-    import re
-    regs = {**{f"r{i}": i for i in range(13)}, "sb": 9, "sl": 10, "fp": 11, "ip": 12, "sp": 13, "lr": 14}
-    pat = re.compile(r"\[(\w+)(?:,\s*#(-?\d+))?\]$")
-    got = []
-    for mn, ops in (("pld", "[r3, #128]"), ("pld", "[ip]"), ("pld", "[r1, r2]"), ("vld1.8", "{d16}, [r1]")):
-        m = pat.match(ops) if mn.startswith("pld") else None
-        if m and m.group(1) in regs:
-            got.append((regs[m.group(1)], int(m.group(2) or 0)))
-    assert got == [(3, 128), (12, 0)]
-    assert "re.match(r\"\\[(\\w+)(?:,\\s*#(-?\\d+))?\\]$\"" in (VITA / "a9_layers.py").read_text()
+def test_pld_sites_parse():
+    """pld_sites (what build() writes as 'address reg offset' for the plugin) takes the immediate-offset forms of
+    PLD, in address order, and nothing else."""
+    rows = {0x40: ("mm_i16", "pld", "[r1, r2]"), 0x10: ("mm_i16", "pld", "[r3, #128]"),
+            0x30: ("mm_i16", "vld1.8", "{d16}, [r1]"), 0x20: ("mm_i16", "pld", "[ip]"),
+            0x28: ("mm_i16", "pld", "[sl, #-32]"), 0x38: ("mm_i16", "pldw", "[r4, #64]"), 0x50: ("main", "pld", "[pc]")}
+    assert a9_layers.pld_sites(rows) == [(0x10, 3, 128), (0x20, 12, 0), (0x28, 10, -32), (0x38, 4, 64)]
+    assert a9_layers.pld_sites({}) == []

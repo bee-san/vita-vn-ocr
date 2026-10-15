@@ -33,18 +33,23 @@ def names_no_machine(record):
     return SECRET not in text and not any(n in text for n in REAL)
 
 
-def test_label_is_the_cpu_count_and_model(tmp_path, monkeypatch):
+def test_label_is_the_core_count_and_cpu_model(tmp_path, monkeypatch):
     info = tmp_path / "cpuinfo"
-    info.write_text("processor\t: 0\nvendor_id\t: AuthenticAMD\nmodel name\t: AMD EPYC  9R14\n\n"
-                    "processor\t: 1\nmodel name\t: AMD EPYC 9R14\n")
-    monkeypatch.setattr(hostinfo.os, "cpu_count", lambda: 64)
-    assert hostinfo.cpu_model(info) == "AMD EPYC 9R14"
+    # two sockets, two cores each, two threads per core: 8 logical CPUs, 4 physical cores
+    blocks = [f"processor\t: {i}\nvendor_id\t: AuthenticAMD\nmodel name\t: AMD EPYC  9R14\nphysical id\t: {i // 4}\n"
+              f"siblings\t: 4\ncore id\t\t: {i % 4 // 2}\ncpu cores\t: 2\n" for i in range(8)]
+    info.write_text("\n".join(blocks))
+    monkeypatch.setattr(hostinfo.os, "cpu_count", lambda: 8)
+    assert hostinfo.cpu_info(info) == ("AMD EPYC 9R14", 4)
+    assert hostinfo.host_label(info) == "4-core AMD EPYC 9R14 host"
+    info.write_text("processor\t: 0\nmodel name\t: AMD EPYC 9R14\n\nprocessor\t: 1\nmodel name\t: AMD EPYC 9R14\n")
+    monkeypatch.setattr(hostinfo.os, "cpu_count", lambda: 64)       # no core ids: the logical CPU count
     assert hostinfo.host_label(info) == "64-core AMD EPYC 9R14 host"
 
 
 def test_label_without_a_cpu_model_is_build_host(tmp_path, monkeypatch):
     info = tmp_path / "cpuinfo"
-    info.write_text("processor\t: 0\nFeatures\t: fp asimd\n")    # some ARM kernels give no model name
+    info.write_text("processor\t: 0\nFeatures\t: fp asimd\ncore id\t\t: 0\n")    # some ARM kernels give no model name
     assert hostinfo.host_label(info) == hostinfo.FALLBACK == "build-host"
     assert hostinfo.host_label(tmp_path / "missing") == "build-host"
     info.write_text("model name\t: AMD EPYC 9R14\n")

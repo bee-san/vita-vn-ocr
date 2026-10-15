@@ -1,8 +1,9 @@
 # Machine names in committed results
 
 The repository is public. No tracked file names the machine a result was produced on: result files hold a generic
-label from `train/hostinfo.py`, `host_label()`: `"<CPUs>-core <CPU model> host"` (`"64-core AMD EPYC 9R14 host"` on
-the build host) or `"build-host"` when the CPU model is unknown. Never the node name, the socket host name or the FQDN.
+label from `train/hostinfo.py`, `host_label()`: `"<cores>-core <CPU model> host"` (`"64-core AMD EPYC 9R14 host"` on
+the build host; physical cores from `/proc/cpuinfo`) or `"build-host"` when the CPU model is unknown. Never the node
+name, the socket host name or the FQDN.
 
 | writer | field |
 |---|---|

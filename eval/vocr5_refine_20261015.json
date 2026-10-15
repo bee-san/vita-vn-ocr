@@ -1,0 +1,356 @@
+{
+ "kind": "vocr5-refined-copies",
+ "schema": 1,
+ "spec": "prompts/vocr5-aug.md part B; eval/vocr5_protocol.json data.real_pools.refined_copies",
+ "pools": [
+  {
+   "name": "rp3_grad",
+   "src": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/realplus-v3/realplus_train_grad_v3i6.npz",
+   "src_sha256": "fdf5028648f72636a9fcb190e07346e46f6ee2f0058898626114239a2f2fa94b",
+   "out": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/aug/realplus_train_grad_v3i6_ref.npz",
+   "out_sha256": "bfd7711c09eafcdd307c0b19b2ac36ff8da9ff54dfd22f28eee5b10626e8cdbc",
+   "flags": 31,
+   "min_h": 8,
+   "rows_only": true,
+   "rows": 97089,
+   "counts": {
+    "kept": 83643,
+    "unchanged": 12331,
+    "split": 492,
+    "too_small": 455,
+    "columns_cut": 168
+   },
+   "by_target": {
+    "psp": {
+     "kept": 33738,
+     "unchanged": 2136,
+     "split": 243,
+     "too_small": 342,
+     "columns_cut": 107
+    },
+    "vita": {
+     "kept": 49905,
+     "unchanged": 10195,
+     "split": 249,
+     "too_small": 113,
+     "columns_cut": 61
+    }
+   },
+   "split_lines": {
+    "2": 484,
+    "3": 7,
+    "4": 1
+   },
+   "kept_geometry": {
+    "rows_removed_mean": 4.766,
+    "rows_removed_median": 4.0,
+    "columns_trimmed": 0
+   },
+   "ctc_short_info": {
+    "refined": 1,
+    "their_sources": 1,
+    "note": "kept copies whose height-32 width holds fewer CTC frames than the label needs (train2's load_shard drops such a line); information only"
+   },
+   "code": {
+    "eval/vocr5_refine.py": "785da7e35b65749385573900bc160502f4d41583881bacf5428c48f38bc1bb90",
+    "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98"
+   },
+   "git": "dd7ddfb48451d1a3283f034df0aeed5ac2cc73fd",
+   "reserve_check": {
+    "verdict": "RESERVE_OK",
+    "json": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/aug/realplus_train_grad_v3i6_ref.reserve_check.json",
+    "blockers": [],
+    "hash_coverage": {
+     "rows": 83643,
+     "hash_checked": 83643,
+     "pixel_checked": 83643,
+     "share": 1.0
+    }
+   }
+  },
+  {
+   "name": "own_grad",
+   "src": "/local/home/skerraut/herd-vita-ocr/shared/private/owner-games/_build2/owner-pool-2/owner_train_grad_v2.npz",
+   "src_sha256": "a42db74342c459c732e1720e436869f2387efa2a132be75c8afaed29d28d343e",
+   "out": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/aug/owner_train_grad_v2_ref.npz",
+   "out_sha256": "2c72aa1bc9e61d4335e7b83aad905be601dd9cb4b178f8587bfadbc292609d1e",
+   "flags": 31,
+   "min_h": 8,
+   "rows_only": true,
+   "rows": 5624,
+   "counts": {
+    "kept": 4656,
+    "unchanged": 961,
+    "split": 5,
+    "too_small": 0,
+    "columns_cut": 2
+   },
+   "by_target": {
+    "psp": {
+     "kept": 3160,
+     "unchanged": 76,
+     "split": 4,
+     "too_small": 0,
+     "columns_cut": 2
+    },
+    "vita": {
+     "kept": 1496,
+     "unchanged": 885,
+     "split": 1,
+     "too_small": 0,
+     "columns_cut": 0
+    }
+   },
+   "split_lines": {
+    "2": 5
+   },
+   "kept_geometry": {
+    "rows_removed_mean": 3.68,
+    "rows_removed_median": 3.0,
+    "columns_trimmed": 0
+   },
+   "ctc_short_info": {
+    "refined": 0,
+    "their_sources": 0,
+    "note": "kept copies whose height-32 width holds fewer CTC frames than the label needs (train2's load_shard drops such a line); information only"
+   },
+   "code": {
+    "eval/vocr5_refine.py": "785da7e35b65749385573900bc160502f4d41583881bacf5428c48f38bc1bb90",
+    "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98"
+   },
+   "git": "dd7ddfb48451d1a3283f034df0aeed5ac2cc73fd",
+   "reserve_check": {
+    "verdict": "RESERVE_OK",
+    "json": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/aug/owner_train_grad_v2_ref.reserve_check.json",
+    "blockers": [],
+    "hash_coverage": {
+     "rows": 4656,
+     "hash_checked": 484,
+     "pixel_checked": 484,
+     "share": 0.104
+    }
+   }
+  },
+  {
+   "name": "nat_grad",
+   "src": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/native-frames/pool/native_train_grad_v1.npz",
+   "src_sha256": "2cf40190bdf61f2cb5e6e0b2246f27c9521cdd4ef0bdc3ad81c8164673e86366",
+   "out": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/aug/native_train_grad_v1_ref.npz",
+   "out_sha256": "19149b480a82a3d1c3e9f06738f70903b9980219fed65f70148ca8cf563a6189",
+   "flags": 31,
+   "min_h": 8,
+   "rows_only": true,
+   "rows": 411,
+   "counts": {
+    "kept": 357,
+    "unchanged": 49,
+    "split": 3,
+    "too_small": 2,
+    "columns_cut": 0
+   },
+   "by_target": {
+    "psp": {
+     "kept": 309,
+     "unchanged": 20,
+     "split": 3,
+     "too_small": 2,
+     "columns_cut": 0
+    },
+    "vita": {
+     "kept": 48,
+     "unchanged": 29,
+     "split": 0,
+     "too_small": 0,
+     "columns_cut": 0
+    }
+   },
+   "split_lines": {
+    "2": 3
+   },
+   "kept_geometry": {
+    "rows_removed_mean": 5.431,
+    "rows_removed_median": 5.0,
+    "columns_trimmed": 0
+   },
+   "ctc_short_info": {
+    "refined": 0,
+    "their_sources": 0,
+    "note": "kept copies whose height-32 width holds fewer CTC frames than the label needs (train2's load_shard drops such a line); information only"
+   },
+   "code": {
+    "eval/vocr5_refine.py": "785da7e35b65749385573900bc160502f4d41583881bacf5428c48f38bc1bb90",
+    "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98"
+   },
+   "git": "dd7ddfb48451d1a3283f034df0aeed5ac2cc73fd",
+   "reserve_check": {
+    "verdict": "RESERVE_OK",
+    "json": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/aug/native_train_grad_v1_ref.reserve_check.json",
+    "blockers": [],
+    "hash_coverage": {
+     "rows": 357,
+     "hash_checked": 357,
+     "pixel_checked": 357,
+     "share": 1.0
+    }
+   }
+  },
+  {
+   "name": "dntv_grad",
+   "src": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/devnative_tv_native_grad_train.npz",
+   "src_sha256": "f789db1e742643662e94cff8c19081373d7cd8d1324d84f872c46c2da2a19e20",
+   "out": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/aug/devnative_tv_native_grad_train_ref.npz",
+   "out_sha256": "cdc4bf7f70d9cd7eac3cd2e3f664600bf7e587fdd759bf4d972f6214cd004975",
+   "flags": 31,
+   "min_h": 8,
+   "rows_only": true,
+   "rows": 104,
+   "counts": {
+    "kept": 85,
+    "unchanged": 13,
+    "split": 4,
+    "too_small": 0,
+    "columns_cut": 2
+   },
+   "by_target": {
+    "psp": {
+     "kept": 72,
+     "unchanged": 2,
+     "split": 3,
+     "too_small": 0,
+     "columns_cut": 2
+    },
+    "vita": {
+     "kept": 13,
+     "unchanged": 11,
+     "split": 1,
+     "too_small": 0,
+     "columns_cut": 0
+    }
+   },
+   "split_lines": {
+    "2": 4
+   },
+   "kept_geometry": {
+    "rows_removed_mean": 4.435,
+    "rows_removed_median": 4.0,
+    "columns_trimmed": 0
+   },
+   "ctc_short_info": {
+    "refined": 0,
+    "their_sources": 0,
+    "note": "kept copies whose height-32 width holds fewer CTC frames than the label needs (train2's load_shard drops such a line); information only"
+   },
+   "code": {
+    "eval/vocr5_refine.py": "785da7e35b65749385573900bc160502f4d41583881bacf5428c48f38bc1bb90",
+    "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98"
+   },
+   "git": "dd7ddfb48451d1a3283f034df0aeed5ac2cc73fd",
+   "reserve_check": {
+    "verdict": "RESERVE_OK",
+    "json": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/aug/devnative_tv_native_grad_train_ref.reserve_check.json",
+    "blockers": [],
+    "hash_coverage": {
+     "rows": 85,
+     "hash_checked": 85,
+     "pixel_checked": 85,
+     "share": 1.0
+    }
+   }
+  },
+  {
+   "name": "dnst_grad",
+   "src": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/devnative_strict_grad_train.npz",
+   "src_sha256": "ea89bed96eda2498a55ee66c33385645e77616145aeca354dfdb7decefbae2e6",
+   "out": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/aug/devnative_strict_grad_train_ref.npz",
+   "out_sha256": "fc693251c8caf89dcc76410a98e20d53aac4469558cb919d9984d46f8e48c163",
+   "flags": 31,
+   "min_h": 8,
+   "rows_only": true,
+   "rows": 4,
+   "counts": {
+    "kept": 4,
+    "unchanged": 0,
+    "split": 0,
+    "too_small": 0,
+    "columns_cut": 0
+   },
+   "by_target": {
+    "psp": {
+     "kept": 4,
+     "unchanged": 0,
+     "split": 0,
+     "too_small": 0,
+     "columns_cut": 0
+    }
+   },
+   "split_lines": {},
+   "kept_geometry": {
+    "rows_removed_mean": 3.25,
+    "rows_removed_median": 3.0,
+    "columns_trimmed": 0
+   },
+   "ctc_short_info": {
+    "refined": 0,
+    "their_sources": 0,
+    "note": "kept copies whose height-32 width holds fewer CTC frames than the label needs (train2's load_shard drops such a line); information only"
+   },
+   "code": {
+    "eval/vocr5_refine.py": "785da7e35b65749385573900bc160502f4d41583881bacf5428c48f38bc1bb90",
+    "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98"
+   },
+   "git": "dd7ddfb48451d1a3283f034df0aeed5ac2cc73fd",
+   "reserve_check": {
+    "verdict": "RESERVE_OK",
+    "json": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/aug/devnative_strict_grad_train_ref.reserve_check.json",
+    "blockers": [],
+    "hash_coverage": {
+     "rows": 4,
+     "hash_checked": 4,
+     "pixel_checked": 4,
+     "share": 1.0
+    }
+   }
+  }
+ ],
+ "totals": {
+  "kept": 88745,
+  "unchanged": 13354,
+  "split": 504,
+  "too_small": 457,
+  "columns_cut": 172
+ },
+ "devnative_agreement": {
+  "verdict": "DEVNATIVE_AGREE",
+  "lines": 108,
+  "screenshots": 48,
+  "totals": {
+   "box_reproduced": 108,
+   "crop_reproduced": 108,
+   "dark_equal": 108,
+   "refine_agree": 108,
+   "status:kept": 91,
+   "status:split": 4,
+   "status:unchanged": 13
+  },
+  "files": [
+   {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/devnative_tv_native_grad_train.npz",
+    "sha256": "f789db1e742643662e94cff8c19081373d7cd8d1324d84f872c46c2da2a19e20",
+    "rows": 104
+   },
+   {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/devnative_strict_grad_train.npz",
+    "sha256": "ea89bed96eda2498a55ee66c33385645e77616145aeca354dfdb7decefbae2e6",
+    "rows": 4
+   }
+  ],
+  "flags": 31,
+  "code": {
+   "eval/vocr5_refine.py": "785da7e35b65749385573900bc160502f4d41583881bacf5428c48f38bc1bb90",
+   "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+   "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e"
+  },
+  "git": "dd7ddfb48451d1a3283f034df0aeed5ac2cc73fd",
+  "disagree": 0
+ }
+}

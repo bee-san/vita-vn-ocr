@@ -53,7 +53,10 @@ lm)
 clannad)
   # owner-drive-ingest's extra-arms path (read-only on its WORK; one attempt per suffix)
   WORK=$HERD/shared/private/owner-drive-20261013/clannad-compare; C=$HERD/shared/private/vocr5-train/clannad; mkdir -p "$C"
-  EX=(); for t in S N L; do EX+=(--extra "VOCR5_$t=VOCR5_${t}_w8.vocr#$(sha256sum "$R/blobs/VOCR5_${t}_w8.vocr" | cut -c1-64)"); done
+  # VOCR4's three are read again beside VOCR5's (the runtime is deterministic), so every pair's baseline is in this
+  # attempt's arms file; VOCR1, VOCR_H15 and Lens come from the references' own arms
+  EX=(); for a in VOCR4_FL10 VOCR4_H15 VOCR4_W20 VOCR5_S VOCR5_N VOCR5_L; do
+    EX+=(--extra "$a=${a}_w8.vocr#$(sha256sum "$R/blobs/${a}_w8.vocr" | cut -c1-64)"); done
   $PY eval/clannad_refs.py arms --work "$WORK" --blobs "$R/blobs" "${EX[@]}" --suffix vocr5 --into "$C"
   $PY eval/clannad_refs.py score --work "$WORK" --suffix vocr5 --into "$C" \
      --pair VOCR5_S:VOCR4_FL10 --pair VOCR5_N:VOCR4_H15 --pair VOCR5_L:VOCR4_W20 --pair VOCR5_N:VOCR4_W20 \

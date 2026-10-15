@@ -2,6 +2,7 @@
 """VOCR5's refined copies of the GRAD pools (eval/vocr5_protocol.json "refined_copies"; prompts/vocr5-aug.md part B).
 
   vocr5_refine.py build --src GRAD.npz --out REF.npz [--report JSON] [--name NAME] [--force] [--no-reserve-check]
+                        [--rows-only]
   vocr5_refine.py realplus SNAPSHOT [--force]       one command for a realplus-v3 snapshot (v3i6, v3i7, ..., v3)
   vocr5_refine.py all [--realplus SNAPSHOT]          every GRAD pool VOCR5 fine-tunes on
   vocr5_refine.py check-devnative [--out JSON]       refining a stored GRAD crop = refining the frame's GRAD box
@@ -16,7 +17,9 @@ build: for each crop of a GRAD npz (train2's shard format: data, offsets, shapes
     refined_from  {"file", "sha256", "row"}: the source npz and the row the copy was cut from
     refine_box    the refined line's box in the frame, [x0, y0, x1, y1] like meta box (box stays the finder's GRAD box;
                   chars stay relative to it)
-  Lines the refinement splits are skipped (their label cannot be divided). Counts (kept, unchanged, split, too small)
+  Lines the refinement splits are skipped (their label cannot be divided). --rows-only (opt-in, not the protocol's
+  rule unless amended) also skips a copy whose columns the refinement cut (its cursor / portrait step: such a cut
+  can drop glyphs the unchanged label still holds), counted as columns_cut. Counts (kept, unchanged, split, too small)
   and geometry go to the report (default REF.report.json, no text). The output is written deterministically (fixed
   zip timestamps), so the same input and code give the same sha256; an existing output is never replaced without
   --force. eval/tools/reserve_check.py --dump DUMP --pixels then runs on the output (REF.reserve_check.json, next to
@@ -141,8 +144,10 @@ def ctc_frames_short(label, shape):
     return need > -(-nw // 8)
 
 
-def build(src, out, name=None, report=None, force=False, reserve=True, dump=DUMP, flags=RF.DEFAULT):
-    """Write src's refined copy to out (and its report); returns the report dict."""
+def build(src, out, name=None, report=None, force=False, reserve=True, dump=DUMP, flags=RF.DEFAULT, rows_only=False):
+    """Write src's refined copy to out (and its report); returns the report dict. rows_only (off by default, the
+    protocol's rule): also skip a copy whose columns the refinement cut (its cursor or portrait step), counted as
+    columns_cut, since such a cut can drop glyphs the unchanged label still holds."""
     src, out = Path(src), Path(out)
     if src.name.endswith("_dev.npz"):
         raise SystemExit(f"{src}: a development-sample file; refined copies are built from training pools only")
@@ -173,6 +178,8 @@ def build(src, out, name=None, report=None, force=False, reserve=True, dump=DUMP
             raise ValueError(f"{src} row {i}: meta has no dark / inverted flag")
         boxes, _ = refine_stored(g, bool(m["inverted"]), int(m["dark"]), flags)
         st = classify(boxes, (h, w))
+        if st == "kept" and rows_only and (boxes[0][0] != 0 or boxes[0][2] != w):
+            st = "columns_cut"
         counts[st] += 1
         by_target.setdefault(str(m.get("target")), Counter())[st] += 1
         if st == "split":
@@ -204,10 +211,11 @@ def build(src, out, name=None, report=None, force=False, reserve=True, dump=DUMP
                 or not np.array_equal(chk["data"], arrays["data"])):
             raise RuntimeError(f"{out}: read-back differs from what was written")
     rr = np.asarray(removed_rows, np.int64)
+    keys = STATUSES + (("columns_cut",) if rows_only else ())
     rep = {"kind": "vocr5-refined-copy", "schema": 1, "name": name, "src": str(src), "src_sha256": src_sha,
-           "out": str(out), "out_sha256": sha256(out), "flags": flags, "min_h": MIN_H, "rows": len(meta),
-           "counts": {k: counts[k] for k in STATUSES}, "by_target": {t: {k: c[k] for k in STATUSES}
-                                                                     for t, c in sorted(by_target.items())},
+           "out": str(out), "out_sha256": sha256(out), "flags": flags, "min_h": MIN_H, "rows_only": rows_only,
+           "rows": len(meta), "counts": {k: counts[k] for k in keys},
+           "by_target": {t: {k: c[k] for k in keys} for t, c in sorted(by_target.items())},
            "split_lines": {str(k): v for k, v in sorted(split_n.items())},
            "kept_geometry": {"rows_removed_mean": round(float(rr.mean()), 3) if len(rr) else None,
                              "rows_removed_median": float(np.median(rr)) if len(rr) else None,
@@ -219,7 +227,8 @@ def build(src, out, name=None, report=None, force=False, reserve=True, dump=DUMP
                     "synth/lines_refine.py": sha256(ROOT / "synth" / "lines_refine.py")},
            "git": _git_head(), "seconds": round(time.time() - t0, 1)}
     print(f"{name or src.stem}: {len(meta)} rows -> kept {counts['kept']}, unchanged {counts['unchanged']}, "
-          f"split {counts['split']}, too small {counts['too_small']} -> {out}", flush=True)
+          f"split {counts['split']}, too small {counts['too_small']}"
+          + (f", columns cut {counts['columns_cut']}" if rows_only else "") + f" -> {out}", flush=True)
     if reserve:
         rep["reserve_check"] = reserve_check(name or out.stem, out, dump)
     report.parent.mkdir(parents=True, exist_ok=True)
@@ -341,8 +350,8 @@ def check_devnative(train_npz=DEVNATIVE_TRAIN, lines=DEVNATIVE_LINES, shots=ROOT
 
 # ----------------------------------------------------------------------------- CLI
 
-SUMMARY_KEYS = ("name", "src", "src_sha256", "out", "out_sha256", "flags", "min_h", "rows", "counts", "by_target",
-                "split_lines", "kept_geometry", "ctc_short_info", "code", "git")
+SUMMARY_KEYS = ("name", "src", "src_sha256", "out", "out_sha256", "flags", "min_h", "rows_only", "rows", "counts",
+                "by_target", "split_lines", "kept_geometry", "ctc_short_info", "code", "git")
 
 
 def summary(reports, devnative=None):
@@ -359,7 +368,9 @@ def summary(reports, devnative=None):
         pools_.append(e)
     doc = {"kind": "vocr5-refined-copies", "schema": 1, "spec": "prompts/vocr5-aug.md part B; eval/vocr5_protocol.json "
            "data.real_pools.refined_copies", "pools": pools_,
-           "totals": {k: sum(e["counts"][k] for e in pools_) for k in STATUSES}}
+           "totals": {k: sum(e["counts"].get(k, 0) for e in pools_)
+                      for k in STATUSES + (("columns_cut",) if any("columns_cut" in e["counts"] for e in pools_)
+                                           else ())}}
     if devnative:
         d = json.loads(Path(devnative).read_text(encoding="utf-8"))
         doc["devnative_agreement"] = {k: d[k] for k in ("verdict", "lines", "screenshots", "totals", "files", "flags",
@@ -368,8 +379,8 @@ def summary(reports, devnative=None):
     return doc
 
 
-def _build_named(name, src, force):
-    rep = build(src, out_path(src, is_private(src)), name=name, force=force)
+def _build_named(name, src, force, rows_only=False):
+    rep = build(src, out_path(src, is_private(src)), name=name, force=force, rows_only=rows_only)
     return rep.get("reserve_check", {}).get("verdict") == "RESERVE_OK"
 
 
@@ -384,12 +395,16 @@ def main(argv=None):
     b.add_argument("--force", action="store_true", help="replace an existing output")
     b.add_argument("--no-reserve-check", action="store_true")
     b.add_argument("--dump", default=str(DUMP), help="VNDB dump db directory for reserve_check --dump")
+    rows_help = "also skip copies whose columns the refinement cut (not the protocol's rule unless amended)"
+    b.add_argument("--rows-only", action="store_true", help=rows_help)
     r = sub.add_parser("realplus", help="the refined copy of a realplus-v3 snapshot's GRAD npz")
     r.add_argument("snapshot", help="v3i6, v3i7, ..., v3: realplus-v3/realplus_train_grad_<SNAPSHOT>.npz")
     r.add_argument("--force", action="store_true")
+    r.add_argument("--rows-only", action="store_true", help=rows_help)
     a = sub.add_parser("all", help="every GRAD pool of VOCR5's fine-tunes")
     a.add_argument("--realplus", default=REALPLUS_SNAPSHOT)
     a.add_argument("--force", action="store_true")
+    a.add_argument("--rows-only", action="store_true", help=rows_help)
     c = sub.add_parser("check-devnative", help="stored crop refinement = frame GRAD box refinement (devnative train)")
     c.add_argument("--out")
     s = sub.add_parser("summary", help="one text-free results JSON from the reports and the devnative check")
@@ -404,13 +419,13 @@ def main(argv=None):
         return 0
     if args.cmd == "build":
         rep = build(args.src, args.out, name=args.name, report=args.report, force=args.force,
-                    reserve=not args.no_reserve_check, dump=args.dump)
+                    reserve=not args.no_reserve_check, dump=args.dump, rows_only=args.rows_only)
         v = rep.get("reserve_check", {}).get("verdict")
         return 0 if v in (None, "RESERVE_OK") else 1
     if args.cmd == "realplus":
-        return 0 if _build_named("rp3_grad", pools(args.snapshot)["rp3_grad"], args.force) else 1
+        return 0 if _build_named("rp3_grad", pools(args.snapshot)["rp3_grad"], args.force, args.rows_only) else 1
     if args.cmd == "all":
-        ok = [_build_named(n, p, args.force) for n, p in pools(args.realplus).items()]
+        ok = [_build_named(n, p, args.force, args.rows_only) for n, p in pools(args.realplus).items()]
         return 0 if all(ok) else 1
     res = check_devnative()
     if args.out:

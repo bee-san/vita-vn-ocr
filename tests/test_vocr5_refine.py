@@ -169,6 +169,29 @@ def test_a_refined_copy_is_not_refined_again(pool, tmp_path):
         V.build(out, tmp_path / "twice_ref.npz", reserve=False)
 
 
+def test_rows_only_skips_copies_whose_columns_were_cut(tmp_path):
+    """The opt-in rule: a next-page cursor after the text is a column cut (kept by default, columns_cut with
+    rows_only); a copy that only loses rows is kept either way."""
+    cursor = glyph_row(screen(40, 220), 12, 16, 4, 150, 230)
+    cursor[15:25, 185:195] = 230                                       # a solid cursor beyond the text
+    rows_cut = drawn_cases()[0][1]
+    pool = []
+    for k, s in enumerate((cursor, rows_cut)):
+        h, w = s.shape
+        pool.append((s, "あい", {"id": f"v1_{k}_0", "vn": "v1", "box": [0, 0, w, h], "dark": 0, "inverted": False,
+                                 "target": "vita"}))
+    src = tmp_path / "c_grad.npz"
+    write_pool(src, pool)
+    boxes = V.refine_stored(cursor, False, 0)[0]
+    assert len(boxes) == 1 and boxes[0][2] < cursor.shape[1]           # the cursor's columns are cut
+    a = V.build(src, tmp_path / "a_ref.npz", reserve=False)
+    b = V.build(src, tmp_path / "b_ref.npz", reserve=False, rows_only=True)
+    assert a["counts"]["kept"] == 2 and "columns_cut" not in a["counts"] and a["rows_only"] is False
+    assert b["counts"]["kept"] == 1 and b["counts"]["columns_cut"] == 1 and b["rows_only"] is True
+    (crop, _, meta), = load(tmp_path / "b_ref.npz")
+    assert meta["id"] == "v1_1_0" and crop.shape[1] == rows_cut.shape[1]
+
+
 def test_summary_collects_counts_and_holds_no_label_text(pool, tmp_path):
     out = tmp_path / "s_ref.npz"
     V.build(pool[0], out, name="s_grad", reserve=False)

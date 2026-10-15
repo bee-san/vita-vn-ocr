@@ -60,6 +60,61 @@ def test_no_tracked_symlinks_out_of_the_repo():
     assert not bad, bad
 
 
+# The repo is public: no tracked file may name an internal machine. Result files name the machine they ran on
+# with train/hostinfo.py's generic label instead (docs/build-host.md). INTERNAL_HOST (the build machines'
+# corporate cloud-desktop names and the corporate domain) is written so that no tracked file, this one included,
+# matches it; HOSTNAME_READ covers the usual ways code reads the machine's network name (Python, shell, C).
+INTERNAL_HOST = re.compile(rb"dev-ds[k]-|\.amazon\.com", re.IGNORECASE)
+HOSTNAME_READ = re.compile(rb"platform\.(?:node|uname)\(|socket\.(?:gethostname|getfqdn)\(|os\.uname\(|\.nodename\b"
+                           rb"|\bgethostname\(|[\"']HOSTNAME[\"']|\$\{?HOSTNAME\b|\$\(hostname\b|`hostname\b"
+                           rb"|\buname +-[a-z]*n")
+CODE_SUFFIXES = {".py", ".sh", ".c", ".h", ".cmake", ".yml", ".yaml"}
+# Code that may name those calls: this file (the patterns and their samples) and the test that checks that no
+# writer records the name.
+HOSTNAME_READ_ALLOWED = {"tests/test_repo_policy.py", "tests/test_hostinfo.py"}
+
+
+def matches(pattern, paths):
+    bad = []
+    for path in paths:
+        f = ROOT / path
+        if f.is_file():
+            data = f.read_bytes()
+            for m in pattern.finditer(data):
+                line = data.count(b"\n", 0, m.start()) + 1
+                bad.append(f"{path}:{line}: {m.group().decode(errors='replace')}")
+    return bad
+
+
+def test_internal_host_patterns():
+    for name in (b"dev-" + b"dsk-someone-main-1a-0123abcd", b"DEV-" + b"DSK-X", b"host.eu-west-1.amazon" + b".com",
+                 b"https://example.AMAZON" + b".COM/x"):
+        assert INTERNAL_HOST.search(name), name
+    for name in (b"Amazon Linux 2023", b"build-host", b"64-core AMD EPYC 9R14 host", b"dev-disk-1"):
+        assert not INTERNAL_HOST.search(name), name
+    for call in (b"platform." + b"node()", b"socket." + b"gethostname()", b"socket." + b"getfqdn()",
+                 b"platform." + b"uname()", b"os." + b"uname().nodename", b"echo $" + b"HOSTNAME",
+                 b"x=$(" + b"hostname -f)", b"os.environ['HOST" + b"NAME']", b"uname " + b"-n", b"uname " + b"-an"):
+        assert HOSTNAME_READ.search(call), call
+    for call in (b"platform.platform()", b"platform.machine()", b"socket.if_nameindex()", b"hostinfo.host_label()"):
+        assert not HOSTNAME_READ.search(call), call
+
+
+def test_no_internal_host_names_in_tracked_files():
+    bad = matches(INTERNAL_HOST, [path for _, path in tracked()])
+    assert not bad, ("an internal host name in a tracked file; record hostinfo.host_label() instead "
+                     "(docs/build-host.md):\n" + "\n".join(bad))
+
+
+def test_no_code_reads_the_machine_network_name():
+    code = [path for _, path in tracked() if path not in HOSTNAME_READ_ALLOWED
+            and (Path(path).suffix in CODE_SUFFIXES or Path(path).name == "Makefile")]
+    assert code
+    bad = matches(HOSTNAME_READ, code)
+    assert not bad, ("result files name the machine with hostinfo.host_label(), never its network name "
+                     "(docs/build-host.md):\n" + "\n".join(bad))
+
+
 def workflow_files():
     gh = ROOT / ".github"
     return sorted([*gh.glob("workflows/*.y*ml"), *gh.glob("actions/*/action.y*ml")])

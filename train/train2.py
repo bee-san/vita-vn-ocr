@@ -76,6 +76,7 @@ sys.path.insert(0, str(ROOT / "synth"))
 sys.path.insert(0, str(ROOT / "eval"))
 from metrics import lev, norm, score_hiragana  # noqa: E402
 
+import hostinfo  # noqa: E402
 from common import DATA, load_vocab  # noqa: E402
 from model import TinyVNOCR, fuse_rep, load_plain_into_rep, set_weight_quant  # noqa: E402
 from source_policy import (  # noqa: E402
@@ -549,7 +550,7 @@ def execution_identity(vocab_path, vocab, context=None):
                              "lock_sha256": {name: file_sha256(ROOT / name)
                                              for name in ("requirements.lock", "requirements-ci.lock")}},
             "host": {"platform": platform.platform(), "system": platform.system(), "release": platform.release(),
-                     "machine": platform.machine(), "processor": platform.processor(), "node": platform.node(),
+                     "machine": platform.machine(), "processor": platform.processor(), "node": hostinfo.host_label(),
                      "libc": list(platform.libc_ver())},
             "math_backend": {"torch_build_sha256": json_digest(torch.__config__.show()),
                              "torch_parallel_sha256": json_digest(torch.__config__.parallel_info()),

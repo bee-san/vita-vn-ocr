@@ -62,6 +62,8 @@ import run as eval_run  # noqa: E402
 import sets  # noqa: E402
 from fetch import data_dir  # noqa: E402
 
+import hostinfo  # noqa: E402
+
 SHARED_SETS = ("vita-test", "psp-test")
 POLARITIES = ("console", "native")
 FINDERS = {"grad": 0, "textbox": 2, "textbox_recovery": 3}       # runtime/vocr_lines.h modes
@@ -139,7 +141,7 @@ def environment():
         except md.PackageNotFoundError:
             pk[name] = None
     return {"python": platform.python_version(), "python_executable_sha256": sha256(Path(sys.executable).resolve()),
-            "host": platform.node(), "system": platform.system(), "machine": platform.machine(),
+            "host": hostinfo.host_label(), "system": platform.system(), "machine": platform.machine(),
             "libc": list(platform.libc_ver()), "packages": pk, "git": git_state(),
             "date": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")}
 

@@ -1,0 +1,1371 @@
+{
+ "kind": "synth3-shards",
+ "schema": 1,
+ "sets": {
+  "shards": {
+   "kind": "synth4-recipe",
+   "schema": 1,
+   "split": "train",
+   "seed": 20261015,
+   "profile": "personal",
+   "per_shard": 10000,
+   "cfg": {
+    "version": 3,
+    "platform": {
+     "vita": 0.24,
+     "psp": 0.24,
+     "psp2x": 0.05,
+     "scaled": 0.47
+    },
+    "scaled_to_psp": 0.4,
+    "category": {
+     "vita": {
+      "gothic": 0.42,
+      "rounded": 0.21,
+      "mincho": 0.19,
+      "pen": 0.06,
+      "display": 0.08,
+      "pixel": 0.04
+     },
+     "psp": {
+      "gothic": 0.45,
+      "rounded": 0.18,
+      "mincho": 0.17,
+      "pen": 0.05,
+      "display": 0.07,
+      "pixel": 0.08
+     }
+    },
+    "raster": {
+     "vita": {
+      "aa8": 0.38,
+      "aa4": 0.25,
+      "atlas": 0.27,
+      "ss2": 0.08,
+      "mono": 0.02
+     },
+     "psp": {
+      "aa8": 0.24,
+      "aa4": 0.52,
+      "atlas": 0.16,
+      "ss2": 0.04,
+      "mono": 0.04
+     }
+    },
+    "gamma": {
+     "p": 0.5,
+     "lo": 0.7,
+     "hi": 1.45
+    },
+    "layout": {
+     "adv": 0.5,
+     "band": 0.12,
+     "nvl": 0.09,
+     "balloon": 0.04,
+     "choice": 0.08,
+     "bare": 0.12,
+     "ui": 0.05
+    },
+    "ui": {
+     "lines": [
+      2,
+      5
+     ],
+     "latin_word": 0.08,
+     "places": 0.45
+    },
+    "short": 0.15,
+    "narration": 0.18,
+    "narrate_nvl": 0.4,
+    "focus": 0.4,
+    "focus_exponent": 0.6,
+    "focus_hard_gain": 4.0,
+    "focus_prior_exponent": 0.35,
+    "reference_pools": [
+     "wiktionary",
+     "wikiquote"
+    ],
+    "brackets": {
+     "named": 0.7,
+     "unnamed": 0.35,
+     "double": 0.03
+    },
+    "dressing": {
+     "interjection": 0.08,
+     "stammer": 0.03,
+     "ending": 0.15,
+     "terminal": 0.75,
+     "dots": 0.06,
+     "elongation": 0.03,
+     "alnum": 0.012
+    },
+    "latin_keep": 0.22,
+    "latin_redraws": 8,
+    "pages": {
+     "wrap_lines": 48
+    },
+    "terminal": {
+     "。": 0.45,
+     "！": 0.17,
+     "？": 0.13,
+     "……": 0.12,
+     "っ！": 0.04,
+     "！？": 0.03,
+     "～": 0.04,
+     "♪": 0.02
+    },
+    "names": {
+     "vndb": 0.6,
+     "syosetu": 0.3,
+     "generated": 0.1,
+     "honorific": 0.2,
+     "brackets": 0.1,
+     "unknown": 0.03,
+     "role": 0.03,
+     "space": 0.3
+    },
+    "name_mode": {
+     "vita": {
+      "tab": 0.58,
+      "inline": 0.06,
+      "line": 0.24,
+      "null": 0.12
+     },
+     "psp": {
+      "tab": 0.55,
+      "inline": 0.08,
+      "line": 0.25,
+      "null": 0.12
+     }
+    },
+    "nvl_name": 0.3,
+    "name_coloured": 0.3,
+    "ruby": {
+     "vita": 0.15,
+     "psp": 0.2
+    },
+    "cursor": 0.33,
+    "partial": {
+     "p": 0.08,
+     "ramp": 0.5
+    },
+    "join": 0.35,
+    "drop_aside": 0.8,
+    "coloured": {
+     "span": 0.08,
+     "line": 0.06
+    },
+    "outline": {
+     "vita": {
+      "light_on_dark": 0.2,
+      "dark_on_light": 0.06,
+      "on_colour": 0.5
+     },
+     "psp": {
+      "light_on_dark": 0.25,
+      "dark_on_light": 0.08,
+      "on_colour": 0.5
+     },
+     "scaled": {
+      "light_on_dark": 0.35,
+      "dark_on_light": 0.1,
+      "on_colour": 0.6
+     }
+    },
+    "shadow": {
+     "vita": 0.3,
+     "psp": 0.25,
+     "scaled": 0.5
+    },
+    "psp_sizes": [
+     [
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      20
+     ],
+     [
+      0.04,
+      0.1,
+      0.17,
+      0.21,
+      0.19,
+      0.12,
+      0.1,
+      0.07
+     ]
+    ],
+    "capture": {
+     "vita": {
+      "clean": 0.5,
+      "vndb2": 0.5
+     },
+     "psp": {
+      "clean": 0.35,
+      "q90": 0.35,
+      "vndb2": 0.3
+     },
+     "psp2x": {
+      "bilinear": 0.6,
+      "nearest": 0.3,
+      "x1995": 0.05,
+      "scanlines": 0.05,
+      "jpeg": 0.1
+     },
+     "scaled": {
+      "q90": 0.85,
+      "clean": 0.15
+     }
+    },
+    "dither565": 0.45,
+    "blur": 0.1,
+    "noise": 0.15,
+    "subnative": 0.03,
+    "crop": {
+     "gt": 0.25,
+     "grad": 0.75
+    },
+    "grad_fallback": true,
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "pad_extra": {
+     "vita": {
+      "p": 1.0,
+      "top": 0.04,
+      "bottom": 0.06,
+      "left": 0.12,
+      "right": 0.04
+     },
+     "psp": {
+      "p": 1.0,
+      "top": 0.0,
+      "bottom": 0.02,
+      "left": 0.2,
+      "right": 0.0
+     }
+    },
+    "scaled_em": {
+     "vita": [
+      19.0,
+      3.3,
+      13,
+      30
+     ],
+     "psp": [
+      13.5,
+      2.0,
+      9,
+      19
+     ]
+    },
+    "background": {
+     "scene": 0.92
+    },
+    "scene_zoom": [
+     1.0,
+     1.2
+    ],
+    "box_alpha": {
+     "vita": {
+      "on_dark": [
+       0.55,
+       [
+        0.3,
+        0.7
+       ],
+       [
+        0.7,
+        0.93
+       ]
+      ],
+      "light": [
+       0.3,
+       [
+        0.65,
+        0.88
+       ],
+       [
+        0.88,
+        1.0
+       ]
+      ],
+      "on_colour": [
+       0.7,
+       0.97
+      ]
+     },
+     "psp": {
+      "on_dark": [
+       0.7,
+       [
+        0.2,
+        0.65
+       ],
+       [
+        0.65,
+        0.9
+       ]
+      ],
+      "light": [
+       0.5,
+       [
+        0.5,
+        0.82
+       ],
+       [
+        0.82,
+        1.0
+       ]
+      ],
+      "on_colour": [
+       0.6,
+       0.95
+      ]
+     },
+     "scaled": {
+      "on_dark": [
+       0.8,
+       [
+        0.15,
+        0.6
+       ],
+       [
+        0.6,
+        0.85
+       ]
+      ],
+      "light": [
+       0.65,
+       [
+        0.4,
+        0.75
+       ],
+       [
+        0.75,
+        0.95
+       ]
+      ],
+      "on_colour": [
+       0.5,
+       0.9
+      ]
+     }
+    },
+    "pitch": [
+     1.12,
+     1.8
+    ],
+    "dialogue_pools": {
+     "aozora_dialogue": 0.16,
+     "narikiri": 0.2,
+     "aratako_dsv3": 0.07,
+     "aratako_gpt4omini": 0.09,
+     "opensubtitles": 0.09,
+     "jesc": 0.09,
+     "tatoeba": 0.07,
+     "nucc": 0.03,
+     "jdd": 0.02,
+     "bsd": 0.01,
+     "templates": 0.07,
+     "wiktionary": 0.01,
+     "wikiquote": 0.01
+    },
+    "narration_pools": {
+     "aozora_narration": 0.85,
+     "wiki": 0.15
+    },
+    "length_edges": [
+     0,
+     2,
+     4,
+     6,
+     9,
+     13,
+     18,
+     24,
+     31,
+     41,
+     200
+    ],
+    "length_target": [
+     0.0132,
+     0.2402,
+     0.154,
+     0.1029,
+     0.1199,
+     0.1419,
+     0.1216,
+     0.0867,
+     0.0191,
+     0.0003
+    ],
+    "length_floor": 0.15,
+    "frames": null
+   },
+   "code_sha256": {
+    "synth3.py": "834c4ad7995d9f62770e0e95223aea5077665b779385a0d6b9ce572d32b14fc9",
+    "render.py": "25733484aa71a76f01f910c5e89b01b8ec349188de7d15f6a815f13912266624",
+    "common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+    "synth3_text.py": "0fb09a1db0b27fba79d096a8c39fd1fb8dd358b212d8152be30b8b6d4b18a962",
+    "synth4.py": "5960609f23c5abb0f86d80d24d4a9b9bb96d4b427c308b10bcbe55aa183cfb7a"
+   },
+   "font_manifest_sha256": "5f387f5f55dd8a63f2962a5ee2ac0eed0944fd0c735411ea6913ff1d1ddb4feb",
+   "vocab_sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+   "fonts": 317,
+   "font_families": 112,
+   "text": {
+    "pools": {
+     "aozora_dialogue": {
+      "file": "aozora_dialogue.train.txt",
+      "sha256": "81c3fe6570d2a6ef1cf30e1da6e1198d805120a49140e801aba6a83ddb6c8ff5",
+      "lines": 399943,
+      "class": "open"
+     },
+     "narikiri": {
+      "file": "narikiri.train.txt",
+      "sha256": "c6492a1eaf93c3bb303fe54759b0cb546c5f1616cef1dc161088e2120113b2ba",
+      "lines": 399832,
+      "class": "grey"
+     },
+     "aratako_dsv3": {
+      "file": "aratako_dsv3.train.txt",
+      "sha256": "345866dad525db1baf6d780ebbb2361ad2084687dff20ca5b89daca3df253a19",
+      "lines": 399960,
+      "class": "open"
+     },
+     "aratako_gpt4omini": {
+      "file": "aratako_gpt4omini.train.txt",
+      "sha256": "ae6bb22fe351f2c9e499fa074b53d3c98d0cc97c558526cdf50790bd412ec09d",
+      "lines": 399973,
+      "class": "nc"
+     },
+     "opensubtitles": {
+      "file": "opensubtitles.train.txt",
+      "sha256": "efe79bc19565e776f98a79d6003ab5f63bb7a1c96879c6edb62ebbce68f6bbe3",
+      "lines": 391948,
+      "class": "grey"
+     },
+     "jesc": {
+      "file": "jesc.train.txt",
+      "sha256": "08c0ec3f4ca2441b5c273df4b7a6135d7940d89f946ef1d1bbdd6e56fed5d22d",
+      "lines": 392513,
+      "class": "open"
+     },
+     "tatoeba": {
+      "file": "tatoeba.train.txt",
+      "sha256": "5f7322923c2c41d18b9515905a03f61a6d31448b3fe71fefe444e77a444ca6f3",
+      "lines": 237530,
+      "class": "open"
+     },
+     "nucc": {
+      "file": "nucc.train.txt",
+      "sha256": "29115769e61038746bb1c23d99b5d6329fbf71d82e61be1bf7bdf9ce5879d828",
+      "lines": 100600,
+      "class": "nc"
+     },
+     "jdd": {
+      "file": "jdd.train.txt",
+      "sha256": "b7612307e69c2f1f3b1445ca41432facfe2d293d7ad6e9056b32d5151c2f469d",
+      "lines": 39595,
+      "class": "nc"
+     },
+     "bsd": {
+      "file": "bsd.train.txt",
+      "sha256": "7049dadadf69ecd69a367f71cb2d2506f6471d361bd0554d4dae325c8d15617d",
+      "lines": 20564,
+      "class": "nc"
+     },
+     "wiktionary": {
+      "file": "wiktionary.train.txt",
+      "sha256": "2e2fd71b2bd2c76e02bf3a69ed5e3ddeefa51ad67cb8adf5fe13deb9d8368e7a",
+      "lines": 50774,
+      "class": "open"
+     },
+     "wikiquote": {
+      "file": "wikiquote.train.txt",
+      "sha256": "8c5a52b3692c84db63abb3ff02ed383b935bf45fda4ba1d04f25fdfea2675ff4",
+      "lines": 18637,
+      "class": "open"
+     },
+     "aozora_narration": {
+      "file": "aozora_narration.train.txt",
+      "sha256": "2b75f33bf57279c23d511b271eb3a65773de601c7b2501f885502454f5cdaa94",
+      "lines": 399949,
+      "class": "open"
+     },
+     "wiki": {
+      "file": "wiki.train.txt",
+      "sha256": "9c18dd18fb604bfe7555c7ccd1758a7233f7bcbdde5ecb462a2b047e887ea81b",
+      "lines": 399993,
+      "class": "open"
+     }
+    },
+    "contexts": "16f15ae70d3339c421d3748971de62a6df5c2cbd288b2dcec4d0fa5d5546bfc2",
+    "names": "4aa76da50328146dd11e14096b7c1b2d99a54a7f693df1b513da8900cf773d44",
+    "names_dropped_excluded": 255,
+    "targets": "f8ca14c49d139e130a2818a3cf72656d0f11f17418914b9367ed50a94d460a20",
+    "lists": "d1a821a4a0b6e56222bbe6ef8d8db6ebd1dfcaf3fad5997f271e19a14a0e2d14"
+   },
+   "background_vns": 1255,
+   "background_shots": {
+    "vita": 980,
+    "psp": 1382,
+    "hires": 3181
+   },
+   "exclusions": [
+    {
+     "file": "synth3_exclude_clannad.json",
+     "sha256": "1143db8610b16757242994fa2b8fa232c4af8a8b04183290bfa1a2dfa38ff136",
+     "vns": 24
+    }
+   ],
+   "scenes_dropped": {
+    "excluded_vn": 21,
+    "excluded_hash": 0
+   },
+   "scene_hashes_sha256": "ec823887de2c2067eb0ee96ad77f074538a75952829562e3e5eade45f7b69a74",
+   "versions": {
+    "numpy": "2.4.6",
+    "opencv": "5.0.0",
+    "pillow": "12.3.0",
+    "freetype": "2.14.3"
+   },
+   "cfg4": {
+    "generator": "synth4",
+    "version": 1,
+    "curriculum": {
+     "k_vn": 80,
+     "k_other": 25,
+     "shards": 100,
+     "quota_share": 0.75
+    },
+    "contexts": {
+     "word": 0.35,
+     "name": 0.15
+    },
+    "name_focus": 0.3,
+    "stroke_drop": 0.45,
+    "grad_keep": 0.5,
+    "contrast": {
+     "dark_box": [
+      0.3,
+      0.75
+     ],
+     "light_box": [
+      0.3,
+      0.7
+     ],
+     "white_fill": 0.75,
+     "dark_fill": [
+      0.2,
+      0.7
+     ]
+    },
+    "accent_fill_drop": 0.4,
+    "green_band": [
+     0.17,
+     0.55
+    ],
+    "green_redraw": 0.85,
+    "pixel_vita_min_em": 10,
+    "hard_blend": 0.5
+   },
+   "cfg_patch": {
+    "category": {
+     "vita": {
+      "gothic": 0.42,
+      "rounded": 0.21,
+      "mincho": 0.19,
+      "pen": 0.06,
+      "display": 0.08,
+      "pixel": 0.04
+     },
+     "psp": {
+      "gothic": 0.45,
+      "rounded": 0.18,
+      "mincho": 0.17,
+      "pen": 0.05,
+      "display": 0.07,
+      "pixel": 0.08
+     }
+    },
+    "raster": {
+     "vita": {
+      "aa8": 0.38,
+      "aa4": 0.25,
+      "atlas": 0.27,
+      "ss2": 0.08,
+      "mono": 0.02
+     },
+     "psp": {
+      "aa8": 0.24,
+      "aa4": 0.52,
+      "atlas": 0.16,
+      "ss2": 0.04,
+      "mono": 0.04
+     }
+    },
+    "focus": 0.4,
+    "outline": {
+     "vita": {
+      "light_on_dark": 0.2,
+      "dark_on_light": 0.06,
+      "on_colour": 0.5
+     },
+     "psp": {
+      "light_on_dark": 0.25,
+      "dark_on_light": 0.08,
+      "on_colour": 0.5
+     },
+     "scaled": {
+      "light_on_dark": 0.35,
+      "dark_on_light": 0.1,
+      "on_colour": 0.6
+     }
+    },
+    "coloured": {
+     "span": 0.08,
+     "line": 0.06
+    },
+    "name_coloured": 0.3,
+    "scaled_em": {
+     "vita": [
+      19.0,
+      3.3,
+      13,
+      30
+     ],
+     "psp": [
+      13.5,
+      2.0,
+      9,
+      19
+     ]
+    },
+    "blur": 0.1
+   },
+   "curriculum": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/curriculum_v5631.json",
+    "sha256": "a8b3752ed6637730ede0d16728f502a0e39a4c835029b5fa09ec878328e8e579",
+    "deficit": 186181
+   },
+   "targets_sha256": "f8ca14c49d139e130a2818a3cf72656d0f11f17418914b9367ed50a94d460a20",
+   "vocab": "data/vocab_vn_5631.txt",
+   "fonts_by_licence": {
+    "nc": 8,
+    "open": 307,
+    "owner": 2
+   }
+  }
+ },
+ "shards": [
+  {
+   "set": "shards",
+   "file": "synth4_00000.npz",
+   "bytes": 45242140,
+   "sha256": "ed3bcf4ce3cce673ccd6837bf1a2f3b5dd8c1a05fe6fd55da0c64bab77dc500c",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00001.npz",
+   "bytes": 45787524,
+   "sha256": "0f58ab589ab77a475cf18ea5103fe37e4d8d0556dca7d998233d2be5422389e7",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00002.npz",
+   "bytes": 46243280,
+   "sha256": "c7bb13b56d6a64d97f6e9336a2a365f8fbae0f19f04a2458723e9811790dd193",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00003.npz",
+   "bytes": 45855632,
+   "sha256": "c6af437dead6d712734ae1ee54c9fd2e438d3aed7e7e57408305de2883f90839",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00004.npz",
+   "bytes": 45887155,
+   "sha256": "7f7642882c9f85df6e7f4ead08c1ebd228202884b1951a895203f05536ec5e5c",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00005.npz",
+   "bytes": 46002975,
+   "sha256": "01c8d3bcaabc3663159daf4179595238c782fe6bb85154a53bd245a95bc3605d",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00006.npz",
+   "bytes": 45927997,
+   "sha256": "1c77302c50c764eeb5b244be282bb6e69399abefcb202bb84123461e133ed270",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00007.npz",
+   "bytes": 46268772,
+   "sha256": "15831eb3ebb1019c89d526df0b89fa1fdef3e3324a21b460cbfb5545c3a28772",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00008.npz",
+   "bytes": 45293796,
+   "sha256": "0d2536b2d007b0a2241f89caf31c2ada0ed28353b79160f91e4735d2cb6a70d0",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00009.npz",
+   "bytes": 45860163,
+   "sha256": "74c5dd8c775580faa92d700acd99faf58e12d9525a25be5ba4489e776057d387",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00010.npz",
+   "bytes": 46597058,
+   "sha256": "e073e278f8c2eb35d65287f403ad2e26aca02d7cb3fd8ab761685bb5fbbd5260",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00011.npz",
+   "bytes": 46529817,
+   "sha256": "f22ee541bb05f84936392f5b25aec9453a7bd32d8f96ba93dbecc2274f1de059",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00012.npz",
+   "bytes": 46352587,
+   "sha256": "b2eab7c85f5eacf47e0795f26be9d3d4fcce6ce3eacedc843118fc6cf329fe36",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00013.npz",
+   "bytes": 46376170,
+   "sha256": "7ab5af9423cff7ded8e3165aec61cde4e6e99b68d0d6dd7c763e29976f38a9e6",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00014.npz",
+   "bytes": 46627003,
+   "sha256": "484fbfd817ffeb35a48e574214496659e3b6d86b5079ed62d89d64b2ef619e67",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00015.npz",
+   "bytes": 46531949,
+   "sha256": "c972f4941ad5819be7995b9a2f2e01022278451582f6863c604d526659371046",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00016.npz",
+   "bytes": 45013008,
+   "sha256": "2fd15c2873869518dc24a463c947d39bfd7b4fd5dad580acf2fffd578f534926",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00017.npz",
+   "bytes": 47248697,
+   "sha256": "d6bf229d88ff5c86133517bd18c48bc0ba1ff92a46d97a6d8fccebf9a0694f3e",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00018.npz",
+   "bytes": 46650004,
+   "sha256": "1316f35e3db9483290f03cbacda7b6f707f9515ea5794ac042861560071ec182",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00019.npz",
+   "bytes": 46642883,
+   "sha256": "46f76dc7af14342675a182d85c68d64d4ae4ba238bee068fb08bacfe603eb15a",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00020.npz",
+   "bytes": 46530877,
+   "sha256": "f677de3a99b7c6bb8699cd0d1d65057b1334c0ed527519099b2e368aefb0b755",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00021.npz",
+   "bytes": 46604588,
+   "sha256": "adff3a940044cf7a2269a82ea3fe1e3b1d29027b5cb93ee9b1d67d157efbad27",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00022.npz",
+   "bytes": 46392455,
+   "sha256": "1cd1e6e10bc5767fd7c414c4ad4380b5d17fcf56bc70d8d7190265e28ee48640",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00023.npz",
+   "bytes": 46081311,
+   "sha256": "6468060d351a569d167c05521a8bb062576d6f79136bc7b6beec172c93b5f13e",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00024.npz",
+   "bytes": 46643272,
+   "sha256": "83da057feb174676ed60912b59adc60b127dcd5ab65ab6e61595e0ed832a02ef",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00025.npz",
+   "bytes": 46653190,
+   "sha256": "8c4813b04cbc33aff27eca2a63e31d63ce75df30a86adcf0c6c23015f9732391",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00026.npz",
+   "bytes": 46300621,
+   "sha256": "edc0e663b7ddacf618714c13f26d8ef800eb616a7516d09e9682ef88f2e9c998",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00027.npz",
+   "bytes": 46237170,
+   "sha256": "7a167497f146958f13b4c767923492b4c5bbfbda2560c12ee7a2e17bceacb9cc",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00028.npz",
+   "bytes": 45407950,
+   "sha256": "6e91c6de9a4abd96bc613916f4112ba1371cbdbe9b4557faba9f4654578ebae4",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00029.npz",
+   "bytes": 46181072,
+   "sha256": "88f382d9fc21b732ffea7273b4099b6bebf85c3809be7c1d0b56d5ea1521ec18",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00030.npz",
+   "bytes": 46164897,
+   "sha256": "781eded782c516432ad41d01b61fb907444a414f0785089b203cd1779c615e94",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00031.npz",
+   "bytes": 46178183,
+   "sha256": "c95c9dab2e47532f3631e0f66bdfc179f701821febbcf2d6730bd48c3984d22a",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00032.npz",
+   "bytes": 46462304,
+   "sha256": "337b7a4f906053e9853c3bec60264b6e7e5bf456fb9e75bdea6dce8d994757e2",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00033.npz",
+   "bytes": 46618659,
+   "sha256": "b4bbfd853a32b783b1ea25f12765a76440c9b5dfd2ad23b33cf124aa5a9d1aff",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00034.npz",
+   "bytes": 45728433,
+   "sha256": "5b7499b3a5121fa4cbe3c32fe7bb46e2bd908d0a040fd6b5a1058772886a954b",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00035.npz",
+   "bytes": 46834379,
+   "sha256": "e17a41d23280b51ac3b52a3bba420e55359c529e4eb02a352acac7103a68e05d",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00036.npz",
+   "bytes": 45606593,
+   "sha256": "262d9531f0483e9a1a4f845cf617d9b09c45fd27c642e4e14083ad77bd713e06",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00037.npz",
+   "bytes": 45256779,
+   "sha256": "22da0f0209560f9aea35383755ab916924d13aa9544c8d5e41613e2ac6d41ca2",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00038.npz",
+   "bytes": 46298574,
+   "sha256": "d1141acfe5ec8077221f9505e0a6409a6379a68c4a435b70c871f52048b90fec",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00039.npz",
+   "bytes": 45753816,
+   "sha256": "2d6489f936a9e636d06835af2fc2e60c4d94e80a88d056c65dfe825239c27942",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00040.npz",
+   "bytes": 46006121,
+   "sha256": "1c2db04b2a73745a6cff0936e2b1483b8ee6f4f3d2137a19822b4564b1bb9d51",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00041.npz",
+   "bytes": 46393985,
+   "sha256": "bc4c683851455e46623549cdcf3dc32f6499db1991028fe291f8bdd12fb52145",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00042.npz",
+   "bytes": 45926400,
+   "sha256": "e409eb83f1b689ac72c4e8f12b0fdee2f3fa9cb2d17ac4c7281b165953bc84a7",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00043.npz",
+   "bytes": 46134485,
+   "sha256": "5ef4cc18f63da0af3dea22c381e41362bb74a4f9b90ca9f0ba872568f60051a7",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00044.npz",
+   "bytes": 47017380,
+   "sha256": "1c2813dc092dc3e7de9698577d179e02a0f8a2d319805bb9f468b09a5bdd9d35",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00045.npz",
+   "bytes": 46921161,
+   "sha256": "59e7be337eb14289824309b3fbe7f6e0e9238a4d2ed1b5c55d698f279bd73cd2",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00046.npz",
+   "bytes": 45344664,
+   "sha256": "d73645b150821080a26f6878c09edb6630d2d4fb53490c0528a14b87bc7340cf",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00047.npz",
+   "bytes": 45787346,
+   "sha256": "6ea5349c25c913aec152bc48a2e92dad01cf0215dcebe590ca7ccc32256b2afe",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00048.npz",
+   "bytes": 46470514,
+   "sha256": "84a70040fd4d079de51f5f1c92beb381144c5fbc53a3f36d5edc751b8bea79e3",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00049.npz",
+   "bytes": 45538710,
+   "sha256": "951ca679160a4d39cf1eae7b385768fd9c5351640a35653029d810a638d78b1e",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00050.npz",
+   "bytes": 45915268,
+   "sha256": "cb584819c11d58a0c95434785cbb59da5566c88f60f23d497b64a8e0dd77bdc5",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00051.npz",
+   "bytes": 46545277,
+   "sha256": "f8d5e204f4da4b04231f6c5fb465c2b5f7f1969a8c0292eaa78a0c9dbf2662fd",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00052.npz",
+   "bytes": 46128852,
+   "sha256": "ca0c180b61332c3e874f631ad0603de6cbe1bc7eb60db0ad15ba03c14094ca13",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00053.npz",
+   "bytes": 46143434,
+   "sha256": "69bc82b0a6d4836ffb6a81a9b817025787057b01958f5aaa3e2a177f79e6c460",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00054.npz",
+   "bytes": 45671174,
+   "sha256": "8d5c858b8851b6aaf91a7d97e95a13b1908baa606df1f6a96cc6d586dc31244b",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00055.npz",
+   "bytes": 47939906,
+   "sha256": "ab2dd16745acc6347898ec8ea4d7f30e5293ff15d306acb4a0b9e1015f668fb7",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00056.npz",
+   "bytes": 46862110,
+   "sha256": "e84aa005a53fb415f797b4e0166253fdc7c39b296ff9ded3136183d8407b80d4",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00057.npz",
+   "bytes": 46137935,
+   "sha256": "86aa26000849b02f03577ef6593fb233ed0b866b00f809a8e5d18c75c738e01d",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00058.npz",
+   "bytes": 46044759,
+   "sha256": "577f34dbbdc614da71592124af43b98404436fba34ec82844ad62a40b2c48095",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00059.npz",
+   "bytes": 47711353,
+   "sha256": "5438edc945fec4ccb8e1106ec549a5c5de8f038ce6a416abf0021f8e70d896a5",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00060.npz",
+   "bytes": 47707690,
+   "sha256": "edf423f8f2f0d2509e5dd8eb6473a180620e59747f00612306ed4bbfd6af2009",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00061.npz",
+   "bytes": 45774541,
+   "sha256": "980dc6387e4d6b00cfe58357b38ad71af36e4cdb2eafd35437f3a5d5c1daea36",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00062.npz",
+   "bytes": 46538533,
+   "sha256": "6ef412ef1d5ed75052e10887ea25c150a6f992bf3ebb8612c44ae9e23c03c2ea",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00063.npz",
+   "bytes": 46030133,
+   "sha256": "59502f9e3527271590365ff00c79466591b58e5538f66272faf854c86b909925",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00064.npz",
+   "bytes": 46666140,
+   "sha256": "662ed848eaa42c01b47342a76181a6ccc98ea60f2633563c18c98b184f4ff2ad",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00065.npz",
+   "bytes": 47041386,
+   "sha256": "08227e283e49cfb65c3e281285b5c673763028320fae6ceb915ede664cd27b9c",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00066.npz",
+   "bytes": 46522806,
+   "sha256": "ebe170fd75603db021e3f1df4ce34915b39288f0b12a1c6d7ee81c2d3c22d2bb",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00067.npz",
+   "bytes": 46149352,
+   "sha256": "174a6d4af26ae702e44d444899250abf37019fab9e6f8c74a372d58a9332c0aa",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00068.npz",
+   "bytes": 46868853,
+   "sha256": "e7ba375fce9064a5227639339472cbc91b80a4d34fd4b517de3cdd4b77e484d1",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00069.npz",
+   "bytes": 46355817,
+   "sha256": "6160a093bbc1de0b076e1ee899bc5611b6e429c11c73856b2c7714ca6ce407eb",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00070.npz",
+   "bytes": 46845638,
+   "sha256": "d05acba4b9620462333e02c11a5a1d075448f04a452b15eef0f566c907d3b15d",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00071.npz",
+   "bytes": 46072903,
+   "sha256": "c2ba65492d9e56574d6c445ee86fe1230466293c2667cfc98a63d917d39ac7cc",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00072.npz",
+   "bytes": 45927176,
+   "sha256": "257a005c03f671937d6e2cfe47247bf12789425fb346996a6b5909d9d2cb78db",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00073.npz",
+   "bytes": 45201266,
+   "sha256": "89cd71ff20a7a4c8f0c5bd459d9fdb2b338d80c3f4a18f492cb1cf19e7c38bd1",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00074.npz",
+   "bytes": 46636449,
+   "sha256": "c81ef17406f6186fc9f177531f21877499506b5d265acbf006d09ef8f011d255",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00075.npz",
+   "bytes": 46361015,
+   "sha256": "68602213e56fa7d65b458816efe58fb4427986543c2a5c945acffbe9b19b95dd",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00076.npz",
+   "bytes": 46437506,
+   "sha256": "d6d49230c76a910c904d9faa98c92f6eb1c63a647c0e675c6ea8585d83e75130",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00077.npz",
+   "bytes": 46514751,
+   "sha256": "01b9bb58ebe4c8a7e24389802865f7dc5e3b8c00b95f7de7037d8191b23433fd",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00078.npz",
+   "bytes": 46315793,
+   "sha256": "3aabc2a7f4b2581216786d73c223331db4e24847f58bfa1569fa8df13a5b6e1d",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00079.npz",
+   "bytes": 46828993,
+   "sha256": "27414a29a8d2200b482a2821df860ff6f5d2c43139c14ad1eacd063d72ae75c7",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00080.npz",
+   "bytes": 46322999,
+   "sha256": "3465dd91cfe11563b052d8365178c05c2a47936e063c682771c97752031cbe64",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00081.npz",
+   "bytes": 46130250,
+   "sha256": "63c6268d18573be81f95c9989e03ea1a42bb40daaa02b1818af31e881a83c8cb",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00082.npz",
+   "bytes": 45790609,
+   "sha256": "3ae0ed128305a0927a783be41926d30e7b577ce8522caa25efc25f49d66eb4c0",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00083.npz",
+   "bytes": 46416674,
+   "sha256": "9cf6dfc794f4a155d2cee95e9eb4bc5dde30353372ab44dc2bbb2fa67ba0a72d",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00084.npz",
+   "bytes": 46208790,
+   "sha256": "55007a4331152536336c9d063d615359f90930489f71ec1d4a9f1b9543c43dc5",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00085.npz",
+   "bytes": 46100235,
+   "sha256": "90e60fdf300bae2568f5105261b4a7d7c8b01b0f3a158722431dcc66f7626e9b",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00086.npz",
+   "bytes": 46247888,
+   "sha256": "aced5625076be3af8b347abb3d4051232aed8a765f2a7a19c8490de0b0641dd3",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00087.npz",
+   "bytes": 46273994,
+   "sha256": "b60a75bf1aa42fb12208035beb705bacf61bbf2653d431d5361032e3ec185a24",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00088.npz",
+   "bytes": 46679147,
+   "sha256": "edc50b0b76d7daca056e878eef95f8e78892dafab8cbab75609dddbb32b40b04",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00089.npz",
+   "bytes": 45501172,
+   "sha256": "baab7a1cf353c15a40dfe7860662b4b5936c4f4dfe1d3656bcdec68586593340",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00090.npz",
+   "bytes": 46944334,
+   "sha256": "8825ac6e29bac1a4423f38408d0b88e76034a51df67907f8984cc556f74d90fc",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00091.npz",
+   "bytes": 46423873,
+   "sha256": "c46786522b707d8a9794ce9e89b8466fa50b81b36dc9dffa123125fe319742be",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00092.npz",
+   "bytes": 46575737,
+   "sha256": "281551672be9603e7de03d5ed835ff1f53046cc67854c8cfa37bd6b5d47cef4d",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00093.npz",
+   "bytes": 46802141,
+   "sha256": "fe3e3a1dbf407fa619ca702b40d626b9a98ad81fa15b3c30556c6e8f63c1c2c6",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00094.npz",
+   "bytes": 46692428,
+   "sha256": "f4a6f836413ce88aad9246567b699c1a25ee024bd77f366ba39b9e65f3316a2b",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00095.npz",
+   "bytes": 45732571,
+   "sha256": "6bdb178c569f5cc4e34b416e299d752b0cca22a83b3ee610d4eec5e2f87ca808",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00096.npz",
+   "bytes": 46290234,
+   "sha256": "0941bd5992cb9a7e3661bc784e1f86e4d808901651d2f26222f30414b1e0c7f0",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00097.npz",
+   "bytes": 46419127,
+   "sha256": "c31c6f7be8ed3d7ad97fd26dacb91a45331f132431d6858429dcf3b601ac1e30",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00098.npz",
+   "bytes": 46305067,
+   "sha256": "fe61282dd898f9db7b9e6dc2afdf831ce2c12fe79ed49e0273d0f0bcb6ce2712",
+   "samples": 10000
+  },
+  {
+   "set": "shards",
+   "file": "synth4_00099.npz",
+   "bytes": 46768661,
+   "sha256": "1821662f3f075a6fc17ad601bf6f5d1babddaf1eb7b4e9c5333b51d25f48d98b",
+   "samples": 10000
+  }
+ ],
+ "samples": 1000000,
+ "bytes": 4628937239
+}

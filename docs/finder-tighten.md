@@ -14,7 +14,8 @@ or a host estimate of console time. Nothing ran on a console.
 - **Development (selection data), dialogue lines of the 443 pairs** (dn pairs): GRAD → refined closes **38-69%
   of the gap** to the ink crop across the six models (mean 56%); VOCR3-W20 1.53% → 0.71% (ink 0.35%). With names
   included, the gap the model-tiers table quotes (3.10% → 0.51%) closes by 18-36% (VOCR3-W20 → 2.22%): speaker
-  names stay at 23-31% CER, and names are a secondary column by the owner's rule of 13:57Z.
+  names go only from 24.9-33.9% to 23.2-31.1% CER, and names are a secondary column by the owner's rule of
+  13:57Z.
 - **Development whole dialogue** (teacher_val, devnative and the owner's frames as the dialogue box a player
   draws, at the base region and grown by 4 and 8 px): **−1.44 to −1.67 points** pooled over the variants
   (VOCR3-W20 5.40% → 3.94%), every VN-cluster 95% interval below zero, every model and cohort better.
@@ -24,11 +25,15 @@ or a host estimate of console time. Nothing ran on a console.
     and VOCR4-W20 and including 0 for the other three (upper bounds +0.11 to +0.32). Vita is level or worse
     (−0.13 to +0.50, intervals include 0).
   - **CLANNAD long run: worse for five of six models**, +0.07 to +0.43 points (VOCR4-W20 1.81% → 2.24%, page
-    interval +0.31 to +0.56); VOCR3-W20 −0.06 (interval includes 0).
+    interval +0.31 to +0.56); four of them resolved (VOCR3-FL10, VOCR3-H15, VOCR4-FL10, VOCR4-W20), while
+    VOCR4-H15's +0.07 has an interval including 0 (−0.06 to +0.21); VOCR3-W20 −0.06 (interval includes 0).
 - **Cost**: about 0.5-1.1 ms per finder line on one 444 MHz Cortex-A9 core (estimate; the same method brackets
-  the finder's measured console time), under 1% of recognizing a 640-px line; no new memory (its arena fits
-  inside the finder's). Its pixel reads matter more on the console (11-26 ms per framebuffer strip): refined
-  from the strip the recognizer reads anyway, it needs none (§6).
+  the finder's measured console time), about 1% of recognizing the same box with FL10 and 0.4-0.6% with H15 or
+  W20; no new memory (its arena fits inside the finder's). Two costs around it are larger. The refined lines are
+  shorter, so the recognizer reads them wider: 14.6% more CTC frames than the finder's boxes on the development
+  regions (PSP +20%, Vita +9%), about 33-35 ms more H15 recognition per finder line at the console's measured
+  rate. And its pixel reads (11-26 ms per framebuffer strip on the console): refined from the strip the
+  recognizer reads anyway, it needs none (§6).
 
 So the refinement is a clear gain on the development PSP frames (pooled whole dialogue −2.37 to −2.82 points,
 every VN interval below 0), in the same direction on psp-test (−2.2 to −2.9 points, resolved for three of the six
@@ -103,9 +108,13 @@ vocr_refine_lines_rows(&src, VOCR_REFINE_DEFAULT, arena, need, &set, &rows);   /
 ```
 
 - `vocr_refine_arena_bytes(w, h)` ≤ `vocr_lines_arena_bytes(w, h)` for every size (tested on a grid up to
-  6000 px), so no arena grows. No heap, no recursion. Stack: 1,704 B in `refine` (arm-vita-eabi-gcc -O2,
-  `-fstack-usage`), after the finder has returned.
-- Code: 4,496 B of Thumb-2 text at -O2 (3,312 B at -Os); external symbols `memset`, `memcpy` only.
+  6000 px), so no arena grows. No heap, no recursion. Stack (arm-vita-eabi-gcc 15.2, `-fstack-usage`, after the
+  finder has returned): 1,848 B on the deepest static call chain at -O2 (`vocr_refine_lines` 24 + `refine` 1,704
+  + `portrait_part` 72 + `part_rows` 48; 1,840 B at -Os), plus `memset`'s own frame (called at most 1,824 B deep)
+  and, in the row-callback form, the callback's frame (called 1,728 B deep).
+- Code: 4,496 B of Thumb-2 text at -O2 (3,312 B at -Os). External symbols: `memset` and `memcpy` at -O2; the -Os
+  object also calls libgcc's `__aeabi_uldivmod` (the 64-bit percentile divisions in `stats_of`), one of the
+  integer-division helpers `runtime/README.md` allows on 32-bit ARM.
 - **Rows read** (the overlay's strip cost): each finder box is read once, top to bottom, boxes in set order,
   when the arena also holds the box's grey pixels (mask + w·h bytes); otherwise twice (its middle half, then
   every row: 1.5× its height). With the overlay's job scratch (the larger of the finder's and the recognizer's
@@ -142,9 +151,17 @@ owner's policy of 13:25Z everything outside CLANNAD, vita-test and psp-test is d
 A whole-dialogue region is a frame's labelled non-name lines grouped with eval's rule (gap ≤ 1.6 line heights),
 their union plus 12 px (Vita) / 6 px (PSP), at three sizes (+0, +4, +8 px, the VOCR3 harness's variants). Every
 other detected text box (speaker names, unlabelled or rejected lines, UI) is kept out of the region, as a player
-crops a name plate out; a group another box overlaps is dropped. The pooled whole-dialogue figure is tv_dlg +
-own_dlg + the dn_dlg frames teacher_val does not hold (183 of its 645 cases): devnative's tv_native subset is
-teacher_val's own native screenshots, never pooled twice.
+crops a name plate out; a group another box overlaps is dropped. A name line is devnative's reviewed name style
+(dn_pairs, dn_dlg), the owner pool's own review `name` flag (own_pairs, own_dlg), and in teacher_val, which has
+neither, a name-like label (6 or fewer characters and no punctuation, `eval/synth3_ablation.py`'s rule; tv_dlg
+only). The harness's docstring says the name-like rule applies outside devnative; it applies to tv_dlg only (the
+file is frozen by the protocol, so the correction is here). The pooled whole-dialogue figure is tv_dlg + own_dlg +
+the dn_dlg frames that tv_dlg holds no region of (61 frames, 183 of dn_dlg's 645 cases): devnative's tv_native
+subset is teacher_val's own native screenshots, so no frame is pooled twice. 42 of those 61 frames are teacher_val
+frames too, which tv_dlg's rules (name-like lines, groups another box overlaps) left without a region; none is
+the same screenshot as a tv_dlg frame by URL or file (audit-finder-tighten checked). The harness's
+`pooled_dialogue` docstring ("the dn_dlg frames teacher_val does not hold") and the protocol ("dn_dlg frames not
+in teacher_val") name this loosely; the rule is the one above.
 
 The owner pool is VOCR4-W20's training data (arm M fine-tunes on it), so its own_pairs and own_dlg rows are
 in-sample for that model; the comparison is paired (the same model on both crops).
@@ -240,22 +257,27 @@ Whole-page bootstraps, clannad_refs' scoring.
 | VOCR4-W20 | 1.81% | 2.24% | +0.43 (+0.31 to +0.56) |
 
 VOCR4-W20 trained on the owner's planetarian PSP frames (Key/Prototype, like CLANNAD's Vita port); its CLANNAD
-numbers carry that exposure.
+numbers carry that exposure. Every arm, VOCR3 and VOCR4 alike, also trained on 7 scaled-PC lines of planetarian
+~Snow Globe~ (`docs/vocr4.md`, the CLANNAD disclosure). Each Δ here is paired (the same model reads the GRAD and
+the refined crops), so an exposure acts on both sides of it.
 
 **Reading the two together.** PSP text (12-20 px ink in 480×272 frames, often in boxes GRAD grows into the frame
-and the next line) gains the most: clearly on the development frames, and in the same direction on psp-test,
-where three of the six models' VN intervals exclude 0. On 960×544 Vita text the GRAD crop
-is already close to the text and the recognizers were fine-tuned on GRAD crops too (the real pools hold GRAD
-crops), so cutting it back moves them off what they learned; the development cohorts held too few native Vita
-frames of CLANNAD's kind to show it. **Recommendation for the overlay** (made after seeing the protected sets, so
-it is a deployment caution, not a selection): apply `VOCR_REFINE_DEFAULT` where the captured text is PSP-sized,
-and keep flags 0 for native Vita titles until a Vita development cohort shows a gain, with A/B logging in the test
-build. Whether that covers PSP titles under Adrenaline is **untested**: every PSP frame measured here is at the
-PSP's 480×272 (native captures, or PC screenshots scaled to fit it), and none is an Adrenaline capture (the owner's
-frames hold no Adrenaline upscale, `docs/owner-games.md`). Adrenaline can show a PSP game 2× on the Vita's 960×544
-(nearest or smoothed, `docs/native-pool.md`), which puts the text at about twice PSP's pixel size, like native
-Vita text, where the protected sets show no gain. So decide it by the text size the overlay captures, and check it
-in the A/B logs before it becomes a default. The refinement and its default are unchanged.
+and the next line) gains the most: clearly on the development frames, and in the same direction on psp-test, where
+three of the six models' VN intervals exclude 0. On 960×544 Vita text the GRAD crop is already close to the text:
+on the development pairs' Vita dialogue lines the GRAD box's median height is 1 row over the ink crop's (devnative)
+and level (the owner's frames), against 4 rows on PSP. Why the tighter Vita crop reads worse on CLANNAD was not
+tested. One hypothesis: the recognizers were fine-tuned on GRAD crops too (the real pools hold GRAD crops), so a
+tighter crop moves them off what they learned. The development cohorts hold few native Vita frames (devnative: 8
+Vita VNs; the owner's: CHAOS;CHILD only), and there the refinement is level. **Recommendation for the overlay**
+(made after seeing the protected sets, so it is a deployment caution, not a selection): apply `VOCR_REFINE_DEFAULT`
+where the captured text is PSP-sized, and keep flags 0 for native Vita titles until a Vita development cohort shows
+a gain, with A/B logging in the test build. Whether that covers PSP titles under Adrenaline is **untested**: every
+PSP frame measured here is at the PSP's 480×272 (native captures, or PC screenshots scaled to fit it), and none is
+an Adrenaline capture (the owner's frames hold no Adrenaline upscale, `docs/owner-games.md`). Adrenaline can show a
+PSP game 2× on the Vita's 960×544 (nearest or smoothed, `docs/native-pool.md`), which puts the text at about twice
+PSP's pixel size, like native Vita text, where the protected sets show no gain. So decide it by the text size the
+overlay captures, and check it in the A/B logs before it becomes a default. The refinement and its default are
+unchanged.
 
 ## 6. Cost
 
@@ -269,7 +291,17 @@ and with the default, the difference is the refinement (99.99% of it in the refi
   (the driver gave the refinement only the finder's arena, so 78% of the boxes were read twice; the overlay's
   scratch makes them all one pass, which only removes work). Most of it is the mask (`mask_row`), the grey
   conversion and the band columns.
-- Against recognition (`docs/vocr4.md`): FL10 94-179 ms, W20 235-416 ms per 640-px line at 444 MHz, so under 1%.
+- Against recognition (`docs/vocr4.md`'s estimates per 80 CTC frames, a 640-px line, at 444 MHz: FL10 94-179 ms,
+  H15 166-302 ms, W20 235-416 ms): the mean finder box of these regions (297×26 px) is 45.3 frames, which FL10
+  reads in an estimated 53-101 ms, H15 in 94-171 ms and W20 in 133-235 ms. So the refinement is about 1% of
+  FL10's recognition of the same box (1.00-1.05%) and 0.4-0.6% of H15's or W20's.
+- The refined lines cost more recognition than the refinement itself. The recognizer scales each crop to 32
+  rows, so a box cut to fewer rows is read at a larger width. Over these 1,236 regions the 1,843 refined lines
+  hold 95,182 CTC frames against the 1,834 finder boxes' 83,031: +14.6% (PSP +20.1%, Vita +8.7%; no line reaches
+  the 1,024-px width cap), 6.6 frames more per finder line. That is an estimated 8-15 ms more recognition per
+  finder line for FL10, 14-25 ms for H15 and 19-34 ms for W20 at 444 MHz. The development CER above already
+  reads every refined line at its own width. Geometry only: frames = `vocr_resized_width` / 8, from the C
+  function, on the finder's and the refinement's boxes (`$HERD/shared/artifacts/finder-tighten/resume/frames.py`).
 - Host: 36.7 µs per region on the 1,236 regions (Xeon, gcc -O2, best of 20, three repeats within 0.3%).
 
 **Against the console** (the owner's v0.8.0-test.1 collect logs, 2026-10-14, private: 21 OCR jobs in one Vita game
@@ -279,14 +311,16 @@ measure its neighbours and calibrate the estimate:
 - The finder's compute (job "find" time minus its strip capture, on the jobs that found no line) was 23-24 ms for
   an 883×112 region. The same qemu method puts the finder at 15-32 ms (444 MHz) and 20-42 ms (333 MHz) for that
   region: inside the range.
-- H15 recognized at 5.0-5.2 ms per CTC frame, the top of `docs/vocr4.md`'s 333-MHz estimate (221-403 ms per 80
-  frames). So the refinement's own console time is likely near the top of its 333-MHz range, about 1-1.5 ms per
-  finder line.
-- Reading the framebuffer costs more than either: the overlay's 64-row strips of that region took 11-26 ms each
-  (4 strips in 43-105 ms). Run right after the finder over all boxes, the refinement can add about one strip read
-  per box when recognition later reads the lines again. Refining each box from the strip the recognizer fetches
-  for it (`vocr_refine_lines` on that strip, a one-line set) gives the same lines with no extra read: the
-  refinement reads only the box's own pixels (the single difference is the 16-line cap on splits).
+- H15 recognized at 4.9-5.2 ms per CTC frame (4.94-5.22 over the 11 H15 jobs that read lines; the owner's 18:09Z
+  note rounds it to 5.0-5.2), about the top of `docs/vocr4.md`'s 333-MHz estimate (221-403 ms per 80 frames). So
+  the refinement's own console time is likely near the top of its 333-MHz range, about 1-1.5 ms per finder line,
+  and the wider refined lines (above) add about 33-35 ms of H15 recognition per finder line.
+- Reading the framebuffer costs more than the finder's or the refinement's own work: the overlay's 64-row strips of
+  that region took 11-26 ms each (4 strips in 43-105 ms). Run right after the finder over all boxes, the refinement
+  can add about one strip read per box when recognition later reads the lines again. Refining each box from the
+  strip the recognizer fetches for it (`vocr_refine_lines` on that strip, a one-line set) gives the same lines with
+  no extra read: the refinement reads only the box's own pixels (the single difference is the 16-line cap on
+  splits).
 
 ### Changed after the protected run (test code only)
 
@@ -304,11 +338,12 @@ pre-fix file.
 - Development labels are engine-plus-assistant agreed, not hand-checked; the protected references are Claude's.
 - The remaining development gap on dialogue lines is mostly at the line's ends (portraits, ornaments, scenery
   wider than the cursor and portrait tests allow) and one striped background the ink mask cannot separate.
-- Speaker names are not fixed (23-31% CER on GRAD and refined crops alike): GRAD's name boxes often hold the
+- Speaker names are not fixed (GRAD 24.9-33.9% CER, refined 23.2-31.1%): GRAD's name boxes often hold the
   plate's decoration, and the owner's 13:57Z rule makes names secondary.
 - Vita: see §5. The development cohorts are PSP-heavy (devnative: 108 Vita lines of 551).
 - Adrenaline: no measured frame is a PSP game shown 2× on the Vita (§5), so the refinement is untested there.
-- Every console time is a qemu-based estimate; nothing ran on a console.
+- Every console time here is an estimate (qemu-based, or the console's measured per-frame rate applied to host
+  geometry); nothing of the refinement ran on a console.
 
 ## 8. For VOCR5
 

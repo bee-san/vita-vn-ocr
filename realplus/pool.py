@@ -676,9 +676,11 @@ def cmd_edge_boxes(args):
     it needs a check (edge_flags; or a later look called the line cut)."""
     from common import to_gray
     from devnative import edgecheck as E
-    labels = [r for r in jl(OUT / "labels.jsonl") if r["status"] in ("kept", "pending")]
+    _, skip_vns, skip_shots, _ = build_exclusions()   # lines the build drops need no frame (and may have no read)
     shots = load_reads()
     idx = S.line_index(shots)
+    labels = [r for r in jl(OUT / "labels.jsonl") if r["status"] in ("kept", "pending") and r["vn"] not in skip_vns
+              and r["shot"] not in skip_shots and r["id"] in idx]
     ev = E.evidence(done_batches("blind"))     # a blind look that called the line cut
     out, cache = [], {}
     for r in sorted(labels, key=lambda r: (int(r["shot"].split("_")[0][1:]), r["id"])):

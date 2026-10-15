@@ -2,7 +2,7 @@
 
 A [rejected horizontal-padding experiment](dialogue-padding.md) is archived with its frozen source revision and aggregate results. Its runtime change is excluded; the original preprocessing remains the default.
 
-An optional post-finder refinement, `runtime/vocr_lines_refine.c` (separate from this frozen file), cuts each GRAD box back to its text band, drops frame rows, splits merged rows and trims cursors and portrait edges. It is a gain on PSP-sized text and on the development cohorts, not on native Vita text in the protected sets: see [finder-tighten](finder-tighten.md).
+An optional post-finder refinement, `runtime/vocr_lines_refine.c` (separate from this frozen file), cuts each GRAD box back to its text band, drops frame rows, splits merged rows and trims cursors and portrait edges. It is a clear gain on the development cohorts' PSP frames (every VN interval below 0), the same direction on psp-test (resolved for three of six models), and not a gain on native Vita text in the protected sets: see [finder-tighten](finder-tighten.md).
 
 The recognizer reads one line at a time, so something has to cut the user's region into lines. The finder v1 was trained with is vita-jp-overlay's bright-pixel row projection (`vjo_ocr_find_lines`). It only sees near-white text. Dark text on a light box, light text on a light bar, outlined text and pale-yellow names make it reject the region or find nothing. On the research campaign's 16 real regions it rejects 4, and the pipeline CER is 28.4%.
 

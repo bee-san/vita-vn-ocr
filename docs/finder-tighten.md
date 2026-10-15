@@ -20,7 +20,9 @@ or a host estimate of console time. Nothing ran on a console.
   (VOCR3-W20 5.40% → 3.94%), every VN-cluster 95% interval below zero, every model and cohort better.
 - **The protected sets, once, report only** (after the rule was frozen and pushed, `1747eb4`):
   - vita-test + psp-test whole dialogue, dialogue (body) text: **−1.13 to −1.28 points** (VN intervals include
-    0). The gain is all PSP (−2.19 to −2.90); Vita is level or worse (−0.13 to +0.50, intervals include 0).
+    0). The gain is all PSP: psp-test −2.19 to −2.90 points, with VN intervals below 0 for VOCR3-H15, VOCR3-W20
+    and VOCR4-W20 and including 0 for the other three (upper bounds +0.11 to +0.32). Vita is level or worse
+    (−0.13 to +0.50, intervals include 0).
   - **CLANNAD long run: worse for five of six models**, +0.07 to +0.43 points (VOCR4-W20 1.81% → 2.24%, page
     interval +0.31 to +0.56); VOCR3-W20 −0.06 (interval includes 0).
 - **Cost**: about 0.5-1.1 ms per finder line on one 444 MHz Cortex-A9 core (estimate; the same method brackets
@@ -28,8 +30,11 @@ or a host estimate of console time. Nothing ran on a console.
   inside the finder's). Its pixel reads matter more on the console (11-26 ms per framebuffer strip): refined
   from the strip the recognizer reads anyway, it needs none (§6).
 
-So the refinement is a clear gain on PSP-sized text and on the scaled and native development frames, and **not
-a gain on 960×544 Vita text in the protected sets**. The default the overlay ships should follow that (below).
+So the refinement is a clear gain on the development PSP frames (pooled whole dialogue −2.37 to −2.82 points,
+every VN interval below 0), in the same direction on psp-test (−2.2 to −2.9 points, resolved for three of the six
+models), a smaller gain that no VN interval resolves on the development Vita frames (−0.39 to −0.61 points), and
+**not a gain on 960×544 Vita text in the protected sets**. The default the overlay ships should follow that
+(below).
 
 ## 1. What the GRAD crop gets wrong
 
@@ -189,10 +194,15 @@ own_pairs barely moves (GRAD 0.02-0.38% against ink 0.01-0.43%): on the owner's 
 already reads as well as the hand-cut one. The refinement returns under 1% more lines (splits) on whole
 dialogue (tv_dlg 2,556 → 2,573 crops).
 
-By platform, the development gain is mostly PSP: whole-dialogue Vita frames improve on teacher_val (scaled and
-native, e.g. VOCR3-W20 4.80% → 4.16%) and are level on devnative's native Vita frames (2.45-2.92% → 2.53-2.92%)
-and the owner's CHAOS;CHILD (0.24-0.61% → 0.17-0.65%); devnative's Vita pairs are level or better except
-VOCR4-W20 (0.26% → 0.43%, 2 errors more on 1,153 characters).
+By platform, the development gain is mostly PSP. Pooled whole dialogue, all variants: PSP frames −2.37 to −2.82
+points (101 VNs; every VN interval below 0, upper bounds −0.68 to −0.93), Vita frames −0.39 to −0.61 (134 VNs;
+every VN interval includes 0, upper bounds +0.01 to +0.22). On teacher_val's Vita frames (scaled and native) the
+point estimate improves by 0.64-0.94 points (e.g. VOCR3-W20 4.80% → 4.16%), but every VN interval includes 0
+(upper bounds +0.03 to +0.29, 133 VNs). devnative's native Vita frames are level (2.45-2.92% → 2.53-2.92%,
+−0.11 to +0.08 points) and so is the owner's CHAOS;CHILD (0.24-0.61% → 0.17-0.65%); devnative's Vita pairs are
+level or better except VOCR4-W20 (0.26% → 0.43%, 2 errors more on 1,153 characters). These platform splits use
+the same stored per-unit counts and the same VN-cluster bootstrap as the table (`pooled_dialogue` and `compare`
+on the units of one platform; no new recognition).
 
 ## 5. The protected sets: once, report only
 
@@ -233,7 +243,8 @@ VOCR4-W20 trained on the owner's planetarian PSP frames (Key/Prototype, like CLA
 numbers carry that exposure.
 
 **Reading the two together.** PSP text (12-20 px ink in 480×272 frames, often in boxes GRAD grows into the frame
-and the next line) gains the most, on development data and on psp-test alike. On 960×544 Vita text the GRAD crop
+and the next line) gains the most: clearly on the development frames, and in the same direction on psp-test,
+where three of the six models' VN intervals exclude 0. On 960×544 Vita text the GRAD crop
 is already close to the text and the recognizers were fine-tuned on GRAD crops too (the real pools hold GRAD
 crops), so cutting it back moves them off what they learned; the development cohorts held too few native Vita
 frames of CLANNAD's kind to show it. **Recommendation for the overlay** (made after seeing the protected sets, so

@@ -124,12 +124,14 @@ Setup: x86-64, one thread pinned to one core, the first 100 synth-val lines (5,7
 
 ### Console speed (VOCR3-H15, 2026-10-14)
 
-On the owner's console (vita-jp-overlay #81, v0.8.0-test.1) VOCR3-H15 ran 4,941-5,238 µs per CTC frame,
-which is `vita/a9_cycles.py`'s high bound x 1.03 at 333 MHz. The W8I kernels have since been rewritten for
-the Cortex-A9 (8-k NEON passes in `mm_i16` with a prefetched weight stream, the head's argmax in NEON
-lanes, pointer-stepped depthwise taps), bit for bit: the estimate is 2.88 ms per frame for H15 at 333 MHz
-(1.76x; 1.5x if the prefetch does not help). Per layer, calibration and parity: `docs/ocr-speed.md`.
-`make check-arm` runs the C unit tests as Cortex-A9 NEON and scalar builds under qemu-arm.
+On the owner's console (vita-jp-overlay #81, v0.8.0-test.1) VOCR3-H15 ran its lines of 60-100 CTC frames at
+4,942 µs per frame (frame-weighted), which is `vita/a9_cycles.py`'s high bound x 1.0007 at 333 MHz (the clock is
+assumed). The W8I kernels have since been rewritten for the Cortex-A9 (8-k NEON passes in `mm_i16` with a
+prefetched weight stream, the head's argmax and the LM's top-K block filter in NEON lanes, pointer-stepped
+depthwise taps), bit for bit: the estimate is 2.90 ms per frame for H15 with the top 8 at 333 MHz (1.75x; 1.51x
+if the prefetch does not help). Builds without NEON compile to the same machine code as before. Per layer,
+calibration and parity: `docs/ocr-speed.md`. `make check-arm` runs the C unit tests, with known-answer logits for
+every NEON kernel, as Cortex-A9 NEON and scalar builds under qemu-arm.
 
 ## API
 

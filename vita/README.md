@@ -206,11 +206,12 @@ What the numbers say:
 `a9_layers.py` breaks the estimate above down by layer: `runtime/vocr.c` built with `-DVOCR_PROF` calls
 `qemu/prof_mark.c`'s marker as each phase of `vocr_run()` starts, and `qemu/insn_mix.c` counts the
 instructions, unit switches, data cache misses (`l1d=on`, its own LRU model) and `PLD` fills (`pld=`) per
-phase. `report` applies `a9_cycles.py`'s cost model per phase and can scale it to a console figure
-(`--console-ms 5.07 --console-mhz 333`); `compare` gives before/after per layer. `dev_pack.py` writes the
-development lines the overlay's game worker would hand the recognizer (dev manifests only), and
-`speed_parity.py` proves two `vocr.c` versions give the same logits in five builds. Results and how to
-run them: `docs/ocr-speed.md`.
+phase (`--no-pld`: without the fills, the bound if `PLD` does nothing). `report` applies `a9_cycles.py`'s cost
+model per phase and can scale it to a console figure (`--console-ms`, `--console-mhz`, or a fixed `--scale`);
+`compare` gives before/after per layer. `dev_pack.py` writes the development lines the overlay's game worker would
+hand the recognizer (dev manifests only, every test-reserved VN refused), and `speed_parity.py` proves two
+`vocr.c` versions give the same logits, texts and (with `--topk`) top-K in five builds. Results and how to run
+them: `docs/ocr-speed.md`.
 
 ## Not done here
 

@@ -257,6 +257,10 @@ training folders:
 Iwaihime's 241 frames are the first drop's 240 plus the second drop's 1 new frame. The shots are named
 `<vn>_p2f<n>`, apart from v1's `<vn>_owner<n>`.
 
+81 of the 3,777 new frames are title or settings screens by the drop's own categories. The drop's other 6 such frames
+are the test games' 5 and VA-11 HALL-A's one refused frame. Their lines are counted apart from dialogue
+([below](#dialogue-only-count)).
+
 The four test games of the 2026-10-14 drop (408 frames) were never read, planned or labelled. Neither was CLANNAD.
 They serve only as the comparison side of the leak check.
 
@@ -354,7 +358,7 @@ with `pool: "owner"` in the meta and `session` `null`, as in v1. Every frame's s
 |---:|---|
 | **6,594 lines** | from 71 VNs: 3,817 PSP (32 VNs), 2,777 Vita (39 VNs) |
 | how | 3,042 auto, 2,198 both engine families, 1,354 one family; every reviewed line had a confirm look |
-| dialogue | **6,426** (below) |
+| dialogue | **6,236** (below); 181 more are menu lines and 177 speaker names |
 | dropped by the build | of the 8,012 kept labels: 958 repeated labels (repeat caps); 312 by the edge check (221 unchecked copies past the caps, 78 bad, 12 cut, 1 another text); 145 with no usable crop; 2 out of vocab; 1 on the leak-dropped frame |
 
 | file (`_build2/owner-pool-2/`) | crops | PSP / Vita | sha256 |
@@ -377,104 +381,117 @@ lines' rows are identical in pixels, label and meta in all four files.
 
 ### Per game
 
-Frames read, candidate lines, kept labels, built lines and dialogue lines per VN (`stats_v2.json` "per_game").
-Nine VNs give no line: each has one frame, a title or settings screen.
+Frames read (of them title or settings screens), candidate lines, kept labels, built lines, menu lines and dialogue
+lines per VN (`stats_v2.json` "per_game"). Nine VNs give no line: each has one frame, a title or settings screen.
 
-| VN | title (VNDB) | platform | frames read | candidate lines | kept labels | built lines | dialogue lines |
-|---|---|---|---:|---:|---:|---:|---:|
-| v2113 | ソルフェージュ | psp | 150 | 705 | 480 | 393 | 380 |
-| v14909 | 銃声とダイヤモンド | psp | 149 | 599 | 465 | 341 | 323 |
-| v10623 | カスタムドライブ | psp | 150 | 465 | 362 | 324 | 307 |
-| v3278 | のーふぇいと！～only the power of will～ | psp | 150 | 299 | 265 | 238 | 227 |
-| v3992 | 涼風のメルト -Where wishes are drawn to each other- | psp | 150 | 327 | 301 | 236 | 232 |
-| v689 | MagusTale ～世界樹と恋する魔法使い～ | psp | 149 | 332 | 269 | 230 | 228 |
-| v10 | narcissu | psp | 200 | 312 | 257 | 222 | 222 |
-| v1322 | 天神乱漫 LUCKY or UNLUCKY!? | psp | 150 | 310 | 279 | 222 | 211 |
-| v1646 | メモリーズオフ6 ～T-wave～ | psp | 150 | 238 | 201 | 179 | 175 |
-| v1281 | アマガミ | psp | 113 | 197 | 177 | 177 | 177 |
-| v7018 | DUNAMIS15 | psp | 150 | 248 | 174 | 173 | 168 |
-| v1171 | Memories Off ～それから～ | psp | 150 | 238 | 234 | 164 | 162 |
-| v7301 | 白衣性恋愛症候群 | psp | 100 | 181 | 166 | 155 | 153 |
-| v1080 | ぱすてるチャイムContinue | psp | 150 | 267 | 238 | 138 | 138 |
-| v264 | D.C.～ダ・カーポ～ | psp | 150 | 275 | 236 | 125 | 124 |
-| v12369 | Fate/EXTRA CCC | psp | 44 | 128 | 104 | 98 | 97 |
-| v16386 | MISSING PARTS the TANTEI stories | psp | 49 | 112 | 90 | 76 | 72 |
-| v7014 | ダンガンロンパ 希望の学園と絶望の高校生 | psp | 38 | 122 | 67 | 67 | 63 |
-| v7602 | フェイト/エクストラ | psp | 24 | 85 | 76 | 61 | 61 |
-| v11713 | Trick x Logic Season 1 | psp | 48 | 98 | 83 | 53 | 49 |
-| v266 | D.C.II ～ダ・カーポII～ | psp | 37 | 53 | 39 | 37 | 36 |
-| v6572 | BLAZBLUE CONTINUUM SHIFT | psp | 32 | 52 | 35 | 35 | 31 |
-| v728 | プリンセスメーカー5 | psp | 10 | 41 | 35 | 27 | 27 |
-| v19010 | 探偵 神宮寺三郎 灰とダイヤモンド | psp | 11 | 33 | 17 | 17 | 17 |
-| v1170 | 想い出にかわる君 ～メモリーズオフ～ | psp | 6 | 13 | 12 | 11 | 11 |
-| v1325 | Memories Off #5 とぎれたフィルム | psp | 3 | 5 | 5 | 5 | 3 |
-| v2063 | 流行り神 警視庁怪異事件ファイル | psp | 2 | 15 | 6 | 5 | 5 |
-| v727 | プリンセスメーカー4 | psp | 2 | 9 | 3 | 3 | 3 |
-| v22505 | CHAOS;HEAD NOAH | psp | 1 | 2 | 2 | 2 | 2 |
-| v3333 | ディスガイア インフィニット | psp | 1 | 4 | 2 | 1 | 1 |
-| v4091 | セカンドノベル ～彼女の夏、15分の記憶～ | psp | 2 | 2 | 1 | 1 | 1 |
-| v4185 | 密室のサクリファイス | psp | 1 | 3 | 1 | 1 | 1 |
-| v21259 | 流行り神2 警視庁怪異事件ファイル | psp | 1 | 6 | 0 | 0 | 0 |
-| v17863 | 祝姫 | vita | 241 | 408 | 340 | 304 | 302 |
-| v7803 | AMNESIA | vita | 119 | 371 | 369 | 279 | 279 |
-| v10680 | 月に寄りそう乙女の作法 | vita | 116 | 505 | 429 | 272 | 266 |
-| v16610 | 白衣性愛情依存症 | vita | 150 | 363 | 297 | 250 | 246 |
-| v2002 | STEINS;GATE | vita | 150 | 359 | 185 | 183 | 181 |
-| v17285 | 帝国海軍恋慕情 ～明治横須賀行進曲～ | vita | 88 | 207 | 192 | 151 | 149 |
-| v15773 | 百華夜光 | vita | 79 | 166 | 155 | 143 | 140 |
-| v17936 | 東京喰種 JAIL | vita | 120 | 176 | 141 | 140 | 140 |
-| v18334 | NEWダンガンロンパV3 | vita | 84 | 179 | 121 | 121 | 118 |
-| v6618 | STEINS;GATE 比翼恋理のだーりん | vita | 104 | 283 | 120 | 120 | 112 |
-| v19743 | Side Kicks! | vita | 63 | 122 | 110 | 110 | 108 |
-| v7809 | 極限脱出ADV 善人シボウデス | vita | 102 | 203 | 193 | 100 | 100 |
-| v11108 | Princess Arthur | vita | 53 | 123 | 107 | 86 | 84 |
-| v7833 | OZMAFIA!! | vita | 76 | 88 | 79 | 79 | 76 |
-| v5883 | ROBOTICS;NOTES | vita | 86 | 126 | 66 | 66 | 66 |
-| v11173 | さくら荘のペットな彼女 | vita | 38 | 86 | 65 | 65 | 61 |
-| v22174 | 見鏡澄香の制服活動 | vita | 48 | 83 | 74 | 64 | 64 |
-| v17102 | STEINS;GATE 0 | vita | 48 | 67 | 57 | 49 | 47 |
-| v19100 | クロスアンジュ 天使と竜の輪舞tr. | vita | 13 | 38 | 37 | 29 | 29 |
-| v13059 | XBLAZE CODE:EMBRYO | vita | 33 | 60 | 37 | 27 | 20 |
-| v11660 | STEINS;GATE 線形拘束のフェノグラム | vita | 27 | 68 | 27 | 24 | 20 |
-| v15231 | 逆転 吉原 | vita | 1 | 27 | 19 | 19 | 19 |
-| v17902 | クロガネ回姫譚 -一期一会- | vita | 2 | 39 | 25 | 15 | 15 |
-| v19851 | 蝶々事件ラブソディック | vita | 4 | 31 | 15 | 14 | 14 |
-| v12630 | やはりゲームでも俺の青春ラブコメはまちがっている。 | vita | 8 | 17 | 14 | 13 | 9 |
-| v21899 | あざやかな彩りの中で、君らしく | vita | 2 | 21 | 11 | 11 | 11 |
-| v24957 | レイギガント | vita | 2 | 21 | 12 | 11 | 11 |
-| v3091 | カオスヘッド らぶChu☆Chu! | vita | 10 | 29 | 10 | 10 | 10 |
-| v10561 | 真かまいたちの夜 11人目の訪問者（サスペクト） | vita | 1 | 7 | 5 | 5 | 5 |
-| v2923 | Cure Mate Club | vita | 1 | 5 | 4 | 3 | 3 |
-| v2954 | Bitter Smile. | vita | 1 | 5 | 2 | 2 | 2 |
-| v4540 | 猛獣使いと王子様 | vita | 2 | 8 | 2 | 2 | 2 |
-| v5386 | Present for you ～わたしをあ・げ・る～ | vita | 1 | 4 | 2 | 2 | 2 |
-| v13865 | IS＜インフィニット・ストラトス＞2 イグニッション・ハーツ | vita | 2 | 10 | 2 | 2 | 2 |
-| v19441 | プラスティック・メモリーズ | vita | 3 | 3 | 2 | 2 | 2 |
-| v7967 | ホチキス | vita | 1 | 3 | 1 | 1 | 1 |
-| v10271 | 彼女はオレからはなれない | vita | 1 | 4 | 1 | 1 | 1 |
-| v10641 | キスベル | vita | 1 | 4 | 1 | 1 | 1 |
-| v16467 | アブナイ恋の捜査室 ~Eternal Happiness~ | vita | 2 | 3 | 1 | 1 | 1 |
-| v683 | パルフェ ～ショコラ second brew～ | vita | 1 | 1 | 0 | 0 | 0 |
-| v11677 | 花咲くまにまに | vita | 1 | 0 | 0 | 0 | 0 |
-| v14787 | Binary Star | vita | 1 | 1 | 0 | 0 | 0 |
-| v14919 | レンドフルール | vita | 1 | 0 | 0 | 0 | 0 |
-| v16468 | Vamwolf Cross† | vita | 1 | 0 | 0 | 0 | 0 |
-| v16607 | 5人の恋プリンス ~ヒミツの契約結婚~ | vita | 1 | 1 | 0 | 0 | 0 |
-| v18777 | イケメン幕末◆運命の恋 | vita | 1 | 1 | 0 | 0 | 0 |
-| v19119 | Fate/EXTELLA | vita | 1 | 1 | 0 | 0 | 0 |
-| **all** | | | **4414** | **10103** | **8012** | **6594** | **6426** |
+| VN | title (VNDB) | platform | frames read (menu) | candidate lines | kept labels | built lines | menu lines | dialogue lines |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| v2113 | ソルフェージュ | psp | 150 | 705 | 480 | 393 | 0 | 377 |
+| v14909 | 銃声とダイヤモンド | psp | 149 (1) | 599 | 465 | 341 | 0 | 323 |
+| v10623 | カスタムドライブ | psp | 150 (2) | 465 | 362 | 324 | 6 | 301 |
+| v3278 | のーふぇいと！～only the power of will～ | psp | 150 | 299 | 265 | 238 | 0 | 227 |
+| v3992 | 涼風のメルト -Where wishes are drawn to each other- | psp | 150 (2) | 327 | 301 | 236 | 4 | 228 |
+| v689 | MagusTale ～世界樹と恋する魔法使い～ | psp | 149 (2) | 332 | 269 | 230 | 2 | 226 |
+| v10 | narcissu | psp | 200 | 312 | 257 | 222 | 0 | 222 |
+| v1322 | 天神乱漫 LUCKY or UNLUCKY!? | psp | 150 (2) | 310 | 279 | 222 | 1 | 208 |
+| v1646 | メモリーズオフ6 ～T-wave～ | psp | 150 | 238 | 201 | 179 | 0 | 175 |
+| v1281 | アマガミ | psp | 113 | 197 | 177 | 177 | 0 | 177 |
+| v7018 | DUNAMIS15 | psp | 150 | 248 | 174 | 173 | 0 | 168 |
+| v1171 | Memories Off ～それから～ | psp | 150 | 238 | 234 | 164 | 0 | 162 |
+| v7301 | 白衣性恋愛症候群 | psp | 100 | 181 | 166 | 155 | 0 | 151 |
+| v1080 | ぱすてるチャイムContinue | psp | 150 (2) | 267 | 238 | 138 | 7 | 131 |
+| v264 | D.C.～ダ・カーポ～ | psp | 150 | 275 | 236 | 125 | 0 | 124 |
+| v12369 | Fate/EXTRA CCC | psp | 44 (1) | 128 | 104 | 98 | 0 | 97 |
+| v16386 | MISSING PARTS the TANTEI stories | psp | 49 | 112 | 90 | 76 | 0 | 72 |
+| v7014 | ダンガンロンパ 希望の学園と絶望の高校生 | psp | 38 | 122 | 67 | 67 | 0 | 63 |
+| v7602 | フェイト/エクストラ | psp | 24 (2) | 85 | 76 | 61 | 4 | 57 |
+| v11713 | Trick x Logic Season 1 | psp | 48 | 98 | 83 | 53 | 0 | 49 |
+| v266 | D.C.II ～ダ・カーポII～ | psp | 37 (2) | 53 | 39 | 37 | 2 | 34 |
+| v6572 | BLAZBLUE CONTINUUM SHIFT | psp | 32 (2) | 52 | 35 | 35 | 1 | 30 |
+| v728 | プリンセスメーカー5 | psp | 10 (2) | 41 | 35 | 27 | 1 | 26 |
+| v19010 | 探偵 神宮寺三郎 灰とダイヤモンド | psp | 11 (2) | 33 | 17 | 17 | 1 | 16 |
+| v1170 | 想い出にかわる君 ～メモリーズオフ～ | psp | 6 | 13 | 12 | 11 | 0 | 11 |
+| v1325 | Memories Off #5 とぎれたフィルム | psp | 3 | 5 | 5 | 5 | 0 | 3 |
+| v2063 | 流行り神 警視庁怪異事件ファイル | psp | 2 (2) | 15 | 6 | 5 | 5 | 0 |
+| v727 | プリンセスメーカー4 | psp | 2 (2) | 9 | 3 | 3 | 3 | 0 |
+| v22505 | CHAOS;HEAD NOAH | psp | 1 | 2 | 2 | 2 | 0 | 2 |
+| v3333 | ディスガイア インフィニット | psp | 1 (1) | 4 | 2 | 1 | 1 | 0 |
+| v4091 | セカンドノベル ～彼女の夏、15分の記憶～ | psp | 2 | 2 | 1 | 1 | 0 | 1 |
+| v4185 | 密室のサクリファイス | psp | 1 (1) | 3 | 1 | 1 | 1 | 0 |
+| v21259 | 流行り神2 警視庁怪異事件ファイル | psp | 1 (1) | 6 | 0 | 0 | 0 | 0 |
+| v17863 | 祝姫 | vita | 241 (1) | 408 | 340 | 304 | 0 | 302 |
+| v7803 | AMNESIA | vita | 119 | 371 | 369 | 279 | 0 | 279 |
+| v10680 | 月に寄りそう乙女の作法 | vita | 116 (1) | 505 | 429 | 272 | 0 | 264 |
+| v16610 | 白衣性愛情依存症 | vita | 150 | 363 | 297 | 250 | 0 | 246 |
+| v2002 | STEINS;GATE | vita | 150 | 359 | 185 | 183 | 0 | 181 |
+| v17285 | 帝国海軍恋慕情 ～明治横須賀行進曲～ | vita | 88 (2) | 207 | 192 | 151 | 7 | 142 |
+| v15773 | 百華夜光 | vita | 79 (2) | 166 | 155 | 143 | 7 | 133 |
+| v17936 | 東京喰種 JAIL | vita | 120 (2) | 176 | 141 | 140 | 1 | 139 |
+| v18334 | NEWダンガンロンパV3 | vita | 84 | 179 | 121 | 121 | 0 | 118 |
+| v6618 | STEINS;GATE 比翼恋理のだーりん | vita | 104 | 283 | 120 | 120 | 0 | 112 |
+| v19743 | Side Kicks! | vita | 63 (2) | 122 | 110 | 110 | 11 | 97 |
+| v7809 | 極限脱出ADV 善人シボウデス | vita | 102 (1) | 203 | 193 | 100 | 2 | 98 |
+| v11108 | Princess Arthur | vita | 53 (2) | 123 | 107 | 86 | 10 | 74 |
+| v7833 | OZMAFIA!! | vita | 76 (1) | 88 | 79 | 79 | 0 | 76 |
+| v5883 | ROBOTICS;NOTES | vita | 86 (2) | 126 | 66 | 66 | 10 | 56 |
+| v11173 | さくら荘のペットな彼女 | vita | 38 (1) | 86 | 65 | 65 | 5 | 56 |
+| v22174 | 見鏡澄香の制服活動 | vita | 48 | 83 | 74 | 64 | 0 | 64 |
+| v17102 | STEINS;GATE 0 | vita | 48 | 67 | 57 | 49 | 0 | 47 |
+| v19100 | クロスアンジュ 天使と竜の輪舞tr. | vita | 13 | 38 | 37 | 29 | 0 | 29 |
+| v13059 | XBLAZE CODE:EMBRYO | vita | 33 (2) | 60 | 37 | 27 | 1 | 19 |
+| v11660 | STEINS;GATE 線形拘束のフェノグラム | vita | 27 (1) | 68 | 27 | 24 | 0 | 20 |
+| v15231 | 逆転 吉原 | vita | 1 (1) | 27 | 19 | 19 | 19 | 0 |
+| v17902 | クロガネ回姫譚 -一期一会- | vita | 2 (2) | 39 | 25 | 15 | 15 | 0 |
+| v19851 | 蝶々事件ラブソディック | vita | 4 (2) | 31 | 15 | 14 | 11 | 3 |
+| v12630 | やはりゲームでも俺の青春ラブコメはまちがっている。 | vita | 8 | 17 | 14 | 13 | 0 | 9 |
+| v21899 | あざやかな彩りの中で、君らしく | vita | 2 (2) | 21 | 11 | 11 | 11 | 0 |
+| v24957 | レイギガント | vita | 2 (2) | 21 | 12 | 11 | 11 | 0 |
+| v3091 | カオスヘッド らぶChu☆Chu! | vita | 10 (1) | 29 | 10 | 10 | 1 | 9 |
+| v10561 | 真かまいたちの夜 11人目の訪問者（サスペクト） | vita | 1 (1) | 7 | 5 | 5 | 5 | 0 |
+| v2923 | Cure Mate Club | vita | 1 (1) | 5 | 4 | 3 | 3 | 0 |
+| v2954 | Bitter Smile. | vita | 1 (1) | 5 | 2 | 2 | 2 | 0 |
+| v4540 | 猛獣使いと王子様 | vita | 2 (2) | 8 | 2 | 2 | 2 | 0 |
+| v5386 | Present for you ～わたしをあ・げ・る～ | vita | 1 (1) | 4 | 2 | 2 | 2 | 0 |
+| v13865 | IS＜インフィニット・ストラトス＞2 イグニッション・ハーツ | vita | 2 (2) | 10 | 2 | 2 | 2 | 0 |
+| v19441 | プラスティック・メモリーズ | vita | 3 (1) | 3 | 2 | 2 | 0 | 2 |
+| v7967 | ホチキス | vita | 1 (1) | 3 | 1 | 1 | 1 | 0 |
+| v10271 | 彼女はオレからはなれない | vita | 1 (1) | 4 | 1 | 1 | 1 | 0 |
+| v10641 | キスベル | vita | 1 (1) | 4 | 1 | 1 | 1 | 0 |
+| v16467 | アブナイ恋の捜査室 ~Eternal Happiness~ | vita | 2 (2) | 3 | 1 | 1 | 1 | 0 |
+| v683 | パルフェ ～ショコラ second brew～ | vita | 1 (1) | 1 | 0 | 0 | 0 | 0 |
+| v11677 | 花咲くまにまに | vita | 1 (1) | 0 | 0 | 0 | 0 | 0 |
+| v14787 | Binary Star | vita | 1 (1) | 1 | 0 | 0 | 0 | 0 |
+| v14919 | レンドフルール | vita | 1 (1) | 0 | 0 | 0 | 0 | 0 |
+| v16468 | Vamwolf Cross† | vita | 1 (1) | 0 | 0 | 0 | 0 | 0 |
+| v16607 | 5人の恋プリンス ~ヒミツの契約結婚~ | vita | 1 (1) | 1 | 0 | 0 | 0 | 0 |
+| v18777 | イケメン幕末◆運命の恋 | vita | 1 (1) | 1 | 0 | 0 | 0 | 0 |
+| v19119 | Fate/EXTELLA | vita | 1 (1) | 1 | 0 | 0 | 0 | 0 |
+| **all** | | | **4,414 (81)** | **10,103** | **8,012** | **6,594** | **181** | **6,236** |
 
 ### Dialogue-only count
 
-**6,426 of the 6,594 lines are dialogue**: 3,707 PSP, 2,719 Vita. The other 168 are speaker names under
-`owner_pool.NAME_RULE`. A name is a line that a Claude look flagged (`"name": true` in pass 1, a confirm look, an
-edge check or the precision check), or a line whose label has the key of a flagged line of the same VN.
-- 84 of the 168 carry pass 1's own flag, which is the npz meta's `name`.
-- The other 84 are auto lines. Each was flagged by a look of its own (an edge check or the precision check), or its
-  text was flagged as a name elsewhere in the same game.
+**6,236 of the 6,594 lines are dialogue**: 3,661 PSP, 2,575 Vita. The other 358 are menu lines (181) or speaker names
+(177), with no line in both.
 
-An auto line that is a name, whose text no look ever flagged in its game, still counts as dialogue. The repeat caps
-keep any one name to 2 lines per VN.
+**Menu lines** (`owner_pool.MENU_RULE`). 181 lines (39 PSP, 142 Vita; 39 VNs) come from 81 of the frames read. The
+drop's own manifest (`owner-games/<folder>/manifest_20261014.jsonl`, "category") calls those frames title or
+settings screens: 52 Vita, 29 PSP.
+- Pass 1 kept no reviewed line on them: it skipped 284 as ui and 6 as bad.
+- All 181 lines are auto lines, kept by rule 1 because all four readings agreed.
+- They are real console text with correct labels, so they stay in the pool. But they are menus, not dialogue.
+- `manifests/menu_lines_v2.jsonl` in the pool lists their ids, for a trainer that wants to leave them out.
+
+The first drop's 637 frames carry no category, so a menu frame among them would not be counted here.
+
+**Speaker names** (`owner_pool.NAME_RULE`). A name is one of these:
+- a line that a Claude look flagged (`"name": true` in pass 1, a confirm look, an edge check or the precision check);
+- a line whose label has the key of a flagged line of the same VN;
+- a label that is one `【…】` bracket, the review conventions' 【name】.
+
+84 of the 177 carry pass 1's own flag, which is the npz meta's `name`. The other 93 are auto lines.
+
+An auto name plate without brackets that no look ever flagged in its game still counts as dialogue. So 6,236 is an
+upper bound. The repeat caps keep any one name to 2 lines per VN.
 
 ### Precision (`native.py check`, `check-score`)
 
@@ -535,7 +552,9 @@ comparison side.
 
 ### Limits
 
-- **Names.** The dialogue count misses an unflagged name among the auto lines; see above.
+- **Menu lines.** The pool holds 181 auto lines of title and settings screens (above). They are left in as console
+  text and are excluded from the dialogue count; `manifests/menu_lines_v2.jsonl` lists them.
+- **Names.** The dialogue count misses an unbracketed auto name plate that no look flagged; see above.
 - **Look-alike characters.** The engines agreed on a wrong ヘ in one of 60 sampled auto lines. Other identical-glyph
   pairs (ロ/口, エ/工, ニ/二, カ/力, ー/一) were not scanned. The auto stratum's precision bound (91.1-99.7%) covers
   them only as a rate.

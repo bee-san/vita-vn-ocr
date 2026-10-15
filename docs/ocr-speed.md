@@ -199,9 +199,12 @@ third; estimates):
 | 333 MHz, 2 cores | 1.28 / 2.29 / 3.04 MB | 1.73 / 2.63 / 3.62 MB | 2.08 / 3.79 / 5.60 MB |
 | 444 MHz, 2 cores | 1.66 / 2.66 / 3.79 MB | 2.07 / 3.08 / 4.47 MB | 2.57 / 4.89 / > 6.2 MB |
 
-The safe reading (one core, 333 MHz, no prefetch credit): a 1 s box allows 1.26 MB, a 2 s box (Normal) 2.15 MB, a
-3 s box (Large) 2.65 MB. Small stays under 1 MB (the owner's cap; time would allow 1.26 MB). The overlay's
-`docs/ocr-speed.md` (vita-jp-overlay #93) has what its parallel lines and clock flag add. All estimates.
+The safe reading (one core, 333 MHz, no prefetch credit): a 1 s box allows 1.26 MB, a 2 s box 2.15 MB, a 3 s box
+2.65 MB. These are time ceilings, not the next models' sizes: the owner's weight caps bind where they are lower (Small
+< 1 MB, Normal ≤ 1.6 MB, Large ≤ 2.5 MB), and Normal, the default tier, is sized for about 1 s per box on one core at
+333 MHz. So the VOCR5 sizes are Small < 1 MB, Normal about 1.26 MB and Large ≤ 2.5 MB (the conductor, 2026-10-15),
+provisional until the console confirms the speed. The overlay's `docs/ocr-speed.md` (vita-jp-overlay #93) has what its
+parallel lines and clock flag add. All estimates.
 
 ## Reproduce
 

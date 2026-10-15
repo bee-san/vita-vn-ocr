@@ -484,7 +484,8 @@
   "sets": {
    "fixed lines": "vita-test and psp-test through the scalar C W8I runtime, console polarity primary, native also; per set, per style, per VN, pooled; dialogue (lines without the 'name' style) primary, all text and names also; hiragana",
    "whole dialogue": "each region at base, +4 and +8 px with the arm's C finder (VOCR2's held-out guard scoring); body (dialogue) text primary",
-   "deployed decode (report only)": "the VOCR4 and VOCR5 models' fixed lines with vocr_cli --lm and the overlay's default 1 MB LM (vocr_lm_o3_1000k.vlm, v0.2.6-ctclm.2) at docs/ctc-lm-decode.json's settings for that tier, through eval/run.py's cmd: backend"
+   "deployed decode (report only)": "the VOCR4 and VOCR5 models' fixed lines with vocr_cli --lm and the overlay's default 1 MB LM (vocr_lm_o3_1000k.vlm, v0.2.6-ctclm.2) at docs/ctc-lm-decode.json's settings for that tier, through eval/run.py's cmd: backend",
+   "Google Lens (report only, amendment 2)": "vita-test and psp-test fixed lines read once by Google Lens (owocr 1.26.7), screen polarity RGB; dialogue primary; pairs VOCR5_S/N/L - Lens"
   },
   "statistics": "CAND - BASE in points, paired bootstrap 95% intervals (10,000 resamples, seed 0) over lines and VN clusters (strata with at least 5 VNs)",
   "gates": "VOCR2's fixed-line gate and whole-dialogue guard for VOCR5_S vs VOCR1, VOCR5_N vs VOCR_H15 and VOCR5_L vs VOCR_H15, reported. The owner's 13:26Z instruction makes VOCR5 the overlay's default whatever they say; the report states each gate's result",
@@ -508,6 +509,11 @@
    "change": "data.real_pools.refined_copies: a GRAD crop's refined copy is kept only when the refinement changed its rows alone (the refined box's columns equal the crop's); copies whose columns the refinement cut (its CURSOR or PORTRAIT step) are skipped, like split lines (eval/vocr5_refine.py --rows-only)",
    "why": "the label of a refined copy is the GRAD crop's label unchanged, so a copy is a correct training crop only if it still shows the whole line. The helper vocr5-aug read 40 of the 168 column-cut copies of realplus v3i6 on a contact sheet (public VNDB crops): about 38 had lost real glyphs (a first or last word, a surname, half the sentence) and 2 a real icon; 40 random row-only copies all kept the whole line. The conductor viewed the same sheet and agrees. The rule was chosen on the correctness of training labels only: no model was scored, and no development or protected set was read",
    "effect": "kept copies: rp3 v3i6 83,811 -> 83,643, own 4,658 -> 4,656, dntv 87 -> 85; nat 357 and dnst 4 unchanged (the helper's counts)"
+  },
+  {
+   "date": "2026-10-15 (commit time in git), before any VOCR5 model or Lens was read on a protected set",
+   "change": "locked_report.sets gains a REPORT-ONLY arm: Google Lens on vita-test and psp-test. Lens (owocr 1.26.7 through eval/owocr_bridge.py; the reader eval/lens_lines.py from vvo-public, committed before it runs) reads every scored line once, cut as eval/run.py's recognizer mode cuts it (the line box plus eval's pad), RGB in screen polarity (Lens sees the screen), one request per crop with up to 5 retries and backoff; the readings are cached privately ($HERD/shared/private/vocr5-train/lens/) with each crop's sha256; committed outputs hold counts, rates and hashes only. It runs once, inside the locked report, after the three selections are committed. Scored as the other arms (eval/metrics.norm, CER, exact lines; dialogue = lines without the 'name' style primary, all text and names also), with paired line and VN-cluster bootstraps VOCR5_S/N/L - Lens over the lines Lens read; a line Lens could not read after the retries is listed and left out of Lens's figures and of its pairs",
+   "why": "the owner (09:43Z) asked for a VOCR-vs-Google-Lens chart on CLANNAD, vita-test and psp-test (vvo-public); Lens had measured numbers on CLANNAD only. vita-test and psp-test are public VNDB screenshots, which _rules.md allows Lens to read. The arm decides, selects and tunes nothing and is not a gate arm"
   }
  ]
 }

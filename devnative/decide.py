@@ -148,8 +148,10 @@ def parsed(d):
     d = Path(d)
     batch, sheets = load_batch(d)
     recs = parse_decisions((d / "decisions.jsonl").read_text(encoding="utf-8"), sheets, batch["mode"], d.name)
-    (d / "decisions.parsed.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in recs),
-                                              encoding="utf-8")
+    text = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in recs)
+    cache = d / "decisions.parsed.jsonl"
+    if not cache.exists() or cache.read_text(encoding="utf-8") != text:    # frozen batches stay untouched
+        cache.write_text(text, encoding="utf-8")
     return recs
 
 

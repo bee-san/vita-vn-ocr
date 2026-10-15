@@ -57,7 +57,9 @@ def test_files_are_small():
 def test_only_training_side_vns_and_screenshots():
     """No realplus screenshot is of a reserved VN (eval/manifests/reserved.json: the test sets with their release
     partners, the CLANNAD family, the development sample; docs/reservations.md), from a test capture session, or
-    one of vita-test's / psp-test's screenshots. The old hash split trains since 2026-10-14."""
+    one of vita-test's / psp-test's screenshots. v1 and v2 were selected under the old rules, which also held out the
+    old hash split (synth/common.is_test_vn); a build published under the owner's 2026-10-14 FINAL policy (stats.json
+    "policy": "final-2026-10-14", v3 on) trains on it."""
     import common
     res = common.reservation()
     held = set(res["test"]) | set(res["dev_sample"]) | SH.CLANNAD | SH.CLANNAD_FAMILY | CLANNAD_RELATIONS
@@ -65,7 +67,9 @@ def test_only_training_side_vns_and_screenshots():
     bad = [r["shot"] for r in rows() if r["vn"] in held or int(r["shot"].split("_")[1]) in test_img
            or r.get("release") in sessions]
     assert not bad, bad[:20]
-    assert not any(is_test_vn(r["vn"]) for r in rows())       # v2 was built under the old rules (history)
+    stats = json.loads((MAN / "stats.json").read_text(encoding="utf-8"))
+    if stats.get("policy") != "final-2026-10-14":        # v2 was built under the old rules (history)
+        assert not any(is_test_vn(r["vn"]) for r in rows())
 
 
 def test_stats_pin_the_npz_files_and_the_local_manifests():

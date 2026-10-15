@@ -275,6 +275,10 @@ INTRO = {
              "image alone. The candidates are shuffled and unattributed; any of them, or none, may be right.",
     "blind": "Blind re-check: decide each line from the image alone. The candidates are shuffled and "
              "unattributed; any of them, or none, may be right.",
+    "check": "Independent transcription check: no candidate reading is shown. Type exactly the text inside the "
+             "red frame (\"text\": ...), in the label conventions below; mark unsure when a character cannot be "
+             "settled from the image; skip \"cut\" when the frame cuts a character or the line runs on outside "
+             "it, \"bad\" when the frame holds no single readable horizontal text line.",
     "grad": "GRAD-crop check. Here the red frame is the box the console's line finder cut for the line, and "
             "the one candidate is the line's decided label. Pick 1 when the frame shows exactly that text and no "
             "other readable character (decoration, plates, background art and unreadable slivers of glyphs cut "

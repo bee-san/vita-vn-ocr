@@ -203,14 +203,18 @@ def vn_rank(vn, seed=20261012):
     return hashlib.sha256(f"{seed}:{vn}".encode()).hexdigest()
 
 
-def plan(shots):
+def plan(shots, skip_vns=frozenset(), skip_shots=frozenset()):
     """{line id: {"tier", "vn", "shot", "keys"}} for every candidate line, and the review order: by
     tier, then round-robin over VNs (a VN's n-th screenshot after every VN's (n-1)-th), lines of
-    one screenshot together, top to bottom."""
+    one screenshot together, top to bottom. Screenshots of skip_vns (reserved VNs) and skip_shots (dedupe
+    copies, leak drops: build_exclusions) get no line, but keep their place in the round-robin, so leaving
+    them out never reorders the other lines."""
     lines, auto_keys = {}, collections.defaultdict(collections.Counter)
     by_vn = collections.defaultdict(list)
     for s in shots.values():
         by_vn[s["vn"]].append(s["shot"])
+        if s["vn"] in skip_vns or s["shot"] in skip_shots:
+            continue
         for ln in s.get("lines", []):
             ok, _ = S.is_candidate(ln)
             if not ok:
@@ -240,13 +244,21 @@ def plan(shots):
 
 
 def cmd_plan(args):
+    """plan.jsonl: the review order of every candidate line the build could keep. The build's exclusions apply
+    here too (build_exclusions: reserved VNs, dedupe copies of v2's selection and the reclaim tier, among them the
+    reclaim tier's PSP-scale reads, and leak drops), so no reviewer or Codex call sees such a line."""
     shots = load_reads()
-    lines, order = plan(shots)
+    _, skip_vns, skip_shots, _ = build_exclusions()
+    lines, order = plan(shots, skip_vns, skip_shots)
     c = collections.Counter(x["tier"] for x in lines.values())
     sk = sum(1 for x in lines.values() if x.get("skip"))
+    out = [s for s in shots.values() if s["vn"] in skip_vns or s["shot"] in skip_shots]
     wjl(REVIEW / "plan.jsonl", [{"id": lid, "tier": lines[lid]["tier"]} for lid in order])
     print(json.dumps({"screenshots": len(shots), "candidate_lines": len(lines), "tiers": dict(c),
-                      "review": len(order), "skipped_repeat_cap": sk}, indent=1), flush=True)
+                      "review": len(order), "skipped_repeat_cap": sk,
+                      "excluded_screenshots": {"reserved-vn": sum(s["vn"] in skip_vns for s in out),
+                                               "dedupe-or-leak": sum(s["vn"] not in skip_vns for s in out)}},
+                     indent=1), flush=True)
 
 
 # ----------------------------------------------------------------------------- batches
@@ -394,6 +406,8 @@ def cmd_helpers(args):
             prior = [h for h in log if h.get("batch") == str(b)]
             if prior and any(h in busy for h in prior):
                 continue
+            if any(h["label"].startswith("self") and not h.get("cancelled") for h in prior):
+                continue                                  # reserved by this agent (pool.py reserve): no helper
             if prior and (not args.retry or len(prior) >= 3):     # a stalled or dead helper: at most 3 tries
                 continue
             n += 1
@@ -743,19 +757,22 @@ CHECK_NOTE = ("This is a label-precision check (v3): transcribe the framed text 
               "a button, a name), including every bracket and punctuation mark inside the frame; do not use skip\n"
               "\"ui\". Vita entries are at the Vita scale (960 x 544), PSP entries at the PSP scale (480 x 272).\n")
 # The sample (pre-registered here before any check sheet existed): entries are (line, one of its crops).
-CHECK_STRATA = {"new:t1": 300, "new:t2": 100, "new:edge": 100, "v2:auto": 120, "v2:reviewed": 80}
+# Amended 2026-10-15, still before any check sheet existed: the reclaim tier (2026-10-14) brought about 20k new
+# auto lines, which would otherwise have fallen into new:edge; they get their own stratum, new:auto.
+CHECK_STRATA = {"new:t1": 300, "new:t2": 100, "new:auto": 200, "new:edge": 100, "v2:auto": 120, "v2:reviewed": 80}
 CROP_KINDS = ("vita_ink", "psp_ink", "vita_grad", "psp_grad")
 
 
 def check_stratum(m, v2_ids, v3_pass1, tiers):
     """Stratum of a built line: new (not in v2) by its v3 review tier (plan tier of the line a v3 pass-1
-    batch decided) or "edge" (a v2 label whose withdrawn edge check v3 completed); v2 lines by auto /
+    batch decided), "auto" (an auto line v2 did not build: the reclaim tier's, or a flagged one whose edge
+    check v3 made) or "edge" (a reviewed v2 label whose withdrawn edge check v3 completed); v2 lines by auto /
     reviewed."""
     if m["id"] in v2_ids:
         return "v2:auto" if m["how"] == "auto" else "v2:reviewed"
     if (m.get("pass1") or {}).get("batch") in v3_pass1:
         return f"new:{tiers.get(m['id'], 't?')}"
-    return "new:edge"
+    return "new:auto" if m["how"] == "auto" else "new:edge"
 
 
 def check_sample(man, v2_ids, v3_pass1, tiers, seed, strata=CHECK_STRATA):

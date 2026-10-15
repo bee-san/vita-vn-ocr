@@ -1,6 +1,7 @@
 """realplus v3: the Claude + Luna agreement rule (realplus/luna.py, pool.apply_luna), the independent
 precision check (pool.check_*), the hygiene tool's blockers and the frozen-batch guarantee of
 decide.parsed. No network, screenshots or shared artifacts."""
+import argparse
 import json
 import os
 import sys
@@ -116,20 +117,22 @@ def test_check_sample_is_stratified_and_picks_a_crop_the_pool_holds():
     man += [_man(f"v2_{i}_0", "consensus", ["vita_ink"], "b0005") for i in range(5)]           # v2 reviewed
     man += [_man(f"v3_{i}_0", "consensus", ["vita_ink", "vita_grad"], "b0020") for i in range(30)]   # new t1
     man += [_man(f"v4_{i}_0", "consensus", ["vita_ink", "psp_grad"], "b0030") for i in range(6)]     # new t2
-    man += [_man(f"v5_{i}_0", "auto", ["vita_ink", "psp_ink", "vita_grad"]) for i in range(8)]       # new edge
+    man += [_man(f"v5_{i}_0", "auto", ["vita_ink", "psp_ink", "vita_grad"]) for i in range(8)]       # new auto
+    man += [_man(f"v6_{i}_0", "consensus", ["vita_ink", "psp_ink"], "b0007") for i in range(5)]     # new edge
     v2 = {m["id"] for m in man if m["id"].startswith(("v1_", "v2_"))}
     tiers = {m["id"]: ("t2" if m["id"].startswith("v4_") else "t1") for m in man}
-    strata = {"new:t1": 10, "new:t2": 10, "new:edge": 4, "v2:auto": 5, "v2:reviewed": 2}
+    strata = {"new:t1": 10, "new:t2": 10, "new:auto": 4, "new:edge": 3, "v2:auto": 5, "v2:reviewed": 2}
     sample = PL.check_sample(man, v2, {"b0020", "b0030"}, tiers, "seed", strata)
     by = {}
     for e in sample:
         by.setdefault(e["stratum"], []).append(e)
-    assert {k: len(v) for k, v in by.items()} == {"new:t1": 10, "new:t2": 6, "new:edge": 4, "v2:auto": 5,
-                                                   "v2:reviewed": 2}
+    assert {k: len(v) for k, v in by.items()} == {"new:t1": 10, "new:t2": 6, "new:auto": 4, "new:edge": 3,
+                                                   "v2:auto": 5, "v2:reviewed": 2}
     rows = {m["id"]: m for m in man}
     assert all(e["crop"] in rows[e["id"]]["crops"] for e in sample)
     assert sample == PL.check_sample(man, v2, {"b0020", "b0030"}, tiers, "seed", strata)     # pre-registered
-    assert {e["crop"] for e in by["new:edge"]} <= {"vita_ink", "psp_ink", "vita_grad"}
+    assert {e["crop"] for e in by["new:auto"]} <= {"vita_ink", "psp_ink", "vita_grad"}
+    assert {e["crop"] for e in by["new:edge"]} <= {"vita_ink", "psp_ink"}
 
 
 def test_check_score_counts_skips_as_disagreements_by_stratum_and_crop():
@@ -148,7 +151,8 @@ def test_check_score_counts_skips_as_disagreements_by_stratum_and_crop():
 
 
 def test_check_stratum_new_edge_is_an_unreviewed_v2_label_outside_v2():
-    assert PL.check_stratum(_man("x", "auto", ["vita_ink"]), set(), {"b0020"}, {}) == "new:edge"
+    assert PL.check_stratum(_man("x", "auto", ["vita_ink"]), set(), {"b0020"}, {}) == "new:auto"
+    assert PL.check_stratum(_man("x", "consensus", ["vita_ink"], "b0003"), set(), {"b0020"}, {}) == "new:edge"
     assert PL.check_stratum(_man("x", "consensus", ["vita_ink"], "b0020"), set(), {"b0020"}, {"x": "t2"}) == "new:t2"
     assert PL.check_stratum(_man("x", "consensus", ["vita_ink"], "b0003"), {"x"}, {"b0020"}, {}) == "v2:reviewed"
 
@@ -292,3 +296,22 @@ def test_load_reads_merges_the_reclaim_tier(tmp_path, monkeypatch):
     other = tmp_path / "other.jsonl"
     other.write_text(json.dumps({"shot": "v2_2", "vn": "v2", "kind": "vita"}) + "\n")
     assert set(PL.load_reads(other)) == {"v2_2"}                # a different path: no merge
+
+
+def test_helpers_skip_a_batch_the_agent_reserved_for_itself(tmp_path, monkeypatch):
+    """pool.py reserve marks a batch self-<name>: the feed queues no helper for it while it is open, but does for
+    an open batch nobody holds (and again for the reserved one once the reservation is cancelled)."""
+    for n in (1, 2):
+        d = tmp_path / "pass1" / f"b{n:04d}"
+        d.mkdir(parents=True)
+        (d / "batch.json").write_text("{}")
+    monkeypatch.setattr(PL, "REVIEW", tmp_path)
+    monkeypatch.setattr(PL, "HERD_DIR", tmp_path)
+    monkeypatch.setattr(PL, "live_helpers", lambda: set())
+    queued = []
+    monkeypatch.setattr(PL.subprocess, "run", lambda cmd, **kw: queued.append(cmd[1]))
+    PL.cmd_reserve(argparse.Namespace(batch=[str(tmp_path / "pass1" / "b0001")]))
+    PL.cmd_helpers(argparse.Namespace(max=6, kinds="pass1", retry=True))
+    log = PL.helper_log()
+    assert [h["batch"].rsplit("/", 1)[1] for h in log] == ["b0001", "b0002"] and len(queued) == 1
+    assert log[0]["label"] == "self-b0001" and log[1]["label"] == f"{PL.HELPER}1"

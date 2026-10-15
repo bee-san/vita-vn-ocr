@@ -29,6 +29,12 @@ comma-separated list of key=value:
                 polarities (real crops are stored as the console hands them over, dark text
                 inverted; eval feeds them as they are on screen)
   aug=1         0 turns augmentation off for the source
+  fa=0          finder augmentation (train/finder_aug.py; VOCR5's arm F): with this probability a line
+                first gets what the console's GRAD finder adds around it (extra rows with a box border,
+                a neighbour line's glyphs, furigana or scenery; a next-page cursor or a portrait edge),
+                resized back to height 32; the donor of borrowed glyphs is another line of the batch.
+                The label is unchanged. 0 draws nothing: the batches are those without the option.
+                Lines with frame targets (kd) never get it
 
 Augmentation (train.py's plus a PSP-like down-up resize and JPEG): lines with frame
 targets get only augmentations that keep the frame grid (no horizontal stretch).
@@ -77,6 +83,7 @@ sys.path.insert(0, str(ROOT / "eval"))
 from metrics import lev, norm, score_hiragana  # noqa: E402
 
 from common import DATA, load_vocab  # noqa: E402
+from finder_aug import finder_aug  # noqa: E402
 from model import TinyVNOCR, fuse_rep, load_plain_into_rep, set_weight_quant  # noqa: E402
 from source_policy import (  # noqa: E402
     CAPS,
@@ -325,7 +332,7 @@ def augment(g, rng, geo=True, inv=0.0, min_width=8):
 
 def make_batch(items, rng, src_opts):
     gs = []
-    for it in items:
+    for j, it in enumerate(items):
         o = src_opts[it.src]
         if rng is not None and o.get("aug", "1") != "0":
             # Shrinking a tight crop must retain enough frames for the label, including
@@ -334,7 +341,18 @@ def make_batch(items, rng, src_opts):
             frames = 1 if it.ids is None else len(it.ids) + sum(
                 a == b for a, b in zip(it.ids, it.ids[1:]))
             min_width = max(8, (frames - 1) * STRIDE + 1)
-            g = augment(it.img, rng, geo=it.kid is None, inv=float(o.get("inv", 0.2)),
+            g = it.img
+            fa = float(o.get("fa", 0))
+            # fa=0 (the default) draws nothing here, so the random stream and every batch
+            # are as without the option. Lines with frame targets never get it: it changes
+            # the width, which would misalign their teacher frames.
+            if fa > 0 and it.kid is None and rng.random() < fa:
+                donor = None
+                if len(items) > 1:
+                    k = int(rng.integers(len(items) - 1))
+                    donor = items[k + (k >= j)].img
+                g = finder_aug(it.img.astype(np.float32), rng, donor, min_width=min_width, height=H, max_w=MAX_W)
+            g = augment(g, rng, geo=it.kid is None, inv=float(o.get("inv", 0.2)),
                         min_width=min_width)
         else:
             g = it.img.astype(np.float32)
@@ -538,7 +556,8 @@ def validate_policy_options(opts):
 
 
 def execution_identity(vocab_path, vocab, context=None):
-    files = [HERE / name for name in ("train2.py", "source_policy.py", "train.py", "model.py", "restore_blob.py")]
+    files = [HERE / name for name in ("train2.py", "source_policy.py", "train.py", "model.py", "restore_blob.py",
+                                      "finder_aug.py")]
     files += [ROOT / "synth/common.py", ROOT / "eval/metrics.py"]
     identity = {"schema": 1, "vocabulary_file_sha256": file_sha256(vocab_path),
             "ordered_vocabulary_sha256": json_digest(vocab),

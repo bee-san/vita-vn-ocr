@@ -248,9 +248,14 @@ where three of the six models' VN intervals exclude 0. On 960×544 Vita text the
 is already close to the text and the recognizers were fine-tuned on GRAD crops too (the real pools hold GRAD
 crops), so cutting it back moves them off what they learned; the development cohorts held too few native Vita
 frames of CLANNAD's kind to show it. **Recommendation for the overlay** (made after seeing the protected sets, so
-it is a deployment caution, not a selection): apply `VOCR_REFINE_DEFAULT` where the text is PSP-sized (PSP titles,
-including under Adrenaline) and keep flags 0 for native Vita titles until a Vita development cohort shows a gain,
-with A/B logging in the test build. The refinement and its default are unchanged.
+it is a deployment caution, not a selection): apply `VOCR_REFINE_DEFAULT` where the captured text is PSP-sized,
+and keep flags 0 for native Vita titles until a Vita development cohort shows a gain, with A/B logging in the test
+build. Whether that covers PSP titles under Adrenaline is **untested**: every PSP frame measured here is at the
+PSP's 480×272 (native captures, or PC screenshots scaled to fit it), and none is an Adrenaline capture (the owner's
+frames hold no Adrenaline upscale, `docs/owner-games.md`). Adrenaline can show a PSP game 2× on the Vita's 960×544
+(nearest or smoothed, `docs/native-pool.md`), which puts the text at about twice PSP's pixel size, like native
+Vita text, where the protected sets show no gain. So decide it by the text size the overlay captures, and check it
+in the A/B logs before it becomes a default. The refinement and its default are unchanged.
 
 ## 6. Cost
 
@@ -302,6 +307,7 @@ pre-fix file.
 - Speaker names are not fixed (23-31% CER on GRAD and refined crops alike): GRAD's name boxes often hold the
   plate's decoration, and the owner's 13:57Z rule makes names secondary.
 - Vita: see §5. The development cohorts are PSP-heavy (devnative: 108 Vita lines of 551).
+- Adrenaline: no measured frame is a PSP game shown 2× on the Vita (§5), so the refinement is untested there.
 - Every console time is a qemu-based estimate; nothing ran on a console.
 
 ## 8. For VOCR5

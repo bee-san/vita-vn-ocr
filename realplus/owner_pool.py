@@ -34,6 +34,7 @@ import argparse
 import collections
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -528,12 +529,18 @@ def cmd_merge(args):
 # ----------------------------------------------------------------------------- publish (aggregate only)
 
 NAME_RULE = ("a speaker name: a line a Claude look flagged (\"name\": true in pass 1, a confirm look, an edge check "
-             "or the precision check), or a line whose label has the key of a flagged line of the same VN")
+             "or the precision check), a line whose label has the key of a flagged line of the same VN, or a label "
+             "that is one 【...】 bracket (the review conventions' 【name】)")
+BRACKET_NAME = re.compile(r"【[^【】]+】")
+MENU = ("title_screen", "settings_screen")          # the 2026-10-14 drop's frame categories that are not dialogue
+MENU_RULE = ("a menu line: a line of a frame that the 2026-10-14 drop's own manifest calls a title or settings screen "
+             "(owner-games/<folder>/manifest_20261014.jsonl \"category\"); the 2026-10-13 drop has no categories")
 
 
 def name_ids(labels, kinds=KINDS):
     """Line ids of the speaker names among labels (NAME_RULE). Auto lines had no pass-1 look, and name plates repeat, so
-    a flagged label marks its copies in the same VN too. The dialogue-only count is the built lines outside this set."""
+    a flagged label marks its copies in the same VN too. The dialogue-only count is the built lines outside this set
+    and outside the menu frames (menu_shots)."""
     from devnative import decide as D
     lab = {r["id"]: r for r in labels}
     flagged = {r["id"] for r in labels if r.get("name")}
@@ -541,16 +548,31 @@ def name_ids(labels, kinds=KINDS):
         bs = PL.done_batches(kind)
         flagged |= {lid.split("@", 1)[0] for lid, d in (D.collect(bs) if bs else {}).items() if d.get("name")}
     keys = {(lab[i]["vn"], vote.key(lab[i]["label"])) for i in flagged if (lab.get(i) or {}).get("label")}
-    return flagged | {r["id"] for r in labels if r.get("label") and (r["vn"], vote.key(r["label"])) in keys}
+    return flagged | {r["id"] for r in labels if r.get("label") and ((r["vn"], vote.key(r["label"])) in keys
+                                                                    or BRACKET_NAME.fullmatch(r["label"].strip()))}
+
+
+def menu_shots(frames, root=None):
+    """Shot keys of the frames whose drop manifest calls them a title or settings screen (MENU_RULE). Their lines are
+    real console text and stay in the pool, but they are not dialogue."""
+    import shots as SH
+    root = Path(root) if root else SH.OWNER_GAMES
+    cat = {}
+    for folder in sorted({f["folder"] for f in frames}):
+        for r in jl(root / folder / "manifest_20261014.jsonl"):
+            cat[(folder, r["file"])] = r.get("category")
+    return {f["shot"] for f in frames if cat.get((f["folder"], f["file"])) in MENU}
 
 
 def per_game(frames, labels, man, drop_games=()):
-    """{vn: {...}} for the table: platform, folders, frames read, candidate lines, kept labels, built lines, dialogue
-    lines (built lines that are not speaker names), by crop kind. Counts only."""
+    """{vn: {...}} for the table: platform, folders, frames read (of them menu frames), candidate lines, kept labels,
+    built lines, menu lines, dialogue lines (built lines that are neither speaker names nor on a menu frame), by crop
+    kind. Counts only. A frame or line row may carry "menu" (menu_shots)."""
     out = collections.defaultdict(lambda: collections.Counter())
     meta = collections.defaultdict(dict)
     for f in frames:
         out[f["vn"]]["frames"] += 1
+        out[f["vn"]]["menu_frames"] += bool(f.get("menu"))
         meta[f["vn"]].setdefault("platform", f["kind"])
         meta[f["vn"]].setdefault("folders", set()).add(f["folder"])
     for r in labels:
@@ -559,7 +581,8 @@ def per_game(frames, labels, man, drop_games=()):
         out[vn]["kept_labels"] += r["status"] == "kept"
     for m in man:
         out[m["vn"]]["lines"] += 1
-        out[m["vn"]]["dialogue_lines"] += not m.get("name")
+        out[m["vn"]]["menu_lines"] += bool(m.get("menu"))
+        out[m["vn"]]["dialogue_lines"] += not m.get("name") and not m.get("menu")
         for c in m["crops"]:
             out[m["vn"]][f"crops_{c}"] += 1
     titles = {g["vn"]: g["title"] for g in drop_games}
@@ -575,9 +598,14 @@ def cmd_publish(args):
     frames = jl(OUT / "manifests" / "frames.jsonl")
     labels = jl(OUT / "labels.jsonl")
     man = jl(OUT / "manifests" / f"lines_{args.tag}.jsonl")
-    # the build's line manifests carry no name flag: take it from the labels and every look (NAME_RULE)
+    # the build's line manifests carry no name flag: take it from the labels and every look (NAME_RULE); a line of a
+    # title or settings screen (MENU_RULE) is not dialogue either
     names, pass1_names = name_ids(labels), {r["id"] for r in labels if r.get("name")}
-    man = [dict(m, name=m["id"] in names) for m in man]
+    menu = menu_shots(frames)
+    frames = [dict(f, menu=f["shot"] in menu) for f in frames]
+    man = [dict(m, name=m["id"] in names, menu=m["shot"] in menu) for m in man]
+    # the menu lines' ids, for a trainer that wants to leave them out (private, next to the npz files)
+    wjl(OUT / "manifests" / f"menu_lines_{args.tag}.jsonl", [{"id": m["id"], "vn": m["vn"]} for m in man if m["menu"]])
     # titles: both drops' public tables (the 2026-10-13 drop's former -TEST folders train in this pool too)
     games = [g for d in ("20261013", "20261014") for g in json.loads(
         (ROOT / "data" / "manifests" / f"owner_drop_{d}.json").read_text(encoding="utf-8"))["games"]]
@@ -590,9 +618,13 @@ def cmd_publish(args):
            "frames_by_kind": dict(collections.Counter(f["kind"] for f in frames)),
            "labels": dict(collections.Counter(f"{r['status']}:{r['how'] if r['status'] == 'kept' else r['why']}"
                                               for r in labels)),
-           "build": build, "lines": len(man), "dialogue_lines": sum(not m["name"] for m in man),
+           "build": build, "lines": len(man), "dialogue_lines": sum(not m["name"] and not m["menu"] for m in man),
+           "dialogue_lines_by_kind": dict(collections.Counter(m["kind"] for m in man
+                                                              if not m["name"] and not m["menu"])),
            "name_lines": sum(m["name"] for m in man), "name_rule": NAME_RULE,
            "name_lines_pass1_flag": sum(m["id"] in pass1_names for m in man),
+           "menu_frames_read": len(menu), "menu_lines": sum(m["menu"] for m in man), "menu_rule": MENU_RULE,
+           "menu_lines_by_how": dict(collections.Counter(m["how"] for m in man if m["menu"])),
            "per_game": per_game(frames, labels, man, games)}
     for k in ("pass1", "confirm", "edge", "check"):
         doc[f"batches_{k}"] = len(PL.batch_dirs(k))

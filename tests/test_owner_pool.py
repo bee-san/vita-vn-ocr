@@ -191,13 +191,30 @@ def test_merge_keeps_every_crop_kind_of_a_line_under_one_cap(tmp_path, monkeypat
 
 
 def test_per_game_table_counts_only():
-    frames = [{"vn": "v2", "kind": "psp", "folder": "psp-b-v2"}, {"vn": "v2", "kind": "psp", "folder": "psp-b-v2"}]
+    frames = [{"vn": "v2", "kind": "psp", "folder": "psp-b-v2"}, {"vn": "v2", "kind": "psp", "folder": "psp-b-v2",
+                                                                  "menu": True}]
     labels = [{"id": "v2_p2f0000_0", "status": "kept"}, {"id": "v2_p2f0000_1", "status": "dropped"}]
     man = [{"vn": "v2", "name": True, "crops": {"ink": [0, 0, 1, 1]}},
-           {"vn": "v2", "name": False, "crops": {"ink": [0, 0, 1, 1], "grad": [0, 0, 1, 1]}}]
+           {"vn": "v2", "name": False, "crops": {"ink": [0, 0, 1, 1], "grad": [0, 0, 1, 1]}},
+           {"vn": "v2", "name": False, "menu": True, "crops": {"ink": [0, 0, 1, 1]}}]
     t = OP.per_game(frames, labels, man, [{"vn": "v2", "title": "B"}])
-    assert t == {"v2": {"platform": "psp", "folders": ["psp-b-v2"], "title": "B", "frames": 2, "candidates": 2,
-                        "kept_labels": 1, "lines": 2, "dialogue_lines": 1, "crops_ink": 2, "crops_grad": 1}}
+    assert t == {"v2": {"platform": "psp", "folders": ["psp-b-v2"], "title": "B", "frames": 2, "menu_frames": 1,
+                        "candidates": 2, "kept_labels": 1, "lines": 3, "menu_lines": 1, "dialogue_lines": 1,
+                        "crops_ink": 3, "crops_grad": 1}}
+
+
+def test_menu_shots_take_the_drops_frame_categories(tmp_path):
+    for folder, rows in (("psp-a-v1", [("d20261014_000001.png", "dialogue"), ("d20261014_000002.png", "title_screen")]),
+                         ("vita-b-v2", [("d20261014_000001.png", "settings_screen")])):
+        (tmp_path / folder).mkdir()
+        (tmp_path / folder / "manifest_20261014.jsonl").write_text(
+            "".join(json.dumps({"file": f, "category": c}) + "\n" for f, c in rows))
+    (tmp_path / "psp-c-v3").mkdir()                       # a first-drop folder: no manifest_20261014.jsonl
+    frames = [{"shot": "v1_p2f0000", "folder": "psp-a-v1", "file": "d20261014_000001.png"},
+              {"shot": "v1_p2f0001", "folder": "psp-a-v1", "file": "d20261014_000002.png"},
+              {"shot": "v2_p2f0000", "folder": "vita-b-v2", "file": "d20261014_000001.png"},
+              {"shot": "v3_p2f0000", "folder": "psp-c-v3", "file": "0001.png"}]
+    assert OP.menu_shots(frames, root=tmp_path) == {"v1_p2f0001", "v2_p2f0000"}
 
 
 def test_name_ids_take_every_look_and_the_same_label_in_the_same_vn(monkeypatch):
@@ -207,9 +224,11 @@ def test_name_ids_take_every_look_and_the_same_label_in_the_same_vn(monkeypatch)
               {"id": "v2_p2f0000_0", "vn": "v2", "status": "kept", "label": "岡部", "how": "auto"},  # another VN
               {"id": "v1_p2f0004_1", "vn": "v1", "status": "kept", "label": "まゆり", "how": "auto"},  # check flag
               {"id": "v1_p2f0005_0", "vn": "v1", "status": "kept", "label": "トゥットゥルー♪"},
-              {"id": "v1_p2f0006_0", "vn": "v1", "status": "dropped", "label": None}]
+              {"id": "v1_p2f0006_0", "vn": "v1", "status": "dropped", "label": None},
+              {"id": "v2_p2f0007_0", "vn": "v2", "status": "kept", "label": "【紅莉栖】", "how": "auto"},  # 【name】
+              {"id": "v2_p2f0008_0", "vn": "v2", "status": "kept", "label": "【紅莉栖】そうね", "how": "auto"}]
     monkeypatch.setattr(OP.PL, "done_batches", lambda kind: [kind] if kind in ("check", "edge") else [])
     looks = {"check": {"v1_p2f0004_1@ink_m4": {"decision": "text", "name": True}},
              "edge": {"v1_p2f0005_0": {"decision": "pick", "name": False}}}
     monkeypatch.setattr(D, "collect", lambda bs: looks[bs[0]])
-    assert OP.name_ids(labels) == {"v1_p2f0000_0", "v1_p2f0003_0", "v1_p2f0004_1"}
+    assert OP.name_ids(labels) == {"v1_p2f0000_0", "v1_p2f0003_0", "v1_p2f0004_1", "v2_p2f0007_0"}

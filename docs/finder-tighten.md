@@ -274,10 +274,11 @@ where the captured text is PSP-sized, and keep flags 0 for native Vita titles un
 a gain, with A/B logging in the test build. Whether that covers PSP titles under Adrenaline is **untested**: every
 PSP frame measured here is at the PSP's 480×272 (native captures, or PC screenshots scaled to fit it), and none is
 an Adrenaline capture (the owner's frames hold no Adrenaline upscale, `docs/owner-games.md`). Adrenaline can show a
-PSP game 2× on the Vita's 960×544 (nearest or smoothed, `docs/native-pool.md`), which puts the text at about twice
-PSP's pixel size, like native Vita text, where the protected sets show no gain. So decide it by the text size the
-overlay captures, and check it in the A/B logs before it becomes a default. The refinement and its default are
-unchanged.
+PSP game 2× on the Vita's 960×544 (nearest or smoothed, `docs/native-pool.md`), and vita-jp-overlay's notes say its
+display hook receives a PSP game's 480×272 frame shown 2× through the emulator's bilinear filter (its
+`docs/vita-vn-ocr.md`, on blank lines). That puts the text at about twice PSP's pixel size, like native Vita text,
+where the protected sets show no gain. So decide it by the text size the overlay captures, and check it in the A/B
+logs before it becomes a default. The refinement and its default are unchanged.
 
 ## 6. Cost
 

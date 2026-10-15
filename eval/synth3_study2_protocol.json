@@ -8,7 +8,7 @@
   "why_study2": "train2 found that the pretrain does most of the work and the real fine-tune adds -0.4 to -0.9 points on teacher_val. A synthetic-data gain in a short pretrain can shrink or vanish once nvsynth's 12M every-line crops, 2-2.5x more steps and the real fine-tune are added; the released models were trained that way, so the decision that matters for a release is made here.",
   "arms_chosen": "A (synth2, the released recipe) against study 1's winner C (the mix). B (synth3 alone) is not carried: C beat it in study 1. A version-3 synth3 arm is not included: study 1b (agent synth3-v3) had no committed result when this protocol was committed."
  },
- "machine": "dev-dsk-skerraut-main-1a-dc2efe10 (64 AMD EPYC 9R14 cores, the same CPU model as study 1's box). Every study-2 run trains here through heavy.sh with HEAVY_SLOTS=10 (at most 10 concurrent training runs), 5 torch threads per run. A re-run of study 1's B_s3_seed1 on this machine reproduced study 1's logged CTC loss and per-source draw counts at steps 100, 200 and 300 exactly.",
+ "machine": "build-host (64 AMD EPYC 9R14 cores, the same CPU model as study 1's box). Every study-2 run trains here through heavy.sh with HEAVY_SLOTS=10 (at most 10 concurrent training runs), 5 torch threads per run. A re-run of study 1's B_s3_seed1 on this machine reproduced study 1's logged CTC loss and per-source draw counts at steps 100, 200 and 300 exactly.",
  "architectures": {
   "FL10": {
    "width": 1.0, "bottleneck": 96, "depth": 1, "ctx": 2, "ctx_k": 5, "height": 32,

@@ -5,7 +5,7 @@
  "question": "At FL10's topology (width 1.0, bottleneck 96, the always-safe tier's shape) and synth4's 16,000-step pretraining recipe, does a VN-ordered 4,987-class head (data/vocab_4987_proof.txt: data/vocab.txt's 486 non-kanji plus its 4,499 kanji with the most weight in Jiten's visual-novel word list, plus <unk>) cost accuracy against FL10's 3,500-class vocab, and does it learn the 1,554 classes FL10 lacks?",
  "base_protocol": {
   "file": "eval/synth4_protocol.json",
-  "sha256": "5a14d5c3753d616117767225007056999bf562cf9d3e7f037cd511549ceff3e3",
+  "sha256": "1ea0bbc723299d563e400e4a7898ac22766b31953c9a7b4ee4cdd1adb1ffc28e",
   "copied_exactly": [
    "architecture except the vocab",
    "recipe",
@@ -21,7 +21,7 @@
   ],
   "changed": "the arms: F_s4 (reused, FL10's vocab) against G_v4987 (new, the proof vocab); the decision is two-sided (worse / better / no measured difference); character-level strata and a synthetic probe are added, report only"
  },
- "machine": "dev-dsk-skerraut-main-1a-dc2efe10 (64 cores), the machine D_s3v3 trained on (study 1b, 2026-10-13 02:5x-05:02Z)",
+ "machine": "build-host (64 cores), the machine D_s3v3 trained on (study 1b, 2026-10-13 02:5x-05:02Z)",
  "architecture": {
   "name": "FL10 (the shipped default's topology)",
   "width": 1.0,

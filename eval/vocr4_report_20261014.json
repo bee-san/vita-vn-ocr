@@ -625,7 +625,7 @@
     "dirty": false,
     "head": "a13a31ef8c9b934cbd913ca5b30bb5a0d988670d"
    },
-   "host": "dev-dsk-skerraut-main-1a-dc2efe10.eu-west-1.amazon.com",
+   "host": "build-host",
    "libc": [
     "glibc",
     "2.34"
@@ -994,7 +994,7 @@
     "dirty": false,
     "head": "a13a31ef8c9b934cbd913ca5b30bb5a0d988670d"
    },
-   "host": "dev-dsk-skerraut-main-1a-dc2efe10.eu-west-1.amazon.com",
+   "host": "build-host",
    "libc": [
     "glibc",
     "2.34"
@@ -1213,10 +1213,10 @@
   }
  },
  "part_sha256": {
-  "a9": "f9264bc50788e6e6dde7521494585edcde428510f7cba8f6ad94855b81e955d5",
-  "overlay": "caa9ac37d611d6e99cdc79e56fb935bda101dbaecdbc2e0f7177b5299e96cc88",
+  "a9": "60a05eb4a42d9d1a44abd3cbd2a47c934b8c625c157c7167ffe5cf0884ecdebb",
+  "overlay": "a6d1584027bece5458cf96942389a60751698de004b74bd2795266329024651f",
   "overlay_vs_dialogue": "da6560b4ad5bbe2797869ed7ccd2f0334f62cab8b0899884b3d78a4c45355e66",
-  "shared": "8d31f70833f342c5e3f4a258939024155ac5ebb6af0c2bfed1dc6e369c6780fe"
+  "shared": "f72bea7b5d765de4606d330e596f2f88594256cebdc67d29743f3e48071bc729"
  },
  "parts": [
   "a9",
@@ -38861,7 +38861,7 @@
     "dirty": false,
     "head": "a13a31ef8c9b934cbd913ca5b30bb5a0d988670d"
    },
-   "host": "dev-dsk-skerraut-main-1a-dc2efe10.eu-west-1.amazon.com",
+   "host": "build-host",
    "libc": [
     "glibc",
     "2.34"

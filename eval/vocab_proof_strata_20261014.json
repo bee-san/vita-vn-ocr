@@ -1,6 +1,6 @@
 {
  "kind": "vocab-proof-strata",
- "protocol_sha256": "ca8de1e5b6fe9ebedfc2a7a55fc8dadc18205bf11ff4223209fa3177206d9c09",
+ "protocol_sha256": "11863c1446b4c245983d88985c46ddc8d9e4f3aa34ab09fafbf4ba19f2c08107",
  "files": {
   "teacher_val.json": {
    "lines": 1643,

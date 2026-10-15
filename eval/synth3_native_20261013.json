@@ -2,7 +2,7 @@
  "kind": "synth3-native-result",
  "protocol": {
   "file": "eval/synth3_native_protocol.json",
-  "sha256": "87be292dd794ccda64a48ec2a0ab2b49cbc77562f67f3031d8d606a08656e2bb"
+  "sha256": "6398fbc03db162bde946f2aee158bde933f56343216992be2f25b98cb885175f"
  },
  "git": "484b9a86ed1b9a41e2cafa83ae36d47068328e26",
  "scored": "2026-10-13T14:38:35Z",
@@ -22,7 +22,7 @@
  },
  "devnative_v3_pooled": {
   "kind": "synth3-ablation-result",
-  "protocol_sha256": "87be292dd794ccda64a48ec2a0ab2b49cbc77562f67f3031d8d606a08656e2bb",
+  "protocol_sha256": "6398fbc03db162bde946f2aee158bde933f56343216992be2f25b98cb885175f",
   "dev": {
    "merged": [
     {
@@ -412,7 +412,7 @@
  "devnative_v3_files": {
   "strict_ink": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "87be292dd794ccda64a48ec2a0ab2b49cbc77562f67f3031d8d606a08656e2bb",
+   "protocol_sha256": "6398fbc03db162bde946f2aee158bde933f56343216992be2f25b98cb885175f",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/native-frames/study/dev/devnative_strict_ink_noowner.npz",
     "sha256": "742944e99dd058bdfbce5c298100cec1b85d37bff5378670b301fa61a1e3cde7",
@@ -679,7 +679,7 @@
   },
   "strict_grad": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "87be292dd794ccda64a48ec2a0ab2b49cbc77562f67f3031d8d606a08656e2bb",
+   "protocol_sha256": "6398fbc03db162bde946f2aee158bde933f56343216992be2f25b98cb885175f",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/native-frames/study/dev/devnative_strict_grad_noowner.npz",
     "sha256": "76bb3329a24866b331b55a8526a82092b3ec084e4e1e7b368c8cf1c835572d3f",
@@ -921,7 +921,7 @@
   },
   "tv_native_ink": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "87be292dd794ccda64a48ec2a0ab2b49cbc77562f67f3031d8d606a08656e2bb",
+   "protocol_sha256": "6398fbc03db162bde946f2aee158bde933f56343216992be2f25b98cb885175f",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/native-frames/study/dev/devnative_tv_native_ink_noowner.npz",
     "sha256": "baef59f132acd3242b237c9d0d168b3d5202f6c381b716109cb20e0fa044e985",
@@ -1278,7 +1278,7 @@
   },
   "tv_native_grad": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "87be292dd794ccda64a48ec2a0ab2b49cbc77562f67f3031d8d606a08656e2bb",
+   "protocol_sha256": "6398fbc03db162bde946f2aee158bde933f56343216992be2f25b98cb885175f",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/native-frames/study/dev/devnative_tv_native_grad_noowner.npz",
     "sha256": "2eb847ebf01d76741b1fdd2d1b92debf719b6a8edaacb8e8114d697632a73f3b",
@@ -1636,7 +1636,7 @@
  },
  "teacher_val_reported_only": {
   "kind": "synth3-ablation-result",
-  "protocol_sha256": "87be292dd794ccda64a48ec2a0ab2b49cbc77562f67f3031d8d606a08656e2bb",
+  "protocol_sha256": "6398fbc03db162bde946f2aee158bde933f56343216992be2f25b98cb885175f",
   "dev": {
    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/native-frames/study/dev/teacher_val_noowner.npz",
    "sha256": "f5c0032041c14b31bff87b52a56381b8f0d3e84e2f6cfd78a3b600e55751f81e",

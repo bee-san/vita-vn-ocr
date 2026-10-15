@@ -5,7 +5,7 @@
  "question": "Used as the VN-style synthetic source of train2's pretraining mixture, does replacing synth3 version 3's native console crops (platforms vita, psp and psp2x: 53% of its crops) with version 4's native console-frame renders (whole 960x544 / 480x272 frames, console scaling, 16-bit dither and VNDB's measured JPEG chain applied to the frame; docs/synth3-native.md) lower CER on native console frames (devnative v3) compared with version 3, at study 1's fixed architecture, recipe, step count and seeds?",
  "base_protocol": {
   "file": "eval/synth3_study1b_protocol.json",
-  "sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+  "sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
   "copied_exactly": [
    "architecture",
    "recipe",
@@ -18,7 +18,7 @@
   ],
   "changed": "the arms (D_s3v3 reused, E_s3nat new) and the deciding development set (devnative v3 instead of teacher_val: the question is about native console frames; teacher_val is two thirds PC screenshots scaled down)"
  },
- "machine": "dev-dsk-skerraut-main-1a-dc2efe10 (64 cores), the machine D_s3v3 trained on (study 1b, 2026-10-13 02:5x-05:02Z)",
+ "machine": "build-host (64 cores), the machine D_s3v3 trained on (study 1b, 2026-10-13 02:5x-05:02Z)",
  "architecture": {
   "name": "FL10 (the shipped default's topology)",
   "width": 1.0,

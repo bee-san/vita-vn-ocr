@@ -2,7 +2,7 @@
  "kind": "synth4-ablation-result",
  "protocol": {
   "file": "eval/synth4_protocol.json",
-  "sha256": "5a14d5c3753d616117767225007056999bf562cf9d3e7f037cd511549ceff3e3"
+  "sha256": "1ea0bbc723299d563e400e4a7898ac22766b31953c9a7b4ee4cdd1adb1ffc28e"
  },
  "comparison": "F_vs_D",
  "decision": {

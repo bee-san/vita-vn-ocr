@@ -102,8 +102,8 @@ of the gain (the sweep below): `l_w325v5631` has 22,672 L2 misses per frame with
 | VOCR3-H15 (1,155,968 B) | 5.07 | 2.90 | 3.36 | 2.17 | 2.52 | 1.22 → 0.70 s (0.81) |
 | VOCR4-W20 (1,558,016 B) | 6.94 | 4.08 | 4.83 | 3.06 | 3.62 | 1.66 → 0.98 s (1.16) |
 
-The 444 MHz column scales the cycles (the DRAM term in nanoseconds stays): a 444 MHz run is the overlay's opt-in
-clock flag (vita-jp-overlay), off by default.
+The 444 MHz column scales the cycles (the DRAM term in nanoseconds stays): a 444 MHz run is the overlay's
+`ocr_boost_clock` (vita-jp-overlay #93, on by default there).
 
 Larger tiles (`--tile 8 --head 32`, arena 318,528 B instead of 182,944 B for H15) give another 7 % (2.99 instead of
 3.21 ms per frame at that point of the work); not taken: the arena grows by 74 % and the overlay pins the default

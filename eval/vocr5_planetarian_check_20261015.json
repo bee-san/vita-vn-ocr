@@ -1,0 +1,70 @@
+{
+ "kind": "vocr4-vn-check",
+ "schema": 1,
+ "vns": [
+  "v27747",
+  "v34",
+  "v5698"
+ ],
+ "releases": 84,
+ "dump": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/native-frames/vndb/dump/db",
+ "sets": {
+  "teacher_val_dev.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/teacher_val_dev.npz",
+   "sha256": "e2f0300fd9f417b6c3c01e1dab36641bfd72749e2cac5db896226ef0d29b65dd",
+   "rows": 959,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "real_val_dev.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/real_val_dev.npz",
+   "sha256": "88a2d4a00d67f46f1f23d79eb71901c05727c9b58319f4441fc5145a0a665b32",
+   "rows": 807,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "devnative_tv_native_ink_dev.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/devnative_tv_native_ink_dev.npz",
+   "sha256": "c198c9ea147620e2f75b929dbb676eda30cd10137b2b3c14eae17f28204bc0c4",
+   "rows": 392,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "devnative_tv_native_grad_dev.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/devnative_tv_native_grad_dev.npz",
+   "sha256": "4bda0139ae52f6d472513e96d2f79d30cc25be96dbc2d2316b3bce22f5e4702a",
+   "rows": 319,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "devnative_strict_ink_dev.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/devnative_strict_ink_dev.npz",
+   "sha256": "ad4207cdfc6f3e667ffe776a80ac3f97fe58fc3e27dab6285a621e35e24c7645",
+   "rows": 32,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "devnative_strict_grad_dev.npz": {
+   "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/devnative_strict_grad_dev.npz",
+   "sha256": "5e5b147254f9e65ccd9d904d79db68224b8fd26e902a0b167dff005b725891a1",
+   "rows": 22,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "vita-test.jsonl": {
+   "file": "eval/manifests/vita-test.jsonl",
+   "sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+   "rows": 208,
+   "vn_rows": 0,
+   "session_rows": 0
+  },
+  "psp-test.jsonl": {
+   "file": "eval/manifests/psp-test.jsonl",
+   "sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+   "rows": 245,
+   "vn_rows": 0,
+   "session_rows": 0
+  }
+ },
+ "total_hits": 0
+}

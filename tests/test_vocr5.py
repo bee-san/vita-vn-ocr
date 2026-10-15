@@ -102,3 +102,99 @@ def test_decisions_pairs_and_cohorts():
     assert len(c["tv"]["sha256"]) == 64 and len(c["dn"]["files"]) == 4 and len(c["wd"]["files"]) == 2
     assert "0.5 x (tv + dn) / 2 + 0.5 x wd" in P["score"]["dev_score"]
     assert P["amendments"] == [] or all("date" in a and "change" in a for a in P["amendments"])
+
+
+# ---------------------------------------------------------------- eval/vocr5_pools.py on toy pools
+
+def _npz(path, rows):
+    """A train2-format shard: rows of (vn, line id, label)."""
+    import numpy as np
+    data = np.zeros(len(rows) * 4, np.uint8)
+    np.savez(path, data=data, offsets=np.arange(0, len(rows) * 4 + 1, 4), shapes=np.array([[2, 2]] * len(rows)),
+             labels=np.array(json.dumps([r[2] for r in rows], ensure_ascii=False)),
+             meta=np.array(json.dumps([{"vn": r[0], "id": r[1]} for r in rows])))
+    return path
+
+
+def test_pools_exclude_reserved_and_deduplicate_by_crop_style(tmp_path):
+    sys.path.insert(0, str(ROOT / "eval"))
+    import vocr5_pools as VP
+    ex, _ = VP.reserved()
+    res = json.loads((ROOT / "eval" / "manifests" / "reserved.json").read_text(encoding="utf-8"))
+    assert set(ex) == set(res["test"]) | set(res["dev_sample"])
+    test_vn, dev_vn = sorted(res["test"])[0], sorted(res["dev_sample"])[0]
+    exf = tmp_path / "ex.json"
+    exf.write_text(json.dumps({"vns": ex}))
+    tt = _npz(tmp_path / "tt.npz", [("v9001", "v9001_100_0", "あい"), ("v9001", "v9001_100_1", "うえ")])
+    rd = _npz(tmp_path / "rd.npz", [("v9001", "v9001_100_0", "あい")])            # control pools: never deduplicated
+    ink = _npz(tmp_path / "ink.npz", [("v9001", "v9001_100_7", "あい"), ("v9002", "v9002_5_0", "か"),
+                                      (test_vn, f"{test_vn}_1_0", "き"), (dev_vn, f"{dev_vn}_1_0", "く")])
+    grad = _npz(tmp_path / "grad.npz", [("v9001", "v9001_100_3", "あい"), ("v9001", "v9001_100_4", "あい")])
+    out = tmp_path / "out"
+    argv = ["vocr5_pools.py", "build", "--exclusions", str(exf), "--out", str(out), "--tag", "t",
+            f"tt={tt}", f"rd={rd}", f"rp3_ink={ink}", f"rp3_grad={grad}"]
+    old = sys.argv
+    try:
+        sys.argv = argv
+        VP.main()
+    finally:
+        sys.argv = old
+    rec = {p["name"]: p for p in json.loads((out / "pools_record_t.json").read_text())["pools"]}
+    assert rec["rd"]["out_rows"] == 1                       # rd keeps tt's line: the control pools stay whole
+    assert rec["rp3_ink"]["out_rows"] == 1                  # same screenshot + label + ink style dropped, reserved out
+    assert rec["rp3_ink"]["duplicates_dropped"] == 1
+    assert {k.split(":")[0] for k in rec["rp3_ink"]["dropped_by_reason"]} == {"test", "dev_sample"}
+    assert rec["rp3_grad"]["out_rows"] == 2                 # a GRAD crop stays when only its ink crop is elsewhere
+    assert VP.group_of("tvt") == "tt" and VP.group_of("own_m8") == "own" and VP.style_of("own_m4") == "ink"
+    assert VP.style_of("rp3_grad") == "grad" and VP.style_of("rp3_ref") == "ref"
+
+
+def test_fine_tune_sources_split_by_rows_and_sum_to_the_real_half():
+    sys.path.insert(0, str(ROOT / "eval"))
+    import vocr5_pools as VP
+    names = [n for _, _, ns, _ in VP.SOURCES for n in ns]
+    record = {"pools": [{"name": n, "out": f"/x/{n}.npz", "out_rows": 10 + i} for i, n in enumerate(names)]}
+    real = VP.ft_sources(record, {"rp3_grad": "/x/rp3_ref.npz"})
+    assert abs(sum(e["weight"] for e in real) - 0.5) < 1e-5
+    by = {e["name"]: e for e in real}
+    assert abs(by["rpi"]["weight"] + by["rpg"]["weight"] - 0.175) < 1e-6
+    assert by["rpi"]["fa"] == 0.3 and by["rpg"]["fa"] == 0 and by["rpg"]["refined"] == ["/x/rp3_ref.npz"]
+    script = RUN
+    assert 'fa={s[\'fa\']}' in script and '"F" else [])' in script
+
+
+# ---------------------------------------------------------------- eval/vocr5_select.py on toy components
+
+def _comps(errs):
+    """Toy components: errs {model: (tv, dn, wd) per-row errors}; 4 VNs, 10 rows per component."""
+    import numpy as np
+    sys.path.insert(0, str(ROOT / "eval"))
+    import vocr5_select as VS
+    comps = {n: VS.Component(n) for n in ("tv", "dn", "wd")}
+    vns = [f"v{i % 4}" for i in range(10)]
+    for model, (a, b, c) in errs.items():
+        for comp, e in zip(comps.values(), (a, b, c)):
+            comp.add(model, np.asarray(e, float), np.full(10, 20.0), vns, np.zeros(10, bool), {})
+    return VS, comps
+
+
+def test_decisions_follow_the_rule():
+    proto = {"tiers": {"Small": {"incumbent": {"name": "INC"}}},
+             "runs": {"fine_tunes": {"Small": {"P": ["v5p_S_seed1", "v5p_S_seed2"],
+                                               "F": ["v5f_S_seed1", "v5f_S_seed2"]}}}}
+    base = [2] * 10
+    better = [0] * 10
+    VS, comps = _comps({"v5p_S_seed1": (base, base, base), "v5p_S_seed2": (base, base, base),
+                        "v5f_S_seed1": (better, better, better), "v5f_S_seed2": (better, base, better),
+                        "INC": (base, base, [3] * 10)})
+    arm = VS.decide(proto, "Small", "arm", comps, n_boot=500)
+    assert arm["adopted"] and arm["adopted_arm"] == "F" and arm["rule"]["every_pair_below_zero"]
+    rep = VS.decide(proto, "Small", "replace", comps, arm, n_boot=500)
+    assert rep["replaces"] and rep["runs_x"] == ["INC", "INC"]
+    # a candidate worse on one component by a resolved margin is not adopted
+    VS, comps = _comps({"v5p_S_seed1": (base, base, base), "v5p_S_seed2": (base, base, base),
+                        "v5f_S_seed1": ([5] * 10, better, better), "v5f_S_seed2": ([5] * 10, better, better),
+                        "INC": (base, base, base)})
+    arm = VS.decide(proto, "Small", "arm", comps, n_boot=500)
+    assert not arm["rule"]["no_component_entirely_above_zero"] and arm["adopted_arm"] == "P"
+    assert abs(VS.score_of(comps, "v5p_S_seed1") - 10.0) < 1e-9      # 2 errors / 20 chars everywhere = 10 points

@@ -305,6 +305,8 @@ exhaustive proof for every MNN model or metadata failure.
 
 The project and arena binding are GPL-3.0-or-later. The decoder adaptation and
 Meiki/MNN code are Apache-2.0; model weights and their conversion are LGPL-3.0.
+`decode.c` and `decode.h` adapt rtr46/meikiocr 0.3.5; its Apache-2.0 licence text is in
+`LICENSE.meikiocr` (upstream `LICENSE` at commit `52aa607`, byte for byte; meikiocr has no NOTICE file).
 The resize adaptation retains the OpenCV contributors' BSD notices.
 The private test display's M+ 1p font is OFL-1.1, with its license in the VPK.
 The private VPK contains game screenshot crops: keep it local, and do not

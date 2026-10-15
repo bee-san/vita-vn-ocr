@@ -221,11 +221,22 @@ def cmd_prep(args):
 
 def cmd_pool_prep(args):
     """read.py's input for the owner training pool: every unique, eligible frame of the training folders.
-    A frame whose pixels another folder already holds is dropped (first folder in name order wins)."""
+    A frame whose pixels another folder already holds is dropped (first folder in name order wins). --skip-pool
+    leaves out the frames an earlier owner pool already read (its manifests/frames.jsonl, by decoded-pixel
+    sha256), so a later pool reads only new frames; --prefix names its shots <vn>_<prefix><n> (a VN's n-th unique
+    frame across its folders, in name order) apart from the first pool's <vn>_owner<n>."""
     out, pool = Path(args.out), Path(args.pool)
     rows = [json.loads(x) for x in (out / "inventory.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()]
     want = set(args.folder or ())
-    reads, frames, refused = [], [], collections.Counter()
+    skip = {}
+    for sp in getattr(args, "skip_pool", None) or ():
+        for x in (Path(sp) / "manifests" / "frames.jsonl").read_text(encoding="utf-8").splitlines():
+            if x.strip():
+                f = json.loads(x)
+                skip.setdefault(f["pixel_sha256"], f"{Path(sp).name}:{f['shot']}")
+    prefix = getattr(args, "prefix", None) or "owner"
+    reads, frames, refused, skipped = [], [], collections.Counter(), collections.Counter()
+    index = collections.Counter()
     for folder in sorted({r["folder"] for r in rows}):
         rs = [r for r in rows if r["folder"] == folder]
         if (want and folder not in want) or rs[0]["role"] != "training":
@@ -235,12 +246,17 @@ def cmd_pool_prep(args):
             continue
         keep = [r for r in rs if "duplicate_of" not in r and "error" not in r]
         for i, r in enumerate(keep):
+            n = i if prefix == "owner" else index[r["vn"]]
+            index[r["vn"]] += 1
             kind = "psp" if r["source"] == "480x272" and r["dims"] == [480, 272] else (
                 "vita" if r["dims"] == [960, 544] and r["source"] == "960x544" else None)
             if kind is None:
                 refused[f"{folder}: not a native frame ({r['source']}, {r['dims']})"] += 1
                 continue
-            shot = f"{r['vn']}_owner{i:04d}"
+            if r["pixel_sha256"] in skip:
+                skipped[folder] += 1
+                continue
+            shot = f"{r['vn']}_{prefix}{n:04d}"
             reads.append({"shot": shot, "vn": r["vn"], "kind": kind, "url": f"owner:{folder}/{r['file']}",
                           "path": str(Path(args.root) / folder / r["file"]), "release": None,
                           "session": f"owner/{folder}", "subset": "native", "flags": [], "source_kind": kind,
@@ -254,8 +270,8 @@ def cmd_pool_prep(args):
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows_), encoding="utf-8")
     print(json.dumps({"frames": len(reads), "by_vn": dict(collections.Counter(r["vn"] for r in reads)),
-                      "by_kind": dict(collections.Counter(r["kind"] for r in reads)), "refused": dict(refused)},
-                     indent=1), flush=True)
+                      "by_kind": dict(collections.Counter(r["kind"] for r in reads)), "refused": dict(refused),
+                      "skipped_read_by_an_earlier_pool": dict(skipped)}, indent=1), flush=True)
 
 
 def cmd_publish(args):
@@ -318,6 +334,8 @@ def main():
     p = sub.add_parser("pool-prep")
     p.add_argument("--pool", required=True, help="the owner pool directory (under shared/private)")
     p.add_argument("--folder", action="append", help="only these training folders (default: all)")
+    p.add_argument("--prefix", default="owner", help="shot name prefix: <vn>_<prefix><n> (a later pool: e.g. p2f)")
+    p.add_argument("--skip-pool", action="append", help="an earlier owner pool directory whose frames are skipped")
     p = sub.add_parser("publish")
     p.add_argument("--pool", required=True)
     p.add_argument("--tag", required=True)

@@ -25,9 +25,18 @@ static int failures;
 
 /* ------------------------------------------------------------ tiny blob builder */
 
-static unsigned char blob_buf[1 << 16] __attribute__((aligned(16)));
+static unsigned char blob_buf[1 << 17] __attribute__((aligned(16)));
 static size_t blob_pos;
 static uint32_t lcg = 12345u;
+
+/* every write into blob_buf asks first: a blob that does not fit stops the test */
+static void room(size_t n)
+{
+    if (blob_pos + n > sizeof blob_buf) {
+        fprintf(stderr, "test blob too large: %zu + %zu bytes\n", blob_pos, n);
+        exit(2);
+    }
+}
 
 static float frand(void)
 {
@@ -47,6 +56,7 @@ static void wr32(unsigned char *p, uint32_t v)
 static uint32_t put(const void *data, size_t n)
 {
     uint32_t off = (uint32_t)blob_pos;
+    room(n);
     memcpy(blob_buf + blob_pos, data, n);
     blob_pos = (blob_pos + n + 15u) & ~(size_t)15u;
     return off;
@@ -56,6 +66,7 @@ static uint32_t put_floats(unsigned n, float scale)
 {
     uint32_t off = (uint32_t)blob_pos;
     unsigned i;
+    room(4u * (size_t)n);
     for (i = 0; i < n; i++) {
         float v = frand() * scale;
         memcpy(blob_buf + blob_pos + 4u * i, &v, sizeof v);
@@ -113,9 +124,11 @@ static void mat_op(unsigned i, unsigned type, unsigned flags, unsigned kh, unsig
     uint32_t w_off, s_off = 0, b_off = 0;
     if (int8) {
         w_off = (uint32_t)blob_pos;
+        room(n);
         for (j = 0; j < n; j++) blob_buf[blob_pos + j] = (unsigned char)(signed char)(int)(frand() * 127.0f);
         blob_pos = (blob_pos + n + 15u) & ~(size_t)15u;
         s_off = (uint32_t)blob_pos;
+        room(4u * (size_t)cout_pad);
         for (j = 0; j < cout_pad; j++) {
             float sc = 0.01f + 0.004f * (float)(j % 5);
             memcpy(blob_buf + blob_pos + 4u * j, &sc, sizeof sc);
@@ -356,10 +369,28 @@ static void test_load(int int8)
     CHECK(vocr_check_crc(blob_buf, n) == VOCR_OK);
 }
 
-static void test_run_sc(int int8, unsigned sc, unsigned c1);
-static void test_run(int int8, unsigned c1) { test_run_sc(int8, 8, c1); }
+/* FNV-1a 64 over bytes */
+static uint64_t fnv64(uint64_t h, const void *p, size_t n)
+{
+    const unsigned char *b = (const unsigned char *)p;
+    while (n--) {
+        h ^= *b++;
+        h *= 0x100000001b3ull;
+    }
+    return h;
+}
 
-static void test_run_sc(int int8, unsigned sc, unsigned c1)
+/* Runs the blob of build_blob_sc(int8, sc, c1) in every mode and format, at every tiling. `want` is
+ * the known answer: the FNV-1a 64 of every reference run's logits and text, as main's scalar code
+ * computes them (any build gives the same bits). The modes and tilings are only compared with each
+ * other, and the stem and depthwise kernels are the same code in every mode, so a wrong tap there
+ * would pass every other check: this hash is their independent reference. With sc = 32 the stem's
+ * and the 3x3 depthwise's NEON paths (16 channels a pass) run twice per position, and the 1x5
+ * depthwise (16 channels) takes the kw != 3 path. */
+static void test_run_sc(int int8, unsigned sc, unsigned c1, uint64_t want);
+static void test_run(int int8, unsigned c1, uint64_t want) { test_run_sc(int8, 8, c1, want); }
+
+static void test_run_sc(int int8, unsigned sc, unsigned c1, uint64_t want)
 {
     vocr_model m;
     vocr_opts o;
@@ -370,6 +401,7 @@ static void test_run_sc(int int8, unsigned sc, unsigned c1)
     const int modes_i8[2] = {VOCR_MODE_W8F, VOCR_MODE_W8I};
     int mi, nmodes = int8 ? 2 : 1, fmt;
     unsigned tiles[5][2] = {{1, 1}, {2, 3}, {3, 1}, {5, 7}, {64, 64}};
+    uint64_t kh = 0xcbf29ce484222325ull;
     CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK);
     memset(&o, 0, sizeof o);
     o.mode = int8 ? VOCR_MODE_F32 : VOCR_MODE_W8F; /* wrong mode for this blob */
@@ -388,6 +420,8 @@ static void test_run_sc(int int8, unsigned sc, unsigned c1)
             CHECK(ex.frames == (ex.width + 3u) / 4u);
             CHECK(ex.frames <= 80);
             for (t = 0; t < ex.frames * CLASSES; t++) CHECK(isfinite(lref[t]));
+            kh = fnv64(kh, lref, (size_t)ex.frames * CLASSES * sizeof(float));
+            kh = fnv64(kh, ref, strlen(ref) + 1);
             if (o.mode == VOCR_MODE_W8F) memcpy(lw8f, lref, sizeof lw8f);
             if (o.mode == VOCR_MODE_W8I) { /* int16 activations stay close to float ones */
                 float mx = 0.0f, d = 0.0f;
@@ -425,6 +459,11 @@ static void test_run_sc(int int8, unsigned sc, unsigned c1)
                 CHECK(strncmp(text, ref, strlen(text)) == 0);
             }
         }
+    if (kh != want) {
+        fprintf(stderr, "test_run_sc(%d, %u, %u): logits hash %016llx, want %016llx\n", int8, sc, c1,
+                (unsigned long long)kh, (unsigned long long)want);
+        failures++;
+    }
 }
 
 /* VOCR_INVERT reads every source pixel as 255 - grey before the resize (what
@@ -605,10 +644,12 @@ static size_t build_head_blob(const float *bias, int int8)
     /* the head: zero weights, the given biases */
     n = cout_pad * 16u;
     w_off = (uint32_t)blob_pos;
+    room((size_t)n * (int8 ? 1u : 4u));
     memset(blob_buf + blob_pos, 0, (size_t)n * (int8 ? 1u : 4u));
     blob_pos = (blob_pos + (size_t)n * (int8 ? 1u : 4u) + 15u) & ~(size_t)15u;
     if (int8) {
         s_off = (uint32_t)blob_pos;
+        room(4u * (size_t)cout_pad);
         for (i = 0; i < cout_pad; i++) {
             const float sc = -0.01f;
             memcpy(blob_buf + blob_pos + 4u * i, &sc, sizeof sc);
@@ -736,14 +777,17 @@ int main(void)
 {
     test_load(0);
     test_load(1);
-    test_run(0, 16);
-    test_run(1, 16);
-    test_run(0, 272);
-    test_run(1, 272);
+    /* known answers: main a540027's scalar code (host gcc and clang, Cortex-A9 NEON and scalar agree) */
+    test_run(0, 16, 0x119943e1dc1cc516ull);
+    test_run(1, 16, 0x807bd1f142cf0a33ull);
+    test_run(0, 272, 0x6b8b79592b793218ull);
+    test_run(1, 272, 0x0e9062f159f32b9eull);
+    test_run_sc(0, 32, 16, 0x59e8de63c50ea85full);
+    test_run_sc(1, 32, 16, 0xc2246e1d797ae5c0ull);
+    test_run_sc(0, 32, 272, 0xb905ef3abe85868aull);
+    test_run_sc(1, 32, 272, 0x30951002cbd4e0e1ull);
     test_topk(0);
     test_topk(1);
-    test_run_sc(0, 32, 16);
-    test_run_sc(1, 32, 272);
     test_invert();
     test_limits();
     test_head_argmax();

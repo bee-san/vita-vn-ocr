@@ -187,3 +187,45 @@ def test_committed_ablation_result_holds_no_prediction_text():
     assert r["kind"] == "synth4-ablation-result"
     assert "pred" not in json.dumps(r) and "lines" not in r["teacher_val"]
     assert set(r["decision"]) >= {"teacher_val_better", "devnative_not_worse", "synth4_better"}
+
+
+def test_context_index_follows_another_vocab():
+    """The text pools' context index holds data/vocab.txt ids; a VOCR5 tier vocab remaps them through the
+    characters, drops the ids it lacks, and never maps anything onto its <unk> entry."""
+    import synth3 as S3
+    base = S3.load_vocab()
+    char = np.array([0, 1, 2, len(base) - 1], np.int64)
+    assert (S3.context_chars(char, base) == char).all()            # the default vocab: unchanged
+    other = [base[2], "龘", base[0], S3.UNK]                       # reordered, one id missing, a new class, <unk>
+    got = S3.context_chars(char, other)
+    assert got.tolist() == [2, -1, 0, -1]
+    assert S3.UNK == "〓"
+
+
+def test_vocab_option_defaults_to_vocab_txt_and_tier_vocabs_end_with_unk():
+    import synth3 as S3
+    for name in ("vocab_vn_5631.txt", "vocab_4987_proof.txt"):
+        v = S3.load_vocab(ROOT / "data" / name)
+        assert v[-1] == S3.UNK and S3.UNK not in v[:-1]
+    assert S3.UNK not in S3.load_vocab()                             # vocab.txt has no <unk> entry
+    src = (ROOT / "synth" / "synth4.py").read_text(encoding="utf-8")
+    assert 'ap.add_argument("--vocab", type=Path, default=S3.DATA / "vocab.txt"' in src
+    assert 'if c != S3.UNK]' in src                                  # the curriculum never gives <unk> a quota
+
+
+def test_curriculum_refuses_another_vocab(tmp_path):
+    """init4 compares the curriculum's recorded vocab sha256 with the vocab the render labels with."""
+    import synth3 as S3
+    cur = tmp_path / "cur.json"
+    cur.write_text(json.dumps({"inputs": {"vocab_sha256": "0" * 64}, "deficit": {}, "words": {}}), encoding="utf-8")
+
+    class FakeR:
+        vocab_path = S3.DATA / "vocab.txt"
+    real_init, real_patch = S3.init, S4.patch
+    try:
+        S3.init = lambda **kw: FakeR()
+        S4.patch = lambda: None
+        with pytest.raises(SystemExit, match="another vocab"):
+            S4.init4(cur)
+    finally:
+        S3.init, S4.patch = real_init, real_patch

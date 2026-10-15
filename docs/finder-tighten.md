@@ -109,8 +109,16 @@ vocr_refine_lines_rows(&src, VOCR_REFINE_DEFAULT, arena, need, &set, &rows);   /
 - Return codes: `VOCR_LINES_E_ARG` (bad image, unknown flags, a line outside the image),
   `VOCR_LINES_E_ARENA`, `VOCR_LINES_E_SOURCE` (a row could not be read). On any error the set is unchanged.
 - Integer ranges: row counts are 16-bit and band masses 32-bit (`unsigned long` on the Vita), so the C equals
-  the twin for boxes up to 65,535 px wide and about 42 million pixels (any console region); a larger box could
-  wrap a comparison (never a memory access).
+  the twin for boxes up to 65,535 px wide and about 42 million pixels (any console region); beyond that a count
+  or a mass can wrap, which changes a comparison only. One sum can also wrap into a memory error, far beyond any
+  console region: with a 32-bit `size_t` (Vita, PSP) the one-pass test `need + w·h <= avail`
+  (`vocr_lines_refine.c:417`) wraps once a box's mask plus grey bytes reach 4 GiB (a box of about 3.8 Gpx, e.g.
+  65,535 × 58,247, with an arena of at least 478 MB), and the box's grey pixels are then written past the arena
+  (audit-finder-tighten showed it under qemu-arm). A console region (at most 960×544, 0.52 Mpx) is over 7,000
+  times smaller, and such an arena does not fit a game's 256 MiB budget. Every sanitizer run in CI is 64-bit,
+  where the sum cannot wrap for any arena a machine can hold, so no CI test sees it. Hardening the test
+  (`need <= avail && w·h <= avail − need`, and `VOCR_LINES_E_ARG` above 65,535 px) changes a frozen source, so it
+  belongs in a separate PR with a protocol note.
 
 ## 3. Development data
 

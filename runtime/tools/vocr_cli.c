@@ -14,6 +14,9 @@
  *                          preprocessed grey input (height x padded width bytes)
  *       --topk K           keep each frame's K largest logits (vocr_extra.topk; the text does not change)
  *       --conf             per line, "conf_min conf_mean" of the greedy text on stderr (needs --topk)
+ *       --topk-out OUT.bin per line (needs --topk): u32 frames, u32 K, float32 top-K logits (frames x K),
+ *                          u16 their classes (frames x K), float32 blank logits (frames), float32
+ *                          conf_min and conf_mean
  *       --lm LM.vlm        decode with vocr_lm.h's CTC prefix beam search and this character LM; prints the
  *                          beam text. --beam N (8), --alpha A, --beta B, --gate G (1/1000 nat; defaults 0),
  *                          --lm-flags F (1 <s>, 2 </s>), --bracket C (1/1000 nat); --topk defaults to 8.
@@ -37,6 +40,7 @@
 static int invert_flag; /* VOCR_INVERT or 0, from --invert, for every crop */
 static unsigned topk_n;  /* --topk */
 static int conf_flag;    /* --conf */
+static FILE *topk_out;   /* --topk-out */
 static vocr_lm_ctx *lm_dec; /* --lm: the beam decoder, or NULL */
 
 static double now(void)
@@ -179,6 +183,19 @@ static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px,
     }
     printf("%s\n", lm_dec ? beam_text : text);
     if (conf_flag) fprintf(stderr, "conf %.6f %.6f\n", (double)ex.conf_min, (double)ex.conf_mean);
+    if (topk_out && topk_n) {
+        unsigned hdr[2];
+        float conf[2];
+        hdr[0] = ex.frames;
+        hdr[1] = topk_n;
+        conf[0] = ex.conf_min;
+        conf[1] = ex.conf_mean;
+        fwrite(hdr, sizeof hdr, 1, topk_out);
+        fwrite(tv, sizeof(float), (size_t)ex.frames * topk_n, topk_out);
+        fwrite(tc, sizeof(uint16_t), (size_t)ex.frames * topk_n, topk_out);
+        fwrite(bl, sizeof(float), ex.frames, topk_out);
+        fwrite(conf, sizeof conf, 1, topk_out);
+    }
     free(tv);
     free(tc);
     free(bl);
@@ -284,7 +301,7 @@ int main(int argc, char **argv)
     size_t blob_n = 0, need;
     void *blob = NULL, *arena = NULL;
     const char *pack = NULL, *logits_path = NULL, *arena_list = NULL, *input_path = NULL;
-    const char *mode_name = "auto", *lm_path = NULL;
+    const char *mode_name = "auto", *lm_path = NULL, *topk_path = NULL;
     void *lm_blob = NULL, *lm_ws = NULL;
     size_t lm_n = 0;
     vocr_lm lm;
@@ -318,6 +335,7 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--lm-flags") && has) lo.flags = (unsigned)atoi(argv[++i]);
         else if (!strcmp(a, "--bracket") && has) lo.bracket = atoi(argv[++i]);
         else if (!strcmp(a, "--conf")) conf_flag = 1;
+        else if (!strcmp(a, "--topk-out") && has) topk_path = argv[++i];
         else if (!strcmp(a, "--input-out") && has) input_path = argv[++i];
         else if (!strcmp(a, "--repeat") && has) repeat = atoi(argv[++i]);
         else if (!strcmp(a, "--pack") && has) pack = argv[++i];
@@ -386,8 +404,8 @@ int main(int argc, char **argv)
                 "bracket %d\n", (unsigned long)lm_n, (unsigned long)ws_n, lo.beam, lo.topk, lo.alpha, lo.beta,
                 lo.gate, lo.flags, lo.bracket);
     }
-    if (topk_n > VOCR_TOPK_MAX || (conf_flag && !topk_n)) {
-        fprintf(stderr, "--topk must be 1..%d (and --conf needs it)\n", VOCR_TOPK_MAX);
+    if (topk_n > VOCR_TOPK_MAX || ((conf_flag || topk_path) && !topk_n)) {
+        fprintf(stderr, "--topk must be 1..%d (and --conf and --topk-out need it)\n", VOCR_TOPK_MAX);
         goto done;
     }
     need = vocr_arena_bytes(&m, &o);
@@ -411,6 +429,10 @@ int main(int argc, char **argv)
         fprintf(stderr, "cannot write %s\n", input_path);
         goto done;
     }
+    if (topk_path && !(topk_out = fopen(topk_path, "wb"))) {
+        fprintf(stderr, "cannot write %s\n", topk_path);
+        goto done;
+    }
     if (pack && run_pack(&ctx, &m, pack, repeat, lf, inf, &t_total, &frames, &lines)) goto done;
     for (i = 2; i < argc; i++) {
         const char *a = argv[i];
@@ -431,6 +453,7 @@ int main(int argc, char **argv)
 done:
     if (lf && fclose(lf)) status = 1;
     if (inf && fclose(inf)) status = 1;
+    if (topk_out && fclose(topk_out)) status = 1;
     free(arena);
     free(blob);
     free(lm_ws);

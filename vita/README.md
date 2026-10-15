@@ -201,6 +201,18 @@ What the numbers say:
 
   Both are follow-ups for `runtime/`.
 
+## Per-layer cycles and the speed tools
+
+`a9_layers.py` breaks the estimate above down by layer: `runtime/vocr.c` built with `-DVOCR_PROF` calls
+`qemu/prof_mark.c`'s marker as each phase of `vocr_run()` starts, and `qemu/insn_mix.c` counts the
+instructions, unit switches, data cache misses (`l1d=on`, its own LRU model) and `PLD` fills (`pld=`) per
+phase (`--no-pld`: without the fills, the bound if `PLD` does nothing). `report` applies `a9_cycles.py`'s cost
+model per phase and can scale it to a console figure (`--console-ms`, `--console-mhz`, or a fixed `--scale`);
+`compare` gives before/after per layer. `dev_pack.py` writes the development lines the overlay's game worker would
+hand the recognizer (dev manifests only, every test-reserved VN refused), and `speed_parity.py` proves two
+`vocr.c` versions give the same logits, texts and (with `--topk`) top-K in five builds. Results and how to run
+them: `docs/ocr-speed.md`.
+
 ## Not done here
 
 - This test app has not run on a PCH-1000. Console speed above is an estimate, and emulator times are not console times. The runtime itself has run on a console only inside vita-jp-overlay (FL10 in CLANNAD, `docs/vita-memory-budget.md`).

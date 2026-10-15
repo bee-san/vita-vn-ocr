@@ -340,8 +340,8 @@ one helper session; none needed a retry.
   as `owner_pool.CapCount` counts them.
   - `CapCount` counts every copy toward the global cap of 8. The build's `pool.cap_repeats` counts a copy toward it
     only after the copy passes the per-VN cap of 2.
-  - So a label repeated in one VN held back its copies in other VNs too. Some labels have 40 to 92 kept copies in one
-    game.
+  - So a label repeated in one VN held back its copies in other VNs too. The five most repeated labels have 42 to 92
+    kept copies in one game.
   - For 687 of the 757, the final build had no room anyway. The other **70** had room: fewer than 2 built lines of
     their label in their VN, and fewer than 8 in all. 69 of the 70 are names.
   - All 757 stay out of the pool (`pending`, `confirm-missing`), as rule 3 says.
@@ -542,8 +542,8 @@ crop, so no line is left in one crop kind and missing from another. `train2.load
 
 **v1's frames against the new test frames.** v1's 577 frames were not leak-checked against this drop's test games
 when v2 was built. `leakcheck.py` on them against the 2,614 owner test frames gives 7 pairs at 0.950-0.952, all
-cross-VN, on 3 planetarian frames: 5 against Utawarerumono test frames and 2 against one CLANNAD frame. That is 0 of
-v1's frames against vita-test + psp-test.
+cross-VN, on 3 planetarian frames: 5 against Utawarerumono test frames and 2 against one CLANNAD frame. v1's own
+check had found 0 pairs against vita-test + psp-test.
 - In audit-owner-pool-2's look they are white-out scenes with a dialogue box, matching only in layout. v1's audit
   accepted the CLANNAD pair the same way.
 - v2's own rule would drop frames like these. The merged files keep v1's 2 lines on them (8 rows), under v1's
@@ -580,8 +580,7 @@ comparison side.
 - **Repeat copies.** 757 reviewed labels and 221 flagged crops got no second look and are not in the pool. Most could
   not have entered the build. But `CapCount`'s stricter global count held back 82 that had room: 70 labels, 69 of them
   names, and 12 auto crops of 3 labels. That is at most 82 lines lost. A later pool should count like `cap_repeats`.
-- **Neighbour slivers.** Tightly spaced lines (D.C., Pastel Chime and other PSP text) leave part of the next line in
-  the crop.
+- **Neighbour slivers.** Tightly spaced lines leave part of the line above or below in the crop.
   - 507 of the 6,587 ink crops (299 PSP, 208 Vita) hold another read line's ink box by 2 px or more where they
     overlap.
   - 226 of them hold at least a quarter of that line's ink height, and at most a half. None shows a whole second line.

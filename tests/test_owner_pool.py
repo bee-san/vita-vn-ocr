@@ -198,3 +198,18 @@ def test_per_game_table_counts_only():
     t = OP.per_game(frames, labels, man, [{"vn": "v2", "title": "B"}])
     assert t == {"v2": {"platform": "psp", "folders": ["psp-b-v2"], "title": "B", "frames": 2, "candidates": 2,
                         "kept_labels": 1, "lines": 2, "dialogue_lines": 1, "crops_ink": 2, "crops_grad": 1}}
+
+
+def test_name_ids_take_every_look_and_the_same_label_in_the_same_vn(monkeypatch):
+    from devnative import decide as D
+    labels = [{"id": "v1_p2f0000_0", "vn": "v1", "status": "kept", "label": "岡部", "name": True},   # pass 1 flag
+              {"id": "v1_p2f0003_0", "vn": "v1", "status": "kept", "label": "岡部", "how": "auto"},  # same VN, same key
+              {"id": "v2_p2f0000_0", "vn": "v2", "status": "kept", "label": "岡部", "how": "auto"},  # another VN
+              {"id": "v1_p2f0004_1", "vn": "v1", "status": "kept", "label": "まゆり", "how": "auto"},  # check flag
+              {"id": "v1_p2f0005_0", "vn": "v1", "status": "kept", "label": "トゥットゥルー♪"},
+              {"id": "v1_p2f0006_0", "vn": "v1", "status": "dropped", "label": None}]
+    monkeypatch.setattr(OP.PL, "done_batches", lambda kind: [kind] if kind in ("check", "edge") else [])
+    looks = {"check": {"v1_p2f0004_1@ink_m4": {"decision": "text", "name": True}},
+             "edge": {"v1_p2f0005_0": {"decision": "pick", "name": False}}}
+    monkeypatch.setattr(D, "collect", lambda bs: looks[bs[0]])
+    assert OP.name_ids(labels) == {"v1_p2f0000_0", "v1_p2f0003_0", "v1_p2f0004_1"}

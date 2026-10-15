@@ -527,6 +527,23 @@ def cmd_merge(args):
 
 # ----------------------------------------------------------------------------- publish (aggregate only)
 
+NAME_RULE = ("a speaker name: a line a Claude look flagged (\"name\": true in pass 1, a confirm look, an edge check "
+             "or the precision check), or a line whose label has the key of a flagged line of the same VN")
+
+
+def name_ids(labels, kinds=KINDS):
+    """Line ids of the speaker names among labels (NAME_RULE). Auto lines had no pass-1 look, and name plates repeat, so
+    a flagged label marks its copies in the same VN too. The dialogue-only count is the built lines outside this set."""
+    from devnative import decide as D
+    lab = {r["id"]: r for r in labels}
+    flagged = {r["id"] for r in labels if r.get("name")}
+    for kind in kinds:
+        bs = PL.done_batches(kind)
+        flagged |= {lid.split("@", 1)[0] for lid, d in (D.collect(bs) if bs else {}).items() if d.get("name")}
+    keys = {(lab[i]["vn"], vote.key(lab[i]["label"])) for i in flagged if (lab.get(i) or {}).get("label")}
+    return flagged | {r["id"] for r in labels if r.get("label") and (r["vn"], vote.key(r["label"])) in keys}
+
+
 def per_game(frames, labels, man, drop_games=()):
     """{vn: {...}} for the table: platform, folders, frames read, candidate lines, kept labels, built lines, dialogue
     lines (built lines that are not speaker names), by crop kind. Counts only."""
@@ -558,9 +575,12 @@ def cmd_publish(args):
     frames = jl(OUT / "manifests" / "frames.jsonl")
     labels = jl(OUT / "labels.jsonl")
     man = jl(OUT / "manifests" / f"lines_{args.tag}.jsonl")
-    names = {r["id"]: bool(r.get("name")) for r in jl(OUT / f"lines_full_{args.tag}.jsonl")}
-    man = [dict(m, name=names.get(m["id"], False)) for m in man]
-    drop = json.loads((ROOT / "data" / "manifests" / "owner_drop_20261014.json").read_text(encoding="utf-8"))
+    # the build's line manifests carry no name flag: take it from the labels and every look (NAME_RULE)
+    names, pass1_names = name_ids(labels), {r["id"] for r in labels if r.get("name")}
+    man = [dict(m, name=m["id"] in names) for m in man]
+    # titles: both drops' public tables (the 2026-10-13 drop's former -TEST folders train in this pool too)
+    games = [g for d in ("20261013", "20261014") for g in json.loads(
+        (ROOT / "data" / "manifests" / f"owner_drop_{d}.json").read_text(encoding="utf-8"))["games"]]
     build = json.loads((OUT / "manifests" / f"build_stats_{args.tag}.json").read_text())
     doc = {"kind": "owner-pool-stats", "tag": args.tag, "pool": "owner pool v2",
            "private_dir": f"shared/private/owner-games/_build2/{OUT.name}",
@@ -571,8 +591,9 @@ def cmd_publish(args):
            "labels": dict(collections.Counter(f"{r['status']}:{r['how'] if r['status'] == 'kept' else r['why']}"
                                               for r in labels)),
            "build": build, "lines": len(man), "dialogue_lines": sum(not m["name"] for m in man),
-           "name_lines": sum(m["name"] for m in man),
-           "per_game": per_game(frames, labels, man, drop["games"])}
+           "name_lines": sum(m["name"] for m in man), "name_rule": NAME_RULE,
+           "name_lines_pass1_flag": sum(m["id"] in pass1_names for m in man),
+           "per_game": per_game(frames, labels, man, games)}
     for k in ("pass1", "confirm", "edge", "check"):
         doc[f"batches_{k}"] = len(PL.batch_dirs(k))
     for name in ("leak", "hygiene"):

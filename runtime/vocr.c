@@ -1468,12 +1468,16 @@ static void lanes_argmax(const vocr_lane_i32 *lk, const vocr_lane_u32 *li, unsig
  * K largest logits of every frame, straight into the caller's topk_* buffers (inserted with strict
  * comparisons, so equal logits keep the lower class first and [0] is the argmax), the blank's logit,
  * and the confidence of every frame that emits a character.
- * W8I with NEON and no top-K: once quant16 has read the accumulated frames, their memory is not read
- * again, so it holds each frame's argmax per lane (lanes_argmax) instead of a scalar compare per
- * class: the logits are mm_i16's, the same bits, and only the scan's bookkeeping moves to NEON. A
- * last block of fewer than 8 classes goes through the scalar scan after the lanes, in class order.
- * The top-K path needs every class's value in order, so it keeps the per-class loop, as do the
- * builds without NEON, whose run_head is main's token for token. */
+ * W8I with NEON, the logits are mm_i16's, the same bits, VOCR_HEAD_CHUNK frames per call, and only the
+ * scan's bookkeeping moves to NEON:
+ *  - no top-K: once quant16 has read the accumulated frames, their memory is not read again, so it
+ *    holds each frame's argmax per lane (lanes_argmax) instead of a scalar compare per class;
+ *  - top-K: a full block of 8 classes goes through the per-class insertion only if one of its logits
+ *    is above the frame's K-th largest so far (fkey's order is `v > t`'s). That value only grows
+ *    while the classes are inserted in order, and the argmax is never below it (it is [0]), so a
+ *    block with none above it is one the per-class loop would leave as it is.
+ * A last block of fewer than 8 classes goes through the per-class loop after the full ones. The
+ * builds without NEON compile main's run_head token for token. */
 static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
 {
     const vocr_model *m = c->model;
@@ -1495,8 +1499,9 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     const unsigned TK = o->topk;
     unsigned f, nb, f0, q, j;
 #ifdef VOCR_NEON
-    /* frames per mm_* call: 4, or VOCR_HEAD_CHUNK on the lane path (one call per block) */
-    unsigned n_lanes = 0, step = 4;
+    /* frames per mm_* call: 4, or VOCR_HEAD_CHUNK on the NEON W8I paths (one call per block); the
+     * blocks below n_lanes (no top-K) or n_tk (top-K) take those paths */
+    unsigned n_lanes = 0, n_tk = 0, step = 4;
     float tmp[VOCR_HEAD_CHUNK * 8];
     vocr_lane_i32 *lk = (vocr_lane_i32 *)(void *)x;              /* nf x 8 lane maxima (keys) ... */
     vocr_lane_u32 *li = (vocr_lane_u32 *)(void *)(x + (size_t)nf * 8u); /* ... and blocks: 16 nf <= K nf */
@@ -1516,12 +1521,16 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
         }
     if (c->mode == VOCR_MODE_W8I) quant16(x, K, K, nf, qx, sx);
 #ifdef VOCR_NEON
-    if (c->mode == VOCR_MODE_W8I && K >= 16u && !TK) {
-        n_lanes = N / 8u;
+    if (c->mode == VOCR_MODE_W8I && K >= 16u) {
         step = VOCR_HEAD_CHUNK;
-        for (f = 0; f < nf * 8u; f++) {
-            lk[f] = -0x7F800000; /* fkey(-inf) */
-            li[f] = 0;
+        if (TK) {
+            n_tk = N / 8u;
+        } else {
+            n_lanes = N / 8u;
+            for (f = 0; f < nf * 8u; f++) {
+                lk[f] = -0x7F800000; /* fkey(-inf) */
+                li[f] = 0;
+            }
         }
     }
 #endif
@@ -1564,6 +1573,39 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
                         if (frame < ex->cap_frames)
                             memcpy(ex->logits + (size_t)frame * N + nb * 8, tmp + q * 8, 8 * sizeof(float));
                     }
+                continue;
+            }
+            if (nb < n_tk) {
+                for (q = 0; q < pn; q++) {
+                    const unsigned frame = o->frame + f0 + q;
+                    float *tv = ex->topk_logit + (size_t)frame * TK;
+                    uint16_t *tc = ex->topk_class + (size_t)frame * TK;
+                    const int32x4_t kt = fkey(vld1q_dup_f32(tv + TK - 1));
+                    const uint32x4_t gt = vorrq_u32(vcgtq_s32(fkey(vld1q_f32(tmp + q * 8)), kt),
+                                                    vcgtq_s32(fkey(vld1q_f32(tmp + q * 8 + 4)), kt));
+                    const uint32x2_t g2 = vorr_u32(vget_low_u32(gt), vget_high_u32(gt));
+                    if (ex->logits && frame < ex->cap_frames)
+                        memcpy(ex->logits + (size_t)frame * N + nb * 8, tmp + q * 8, 8 * sizeof(float));
+                    if (!nb && ex->blank_logit) ex->blank_logit[frame] = tmp[q * 8];
+                    if (!vget_lane_u32(vpmax_u32(g2, g2), 0)) continue;
+                    for (j = 0; j < 8; j++) { /* the per-class loop below, for this frame */
+                        const float v = tmp[q * 8 + j];
+                        if (v > bestv[f0 + q]) {
+                            bestv[f0 + q] = v;
+                            besti[f0 + q] = nb * 8 + j;
+                        }
+                        if (v > tv[TK - 1]) {
+                            unsigned p = TK - 1;
+                            while (p && v > tv[p - 1]) {
+                                tv[p] = tv[p - 1];
+                                tc[p] = tc[p - 1];
+                                p--;
+                            }
+                            tv[p] = v;
+                            tc[p] = (uint16_t)(nb * 8 + j);
+                        }
+                    }
+                }
                 continue;
             }
 #endif

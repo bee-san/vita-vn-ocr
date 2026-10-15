@@ -686,6 +686,29 @@ static size_t build_head_blob(const float *bias, int int8)
 }
 
 static float hlogits[80 * HCLASSES];
+static float htv[80 * HCLASSES], hbl[80];
+static uint16_t htc[80 * HCLASSES];
+
+/* main's top-K: the classes in order, each inserted where it is strictly larger (vocr.c run_head) */
+static void topk_ref(const float *v, unsigned n, unsigned k, float *tv, uint16_t *tc)
+{
+    unsigned j, p;
+    for (j = 0; j < k; j++) {
+        tv[j] = -INFINITY;
+        tc[j] = 0;
+    }
+    for (j = 0; j < n; j++)
+        if (v[j] > tv[k - 1]) {
+            for (p = k - 1; p && v[j] > tv[p - 1]; p--) {
+                tv[p] = tv[p - 1];
+                tc[p] = tc[p - 1];
+            }
+            tv[p] = v[j];
+            tc[p] = (uint16_t)j;
+        }
+}
+
+static int same_float(float a, float b) { return (isnan(a) && isnan(b)) || !memcmp(&a, &b, sizeof a); }
 
 static void test_head_argmax(void)
 {
@@ -770,6 +793,48 @@ static void test_head_argmax(void)
                 }
             if (cases[ci].expect) want[0] = (char)('A' + cases[ci].expect - 1);
             CHECK(strcmp(text, want) == 0);
+            /* the top K of every frame, as main's per-class insertion gives it (NEON W8I skips the blocks
+             * with no logit above a frame's K-th largest): K 1, 3, 8 and the largest allowed */
+            {
+                static const unsigned ks[4] = {1, 3, 8, VOCR_TOPK_MAX < HCLASSES ? VOCR_TOPK_MAX : HCLASSES};
+                unsigned ki;
+                for (ki = 0; ki < 4; ki++) {
+                    const unsigned k = ks[ki];
+                    float rtv[HCLASSES];
+                    uint16_t rtc[HCLASSES];
+                    char ktext[64];
+                    memset(&ex, 0, sizeof ex);
+                    memset(best, 0xFF, sizeof best);
+                    for (j = 0; j < 80 * HCLASSES; j++) {
+                        hlogits[j] = 12345.0f;
+                        htv[j] = 12345.0f;
+                        htc[j] = 0xFFFF;
+                    }
+                    ex.best = best;
+                    ex.logits = hlogits;
+                    ex.cap_frames = 80;
+                    ex.topk = k;
+                    ex.topk_logit = htv;
+                    ex.topk_class = htc;
+                    ex.blank_logit = hbl;
+                    CHECK(vocr_run(&c, &im, ktext, sizeof ktext, &ex) == VOCR_OK);
+                    CHECK(strcmp(ktext, text) == 0);
+                    for (f = 0; f < ex.frames; f++) {
+                        const float *row = hlogits + f * HCLASSES;
+                        int bad = best[f] != cases[ci].expect || !same_float(hbl[f], row[0]);
+                        for (j = 0; j < HCLASSES; j++) /* the biases, -0 and +0 alike (W8F's sums give +0) */
+                            bad |= !(row[j] == bias[j] || (isnan(row[j]) && isnan(bias[j])));
+                        topk_ref(row, HCLASSES, k, rtv, rtc);
+                        for (j = 0; j < k; j++) bad |= htc[f * k + j] != rtc[j] || !same_float(htv[f * k + j], rtv[j]);
+                        if (bad) {
+                            fprintf(stderr, "head case %u mode %d top-%u frame %u: wrong top-K, argmax, blank or "
+                                    "logits\n", ci, modes[mi], k, f);
+                            failures++;
+                            break;
+                        }
+                    }
+                }
+            }
         }
 }
 

@@ -56,11 +56,17 @@ def build(out, vitasdk, arm_cc, runtime, prof):
     vcc = Path(vitasdk) / "bin/arm-vita-eabi-gcc"
     tag = "prof" if prof else "plain"
     obj, cli = out / f"vocr_vita_{tag}.o", out / f"vocr_cli_{tag}"
+    lm_obj = out / f"vocr_lm_vita_{tag}.o"
     flags = [*A9.WARN, *A9.ARCH, "-O2"] + (["-DVOCR_PROF=vocr_prof_mark"] if prof else [])
     subprocess.run([str(vcc), *flags, "-c", "-o", str(obj), str(runtime / "vocr.c")], check=True)
+    # vocr_cli.c links the CTC beam/LM decoder: the version's vocr_lm.c, else this checkout's (Vita compiler
+    # too); only vocr.c's functions are profiled, and the decoder runs only with --lm
+    lm_c = runtime / "vocr_lm.c" if (runtime / "vocr_lm.c").exists() else ROOT / "runtime/vocr_lm.c"
+    subprocess.run([str(vcc), *A9.WARN, *A9.ARCH, "-O2", "-I", str(ROOT / "runtime"), "-c", "-o", str(lm_obj),
+                    str(lm_c)], check=True)
     extra = [str(HERE / "qemu/prof_mark.c")] if prof else []
     subprocess.run([arm_cc, *A9.WARN, *A9.ARCH, "-O2", "-static", "-Wl,--no-enum-size-warning", "-o", str(cli),
-                    str(obj), *extra, str(ROOT / "runtime/tools/vocr_cli.c"), "-lm"], check=True,
+                    str(obj), str(lm_obj), *extra, str(ROOT / "runtime/tools/vocr_cli.c"), "-lm"], check=True,
                    capture_output=True)
     objdump = arm_cc[:-3] + "objdump" if arm_cc.endswith("gcc") else "objdump"
     dis = subprocess.run([objdump, "-d", "--no-show-raw-insn", str(cli)], check=True, capture_output=True,

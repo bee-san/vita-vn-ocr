@@ -303,6 +303,9 @@ The 4,414 frames were compared with the three test sets only:
 All three pairs involve one Iwaihime -Matsuri- frame. It is dropped (`manifests/leak_drop.json`): its lines were
 never shown on a sheet, and its one auto line is left out of the build (`excluded-late`).
 
+The comparison side's 2,614 hardlinks are kept apart from the pool, in `_build2/leak-test-links/`, so that no tool
+globbing the pool directory for images takes them in.
+
 ### Reads and plan
 
 `devnative/read.py` read the 4,414 frames offline at native size in 371 s (5 workers, one heavy.sh slot):
@@ -332,11 +335,18 @@ one helper session; none needed a retry.
   1 was 3,775 of 3,791 confirm reads of a pass-1 label (99.6%).
 - **The 2 extra looks.** They were at lines of pass-1 batch b0009 whose helper changed its decision to cut after the
   confirm batch was made. Pass 1's final decision stands, so both lines are dropped as cut.
-- **Lines with no confirm look.** 757 pass-1 labels never got one. Each is a copy of a label whose kept copies already
-  fill the repeat caps (561 of them speaker names). The batches were cap-aware (`confirm_entries`), since a look at a
-  copy past the caps could not add a line. They stay out of the pool (`pending`, `confirm-missing`), as rule 3 says.
-- **Lines with no edge look.** For the same reason, 221 flagged kept crops got no edge look. The build drops them
-  (`edge-unchecked`).
+- **Lines with no confirm look.** 757 pass-1 labels never got one; 561 of them are speaker names. The batches were
+  cap-aware (`confirm_entries`): a copy was held back once its label's kept or batched copies reached the repeat caps,
+  as `owner_pool.CapCount` counts them.
+  - `CapCount` counts every copy toward the global cap of 8. The build's `pool.cap_repeats` counts a copy toward it
+    only after the copy passes the per-VN cap of 2.
+  - So a label repeated in one VN held back its copies in other VNs too. Some labels have 40 to 92 kept copies in one
+    game.
+  - For 687 of the 757, the final build had no room anyway. The other **70** had room: fewer than 2 built lines of
+    their label in their VN, and fewer than 8 in all. 69 of the 70 are names.
+  - All 757 stay out of the pool (`pending`, `confirm-missing`), as rule 3 says.
+- **Lines with no edge look.** The same counting left 221 flagged kept crops without an edge look, and the build drops
+  them (`edge-unchecked`). **12** of them had room: all auto lines, of 3 labels.
 
 The final labels (`labels.jsonl`, after the precision check below):
 
@@ -530,6 +540,15 @@ pool's v2 lines under one global repeat cap of 8 per label. Each row's meta carr
 The global cap removes 2 v2 lines, labels that already had 8 lines across the two pools. Neither line has a grad
 crop, so no line is left in one crop kind and missing from another. `train2.load_shard` loads every row (0 dropped).
 
+**v1's frames against the new test frames.** v1's 577 frames were not leak-checked against this drop's test games
+when v2 was built. `leakcheck.py` on them against the 2,614 owner test frames gives 7 pairs at 0.950-0.952, all
+cross-VN, on 3 planetarian frames: 5 against Utawarerumono test frames and 2 against one CLANNAD frame. That is 0 of
+v1's frames against vita-test + psp-test.
+- In audit-owner-pool-2's look they are white-out scenes with a dialogue box, matching only in layout. v1's audit
+  accepted the CLANNAD pair the same way.
+- v2's own rule would drop frames like these. The merged files keep v1's 2 lines on them (8 rows), under v1's
+  decision.
+
 **Disclosure.** As with v1, the merged files hold v1's planetarian lines (v34, owner decision). Any CLANNAD score of
 a model trained on them must disclose that exposure.
 
@@ -558,8 +577,15 @@ comparison side.
 - **Look-alike characters.** The engines agreed on a wrong ヘ in one of 60 sampled auto lines. Other identical-glyph
   pairs (ロ/口, エ/工, ニ/二, カ/力, ー/一) were not scanned. The auto stratum's precision bound (91.1-99.7%) covers
   them only as a rate.
-- **Repeat copies.** 757 reviewed labels and 221 flagged crops past the repeat caps got no second look and are not
-  in the pool. A copy past the cap could not have entered the build anyway.
+- **Repeat copies.** 757 reviewed labels and 221 flagged crops got no second look and are not in the pool. Most could
+  not have entered the build. But `CapCount`'s stricter global count held back 82 that had room: 70 labels, 69 of them
+  names, and 12 auto crops of 3 labels. That is at most 82 lines lost. A later pool should count like `cap_repeats`.
+- **Neighbour slivers.** Tightly spaced lines (D.C., Pastel Chime and other PSP text) leave part of the next line in
+  the crop.
+  - 507 of the 6,587 ink crops (299 PSP, 208 Vita) hold another read line's ink box by 2 px or more where they
+    overlap.
+  - 226 of them hold at least a quarter of that line's ink height, and at most a half. None shows a whole second line.
+  - This is eval's and v1's ink-crop convention. None of these 507 lines has a margin variant.
 - **Skew.** PSP gives 58% of the lines. Five large games (Solfege, Juusei to Diamond, Custom Drive, Iwaihime, AMNESIA)
   give a quarter of them.
 - **Lossless.** Like v1, the frames are lossless PNG framebuffers, without VNDB's JPEG artefacts.
@@ -574,7 +600,7 @@ OWNER_BUILD=$B2 .venv-ci/bin/python realplus/owner_frames.py pool-prep --pool $O
 HEAVY_SLOTS=12 $HERD/heavy.sh timeout 7200 unshare -rn teacher/.venv/bin/python devnative/read.py run \
     --shots $OP2/reads/shots.jsonl --out $OP2/reads --procs 5
 export REALPLUS=$OP2 NATIVE_POOL=$OP2 NATIVE_OWNER_POOL=1
-$OP2/leak.sh                        # leakcheck.py against eval's test screenshots and the owner's test frames
+$OP2/leak.sh                        # leakcheck.py against eval's test screenshots and $B2/leak-test-links
 .venv-ci/bin/python realplus/owner_pool.py leak-drop $OP2/logs/leak_test_sets.log $OP2/logs/leak_owner_test.log
 .venv-ci/bin/python realplus/pool.py plan
 .venv-ci/bin/python realplus/native.py known && .venv-ci/bin/python realplus/native.py filter-plan
@@ -591,7 +617,8 @@ $OP2/leak.sh                        # leakcheck.py against eval's test screensho
 .venv-ci/bin/python realplus/native.py edge-boxes && .venv-ci/bin/python realplus/pool.py edge-apply
 .venv-ci/bin/python realplus/native.py build --tag v2 --margins 4,8
 .venv-ci/bin/python realplus/owner_pool.py merge --tag v2 --old $HERD/shared/private/owner-games/_build/owner-pool:v2
-.venv-ci/bin/python eval/tools/reserve_check.py --dump $DB --pixels --require-hashes --shots $OP2/manifests/frames.jsonl \
-    NAME=$OP2/native_train_ink_v2.npz ...       # every v2 and merged file, lines_v2, frames, labels
+DB=$HERD/shared/artifacts/native-frames/vndb/dump/db      # the pools first: --shots takes every argument after it
+.venv-ci/bin/python eval/tools/reserve_check.py owner2_ink_v2=$OP2/native_train_ink_v2.npz ... \
+    --dump $DB --pixels --require-hashes --shots $OP2/manifests/frames.jsonl  # every v2 and merged file, lines_v2, frames, labels
 .venv-ci/bin/python realplus/owner_pool.py publish --tag v2 --check pre   # realplus/manifests/owner/stats_v2.json
 ```

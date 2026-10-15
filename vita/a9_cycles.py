@@ -36,6 +36,7 @@ import collections
 import json
 import os
 import re
+import shlex
 import shutil
 import struct
 import subprocess
@@ -193,19 +194,25 @@ def default_qemu():
 
 def build_cli(out, vitasdk, arm_cc):
     vcc = Path(vitasdk) / "bin/arm-vita-eabi-gcc"
-    obj, cli = out / "vocr_vita.o", out / "vocr_cli_vitacc"
-    subprocess.run([str(vcc), *WARN, *ARCH, "-O2", "-c", "-o", str(obj), str(ROOT / "runtime/vocr.c")], check=True)
+    cli = out / "vocr_cli_vitacc"
+    # the runtime (vocr.c) and its CTC beam/LM decoder (vocr_lm.c), each with the Vita compiler and flags
+    objs = [out / "vocr_vita.o", out / "vocr_lm_vita.o"]
+    for obj, src in zip(objs, ("runtime/vocr.c", "runtime/vocr_lm.c")):
+        subprocess.run([str(vcc), *WARN, *ARCH, "-O2", "-c", "-o", str(obj), str(ROOT / src)], check=True)
     # VitaSDK builds with short enums; vocr.h passes no enum across the API, so the linker's
     # enum-size warning does not apply.
-    subprocess.run([arm_cc, *WARN, *ARCH, "-O2", "-static", "-Wl,--no-enum-size-warning", "-o", str(cli), str(obj),
-                    str(ROOT / "runtime/tools/vocr_cli.c"), "-lm"], check=True, capture_output=True)
+    subprocess.run([arm_cc, *WARN, *ARCH, "-O2", "-static", "-Wl,--no-enum-size-warning", "-o", str(cli),
+                    *map(str, objs), str(ROOT / "runtime/tools/vocr_cli.c"), "-lm"], check=True, capture_output=True)
     objdump = arm_cc[:-3] + "objdump" if arm_cc.endswith("gcc") else "objdump"
     dis = subprocess.run([objdump, "-d", "--no-show-raw-insn", str(cli)], check=True, capture_output=True,
                          text=True).stdout
     (out / "cli.dis").write_text(dis)
-    nm = subprocess.run([str(Path(vitasdk) / "bin/arm-vita-eabi-nm"), "--defined-only", str(obj)], check=True,
-                        capture_output=True, text=True).stdout
-    funcs = sorted({ln.split()[-1] for ln in nm.splitlines() if ln.split()[1:2] and ln.split()[1] in "tT"})
+    funcs = set()
+    for obj in objs:
+        nm = subprocess.run([str(Path(vitasdk) / "bin/arm-vita-eabi-nm"), "--defined-only", str(obj)], check=True,
+                            capture_output=True, text=True).stdout
+        funcs |= {ln.split()[-1] for ln in nm.splitlines() if ln.split()[1:2] and ln.split()[1] in "tT"}
+    funcs = sorted(funcs)
     (out / "vocr_functions.txt").write_text("\n".join(funcs) + "\n")
     return cli, dis
 
@@ -290,7 +297,17 @@ def measure(args):
             if unit != "I":
                 f.write(f"{a:x} {unit}\n")
     pack = out / "lines.bin"
-    n_lines = write_pack(pack, args.lines, args.eval_data)
+    if getattr(args, "pack", None):          # a caller's own pack (vocr_cli's format), e.g. development lines
+        shutil.copy2(args.pack, pack)
+        n_lines = struct.unpack("<I", pack.read_bytes()[:4])[0]
+    else:
+        n_lines = write_pack(pack, args.lines, args.eval_data)
+    extra = shlex.split(getattr(args, "cli_args", None) or "")
+    staged = []                              # files the extra CLI arguments name (an LM blob): copied to the stage
+    for i, a in enumerate(extra):
+        if i and extra[i - 1] == "--lm":
+            staged.append(Path(a))
+            extra[i] = Path(a).name
     if getattr(args, "blob", None):
         meta = {"lines": n_lines, "blob": Path(args.blob).name, "blob_sha256": blob_sha, "modes": {}}
     else:
@@ -299,7 +316,7 @@ def measure(args):
     q = Path(args.qemu) if args.qemu else default_qemu()
     stage = Path(tempfile.mkdtemp(prefix="vocr-a9-", dir="/tmp"))     # fixed-length real path, see below
     try:
-        for f in (cli, pack, *{b for b in blobs.values()}):
+        for f in (cli, pack, *{b for b in blobs.values()}, *staged):
             shutil.copy2(f, stage / Path(f).name)
         for mode in modes:
             blob = blobs["f32" if mode == "f32" else "w8"]
@@ -314,7 +331,7 @@ def measure(args):
             # with relative file names, an empty environment (QEMU_GUEST_ENV) and seed 0: the same
             # inputs give the same counts, wherever DIR is and whatever the caller's environment holds.
             p = subprocess.run([str(q / "bin/qemu-arm"), "-cpu", "cortex-a9", "-seed", "0", *plugins,
-                                f"./{cli.name}", Path(blob).name, "--mode", mode, "--pack", pack.name],
+                                f"./{cli.name}", Path(blob).name, "--mode", mode, "--pack", pack.name, *extra],
                                capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=7200,
                                env=dict(QEMU_GUEST_ENV), cwd=stage)
             if p.returncode:
@@ -448,6 +465,10 @@ def main():
     m.add_argument("--arm-cc")
     m.add_argument("--qemu")
     m.add_argument("--no-cache", dest="cache", action="store_false")
+    m.add_argument("--pack", type=Path, help="run this vocr_cli pack file instead of synth-val + vita-test lines")
+    m.add_argument("--cli-args", default="",
+                   help="more vocr_cli arguments as one string, e.g. '--topk 8 --lm LM.vlm --beam 8' (the --lm file "
+                        "is copied to the stage)")
     r = sub.add_parser("report")
     r.add_argument("dir", type=Path)
     r.add_argument("--json", type=Path)

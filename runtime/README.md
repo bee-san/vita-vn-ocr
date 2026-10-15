@@ -162,7 +162,7 @@ text = r.text(crop, invert=True)                    # dark text (VOCR_INVERT)
 text, logits = r.run(crop, logits=True)
 ```
 
-`pyvocr` rebuilds `build/libvocr.so` whenever `vocr.c` or `vocr.h` is newer than it, and refuses crops that aren't `uint8`.
+`pyvocr` rebuilds `build/libvocr.so` (`vocr.c` and `vocr_lm.c`) whenever one of `vocr.c`, `vocr.h`, `vocr_lm.c` or `vocr_lm.h` is newer than it, and refuses crops that aren't `uint8`.
 
 From eval's harness (PR #2), use its `cmd:` protocol. The CLI reads PGM or PPM paths on stdin and prints one line each:
 
@@ -171,6 +171,44 @@ python eval/run.py --model 'cmd:runtime/build/vocr_cli v1_w8.vocr --mode w8i --s
 ```
 
 `vocr_cli --invert` sets `VOCR_INVERT` for every crop it reads, and an unknown `--mode` is an error.
+
+### Top-K, confidence and the beam + LM decoder (`vocr_lm.h`)
+
+`vocr_run()` decodes greedily. Two optional additions read the same network output differently; neither changes `vocr_arena_bytes()`, the logits or the greedy text (tested bit for bit). A zeroed `vocr_extra` keeps the top-K off, and the decoder runs only when called (a zeroed `vocr_lm_opts` is invalid: `beam` and `topk` must be at least 1). The measurements behind the recommended settings are in [docs/ctc-lm-decode.md](../docs/ctc-lm-decode.md).
+
+**Per-frame top-K and a confidence, greedy path.** Set `vocr_extra.topk = K` (1..`VOCR_TOPK_MAX` = 16) and give it caller buffers of `cap_frames` frames: `topk_logit` (K floats per frame, decreasing; ties keep the lower class first, so `[f * K]` is the argmax), `topk_class` (K `uint16_t`) and optionally `blank_logit` (one float per frame). `cap_frames` must hold the line's frames (`vocr_resized_width(m, w, h) / m->stride + 1` always does), else `VOCR_E_ARG`. The run also writes `conf_min` and `conf_mean`: over the frames that emit a character of the greedy text, the smallest and the mean softmax-max probability, computed over that frame's top K (an upper bound of the full softmax's). For a 1,024-px line (128 frames) at K = 8 the buffers are 128 × 8 × 6 + 128 × 4 = 6,656 B.
+
+**CTC prefix beam search with a character n-gram LM.** `runtime/vocr_lm.c` (C99, no malloc, no libm, integer scores in 1/1024 nat) decodes a line from those top-K extras with an LM blob written by `lm/build.py` (a `VOLM` file; the tiers are release assets, `docs/ctc-lm-decode.md`):
+
+```c
+#include "vocr_lm.h"
+
+static vocr_lm lm;             /* 188 B on 32-bit ARM (368 on x86-64); points into the LM blob */
+static vocr_lm_ctx dec;        /* 120 B (136) */
+vocr_lm_opts lo = {0};
+lo.beam = 8; lo.topk = 8;                         /* the recommended settings for each LM tier: */
+lo.alpha = 500; lo.beta = 3500; lo.gate = 8000;   /* docs/ctc-lm-decode.md (1/1000 nat; alpha 1/1000) */
+lo.flags = VOCR_LM_EOS; lo.bracket = 8000;
+rc = vocr_lm_load(&lm, lm_blob, lm_bytes);        /* 16-byte aligned, used in place, any memory type */
+size_t ws_need = vocr_lm_workspace_bytes(&model, &lm, &lo);   /* exact; ~35-41 KB at these settings */
+rc = vocr_lm_init(&dec, &model, &lm, &lo, ws, ws_need);       /* ws 16-byte aligned; maps classes once */
+
+vocr_extra ex = {0};
+ex.cap_frames = cap; ex.topk = 8;
+ex.topk_logit = tv; ex.topk_class = tc; ex.blank_logit = bl;  /* caller buffers, cap frames each */
+ex.cancel = cancel_cb; ex.user = job;                         /* polled by both calls */
+rc = vocr_run(&ctx, &img, greedy, sizeof greedy, &ex);         /* greedy text, top-K, conf_min/mean */
+rc = vocr_lm_decode(&dec, &ex, text, sizeof text, &chars);     /* the beam + LM text */
+```
+
+- The search keeps `beam` prefixes per frame (Viterbi: max over alignments). A prefix scores its frames' logit margins to each frame's top-1, plus `alpha` × the LM's log-probability of each character, plus `beta` per character, plus (with `VOCR_LM_EOS`) `alpha` × log P(end of line). A frame's candidates are its top-1 and the other top-K classes and the blank within `gate` nat of it: a frame whose top-1/top-2 margin is at least `gate` keeps its top-1, the guard for confidently read names and rare words. A closing bracket that does not match the line's innermost open bracket costs `bracket`; the LM reads every bracket pair as 「」, so the picture picks the style.
+- With `alpha = beta = bracket = 0` the output is `vocr_run()`'s greedy text bit for bit, for any beam, top-K and gate (every non-top-1 candidate costs at least 1/1024 nat). `lm` may then be NULL.
+- `vocr_lm_decode()` needs `ex->frames <= max_frames` (default: the model's 1,024 px / 8 = 128 frames; at most 1,024) and `<= ex->cap_frames`, else `VOCR_E_WIDTH`. It polls `ex->cancel` every 8 frames (`VOCR_E_CANCELLED`, empty text) and writes whole characters only on `VOCR_E_TEXT`.
+- One decoder context per thread; the LM blob and the model can be shared. `vocr_lm_check_crc()` checks the blob's CRC-32; `vocr_lm_load()` checks what keeps every read inside the blob (sections, child ranges, token ids), not the order of the tokens within a range: a damaged blob can score wrongly but never makes the decoder read outside it, and the CRC catches the damage.
+- Code: `vocr_lm.o` is 4,997 B with `vita/CMakeLists.txt`'s flags (VitaSDK gcc 15.2, Thumb-2; `size.txt` of `vita/scripts/build.sh`) and 7,897 B with `psp/Makefile`'s (psp-gcc 15.2.0, `-O2 -G0`); it needs only `memcpy`, `memset`, `vocr_class_text` (and libgcc's `__aeabi_uidiv` on ARM, once per init). The top-K branch grows `vocr.o` from 14,583 to 15,555 B (NEON) and from 12,455 to 13,403 B (scalar). The decoder has run on the host (gcc, clang, ASan/UBSan) and under qemu-arm for the cycle estimate; not on a console or in PPSSPP.
+- `lm/vlm.py` is the specification: its reference decoder and scorer give the C code's output bit for bit (`tests/test_ctclm.py`).
+
+From Python: `Vocr.run_topk(crop, k)` returns the greedy text, `topv`, `topc`, `blank`, `conf_min` and `conf_mean`; `VocrLM(vocr, lm_path, beam=8, topk=8, alpha=..., beta=..., gate=..., flags=..., bracket=...)` wraps the decoder (`.decode(topv, topc, blank)`). `pyvocr` loads `$VOCR_LIB` as is when it is set (a frozen build for long runs). The CLI takes `--topk K`, `--conf` (conf_min and conf_mean per line on stderr) and `--lm LM.vlm --beam N --alpha A --beta B --gate G --lm-flags F --bracket C` (prints the beam text; `--lm none` runs the beam without an LM).
 
 ## Modes and exactness
 
@@ -215,7 +253,7 @@ The full layout is in the docstring of `train/export.py`. `vocr_load()` rejects 
 
 ```sh
 make -C runtime                  # build/vocr_cli, build/libvocr.so
-make -C runtime check            # line finder checks, then C unit tests + PyTorch parity on a
+make -C runtime check            # line finder checks, then C unit tests (vocr, vocr_lm) + PyTorch parity on a
                                  # random-init fixture, built with ASan + UBSan (CI: ci/runtime.sh)
 python runtime/tests/parity.py --ckpt models/v1/ckpt_best.pt               # synth val shard
 python runtime/tests/parity.py --ckpt models/v1/ckpt_best.pt --set real    # RGBA crops

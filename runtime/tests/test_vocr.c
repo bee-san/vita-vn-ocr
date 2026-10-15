@@ -227,6 +227,87 @@ static int stop_now(void *user)
     return ++*calls >= 2;
 }
 
+/* vocr_run with vocr_extra.topk = k (cap frames of buffers) */
+static int run_topk(const vocr_model *m, vocr_opts o, unsigned w, unsigned h, int fmt, char *text, size_t cap,
+                    unsigned k, float *tv, uint16_t *tc, float *bl, unsigned cap_frames, vocr_extra *ex_out)
+{
+    vocr_ctx c;
+    vocr_image im;
+    vocr_extra ex;
+    size_t need = vocr_arena_bytes(m, &o);
+    int rc;
+    if (!need) return VOCR_E_ARG;
+    rc = vocr_init(&c, m, &o, arena_b, need);
+    if (rc) return rc;
+    im.pixels = img_px;
+    im.width = w;
+    im.height = h;
+    im.stride = (size_t)w * (fmt == VOCR_RGBA8 ? 4u : 1u);
+    im.format = fmt;
+    memset(&ex, 0, sizeof ex);
+    ex.cap_frames = cap_frames;
+    ex.topk = k;
+    ex.topk_logit = tv;
+    ex.topk_class = tc;
+    ex.blank_logit = bl;
+    rc = vocr_run(&c, &im, text, cap, &ex);
+    if (ex_out) *ex_out = ex;
+    return rc;
+}
+
+/* The per-frame top-K equals the K largest logits (ties: the lower class first), the blank logit is
+ * class 0's, the text and the arena do not change, and the confidence lies in (0, 1]. */
+static void test_topk(int int8)
+{
+    vocr_model m;
+    vocr_opts o;
+    char ref[256], text[256];
+    float lref[80 * CLASSES], tv[80 * CLASSES], bl[80];
+    uint16_t tc[80 * CLASSES];
+    vocr_extra ex, eg;
+    const size_t n = build_blob(int8);
+    const unsigned ks[4] = {1, 2, 3, CLASSES}, tiles[3][2] = {{0, 0}, {1, 1}, {5, 7}};
+    unsigned ki, ti, f, j, w = 157u, h = 19u;
+    CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK);
+    make_image(w, h, 0);
+    memset(&o, 0, sizeof o);
+    o.mode = int8 ? VOCR_MODE_W8I : VOCR_MODE_F32;
+    memset(lref, 0, sizeof lref);
+    CHECK(run_once(&m, o, arena_a, w, h, VOCR_GREY8, ref, sizeof ref, lref, 80, &eg) == VOCR_OK);
+    for (ki = 0; ki < 4; ki++)
+        for (ti = 0; ti < 3; ti++) {
+            const unsigned k = ks[ki];
+            vocr_opts ot = o;
+            ot.tile_frames = tiles[ti][0];
+            ot.head_frames = tiles[ti][1];
+            CHECK(run_topk(&m, ot, w, h, VOCR_GREY8, text, sizeof text, k, tv, tc, bl, 80, &ex) == VOCR_OK);
+            CHECK(strcmp(text, ref) == 0);
+            CHECK(ex.frames == eg.frames && ex.chars == eg.chars);
+            CHECK(ex.conf_min > 0.0f && ex.conf_min <= ex.conf_mean && ex.conf_mean <= 1.0f);
+            if (k == 1) CHECK(ex.conf_min == 1.0f && ex.conf_mean == 1.0f);
+            for (f = 0; f < ex.frames; f++) {
+                const float *row = lref + (size_t)f * CLASSES;
+                unsigned used = 0;
+                CHECK(memcmp(&bl[f], &row[0], sizeof(float)) == 0);
+                for (j = 0; j < k; j++) {
+                    unsigned c, bc = CLASSES;
+                    for (c = 0; c < CLASSES; c++) /* the reference: the largest unused, first on ties */
+                        if (!(used & (1u << c)) && (bc == CLASSES || row[c] > row[bc])) bc = c;
+                    used |= 1u << bc;
+                    CHECK(tc[f * k + j] == bc);
+                    CHECK(memcmp(&tv[f * k + j], &row[bc], sizeof(float)) == 0);
+                }
+            }
+        }
+    /* errors: buffers too short, K too large, a missing buffer */
+    CHECK(run_topk(&m, o, w, h, VOCR_GREY8, text, sizeof text, 2, tv, tc, bl, eg.frames - 1, NULL) == VOCR_E_ARG);
+    CHECK(run_topk(&m, o, w, h, VOCR_GREY8, text, sizeof text, CLASSES + 1, tv, tc, bl, 80, NULL) == VOCR_E_ARG);
+    CHECK(run_topk(&m, o, w, h, VOCR_GREY8, text, sizeof text, VOCR_TOPK_MAX + 1, tv, tc, bl, 80, NULL) ==
+          VOCR_E_ARG);
+    CHECK(run_topk(&m, o, w, h, VOCR_GREY8, text, sizeof text, 2, NULL, tc, bl, 80, NULL) == VOCR_E_ARG);
+    CHECK(run_topk(&m, o, w, h, VOCR_GREY8, text, sizeof text, 2, tv, tc, NULL, 80, NULL) == VOCR_OK);
+}
+
 /* ------------------------------------------------------------ tests */
 
 static void test_load(int int8)
@@ -494,6 +575,8 @@ int main(void)
     test_run(1, 16);
     test_run(0, 272);
     test_run(1, 272);
+    test_topk(0);
+    test_topk(1);
     test_invert();
     test_limits();
     if (failures) {

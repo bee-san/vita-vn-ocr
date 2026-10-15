@@ -6,10 +6,14 @@
     text = r.text(crop, invert=True)             # dark text: read as 255 - grey (VOCR_INVERT)
     text, logits = r.run(crop, logits=True)      # logits: frames x classes float32
     r.arena_bytes                                # exact arena bytes of this context
+    out = r.run_topk(crop, 8)                    # greedy text + per-frame top-8 + confidence
+    lm = VocrLM(r, "lm.vlm", beam=8, topk=8, alpha=300, beta=0, gate=3000)   # runtime/vocr_lm.h
+    text = lm.decode(out["topv"], out["topc"], out["blank"])                  # beam + LM text
 
 Not part of the console build: the runtime itself is dependency-free C.
 """
 import ctypes as C
+import os
 import subprocess
 from pathlib import Path
 
@@ -34,7 +38,14 @@ class _Image(C.Structure):
 class _Extra(C.Structure):
     _fields_ = [("logits", C.c_void_p), ("best", C.c_void_p), ("cap_frames", C.c_uint),
                 ("cancel", C.c_void_p), ("user", C.c_void_p), ("width", C.c_uint),
-                ("frames", C.c_uint), ("chars", C.c_uint)]
+                ("frames", C.c_uint), ("chars", C.c_uint), ("topk", C.c_uint),
+                ("topk_logit", C.c_void_p), ("topk_class", C.c_void_p), ("blank_logit", C.c_void_p),
+                ("conf_min", C.c_float), ("conf_mean", C.c_float)]
+
+
+class _LMOpts(C.Structure):
+    _fields_ = [("beam", C.c_uint), ("topk", C.c_uint), ("max_frames", C.c_uint), ("alpha", C.c_int),
+                ("beta", C.c_int), ("gate", C.c_int), ("flags", C.c_uint), ("bracket", C.c_int)]
 
 
 def _aligned(nbytes, align=16):
@@ -48,11 +59,13 @@ def _stale(lib):
     if not lib.exists():
         return True
     built = lib.stat().st_mtime
-    return any((HERE / src).stat().st_mtime > built for src in ("vocr.c", "vocr.h"))
+    return any((HERE / src).stat().st_mtime > built for src in ("vocr.c", "vocr.h", "vocr_lm.c", "vocr_lm.h"))
 
 
 def load_lib(path=None):
-    path = Path(path) if path else LIB
+    """The ctypes library: `path`, else $VOCR_LIB (a frozen build, used as is), else build/libvocr.so
+    (rebuilt whenever a runtime source is newer)."""
+    path = Path(path) if path else Path(os.environ["VOCR_LIB"]) if os.environ.get("VOCR_LIB") else LIB
     if path == LIB and _stale(LIB):        # never test an old build of vocr.c
         subprocess.run(["make", "-s", "-C", str(HERE), str(LIB.relative_to(HERE))], check=True)
     lib = C.CDLL(str(path))
@@ -69,6 +82,22 @@ def load_lib(path=None):
     lib.vocr_strerror.argtypes = [C.c_int]
     lib.vocr_strerror.restype = C.c_char_p
     lib.vocr_sizes.argtypes = [C.POINTER(sz), C.POINTER(sz)]
+    lib.vocr_class_text.argtypes = [vp, u, C.POINTER(u)]
+    lib.vocr_class_text.restype = vp
+    if not hasattr(lib, "vocr_lm_load"):     # a library built from vocr.c alone (eval/vocr3_report.py): no decoder
+        return lib
+    lib.vocr_lm_check_crc.argtypes = [vp, sz]
+    lib.vocr_lm_load.argtypes = [vp, vp, sz]
+    lib.vocr_lm_workspace_bytes.argtypes = [vp, vp, C.POINTER(_LMOpts)]
+    lib.vocr_lm_workspace_bytes.restype = sz
+    lib.vocr_lm_init.argtypes = [vp, vp, vp, C.POINTER(_LMOpts), vp, sz]
+    lib.vocr_lm_decode.argtypes = [vp, C.POINTER(_Extra), C.c_char_p, sz, C.POINTER(u)]
+    lib.vocr_lm_token.argtypes = [vp, C.c_uint32]
+    lib.vocr_lm_token.restype = u
+    lib.vocr_lm_score.argtypes = [vp, C.POINTER(C.c_int32), u, C.POINTER(C.c_int32)]
+    lib.vocr_lm_score.restype = C.c_int32
+    lib.vocr_lm_initial.argtypes = [vp, u, C.POINTER(C.c_int32)]
+    lib.vocr_lm_sizes.argtypes = [C.POINTER(sz), C.POINTER(sz)]
     return lib
 
 
@@ -135,6 +164,12 @@ class Vocr:
     def resized_width(self, w, h):
         return self.lib.vocr_resized_width(self._model, w, h)
 
+    def class_text(self, c):
+        """UTF-8 text of class c ("" for the blank, class 0)."""
+        n = C.c_uint()
+        p = self.lib.vocr_class_text(self._model, c, C.byref(n))
+        return C.string_at(p, n.value).decode("utf-8") if n.value else ""
+
     def preprocess(self, img, invert=False):
         """The grey network input (height x padded width, uint8) and the unpadded width."""
         keep, im = self._image(img, invert)
@@ -167,3 +202,82 @@ class Vocr:
 
     def text(self, img, invert=False):
         return self.run(img, invert=invert)
+
+    def run_topk(self, img, k, invert=False, blank=True):
+        """vocr_run with vocr_extra.topk = k: the greedy text, per frame the k largest logits (topv,
+        decreasing) and their classes (topc), the blank's logit, and conf_min / conf_mean."""
+        keep, im = self._image(img, invert)
+        cap = self.resized_width(im.width, im.height) // self.stride + 1
+        topv = np.zeros((cap, k), np.float32)
+        topc = np.zeros((cap, k), np.uint16)
+        bl = np.zeros(cap, np.float32)
+        best = np.zeros(cap, np.uint16)
+        ex = _Extra()
+        ex.best, ex.cap_frames, ex.topk = best.ctypes.data, cap, k
+        ex.topk_logit, ex.topk_class = topv.ctypes.data, topc.ctypes.data
+        ex.blank_logit = bl.ctypes.data if blank else None
+        self._check(self.lib.vocr_run(self._ctx, C.byref(im), self._text, len(self._text), C.byref(ex)), "vocr_run")
+        del keep
+        n = ex.frames
+        self.last_best = best[:n]
+        return {"text": self._text.value.decode("utf-8"), "topv": topv[:n], "topc": topc[:n],
+                "blank": bl[:n] if blank else None, "conf_min": ex.conf_min, "conf_mean": ex.conf_mean,
+                "frames": n, "chars": ex.chars}
+
+
+class VocrLM:
+    """runtime/vocr_lm.h: the character n-gram LM and CTC prefix beam search, for one Vocr model.
+    lm: a VOLM blob (path or bytes), or None with alpha = 0. alpha, beta, gate, bracket in 1/1000 (nat)."""
+
+    def __init__(self, vocr, lm, beam=8, topk=8, alpha=0, beta=0, gate=0, flags=0, max_frames=0, bracket=0,
+                 check_crc=True):
+        self.lib, self.vocr = vocr.lib, vocr
+        lsz, csz = C.c_size_t(), C.c_size_t()
+        self.lib.vocr_lm_sizes(C.byref(lsz), C.byref(csz))
+        self._lm = C.create_string_buffer(lsz.value)
+        self._ctx = C.create_string_buffer(csz.value)
+        self._blob = None
+        lm_ptr = None
+        if lm is not None:
+            data = Path(lm).read_bytes() if isinstance(lm, (str, Path)) else bytes(lm)
+            self._blob = _aligned(len(data))
+            self._blob[:] = np.frombuffer(data, np.uint8)
+            if check_crc:
+                self._check(self.lib.vocr_lm_check_crc(self._blob.ctypes.data, len(data)), "vocr_lm_check_crc")
+            self._check(self.lib.vocr_lm_load(self._lm, self._blob.ctypes.data, len(data)), "vocr_lm_load")
+            lm_ptr = self._lm
+            self.lm_bytes = len(data)
+        self.opts = _LMOpts(beam, topk, max_frames, alpha, beta, gate, flags, bracket)
+        self.workspace_bytes = self.lib.vocr_lm_workspace_bytes(vocr._model, lm_ptr, C.byref(self.opts))
+        if not self.workspace_bytes:
+            raise ValueError(f"invalid vocr_lm options {beam=} {topk=} {alpha=} {beta=} {gate=} {flags=} {bracket=}")
+        self._ws = _aligned(self.workspace_bytes)
+        self._check(self.lib.vocr_lm_init(self._ctx, vocr._model, lm_ptr, C.byref(self.opts), self._ws.ctypes.data,
+                                          self.workspace_bytes), "vocr_lm_init")
+        self._text = C.create_string_buffer(1 << 16)
+
+    def _check(self, rc, what):
+        if rc:
+            raise VocrError(self.lib, rc, what)
+
+    def decode(self, topv, topc, blank=None):
+        """The beam + LM text of one line from its per-frame top-K (frames x K) and blank logits."""
+        topv = np.ascontiguousarray(topv, np.float32)
+        topc = np.ascontiguousarray(topc, np.uint16)
+        ex = _Extra()
+        ex.frames, ex.cap_frames, ex.topk = topv.shape[0], topv.shape[0], topv.shape[1]
+        ex.topk_logit, ex.topk_class = topv.ctypes.data, topc.ctypes.data
+        if blank is not None:
+            blank = np.ascontiguousarray(blank, np.float32)
+            ex.blank_logit = blank.ctypes.data
+        n = C.c_uint()
+        self._check(self.lib.vocr_lm_decode(self._ctx, C.byref(ex), self._text, len(self._text), C.byref(n)),
+                    "vocr_lm_decode")
+        return self._text.value.decode("utf-8")
+
+    def score(self, state, token):
+        """(log P(token | state) in Q10, next state) through the C scorer (tests)."""
+        st = (C.c_int32 * len(state))(*state)
+        nxt = (C.c_int32 * len(state))()
+        lp = self.lib.vocr_lm_score(self._lm, st, token, nxt)
+        return lp, tuple(nxt)

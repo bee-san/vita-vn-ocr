@@ -1,0 +1,89 @@
+{
+ "kind": "volm-sources",
+ "note": "Inputs of lm/build.py, each checked by sha256 before use. Nothing here is committed or redistributed except as the built LM (a release asset, CC BY-SA 4.0 with the attributions below). $HERD is the fleet's shared box (/local/home/skerraut/herd-vita-ocr). The corpora are synth3's text pools (synth/synth3_text.py, data/manifests/synth3_text_sources.json: norm_vn display form, pieces of at most 60 characters, every character in data/vocab.txt), built from the pinned raw sources listed there.",
+ "vocab": {
+  "path": "data/vocab.txt",
+  "sha256": "ae09932df1d832e5e9c02f8fedab8cdd2996638ea2c848485553773c60fb021b"
+ },
+ "corpora": {
+  "aozora_dialogue": {
+   "path": "$HERD/shared/artifacts/synth3/text/pools3/aozora_dialogue.train.txt",
+   "sha256": "81c3fe6570d2a6ef1cf30e1da6e1198d805120a49140e801aba6a83ddb6c8ff5",
+   "licence": "public-domain texts (Aozora Bunko); dataset CC BY 4.0",
+   "attribution": "Aozora Bunko (https://www.aozora.gr.jp/), via globis-university/aozorabunko-clean (https://huggingface.co/datasets/globis-university/aozorabunko-clean, CC BY 4.0)"
+  },
+  "aozora_narration": {
+   "path": "$HERD/shared/artifacts/synth3/text/pools3/aozora_narration.train.txt",
+   "sha256": "2b75f33bf57279c23d511b271eb3a65773de601c7b2501f885502454f5cdaa94",
+   "licence": "public-domain texts (Aozora Bunko); dataset CC BY 4.0",
+   "attribution": "Aozora Bunko (https://www.aozora.gr.jp/), via globis-university/aozorabunko-clean (https://huggingface.co/datasets/globis-university/aozorabunko-clean, CC BY 4.0)"
+  },
+  "aratako_dsv3": {
+   "path": "$HERD/shared/artifacts/synth3/text/pools3/aratako_dsv3.train.txt",
+   "sha256": "345866dad525db1baf6d780ebbb2361ad2084687dff20ca5b89daca3df253a19",
+   "licence": "MIT",
+   "attribution": "Aratako/Synthetic-Japanese-Roleplay-SFW-DeepSeek-V3-0324-20k (https://huggingface.co/datasets/Aratako/Synthetic-Japanese-Roleplay-SFW-DeepSeek-V3-0324-20k, MIT)"
+  },
+  "jesc": {
+   "path": "$HERD/shared/artifacts/synth3/text/pools3/jesc.train.txt",
+   "sha256": "08c0ec3f4ca2441b5c273df4b7a6135d7940d89f946ef1d1bbdd6e56fed5d22d",
+   "licence": "CC BY-SA 4.0",
+   "attribution": "JESC: Japanese-English Subtitle Corpus, Pryzant et al. 2018 (https://nlp.stanford.edu/projects/jesc/, CC BY-SA 4.0)"
+  },
+  "tatoeba": {
+   "path": "$HERD/shared/artifacts/synth3/text/pools3/tatoeba.train.txt",
+   "sha256": "5f7322923c2c41d18b9515905a03f61a6d31448b3fe71fefe444e77a444ca6f3",
+   "licence": "CC BY 2.0 FR",
+   "attribution": "Tatoeba (https://tatoeba.org/, CC BY 2.0 FR)"
+  },
+  "wiki": {
+   "path": "$HERD/shared/artifacts/synth3/text/pools3/wiki.train.txt",
+   "sha256": "9c18dd18fb604bfe7555c7ccd1758a7233f7bcbdde5ecb462a2b047e887ea81b",
+   "licence": "CC BY-SA 4.0",
+   "attribution": "Japanese Wikipedia via wikimedia/wikipedia 20231101.ja (https://huggingface.co/datasets/wikimedia/wikipedia, CC BY-SA 4.0)"
+  }
+ },
+ "jiten": {
+  "vn": {
+   "path": "$HERD/shared/artifacts/ctc-lm-decode/jiten/freq_media7.csv",
+   "url": "https://api.jiten.moe/api/frequency-list/download?downloadType=csv&mediaType=7",
+   "sha256": "043fd4b24b62089586159edb23c122f5da58cd82a3b59b9452a737117c427372",
+   "licence": "CC BY-SA 4.0",
+   "attribution": "Jiten visual-novel frequency list (https://jiten.moe/frequency-dictionaries, 2,162 VN scripts; CC BY-SA 4.0); retrieved 2026-10-12 and again 2026-10-14 with the same bytes"
+  },
+  "novel": {
+   "path": "$HERD/shared/artifacts/ctc-lm-decode/jiten/freq_media4.csv",
+   "url": "https://api.jiten.moe/api/frequency-list/download?downloadType=csv&mediaType=4",
+   "sha256": "c33ce86d72b749a083bc3b79d76bf2eb652d0ffb1a708a5710e768404162b007",
+   "licence": "CC BY-SA 4.0",
+   "attribution": "Jiten novel frequency list (https://jiten.moe/frequency-dictionaries, 3,161 novels; CC BY-SA 4.0); retrieved 2026-10-14"
+  }
+ },
+ "heldout": {
+  "realplus": {
+   "path": "$HERD/shared/artifacts/realplus/lines_full_v2.jsonl",
+   "sha256": "8dd41a6faa0484061662cc5e7744f63a8ceb8410f9c4ddc6dbe0494507f28bb2",
+   "use": "held-out VN text for the pruning-profile choice only (never trained on): the realplus v2 labels, training-side VNs of the recognizer's pool; no development or protected set"
+  }
+ },
+ "exclusions": {
+  "test_games": {
+   "path": "eval/manifests/test_games.json",
+   "sha256": "c24d67e7697da2a8ebbcc940449ded4ccc839c25acc2bae3a5ef85eec4fcce9b"
+  },
+  "clannad": {
+   "path": "data/manifests/synth3_exclude_clannad.json",
+   "sha256": "1143db8610b16757242994fa2b8fa232c4af8a8b04183290bfa1a2dfa38ff136"
+  },
+  "vndb_chars": {
+   "path": "$HERD/shared/artifacts/synth3/text/vndb_chars.tsv",
+   "sha256": "6cf3ffd77fe8399e5367a80bcb4fe37fd0e711ec2d93ccd4869b63fc6109a63d",
+   "note": "VNDB character names by VN, from the VNDB dump of 2026-10-12 (ODbL 1.0 / DbCL 1.0; synth3 text/README_vndb.md)"
+  },
+  "vndb_titles": {
+   "path": "$HERD/shared/artifacts/synth3/text/vndb_vn_titles.tsv",
+   "sha256": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0",
+   "note": "VNDB titles by VN, the same dump"
+  }
+ }
+}

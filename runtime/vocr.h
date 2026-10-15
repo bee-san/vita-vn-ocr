@@ -100,15 +100,32 @@ typedef struct {
     int format;                    /* VOCR_GREY8 or VOCR_RGBA8, optionally | VOCR_INVERT */
 } vocr_image;
 
+#define VOCR_TOPK_MAX 16
+
 typedef struct {             /* optional per-line extras for vocr_run() */
     float *logits;           /* in: frames x n_classes floats, or NULL */
     uint16_t *best;          /* in: argmax class per frame, or NULL */
-    unsigned cap_frames;     /* in: capacity of logits / best in frames */
+    unsigned cap_frames;     /* in: capacity of logits / best / topk_* / blank_logit in frames */
     int (*cancel)(void *user);   /* in: polled once per tile; nonzero stops */
     void *user;
     unsigned width;          /* out: resized width before padding */
     unsigned frames;         /* out: CTC frames */
     unsigned chars;          /* out: decoded characters */
+    /* Per-frame top-K and a confidence for the greedy text, for vocr_lm_decode() (vocr_lm.h) and for
+     * callers that re-read a doubtful line. topk = 0 (zeroed extras) is today's path exactly. Neither
+     * the text nor any logit depends on topk, and the arena does not either: the top-K state lives in
+     * the caller's buffers below, which must hold cap_frames >= the line's frames
+     * (vocr_resized_width(m, w, h) / m->stride + 1 always suffices; else VOCR_E_ARG). */
+    unsigned topk;           /* in: 0 off, 1..VOCR_TOPK_MAX: keep the K largest logits per frame */
+    float *topk_logit;       /* in: cap_frames x topk floats, per frame decreasing (ties: the lower
+                                class first, so topk_class[f * topk] is the argmax of frame f) */
+    uint16_t *topk_class;    /* in: cap_frames x topk classes, aligned with topk_logit */
+    float *blank_logit;      /* in: cap_frames floats, class 0's logit per frame, or NULL */
+    float conf_min;          /* out (topk >= 1): over the frames that emit a character of the text,
+                                the smallest softmax-max probability, computed over that frame's
+                                top-K logits (an upper bound of the full softmax's, equal to it when
+                                the classes outside the top K carry no mass); 1 with no character */
+    float conf_mean;         /* out (topk >= 1): the mean of the same per-character probabilities */
 } vocr_extra;
 
 typedef struct {             /* per-op plan; private */

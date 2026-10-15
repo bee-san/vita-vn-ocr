@@ -133,10 +133,13 @@ static void mat_op(unsigned i, unsigned type, unsigned flags, unsigned kh, unsig
 /* height 8, stride 4: stem 3x3/2 (1->8, 8->4 rows), dw 3x3/2 (4->2), pw 8->C1,
  * collapse 2x1 (C1->16, 2->1), dw 1x5, pw residual, head 16->6. C1 = 16, or 272 when
  * wide, which makes the collapse's reduction length K = 544 > 512 (the w8i chunk). */
-static size_t build_blob_c1(int int8, unsigned c1);
+static size_t build_blob_sc(int int8, unsigned s, unsigned c1);
+static size_t build_blob_c1(int int8, unsigned c1) { return build_blob_sc(int8, 8, c1); }
 static size_t build_blob(int int8) { return build_blob_c1(int8, 16); }
 
-static size_t build_blob_c1(int int8, unsigned c1)
+/* s: the stem's and the first depthwise layer's channels: 8, or 32 so that their NEON paths
+ * (16 channels a pass) run twice per position */
+static size_t build_blob_sc(int int8, unsigned s, unsigned c1)
 {
     unsigned char vocab[64];
     const char *chars[CLASSES - 1] = {"a", "\xe3\x81\x82", "b", "\xe3\x83\xbc", "!"};
@@ -145,11 +148,11 @@ static size_t build_blob_c1(int int8, unsigned c1)
     memset(blob_buf, 0, sizeof blob_buf);
     blob_pos = 64 + 64 * n_ops;
     lcg = 12345u;
-    off = put_floats(9 * 8, 0.6f);
-    op_rec(0, 1, 1 | 4, 3, 3, 2, 2, 1, 1, 1, 8, 8, 4, off, 9 * 8 * 4, put_floats(8, 0.1f), 0, 9, 8);
-    off = put_floats(9 * 8, 0.6f);
-    op_rec(1, 2, 1 | 4, 3, 3, 2, 2, 1, 1, 8, 8, 4, 2, off, 9 * 8 * 4, put_floats(8, 0.1f), 0, 9, 8);
-    mat_op(2, 3, 1 | 4, 1, 8, c1, 2, 2, int8);
+    off = put_floats(9 * s, 0.6f);
+    op_rec(0, 1, 1 | 4, 3, 3, 2, 2, 1, 1, 1, s, 8, 4, off, 9 * s * 4, put_floats(s, 0.1f), 0, 9, s);
+    off = put_floats(9 * s, 0.6f);
+    op_rec(1, 2, 1 | 4, 3, 3, 2, 2, 1, 1, s, s, 4, 2, off, 9 * s * 4, put_floats(s, 0.1f), 0, 9, s);
+    mat_op(2, 3, 1 | 4, 1, s, c1, 2, 2, int8);
     mat_op(3, 3, 1 | 4 | 16, 2, c1, 16, 2, 1, int8);
     off = put_floats(5 * 16, 0.6f);
     op_rec(4, 2, 1 | 4, 1, 5, 1, 1, 0, 2, 16, 16, 1, 1, off, 5 * 16 * 4, put_floats(16, 0.1f), 0, 5, 16);
@@ -213,7 +216,7 @@ static int run_once(const vocr_model *m, vocr_opts o, unsigned char *arena, unsi
     im.pixels = img_px;
     im.width = w;
     im.height = h;
-    im.stride = (size_t)w * (fmt == VOCR_RGBA8 ? 4u : 1u);
+    im.stride = (size_t)w * ((fmt & ~VOCR_INVERT) == VOCR_RGBA8 ? 4u : 1u);
     im.format = fmt;
     memset(&ex, 0, sizeof ex);
     ex.logits = logits;
@@ -272,14 +275,17 @@ static void test_load(int int8)
     CHECK(vocr_check_crc(blob_buf, n) == VOCR_OK);
 }
 
-static void test_run(int int8, unsigned c1)
+static void test_run_sc(int int8, unsigned sc, unsigned c1);
+static void test_run(int int8, unsigned c1) { test_run_sc(int8, 8, c1); }
+
+static void test_run_sc(int int8, unsigned sc, unsigned c1)
 {
     vocr_model m;
     vocr_opts o;
     char ref[256], text[256];
     float lref[80 * CLASSES], lcur[80 * CLASSES], lw8f[80 * CLASSES];
     vocr_extra ex;
-    size_t n = build_blob_c1(int8, c1);
+    size_t n = build_blob_sc(int8, sc, c1);
     const int modes_i8[2] = {VOCR_MODE_W8F, VOCR_MODE_W8I};
     int mi, nmodes = int8 ? 2 : 1, fmt;
     unsigned tiles[5][2] = {{1, 1}, {2, 3}, {3, 1}, {5, 7}, {64, 64}};
@@ -557,6 +563,8 @@ static size_t build_head_blob(const float *bias, int int8)
     return blob_pos;
 }
 
+static float hlogits[80 * HCLASSES];
+
 static void test_head_argmax(void)
 {
     const float ninf = -INFINITY, nan_ = NAN, low = -5.0f;
@@ -613,10 +621,24 @@ static void test_head_argmax(void)
             im.format = VOCR_GREY8;
             memset(&ex, 0, sizeof ex);
             memset(best, 0xFF, sizeof best);
+            for (j = 0; j < 80 * HCLASSES; j++) hlogits[j] = 12345.0f;
             ex.best = best;
+            ex.logits = hlogits;
             ex.cap_frames = 80;
             CHECK(vocr_run(&c, &im, text, sizeof text, &ex) == VOCR_OK);
             CHECK(ex.frames > 20 && ex.frames <= 80);
+            /* every logit is its class's bias (NEON W8I copies them out of its lane path) */
+            for (f = 0; f < ex.frames; f++)
+                for (j = 0; j < HCLASSES; j++) {
+                    const float v = hlogits[f * HCLASSES + j], b = bias[j];
+                    if (!(v == b || (isnan(v) && isnan(b)))) {
+                        fprintf(stderr, "head case %u mode %d frame %u class %u: logit %g, bias %g\n", ci,
+                                modes[mi], f, j, (double)v, (double)b);
+                        failures++;
+                        f = ex.frames;
+                        break;
+                    }
+                }
             for (f = 0; f < ex.frames; f++)
                 if (best[f] != cases[ci].expect) {
                     fprintf(stderr, "head case %u mode %d frame %u: class %u, want %u\n", ci, modes[mi], f,
@@ -629,14 +651,83 @@ static void test_head_argmax(void)
         }
 }
 
-int main(void)
+/* FNV-1a 64 over bytes */
+static uint64_t fnv64(uint64_t h, const void *p, size_t n)
 {
+    const unsigned char *b = (const unsigned char *)p;
+    while (n--) {
+        h ^= *b++;
+        h *= 0x100000001b3ull;
+    }
+    return h;
+}
+
+/* `test_vocr --hash`: one 64-bit hash of every logit and text of a fixed set of runs, for
+ * comparing builds (make check-arm: the NEON build against the scalar one and the host's).
+ * The blobs cover every NEON kernel: a 32-channel stem and depthwise 3x3 (two 16-channel
+ * passes per position), a 16-channel 1x5 depthwise, the pointwise and collapse matrices
+ * with K below and above the 512-term chunk, the head with its lane argmax; each in f32,
+ * w8f and w8i, grey and RGBA, with and without VOCR_INVERT, at the default tiles and at
+ * one frame a tile. Nothing here checks values: the builds must agree bit for bit. */
+static int hash_runs(void)
+{
+    static const unsigned shapes[][2] = {{8, 16}, {32, 16}, {32, 272}};
+    static float lbuf[80 * CLASSES];
+    uint64_t h = 0xcbf29ce484222325ull;
+    unsigned si, runs = 0;
+    for (si = 0; si < sizeof shapes / sizeof shapes[0]; si++) {
+        int int8;
+        for (int8 = 0; int8 <= 1; int8++) {
+            const int modes_i8[2] = {VOCR_MODE_W8F, VOCR_MODE_W8I};
+            int mi, nmodes = int8 ? 2 : 1, fmt, inv, tile;
+            vocr_model m;
+            size_t n = build_blob_sc(int8, shapes[si][0], shapes[si][1]);
+            if (vocr_load(&m, blob_buf, n) != VOCR_OK) {
+                fprintf(stderr, "hash run: shape %u int8 %d: blob refused\n", si, int8);
+                return 1;
+            }
+            for (mi = 0; mi < nmodes; mi++)
+                for (fmt = VOCR_GREY8; fmt <= VOCR_RGBA8; fmt += 3)
+                    for (inv = 0; inv <= 1; inv++)
+                        for (tile = 0; tile <= 1; tile++) {
+                            vocr_opts o;
+                            vocr_extra ex;
+                            char text[256];
+                            unsigned w = fmt == VOCR_GREY8 ? 257u : 93u;
+                            int rc;
+                            make_image(w, 19, fmt == VOCR_RGBA8);
+                            memset(&o, 0, sizeof o);
+                            o.mode = int8 ? modes_i8[mi] : VOCR_MODE_F32;
+                            o.tile_frames = o.head_frames = tile ? 1u : 0u;
+                            memset(lbuf, 0, sizeof lbuf);
+                            rc = run_once(&m, o, arena_a, w, 19, fmt | (inv ? VOCR_INVERT : 0), text, sizeof text, lbuf,
+                                          80, &ex);
+                            if (rc != VOCR_OK) {
+                                fprintf(stderr, "hash run: shape %u int8 %d mode %d fmt %d inv %d tile %d: %s\n", si, int8, o.mode, fmt, inv, tile, vocr_strerror(rc));
+                                return 1;
+                            }
+                            h = fnv64(h, lbuf, (size_t)ex.frames * CLASSES * sizeof(float));
+                            h = fnv64(h, text, strlen(text) + 1);
+                            runs++;
+                        }
+        }
+    }
+    printf("test_vocr hash %016llx (%u runs)\n", (unsigned long long)h, runs);
+    return 0;
+}
+
+int main(int argc, char **argv)
+{
+    if (argc == 2 && !strcmp(argv[1], "--hash")) return hash_runs();
+    (void)argv;
     test_load(0);
     test_load(1);
     test_run(0, 16);
     test_run(1, 16);
     test_run(0, 272);
     test_run(1, 272);
+    test_run_sc(0, 32, 16);
+    test_run_sc(1, 32, 272);
     test_invert();
     test_limits();
     test_head_argmax();

@@ -88,7 +88,10 @@ and never goes to Codex or any third party.
 
 It holds 5,050 PNG frames of 87 games, at most 150 per game, in `games/<folder>/` with a per-frame `manifest.jsonl`:
 - 4,963 dialogue frames (`visually_reviewed_new_dialogue`) and 87 title or settings screens;
-- 3,071 PSP frames at 480x272 and 1,979 Vita frames at 960x544, every one native (no Adrenaline upscale).
+- 3,071 PSP frames at 480x272 and 1,979 Vita frames at 960x544: every frame is at its platform's own screen size. A
+  PSP game captured through Adrenaline would be 960x544, and none is. `owner_frames.upscale_2x` still reads 2 Vita
+  frames as possible 2x upscales: VA-11 HALL-A's one frame (nearest-neighbour) and a Mikagami Sumika frame (smooth).
+  Owner pool v2's `pool-prep` refuses both ([owner-pool](owner-pool.md#frames)).
 
 `synth/owner_drop.py` checked every folder's VN on the 2026-10-13 VNDB dump (`GAMES_20261014`). The drop names a VN for
 86 folders (`canonical_vndb_ids`), and the dump confirms each one:

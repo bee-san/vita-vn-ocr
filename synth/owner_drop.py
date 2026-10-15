@@ -22,8 +22,9 @@ an earlier frame of the drop) as duplicate_of, and with --leak tests each frame 
 MIN_CORR is left out of its training folder (leak_dropped), instead of blocking its game. sort never links a
 duplicate or a leak-dropped frame, and names the frames d<date>_<file> next to the first drop's.
 
-check   per full frame: the decoded size (the source resolution; every frame of this drop is a native
-        capture, 960x544 Vita or 480x272 PSP, never an Adrenaline upscale) and three hashes (the file's, PIL's
+check   per full frame: the decoded size (the source resolution; every frame of this drop is at its platform's
+        screen size, 960x544 Vita or 480x272 PSP; owner_frames.upscale_2x tests each for a 2x upscale at inventory,
+        and pool-prep refuses the frames it flags) and three hashes (the file's, PIL's
         decoded RGB as the fresh-native harness hashes it, devnative's). Per game: its VNDB id (GAMES:
         identified on VNDB's 2026-10-13 dump by title, platform and the Japanese console release),
         realplus/shots.reserved_vns's reason on the dump, the VN's rows in eval's and the development sets

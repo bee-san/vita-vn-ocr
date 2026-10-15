@@ -197,6 +197,15 @@ The local working files (screenshots, readings, decisions) live in
 arenas, A9 estimates and the vita-jp-overlay host cross-check; `eval/vocr3_fresh.py` and
 `eval/vocr3_clannad.py` run the private tests. See [docs/vocr3-harness.md](../docs/vocr3-harness.md).
 
+## Google Lens on the test sets (report only)
+
+`eval/lens_lines.py read` sends each scored vita-test or psp-test line crop (recognizer mode: box plus
+pad, screen polarity) to Google Lens through `eval/owocr_bridge.py` (owocr 1.26.7, its own venv), one
+request per crop with retries, into a private JSONL cache keyed by the crop's hash; it never prints a
+reading. `eval/lens_lines.py serve` hands the cache to `eval/run.py` as a `cmd:` recognizer
+(`--polarity native`), so Lens is scored by the same metrics as every other arm. Lens is a comparison
+only, never a label source, and sees public VNDB screenshots only.
+
 ## Hiragana and private captures
 
 Every recognizer result includes a `hiragana` table and confusion counts. Text is

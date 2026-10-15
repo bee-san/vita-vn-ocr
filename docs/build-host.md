@@ -1,9 +1,13 @@
 # Machine names in committed results
 
-The repository is public. No tracked file names the machine a result was produced on: result files hold a generic
-label from `train/hostinfo.py`, `host_label()`: `"<cores>-core <CPU model> host"` (`"64-core AMD EPYC 9R14 host"` on
-the build host; physical cores from `/proc/cpuinfo`) or `"build-host"` when the CPU model is unknown. Never the node
-name, the socket host name or the FQDN.
+The repository is public. No tracked file names the internal build machine (a corporate cloud desktop), and new
+result files do not record any machine's name: they hold a generic label from `train/hostinfo.py`, `host_label()`:
+`"<cores>-core <CPU model> host"` (`"64-core AMD EPYC 9R14 host"` on the build host; physical cores from
+`/proc/cpuinfo`) or `"build-host"` when the CPU model is unknown. Never the node name, the socket host name or the
+FQDN. Five result files from 2026-10-11 still record the node name of the machine that ran them (`"host":
+"artemis"`; the four experiment manifests record CachyOS on an Intel Core Ultra 7 165U), which is not an internal
+host: `eval/hiragana_baseline_20261011.json` and
+`data/manifests/fl10_{fresh,native,native_full,bitmap}_experiment_20261011.json` are unchanged.
 
 | writer | field |
 |---|---|
@@ -12,19 +16,28 @@ name, the socket host name or the FQDN.
 | `train/hiragana_fresh.py` (and `hiragana_bitmap.py`, `hiragana_native.py`, which use it) | `environment.host` |
 | `train/train2.py` (source-policy runs) | `host.node` of the execution identity (`source_execution.json`, checkpoints) |
 
-`tests/test_repo_policy.py` runs in CI's `ruff + policy` job on every event and fails on an internal host name in
-any tracked file, and on code that reads the machine's network name.
+`tests/test_repo_policy.py` runs in CI's `ruff + policy` job on every event. It fails when any tracked file holds the
+internal cloud desktops' host-name prefix, the corporate domain (so a public link to a site under that domain fails
+too) or an EC2-internal DNS name, and when code (`.py`, `.sh`, C/C++, make, CMake, workflow YAML) uses one of the
+usual ways to read the machine's network name: `platform.node()`/`uname()`, `socket.gethostname()`/`getfqdn()`,
+`os.uname()`, `gethostname()`, `/etc/hostname`, `$HOSTNAME`, `$(hostname)`, `uname -n`/`-a`, and similar. It is a
+guard against the usual forms, not a proof: a name assembled at run time passes. `tests/test_hostinfo.py` checks
+what each writer records.
 
 ## The 2026-10-15 scrub
 
 Until 2026-10-15 seven eval JSONs recorded the internal build machine's hostname, a corporate cloud desktop's name
 (found by the publication audit of 2026-10-15). On the owner's request ("remove the hostname", 17:46Z) it was
-replaced by `build-host`, and nothing else in those files changed:
+replaced by `build-host` in these fields:
 
 - `machine` in five frozen protocols: `eval/synth3_study1b_protocol.json`, `eval/synth3_study2_protocol.json`,
   `eval/synth3_native_protocol.json`, `eval/synth4_protocol.json`, `eval/vocab_proof_protocol.json`;
 - `host` in three environment records each of the VOCR3 and VOCR4 locked reports,
   `eval/vocr3_report_20261013.json` and `eval/vocr4_report_20261014.json`.
+
+Apart from that string, the only bytes that changed in those 7 files are pins of changed bytes: the
+`base_protocol.sha256` of the native, synth4 and vocab-proof protocols (they pin the study 1b, study 1b and synth4
+protocols), and the three `part_sha256` digests of each report.
 
 The pins of those bytes were rewritten to match, in 11 more result files, to a fixpoint (a protocol pins its base
 protocol's sha256, and a result pins its protocol's). No measured number changed: old and new have the same
@@ -35,8 +48,10 @@ host string or one of the digests below. Both locked reports re-render byte for 
 pass on the new files.
 
 A frozen protocol's file on `main` is therefore no longer the frozen bytes. Those are in git history: the file at
-`d214a05` (the last commit before the scrub; `git show d214a05:<file>`) has the "before" sha256 below, and differs
-from today's file only in the host string. The 11 digests that changed (37 places):
+`d214a05` (`main` when this change was made; `git show d214a05:<file>`) has the "before" sha256 below. It differs
+from today's file only in the host string and, for the three protocols whose base protocol is one of the scrubbed
+protocols (`synth3_native` and `synth4` pin study 1b, `vocab_proof` pins synth4), in that pin
+(`base_protocol.sha256`). The 11 digests that changed (37 places):
 
 | what the digest pins | before (up to `d214a05`) | after |
 |---|---|---|
@@ -57,14 +72,21 @@ part (the committed file is its `compact` form without per-line records), recomp
 
 The files that changed are those 7 and `eval/synth3_study1b_20261012.json`, `eval/synth3_native_20261013.json`,
 `eval/synth3_study2_{FL10_20261012,FL10_test_20261012,FL10_step_test_20261013,H15_20261013,H15_test_20261013,curves_20261013}.json`,
-`eval/synth4_ablation_20261013.json` and `eval/vocab_proof_{probe,strata}_20261014.json`. To check by eye:
-`git diff d214a05 <scrub commit> --word-diff -- 'eval/*.json'` shows only the host fields and the digests above.
+`eval/synth4_ablation_20261013.json` and `eval/vocab_proof_{probe,strata}_20261014.json`. To check by eye (the
+scrub is the commit that added this file):
+
+```sh
+git diff d214a05 "$(git log --diff-filter=A --format=%H -1 -- docs/build-host.md)" --word-diff -- 'eval/*.json'
+```
+
+shows only the host fields and the digests above.
 
 Code-identity records in older results (the sha256 of `eval/run.py`, `eval/vocr3_report.py` or
 `train/hiragana_fresh.py` at the time) describe the code their result ran; they do not match the files after the
 writers changed, as with any later code change.
 
-**What the scrub does not do.** The old name is still in the repository's history (every commit before the scrub,
-the pull request refs) and in any clone, fork or archive made while it was public. Only rewriting the history in a
-new repository would remove it from GitHub; that is plan B of the publication audit and needs the owner's explicit
-decision.
+**What the scrub does not do.** The old name is still in the repository's history: in 30 of the 157 commits of
+`main` up to `d214a05` (every commit from `eab1ab8`, the squash merge of #50 on 2026-10-13), on other refs
+(branches, pull request refs, tags) from 2026-10-12 17:33Z on (first in `9b80340`, the study-2 protocol freeze), and
+in any clone, fork or archive made while it was public. Only rewriting the history in a new repository would remove
+it from GitHub; that is plan B of the publication audit and needs the owner's explicit decision.

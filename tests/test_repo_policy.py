@@ -62,13 +62,19 @@ def test_no_tracked_symlinks_out_of_the_repo():
 
 # The repo is public: no tracked file may name an internal machine. Result files name the machine they ran on
 # with train/hostinfo.py's generic label instead (docs/build-host.md). INTERNAL_HOST (the build machines'
-# corporate cloud-desktop names and the corporate domain) is written so that no tracked file, this one included,
-# matches it; HOSTNAME_READ covers the usual ways code reads the machine's network name (Python, shell, C).
-INTERNAL_HOST = re.compile(rb"dev-ds[k]-|\.amazon\.com", re.IGNORECASE)
+# corporate cloud-desktop names, the corporate domain and EC2's internal DNS names) is written so that no tracked
+# file, this one included, matches it; HOSTNAME_READ covers the usual ways code reads the machine's network name
+# (Python, shell, make, C/C++). Both are guards against the usual forms, not proofs: a name built at run time
+# (e.g. "HOST" "NAME") passes, and tests/test_hostinfo.py checks what the writers record.
+INTERNAL_HOST = re.compile(rb"dev-ds[k]-|\.amazon\.com|\.(?:compute|ec2)\.internal\b|\bip-\d{1,3}(?:-\d{1,3}){3}\b",
+                           re.IGNORECASE)
 HOSTNAME_READ = re.compile(rb"platform\.(?:node|uname)\(|socket\.(?:gethostname|getfqdn)\(|os\.uname\(|\.nodename\b"
-                           rb"|\bgethostname\(|[\"']HOSTNAME[\"']|\$\{?HOSTNAME\b|\$\(hostname\b|`hostname\b"
-                           rb"|\buname +-[a-z]*n")
-CODE_SUFFIXES = {".py", ".sh", ".c", ".h", ".cmake", ".yml", ".yaml"}
+                           rb"|\bgethostname\(|\bgethostbyaddr\(|\bgetnameinfo\(|[\"'](?:HOSTNAME|hostname)[\"']"
+                           rb"|/etc/hostname|\$\{?HOSTNAME\b|\$\(hostname\b|`hostname\b|\(shell +hostname\b"
+                           rb"|\buname +(?:-[a-z]*[an]|--(?:all|nodename))|from +platform +import[^\n]*\bnode\b"
+                           rb"|from +socket +import[^\n]*\b(?:gethostname|getfqdn)\b")
+CODE_SUFFIXES = {".py", ".sh", ".c", ".h", ".cpp", ".hpp", ".cc", ".mk", ".cmake", ".yml", ".yaml"}
+CODE_NAMES = {"Makefile", "CMakeLists.txt"}
 # Code that may name those calls: this file (the patterns and their samples) and the test that checks that no
 # writer records the name.
 HOSTNAME_READ_ALLOWED = {"tests/test_repo_policy.py", "tests/test_hostinfo.py"}
@@ -88,27 +94,34 @@ def matches(pattern, paths):
 
 def test_internal_host_patterns():
     for name in (b"dev-" + b"dsk-someone-main-1a-0123abcd", b"DEV-" + b"DSK-X", b"host.eu-west-1.amazon" + b".com",
-                 b"https://example.AMAZON" + b".COM/x"):
+                 b"https://example.AMAZON" + b".COM/x", b"ip-" + b"10-0-1-23.eu-west-1.compute" + b".internal",
+                 b"ip-" + b"172-31-5-9", b"host.ec2" + b".internal"):
         assert INTERNAL_HOST.search(name), name
-    for name in (b"Amazon Linux 2023", b"build-host", b"64-core AMD EPYC 9R14 host", b"dev-disk-1"):
+    for name in (b"Amazon Linux 2023", b"build-host", b"64-core AMD EPYC 9R14 host", b"dev-disk-1", b"zip-10-0-0-1",
+                 b"ip-address", b"internal.compute"):
         assert not INTERNAL_HOST.search(name), name
     for call in (b"platform." + b"node()", b"socket." + b"gethostname()", b"socket." + b"getfqdn()",
                  b"platform." + b"uname()", b"os." + b"uname().nodename", b"echo $" + b"HOSTNAME",
-                 b"x=$(" + b"hostname -f)", b"os.environ['HOST" + b"NAME']", b"uname " + b"-n", b"uname " + b"-an"):
+                 b"x=$(" + b"hostname -f)", b"os.environ['HOST" + b"NAME']", b"uname " + b"-n", b"uname " + b"-an",
+                 b"uname " + b"-a", b"uname " + b"--all", b'subprocess.run(["host' + b'name"])',
+                 b"open('/etc/host" + b"name')", b"from platform import " + b"node",
+                 b"from socket import " + b"getfqdn", b"HOST := $(shell host" + b"name)",
+                 b"socket.gethostby" + b"addr(ip)", b"getname" + b"info(sa, n)"):
         assert HOSTNAME_READ.search(call), call
-    for call in (b"platform.platform()", b"platform.machine()", b"socket.if_nameindex()", b"hostinfo.host_label()"):
+    for call in (b"platform.platform()", b"platform.machine()", b"socket.if_nameindex()", b"hostinfo.host_label()",
+                 b"uname -s", b"uname -m", b"from platform import machine"):
         assert not HOSTNAME_READ.search(call), call
 
 
 def test_no_internal_host_names_in_tracked_files():
-    bad = matches(INTERNAL_HOST, [path for _, path in tracked()])
+    bad = matches(INTERNAL_HOST, [path for _, path in tracked()] + sorted(ALLOWED))
     assert not bad, ("an internal host name in a tracked file; record hostinfo.host_label() instead "
                      "(docs/build-host.md):\n" + "\n".join(bad))
 
 
 def test_no_code_reads_the_machine_network_name():
     code = [path for _, path in tracked() if path not in HOSTNAME_READ_ALLOWED
-            and (Path(path).suffix in CODE_SUFFIXES or Path(path).name == "Makefile")]
+            and (Path(path).suffix in CODE_SUFFIXES or Path(path).name in CODE_NAMES)]
     assert code
     bad = matches(HOSTNAME_READ, code)
     assert not bad, ("result files name the machine with hostinfo.host_label(), never its network name "

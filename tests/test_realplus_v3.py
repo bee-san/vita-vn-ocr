@@ -310,7 +310,7 @@ def test_helpers_skip_a_batch_the_agent_reserved_for_itself(tmp_path, monkeypatc
     monkeypatch.setattr(PL, "live_helpers", lambda: set())
     queued = []
     monkeypatch.setattr(PL.subprocess, "run", lambda cmd, **kw: queued.append(cmd[1]))
-    PL.cmd_reserve(argparse.Namespace(batch=[str(tmp_path / "pass1" / "b0001")]))
+    PL.cmd_reserve(argparse.Namespace(batch=[str(tmp_path / "pass1" / "b0001")], model="claude-opus-5.5"))
     PL.cmd_helpers(argparse.Namespace(max=6, kinds="pass1", retry=True))
     log = PL.helper_log()
     assert [h["batch"].rsplit("/", 1)[1] for h in log] == ["b0001", "b0002"] and len(queued) == 1

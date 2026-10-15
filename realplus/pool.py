@@ -46,6 +46,7 @@ import hashlib
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 import time
@@ -429,12 +430,14 @@ def cmd_helpers(args):
 
 
 def cmd_reserve(args):
-    """Mark batches as reviewed by this agent itself (no helper is queued for them)."""
+    """Mark batches as reviewed by this agent itself (no helper is queued for them; review.md's instructions, one
+    sub-session per batch). --model records the reviewer's model, as helpers.jsonl does for helpers."""
     with review_lock():
         log = helper_log()
         for b in args.batch:
             log.append({"label": f"self-{Path(b).name}", "batch": str(Path(b)), "kind": Path(b).parent.name,
-                        "queued": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
+                        "queued": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                        "model": getattr(args, "model", None) or "default"})
         wjl(REVIEW / "helpers.jsonl", log)
 
 
@@ -538,9 +541,17 @@ def done_batches(kind):
     return [b for b in batch_dirs(kind) if batch_state(b)[0] == "done"]
 
 
+RECLAIM_READS_ALL = RECLAIM_READS.with_name("reads.jsonl.prefilter")   # every reclaim read, before the 18 skipped
+SHOT_KEY = re.compile(r'^\{"shot": "(v\d+_\d+)"', re.M)                # read.py writes "shot" first
+
+
 def reads_snapshot():
     """READS without a partial last line (a read may be appending): devnative's loaders need whole
-    lines. Returns the snapshot path."""
+    lines. Returns the snapshot path. The reclaim reads are appended, and so are the reads of any
+    screenshot that a batch holds a line of but that was taken out of the reclaim reads afterwards
+    (2026-10-14: 18 screenshots of three VNs that became development-sample partners; one of their
+    lines was already in pass-1 b0159), so that decide.py can resolve every decided line. Such lines
+    stay out of the pool all the same: build_exclusions reserves their VNs."""
     snap = OUT / "reads" / "reads_snapshot.jsonl"
     text = READS.read_text(encoding="utf-8")
     if text and not text.endswith("\n"):
@@ -550,6 +561,13 @@ def reads_snapshot():
         if rtext and not rtext.endswith("\n"):
             rtext = rtext[:rtext.rfind("\n") + 1]
         text += rtext
+        if RECLAIM_READS_ALL.exists():
+            have = set(SHOT_KEY.findall(text))
+            need = {"_".join(lid.split("_")[:2]) for k in ("pass1", "confirm", "edge") for lid in batched_ids(k)}
+            for x in RECLAIM_READS_ALL.read_text(encoding="utf-8").splitlines():
+                m = SHOT_KEY.match(x)
+                if m and m.group(1) in need and m.group(1) not in have:
+                    text += x + "\n"
     snap.write_text(text, encoding="utf-8")
     return snap
 
@@ -682,12 +700,13 @@ def cmd_edge_boxes(args):
                       "why": dict(collections.Counter(w for x in out for w in x["why"]))}), flush=True)
 
 
-def edge_entries(boxes, have, shots):
+def edge_entries(boxes, have, shots, skip_vns=frozenset(), skip_shots=frozenset()):
     """Sheet entries (sheets.make_batch, mode edge: the frame is the final crop, the one candidate
-    its label) for flagged kept lines not in any edge batch yet, in review order."""
+    its label) for flagged kept lines not in any edge batch yet, in review order. Lines of skip_vns /
+    skip_shots (build_exclusions: the build drops them) get no edge check."""
     idx = S.line_index(shots)
     todo = [b for b in boxes if b["check"] and b.get("status", "kept") == "kept" and b["id"] not in have
-            and b["id"] in idx]
+            and b["id"] in idx and b["shot"].split("_")[0] not in skip_vns and b["shot"] not in skip_shots]
     todo.sort(key=lambda b: (vn_rank(b["shot"].split("_")[0]), b["shot"], b["id"]))
     return [(b["id"], idx[b["id"]][0], idx[b["id"]][1],
              [{"text": b["label"], "key": vote.key(b["label"]), "engines": []}], b["crop"]) for b in todo]
@@ -696,9 +715,10 @@ def edge_entries(boxes, have, shots):
 def cmd_edge_batches(args):
     """Disjoint edge-check batches of --size flagged lines (review/edge/bNNNN)."""
     boxes = jl(EDGE / "boxes.jsonl")
+    _, skip_vns, skip_shots, _ = build_exclusions()
     with review_lock():
         have = batched_ids("edge")
-        entries = edge_entries(boxes, have, load_reads())
+        entries = edge_entries(boxes, have, load_reads(), skip_vns, skip_shots)
         d = REVIEW / "edge"
         start = len(batch_dirs("edge"))
         for k in range(args.n):
@@ -731,7 +751,9 @@ CONFIRM_NOTE = ("This is a confirmation look (v3, AGREEMENT.md rule 3): a second
 def cmd_confirm_batches(args):
     """Confirm-look batches (sheets mode blind: candidates shuffled and unattributed, framed on the
     final crop) of the pending v3 lines (labels.jsonl status "pending") not in a confirm batch yet."""
-    labels = [r for r in jl(OUT / "labels.jsonl") if r["status"] == "pending"]
+    _, skip_vns, skip_shots, _ = build_exclusions()          # lines the build drops get no confirm look
+    labels = [r for r in jl(OUT / "labels.jsonl") if r["status"] == "pending" and r["vn"] not in skip_vns
+              and r["shot"] not in skip_shots]
     boxes = {b["id"]: b for b in jl(EDGE / "boxes.jsonl")}
     with review_lock():
         have = batched_ids("confirm")
@@ -1498,6 +1520,7 @@ def main():
     p.add_argument("--tiers", help="pass-1 batches only from these plan tiers (v3 Stage A: t1,t2)")
     p = sub.add_parser("reserve")
     p.add_argument("batch", nargs="+")
+    p.add_argument("--model", help="the reviewer's model (recorded in helpers.jsonl)")
     p = sub.add_parser("final")
     p.add_argument("--no-resolve", action="store_true")
     p = sub.add_parser("build")

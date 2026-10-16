@@ -15,6 +15,7 @@ VOCR5_<S|N|L>_w8.vocr. Arms, pairs and gates are the protocol's. The run behind 
 import argparse
 import hashlib
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -52,7 +53,7 @@ def build(proto, selections, vocr4_spec, blob_dirs, blob_dir):
         sel = selections[tier]
         if sel.get("kind") != "vocr5-selection" or sel["tier"] != tier:
             raise SystemExit(f"{tier}: not a VOCR5 selection of that tier")
-        blob = Path(sel["selected_blob"]).expanduser()
+        blob = Path(os.path.expandvars(sel["selected_blob"])).expanduser()   # a kept incumbent: $HERD/...
         if sha256(blob) != sel["selected_blob_sha256"]:
             raise SystemExit(f"{blob}: sha256 differs from the {tier} selection")
         file = f"VOCR5_{t}_w8.vocr"

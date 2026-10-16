@@ -44,8 +44,11 @@ Machine-readable outputs:
 - Records: `eval/vocr5_render_s4v5631_20261015.json`, `eval/vocr5_pools_20261016.json`,
   `eval/vocr5_refine_20261015.json`.
 - Decisions and selections: `eval/vocr5_{arm,replace,selection,scores}_<Tier>_20261016.json`.
-- The locked report: `eval/vocr5_report_20261016.json` and `docs/vocr5-report-20261016.md`, plus the
-  dialogue-primary tables with the Lens and LM arms in `eval/vocr5_dialogue_20261016.json`.
+- The locked report: `eval/vocr5_report_20261016.json` and `docs/vocr5-report-20261016.md`.
+  - The JSON is the report's `report_summary.json` written compactly (no indentation). It has the same content, and
+    the compact form keeps it under the repository's 2 MiB file limit.
+  - The dialogue-primary tables with the Lens and LM arms, and per-style rows for every arm, are in
+    `eval/vocr5_dialogue_20261016.json`: `eval/vocr5_dialogue.py tables` on the report's stored per-line records.
 - Lens: `eval/vocr5_lens_20261016.json`.
 - CLANNAD: `eval/vocr5_clannad_20261016.json` and `eval/vocr5_clannad_lens_view_20261016.json`.
 
@@ -239,7 +242,8 @@ the decoded numbers carry that disclosure.
 | VOCR5-L − Lens | −3.18 (−6.45 to −1.09) | −6.61 (−12.74 to −2.24) | −4.86 (−8.87 to −2.02) |
 
 The crops include the furigana sitting above a line, which the references leave out by convention and Lens
-transcribes. On psp-test's 20 furigana lines that is 116 of Lens's 227 errors (all text). This is not how Lens is
+transcribes. On psp-test's 20 furigana lines that is 116 of Lens's 227 errors (all text), and on vita-test's 3 it is
+30 of 89 (`eval/vocr5_dialogue_20261016.json`, `arms.native.Lens.styles.furigana`). This is not how Lens is
 normally used; on CLANNAD's GRAD line crops it scores 1.53%.
 
 ### Whole dialogue (finder-cut regions, each model's C finder; dialogue text, pooled)

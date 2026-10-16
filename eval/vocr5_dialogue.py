@@ -8,12 +8,12 @@
 REPORT.json is eval/vocr3_report.py's rendered report (its "shared.fixed_line[polarity][arm].lines[set]": integer
 per-line records with styles). --lens takes eval/run.py --out files of the Lens arm (eval/lens_lines.py serve, native
 polarity), one per set; --extra adds any other eval/run.py --out arm (e.g. the deployed beam + LM decode,
-console:VOCR5_L+LM:vita-test=...). Per arm, set and polarity: dialogue (no 'name' style), names, all text: errors,
-chars, lines,
-exact lines, CER; pooled over vita-test and psp-test. Pairs (the protocol's, plus VOCR5_S/N/L - Lens): CAND - BASE in
-points with eval/vocr3_report.py's paired line and VN-cluster bootstraps (10,000 resamples, seed 0, at least 5 VNs),
-over the lines both arms read. Lens reads the screen, so its lines pair with the other arms' native-polarity lines and
-also, as the protocol's primary view, with their console-polarity lines (the same crops' ground truth). Counts only.
+console:VOCR5_L+LM:vita-test=...). Per arm, set and polarity: dialogue (no 'name' style), names and all text, with
+errors, chars, lines, exact lines and CER, pooled over vita-test and psp-test too; and per style tag (all text of the
+lines carrying it). Pairs (the protocol's, plus VOCR5_S/N/L - Lens): CAND - BASE in points with eval/vocr3_report.py's
+paired line and VN-cluster bootstraps (10,000 resamples, seed 0, at least 5 VNs), over the lines both arms read. Lens
+reads the screen, so its lines pair with the other arms' native-polarity lines and also, as the protocol's primary
+view, with their console-polarity lines (the same crops' ground truth). Counts only.
 """
 import argparse
 import json
@@ -95,6 +95,10 @@ def tables(report, lens, pairs, extra=None):
             for part, keep in PARTS.items():
                 e[part] = {s: tally([x for x in sets[s] if keep(x)]) for s in SETS if s in sets}
                 e[part]["pooled"] = tally([x for s in SETS if s in sets for x in sets[s] if keep(x)])
+            styles = sorted({t for s in SETS if s in sets for x in sets[s] for t in x["styles"]})
+            e["styles"] = {t: {**{s: tally([x for x in sets[s] if t in x["styles"]]) for s in SETS if s in sets},
+                               "pooled": tally([x for s in SETS if s in sets for x in sets[s] if t in x["styles"]])}
+                           for t in styles}
     for cand, base in pairs:
         for pol in arms:
             if base == LENS and pol != "native":

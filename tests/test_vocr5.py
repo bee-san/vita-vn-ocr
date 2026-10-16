@@ -219,6 +219,7 @@ def test_dialogue_tables_split_names_and_pair_arms():
     d = doc["arms"]["console"]["A"]["dialogue"]
     assert d["vita-test"] == {"lines": 9, "chars": 90, "errors": 1, "exact": 8, "cer": round(100 / 90, 3)}
     assert doc["arms"]["console"]["A"]["names"]["pooled"]["errors"] == 5          # the name lines only
+    assert doc["arms"]["console"]["A"]["styles"]["name"]["pooled"]["errors"] == 5   # per style tag, all text
     p = doc["pairs"]["A-B"]["console"]["dialogue"]["pooled"]
     assert p["candidate_errors"] == 2 and p["baseline_errors"] == 9 and p["units"] == 18
     assert p["delta"] == round(100 * (2 - 9) / 180, 6)

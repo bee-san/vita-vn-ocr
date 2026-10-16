@@ -4,47 +4,47 @@ realplus is a pool of real Japanese visual-novel text lines with clean labels, f
 console recognizer. It uses every usable training-side VNDB screenshot and labels the lines with
 devnative's pipeline (PP-OCRv6 small and MeikiOCR read every line; Claude adjudicates on contact
 sheets; devnative's training rule decides). The screenshots, crops, labels and npz files stay local
-under `$HERD/shared/artifacts/realplus`. The repository holds the code (`realplus/`), a text-free
+under `$HERD/shared/artifacts/realplus` (v1, v2) and `$HERD/shared/artifacts/realplus-v3` (v3).
+The repository holds the code (`realplus/`), a text-free
 screenshot manifest (`realplus/manifests/shots_NN.jsonl`: URL, file and pixel sha256, VN, release,
 capture session, line and crop counts), the counts at every stage (`realplus/manifests/stats.json`),
 this report and the tests.
 
 ## Result
 
-The pool is version 2 (`--tag v2`). Version 1 is still on disk, unchanged, because VOCR3 pinned it;
-v2 drops three CLANNAD fan works from it (see "Versions").
+The pool is version 3 (`--tag v3`, built 2026-10-16 under `$HERD/shared/artifacts/realplus-v3`). v1 and v2 are
+still on disk, unchanged, because VOCR3 pinned them: v2 drops three CLANNAD fan works from v1, and v3 adds the
+Stage A review and the reclaim tier to v2 (see "Versions" and "Version 3").
 
 | | |
 |---|---|
-| distinct lines | **43,228**, from **9,137 VNs** and 25,314 screenshots |
-| characters | 474,600 (eval's scoring key); median line 8 characters, mean 11.0 |
-| ink crops | 71,153: 43,103 Vita, 28,050 PSP (`realplus_train_ink_v2.npz`, 285 MB) |
-| GRAD crops | 53,566: 33,726 Vita, 19,840 PSP (`realplus_train_grad_v2.npz`, 257 MB) |
-| labels | 41,182 lines (95.3%) agreed by all four readings (auto); 2,046 reviewed by Claude, of which 1,990 are read by both engine families and 56 by one |
-| confirmation re-check | **495 of 500** random accepted lines agree (99.0%, Wilson 95% 97.7-99.6%); see Precision for what it measures |
+| distinct lines | **101,350**, from **14,461 VNs** and 49,285 screenshots (v2: 43,228 / 9,137 / 25,314) |
+| characters | 1,273,030 (eval's scoring key); median line 11 characters, mean 12.6 |
+| ink crops | 170,387: 100,915 Vita, 69,472 PSP (`realplus_train_ink_v3.npz`, 782 MB) |
+| GRAD crops | 116,994: 71,897 Vita, 45,097 PSP (`realplus_train_grad_v3.npz`, 645 MB) |
+| labels | 61,992 lines (61.2%) agreed by all four readings (auto); 39,358 reviewed by Claude, of which 37,329 were also read the same way by Codex gpt-6-luna (v3's agreement rule) and 2,029 are v2's reviewed lines |
+| precision (v3) | independent transcription of 800 stratified lines: **742 agree** as measured (92.75%, Wilson 95% 90.7-94.4%); after third looks at the 58 disagreements, **786 labels right** (98.25%, 97.1-99.0%), 4 wrong, 10 unsettled (see "Version 3") |
 
-Compared with train2's real fine-tune data (about 32k crops: tt 12,115, rd 9,811, ps 10,706), the pool
-has 2.2 times as many ink crops and 3.8 times as many crops in all. The goal was 100k+ lines, and
-43,228 distinct lines falls short of it; 124,719 crops is the count in train2's units. The limit was
-review capacity, not screenshots (see Limits).
+v3 reaches the 100k-line goal v2 fell short of: 101,350 distinct lines and 287,381 crops in all, against train2's
+real fine-tune data of about 32k crops (tt 12,115, rd 9,811, ps 10,706).
 
-The files are under `$HERD/shared/artifacts/realplus`. `pool.py build` never overwrites a built
-pool: a new build needs `--tag`, which gives every output a new file name. `realplus/manifests/
-stats.json` pins every file's sha256:
+The files are under `$HERD/shared/artifacts/realplus-v3` (v1 and v2: `$HERD/shared/artifacts/realplus`).
+`pool.py build` never overwrites a built pool: a new build needs `--tag`, which gives every output a new file
+name. `realplus/manifests/stats.json` pins every file's sha256:
 
-- the two v2 npz files, and v1's (`supersedes`);
-- the local line manifests: `manifests/lines_v2.jsonl` (crop boxes and provenance, no text) and
-  `lines_full_v2.jsonl` (the same rows with labels);
+- the two v3 npz files, and v2's (`supersedes`; v2's own stats.json is in git history at 75cae68);
+- the local line manifests: `manifests/lines_v3.jsonl` (crop boxes and provenance, no text) and
+  `lines_full_v3.jsonl` (the same rows with labels);
 - `labels.jsonl` and the review files the precision measurement rests on.
 
 ## Versions
 
-| | v1 (untagged) | v2 |
-|---|---|---|
-| ink npz sha256 | `eed888a6f06034ddd99b4b610c9867ff2366b19f77b548cbdebe3c78c5a6e9d8` | `e11467b2f81d5437b966fbe9faa9cf5d8e6c9912ccf76f97ee1747e815f7163d` |
-| GRAD npz sha256 | `f2a3b7d33b2a8678f047493cb962d48c5f923c4809296c0edd319d162363351f` | `1b5419dcd22091bc63d82c19a225283a0fcf7dc4b0bb45df448b8454e9c7135f` |
-| lines / VNs | 43,264 / 9,140 | 43,228 / 9,137 |
-| ink / GRAD crops | 71,219 / 53,626 | 71,153 / 53,566 |
+| | v1 (untagged) | v2 | v3 |
+|---|---|---|---|
+| ink npz sha256 | `eed888a6f06034ddd99b4b610c9867ff2366b19f77b548cbdebe3c78c5a6e9d8` | `e11467b2f81d5437b966fbe9faa9cf5d8e6c9912ccf76f97ee1747e815f7163d` | `8ae031e3fee872febe2ebf600ebc07971cf1abbebeef8496662aec608f8a8970` |
+| GRAD npz sha256 | `f2a3b7d33b2a8678f047493cb962d48c5f923c4809296c0edd319d162363351f` | `1b5419dcd22091bc63d82c19a225283a0fcf7dc4b0bb45df448b8454e9c7135f` | `88ba60a439262ae588bb8de4380535adc0d4967fa67fb6d2c8ff9c2fbd7489fa` |
+| lines / VNs | 43,264 / 9,140 | 43,228 / 9,137 | 101,350 / 14,461 |
+| ink / GRAD crops | 71,219 / 53,626 | 71,153 / 53,566 | 170,387 / 116,994 |
 
 The audit of PR #57 found three CLANNAD fan works in v1:
 
@@ -61,6 +61,211 @@ v2 is v1 minus every crop whose meta `vn` is one of the three. The two files wer
 crop: every other crop is byte-identical and in the same order, with the same label and meta
 (`logs/v2_vs_v1.json`). No line of these VNs was in the precision sample, so the measurement holds
 for both versions.
+
+## Version 3
+
+v3 is Stage A of the v3 plan (`$R/v3_plan.md`, where `R=$HERD/shared/artifacts/realplus`). It reviews the
+candidate lines v2 had read but left undecided, in the plan's tiers t1 and t2 (t1 round-robin over VNs, then t2).
+It completes the 2,093 edge checks v2 withdrew at its freeze (`review/edge/b0020`-`b0030`) and adds the reclaim
+tier (below). v2's screenshots got no new read. v2's files, labels and finished batches were reused read-only:
+pass 1 b0001-b0017, pass 2, edge b0001-b0019 and the blind re-check. Everything v3 made is under
+`R3=$HERD/shared/artifacts/realplus-v3`.
+
+| v3 pool | lines |
+|---|---:|
+| v2's lines (of 43,228) | 42,067 |
+| new auto lines of the reclaim tier | 20,245 |
+| new auto lines whose withdrawn v2 edge check v3 completed | 1,709 |
+| new reviewed lines (v3 pass 1: Claude and Luna agree) | 37,329 |
+| **total** | **101,350** |
+
+v3 is not a strict superset of v2: 1,161 of v2's lines are not in it. Most of them, 1,150, are cut by the repeat
+caps, because new lines now share their labels: 1,052 labels already have 8 lines in v3 (the overall cap) and 98
+already have 2 in their VN (the per-VN cap). 7 more leave through other build rules. The last 4 were dropped by
+v3's third looks: 3 unsure, 1 label wrong.
+
+### The reclaim tier
+
+The owner's FINAL reservation policy (2026-10-14 13:25Z, `docs/reservations.md`) made everything except the
+CLANNAD family, vita-test and psp-test (with their shared releases) training data. reserve-policy then fetched the
+20,867 VNDB screenshots of VNs that the old rules had reserved (`$HERD/shared/artifacts/reserve-policy/realplus/
+manifests/shots.jsonl`).
+
+- Before the read, `shots.dedupe` removed 287 of them: 283 pixel copies of eval's candidate screenshots and
+  4 copies within the tier.
+- devnative/read.py read the other 20,580 with v2's frozen pipeline (`$R3/reclaim/reads/reads.jsonl`).
+- After the read, three groups were taken out: 18 screenshots of three VNs that became development-sample
+  partners, 12 PSP-resolution images that the Vita-scale cutter does not handle, and 2 copies on reserve-policy's
+  lists (`$R3/reclaim/manifests/dups.json`, 301 entries in all).
+
+The reclaim tier's 66,044 candidate lines (auto 23,665, t1 21,781, t2 2,461, t3 18,137) were planned together with
+v2's and went through the same batches, rule and build. 32,687 of v3's lines come from it: 20,245 auto and 12,442
+reviewed. Its yields are listed separately below.
+
+### The agreement rule
+
+Every new training label needs two independent reviewers to read the same text (the owner's rule of 2026-10-13
+05:40Z). The exact rule was fixed in `$R3/AGREEMENT.md` before the first v3 batch was reviewed. In short:
+
+- A Claude reviewer (claude-opus-5.5) decides each pass-1 sheet as in v2 (`reviewer_kind: "assistant"`).
+  145 of the 351 v3 pass-1 batches were decided by review helpers (`review-v3-N`, prompts/review.md) and 206 by
+  the agent's own reviewer sub-sessions. Their instructions are in `$R3/prompts/self_*.md`, calibrated on copies
+  of helper-decided batches. Edge checks: 24 helper, 68 own; confirm looks: 19 helper, 36 own; the precision
+  check: 7 own.
+- Codex gpt-6-luna votes on the same sheet in a fresh session (`tools/codex_sheet.sh`, one call per sheet, at
+  most 4 at a time, public VNDB crops only; `reviewer_kind: "codex:gpt-6-luna"`). It sees the README, the sheet
+  and the candidate texts, never the Claude decision.
+- The two readings are compared by `teacher/vote.key`, eval's scoring normalisation. A difference only in an edge
+  「」『』。、！？ is a disagreement.
+- The outcomes:
+  - agree: the line goes on to devnative's training rule;
+  - Luna reads another text: the line is dropped (`luna-disagree`);
+  - Luna skips (ui / cut / bad) or is unsure: a second, blind Claude look on the final crop decides (`review/
+    confirm`, candidates shuffled and unattributed, `decide.py --confirm`);
+  - Claude skips or is unsure: the line is dropped as in v2, whatever Luna says.
+- A label only one engine family read also needs the confirm look (v2's pass 2).
+- A line still without a Luna vote at the freeze is dropped. Sheets whose vote missed entries were run up to 3
+  times (`luna.py run --retries 3` for the last round). 9 lines stayed without a vote.
+- Amendment 1 (after the first decided batch): a Luna line with both a reading and a skip counts as the skip.
+
+Luna's agreement with Claude (`luna.py stats`; `$R3/luna/agreement_first10.json`, `agreement_all.json`):
+
+| | first 10 batches (b0018-b0027) | all 351 v3 batches (b0018-b0368) |
+|---|---:|---:|
+| lines | 2,000 | 70,155 |
+| Claude read (pick or text) | 1,327 | 42,276 |
+| Luna read the same key | 969 (73.0%, Wilson 95% 70.6-75.3%) | 33,151 (78.4%, 78.0-78.8%) |
+| Luna read another key (dropped); of which only an edge character differs | 53; 23 | 1,872; 672 |
+| Luna skipped or unsure (confirm look) | 304 (cut 222, ui 81, unsure 1) | 7,244 (cut 5,651, ui 1,581, unsure 9, bad 3) |
+| no Luna vote (dropped) | 1 | 9 |
+| **agreement where both read** | **969 / 1,022 (94.8%)** | **33,151 / 35,023 (94.65%)** |
+
+Most of Luna's skips were false alarms against the pipeline's conventions: it called wrapped screen lines "cut"
+and name plates "ui". From b0022 on, every batch README restates those conventions (`pool.WRAP_NOTE`). Luna's
+skip-or-unsure share of the lines Claude read fell from 27.4% (148 / 540, b0018-b0021) to 17.0% (7,096 / 41,736).
+Luna also read a text on 10,242 lines Claude skipped; under the rule these never enter the pool.
+
+The confirm looks covered 10,388 lines and agreed with the first reading on 10,026 (96.5%). By the reason a line
+was sent:
+
+| reason sent | agreed |
+|---|---:|
+| Luna skip "cut" | 5,472 / 5,567 |
+| Luna skip "ui" | 1,437 / 1,555 |
+| Luna unsure | 9 / 9 |
+| Luna skip "bad" | 3 / 3 |
+| single-family labels | 3,105 / 3,254 |
+
+The other 362 were dropped (another reading 87, unsure 129, skip 146).
+
+### Yields
+
+v3 pass 1 (b0018-b0368, 70,155 lines; "kept" = kept after both reviewers and the confirm looks; "in the pool" =
+after the edge check, the crop rules and the repeat caps):
+
+| source | tier | lines reviewed | Claude read | kept | in the pool |
+|---|---|---:|---:|---:|---:|
+| v2's candidates | t1 | 40,921 | 25,568 | 24,423 | 22,857 |
+| v2's candidates | t2 | 5,012 | 2,642 | 2,140 | 2,030 |
+| reclaim tier | t1 | 21,751 | 12,739 | 12,204 | 11,421 |
+| reclaim tier | t2 | 2,458 | 1,316 | 1,075 | 1,021 |
+| lines the plan dropped later (reserved VNs, PSP-scale reads) | | 13 | 11 | 10 | 0 |
+| **all** | | **70,155** | **42,276** | **39,852** | **37,329** |
+
+The pool yield per reviewed line is 54.7% in t1 (34,278 / 62,672) and 40.8% in t2 (3,051 / 7,470).
+
+Edge checks (Claude only, `$R3/prompts/self_edge.md` for the agent's own sessions):
+
+| | lines | pick | text | unsure | cut | in the pool |
+|---|---:|---:|---:|---:|---:|---:|
+| v2's withdrawn b0020-b0030 (all auto lines) | 2,093 | 1,964 | 9 | 27 | 93 | 1,709 |
+| v3's own b0031-b0111 (new labels and flagged reclaim auto lines) | 15,457 | 14,399 | 21 | 144 | 893 | 13,739 |
+
+### Reservations and hygiene
+
+v3 is built under the FINAL policy (`pool.POLICY = "final-2026-10-14"`, recorded in build_stats and stats.json).
+One reservation, `shots.reserved_vns` over `eval/manifests/reserved.json`, serves the plan, the build and
+`realplus/hygiene.py`. On the 2026-10-12 dump it reserves 187 VNs. 71 are test VNs: CLANNAD 7, its family 6, its
+VNDB relations 8 and their shared releases 3, and the 28 VNs of the vita-test and psp-test games with 19 shared
+releases. The other 116 are the development sample (100 VNs and 16 shared-release partners), which training must
+also skip.
+
+- `realplus/hygiene.py` reran from the raw inputs before the build (labels) and after it (lines): HYGIENE_OK both
+  times, no blockers, 0 pixel-hash hits against the 629 protected screenshots (`$R3/logs/hygiene.json`). The
+  build dropped 60 lines of reserved VNs (`excluded-late`).
+- Main's `eval/tools/reserve_check.py --require-hashes --pixels` (by VN, release, screenshot id, file and pixel
+  sha256) gives RESERVE_OK. Every row was hash-checked: ink 170,387 / 170,387, GRAD 116,994 / 116,994, lines
+  101,350 / 101,350 (`$R3/logs/reserve_check_v3.json`).
+- Thumbnail leak checks (`eval/tools/leakcheck.py`, correlation >= 0.95, run before the first v3 build): v2's
+  screenshots against vita-test / psp-test, 2 cross-VN pairs (dropped through `leak_drop.json`); devnative, 0;
+  teacher_val, 1 pair with unrelated text. The reclaim tier came later. Its leak check was missed when the tier was
+  added, and it ran only after the v3 build (2026-10-16 03:50Z): its 20,867 screenshots against the 157 vita-test
+  and psp-test screenshots gave 0 pairs, with the closest test screenshot at 0.90-0.95
+  (`$R3/logs/leakcheck_reclaim.log`). So no build changes. The exact checks (screenshot ids and file and pixel
+  hashes) covered the tier in every build that held it.
+- Codex exposure: 9 lines of three CLANNAD-relation fan works (v11057 *NETANNAD*, v42392 *YAMANNAD*, v16902
+  *杏アフターアフター*; public VNDB screenshots) sat on 8 pass-1 batches (b0039, b0050, b0059, b0084, b0093,
+  b0101, b0132, b0139). They were batched before the FINAL policy reached the plan, and Luna voted on those
+  sheets. The build drops them and they are never trained on, but CLANNAD-family crops did reach Codex. No other
+  test-reserved line was on any sheet. One development-sample line was (b0159), and it is dropped at the build
+  too.
+
+### Precision (independent transcription)
+
+The check was pre-registered in `pool.py` (`CHECK_STRATA`, seed `realplus-v3-check-20261013`) before any check
+sheet existed, and drawn once from v3pre (`review/check_spec_v3pre.json`). v3pre is the build with all of Stage A
+decided, before the check's third looks.
+
+- Each entry is one of the line's crops in the npz, chosen at random (vita_ink 313, vita_grad 201, psp_ink 180,
+  psp_grad 106). It is framed on its own screen at its own scale, with no candidate shown.
+- Seven fresh Claude sessions, one per check batch (120 entries; the last 80), transcribed the frames. They saw no
+  label, candidate or other batch.
+- A skip or unsure counts as a disagreement.
+- The stratum `new:edge` (100 planned) was empty: every line of v2's withdrawn edge checks is an auto line, so those
+  lines fall in `new:auto`. That stratum's 200 entries are 182 reclaim auto lines and 18 such lines, and the sample
+  is 800 lines, not 900.
+
+Third looks: one fresh Claude session looked at the 58 disagreements (`pool.py look3`, `review/look3/b0001`). Each
+entry showed the label and the check's reading, shuffled and unattributed, or only the label when the check typed
+nothing. A line stays only if this look reads the label: 44 did; 4 read another text, 9 were unsure and 1 was cut,
+and those 14 are dropped (`review/resolutions_v3.jsonl`). v3 is v3pre minus those 14 lines.
+
+| | lines | agree as measured | right after third looks | wrong | unsettled |
+|---|---:|---:|---:|---:|---:|
+| **all** | 800 | **742 (92.75%, 90.7-94.4%)** | **786 (98.25%, 97.1-99.0%)** | 4 (0.2-1.3%) | 10 |
+| new: t1 | 300 | 277 | 295 | 1 | 4 |
+| new: t2 | 100 | 87 | 97 | 1 | 2 |
+| new: auto | 200 | 194 | 198 | 1 | 1 |
+| v2: auto | 120 | 111 | 117 | 1 | 2 |
+| v2: reviewed | 80 | 73 | 79 | 0 | 1 |
+| Vita ink | 313 | 302 | 309 | 3 | 1 |
+| Vita GRAD | 201 | 192 | 197 | 1 | 3 |
+| PSP ink | 180 | 159 | 179 | 0 | 1 |
+| PSP GRAD | 106 | 89 | 101 | 0 | 5 |
+
+(Percentages in brackets: Wilson 95% intervals; `review/check_report_v3pre.json`, after the looks in
+stats.json `check.after_third_looks`.)
+
+**What it measures.**
+
+- The first read is an independent transcription: no candidate is shown, unlike v2's confirmation re-check.
+- The third looks show the label, so they are a confirmation and inherit its anchoring. Without them, 742 / 800
+  is the conservative number.
+- Most disagreements were the transcriber's caution on the small PSP crops. 34 of the 38 PSP disagreements were
+  unsure or skip (half-scale text; a PSP crop needs only 10 px of ink). After the looks PSP stands at 280 / 286
+  and Vita at 506 / 514.
+- Every reader is Claude, recorded as reviewer_kind "assistant": the same model family as pass 1, in separate
+  sessions with no shared context.
+- The 14 dropped lines leave only the sample. The rest of the pool carries the measured rate.
+
+### Decisions
+
+- Stage B (t3, 53,841 lines with three or more candidates, none read by both families) was not started. The task
+  makes it conditional on time, and Stage A was fully decided only on 2026-10-16 at 01:56Z, about four hours before
+  VOCR5 pins its fine-tune pools (about 06:00Z). t2's pool yield (40.8%) was already well below t1's (54.7%).
+- Interim snapshots (v3i to v3i9, then v3pre) were built along the way from the lines decided by then, for the
+  VOCR4 and VOCR5 fine-tunes. Their files are kept. From v3i5 on, each one passed hygiene.py and main's
+  reserve_check with `--require-hashes --pixels` before it was announced.
 
 ## Sources and selection
 
@@ -319,6 +524,9 @@ The audit also noted, for information:
 
 ## Precision
 
+This section measures v2, with the blind confirmation re-check. v3's independent transcription check is under
+"Version 3".
+
 **What it measures.** This is a confirmation re-check by fresh agents, not an independent
 transcription:
 
@@ -387,6 +595,18 @@ semantics.
 
 ## Limits
 
+These limits were written for v2. v3 changes four of them:
+
+- Review coverage: v3 decided all of t1 and t2, 70,155 more pass-1 lines, so 38.8% of v3's lines are reviewed
+  (v2: 4.7%).
+- The edge check: v2's 2,093 withdrawn lines are now checked.
+- Precision: v3's check is an independent transcription, stratified over tiers, new and v2 lines, Vita and PSP,
+  ink and GRAD.
+- Reviewers: every new v3 label also carries Codex gpt-6-luna's agreeing vote.
+
+The rest hold for v3 as well: hires-only crops (the reclaim tier's 12 PSP-resolution reads are excluded), text of
+every kind and not only dialogue, devnative's edge rule, and reviews by AI models, never a human.
+
 - All crops are hires. Every crop comes from a PC or home-console screenshot scaled down to the
   console screen; no training-side native Vita or PSP screenshot was left. Downscaled text is
   smoother than native console rendering, so the pool complements the native pools and synth3's
@@ -413,8 +633,8 @@ semantics.
     of wrapped lines.
   Repeats are capped at 2 per VN and 8 overall, so no string appears more than 8 times. Meta `name`
   is set only on reviewed lines (374), never on auto lines.
-- The edge check was not finished. 2,091 flagged lines (v2) had no edge check at the freeze and
-  were dropped; the 11 remaining edge batches were withdrawn.
+- The edge check was not finished in v2. 2,091 flagged lines (v2) had no edge check at the freeze and
+  were dropped; the 11 remaining edge batches were withdrawn. v3 decided them (b0020-b0030, 2,093 lines).
 - devnative's edge rule misses some cut lines. `lines.ink_beyond` looks for ink only inside the
   line's read view, which ends a few pixels past the detected ink. It also needs more than
   max(2 px, 0.2 ink heights) of it. So it misses:
@@ -494,4 +714,57 @@ $PY realplus/pool.py blind-score --tag v2 && $PY realplus/pool.py publish --tag 
 # 8. leak check against teacher_val (run after the v2 build; it removed nothing):
 #   teacher_val's 646 screenshots (named in teacher_val.npz's meta) linked into $R/tvdata, then
 env $H $PY eval/tools/leakcheck.py $R/shots --test $R/tvdata --keep-reserved
+```
+
+v3 (from this branch; every command with `REALPLUS=$R3`, v2's `$R` files are read-only inputs). The run itself
+differed in three ways:
+
+- **Loops.** Detached loops drove it: `feed`, `luna.py run --loop`, and a two-hourly round of `final`,
+  `edge-boxes`, `confirm-batches` and `edge-batches`. They also made the interim snapshots. Every round is in
+  `$R3/logs` and `$R3/notes.md`.
+- **The plan.** It was made on 2026-10-13, extended by the reclaim tier on 2026-10-14, and filtered by hand on
+  2026-10-14 at 19:55Z (reserved VNs, PSP-scale reads, copies). `pool.py plan` has applied the same filters since
+  2026-10-15. Re-run then, it gave the filtered plan minus 13 lines, 12 of them already batched.
+- **Third looks and the last Luna round.** Local scripts made them (`$R3/look3.py`, `$R3/luna_retry3.py`), which
+  `pool.py look3` and `luna.py run --retries 3` replace. On the same inputs, `look3` gives the same 58 candidate
+  lists and the same 58 resolutions (checked).
+
+```sh
+HERD=/local/home/skerraut/herd-vita-ocr; R3=$HERD/shared/artifacts/realplus-v3; PY=.venv-ci/bin/python
+export REALPLUS=$R3 HERD_DIR=/local/home/skerraut/herd-synth3 REALPLUS_HELPER=review-v3-
+H="HEAVY_SLOTS=12 $HERD/heavy.sh timeout 7200"
+# 1. the reclaim tier (fetched by reserve-policy): shots.dedupe over it (-> $R3/reclaim/manifests/dups.json) and
+#    the read input $R3/reclaim/reads/shots.jsonl (hires shots read as kind vita, as v2's), then
+env $H unshare -rn .venv/bin/python devnative/read.py run --shots $R3/reclaim/reads/shots.jsonl \
+    --out $R3/reclaim/reads --procs 5
+# 2. the plan, pass 1 (Claude), the Luna votes, edge checks and confirm looks, until nothing is pending
+$PY realplus/pool.py plan
+$PY realplus/pool.py feed --loop --every 30 --ready 4 --max 6 --min-new 1000000000 \
+    --kinds confirm,edge-new,pass1,edge --tiers t1,t2
+$PY realplus/luna.py run --loop --every 120 --max 4
+env $H $PY realplus/pool.py final && env $H $PY realplus/pool.py edge-boxes
+env $H $PY realplus/pool.py confirm-batches --n 20 --size 200 --min 1
+env $H $PY realplus/pool.py edge-batches --n 20 --size 200 --min 1
+$PY realplus/luna.py run --retries 3                                # the last votes before the freeze
+# 3. v3pre (all of Stage A), its gates, the precision check and its third looks
+cp $R3/labels.jsonl $R3/labels_v3pre.jsonl && env $H $PY realplus/pool.py edge-apply
+env $H $PY realplus/hygiene.py --labels $R3/labels_v3pre.jsonl --out $R3/logs/hygiene_labels_v3pre.json
+env $H $PY realplus/pool.py build --tag v3pre --procs 5
+env $H $PY realplus/pool.py check --tag v3pre                       # 800 entries: review/check/b0001-b0007
+$PY realplus/pool.py check-score --tag v3pre
+env $H $PY realplus/pool.py look3 --tag v3pre                       # review/look3/b0001, then a fresh look
+$PY realplus/pool.py look3 --tag v3pre --resolve                    # -> review/resolutions_v3.jsonl
+# 4. v3: the same gates, Luna's agreement, the committed manifests
+env $H $PY realplus/pool.py final && cp $R3/labels.jsonl $R3/labels_v3.jsonl
+env $H $PY realplus/pool.py edge-apply
+env $H $PY realplus/hygiene.py --labels $R3/labels_v3.jsonl --out $R3/logs/hygiene_labels_v3.json
+env $H $PY realplus/pool.py build --tag v3 --procs 5
+env $H $PY realplus/hygiene.py --lines $R3/manifests/lines_v3.jsonl --out $R3/logs/hygiene_v3.json
+env $H $PY eval/tools/reserve_check.py ink=$R3/realplus_train_ink_v3.npz grad=$R3/realplus_train_grad_v3.npz \
+    lines=$R3/manifests/lines_v3.jsonl --require-hashes --pixels --out $R3/logs/reserve_check_v3.json
+env $H $PY eval/tools/leakcheck.py $HERD/shared/artifacts/reserve-policy/realplus/shots \
+    --data $HERD/shared/artifacts/eval --keep-reserved                # the reclaim tier vs vita-test / psp-test
+$PY realplus/luna.py stats --batches 10 --out $R3/luna/agreement_first10.json
+$PY realplus/luna.py stats --batches 1000 --out $R3/luna/agreement_all.json
+env $H $PY realplus/pool.py publish --tag v3 --supersedes v2 --check v3pre
 ```

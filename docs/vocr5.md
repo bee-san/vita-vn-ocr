@@ -14,13 +14,15 @@ Results are added below it once they exist. Every console time here is a host es
 
 The sizing comes from the owner's caps (18:09Z) and the conductor's final note (10:07Z / 10:21Z). Speed limits are
 per typical full textbox: 3 lines of about 640 px, which is 240 CTC frames plus 0.1 s for the finder, on one
-Cortex-A9 core. #85 and overlay #93 are open and test.3 has not confirmed the 444 MHz boost, so Normal stays at
-most 1.3 MB.
+Cortex-A9 core. At freezing, #85 and overlay #93 were open and test.3 had not confirmed the 444 MHz boost, so
+Normal's ceiling was 1.3 MB. Amendment 3 (2026-10-16, before any candidate was scored) raised it to the owner's
+1.6 MB cap once test.3 confirmed the boost, and made the already-trained VOCR4-W20 Normal's incumbent. Normal's
+VOCR5 shape is unchanged, because a 1.6 MB VOCR5 shape would have needed a new pretrain, about a day.
 
 | tier | shape | vocab | int8 weights | W8I arena | MACs/frame | incumbent |
 |---|---|---|---:|---:|---:|---|
 | Small (< 1 MB, < 1 s) | `s_w100v4987`: FL10's topology | `data/vocab_4987_proof.txt` (4,987) | 819,792 B | 124,832 B | 967,392 | VOCR4-FL10 (657,664 B) |
-| Normal (≤ 1.3 MB, about 1 s at 333 MHz) | `n_w150v5631`: H15's topology | `data/vocab_vn_5631.txt` (5,631) | 1,185,632 B | 182,944 B | 1,591,488 | VOCR4-H15 (1,155,968 B) |
+| Normal (≤ 1.6 MB since amendment 3; about 1 s per box) | `n_w150v5631`: H15's topology | `data/vocab_vn_5631.txt` (5,631) | 1,185,632 B | 182,944 B | 1,591,488 | VOCR4-W20 (1,558,016 B; VOCR4-H15 until amendment 3) |
 | Large (≤ 2.5 MB, < 3 s) | `l_lw300v5631`: late-wide 2.0 → 3.0 | `data/vocab_vn_5631.txt` (5,631) | 2,473,696 B | 261,024 B | 3,402,720 | VOCR4-W20 (1,558,016 B) |
 
 Estimated time per 3-line box. The method is ocr-speed's: `vita/a9_layers.py` at #85's head, top-8, scaled to
@@ -32,6 +34,10 @@ VOCR3-H15's measured console rate of 4,941.7 µs per frame at an assumed 333 MHz
 | `s_w100v4987` | 0.94 / 0.73 s | 0.57 / 0.45 s | 0.63 / 0.50 s |
 | `n_w150v5631` | 1.34 / 1.03 s | 0.81 / 0.63 s | 0.92 / 0.72 s |
 | `l_lw300v5631` | 2.68 / 2.08 s | 1.47 / 1.13 s | 2.08 / 1.63 s |
+| VOCR4-W20 (Normal's incumbent) | 1.77 / 1.35 s | 1.08 / 0.84 s | 1.26 / 0.97 s |
+
+VOCR4-W20 costs an estimated 0.20-0.43 s more per box than `n_w150v5631`, depending on the runtime and clock: 0.25 s
+at 444 MHz and 0.34 s at 333 MHz without prefetch credit.
 
 Why these shapes:
 
@@ -46,8 +52,8 @@ Why these shapes:
   compute-light kind the owner asked for: 2.47 MB of weights for 3.40 M MACs per frame, against 3.92 M for a
   plain width 2.75 of 2.39 MB. With vocab-expand's 6,459-class Large vocab it would weigh 2,564,368 B, over the
   cap, and on VN text that vocab covers nothing 5,631 misses (0.000 per 1,000 either way).
-- **Incumbents.** VOCR4-W20 is over Normal's 1.3 MB, so Normal's incumbent is VOCR4-H15, which the task names as
-  the lighter Normal alternative.
+- **Incumbents.** At freezing VOCR4-W20 was over Normal's 1.3 MB, so Normal's incumbent was VOCR4-H15, which the
+  task names as the lighter Normal alternative. Since amendment 3 it is VOCR4-W20, the task's original Normal.
 
 ## Data
 

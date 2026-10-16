@@ -73,19 +73,19 @@
     "macs_per_frame": 1591488
    },
    "limits": {
-    "weights_le": 1300000,
+    "weights_le": 1600000,
     "arena_le": 262144,
-    "box_s_target": "about 1 s at 333 MHz, one core, #85's runtime, no prefetch credit",
+    "box_s_target": "about 1 s per box with the 444 MHz boost (test.3 confirmed it; amendment 3), about 1.26 s at 333 MHz for VOCR4-W20 without prefetch credit (estimate)",
     "box_s_le": 2.0
    },
    "why_this_shape": "the widest of model-tiers' family that keeps a 1 s box at 333 MHz without prefetch credit inside 1.3 MB: width 1.6 (1,254,560 B, 1,732,480 MACs/frame) is at the 1 s edge of the estimate; the late-wide n_lw300v5631 and every Normal shape of #74 are over 1.3 MB under the final sizing",
    "incumbent": {
-    "name": "VOCR4-H15",
-    "run": "v4c_H15_seed1",
-    "blob": "$HERD/shared/artifacts/vocr4-train/report/blobs/VOCR4_H15_w8.vocr",
-    "sha256": "d380d1a4cf4c3c76e4e4b0f9a73fd1619cc1068c4f070d0da07e5e4d05254b9b",
-    "blob_bytes": 1155968,
-    "why": "VOCR4-W20 (1,558,016 B), the task's Normal incumbent, is over the final 1.3 MB Normal ceiling; VOCR4-H15 is the most accurate VOCR4 model inside it (the task names it the lighter Normal alternative)"
+    "name": "VOCR4-W20",
+    "run": "v4m_W20_seed2",
+    "blob": "$HERD/shared/artifacts/vocr4-train/report/blobs/VOCR4_W20_w8.vocr",
+    "sha256": "2745e69699ad7b2aba3092f83e5ddc1912f405f54b9df8a2e55be82c385b716e",
+    "blob_bytes": 1558016,
+    "why": "amendment 3: Normal's ceiling is the owner's 1.6 MB cap (test.3 confirmed the 444 MHz boost, the conductor's 10:21Z rule), so the incumbent is the most accurate VOCR4 model inside it, VOCR4-W20, as the task first named it; until amendment 3 it was VOCR4-H15 (the most accurate inside 1.3 MB)"
    },
    "recipe": "M",
    "pretrain_steps": 150000,
@@ -263,7 +263,49 @@
      ]
     }
    },
-   "reading": "every shape meets its tier on every column; Normal's about 1 s box at 333 MHz holds with #85's runtime (0.81-0.92 s), not with main's (1.34 s: 1.03 s at 444 MHz), which is why the conductor's sizing is provisional on #85"
+   "reading": "every shape meets its tier on every column; Normal's about 1 s box at 333 MHz holds with #85's runtime (0.81-0.92 s), not with main's (1.34 s: 1.03 s at 444 MHz), which is why the conductor's sizing is provisional on #85",
+   "VOCR4-W20 (Normal incumbent from amendment 3; Large incumbent)": {
+    "bytes": 1558016,
+    "macs_per_frame": 2339232,
+    "main": {
+     "333": [
+      6.937,
+      1.765
+     ],
+     "444": [
+      5.204,
+      1.349
+     ]
+    },
+    "#85": {
+     "333": [
+      4.082,
+      1.08
+     ],
+     "444": [
+      3.062,
+      0.835
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      4.829,
+      1.259
+     ],
+     "444": [
+      3.623,
+      0.97
+     ]
+    }
+   },
+   "latency cost of VOCR4-W20 over n_w150v5631, ms per 3-line box (estimates)": {
+    "main @333 MHz": 426,
+    "main @444 MHz": 320,
+    "#85 @333 MHz": 272,
+    "#85 @444 MHz": 204,
+    "#85 no-PLD @333 MHz": 338,
+    "#85 no-PLD @444 MHz": 254
+   }
   }
  },
  "data": {
@@ -514,6 +556,12 @@
    "date": "2026-10-15 (commit time in git), before any VOCR5 model or Lens was read on a protected set",
    "change": "locked_report.sets gains a REPORT-ONLY arm: Google Lens on vita-test and psp-test. Lens (owocr 1.26.7 through eval/owocr_bridge.py; the reader eval/lens_lines.py from vvo-public, committed before it runs) reads every scored line once, cut as eval/run.py's recognizer mode cuts it (the line box plus eval's pad), RGB in screen polarity (Lens sees the screen), one request per crop with up to 5 retries and backoff; the readings are cached privately ($HERD/shared/private/vocr5-train/lens/) with each crop's sha256; committed outputs hold counts, rates and hashes only. It runs once, inside the locked report, after the three selections are committed. Scored as the other arms (eval/metrics.norm, CER, exact lines; dialogue = lines without the 'name' style primary, all text and names also), with paired line and VN-cluster bootstraps VOCR5_S/N/L - Lens over the lines Lens read; a line Lens could not read after the retries is listed and left out of Lens's figures and of its pairs",
    "why": "the owner (09:43Z) asked for a VOCR-vs-Google-Lens chart on CLANNAD, vita-test and psp-test (vvo-public); Lens had measured numbers on CLANNAD only. vita-test and psp-test are public VNDB screenshots, which _rules.md allows Lens to read. The arm decides, selects and tunes nothing and is not a gate arm"
+  },
+  {
+   "date": "2026-10-16 (commit time in git), before any VOCR5 fine-tune started and before any VOCR5 candidate was scored on any set; the incumbents' development scores existed (scored 04:10Z by the scoring loop), the candidates' did not",
+   "change": "tiers.Normal: weights ceiling 1,300,000 -> 1,600,000 B (the owner's 18:09Z cap) and incumbent VOCR4-H15 -> VOCR4-W20 (v4m_W20_seed2, 1,558,016 B, sha256 2745e696...). Normal is the better of VOCR5-N (n_w150v5631, 1,185,632 B, unchanged) and VOCR4-W20 under decisions.replace (paired over the seeds, dialogue development score): VOCR5-N replaces VOCR4-W20 only if it passes the rule, otherwise Normal is VOCR4-W20. Small and Large unchanged. estimates.table gains VOCR4-W20's row and the latency cost of W20 over N per 3-line box; the report states it",
+   "why": "the conductor (2026-10-16 07:30Z, 07:52Z): test.3 (overlay #138) logged 22 jobs going 333 -> 444 -> 333 MHz, so the boost is in effect and the 10:21Z rule lets Normal grow to 1.6 MB; a new 1.6 MB VOCR5 shape would need a new pretrain (about a day), so the zero-delay option takes the trained VOCR4-W20 as Normal's incumbent. The choice follows the sizing rule (the most accurate VOCR4 model inside the ceiling, as the protocol already defines the incumbent), not any score",
+   "effect": "Normal's incumbent is scored on the development cohorts like every run (its scores as Large's incumbent are the same blob on the same cohorts); the locked report's arms and pairs are unchanged (VOCR5_N - VOCR4_W20 was already a pair); the speed-up of #85 (merged) and the boost are what make W20 a Normal candidate: est. 0.97 s per box at 444 MHz without prefetch credit (1.26 s at 333 MHz)"
   }
  ]
 }

@@ -32,10 +32,12 @@ def test_tiers_limits_and_vocabs():
         lines = v.read_text(encoding="utf-8").splitlines()
         assert len(lines) + 1 == t["vocab"]["classes"]          # + the CTC blank
         assert lines[-1] == "〓"                                # the <unk> class of a reduced vocab
-        assert t["incumbent"]["blob_bytes"] <= e["blob_bytes"]
+        inc = t["incumbent"]["blob_bytes"]                      # the incumbent is inside its tier
+        assert inc < lim["weights_lt"] if "weights_lt" in lim else inc <= lim["weights_le"]
     lim = {n: t["limits"] for n, t in P["tiers"].items()}
     assert lim["Small"]["weights_lt"] == 1_000_000
-    assert lim["Normal"]["weights_le"] == 1_300_000           # conductor 10:07Z / 10:21Z: no test.3 before training
+    assert lim["Normal"]["weights_le"] == 1_600_000           # amendment 3: test.3 confirmed the boost (owner's cap)
+    assert P["tiers"]["Normal"]["incumbent"]["name"] == "VOCR4-W20"
     assert lim["Large"]["weights_le"] == 2_500_000            # owner 18:09Z
 
 

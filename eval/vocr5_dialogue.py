@@ -2,11 +2,14 @@
 """VOCR5's dialogue-primary fixed-line tables (eval/vocr5_protocol.json "locked_report": dialogue = lines without the
 'name' style), from the locked report's stored parts, with Google Lens as a report-only arm (amendment 2).
 
-  vocr5_dialogue.py tables --report REPORT.json [--lens SET=RUN_OUT.json ...] --out DIALOGUE.json [--md TABLES.md]
+  vocr5_dialogue.py tables --report REPORT.json [--lens SET=RUN_OUT.json ...] [--extra POL:ARM:SET=RUN_OUT.json ...]
+                           --out DIALOGUE.json [--md TABLES.md]
 
 REPORT.json is eval/vocr3_report.py's rendered report (its "shared.fixed_line[polarity][arm].lines[set]": integer
 per-line records with styles). --lens takes eval/run.py --out files of the Lens arm (eval/lens_lines.py serve, native
-polarity), one per set. Per arm, set and polarity: dialogue (no 'name' style), names, all text: errors, chars, lines,
+polarity), one per set; --extra adds any other eval/run.py --out arm (e.g. the deployed beam + LM decode,
+console:VOCR5_L+LM:vita-test=...). Per arm, set and polarity: dialogue (no 'name' style), names, all text: errors,
+chars, lines,
 exact lines, CER; pooled over vita-test and psp-test. Pairs (the protocol's, plus VOCR5_S/N/L - Lens): CAND - BASE in
 points with eval/vocr3_report.py's paired line and VN-cluster bootstraps (10,000 resamples, seed 0, at least 5 VNs),
 over the lines both arms read. Lens reads the screen, so its lines pair with the other arms' native-polarity lines and
@@ -76,12 +79,14 @@ def pair(cand, base, keep, boot):
     return out
 
 
-def tables(report, lens, pairs):
+def tables(report, lens, pairs, extra=None):
     fl = report["shared"]["fixed_line"]
     boot = report["shared"]["spec"]["bootstrap"]
     arms = {pol: {a: e["lines"] for a, e in fl[pol].items()} for pol in fl}
     if lens:
         arms.setdefault("native", {})[LENS] = lens
+    for (pol, arm), sets in (extra or {}).items():
+        arms.setdefault(pol, {})[arm] = sets
     out = {"kind": "vocr5-dialogue-tables", "schema": 1, "parts": list(PARTS), "bootstrap": boot,
            "lens_lines": {s: len(v) for s, v in (lens or {}).items()}, "arms": {}, "pairs": {}}
     for pol, by_arm in arms.items():
@@ -140,6 +145,7 @@ def main():
     t.add_argument("--report", required=True)
     t.add_argument("--protocol", default=str(HERE / "vocr5_protocol.json"))
     t.add_argument("--lens", action="append", default=[], help="SET=eval/run.py --out JSON of the Lens arm")
+    t.add_argument("--extra", action="append", default=[], help="POL:ARM:SET=eval/run.py --out JSON of another arm")
     t.add_argument("--out", required=True)
     t.add_argument("--md")
     args = ap.parse_args()
@@ -149,12 +155,20 @@ def main():
     for spec in args.lens:
         s, _, p = spec.partition("=")
         lens[s] = lens_lines(p, s)
+    extra = {}
+    for spec in args.extra:
+        key, _, p = spec.partition("=")
+        pol, arm, s = key.split(":")
+        extra.setdefault((pol, arm), {})[s] = lens_lines(p, s)
     pairs = [tuple(p) for p in proto["locked_report"]["pairs"]]
     if lens:
         pairs += [("VOCR5_S", LENS), ("VOCR5_N", LENS), ("VOCR5_L", LENS)]
-    doc = tables(report, lens, pairs)
+    for pol, arm in extra:                       # each extra arm against its greedy self (report only)
+        base = arm.split("+")[0]
+        pairs.append((arm, base))
+    doc = tables(report, lens, pairs, extra)
     Path(args.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
-    order = list(proto["locked_report"]["arms"]) + ([LENS] if lens else [])
+    order = list(proto["locked_report"]["arms"]) + [a for _, a in extra] + ([LENS] if lens else [])
     md = markdown(doc, order)
     if args.md:
         Path(args.md).write_text(md + "\n", encoding="utf-8")

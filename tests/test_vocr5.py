@@ -268,3 +268,15 @@ def test_make_spec_arms_are_the_protocols(tmp_path, monkeypatch):
     assert [(p["candidate"], p["baseline"]) for p in spec["pairs"]] == [tuple(p) for p in P["locked_report"]["pairs"]]
     assert runs == {"VOCR5_S": "run_S", "VOCR5_N": "run_N", "VOCR5_L": "run_L"}
     assert (tmp_path / "blobs" / "VOCR5_N_w8.vocr").read_bytes() == b"toy Normal"
+
+
+def test_clannad_lens_view_on_toy_rows():
+    sys.path.insert(0, str(ROOT / "eval"))
+    import vocr5_clannad_lens as CL
+    rows = [{"id": f"l{i}", "page": f"p{i // 2}", "preds": {"Lens": "あいう", "A": "あいう" if i % 2 else "あいえ"}}
+            for i in range(8)]
+    names = {f"l{i}": i == 0 for i in range(8)}
+    v = CL.view(rows, names, ["A"])
+    assert v["all"]["systems"]["A"]["edits"] == 4 and v["all"]["systems"]["A"]["lens_chars"] == 24
+    assert v["dialogue"]["lines"] == 7 and v["dialogue"]["systems"]["A"]["edits"] == 3
+    assert v["all"]["systems"]["A"]["same_as_lens"] == 50.0

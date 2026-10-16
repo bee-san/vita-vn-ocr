@@ -79,5 +79,11 @@
   },
   "render_errors": 0
  },
- "hygiene": "scenes: synth3's filter (test_games all + reserved.json test and dev_sample + is_reserved_vn) at render time; text pools, lists and names: synth3 v3's assets, built under the stricter 2026-10-12/13 reservation (a superset of reserved.json's 187 VNs; the 2026-10-13 list holds all 187), with the CLANNAD exclusion manifest's name hashes and markers"
+ "hygiene": {
+  "scenes": "synth3's filter at render time (test_games.json 'all' + reserved.json test and dev_sample + is_reserved_vn): no scene of a reserved VN",
+  "text pools and lists": "synth3 v3's text assets (text/pools3), unchanged",
+  "speaker names": "synth3's names.train.tsv (sha256 4aa76da50328146d..., built 2026-10-12 11:22Z under that day's reservation: the 2026-10-12 test_games.json 'all' (172 VNs), exclude_dev_vns.txt (190 VNs) and is_test_vn), filtered at render time only by the CLANNAD exclusion manifest's name hashes and text markers (255 names dropped)",
+  "corrected": "2026-10-16, audit-vocr5 F1. The first version of this field said the names were built under a reservation that is a superset of reserved.json's 187 VNs. That was wrong: it rested on a check that read the TSV's name-kind column as a VN id. The 2026-10-12 build did not forbid 42 of the 187 reserved VNs, and the names of 128 characters of 12 of them remain in the pool (190 of its 378,143 rows): 7 test-shared-release VNs (v1267 30, v2389 28, v172 20, v1038 17, v7495 13, v5721 11, v2028 6) and 5 dev-sample-shared-release VNs (v53298 5, v24 4, v15076 3, v26592 2, v1795 1). 506 of the 1,000,000 crops show one of these 109 full names drawn from the VNDB pool (995 hold one as a substring from any source); the inherited synth3 v2 and v3 shards hold 588 and 604 such crops. None of the 109 names occurs in a vita-test, psp-test, teacher_val-dev or devnative-dev line, and no name-style test line equals a name or a name part (audit-vocr5 evidence names_leak_*.txt). So 'no material of a reserved.json VN' (eval/vocr5_protocol.json data.render) holds for scenes and real data, not for synthetic speaker names",
+  "first_version": "scenes: synth3's filter (test_games all + reserved.json test and dev_sample + is_reserved_vn) at render time; text pools, lists and names: synth3 v3's assets, built under the stricter 2026-10-12/13 reservation (a superset of reserved.json's 187 VNs; the 2026-10-13 list holds all 187), with the CLANNAD exclusion manifest's name hashes and markers"
+ }
 }

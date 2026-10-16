@@ -122,11 +122,13 @@ def markdown(doc, order):
             if not e:
                 continue
             d, n = e["dialogue"], e["names"]
-            cells = [f"{d[s]['cer']:.2f}% ({d[s]['errors']}/{d[s]['chars']})" if s in d else "-" for s in SETS]
+            def pct(t):     # from the counts (the JSON's cer is rounded to 3 decimals: never round it again)
+                return f"{100 * t['errors'] / max(1, t['chars']):.2f}%"
+            cells = [f"{pct(d[s])} ({d[s]['errors']}/{d[s]['chars']})" if s in d else "-" for s in SETS]
             p = d["pooled"]
             md.append(f"| {a} ({pol}) | " + " | ".join(cells)
-                      + f" | **{p['cer']:.2f}%** ({p['errors']}/{p['chars']}) | "
-                      f"{100 * p['exact'] / max(1, p['lines']):.1f}% | {n['pooled']['cer']:.2f}% |")
+                      + f" | **{pct(p)}** ({p['errors']}/{p['chars']}) | "
+                      f"{100 * p['exact'] / max(1, p['lines']):.1f}% | {pct(n['pooled'])} |")
     md += ["", "| pair (dialogue, points; line / VN-cluster 95% CI) | view | vita-test | psp-test | pooled |",
            "|---|---|---|---|---|"]
 

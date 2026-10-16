@@ -62,8 +62,14 @@ lens)
   done ;;
 dialogue)
   # the dialogue-primary fixed-line tables and pairs (lines without the 'name' style), Lens included
+  # (run after the lm step: the deployed decode's arms enter as --extra console:<arm>+LM:<set>)
   LA=(); L=$HERD/shared/private/vocr5-train/lens
   for s in vita-test psp-test; do [ -s "$L/run_$s.json" ] && LA+=(--lens "$s=$L/run_$s.json"); done
+  for arm in VOCR4_FL10 VOCR4_H15 VOCR4_W20 VOCR5_S VOCR5_N VOCR5_L; do
+    for s in vita-test psp-test; do
+      [ -s "$R/lm/${arm}_$s.json" ] && LA+=(--extra "console:${arm}+LM:$s=$R/lm/${arm}_$s.json")
+    done
+  done
   $PY eval/vocr5_dialogue.py tables --report "$R/out/report.json" "${LA[@]}" --out "$R/out/dialogue.json" \
     --md "$R/out/dialogue.md" | head -n 40 ;;
 clannad)

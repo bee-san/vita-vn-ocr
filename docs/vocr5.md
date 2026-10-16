@@ -61,6 +61,11 @@ not confirmed the 444 MHz boost. Amendment 3 (2026-10-16 08:23Z, before any cand
 owner's 1.6 MB cap once test.3 confirmed the boost, and made the already-trained VOCR4-W20 Normal's incumbent. A
 1.6 MB VOCR5 shape would have needed a new pretrain, about a day.
 
+The 10:21Z rule allowed the 1.6 MB Normal only if test.3 confirmed the boost **before VOCR5 training started**.
+test.3 came on 2026-10-16, after training had started. The conductor waived that condition (2026-10-16 07:52Z)
+because the trained Normal shape stayed the same: the amendment changed only the incumbent Normal had to beat. That
+raised the bar, since VOCR4-W20's development score (3.580) is better than VOCR4-H15's (3.959).
+
 | tier | shape | vocab | int8 weights | W8I arena | MACs/frame | incumbent | selected run |
 |---|---|---|---:|---:|---:|---|---|
 | Small (< 1 MB, < 1 s) | `s_w100v4987`: FL10's topology | `data/vocab_4987_proof.txt` (4,987) | 819,792 B | 124,832 B | 967,392 | VOCR4-FL10 (657,664 B) | `v5f_S_seed2` |
@@ -102,6 +107,16 @@ Why these shapes:
   - The 610 kanji new against `data/vocab.txt` got 50-127 exposures (median 67). The curriculum's K = 80 was not
     reached for 563 of them, as synth4's own render left classes below K.
   - The first 1,000 crops of shards 0 and 57 re-render byte for byte.
+  - **Speaker names of 12 reserved release-partner VNs** (found by audit-vocr5, F1). The renders draw speaker names
+    from synth3's name pool, built on 2026-10-12 under that day's reservation, and filtered at render time only by
+    the CLANNAD exclusion manifest. That leaves the names of 128 characters of 12 VNs that `reserved.json` reserves:
+    7 test-shared-release VNs and 5 dev-sample-shared-release VNs, 190 of the pool's 378,143 rows.
+    - 506 of s4v5631's 1,000,000 crops show one of these 109 full names, drawn from the VNDB pool. The inherited
+      synth3 v2 and v3 shards hold 588 and 604 such crops.
+    - None of the 109 names occurs in a vita-test, psp-test, teacher_val-dev or devnative-dev line.
+    - So the protocol's "no material of a reserved.json VN" holds for scenes and real data, not for synthetic
+      speaker names. The render record's first hygiene statement said otherwise; it was corrected
+      (`eval/vocr5_render_s4v5631_20261015.json` `hygiene`).
   - nvsynth was not cut again.
 - **Real** (`eval/vocr5_pools_20261016.json`: CHECK_OK, and `eval/tools/reserve_check.py --require-hashes --pixels`
   RESERVE_OK on every file):
@@ -124,7 +139,8 @@ Two rules shaped the real data:
 ## Arms and runs
 
 - **Pretrains.** Small 216,000 steps, Normal 150,000 and Large 108,000 (VOCR4: 128,000 / 40,000 / 32,000). There
-  were 2, 3 and 3 seeds, 8 at once: 2026-10-15 12:42-13:37Z to 2026-10-16 12:29-13:31Z, about 24 h each.
+  were 2, 3 and 3 seeds, 8 at once: started 2026-10-15 12:42:28-13:43:39Z, ended 2026-10-16 12:29-13:31Z, about
+  24 h each.
 - **Fine-tunes.** VOCR4's recipe, 15,000 steps, two arms per pretrain:
   - **P**: every pool, real half 0.5 (tt + tvt 0.15, rd + rvt 0.075, rp3 0.175, own 0.075, dn + nat 0.025, each
     split into ink and GRAD by rows).
@@ -134,7 +150,8 @@ Two rules shaped the real data:
     copies.
   - **Refined copies.** Made by the merged refinement and kept only where it changed the rows alone (amendment 1:
     of the column-cut copies the helper read, about 38 of 40 had lost glyphs under an unchanged label).
-- **Runs.** 2026-10-16 12:29-19:19Z. 24 runs, none failed or was restarted.
+- **Runs.** The 16 fine-tunes ran 2026-10-16 12:42:14-19:19:07Z. All 24 runs (8 pretrains, 16 fine-tunes) span
+  2026-10-15 12:42Z to 2026-10-16 19:19Z; none failed or was restarted.
 
 ## Selection (development sample only)
 
@@ -146,8 +163,10 @@ The cohorts are the fixed development sample (`reserved.json` dev_sample):
   and without the refinement, at base, +4 and +8 px.
 
 Score = 0.25 tv + 0.25 dn + 0.5 wd (dialogue CER points). The decisions use stratified VN-cluster bootstraps
-(10,000 resamples). A candidate is adopted when the interval of the mean seed-pair difference lies below 0, every
-pair is below 0 and no component's interval lies above 0.
+(10,000 resamples). tv's, dn's and wd's VNs are resampled independently, with numpy seeds 0, 1 and 2
+(`eval/vocr5_select.py`; the protocol's "seed 0" names only the first). The audit re-decided every tier with three
+other seed sets and no decision changed. A candidate is adopted when the interval of the mean seed-pair difference
+lies below 0, every pair is below 0 and no component's interval lies above 0.
 
 | tier | decision | score (95% CI) | tv | dn | wd | pairs | adopted |
 |---|---|---|---|---|---|---|---|
@@ -194,13 +213,13 @@ intervals are paired bootstraps (10,000 resamples, seed 0) over lines and VN clu
 | VOCR1 (v0.2.0 FL10) | 2.05% (49/2392) | 4.17% (96/2301) | **3.09%** (145/4693) | 72.0% | 3.82% (194/5074) | 12.86% |
 | v0.2.0 H15 | 1.30% (31/2392) | 2.30% (53/2301) | **1.79%** (84/4693) | 82.4% | 2.21% (112/5074) | 7.35% |
 | F20 | 1.38% (33/2392) | 2.22% (51/2301) | **1.79%** (84/4693) | 82.1% | 2.19% (111/5074) | 7.09% |
-| VOCR3-W20 | 0.92% (22/2392) | 1.70% (39/2301) | **1.30%** (61/4693) | 87.2% | 1.62% (82/5074) | 5.51% |
+| VOCR3-W20 | 0.92% (22/2392) | 1.69% (39/2301) | **1.30%** (61/4693) | 87.2% | 1.62% (82/5074) | 5.51% |
 | VOCR4-FL10 | 1.25% (30/2392) | 2.30% (53/2301) | **1.77%** (83/4693) | 83.6% | 2.15% (109/5074) | 6.82% |
 | VOCR4-H15 | 1.00% (24/2392) | 1.96% (45/2301) | **1.47%** (69/4693) | 86.0% | 1.83% (93/5074) | 6.30% |
 | VOCR4-W20 | 0.79% (19/2392) | 1.56% (36/2301) | **1.17%** (55/4693) | 88.4% | 1.40% (71/5074) | 4.20% |
 | **VOCR5-S** | 1.00% (24/2392) | 2.22% (51/2301) | **1.60%** (75/4693) | 86.0% | 1.83% (93/5074) | 4.72% |
 | **VOCR5-N** | 0.96% (23/2392) | 1.30% (30/2301) | **1.13%** (53/4693) | 88.4% | 1.30% (66/5074) | 3.41% |
-| **VOCR5-L** | 0.58% (14/2392) | 1.00% (23/2301) | **0.79%** (37/4693) | 90.8% | 0.93% (47/5074) | 2.62% |
+| **VOCR5-L** | 0.59% (14/2392) | 1.00% (23/2301) | **0.79%** (37/4693) | 90.8% | 0.93% (47/5074) | 2.62% |
 
 | pair (dialogue, points; VN-cluster 95% CI) | vita-test | psp-test | pooled |
 |---|---|---|---|
@@ -322,8 +341,13 @@ lines it is ahead (−0.36 points) because it reads speaker names far better (8.
 agreement with Lens, not accuracy): on the dialogue lines VOCR5-L, -N and -S differ from Lens by 2.07%, 2.24% and
 2.63% of its characters, and read 88.3%, 86.2% and 81.1% of lines exactly as Lens does.
 
-**Disclosure.** Every VOCR5 model trained on the owner's captures, which hold planetarian's PSP port (v34), a Key /
-Prototype release like CLANNAD's Vita port.
+**Disclosures.**
+
+- **planetarian.** Every VOCR5 model trained on the owner's captures, which hold planetarian's PSP port (v34), a
+  Key / Prototype release like CLANNAD's Vita port.
+- **CLANNAD's cast names (Small).** VOCR5-S also trained on synth3 v2 (pretrain 0.25, fine-tune 0.125). Its renders
+  hold CLANNAD's main cast names, which VNDB lists again under Tomoyo After and Hikari Mimamoru Sakamichi de; 7 crops
+  show a full cast name (`docs/synth3.md`, Limits). synth3 v3, which Normal and Large read, excludes them.
 
 ## Hygiene and timeline (UTC)
 
@@ -336,18 +360,29 @@ Prototype release like CLANNAD's Vita port.
 | 16:42Z | amendment 2 (Lens report-only arm) |
 | 2026-10-16 03:55Z | the fine-tune pools pinned (tag `vocr5-runner-15f244b`, realplus v3 final) |
 | 08:23Z | amendment 3 (Normal ≤ 1.6 MB, incumbent VOCR4-W20); scoring runner `vocr5-runner-aa3df3b` |
-| 12:29-13:31Z | pretrains end; 12:29-19:19Z fine-tunes |
+| 12:29-13:31Z | pretrains end; 12:42-19:19Z fine-tunes |
 | 18:45-19:34Z | decisions, each committed before its tier's selection |
 | 19:34-20:33Z | locked report, Lens, CLANNAD, deployed decode; 20:38Z release v0.3.0 |
 
-- **Branch history.** The branch was rebased onto main (#85, #87, #88) on 2026-10-16 02:1xZ. The original commits
-  are at tag `vocr5-history-20261016a` and the runner tags; author dates keep the times above.
+- **Branch history.** The branch was rebased onto main twice, and author dates keep the times above:
+  - onto #85, #87 and #88 (commits dated 2026-10-16 02:25Z, force-pushed 02:34Z), with the originals at tag
+    `vocr5-history-20261016a` and the runner tags;
+  - onto #89 (force-pushed 21:01:54Z), with the originals at tag `vocr5-history-20261016b` (`cbe8497`). That tag
+    also holds `a5ed2d9`, the deployed-decode step's commit.
 - **Code timing.** The `--rows-only` option of `eval/vocr5_refine.py` was written before amendment 1 decided to use
   it (vocr5-aug asked first).
 - **Incumbent scores.** The incumbents' development scores existed from 04:10Z. Amendment 3 was decided by the sizing
   rule, before any candidate was scored.
 - **Protected sets.** Nothing was chosen, tuned or dropped on vita-test, psp-test or CLANNAD. Each was read once, after
   the three selections were committed. The in-run evaluations (teacher_val's dev part, logged) selected nothing.
+- **Smoke and pipeline runs.** None of these is a VOCR5 run or reached a selection:
+  - `$V5/scratch/seltest/run.sh` (2026-10-15 13:05Z) scored VOCR3-FL10 on the development cohorts to test the
+    scoring pipeline (score 4.28);
+  - `$V5/scratch/smoke/run2.sh` (14:53-14:58Z) ran two 30-step fine-tunes (S F, N F) from early pretrain checkpoints
+    on draft sources, then deleted them; their in-run teacher_val-dev evaluation was logged and not read;
+  - the helper vocr5-aug's 40-step `fa=0.3` train2 smoke run (14:39Z).
+- **Reserved speaker names in the synthetic data.** As above (Data, F1): 128 characters of 12 reserved release-partner
+  VNs, none of whose names occurs in a scored or development line.
 - **Private data.** The owner's frames, the Lens readings and every CLANNAD reading stay under `shared/private`.
   Committed files hold counts, ids and hashes only, and no hostname (#88).
 
@@ -357,8 +392,8 @@ Prototype release like CLANNAD's Vita port.
 - Nothing of VOCR5 ran on a console. Every time is a host estimate. The #85 runtime is merged, but its speed above
   the 2 MiB L2 (Large) is unconfirmed on the console (audit-ocr-speed-1 F5).
 - The development sample is 116 VNs. teacher_val is mostly scaled PC screenshots. Names are a secondary column only.
-- The new vocab's 610 kanji have under 80 synthetic exposures each (median 67) and few real ones, so their recall is
-  unmeasured beyond the dev sets.
+- 563 of the new vocab's 610 kanji have under 80 synthetic exposures (50-127, median 67) and few real ones, so their
+  recall is unmeasured beyond the dev sets.
 - The Lens arm read line crops including furigana. It is not a measure of Lens on full screens.
 
 ## Reproduce

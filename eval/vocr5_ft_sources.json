@@ -1,0 +1,110 @@
+{
+ "kind": "vocr5-ft-sources",
+ "schema": 1,
+ "pools_record": {
+  "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/pools_record_v3.json",
+  "sha256": "a7232ab97231e82171788a97a2a14d55b06eef5e63b37184bdb2c18fa4fd4bdb"
+ },
+ "real_half": 0.5,
+ "real": [
+  {
+   "name": "tt",
+   "weight": 0.15,
+   "group": "tt",
+   "rows": 12721,
+   "files": [
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/tt.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/tvt.npz"
+   ],
+   "fa": 0.3
+  },
+  {
+   "name": "rd",
+   "weight": 0.075,
+   "group": "rd",
+   "rows": 10421,
+   "files": [
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+   ],
+   "fa": 0.3
+  },
+  {
+   "name": "rpi",
+   "weight": 0.103757,
+   "group": "rp3",
+   "rows": 170387,
+   "files": [
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+   ],
+   "fa": 0.3
+  },
+  {
+   "name": "rpg",
+   "weight": 0.071243,
+   "group": "rp3",
+   "rows": 116994,
+   "files": [
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz"
+   ],
+   "fa": 0,
+   "refined": [
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+   ]
+  },
+  {
+   "name": "owi",
+   "weight": 0.058827,
+   "group": "own",
+   "rows": 20457,
+   "files": [
+    "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_ink.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_m4.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_m8.npz"
+   ],
+   "fa": 0.3
+  },
+  {
+   "name": "owg",
+   "weight": 0.016173,
+   "group": "own",
+   "rows": 5624,
+   "files": [
+    "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_grad.npz"
+   ],
+   "fa": 0,
+   "refined": [
+    "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_ref.npz"
+   ]
+  },
+  {
+   "name": "nti",
+   "weight": 0.013041,
+   "group": "nt",
+   "rows": 566,
+   "files": [
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+   ],
+   "fa": 0.3
+  },
+  {
+   "name": "ntg",
+   "weight": 0.011959,
+   "group": "nt",
+   "rows": 519,
+   "files": [
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz"
+   ],
+   "fa": 0,
+   "refined": [
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+    "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+   ]
+  }
+ ]
+}

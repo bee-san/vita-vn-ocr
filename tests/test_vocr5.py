@@ -220,3 +220,19 @@ def test_dialogue_tables_split_names_and_pair_arms():
     p = doc["pairs"]["A-B"]["console"]["dialogue"]["pooled"]
     assert p["candidate_errors"] == 2 and p["baseline_errors"] == 9 and p["units"] == 18
     assert p["delta"] == round(100 * (2 - 9) / 180, 6)
+
+
+def test_fine_tune_pin_is_complete():
+    pin = (ROOT / "eval" / "vocr5_pools.sha256").read_text(encoding="utf-8").splitlines()
+    pinned = {ln.split()[1]: ln.split()[0] for ln in pin if ln.strip()}
+    assert all(len(s) == 64 and int(s, 16) >= 0 for s in pinned.values())
+    src = json.loads((ROOT / "eval" / "vocr5_ft_sources.json").read_text(encoding="utf-8"))
+    assert abs(sum(e["weight"] for e in src["real"]) - 0.5) < 1e-5
+    files = [f for e in src["real"] for f in e["files"] + e.get("refined", [])]
+    assert set(files) == set(pinned)
+    for e in src["real"]:
+        assert (e["fa"] == 0.3) == (not e["name"].endswith("g"))     # fa on the ink sources only
+        assert bool(e.get("refined")) == e["name"].endswith("g")      # refined copies with the GRAD sources
+    rec = json.loads((ROOT / "eval" / "vocr5_pools_20261016.json").read_text(encoding="utf-8"))
+    assert rec["checks"]["reserve_check"]["verdict"] == "RESERVE_OK" and "CHECK_OK" in rec["checks"]["vocr5_pools_check"]
+    assert rec["realplus_snapshot"]["refined"]["rows_only"] is True

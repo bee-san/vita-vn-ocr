@@ -22,7 +22,7 @@ Stage A review and the reclaim tier to v2 (see "Versions" and "Version 3").
 | characters | 1,273,030 (eval's scoring key); median line 11 characters, mean 12.6 |
 | ink crops | 170,387: 100,915 Vita, 69,472 PSP (`realplus_train_ink_v3.npz`, 782 MB) |
 | GRAD crops | 116,994: 71,897 Vita, 45,097 PSP (`realplus_train_grad_v3.npz`, 645 MB) |
-| labels | 61,992 lines (61.2%) agreed by all four readings (auto); 39,358 reviewed by Claude, of which 37,329 were also read the same way by Codex gpt-6-luna (v3's agreement rule) and 2,029 are v2's reviewed lines |
+| labels | 61,992 lines (61.2%) agreed by all four readings (auto); 39,358 reviewed by Claude: 37,329 in v3's pass 1 under the agreement rule (30,837 with Codex gpt-6-luna reading the same text, 6,492 confirmed by a second, blind Claude look after Luna skipped or was unsure) and 2,029 from v2's review |
 | precision (v3) | independent transcription of 800 stratified lines: **742 agree** as measured (92.75%, Wilson 95% 90.7-94.4%); after third looks at the 58 disagreements, **786 labels right** (98.25%, 97.1-99.0%), 4 wrong, 10 unsettled (see "Version 3") |
 
 v3 reaches the 100k-line goal v2 fell short of: 101,350 distinct lines and 287,381 crops in all, against train2's
@@ -76,8 +76,12 @@ pass 1 b0001-b0017, pass 2, edge b0001-b0019 and the blind re-check. Everything 
 | v2's lines (of 43,228) | 42,067 |
 | new auto lines of the reclaim tier | 20,245 |
 | new auto lines whose withdrawn v2 edge check v3 completed | 1,709 |
-| new reviewed lines (v3 pass 1: Claude and Luna agree) | 37,329 |
+| new reviewed lines (v3 pass 1, the agreement rule) | 37,329 |
 | **total** | **101,350** |
+
+Of the 37,329 new reviewed lines, Luna read the same text as Claude on 30,837. On the other 6,492 Luna skipped or
+was unsure (cut 5,185, ui 1,296, unsure 8, bad 3), and a second, blind Claude look read Claude's text (rule 3
+below).
 
 v3 is not a strict superset of v2: 1,161 of v2's lines are not in it. Most of them, 1,150, are cut by the repeat
 caps, because new lines now share their labels: 1,052 labels already have 8 lines in v3 (the overall cap) and 98
@@ -602,7 +606,8 @@ These limits were written for v2. v3 changes four of them:
 - The edge check: v2's 2,093 withdrawn lines are now checked.
 - Precision: v3's check is an independent transcription, stratified over tiers, new and v2 lines, Vita and PSP,
   ink and GRAD.
-- Reviewers: every new v3 label also carries Codex gpt-6-luna's agreeing vote.
+- Reviewers: every new v3 label also had a Codex gpt-6-luna vote. Of the 37,329 in the pool, 30,837 had Luna read
+  the same text; on the other 6,492 Luna skipped or was unsure, and a second, blind Claude look confirmed them.
 
 The rest hold for v3 as well: hires-only crops (the reclaim tier's 12 PSP-resolution reads are excluded), text of
 every kind and not only dialogue, devnative's edge rule, and reviews by AI models, never a human.

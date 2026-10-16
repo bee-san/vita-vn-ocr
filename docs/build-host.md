@@ -22,8 +22,9 @@ included; the bare domain itself passes) or an EC2-internal DNS name, and when c
 make, CMake, workflow YAML) uses one of the usual ways to read the machine's network name: `platform.node()`/`uname()`,
 `socket.gethostname()`/`getfqdn()`, `os.uname()`, `gethostname()`, `/etc/hostname`, `$HOSTNAME`, `$(hostname)`,
 `uname -n`/`-a`, and similar. It is a guard against the usual forms, not a proof: code that assembles the name or the
-call at run time (string concatenation, `__import__`) passes, and so do spellings it does not list (an aliased import
-such as `import socket as s`, `/proc/sys/kernel/hostname`, `hostnamectl`, `uname -s -n`, CMake's `site_name()`).
+call at run time (string concatenation, `__import__`) passes, and so do spellings it does not list (an aliased module
+such as `import platform as p` then `p.node()`, `/proc/sys/kernel/hostname`, `hostnamectl`, `uname -s -n`, CMake's
+`site_name()`).
 It can also reject harmless text, such as a quoted `"hostname"` in code (a dict key, say), any `.nodename` attribute
 or an EC2-style `ip-` name in any file; the failure names the file and line. `tests/test_hostinfo.py` checks what
 each writer records.

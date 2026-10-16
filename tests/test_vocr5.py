@@ -198,3 +198,25 @@ def test_decisions_follow_the_rule():
     arm = VS.decide(proto, "Small", "arm", comps, n_boot=500)
     assert not arm["rule"]["no_component_entirely_above_zero"] and arm["adopted_arm"] == "P"
     assert abs(VS.score_of(comps, "v5p_S_seed1") - 10.0) < 1e-9      # 2 errors / 20 chars everywhere = 10 points
+
+
+# ---------------------------------------------------------------- eval/vocr5_dialogue.py on a toy report
+
+def test_dialogue_tables_split_names_and_pair_arms():
+    sys.path.insert(0, str(ROOT / "eval"))
+    import vocr5_dialogue as VD
+
+    def recs(errs, names=(0,)):
+        return [{"id": f"l{i}", "vn": f"v{i % 6}", "styles": ["name"] if i in names else [], "n": 10, "errors": e}
+                for i, e in enumerate(errs)]
+    a = {"vita-test": recs([5, 0, 1, 0, 0, 0, 0, 0, 0, 0]), "psp-test": recs([0, 1, 0, 0, 0, 0, 0, 0, 0, 0])}
+    b = {"vita-test": recs([5, 2, 2, 1, 0, 0, 0, 0, 0, 0]), "psp-test": recs([0, 2, 1, 1, 0, 0, 0, 0, 0, 0])}
+    report = {"shared": {"spec": {"bootstrap": {"reps": 500, "seed": 0, "min_clusters": 5}},
+                         "fixed_line": {"console": {"A": {"lines": a}, "B": {"lines": b}}}}}
+    doc = VD.tables(report, {}, [("A", "B")])
+    d = doc["arms"]["console"]["A"]["dialogue"]
+    assert d["vita-test"] == {"lines": 9, "chars": 90, "errors": 1, "exact": 8, "cer": round(100 / 90, 3)}
+    assert doc["arms"]["console"]["A"]["names"]["pooled"]["errors"] == 5          # the name lines only
+    p = doc["pairs"]["A-B"]["console"]["dialogue"]["pooled"]
+    assert p["candidate_errors"] == 2 and p["baseline_errors"] == 9 and p["units"] == 18
+    assert p["delta"] == round(100 * (2 - 9) / 180, 6)

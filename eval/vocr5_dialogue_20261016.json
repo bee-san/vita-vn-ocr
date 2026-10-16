@@ -86,6 +86,238 @@
       "exact": 371,
       "cer": 2.188
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 35,
+       "exact": 137,
+       "cer": 1.736
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 35,
+       "exact": 113,
+       "cer": 2.484
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 70,
+       "exact": 250,
+       "cer": 2.044
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 11,
+       "exact": 11,
+       "cer": 5.641
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 7,
+       "exact": 16,
+       "cer": 3.271
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 18,
+       "exact": 27,
+       "cer": 4.401
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 3,
+       "exact": 12,
+       "cer": 6.667
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 9,
+       "exact": 36,
+       "cer": 1.642
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 32,
+       "exact": 85,
+       "cer": 2.906
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 41,
+       "exact": 121,
+       "cer": 2.486
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 20,
+       "exact": 10,
+       "cer": 9.709
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 21,
+       "exact": 12,
+       "cer": 7.778
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 6,
+       "exact": 43,
+       "cer": 0.888
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 24,
+       "exact": 70,
+       "cer": 2.439
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 30,
+       "exact": 113,
+       "cer": 1.807
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 11,
+       "exact": 46,
+       "cer": 6.395
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 16,
+       "exact": 49,
+       "cer": 7.656
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 27,
+       "exact": 95,
+       "cer": 7.087
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 17,
+       "exact": 60,
+       "cer": 1.719
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 18,
+       "exact": 59,
+       "cer": 2.432
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 35,
+       "exact": 119,
+       "cer": 2.024
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 20,
+       "exact": 90,
+       "cer": 2.055
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 20,
+       "exact": 90,
+       "cer": 2.055
+      }
+     }
     }
    },
    "VOCR1": {
@@ -156,6 +388,238 @@
       "errors": 194,
       "exact": 323,
       "cer": 3.823
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 56,
+       "exact": 119,
+       "cer": 2.778
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 74,
+       "exact": 96,
+       "cer": 5.252
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 130,
+       "exact": 215,
+       "cer": 3.796
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 13,
+       "exact": 8,
+       "cer": 6.667
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 13,
+       "exact": 12,
+       "cer": 6.075
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 26,
+       "exact": 20,
+       "cer": 6.357
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 1,
+       "exact": 6,
+       "cer": 4.167
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 4,
+       "exact": 11,
+       "cer": 8.889
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 5,
+       "exact": 39,
+       "cer": 0.912
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 59,
+       "exact": 69,
+       "cer": 5.359
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 64,
+       "exact": 108,
+       "cer": 3.881
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 3,
+       "exact": 2,
+       "cer": 4.688
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 48,
+       "exact": 1,
+       "cer": 23.301
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 51,
+       "exact": 3,
+       "cer": 18.889
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 10,
+       "exact": 39,
+       "cer": 1.479
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 46,
+       "exact": 58,
+       "cer": 4.675
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 56,
+       "exact": 97,
+       "cer": 3.373
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 12,
+       "exact": 42,
+       "cer": 6.977
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 37,
+       "exact": 39,
+       "cer": 17.703
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 49,
+       "exact": 81,
+       "cer": 12.861
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 8,
+       "exact": 1,
+       "cer": 13.559
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 8,
+       "exact": 1,
+       "cer": 13.559
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 22,
+       "exact": 55,
+       "cer": 2.224
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 30,
+       "exact": 54,
+       "cer": 4.054
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 52,
+       "exact": 109,
+       "cer": 3.008
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 35,
+       "exact": 78,
+       "cer": 3.597
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 35,
+       "exact": 78,
+       "cer": 3.597
+      }
      }
     }
    },
@@ -228,6 +692,238 @@
       "exact": 332,
       "cer": 3.508
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 53,
+       "exact": 121,
+       "cer": 2.629
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 67,
+       "exact": 99,
+       "cer": 4.755
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 120,
+       "exact": 220,
+       "cer": 3.504
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 13,
+       "exact": 9,
+       "cer": 6.667
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 12,
+       "exact": 13,
+       "cer": 5.607
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 25,
+       "exact": 22,
+       "cer": 6.112
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 3,
+       "exact": 12,
+       "cer": 6.667
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 6,
+       "exact": 38,
+       "cer": 1.095
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 52,
+       "exact": 74,
+       "cer": 4.723
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 58,
+       "exact": 112,
+       "cer": 3.517
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 3,
+       "exact": 2,
+       "cer": 4.688
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 46,
+       "exact": 1,
+       "cer": 22.33
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 49,
+       "exact": 3,
+       "cer": 18.148
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 10,
+       "exact": 38,
+       "cer": 1.479
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 43,
+       "exact": 59,
+       "cer": 4.37
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 53,
+       "exact": 97,
+       "cer": 3.193
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 13,
+       "exact": 41,
+       "cer": 7.558
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 34,
+       "exact": 40,
+       "cer": 16.268
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 47,
+       "exact": 81,
+       "cer": 12.336
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 10,
+       "exact": 1,
+       "cer": 16.949
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 10,
+       "exact": 1,
+       "cer": 16.949
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 21,
+       "exact": 57,
+       "cer": 2.123
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 27,
+       "exact": 58,
+       "cer": 3.649
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 48,
+       "exact": 115,
+       "cer": 2.776
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 32,
+       "exact": 80,
+       "cer": 3.289
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 32,
+       "exact": 80,
+       "cer": 3.289
+      }
+     }
     }
    },
    "VOCR3_FL10": {
@@ -298,6 +994,238 @@
       "errors": 108,
       "exact": 379,
       "cer": 2.128
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 32,
+       "exact": 138,
+       "cer": 1.587
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 45,
+       "exact": 113,
+       "cer": 3.194
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 77,
+       "exact": 251,
+       "cer": 2.248
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 11,
+       "exact": 13,
+       "cer": 5.641
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 5,
+       "exact": 16,
+       "cer": 2.336
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 16,
+       "exact": 29,
+       "cer": 3.912
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 3,
+       "exact": 12,
+       "cer": 6.667
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 5,
+       "exact": 38,
+       "cer": 0.912
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 26,
+       "exact": 90,
+       "cer": 2.361
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 31,
+       "exact": 128,
+       "cer": 1.88
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 34,
+       "exact": 6,
+       "cer": 16.505
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 35,
+       "exact": 8,
+       "cer": 12.963
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 3,
+       "exact": 44,
+       "cer": 0.444
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 20,
+       "exact": 74,
+       "cer": 2.033
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 23,
+       "exact": 118,
+       "cer": 1.386
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 8,
+       "exact": 45,
+       "cer": 4.651
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 24,
+       "exact": 47,
+       "cer": 11.483
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 32,
+       "exact": 92,
+       "cer": 8.399
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 18,
+       "exact": 61,
+       "cer": 1.82
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 13,
+       "exact": 61,
+       "cer": 1.757
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 31,
+       "exact": 122,
+       "cer": 1.793
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 94,
+       "cer": 1.439
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 94,
+       "cer": 1.439
+      }
      }
     }
    },
@@ -370,6 +1298,238 @@
       "exact": 386,
       "cer": 1.734
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 26,
+       "exact": 143,
+       "cer": 1.29
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 31,
+       "exact": 114,
+       "cer": 2.2
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 57,
+       "exact": 257,
+       "cer": 1.664
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 8,
+       "exact": 15,
+       "cer": 4.103
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 3,
+       "exact": 18,
+       "cer": 1.402
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 11,
+       "exact": 33,
+       "cer": 2.689
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 2,
+       "exact": 41,
+       "cer": 0.365
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 29,
+       "exact": 88,
+       "cer": 2.634
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 31,
+       "exact": 129,
+       "cer": 1.88
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 1,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 21,
+       "exact": 8,
+       "cer": 10.194
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 23,
+       "exact": 9,
+       "cer": 8.519
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 4,
+       "exact": 43,
+       "cer": 0.592
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 24,
+       "exact": 69,
+       "cer": 2.439
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 28,
+       "exact": 112,
+       "cer": 1.687
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 4,
+       "exact": 49,
+       "cer": 2.326
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 19,
+       "exact": 48,
+       "cer": 9.091
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 23,
+       "exact": 97,
+       "cer": 6.037
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 13,
+       "exact": 65,
+       "cer": 1.314
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 10,
+       "exact": 64,
+       "cer": 1.351
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 23,
+       "exact": 129,
+       "cer": 1.33
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 23,
+       "exact": 88,
+       "cer": 2.364
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 23,
+       "exact": 88,
+       "cer": 2.364
+      }
+     }
     }
    },
    "VOCR3_W20": {
@@ -440,6 +1600,238 @@
       "errors": 82,
       "exact": 392,
       "cer": 1.616
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 22,
+       "exact": 143,
+       "cer": 1.091
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 30,
+       "exact": 119,
+       "cer": 2.129
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 52,
+       "exact": 262,
+       "cer": 1.518
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 5,
+       "exact": 15,
+       "cer": 2.564
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 6,
+       "exact": 17,
+       "cer": 2.804
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 11,
+       "exact": 32,
+       "cer": 2.689
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 5,
+       "exact": 38,
+       "cer": 0.912
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 25,
+       "exact": 92,
+       "cer": 2.271
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 30,
+       "exact": 130,
+       "cer": 1.819
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 23,
+       "exact": 11,
+       "cer": 11.165
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 24,
+       "exact": 13,
+       "cer": 8.889
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 3,
+       "exact": 44,
+       "cer": 0.444
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 13,
+       "exact": 78,
+       "cer": 1.321
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 16,
+       "exact": 122,
+       "cer": 0.964
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 5,
+       "exact": 48,
+       "cer": 2.907
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 16,
+       "exact": 51,
+       "cer": 7.656
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 21,
+       "exact": 99,
+       "cer": 5.512
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 10,
+       "exact": 65,
+       "cer": 1.011
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 13,
+       "exact": 63,
+       "cer": 1.757
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 23,
+       "exact": 128,
+       "cer": 1.33
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 95,
+       "cer": 1.439
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 95,
+       "cer": 1.439
+      }
      }
     }
    },
@@ -512,6 +1904,238 @@
       "exact": 376,
       "cer": 2.148
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 30,
+       "exact": 139,
+       "cer": 1.488
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 44,
+       "exact": 111,
+       "cer": 3.123
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 74,
+       "exact": 250,
+       "cer": 2.161
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 12,
+       "exact": 11,
+       "cer": 6.154
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 9,
+       "exact": 16,
+       "cer": 4.206
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 21,
+       "exact": 27,
+       "cer": 5.134
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 3,
+       "exact": 12,
+       "cer": 6.667
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 7,
+       "exact": 37,
+       "cer": 1.277
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 28,
+       "exact": 89,
+       "cer": 2.543
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 35,
+       "exact": 126,
+       "cer": 2.122
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 33,
+       "exact": 6,
+       "cer": 16.019
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 35,
+       "exact": 8,
+       "cer": 12.963
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 3,
+       "exact": 44,
+       "cer": 0.444
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 22,
+       "exact": 72,
+       "cer": 2.236
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 25,
+       "exact": 116,
+       "cer": 1.506
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 7,
+       "exact": 46,
+       "cer": 4.07
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 19,
+       "exact": 49,
+       "cer": 9.091
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 26,
+       "exact": 95,
+       "cer": 6.824
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 17,
+       "exact": 61,
+       "cer": 1.719
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 18,
+       "exact": 60,
+       "cer": 2.432
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 35,
+       "exact": 121,
+       "cer": 2.024
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 20,
+       "exact": 90,
+       "cer": 2.055
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 20,
+       "exact": 90,
+       "cer": 2.055
+      }
+     }
     }
    },
    "VOCR4_H15": {
@@ -582,6 +2206,238 @@
       "errors": 93,
       "exact": 386,
       "cer": 1.833
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 21,
+       "exact": 148,
+       "cer": 1.042
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 36,
+       "exact": 115,
+       "cer": 2.555
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 57,
+       "exact": 263,
+       "cer": 1.664
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 7,
+       "exact": 16,
+       "cer": 3.59
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 5,
+       "exact": 18,
+       "cer": 2.336
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 12,
+       "exact": 34,
+       "cer": 2.934
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 6,
+       "exact": 37,
+       "cer": 1.095
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 30,
+       "exact": 86,
+       "cer": 2.725
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 36,
+       "exact": 123,
+       "cer": 2.183
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 26,
+       "exact": 9,
+       "cer": 12.621
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 27,
+       "exact": 11,
+       "cer": 10.0
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 4,
+       "exact": 44,
+       "cer": 0.592
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 24,
+       "exact": 69,
+       "cer": 2.439
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 28,
+       "exact": 113,
+       "cer": 1.687
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 3,
+       "exact": 50,
+       "cer": 1.744
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 21,
+       "exact": 47,
+       "cer": 10.048
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 24,
+       "exact": 97,
+       "cer": 6.299
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.39
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.39
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 9,
+       "exact": 69,
+       "cer": 0.91
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 13,
+       "exact": 62,
+       "cer": 1.757
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 22,
+       "exact": 131,
+       "cer": 1.272
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 23,
+       "exact": 87,
+       "cer": 2.364
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 23,
+       "exact": 87,
+       "cer": 2.364
+      }
      }
     }
    },
@@ -654,6 +2510,238 @@
       "exact": 400,
       "cer": 1.399
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 17,
+       "exact": 149,
+       "cer": 0.843
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 30,
+       "exact": 118,
+       "cer": 2.129
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 47,
+       "exact": 267,
+       "cer": 1.372
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 4,
+       "exact": 16,
+       "cer": 2.051
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 3,
+       "exact": 18,
+       "cer": 1.402
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 7,
+       "exact": 34,
+       "cer": 1.711
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 39,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 20,
+       "exact": 94,
+       "cer": 1.817
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 24,
+       "exact": 133,
+       "cer": 1.455
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 24,
+       "exact": 9,
+       "cer": 11.65
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 26,
+       "exact": 11,
+       "cer": 9.63
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 3,
+       "exact": 44,
+       "cer": 0.444
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 15,
+       "exact": 77,
+       "cer": 1.524
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 18,
+       "exact": 121,
+       "cer": 1.084
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 2,
+       "exact": 51,
+       "cer": 1.163
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 14,
+       "exact": 52,
+       "cer": 6.699
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 16,
+       "exact": 103,
+       "cer": 4.199
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 5,
+       "exact": 70,
+       "cer": 0.506
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 13,
+       "exact": 62,
+       "cer": 1.757
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 18,
+       "exact": 132,
+       "cer": 1.041
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 94,
+       "cer": 1.439
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 94,
+       "cer": 1.439
+      }
+     }
     }
    },
    "VOCR5_L": {
@@ -724,6 +2812,238 @@
       "errors": 47,
       "exact": 412,
       "cer": 0.926
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 13,
+       "exact": 152,
+       "cer": 0.645
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 12,
+       "exact": 126,
+       "cer": 0.852
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 25,
+       "exact": 278,
+       "cer": 0.73
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 5,
+       "exact": 15,
+       "cer": 2.564
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 3,
+       "exact": 18,
+       "cer": 1.402
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 8,
+       "exact": 33,
+       "cer": 1.956
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 3,
+       "exact": 40,
+       "cer": 0.547
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 19,
+       "exact": 94,
+       "cer": 1.726
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 22,
+       "exact": 134,
+       "cer": 1.334
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 10,
+       "exact": 13,
+       "cer": 4.854
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 12,
+       "exact": 15,
+       "cer": 4.444
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 0,
+       "exact": 47,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 16,
+       "exact": 76,
+       "cer": 1.626
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 16,
+       "exact": 123,
+       "cer": 0.964
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 2,
+       "exact": 51,
+       "cer": 1.163
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 8,
+       "exact": 56,
+       "cer": 3.828
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 10,
+       "exact": 107,
+       "cer": 2.625
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 6,
+       "exact": 69,
+       "cer": 0.607
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 7,
+       "exact": 65,
+       "cer": 0.946
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 13,
+       "exact": 134,
+       "cer": 0.752
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 12,
+       "exact": 95,
+       "cer": 1.233
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 12,
+       "exact": 95,
+       "cer": 1.233
+      }
      }
     }
    },
@@ -796,6 +3116,238 @@
       "exact": 404,
       "cer": 1.301
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 21,
+       "exact": 145,
+       "cer": 1.042
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 24,
+       "exact": 122,
+       "cer": 1.703
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 45,
+       "exact": 267,
+       "cer": 1.314
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 5,
+       "exact": 14,
+       "cer": 2.564
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 3,
+       "exact": 18,
+       "cer": 1.402
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 8,
+       "exact": 32,
+       "cer": 1.956
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 3,
+       "exact": 40,
+       "cer": 0.547
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 18,
+       "exact": 97,
+       "cer": 1.635
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 21,
+       "exact": 137,
+       "cer": 1.273
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 1,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 19,
+       "exact": 12,
+       "cer": 9.223
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 21,
+       "exact": 13,
+       "cer": 7.778
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 2,
+       "exact": 45,
+       "cer": 0.296
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 13,
+       "exact": 79,
+       "cer": 1.321
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 15,
+       "exact": 124,
+       "cer": 0.904
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 1,
+       "exact": 52,
+       "cer": 0.581
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 12,
+       "exact": 55,
+       "cer": 5.742
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 13,
+       "exact": 107,
+       "cer": 3.412
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 9,
+       "exact": 65,
+       "cer": 0.91
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 9,
+       "exact": 64,
+       "cer": 1.216
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 18,
+       "exact": 129,
+       "cer": 1.041
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 96,
+       "cer": 1.439
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 96,
+       "cer": 1.439
+      }
+     }
     }
    },
    "VOCR5_S": {
@@ -866,6 +3418,238 @@
       "errors": 93,
       "exact": 391,
       "cer": 1.833
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 25,
+       "exact": 145,
+       "cer": 1.24
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 37,
+       "exact": 115,
+       "cer": 2.626
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 62,
+       "exact": 260,
+       "cer": 1.81
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 6,
+       "exact": 15,
+       "cer": 3.077
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 5,
+       "exact": 18,
+       "cer": 2.336
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 11,
+       "exact": 33,
+       "cer": 2.689
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 3,
+       "exact": 41,
+       "cer": 0.547
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 28,
+       "exact": 90,
+       "cer": 2.543
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 31,
+       "exact": 131,
+       "cer": 1.88
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 28,
+       "exact": 7,
+       "cer": 13.592
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 29,
+       "exact": 9,
+       "cer": 10.741
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 2,
+       "exact": 45,
+       "cer": 0.296
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 21,
+       "exact": 73,
+       "cer": 2.134
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 23,
+       "exact": 118,
+       "cer": 1.386
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 4,
+       "exact": 50,
+       "cer": 2.326
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 14,
+       "exact": 52,
+       "cer": 6.699
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 18,
+       "exact": 102,
+       "cer": 4.724
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 1,
+       "cer": 6.78
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 1,
+       "cer": 6.78
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 10,
+       "exact": 67,
+       "cer": 1.011
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 12,
+       "exact": 63,
+       "cer": 1.622
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 22,
+       "exact": 130,
+       "cer": 1.272
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 22,
+       "exact": 90,
+       "cer": 2.261
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 22,
+       "exact": 90,
+       "cer": 2.261
+      }
      }
     }
    },
@@ -938,6 +3722,238 @@
       "exact": 372,
       "cer": 2.207
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 36,
+       "exact": 133,
+       "cer": 1.786
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 43,
+       "exact": 111,
+       "cer": 3.052
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 79,
+       "exact": 244,
+       "cer": 2.307
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 13,
+       "exact": 9,
+       "cer": 6.667
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 8,
+       "exact": 15,
+       "cer": 3.738
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 21,
+       "exact": 24,
+       "cer": 5.134
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 3,
+       "exact": 12,
+       "cer": 6.667
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 40,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 29,
+       "exact": 88,
+       "cer": 2.634
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 33,
+       "exact": 128,
+       "cer": 2.001
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 0,
+       "exact": 3,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 30,
+       "exact": 7,
+       "cer": 14.563
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 30,
+       "exact": 10,
+       "cer": 11.111
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 5,
+       "exact": 43,
+       "cer": 0.74
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 23,
+       "exact": 71,
+       "cer": 2.337
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 28,
+       "exact": 114,
+       "cer": 1.687
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 9,
+       "exact": 44,
+       "cer": 5.233
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 19,
+       "exact": 51,
+       "cer": 9.091
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 28,
+       "exact": 95,
+       "cer": 7.349
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 5,
+       "exact": 1,
+       "cer": 8.475
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 5,
+       "exact": 1,
+       "cer": 8.475
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 21,
+       "exact": 56,
+       "cer": 2.123
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 23,
+       "exact": 57,
+       "cer": 3.108
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 44,
+       "exact": 113,
+       "cer": 2.545
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 16,
+       "exact": 93,
+       "cer": 1.644
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 16,
+       "exact": 93,
+       "cer": 1.644
+      }
+     }
     }
    },
    "VOCR4_FL10+LM": {
@@ -1008,6 +4024,238 @@
       "errors": 94,
       "exact": 390,
       "cer": 1.853
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 30,
+       "exact": 142,
+       "cer": 1.488
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 34,
+       "exact": 116,
+       "cer": 2.413
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 64,
+       "exact": 258,
+       "cer": 1.869
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 14,
+       "exact": 12,
+       "cer": 7.179
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 7,
+       "exact": 16,
+       "cer": 3.271
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 21,
+       "exact": 28,
+       "cer": 5.134
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 1,
+       "exact": 6,
+       "cer": 4.167
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 4,
+       "exact": 11,
+       "cer": 8.889
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 11,
+       "exact": 35,
+       "cer": 2.007
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 19,
+       "exact": 97,
+       "cer": 1.726
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 30,
+       "exact": 132,
+       "cer": 1.819
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 26,
+       "exact": 9,
+       "cer": 12.621
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 28,
+       "exact": 11,
+       "cer": 10.37
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 2,
+       "exact": 45,
+       "cer": 0.296
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 16,
+       "exact": 77,
+       "cer": 1.626
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 18,
+       "exact": 122,
+       "cer": 1.084
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 10,
+       "exact": 45,
+       "cer": 5.814
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 21,
+       "exact": 47,
+       "cer": 10.048
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 31,
+       "exact": 92,
+       "cer": 8.136
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 18,
+       "exact": 63,
+       "cer": 1.82
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 13,
+       "exact": 62,
+       "cer": 1.757
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 31,
+       "exact": 125,
+       "cer": 1.793
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 12,
+       "exact": 97,
+       "cer": 1.233
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 12,
+       "exact": 97,
+       "cer": 1.233
+      }
      }
     }
    },
@@ -1080,6 +4328,238 @@
       "exact": 401,
       "cer": 1.458
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 22,
+       "exact": 148,
+       "cer": 1.091
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 30,
+       "exact": 118,
+       "cer": 2.129
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 52,
+       "exact": 266,
+       "cer": 1.518
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 9,
+       "exact": 15,
+       "cer": 4.615
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 3,
+       "exact": 19,
+       "cer": 1.402
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 12,
+       "exact": 34,
+       "cer": 2.934
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 39,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 18,
+       "exact": 96,
+       "cer": 1.635
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 22,
+       "exact": 135,
+       "cer": 1.334
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 21,
+       "exact": 12,
+       "cer": 10.194
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 22,
+       "exact": 14,
+       "cer": 8.148
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 4,
+       "exact": 44,
+       "cer": 0.592
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 14,
+       "exact": 78,
+       "cer": 1.423
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 18,
+       "exact": 122,
+       "cer": 1.084
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 2,
+       "exact": 51,
+       "cer": 1.163
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 23,
+       "exact": 46,
+       "cer": 11.005
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 25,
+       "exact": 97,
+       "cer": 6.562
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 12,
+       "exact": 67,
+       "cer": 1.213
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 11,
+       "exact": 64,
+       "cer": 1.486
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 23,
+       "exact": 131,
+       "cer": 1.33
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 94,
+       "cer": 1.439
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 14,
+       "exact": 94,
+       "cer": 1.439
+      }
+     }
     }
    },
    "VOCR4_W20+LM": {
@@ -1150,6 +4630,238 @@
       "errors": 58,
       "exact": 413,
       "cer": 1.143
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 19,
+       "exact": 150,
+       "cer": 0.942
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 24,
+       "exact": 121,
+       "cer": 1.703
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 43,
+       "exact": 271,
+       "cer": 1.255
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 7,
+       "exact": 15,
+       "cer": 3.59
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 3,
+       "exact": 19,
+       "cer": 1.402
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 10,
+       "exact": 34,
+       "cer": 2.445
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 2,
+       "exact": 41,
+       "cer": 0.365
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 13,
+       "exact": 101,
+       "cer": 1.181
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 15,
+       "exact": 142,
+       "cer": 0.91
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 18,
+       "exact": 11,
+       "cer": 8.738
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 20,
+       "exact": 13,
+       "cer": 7.407
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 5,
+       "exact": 43,
+       "cer": 0.74
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 11,
+       "exact": 81,
+       "cer": 1.118
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 16,
+       "exact": 124,
+       "cer": 0.964
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 2,
+       "exact": 51,
+       "cer": 1.163
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 13,
+       "exact": 53,
+       "cer": 6.22
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 15,
+       "exact": 104,
+       "cer": 3.937
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.39
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.39
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 8,
+       "exact": 69,
+       "cer": 0.809
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 7,
+       "exact": 65,
+       "cer": 0.946
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 15,
+       "exact": 134,
+       "cer": 0.868
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 11,
+       "exact": 98,
+       "cer": 1.131
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 11,
+       "exact": 98,
+       "cer": 1.131
+      }
      }
     }
    },
@@ -1222,6 +4934,238 @@
       "exact": 404,
       "cer": 1.38
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 24,
+       "exact": 146,
+       "cer": 1.19
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 26,
+       "exact": 120,
+       "cer": 1.845
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 50,
+       "exact": 266,
+       "cer": 1.46
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 7,
+       "exact": 16,
+       "cer": 3.59
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 3,
+       "exact": 19,
+       "cer": 1.402
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 10,
+       "exact": 35,
+       "cer": 2.445
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 40,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 16,
+       "exact": 98,
+       "cer": 1.453
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 20,
+       "exact": 138,
+       "cer": 1.213
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 20,
+       "exact": 11,
+       "cer": 9.709
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 21,
+       "exact": 13,
+       "cer": 7.778
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 5,
+       "exact": 43,
+       "cer": 0.74
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 11,
+       "exact": 80,
+       "cer": 1.118
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 16,
+       "exact": 123,
+       "cer": 0.964
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 3,
+       "exact": 51,
+       "cer": 1.744
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 13,
+       "exact": 52,
+       "cer": 6.22
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 16,
+       "exact": 103,
+       "cer": 4.199
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 11,
+       "exact": 67,
+       "cer": 1.112
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 8,
+       "exact": 65,
+       "cer": 1.081
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 19,
+       "exact": 132,
+       "cer": 1.099
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 11,
+       "exact": 97,
+       "cer": 1.131
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 11,
+       "exact": 97,
+       "cer": 1.131
+      }
+     }
     }
    },
    "VOCR5_N+LM": {
@@ -1293,6 +5237,238 @@
       "exact": 420,
       "cer": 0.847
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 18,
+       "exact": 148,
+       "cer": 0.893
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 16,
+       "exact": 125,
+       "cer": 1.136
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 34,
+       "exact": 273,
+       "cer": 0.993
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 6,
+       "exact": 15,
+       "cer": 3.077
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 4,
+       "exact": 18,
+       "cer": 1.869
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 10,
+       "exact": 33,
+       "cer": 2.445
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 2,
+       "exact": 41,
+       "cer": 0.365
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 7,
+       "exact": 106,
+       "cer": 0.636
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 9,
+       "exact": 147,
+       "cer": 0.546
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 1,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 13,
+       "exact": 13,
+       "cer": 6.311
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 15,
+       "exact": 14,
+       "cer": 5.556
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 2,
+       "exact": 45,
+       "cer": 0.296
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 5,
+       "exact": 86,
+       "cer": 0.508
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 7,
+       "exact": 131,
+       "cer": 0.422
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 1,
+       "exact": 52,
+       "cer": 0.581
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 8,
+       "exact": 57,
+       "cer": 3.828
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 9,
+       "exact": 109,
+       "cer": 2.362
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 10,
+       "exact": 66,
+       "cer": 1.011
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 6,
+       "exact": 66,
+       "cer": 0.811
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 16,
+       "exact": 132,
+       "cer": 0.925
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 3,
+       "exact": 105,
+       "cer": 0.308
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 3,
+       "exact": 105,
+       "cer": 0.308
+      }
+     }
     }
    },
    "VOCR5_L+LM": {
@@ -1363,6 +5539,238 @@
       "errors": 35,
       "exact": 424,
       "cer": 0.69
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 12,
+       "exact": 153,
+       "cer": 0.595
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 8,
+       "exact": 129,
+       "cer": 0.568
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 20,
+       "exact": 282,
+       "cer": 0.584
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 4,
+       "exact": 16,
+       "cer": 2.051
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 4,
+       "exact": 18,
+       "cer": 1.869
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 8,
+       "exact": 34,
+       "cer": 1.956
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 3,
+       "exact": 40,
+       "cer": 0.547
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 12,
+       "exact": 102,
+       "cer": 1.09
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 15,
+       "exact": 142,
+       "cer": 0.91
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 7,
+       "exact": 15,
+       "cer": 3.398
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 9,
+       "exact": 17,
+       "cer": 3.333
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 1,
+       "exact": 46,
+       "cer": 0.148
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 10,
+       "exact": 82,
+       "cer": 1.016
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 11,
+       "exact": 128,
+       "cer": 0.663
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 2,
+       "exact": 51,
+       "cer": 1.163
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 8,
+       "exact": 56,
+       "cer": 3.828
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 10,
+       "exact": 107,
+       "cer": 2.625
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 6,
+       "exact": 69,
+       "cer": 0.607
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 4,
+       "exact": 67,
+       "cer": 0.541
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 10,
+       "exact": 136,
+       "cer": 0.578
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 5,
+       "exact": 103,
+       "cer": 0.514
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 5,
+       "exact": 103,
+       "cer": 0.514
+      }
      }
     }
    }
@@ -1437,6 +5845,238 @@
       "exact": 368,
       "cer": 2.286
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 35,
+       "exact": 138,
+       "cer": 1.736
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 35,
+       "exact": 113,
+       "cer": 2.484
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 70,
+       "exact": 251,
+       "cer": 2.044
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 11,
+       "exact": 12,
+       "cer": 5.641
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 6,
+       "exact": 17,
+       "cer": 2.804
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 17,
+       "exact": 29,
+       "cer": 4.156
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 4,
+       "exact": 5,
+       "cer": 19.048
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 4,
+       "exact": 12,
+       "cer": 8.889
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 11,
+       "exact": 35,
+       "cer": 2.007
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 35,
+       "exact": 82,
+       "cer": 3.179
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 46,
+       "exact": 117,
+       "cer": 2.79
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 20,
+       "exact": 10,
+       "cer": 9.709
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 21,
+       "exact": 12,
+       "cer": 7.778
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 6,
+       "exact": 43,
+       "cer": 0.888
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 29,
+       "exact": 66,
+       "cer": 2.947
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 35,
+       "exact": 109,
+       "cer": 2.108
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 12,
+       "exact": 46,
+       "cer": 6.977
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 17,
+       "exact": 49,
+       "cer": 8.134
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 29,
+       "exact": 95,
+       "cer": 7.612
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 17,
+       "exact": 61,
+       "cer": 1.719
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 18,
+       "exact": 59,
+       "cer": 2.432
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 35,
+       "exact": 120,
+       "cer": 2.024
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 20,
+       "exact": 90,
+       "cer": 2.055
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 20,
+       "exact": 90,
+       "cer": 2.055
+      }
+     }
     }
    },
    "VOCR1": {
@@ -1507,6 +6147,238 @@
       "errors": 189,
       "exact": 331,
       "cer": 3.725
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 55,
+       "exact": 120,
+       "cer": 2.728
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 76,
+       "exact": 95,
+       "cer": 5.394
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 131,
+       "exact": 215,
+       "cer": 3.825
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 12,
+       "exact": 9,
+       "cer": 6.154
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 12,
+       "exact": 14,
+       "cer": 5.607
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 24,
+       "exact": 23,
+       "cer": 5.868
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 3,
+       "exact": 12,
+       "cer": 6.667
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 40,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 54,
+       "exact": 76,
+       "cer": 4.905
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 58,
+       "exact": 116,
+       "cer": 3.517
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 3,
+       "exact": 2,
+       "cer": 4.688
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 48,
+       "exact": 1,
+       "cer": 23.301
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 51,
+       "exact": 3,
+       "cer": 18.889
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 10,
+       "exact": 39,
+       "cer": 1.479
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 45,
+       "exact": 59,
+       "cer": 4.573
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 55,
+       "exact": 98,
+       "cer": 3.313
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 12,
+       "exact": 42,
+       "cer": 6.977
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 35,
+       "exact": 40,
+       "cer": 16.746
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 47,
+       "exact": 82,
+       "cer": 12.336
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 8,
+       "exact": 1,
+       "cer": 13.559
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 8,
+       "exact": 1,
+       "cer": 13.559
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 21,
+       "exact": 56,
+       "cer": 2.123
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 32,
+       "exact": 53,
+       "cer": 4.324
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 53,
+       "exact": 109,
+       "cer": 3.065
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 31,
+       "exact": 84,
+       "cer": 3.186
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 31,
+       "exact": 84,
+       "cer": 3.186
+      }
      }
     }
    },
@@ -1579,6 +6451,238 @@
       "exact": 336,
       "cer": 3.488
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 53,
+       "exact": 121,
+       "cer": 2.629
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 68,
+       "exact": 98,
+       "cer": 4.826
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 121,
+       "exact": 219,
+       "cer": 3.533
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 13,
+       "exact": 9,
+       "cer": 6.667
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 11,
+       "exact": 14,
+       "cer": 5.14
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 24,
+       "exact": 23,
+       "cer": 5.868
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 3,
+       "exact": 12,
+       "cer": 6.667
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 5,
+       "exact": 39,
+       "cer": 0.912
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 51,
+       "exact": 78,
+       "cer": 4.632
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 56,
+       "exact": 117,
+       "cer": 3.396
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 3,
+       "exact": 2,
+       "cer": 4.688
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 46,
+       "exact": 1,
+       "cer": 22.33
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 49,
+       "exact": 3,
+       "cer": 18.148
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 10,
+       "exact": 38,
+       "cer": 1.479
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 44,
+       "exact": 59,
+       "cer": 4.472
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 54,
+       "exact": 97,
+       "cer": 3.253
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 13,
+       "exact": 41,
+       "cer": 7.558
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 34,
+       "exact": 40,
+       "cer": 16.268
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 47,
+       "exact": 81,
+       "cer": 12.336
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 10,
+       "exact": 1,
+       "cer": 16.949
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 10,
+       "exact": 1,
+       "cer": 16.949
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 21,
+       "exact": 57,
+       "cer": 2.123
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 28,
+       "exact": 57,
+       "cer": 3.784
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 49,
+       "exact": 114,
+       "cer": 2.834
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 28,
+       "exact": 84,
+       "cer": 2.878
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 28,
+       "exact": 84,
+       "cer": 2.878
+      }
+     }
     }
    },
    "VOCR3_FL10": {
@@ -1649,6 +6753,238 @@
       "errors": 109,
       "exact": 378,
       "cer": 2.148
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 32,
+       "exact": 138,
+       "cer": 1.587
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 45,
+       "exact": 113,
+       "cer": 3.194
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 77,
+       "exact": 251,
+       "cer": 2.248
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 11,
+       "exact": 13,
+       "cer": 5.641
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 5,
+       "exact": 16,
+       "cer": 2.336
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 16,
+       "exact": 29,
+       "cer": 3.912
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 3,
+       "exact": 12,
+       "cer": 6.667
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 39,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 28,
+       "exact": 88,
+       "cer": 2.543
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 32,
+       "exact": 127,
+       "cer": 1.941
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 34,
+       "exact": 6,
+       "cer": 16.505
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 35,
+       "exact": 8,
+       "cer": 12.963
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 3,
+       "exact": 44,
+       "cer": 0.444
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 22,
+       "exact": 71,
+       "cer": 2.236
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 25,
+       "exact": 115,
+       "cer": 1.506
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 7,
+       "exact": 46,
+       "cer": 4.07
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 23,
+       "exact": 47,
+       "cer": 11.005
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 30,
+       "exact": 93,
+       "cer": 7.874
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 18,
+       "exact": 61,
+       "cer": 1.82
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 13,
+       "exact": 61,
+       "cer": 1.757
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 31,
+       "exact": 122,
+       "cer": 1.793
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 16,
+       "exact": 93,
+       "cer": 1.644
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 16,
+       "exact": 93,
+       "cer": 1.644
+      }
      }
     }
    },
@@ -1721,6 +7057,238 @@
       "exact": 386,
       "cer": 1.734
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 26,
+       "exact": 143,
+       "cer": 1.29
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 32,
+       "exact": 113,
+       "cer": 2.271
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 58,
+       "exact": 256,
+       "cer": 1.693
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 8,
+       "exact": 15,
+       "cer": 4.103
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 4,
+       "exact": 17,
+       "cer": 1.869
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 12,
+       "exact": 32,
+       "cer": 2.934
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 2,
+       "exact": 41,
+       "cer": 0.365
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 28,
+       "exact": 89,
+       "cer": 2.543
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 30,
+       "exact": 130,
+       "cer": 1.819
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 1,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 22,
+       "exact": 7,
+       "cer": 10.68
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 24,
+       "exact": 8,
+       "cer": 8.889
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 4,
+       "exact": 43,
+       "cer": 0.592
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 23,
+       "exact": 71,
+       "cer": 2.337
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 27,
+       "exact": 114,
+       "cer": 1.627
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 4,
+       "exact": 49,
+       "cer": 2.326
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 20,
+       "exact": 48,
+       "cer": 9.569
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 24,
+       "exact": 97,
+       "cer": 6.299
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 13,
+       "exact": 65,
+       "cer": 1.314
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 11,
+       "exact": 63,
+       "cer": 1.486
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 24,
+       "exact": 128,
+       "cer": 1.388
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 20,
+       "exact": 90,
+       "cer": 2.055
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 20,
+       "exact": 90,
+       "cer": 2.055
+      }
+     }
     }
    },
    "VOCR3_W20": {
@@ -1791,6 +7359,238 @@
       "errors": 80,
       "exact": 394,
       "cer": 1.577
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 22,
+       "exact": 143,
+       "cer": 1.091
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 30,
+       "exact": 119,
+       "cer": 2.129
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 52,
+       "exact": 262,
+       "cer": 1.518
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 5,
+       "exact": 15,
+       "cer": 2.564
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 6,
+       "exact": 17,
+       "cer": 2.804
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 11,
+       "exact": 32,
+       "cer": 2.689
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 39,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 24,
+       "exact": 93,
+       "cer": 2.18
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 28,
+       "exact": 132,
+       "cer": 1.698
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 23,
+       "exact": 11,
+       "cer": 11.165
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 24,
+       "exact": 13,
+       "cer": 8.889
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 3,
+       "exact": 44,
+       "cer": 0.444
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 16,
+       "exact": 75,
+       "cer": 1.626
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 19,
+       "exact": 119,
+       "cer": 1.145
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 5,
+       "exact": 48,
+       "cer": 2.907
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 13,
+       "exact": 52,
+       "cer": 6.22
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 18,
+       "exact": 100,
+       "cer": 4.724
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 9,
+       "exact": 66,
+       "cer": 0.91
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 13,
+       "exact": 63,
+       "cer": 1.757
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 22,
+       "exact": 129,
+       "cer": 1.272
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 15,
+       "exact": 96,
+       "cer": 1.542
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 15,
+       "exact": 96,
+       "cer": 1.542
+      }
      }
     }
    },
@@ -1863,6 +7663,238 @@
       "exact": 376,
       "cer": 2.109
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 30,
+       "exact": 139,
+       "cer": 1.488
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 45,
+       "exact": 110,
+       "cer": 3.194
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 75,
+       "exact": 249,
+       "cer": 2.19
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 12,
+       "exact": 11,
+       "cer": 6.154
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 10,
+       "exact": 14,
+       "cer": 4.673
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 22,
+       "exact": 25,
+       "cer": 5.379
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 1,
+       "exact": 6,
+       "cer": 4.167
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 4,
+       "exact": 11,
+       "cer": 8.889
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 39,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 28,
+       "exact": 88,
+       "cer": 2.543
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 32,
+       "exact": 127,
+       "cer": 1.941
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 33,
+       "exact": 6,
+       "cer": 16.019
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 35,
+       "exact": 8,
+       "cer": 12.963
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 3,
+       "exact": 44,
+       "cer": 0.444
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 23,
+       "exact": 70,
+       "cer": 2.337
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 26,
+       "exact": 114,
+       "cer": 1.566
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 5,
+       "exact": 48,
+       "cer": 2.907
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 21,
+       "exact": 47,
+       "cer": 10.048
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 26,
+       "exact": 95,
+       "cer": 6.824
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 17,
+       "exact": 61,
+       "cer": 1.719
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 19,
+       "exact": 59,
+       "cer": 2.568
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 36,
+       "exact": 120,
+       "cer": 2.082
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 18,
+       "exact": 91,
+       "cer": 1.85
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 18,
+       "exact": 91,
+       "cer": 1.85
+      }
+     }
     }
    },
    "VOCR4_H15": {
@@ -1933,6 +7965,238 @@
       "errors": 93,
       "exact": 387,
       "cer": 1.833
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 21,
+       "exact": 148,
+       "cer": 1.042
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 37,
+       "exact": 114,
+       "cer": 2.626
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 58,
+       "exact": 262,
+       "cer": 1.693
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 7,
+       "exact": 16,
+       "cer": 3.59
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 6,
+       "exact": 17,
+       "cer": 2.804
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 13,
+       "exact": 33,
+       "cer": 3.178
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 5,
+       "exact": 38,
+       "cer": 0.912
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 30,
+       "exact": 87,
+       "cer": 2.725
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 35,
+       "exact": 125,
+       "cer": 2.122
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 27,
+       "exact": 8,
+       "cer": 13.107
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 28,
+       "exact": 10,
+       "cer": 10.37
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 4,
+       "exact": 44,
+       "cer": 0.592
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 23,
+       "exact": 70,
+       "cer": 2.337
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 27,
+       "exact": 114,
+       "cer": 1.627
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 3,
+       "exact": 50,
+       "cer": 1.744
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 22,
+       "exact": 46,
+       "cer": 10.526
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 25,
+       "exact": 96,
+       "cer": 6.562
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 1,
+       "cer": 5.085
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 1,
+       "cer": 5.085
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 9,
+       "exact": 69,
+       "cer": 0.91
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 14,
+       "exact": 61,
+       "cer": 1.892
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 23,
+       "exact": 130,
+       "cer": 1.33
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 22,
+       "exact": 89,
+       "cer": 2.261
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 22,
+       "exact": 89,
+       "cer": 2.261
+      }
      }
     }
    },
@@ -2005,6 +8269,238 @@
       "exact": 398,
       "cer": 1.458
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 16,
+       "exact": 150,
+       "cer": 0.794
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 30,
+       "exact": 118,
+       "cer": 2.129
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 46,
+       "exact": 268,
+       "cer": 1.343
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 3,
+       "exact": 17,
+       "cer": 1.538
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 2,
+       "exact": 18,
+       "cer": 0.935
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 5,
+       "exact": 35,
+       "cer": 1.222
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 0,
+       "exact": 8,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 0,
+       "exact": 15,
+       "cer": 0.0
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 6,
+       "exact": 37,
+       "cer": 1.095
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 22,
+       "exact": 93,
+       "cer": 1.998
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 28,
+       "exact": 130,
+       "cer": 1.698
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 24,
+       "exact": 9,
+       "cer": 11.65
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 26,
+       "exact": 11,
+       "cer": 9.63
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 3,
+       "exact": 44,
+       "cer": 0.444
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 15,
+       "exact": 78,
+       "cer": 1.524
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 18,
+       "exact": 122,
+       "cer": 1.084
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 3,
+       "exact": 50,
+       "cer": 1.744
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 14,
+       "exact": 52,
+       "cer": 6.699
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 17,
+       "exact": 102,
+       "cer": 4.462
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 3,
+       "exact": 2,
+       "cer": 5.085
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 4,
+       "exact": 71,
+       "cer": 0.404
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 13,
+       "exact": 62,
+       "cer": 1.757
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 17,
+       "exact": 133,
+       "cer": 0.983
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 17,
+       "exact": 92,
+       "cer": 1.747
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 17,
+       "exact": 92,
+       "cer": 1.747
+      }
+     }
     }
    },
    "VOCR5_L": {
@@ -2075,6 +8571,238 @@
       "errors": 42,
       "exact": 415,
       "cer": 0.828
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 13,
+       "exact": 152,
+       "cer": 0.645
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 12,
+       "exact": 126,
+       "cer": 0.852
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 25,
+       "exact": 278,
+       "cer": 0.73
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 5,
+       "exact": 15,
+       "cer": 2.564
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 3,
+       "exact": 18,
+       "cer": 1.402
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 8,
+       "exact": 33,
+       "cer": 1.956
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 1,
+       "exact": 14,
+       "cer": 2.222
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 2,
+       "exact": 41,
+       "cer": 0.365
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 15,
+       "exact": 96,
+       "cer": 1.362
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 17,
+       "exact": 137,
+       "cer": 1.031
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 2,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 10,
+       "exact": 13,
+       "cer": 4.854
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 12,
+       "exact": 15,
+       "cer": 4.444
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 0,
+       "exact": 47,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 11,
+       "exact": 79,
+       "cer": 1.118
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 11,
+       "exact": 126,
+       "cer": 0.663
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 2,
+       "exact": 51,
+       "cer": 1.163
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 6,
+       "exact": 56,
+       "cer": 2.871
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 8,
+       "exact": 107,
+       "cer": 2.1
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 2,
+       "exact": 3,
+       "cer": 3.39
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 6,
+       "exact": 69,
+       "cer": 0.607
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 7,
+       "exact": 65,
+       "cer": 0.946
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 13,
+       "exact": 134,
+       "cer": 0.752
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 11,
+       "exact": 96,
+       "cer": 1.131
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 11,
+       "exact": 96,
+       "cer": 1.131
+      }
      }
     }
    },
@@ -2147,6 +8875,238 @@
       "exact": 398,
       "cer": 1.419
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 22,
+       "exact": 144,
+       "cer": 1.091
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 24,
+       "exact": 122,
+       "cer": 1.703
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 46,
+       "exact": 266,
+       "cer": 1.343
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 6,
+       "exact": 13,
+       "cer": 3.077
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 3,
+       "exact": 18,
+       "cer": 1.402
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 9,
+       "exact": 31,
+       "cer": 2.2
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 2,
+       "exact": 6,
+       "cer": 9.524
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 0,
+       "exact": 7,
+       "cer": 0.0
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 2,
+       "exact": 13,
+       "cer": 4.444
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 39,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 22,
+       "exact": 93,
+       "cer": 1.998
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 26,
+       "exact": 132,
+       "cer": 1.577
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 2,
+       "exact": 1,
+       "cer": 3.125
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 19,
+       "exact": 12,
+       "cer": 9.223
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 21,
+       "exact": 13,
+       "cer": 7.778
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 2,
+       "exact": 45,
+       "cer": 0.296
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 15,
+       "exact": 78,
+       "cer": 1.524
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 17,
+       "exact": 123,
+       "cer": 1.024
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 2,
+       "exact": 51,
+       "cer": 1.163
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 14,
+       "exact": 54,
+       "cer": 6.699
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 16,
+       "exact": 105,
+       "cer": 4.199
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 1,
+       "exact": 3,
+       "cer": 1.695
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 10,
+       "exact": 64,
+       "cer": 1.011
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 9,
+       "exact": 64,
+       "cer": 1.216
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 19,
+       "exact": 128,
+       "cer": 1.099
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 15,
+       "exact": 94,
+       "cer": 1.542
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 15,
+       "exact": 94,
+       "cer": 1.542
+      }
+     }
     }
    },
    "VOCR5_S": {
@@ -2217,6 +9177,238 @@
       "errors": 94,
       "exact": 390,
       "cer": 1.853
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 25,
+       "exact": 145,
+       "cer": 1.24
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 37,
+       "exact": 115,
+       "cer": 2.626
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 62,
+       "exact": 260,
+       "cer": 1.81
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 6,
+       "exact": 15,
+       "cer": 3.077
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 6,
+       "exact": 17,
+       "cer": 2.804
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 12,
+       "exact": 32,
+       "cer": 2.934
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 1,
+       "exact": 7,
+       "cer": 4.762
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 1,
+       "exact": 6,
+       "cer": 4.167
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 2,
+       "exact": 13,
+       "cer": 4.444
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 3,
+       "exact": 41,
+       "cer": 0.547
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 29,
+       "exact": 89,
+       "cer": 2.634
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 32,
+       "exact": 130,
+       "cer": 1.941
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 1,
+       "exact": 2,
+       "cer": 1.562
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 28,
+       "exact": 7,
+       "cer": 13.592
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 29,
+       "exact": 9,
+       "cer": 10.741
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 2,
+       "exact": 45,
+       "cer": 0.296
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 22,
+       "exact": 73,
+       "cer": 2.236
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 24,
+       "exact": 118,
+       "cer": 1.446
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 4,
+       "exact": 50,
+       "cer": 2.326
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 16,
+       "exact": 50,
+       "cer": 7.656
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 20,
+       "exact": 100,
+       "cer": 5.249
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 1,
+       "cer": 6.78
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 1,
+       "cer": 6.78
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 10,
+       "exact": 67,
+       "cer": 1.011
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 12,
+       "exact": 63,
+       "cer": 1.622
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 22,
+       "exact": 130,
+       "cer": 1.272
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 24,
+       "exact": 89,
+       "cer": 2.467
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 24,
+       "exact": 89,
+       "cer": 2.467
+      }
      }
     }
    },
@@ -2289,6 +9481,238 @@
       "exact": 374,
       "cer": 2.089
      }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 36,
+       "exact": 133,
+       "cer": 1.786
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 42,
+       "exact": 112,
+       "cer": 2.981
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 78,
+       "exact": 245,
+       "cer": 2.277
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 13,
+       "exact": 9,
+       "cer": 6.667
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 8,
+       "exact": 15,
+       "cer": 3.738
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 21,
+       "exact": 24,
+       "cer": 5.134
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 3,
+       "exact": 5,
+       "cer": 14.286
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 1,
+       "exact": 6,
+       "cer": 4.167
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 4,
+       "exact": 11,
+       "cer": 8.889
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 4,
+       "exact": 39,
+       "cer": 0.73
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 24,
+       "exact": 90,
+       "cer": 2.18
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 28,
+       "exact": 129,
+       "cer": 1.698
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 0,
+       "exact": 3,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 29,
+       "exact": 8,
+       "cer": 14.078
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 29,
+       "exact": 11,
+       "cer": 10.741
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 5,
+       "exact": 43,
+       "cer": 0.74
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 19,
+       "exact": 73,
+       "cer": 1.931
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 24,
+       "exact": 116,
+       "cer": 1.446
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 9,
+       "exact": 44,
+       "cer": 5.233
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 19,
+       "exact": 49,
+       "cer": 9.091
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 28,
+       "exact": 93,
+       "cer": 7.349
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 4,
+       "exact": 2,
+       "cer": 6.78
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 21,
+       "exact": 56,
+       "cer": 2.123
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 22,
+       "exact": 58,
+       "cer": 2.973
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 43,
+       "exact": 114,
+       "cer": 2.487
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 15,
+       "exact": 93,
+       "cer": 1.542
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 15,
+       "exact": 93,
+       "cer": 1.542
+      }
+     }
     }
    },
    "Lens": {
@@ -2359,6 +9783,238 @@
       "errors": 316,
       "exact": 385,
       "cer": 6.228
+     }
+    },
+    "styles": {
+     "bright-on-dark": {
+      "vita-test": {
+       "lines": 163,
+       "chars": 2016,
+       "errors": 78,
+       "exact": 146,
+       "cer": 3.869
+      },
+      "psp-test": {
+       "lines": 135,
+       "chars": 1409,
+       "errors": 157,
+       "exact": 106,
+       "cer": 11.143
+      },
+      "pooled": {
+       "lines": 298,
+       "chars": 3425,
+       "errors": 235,
+       "exact": 252,
+       "cer": 6.861
+      }
+     },
+     "coloured": {
+      "vita-test": {
+       "lines": 19,
+       "chars": 195,
+       "errors": 11,
+       "exact": 17,
+       "cer": 5.641
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 214,
+       "errors": 19,
+       "exact": 16,
+       "cer": 8.879
+      },
+      "pooled": {
+       "lines": 39,
+       "chars": 409,
+       "errors": 30,
+       "exact": 33,
+       "cer": 7.335
+      }
+     },
+     "coloured-name": {
+      "vita-test": {
+       "lines": 8,
+       "chars": 21,
+       "errors": 0,
+       "exact": 8,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 7,
+       "chars": 24,
+       "errors": 2,
+       "exact": 6,
+       "cer": 8.333
+      },
+      "pooled": {
+       "lines": 15,
+       "chars": 45,
+       "errors": 2,
+       "exact": 14,
+       "cer": 4.444
+      }
+     },
+     "dark-on-light": {
+      "vita-test": {
+       "lines": 43,
+       "chars": 548,
+       "errors": 11,
+       "exact": 39,
+       "cer": 2.007
+      },
+      "psp-test": {
+       "lines": 110,
+       "chars": 1101,
+       "errors": 70,
+       "exact": 94,
+       "cer": 6.358
+      },
+      "pooled": {
+       "lines": 153,
+       "chars": 1649,
+       "errors": 81,
+       "exact": 133,
+       "cer": 4.912
+      }
+     },
+     "furigana": {
+      "vita-test": {
+       "lines": 3,
+       "chars": 64,
+       "errors": 30,
+       "exact": 0,
+       "cer": 46.875
+      },
+      "psp-test": {
+       "lines": 20,
+       "chars": 206,
+       "errors": 116,
+       "exact": 1,
+       "cer": 56.311
+      },
+      "pooled": {
+       "lines": 23,
+       "chars": 270,
+       "errors": 146,
+       "exact": 1,
+       "cer": 54.074
+      }
+     },
+     "mincho": {
+      "vita-test": {
+       "lines": 47,
+       "chars": 676,
+       "errors": 16,
+       "exact": 42,
+       "cer": 2.367
+      },
+      "psp-test": {
+       "lines": 90,
+       "chars": 984,
+       "errors": 47,
+       "exact": 80,
+       "cer": 4.776
+      },
+      "pooled": {
+       "lines": 137,
+       "chars": 1660,
+       "errors": 63,
+       "exact": 122,
+       "cer": 3.795
+      }
+     },
+     "name": {
+      "vita-test": {
+       "lines": 53,
+       "chars": 172,
+       "errors": 0,
+       "exact": 53,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 62,
+       "chars": 209,
+       "errors": 54,
+       "exact": 52,
+       "cer": 25.837
+      },
+      "pooled": {
+       "lines": 115,
+       "chars": 381,
+       "errors": 54,
+       "exact": 105,
+       "cer": 14.173
+      }
+     },
+     "no-box": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 17,
+       "exact": 0,
+       "cer": 28.814
+      },
+      "pooled": {
+       "lines": 4,
+       "chars": 59,
+       "errors": 17,
+       "exact": 0,
+       "cer": 28.814
+      }
+     },
+     "outlined": {
+      "vita-test": {
+       "lines": 74,
+       "chars": 989,
+       "errors": 48,
+       "exact": 66,
+       "cer": 4.853
+      },
+      "psp-test": {
+       "lines": 69,
+       "chars": 740,
+       "errors": 65,
+       "exact": 53,
+       "cer": 8.784
+      },
+      "pooled": {
+       "lines": 143,
+       "chars": 1729,
+       "errors": 113,
+       "exact": 119,
+       "cer": 6.536
+      }
+     },
+     "small": {
+      "vita-test": {
+       "lines": 0,
+       "chars": 0,
+       "errors": 0,
+       "exact": 0,
+       "cer": 0.0
+      },
+      "psp-test": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 34,
+       "exact": 99,
+       "cer": 3.494
+      },
+      "pooled": {
+       "lines": 106,
+       "chars": 973,
+       "errors": 34,
+       "exact": 99,
+       "cer": 3.494
+      }
      }
     }
    }

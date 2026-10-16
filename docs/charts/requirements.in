@@ -1,0 +1,4 @@
+# The README chart's environment (docs/charts/vocr_vs_lens.py); not a repo or CI dependency.
+# Rebuild the lock: uv pip compile --generate-hashes --python-version 3.11 docs/charts/requirements.in -o docs/charts/requirements.lock
+matplotlib==3.11.2
+numpy==2.4.6

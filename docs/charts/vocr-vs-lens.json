@@ -1,0 +1,379 @@
+{
+ "kind": "vocr-vs-lens-chart-data",
+ "schema": 2,
+ "metric": "dialogue CER: character edit distance / reference characters over the lines without the 'name' style (eval/metrics.norm), in percent; lower is better",
+ "systems": [
+  {
+   "key": "VOCR5_S",
+   "label": "VOCR5 Small"
+  },
+  {
+   "key": "VOCR5_N",
+   "label": "VOCR5 Normal"
+  },
+  {
+   "key": "VOCR5_L",
+   "label": "VOCR5 Large"
+  },
+  {
+   "key": "Lens",
+   "label": "Google Lens"
+  }
+ ],
+ "sets": [
+  {
+   "key": "clannad",
+   "label": "CLANNAD",
+   "platform": "PS Vita",
+   "lines": 2052,
+   "chars": 33485
+  },
+  {
+   "key": "vita-test",
+   "label": "vita-test",
+   "platform": "PS Vita",
+   "lines": 153,
+   "chars": 2392
+  },
+  {
+   "key": "psp-test",
+   "label": "psp-test",
+   "platform": "PSP",
+   "lines": 183,
+   "chars": 2301
+  }
+ ],
+ "values": {
+  "clannad": {
+   "VOCR5_S": {
+    "errors": 463,
+    "chars": 33485,
+    "lines": 2052,
+    "cer": 1.3827,
+    "cer_ci95": [
+     1.2334,
+     1.5359
+    ],
+    "exact_pct": 82.4561,
+    "path": "scores.systems.VOCR5_S.not_name"
+   },
+   "VOCR5_N": {
+    "errors": 322,
+    "chars": 33485,
+    "lines": 2052,
+    "cer": 0.9616,
+    "cer_ci95": [
+     0.8432,
+     1.0846
+    ],
+    "exact_pct": 87.3782,
+    "path": "scores.systems.VOCR5_N.not_name"
+   },
+   "VOCR5_L": {
+    "errors": 246,
+    "chars": 33485,
+    "lines": 2052,
+    "cer": 0.7347,
+    "cer_ci95": [
+     0.629,
+     0.846
+    ],
+    "exact_pct": 89.9123,
+    "path": "scores.systems.VOCR5_L.not_name"
+   },
+   "Lens": {
+    "errors": 511,
+    "chars": 33485,
+    "lines": 2052,
+    "cer": 1.5261,
+    "cer_ci95": [
+     0.897,
+     2.2547
+    ],
+    "exact_pct": 96.54,
+    "path": "scores.systems.Lens.not_name"
+   }
+  },
+  "vita-test": {
+   "VOCR5_S": {
+    "errors": 24,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 136,
+    "cer": 1.0033,
+    "exact_pct": 88.89,
+    "path": "arms.console.VOCR5_S.dialogue.vita-test",
+    "vs": {
+     "Lens": {
+      "delta": -2.7174,
+      "ci95": [
+       -4.8658,
+       -0.8754
+      ],
+      "vn_ci95": [
+       -6.0256,
+       -0.5374
+      ],
+      "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.vita-test"
+     }
+    }
+   },
+   "VOCR5_N": {
+    "errors": 23,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 133,
+    "cer": 0.9615,
+    "exact_pct": 86.93,
+    "path": "arms.console.VOCR5_N.dialogue.vita-test",
+    "vs": {
+     "Lens": {
+      "delta": -2.7592,
+      "ci95": [
+       -4.8224,
+       -0.9816
+      ],
+      "vn_ci95": [
+       -5.943,
+       -0.5832
+      ],
+      "path": "pairs.VOCR5_N-Lens.console_vs_lens_native.dialogue.vita-test"
+     }
+    }
+   },
+   "VOCR5_L": {
+    "errors": 14,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 141,
+    "cer": 0.5853,
+    "exact_pct": 92.16,
+    "path": "arms.console.VOCR5_L.dialogue.vita-test",
+    "vs": {
+     "Lens": {
+      "delta": -3.1355,
+      "ci95": [
+       -5.1948,
+       -1.3983
+      ],
+      "vn_ci95": [
+       -6.425,
+       -1.0345
+      ],
+      "path": "pairs.VOCR5_L-Lens.console_vs_lens_native.dialogue.vita-test"
+     }
+    }
+   },
+   "Lens": {
+    "errors": 89,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 132,
+    "cer": 3.7207,
+    "exact_pct": 86.27,
+    "path": "arms.native.Lens.dialogue.vita-test"
+   }
+  },
+  "psp-test": {
+   "VOCR5_S": {
+    "errors": 51,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 153,
+    "cer": 2.2164,
+    "exact_pct": 83.61,
+    "path": "arms.console.VOCR5_S.dialogue.psp-test",
+    "vs": {
+     "Lens": {
+      "delta": -5.302,
+      "ci95": [
+       -8.2832,
+       -2.6892
+      ],
+      "vn_ci95": [
+       -10.2509,
+       -1.4668
+      ],
+      "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.psp-test"
+     }
+    }
+   },
+   "VOCR5_N": {
+    "errors": 30,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 164,
+    "cer": 1.3038,
+    "exact_pct": 89.62,
+    "path": "arms.console.VOCR5_N.dialogue.psp-test",
+    "vs": {
+     "Lens": {
+      "delta": -6.2147,
+      "ci95": [
+       -9.1802,
+       -3.5758
+      ],
+      "vn_ci95": [
+       -11.8552,
+       -2.0431
+      ],
+      "path": "pairs.VOCR5_N-Lens.console_vs_lens_native.dialogue.psp-test"
+     }
+    }
+   },
+   "VOCR5_L": {
+    "errors": 23,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 164,
+    "cer": 0.9996,
+    "exact_pct": 89.62,
+    "path": "arms.console.VOCR5_L.dialogue.psp-test",
+    "vs": {
+     "Lens": {
+      "delta": -6.5189,
+      "ci95": [
+       -9.6689,
+       -3.8326
+      ],
+      "vn_ci95": [
+       -12.6917,
+       -2.1445
+      ],
+      "path": "pairs.VOCR5_L-Lens.console_vs_lens_native.dialogue.psp-test"
+     }
+    }
+   },
+   "Lens": {
+    "errors": 173,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 148,
+    "cer": 7.5185,
+    "exact_pct": 80.87,
+    "path": "arms.native.Lens.dialogue.psp-test"
+   }
+  }
+ },
+ "sources": {
+  "clannad": {
+   "file": "eval/vocr5_clannad_20261016.json",
+   "sha256": "6cb9914fcb555b7d26f212b8ab423c3c45cc262b7b45279737c828e5b8090fc0"
+  },
+  "dialogue": {
+   "file": "eval/vocr5_dialogue_20261016.json",
+   "sha256": "817b6fece780fcf6d915b51c45024c0a79bbd703278ae7e06f41580e18df652b"
+  }
+ },
+ "facts": {
+  "lens_furigana_vita-test": {
+   "furigana_lines": 3,
+   "furigana_errors": 30,
+   "all_errors": 89,
+   "all_lines": 206,
+   "path": "arms.native.Lens.styles.furigana.vita-test / arms.native.Lens.all.vita-test"
+  },
+  "lens_furigana_psp-test": {
+   "furigana_lines": 20,
+   "furigana_errors": 116,
+   "all_errors": 227,
+   "all_lines": 245,
+   "path": "arms.native.Lens.styles.furigana.psp-test / arms.native.Lens.all.psp-test"
+  }
+ },
+ "resources": {},
+ "copy": {
+  "eyebrow": "VOCR5  ·  Japanese OCR for PS Vita and PSP visual novels",
+  "headline": "Reads dialogue as well as Google Lens. Offline.",
+  "subhead": "Character error rate on visual-novel dialogue, three test sets. Lower is better.",
+  "panel": {
+   "kicker": "Built for the console",
+   "big": "1.2 MB",
+   "big_sub": "the default model's int8 weights",
+   "lines": [
+    "Offline, in the game's own memory",
+    "Small 0.8 MB · Large 2.5 MB",
+    "≈0.7 s per text box (estimated)"
+   ],
+   "lens_lines": [
+    "Google Lens is a cloud service.",
+    "It needs an internet connection."
+   ]
+  },
+  "marks": {
+   "vita-test": {
+    "Lens": "*"
+   },
+   "psp-test": {
+    "Lens": "*"
+   }
+  },
+  "footnote": [
+   "CLANNAD: 2,052 dialogue lines of a PS Vita playthrough (Vita3K), references read by Claude, Lens's cached readings of the same crops; Lens reads more lines exactly (96.5% vs 87.4% for Normal).",
+   "vita-test, psp-test: 153 and 183 hand-checked dialogue lines of 16 and 14 games (VNDB screenshots), the same crops for all. * Lens also reads the furigana the references leave out: 116 of its 227 psp-test errors, names included.",
+   "Dialogue: lines without a speaker name. VOCR5: int8, plain-C runtime, greedy decoding; trained with the owner's captures, incl. planetarian, a Key / Prototype port like CLANNAD's. Time: an estimate for a 3-line box on one Cortex-A9 core at 444 MHz; VOCR5 has not run on a console yet."
+  ],
+  "claims": [
+   {
+    "set": "clannad",
+    "system": "VOCR5_S",
+    "op": "<",
+    "than": "Lens"
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR5_N",
+    "op": "<",
+    "than": "Lens"
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR5_L",
+    "op": "<",
+    "than": "Lens"
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR5_S",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR5_N",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR5_L",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR5_S",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR5_N",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR5_L",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   }
+  ]
+ }
+}

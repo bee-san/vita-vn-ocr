@@ -234,5 +234,6 @@ def test_fine_tune_pin_is_complete():
         assert (e["fa"] == 0.3) == (not e["name"].endswith("g"))     # fa on the ink sources only
         assert bool(e.get("refined")) == e["name"].endswith("g")      # refined copies with the GRAD sources
     rec = json.loads((ROOT / "eval" / "vocr5_pools_20261016.json").read_text(encoding="utf-8"))
-    assert rec["checks"]["reserve_check"]["verdict"] == "RESERVE_OK" and "CHECK_OK" in rec["checks"]["vocr5_pools_check"]
+    assert rec["checks"]["reserve_check"]["verdict"] == "RESERVE_OK"
+    assert "CHECK_OK" in rec["checks"]["vocr5_pools_check"]
     assert rec["realplus_snapshot"]["refined"]["rows_only"] is True

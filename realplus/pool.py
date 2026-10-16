@@ -1513,14 +1513,16 @@ def cmd_publish(args):
     sel = json.loads((OUT / "manifests" / "selection.json").read_text())
     fetched = collections.Counter("ok" if r.get("sha256") else r.get("status", "not-fetched") for r in rows.values())
     dump = SH.realplus_dir() / "vndb" / f"vndb-db-{args.dump_date}.tar.zst"
-    labels = jl(OUT / "labels.jsonl")
+    sfx = f"_{args.tag}" if args.tag else ""
+    # a tagged build pins its read-only labels snapshot (labels_<tag>.jsonl), not the working labels.jsonl
+    labels_name = f"labels{sfx}.jsonl" if (OUT / f"labels{sfx}.jsonl").exists() else "labels.jsonl"
+    labels = jl(OUT / labels_name)
     blind = OUT / "review" / "blind_report_measured.json"      # as scored, before the third looks
     if not blind.exists():
         blind = OUT / "review" / "blind_report.json"
     looks3 = [x for f in sorted(REVIEW.glob("resolutions*.jsonl")) for x in jl(f)]
     sup = build_paths(args.supersedes)["stats"] if args.tag else None
     sup_stats = json.loads(sup.read_text()) if sup and sup.exists() else None
-    sfx = f"_{args.tag}" if args.tag else ""
     luna_p = OUT / "luna" / "agreement_first10.json"
     luna_all = OUT / "luna" / "agreement_all.json"
     # the precision check runs on the build before the third looks (v3: check --tag v3pre); its third looks
@@ -1571,7 +1573,7 @@ def cmd_publish(args):
         if (REVIEW / "blind_ids.json").exists() else None,
         "build": build,
         "screenshot_manifests": names,
-        "local_manifests": {n: P.file_sha256(OUT / n) for n in (str(bp["lines"].relative_to(OUT)), "labels.jsonl",
+        "local_manifests": {n: P.file_sha256(OUT / n) for n in (str(bp["lines"].relative_to(OUT)), labels_name,
                                                                 bp["full"].name, "edge/boxes.jsonl",
                                                                 "edge/edge.jsonl", "review/blind_ids.json",
                                                                 "review/resolutions.jsonl",

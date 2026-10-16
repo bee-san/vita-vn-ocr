@@ -23,6 +23,10 @@ adds what a training pool of PC / console shots needs on top:
   pool.py build                    the npz files (teacher_train's format) and the committed manifests
   pool.py blind [--n 540]          a blind re-check sample, framed on the final crops -> $REALPLUS/review/blind
   pool.py blind-score              devnative's blind agreement on the first 500 sampled lines in the pool
+  pool.py confirm-batches          v3: second, blind Claude looks at lines Luna did not confirm -> review/confirm/bNNNN
+  pool.py check --tag T            v3: the pre-registered precision sample of build T (no candidates) -> review/check
+  pool.py check-score --tag T      v3: the check's agreement with the labels -> review/check_report_T.json
+  pool.py look3 --tag T [--resolve]  v3: third looks at the check's disagreements -> review/resolutions_v3.jsonl
   pool.py publish                  the committed, text-free manifests: realplus/manifests/shots_NN.jsonl, stats.json
 
 Each PC / console screenshot is read once, scaled to fit the Vita screen (960x544, cv2.INTER_AREA as
@@ -46,6 +50,7 @@ import hashlib
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 import time
@@ -68,9 +73,24 @@ from teacher import vote  # noqa: E402
 
 OUT = SH.realplus_dir()
 READS = OUT / "reads" / "reads.jsonl"
+# The reclaim tier (owner / reserve-policy 2026-10-14): screenshots of VNs the old reservation reserved and the
+# new FINAL policy frees, read by devnative/read.py into their own reads.jsonl (their rows carry an absolute
+# "path", so the build loads them from the reserve-policy shots dir). When present they are planned, batched,
+# reviewed and built with v2's already-read lines as one v3 pool; the plan tier (t1/t2/t3) applies to them too.
+RECLAIM_READS = OUT / "reclaim" / "reads" / "reads.jsonl"
 REVIEW = OUT / "review"
 HERD_DIR = Path(os.environ.get("HERD_DIR", "/local/home/skerraut/herd-synth3"))
 REVIEW_PROMPT = HERD_DIR / "prompts" / "review.md"
+# Helper agents are labelled <HELPER><n>; v2 used review-rpN, v3 review-v3-N (results.txt keeps both).
+HELPER = os.environ.get("REALPLUS_HELPER", "review-rp")
+# v3 (docs/realplus.md, "Version 3"): pass-1 batches from b0018 and edge batches from b0020 are decided
+# under the Claude + Luna agreement rule ($REALPLUS/AGREEMENT.md); earlier batches are v2's, frozen.
+V3_FIRST = {"pass1": int(os.environ.get("REALPLUS_V3_PASS1", "18")),
+            "edge": int(os.environ.get("REALPLUS_V3_EDGE", "20"))}
+LUNA_KIND = "codex:gpt-6-luna"
+# The reservation a build applies (build_exclusions): the owner's 2026-10-14 13:25Z FINAL policy, recorded in the
+# published stats.json (v2's stats, pinned in git history, predate the field).
+POLICY = "final-2026-10-14"
 FAMILY = {"meiki", "v6s"}
 PER_VN_CAP, GLOBAL_CAP = 2, 8          # devnative/build.py's per-VN cap; teacher/build.py's overall cap
 MIN_PSP_INK = L.MIN_INK                # a PSP crop needs 10 px of ink, as a native PSP line
@@ -80,6 +100,12 @@ NOTE = ("\nNote (realplus): these screenshots are PC / home-console visual-novel
         "decisions of each sheet to decisions.jsonl in this directory as soon as that sheet is decided, so a\n"
         "fresh session can resume: if decisions.jsonl already exists, keep it and continue with the first sheet\n"
         "that has no decisions yet.\n")
+# v3 (07:40Z, after batch b0019 showed Luna skipping wrapped lines as cut and name plates as ui): the
+# conventions restated for both reviewers; appended to every batch made from b0022 on.
+WRAP_NOTE = ("Conventions restated: a screen line is one line of the text box. A wrapped line that ends at the box's\n"
+             "edge and continues on the next screen line is a complete line, not cut; \"cut\" is only for a frame\n"
+             "that cuts a character or text of this line running on past the frame. Speaker names (name plates,\n"
+             "【name】) are labelled with \"name\": true, not skipped as ui.\n")
 EDGE_NOTE = ("This check is about the frame only: menus, buttons, system text and speaker names are in scope\n"
              "like dialogue (do not skip them as \"ui\"); pick 1 when the frame shows exactly the label.\n")
 BLIND_NOTE = ("This is a label-precision check: transcribe the framed text whatever it is (dialogue, a menu,\n"
@@ -99,16 +125,23 @@ def wjl(path, rows):
     tmp.replace(p)
 
 
-def load_reads(path=READS):
-    """sheets.load_reads, skipping a last line read.py is still writing."""
+def load_reads(path=None):
+    """sheets.load_reads, skipping a last line read.py is still writing. When reading the default
+    reads (path omitted) and the reclaim reads exist they are merged in (their shot keys are disjoint
+    from v2's: the reclaim dedupe dropped any pixel copy of a pool image), so the plan and build see
+    one combined set of read screenshots."""
     shots = {}
-    for x in Path(path).read_text(encoding="utf-8").splitlines():
-        if x.strip():
-            try:
-                r = json.loads(x)
-            except ValueError:
-                continue
-            shots[r["shot"]] = r
+    paths = [READS] if path is None else [path]
+    if (path is None or Path(path) == READS) and RECLAIM_READS.exists():
+        paths.append(RECLAIM_READS)
+    for pth in paths:
+        for x in Path(pth).read_text(encoding="utf-8").splitlines():
+            if x.strip():
+                try:
+                    r = json.loads(x)
+                except ValueError:
+                    continue
+                shots[r["shot"]] = r
     return shots
 
 
@@ -117,6 +150,24 @@ def load_reads(path=READS):
 def dups():
     p = OUT / "manifests" / "dups.json"
     return json.loads(p.read_text()) if p.exists() else {}
+
+
+RECLAIM_SHOTS = OUT / "reclaim" / "manifests" / "shots.jsonl"
+RECLAIM_DUPS = OUT / "reclaim" / "manifests" / "dups.json"
+
+
+def reclaim_shot_rows():
+    """The reclaim tier's selection rows (shots.py select format), or [] when there is no reclaim tier.
+    Preferred source: the reserve-policy manifest the fetcher wrote hashes into."""
+    import shots as _SH
+    for p in (RECLAIM_SHOTS, _SH.ART / "reserve-policy" / "realplus" / "manifests" / "shots.jsonl"):
+        if p.exists():
+            return [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
+    return []
+
+
+def reclaim_dups():
+    return json.loads(RECLAIM_DUPS.read_text()) if RECLAIM_DUPS.exists() else {}
 
 
 def read_rows(rows, dup):
@@ -157,14 +208,18 @@ def vn_rank(vn, seed=20261012):
     return hashlib.sha256(f"{seed}:{vn}".encode()).hexdigest()
 
 
-def plan(shots):
+def plan(shots, skip_vns=frozenset(), skip_shots=frozenset()):
     """{line id: {"tier", "vn", "shot", "keys"}} for every candidate line, and the review order: by
     tier, then round-robin over VNs (a VN's n-th screenshot after every VN's (n-1)-th), lines of
-    one screenshot together, top to bottom."""
+    one screenshot together, top to bottom. Screenshots of skip_vns (reserved VNs) and skip_shots (dedupe
+    copies, leak drops: build_exclusions) get no line, but keep their place in the round-robin, so leaving
+    them out never reorders the other lines."""
     lines, auto_keys = {}, collections.defaultdict(collections.Counter)
     by_vn = collections.defaultdict(list)
     for s in shots.values():
         by_vn[s["vn"]].append(s["shot"])
+        if s["vn"] in skip_vns or s["shot"] in skip_shots:
+            continue
         for ln in s.get("lines", []):
             ok, _ = S.is_candidate(ln)
             if not ok:
@@ -194,13 +249,21 @@ def plan(shots):
 
 
 def cmd_plan(args):
+    """plan.jsonl: the review order of every candidate line the build could keep. The build's exclusions apply
+    here too (build_exclusions: reserved VNs, dedupe copies of v2's selection and the reclaim tier, among them the
+    reclaim tier's PSP-scale reads, and leak drops), so no reviewer or Codex call sees such a line."""
     shots = load_reads()
-    lines, order = plan(shots)
+    _, skip_vns, skip_shots, _ = build_exclusions()
+    lines, order = plan(shots, skip_vns, skip_shots)
     c = collections.Counter(x["tier"] for x in lines.values())
     sk = sum(1 for x in lines.values() if x.get("skip"))
+    out = [s for s in shots.values() if s["vn"] in skip_vns or s["shot"] in skip_shots]
     wjl(REVIEW / "plan.jsonl", [{"id": lid, "tier": lines[lid]["tier"]} for lid in order])
     print(json.dumps({"screenshots": len(shots), "candidate_lines": len(lines), "tiers": dict(c),
-                      "review": len(order), "skipped_repeat_cap": sk}, indent=1), flush=True)
+                      "review": len(order), "skipped_repeat_cap": sk,
+                      "excluded_screenshots": {"reserved-vn": sum(s["vn"] in skip_vns for s in out),
+                                               "dedupe-or-leak": sum(s["vn"] not in skip_vns for s in out)}},
+                     indent=1), flush=True)
 
 
 # ----------------------------------------------------------------------------- batches
@@ -220,7 +283,8 @@ def batched_ids(kind="pass1"):
 def cmd_batches(args):
     shots = load_reads()
     idx = S.line_index(shots)
-    plan_ids = [r["id"] for r in jl(REVIEW / "plan.jsonl")]
+    tiers = set(args.tiers.split(",")) if getattr(args, "tiers", None) else None
+    plan_ids = [r["id"] for r in jl(REVIEW / "plan.jsonl") if tiers is None or r["tier"] in tiers]
     done = batched_ids()
     todo = [lid for lid in plan_ids if lid not in done and lid in idx]
     have = batch_dirs()
@@ -228,6 +292,8 @@ def cmd_batches(args):
     made = 0
     while todo and made < args.n:
         chunk, todo = todo[:args.size], todo[args.size:]
+        if len(chunk) < (getattr(args, "min", None) or 0):
+            break
         # lines of one screenshot together, so the reviewer sees a name next to its dialogue
         chunk.sort(key=lambda lid: (idx[lid][0]["shot"], idx[lid][1]["ink"][1], idx[lid][1]["ink"][0]))
         k += 1
@@ -235,7 +301,7 @@ def cmd_batches(args):
         entries = [(lid, idx[lid][0], idx[lid][1], S.candidates(idx[lid][1])) for lid in chunk]
         ns = S.make_batch(entries, out, "pass1", name=f"realplus/pass1/{out.name}")
         with open(out / "README.md", "a", encoding="utf-8") as f:
-            f.write(NOTE)
+            f.write(NOTE + WRAP_NOTE)
         print(f"{out}: {len(chunk)} lines, {ns} sheets", flush=True)
         made += 1
 
@@ -294,14 +360,50 @@ def outstanding(log, res):
     return out
 
 
+def helper_number(label):
+    """n of a helper label <HELPER><n> (0 for labels of another prefix or the agent's own self-* marks)."""
+    if not label.startswith(HELPER):
+        return 0
+    tail = label[len(HELPER):].split("-")[0]
+    return int(tail) if tail.isdigit() else 0
+
+
+def live_helpers():
+    """Helper labels (our prefix) the orchestrator counts as queued or running: in queue.tsv, or in
+    agents.txt and not yet in closed.txt (a finished helper's tab stays open until its next poll)."""
+    def labels(name, col=0):
+        p = HERD_DIR / name
+        return {x.split("\t")[col].split(" ")[0] for x in p.read_text(encoding="utf-8").splitlines() if x.strip()} \
+            if p.exists() else set()
+    live = labels("queue.tsv") | (labels("agents.txt") - labels("closed.txt"))
+    return {x for x in live if x.startswith(HELPER)}
+
+
+# v2 made edge batches b0001-b0030 and decided b0001-b0019; b0020-b0030 (2,091 kept v2 labels) were withdrawn at
+# its freeze. v3 completes those after t2 (the plan's order). The edge batches v3 makes for its own new flagged
+# lines (b0031 on) are part of labelling those lines and can go to helpers before the remaining pass-1 batches.
+V2_EDGE_LAST = 30
+
+
+def helper_batches(kind):
+    """The batches a --kinds token names, in order: a batch kind (pass1, confirm, edge, check ...) or
+    "edge-new" (only the edge batches after v2's withdrawn b0020-b0030)."""
+    if kind == "edge-new":
+        return [b for b in batch_dirs("edge") if int(b.name[1:]) > V2_EDGE_LAST]
+    return batch_dirs(kind)
+
+
 def cmd_helpers(args):
     log, res = helper_log(), results()
     busy = outstanding(log, res)
-    n = max([int(h["label"].rsplit("rp", 1)[1].split("-")[0]) for h in log if "-rp" in h["label"]] + [0])
+    live = live_helpers()
+    n_busy = max(len(busy), len(live))
+    n = max([helper_number(h["label"]) for h in log] + [0])
     queued = []
-    for kind in args.kinds.split(","):
-        for b in batch_dirs(kind):
-            if len(busy) + len(queued) >= args.max:
+    for token in args.kinds.split(","):
+        kind = token.split("-")[0]
+        for b in helper_batches(token):
+            if n_busy + len(queued) >= args.max:
                 break
             st, _ = batch_state(b)
             if st == "done":
@@ -309,28 +411,37 @@ def cmd_helpers(args):
             prior = [h for h in log if h.get("batch") == str(b)]
             if prior and any(h in busy for h in prior):
                 continue
-            if prior and not args.retry:
+            if any(h["label"].startswith("self") and not h.get("cancelled") for h in prior):
+                continue                                  # reserved by this agent (pool.py reserve): no helper
+            if prior and (not args.retry or len(prior) >= 3):     # a stalled or dead helper: at most 3 tries
                 continue
             n += 1
-            label = f"review-rp{n}"
+            label = f"{HELPER}{n}"
+            if os.environ.get("REALPLUS_HELPER_MODEL"):        # spawn.sh reads the per-label model from models.txt
+                with open(HERD_DIR / "models.txt", "a", encoding="utf-8") as f:
+                    f.write(f"{label} {os.environ['REALPLUS_HELPER_MODEL']}\n")
             cmd = [str(HERD_DIR / "enqueue.sh"), label, "-", str(REVIEW_PROMPT), f"Your batch is {b}."]
             subprocess.run(cmd, check=True, cwd=HERD_DIR, env=dict(os.environ, HERD_DIR=str(HERD_DIR)),
                            stdin=subprocess.DEVNULL, capture_output=True, timeout=120)
             rec = {"label": label, "batch": str(b), "kind": kind, "queued": time.strftime("%Y-%m-%dT%H:%M:%SZ",
-                                                                                            time.gmtime())}
+                                                                                            time.gmtime()),
+                   "model": os.environ.get("REALPLUS_HELPER_MODEL") or "default"}
             log.append(rec)
             queued.append(rec)
     wjl(REVIEW / "helpers.jsonl", log)
-    print(f"{len(busy)} helpers outstanding, {len(queued)} queued now: {[q['label'] for q in queued]}", flush=True)
+    print(f"{len(busy)} helpers outstanding ({len(live)} queued or with an open tab), {len(queued)} queued now: "
+          f"{[q['label'] for q in queued]}", flush=True)
 
 
 def cmd_reserve(args):
-    """Mark batches as reviewed by this agent itself (no helper is queued for them)."""
+    """Mark batches as reviewed by this agent itself (no helper is queued for them; review.md's instructions, one
+    sub-session per batch). --model records the reviewer's model, as helpers.jsonl does for helpers."""
     with review_lock():
         log = helper_log()
         for b in args.batch:
             log.append({"label": f"self-{Path(b).name}", "batch": str(Path(b)), "kind": Path(b).parent.name,
-                        "queued": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
+                        "queued": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                        "model": getattr(args, "model", None) or "default"})
         wjl(REVIEW / "helpers.jsonl", log)
 
 
@@ -367,6 +478,27 @@ def unassigned(log):
     return [b for b in batch_dirs("pass1") if str(b) not in have and batch_state(b)[0] != "done"]
 
 
+def plan_left(tiers=None):
+    """Plan lines (of these comma-separated tiers; default all) not in a pass-1 batch yet."""
+    t = set(tiers.split(",")) if tiers else None
+    done = batched_ids()
+    return sum(1 for r in jl(REVIEW / "plan.jsonl") if (t is None or r["tier"] in t) and r["id"] not in done)
+
+
+def make_batches(n, size, tiers):
+    """cmd_batches for the feed. Rendering contact sheets is CPU work, so when the feed runs outside a
+    heavy.sh slot (HERD set, HEAVY_SLOT unset) the batches are made in a slot of their own and the
+    long-running loop does not hold one."""
+    herd = os.environ.get("HERD")
+    if herd and not os.environ.get("HEAVY_SLOT"):
+        cmd = [f"{herd}/heavy.sh", "timeout", "3600", sys.executable, str(HERE / "pool.py"), "batches",
+               "--n", str(n), "--size", str(size)] + (["--tiers", tiers] if tiers else [])
+        subprocess.run(cmd, env=dict(os.environ, HEAVY_SLOTS=os.environ.get("HEAVY_SLOTS", "12")),
+                       stdin=subprocess.DEVNULL, check=False, timeout=7200)
+    else:
+        cmd_batches(argparse.Namespace(n=n, size=size, tiers=tiers, min=None))
+
+
 def cmd_feed(args):
     """One round (or --loop forever): start a read of new screenshots when none runs, keep --ready
     pass-1 batches without a helper, and queue helpers up to --max."""
@@ -379,9 +511,12 @@ def cmd_feed(args):
             print(f"{time.strftime('%H:%M:%S')} reading {new} new screenshots -> {start_read()}", flush=True)
         with review_lock():
             if len(unassigned(helper_log())) < args.ready:
-                cmd_plan(None)
-                cmd_batches(argparse.Namespace(n=args.ready, size=args.size))
-            cmd_helpers(argparse.Namespace(max=args.max, kinds=args.kinds, retry=False))
+                tiers = getattr(args, "tiers", None)
+                if not (REVIEW / "plan.jsonl").exists() or not tiers:
+                    cmd_plan(None)
+                if plan_left(tiers):
+                    make_batches(args.ready, args.size, tiers)
+            cmd_helpers(argparse.Namespace(max=args.max, kinds=args.kinds, retry=True))
         if not args.loop:
             break
         time.sleep(args.every)
@@ -410,13 +545,33 @@ def done_batches(kind):
     return [b for b in batch_dirs(kind) if batch_state(b)[0] == "done"]
 
 
+RECLAIM_READS_ALL = RECLAIM_READS.with_name("reads.jsonl.prefilter")   # every reclaim read, before the 18 skipped
+SHOT_KEY = re.compile(r'^\{"shot": "(v\d+_\d+)"', re.M)                # read.py writes "shot" first
+
+
 def reads_snapshot():
     """READS without a partial last line (a read may be appending): devnative's loaders need whole
-    lines. Returns the snapshot path."""
+    lines. Returns the snapshot path. The reclaim reads are appended, and so are the reads of any
+    screenshot that a batch holds a line of but that was taken out of the reclaim reads afterwards
+    (2026-10-14: 18 screenshots of three VNs that became development-sample partners; one of their
+    lines was already in pass-1 b0159), so that decide.py can resolve every decided line. Such lines
+    stay out of the pool all the same: build_exclusions reserves their VNs."""
     snap = OUT / "reads" / "reads_snapshot.jsonl"
     text = READS.read_text(encoding="utf-8")
     if text and not text.endswith("\n"):
         text = text[:text.rfind("\n") + 1]
+    if RECLAIM_READS.exists():                 # decide.py resolves reclaim lines against their reads too
+        rtext = RECLAIM_READS.read_text(encoding="utf-8")
+        if rtext and not rtext.endswith("\n"):
+            rtext = rtext[:rtext.rfind("\n") + 1]
+        text += rtext
+        if RECLAIM_READS_ALL.exists():
+            have = set(SHOT_KEY.findall(text))
+            need = {"_".join(lid.split("_")[:2]) for k in ("pass1", "confirm", "edge") for lid in batched_ids(k)}
+            for x in RECLAIM_READS_ALL.read_text(encoding="utf-8").splitlines():
+                m = SHOT_KEY.match(x)
+                if m and m.group(1) in need and m.group(1) not in have:
+                    text += x + "\n"
     snap.write_text(text, encoding="utf-8")
     return snap
 
@@ -431,6 +586,9 @@ def cmd_final(args):
     bl = done_batches("blind")
     if bl:
         cmd += ["--blind", *map(str, bl)]        # counted in looks; never changes a label
+    conf = done_batches("confirm")
+    if conf:
+        cmd += ["--confirm", *map(str, conf)]    # v3: a disagreeing confirm look drops the line
     res = sorted(REVIEW.glob("resolutions*.jsonl"))
     if res and not args.no_resolve:
         cmd += ["--resolve", *map(str, res)]
@@ -438,11 +596,58 @@ def cmd_final(args):
     if not p1:
         sys.exit("no decided pass-1 batch yet")
     subprocess.run(cmd, check=True)
+    labels = jl(OUT / "labels.jsonl")
     if res and not args.no_resolve:
-        labels = jl(OUT / "labels.jsonl")
         n = apply_auto_resolutions(labels, {r["id"]: r for f in res for r in jl(f)})
-        wjl(OUT / "labels.jsonl", labels)
         print(f"third looks applied to {n} auto lines", flush=True)
+    if v3_batch_names("pass1"):
+        import luna as LU
+        LU.cmd_merge(argparse.Namespace(first=V3_FIRST["pass1"]))      # Claude's decisions x Luna's votes
+        c = apply_luna(labels, LU.load_votes(V3_FIRST["pass1"]))
+        print(f"Luna rule applied to v3 lines: {json.dumps(c)}", flush=True)
+    wjl(OUT / "labels.jsonl", labels)
+
+
+def v3_batch_names(kind):
+    """Names of the v3 batches of a kind (b-numbers from V3_FIRST[kind]); earlier ones are v2's, frozen."""
+    return {b.name for b in batch_dirs(kind) if int(b.name[1:]) >= V3_FIRST.get(kind, 1)}
+
+
+def apply_luna(labels, votes, v3=None):
+    """AGREEMENT.md's rule on the lines a v3 pass-1 batch decided (votes: luna.load_votes). A line
+    Claude read is kept only when Luna read the same key; a Luna skip or unsure sends it to a
+    confirm look (status "pending" until the look exists; decide.py's --confirm has already dropped
+    the lines whose look disagreed); a different Luna reading drops it; no vote drops it at the
+    freeze. A label only one engine family read also needs the confirm look (v2's pass 2). Records
+    get reviewer_kinds, luna and luna_vote. Returns the counts of what changed."""
+    v3 = v3_batch_names("pass1") if v3 is None else set(v3)
+    c = collections.Counter()
+    for r in labels:
+        b = (r.get("pass1") or {}).get("batch")
+        if b not in v3:
+            r.setdefault("reviewer_kinds", ["assistant"])
+            continue
+        v = votes.get(r["id"])
+        r["reviewer_kinds"] = ["assistant", LUNA_KIND]
+        r["luna"] = v["luna"] if v else "missing"
+        r["luna_vote"] = v.get("luna_vote") if v else None
+        if r["status"] != "kept":
+            c[f"not-kept:{r['why']}"] += 1
+            continue
+        st = r["luna"]
+        confirmed = (r.get("confirm") or {}).get("agree")
+        if st == "missing":
+            r.update(status="dropped", why="luna-missing", label=None)
+        elif st == "disagree":
+            r.update(status="dropped", why="luna-disagree", label=None)
+        elif st != "agree" and not confirmed:                   # skip-ui / skip-cut / skip-bad / unsure
+            r.update(status="pending", why="luna-unconfirmed")
+        elif r["how"] == "single" and not confirmed and not (r.get("pass2") or {}).get("agree"):
+            r.update(status="pending", why="confirm-missing")
+        else:
+            r["looks"] = (r.get("looks") or 1) + (st == "agree")
+        c[f"{r['status']}:{r['why'] if r['status'] != 'kept' else r['luna']}"] += 1
+    return dict(c)
 
 
 def apply_auto_resolutions(labels, res):
@@ -475,9 +680,11 @@ def cmd_edge_boxes(args):
     it needs a check (edge_flags; or a later look called the line cut)."""
     from common import to_gray
     from devnative import edgecheck as E
-    labels = [r for r in jl(OUT / "labels.jsonl") if r["status"] == "kept"]
+    _, skip_vns, skip_shots, _ = build_exclusions()   # lines the build drops need no frame (and may have no read)
     shots = load_reads()
     idx = S.line_index(shots)
+    labels = [r for r in jl(OUT / "labels.jsonl") if r["status"] in ("kept", "pending") and r["vn"] not in skip_vns
+              and r["shot"] not in skip_shots and r["id"] in idx]
     ev = E.evidence(done_batches("blind"))     # a blind look that called the line cut
     out, cache = [], {}
     for r in sorted(labels, key=lambda r: (int(r["shot"].split("_")[0][1:]), r["id"])):
@@ -491,18 +698,21 @@ def cmd_edge_boxes(args):
         fc, rc, why = edge_flags(gray, ln, "vita", W, H, r["label"])
         why += ev.get(r["id"], [])
         out.append({"id": r["id"], "shot": s["shot"], "label": r["label"], "crop": fc, "reviewed": rc,
-                    "check": bool(why), "why": why})
+                    "check": bool(why), "why": why, "status": r["status"]})
     EDGE.mkdir(parents=True, exist_ok=True)
     wjl(EDGE / "boxes.jsonl", out)
-    print(json.dumps({"lines": len(out), "check": sum(x["check"] for x in out),
+    print(json.dumps({"lines": len(out), "pending": sum(x["status"] == "pending" for x in out),
+                      "check": sum(x["check"] for x in out if x["status"] == "kept"),
                       "why": dict(collections.Counter(w for x in out for w in x["why"]))}), flush=True)
 
 
-def edge_entries(boxes, have, shots):
+def edge_entries(boxes, have, shots, skip_vns=frozenset(), skip_shots=frozenset()):
     """Sheet entries (sheets.make_batch, mode edge: the frame is the final crop, the one candidate
-    its label) for flagged lines not in any edge batch yet, in review order."""
+    its label) for flagged kept lines not in any edge batch yet, in review order. Lines of skip_vns /
+    skip_shots (build_exclusions: the build drops them) get no edge check."""
     idx = S.line_index(shots)
-    todo = [b for b in boxes if b["check"] and b["id"] not in have and b["id"] in idx]
+    todo = [b for b in boxes if b["check"] and b.get("status", "kept") == "kept" and b["id"] not in have
+            and b["id"] in idx and b["shot"].split("_")[0] not in skip_vns and b["shot"] not in skip_shots]
     todo.sort(key=lambda b: (vn_rank(b["shot"].split("_")[0]), b["shot"], b["id"]))
     return [(b["id"], idx[b["id"]][0], idx[b["id"]][1],
              [{"text": b["label"], "key": vote.key(b["label"]), "engines": []}], b["crop"]) for b in todo]
@@ -511,9 +721,10 @@ def edge_entries(boxes, have, shots):
 def cmd_edge_batches(args):
     """Disjoint edge-check batches of --size flagged lines (review/edge/bNNNN)."""
     boxes = jl(EDGE / "boxes.jsonl")
+    _, skip_vns, skip_shots, _ = build_exclusions()
     with review_lock():
         have = batched_ids("edge")
-        entries = edge_entries(boxes, have, load_reads())
+        entries = edge_entries(boxes, have, load_reads(), skip_vns, skip_shots)
         d = REVIEW / "edge"
         start = len(batch_dirs("edge"))
         for k in range(args.n):
@@ -533,6 +744,253 @@ def cmd_edge_apply(args):
     cmd = [sys.executable, str(ROOT / "devnative" / "edgecheck.py"), "--reads", str(reads_snapshot()), "apply",
            "--boxes", str(EDGE / "boxes.jsonl"), "--out", str(EDGE / "edge.jsonl"), "--batch", *map(str, done)]
     subprocess.run(cmd, check=True)
+
+
+# ----------------------------------------------------------------------------- v3: confirm looks
+
+CONFIRM_NOTE = ("This is a confirmation look (v3, AGREEMENT.md rule 3): a second reviewer did not confirm the first\n"
+                "reading of these lines. Decide each line from the image alone, exactly as above: pick or type what\n"
+                "the frame shows; skip \"ui\", \"cut\" or \"bad\" only as defined above; unsure when you cannot\n"
+                "tell.\n")
+
+
+def cmd_confirm_batches(args):
+    """Confirm-look batches (sheets mode blind: candidates shuffled and unattributed, framed on the
+    final crop) of the pending v3 lines (labels.jsonl status "pending") not in a confirm batch yet."""
+    _, skip_vns, skip_shots, _ = build_exclusions()          # lines the build drops get no confirm look
+    labels = [r for r in jl(OUT / "labels.jsonl") if r["status"] == "pending" and r["vn"] not in skip_vns
+              and r["shot"] not in skip_shots]
+    boxes = {b["id"]: b for b in jl(EDGE / "boxes.jsonl")}
+    with review_lock():
+        have = batched_ids("confirm")
+        ids = [r["id"] for r in labels if r["id"] not in have and r["id"] in boxes]
+        ids.sort(key=lambda i: (vn_rank(i.split("_")[0]), i))
+        shots = load_reads()
+        entries = S.review_entries(shots, ids, frames={i: boxes[i]["crop"] for i in ids})
+        start = len(batch_dirs("confirm"))
+        for k in range(args.n):
+            part = entries[k * args.size:(k + 1) * args.size]
+            if not part or len(part) < (args.min if args.min is not None else args.size):
+                break
+            out = REVIEW / "confirm" / f"b{start + k + 1:04d}"
+            n = S.make_batch(part, out, "blind", name=f"realplus/confirm/{out.name}")
+            with open(out / "README.md", "a", encoding="utf-8") as f:
+                f.write(NOTE + CONFIRM_NOTE)
+            print(f"{out}: {len(part)} lines, {n} sheets", flush=True)
+
+
+# ----------------------------------------------------------------------------- v3: independent precision check
+
+CHECK_NOTE = ("This is a label-precision check (v3): transcribe the framed text whatever it is (dialogue, a menu,\n"
+              "a button, a name), including every bracket and punctuation mark inside the frame; do not use skip\n"
+              "\"ui\". Vita entries are at the Vita scale (960 x 544), PSP entries at the PSP scale (480 x 272).\n")
+# The sample (pre-registered here before any check sheet existed): entries are (line, one of its crops).
+# Amended 2026-10-15, still before any check sheet existed: the reclaim tier (2026-10-14) brought about 20k new
+# auto lines, which would otherwise have fallen into new:edge; they get their own stratum, new:auto.
+CHECK_STRATA = {"new:t1": 300, "new:t2": 100, "new:auto": 200, "new:edge": 100, "v2:auto": 120, "v2:reviewed": 80}
+CROP_KINDS = ("vita_ink", "psp_ink", "vita_grad", "psp_grad")
+
+
+def check_stratum(m, v2_ids, v3_pass1, tiers):
+    """Stratum of a built line: new (not in v2) by its v3 review tier (plan tier of the line a v3 pass-1
+    batch decided), "auto" (an auto line v2 did not build: the reclaim tier's, or a flagged one whose edge
+    check v3 made) or "edge" (a reviewed v2 label whose withdrawn edge check v3 completed); v2 lines by auto /
+    reviewed."""
+    if m["id"] in v2_ids:
+        return "v2:auto" if m["how"] == "auto" else "v2:reviewed"
+    if (m.get("pass1") or {}).get("batch") in v3_pass1:
+        return f"new:{tiers.get(m['id'], 't?')}"
+    return "new:auto" if m["how"] == "auto" else "new:edge"
+
+
+def check_sample(man, v2_ids, v3_pass1, tiers, seed, strata=CHECK_STRATA):
+    """[{id, crop, stratum}]: `strata[s]` lines drawn at random from each stratum, each shown as one
+    of its crops, chosen at random among the crops the npz holds for it (so PSP and GRAD crops are
+    checked in the proportions the pool has them, and every entry is checked on exactly the pixels
+    the pool holds)."""
+    rng = random.Random(seed)
+    by = collections.defaultdict(list)
+    for m in man:
+        by[check_stratum(m, v2_ids, v3_pass1, tiers)].append(m)
+    out = []
+    for s, n in strata.items():
+        rows = sorted(by.get(s, []), key=lambda m: m["id"])
+        for m in rng.sample(rows, min(n, len(rows))):
+            crops = [c for c in CROP_KINDS if c in m["crops"]]
+            out.append({"id": m["id"], "crop": rng.choice(crops), "stratum": s})
+    return out
+
+
+def check_entries(sample, man, shots):
+    """Sheet entries for the check: the crop framed on its target's screen, no candidates."""
+    idx = S.line_index(shots)
+    rows = {m["id"]: m for m in man}
+    out = []
+    for e in sample:
+        s, ln = idx[e["id"]]
+        target = e["crop"].split("_")[0]
+        box = rows[e["id"]]["crops"][e["crop"]]
+        if target == "psp":
+            rgb_v, rgb_p = screen(s, "vita"), screen(s, "psp")
+            fx, fy = rgb_p.shape[1] / rgb_v.shape[1], rgb_p.shape[0] / rgb_v.shape[0]
+            ln = scale_line(ln, fx, fy)
+        row = dict(s, kind=target, shot=f"{s['shot']}@{target}")        # make_batch loads the screen by kind
+        out.append((f"{e['id']}@{e['crop']}", row, ln, [], box))
+    return out
+
+
+def cmd_check(args):
+    """The v3 precision sample (review/check_spec_<tag>.json, pre-registered) and its sheets
+    (review/check/bNNNN, mode check: no candidates, the crop framed on its own screen)."""
+    bp = build_paths(args.tag)
+    man = jl(bp["full"])
+    if not man:
+        sys.exit("build first")
+    spec_p = REVIEW / f"check_spec_{args.tag}.json"
+    if spec_p.exists():
+        sys.exit(f"{spec_p} exists: the sample is registered once")
+    v2 = {m["id"] for m in jl(OUT / "manifests" / f"lines_{args.v2}.jsonl")}
+    tiers = {r["id"]: r["tier"] for r in jl(REVIEW / "plan.jsonl")}
+    sample = check_sample(man, v2, v3_batch_names("pass1"), tiers, args.seed)
+    spec = {"tag": args.tag, "seed": args.seed, "strata": CHECK_STRATA, "from": len(man), "v2_lines": args.v2,
+            "entries": sample, "counts": {"stratum": dict(collections.Counter(e["stratum"] for e in sample)),
+                                          "crop": dict(collections.Counter(e["crop"] for e in sample))}}
+    spec_p.write_text(json.dumps(spec, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    shots = load_reads()
+    order = list(range(len(sample)))
+    random.Random(f"{args.seed}:order").shuffle(order)       # strata and crop kinds mixed on the sheets
+    entries = check_entries([sample[i] for i in order], man, shots)
+    for k in range(0, len(entries), args.size):
+        out = REVIEW / "check" / f"b{k // args.size + 1:04d}"
+        ns = S.make_batch(entries[k:k + args.size], out, "check", name=f"realplus/check/{out.name}")
+        with open(out / "README.md", "a", encoding="utf-8") as f:
+            f.write(NOTE + CHECK_NOTE)
+        print(f"{out}: {len(entries[k:k + args.size])} entries, {ns} sheets", flush=True)
+    print(json.dumps(spec["counts"]), flush=True)
+
+
+def check_score(spec, man, decided):
+    """Agreement of the independent transcriptions with the pool's labels: {stratum / crop / all:
+    {agree, lines, rate, wilson95}} and the disagreements. A skip or unsure counts as a disagreement."""
+    labels = {m["id"]: m["label"] for m in man}
+    rows, by = [], collections.defaultdict(lambda: [0, 0])
+    for e in spec["entries"]:
+        d = decided.get(f"{e['id']}@{e['crop']}")
+        if d is None:
+            continue
+        agree = d["decision"] in ("pick", "text") and vote.key(d["text"]) == vote.key(labels[e["id"]])
+        rows.append({**e, "agree": agree, "decision": d["decision"], "text": d.get("text"), "skip": d.get("skip"),
+                     "label": labels[e["id"]]})
+        for k in ("all", f"stratum:{e['stratum']}", f"crop:{e['crop']}", f"side:{e['stratum'].split(':')[0]}"):
+            by[k][0] += agree
+            by[k][1] += 1
+    summ = {k: {"agree": a, "lines": n, "rate": round(a / n, 4), "wilson95": D.wilson95(a, n)}
+            for k, (a, n) in sorted(by.items()) if n}
+    return summ, [r for r in rows if not r["agree"]], len(rows)
+
+
+def cmd_check_score(args):
+    spec = json.loads((REVIEW / f"check_spec_{args.tag}.json").read_text(encoding="utf-8"))
+    man = jl(build_paths(args.tag)["full"])
+    decided = D.collect(done_batches("check"))
+    summ, dis, n = check_score(spec, man, decided)
+    out = REVIEW / f"check_report_{args.tag}.json"
+    out.write_text(json.dumps({"summary": summ, "scored": n, "of": len(spec["entries"]), "disagreements": dis,
+                               "reviewer_kind": "assistant"}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"scored": n, "of": len(spec["entries"]), **{k: v for k, v in summ.items()
+                                                                  if k == "all" or k.startswith("side")}},
+                     indent=1), flush=True)
+    for r in dis:
+        print(json.dumps(r, ensure_ascii=False), flush=True)
+
+
+# ----------------------------------------------------------------------------- v3: third looks at the check
+
+LOOK3_NOTE = ("\nThis is a third look (v3) at lines where an independent transcription and the pool label differ, or\n"
+              "the transcriber could not settle the line. The candidates are those readings, shuffled and\n"
+              "unattributed (one candidate when the transcriber typed nothing). Decide from the image alone what\n"
+              "the red frame shows, in the conventions above: pick the candidate that is exactly right, or type the\n"
+              "text, or unsure, or skip \"cut\" / \"bad\" as defined above (never skip \"ui\": menus and names are in\n"
+              "scope). Vita entries are at the Vita scale (960 x 544), PSP entries at the PSP scale (480 x 272).\n")
+
+
+def look3_candidates(d):
+    """The candidates a third look shows for a check disagreement: the pool label and, when the check typed
+    another text, that text; shuffled per entry, unattributed."""
+    cands = [{"text": d["label"], "key": vote.key(d["label"]), "engines": []}]
+    if d["decision"] == "text" and d.get("text") and vote.key(d["text"]) != vote.key(d["label"]):
+        cands.append({"text": d["text"], "key": vote.key(d["text"]), "engines": []})
+    random.Random(f"look3:{d['id']}@{d['crop']}").shuffle(cands)
+    return cands
+
+
+def look3_resolutions(dis, decided, tag):
+    """review/resolutions_v3.jsonl rows from the third looks (decided: {id@crop: decision}). A look that reads
+    the pool label's key keeps the line (label-right); another reading drops it (label-wrong), and so do unsure
+    and cut / bad: a label needs Claude and Luna to agree (AGREEMENT.md), so a third look never writes one."""
+    out = []
+    for d in dis:
+        x = decided.get(f"{d['id']}@{d['crop']}")
+        if x is None:
+            raise KeyError(f"no third look for {d['id']}@{d['crop']}")
+        if x["decision"] in ("pick", "text"):
+            why = "label-right" if vote.key(x["text"]) == vote.key(d["label"]) else "label-wrong"
+        else:
+            why = "unsure" if x["decision"] == "unsure" else (x.get("skip") or "skip")
+        third = x.get("text") if x["decision"] in ("pick", "text") else x["decision"]
+        note = (f"third look (assistant) on {d['crop']} after the {tag} check (stratum {d['stratum']}, check "
+                f"{d['decision']}): {json.dumps(third, ensure_ascii=False)}")
+        if x.get("note"):
+            note += f"; {x['note']}"
+        out.append({"id": d["id"], "keep": why == "label-right", "why": why, "note": note})
+    return out
+
+
+def check_after_looks(spec, report, res):
+    """The check after the third looks: per stratum / crop / side / target, lines whose label the check read
+    (agree), or a third look read (look3-right), read another text (look3-wrong) or could not settle."""
+    dis = {f"{d['id']}@{d['crop']}" for d in report["disagreements"]}
+    by = collections.defaultdict(collections.Counter)
+    for e in spec["entries"]:
+        r = res.get(e["id"]) if f"{e['id']}@{e['crop']}" in dis else None
+        st = "agree" if f"{e['id']}@{e['crop']}" not in dis else "look3-missing" if r is None else \
+            "look3-right" if r["keep"] else "look3-wrong" if r["why"] == "label-wrong" else "look3-unsettled"
+        for k in ("all", f"stratum:{e['stratum']}", f"crop:{e['crop']}", f"side:{e['stratum'].split(':')[0]}",
+                  f"target:{e['crop'].split('_')[0]}"):
+            by[k][st] += 1
+    out = {}
+    for k, c in sorted(by.items()):
+        n, ok = sum(c.values()), c["agree"] + c["look3-right"]
+        out[k] = {**c, "lines": n, "right": ok, "rate": round(ok / n, 4), "wilson95": D.wilson95(ok, n),
+                  "wrong_wilson95": D.wilson95(c["look3-wrong"], n)}
+    return out
+
+
+def cmd_look3(args):
+    """Third looks at the disagreements of check_report_<tag>.json: one batch review/look3/b0001 (sheets mode
+    blind, framed on the crop the check showed), then --resolve: review/resolutions_v3.jsonl (final applies it)."""
+    rep = json.loads((REVIEW / f"check_report_{args.tag}.json").read_text(encoding="utf-8"))
+    dis = rep["disagreements"]
+    b = REVIEW / "look3" / "b0001"
+    if args.resolve:
+        p = REVIEW / "resolutions_v3.jsonl"
+        if p.exists():
+            sys.exit(f"{p} exists")
+        res = look3_resolutions(dis, D.collect([b]), args.tag)
+        wjl(p, res)
+        print(json.dumps(dict(collections.Counter((r["why"] for r in res)))), flush=True)
+        return
+    if b.exists():
+        sys.exit(f"{b} exists")
+    man = jl(build_paths(args.tag)["full"])
+    ents = check_entries([{"id": d["id"], "crop": d["crop"], "stratum": d["stratum"]} for d in dis], man,
+                         load_reads())
+    by = {f"{d['id']}@{d['crop']}": d for d in dis}
+    n = S.make_batch([(k, row, ln, look3_candidates(by[k]), box) for k, row, ln, _, box in ents], b, "blind",
+                     name="realplus/look3/b0001")
+    with open(b / "README.md", "a", encoding="utf-8") as f:
+        f.write(NOTE + LOOK3_NOTE)
+    print(f"{b}: {len(ents)} entries, {n} sheets", flush=True)
 
 
 # ----------------------------------------------------------------------------- build
@@ -690,7 +1148,9 @@ def cut_shot(s, recs, idx, src=None, edge=None):
                "release": s.get("release"), "how": r["how"], "support": r["support"], "readers": r["readers"],
                "pass1": r.get("pass1"), "pass2": r.get("pass2"), "blind": r.get("blind"),
                "looks": r.get("looks"), "name": r.get("name", False), "edge": {"flags": flags, "why": edge_why},
-               "reviewer_kind": "assistant", "chars": len(vote.key(r["label"])), "crops": {}}
+               "reviewer_kind": "assistant", "reviewer_kinds": r.get("reviewer_kinds", ["assistant"]),
+               "luna": r.get("luna"), "confirm": r.get("confirm"),
+               "chars": len(vote.key(r["label"])), "crops": {}}
         out = []
         for target, ln, g, rgb, W, H, fc, fr in (("vita", lv, g_v, rgb_v, Wv, Hv, fc_v, fr_v),
                                                  ("psp", lp, g_p, rgb_p, Wp, Hp, fc_p, fr_p)):
@@ -729,7 +1189,8 @@ def cut_shot(s, recs, idx, src=None, edge=None):
                         "target": target, "crop": crop, "box": box, "dark": dark, "inverted": inverted,
                         "how": r["how"], "pol": pol, "support": r["support"], "readers": r["readers"],
                         "decision": (r.get("pass1") or {}).get("decision"), "looks": r.get("looks"),
-                        "reviewer_kind": "assistant", "name": r.get("name", False), "chars": ch,
+                        "reviewer_kind": "assistant", "reviewer_kinds": r.get("reviewer_kinds", ["assistant"]),
+                        "luna": r.get("luna"), "name": r.get("name", False), "chars": ch,
                         "chars_match": ch_ok, "src_dims": dims, "screen": [W, H]}
                 out.append(((target, crop), img, meta))
                 row["crops"][f"{target}_{crop}"] = box
@@ -823,6 +1284,24 @@ def late_exclusions(src_rows, saved_vns=(), current_vns=(), dup_images=(), leak_
     return vns, shots_
 
 
+def build_exclusions():
+    """What a build leaves out, whatever was decided earlier: (reserved VNs {vn: reason}, their set, shot keys,
+    {shot key: selection row} of v2's selection and the reclaim tier). The reservation is recomputed from today's
+    dump and unioned with the committed eval/manifests/reserved.json (shots.reserved_vns; docs/reservations.md;
+    owner 2026-10-14 13:25Z: the test sets and their release partners, the CLANNAD family, the development
+    sample). A reserved_vns.json saved at selection under the old rules (hash splits, development, fresh native,
+    owner test series) no longer excludes anything. Shot keys: dedupe copies (v2's dups.json and the reclaim
+    tier's) and the leak-check drops. hygiene.py checks the same pool."""
+    rows_, rcl = SH.load_shots(), reclaim_shot_rows()
+    current = SH.reserved_vns(SH.load_dump())
+    leak = OUT / "manifests" / "leak_drop.json"
+    vns, shots_ = late_exclusions(rows_, (), set(current), dups(),
+                                  json.loads(leak.read_text()) if leak.exists() else ())
+    rd = reclaim_dups()
+    shots_ |= {f"{r['vn']}_{r['image']}" for r in rcl if str(r["image"]) in rd}
+    return current, vns, shots_, {f"{r['vn']}_{r['image']}": r for r in rows_ + rcl}
+
+
 def build_paths(tag=None):
     """The build's outputs. Built files are pinned by their users (VOCR3 pins the npz sha256s), so a
     build never replaces one: a new build needs a new --tag, whose files carry it in their names."""
@@ -840,15 +1319,7 @@ def cmd_build(args):
                  "build with a new --tag (new file names) and tell the conductor")
     labels = jl(OUT / "labels.jsonl")
     shots = load_reads()
-    rows_ = SH.load_shots()
-    # The reservation recomputed from today's dump and the committed eval/manifests/reserved.json (docs/
-    # reservations.md). A reserved_vns.json saved at selection under the old rules (hash splits, development, fresh
-    # native, owner test series) no longer excludes anything; select under the new rules rewrites it.
-    current = SH.reserved_vns(SH.load_dump())
-    leak = OUT / "manifests" / "leak_drop.json"
-    late_vns, late_shots = late_exclusions(
-        rows_, (), set(current), dups(), json.loads(leak.read_text()) if leak.exists() else ())
-    src = {f"{r['vn']}_{r['image']}": r for r in rows_}
+    current, late_vns, late_shots, src = build_exclusions()
     edge_p = OUT / "edge" / "edge.jsonl"
     edge = {r["id"]: r for r in jl(edge_p)} if edge_p.exists() else None
     files, man, drops, kept = build_lines(labels, shots, late_vns, late_shots, src, edge, procs=args.procs)
@@ -866,7 +1337,8 @@ def cmd_build(args):
     wjl(out["full"], [dict(m, label=full[m["id"]]["label"]) for m in man])
     stats = {"lines": len(man), "vns": len({m["vn"] for m in man}), "screenshots": len({m["shot"] for m in man}),
              "how": dict(collections.Counter(m["how"] for m in man)), "names": sum(m["name"] for m in man),
-             "files": counts, "dropped_at_build": dict(drops)}
+             "files": counts, "dropped_at_build": dict(drops), "policy": POLICY,
+             "reserved_vns": dict(collections.Counter(current.values()))}
     out["stats"].write_text(json.dumps(stats, indent=1) + "\n")
     print(json.dumps(stats, indent=1), flush=True)
     print("BUILD_DONE", flush=True)
@@ -1010,6 +1482,12 @@ def last_json(path):
     return None
 
 
+def luna_summary(d):
+    """luna.py stats output without its list of batch names (a range instead)."""
+    b = d.get("batches") or []
+    return {**{k: v for k, v in d.items() if k != "batches"}, "batches": f"{b[0]}-{b[-1]} ({len(b)})" if b else None}
+
+
 def cmd_publish(args):
     """The committed, text-free part of the pool: realplus/manifests/shots_NN.jsonl (every screenshot a
     built line comes from: URL, file and pixel sha256, VN, release, capture session, line and crop
@@ -1020,7 +1498,7 @@ def cmd_publish(args):
     if not man:
         sys.exit("build first")
     build = json.loads(bp["stats"].read_text())
-    rows = {f"{r['vn']}_{r['image']}": r for r in SH.load_shots()}
+    rows = {f"{r['vn']}_{r['image']}": r for r in SH.load_shots() + reclaim_shot_rows()}
     nl, nc = collections.Counter(), collections.Counter()
     for m in man:
         nl[m["shot"]] += 1
@@ -1035,19 +1513,36 @@ def cmd_publish(args):
     sel = json.loads((OUT / "manifests" / "selection.json").read_text())
     fetched = collections.Counter("ok" if r.get("sha256") else r.get("status", "not-fetched") for r in rows.values())
     dump = SH.realplus_dir() / "vndb" / f"vndb-db-{args.dump_date}.tar.zst"
-    labels = jl(OUT / "labels.jsonl")
+    sfx = f"_{args.tag}" if args.tag else ""
+    # a tagged build pins its read-only labels snapshot (labels_<tag>.jsonl), not the working labels.jsonl
+    labels_name = f"labels{sfx}.jsonl" if (OUT / f"labels{sfx}.jsonl").exists() else "labels.jsonl"
+    labels = jl(OUT / labels_name)
     blind = OUT / "review" / "blind_report_measured.json"      # as scored, before the third looks
     if not blind.exists():
         blind = OUT / "review" / "blind_report.json"
     looks3 = [x for f in sorted(REVIEW.glob("resolutions*.jsonl")) for x in jl(f)]
+    sup = build_paths(args.supersedes)["stats"] if args.tag else None
+    sup_stats = json.loads(sup.read_text()) if sup and sup.exists() else None
+    luna_p = OUT / "luna" / "agreement_first10.json"
+    luna_all = OUT / "luna" / "agreement_all.json"
+    # the precision check runs on the build before the third looks (v3: check --tag v3pre); its third looks
+    # (review/resolutions_v3.jsonl) are applied by final before this build
+    csfx = f"_{args.check or args.tag}" if (args.check or args.tag) else ""
+    check_p = REVIEW / f"check_report{csfx}.json"
+    spec_p = REVIEW / f"check_spec{csfx}.json"
+    res3_p = REVIEW / "resolutions_v3.jsonl"
+    after3 = check_after_looks(json.loads(spec_p.read_text(encoding="utf-8")),
+                               json.loads(check_p.read_text(encoding="utf-8")),
+                               {r["id"]: r for r in jl(res3_p)}) if check_p.exists() and res3_p.exists() else None
     stats = {
         "pool": "realplus",
+        "policy": POLICY,
         "pipeline": {"devnative": "f5a1dbd: read and sheets as frozen at 35a86ca, GRAD containment 0cb084e, "
                                   "final crops, edge check and looks f523e30",
                      "devnative_check": "every devnative function realplus calls has the same body at 14ae22d "
                                         "(edgecheck.flags gained crop=, default unchanged; decide.wilson95 factored "
                                         "out); edge flags recomputed at 14ae22d matched on 2,000 of 2,000 lines",
-                     "code_sha256": {n: P.file_sha256(HERE / n) for n in ("shots.py", "pool.py")},
+                     "code_sha256": {n: P.file_sha256(HERE / n) for n in ("shots.py", "pool.py", "luna.py")},
                      "published_at": args.commit},
         "vndb_dump": {"file": dump.name, "sha256": P.file_sha256(dump) if dump.exists() else None,
                       "bytes": dump.stat().st_size if dump.exists() else None, "timestamp": sel["dump"]},
@@ -1057,38 +1552,59 @@ def cmd_publish(args):
         "duplicates": len(dups()),
         "read": {"screenshots": len(load_reads())},
         "review": {"pass1": decision_counts("pass1"), "edge": decision_counts("edge"),
-                   "pass2": decision_counts("pass2"), "reviewer_kind": "assistant"},
+                   "pass2": decision_counts("pass2"), "confirm": decision_counts("confirm"),
+                   "check": decision_counts("check"), "look3": decision_counts("look3"),
+                   "reviewer_kind": "assistant",
+                   "reviewer_kinds": {"v2 batches, auto lines": ["assistant"],
+                                      "v3 pass-1 batches": ["assistant", LUNA_KIND]}},
         "labels": dict(collections.Counter(f"{r['status']}:{r['how'] if r['status'] == 'kept' else r.get('why')}"
                                            for r in labels)),
+        "luna": {**json.loads(luna_p.read_text(encoding="utf-8")), "rule": "AGREEMENT.md",
+                 "votes": dict(collections.Counter(r.get("luna") for r in labels if r.get("luna"))),
+                 "all_batches": luna_summary(json.loads(luna_all.read_text(encoding="utf-8")))
+                 if luna_all.exists() else None}
+        if luna_p.exists() else None,
         "edge_check": dict(collections.Counter(e["edge_why"] for e in jl(EDGE / "edge.jsonl"))),
         "leakcheck": {name: last_json(OUT / "logs" / f"{name}.log")
-                      for name in ("leakcheck", "leakcheck_devnative", "leakcheck_teacher_val")},
+                      for name in ("leakcheck", "leakcheck_devnative", "leakcheck_teacher_val", "leakcheck_reclaim")},
         "leak_dropped_screenshots": len(json.loads((OUT / "manifests" / "leak_drop.json").read_text()))
         if (OUT / "manifests" / "leak_drop.json").exists() else 0,
         "blind_sample": {k: v for k, v in json.loads((REVIEW / "blind_ids.json").read_text()).items() if k != "order"}
         if (REVIEW / "blind_ids.json").exists() else None,
         "build": build,
         "screenshot_manifests": names,
-        "local_manifests": {n: P.file_sha256(OUT / n) for n in (str(bp["lines"].relative_to(OUT)), "labels.jsonl",
+        "local_manifests": {n: P.file_sha256(OUT / n) for n in (str(bp["lines"].relative_to(OUT)), labels_name,
                                                                 bp["full"].name, "edge/boxes.jsonl",
                                                                 "edge/edge.jsonl", "review/blind_ids.json",
                                                                 "review/resolutions.jsonl",
+                                                                "review/resolutions_v2.jsonl",
+                                                                f"review/resolutions{sfx}.jsonl",
                                                                 "review/blind_report_measured.json",
+                                                                f"review/check_spec{csfx}.json",
+                                                                f"review/check_report{csfx}.json",
+                                                                "review/look3/b0001/decisions.jsonl",
+                                                                "luna/agreement_first10.json",
+                                                                "luna/agreement_all.json", "AGREEMENT.md",
                                                                 FROZEN_LABELS, "logs/v2_vs_v1.json",
                                                                 "logs/strict_edge.log", "logs/leakcheck.log",
                                                                 "logs/leakcheck_devnative.log",
                                                                 "logs/leakcheck_teacher_val.log",
+                                                                "logs/leakcheck_reclaim.log",
+                                                                "logs/hygiene.json",
                                                                 "manifests/dups.json", "manifests/leak_drop.json")
                             if (OUT / n).exists()},
-        "batches_used": {k: [b.name for b in done_batches(k)] for k in ("pass1", "pass2", "edge", "blind")},
+        "batches_used": {k: [b.name for b in done_batches(k)] for k in ("pass1", "pass2", "edge", "blind", "confirm",
+                                                                        "check", "look3")},
         "blind": json.loads(blind.read_text())["summary"] if blind.exists() else None,
         "blind_on_this_build": json.loads((REVIEW / f"blind_report_{args.tag}.json").read_text())["summary"]["all"]
         if args.tag and (REVIEW / f"blind_report_{args.tag}.json").exists() else None,
+        "check": {**{k: v for k, v in json.loads(check_p.read_text(encoding="utf-8")).items() if k != "disagreements"},
+                  "on_build": args.check or args.tag, "after_third_looks": after3}
+        if check_p.exists() else None,
         "build_tag": args.tag,
-        "supersedes": {"build": "untagged", "files": {n: f["sha256"] for n, f in
-                                                      json.loads(build_paths()["stats"].read_text())["files"].items()},
-                       "lines": json.loads(build_paths()["stats"].read_text())["lines"]}
-        if args.tag and build_paths()["stats"].exists() else None,
+        "supersedes": {"build": args.supersedes or "untagged",
+                       "files": {n: f["sha256"] for n, f in sup_stats["files"].items()}, "lines": sup_stats["lines"]}
+        if sup_stats else None,
         "third_looks": {"lines": len(looks3), "kept": sum(bool(x.get("keep")) for x in looks3),
                         "why": dict(collections.Counter(x.get("why") for x in looks3)), "reviewer_kind": "assistant"},
     }
@@ -1104,6 +1620,8 @@ def main():
     p = sub.add_parser("batches")
     p.add_argument("--n", type=int, default=1)
     p.add_argument("--size", type=int, default=200)
+    p.add_argument("--tiers", help="only plan lines of these tiers, e.g. t1,t2 (default: all)")
+    p.add_argument("--min", type=int, help="smallest batch to write (default: any)")
     p = sub.add_parser("helpers")
     p.add_argument("--max", type=int, default=8)
     p.add_argument("--kinds", default="pass1")
@@ -1116,9 +1634,12 @@ def main():
     p.add_argument("--size", type=int, default=200)
     p.add_argument("--max", type=int, default=8)
     p.add_argument("--min-new", type=int, default=400)
-    p.add_argument("--kinds", default="edge,pass1", help="batch kinds helpers are queued for, in order")
+    p.add_argument("--kinds", default="edge,pass1",
+                   help="batch kinds helpers are queued for, in order (edge-new: v3's own edge batches only)")
+    p.add_argument("--tiers", help="pass-1 batches only from these plan tiers (v3 Stage A: t1,t2)")
     p = sub.add_parser("reserve")
     p.add_argument("batch", nargs="+")
+    p.add_argument("--model", help="the reviewer's model (recorded in helpers.jsonl)")
     p = sub.add_parser("final")
     p.add_argument("--no-resolve", action="store_true")
     p = sub.add_parser("build")
@@ -1131,9 +1652,25 @@ def main():
     p.add_argument("--size", type=int, default=200)
     p.add_argument("--min", type=int, help="smallest batch to write (default --size)")
     sub.add_parser("edge-apply")
+    p = sub.add_parser("confirm-batches")
+    p.add_argument("--n", type=int, default=1)
+    p.add_argument("--size", type=int, default=200)
+    p.add_argument("--min", type=int, help="smallest batch to write (default --size)")
+    p = sub.add_parser("check")
+    p.add_argument("--tag", required=True, help="the build to sample (lines_full_<tag>.jsonl)")
+    p.add_argument("--v2", default="v2", help="the earlier build's lines manifest tag (new = not in it)")
+    p.add_argument("--seed", default="realplus-v3-check-20261013")
+    p.add_argument("--size", type=int, default=120, help="entries per check batch")
+    p = sub.add_parser("check-score")
+    p.add_argument("--tag", required=True)
+    p = sub.add_parser("look3")
+    p.add_argument("--tag", required=True, help="the build whose check_report_<tag>.json disagreements get a look")
+    p.add_argument("--resolve", action="store_true", help="write review/resolutions_v3.jsonl from the decided looks")
     p = sub.add_parser("publish")
     p.add_argument("--dump-date", default="2026-10-12")
     p.add_argument("--tag", help="publish this tagged build")
+    p.add_argument("--supersedes", help="the tag of the build this one replaces (its stats stay pinned)")
+    p.add_argument("--check", help="the build the precision check ran on (default --tag; v3: v3pre)")
     p.add_argument("--commit", default=subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                                                       capture_output=True, text=True).stdout.strip())
     p = sub.add_parser("blind")
@@ -1148,7 +1685,9 @@ def main():
     {"prep": cmd_prep, "plan": cmd_plan, "batches": cmd_batches, "helpers": cmd_helpers, "status": cmd_status,
      "final": cmd_final, "build": cmd_build, "blind": cmd_blind, "reserve": cmd_reserve,
      "feed": cmd_feed, "edge-boxes": cmd_edge_boxes, "edge-batches": cmd_edge_batches,
-     "edge-apply": cmd_edge_apply, "publish": cmd_publish, "blind-score": cmd_blind_score}[args.cmd](args)
+     "edge-apply": cmd_edge_apply, "publish": cmd_publish, "blind-score": cmd_blind_score,
+     "confirm-batches": cmd_confirm_batches, "check": cmd_check, "check-score": cmd_check_score,
+     "look3": cmd_look3}[args.cmd](args)
 
 
 if __name__ == "__main__":

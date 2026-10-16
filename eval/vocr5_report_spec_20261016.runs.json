@@ -1,0 +1,8 @@
+{
+ "kind": "vocr5-report-spec-runs",
+ "selected_runs": {
+  "VOCR5_S": "v5f_S_seed2",
+  "VOCR5_N": "v5f_N_seed3",
+  "VOCR5_L": "v5f_L_seed2"
+ }
+}

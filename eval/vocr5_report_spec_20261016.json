@@ -1,0 +1,164 @@
+{
+ "schema": 1,
+ "kind": "vocr3-report-spec",
+ "arms": [
+  {
+   "name": "VOCR1",
+   "file": "FL10_w8.vocr",
+   "finder": "grad",
+   "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+   "role": "released baseline"
+  },
+  {
+   "name": "VOCR2",
+   "file": "VOCR2_FL10_w8.vocr",
+   "finder": "textbox",
+   "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766",
+   "role": "released baseline"
+  },
+  {
+   "name": "VOCR_H15",
+   "file": "H15_w8.vocr",
+   "finder": "grad",
+   "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd",
+   "role": "released baseline"
+  },
+  {
+   "name": "F20",
+   "file": "F20_w8.vocr",
+   "finder": "grad",
+   "sha256": "f8c1abe4743a71a742e718523f4206f992d3bd4fb69de321997b2bd6f16779c0",
+   "role": "released baseline"
+  },
+  {
+   "name": "VOCR3_FL10",
+   "file": "VOCR3_FL10_w8.vocr",
+   "finder": "grad",
+   "sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154",
+   "role": "VOCR3-FL10: rp_FL10_C_mix_pre128k_seed1 (VOCR3's selection)"
+  },
+  {
+   "name": "VOCR3_H15",
+   "file": "VOCR3_H15_w8.vocr",
+   "finder": "grad",
+   "sha256": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c",
+   "role": "VOCR3-H15: rp_H15_C_mix_seed2 (VOCR3's selection)"
+  },
+  {
+   "name": "VOCR3_W20",
+   "file": "VOCR3_W20_w8.vocr",
+   "finder": "grad",
+   "sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19",
+   "role": "VOCR3-W20: rp_W20_C_mix_seed1 (VOCR3's selection)"
+  },
+  {
+   "name": "VOCR4_FL10",
+   "file": "VOCR4_FL10_w8.vocr",
+   "finder": "grad",
+   "sha256": "d7c4c08a34ab5349cab30a81ac87c3dd436dd2ea7b69d022537bd78337c181a2",
+   "role": "VOCR4-FL10: v4c_FL10_seed1 (arm C)"
+  },
+  {
+   "name": "VOCR4_H15",
+   "file": "VOCR4_H15_w8.vocr",
+   "finder": "grad",
+   "sha256": "d380d1a4cf4c3c76e4e4b0f9a73fd1619cc1068c4f070d0da07e5e4d05254b9b",
+   "role": "VOCR4-H15: v4c_H15_seed1 (arm C)"
+  },
+  {
+   "name": "VOCR4_W20",
+   "file": "VOCR4_W20_w8.vocr",
+   "finder": "grad",
+   "sha256": "2745e69699ad7b2aba3092f83e5ddc1912f405f54b9df8a2e55be82c385b716e",
+   "role": "VOCR4-W20: v4m_W20_seed2 (arm M)"
+  },
+  {
+   "name": "VOCR5_S",
+   "file": "VOCR5_S_w8.vocr",
+   "finder": "grad",
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+   "role": "VOCR5 Small: v5f_S_seed2 (arm F)"
+  },
+  {
+   "name": "VOCR5_N",
+   "file": "VOCR5_N_w8.vocr",
+   "finder": "grad",
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+   "role": "VOCR5 Normal: v5f_N_seed3 (arm F)"
+  },
+  {
+   "name": "VOCR5_L",
+   "file": "VOCR5_L_w8.vocr",
+   "finder": "grad",
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+   "role": "VOCR5 Large: v5f_L_seed2 (arm F)"
+  }
+ ],
+ "pairs": [
+  {
+   "candidate": "VOCR5_S",
+   "baseline": "VOCR4_FL10"
+  },
+  {
+   "candidate": "VOCR5_S",
+   "baseline": "VOCR1"
+  },
+  {
+   "candidate": "VOCR5_N",
+   "baseline": "VOCR4_H15"
+  },
+  {
+   "candidate": "VOCR5_N",
+   "baseline": "VOCR_H15"
+  },
+  {
+   "candidate": "VOCR5_N",
+   "baseline": "VOCR4_W20"
+  },
+  {
+   "candidate": "VOCR5_N",
+   "baseline": "VOCR5_S"
+  },
+  {
+   "candidate": "VOCR5_L",
+   "baseline": "VOCR4_W20"
+  },
+  {
+   "candidate": "VOCR5_L",
+   "baseline": "VOCR5_N"
+  },
+  {
+   "candidate": "VOCR5_L",
+   "baseline": "F20"
+  }
+ ],
+ "gates": [
+  {
+   "candidate": "VOCR5_S",
+   "baseline": "VOCR1"
+  },
+  {
+   "candidate": "VOCR5_N",
+   "baseline": "VOCR_H15"
+  },
+  {
+   "candidate": "VOCR5_L",
+   "baseline": "VOCR_H15"
+  }
+ ],
+ "sets": [
+  "vita-test",
+  "psp-test"
+ ],
+ "polarities": [
+  "console",
+  "native"
+ ],
+ "primary_polarity": "console",
+ "bootstrap": {
+  "reps": 10000,
+  "seed": 0,
+  "min_clusters": 5
+ },
+ "dialogue": true
+}

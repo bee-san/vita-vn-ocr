@@ -122,7 +122,7 @@ def cmd_run(args):
     """Vote on every v3 pass-1 sheet that has no vote file yet, --max calls at a time."""
     mx = min(args.max, MAX_CALLS)
     while True:
-        todo = todo_sheets(v3_batches("pass1", args.first))
+        todo = todo_sheets(v3_batches("pass1", args.first), retries=args.retries)
         if args.limit:
             todo = todo[:args.limit]
         if todo:
@@ -320,6 +320,8 @@ def main():
     p.add_argument("--limit", type=int, default=0, help="at most this many sheets this round (0: all)")
     p.add_argument("--loop", action="store_true")
     p.add_argument("--every", type=int, default=120)
+    p.add_argument("--retries", type=int, default=2,
+                   help="runs a sheet whose vote misses entries gets (v3: one last round at 3 before the freeze)")
     sub.add_parser("merge")
     p = sub.add_parser("stats")
     p.add_argument("--batches", type=int, default=10)

@@ -8,6 +8,8 @@ import sys
 import time
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 for d in ("realplus", "synth", ""):
     sys.path.insert(0, str(ROOT / d) if d else str(ROOT))
@@ -155,6 +157,55 @@ def test_check_stratum_new_edge_is_an_unreviewed_v2_label_outside_v2():
     assert PL.check_stratum(_man("x", "consensus", ["vita_ink"], "b0003"), set(), {"b0020"}, {}) == "new:edge"
     assert PL.check_stratum(_man("x", "consensus", ["vita_ink"], "b0020"), set(), {"b0020"}, {"x": "t2"}) == "new:t2"
     assert PL.check_stratum(_man("x", "consensus", ["vita_ink"], "b0003"), {"x"}, {"b0020"}, {}) == "v2:reviewed"
+
+
+def _dis(i, label, decision, text=None, crop="vita_ink", stratum="new:t1"):
+    return {"id": i, "crop": crop, "stratum": stratum, "decision": decision, "text": text, "label": label}
+
+
+def test_look3_candidates_show_the_label_and_a_typed_other_reading_shuffled_and_fixed():
+    one = PL.look3_candidates(_dis("a", "「はい」", "unsure"))
+    assert [c["text"] for c in one] == ["「はい」"]
+    two = PL.look3_candidates(_dis("b", "「はい」", "text", "「はい。」"))
+    assert sorted(c["text"] for c in two) == ["「はい。」", "「はい」"]
+    assert two == PL.look3_candidates(_dis("b", "「はい」", "text", "「はい。」"))            # same order every run
+    same_key = PL.look3_candidates(_dis("c", "あ…", "text", "あ..."))   # the check typed the label's key
+    assert [c["text"] for c in same_key] == ["あ…"]
+
+
+def test_look3_resolutions_keep_only_a_third_look_that_reads_the_label():
+    dis = [_dis("a", "あい", "unsure"), _dis("b", "あい", "text", "あぃ"), _dis("c", "あい", "skip"),
+           _dis("d", "あい", "unsure", crop="psp_grad"), _dis("e", "あい", "text", "かき")]
+    looks = {"a@vita_ink": {"decision": "pick", "text": "あい"}, "b@vita_ink": {"decision": "text", "text": "あぃ"},
+             "c@vita_ink": {"decision": "skip", "skip": "cut"}, "d@psp_grad": {"decision": "unsure", "note": "blur"},
+             "e@vita_ink": {"decision": "text", "text": "か き"}}       # another reading, not the label's key
+    res = PL.look3_resolutions(dis, looks, "v3pre")
+    assert [(r["id"], r["keep"], r["why"]) for r in res] == [
+        ("a", True, "label-right"), ("b", False, "label-wrong"), ("c", False, "cut"), ("d", False, "unsure"),
+        ("e", False, "label-wrong")]
+    assert res[3]["note"].endswith('"unsure"; blur') and "after the v3pre check" in res[0]["note"]
+    with pytest.raises(KeyError):
+        PL.look3_resolutions(dis, {}, "v3pre")
+
+
+def test_check_after_looks_counts_right_wrong_and_unsettled_by_stratum_and_crop():
+    spec = {"entries": [{"id": i, "crop": c, "stratum": s} for i, c, s in
+                        [("a", "vita_ink", "new:t1"), ("b", "psp_grad", "new:t1"), ("c", "vita_ink", "v2:auto"),
+                         ("d", "psp_ink", "v2:auto")]]}
+    report = {"disagreements": [{"id": "b", "crop": "psp_grad"}, {"id": "c", "crop": "vita_ink"},
+                                {"id": "d", "crop": "psp_ink"}]}
+    res = {"b": {"keep": True, "why": "label-right"}, "c": {"keep": False, "why": "label-wrong"},
+           "d": {"keep": False, "why": "unsure"}}
+    out = PL.check_after_looks(spec, report, res)
+    assert out["all"]["lines"] == 4 and out["all"]["right"] == 2 and out["all"]["look3-wrong"] == 1
+    assert out["all"]["look3-unsettled"] == 1 and out["stratum:new:t1"]["rate"] == 1.0
+    assert out["target:psp"]["right"] == 1 and out["crop:vita_ink"]["look3-wrong"] == 1
+    assert len(out["all"]["wilson95"]) == 2 and out["side:v2"]["right"] == 0
+
+
+def test_luna_summary_replaces_the_batch_list_by_its_range():
+    s = PL.luna_summary({"batches": ["b0018", "b0019", "b0368"], "lines": 3, "agree_of_both_read": [1, 2, 0.5]})
+    assert s == {"batches": "b0018-b0368 (3)", "lines": 3, "agree_of_both_read": [1, 2, 0.5]}
 
 
 def test_hygiene_blockers_skip_information_only_checks():

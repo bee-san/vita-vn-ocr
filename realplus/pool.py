@@ -23,6 +23,10 @@ adds what a training pool of PC / console shots needs on top:
   pool.py build                    the npz files (teacher_train's format) and the committed manifests
   pool.py blind [--n 540]          a blind re-check sample, framed on the final crops -> $REALPLUS/review/blind
   pool.py blind-score              devnative's blind agreement on the first 500 sampled lines in the pool
+  pool.py confirm-batches          v3: second, blind Claude looks at lines Luna did not confirm -> review/confirm/bNNNN
+  pool.py check --tag T            v3: the pre-registered precision sample of build T (no candidates) -> review/check
+  pool.py check-score --tag T      v3: the check's agreement with the labels -> review/check_report_T.json
+  pool.py look3 --tag T [--resolve]  v3: third looks at the check's disagreements -> review/resolutions_v3.jsonl
   pool.py publish                  the committed, text-free manifests: realplus/manifests/shots_NN.jsonl, stats.json
 
 Each PC / console screenshot is read once, scaled to fit the Vita screen (960x544, cv2.INTER_AREA as
@@ -900,6 +904,95 @@ def cmd_check_score(args):
         print(json.dumps(r, ensure_ascii=False), flush=True)
 
 
+# ----------------------------------------------------------------------------- v3: third looks at the check
+
+LOOK3_NOTE = ("\nThis is a third look (v3) at lines where an independent transcription and the pool label differ, or\n"
+              "the transcriber could not settle the line. The candidates are those readings, shuffled and\n"
+              "unattributed (one candidate when the transcriber typed nothing). Decide from the image alone what\n"
+              "the red frame shows, in the conventions above: pick the candidate that is exactly right, or type the\n"
+              "text, or unsure, or skip \"cut\" / \"bad\" as defined above (never skip \"ui\": menus and names are in\n"
+              "scope). Vita entries are at the Vita scale (960 x 544), PSP entries at the PSP scale (480 x 272).\n")
+
+
+def look3_candidates(d):
+    """The candidates a third look shows for a check disagreement: the pool label and, when the check typed
+    another text, that text; shuffled per entry, unattributed."""
+    cands = [{"text": d["label"], "key": vote.key(d["label"]), "engines": []}]
+    if d["decision"] == "text" and d.get("text") and vote.key(d["text"]) != vote.key(d["label"]):
+        cands.append({"text": d["text"], "key": vote.key(d["text"]), "engines": []})
+    random.Random(f"look3:{d['id']}@{d['crop']}").shuffle(cands)
+    return cands
+
+
+def look3_resolutions(dis, decided, tag):
+    """review/resolutions_v3.jsonl rows from the third looks (decided: {id@crop: decision}). A look that reads
+    the pool label's key keeps the line (label-right); another reading drops it (label-wrong), and so do unsure
+    and cut / bad: a label needs Claude and Luna to agree (AGREEMENT.md), so a third look never writes one."""
+    out = []
+    for d in dis:
+        x = decided.get(f"{d['id']}@{d['crop']}")
+        if x is None:
+            raise KeyError(f"no third look for {d['id']}@{d['crop']}")
+        if x["decision"] in ("pick", "text"):
+            why = "label-right" if vote.key(x["text"]) == vote.key(d["label"]) else "label-wrong"
+        else:
+            why = "unsure" if x["decision"] == "unsure" else (x.get("skip") or "skip")
+        third = x.get("text") if x["decision"] in ("pick", "text") else x["decision"]
+        note = (f"third look (assistant) on {d['crop']} after the {tag} check (stratum {d['stratum']}, check "
+                f"{d['decision']}): {json.dumps(third, ensure_ascii=False)}")
+        if x.get("note"):
+            note += f"; {x['note']}"
+        out.append({"id": d["id"], "keep": why == "label-right", "why": why, "note": note})
+    return out
+
+
+def check_after_looks(spec, report, res):
+    """The check after the third looks: per stratum / crop / side / target, lines whose label the check read
+    (agree), or a third look read (look3-right), read another text (look3-wrong) or could not settle."""
+    dis = {f"{d['id']}@{d['crop']}" for d in report["disagreements"]}
+    by = collections.defaultdict(collections.Counter)
+    for e in spec["entries"]:
+        r = res.get(e["id"]) if f"{e['id']}@{e['crop']}" in dis else None
+        st = "agree" if f"{e['id']}@{e['crop']}" not in dis else "look3-missing" if r is None else \
+            "look3-right" if r["keep"] else "look3-wrong" if r["why"] == "label-wrong" else "look3-unsettled"
+        for k in ("all", f"stratum:{e['stratum']}", f"crop:{e['crop']}", f"side:{e['stratum'].split(':')[0]}",
+                  f"target:{e['crop'].split('_')[0]}"):
+            by[k][st] += 1
+    out = {}
+    for k, c in sorted(by.items()):
+        n, ok = sum(c.values()), c["agree"] + c["look3-right"]
+        out[k] = {**c, "lines": n, "right": ok, "rate": round(ok / n, 4), "wilson95": D.wilson95(ok, n),
+                  "wrong_wilson95": D.wilson95(c["look3-wrong"], n)}
+    return out
+
+
+def cmd_look3(args):
+    """Third looks at the disagreements of check_report_<tag>.json: one batch review/look3/b0001 (sheets mode
+    blind, framed on the crop the check showed), then --resolve: review/resolutions_v3.jsonl (final applies it)."""
+    rep = json.loads((REVIEW / f"check_report_{args.tag}.json").read_text(encoding="utf-8"))
+    dis = rep["disagreements"]
+    b = REVIEW / "look3" / "b0001"
+    if args.resolve:
+        p = REVIEW / "resolutions_v3.jsonl"
+        if p.exists():
+            sys.exit(f"{p} exists")
+        res = look3_resolutions(dis, D.collect([b]), args.tag)
+        wjl(p, res)
+        print(json.dumps(dict(collections.Counter((r["why"] for r in res)))), flush=True)
+        return
+    if b.exists():
+        sys.exit(f"{b} exists")
+    man = jl(build_paths(args.tag)["full"])
+    ents = check_entries([{"id": d["id"], "crop": d["crop"], "stratum": d["stratum"]} for d in dis], man,
+                         load_reads())
+    by = {f"{d['id']}@{d['crop']}": d for d in dis}
+    n = S.make_batch([(k, row, ln, look3_candidates(by[k]), box) for k, row, ln, _, box in ents], b, "blind",
+                     name="realplus/look3/b0001")
+    with open(b / "README.md", "a", encoding="utf-8") as f:
+        f.write(NOTE + LOOK3_NOTE)
+    print(f"{b}: {len(ents)} entries, {n} sheets", flush=True)
+
+
 # ----------------------------------------------------------------------------- build
 
 def scale_line(ln, fx, fy):
@@ -1389,6 +1482,12 @@ def last_json(path):
     return None
 
 
+def luna_summary(d):
+    """luna.py stats output without its list of batch names (a range instead)."""
+    b = d.get("batches") or []
+    return {**{k: v for k, v in d.items() if k != "batches"}, "batches": f"{b[0]}-{b[-1]} ({len(b)})" if b else None}
+
+
 def cmd_publish(args):
     """The committed, text-free part of the pool: realplus/manifests/shots_NN.jsonl (every screenshot a
     built line comes from: URL, file and pixel sha256, VN, release, capture session, line and crop
@@ -1423,7 +1522,16 @@ def cmd_publish(args):
     sup_stats = json.loads(sup.read_text()) if sup and sup.exists() else None
     sfx = f"_{args.tag}" if args.tag else ""
     luna_p = OUT / "luna" / "agreement_first10.json"
-    check_p = REVIEW / f"check_report{sfx}.json"
+    luna_all = OUT / "luna" / "agreement_all.json"
+    # the precision check runs on the build before the third looks (v3: check --tag v3pre); its third looks
+    # (review/resolutions_v3.jsonl) are applied by final before this build
+    csfx = f"_{args.check or args.tag}" if (args.check or args.tag) else ""
+    check_p = REVIEW / f"check_report{csfx}.json"
+    spec_p = REVIEW / f"check_spec{csfx}.json"
+    res3_p = REVIEW / "resolutions_v3.jsonl"
+    after3 = check_after_looks(json.loads(spec_p.read_text(encoding="utf-8")),
+                               json.loads(check_p.read_text(encoding="utf-8")),
+                               {r["id"]: r for r in jl(res3_p)}) if check_p.exists() and res3_p.exists() else None
     stats = {
         "pool": "realplus",
         "policy": POLICY,
@@ -1443,13 +1551,16 @@ def cmd_publish(args):
         "read": {"screenshots": len(load_reads())},
         "review": {"pass1": decision_counts("pass1"), "edge": decision_counts("edge"),
                    "pass2": decision_counts("pass2"), "confirm": decision_counts("confirm"),
-                   "check": decision_counts("check"), "reviewer_kind": "assistant",
+                   "check": decision_counts("check"), "look3": decision_counts("look3"),
+                   "reviewer_kind": "assistant",
                    "reviewer_kinds": {"v2 batches, auto lines": ["assistant"],
                                       "v3 pass-1 batches": ["assistant", LUNA_KIND]}},
         "labels": dict(collections.Counter(f"{r['status']}:{r['how'] if r['status'] == 'kept' else r.get('why')}"
                                            for r in labels)),
         "luna": {**json.loads(luna_p.read_text(encoding="utf-8")), "rule": "AGREEMENT.md",
-                 "votes": dict(collections.Counter(r.get("luna") for r in labels if r.get("luna")))}
+                 "votes": dict(collections.Counter(r.get("luna") for r in labels if r.get("luna"))),
+                 "all_batches": luna_summary(json.loads(luna_all.read_text(encoding="utf-8")))
+                 if luna_all.exists() else None}
         if luna_p.exists() else None,
         "edge_check": dict(collections.Counter(e["edge_why"] for e in jl(EDGE / "edge.jsonl"))),
         "leakcheck": {name: last_json(OUT / "logs" / f"{name}.log")
@@ -1467,9 +1578,11 @@ def cmd_publish(args):
                                                                 "review/resolutions_v2.jsonl",
                                                                 f"review/resolutions{sfx}.jsonl",
                                                                 "review/blind_report_measured.json",
-                                                                f"review/check_spec{sfx}.json",
-                                                                f"review/check_report{sfx}.json",
-                                                                "luna/agreement_first10.json", "AGREEMENT.md",
+                                                                f"review/check_spec{csfx}.json",
+                                                                f"review/check_report{csfx}.json",
+                                                                "review/look3/b0001/decisions.jsonl",
+                                                                "luna/agreement_first10.json",
+                                                                "luna/agreement_all.json", "AGREEMENT.md",
                                                                 FROZEN_LABELS, "logs/v2_vs_v1.json",
                                                                 "logs/strict_edge.log", "logs/leakcheck.log",
                                                                 "logs/leakcheck_devnative.log",
@@ -1478,11 +1591,12 @@ def cmd_publish(args):
                                                                 "manifests/dups.json", "manifests/leak_drop.json")
                             if (OUT / n).exists()},
         "batches_used": {k: [b.name for b in done_batches(k)] for k in ("pass1", "pass2", "edge", "blind", "confirm",
-                                                                        "check")},
+                                                                        "check", "look3")},
         "blind": json.loads(blind.read_text())["summary"] if blind.exists() else None,
         "blind_on_this_build": json.loads((REVIEW / f"blind_report_{args.tag}.json").read_text())["summary"]["all"]
         if args.tag and (REVIEW / f"blind_report_{args.tag}.json").exists() else None,
-        "check": {k: v for k, v in json.loads(check_p.read_text(encoding="utf-8")).items() if k != "disagreements"}
+        "check": {**{k: v for k, v in json.loads(check_p.read_text(encoding="utf-8")).items() if k != "disagreements"},
+                  "on_build": args.check or args.tag, "after_third_looks": after3}
         if check_p.exists() else None,
         "build_tag": args.tag,
         "supersedes": {"build": args.supersedes or "untagged",
@@ -1546,10 +1660,14 @@ def main():
     p.add_argument("--size", type=int, default=120, help="entries per check batch")
     p = sub.add_parser("check-score")
     p.add_argument("--tag", required=True)
+    p = sub.add_parser("look3")
+    p.add_argument("--tag", required=True, help="the build whose check_report_<tag>.json disagreements get a look")
+    p.add_argument("--resolve", action="store_true", help="write review/resolutions_v3.jsonl from the decided looks")
     p = sub.add_parser("publish")
     p.add_argument("--dump-date", default="2026-10-12")
     p.add_argument("--tag", help="publish this tagged build")
     p.add_argument("--supersedes", help="the tag of the build this one replaces (its stats stay pinned)")
+    p.add_argument("--check", help="the build the precision check ran on (default --tag; v3: v3pre)")
     p.add_argument("--commit", default=subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                                                       capture_output=True, text=True).stdout.strip())
     p = sub.add_parser("blind")
@@ -1565,7 +1683,8 @@ def main():
      "final": cmd_final, "build": cmd_build, "blind": cmd_blind, "reserve": cmd_reserve,
      "feed": cmd_feed, "edge-boxes": cmd_edge_boxes, "edge-batches": cmd_edge_batches,
      "edge-apply": cmd_edge_apply, "publish": cmd_publish, "blind-score": cmd_blind_score,
-     "confirm-batches": cmd_confirm_batches, "check": cmd_check, "check-score": cmd_check_score}[args.cmd](args)
+     "confirm-batches": cmd_confirm_batches, "check": cmd_check, "check-score": cmd_check_score,
+     "look3": cmd_look3}[args.cmd](args)
 
 
 if __name__ == "__main__":

@@ -237,3 +237,32 @@ def test_fine_tune_pin_is_complete():
     assert rec["checks"]["reserve_check"]["verdict"] == "RESERVE_OK"
     assert "CHECK_OK" in rec["checks"]["vocr5_pools_check"]
     assert rec["realplus_snapshot"]["refined"]["rows_only"] is True
+
+
+def test_make_spec_arms_are_the_protocols(tmp_path, monkeypatch):
+    import hashlib as H
+    sys.path.insert(0, str(ROOT / "eval"))
+    import vocr5_make_spec as MS
+    v4 = json.loads((ROOT / "eval" / "vocr4_report_spec_20261014.json").read_text(encoding="utf-8"))
+    old = tmp_path / "old"
+    old.mkdir()
+    fake = {}
+    for a in v4["arms"]:                         # toy files standing in for the committed spec's blobs
+        data = f"toy {a['file']}".encode()
+        (old / a["file"]).write_bytes(data)
+        fake[a["name"]] = dict(a, sha256=H.sha256(data).hexdigest())
+    v4 = dict(v4, arms=[fake[a["name"]] for a in v4["arms"]])
+    monkeypatch.setenv("HERD", str(tmp_path))
+    sels = {}
+    for tier, t in MS.TIERS.items():
+        blob = tmp_path / f"{t}.vocr"
+        blob.write_bytes(f"toy {tier}".encode())
+        path = "$HERD/" + blob.name if tier == "Normal" else str(blob)      # a kept incumbent is a $HERD path
+        sels[tier] = {"kind": "vocr5-selection", "tier": tier, "selected": f"run_{t}", "selected_blob": path,
+                      "selected_blob_sha256": H.sha256(blob.read_bytes()).hexdigest(),
+                      "replaces": tier != "Normal", "adopted_arm": "P"}
+    spec, runs = MS.build(P, sels, v4, [old], tmp_path / "blobs")
+    assert {a["name"] for a in spec["arms"]} == set(P["locked_report"]["arms"])
+    assert [(p["candidate"], p["baseline"]) for p in spec["pairs"]] == [tuple(p) for p in P["locked_report"]["pairs"]]
+    assert runs == {"VOCR5_S": "run_S", "VOCR5_N": "run_N", "VOCR5_L": "run_L"}
+    assert (tmp_path / "blobs" / "VOCR5_N_w8.vocr").read_bytes() == b"toy Normal"

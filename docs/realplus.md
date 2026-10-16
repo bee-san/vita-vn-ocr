@@ -169,8 +169,9 @@ never enter the pool.
 The table counts the vote each line was decided by, which is not always Luna's first vote:
 
 - b0022-b0029 were voted on again under the new README; their first votes are kept in `$R3/luna/pass1_prewrap/`.
-- A sheet whose vote missed entries was run again in full (465 sheets have more than one vote file), and the newest
-  run wins for every entry, not only the missing ones (`luna.luna_votes`).
+- A sheet whose vote missed entries was run again in full (304 sheets; with b0022-b0029's 166 re-voted sheets, 465
+  have more than one vote file), and the newest run wins for every entry, not only the missing ones
+  (`luna.luna_votes`).
 
 With each line's first complete vote, the first 10 batches give 950 / 1,327 (71.6%) of Claude's readings and
 950 / 1,000 (95.0%) where both read. In the pool, 18 lines had a first vote that disagreed with Claude: 11 later
@@ -256,11 +257,11 @@ also skip.
 
 ### Precision (independent transcription)
 
-The check was pre-registered in `pool.py` (`CHECK_STRATA`, seed `realplus-v3-check-20261013`) at ddd2f32, written
-2026-10-13 07:20Z. It was amended once, at dcfd608 on 2026-10-15 07:25Z, still about 19 hours before the first check
-sheet (2026-10-16 02:12Z). The amendment added the stratum `new:auto` (200) for the reclaim tier's auto lines, which
-would otherwise have filled `new:edge`. The sample was drawn once from v3pre (`review/check_spec_v3pre.json`). v3pre
-is the build with all of Stage A decided, before the check's third looks.
+The check was pre-registered in `pool.py` (`CHECK_STRATA`, seed `realplus-v3-check-20261013`) on 2026-10-13 at
+07:20Z. It was amended once, on 2026-10-15 at 07:25Z, still about 19 hours before the first check sheet (2026-10-16
+02:12Z); the comment above `CHECK_STRATA` records the amendment. It added the stratum `new:auto` (200) for the
+reclaim tier's auto lines, which would otherwise have filled `new:edge`. The sample was drawn once from v3pre
+(`review/check_spec_v3pre.json`). v3pre is the build with all of Stage A decided, before the check's third looks.
 
 - Each entry is one of the line's crops in the npz, chosen at random (vita_ink 313, vita_grad 201, psp_ink 180,
   psp_grad 106). It is framed on its own screen at its own scale, with no candidate shown.
@@ -278,7 +279,9 @@ nothing. A line stays only if this look reads the label: 44 did; 4 read another 
 and those 14 are dropped (`review/resolutions_v3.jsonl`). v3 is v3pre minus those 14 lines. In crops the difference
 is not quite a subtraction: dropping a line frees its neighbours' GRAD regions, so 5 lines on the same screenshots
 changed (6 new GRAD crops on 4 lines, and 1 GRAD crop re-cut 1 px off). Ink is v3pre's minus 23 crops, with no new
-or changed pixels; GRAD is minus 20, plus 6 new, with 1 changed. Training note, from the audit of PR #89: train2's
+or changed pixels; GRAD is minus 20, plus 6 new, with 1 changed. The `looks` field rose by 1 on the 34 reviewed
+lines a third look kept, but not on the 10 auto lines it kept (`apply_auto_resolutions` does not count the look);
+this is metadata only and changes no label. Training note, from the audit of PR #89: train2's
 `load_shard` drops 2 of v3's 287,381 crops on its CTC length check, both PSP crops of long repeated-kana runs
 (v7762_21992_1 psp_ink, v2593_17776_7 psp_grad).
 

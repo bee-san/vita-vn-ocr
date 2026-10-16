@@ -1,0 +1,89 @@
+{
+ "kind": "vocr5-render-record",
+ "schema": 1,
+ "render": "s4v5631",
+ "what": "synth4 (#69's generator, --profile personal) with --vocab data/vocab_vn_5631.txt, the curriculum rebuilt for that vocab, 1,000,000 crops in 100 shards, seed 20261015 (eval/vocr5_protocol.json data.render)",
+ "manifest": {
+  "file": "data/manifests/synth4_shards_v5631.json",
+  "sha256": "660c36f43b1007ed9327e8d2222d67e47309ee4e6f0273bd737a5ba32e8949b4"
+ },
+ "recipe_sha256": "5be305397ccfff0ad60902b19eebc27823fb04dd21b9b89fd41776364789d72a",
+ "vocab": {
+  "file": "data/vocab_vn_5631.txt",
+  "sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0"
+ },
+ "curriculum": {
+  "sha256": "a8b3752ed6637730ede0d16728f502a0e39a4c835029b5fa09ec878328e8e579",
+  "totals": {
+   "deficit": 186181,
+   "classes_with_deficit": 3062,
+   "vn_classes": 5484
+  },
+  "inputs": {
+   "exposures": "c49b6120abd750c13aa6d4efcb3452908beb3cac760a70ea452404ce9b01ecb8",
+   "jiten_vn": "043fd4b24b62089586159edb23c122f5da58cd82a3b59b9452a737117c427372",
+   "text": "9905382c820a2c336c9b75b9f11189dc17eaa3bbaf6ad33d1b55303783b4cfcb",
+   "mine": "993342599a0fb8f458bf3ad5fa0a48ce9d13bf0edcf6146def8c66e76e21df7b",
+   "targets_out_sha256": "f8ca14c49d139e130a2818a3cf72656d0f11f17418914b9367ed50a94d460a20",
+   "vocab": "data/vocab_vn_5631.txt",
+   "vocab_sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0"
+  },
+  "new_classes_k80_with_words": 610
+ },
+ "targets_sha256": "f8ca14c49d139e130a2818a3cf72656d0f11f17418914b9367ed50a94d460a20",
+ "font_cache_sha256": "f8af16418dc213604773e1bc1d45b8e468d7bdb6fa45ca24eebd9df99ed6c386",
+ "fonts": 317,
+ "fonts_by_licence": {
+  "nc": 8,
+  "open": 307,
+  "owner": 2
+ },
+ "background_vns": 1255,
+ "scenes_dropped": {
+  "excluded_vn": 21,
+  "excluded_hash": 0
+ },
+ "text_names_dropped_excluded": 255,
+ "checks": {
+  "labels": {
+   "shards": 100,
+   "rows": 1000000,
+   "labels_with_unk": 0,
+   "labels_with_oov": 0,
+   "encode_drops": 0,
+   "new_classes": 610,
+   "new_exposures": {
+    "min": 50,
+    "p10": 59.0,
+    "median": 67.0,
+    "max": 127,
+    "under_80": 563,
+    "zero": 0
+   },
+   "all_classes": {
+    "under_10": 15,
+    "median": 92.0
+   }
+  },
+  "determinism": {
+   "0": {
+    "crops": 1000,
+    "labels_identical": true,
+    "pixels_identical": true
+   },
+   "57": {
+    "crops": 1000,
+    "labels_identical": true,
+    "pixels_identical": true
+   }
+  },
+  "render_errors": 0
+ },
+ "hygiene": {
+  "scenes": "synth3's filter at render time (test_games.json 'all' + reserved.json test and dev_sample + is_reserved_vn): no scene of a reserved VN",
+  "text pools and lists": "synth3 v3's text assets (text/pools3), unchanged",
+  "speaker names": "synth3's names.train.tsv (sha256 4aa76da50328146d..., built 2026-10-12 11:22Z under that day's reservation: the 2026-10-12 test_games.json 'all' (172 VNs), exclude_dev_vns.txt (190 VNs) and is_test_vn), filtered at render time only by the CLANNAD exclusion manifest's name hashes and text markers (255 names dropped)",
+  "corrected": "2026-10-16, audit-vocr5 F1. The first version of this field said the names were built under a reservation that is a superset of reserved.json's 187 VNs. That was wrong: it rested on a check that read the TSV's name-kind column as a VN id. The 2026-10-12 build did not forbid 42 of the 187 reserved VNs, and the names of 128 characters of 12 of them remain in the pool (190 of its 378,143 rows): 7 test-shared-release VNs (v1267 30, v2389 28, v172 20, v1038 17, v7495 13, v5721 11, v2028 6) and 5 dev-sample-shared-release VNs (v53298 5, v24 4, v15076 3, v26592 2, v1795 1). 506 of the 1,000,000 crops show one of these 109 full names drawn from the VNDB pool (995 hold one as a substring from any source); the inherited synth3 v2 and v3 shards hold 588 and 604 such crops. None of the 109 names occurs in a vita-test, psp-test, teacher_val-dev or devnative-dev line, and no name-style test line equals a name or a name part (audit-vocr5 evidence names_leak_*.txt). So 'no material of a reserved.json VN' (eval/vocr5_protocol.json data.render) holds for scenes and real data, not for synthetic speaker names",
+  "first_version": "scenes: synth3's filter (test_games all + reserved.json test and dev_sample + is_reserved_vn) at render time; text pools, lists and names: synth3 v3's assets, built under the stricter 2026-10-12/13 reservation (a superset of reserved.json's 187 VNs; the 2026-10-13 list holds all 187), with the CLANNAD exclusion manifest's name hashes and markers"
+ }
+}

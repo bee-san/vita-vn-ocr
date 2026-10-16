@@ -1,0 +1,236 @@
+{
+ "kind": "vocr5-decision",
+ "decision": "replace",
+ "tier": "Large",
+ "x": "VOCR4-W20",
+ "y": "F",
+ "runs_x": [
+  "VOCR4-W20",
+  "VOCR4-W20",
+  "VOCR4-W20"
+ ],
+ "runs_y": [
+  "v5f_L_seed1",
+  "v5f_L_seed2",
+  "v5f_L_seed3"
+ ],
+ "total": {
+  "tv": {
+   "delta_points": -0.277,
+   "ci95": [
+    -0.469,
+    -0.111
+   ],
+   "vns": 94,
+   "cer_x": 0.007938,
+   "cer_y": 0.005167
+  },
+  "dn": {
+   "delta_points": -0.318,
+   "ci95": [
+    -0.624,
+    -0.094
+   ],
+   "vns": 34,
+   "cer_x": 0.009422,
+   "cer_y": 0.006241
+  },
+  "wd": {
+   "delta_points": -0.901,
+   "ci95": [
+    -1.474,
+    -0.479
+   ],
+   "vns": 93,
+   "cer_x": 0.06293,
+   "cer_y": 0.053925
+  },
+  "score": {
+   "delta_points": -0.599,
+   "ci95": [
+    -0.901,
+    -0.374
+   ]
+  }
+ },
+ "pairs": {
+  "VOCR4-W20->v5f_L_seed1": {
+   "tv": {
+    "delta_points": -0.263,
+    "ci95": [
+     -0.459,
+     -0.087
+    ],
+    "vns": 94,
+    "cer_x": 0.007938,
+    "cer_y": 0.005313
+   },
+   "dn": {
+    "delta_points": -0.324,
+    "ci95": [
+     -0.64,
+     -0.087
+    ],
+    "vns": 34,
+    "cer_x": 0.009422,
+    "cer_y": 0.006181
+   },
+   "wd": {
+    "delta_points": -0.851,
+    "ci95": [
+     -1.46,
+     -0.409
+    ],
+    "vns": 93,
+    "cer_x": 0.06293,
+    "cer_y": 0.054421
+   },
+   "score": {
+    "delta_points": -0.572,
+    "ci95": [
+     -0.888,
+     -0.332
+    ]
+   }
+  },
+  "VOCR4-W20->v5f_L_seed2": {
+   "tv": {
+    "delta_points": -0.3,
+    "ci95": [
+     -0.523,
+     -0.1
+    ],
+    "vns": 94,
+    "cer_x": 0.007938,
+    "cer_y": 0.004938
+   },
+   "dn": {
+    "delta_points": -0.264,
+    "ci95": [
+     -0.576,
+     -0.028
+    ],
+    "vns": 34,
+    "cer_x": 0.009422,
+    "cer_y": 0.006781
+   },
+   "wd": {
+    "delta_points": -0.961,
+    "ci95": [
+     -1.547,
+     -0.539
+    ],
+    "vns": 93,
+    "cer_x": 0.06293,
+    "cer_y": 0.053319
+   },
+   "score": {
+    "delta_points": -0.622,
+    "ci95": [
+     -0.93,
+     -0.393
+    ]
+   }
+  },
+  "VOCR4-W20->v5f_L_seed3": {
+   "tv": {
+    "delta_points": -0.269,
+    "ci95": [
+     -0.491,
+     -0.072
+    ],
+    "vns": 94,
+    "cer_x": 0.007938,
+    "cer_y": 0.00525
+   },
+   "dn": {
+    "delta_points": -0.366,
+    "ci95": [
+     -0.712,
+     -0.11
+    ],
+    "vns": 34,
+    "cer_x": 0.009422,
+    "cer_y": 0.005761
+   },
+   "wd": {
+    "delta_points": -0.89,
+    "ci95": [
+     -1.43,
+     -0.473
+    ],
+    "vns": 93,
+    "cer_x": 0.06293,
+    "cer_y": 0.054034
+   },
+   "score": {
+    "delta_points": -0.604,
+    "ci95": [
+     -0.886,
+     -0.377
+    ]
+   }
+  }
+ },
+ "rule": {
+  "ci_upper_below_zero": true,
+  "every_pair_below_zero": true,
+  "no_component_entirely_above_zero": true
+ },
+ "adopted": true,
+ "replaces": true,
+ "protocol_sha256": "7b21cd065a61ea682fb0b241473b10a21f4b0dcc50266e9014a0bb465af79177",
+ "computed": "2026-10-16T19:33:49Z",
+ "inputs": {
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/tv_v5p_L_seed1.json": "b1b5cf891848a6cacaa9e7165649b3cf1e7b5ae365997aa9cf29b2b6e7c9a41d",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/tv_v5p_L_seed2.json": "6d22523be58be931f726070dfa7c84633f2e543502be29c860dce8df4c9c79fd",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/tv_v5p_L_seed3.json": "017bacc889a6ef3bc6de5e57b371599a5ded122f5eb3a4b8d92c982dafc6797d",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/tv_v5f_L_seed1.json": "f27f0263d9972a0be48d5a31d6d322342ab90af501a8ff9d1c0fa7fe8ffdb018",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/tv_v5f_L_seed2.json": "bc996e2cd2e4bed7cb131610b63375f2984e626918fbfb2a67e8935ba97f41e8",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/tv_v5f_L_seed3.json": "28f180d909f9f493ac80868be8ea18898ef6447633e8658b25ce2684f9e1c151",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/tv_VOCR4-W20.json": "241b01264f23a26fe20e3b68704dc7f1904be6aa3e8fb1c348477b256e00f6f1",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_ink_dev_v5p_L_seed1.json": "46aa5ec7558c61b9bd007ab3f4d05caab9a46dc3d71ce06e04fdec1d0026828b",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_grad_dev_v5p_L_seed1.json": "52148fb066c914843e3f8dc5fa0598fd39ae4f573b2bc9baecc5e6ac14a5e897",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_ink_dev_v5p_L_seed1.json": "6748cecc603b7874231d586fedf29dd3052299fc569e65692f311ea943a52414",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_grad_dev_v5p_L_seed1.json": "fe892fab6e62d7c2e4cec35a98763d5dfc33423443bfd3824f06d83c92ff2a13",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_ink_dev_v5p_L_seed2.json": "59e019e47ae8b4a1268e23718325bf524ada628aeb38e88a12ac2091a0392cb5",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_grad_dev_v5p_L_seed2.json": "dec6987fc73f8215f71f48d987c59089f85c605f183a65b001d3cb5ca155ce5b",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_ink_dev_v5p_L_seed2.json": "2e0d48c5c3628d91a9c6559df7e3d810d906feaa137ed44c19b78c9af057a48e",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_grad_dev_v5p_L_seed2.json": "5aad86e2567e575253a9ee1b0d02c42a230d7a1caa986855362b20ebadd72a1c",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_ink_dev_v5p_L_seed3.json": "8071ade392276108abf689ac76039d38c82f02a2f37b5f960b6ea1f45f535462",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_grad_dev_v5p_L_seed3.json": "97d107b79e6ee9ab0f0e50bd5a0afeccf7750313f3cdde72f1361f5e1c088672",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_ink_dev_v5p_L_seed3.json": "481fb38d5734b56c7ba4026a3a0bca59c7c62b5baac79b083f4f89ed3e158d78",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_grad_dev_v5p_L_seed3.json": "0312b305c3552cece938f2ac8f3355e41441ef486c5a5d3a1dbc19eb984c0b3f",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_ink_dev_v5f_L_seed1.json": "b3f38feb5dc65fcf3ed6c386d7364160dbb0897506b9455ac6770df9ebd56d34",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_grad_dev_v5f_L_seed1.json": "8623ca0aece501abe0e836d3d566d0dcfff49b1c1f7eee3a82df4f98d41727fd",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_ink_dev_v5f_L_seed1.json": "427b05cc35f9d5769b34d61f8dab9be1bd338296a6cc98750da3b6b273793af2",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_grad_dev_v5f_L_seed1.json": "8d2f8188789ecacd13ae240956373747e6d13e280f116510163c517211ed3c48",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_ink_dev_v5f_L_seed2.json": "bdab57c3e0e88438e159a857415ccea0764ae744fbf8f6d3dfe62cd6babbce93",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_grad_dev_v5f_L_seed2.json": "64034b9dcf95b0518319df33b8b4cdb394a8abcdda2037d078f42e90be0701e6",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_ink_dev_v5f_L_seed2.json": "33a9a56168343b14414883a475165e7f90915d18a187af4a9b7e09b9cef448e2",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_grad_dev_v5f_L_seed2.json": "f5672e3c56d0937acf596b8c473d7e65d6c08ac02cfbd962f7a3a0995f0d3212",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_ink_dev_v5f_L_seed3.json": "13a93e06440c54c76fe8ca8b09be848e415888ff837ec850a7efb5cf9f740501",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_grad_dev_v5f_L_seed3.json": "a01f3431da8ca8f499c1444a0c6a40b40480b45286aa2f54f25645cc2721080e",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_ink_dev_v5f_L_seed3.json": "1a6a70d3d6b9e48d81fd49d1bb6a1cc28a8a0fc588f9f13ad4506625deed3345",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_grad_dev_v5f_L_seed3.json": "3735c90b34ecf1340a1c5722c24898c0a05b3bce9cecde5c2b876a9ab8f9ca07",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_ink_dev_VOCR4-W20.json": "451a199ac189b1b1cdc63d28afadf41931bcfaa4fecde2bca2a65865ad20e257",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_tv_native_grad_dev_VOCR4-W20.json": "94287465db4f92af7630d68ac3fcb76d30b976bc4ce6b7f52151240c7c8103e3",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_ink_dev_VOCR4-W20.json": "abc14b67d7db71a0e05522ebb58c5f3fad7074408cdbdc415b996c5cafc5d43f",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/scores/dn_devnative_strict_grad_dev_VOCR4-W20.json": "096c21191d8f9f733514d92a6e744da7470819275abfb8b64afee202b6618b58",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5p_L_seed1/meta.json": "db3fe97021ae7c7dfc0798b391c0b7f533028d21a8aad7a7ff27b873154c3684",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5p_L_seed2/meta.json": "cb4e9b57d919ebc3140262c6d11d93ec8fda7a7b5890b5380ca59942c49f5f51",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5p_L_seed3/meta.json": "61c5ab9cf996e101dc95d66e4816f9d17954c3549e3075b4c7ce74ac6a362ccd",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5f_L_seed1/meta.json": "8adfec4475cce217d10c184fd1da51befdeb9955ab6448288a6e11d478af011c",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5f_L_seed2/meta.json": "fecdc9075fa9a0d175031454de2b78a97ad6e9bca4293a9a052942db6dfad04f",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5f_L_seed3/meta.json": "a95d31c4578a261379eed6a4bffa807ab2f2a0482b276f999d68424d398a2340",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/VOCR4-W20/meta.json": "7e368b27bd3af15f68d03e7ae1424c0d3f473eea13b71a888aef447c12ddf0d7",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5p_L_seed1/units_v5p_L_seed1.json": "d51c94e701bf83ebcd4cac1423b6fd424fe4f6abdffb5eff6d5266d764cfa1ca",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5p_L_seed2/units_v5p_L_seed2.json": "8e1fa7a43cf22a49b9a24e4ab8fa1638e2493144c80c0f90e887563cf0652396",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5p_L_seed3/units_v5p_L_seed3.json": "98d86ce508977cdc4192751e5b6dfee09423183985ffa77bf7abe5488a17ae93",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5f_L_seed1/units_v5f_L_seed1.json": "7b0df55aa85f5958378032106494305f67fc86d41d61adb5282d60ded376b239",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5f_L_seed2/units_v5f_L_seed2.json": "0aeec03c3f4679700920d229754f7a31646fbffbe564a4df5f6c1bb1af4eac1b",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/v5f_L_seed3/units_v5f_L_seed3.json": "50223f7f6fb7ccbf5ff041e57f7bd04341c898d058d1ee254c05915b6ffb8866",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/wd/VOCR4-W20/units_VOCR4-W20.json": "2ac7d31385078fd5902cdb57155ec82b7cdf12b6aceaca3b9febac8df370d9c5",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/select/Large/arm_decision.json": "b4dd35016601e9c55046725ef6f7f2b4be2b96de5f5e9823d951bae0fb74684d"
+ }
+}

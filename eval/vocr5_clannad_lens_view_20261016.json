@@ -1,0 +1,449 @@
+{
+ "kind": "vocr5-clannad-lens-view",
+ "schema": 1,
+ "report_only": true,
+ "what": "each system's reading scored against Google Lens's reading of the same CLANNAD line crops (the 'Lens = 100%' view): agreement with Lens, not accuracy",
+ "inputs": {
+  "private_rows_sha256": "e29c4a9c594c98a0b23a1a567e2af44b5264cbdb40d31cbb5f05066e40872e31",
+  "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b"
+ },
+ "bootstrap": {
+  "unit": "page",
+  "reps": 10000,
+  "seed": 0
+ },
+ "view": {
+  "all": {
+   "pages": 2044,
+   "lines": 3048,
+   "systems": {
+    "F20": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1409,
+     "cer_vs_lens": 3.9155,
+     "cer_vs_lens_ci95": [
+      3.3048,
+      4.5706
+     ],
+     "same_as_lens": 73.8845,
+     "same_as_lens_ci95": [
+      72.3164,
+      75.446
+     ]
+    },
+    "VOCR1": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 2045,
+     "cer_vs_lens": 5.6829,
+     "cer_vs_lens_ci95": [
+      5.0546,
+      6.3693
+     ],
+     "same_as_lens": 62.7953,
+     "same_as_lens_ci95": [
+      61.0821,
+      64.4866
+     ]
+    },
+    "VOCR2": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1891,
+     "cer_vs_lens": 5.255,
+     "cer_vs_lens_ci95": [
+      4.6233,
+      5.9415
+     ],
+     "same_as_lens": 65.8465,
+     "same_as_lens_ci95": [
+      64.2036,
+      67.4763
+     ]
+    },
+    "VOCR3_FL10": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1573,
+     "cer_vs_lens": 4.3713,
+     "cer_vs_lens_ci95": [
+      3.7302,
+      5.0579
+     ],
+     "same_as_lens": 74.7703,
+     "same_as_lens_ci95": [
+      73.2358,
+      76.2791
+     ]
+    },
+    "VOCR3_H15": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1588,
+     "cer_vs_lens": 4.4129,
+     "cer_vs_lens_ci95": [
+      3.7728,
+      5.1122
+     ],
+     "same_as_lens": 76.6732,
+     "same_as_lens_ci95": [
+      75.1788,
+      78.1251
+     ]
+    },
+    "VOCR3_W20": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1269,
+     "cer_vs_lens": 3.5265,
+     "cer_vs_lens_ci95": [
+      2.9081,
+      4.1958
+     ],
+     "same_as_lens": 80.1837,
+     "same_as_lens_ci95": [
+      78.7373,
+      81.6126
+     ]
+    },
+    "VOCR4_FL10": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1508,
+     "cer_vs_lens": 4.1906,
+     "cer_vs_lens_ci95": [
+      3.5575,
+      4.8629
+     ],
+     "same_as_lens": 75.5249,
+     "same_as_lens_ci95": [
+      73.9993,
+      77.0172
+     ]
+    },
+    "VOCR4_H15": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1425,
+     "cer_vs_lens": 3.96,
+     "cer_vs_lens_ci95": [
+      3.3225,
+      4.6514
+     ],
+     "same_as_lens": 78.8386,
+     "same_as_lens_ci95": [
+      77.3554,
+      80.2985
+     ]
+    },
+    "VOCR4_W20": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1088,
+     "cer_vs_lens": 3.0235,
+     "cer_vs_lens_ci95": [
+      2.4132,
+      3.6842
+     ],
+     "same_as_lens": 84.1535,
+     "same_as_lens_ci95": [
+      82.8114,
+      85.4105
+     ]
+    },
+    "VOCR5_L": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 811,
+     "cer_vs_lens": 2.2537,
+     "cer_vs_lens_ci95": [
+      1.6554,
+      2.9105
+     ],
+     "same_as_lens": 89.731,
+     "same_as_lens_ci95": [
+      88.6146,
+      90.838
+     ]
+    },
+    "VOCR5_N": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 966,
+     "cer_vs_lens": 2.6845,
+     "cer_vs_lens_ci95": [
+      2.087,
+      3.3419
+     ],
+     "same_as_lens": 86.1549,
+     "same_as_lens_ci95": [
+      84.8933,
+      87.4005
+     ]
+    },
+    "VOCR5_S": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1176,
+     "cer_vs_lens": 3.268,
+     "cer_vs_lens_ci95": [
+      2.6495,
+      3.9275
+     ],
+     "same_as_lens": 81.9882,
+     "same_as_lens_ci95": [
+      80.6018,
+      83.3659
+     ]
+    },
+    "VOCR_H15": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 1414,
+     "cer_vs_lens": 3.9294,
+     "cer_vs_lens_ci95": [
+      3.3229,
+      4.5963
+     ],
+     "same_as_lens": 74.9344,
+     "same_as_lens_ci95": [
+      73.39,
+      76.4358
+     ]
+    },
+    "v1": {
+     "lines": 3048,
+     "lens_chars": 35985,
+     "edits": 5273,
+     "cer_vs_lens": 14.6533,
+     "cer_vs_lens_ci95": [
+      13.5084,
+      15.8402
+     ],
+     "same_as_lens": 57.874,
+     "same_as_lens_ci95": [
+      56.1581,
+      59.6354
+     ]
+    }
+   }
+  },
+  "dialogue": {
+   "pages": 1867,
+   "lines": 2052,
+   "systems": {
+    "F20": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 1108,
+     "cer_vs_lens": 3.2818,
+     "cer_vs_lens_ci95": [
+      2.6434,
+      3.9821
+     ],
+     "same_as_lens": 73.4893,
+     "same_as_lens_ci95": [
+      71.5118,
+      75.4164
+     ]
+    },
+    "VOCR1": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 1444,
+     "cer_vs_lens": 4.277,
+     "cer_vs_lens_ci95": [
+      3.6306,
+      4.9844
+     ],
+     "same_as_lens": 63.0604,
+     "same_as_lens_ci95": [
+      60.9458,
+      65.1266
+     ]
+    },
+    "VOCR2": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 1315,
+     "cer_vs_lens": 3.8949,
+     "cer_vs_lens_ci95": [
+      3.2484,
+      4.6016
+     ],
+     "same_as_lens": 66.9591,
+     "same_as_lens_ci95": [
+      64.8728,
+      68.9892
+     ]
+    },
+    "VOCR3_FL10": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 893,
+     "cer_vs_lens": 2.645,
+     "cer_vs_lens_ci95": [
+      2.0125,
+      3.3485
+     ],
+     "same_as_lens": 80.653,
+     "same_as_lens_ci95": [
+      78.9756,
+      82.3927
+     ]
+    },
+    "VOCR3_H15": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 849,
+     "cer_vs_lens": 2.5147,
+     "cer_vs_lens_ci95": [
+      1.8792,
+      3.2188
+     ],
+     "same_as_lens": 82.6023,
+     "same_as_lens_ci95": [
+      80.9314,
+      84.257
+     ]
+    },
+    "VOCR3_W20": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 816,
+     "cer_vs_lens": 2.4169,
+     "cer_vs_lens_ci95": [
+      1.782,
+      3.115
+     ],
+     "same_as_lens": 84.3567,
+     "same_as_lens_ci95": [
+      82.747,
+      85.9316
+     ]
+    },
+    "VOCR4_FL10": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 907,
+     "cer_vs_lens": 2.6865,
+     "cer_vs_lens_ci95": [
+      2.056,
+      3.3911
+     ],
+     "same_as_lens": 79.8246,
+     "same_as_lens_ci95": [
+      78.0822,
+      81.602
+     ]
+    },
+    "VOCR4_H15": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 897,
+     "cer_vs_lens": 2.6568,
+     "cer_vs_lens_ci95": [
+      2.013,
+      3.3661
+     ],
+     "same_as_lens": 80.7992,
+     "same_as_lens_ci95": [
+      79.0471,
+      82.5196
+     ]
+    },
+    "VOCR4_W20": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 730,
+     "cer_vs_lens": 2.1622,
+     "cer_vs_lens_ci95": [
+      1.5325,
+      2.8709
+     ],
+     "same_as_lens": 87.037,
+     "same_as_lens_ci95": [
+      85.5391,
+      88.4878
+     ]
+    },
+    "VOCR5_L": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 699,
+     "cer_vs_lens": 2.0704,
+     "cer_vs_lens_ci95": [
+      1.4453,
+      2.7827
+     ],
+     "same_as_lens": 88.2554,
+     "same_as_lens_ci95": [
+      86.8217,
+      89.6687
+     ]
+    },
+    "VOCR5_N": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 757,
+     "cer_vs_lens": 2.2422,
+     "cer_vs_lens_ci95": [
+      1.6072,
+      2.9518
+     ],
+     "same_as_lens": 86.2086,
+     "same_as_lens_ci95": [
+      84.6895,
+      87.7235
+     ]
+    },
+    "VOCR5_S": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 888,
+     "cer_vs_lens": 2.6302,
+     "cer_vs_lens_ci95": [
+      1.9989,
+      3.3368
+     ],
+     "same_as_lens": 81.1404,
+     "same_as_lens_ci95": [
+      79.3859,
+      82.8724
+     ]
+    },
+    "VOCR_H15": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 1029,
+     "cer_vs_lens": 3.0478,
+     "cer_vs_lens_ci95": [
+      2.4081,
+      3.7601
+     ],
+     "same_as_lens": 75.8772,
+     "same_as_lens_ci95": [
+      73.998,
+      77.7129
+     ]
+    },
+    "v1": {
+     "lines": 2052,
+     "lens_chars": 33762,
+     "edits": 1513,
+     "cer_vs_lens": 4.4814,
+     "cer_vs_lens_ci95": [
+      3.8379,
+      5.19
+     ],
+     "same_as_lens": 61.3548,
+     "same_as_lens_ci95": [
+      59.2061,
+      63.442
+     ]
+    }
+   }
+  }
+ }
+}

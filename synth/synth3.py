@@ -71,6 +71,8 @@ sys.path.insert(0, str(HERE))
 import render as S2  # noqa: E402
 from common import DATA, is_reserved_vn, line_dark, load_vocab, reservation, to_gray  # noqa: E402
 
+UNK = "〓"   # GETA MARK: the <unk> class of a reduced vocab (train/train.py), always its last entry
+
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 ASSETS = HERD / "shared" / "artifacts" / "synth3"
 SHARED_DATA = HERD / "shared" / "data"
@@ -337,8 +339,9 @@ class Resources:
         self.targets_path = Path(targets) if targets else None
         self.exclusions = load_exclusions(exclude)
         self.font_cache = Path(font_cache) if font_cache else self.assets / "fonts" / "coverage_cache.json"
-        self.vocab = load_vocab(vocab) if vocab else load_vocab()
-        self.vocab_set = set(self.vocab)
+        self.vocab_path = Path(vocab) if vocab else DATA / "vocab.txt"
+        self.vocab = load_vocab(self.vocab_path)
+        self.vocab_set = set(self.vocab) - {UNK}          # a reduced vocab's <unk> class is never rendered
         self.cid = {c: i for i, c in enumerate(self.vocab)}
         self.fonts = self._fonts(font_manifest, holdout_fonts)
         self.by_cat = {}
@@ -416,8 +419,10 @@ class Resources:
         z = np.load(pools_dir / f"contexts.{split}.npz")
         names = json.loads(str(z["pools"]))
         keep = np.array([names[p] in self.pools for p in z["pool"]], bool)
-        order = np.argsort(z["char"][keep], kind="stable")
-        self.ctx_char = z["char"][keep][order]
+        char = context_chars(z["char"], self.vocab)
+        keep &= char >= 0
+        order = np.argsort(char[keep], kind="stable")
+        self.ctx_char = char[keep][order]
         self.ctx_pool = np.array([names[p] for p in z["pool"][keep][order]], dtype=object)
         self.ctx_line = z["line"][keep][order]
         self.ctx_start = np.searchsorted(self.ctx_char, np.arange(len(self.vocab) + 1))
@@ -534,6 +539,19 @@ class Resources:
             return None, None
         pool = self.ctx_pool[k]
         return self.pools[pool][int(self.ctx_line[k])], pool
+
+
+def context_chars(char, vocab):
+    """The text pools' context index stores data/vocab.txt class ids (the vocab the pools were cut to). For
+    another vocab, map each id through its character to that vocab's id; a character the vocab lacks is -1
+    (its context rows are dropped). Characters only the other vocab has get no pool context: the pools hold
+    only data/vocab.txt's characters (synth4's curriculum gives them word and name contexts)."""
+    base = load_vocab()
+    if list(vocab) == base:
+        return np.asarray(char)
+    cid = {c: i for i, c in enumerate(vocab) if c != UNK}
+    remap = np.array([cid.get(c, -1) for c in base], np.int64)
+    return remap[np.asarray(char, np.int64)]
 
 
 def scene_candidates():
@@ -2036,7 +2054,7 @@ def recipe(args):
     code = {p: sha256(HERE / p) for p in ("synth3.py", "render.py", "common.py", "synth3_text.py")}
     return {"kind": "synth3-recipe", "schema": 1, "split": args.split, "seed": args.seed, "profile": args.profile,
             "per_shard": args.per_shard, "cfg": CFG, "code_sha256": code,
-            "font_manifest_sha256": sha256(FONT_MANIFEST), "vocab_sha256": sha256(DATA / "vocab.txt"),
+            "font_manifest_sha256": sha256(FONT_MANIFEST), "vocab_sha256": sha256(R.vocab_path),
             "fonts": len(R.fonts), "font_families": len({f.fam for f in R.fonts}),
             "text": R.text_identity, "background_vns": len(R.bg_vns),
             "background_shots": {k: len(v) for k, v in R.bg.items()},

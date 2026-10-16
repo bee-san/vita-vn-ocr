@@ -382,7 +382,9 @@ agreement with Lens, not accuracy): on the dialogue lines VOCR5-L, -N and -S dif
     on draft sources, then deleted them; their in-run teacher_val-dev evaluation was logged and not read;
   - the helper vocr5-aug's 40-step `fa=0.3` train2 smoke run (14:39Z).
 - **Reserved speaker names in the synthetic data.** As above (Data, F1): 128 characters of 12 reserved release-partner
-  VNs, none of whose names occurs in a scored or development line.
+  VNs. None of their names occurs in a vita-test, psp-test or development line. Two short ones occur in 8 of CLANNAD's
+  3,048 reference lines (2 of them speaker plates). Both are also common in ordinary text and are not CLANNAD names
+  (audit-vocr5-b, b1).
 - **Private data.** The owner's frames, the Lens readings and every CLANNAD reading stay under `shared/private`.
   Committed files hold counts, ids and hashes only, and no hostname (#88).
 

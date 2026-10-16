@@ -71,7 +71,8 @@ dialogue)
     done
   done
   $PY eval/vocr5_dialogue.py tables --report "$R/out/report.json" "${LA[@]}" --out "$R/out/dialogue.json" \
-    --md "$R/out/dialogue.md" | head -n 40 ;;
+    --md "$R/out/dialogue.md" > "$R/out/dialogue.stdout"   # the table (68 lines); a pipe into head broke it (b2)
+  head -n 40 "$R/out/dialogue.stdout" ;;
 clannad)
   # owner-drive-ingest's extra-arms path (read-only on its WORK; one attempt per suffix)
   WORK=$HERD/shared/private/owner-drive-20261013/clannad-compare; C=$HERD/shared/private/vocr5-train/clannad; mkdir -p "$C"

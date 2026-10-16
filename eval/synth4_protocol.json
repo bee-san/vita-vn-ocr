@@ -5,12 +5,12 @@
  "question": "Used as the VN-style synthetic source of train2's pretraining mixture, does synth4 (synth3 version 3 plus a rare-character curriculum and a style mix set from measured real crops; docs/synth4-gap.md, docs/synth4.md) lower CER on the development cohorts compared with synth3 version 3, at study 1's fixed architecture, recipe, step count and seeds?",
  "base_protocol": {
   "file": "eval/synth3_study1b_protocol.json",
-  "sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+  "sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
   "copied_exactly": ["architecture", "recipe", "checkpoint", "export", "views", "metric", "bootstrap",
                      "the B-better-than-A rule on teacher_val (VN-cluster interval entirely below 0 and every seed pair below 0)"],
   "changed": "the arms (D_s3v3 reused, F_s4 new); the development sets are the VOCR3 selection's amendment-8 copies (teacher_val and devnative v3 without the owner's reserved titles); devnative v3 pooled is a guard in the decision (not worse), not reported only; three curriculum strata are added"
  },
- "machine": "dev-dsk-skerraut-main-1a-dc2efe10 (64 cores), the machine D_s3v3 trained on (study 1b, 2026-10-13 02:5x-05:02Z)",
+ "machine": "build-host (64 cores), the machine D_s3v3 trained on (study 1b, 2026-10-13 02:5x-05:02Z)",
  "architecture": {
   "name": "FL10 (the shipped default's topology)", "width": 1.0, "bottleneck": 96, "depth": 1, "ctx": 2, "ctx_k": 5,
   "height": 32,

@@ -128,7 +128,9 @@ kana and dakuten are **not** folded: confusing them is an error.
 - `ms/line` is host wall time, informational only; it says nothing about a console.
 
 `--out` writes everything as JSON, including every line's prediction and the
-ground-truth characters the model cannot emit (`oov_chars`).
+ground-truth characters the model cannot emit (`oov_chars`). Its `env.host` is a generic label
+(`train/hostinfo.py`, e.g. "64-core AMD EPYC 9R14 host"), never the machine's hostname
+([docs/build-host.md](../docs/build-host.md)).
 
 ### Polarity
 

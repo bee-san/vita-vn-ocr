@@ -2,7 +2,7 @@
  "kind": "synth3-study1b-result",
  "protocol": {
   "file": "eval/synth3_study1b_protocol.json",
-  "sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205"
+  "sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3"
  },
  "git": "2b132aaba600ab7dbceeeb1f3a71877d3202e853",
  "scored": "2026-10-13T05:32:04Z",
@@ -22,7 +22,7 @@
  },
  "teacher_val": {
   "kind": "synth3-ablation-result",
-  "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+  "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
   "dev": {
    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/teacher/teacher_val.npz",
    "sha256": "ba46539cfe7f8af72afed494677186d94df2c8527e3032c290c8fd8d62d14671",
@@ -390,7 +390,7 @@
  "devnative_reported_only": {
   "strict_ink": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/devnative_strict_ink.npz",
     "sha256": "ab2cc6890a0da59f49e9c1b491a0a1bc4e68cb9d7715ac485674b80cf2414f51",
@@ -677,7 +677,7 @@
   },
   "strict_grad": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/devnative_strict_grad.npz",
     "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e",
@@ -914,7 +914,7 @@
   },
   "tv_native_ink": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/devnative_tv_native_ink.npz",
     "sha256": "7fb36fc291ff7213d06bf023f0e7cb6fb391a88524d411d02b43d15c1c984d32",
@@ -1271,7 +1271,7 @@
   },
   "tv_native_grad": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/devnative_tv_native_grad.npz",
     "sha256": "f810690caec0164f47224b29ad537efa3500f41b1cc08653a49abdf6f6f94747",
@@ -1628,7 +1628,7 @@
   },
   "pooled": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "merged": [
      {
@@ -2019,7 +2019,7 @@
  "devnative_v2_reported_only": {
   "strict_ink": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v2/devnative_strict_ink.npz",
     "sha256": "ab2cc6890a0da59f49e9c1b491a0a1bc4e68cb9d7715ac485674b80cf2414f51",
@@ -2306,7 +2306,7 @@
   },
   "strict_grad": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v2/devnative_strict_grad.npz",
     "sha256": "94b3dba500ef6f3297fd3e44515ec9e5004dbde85585ddbc4272ea1e78edc61e",
@@ -2543,7 +2543,7 @@
   },
   "tv_native_ink": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v2/devnative_tv_native_ink.npz",
     "sha256": "79111ea886940aa60786fc9ceb32e19af67473db2db5214ce725602b9a22977b",
@@ -2900,7 +2900,7 @@
   },
   "tv_native_grad": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/devnative/v2/devnative_tv_native_grad.npz",
     "sha256": "3e9bbe20d02371975576199fd9c75fd57c125aeaaed945a3f848954cbf6d0bef",
@@ -3257,7 +3257,7 @@
   },
   "pooled": {
    "kind": "synth3-ablation-result",
-   "protocol_sha256": "5219b318be54bfae378268c16ca47d4de25f2798587ee15d1f72eee20b6b5205",
+   "protocol_sha256": "e8f1bfefd3c9f4aa64321d3933eb268b3b5cfa2efc86ddb9131cba4858fea8b3",
    "dev": {
     "merged": [
      {

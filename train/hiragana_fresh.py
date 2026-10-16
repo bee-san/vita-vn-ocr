@@ -23,6 +23,7 @@ import cv2
 import numpy as np
 import torch
 
+import hostinfo
 from hiragana_experiment import FL10_ARCH, sha256, shard_files
 from model import from_checkpoint
 
@@ -205,7 +206,7 @@ def host_environment():
     if info.exists():
         cpu = next((s.split(":", 1)[1].strip() for s in info.read_text().splitlines()
                     if s.startswith("model name")), cpu)
-    return {"host": platform.node(), "platform": platform.platform(), "machine": platform.machine(),
+    return {"host": hostinfo.host_label(), "platform": platform.platform(), "machine": platform.machine(),
             "cpu": cpu, "logical_cpus": os.cpu_count(), "python": platform.python_version(),
             "torch": torch.__version__, "numpy": np.__version__, "opencv": cv2.__version__,
             "cuda_available": torch.cuda.is_available(), "training_threads": 6}

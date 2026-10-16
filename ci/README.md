@@ -4,7 +4,7 @@
 
 | Job | Checks | Local command |
 |---|---|---|
-| ruff + policy | lint (`ruff.toml`: E, F, W, I), the repo policy tests (`tests/test_repo_policy.py`: data policy on every tracked file, action pinning, `ubuntu-24.04`), and `ci/changed.py`, which decides which jobs below run | `.venv-ci/bin/ruff check . && .venv-ci/bin/python -m pytest tests/test_repo_policy.py` |
+| ruff + policy | lint (`ruff.toml`: E, F, W, I), the repo policy tests (`tests/test_repo_policy.py`: data policy on every tracked file, no internal host name in any tracked file and no code that reads the machine's network name (`docs/build-host.md`), action pinning, `ubuntu-24.04`), and `ci/changed.py`, which decides which jobs below run | `.venv-ci/bin/ruff check . && .venv-ci/bin/python -m pytest tests/test_repo_policy.py` |
 | pytest | `tests/`: vocab, model shape and op set, `train.py` helpers, renderer smoke, CI fixtures, repo data policy, action pinning | `.venv-ci/bin/python -m pytest` |
 | training smoke (50 steps) | renders 2 × 160 lines from the pinned font and `ci/fixtures/corpus`, trains exactly 50 CTC steps with `train/train.py`, then checks the checkpoint, the metrics and that the loss fell | `.venv-ci/bin/python ci/train_smoke.py --threads 2` |
 | runtime (gcc), runtime (clang) | `runtime/` as C99 with `-Wall -Wextra -Werror` plus ASan and UBSan, then its parity test against PyTorch. Skipped until `runtime/` exists | `PYTHON=.venv-ci/bin/python ci/runtime.sh gcc` |

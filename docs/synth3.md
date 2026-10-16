@@ -658,7 +658,8 @@ series (realplus v3, the native-frames pool); VOCR3's selection cohorts are copi
   none from v4). Its scenes include 5 family screenshots (four of v4060, one of v12; neither v4
   screenshot). Study 1's and study 2's hygiene notes ("synth3 ... never read ... CLANNAD") hold
   for v4's names and scenes but not for this calibration, the family's scenes or the family's
-  names below; the protocol files stay unchanged because results pin their sha256. synth3's own exclusion list
+  names below; the protocol files stay unchanged because results pin their sha256 (apart from the 2026-10-15
+  removal of the build machine's name, [build-host.md](build-host.md)). synth3's own exclusion list
   holds v4 but not its family, and VNDB lists CLANNAD's main cast again as characters of Tomoyo
   After (v12) and Hikari Mimamoru Sakamichi de (v4060): 19 name parts of those 22 entries (古河,
   渚, 岡崎, 坂上, 智代, 春原, 陽平, 伊吹, 風子, 藤林, 杏, 椋, 秋生, 早苗, ...) are VNDB rows of

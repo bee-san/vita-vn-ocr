@@ -35,11 +35,14 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(ROOT / "train"))
 import backends  # noqa: E402
 import finders  # noqa: E402
 import metrics  # noqa: E402
 import sets  # noqa: E402
 from fetch import data_dir  # noqa: E402
+
+import hostinfo  # noqa: E402
 
 
 def git_sha():
@@ -263,7 +266,7 @@ def main(argv=None):
     find = finders.make_finder(args.finder) if args.finder else None
     results = {"model": args.model, "model_name": rec.name, "model_info": info, "finder": args.finder,
                "pad": args.pad if args.pad is not None else sets.PAD, "polarity": args.polarity, "sets": {},
-               "env": {"git": git_sha(), "python": platform.python_version(), "host": platform.node(),
+               "env": {"git": git_sha(), "python": platform.python_version(), "host": hostinfo.host_label(),
                        "threads": backends.threads(),
                        "date": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")}}
     results["datasets"] = {}

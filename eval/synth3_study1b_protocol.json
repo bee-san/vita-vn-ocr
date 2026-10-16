@@ -18,7 +18,7 @@
   ],
   "changed": "the arms only: B_s3 (version 2, as in study 1) rerun on this machine, and D_s3v3"
  },
- "machine": "dev-dsk-skerraut-main-1a-dc2efe10 (64 cores). Study 1's B_s3 trained on the 32-core box, so B_s3 is rerun here and both arms of this study train on one machine type",
+ "machine": "build-host (64 cores). Study 1's B_s3 trained on the 32-core box, so B_s3 is rerun here and both arms of this study train on one machine type",
  "architecture": {
   "name": "FL10 (the shipped default's topology)",
   "width": 1.0,

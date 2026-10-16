@@ -17,12 +17,16 @@ host: `eval/hiragana_baseline_20261011.json` and
 | `train/train2.py` (source-policy runs) | `host.node` of the execution identity (`source_execution.json`, checkpoints) |
 
 `tests/test_repo_policy.py` runs in CI's `ruff + policy` job on every event. It fails when any tracked file holds the
-internal cloud desktops' host-name prefix, the corporate domain (so a public link to a site under that domain fails
-too) or an EC2-internal DNS name, and when code (`.py`, `.sh`, C/C++, make, CMake, workflow YAML) uses one of the
-usual ways to read the machine's network name: `platform.node()`/`uname()`, `socket.gethostname()`/`getfqdn()`,
-`os.uname()`, `gethostname()`, `/etc/hostname`, `$HOSTNAME`, `$(hostname)`, `uname -n`/`-a`, and similar. It is a
-guard against the usual forms, not a proof: code that assembles the name or the call at run time (string
-concatenation, `__import__`) passes. `tests/test_hostinfo.py` checks what each writer records.
+internal cloud desktops' host-name prefix, a host name under the corporate domain (any host under it, public sites
+included; the bare domain itself passes) or an EC2-internal DNS name, and when code (`.py`, `.sh`, C/C++,
+make, CMake, workflow YAML) uses one of the usual ways to read the machine's network name: `platform.node()`/`uname()`,
+`socket.gethostname()`/`getfqdn()`, `os.uname()`, `gethostname()`, `/etc/hostname`, `$HOSTNAME`, `$(hostname)`,
+`uname -n`/`-a`, and similar. It is a guard against the usual forms, not a proof: code that assembles the name or the
+call at run time (string concatenation, `__import__`) passes, and so do spellings it does not list (an aliased import
+such as `import socket as s`, `/proc/sys/kernel/hostname`, `hostnamectl`, `uname -s -n`, CMake's `site_name()`).
+It can also reject harmless text, such as a quoted `"hostname"` in code (a dict key, say), any `.nodename` attribute
+or an EC2-style `ip-` name in any file; the failure names the file and line. `tests/test_hostinfo.py` checks what
+each writer records.
 
 ## The 2026-10-15 scrub
 
@@ -37,7 +41,8 @@ replaced by `build-host` in these fields:
 
 Apart from that string, the only bytes that changed in those 7 files are pins of changed bytes: the
 `base_protocol.sha256` of the native, synth4 and vocab-proof protocols (they pin the study 1b, study 1b and synth4
-protocols), and the three `part_sha256` digests of each report.
+protocols), and three of the four `part_sha256` digests of each report (`a9`, `overlay`, `shared`;
+`overlay_vs_dialogue` is unchanged).
 
 The pins of those bytes were rewritten to match, in 11 more result files, to a fixpoint (a protocol pins its base
 protocol's sha256, and a result pins its protocol's). No measured number changed: old and new have the same

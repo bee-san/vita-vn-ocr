@@ -6,10 +6,10 @@
   "devnative_check": "every devnative function realplus calls has the same body at 14ae22d (edgecheck.flags gained crop=, default unchanged; decide.wilson95 factored out); edge flags recomputed at 14ae22d matched on 2,000 of 2,000 lines",
   "code_sha256": {
    "shots.py": "ba8ce673bb262b76cecf6b62d55505c642d15e9b9ae9346d0ceb500135b97071",
-   "pool.py": "caa5a6da0558f3014b65c98e253eb8882b1a6e43b2d7e6d1a61dcad3f1bbbee3",
+   "pool.py": "4236930c88d0a391f79f5740885f627dc68aa2c8313f41638505b8fa18eef4ed",
    "luna.py": "1a60a8f8249c309f60afa332913dd1769182311bcd0948bbe1974a69eaca63fe"
   },
-  "published_at": "71f3c77"
+  "published_at": "1cc09f5"
  },
  "vndb_dump": {
   "file": "vndb-db-2026-10-12.tar.zst",
@@ -382,7 +382,7 @@
  ],
  "local_manifests": {
   "manifests/lines_v3.jsonl": "b925fd8f96bee8906a086e01aa053d8ea57bd35fcca0acffd28b56c42c570a4b",
-  "labels.jsonl": "dd3715ecddf45ed16bf6d760103016eeaeba840c32946d769760f47bf03daf71",
+  "labels_v3.jsonl": "dd3715ecddf45ed16bf6d760103016eeaeba840c32946d769760f47bf03daf71",
   "lines_full_v3.jsonl": "055e53cab4f8304d3d532d678a7cef70622d7365e4ccda28f49cee8e0eceb1c0",
   "edge/boxes.jsonl": "e1bd023075ee37b94d2e063c54b8f6c666bee14e904353ea690aae79d8fb185b",
   "edge/edge.jsonl": "ed79ad8a864aa0a7c826d157e3b6286a6e87d65440f5dec7f08f7084d67fa207",

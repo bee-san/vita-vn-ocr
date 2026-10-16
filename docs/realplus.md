@@ -102,23 +102,38 @@ manifests/shots.jsonl`).
   partners, 12 PSP-resolution images that the Vita-scale cutter does not handle, and 2 copies on reserve-policy's
   lists (`$R3/reclaim/manifests/dups.json`, 301 entries in all).
 
-The reclaim tier's 66,044 candidate lines (auto 23,665, t1 21,781, t2 2,461, t3 18,137) were planned together with
-v2's and went through the same batches, rule and build. 32,687 of v3's lines come from it: 20,245 auto and 12,442
-reviewed. Its yields are listed separately below.
+At the read the reclaim tier had 66,044 candidate lines (auto 23,665, t1 21,781, t2 2,461, t3 18,137). After the
+filters above, the plan holds t1 21,751, t2 2,458 and t3 18,098 of them, and the yields table uses those. They were
+planned together with v2's and went through the same batches, rule and build. 32,687 of v3's lines come from the
+tier: 20,245 auto and 12,442 reviewed. Its yields are listed separately below.
 
 ### The agreement rule
 
 Every new training label needs two independent reviewers to read the same text (the owner's rule of 2026-10-13
 05:40Z). The exact rule was fixed in `$R3/AGREEMENT.md` before the first v3 batch was reviewed. In short:
 
-- A Claude reviewer (claude-opus-5.5) decides each pass-1 sheet as in v2 (`reviewer_kind: "assistant"`).
-  145 of the 351 v3 pass-1 batches were decided by review helpers (`review-v3-N`, prompts/review.md) and 206 by
-  the agent's own reviewer sub-sessions. Their instructions are in `$R3/prompts/self_*.md`, calibrated on copies
-  of helper-decided batches. Edge checks: 24 helper, 68 own; confirm looks: 19 helper, 36 own; the precision
-  check: 7 own.
-- Codex gpt-6-luna votes on the same sheet in a fresh session (`tools/codex_sheet.sh`, one call per sheet, at
-  most 4 at a time, public VNDB crops only; `reviewer_kind: "codex:gpt-6-luna"`). It sees the README, the sheet
-  and the candidate texts, never the Claude decision.
+- A Claude reviewer decides each pass-1 sheet as in v2 (`reviewer_kind: "assistant"`). The model differed by batch.
+  The table below is from the helpers' kiro session metadata. `$R3/review/helpers.jsonl` agrees only in part: it
+  names claude-fable-5.1 for 74 pass-1 and 9 confirm batches, but 4 of those 74 ran Opus after spawn.sh began
+  enforcing it, and 16 Fable pass-1 batches and 2 Fable confirm batches have no model recorded.
+
+  | reviewer | pass 1 (351) | confirm looks (55) | edge checks (92) |
+  |---|---|---|---|
+  | claude-fable-5.1 review helpers | 86: b0018-b0033, b0071-b0140 (17,200 lines; 9,919 of the pool's new reviewed lines) | 11: b0001-b0002, b0007-b0015 | none |
+  | claude-opus-5.5 review helpers | 59: b0034-b0070, b0141-b0158, b0166, b0272-b0273, b0294 | 8 | 24: b0031-b0053, b0064 |
+  | claude-opus-5.5, the agent's own sub-sessions | 206: b0159-b0165, b0167-b0271, b0274-b0293, b0295-b0368 | 36 | 68 |
+
+  The helpers of b0018-b0033 ran Fable because they were spawned on 2026-10-13 from 07:04Z, before the owner's 09:15Z
+  update returned new agents to Opus. b0071-b0140 ran Fable because the helpers were pinned to claude-fable-5.1 at
+  15:30Z that day (`REALPLUS_HELPER_MODEL`), after and against that update. The pin lasted until spawn.sh enforced
+  Opus for every agent on 2026-10-14 at 07:48Z.
+  No quality difference is visible: in the precision check, new t1/t2 lines from Fable batches agree 75 / 83 as
+  measured and 82 / 83 are right after the third looks, against 289 / 317 and 310 / 317 for the other batches. The
+  own sub-sessions follow `$R3/prompts/self_*.md`, calibrated on copies of helper-decided batches. The precision
+  check (7 batches) and the third looks were the agent's own claude-opus-5.5 sessions.
+- Codex gpt-6-luna votes on the same sheet in a fresh session (`tools/codex_sheet.sh`, one call per sheet, public
+  VNDB crops only; `reviewer_kind: "codex:gpt-6-luna"`). It ran at most 6 calls at a time, the owner's limit, and at
+  most 4 from 2026-10-13 10:35Z. It sees the README, the sheet and the candidate texts, never the Claude decision.
 - The two readings are compared by `teacher/vote.key`, eval's scoring normalisation. A difference only in an edge
   「」『』。、！？ is a disagreement.
 - The outcomes:
@@ -145,9 +160,28 @@ Luna's agreement with Claude (`luna.py stats`; `$R3/luna/agreement_first10.json`
 | **agreement where both read** | **969 / 1,022 (94.8%)** | **33,151 / 35,023 (94.65%)** |
 
 Most of Luna's skips were false alarms against the pipeline's conventions: it called wrapped screen lines "cut"
-and name plates "ui". From b0022 on, every batch README restates those conventions (`pool.WRAP_NOTE`). Luna's
-skip-or-unsure share of the lines Claude read fell from 27.4% (148 / 540, b0018-b0021) to 17.0% (7,096 / 41,736).
-Luna also read a text on 10,242 lines Claude skipped; under the rule these never enter the pool.
+and name plates "ui". So `pool.WRAP_NOTE`, which restates those conventions, was appended to the READMEs of
+b0022-b0029 on 2026-10-13 at 07:30Z, and every batch from b0038 on carries it. b0018-b0021 and b0030-b0037 do not.
+Luna's skip-or-unsure share of the lines Claude read is 24.6% on the 12 batches without the note (395 / 1,608) and
+16.8% on those with it (6,849 / 40,668). Luna also read a text on 10,242 lines Claude skipped; under the rule these
+never enter the pool.
+
+The table counts the vote each line was decided by, which is not always Luna's first vote:
+
+- b0022-b0029 were voted on again under the new README; their first votes are kept in `$R3/luna/pass1_prewrap/`.
+- A sheet whose vote missed entries was run again in full (465 sheets have more than one vote file), and the newest
+  run wins for every entry, not only the missing ones (`luna.luna_votes`).
+
+With each line's first complete vote, the first 10 batches give 950 / 1,327 (71.6%) of Claude's readings and
+950 / 1,000 (95.0%) where both read. In the pool, 18 lines had a first vote that disagreed with Claude: 11 later
+agreed, and 7 later skipped and were confirmed by a confirm look. Under rule 2, with no re-vote, they would have been
+dropped. 146 more lines had a first-vote skip that later became agree, so they did not need a confirm look, and 100
+went the other way, from agree to a skip and a confirm look. A future rule should keep each entry's first complete
+vote.
+
+Two Luna records, `{"pick": 1, "cut": "cut"}` with the key `cut` instead of `skip`, parse as plain picks and count
+as agreements. By amendment 1's intent they are skips. Both lines are in the pool without a confirm look:
+v26337_127493_1 (b0328) and v17793_138107_1 (b0321).
 
 The confirm looks covered 10,388 lines and agreed with the first reading on 10,026 (96.5%). By the reason a line
 was sent:
@@ -160,7 +194,10 @@ was sent:
 | Luna skip "bad" | 3 / 3 |
 | single-family labels | 3,105 / 3,254 |
 
-The other 362 were dropped (another reading 87, unsure 129, skip 146).
+The other 362 were dropped (another reading 87, unsure 129, skip 146). These counts come from the `confirm` field of
+`labels_v3.jsonl`. The confirm batches themselves hold 10,392 decisions, 10,030 agreeing. The 4 extra lines agreed,
+but the precision check's third looks dropped them later. The single-family row includes 5 lines that were first
+sent for a Luna skip that a later re-vote turned into agree.
 
 ### Yields
 
@@ -209,16 +246,21 @@ also skip.
   hashes) covered the tier in every build that held it.
 - Codex exposure: 9 lines of three CLANNAD-relation fan works (v11057 *NETANNAD*, v42392 *YAMANNAD*, v16902
   *杏アフターアフター*; public VNDB screenshots) sat on 8 pass-1 batches (b0039, b0050, b0059, b0084, b0093,
-  b0101, b0132, b0139). They were batched before the FINAL policy reached the plan, and Luna voted on those
-  sheets. The build drops them and they are never trained on, but CLANNAD-family crops did reach Codex. No other
-  test-reserved line was on any sheet. One development-sample line was (b0159), and it is dropped at the build
-  too.
+  b0101, b0132, b0139). Those batches were made between 2026-10-13 09:05Z and 2026-10-14 06:52Z, and Luna voted on
+  each within minutes. These VNs were already reserved, by `clannad-relation`, which came in with PR #57 (merged
+  2026-10-13 06:32Z, before the first v3 batch), and every build excluded them. The gap was in v3's plan: until the
+  hand filter of 2026-10-14 19:55Z it applied no reservation, so lines of reserved VNs could reach a sheet.
+  `pool.py plan` has applied the build's reservation (`build_exclusions`) since 2026-10-15. The build drops these 9
+  lines and they are never trained on, but CLANNAD-family crops did reach Codex. A scan of every v3 pass-1 sheet
+  finds no other test-reserved line. One development-sample line was there (b0159), and the build drops it too.
 
 ### Precision (independent transcription)
 
-The check was pre-registered in `pool.py` (`CHECK_STRATA`, seed `realplus-v3-check-20261013`) before any check
-sheet existed, and drawn once from v3pre (`review/check_spec_v3pre.json`). v3pre is the build with all of Stage A
-decided, before the check's third looks.
+The check was pre-registered in `pool.py` (`CHECK_STRATA`, seed `realplus-v3-check-20261013`) at ddd2f32, written
+2026-10-13 07:20Z. It was amended once, at dcfd608 on 2026-10-15 07:25Z, still about 19 hours before the first check
+sheet (2026-10-16 02:12Z). The amendment added the stratum `new:auto` (200) for the reclaim tier's auto lines, which
+would otherwise have filled `new:edge`. The sample was drawn once from v3pre (`review/check_spec_v3pre.json`). v3pre
+is the build with all of Stage A decided, before the check's third looks.
 
 - Each entry is one of the line's crops in the npz, chosen at random (vita_ink 313, vita_grad 201, psp_ink 180,
   psp_grad 106). It is framed on its own screen at its own scale, with no candidate shown.
@@ -226,13 +268,19 @@ decided, before the check's third looks.
   label, candidate or other batch.
 - A skip or unsure counts as a disagreement.
 - The stratum `new:edge` (100 planned) was empty: every line of v2's withdrawn edge checks is an auto line, so those
-  lines fall in `new:auto`. That stratum's 200 entries are 182 reclaim auto lines and 18 such lines, and the sample
-  is 800 lines, not 900.
+  lines fall in `new:auto`. That stratum's 200 entries are 182 reclaim auto lines and 18 such lines, so the withdrawn
+  edge checks got 18 entries rather than the 100 the first registration meant for them, and the sample is 800 lines,
+  not 900.
 
 Third looks: one fresh Claude session looked at the 58 disagreements (`pool.py look3`, `review/look3/b0001`). Each
 entry showed the label and the check's reading, shuffled and unattributed, or only the label when the check typed
 nothing. A line stays only if this look reads the label: 44 did; 4 read another text, 9 were unsure and 1 was cut,
-and those 14 are dropped (`review/resolutions_v3.jsonl`). v3 is v3pre minus those 14 lines.
+and those 14 are dropped (`review/resolutions_v3.jsonl`). v3 is v3pre minus those 14 lines. In crops the difference
+is not quite a subtraction: dropping a line frees its neighbours' GRAD regions, so 5 lines on the same screenshots
+changed (6 new GRAD crops on 4 lines, and 1 GRAD crop re-cut 1 px off). Ink is v3pre's minus 23 crops, with no new
+or changed pixels; GRAD is minus 20, plus 6 new, with 1 changed. Training note, from the audit of PR #89: train2's
+`load_shard` drops 2 of v3's 287,381 crops on its CTC length check, both PSP crops of long repeated-kana runs
+(v7762_21992_1 psp_ink, v2593_17776_7 psp_grad).
 
 | | lines | agree as measured | right after third looks | wrong | unsettled |
 |---|---:|---:|---:|---:|---:|

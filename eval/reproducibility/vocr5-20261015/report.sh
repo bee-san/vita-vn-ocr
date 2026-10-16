@@ -42,7 +42,7 @@ lm)
   # docs/ctc-lm-decode.json "tiers" 1MB config: beam 8, top-8, alpha 500, beta 3500, gate 8000, flags 2, bracket 8000
   LM=$A/ctc-lm-decode/release_pub2/vocr_lm_o3_1000k.vlm; mkdir -p "$R/lm"
   [ "$(sha256sum "$LM" | cut -c1-16)" = 993000611555171d ] || { echo "$LM is not the pinned 1 MB LM"; exit 4; }
-  OPTS="--topk 8 --beam 8 --alpha 500 --beta 3500 --gate 8000 --lm-flags 2 --bracket 8000 --lm $LM"
+  OPTS="--stdin --topk 8 --beam 8 --alpha 500 --beta 3500 --gate 8000 --lm-flags 2 --bracket 8000 --lm $LM"
   make -C runtime build/vocr_cli >/dev/null
   for arm in VOCR4_FL10 VOCR4_H15 VOCR4_W20 VOCR5_S VOCR5_N VOCR5_L; do
     for s in vita-test psp-test; do

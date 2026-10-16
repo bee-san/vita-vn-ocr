@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # report.sh STEP: the VOCR5 locked report (eval/vocr5_protocol.json "locked_report"), run ONCE after the three
 # selections are committed on feat/vocr5. A copy of VOCR4's report.sh. STEP = spec | shared | a9 | overlay | render |
-# lm | clannad.
+# lm | lens | dialogue | clannad.
 set -euo pipefail
 STEP=$1
 HERD=/local/home/skerraut/herd-vita-ocr; A=$HERD/shared/artifacts; export HERD
@@ -50,6 +50,22 @@ lm)
         --set "$s" --data "$A/eval" --polarity console --out "$R/lm/${arm}_${s}.json" 2>&1 | tail -n 2
     done
   done ;;
+lens)
+  # protocol amendment 2 (report only): Google Lens reads each scored line of vita-test and psp-test once (public VNDB
+  # screenshots), screen polarity; readings cached privately; scored by eval/run.py like every arm (native polarity)
+  L=$HERD/shared/private/vocr5-train/lens; mkdir -p "$L" "$R/lens"
+  [ -x .venv-owocr/bin/python ] || { echo "no .venv-owocr (eval/lens_lines.py's install steps)"; exit 2; }
+  for s in vita-test psp-test; do
+    $PY eval/lens_lines.py read --set "$s" --data "$A/eval" --owocr-python .venv-owocr/bin/python --out "$L/$s.jsonl"
+    $PY eval/run.py --set "$s" --data "$A/eval" --polarity native \
+      --model "cmd:$PY eval/lens_lines.py serve --cache $L/$s.jsonl" --out "$L/run_$s.json" 2>&1 | tail -n 3
+  done ;;
+dialogue)
+  # the dialogue-primary fixed-line tables and pairs (lines without the 'name' style), Lens included
+  LA=(); L=$HERD/shared/private/vocr5-train/lens
+  for s in vita-test psp-test; do [ -s "$L/run_$s.json" ] && LA+=(--lens "$s=$L/run_$s.json"); done
+  $PY eval/vocr5_dialogue.py tables --report "$R/out/report.json" "${LA[@]}" --out "$R/out/dialogue.json" \
+    --md "$R/out/dialogue.md" | head -n 40 ;;
 clannad)
   # owner-drive-ingest's extra-arms path (read-only on its WORK; one attempt per suffix)
   WORK=$HERD/shared/private/owner-drive-20261013/clannad-compare; C=$HERD/shared/private/vocr5-train/clannad; mkdir -p "$C"

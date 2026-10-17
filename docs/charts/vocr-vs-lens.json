@@ -54,7 +54,8 @@
      1.2334,
      1.5359
     ],
-    "exact_pct": 82.4561,
+    "exact_lines": 1692,
+    "exact_pct": 82.46,
     "path": "scores.systems.VOCR5_S.not_name"
    },
    "VOCR5_N": {
@@ -66,7 +67,8 @@
      0.8432,
      1.0846
     ],
-    "exact_pct": 87.3782,
+    "exact_lines": 1793,
+    "exact_pct": 87.38,
     "path": "scores.systems.VOCR5_N.not_name"
    },
    "VOCR5_L": {
@@ -78,7 +80,8 @@
      0.629,
      0.846
     ],
-    "exact_pct": 89.9123,
+    "exact_lines": 1845,
+    "exact_pct": 89.91,
     "path": "scores.systems.VOCR5_L.not_name"
    },
    "Lens": {
@@ -90,6 +93,7 @@
      0.897,
      2.2547
     ],
+    "exact_lines": 1981,
     "exact_pct": 96.54,
     "path": "scores.systems.Lens.not_name"
    }
@@ -263,15 +267,31 @@
   "dialogue": {
    "file": "eval/vocr5_dialogue_20261016.json",
    "sha256": "817b6fece780fcf6d915b51c45024c0a79bbd703278ae7e06f41580e18df652b"
+  },
+  "report": {
+   "file": "eval/vocr5_report_20261016.json",
+   "sha256": "d1d06551483a57fbf9d16ffc4f0fe248aaf04d1342ce8e34c223c8e1e002d915"
+  },
+  "protocol": {
+   "file": "eval/vocr5_protocol.json",
+   "sha256": "7b21cd065a61ea682fb0b241473b10a21f4b0dcc50266e9014a0bb465af79177"
   }
  },
  "facts": {
+  "games_vita-test": {
+   "games": 16,
+   "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.vita-test.vn_clusters"
+  },
   "lens_furigana_vita-test": {
    "furigana_lines": 3,
    "furigana_errors": 30,
    "all_errors": 89,
    "all_lines": 206,
    "path": "arms.native.Lens.styles.furigana.vita-test / arms.native.Lens.all.vita-test"
+  },
+  "games_psp-test": {
+   "games": 14,
+   "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.psp-test.vn_clusters"
   },
   "lens_furigana_psp-test": {
    "furigana_lines": 20,
@@ -281,19 +301,41 @@
    "path": "arms.native.Lens.styles.furigana.psp-test / arms.native.Lens.all.psp-test"
   }
  },
- "resources": {},
+ "resources": {
+  "VOCR5_S": {
+   "bytes": 819792,
+   "arena_w8i": 124832,
+   "shape": "s_w100v4987",
+   "box_s_333": 0.631,
+   "box_s_444": 0.499
+  },
+  "VOCR5_N": {
+   "bytes": 1185632,
+   "arena_w8i": 182944,
+   "shape": "n_w150v5631",
+   "box_s_333": 0.921,
+   "box_s_444": 0.716
+  },
+  "VOCR5_L": {
+   "bytes": 2473696,
+   "arena_w8i": 261024,
+   "shape": "l_lw300v5631",
+   "box_s_333": 2.077,
+   "box_s_444": 1.627
+  }
+ },
  "copy": {
   "eyebrow": "VOCR5  ·  Japanese OCR for PS Vita and PSP visual novels",
   "headline": "Reads dialogue as well as Google Lens. Offline.",
   "subhead": "Character error rate on visual-novel dialogue, three test sets. Lower is better.",
   "panel": {
    "kicker": "Built for the console",
-   "big": "1.2 MB",
+   "big": "{N_MB}",
    "big_sub": "the default model's int8 weights",
    "lines": [
     "Offline, in the game's own memory",
-    "Small 0.8 MB · Large 2.5 MB",
-    "≈0.7 s per text box (estimated)"
+    "Small {S_MB} · Large {L_MB}",
+    "≈{N_S444}-{N_S333} s per text box (estimated)"
    ],
    "lens_lines": [
     "Google Lens is a cloud service.",
@@ -309,9 +351,9 @@
    }
   },
   "footnote": [
-   "CLANNAD: 2,052 dialogue lines of a PS Vita playthrough (Vita3K), references read by Claude, Lens's cached readings of the same crops; Lens reads more lines exactly (96.5% vs 87.4% for Normal).",
-   "vita-test, psp-test: 153 and 183 hand-checked dialogue lines of 16 and 14 games (VNDB screenshots), the same crops for all. * Lens also reads the furigana the references leave out: 116 of its 227 psp-test errors, names included.",
-   "Dialogue: lines without a speaker name. VOCR5: int8, plain-C runtime, greedy decoding; trained with the owner's captures, incl. planetarian, a Key / Prototype port like CLANNAD's. Time: an estimate for a 3-line box on one Cortex-A9 core at 444 MHz; VOCR5 has not run on a console yet."
+   "CLANNAD: {CL_LINES} dialogue lines of a PS Vita playthrough (Vita3K), references read by Claude, Lens's cached readings of the same crops; Lens reads more lines exactly ({CL_LENS_EXACT}% vs {CL_N_EXACT}% for Normal).",
+   "vita-test, psp-test: {VT_LINES} and {PT_LINES} hand-checked dialogue lines of {VT_GAMES} and {PT_GAMES} games (VNDB screenshots); every reader got the same crops, Lens in screen polarity. * Lens also reads the furigana the references omit: {PT_FUR_ERR} of its {PT_ALL_ERR} psp-test and {VT_FUR_ERR} of its {VT_ALL_ERR} vita-test errors (names included) fall on the {PT_FUR_LINES} and {VT_FUR_LINES} lines with furigana.",
+   "Dialogue: lines without a speaker name. VOCR5: int8, plain-C runtime, greedy decoding; trained with the owner's captures, incl. planetarian, a Key / Prototype port like CLANNAD's. Time: estimated for a 3-line box on one Cortex-A9 core at 444 / 333 MHz; VOCR5 has not run on a console yet."
   ],
   "claims": [
    {
@@ -375,5 +417,14 @@
     "ci": true
    }
   ]
+ },
+ "rendered": {
+  "inputs_sha256": "508a8d5bbb0723d7f3778eb32b342fb160f9ac6dffa8667b13c0f14acabcf783",
+  "files": {
+   "vocr-vs-lens-dark-2x.png": "20371343a62e38393736baa5757c289d1ba196db7eb5e158f9019cf631432cbe",
+   "vocr-vs-lens-dark.svg": "d17dd524b75448c33622986b1271408a9e6ff97a5562309db7c123de9dfd5ea2",
+   "vocr-vs-lens-light-2x.png": "596aca2f8c2a74b961acc7568312c180d76199b5c984ed1c988cbaea2b83727c",
+   "vocr-vs-lens-light.svg": "2329bac1f8ad0b51d7feb07d5b39dcd1e4e92b95634827771391bd1a461bd9b1"
+  }
  }
 }

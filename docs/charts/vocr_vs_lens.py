@@ -2,13 +2,14 @@
 """The README's "VOCR vs Google Lens" chart: dialogue CER per protected set, light and dark, SVG + 2x PNG.
 
 Every number comes from docs/charts/vocr-vs-lens.json, which `data` builds from the committed score files
-(VOCR5's dialogue tables and its CLANNAD comparison) and which records where each number came from. The
-headline and the other words live in that JSON's "copy" object (kept when `data` runs again). Nothing here
-scores anything.
+(VOCR5's dialogue tables, CLANNAD comparison, locked report and protocol) and which records where each number
+came from. The words live in that JSON's "copy" object (kept when `data` runs again); the panel's and the
+footnote's numbers are filled into them from the data. Nothing here scores anything.
 
   python docs/charts/vocr_vs_lens.py fonts                 # Inter 4.1 (OFL-1.1) into the cache, sha256-checked
   python docs/charts/vocr_vs_lens.py data --dialogue eval/vocr5_dialogue_20261016.json \\
-      --clannad eval/vocr5_clannad_20261016.json --arms 'VOCR5_S=VOCR5 Small,VOCR5_N=VOCR5 Normal,VOCR5_L=VOCR5 Large'
+      --clannad eval/vocr5_clannad_20261016.json --report eval/vocr5_report_20261016.json \\
+      --protocol eval/vocr5_protocol.json --arms 'VOCR5_S=VOCR5 Small,VOCR5_N=VOCR5 Normal,VOCR5_L=VOCR5 Large'
   python docs/charts/vocr_vs_lens.py check                 # the charted numbers, and copy.claims tested on them
   python docs/charts/vocr_vs_lens.py render                # -> docs/charts/vocr-vs-lens-{light,dark}{.svg,-2x.png}
 
@@ -36,11 +37,11 @@ FACES = {  # role -> file inside the zip
 }
 
 THEMES = {
-    "light": {"bg": ("#FFFFFF", "#F2F2F7"), "text": "#1D1D1F", "dim": "#6E6E73", "faint": "#86868B",
-              "accent": "#0071E3", "lens": "#C7C7CC", "lens_text": "#6E6E73", "rule": "#D2D2D7",
+    "light": {"bg": ("#FFFFFF", "#F2F2F7"), "text": "#1D1D1F", "dim": "#6E6E73", "faint": "#6E6E73",
+              "accent": "#0071E3", "lens": "#86868B", "lens_text": "#6E6E73", "rule": "#D2D2D7",
               "tiers": [("#8EC5FF", "#5AA9FF"), ("#3D8BFF", "#0A6CFF"), ("#7B61FF", "#3A3AFF")]},
-    "dark": {"bg": ("#000000", "#141416"), "text": "#F5F5F7", "dim": "#A1A1A6", "faint": "#86868B",
-             "accent": "#2997FF", "lens": "#3A3A3C", "lens_text": "#A1A1A6", "rule": "#333336",
+    "dark": {"bg": ("#000000", "#141416"), "text": "#F5F5F7", "dim": "#A1A1A6", "faint": "#A1A1A6",
+             "accent": "#2997FF", "lens": "#636366", "lens_text": "#A1A1A6", "rule": "#333336",
              "tiers": [("#6BB6FF", "#3A93F5"), ("#2F80FF", "#0060F0"), ("#8C7BFF", "#4B3BFF")]},
 }
 
@@ -84,6 +85,52 @@ def rate(errors, chars):
     return round(100.0 * errors / chars, 4)
 
 
+SHAPES = {"VOCR5_S": "s_w100v4987", "VOCR5_N": "n_w150v5631", "VOCR5_L": "l_lw300v5631"}
+
+
+def resources(report_path, protocol_path):
+    """Per-model int8 bytes and W8I arena (the locked report) and the estimated seconds per 3-line box (the
+    protocol's estimate table, #85's runtime without prefetch credit: the figure the release and the overlay use)."""
+    rep = json.loads(Path(report_path).read_text())["shared"]["resources"]
+    est = json.loads(Path(protocol_path).read_text())["estimates"]["table"]
+    out = {}
+    for arm, shape in SHAPES.items():
+        e = est[shape]["#85 no-PLD"]
+        assert est[shape]["bytes"] == rep[arm]["blob_bytes"], arm
+        out[arm] = {"bytes": rep[arm]["blob_bytes"], "arena_w8i": rep[arm]["arena_w8i"], "shape": shape,
+                    "box_s_333": e["333"][1], "box_s_444": e["444"][1]}
+    return out
+
+
+def mb(n):
+    return f"{n / 1e6:.1f} MB"
+
+
+def panel_text(data):
+    """The panel's words with their numbers filled from `resources`: {N_MB}, {S_MB}, {L_MB}, {N_S444}."""
+    r = data["resources"]
+    vals = {"N_MB": mb(r["VOCR5_N"]["bytes"]), "S_MB": mb(r["VOCR5_S"]["bytes"]), "L_MB": mb(r["VOCR5_L"]["bytes"]),
+            "N_S444": f"{r['VOCR5_N']['box_s_444']:.1f}", "N_S333": f"{r['VOCR5_N']['box_s_333']:.1f}"}
+    p = data["copy"]["panel"]
+    return {k: (v.format(**vals) if isinstance(v, str) else [x.format(**vals) for x in v]) for k, v in p.items()}
+
+
+def footnote_text(data):
+    """The footnote paragraphs with their numbers filled from `values`, `sets` and `facts`."""
+    V, F = data["values"], data["facts"]
+    sets = {x["key"]: x for x in data["sets"]}
+    vals = {"CL_LINES": f"{sets['clannad']['lines']:,}", "VT_LINES": f"{sets['vita-test']['lines']:,}",
+            "PT_LINES": f"{sets['psp-test']['lines']:,}",
+            "CL_LENS_EXACT": f"{V['clannad']['Lens']['exact_pct']:.1f}",
+            "CL_N_EXACT": f"{V['clannad']['VOCR5_N']['exact_pct']:.1f}",
+            "VT_GAMES": F["games_vita-test"]["games"], "PT_GAMES": F["games_psp-test"]["games"]}
+    for key, tag in (("psp-test", "PT"), ("vita-test", "VT")):
+        f = F[f"lens_furigana_{key}"]
+        vals[f"{tag}_FUR_ERR"], vals[f"{tag}_ALL_ERR"] = f["furigana_errors"], f["all_errors"]
+        vals[f"{tag}_FUR_LINES"] = f["furigana_lines"]
+    return [x.format(**vals) for x in data["copy"]["footnote"]]
+
+
 def dialogue_value(dlg, arm, set_name):
     """One arm's dialogue counts (lines without the 'name' style) on vita-test or psp-test from VOCR5's dialogue
     tables (eval/vocr5_dialogue_*.json): console polarity for our models, screen polarity for Lens, which reads
@@ -119,7 +166,9 @@ def cmd_data(a):
         for k in [*arms, "Lens"]:
             v = S[k]["not_name"]
             vals[k] = {"errors": v["errors"], "chars": v["chars"], "lines": v["lines"], "cer": v["cer"],
-                       "cer_ci95": v["cer_ci95"], "exact_pct": v["exact"], "path": f"scores.systems.{k}.not_name"}
+                       "cer_ci95": v["cer_ci95"], "exact_lines": v["exact_lines"],
+                       "exact_pct": round(100.0 * v["exact_lines"] / v["lines"], 2),
+                       "path": f"scores.systems.{k}.not_name"}
         out["sets"].append({"key": "clannad", "label": "CLANNAD", "platform": "PS Vita",
                             "lines": vals["Lens"]["lines"], "chars": vals["Lens"]["chars"]})
         out["values"]["clannad"] = vals
@@ -133,13 +182,23 @@ def cmd_data(a):
             out["sets"].append({"key": set_name, "label": set_name, "platform": platform,
                                 "lines": vals["Lens"]["lines"], "chars": vals["Lens"]["chars"]})
             out["values"][set_name] = vals
+            first = next(iter(arms))
+            pair = d["pairs"][f"{first}-Lens"]["console_vs_lens_native"]["dialogue"][set_name]
+            out["facts"][f"games_{set_name}"] = {
+                "games": pair["vn_clusters"],
+                "path": f"pairs.{first}-Lens.console_vs_lens_native.dialogue.{set_name}.vn_clusters"}
             fur = d["arms"]["native"]["Lens"]["styles"]["furigana"][set_name]
             allv = d["arms"]["native"]["Lens"]["all"][set_name]
             out["facts"][f"lens_furigana_{set_name}"] = {
                 "furigana_lines": fur["lines"], "furigana_errors": fur["errors"], "all_errors": allv["errors"],
                 "all_lines": allv["lines"],
                 "path": f"arms.native.Lens.styles.furigana.{set_name} / arms.native.Lens.all.{set_name}"}
-    out["resources"] = json.loads(a.resources) if a.resources else old.get("resources", {})
+    if a.report and a.protocol:
+        out["resources"] = resources(a.report, a.protocol)
+        out["sources"]["report"] = {"file": a.report, "sha256": sha256(a.report)}
+        out["sources"]["protocol"] = {"file": a.protocol, "sha256": sha256(a.protocol)}
+    else:
+        out["resources"] = old.get("resources", {})
     out["copy"] = old.get("copy", {"eyebrow": "", "headline": "", "subhead": "", "panel": {}, "footnote": [],
                                    "claims": []})
     DATA.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n")
@@ -160,7 +219,7 @@ def vgrad(top, bottom, n=256):
     return (t * (1 - k) + b * k)[:, None, :]
 
 
-FOOT_PT, FOOT_LH = 11.5, 18.0               # footnote size (pt) and line height (px)
+FOOT_PT, FOOT_LH = 13.0, 20.0               # footnote size (pt) and line height (px)
 
 
 def wrap(text, prop, size_pt, width_px):
@@ -212,7 +271,7 @@ def render(data, theme, out_stem, F):
     sets = data["sets"]
     vals = data["values"]
     cmax = max(v["cer"] for s in sets for v in vals[s["key"]].values() if v)
-    top_px, base = 340.0, 262.0            # bar area: base line y and the tallest bar's height
+    top_px, base = 330.0, 290.0            # bar area: base line y and the tallest bar's height
     scale = top_px / (cmax * 1.08)
     gx0, gx1 = X0, 1066                    # bar groups span this x range; the panel sits right of it
     gw = (gx1 - gx0) / len(sets)
@@ -254,7 +313,7 @@ def render(data, theme, out_stem, F):
     bg.plot([gx0, gx1], [base, base], color=T["rule"], lw=1.0, zorder=2)
 
     # --- the right panel: where it runs
-    p = c.get("panel", {})
+    p = panel_text(data)
     px = 1134
     bg.plot([px - 36, px - 36], [base - 90, base + top_px + 10], color=T["rule"], lw=1.0, zorder=2)
     txt(px, base + top_px - 18, p.get("kicker", ""), "semibold", 15, T["accent"], va="baseline")
@@ -270,7 +329,7 @@ def render(data, theme, out_stem, F):
         yy -= 23
 
     # --- footnote: each paragraph wrapped to the content width, the block set on the bottom margin
-    lines = [ln for para in c.get("footnote", []) for ln in wrap(para, F["regular"], FOOT_PT, W - 2 * X0)]
+    lines = [ln for para in footnote_text(data) for ln in wrap(para, F["regular"], FOOT_PT, W - 2 * X0)]
     y = 34 + (len(lines) - 1) * FOOT_LH
     for line in lines:
         txt(X0, y, line, "regular", FOOT_PT, T["faint"], va="baseline")
@@ -295,6 +354,17 @@ def cmd_render(a):
     out.mkdir(parents=True, exist_ok=True)
     for theme in a.themes.split(","):
         render(data, theme, str(out / f"vocr-vs-lens-{theme}"), F)
+    if Path(a.data).resolve() == DATA and out.resolve() == HERE:
+        data["rendered"] = {"inputs_sha256": inputs_sha256(data),
+                            "files": {f.name: sha256(f) for f in sorted(out.glob("vocr-vs-lens-*"))
+                                      if f.suffix in (".svg", ".png")}}
+        DATA.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n")
+
+
+def inputs_sha256(data):
+    """What the images are drawn from: the JSON without its own 'rendered' record."""
+    d = {k: v for k, v in data.items() if k != "rendered"}
+    return hashlib.sha256(json.dumps(d, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
 
 
 # ---------------------------------------------------------------- claims
@@ -346,7 +416,8 @@ def main():
     d.add_argument("--dialogue", help="VOCR5's dialogue tables JSON (vita-test, psp-test, Lens)")
     d.add_argument("--clannad", help="the CLANNAD comparison JSON (eval/clannad_refs.py score output)")
     d.add_argument("--arms", required=True, help="ARM=Label,... in bar order, e.g. VOCR5_S=VOCR5 Small,...")
-    d.add_argument("--resources", help="JSON object: per-arm bytes, arena and time estimates for the panel")
+    d.add_argument("--report", help="VOCR5's locked report JSON (int8 bytes, W8I arenas)")
+    d.add_argument("--protocol", help="VOCR5's protocol JSON (the box-time estimate table)")
     r = sub.add_parser("render")
     r.add_argument("--data", default=str(DATA))
     r.add_argument("--out-dir", default=str(HERE))

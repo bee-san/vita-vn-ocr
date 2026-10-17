@@ -5,14 +5,14 @@ Written 2026-10-12 for the agents training the next recognizers. Every console s
 hardware CER.
 
 *Revised 2026-10-13*, after the SDK documentation and vita-jp-overlay PR
-[#60](https://github.com/bee-san/vita-jp-overlay/pull/60) were read: the budget is stated in three
+[#60](https://github.com/bee-san/Rubi_for_vita/pull/60) were read: the budget is stated in three
 tiers for a recognizer in the game process only; section 1 gains the SDK's game-budget rules, the
 per-title free-memory table with the preflight rule, and the scheduler facts; and where the
 overlay's memory comes from is corrected (marked "correction"): the recognizer's budget is the game
 process's main memory only; SceShell's 50 MiB partition, not its 5 MiB PAF heap, is the pool that
 runs out there; and `*ALL` loads the worker into SceShell too. The short platform note is
 [`vita-platform-memory.md`](vita-platform-memory.md); the full reference is vita-jp-overlay's
-[`docs/vita-memory.md`](https://github.com/bee-san/vita-jp-overlay/blob/main/docs/vita-memory.md).
+[`docs/vita-memory.md`](https://github.com/bee-san/Rubi_for_vita/blob/main/docs/vita-memory.md).
 
 ## The answer
 
@@ -49,7 +49,7 @@ BUDGET_TIERS always: weights<=900000 arena<=131072 ms<=300; preflight: weights<=
     refuses it: the smallest free figure seen in a game is 56 MiB, nearly 40× its peak. A default
     model from this tier needs no fallback model.
   - *Safe with the preflight* is the ceiling. It needs what the overlay has had since
-    [#54](https://github.com/bee-san/vita-jp-overlay/pull/54)-[#57](https://github.com/bee-san/vita-jp-overlay/pull/57):
+    [#54](https://github.com/bee-san/Rubi_for_vita/pull/54)-[#57](https://github.com/bee-san/Rubi_for_vita/pull/57):
     free `USER` minus the 4 MiB reserve must cover the job plus the weights unless they are
     resident, a refusal falls back to an always-safe model, and the resident weights go back to
     the game when it is not the active one. Its cost is speed, not safety: with the game holding
@@ -87,9 +87,9 @@ What the numbers say:
   samples), and the overlay's `*main` plugin plus the `*ALL` worker, which taiHEN also loads into
   SceShell, already hold 540,672 B of it permanently. A 36,864 B growth of that footprint between
   the build that boots (API 13) and the one that does not (API 16) is the most economical
-  explanation of overlay issue [#59](https://github.com/bee-san/vita-jp-overlay/issues/59):
+  explanation of overlay issue [#59](https://github.com/bee-san/Rubi_for_vita/issues/59):
   SceShell's own `SceLiveAreaDailyCronJob` died with `0x80024302`, no free page, before any OCR
-  job ran ([PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60)). So every byte above is
+  job ran ([PR #60](https://github.com/bee-san/Rubi_for_vita/pull/60)). So every byte above is
   the game's, and nothing of the recognizer may sit in SceShell at any size
   ([`vita-platform-memory.md`](vita-platform-memory.md) has the pools in one table).
 - **In the game, RAM does not set the ceiling; the preflight does.** One job of a ceiling-sized
@@ -105,7 +105,7 @@ What the numbers say:
   - a game that holds part of the L2 moves the knee down: with half of it, H15 already spills
     (+10% on the high bound) and F20 pays +26%; an always-safe model does not spill.
 - **"More memory is slower" was the overlay's loader, not the cache, and #54 fixed it.**
-  - Until [#54](https://github.com/bee-san/vita-jp-overlay/pull/54), vita-jp-overlay read and
+  - Until [#54](https://github.com/bee-san/Rubi_for_vita/pull/54), vita-jp-overlay read and
     re-hashed the whole weights file on every OCR job, through 8 KiB kernel round trips with a
     1 ms sleep each. On the console that took 213-359 ms for FL10, more than the recognition
     itself (36-145 ms), and it grew with the blob.
@@ -133,7 +133,7 @@ PSP has no NEON and its own budget (`psp/README.md`).
 
 vita-jp-overlay main is at `599dd9c` (2026-10-13; `#54`-`#58` merged). The line links below, `M`,
 point at `1a118ef`, the main this section was first written against:
-`https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb`; the
+`https://github.com/bee-san/Rubi_for_vita/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb`; the
 facts that changed since are marked with their PR. The overlay has three parts:
 - a kernel plugin (`*KERNEL`) that captures the screen into a region-sized `KERNEL_RW` buffer and
   brokers the model file;
@@ -143,7 +143,7 @@ facts that changed since are marked with their PR. The overlay has three parts:
   system application as well, not only into enabled games (taiHEN matches the `ALL` section for
   every section but `KERNEL`); there its `module_start` finds no candidate title and starts
   nothing, but the module stays resident (45,056 B of SceShell's pages,
-  [PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60), section 3.3). The expert's rule,
+  [PR #60](https://github.com/bee-san/Rubi_for_vita/pull/60), section 3.3). The expert's rule,
   binding in the overlay's `AGENTS.md`, is one `*TITLEID` section per game; #60 plans that move.
 
 Facts, each with its source:
@@ -154,14 +154,14 @@ Facts, each with its source:
 | the game's partitions | 256 MiB main (+29, +77 or +109 MiB when the title's `param.sfo` asks for it; fixed per title), 112 MiB CDRAM, 26 MiB phycont | SDK `Programming-Startup_Guide` ("Resources that Can Be Used by an Application"); [Memory budget](https://wiki.henkaku.xyz/index.php?title=Memory_budget&oldid=18995); Vita3K [SceSysmem.cpp#L171-L211](https://github.com/Vita3K/Vita3K/blob/7e152b66e85345f175d3d287fcbd7f8abec7574a/vita3k/modules/SceSysmem/SceSysmem.cpp#L171-L211) (`ATTRIBUTE2 & 0x0C`: 4, 8, 12) |
 | SceShell, kernel drivers | SceShell: 50 MiB main (`ScePhyMemPartShell`) + 16 MiB CDRAM, shared by all of SceShell and every `*main`/`*ALL` plugin; measured free beside a running game: 28,672 B and 98,304 B. Kernel drivers and kernel plugins: 36 MiB (`ScePhyMemPartKD`), free size unmeasured | same Memory budget page; vita-jp-overlay PR #60; `notes/08`, `notes/26` |
 | a game plugin's memory | taiHEN loads the plugin into the game's process (`ksceKernelLoadStartModuleForPid`), before the game's own code runs. Correction: its module pages, its thread's stack, at least 4 KiB of TLS and its memory blocks are charged to that process's budget, like the game's own (the SDK's Kernel Overview: the memory block service loads modules and allocates stacks; its Kernel Reference: stacks and TLS come out of the application's budget at thread creation) | taiHEN [plugin.c#L165-L173](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/plugin.c#L165-L173), [hen.c#L345-L380](https://github.com/yifanlu/taiHEN/blob/309b3800bcb8ebbd5e4f5e5e920af3da3590b829/hen.c#L345-L380); SDK `Kernel-Overview` (thread context), `Kernel-Reference` (`sceKernelCreateThread`); the same accounting in SceShell, measured (540,672 B): PR #60; vita-jp-overlay `docs/vita-memory.md` sections 3-4 |
-| heap | none: the worker links with `-nostdlib`. It allocates one `USER_RW` memblock per job (4 KiB granularity) and frees it when the job ends; since #54 the verified weights have a second `USER_RW` block that stays while the title is the active game | [M/vita/CMakeLists.txt#L176](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/vita/CMakeLists.txt#L176); [`game_ocr/main.c`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c) at `599dd9c` (`weights_alloc`, `check_memory`, `cleanup`) |
-| preflight | `sceKernelGetFreeMemorySize` (`sizeMain`, the game's own main-memory budget, minus a system margin, per the SDK) must report free `USER_RW` of at least the page-rounded workspace plus the page-rounded weights, unless they are already resident, plus a 4 MiB reserve, or the job is refused before anything is allocated; a refusal tries the configured fallback model when it is pinned and needs less, and is logged with the free bytes ([#55](https://github.com/bee-san/vita-jp-overlay/pull/55)) | [`game_ocr/main.c#L19`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L19), [`#L196-L205`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L196-L205), [`#L241-L244`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L241-L244); SDK `Kernel-Reference` (`sceKernelGetFreeMemorySize`) |
+| heap | none: the worker links with `-nostdlib`. It allocates one `USER_RW` memblock per job (4 KiB granularity) and frees it when the job ends; since #54 the verified weights have a second `USER_RW` block that stays while the title is the active game | [M/vita/CMakeLists.txt#L176](https://github.com/bee-san/Rubi_for_vita/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/vita/CMakeLists.txt#L176); [`game_ocr/main.c`](https://github.com/bee-san/Rubi_for_vita/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c) at `599dd9c` (`weights_alloc`, `check_memory`, `cleanup`) |
+| preflight | `sceKernelGetFreeMemorySize` (`sizeMain`, the game's own main-memory budget, minus a system margin, per the SDK) must report free `USER_RW` of at least the page-rounded workspace plus the page-rounded weights, unless they are already resident, plus a 4 MiB reserve, or the job is refused before anything is allocated; a refusal tries the configured fallback model when it is pinned and needs less, and is logged with the free bytes ([#55](https://github.com/bee-san/Rubi_for_vita/pull/55)) | [`game_ocr/main.c#L19`](https://github.com/bee-san/Rubi_for_vita/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L19), [`#L196-L205`](https://github.com/bee-san/Rubi_for_vita/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L196-L205), [`#L241-L244`](https://github.com/bee-san/Rubi_for_vita/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L241-L244); SDK `Kernel-Reference` (`sceKernelGetFreeMemorySize`) |
 | free memory seen in games | CLANNAD (PCSG00415, a plain 256 MiB title: its `param.sfo` has `ATTRIBUTE2=0`): 91,226,112 B of free `USER` before a job (one logged sample). Stardew Valley in +109 MiB mode: 309 of 365 MB used, about 56 MiB free (a third-party PSVshell screenshot, not our measurement) | `notes/27`, `notes/26`; [PSVshell README](https://github.com/Electry/PSVshell#readme), whose [perf.c](https://github.com/Electry/PSVshell/blob/master/src/perf.c) reads the running process's own partition totals |
-| free memory in SceShell beside a game | 98,304 B and 28,672 B of its 50 MiB (two samples, different days). The overlay's `*main` plugin and the `*ALL` worker hold 540,672 B of that partition permanently at API 16 | `notes/26`, `notes/08`; [PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60) |
+| free memory in SceShell beside a game | 98,304 B and 28,672 B of its 50 MiB (two samples, different days). The overlay's `*main` plugin and the `*ALL` worker hold 540,672 B of that partition permanently at API 16 | `notes/26`, `notes/08`; [PR #60](https://github.com/bee-san/Rubi_for_vita/pull/60) |
 | file mapping | VitaSDK has no `mmap`, so the weights must be read into RAM | the pinned SDK headers: no `sys/mman.h`, no map API |
-| how the weights are read | once per game session since [#54](https://github.com/bee-san/vita-jp-overlay/pull/54): through the kernel broker, because the game cannot see `ux0:`, in 32 KiB pieces with a bounded in-kernel wait instead of a 1 ms sleep, SHA-256 checked once, then kept in their own `USER_RW` block while the title is the active game (re-read when the file's size or time changes). Before #54: on every job that found a line, in 8 KiB round trips with a 1 ms sleep each | [`include/vjo_game_ocr.h#L13`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/include/vjo_game_ocr.h#L13); before: [M/core/vocr_ocr.c#L192-L196](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.c#L192-L196), [M/game_ocr/main.c#L50-L67](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L50-L67) |
-| stack | the worker thread has 32 KiB (plus at least 4 KiB of TLS, from the game's budget). The runtime and both line finders use 4,316 B of it (measured in Vita3K, section 3) | [`game_ocr/main.c#L8`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L8) |
-| cores and priority | a game may use three of the four A9 cores; the fourth is meant for kernel and system threads. The worker is created with the default priority and the default affinity mask, which for a game process mean priority 160 in the common ready queue and any of the three cores. The scheduler is fixed-priority and not time-sharing (below). The kernel plugin's worker thread runs at priority 60, above every game thread, pinned to core 0 | SDK `Programming-Startup_Guide` (CPU), `Kernel-Overview` (thread priority, CPU affinity mask, thread scheduling); vita-headers [cpu.h#L17-L23](https://github.com/vitasdk/vita-headers/blob/e66ebe90b73d1fa4cce005a5b2072cec27322544/include/psp2/kernel/cpu.h#L17-L23); [`game_ocr/main.c#L345`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L345); [`kernel/main.c#L484`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/kernel/main.c#L484) |
+| how the weights are read | once per game session since [#54](https://github.com/bee-san/Rubi_for_vita/pull/54): through the kernel broker, because the game cannot see `ux0:`, in 32 KiB pieces with a bounded in-kernel wait instead of a 1 ms sleep, SHA-256 checked once, then kept in their own `USER_RW` block while the title is the active game (re-read when the file's size or time changes). Before #54: on every job that found a line, in 8 KiB round trips with a 1 ms sleep each | [`include/vjo_game_ocr.h#L13`](https://github.com/bee-san/Rubi_for_vita/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/include/vjo_game_ocr.h#L13); before: [M/core/vocr_ocr.c#L192-L196](https://github.com/bee-san/Rubi_for_vita/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/vocr_ocr.c#L192-L196), [M/game_ocr/main.c#L50-L67](https://github.com/bee-san/Rubi_for_vita/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/game_ocr/main.c#L50-L67) |
+| stack | the worker thread has 32 KiB (plus at least 4 KiB of TLS, from the game's budget). The runtime and both line finders use 4,316 B of it (measured in Vita3K, section 3) | [`game_ocr/main.c#L8`](https://github.com/bee-san/Rubi_for_vita/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L8) |
+| cores and priority | a game may use three of the four A9 cores; the fourth is meant for kernel and system threads. The worker is created with the default priority and the default affinity mask, which for a game process mean priority 160 in the common ready queue and any of the three cores. The scheduler is fixed-priority and not time-sharing (below). The kernel plugin's worker thread runs at priority 60, above every game thread, pinned to core 0 | SDK `Programming-Startup_Guide` (CPU), `Kernel-Overview` (thread priority, CPU affinity mask, thread scheduling); vita-headers [cpu.h#L17-L23](https://github.com/vitasdk/vita-headers/blob/e66ebe90b73d1fa4cce005a5b2072cec27322544/include/psp2/kernel/cpu.h#L17-L23); [`game_ocr/main.c#L345`](https://github.com/bee-san/Rubi_for_vita/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/game_ocr/main.c#L345); [`kernel/main.c#L484`](https://github.com/bee-san/Rubi_for_vita/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/kernel/main.c#L484) |
 | clock | 333 MHz by default (the shell's default; a game may ask for more). `scePowerSetArmClockFrequency` allows up to 444 MHz and works from a user plugin inside a game; oclockvita does it. 500 MHz needs kernel code. One clock drives all four cores. The overlay never changes it | [ScePower](https://wiki.henkaku.xyz/index.php?title=ScePower&oldid=21824), [Pervasive](https://wiki.henkaku.xyz/index.php?title=Pervasive&oldid=21701), [oclockvita.c](https://github.com/frangarcj/oclockvita/blob/63aa0442685a45c99bee433c6242032008aec740/oclockvita.c#L20-L21), PSVshell [main.c#L106-L123](https://github.com/Electry/PSVshell/blob/9a47b0eb22c60bdbddd8c7b5c9f1218c7e8a3037/src/main.c#L106-L123) |
 | caches | 32 KiB L1 I and 32 KiB L1 D per core, 32-byte lines. One **2 MiB, 16-way PL310 L2 is shared by all four cores**, with pseudo-random replacement and no L2 data prefetch. The "1 MB L2" sometimes quoted is 7-cpu.com's Exynos 4210, not the Vita | [Main Processor](https://wiki.henkaku.xyz/index.php?title=Main_Processor&oldid=21601) ("a L2 cache of 2 MiB shared by all cores"); [Caches](https://wiki.henkaku.xyz/index.php?title=Caches&oldid=21009): AUX_CTRL `0x60090001` = 16 ways × 128 KB, bits 25 and 28 clear ([Linux cache-l2x0.h#L125-L129](https://github.com/torvalds/linux/blob/v6.7/arch/arm/include/asm/hardware/cache-l2x0.h#L125-L129)) |
 
@@ -175,7 +175,7 @@ Facts, each with its source:
   sub-pool inside it: exhausting the heap starves the UI, exhausting the partition starves
   firmware, as in #59, where a SceShell thread of the firmware's own ran out of pages while our
   plugins held 540,672 B of the partition
-  ([PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60)). That is why ncnn, Meiki and VOCR
+  ([PR #60](https://github.com/bee-san/Rubi_for_vita/pull/60)). That is why ncnn, Meiki and VOCR
   all moved out of it, and why no weights, arena, dictionary or cache of the recognizer may go
   back, at any size.
 - **Kernel plugin.** It would share the 36 MiB kernel-driver pool (`ScePhyMemPartKD`), whose free
@@ -186,7 +186,7 @@ Facts, each with its source:
 
 **What one job allocates.** Since #54 there are two `USER_RW` blocks, each rounded up to 4 KiB
 pages: the verified weights, which stay while the title is the active game, and the job
-workspace ([`core/vocr_ocr.c`](https://github.com/bee-san/vita-jp-overlay/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/core/vocr_ocr.c), `layout`):
+workspace ([`core/vocr_ocr.c`](https://github.com/bee-san/Rubi_for_vita/blob/599dd9cbb6f5c452ceadb10363eea065219d435e/core/vocr_ocr.c), `layout`):
 
 > workspace = max(line-finder arena, recognizer arena) + 3,760 B of runtime structs + the grey region (width × height), each part rounded up to 16 B
 
@@ -250,7 +250,7 @@ In our words, from the SDK's `Programming-Startup_Guide`, `Kernel-Overview`, `Ke
   (homebrew often does). Two games have been measured; both left more than 50 MiB. Visual novels
   are 2D and usually light, but that is an expectation, not a figure: the 16 titles above have
   not been measured, and the per-title number is now free, because since
-  [#55](https://github.com/bee-san/vita-jp-overlay/pull/55) every job, refused or not, logs
+  [#55](https://github.com/bee-san/Rubi_for_vita/pull/55) every job, refused or not, logs
   `game vocr memory: free USER=…`. The first session in each title fills the table.
 - **So the allowance is a rule, not a number.** Per job: free `USER` − 4 MiB reserve ≥ page-rounded
   workspace + page-rounded weights (0 when they are already resident; another model's resident
@@ -268,7 +268,7 @@ In our words, from the SDK's `Programming-Startup_Guide`, `Kernel-Overview`, `Ke
   on a refused preflight, and at stop.
 - **The right structure is the current one:** a default from the ceiling tier with a fallback from
   the always-safe tier (H15 with FL10 since
-  [#57](https://github.com/bee-san/vita-jp-overlay/pull/57)). A default from the always-safe tier
+  [#57](https://github.com/bee-san/Rubi_for_vita/pull/57)). A default from the always-safe tier
   needs no fallback. Both still wait for their first console run (#59).
 
 ### Which cores and which priority
@@ -315,39 +315,39 @@ is `$HERD/shared/artifacts/vita-budget/research/overlay-failures.md`; the device
 
 | when | engine, where it ran | what failed | class (memory pool) | fix |
 |---|---|---|---|---|
-| 10-08 | ncnn PP-OCRv5 mobile, SceShell | Needed a 64 MiB block (32-42 MiB used; 13.4 MiB even trimmed to int8) against a 5 MiB Shell PAF heap. Never ran on a console | out of memory by design (SceShell) | dropped ([#18](https://github.com/bee-san/vita-jp-overlay/pull/18), [#19](https://github.com/bee-san/vita-jp-overlay/pull/19)) |
-| 10-10 | none (the overlay's result arenas), SceShell | An eager 786,432 B result allocation failed in CLANNAD with `0x80024302`, "no free physical page" | out of memory: SceShell's 50 MiB partition had no free page for a `USER_RW` block (correction: the partition, not the PAF heap) | lazy, smaller arenas ([#11](https://github.com/bee-san/vita-jp-overlay/pull/11)); checked on the console (E07, E31) |
-| 10-10 | Google Lens, kernel capture | The 2,088,960 B full-frame `KERNEL_RW` capture buffer failed with `0x80024302`. The UI said "unexpected response (-108)" | out of memory (kernel-driver pool `ScePhyMemPartKD`), plus error mapping | region-sized capture ([#14](https://github.com/bee-san/vita-jp-overlay/pull/14)); error encoding ([#27](https://github.com/bee-san/vita-jp-overlay/pull/27)) |
+| 10-08 | ncnn PP-OCRv5 mobile, SceShell | Needed a 64 MiB block (32-42 MiB used; 13.4 MiB even trimmed to int8) against a 5 MiB Shell PAF heap. Never ran on a console | out of memory by design (SceShell) | dropped ([#18](https://github.com/bee-san/Rubi_for_vita/pull/18), [#19](https://github.com/bee-san/Rubi_for_vita/pull/19)) |
+| 10-10 | none (the overlay's result arenas), SceShell | An eager 786,432 B result allocation failed in CLANNAD with `0x80024302`, "no free physical page" | out of memory: SceShell's 50 MiB partition had no free page for a `USER_RW` block (correction: the partition, not the PAF heap) | lazy, smaller arenas ([#11](https://github.com/bee-san/Rubi_for_vita/pull/11)); checked on the console (E07, E31) |
+| 10-10 | Google Lens, kernel capture | The 2,088,960 B full-frame `KERNEL_RW` capture buffer failed with `0x80024302`. The UI said "unexpected response (-108)" | out of memory (kernel-driver pool `ScePhyMemPartKD`), plus error mapping | region-sized capture ([#14](https://github.com/bee-san/Rubi_for_vita/pull/14)); error encoding ([#27](https://github.com/bee-san/Rubi_for_vita/pull/27)) |
 | 10-10 | Meiki, SceShell | Its 5,392,856 B model alone is larger than the whole 5,242,880 B Shell PAF heap | out of memory (SceShell PAF) | inference moved into the game |
-| 10-11 | VOCR FL10/H15, SceShell | Moved out before any console run: about 2.4 MiB PAF free minus the 1.5 MiB reserve is less than H15's 1.4 MiB workspace | out of memory, predicted | game-process worker ([#21](https://github.com/bee-san/vita-jp-overlay/pull/21)) |
-| 10-11 | VOCR FL10, game | The game cannot open `ux0:` (`0x80010013`). The UI told the user to re-download the weights | integration (file namespace) | model read through the kernel ([#24](https://github.com/bee-san/vita-jp-overlay/pull/24), [#25](https://github.com/bee-san/vita-jp-overlay/pull/25)); checked |
-| 10-11 | VOCR FL10, game | The kernel's BUSY reached the game as `0xBFFFFFFD`, with bit 30 cleared. The game kept ownership and blocked every later capture | ABI and lifetime | [#27](https://github.com/bee-san/vita-jp-overlay/pull/27); 15 jobs with rc=0 on the console (HW02) |
-| 10-11 | VOCR FL10 in the game, dictionary in SceShell | Six OCR jobs succeeded, then dictionary arenas failed at 355-441 KB of PAF free. A test tool had left a 2,187,264 B JPEG pool allocated | out of memory (SceShell PAF, leaked by an outside tool) | reboot; one 64 KiB arena ([#30](https://github.com/bee-san/vita-jp-overlay/pull/30)); checked (HW15) |
+| 10-11 | VOCR FL10/H15, SceShell | Moved out before any console run: about 2.4 MiB PAF free minus the 1.5 MiB reserve is less than H15's 1.4 MiB workspace | out of memory, predicted | game-process worker ([#21](https://github.com/bee-san/Rubi_for_vita/pull/21)) |
+| 10-11 | VOCR FL10, game | The game cannot open `ux0:` (`0x80010013`). The UI told the user to re-download the weights | integration (file namespace) | model read through the kernel ([#24](https://github.com/bee-san/Rubi_for_vita/pull/24), [#25](https://github.com/bee-san/Rubi_for_vita/pull/25)); checked |
+| 10-11 | VOCR FL10, game | The kernel's BUSY reached the game as `0xBFFFFFFD`, with bit 30 cleared. The game kept ownership and blocked every later capture | ABI and lifetime | [#27](https://github.com/bee-san/Rubi_for_vita/pull/27); 15 jobs with rc=0 on the console (HW02) |
+| 10-11 | VOCR FL10 in the game, dictionary in SceShell | Six OCR jobs succeeded, then dictionary arenas failed at 355-441 KB of PAF free. A test tool had left a 2,187,264 B JPEG pool allocated | out of memory (SceShell PAF, leaked by an outside tool) | reboot; one 64 KiB arena ([#30](https://github.com/bee-san/Rubi_for_vita/pull/30)); checked (HW15) |
 | 10-11 | VOCR FL10, game | **Works**: 14 text-bearing jobs with rc=0. The user then reported poor OCR quality | poor output (qualitative) | led to the Meiki trial |
-| 10-11 | Meiki, game | Fitted easily (21.4 MB requested, 91 MB free), but took 7.9-8.0 s per line and needed a copy of its engine in every game | too slow; packaging | removed ([#50](https://github.com/bee-san/vita-jp-overlay/pull/50)) |
-| 10-11 | VOCR, dictionary in SceShell | Shell PAF free fell to 190 KiB, and a static 64 KiB buffer in the Shell plugin hung the boot | out of memory (SceShell PAF, cause unknown); hang: correction, the 65,544 B of `.bss` are 16 pages of SceShell's 50 MiB partition, the same pool that failed in #59 (PR #60) | [issue #42](https://github.com/bee-san/vita-jp-overlay/issues/42), closed unfixed |
+| 10-11 | Meiki, game | Fitted easily (21.4 MB requested, 91 MB free), but took 7.9-8.0 s per line and needed a copy of its engine in every game | too slow; packaging | removed ([#50](https://github.com/bee-san/Rubi_for_vita/pull/50)) |
+| 10-11 | VOCR, dictionary in SceShell | Shell PAF free fell to 190 KiB, and a static 64 KiB buffer in the Shell plugin hung the boot | out of memory (SceShell PAF, cause unknown); hang: correction, the 65,544 B of `.bss` are 16 pages of SceShell's 50 MiB partition, the same pool that failed in #59 (PR #60) | [issue #42](https://github.com/bee-san/Rubi_for_vita/issues/42), closed unfixed |
 
 VOCR2 and PP-OCRv6 small have never run on a console. PP-OCRv6 small
-([#52](https://github.com/bee-san/vita-jp-overlay/pull/52), open) needs 23.7 MB of free game memory
+([#52](https://github.com/bee-san/Rubi_for_vita/pull/52), open) needs 23.7 MB of free game memory
 for a full-screen job and an estimated 3-10 s per line.
 
 **Fixed since, on the host only** (the three items of
-[#53](https://github.com/bee-san/vita-jp-overlay/issues/53), none yet run on a console):
+[#53](https://github.com/bee-san/Rubi_for_vita/issues/53), none yet run on a console):
 1. **The weights were reloaded and re-hashed on every job**, the cost that grew with model size.
-   [#54](https://github.com/bee-san/vita-jp-overlay/pull/54) keeps the verified weights resident
+   [#54](https://github.com/bee-san/Rubi_for_vita/pull/54) keeps the verified weights resident
    and reads them in 32 KiB pieces without sleeps.
-2. **A refused preflight hid its numbers.** [#55](https://github.com/bee-san/vita-jp-overlay/pull/55)
+2. **A refused preflight hid its numbers.** [#55](https://github.com/bee-san/Rubi_for_vita/pull/55)
    logs the free `USER` bytes, the needs and the reserve on every job, and the CTC frames per
    line, so each console job measures ms per frame and each title reports its budget.
 3. **Every out-of-memory error gave the same advice.**
-   [#56](https://github.com/bee-san/vita-jp-overlay/pull/56) names the stage (kernel capture, game,
+   [#56](https://github.com/bee-san/Rubi_for_vita/pull/56) names the stage (kernel capture, game,
    Shell).
 
 **The first console test of that build failed in SceShell, not in the game**
-([#59](https://github.com/bee-san/vita-jp-overlay/issues/59), 2026-10-13). The API 16 build did not
+([#59](https://github.com/bee-san/Rubi_for_vita/issues/59), 2026-10-13). The API 16 build did not
 boot: SceShell's `SceLiveAreaDailyCronJob` died inside ScePaf with `0x80024302`, no free page in
 SceShell's 50 MiB partition. No OCR job had run. The root-cause analysis
-([PR #60](https://github.com/bee-san/vita-jp-overlay/pull/60)) attributes it to the overlay's own
+([PR #60](https://github.com/bee-san/Rubi_for_vita/pull/60)) attributes it to the overlay's own
 permanent footprint in that partition: the `*main` plugin's module pages, its two thread stacks and
 TLS, and the `*ALL` worker that taiHEN loads into SceShell as well, 540,672 B in all, 36,864 B more
 than the API 13 build that boots, in a partition measured at 28,672-98,304 B free beside a game.
@@ -359,9 +359,9 @@ SceShell for `*TITLEID` sections) is the overlay's work, outside this repo.
 
 **Corrections to earlier statements:**
 - **The overlay's default model is H15 with an automatic FL10 fallback since
-  [#57](https://github.com/bee-san/vita-jp-overlay/pull/57)** (`e759187`). Until then the config
+  [#57](https://github.com/bee-san/Rubi_for_vita/pull/57)** (`e759187`). Until then the config
   default and the release package set `FL10_w8.vocr`
-  ([M/core/config.c#L93](https://github.com/bee-san/vita-jp-overlay/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/config.c#L93));
+  ([M/core/config.c#L93](https://github.com/bee-san/Rubi_for_vita/blob/1a118ef8ca794bb5e2b5b2a96cd2cd07552d93eb/core/config.c#L93));
   `VJO_VOCR_DEFAULT_MODEL "H15_w8.vocr"` was only the host tools' default. Every console log is
   still FL10: **H15 has never run on a console** (#59 is that test, and it has not reached a game).
 - **FL10 has run on a console:** a PCH-1001 on firmware 3.65, inside CLANNAD (`notes/26`, HW02 and
@@ -599,7 +599,7 @@ about half the recognition columns.
 In order of value per effort. Items 1-3 are overlay changes; nothing in `runtime/` has to change.
 
 1. **Stop reloading the weights on every job.** Done in
-   [#54](https://github.com/bee-san/vita-jp-overlay/pull/54): a bounded in-kernel wait instead of
+   [#54](https://github.com/bee-san/Rubi_for_vita/pull/54): a bounded in-kernel wait instead of
    the 1 ms sleep loop, a 32 KiB kernel stage, one hash per session, and the verified weights kept
    in their own `USER_RW` block while the title is the active game, under the same preflight. It
    saves 0.2-0.36 s per FL10 job and an estimated 0.5-0.85 s per F20 job, for 0.66-1.6 MB of the
@@ -642,7 +642,7 @@ In order of value per effort. Items 1-3 are overlay changes; nothing in `runtime
 
 ## 6. What would turn these estimates into measurements
 
-- **Run the overlay's console test** ([#59](https://github.com/bee-san/vita-jp-overlay/issues/59),
+- **Run the overlay's console test** ([#59](https://github.com/bee-san/Rubi_for_vita/issues/59),
   `docs/console-test.md` there), once the boot failure's fix has merged behind its boot-safety
   guard. Since #55 every job logs `game vocr speed: … us per frame` and
   `game vocr memory: free USER=…`, so ten pages of CLANNAD give the first on-console ms per frame

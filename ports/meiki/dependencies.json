@@ -57,7 +57,7 @@
     "sha256": "87b111ff350c1f36bde1c2923e57467c1f86b044d54bc616631260486f2a512c"
   },
   "arena_source": {
-    "repository": "https://github.com/bee-san/vita-jp-overlay",
+    "repository": "https://github.com/bee-san/Rubi_for_vita",
     "license": "GPL-3.0-or-later",
     "commit": "61a2a50ab93953753b7531ec408621f36618cf98",
     "file": "core/ocr_heap.c"

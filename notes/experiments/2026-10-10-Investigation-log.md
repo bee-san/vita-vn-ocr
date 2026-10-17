@@ -64,7 +64,7 @@ The next experiment should append here or use a dated child note, then update [[
 
 Commit `0a66015994dbb3f12a3a506f0c0e4cab8ec72fdd` adds SceLibc coverage alongside the original clib family. `strcpy` uses a kernel-bounded NUL read with automatic UTF-8/CP932 decoding, avoiding a user-side unbounded `strlen`. Ten host suites passed (2.14 s), including 10 production-kernel cases. The actual ARM production-plugin harness passed 255 checks: 43 portable, 192 observer and 20 plugin; both families, return values, overlapping memmove, zero-length suppression and unload were exercised.
 
-Version `0.6-hooks.5` built and passed packaged ABI checks. It was pushed as [draft overlay PR #12](https://github.com/bee-san/vita-jp-overlay/pull/12), deliberately pending real commercial-game evidence. Physical plugins remain unchanged after rollback. Earlier scanner diagnostics are preserved only in local commit `2d56ce4` on `fix/native-text-discovery`; they are not part of this deployment. See [[14-Retail-libc-hook-coverage]].
+Version `0.6-hooks.5` built and passed packaged ABI checks. It was pushed as [draft overlay PR #12](https://github.com/bee-san/Rubi_for_vita/pull/12), deliberately pending real commercial-game evidence. Physical plugins remain unchanged after rollback. Earlier scanner diagnostics are preserved only in local commit `2d56ce4` on `fix/native-text-discovery`; they are not part of this deployment. See [[14-Retail-libc-hook-coverage]].
 
 ## 10. Real startup call, debugger deadlock and rendering correction
 

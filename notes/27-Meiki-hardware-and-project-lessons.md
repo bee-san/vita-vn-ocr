@@ -15,12 +15,12 @@ OCR accuracy, broad game compatibility or a complete residency measurement.
 
 ## Exact build and runtime observations
 
-[Overlay PR32](https://github.com/bee-san/vita-jp-overlay/pull/32) restored Square
+[Overlay PR32](https://github.com/bee-san/Rubi_for_vita/pull/32) restored Square
 and Circle in the ordinary overlay input handler. Tested head
 `996642e5da5e3c87ae72bd748329e4d568539ce1` and merged main
 `8cf11bb0eb8b3884f4299fe08ac6239ebb0bec7b` have tree
 `a60400ce7fb3204910fdaeb306a95ca767e05cc8`.
-[Release meiki.2](https://github.com/bee-san/vita-jp-overlay/releases/tag/v0.7.6-meiki.2)
+[Release meiki.2](https://github.com/bee-san/Rubi_for_vita/releases/tag/v0.7.6-meiki.2)
 contains the changed 147,544-byte Shell with SHA-256
 `7be08ef1e6993be63d521d165a0e169b290d3deced16a2c7eb7e8cce64e70295`.
 Native staged upload and full readback match. The API13 kernel, game worker and
@@ -137,12 +137,12 @@ Fault tests cover partial I/O, failed sync/rename, backup-only recovery and
 truthful save errors. The Japanese selector rejects malformed overlong UTF-8
 without changing the older decoder's compatibility behavior.
 
-**Measured local validation, MC02:** [overlay PR #33](https://github.com/bee-san/vita-jp-overlay/pull/33)
+**Measured local validation, MC02:** [overlay PR #33](https://github.com/bee-san/Rubi_for_vita/pull/33)
 passed exact-head hosted host/native gates at
 `e6c11ac688b8115202064a609500df2c0f2b1988` and merged as
 `45c6f11fa1d32459d749ba106dcbcaf3c92fade6`; both trees are
 `6e8cd308dba7c50f0ec56e4c6779714ee2d0bfda`.
-[Release v0.7.6](https://github.com/bee-san/vita-jp-overlay/releases/tag/v0.7.6)
+[Release v0.7.6](https://github.com/bee-san/Rubi_for_vita/releases/tag/v0.7.6)
 is published and all downloaded assets match SHA256SUMS. Its 57 unique ZIP
 members comprise 56 checksum-manifested payloads and one manifest. Both model
 families, JMdict and the complete dependency notices are present; commercial
@@ -204,7 +204,7 @@ checks. Preserve the working rollback and earlier hardware observations.
 
 ## Settings readability follow-up: controls verified; font inspection pending
 
-**Implemented, SR01:** [overlay PR #34](https://github.com/bee-san/vita-jp-overlay/pull/34)
+**Implemented, SR01:** [overlay PR #34](https://github.com/bee-san/Rubi_for_vita/pull/34)
 at exact head `c9ec54f9a6562ad61cbb8d9e4876e86028e652f4` packages the
 Settings-only redesign as v0.7.7. The in-game overlay and OCR worker layouts
 are unchanged. Settings shows three 80-pixel game cards instead of five
@@ -245,7 +245,7 @@ preference-input checks are recorded in NI07.
 
 Private evidence locator:
 `vita-release-2026-10-11/settings-readability-qa/verification.json`.
-The public [Settings readability note](https://github.com/bee-san/vita-jp-overlay/blob/c9ec54f9a6562ad61cbb8d9e4876e86028e652f4/docs/settings-readability.md)
+The public [Settings readability note](https://github.com/bee-san/Rubi_for_vita/blob/c9ec54f9a6562ad61cbb8d9e4876e86028e652f4/docs/settings-readability.md)
 records the harness command shape and limitations. No game-library data,
 screenshots, fonts or device identity are included in the notes or release.
 PR #34 merged as `b6518d0b01cf5274eddfa036f7f5f65109121450` after exact-head
@@ -347,9 +347,9 @@ layout and accepts the repaired 104-byte save within 160-byte storage; six
 adversarial cases pass. These are ABI/image checks, not a physical launch test.
 
 **Measured repair and installed-file reconciliation, NI05:**
-[overlay PR #36](https://github.com/bee-san/vita-jp-overlay/pull/36) at exact head
+[overlay PR #36](https://github.com/bee-san/Rubi_for_vita/pull/36) at exact head
 `1c8e8db1d4df301342416b6d68c4998e9dddbd67` passes host and native CI in
-[run 38146423675](https://github.com/bee-san/vita-jp-overlay/actions/runs/38146423675).
+[run 38146423675](https://github.com/bee-san/Rubi_for_vita/actions/runs/38146423675).
 The repair retains the existing libvita2d, Settings design and OCR/plugin
 source, rebuilding the pinned PNG dependency and checking its actual linked ABI.
 The complete 283,190-byte candidate VPK was uploaded and fully read back with
@@ -368,7 +368,7 @@ operation identity and unresolved terminal promotion status separately from
 the verified installed bytes.
 
 PR #36 merged as `b0642493688c0f31bc33738d937d876ba0edbab6`, and
-[release v0.7.8](https://github.com/bee-san/vita-jp-overlay/releases/tag/v0.7.8)
+[release v0.7.8](https://github.com/bee-san/Rubi_for_vita/releases/tag/v0.7.8)
 was published at 14:23:11 UTC on October 11. All six downloaded assets are
 byte-equal to the independently audited candidates; all downloaded ZIP CRCs
 pass. The private receipt is

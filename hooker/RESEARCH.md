@@ -373,7 +373,7 @@ named functions. Source inspection has no timed/repeated benchmark samples.
 [sdk-pvf]: https://github.com/vitasdk/vita-headers/blob/e66ebe90b73d1fa4cce005a5b2072cec27322544/include/psp2/pvf.h
 [sdk-pgf]: https://github.com/vitasdk/vita-headers/blob/e66ebe90b73d1fa4cce005a5b2072cec27322544/include/psp2/pgf.h
 [sdk-gxm]: https://github.com/vitasdk/vita-headers/blob/e66ebe90b73d1fa4cce005a5b2072cec27322544/include/psp2/gxm.h
-[overlay-capture]: https://github.com/bee-san/vita-jp-overlay/blob/61a2a50ab93953753b7531ec408621f36618cf98/kernel/capture.c
+[overlay-capture]: https://github.com/bee-san/Rubi_for_vita/blob/61a2a50ab93953753b7531ec408621f36618cf98/kernel/capture.c
 
 ### Inspected-file SHA-256
 

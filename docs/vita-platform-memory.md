@@ -1,12 +1,12 @@
 # The PS Vita memory the recognizer runs in
 
 Written 2026-10-13. The full platform reference, with every pool, size and citation, is
-vita-jp-overlay's [`docs/vita-memory.md`](https://github.com/bee-san/vita-jp-overlay/blob/main/docs/vita-memory.md)
-(PR [#61](https://github.com/bee-san/vita-jp-overlay/pull/61)). This note states the part that
+vita-jp-overlay's [`docs/vita-memory.md`](https://github.com/bee-san/Rubi_for_vita/blob/main/docs/vita-memory.md)
+(PR [#61](https://github.com/bee-san/Rubi_for_vita/pull/61)). This note states the part that
 decides how big a model may be, and corrects what `docs/vita-memory-budget.md` got wrong about
 where the overlay's memory comes from. Sources are the Sony SDK documentation (cited there by
 file name), the henkaku wiki, the taiHEN sources and the overlay's console measurements, in
-particular vita-jp-overlay PR [#60](https://github.com/bee-san/vita-jp-overlay/pull/60)
+particular vita-jp-overlay PR [#60](https://github.com/bee-san/Rubi_for_vita/pull/60)
 (`docs/issue-59-root-cause.md`).
 
 ## The pools, in one table

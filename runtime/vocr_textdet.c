@@ -772,13 +772,21 @@ static void setup(Net *t, const Plan *p)
     t->ctrunc = 0;
 }
 
+/* Where the lines go: a VocrTextdetSet's arrays, or (vertical NULL: the finder mode) a VocrLineSet's
+ * lines, which receives the horizontal ones only. */
+typedef struct {
+    VocrLine *lines;
+    unsigned *vertical;
+    unsigned count, truncated;
+} Out;
+
 /* Horizontal lines in rows (a line joins a row when it overlaps the row's first line by half the
  * smaller height; a row goes left to right), then vertical lines right to left; at most
- * VOCR_LINES_MAX. */
-static void order(Net *t, VocrTextdetSet *out)
+ * VOCR_LINES_MAX of them in all. Without out->vertical only the horizontal ones among those. */
+static void order(Net *t, Out *out)
 {
     Cand *c = t->cand;
-    unsigned n = t->ncand, nh = 0, i, j, k;
+    unsigned n = t->ncand, nh = 0, i, j, k = 0;
     while (nh < n && !c[nh].v) nh++;
     for (i = 0; i < nh; i = j) {
         unsigned fy = c[i].y, fh = c[i].h;
@@ -788,27 +796,28 @@ static void order(Net *t, VocrTextdetSet *out)
         }
         sort_cands(c + i, j - i, row_less);
     }
-    sort_cands(c + nh, n - nh, vert_less);
-    for (k = 0; k < n && k < VOCR_LINES_MAX; k++) {
-        out->lines[k].x = c[k].x;
-        out->lines[k].y = c[k].y;
-        out->lines[k].w = c[k].w;
-        out->lines[k].h = c[k].h;
+    if (out->vertical) sort_cands(c + nh, n - nh, vert_less);
+    for (i = 0; i < (out->vertical ? n : nh) && k < VOCR_LINES_MAX; i++, k++) {
+        out->lines[k].x = c[i].x;
+        out->lines[k].y = c[i].y;
+        out->lines[k].w = c[i].w;
+        out->lines[k].h = c[i].h;
         out->lines[k].dark = 0;
-        out->vertical[k] = c[k].v;
+        if (out->vertical) out->vertical[k] = c[i].v;
     }
     out->count = k;
     out->truncated = (t->ctrunc || n > VOCR_LINES_MAX) ? 1u : 0u;
 }
 
 static int detect(const vocr_textdet *m, const Src *s, unsigned width, unsigned height, unsigned bpp, void *arena,
-                  size_t arena_bytes, VocrTextdetSet *out, vocr_textdet_map_row hook, void *user)
+                  size_t arena_bytes, Out *out, vocr_textdet_map_row hook, void *user)
 {
     Plan p;
     Net t;
     unsigned y, k;
     uintptr_t a;
     int rc;
+    out->count = out->truncated = 0;
     if (!loaded(m) || !width || !height || width > VOCR_TEXTDET_MAX_SIDE || height > VOCR_TEXTDET_MAX_SIDE ||
         (bpp != VOCR_LINES_GREY && bpp != VOCR_LINES_RGBA) || !arena)
         return VOCR_LINES_E_ARG;
@@ -832,7 +841,10 @@ static int detect(const vocr_textdet *m, const Src *s, unsigned width, unsigned 
         VocrLine *ln = &out->lines[k];
         int d = s->im ? vocr_line_dark(s->im, ln->x, ln->y, ln->w, ln->h)
                       : vocr_line_dark_rows(s->rows, ln->x, ln->y, ln->w, ln->h);
-        if (d < 0) return d;
+        if (d < 0) {
+            out->count = out->truncated = 0;
+            return d;
+        }
         ln->dark = (unsigned)d;
     }
     return VOCR_LINES_OK;
@@ -844,47 +856,72 @@ static int image_ok(const VocrLinesImage *im)
            im->stride >= (size_t)im->width * im->bpp;
 }
 
+/* The detector into a set (vertical flags) or a finder-mode set (vertical NULL). */
+static int run_image(const vocr_textdet *m, const VocrLinesImage *im, void *arena, size_t arena_bytes, VocrLine *lines,
+                     unsigned *vertical, unsigned *count, unsigned *truncated)
+{
+    Src s;
+    Out o;
+    int rc = VOCR_LINES_E_ARG;
+    o.lines = lines;
+    o.vertical = vertical;
+    o.count = o.truncated = 0;
+    if (image_ok(im)) {
+        s.im = im;
+        s.rows = NULL;
+        rc = detect(m, &s, im->width, im->height, im->bpp, arena, arena_bytes, &o, NULL, NULL);
+    }
+    *count = o.count;
+    *truncated = o.truncated;
+    return rc;
+}
+
+static int run_rows(const vocr_textdet *m, const VocrLinesRows *src, void *arena, size_t arena_bytes, VocrLine *lines,
+                    unsigned *vertical, unsigned *count, unsigned *truncated)
+{
+    Src s;
+    Out o;
+    int rc = VOCR_LINES_E_ARG;
+    o.lines = lines;
+    o.vertical = vertical;
+    o.count = o.truncated = 0;
+    if (src && src->row) {
+        s.im = NULL;
+        s.rows = src;
+        rc = detect(m, &s, src->width, src->height, src->bpp, arena, arena_bytes, &o, NULL, NULL);
+    }
+    *count = o.count;
+    *truncated = o.truncated;
+    return rc;
+}
+
 int vocr_textdet_find(const vocr_textdet *m, const VocrLinesImage *im, void *arena, size_t arena_bytes,
                       VocrTextdetSet *out)
 {
-    Src s;
-    int rc;
     if (!out) return VOCR_LINES_E_ARG;
-    out->count = 0;
-    out->truncated = 0;
-    if (!image_ok(im)) return VOCR_LINES_E_ARG;
-    s.im = im;
-    s.rows = NULL;
-    rc = detect(m, &s, im->width, im->height, im->bpp, arena, arena_bytes, out, NULL, NULL);
-    if (rc) out->count = out->truncated = 0;
-    return rc;
+    return run_image(m, im, arena, arena_bytes, out->lines, out->vertical, &out->count, &out->truncated);
 }
 
 int vocr_textdet_find_rows(const vocr_textdet *m, const VocrLinesRows *src, void *arena, size_t arena_bytes,
                            VocrTextdetSet *out)
 {
-    Src s;
-    int rc;
     if (!out) return VOCR_LINES_E_ARG;
-    out->count = 0;
-    out->truncated = 0;
-    if (!src || !src->row) return VOCR_LINES_E_ARG;
-    s.im = NULL;
-    s.rows = src;
-    rc = detect(m, &s, src->width, src->height, src->bpp, arena, arena_bytes, out, NULL, NULL);
-    if (rc) out->count = out->truncated = 0;
-    return rc;
+    return run_rows(m, src, arena, arena_bytes, out->lines, out->vertical, &out->count, &out->truncated);
 }
 
 int vocr_textdet_maps(const vocr_textdet *m, const VocrLinesImage *im, void *arena, size_t arena_bytes,
                       vocr_textdet_map_row row, void *user)
 {
     Src s;
-    VocrTextdetSet out;
+    Out o;
+    VocrLine lines[VOCR_LINES_MAX];
+    unsigned vertical[VOCR_LINES_MAX];
     if (!image_ok(im) || !row) return VOCR_LINES_E_ARG;
     s.im = im;
     s.rows = NULL;
-    return detect(m, &s, im->width, im->height, im->bpp, arena, arena_bytes, &out, row, user);
+    o.lines = lines;
+    o.vertical = vertical;
+    return detect(m, &s, im->width, im->height, im->bpp, arena, arena_bytes, &o, row, user);
 }
 
 /* ---------------------------------------------------------------- the finder mode */
@@ -895,39 +932,18 @@ size_t vocr_lines_det_arena_bytes(const vocr_textdet *m, unsigned max_width, uns
     return a > b ? a : b;
 }
 
-static void horizontal(const VocrTextdetSet *det, VocrLineSet *out)
-{
-    unsigned i;
-    out->count = 0;
-    for (i = 0; i < det->count; i++)
-        if (!det->vertical[i]) out->lines[out->count++] = det->lines[i];
-    out->truncated = det->truncated;
-}
-
 int vocr_find_lines_det(const VocrLinesImage *im, int finder, const vocr_textdet *m, void *arena,
                         size_t arena_bytes, VocrLineSet *out)
 {
-    VocrTextdetSet det;
-    int rc;
     if (finder != VOCR_LINES_TEXTDET) return vocr_find_lines(im, finder, arena, arena_bytes, out);
     if (!out) return VOCR_LINES_E_ARG;
-    out->count = 0;
-    out->truncated = 0;
-    rc = vocr_textdet_find(m, im, arena, arena_bytes, &det);
-    if (!rc) horizontal(&det, out);
-    return rc;
+    return run_image(m, im, arena, arena_bytes, out->lines, NULL, &out->count, &out->truncated);
 }
 
 int vocr_find_lines_det_rows(const VocrLinesRows *src, int finder, const vocr_textdet *m, void *arena,
                              size_t arena_bytes, VocrLineSet *out)
 {
-    VocrTextdetSet det;
-    int rc;
     if (finder != VOCR_LINES_TEXTDET) return vocr_find_lines_rows(src, finder, arena, arena_bytes, out);
     if (!out) return VOCR_LINES_E_ARG;
-    out->count = 0;
-    out->truncated = 0;
-    rc = vocr_textdet_find_rows(m, src, arena, arena_bytes, &det);
-    if (!rc) horizontal(&det, out);
-    return rc;
+    return run_rows(m, src, arena, arena_bytes, out->lines, NULL, &out->count, &out->truncated);
 }

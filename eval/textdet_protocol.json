@@ -1,0 +1,731 @@
+{
+ "kind": "textdet-protocol",
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/96",
+ "schema": 1,
+ "frozen": "2026-10-17T21:44:14Z",
+ "rule_of_this_file": "Frozen before any detector training run (including speed probes). Amendments are appended to 'amendments' with their UTC time and reason, before the score they could affect is computed; no field above them is rewritten.",
+ "owner_steering": [
+  "2026-10-17 21:15Z: complete issue #96.",
+  "2026-10-17 21:16Z: we need it to run on a ps vita, so smaller == better; play around with sizings."
+ ],
+ "sources_sha256": {
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+  "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+  "runtime/vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465",
+  "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+  "runtime/vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+  "eval/finder_tighten.py": "a01ac2e8a8b136b5ea677fbc3f7a7226f158620af6eea7b928e939b5f57148f4",
+  "eval/textdet.py": "9ed761447edb5ecacb145bd404c7c0f3b68b382c4ca25821d148c778c470631e",
+  "train/general_vn_textbox_guard.py": "637fbe5a3cb06dcfd83399218c1558c6d3c69d4ebba44ab0ca0742f2b89b254e",
+  "runtime/vocr.c": "3e1756138b2e1d9aff15abdda95b02e0c015a5ba0af99678bdd678377b73f559",
+  "runtime/vocr.h": "30bb32693e634a4c4b4cd5cd3a4da8d33f6882bf00348d0e1d8264ba08376271",
+  "eval/manifests/reserved.json": "8ddaace6d1c9be5331bbcf628ff64d1c51365dc61f8a47d343d1bfb202e894cc",
+  "eval/manifests/vita-test.jsonl": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+  "eval/manifests/psp-test.jsonl": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+  "eval/linefind/manifests/vita_dev.jsonl": "f4396bad63eb8f31c18c0415027db2a59610a0514209bd6cd96caba46c9ecf52",
+  "eval/linefind/manifests/psp_dev.jsonl": "7f32d43e382259b4ffb44550ede8355048aae69332f94cbf05d8009e2f95fe4d",
+  "eval/linefind/manifests/vita_holdout.jsonl": "5ea744131533c16d4ae004df2985a654854a1b9cc71f5c410f169ea9c835e716",
+  "eval/linefind/manifests/psp_holdout.jsonl": "9ce425feadbef329948860ff7f448af4c77a5afc7d7abb19be7ce4f86163c025",
+  "train/textdet_model.py": "f0a7ab8ffb494465fa8c8bdb5dbe96bf301a574d6592ea87eb7d4f5f30b110f8"
+ },
+ "recognizers": {
+  "VOCR5-S": {
+   "release": "v0.3.0",
+   "asset": "VOCR5_S_w8.vocr",
+   "run": "v5f_S_seed2",
+   "blob_bytes": 819792,
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+  },
+  "VOCR5-N": {
+   "release": "v0.3.0",
+   "asset": "VOCR5_N_w8.vocr",
+   "run": "v5f_N_seed3",
+   "blob_bytes": 1185632,
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+  },
+  "VOCR5-L": {
+   "release": "v0.3.0",
+   "asset": "VOCR5_L_w8.vocr",
+   "run": "v5f_L_seed2",
+   "blob_bytes": 2473696,
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+  }
+ },
+ "finders": {
+  "grad": "runtime/vocr_lines.c VOCR_LINES_GRAD (frozen; bit-exact twin synth/common.find_lines_ex)",
+  "refine": "GRAD then runtime/vocr_lines_refine.c with VOCR_REFINE_DEFAULT = 0x1F (twin synth/lines_refine.py)",
+  "det": "a detector candidate: the int8 blob through runtime/vocr_textdet.c (C) and synth/textdet_twin.py (its bit-exact Python twin); every development region is run through both and must agree box for box, or the candidate is ineligible"
+ },
+ "development": {
+  "wd": {
+   "what": "VOCR5's development whole dialogue (eval/vocr5_select.load_wd): finder-tighten's tv_dlg and dn_dlg regions of the reserved.json dev_sample VNs, tv_dlg plus the dn_dlg frames tv_dlg does not hold, base / +4 / +8 px; every crop a finder returns (vertical-flagged boxes excepted) is read by the VOCR5 model in W8I through the C runtime with VOCR_INVERT from the box's dark flag, joined in the finder's order and scored by transcript_score (all/full): dialogue CER, the regions hold no speaker name",
+   "cohorts": {
+    "tv_dlg": {
+     "sha256": "f1007ab4e943012330b229cc2630f3fc9d33aa94d6dac03130bc5ea5126c1af3",
+     "cases": 1008
+    },
+    "dn_dlg": {
+     "sha256": "c6dfd35293e7716bc3772fffc88c8d8aeba62c8fa20f97c0d5041b4f1dbc1e1f",
+     "cases": 507
+    }
+   },
+   "units": 1161,
+   "vns": 93,
+   "primary": "all three variants pooled",
+   "bootstrap": "VN clusters, 10,000 resamples, numpy default_rng(0), sorted VN ids, linear 2.5/97.5 percentiles (eval/textdet.vn_diff; one pair = eval/vocr3_report.cluster_bootstrap)"
+  },
+  "native_vita": {
+   "what": "the CLANNAD-dev-style subset: the wd units whose frame is a native PS Vita screenshot (teacher_val frames whose teacher read is of kind 'vita', devnative's Vita frames): 960x544 native Vita text, where finder-tighten's refinement was level on development and worse on CLANNAD (docs/finder-tighten.md)",
+   "units": 150,
+   "base_regions": 50,
+   "chars": 3738,
+   "vns": [
+    "v10383",
+    "v16128",
+    "v16770",
+    "v18161",
+    "v18163",
+    "v18432",
+    "v18643",
+    "v18857",
+    "v21004"
+   ]
+  },
+  "empty": {
+   "what": "eval/linefind's 'empty' regions (text-free regions from the upper screen) of vita_dev and psp_dev, regions of a reserved test VN left out (vita_dev v36, psp_dev v1267 / v4060): 66 regions; empty rate = the share for which the finder returns no line",
+   "regions": 66
+  },
+  "linefind": "line recall / precision / F1 (IoU >= 0.5), region exact, merged / split / cut per set and tag on vita_dev, psp_dev (development) and vita_holdout, psp_holdout (report only); never research_a/b",
+  "report_only": [
+   "the owner's CHAOS;CHILD (v14018) native Vita whole dialogue (finder-tighten's own_dlg Vita units): the detector never trains on v14018, the VOCR5 models did (in-sample for the recognizers), so it is a secondary native-Vita check that decides nothing",
+   "the dn pairs of the dev_sample VNs: the detector's box for the line against the hand-cut ink crop",
+   "gate arms: GRAD and GRAD + refine with every line dropped when the detector returns no text for the region (an empty-region gate in front of the hand-written finder)"
+  ]
+ },
+ "baseline": {
+  "computed": "2026-10-17T21:44:14Z",
+  "file": "eval/textdet_baseline_20261017.json",
+  "wd_dialogue_cer_all_variants": {
+   "VOCR5-S": {
+    "grad": 7.4418,
+    "refine": 5.2139
+   },
+   "VOCR5-N": {
+    "grad": 6.8655,
+    "refine": 4.7807
+   },
+   "VOCR5-L": {
+    "grad": 6.2041,
+    "refine": 4.4597
+   }
+  },
+  "wd_native_vita_cer": {
+   "VOCR5-S": {
+    "grad": 0.8293,
+    "refine": 0.9096
+   },
+   "VOCR5-N": {
+    "grad": 1.0701,
+    "refine": 1.0166
+   },
+   "VOCR5-L": {
+    "grad": 0.9363,
+    "refine": 0.8026
+   }
+  },
+  "empty_rate_dev": {
+   "grad": 0.0758,
+   "refine": 0.0758
+  },
+  "note": "the wd units equal VOCR5's stored selection units for the three selected runs, unit for unit"
+ },
+ "detector": {
+  "family": "train/textdet_model.py: a stem (3x3/2), a downsampling stage to output stride 4 or 8, 3-5 blocks (separable: 3x3 depthwise with dilation + 1x1; or plain 3x3 with dilation) and a 1x1 head with 4 maps per cell: K (text kernel), O (vertical), A1 / A2 (distances to the line's near and far edges across the line). BatchNorm folded; int8 weights, int8 activations, int32 accumulators, fixed-point requantisation: integer arithmetic only",
+  "targets": {
+   "box": "a line's main-text ink box (fill, outline and shadow; furigana, emphasis dots, cursors and icons excluded) on its long axis and across it",
+   "kernel": "cells whose centre lies within max(h/4, s/2) of the line's centre line across it (h = ink size across the line, s = stride) and whose span meets the ink box along it",
+   "A1_A2": "for kernel cells, the distances in px from the cell centre to the ink box's near and far edges across the line (int8 code = 2 x px, clamped to 0..127)",
+   "O": "1 on the kernel cells of vertical lines, 0 on horizontal ones (loss on kernel cells only)",
+   "ignore": "areas the generator marks unlabelled (unknown or unreadable text) carry no loss"
+  },
+  "decode": {
+   "kernel": "cells with K code > 0, 4-connected components",
+   "drop": "components of fewer than 2 cells (stride 4) or 1 cell (stride 8); boxes under 4 px across",
+   "orientation": "vertical iff the sum of the component's O codes is > 0",
+   "across": "with c2 = 2 x a cell's centre across the line (2*s*i + s - 1) and n cells: near edge = floor(sum(c2 - A1) / (2n)), far edge = ceil(sum(c2 + A2) / (2n)), integers only",
+   "along": "the component's first cell x stride to (last cell + 1) x stride",
+   "pad": "max(2, (h * 18 + 50) / 100) px on every side (h = far - near), then clipped to the region",
+   "order": "horizontal lines top to bottom (a line whose rows overlap the previous one's by half the smaller height goes left to right), then vertical lines right to left",
+   "cap": "16 lines (VocrLineSet), the rest dropped and truncated set",
+   "dark": "vocr_line_dark on the padded box (the GRAD finder's polarity rule, unchanged)",
+   "text_present": "at least one line returned",
+   "vertical_boxes": "flagged, never handed to the horizontal recognizers (not read in wd, protected or CLANNAD scoring)"
+  },
+  "constants_rule": "the decode constants above are fixed here; they may change only by an amendment made before any candidate's wd score exists"
+ },
+ "sweep": {
+  "shapes": {
+   "s4_c4": {
+    "name": "s4_c4",
+    "stride": 4,
+    "c0": 4,
+    "c1": 4,
+    "c2": null,
+    "chans": [
+     4,
+     4,
+     4
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 3130200,
+    "params": 300,
+    "macs_960x544": 12011520,
+    "macs_480x272": 3002880,
+    "macs_450x80": 830240,
+    "receptive_field": 63
+   },
+   "s4_c6": {
+    "name": "s4_c6",
+    "stride": 4,
+    "c0": 4,
+    "c1": 6,
+    "c2": null,
+    "chans": [
+     6,
+     6,
+     6
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 4241700,
+    "params": 444,
+    "macs_960x544": 16254720,
+    "macs_480x272": 4063680,
+    "macs_450x80": 1124040,
+    "receptive_field": 63
+   },
+   "s4_c8": {
+    "name": "s4_c8",
+    "stride": 4,
+    "c0": 4,
+    "c1": 8,
+    "c2": null,
+    "chans": [
+     8,
+     8,
+     8
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 5558400,
+    "params": 612,
+    "macs_960x544": 21281280,
+    "macs_480x272": 5320320,
+    "macs_450x80": 1472080,
+    "receptive_field": 63
+   },
+   "s4_c8n5": {
+    "name": "s4_c8n5",
+    "stride": 4,
+    "c0": 4,
+    "c1": 8,
+    "c2": null,
+    "chans": [
+     8,
+     8,
+     8,
+     8,
+     8
+    ],
+    "dil": [
+     1,
+     2,
+     4,
+     1,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 7884000,
+    "params": 916,
+    "macs_960x544": 30159360,
+    "macs_480x272": 7539840,
+    "macs_450x80": 2086800,
+    "receptive_field": 87
+   },
+   "s4_c12": {
+    "name": "s4_c12",
+    "stride": 4,
+    "c0": 6,
+    "c1": 12,
+    "c2": null,
+    "chans": [
+     12,
+     12,
+     12
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 9774000,
+    "params": 1084,
+    "macs_960x544": 37405440,
+    "macs_480x272": 9351360,
+    "macs_450x80": 2587800,
+    "receptive_field": 63
+   },
+   "s4_c16": {
+    "name": "s4_c16",
+    "stride": 4,
+    "c0": 8,
+    "c1": 16,
+    "c2": null,
+    "chans": [
+     16,
+     16,
+     16
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 14947200,
+    "params": 1668,
+    "macs_960x544": 57185280,
+    "macs_480x272": 14296320,
+    "macs_450x80": 3956640,
+    "receptive_field": 63
+   },
+   "s4_c16n4": {
+    "name": "s4_c16n4",
+    "stride": 4,
+    "c0": 8,
+    "c1": 16,
+    "c2": null,
+    "chans": [
+     16,
+     16,
+     16,
+     16
+    ],
+    "dil": [
+     1,
+     2,
+     4,
+     1
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 18367200,
+    "params": 2100,
+    "macs_960x544": 70241280,
+    "macs_480x272": 17560320,
+    "macs_450x80": 4860640,
+    "receptive_field": 71
+   },
+   "s4_c24": {
+    "name": "s4_c24",
+    "stride": 4,
+    "c0": 8,
+    "c1": 16,
+    "c2": null,
+    "chans": [
+     24,
+     24,
+     24
+    ],
+    "dil": [
+     1,
+     2,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 23018400,
+    "params": 2652,
+    "macs_960x544": 87997440,
+    "macs_480x272": 21999360,
+    "macs_450x80": 6090080,
+    "receptive_field": 47
+   },
+   "s4p_c4": {
+    "name": "s4p_c4",
+    "stride": 4,
+    "c0": 4,
+    "c1": 4,
+    "c2": null,
+    "chans": [
+     4,
+     4,
+     4
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "plain",
+    "head": "kroa",
+    "macs": 6276600,
+    "params": 652,
+    "macs_960x544": 24023040,
+    "macs_480x272": 6005760,
+    "macs_450x80": 1661920,
+    "receptive_field": 63
+   },
+   "s4p_c8": {
+    "name": "s4p_c8",
+    "stride": 4,
+    "c0": 4,
+    "c1": 8,
+    "c2": null,
+    "chans": [
+     8,
+     8,
+     8
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "plain",
+    "head": "kroa",
+    "macs": 18725400,
+    "params": 2124,
+    "macs_960x544": 71546880,
+    "macs_480x272": 17886720,
+    "macs_450x80": 4952480,
+    "receptive_field": 63
+   },
+   "s8_c8": {
+    "name": "s8_c8",
+    "stride": 8,
+    "c0": 4,
+    "c1": 8,
+    "c2": 8,
+    "chans": [
+     8,
+     8,
+     8
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 3033072,
+    "params": 764,
+    "macs_960x544": 11619840,
+    "macs_480x272": 2904960,
+    "macs_450x80": 806000,
+    "receptive_field": 127
+   },
+   "s8_c16": {
+    "name": "s8_c16",
+    "stride": 8,
+    "c0": 4,
+    "c1": 8,
+    "c2": 16,
+    "chans": [
+     16,
+     16,
+     16
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 4939608,
+    "params": 1708,
+    "macs_960x544": 18865920,
+    "macs_480x272": 4716480,
+    "macs_450x80": 1312160,
+    "receptive_field": 127
+   },
+   "s8_c24": {
+    "name": "s8_c24",
+    "stride": 8,
+    "c0": 8,
+    "c1": 16,
+    "c2": 24,
+    "chans": [
+     24,
+     24,
+     24
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 10581000,
+    "params": 3492,
+    "macs_960x544": 40408320,
+    "macs_480x272": 10102080,
+    "macs_450x80": 2810000,
+    "receptive_field": 127
+   },
+   "s8_c32": {
+    "name": "s8_c32",
+    "stride": 8,
+    "c0": 8,
+    "c1": 16,
+    "c2": 32,
+    "chans": [
+     32,
+     32,
+     32
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 14273840,
+    "params": 5268,
+    "macs_960x544": 54443520,
+    "macs_480x272": 13610880,
+    "macs_450x80": 3790400,
+    "receptive_field": 127
+   },
+   "s8_c32n4": {
+    "name": "s8_c32n4",
+    "stride": 8,
+    "c0": 8,
+    "c1": 16,
+    "c2": 32,
+    "chans": [
+     32,
+     32,
+     32,
+     32
+    ],
+    "dil": [
+     1,
+     2,
+     2,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 17090704,
+    "params": 6644,
+    "macs_960x544": 65149440,
+    "macs_480x272": 16287360,
+    "macs_450x80": 4538240,
+    "receptive_field": 127
+   },
+   "s8_c48": {
+    "name": "s8_c48",
+    "stride": 8,
+    "c0": 8,
+    "c1": 24,
+    "c2": 48,
+    "chans": [
+     48,
+     48,
+     48
+    ],
+    "dil": [
+     1,
+     2,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": 25659096,
+    "params": 10508,
+    "macs_960x544": 97724160,
+    "macs_480x272": 24431040,
+    "macs_450x80": 6812400,
+    "receptive_field": 95
+   },
+   "s4_c8_ko": {
+    "name": "s4_c8_ko",
+    "stride": 4,
+    "c0": 4,
+    "c1": 8,
+    "c2": null,
+    "chans": [
+     8,
+     8,
+     8
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "ko",
+    "macs": 5558400,
+    "params": 612,
+    "macs_960x544": 21281280,
+    "macs_480x272": 5320320,
+    "macs_450x80": 1472080,
+    "receptive_field": 63
+   },
+   "s8_c16_ko": {
+    "name": "s8_c16_ko",
+    "stride": 8,
+    "c0": 4,
+    "c1": 8,
+    "c2": 16,
+    "chans": [
+     16,
+     16,
+     16
+    ],
+    "dil": [
+     1,
+     2,
+     4
+    ],
+    "block": "sep",
+    "head": "ko",
+    "macs": 4939608,
+    "params": 1708,
+    "macs_960x544": 18865920,
+    "macs_480x272": 4716480,
+    "macs_450x80": 1312160,
+    "receptive_field": 127
+   }
+  },
+  "runs": [
+   "s4_c4_seed1",
+   "s4_c6_seed1",
+   "s4_c8_seed1",
+   "s4_c8n5_seed1",
+   "s4_c12_seed1",
+   "s4_c16_seed1",
+   "s4_c16n4_seed1",
+   "s4_c24_seed1",
+   "s4p_c4_seed1",
+   "s4p_c8_seed1",
+   "s8_c8_seed1",
+   "s8_c16_seed1",
+   "s8_c24_seed1",
+   "s8_c32_seed1",
+   "s8_c32n4_seed1",
+   "s8_c48_seed1",
+   "s4_c8_ko_seed1",
+   "s8_c16_ko_seed1",
+   "s4_c4_seed2",
+   "s4_c8_seed2",
+   "s4_c16_seed2",
+   "s8_c8_seed2",
+   "s8_c16_seed2",
+   "s8_c32_seed2"
+  ],
+  "seeds": "seed 1 for every shape, seed 2 for s4_c4, s4_c8, s4_c16, s8_c8, s8_c16, s8_c32",
+  "outside_the_rule": "an int4-weight study (fake-quantised 4-bit weights of 2-3 trained shapes, report only: the runtime runs int8) and the strip/row-buffer arena table (the runtime streams rows exactly, so a strip height changes no output)",
+  "shared_trunk": "considered and not swept: the recognizers read 32-px line crops resized after detection, so no layer of theirs can run on the region before the lines are known"
+ },
+ "training": {
+  "where": "train/textdet_train.py through HEAVY_SLOTS=12 $HERD/heavy.sh, 5 torch threads per run",
+  "steps": 30000,
+  "batch": 16,
+  "window": [
+   192,
+   512
+  ],
+  "optimizer": "AdamW, lr 4e-3, 500 warm-up steps, cosine to 1e-4, weight decay 1e-4 (not on BN / bias)",
+  "loss": "K: BCE + dice over valid cells; O: BCE on kernel cells x 0.5; A1/A2: smooth L1 on kernel cells (px / 8)",
+  "qat": "int8 fake quantisation (weights per output channel, activations per tensor) from step 24,000",
+  "mix": "synthetic 0.5, real 0.5 per batch",
+  "selection_inside_a_run": "none: the last step is the run's model (no checkpoint is picked on any score)"
+ },
+ "data": {
+  "generator": "synth/textdet_data.py: pinned shards (sha256 manifest committed before the first training run) of grey canvases with line boxes (main-text ink box, orientation, role) and ignore areas",
+  "synthetic": "synth3 version 3's region renderer (its ink, fill and ruby masks give exact boxes) in canvases of several sizes (the region, loose crops, whole screens on text-free backgrounds), plus vertical-text renders and empty negatives (boxes, scenes and screens with no text)",
+  "real": "MeikiOCR line boxes refined to ink and its detector boxes (with their vertical flag) from realplus, teacher, devnative (training part) and the owner's frames, cut into regions like a player's plus text-free regions",
+  "excluded": [
+   "every reserved.json 'test' VN (vita-test, psp-test, CLANNAD family and their release partners) and 'dev_sample' VN, and every 'sessions' release",
+   "every screenshot of eval's sets (vita-test, psp-test), of eval/linefind's six manifests and every VN of vita_dev, vita_holdout, psp_dev, psp_holdout",
+   "every frame of the wd cohorts (by shot id) and of finder-tighten's own_dlg Vita units (the owner's CHAOS;CHILD v14018)",
+   "synthetic scenes and names: synth3's own exclusions (CLANNAD manifest, test VNs)"
+  ],
+  "check": "eval/tools/reserve_check.py on every real shard, recorded"
+ },
+ "promotion_rule": {
+  "eligible": "int8 blob < 100,000 B; arena at 960x544 <= 131,072 B (the C runtime's exact function); <= 30,000,000 MACs on a 900x150 region; C == twin on every development region",
+  "size_order": "blob bytes ascending, then MACs on a 900x150 region, then run name",
+  "qualifies": "for each of VOCR5-S, -N, -L: the wd CER difference det - GRAD and det - refine (points, all variants pooled) has a VN-cluster 95% interval entirely below 0; on the native_vita subset no such difference (det - GRAD, det - refine, any model) has an interval entirely above 0; and the development empty rate is >= 0.75",
+  "winner": "W = the smallest qualifying candidate; then repeatedly, among the qualifying candidates larger than W, the smallest whose mean over the three models of its wd CER difference to W has a VN-cluster interval entirely below 0 becomes W; the final W is selected",
+  "no_winner": "if no candidate qualifies the verdict is negative: GRAD (+ refine where the overlay uses it) stays, and the protected sets are read once for the eligible candidate with the lowest mean wd CER over the three models, labelled not promoted"
+ },
+ "fine_tune": {
+  "trigger": "no candidate qualifies, and an eligible candidate passes the native_vita and empty conditions with a wd CER below GRAD's and refine's (point estimates) for every model",
+  "recipe": "for each tier, the released checkpoint fine-tuned 3,000 steps with VOCR5's arm F recipe, the GRAD-crop and refined-crop sources replaced by that candidate's crops of the same frames; then the rule re-applied with the fine-tuned models in every arm (GRAD, refine and det)",
+  "otherwise": "not run"
+ },
+ "protected": {
+  "when": "once, after the selection (or the no-winner record) is committed and pushed; attempt records are created exclusively and refuse a second run",
+  "sets": [
+   "vita-test + psp-test whole dialogue: eval's regions (an uncertain line leaves its region out), base / +4 / +8, GRAD, refine and det with VOCR5-S/N/L, body and all text, VN-cluster intervals",
+   "vita-test + psp-test detection: the same regions against eval's line boxes (line R / P / F1, region exact), GRAD, refine and det",
+   "CLANNAD long run (owner-drive-ingest's frozen references, refs_sha256 35411688...): each page's ROI; a reference line reads the finder lines whose rows lie mostly in its GRAD box (most of a line's height inside the box), joined in order; whole-page bootstraps; plus the number of lines returned on the pages and boxes the references hold no text for"
+  ],
+  "fixed_lines": "unchanged (no finder)"
+ },
+ "estimates": {
+  "label": "every console time and memory figure is a host estimate until measured on a console",
+  "mac_rate": "VOCR3-H15 ran 1564992 MACs per CTC frame at 5.0-5.2 ms on one A9 core (v0.8.0-test.1, 333 MHz assumed): 0.301-0.313 GMAC/s at 333 MHz, x444/333 at 444 MHz",
+  "cycle_model": "vita/a9_cycles.py on the Vita compiler's code of runtime/vocr_textdet.c under plugin qemu-arm, with ocr-speed's calibration factor (x1.0007 of the high bound at 333 MHz)",
+  "regions": {
+   "vita_box": [
+    900,
+    150
+   ],
+   "psp_box": [
+    450,
+    80
+   ],
+   "vita_screen": [
+    960,
+    544
+   ],
+   "psp_screen": [
+    480,
+    272
+   ]
+  }
+ },
+ "amendments": []
+}

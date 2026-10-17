@@ -51,6 +51,15 @@
 #include <stdint.h>
 #include <string.h>
 
+/* NEON kernels on the Vita (-mfpu=neon), the same arithmetic as the scalar ones; -DVOCR_NO_NEON forces
+ * the scalar code (as for vocr.c). */
+#if defined(__ARM_NEON) && !defined(VOCR_NO_NEON)
+#include <arm_neon.h>
+#define TD_NEON 1
+#else
+#define TD_NEON 0
+#endif
+
 #define HEADER 64u
 #define RECORD 32u
 #define LOADED 0x31445456u  /* "VTD1" */
@@ -60,6 +69,7 @@
 #define MIN_ACROSS 4
 #define MAXCH 64u           /* channels of a layer */
 #define NONE 0xFFFFu        /* no component slot / a free slot */
+#define BLK 8u              /* output pixels computed together (a block) */
 
 /* ---------------------------------------------------------------- the blob */
 
@@ -180,7 +190,7 @@ typedef struct {
 
 typedef struct {
     uint32_t ring;       /* arena offset of a 3x3 layer's input ring */
-    uint32_t rowlen;     /* bytes per ring row: (w_in + 2 dil) * cin */
+    uint32_t plane;      /* bytes per channel plane of a ring row: w_in + 2 dil + (BLK - 1) stride */
     uint16_t w_in, h_in, w_out, h_out;
     uint16_t received;   /* input rows in the ring so far (3x3 layers) */
     uint16_t next_out;   /* next output row */
@@ -204,7 +214,7 @@ typedef struct {
 } Cand;
 
 typedef struct {
-    size_t run, chan, rings, head, comp, freel, prev, cur, cand, total;
+    size_t run, chan, rings, tmp, head, comp, freel, prev, cur, cand, total;
     unsigned wm, nc, nr;
 } Plan;
 
@@ -218,14 +228,23 @@ static int loaded(const vocr_textdet *m)
     return m && m->loaded == LOADED && m->n_layers >= 2u && m->n_layers <= VOCR_TEXTDET_MAX_LAYERS;
 }
 
+/* Bytes per channel plane of a 3x3 layer's ring row: the d zero columns either side of the w input
+ * pixels, then BLK * stride zero columns that a last, partial block of BLK output pixels reads past them
+ * (BLK - 1 strides for the scalar code, one byte more for NEON's 16-byte de-interleaving load). */
+static size_t plane_bytes(unsigned w, const vocr_textdet_layer *L)
+{
+    return (size_t)w + 2u * L->dil + BLK * L->stride;
+}
+
 /* The arena layout for regions of the given width (sections 8-byte aligned from an aligned base). */
 static void plan(const vocr_textdet *m, unsigned width, Plan *p)
 {
-    unsigned i, w = width;
+    unsigned i, w = width, maxch = 1;
     size_t rings = 0;
     for (i = 0; i < m->n_layers; i++) {
         const vocr_textdet_layer *L = &m->layers[i];
-        if (L->k == 3u) rings += (size_t)(2u * L->dil + 1u) * (w + 2u * L->dil) * L->cin;
+        if (L->k == 3u) rings += (size_t)(2u * L->dil + 1u) * L->cin * plane_bytes(w, L);
+        if (L->cout > maxch) maxch = L->cout;
         w = (w + L->stride - 1u) / L->stride;
     }
     p->wm = w;
@@ -234,7 +253,8 @@ static void plan(const vocr_textdet *m, unsigned width, Plan *p)
     p->run = 0;
     p->chan = p->run + up8((size_t)m->n_layers * sizeof(Run));
     p->rings = p->chan + up8((size_t)m->channels * sizeof(Chan));
-    p->head = p->rings + up8(rings);
+    p->tmp = p->rings + up8(rings);
+    p->head = p->tmp + up8((size_t)3u * BLK * maxch);   /* three blocks: a 3x3 output, two 1x1 ones */
     p->comp = p->head + up8((size_t)4u * w);
     p->freel = p->comp + up8((size_t)p->nc * sizeof(Comp));
     p->prev = p->freel + up8((size_t)p->nc * sizeof(uint16_t));
@@ -266,6 +286,8 @@ typedef struct {
     Run *run;
     Chan *chan;
     int8_t *head;               /* the head's map row: 4 codes per cell */
+    int8_t *tmp;                /* three blocks of BLK x maxch codes: a 3x3 output, two 1x1 ones */
+    unsigned maxch;             /* the most output channels of a layer */
     unsigned rl[VOCR_TEXTDET_MAX_LAYERS], nrl;   /* the 3x3 layers, in order */
     unsigned width, height, wm, hm;
     vocr_textdet_map_row hook;
@@ -286,6 +308,7 @@ static const unsigned char *src_row(const Src *s, unsigned y)
     return s->rows->row(s->rows->user, y);
 }
 
+#if !TD_NEON
 /* floor(v / 2^s) without shifting a negative value */
 static int64_t shr64(int64_t v, unsigned s)
 {
@@ -309,71 +332,214 @@ static int8_t requant(int32_t acc, const Chan *c, int32_t lo)
     }
     return (int8_t)(q < lo ? lo : q > 127 ? 127 : q);
 }
+#endif
 
-/* One output pixel of a dense 3x3 layer: rows[t] (kernel row kys[t]) point at the padded input row,
- * x at the pixel's first tap; dc = dil * cin bytes between taps. */
-static void conv3_dense(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout,
-                        const int8_t *const *rows, const unsigned *kys, unsigned nrow, size_t x, unsigned dc,
-                        int8_t *out)
-{
-    unsigned c, t, q;
-    for (c = 0; c < cout; c++) {
-        int32_t acc = 0;
-        const int8_t *wc = w + (size_t)c * cin * 9u;
-        for (t = 0; t < nrow; t++) {
-            const int8_t *xp = rows[t] + x;
-            const int8_t *wk = wc + kys[t] * 3u;
-            for (q = 0; q < cin; q++, wk += 9, xp++)
-                acc += wk[0] * xp[0] + wk[1] * xp[dc] + wk[2] * xp[2u * dc];
-        }
-        out[c] = requant(acc, &ch[c], lo);
-    }
+#if TD_NEON
+/* ---- NEON (the Vita): a block's 8 int32 sums in two registers; the arithmetic of requant() */
+
+/* floor((bq + acc m) / 2^sh) per lane in int64 (vshl by -sh: an arithmetic shift), saturated to int8,
+ * then at least lo; n lanes stored at out. */
+#define RQ_STORE(LO, HI, C, LOW, OUT, N) do { \
+        const Chan *c_ = (C); \
+        int64x2_t b_ = vdupq_n_s64(c_->bq), s_ = vdupq_n_s64(-(int64_t)c_->sh); \
+        int32x2_t m_ = vdup_n_s32(c_->m); \
+        int64x2_t p0_ = vshlq_s64(vmlal_s32(b_, vget_low_s32(LO), m_), s_); \
+        int64x2_t p1_ = vshlq_s64(vmlal_s32(b_, vget_high_s32(LO), m_), s_); \
+        int64x2_t p2_ = vshlq_s64(vmlal_s32(b_, vget_low_s32(HI), m_), s_); \
+        int64x2_t p3_ = vshlq_s64(vmlal_s32(b_, vget_high_s32(HI), m_), s_); \
+        int16x4_t h0_ = vqmovn_s32(vcombine_s32(vqmovn_s64(p0_), vqmovn_s64(p1_))); \
+        int16x4_t h1_ = vqmovn_s32(vcombine_s32(vqmovn_s64(p2_), vqmovn_s64(p3_))); \
+        int8x8_t v_ = vmax_s8(vqmovn_s16(vcombine_s16(h0_, h1_)), vdup_n_s8((int8_t)(LOW))); \
+        if ((N) == BLK) { \
+            vst1_s8((OUT), v_); \
+        } else { \
+            int8_t t_[BLK]; \
+            unsigned i_; \
+            vst1_s8(t_, v_); \
+            for (i_ = 0; i_ < (N); i_++) (OUT)[i_] = t_[i_]; \
+        } \
+    } while (0)
+
+/* 8 pixels of one input channel at stride S, widened (vld2 reads 16 bytes: the plane's slack covers it) */
+#define LOAD8(x, S) vmovl_s8((S) == 1u ? vld1_s8(x) : vld2_s8(x).val[0])
+/* LO/HI += X * lane L of the int16x4 weights W, or * the scalar K */
+#define MACL(LO, HI, X, W, L) do { \
+        int16x8_t x_ = (X); \
+        (LO) = vmlal_lane_s16((LO), vget_low_s16(x_), (W), L); \
+        (HI) = vmlal_lane_s16((HI), vget_high_s16(x_), (W), L); \
+    } while (0)
+#define MACN(LO, HI, X, K) do { \
+        int16x8_t x_ = (X); \
+        (LO) = vmlal_n_s16((LO), vget_low_s16(x_), (int16_t)(K)); \
+        (HI) = vmlal_n_s16((HI), vget_high_s16(x_), (int16_t)(K)); \
+    } while (0)
+
+/* A block of BLK output pixels from pixel j0 of a 3x3 layer with input stride S, output channel by output
+ * channel into out[c * ostride + p] (p < n). rows[ky] is the padded input row of kernel row ky (the centre
+ * row where valid[ky] is 0, its weights then masked to 0), plane bytes from one input channel to the next.
+ * Depthwise: output channel c reads input channel c; otherwise every input channel (cin of them). */
+#define K3_BLOCK(name, S) \
+static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, int depthwise, \
+                 const int8_t *const *rows, const int *valid, size_t plane, unsigned d, unsigned j0, int8_t *out, \
+                 size_t ostride, unsigned n) \
+{ \
+    static const int16_t top_[8] = {0, 0, 0, -1, -1, -1, -1, -1}, mid_[8] = {-1, -1, -1, -1, -1, -1, 0, 0}; \
+    int16x8_t keep = vdupq_n_s16(-1); \
+    int last = valid[2]; \
+    unsigned c, q; \
+    const int8_t *r0 = rows[0] + (size_t)j0 * (S), *r1 = rows[1] + (size_t)j0 * (S); \
+    const int8_t *r2 = rows[2] + (size_t)j0 * (S); \
+    if (!valid[0]) keep = vandq_s16(keep, vld1q_s16(top_)); \
+    if (!valid[2]) keep = vandq_s16(keep, vld1q_s16(mid_)); \
+    for (c = 0; c < cout; c++) { \
+        int32x4_t lo4 = vdupq_n_s32(0), hi4 = lo4; \
+        unsigned q0 = depthwise ? c : 0, q1 = depthwise ? c + 1u : cin; \
+        for (q = q0; q < q1; q++) { \
+            const int8_t *wq = w + 9u * (depthwise ? c : c * cin + q); \
+            int16x8_t wv = vandq_s16(vmovl_s8(vld1_s8(wq)), keep); \
+            int16x4_t wa = vget_low_s16(wv), wb = vget_high_s16(wv); \
+            const int8_t *x0 = r0 + q * plane, *x1 = r1 + q * plane, *x2 = r2 + q * plane; \
+            MACL(lo4, hi4, LOAD8(x0, S), wa, 0); \
+            MACL(lo4, hi4, LOAD8(x0 + d, S), wa, 1); \
+            MACL(lo4, hi4, LOAD8(x0 + 2u * d, S), wa, 2); \
+            MACL(lo4, hi4, LOAD8(x1, S), wa, 3); \
+            MACL(lo4, hi4, LOAD8(x1 + d, S), wb, 0); \
+            MACL(lo4, hi4, LOAD8(x1 + 2u * d, S), wb, 1); \
+            MACL(lo4, hi4, LOAD8(x2, S), wb, 2); \
+            MACL(lo4, hi4, LOAD8(x2 + d, S), wb, 3); \
+            if (last) MACN(lo4, hi4, LOAD8(x2 + 2u * d, S), wq[8]); \
+        } \
+        RQ_STORE(lo4, hi4, &ch[c], lo, out + c * ostride, n); \
+    } \
 }
+K3_BLOCK(k3_block_s1, 1u)
+K3_BLOCK(k3_block_s2, 2u)
 
-static void conv3_dw(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, const int8_t *const *rows,
-                     const unsigned *kys, unsigned nrow, size_t x, unsigned dc, int8_t *out)
-{
-    unsigned c, t;
-    for (c = 0; c < cin; c++) {
-        int32_t acc = 0;
-        const int8_t *wc = w + (size_t)c * 9u;
-        for (t = 0; t < nrow; t++) {
-            const int8_t *xp = rows[t] + x + c;
-            const int8_t *wk = wc + kys[t] * 3u;
-            acc += wk[0] * xp[0] + wk[1] * xp[dc] + wk[2] * xp[2u * dc];
-        }
-        out[c] = requant(acc, &ch[c], lo);
-    }
-}
-
-static void conv1(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, const int8_t *in,
-                  int8_t *out)
+/* A block of a 1x1 layer: in[q * BLK + p] -> out[c * ostride + p] (p < n). */
+static void k1_block(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, const int8_t *in,
+                     int8_t *out, size_t ostride, unsigned n)
 {
     unsigned c, q;
     for (c = 0; c < cout; c++) {
-        int32_t acc = 0;
+        int32x4_t lo4 = vdupq_n_s32(0), hi4 = lo4;
         const int8_t *wc = w + (size_t)c * cin;
-        for (q = 0; q < cin; q++) acc += wc[q] * in[q];
-        out[c] = requant(acc, &ch[c], lo);
+        for (q = 0; q + 8u <= cin; q += 8u) {
+            int16x8_t wv = vmovl_s8(vld1_s8(wc + q));
+            int16x4_t wa = vget_low_s16(wv), wb = vget_high_s16(wv);
+            const int8_t *x = in + q * BLK;
+            MACL(lo4, hi4, vmovl_s8(vld1_s8(x)), wa, 0);
+            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + BLK)), wa, 1);
+            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 2u * BLK)), wa, 2);
+            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 3u * BLK)), wa, 3);
+            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 4u * BLK)), wb, 0);
+            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 5u * BLK)), wb, 1);
+            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 6u * BLK)), wb, 2);
+            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 7u * BLK)), wb, 3);
+        }
+        for (; q < cin; q++) MACN(lo4, hi4, vmovl_s8(vld1_s8(in + q * BLK)), wc[q]);
+        RQ_STORE(lo4, hi4, &ch[c], lo, out + c * ostride, n);
     }
 }
+#else
+/* ---- scalar (the PSP, hosts): eight named accumulators, so they stay in registers */
+
+typedef struct {
+    int32_t v[BLK];
+} Acc;
+
+static Acc acc_zero(void)
+{
+    Acc a = {{0, 0, 0, 0, 0, 0, 0, 0}};
+    return a;
+}
+
+#define MAC(a, k, x, S) do { \
+        const int8_t *x_ = (x); \
+        int32_t k_ = (k); \
+        (a).v[0] += k_ * x_[0]; (a).v[1] += k_ * x_[1 * (S)]; (a).v[2] += k_ * x_[2 * (S)]; \
+        (a).v[3] += k_ * x_[3 * (S)]; (a).v[4] += k_ * x_[4 * (S)]; (a).v[5] += k_ * x_[5 * (S)]; \
+        (a).v[6] += k_ * x_[6 * (S)]; (a).v[7] += k_ * x_[7 * (S)]; \
+    } while (0)
+
+static void store_acc(Acc a, const Chan *c, int32_t lo, int8_t *out, unsigned n)
+{
+    unsigned p;
+    if (c->sh >= 32) {                        /* the usual case: the high word, then a 32-bit shift */
+        int64_t bq = c->bq;
+        int32_t m = c->m;
+        unsigned s = (unsigned)(c->sh - 32);
+        for (p = 0; p < n; p++) {
+            int32_t q = shr32((int32_t)shr64(bq + (int64_t)a.v[p] * m, 32u), s);
+            out[p] = (int8_t)(q < lo ? lo : q > 127 ? 127 : q);
+        }
+    } else {
+        for (p = 0; p < n; p++) out[p] = requant(a.v[p], c, lo);
+    }
+}
+
+/* A block of BLK output pixels from pixel j0 of a 3x3 layer with input stride S, output channel by output
+ * channel into out[c * ostride + p] (p < n). rows[ky] is the padded input row of kernel row ky (valid[ky]
+ * when it lies inside the input), plane bytes from one input channel to the next. Depthwise: output
+ * channel c reads input channel c; otherwise every input channel (cin of them). */
+#define K3_BLOCK(name, S) \
+static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, int depthwise, \
+                 const int8_t *const *rows, const int *valid, size_t plane, unsigned d, unsigned j0, int8_t *out, \
+                 size_t ostride, unsigned n) \
+{ \
+    unsigned c, q, ky; \
+    for (c = 0; c < cout; c++) { \
+        Acc a = acc_zero(); \
+        unsigned q0 = depthwise ? c : 0, q1 = depthwise ? c + 1u : cin; \
+        for (q = q0; q < q1; q++) { \
+            const int8_t *wq = w + 9u * (depthwise ? c : c * cin + q); \
+            for (ky = 0; ky < 3u; ky++) { \
+                const int8_t *x = rows[ky] + q * plane + (size_t)j0 * (S), *wk = wq + 3u * ky; \
+                if (!valid[ky]) continue; \
+                MAC(a, wk[0], x, S); \
+                MAC(a, wk[1], x + d, S); \
+                MAC(a, wk[2], x + 2u * d, S); \
+            } \
+        } \
+        store_acc(a, &ch[c], lo, out + c * ostride, n); \
+    } \
+}
+K3_BLOCK(k3_block_s1, 1u)
+K3_BLOCK(k3_block_s2, 2u)
+
+/* A block of a 1x1 layer: in[q * BLK + p] -> out[c * ostride + p] (p < n). */
+static void k1_block(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, const int8_t *in,
+                     int8_t *out, size_t ostride, unsigned n)
+{
+    unsigned c, q;
+    for (c = 0; c < cout; c++) {
+        Acc a = acc_zero();
+        const int8_t *wc = w + (size_t)c * cin;
+        for (q = 0; q < cin; q++) MAC(a, wc[q], in + q * BLK, 1u);
+        store_acc(a, &ch[c], lo, out + c * ostride, n);
+    }
+}
+#endif
 
 static const int8_t *weights(const vocr_textdet_layer *L)
 {
     return (const int8_t *)(const void *)L->w;
 }
 
-/* The 1x1 layers [from, to) on the vector v (in a, or b) of one pixel; the last writes to dst. */
-static void chain(const Net *t, unsigned from, unsigned to, int8_t *a, int8_t *b, int8_t *dst)
+/* The 1x1 layers [from, to) on a block in[q * BLK + p]; the last writes n pixels to dst (plane dstride
+ * bytes apart); a and b are BLK * maxch scratch blocks. */
+static void chain(const Net *t, unsigned from, unsigned to, const int8_t *in, int8_t *a, int8_t *b, int8_t *dst,
+                  size_t dstride, unsigned n)
 {
     unsigned l;
-    int8_t *in = a, *out = b;
     for (l = from; l < to; l++) {
         const vocr_textdet_layer *L = &t->m->layers[l];
-        int8_t *o = l + 1u == to ? dst : out;
-        conv1(weights(L), t->chan + t->run[l].chan, L->relu ? 0 : -128, L->cin, L->cout, in, o);
-        out = in;
+        int last = l + 1u == to;
+        int8_t *o = last ? dst : a;
+        k1_block(weights(L), t->chan + t->run[l].chan, L->relu ? 0 : -128, L->cin, L->cout, in, o,
+                 last ? dstride : BLK, last ? n : BLK);
         in = o;
+        a = b;
+        b = o;
     }
 }
 
@@ -535,10 +701,10 @@ static void sweep(Net *t, unsigned stamp)
     }
 }
 
-/* Map row i (in t->head) into the streaming components. */
+/* Map row i (in t->head: K, O, A1, A2 planes of wm cells) into the streaming components. */
 static void decode_row(Net *t, unsigned i)
 {
-    const int8_t *cell = t->head;
+    const int8_t *kk = t->head, *oo = kk + t->wm, *a1 = oo + t->wm, *a2 = a1 + t->wm;
     Comp *cp = t->comp;
     Seg *prev = t->prev, *cur = t->cur;
     unsigned wm = t->wm, j = 0, k = 0, q, nc = 0, np = t->np;
@@ -546,15 +712,15 @@ static void decode_row(Net *t, unsigned i)
         unsigned a, root = NONE;
         int32_t n = 0, so = 0, sa1 = 0, sa2 = 0, sc = 0;
         Comp *c;
-        if (cell[4u * j] <= 0) {
+        if (kk[j] <= 0) {
             j++;
             continue;
         }
         a = j;
-        for (; j < wm && cell[4u * j] > 0; j++) {
-            so += cell[4u * j + 1u];
-            sa1 += cell[4u * j + 2u];
-            sa2 += cell[4u * j + 3u];
+        for (; j < wm && kk[j] > 0; j++) {
+            so += oo[j];
+            sa1 += a1[j];
+            sa2 += a2[j];
             sc += (int32_t)j;
             n++;
         }
@@ -606,16 +772,20 @@ static int8_t *ring_row(const Net *t, unsigned l, unsigned y)
 {
     const vocr_textdet_layer *L = &t->m->layers[l];
     const Run *r = &t->run[l];
-    return (int8_t *)(void *)(t->base + r->ring + (size_t)(y % (2u * L->dil + 1u)) * r->rowlen);
+    return (int8_t *)(void *)(t->base + r->ring + (size_t)(y % (2u * L->dil + 1u)) * L->cin * r->plane);
 }
 
-/* Where the segment ending before layer `next` writes pixel 0 of its row: the next 3x3 layer's newest
- * ring row (after its left padding), or the map row. */
+/* Where the segment ending before layer `next` writes pixel 0 of channel 0 of its row (channel c at
+ * + c * dest_stride): the next 3x3 layer's newest ring row, after its left padding, or the map row. */
 static int8_t *dest_row(const Net *t, unsigned next)
 {
-    if (next < t->m->n_layers)
-        return ring_row(t, next, t->run[next].received) + (size_t)t->m->layers[next].dil * t->m->layers[next].cin;
+    if (next < t->m->n_layers) return ring_row(t, next, t->run[next].received) + t->m->layers[next].dil;
     return t->head;
+}
+
+static size_t dest_stride(const Net *t, unsigned next)
+{
+    return next < t->m->n_layers ? t->run[next].plane : t->wm;
 }
 
 /* The row has gone into layer `next` (a ring) or is the map row i. */
@@ -629,31 +799,33 @@ static void delivered(Net *t, unsigned next, unsigned i)
     decode_row(t, i);
 }
 
-/* Output row next_out of the 3x3 layer l, through the 1x1 layers after it. */
+/* Output row next_out of the 3x3 layer l, through the 1x1 layers after it, BLK pixels at a time. */
 static void produce(Net *t, unsigned l)
 {
     const vocr_textdet_layer *L = &t->m->layers[l];
     Run *r = &t->run[l];
-    unsigned s = L->stride, d = L->dil, cin = L->cin, cout = L->cout, nx = r->next, i = r->next_out;
-    unsigned ky, nrow = 0, kys[3], j, nch = t->m->layers[nx - 1u].cout, dc = d * cin;
+    unsigned s = L->stride, d = L->dil, nx = r->next, i = r->next_out, ky, j0;
     const int8_t *rows[3];
-    const int8_t *w = weights(L);
+    int valid[3];
     const Chan *ch = t->chan + r->chan;
     int32_t lo = L->relu ? 0 : -128;
-    int8_t *dst = dest_row(t, nx);
-    for (ky = 0; ky < 3u; ky++) {
-        unsigned y = i * s + ky * d;          /* input row + d */
-        if (y < d || y - d >= r->h_in) continue;
-        rows[nrow] = ring_row(t, l, y - d);
-        kys[nrow++] = ky;
+    int8_t *dst = dest_row(t, nx), *blk = t->tmp;
+    size_t ds = dest_stride(t, nx), bs = (size_t)BLK * t->maxch;
+    for (ky = 0; ky < 3u; ky++) {             /* input row i s + (ky - 1) d; the centre one always exists */
+        unsigned y = i * s + ky * d;
+        valid[ky] = y >= d && y - d < r->h_in;
+        rows[ky] = ring_row(t, l, valid[ky] ? y - d : i * s);
     }
-    for (j = 0; j < r->w_out; j++) {
-        int8_t va[MAXCH], vb[MAXCH];
-        int8_t *o = nx == l + 1u ? dst + (size_t)j * nch : va;
-        size_t x = (size_t)j * s * cin;      /* the first tap of pixel j in the padded row */
-        if (L->kind == 1u) conv3_dw(w, ch, lo, cin, rows, kys, nrow, x, dc, o);
-        else conv3_dense(w, ch, lo, cin, cout, rows, kys, nrow, x, dc, o);
-        if (nx != l + 1u) chain(t, l + 1u, nx, va, vb, dst + (size_t)j * nch);
+    for (j0 = 0; j0 < r->w_out; j0 += BLK) {
+        unsigned n = min_u(BLK, r->w_out - j0);
+        int8_t *o = nx == l + 1u ? dst + j0 : blk;
+        if (s == 1u)
+            k3_block_s1(weights(L), ch, lo, L->cin, L->cout, L->kind == 1u, rows, valid, r->plane, d, j0, o,
+                        nx == l + 1u ? ds : BLK, nx == l + 1u ? n : BLK);
+        else
+            k3_block_s2(weights(L), ch, lo, L->cin, L->cout, L->kind == 1u, rows, valid, r->plane, d, j0, o,
+                        nx == l + 1u ? ds : BLK, nx == l + 1u ? n : BLK);
+        if (nx != l + 1u) chain(t, l + 1u, nx, blk, blk + bs, blk + 2u * bs, dst + j0, ds, n);
     }
     r->next_out++;
     delivered(t, nx, i);
@@ -693,17 +865,17 @@ static unsigned grey_px(const unsigned char *row, unsigned x, unsigned bpp)
 static int feed(Net *t, const Src *s, unsigned y, unsigned bpp)
 {
     const unsigned char *row = src_row(s, y);
-    unsigned first = t->rl[0], x;
+    unsigned first = t->rl[0], x, p;
     int8_t *dst = dest_row(t, first);
     if (!row) return VOCR_LINES_E_SOURCE;
     if (!first) {
         for (x = 0; x < t->width; x++) dst[x] = (int8_t)((int)grey_px(row, x, bpp) - 128);
     } else {
-        unsigned nch = t->m->layers[first - 1u].cout;
-        for (x = 0; x < t->width; x++) {
-            int8_t va[MAXCH], vb[MAXCH];
-            va[0] = (int8_t)((int)grey_px(row, x, bpp) - 128);
-            chain(t, 0, first, va, vb, dst + (size_t)x * nch);
+        size_t bs = (size_t)BLK * t->maxch;
+        for (x = 0; x < t->width; x += BLK) {
+            unsigned n = min_u(BLK, t->width - x);
+            for (p = 0; p < BLK; p++) t->tmp[p] = (int8_t)(p < n ? (int)grey_px(row, x + p, bpp) - 128 : 0);
+            chain(t, 0, first, t->tmp, t->tmp + bs, t->tmp + 2u * bs, dst + x, t->run[first].plane, n);
         }
     }
     delivered(t, first, y);
@@ -720,12 +892,14 @@ static void setup(Net *t, const Plan *p)
     t->run = (Run *)(void *)(t->base + p->run);
     t->chan = (Chan *)(void *)(t->base + p->chan);
     t->head = (int8_t *)(void *)(t->base + p->head);
+    t->tmp = (int8_t *)(void *)(t->base + p->tmp);
     t->comp = (Comp *)(void *)(t->base + p->comp);
     t->freel = (uint16_t *)(void *)(t->base + p->freel);
     t->prev = (Seg *)(void *)(t->base + p->prev);
     t->cur = (Seg *)(void *)(t->base + p->cur);
     t->cand = (Cand *)(void *)(t->base + p->cand);
     t->nrl = 0;
+    t->maxch = 1;
     for (i = 0; i < m->n_layers; i++) {
         const vocr_textdet_layer *L = &m->layers[i];
         Run *r = &t->run[i];
@@ -744,13 +918,14 @@ static void setup(Net *t, const Plan *p)
             q->sh = sh;
             q->bq = (int64_t)rds32(L->b + 4u * c) * q->m + ((int64_t)1 << (sh - 1));
         }
-        r->ring = r->rowlen = 0;
+        r->ring = r->plane = 0;
+        if (L->cout > t->maxch) t->maxch = L->cout;
         if (L->k == 3u) {
             size_t bytes;
             r->ring = roff;
-            r->rowlen = ((uint32_t)r->w_in + 2u * L->dil) * L->cin;
-            bytes = (size_t)(2u * L->dil + 1u) * r->rowlen;
-            memset(t->base + roff, 0, bytes);   /* the padding columns stay zero */
+            r->plane = (uint32_t)plane_bytes(r->w_in, L);
+            bytes = (size_t)(2u * L->dil + 1u) * L->cin * r->plane;
+            memset(t->base + roff, 0, bytes);   /* the padding and slack columns stay zero */
             roff += (uint32_t)bytes;
             t->rl[t->nrl++] = i;
         }

@@ -16,7 +16,22 @@ Finders (NAME):
             --check-c the C driver runtime/vocr_lines_test.c runs too and must give the same boxes)
   refine    GRAD, then runtime/vocr_lines_refine.c with VOCR_REFINE_DEFAULT (twin synth/lines_refine.py)
 
+  det:NAME=BLOB  a detector candidate (synth/textdet_twin.py, the C runtime's bit-exact twin); every line counts in
+            linefind (vertical ones too), only horizontal lines are read by a recognizer
+
 Every finder reads the region as the console does: synth/common.to_gray of the RGB region (the recognizer's luma).
+
+  textdet.py baseline --units NAME=DIR ... --linefind JSON --out JSON          the frozen baseline (see above)
+  textdet.py detect --cand NAME=BLOB ... --cohorts DIR --out DIR [--cbin DRIVER]
+      Every detector candidate on every development whole-dialogue case (VOCR5's tv_dlg / dn_dlg cohorts): its lines
+      per case to DIR/dets_NAME.json. With --cbin, the C runtime's driver (runtime/vocr_textdet_test batch mode) runs
+      too and must equal the twin on every case (the protocol's eligibility condition).
+  textdet.py read --model NAME=BLOB --dets DIR --cohorts DIR --out DIR [--cand NAME ...]
+      One recognizer (the C runtime in W8I, eval/finder_tighten.Reader) on every candidate's horizontal lines, read
+      in the detector's order, joined and scored by transcript_score: DIR/NAME/units_CAND.json in
+      eval/finder_tighten.py's unit format (cohort -> {"det": [units]}), so eval/textdet.wd_units pools them.
+  textdet.py select --protocol JSON --baseline DIR --units DIR --linefind JSON ... --blobs DIR --out JSON
+      The pre-registered promotion rule (eval/textdet_protocol.json "promotion_rule") over every candidate.
 """
 import argparse
 import datetime
@@ -92,11 +107,33 @@ class Refine(Grad):
         return [tuple(int(v) for v in x) for x in b], [int(v) for v in d]
 
 
+class Det:
+    """A detector candidate through the twin: every line (horizontal and vertical); last_vertical holds the flags."""
+
+    def __init__(self, name, blob):
+        import textdet_twin as TW
+        self.name = name
+        self.model = TW.Model(Path(blob).read_bytes())
+        self.last_vertical = []
+
+    def lines(self, grey):
+        import textdet_twin as TW
+        return TW.find_lines(self.model, grey)
+
+    def __call__(self, grey):
+        lines, _ = self.lines(grey)
+        self.last_vertical = [ln[5] for ln in lines]
+        return [tuple(ln[:4]) for ln in lines], [ln[4] for ln in lines]
+
+
 def make_finder(spec, check_c=False):
     if spec == "grad":
         return Grad(check_c)
     if spec == "refine":
         return Refine(check_c)
+    if spec.startswith("det:"):
+        name, _, blob = spec[4:].partition("=")
+        return Det(name, blob)
     raise SystemExit(f"unknown finder {spec!r}")
 
 
@@ -341,6 +378,127 @@ def cmd_baseline(args):
               f"({tab[arm]['grad']['native_vita_vns']} VNs)")
 
 
+# ---------------------------------------------------------------- detector candidates on the development wd
+
+def load_cohort(directory, name):
+    import pickle
+    with open(Path(directory) / f"{name}.pkl", "rb") as f:
+        return pickle.load(f)
+
+
+def case_key(name, c):
+    return f"{name}|{c['unit']}|{c['variant']}"
+
+
+def c_detect(cbin, blob, images):
+    """The C driver's batch mode: [(lines [(x, y, w, h, dark, vertical)], truncated)] per grey image."""
+    import struct
+    import subprocess
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+        for img in images:
+            img = np.ascontiguousarray(img, dtype=np.uint8)
+            h, w = img.shape
+            f.write(struct.pack("<4I", w, h, 1, 0))
+            f.write(img.tobytes())
+        path = f.name
+    try:
+        out = subprocess.run([str(cbin), "--batch", str(blob), path], check=True, capture_output=True,
+                             text=True).stdout.splitlines()
+    finally:
+        os.unlink(path)
+    if len(out) != len(images):
+        raise RuntimeError(f"C driver returned {len(out)} results for {len(images)} images")
+    res = []
+    for line in out:
+        v = [int(t) for t in line.split()]
+        if v[0] != 0:
+            raise RuntimeError(f"C detector rc={v[0]}")
+        n = v[1]
+        res.append(([tuple(v[3 + 6 * i:9 + 6 * i]) for i in range(n)], bool(v[2])))
+    return res
+
+
+def cmd_detect(args):
+    import textdet_twin as TW
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    cases = [(name, c) for name in WD_COHORTS for c in load_cohort(args.cohorts, name)]
+    for spec in args.cand:
+        name, _, blob = spec.partition("=")
+        target = out / f"dets_{name}.json"
+        if target.exists() and not args.force:
+            print(f"{name}: {target} exists", flush=True)
+            continue
+        model = TW.Model(Path(blob).read_bytes())
+        dets = {}
+        for cname, c in cases:
+            lines, truncated = TW.find_lines(model, c["image"])
+            dets[case_key(cname, c)] = {"lines": [list(map(int, ln)) for ln in lines], "truncated": bool(truncated)}
+        c_equal = None
+        if args.cbin:
+            cres = c_detect(args.cbin, blob, [c["image"] for _, c in cases])
+            c_equal = all([list(map(int, ln)) for ln in cl] == dets[case_key(cn, c)]["lines"] and
+                          ct == dets[case_key(cn, c)]["truncated"] for (cn, c), (cl, ct) in zip(cases, cres))
+            if not c_equal:
+                print(f"{name}: C and twin DIFFER", flush=True)
+        doc = {"kind": "textdet-dets", "candidate": name, "blob": str(blob), "blob_sha256": sha256(blob),
+               "blob_bytes": model.blob_bytes, "shape": model.name, "cohorts": args.cohorts,
+               "c_equals_twin": c_equal, "computed": utc_now(), "dets": dets}
+        target.write_text(json.dumps(doc) + "\n", encoding="utf-8")
+        n = sum(len(d["lines"]) for d in dets.values())
+        print(f"{name}: {len(dets)} cases, {n} lines, C == twin: {c_equal}", flush=True)
+
+
+def cmd_read(args):
+    import finder_tighten as FT
+
+    from general_vn_textbox_guard import transcript_score
+    name, _, blob = args.model.partition("=")
+    out = Path(args.out) / name
+    out.mkdir(parents=True, exist_ok=True)
+    ident = FT.build(out / "build")
+    reader = FT.Reader(Path(blob), ident["library"])
+    cohorts = {cn: load_cohort(args.cohorts, cn) for cn in WD_COHORTS}
+    cache = {}
+
+    def read(g, dark):
+        key = (hashlib.blake2b(np.ascontiguousarray(g).tobytes(), digest_size=16).hexdigest(), g.shape, int(dark))
+        if key not in cache:
+            cache[key] = reader.read(g, dark)
+        return cache[key]
+
+    files = sorted(Path(args.dets).glob("dets_*.json"))
+    for f in files:
+        doc = json.loads(f.read_text(encoding="utf-8"))
+        cand = doc["candidate"]
+        if args.cand and cand not in args.cand:
+            continue
+        target = out / f"units_{cand}.json"
+        if target.exists() and not args.force:
+            continue
+        res = {}
+        for cn, cases in cohorts.items():
+            units = []
+            for c in cases:
+                d = doc["dets"][case_key(cn, c)]
+                img = c["image"]
+                hz = [ln for ln in d["lines"] if not ln[5]]
+                preds = [read(img[y:y + h, x:x + w], dk) for x, y, w, h, dk, _ in hz]
+                sc = transcript_score(c["lines"], preds)
+                units.append({"unit": f"{c['unit']}|{c['variant']}", "shot": c["shot"], "vn": c["vn"],
+                              "platform": c["kind"], "variant": c["variant"],
+                              "errors": sc["all"]["full"]["errors"], "chars": sc["all"]["full"]["chars"],
+                              "hira_errors": sc["all"]["hira"]["errors"], "hira_chars": sc["all"]["hira"]["chars"],
+                              "detections": len(hz), "vertical": len(d["lines"]) - len(hz)})
+            res[cn] = {"det": units}
+        meta = {"model": name, "blob_sha256": reader.sha256, "candidate": cand, "dets_sha256": sha256(f),
+                "native": ident, "computed": utc_now()}
+        target.write_text(json.dumps({"meta": meta, **res}) + "\n", encoding="utf-8")
+        e = sum(u["errors"] for cn in res for u in res[cn]["det"])
+        print(f"{name} {cand}: {e} errors, cache {len(cache)} crops", flush=True)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -354,11 +512,28 @@ def main(argv=None):
     p.add_argument("--units", action="append", required=True, help="NAME=DIR of a finder_tighten.py score output")
     p.add_argument("--linefind", required=True)
     p.add_argument("--out", required=True)
+    p = sub.add_parser("detect")
+    p.add_argument("--cand", action="append", required=True, help="NAME=BLOB")
+    p.add_argument("--cohorts", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--cbin", default="")
+    p.add_argument("--force", action="store_true")
+    p = sub.add_parser("read")
+    p.add_argument("--model", required=True, help="NAME=BLOB")
+    p.add_argument("--dets", required=True)
+    p.add_argument("--cohorts", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--cand", action="append", default=[])
+    p.add_argument("--force", action="store_true")
     args = ap.parse_args(argv)
     if args.cmd == "linefind":
         cmd_linefind(args)
     elif args.cmd == "baseline":
         cmd_baseline(args)
+    elif args.cmd == "detect":
+        cmd_detect(args)
+    elif args.cmd == "read":
+        cmd_read(args)
 
 
 if __name__ == "__main__":

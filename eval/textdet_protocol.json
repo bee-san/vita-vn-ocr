@@ -738,6 +738,50 @@
     "the decode's exact specification is synth/textdet_twin.py (the bit-exact twin the C runtime must equal): 'boxes under 4 px across' means far - near < 4 before padding; a line whose clipped box is empty is dropped; A1 and A2 are used as the head writes them; at most 64 candidates are kept (the smallest by (vertical, y, x, h, w)) before the 16-line cap; the reading order's row rule compares a line with its row's first line (rows overlapping by at least half the smaller height) and orders a row by (x, y, h, w); vertical lines go by (-(x + w), y, x, w, h)",
     "train/textdet_export.py is the int8 export: per-output-channel weight scales max|w|/127, int32 biases, fixed-point requantisation (multiplier in [2^30, 2^31), shift 1..62, round half up), input codes grey - 128, the head's K and O at 1/16 per code and A1, A2 at 1/2 px per code"
    ]
+  },
+  {
+   "n": 2,
+   "time": "2026-10-17T22:15:09Z",
+   "before": "any detector training run or score",
+   "reason": "the data are rendered and pinned, the training script is written; this records what they fix",
+   "changes": [
+    "the two head ablations s4_c8_ko and s8_c16_ko are dropped from the sweep: the frozen decode reads A1 and A2 for every box, so a head without edge maps has no defined box, and a second decode would be an unregistered change. The sweep is the other 16 shapes: 22 runs",
+    "data: data/manifests/textdet_shards_v1.json pins 117 shards (148,602 canvases, 394,949 lines, 53,332 of them vertical) by sha256: synthetic 120,000 (region 55,529, loose 24,779, vertical 15,537, empty 24,155), realplus 19,705, teacher 6,003, owner 2,821 (private), devnative 73; synth/textdet_data.py at the manifest's code_sha256. A positive's ink size across the line is 8-72 px (other lines are ignore areas); per-VN caps realplus 2, teacher 6, owner 80 screenshots; eval/tools/reserve_check.py --pixels on the four real sources: RESERVE_OK (no blocker; the owner rows are VN- and session-checked, 160 of 2,821 also by hash)",
+    "training (train/textdet_train.py): the real half of a batch is realplus 0.35, teacher 0.35, owner 0.25, devnative 0.05; a canvas that fits the 192 x 512 window is used whole, a bigger one gives a random window or (real canvases, half the time) a player-like region around a group of lines (union plus 4-20 px, +0/+4/+8 px, halved at the PSP target); one data-loader process beside the 5 torch threads; gradient norm clipped at 5; QAT activation scales from the 99.99th percentile of |output| over 32 batches",
+    "eval/textdet.py grew the detect / read / select commands; its linefind and baseline code is unchanged (the committed baseline re-computes identically, every field but its 'computed' time)"
+   ],
+   "runs": [
+    "s4_c4_seed1",
+    "s4_c6_seed1",
+    "s4_c8_seed1",
+    "s4_c8n5_seed1",
+    "s4_c12_seed1",
+    "s4_c16_seed1",
+    "s4_c16n4_seed1",
+    "s4_c24_seed1",
+    "s4p_c4_seed1",
+    "s4p_c8_seed1",
+    "s8_c8_seed1",
+    "s8_c16_seed1",
+    "s8_c24_seed1",
+    "s8_c32_seed1",
+    "s8_c32n4_seed1",
+    "s8_c48_seed1",
+    "s4_c4_seed2",
+    "s4_c8_seed2",
+    "s4_c16_seed2",
+    "s8_c8_seed2",
+    "s8_c16_seed2",
+    "s8_c32_seed2"
+   ],
+   "pins": {
+    "data/manifests/textdet_shards_v1.json": "84bba8c37b2fcefb14474b35f5a803d76f303fc57bf710a2239e848a09ffef27",
+    "train/textdet_train.py": "1b5295cd921e29dc0bc6d236f1d8279a364abe7f6fa3fe85fecc821a9fd95ebe",
+    "train/textdet_model.py": "71c48dba9a47bfad6a00693751e012a0061ed3d9a8e5f5f8970f4fb7519443b8",
+    "train/textdet_export.py": "76a7eed861ab534800492670da4a754d2f364167d35992e47df809f2d7ce7768",
+    "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+    "synth/textdet_data.py": "359f18a8d97a868381b0e7988806375cc51882ce23c1965de082d1995193b200"
+   }
   }
  ]
 }

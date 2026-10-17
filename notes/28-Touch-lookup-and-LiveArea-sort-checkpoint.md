@@ -32,10 +32,10 @@ the 374.066-second quiet connection result remain dated evidence in
 
 ## Highlighting and touch implementation
 
-**Implemented and checked, TL01:** [overlay PR #38](https://github.com/bee-san/vita-jp-overlay/pull/38)
+**Implemented and checked, TL01:** [overlay PR #38](https://github.com/bee-san/Rubi_for_vita/pull/38)
 at `ee796f1ea683d84a668bbc52961bf146a9f9986c` passed host and Vita CI and
 merged as `dc0bea53a6a8d075d4598cea27708953ed467666` at 15:22:53 UTC.
-[Exact-head CI run](https://github.com/bee-san/vita-jp-overlay/actions/runs/38150696126)
+[Exact-head CI run](https://github.com/bee-san/Rubi_for_vita/actions/runs/38150696126)
 reports both jobs successful. The local full host gate passed 22 suites;
 native Release and the existing ABI, instruction and Settings PNG gates passed.
 These are build/host checks, not native touch or font measurements.
@@ -80,7 +80,7 @@ Han and unavailable layout. Runtime PAF queries are the implementation's
 geometry source; this checkpoint contains no measured hardware finger accuracy
 or new firmware glyph bounds.
 
-[Overlay touch contract and test boundaries](https://github.com/bee-san/vita-jp-overlay/blob/dc0bea53a6a8d075d4598cea27708953ed467666/docs/touch-lookup.md)
+[Overlay touch contract and test boundaries](https://github.com/bee-san/Rubi_for_vita/blob/dc0bea53a6a8d075d4598cea27708953ed467666/docs/touch-lookup.md)
 
 ## Native transfer, interrupted promotion and verified Settings controls
 
@@ -132,7 +132,7 @@ receipt has no own timestamp. Settings-card taps are separate from recognized
 header taps in a game. Fresh Shell loaded-module proof was subsequently
 obtained; physical font readability and game-touch behavior remain pending.
 
-**Verified publication, TL06:** [stable v0.7.9](https://github.com/bee-san/vita-jp-overlay/releases/tag/v0.7.9)
+**Verified publication, TL06:** [stable v0.7.9](https://github.com/bee-san/Rubi_for_vita/releases/tag/v0.7.9)
 was published at 15:44:16 UTC, targeting merge
 `dc0bea53a6a8d075d4598cea27708953ed467666`. A fresh independent download audit
 verified all six assets against the candidate bytes and GitHub asset digests,

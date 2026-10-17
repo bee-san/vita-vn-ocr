@@ -45,7 +45,7 @@ The earlier FPU-only repair removed 85 FPU/NEON instructions but **did not fix t
 
 The physical Vita booted normally; kernel API returned 8, shell registration returned 0, and startup reached `bootstrap: worker started`. Kernel and shell were STARTED (6), as was the text plugin after launching CLANNAD. Installed binary hashes and readback are in [[02-Current-device-state]]. CLANNAD then exposed a separate result-arena allocation failure, covered in [[06-Low-memory-overlay]].
 
-Fix source commit: `8486c97`; boot evidence: `8e7a6e8`; merged PR: [overlay #10](https://github.com/bee-san/vita-jp-overlay/pull/10), merge `bfb1ada4f3f6995100cb7fa04d4b8240c868ddcf`.
+Fix source commit: `8486c97`; boot evidence: `8e7a6e8`; merged PR: [overlay #10](https://github.com/bee-san/Rubi_for_vita/pull/10), merge `bfb1ada4f3f6995100cb7fa04d4b8240c868ddcf`.
 
 ## CI header mismatch
 

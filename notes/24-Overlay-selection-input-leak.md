@@ -24,7 +24,7 @@ The real-worker test flow checks open → select → dictionary completion → r
 
 ## Published hardening and bounded diagnostics
 
-[Overlay PR #17](https://github.com/bee-san/vita-jp-overlay/pull/17), “Harden overlay input blocking and trace selection button leakage,” is on `fix/overlay-input-ownership` in `/home/bee/Documents/src/vita-jp-overlay-input-ownership`. Implementation `cda7de4` and validation follow-up `464248a8606e38b45c0cd35677acb3d37cd6879f` are published, with hardware validation pending. This is the **overlay repository's** PR #17; the separate **notes repository's** [PR #17](https://github.com/bee-san/vita-vn-ocr/pull/17) only maintains documentation.
+[Overlay PR #17](https://github.com/bee-san/Rubi_for_vita/pull/17), “Harden overlay input blocking and trace selection button leakage,” is on `fix/overlay-input-ownership` in `/home/bee/Documents/src/vita-jp-overlay-input-ownership`. Implementation `cda7de4` and validation follow-up `464248a8606e38b45c0cd35677acb3d37cd6879f` are published, with hardware validation pending. This is the **overlay repository's** PR #17; the separate **notes repository's** [PR #17](https://github.com/bee-san/vita-vn-ocr/pull/17) only maintains documentation.
 
 - While blocked, write neutral buttons/sticks directly without depending on reading the old controller sample. Preserve timestamps/reserved fields, negative-button semantics and raw/SceShell input.
 - Check every write, propagate native copy errors and reject an oversized blocked batch instead of returning an unfiltered tail as successful input.

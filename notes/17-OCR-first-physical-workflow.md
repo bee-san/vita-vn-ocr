@@ -49,7 +49,7 @@ After the physical source failure, the user explicitly chose a fixed manual hook
 
 Branch `fix/ocr-first-hook-picker` starts from merged `a5e0c50`. Root owns worker behavior, configuration and device work; another agent investigates OCR memory and another owns picker rendering. Notes work remains separate and makes no device calls.
 
-The follow-up is published as [overlay PR #13](https://github.com/bee-san/vita-jp-overlay/pull/13). Implementation commit `4205be7034a2b48df45e65c7f253e7c7524b349a` and current follow-up head `5826329ddcb1244b0e318f2c6c527181cc14d4d8` are built, reviewed, merged and installed with full shell/config readback and normal boot verified. Exact-head hosted validation is discussed below; live production Lens has since matched one verified short page on the host, while device behavior remains unverified. The installed kernel/text remain the verified `6cc2dc86...` / `84259631...` pair, now accompanied by OCR-first shell `32baceeb...` replacing the backed-up low-memory shell `45f86b1e...`.
+The follow-up is published as [overlay PR #13](https://github.com/bee-san/Rubi_for_vita/pull/13). Implementation commit `4205be7034a2b48df45e65c7f253e7c7524b349a` and current follow-up head `5826329ddcb1244b0e318f2c6c527181cc14d4d8` are built, reviewed, merged and installed with full shell/config readback and normal boot verified. Exact-head hosted validation is discussed below; live production Lens has since matched one verified short page on the host, while device behavior remains unverified. The installed kernel/text remain the verified `6cc2dc86...` / `84259631...` pair, now accompanied by OCR-first shell `32baceeb...` replacing the backed-up low-memory shell `45f86b1e...`.
 
 ## Implemented follow-up
 

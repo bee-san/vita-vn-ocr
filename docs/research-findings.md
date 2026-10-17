@@ -6,7 +6,7 @@ Definition of Done: a definitive decision, a specific model run in a specific wa
 
 ## Executive summary and recommendation (final, cycle 006)
 
-**Decision: keep the model the overlay already ships, slim it, and fix the line finder.** It's for [bee-san/vita-jp-overlay](https://github.com/bee-san/vita-jp-overlay)'s on-console ncnn backend.
+**Decision: keep the model the overlay already ships, slim it, and fix the line finder.** It's for [bee-san/vita-jp-overlay](https://github.com/bee-san/Rubi_for_vita)'s on-console ncnn backend.
 
 The model:
 
@@ -79,7 +79,7 @@ Reproducible tools and models:
 
 _Rewritten every cycle. Last updated: cycle 002 (2026-10-08). The user's priority is low memory: rank every usable model, memory first, then speed, then accuracy._
 
-**Target.** On-console OCR for the ncnn backend of [bee-san/vita-jp-overlay](https://github.com/bee-san/vita-jp-overlay).
+**Target.** On-console OCR for the ncnn backend of [bee-san/vita-jp-overlay](https://github.com/bee-san/Rubi_for_vita).
 
 **Provisional decision (updated cycle 004).** PP-OCRv5 mobile rec with its CTC head pruned to JIS X 0208 + ASCII + full-width forms (6,513 of 18,385 classes).
 
@@ -206,10 +206,10 @@ Five sub-agents covered one sub-question each. I re-checked the key GSM code cla
 
 ### Cycle 000 addendum: the user's steer (2026-10-08)
 
-The user pointed me at [bee-san/vita-jp-overlay](https://github.com/bee-san/vita-jp-overlay) mid-cycle. That changes the target from "OCR the Vita's screen on a PC" to "OCR on the Vita itself, inside the overlay".
+The user pointed me at [bee-san/vita-jp-overlay](https://github.com/bee-san/Rubi_for_vita) mid-cycle. That changes the target from "OCR the Vita's screen on a PC" to "OCR on the Vita itself, inside the overlay".
 
-- The fork reads a region the player draws (Square, then drag on the touchscreen), shows dictionary entries (Hachidori Relay by default, or local Yomitan dictionaries converted to `.vjdict`) and queues Anki cards offline. Google Lens is the default OCR and receives the selected crop; `ocr_backend = ncnn` keeps OCR on the console ([README](https://github.com/bee-san/vita-jp-overlay)).
-- Local OCR is PP-OCRv5 mobile recognition through ncnn: one thread, NEON, FP32 with fp16/BF16 off, a private 64 MiB memblock for weights and tensors per job (host crops used about 32-43 MiB), lines resized to height 48 and width at most 1024, an 8,242,276-byte weights file, and no cloud fallback on error ([docs/local-ocr.md](https://github.com/bee-san/vita-jp-overlay/blob/main/docs/local-ocr.md)).
+- The fork reads a region the player draws (Square, then drag on the touchscreen), shows dictionary entries (Hachidori Relay by default, or local Yomitan dictionaries converted to `.vjdict`) and queues Anki cards offline. Google Lens is the default OCR and receives the selected crop; `ocr_backend = ncnn` keeps OCR on the console ([README](https://github.com/bee-san/Rubi_for_vita)).
+- Local OCR is PP-OCRv5 mobile recognition through ncnn: one thread, NEON, FP32 with fp16/BF16 off, a private 64 MiB memblock for weights and tensors per job (host crops used about 32-43 MiB), lines resized to height 48 and width at most 1024, an 8,242,276-byte weights file, and no cloud fallback on error ([docs/local-ocr.md](https://github.com/bee-san/Rubi_for_vita/blob/main/docs/local-ocr.md)).
 - Line finding is a bright-pixel row projection for horizontal white or near-white text on a dark box: up to 8 lines, each at most 88 px tall, components under 8 px ignored. Mincho fonts, outlines, translucent boxes, portraits behind text, furigana, coloured speaker names and menu decorations can confuse it. Black-on-white and vertical text are unsupported (same doc).
 - It was smoke-tested on 13 dialogue-line crops from Clannad, AIR and Corpse Party: Blood Drive on a host CPU, with some wrong characters and punctuation. On-console speed, SceShell memory and stability are still untested on a PCH-1000 (same doc).
 - What this changes: SQ1's "nobody has built it" is wrong for this fork. Its 1-3 s per cropped box estimate still works as a planning figure, and it suits the overlay's on-demand design. The PC-side pipeline from this cycle becomes the fallback track.
@@ -222,9 +222,9 @@ Five sub-agents ran the on-console questions. The hands-on benchmark hit its 30-
 
 **What the overlay does today.**
 
-- One thread, lightmode on, fp16/bf16 off, winograd and sgemm off, and the weights are re-read and re-hashed on every job ([local_ocr.cpp](https://raw.githubusercontent.com/bee-san/vita-jp-overlay/HEAD/core/local_ocr.cpp)).
-- `NCNN_INT8` off and a 27-layer whitelist ([LocalOCR.cmake](https://raw.githubusercontent.com/bee-san/vita-jp-overlay/HEAD/cmake/LocalOCR.cmake)).
-- Worker affinity 0 and no clock calls ([worker.c](https://raw.githubusercontent.com/bee-san/vita-jp-overlay/HEAD/shell/worker.c), [vita/CMakeLists.txt](https://raw.githubusercontent.com/bee-san/vita-jp-overlay/HEAD/vita/CMakeLists.txt)).
+- One thread, lightmode on, fp16/bf16 off, winograd and sgemm off, and the weights are re-read and re-hashed on every job ([local_ocr.cpp](https://raw.githubusercontent.com/bee-san/Rubi_for_vita/HEAD/core/local_ocr.cpp)).
+- `NCNN_INT8` off and a 27-layer whitelist ([LocalOCR.cmake](https://raw.githubusercontent.com/bee-san/Rubi_for_vita/HEAD/cmake/LocalOCR.cmake)).
+- Worker affinity 0 and no clock calls ([worker.c](https://raw.githubusercontent.com/bee-san/Rubi_for_vita/HEAD/shell/worker.c), [vita/CMakeLists.txt](https://raw.githubusercontent.com/bee-san/Rubi_for_vita/HEAD/vita/CMakeLists.txt)).
 
 **Runtime (SQ8).**
 
@@ -250,7 +250,7 @@ Five sub-agents ran the on-console questions. The hands-on benchmark hit its 30-
 
 - `oneocr_serve` is a FastAPI server that takes a raw image POST and returns JSON `text` ([oneocr.py](https://raw.githubusercontent.com/AuroraWright/oneocr/HEAD/oneocr.py)). OwOCR's websocket only acknowledges and broadcasts ([run.py](https://github.com/AuroraWright/owocr/blob/master/owocr/run.py)).
 - Estimated 65-320 ms end to end over Vita Wi-Fi ([vitaki doc](https://github.com/mauricio-gg/vitaki-vitarps5/blob/main/docs/WIFI_OPTIMIZATION.md)).
-- About 100-150 lines of C, reusing `vjo_lens_ocr()` and the Hachidori HTTP client ([client.c](https://github.com/bee-san/vita-jp-overlay/blob/HEAD/core/client.c)).
+- About 100-150 lines of C, reusing `vjo_lens_ocr()` and the Hachidori HTTP client ([client.c](https://github.com/bee-san/Rubi_for_vita/blob/HEAD/core/client.c)).
 
 **Memory measurements (mine, after the steer).**
 

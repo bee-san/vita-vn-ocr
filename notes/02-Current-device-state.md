@@ -127,9 +127,9 @@ checkpoint, installed bytes, normal startup, process launch and user-reported
 app visibility were established; successful saves and preference controls
 had not yet been measured. The repaired app's later checks follow below.
 
-**PNG repair candidate checkpoint:** [overlay PR #36](https://github.com/bee-san/vita-jp-overlay/pull/36)
+**PNG repair candidate checkpoint:** [overlay PR #36](https://github.com/bee-san/Rubi_for_vita/pull/36)
 at `1c8e8db1d4df301342416b6d68c4998e9dddbd67` passes both host and native CI in
-[run 38146423675](https://github.com/bee-san/vita-jp-overlay/actions/runs/38146423675).
+[run 38146423675](https://github.com/bee-san/Rubi_for_vita/actions/runs/38146423675).
 The complete 283,190-byte candidate VPK was uploaded and read back with SHA-256
 `c8d032acca58ea4ff586c9de7c505f9dc5ea068af6d408659c7d459e43f2bd04`.
 The connection disconnected while waiting for promotion. Retained status is
@@ -170,7 +170,7 @@ and actual Daijirin-first lookup remain pending.
 
 **Verified publication:** PR #36 merged as
 `b0642493688c0f31bc33738d937d876ba0edbab6`.
-[Release v0.7.8](https://github.com/bee-san/vita-jp-overlay/releases/tag/v0.7.8)
+[Release v0.7.8](https://github.com/bee-san/Rubi_for_vita/releases/tag/v0.7.8)
 was published at 14:23:11 UTC on October 11. All six downloaded assets are
 byte-equal to the audited candidates, and every downloaded ZIP passes CRC.
 The private download-audit receipt is

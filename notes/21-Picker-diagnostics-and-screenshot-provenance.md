@@ -12,7 +12,7 @@ Earlier the user suspected the selected manual text was wrong, while the device 
 
 ## Merged diagnostic change
 
-[Overlay PR #15](https://github.com/bee-san/vita-jp-overlay/pull/15), “Log bounded picker candidates on explicit user actions,” has exact head `f58b1aa49dd43fcc3d6d78b0c9bcd48a1c0ca6d7`. It merged at 11:55:40 UTC as `5e5bc2557ee183e60c4afd9335b55666e8697cea`, on top of capture-repair merge `c888b59`.
+[Overlay PR #15](https://github.com/bee-san/Rubi_for_vita/pull/15), “Log bounded picker candidates on explicit user actions,” has exact head `f58b1aa49dd43fcc3d6d78b0c9bcd48a1c0ca6d7`. It merged at 11:55:40 UTC as `5e5bc2557ee183e60c4afd9335b55666e8697cea`, on top of capture-repair merge `c888b59`.
 
 - Open, refresh and selection actions record displayed rows/selected source, ID, kind, encoding, address and at most 160 UTF-8 bytes of text.
 - OCR-triggered actions emit once when the result is published; closing or changing games clears a pending diagnostic.

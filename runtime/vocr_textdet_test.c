@@ -13,7 +13,8 @@
  *   vocr_textdet_test --maps BLOB FILE           the head's maps per record: a line "X" + hm * wm cells of
  *                                                K O A1 A2 (row-major), then a line "rc hm wm"
  *   vocr_textdet_test --dry BLOB FILE            reads the records, runs nothing ("0 0 0" each): the
- *                                                baseline of the A9 instruction counts
+ *                                                baseline of the A9 instruction counts (--empty: the same,
+ *                                                spelt as long as --batch)
  *   vocr_textdet_test --load BLOB...             vocr_textdet_load's return code per file
  *   vocr_textdet_test --arena BLOB W H           vocr_textdet_arena_bytes (one integer)
  *   vocr_textdet_test --arenas BLOB W H          that, vocr_lines_arena_bytes and vocr_lines_det_arena_bytes
@@ -573,7 +574,8 @@ int main(int argc, char **argv)
     if (argc >= 3 && !strcmp(argv[1], "--selftest"))
         return selftest((unsigned)strtoul(argv[2], NULL, 10), argc - 3, argv + 3);
     if (argc == 4 && !strcmp(argv[1], "--maps")) return batch(argv[2], argv[3], MAPS, 0);
-    if (argc == 4 && !strcmp(argv[1], "--dry")) return batch(argv[2], argv[3], DRY, 0);
+    if (argc == 4 && (!strcmp(argv[1], "--dry") || !strcmp(argv[1], "--empty")))
+        return batch(argv[2], argv[3], DRY, 0);
     if (argc == 5 && !strcmp(argv[1], "--bench")) return batch(argv[2], argv[3], BENCH, (unsigned)strtoul(argv[4], NULL, 10));
     if (argc >= 3 && !strcmp(argv[1], "--load")) {
         int i;

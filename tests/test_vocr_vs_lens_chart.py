@@ -164,6 +164,90 @@ def test_the_readme_agrees_with_the_chart():
     assert want in lens, (want, lens)
 
 
+# The chart's words, frozen: a change to the headline, subhead, panel, footnote or marks must be re-read for
+# truthfulness (README "How to read the chart") and this sha256 updated in the same PR.
+WORDS_SHA256 = "9f77f93e43fbb0812ecbce662f78a5aeb74439e9f3677ad6ff9459d03e3015b6"
+
+
+@needs_data
+def test_the_words_are_the_reviewed_ones():
+    c = data()["copy"]
+    words = {k: c[k] for k in ("eyebrow", "headline", "subhead", "panel", "footnote", "marks")}
+    got = chart.hashlib.sha256(json.dumps(words, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+    assert got == WORDS_SHA256, "the chart's words changed: review them against the data, then update WORDS_SHA256"
+
+
+@needs_data
+def test_every_set_and_tier_has_a_claim_and_the_test_sets_need_intervals():
+    d = data()
+    arms = [s["key"] for s in d["systems"] if s["key"] != "Lens"]
+    claims = {(c["set"], c["system"]): c for c in d["copy"]["claims"] if c["than"] == "Lens" and c["op"] == "<"}
+    assert set(claims) == {(s["key"], a) for s in d["sets"] for a in arms}, "one 'below Lens' claim per set and tier"
+    for set_name in ("vita-test", "psp-test"):
+        for a in arms:
+            assert claims[(set_name, a)].get("ci") is True, f"{set_name} {a}: the claim must need its interval"
+            pair = source(d, "dialogue")["pairs"][f"{a}-Lens"]["console_vs_lens_native"]["dialogue"][set_name]
+            assert pair["lines_ci95"][1] < 0 and pair["vn_ci95"][1] < 0, "straight from the source: below 0"
+    assert all(not c.get("ci") for (s_, _), c in claims.items() if s_ == "clannad"), \
+        "CLANNAD is level within the noise: no interval claim there"
+
+
+@needs_data
+def test_the_svgs_say_what_the_json_says():
+    d = data()
+    V = d["values"]
+    p = chart.panel_text(d)
+    want = [d["copy"]["eyebrow"], d["copy"]["headline"], d["copy"]["subhead"]]
+    for s in d["sets"]:
+        for x in d["systems"]:
+            mark = d["copy"].get("marks", {}).get(s["key"], {}).get(x["key"], "")
+            label = "Lens" if x["key"] == "Lens" else x["label"].split()[-1]
+            want += [label, chart.fmt_pct(V[s["key"]][x["key"]]["cer"]) + mark]
+        want += [s["label"], f"{s['platform']} · {s['lines']:,} lines"]
+    want += [p["kicker"], p["big"], p["big_sub"], *p["lines"], *p["lens_lines"]]
+    foot = " ".join(chart.footnote_text(d)).split()
+    for name in ("vocr-vs-lens-light.svg", "vocr-vs-lens-dark.svg"):
+        texts = re.findall(r"<!-- (.*?) -->", (CHARTS / name).read_text(encoding="utf-8"), re.S)
+        n = len(want)
+        assert texts[:n] == want, name
+        assert " ".join(texts[n:]).split() == foot, f"{name}: the footnote drawn is the footnote filled from the data"
+
+
+@needs_data
+def test_the_readme_notes_agree_with_the_sources():
+    d = data()
+    readme = (ROOT / "README.md").read_text()
+    notes = readme[readme.index("How to read the chart:"):readme.index("The chart is drawn by")]
+    V = d["values"]
+    cl = source(d, "clannad")["scores"]
+    dl = source(d, "dialogue")
+    rows = {s["key"]: V[s["key"]] for s in d["sets"]}
+    assert f"below Lens's {rows['clannad']['Lens']['cer']:.2f}%" in notes
+    lo, hi = rows["clannad"]["Lens"]["cer_ci95"]
+    assert f"({lo:.2f} to {hi:.2f})" in notes
+    exact = rows["clannad"]
+    assert f"{exact['Lens']['exact_pct']:.1f}% against {exact['VOCR5_L']['exact_pct']:.1f}% for Large" in notes
+    p = cl["pairs"]["VOCR5_L:Lens"]
+    assert f"Large minus Lens is −{abs(p['cer_delta']):.2f} points" in notes
+    assert f"(paired 95% interval −{abs(p['cer_ci95'][0]):.2f} to +{p['cer_ci95'][1]:.2f})" in notes
+    names = {k: cl["systems"][k]["name"]["cer"] for k in ("Lens", "VOCR5_S", "VOCR5_N", "VOCR5_L")}
+    ours = sorted(names[k] for k in ("VOCR5_S", "VOCR5_N", "VOCR5_L"))
+    assert f"({names['Lens']:.2f}% against {ours[0]:.2f}-{ours[-1]:.2f}%)" in notes
+    for set_name in ("vita-test", "psp-test"):
+        nm = {k: dl["arms"]["native" if k == "Lens" else "console"][k]["names"][set_name] for k in names}
+        rate = {k: 100 * v["errors"] / v["chars"] for k, v in nm.items()}
+        ours = sorted(rate[k] for k in ("VOCR5_S", "VOCR5_N", "VOCR5_L"))
+        assert f"({rate['Lens']:.2f}% against {ours[0]:.2f}-{ours[-1]:.2f}%)" in notes, set_name
+    f = d["facts"]
+    for set_name in ("psp-test", "vita-test"):
+        assert str(f[f"lens_furigana_{set_name}"]["furigana_errors"]) in notes
+    lv = json.loads((ROOT / "eval/vocr5_clannad_lens_view_20261016.json").read_text())["view"]["dialogue"]["systems"]
+    assert " / ".join(f"{lv[k]['cer_vs_lens']:.2f}%" for k in ("VOCR5_S", "VOCR5_N", "VOCR5_L")) in notes
+    lm = " / ".join(f"{dl['arms']['console'][k + '+LM']['dialogue']['pooled']['cer']:.2f}%"
+                    for k in ("VOCR5_S", "VOCR5_N", "VOCR5_L"))
+    assert lm in readme, "the README gives the LM-decoded figures"
+
+
 def test_claim_checker_rejects_a_false_claim():
     d = {"values": {"x": {"A": {"cer": 1.0}, "Lens": {"cer": 0.5}}},
          "copy": {"claims": [{"set": "x", "system": "A", "op": "<", "than": "Lens"}]}}

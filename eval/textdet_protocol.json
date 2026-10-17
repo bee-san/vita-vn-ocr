@@ -727,5 +727,17 @@
    ]
   }
  },
- "amendments": []
+ "amendments": [
+  {
+   "n": 1,
+   "time": "2026-10-17T21:58:14Z",
+   "before": "any detector training run or score",
+   "reason": "the code the protocol names was written after freezing; this records what it pins down",
+   "changes": [
+    "train/textdet_model.py grew the training code (validity masks, BatchNorm folding, the fake-quantised QTextDet); its SHAPES and layers() are unchanged (every shape's MACs, parameters and receptive field equal the protocol's 'sweep' entries; tests/test_textdet.py checks it). Its docstring's sentence on the cell centre was wrong: the receptive field of cell i is centred on input pixel s*i; the targets and the decode measure from s*i + (s-1)/2 as frozen (a labelling convention the network learns; nothing changes)",
+    "the decode's exact specification is synth/textdet_twin.py (the bit-exact twin the C runtime must equal): 'boxes under 4 px across' means far - near < 4 before padding; a line whose clipped box is empty is dropped; A1 and A2 are used as the head writes them; at most 64 candidates are kept (the smallest by (vertical, y, x, h, w)) before the 16-line cap; the reading order's row rule compares a line with its row's first line (rows overlapping by at least half the smaller height) and orders a row by (x, y, h, w); vertical lines go by (-(x + w), y, x, w, h)",
+    "train/textdet_export.py is the int8 export: per-output-channel weight scales max|w|/127, int32 biases, fixed-point requantisation (multiplier in [2^30, 2^31), shift 1..62, round half up), input codes grey - 128, the head's K and O at 1/16 per code and A1, A2 at 1/2 px per code"
+   ]
+  }
+ ]
 }

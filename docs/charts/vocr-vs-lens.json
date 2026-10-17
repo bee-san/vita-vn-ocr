@@ -1,0 +1,430 @@
+{
+ "kind": "vocr-vs-lens-chart-data",
+ "schema": 2,
+ "metric": "dialogue CER: character edit distance / reference characters over the lines without the 'name' style (eval/metrics.norm), in percent; lower is better",
+ "systems": [
+  {
+   "key": "VOCR5_S",
+   "label": "VOCR5 Small"
+  },
+  {
+   "key": "VOCR5_N",
+   "label": "VOCR5 Normal"
+  },
+  {
+   "key": "VOCR5_L",
+   "label": "VOCR5 Large"
+  },
+  {
+   "key": "Lens",
+   "label": "Google Lens"
+  }
+ ],
+ "sets": [
+  {
+   "key": "clannad",
+   "label": "CLANNAD",
+   "platform": "PS Vita",
+   "lines": 2052,
+   "chars": 33485
+  },
+  {
+   "key": "vita-test",
+   "label": "vita-test",
+   "platform": "PS Vita",
+   "lines": 153,
+   "chars": 2392
+  },
+  {
+   "key": "psp-test",
+   "label": "psp-test",
+   "platform": "PSP",
+   "lines": 183,
+   "chars": 2301
+  }
+ ],
+ "values": {
+  "clannad": {
+   "VOCR5_S": {
+    "errors": 463,
+    "chars": 33485,
+    "lines": 2052,
+    "cer": 1.3827,
+    "cer_ci95": [
+     1.2334,
+     1.5359
+    ],
+    "exact_lines": 1692,
+    "exact_pct": 82.46,
+    "path": "scores.systems.VOCR5_S.not_name"
+   },
+   "VOCR5_N": {
+    "errors": 322,
+    "chars": 33485,
+    "lines": 2052,
+    "cer": 0.9616,
+    "cer_ci95": [
+     0.8432,
+     1.0846
+    ],
+    "exact_lines": 1793,
+    "exact_pct": 87.38,
+    "path": "scores.systems.VOCR5_N.not_name"
+   },
+   "VOCR5_L": {
+    "errors": 246,
+    "chars": 33485,
+    "lines": 2052,
+    "cer": 0.7347,
+    "cer_ci95": [
+     0.629,
+     0.846
+    ],
+    "exact_lines": 1845,
+    "exact_pct": 89.91,
+    "path": "scores.systems.VOCR5_L.not_name"
+   },
+   "Lens": {
+    "errors": 511,
+    "chars": 33485,
+    "lines": 2052,
+    "cer": 1.5261,
+    "cer_ci95": [
+     0.897,
+     2.2547
+    ],
+    "exact_lines": 1981,
+    "exact_pct": 96.54,
+    "path": "scores.systems.Lens.not_name"
+   }
+  },
+  "vita-test": {
+   "VOCR5_S": {
+    "errors": 24,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 136,
+    "cer": 1.0033,
+    "exact_pct": 88.89,
+    "path": "arms.console.VOCR5_S.dialogue.vita-test",
+    "vs": {
+     "Lens": {
+      "delta": -2.7174,
+      "ci95": [
+       -4.8658,
+       -0.8754
+      ],
+      "vn_ci95": [
+       -6.0256,
+       -0.5374
+      ],
+      "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.vita-test"
+     }
+    }
+   },
+   "VOCR5_N": {
+    "errors": 23,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 133,
+    "cer": 0.9615,
+    "exact_pct": 86.93,
+    "path": "arms.console.VOCR5_N.dialogue.vita-test",
+    "vs": {
+     "Lens": {
+      "delta": -2.7592,
+      "ci95": [
+       -4.8224,
+       -0.9816
+      ],
+      "vn_ci95": [
+       -5.943,
+       -0.5832
+      ],
+      "path": "pairs.VOCR5_N-Lens.console_vs_lens_native.dialogue.vita-test"
+     }
+    }
+   },
+   "VOCR5_L": {
+    "errors": 14,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 141,
+    "cer": 0.5853,
+    "exact_pct": 92.16,
+    "path": "arms.console.VOCR5_L.dialogue.vita-test",
+    "vs": {
+     "Lens": {
+      "delta": -3.1355,
+      "ci95": [
+       -5.1948,
+       -1.3983
+      ],
+      "vn_ci95": [
+       -6.425,
+       -1.0345
+      ],
+      "path": "pairs.VOCR5_L-Lens.console_vs_lens_native.dialogue.vita-test"
+     }
+    }
+   },
+   "Lens": {
+    "errors": 89,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 132,
+    "cer": 3.7207,
+    "exact_pct": 86.27,
+    "path": "arms.native.Lens.dialogue.vita-test"
+   }
+  },
+  "psp-test": {
+   "VOCR5_S": {
+    "errors": 51,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 153,
+    "cer": 2.2164,
+    "exact_pct": 83.61,
+    "path": "arms.console.VOCR5_S.dialogue.psp-test",
+    "vs": {
+     "Lens": {
+      "delta": -5.302,
+      "ci95": [
+       -8.2832,
+       -2.6892
+      ],
+      "vn_ci95": [
+       -10.2509,
+       -1.4668
+      ],
+      "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.psp-test"
+     }
+    }
+   },
+   "VOCR5_N": {
+    "errors": 30,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 164,
+    "cer": 1.3038,
+    "exact_pct": 89.62,
+    "path": "arms.console.VOCR5_N.dialogue.psp-test",
+    "vs": {
+     "Lens": {
+      "delta": -6.2147,
+      "ci95": [
+       -9.1802,
+       -3.5758
+      ],
+      "vn_ci95": [
+       -11.8552,
+       -2.0431
+      ],
+      "path": "pairs.VOCR5_N-Lens.console_vs_lens_native.dialogue.psp-test"
+     }
+    }
+   },
+   "VOCR5_L": {
+    "errors": 23,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 164,
+    "cer": 0.9996,
+    "exact_pct": 89.62,
+    "path": "arms.console.VOCR5_L.dialogue.psp-test",
+    "vs": {
+     "Lens": {
+      "delta": -6.5189,
+      "ci95": [
+       -9.6689,
+       -3.8326
+      ],
+      "vn_ci95": [
+       -12.6917,
+       -2.1445
+      ],
+      "path": "pairs.VOCR5_L-Lens.console_vs_lens_native.dialogue.psp-test"
+     }
+    }
+   },
+   "Lens": {
+    "errors": 173,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 148,
+    "cer": 7.5185,
+    "exact_pct": 80.87,
+    "path": "arms.native.Lens.dialogue.psp-test"
+   }
+  }
+ },
+ "sources": {
+  "clannad": {
+   "file": "eval/vocr5_clannad_20261016.json",
+   "sha256": "6cb9914fcb555b7d26f212b8ab423c3c45cc262b7b45279737c828e5b8090fc0"
+  },
+  "dialogue": {
+   "file": "eval/vocr5_dialogue_20261016.json",
+   "sha256": "817b6fece780fcf6d915b51c45024c0a79bbd703278ae7e06f41580e18df652b"
+  },
+  "report": {
+   "file": "eval/vocr5_report_20261016.json",
+   "sha256": "d1d06551483a57fbf9d16ffc4f0fe248aaf04d1342ce8e34c223c8e1e002d915"
+  },
+  "protocol": {
+   "file": "eval/vocr5_protocol.json",
+   "sha256": "7b21cd065a61ea682fb0b241473b10a21f4b0dcc50266e9014a0bb465af79177"
+  }
+ },
+ "facts": {
+  "games_vita-test": {
+   "games": 16,
+   "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.vita-test.vn_clusters"
+  },
+  "lens_furigana_vita-test": {
+   "furigana_lines": 3,
+   "furigana_errors": 30,
+   "all_errors": 89,
+   "all_lines": 206,
+   "path": "arms.native.Lens.styles.furigana.vita-test / arms.native.Lens.all.vita-test"
+  },
+  "games_psp-test": {
+   "games": 14,
+   "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.psp-test.vn_clusters"
+  },
+  "lens_furigana_psp-test": {
+   "furigana_lines": 20,
+   "furigana_errors": 116,
+   "all_errors": 227,
+   "all_lines": 245,
+   "path": "arms.native.Lens.styles.furigana.psp-test / arms.native.Lens.all.psp-test"
+  }
+ },
+ "resources": {
+  "VOCR5_S": {
+   "bytes": 819792,
+   "arena_w8i": 124832,
+   "shape": "s_w100v4987",
+   "box_s_333": 0.631,
+   "box_s_444": 0.499
+  },
+  "VOCR5_N": {
+   "bytes": 1185632,
+   "arena_w8i": 182944,
+   "shape": "n_w150v5631",
+   "box_s_333": 0.921,
+   "box_s_444": 0.716
+  },
+  "VOCR5_L": {
+   "bytes": 2473696,
+   "arena_w8i": 261024,
+   "shape": "l_lw300v5631",
+   "box_s_333": 2.077,
+   "box_s_444": 1.627
+  }
+ },
+ "copy": {
+  "eyebrow": "VOCR5  ·  Japanese OCR for PS Vita and PSP visual novels",
+  "headline": "Reads dialogue as well as Google Lens. Offline.",
+  "subhead": "Character error rate on visual-novel dialogue, three test sets. Lower is better.",
+  "panel": {
+   "kicker": "Built for the console",
+   "big": "{N_MB}",
+   "big_sub": "the default model's int8 weights",
+   "lines": [
+    "Offline, in the game's own memory",
+    "Small {S_MB} · Large {L_MB}",
+    "≈{N_S444}-{N_S333} s per text box (estimated)"
+   ],
+   "lens_lines": [
+    "Google Lens is a cloud service.",
+    "It needs an internet connection."
+   ]
+  },
+  "marks": {
+   "vita-test": {
+    "Lens": "*"
+   },
+   "psp-test": {
+    "Lens": "*"
+   }
+  },
+  "footnote": [
+   "CLANNAD: {CL_LINES} dialogue lines of a PS Vita playthrough (Vita3K), references read by Claude, Lens's cached readings of the same crops; Lens reads more lines exactly ({CL_LENS_EXACT}% vs {CL_N_EXACT}% for Normal).",
+   "vita-test, psp-test: {VT_LINES} and {PT_LINES} hand-checked dialogue lines of {VT_GAMES} and {PT_GAMES} games (VNDB screenshots); every reader got the same crops, Lens in screen polarity. * Lens also reads the furigana the references omit: {PT_FUR_ERR} of its {PT_ALL_ERR} psp-test and {VT_FUR_ERR} of its {VT_ALL_ERR} vita-test errors (names included) fall on the {PT_FUR_LINES} and {VT_FUR_LINES} lines with furigana.",
+   "Dialogue: lines without a speaker name. VOCR5: int8, plain-C runtime, greedy decoding; trained with the owner's captures, incl. planetarian, a Key / Prototype port like CLANNAD's. Time: estimated for a 3-line box on one Cortex-A9 core at 444 / 333 MHz; VOCR5 has not run on a console yet."
+  ],
+  "claims": [
+   {
+    "set": "clannad",
+    "system": "VOCR5_S",
+    "op": "<",
+    "than": "Lens"
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR5_N",
+    "op": "<",
+    "than": "Lens"
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR5_L",
+    "op": "<",
+    "than": "Lens"
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR5_S",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR5_N",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR5_L",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR5_S",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR5_N",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR5_L",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   }
+  ]
+ },
+ "rendered": {
+  "inputs_sha256": "508a8d5bbb0723d7f3778eb32b342fb160f9ac6dffa8667b13c0f14acabcf783",
+  "files": {
+   "vocr-vs-lens-dark-2x.png": "20371343a62e38393736baa5757c289d1ba196db7eb5e158f9019cf631432cbe",
+   "vocr-vs-lens-dark.svg": "d17dd524b75448c33622986b1271408a9e6ff97a5562309db7c123de9dfd5ea2",
+   "vocr-vs-lens-light-2x.png": "596aca2f8c2a74b961acc7568312c180d76199b5c984ed1c988cbaea2b83727c",
+   "vocr-vs-lens-light.svg": "2329bac1f8ad0b51d7feb07d5b39dcd1e4e92b95634827771391bd1a461bd9b1"
+  }
+ }
+}

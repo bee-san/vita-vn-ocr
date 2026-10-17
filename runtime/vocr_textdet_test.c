@@ -467,12 +467,13 @@ typedef struct {
     unsigned rows, wm;
 } MapPrint;
 
-static void print_map_row(void *user, unsigned i, const signed char *cells, unsigned width)
+static void print_map_row(void *user, unsigned i, const signed char *maps, unsigned width)
 {
     MapPrint *p = (MapPrint *)user;
-    unsigned j;
+    unsigned j, c;
     (void)i;
-    for (j = 0; j < 4u * width; j++) printf(" %d", cells[j]);
+    for (j = 0; j < width; j++)
+        for (c = 0; c < 4u; c++) printf(" %d", maps[c * width + j]);
     p->rows++;
     p->wm = width;
 }

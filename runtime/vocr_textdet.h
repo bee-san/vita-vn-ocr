@@ -100,10 +100,11 @@ int vocr_textdet_find(const vocr_textdet *m, const VocrLinesImage *im, void *are
 int vocr_textdet_find_rows(const vocr_textdet *m, const VocrLinesRows *src, void *arena, size_t arena_bytes,
                            VocrTextdetSet *out);
 
-/* Debug and test hook: runs the network on im and calls row(user, i, cells, width) for each row i
- * of the head's output, in increasing order; cells holds width cells of 4 int8 codes (K, O, A1, A2)
- * and is valid only during the call. Same arena and return codes as vocr_textdet_find. */
-typedef void (*vocr_textdet_map_row)(void *user, unsigned i, const signed char *cells, unsigned width);
+/* Debug and test hook: runs the network on im and calls row(user, i, maps, width) for each row i of
+ * the head's output, in increasing order; maps holds the row of the four maps one after the other (K
+ * at [0, width), O, A1, then A2 at [3 width, 4 width)) and is valid only during the call. Same arena
+ * and return codes as vocr_textdet_find. */
+typedef void (*vocr_textdet_map_row)(void *user, unsigned i, const signed char *maps, unsigned width);
 int vocr_textdet_maps(const vocr_textdet *m, const VocrLinesImage *im, void *arena, size_t arena_bytes,
                       vocr_textdet_map_row row, void *user);
 

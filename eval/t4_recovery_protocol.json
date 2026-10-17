@@ -1,0 +1,221 @@
+{
+ "kind": "t4-recovery-protocol",
+ "created": "2026-10-17T12:31:04Z",
+ "question": "#194 bug 2: the overlay owner's commit 842980e (Rubi_for_vita branch test4-console-fixes) runs every pinned model with VOCR_LINES_TEXTBOX_RECOVERY (mode 3) instead of GRAD (mode 0). Does mode 3 keep the short last line GRAD drops, without a regression elsewhere?",
+ "runtime_pin": "d214a05deeef503a5e1d1853fe9fa4c91eb60bc2 (vita-vn-ocr; every finder file at this checkout equals it)",
+ "code_sha256": {
+  "eval/t4_recovery.py": "2e7d319d6293887016123f82b14806d884e0349ef44a58e64225b0be85215b57",
+  "eval/finder_tighten.py": "a01ac2e8a8b136b5ea677fbc3f7a7226f158620af6eea7b928e939b5f57148f4",
+  "eval/finders.py": "920b8e0912555297cb70bfd23f86bd0f6edb448b95d118df1672e2384f1ea8f3",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "eval/vocr3_report.py": "9247949aa2146bb4ede037748c4f9640f84b2ff1d4afb64af604060dba776238",
+  "eval/sets.py": "a65154a114c922e8a2bacf621dc96289f2fc74706e1705ab297a5014edb09bce",
+  "eval/clannad_refs.py": "a7bdf56cf49a9211e62627ab474da6d2f0368f5f59e71e212b5b9331e4b5fd67",
+  "train/general_vn_textbox_guard.py": "637fbe5a3cb06dcfd83399218c1558c6d3c69d4ebba44ab0ca0742f2b89b254e",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "runtime/pyvocr.py": "b32db8a0e5d5e9dc9f3a659c92c2c48b7fa796cc4e7835c4b2d9eedd789f78f8",
+  "runtime/vocr.c": "3e1756138b2e1d9aff15abdda95b02e0c015a5ba0af99678bdd678377b73f559",
+  "runtime/vocr.h": "30bb32693e634a4c4b4cd5cd3a4da8d33f6882bf00348d0e1d8264ba08376271",
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+  "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+  "runtime/vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465",
+  "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+  "runtime/vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+  "runtime/vocr_lines_refine_test.c": "ab73c50fc2b89b6bf8b03483ed68538cec55701162fa928d6340988e383c2b7e",
+  "runtime/vocr_lines_test.c": "c1af9976ce7ccc51b1804417b5cb42959fda4b231da0cc1f0e04e2b049eb9c45"
+ },
+ "arms": {
+  "VOCR5_S": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+  "VOCR5_N": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+  "VOCR5_L": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+ },
+ "decode": "finder_tighten.Reader: the C runtime, deployment W8I, greedy (the overlay adds the beam + LM decode, the same for both finders)",
+ "finders": {
+  "grad": 0,
+  "tbr": 3
+ },
+ "refinement": {
+  "off": 0,
+  "on": 31,
+  "deployed": "on in PSP units, off in Vita units (the overlay's ocr_refine_lines = psp)"
+ },
+ "sets": {
+  "vita-test": {
+   "manifest_sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+   "regions": "eval's, base / +4 / +8 (vocr3_report.expand); a region with an uncertain line is left out whole"
+  },
+  "psp-test": {
+   "manifest_sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+   "regions": "as vita-test"
+  },
+  "clannad": {
+   "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+   "lines_sha256": "a6be0300b651a2cdf3ae58f9705b6f100263b66b7030365b119e6a0a2323ffd1",
+   "rois": {
+    "longrun": [
+     32,
+     360,
+     896,
+     184
+    ],
+    "console": [
+     50,
+     409,
+     852,
+     135
+    ]
+   },
+   "use": "every successful page of the long run at both ROIs, refinement off; the referenced lines (GRAD boxes of the long-run ROI) scored by clannad_refs' rules with whole-page bootstraps; tbr's new rows counted and classified by viewing"
+  }
+ },
+ "clannad_refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+ "metrics": "see the eval/t4_recovery.py docstring: lines found (eval/finders.match), dialogue CER (transcript_score body), short last line (bottom dialogue line of a 2+ dialogue-line region, <= 40% of the widest dialogue line's width), extra boxes, tbr's new boxes by kind (short_last, dialogue, name, union, duplicate, offtext), lost boxes",
+ "bootstrap": {
+  "units_and_vn": "finder_tighten.compare (10,000 resamples, seed 0, >= 5 VN clusters)",
+  "clannad": "clannad_refs page bootstrap (10,000, seed 0)"
+ },
+ "runs": "one each: protected.attempt.json and clannad.attempt.json are created exclusively; no model, constant or rule changes after this file",
+ "regression_rule": {
+  "R1": "vita-test or psp-test, deployed view, all variants pooled: for any arm, the VN-cluster 95% CI of tbr - grad dialogue CER lies entirely above 0",
+  "R2": "vita-test or psp-test, deployed view, all variants: tbr finds fewer ground-truth dialogue lines than grad (lines only grad finds > lines only tbr finds)",
+  "R3": "CLANNAD long-run ROI: for any arm, the page-bootstrap 95% CI of tbr - grad dialogue CER on the referenced lines lies entirely above 0",
+  "R4": "CLANNAD, either ROI: of tbr's new rows, those that hold no dialogue text by viewing (scene art, frames, cursors, furigana, names, unions or duplicates of other rows) outnumber those that hold dialogue text GRAD missed (every new row viewed if there are at most 160 at a ROI, else a seeded sample of 160, seed 0)",
+  "verdict": "a regression if any of R1-R4 holds (the dev pool is reported with R1's test, but it was known before this file: below)"
+ },
+ "dev_results_known_at_freeze": {
+  "report_sha256": "4a2d091fe42a54411c5328b97f27f8586f5b964323608464c948ec1085b49810",
+  "pooled_deployed_all": {
+   "lines_found": [
+    4605,
+    4636,
+    4734
+   ],
+   "short_last_found": [
+    289,
+    311,
+    348
+   ],
+   "tbr_new": {
+    "short_last": 23,
+    "dialogue": 15,
+    "name": 0,
+    "union": 2,
+    "duplicate": 14,
+    "offtext": 13
+   },
+   "dialogue_cer_delta_vn_ci": {
+    "VOCR5_S": [
+     0.207426,
+     [
+      -0.062439,
+      0.740451
+     ]
+    ],
+    "VOCR5_N": [
+     0.229465,
+     [
+      -0.049259,
+      0.778808
+     ]
+    ],
+    "VOCR5_L": [
+     0.229465,
+     [
+      -0.053775,
+      0.794998
+     ]
+    ]
+   }
+  },
+  "pooled_off_all": {
+   "lines_found": [
+    4590,
+    4621,
+    4734
+   ],
+   "short_last_found": [
+    290,
+    312,
+    348
+   ],
+   "tbr_new": {
+    "short_last": 22,
+    "dialogue": 18,
+    "name": 0,
+    "union": 3,
+    "duplicate": 3,
+    "offtext": 13
+   },
+   "dialogue_cer_delta_vn_ci": {
+    "VOCR5_S": [
+     0.009075,
+     [
+      -0.121061,
+      0.211917
+     ]
+    ],
+    "VOCR5_N": [
+     0.014261,
+     [
+      -0.118405,
+      0.227191
+     ]
+    ],
+    "VOCR5_L": [
+     0.0363,
+     [
+      -0.107687,
+      0.275378
+     ]
+    ]
+   }
+  },
+  "pooled_on_all": {
+   "lines_found": [
+    4603,
+    4634,
+    4734
+   ],
+   "short_last_found": [
+    289,
+    311,
+    348
+   ],
+   "tbr_new": {
+    "short_last": 23,
+    "dialogue": 17,
+    "name": 0,
+    "union": 0,
+    "duplicate": 15,
+    "offtext": 14
+   },
+   "dialogue_cer_delta_vn_ci": {
+    "VOCR5_S": [
+     0.230761,
+     [
+      -0.054058,
+      0.785738
+     ]
+    ],
+    "VOCR5_N": [
+     0.248911,
+     [
+      -0.047343,
+      0.82266
+     ]
+    ],
+    "VOCR5_L": [
+     0.23854,
+     [
+      -0.060321,
+      0.81731
+     ]
+    ]
+   }
+  },
+  "observed": "tbr keeps short last lines GRAD drops (22 more of 348 found over the three variants) at no dialogue CER cost with the refinement off; it also adds a union box spanning tightly set 3-line dialogue (mostly PSP), which the refinement then splits into rows read twice: with the refinement on (the PSP default) every arm's dialogue CER is about +0.2 points (VN CIs include 0), dn_dlg about +1.1",
+  "dev_run_script_sha256": "1e9cd213cb848d482a1941bd7968cb28d23927aaec77c47ebbb94f46348cd863",
+  "script_change_since_dev_run": "cmd_clannad skips a scope with no lines (an empty-scope guard); nothing the dev run executes changed"
+ }
+}

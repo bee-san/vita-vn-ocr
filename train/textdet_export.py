@@ -48,8 +48,10 @@ def quantize_multiplier(M):
     return m, sh
 
 
-def quantize_layers(shape, folded, act_scale):
-    """Integer layers from folded float weights and per-layer output scales: [dict(w, b, m, sh, ...)]."""
+def quantize_layers(shape, folded, act_scale, wbits=8):
+    """Integer layers from folded float weights and per-layer output scales: [dict(w, b, m, sh, ...)]. wbits < 8
+    keeps the int8 container but limits every weight to +-(2^(wbits-1) - 1) codes (the report-only int4 study)."""
+    qmax = 2 ** (wbits - 1) - 1
     out = []
     s_x = IN_SCALE
     for L, (w, b), s_y in zip(TM.layers(shape), folded, act_scale):
@@ -61,8 +63,8 @@ def quantize_layers(shape, folded, act_scale):
         else:
             s_out = np.full(cout, float(s_y))
         mx = np.abs(w.reshape(cout, -1)).max(1)
-        s_w = np.where(mx > 0, mx / 127, 1.0)
-        wq = np.clip(np.floor(w / s_w.reshape(-1, 1, 1, 1) + 0.5), -127, 127).astype(np.int8)
+        s_w = np.where(mx > 0, mx / qmax, 1.0)
+        wq = np.clip(np.floor(w / s_w.reshape(-1, 1, 1, 1) + 0.5), -qmax, qmax).astype(np.int8)
         bq = np.clip(np.floor(b / (s_w * s_x) + 0.5), -(2 ** 31 - 1), 2 ** 31 - 1).astype(np.int64)
         ms = [quantize_multiplier(float(s_w[c] * s_x / s_out[c])) for c in range(cout)]
         out.append({**L, "wq": wq, "bq": bq, "m": np.array([m for m, _ in ms], np.int64),
@@ -110,7 +112,7 @@ def pack(shape, qlayers, ckpt_sha256=b"\0" * 8):
     return blob
 
 
-def export_checkpoint(path):
+def export_checkpoint(path, wbits=8):
     import torch
     ck = torch.load(path, map_location="cpu", weights_only=False)
     if ck.get("kind") != "textdet-qat":
@@ -118,7 +120,7 @@ def export_checkpoint(path):
     shape = ck["shape"]
     folded = [(w.double(), b.double()) for w, b in zip(ck["w"], ck["b"])]
     sha = hashlib.sha256(Path(path).read_bytes()).digest()
-    return pack(shape, quantize_layers(shape, folded, ck["act_scale"]), sha)
+    return pack(shape, quantize_layers(shape, folded, ck["act_scale"], wbits), sha)
 
 
 def random_model(shape_name, seed, calib=8):
@@ -258,12 +260,13 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out")
     ap.add_argument("--info")
+    ap.add_argument("--wbits", type=int, default=8, choices=(4, 8), help="4: weights limited to +-7 codes (study)")
     args = ap.parse_args()
     if args.info:
         info(args.info)
         return
     if args.ckpt:
-        blob = export_checkpoint(args.ckpt)
+        blob = export_checkpoint(args.ckpt, args.wbits)
     elif args.random:
         shape, qlayers = random_int_layers(args.random, args.seed)
         blob = pack(shape, qlayers, hashlib.sha256(f"random:{args.random}:{args.seed}".encode()).digest())

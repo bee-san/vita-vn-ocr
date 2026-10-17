@@ -44,9 +44,21 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-for _p in (ROOT, ROOT / "eval", ROOT / "eval" / "linefind", ROOT / "synth", ROOT / "runtime", ROOT / "train"):
+for _p in (ROOT, ROOT / "eval", ROOT / "synth", ROOT / "runtime", ROOT / "train"):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
+
+
+def _linefind(module):
+    """eval/linefind's modules by path, under their own names (its metrics.py is not eval/metrics.py)."""
+    import importlib.util
+    name = f"linefind_{module}"
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, ROOT / "eval" / "linefind" / f"{module}.py")
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[name] = mod
+        spec.loader.exec_module(mod)
+    return sys.modules[name]
 
 HERD = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
 LINEFIND = ROOT / "eval" / "linefind" / "manifests"
@@ -82,8 +94,7 @@ class Grad:
     def __init__(self, check_c=False):
         self.c = None
         if check_c:
-            import cfinder
-            self.c = cfinder.Finder("grad")
+            self.c = _linefind("cfinder").Finder("grad")
 
     def __call__(self, grey):
         from common import find_lines_ex
@@ -141,17 +152,14 @@ def make_finder(spec, check_c=False):
 
 def linefind_rows(name, test_vns):
     """(kept rows, left-out rows) of one linefind set: regions of a reserved test VN are left out."""
-    from build_gt import read
-    rows = read(LINEFIND / f"{name}.jsonl")
+    rows = _linefind("build_gt").read(LINEFIND / f"{name}.jsonl")
     keep = [r for r in rows if r["vn"] not in test_vns]
     return keep, [r for r in rows if r["vn"] in test_vns]
 
 
 def region_grey(row, shots):
-    from build_gt import region_rgb
-
     from common import to_gray
-    return np.ascontiguousarray(to_gray(np.ascontiguousarray(region_rgb(row, shots))))
+    return np.ascontiguousarray(to_gray(np.ascontiguousarray(_linefind("build_gt").region_rgb(row, shots))))
 
 
 def gt_of(row):
@@ -166,7 +174,7 @@ def gt_of(row):
 
 
 def score_linefind(rows, greys, finder):
-    import metrics as M
+    M = _linefind("metrics")
     out = []
     for r, g in zip(rows, greys):
         boxes, _ = finder(g)
@@ -196,7 +204,7 @@ def summarize(per):
 
 
 def cmd_linefind(args):
-    from build_gt import SHOT_DIRS
+    SHOT_DIRS = _linefind("build_gt").SHOT_DIRS
     shots = [str(d) for d in args.shots] + [str(d) for d in SHOT_DIRS]
     test_vns = reserved_test_vns()
     finders = [make_finder(f, args.check_c) for f in args.finder]
@@ -457,7 +465,7 @@ def cmd_read(args):
     name, _, blob = args.model.partition("=")
     out = Path(args.out) / name
     out.mkdir(parents=True, exist_ok=True)
-    ident = FT.build(out / "build")
+    ident = FT.build(out / f"build-{os.getpid()}")       # one per process: several may read for one model
     reader = FT.Reader(Path(blob), ident["library"])
     cohorts = {cn: load_cohort(args.cohorts, cn) for cn in WD_COHORTS}
     cache = {}
@@ -499,6 +507,150 @@ def cmd_read(args):
         print(f"{name} {cand}: {e} errors, cache {len(cache)} crops", flush=True)
 
 
+# ---------------------------------------------------------------- the promotion rule
+
+MODELS = ("VOCR5-S", "VOCR5-N", "VOCR5-L")
+H15_MACS, H15_MS = 1564992, (5.0, 5.2)          # VOCR3-H15 on the console: MACs per CTC frame, ms per frame
+REGIONS = {"vita_box": (900, 150), "psp_box": (450, 80), "vita_screen": (960, 544), "psp_screen": (480, 272)}
+
+
+def est_ms(macs):
+    """MAC-rate estimate (the protocol's): {333: [lo, hi], 444: [lo, hi]} ms. Estimates, not measurements."""
+    lo, hi = macs * H15_MS[0] / H15_MACS, macs * H15_MS[1] / H15_MACS
+    return {"333": [round(lo, 2), round(hi, 2)], "444": [round(lo * 333 / 444, 2), round(hi * 333 / 444, 2)]}
+
+
+def costs(shape_name):
+    import textdet_model as TM
+    shape = TM.SHAPES[shape_name]
+    out = {}
+    for k, (w, h) in REGIONS.items():
+        m = TM.cost(shape, w, h)["macs"]
+        out[k] = {"macs": m, "est_ms": est_ms(m)}
+    c = TM.cost(shape, 960, 544)
+    out.update(params=c["params"], weights_int8=c["weights_int8"])
+    return out
+
+
+def load_baseline(directory):
+    """{model: units (finder_tighten format: cohort -> grad / refine)} of the frozen baseline."""
+    return {m: json.loads((Path(directory) / m / f"units_{m}.json").read_text(encoding="utf-8")) for m in MODELS}
+
+
+def load_det_units(directory, cand):
+    return {m: json.loads((Path(directory) / m / f"units_{cand}.json").read_text(encoding="utf-8")) for m in MODELS}
+
+
+def candidate_report(cand, det, base, native, empty_rate, blob_bytes, arena, c_equal, shape):
+    """Every number the rule reads for one candidate, plus the rule's conditions."""
+    keep_all = lambda u: True  # noqa: E731
+    keep_nat = lambda u: u["shot"] in native  # noqa: E731
+    rep = {"candidate": cand, "shape": shape, "blob_bytes": blob_bytes, "arena_960x544": arena,
+           "c_equals_twin": c_equal, "empty_rate": empty_rate, "costs": costs(shape), "models": {}}
+    for m in MODELS:
+        d = wd_units(det[m], "det")
+        g, r = wd_units(base[m], "grad"), wd_units(base[m], "refine")
+        rep["models"][m] = {
+            "wd": {"det": cer_of(d), "grad": cer_of(g), "refine": cer_of(r)},
+            "native_vita": {"det": cer_of(d, keep_nat), "grad": cer_of(g, keep_nat), "refine": cer_of(r, keep_nat)},
+            "det_minus_grad": vn_diff([(d, g)], keep_all), "det_minus_refine": vn_diff([(d, r)], keep_all),
+            "native_det_minus_grad": vn_diff([(d, g)], keep_nat),
+            "native_det_minus_refine": vn_diff([(d, r)], keep_nat),
+            "per_platform": {p: {"det": cer_of(d, lambda u, p=p: u["platform"] == p),
+                                 "grad": cer_of(g, lambda u, p=p: u["platform"] == p),
+                                 "refine": cer_of(r, lambda u, p=p: u["platform"] == p)} for p in ("vita", "psp")},
+            "zero_detection_units": sum(u["detections"] == 0 for u in d)}
+    mm = rep["models"]
+    below = all(mm[m]["det_minus_grad"]["ci95"][1] < 0 and mm[m]["det_minus_refine"]["ci95"][1] < 0 for m in MODELS)
+    native_ok = all(not (mm[m][k]["ci95"] is not None and mm[m][k]["ci95"][0] > 0)
+                    for m in MODELS for k in ("native_det_minus_grad", "native_det_minus_refine"))
+    rep["mean_wd_cer"] = round(sum(mm[m]["wd"]["det"]["cer"] for m in MODELS) / len(MODELS), 4)
+    rep["conditions"] = {"wd_resolved_below_grad_and_refine": below, "no_resolved_native_vita_regression": native_ok,
+                         "empty_rate_ge_0_75": empty_rate is not None and empty_rate >= 0.75}
+    rep["eligible"] = {"blob_lt_100000": blob_bytes < 100000, "arena_le_131072": arena is not None and arena <= 131072,
+                       "macs_900x150_le_30M": rep["costs"]["vita_box"]["macs"] <= 30_000_000,
+                       "c_equals_twin": bool(c_equal)}
+    rep["is_eligible"] = all(rep["eligible"].values())
+    rep["qualifies"] = rep["is_eligible"] and all(rep["conditions"].values())
+    rep["point_below_both"] = all(mm[m]["wd"]["det"]["cer"] < min(mm[m]["wd"]["grad"]["cer"],
+                                                                  mm[m]["wd"]["refine"]["cer"]) for m in MODELS)
+    return rep
+
+
+def apply_rule(reps, det_units):
+    """The protocol's winner: the smallest qualifying candidate; a larger one only by a resolved mean margin."""
+    order = sorted(reps, key=lambda c: (reps[c]["blob_bytes"], reps[c]["costs"]["vita_box"]["macs"], c))
+    qual = [c for c in order if reps[c]["qualifies"]]
+    steps = []
+    if not qual:
+        elig = [c for c in order if reps[c]["is_eligible"]]
+        best = min(elig, key=lambda c: (reps[c]["mean_wd_cer"], c)) if elig else None
+        trigger = any(reps[c]["is_eligible"] and reps[c]["conditions"]["no_resolved_native_vita_regression"] and
+                      reps[c]["conditions"]["empty_rate_ge_0_75"] and reps[c]["point_below_both"] for c in order)
+        return {"winner": None, "order": order, "qualifying": [], "report_candidate": best,
+                "fine_tune_triggered": trigger, "steps": steps}
+    w = qual[0]
+    steps.append({"start": w})
+    while True:
+        moved = None
+        for c in qual[qual.index(w) + 1:]:
+            pairs = [(wd_units(det_units[c][m], "det"), wd_units(det_units[w][m], "det")) for m in MODELS]
+            d = vn_diff(pairs)
+            steps.append({"from": w, "to": c, "mean_delta": d["delta"], "ci95": d["ci95"]})
+            if d["ci95"] is not None and d["ci95"][1] < 0:
+                moved = c
+                break
+        if moved is None:
+            break
+        w = moved
+    return {"winner": w, "order": order, "qualifying": qual, "fine_tune_triggered": False, "steps": steps}
+
+
+def pareto(reps, key="mean_wd_cer"):
+    """Candidates no other candidate beats on both blob bytes and the key (lower is better on both)."""
+    front = []
+    for c, r in reps.items():
+        if not any(o != c and q["blob_bytes"] <= r["blob_bytes"] and q[key] <= r[key] and
+                   (q["blob_bytes"] < r["blob_bytes"] or q[key] < r[key]) for o, q in reps.items()):
+            front.append(c)
+    return sorted(front, key=lambda c: reps[c]["blob_bytes"])
+
+
+def cmd_select(args):
+    proto = json.loads(Path(args.protocol).read_text(encoding="utf-8"))
+    runs = proto["amendments"][1]["runs"]
+    base = load_baseline(args.baseline)
+    native = native_vita_shots()
+    arenas = json.loads(Path(args.arena).read_text(encoding="utf-8")) if args.arena else {}
+    reps, det_units = {}, {}
+    for cand in runs:
+        dets = json.loads((Path(args.dets) / f"dets_{cand}.json").read_text(encoding="utf-8"))
+        lf = json.loads((Path(args.linefind) / f"linefind_{cand}.json").read_text(encoding="utf-8"))
+        empty = lf["pooled"]["development"][cand]["empty"].get("empty_rate")
+        det_units[cand] = load_det_units(args.units, cand)
+        reps[cand] = candidate_report(cand, det_units[cand], base, native, empty, dets["blob_bytes"],
+                                      arenas.get(cand), dets["c_equals_twin"], dets["shape"])
+        reps[cand]["linefind_dev"] = lf["pooled"]["development"][cand]["all"]
+        reps[cand]["linefind_report"] = lf["pooled"]["report"][cand]["all"]
+    rule = apply_rule(reps, det_units)
+    doc = {"kind": "textdet-selection", "computed": utc_now(), "protocol_sha256": sha256(args.protocol),
+           "runs": runs, "rule": rule, "pareto_mean_wd_cer": pareto(reps), "candidates": reps,
+           "baseline": {m: {"grad": cer_of(wd_units(base[m], "grad")), "refine": cer_of(wd_units(base[m], "refine"))}
+                        for m in MODELS}}
+    Path(args.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+    for c in rule["order"]:
+        r = reps[c]
+        mm = r["models"]
+        print(f"{c:16s} {r['blob_bytes']:6d} B  wd " + " ".join(f"{mm[m]['wd']['det']['cer']:.2f}" for m in MODELS) +
+              "  d-grad " + " ".join(f"{mm[m]['det_minus_grad']['delta']:+.2f}{mm[m]['det_minus_grad']['ci95']}"
+                                     for m in MODELS) +
+              "  d-ref " + " ".join(f"{mm[m]['det_minus_refine']['delta']:+.2f}{mm[m]['det_minus_refine']['ci95']}"
+                                    for m in MODELS) +
+              f"  empty {r['empty_rate']}  qual {r['qualifies']}", flush=True)
+    print("winner:", rule["winner"], "| report candidate:", rule.get("report_candidate"), "| fine-tune:",
+          rule["fine_tune_triggered"])
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -525,6 +677,14 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--cand", action="append", default=[])
     p.add_argument("--force", action="store_true")
+    p = sub.add_parser("select")
+    p.add_argument("--protocol", default=str(ROOT / "eval" / "textdet_protocol.json"))
+    p.add_argument("--baseline", required=True)
+    p.add_argument("--units", required=True)
+    p.add_argument("--dets", required=True)
+    p.add_argument("--linefind", required=True)
+    p.add_argument("--arena", default="")
+    p.add_argument("--out", required=True)
     args = ap.parse_args(argv)
     if args.cmd == "linefind":
         cmd_linefind(args)
@@ -534,6 +694,8 @@ def main(argv=None):
         cmd_detect(args)
     elif args.cmd == "read":
         cmd_read(args)
+    elif args.cmd == "select":
+        cmd_select(args)
 
 
 if __name__ == "__main__":

@@ -492,6 +492,7 @@ def cmd_sheets(args):
     font = ImageFont.truetype(str(HERD / "shared" / "data" / "fonts" / "bizudgothic" / "BIZUDGothic-Regular.ttf"), 14)
     rows = jsonl(args.reads)
     want = set(json.load(open(args.ids))) if args.ids else None
+    extra = json.load(open(args.extra)) if args.extra else {}
     ents = []
     for r in rows:
         if r.get("error") or (args.split and r["split"] != args.split):
@@ -546,6 +547,10 @@ def cmd_sheets(args):
             dr.rectangle([fx0, fy0, fx0 + w * z2 - 1, fy0 + h * z2 - 1], outline=(255, 0, 0), width=1)
             dr.text((x + 4, y + 1), str(n), fill=(0, 0, 0), font=font)
             cands = candidates(c)
+            for t in extra.get(cid, []):        # the earlier reviewers' readings, unattributed
+                t = canon(t)
+                if t and all(t != x for x, _ in cands):
+                    cands.append((t, ["review"]))
             if args.mode != "pass1":
                 rnd = random.Random(cid)
                 rnd.shuffle(cands)
@@ -641,11 +646,11 @@ def cmd_decide(args):
         if a is None:
             continue
         b, z = p2.get(cid), p3.get(cid)
-        if a["skip"] or a["unsure"]:
-            final = {"skip": a["skip"] or "unsure"}
-        elif z is not None:
+        if z is not None:                     # a third look settles a disagreement
             ok = z["text"] and not z["skip"] and not z["unsure"]
             final = {"text": z["text"]} if ok else {"skip": z["skip"] or "unsure"}
+        elif a["skip"] or a["unsure"]:
+            final = {"skip": a["skip"] or "unsure"}
         elif b is not None and b["text"] == a["text"]:
             final = {"text": a["text"]}
         elif b is None and args.single:
@@ -757,6 +762,7 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--mode", default="pass1")
     p.add_argument("--ids")
+    p.add_argument("--extra", help="JSON {column id: [more candidate texts]} (a third look's earlier readings)")
     p.add_argument("--split")
     p.add_argument("--private", action="store_true")
     p = sub.add_parser("shard")

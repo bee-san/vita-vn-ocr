@@ -36,7 +36,7 @@ sys.path.insert(0, str(ROOT / "synth"))
 from metrics import lev, norm  # noqa: E402
 
 import common  # noqa: E402
-import vertical as V  # noqa: E402
+import vertical_twin as V  # noqa: E402
 
 PAD = {"vita": 4, "psp": 2}
 REGION_MARGIN = {"vita": 12, "psp": 6}
@@ -65,7 +65,36 @@ def cohort(row):
     return "manga" if row.get("origin") == "manga" else "vn"
 
 
+def boot_unit(row):
+    """The bootstrap unit: the series cluster, or for manga (one series per split) the book page (amendment 1)."""
+    if row.get("cohort") == "manga" or row.get("origin") == "manga":
+        return row["page"].rsplit("_w", 1)[0] if row.get("page") else row["id"].rsplit("_w", 1)[0]
+    return row["cluster"]
+
+
 # ----------------------------------------------------------------------------- manifests
+
+def merge_pieces(cols):
+    """MeikiOCR's detector sometimes cuts one column in two at a full-width space: pieces whose columns overlap by
+    70% of the narrower width, one below the other within 1.2 column widths, become one column (texts top to bottom,
+    boxes united), as the column finder sees them."""
+    out = []
+    for c in sorted(cols, key=lambda c: c["box"][1]):
+        x, y, w, h = c["box"]
+        for o in out:
+            ox, oy, ow, oh = o["box"]
+            ov = min(x + w, ox + ow) - max(x, ox)
+            gap = y - (oy + oh)
+            if ov >= 0.7 * min(w, ow) and -0.2 * max(w, ow) <= gap <= 1.2 * max(w, ow):
+                x0, y0 = min(x, ox), min(y, oy)
+                x1, y1 = max(x + w, ox + ow), max(y + h, oy + oh)
+                o["box"], o["text"] = [x0, y0, x1 - x0, y1 - y0], o["text"] + c["text"]
+                o["pieces"] = o.get("pieces", [o["id"]]) + [c["id"]]
+                break
+        else:
+            out.append(dict(c))
+    return sorted(out, key=lambda c: (-(c["box"][0] + c["box"][2]), c["box"][1]))
+
 
 def cmd_build(args):
     """Columns and regions of the reviewed pages. A column's box is its main-text ink box (column_box); a label
@@ -123,7 +152,7 @@ def cmd_build(args):
             x1 = min(W, max(c["box"][0] + c["box"][2] for c in g) + m)
             y1 = min(H, max(c["box"][1] + c["box"][3] for c in g) + m)
             inside = lambda b: b[0] < x1 and b[0] + b[2] > x0 and b[1] < y1 and b[1] + b[3] > y0  # noqa: E731
-            order = sorted(g, key=lambda c: (-(c["box"][0] + c["box"][2]), c["box"][1]))
+            order = merge_pieces(sorted(g, key=lambda c: (-(c["box"][0] + c["box"][2]), c["box"][1])))
             ignore = [c["box"] for c in page_cols if c not in g and inside(c["box"])]
             ignore += [[h["det"][0], h["det"][1], h["det"][2] - h["det"][0], h["det"][3] - h["det"][1]]
                        for h in r.get("horizontal", []) if inside([h["det"][0], h["det"][1], h["det"][2] - h["det"][0],
@@ -231,7 +260,8 @@ def cmd_columns(args):
     for r, p in zip(rows, preds):
         r["pred"] = p
     res = {"arm": args.arm, "model": args.model, "manifest": args.manifest, "scores": score_rows(rows),
-           "rows": [{k: r[k] for k in ("id", "cluster", "cohort", "name", "text", "pred", "dark")} for r in rows]}
+           "rows": [{**{k: r[k] for k in ("id", "cohort", "name", "text", "pred", "dark")}, "cluster": boot_unit(r)}
+                    for r in rows]}
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     json.dump(res, open(args.out, "w"), ensure_ascii=False, indent=0)
     for k, o in sorted(res["scores"].items()):
@@ -348,7 +378,7 @@ def cmd_e2e(args):
     out_rows = []
     for r, t in zip(rows, texts):
         ref = "".join(norm(c["text"]) for c in r["columns"])
-        out_rows.append({"id": r["id"], "cluster": r["cluster"], "cohort": r["cohort"], "text": ref, "pred": t})
+        out_rows.append({"id": r["id"], "cluster": boot_unit(r), "cohort": r["cohort"], "text": ref, "pred": t})
     res = {"finder": args.finder, "arm": args.arm, "model": args.model, "scores": score_rows(out_rows),
            "rows": out_rows}
     json.dump(res, open(args.out, "w"), ensure_ascii=False, indent=0)

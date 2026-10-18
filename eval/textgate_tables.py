@@ -4,7 +4,7 @@
   textgate_tables.py record --calibration JSON --selection JSON --parity JSON --sizes JSON --out-cal JSON --out-dev JSON
       The committed records: the calibration (every candidate's operating points on the training-side cohorts) and
       the development selection (eval/textgate.py select), with local paths written relative to $HERD or the clone.
-  textgate_tables.py tables --cal JSON --dev JSON [--report JSON]
+  textgate_tables.py tables --cal JSON --dev JSON
       Markdown tables (calibration, development, the winner), printed.
 """
 import argparse

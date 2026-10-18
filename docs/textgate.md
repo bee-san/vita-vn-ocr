@@ -308,7 +308,7 @@ the Vita. Code, VitaSDK gcc 15.2 with Rubi's runtime flags, `--gc-sections`: 1,8
 | network MACs (all four head maps, as `train/textdet_model.cost` counts them) | 2.74 M | 0.73 M | 10.5 M | 2.63 M |
 | the gate's own MACs (only the head's K map) | 2.69 M | 0.71 M | 10.3 M | 2.58 M |
 | A9 cycle model @333 / @444 MHz (low to calibrated high) | 67-135 / 50-101 ms | 18-36 / 13-27 ms | 256-517 / 192-388 ms | 64-129 / 48-97 ms |
-| MAC-rate estimate @333 MHz (VOCR3-H15's console rate, NEON code) | 8.8-9.1 ms | 2.3-2.4 ms | 33.6-34.9 ms | 8.4-8.7 ms |
+| MAC-rate estimate @333 MHz (network MACs at VOCR3-H15's console rate, NEON code) | 8.8-9.1 ms | 2.3-2.4 ms | 33.6-34.9 ms | 8.4-8.7 ms |
 
 The cycle model prices the Vita compiler's `-O2` code (the scalar gate) under plugin qemu-arm with `vita/a9_cycles.py`,
 calibrated to VOCR3-H15's 5.0-5.2 ms per CTC frame on the console; the MAC-rate figures assume the recognizer's NEON
@@ -345,8 +345,8 @@ work and the model's load.
 - **The calibration split is in the synthetic scene pool** (found by audit-textgate, after the protected read). The
   protocol says the calibration VNs are never trained on; the trainer drops them from the real canvases only, and
   the clean scene pool was not cut by the split: it holds 853 screenshots of 236 calibration-split VNs, and the
-  frames of 2,205 cal_dlg cases (493 frames, all teacher frames: 1,893 scaled PC, 294 PSP, 18 Vita) and 681
-  cal_empty regions (501 frames), 20% of each cohort, are scene-pool files, which the synthetic canvases crop
+  frames of 2,205 cal_dlg cases (1,893 scaled PC, 294 PSP and 18 Vita cases, on 493 teacher frames: 397 / 94 / 2)
+  and 681 cal_empty regions (501 frames), 20% of each cohort's cases and 16% of its frames, are scene-pool files, which the synthetic canvases crop
   backgrounds from (the upper 62% of a screenshot, away from its text). For the winner (boxes, k 4, t -8) cal_empty
   reads 0.9325 inside the pool and 0.9178 outside it, cal_dlg recall 0.9968 and 0.9983; on teacher frames alone
   0.9325 against 0.870 (60 of 69) and 0.9968 against 1.000 (258): consistent with some exposure, on small samples.

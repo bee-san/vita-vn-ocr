@@ -53,8 +53,9 @@ PAD = {"vita": 4, "psp": 2}
 JP = re.compile(r"[\u3040-\u30ff\u4e00-\u9fff\u3005]")
 UA = "vita-vn-ocr-vertical/0.1 (OCR evaluation, low volume; github.com/bee-san/vita-vn-ocr)"
 
-# Series clusters of the console VNs with vertical dialogue (issue #99's census) and their split. A cluster is
-# one font / engine family; the split is by cluster, so no VN of a test cluster is in development.
+# Series clusters of the console VNs with vertical dialogue (issue #99's census) and their split. A cluster is one
+# series (VNDB's direct relations); the split is by cluster, so no VN of a test cluster is in development.
+# Developers and engines do cross it (Rejet, Otomate: docs/vertical.md, "Limits and disclosures").
 CONSOLE_CLUSTERS = {
     "harukanaru": (["v1794", "v3259", "v3260", "v3261", "v3262", "v3263"], "dev"),
     "genrou": (["v11109"], "dev"),
@@ -101,9 +102,10 @@ def reserved():
 
 
 def eval_images():
-    """URL ids of every screenshot in eval's sets (vita-test, psp-test, linefind)."""
+    """URL ids of every screenshot in eval's sets (vita-test, psp-test, linefind); the vertical sets' own manifests
+    (eval/manifests/vertical-*.jsonl, built by this tool) are left out, so a rerun selects the same pages."""
     ids = set()
-    files = list((ROOT / "eval" / "manifests").glob("*.jsonl"))
+    files = [f for f in (ROOT / "eval" / "manifests").glob("*.jsonl") if not f.name.startswith("vertical-")]
     files += list((ROOT / "eval" / "linefind" / "manifests").glob("*.jsonl"))
     for p in files:
         for line in p.read_text(encoding="utf-8").splitlines():

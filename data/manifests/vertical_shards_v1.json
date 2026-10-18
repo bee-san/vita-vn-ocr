@@ -715,5 +715,6 @@
   }
  ],
  "crops": 1003000,
- "bytes": 7591956572
+ "bytes": 7591956572,
+ "note": "rendered 2026-10-18 07:51:54Z by an earlier revision of synth/vertical_render.py (n offsets; one more random draw in look_colours) and extended to train2's n + 1 offsets by an uncommitted tool (fix_offsets.py: pixels and labels unchanged); code_sha256 is the file when this manifest was written, not the rendering revision. The committed renderer with --gen 1 reproduces shard 0 crop for crop (data, offsets, shapes, labels and meta equal); the shards are pinned by their sha256"
 }

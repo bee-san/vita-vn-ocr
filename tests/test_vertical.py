@@ -163,3 +163,37 @@ def test_protocol_is_frozen_and_complete():
     m = json.loads((ROOT / "data" / "manifests" / "vertical_shards_v1.json").read_text())
     assert m["crops"] == sum(s["crops"] for s in m["shards"]) and len(m["shards"]) >= 100
     assert all(len(s["sha256"]) == 64 for s in m["shards"])
+
+
+FROZEN = {   # eval/vertical_protocol.json amendments 1 (development) and 3 (test)
+    "eval/manifests/vertical-dev-columns.jsonl": "c79df64f6971d42c46057956ee1656cb06012800b304fb8633780ad76c1b198d",
+    "eval/manifests/vertical-dev-regions.jsonl": "61219f5dd7d61e4d43f7997cac17c428a0e6cbc6e0b2ea8242f4ccce48bb06c5",
+    "eval/manifests/vertical-test-columns.jsonl": "912bebf5ba171374c79a0a584bb595a354e8ea2d8ba687a46f469833b0e89d05",
+    "eval/manifests/vertical-test-regions.jsonl": "81ff743b12ae34c4bacbfef20296e754dc67bf62bae0404b7ef3925edf9ca32c",
+}
+
+
+@pytest.mark.parametrize("path,want", sorted(FROZEN.items()))
+def test_frozen_manifests_unchanged(path, want):
+    import hashlib
+    assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == want
+    p = json.loads((ROOT / "eval" / "vertical_protocol.json").read_text())
+    assert any(want in " ".join(a["what"]) for a in p["amendments"]), "the pin is in the protocol's amendments"
+
+
+def test_exclude_scenes_cover_the_vertical_sets():
+    ex = json.loads((ROOT / "data" / "manifests" / "vertical_exclude_scenes.json").read_text())
+    shots = set(ex["shots"])
+    for split in ("dev", "test"):
+        for line in (ROOT / "eval" / "manifests" / f"vertical-{split}-columns.jsonl").read_text().splitlines():
+            r = json.loads(line)
+            if r["origin"] == "vndb":
+                assert r["page"] in shots
+    assert set(ex["in_synth3_scene_pools_2026_10_18"]) <= shots
+
+
+def test_find_columns_no_dark_flag():
+    g, _ = _columns_region(n=3, fg=20, bg=230)
+    b1, d1, t1 = V.find_columns(g, 1)
+    b3, d3, t3 = V.find_columns(g, 3)
+    assert b1 == b3 and t1 == t3 and all(d1) and d3 == [0] * len(b3)

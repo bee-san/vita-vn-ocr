@@ -30,7 +30,11 @@ extern "C" {
 #define VOCR_COLUMNS_VALLEYS 0x1u /* split bands where a column's ink falls under a quarter of the band's
                                      median, and grow a column only over rows dense enough to be text
                                      (variant 1) */
-#define VOCR_COLUMNS_FLAGS 0x1u   /* every defined flag */
+#define VOCR_COLUMNS_NO_DARK 0x2u /* leave every dark flag 0 and read no column box: the caller computes
+                                     vocr_line_dark on each column's pixels (the same flag, bit for bit), e.g.
+                                     on the copy it reads for recognition. With a row callback this saves one
+                                     more read of every column's rows (a column spans the region's strips) */
+#define VOCR_COLUMNS_FLAGS 0x3u   /* every defined flag */
 
 /* Exact arena bytes vocr_find_columns(_rows) needs for any region up to max_width x max_height (0 if either is
  * 0): 83,619 bytes at 960 x 544 and 26,467 at 480 x 272, about GRAD's vocr_lines_arena_bytes. */
@@ -43,8 +47,8 @@ size_t vocr_columns_arena_bytes(unsigned max_width, unsigned max_height);
 int vocr_find_columns(const VocrLinesImage *im, unsigned flags, void *arena, size_t arena_bytes, VocrLineSet *out);
 
 /* The same through a row callback (vocr_lines_rows.h): two passes over the region's rows in increasing order,
- * then each column's box once for its dark flag. The same columns for the same pixels, or VOCR_LINES_E_SOURCE
- * (and no columns) when a row could not be read. */
+ * then each column's box once for its dark flag (none with VOCR_COLUMNS_NO_DARK). The same columns for the same
+ * pixels, or VOCR_LINES_E_SOURCE (and no columns) when a row could not be read. */
 int vocr_find_columns_rows(const VocrLinesRows *src, unsigned flags, void *arena, size_t arena_bytes,
                            VocrLineSet *out);
 

@@ -37,7 +37,9 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 
-GEN_VERSION = 1
+GEN_VERSION = 2       # 1: the pinned v1 shards (data/manifests/vertical_shards_v1.json); 2: the scenes of the vertical
+                      # development and test pages excluded (data/manifests/vertical_exclude_scenes.json)
+EXCLUDE_SCENES = ROOT / "data" / "manifests" / "vertical_exclude_scenes.json"
 PAD = {"vita": 4, "psp": 2, "manga": 4}
 LOOK = {"vita": 0.45, "psp": 0.25, "manga": 0.30}
 NO_START = set("、。，．」』）】〕〉》ー…‥～・！？!?ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ")
@@ -46,13 +48,20 @@ S3 = None
 _FONT_CACHE = {}
 
 
-def init(vocab=None):
+def init(vocab=None, gen=GEN_VERSION):
+    """synth3's resources. From generation 2 on, the scene pools leave out every screenshot of the vertical
+    development and test sets and their byte-identical copies (version 1, the pinned shards, drew from the whole
+    pools: two test and three development pages were scenes; docs/vertical.md)."""
     global S3
     import cv2
 
     import synth3
     cv2.setNumThreads(1)
     synth3.init(vocab=vocab)
+    if gen >= 2:
+        ex = set(json.loads(EXCLUDE_SCENES.read_text(encoding="utf-8"))["shots"])
+        for k in list(synth3.R.bg):
+            synth3.R.bg[k] = [p for p in synth3.R.bg[k] if Path(p).stem not in ex]
     S3 = synth3
     return synth3
 
@@ -124,6 +133,7 @@ def look_colours(rng, look, bg_mean):
         if rng.random() < 0.85:
             return np.array([rng.uniform(0, 45)] * 3), None, False, ("balloon", rng.uniform(225, 255))
         return np.array([rng.uniform(230, 255)] * 3), np.array([rng.uniform(0, 30)] * 3), False, ("panel", None)
+    rng.random()          # drawn and unused: keeps the random stream the pinned v1 shards were rendered with
     box = None
     if rng.random() < 0.45:
         box = ("dark", rng.uniform(0.45, 0.9)) if rng.random() < 0.7 else ("light", rng.uniform(0.5, 0.95))
@@ -283,12 +293,12 @@ def sample(rng, vocab_set=None):
 
 
 def run_shard(job):
-    idx, n, seed, out, vocab = job
+    idx, n, seed, out, vocab, gen = job
     path = Path(out) / f"vsyn_{idx:05d}.npz"
     if path.exists():
         return idx, "exists"
     if S3 is None:
-        init(vocab)
+        init(vocab, gen)
     rng = np.random.default_rng([seed, idx])
     crops, labels, metas = [], [], []
     while len(crops) < n:
@@ -303,7 +313,7 @@ def run_shard(job):
     data = np.concatenate([c.ravel() for c in crops])
     tmp = path.with_suffix(".tmp.npz")
     np.savez(tmp, data=data, offsets=offs, shapes=shapes, labels=json.dumps(labels, ensure_ascii=False),
-             meta=json.dumps({"gen": GEN_VERSION, "seed": seed, "shard": idx, "items": metas}, ensure_ascii=False))
+             meta=json.dumps({"gen": gen, "seed": seed, "shard": idx, "items": metas}, ensure_ascii=False))
     os.replace(tmp, path)
     return idx, "ok"
 
@@ -311,7 +321,8 @@ def run_shard(job):
 def cmd_shards(args):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    jobs = [(i, args.per_shard, args.seed, str(out), args.vocab) for i in range(args.first, args.first + args.shards)]
+    jobs = [(i, args.per_shard, args.seed, str(out), args.vocab, args.gen)
+            for i in range(args.first, args.first + args.shards)]
     with mp.get_context("spawn").Pool(args.workers) as pool:
         for idx, st in pool.imap_unordered(run_shard, jobs):
             print(idx, st, flush=True)
@@ -319,7 +330,7 @@ def cmd_shards(args):
 
 
 def cmd_preview(args):
-    init(args.vocab)
+    init(args.vocab, args.gen)
     rng = np.random.default_rng(args.seed)
     items = []
     while len(items) < args.n:
@@ -366,7 +377,7 @@ def cmd_manifest(args):
             z = np.load(p)
             shards.append({"dir": Path(d).name, "file": p.name, "sha256": sha(p), "bytes": p.stat().st_size,
                            "crops": int(len(z["shapes"]))})
-    doc = {"kind": "vita-vn-ocr-vertical-shards", "generator": "synth/vertical_render.py", "gen_version": GEN_VERSION,
+    doc = {"kind": "vita-vn-ocr-vertical-shards", "generator": "synth/vertical_render.py", "gen_version": args.gen,
            "code_sha256": sha(Path(__file__)), "vocab": args.vocab, "seed": args.seed, "shards": shards,
            "crops": sum(s["crops"] for s in shards), "bytes": sum(s["bytes"] for s in shards)}
     Path(args.out).write_text(json.dumps(doc, indent=1) + "\n")
@@ -384,13 +395,17 @@ def main():
     p.add_argument("--seed", type=int, default=20261018)
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--vocab")
+    p.add_argument("--gen", type=int, default=GEN_VERSION, choices=(1, 2),
+                   help="1 reproduces the pinned v1 shards; 2 (default) excludes the vertical sets' scenes")
     p = sub.add_parser("preview")
     p.add_argument("--out", required=True)
     p.add_argument("--n", type=int, default=40)
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--vocab")
+    p.add_argument("--gen", type=int, default=GEN_VERSION, choices=(1, 2))
     p = sub.add_parser("manifest")
     p.add_argument("--dir", action="append", required=True)
+    p.add_argument("--gen", type=int, default=GEN_VERSION, choices=(1, 2))
     p.add_argument("--vocab", default="data/vocab_4987_proof.txt")
     p.add_argument("--seed", type=int, default=20261018)
     p.add_argument("--out", required=True)

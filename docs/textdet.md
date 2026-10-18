@@ -198,6 +198,18 @@ and `train/textdet_export.py` gained an optional `--wbits` after amendment 2 pin
 re-export byte for byte). Three rounds on one development sample make its intervals optimistic for the last
 round's candidates; the protected sets were read once, at the end, for round 3's report candidate.
 
+A third, found after the protected read and not in any amendment: the protocol says every screenshot and VN of
+eval/linefind is excluded from the training data, but `synth/textdet_data.py` excluded them from the real canvases
+only. The synthetic canvases draw their backgrounds and empty negatives from synth3's scene pool (test and
+development-sample VNs excluded), which holds 94 of vita_dev's 111 screenshots and 59 of psp_dev's 78, and 54 of
+the 66 development empty regions lie on such a screenshot. The wd cohort, the protected sets and every real canvas
+are unaffected. On the 12 development empty regions whose screenshot is not in the pool, `s8_c24_seed4` returns no
+line for 11 (0.92, the same as on the other 54), and on the 6 such holdout regions for all 6
+(`eval/textdet_empty_pool_check_20261018.json`), so the empty-region rate does not look inflated by it; the linefind
+detection rows (whose tight and loose regions are mostly the dialogue boxes in the lower screen, while the scene
+crops come from the upper 62%) carry the same caveat. It changes no decision: no candidate met the rule's
+whole-dialogue conditions, which this does not touch.
+
 ### The runtime (`runtime/vocr_textdet.c`, `runtime/README.md`)
 
 C99, no malloc, no recursion, integer only, a caller arena that depends on the region's width alone, and the

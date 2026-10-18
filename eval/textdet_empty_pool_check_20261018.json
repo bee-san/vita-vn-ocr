@@ -1,0 +1,66 @@
+{
+ "kind": "textdet-empty-scene-pool-check",
+ "note": "report only (found after the protected read): eval/linefind empty regions split by whether their screenshot is in synth3's scene pool, which the synthetic training canvases draw backgrounds and empty negatives from",
+ "results": {
+  "development/grad": {
+   "in_pool": [
+    5,
+    54
+   ],
+   "not_in_pool": [
+    0,
+    12
+   ]
+  },
+  "development/det+refine s8_c24_seed4": {
+   "in_pool": [
+    50,
+    54
+   ],
+   "not_in_pool": [
+    11,
+    12
+   ]
+  },
+  "development/det+refine s8_c24_seed1": {
+   "in_pool": [
+    47,
+    54
+   ],
+   "not_in_pool": [
+    10,
+    12
+   ]
+  },
+  "report/grad": {
+   "in_pool": [
+    1,
+    19
+   ],
+   "not_in_pool": [
+    0,
+    6
+   ]
+  },
+  "report/det+refine s8_c24_seed4": {
+   "in_pool": [
+    18,
+    19
+   ],
+   "not_in_pool": [
+    6,
+    6
+   ]
+  },
+  "report/det+refine s8_c24_seed1": {
+   "in_pool": [
+    18,
+    19
+   ],
+   "not_in_pool": [
+    6,
+    6
+   ]
+  }
+ }
+}

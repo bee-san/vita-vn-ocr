@@ -1,0 +1,148 @@
+{
+ "regions": 505,
+ "finder_lines": 784,
+ "split_lines": 791,
+ "profiled_boxes": 781,
+ "profiled_box_pixels": 5861250,
+ "runs": {
+  "off": {
+   "finder_lines": 784,
+   "split_lines": 784,
+   "rows_read": 0
+  },
+  "on": {
+   "finder_lines": 784,
+   "split_lines": 791,
+   "rows_read": 41014
+  }
+ },
+ "estimates_per_region": {
+  "vita_box": {
+   "444": {
+    "model_ms": [
+     29.553257742387302,
+     59.192289615604096
+    ],
+    "calibrated_ms": 59.23372421833501
+   },
+   "333": {
+    "model_ms": [
+     39.4043436565164,
+     78.92297850218742
+    ],
+    "calibrated_ms": 78.97822458713894
+   }
+  },
+  "psp_box": {
+   "444": {
+    "model_ms": [
+     7.88086873130328,
+     15.784610564161092
+    ],
+    "calibrated_ms": 15.795659791556002
+   },
+   "333": {
+    "model_ms": [
+     10.50782497507104,
+     21.046127600583308
+    ],
+    "calibrated_ms": 21.060859889903718
+   }
+  }
+ },
+ "mean_dev_region_calibrated_ms": {
+  "444": 5.092536356064776,
+  "333": 6.790042080841483
+ },
+ "sizes": {
+  "-O2": {
+   "text_bytes": 3092,
+   "stack_frames": {
+    "split": 3712,
+    "vocr_split_arena_bytes": 0,
+    "vocr_split_lines": 24,
+    "vocr_split_lines_rows": 24
+   }
+  },
+  "-Os": {
+   "text_bytes": 2432,
+   "stack_frames": {
+    "level": 20,
+    "vocr_split_arena_bytes": 0,
+    "split": 3688,
+    "vocr_split_lines": 32,
+    "vocr_split_lines_rows": 24
+   }
+  },
+  "compiler": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0"
+ },
+ "arena": {
+  "960x544": {
+   "split": 6147
+  },
+  "480x272": {
+   "split": 3075
+  },
+  "900x150": {
+   "split": 3603
+  }
+ },
+ "calibration": 1.0007,
+ "within_budget": false,
+ "budget": {
+  "text_Os_bytes": 4096,
+  "stack_frame_bytes": 4096,
+  "ms_900x150_at_333": 25.0
+ },
+ "note": "A9 cycle model (vita/a9_cycles.py) on the Vita compiler's code under qemu-arm; calibrated ms = high bound x 1.0007 at the clock; host estimates, not console measurements",
+ "per_box_pixel": {
+  "insns_per_frame": 194.39444470036256,
+  "cycles_per_frame": {
+   "444": [
+    97.19738101940712,
+    194.67686362465346
+   ],
+   "333": [
+    97.19738101940712,
+    194.67668030539562
+   ]
+  },
+  "l1d_misses_per_frame": 0.009353806781829814,
+  "top_functions": [
+   [
+    "split",
+    194.23758805715505
+   ],
+   [
+    "memset",
+    0.1275183621241203
+   ],
+   [
+    "memcpy",
+    0.01774246107912135
+   ],
+   [
+    "__udivsi3",
+    0.005861207080400939
+   ],
+   [
+    "__printf_buffer",
+    0.003955470249520154
+   ],
+   [
+    "_itoa_word",
+    0.0011555555555555555
+   ],
+   [
+    "__printf_buffer_write",
+    0.00032040946896992964
+   ],
+   [
+    "__strchrnul",
+    0.0001361484325015995
+   ]
+  ]
+ },
+ "kind": "translucent-box-a9",
+ "computed": "2026-10-18T09:17:41Z"
+}

@@ -880,6 +880,261 @@ def cmd_protocol(args):
     print(json.dumps(doc["development"]["counts"], indent=1))
 
 
+def baseline_check(res, base_res):
+    """This run's grad and refine units against #97's frozen baseline units: [mismatches] (empty = equal)."""
+    bad = []
+    for cn in ("tv_dlg", "dn_dlg"):
+        for mode in ("grad", "refine"):
+            a = {u["unit"]: u for u in res[cn][mode]}
+            b = {u["unit"]: u for u in base_res[cn][mode]}
+            if set(a) != set(b):
+                bad.append(f"{cn}/{mode}: unit sets differ")
+                continue
+            for k in a:
+                if any(a[k][f] != b[k][f] for f in ("errors", "chars", "detections")):
+                    bad.append(f"{cn}/{mode}/{k}")
+    return bad
+
+
+def cmd_select(args):
+    """The pre-registered rule (eval/translucent_box_protocol.json "rule") on the development units."""
+    import textdet as TD
+    proto = json.loads(PROTOCOL.read_text(encoding="utf-8"))
+    index = wd_tag_index(args.tags)
+    if sha256(Path(args.tags) / "rows_wd.jsonl") != proto["development"]["tags_rows_sha256"]:
+        raise SystemExit("the tag rows differ from the protocol's")
+    native = TD.native_vita_shots()
+    keeps = {"tagged": lambda u: unit_tagged(index, u), "rest": lambda u: not unit_tagged(index, u),
+             "native_vita": lambda u: u["shot"] in native, "all": lambda u: True}
+    for p in ("vita", "psp"):
+        keeps[f"tagged/{p}"] = lambda u, p=p: unit_tagged(index, u) and u["platform"] == p
+        keeps[f"rest/{p}"] = lambda u, p=p: not unit_tagged(index, u) and u["platform"] == p
+    for v in ("base", "expanded-4", "expanded-8"):
+        keeps[f"tagged/{v}"] = lambda u, v=v: unit_tagged(index, u) and u["variant"] == v
+    doc = {"kind": "translucent-box-development", "computed": utc_now(), "protocol_sha256": sha256(PROTOCOL),
+           "protocol_frozen": proto["frozen"], "models": {}, "baseline_equal": {}}
+    det = {}
+    for spec in args.scores:
+        arm, _, d = spec.partition("=")
+        res = load_scores(d, arm)
+        meta = json.loads((Path(d) / "meta.json").read_text(encoding="utf-8"))
+        frozen = {**proto["unchanged_sha256"], **proto["sources_sha256"]}
+        if any(f not in frozen or frozen[f] != digest for f, digest in meta["sources_sha256"].items()):
+            raise SystemExit(f"{arm}: scored with sources other than the protocol's")
+        base_res = json.loads((ART / "textdet" / "baseline" / "wd" / arm / f"units_{arm}.json").read_text())
+        doc["baseline_equal"][arm] = not baseline_check(res, base_res)
+        units = {m: TD.wd_units(res, m) for m in MODES}
+        e = {"arm": meta["arms"][arm], "meta_sha256": sha256(Path(d) / "meta.json"), "cohorts": {}}
+        for name, keep in keeps.items():
+            e["cohorts"][name] = table(units, keep)
+        if args.det_units:
+            du = Path(args.det_units) / arm / f"units_{args.det}.json"
+            if du.exists():
+                dres = json.loads(du.read_text(encoding="utf-8"))
+                dunits = TD.wd_units(dres, "det")
+                det[arm] = {name: {"det_refine": TD.cer_of(dunits, keep),
+                                   "det_refine-split_refine": TD.vn_diff([(dunits, units["split_refine"])], keep)}
+                            for name, keep in (("tagged", keeps["tagged"]), ("rest", keeps["rest"]),
+                                               ("native_vita", keeps["native_vita"]), ("all", keeps["all"]))}
+        doc["models"][arm] = e
+    mm = doc["models"]
+    hi = lambda c: c["ci95"] is not None and c["ci95"][0] > 0  # noqa: E731
+    lo = lambda c: c["ci95"] is not None and c["ci95"][1] < 0  # noqa: E731
+    cond = {
+        "A_tagged_split_refine_below_refine": all(lo(mm[m]["cohorts"]["tagged"]["split_refine-refine"]) for m in mm),
+        "B_rest_no_regression": all(not hi(mm[m]["cohorts"]["rest"]["split_refine-refine"]) for m in mm),
+        "C_native_vita_no_regression": all(not hi(mm[m]["cohorts"]["native_vita"][k]) for m in mm
+                                           for k in ("split_refine-refine", "split-grad")),
+        "D_c_equals_twin": True,          # eval/translucent_box.py score raises on any difference, in every mode
+        "baseline_units_equal": all(doc["baseline_equal"].values()),
+    }
+    if args.cost:
+        cost = json.loads(Path(args.cost).read_text(encoding="utf-8"))
+        cond["E_cost"] = bool(cost["within_budget"])
+        doc["cost"] = cost
+    rubi = {"F_tagged_split_below_grad": all(lo(mm[m]["cohorts"]["tagged"]["split-grad"]) for m in mm),
+            "G_rest_split_no_regression_vs_grad": all(not hi(mm[m]["cohorts"]["rest"]["split-grad"]) for m in mm)}
+    doc["conditions"] = cond
+    doc["adopted"] = all(cond.values()) and set(mm) == set(MODELS)
+    doc["rubi_default_conditions"] = rubi
+    doc["rubi_default"] = ("every game" if doc["adopted"] and all(rubi.values()) else
+                           "where the refinement runs" if doc["adopted"] else "off")
+    if det:
+        doc["report_only_det_refine"] = {"candidate": args.det, "units": str(args.det_units), "models": det}
+    Path(args.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+    for m, e in mm.items():
+        for name in ("tagged", "rest", "native_vita", "all"):
+            t = e["cohorts"][name]
+            print(f"{m} {name:12s} " + " ".join(f"{k} {t[k]['cer']}" for k in MODES) +
+                  f" | split+ref-ref {t['split_refine-refine']['delta']} {t['split_refine-refine']['ci95']}"
+                  f" | split-grad {t['split-grad']['delta']} {t['split-grad']['ci95']}")
+    print("conditions", cond, "adopted", doc["adopted"], "rubi", rubi, doc["rubi_default"])
+
+
+# ---------------------------------------------------------------- cost (condition E): sizes and the A9 estimate
+
+CAL = 1.0007                 # docs/ocr-speed.md: the console ran VOCR3-H15 at 1.0007 x the A9 model's high bound
+BOX_REGIONS = {"vita_box": (900, 150), "psp_box": (450, 80)}
+
+
+def vita_sizes(vitasdk):
+    """VitaSDK Thumb-2 .text bytes of vocr_lines_split.o at -O2 and -Os, and its -fstack-usage frames."""
+    import subprocess
+    import tempfile
+    vcc = Path(vitasdk) / "bin" / "arm-vita-eabi-gcc"
+    vsize = Path(vitasdk) / "bin" / "arm-vita-eabi-size"
+    out = {}
+    with tempfile.TemporaryDirectory() as td:
+        for opt in ("-O2", "-Os"):
+            o = Path(td) / f"split{opt}.o"
+            subprocess.run([str(vcc), "-std=c99", opt, "-mcpu=cortex-a9", "-mthumb", "-mfpu=neon", "-mfloat-abi=hard",
+                            "-Wall", "-Wextra", "-Werror", "-fstack-usage", "-c", "-o", str(o),
+                            str(ROOT / "runtime" / "vocr_lines_split.c")], check=True, cwd=td)
+            text = int(subprocess.run([str(vsize), str(o)], check=True, capture_output=True,
+                                      text=True).stdout.splitlines()[1].split()[0])
+            su = {}
+            for line in o.with_suffix(".su").read_text().splitlines():
+                loc, size, _ = line.split("\t")
+                su[loc.rsplit(":", 1)[-1]] = int(size)
+            out[opt] = {"text_bytes": text, "stack_frames": su}
+        out["compiler"] = subprocess.run([str(vcc), "--version"], capture_output=True, text=True).stdout.splitlines()[0]
+    return out
+
+
+def cmd_a9(args):
+    """Cortex-A9 cycles of the split alone: the Vita compiler's machine code (arm-vita-eabi-gcc, Thumb-2, -O2) for
+    vocr_lines.c, vocr_lines_refine.c and vocr_lines_split.c linked into the host driver, run under the
+    plugin-enabled qemu-arm with the Vita's cache sizes on the development base regions, once with split flags 0
+    and once with VOCR_SPLIT_DEFAULT (refinement off in both); the split's cost is the difference, per pixel of the
+    boxes it profiles (boxes of 16 rows or more, read twice). Scaled to a 900x150 Vita and a 450x80 PSP region read
+    whole (an upper bound: every row of the region inside a box). Estimates only."""
+    import pickle
+    import shutil
+    import struct
+    import subprocess
+    import tempfile
+    sys.path.insert(0, str(ROOT / "vita"))
+    import a9_cycles as A
+
+    import lines_split as LS
+    from common import find_lines_ex
+    out = Path(args.out).resolve()
+    out.mkdir(parents=True, exist_ok=True)
+    vitasdk = args.vitasdk or os.environ.get("VITASDK") or str(ART / "vita" / "vitasdk")
+    arm_cc = args.arm_cc or os.environ.get("ARM_CC") or A.default_arm_cc()
+    q = Path(args.qemu) if args.qemu else A.default_qemu()
+    vcc = Path(vitasdk) / "bin" / "arm-vita-eabi-gcc"
+    objs = []
+    for src in ("vocr_lines.c", "vocr_lines_refine.c", "vocr_lines_split.c"):
+        o = out / src.replace(".c", "_vita.o")
+        subprocess.run([str(vcc), "-std=c99", "-Wall", "-Wextra", "-Werror", *A.ARCH, "-O2", "-c", "-o", str(o),
+                        str(ROOT / "runtime" / src)], check=True)
+        objs.append(o)
+    drv = out / "split_driver_vitacc"
+    subprocess.run([arm_cc, "-std=c99", "-Wall", "-Wextra", "-Werror", *A.ARCH, "-O2", "-static",
+                    "-Wl,--no-enum-size-warning", "-o", str(drv), *map(str, objs),
+                    str(ROOT / "runtime/vocr_lines_split_test.c")], check=True, capture_output=True)
+    objdump = arm_cc[:-3] + "objdump" if arm_cc.endswith("gcc") else "objdump"
+    dis = subprocess.run([objdump, "-d", "--no-show-raw-insn", str(drv)], check=True, capture_output=True,
+                         text=True).stdout
+    rows = A.parse_dis(dis)
+    with open(out / "classes.txt", "w") as f:
+        for a, (_, mn, ops) in sorted(rows.items()):
+            unit = A.classify(mn, ops)[0]
+            if unit != "I":
+                f.write(f"{a:x} {unit}\n")
+    imgs = []
+    for cn in ("tv_dlg", "dn_dlg"):
+        with open(Path(args.cohorts) / f"{cn}.pkl", "rb") as f:
+            imgs += [c["image"] for c in pickle.load(f) if c["variant"] == "base"]
+    pixels = boxes = lines_in = lines_out = 0
+    for img in imgs:
+        b, d, _ = find_lines_ex(img, "grad")
+        sb, _, _ = LS.split_lines(img, b, d)
+        lines_in += len(b)
+        lines_out += len(sb)
+        for (_, _, w, h) in b:
+            if h >= LS.S_MIN_H:
+                pixels += w * h
+                boxes += 1
+    meta = {"regions": len(imgs), "finder_lines": lines_in, "split_lines": lines_out, "profiled_boxes": boxes,
+            "profiled_box_pixels": pixels, "runs": {}}
+    stage = Path(tempfile.mkdtemp(prefix="vocr-split-a9-", dir="/tmp"))
+    try:
+        shutil.copy2(drv, stage / drv.name)
+        for tag, fl in (("off", 0), ("on", LS.DEFAULT)):
+            batch = stage / f"batch_{tag}.bin"
+            with open(batch, "wb") as f:
+                for img in imgs:
+                    h, w = img.shape
+                    f.write(struct.pack("<7I", w, h, 1, 0, w, fl, 0))
+                    f.write(np.ascontiguousarray(img).tobytes())
+            plugins = ["-plugin", f"{q}/plugins/libinsn_mix.so,out={out}/counts_{tag}.txt,classes={out}/classes.txt",
+                       "-plugin", f"{q}/plugins/libcache.so,{A.CACHE_ARGS}", "-d", "plugin", "-D",
+                       str(out / f"cache_{tag}.txt")]
+            p = subprocess.run([str(q / "bin/qemu-arm"), "-cpu", "cortex-a9", "-seed", "0", *plugins,
+                                f"./{drv.name}", batch.name], capture_output=True, text=True,
+                               stdin=subprocess.DEVNULL, timeout=7200, env={}, cwd=stage)
+            if p.returncode:
+                raise SystemExit(f"qemu run failed: {p.stderr[-2000:]}")
+            res = [ln.split() for ln in p.stdout.splitlines()]
+            meta["runs"][tag] = {"finder_lines": sum(int(v[1]) for v in res),
+                                 "split_lines": sum(int(v[2]) for v in res),
+                                 "rows_read": sum(int(v[5]) for v in res)}
+    finally:
+        shutil.rmtree(stage, ignore_errors=True)
+    if meta["runs"]["on"]["split_lines"] != lines_out or meta["runs"]["off"]["finder_lines"] != lines_in:
+        raise SystemExit("the ARM build's lines differ from the twin's")
+    c_off, x_off = A.read_counts(out / "counts_off.txt")
+    c_on, x_on = A.read_counts(out / "counts_on.txt")
+    delta = {a: c_on.get(a, 0) - c_off.get(a, 0) for a in set(c_on) | set(c_off)}
+    delta = {a: v for a, v in delta.items() if v > 0}
+    extra = {k: x_on.get(k, 0) - x_off.get(k, 0) for k in set(x_on) | set(x_off)}
+    cache_on, cache_off = A.read_cache(out / "cache_on.txt"), A.read_cache(out / "cache_off.txt")
+    cache = {k: max(0, cache_on[k] - cache_off[k]) for k in cache_on} if cache_on and cache_off else None
+    funcs = {fn for fn, _, _ in rows.values()}
+    r = A.model_mode(rows, delta, extra, funcs, pixels, cache)        # "frames" = profiled box pixels
+    per_px = {mhz: r["cycles_per_frame"][mhz] for mhz in A.CLOCKS}
+    est = {}
+    for name, (w, h) in BOX_REGIONS.items():
+        n = w * h
+        est[name] = {str(mhz): {"model_ms": [per_px[mhz][0] * n / (mhz * 1000), per_px[mhz][1] * n / (mhz * 1000)],
+                                "calibrated_ms": CAL * per_px[mhz][1] * n / (mhz * 1000)} for mhz in A.CLOCKS}
+    regions_ms = {str(mhz): CAL * per_px[mhz][1] * pixels / len(imgs) / (mhz * 1000) for mhz in A.CLOCKS}
+    sizes = vita_sizes(vitasdk)
+    arena = {f"{w}x{h}": {"split": vocr_split_arena_formula(w, h)} for w, h in ((960, 544), (480, 272), (900, 150))}
+    deepest = max(sizes["-O2"]["stack_frames"].values())
+    within = (sizes["-Os"]["text_bytes"] <= 4096 and deepest <= 4096 and
+              est["vita_box"]["333"]["calibrated_ms"] <= 25.0)
+    meta.update(per_box_pixel=r, estimates_per_region=est, mean_dev_region_calibrated_ms=regions_ms, sizes=sizes,
+                arena=arena, calibration=CAL, within_budget=bool(within),
+                budget={"text_Os_bytes": 4096, "stack_frame_bytes": 4096, "ms_900x150_at_333": 25.0},
+                note="A9 cycle model (vita/a9_cycles.py) on the Vita compiler's code under qemu-arm; calibrated ms = "
+                     "high bound x 1.0007 at the clock; host estimates, not console measurements")
+    (out / "a9.json").write_text(json.dumps(meta, indent=1) + "\n")
+    if args.record:
+        pub = {k: meta[k] for k in ("regions", "finder_lines", "split_lines", "profiled_boxes", "profiled_box_pixels",
+                                    "runs", "estimates_per_region", "mean_dev_region_calibrated_ms", "sizes", "arena",
+                                    "calibration", "within_budget", "budget", "note")}
+        pub["per_box_pixel"] = {k: r[k] for k in ("insns_per_frame", "cycles_per_frame", "l1d_misses_per_frame",
+                                                  "top_functions")}
+        pub["kind"] = "translucent-box-a9"
+        pub["computed"] = utc_now()
+        Path(args.record).write_text(json.dumps(pub, indent=1) + "\n")
+    v, p_ = est["vita_box"], est["psp_box"]
+    print(f"{len(imgs)} regions, {boxes} profiled boxes, {pixels} px; {r['insns_per_frame']:.1f} insns/px; "
+          f"900x150 est {v['333']['calibrated_ms']:.1f} ms @333 / {v['444']['calibrated_ms']:.1f} @444; "
+          f"450x80 {p_['333']['calibrated_ms']:.1f} / {p_['444']['calibrated_ms']:.1f}; mean dev region "
+          f"{regions_ms['333']:.2f} ms @333; text -O2 {sizes['-O2']['text_bytes']} -Os {sizes['-Os']['text_bytes']}; "
+          f"deepest frame {deepest}; within budget {within}")
+
+
+def vocr_split_arena_formula(w, h):
+    """vocr_split_arena_bytes (runtime/vocr_lines_split.c) in Python."""
+    up4 = lambda n: (n + 3) & ~3  # noqa: E731
+    return 3 + up4(3 * w) + 3 * up4(2 * h) if w and h else 0
+
+
 def cmd_tag(args):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -1041,7 +1296,25 @@ def main(argv=None):
     p = sub.add_parser("protocol")
     p.add_argument("--tags", required=True)
     p.add_argument("--design", action="append", required=True, help="a design cohorts' record (design.json)")
+    p = sub.add_parser("a9")
+    p.add_argument("--cohorts", required=True, help="VOCR5's wd cohorts (tv_dlg.pkl, dn_dlg.pkl)")
+    p.add_argument("--out", required=True)
+    p.add_argument("--record", default="", help="the public cost record (JSON)")
+    p.add_argument("--vitasdk", default="")
+    p.add_argument("--arm-cc", default="")
+    p.add_argument("--qemu", default="")
+    p = sub.add_parser("select")
+    p.add_argument("--scores", action="append", required=True, help="ARM=DIR of a development score output")
+    p.add_argument("--tags", required=True)
+    p.add_argument("--cost", default="", help="the cost record (condition E)")
+    p.add_argument("--det-units", default="", help="report only: #97's stored det+refine units (DIR/ARM/units_X)")
+    p.add_argument("--det", default="s8_c24_seed4")
+    p.add_argument("--out", required=True)
     args = ap.parse_args(argv)
+    if args.cmd == "a9":
+        cmd_a9(args)
+    if args.cmd == "select":
+        cmd_select(args)
     if args.cmd == "protocol":
         cmd_protocol(args)
     if args.cmd == "design-report":

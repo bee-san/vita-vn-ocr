@@ -13,13 +13,14 @@
  *
  * Streaming. The region is read once, top to bottom. Every 3x3 layer keeps a ring of the
  * (k - 1) * d + 1 = 2 d + 1 input rows its kernel spans (3 for the stride-2 layers, whose d is 1), each
- * row stored with d zero columns on both sides and the channels of a pixel side by side. An output row
- * is computed once the last input row it reads has arrived (or lies below the input), and the layers
+ * row one plane per channel with d zero columns on both sides and BLK * stride zero columns of slack
+ * (the last block of BLK = 8 output pixels reads past the row). An output row is computed, BLK pixels
+ * at a time, once the last input row it reads has arrived (or lies below the input), and the layers
  * are drained deepest first, so a ring slot is overwritten only when no later output row reads it.
- * 1x1 layers keep no rows: they run per pixel on the vector the layer before them (or the input) has
+ * 1x1 layers keep no rows: they run on the block of 8 pixels the layer before them (or the input) has
  * just produced, and their result goes straight into the next 3x3 layer's ring or into the head's map
- * row. The arena therefore holds sum(R_l * (w_l + 2 d_l) * cin_l) ring bytes, one map row and the
- * decode below, for any height.
+ * row. The arena therefore holds sum(R_l * cin_l * (w_l + 2 d_l + 8 s_l)) ring bytes, three blocks,
+ * one map row and the decode below, for any height.
  *
  * Decode. In each map row the kernel cells (K > 0) form runs; a run joins the components of the runs
  * of the row above it overlaps (4-connectivity), by union-find over component slots, and adds its
@@ -41,7 +42,9 @@
  *    the line a cell's c2 = 2 s i + s - 1 <= 2 (2048 - 1) + s - 1 <= 4101 (s <= 8), and |O|, |A1|,
  *    |A2| <= 128, so every component sum (n; O; A1; A2; rows i or columns j, each below 512;
  *    2 s sum(i) + n (s - 1) -+ sum(A)) is at most 2^18 * (4101 + 128) = 1,108,606,976 < 2^31 in
- *    magnitude, and 2 n <= 2^19. A box side is at most 2048 + 2 * 1,172 (the pad), so the box sums fit.
+ *    magnitude, and 2 n <= 2^19. Then near >= floor((3 - 127) / 2) = -62 and far <= ceil((4101 + 127) / 2)
+ *    = 2114, so across <= 2176, pad <= (2176 * 18 + 50) / 100 = 392, and a box edge lies in [-454, 2506]
+ *    before it is clipped to the region.
  *
  * Memory: no allocation; one arena (vocr_textdet_arena_bytes) holds the per-layer state, the
  * per-channel requantisation constants, the rings, the map row, the decode's component slots and run
@@ -193,7 +196,7 @@ typedef struct {
 
 typedef struct {
     uint32_t ring;       /* arena offset of a 3x3 layer's input ring */
-    uint32_t plane;      /* bytes per channel plane of a ring row: w_in + 2 dil + (BLK - 1) stride */
+    uint32_t plane;      /* bytes per channel plane of a ring row: w_in + 2 dil + BLK stride */
     uint16_t w_in, h_in, w_out, h_out;
     uint16_t received;   /* input rows in the ring so far (3x3 layers) */
     uint16_t next_out;   /* next output row */
@@ -288,7 +291,7 @@ typedef struct {
     unsigned char *base;        /* the aligned arena */
     Run *run;
     Chan *chan;
-    int8_t *head;               /* the head's map row: 4 codes per cell */
+    int8_t *head;               /* the head's map row: the K, O, A1, A2 planes of wm cells each */
     int8_t *tmp;                /* three blocks of BLK x maxch codes: a 3x3 output, two 1x1 ones */
     unsigned maxch;             /* the most output channels of a layer */
     unsigned rl[VOCR_TEXTDET_MAX_LAYERS], nrl;   /* the 3x3 layers, in order */

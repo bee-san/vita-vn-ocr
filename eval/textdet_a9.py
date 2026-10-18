@@ -41,7 +41,7 @@ import a9_cycles as A  # noqa: E402
 
 SIZES = ((900, 150), (450, 80), (960, 544), (480, 272))
 CAL = 1.0007                 # docs/ocr-speed.md: the console ran VOCR3-H15 at 1.0007 x the high bound (333 MHz)
-SOURCES = ("vocr_textdet.c", "vocr_lines.c", "vocr_lines_rows.c")
+SOURCES = ("vocr_textdet.c", "vocr_lines.c", "vocr_lines_rows.c", "vocr_lines_refine.c")
 
 
 def sha256(path):

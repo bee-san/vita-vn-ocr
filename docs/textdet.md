@@ -180,9 +180,9 @@ console.
   registered one, below): 1.54 / 1.15 / 1.02% against GRAD 1.38 / 0.96 / 0.73% and refine 1.43 / 0.92 / 0.63%:
   **worse for Normal and Large** (+0.23 and +0.39 points against refine, page intervals above 0), level for Small.
 - **Is it worth it over GRAD + refine?** Not as the default. Its gain over GRAD + refine is large where GRAD fails
-  (psp-test: about half of the whole-dialogue errors; the development VN v27449), small or absent elsewhere (the
-  development data without v27449: −0.2 to −0.3 points; their PSP frames +0.8, their Vita frames −1.4; vita-test
-  level), and on CLANNAD's native Vita text, where the GRAD crops already read near their ceiling, it loses 0.1-0.4
+  (psp-test: about half of the whole-dialogue errors; the development VN v27449), small or absent on the development
+  data as a whole without v27449 (−0.2 to −0.3 points; their PSP frames +0.8) and on vita-test, resolved on the
+  development Vita frames (−1.4 points without v27449), and on CLANNAD's native Vita text, where the GRAD crops already read near their ceiling, it loses 0.1-0.4
   points as scored. It also returns no line for 92% of empty regions, where GRAD does so for 8%. The evidence does not
   single out a platform: psp-test (14 games) favours PSP text, the development PSP frames (54 VNs without v27449) do
   not. The case for Rubi is therefore an opt-in finder, chosen per title where GRAD visibly fails (merged lines,
@@ -246,7 +246,9 @@ Not in any amendment, and disclosed here:
   reads the finder lines with most of their height inside its GRAD box; the scorer (`eval/textdet_protected.assign`)
   gives a detector line to the GRAD box it overlaps most only when that box holds at least half the line's area.
   The area rule implies the height rule for that box, so it can only leave more detector lines unread for their
-  reference, whose characters then count as missed: if anything, against the detector. On development data (no
+  reference. Their characters then count as missed, but under the height rule such a line, which reaches well
+  outside the box along the line, could also have added insertions: the effect is most likely against the detector,
+  and its size and sign cannot be measured. On development data (no
   protected data read) the two rules disagree on 0 of the 138 base-region det+refine lines of the native-Vita subset
   and on 2 of the 705 others. The CLANNAD per-line outputs were not stored and a re-read would be a second protected
   attempt, so the CLANNAD figures stand as scored.
@@ -414,7 +416,7 @@ What the rounds show:
   units where it returns as many lines as the reference holds it makes about 590-640 fewer errors (tighter crops);
   in the 11 units where it returns fewer (lines set close together merged or missed: PSP-sized NVL pages, two-line
   boxes at about 1.1 line heights' pitch) and the 78 where it returns more (splits, stray boxes) it makes about 230-250
-  more. The +4 px variants gain least. By platform, without v27449 (12 Vita and 12 PSP units): on the Vita frames
+  more. The +4 px variants gain least. By platform, without v27449's 12 Vita and 12 PSP units: on the Vita frames
   det+refine − GRAD + refine is −1.38 / −1.40 / −1.28 points (VOCR5-S / N / L; VN intervals end at −0.28 / −0.22 /
   −0.10), on the PSP frames +0.57 / +0.80 / +0.62 (intervals include 0); round 2's `s8_c24_seed1` and `s8_c32_seed1`
   and round 3's `s8_c24n4_seed3` show the same pattern (VOCR5-N: Vita −1.1 to −1.6, PSP −0.4 to +1.2). With v27449,
@@ -432,8 +434,10 @@ empty-region rate (61 of the 66 text-free regions return nothing, against GRAD's
 `eval/textdet_own_dlg_20261018.json`): the owner's v14018 frames as whole dialogue (finder-tighten's own_dlg Vita
 units, 145 regions at base / +4 / +8 px, 13,866 characters). GRAD 0.28 / 0.37 / 0.24%, GRAD + refine 0.30 / 0.41 /
 0.24%, det+refine 0.48 / 0.48 / 0.38% (VOCR5-S / N / L): +0.18 / +0.07 / +0.14 points against GRAD + refine, region
-intervals from about −0.1 to +0.4. The same direction as CLANNAD: on clean native console text the GRAD crops already
-read near-perfectly and the detector's are a little worse. The recognizers trained on these frames; the detector did
+intervals from about −0.1 to +0.4. The same direction as CLANNAD: on these two titles' clean native console text the
+GRAD crops already read near-perfectly and the detector's are a little worse, while the development native-Vita
+subset (150 units, 9 VNs) reads the other way (det+refine 0.29 / 0.19 / 0.16% against refine's 0.91 / 1.02 / 0.80%,
+intervals include 0). The recognizers trained on these frames; the detector did
 not (only three VNDB PC screenshots of v14018 are in its synthetic scene pool).
 
 **int4 weights** (report only, `eval/textdet_int4_20261018.json`): limiting the trained weights to ±7 codes without
@@ -521,11 +525,21 @@ console memory is the arithmetic above.
 ### Reproduce
 
 ```sh
-H=$HERD; T=$H/shared/artifacts/textdet; V5=$H/shared/artifacts/vocr5-train
+H=$HERD; T=$H/shared/artifacts/textdet; P=$H/shared/private/textdet; V5=$H/shared/artifacts/vocr5-train
 .venv/bin/python synth/textdet_data.py synth|real ...                    # shards, pinned by data/manifests/textdet_shards_v1.json
 eval/reproducibility/textdet-20261017/sweep.sh $T/sweep                  # round 1 (22 runs); sweep_r3.sh $T/sweep_r3 (round 3)
 eval/reproducibility/textdet-20261017/evaluate.sh $T/sweep $T/eval CBIN  # round 1; evaluate_r2.sh / evaluate_r3.sh for rounds 2-3
 .venv/bin/python eval/textdet.py select --runs-from 4 ...                # the rule (round 3)
 .venv/bin/python eval/textdet_protected.py tests|clannad --refine ...    # once (attempt records refuse a second run)
 .venv-ci/bin/python eval/textdet_tables.py round eval/textdet_round3_dev_20261018.json --a9 ...   # the tables above
+# the report-only records (eval/textdet_reports.py: own-dlg, int4, round1-final, empty-pool):
+.venv-ci/bin/python eval/finder_tighten.py score --cohorts $P/own_dlg/cohort --cohort own_dlg --arm VOCR5-N=... --out $P/own_dlg/base/VOCR5-N
+.venv/bin/python eval/textdet.py detect --refine --names own_dlg --cand s8_c24_seed4=... --cohorts $P/own_dlg/cohort --out $P/own_dlg/dets --cbin CBIN
+.venv/bin/python eval/textdet.py read --names own_dlg --model VOCR5-N=... --dets $P/own_dlg/dets --cohorts $P/own_dlg/cohort --out $P/own_dlg/units
+.venv/bin/python eval/textdet_reports.py own-dlg --private $P/own_dlg --out eval/textdet_own_dlg_20261018.json
+.venv/bin/python eval/textdet_reports.py int4|round1-final|empty-pool --artifacts $T ... --out eval/textdet_<record>_20261018.json
 ```
+
+`$P/own_dlg/cohort/own_dlg.pkl` is finder-tighten's `own_dlg.pkl` restricted to its cases of kind `vita` (all
+v14018); the int4 blobs are `train/textdet_export.py --ckpt RUN/final.pt --wbits 4` of the three runs, scored with
+`detect --refine` and `read` (VOCR5-N) on the wd cohorts.

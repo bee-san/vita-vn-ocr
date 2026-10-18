@@ -29,5 +29,16 @@
     3.5773
    ]
   }
+ },
+ "inputs": {
+  "int4/units/VOCR5-N/units_s8_c24_seed4_w4.json": "8c12eb90f19284c3d9d76001ddae2f90df21fa6581971c37b5014c78cee8f081",
+  "eval_r3/units/VOCR5-N/units_s8_c24_seed4.json": "5e3648073fec410d032d0c44e530a0c4b4e5f16cb092fe33dad745497f8e8ec4",
+  "int4/blobs/s8_c24_seed4_w4.vtd": "a1a62e8856fc4d2092fd28a1dc9b5deedbdb244d1ec983b53b018159d4540b4d",
+  "int4/units/VOCR5-N/units_s8_c24_seed1_w4.json": "df5bb79b56928f638facecbb8a434cab41e220889947d995b6279e2f240c8ba1",
+  "eval_r2/units/VOCR5-N/units_s8_c24_seed1.json": "b0e7b198b8bd0691ccd068b59abeddde1214841688c3f1e3981e1919ccd95daa",
+  "int4/blobs/s8_c24_seed1_w4.vtd": "eeff2b8d1de74cdd9e7fcdcc75db6630fdb39951a067406e0b458359cf951034",
+  "int4/units/VOCR5-N/units_s4_c16n4_seed1_w4.json": "ff1dc050af741fa605a0e9df42b5d1e92f7a2534b0b0856fc8168d2231b8627a",
+  "eval_r2/units/VOCR5-N/units_s4_c16n4_seed1.json": "6c45ac617176adb19e4453bb983138b5583c74adfb6f0b13ac316afec168fd90",
+  "int4/blobs/s4_c16n4_seed1_w4.vtd": "340688ce8afb91c8dd07cb03ff80d3044bd8baf901ba54faf41d2fca377d0bf5"
  }
 }

@@ -32,8 +32,9 @@ Nothing ran on a console.
   whole development set goes from 5.21 / 4.78 / 4.46% to 3.87 / 3.45 / 3.14%. But the gain sits in two of the
   cohort's 32 VNs (v27449 and v12436, the two whose regions the idea was first checked on, so it is not a held-out
   estimate), the VN-cluster intervals reach 0.00, and the A9 model puts it at an estimated 79 ms per 900×150 box at
-  333 MHz, over its 25 ms budget. The rest of development shows no resolved change (+0.01 / +0.01 / +0.04 points; a
-  few false splits cost 1-5 characters in three VNs), the native-Vita subset not one changed line. **Verdict: not
+  333 MHz, over its 25 ms budget. The rest of development shows no resolved change (+0.01 / +0.01 / +0.04 points;
+  false splits cost 1-5 characters in two VNs, v3066 and v6218, and a different cut of v5000's lines +3 / −3 / +9),
+  the native-Vita subset not one changed line. **Verdict: not
   adopted** (conditions A and E fail).
 - **Protected sets, once, report only.** vita-test + psp-test whole dialogue (body text): GRAD + refine 9.51 / 9.16 /
   8.35% → split + refine **7.88 / 7.88 / 7.11%** (−1.6 / −1.3 / −1.2 points; VN intervals include 0), all of it on
@@ -77,6 +78,13 @@ development data, and one late harness addition, were not named there:
    protected-set commands after the freeze. Both implement the frozen text (the audit checked them against it).
 
 None of them changes the verdict: each favours adoption, and the rule did not adopt.
+
+**Commit ids.** The branch was rebased onto main after #101 merged; the commits named above and in the records are
+the original ones, kept at the tags `translucent-box-protocol-120c5e6`, `translucent-box-dev-record-8c1439e` and
+`translucent-box-history-20261018` (the pre-rebase head `2b3602f`, whose tree differs from the rebased head's only
+by #101's files and the three-way union in README.md, runtime/Makefile and runtime/README.md). On main's history the
+protocol commit is `5152da6`, the development record `dff3765`, the protected-set code `6c7b99e`; every file the
+protocol pins is byte for byte the same in both histories.
 
 - **Arms** (each read by VOCR5-S, -N and -L, the C runtime in W8I, every crop inverted by its dark flag): `grad`
   (GRAD), `refine` (GRAD + `VOCR_REFINE_DEFAULT`), `split` (GRAD + the split), `split_refine` (GRAD + the split +
@@ -125,9 +133,9 @@ boxes or buttons whose sample takes in a box edge, the scene outside a button or
 regions drawn below busy 0.035 (before the threshold was frozen at 0.03) holds 23 untagged ones: 3 show a scene
 behind the text at a contrast below the strokes', 3 a soft dark scene (unclear), 17 plain boxes. The audit's own
 random sheets (24 tagged, 24 untagged) gave about 7 scenes, 6 unclear and 11 plain boxes among the tagged ones, and
-4 scenes and 5 soft dark scenes among the untagged ones (two of them frames of v27449 and v12436 just under the
-threshold). So the tag means "a background as contrasty as the strokes", the case that breaks GRAD's mask, not every
-translucent box, and about half of what it tags is that.
+4 scenes and 5 soft dark scenes among the untagged ones (two of them frames of v27449 and v12436, busy 0.023 and
+0.014). So the tag means "a background as contrasty as the strokes", the case that breaks GRAD's mask, not every
+translucent box, and by eye about half of what it tags shows a scene or texture behind the text.
 
 ## The stroke split (`runtime/vocr_lines_split.c`, twin `synth/lines_split.py`)
 
@@ -152,7 +160,7 @@ It reads only each box's own pixels (twice, top to bottom), so a caller can spli
 like the refinement; boxes never grow and keep their columns and flags. C99, no allocation, no recursion, integer
 only. The twin is the specification; `make check-split` runs the strict compile, the sanitized self-test and the
 C-vs-twin parity in both forms, on procedural and busy regions and on merged-line regions where the split acts
-(`tests/lines_split_merged.py`, added after the audit: the split acts on about 3 regions in 8), and on every
+(`tests/lines_split_merged.py`, added after the audit: the split acts on almost half of them), and on every
 development and design case the C driver equals the twins in all four modes.
 
 **Design (`eval/translucent_box_design_20261018.json`).** The method's form and its constants were chosen on

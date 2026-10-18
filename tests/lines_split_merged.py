@@ -5,10 +5,10 @@
 
 tests/lines_split_parity.py's regions rarely make the split act (about 1 run in 45). These regions are rows of
 outlined glyphs set close together over short scene strokes, at a contrast the GRAD finder takes for text: the case
-the split is for, where GRAD often returns one box for two or three rows and the split separates them (about 3
-regions in 8). Each region runs through the finder, the split and the refinement (lines_split_parity.FLAG_SETS) in
-the C driver and the twins, with lines_split_parity.run, which is unchanged (its sha256 is pinned by
-eval/translucent_box_protocol.json). Added after the audit of #102 (n8).
+the split is for, where GRAD often returns one box for two or three rows and the split separates them (in almost
+half of the regions). Each region runs through the finder, the split and the refinement
+(lines_split_parity.FLAG_SETS) in the C driver and the twins, with lines_split_parity.run, which is unchanged (its
+sha256 is pinned by eval/translucent_box_protocol.json). Added after the audit of #102 (n8).
 """
 import argparse
 import sys

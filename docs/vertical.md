@@ -220,7 +220,7 @@ The test VN cohort (16 clusters) reads better than development's (10.64%). Devel
 - C99, no malloc, integer only.
   - Arena: 83,619 B at 960×544, 26,467 B at 480×272.
   - Code (gcc 15.2, -O2): 4,264 B Thumb-2 (VitaSDK) and 6,528 B mips32 (psp-gcc).
-  - Stack: about 3.4 KB at peak (compiler frames: 1,264 B for the finder and 2,120 B for `vocr_line_dark`).
+  - Stack: about 3.5 KB at peak (VitaSDK `-fstack-usage` frames: 1,264 B for the finder plus 2,120 B for `vocr_line_dark`, or 2,176 B for `vocr_line_dark_rows` and its helper).
 - `vocr_lines.c`, `vocr_lines_rows.c`, `vocr_lines_refine.c`, `vocr_textdet.c` and `vocr.c` are unchanged: with vertical mode off nothing changes.
 - **Checks** (`make -C runtime check-vertical`, in `check`):
   - strict compiles;
@@ -245,6 +245,14 @@ Plus the column finder: about GRAD's cost (GRAD measured 23-24 ms of console com
 Memory in the game: the model is one 0.82 MB file that replaces the job's tier model while vertical mode is on. Its W8I arena is VOCR5-S's (124,832 B), and the finder's arena is 83,619 B. Rubi adds a rotation buffer of at most one strip (56 KiB). The job stays below the Normal and Large tiers' jobs.
 
 ## Limits and disclosures
+
+**Before the freeze.** The protocol says it was frozen "before any vertical CER, finder score or training run beyond a 200-step smoke test". That is true of CER and training, not of the finder:
+- Between 07:57Z and 08:15Z, about ten minutes before the protocol commit (08:23Z), the column finder ran on the development regions as first built: MeikiOCR's boxes, with PP-OCRv6 small's readings as stand-in labels. It scored column F1 0.740 for P0.
+- I looked at 12 of P0's failure regions there and designed P1's valley split and density gate after that look (F1 0.750 on the same provisional regions).
+- No recognizer read a development column before the freeze. The finder rule was then registered with both variants.
+
+So the development comparison P1 − P0 favours P1, whose design saw the development regions' geometry. The test read used P1 alone and is unaffected. The 200-step smoke test scored synthetic validation crops only.
+
 
 - **Exposure:**
   - VOCR5-V starts from VOCR5-S, which trained on horizontal lines of real screenshots, among them other lines of some development and test VNs (their vertical lines were never in any pool).

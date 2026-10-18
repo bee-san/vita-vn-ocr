@@ -104,6 +104,15 @@
     "VOCR5-V3500 (the 'smaller vocabulary' run the protocol allows once seed 1 is adopted): data/vocab_vn_3500.txt (sha256 8d9a04a7a118444897d7238337167633012a3cbc4264e2b214760fbdb308f5aa: the first 3,499 classes of data/vocab_vn_4987.txt, VN-ordered, plus <unk>); init = seed 1's last checkpoint with its head re-targeted by train/remap_head.py (3,495 rows copied, 5 from <unk>; sha256 b22c735010cc162e90c468813e9d8cc5e8edee85d4d85d53462f19b5b87d42cb); train2 with seed 1's sources and settings except --steps 10000 --lr 0.0005 --warmup 300 --vocab data/vocab_vn_3500.txt; its model is its last checkpoint. Rule: adopt_V with VOCR5-V seed 1 in R*'s place; adopted, it ships (the smallest adopted size)",
     "VOCR5-V seed 2: seed 1's recipe with --seed 2, report only (the spread between seeds)"
    ]
+  },
+  {
+   "n": 3,
+   "when": "2026-10-18 ~10:45Z, after the test labels, before the test set is read by any arm or finder",
+   "what": [
+    "test set pinned: eval/manifests/vertical-test-columns.jsonl sha256 912bebf5ba171374c79a0a584bb595a354e8ea2d8ba687a46f469833b0e89d05, eval/manifests/vertical-test-regions.jsonl sha256 81ff743b12ae34c4bacbfef20296e754dc67bf62bae0404b7ef3925edf9ca32c, and the private part (the owner's Trick x Logic PSP frames: 22 columns, 2 regions; never committed) columns sha256 9289084a915d8863c4f6dada60f41f4778efb24795fd56d0ced27a3a50a5eed7, regions sha256 ba9043aa8069ec4f47a1be119d6132274f7c465a8b3baafdcbb3939a63386d5a",
+    "test VN cohort: 173 dialogue columns, 2,453 characters, 16 series clusters (Bakumatsu Rock, Ren'ai Banchou 1-2, Yunohana SpRING! (PS Vita), Trick x Logic (the owner's PSP frames), 12 PC clusters); manga: Black Jack ni Yoroshiku vol. 13, 126 columns, 694 characters, 25 pages",
+    "test labels: the same blind double review (vertical-review-3 and -6), 3 disagreements settled by a third look; the owner's 22 agreed in both passes"
+   ]
   }
  ]
 }

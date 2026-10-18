@@ -154,16 +154,19 @@ console.
 
 - **No candidate met the pre-registered promotion rule in any of the three rounds, so the verdict is negative: the
   learned detector does not replace GRAD + refine as the overlay's default finder.** The best one is resolved better
-  than GRAD and has lower CER than GRAD + refine at every point estimate, but no interval against GRAD + refine
-  excludes zero, and on CLANNAD it is resolved worse for Normal and Large.
+  than GRAD and has a lower development CER than GRAD + refine for all three models, but no interval against GRAD +
+  refine excludes zero, and on CLANNAD it is resolved worse for Normal and Large.
 - **The best detector is tiny:** `s8_c24` (round 3's report candidate `s8_c24_seed4`): **5,700 B of int8 weights**,
   an arena of 92,639 B at 960×544 with the refinement (the always-safe tier's 131,072 B), 10.6 M MACs on a 900×150
   text box, an estimated 53 ms on one Cortex-A9 core at 333 MHz (40 ms at 444) per box and 15 / 11 ms per 450×80 PSP
   box (A9 cycle model, high bound; estimates).
 - **Development whole dialogue** (det+refine, VOCR5-S / N / L): **3.67 / 3.39 / 3.12%** against GRAD 7.44 / 6.87 /
   6.20% (−3.8 / −3.5 / −3.1 points, every VN interval below 0) and GRAD + refine 5.21 / 4.78 / 4.46% (−1.5 / −1.4 /
-  −1.3 points; VN intervals reach +0.79 / +0.87 / +0.83). Native Vita frames 0.29 / 0.19 / 0.16% against refine's
-  0.91 / 1.02 / 0.80% (intervals include 0). Empty regions: no line in **92%** of them (GRAD 8%).
+  −1.3 points; VN intervals reach +0.79 / +0.87 / +0.83). Most of the gain over GRAD + refine is one VN: on v27449 (a
+  translucent box over a busy scene) GRAD and GRAD + refine read 40-47% of the characters wrong and det+refine 6-9%;
+  without it det+refine − refine is −0.33 / −0.22 / −0.26 points (VN intervals −2.1 to +1.2). Native Vita frames 0.29
+  / 0.19 / 0.16% against refine's 0.91 / 1.02 / 0.80% (intervals include 0). Empty regions: no line in **92%** of
+  them (GRAD 8%).
 - **vita-test + psp-test whole dialogue, once** (body text, all variants): **6.28 / 5.99 / 5.62%** against GRAD 10.53
   / 10.23 / 9.42% (resolved, −4.3 / −4.2 / −3.8 points) and GRAD + refine 9.51 / 9.16 / 8.35% (−3.2 / −3.2 / −2.7,
   intervals reach +0.35 / +0.18 / +0.44). It is all PSP: psp-test 6.08 / 5.58 / 5.33% against refine's 12.33 / 11.53
@@ -171,12 +174,13 @@ console.
 - **CLANNAD, once** (2,052 dialogue lines): 1.54 / 1.15 / 1.02% against GRAD 1.38 / 0.96 / 0.73% and refine 1.43 /
   0.92 / 0.63%: **worse for Normal and Large** (+0.23 and +0.39 points against refine, page intervals above 0),
   level for Small.
-- **Is it worth it over GRAD + refine?** Not as the default. On PSP-sized text (psp-test, the development PSP frames)
-  it removes about half of GRAD + refine's whole-dialogue errors and returns no line for empty regions; on native
-  Vita text CLANNAD's GRAD crops already read near their ceiling and the detector's tighter crops lose a little. The
-  case for Rubi is an opt-in finder for PSP titles (480×272 frames) with A/B logging on the console, or the detector as
-  a text-presence gate in front of GRAD + refine (below). This recommendation is made after the protected sets were
-  read: a deployment caution, not a selection.
+- **Is it worth it over GRAD + refine?** Not as the default. Its gain over GRAD + refine is large where GRAD fails
+  (psp-test: about half of the whole-dialogue errors; the development VN v27449), small on the rest of the
+  development data (5.50% against 5.90% on its PSP frames for VOCR5-N), absent on vita-test, and on CLANNAD's native
+  Vita text, where the GRAD crops already read near their ceiling, it loses 0.1-0.4 points. It also returns no line
+  for most empty regions, which GRAD never does. The case for Rubi is an opt-in finder for PSP titles (480×272
+  frames) with A/B logging on the console, or the detector as a text-presence gate in front of GRAD + refine (below).
+  This recommendation is made after the protected sets were read: a deployment caution, not a selection.
 
 ### What changed after the freeze (amendments 1-4)
 
@@ -333,17 +337,22 @@ What the rounds show:
 
 - **Size.** Below about 2 KB (stride 4 with 4-8 channels, stride 8 with 8) the detector misses and merges lines:
   every such run is worse than GRAD + refine, most of them worse than GRAD. From about 4 KB (stride 4 with four
-  16-channel blocks, stride 8 with 24-48 channels) some runs are resolved better than GRAD: `s8_c24` for all three
-  models in rounds 2 and 3 (one seed of two in round 3), `s8_c32`, `s8_c32n4`, `s8_c48` and `s8_c24n4` for most.
+  16-channel blocks, stride 8 with 24-48 channels) some runs are resolved better than GRAD (det+refine): `s8_c24` for
+  all three models in rounds 2 and 3 (one seed of two in round 3), and `s8_c32`, `s8_c32n4`, `s8_c48`, `s8_c24n4` and
+  `s4_c16n4` for some or all models.
   Above 6 KB nothing more is gained: the front ends at `s8_c24` (5,700 B) in every round. Seeds of one shape differ
   by up to 5 points (`s8_c8`: 12.6 and 7.7% in round 1), more than neighbouring shapes do.
-- **det+refine** helped every round-1 blob (the best by 0.6-0.7 points): the refinement's SPLIT repairs the boxes the
-  detector merged on lines set close together, and TIGHTEN its loose rows.
-- **The strict kernel rule** (round 3) did not move the front: `s8_c24_seed4` reads like round 2's `s8_c24_seed1`
-  within the seed spread.
-- **What stops it** (round 1-2 failure analysis on development data): all of the excess over GRAD + refine sits in
-  the regions where the detector returns fewer lines than the reference, PSP-sized NVL pages and two-line boxes at
-  about 1.1 line heights' pitch, worst in the +4 px variants, where the stride-8 grid's phase moves with the region.
+- **det+refine** lowered the mean development CER of every round-1 blob (`s8_c24_seed1` by 0.7-0.8 points): the
+  refinement's SPLIT repairs boxes the detector merged on lines set close together, and TIGHTEN its loose rows.
+- **The strict kernel rule** (round 3) did not help: the round-1 shapes it retrained read the same or worse (VOCR5-N,
+  `s8_c24`: 4.12 and 3.39% for seeds 3 and 4, against round 2's 3.00% for seed 1). Round 2's `s8_c24_seed1` has the
+  lowest development CER of all 34 runs (3.40 / 3.00 / 2.61%); as amendment 4 pre-registered, the protected sets were
+  read for round 3's report candidate, `s8_c24_seed4`.
+- **Where it gains and loses** (`s8_c24_seed4`, det+refine against GRAD + refine, development): in the 1,072 of 1,161
+  units where it returns as many lines as the reference holds it makes about 590-640 fewer errors (tighter crops);
+  in the 11 units where it returns fewer (lines set close together merged or missed: PSP-sized NVL pages, two-line
+  boxes at about 1.1 line heights' pitch) and the 78 where it returns more (splits, stray boxes) it makes about 230-250
+  more. The +4 px variants gain least.
 - **Empty regions** (66 text-free development regions): GRAD returns no line in 8% of them, every candidate from
   about 3 KB in 70-94%.
 
@@ -387,8 +396,8 @@ the detector's lines that lie mostly inside its GRAD box; whole-page intervals):
 | VOCR5-N | 0.96 | 0.92 | 1.15 | +0.19 (+0.04 to +0.35) | +0.23 (+0.07 to +0.39) | +0.62 (+0.42 to +0.83) |
 | VOCR5-L | 0.73 | 0.63 | 1.02 | +0.29 (+0.14 to +0.45) | +0.39 (+0.25 to +0.55) | +0.78 (+0.61 to +0.97) |
 
-On CLANNAD's 133 pages whose lines the references hold no text for (excluded lines: UI, cut or unreadable text, not
-empty screens) the detector returned 373 lines and GRAD 161. Every VOCR5 model trained on the owner's planetarian PSP
+On the 133 CLANNAD pages none of whose lines the references score (lines excluded as no text, cut by the ROI, UI or
+unreadable) the detector returned 373 lines and GRAD 161; whether those pages show text was not checked. Every VOCR5 model trained on the owner's planetarian PSP
 frames (Key / Prototype, like CLANNAD's Vita port); the detector trained on none of the owner's CLANNAD frames
 (CLANNAD's family is excluded from every pool) but on other owner frames, including planetarian's.
 
@@ -401,8 +410,9 @@ frames (Key / Prototype, like CLANNAD's Vita port); the detector trained on none
 | A9 cycle model @333 / @444 MHz (high bound × 1.0007) | 53 / 40 ms | 15 / 11 ms | 191 / 143 ms | 50 / 37 ms |
 
 Plus the refinement, about 0.7-1.4 ms per line at 333 MHz. For comparison, the GRAD finder's measured console
-compute was 23-24 ms for an 883×112 region (v0.8.0-test.1, `docs/finder-tighten.md`): the detector costs about twice
-that, well inside the 0.1 s the tier estimates give the finder. Memory: 5,700 B of weights (resident with the
+compute was 23-24 ms for an 883×112 region (v0.8.0-test.1, `docs/finder-tighten.md`); scaled by pixels, the cycle
+model puts the detector at about 39 ms for that size (about 1.6×), inside the 0.1 s the tier estimates give the
+finder. Memory: 5,700 B of weights (resident with the
 recognizer's), about 9 KB of code, and an arena of 92,639 B at 960×544, which the job workspace already holds
 (VOCR5's W8I arenas are 124,832 / 182,944 / 261,024 B and the finder runs before the recognizer). Both A9 methods
 are estimates: nothing of the detector has run on a console.

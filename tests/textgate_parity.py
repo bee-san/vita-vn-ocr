@@ -44,11 +44,12 @@ ROOT = Path(__file__).resolve().parents[1]
 for _p in (ROOT / "eval", ROOT / "synth", ROOT / "train", ROOT / "tests"):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
+import textgate as TG  # noqa: E402
+
 import textdet_export as E  # noqa: E402
 import textdet_model as TM  # noqa: E402
 import textdet_parity as TP  # noqa: E402
 import textdet_twin as TW  # noqa: E402
-import textgate as TG  # noqa: E402
 import textgate_train as G  # noqa: E402
 
 ROWS, PUSH, BOXES, ODD, FINDER, NOGATE = 1, 2, 4, 8, 256, 512     # vocr_textgate_test's record flags
@@ -332,6 +333,22 @@ def check_blob(binary, name, blob, imgs, rng, td, args, real=False):
     return len(recs), nmaps, bad
 
 
+def check_real(job):
+    """One blob on the real regions, in chunks (a worker process): (name, records, maps, mismatches)."""
+    binary, name, blob, cohort, limit, chunk, seed, args = job
+    real = cohort_regions(cohort, limit)
+    rng = np.random.default_rng([seed, int(hashlib.sha256(blob).hexdigest()[:8], 16)])
+    nrec = nmaps = 0
+    bad = []
+    with tempfile.TemporaryDirectory(prefix="textgate-parity-real-") as td:
+        for c0 in range(0, len(real), chunk):
+            r, mp, b = check_blob(binary, name, blob, real[c0:c0 + chunk], rng, td, args, True)
+            nrec += r
+            nmaps += mp
+            bad += b
+    return name, len(real), nrec, nmaps, bad
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--bin", required=True)
@@ -353,6 +370,8 @@ def main(argv=None):
     ap.add_argument("--cohort-limit", type=int, default=0, help="cases per cohort (0: all)")
     ap.add_argument("--only-files", action="store_true", help="only the --blob files (no random blobs)")
     ap.add_argument("--json", default="", help="write per-blob parity records here")
+    ap.add_argument("--chunk", type=int, default=200, help="real regions per driver call")
+    ap.add_argument("--jobs", type=int, default=1, help="worker processes for --cohort runs (one blob each)")
     args = ap.parse_args(argv)
     t0 = time.time()
     if args.only_files:
@@ -361,9 +380,25 @@ def main(argv=None):
     else:
         blobs = all_blobs(args)
     rng = np.random.default_rng(args.seed)
-    real = cohort_regions(args.cohort, args.cohort_limit) if args.cohort else []
     nrec = nreg = nmaps = 0
     bad, doc = [], {}
+    if args.cohort:   # real regions: parity only, one worker per blob, regions in chunks
+        import multiprocessing as mp
+        jobs = [(args.bin, name, blob, args.cohort, args.cohort_limit, args.chunk, args.seed, args)
+                for name, blob, _ in blobs]
+        with mp.get_context("fork").Pool(max(1, args.jobs)) as pool:
+            for name, n, r, nm, b in pool.imap_unordered(check_real, jobs):
+                nrec += r
+                nreg += n
+                nmaps += nm
+                bad += b
+                blob = next(bb for nn, bb, _ in blobs if nn == name)
+                doc[name] = {"c_equals_twin": not b, "regions": n, "records": r, "maps": nm,
+                             "sha256": hashlib.sha256(blob).hexdigest(), "real": True}
+                print(f"{name}: {'equal' if not b else 'DIFFER'} ({n} regions, {r} records)", flush=True)
+        blobs_done = True
+    else:
+        blobs_done = False
     with tempfile.TemporaryDirectory(prefix="textgate-parity-") as td:
         if args.selftest:
             pick = [b for b in blobs if not b[0].startswith(("probe", "chain"))][::3][:max(0, args.selftest_blobs - 1)]
@@ -374,22 +409,18 @@ def main(argv=None):
                 p.write_bytes(blob)
                 paths.append(p)
             print(" ".join(run_driver(args.bin, ["--selftest", args.selftest, *paths])))
-        for bi, (name, blob, probe) in enumerate(blobs):
-            if real:
-                imgs, is_real = real, True
-            else:
-                screen = None
-                if args.screen_every and bi % args.screen_every == 0:
-                    screen = (960, 544) if (bi // args.screen_every) % 2 == 0 else (480, 272)
-                imgs = [(f"r{i}", g) for i, g in enumerate(regions(rng, args.regions, probe, screen))]
-                is_real = False
-            r, mp, b = check_blob(args.bin, name, blob, imgs, rng, td, args, is_real)
+        for bi, (name, blob, probe) in enumerate([] if blobs_done else blobs):
+            screen = None
+            if args.screen_every and bi % args.screen_every == 0:
+                screen = (960, 544) if (bi // args.screen_every) % 2 == 0 else (480, 272)
+            imgs = [(f"r{i}", g) for i, g in enumerate(regions(rng, args.regions, probe, screen))]
+            r, nm, b = check_blob(args.bin, name, blob, imgs, rng, td, args, False)
             nrec += r
             nreg += len(imgs)
-            nmaps += mp
+            nmaps += nm
             bad += b
-            doc[name] = {"c_equals_twin": not b, "regions": len(imgs), "records": r, "maps": mp,
-                         "sha256": hashlib.sha256(blob).hexdigest(), "real": is_real}
+            doc[name] = {"c_equals_twin": not b, "regions": len(imgs), "records": r, "maps": nm,
+                         "sha256": hashlib.sha256(blob).hexdigest(), "real": False}
     if args.json:
         Path(args.json).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     if bad:

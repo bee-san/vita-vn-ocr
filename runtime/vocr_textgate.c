@@ -45,7 +45,8 @@
 #define MAGIC 0x54445456u   /* "VTDT" */
 
 /* The kernel stays a function of its own: inlined into the row pipeline it runs out of registers (gcc
- * -Os, Thumb-2), which costs bytes and time. */
+ * -Os, Thumb-2), which costs bytes and time. It runs a row channel by channel, so each channel's constants
+ * are read once a row: about 26% fewer instructions than pixel by pixel for 90 more bytes (eval/textgate_a9.py). */
 #if defined(__GNUC__)
 #define NOINLINE __attribute__((noinline))
 #else
@@ -208,31 +209,42 @@ static signed char *ring_row(vocr_textgate_state *st, unsigned l, unsigned y, in
     return row + u->pad;
 }
 
-/* One output pixel of layer r into out (nc channels). tap[t]: the input the t-th kernel tap reads for the
- * row's first pixel (NULL where its row lies outside the input), a pixel's channels side by side; off: the
- * bytes on to this pixel. */
-NOINLINE static void pixel(const unsigned char *blob, const unsigned char *r, const signed char *const *tap, size_t off,
-                  signed char *out, unsigned nc)
+/* wo output pixels of layer r, nc channels each, into out (a pixel's channels side by side), one channel at
+ * a time (its constants read once a row). tap[t]: the input the t-th kernel tap reads for pixel 0 (NULL
+ * where its row lies outside the input), a pixel's channels side by side; step: the bytes from one output
+ * pixel's input to the next. A 1x1 layer is a dot product over the input channels. */
+NOINLINE static void conv_row(const unsigned char *blob, const unsigned char *r, const signed char *const *tap,
+                              unsigned wo, unsigned step, signed char *out, unsigned nc)
 {
-    const signed char *w = (const signed char *)(const void *)(blob + rd32(r + 12));
-    unsigned c, q, t, kk = r[1] * r[1];
+    unsigned c, q, t, j, kk = r[1] * r[1], dw = r[0], per = dw ? 1u : rd16(r + 8);
+    int lo = 256 * r[4] - 257;   /* 2 lo - 1: -1 with ReLU, else -257 */
     for (c = 0; c < nc; c++) {
-        int32_t sum = 0, m = rds32(blob + rd32(r + 20) + 4u * c), lo;
+        const signed char *w = (const signed char *)(const void *)(blob + rd32(r + 12)) + (size_t)c * per * kk;
+        int32_t m = rds32(blob + rd32(r + 20) + 4u * c);
+        int64_t b = (int64_t)rds32(blob + rd32(r + 16) + 4u * c) * m;
         unsigned sh = blob[rd32(r + 24) + c] - 1u;
-        int64_t v;
-        for (q = 0; q < (r[0] ? 1u : rd16(r + 8)); q++) {
-            size_t o = off + (r[0] ? c : q);
-            for (t = 0; t < kk; t++, w++)
-                if (tap[t]) sum += *w * tap[t][o];
+        for (j = 0; j < wo; j++) {
+            size_t off = (size_t)j * step;
+            int32_t sum = 0;
+            if (kk == 1u) {                        /* 1x1: a dot product over the input channels */
+                const signed char *x = tap[0] + off;
+                for (q = 0; q < per; q++) sum += w[q] * x[q];
+            } else {
+                const signed char *wq = w;
+                for (q = 0; q < per; q++) {
+                    size_t o = off + (dw ? c : q);
+                    for (t = 0; t < kk; t++, wq++)
+                        if (tap[t]) sum += *wq * tap[t][o];
+                }
+            }
+            /* v = floor((bias + sum) m / 2^(shift - 1)); floor((v + 1) / 2) is then the twin's
+             * floor(((bias + sum) m + 2^(shift - 1)) / 2^shift), clamped through v in [2 lo - 1, 254] */
+            int64_t v = b + (int64_t)sum * m;
+            v = v < 0 ? ~(~v >> sh) : v >> sh;
+            if (v > 254) v = 254;
+            if (v < lo) v = lo;
+            out[(size_t)j * nc + c] = (signed char)((int)((v + 257) >> 1) - 128);
         }
-        /* v = floor((bias + sum) m / 2^(shift - 1)); floor((v + 1) / 2) is then the twin's
-         * floor(((bias + sum) m + 2^(shift - 1)) / 2^shift), clamped through v in [2 lo - 1, 254] */
-        v = (int64_t)rds32(blob + rd32(r + 16) + 4u * c) * m + (int64_t)sum * m;
-        v = v < 0 ? ~(~v >> sh) : v >> sh;
-        lo = 256 * r[4] - 257;   /* 2 lo - 1: -1 with ReLU, else -257 */
-        if (v > 254) v = 254;
-        if (v < lo) v = lo;
-        out[c] = (signed char)((int)((v + 257) >> 1) - 128);
     }
 }
 
@@ -270,7 +282,7 @@ static void produce(vocr_textgate_state *st, unsigned l)
         nc = 1;
         dst = kbuf(st) + (st->mode ? (size_t)i * wo : 0u);
     }
-    for (j = 0; j < wo; j++) pixel(blob, r, tap, (size_t)j * s * cin, dst + (size_t)j * nc, nc);
+    conv_row(blob, r, tap, wo, s * cin, dst, nc);
     if (l + 1u == st->n && !st->mode)
         for (j = 0; j < wo; j++) put(st, dst[j]);
     u->done++;

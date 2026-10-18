@@ -10,12 +10,15 @@
 #        their box, errors leave the set unchanged, the arena never exceeds the finder's)
 #     3. tests/lines_split_parity.py: that build against the Python twin (synth/lines_split.py, then
 #        synth/lines_refine.py) on SPLIT_PARITY_CASES procedural and as many busy regions, both forms
+#     4. tests/lines_split_merged.py: the same on SPLIT_MERGED_CASES merged-line regions (close rows over scene
+#        strokes, the case the split acts on), both forms; it fails if no run splits a box
 #
 # Uses CC, CPPFLAGS, CFLAGS, LDFLAGS, PYTHON, OUT, SAN_ENV and LINES_STRICT from the including Makefile and
 # vocr_lines.mk. The driver is rebuilt on every run, so a change of CC or flags always takes effect.
 
 SPLIT_CASES ?= 500
 SPLIT_PARITY_CASES ?= 200
+SPLIT_MERGED_CASES ?= 200
 SPLIT_OUT = $(abspath $(OUT))/split
 
 .PHONY: check-split
@@ -31,3 +34,7 @@ check-split:
 	    --cases $(SPLIT_PARITY_CASES)
 	$(SAN_ENV) $(PYTHON) ../tests/lines_split_parity.py --bin $(SPLIT_OUT)/vocr_lines_split_test \
 	    --cases $(SPLIT_PARITY_CASES) --seed 2 --rows
+	$(SAN_ENV) $(PYTHON) ../tests/lines_split_merged.py --bin $(SPLIT_OUT)/vocr_lines_split_test \
+	    --cases $(SPLIT_MERGED_CASES)
+	$(SAN_ENV) $(PYTHON) ../tests/lines_split_merged.py --bin $(SPLIT_OUT)/vocr_lines_split_test \
+	    --cases $(SPLIT_MERGED_CASES) --seed 4 --rows

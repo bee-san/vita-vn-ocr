@@ -948,10 +948,9 @@ def cmd_select(args):
         "D_c_equals_twin": True,          # eval/translucent_box.py score raises on any difference, in every mode
         "baseline_units_equal": all(doc["baseline_equal"].values()),
     }
-    if args.cost:
-        cost = json.loads(Path(args.cost).read_text(encoding="utf-8"))
-        cond["E_cost"] = bool(cost["within_budget"])
-        doc["cost"] = cost
+    cost = json.loads(Path(args.cost).read_text(encoding="utf-8"))
+    cond["E_cost"] = bool(cost["within_budget"])
+    doc["cost"] = cost
     rubi = {"F_tagged_split_below_grad": all(lo(mm[m]["cohorts"]["tagged"]["split-grad"]) for m in mm),
             "G_rest_split_no_regression_vs_grad": all(not hi(mm[m]["cohorts"]["rest"]["split-grad"]) for m in mm)}
     doc["conditions"] = cond
@@ -1475,6 +1474,22 @@ def cmd_linefind(args):
     Path(args.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
 
 
+def cmd_own_report(args):
+    """Report only: the owner's frames (finder-tighten's own_dlg cohort, scored by `score --names own_dlg`) per model
+    and platform. Three VNs, so no VN-cluster interval (it needs 5)."""
+    out = {}
+    for spec in args.scores:
+        arm, _, d = spec.partition("=")
+        res = load_scores(d, arm)["own_dlg"]
+        for plat in ("vita", "psp", "all"):
+            out.setdefault(arm, {})[plat] = table(res, lambda u, p=plat: p == "all" or u["platform"] == p)
+    doc = {"kind": "translucent-box-own-dlg", "computed": utc_now(),
+           "note": "report only: the owner frames (finder-tighten own_dlg, 3 VNs; training data, seen during design "
+                   "as a no-false-split check); VN-cluster intervals need 5 VNs, so none",
+           "models": out}
+    Path(args.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+
+
 def cmd_tag(args):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -1636,6 +1651,9 @@ def main(argv=None):
     p = sub.add_parser("protocol")
     p.add_argument("--tags", required=True)
     p.add_argument("--design", action="append", required=True, help="a design cohorts' record (design.json)")
+    p = sub.add_parser("own-report")
+    p.add_argument("--scores", action="append", required=True, help="ARM=DIR of an own_dlg score output")
+    p.add_argument("--out", required=True)
     p = sub.add_parser("linefind")
     p.add_argument("--tags", required=True)
     p.add_argument("--out", required=True)
@@ -1659,11 +1677,13 @@ def main(argv=None):
     p = sub.add_parser("select")
     p.add_argument("--scores", action="append", required=True, help="ARM=DIR of a development score output")
     p.add_argument("--tags", required=True)
-    p.add_argument("--cost", default="", help="the cost record (condition E)")
+    p.add_argument("--cost", required=True, help="the cost record (condition E)")
     p.add_argument("--det-units", default="", help="report only: #97's stored det+refine units (DIR/ARM/units_X)")
     p.add_argument("--det", default="s8_c24_seed4")
     p.add_argument("--out", required=True)
     args = ap.parse_args(argv)
+    if args.cmd == "own-report":
+        cmd_own_report(args)
     if args.cmd == "linefind":
         cmd_linefind(args)
     if args.cmd == "protected":

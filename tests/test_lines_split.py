@@ -159,6 +159,15 @@ def test_c_matches_twin(driver, rows):
     assert bad == []
 
 
+@pytest.mark.parametrize("rows", [False, True])
+def test_c_matches_twin_where_it_splits(driver, rows):
+    """The splitting branch itself: merged-line regions, most of which the split acts on."""
+    import lines_split_merged
+    cases = lines_split_merged.cases(19, 60)
+    bad, splits = lines_split_parity.run(driver, cases, seed=19, rows=rows)
+    assert bad == [] and splits >= 20
+
+
 def test_c_arena_fits_in_the_finders(driver):
     for w, h in ((960, 544), (480, 272), (8, 8), (1, 3000), (3000, 1), (960, 16)):
         split_b, finder = map(int, subprocess.run([str(driver), "--arena", str(w), str(h)], check=True,
@@ -192,16 +201,35 @@ def test_prevalence_record_covers_every_source():
     assert set(rec["sources"]) == set(TB.SOURCES) and rec["sources"]["wd"]["tagged"] > 0
 
 
+FINDER_FILES = ("runtime/vocr_lines.c", "runtime/vocr_lines.h", "runtime/vocr_lines_rows.c",
+                "runtime/vocr_lines_rows.h", "runtime/vocr_lines_refine.c", "runtime/vocr_lines_refine.h",
+                "synth/lines_refine.py")
+
+
 def test_frozen_sources_match_the_protocol():
-    """The committed results are for this code: a changed split or classifier needs a new protocol and results."""
+    """The committed results are for this code: a changed split needs a new protocol and new results. Pinned: the
+    split's own files and the finder and refinement it runs between (which tests/test_textdet.py and
+    tests/test_lines_refine.py pin too). The protocol also records the harness files it was scored with
+    (runtime/vocr.c, synth/common.py, eval/textdet.py, ...); those may change with other work, so they are not
+    pinned here."""
     if not PROTOCOL.exists():
         pytest.skip("protocol not written yet")
     proto = json.loads(PROTOCOL.read_text())
     for f, digest in proto["sources_sha256"].items():
         assert hashlib.sha256((ROOT / f).read_bytes()).hexdigest() == digest, f
-    for f, digest in proto["unchanged_sha256"].items():
-        assert hashlib.sha256((ROOT / f).read_bytes()).hexdigest() == digest, f
+    for f in FINDER_FILES:
+        assert hashlib.sha256((ROOT / f).read_bytes()).hexdigest() == proto["unchanged_sha256"][f], f
     assert proto["candidate"]["split_flags"] == S.DEFAULT
+
+
+def test_ridge_reach_is_three_in_c_and_twin():
+    """The C code takes a pixel's left and right minima from the 3-pixel window centred S_R - 1 away, which equals
+    the twin's reach-S_R minima only for S_R = 3 (audit n9; the frozen C source is not edited for it): both must say
+    3, so a changed reach fails here before it can make the two disagree."""
+    import re
+    c = (ROOT / "runtime" / "vocr_lines_split.c").read_text()
+    assert S.S_R == 3
+    assert re.search(r"^#define S_R 3u\b", c, re.M)
 
 
 def test_committed_records_hold_no_text():

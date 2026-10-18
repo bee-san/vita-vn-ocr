@@ -15,28 +15,36 @@ Nothing ran on a console.
 ## Answer first
 
 - **How common.** A frozen image-statistics classifier tags 13.4% of the development dialogue regions (52 of 387,
-  32 of 93 VNs) as text over a background as contrasty as its strokes. Those regions hold **53-54% of GRAD + refine's
-  development dialogue errors**: 22.3 / 21.0 / 19.1% CER (VOCR5-S / N / L) against 2.8 / 2.5 / 2.4% elsewhere. The
-  training pools hold the style as often (realplus 13.6%, teacher 17.8%, eval/linefind 21%); the owner's console
-  frames almost never (2 of 420).
+  32 of 93 VNs) as text over a background as contrasty as its strokes (by eye about half of the tagged regions viewed
+  show a scene or texture behind the text; most of the rest are plain boxes whose edges the sample meets). Those
+  regions hold **53-54% of GRAD + refine's development dialogue errors**: 22.3 / 21.0 / 19.1% CER (VOCR5-S / N / L)
+  against 2.8 / 2.5 / 2.4% elsewhere. That share is concentrated: 71-74% of the tagged regions' errors are two VNs,
+  v27449 and v12436; without them the tagged regions read 8.3 / 8.4 / 7.0%. The statistic was chosen partly while
+  looking at this outcome (disclosed under "Protocol"). The training pools hold the style as often (realplus 13.6%,
+  teacher 17.8%, eval/linefind 21%); the owner's console frames almost never (2 of 420).
 - **The fix.** `runtime/vocr_lines_split.c`, a *stroke split* between the finder and the refinement, behind a flag
   (`VOCR_SPLIT_STROKE`; flags 0 = today's lines bit for bit): no weights, 2,432 B of Thumb-2 code at `-Os`, an arena
   of at most 6,147 B inside the finder's. Per GRAD box it profiles the rows by thin strokes of both polarities and
-  splits the box at a valley no stroke crosses. It was designed on training frames only.
+  splits the box at a valley no stroke crosses. Its constants were chosen on training frames only; the idea itself,
+  a two-polarity stroke profile, was first checked on development regions of v27449 and v12436 (see "Protocol").
 - **Development (pre-registered rule, VN-cluster intervals).** On the tagged cohort it halves the dialogue CER:
   split + refine against GRAD + refine **22.34 → 11.34% / 20.99 → 10.08% / 19.07 → 8.07%** (−11.0 points), and the
-  whole development set goes from 5.21 / 4.78 / 4.46% to 3.87 / 3.45 / 3.14%. The rest of the development data and
-  the native-Vita subset do not move (native Vita: not one line changes). But the gain sits in two of the cohort's
-  32 VNs (v27449 and v12436), so the VN-cluster intervals reach 0.00, and the A9 model puts it at an estimated 79 ms
-  per 900×150 box at 333 MHz, over its 25 ms budget. **Verdict: not adopted** (conditions A and E fail).
+  whole development set goes from 5.21 / 4.78 / 4.46% to 3.87 / 3.45 / 3.14%. But the gain sits in two of the
+  cohort's 32 VNs (v27449 and v12436, the two whose regions the idea was first checked on, so it is not a held-out
+  estimate), the VN-cluster intervals reach 0.00, and the A9 model puts it at an estimated 79 ms per 900×150 box at
+  333 MHz, over its 25 ms budget. The rest of development shows no resolved change (+0.01 / +0.01 / +0.04 points; a
+  few false splits cost 1-5 characters in three VNs), the native-Vita subset not one changed line. **Verdict: not
+  adopted** (conditions A and E fail).
 - **Protected sets, once, report only.** vita-test + psp-test whole dialogue (body text): GRAD + refine 9.51 / 9.16 /
   8.35% → split + refine **7.88 / 7.88 / 7.11%** (−1.6 / −1.3 / −1.2 points; VN intervals include 0), all of it on
   psp-test (−3.2 / −2.5 / −2.5); vita-test is level (−0.07 / −0.06 / +0.04). Merged lines: 16 → 5. CLANNAD
   (native Vita text on plain boxes) gains nothing: a handful of false splits cost +0.02 / +0.04 / +0.04 points of
   dialogue CER (page intervals start at 0.00; +0.03 to +0.05 with names, resolved).
-- **Is it worth it?** It repairs the failure it was built for (v27449: VOCR5-N 363 → 84 errors of 579 characters)
-  and nothing else it touches gets worse on dialogue, but the evidence is two development VNs and it costs about
-  three times its time budget. #97's learned detector still reads the tagged cohort better (det+refine 7.26% against
+- **Is it worth it?** (written after the protected sets were read.) It repairs the failure it was built for
+  (v27449: VOCR5-N 363 → 84 errors of 579 characters), and elsewhere it changes little, but its few false splits
+  cost a little (CLANNAD +0.02 to +0.05 points; linefind vita_dev line F1 −0.01; vita-test all text +0.15 to +0.23,
+  intervals include 0), the evidence for the gain is two development VNs, and it costs about three times its time
+  budget. #97's learned detector still reads the tagged cohort better (det+refine 7.26% against
   10.08%, VOCR5-N, report only). So it stays off by default in the runtime and no Rubi change follows; a cheaper
   implementation and a cohort with more such VNs would be the next step.
 
@@ -50,6 +58,25 @@ prevalence record committed with the protocol had an empty per-source table (its
 second name is now `FROZEN_SOURCES` and the record was rebuilt from the same tag rows (their sha256 is the
 protocol's); the classifier, the cohorts and every score are unchanged, and a test checks the module binds no
 constant twice.
+
+**Disclosed after the audit (2026-10-18, audit-translucent-box F1, n11).** The protocol's disclosures name the
+diagnosis by viewing and the classifier's choice while viewing development sheets. Two more pre-freeze uses of
+development data, and one late harness addition, were not named there:
+
+1. *The classifier was compared with the baseline's errors.* From the first statistic on (07:04-07:22Z;
+   `scratch/bgstats*.py`, `scratch/evalstat.py` in the private artifacts), every candidate statistic was printed with
+   the share of #97's VOCR5-N GRAD + refine development errors its top 10-80 regions held and the ranks of the 24
+   highest-error regions. The statistic (and so the 53-54% figure) was chosen partly on that outcome; the threshold
+   (0.03) by comparing the viewed labels at 0.02-0.05. These are the baseline's errors, not a candidate's.
+2. *The split's idea was first checked on the two development VNs that carry its gain.* At 07:33Z
+   (`scratch/ridge.py`) the bright- and dark-ridge row profiles were printed for one development region each of
+   v27449 and v12436, whose merged lines they separated; the design sets were then built to choose the method's form
+   and constants on training frames. So the tagged cohort's gain is not a held-out estimate.
+3. *The rule's code came after the development scores.* `select` (conditions A-E) and `a9` were written in
+   `8c1439e`, after the development scores (09:09-09:11Z), while the protocol's harness note allowed only report and
+   protected-set commands after the freeze. Both implement the frozen text (the audit checked them against it).
+
+None of them changes the verdict: each favours adoption, and the rule did not adopt.
 
 - **Arms** (each read by VOCR5-S, -N and -L, the C runtime in W8I, every crop inverted by its dark flag): `grad`
   (GRAD), `refine` (GRAD + `VOCR_REFINE_DEFAULT`), `split` (GRAD + the split), `split_refine` (GRAD + the split +
@@ -94,10 +121,13 @@ right count (scene rows in the crops).
 
 **Checked by eye** (contact sheets of development regions, one image per view; labels in the private artifacts): of
 the 48 highest-ranked regions, all tagged, 22 show a scene or texture behind the text, 7 are unclear and 19 are plain
-boxes or buttons whose sample takes in a box edge, the scene outside a button or other text; of 24 random untagged
-regions, 4 show a scene behind the text at a contrast below the strokes' and 3 a soft dark scene (unclear). So the tag
-means "a background as
-contrasty as the strokes", the case that breaks GRAD's mask, not every translucent box.
+boxes or buttons whose sample takes in a box edge, the scene outside a button or other text. A second sheet of 24
+regions drawn below busy 0.035 (before the threshold was frozen at 0.03) holds 23 untagged ones: 3 show a scene
+behind the text at a contrast below the strokes', 3 a soft dark scene (unclear), 17 plain boxes. The audit's own
+random sheets (24 tagged, 24 untagged) gave about 7 scenes, 6 unclear and 11 plain boxes among the tagged ones, and
+4 scenes and 5 soft dark scenes among the untagged ones (two of them frames of v27449 and v12436 just under the
+threshold). So the tag means "a background as contrasty as the strokes", the case that breaks GRAD's mask, not every
+translucent box, and about half of what it tags is that.
 
 ## The stroke split (`runtime/vocr_lines_split.c`, twin `synth/lines_split.py`)
 
@@ -121,13 +151,16 @@ Per finder box of at least 16 rows, from the box's own grey pixels:
 It reads only each box's own pixels (twice, top to bottom), so a caller can split each box on the strip it holds,
 like the refinement; boxes never grow and keep their columns and flags. C99, no allocation, no recursion, integer
 only. The twin is the specification; `make check-split` runs the strict compile, the sanitized self-test and the
-C-vs-twin parity (both forms), and on every development and design case the C driver equals the twins in all four
-modes.
+C-vs-twin parity in both forms, on procedural and busy regions and on merged-line regions where the split acts
+(`tests/lines_split_merged.py`, added after the audit: the split acts on about 3 regions in 8), and on every
+development and design case the C driver equals the twins in all four modes.
 
-**Design (training data only, `eval/translucent_box_design_20261018.json`).** The method and its constants were
-chosen on whole-dialogue regions of training frames: realplus and teacher frames the classifier tags and as many
-untagged ones (Vita: 600 + 600 regions, 1,092 VNs; PSP: 396 + 396 regions, 524 VNs), every reserved VN, every
-development frame and every linefind screenshot left out. Rejected along the way: bands at one fixed fraction of the
+**Design (`eval/translucent_box_design_20261018.json`).** The method's form and its constants were chosen on
+whole-dialogue regions of training frames: realplus and teacher frames the classifier tags and as many untagged ones
+(Vita: 600 + 600 regions, 1,092 VNs; PSP: 396 + 396 regions, 524 VNs), every reserved VN, every development frame and
+every screenshot of the six linefind sets left out (17 design screenshots are in linefind's unscored candidate
+pools). The idea was first checked on two development regions (see "Protocol"); during design the prototypes also
+ran on the owner's frames (finder-tighten's own_dlg) as a check for false splits. Rejected along the way: bands at one fixed fraction of the
 peak (instead of valleys), a summed instead of a two-sided profile, a 3×3 continuity guard, ridges along both axes
 (better on the Vita set, worse on the PSP one, about twice the work per pixel and a ring of rows), an adaptive
 radius, a column trim and re-computed polarity flags. The chosen split on the design sets (VOCR5-N, `split_refine − refine`, VN intervals): Vita
@@ -151,11 +184,12 @@ Dialogue CER, base / +4 / +8 pooled; differences in points with 95% VN-cluster i
 | | VOCR5-N | 6.87 | 4.78 | 3.73 | 3.45 | −1.33 (−3.79 to +0.03) | −3.14 (−6.63 to −0.29) |
 | | VOCR5-L | 6.20 | 4.46 | 3.09 | 3.14 | −1.32 (−3.79 to +0.08) | −3.12 (−6.58 to −0.31) |
 
-- **Where it acts.** The split changes the lines of 7 of the 93 VNs (20 of the 1,515 cases). VOCR5-N: in the tagged
-  cohort, v27449 (errors 363 → 84 of 579 characters) and v12436 (114 → 46 of 318); the other 30 tagged VNs keep their
-  lines. In the rest, v5000 (164 → 161) and v21047 (45 → 45; against GRAD 129 → 45: it splits the lines the
-  refinement's own SPLIT splits), two splits that cost 1 and 5 characters (v6218, v3066), and v1315, whose changed
-  boxes read the same. Because the gain rests on two VN clusters, a
+- **Where it acts.** In the scored (pooled) units the split changes the lines of 6 of the 93 VNs (19 units).
+  VOCR5-N: in the tagged cohort, v27449 (errors 363 → 84 of 579 characters) and v12436 (114 → 46 of 318); the other
+  30 tagged VNs keep their lines. In the rest, v5000 (164 → 161) and v21047 (45 → 45; against GRAD 129 → 45: it
+  splits the lines the refinement's own SPLIT splits), and two splits that cost 1 and 5 characters (v6218, v3066).
+  A seventh VN, v1315, changes only in a devnative frame the pooling leaves out as a duplicate of a teacher_val
+  frame (there split + refine reads as refine does, split against GRAD 36 → 31 errors over its units). Because the gain rests on two VN clusters, a
   resample that draws neither shows no difference, and every tagged interval ends at 0.00: condition A fails.
 - **By platform and variant** (VOCR5-N, tagged): Vita units (45, 12 VNs; the gain is v27449's 960×544 copies) 17.25 →
   2.22%, PSP units (111, 24 VNs) 22.56 → 13.40%; base 18.66 → 7.63%, +4 px 21.02 → 9.90%, +8 px 23.28 → 12.72%.
@@ -178,7 +212,9 @@ Vita's cache sizes, the 505 development base regions with the split on and off; 
 conditional moves of the clamped window code). Code: 3,092 B at `-O2`, 2,432 B at `-Os` (VitaSDK gcc 15.2); deepest
 frame 3,712 B (`split`: three 256-entry histograms); arena 6,147 B at 960×544, 3,075 B at 480×272. The 900×150 figure
 is an upper bound (the whole region inside boxes); the mean development region is the typical one. The time budget
-of condition E (25 ms) is missed by about 3×: condition E fails.
+of condition E (25 ms) is missed by about 3×: condition E fails. Issue #98's budget also asked for "≤ 2 ms for the
+decision where it does not fire"; the protocol's condition E left that part out, and the split has no cheap
+decision: it profiles every box of 16 rows or more, so a box it leaves alone costs the same as one it splits.
 
 ### Report only
 
@@ -229,21 +265,30 @@ every line derived from its GRAD box, joined; whole-page intervals):
 | VOCR5-N | 0.96 | 0.92 | 1.00 | 0.96 | +0.04 (0.00 to +0.08) | +0.04 (+0.01 to +0.09) |
 | VOCR5-L | 0.73 | 0.63 | 0.77 | 0.67 | +0.04 (0.00 to +0.08) | +0.05 (+0.01 to +0.10) |
 
-GRAD and GRAD + refine equal #97's and #83's CLANNAD figures. On CLANNAD's native console text the split adds 8 lines
+GRAD and GRAD + refine equal #97's CLANNAD figures (`eval/textdet_clannad_20261018.json`). On CLANNAD's native console text the split adds 8 lines
 in all (it splits a handful of GRAD boxes), and those boxes read worse: 4 / 5 / 6 reference lines change (2 / 2 / 3
 of them speaker names), all for the worse, +12 / +16 / +17 errors in all (`split − GRAD` is the same). On dialogue
 the page intervals start at 0.00; with names included they lie above 0. The split never helps on CLANNAD, whose
 boxes are plain, and its few false splits cost a little: the same direction as the development linefind check on
 vita_dev (false splits of scenery boxes). Every VOCR5 model trained on the owner's planetarian PSP frames (Key /
-Prototype, like CLANNAD's Vita port); the split trained on nothing.
+Prototype, like CLANNAD's Vita port). The split has no weights, but its design's no-false-split check (the owner's
+frames, own_dlg) holds 201 base regions of those planetarian frames; that check would favour it on CLANNAD, which
+still reads slightly worse.
 
 ## Limits
 
 - The development cohort's busy-background failures that the split repairs sit in two VNs; the test sets' in PSP
   frames. The intervals are wide, and the design sets (where the gain is resolved) were used to choose the method.
-- The classifier tags a background as contrasty as the strokes, which includes some plain boxes whose sample meets
-  an edge or a button's surroundings (19 of the 48 top regions viewed); untagged translucent boxes at a lower
-  contrast exist (4 of 24 random untagged regions).
+- The classifier tags a background as contrasty as the strokes, which includes plain boxes whose sample meets an
+  edge or a button's surroundings: about 40% of the tagged regions viewed are plain boxes (19 of the 48 top-ranked;
+  11 of 24 random ones in the audit's view); untagged translucent boxes at a lower contrast exist (3 of 23 random
+  untagged regions; two frames of v27449 and v12436 lie just under the threshold).
+- The rule's condition A could not pass with a gain in so few VNs: with the gain in at most 3 of the cohort's 32 VN
+  clusters, at least (29/32)^32 = 4.3% of resamples draw none of them, so the interval's upper bound stays at or
+  above 0. v27449 alone held 29.6% of GRAD + refine's errors before the freeze; a future rule should check its power
+  against such a concentration.
+- `S_R` (the ridge reach) is fixed at 3: the C code takes the left and right minima from the 3-pixel window centred
+  2 px away, which equals the twin only for a reach of 3 (`tests/test_lines_split.py` checks both say 3).
 - The design and development labels are engine-plus-assistant agreed, not hand-checked; the design frames are
   PC-scaled screenshots more often than console captures.
 - The cost is an estimate from the A9 model, about 3× over budget; the code was not optimized (the window clamps run
@@ -259,6 +304,16 @@ H=$HERD; A=$H/shared/artifacts; P=$H/shared/private/translucent-box; V5=$A/vocr5
     --out eval/translucent_box_prevalence_20261018.json
 .venv-ci/bin/python eval/translucent_box.py design --out $P/design --frames 20000 --kinds vita --regions 600
 .venv-ci/bin/python eval/translucent_box.py design --out $P/design --kinds psp --name design_psp --regions 400
+for m in S:v5f_S_seed2 N:v5f_N_seed3 L:v5f_L_seed2; do                                  # the design record
+  HEAVY_SLOTS=12 $H/heavy.sh .venv-ci/bin/python eval/translucent_box.py score --cohorts $P/design \
+      --names design_tagged design_rest design_psp_tagged design_psp_rest \
+      --arm VOCR5-${m%%:*}=$V5/blobs/${m#*:}_w8.vocr --out $P/design_scores/VOCR5-${m%%:*}
+done
+.venv-ci/bin/python eval/translucent_box.py design-report --scores VOCR5-S=$P/design_scores/VOCR5-S \
+    --scores VOCR5-N=$P/design_scores/VOCR5-N --scores VOCR5-L=$P/design_scores/VOCR5-L \
+    --out eval/translucent_box_design_20261018.json
+.venv-ci/bin/python eval/translucent_box.py protocol --tags $P/tags \
+    --design $P/design/design.json --design $P/design/design_psp.json      # wrote the frozen protocol, once
 make -C runtime check-split PYTHON=$PWD/.venv-ci/bin/python                            # self-test + parity
 for m in S:v5f_S_seed2 N:v5f_N_seed3 L:v5f_L_seed2; do                                  # one heavy.sh slot each
   HEAVY_SLOTS=12 $H/heavy.sh .venv-ci/bin/python eval/translucent_box.py score --cohorts $V5/cohorts \
@@ -270,6 +325,12 @@ done
     --scores VOCR5-L=$P/dev/VOCR5-L --tags $P/tags --cost eval/translucent_box_a9_20261018.json \
     --det-units $A/textdet/eval_r3/units --out eval/translucent_box_dev_20261018.json
 .venv-ci/bin/python eval/translucent_box.py linefind --tags $P/tags --out eval/translucent_box_linefind_20261018.json
+for m in S:v5f_S_seed2 N:v5f_N_seed3 L:v5f_L_seed2; do                                  # the owner's frames
+  HEAVY_SLOTS=12 $H/heavy.sh .venv-ci/bin/python eval/translucent_box.py score --cohorts $A/finder-tighten/cohorts \
+      --names own_dlg --arm VOCR5-${m%%:*}=$V5/blobs/${m#*:}_w8.vocr --out $P/own/VOCR5-${m%%:*}
+done
+.venv-ci/bin/python eval/translucent_box.py own-report --scores VOCR5-S=$P/own/VOCR5-S --scores VOCR5-N=$P/own/VOCR5-N \
+    --scores VOCR5-L=$P/own/VOCR5-L --out eval/translucent_box_own_dlg_20261018.json
 # the protected sets ran once (attempt records refuse a second run; protected-summary rebuilds the record):
 #   eval/translucent_box.py protected --data $A/eval --arm ... --out $P/protected/tests
 #   eval/translucent_box.py clannad --work $H/shared/private/owner-drive-20261013/clannad-compare --arm ... \

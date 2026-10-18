@@ -412,7 +412,7 @@ vocr_refine_lines_rows(&src, VOCR_REFINE_DEFAULT, arena, need, &set, &rows);  /*
 - Checks: `make check-split` (strict compile; the sanitized driver `vocr_lines_split_test.c`'s `--selftest`: flags 0
   is the identity, the in-memory, row-callback and per-box strip forms and the minimum misaligned arena agree, lines
   stay inside their box, errors leave the set unchanged; then `tests/lines_split_parity.py` against the twins, both
-  forms), and `tests/test_lines_split.py`.
+  forms, and `tests/lines_split_merged.py` on merged-line regions, where the split acts), and `tests/test_lines_split.py`.
 
 ## Porting notes (vita, psp)
 

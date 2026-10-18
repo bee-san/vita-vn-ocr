@@ -34,7 +34,9 @@
  *  - an accumulator sums at most 9 * 64 = 576 products of two int8 codes, |w x| <= 2^14, so
  *    |sum| <= 576 * 2^14 < 2^24 fits int32. The bias enters through bq = bias * mult + 2^(shift - 1)
  *    (int64, per channel): |bias * mult| <= 2^31 * (2^31 - 1) < 2^62, 2^(shift - 1) <= 2^61 and
- *    |sum * mult| < 2^24 * 2^31 = 2^55, so bq + sum * mult is the exact value and below 2^63.
+ *    |sum * mult| < 2^24 * 2^31 = 2^55, so bq + sum * mult is the exact value and below 2^63. The NEON
+ *    code, for a channel whose |bias| <= 2^31 - 1 - 2^24 (so bias + sum fits int32), forms
+ *    (bias + sum) * mult < 2^62 instead and lets VRSHL add 2^(shift - 1): the same value.
  *  - the map has at most ceil(2048 / 4)^2 = 2^18 cells, so a component has n <= 2^18 cells. Across
  *    the line a cell's c2 = 2 s i + s - 1 <= 2 (2048 - 1) + s - 1 <= 4101 (s <= 8), and |O|, |A1|,
  *    |A2| <= 128, so every component sum (n; O; A1; A2; rows i or columns j, each below 512;
@@ -183,9 +185,10 @@ int vocr_textdet_load(vocr_textdet *m, const void *blob, size_t bytes)
 /* ---------------------------------------------------------------- arena */
 
 typedef struct {
-    int64_t bq;   /* bias * multiplier + 2^(shift - 1) */
+    int32_t b;    /* bias */
     int32_t m;    /* multiplier */
     int32_t sh;   /* shift */
+    int32_t fast; /* sh >= 32 and |b| <= 2^31 - 1 - 2^24: bias + sum fits int32 (the 32-bit requantisation) */
 } Chan;
 
 typedef struct {
@@ -308,6 +311,12 @@ static const unsigned char *src_row(const Src *s, unsigned y)
     return s->rows->row(s->rows->user, y);
 }
 
+/* bias * m + 2^(sh - 1): the requantisation's constant term (int64, see the ranges above) */
+static int64_t bq_of(const Chan *c)
+{
+    return (int64_t)c->b * c->m + ((int64_t)1 << (c->sh - 1));
+}
+
 #if !TD_NEON
 /* floor(v / 2^s) without shifting a negative value */
 static int64_t shr64(int64_t v, unsigned s)
@@ -322,7 +331,7 @@ static int32_t shr32(int32_t v, unsigned s)
 
 static int8_t requant(int32_t acc, const Chan *c, int32_t lo)
 {
-    int64_t p = c->bq + (int64_t)acc * c->m;
+    int64_t p = bq_of(c) + (int64_t)acc * c->m;
     int32_t q;
     if (c->sh >= 32) {
         q = shr32((int32_t)shr64(p, 32u), (unsigned)(c->sh - 32));   /* floor(floor(p / 2^32) / 2^(sh - 32)) */
@@ -337,26 +346,41 @@ static int8_t requant(int32_t acc, const Chan *c, int32_t lo)
 #if TD_NEON
 /* ---- NEON (the Vita): a block's 8 int32 sums in two registers; the arithmetic of requant() */
 
-/* floor((bq + acc m) / 2^sh) per lane in int64 (vshl by -sh: an arithmetic shift), saturated to int8,
- * then at least lo; n lanes stored at out. */
+/* (bias + sum) * m + 2^(sh - 1), floor-divided by 2^sh, per lane, saturated to int8, then at least lo; n
+ * lanes stored at out. Where bias + sum fits int32 (fast: every channel of a trained blob) that is VRSHL
+ * by -sh of the exact int64 product: (x + 2^(sh-1)) >> sh, round half up, the twin's rule. Otherwise the
+ * int64 constant bias * m + 2^(sh - 1) is added by VMLAL and VSHL shifts (floor). VSHL / VRSHL read the
+ * shift from each 64-bit lane's lowest byte, so a dup of the int32 -sh serves. */
 #define RQ_STORE(LO, HI, C, LOW, OUT, N) do { \
         const Chan *c_ = (C); \
-        int64x2_t b_ = vdupq_n_s64(c_->bq), s_ = vdupq_n_s64(-(int64_t)c_->sh); \
+        int64x2_t s_ = vreinterpretq_s64_s32(vdupq_n_s32(-c_->sh)), p0_, p1_, p2_, p3_; \
         int32x2_t m_ = vdup_n_s32(c_->m); \
-        int64x2_t p0_ = vshlq_s64(vmlal_s32(b_, vget_low_s32(LO), m_), s_); \
-        int64x2_t p1_ = vshlq_s64(vmlal_s32(b_, vget_high_s32(LO), m_), s_); \
-        int64x2_t p2_ = vshlq_s64(vmlal_s32(b_, vget_low_s32(HI), m_), s_); \
-        int64x2_t p3_ = vshlq_s64(vmlal_s32(b_, vget_high_s32(HI), m_), s_); \
-        int16x4_t h0_ = vqmovn_s32(vcombine_s32(vqmovn_s64(p0_), vqmovn_s64(p1_))); \
-        int16x4_t h1_ = vqmovn_s32(vcombine_s32(vqmovn_s64(p2_), vqmovn_s64(p3_))); \
-        int8x8_t v_ = vmax_s8(vqmovn_s16(vcombine_s16(h0_, h1_)), vdup_n_s8((int8_t)(LOW))); \
-        if ((N) == BLK) { \
-            vst1_s8((OUT), v_); \
+        if (c_->fast) { \
+            int32x4_t b_ = vdupq_n_s32(c_->b), l_ = vaddq_s32((LO), b_), h_ = vaddq_s32((HI), b_); \
+            p0_ = vrshlq_s64(vmull_s32(vget_low_s32(l_), m_), s_); \
+            p1_ = vrshlq_s64(vmull_s32(vget_high_s32(l_), m_), s_); \
+            p2_ = vrshlq_s64(vmull_s32(vget_low_s32(h_), m_), s_); \
+            p3_ = vrshlq_s64(vmull_s32(vget_high_s32(h_), m_), s_); \
         } else { \
-            int8_t t_[BLK]; \
-            unsigned i_; \
-            vst1_s8(t_, v_); \
-            for (i_ = 0; i_ < (N); i_++) (OUT)[i_] = t_[i_]; \
+            int64x2_t b_ = vdupq_n_s64(bq_of(c_)); \
+            p0_ = vshlq_s64(vmlal_s32(b_, vget_low_s32(LO), m_), s_); \
+            p1_ = vshlq_s64(vmlal_s32(b_, vget_high_s32(LO), m_), s_); \
+            p2_ = vshlq_s64(vmlal_s32(b_, vget_low_s32(HI), m_), s_); \
+            p3_ = vshlq_s64(vmlal_s32(b_, vget_high_s32(HI), m_), s_); \
+        } \
+        { \
+            int16x4_t h0_ = vqmovn_s32(vcombine_s32(vqmovn_s64(p0_), vqmovn_s64(p1_))); \
+            int16x4_t h1_ = vqmovn_s32(vcombine_s32(vqmovn_s64(p2_), vqmovn_s64(p3_))); \
+            int8x8_t v_ = vqmovn_s16(vcombine_s16(h0_, h1_)); \
+            if (!(LOW)) v_ = vmax_s8(v_, vmov_n_s8(0));   /* ReLU; -128 is the saturation's own floor */ \
+            if ((N) == BLK) { \
+                vst1_s8((OUT), v_); \
+            } else { \
+                int8_t t_[BLK]; \
+                unsigned i_; \
+                vst1_s8(t_, v_); \
+                for (i_ = 0; i_ < (N); i_++) (OUT)[i_] = t_[i_]; \
+            } \
         } \
     } while (0)
 
@@ -386,28 +410,39 @@ static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsi
     static const int16_t top_[8] = {0, 0, 0, -1, -1, -1, -1, -1}, mid_[8] = {-1, -1, -1, -1, -1, -1, 0, 0}; \
     int16x8_t keep = vdupq_n_s16(-1); \
     int last = valid[2]; \
-    unsigned c, q; \
+    unsigned c, q, nq = depthwise ? 1u : cin; \
     const int8_t *r0 = rows[0] + (size_t)j0 * (S), *r1 = rows[1] + (size_t)j0 * (S); \
-    const int8_t *r2 = rows[2] + (size_t)j0 * (S); \
+    const int8_t *r2 = rows[2] + (size_t)j0 * (S), *wq = w; \
     if (!valid[0]) keep = vandq_s16(keep, vld1q_s16(top_)); \
     if (!valid[2]) keep = vandq_s16(keep, vld1q_s16(mid_)); \
     for (c = 0; c < cout; c++) { \
         int32x4_t lo4 = vdupq_n_s32(0), hi4 = lo4; \
-        unsigned q0 = depthwise ? c : 0, q1 = depthwise ? c + 1u : cin; \
-        for (q = q0; q < q1; q++) { \
-            const int8_t *wq = w + 9u * (depthwise ? c : c * cin + q); \
+        const int8_t *x0 = r0, *x1 = r1, *x2 = r2; \
+        if (depthwise) { \
+            x0 += c * plane; \
+            x1 += c * plane; \
+            x2 += c * plane; \
+        } \
+        for (q = 0; q < nq; q++, wq += 9, x0 += plane, x1 += plane, x2 += plane) { \
             int16x8_t wv = vandq_s16(vmovl_s8(vld1_s8(wq)), keep); \
             int16x4_t wa = vget_low_s16(wv), wb = vget_high_s16(wv); \
-            const int8_t *x0 = r0 + q * plane, *x1 = r1 + q * plane, *x2 = r2 + q * plane; \
-            MACL(lo4, hi4, LOAD8(x0, S), wa, 0); \
-            MACL(lo4, hi4, LOAD8(x0 + d, S), wa, 1); \
-            MACL(lo4, hi4, LOAD8(x0 + 2u * d, S), wa, 2); \
-            MACL(lo4, hi4, LOAD8(x1, S), wa, 3); \
-            MACL(lo4, hi4, LOAD8(x1 + d, S), wb, 0); \
-            MACL(lo4, hi4, LOAD8(x1 + 2u * d, S), wb, 1); \
-            MACL(lo4, hi4, LOAD8(x2, S), wb, 2); \
-            MACL(lo4, hi4, LOAD8(x2 + d, S), wb, 3); \
-            if (last) MACN(lo4, hi4, LOAD8(x2 + 2u * d, S), wq[8]); \
+            const int8_t *x = x0; \
+            MACL(lo4, hi4, LOAD8(x, S), wa, 0); \
+            x += d; \
+            MACL(lo4, hi4, LOAD8(x, S), wa, 1); \
+            x += d; \
+            MACL(lo4, hi4, LOAD8(x, S), wa, 2); \
+            x = x1; \
+            MACL(lo4, hi4, LOAD8(x, S), wa, 3); \
+            x += d; \
+            MACL(lo4, hi4, LOAD8(x, S), wb, 0); \
+            x += d; \
+            MACL(lo4, hi4, LOAD8(x, S), wb, 1); \
+            x = x2; \
+            MACL(lo4, hi4, LOAD8(x, S), wb, 2); \
+            x += d; \
+            MACL(lo4, hi4, LOAD8(x, S), wb, 3); \
+            if (last) MACN(lo4, hi4, LOAD8(x + d, S), wq[8]); \
         } \
         RQ_STORE(lo4, hi4, &ch[c], lo, out + c * ostride, n); \
     } \
@@ -415,28 +450,46 @@ static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsi
 K3_BLOCK(k3_block_s1, 1u)
 K3_BLOCK(k3_block_s2, 2u)
 
-/* A block of a 1x1 layer: in[q * BLK + p] -> out[c * ostride + p] (p < n). */
+/* A block of a 1x1 layer: in[q * BLK + p] -> out[c * ostride + p] (p < n). Two output channels per
+ * pass (four sums, two weight vectors and the inputs stay in the 16 Q registers), weights 8 input channels
+ * at a time (never read past a weight row), then one at a time. */
+#define K1_STEP(U, H, L) do { \
+        int16x8_t x_ = vmovl_s8(vld1_s8(in + (q + (U)) * BLK)); \
+        int16x4_t xl_ = vget_low_s16(x_), xh_ = vget_high_s16(x_); \
+        a0 = vmlal_lane_s16(a0, xl_, H(k0), L); b0 = vmlal_lane_s16(b0, xh_, H(k0), L); \
+        a1 = vmlal_lane_s16(a1, xl_, H(k1), L); b1 = vmlal_lane_s16(b1, xh_, H(k1), L); \
+    } while (0)
+
 static void k1_block(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, const int8_t *in,
                      int8_t *out, size_t ostride, unsigned n)
 {
-    unsigned c, q;
-    for (c = 0; c < cout; c++) {
+    unsigned c = 0, q;
+    for (; c + 2u <= cout; c += 2u) {
+        int32x4_t a0 = vdupq_n_s32(0), b0 = a0, a1 = a0, b1 = a0;
+        const int8_t *w0 = w + (size_t)c * cin, *w1 = w0 + cin;
+        for (q = 0; q + 8u <= cin; q += 8u) {
+            int16x8_t k0 = vmovl_s8(vld1_s8(w0 + q)), k1 = vmovl_s8(vld1_s8(w1 + q));
+            K1_STEP(0, vget_low_s16, 0);
+            K1_STEP(1, vget_low_s16, 1);
+            K1_STEP(2, vget_low_s16, 2);
+            K1_STEP(3, vget_low_s16, 3);
+            K1_STEP(4, vget_high_s16, 0);
+            K1_STEP(5, vget_high_s16, 1);
+            K1_STEP(6, vget_high_s16, 2);
+            K1_STEP(7, vget_high_s16, 3);
+        }
+        for (; q < cin; q++) {
+            int16x8_t x = vmovl_s8(vld1_s8(in + q * BLK));
+            MACN(a0, b0, x, w0[q]);
+            MACN(a1, b1, x, w1[q]);
+        }
+        RQ_STORE(a0, b0, &ch[c], lo, out + c * ostride, n);
+        RQ_STORE(a1, b1, &ch[c + 1u], lo, out + (c + 1u) * ostride, n);
+    }
+    for (; c < cout; c++) {
         int32x4_t lo4 = vdupq_n_s32(0), hi4 = lo4;
         const int8_t *wc = w + (size_t)c * cin;
-        for (q = 0; q + 8u <= cin; q += 8u) {
-            int16x8_t wv = vmovl_s8(vld1_s8(wc + q));
-            int16x4_t wa = vget_low_s16(wv), wb = vget_high_s16(wv);
-            const int8_t *x = in + q * BLK;
-            MACL(lo4, hi4, vmovl_s8(vld1_s8(x)), wa, 0);
-            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + BLK)), wa, 1);
-            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 2u * BLK)), wa, 2);
-            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 3u * BLK)), wa, 3);
-            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 4u * BLK)), wb, 0);
-            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 5u * BLK)), wb, 1);
-            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 6u * BLK)), wb, 2);
-            MACL(lo4, hi4, vmovl_s8(vld1_s8(x + 7u * BLK)), wb, 3);
-        }
-        for (; q < cin; q++) MACN(lo4, hi4, vmovl_s8(vld1_s8(in + q * BLK)), wc[q]);
+        for (q = 0; q < cin; q++) MACN(lo4, hi4, vmovl_s8(vld1_s8(in + q * BLK)), wc[q]);
         RQ_STORE(lo4, hi4, &ch[c], lo, out + c * ostride, n);
     }
 }
@@ -465,7 +518,7 @@ static void store_acc(Acc a, const Chan *c, int32_t lo, int8_t *out, unsigned n)
 {
     unsigned p;
     if (c->sh >= 32) {                        /* the usual case: the high word, then a 32-bit shift */
-        int64_t bq = c->bq;
+        int64_t bq = bq_of(c);
         int32_t m = c->m;
         unsigned s = (unsigned)(c->sh - 32);
         for (p = 0; p < n; p++) {
@@ -913,10 +966,11 @@ static void setup(Net *t, const Plan *p)
         r->chan = (uint16_t)ci;
         for (c = 0; c < L->cout; c++, ci++) {
             Chan *q = &t->chan[ci];
-            int32_t sh = L->sh[c];
+            q->b = rds32(L->b + 4u * c);
             q->m = rds32(L->m + 4u * c);
-            q->sh = sh;
-            q->bq = (int64_t)rds32(L->b + 4u * c) * q->m + ((int64_t)1 << (sh - 1));
+            q->sh = L->sh[c];
+            /* |sum| < 2^24 (576 products of 2^14), so bias + sum fits int32 when |bias| <= 2^31 - 1 - 2^24 */
+            q->fast = q->b >= -(INT32_MAX - (1 << 24)) && q->b <= INT32_MAX - (1 << 24);
         }
         r->ring = r->plane = 0;
         if (L->cout > t->maxch) t->maxch = L->cout;

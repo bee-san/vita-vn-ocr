@@ -1,0 +1,93 @@
+{
+ "kind": "textdet-own-dlg-report",
+ "note": "report only, run after the protected read: the owner's CHAOS;CHILD (v14018) native Vita frames as whole dialogue (finder-tighten's own_dlg Vita units: 145 regions x base/+4/+8); the VOCR5 models trained on these frames (in-sample for the recognizers), the detector did not (three VNDB PC screenshots of v14018 are in its synthetic scene pool); intervals: paired bootstrap over the 145 regions (one VN), 10,000 resamples, seed 0",
+ "models": {
+  "VOCR5-S": {
+   "chars": 13866,
+   "regions": 145,
+   "cases": 435,
+   "cer": {
+    "grad": 0.281,
+    "refine": 0.303,
+    "det_refine": 0.483
+   },
+   "det_refine_minus_grad": [
+    0.202,
+    [
+     0.0,
+     0.439
+    ]
+   ],
+   "det_refine_minus_refine": [
+    0.18,
+    [
+     -0.016,
+     0.42
+    ]
+   ],
+   "zero_detection_cases": 0
+  },
+  "VOCR5-N": {
+   "chars": 13866,
+   "regions": 145,
+   "cases": 435,
+   "cer": {
+    "grad": 0.368,
+    "refine": 0.411,
+    "det_refine": 0.483
+   },
+   "det_refine_minus_grad": [
+    0.115,
+    [
+     -0.085,
+     0.348
+    ]
+   ],
+   "det_refine_minus_refine": [
+    0.072,
+    [
+     -0.134,
+     0.306
+    ]
+   ],
+   "zero_detection_cases": 0
+  },
+  "VOCR5-L": {
+   "chars": 13866,
+   "regions": 145,
+   "cases": 435,
+   "cer": {
+    "grad": 0.238,
+    "refine": 0.238,
+    "det_refine": 0.375
+   },
+   "det_refine_minus_grad": [
+    0.137,
+    [
+     -0.049,
+     0.358
+    ]
+   ],
+   "det_refine_minus_refine": [
+    0.137,
+    [
+     -0.029,
+     0.35
+    ]
+   ],
+   "zero_detection_cases": 0
+  }
+ },
+ "inputs": {
+  "base/VOCR5-S/units_VOCR5-S.json": "b634d01beb3fd2547bedd19ed9254087451e66f013bab54468f8e1b600b3ab2b",
+  "units/VOCR5-S/units_s8_c24_seed4.json": "06e6ac9856d963458446ec8cb76d14224c93788891300c2fe5556ce1d5752400",
+  "base/VOCR5-N/units_VOCR5-N.json": "6037952db45545bb29c1ffcbc38c72322b0ef2eb0738ead3c8fedf07705a72f9",
+  "units/VOCR5-N/units_s8_c24_seed4.json": "ad77c7098c33fd0aba1fe3d553b2261b3858521de1c43cbc6d91d62463b3412a",
+  "base/VOCR5-L/units_VOCR5-L.json": "49e4b4b2af9460f08799c2956b18d7912ce0225f48fa2d52b52fd8ecbcae506e",
+  "units/VOCR5-L/units_s8_c24_seed4.json": "93d5683a9fedb3eb1fb1daa0fcf5cb6e05b4975f86b1c2a2de014cbf208ac266",
+  "cohort/own_dlg.pkl": "8255523f7ff137a7f1950f709e1cd054934b6fe471889efb3032095e3583d058",
+  "dets/dets_s8_c24_seed4.json": "e5e5f4faae8d29012e8804d72a475fadb55f8b9fac175582ceabf2db22bd3903",
+  "blob_sha256": "8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179",
+  "c_equals_twin": true
+ }
+}

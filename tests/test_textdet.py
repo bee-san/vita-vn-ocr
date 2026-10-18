@@ -357,8 +357,9 @@ def driver(tmp_path_factory):
         pytest.skip("no C compiler")
     out = tmp_path_factory.mktemp("textdet") / "vocr_textdet_test"
     subprocess.run([CC, "-std=c99", "-O2", "-Wall", "-Wextra", "-Werror",
-                    *(str(ROOT / "runtime" / f) for f in ("vocr_lines.c", "vocr_lines_rows.c", "vocr_textdet.c",
-                                                          "vocr_textdet_test.c")), "-o", str(out)], check=True)
+                    *(str(ROOT / "runtime" / f) for f in ("vocr_lines.c", "vocr_lines_rows.c", "vocr_lines_refine.c",
+                                                          "vocr_textdet.c", "vocr_textdet_test.c")),
+                    "-o", str(out)], check=True)
     return out
 
 
@@ -417,3 +418,23 @@ def test_c_batch_contract(driver, tmp_path):
     assert out == [want, want, "0 0 0"]
     v = [int(t) for t in want.split()]
     assert len(v) == 3 + 6 * v[1]
+
+
+def test_c_det_refine_contract(driver, tmp_path):
+    """Record flag 2 (det+refine): the detector's horizontal lines through VOCR_REFINE_DEFAULT, in-memory and rows
+    forms, equal synth/lines_refine.refine_lines on the twin's horizontal lines; --arena-refine prints
+    max(vocr_textdet_arena_bytes, vocr_refine_arena_bytes)."""
+    blob = P.probe_blob(4, 0)
+    p = tmp_path / "p.vtd"
+    p.write_bytes(blob)
+    rng = np.random.default_rng(5)
+    imgs = [P.designed_region(rng, 4) for _ in range(6)]
+    P.write_batch(tmp_path / "r.bin", [(g, P.REFINE | form) for g in imgs for form in (0, P.ROWS)])
+    out = subprocess.run([str(driver), "--batch", str(p), str(tmp_path / "r.bin")], check=True,
+                         capture_output=True, text=True).stdout.splitlines()
+    want = [P.refine_line(TW.Model(blob), g) for g in imgs for _ in (0, 1)]
+    assert out == want
+    for w, h in ((960, 544), (480, 272), (8, 8)):
+        det, ref = (int(subprocess.run([str(driver), mode, str(p), str(w), str(h)], check=True, capture_output=True,
+                                       text=True).stdout) for mode in ("--arena", "--arena-refine"))
+        assert ref >= det

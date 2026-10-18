@@ -377,10 +377,15 @@ GREY and RGBA, both forms, against the twin's maps and lines; plus the driver's 
 ```sh
 G=runtime/scripts/tools/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc
 $G -std=c99 -O2 -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -static runtime/vocr_lines.c runtime/vocr_lines_rows.c \
-   runtime/vocr_textdet.c runtime/vocr_textdet_test.c -o vtd_neon          # add -DVOCR_NO_NEON for the scalar build
+   runtime/vocr_lines_refine.c runtime/vocr_textdet.c runtime/vocr_textdet_test.c -o vtd_neon   # -DVOCR_NO_NEON: scalar
 printf '#!/bin/sh\nexec runtime/scripts/tools/bin/qemu-arm -cpu cortex-a9 ./vtd_neon "$@"\n' > vtd_qemu && chmod +x vtd_qemu
 python tests/textdet_parity.py --bin ./vtd_qemu --seeds 1 --selftest 3
 ```
+
+det+refine (the protocol's round-2 finder) is the finder mode's lines, then `vocr_refine_lines(_rows)` with
+`VOCR_REFINE_DEFAULT` in the same arena of max(`vocr_textdet_arena_bytes`, `vocr_refine_arena_bytes`) bytes;
+`vocr_textdet_test --batch` runs it for record flag 2 and `--arena-refine` prints that arena, and the parity checks it
+against `synth/lines_refine.refine_lines` on the twin's horizontal lines.
 
 ## Porting notes (vita, psp)
 

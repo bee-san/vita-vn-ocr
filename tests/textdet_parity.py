@@ -10,7 +10,9 @@ fourth (eighth) pixel through to the head's maps, so designed regions drive the 
 (more than 64 components, vertical lines, merging runs, the 4-px drop, boxes at the borders; min_cells 1-4).
 Every blob reads procedural regions (textdet_export.procedural_region, edge sizes from 1x1, odd sizes and
 whole 960x544 / 480x272 screens; GREY and RGBA) through the C driver in the in-memory and row-callback forms
-(and the finder mode, padded strides and odd arenas on some), and the twin; any difference in the head's four
+(and the finder mode, det+refine (the detector's horizontal lines through runtime/vocr_lines_refine.c's
+VOCR_REFINE_DEFAULT against synth/lines_refine.py), padded strides and odd arenas on some), and the twin; any
+difference in the head's four
 maps (--maps), boxes, dark, vertical, order or truncated fails. --selftest N also runs the driver's own
 invariants (vocr_textdet_test --selftest) on N regions of a few of the blobs. Prints
 TEXTDET_PARITY_OK <runs> runs (<regions> regions, ...).
@@ -35,7 +37,7 @@ import textdet_export as E  # noqa: E402
 import textdet_model as TM  # noqa: E402
 import textdet_twin as TW  # noqa: E402
 
-ROWS, FINDER, PADDED, ODD = 1, 2, 4, 8
+ROWS, REFINE, PADDED, ODD, FINDER = 1, 2, 4, 8, 16     # vocr_textdet_test's record flags
 EDGE = ((1, 1), (2, 1), (1, 2), (3, 3), (5, 7), (7, 5), (1, 40), (40, 1), (9, 13), (17, 31), (33, 8), (63, 65))
 
 
@@ -255,6 +257,15 @@ def finder_line(model, img):
     return f"0 {len(boxes)} {int(trunc)}" + "".join(f" {x} {y} {w} {h} {d} 0" for (x, y, w, h), d in zip(boxes, dark))
 
 
+def refine_line(model, img):
+    """det+refine's expected line: synth/lines_refine.refine_lines(grey, boxes, dark, DEFAULT) on the twin's
+    horizontal lines (vertical ones left out), the detector's truncated flag, vertical printed 0."""
+    import lines_refine as LR
+    boxes, dark, trunc = TW.find_lines_ex(model, img)
+    rb, rd, _ = LR.refine_lines(img, boxes, dark, LR.DEFAULT)
+    return f"0 {len(rb)} {int(trunc)}" + "".join(f" {x} {y} {w} {h} {d} 0" for (x, y, w, h), d in zip(rb, rd))
+
+
 def run_driver(binary, args, timeout=3600):
     p = subprocess.run([str(binary), *map(str, args)], capture_output=True, text=True, timeout=timeout,
                        stdin=subprocess.DEVNULL)
@@ -279,6 +290,11 @@ def check_blob(binary, name, blob, imgs, rng, td, maps_every=1):
         if rng.random() < 0.3:
             cases.append((img, base | FINDER | int(rng.integers(0, 2))))
             exp.append((k, "finder", finder_line(model, img)))
+        if rng.random() < 0.5:                              # det+refine, both forms
+            line_r = refine_line(model, img)
+            for form in (0, ROWS):
+                cases.append((img, base | REFINE | form))
+                exp.append((k, f"refine{form}", line_r))
     batch = Path(td) / f"{name}.bin"
     write_batch(batch, cases)
     got = run_driver(binary, ["--batch", bpath, batch]).splitlines()

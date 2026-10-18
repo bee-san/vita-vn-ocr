@@ -17,17 +17,22 @@
  *                                                spelt as long as --batch)
  *   vocr_textdet_test --load BLOB...             vocr_textdet_load's return code per file
  *   vocr_textdet_test --arena BLOB W H           vocr_textdet_arena_bytes (one integer)
+ *   vocr_textdet_test --arena-refine BLOB W H    det+refine's shared arena: max(vocr_textdet_arena_bytes,
+ *                                                vocr_refine_arena_bytes) (one integer)
  *   vocr_textdet_test --arenas BLOB W H          that, vocr_lines_arena_bytes and vocr_lines_det_arena_bytes
  *   vocr_textdet_test --bench BLOB FILE REPS     host time per record (best of REPS), in-memory form
  *
  * FILE records: struct.pack("<4I", width, height, bpp, flags), then width * height * bpp pixel bytes
  * (bpp 1 = GREY, 4 = RGBA). Flags: 0 the in-memory form, 1 the row-callback form (a callback that
- * poisons each row once the next is asked); 2 the finder mode (vocr_find_lines_det with
- * VOCR_LINES_TEXTDET: horizontal lines only, vertical printed 0), 4 a padded stride, 8 an arena at an
- * odd address, all with exactly the arena the call needs. Output per record, one line:
- * rc count truncated, then x y w h dark vertical per line, space separated.
+ * poisons each row once the next is asked); 2 det+refine: the detector's horizontal lines (as a
+ * VocrLineSet; vertical lines left out) then vocr_refine_lines / vocr_refine_lines_rows with
+ * VOCR_REFINE_DEFAULT in the same arena, max(vocr_textdet_arena_bytes, vocr_refine_arena_bytes); 16 the
+ * finder mode alone (vocr_find_lines_det with VOCR_LINES_TEXTDET: the horizontal lines); in both, vertical
+ * prints 0; 4 a padded stride, 8 an arena at an odd address, all with exactly the arena the call needs.
+ * Output per record, one line: rc count truncated, then x y w h dark vertical per line, space separated.
  */
 #include "vocr_textdet.h"
+#include "vocr_lines_refine.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -297,6 +302,20 @@ static int region(const vocr_textdet *m, unsigned w, unsigned h, unsigned bpp)
     REQUIRE(vocr_find_lines_det_rows(&src, VOCR_LINES_TEXTDET, m, larena, lines_need, &lb) == VOCR_LINES_OK);
     REQUIRE(same_set(&la, &lb));
     REQUIRE(vocr_find_lines_det(&im, VOCR_LINES_TEXTDET, NULL, larena, lines_need, &lb) == VOCR_LINES_E_ARG && !lb.count);
+    {   /* det+refine: the horizontal lines through the default refinement, in one exact shared arena */
+        size_t rneed = vocr_refine_arena_bytes(w, h) > need ? vocr_refine_arena_bytes(w, h) : need;
+        unsigned char *ra = (unsigned char *)malloc(rneed);
+        VocrLineSet ra_set, rb_set;
+        REQUIRE(ra != NULL);
+        REQUIRE(vocr_find_lines_det(&im, VOCR_LINES_TEXTDET, m, ra, rneed, &ra_set) == VOCR_LINES_OK);
+        REQUIRE(vocr_refine_lines(&im, VOCR_REFINE_DEFAULT, ra, rneed, &ra_set, NULL) == VOCR_LINES_OK);
+        source_init(&s, &im, slots, NULL, 0);
+        rows_of(&src, &im, &s);
+        REQUIRE(vocr_find_lines_det_rows(&src, VOCR_LINES_TEXTDET, m, ra, rneed, &rb_set) == VOCR_LINES_OK);
+        REQUIRE(vocr_refine_lines_rows(&src, VOCR_REFINE_DEFAULT, ra, rneed, &rb_set, NULL) == VOCR_LINES_OK);
+        REQUIRE(same_set(&ra_set, &rb_set) && ra_set.count <= VOCR_LINES_MAX);
+        free(ra);
+    }
     {
         int f;
         for (f = VOCR_LINES_GRAD; f <= VOCR_LINES_TEXTBOX_RECOVERY; f++) {
@@ -511,7 +530,8 @@ static int batch(const char *blob_path, const char *path, int mode, unsigned rep
         im.pixels = buf; im.width = w; im.height = h; im.stride = stride; im.bpp = bpp;
         need = vocr_textdet_arena_bytes(&m, w, h);
         lneed = vocr_lines_det_arena_bytes(&m, w, h);
-        if (flags & 2u) need = lneed;
+        if (flags & 16u) need = lneed;
+        if ((flags & 2u) && vocr_refine_arena_bytes(w, h) > need) need = vocr_refine_arena_bytes(w, h);
         arena = (unsigned char *)malloc(need + 8u);
         if (!arena) return 2;
         base = arena + ((flags & 8u) ? 1u + w % 7u : 0u);
@@ -541,10 +561,16 @@ static int batch(const char *blob_path, const char *path, int mode, unsigned rep
             if (!slots) return 2;
             source_init(&s, &im, slots, NULL, 0);
             rows_of(&src, &im, &s);
-            if (flags & 2u) {
+            if (flags & 18u) {
+                /* 16: the finder mode (horizontal lines); 2: those lines then vocr_lines_refine.c's default
+                 * refinement, in the same arena (det+refine) */
                 VocrLineSet ls;
                 rc = (flags & 1u) ? vocr_find_lines_det_rows(&src, VOCR_LINES_TEXTDET, &m, base, need, &ls)
                                   : vocr_find_lines_det(&im, VOCR_LINES_TEXTDET, &m, base, need, &ls);
+                if (!rc && (flags & 2u))
+                    rc = (flags & 1u) ? vocr_refine_lines_rows(&src, VOCR_REFINE_DEFAULT, base, need, &ls, NULL)
+                                      : vocr_refine_lines(&im, VOCR_REFINE_DEFAULT, base, need, &ls, NULL);
+                if (rc) ls.count = ls.truncated = 0;
                 printf("%d %u %u", rc, ls.count, ls.truncated);
                 for (i = 0; i < ls.count; i++)
                     printf(" %u %u %u %u %u 0", ls.lines[i].x, ls.lines[i].y, ls.lines[i].w, ls.lines[i].h,
@@ -589,22 +615,29 @@ int main(int argc, char **argv)
         }
         return 0;
     }
-    if (argc == 5 && (!strcmp(argv[1], "--arena") || !strcmp(argv[1], "--arenas"))) {
+    if (argc == 5 && (!strcmp(argv[1], "--arena") || !strcmp(argv[1], "--arenas") ||
+                      !strcmp(argv[1], "--arena-refine"))) {
         size_t n = 0;
         unsigned char *b = load_file(argv[2], &n);
         vocr_textdet m;
         unsigned w = (unsigned)strtoul(argv[3], NULL, 10), h = (unsigned)strtoul(argv[4], NULL, 10);
+        size_t det, ref;
         if (!b || vocr_textdet_load(&m, b, n)) { fprintf(stderr, "cannot load %s\n", argv[2]); return 2; }
+        det = vocr_textdet_arena_bytes(&m, w, h);
+        ref = vocr_refine_arena_bytes(w, h);
         if (!strcmp(argv[1], "--arena"))
-            printf("%lu\n", (unsigned long)vocr_textdet_arena_bytes(&m, w, h));
+            printf("%lu\n", (unsigned long)det);
+        else if (!strcmp(argv[1], "--arena-refine"))     /* det+refine shares one arena */
+            printf("%lu\n", (unsigned long)(det > ref ? det : ref));
         else
-            printf("%lu %lu %lu\n", (unsigned long)vocr_textdet_arena_bytes(&m, w, h),
-                   (unsigned long)vocr_lines_arena_bytes(w, h), (unsigned long)vocr_lines_det_arena_bytes(&m, w, h));
+            printf("%lu %lu %lu\n", (unsigned long)det, (unsigned long)vocr_lines_arena_bytes(w, h),
+                   (unsigned long)vocr_lines_det_arena_bytes(&m, w, h));
         free(b);
         return 0;
     }
     if (argc == 4 && !strcmp(argv[1], "--batch")) return batch(argv[2], argv[3], RUN, 0);
     fprintf(stderr, "usage: %s --selftest CASES BLOB... | --batch BLOB FILE | --maps BLOB FILE | --dry BLOB FILE |\n"
-                    "       --load BLOB... | --arena BLOB W H | --arenas BLOB W H | --bench BLOB FILE REPS\n", argv[0]);
+                    "       --load BLOB... | --arena BLOB W H | --arena-refine BLOB W H | --arenas BLOB W H |\n"
+                    "       --bench BLOB FILE REPS\n", argv[0]);
     return 2;
 }

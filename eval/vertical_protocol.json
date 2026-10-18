@@ -123,5 +123,8 @@
     "the test set is read once for the selection (fixed columns and end to end); report only on the same read: R* (a1 + VOCR5-N) fixed and end to end with P1, VOCR5-V3500 fixed columns; seed 2 is read on development only"
    ]
   }
+ ],
+ "disclosures": [
+  "added after the test read, as a correction of 'frozen': before the protocol commit (dcf6769, 08:23Z) the column finder P0 ran on the development regions as first built (MeikiOCR boxes, PP-OCRv6 small's readings as stand-in labels; column F1 0.740, 07:57-08:15Z) and P1's valley split and density gate were designed after a look at 12 of P0's failure regions there (F1 0.750 on the same provisional regions); no recognizer read any development column before the freeze. The development comparison P1 - P0 therefore favours P1; the test read (P1 only) is unaffected"
  ]
 }

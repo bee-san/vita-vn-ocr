@@ -84,7 +84,7 @@
  "amendments": [
   {
    "n": 1,
-   "when": "2026-10-18 ~09:10Z, after the development labels and before any vertical score (VOCR5-V seed 1 is training; no development column has been read by any recognizer arm)",
+   "when": "committed 2026-10-18T09:09:00Z (74f2c19), after the development labels and before any vertical score (VOCR5-V seed 1 was training; no development column had been read by any recognizer arm)",
    "what": [
     "development set pinned: eval/manifests/vertical-dev-columns.jsonl sha256 c79df64f6971d42c46057956ee1656cb06012800b304fb8633780ad76c1b198d and eval/manifests/vertical-dev-regions.jsonl sha256 61219f5dd7d61e4d43f7997cac17c428a0e6cbc6e0b2ea8242f4ccce48bb06c5: 654 columns (VN: 202 dialogue columns, 2,275 characters, 25 clusters, 49 pages, PSP and PC-scaled; manga: 262 columns, 1,483 characters, 37 pages), 181 regions",
     "labels: two independent blind Claude passes (vertical-review-1/2 and -4/5) agreed on 474 of 477 columns both read as text; 13 disagreements settled by a third look (the vertical agent); a blind spot check of 26 random agreed labels found 0 errors (26/26)",
@@ -94,7 +94,7 @@
   },
   {
    "n": 2,
-   "when": "2026-10-18 ~10:30Z, after the development scores of a0, a1 and VOCR5-V seed 1, before any run below starts or the test set is read",
+   "when": "committed 2026-10-18T10:19:34Z (6b3b832), after the development scores of a0, a1 and VOCR5-V seed 1, before either run below started or the test set was read",
    "decisions_so_far": [
     "code_only: a1 - a0 (VOCR5-N, VN development) = -1.19 points (cluster interval -2.47 to -0.42): R* = a1 + VOCR5-N (VN 36.70%, manga 4.18%)",
     "adopt_V: VOCR5-V seed 1 (last checkpoint, blob sha256 ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172, 819,792 B) VN development 10.64% (manga 2.70%); V - R* VN = -26.07 points (-35.13 to -16.80): adopted",
@@ -107,7 +107,7 @@
   },
   {
    "n": 3,
-   "when": "2026-10-18 ~10:45Z, after the test labels, before the test set is read by any arm or finder",
+   "when": "committed with this record (see git log; 2026-10-18 about 10:24Z), after the test labels, before the test set is read by any arm or finder",
    "what": [
     "test set pinned: eval/manifests/vertical-test-columns.jsonl sha256 912bebf5ba171374c79a0a584bb595a354e8ea2d8ba687a46f469833b0e89d05, eval/manifests/vertical-test-regions.jsonl sha256 81ff743b12ae34c4bacbfef20296e754dc67bf62bae0404b7ef3925edf9ca32c, and the private part (the owner's Trick x Logic PSP frames: 22 columns, 2 regions; never committed) columns sha256 9289084a915d8863c4f6dada60f41f4778efb24795fd56d0ced27a3a50a5eed7, regions sha256 ba9043aa8069ec4f47a1be119d6132274f7c465a8b3baafdcbb3939a63386d5a",
     "test VN cohort: 173 dialogue columns, 2,453 characters, 16 series clusters (Bakumatsu Rock, Ren'ai Banchou 1-2, Yunohana SpRING! (PS Vita), Trick x Logic (the owner's PSP frames), 12 PC clusters); manga: Black Jack ni Yoroshiku vol. 13, 126 columns, 694 characters, 25 pages",

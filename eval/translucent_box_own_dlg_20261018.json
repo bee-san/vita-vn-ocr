@@ -1,0 +1,589 @@
+{
+ "kind": "translucent-box-own-dlg",
+ "computed": "2026-10-18T09:39:09Z",
+ "note": "report only: the owner frames (finder-tighten own_dlg, 3 VNs; training data, seen during design as a no-false-split check); VN-cluster intervals need 5 VNs, so none",
+ "models": {
+  "VOCR5-S": {
+   "vita": {
+    "grad": {
+     "errors": 39,
+     "chars": 13866,
+     "cer": 0.2813
+    },
+    "refine": {
+     "errors": 42,
+     "chars": 13866,
+     "cer": 0.3029
+    },
+    "split": {
+     "errors": 39,
+     "chars": 13866,
+     "cer": 0.2813
+    },
+    "split_refine": {
+     "errors": 42,
+     "chars": 13866,
+     "cer": 0.3029
+    },
+    "units": 435,
+    "vns": 1,
+    "split_refine-refine": {
+     "delta": 0.0,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split-grad": {
+     "delta": 0.0,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "refine-grad": {
+     "delta": 0.0216,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split_refine-grad": {
+     "delta": 0.0216,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    }
+   },
+   "psp": {
+    "grad": {
+     "errors": 369,
+     "chars": 18744,
+     "cer": 1.9686
+    },
+    "refine": {
+     "errors": 228,
+     "chars": 18744,
+     "cer": 1.2164
+    },
+    "split": {
+     "errors": 264,
+     "chars": 18744,
+     "cer": 1.4085
+    },
+    "split_refine": {
+     "errors": 224,
+     "chars": 18744,
+     "cer": 1.195
+    },
+    "units": 825,
+    "vns": 2,
+    "split_refine-refine": {
+     "delta": -0.0213,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split-grad": {
+     "delta": -0.5602,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "refine-grad": {
+     "delta": -0.7522,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split_refine-grad": {
+     "delta": -0.7736,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    }
+   },
+   "all": {
+    "grad": {
+     "errors": 408,
+     "chars": 32610,
+     "cer": 1.2511
+    },
+    "refine": {
+     "errors": 270,
+     "chars": 32610,
+     "cer": 0.828
+    },
+    "split": {
+     "errors": 303,
+     "chars": 32610,
+     "cer": 0.9292
+    },
+    "split_refine": {
+     "errors": 266,
+     "chars": 32610,
+     "cer": 0.8157
+    },
+    "units": 1260,
+    "vns": 3,
+    "split_refine-refine": {
+     "delta": -0.0123,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split-grad": {
+     "delta": -0.322,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "refine-grad": {
+     "delta": -0.4232,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split_refine-grad": {
+     "delta": -0.4354,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    }
+   }
+  },
+  "VOCR5-N": {
+   "vita": {
+    "grad": {
+     "errors": 51,
+     "chars": 13866,
+     "cer": 0.3678
+    },
+    "refine": {
+     "errors": 57,
+     "chars": 13866,
+     "cer": 0.4111
+    },
+    "split": {
+     "errors": 51,
+     "chars": 13866,
+     "cer": 0.3678
+    },
+    "split_refine": {
+     "errors": 57,
+     "chars": 13866,
+     "cer": 0.4111
+    },
+    "units": 435,
+    "vns": 1,
+    "split_refine-refine": {
+     "delta": 0.0,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split-grad": {
+     "delta": 0.0,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "refine-grad": {
+     "delta": 0.0433,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split_refine-grad": {
+     "delta": 0.0433,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    }
+   },
+   "psp": {
+    "grad": {
+     "errors": 287,
+     "chars": 18744,
+     "cer": 1.5312
+    },
+    "refine": {
+     "errors": 178,
+     "chars": 18744,
+     "cer": 0.9496
+    },
+    "split": {
+     "errors": 195,
+     "chars": 18744,
+     "cer": 1.0403
+    },
+    "split_refine": {
+     "errors": 179,
+     "chars": 18744,
+     "cer": 0.955
+    },
+    "units": 825,
+    "vns": 2,
+    "split_refine-refine": {
+     "delta": 0.0053,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split-grad": {
+     "delta": -0.4908,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "refine-grad": {
+     "delta": -0.5815,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split_refine-grad": {
+     "delta": -0.5762,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    }
+   },
+   "all": {
+    "grad": {
+     "errors": 338,
+     "chars": 32610,
+     "cer": 1.0365
+    },
+    "refine": {
+     "errors": 235,
+     "chars": 32610,
+     "cer": 0.7206
+    },
+    "split": {
+     "errors": 246,
+     "chars": 32610,
+     "cer": 0.7544
+    },
+    "split_refine": {
+     "errors": 236,
+     "chars": 32610,
+     "cer": 0.7237
+    },
+    "units": 1260,
+    "vns": 3,
+    "split_refine-refine": {
+     "delta": 0.0031,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split-grad": {
+     "delta": -0.2821,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "refine-grad": {
+     "delta": -0.3159,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split_refine-grad": {
+     "delta": -0.3128,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    }
+   }
+  },
+  "VOCR5-L": {
+   "vita": {
+    "grad": {
+     "errors": 33,
+     "chars": 13866,
+     "cer": 0.238
+    },
+    "refine": {
+     "errors": 33,
+     "chars": 13866,
+     "cer": 0.238
+    },
+    "split": {
+     "errors": 33,
+     "chars": 13866,
+     "cer": 0.238
+    },
+    "split_refine": {
+     "errors": 33,
+     "chars": 13866,
+     "cer": 0.238
+    },
+    "units": 435,
+    "vns": 1,
+    "split_refine-refine": {
+     "delta": 0.0,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split-grad": {
+     "delta": 0.0,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "refine-grad": {
+     "delta": 0.0,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split_refine-grad": {
+     "delta": 0.0,
+     "clusters": 1,
+     "chars": 13866,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    }
+   },
+   "psp": {
+    "grad": {
+     "errors": 266,
+     "chars": 18744,
+     "cer": 1.4191
+    },
+    "refine": {
+     "errors": 181,
+     "chars": 18744,
+     "cer": 0.9656
+    },
+    "split": {
+     "errors": 185,
+     "chars": 18744,
+     "cer": 0.987
+    },
+    "split_refine": {
+     "errors": 182,
+     "chars": 18744,
+     "cer": 0.971
+    },
+    "units": 825,
+    "vns": 2,
+    "split_refine-refine": {
+     "delta": 0.0053,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split-grad": {
+     "delta": -0.4321,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "refine-grad": {
+     "delta": -0.4535,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split_refine-grad": {
+     "delta": -0.4481,
+     "clusters": 2,
+     "chars": 18744,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    }
+   },
+   "all": {
+    "grad": {
+     "errors": 299,
+     "chars": 32610,
+     "cer": 0.9169
+    },
+    "refine": {
+     "errors": 214,
+     "chars": 32610,
+     "cer": 0.6562
+    },
+    "split": {
+     "errors": 218,
+     "chars": 32610,
+     "cer": 0.6685
+    },
+    "split_refine": {
+     "errors": 215,
+     "chars": 32610,
+     "cer": 0.6593
+    },
+    "units": 1260,
+    "vns": 3,
+    "split_refine-refine": {
+     "delta": 0.0031,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split-grad": {
+     "delta": -0.2484,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "refine-grad": {
+     "delta": -0.2607,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    },
+    "split_refine-grad": {
+     "delta": -0.2576,
+     "clusters": 3,
+     "chars": 32610,
+     "pairs": 1,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": null
+    }
+   }
+  }
+ }
+}

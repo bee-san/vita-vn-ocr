@@ -1,0 +1,254 @@
+{
+ "kind": "translucent-box-protocol",
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/98",
+ "schema": 1,
+ "frozen": "2026-10-18T09:04:05Z",
+ "rule_of_this_file": "Written and pushed before any candidate is scored on development data. Nothing here changes after that except through a dated amendment appended to 'amendments', made before the scores it can affect.",
+ "owner_steering": "2026-10-18 06:50Z: do all four workstreams, PRs and issues, auto-merge, issues left open; 'we need it to run on a ps vita, so smaller == better'",
+ "sources_sha256": {
+  "runtime/vocr_lines_split.c": "a41fb636d58c13b05026e2ceaf0dba53765f11e7710851f5fb811bca86b314cb",
+  "runtime/vocr_lines_split.h": "518058ac5d7ff999008d240e0cb067b60f5e34a2463c5d8f9807b359b7ccf659",
+  "runtime/vocr_lines_split_test.c": "3b54533aab5e745852d64093df6e0daf13c8b66d209660d710c2130cc7ee185d",
+  "synth/lines_split.py": "86da9b151b985689a7eae49abcc105dab89a04f0aa8246b852fa436b96c5d725",
+  "tests/lines_split_parity.py": "b5834c8707abcb3076508a77932f61e4f5aa1e4781721d50452a3a3fe9050030"
+ },
+ "harness_sha256_at_freeze": {
+  "eval/translucent_box.py": "08c4f24d2f97672ae135cdeb727113dc8aefbaacff4f427e1f429777563ef491"
+ },
+ "harness_note": "eval/translucent_box.py may gain report and protected-set commands after the freeze; the classifier, the cohorts (the tag rows' sha256 below) and the score path do not change",
+ "unchanged_sha256": {
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+  "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+  "runtime/vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465",
+  "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+  "runtime/vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+  "runtime/vocr.c": "3e1756138b2e1d9aff15abdda95b02e0c015a5ba0af99678bdd678377b73f559",
+  "runtime/vocr.h": "30bb32693e634a4c4b4cd5cd3a4da8d33f6882bf00348d0e1d8264ba08376271",
+  "train/general_vn_textbox_guard.py": "637fbe5a3cb06dcfd83399218c1558c6d3c69d4ebba44ab0ca0742f2b89b254e",
+  "eval/finder_tighten.py": "a01ac2e8a8b136b5ea677fbc3f7a7226f158620af6eea7b928e939b5f57148f4",
+  "eval/textdet.py": "9046680b50b98abd8a7edb9e27511f554355839d37f843f174510b9285335500",
+  "eval/manifests/reserved.json": "8ddaace6d1c9be5331bbcf628ff64d1c51365dc61f8a47d343d1bfb202e894cc"
+ },
+ "recognizers": {
+  "VOCR5-S": {
+   "release": "v0.3.0",
+   "asset": "VOCR5_S_w8.vocr",
+   "run": "v5f_S_seed2",
+   "blob_bytes": 819792,
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+  },
+  "VOCR5-N": {
+   "release": "v0.3.0",
+   "asset": "VOCR5_N_w8.vocr",
+   "run": "v5f_N_seed3",
+   "blob_bytes": 1185632,
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+  },
+  "VOCR5-L": {
+   "release": "v0.3.0",
+   "asset": "VOCR5_L_w8.vocr",
+   "run": "v5f_L_seed2",
+   "blob_bytes": 2473696,
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+  }
+ },
+ "candidate": {
+  "name": "split",
+  "split_flags": 1,
+  "flag_names": "VOCR_SPLIT_STROKE",
+  "api": [
+   "vocr_split_lines(im, flags, arena, bytes, set, rows_read)",
+   "vocr_split_lines_rows(src, flags, arena, bytes, set, rows_read)"
+  ],
+  "where": "after the GRAD finder (runtime/vocr_lines.c, unchanged), before the refinement (runtime/vocr_lines_refine.c, unchanged); reads each box's own pixels only",
+  "off": "flags 0 returns the finder's set unchanged and reads nothing (bit-identical; tested)",
+  "arena": "vocr_split_arena_bytes(w, h) = 3 + up4(3w) + 3 up4(2h) <= vocr_lines_arena_bytes(w, h) (tested on a grid of sizes)",
+  "method": "synth/lines_split.py's docstring (the twin is the specification): per GRAD box of at least 16 rows, bright and dark ridges along the rows (reach 3 px), S(y) = min(#bright, #dark) above 2/5 of their 99th percentiles (floor 24), valley segmentation (S[y] * 3 <= the smaller neighbouring peak), bands (S * 4 >= the segment's peak), text bands (>= 70% of the tallest, >= 10% of the heaviest mass, >= 6 rows), a continuity guard on the horizontal 3-pixel contrast (the gap's smallest count <= 60% of the bands' upper median), lines = band +- 16%, the box's columns and dark flag",
+  "constants": {
+   "S_BAND_H": 70,
+   "S_BAND_M": 10,
+   "S_BAND_MINH": 6,
+   "S_BDEN": 4,
+   "S_BNUM": 1,
+   "S_CFLOOR": 40,
+   "S_CONT": 60,
+   "S_MARGIN": 16,
+   "S_MAXW": 65535,
+   "S_MIN_H": 16,
+   "S_R": 3,
+   "S_SEGS": 16,
+   "S_TFLOOR": 24,
+   "S_VDEN": 3,
+   "S_VNUM": 1
+  },
+  "arms": {
+   "grad": {
+    "split_flags": 0,
+    "refine_flags": 0
+   },
+   "refine": {
+    "split_flags": 0,
+    "refine_flags": 31
+   },
+   "split": {
+    "split_flags": 1,
+    "refine_flags": 0
+   },
+   "split_refine": {
+    "split_flags": 1,
+    "refine_flags": 31
+   }
+  },
+  "design": "chosen on training data only (eval/translucent_box.py design: realplus and teacher training frames, every reserved VN, every wd frame and every linefind screenshot left out; the sets below); the record is eval/translucent_box_design_20261018.json",
+  "design_sets": {
+   "design": {
+    "tagged": {
+     "regions": 600,
+     "cases": 1800,
+     "vns": 537,
+     "by_src": {
+      "realplus": 472,
+      "teacher": 128
+     },
+     "by_kind": {
+      "vita": 600,
+      "psp": 0
+     }
+    },
+    "rest": {
+     "regions": 600,
+     "cases": 1800,
+     "vns": 586,
+     "by_src": {
+      "realplus": 552,
+      "teacher": 48
+     },
+     "by_kind": {
+      "vita": 600,
+      "psp": 0
+     }
+    }
+   },
+   "design_psp": {
+    "tagged": {
+     "regions": 396,
+     "cases": 1188,
+     "vns": 314,
+     "by_src": {
+      "realplus": 0,
+      "teacher": 396
+     },
+     "by_kind": {
+      "vita": 0,
+      "psp": 396
+     }
+    },
+    "rest": {
+     "regions": 396,
+     "cases": 1188,
+     "vns": 307,
+     "by_src": {
+      "realplus": 0,
+      "teacher": 396
+     },
+     "by_kind": {
+      "vita": 0,
+      "psp": 396
+     }
+    }
+   }
+  }
+ },
+ "development": {
+  "wd": "VOCR5's development whole dialogue, unchanged (eval/textdet.wd_units: tv_dlg plus the dn_dlg frames tv_dlg does not hold, base / +4 / +8 px; VOCR5's cohorts, sha256 below); every crop a mode returns read in order by the C runtime in W8I, joined, scored by transcript_score (dialogue text)",
+  "cohorts_sha256": {
+   "tv_dlg": "f1007ab4e943012330b229cc2630f3fc9d33aa94d6dac03130bc5ea5126c1af3",
+   "dn_dlg": "c6dfd35293e7716bc3772fffc88c8d8aeba62c8fa20f97c0d5041b4f1dbc1e1f"
+  },
+  "translucent_box_cohort": "the wd units whose base region the frozen classifier tags (eval/translucent_box.py busyness >= 0.03, sample >= 48 px; the tags as committed in eval/translucent_box_prevalence_20261018.json and the private rows file below)",
+  "rest_of_dev": "every other wd unit",
+  "native_vita": "#97's native-Vita subset (eval/textdet.native_vita_shots: teacher_val frames read as kind 'vita' and devnative's Vita frames)",
+  "tags_rows_sha256": "864fdcb967c2a03756f17eb3a4a4dc72525dedf0d96cfb2de7d3615b7773763e",
+  "counts": {
+   "tagged": {
+    "units": 156,
+    "regions": 52,
+    "vns": 32,
+    "chars": 3183,
+    "by_platform": {
+     "vita": 45,
+     "psp": 111
+    }
+   },
+   "rest": {
+    "units": 1005,
+    "regions": 335,
+    "vns": 90,
+    "chars": 22671,
+    "by_platform": {
+     "vita": 489,
+     "psp": 516
+    }
+   },
+   "native_vita": {
+    "units": 150,
+    "regions": 50,
+    "vns": 9,
+    "chars": 3738,
+    "by_platform": {
+     "vita": 150,
+     "psp": 0
+    }
+   },
+   "native_vita_tagged_units": 18
+  },
+  "baseline": "#97's frozen baseline units (GRAD flags 0 / refine 31; $HERD/shared/artifacts/textdet/baseline/wd): this run's grad and refine units must equal them unit for unit",
+  "baseline_units_sha256": {
+   "VOCR5-S": "a8b0e13e93ad0b57407f7adfb6b1b3c8bcb8b675d988113979825430e3255ebe",
+   "VOCR5-N": "e02d09c6e399b120ce9404670afab50be1e1b6a47e52bd6d6872baed623b7edb",
+   "VOCR5-L": "0aeec03c3f4679700920d229754f7a31646fbffbe564a4df5f6c1bb1af4eac1b"
+  },
+  "bootstrap": {
+   "reps": 10000,
+   "seed": 0,
+   "min_clusters": 5,
+   "method": "eval/textdet.vn_diff: VN clusters resampled with numpy default_rng(0).integers, 2.5 / 97.5 percentiles, variants pooled"
+  }
+ },
+ "rule": {
+  "adopted_iff": [
+   "A. translucent-box cohort: split_refine - refine has a VN-cluster 95% interval entirely below 0, for each of VOCR5-S, -N and -L",
+   "B. rest of dev: split_refine - refine has no interval entirely above 0, for each model",
+   "C. native Vita: neither split_refine - refine nor split - grad has an interval entirely above 0, for any model",
+   "D. the C driver equals the twins on every development case in all four modes",
+   "E. cost: VitaSDK Thumb-2 text of vocr_lines_split.o at -Os <= 4,096 B; deepest stack frame (-fstack-usage) <= 4,096 B; the arena bound above; an estimated <= 25 ms per 900x150 box at 333 MHz on one Cortex-A9 core (the A9 cycle model, calibrated as #97 to VOCR3-H15's 5.0-5.2 ms per CTC frame)"
+  ],
+  "rubi_default": "if adopted: Rubi runs the split in every game (its own setting, default on) when, for each model, also F. tagged: split - grad has an interval entirely below 0 and G. rest of dev: split - grad has no interval entirely above 0 (Rubi's Vita games run no refinement by default); otherwise the split runs only where the refinement does (Rubi's ocr_refine_lines, PSP games by default)",
+  "not_adopted": "the verdict is negative; a fallback (#97's detector gated on boxes the classifier tags, or the textgate model) may be tried only through a dated amendment made before any of its scores; the protected sets are read once for the candidate, labelled not adopted",
+  "report_only": [
+   "per platform and per variant",
+   "linefind detection (vita_dev, psp_dev; holdouts)",
+   "#97's det+refine (s8_c24_seed4, its stored units) on the same cohorts",
+   "the owner's frames (own_dlg; seen during design as a no-false-split check)",
+   "the design record"
+  ]
+ },
+ "protected": {
+  "when": "once, after the development record (scores, rule outcome) is committed and pushed",
+  "sets": [
+   "vita-test + psp-test whole dialogue: eval's regions (a region with an uncertain line left out whole), base / +4 / +8, the four modes, each VOCR5 model; body text and all text; VN-cluster intervals (eval/finder_tighten's protected procedure with the split's modes)",
+   "CLANNAD long run: owner-drive-ingest's frozen references (refs_sha256 35411688...), each page's ROI, the C finder; a reference line reads every line derived from its GRAD box (the split, then the refinement), joined in order (eval/finder_tighten's clannad procedure); dialogue (no name style) and all lines; whole-page bootstraps"
+  ],
+  "attempts": "attempt records created exclusively; a second run refuses",
+  "role": "report only: they decide nothing"
+ },
+ "disclosures": [
+  "The failure modes were diagnosed on development regions before this freeze, by viewing (GRAD and GRAD + refine boxes of v27449's four frames and of the 24 highest-error base regions, and the classifier's ranked samples); the classifier's statistic and threshold were chosen while viewing development regions. No candidate split was run on a development case before this freeze.",
+  "During design the prototypes were also run on the owner's frames (finder-tighten's own_dlg cohort, training data) as a check for false splits on native console text; it is report only here."
+ ],
+ "estimates": "every console time is a host estimate (vita/a9_cycles.py's model under qemu-arm, as #83 and #97), labelled as such; nothing runs on a console (hardware work is paused by the owner)",
+ "amendments": []
+}

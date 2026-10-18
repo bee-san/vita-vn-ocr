@@ -1,0 +1,53 @@
+{
+ "kind": "vita-vn-ocr-vertical-protocol",
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/99",
+ "frozen": "2026-10-18, before any vertical CER, finder score or training run beyond a 200-step smoke test (pipeline check, nothing scored on development data)",
+ "owner_steering": [
+  "2026-10-18 06:50Z: vertical text is worth it because of noboru on PS Vita (NOBORU: a PS Vita manga reader)",
+  "2026-10-18 07:40Z: a dedicated small, fast vertical / manga recognizer; Manga109-s only, through the owner's Hugging Face account; vertical VN dialogue stays the primary metric, manga is training data and an extra development cohort"
+ ],
+ "sets": {
+  "note": "Development and test columns are MeikiOCR's vertical detector boxes refined to their main-text ink (eval/vertical_data.py column_box), each labelled by two independent blind Claude reviews (a third look where they disagree; disagreements left out). Split by series cluster (eval/vertical_data.py CONSOLE_CLUSTERS; PC VNs by VNDB-relation component; manga by volume). The manifests are pinned by sha256 in amendment 1, before any score.",
+  "dev": "eval/manifests/vertical-dev columns and regions (amendment 1)",
+  "test": "eval/manifests/vertical-test columns and regions (amendment 1); read once, after the selection is committed and pushed, with attempt records",
+  "cohorts": {
+   "vn": "console (PS Vita, PSP) and PC (scaled to 960x544) visual-novel pages: the PRIMARY cohort",
+   "manga": "Black Jack ni Yoroshiku (Shuho Sato, densho810.com/free, free secondary use) in NOBORU's fit-to-width view: vol. 1 development, vol. 13 test; reported on its own line"
+  },
+  "dialogue": "columns not marked as a speaker name"
+ },
+ "metric": {
+  "primary": "VN development dialogue CER on fixed column crops (the column box plus 4 px on Vita and manga views, 2 px on PSP; console polarity), C runtime W8I greedy, eval/metrics.norm both sides, Levenshtein over reference characters",
+  "secondary": ["manga development CER", "end-to-end region CER (finder, columns in its reading order, joined, against the region's columns right to left)", "column F1 at IoU >= 0.5"],
+  "intervals": "10,000 bootstrap resamples over series clusters, seed 0 (eval/vertical.py cluster_diff)"
+ },
+ "arms": {
+  "a0": {"input": "synth/vertical.py retile(crop, 'a0')", "models": {"VOCR5-S": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d", "VOCR5-N": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc", "VOCR5-L": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"}},
+  "a1": {"input": "synth/vertical.py retile(crop, 'a1')", "models": "as a0"},
+  "V": {"input": "synth/vertical.py rotate_ccw(crop) (runtime/vocr_vertical.c vocr_column_rotate)", "models": "VOCR5-V runs below, exported int8 (train/export.py --int8) and read in W8I"},
+  "b": "not run: VOCR5-S's head and bottleneck are 502,171 of its 726,075 parameters, so a head variant saves little; with the turned input the trunk has to change anyway, and with the re-tiled input it keeps a0/a1's segmentation limits"
+ },
+ "VOCR5-V": {
+  "topology": "train/model.py TinyVNOCR width 1.0, bottleneck 96, depth 1, ctx 2 (VOCR5-S's)",
+  "vocab": {"file": "data/vocab_4987_proof.txt", "sha256": "4a1e7cb77c627a217ae57c7ed427f0695c732dfb85158c674ec4d14994a4e04c"},
+  "init": {"file": "vocr5-train/runs/v5f_S_seed2/ckpt_best.pt (the released VOCR5-S's checkpoint)", "sha256": "e4b05525ecf42620ca2c7b12eb36fe66d4befac07cc0186f6fea3cd90c395cc1"},
+  "recipe": "train/train2.py --steps 30000 --batch 96 --lr 0.001 --final-lr 0.05 --warmup 500 --wd 0.01 --width 1.0 --bottleneck 96 --vocab data/vocab_4987_proof.txt --ema 0.999 --threads 5 --eval-every 2500 --keep-evals --src vsyn:0.75:<the 100 pinned shards>:stream=1,pool=6,inv=0.2 --src vra:0.15:vreal_agree.npz:inv=0.2 --src vps:0.10:vreal_ps.npz:inv=0.2 --val vval:<pinned val shard>:n=3000 --select vval",
+  "data": {
+   "synthetic": "data/manifests/vertical_shards_v1.json (synth/vertical_render.py, 100 x 10,000 training crops + 3,000 validation crops)",
+   "real_agree": {"file": "vreal_agree.npz", "sha256": "1395bf2b7b7731dbab58414866bf8716688aaf6eaad5bef81be2438c9b0a0a52", "rule": "training-side pages only (eval/vertical_data.py train-pages: no VN sharing a VNDB-relation component with a development or test VN, no reserved.json test or dev_sample VN, no test session, no eval screenshot); MeikiOCR's page read == PP-OCRv6 small's read of the turned crop; each also at half scale"},
+   "real_ps": {"file": "vreal_ps.npz", "sha256": "8d1be8cc0cc3bb1790a66e0319bf6381db052f5a3ffbabbf6cc05dada9eb1b51", "rule": "the same pages; the two disagree, PP-OCRv6 small's lowest character confidence >= 0.9: its reading"}
+  },
+  "model_of_a_run": "its last checkpoint (step 30,000, the EMA weights); --select only picks ckpt_best for monitoring, which is not used",
+  "runs": "seed 1 is the candidate; at most 3 more runs in all (seed 2 for its variance, report only; a smaller vocabulary only if seed 1 is adopted, under the same rule against it)",
+  "manga109s": "added as a training source only if the owner's token appears; such a run is a new candidate under the same rule, and its release notes say Manga109-s"
+ },
+ "rules": {
+  "code_only": "a1 replaces a0 only if a1 - a0 on VN development (VOCR5-N) has an interval entirely below 0; R* = the better arm with VOCR5-N",
+  "adopt_V": "VOCR5-V (seed 1) is adopted when (i) VN development: V - R* has an interval upper bound below +0.5 points, and (ii) V's VN point estimate is lower than R*'s, or V - R* on manga development has an interval entirely below 0",
+  "sizes": "among adopted VOCR5-V sizes the smallest wins; if none is adopted, R* ships and VOCR5-V is reported as not adopted",
+  "manga_never_trades_vn": "manga is never a reason to accept a resolved VN loss",
+  "finder": "candidates: P0 = synth/vertical.py variant 0 (GRAD transposed), P1 = variant 1 (valley split, density-gated growth), D = the textdet detector s8_c24 (v0.3.1-textdet.1, sha256 8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179) vertical boxes. With the selected recognizer arm: P1 replaces P0 only if P1 - P0 end-to-end VN development CER has an interval entirely below 0; D replaces the chosen projection finder only if D - it has an interval entirely below 0 and its arena (with the recognizer's) stays within the tier's; eligible finders: arena <= 131,072 B at 960x544, C == twin on every development region",
+  "test": "the test set is read once, after the selection is committed and pushed, for the selected finder and arm; every other arm is report only"
+ },
+ "estimates": "console time is a host estimate: MAC counts of the recognizer at VOCR3-H15's measured 5.0-5.2 ms per CTC frame (1,564,992 MACs per frame), 333 and 444 MHz; nothing here has run on a console"
+}

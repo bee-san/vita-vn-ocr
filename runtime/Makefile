@@ -3,7 +3,9 @@
 #   make                  build/vocr_cli and build/libvocr.so (release flags; vocr.c + vocr_lm.c)
 #   make check            the line finder's checks (check-lines, vocr_lines.mk), the text detector's
 #                         (check-textdet, vocr_textdet.mk: strict compile, its C self-test and its
-#                         parity with synth/textdet_twin.py), then the
+#                         parity with synth/textdet_twin.py), the vertical column finder's
+#                         (check-vertical, vocr_vertical.mk: strict compile, self-test, parity with
+#                         synth/vertical.py), then the
 #                         recognizer's: C unit tests and the PyTorch parity test through a
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan)
 #   make check-all        check with gcc and clang, plus strict release builds of both
@@ -78,10 +80,11 @@ $(OUT)/test_vocr_lm_check: $(SRC) tests/test_vocr_lm.c $(FLAGS_STAMP) | $(OUT)
 $(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) $(CLI) $(LDFLAGS) $(LDLIBS)
 
-check: check-lines check-textdet check-vocr
+check: check-lines check-textdet check-vertical check-vocr
 
 include vocr_lines.mk
 include vocr_textdet.mk
+include vocr_vertical.mk
 
 check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_check

@@ -1,6 +1,6 @@
 {
  "kind": "textgate-sizes",
- "computed": "2026-10-18T09:14:55Z",
+ "computed": "2026-10-18T09:25:31Z",
  "code_bytes": {
   "region": 1892,
   "boxes": 2072,
@@ -301,7 +301,7 @@
   }
  },
  "sources_sha256": {
-  "vocr_textgate.c": "bf9b4c85ca7a8293b655674a564bdd77320903200a71d120d7f542efac261f78",
+  "vocr_textgate.c": "da772dd316b69ac79dc0d6ffbae14da428df429657d089fd99ba8cd74c43266e",
   "vocr_textgate.h": "aeb8c5bdb810e8ab82bfaa37aadc1d564ec0dec2a80b1e2f80323819853d7258",
   "vocr_textdet.c": "e5be547e33556bc170e37f3b00a2942ba0a221209b1b1cd9147dd38d69e0cda0",
   "vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",

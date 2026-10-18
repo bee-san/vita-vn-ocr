@@ -152,8 +152,8 @@ static unsigned cells(unsigned n, unsigned shift)   /* ceil(n / 2^shift), n >= 1
     return ((n - 1u) >> shift) + 1u;
 }
 
-/* The arena layout from the aligned base: the run state, the K row (region mode) or map (boxes mode), the
- * rings. Fills the run state when run is given. */
+/* The arena layout from the aligned base: the run state, the rings, then the K row (region mode) or map
+ * (boxes mode). Fills the run state when run is given. */
 static size_t plan(const vocr_textgate_model *g, int mode, unsigned w, unsigned h, Run *run)
 {
     unsigned l, n = rd16(g->blob + 16);

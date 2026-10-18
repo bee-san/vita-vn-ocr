@@ -5,9 +5,10 @@
 
 Procedural regions (columns of stroke glyphs over flat, gradient or noisy backgrounds, either polarity, with
 furigana beside some columns, horizontal lines and clutter; grey and RGB), and optionally real regions (eval's
-vertical regions manifest: each row's page cut to its region), through the C driver (in-memory and row forms, both
-flag sets: valleys and no-dark) and the twin: every box, dark flag, the order and the truncated flag must be equal. The rotation is
-checked too (vocr_vertical_test --rotate against np.rot90). Exits non-zero on any difference.
+vertical regions manifest: each row's page cut to its region), through the C driver (in-memory and row forms, all
+four flag sets: VOCR_COLUMNS_VALLEYS and VOCR_COLUMNS_NO_DARK) and the twin: every box, dark flag, the order and
+the truncated flag must be equal. The rotation is checked too (vocr_vertical_test --rotate against np.rot90). Exits
+non-zero on any difference.
 """
 import argparse
 import json

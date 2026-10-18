@@ -1,0 +1,155 @@
+{
+ "kind": "vita-vn-ocr-vertical-census",
+ "date": "2026-10-18",
+ "method": "eval/vertical_count.py (MeikiOCR vertical flag; Screen AI's in the teacher reads); vertical line: h >= 2w, >= 3 kana/kanji; vertical page: >= 2 lines of >= 6",
+ "totals": {
+  "pc|vndb": {
+   "shots": 67700,
+   "v": 1830,
+   "pages": 624,
+   "lines": 6270,
+   "vns": 15860,
+   "vns_with_pages": 306
+  },
+  "psp|owner": {
+   "shots": 2942,
+   "v": 20,
+   "pages": 2,
+   "lines": 40,
+   "vns": 35,
+   "vns_with_pages": 1
+  },
+  "psp|vndb": {
+   "shots": 2382,
+   "v": 108,
+   "pages": 55,
+   "lines": 271,
+   "vns": 299,
+   "vns_with_pages": 15
+  },
+  "psv|owner": {
+   "shots": 2049,
+   "v": 2,
+   "pages": 1,
+   "lines": 4,
+   "vns": 48,
+   "vns_with_pages": 1
+  },
+  "psv|vndb": {
+   "shots": 614,
+   "v": 32,
+   "pages": 4,
+   "lines": 76,
+   "vns": 93,
+   "vns_with_pages": 4
+  }
+ },
+ "console_vertical_pages_by_eye": [
+  {
+   "plat": "psp",
+   "vn": "v11109",
+   "balloon": 5
+  },
+  {
+   "plat": "psp",
+   "vn": "v11309",
+   "balloon": 3
+  },
+  {
+   "plat": "psp",
+   "vn": "v11713",
+   "nvl": 2
+  },
+  {
+   "plat": "psp",
+   "vn": "v15361",
+   "balloon": 6
+  },
+  {
+   "plat": "psp",
+   "vn": "v16416",
+   "ui": 1
+  },
+  {
+   "plat": "psp",
+   "vn": "v1794",
+   "adv-box": 7
+  },
+  {
+   "plat": "psp",
+   "vn": "v3259",
+   "adv-box": 4
+  },
+  {
+   "plat": "psp",
+   "vn": "v3260",
+   "adv-box": 6
+  },
+  {
+   "plat": "psp",
+   "vn": "v3261",
+   "adv-box": 6
+  },
+  {
+   "plat": "psp",
+   "vn": "v3262",
+   "adv-box": 4
+  },
+  {
+   "plat": "psp",
+   "vn": "v3263",
+   "adv-box": 2,
+   "ui": 1
+  },
+  {
+   "plat": "psp",
+   "vn": "v6135",
+   "ui": 1
+  },
+  {
+   "plat": "psp",
+   "vn": "v7716",
+   "balloon": 2
+  },
+  {
+   "plat": "psp",
+   "vn": "v7912",
+   "balloon": 5
+  },
+  {
+   "plat": "psp",
+   "vn": "v8092",
+   "ui": 1
+  },
+  {
+   "plat": "psp",
+   "vn": "v9910",
+   "ui": 1
+  },
+  {
+   "plat": "psv",
+   "vn": "v17343",
+   "adv-box": 1
+  },
+  {
+   "plat": "psv",
+   "vn": "v18163",
+   "ui": 1
+  },
+  {
+   "plat": "psv",
+   "vn": "v18777",
+   "ui": 1
+  },
+  {
+   "plat": "psv",
+   "vn": "v19288",
+   "ui": 1
+  },
+  {
+   "plat": "psv",
+   "vn": "v19853",
+   "ui": 1
+  }
+ ]
+}

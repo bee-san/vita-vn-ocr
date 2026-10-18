@@ -270,10 +270,21 @@ def cmd_columns(args):
 
 # ----------------------------------------------------------------------------- finder
 
+_DET = {}
+
+
 def find(finder, region_grey):
     if finder.startswith("py"):
         b, d, t = V.find_columns(region_grey, int(finder[2:] or 0))
         return b, d
+    if finder.startswith("det:"):
+        import textdet_twin as TD
+        m = _DET.get(finder)
+        if m is None:
+            m = _DET[finder] = TD.Model(open(finder[4:], "rb").read())
+        lines, _ = TD.find_lines(m, region_grey)
+        v = [ln for ln in lines if ln[5]]         # its vertical lines, in its order (right to left)
+        return [tuple(ln[:4]) for ln in v], [ln[4] for ln in v]
     if finder.startswith("c:"):
         with tempfile.TemporaryDirectory() as td:
             p = os.path.join(td, "r.pgm")

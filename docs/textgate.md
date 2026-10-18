@@ -326,6 +326,12 @@ work and the model's load.
   would lose its place only if it cost 1,268 B more than `region`.
 - The presence runs started (07:48Z) before the protocol was pushed (07:52Z), with the pinned trainer, as the
   protocol says; nothing of them was scored before it.
+- **Two exclusions are narrower than the protocol's wording.** The protocol says the calibration cohorts hold no
+  eval/linefind VN and the clean scene pool none of its VNs or screenshots; both exclude every screenshot any eval
+  or eval/linefind manifest lists and every VN of the four detector-built linefind sets (whose empty regions are
+  scored), but not the other screenshots of research_a/b's VNs (GRAD's tuning sets, never read here): one such VN
+  (v16842) gives 21 cal_dlg cases and 2 cal_empty regions, and 19 scene-pool screenshots belong to four of them
+  (v12794, v15080, v16842, v8158). No scored region is on any of them, and no screenshot is shared.
 
 ### Limits
 

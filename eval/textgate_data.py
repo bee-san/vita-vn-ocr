@@ -2,8 +2,9 @@
 """textgate: training-side data of the text-presence gate (docs/textgate.md, eval/textgate_protocol.json).
 
   textgate_data.py cal --out DIR [--workers W]
-      The calibration cohorts, from the calibration split's VNs only (calib_vn), never a development, test or
-      eval/linefind VN or screenshot:
+      The calibration cohorts, from the calibration split's VNs only (calib_vn): never a reserved test or
+      development-sample VN or session, a VN of eval/linefind's four detector-built sets, any screenshot an eval or
+      eval/linefind manifest lists, or v14018 (synth/textdet_data._excluded, #97's rule for its real canvases):
         cal_dlg    whole-dialogue regions built exactly as the development wd cohort is (eval/finder_tighten.py
                    _frame_units: labelled non-name lines grouped at 1.6 line heights, their union plus 12 / 6 px,
                    grown by 0 / 4 / 8 px, shrunk away from every other detected text box): realplus's kept labels

@@ -182,7 +182,7 @@ It reads development VN at 11.21% and manga at 2.70%:
 
 The VN upper bound is over the +0.5-point margin, so it is **not adopted** and the 4,987-class VOCR5-V ships. The test read confirms the direction (report only): VN +0.45 points (+0.05 to +0.90).
 
-**Seed 2** (report only: the spread between seeds; seed 1's recipe with `--seed 2`, blob sha256 `0f4f3622…`): development VN 10.81%, manga 2.76%. Against seed 1: VN +0.18 points (−0.64 to +0.70), manga +0.07 (0.00 to +0.22). The seeds agree within the noise; seed 1 was chosen by the protocol (amendment 2), not by this comparison.
+**Seed 2** (report only: the spread between seeds; seed 1's recipe with `--seed 2`): its last checkpoint (step 30,000, blob sha256 `6886bd95…`) reads development VN at 10.90% and manga at 2.76%. Against seed 1: VN +0.26 points (−0.58 to +0.83), manga +0.07 (0.00 to +0.22). The seeds agree within the noise; seed 1 was chosen by the protocol (amendment 2), not by this comparison. (A first report gave 10.81% from a step-27,500 snapshot exported 70 s before the run ended; the re-audit caught it.)
 
 ## The test set, once
 
@@ -232,7 +232,7 @@ Two test pages were also synthetic training scenes (below): without them VOCR5-V
 - C99, no malloc, integer only.
   - Arena: 83,619 B at 960×544, 26,467 B at 480×272.
   - Code (gcc 15.2, -O2): 4,312 B of Thumb-2 `.text` (VitaSDK; 4,264 B before `VOCR_COLUMNS_NO_DARK`) and 6,560 B of mips32 `.text` (psp-gcc; plus 24 B of `.reginfo`).
-  - Stack peak (VitaSDK `-fstack-usage`, Thumb): 3,448 B in the memory form (1,264 B for the finder, 64 for the entry, 2,120 for `vocr_line_dark`) and 3,504 B in the row form (`vocr_line_dark_rows` and its helper: 2,176 B); with `VOCR_COLUMNS_NO_DARK`, 1,328 B.
+  - Stack peak (VitaSDK `-fstack-usage`, Thumb): 3,448 B in the memory form (1,264 B for the finder, 64 for the entry, 2,120 for `vocr_line_dark`) and 3,504 B in the row form (`vocr_line_dark_rows` and its helper: 2,176 B); with `VOCR_COLUMNS_NO_DARK`, 1,424 B (64 + 1,264 + 48 for `contrast_row` + 48 for `contrast_load`), plus the row callback's own frame in the row form.
 - `vocr_lines.c`, `vocr_lines_rows.c`, `vocr_lines_refine.c`, `vocr_textdet.c` and `vocr.c` are unchanged: with vertical mode off nothing changes.
 - **Checks** (`make -C runtime check-vertical`, in `check`):
   - strict compiles;
@@ -240,7 +240,7 @@ Two test pages were also synthetic training scenes (below): without them VOCR5-V
   - `tests/vertical_parity.py`: the C finder against the twin.
 
   The C finder equals the twin on all 181 pinned development regions and 150 procedural ones, every flag set and both forms (3,268 columns over the four flag sets, gcc and clang with ASan/UBSan). The auditor reproduced it under qemu-arm as a Cortex-A9 build (937 columns of the pinned regions).
-- `VOCR_COLUMNS_NO_DARK` (added after the test read; it changes no box and no flag value) leaves every dark flag 0 and reads no column box, for a caller that computes `vocr_line_dark` on the column's pixels itself. With a row callback the dark flags otherwise re-read every column's rows (a 16-column 960×544 region: 9,216 row reads against the passes' 1,088), and in Rubi a strip read waits for the game's next frame.
+- `VOCR_COLUMNS_NO_DARK` (added after the test read; it changes no box, and without it nothing changes) leaves every dark flag 0 and reads no column box, for a caller that computes `vocr_line_dark` on the column's pixels itself. With a row callback the dark flags otherwise re-read every column's rows (a 16-column 960×544 region: 9,216 row reads against the passes' 1,088), and in Rubi a strip read waits for the game's next frame.
 
 ## Speed and memory (estimates)
 
@@ -291,8 +291,9 @@ So 38 of the 4,490 real training crops, from 10 VNs, share a full relation compo
 - The development and test labels are assistant-reviewed (two blind passes), not human.
 - **68% of the real training columns are unreviewed single-engine labels:** 1,533 of 2,245 columns are PP-OCRv6 small's reading alone (lowest character confidence ≥ 0.9), against #99's plan, which asked for two engines agreeing or a Claude review agreeing with one. The protocol pre-registered this source (`real_ps`); the evaluation sets are unaffected.
 - **The synthetic shards were rendered by an earlier revision of `synth/vertical_render.py`** (07:51:54Z): it wrote n offsets, which `fix_offsets.py` (an uncommitted tool) extended to train2's n + 1 at 08:07-08:21Z without touching any pixel or label, and it drew one more random number in `look_colours` that a lint fix removed before the first commit. The manifest's `code_sha256` is the file at 08:21Z, not the rendering revision. The committed renderer restores that draw, and with `--gen 1` it reproduces shard 0 crop for crop (data, offsets, shapes, labels and meta equal). The shards are pinned by their sha256.
-- `vocr_vertical.c` is not part of this repository's VitaSDK CI build (nor is `vocr_textdet.c`); its Thumb-2 size above was measured by hand, and Rubi's Vita builds compile it (Rubi_for_vita#213).
+- The VitaSDK CI build (`vita/CMakeLists.txt`) compiles `vocr_lines_rows.c` and `vocr_vertical.c` into `libvocr.a` with `-Wconversion -Wsign-conversion` on top of the runtime's `-Werror` flags; its `vocr_vertical.c` object is the 4,312 B of `.text` quoted above. `vocr_textdet.c` is still not in that build. Rubi's Vita builds compile the finder too (Rubi_for_vita#213).
 - Manga109-s: requested from the owner (issue #99); not used by any model here.
+- **The vertical test set stays held out** for later vertical models (a Manga109-s retrain would be scored on it). Generation 2 of the renderer excludes only its pages; 20 other screenshots of 9 development and test VNs (7 of 4 test VNs) are still in synth3's scene pools with their vertical text unmasked. Before a later model is trained, its scenes and real pools must exclude the development and test VNs themselves, not only their pages.
 - Nothing ran on a console. The times above are estimates.
 
 ## Reproduce
@@ -305,7 +306,7 @@ H=$HERD; A=$H/shared/artifacts/vertical
 HEAVY_SLOTS=12 $H/heavy.sh unshare -rn teacher/.venv/bin/python eval/vertical_data.py read --pages ... --out $A/data/reads
 .venv-ci/bin/python eval/vertical_data.py sheets|decide ...                               # review batches, labels
 .venv-ci/bin/python eval/vertical.py build --reads ... --labels ... --out $A/sets
-.venv/bin/python synth/vertical_render.py shards --out $A/synth/shards_v1 --shards 100 --vocab data/vocab_4987_proof.txt
+.venv/bin/python synth/vertical_render.py shards --out $A/synth/shards_v1 --shards 100 --gen 1 --vocab data/vocab_4987_proof.txt   # the pinned v1 shards
 .venv-ci/bin/python eval/vertical_data.py shard --reads $A/data/reads_train/reads.jsonl --select agree|ps --half --out ...
 .venv/bin/python train/train2.py --run vV_S_seed1 ... (eval/vertical_protocol.json "VOCR5-V".recipe)
 .venv/bin/python train/export.py --ckpt $A/runs/vV_S_seed1/ckpt_last.pt --out VOCR5_V_w8.vocr --int8

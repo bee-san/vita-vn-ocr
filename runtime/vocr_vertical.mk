@@ -9,7 +9,7 @@
 #        VERTICAL_SELFTEST procedural regions (in-memory, row and RGBA forms agree, exact arena, error paths,
 #        the rotation)
 #     3. tests/vertical_parity.py: that build against the Python twin (synth/vertical_twin.py) on VERTICAL_CASES
-#        procedural regions, both flag sets, both forms, and the rotation
+#        procedural regions, all four flag sets, both forms, and the rotation
 #
 # Uses CC, CPPFLAGS, CFLAGS, LDFLAGS, PYTHON, OUT, SAN_ENV and LINES_STRICT from the including Makefile and
 # vocr_lines.mk. The driver is rebuilt on every run, so a change of CC or flags always takes effect.

@@ -6,7 +6,7 @@
 #
 # Builds, with arm-vita-eabi-gcc:
 #   libvocr.a       runtime/vocr.c + runtime/vocr_lm.c + runtime/vocr_lines.c (+ vocr_lines_rows.c and the vertical
-#                   column finder vocr_vertical.c, compiled for size and warnings), NEON, the runtime's own -Werror flags
+#                   column finder vocr_vertical.c, at -O2 with the strict warnings), NEON, the runtime's own -Werror flags
 #   vocr_test       the test app (app/main.c, app/screen.c) -> eboot.bin -> vocr_test.vpk
 # Nothing built here is committed: the VPK is a build product (vita/README.md).
 cmake_minimum_required(VERSION 3.16)

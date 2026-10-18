@@ -113,6 +113,15 @@
     "test VN cohort: 173 dialogue columns, 2,453 characters, 16 series clusters (Bakumatsu Rock, Ren'ai Banchou 1-2, Yunohana SpRING! (PS Vita), Trick x Logic (the owner's PSP frames), 12 PC clusters); manga: Black Jack ni Yoroshiku vol. 13, 126 columns, 694 characters, 25 pages",
     "test labels: the same blind double review (vertical-review-3 and -6), 3 disagreements settled by a third look; the owner's 22 agreed in both passes"
    ]
+  },
+  {
+   "n": 4,
+   "when": "committed with this record (2026-10-18 about 10:50Z), the selection, before the test set is read",
+   "what": [
+    "VOCR5-V3500 (657,616 B, blob sha256 12240f6933aece455a4404841903d37a67d5bfa01fd8036af0020e2a29519e11) VN development 11.21%, manga 2.70%; against VOCR5-V seed 1: VN +0.57 points (-0.12 to +1.03), manga 0.00 (-0.18 to +0.20). Condition (i) fails (upper bound 1.03 >= 0.5): not adopted",
+    "SELECTION: finder P1 (vocr_find_columns with VOCR_COLUMNS_VALLEYS) + VOCR5-V seed 1 (VOCR5_V_w8.vocr = blob sha256 ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172, 819,792 B) reading the column turned anticlockwise",
+    "the test set is read once for the selection (fixed columns and end to end); report only on the same read: R* (a1 + VOCR5-N) fixed and end to end with P1, VOCR5-V3500 fixed columns; seed 2 is read on development only"
+   ]
   }
  ]
 }

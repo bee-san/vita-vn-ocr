@@ -91,6 +91,19 @@
     "the manga cohort holds one series per split, so its bootstrap unit is the manga page (the page id without its window suffix) instead of the series cluster; the VN cohort keeps the series clusters",
     "the development VN cohort has no native PS Vita page (its console clusters are PSP: Harukanaru, Genrou, Gekka Ryouran; Vita-resolution text comes from PC pages scaled to 960x544); the test set holds the native Vita cluster (Yunohana SpRING!)"
    ]
+  },
+  {
+   "n": 2,
+   "when": "2026-10-18 ~10:30Z, after the development scores of a0, a1 and VOCR5-V seed 1, before any run below starts or the test set is read",
+   "decisions_so_far": [
+    "code_only: a1 - a0 (VOCR5-N, VN development) = -1.19 points (cluster interval -2.47 to -0.42): R* = a1 + VOCR5-N (VN 36.70%, manga 4.18%)",
+    "adopt_V: VOCR5-V seed 1 (last checkpoint, blob sha256 ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172, 819,792 B) VN development 10.64% (manga 2.70%); V - R* VN = -26.07 points (-35.13 to -16.80): adopted",
+    "finder: end-to-end with VOCR5-V, P1 - P0 VN = -1.10 points (-2.11 to -0.31): P1 (VOCR_COLUMNS_VALLEYS) replaces P0; D reads VN at 52.88% against P1's 19.47% and is not adopted"
+   ],
+   "what": [
+    "VOCR5-V3500 (the 'smaller vocabulary' run the protocol allows once seed 1 is adopted): data/vocab_vn_3500.txt (sha256 8d9a04a7a118444897d7238337167633012a3cbc4264e2b214760fbdb308f5aa: the first 3,499 classes of data/vocab_vn_4987.txt, VN-ordered, plus <unk>); init = seed 1's last checkpoint with its head re-targeted by train/remap_head.py (3,495 rows copied, 5 from <unk>; sha256 b22c735010cc162e90c468813e9d8cc5e8edee85d4d85d53462f19b5b87d42cb); train2 with seed 1's sources and settings except --steps 10000 --lr 0.0005 --warmup 300 --vocab data/vocab_vn_3500.txt; its model is its last checkpoint. Rule: adopt_V with VOCR5-V seed 1 in R*'s place; adopted, it ships (the smallest adopted size)",
+    "VOCR5-V seed 2: seed 1's recipe with --seed 2, report only (the spread between seeds)"
+   ]
   }
  ]
 }

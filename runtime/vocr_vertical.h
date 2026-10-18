@@ -5,7 +5,7 @@
  * vocr_find_columns is the GRAD line finder of vocr_lines.h run on the region's transpose: the same contrast
  * mask, runs, bands, clusters, growth, narrow-line drop and padding, so it finds text columns where GRAD finds
  * rows; then boxes wider than 5/4 of their height (horizontal text) are dropped and the columns are put in
- * reading order, right to left. synth/vertical.py find_columns() is its bit-exact Python twin.
+ * reading order, right to left. synth/vertical_twin.py find_columns() is its bit-exact Python twin.
  *
  * vocr_column_rotate turns a column crop 90 degrees anticlockwise (the column's top to the left), so a CTC
  * recognizer trained on such strips (VOCR5-V) reads it as one horizontal line with vocr_run, unchanged.
@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-/* Flags of vocr_find_columns. 0 is GRAD transposed exactly (synth/vertical.py variant 0). */
+/* Flags of vocr_find_columns. 0 is GRAD transposed exactly (synth/vertical_twin.py variant 0). */
 #define VOCR_COLUMNS_VALLEYS 0x1u /* split bands where a column's ink falls under a quarter of the band's
                                      median, and grow a column only over rows dense enough to be text
                                      (variant 1) */

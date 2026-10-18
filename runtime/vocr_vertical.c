@@ -1,6 +1,6 @@
 /* vocr_vertical.c - the column finder and the column rotation of vocr_vertical.h (issue #99, docs/vertical.md).
  *
- * The finder is the GRAD finder of vocr_lines.c on the region's transpose (synth/vertical.py find_columns is the
+ * The finder is the GRAD finder of vocr_lines.c on the region's transpose (synth/vertical_twin.py find_columns is the
  * bit-exact twin; the step numbers below are its docstring's):
  *  1. grey and its 3x3 contrast (max - min, edges replicated), streamed from rings of three rows; the threshold
  *     T = max(40, 2/5 of the 99th percentile) from a first pass, the on-mask (c >= T) from a second. The mask is
@@ -34,7 +34,7 @@
 #define GAPC 2u
 #define PAD 3u
 #define FURI_PCT 55u
-/* the columns' own (synth/vertical.py) */
+/* the columns' own (synth/vertical_twin.py) */
 #define ASPECT_NUM 5u
 #define ASPECT_DEN 4u
 #define VALLEY_DIV 4u

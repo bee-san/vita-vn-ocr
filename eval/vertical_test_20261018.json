@@ -1,0 +1,400 @@
+{
+ "attempt": {
+  "started": "2026-10-18T10:50:39Z",
+  "git": "49c08abca3dd0b56c51d8f179746ab7f32736ab3",
+  "inputs": {
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/sets_test/columns_test.jsonl": "731051b95a2bc07a873095d63e202cd82b0ad9d9f800ba90ef7dad951855483f",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/sets_test/regions_test.jsonl": "4ad6df407d5c17015048b5904ae7b32a55523044272eadec0f132b4c569cbc71",
+   "/local/home/skerraut/herd-vita-ocr/shared/private/vertical/sets/columns_test.jsonl": "9289084a915d8863c4f6dada60f41f4778efb24795fd56d0ced27a3a50a5eed7",
+   "/local/home/skerraut/herd-vita-ocr/shared/private/vertical/sets/regions_test.jsonl": "ba9043aa8069ec4f47a1be119d6132274f7c465a8b3baafdcbb3939a63386d5a",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/blobs/VOCR5_V_seed1_w8.vocr": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/blobs/VOCR5_V3500_seed1_w8.vocr": "12240f6933aece455a4404841903d37a67d5bfa01fd8036af0020e2a29519e11",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_N_w8.vocr": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+  },
+  "finished": "2026-10-18T10:51:08Z"
+ },
+ "runs": {
+  "V_fixed": {
+   "scores_public": {
+    "vn": {
+     "chars": 2196,
+     "errs": 171,
+     "lines": 151,
+     "exact": 64,
+     "cer": 0.0778688524590164
+    },
+    "all": {
+     "chars": 2890,
+     "errs": 177,
+     "lines": 277,
+     "exact": 188,
+     "cer": 0.06124567474048443
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 6,
+     "lines": 126,
+     "exact": 124,
+     "cer": 0.008645533141210375
+    }
+   },
+   "scores_private": {
+    "vn": {
+     "chars": 257,
+     "errs": 5,
+     "lines": 22,
+     "exact": 17,
+     "cer": 0.019455252918287938
+    },
+    "all": {
+     "chars": 257,
+     "errs": 5,
+     "lines": 22,
+     "exact": 17,
+     "cer": 0.019455252918287938
+    }
+   },
+   "scores_pooled": {
+    "vn": {
+     "chars": 2453,
+     "errs": 176,
+     "lines": 173,
+     "exact": 81,
+     "cer": 0.07174887892376682
+    },
+    "all": {
+     "chars": 3147,
+     "errs": 182,
+     "lines": 299,
+     "exact": 205,
+     "cer": 0.05783285668891007
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 6,
+     "lines": 126,
+     "exact": 124,
+     "cer": 0.008645533141210375
+    }
+   }
+  },
+  "V_e2e_P1": {
+   "scores_public": {
+    "vn": {
+     "chars": 2196,
+     "errs": 265,
+     "lines": 46,
+     "exact": 6,
+     "cer": 0.12067395264116576
+    },
+    "all": {
+     "chars": 2890,
+     "errs": 282,
+     "lines": 91,
+     "exact": 43,
+     "cer": 0.09757785467128027
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 17,
+     "lines": 45,
+     "exact": 37,
+     "cer": 0.024495677233429394
+    }
+   },
+   "scores_private": {
+    "vn": {
+     "chars": 257,
+     "errs": 12,
+     "lines": 2,
+     "exact": 0,
+     "cer": 0.04669260700389105
+    },
+    "all": {
+     "chars": 257,
+     "errs": 12,
+     "lines": 2,
+     "exact": 0,
+     "cer": 0.04669260700389105
+    }
+   },
+   "scores_pooled": {
+    "vn": {
+     "chars": 2453,
+     "errs": 277,
+     "lines": 48,
+     "exact": 6,
+     "cer": 0.1129229514879739
+    },
+    "all": {
+     "chars": 3147,
+     "errs": 294,
+     "lines": 93,
+     "exact": 43,
+     "cer": 0.09342230695900858
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 17,
+     "lines": 45,
+     "exact": 37,
+     "cer": 0.024495677233429394
+    }
+   }
+  },
+  "Rstar_fixed": {
+   "scores_public": {
+    "vn": {
+     "chars": 2196,
+     "errs": 814,
+     "lines": 151,
+     "exact": 29,
+     "cer": 0.37067395264116576
+    },
+    "all": {
+     "chars": 2890,
+     "errs": 842,
+     "lines": 277,
+     "exact": 141,
+     "cer": 0.29134948096885815
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 28,
+     "lines": 126,
+     "exact": 112,
+     "cer": 0.040345821325648415
+    }
+   },
+   "scores_private": {
+    "vn": {
+     "chars": 257,
+     "errs": 13,
+     "lines": 22,
+     "exact": 16,
+     "cer": 0.05058365758754864
+    },
+    "all": {
+     "chars": 257,
+     "errs": 13,
+     "lines": 22,
+     "exact": 16,
+     "cer": 0.05058365758754864
+    }
+   },
+   "scores_pooled": {
+    "vn": {
+     "chars": 2453,
+     "errs": 827,
+     "lines": 173,
+     "exact": 45,
+     "cer": 0.3371381981247452
+    },
+    "all": {
+     "chars": 3147,
+     "errs": 855,
+     "lines": 299,
+     "exact": 157,
+     "cer": 0.2716873212583413
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 28,
+     "lines": 126,
+     "exact": 112,
+     "cer": 0.040345821325648415
+    }
+   }
+  },
+  "Rstar_e2e_P1": {
+   "scores_public": {
+    "vn": {
+     "chars": 2196,
+     "errs": 812,
+     "lines": 46,
+     "exact": 3,
+     "cer": 0.3697632058287796
+    },
+    "all": {
+     "chars": 2890,
+     "errs": 895,
+     "lines": 91,
+     "exact": 26,
+     "cer": 0.3096885813148789
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 83,
+     "lines": 45,
+     "exact": 23,
+     "cer": 0.11959654178674352
+    }
+   },
+   "scores_private": {
+    "vn": {
+     "chars": 257,
+     "errs": 23,
+     "lines": 2,
+     "exact": 0,
+     "cer": 0.08949416342412451
+    },
+    "all": {
+     "chars": 257,
+     "errs": 23,
+     "lines": 2,
+     "exact": 0,
+     "cer": 0.08949416342412451
+    }
+   },
+   "scores_pooled": {
+    "vn": {
+     "chars": 2453,
+     "errs": 835,
+     "lines": 48,
+     "exact": 3,
+     "cer": 0.34039951080309827
+    },
+    "all": {
+     "chars": 3147,
+     "errs": 918,
+     "lines": 93,
+     "exact": 26,
+     "cer": 0.2917063870352717
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 83,
+     "lines": 45,
+     "exact": 23,
+     "cer": 0.11959654178674352
+    }
+   }
+  },
+  "V3500_fixed": {
+   "scores_public": {
+    "vn": {
+     "chars": 2196,
+     "errs": 180,
+     "lines": 151,
+     "exact": 70,
+     "cer": 0.08196721311475409
+    },
+    "all": {
+     "chars": 2890,
+     "errs": 186,
+     "lines": 277,
+     "exact": 194,
+     "cer": 0.0643598615916955
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 6,
+     "lines": 126,
+     "exact": 124,
+     "cer": 0.008645533141210375
+    }
+   },
+   "scores_private": {
+    "vn": {
+     "chars": 257,
+     "errs": 7,
+     "lines": 22,
+     "exact": 16,
+     "cer": 0.027237354085603113
+    },
+    "all": {
+     "chars": 257,
+     "errs": 7,
+     "lines": 22,
+     "exact": 16,
+     "cer": 0.027237354085603113
+    }
+   },
+   "scores_pooled": {
+    "vn": {
+     "chars": 2453,
+     "errs": 187,
+     "lines": 173,
+     "exact": 86,
+     "cer": 0.07623318385650224
+    },
+    "all": {
+     "chars": 3147,
+     "errs": 193,
+     "lines": 299,
+     "exact": 210,
+     "cer": 0.06132824912615189
+    },
+    "manga": {
+     "chars": 694,
+     "errs": 6,
+     "lines": 126,
+     "exact": 124,
+     "cer": 0.008645533141210375
+    }
+   }
+  }
+ },
+ "diffs": {
+  "V_fixed - Rstar_fixed": {
+   "vn": {
+    "clusters": 16,
+    "chars": 2453,
+    "a": 33.71381981247452,
+    "b": 7.174887892376682,
+    "diff": -26.53893192009784,
+    "lo": -34.93290972914127,
+    "hi": -12.604849697573274
+   },
+   "manga": {
+    "clusters": 12,
+    "chars": 694,
+    "a": 4.034582132564841,
+    "b": 0.8645533141210375,
+    "diff": -3.170028818443804,
+    "lo": -6.153846153846154,
+    "hi": -0.9925489917131985
+   }
+  },
+  "V_e2e_P1 - Rstar_e2e_P1": {
+   "vn": {
+    "clusters": 16,
+    "chars": 2453,
+    "a": 34.03995108030983,
+    "b": 11.29229514879739,
+    "diff": -22.747655931512433,
+    "lo": -31.116335423058114,
+    "hi": -8.54145414451527
+   },
+   "manga": {
+    "clusters": 12,
+    "chars": 694,
+    "a": 11.959654178674352,
+    "b": 2.4495677233429394,
+    "diff": -9.510086455331413,
+    "lo": -12.030112262905785,
+    "hi": -7.241242077948004
+   }
+  },
+  "V3500_fixed - V_fixed": {
+   "vn": {
+    "clusters": 16,
+    "chars": 2453,
+    "a": 7.174887892376682,
+    "b": 7.623318385650224,
+    "diff": 0.4484304932735426,
+    "lo": 0.052940650451243694,
+    "hi": 0.8962279250114754
+   },
+   "manga": {
+    "clusters": 12,
+    "chars": 694,
+    "a": 0.8645533141210375,
+    "b": 0.8645533141210375,
+    "diff": 0.0,
+    "lo": 0.0,
+    "hi": 0.0
+   }
+  }
+ }
+}

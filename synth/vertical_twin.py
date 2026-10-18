@@ -79,8 +79,9 @@ def _split_valleys(oc, a, b):
 def find_columns(img, variant=0):
     """img: HxW grey or HxWx3/4 RGB(A) uint8 region. Returns (boxes, dark, truncated): boxes [(x, y, w, h)] in
     reading order (right to left), dark[i] 1 when column i's text is darker than its background.
-    variant 0: GRAD transposed, as described above; 1: also split bands at on-pixel valleys and lengthen / cluster
-    a column only over rows dense enough to be text (research variants, docs/vertical.md)."""
+    variant: runtime/vocr_vertical.h's flags. 0: GRAD transposed, as described above; bit 0 (VOCR_COLUMNS_VALLEYS,
+    the selected P1): also split bands at on-pixel valleys and lengthen / cluster a column only over rows dense
+    enough to be text; bit 1 (VOCR_COLUMNS_NO_DARK): every dark flag 0 (the caller computes line_dark itself)."""
     g = grey_of(np.asarray(img))
     H, W = g.shape
     if not H or not W:
@@ -117,6 +118,8 @@ def find_columns(img, variant=0):
             y += 1
         if last + 1 - s >= MIN_H:
             bands.append((s, last + 1))
+    no_dark = bool(variant & 2)
+    variant &= 1
     if variant:
         oc_all = on.sum(axis=1)
         bands = [q for a, b in bands for q in _split_valleys(oc_all, a, b)]
@@ -169,7 +172,7 @@ def find_columns(img, variant=0):
             truncated = True
             break
         boxes.append(out[i])
-        dark.append(line_dark(g, out[i]))
+        dark.append(0 if no_dark else line_dark(g, out[i]))
     return boxes, dark, truncated
 
 

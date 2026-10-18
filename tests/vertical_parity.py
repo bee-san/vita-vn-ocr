@@ -6,7 +6,7 @@
 Procedural regions (columns of stroke glyphs over flat, gradient or noisy backgrounds, either polarity, with
 furigana beside some columns, horizontal lines and clutter; grey and RGB), and optionally real regions (eval's
 vertical regions manifest: each row's page cut to its region), through the C driver (in-memory and row forms, both
-flag sets) and the twin: every box, dark flag, the order and the truncated flag must be equal. The rotation is
+flag sets: valleys and no-dark) and the twin: every box, dark flag, the order and the truncated flag must be equal. The rotation is
 checked too (vocr_vertical_test --rotate against np.rot90). Exits non-zero on any difference.
 """
 import argparse
@@ -83,6 +83,24 @@ def write_pnm(path, img):
         f.write(img.tobytes())
 
 
+def read_pgm(path):
+    """A binary PGM (P5, maxval 255): the magic, width, height and maxval tokens, one whitespace byte, the rows."""
+    data = open(path, "rb").read()
+    tokens, i = [], 0
+    while len(tokens) < 4:
+        while data[i:i + 1].isspace():
+            i += 1
+        j = i
+        while not data[j:j + 1].isspace():
+            j += 1
+        tokens.append(data[i:j])
+        i = j
+    if tokens[0] != b"P5" or tokens[3] != b"255":
+        raise SystemExit(f"{path}: not a P5 maxval-255 PGM")
+    w, h = int(tokens[1]), int(tokens[2])
+    return np.frombuffer(data[i + 1:i + 1 + w * h], np.uint8).reshape(h, w)
+
+
 def c_columns(binpath, path, flags, rows):
     cmd = [*binpath, path, "--flags", str(flags)] + (["--rows"] if rows else [])
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
@@ -131,7 +149,7 @@ def main():
         for i, img in enumerate(imgs):
             p = os.path.join(td, f"r{i}.pnm")
             write_pnm(p, img)
-            for flags in (0, 1):
+            for flags in (0, 1, 2, 3):
                 want = V.find_columns(img, flags)
                 cols += len(want[0])
                 for rows in (False, True):
@@ -144,9 +162,7 @@ def main():
                 g = img if img.ndim == 2 else common.to_gray(img)
                 q = os.path.join(td, f"o{i}.pgm")
                 subprocess.run([*binpath, "--rotate", p, q], check=True, timeout=60)
-                with open(q, "rb") as f:
-                    data = f.read()
-                rot = np.frombuffer(data[data.index(b"255\n") + 4:], np.uint8).reshape(g.shape[1], g.shape[0])
+                rot = read_pgm(q)
                 if not np.array_equal(rot, V.rotate_ccw(g)):
                     bad += 1
                     print(f"region {i}: rotation differs")

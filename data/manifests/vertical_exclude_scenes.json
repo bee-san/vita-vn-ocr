@@ -1,0 +1,759 @@
+{
+ "kind": "vita-vn-ocr-vertical-exclude-scenes",
+ "rule": "every VNDB screenshot of the vertical development and test sets (eval/manifests/vertical-*.jsonl; the manga pages and the owner's frames are in no scene pool) and every scene file with the same bytes; synth/vertical_render.py generation 2 leaves them out of synth3's scene pools",
+ "shots": [
+  "v10137_102274",
+  "v10186_62603",
+  "v10320_180179",
+  "v1044_164919",
+  "v1070_25171",
+  "v1107_9409",
+  "v11109_56633",
+  "v11109_56634",
+  "v11109_56635",
+  "v11109_56636",
+  "v11109_56640",
+  "v11309_57510",
+  "v11795_49546",
+  "v12051_104834",
+  "v12732_230841",
+  "v12991_60545",
+  "v13178_52718",
+  "v13181_52732",
+  "v1378_12688",
+  "v13826_58658",
+  "v14512_162662",
+  "v15361_69915",
+  "v15361_69917",
+  "v15361_69918",
+  "v15361_69919",
+  "v15361_69920",
+  "v15361_69921",
+  "v16141_82439",
+  "v17343_154641",
+  "v1794_56736",
+  "v1794_56738",
+  "v1794_56739",
+  "v1794_56740",
+  "v1794_56741",
+  "v1794_56742",
+  "v18542_162692",
+  "v20406_102088",
+  "v20707_194737",
+  "v21216_204693",
+  "v2146_40052",
+  "v21941_118208",
+  "v22252_120677",
+  "v22253_235936",
+  "v23093_112674",
+  "v23318_113745",
+  "v2347_31226",
+  "v24311_130468",
+  "v24870_162248",
+  "v25505_122567",
+  "v25743_123848",
+  "v25912_146615",
+  "v26364_127628",
+  "v27023_130473",
+  "v27409_213264",
+  "v27689_132290",
+  "v28288_135410",
+  "v298_2476",
+  "v30172_145252",
+  "v3155_24129",
+  "v32588_178764",
+  "v32590_178676",
+  "v3259_56744",
+  "v3259_56746",
+  "v3259_56749",
+  "v3259_56750",
+  "v3260_56755",
+  "v3260_56756",
+  "v3260_56758",
+  "v3260_56759",
+  "v3260_56760",
+  "v3261_56763",
+  "v3261_56770",
+  "v3262_56773",
+  "v3262_56776",
+  "v3262_56778",
+  "v3262_56780",
+  "v3263_56786",
+  "v33720_170716",
+  "v33898_171604",
+  "v34976_185303",
+  "v37516_182680",
+  "v37755_172952",
+  "v40827_205542",
+  "v4652_64061",
+  "v4698_185587",
+  "v47012_201496",
+  "v49943_209777",
+  "v54532_250733",
+  "v5460_58269",
+  "v5502_148435",
+  "v564_17448",
+  "v59379_227473",
+  "v6010_18231",
+  "v63620_243877",
+  "v65694_247396",
+  "v6899_249559",
+  "v7100_187432",
+  "v730_136217",
+  "v7589_74572",
+  "v7716_43178",
+  "v7912_57511",
+  "v7912_57513",
+  "v7912_57515",
+  "v7912_57518",
+  "v7912_57519",
+  "v9013_94805"
+ ],
+ "pages": [
+  {
+   "shot": "v10137_102274",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/74/102274.jpg",
+   "sha256": "421417146c9193dd5438ffa37886e070bb6e77af11591790546cb80f5fd589c6"
+  },
+  {
+   "shot": "v10186_62603",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/03/62603.jpg",
+   "sha256": "ae24692d5c448c2a3a50fb3a09f9e27ae2c5ad30f7d8474451b4175b59067219"
+  },
+  {
+   "shot": "v10320_180179",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/79/180179.jpg",
+   "sha256": "0ada2a777f9c55328861c044706b6af7f8f4be6cd5f3485515ff87ed63e37825"
+  },
+  {
+   "shot": "v1044_164919",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/19/164919.jpg",
+   "sha256": "7e9cabd7d31656da1fadeb092d17ac8b13e12e4289f5fed57f1534ef7cf1da9c"
+  },
+  {
+   "shot": "v1070_25171",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/71/25171.jpg",
+   "sha256": "bfd2e1f5034c8a6a9c6e4a3f8b795667b150f916b9232b6bc2fe89ec047fc7ee"
+  },
+  {
+   "shot": "v1107_9409",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/09/9409.jpg",
+   "sha256": "1cf121c518a78be8cfa9da607386ac3755e0723d182cbb8695966bb1e907c42a"
+  },
+  {
+   "shot": "v11109_56633",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/33/56633.jpg",
+   "sha256": "fd749f82b0af48c4ef55d47954f63d8fa07f957d5cfa18125d630f5d3dad9810"
+  },
+  {
+   "shot": "v11109_56634",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/34/56634.jpg",
+   "sha256": "f9fd3f11b3c4ea8ebdf26f9aa36aab36d79a973b967df0e9416fa1e893239de3"
+  },
+  {
+   "shot": "v11109_56635",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/35/56635.jpg",
+   "sha256": "bb1928636de2e18489b4ff9ed08835f9b99e15b0bd36cd224fbe6ae75774a6b8"
+  },
+  {
+   "shot": "v11109_56636",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/36/56636.jpg",
+   "sha256": "9aad879bbf14ad53b1ff269bece9462497d0d2ad09e5740937b2db84fdac56c4"
+  },
+  {
+   "shot": "v11109_56640",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/40/56640.jpg",
+   "sha256": "dfd29dc186b640c01e68870f70cc05ca1b987e96d070f7d5b4e8903b8dafdd70"
+  },
+  {
+   "shot": "v11309_57510",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/10/57510.jpg",
+   "sha256": "3eaacc8fe25f71d8bf6c730e98f72191f30c03ef5325e752d28cb849c96c15c7"
+  },
+  {
+   "shot": "v11795_49546",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/46/49546.jpg",
+   "sha256": "02b48122207643fd15220af78b79b1c92e08449fb3b736a19b3988c5969ab0f4"
+  },
+  {
+   "shot": "v12051_104834",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/34/104834.jpg",
+   "sha256": "1454878403e28768abc531dae2f3ed108e3e68fa99a2bf6dbbf2876a763ecd56"
+  },
+  {
+   "shot": "v12732_230841",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/41/230841.jpg",
+   "sha256": "ec6a7714a65bde609650c6e2bcaee08a7d975b8dbf62cff34724784f1e968408"
+  },
+  {
+   "shot": "v12991_60545",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/45/60545.jpg",
+   "sha256": "8bdb0b05cd334dfe8a4a956ade949b17aa4bff8473284e4c27c748bd5d6b8840"
+  },
+  {
+   "shot": "v13178_52718",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/18/52718.jpg",
+   "sha256": "bb7af44c44256bf7200617f328de71613d41e7750501e0d037e29124e71a0113"
+  },
+  {
+   "shot": "v13181_52732",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/32/52732.jpg",
+   "sha256": "6afcf2e3c475176a7edca0917b1c02c321a5b37172aeb6342094fba1e9d17d42"
+  },
+  {
+   "shot": "v1378_12688",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/88/12688.jpg",
+   "sha256": "78e2718c21b20e667d6b3b3beccc06d4bd7e8f03a3b8980f80dfaee47b232803"
+  },
+  {
+   "shot": "v13826_58658",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/58/58658.jpg",
+   "sha256": "326386615e5063c64d0a9ccaee03ad8227e949bc78188754eaa1247c980442d7"
+  },
+  {
+   "shot": "v14512_162662",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/62/162662.jpg",
+   "sha256": "232fe91404644a5e1defe2185faa400ae1c483fbc603e5a9a68c24ce22ef3e60"
+  },
+  {
+   "shot": "v15361_69915",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/15/69915.jpg",
+   "sha256": "ab9a269d520397808a9d4e9015e08da862b47038704c3de0380089f96a13e33e"
+  },
+  {
+   "shot": "v15361_69917",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/17/69917.jpg",
+   "sha256": "4a0cc3c259c5a4b285b2a06778bdb02a8815a22dd54ab2185708441d17d65f67"
+  },
+  {
+   "shot": "v15361_69918",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/18/69918.jpg",
+   "sha256": "56ecc78bb7c12a6db91ee68b59a34458606a1575d5a9ab1ba2adfacfd39c3413"
+  },
+  {
+   "shot": "v15361_69919",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/19/69919.jpg",
+   "sha256": "9ec0e6f15f892d298a489a12aecd018b39451e5a27494f09898694d2f6fe6b85"
+  },
+  {
+   "shot": "v15361_69920",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/20/69920.jpg",
+   "sha256": "8399898666dece488d83a995bd986fd3587ab4340e6a24e5a5dbb337e3cf348a"
+  },
+  {
+   "shot": "v15361_69921",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/21/69921.jpg",
+   "sha256": "039b7a68c025ce67288c374b7b39ddce01be1c5e2c4fee117dc757223e20e875"
+  },
+  {
+   "shot": "v16141_82439",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/39/82439.jpg",
+   "sha256": "c051318623808319511594d8cdbd37c1c8f2b45d23fe938baf40cd0d6b3212fd"
+  },
+  {
+   "shot": "v17343_154641",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/41/154641.jpg",
+   "sha256": "9c6799e0cd7f4cee6f74d50f41e3b90a188dfd16a38409a7c0a4a7b4daea0ca1"
+  },
+  {
+   "shot": "v1794_56736",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/36/56736.jpg",
+   "sha256": "529844bc653f7387dfd3c3c4a63031366f225a0256564d641b82145c2307ab6e"
+  },
+  {
+   "shot": "v1794_56738",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/38/56738.jpg",
+   "sha256": "20a0fddc01e9d1340ca7caab0055b75d5a2fec81f689514b1fb286370f9624a7"
+  },
+  {
+   "shot": "v1794_56739",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/39/56739.jpg",
+   "sha256": "6def6b07f50ba8f93aa93cd84be1b8d25626a83e62f0818e3ef6359d3d806c59"
+  },
+  {
+   "shot": "v1794_56740",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/40/56740.jpg",
+   "sha256": "01188459970343c4b7f1247a7992641bc20db5c1b836cecbfbce1bdee2ed5a66"
+  },
+  {
+   "shot": "v1794_56741",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/41/56741.jpg",
+   "sha256": "86d26cc1361bd529dfbc6b1bf987b694dcdda371090ab23d60cad051163e8707"
+  },
+  {
+   "shot": "v1794_56742",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/42/56742.jpg",
+   "sha256": "13691205cd27cc77f754031e20d1eb80bbd8a36e7dd2ad840422da6c25935183"
+  },
+  {
+   "shot": "v18542_162692",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/92/162692.jpg",
+   "sha256": "8712a405c7fea6c1586b4484e42ce38739f9b2be5c690e98f45fa2d50382212e"
+  },
+  {
+   "shot": "v20406_102088",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/88/102088.jpg",
+   "sha256": "0c61b31d5523ece77f3a94cfc75fbe91deb95c9d5cfccb1d70a392d929ccd827"
+  },
+  {
+   "shot": "v20707_194737",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/37/194737.jpg",
+   "sha256": "cb5e5439e3f8a7b758ac94ad0b20093882328868fb1e369c3787edf323f6075c"
+  },
+  {
+   "shot": "v21216_204693",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/93/204693.jpg",
+   "sha256": "811355b64f99f8e763e452aef85d63f08961656ffb2b33584e17f482cb1fc128"
+  },
+  {
+   "shot": "v2146_40052",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/52/40052.jpg",
+   "sha256": "b2b7efb247a2d0fe1774976c12cc0d5a011e5eaa3163cb50d8f780799f19286a"
+  },
+  {
+   "shot": "v21941_118208",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/08/118208.jpg",
+   "sha256": "7ceae96671bc295a3f34688acae50b74d788cee1dc59bfcc5dfd91363d364cd0"
+  },
+  {
+   "shot": "v22252_120677",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/77/120677.jpg",
+   "sha256": "d7c15f21100f0b910ed6150816cf642d86da7d6b7f1f2cd62d1a655e335a90f1"
+  },
+  {
+   "shot": "v22253_235936",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/36/235936.jpg",
+   "sha256": "cc7237a07a9ac96a3a156fce8189ca181cbdced39a67e4b376198f669e6a8ee2"
+  },
+  {
+   "shot": "v23093_112674",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/74/112674.jpg",
+   "sha256": "54c788167f58c407c4cad8365268504455149f975d4dff51110ac565c6bfd2cb"
+  },
+  {
+   "shot": "v23318_113745",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/45/113745.jpg",
+   "sha256": "ddded3f2156d6a213c9a8ef1952c26a1a9693ef39850d385fcc8581edb4993e7"
+  },
+  {
+   "shot": "v2347_31226",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/26/31226.jpg",
+   "sha256": "e00fc54f57fa078f37bc3afc3f9cd8f01561a6c85856c9ced05853d049755f2f"
+  },
+  {
+   "shot": "v24311_130468",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/68/130468.jpg",
+   "sha256": "223148e8edc18642fa4f553592e2bddec474fc44f0697bafc3f3dba500a19ac1"
+  },
+  {
+   "shot": "v24870_162248",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/48/162248.jpg",
+   "sha256": "e89f421ec168c355792bc4bc162ba253111006ef6be4f44abe6b62a276361d4a"
+  },
+  {
+   "shot": "v25505_122567",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/67/122567.jpg",
+   "sha256": "fda40b9829f44a7bb974467d5daf8946d2b6041c69cd2fdd01bed3fc8e59da57"
+  },
+  {
+   "shot": "v25743_123848",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/48/123848.jpg",
+   "sha256": "bf9bd9320a80f34808eb465066bffa2e47354ca0e05889e58b2d5175d02c1b41"
+  },
+  {
+   "shot": "v25912_146615",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/15/146615.jpg",
+   "sha256": "84efecec6f1e1f7526bd9d5c7c4113a739cfdddd93f32c307d08aecb688ae4f8"
+  },
+  {
+   "shot": "v26364_127628",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/28/127628.jpg",
+   "sha256": "bc3fba1346cfb5a9a72ae08aba0d706deda740597b46bc4efd9a5330b0a96066"
+  },
+  {
+   "shot": "v27023_130473",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/73/130473.jpg",
+   "sha256": "984aaf34c6ceb9f0aa4de7e68f5b168388ca49604b209bd523e100a82d46b610"
+  },
+  {
+   "shot": "v27409_213264",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/64/213264.jpg",
+   "sha256": "051081f8df50d818cebc3b14917fafe93255062c70787a3f6a09db53a48ec07a"
+  },
+  {
+   "shot": "v27689_132290",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/90/132290.jpg",
+   "sha256": "6c8ee621bb294f9a3adaa38cc798a0a20dd06cae92811be238e85002f8e280b7"
+  },
+  {
+   "shot": "v28288_135410",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/10/135410.jpg",
+   "sha256": "67227f18b84faac27aeecdd8344920ed099d0e9f8ef41073e9c5154be3077770"
+  },
+  {
+   "shot": "v298_2476",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/76/2476.jpg",
+   "sha256": "f9ed1a47ce679ef392315263a78f9a306dd8db347a29884f03cfdf8ebc89ae44"
+  },
+  {
+   "shot": "v30172_145252",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/52/145252.jpg",
+   "sha256": "6424a97920229308f4f323432176170d5c79240b4cccbeb5d989797406a67497"
+  },
+  {
+   "shot": "v3155_24129",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/29/24129.jpg",
+   "sha256": "1f420f90d17c3b376f1a1dcf5e6da430bede220c42a7f9c7f8e801edeff8d001"
+  },
+  {
+   "shot": "v32588_178764",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/64/178764.jpg",
+   "sha256": "6ad52e81701ac5dc5d800005a2d5c566d427ef3fb93a46931a8c21c0d7679fff"
+  },
+  {
+   "shot": "v32590_178676",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/76/178676.jpg",
+   "sha256": "e20fbd9ea0960dcd5fd8970a2b3120ab42c68fc73bf5bea050bbd1f016e01636"
+  },
+  {
+   "shot": "v3259_56744",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/44/56744.jpg",
+   "sha256": "6e41dce631c404b37df88a15af7896f1554869eccfc3521718043e34e2cf2662"
+  },
+  {
+   "shot": "v3259_56746",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/46/56746.jpg",
+   "sha256": "69307d22250316c01f2f1a040678100207b57cec88159178887d5aef0e202c2b"
+  },
+  {
+   "shot": "v3259_56749",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/49/56749.jpg",
+   "sha256": "9f6126c57e1d0f061e7bb87109e9af7046f5fe30ab875a5d7f2f18a9bb856800"
+  },
+  {
+   "shot": "v3259_56750",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/50/56750.jpg",
+   "sha256": "a1ecf1ba9546ab9f2eaab75dc333966eee79bd01537698f0c7021adba889a476"
+  },
+  {
+   "shot": "v3260_56755",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/55/56755.jpg",
+   "sha256": "8d36a546c939dd2f36a16f0594f2543b9f2caffb145caeb51f50cfb9a6935e9b"
+  },
+  {
+   "shot": "v3260_56756",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/56/56756.jpg",
+   "sha256": "e985fd1892f27a85f19783abdf4243d8771033a6396fc109cb40273803de3f7b"
+  },
+  {
+   "shot": "v3260_56758",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/58/56758.jpg",
+   "sha256": "437f93ce571c7554c3ec8916f87163e1149a135a78edddb2b7a4805a9282d862"
+  },
+  {
+   "shot": "v3260_56759",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/59/56759.jpg",
+   "sha256": "a2f9ac838767933925631fc9f959dee6576bfacaf6a941bea996ec2575b32d31"
+  },
+  {
+   "shot": "v3261_56763",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/63/56763.jpg",
+   "sha256": "b5771f13dac80302c9564143afb237a7e73a6c372c23fb9e43b8bc82ac7bbf4a"
+  },
+  {
+   "shot": "v3261_56770",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/70/56770.jpg",
+   "sha256": "19e1efad9c3945d7a06cfa0a839542a7449680c85f41538d22fa471d2f59ad16"
+  },
+  {
+   "shot": "v3262_56773",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/73/56773.jpg",
+   "sha256": "cea438370733c49a0d956d16fc71d1c73b9f93cda34002d4263e18d6a20f3d0a"
+  },
+  {
+   "shot": "v3262_56776",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/76/56776.jpg",
+   "sha256": "7e248d9115005fb081526919d32c4d4cbe0c33c19851953fda3e2045d74e24d4"
+  },
+  {
+   "shot": "v3262_56778",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/78/56778.jpg",
+   "sha256": "b681eb924ea623103e055217ed263821b1ee9b86cd25838c1640b58627f44d8e"
+  },
+  {
+   "shot": "v3262_56780",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/80/56780.jpg",
+   "sha256": "347a950ba6935353cc043e7ce78626fdeab44e7e9bbcfcf6aad45c7c57aefe35"
+  },
+  {
+   "shot": "v3263_56786",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/86/56786.jpg",
+   "sha256": "d3a8a92bd4426ffb393cbdb52518cd88a2ec8a764a07769c76073f190bff4c43"
+  },
+  {
+   "shot": "v33720_170716",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/16/170716.jpg",
+   "sha256": "564d75ac18af4795c262a4c5c82c286c75f11b25cd5f680963d02339604566a0"
+  },
+  {
+   "shot": "v33898_171604",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/04/171604.jpg",
+   "sha256": "503c0ce1064c7807ec440a68c5593012014727cffa58c2a78bb8356a5ee1f526"
+  },
+  {
+   "shot": "v34976_185303",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/03/185303.jpg",
+   "sha256": "bfc25b7c32c5aa6d3e7c0d3df4c230bc1eb4c2401ea28f54044152c0e23cb3e0"
+  },
+  {
+   "shot": "v37516_182680",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/80/182680.jpg",
+   "sha256": "efee48eea52ef687157632220229c60cd7ea651d4a9e940797c5089140731df2"
+  },
+  {
+   "shot": "v37755_172952",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/52/172952.jpg",
+   "sha256": "8b125c4e84307cd4ec8f09309a91fdab2c56dd4eb54a5e0aaa238b391c59f604"
+  },
+  {
+   "shot": "v40827_205542",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/42/205542.jpg",
+   "sha256": "77652d5fb7ff8e0d71f3fde6aafa527690ac44ba8cfb00f6216713e67522a5a3"
+  },
+  {
+   "shot": "v4652_64061",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/61/64061.jpg",
+   "sha256": "0f94c3ab438b0b2c29c4490082377594a54db06e66aec57c24e0ba6c4a100c3f"
+  },
+  {
+   "shot": "v4698_185587",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/87/185587.jpg",
+   "sha256": "de33558d24488c289651afe19dfeb21872c63638ccbac8bddc1faed589c22977"
+  },
+  {
+   "shot": "v47012_201496",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/96/201496.jpg",
+   "sha256": "23546ff1eacd19b2a42e608241f485dbfc402c55c2ea62f9c520cc24aaacf140"
+  },
+  {
+   "shot": "v49943_209777",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/77/209777.jpg",
+   "sha256": "fcfe5e1ab4b1c935c27990a4f95b378b9a17dad7c678818ef1eca29613e81344"
+  },
+  {
+   "shot": "v54532_250733",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/33/250733.jpg",
+   "sha256": "332b026295157c6ae77daec51f4e11a2c642ceae1c71a429d6f2dfe1f8c8b905"
+  },
+  {
+   "shot": "v5460_58269",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/69/58269.jpg",
+   "sha256": "050b3e0d005b5103847e587cbb0a7ba059e7f7aa01a14c74995e6daa19a65c54"
+  },
+  {
+   "shot": "v5502_148435",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/35/148435.jpg",
+   "sha256": "a9998f9b893f64ddd3f2d0053eb86cbe5362ecc04faa5de218b164e96a7f0e94"
+  },
+  {
+   "shot": "v564_17448",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/48/17448.jpg",
+   "sha256": "1be14adfcdca325d63c1991239d9f7c7777d7d2603b3f565d8d82cd293aedf7b"
+  },
+  {
+   "shot": "v59379_227473",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/73/227473.jpg",
+   "sha256": "a6a90cd239499226261570562e76e62ded74df5bc57eeffe78f2542fa5efd116"
+  },
+  {
+   "shot": "v6010_18231",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/31/18231.jpg",
+   "sha256": "177e66241e39f8778aa629bc837443e07012c67f72841350cd873bca970dddca"
+  },
+  {
+   "shot": "v63620_243877",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/77/243877.jpg",
+   "sha256": "4984b6046a24814e0a33cd497a423b6d0c055cfdb4554e52c37d6d4259c4f89f"
+  },
+  {
+   "shot": "v65694_247396",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/96/247396.jpg",
+   "sha256": "ef44d4263b4415206ffbd2f2ca81f20bd2120b1cc8685b35e85e22db60ce8ab5"
+  },
+  {
+   "shot": "v6899_249559",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/59/249559.jpg",
+   "sha256": "34e63aba0f5ee48b0354d75ec74d0b636b262efb9a6d01c7239ebfa0151c691e"
+  },
+  {
+   "shot": "v7100_187432",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/32/187432.jpg",
+   "sha256": "44129b3b3614613bb3190b5d1e4d6b9c9165db8c89068602294557a9cb03bc9a"
+  },
+  {
+   "shot": "v730_136217",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/17/136217.jpg",
+   "sha256": "21951999ee34febb46f0e2bafbb3d9754e568833c7779225fc79d3c668cebe75"
+  },
+  {
+   "shot": "v7589_74572",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/72/74572.jpg",
+   "sha256": "bedda95e24ef285d353cf8f7dd4c500a508560ee0f50fa1260fa05b1fff71e4d"
+  },
+  {
+   "shot": "v7716_43178",
+   "split": "dev",
+   "url": "https://t.vndb.org/sf/78/43178.jpg",
+   "sha256": "e6355de99fbcb8ee780e6120765c95f2856ef50fb0881ce98d2e03ec1b4262ad"
+  },
+  {
+   "shot": "v7912_57511",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/11/57511.jpg",
+   "sha256": "b52d30d52a5df188a6f899233dc8327390afce1275b6e66dc13d7f7256a2bd62"
+  },
+  {
+   "shot": "v7912_57513",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/13/57513.jpg",
+   "sha256": "0365bfbb0d7be949fa4cda9be8484e6d9301ddcb82248d1f5e8ccc6b231de646"
+  },
+  {
+   "shot": "v7912_57515",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/15/57515.jpg",
+   "sha256": "46e0120f82b2104645d62b9365f79f8aab7b3604b90415fc3ece229ca0c193c3"
+  },
+  {
+   "shot": "v7912_57518",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/18/57518.jpg",
+   "sha256": "61e011fd1393fa4a08d9898e2d6de0d3c373befda7b1bf6aeb71589e327927b4"
+  },
+  {
+   "shot": "v7912_57519",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/19/57519.jpg",
+   "sha256": "a0cd107aac3620b6fbe0c66a02ae4ba69e8c641f6c6b0c1a9781c9f3f13c525f"
+  },
+  {
+   "shot": "v9013_94805",
+   "split": "test",
+   "url": "https://t.vndb.org/sf/05/94805.jpg",
+   "sha256": "fedd014dacfce3f78ac0961d8eef0bf8ccc811690b54ed205b2b43dbff36a95e"
+  }
+ ],
+ "byte_identical_scenes": [
+  {
+   "shot": "v3260_56760",
+   "same_bytes_as": "v3261_56770",
+   "sha256": "19e1efad9c3945d7a06cfa0a839542a7449680c85f41538d22fa471d2f59ad16"
+  }
+ ],
+ "in_synth3_scene_pools_2026_10_18": [
+  "v11109_56634",
+  "v3259_56744",
+  "v3260_56760",
+  "v3261_56770",
+  "v7912_57511",
+  "v7912_57518"
+ ]
+}

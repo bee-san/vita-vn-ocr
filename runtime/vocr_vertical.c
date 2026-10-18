@@ -15,7 +15,8 @@
  *     lengthened over rows with ink at most max(4, width) apart and widened by up to half the band width (never
  *     past half the gap to the neighbour band) while columns hold 2+ on-pixels
  *  5. columns under FURI_PCT % of the median width dropped; 6. boxes wider than 5/4 of their height dropped
- *  7. a PAD px pad and vocr_line_dark's flag; 8. right to left (a column's right edge, larger first; then top)
+ *  7. a PAD px pad and vocr_line_dark's flag (VOCR_COLUMNS_NO_DARK: 0, the caller computes it); 8. right to
+ *     left (a column's right edge, larger first; then top)
  * Memory: the column-major on-mask, per-column and per-row counters, three row rings and the candidates, all
  * from the caller's arena (vocr_columns_arena_bytes). Integer arithmetic only.
  */
@@ -443,6 +444,10 @@ static int find_columns(Source *s, unsigned flags, unsigned char *base, VocrLine
             ln = &out->lines[out->count++];
             ln->x = cand[k].x1; ln->y = cand[k].y1;
             ln->w = cand[k].x2 - cand[k].x1; ln->h = cand[k].y2 - cand[k].y1;
+            if (flags & VOCR_COLUMNS_NO_DARK) {
+                ln->dark = 0;
+                continue;
+            }
             dark = s->im ? vocr_line_dark(s->im, ln->x, ln->y, ln->w, ln->h)
                          : vocr_line_dark_rows(s->src, ln->x, ln->y, ln->w, ln->h);
             if (dark < 0) return dark;

@@ -18,24 +18,55 @@
  },
  "metric": {
   "primary": "VN development dialogue CER on fixed column crops (the column box plus 4 px on Vita and manga views, 2 px on PSP; console polarity), C runtime W8I greedy, eval/metrics.norm both sides, Levenshtein over reference characters",
-  "secondary": ["manga development CER", "end-to-end region CER (finder, columns in its reading order, joined, against the region's columns right to left)", "column F1 at IoU >= 0.5"],
+  "secondary": [
+   "manga development CER",
+   "end-to-end region CER (finder, columns in its reading order, joined, against the region's columns right to left)",
+   "column F1 at IoU >= 0.5"
+  ],
   "intervals": "10,000 bootstrap resamples over series clusters, seed 0 (eval/vertical.py cluster_diff)"
  },
  "arms": {
-  "a0": {"input": "synth/vertical.py retile(crop, 'a0')", "models": {"VOCR5-S": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d", "VOCR5-N": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc", "VOCR5-L": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"}},
-  "a1": {"input": "synth/vertical.py retile(crop, 'a1')", "models": "as a0"},
-  "V": {"input": "synth/vertical.py rotate_ccw(crop) (runtime/vocr_vertical.c vocr_column_rotate)", "models": "VOCR5-V runs below, exported int8 (train/export.py --int8) and read in W8I"},
+  "a0": {
+   "input": "synth/vertical_twin.py retile(crop, 'a0')",
+   "models": {
+    "VOCR5-S": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+    "VOCR5-N": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+    "VOCR5-L": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+   }
+  },
+  "a1": {
+   "input": "synth/vertical_twin.py retile(crop, 'a1')",
+   "models": "as a0"
+  },
+  "V": {
+   "input": "synth/vertical_twin.py rotate_ccw(crop) (runtime/vocr_vertical.c vocr_column_rotate)",
+   "models": "VOCR5-V runs below, exported int8 (train/export.py --int8) and read in W8I"
+  },
   "b": "not run: VOCR5-S's head and bottleneck are 502,171 of its 726,075 parameters, so a head variant saves little; with the turned input the trunk has to change anyway, and with the re-tiled input it keeps a0/a1's segmentation limits"
  },
  "VOCR5-V": {
   "topology": "train/model.py TinyVNOCR width 1.0, bottleneck 96, depth 1, ctx 2 (VOCR5-S's)",
-  "vocab": {"file": "data/vocab_4987_proof.txt", "sha256": "4a1e7cb77c627a217ae57c7ed427f0695c732dfb85158c674ec4d14994a4e04c"},
-  "init": {"file": "vocr5-train/runs/v5f_S_seed2/ckpt_best.pt (the released VOCR5-S's checkpoint)", "sha256": "e4b05525ecf42620ca2c7b12eb36fe66d4befac07cc0186f6fea3cd90c395cc1"},
+  "vocab": {
+   "file": "data/vocab_4987_proof.txt",
+   "sha256": "4a1e7cb77c627a217ae57c7ed427f0695c732dfb85158c674ec4d14994a4e04c"
+  },
+  "init": {
+   "file": "vocr5-train/runs/v5f_S_seed2/ckpt_best.pt (the released VOCR5-S's checkpoint)",
+   "sha256": "e4b05525ecf42620ca2c7b12eb36fe66d4befac07cc0186f6fea3cd90c395cc1"
+  },
   "recipe": "train/train2.py --steps 30000 --batch 96 --lr 0.001 --final-lr 0.05 --warmup 500 --wd 0.01 --width 1.0 --bottleneck 96 --vocab data/vocab_4987_proof.txt --ema 0.999 --threads 5 --eval-every 2500 --keep-evals --src vsyn:0.75:<the 100 pinned shards>:stream=1,pool=6,inv=0.2 --src vra:0.15:vreal_agree.npz:inv=0.2 --src vps:0.10:vreal_ps.npz:inv=0.2 --val vval:<pinned val shard>:n=3000 --select vval",
   "data": {
    "synthetic": "data/manifests/vertical_shards_v1.json (synth/vertical_render.py, 100 x 10,000 training crops + 3,000 validation crops)",
-   "real_agree": {"file": "vreal_agree.npz", "sha256": "1395bf2b7b7731dbab58414866bf8716688aaf6eaad5bef81be2438c9b0a0a52", "rule": "training-side pages only (eval/vertical_data.py train-pages: no VN sharing a VNDB-relation component with a development or test VN, no reserved.json test or dev_sample VN, no test session, no eval screenshot); MeikiOCR's page read == PP-OCRv6 small's read of the turned crop; each also at half scale"},
-   "real_ps": {"file": "vreal_ps.npz", "sha256": "8d1be8cc0cc3bb1790a66e0319bf6381db052f5a3ffbabbf6cc05dada9eb1b51", "rule": "the same pages; the two disagree, PP-OCRv6 small's lowest character confidence >= 0.9: its reading"}
+   "real_agree": {
+    "file": "vreal_agree.npz",
+    "sha256": "1395bf2b7b7731dbab58414866bf8716688aaf6eaad5bef81be2438c9b0a0a52",
+    "rule": "training-side pages only (eval/vertical_data.py train-pages: no VN sharing a VNDB-relation component with a development or test VN, no reserved.json test or dev_sample VN, no test session, no eval screenshot); MeikiOCR's page read == PP-OCRv6 small's read of the turned crop; each also at half scale"
+   },
+   "real_ps": {
+    "file": "vreal_ps.npz",
+    "sha256": "8d1be8cc0cc3bb1790a66e0319bf6381db052f5a3ffbabbf6cc05dada9eb1b51",
+    "rule": "the same pages; the two disagree, PP-OCRv6 small's lowest character confidence >= 0.9: its reading"
+   }
   },
   "model_of_a_run": "its last checkpoint (step 30,000, the EMA weights); --select only picks ckpt_best for monitoring, which is not used",
   "runs": "seed 1 is the candidate; at most 3 more runs in all (seed 2 for its variance, report only; a smaller vocabulary only if seed 1 is adopted, under the same rule against it)",
@@ -46,8 +77,20 @@
   "adopt_V": "VOCR5-V (seed 1) is adopted when (i) VN development: V - R* has an interval upper bound below +0.5 points, and (ii) V's VN point estimate is lower than R*'s, or V - R* on manga development has an interval entirely below 0",
   "sizes": "among adopted VOCR5-V sizes the smallest wins; if none is adopted, R* ships and VOCR5-V is reported as not adopted",
   "manga_never_trades_vn": "manga is never a reason to accept a resolved VN loss",
-  "finder": "candidates: P0 = synth/vertical.py variant 0 (GRAD transposed), P1 = variant 1 (valley split, density-gated growth), D = the textdet detector s8_c24 (v0.3.1-textdet.1, sha256 8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179) vertical boxes. With the selected recognizer arm: P1 replaces P0 only if P1 - P0 end-to-end VN development CER has an interval entirely below 0; D replaces the chosen projection finder only if D - it has an interval entirely below 0 and its arena (with the recognizer's) stays within the tier's; eligible finders: arena <= 131,072 B at 960x544, C == twin on every development region",
+  "finder": "candidates: P0 = synth/vertical_twin.py variant 0 (GRAD transposed), P1 = variant 1 (valley split, density-gated growth), D = the textdet detector s8_c24 (v0.3.1-textdet.1, sha256 8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179) vertical boxes. With the selected recognizer arm: P1 replaces P0 only if P1 - P0 end-to-end VN development CER has an interval entirely below 0; D replaces the chosen projection finder only if D - it has an interval entirely below 0 and its arena (with the recognizer's) stays within the tier's; eligible finders: arena <= 131,072 B at 960x544, C == twin on every development region",
   "test": "the test set is read once, after the selection is committed and pushed, for the selected finder and arm; every other arm is report only"
  },
- "estimates": "console time is a host estimate: MAC counts of the recognizer at VOCR3-H15's measured 5.0-5.2 ms per CTC frame (1,564,992 MACs per frame), 333 and 444 MHz; nothing here has run on a console"
+ "estimates": "console time is a host estimate: MAC counts of the recognizer at VOCR3-H15's measured 5.0-5.2 ms per CTC frame (1,564,992 MACs per frame), 333 and 444 MHz; nothing here has run on a console",
+ "amendments": [
+  {
+   "n": 1,
+   "when": "2026-10-18 ~09:10Z, after the development labels and before any vertical score (VOCR5-V seed 1 is training; no development column has been read by any recognizer arm)",
+   "what": [
+    "development set pinned: eval/manifests/vertical-dev-columns.jsonl sha256 c79df64f6971d42c46057956ee1656cb06012800b304fb8633780ad76c1b198d and eval/manifests/vertical-dev-regions.jsonl sha256 61219f5dd7d61e4d43f7997cac17c428a0e6cbc6e0b2ea8242f4ccce48bb06c5: 654 columns (VN: 202 dialogue columns, 2,275 characters, 25 clusters, 49 pages, PSP and PC-scaled; manga: 262 columns, 1,483 characters, 37 pages), 181 regions",
+    "labels: two independent blind Claude passes (vertical-review-1/2 and -4/5) agreed on 474 of 477 columns both read as text; 13 disagreements settled by a third look (the vertical agent); a blind spot check of 26 random agreed labels found 0 errors (26/26)",
+    "the manga cohort holds one series per split, so its bootstrap unit is the manga page (the page id without its window suffix) instead of the series cluster; the VN cohort keeps the series clusters",
+    "the development VN cohort has no native PS Vita page (its console clusters are PSP: Harukanaru, Genrou, Gekka Ryouran; Vita-resolution text comes from PC pages scaled to 960x544); the test set holds the native Vita cluster (Yunohana SpRING!)"
+   ]
+  }
+ ]
 }

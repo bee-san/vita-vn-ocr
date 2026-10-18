@@ -177,6 +177,21 @@ def test_classifier_tags_a_busy_background_not_a_plain_box():
     assert TB.busyness(busy, ink, "vita")["tagged"]
 
 
+def test_no_module_constant_is_bound_twice():
+    """eval/translucent_box.py once bound SOURCES twice, so the tag sources were shadowed by the split's files."""
+    import ast
+    tree = ast.parse((ROOT / "eval" / "translucent_box.py").read_text())
+    names = [t.id for node in tree.body if isinstance(node, ast.Assign) for t in node.targets
+             if isinstance(t, ast.Name) and t.id.isupper()]
+    assert len(names) == len(set(names)), sorted({n for n in names if names.count(n) > 1})
+
+
+def test_prevalence_record_covers_every_source():
+    import translucent_box as TB
+    rec = json.loads((ROOT / "eval" / "translucent_box_prevalence_20261018.json").read_text())
+    assert set(rec["sources"]) == set(TB.SOURCES) and rec["sources"]["wd"]["tagged"] > 0
+
+
 def test_frozen_sources_match_the_protocol():
     """The committed results are for this code: a changed split or classifier needs a new protocol and results."""
     if not PROTOCOL.exists():

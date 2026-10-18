@@ -1,6 +1,6 @@
 # runtime: the recognizer in plain C
 
-`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob. The dialogue line finder that feeds it lives next to it (`vocr_lines.c`, `docs/linefind.md`); the two share nothing but naming. `make check` runs the checks of both. An optional refinement of the finder's boxes (`vocr_lines_refine.c`: `vocr_refine_lines` / `vocr_refine_lines_rows`, called after the finder with its arena; flags 0 leave the lines unchanged) is described with its measurements in `docs/finder-tighten.md`; `make check-lines` runs its self-test and its parity with `synth/lines_refine.py`. The learned text detector (`vocr_textdet.c`, issue #96, `docs/textdet.md`) is a finder mode behind a flag; it has its own section below, and `make check-textdet` runs its checks. So is the text-presence gate (`vocr_textgate.c`, issue #100, `docs/textgate.md`): `make check-textgate`.
+`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob. The dialogue line finder that feeds it lives next to it (`vocr_lines.c`, `docs/linefind.md`); the two share nothing but naming. `make check` runs the checks of both. An optional refinement of the finder's boxes (`vocr_lines_refine.c`: `vocr_refine_lines` / `vocr_refine_lines_rows`, called after the finder with its arena; flags 0 leave the lines unchanged) is described with its measurements in `docs/finder-tighten.md`; `make check-lines` runs its self-test and its parity with `synth/lines_refine.py`. The learned text detector (`vocr_textdet.c`, issue #96, `docs/textdet.md`) is a finder mode behind a flag; it has its own section below, and `make check-textdet` runs its checks. So is the text-presence gate (`vocr_textgate.c`, issue #100, `docs/textgate.md`): `make check-textgate`. The stroke split (`vocr_lines_split.c`, issue #98, `docs/translucent-box.md`) is a second optional step between the finder and the refinement, for text over translucent boxes and busy scenes; flags 0 leave the lines unchanged, it is not a default (its pre-registered rule did not adopt it), and `make check-split` runs its checks.
 
 - C99. The runtime uses no `malloc` and nothing from libc except `memcpy`, `memset` and `<math.h>` (on 32-bit ARM, also libgcc's integer-division helpers; see the porting notes).
 - The blob is read in place. All working memory comes from one arena that the caller provides, sized exactly by `vocr_arena_bytes()`.
@@ -488,6 +488,33 @@ $G -std=c99 -O2 -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -static runtime/vocr
 printf '#!/bin/sh\nexec runtime/scripts/tools/bin/qemu-arm -cpu cortex-a9 ./vtg_arm "$@"\n' > vtg_qemu && chmod +x vtg_qemu
 python tests/textgate_parity.py --bin ./vtg_qemu --seeds 1 --regions 3 --selftest 6
 ```
+
+## Stroke split (`vocr_lines_split.c`)
+
+Issue #98 (`docs/translucent-box.md`): over a translucent dialogue box with a busy scene behind it, the finder can
+return one box for two lines. `vocr_split_lines` / `vocr_split_lines_rows` take the finder's `VocrLineSet` and split
+a box at valleys of a row profile of thin strokes of both polarities; `synth/lines_split.py` is the bit-exact twin
+and the specification.
+
+```c
+size_t need = vocr_lines_arena_bytes(w, h);              /* the finder's arena serves the split and the refinement */
+vocr_find_lines_rows(&src, VOCR_LINES_GRAD, arena, need, &set);
+vocr_split_lines_rows(&src, VOCR_SPLIT_DEFAULT, arena, need, &set, &rows);    /* 0 = off: set unchanged */
+vocr_refine_lines_rows(&src, VOCR_REFINE_DEFAULT, arena, need, &set, &rows);  /* optional, as before */
+```
+
+- C99, no allocation or recursion, integer only. Arena `vocr_split_arena_bytes(w, h) = 3 + up4(3w) + 3 up4(2h)`
+  (6,147 B at 960x544), never more than `vocr_lines_arena_bytes` (tested on a grid of sizes). Reads only each box's
+  own pixels, twice, top to bottom (boxes under 16 rows are not read), so a caller can split each box on the strip
+  it holds. Lines keep their box's columns and dark flag and stay in order; nothing is dropped.
+- Code (VitaSDK gcc 15.2, Thumb-2): 3,092 B at `-O2`, 2,432 B at `-Os`; deepest frame 3,712 B (`split`, three
+  256-entry histograms). Cost (estimate, A9 cycle model under qemu-arm): 194 instructions per pixel of the boxes it
+  profiles, about 79 ms for a 900x150 region at 333 MHz read whole, 6.8 ms for the mean development region
+  (`eval/translucent_box_a9_20261018.json`).
+- Checks: `make check-split` (strict compile; the sanitized driver `vocr_lines_split_test.c`'s `--selftest`: flags 0
+  is the identity, the in-memory, row-callback and per-box strip forms and the minimum misaligned arena agree, lines
+  stay inside their box, errors leave the set unchanged; then `tests/lines_split_parity.py` against the twins, both
+  forms), and `tests/test_lines_split.py`.
 
 ## Porting notes (vita, psp)
 

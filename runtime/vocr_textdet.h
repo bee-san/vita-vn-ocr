@@ -116,7 +116,8 @@ int vocr_textdet_maps(const vocr_textdet *m, const VocrLinesImage *im, void *are
 size_t vocr_lines_det_arena_bytes(const vocr_textdet *m, unsigned max_width, unsigned max_height);
 
 /* finder == VOCR_LINES_TEXTDET: the detector's horizontal lines in its order (vertical lines are
- * dropped; count 0 means no text), its truncated flag and return codes, m required. Any other
+ * dropped, so count 0 means no horizontal text: use vocr_textdet_find to tell an empty region from
+ * one with vertical text only), its truncated flag and return codes, m required. Any other
  * finder: vocr_find_lines(im, finder, arena, arena_bytes, out), unchanged (m is not read). */
 int vocr_find_lines_det(const VocrLinesImage *im, int finder, const vocr_textdet *m, void *arena,
                         size_t arena_bytes, VocrLineSet *out);

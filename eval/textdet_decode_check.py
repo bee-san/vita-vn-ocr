@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""textdet: the decode check behind protocol amendment 3, on held-out canvases (never development data).
+"""textdet: checks of decode variants that were not adopted, on held-out canvases (never development data).
 
   textdet_decode_check.py --blob NAME=BLOB ... --out JSON [--synth 400] [--real 150]
 

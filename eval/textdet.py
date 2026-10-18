@@ -446,7 +446,7 @@ def cmd_detect(args):
     import textdet_twin as TW
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    cases = [(name, c) for name in WD_COHORTS for c in load_cohort(args.cohorts, name)]
+    cases = [(name, c) for name in args.names for c in load_cohort(args.cohorts, name)]
     for spec in args.cand:
         name, _, blob = spec.partition("=")
         target = out / f"dets_{name}.json"
@@ -491,7 +491,7 @@ def cmd_read(args):
     out.mkdir(parents=True, exist_ok=True)
     ident = FT.build(out / f"build-{os.getpid()}")       # one per process: several may read for one model
     reader = FT.Reader(Path(blob), ident["library"])
-    cohorts = {cn: load_cohort(args.cohorts, cn) for cn in WD_COHORTS}
+    cohorts = {cn: load_cohort(args.cohorts, cn) for cn in args.names}
     cache = {}
 
     def read(g, dark):
@@ -696,6 +696,7 @@ def main(argv=None):
     p.add_argument("--cbin", default="")
     p.add_argument("--refine", action="store_true", help="round 2's det+refine")
     p.add_argument("--force", action="store_true")
+    p.add_argument("--names", nargs="+", default=list(WD_COHORTS), help="cohort files (default: the wd cohorts)")
     p = sub.add_parser("read")
     p.add_argument("--model", required=True, help="NAME=BLOB")
     p.add_argument("--dets", required=True)
@@ -703,6 +704,7 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--cand", action="append", default=[])
     p.add_argument("--force", action="store_true")
+    p.add_argument("--names", nargs="+", default=list(WD_COHORTS), help="cohort files (default: the wd cohorts)")
     p = sub.add_parser("select")
     p.add_argument("--protocol", default=str(ROOT / "eval" / "textdet_protocol.json"))
     p.add_argument("--baseline", required=True)

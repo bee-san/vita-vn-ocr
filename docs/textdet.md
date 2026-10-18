@@ -155,7 +155,7 @@ console.
 - **No candidate met the pre-registered promotion rule in any of the three rounds, so the verdict is negative: the
   learned detector does not replace GRAD + refine as the overlay's default finder.** The best one is resolved better
   than GRAD and has a lower development CER than GRAD + refine for all three models, but no interval against GRAD +
-  refine excludes zero, and on CLANNAD it is resolved worse for Normal and Large.
+  refine excludes zero, and on CLANNAD it is resolved worse for Normal and Large (as scored).
 - **The best detector is tiny:** `s8_c24` (round 3's report candidate `s8_c24_seed4`): **5,700 B of int8 weights**,
   an arena of 92,639 B at 960×544 with the refinement (the always-safe tier's 131,072 B), 10.6 M MACs on a 900×150
   text box, an estimated 53 ms on one Cortex-A9 core at 333 MHz (40 ms at 444) per box and 15 / 11 ms per 450×80 PSP
@@ -165,22 +165,30 @@ console.
   −1.3 points; VN intervals reach +0.79 / +0.87 / +0.83). Most of the gain over GRAD + refine is one VN: on v27449 (a
   translucent box over a busy scene) GRAD and GRAD + refine read 40-47% of the characters wrong and det+refine 6-9%;
   without it det+refine − refine is −0.33 / −0.22 / −0.26 points (VN intervals −2.1 to +1.2). Native Vita frames 0.29
-  / 0.19 / 0.16% against refine's 0.91 / 1.02 / 0.80% (intervals include 0). Empty regions: no line in **92%** of
-  them (GRAD 8%).
+  / 0.19 / 0.16% against refine's 0.91 / 1.02 / 0.80% (intervals include 0). By platform (VOCR5-N, without
+  v27449): the Vita frames are resolved better than GRAD + refine (0.97% against 2.36%, −1.40 points, VN interval
+  −2.85 to −0.22), the PSP frames are not (5.24% against 4.44%, +0.80, −1.78 to +3.13). Empty regions: no line in
+  **92%** of them (GRAD 8%; most of them lie on screenshots the synthetic training canvases also drew backgrounds
+  from, and the rate is the same on the others: "What changed after the freeze").
 - **vita-test + psp-test whole dialogue, once** (body text, all variants): **6.28 / 5.99 / 5.62%** against GRAD 10.53
   / 10.23 / 9.42% (resolved, −4.3 / −4.2 / −3.8 points) and GRAD + refine 9.51 / 9.16 / 8.35% (−3.2 / −3.2 / −2.7,
-  intervals reach +0.35 / +0.18 / +0.44). It is all PSP: psp-test 6.08 / 5.58 / 5.33% against refine's 12.33 / 11.53
-  / 10.92% (−6.2 / −6.0 / −5.6 points, resolved), vita-test level (6.47 / 6.40 / 5.90% against 6.73 / 6.83 / 5.81%).
-- **CLANNAD, once** (2,052 dialogue lines): 1.54 / 1.15 / 1.02% against GRAD 1.38 / 0.96 / 0.73% and refine 1.43 /
-  0.92 / 0.63%: **worse for Normal and Large** (+0.23 and +0.39 points against refine, page intervals above 0),
-  level for Small.
+  intervals reach +0.35 / +0.18 / +0.44). On these sets it is all PSP: psp-test 6.08 / 5.58 / 5.33% against
+  refine's 12.33 / 11.53 / 10.92% (−6.2 / −6.0 / −5.6 points, resolved), vita-test level (6.47 / 6.40 / 5.90% against
+  6.73 / 6.83 / 5.81%). The development data point the other way (above): their PSP frames gain nothing once v27449
+  is set aside.
+- **CLANNAD, once** (2,052 dialogue lines, as scored: the scorer's line-to-reference rule is stricter than the
+  registered one, below): 1.54 / 1.15 / 1.02% against GRAD 1.38 / 0.96 / 0.73% and refine 1.43 / 0.92 / 0.63%:
+  **worse for Normal and Large** (+0.23 and +0.39 points against refine, page intervals above 0), level for Small.
 - **Is it worth it over GRAD + refine?** Not as the default. Its gain over GRAD + refine is large where GRAD fails
-  (psp-test: about half of the whole-dialogue errors; the development VN v27449), small on the rest of the
-  development data (5.50% against 5.90% on its PSP frames for VOCR5-N), absent on vita-test, and on CLANNAD's native
-  Vita text, where the GRAD crops already read near their ceiling, it loses 0.1-0.4 points. It also returns no line
-  for most empty regions, which GRAD never does. The case for Rubi is an opt-in finder for PSP titles (480×272
-  frames) with A/B logging on the console, or the detector as a text-presence gate in front of GRAD + refine (below).
-  This recommendation is made after the protected sets were read: a deployment caution, not a selection.
+  (psp-test: about half of the whole-dialogue errors; the development VN v27449), small or absent elsewhere (the
+  development data without v27449: −0.2 to −0.3 points; their PSP frames +0.8, their Vita frames −1.4; vita-test
+  level), and on CLANNAD's native Vita text, where the GRAD crops already read near their ceiling, it loses 0.1-0.4
+  points as scored. It also returns no line for 92% of empty regions, where GRAD does so for 8%. The evidence does not
+  single out a platform: psp-test (14 games) favours PSP text, the development PSP frames (54 VNs without v27449) do
+  not. The case for Rubi is therefore an opt-in finder, chosen per title where GRAD visibly fails (merged lines,
+  translucent boxes over busy scenes, junk on empty boxes) with A/B logging on the console, or the detector as a
+  text-presence gate in front of GRAD + refine (below). This recommendation is made after the protected sets were
+  read: a deployment caution, not a selection.
 
 ### What changed after the freeze (amendments 1-4)
 
@@ -192,23 +200,56 @@ console.
 | 4 | after round 2's scores, before round 3's runs | round 3, the last: the strict kernel rule (`--strict-kernel`), 12 runs over seven round-1 and five deeper shapes, det+refine; the fine-tune clause withdrawn |
 
 Two deviations from the letter of the frozen protocol, recorded in the amendments: round 1's fine-tune clause, which
-its scores triggered, never ran (the losses are box geometry, not the recognizers' input distribution: the units
-whose line count the detector gets right already read better than GRAD + refine with the unchanged recognizers),
-and `train/textdet_export.py` gained an optional `--wbits` after amendment 2 pinned it (all 22 round-1 blobs
-re-export byte for byte). Three rounds on one development sample make its intervals optimistic for the last
-round's candidates; the protected sets were read once, at the end, for round 3's report candidate.
+its scores triggered (as did rounds 2 and 3's), never ran (the losses are box geometry, not the recognizers' input
+distribution: the units whose line count the detector gets right already read better than GRAD + refine with the
+unchanged recognizers), and `train/textdet_export.py` gained an optional `--wbits` after amendment 2 pinned it (all
+34 runs' blobs re-export byte for byte with the pinned export, with `520d759`'s and with the final one). Three rounds
+on one development sample make its intervals optimistic for the last round's candidates; the protected sets were
+read once, at the end, for round 3's report candidate.
 
-A third, found after the protected read and not in any amendment: the protocol says every screenshot and VN of
-eval/linefind is excluded from the training data, but `synth/textdet_data.py` excluded them from the real canvases
-only. The synthetic canvases draw their backgrounds and empty negatives from synth3's scene pool (test and
-development-sample VNs excluded), which holds 94 of vita_dev's 111 screenshots and 59 of psp_dev's 78, and 54 of
-the 66 development empty regions lie on such a screenshot. The wd cohort, the protected sets and every real canvas
-are unaffected. On the 12 development empty regions whose screenshot is not in the pool, `s8_c24_seed4` returns no
-line for 11 (0.92, the same as on the other 54), and on the 6 such holdout regions for all 6
-(`eval/textdet_empty_pool_check_20261018.json`), so the empty-region rate does not look inflated by it; the linefind
-detection rows (whose tight and loose regions are mostly the dialogue boxes in the lower screen, while the scene
-crops come from the upper 62%) carry the same caveat. It changes no decision: no candidate met the rule's
-whole-dialogue conditions, which this does not touch.
+Not in any amendment, and disclosed here:
+
+- **Probes and a smoke test.** Before the sweep three 120-step speed probes (`s4_c8`, `s8_c48`, `s4_c24`, on a
+  100-canvas test manifest, 22:06-22:07Z) and, after amendment 2, a harness smoke test (a probe blob on 60 wd cases,
+  read by VOCR5-S, 22:20Z) ran outside the sweep. Nothing of them is used or committed.
+- **A working-tree twin in one run.** `s8_c16_seed2`'s `run.json` records a `synth/textdet_twin.py` sha256
+  (`7773edd1…`) that is neither the pin nor in git: the twin was briefly edited in the working tree for the decode
+  check below when that run started. Training does not use the twin, and the blob re-exports byte for byte with the
+  pinned twin.
+- **Decode checks.** `eval/textdet_decode_check.py` tried two decode variants (centre-consistent connectivity;
+  higher kernel thresholds) with round-1 blobs on held-out canvases only: synthetic ones of an unused seed and
+  realplus screenshots of training VNs that the per-VN cap left out of the pool, never development data
+  (22:57Z with six finished runs, 00:05-00:08Z with five round-1 blobs). Neither variant was adopted; the decode is
+  the frozen one.
+- **Amendment 3's empty-rate sentence** says `eval/textdet.py` checks that det+refine never adds a line to a region
+  the detector returns none for; there is no such check in the code. The claim holds: the det+refine empty rates
+  equal round 1's det rates for all 22 blobs.
+- **Amendment 4's "seven round-1 shapes"** are seven runs of six shapes (`s8_c24` twice).
+- **Two report-only analyses were not run before the protected read:** the dn pairs (the detector's box for a line
+  against the hand-cut crop: the protocol gives no rule for which detector line is "the line") were not run at all,
+  and the owner's CHAOS;CHILD native Vita whole dialogue was run afterwards (below, report only).
+- **The synthetic scene pool holds eval/linefind screenshots and v14018** (found after the protected read). The
+  protocol says every screenshot and VN of eval/linefind, and v14018, are excluded from the training data, but
+  `synth/textdet_data.py` (whose pinned docstring says the same) excluded them from the real canvases only. The
+  synthetic canvases draw their backgrounds and empty negatives from synth3's scene pool (test and
+  development-sample VNs excluded), which holds 94 of vita_dev's 111 screenshots, 59 of psp_dev's 78, 23 of
+  vita_holdout's 26, 35 of psp_holdout's 42, 8 of research_a's 16 and 11 of research_b's 19 (119 of the 142 linefind
+  VNs), and three PC screenshots of CHAOS;CHILD (v14018). 54 of the 66 development empty regions lie on such a
+  screenshot. The wd cohort, the protected sets and every real canvas are unaffected. On the 12 development empty
+  regions whose screenshot is not in the pool, `s8_c24_seed4` returns no line for 11 (0.92, the same as on the other
+  54), and on the 6 such holdout regions for all 6 (`eval/textdet_empty_pool_check_20261018.json`), so the
+  empty-region rate does not look inflated by it; the linefind detection rows (whose tight and loose regions are
+  mostly the dialogue boxes in the lower screen, while the scene crops come from the upper 62%) carry the same
+  caveat. It changes no decision: no candidate met the rule's
+  whole-dialogue conditions, which this does not touch.
+- **CLANNAD was scored with a stricter line-to-reference rule than registered.** The protocol says a reference line
+  reads the finder lines with most of their height inside its GRAD box; the scorer (`eval/textdet_protected.assign`)
+  gives a detector line to the GRAD box it overlaps most only when that box holds at least half the line's area.
+  The area rule implies the height rule for that box, so it can only leave more detector lines unread for their
+  reference, whose characters then count as missed: if anything, against the detector. On development data (no
+  protected data read) the two rules disagree on 0 of the 138 base-region det+refine lines of the native-Vita subset
+  and on 2 of the 705 others. The CLANNAD per-line outputs were not stored and a re-read would be a second protected
+  attempt, so the CLANNAD figures stand as scored.
 
 ### The runtime (`runtime/vocr_textdet.c`, `runtime/README.md`)
 
@@ -221,7 +262,10 @@ twin's bits. Built strictly with gcc 11.5 and clang 18.1.8 (ASan + UBSan), VitaS
 text at -O2) and psp-gcc 15.2 (mips32: 13,068 B at -O2). `tests/textdet_parity.py` compares it with the twin on
 random, probe and wild blobs of every shape and on the 22 round-1 blobs, also as Cortex-A9 NEON and scalar builds
 under qemu-arm, and on every development case the C runtime equals the twin for all 34 trained blobs, det and
-det+refine (`eval/textdet.py detect --cbin`). Stack peak 2,848 B on the Vita (through `vocr_line_dark`).
+det+refine (`eval/textdet.py detect --cbin`). Stack peak 2,848 B on the Vita (through `vocr_line_dark`). In the
+finder mode a count of 0 also results when the detector finds only vertical lines (they are dropped there);
+`vocr_textdet_find` tells the two cases apart (the header's comment said "no text" until the audit; that comment-only
+edit came after the A9 measurement, so `eval/textdet_a9_*.json` record the earlier header's sha256).
 
 ### Round 1: the detector alone (22 runs, `eval/textdet_round1_dev_20261018.json`)
 
@@ -361,15 +405,21 @@ What the rounds show:
   by up to 5 points (`s8_c8`: 12.6 and 7.7% in round 1), more than neighbouring shapes do.
 - **det+refine** lowered the mean development CER of every round-1 blob (`s8_c24_seed1` by 0.7-0.8 points): the
   refinement's SPLIT repairs boxes the detector merged on lines set close together, and TIGHTEN its loose rows.
-- **The strict kernel rule** (round 3) did not help: the round-1 shapes it retrained read the same or worse (VOCR5-N,
-  `s8_c24`: 4.12 and 3.39% for seeds 3 and 4, against round 2's 3.00% for seed 1). Round 2's `s8_c24_seed1` has the
+- **The strict kernel rule** (round 3) did not help: of the six round-1 shapes it retrained, five read the same or
+  worse (VOCR5-N, `s8_c24`: 4.12 and 3.39% for seeds 3 and 4, against round 2's 3.00% for seed 1); only `s8_c16`
+  read better (5.79% against 6.30 and 6.68%). Round 2's `s8_c24_seed1` has the
   lowest development CER of all 34 runs (3.40 / 3.00 / 2.61%); as amendment 4 pre-registered, the protected sets were
   read for round 3's report candidate, `s8_c24_seed4`.
 - **Where it gains and loses** (`s8_c24_seed4`, det+refine against GRAD + refine, development): in the 1,072 of 1,161
   units where it returns as many lines as the reference holds it makes about 590-640 fewer errors (tighter crops);
   in the 11 units where it returns fewer (lines set close together merged or missed: PSP-sized NVL pages, two-line
   boxes at about 1.1 line heights' pitch) and the 78 where it returns more (splits, stray boxes) it makes about 230-250
-  more. The +4 px variants gain least.
+  more. The +4 px variants gain least. By platform, without v27449 (12 Vita and 12 PSP units): on the Vita frames
+  det+refine − GRAD + refine is −1.38 / −1.40 / −1.28 points (VOCR5-S / N / L; VN intervals end at −0.28 / −0.22 /
+  −0.10), on the PSP frames +0.57 / +0.80 / +0.62 (intervals include 0); round 2's `s8_c24_seed1` and `s8_c32_seed1`
+  and round 3's `s8_c24n4_seed3` show the same pattern (VOCR5-N: Vita −1.1 to −1.6, PSP −0.4 to +1.2). With v27449,
+  which holds 414 of the PSP frames' characters at 53% CER for GRAD + refine against 14% for det+refine (VOCR5-N),
+  the PSP frames read 5.50% against 5.90%.
 - **Empty regions** (66 text-free development regions): GRAD returns no line in 8% of them, every candidate from
   about 3 KB in 70-94%.
 
@@ -377,6 +427,14 @@ What the rounds show:
 line for the region costs 0.02-0.03 points of development whole-dialogue CER with `s8_c24_seed4` (3 of the 1,515
 cases, all +4 / +8 px variants of two regions, lose their lines; VOCR5-N 4.78 → 4.80%) and takes the detector's
 empty-region rate (61 of the 66 text-free regions return nothing, against GRAD's 5).
+
+**CHAOS;CHILD, native Vita console captures** (report only, run after the protected read;
+`eval/textdet_own_dlg_20261018.json`): the owner's v14018 frames as whole dialogue (finder-tighten's own_dlg Vita
+units, 145 regions at base / +4 / +8 px, 13,866 characters). GRAD 0.28 / 0.37 / 0.24%, GRAD + refine 0.30 / 0.41 /
+0.24%, det+refine 0.48 / 0.48 / 0.38% (VOCR5-S / N / L): +0.18 / +0.07 / +0.14 points against GRAD + refine, region
+intervals from about −0.1 to +0.4. The same direction as CLANNAD: on clean native console text the GRAD crops already
+read near-perfectly and the detector's are a little worse. The recognizers trained on these frames; the detector did
+not (only three VNDB PC screenshots of v14018 are in its synthetic scene pool).
 
 **int4 weights** (report only, `eval/textdet_int4_20261018.json`): limiting the trained weights to ±7 codes without
 retraining costs +1.11, +0.49 and +1.90 points of development whole-dialogue CER (VOCR5-N, det+refine) for
@@ -405,7 +463,9 @@ against eval's line boxes, pooled: line recall 0.90 (GRAD 0.68, refine 0.73), pr
 (0.68, 0.73), no merged line (GRAD 37, refine 16).
 
 **CLANNAD long run** (owner-drive-ingest's frozen references, `refs_sha256` `35411688…`; each reference line reads
-the detector's lines that lie mostly inside its GRAD box; whole-page intervals):
+the detector's lines that lie mostly inside its GRAD box: a line goes to the GRAD box it overlaps most when that box
+holds at least half its area, stricter than the protocol's "most of its height", see "What changed after the
+freeze"; whole-page intervals; as scored):
 
 | model | dialogue GRAD | refine | det+refine | − GRAD (page CI) | − refine (page CI) | all lines − refine (page CI) |
 |---|---:|---:|---:|---|---|---|
@@ -414,9 +474,10 @@ the detector's lines that lie mostly inside its GRAD box; whole-page intervals):
 | VOCR5-L | 0.73 | 0.63 | 1.02 | +0.29 (+0.14 to +0.45) | +0.39 (+0.25 to +0.55) | +0.78 (+0.61 to +0.97) |
 
 On the 133 CLANNAD pages none of whose lines the references score (lines excluded as no text, cut by the ROI, UI or
-unreadable) the detector returned 373 lines and GRAD 161; whether those pages show text was not checked. Every VOCR5 model trained on the owner's planetarian PSP
-frames (Key / Prototype, like CLANNAD's Vita port); the detector trained on none of the owner's CLANNAD frames
-(CLANNAD's family is excluded from every pool) but on other owner frames, including planetarian's.
+unreadable) the detector returned 373 lines and GRAD 161; whether those pages show text was not checked. Every
+VOCR5 model trained on the owner's planetarian PSP frames (Key / Prototype, like CLANNAD's Vita port); the detector
+trained on none of the owner's CLANNAD frames (CLANNAD's family is excluded from every pool) but on other owner
+frames, including planetarian's.
 
 ### Console time and memory (host estimates)
 
@@ -447,6 +508,11 @@ console memory is the arithmetic above.
   clusters are wide, which is what kept every candidate from qualifying against GRAD + refine.
 - Three rounds were run on that sample; round 3's report candidate's development intervals are therefore
   optimistic. The protected sets, read once, agree in direction for vita-test + psp-test and disagree for CLANNAD.
+- The platform evidence conflicts: psp-test's gain is all PSP, the development data's (without v27449) all Vita.
+- CLANNAD was scored with a line-to-reference rule stricter than the registered one (area, not height); its
+  figures stand as scored and cannot be re-scored without a second protected attempt.
+- The synthetic scene pool holds most eval/linefind screenshots (the empty-region and linefind rows carry that
+  caveat) and three PC screenshots of v14018.
 - The training labels of real screenshots are MeikiOCR's boxes refined to ink, not hand-checked; synthetic scenes
   carry some unlabelled scene text.
 - Vertical text: the detector flags vertical boxes (they are never read), but no vertical text is in any scored set.

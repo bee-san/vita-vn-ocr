@@ -1,0 +1,81 @@
+{
+ "kind": "textdet-own-dlg-report",
+ "note": "report only, run after the protected read: the owner's CHAOS;CHILD (v14018) native Vita frames as whole dialogue (finder-tighten's own_dlg Vita units: 145 regions x base/+4/+8); the VOCR5 models trained on these frames (in-sample for the recognizers), the detector did not (three VNDB PC screenshots of v14018 are in its synthetic scene pool); intervals: paired bootstrap over the 145 regions (one VN), 10,000 resamples, seed 0",
+ "models": {
+  "VOCR5-S": {
+   "chars": 13866,
+   "regions": 145,
+   "cases": 435,
+   "cer": {
+    "grad": 0.281,
+    "refine": 0.303,
+    "det_refine": 0.483
+   },
+   "det_refine_minus_grad": [
+    0.202,
+    [
+     0.0,
+     0.439
+    ]
+   ],
+   "det_refine_minus_refine": [
+    0.18,
+    [
+     -0.016,
+     0.42
+    ]
+   ],
+   "zero_detection_cases": 0
+  },
+  "VOCR5-N": {
+   "chars": 13866,
+   "regions": 145,
+   "cases": 435,
+   "cer": {
+    "grad": 0.368,
+    "refine": 0.411,
+    "det_refine": 0.483
+   },
+   "det_refine_minus_grad": [
+    0.115,
+    [
+     -0.085,
+     0.348
+    ]
+   ],
+   "det_refine_minus_refine": [
+    0.072,
+    [
+     -0.134,
+     0.306
+    ]
+   ],
+   "zero_detection_cases": 0
+  },
+  "VOCR5-L": {
+   "chars": 13866,
+   "regions": 145,
+   "cases": 435,
+   "cer": {
+    "grad": 0.238,
+    "refine": 0.238,
+    "det_refine": 0.375
+   },
+   "det_refine_minus_grad": [
+    0.137,
+    [
+     -0.049,
+     0.358
+    ]
+   ],
+   "det_refine_minus_refine": [
+    0.137,
+    [
+     -0.029,
+     0.35
+    ]
+   ],
+   "zero_detection_cases": 0
+  }
+ }
+}

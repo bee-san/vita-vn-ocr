@@ -2,7 +2,9 @@
 """Markdown tables of docs/textdet.md from the committed result files (so the document's numbers are the JSONs').
 
   textdet_tables.py round eval/textdet_round<N>_dev_<date>.json [--a9 eval/textdet_a9_20261018.json ...]
-  textdet_tables.py protected eval/textdet_protected_<date>.json eval/textdet_clannad_<date>.json
+
+(The protected-set tables of docs/textdet.md were written by hand from eval/textdet_protected_20261018.json and
+eval/textdet_clannad_20261018.json.)
 """
 import argparse
 import json

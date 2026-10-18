@@ -47,8 +47,9 @@ def cmd_record(args):
 
 
 def fmt_ci(d):
+    """delta (VN-cluster 95% interval), three decimals: a lower end above 0 (resolved worse) shows as such."""
     ci = d.get("ci95")
-    return f"{d['delta']:+.3f} ({ci[0]:+.2f} to {ci[1]:+.2f})" if ci else f"{d['delta']:+.3f}"
+    return f"{d['delta']:+.3f} ({ci[0]:+.3f} to {ci[1]:+.3f})" if ci else f"{d['delta']:+.3f}"
 
 
 def cmd_tables(args):

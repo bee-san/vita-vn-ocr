@@ -210,10 +210,10 @@ at least its τ of the cal_dlg cases GRAD + refine finds a line in (`eval/textga
 | r97_s8_c16n4_seed3 | 4,028 | **0.891** | **0.862** | 0.810 | 0.762 |
 | r97_s8_c24_seed4 | 5,700 | **0.972** | **0.957** | **0.928** | 0.812 |
 
-The two baselines change nothing GRAD + refine would not (cal_empty: 0.077 and 0.083 against the finder's own
-0.074): the networks beat them easily. Below about 1.3 KB no network gets through the screen; the presence-trained
-`p8_c8_seed1` (1,540 B) matches #97's 3-4 KB detectors, and only #97's 5.7 KB `s8_c24_seed4` (report only) is clearly
-better.
+The two baselines barely move the finder's own rate (cal_empty: 0.077 and 0.083 against GRAD + refine's 0.074): the
+networks beat them easily. No network under 1,280 B gets through the screen, and at 1,280 B one of the two `p8_c6`
+seeds does; the presence-trained `p8_c8_seed1` (1,540 B) matches #97's 3-4 KB detectors, and only #97's 5.7 KB
+`s8_c24_seed4` (report only) is clearly better.
 
 ### Development (the rule's data)
 
@@ -223,44 +223,45 @@ mode's code (1,892 B region, 2,072 B boxes; `eval/textgate_sizes_20261018.json`)
 
 | operating point | total B (weights + code) | wd cases stopped | gate − refine, S / N / L (VN CI) | native Vita, N | empty: no line (of 66) | out of the scene pool (of 12) | qualifies |
 |---|---:|---:|---|---|---:|---:|---|
-| p8_c6_seed2/region/0.998 | 3,172 (1,280 + 1,892) | 10 | +0.062 (+0.00 to +0.19) / +0.050 (+0.00 to +0.17) / +0.058 (+0.00 to +0.20) | +0.000 (+0.00 to +0.00) | 55 (0.833) | 10 | no |
-| p8_c6_seed2/boxes/0.998 | 3,352 (1,280 + 2,072) | 10 | +0.062 (+0.00 to +0.19) / +0.050 (+0.00 to +0.17) / +0.058 (+0.00 to +0.20) | +0.000 (+0.00 to +0.00) | 56 (0.849) | 10 | no |
-| p8_c8_seed1/region/0.999 | 3,432 (1,540 + 1,892) | 6 | +0.054 (+0.00 to +0.18) / +0.050 (+0.00 to +0.17) / +0.058 (+0.00 to +0.20) | +0.000 (+0.00 to +0.00) | 56 (0.849) | 10 | no |
-| p8_c8_seed1/region/0.998 | 3,432 (1,540 + 1,892) | 8 | +0.089 (+0.00 to +0.28) / +0.081 (+0.00 to +0.26) / +0.104 (+0.00 to +0.32) | +0.000 (+0.00 to +0.00) | 59 (0.894) | 10 | no |
-| p8_c8_seed2/region/0.998 | 3,432 (1,540 + 1,892) | 10 | +0.159 (+0.00 to +0.46) / +0.159 (+0.00 to +0.46) / +0.166 (+0.00 to +0.47) | +0.000 (+0.00 to +0.00) | 54 (0.818) | 10 | no |
-| p8_c8_seed1/boxes/0.999 | 3,612 (1,540 + 2,072) | 5 | +0.050 (+0.00 to +0.17) / +0.050 (+0.00 to +0.17) / +0.058 (+0.00 to +0.20) | +0.000 (+0.00 to +0.00) | 52 (0.788) | 10 | no |
-| p8_c8_seed1/boxes/0.998 | 3,612 (1,540 + 2,072) | 7 | +0.062 (+0.00 to +0.19) / +0.058 (+0.00 to +0.18) / +0.073 (+0.00 to +0.22) | +0.000 (+0.00 to +0.00) | 59 (0.894) | 10 | **yes** |
-| p8_c8_seed2/boxes/0.998 | 3,612 (1,540 + 2,072) | 10 | +0.159 (+0.00 to +0.46) / +0.159 (+0.00 to +0.46) / +0.166 (+0.00 to +0.47) | +0.000 (+0.00 to +0.00) | 54 (0.818) | 10 | no |
-| r97_s8_c8_seed1/region/0.998 | 3,776 (1,884 + 1,892) | 11 | +0.124 (+0.01 to +0.30) / +0.108 (+0.00 to +0.27) / +0.112 (+0.00 to +0.28) | +0.000 (+0.00 to +0.00) | 53 (0.803) | 11 | no |
-| p8_c12_seed1/region/0.998 | 3,892 (2,000 + 1,892) | 12 | +0.217 (+0.00 to +0.64) / +0.213 (+0.00 to +0.64) / +0.221 (+0.00 to +0.65) | +0.000 (+0.00 to +0.00) | 51 (0.773) | 9 | no |
-| r97_s8_c8_seed1/boxes/0.998 | 3,956 (1,884 + 2,072) | 10 | +0.120 (+0.01 to +0.30) / +0.108 (+0.00 to +0.27) / +0.112 (+0.00 to +0.28) | +0.000 (+0.00 to +0.00) | 51 (0.773) | 11 | no |
-| p8_c12_seed1/boxes/0.998 | 4,072 (2,000 + 2,072) | 12 | +0.221 (+0.00 to +0.64) / +0.213 (+0.00 to +0.64) / +0.221 (+0.00 to +0.65) | +0.000 (+0.00 to +0.00) | 54 (0.818) | 9 | no |
-| r97_s4_c12n4_seed3/region/0.998 | 4,700 (2,808 + 1,892) | 9 | +0.093 (+0.00 to +0.28) / +0.081 (+0.00 to +0.26) / +0.097 (+0.00 to +0.31) | +0.000 (+0.00 to +0.00) | 58 (0.879) | 11 | **yes** |
-| r97_s4_c16_seed2/region/0.999 | 5,000 (3,108 + 1,892) | 8 | +0.085 (+0.00 to +0.28) / +0.073 (+0.00 to +0.25) / +0.089 (+0.00 to +0.30) | +0.000 (+0.00 to +0.00) | 55 (0.833) | 11 | no |
-| r97_s4_c16_seed1/region/0.998 | 5,000 (3,108 + 1,892) | 7 | +0.058 (+0.00 to +0.18) / +0.050 (+0.00 to +0.17) / +0.058 (+0.00 to +0.20) | +0.000 (+0.00 to +0.00) | 56 (0.849) | 11 | no |
-| r97_s4_c16_seed2/region/0.998 | 5,000 (3,108 + 1,892) | 10 | +0.097 (+0.00 to +0.29) / +0.081 (+0.00 to +0.26) / +0.097 (+0.00 to +0.31) | +0.000 (+0.00 to +0.00) | 62 (0.939) | 11 | **yes** |
-| r97_s8_c16_seed1/region/0.999 | 5,168 (3,276 + 1,892) | 8 | +0.097 (+0.00 to +0.31) / +0.101 (+0.00 to +0.34) / +0.108 (+0.00 to +0.37) | +0.000 (+0.00 to +0.00) | 50 (0.758) | 10 | no |
-| r97_s8_c16_seed1/region/0.998 | 5,168 (3,276 + 1,892) | 8 | +0.097 (+0.00 to +0.31) / +0.101 (+0.00 to +0.34) / +0.108 (+0.00 to +0.37) | +0.000 (+0.00 to +0.00) | 54 (0.818) | 10 | no |
-| r97_s8_c16_seed2/region/0.998 | 5,168 (3,276 + 1,892) | 4 | +0.004 (+0.00 to +0.01) / +0.000 (+0.00 to +0.00) / +0.000 (+0.00 to +0.00) | +0.000 (+0.00 to +0.00) | 55 (0.833) | 10 | no |
-| r97_s8_c16_seed3/region/0.998 | 5,168 (3,276 + 1,892) | 6 | +0.093 (+0.00 to +0.24) / +0.093 (+0.00 to +0.24) / +0.097 (+0.00 to +0.25) | +0.000 (+0.00 to +0.00) | 53 (0.803) | 11 | no |
-| r97_s4_c16_seed2/boxes/0.998 | 5,180 (3,108 + 2,072) | 10 | +0.097 (+0.00 to +0.29) / +0.081 (+0.00 to +0.26) / +0.097 (+0.00 to +0.31) | +0.000 (+0.00 to +0.00) | 61 (0.924) | 11 | **yes** |
-| r97_s8_c16_seed1/boxes/0.998 | 5,348 (3,276 + 2,072) | 8 | +0.097 (+0.00 to +0.31) / +0.101 (+0.00 to +0.34) / +0.108 (+0.00 to +0.37) | +0.000 (+0.00 to +0.00) | 54 (0.818) | 10 | no |
-| r97_s8_c16_seed2/boxes/0.998 | 5,348 (3,276 + 2,072) | 4 | +0.004 (+0.00 to +0.01) / +0.000 (+0.00 to +0.00) / +0.000 (+0.00 to +0.00) | +0.000 (+0.00 to +0.00) | 56 (0.849) | 10 | no |
-| r97_s8_c16_seed3/boxes/0.998 | 5,348 (3,276 + 2,072) | 6 | +0.093 (+0.00 to +0.24) / +0.093 (+0.00 to +0.24) / +0.097 (+0.00 to +0.25) | +0.000 (+0.00 to +0.00) | 53 (0.803) | 11 | no |
-| r97_s4_c16n4_seed1/region/0.999 | 5,752 (3,860 + 1,892) | 6 | +0.019 (+0.00 to +0.06) / +0.015 (+0.00 to +0.05) / +0.015 (+0.00 to +0.05) | +0.000 (+0.00 to +0.00) | 56 (0.849) | 10 | no |
-| r97_s4_c16n4_seed3/region/0.999 | 5,752 (3,860 + 1,892) | 8 | +0.043 (+0.00 to +0.11) / +0.054 (+0.00 to +0.14) / +0.054 (+0.00 to +0.14) | +0.000 (+0.00 to +0.00) | 60 (0.909) | 11 | **yes** |
-| r97_s4_c16n4_seed1/region/0.998 | 5,752 (3,860 + 1,892) | 10 | +0.089 (+0.00 to +0.22) / +0.085 (+0.00 to +0.22) / +0.093 (+0.00 to +0.25) | +0.000 (+0.00 to +0.00) | 63 (0.955) | 10 | no |
-| r97_s4_c16n4_seed3/region/0.998 | 5,752 (3,860 + 1,892) | 10 | +0.116 (+0.00 to +0.34) / +0.124 (+0.00 to +0.37) / +0.132 (+0.00 to +0.40) | +0.000 (+0.00 to +0.00) | 63 (0.955) | 11 | no |
-| r97_s8_c16n4_seed3/region/0.998 | 5,920 (4,028 + 1,892) | 8 | +0.093 (+0.00 to +0.28) / +0.081 (+0.00 to +0.26) / +0.097 (+0.00 to +0.31) | +0.000 (+0.00 to +0.00) | 59 (0.894) | 10 | **yes** |
-| r97_s4_c16n4_seed1/boxes/0.999 | 5,932 (3,860 + 2,072) | 6 | +0.019 (+0.00 to +0.06) / +0.015 (+0.00 to +0.05) / +0.015 (+0.00 to +0.05) | +0.000 (+0.00 to +0.00) | 54 (0.818) | 10 | no |
-| r97_s4_c16n4_seed3/boxes/0.999 | 5,932 (3,860 + 2,072) | 8 | +0.043 (+0.00 to +0.11) / +0.054 (+0.00 to +0.14) / +0.054 (+0.00 to +0.14) | +0.000 (+0.00 to +0.00) | 59 (0.894) | 11 | **yes** |
-| r97_s4_c16n4_seed1/boxes/0.998 | 5,932 (3,860 + 2,072) | 10 | +0.089 (+0.00 to +0.22) / +0.085 (+0.00 to +0.22) / +0.093 (+0.00 to +0.25) | +0.000 (+0.00 to +0.00) | 59 (0.894) | 10 | no |
-| r97_s4_c16n4_seed3/boxes/0.998 | 5,932 (3,860 + 2,072) | 8 | +0.043 (+0.00 to +0.11) / +0.054 (+0.00 to +0.14) / +0.054 (+0.00 to +0.14) | +0.000 (+0.00 to +0.00) | 63 (0.955) | 11 | **yes** |
-| r97_s8_c16n4_seed3/boxes/0.998 | 6,100 (4,028 + 2,072) | 8 | +0.085 (+0.00 to +0.28) / +0.073 (+0.00 to +0.25) / +0.089 (+0.00 to +0.30) | +0.000 (+0.00 to +0.00) | 57 (0.864) | 10 | **yes** |
+| p8_c6_seed2/region/0.998 | 3,172 (1,280 + 1,892) | 10 | +0.062 (+0.000 to +0.190) / +0.050 (+0.000 to +0.172) / +0.058 (+0.000 to +0.198) | +0.000 (+0.000 to +0.000) | 55 (0.833) | 10 | no |
+| p8_c6_seed2/boxes/0.998 | 3,352 (1,280 + 2,072) | 10 | +0.062 (+0.000 to +0.190) / +0.050 (+0.000 to +0.172) / +0.058 (+0.000 to +0.198) | +0.000 (+0.000 to +0.000) | 56 (0.849) | 10 | no |
+| p8_c8_seed1/region/0.999 | 3,432 (1,540 + 1,892) | 6 | +0.054 (+0.000 to +0.177) / +0.050 (+0.000 to +0.172) / +0.058 (+0.000 to +0.198) | +0.000 (+0.000 to +0.000) | 56 (0.849) | 10 | no |
+| p8_c8_seed1/region/0.998 | 3,432 (1,540 + 1,892) | 8 | +0.089 (+0.000 to +0.279) / +0.081 (+0.000 to +0.261) / +0.104 (+0.000 to +0.324) | +0.000 (+0.000 to +0.000) | 59 (0.894) | 10 | no |
+| p8_c8_seed2/region/0.998 | 3,432 (1,540 + 1,892) | 10 | +0.159 (+0.000 to +0.458) / +0.159 (+0.000 to +0.458) / +0.166 (+0.000 to +0.473) | +0.000 (+0.000 to +0.000) | 54 (0.818) | 10 | no |
+| p8_c8_seed1/boxes/0.999 | 3,612 (1,540 + 2,072) | 5 | +0.050 (+0.000 to +0.172) / +0.050 (+0.000 to +0.172) / +0.058 (+0.000 to +0.198) | +0.000 (+0.000 to +0.000) | 52 (0.788) | 10 | no |
+| p8_c8_seed1/boxes/0.998 | 3,612 (1,540 + 2,072) | 7 | +0.062 (+0.000 to +0.186) / +0.058 (+0.000 to +0.182) / +0.073 (+0.000 to +0.220) | +0.000 (+0.000 to +0.000) | 59 (0.894) | 10 | **yes** |
+| p8_c8_seed2/boxes/0.998 | 3,612 (1,540 + 2,072) | 10 | +0.159 (+0.000 to +0.458) / +0.159 (+0.000 to +0.458) / +0.166 (+0.000 to +0.473) | +0.000 (+0.000 to +0.000) | 54 (0.818) | 10 | no |
+| r97_s8_c8_seed1/region/0.998 | 3,776 (1,884 + 1,892) | 11 | +0.124 (+0.012 to +0.300) / +0.108 (+0.000 to +0.275) / +0.112 (+0.000 to +0.281) | +0.000 (+0.000 to +0.000) | 53 (0.803) | 11 | no |
+| p8_c12_seed1/region/0.998 | 3,892 (2,000 + 1,892) | 12 | +0.217 (+0.000 to +0.642) / +0.213 (+0.000 to +0.638) / +0.221 (+0.000 to +0.652) | +0.000 (+0.000 to +0.000) | 51 (0.773) | 9 | no |
+| r97_s8_c8_seed1/boxes/0.998 | 3,956 (1,884 + 2,072) | 10 | +0.120 (+0.008 to +0.296) / +0.108 (+0.000 to +0.275) / +0.112 (+0.000 to +0.281) | +0.000 (+0.000 to +0.000) | 51 (0.773) | 11 | no |
+| p8_c12_seed1/boxes/0.998 | 4,072 (2,000 + 2,072) | 12 | +0.221 (+0.000 to +0.645) / +0.213 (+0.000 to +0.638) / +0.221 (+0.000 to +0.652) | +0.000 (+0.000 to +0.000) | 54 (0.818) | 9 | no |
+| r97_s4_c12n4_seed3/region/0.998 | 4,700 (2,808 + 1,892) | 9 | +0.093 (+0.000 to +0.284) / +0.081 (+0.000 to +0.261) / +0.097 (+0.000 to +0.314) | +0.000 (+0.000 to +0.000) | 58 (0.879) | 11 | **yes** |
+| r97_s4_c16_seed2/region/0.999 | 5,000 (3,108 + 1,892) | 8 | +0.085 (+0.000 to +0.276) / +0.073 (+0.000 to +0.251) / +0.089 (+0.000 to +0.303) | +0.000 (+0.000 to +0.000) | 55 (0.833) | 11 | no |
+| r97_s4_c16_seed1/region/0.998 | 5,000 (3,108 + 1,892) | 7 | +0.058 (+0.000 to +0.182) / +0.050 (+0.000 to +0.172) / +0.058 (+0.000 to +0.198) | +0.000 (+0.000 to +0.000) | 56 (0.849) | 11 | no |
+| r97_s4_c16_seed2/region/0.998 | 5,000 (3,108 + 1,892) | 10 | +0.097 (+0.000 to +0.289) / +0.081 (+0.000 to +0.261) / +0.097 (+0.000 to +0.314) | +0.000 (+0.000 to +0.000) | 62 (0.939) | 11 | **yes** |
+| r97_s8_c16_seed1/region/0.999 | 5,168 (3,276 + 1,892) | 8 | +0.097 (+0.000 to +0.312) / +0.101 (+0.000 to +0.343) / +0.108 (+0.000 to +0.370) | +0.000 (+0.000 to +0.000) | 50 (0.758) | 10 | no |
+| r97_s8_c16_seed1/region/0.998 | 5,168 (3,276 + 1,892) | 8 | +0.097 (+0.000 to +0.312) / +0.101 (+0.000 to +0.343) / +0.108 (+0.000 to +0.370) | +0.000 (+0.000 to +0.000) | 54 (0.818) | 10 | no |
+| r97_s8_c16_seed2/region/0.998 | 5,168 (3,276 + 1,892) | 4 | +0.004 (+0.000 to +0.013) / +0.000 (+0.000 to +0.000) / +0.000 (+0.000 to +0.000) | +0.000 (+0.000 to +0.000) | 55 (0.833) | 10 | no |
+| r97_s8_c16_seed3/region/0.998 | 5,168 (3,276 + 1,892) | 6 | +0.093 (+0.000 to +0.240) / +0.093 (+0.000 to +0.240) / +0.097 (+0.000 to +0.247) | +0.000 (+0.000 to +0.000) | 53 (0.803) | 11 | no |
+| r97_s4_c16_seed2/boxes/0.998 | 5,180 (3,108 + 2,072) | 10 | +0.097 (+0.000 to +0.289) / +0.081 (+0.000 to +0.261) / +0.097 (+0.000 to +0.314) | +0.000 (+0.000 to +0.000) | 61 (0.924) | 11 | **yes** |
+| r97_s8_c16_seed1/boxes/0.998 | 5,348 (3,276 + 2,072) | 8 | +0.097 (+0.000 to +0.312) / +0.101 (+0.000 to +0.343) / +0.108 (+0.000 to +0.370) | +0.000 (+0.000 to +0.000) | 54 (0.818) | 10 | no |
+| r97_s8_c16_seed2/boxes/0.998 | 5,348 (3,276 + 2,072) | 4 | +0.004 (+0.000 to +0.013) / +0.000 (+0.000 to +0.000) / +0.000 (+0.000 to +0.000) | +0.000 (+0.000 to +0.000) | 56 (0.849) | 10 | no |
+| r97_s8_c16_seed3/boxes/0.998 | 5,348 (3,276 + 2,072) | 6 | +0.093 (+0.000 to +0.240) / +0.093 (+0.000 to +0.240) / +0.097 (+0.000 to +0.247) | +0.000 (+0.000 to +0.000) | 53 (0.803) | 11 | no |
+| r97_s4_c16n4_seed1/region/0.999 | 5,752 (3,860 + 1,892) | 6 | +0.019 (+0.000 to +0.056) / +0.015 (+0.000 to +0.051) / +0.015 (+0.000 to +0.051) | +0.000 (+0.000 to +0.000) | 56 (0.849) | 10 | no |
+| r97_s4_c16n4_seed3/region/0.999 | 5,752 (3,860 + 1,892) | 8 | +0.043 (+0.000 to +0.106) / +0.054 (+0.000 to +0.143) / +0.054 (+0.000 to +0.143) | +0.000 (+0.000 to +0.000) | 60 (0.909) | 11 | **yes** |
+| r97_s4_c16n4_seed1/region/0.998 | 5,752 (3,860 + 1,892) | 10 | +0.089 (+0.004 to +0.225) / +0.085 (+0.000 to +0.222) / +0.093 (+0.000 to +0.246) | +0.000 (+0.000 to +0.000) | 63 (0.955) | 10 | no |
+| r97_s4_c16n4_seed3/region/0.998 | 5,752 (3,860 + 1,892) | 10 | +0.116 (+0.000 to +0.339) / +0.124 (+0.000 to +0.372) / +0.132 (+0.000 to +0.399) | +0.000 (+0.000 to +0.000) | 63 (0.955) | 11 | no |
+| r97_s8_c16n4_seed3/region/0.998 | 5,920 (4,028 + 1,892) | 8 | +0.093 (+0.000 to +0.284) / +0.081 (+0.000 to +0.261) / +0.097 (+0.000 to +0.314) | +0.000 (+0.000 to +0.000) | 59 (0.894) | 10 | **yes** |
+| r97_s4_c16n4_seed1/boxes/0.999 | 5,932 (3,860 + 2,072) | 6 | +0.019 (+0.000 to +0.056) / +0.015 (+0.000 to +0.051) / +0.015 (+0.000 to +0.051) | +0.000 (+0.000 to +0.000) | 54 (0.818) | 10 | no |
+| r97_s4_c16n4_seed3/boxes/0.999 | 5,932 (3,860 + 2,072) | 8 | +0.043 (+0.000 to +0.106) / +0.054 (+0.000 to +0.143) / +0.054 (+0.000 to +0.143) | +0.000 (+0.000 to +0.000) | 59 (0.894) | 11 | **yes** |
+| r97_s4_c16n4_seed1/boxes/0.998 | 5,932 (3,860 + 2,072) | 10 | +0.089 (+0.004 to +0.225) / +0.085 (+0.000 to +0.222) / +0.093 (+0.000 to +0.246) | +0.000 (+0.000 to +0.000) | 59 (0.894) | 10 | no |
+| r97_s4_c16n4_seed3/boxes/0.998 | 5,932 (3,860 + 2,072) | 8 | +0.043 (+0.000 to +0.106) / +0.054 (+0.000 to +0.143) / +0.054 (+0.000 to +0.143) | +0.000 (+0.000 to +0.000) | 63 (0.955) | 11 | **yes** |
+| r97_s8_c16n4_seed3/boxes/0.998 | 6,100 (4,028 + 2,072) | 8 | +0.085 (+0.000 to +0.276) / +0.073 (+0.000 to +0.251) / +0.089 (+0.000 to +0.303) | +0.000 (+0.000 to +0.000) | 57 (0.864) | 10 | **yes** |
 
-Report only (`eval/textgate_dev_report_20261018.json`): #97's `s8_c24_seed4` read as a presence gate stops 16 cases at
-its 0.998 point (+0.55 / +0.56 / +0.57 points, 65 of 66 empty) and 6 at its 0.999 point (+0.12 / +0.11 / +0.12, 63 of
-66); as #97's own gate (its decode returns no line) it cost 0.02-0.03 points for 61 of 66 (`docs/textdet.md`). The
+Report only (`eval/textgate_dev_report_20261018.json`): #97's `s8_c24_seed4` read as a presence gate, in region mode,
+stops 16 cases at its 0.998 point (+0.55 / +0.56 / +0.57 points, 65 of 66 empty) and 6 at its 0.999 point (+0.12 /
++0.11 / +0.12, 63 of 66); in boxes mode 13 (+0.53 / +0.53 / +0.55, 65 of 66) and 4 (+0.023 / +0.023 / +0.027, 52 of
+66). As #97's own gate (its decode returns no line) it cost 0.02-0.03 points for 61 of 66 (`docs/textdet.md`). The
 baselines `blank` and `rule8` leave 5 of 66, the finder's own.
 
 The winner, per variant (VOCR5-N): base 4.37 → 4.37%, +4 px 4.82 → 4.90%, +8 px 5.15 → 5.24%; per platform: Vita
@@ -284,7 +285,8 @@ protected region.
 Whether those 133 pages show text was not checked (#97 noted the same); the references exclude lines cut by the ROI,
 UI and unreadable ones. Every VOCR5 model trained on the owner's planetarian PSP frames (Key / Prototype, like
 CLANNAD's Vita port); the gate trained on none of the owner's planetarian frames (v34 falls in its calibration
-split) and none of CLANNAD's.
+split) and none of CLANNAD's, but its operating point was calibrated on 80 cases of the planetarian frames (60 in
+cal_dlg, 20 in cal_empty).
 
 ### The runtime (`runtime/vocr_textgate.c`, `runtime/README.md`)
 
@@ -303,7 +305,8 @@ the Vita. Code, VitaSDK gcc 15.2 with Rubi's runtime flags, `--gc-sections`: 1,8
 
 | `p8_c8`, boxes mode | 900×150 box | 450×80 PSP box | 960×544 screen | 480×272 screen |
 |---|---:|---:|---:|---:|
-| MACs | 2.74 M | 0.73 M | 10.5 M | 2.63 M |
+| network MACs (all four head maps, as `train/textdet_model.cost` counts them) | 2.74 M | 0.73 M | 10.5 M | 2.63 M |
+| the gate's own MACs (only the head's K map) | 2.69 M | 0.71 M | 10.3 M | 2.58 M |
 | A9 cycle model @333 / @444 MHz (low to calibrated high) | 67-135 / 50-101 ms | 18-36 / 13-27 ms | 256-517 / 192-388 ms | 64-129 / 48-97 ms |
 | MAC-rate estimate @333 MHz (VOCR3-H15's console rate, NEON code) | 8.8-9.1 ms | 2.3-2.4 ms | 33.6-34.9 ms | 8.4-8.7 ms |
 
@@ -332,6 +335,40 @@ work and the model's load.
   scored), but not the other screenshots of research_a/b's VNs (GRAD's tuning sets, never read here): one such VN
   (v16842) gives 21 cal_dlg cases and 2 cal_empty regions, and 19 scene-pool screenshots belong to four of them
   (v12794, v15080, v16842, v8158). No scored region is on any of them, and no screenshot is shared.
+  Corrected 2026-10-18 after audit-textgate: the real training canvases (#97's real shards less the calibration
+  split) also hold 19 teacher samples (16 screenshots) of four research VNs (v12794 2, v15080 6, v21261 6, v8158 5),
+  none of them a research screenshot; and "any screenshot an eval or eval/linefind manifest lists" did not read
+  `eval/linefind/manifests/psp_pool.jsonl` and the `*.candidates.jsonl` lists (none of them scored), which hold 18
+  cal_dlg cases and 1 cal_empty region (v1199, v16842; 2 frames match by sha256) and 31 scene-pool screenshots (33
+  by sha256). None of the 68 VNs or 91 screenshots of the 91 scored empty regions is in the cohorts, the scene pool
+  or the real canvases.
+- **The calibration split is in the synthetic scene pool** (found by audit-textgate, after the protected read). The
+  protocol says the calibration VNs are never trained on; the trainer drops them from the real canvases only, and
+  the clean scene pool was not cut by the split: it holds 853 screenshots of 236 calibration-split VNs, and the
+  frames of 2,205 cal_dlg cases (493 frames, all teacher frames: 1,893 scaled PC, 294 PSP, 18 Vita) and 681
+  cal_empty regions (501 frames), 20% of each cohort, are scene-pool files, which the synthetic canvases crop
+  backgrounds from (the upper 62% of a screenshot, away from its text). For the winner (boxes, k 4, t -8) cal_empty
+  reads 0.9325 inside the pool and 0.9178 outside it, cal_dlg recall 0.9968 and 0.9983; on teacher frames alone
+  0.9325 against 0.870 (60 of 69) and 0.9968 against 1.000 (258): consistent with some exposure, on small samples.
+  A recalibration on the 80% outside the pool (not a clean counterfactual: it drops 90% of the teacher's PSP and
+  scaled PC frames) changes no screen decision of a candidate smaller than the winner; 7 of the 120 learned
+  operating points change theirs, all of #97's detectors of 2,228 B or more (totals of 4,120 B or more); the winner's
+  own point would move to k 1, t 11 (0.932). The selection stands: the rule reads development data, which hold no
+  screenshot or VN of the pool or of the cohorts, and the development and protected figures measure the shipped
+  point. A later round should cut the calibration split from the scene pool.
+- **The pre-study note understated its best result** (dated correction, 2026-10-18, after audit-textgate; the
+  frozen text above and the protocol's `pre_study.note` stay as written). The best block-statistics CNN kept 0.77 of
+  cal_empty at 0.998 recall, not "at most 0.47": three layers at stride 8 (`c3x16 + c3x16 + h9`, 5,249 parameters,
+  about 5.2 KB as int8 weights; 0.47 was the two-layer `c3x16 + c3x16`); and #97's 2,228-3,276 B detectors kept
+  0.60-0.91, not 0.80-0.91. The conclusion is the same: 0.77 is under the 0.85 screen, at 3.4 times the winner's
+  whole blob.
+- **`eval/textgate_data.py` changed after the freeze, in docstrings only** (the protocol pins fbf8aa95; `e929f57`
+  52277592, and this correction once more). The shard manifest records the file as it was when the manifest was
+  written (bb715233, before two docstring edits); a re-render of shard 0 with the head's code is byte-identical
+  (audit-textgate).
+- **The calibration of #97's detectors and of the two rules also started before the protocol was pushed** (07:49Z,
+  restarted 07:50:50Z; the protocol was pushed at 07:52:36Z). It is training-side, and the protocol uses nothing of
+  its output (its pre-study figures come from an earlier exploration script).
 
 ### Limits
 
@@ -340,8 +377,10 @@ work and the model's load.
 - The empty regions are upper-screen scene crops of VNDB screenshots; menus, hidden text boxes and full CG screens
   as Rubi captures them were not scored as such.
 - The cost sits on short lines in loose regions; a region holding only a short line of a few characters is where
-  the gate is most likely to stop text. In boxes mode Rubi's finder (the textbox recovery, a superset of GRAD's
-  boxes) can only raise the score, never stop more.
+  the gate is most likely to stop text. Rubi runs the textbox recovery (`VOCR_LINES_TEXTBOX_RECOVERY`), not GRAD:
+  on 13,074 training-side Vita calibration regions its boxes miss a cell GRAD's meet in 61 regions and give a lower
+  score in 49 (5 dialogue, 44 empty); at t = -8, 2 regions (both empty) go from kept to stopped and 48 (47 dialogue)
+  from stopped to kept, so no dialogue region GRAD's boxes kept is stopped (counted by audit-textgate).
 - Vertical text: the gate was not trained to keep it (no loss on vertical lines) and no vertical text is scored.
 - Speed is an estimate, and scalar: about 0.1 s per text box at 333 MHz.
 - Nothing ran on a console.

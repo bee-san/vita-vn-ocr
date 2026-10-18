@@ -145,7 +145,7 @@ def test_frozen_sources_are_unchanged():
     pinned = PROTOCOL["sources_sha256"]
     for f in ("runtime/vocr_lines.c", "runtime/vocr_lines.h", "runtime/vocr_lines_rows.c", "runtime/vocr_lines_rows.h",
               "runtime/vocr_lines_refine.c", "runtime/vocr_lines_refine.h", "runtime/vocr_textdet.c",
-              "runtime/vocr_textdet.h", "eval/textgate.py", "synth/textdet_twin.py"):
+              "runtime/vocr_textdet.h", "eval/textgate.py", "synth/textdet_twin.py", "train/textgate_train.py"):
         assert hashlib.sha256((ROOT / f).read_bytes()).hexdigest() == pinned[f], f
 
 

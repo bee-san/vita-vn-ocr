@@ -28,7 +28,8 @@
 
 The gate's training split: every VN for which calib_vn() is false. The real canvases are #97's real shards
 (data/manifests/textdet_shards_v1.json: realplus, teacher, devnative and the owner's), whose exclusions are the
-protocol's; a canvas of a calibration VN is never trained on.
+protocol's; a real canvas of a calibration VN is never trained on. The clean scene pool is not cut by the split, so
+screenshots of calibration VNs can be synthetic backgrounds (20% of the cohorts' frames; docs/textgate.md).
 """
 import argparse
 import hashlib
@@ -67,7 +68,7 @@ def sha256(path):
 
 
 def calib_vn(vn):
-    """The calibration split: a fifth of the training-side VNs, by hash (never trained on)."""
+    """The calibration split: a fifth of the training-side VNs, by hash (never trained on as real canvases)."""
     return int(hashlib.sha256(f"{SPLIT_SALT}{vn}".encode()).hexdigest()[:8], 16) % 5 == 0
 
 

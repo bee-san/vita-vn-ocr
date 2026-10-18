@@ -253,6 +253,11 @@ s8_c24_seed1, all three models:
 
 linefind development (vita_dev + psp_dev): line F1 0.839, region exact 0.680, merged / split / cut 9 / 33 / 72; empty rate 0.864.
 
+Round 1's arena column and its C == twin check come from the runtime's early, bit-exact version (`f9d4ad3`,
+amendment 3). The final runtime's detector arenas are 0.9-7.7 KB larger (its NEON kernels keep channel-planar
+rings; s8_c24 92,639 B, s8_c48 129,855 B, all within 131,072 B) and it returns the same lines on every development
+case (`eval/textdet_round1_final_runtime_20261018.json`); rounds 2 and 3 use the final runtime throughout.
+
 ### Round 2: det+refine, the same 22 blobs (`eval/textdet_round2_dev_20261018.json`)
 
 

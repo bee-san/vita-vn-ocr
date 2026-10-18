@@ -1,0 +1,140 @@
+{
+ "kind": "textdet-round1-final-runtime",
+ "runtime": "feat/textdet-runtime 000bdca (merged in PR #97)",
+ "driver_sha256": "d54d102783ed49bb53d69dbd0d9c4b19d931fb2feeddc4aad43380de3ce2fdd3",
+ "note": "round 1's record (eval/textdet_round1_dev_20261018.json) used the early, bit-exact runtime f9d4ad3 for its C == twin check and arenas (protocol amendment 3); with the final runtime the detector's lines are identical on every development case and the arenas below apply; no candidate's eligibility changes",
+ "runs": {
+  "s4_c4_seed1": {
+   "arena_960x544_final": 39311,
+   "arena_960x544_record": 38431,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c6_seed1": {
+   "arena_960x544_final": 48215,
+   "arena_960x544_record": 47015,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c8_seed1": {
+   "arena_960x544_final": 57111,
+   "arena_960x544_record": 55591,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c8n5_seed1": {
+   "arena_960x544_final": 73799,
+   "arena_960x544_record": 71767,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c12_seed1": {
+   "arena_960x544_final": 77967,
+   "arena_960x544_record": 75711,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c16_seed1": {
+   "arena_960x544_final": 98815,
+   "arena_960x544_record": 95823,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c16n4_seed1": {
+   "arena_960x544_final": 111375,
+   "arena_960x544_record": 107999,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c24_seed1": {
+   "arena_960x544_final": 103103,
+   "arena_960x544_record": 99791,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4p_c4_seed1": {
+   "arena_960x544_final": 38959,
+   "arena_960x544_record": 38079,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4p_c8_seed1": {
+   "arena_960x544_final": 56567,
+   "arena_960x544_record": 55047,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s8_c8_seed1": {
+   "arena_960x544_final": 41527,
+   "arena_960x544_record": 39623,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s8_c16_seed1": {
+   "arena_960x544_final": 60807,
+   "arena_960x544_record": 57623,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s8_c24_seed1": {
+   "arena_960x544_final": 92639,
+   "arena_960x544_record": 87599,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s8_c32_seed1": {
+   "arena_960x544_final": 111919,
+   "arena_960x544_record": 105599,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s8_c32n4_seed1": {
+   "arena_960x544_final": 116063,
+   "arena_960x544_record": 109487,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s8_c48_seed1": {
+   "arena_960x544_final": 129855,
+   "arena_960x544_record": 122127,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c4_seed2": {
+   "arena_960x544_final": 39311,
+   "arena_960x544_record": 38431,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c8_seed2": {
+   "arena_960x544_final": 57111,
+   "arena_960x544_record": 55591,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s4_c16_seed2": {
+   "arena_960x544_final": 98815,
+   "arena_960x544_record": 95823,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s8_c8_seed2": {
+   "arena_960x544_final": 41527,
+   "arena_960x544_record": 39623,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s8_c16_seed2": {
+   "arena_960x544_final": 60807,
+   "arena_960x544_record": 57623,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  },
+  "s8_c32_seed2": {
+   "arena_960x544_final": 111919,
+   "arena_960x544_record": 105599,
+   "lines_identical": true,
+   "c_equals_twin_final": true
+  }
+ }
+}

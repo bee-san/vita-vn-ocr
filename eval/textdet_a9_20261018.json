@@ -1,0 +1,8154 @@
+{
+ "kind": "textdet-a9",
+ "computed": "2026-10-18T00:02:53Z",
+ "method": "textdet_a9.py measure --out DIR [--shapes s4_c8,...] [--sizes 900x150,450x80,960x544,480x272] [--regions 2]                         [--seed 1] [--blob SHAPE=FILE ...] [--jobs 5] [--vitasdk DIR] [--arm-cc GCC] [--qemu DIR]   textdet_a9.py report DIR [--json eval/textdet_a9_YYYYMMDD.json]",
+ "sources_sha256": {
+  "runtime/vocr_textdet.c": "1210fb6b0870863052b473e1f7e0ff101e69cd57b5dadeff7cfccd3eda16b91e",
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+  "runtime/vocr_textdet_test.c": "35b9a88462cd28b4ab63c7efcf5c409e9d3bd2c1cfd9beba2103d0bae8702b78",
+  "runtime/vocr_textdet.h": "65f3fe42ee8e0e7927c382be0db6ebb330f6e337e70a21e8142c83f1764b12d8"
+ },
+ "tools": {
+  "vita_cc": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+  "arm_cc": "arm-none-linux-gnueabihf-gcc (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 14.2.1 20241119",
+  "qemu": "qemu-arm version 10.0.13",
+  "qemu_plugins_sha256": {
+   "libcache.so": "a608e4927a127450edace570319b869e7912f5b91ce53057f2a9516100592151",
+   "libinsn_mix.so": "107d2886b260c2c7a92db4ba19b418c3e8eee2b120757eff2e911bd35e8397ac"
+  },
+  "a9_cycles_sha256": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc"
+ },
+ "flags": [
+  "-std=c99",
+  "-mcpu=cortex-a9",
+  "-mfpu=neon",
+  "-mfloat-abi=hard",
+  "-O2",
+  "(Thumb-2: the VitaSDK default)"
+ ],
+ "cache": "dcachesize=32768,dassoc=4,dblksize=32,icachesize=32768,iassoc=4,iblksize=32,l2=on,l2cachesize=2097152,l2assoc=8,l2blksize=32,limit=10",
+ "vocr_textdet_o_text_bytes": 8912,
+ "calibration": 1.0007,
+ "note": "estimates: qemu-arm instruction counts priced by vita/a9_cycles.py's Cortex-A9 model, not a console measurement; ms = high bound x 1.0007 at the clock",
+ "table": [
+  {
+   "shape": "s4_c4",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "dfd6c1beb802cdc462aeeb4a856a0f1047471df5a4bfb720ae65b16debdf25d8",
+   "blob_bytes": 1004,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 3130200,
+   "insns_per_region": 8798799.0,
+   "cycles_per_region": {
+    "444": [
+     4697792.5,
+     9876476.3
+    ],
+    "333": [
+     4697792.5,
+     9818081.975
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 10.58061373873874,
+     "high": 22.244315990990994,
+     "calibrated": 22.259887012184684
+    },
+    "333": {
+     "low": 14.107484984984985,
+     "high": 29.483729654654653,
+     "calibrated": 29.50436826541291
+    }
+   },
+   "l1d_misses_per_region": 16797.5,
+   "l2_misses_per_region": 4782.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     5845070
+    ],
+    [
+     "chain",
+     2375266
+    ],
+    [
+     "delivered",
+     238720
+    ],
+    [
+     "vocr_line_dark",
+     150864
+    ],
+    [
+     "sweep",
+     94594
+    ],
+    [
+     "__udivsi3",
+     37058
+    ],
+    [
+     "memset",
+     17316
+    ],
+    [
+     "memcpy",
+     12068
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c4",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "dfd6c1beb802cdc462aeeb4a856a0f1047471df5a4bfb720ae65b16debdf25d8",
+   "blob_bytes": 1004,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 18,
+   "macs": 830240,
+   "insns_per_region": 2510080.5,
+   "cycles_per_region": {
+    "444": [
+     1276091.0,
+     2706280.9
+    ],
+    "333": [
+     1276091.0,
+     2694864.55
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 2.874078828828829,
+     "high": 6.095227252252252,
+     "calibrated": 6.099493911328828
+    },
+    "333": {
+     "low": 3.832105105105105,
+     "high": 8.092686336336335,
+     "calibrated": 8.09835121677177
+    }
+   },
+   "l1d_misses_per_region": 2290.5,
+   "l2_misses_per_region": 935.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     1602240
+    ],
+    [
+     "chain",
+     647860
+    ],
+    [
+     "vocr_line_dark",
+     127673
+    ],
+    [
+     "delivered",
+     65642
+    ],
+    [
+     "sweep",
+     21894
+    ],
+    [
+     "__udivsi3",
+     16933
+    ],
+    [
+     "memset",
+     9569
+    ],
+    [
+     "memcpy",
+     6488
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c4",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "dfd6c1beb802cdc462aeeb4a856a0f1047471df5a4bfb720ae65b16debdf25d8",
+   "blob_bytes": 1004,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 12011520,
+   "insns_per_region": 32467570.5,
+   "cycles_per_region": {
+    "444": [
+     17594027.0,
+     36063256.82
+    ],
+    "333": [
+     17594027.0,
+     35955222.74
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 39.62618693693694,
+     "high": 81.2235513963964,
+     "calibrated": 81.28040788237386
+    },
+    "333": {
+     "low": 52.834915915915914,
+     "high": 107.97364186186186,
+     "calibrated": 108.04922341116516
+    }
+   },
+   "l1d_misses_per_region": 72668.0,
+   "l2_misses_per_region": 8848.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     22028868
+    ],
+    [
+     "chain",
+     8776080
+    ],
+    [
+     "delivered",
+     923566
+    ],
+    [
+     "sweep",
+     290882
+    ],
+    [
+     "vocr_line_dark",
+     185256
+    ],
+    [
+     "__udivsi3",
+     168299
+    ],
+    [
+     "dest_row",
+     37536
+    ],
+    [
+     "__aeabi_uidivmod",
+     29376
+    ]
+   ],
+   "negative_count_addresses": 171
+  },
+  {
+   "shape": "s4_c4",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "dfd6c1beb802cdc462aeeb4a856a0f1047471df5a4bfb720ae65b16debdf25d8",
+   "blob_bytes": 1004,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 3002880,
+   "insns_per_region": 8394995.0,
+   "cycles_per_region": {
+    "444": [
+     4396467.0,
+     8969594.24
+    ],
+    "333": [
+     4396467.0,
+     8939850.68
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 9.901952702702703,
+     "high": 20.20178882882883,
+     "calibrated": 20.21593008100901
+    },
+    "333": {
+     "low": 13.202603603603604,
+     "high": 26.846398438438438,
+     "calibrated": 26.86519091734534
+    }
+   },
+   "l1d_misses_per_region": 6773.5,
+   "l2_misses_per_region": 2436.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     5566039
+    ],
+    [
+     "chain",
+     2194020
+    ],
+    [
+     "delivered",
+     213110
+    ],
+    [
+     "vocr_line_dark",
+     209465
+    ],
+    [
+     "sweep",
+     79986
+    ],
+    [
+     "__udivsi3",
+     74681
+    ],
+    [
+     "dest_row",
+     18768
+    ],
+    [
+     "__aeabi_uidivmod",
+     14688
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c6",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "73b16aadf70c04b21afb33738cc9d077936f8c0da66b345d016e5d31d718ffdb",
+   "blob_bytes": 1280,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 4241700,
+   "insns_per_region": 10878504.0,
+   "cycles_per_region": {
+    "444": [
+     6244202.5,
+     12226707.82
+    ],
+    "333": [
+     6244202.5,
+     12166750.615
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 14.063519144144145,
+     "high": 27.537630225225225,
+     "calibrated": 27.55690656638288
+    },
+    "333": {
+     "low": 18.751358858858858,
+     "high": 36.536788633633634,
+     "calibrated": 36.56236438567718
+    }
+   },
+   "l1d_misses_per_region": 25411.0,
+   "l2_misses_per_region": 4910.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     6674999
+    ],
+    [
+     "chain",
+     3646594
+    ],
+    [
+     "delivered",
+     250407
+    ],
+    [
+     "vocr_line_dark",
+     116328
+    ],
+    [
+     "sweep",
+     93080
+    ],
+    [
+     "__udivsi3",
+     37058
+    ],
+    [
+     "memset",
+     19612
+    ],
+    [
+     "memcpy",
+     15488
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c6",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "73b16aadf70c04b21afb33738cc9d077936f8c0da66b345d016e5d31d718ffdb",
+   "blob_bytes": 1280,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 18,
+   "macs": 1124040,
+   "insns_per_region": 3066028.5,
+   "cycles_per_region": {
+    "444": [
+     1695622.5,
+     3280975.38
+    ],
+    "333": [
+     1695622.5,
+     3268679.91
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 3.8189695945945945,
+     "high": 7.389584189189189,
+     "calibrated": 7.394756898121621
+    },
+    "333": {
+     "low": 5.091959459459459,
+     "high": 9.815855585585586,
+     "calibrated": 9.822726684495494
+    }
+   },
+   "l1d_misses_per_region": 2759.5,
+   "l2_misses_per_region": 1007.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     1827188
+    ],
+    [
+     "chain",
+     994420
+    ],
+    [
+     "vocr_line_dark",
+     122384
+    ],
+    [
+     "delivered",
+     55025
+    ],
+    [
+     "sweep",
+     20182
+    ],
+    [
+     "__udivsi3",
+     16933
+    ],
+    [
+     "memset",
+     10783
+    ],
+    [
+     "memcpy",
+     8288
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c6",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "73b16aadf70c04b21afb33738cc9d077936f8c0da66b345d016e5d31d718ffdb",
+   "blob_bytes": 1280,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 16254720,
+   "insns_per_region": 40335206.0,
+   "cycles_per_region": {
+    "444": [
+     23328777.0,
+     45084454.92
+    ],
+    "333": [
+     23328777.0,
+     44974711.44
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 52.54229054054054,
+     "high": 101.54156513513514,
+     "calibrated": 101.61264423072973
+    },
+    "333": {
+     "low": 70.05638738738739,
+     "high": 135.05919351351352,
+     "calibrated": 135.15373494897295
+    }
+   },
+   "l1d_misses_per_region": 110477.5,
+   "l2_misses_per_region": 8988.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     25109710
+    ],
+    [
+     "chain",
+     13476240
+    ],
+    [
+     "delivered",
+     920466
+    ],
+    [
+     "sweep",
+     339827
+    ],
+    [
+     "vocr_line_dark",
+     215521
+    ],
+    [
+     "__udivsi3",
+     168299
+    ],
+    [
+     "dest_row",
+     37536
+    ],
+    [
+     "__aeabi_uidivmod",
+     29376
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c6",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "73b16aadf70c04b21afb33738cc9d077936f8c0da66b345d016e5d31d718ffdb",
+   "blob_bytes": 1280,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 4063680,
+   "insns_per_region": 10492415.0,
+   "cycles_per_region": {
+    "444": [
+     5830998.0,
+     11104316.66
+    ],
+    "333": [
+     5830998.0,
+     11073651.245
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 13.13287837837838,
+     "high": 25.009722207207208,
+     "calibrated": 25.02722901275225
+    },
+    "333": {
+     "low": 17.510504504504503,
+     "high": 33.25420794294294,
+     "calibrated": 33.277485888503
+    }
+   },
+   "l1d_misses_per_region": 7568.5,
+   "l2_misses_per_region": 2511.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     6335328
+    ],
+    [
+     "chain",
+     3369060
+    ],
+    [
+     "vocr_line_dark",
+     284592
+    ],
+    [
+     "delivered",
+     270100
+    ],
+    [
+     "sweep",
+     96355
+    ],
+    [
+     "__udivsi3",
+     74681
+    ],
+    [
+     "dest_row",
+     18768
+    ],
+    [
+     "memset",
+     15534
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c8",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "f2a93767f60b1a2b6fafe071585361ae07547c0858c7f8448a57309a05ffe923",
+   "blob_bytes": 1540,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 5558400,
+   "insns_per_region": 11914430.5,
+   "cycles_per_region": {
+    "444": [
+     7126952.0,
+     13541228.66
+    ],
+    "333": [
+     7126952.0,
+     13479580.370000001
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 16.051693693693693,
+     "high": 30.49826274774775,
+     "calibrated": 30.51961153167117
+    },
+    "333": {
+     "low": 21.402258258258257,
+     "high": 40.479220330330335,
+     "calibrated": 40.50755578456156
+    }
+   },
+   "l1d_misses_per_region": 34122.5,
+   "l2_misses_per_region": 5049.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     7504145
+    ],
+    [
+     "chain",
+     3732170
+    ],
+    [
+     "delivered",
+     323565
+    ],
+    [
+     "vocr_line_dark",
+     170159
+    ],
+    [
+     "sweep",
+     83299
+    ],
+    [
+     "__udivsi3",
+     37058
+    ],
+    [
+     "memset",
+     21906
+    ],
+    [
+     "memcpy",
+     18908
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c8",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "f2a93767f60b1a2b6fafe071585361ae07547c0858c7f8448a57309a05ffe923",
+   "blob_bytes": 1540,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 21,
+   "macs": 1472080,
+   "insns_per_region": 3380514.5,
+   "cycles_per_region": {
+    "444": [
+     1935547.5,
+     3636324.38
+    ],
+    "333": [
+     1935547.5,
+     3623113.16
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 4.359341216216216,
+     "high": 8.189919774774774,
+     "calibrated": 8.195652718617117
+    },
+    "333": {
+     "low": 5.812454954954955,
+     "high": 10.8802196996997,
+     "calibrated": 10.88783585348949
+    }
+   },
+   "l1d_misses_per_region": 3816.5,
+   "l2_misses_per_region": 1082.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     2052342
+    ],
+    [
+     "chain",
+     1018180
+    ],
+    [
+     "vocr_line_dark",
+     153720
+    ],
+    [
+     "delivered",
+     85378
+    ],
+    [
+     "sweep",
+     20028
+    ],
+    [
+     "__udivsi3",
+     16933
+    ],
+    [
+     "memset",
+     12920
+    ],
+    [
+     "memcpy",
+     10358
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c8",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "f2a93767f60b1a2b6fafe071585361ae07547c0858c7f8448a57309a05ffe923",
+   "blob_bytes": 1540,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 21281280,
+   "insns_per_region": 44039902.5,
+   "cycles_per_region": {
+    "444": [
+     26610468.0,
+     49922130.54
+    ],
+    "333": [
+     26610468.0,
+     49810641.03
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 59.93348648648649,
+     "high": 112.43723094594594,
+     "calibrated": 112.51593700760809
+    },
+    "333": {
+     "low": 79.91131531531532,
+     "high": 149.5815045945946,
+     "calibrated": 149.6862116478108
+    }
+   },
+   "l1d_misses_per_region": 146670.0,
+   "l2_misses_per_region": 9131.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     28190774
+    ],
+    [
+     "chain",
+     13786320
+    ],
+    [
+     "delivered",
+     1290410
+    ],
+    [
+     "sweep",
+     301404
+    ],
+    [
+     "vocr_line_dark",
+     202988
+    ],
+    [
+     "__udivsi3",
+     168299
+    ],
+    [
+     "dest_row",
+     37536
+    ],
+    [
+     "__aeabi_uidivmod",
+     29376
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c8",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "f2a93767f60b1a2b6fafe071585361ae07547c0858c7f8448a57309a05ffe923",
+   "blob_bytes": 1540,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 5320320,
+   "insns_per_region": 11277334.0,
+   "cycles_per_region": {
+    "444": [
+     6648192.0,
+     12084411.92
+    ],
+    "333": [
+     6648192.0,
+     12052812.44
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 14.973405405405405,
+     "high": 27.217143963963963,
+     "calibrated": 27.236195964738734
+    },
+    "333": {
+     "low": 19.96454054054054,
+     "high": 36.19463195195195,
+     "calibrated": 36.21996819431831
+    }
+   },
+   "l1d_misses_per_region": 13771.0,
+   "l2_misses_per_region": 2588.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     7104758
+    ],
+    [
+     "chain",
+     3446580
+    ],
+    [
+     "delivered",
+     311053
+    ],
+    [
+     "vocr_line_dark",
+     209056
+    ],
+    [
+     "__udivsi3",
+     74681
+    ],
+    [
+     "sweep",
+     74224
+    ],
+    [
+     "dest_row",
+     18768
+    ],
+    [
+     "memset",
+     16812
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c8n5",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "1be77782478cb4ff531497262de777c41f499217e4d42e0546b01651457a11c7",
+   "blob_bytes": 2228,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 7884000,
+   "insns_per_region": 16178205.5,
+   "cycles_per_region": {
+    "444": [
+     9963772.0,
+     18531290.04
+    ],
+    "333": [
+     9963772.0,
+     18466656.405
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 22.440927927927927,
+     "high": 41.737139729729726,
+     "calibrated": 41.76635572754054
+    },
+    "333": {
+     "low": 29.921237237237236,
+     "high": 55.455424639639645,
+     "calibrated": 55.49424343688739
+    }
+   },
+   "l1d_misses_per_region": 54745.5,
+   "l2_misses_per_region": 5293.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     9935068
+    ],
+    [
+     "chain",
+     5352566
+    ],
+    [
+     "vocr_line_dark",
+     329655
+    ],
+    [
+     "delivered",
+     316278
+    ],
+    [
+     "sweep",
+     109922
+    ],
+    [
+     "__udivsi3",
+     46566
+    ],
+    [
+     "memcpy",
+     28028
+    ],
+    [
+     "memset",
+     26250
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c8n5",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "1be77782478cb4ff531497262de777c41f499217e4d42e0546b01651457a11c7",
+   "blob_bytes": 2228,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 2086800,
+   "insns_per_region": 4651270.5,
+   "cycles_per_region": {
+    "444": [
+     2706890.5,
+     5051819.5
+    ],
+    "333": [
+     2706890.5,
+     5036862.25
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 6.096600225225226,
+     "high": 11.377971846846847,
+     "calibrated": 11.38593642713964
+    },
+    "333": {
+     "low": 8.1288003003003,
+     "high": 15.125712462462463,
+     "calibrated": 15.136300461186186
+    }
+   },
+   "l1d_misses_per_region": 7403.0,
+   "l2_misses_per_region": 1225.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     2718238
+    ],
+    [
+     "chain",
+     1460540
+    ],
+    [
+     "vocr_line_dark",
+     274360
+    ],
+    [
+     "delivered",
+     91918
+    ],
+    [
+     "sweep",
+     30108
+    ],
+    [
+     "__udivsi3",
+     21089
+    ],
+    [
+     "memset",
+     18723
+    ],
+    [
+     "memcpy",
+     16148
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c8n5",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "1be77782478cb4ff531497262de777c41f499217e4d42e0546b01651457a11c7",
+   "blob_bytes": 2228,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 30159360,
+   "insns_per_region": 59162444.0,
+   "cycles_per_region": {
+    "444": [
+     37131678.5,
+     67830709.28
+    ],
+    "333": [
+     37131678.5,
+     67716032.96
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 83.62990653153153,
+     "high": 152.77186774774776,
+     "calibrated": 152.87880805517116
+    },
+    "333": {
+     "low": 111.50654204204204,
+     "high": 203.35145033033032,
+     "calibrated": 203.49379634556152
+    }
+   },
+   "l1d_misses_per_region": 227957.0,
+   "l2_misses_per_region": 9392.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     37201848
+    ],
+    [
+     "chain",
+     19767600
+    ],
+    [
+     "delivered",
+     1254688
+    ],
+    [
+     "sweep",
+     377208
+    ],
+    [
+     "vocr_line_dark",
+     221344
+    ],
+    [
+     "__udivsi3",
+     212759
+    ],
+    [
+     "dest_row",
+     45696
+    ],
+    [
+     "__aeabi_uidivmod",
+     38080
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c8n5",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "1be77782478cb4ff531497262de777c41f499217e4d42e0546b01651457a11c7",
+   "blob_bytes": 2228,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 7539840,
+   "insns_per_region": 15171237.0,
+   "cycles_per_region": {
+    "444": [
+     9276167.5,
+     16605374.04
+    ],
+    "333": [
+     9276167.5,
+     16572028.53
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 20.892269144144144,
+     "high": 37.39949108108108,
+     "calibrated": 37.42567072483783
+    },
+    "333": {
+     "low": 27.856358858858858,
+     "high": 49.76585144144144,
+     "calibrated": 49.80068753745044
+    }
+   },
+   "l1d_misses_per_region": 31647.5,
+   "l2_misses_per_region": 2731.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     9372788
+    ],
+    [
+     "chain",
+     4941900
+    ],
+    [
+     "vocr_line_dark",
+     304844
+    ],
+    [
+     "delivered",
+     285607
+    ],
+    [
+     "sweep",
+     97204
+    ],
+    [
+     "__udivsi3",
+     94069
+    ],
+    [
+     "dest_row",
+     22848
+    ],
+    [
+     "memset",
+     19257
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c12",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "626899a62cbd15df434139cd68ae7eaa28e46b2bc259acded1883d4a24dace4b",
+   "blob_bytes": 2276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 9774000,
+   "insns_per_region": 18512925.5,
+   "cycles_per_region": {
+    "444": [
+     12012359.0,
+     20874373.7
+    ],
+    "333": [
+     12012359.0,
+     20808989.15
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 27.054862612612613,
+     "high": 47.01435518018018,
+     "calibrated": 47.047265228806296
+    },
+    "333": {
+     "low": 36.07315015015015,
+     "high": 62.4894569069069,
+     "calibrated": 62.53319952674173
+    }
+   },
+   "l1d_misses_per_region": 57959.0,
+   "l2_misses_per_region": 5355.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     10492238
+    ],
+    [
+     "chain",
+     7328338
+    ],
+    [
+     "delivered",
+     268128
+    ],
+    [
+     "vocr_line_dark",
+     189464
+    ],
+    [
+     "sweep",
+     117218
+    ],
+    [
+     "__udivsi3",
+     37058
+    ],
+    [
+     "memset",
+     27234
+    ],
+    [
+     "memcpy",
+     25748
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c12",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "626899a62cbd15df434139cd68ae7eaa28e46b2bc259acded1883d4a24dace4b",
+   "blob_bytes": 2276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 29,
+   "macs": 2587800,
+   "insns_per_region": 5233543.5,
+   "cycles_per_region": {
+    "444": [
+     3263747.0,
+     5638825.38
+    ],
+    "333": [
+     3263747.0,
+     5623477.41
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 7.350781531531531,
+     "high": 12.700057162162162,
+     "calibrated": 12.708947202175676
+    },
+    "333": {
+     "low": 9.801042042042042,
+     "high": 16.88731954954955,
+     "calibrated": 16.899140673234232
+    }
+   },
+   "l1d_misses_per_region": 8308.0,
+   "l2_misses_per_region": 1257.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     2863822
+    ],
+    [
+     "chain",
+     1998100
+    ],
+    [
+     "vocr_line_dark",
+     189578
+    ],
+    [
+     "delivered",
+     88130
+    ],
+    [
+     "sweep",
+     25538
+    ],
+    [
+     "memset",
+     18322
+    ],
+    [
+     "__udivsi3",
+     16933
+    ],
+    [
+     "memcpy",
+     14678
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c12",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "626899a62cbd15df434139cd68ae7eaa28e46b2bc259acded1883d4a24dace4b",
+   "blob_bytes": 2276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 37405440,
+   "insns_per_region": 68475358.5,
+   "cycles_per_region": {
+    "444": [
+     44812793.5,
+     76930213.96
+    ],
+    "333": [
+     44812793.5,
+     76814750.095
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 100.92971509009008,
+     "high": 173.26624765765763,
+     "calibrated": 173.38753403101796
+    },
+    "333": {
+     "low": 134.57295345345347,
+     "high": 230.6749252102102,
+     "calibrated": 230.83639765785733
+    }
+   },
+   "l1d_misses_per_region": 231899.5,
+   "l2_misses_per_region": 9456.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     39387278
+    ],
+    [
+     "chain",
+     27087120
+    ],
+    [
+     "delivered",
+     1142624
+    ],
+    [
+     "sweep",
+     372130
+    ],
+    [
+     "vocr_line_dark",
+     203322
+    ],
+    [
+     "__udivsi3",
+     168299
+    ],
+    [
+     "dest_row",
+     37536
+    ],
+    [
+     "__aeabi_uidivmod",
+     29376
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c12",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "626899a62cbd15df434139cd68ae7eaa28e46b2bc259acded1883d4a24dace4b",
+   "blob_bytes": 2276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 9351360,
+   "insns_per_region": 17435850.5,
+   "cycles_per_region": {
+    "444": [
+     11196695.0,
+     18750606.36
+    ],
+    "333": [
+     11196695.0,
+     18716827.395
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 25.217781531531532,
+     "high": 42.231095405405405,
+     "calibrated": 42.260657172189184
+    },
+    "333": {
+     "low": 33.62370870870871,
+     "high": 56.20668887387387,
+     "calibrated": 56.246033556085585
+    }
+   },
+   "l1d_misses_per_region": 30347.5,
+   "l2_misses_per_region": 2766.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     9902187
+    ],
+    [
+     "chain",
+     6771780
+    ],
+    [
+     "delivered",
+     262287
+    ],
+    [
+     "vocr_line_dark",
+     247838
+    ],
+    [
+     "sweep",
+     107226
+    ],
+    [
+     "__udivsi3",
+     74681
+    ],
+    [
+     "memset",
+     19809
+    ],
+    [
+     "dest_row",
+     18768
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c16",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "8cdb8e77891a0156493cacf7237552381a471ba789fa1ec54a816c87b315429f",
+   "blob_bytes": 3108,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 14947200,
+   "insns_per_region": 22577082.0,
+   "cycles_per_region": {
+    "444": [
+     15727295.0,
+     25492844.66
+    ],
+    "333": [
+     15727295.0,
+     25423717.745
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 35.42183558558558,
+     "high": 57.416316801801806,
+     "calibrated": 57.456508223563056
+    },
+    "333": {
+     "low": 47.22911411411411,
+     "high": 76.34750073573574,
+     "calibrated": 76.40094398625075
+    }
+   },
+   "l1d_misses_per_region": 75597.0,
+   "l2_misses_per_region": 5661.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     13480221
+    ],
+    [
+     "chain",
+     8403130
+    ],
+    [
+     "delivered",
+     279743
+    ],
+    [
+     "vocr_line_dark",
+     187128
+    ],
+    [
+     "sweep",
+     96399
+    ],
+    [
+     "__udivsi3",
+     37058
+    ],
+    [
+     "memset",
+     32607
+    ],
+    [
+     "memcpy",
+     32588
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c16",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "8cdb8e77891a0156493cacf7237552381a471ba789fa1ec54a816c87b315429f",
+   "blob_bytes": 3108,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 3956640,
+   "insns_per_region": 6397920.0,
+   "cycles_per_region": {
+    "444": [
+     4273030.0,
+     6988294.68
+    ],
+    "333": [
+     4273030.0,
+     6970871.01
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 9.623941441441442,
+     "high": 15.739402432432431,
+     "calibrated": 15.750420014135132
+    },
+    "333": {
+     "low": 12.831921921921921,
+     "high": 20.933546576576575,
+     "calibrated": 20.948200059180177
+    }
+   },
+   "l1d_misses_per_region": 13974.0,
+   "l2_misses_per_region": 1427.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     3676071
+    ],
+    [
+     "chain",
+     2291620
+    ],
+    [
+     "vocr_line_dark",
+     222179
+    ],
+    [
+     "delivered",
+     91345
+    ],
+    [
+     "sweep",
+     42516
+    ],
+    [
+     "memset",
+     22081
+    ],
+    [
+     "memcpy",
+     18548
+    ],
+    [
+     "__udivsi3",
+     16933
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c16",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "8cdb8e77891a0156493cacf7237552381a471ba789fa1ec54a816c87b315429f",
+   "blob_bytes": 3108,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 57185280,
+   "insns_per_region": 83740419.5,
+   "cycles_per_region": {
+    "444": [
+     58679645.0,
+     94141348.53999999
+    ],
+    "333": [
+     58679645.0,
+     94021922.53
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 132.1613626126126,
+     "high": 212.03006427927926,
+     "calibrated": 212.17848532427476
+    },
+    "333": {
+     "low": 176.21515015015015,
+     "high": 282.3481157057057,
+     "calibrated": 282.54575938669973
+    }
+   },
+   "l1d_misses_per_region": 295719.5,
+   "l2_misses_per_region": 9781.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     50583870
+    ],
+    [
+     "chain",
+     31052880
+    ],
+    [
+     "delivered",
+     1188704
+    ],
+    [
+     "sweep",
+     391400
+    ],
+    [
+     "vocr_line_dark",
+     232548
+    ],
+    [
+     "__udivsi3",
+     168299
+    ],
+    [
+     "dest_row",
+     37536
+    ],
+    [
+     "memset",
+     34002
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c16",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "8cdb8e77891a0156493cacf7237552381a471ba789fa1ec54a816c87b315429f",
+   "blob_bytes": 3108,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 14296320,
+   "insns_per_region": 21200322.5,
+   "cycles_per_region": {
+    "444": [
+     14660989.5,
+     23281032.1
+    ],
+    "333": [
+     14660989.5,
+     23245134.7
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 33.020246621621624,
+     "high": 52.434756981981984,
+     "calibrated": 52.47146131186936
+    },
+    "333": {
+     "low": 44.0269954954955,
+     "high": 69.8052093093093,
+     "calibrated": 69.85407295582583
+    }
+   },
+   "l1d_misses_per_region": 55417.0,
+   "l2_misses_per_region": 2940.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     12700494
+    ],
+    [
+     "chain",
+     7763220
+    ],
+    [
+     "delivered",
+     272940
+    ],
+    [
+     "vocr_line_dark",
+     229094
+    ],
+    [
+     "sweep",
+     92968
+    ],
+    [
+     "__udivsi3",
+     74681
+    ],
+    [
+     "memset",
+     22797
+    ],
+    [
+     "dest_row",
+     18768
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c16n4",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "5ad80a362b9460ea401ddae2234bfefb80db0f4ba8717ba8b8e12aeb35786bed",
+   "blob_bytes": 3860,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 18367200,
+   "insns_per_region": 27097265.0,
+   "cycles_per_region": {
+    "444": [
+     19112738.0,
+     30520650.38
+    ],
+    "333": [
+     19112738.0,
+     30449289.035
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 43.046707207207206,
+     "high": 68.74020355855856,
+     "calibrated": 68.78832170104954
+    },
+    "333": {
+     "low": 57.39560960960961,
+     "high": 91.43930641141141,
+     "calibrated": 91.50331392589939
+    }
+   },
+   "l1d_misses_per_region": 90356.5,
+   "l2_misses_per_region": 5844.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     15806094
+    ],
+    [
+     "chain",
+     10502896
+    ],
+    [
+     "delivered",
+     318083
+    ],
+    [
+     "vocr_line_dark",
+     187172
+    ],
+    [
+     "sweep",
+     130038
+    ],
+    [
+     "__udivsi3",
+     42204
+    ],
+    [
+     "memcpy",
+     41708
+    ],
+    [
+     "memset",
+     35823
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c16n4",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "5ad80a362b9460ea401ddae2234bfefb80db0f4ba8717ba8b8e12aeb35786bed",
+   "blob_bytes": 3860,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 4860640,
+   "insns_per_region": 7575282.5,
+   "cycles_per_region": {
+    "444": [
+     5193452.5,
+     8313669.4399999995
+    ],
+    "333": [
+     5193452.5,
+     8295006.455
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 11.69696509009009,
+     "high": 18.72448072072072,
+     "calibrated": 18.737587857225222
+    },
+    "333": {
+     "low": 15.595953453453454,
+     "high": 24.909929294294294,
+     "calibrated": 24.9273662448003
+    }
+   },
+   "l1d_misses_per_region": 18227.0,
+   "l2_misses_per_region": 1528.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     4310977
+    ],
+    [
+     "chain",
+     2864480
+    ],
+    [
+     "vocr_line_dark",
+     175492
+    ],
+    [
+     "delivered",
+     95596
+    ],
+    [
+     "sweep",
+     41187
+    ],
+    [
+     "memset",
+     23768
+    ],
+    [
+     "memcpy",
+     23348
+    ],
+    [
+     "__udivsi3",
+     19223
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c16n4",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "5ad80a362b9460ea401ddae2234bfefb80db0f4ba8717ba8b8e12aeb35786bed",
+   "blob_bytes": 3860,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 70241280,
+   "insns_per_region": 100312937.0,
+   "cycles_per_region": {
+    "444": [
+     71222885.5,
+     112643944.62
+    ],
+    "333": [
+     71222885.5,
+     112522082.715
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 160.41190427927927,
+     "high": 253.702577972973,
+     "calibrated": 253.88016977755404
+    },
+    "333": {
+     "low": 213.88253903903905,
+     "high": 337.9041522972973,
+     "calibrated": 338.1406852039054
+    }
+   },
+   "l1d_misses_per_region": 353347.5,
+   "l2_misses_per_region": 9980.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     59201168
+    ],
+    [
+     "chain",
+     38808960
+    ],
+    [
+     "delivered",
+     1315618
+    ],
+    [
+     "sweep",
+     486063
+    ],
+    [
+     "__udivsi3",
+     191901
+    ],
+    [
+     "vocr_line_dark",
+     167089
+    ],
+    [
+     "dest_row",
+     41616
+    ],
+    [
+     "memset",
+     37416
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c16n4",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "5ad80a362b9460ea401ddae2234bfefb80db0f4ba8717ba8b8e12aeb35786bed",
+   "blob_bytes": 3860,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 17560320,
+   "insns_per_region": 25318475.0,
+   "cycles_per_region": {
+    "444": [
+     17795770.0,
+     28165322.22
+    ],
+    "333": [
+     17795770.0,
+     28128136.665
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 40.08056306306306,
+     "high": 63.435410405405406,
+     "calibrated": 63.47981519268918
+    },
+    "333": {
+     "low": 53.44075075075075,
+     "high": 84.46887887387388,
+     "calibrated": 84.52800708908558
+    }
+   },
+   "l1d_misses_per_region": 79153.0,
+   "l2_misses_per_region": 3045.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     14862600
+    ],
+    [
+     "chain",
+     9702240
+    ],
+    [
+     "delivered",
+     296295
+    ],
+    [
+     "vocr_line_dark",
+     171668
+    ],
+    [
+     "sweep",
+     126523
+    ],
+    [
+     "__udivsi3",
+     85067
+    ],
+    [
+     "memset",
+     24591
+    ],
+    [
+     "dest_row",
+     20808
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c24",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "5a5f873d8815c434ae32a52bb38506b89717cae25c645db1fc090d3ec6008b97",
+   "blob_bytes": 4412,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 23018400,
+   "insns_per_region": 29659142.0,
+   "cycles_per_region": {
+    "444": [
+     21818631.0,
+     33147709.48
+    ],
+    "333": [
+     21818631.0,
+     33077843.86
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 49.141060810810814,
+     "high": 74.65700333333334,
+     "calibrated": 74.70926323566667
+    },
+    "333": {
+     "low": 65.52141441441441,
+     "high": 99.33286444444444,
+     "calibrated": 99.40239744955554
+    }
+   },
+   "l1d_misses_per_region": 94574.5,
+   "l2_misses_per_region": 5722.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     15701687
+    ],
+    [
+     "chain",
+     13256794
+    ],
+    [
+     "delivered",
+     273833
+    ],
+    [
+     "vocr_line_dark",
+     172116
+    ],
+    [
+     "sweep",
+     108827
+    ],
+    [
+     "memcpy",
+     41708
+    ],
+    [
+     "__udivsi3",
+     37866
+    ],
+    [
+     "memset",
+     33507
+    ]
+   ],
+   "negative_count_addresses": 171
+  },
+  {
+   "shape": "s4_c24",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "5a5f873d8815c434ae32a52bb38506b89717cae25c645db1fc090d3ec6008b97",
+   "blob_bytes": 4412,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 6090080,
+   "insns_per_region": 8317958.5,
+   "cycles_per_region": {
+    "444": [
+     5931243.5,
+     9144499.9
+    ],
+    "333": [
+     5931243.5,
+     9126673.3
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 13.358656531531532,
+     "high": 20.595720495495495,
+     "calibrated": 20.610137499842338
+    },
+    "333": {
+     "low": 17.811542042042042,
+     "high": 27.40742732732733,
+     "calibrated": 27.42661252645646
+    }
+   },
+   "l1d_misses_per_region": 21781.5,
+   "l2_misses_per_region": 1460.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     4280737
+    ],
+    [
+     "chain",
+     3614180
+    ],
+    [
+     "vocr_line_dark",
+     213052
+    ],
+    [
+     "delivered",
+     87771
+    ],
+    [
+     "sweep",
+     33748
+    ],
+    [
+     "memcpy",
+     23348
+    ],
+    [
+     "memset",
+     22477
+    ],
+    [
+     "__udivsi3",
+     17381
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c24",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "5a5f873d8815c434ae32a52bb38506b89717cae25c645db1fc090d3ec6008b97",
+   "blob_bytes": 4412,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 87997440,
+   "insns_per_region": 109751642.0,
+   "cycles_per_region": {
+    "444": [
+     81227056.0,
+     121995146.8
+    ],
+    "333": [
+     81227056.0,
+     121874939.35
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 182.94381981981982,
+     "high": 274.7638441441441,
+     "calibrated": 274.956178835045
+    },
+    "333": {
+     "low": 243.9250930930931,
+     "high": 365.9908088588588,
+     "calibrated": 366.24700242506003
+    }
+   },
+   "l1d_misses_per_region": 357528.5,
+   "l2_misses_per_region": 9845.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     58809472
+    ],
+    [
+     "chain",
+     49004880
+    ],
+    [
+     "delivered",
+     1050755
+    ],
+    [
+     "sweep",
+     349820
+    ],
+    [
+     "vocr_line_dark",
+     246212
+    ],
+    [
+     "__udivsi3",
+     171067
+    ],
+    [
+     "dest_row",
+     37536
+    ],
+    [
+     "memset",
+     34974
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c24",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "5a5f873d8815c434ae32a52bb38506b89717cae25c645db1fc090d3ec6008b97",
+   "blob_bytes": 4412,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 21999360,
+   "insns_per_region": 27684361.5,
+   "cycles_per_region": {
+    "444": [
+     20299893.0,
+     30592529.92
+    ],
+    "333": [
+     20299893.0,
+     30556199.065
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 45.72047972972973,
+     "high": 68.90209441441442,
+     "calibrated": 68.95032588050451
+    },
+    "333": {
+     "low": 60.96063963963964,
+     "high": 91.76035755255256,
+     "calibrated": 91.82458980283933
+    }
+   },
+   "l1d_misses_per_region": 82874.0,
+   "l2_misses_per_region": 2975.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     14756386
+    ],
+    [
+     "chain",
+     12251220
+    ],
+    [
+     "delivered",
+     271090
+    ],
+    [
+     "vocr_line_dark",
+     158625
+    ],
+    [
+     "sweep",
+     91987
+    ],
+    [
+     "__udivsi3",
+     76089
+    ],
+    [
+     "memset",
+     23229
+    ],
+    [
+     "dest_row",
+     18768
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4p_c4",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "964cbcacaf13d9ec401ab92c881c1f8ec1c2972278b346c2c46043db55ea9006",
+   "blob_bytes": 1100,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 6276600,
+   "insns_per_region": 10189034.0,
+   "cycles_per_region": {
+    "444": [
+     6364726.5,
+     11131132.32
+    ],
+    "333": [
+     6364726.5,
+     11072853.99
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 14.334969594594595,
+     "high": 25.070117837837838,
+     "calibrated": 25.08766692032432
+    },
+    "333": {
+     "low": 19.113292792792794,
+     "high": 33.25181378378378,
+     "calibrated": 33.27509005343243
+    }
+   },
+   "l1d_misses_per_region": 16742.5,
+   "l2_misses_per_region": 4773.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     9008909
+    ],
+    [
+     "chain",
+     469566
+    ],
+    [
+     "vocr_line_dark",
+     311834
+    ],
+    [
+     "delivered",
+     234166
+    ],
+    [
+     "sweep",
+     81393
+    ],
+    [
+     "__udivsi3",
+     37022
+    ],
+    [
+     "memset",
+     17316
+    ],
+    [
+     "dest_row",
+     10398
+    ]
+   ],
+   "negative_count_addresses": 171
+  },
+  {
+   "shape": "s4p_c4",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "964cbcacaf13d9ec401ab92c881c1f8ec1c2972278b346c2c46043db55ea9006",
+   "blob_bytes": 1100,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 1661920,
+   "insns_per_region": 2944448.5,
+   "cycles_per_region": {
+    "444": [
+     1724916.5,
+     3106172.38
+    ],
+    "333": [
+     1724916.5,
+     3094792.66
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 3.8849470720720722,
+     "high": 6.995883738738739,
+     "calibrated": 7.000780857355855
+    },
+    "333": {
+     "low": 5.179929429429429,
+     "high": 9.293671651651652,
+     "calibrated": 9.300177221807807
+    }
+   },
+   "l1d_misses_per_region": 2369.5,
+   "l2_misses_per_region": 932.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     2460091
+    ],
+    [
+     "vocr_line_dark",
+     233334
+    ],
+    [
+     "chain",
+     128140
+    ],
+    [
+     "delivered",
+     53362
+    ],
+    [
+     "sweep",
+     22440
+    ],
+    [
+     "__udivsi3",
+     16897
+    ],
+    [
+     "memset",
+     14035
+    ],
+    [
+     "dest_row",
+     5520
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4p_c4",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "964cbcacaf13d9ec401ab92c881c1f8ec1c2972278b346c2c46043db55ea9006",
+   "blob_bytes": 1100,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 24023040,
+   "insns_per_region": 37155336.5,
+   "cycles_per_region": {
+    "444": [
+     23838217.5,
+     40249990.94
+    ],
+    "333": [
+     23838217.5,
+     40142042.33
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 53.689679054054054,
+     "high": 90.65313274774775,
+     "calibrated": 90.71658994067116
+    },
+    "333": {
+     "low": 71.58623873873874,
+     "high": 120.54667366366365,
+     "calibrated": 120.63105633522821
+    }
+   },
+   "l1d_misses_per_region": 72254.0,
+   "l2_misses_per_region": 8841.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     33796817
+    ],
+    [
+     "chain",
+     1734000
+    ],
+    [
+     "delivered",
+     870918
+    ],
+    [
+     "sweep",
+     298346
+    ],
+    [
+     "vocr_line_dark",
+     189690
+    ],
+    [
+     "__udivsi3",
+     168263
+    ],
+    [
+     "dest_row",
+     37536
+    ],
+    [
+     "__aeabi_uidivmod",
+     29376
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4p_c4",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "964cbcacaf13d9ec401ab92c881c1f8ec1c2972278b346c2c46043db55ea9006",
+   "blob_bytes": 1100,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 6005760,
+   "insns_per_region": 9634054.0,
+   "cycles_per_region": {
+    "444": [
+     5954092.5,
+     10092470.78
+    ],
+    "333": [
+     5954092.5,
+     10062806.585
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 13.410118243243243,
+     "high": 22.730790045045044,
+     "calibrated": 22.746701598076573
+    },
+    "333": {
+     "low": 17.88015765765766,
+     "high": 30.218638393393395,
+     "calibrated": 30.23979144026877
+    }
+   },
+   "l1d_misses_per_region": 6794.5,
+   "l2_misses_per_region": 2429.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     8502336
+    ],
+    [
+     "chain",
+     433500
+    ],
+    [
+     "delivered",
+     255672
+    ],
+    [
+     "vocr_line_dark",
+     230666
+    ],
+    [
+     "sweep",
+     81681
+    ],
+    [
+     "__udivsi3",
+     74645
+    ],
+    [
+     "dest_row",
+     18768
+    ],
+    [
+     "__aeabi_uidivmod",
+     14688
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4p_c8",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "ad7d6bbeb8f331535b21e0b23b4558c234a48c89fc62c34a0b9a45cd762af72e",
+   "blob_bytes": 2700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 18725400,
+   "insns_per_region": 21972148.0,
+   "cycles_per_region": {
+    "444": [
+     16614017.5,
+     23501341.6
+    ],
+    "333": [
+     16614017.5,
+     23439803.2
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 37.418958333333336,
+     "high": 52.93094954954955,
+     "calibrated": 52.968001214234235
+    },
+    "333": {
+     "low": 49.89194444444445,
+     "high": 70.3897993993994,
+     "calibrated": 70.43907225897897
+    }
+   },
+   "l1d_misses_per_region": 35580.0,
+   "l2_misses_per_region": 5040.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     20928478
+    ],
+    [
+     "chain",
+     438710
+    ],
+    [
+     "delivered",
+     244754
+    ],
+    [
+     "vocr_line_dark",
+     155832
+    ],
+    [
+     "sweep",
+     111432
+    ],
+    [
+     "__udivsi3",
+     37022
+    ],
+    [
+     "memset",
+     21906
+    ],
+    [
+     "dest_row",
+     10398
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4p_c8",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "ad7d6bbeb8f331535b21e0b23b4558c234a48c89fc62c34a0b9a45cd762af72e",
+   "blob_bytes": 2700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 17,
+   "macs": 4952480,
+   "insns_per_region": 6085265.5,
+   "cycles_per_region": {
+    "444": [
+     4494797.0,
+     6315875.24
+    ],
+    "333": [
+     4494797.0,
+     6302767.805
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 10.123416666666667,
+     "high": 14.224944234234234,
+     "calibrated": 14.234901695198197
+    },
+    "333": {
+     "low": 13.49788888888889,
+     "high": 18.927230645645643,
+     "calibrated": 18.940479707097595
+    }
+   },
+   "l1d_misses_per_region": 4289.5,
+   "l2_misses_per_region": 1073.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     5685384
+    ],
+    [
+     "vocr_line_dark",
+     141086
+    ],
+    [
+     "chain",
+     119740
+    ],
+    [
+     "delivered",
+     63470
+    ],
+    [
+     "sweep",
+     26677
+    ],
+    [
+     "__udivsi3",
+     16897
+    ],
+    [
+     "memset",
+     11644
+    ],
+    [
+     "dest_row",
+     5520
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4p_c8",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "ad7d6bbeb8f331535b21e0b23b4558c234a48c89fc62c34a0b9a45cd762af72e",
+   "blob_bytes": 2700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 71546880,
+   "insns_per_region": 81514399.5,
+   "cycles_per_region": {
+    "444": [
+     62036706.0,
+     86996581.46
+    ],
+    "333": [
+     62036706.0,
+     86885238.47
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 139.72231081081082,
+     "high": 195.93824653153152,
+     "calibrated": 196.07540330410356
+    },
+    "333": {
+     "low": 186.29641441441441,
+     "high": 260.916632042042,
+     "calibrated": 261.0992736844714
+    }
+   },
+   "l1d_misses_per_region": 150891.0,
+   "l2_misses_per_region": 9119.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     78162117
+    ],
+    [
+     "chain",
+     1619760
+    ],
+    [
+     "delivered",
+     1003713
+    ],
+    [
+     "sweep",
+     305600
+    ],
+    [
+     "__udivsi3",
+     168263
+    ],
+    [
+     "vocr_line_dark",
+     154569
+    ],
+    [
+     "dest_row",
+     37536
+    ],
+    [
+     "__aeabi_uidivmod",
+     29376
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4p_c8",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "ad7d6bbeb8f331535b21e0b23b4558c234a48c89fc62c34a0b9a45cd762af72e",
+   "blob_bytes": 2700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 17886720,
+   "insns_per_region": 20686911.0,
+   "cycles_per_region": {
+    "444": [
+     15480407.5,
+     21396013.2
+    ],
+    "333": [
+     15480407.5,
+     21364511.4
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 34.86578265765766,
+     "high": 48.18921891891892,
+     "calibrated": 48.22295137216215
+    },
+    "333": {
+     "low": 46.48771021021021,
+     "high": 64.15769189189189,
+     "calibrated": 64.20260227621621
+    }
+   },
+   "l1d_misses_per_region": 14737.5,
+   "l2_misses_per_region": 2580.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     19570471
+    ],
+    [
+     "chain",
+     404940
+    ],
+    [
+     "delivered",
+     256054
+    ],
+    [
+     "vocr_line_dark",
+     207521
+    ],
+    [
+     "sweep",
+     108521
+    ],
+    [
+     "__udivsi3",
+     74645
+    ],
+    [
+     "dest_row",
+     18768
+    ],
+    [
+     "memset",
+     16812
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c8",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "b30a161c622c316903007eb815b0e74c75429208c2df91096279c48b8f7f4b4f",
+   "blob_bytes": 1884,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 3033072,
+   "insns_per_region": 7311901.0,
+   "cycles_per_region": {
+    "444": [
+     4113014.5,
+     8227620.3
+    ],
+    "333": [
+     4113014.5,
+     8168615.475
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 9.263546171171171,
+     "high": 18.53067635135135,
+     "calibrated": 18.543647824797294
+    },
+    "333": {
+     "low": 12.351394894894895,
+     "high": 24.5303768018018,
+     "calibrated": 24.54754806556306
+    }
+   },
+   "l1d_misses_per_region": 14560.5,
+   "l2_misses_per_region": 4832.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     5123031
+    ],
+    [
+     "chain",
+     1823221
+    ],
+    [
+     "vocr_line_dark",
+     157621
+    ],
+    [
+     "delivered",
+     73350
+    ],
+    [
+     "sweep",
+     38368
+    ],
+    [
+     "__udivsi3",
+     32391
+    ],
+    [
+     "memset",
+     19308
+    ],
+    [
+     "memcpy",
+     15488
+    ]
+   ],
+   "negative_count_addresses": 171
+  },
+  {
+   "shape": "s8_c8",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "b30a161c622c316903007eb815b0e74c75429208c2df91096279c48b8f7f4b4f",
+   "blob_bytes": 1884,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 806000,
+   "insns_per_region": 2190718.5,
+   "cycles_per_region": {
+    "444": [
+     1129959.5,
+     2378923.58
+    ],
+    "333": [
+     1129959.5,
+     2366872.31
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 2.5449538288288287,
+     "high": 5.357935990990991,
+     "calibrated": 5.361686546184685
+    },
+    "333": {
+     "low": 3.3932717717717717,
+     "high": 7.107724654654655,
+     "calibrated": 7.112700061912912
+    }
+   },
+   "l1d_misses_per_region": 2737.0,
+   "l2_misses_per_region": 987.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     1414424
+    ],
+    [
+     "chain",
+     506060
+    ],
+    [
+     "vocr_line_dark",
+     184292
+    ],
+    [
+     "delivered",
+     21265
+    ],
+    [
+     "memset",
+     15200
+    ],
+    [
+     "__udivsi3",
+     14770
+    ],
+    [
+     "sweep",
+     10569
+    ],
+    [
+     "memcpy",
+     9548
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c8",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "b30a161c622c316903007eb815b0e74c75429208c2df91096279c48b8f7f4b4f",
+   "blob_bytes": 1884,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 11619840,
+   "insns_per_region": 26663707.5,
+   "cycles_per_region": {
+    "444": [
+     15242690.5,
+     29607159.08
+    ],
+    "333": [
+     15242690.5,
+     29498496.185
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 34.33038400900901,
+     "high": 66.68279072072072,
+     "calibrated": 66.72946867422522
+    },
+    "333": {
+     "low": 45.77384534534534,
+     "high": 88.58407262762762,
+     "calibrated": 88.64608147846695
+    }
+   },
+   "l1d_misses_per_region": 62828.5,
+   "l2_misses_per_region": 8899.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     19206747
+    ],
+    [
+     "chain",
+     6608580
+    ],
+    [
+     "delivered",
+     334378
+    ],
+    [
+     "vocr_line_dark",
+     159406
+    ],
+    [
+     "__udivsi3",
+     147473
+    ],
+    [
+     "sweep",
+     115956
+    ],
+    [
+     "dest_row",
+     35088
+    ],
+    [
+     "__aeabi_uidivmod",
+     25568
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c8",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "b30a161c622c316903007eb815b0e74c75429208c2df91096279c48b8f7f4b4f",
+   "blob_bytes": 1884,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 2904960,
+   "insns_per_region": 7061136.0,
+   "cycles_per_region": {
+    "444": [
+     3900899.0,
+     7562848.62
+    ],
+    "333": [
+     3900899.0,
+     7532561.715
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 8.785808558558559,
+     "high": 17.03344283783784,
+     "calibrated": 17.045366247824322
+    },
+    "333": {
+     "low": 11.714411411411412,
+     "high": 22.62030545045045,
+     "calibrated": 22.636139664265762
+    }
+   },
+   "l1d_misses_per_region": 7108.0,
+   "l2_misses_per_region": 2480.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     4927090
+    ],
+    [
+     "chain",
+     1716252
+    ],
+    [
+     "vocr_line_dark",
+     159312
+    ],
+    [
+     "delivered",
+     78282
+    ],
+    [
+     "__udivsi3",
+     65424
+    ],
+    [
+     "sweep",
+     38832
+    ],
+    [
+     "dest_row",
+     17544
+    ],
+    [
+     "memcpy",
+     17228
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c16",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "4e05b668aad167dc77c9cbcf653d763fde05f18906f73997e421ee0a26bab49f",
+   "blob_bytes": 3276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 4939608,
+   "insns_per_region": 9510058.0,
+   "cycles_per_region": {
+    "444": [
+     5825109.0,
+     10744071.120000001
+    ],
+    "333": [
+     5825109.0,
+     10681580.34
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 13.119614864864865,
+     "high": 24.19835837837838,
+     "calibrated": 24.215297229243244
+    },
+    "333": {
+     "low": 17.492819819819818,
+     "high": 32.07681783783784,
+     "calibrated": 32.09927161032432
+    }
+   },
+   "l1d_misses_per_region": 24375.0,
+   "l2_misses_per_region": 5118.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     5978421
+    ],
+    [
+     "chain",
+     3048949
+    ],
+    [
+     "vocr_line_dark",
+     252308
+    ],
+    [
+     "delivered",
+     85018
+    ],
+    [
+     "sweep",
+     40658
+    ],
+    [
+     "__udivsi3",
+     32391
+    ],
+    [
+     "memset",
+     24150
+    ],
+    [
+     "memcpy",
+     22328
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c16",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "4e05b668aad167dc77c9cbcf653d763fde05f18906f73997e421ee0a26bab49f",
+   "blob_bytes": 3276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 26,
+   "macs": 1312160,
+   "insns_per_region": 2821007.0,
+   "cycles_per_region": {
+    "444": [
+     1608478.5,
+     3073848.58
+    ],
+    "333": [
+     1608478.5,
+     3059813.185
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 3.622699324324324,
+     "high": 6.923082387387388,
+     "calibrated": 6.927928545058558
+    },
+    "333": {
+     "low": 4.830265765765766,
+     "high": 9.188628183183184,
+     "calibrated": 9.19506022291141
+    }
+   },
+   "l1d_misses_per_region": 4476.5,
+   "l2_misses_per_region": 1149.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     1653019
+    ],
+    [
+     "chain",
+     851020
+    ],
+    [
+     "vocr_line_dark",
+     232034
+    ],
+    [
+     "delivered",
+     23180
+    ],
+    [
+     "memset",
+     15986
+    ],
+    [
+     "__udivsi3",
+     14770
+    ],
+    [
+     "memcpy",
+     12608
+    ],
+    [
+     "sweep",
+     7472
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c16",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "4e05b668aad167dc77c9cbcf653d763fde05f18906f73997e421ee0a26bab49f",
+   "blob_bytes": 3276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 18865920,
+   "insns_per_region": 34229537.5,
+   "cycles_per_region": {
+    "444": [
+     21386267.5,
+     38358561.66
+    ],
+    "333": [
+     21386267.5,
+     38246241.87
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 48.16726914414414,
+     "high": 86.39315689189188,
+     "calibrated": 86.45363210171621
+    },
+    "333": {
+     "low": 64.22302552552553,
+     "high": 114.85357918918918,
+     "calibrated": 114.93397669462162
+    }
+   },
+   "l1d_misses_per_region": 101655.5,
+   "l2_misses_per_region": 9199.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     22284752
+    ],
+    [
+     "chain",
+     10982340
+    ],
+    [
+     "delivered",
+     298922
+    ],
+    [
+     "vocr_line_dark",
+     279414
+    ],
+    [
+     "__udivsi3",
+     147473
+    ],
+    [
+     "sweep",
+     136292
+    ],
+    [
+     "dest_row",
+     35088
+    ],
+    [
+     "__aeabi_uidivmod",
+     25568
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c16",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "4e05b668aad167dc77c9cbcf653d763fde05f18906f73997e421ee0a26bab49f",
+   "blob_bytes": 3276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 4716480,
+   "insns_per_region": 9167775.0,
+   "cycles_per_region": {
+    "444": [
+     5537924.0,
+     9934357.52
+    ],
+    "333": [
+     5537924.0,
+     9901964.39
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 12.472801801801802,
+     "high": 22.374679099099097,
+     "calibrated": 22.390341374468466
+    },
+    "333": {
+     "low": 16.630402402402403,
+     "high": 29.7356287987988,
+     "calibrated": 29.756443738957955
+    }
+   },
+   "l1d_misses_per_region": 15450.0,
+   "l2_misses_per_region": 2653.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     5747167
+    ],
+    [
+     "chain",
+     2889116
+    ],
+    [
+     "vocr_line_dark",
+     249586
+    ],
+    [
+     "delivered",
+     84291
+    ],
+    [
+     "__udivsi3",
+     65424
+    ],
+    [
+     "sweep",
+     47162
+    ],
+    [
+     "memcpy",
+     29468
+    ],
+    [
+     "memset",
+     18309
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c24",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "f89646b81a91665090cca895754adfd1bc0b2c9bce16cc59bd7d63ed1d6251c1",
+   "blob_bytes": 5700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 10581000,
+   "insns_per_region": 15801324.5,
+   "cycles_per_region": {
+    "444": [
+     10975766.0,
+     17647507.42
+    ],
+    "333": [
+     10975766.0,
+     17579277.94
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 24.720193693693695,
+     "high": 39.74663833333334,
+     "calibrated": 39.774460980166666
+    },
+    "333": {
+     "low": 32.96025825825826,
+     "high": 52.79062444444445,
+     "calibrated": 52.827577881555555
+    }
+   },
+   "l1d_misses_per_region": 43554.5,
+   "l2_misses_per_region": 5588.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     9776846
+    ],
+    [
+     "chain",
+     5594949
+    ],
+    [
+     "vocr_line_dark",
+     182954
+    ],
+    [
+     "delivered",
+     80706
+    ],
+    [
+     "sweep",
+     42254
+    ],
+    [
+     "memcpy",
+     33728
+    ],
+    [
+     "__udivsi3",
+     32391
+    ],
+    [
+     "memset",
+     32205
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c24",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "f89646b81a91665090cca895754adfd1bc0b2c9bce16cc59bd7d63ed1d6251c1",
+   "blob_bytes": 5700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 2810000,
+   "insns_per_region": 4530855.0,
+   "cycles_per_region": {
+    "444": [
+     3029527.0,
+     4946457.22
+    ],
+    "333": [
+     3029527.0,
+     4929112.915
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 6.823259009009009,
+     "high": 11.140669414414413,
+     "calibrated": 11.148467883004503
+    },
+    "333": {
+     "low": 9.097678678678678,
+     "high": 14.802140885885885,
+     "calibrated": 14.812502384506004
+    }
+   },
+   "l1d_misses_per_region": 9168.0,
+   "l2_misses_per_region": 1420.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     2694986
+    ],
+    [
+     "chain",
+     1561580
+    ],
+    [
+     "vocr_line_dark",
+     170495
+    ],
+    [
+     "delivered",
+     22660
+    ],
+    [
+     "memset",
+     22292
+    ],
+    [
+     "memcpy",
+     19148
+    ],
+    [
+     "__udivsi3",
+     14770
+    ],
+    [
+     "sweep",
+     12672
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c24",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "f89646b81a91665090cca895754adfd1bc0b2c9bce16cc59bd7d63ed1d6251c1",
+   "blob_bytes": 5700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 40408320,
+   "insns_per_region": 57478187.0,
+   "cycles_per_region": {
+    "444": [
+     40342187.0,
+     63652938.12
+    ],
+    "333": [
+     40342187.0,
+     63534586.59
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 90.86078153153153,
+     "high": 143.36247324324324,
+     "calibrated": 143.4628269745135
+    },
+    "333": {
+     "low": 121.1477087087087,
+     "high": 190.79455432432434,
+     "calibrated": 190.92811051235137
+    }
+   },
+   "l1d_misses_per_region": 168601.5,
+   "l2_misses_per_region": 9693.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     36452380
+    ],
+    [
+     "chain",
+     20154180
+    ],
+    [
+     "delivered",
+     287822
+    ],
+    [
+     "vocr_line_dark",
+     204710
+    ],
+    [
+     "__udivsi3",
+     147473
+    ],
+    [
+     "sweep",
+     122464
+    ],
+    [
+     "dest_row",
+     35088
+    ],
+    [
+     "memset",
+     33465
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c24",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "f89646b81a91665090cca895754adfd1bc0b2c9bce16cc59bd7d63ed1d6251c1",
+   "blob_bytes": 5700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 10102080,
+   "insns_per_region": 15141725.0,
+   "cycles_per_region": {
+    "444": [
+     10428907.5,
+     16583905.620000001
+    ],
+    "333": [
+     10428907.5,
+     16548124.215
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 23.488530405405406,
+     "high": 37.35113878378379,
+     "calibrated": 37.37728458093243
+    },
+    "333": {
+     "low": 31.31804054054054,
+     "high": 49.69406671171171,
+     "calibrated": 49.728852558409905
+    }
+   },
+   "l1d_misses_per_region": 37234.0,
+   "l2_misses_per_region": 2930.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     9356487
+    ],
+    [
+     "chain",
+     5300668
+    ],
+    [
+     "vocr_line_dark",
+     190386
+    ],
+    [
+     "delivered",
+     87615
+    ],
+    [
+     "__udivsi3",
+     65424
+    ],
+    [
+     "memcpy",
+     41708
+    ],
+    [
+     "sweep",
+     39752
+    ],
+    [
+     "memset",
+     22935
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c32",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "f3c0eb5b57b251701ff8e7c873de6e9cfdeb7d77943597d8a6992f4752e10032",
+   "blob_bytes": 7924,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 14273840,
+   "insns_per_region": 18916756.5,
+   "cycles_per_region": {
+    "444": [
+     13636206.0,
+     21060861.5
+    ],
+    "333": [
+     13636206.0,
+     20989127.75
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 30.712175675675677,
+     "high": 47.434372747747744,
+     "calibrated": 47.46757680867117
+    },
+    "333": {
+     "low": 40.94956756756757,
+     "high": 63.030413663663666,
+     "calibrated": 63.07453495322822
+    }
+   },
+   "l1d_misses_per_region": 52701.0,
+   "l2_misses_per_region": 5875.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     10631987
+    ],
+    [
+     "chain",
+     7769157
+    ],
+    [
+     "vocr_line_dark",
+     246690
+    ],
+    [
+     "delivered",
+     85404
+    ],
+    [
+     "sweep",
+     49582
+    ],
+    [
+     "memcpy",
+     40568
+    ],
+    [
+     "memset",
+     37047
+    ],
+    [
+     "__udivsi3",
+     32391
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c32",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "f3c0eb5b57b251701ff8e7c873de6e9cfdeb7d77943597d8a6992f4752e10032",
+   "blob_bytes": 7924,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 24,
+   "macs": 3790400,
+   "insns_per_region": 5420115.5,
+   "cycles_per_region": {
+    "444": [
+     3774308.5,
+     5953768.06
+    ],
+    "333": [
+     3774308.5,
+     5934427.42
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 8.50069481981982,
+     "high": 13.409387522522522,
+     "calibrated": 13.418774093788286
+    },
+    "333": {
+     "low": 11.33425975975976,
+     "high": 17.821103363363363,
+     "calibrated": 17.833578135717715
+    }
+   },
+   "l1d_misses_per_region": 12683.0,
+   "l2_misses_per_region": 1584.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     2933238
+    ],
+    [
+     "chain",
+     2172780
+    ],
+    [
+     "vocr_line_dark",
+     207837
+    ],
+    [
+     "delivered",
+     25003
+    ],
+    [
+     "memset",
+     22467
+    ],
+    [
+     "memcpy",
+     22028
+    ],
+    [
+     "__udivsi3",
+     14770
+    ],
+    [
+     "sweep",
+     9916
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c32",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "f3c0eb5b57b251701ff8e7c873de6e9cfdeb7d77943597d8a6992f4752e10032",
+   "blob_bytes": 7924,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 54443520,
+   "insns_per_region": 68390315.5,
+   "cycles_per_region": {
+    "444": [
+     49881883.5,
+     75558578.62
+    ],
+    "333": [
+     49881883.5,
+     75436564.09
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 112.34658445945946,
+     "high": 170.17697887387388,
+     "calibrated": 170.29610275908558
+    },
+    "333": {
+     "low": 149.79544594594594,
+     "high": 226.5362284984985,
+     "calibrated": 226.69480385844744
+    }
+   },
+   "l1d_misses_per_region": 200916.5,
+   "l2_misses_per_region": 9993.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     39530215
+    ],
+    [
+     "chain",
+     27922500
+    ],
+    [
+     "delivered",
+     285104
+    ],
+    [
+     "vocr_line_dark",
+     255350
+    ],
+    [
+     "__udivsi3",
+     147473
+    ],
+    [
+     "sweep",
+     136218
+    ],
+    [
+     "memset",
+     38577
+    ],
+    [
+     "dest_row",
+     35088
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c32",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "f3c0eb5b57b251701ff8e7c873de6e9cfdeb7d77943597d8a6992f4752e10032",
+   "blob_bytes": 7924,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 13610880,
+   "insns_per_region": 18029359.5,
+   "cycles_per_region": {
+    "444": [
+     12970131.5,
+     19901975.6
+    ],
+    "333": [
+     12970131.5,
+     19864094.075
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 29.212007882882883,
+     "high": 44.824269369369375,
+     "calibrated": 44.855646357927924
+    },
+    "333": {
+     "low": 38.94934384384384,
+     "high": 59.651934159159154,
+     "calibrated": 59.693690513070564
+    }
+   },
+   "l1d_misses_per_region": 51176.5,
+   "l2_misses_per_region": 3102.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     10175863
+    ],
+    [
+     "chain",
+     7378748
+    ],
+    [
+     "vocr_line_dark",
+     174171
+    ],
+    [
+     "delivered",
+     72165
+    ],
+    [
+     "__udivsi3",
+     65424
+    ],
+    [
+     "memcpy",
+     53948
+    ],
+    [
+     "sweep",
+     45362
+    ],
+    [
+     "memset",
+     25752
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c32n4",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "0da2f9dce835434c14a3a040c63680ceee631a9a7fd15a121a0d6f4ee81abda9",
+   "blob_bytes": 9876,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 17090704,
+   "insns_per_region": 21754655.0,
+   "cycles_per_region": {
+    "444": [
+     15966801.0,
+     24174455.98
+    ],
+    "333": [
+     15966801.0,
+     24101995.735
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 35.961263513513515,
+     "high": 54.44697292792793,
+     "calibrated": 54.48508580897747
+    },
+    "333": {
+     "low": 47.94835135135135,
+     "high": 72.37836557057057,
+     "calibrated": 72.42903042646996
+    }
+   },
+   "l1d_misses_per_region": 61366.5,
+   "l2_misses_per_region": 5934.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     11811366
+    ],
+    [
+     "chain",
+     9419326
+    ],
+    [
+     "vocr_line_dark",
+     246154
+    ],
+    [
+     "delivered",
+     90287
+    ],
+    [
+     "memcpy",
+     49688
+    ],
+    [
+     "sweep",
+     38767
+    ],
+    [
+     "memset",
+     37887
+    ],
+    [
+     "__udivsi3",
+     34553
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c32n4",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "0da2f9dce835434c14a3a040c63680ceee631a9a7fd15a121a0d6f4ee81abda9",
+   "blob_bytes": 9876,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 24,
+   "macs": 4538240,
+   "insns_per_region": 6269617.5,
+   "cycles_per_region": {
+    "444": [
+     4428644.5,
+     6898536.78
+    ],
+    "333": [
+     4428644.5,
+     6878793.21
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 9.97442454954955,
+     "high": 15.537245,
+     "calibrated": 15.548121071499999
+    },
+    "333": {
+     "low": 13.299232732732733,
+     "high": 20.657036666666666,
+     "calibrated": 20.67149659233333
+    }
+   },
+   "l1d_misses_per_region": 15651.5,
+   "l2_misses_per_region": 1617.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     3266604
+    ],
+    [
+     "chain",
+     2637180
+    ],
+    [
+     "vocr_line_dark",
+     250560
+    ],
+    [
+     "delivered",
+     27950
+    ],
+    [
+     "memcpy",
+     26828
+    ],
+    [
+     "memset",
+     22795
+    ],
+    [
+     "__udivsi3",
+     15684
+    ],
+    [
+     "sweep",
+     10598
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c32n4",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "0da2f9dce835434c14a3a040c63680ceee631a9a7fd15a121a0d6f4ee81abda9",
+   "blob_bytes": 9876,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 65149440,
+   "insns_per_region": 78504759.0,
+   "cycles_per_region": {
+    "444": [
+     58225159.0,
+     86734612.66
+    ],
+    "333": [
+     58225159.0,
+     86611761.745
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 131.1377454954955,
+     "high": 195.3482267117117,
+     "calibrated": 195.48497047040988
+    },
+    "333": {
+     "low": 174.85032732732734,
+     "high": 260.0953806156156,
+     "calibrated": 260.27744738204655
+    }
+   },
+   "l1d_misses_per_region": 234578.5,
+   "l2_misses_per_region": 10061.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     43751031
+    ],
+    [
+     "chain",
+     33810960
+    ],
+    [
+     "delivered",
+     338954
+    ],
+    [
+     "vocr_line_dark",
+     192232
+    ],
+    [
+     "__udivsi3",
+     157883
+    ],
+    [
+     "sweep",
+     136036
+    ],
+    [
+     "memset",
+     39480
+    ],
+    [
+     "dest_row",
+     37128
+    ]
+   ],
+   "negative_count_addresses": 150
+  },
+  {
+   "shape": "s8_c32n4",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "0da2f9dce835434c14a3a040c63680ceee631a9a7fd15a121a0d6f4ee81abda9",
+   "blob_bytes": 9876,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 16287360,
+   "insns_per_region": 20841796.0,
+   "cycles_per_region": {
+    "444": [
+     15194908.5,
+     23099382.66
+    ],
+    "333": [
+     15194908.5,
+     23061085.995
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 34.222766891891894,
+     "high": 52.02563662162162,
+     "calibrated": 52.06205456725675
+    },
+    "333": {
+     "low": 45.63035585585585,
+     "high": 69.2525104954955,
+     "calibrated": 69.30098725284235
+    }
+   },
+   "l1d_misses_per_region": 63538.5,
+   "l2_misses_per_region": 3136.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     11305305
+    ],
+    [
+     "chain",
+     8957708
+    ],
+    [
+     "vocr_line_dark",
+     255270
+    ],
+    [
+     "delivered",
+     84938
+    ],
+    [
+     "memcpy",
+     70268
+    ],
+    [
+     "__udivsi3",
+     69906
+    ],
+    [
+     "sweep",
+     34883
+    ],
+    [
+     "memset",
+     26115
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c48",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "96f035ef2240c2867d490d88fe19e93e2b45386cc5cd8fc8657f223d444043ea",
+   "blob_bytes": 14188,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 25659096,
+   "insns_per_region": 27816149.0,
+   "cycles_per_region": {
+    "444": [
+     21533476.0,
+     30795446.240000002
+    ],
+    "333": [
+     21533476.0,
+     30720525.68
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 48.49881981981982,
+     "high": 69.35911315315316,
+     "calibrated": 69.40766453236036
+    },
+    "333": {
+     "low": 64.66509309309309,
+     "high": 92.25383087087087,
+     "calibrated": 92.31840855248048
+    }
+   },
+   "l1d_misses_per_region": 79876.5,
+   "l2_misses_per_region": 6136.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "chain",
+     14593957
+    ],
+    [
+     "detect",
+     12640069
+    ],
+    [
+     "vocr_line_dark",
+     299228
+    ],
+    [
+     "delivered",
+     80996
+    ],
+    [
+     "memcpy",
+     58808
+    ],
+    [
+     "sweep",
+     43778
+    ],
+    [
+     "memset",
+     41160
+    ],
+    [
+     "__udivsi3",
+     32819
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c48",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "96f035ef2240c2867d490d88fe19e93e2b45386cc5cd8fc8657f223d444043ea",
+   "blob_bytes": 14188,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 6812400,
+   "insns_per_region": 7973275.0,
+   "cycles_per_region": {
+    "444": [
+     5985448.0,
+     8804895.44
+    ],
+    "333": [
+     5985448.0,
+     8783637.83
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 13.480738738738738,
+     "high": 19.830845585585585,
+     "calibrated": 19.844727177495493
+    },
+    "333": {
+     "low": 17.974318318318318,
+     "high": 26.377290780780783,
+     "calibrated": 26.395754884327324
+    }
+   },
+   "l1d_misses_per_region": 22186.0,
+   "l2_misses_per_region": 1741.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "chain",
+     4084780
+    ],
+    [
+     "detect",
+     3498262
+    ],
+    [
+     "vocr_line_dark",
+     264702
+    ],
+    [
+     "memcpy",
+     32348
+    ],
+    [
+     "memset",
+     27089
+    ],
+    [
+     "delivered",
+     24370
+    ],
+    [
+     "__udivsi3",
+     15018
+    ],
+    [
+     "sweep",
+     13131
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c48",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "96f035ef2240c2867d490d88fe19e93e2b45386cc5cd8fc8657f223d444043ea",
+   "blob_bytes": 14188,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 97724160,
+   "insns_per_region": 100138132.0,
+   "cycles_per_region": {
+    "444": [
+     78229273.5,
+     110980256.48
+    ],
+    "333": [
+     78229273.5,
+     110854835.36
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 176.19205743243242,
+     "high": 249.95553261261261,
+     "calibrated": 250.1305014854414
+    },
+    "333": {
+     "low": 234.92274324324325,
+     "high": 332.89740348348346,
+     "calibrated": 333.1304316659219
+    }
+   },
+   "l1d_misses_per_region": 322485.0,
+   "l2_misses_per_region": 10272.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "chain",
+     52402500
+    ],
+    [
+     "detect",
+     46718932
+    ],
+    [
+     "delivered",
+     326168
+    ],
+    [
+     "vocr_line_dark",
+     279524
+    ],
+    [
+     "__udivsi3",
+     148881
+    ],
+    [
+     "sweep",
+     144664
+    ],
+    [
+     "memset",
+     42942
+    ],
+    [
+     "dest_row",
+     35088
+    ]
+   ],
+   "negative_count_addresses": 171
+  },
+  {
+   "shape": "s8_c48",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "96f035ef2240c2867d490d88fe19e93e2b45386cc5cd8fc8657f223d444043ea",
+   "blob_bytes": 14188,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 24431040,
+   "insns_per_region": 26483293.0,
+   "cycles_per_region": {
+    "444": [
+     20491304.5,
+     29322709.08
+    ],
+    "333": [
+     20491304.5,
+     29282880.06
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 46.15158671171171,
+     "high": 66.04213756756756,
+     "calibrated": 66.08836706386485
+    },
+    "333": {
+     "low": 61.53544894894895,
+     "high": 87.93657675675675,
+     "calibrated": 87.99813236048648
+    }
+   },
+   "l1d_misses_per_region": 82946.0,
+   "l2_misses_per_region": 3262.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "chain",
+     13875196
+    ],
+    [
+     "detect",
+     12093285
+    ],
+    [
+     "vocr_line_dark",
+     170370
+    ],
+    [
+     "delivered",
+     85881
+    ],
+    [
+     "memcpy",
+     78428
+    ],
+    [
+     "__udivsi3",
+     66152
+    ],
+    [
+     "sweep",
+     46718
+    ],
+    [
+     "memset",
+     27957
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c8_ko",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "cb82bf58b4133a3676419b93a798d4fee3943f000b55334bbf0abdf177c26dd9",
+   "blob_bytes": 1540,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 5558400,
+   "insns_per_region": 11914430.5,
+   "cycles_per_region": {
+    "444": [
+     7126952.0,
+     13541228.66
+    ],
+    "333": [
+     7126952.0,
+     13479580.370000001
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 16.051693693693693,
+     "high": 30.49826274774775,
+     "calibrated": 30.51961153167117
+    },
+    "333": {
+     "low": 21.402258258258257,
+     "high": 40.479220330330335,
+     "calibrated": 40.50755578456156
+    }
+   },
+   "l1d_misses_per_region": 34122.5,
+   "l2_misses_per_region": 5049.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     7504145
+    ],
+    [
+     "chain",
+     3732170
+    ],
+    [
+     "delivered",
+     323565
+    ],
+    [
+     "vocr_line_dark",
+     170159
+    ],
+    [
+     "sweep",
+     83299
+    ],
+    [
+     "__udivsi3",
+     37058
+    ],
+    [
+     "memset",
+     21906
+    ],
+    [
+     "memcpy",
+     18908
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c8_ko",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "cb82bf58b4133a3676419b93a798d4fee3943f000b55334bbf0abdf177c26dd9",
+   "blob_bytes": 1540,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 21,
+   "macs": 1472080,
+   "insns_per_region": 3380514.5,
+   "cycles_per_region": {
+    "444": [
+     1935547.5,
+     3636324.38
+    ],
+    "333": [
+     1935547.5,
+     3623113.16
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 4.359341216216216,
+     "high": 8.189919774774774,
+     "calibrated": 8.195652718617117
+    },
+    "333": {
+     "low": 5.812454954954955,
+     "high": 10.8802196996997,
+     "calibrated": 10.88783585348949
+    }
+   },
+   "l1d_misses_per_region": 3816.5,
+   "l2_misses_per_region": 1082.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     2052342
+    ],
+    [
+     "chain",
+     1018180
+    ],
+    [
+     "vocr_line_dark",
+     153720
+    ],
+    [
+     "delivered",
+     85378
+    ],
+    [
+     "sweep",
+     20028
+    ],
+    [
+     "__udivsi3",
+     16933
+    ],
+    [
+     "memset",
+     12920
+    ],
+    [
+     "memcpy",
+     10358
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c8_ko",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "cb82bf58b4133a3676419b93a798d4fee3943f000b55334bbf0abdf177c26dd9",
+   "blob_bytes": 1540,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 21281280,
+   "insns_per_region": 44039902.5,
+   "cycles_per_region": {
+    "444": [
+     26610468.0,
+     49922130.54
+    ],
+    "333": [
+     26610468.0,
+     49810641.03
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 59.93348648648649,
+     "high": 112.43723094594594,
+     "calibrated": 112.51593700760809
+    },
+    "333": {
+     "low": 79.91131531531532,
+     "high": 149.5815045945946,
+     "calibrated": 149.6862116478108
+    }
+   },
+   "l1d_misses_per_region": 146670.0,
+   "l2_misses_per_region": 9131.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     28190774
+    ],
+    [
+     "chain",
+     13786320
+    ],
+    [
+     "delivered",
+     1290410
+    ],
+    [
+     "sweep",
+     301404
+    ],
+    [
+     "vocr_line_dark",
+     202988
+    ],
+    [
+     "__udivsi3",
+     168299
+    ],
+    [
+     "dest_row",
+     37536
+    ],
+    [
+     "__aeabi_uidivmod",
+     29376
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c8_ko",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "cb82bf58b4133a3676419b93a798d4fee3943f000b55334bbf0abdf177c26dd9",
+   "blob_bytes": 1540,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 5320320,
+   "insns_per_region": 11277334.0,
+   "cycles_per_region": {
+    "444": [
+     6648192.0,
+     12084411.92
+    ],
+    "333": [
+     6648192.0,
+     12052812.44
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 14.973405405405405,
+     "high": 27.217143963963963,
+     "calibrated": 27.236195964738734
+    },
+    "333": {
+     "low": 19.96454054054054,
+     "high": 36.19463195195195,
+     "calibrated": 36.21996819431831
+    }
+   },
+   "l1d_misses_per_region": 13771.0,
+   "l2_misses_per_region": 2588.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     7104758
+    ],
+    [
+     "chain",
+     3446580
+    ],
+    [
+     "delivered",
+     311053
+    ],
+    [
+     "vocr_line_dark",
+     209056
+    ],
+    [
+     "__udivsi3",
+     74681
+    ],
+    [
+     "sweep",
+     74224
+    ],
+    [
+     "dest_row",
+     18768
+    ],
+    [
+     "memset",
+     16812
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c16_ko",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "811ffa3a64389e2df3e9f689673f1c0881864d37ddda4b7f08d43177937f7d4f",
+   "blob_bytes": 3276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 4939608,
+   "insns_per_region": 9510058.0,
+   "cycles_per_region": {
+    "444": [
+     5825109.0,
+     10744071.120000001
+    ],
+    "333": [
+     5825109.0,
+     10681580.34
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 13.119614864864865,
+     "high": 24.19835837837838,
+     "calibrated": 24.215297229243244
+    },
+    "333": {
+     "low": 17.492819819819818,
+     "high": 32.07681783783784,
+     "calibrated": 32.09927161032432
+    }
+   },
+   "l1d_misses_per_region": 24375.0,
+   "l2_misses_per_region": 5118.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     5978421
+    ],
+    [
+     "chain",
+     3048949
+    ],
+    [
+     "vocr_line_dark",
+     252308
+    ],
+    [
+     "delivered",
+     85018
+    ],
+    [
+     "sweep",
+     40658
+    ],
+    [
+     "__udivsi3",
+     32391
+    ],
+    [
+     "memset",
+     24150
+    ],
+    [
+     "memcpy",
+     22328
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c16_ko",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "811ffa3a64389e2df3e9f689673f1c0881864d37ddda4b7f08d43177937f7d4f",
+   "blob_bytes": 3276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 26,
+   "macs": 1312160,
+   "insns_per_region": 2821007.0,
+   "cycles_per_region": {
+    "444": [
+     1608478.5,
+     3073848.58
+    ],
+    "333": [
+     1608478.5,
+     3059813.185
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 3.622699324324324,
+     "high": 6.923082387387388,
+     "calibrated": 6.927928545058558
+    },
+    "333": {
+     "low": 4.830265765765766,
+     "high": 9.188628183183184,
+     "calibrated": 9.19506022291141
+    }
+   },
+   "l1d_misses_per_region": 4476.5,
+   "l2_misses_per_region": 1149.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     1653019
+    ],
+    [
+     "chain",
+     851020
+    ],
+    [
+     "vocr_line_dark",
+     232034
+    ],
+    [
+     "delivered",
+     23180
+    ],
+    [
+     "memset",
+     15986
+    ],
+    [
+     "__udivsi3",
+     14770
+    ],
+    [
+     "memcpy",
+     12608
+    ],
+    [
+     "sweep",
+     7472
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c16_ko",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "811ffa3a64389e2df3e9f689673f1c0881864d37ddda4b7f08d43177937f7d4f",
+   "blob_bytes": 3276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 18865920,
+   "insns_per_region": 34229537.5,
+   "cycles_per_region": {
+    "444": [
+     21386267.5,
+     38358561.66
+    ],
+    "333": [
+     21386267.5,
+     38246241.87
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 48.16726914414414,
+     "high": 86.39315689189188,
+     "calibrated": 86.45363210171621
+    },
+    "333": {
+     "low": 64.22302552552553,
+     "high": 114.85357918918918,
+     "calibrated": 114.93397669462162
+    }
+   },
+   "l1d_misses_per_region": 101655.5,
+   "l2_misses_per_region": 9199.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     22284752
+    ],
+    [
+     "chain",
+     10982340
+    ],
+    [
+     "delivered",
+     298922
+    ],
+    [
+     "vocr_line_dark",
+     279414
+    ],
+    [
+     "__udivsi3",
+     147473
+    ],
+    [
+     "sweep",
+     136292
+    ],
+    [
+     "dest_row",
+     35088
+    ],
+    [
+     "__aeabi_uidivmod",
+     25568
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c16_ko",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "811ffa3a64389e2df3e9f689673f1c0881864d37ddda4b7f08d43177937f7d4f",
+   "blob_bytes": 3276,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 4716480,
+   "insns_per_region": 9167775.0,
+   "cycles_per_region": {
+    "444": [
+     5537924.0,
+     9934357.52
+    ],
+    "333": [
+     5537924.0,
+     9901964.39
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 12.472801801801802,
+     "high": 22.374679099099097,
+     "calibrated": 22.390341374468466
+    },
+    "333": {
+     "low": 16.630402402402403,
+     "high": 29.7356287987988,
+     "calibrated": 29.756443738957955
+    }
+   },
+   "l1d_misses_per_region": 15450.0,
+   "l2_misses_per_region": 2653.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     5747167
+    ],
+    [
+     "chain",
+     2889116
+    ],
+    [
+     "vocr_line_dark",
+     249586
+    ],
+    [
+     "delivered",
+     84291
+    ],
+    [
+     "__udivsi3",
+     65424
+    ],
+    [
+     "sweep",
+     47162
+    ],
+    [
+     "memcpy",
+     29468
+    ],
+    [
+     "memset",
+     18309
+    ]
+   ],
+   "negative_count_addresses": 140
+  }
+ ],
+ "also": {
+  "label": "the conductor's trained sweep blobs (seed 1 of the 16 sweep shapes, shared/artifacts/textdet/sweep/<shape>_seed1/final.vtd; sha256 per row), 900x150 and 450x80",
+  "computed": "2026-10-18T00:04:01Z",
+  "table": [
+   {
+    "shape": "s4_c4",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "78dc318db047fb6852e01e5b2e398ae9b4e30242dc010004cc9981c7fde7bde4",
+    "blob_bytes": 1004,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 14,
+    "macs": 3130200,
+    "insns_per_region": 8757166.5,
+    "cycles_per_region": {
+     "444": [
+      4691278.5,
+      9800642.44
+     ],
+     "333": [
+      4691278.5,
+      9742602.205
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 10.565942567567568,
+      "high": 22.073519009009008,
+      "calibrated": 22.088970472315314
+     },
+     "333": {
+      "low": 14.087923423423424,
+      "high": 29.25706367867868,
+      "calibrated": 29.277543623253752
+     }
+    },
+    "l1d_misses_per_region": 16363.0,
+    "l2_misses_per_region": 4753.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      5843427
+     ],
+     [
+      "chain",
+      2375266
+     ],
+     [
+      "vocr_line_dark",
+      306765
+     ],
+     [
+      "delivered",
+      90396
+     ],
+     [
+      "sweep",
+      63141
+     ],
+     [
+      "__udivsi3",
+      37058
+     ],
+     [
+      "memset",
+      11574
+     ],
+     [
+      "memcpy",
+      10448
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s4_c4",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "78dc318db047fb6852e01e5b2e398ae9b4e30242dc010004cc9981c7fde7bde4",
+    "blob_bytes": 1004,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 830240,
+    "insns_per_region": 2362262.5,
+    "cycles_per_region": {
+     "444": [
+      1274322.0,
+      2540682.48
+     ],
+     "333": [
+      1274322.0,
+      2529577.485
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 2.8700945945945944,
+      "high": 5.722257837837838,
+      "calibrated": 5.726263418324324
+     },
+     "333": {
+      "low": 3.826792792792793,
+      "high": 7.596328783783783,
+      "calibrated": 7.6016462139324315
+     }
+    },
+    "l1d_misses_per_region": 1942.5,
+    "l2_misses_per_region": 909.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      1601448
+     ],
+     [
+      "chain",
+      647860
+     ],
+     [
+      "vocr_line_dark",
+      35272
+     ],
+     [
+      "delivered",
+      24051
+     ],
+     [
+      "sweep",
+      17030
+     ],
+     [
+      "__udivsi3",
+      16933
+     ],
+     [
+      "dest_row",
+      5520
+     ],
+     [
+      "memcpy",
+      5048
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s4_c6",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "02e54009b01c53ab8c86ede84e1939325a42bc5947d7753642457f80962d5d62",
+    "blob_bytes": 1280,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 12,
+    "macs": 4241700,
+    "insns_per_region": 10800896.0,
+    "cycles_per_region": {
+     "444": [
+      6236928.0,
+      12102321.14
+     ],
+     "333": [
+      6236928.0,
+      12042693.605
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 14.047135135135136,
+      "high": 27.257480045045046,
+      "calibrated": 27.276560281076577
+     },
+     "333": {
+      "low": 18.729513513513513,
+      "high": 36.16424506006006,
+      "calibrated": 36.189560031602106
+     }
+    },
+    "l1d_misses_per_region": 24631.0,
+    "l2_misses_per_region": 4883.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      6673025
+     ],
+     [
+      "chain",
+      3646594
+     ],
+     [
+      "vocr_line_dark",
+      248280
+     ],
+     [
+      "delivered",
+      87018
+     ],
+     [
+      "sweep",
+      62917
+     ],
+     [
+      "__udivsi3",
+      37058
+     ],
+     [
+      "memcpy",
+      13688
+     ],
+     [
+      "memset",
+      13232
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s4_c6",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "02e54009b01c53ab8c86ede84e1939325a42bc5947d7753642457f80962d5d62",
+    "blob_bytes": 1280,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 1,
+    "macs": 1124040,
+    "insns_per_region": 2925980.5,
+    "cycles_per_region": {
+     "444": [
+      1694222.0,
+      3128016.96
+     ],
+     "333": [
+      1694222.0,
+      3116032.845
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 3.8158153153153154,
+      "high": 7.045083243243243,
+      "calibrated": 7.0500148015135125
+     },
+     "333": {
+      "low": 5.087753753753754,
+      "high": 9.357455990990992,
+      "calibrated": 9.364006210184684
+     }
+    },
+    "l1d_misses_per_region": 2542.5,
+    "l2_misses_per_region": 981.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      1826541
+     ],
+     [
+      "chain",
+      994420
+     ],
+     [
+      "vocr_line_dark",
+      25042
+     ],
+     [
+      "delivered",
+      23827
+     ],
+     [
+      "sweep",
+      16952
+     ],
+     [
+      "__udivsi3",
+      16933
+     ],
+     [
+      "memcpy",
+      6758
+     ],
+     [
+      "dest_row",
+      5520
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s4_c8",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "dd39f2610525a8308f035d34313d8fe820f267466c5d37b737b6fc2c14e85a41",
+    "blob_bytes": 1540,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 11,
+    "macs": 5558400,
+    "insns_per_region": 11704745.0,
+    "cycles_per_region": {
+     "444": [
+      7117094.5,
+      13268424.7
+     ],
+     "333": [
+      7117094.5,
+      13207161.025
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 16.029492117117115,
+      "high": 29.883839414414414,
+      "calibrated": 29.9047581020045
+     },
+     "333": {
+      "low": 21.372656156156157,
+      "high": 39.66114421921922,
+      "calibrated": 39.68890702017267
+     }
+    },
+    "l1d_misses_per_region": 33023.0,
+    "l2_misses_per_region": 5017.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      7502690
+     ],
+     [
+      "chain",
+      3732170
+     ],
+     [
+      "vocr_line_dark",
+      231626
+     ],
+     [
+      "delivered",
+      87099
+     ],
+     [
+      "sweep",
+      62835
+     ],
+     [
+      "__udivsi3",
+      37058
+     ],
+     [
+      "memcpy",
+      17018
+     ],
+     [
+      "memset",
+      15207
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s4_c8",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "dd39f2610525a8308f035d34313d8fe820f267466c5d37b737b6fc2c14e85a41",
+    "blob_bytes": 1540,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 1472080,
+    "insns_per_region": 3182714.5,
+    "cycles_per_region": {
+     "444": [
+      1932942.0,
+      3416670.48
+     ],
+     "333": [
+      1932942.0,
+      3403733.985
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 4.353472972972973,
+      "high": 7.695203783783784,
+      "calibrated": 7.700590426432432
+     },
+     "333": {
+      "low": 5.804630630630631,
+      "high": 10.221423378378377,
+      "calibrated": 10.228578374743241
+     }
+    },
+    "l1d_misses_per_region": 3399.5,
+    "l2_misses_per_region": 1059.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      2051716
+     ],
+     [
+      "chain",
+      1018180
+     ],
+     [
+      "vocr_line_dark",
+      29120
+     ],
+     [
+      "delivered",
+      24072
+     ],
+     [
+      "sweep",
+      17030
+     ],
+     [
+      "__udivsi3",
+      16933
+     ],
+     [
+      "memcpy",
+      8648
+     ],
+     [
+      "memset",
+      6859
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s4_c8n5",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "6b6d46c166856addaa5c6b160b2676f2d9f85f8d672f72d11e2c3d988aaabd14",
+    "blob_bytes": 2228,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 13,
+    "macs": 7884000,
+    "insns_per_region": 15802542.5,
+    "cycles_per_region": {
+     "444": [
+      9954253.5,
+      18085236.84
+     ],
+     "333": [
+      9954253.5,
+      18020969.505
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 22.419489864864865,
+      "high": 40.73251540540541,
+      "calibrated": 40.761028166189185
+     },
+     "333": {
+      "low": 29.89265315315315,
+      "high": 54.11702554054054,
+      "calibrated": 54.154907458418904
+     }
+    },
+    "l1d_misses_per_region": 53398.0,
+    "l2_misses_per_region": 5263.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      9933673
+     ],
+     [
+      "chain",
+      5352566
+     ],
+     [
+      "vocr_line_dark",
+      248029
+     ],
+     [
+      "delivered",
+      88309
+     ],
+     [
+      "sweep",
+      62981
+     ],
+     [
+      "__udivsi3",
+      46566
+     ],
+     [
+      "memcpy",
+      26318
+     ],
+     [
+      "memset",
+      20189
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s4_c8n5",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "6b6d46c166856addaa5c6b160b2676f2d9f85f8d672f72d11e2c3d988aaabd14",
+    "blob_bytes": 2228,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 2086800,
+    "insns_per_region": 4307773.5,
+    "cycles_per_region": {
+     "444": [
+      2703861.0,
+      4672040.2
+     ],
+     "333": [
+      2703861.0,
+      4657479.775
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 6.089777027027027,
+      "high": 10.522613063063064,
+      "calibrated": 10.529978892207206
+     },
+     "333": {
+      "low": 8.119702702702703,
+      "high": 13.986425750750751,
+      "calibrated": 13.996216248776276
+     }
+    },
+    "l1d_misses_per_region": 6591.0,
+    "l2_misses_per_region": 1192.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      2717252
+     ],
+     [
+      "chain",
+      1460540
+     ],
+     [
+      "vocr_line_dark",
+      32050
+     ],
+     [
+      "delivered",
+      24497
+     ],
+     [
+      "__udivsi3",
+      21089
+     ],
+     [
+      "sweep",
+      17030
+     ],
+     [
+      "memcpy",
+      13448
+     ],
+     [
+      "memset",
+      9153
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s4_c12",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "766b1b85055124ba1c5471e5918df7ab8f035109cf74766927258c57bfa2fe92",
+    "blob_bytes": 2276,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 9,
+    "macs": 9774000,
+    "insns_per_region": 18263073.0,
+    "cycles_per_region": {
+     "444": [
+      12004180.5,
+      20570938.32
+     ],
+     "333": [
+      12004180.5,
+      20505944.49
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 27.03644256756757,
+      "high": 46.33094216216216,
+      "calibrated": 46.36337382167568
+     },
+     "333": {
+      "low": 36.04859009009009,
+      "high": 61.57941288288288,
+      "calibrated": 61.62251847190089
+     }
+    },
+    "l1d_misses_per_region": 57031.0,
+    "l2_misses_per_region": 5323.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      10490628
+     ],
+     [
+      "chain",
+      7328338
+     ],
+     [
+      "vocr_line_dark",
+      195240
+     ],
+     [
+      "delivered",
+      86591
+     ],
+     [
+      "sweep",
+      62660
+     ],
+     [
+      "__udivsi3",
+      37058
+     ],
+     [
+      "memcpy",
+      23678
+     ],
+     [
+      "memset",
+      19897
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s4_c12",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "766b1b85055124ba1c5471e5918df7ab8f035109cf74766927258c57bfa2fe92",
+    "blob_bytes": 2276,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 2587800,
+    "insns_per_region": 4986015.5,
+    "cycles_per_region": {
+     "444": [
+      3261002.0,
+      5366228.92
+     ],
+     "333": [
+      3261002.0,
+      5351265.565
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 7.344599099099099,
+      "high": 12.08610117117117,
+      "calibrated": 12.09456144199099
+     },
+     "333": {
+      "low": 9.792798798798799,
+      "high": 16.069866561561565,
+      "calibrated": 16.081115468154657
+     }
+    },
+    "l1d_misses_per_region": 7838.5,
+    "l2_misses_per_region": 1225.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      2863128
+     ],
+     [
+      "chain",
+      1998100
+     ],
+     [
+      "vocr_line_dark",
+      34654
+     ],
+     [
+      "delivered",
+      24057
+     ],
+     [
+      "sweep",
+      17030
+     ],
+     [
+      "__udivsi3",
+      16933
+     ],
+     [
+      "memcpy",
+      12248
+     ],
+     [
+      "memset",
+      9709
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s4_c16",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "4e61c0e6003cf4f9b63eba7e93d96bfb1fd6a6f45b8201e9387baed3b60959fe",
+    "blob_bytes": 3108,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 9,
+    "macs": 14947200,
+    "insns_per_region": 22317255.0,
+    "cycles_per_region": {
+     "444": [
+      15718797.5,
+      25187704.78
+     ],
+     "333": [
+      15718797.5,
+      25118968.585
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 35.40269707207207,
+      "high": 56.729064819819826,
+      "calibrated": 56.76877516519369
+     },
+     "333": {
+      "low": 47.2035960960961,
+      "high": 75.4323380930931,
+      "calibrated": 75.48514072975826
+     }
+    },
+    "l1d_misses_per_region": 74979.0,
+    "l2_misses_per_region": 5629.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      13478632
+     ],
+     [
+      "chain",
+      8403130
+     ],
+     [
+      "vocr_line_dark",
+      175078
+     ],
+     [
+      "delivered",
+      85916
+     ],
+     [
+      "sweep",
+      62671
+     ],
+     [
+      "__udivsi3",
+      37058
+     ],
+     [
+      "memcpy",
+      30518
+     ],
+     [
+      "memset",
+      25270
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s4_c16",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "4e61c0e6003cf4f9b63eba7e93d96bfb1fd6a6f45b8201e9387baed3b60959fe",
+    "blob_bytes": 3108,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 3956640,
+    "insns_per_region": 6092365.5,
+    "cycles_per_region": {
+     "444": [
+      4269862.0,
+      6647002.52
+     ],
+     "333": [
+      4269862.0,
+      6630024.515
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 9.616806306306307,
+      "high": 14.970726396396396,
+      "calibrated": 14.981205904873873
+     },
+     "333": {
+      "low": 12.822408408408409,
+      "high": 19.909983528528528,
+      "calibrated": 19.923920516998496
+     }
+    },
+    "l1d_misses_per_region": 13219.0,
+    "l2_misses_per_region": 1390.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      3674540
+     ],
+     [
+      "chain",
+      2291620
+     ],
+     [
+      "vocr_line_dark",
+      29688
+     ],
+     [
+      "delivered",
+      24039
+     ],
+     [
+      "sweep",
+      17030
+     ],
+     [
+      "__udivsi3",
+      16933
+     ],
+     [
+      "memcpy",
+      15848
+     ],
+     [
+      "memset",
+      12511
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s4_c16n4",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "7c0bf2a9998b9d8af867823993b0f102a0fa915aafa67915826b73f282e57a6b",
+    "blob_bytes": 3860,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 14,
+    "macs": 18367200,
+    "insns_per_region": 26801558.0,
+    "cycles_per_region": {
+     "444": [
+      19102350.0,
+      30166982.6
+     ],
+     "333": [
+      19102350.0,
+      30095981.45
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 43.02331081081081,
+      "high": 67.94365450450451,
+      "calibrated": 67.99121506265766
+     },
+     "333": {
+      "low": 57.36441441441441,
+      "high": 90.37832267267267,
+      "calibrated": 90.44158749854353
+     }
+    },
+    "l1d_misses_per_region": 89509.0,
+    "l2_misses_per_region": 5815.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      15804212
+     ],
+     [
+      "chain",
+      10502896
+     ],
+     [
+      "vocr_line_dark",
+      209902
+     ],
+     [
+      "delivered",
+      87528
+     ],
+     [
+      "sweep",
+      63122
+     ],
+     [
+      "__udivsi3",
+      42204
+     ],
+     [
+      "memcpy",
+      40088
+     ],
+     [
+      "memset",
+      30081
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s4_c16n4",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "7c0bf2a9998b9d8af867823993b0f102a0fa915aafa67915826b73f282e57a6b",
+    "blob_bytes": 3860,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 4860640,
+    "insns_per_region": 7311152.0,
+    "cycles_per_region": {
+     "444": [
+      5189962.0,
+      8011350.12
+     ],
+     "333": [
+      5189962.0,
+      7993120.59
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 11.689103603603604,
+      "high": 18.043581351351353,
+      "calibrated": 18.056211858297296
+     },
+     "333": {
+      "low": 15.585471471471472,
+      "high": 24.003365135135134,
+      "calibrated": 24.020167490729726
+     }
+    },
+    "l1d_misses_per_region": 17400.0,
+    "l2_misses_per_region": 1493.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      4309379
+     ],
+     [
+      "chain",
+      2864480
+     ],
+     [
+      "vocr_line_dark",
+      30398
+     ],
+     [
+      "delivered",
+      24362
+     ],
+     [
+      "memcpy",
+      20648
+     ],
+     [
+      "__udivsi3",
+      19223
+     ],
+     [
+      "sweep",
+      17030
+     ],
+     [
+      "memset",
+      14198
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s4_c24",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "04f5b98356f2db135a7d3a005300db74a0e1e6f802a8d8c33e238cfe8235204a",
+    "blob_bytes": 4412,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 10,
+    "macs": 23018400,
+    "insns_per_region": 29487490.5,
+    "cycles_per_region": {
+     "444": [
+      21810544.5,
+      32933767.78
+     ],
+     "333": [
+      21810544.5,
+      32864268.46
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 49.12284797297297,
+      "high": 74.17515265765766,
+      "calibrated": 74.22707526451802
+     },
+     "333": {
+      "low": 65.49713063063064,
+      "high": 98.69149687687688,
+      "calibrated": 98.76058092469069
+     }
+    },
+    "l1d_misses_per_region": 94000.0,
+    "l2_misses_per_region": 5692.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      15700583
+     ],
+     [
+      "chain",
+      13256794
+     ],
+     [
+      "vocr_line_dark",
+      255642
+     ],
+     [
+      "delivered",
+      88571
+     ],
+     [
+      "sweep",
+      62784
+     ],
+     [
+      "memcpy",
+      39728
+     ],
+     [
+      "__udivsi3",
+      37866
+     ],
+     [
+      "memset",
+      26489
+     ]
+    ],
+    "negative_count_addresses": 171
+   },
+   {
+    "shape": "s4_c24",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "04f5b98356f2db135a7d3a005300db74a0e1e6f802a8d8c33e238cfe8235204a",
+    "blob_bytes": 4412,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 6090080,
+    "insns_per_region": 8029632.0,
+    "cycles_per_region": {
+     "444": [
+      5928172.0,
+      8816650.16
+     ],
+     "333": [
+      5928172.0,
+      8799263.12
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 13.351738738738739,
+      "high": 19.85732018018018,
+      "calibrated": 19.871220304306306
+     },
+     "333": {
+      "low": 17.802318318318317,
+      "high": 26.42421357357357,
+      "calibrated": 26.442710523075068
+     }
+    },
+    "l1d_misses_per_region": 20877.0,
+    "l2_misses_per_region": 1424.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      4279800
+     ],
+     [
+      "chain",
+      3614180
+     ],
+     [
+      "vocr_line_dark",
+      33473
+     ],
+     [
+      "delivered",
+      24057
+     ],
+     [
+      "memcpy",
+      20648
+     ],
+     [
+      "__udivsi3",
+      17381
+     ],
+     [
+      "sweep",
+      17030
+     ],
+     [
+      "memset",
+      12907
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s4p_c4",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "0dca6b06d3992d2e883db8b249018eee733df9f8654c8c94e7f94e11281ae970",
+    "blob_bytes": 1100,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 18,
+    "macs": 6276600,
+    "insns_per_region": 9971687.0,
+    "cycles_per_region": {
+     "444": [
+      6358328.0,
+      10869251.42
+     ],
+     "333": [
+      6358328.0,
+      10811247.815
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 14.320558558558558,
+      "high": 24.480295990990992,
+      "calibrated": 24.49743219818468
+     },
+     "333": {
+      "low": 19.094078078078077,
+      "high": 32.466209654654655,
+      "calibrated": 32.48893600141291
+     }
+    },
+    "l1d_misses_per_region": 15920.5,
+    "l2_misses_per_region": 4750.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      9007174
+     ],
+     [
+      "chain",
+      469566
+     ],
+     [
+      "vocr_line_dark",
+      271379
+     ],
+     [
+      "delivered",
+      87100
+     ],
+     [
+      "sweep",
+      63402
+     ],
+     [
+      "__udivsi3",
+      37022
+     ],
+     [
+      "memset",
+      12850
+     ],
+     [
+      "dest_row",
+      10398
+     ]
+    ],
+    "negative_count_addresses": 171
+   },
+   {
+    "shape": "s4p_c4",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "0dca6b06d3992d2e883db8b249018eee733df9f8654c8c94e7f94e11281ae970",
+    "blob_bytes": 1100,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 3,
+    "macs": 1661920,
+    "insns_per_region": 2705032.0,
+    "cycles_per_region": {
+     "444": [
+      1723528.0,
+      2847302.2
+     ],
+     "333": [
+      1723528.0,
+      2836252.15
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 3.8818198198198197,
+      "high": 6.412842792792794,
+      "calibrated": 6.417331782747748
+     },
+     "333": {
+      "low": 5.175759759759759,
+      "high": 8.517273723723724,
+      "calibrated": 8.52323581533033
+     }
+    },
+    "l1d_misses_per_region": 1950.0,
+    "l2_misses_per_region": 905.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      2458939
+     ],
+     [
+      "chain",
+      128140
+     ],
+     [
+      "vocr_line_dark",
+      43214
+     ],
+     [
+      "delivered",
+      24320
+     ],
+     [
+      "sweep",
+      17098
+     ],
+     [
+      "__udivsi3",
+      16897
+     ],
+     [
+      "dest_row",
+      5520
+     ],
+     [
+      "memset",
+      4784
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s4p_c8",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "d15473412710358a2c8980083c73c006d7a5d4a7c1b6669d8fb8c92fb9368697",
+    "blob_bytes": 2700,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 10,
+    "macs": 18725400,
+    "insns_per_region": 21841219.0,
+    "cycles_per_region": {
+     "444": [
+      16607166.0,
+      23318765.3
+     ],
+     "333": [
+      16607166.0,
+      23257623.725
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 37.403527027027025,
+      "high": 52.51974166666667,
+      "calibrated": 52.55650548583333
+     },
+     "333": {
+      "low": 49.87136936936937,
+      "high": 69.8427138888889,
+      "calibrated": 69.8916037886111
+     }
+    },
+    "l1d_misses_per_region": 34588.5,
+    "l2_misses_per_region": 5007.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      20927075
+     ],
+     [
+      "chain",
+      438710
+     ],
+     [
+      "vocr_line_dark",
+      250756
+     ],
+     [
+      "delivered",
+      87795
+     ],
+     [
+      "sweep",
+      62756
+     ],
+     [
+      "__udivsi3",
+      37022
+     ],
+     [
+      "memset",
+      14888
+     ],
+     [
+      "dest_row",
+      10398
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s4p_c8",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "d15473412710358a2c8980083c73c006d7a5d4a7c1b6669d8fb8c92fb9368697",
+    "blob_bytes": 2700,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 4952480,
+    "insns_per_region": 5912270.5,
+    "cycles_per_region": {
+     "444": [
+      4493118.0,
+      6115567.72
+     ],
+     "333": [
+      4493118.0,
+      6102802.165
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 10.119635135135136,
+      "high": 13.77380117117117,
+      "calibrated": 13.783442831990989
+     },
+     "333": {
+      "low": 13.492846846846847,
+      "high": 18.32673322822823,
+      "calibrated": 18.339561941487986
+     }
+    },
+    "l1d_misses_per_region": 3617.0,
+    "l2_misses_per_region": 1045.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      5684920
+     ],
+     [
+      "chain",
+      119740
+     ],
+     [
+      "vocr_line_dark",
+      31230
+     ],
+     [
+      "delivered",
+      24054
+     ],
+     [
+      "sweep",
+      17030
+     ],
+     [
+      "__udivsi3",
+      16897
+     ],
+     [
+      "memset",
+      6859
+     ],
+     [
+      "dest_row",
+      5520
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s8_c8",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "b8114dfb6cf8ea3caafcac7d0bd1851564df114e15431c348ee80f1e8bf3aacf",
+    "blob_bytes": 1884,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 13,
+    "macs": 3033072,
+    "insns_per_region": 7339984.0,
+    "cycles_per_region": {
+     "444": [
+      4110676.0,
+      8249459.4
+     ],
+     "333": [
+      4110676.0,
+      8190729.3
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 9.258279279279279,
+      "high": 18.579863513513516,
+      "calibrated": 18.59286941797297
+     },
+     "333": {
+      "low": 12.344372372372373,
+      "high": 24.596784684684685,
+      "calibrated": 24.61400243396396
+     }
+    },
+    "l1d_misses_per_region": 14649.5,
+    "l2_misses_per_region": 4810.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      5122007
+     ],
+     [
+      "chain",
+      1823221
+     ],
+     [
+      "vocr_line_dark",
+      274766
+     ],
+     [
+      "__udivsi3",
+      32391
+     ],
+     [
+      "delivered",
+      26037
+     ],
+     [
+      "sweep",
+      17122
+     ],
+     [
+      "memcpy",
+      13778
+     ],
+     [
+      "memset",
+      13247
+     ]
+    ],
+    "negative_count_addresses": 171
+   },
+   {
+    "shape": "s8_c8",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "b8114dfb6cf8ea3caafcac7d0bd1851564df114e15431c348ee80f1e8bf3aacf",
+    "blob_bytes": 1884,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 806000,
+    "insns_per_region": 1999851.5,
+    "cycles_per_region": {
+     "444": [
+      1129157.0,
+      2172235.22
+     ],
+     "333": [
+      1129157.0,
+      2160538.04
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 2.5431463963963963,
+      "high": 4.892421666666667,
+      "calibrated": 4.895846361833333
+     },
+     "333": {
+      "low": 3.390861861861862,
+      "high": 6.488102222222222,
+      "calibrated": 6.492643893777777
+     }
+    },
+    "l1d_misses_per_region": 2386.5,
+    "l2_misses_per_region": 958.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      1413681
+     ],
+     [
+      "chain",
+      506060
+     ],
+     [
+      "vocr_line_dark",
+      31128
+     ],
+     [
+      "__udivsi3",
+      14770
+     ],
+     [
+      "delivered",
+      7788
+     ],
+     [
+      "memcpy",
+      6848
+     ],
+     [
+      "memset",
+      5630
+     ],
+     [
+      "dest_row",
+      5160
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s8_c16",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "5b6b1a02810da088aa76c2a0a56e223bbb72f804ce5884043abe939cf4376fa0",
+    "blob_bytes": 3276,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 14,
+    "macs": 4939608,
+    "insns_per_region": 9440608.0,
+    "cycles_per_region": {
+     "444": [
+      5822228.0,
+      10658927.22
+     ],
+     "333": [
+      5822228.0,
+      10596711.165
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 13.113126126126126,
+      "high": 24.00659283783784,
+      "calibrated": 24.023397452824327
+     },
+     "333": {
+      "low": 17.484168168168168,
+      "high": 31.82195545045045,
+      "calibrated": 31.844230819265757
+     }
+    },
+    "l1d_misses_per_region": 24194.0,
+    "l2_misses_per_region": 5095.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      5977229
+     ],
+     [
+      "chain",
+      3048949
+     ],
+     [
+      "vocr_line_dark",
+      282639
+     ],
+     [
+      "__udivsi3",
+      32391
+     ],
+     [
+      "delivered",
+      25719
+     ],
+     [
+      "memcpy",
+      20708
+     ],
+     [
+      "memset",
+      18408
+     ],
+     [
+      "sweep",
+      17113
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s8_c16",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "5b6b1a02810da088aa76c2a0a56e223bbb72f804ce5884043abe939cf4376fa0",
+    "blob_bytes": 3276,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 1312160,
+    "insns_per_region": 2591637.5,
+    "cycles_per_region": {
+     "444": [
+      1607685.0,
+      2823252.5
+     ],
+     "333": [
+      1607685.0,
+      2809516.25
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 3.620912162162162,
+      "high": 6.358676801801802,
+      "calibrated": 6.3631278755630625
+     },
+     "333": {
+      "low": 4.827882882882883,
+      "high": 8.436985735735735,
+      "calibrated": 8.44289162575075
+     }
+    },
+    "l1d_misses_per_region": 3922.0,
+    "l2_misses_per_region": 1125.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      1652465
+     ],
+     [
+      "chain",
+      851020
+     ],
+     [
+      "vocr_line_dark",
+      32882
+     ],
+     [
+      "__udivsi3",
+      14770
+     ],
+     [
+      "memcpy",
+      10448
+     ],
+     [
+      "memset",
+      8330
+     ],
+     [
+      "delivered",
+      7776
+     ],
+     [
+      "dest_row",
+      5160
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s8_c24",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "8b5642feb65bc987d0edb908fd0a2df3c9c658ded0f4dc93bc5797eb25a9e366",
+    "blob_bytes": 5700,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 9,
+    "macs": 10581000,
+    "insns_per_region": 15672963.5,
+    "cycles_per_region": {
+     "444": [
+      10972996.0,
+      17502157.74
+     ],
+     "333": [
+      10972996.0,
+      17434257.93
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 24.713954954954954,
+      "high": 39.41927418918919,
+      "calibrated": 39.44686768112161
+     },
+     "333": {
+      "low": 32.95193993993994,
+      "high": 52.355128918918915,
+      "calibrated": 52.391777509162154
+     }
+    },
+    "l1d_misses_per_region": 43342.5,
+    "l2_misses_per_region": 5561.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      9774771
+     ],
+     [
+      "chain",
+      5594949
+     ],
+     [
+      "vocr_line_dark",
+      155453
+     ],
+     [
+      "__udivsi3",
+      32391
+     ],
+     [
+      "memcpy",
+      31658
+     ],
+     [
+      "memset",
+      24868
+     ],
+     [
+      "delivered",
+      24823
+     ],
+     [
+      "sweep",
+      16742
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s8_c24",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "8b5642feb65bc987d0edb908fd0a2df3c9c658ded0f4dc93bc5797eb25a9e366",
+    "blob_bytes": 5700,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 2810000,
+    "insns_per_region": 4350604.0,
+    "cycles_per_region": {
+     "444": [
+      3028613.0,
+      4748501.02
+     ],
+     "333": [
+      3028613.0,
+      4731523.015
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 6.82120045045045,
+      "high": 10.694822117117116,
+      "calibrated": 10.702308492599098
+     },
+     "333": {
+      "low": 9.094933933933934,
+      "high": 14.208777822822821,
+      "calibrated": 14.218723967298795
+     }
+    },
+    "l1d_misses_per_region": 8767.0,
+    "l2_misses_per_region": 1390.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      2693793
+     ],
+     [
+      "chain",
+      1561580
+     ],
+     [
+      "vocr_line_dark",
+      29565
+     ],
+     [
+      "memcpy",
+      16448
+     ],
+     [
+      "__udivsi3",
+      14770
+     ],
+     [
+      "memset",
+      12722
+     ],
+     [
+      "delivered",
+      7779
+     ],
+     [
+      "dest_row",
+      5160
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s8_c32",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "fb72e5895a2d20c54a85064a414477d70c734f62e0928ec798d0ed0f38cb8f43",
+    "blob_bytes": 7924,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 9,
+    "macs": 14273840,
+    "insns_per_region": 18690200.5,
+    "cycles_per_region": {
+     "444": [
+      13633039.0,
+      20807976.24
+     ],
+     "333": [
+      13633039.0,
+      20736566.055
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 30.705042792792792,
+      "high": 46.86481135135135,
+      "calibrated": 46.89761671929729
+     },
+     "333": {
+      "low": 40.940057057057054,
+      "high": 62.271970135135135,
+      "calibrated": 62.31556051422972
+     }
+    },
+    "l1d_misses_per_region": 52206.0,
+    "l2_misses_per_region": 5848.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      10629942
+     ],
+     [
+      "chain",
+      7769157
+     ],
+     [
+      "vocr_line_dark",
+      131512
+     ],
+     [
+      "memcpy",
+      38498
+     ],
+     [
+      "__udivsi3",
+      32391
+     ],
+     [
+      "memset",
+      29710
+     ],
+     [
+      "delivered",
+      24928
+     ],
+     [
+      "sweep",
+      16734
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s8_c32",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "fb72e5895a2d20c54a85064a414477d70c734f62e0928ec798d0ed0f38cb8f43",
+    "blob_bytes": 7924,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 3790400,
+    "insns_per_region": 5203566.0,
+    "cycles_per_region": {
+     "444": [
+      3773381.0,
+      5715731.04
+     ],
+     "333": [
+      3773381.0,
+      5696732.28
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 8.498605855855855,
+      "high": 12.873268108108109,
+      "calibrated": 12.882279395783783
+     },
+     "333": {
+      "low": 11.331474474474474,
+      "high": 17.107304144144145,
+      "calibrated": 17.119279257045044
+     }
+    },
+    "l1d_misses_per_region": 12141.0,
+    "l2_misses_per_region": 1556.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      2932577
+     ],
+     [
+      "chain",
+      2172780
+     ],
+     [
+      "vocr_line_dark",
+      26219
+     ],
+     [
+      "memcpy",
+      20048
+     ],
+     [
+      "memset",
+      15449
+     ],
+     [
+      "__udivsi3",
+      14770
+     ],
+     [
+      "delivered",
+      7776
+     ],
+     [
+      "dest_row",
+      5160
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s8_c32n4",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "7133b2c822cb256a6b70787039a186358b1815279216c3ed7e46b818ea4981ac",
+    "blob_bytes": 9876,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 9,
+    "macs": 17090704,
+    "insns_per_region": 21540583.0,
+    "cycles_per_region": {
+     "444": [
+      15963778.0,
+      23932717.62
+     ],
+     "333": [
+      15963778.0,
+      23860611.465
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 35.954454954954954,
+      "high": 53.90251716216216,
+      "calibrated": 53.94024892417567
+     },
+     "333": {
+      "low": 47.93927327327327,
+      "high": 71.65348788288289,
+      "calibrated": 71.7036453244009
+     }
+    },
+    "l1d_misses_per_region": 60820.5,
+    "l2_misses_per_region": 5905.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      11810117
+     ],
+     [
+      "chain",
+      9419326
+     ],
+     [
+      "vocr_line_dark",
+      138150
+     ],
+     [
+      "memcpy",
+      47618
+     ],
+     [
+      "__udivsi3",
+      34553
+     ],
+     [
+      "memset",
+      30550
+     ],
+     [
+      "delivered",
+      25014
+     ],
+     [
+      "sweep",
+      16742
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s8_c32n4",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "7133b2c822cb256a6b70787039a186358b1815279216c3ed7e46b818ea4981ac",
+    "blob_bytes": 9876,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 4538240,
+    "insns_per_region": 6009961.0,
+    "cycles_per_region": {
+     "444": [
+      4427633.0,
+      6615007.18
+     ],
+     "333": [
+      4427633.0,
+      6595599.385
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 9.972146396396397,
+      "high": 14.89866481981982,
+      "calibrated": 14.909093885193693
+     },
+     "333": {
+      "low": 13.296195195195196,
+      "high": 19.806604759759757,
+      "calibrated": 19.82046938309159
+     }
+    },
+    "l1d_misses_per_region": 15041.0,
+    "l2_misses_per_region": 1589.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "detect",
+      3265798
+     ],
+     [
+      "chain",
+      2637180
+     ],
+     [
+      "vocr_line_dark",
+      28188
+     ],
+     [
+      "memcpy",
+      24848
+     ],
+     [
+      "memset",
+      15777
+     ],
+     [
+      "__udivsi3",
+      15684
+     ],
+     [
+      "delivered",
+      7880
+     ],
+     [
+      "dest_row",
+      5460
+     ]
+    ],
+    "negative_count_addresses": 140
+   },
+   {
+    "shape": "s8_c48",
+    "size": [
+     900,
+     150
+    ],
+    "regions": 2,
+    "blob_sha256": "75689eb039036f754cedd5a19feb93e6dbd1b7b3d69fd8446081a74f8ebd95e7",
+    "blob_bytes": 14188,
+    "blob": "file:final.vtd",
+    "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+    "rc": [
+     0
+    ],
+    "lines_out": 7,
+    "macs": 25659096,
+    "insns_per_region": 27493702.5,
+    "cycles_per_region": {
+     "444": [
+      21530519.0,
+      30439437.22
+     ],
+     "333": [
+      21530519.0,
+      30364858.54
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 48.49215990990991,
+      "high": 68.55729103603603,
+      "calibrated": 68.60528113976125
+     },
+     "333": {
+      "low": 64.6562132132132,
+      "high": 91.18576138138138,
+      "calibrated": 91.24959141434834
+     }
+    },
+    "l1d_misses_per_region": 79126.0,
+    "l2_misses_per_region": 6108.0,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "chain",
+      14593957
+     ],
+     [
+      "detect",
+      12638260
+     ],
+     [
+      "vocr_line_dark",
+      80514
+     ],
+     [
+      "memcpy",
+      56558
+     ],
+     [
+      "memset",
+      33185
+     ],
+     [
+      "__udivsi3",
+      32819
+     ],
+     [
+      "delivered",
+      24558
+     ],
+     [
+      "sweep",
+      16598
+     ]
+    ],
+    "negative_count_addresses": 148
+   },
+   {
+    "shape": "s8_c48",
+    "size": [
+     450,
+     80
+    ],
+    "regions": 2,
+    "blob_sha256": "75689eb039036f754cedd5a19feb93e6dbd1b7b3d69fd8446081a74f8ebd95e7",
+    "blob_bytes": 14188,
+    "blob": "file:final.vtd",
+    "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+    "rc": [
+     0
+    ],
+    "lines_out": 2,
+    "macs": 6812400,
+    "insns_per_region": 7693438.5,
+    "cycles_per_region": {
+     "444": [
+      5984501.0,
+      8499011.64
+     ],
+     "333": [
+      5984501.0,
+      8478150.855
+     ]
+    },
+    "ms_per_region": {
+     "444": {
+      "low": 13.478605855855855,
+      "high": 19.141918108108108,
+      "calibrated": 19.15531745078378
+     },
+     "333": {
+      "low": 17.971474474474473,
+      "high": 25.459912477477477,
+      "calibrated": 25.47773441621171
+     }
+    },
+    "l1d_misses_per_region": 21520.5,
+    "l2_misses_per_region": 1708.5,
+    "low_bound_set_by": "neon_vfp_issue",
+    "top_functions": [
+     [
+      "chain",
+      4084780
+     ],
+     [
+      "detect",
+      3497217
+     ],
+     [
+      "memcpy",
+      29648
+     ],
+     [
+      "vocr_line_dark",
+      27536
+     ],
+     [
+      "memset",
+      17519
+     ],
+     [
+      "__udivsi3",
+      15018
+     ],
+     [
+      "delivered",
+      7773
+     ],
+     [
+      "dest_row",
+      5160
+     ]
+    ],
+    "negative_count_addresses": 140
+   }
+  ]
+ }
+}

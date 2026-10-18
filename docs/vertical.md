@@ -253,6 +253,12 @@ Memory in the game: the model is one 0.82 MB file that replaces the job's tier m
 
 So the development comparison P1 − P0 favours P1, whose design saw the development regions' geometry. The test read used P1 alone and is unaffected. The 200-step smoke test scored synthetic validation crops only.
 
+**The split's relation components** join VNs on direct VNDB relations between the set's own VNs. Checked after the test read on VNDB's full relation graph (transitively, through VNs outside the set), 4 components span two splits:
+- Three are chains of crossovers, VNs that share characters with a third title: Yunohana SpRING! (test) with four Otomate training VNs; Bloody Romance (test) with one training VN; a large crossover web of PC titles.
+- One is a real series: Secret Home 1 (development) and Secret Home 4 (test), linked by the sequels 2 and 3, which are not in the set.
+
+Secret Home 4 holds 27 of test VN's 2,453 characters. Without it, VOCR5-V reads test VN at 7.25% (fixed columns) and 11.42% (end to end), against 7.17% and 11.29% with it. This is computed from the stored outputs of the one test read, not a second read.
+
 
 - **Exposure:**
   - VOCR5-V starts from VOCR5-S, which trained on horizontal lines of real screenshots, among them other lines of some development and test VNs (their vertical lines were never in any pool).

@@ -165,6 +165,10 @@ Nothing of the gate has run on a console.
   in every job while it is on. So: an opt-in, off by default until a console A/B shows how often empty regions occur
   and what the time costs (the Rubi_for_vita PR does that).
 
+The weights are the pre-release [v0.3.2-textgate.1](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.3.2-textgate.1)
+(`textgate_p8_c8_w8.vtd`, 1,540 B, sha256 `a4e73ad78451c75a19f88a479fc0108daac85beaa88d875b73212ed3c09d85d1`, with
+`ATTRIBUTION.md`: non-commercial use only, as every synth3-trained model here).
+
 ### Calibration (training-side, before development)
 
 The cal_empty share left with no line at each operating point (bold: through the screen, ≥ 0.85); every point keeps

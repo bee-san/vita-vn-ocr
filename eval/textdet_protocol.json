@@ -842,6 +842,229 @@
     "train/textdet_export.py changed after amendment 2's pin (520d759: --wbits, the report-only int4 study); its default int8 export is unchanged: all 22 runs' final.vtd re-export byte for byte from their final.pt with it",
     "round 1's C == twin check and arenas used the runtime's early, bit-exact version (feat/textdet-runtime f9d4ad3); the final runtime is re-checked on every development case before the final selection"
    ]
+  },
+  {
+   "n": 4,
+   "time": "2026-10-18T00:37:07Z",
+   "after": "round 2's development scores (eval/textdet_round2_dev_20261018.json: no candidate qualifies) and before any round-3 training run",
+   "round2": {
+    "winner": null,
+    "report_candidate": "s8_c24_seed1",
+    "report_candidate_wd": {
+     "VOCR5-S": {
+      "det_refine": 3.396,
+      "minus_grad": -4.0458,
+      "minus_grad_ci95": [
+       -7.1336,
+       -1.352
+      ],
+      "minus_refine": -1.8179,
+      "minus_refine_ci95": [
+       -4.6592,
+       0.3853
+      ]
+     },
+     "VOCR5-N": {
+      "det_refine": 3.0015,
+      "minus_grad": -3.864,
+      "minus_grad_ci95": [
+       -6.9048,
+       -1.1987
+      ],
+      "minus_refine": -1.7792,
+      "minus_refine_ci95": [
+       -4.5994,
+       0.3499
+      ]
+     },
+     "VOCR5-L": {
+      "det_refine": 2.6069,
+      "minus_grad": -3.5971,
+      "minus_grad_ci95": [
+       -6.6784,
+       -0.9004
+      ],
+      "minus_refine": -1.8527,
+      "minus_refine_ci95": [
+       -4.4199,
+       0.0769
+      ]
+     }
+    }
+   },
+   "reason": "round 2 brought the best candidate to within reach (det+refine minus GRAD + refine: upper interval bounds +0.39 / +0.35 / +0.08 points for VOCR5-S / N / L) but found no winner. The remaining excess sits in the +4 px variants and in PSP text set 14-18 px apart: with the inclusive 'within r' of the kernel rule, a line under 2s px tall whose centre falls on a cell boundary gets two kernel rows, so at stride 8 the kernel targets of lines 16 px apart touched in 36 of 320 such line pairs (h 12-15 px, pitch 14-18 px, every phase; 24 with a strict bound, where only pitches under 2s remain), and the network learnt to join them",
+   "changes": [
+    "round 3 (the last round): kernel cells are those whose centre lies strictly within r = max(h/4, s/2) of the line's centre across it (the nearest cell when none): train/textdet_train.py --strict-kernel. The data (textdet_shards_v1), the rest of the recipe, the decode and the finder (det+refine, amendment 3) are unchanged",
+    "round 3's 12 runs ('runs'; seeds 3 and 4, new): seven round-1 shapes and five deeper ones ('shapes', with their exact costs and arenas; every det+refine arena at 960 x 544 <= 131,072 B and every 900 x 150 cost <= 30 M MACs)",
+    "the promotion rule is unchanged and applied to round 3's runs with det+refine",
+    "the fine-tune clause (moved to the final round by amendment 3) is withdrawn: rounds 1 and 2 locate the losses in box geometry (merged or missed lines), not in the recognizers' input distribution; the units whose line count the detector gets right already read better than GRAD + refine with the unchanged recognizers",
+    "round 3 is the last: without a winner the verdict is negative and the protected sets are read once for round 3's report candidate (det+refine), labelled not promoted; with one, for the winner",
+    "tests/test_textdet.py's protocol-table check covers this amendment's shapes"
+   ],
+   "shapes": {
+    "s4_c12n4": {
+     "name": "s4_c12n4",
+     "stride": 4,
+     "c0": 6,
+     "c1": 12,
+     "c2": null,
+     "chans": [
+      12,
+      12,
+      12,
+      12
+     ],
+     "dil": [
+      1,
+      2,
+      4,
+      1
+     ],
+     "block": "sep",
+     "head": "kroa",
+     "macs": 11928600,
+     "params": 1360,
+     "macs_960x544": 45630720,
+     "macs_480x272": 11407680,
+     "macs_450x80": 3157320,
+     "receptive_field": 71,
+     "blob_bytes": 2808,
+     "arena_det_refine_960x544": 87399
+    },
+    "s4_c20n4": {
+     "name": "s4_c20n4",
+     "stride": 4,
+     "c0": 8,
+     "c1": 16,
+     "c2": null,
+     "chans": [
+      20,
+      20,
+      20,
+      20
+     ],
+     "dil": [
+      1,
+      2,
+      4,
+      1
+     ],
+     "block": "sep",
+     "head": "kroa",
+     "macs": 23668200,
+     "params": 2748,
+     "macs_960x544": 90478080,
+     "macs_480x272": 22619520,
+     "macs_450x80": 6261840,
+     "receptive_field": 71,
+     "blob_bytes": 4732,
+     "arena_det_refine_960x544": 129175
+    },
+    "s4_c24n4": {
+     "name": "s4_c24n4",
+     "stride": 4,
+     "c0": 8,
+     "c1": 16,
+     "c2": null,
+     "chans": [
+      24,
+      24,
+      24,
+      24
+     ],
+     "dil": [
+      1,
+      2,
+      2,
+      1
+     ],
+     "block": "sep",
+     "head": "kroa",
+     "macs": 29790000,
+     "params": 3492,
+     "macs_960x544": 113848320,
+     "macs_480x272": 28462080,
+     "macs_450x80": 7880000,
+     "receptive_field": 55,
+     "blob_bytes": 5700,
+     "arena_det_refine_960x544": 121919
+    },
+    "s8_c16n4": {
+     "name": "s8_c16n4",
+     "stride": 8,
+     "c0": 4,
+     "c1": 8,
+     "c2": 16,
+     "chans": [
+      16,
+      16,
+      16,
+      16
+     ],
+     "dil": [
+      1,
+      2,
+      4,
+      2
+     ],
+     "block": "sep",
+     "head": "kroa",
+     "macs": 5798408,
+     "params": 2140,
+     "macs_960x544": 22129920,
+     "macs_480x272": 5532480,
+     "macs_450x80": 1540160,
+     "receptive_field": 159,
+     "blob_bytes": 4028,
+     "arena_det_refine_960x544": 72391
+    },
+    "s8_c24n4": {
+     "name": "s8_c24n4",
+     "stride": 8,
+     "c0": 8,
+     "c1": 16,
+     "c2": 24,
+     "chans": [
+      24,
+      24,
+      24,
+      24
+     ],
+     "dil": [
+      1,
+      2,
+      4,
+      2
+     ],
+     "block": "sep",
+     "head": "kroa",
+     "macs": 12281424,
+     "params": 4332,
+     "macs_960x544": 46871040,
+     "macs_480x272": 11717760,
+     "macs_450x80": 3261440,
+     "receptive_field": 159,
+     "blob_bytes": 6988,
+     "arena_det_refine_960x544": 109295
+    }
+   },
+   "runs": [
+    "s8_c8_seed3",
+    "s4_c8n5_seed3",
+    "s4_c12n4_seed3",
+    "s8_c16_seed3",
+    "s4_c16n4_seed3",
+    "s8_c16n4_seed3",
+    "s4_c20n4_seed3",
+    "s8_c24_seed3",
+    "s8_c24_seed4",
+    "s4_c24n4_seed3",
+    "s8_c24n4_seed3",
+    "s8_c32_seed3"
+   ],
+   "training_flags": [
+    "--strict-kernel"
+   ]
   }
  ]
 }

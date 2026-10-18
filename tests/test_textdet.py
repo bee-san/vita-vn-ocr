@@ -328,7 +328,9 @@ def test_random_blobs_are_valid_for_every_shape():
 # ---------------------------------------------------------------- the protocol's sweep table
 
 def test_protocol_sweep_equals_the_model_cost():
-    sweep = PROTOCOL["sweep"]["shapes"]
+    sweep = dict(PROTOCOL["sweep"]["shapes"])
+    for a in PROTOCOL["amendments"]:            # later rounds add shapes (amendment 4)
+        sweep.update(a.get("shapes", {}))
     assert set(sweep) == set(TM.SHAPES)
     for name, row in sweep.items():
         s = TM.SHAPES[name]

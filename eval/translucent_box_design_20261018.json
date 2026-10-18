@@ -1,0 +1,1976 @@
+{
+ "kind": "translucent-box-design-record",
+ "computed": "2026-10-18T09:03:13Z",
+ "code_sha256": "69622ef5c7480a8c7676b413591cfbb58df19f2caa5f885a660b24e883e2d5f7",
+ "scores": {
+  "VOCR5-S": {
+   "meta_sha256": "4085953f0f22df7b5723b5597081d68a8f7b5fdfea39027799ea47ea93c07daf",
+   "arm": {
+    "blob": "v5f_S_seed2_w8.vocr",
+    "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+    "blob_bytes": 819792,
+    "arena_w8i": 124832
+   },
+   "sources_sha256": {
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+    "runtime/vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465",
+    "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+    "runtime/vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+    "runtime/vocr_lines_split.c": "a41fb636d58c13b05026e2ceaf0dba53765f11e7710851f5fb811bca86b314cb",
+    "runtime/vocr_lines_split.h": "518058ac5d7ff999008d240e0cb067b60f5e34a2463c5d8f9807b359b7ccf659",
+    "runtime/vocr_lines_split_test.c": "3b54533aab5e745852d64093df6e0daf13c8b66d209660d710c2130cc7ee185d"
+   },
+   "cohorts": {
+    "design_tagged": {
+     "sha256": "3e5e140852874b5badacbbc48cff13182100299a22a81a099e3da6ddc00bc81a",
+     "cases": 1800
+    },
+    "design_rest": {
+     "sha256": "4c7615b9e54e2ba0d703e105c189109c929257fe19c40d40b13adf9e043cfc11",
+     "cases": 1800
+    },
+    "design_psp_tagged": {
+     "sha256": "80183cc17f411f9ad077a3d8db9835750fcd2fb711b9285a4c59d79597cd80ba",
+     "cases": 1188
+    },
+    "design_psp_rest": {
+     "sha256": "1ca1f9c7eb58562faee369ef3c92c462a43cd7eb6fac1ebee3be5d89474d6795",
+     "cases": 1188
+    }
+   }
+  },
+  "VOCR5-N": {
+   "meta_sha256": "4f991219c47bb84546e4a18b54604c47713895665d0f71ee299d0c8869e35fa9",
+   "arm": {
+    "blob": "v5f_N_seed3_w8.vocr",
+    "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+    "blob_bytes": 1185632,
+    "arena_w8i": 182944
+   },
+   "sources_sha256": {
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+    "runtime/vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465",
+    "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+    "runtime/vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+    "runtime/vocr_lines_split.c": "a41fb636d58c13b05026e2ceaf0dba53765f11e7710851f5fb811bca86b314cb",
+    "runtime/vocr_lines_split.h": "518058ac5d7ff999008d240e0cb067b60f5e34a2463c5d8f9807b359b7ccf659",
+    "runtime/vocr_lines_split_test.c": "3b54533aab5e745852d64093df6e0daf13c8b66d209660d710c2130cc7ee185d"
+   },
+   "cohorts": {
+    "design_tagged": {
+     "sha256": "3e5e140852874b5badacbbc48cff13182100299a22a81a099e3da6ddc00bc81a",
+     "cases": 1800
+    },
+    "design_rest": {
+     "sha256": "4c7615b9e54e2ba0d703e105c189109c929257fe19c40d40b13adf9e043cfc11",
+     "cases": 1800
+    },
+    "design_psp_tagged": {
+     "sha256": "80183cc17f411f9ad077a3d8db9835750fcd2fb711b9285a4c59d79597cd80ba",
+     "cases": 1188
+    },
+    "design_psp_rest": {
+     "sha256": "1ca1f9c7eb58562faee369ef3c92c462a43cd7eb6fac1ebee3be5d89474d6795",
+     "cases": 1188
+    }
+   }
+  },
+  "VOCR5-L": {
+   "meta_sha256": "93b463073e87ff77d6518098d98f7a51bf6bdfee9c40bf1cdb7cfb48af9759f2",
+   "arm": {
+    "blob": "v5f_L_seed2_w8.vocr",
+    "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+    "blob_bytes": 2473696,
+    "arena_w8i": 261024
+   },
+   "sources_sha256": {
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+    "runtime/vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465",
+    "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+    "runtime/vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+    "runtime/vocr_lines_split.c": "a41fb636d58c13b05026e2ceaf0dba53765f11e7710851f5fb811bca86b314cb",
+    "runtime/vocr_lines_split.h": "518058ac5d7ff999008d240e0cb067b60f5e34a2463c5d8f9807b359b7ccf659",
+    "runtime/vocr_lines_split_test.c": "3b54533aab5e745852d64093df6e0daf13c8b66d209660d710c2130cc7ee185d"
+   },
+   "cohorts": {
+    "design_tagged": {
+     "sha256": "3e5e140852874b5badacbbc48cff13182100299a22a81a099e3da6ddc00bc81a",
+     "cases": 1800
+    },
+    "design_rest": {
+     "sha256": "4c7615b9e54e2ba0d703e105c189109c929257fe19c40d40b13adf9e043cfc11",
+     "cases": 1800
+    },
+    "design_psp_tagged": {
+     "sha256": "80183cc17f411f9ad077a3d8db9835750fcd2fb711b9285a4c59d79597cd80ba",
+     "cases": 1188
+    },
+    "design_psp_rest": {
+     "sha256": "1ca1f9c7eb58562faee369ef3c92c462a43cd7eb6fac1ebee3be5d89474d6795",
+     "cases": 1188
+    }
+   }
+  }
+ },
+ "sets": {
+  "design_tagged": {
+   "VOCR5-S": {
+    "all": {
+     "grad": {
+      "errors": 4323,
+      "chars": 34635,
+      "cer": 12.4816
+     },
+     "refine": {
+      "errors": 3182,
+      "chars": 34635,
+      "cer": 9.1872
+     },
+     "split": {
+      "errors": 3386,
+      "chars": 34635,
+      "cer": 9.7762
+     },
+     "split_refine": {
+      "errors": 2479,
+      "chars": 34635,
+      "cer": 7.1575
+     },
+     "units": 1800,
+     "vns": 537,
+     "split_refine-refine": {
+      "delta": -2.0297,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.9105,
+       -0.4936
+      ]
+     },
+     "split-grad": {
+      "delta": -2.7054,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.7505,
+       -0.9808
+      ]
+     },
+     "refine-grad": {
+      "delta": -3.2944,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.0872,
+       -1.9815
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -5.3241,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -7.7531,
+       -3.2327
+      ]
+     }
+    },
+    "vita": {
+     "grad": {
+      "errors": 4323,
+      "chars": 34635,
+      "cer": 12.4816
+     },
+     "refine": {
+      "errors": 3182,
+      "chars": 34635,
+      "cer": 9.1872
+     },
+     "split": {
+      "errors": 3386,
+      "chars": 34635,
+      "cer": 9.7762
+     },
+     "split_refine": {
+      "errors": 2479,
+      "chars": 34635,
+      "cer": 7.1575
+     },
+     "units": 1800,
+     "vns": 537,
+     "split_refine-refine": {
+      "delta": -2.0297,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.9105,
+       -0.4936
+      ]
+     },
+     "split-grad": {
+      "delta": -2.7054,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.7505,
+       -0.9808
+      ]
+     },
+     "refine-grad": {
+      "delta": -3.2944,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.0872,
+       -1.9815
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -5.3241,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -7.7531,
+       -3.2327
+      ]
+     }
+    }
+   },
+   "VOCR5-N": {
+    "all": {
+     "grad": {
+      "errors": 3745,
+      "chars": 34635,
+      "cer": 10.8128
+     },
+     "refine": {
+      "errors": 2915,
+      "chars": 34635,
+      "cer": 8.4163
+     },
+     "split": {
+      "errors": 2823,
+      "chars": 34635,
+      "cer": 8.1507
+     },
+     "split_refine": {
+      "errors": 2228,
+      "chars": 34635,
+      "cer": 6.4328
+     },
+     "units": 1800,
+     "vns": 537,
+     "split_refine-refine": {
+      "delta": -1.9835,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.8268,
+       -0.4694
+      ]
+     },
+     "split-grad": {
+      "delta": -2.662,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.6964,
+       -0.9205
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.3964,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.2046,
+       -1.0508
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -4.38,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -6.8081,
+       -2.2859
+      ]
+     }
+    },
+    "vita": {
+     "grad": {
+      "errors": 3745,
+      "chars": 34635,
+      "cer": 10.8128
+     },
+     "refine": {
+      "errors": 2915,
+      "chars": 34635,
+      "cer": 8.4163
+     },
+     "split": {
+      "errors": 2823,
+      "chars": 34635,
+      "cer": 8.1507
+     },
+     "split_refine": {
+      "errors": 2228,
+      "chars": 34635,
+      "cer": 6.4328
+     },
+     "units": 1800,
+     "vns": 537,
+     "split_refine-refine": {
+      "delta": -1.9835,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.8268,
+       -0.4694
+      ]
+     },
+     "split-grad": {
+      "delta": -2.662,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.6964,
+       -0.9205
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.3964,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.2046,
+       -1.0508
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -4.38,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -6.8081,
+       -2.2859
+      ]
+     }
+    }
+   },
+   "VOCR5-L": {
+    "all": {
+     "grad": {
+      "errors": 3201,
+      "chars": 34635,
+      "cer": 9.2421
+     },
+     "refine": {
+      "errors": 2559,
+      "chars": 34635,
+      "cer": 7.3885
+     },
+     "split": {
+      "errors": 2350,
+      "chars": 34635,
+      "cer": 6.785
+     },
+     "split_refine": {
+      "errors": 1921,
+      "chars": 34635,
+      "cer": 5.5464
+     },
+     "units": 1800,
+     "vns": 537,
+     "split_refine-refine": {
+      "delta": -1.8421,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.6844,
+       -0.2951
+      ]
+     },
+     "split-grad": {
+      "delta": -2.4571,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.5037,
+       -0.7038
+      ]
+     },
+     "refine-grad": {
+      "delta": -1.8536,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.5917,
+       -0.5722
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -3.6957,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -6.082,
+       -1.5968
+      ]
+     }
+    },
+    "vita": {
+     "grad": {
+      "errors": 3201,
+      "chars": 34635,
+      "cer": 9.2421
+     },
+     "refine": {
+      "errors": 2559,
+      "chars": 34635,
+      "cer": 7.3885
+     },
+     "split": {
+      "errors": 2350,
+      "chars": 34635,
+      "cer": 6.785
+     },
+     "split_refine": {
+      "errors": 1921,
+      "chars": 34635,
+      "cer": 5.5464
+     },
+     "units": 1800,
+     "vns": 537,
+     "split_refine-refine": {
+      "delta": -1.8421,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.6844,
+       -0.2951
+      ]
+     },
+     "split-grad": {
+      "delta": -2.4571,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.5037,
+       -0.7038
+      ]
+     },
+     "refine-grad": {
+      "delta": -1.8536,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.5917,
+       -0.5722
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -3.6957,
+      "clusters": 537,
+      "chars": 34635,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -6.082,
+       -1.5968
+      ]
+     }
+    }
+   }
+  },
+  "design_rest": {
+   "VOCR5-S": {
+    "all": {
+     "grad": {
+      "errors": 979,
+      "chars": 38997,
+      "cer": 2.5104
+     },
+     "refine": {
+      "errors": 843,
+      "chars": 38997,
+      "cer": 2.1617
+     },
+     "split": {
+      "errors": 835,
+      "chars": 38997,
+      "cer": 2.1412
+     },
+     "split_refine": {
+      "errors": 815,
+      "chars": 38997,
+      "cer": 2.0899
+     },
+     "units": 1800,
+     "vns": 586,
+     "split_refine-refine": {
+      "delta": -0.0718,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.419,
+       0.1691
+      ]
+     },
+     "split-grad": {
+      "delta": -0.3693,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.2938,
+       0.1605
+      ]
+     },
+     "refine-grad": {
+      "delta": -0.3487,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.083,
+       0.1908
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -0.4205,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.4715,
+       0.268
+      ]
+     }
+    },
+    "vita": {
+     "grad": {
+      "errors": 979,
+      "chars": 38997,
+      "cer": 2.5104
+     },
+     "refine": {
+      "errors": 843,
+      "chars": 38997,
+      "cer": 2.1617
+     },
+     "split": {
+      "errors": 835,
+      "chars": 38997,
+      "cer": 2.1412
+     },
+     "split_refine": {
+      "errors": 815,
+      "chars": 38997,
+      "cer": 2.0899
+     },
+     "units": 1800,
+     "vns": 586,
+     "split_refine-refine": {
+      "delta": -0.0718,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.419,
+       0.1691
+      ]
+     },
+     "split-grad": {
+      "delta": -0.3693,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.2938,
+       0.1605
+      ]
+     },
+     "refine-grad": {
+      "delta": -0.3487,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.083,
+       0.1908
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -0.4205,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.4715,
+       0.268
+      ]
+     }
+    }
+   },
+   "VOCR5-N": {
+    "all": {
+     "grad": {
+      "errors": 894,
+      "chars": 38997,
+      "cer": 2.2925
+     },
+     "refine": {
+      "errors": 807,
+      "chars": 38997,
+      "cer": 2.0694
+     },
+     "split": {
+      "errors": 749,
+      "chars": 38997,
+      "cer": 1.9207
+     },
+     "split_refine": {
+      "errors": 777,
+      "chars": 38997,
+      "cer": 1.9925
+     },
+     "units": 1800,
+     "vns": 586,
+     "split_refine-refine": {
+      "delta": -0.0769,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.4237,
+       0.1644
+      ]
+     },
+     "split-grad": {
+      "delta": -0.3718,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.305,
+       0.1587
+      ]
+     },
+     "refine-grad": {
+      "delta": -0.2231,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.9594,
+       0.3159
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -0.3,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.3438,
+       0.3964
+      ]
+     }
+    },
+    "vita": {
+     "grad": {
+      "errors": 894,
+      "chars": 38997,
+      "cer": 2.2925
+     },
+     "refine": {
+      "errors": 807,
+      "chars": 38997,
+      "cer": 2.0694
+     },
+     "split": {
+      "errors": 749,
+      "chars": 38997,
+      "cer": 1.9207
+     },
+     "split_refine": {
+      "errors": 777,
+      "chars": 38997,
+      "cer": 1.9925
+     },
+     "units": 1800,
+     "vns": 586,
+     "split_refine-refine": {
+      "delta": -0.0769,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.4237,
+       0.1644
+      ]
+     },
+     "split-grad": {
+      "delta": -0.3718,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.305,
+       0.1587
+      ]
+     },
+     "refine-grad": {
+      "delta": -0.2231,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.9594,
+       0.3159
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -0.3,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.3438,
+       0.3964
+      ]
+     }
+    }
+   },
+   "VOCR5-L": {
+    "all": {
+     "grad": {
+      "errors": 745,
+      "chars": 38997,
+      "cer": 1.9104
+     },
+     "refine": {
+      "errors": 671,
+      "chars": 38997,
+      "cer": 1.7206
+     },
+     "split": {
+      "errors": 617,
+      "chars": 38997,
+      "cer": 1.5822
+     },
+     "split_refine": {
+      "errors": 645,
+      "chars": 38997,
+      "cer": 1.654
+     },
+     "units": 1800,
+     "vns": 586,
+     "split_refine-refine": {
+      "delta": -0.0667,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.3819,
+       0.1638
+      ]
+     },
+     "split-grad": {
+      "delta": -0.3282,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.1744,
+       0.1633
+      ]
+     },
+     "refine-grad": {
+      "delta": -0.1898,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.8618,
+       0.3272
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -0.2564,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.2096,
+       0.4022
+      ]
+     }
+    },
+    "vita": {
+     "grad": {
+      "errors": 745,
+      "chars": 38997,
+      "cer": 1.9104
+     },
+     "refine": {
+      "errors": 671,
+      "chars": 38997,
+      "cer": 1.7206
+     },
+     "split": {
+      "errors": 617,
+      "chars": 38997,
+      "cer": 1.5822
+     },
+     "split_refine": {
+      "errors": 645,
+      "chars": 38997,
+      "cer": 1.654
+     },
+     "units": 1800,
+     "vns": 586,
+     "split_refine-refine": {
+      "delta": -0.0667,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.3819,
+       0.1638
+      ]
+     },
+     "split-grad": {
+      "delta": -0.3282,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.1744,
+       0.1633
+      ]
+     },
+     "refine-grad": {
+      "delta": -0.1898,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -0.8618,
+       0.3272
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -0.2564,
+      "clusters": 586,
+      "chars": 38997,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.2096,
+       0.4022
+      ]
+     }
+    }
+   }
+  },
+  "design_psp_tagged": {
+   "VOCR5-S": {
+    "all": {
+     "grad": {
+      "errors": 7309,
+      "chars": 25683,
+      "cer": 28.4585
+     },
+     "refine": {
+      "errors": 6329,
+      "chars": 25683,
+      "cer": 24.6428
+     },
+     "split": {
+      "errors": 5485,
+      "chars": 25683,
+      "cer": 21.3565
+     },
+     "split_refine": {
+      "errors": 4900,
+      "chars": 25683,
+      "cer": 19.0788
+     },
+     "units": 1188,
+     "vns": 314,
+     "split_refine-refine": {
+      "delta": -5.564,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -8.2305,
+       -3.1747
+      ]
+     },
+     "split-grad": {
+      "delta": -7.102,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -9.9279,
+       -4.5361
+      ]
+     },
+     "refine-grad": {
+      "delta": -3.8158,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.4099,
+       -2.1454
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -9.3797,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -12.1216,
+       -6.8653
+      ]
+     }
+    },
+    "psp": {
+     "grad": {
+      "errors": 7309,
+      "chars": 25683,
+      "cer": 28.4585
+     },
+     "refine": {
+      "errors": 6329,
+      "chars": 25683,
+      "cer": 24.6428
+     },
+     "split": {
+      "errors": 5485,
+      "chars": 25683,
+      "cer": 21.3565
+     },
+     "split_refine": {
+      "errors": 4900,
+      "chars": 25683,
+      "cer": 19.0788
+     },
+     "units": 1188,
+     "vns": 314,
+     "split_refine-refine": {
+      "delta": -5.564,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -8.2305,
+       -3.1747
+      ]
+     },
+     "split-grad": {
+      "delta": -7.102,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -9.9279,
+       -4.5361
+      ]
+     },
+     "refine-grad": {
+      "delta": -3.8158,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.4099,
+       -2.1454
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -9.3797,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -12.1216,
+       -6.8653
+      ]
+     }
+    }
+   },
+   "VOCR5-N": {
+    "all": {
+     "grad": {
+      "errors": 6356,
+      "chars": 25683,
+      "cer": 24.7479
+     },
+     "refine": {
+      "errors": 5700,
+      "chars": 25683,
+      "cer": 22.1937
+     },
+     "split": {
+      "errors": 4612,
+      "chars": 25683,
+      "cer": 17.9574
+     },
+     "split_refine": {
+      "errors": 4318,
+      "chars": 25683,
+      "cer": 16.8127
+     },
+     "units": 1188,
+     "vns": 314,
+     "split_refine-refine": {
+      "delta": -5.381,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -7.9636,
+       -3.0423
+      ]
+     },
+     "split-grad": {
+      "delta": -6.7905,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -9.5828,
+       -4.2477
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.5542,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.0789,
+       -0.9739
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -7.9352,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -10.6546,
+       -5.4925
+      ]
+     }
+    },
+    "psp": {
+     "grad": {
+      "errors": 6356,
+      "chars": 25683,
+      "cer": 24.7479
+     },
+     "refine": {
+      "errors": 5700,
+      "chars": 25683,
+      "cer": 22.1937
+     },
+     "split": {
+      "errors": 4612,
+      "chars": 25683,
+      "cer": 17.9574
+     },
+     "split_refine": {
+      "errors": 4318,
+      "chars": 25683,
+      "cer": 16.8127
+     },
+     "units": 1188,
+     "vns": 314,
+     "split_refine-refine": {
+      "delta": -5.381,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -7.9636,
+       -3.0423
+      ]
+     },
+     "split-grad": {
+      "delta": -6.7905,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -9.5828,
+       -4.2477
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.5542,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.0789,
+       -0.9739
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -7.9352,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -10.6546,
+       -5.4925
+      ]
+     }
+    }
+   },
+   "VOCR5-L": {
+    "all": {
+     "grad": {
+      "errors": 5411,
+      "chars": 25683,
+      "cer": 21.0684
+     },
+     "refine": {
+      "errors": 5008,
+      "chars": 25683,
+      "cer": 19.4993
+     },
+     "split": {
+      "errors": 3727,
+      "chars": 25683,
+      "cer": 14.5115
+     },
+     "split_refine": {
+      "errors": 3668,
+      "chars": 25683,
+      "cer": 14.2818
+     },
+     "units": 1188,
+     "vns": 314,
+     "split_refine-refine": {
+      "delta": -5.2175,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -7.7805,
+       -2.9134
+      ]
+     },
+     "split-grad": {
+      "delta": -6.5569,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -9.3074,
+       -4.0623
+      ]
+     },
+     "refine-grad": {
+      "delta": -1.5691,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.1422,
+       0.1401
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -6.7866,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -9.5142,
+       -4.3364
+      ]
+     }
+    },
+    "psp": {
+     "grad": {
+      "errors": 5411,
+      "chars": 25683,
+      "cer": 21.0684
+     },
+     "refine": {
+      "errors": 5008,
+      "chars": 25683,
+      "cer": 19.4993
+     },
+     "split": {
+      "errors": 3727,
+      "chars": 25683,
+      "cer": 14.5115
+     },
+     "split_refine": {
+      "errors": 3668,
+      "chars": 25683,
+      "cer": 14.2818
+     },
+     "units": 1188,
+     "vns": 314,
+     "split_refine-refine": {
+      "delta": -5.2175,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -7.7805,
+       -2.9134
+      ]
+     },
+     "split-grad": {
+      "delta": -6.5569,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -9.3074,
+       -4.0623
+      ]
+     },
+     "refine-grad": {
+      "delta": -1.5691,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.1422,
+       0.1401
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -6.7866,
+      "clusters": 314,
+      "chars": 25683,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -9.5142,
+       -4.3364
+      ]
+     }
+    }
+   }
+  },
+  "design_psp_rest": {
+   "VOCR5-S": {
+    "all": {
+     "grad": {
+      "errors": 1665,
+      "chars": 26490,
+      "cer": 6.2854
+     },
+     "refine": {
+      "errors": 959,
+      "chars": 26490,
+      "cer": 3.6202
+     },
+     "split": {
+      "errors": 885,
+      "chars": 26490,
+      "cer": 3.3409
+     },
+     "split_refine": {
+      "errors": 772,
+      "chars": 26490,
+      "cer": 2.9143
+     },
+     "units": 1188,
+     "vns": 307,
+     "split_refine-refine": {
+      "delta": -0.7059,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.8562,
+       -0.0155
+      ]
+     },
+     "split-grad": {
+      "delta": -2.9445,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.0401,
+       -1.1691
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.6652,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.4553,
+       -1.1254
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -3.3711,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.4721,
+       -1.5592
+      ]
+     }
+    },
+    "psp": {
+     "grad": {
+      "errors": 1665,
+      "chars": 26490,
+      "cer": 6.2854
+     },
+     "refine": {
+      "errors": 959,
+      "chars": 26490,
+      "cer": 3.6202
+     },
+     "split": {
+      "errors": 885,
+      "chars": 26490,
+      "cer": 3.3409
+     },
+     "split_refine": {
+      "errors": 772,
+      "chars": 26490,
+      "cer": 2.9143
+     },
+     "units": 1188,
+     "vns": 307,
+     "split_refine-refine": {
+      "delta": -0.7059,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.8562,
+       -0.0155
+      ]
+     },
+     "split-grad": {
+      "delta": -2.9445,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.0401,
+       -1.1691
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.6652,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.4553,
+       -1.1254
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -3.3711,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.4721,
+       -1.5592
+      ]
+     }
+    }
+   },
+   "VOCR5-N": {
+    "all": {
+     "grad": {
+      "errors": 1468,
+      "chars": 26490,
+      "cer": 5.5417
+     },
+     "refine": {
+      "errors": 843,
+      "chars": 26490,
+      "cer": 3.1823
+     },
+     "split": {
+      "errors": 738,
+      "chars": 26490,
+      "cer": 2.786
+     },
+     "split_refine": {
+      "errors": 661,
+      "chars": 26490,
+      "cer": 2.4953
+     },
+     "units": 1188,
+     "vns": 307,
+     "split_refine-refine": {
+      "delta": -0.6871,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.7975,
+       -0.0039
+      ]
+     },
+     "split-grad": {
+      "delta": -2.7558,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.7308,
+       -1.0887
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.3594,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.1095,
+       -0.8556
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -3.0464,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.0758,
+       -1.312
+      ]
+     }
+    },
+    "psp": {
+     "grad": {
+      "errors": 1468,
+      "chars": 26490,
+      "cer": 5.5417
+     },
+     "refine": {
+      "errors": 843,
+      "chars": 26490,
+      "cer": 3.1823
+     },
+     "split": {
+      "errors": 738,
+      "chars": 26490,
+      "cer": 2.786
+     },
+     "split_refine": {
+      "errors": 661,
+      "chars": 26490,
+      "cer": 2.4953
+     },
+     "units": 1188,
+     "vns": 307,
+     "split_refine-refine": {
+      "delta": -0.6871,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.7975,
+       -0.0039
+      ]
+     },
+     "split-grad": {
+      "delta": -2.7558,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.7308,
+       -1.0887
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.3594,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.1095,
+       -0.8556
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -3.0464,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -5.0758,
+       -1.312
+      ]
+     }
+    }
+   },
+   "VOCR5-L": {
+    "all": {
+     "grad": {
+      "errors": 1288,
+      "chars": 26490,
+      "cer": 4.8622
+     },
+     "refine": {
+      "errors": 732,
+      "chars": 26490,
+      "cer": 2.7633
+     },
+     "split": {
+      "errors": 561,
+      "chars": 26490,
+      "cer": 2.1178
+     },
+     "split_refine": {
+      "errors": 547,
+      "chars": 26490,
+      "cer": 2.0649
+     },
+     "units": 1188,
+     "vns": 307,
+     "split_refine-refine": {
+      "delta": -0.6984,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.7896,
+       -0.0305
+      ]
+     },
+     "split-grad": {
+      "delta": -2.7444,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.7019,
+       -1.1005
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.0989,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.8165,
+       -0.635
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -2.7973,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.796,
+       -1.098
+      ]
+     }
+    },
+    "psp": {
+     "grad": {
+      "errors": 1288,
+      "chars": 26490,
+      "cer": 4.8622
+     },
+     "refine": {
+      "errors": 732,
+      "chars": 26490,
+      "cer": 2.7633
+     },
+     "split": {
+      "errors": 561,
+      "chars": 26490,
+      "cer": 2.1178
+     },
+     "split_refine": {
+      "errors": 547,
+      "chars": 26490,
+      "cer": 2.0649
+     },
+     "units": 1188,
+     "vns": 307,
+     "split_refine-refine": {
+      "delta": -0.6984,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -1.7896,
+       -0.0305
+      ]
+     },
+     "split-grad": {
+      "delta": -2.7444,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.7019,
+       -1.1005
+      ]
+     },
+     "refine-grad": {
+      "delta": -2.0989,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -3.8165,
+       -0.635
+      ]
+     },
+     "split_refine-grad": {
+      "delta": -2.7973,
+      "clusters": 307,
+      "chars": 26490,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       -4.796,
+       -1.098
+      ]
+     }
+    }
+   }
+  }
+ }
+}

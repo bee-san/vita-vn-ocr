@@ -1,0 +1,150 @@
+{
+ "kind": "translucent-box-prevalence",
+ "computed": "2026-10-18T09:03:33Z",
+ "code_sha256": "69622ef5c7480a8c7676b413591cfbb58df19f2caa5f885a660b24e883e2d5f7",
+ "classifier": {
+  "margin": {
+   "vita": 12,
+   "psp": 6
+  },
+  "dilation": {
+   "vita": 3,
+   "psp": 2
+  },
+  "edge": 0.5,
+  "tone": 24,
+  "n_min": 48,
+  "tag_min": 0.03
+ },
+ "tags_meta_sha256": "d6acea13ab5f1225dbdb63ace9a0d9f8a41f0fde6e34366045d0c7fa8ae20f63",
+ "sources": {},
+ "wd_errors": {
+  "VOCR5-S": {
+   "grad": {
+    "tagged": {
+     "errors": 798,
+     "chars": 3183,
+     "cer": 25.0707
+    },
+    "rest": {
+     "errors": 1126,
+     "chars": 22671,
+     "cer": 4.9667
+    },
+    "all": {
+     "errors": 1924,
+     "chars": 25854,
+     "cer": 7.4418
+    },
+    "tagged_error_share": 0.4148,
+    "tagged_units": 156,
+    "tagged_vns": 32
+   },
+   "refine": {
+    "tagged": {
+     "errors": 711,
+     "chars": 3183,
+     "cer": 22.3374
+    },
+    "rest": {
+     "errors": 637,
+     "chars": 22671,
+     "cer": 2.8098
+    },
+    "all": {
+     "errors": 1348,
+     "chars": 25854,
+     "cer": 5.2139
+    },
+    "tagged_error_share": 0.5274,
+    "tagged_units": 156,
+    "tagged_vns": 32
+   }
+  },
+  "VOCR5-N": {
+   "grad": {
+    "tagged": {
+     "errors": 736,
+     "chars": 3183,
+     "cer": 23.1228
+    },
+    "rest": {
+     "errors": 1039,
+     "chars": 22671,
+     "cer": 4.5829
+    },
+    "all": {
+     "errors": 1775,
+     "chars": 25854,
+     "cer": 6.8655
+    },
+    "tagged_error_share": 0.4146,
+    "tagged_units": 156,
+    "tagged_vns": 32
+   },
+   "refine": {
+    "tagged": {
+     "errors": 668,
+     "chars": 3183,
+     "cer": 20.9865
+    },
+    "rest": {
+     "errors": 568,
+     "chars": 22671,
+     "cer": 2.5054
+    },
+    "all": {
+     "errors": 1236,
+     "chars": 25854,
+     "cer": 4.7807
+    },
+    "tagged_error_share": 0.5405,
+    "tagged_units": 156,
+    "tagged_vns": 32
+   }
+  },
+  "VOCR5-L": {
+   "grad": {
+    "tagged": {
+     "errors": 650,
+     "chars": 3183,
+     "cer": 20.421
+    },
+    "rest": {
+     "errors": 954,
+     "chars": 22671,
+     "cer": 4.208
+    },
+    "all": {
+     "errors": 1604,
+     "chars": 25854,
+     "cer": 6.2041
+    },
+    "tagged_error_share": 0.4052,
+    "tagged_units": 156,
+    "tagged_vns": 32
+   },
+   "refine": {
+    "tagged": {
+     "errors": 607,
+     "chars": 3183,
+     "cer": 19.0701
+    },
+    "rest": {
+     "errors": 546,
+     "chars": 22671,
+     "cer": 2.4084
+    },
+    "all": {
+     "errors": 1153,
+     "chars": 25854,
+     "cer": 4.4597
+    },
+    "tagged_error_share": 0.5265,
+    "tagged_units": 156,
+    "tagged_vns": 32
+   }
+  }
+ },
+ "wd_baseline": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/textdet/baseline/wd"
+}

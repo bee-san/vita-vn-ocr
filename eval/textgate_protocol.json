@@ -1,0 +1,479 @@
+{
+ "kind": "textgate-protocol",
+ "issue": 100,
+ "schema": 1,
+ "frozen": "2026-10-18T07:52:34Z",
+ "written_at_head": "c88c52058b6e859126a8b44caf4ba6f251c60b41",
+ "rule_of_this_file": "Frozen before any development score of any gate. Changes only by a dated amendment appended to 'amendments', made before the scores it could affect.",
+ "owner": "bee-san 2026-10-18 06:50Z: do all four workstreams, PRs and issues, merge automatically; earlier: 'we need it to run on a ps vita, so smaller == better'",
+ "problem": "GRAD and GRAD + refine return no line for 5 of the 66 development empty regions (0.076); #97's s8_c24 detector as a gate cost +0.02-0.03 points for 0.92, but Rubi #209 declined its 8,360 B of worker code and 5,700 B of weights",
+ "sources_sha256": {
+  "eval/textgate.py": "f5f99e32aaa62ff7caae1265c3d7f4b63029bfc7ef340e3d717dd21c268ccb95",
+  "eval/textgate_data.py": "fbf8aa95a4ab7e4dcae85ee46e04b8e49ee7a574872a5fb1ede584da25132137",
+  "train/textgate_train.py": "524118fb0cdbc8e1f4b719eac76b2580ea85ca42643fe114239905ef5f513989",
+  "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+  "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+  "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+  "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+  "synth/textdet_data.py": "359f18a8d97a868381b0e7988806375cc51882ce23c1965de082d1995193b200",
+  "eval/textdet.py": "9046680b50b98abd8a7edb9e27511f554355839d37f843f174510b9285335500",
+  "eval/finder_tighten.py": "a01ac2e8a8b136b5ea677fbc3f7a7226f158620af6eea7b928e939b5f57148f4",
+  "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+  "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+  "runtime/vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465",
+  "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+  "runtime/vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+  "runtime/vocr_textdet.c": "e5be547e33556bc170e37f3b00a2942ba0a221209b1b1cd9147dd38d69e0cda0",
+  "runtime/vocr_textdet.h": "0082d49f49e8b05628611b1302b8ebd6cc9c88112a8b40d3bc1f2f4407b85bd7",
+  "eval/manifests/reserved.json": "8ddaace6d1c9be5331bbcf628ff64d1c51365dc61f8a47d343d1bfb202e894cc",
+  "data/manifests/textdet_shards_v1.json": "84bba8c37b2fcefb14474b35f5a803d76f303fc57bf710a2239e848a09ffef27"
+ },
+ "recognizers": {
+  "VOCR5-S": {
+   "release": "v0.3.0",
+   "asset": "VOCR5_S_w8.vocr",
+   "run": "v5f_S_seed2",
+   "blob_bytes": 819792,
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+  },
+  "VOCR5-N": {
+   "release": "v0.3.0",
+   "asset": "VOCR5_N_w8.vocr",
+   "run": "v5f_N_seed3",
+   "blob_bytes": 1185632,
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+  },
+  "VOCR5-L": {
+   "release": "v0.3.0",
+   "asset": "VOCR5_L_w8.vocr",
+   "run": "v5f_L_seed2",
+   "blob_bytes": 2473696,
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+  }
+ },
+ "finder": {
+  "baseline": "GRAD + refine: runtime/vocr_lines.c VOCR_LINES_GRAD, then runtime/vocr_lines_refine.c VOCR_REFINE_DEFAULT (0x1F); the C driver eval/finder_tighten.build, checked against the twins on every case",
+  "gate": "the gate decides per region; 'no text' -> the finder returns no line (nothing is recognized), 'text' -> GRAD + refine unchanged"
+ },
+ "gate": {
+  "learned": "an int8 network in #97's VTDT layout (synth/textdet_twin.py); K = the head's first map, textdet_twin.run_net(model, grey)[0] on the region's grey (synth/common.to_gray)",
+  "modes": {
+   "region": "score = the k-th largest K code of the region's map (the smallest when fewer cells)",
+   "boxes": "score = the k-th largest K code over the cells whose s x s block meets a GRAD box (-129 when no cell does)"
+  },
+  "decision": "text iff score >= t",
+  "k_set": [
+   1,
+   2,
+   4
+  ],
+  "targets": [
+   0.998,
+   0.999
+  ],
+  "calibration": "per candidate, mode and target: for each k, t = the largest code keeping at least the target share of the cal_dlg cases GRAD + refine returns a line for (the (q+1)-th smallest score, q = floor((1 - target) n)); k = the one whose (k, t) leaves the most cal_empty regions with no line (gate says no or GRAD + refine returns none), the smaller k on a tie",
+  "screen": "a candidate operating point goes to development only if that cal_empty rate is >= 0.85",
+  "rules": {
+   "blank": "Rubi's blank-line check (core/vocr_ocr.c vjo_vocr_ink, twin eval/textgate.rubi_ink_edges): text iff a GRAD + refine line's crop has >= 50 edges per 10,000 pixels; t fixed at 1 (calibrated like the others, it has one score level)",
+   "rule8": "the longest horizontal run of 8 x 8 blocks with >= 16 edge pixels (|dx| or |dy| >= 24) and contrast >= 48; text iff the run is >= t blocks, t calibrated"
+  }
+ },
+ "candidates": {
+  "new_presence_runs": [
+   {
+    "shape": "p8_c4",
+    "seed": 1,
+    "run": "p8_c4_seed1",
+    "blob_bytes": 816,
+    "macs_900x150": 1917240,
+    "macs_960x544": 7376640
+   },
+   {
+    "shape": "p8_c6",
+    "seed": 1,
+    "run": "p8_c6_seed1",
+    "blob_bytes": 1280,
+    "macs_900x150": 2359218,
+    "macs_960x544": 9057600
+   },
+   {
+    "shape": "p8_c6",
+    "seed": 2,
+    "run": "p8_c6_seed2",
+    "blob_bytes": 1280,
+    "macs_900x150": 2359218,
+    "macs_960x544": 9057600
+   },
+   {
+    "shape": "p8_c8",
+    "seed": 1,
+    "run": "p8_c8_seed1",
+    "blob_bytes": 1540,
+    "macs_900x150": 2741080,
+    "macs_960x544": 10510080
+   },
+   {
+    "shape": "p8_c8",
+    "seed": 2,
+    "run": "p8_c8_seed2",
+    "blob_bytes": 1540,
+    "macs_900x150": 2741080,
+    "macs_960x544": 10510080
+   },
+   {
+    "shape": "p8_c12",
+    "seed": 1,
+    "run": "p8_c12_seed1",
+    "blob_bytes": 2000,
+    "macs_900x150": 3342240,
+    "macs_960x544": 12794880
+   },
+   {
+    "shape": "p4_c4",
+    "seed": 1,
+    "run": "p4_c4_seed1",
+    "blob_bytes": 816,
+    "macs_900x150": 2685600,
+    "macs_960x544": 10314240
+   },
+   {
+    "shape": "p4_c8",
+    "seed": 1,
+    "run": "p4_c8_seed1",
+    "blob_bytes": 1196,
+    "macs_900x150": 4395600,
+    "macs_960x544": 16842240
+   }
+  ],
+  "shapes": {
+   "p8_c4": {
+    "name": "p8_c4",
+    "stride": 8,
+    "c0": 4,
+    "c1": 4,
+    "c2": 4,
+    "chans": [
+     4
+    ],
+    "dil": [
+     1
+    ],
+    "block": "sep",
+    "head": "kroa"
+   },
+   "p8_c6": {
+    "name": "p8_c6",
+    "stride": 8,
+    "c0": 4,
+    "c1": 6,
+    "c2": 6,
+    "chans": [
+     6,
+     6
+    ],
+    "dil": [
+     1,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa"
+   },
+   "p8_c8": {
+    "name": "p8_c8",
+    "stride": 8,
+    "c0": 4,
+    "c1": 8,
+    "c2": 8,
+    "chans": [
+     8,
+     8
+    ],
+    "dil": [
+     1,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa"
+   },
+   "p8_c12": {
+    "name": "p8_c12",
+    "stride": 8,
+    "c0": 4,
+    "c1": 8,
+    "c2": 12,
+    "chans": [
+     12,
+     12
+    ],
+    "dil": [
+     1,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa"
+   },
+   "p4_c4": {
+    "name": "p4_c4",
+    "stride": 4,
+    "c0": 4,
+    "c1": 4,
+    "c2": null,
+    "chans": [
+     4,
+     4
+    ],
+    "dil": [
+     1,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa"
+   },
+   "p4_c8": {
+    "name": "p4_c8",
+    "stride": 4,
+    "c0": 4,
+    "c1": 8,
+    "c2": null,
+    "chans": [
+     8,
+     8
+    ],
+    "dil": [
+     1,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa"
+   }
+  },
+  "r97_runs": [
+   {
+    "run": "s4_c4_seed1",
+    "blob_sha256": "78dc318db047fb6852e01e5b2e398ae9b4e30242dc010004cc9981c7fde7bde4",
+    "blob_bytes": 1004
+   },
+   {
+    "run": "s4_c4_seed2",
+    "blob_sha256": "daa184d79eb72c8edcaf6502262b975efbdf8f528d924f108ebc33bcfe9f530b",
+    "blob_bytes": 1004
+   },
+   {
+    "run": "s4p_c4_seed1",
+    "blob_sha256": "0dca6b06d3992d2e883db8b249018eee733df9f8654c8c94e7f94e11281ae970",
+    "blob_bytes": 1100
+   },
+   {
+    "run": "s4_c6_seed1",
+    "blob_sha256": "02e54009b01c53ab8c86ede84e1939325a42bc5947d7753642457f80962d5d62",
+    "blob_bytes": 1280
+   },
+   {
+    "run": "s4_c8_seed1",
+    "blob_sha256": "dd39f2610525a8308f035d34313d8fe820f267466c5d37b737b6fc2c14e85a41",
+    "blob_bytes": 1540
+   },
+   {
+    "run": "s4_c8_seed2",
+    "blob_sha256": "a88e735bb44b4a36b31ba09478a354e4d1b5d1e4b7cc7dbdda6d0c854e26cf9a",
+    "blob_bytes": 1540
+   },
+   {
+    "run": "s8_c8_seed1",
+    "blob_sha256": "b8114dfb6cf8ea3caafcac7d0bd1851564df114e15431c348ee80f1e8bf3aacf",
+    "blob_bytes": 1884
+   },
+   {
+    "run": "s8_c8_seed2",
+    "blob_sha256": "b1856e01d877762f4a44e8e4bc5019d0799f6567458718c12e9e9aa7a1973fda",
+    "blob_bytes": 1884
+   },
+   {
+    "run": "s8_c8_seed3",
+    "blob_sha256": "5f57d83d6ad7a2fb91693301bd1b6ba599ebe041093d5715ded89b33acb9c966",
+    "blob_bytes": 1884
+   },
+   {
+    "run": "s4_c8n5_seed1",
+    "blob_sha256": "6b6d46c166856addaa5c6b160b2676f2d9f85f8d672f72d11e2c3d988aaabd14",
+    "blob_bytes": 2228
+   },
+   {
+    "run": "s4_c8n5_seed3",
+    "blob_sha256": "bc4e7d89a67a7d59c2c707ae9ad31c390b7c26fe907b94fd38f86830450131da",
+    "blob_bytes": 2228
+   },
+   {
+    "run": "s4_c12_seed1",
+    "blob_sha256": "766b1b85055124ba1c5471e5918df7ab8f035109cf74766927258c57bfa2fe92",
+    "blob_bytes": 2276
+   },
+   {
+    "run": "s4p_c8_seed1",
+    "blob_sha256": "d15473412710358a2c8980083c73c006d7a5d4a7c1b6669d8fb8c92fb9368697",
+    "blob_bytes": 2700
+   },
+   {
+    "run": "s4_c12n4_seed3",
+    "blob_sha256": "db6d2317b1460c86674309df2978f789cc5ddf1e8f61433fb0851cc28733309e",
+    "blob_bytes": 2808
+   },
+   {
+    "run": "s4_c16_seed1",
+    "blob_sha256": "4e61c0e6003cf4f9b63eba7e93d96bfb1fd6a6f45b8201e9387baed3b60959fe",
+    "blob_bytes": 3108
+   },
+   {
+    "run": "s4_c16_seed2",
+    "blob_sha256": "604ca88c6aa1754d590db6ee8bc2d54c8f5b9eecd1868cfe35e749927b621a78",
+    "blob_bytes": 3108
+   },
+   {
+    "run": "s8_c16_seed1",
+    "blob_sha256": "5b6b1a02810da088aa76c2a0a56e223bbb72f804ce5884043abe939cf4376fa0",
+    "blob_bytes": 3276
+   },
+   {
+    "run": "s8_c16_seed2",
+    "blob_sha256": "0c7e8ce11e9e7e1fdb129f81ba128f7344d3ce4bce7fccc02b76968708fb18f6",
+    "blob_bytes": 3276
+   },
+   {
+    "run": "s8_c16_seed3",
+    "blob_sha256": "c75276bf33d5389825f266806b4e9a32108dbf5fabf490a2ae4e0e38ef986ea5",
+    "blob_bytes": 3276
+   },
+   {
+    "run": "s4_c16n4_seed1",
+    "blob_sha256": "7c0bf2a9998b9d8af867823993b0f102a0fa915aafa67915826b73f282e57a6b",
+    "blob_bytes": 3860
+   },
+   {
+    "run": "s4_c16n4_seed3",
+    "blob_sha256": "5def1386c8f5f3118a9db4bed96c1eae1e3af9388769a64c55bc5cdba674f140",
+    "blob_bytes": 3860
+   },
+   {
+    "run": "s8_c16n4_seed3",
+    "blob_sha256": "156b649190c2aa13c0b4d5c874d9d3ee57dabcc7c97d4a42833ebb10b12e9390",
+    "blob_bytes": 4028
+   }
+  ],
+  "rules": [
+   "blank",
+   "rule8"
+  ],
+  "report_only": {
+   "s8_c24_seed4": "#97's report candidate (5,700 B): as a presence gate (calibrated like the others) and as #97's own gate (its decode returns no line)",
+   "sha256": "8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179"
+  }
+ },
+ "training": {
+  "recipe": "train/textgate_train.py: #97's windows, masks, optimiser and QAT; 24,000 steps, 16 windows of at most 192 x 512, QAT from step 19,200; half real (realplus 0.35, teacher 0.35, owner 0.25, devnative 0.05 of the half) and half clean synthetic; presence targets and loss as the trainer's docstring; the last step is the model",
+  "real_shards": "data/manifests/textdet_shards_v1.json's realplus, teacher, devnative and owner shards, without the calibration split's VNs; #97's synthetic shards are not used",
+  "synth_shards": "data/manifests/textgate_shards_v1.json (eval/textgate_data.py synth: #97's generator, synth3's scene pool without any eval/linefind VN or screenshot, eval's screenshots and v14018)",
+  "synth_manifest_sha256": "39b1608ec750cf9be4e6eeb4d52222f97fb1dc81033c9e476640896a828e88db",
+  "threads": 5,
+  "heavy": "HEAVY_SLOTS=12 $HERD/heavy.sh"
+ },
+ "calibration_data": {
+  "builder": "eval/textgate_data.py cal",
+  "split": "sha256('textgate-split:' + vn)[:8] % 5 == 0 (never trained on)",
+  "cohorts": {
+   "cal_dlg": {
+    "cases": 11103,
+    "regions": 3701,
+    "vns": 1810,
+    "by_source": {
+     "realplus": 8580,
+     "teacher": 2463,
+     "owner": 60
+    },
+    "by_kind": {
+     "vita": 10065,
+     "psp": 1038
+    },
+    "lines": 4826,
+    "sha256": "8e4b4e57661f203fee4a6218e4cec4500a87c4b0c2a89751a12246d073640057"
+   },
+   "cal_empty": {
+    "cases": 3344,
+    "regions": 3344,
+    "vns": 1805,
+    "by_source": {
+     "realplus": 2574,
+     "teacher": 750,
+     "owner": 20
+    },
+    "by_kind": {
+     "vita": 3009,
+     "psp": 335
+    },
+    "lines": 0,
+    "sha256": "cd4c2f9bee08e7268f85bd6460256d80de44a6a6669b9ef3b50b5baa23ec684f"
+   },
+   "errors": [],
+   "split": {
+    "salt": "textgate-split:",
+    "calib": "sha256(salt + vn)[:8] % 5 == 0",
+    "caps": {
+     "realplus": 2,
+     "teacher": 10,
+     "owner": 20
+    },
+    "empty": {
+     "w": [
+      300,
+      600
+     ],
+     "h": [
+      60,
+      140
+     ],
+     "top": 0.45,
+     "pad": 10,
+     "tries": 20
+    }
+   }
+  }
+ },
+ "development": {
+  "wd": "VOCR5's development whole dialogue, as #97 (eval/textdet.wd_units: tv_dlg plus the dn_dlg frames tv_dlg does not hold, base / +4 / +8, pooled; 1,515 cases, 1,161 pooled units, 93 VNs); the baseline units are #97's frozen GRAD + refine units",
+  "baseline_units_sha256": {
+   "VOCR5-S": "a8b0e13e93ad0b57407f7adfb6b1b3c8bcb8b675d988113979825430e3255ebe",
+   "VOCR5-N": "e02d09c6e399b120ce9404670afab50be1e1b6a47e52bd6d6872baed623b7edb",
+   "VOCR5-L": "0aeec03c3f4679700920d229754f7a31646fbffbe564a4df5f6c1bb1af4eac1b"
+  },
+  "cohorts_sha256": {
+   "tv_dlg": "f1007ab4e943012330b229cc2630f3fc9d33aa94d6dac03130bc5ea5126c1af3",
+   "dn_dlg": "c6dfd35293e7716bc3772fffc88c8d8aeba62c8fa20f97c0d5041b4f1dbc1e1f"
+  },
+  "scoring": "a case the gate passes keeps its GRAD + refine unit; a case it stops reads nothing (every character a deletion). Intervals: eval/textdet.vn_diff, 10,000 VN-cluster resamples, seed 0",
+  "native_vita": "eval/textdet.native_vita_shots (150 units, 9 VNs)",
+  "empties": "eval/linefind's empty regions of vita_dev + psp_dev, a reserved test VN's left out: 66; the rate = the share with no line (the gate says no, or GRAD + refine returns none); reported by whether the screenshot is in synth3's default scene pool (#97's caveat: 54 in, 12 out)",
+  "report_only": "the holdout empties (vita_holdout + psp_holdout, 25); per platform and variant"
+ },
+ "selection_rule": {
+  "wd_cost_cap_points": 0.1,
+  "empty_rate_min": 0.85,
+  "eligible": "a learned gate's C runtime (runtime/vocr_textgate.c) gives the twin's score on every development case and empty region; a rule needs no C to be scored",
+  "qualifies": "for each of VOCR5-S, -N and -L: gate - refine on wd (points, variants pooled) has a VN-cluster 95% interval whose lower end is <= 0 and a point estimate <= +0.10; on native_vita the same interval's lower end is <= 0; and the development empty rate is >= 0.85",
+  "size_order": "total bytes = int8 blob bytes + the VitaSDK gcc 15.2 -Os .text bytes of the gate's code for its mode (linked with --gc-sections from the gate's entry points; vita/textgate_size.py), then blob bytes, then region before boxes, then the higher target, then the name",
+  "winner": "the first qualifying candidate in size order",
+  "no_winner": "negative verdict; GRAD + refine stays as it is; the protected sets are read once for the candidate with the most development empties returning no line among those meeting the wd conditions (labelled not promoted)"
+ },
+ "protected": {
+  "when": "once, after the selection record is committed and pushed",
+  "tests": "vita-test + psp-test whole dialogue (eval's regions, base / +4 / +8; #97's GRAD + refine units for VOCR5-S/N/L, with the gate's decisions on the same regions; attempt record)",
+  "clannad": "CLANNAD's long run: the gate on each page's ROI; GRAD + refine reads of every reference line (eval/textdet_protected's mapping), dialogue CER with and without the gate; lines returned on the pages the references hold no text for"
+ },
+ "estimates": "console time from the MAC rate of VOCR3-H15 (1,564,992 MACs per CTC frame at 5.0-5.2 ms, 333 MHz assumed) and, where measured, vita/a9_cycles.py; every console figure an estimate",
+ "pre_study": {
+  "note": "training-side only (calibration cohorts), before this protocol: block-statistics designs (per 8 x 8 / 16 x 16 block: contrast, mean |dx|, mean |dy|, edge share; tiny CNNs of 0.3-5 K parameters on them, trained densely on #97's real canvases) kept at most 0.47 of cal_empty at 0.998 recall of cal_dlg (stride 8, two 3 x 3 x 16 layers); the edge-run rule's run length separated nothing at that recall. #97's detectors read as presence gates: 0.17-0.81 (s4_c4 to s8_c8, 1,004-1,884 B), 0.80-0.91 (s4_c8n5 to s8_c16, 2,228-3,276 B), 0.95 (s8_c24_seed1). The block-statistics CNNs are therefore not carried into the sweep; the rules are, as the baseline the networks must beat",
+  "cal_reference": "#97's s8_c24_seed4 with its own decode on the calibration cohorts: 14 of 11,103 cal_dlg cases with no line (0.9987 kept), 0.904 of cal_empty with no line (its development figures: 3 of 1,515 cases and 0.92)"
+ },
+ "amendments": []
+}

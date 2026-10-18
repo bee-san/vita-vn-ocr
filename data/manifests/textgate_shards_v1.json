@@ -1,0 +1,359 @@
+{
+ "kind": "textgate-shards",
+ "schema": 1,
+ "code_sha256": {
+  "eval/textgate_data.py": "bb7152335e899a15e33bb210fdb34de378e05ce16e14fbbdebb41c715d250be9",
+  "synth/textdet_data.py": "359f18a8d97a868381b0e7988806375cc51882ce23c1965de082d1995193b200",
+  "synth/synth3.py": "834c4ad7995d9f62770e0e95223aea5077665b779385a0d6b9ce572d32b14fc9",
+  "synth/render.py": "25733484aa71a76f01f910c5e89b01b8ec349188de7d15f6a815f13912266624",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "teacher/geometry.py": "fa001851fad9d405700df467925b99322d40cc0b2897fd0305281db43419def5"
+ },
+ "scene_pool": {
+  "vita": 120,
+  "psp": 1035,
+  "hires": 3137
+ },
+ "shards": [
+  {
+   "dir": "synth_clean",
+   "name": "synth_0000",
+   "npy_sha256": "30c58cff41880c7d653f3115a9be0a09a0e583c067e097f09bc97b56398b34be",
+   "json_sha256": "88d1811355563db6ab029b7aa61c71da848e363cd97b6c6b1140f7e44375df6a",
+   "samples": 2000,
+   "lines": 4047,
+   "by_src": {
+    "synth:empty": 411,
+    "synth:region": 934,
+    "synth:loose": 384,
+    "synth:vertical": 271
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0001",
+   "npy_sha256": "f3674390b8ba60a1bde03d03e1f67ae32aedcc6687b1c10b5934059db21bb4d4",
+   "json_sha256": "b2d59f6bc94cb09b143a4c23f005ec9672699b53a30a57b97a5275b2660c3602",
+   "samples": 2000,
+   "lines": 4088,
+   "by_src": {
+    "synth:vertical": 248,
+    "synth:empty": 409,
+    "synth:loose": 413,
+    "synth:region": 930
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0002",
+   "npy_sha256": "965e1aa2372bb996e37d69c0ab122f7a6979f16e3f35680e6213821631df48c5",
+   "json_sha256": "01c8bf54d3b44b91f99723a50095153db5f95d63658950b6eeeccd79843ff80a",
+   "samples": 2000,
+   "lines": 4080,
+   "by_src": {
+    "synth:empty": 407,
+    "synth:region": 942,
+    "synth:loose": 400,
+    "synth:vertical": 251
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0003",
+   "npy_sha256": "8271a7f0e7dc2421c9630e32140322b38694e86b8026d20d5b382af42a5b65ae",
+   "json_sha256": "e2ebec9e9a60aa590db85065ef88536e4db38345f8466a98117d1922783f6531",
+   "samples": 2000,
+   "lines": 4144,
+   "by_src": {
+    "synth:region": 957,
+    "synth:loose": 424,
+    "synth:vertical": 249,
+    "synth:empty": 370
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0004",
+   "npy_sha256": "d95fe4a9cccc264bc946d072cd38b91dc4cabdf20507f52c68db00d3ba0aba34",
+   "json_sha256": "b34193767c916dc00746013ce5926a641d12631e560367396dc629742988de6b",
+   "samples": 2000,
+   "lines": 4031,
+   "by_src": {
+    "synth:empty": 400,
+    "synth:vertical": 263,
+    "synth:loose": 402,
+    "synth:region": 935
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0005",
+   "npy_sha256": "8928b199fe5900d4c0045f190e4b88384df165d8d04e704f645b4af449a282c6",
+   "json_sha256": "21f929e3dd1c478abde723a2938b2485085511d06a77641eff29970c0580ad0d",
+   "samples": 2000,
+   "lines": 4170,
+   "by_src": {
+    "synth:region": 909,
+    "synth:empty": 383,
+    "synth:loose": 424,
+    "synth:vertical": 284
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0006",
+   "npy_sha256": "4f7a30080481cfe34e5e23a8742496edede42848ac5b8c519f6bd3168b80a5d6",
+   "json_sha256": "4c5cd6d1f6d51eac13df8fe9b44a2f39d662cf11eccb69cfd9dd0b04832ffa9b",
+   "samples": 2000,
+   "lines": 4170,
+   "by_src": {
+    "synth:empty": 358,
+    "synth:loose": 431,
+    "synth:region": 954,
+    "synth:vertical": 257
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0007",
+   "npy_sha256": "cd939945084074789aa14407722143249d67c2b5e6666a65425d777ba5076760",
+   "json_sha256": "6a2eb37445bb3e0d02a07cabcfd0f72cde9647b200a55b944fe87ee11e72808c",
+   "samples": 2000,
+   "lines": 4137,
+   "by_src": {
+    "synth:region": 911,
+    "synth:vertical": 290,
+    "synth:loose": 408,
+    "synth:empty": 391
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0008",
+   "npy_sha256": "d149c2a570796496346cc2df625d7bee35263a0f6f38b34e767ee4f89470ae56",
+   "json_sha256": "1f989e2278d8aac5573a00a05d10ff5403ad173ede848422f62bd3db6000d0cb",
+   "samples": 2000,
+   "lines": 4174,
+   "by_src": {
+    "synth:region": 947,
+    "synth:empty": 377,
+    "synth:vertical": 263,
+    "synth:loose": 413
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0009",
+   "npy_sha256": "7d4c4f91427167e44a7f3a8a8be26d0d27a61c3b1de5586c1c54d4444f0d9238",
+   "json_sha256": "8dd579c56dcdbf2e9ed75316bffd0f29a586409515b42a0080fa8b7c4a025964",
+   "samples": 2000,
+   "lines": 4052,
+   "by_src": {
+    "synth:loose": 438,
+    "synth:region": 883,
+    "synth:empty": 426,
+    "synth:vertical": 253
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0010",
+   "npy_sha256": "8a9ef2734c93130dbdebe2ebf44f61c2a4a106aba19a6fb0bfe2aa98baa780ff",
+   "json_sha256": "b4253698995e883133f435402d237bb726b3c82b05ed875b4d99d53731a05aa6",
+   "samples": 2000,
+   "lines": 4146,
+   "by_src": {
+    "synth:vertical": 249,
+    "synth:region": 921,
+    "synth:empty": 388,
+    "synth:loose": 442
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0011",
+   "npy_sha256": "97630d676d70e3c39cedaff722bd214afca6407bf002347609843a0ebcb0eb82",
+   "json_sha256": "cf813fb129634d7bc14a5da22c53d31f52f3b9d5c84039dad8b9e0bf88817082",
+   "samples": 2000,
+   "lines": 4016,
+   "by_src": {
+    "synth:vertical": 256,
+    "synth:region": 939,
+    "synth:empty": 407,
+    "synth:loose": 398
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0012",
+   "npy_sha256": "5599474290dc7a48b5e603cf1a551ebd83f89bd39bd8591f918c6752f9e60d28",
+   "json_sha256": "a2acd1ebfbe9ff30e8dd2fbc73c15ba402dff56da96a3c32980f8bb3fdbc4f50",
+   "samples": 2000,
+   "lines": 4100,
+   "by_src": {
+    "synth:region": 951,
+    "synth:vertical": 258,
+    "synth:loose": 406,
+    "synth:empty": 385
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0013",
+   "npy_sha256": "fc1c57988220a0ad2bf15b27b39fe7da08f1aa25d3f71a97e715cc378b294d81",
+   "json_sha256": "7fa966a802683784e62539cb75bf60d8fd0e41a3dd884d8198cf145a85a48cc8",
+   "samples": 2000,
+   "lines": 4092,
+   "by_src": {
+    "synth:loose": 427,
+    "synth:vertical": 276,
+    "synth:empty": 386,
+    "synth:region": 911
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0014",
+   "npy_sha256": "58c2bd2e12e7c64861d6860ded7fb8917509676c4afa05cd069a279ae3f6b632",
+   "json_sha256": "a968c99283110ff1856d6c2466fd64bc7899b5e25af8460870b376070245cbbf",
+   "samples": 2000,
+   "lines": 3993,
+   "by_src": {
+    "synth:region": 908,
+    "synth:vertical": 246,
+    "synth:loose": 414,
+    "synth:empty": 432
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0015",
+   "npy_sha256": "9a3bc2b79426fe98558972481f0fdb1d6d1f82c9fdc32a0bca94855a2361213f",
+   "json_sha256": "d101acd60de2a95a930a7326375bb217e15f60c5f0966c080a2c9c9e299ca372",
+   "samples": 2000,
+   "lines": 4019,
+   "by_src": {
+    "synth:loose": 403,
+    "synth:vertical": 258,
+    "synth:region": 926,
+    "synth:empty": 413
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0016",
+   "npy_sha256": "d7e06d78e1a7d1fe9d04ec37e5c37a9a01f0c645d8fa61f0aa688abebd77ef82",
+   "json_sha256": "d61af3e15983f501b5d66aaaed29456beb02643bca1459857ae2cb431d48bf49",
+   "samples": 2000,
+   "lines": 4090,
+   "by_src": {
+    "synth:region": 936,
+    "synth:loose": 431,
+    "synth:empty": 402,
+    "synth:vertical": 231
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0017",
+   "npy_sha256": "7291c696471ca43a0deaffbf8508d55c5c47acb20e641c6d9c277d13ae6afd7a",
+   "json_sha256": "610949926835e98ce8bc17016660e7971c015732153f3548b674cae15110b171",
+   "samples": 2000,
+   "lines": 4074,
+   "by_src": {
+    "synth:region": 904,
+    "synth:loose": 443,
+    "synth:vertical": 249,
+    "synth:empty": 404
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0018",
+   "npy_sha256": "2f7311e7d0abddac8061555e30e20b3c51453a82b7c6a7ad978f519d38d2d7cf",
+   "json_sha256": "c5d711347ab0cf79c114e401abec6f4e1e657bd7f9468eb65b999acbfae77114",
+   "samples": 2000,
+   "lines": 4044,
+   "by_src": {
+    "synth:region": 914,
+    "synth:loose": 380,
+    "synth:vertical": 269,
+    "synth:empty": 437
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0019",
+   "npy_sha256": "b41f8a2d8f7888796b65a8f4aa48d9438603069a202e38737ae23508814ac3d0",
+   "json_sha256": "26a03a4e850d1988d8a8eb8cba2c8a72a92fa184039ed61e0b1be9c9a9509bc4",
+   "samples": 2000,
+   "lines": 4189,
+   "by_src": {
+    "synth:region": 918,
+    "synth:empty": 381,
+    "synth:loose": 411,
+    "synth:vertical": 290
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0020",
+   "npy_sha256": "ae8a02544b04ed888f3b28c31a109c7191c60a5ea0b4e1c7edbec4907429b67b",
+   "json_sha256": "d9cb0b7a01a6ffc972a063570d80d62fef69113f737b09b56402ddf57ea405c4",
+   "samples": 2000,
+   "lines": 4124,
+   "by_src": {
+    "synth:empty": 392,
+    "synth:vertical": 260,
+    "synth:loose": 417,
+    "synth:region": 931
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0021",
+   "npy_sha256": "b66205c64071e1c538f99bf012f675ec02db5d82d999513db295420505d50cf4",
+   "json_sha256": "b3470ffdfd91f2c342f69358629bdf85fe15032a666ada45b65a3bf8a314c640",
+   "samples": 2000,
+   "lines": 4128,
+   "by_src": {
+    "synth:empty": 405,
+    "synth:region": 904,
+    "synth:loose": 413,
+    "synth:vertical": 278
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0022",
+   "npy_sha256": "d2b76520879be57a1626df1dff23bc3ec0408e274c76bef92d0cafd47c42914f",
+   "json_sha256": "1d9dbc41ec99e569c4f65a39f0a647e993c82ebfe96ea4dc8d5ad27cd7e6ec58",
+   "samples": 2000,
+   "lines": 4112,
+   "by_src": {
+    "synth:empty": 394,
+    "synth:loose": 438,
+    "synth:vertical": 274,
+    "synth:region": 894
+   }
+  },
+  {
+   "dir": "synth_clean",
+   "name": "synth_0023",
+   "npy_sha256": "929150beed364a50fbf08346baaec360b6fba45937a64d42c6a5fac0e31138dd",
+   "json_sha256": "106680fcba292b25867dc6677c0f5fe1998bdc0cd9d599fdd554df75401421ee",
+   "samples": 2000,
+   "lines": 4147,
+   "by_src": {
+    "synth:empty": 380,
+    "synth:region": 936,
+    "synth:vertical": 274,
+    "synth:loose": 410
+   }
+  }
+ ],
+ "totals": {
+  "samples": 48000,
+  "lines": 98367
+ }
+}

@@ -359,9 +359,11 @@ retraining costs +1.11, +0.49 and +1.90 points of development whole-dialogue CER
 
 ### The protected sets, once (`eval/textdet_protected_20261018.json`, `eval/textdet_clannad_20261018.json`)
 
-After the round-3 record was committed and pushed (`572d395`), round 3's report candidate `s8_c24_seed4` was read
-once with det+refine (attempt records 2026-10-18T02:13:05Z), the C runtime checked against the twin on every
-protected region.
+After the round-3 record was committed and pushed (`572d395`, 2026-10-18T02:12:50Z; tag
+`textdet-round3-record-572d395`), round 3's report candidate `s8_c24_seed4` was read once with det+refine (attempt
+records 2026-10-18T02:13:05Z), the C runtime checked against the twin on every protected region. The branch was later
+rebased onto main, which rewrote its commit ids; the original commits are kept at the tags `textdet-protocol-e32ade6`,
+`textdet-round3-record-572d395` and `textdet-history-20261018` (the same final tree).
 
 **vita-test + psp-test whole dialogue** (eval's 175 regions, 2 vita-test regions with an uncertain line left out, at
 base / +4 / +8 px; body = dialogue text; VN-cluster intervals):

@@ -61,10 +61,15 @@ _shape("s8_c24", 8, 8, 16, [24, 24, 24], [1, 2, 4], c2=24)
 _shape("s8_c32", 8, 8, 16, [32, 32, 32], [1, 2, 4], c2=32)
 _shape("s8_c32n4", 8, 8, 16, [32, 32, 32, 32], [1, 2, 2, 2], c2=32)
 _shape("s8_c48", 8, 8, 24, [48, 48, 48], [1, 2, 2], c2=48)
-# heads ablation: kernel + orientation only (no edge regression: A1/A2 are trained at zero weight to the kernel's
-# own half-band, so the decode gives the kernel's extent grown back to the line)
+# heads ablation: kernel + orientation only (dropped from the sweep by protocol amendment 2)
 _shape("s4_c8_ko", 4, 4, 8, [8, 8, 8], [1, 2, 4], head="ko")
 _shape("s8_c16_ko", 8, 4, 8, [16, 16, 16], [1, 2, 4], c2=16, head="ko")
+# round 3 (protocol amendment 4): deeper shapes around round 2's front
+_shape("s4_c12n4", 4, 6, 12, [12, 12, 12, 12], [1, 2, 4, 1])
+_shape("s4_c20n4", 4, 8, 16, [20, 20, 20, 20], [1, 2, 4, 1])
+_shape("s4_c24n4", 4, 8, 16, [24, 24, 24, 24], [1, 2, 2, 1])
+_shape("s8_c16n4", 8, 4, 8, [16, 16, 16, 16], [1, 2, 4, 2], c2=16)
+_shape("s8_c24n4", 8, 8, 16, [24, 24, 24, 24], [1, 2, 4, 2], c2=24)
 
 N_OUT = 4                     # K, O, A1, A2
 A_SCALE = 2                   # A1/A2 codes per pixel in the int8 blob

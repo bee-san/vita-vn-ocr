@@ -131,8 +131,11 @@ def window_of(rng, smp, canvas_shape, real):
     return int(rng.integers(0, W - w + 1)), int(rng.integers(0, H - h + 1)), w, h
 
 
-def targets(lines, ignore, wx, wy, w, h, s):
-    """Window targets at stride s: K, O, A1, A2 (float32), valid and kernel masks (bool), (WIN_H/s, WIN_W/s)."""
+def targets(lines, ignore, wx, wy, w, h, s, strict=False):
+    """Window targets at stride s: K, O, A1, A2 (float32), valid and kernel masks (bool), (WIN_H/s, WIN_W/s).
+    strict (round 3, protocol amendment 4): a kernel cell's centre lies strictly within r of the line's centre, so a
+    line under 2s px tall gets one kernel row (rounds 1-2: within r inclusive, two rows when the centre falls on a
+    cell boundary, which made the kernels of lines 2s px apart touch)."""
     ho, wo = WIN_H // s, WIN_W // s
     K = np.zeros((ho, wo), np.float32)
     O = np.zeros((ho, wo), np.float32)  # noqa: E741
@@ -170,7 +173,8 @@ def targets(lines, ignore, wx, wy, w, h, s):
         c = (a0 + a1) / 2
         r = max(across / 4, s / 2)
         n_across = ho if not vert else wo
-        idx = np.flatnonzero(np.abs(centres[:n_across] - c) <= r)
+        dist = np.abs(centres[:n_across] - c)
+        idx = np.flatnonzero(dist < r if strict else dist <= r)
         if not len(idx):
             idx = np.array([int(np.clip(round((c - (s - 1) / 2) / s), 0, n_across - 1))])
         along = np.arange(b0 // s, (b1 - 1) // s + 1)
@@ -197,9 +201,9 @@ def targets(lines, ignore, wx, wy, w, h, s):
 
 
 class Batches(torch.utils.data.IterableDataset):
-    def __init__(self, manifest, dirs, stride, seed):
+    def __init__(self, manifest, dirs, stride, seed, strict=False):
         super().__init__()
-        self.manifest, self.dirs, self.stride, self.seed = manifest, dirs, stride, seed
+        self.manifest, self.dirs, self.stride, self.seed, self.strict = manifest, dirs, stride, seed, strict
 
     def __iter__(self):
         pool = Pool(self.manifest, self.dirs)
@@ -219,7 +223,7 @@ class Batches(torch.utils.data.IterableDataset):
                 wx, wy, w, h = window_of(rng, smp, cv.shape, src != "synth")
                 x[b, 0, :h, :w] = cv[wy:wy + h, wx:wx + w]
                 valid_hw.append((h, w))
-                K, O, A1, A2, v, k = targets(smp["lines"], smp["ignore"], wx, wy, w, h, s)  # noqa: E741
+                K, O, A1, A2, v, k = targets(smp["lines"], smp["ignore"], wx, wy, w, h, s, self.strict)  # noqa: E741
                 for t, a in zip(tg, (K, O, A1, A2)):
                     t[b] = a
                 vm[b], km[b] = v, k
@@ -295,6 +299,7 @@ def main():
     ap.add_argument("--steps", type=int, default=30000)
     ap.add_argument("--threads", type=int, default=5)
     ap.add_argument("--log-every", type=int, default=200)
+    ap.add_argument("--strict-kernel", action="store_true", help="round 3's kernel rule (protocol amendment 4)")
     args = ap.parse_args()
     torch.set_num_threads(args.threads)
     torch.manual_seed(args.seed)
@@ -304,12 +309,14 @@ def main():
     s = shape["stride"]
     model = TM.TextDet(shape)
     opt = torch.optim.AdamW(param_groups(list(model.parameters())), lr=LR)
-    loader = torch.utils.data.DataLoader(Batches(args.manifest, args.shards, s, args.seed), batch_size=None,
+    loader = torch.utils.data.DataLoader(Batches(args.manifest, args.shards, s, args.seed, args.strict_kernel),
+                                         batch_size=None,
                                          num_workers=1, persistent_workers=True, prefetch_factor=4)
     it = iter(loader)
     qat_start = int(QAT_FRAC * args.steps)
     run = {"kind": "textdet-run", "shape": shape, "seed": args.seed, "steps": args.steps, "qat_start": qat_start,
            "batch": BATCH, "window": [WIN_H, WIN_W], "mix": MIX, "lr": [LR, LR_MIN, WARMUP], "wd": WD,
+           "strict_kernel": args.strict_kernel,
            "manifest_sha256": sha256(args.manifest),
            "code_sha256": {f: sha256(ROOT / f) for f in ("train/textdet_train.py", "train/textdet_model.py",
                                                          "train/textdet_export.py", "synth/textdet_twin.py")},

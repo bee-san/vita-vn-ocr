@@ -64,16 +64,21 @@ def parse(spec):
     return name, Path(path)
 
 
-def det_lines(model, images, cbin=None, blob=None):
-    """The detector's lines on every grey image (twin), checked against the C driver when given."""
+def det_lines(model, images, cbin=None, blob=None, refine=False):
+    """The detector's lines on every grey image (twin; with refine, round 2's det+refine), checked against the C
+    driver when given."""
     import textdet as TD
 
     import textdet_twin as TW
-    out = [TW.find_lines(model, g) for g in images]
+    out = []
+    for g in images:
+        lines, tr = TW.find_lines(model, g)
+        out.append((TD.det_refine(lines, g) if refine else lines, tr))
     equal = None
     if cbin:
-        c = TD.c_detect(cbin, blob, images)
-        equal = all([list(map(int, ln)) for ln in cl] == [list(map(int, ln)) for ln in tl] and ct == tt
+        c = TD.c_detect(cbin, blob, images, 2 if refine else 0)
+        equal = all([list(map(int, ln)) for ln in cl] ==
+                    [list(map(int, ln)) for ln in tl if not (refine and ln[5])] and ct == tt
                     for (tl, tt), (cl, ct) in zip(out, c))
         if not equal:
             raise SystemExit("the C detector differs from its twin on a protected region")
@@ -92,6 +97,7 @@ def cmd_tests(args):
     out = Path(args.out)
     dname, dblob = parse(args.det)
     once(out / "tests.attempt.json", {"started": utc_now(), "protocol_sha256": sha256(PROTOCOL), "det": dname,
+                                      "finder": "det+refine" if args.refine else "det",
                                       "det_sha256": sha256(dblob),
                                       "models": {n: sha256(p) for n, p in map(parse, args.model)}})
     model = TW.Model(dblob.read_bytes())
@@ -118,7 +124,7 @@ def cmd_tests(args):
                     img[y:y + h, x:x + w])))))
         imgs = [c[3] for c in cases]
         found = {"grad": FT.lines_of(ident["driver"], imgs, 0), "refine": FT.lines_of(ident["driver"], imgs, FLAGS)}
-        dl, eq = det_lines(model, imgs, args.cbin, dblob)
+        dl, eq = det_lines(model, imgs, args.cbin, dblob, args.refine)
         c_equal.append(eq)
         for (reg, variant, (ox, oy), img), g, r, (dlines, _) in zip(cases, found["grad"], found["refine"], dl):
             per = {"grad": (g[0], g[1], [0] * len(g[0])), "refine": (r[0], r[1], [0] * len(r[0])),
@@ -141,6 +147,7 @@ def cmd_tests(args):
                            for k in ("errors", "chars")}})
         print(f"{set_name}: {len(regions)} regions, {len(cases)} cases (excluded {excluded})", flush=True)
     result = {"kind": "textdet-protected-tests", "det": dname, "det_sha256": sha256(dblob),
+              "finder": "det+refine" if args.refine else "det",
               "det_bytes": model.blob_bytes, "c_equals_twin": c_equal, "native": ident,
               "models": {n: {"sha256": r.sha256, "blob_bytes": r.blob_bytes} for n, r in readers.items()},
               "bootstrap": FT.BOOT, "dialogue": {}, "detection": {}}
@@ -212,6 +219,7 @@ def cmd_clannad(args):
     if sha256(work / "refs.jsonl") != freeze["refs_sha256"]:
         raise SystemExit("refs.jsonl differs from its freeze record")
     once(out / "clannad.attempt.json", {"started": utc_now(), "refs_sha256": freeze["refs_sha256"],
+                                        "finder": "det+refine" if args.refine else "det",
                                         "protocol_sha256": sha256(PROTOCOL), "det": dname,
                                         "det_sha256": sha256(dblob)})
     model = TW.Model(dblob.read_bytes())
@@ -236,7 +244,7 @@ def cmd_clannad(args):
         imgs.append(np.ascontiguousarray(to_gray(np.ascontiguousarray(rgb[y:y + h, x:x + w]))))
     grad = FT.lines_of(ident["driver"], imgs, 0)
     refd = FT.lines_of(ident["driver"], imgs, FLAGS)
-    dl, c_equal = det_lines(model, imgs, args.cbin, dblob)
+    dl, c_equal = det_lines(model, imgs, args.cbin, dblob, args.refine)
     preds = {n: {"grad": {}, "refine": {}, "det": {}} for n in readers}
     extra = {"det_lines_on_no_text_pages": 0, "det_lines_outside_ref_boxes": 0, "no_text_pages": 0,
              "pages_with_ref": 0, "det_lines": 0, "det_vertical": 0, "grad_lines_on_no_text_pages": 0}
@@ -273,6 +281,7 @@ def cmd_clannad(args):
     first = preds[next(iter(readers))]["grad"]
     scored = [x for x in refs.values() if x["status"] == "ref" and x["id"] in first]
     result = {"kind": "textdet-clannad", "det": dname, "det_sha256": sha256(dblob),
+              "finder": "det+refine" if args.refine else "det",
               "refs_sha256": freeze["refs_sha256"],
               "scored_lines": len(scored), "matched_grad_boxes": matched, "unmatched": unmatched,
               "c_equals_twin": c_equal, "native": ident, "counts": extra,
@@ -315,6 +324,7 @@ def main():
         p.add_argument("--out", required=True)
         p.add_argument("--cbin", default="")
         p.add_argument("--compiler", default="gcc")
+        p.add_argument("--refine", action="store_true", help="round 2's det+refine (protocol amendment 3)")
         if name == "tests":
             p.add_argument("--data", required=True)
         else:

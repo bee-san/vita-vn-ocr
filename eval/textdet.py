@@ -118,18 +118,31 @@ class Refine(Grad):
         return [tuple(int(v) for v in x) for x in b], [int(v) for v in d]
 
 
-class Det:
-    """A detector candidate through the twin: every line (horizontal and vertical); last_vertical holds the flags."""
+def det_refine(lines, grey):
+    """Round 2's det+refine (protocol amendment 3): the detector's horizontal lines through VOCR_REFINE_DEFAULT
+    (synth/lines_refine.py, the twin of runtime/vocr_lines_refine.c); its vertical lines are kept as they are (never
+    read; they keep the region's line count, so the empty rate is the detector's)."""
+    import lines_refine as LR
+    hz = [ln for ln in lines if not ln[5]]
+    b, d, _ = LR.refine_lines(grey, [ln[:4] for ln in hz], [ln[4] for ln in hz], LR.DEFAULT)
+    return [(*map(int, bx), int(dk), 0) for bx, dk in zip(b, d)] + [tuple(ln) for ln in lines if ln[5]]
 
-    def __init__(self, name, blob):
+
+class Det:
+    """A detector candidate through the twin: every line (horizontal and vertical); last_vertical holds the flags.
+    refine: round 2's det+refine."""
+
+    def __init__(self, name, blob, refine=False):
         import textdet_twin as TW
         self.name = name
         self.model = TW.Model(Path(blob).read_bytes())
+        self.refine = refine
         self.last_vertical = []
 
     def lines(self, grey):
         import textdet_twin as TW
-        return TW.find_lines(self.model, grey)
+        lines, truncated = TW.find_lines(self.model, grey)
+        return (det_refine(lines, grey) if self.refine else lines), truncated
 
     def __call__(self, grey):
         lines, _ = self.lines(grey)
@@ -142,9 +155,10 @@ def make_finder(spec, check_c=False):
         return Grad(check_c)
     if spec == "refine":
         return Refine(check_c)
-    if spec.startswith("det:"):
-        name, _, blob = spec[4:].partition("=")
-        return Det(name, blob)
+    if spec.startswith(("det:", "detref:")):
+        kind, _, rest = spec.partition(":")
+        name, _, blob = rest.partition("=")
+        return Det(name, blob, refine=kind == "detref")
     raise SystemExit(f"unknown finder {spec!r}")
 
 
@@ -398,8 +412,9 @@ def case_key(name, c):
     return f"{name}|{c['unit']}|{c['variant']}"
 
 
-def c_detect(cbin, blob, images):
-    """The C driver's batch mode: [(lines [(x, y, w, h, dark, vertical)], truncated)] per grey image."""
+def c_detect(cbin, blob, images, flags=0):
+    """The C driver's batch mode: [(lines [(x, y, w, h, dark, vertical)], truncated)] per grey image. flags 2: the
+    driver's det+refine mode (the refined horizontal lines only)."""
     import struct
     import subprocess
     import tempfile
@@ -407,7 +422,7 @@ def c_detect(cbin, blob, images):
         for img in images:
             img = np.ascontiguousarray(img, dtype=np.uint8)
             h, w = img.shape
-            f.write(struct.pack("<4I", w, h, 1, 0))
+            f.write(struct.pack("<4I", w, h, 1, flags))
             f.write(img.tobytes())
         path = f.name
     try:
@@ -442,17 +457,26 @@ def cmd_detect(args):
         dets = {}
         for cname, c in cases:
             lines, truncated = TW.find_lines(model, c["image"])
+            if args.refine:
+                lines = det_refine(lines, c["image"])
             dets[case_key(cname, c)] = {"lines": [list(map(int, ln)) for ln in lines], "truncated": bool(truncated)}
         c_equal = None
         if args.cbin:
-            cres = c_detect(args.cbin, blob, [c["image"] for _, c in cases])
-            c_equal = all([list(map(int, ln)) for ln in cl] == dets[case_key(cn, c)]["lines"] and
-                          ct == dets[case_key(cn, c)]["truncated"] for (cn, c), (cl, ct) in zip(cases, cres))
+            cres = c_detect(args.cbin, blob, [c["image"] for _, c in cases], 2 if args.refine else 0)
+            if args.refine:                  # the C driver's det+refine mode drops the vertical lines
+                ref = {k: [ln for ln in v["lines"] if not ln[5]] for k, v in dets.items()}
+                c_equal = all([list(map(int, ln)) for ln in cl] == ref[case_key(cn, c)] and
+                              ct == dets[case_key(cn, c)]["truncated"] for (cn, c), (cl, ct) in zip(cases, cres))
+                cres = None
+            if cres is not None:
+                c_equal = all([list(map(int, ln)) for ln in cl] == dets[case_key(cn, c)]["lines"] and
+                              ct == dets[case_key(cn, c)]["truncated"] for (cn, c), (cl, ct) in zip(cases, cres))
             if not c_equal:
                 print(f"{name}: C and twin DIFFER", flush=True)
         doc = {"kind": "textdet-dets", "candidate": name, "blob": str(blob), "blob_sha256": sha256(blob),
                "blob_bytes": model.blob_bytes, "shape": model.name, "cohorts": args.cohorts,
-               "c_equals_twin": c_equal, "computed": utc_now(), "dets": dets}
+               "finder": "det+refine" if args.refine else "det", "c_equals_twin": c_equal,
+               "c_driver_sha256": sha256(args.cbin) if args.cbin else None, "computed": utc_now(), "dets": dets}
         target.write_text(json.dumps(doc) + "\n", encoding="utf-8")
         n = sum(len(d["lines"]) for d in dets.values())
         print(f"{name}: {len(dets)} cases, {n} lines, C == twin: {c_equal}", flush=True)
@@ -618,7 +642,7 @@ def pareto(reps, key="mean_wd_cer"):
 
 def cmd_select(args):
     proto = json.loads(Path(args.protocol).read_text(encoding="utf-8"))
-    runs = proto["amendments"][1]["runs"]
+    runs = next(a for a in proto["amendments"] if a["n"] == args.runs_from)["runs"]
     base = load_baseline(args.baseline)
     native = native_vita_shots()
     arenas = json.loads(Path(args.arena).read_text(encoding="utf-8")) if args.arena else {}
@@ -634,7 +658,8 @@ def cmd_select(args):
         reps[cand]["linefind_report"] = lf["pooled"]["report"][cand]["all"]
     rule = apply_rule(reps, det_units)
     doc = {"kind": "textdet-selection", "computed": utc_now(), "protocol_sha256": sha256(args.protocol),
-           "runs": runs, "rule": rule, "pareto_mean_wd_cer": pareto(reps), "candidates": reps,
+           "runs_from_amendment": args.runs_from, "runs": runs, "rule": rule, "pareto_mean_wd_cer": pareto(reps),
+           "candidates": reps,
            "baseline": {m: {"grad": cer_of(wd_units(base[m], "grad")), "refine": cer_of(wd_units(base[m], "refine"))}
                         for m in MODELS}}
     Path(args.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
@@ -669,6 +694,7 @@ def main(argv=None):
     p.add_argument("--cohorts", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--cbin", default="")
+    p.add_argument("--refine", action="store_true", help="round 2's det+refine")
     p.add_argument("--force", action="store_true")
     p = sub.add_parser("read")
     p.add_argument("--model", required=True, help="NAME=BLOB")
@@ -684,6 +710,7 @@ def main(argv=None):
     p.add_argument("--dets", required=True)
     p.add_argument("--linefind", required=True)
     p.add_argument("--arena", default="")
+    p.add_argument("--runs-from", type=int, default=2, help="the protocol amendment that lists the round's runs")
     p.add_argument("--out", required=True)
     args = ap.parse_args(argv)
     if args.cmd == "linefind":

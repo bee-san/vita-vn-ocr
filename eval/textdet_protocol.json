@@ -782,6 +782,66 @@
     "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
     "synth/textdet_data.py": "359f18a8d97a868381b0e7988806375cc51882ce23c1965de082d1995193b200"
    }
+  },
+  {
+   "n": 3,
+   "time": "2026-10-18T00:11:26Z",
+   "after": "round 1's development scores (eval/textdet_round1_dev_20261018.json: no candidate qualifies) and before any score of round 2",
+   "round1": {
+    "winner": null,
+    "report_candidate": "s8_c24_seed1",
+    "report_candidate_wd": {
+     "VOCR5-S": {
+      "det": 4.0922,
+      "det_minus_grad": -3.3496,
+      "det_minus_grad_ci95": [
+       -6.1306,
+       -1.1299
+      ],
+      "det_minus_refine": -1.1217,
+      "det_minus_refine_ci95": [
+       -4.5973,
+       2.2204
+      ]
+     },
+     "VOCR5-N": {
+      "det": 3.6745,
+      "det_minus_grad": -3.191,
+      "det_minus_grad_ci95": [
+       -5.8472,
+       -1.0605
+      ],
+      "det_minus_refine": -1.1062,
+      "det_minus_refine_ci95": [
+       -4.4118,
+       2.0783
+      ]
+     },
+     "VOCR5-L": {
+      "det": 3.365,
+      "det_minus_grad": -2.839,
+      "det_minus_grad_ci95": [
+       -5.3238,
+       -0.754
+      ],
+      "det_minus_refine": -1.0946,
+      "det_minus_refine_ci95": [
+       -4.2187,
+       1.9256
+      ]
+     }
+    },
+    "fine_tune_triggered": true
+   },
+   "reason": "round 1 found no winner: its best candidates are resolved below GRAD but not below GRAD + refine. The development failure analysis (VOCR5-N, the round-1 report candidate) puts all of the excess over GRAD + refine in the units where the detector returns fewer lines than the reference: lines set close together (PSP-sized NVL pages, two-line boxes at about 1.1 line heights' pitch) merged into one box or missed, worst in the +4 / +8 px variants (the stride-8 grid's phase moves with the region); the units whose line count it gets right are about 590 errors better than GRAD + refine. A recognizer fine-tune cannot repair a box that holds two lines, while the refinement's SPLIT and TIGHTEN steps exist to split and trim such boxes",
+   "changes": [
+    "round 1's fine-tune clause, which its scores trigger, is not run in round 1: it moves to the final round and runs there if its trigger holds for that round's candidates (a deviation from the letter of the protocol, recorded here)",
+    "round 2 (pre-registered here): the finder det+refine = the detector's horizontal lines (vertical ones left out, as before) handed to runtime/vocr_lines_refine.c with VOCR_REFINE_DEFAULT (its twin synth/lines_refine.py; both unchanged, sources_sha256 above), the caller's arena shared (arena = max of the detector's and the refinement's at 960 x 544, which must be <= 131,072 B). The candidates are the 22 round-1 blobs, unchanged. Everything else of the promotion rule is unchanged: the cohorts, the conditions against GRAD and GRAD + refine for VOCR5-S/N/L, the native_vita and empty-rate conditions, the eligibility (C == twin for the whole det+refine path), the size order and the winner rule",
+    "the empty rate of det+refine is the detector's: the refinement never adds a line to a region the detector returns none for (eval/textdet.py checks it on every development empty region)",
+    "if round 2 has no winner the verdict is negative, unless a further round is pre-registered before its training or scoring; the protected sets are read once, for the final round's selection (or its report candidate)",
+    "train/textdet_export.py changed after amendment 2's pin (520d759: --wbits, the report-only int4 study); its default int8 export is unchanged: all 22 runs' final.vtd re-export byte for byte from their final.pt with it",
+    "round 1's C == twin check and arenas used the runtime's early, bit-exact version (feat/textdet-runtime f9d4ad3); the final runtime is re-checked on every development case before the final selection"
+   ]
   }
  ]
 }

@@ -1135,6 +1135,301 @@ def vocr_split_arena_formula(w, h):
     return 3 + up4(3 * w) + 3 * up4(2 * h) if w and h else 0
 
 
+# ---------------------------------------------------------------- protected sets: once, report only
+
+VARIANT_PAD = {"base": 0, "expanded-4": 4, "expanded-8": 8}
+
+
+class CachedReader:
+    """eval/finder_tighten.Reader with a crop cache (the modes share most crops)."""
+
+    def __init__(self, blob, library):
+        import finder_tighten as FT
+        self.r = FT.Reader(Path(blob), library)
+        self.sha256, self.blob_bytes = self.r.sha256, self.r.blob_bytes
+        self.cache = {}
+
+    def read(self, g, dark):
+        g = np.ascontiguousarray(g)
+        key = (hashlib.blake2b(g.tobytes(), digest_size=16).hexdigest(), g.shape, int(dark))
+        if key not in self.cache:
+            self.cache[key] = self.r.read(g, dark)
+        return self.cache[key]
+
+
+def once(path, record):
+    """Exclusive creation of an attempt record: a second run refuses."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8") as f:
+        json.dump(record, f, indent=1)
+
+
+def final_lines(img, mode):
+    """The twins' lines of one mode with, for each, the index of the GRAD box it came from."""
+    import lines_refine as LR
+    import lines_split as LS
+    from common import find_lines_ex
+    sf, rf = MODES[mode]
+    b, d, _ = find_lines_ex(img, "grad")
+    sb, sd, o1 = LS.split_lines(img, b, d, sf)
+    rb, rd, o2 = LR.refine_lines(img, sb, sd, rf)
+    return ([tuple(map(int, x)) for x in rb], [int(x) for x in rd], [o1[j] for j in o2],
+            [tuple(map(int, x)) for x in b], [int(x) for x in d])
+
+
+def protected_lines(driver, imgs):
+    """{mode: [(boxes, dark, origin, grad boxes, grad dark)]} through the twins, and per mode the number of cases
+    where the C driver's boxes and flags differ from them (0 expected)."""
+    out, diff = {}, {}
+    for mode in MODES:
+        sf, rf = MODES[mode]
+        c = c_lines(driver, imgs, sf, rf)
+        tw = [final_lines(img, mode) for img in imgs]
+        diff[mode] = sum(1 for (cb, cd, _, _), t in zip(c, tw) if cb != t[0] or cd != t[1])
+        out[mode] = tw
+    return out, diff
+
+
+def check_dev_record():
+    """The protected sets are read only after the development record is committed (protocol "protected")."""
+    import subprocess
+    rec = ROOT / "eval" / "translucent_box_dev_20261018.json"
+    doc = json.loads(rec.read_text(encoding="utf-8"))
+    if doc["protocol_sha256"] != sha256(PROTOCOL):
+        raise SystemExit("the development record is for another protocol")
+    tracked = subprocess.run(["git", "ls-files", "--error-unmatch", str(rec)], cwd=ROOT, capture_output=True)
+    dirty = subprocess.run(["git", "status", "--porcelain", "--", str(rec), str(PROTOCOL)], cwd=ROOT,
+                           capture_output=True, text=True).stdout.strip()
+    if tracked.returncode or dirty:
+        raise SystemExit("commit the development record and the protocol first")
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    return {"dev_record_sha256": sha256(rec), "protocol_sha256": sha256(PROTOCOL), "head": head,
+            "code_sha256": sha256(Path(__file__)), "adopted": doc["adopted"]}
+
+
+def protected_summary(units, detection, readers_meta, extra):
+    """The public record of the vita-test + psp-test run (counts, rates, intervals; no text)."""
+    import finder_tighten as FT
+    result = {"kind": "translucent-box-protected-tests", **extra, "models": readers_meta, "bootstrap": FT.BOOT,
+              "dialogue": {}, "detection": {}}
+    for name in units:
+        e = {}
+        for scope in ("body", "all"):
+            for v in list(VARIANT_PAD) + ["all"]:
+                for plat in ("vita", "psp", "pooled"):
+                    def keep(u, v=v, plat=plat):
+                        return (v == "all" or u["variant"] == v) and (plat == "pooled" or u["platform"] == plat)
+                    sel = {m: [dict(u, errors=u[f"{scope}_full_errors"], chars=u[f"{scope}_full_chars"])
+                               for u in units[name][m]] for m in units[name]}
+                    t = {m: FT.totals(sel[m], keep) for m in sel}
+                    e[f"{scope}/{v}/{plat}"] = {
+                        **{m: {"errors": t[m][0], "chars": t[m][1], "cer": FT.pct(t[m])} for m in t},
+                        **{f"{a}-{b}": FT.compare(sel[a], sel[b], keep) for a, b in PAIRS}}
+        result["dialogue"][name] = e
+    for mode, rows in detection.items():
+        for plat in ("vita-test", "psp-test", "pooled"):
+            sel = [r for r in rows if plat == "pooled" or r["set"] == plat]
+            tp, fp, fn = (sum(r[k] for r in sel) for k in ("tp", "fp", "fn"))
+            p_ = tp / (tp + fp) if tp + fp else 0.0
+            r_ = tp / (tp + fn) if tp + fn else 0.0
+            result["detection"][f"{mode}/{plat}"] = {
+                "cases": len(sel), "tp": tp, "fp": fp, "fn": fn, "line_recall": round(r_, 4),
+                "line_precision": round(p_, 4), "line_f1": round(2 * p_ * r_ / (p_ + r_), 4) if p_ + r_ else 0.0,
+                "region_exact": round(sum(r["fp"] == 0 and r["fn"] == 0 for r in sel) / len(sel), 4) if sel else None,
+                **{k: sum(r[k] for r in sel) for k in ("merged", "split", "cut")}}
+    FT.assert_public(result)
+    return result
+
+
+def cmd_protected(args):
+    """vita-test + psp-test whole dialogue, once (protocol "protected"): eval's regions (a region holding an
+    uncertain line left out whole), base / +4 / +8, the four modes, each model; private per-unit counts are stored
+    before the public record is built."""
+    import finder_tighten as FT
+    import sets
+    import textdet as TD
+    import vocr3_report as V
+
+    from common import to_gray
+    from general_vn_textbox_guard import transcript_score
+    out = Path(args.out)
+    gate = check_dev_record()
+    ident = build_driver(out / "build")
+    lib = FT.build(out / "build-lib")
+    arms = [a.partition("=") for a in args.arm]
+    readers = {n: CachedReader(p, lib["library"]) for n, _, p in arms}
+    M = TD._linefind("metrics")
+    once(out / "tests.attempt.json", {"started": utc_now(), **gate,
+                                      "models": {n: r.sha256 for n, r in readers.items()},
+                                      "driver_sha256": ident["driver_sha256"]})
+    units = {n: {m: [] for m in MODES} for n in readers}
+    detection = {m: [] for m in MODES}
+    c_diff = {}
+    for set_name in ("vita-test", "psp-test"):
+        regions, excluded = V.dialogue_regions(set_name, args.data)
+        boxes = {}
+        for _, _, rows in sets.regions(set_name, args.data):
+            for r in rows:
+                boxes[r["id"]] = r["box"]
+        cache = sets.ImageCache()
+        cases = []
+        for reg in regions:
+            img = cache.get(reg["path"])
+            dims = [img.shape[1], img.shape[0]]
+            for variant, pad in VARIANT_PAD.items():
+                x, y, w, h = V.expand(reg["region"], pad, dims)
+                cases.append((reg, variant, (x, y), np.ascontiguousarray(to_gray(np.ascontiguousarray(
+                    img[y:y + h, x:x + w])))))
+        lines, diff = protected_lines(ident["driver"], [c[3] for c in cases])
+        c_diff[set_name] = diff
+        for mode in MODES:
+            for (reg, variant, (ox, oy), img), (bx, dk, _, _, _) in zip(cases, lines[mode]):
+                gt = [(b[0] - ox, b[1] - oy, b[0] - ox + b[2], b[1] - oy + b[3]) for b in
+                      (boxes[ln["id"]] for ln in reg["lines"])]
+                mt = M.match([(x, y, x + w, y + h) for x, y, w, h in bx], gt, ())
+                key = f"{set_name}|{reg['region_id']}|{variant}"
+                detection[mode].append({"unit": key, "set": set_name, "vn": reg["vn"], "variant": variant,
+                                        **{k: mt[k] for k in ("tp", "fp", "fn", "merged", "split", "cut")}})
+                for name, rd in readers.items():
+                    preds = [rd.read(img[y:y + h, x:x + w], d) for (x, y, w, h), d in zip(bx, dk)]
+                    sc = transcript_score(reg["lines"], preds)
+                    units[name][mode].append({
+                        "unit": key, "set": set_name, "vn": reg["vn"], "platform": reg["platform"],
+                        "variant": variant, "detections": len(bx),
+                        **{f"{a}_{t}_{k}": sc[a][t][k] for a in ("all", "body") for t in ("full", "hira")
+                           for k in ("errors", "chars")}})
+        print(f"{set_name}: {len(regions)} regions, {len(cases)} cases (excluded {excluded}); C != twin {diff}",
+              flush=True)
+    (out / "private").mkdir(parents=True, exist_ok=True)
+    (out / "private" / "tests_units.json").write_text(json.dumps({"units": units, "detection": detection}) + "\n")
+    meta = {n: {"sha256": r.sha256, "blob_bytes": r.blob_bytes} for n, r in readers.items()}
+    extra = {"gate": gate, "driver": ident, "c_differs_from_twin": c_diff, "modes": MODES}
+    (out / "private" / "tests_meta.json").write_text(json.dumps({"models": meta, "extra": extra}) + "\n")
+    result = protected_summary(units, detection, meta, extra)
+    (out / "tests.json").write_text(json.dumps(result, indent=1) + "\n")
+    for name in readers:
+        k = result["dialogue"][name]["body/all/pooled"]
+        print(name, {m: k[m]["cer"] for m in MODES}, "split+ref-ref", k["split_refine-refine"]["delta"],
+              k["split_refine-refine"]["vn_ci95"], flush=True)
+
+
+def cmd_protected_summary(args):
+    """Rebuilds the public tests record from the stored private units (no protected image is read)."""
+    out = Path(args.out)
+    d = json.loads((out / "private" / "tests_units.json").read_text())
+    m = json.loads((out / "private" / "tests_meta.json").read_text())
+    result = protected_summary(d["units"], d["detection"], m["models"], m["extra"])
+    (out / "tests.json").write_text(json.dumps(result, indent=1) + "\n")
+
+
+def cmd_clannad(args):
+    """CLANNAD's long run against owner-drive-ingest's frozen references, once (protocol "protected"): each page's
+    ROI from its native frame; a reference line is the GRAD box its stored crop came from, and its reading in a
+    mode is every line derived from that box (the split, then the refinement), joined in order."""
+    import clannad_refs as C
+    import finder_tighten as FT
+    import vocr3_report as V
+    from PIL import Image
+
+    from common import to_gray
+    out = Path(args.out)
+    work = Path(args.work)
+    gate = check_dev_record()
+    freeze = json.loads((work / "refs.freeze.json").read_text(encoding="utf-8"))
+    if sha256(work / "refs.jsonl") != freeze["refs_sha256"]:
+        raise SystemExit("refs.jsonl differs from its freeze record")
+    ident = build_driver(out / "build")
+    lib = FT.build(out / "build-lib")
+    arms = [a.partition("=") for a in args.arm]
+    readers = {n: CachedReader(p, lib["library"]) for n, _, p in arms}
+    once(out / "clannad.attempt.json", {"started": utc_now(), **gate, "refs_sha256": freeze["refs_sha256"],
+                                        "models": {n: r.sha256 for n, r in readers.items()},
+                                        "driver_sha256": ident["driver_sha256"]})
+    rows, meta = C.load_lines(work)
+    session = Path(meta["session"])
+    refs = {x["id"]: x for x in C.read_jsonl(work / "refs.jsonl")}
+    by_page = {}
+    for r in rows:
+        by_page.setdefault(r["page"], []).append(r)
+    pages, imgs = [], []
+    for page, rs in sorted(by_page.items()):
+        if not any(refs.get(r["id"], {}).get("status") == "ref" for r in rs):
+            continue
+        src = rs[0]["source"]
+        path = session / src["path"]
+        if sha256(path) != src["sha256"]:
+            raise SystemExit(f"{src['path']}: frame hash differs from the capture journal")
+        with Image.open(path) as im:
+            rgb = np.asarray(im.convert("RGB"))
+        x, y, w, h = rs[0]["roi"]
+        pages.append((page, rs))
+        imgs.append(np.ascontiguousarray(to_gray(np.ascontiguousarray(rgb[y:y + h, x:x + w]))))
+    lines, c_diff = protected_lines(ident["driver"], imgs)
+    preds = {n: {m: {} for m in MODES} for n in readers}
+    matched = unmatched = 0
+    boxes_split = 0
+    for i, ((page, rs), img) in enumerate(zip(pages, imgs)):
+        gb = lines["grad"][i][3]
+        boxes_split += len(lines["split"][i][0]) - len(gb)
+        for r in rs:
+            if refs.get(r["id"], {}).get("status") != "ref":
+                continue
+            box = tuple(r["box"])
+            if box not in gb:
+                unmatched += 1
+                continue
+            matched += 1
+            k = gb.index(box)
+            for n, rd in readers.items():
+                for mode in MODES:
+                    bx, dk, org = lines[mode][i][0], lines[mode][i][1], lines[mode][i][2]
+                    preds[n][mode][r["id"]] = "".join(rd.read(img[yy:yy + hh, xx:xx + ww], dd)
+                                                      for (xx, yy, ww, hh), dd, o in zip(bx, dk, org) if o == k)
+    first = preds[next(iter(readers))]["grad"]
+    scored = [x for x in refs.values() if x["status"] == "ref" and x["id"] in first]
+    private = {n: {m: [] for m in MODES} for n in readers}
+    result = {"kind": "translucent-box-clannad", "gate": gate, "refs_sha256": freeze["refs_sha256"],
+              "scored_lines": len(scored), "matched_grad_boxes": matched, "unmatched": unmatched,
+              "pages_read": len(pages), "lines_added_by_split": boxes_split, "c_differs_from_twin": c_diff,
+              "driver": ident, "models": {n: {"sha256": r.sha256} for n, r in readers.items()}, "scopes": {}}
+    for n in readers:
+        for mode in MODES:
+            for x in scored:
+                e, c, ex, he, hc = C.line_unit(x["text"], preds[n][mode][x["id"]])
+                private[n][mode].append({"id": x["id"], "page": x["page"], "name": bool(x.get("name")),
+                                         "errors": e, "chars": c, "exact": ex})
+    (out / "private").mkdir(parents=True, exist_ok=True)
+    (out / "private" / "clannad_units.json").write_text(json.dumps(private) + "\n")
+    for scope in ("dialogue", "all"):
+        sel = [x for x in scored if scope == "all" or not x.get("name")]
+        pg = [x["page"] for x in sel]
+        ids = sorted(set(pg))
+        idx = C.boot_idx(len(ids), C.REPS, C.SEED)
+        e = {"lines": len(sel), "pages": len(ids), "systems": {}, "pairs": {}}
+        for n in readers:
+            sums = {}
+            for mode in MODES:
+                u = [C.line_unit(x["text"], preds[n][mode][x["id"]]) for x in sel]
+                sums[mode] = C.page_sums(u, pg)
+                e["systems"][f"{n}/{mode}"] = C.summary(sums[mode], ids, idx)
+            for a_, b_ in PAIRS:
+                a = {p: (sums[a_][p][0], sums[a_][p][1]) for p in ids}
+                b = {p: (sums[b_][p][0], sums[b_][p][1]) for p in ids}
+                cer = V.paired_bootstrap(a, b, C.REPS, C.SEED)
+                e["pairs"][f"{n}/{a_}:{n}/{b_}"] = {"cer_delta": cer["delta"], "cer_ci95": cer["ci95"],
+                                                     "candidate_errors": cer["candidate_errors"],
+                                                     "baseline_errors": cer["baseline_errors"],
+                                                     "chars": cer["chars"]}
+        result["scopes"][scope] = e
+    FT.assert_public(result)
+    (out / "clannad.json").write_text(json.dumps(result, indent=1) + "\n")
+    print(json.dumps({k: (v["cer"], v["cer_ci95"]) for k, v in result["scopes"]["dialogue"]["systems"].items()},
+                     indent=1))
+    print(json.dumps(result["scopes"]["dialogue"]["pairs"], indent=1))
+    print("lines added by the split:", boxes_split, "C != twin:", c_diff)
+
+
 def cmd_tag(args):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -1296,6 +1591,16 @@ def main(argv=None):
     p = sub.add_parser("protocol")
     p.add_argument("--tags", required=True)
     p.add_argument("--design", action="append", required=True, help="a design cohorts' record (design.json)")
+    p = sub.add_parser("protected")
+    p.add_argument("--data", required=True, help="eval's screenshots (VOCR_EVAL_DATA)")
+    p.add_argument("--arm", action="append", required=True, help="NAME=BLOB")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("protected-summary")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("clannad")
+    p.add_argument("--work", required=True, help="owner-drive-ingest's clannad-compare directory")
+    p.add_argument("--arm", action="append", required=True, help="NAME=BLOB")
+    p.add_argument("--out", required=True)
     p = sub.add_parser("a9")
     p.add_argument("--cohorts", required=True, help="VOCR5's wd cohorts (tv_dlg.pkl, dn_dlg.pkl)")
     p.add_argument("--out", required=True)
@@ -1311,6 +1616,12 @@ def main(argv=None):
     p.add_argument("--det", default="s8_c24_seed4")
     p.add_argument("--out", required=True)
     args = ap.parse_args(argv)
+    if args.cmd == "protected":
+        cmd_protected(args)
+    if args.cmd == "protected-summary":
+        cmd_protected_summary(args)
+    if args.cmd == "clannad":
+        cmd_clannad(args)
     if args.cmd == "a9":
         cmd_a9(args)
     if args.cmd == "select":

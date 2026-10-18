@@ -1,0 +1,6432 @@
+{
+ "kind": "translucent-box-protected-tests",
+ "gate": {
+  "dev_record_sha256": "fbaf7eb1fe9d42e22cc41935a0c082a23e4d0eaccbbd891b02fa7b9c8796bec0",
+  "protocol_sha256": "d445bf7802b84e3cf43454da3d662e4a24c9fbcd5746502d116628c6caa1ee92",
+  "head": "b1d063cb71f6866514c139bc6ad13d4fc148e031",
+  "code_sha256": "14aaa4f58dfd28e9a393b2d855aa1791de9796d05e4fdc2606343de127c99411",
+  "adopted": false
+ },
+ "driver": {
+  "driver": "/local/home/skerraut/herd-vita-ocr/shared/private/translucent-box/protected/tests/build/vocr_lines_split_test",
+  "driver_sha256": "fdff7be8c8f0c298c4d98e5dcf06ed3d558bb74c0dc1bf96e40bde43fc03e826",
+  "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+  "flags": [
+   "-std=c99",
+   "-O2",
+   "-ffp-contract=off",
+   "-Wall",
+   "-Wextra",
+   "-Werror"
+  ]
+ },
+ "c_differs_from_twin": {
+  "vita-test": {
+   "grad": 0,
+   "refine": 0,
+   "split": 0,
+   "split_refine": 0
+  },
+  "psp-test": {
+   "grad": 0,
+   "refine": 0,
+   "split": 0,
+   "split_refine": 0
+  }
+ },
+ "modes": {
+  "grad": [
+   0,
+   0
+  ],
+  "refine": [
+   0,
+   31
+  ],
+  "split": [
+   1,
+   0
+  ],
+  "split_refine": [
+   1,
+   31
+  ]
+ },
+ "models": {
+  "VOCR5-S": {
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+   "blob_bytes": 819792
+  },
+  "VOCR5-N": {
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+   "blob_bytes": 1185632
+  },
+  "VOCR5-L": {
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+   "blob_bytes": 2473696
+  }
+ },
+ "bootstrap": {
+  "reps": 10000,
+  "seed": 0,
+  "min_clusters": 5
+ },
+ "dialogue": {
+  "VOCR5-S": {
+   "body/base/vita": {
+    "grad": {
+     "errors": 130,
+     "chars": 2334,
+     "cer": 5.57
+    },
+    "refine": {
+     "errors": 133,
+     "chars": 2334,
+     "cer": 5.698
+    },
+    "split": {
+     "errors": 130,
+     "chars": 2334,
+     "cer": 5.57
+    },
+    "split_refine": {
+     "errors": 133,
+     "chars": 2334,
+     "cer": 5.698
+    },
+    "split_refine-refine": {
+     "delta": 0.0,
+     "units_ci95": [
+      0.0,
+      0.0
+     ],
+     "vn_ci95": [
+      0.0,
+      0.0
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 133,
+     "baseline_errors": 133
+    },
+    "split-grad": {
+     "delta": 0.0,
+     "units_ci95": [
+      0.0,
+      0.0
+     ],
+     "vn_ci95": [
+      0.0,
+      0.0
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 130,
+     "baseline_errors": 130
+    },
+    "refine-grad": {
+     "delta": 0.128535,
+     "units_ci95": [
+      -1.068723,
+      1.850119
+     ],
+     "vn_ci95": [
+      -1.113175,
+      2.109065
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 133,
+     "baseline_errors": 130
+    },
+    "split_refine-grad": {
+     "delta": 0.128535,
+     "units_ci95": [
+      -1.068723,
+      1.850119
+     ],
+     "vn_ci95": [
+      -1.113175,
+      2.109065
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 133,
+     "baseline_errors": 130
+    }
+   },
+   "body/base/psp": {
+    "grad": {
+     "errors": 255,
+     "chars": 2301,
+     "cer": 11.082
+    },
+    "refine": {
+     "errors": 195,
+     "chars": 2301,
+     "cer": 8.475
+    },
+    "split": {
+     "errors": 159,
+     "chars": 2301,
+     "cer": 6.91
+    },
+    "split_refine": {
+     "errors": 155,
+     "chars": 2301,
+     "cer": 6.736
+    },
+    "split_refine-refine": {
+     "delta": -1.738375,
+     "units_ci95": [
+      -5.839475,
+      1.121535
+     ],
+     "vn_ci95": [
+      -6.600037,
+      2.00488
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 155,
+     "baseline_errors": 195
+    },
+    "split-grad": {
+     "delta": -4.172099,
+     "units_ci95": [
+      -9.063549,
+      -0.091443
+     ],
+     "vn_ci95": [
+      -11.309029,
+      1.223888
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 159,
+     "baseline_errors": 255
+    },
+    "refine-grad": {
+     "delta": -2.607562,
+     "units_ci95": [
+      -5.766773,
+      -0.251141
+     ],
+     "vn_ci95": [
+      -5.810828,
+      -0.206159
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 195,
+     "baseline_errors": 255
+    },
+    "split_refine-grad": {
+     "delta": -4.345937,
+     "units_ci95": [
+      -9.139825,
+      -0.28267
+     ],
+     "vn_ci95": [
+      -11.396092,
+      0.995283
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 155,
+     "baseline_errors": 255
+    }
+   },
+   "body/base/pooled": {
+    "grad": {
+     "errors": 385,
+     "chars": 4635,
+     "cer": 8.306
+    },
+    "refine": {
+     "errors": 328,
+     "chars": 4635,
+     "cer": 7.077
+    },
+    "split": {
+     "errors": 289,
+     "chars": 4635,
+     "cer": 6.235
+    },
+    "split_refine": {
+     "errors": 288,
+     "chars": 4635,
+     "cer": 6.214
+    },
+    "split_refine-refine": {
+     "delta": -0.862999,
+     "units_ci95": [
+      -2.903698,
+      0.559033
+     ],
+     "vn_ci95": [
+      -3.305644,
+      0.969734
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 288,
+     "baseline_errors": 328
+    },
+    "split-grad": {
+     "delta": -2.071197,
+     "units_ci95": [
+      -4.580719,
+      -0.066827
+     ],
+     "vn_ci95": [
+      -5.73568,
+      0.5247
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 289,
+     "baseline_errors": 385
+    },
+    "refine-grad": {
+     "delta": -1.229773,
+     "units_ci95": [
+      -2.977024,
+      0.260734
+     ],
+     "vn_ci95": [
+      -3.01533,
+      0.382835
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 328,
+     "baseline_errors": 385
+    },
+    "split_refine-grad": {
+     "delta": -2.092772,
+     "units_ci95": [
+      -4.658112,
+      0.0862
+     ],
+     "vn_ci95": [
+      -5.84638,
+      0.774643
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 288,
+     "baseline_errors": 385
+    }
+   },
+   "body/expanded-4/vita": {
+    "grad": {
+     "errors": 160,
+     "chars": 2334,
+     "cer": 6.855
+    },
+    "refine": {
+     "errors": 158,
+     "chars": 2334,
+     "cer": 6.769
+    },
+    "split": {
+     "errors": 157,
+     "chars": 2334,
+     "cer": 6.727
+    },
+    "split_refine": {
+     "errors": 155,
+     "chars": 2334,
+     "cer": 6.641
+    },
+    "split_refine-refine": {
+     "delta": -0.128535,
+     "units_ci95": [
+      -0.438388,
+      0.0
+     ],
+     "vn_ci95": [
+      -0.444782,
+      0.0
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 155,
+     "baseline_errors": 158
+    },
+    "split-grad": {
+     "delta": -0.128535,
+     "units_ci95": [
+      -0.438388,
+      0.0
+     ],
+     "vn_ci95": [
+      -0.444782,
+      0.0
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 157,
+     "baseline_errors": 160
+    },
+    "refine-grad": {
+     "delta": -0.08569,
+     "units_ci95": [
+      -1.562519,
+      1.728707
+     ],
+     "vn_ci95": [
+      -1.647595,
+      2.171633
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 158,
+     "baseline_errors": 160
+    },
+    "split_refine-grad": {
+     "delta": -0.214225,
+     "units_ci95": [
+      -1.702021,
+      1.622974
+     ],
+     "vn_ci95": [
+      -1.80832,
+      2.060835
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 155,
+     "baseline_errors": 160
+    }
+   },
+   "body/expanded-4/psp": {
+    "grad": {
+     "errors": 363,
+     "chars": 2301,
+     "cer": 15.776
+    },
+    "refine": {
+     "errors": 295,
+     "chars": 2301,
+     "cer": 12.821
+    },
+    "split": {
+     "errors": 248,
+     "chars": 2301,
+     "cer": 10.778
+    },
+    "split_refine": {
+     "errors": 230,
+     "chars": 2301,
+     "cer": 9.996
+    },
+    "split_refine-refine": {
+     "delta": -2.824859,
+     "units_ci95": [
+      -7.966147,
+      1.199182
+     ],
+     "vn_ci95": [
+      -9.44331,
+      2.26996
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 230,
+     "baseline_errors": 295
+    },
+    "split-grad": {
+     "delta": -4.997827,
+     "units_ci95": [
+      -10.703674,
+      -0.085865
+     ],
+     "vn_ci95": [
+      -13.347628,
+      1.137113
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 248,
+     "baseline_errors": 363
+    },
+    "refine-grad": {
+     "delta": -2.955237,
+     "units_ci95": [
+      -6.058085,
+      -0.634336
+     ],
+     "vn_ci95": [
+      -6.432208,
+      -0.270785
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 295,
+     "baseline_errors": 363
+    },
+    "split_refine-grad": {
+     "delta": -5.780096,
+     "units_ci95": [
+      -11.524742,
+      -0.876799
+     ],
+     "vn_ci95": [
+      -14.568723,
+      0.994375
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 230,
+     "baseline_errors": 363
+    }
+   },
+   "body/expanded-4/pooled": {
+    "grad": {
+     "errors": 523,
+     "chars": 4635,
+     "cer": 11.284
+    },
+    "refine": {
+     "errors": 453,
+     "chars": 4635,
+     "cer": 9.773
+    },
+    "split": {
+     "errors": 405,
+     "chars": 4635,
+     "cer": 8.738
+    },
+    "split_refine": {
+     "errors": 385,
+     "chars": 4635,
+     "cer": 8.306
+    },
+    "split_refine-refine": {
+     "delta": -1.467098,
+     "units_ci95": [
+      -3.971369,
+      0.579488
+     ],
+     "vn_ci95": [
+      -4.875526,
+      1.026167
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 385,
+     "baseline_errors": 453
+    },
+    "split-grad": {
+     "delta": -2.545847,
+     "units_ci95": [
+      -5.414097,
+      -0.092001
+     ],
+     "vn_ci95": [
+      -6.925364,
+      0.438245
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 405,
+     "baseline_errors": 523
+    },
+    "refine-grad": {
+     "delta": -1.510248,
+     "units_ci95": [
+      -3.266871,
+      0.000515
+     ],
+     "vn_ci95": [
+      -3.461373,
+      0.290496
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 453,
+     "baseline_errors": 523
+    },
+    "split_refine-grad": {
+     "delta": -2.977346,
+     "units_ci95": [
+      -5.934324,
+      -0.318056
+     ],
+     "vn_ci95": [
+      -7.552844,
+      0.61524
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 385,
+     "baseline_errors": 523
+    }
+   },
+   "body/expanded-8/vita": {
+    "grad": {
+     "errors": 164,
+     "chars": 2334,
+     "cer": 7.027
+    },
+    "refine": {
+     "errors": 180,
+     "chars": 2334,
+     "cer": 7.712
+    },
+    "split": {
+     "errors": 162,
+     "chars": 2334,
+     "cer": 6.941
+    },
+    "split_refine": {
+     "errors": 178,
+     "chars": 2334,
+     "cer": 7.626
+    },
+    "split_refine-refine": {
+     "delta": -0.08569,
+     "units_ci95": [
+      -0.409664,
+      0.120774
+     ],
+     "vn_ci95": [
+      -0.415916,
+      0.116461
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 178,
+     "baseline_errors": 180
+    },
+    "split-grad": {
+     "delta": -0.08569,
+     "units_ci95": [
+      -0.409664,
+      0.120774
+     ],
+     "vn_ci95": [
+      -0.415916,
+      0.116461
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 162,
+     "baseline_errors": 164
+    },
+    "refine-grad": {
+     "delta": 0.685518,
+     "units_ci95": [
+      -0.343211,
+      2.132501
+     ],
+     "vn_ci95": [
+      -0.515288,
+      2.476021
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 180,
+     "baseline_errors": 164
+    },
+    "split_refine-grad": {
+     "delta": 0.599829,
+     "units_ci95": [
+      -0.463773,
+      2.06334
+     ],
+     "vn_ci95": [
+      -0.540066,
+      2.389852
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 178,
+     "baseline_errors": 164
+    }
+   },
+   "body/expanded-8/psp": {
+    "grad": {
+     "errors": 392,
+     "chars": 2301,
+     "cer": 17.036
+    },
+    "refine": {
+     "errors": 361,
+     "chars": 2301,
+     "cer": 15.689
+    },
+    "split": {
+     "errors": 268,
+     "chars": 2301,
+     "cer": 11.647
+    },
+    "split_refine": {
+     "errors": 245,
+     "chars": 2301,
+     "cer": 10.648
+    },
+    "split_refine-refine": {
+     "delta": -5.041286,
+     "units_ci95": [
+      -10.581967,
+      -0.365819
+     ],
+     "vn_ci95": [
+      -12.670606,
+      0.673539
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 245,
+     "baseline_errors": 361
+    },
+    "split-grad": {
+     "delta": -5.388961,
+     "units_ci95": [
+      -11.188598,
+      -0.34525
+     ],
+     "vn_ci95": [
+      -14.193455,
+      1.021704
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 268,
+     "baseline_errors": 392
+    },
+    "refine-grad": {
+     "delta": -1.34724,
+     "units_ci95": [
+      -3.247424,
+      0.555594
+     ],
+     "vn_ci95": [
+      -3.874333,
+      0.542367
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 361,
+     "baseline_errors": 392
+    },
+    "split_refine-grad": {
+     "delta": -6.388527,
+     "units_ci95": [
+      -12.676752,
+      -1.022643
+     ],
+     "vn_ci95": [
+      -15.784924,
+      0.968566
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 245,
+     "baseline_errors": 392
+    }
+   },
+   "body/expanded-8/pooled": {
+    "grad": {
+     "errors": 556,
+     "chars": 4635,
+     "cer": 11.996
+    },
+    "refine": {
+     "errors": 541,
+     "chars": 4635,
+     "cer": 11.672
+    },
+    "split": {
+     "errors": 430,
+     "chars": 4635,
+     "cer": 9.277
+    },
+    "split_refine": {
+     "errors": 423,
+     "chars": 4635,
+     "cer": 9.126
+    },
+    "split_refine-refine": {
+     "delta": -2.545847,
+     "units_ci95": [
+      -5.344925,
+      -0.220405
+     ],
+     "vn_ci95": [
+      -6.485971,
+      0.256749
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 423,
+     "baseline_errors": 541
+    },
+    "split-grad": {
+     "delta": -2.718447,
+     "units_ci95": [
+      -5.69944,
+      -0.198238
+     ],
+     "vn_ci95": [
+      -7.285384,
+      0.38866
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 430,
+     "baseline_errors": 556
+    },
+    "refine-grad": {
+     "delta": -0.323625,
+     "units_ci95": [
+      -1.410155,
+      0.837397
+     ],
+     "vn_ci95": [
+      -1.7962,
+      1.047023
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 541,
+     "baseline_errors": 556
+    },
+    "split_refine-grad": {
+     "delta": -2.869471,
+     "units_ci95": [
+      -6.097614,
+      -0.019753
+     ],
+     "vn_ci95": [
+      -7.787815,
+      0.963128
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 423,
+     "baseline_errors": 556
+    }
+   },
+   "body/all/vita": {
+    "grad": {
+     "errors": 454,
+     "chars": 7002,
+     "cer": 6.484
+    },
+    "refine": {
+     "errors": 471,
+     "chars": 7002,
+     "cer": 6.727
+    },
+    "split": {
+     "errors": 449,
+     "chars": 7002,
+     "cer": 6.412
+    },
+    "split_refine": {
+     "errors": 466,
+     "chars": 7002,
+     "cer": 6.655
+    },
+    "split_refine-refine": {
+     "delta": -0.071408,
+     "units_ci95": [
+      -0.215088,
+      0.028313
+     ],
+     "vn_ci95": [
+      -0.286345,
+      0.038805
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 466,
+     "baseline_errors": 471
+    },
+    "split-grad": {
+     "delta": -0.071408,
+     "units_ci95": [
+      -0.215088,
+      0.028313
+     ],
+     "vn_ci95": [
+      -0.286345,
+      0.038805
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 449,
+     "baseline_errors": 454
+    },
+    "refine-grad": {
+     "delta": 0.242788,
+     "units_ci95": [
+      -0.520756,
+      1.146736
+     ],
+     "vn_ci95": [
+      -0.975407,
+      2.194354
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 471,
+     "baseline_errors": 454
+    },
+    "split_refine-grad": {
+     "delta": 0.17138,
+     "units_ci95": [
+      -0.603049,
+      1.079886
+     ],
+     "vn_ci95": [
+      -1.031904,
+      2.150549
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 466,
+     "baseline_errors": 454
+    }
+   },
+   "body/all/psp": {
+    "grad": {
+     "errors": 1010,
+     "chars": 6903,
+     "cer": 14.631
+    },
+    "refine": {
+     "errors": 851,
+     "chars": 6903,
+     "cer": 12.328
+    },
+    "split": {
+     "errors": 675,
+     "chars": 6903,
+     "cer": 9.778
+    },
+    "split_refine": {
+     "errors": 630,
+     "chars": 6903,
+     "cer": 9.126
+    },
+    "split_refine-refine": {
+     "delta": -3.201507,
+     "units_ci95": [
+      -5.905775,
+      -0.797846
+     ],
+     "vn_ci95": [
+      -9.363706,
+      1.321937
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 630,
+     "baseline_errors": 851
+    },
+    "split-grad": {
+     "delta": -4.852962,
+     "units_ci95": [
+      -7.899207,
+      -2.079785
+     ],
+     "vn_ci95": [
+      -12.864726,
+      0.89797
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 675,
+     "baseline_errors": 1010
+    },
+    "refine-grad": {
+     "delta": -2.303346,
+     "units_ci95": [
+      -3.841967,
+      -0.925364
+     ],
+     "vn_ci95": [
+      -5.064654,
+      -0.122741
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 851,
+     "baseline_errors": 1010
+    },
+    "split_refine-grad": {
+     "delta": -5.504853,
+     "units_ci95": [
+      -8.65908,
+      -2.606175
+     ],
+     "vn_ci95": [
+      -13.787216,
+      0.684339
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 630,
+     "baseline_errors": 1010
+    }
+   },
+   "body/all/pooled": {
+    "grad": {
+     "errors": 1464,
+     "chars": 13905,
+     "cer": 10.529
+    },
+    "refine": {
+     "errors": 1322,
+     "chars": 13905,
+     "cer": 9.507
+    },
+    "split": {
+     "errors": 1124,
+     "chars": 13905,
+     "cer": 8.083
+    },
+    "split_refine": {
+     "errors": 1096,
+     "chars": 13905,
+     "cer": 7.882
+    },
+    "split_refine-refine": {
+     "delta": -1.625315,
+     "units_ci95": [
+      -2.987012,
+      -0.440002
+     ],
+     "vn_ci95": [
+      -4.821262,
+      0.595732
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1096,
+     "baseline_errors": 1322
+    },
+    "split-grad": {
+     "delta": -2.445164,
+     "units_ci95": [
+      -3.995947,
+      -1.055929
+     ],
+     "vn_ci95": [
+      -6.636087,
+      0.367095
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1124,
+     "baseline_errors": 1464
+    },
+    "refine-grad": {
+     "delta": -1.021215,
+     "units_ci95": [
+      -1.907075,
+      -0.207632
+     ],
+     "vn_ci95": [
+      -2.608902,
+      0.486576
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1322,
+     "baseline_errors": 1464
+    },
+    "split_refine-grad": {
+     "delta": -2.64653,
+     "units_ci95": [
+      -4.307393,
+      -1.138562
+     ],
+     "vn_ci95": [
+      -6.959389,
+      0.676916
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1096,
+     "baseline_errors": 1464
+    }
+   },
+   "all/base/vita": {
+    "grad": {
+     "errors": 161,
+     "chars": 2506,
+     "cer": 6.425
+    },
+    "refine": {
+     "errors": 168,
+     "chars": 2506,
+     "cer": 6.704
+    },
+    "split": {
+     "errors": 166,
+     "chars": 2506,
+     "cer": 6.624
+    },
+    "split_refine": {
+     "errors": 172,
+     "chars": 2506,
+     "cer": 6.864
+    },
+    "split_refine-refine": {
+     "delta": 0.159617,
+     "units_ci95": [
+      0.0,
+      0.419292
+     ],
+     "vn_ci95": [
+      0.0,
+      0.354141
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 172,
+     "baseline_errors": 168
+    },
+    "split-grad": {
+     "delta": 0.199521,
+     "units_ci95": [
+      0.0,
+      0.539873
+     ],
+     "vn_ci95": [
+      0.0,
+      0.465125
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 166,
+     "baseline_errors": 161
+    },
+    "refine-grad": {
+     "delta": 0.27933,
+     "units_ci95": [
+      -0.877863,
+      1.88868
+     ],
+     "vn_ci95": [
+      -1.003204,
+      2.120611
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 168,
+     "baseline_errors": 161
+    },
+    "split_refine-grad": {
+     "delta": 0.438947,
+     "units_ci95": [
+      -0.751896,
+      2.062313
+     ],
+     "vn_ci95": [
+      -0.921673,
+      2.249429
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 172,
+     "baseline_errors": 161
+    }
+   },
+   "all/base/psp": {
+    "grad": {
+     "errors": 338,
+     "chars": 2510,
+     "cer": 13.466
+    },
+    "refine": {
+     "errors": 261,
+     "chars": 2510,
+     "cer": 10.398
+    },
+    "split": {
+     "errors": 226,
+     "chars": 2510,
+     "cer": 9.004
+    },
+    "split_refine": {
+     "errors": 214,
+     "chars": 2510,
+     "cer": 8.526
+    },
+    "split_refine-refine": {
+     "delta": -1.87251,
+     "units_ci95": [
+      -5.616862,
+      0.734125
+     ],
+     "vn_ci95": [
+      -6.295308,
+      1.312555
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 214,
+     "baseline_errors": 261
+    },
+    "split-grad": {
+     "delta": -4.462151,
+     "units_ci95": [
+      -9.06531,
+      -0.609044
+     ],
+     "vn_ci95": [
+      -11.312046,
+      0.552421
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 226,
+     "baseline_errors": 338
+    },
+    "refine-grad": {
+     "delta": -3.067729,
+     "units_ci95": [
+      -6.016813,
+      -0.772716
+     ],
+     "vn_ci95": [
+      -6.038696,
+      -0.851021
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 261,
+     "baseline_errors": 338
+    },
+    "split_refine-grad": {
+     "delta": -4.940239,
+     "units_ci95": [
+      -9.497228,
+      -1.142441
+     ],
+     "vn_ci95": [
+      -11.610566,
+      -0.290332
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 214,
+     "baseline_errors": 338
+    }
+   },
+   "all/base/pooled": {
+    "grad": {
+     "errors": 499,
+     "chars": 5016,
+     "cer": 9.948
+    },
+    "refine": {
+     "errors": 429,
+     "chars": 5016,
+     "cer": 8.553
+    },
+    "split": {
+     "errors": 392,
+     "chars": 5016,
+     "cer": 7.815
+    },
+    "split_refine": {
+     "errors": 386,
+     "chars": 5016,
+     "cer": 7.695
+    },
+    "split_refine-refine": {
+     "delta": -0.857257,
+     "units_ci95": [
+      -2.719076,
+      0.4329
+     ],
+     "vn_ci95": [
+      -3.151786,
+      0.733814
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 386,
+     "baseline_errors": 429
+    },
+    "split-grad": {
+     "delta": -2.133174,
+     "units_ci95": [
+      -4.541027,
+      -0.199402
+     ],
+     "vn_ci95": [
+      -5.717245,
+      0.341119
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 392,
+     "baseline_errors": 499
+    },
+    "refine-grad": {
+     "delta": -1.395534,
+     "units_ci95": [
+      -3.043589,
+      0.037342
+     ],
+     "vn_ci95": [
+      -3.112394,
+      0.165812
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 429,
+     "baseline_errors": 499
+    },
+    "split_refine-grad": {
+     "delta": -2.252791,
+     "units_ci95": [
+      -4.740174,
+      -0.118133
+     ],
+     "vn_ci95": [
+      -5.882455,
+      0.37642
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 386,
+     "baseline_errors": 499
+    }
+   },
+   "all/expanded-4/vita": {
+    "grad": {
+     "errors": 195,
+     "chars": 2506,
+     "cer": 7.781
+    },
+    "refine": {
+     "errors": 199,
+     "chars": 2506,
+     "cer": 7.941
+    },
+    "split": {
+     "errors": 197,
+     "chars": 2506,
+     "cer": 7.861
+    },
+    "split_refine": {
+     "errors": 200,
+     "chars": 2506,
+     "cer": 7.981
+    },
+    "split_refine-refine": {
+     "delta": 0.039904,
+     "units_ci95": [
+      -0.305414,
+      0.355398
+     ],
+     "vn_ci95": [
+      -0.322603,
+      0.311896
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 200,
+     "baseline_errors": 199
+    },
+    "split-grad": {
+     "delta": 0.079808,
+     "units_ci95": [
+      -0.286067,
+      0.46729
+     ],
+     "vn_ci95": [
+      -0.307381,
+      0.413384
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 197,
+     "baseline_errors": 195
+    },
+    "refine-grad": {
+     "delta": 0.159617,
+     "units_ci95": [
+      -1.235546,
+      1.872679
+     ],
+     "vn_ci95": [
+      -1.379355,
+      2.307353
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 199,
+     "baseline_errors": 195
+    },
+    "split_refine-grad": {
+     "delta": 0.199521,
+     "units_ci95": [
+      -1.231533,
+      1.937171
+     ],
+     "vn_ci95": [
+      -1.429109,
+      2.314696
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 200,
+     "baseline_errors": 195
+    }
+   },
+   "all/expanded-4/psp": {
+    "grad": {
+     "errors": 467,
+     "chars": 2510,
+     "cer": 18.606
+    },
+    "refine": {
+     "errors": 366,
+     "chars": 2510,
+     "cer": 14.582
+    },
+    "split": {
+     "errors": 332,
+     "chars": 2510,
+     "cer": 13.227
+    },
+    "split_refine": {
+     "errors": 291,
+     "chars": 2510,
+     "cer": 11.594
+    },
+    "split_refine-refine": {
+     "delta": -2.988048,
+     "units_ci95": [
+      -7.630653,
+      0.702215
+     ],
+     "vn_ci95": [
+      -9.334543,
+      1.682839
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 291,
+     "baseline_errors": 366
+    },
+    "split-grad": {
+     "delta": -5.378486,
+     "units_ci95": [
+      -10.692849,
+      -0.756631
+     ],
+     "vn_ci95": [
+      -13.781736,
+      0.522315
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 332,
+     "baseline_errors": 467
+    },
+    "refine-grad": {
+     "delta": -4.023904,
+     "units_ci95": [
+      -6.916843,
+      -1.784228
+     ],
+     "vn_ci95": [
+      -7.102731,
+      -1.643244
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 366,
+     "baseline_errors": 467
+    },
+    "split_refine-grad": {
+     "delta": -7.011952,
+     "units_ci95": [
+      -12.322345,
+      -2.3574
+     ],
+     "vn_ci95": [
+      -15.340091,
+      -0.843593
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 291,
+     "baseline_errors": 467
+    }
+   },
+   "all/expanded-4/pooled": {
+    "grad": {
+     "errors": 662,
+     "chars": 5016,
+     "cer": 13.198
+    },
+    "refine": {
+     "errors": 565,
+     "chars": 5016,
+     "cer": 11.264
+    },
+    "split": {
+     "errors": 529,
+     "chars": 5016,
+     "cer": 10.546
+    },
+    "split_refine": {
+     "errors": 491,
+     "chars": 5016,
+     "cer": 9.789
+    },
+    "split_refine-refine": {
+     "delta": -1.475279,
+     "units_ci95": [
+      -3.80922,
+      0.412899
+     ],
+     "vn_ci95": [
+      -4.796406,
+      0.836995
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 491,
+     "baseline_errors": 565
+    },
+    "split-grad": {
+     "delta": -2.651515,
+     "units_ci95": [
+      -5.408403,
+      -0.309141
+     ],
+     "vn_ci95": [
+      -7.060099,
+      0.266174
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 529,
+     "baseline_errors": 662
+    },
+    "refine-grad": {
+     "delta": -1.933812,
+     "units_ci95": [
+      -3.590927,
+      -0.457874
+     ],
+     "vn_ci95": [
+      -3.806666,
+      -0.168609
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 565,
+     "baseline_errors": 662
+    },
+    "split_refine-grad": {
+     "delta": -3.409091,
+     "units_ci95": [
+      -6.256052,
+      -0.858902
+     ],
+     "vn_ci95": [
+      -7.916749,
+      0.0
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 491,
+     "baseline_errors": 662
+    }
+   },
+   "all/expanded-8/vita": {
+    "grad": {
+     "errors": 196,
+     "chars": 2506,
+     "cer": 7.821
+    },
+    "refine": {
+     "errors": 216,
+     "chars": 2506,
+     "cer": 8.619
+    },
+    "split": {
+     "errors": 203,
+     "chars": 2506,
+     "cer": 8.101
+    },
+    "split_refine": {
+     "errors": 222,
+     "chars": 2506,
+     "cer": 8.859
+    },
+    "split_refine-refine": {
+     "delta": 0.239425,
+     "units_ci95": [
+      -0.231577,
+      0.817668
+     ],
+     "vn_ci95": [
+      -0.234652,
+      0.748243
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 222,
+     "baseline_errors": 216
+    },
+    "split-grad": {
+     "delta": 0.27933,
+     "units_ci95": [
+      -0.222897,
+      0.887233
+     ],
+     "vn_ci95": [
+      -0.20367,
+      0.815933
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 203,
+     "baseline_errors": 196
+    },
+    "refine-grad": {
+     "delta": 0.798085,
+     "units_ci95": [
+      -0.192456,
+      2.166562
+     ],
+     "vn_ci95": [
+      -0.311649,
+      2.445854
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 216,
+     "baseline_errors": 196
+    },
+    "split_refine-grad": {
+     "delta": 1.03751,
+     "units_ci95": [
+      -0.083689,
+      2.515276
+     ],
+     "vn_ci95": [
+      -0.19224,
+      2.997182
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 222,
+     "baseline_errors": 196
+    }
+   },
+   "all/expanded-8/psp": {
+    "grad": {
+     "errors": 510,
+     "chars": 2510,
+     "cer": 20.319
+    },
+    "refine": {
+     "errors": 452,
+     "chars": 2510,
+     "cer": 18.008
+    },
+    "split": {
+     "errors": 359,
+     "chars": 2510,
+     "cer": 14.303
+    },
+    "split_refine": {
+     "errors": 316,
+     "chars": 2510,
+     "cer": 12.59
+    },
+    "split_refine-refine": {
+     "delta": -5.418327,
+     "units_ci95": [
+      -10.48129,
+      -1.046061
+     ],
+     "vn_ci95": [
+      -12.593697,
+      -0.340833
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 316,
+     "baseline_errors": 452
+    },
+    "split-grad": {
+     "delta": -6.015936,
+     "units_ci95": [
+      -11.375771,
+      -1.357757
+     ],
+     "vn_ci95": [
+      -14.507803,
+      -0.246177
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 359,
+     "baseline_errors": 510
+    },
+    "refine-grad": {
+     "delta": -2.310757,
+     "units_ci95": [
+      -4.203525,
+      -0.484986
+     ],
+     "vn_ci95": [
+      -4.709638,
+      -0.516602
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 452,
+     "baseline_errors": 510
+    },
+    "split_refine-grad": {
+     "delta": -7.729084,
+     "units_ci95": [
+      -13.519171,
+      -2.682624
+     ],
+     "vn_ci95": [
+      -16.728166,
+      -1.147466
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 316,
+     "baseline_errors": 510
+    }
+   },
+   "all/expanded-8/pooled": {
+    "grad": {
+     "errors": 706,
+     "chars": 5016,
+     "cer": 14.075
+    },
+    "refine": {
+     "errors": 668,
+     "chars": 5016,
+     "cer": 13.317
+    },
+    "split": {
+     "errors": 562,
+     "chars": 5016,
+     "cer": 11.204
+    },
+    "split_refine": {
+     "errors": 538,
+     "chars": 5016,
+     "cer": 10.726
+    },
+    "split_refine-refine": {
+     "delta": -2.591707,
+     "units_ci95": [
+      -5.228887,
+      -0.358448
+     ],
+     "vn_ci95": [
+      -6.351838,
+      0.039808
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 538,
+     "baseline_errors": 668
+    },
+    "split-grad": {
+     "delta": -2.870813,
+     "units_ci95": [
+      -5.668886,
+      -0.44389
+     ],
+     "vn_ci95": [
+      -7.341603,
+      0.110513
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 562,
+     "baseline_errors": 706
+    },
+    "refine-grad": {
+     "delta": -0.757576,
+     "units_ci95": [
+      -1.840036,
+      0.364115
+     ],
+     "vn_ci95": [
+      -2.218929,
+      0.590232
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 668,
+     "baseline_errors": 706
+    },
+    "split_refine-grad": {
+     "delta": -3.349282,
+     "units_ci95": [
+      -6.435649,
+      -0.620858
+     ],
+     "vn_ci95": [
+      -8.162878,
+      0.336128
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 538,
+     "baseline_errors": 706
+    }
+   },
+   "all/all/vita": {
+    "grad": {
+     "errors": 552,
+     "chars": 7518,
+     "cer": 7.342
+    },
+    "refine": {
+     "errors": 583,
+     "chars": 7518,
+     "cer": 7.755
+    },
+    "split": {
+     "errors": 566,
+     "chars": 7518,
+     "cer": 7.529
+    },
+    "split_refine": {
+     "errors": 594,
+     "chars": 7518,
+     "cer": 7.901
+    },
+    "split_refine-refine": {
+     "delta": 0.146316,
+     "units_ci95": [
+      -0.059133,
+      0.364489
+     ],
+     "vn_ci95": [
+      -0.155839,
+      0.408108
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 594,
+     "baseline_errors": 583
+    },
+    "split-grad": {
+     "delta": 0.18622,
+     "units_ci95": [
+      -0.038597,
+      0.433378
+     ],
+     "vn_ci95": [
+      -0.140071,
+      0.504881
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 566,
+     "baseline_errors": 552
+    },
+    "refine-grad": {
+     "delta": 0.412344,
+     "units_ci95": [
+      -0.321272,
+      1.257511
+     ],
+     "vn_ci95": [
+      -0.816872,
+      2.237467
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 583,
+     "baseline_errors": 552
+    },
+    "split_refine-grad": {
+     "delta": 0.558659,
+     "units_ci95": [
+      -0.217838,
+      1.435647
+     ],
+     "vn_ci95": [
+      -0.779901,
+      2.518642
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 594,
+     "baseline_errors": 552
+    }
+   },
+   "all/all/psp": {
+    "grad": {
+     "errors": 1315,
+     "chars": 7530,
+     "cer": 17.463
+    },
+    "refine": {
+     "errors": 1079,
+     "chars": 7530,
+     "cer": 14.329
+    },
+    "split": {
+     "errors": 917,
+     "chars": 7530,
+     "cer": 12.178
+    },
+    "split_refine": {
+     "errors": 821,
+     "chars": 7530,
+     "cer": 10.903
+    },
+    "split_refine-refine": {
+     "delta": -3.426295,
+     "units_ci95": [
+      -5.904676,
+      -1.21523
+     ],
+     "vn_ci95": [
+      -9.304833,
+      0.579198
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 821,
+     "baseline_errors": 1079
+    },
+    "split-grad": {
+     "delta": -5.285525,
+     "units_ci95": [
+      -8.146932,
+      -2.652205
+     ],
+     "vn_ci95": [
+      -13.136725,
+      0.039368
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 917,
+     "baseline_errors": 1315
+    },
+    "refine-grad": {
+     "delta": -3.13413,
+     "units_ci95": [
+      -4.605087,
+      -1.818419
+     ],
+     "vn_ci95": [
+      -5.685444,
+      -1.133245
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 1079,
+     "baseline_errors": 1315
+    },
+    "split_refine-grad": {
+     "delta": -6.560425,
+     "units_ci95": [
+      -9.50169,
+      -3.82554
+     ],
+     "vn_ci95": [
+      -14.419124,
+      -0.976889
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 821,
+     "baseline_errors": 1315
+    }
+   },
+   "all/all/pooled": {
+    "grad": {
+     "errors": 1867,
+     "chars": 15048,
+     "cer": 12.407
+    },
+    "refine": {
+     "errors": 1662,
+     "chars": 15048,
+     "cer": 11.045
+    },
+    "split": {
+     "errors": 1483,
+     "chars": 15048,
+     "cer": 9.855
+    },
+    "split_refine": {
+     "errors": 1415,
+     "chars": 15048,
+     "cer": 9.403
+    },
+    "split_refine-refine": {
+     "delta": -1.641414,
+     "units_ci95": [
+      -2.912831,
+      -0.542461
+     ],
+     "vn_ci95": [
+      -4.739601,
+      0.356713
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1415,
+     "baseline_errors": 1662
+    },
+    "split-grad": {
+     "delta": -2.551834,
+     "units_ci95": [
+      -4.025601,
+      -1.202426
+     ],
+     "vn_ci95": [
+      -6.702069,
+      0.125978
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1483,
+     "baseline_errors": 1867
+    },
+    "refine-grad": {
+     "delta": -1.362307,
+     "units_ci95": [
+      -2.21237,
+      -0.575928
+     ],
+     "vn_ci95": [
+      -2.927737,
+      0.129953
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1662,
+     "baseline_errors": 1867
+    },
+    "split_refine-grad": {
+     "delta": -3.003721,
+     "units_ci95": [
+      -4.607448,
+      -1.56416
+     ],
+     "vn_ci95": [
+      -7.238489,
+      0.150168
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1415,
+     "baseline_errors": 1867
+    }
+   }
+  },
+  "VOCR5-N": {
+   "body/base/vita": {
+    "grad": {
+     "errors": 124,
+     "chars": 2334,
+     "cer": 5.313
+    },
+    "refine": {
+     "errors": 129,
+     "chars": 2334,
+     "cer": 5.527
+    },
+    "split": {
+     "errors": 127,
+     "chars": 2334,
+     "cer": 5.441
+    },
+    "split_refine": {
+     "errors": 129,
+     "chars": 2334,
+     "cer": 5.527
+    },
+    "split_refine-refine": {
+     "delta": 0.0,
+     "units_ci95": [
+      0.0,
+      0.0
+     ],
+     "vn_ci95": [
+      0.0,
+      0.0
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 129,
+     "baseline_errors": 129
+    },
+    "split-grad": {
+     "delta": 0.128535,
+     "units_ci95": [
+      0.0,
+      0.431655
+     ],
+     "vn_ci95": [
+      0.0,
+      0.424138
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 127,
+     "baseline_errors": 124
+    },
+    "refine-grad": {
+     "delta": 0.214225,
+     "units_ci95": [
+      -0.977258,
+      1.883646
+     ],
+     "vn_ci95": [
+      -1.189221,
+      2.336217
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 129,
+     "baseline_errors": 124
+    },
+    "split_refine-grad": {
+     "delta": 0.214225,
+     "units_ci95": [
+      -0.977258,
+      1.883646
+     ],
+     "vn_ci95": [
+      -1.189221,
+      2.336217
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 129,
+     "baseline_errors": 124
+    }
+   },
+   "body/base/psp": {
+    "grad": {
+     "errors": 246,
+     "chars": 2301,
+     "cer": 10.691
+    },
+    "refine": {
+     "errors": 186,
+     "chars": 2301,
+     "cer": 8.083
+    },
+    "split": {
+     "errors": 161,
+     "chars": 2301,
+     "cer": 6.997
+    },
+    "split_refine": {
+     "errors": 157,
+     "chars": 2301,
+     "cer": 6.823
+    },
+    "split_refine-refine": {
+     "delta": -1.260322,
+     "units_ci95": [
+      -5.224533,
+      1.59313
+     ],
+     "vn_ci95": [
+      -5.692006,
+      2.757134
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 157,
+     "baseline_errors": 186
+    },
+    "split-grad": {
+     "delta": -3.694046,
+     "units_ci95": [
+      -8.425598,
+      0.257216
+     ],
+     "vn_ci95": [
+      -10.673175,
+      1.780324
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 161,
+     "baseline_errors": 246
+    },
+    "refine-grad": {
+     "delta": -2.607562,
+     "units_ci95": [
+      -5.985149,
+      -0.043505
+     ],
+     "vn_ci95": [
+      -5.982077,
+      0.0
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 186,
+     "baseline_errors": 246
+    },
+    "split_refine-grad": {
+     "delta": -3.867884,
+     "units_ci95": [
+      -8.519117,
+      0.123864
+     ],
+     "vn_ci95": [
+      -10.636421,
+      1.482155
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 157,
+     "baseline_errors": 246
+    }
+   },
+   "body/base/pooled": {
+    "grad": {
+     "errors": 370,
+     "chars": 4635,
+     "cer": 7.983
+    },
+    "refine": {
+     "errors": 315,
+     "chars": 4635,
+     "cer": 6.796
+    },
+    "split": {
+     "errors": 288,
+     "chars": 4635,
+     "cer": 6.214
+    },
+    "split_refine": {
+     "errors": 286,
+     "chars": 4635,
+     "cer": 6.17
+    },
+    "split_refine-refine": {
+     "delta": -0.625674,
+     "units_ci95": [
+      -2.632784,
+      0.808687
+     ],
+     "vn_ci95": [
+      -2.842976,
+      1.314933
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 286,
+     "baseline_errors": 315
+    },
+    "split-grad": {
+     "delta": -1.769148,
+     "units_ci95": [
+      -4.185455,
+      0.172258
+     ],
+     "vn_ci95": [
+      -5.370351,
+      0.869158
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 288,
+     "baseline_errors": 370
+    },
+    "refine-grad": {
+     "delta": -1.186624,
+     "units_ci95": [
+      -3.042028,
+      0.37253
+     ],
+     "vn_ci95": [
+      -3.084565,
+      0.513372
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 315,
+     "baseline_errors": 370
+    },
+    "split_refine-grad": {
+     "delta": -1.812298,
+     "units_ci95": [
+      -4.285464,
+      0.301544
+     ],
+     "vn_ci95": [
+      -5.395386,
+      1.024209
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 286,
+     "baseline_errors": 370
+    }
+   },
+   "body/expanded-4/vita": {
+    "grad": {
+     "errors": 149,
+     "chars": 2334,
+     "cer": 6.384
+    },
+    "refine": {
+     "errors": 159,
+     "chars": 2334,
+     "cer": 6.812
+    },
+    "split": {
+     "errors": 153,
+     "chars": 2334,
+     "cer": 6.555
+    },
+    "split_refine": {
+     "errors": 160,
+     "chars": 2334,
+     "cer": 6.855
+    },
+    "split_refine-refine": {
+     "delta": 0.042845,
+     "units_ci95": [
+      0.0,
+      0.146129
+     ],
+     "vn_ci95": [
+      0.0,
+      0.148261
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 160,
+     "baseline_errors": 159
+    },
+    "split-grad": {
+     "delta": 0.17138,
+     "units_ci95": [
+      0.0,
+      0.505519
+     ],
+     "vn_ci95": [
+      0.0,
+      0.479316
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 153,
+     "baseline_errors": 149
+    },
+    "refine-grad": {
+     "delta": 0.428449,
+     "units_ci95": [
+      -0.802498,
+      2.076451
+     ],
+     "vn_ci95": [
+      -0.77616,
+      2.224123
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 159,
+     "baseline_errors": 149
+    },
+    "split_refine-grad": {
+     "delta": 0.471294,
+     "units_ci95": [
+      -0.76156,
+      2.123653
+     ],
+     "vn_ci95": [
+      -0.728282,
+      2.261014
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 160,
+     "baseline_errors": 149
+    }
+   },
+   "body/expanded-4/psp": {
+    "grad": {
+     "errors": 346,
+     "chars": 2301,
+     "cer": 15.037
+    },
+    "refine": {
+     "errors": 273,
+     "chars": 2301,
+     "cer": 11.864
+    },
+    "split": {
+     "errors": 238,
+     "chars": 2301,
+     "cer": 10.343
+    },
+    "split_refine": {
+     "errors": 223,
+     "chars": 2301,
+     "cer": 9.691
+    },
+    "split_refine-refine": {
+     "delta": -2.172968,
+     "units_ci95": [
+      -6.948209,
+      1.595084
+     ],
+     "vn_ci95": [
+      -7.738444,
+      2.39561
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 223,
+     "baseline_errors": 273
+    },
+    "split-grad": {
+     "delta": -4.693611,
+     "units_ci95": [
+      -10.176473,
+      0.0
+     ],
+     "vn_ci95": [
+      -12.951281,
+      1.390133
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 238,
+     "baseline_errors": 346
+    },
+    "refine-grad": {
+     "delta": -3.172534,
+     "units_ci95": [
+      -6.815337,
+      -0.398543
+     ],
+     "vn_ci95": [
+      -7.293253,
+      0.0
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 273,
+     "baseline_errors": 346
+    },
+    "split_refine-grad": {
+     "delta": -5.345502,
+     "units_ci95": [
+      -10.92931,
+      -0.473335
+     ],
+     "vn_ci95": [
+      -13.894146,
+      1.293307
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 223,
+     "baseline_errors": 346
+    }
+   },
+   "body/expanded-4/pooled": {
+    "grad": {
+     "errors": 495,
+     "chars": 4635,
+     "cer": 10.68
+    },
+    "refine": {
+     "errors": 432,
+     "chars": 4635,
+     "cer": 9.32
+    },
+    "split": {
+     "errors": 391,
+     "chars": 4635,
+     "cer": 8.436
+    },
+    "split_refine": {
+     "errors": 383,
+     "chars": 4635,
+     "cer": 8.263
+    },
+    "split_refine-refine": {
+     "delta": -1.057174,
+     "units_ci95": [
+      -3.419384,
+      0.814494
+     ],
+     "vn_ci95": [
+      -3.914318,
+      1.170819
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 383,
+     "baseline_errors": 432
+    },
+    "split-grad": {
+     "delta": -2.243797,
+     "units_ci95": [
+      -5.039153,
+      0.111987
+     ],
+     "vn_ci95": [
+      -6.523063,
+      0.743919
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 391,
+     "baseline_errors": 495
+    },
+    "refine-grad": {
+     "delta": -1.359223,
+     "units_ci95": [
+      -3.31637,
+      0.297312
+     ],
+     "vn_ci95": [
+      -3.607333,
+      0.492082
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 432,
+     "baseline_errors": 495
+    },
+    "split_refine-grad": {
+     "delta": -2.416397,
+     "units_ci95": [
+      -5.342745,
+      0.195758
+     ],
+     "vn_ci95": [
+      -6.888986,
+      0.997899
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 383,
+     "baseline_errors": 495
+    }
+   },
+   "body/expanded-8/vita": {
+    "grad": {
+     "errors": 169,
+     "chars": 2334,
+     "cer": 7.241
+    },
+    "refine": {
+     "errors": 190,
+     "chars": 2334,
+     "cer": 8.141
+    },
+    "split": {
+     "errors": 169,
+     "chars": 2334,
+     "cer": 7.241
+    },
+    "split_refine": {
+     "errors": 185,
+     "chars": 2334,
+     "cer": 7.926
+    },
+    "split_refine-refine": {
+     "delta": -0.214225,
+     "units_ci95": [
+      -0.648529,
+      0.0
+     ],
+     "vn_ci95": [
+      -0.64079,
+      0.0
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 185,
+     "baseline_errors": 190
+    },
+    "split-grad": {
+     "delta": 0.0,
+     "units_ci95": [
+      -0.481952,
+      0.415287
+     ],
+     "vn_ci95": [
+      -0.481354,
+      0.401611
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 169,
+     "baseline_errors": 169
+    },
+    "refine-grad": {
+     "delta": 0.899743,
+     "units_ci95": [
+      -0.043668,
+      2.119667
+     ],
+     "vn_ci95": [
+      -0.105887,
+      2.335852
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 190,
+     "baseline_errors": 169
+    },
+    "split_refine-grad": {
+     "delta": 0.685518,
+     "units_ci95": [
+      -0.355515,
+      1.919709
+     ],
+     "vn_ci95": [
+      -0.18451,
+      1.94723
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 185,
+     "baseline_errors": 169
+    }
+   },
+   "body/expanded-8/psp": {
+    "grad": {
+     "errors": 388,
+     "chars": 2301,
+     "cer": 16.862
+    },
+    "refine": {
+     "errors": 337,
+     "chars": 2301,
+     "cer": 14.646
+    },
+    "split": {
+     "errors": 273,
+     "chars": 2301,
+     "cer": 11.864
+    },
+    "split_refine": {
+     "errors": 242,
+     "chars": 2301,
+     "cer": 10.517
+    },
+    "split_refine-refine": {
+     "delta": -4.12864,
+     "units_ci95": [
+      -9.356184,
+      0.288056
+     ],
+     "vn_ci95": [
+      -10.913651,
+      1.349057
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 242,
+     "baseline_errors": 337
+    },
+    "split-grad": {
+     "delta": -4.997827,
+     "units_ci95": [
+      -10.55353,
+      -0.170922
+     ],
+     "vn_ci95": [
+      -13.526455,
+      1.3526
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 273,
+     "baseline_errors": 388
+    },
+    "refine-grad": {
+     "delta": -2.216428,
+     "units_ci95": [
+      -4.327649,
+      -0.423514
+     ],
+     "vn_ci95": [
+      -5.107261,
+      -0.037827
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 337,
+     "baseline_errors": 388
+    },
+    "split_refine-grad": {
+     "delta": -6.345067,
+     "units_ci95": [
+      -12.194197,
+      -1.235528
+     ],
+     "vn_ci95": [
+      -15.391833,
+      0.905662
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 242,
+     "baseline_errors": 388
+    }
+   },
+   "body/expanded-8/pooled": {
+    "grad": {
+     "errors": 557,
+     "chars": 4635,
+     "cer": 12.017
+    },
+    "refine": {
+     "errors": 527,
+     "chars": 4635,
+     "cer": 11.37
+    },
+    "split": {
+     "errors": 442,
+     "chars": 4635,
+     "cer": 9.536
+    },
+    "split_refine": {
+     "errors": 427,
+     "chars": 4635,
+     "cer": 9.213
+    },
+    "split_refine-refine": {
+     "delta": -2.157497,
+     "units_ci95": [
+      -4.801376,
+      0.059053
+     ],
+     "vn_ci95": [
+      -5.648929,
+      0.485362
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 427,
+     "baseline_errors": 527
+    },
+    "split-grad": {
+     "delta": -2.481122,
+     "units_ci95": [
+      -5.325952,
+      -0.042363
+     ],
+     "vn_ci95": [
+      -6.943237,
+      0.620894
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 442,
+     "baseline_errors": 557
+    },
+    "refine-grad": {
+     "delta": -0.647249,
+     "units_ci95": [
+      -1.81413,
+      0.45109
+     ],
+     "vn_ci95": [
+      -2.205601,
+      0.718425
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 527,
+     "baseline_errors": 557
+    },
+    "split_refine-grad": {
+     "delta": -2.804746,
+     "units_ci95": [
+      -5.808573,
+      -0.125558
+     ],
+     "vn_ci95": [
+      -7.5099,
+      0.878495
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 427,
+     "baseline_errors": 557
+    }
+   },
+   "body/all/vita": {
+    "grad": {
+     "errors": 442,
+     "chars": 7002,
+     "cer": 6.312
+    },
+    "refine": {
+     "errors": 478,
+     "chars": 7002,
+     "cer": 6.827
+    },
+    "split": {
+     "errors": 449,
+     "chars": 7002,
+     "cer": 6.412
+    },
+    "split_refine": {
+     "errors": 474,
+     "chars": 7002,
+     "cer": 6.769
+    },
+    "split_refine-refine": {
+     "delta": -0.057127,
+     "units_ci95": [
+      -0.199409,
+      0.029253
+     ],
+     "vn_ci95": [
+      -0.16543,
+      0.0
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 474,
+     "baseline_errors": 478
+    },
+    "split-grad": {
+     "delta": 0.099971,
+     "units_ci95": [
+      -0.086831,
+      0.301388
+     ],
+     "vn_ci95": [
+      -0.109296,
+      0.406102
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 449,
+     "baseline_errors": 442
+    },
+    "refine-grad": {
+     "delta": 0.514139,
+     "units_ci95": [
+      -0.186757,
+      1.350414
+     ],
+     "vn_ci95": [
+      -0.571784,
+      2.241945
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 478,
+     "baseline_errors": 442
+    },
+    "split_refine-grad": {
+     "delta": 0.457012,
+     "units_ci95": [
+      -0.252599,
+      1.298149
+     ],
+     "vn_ci95": [
+      -0.605208,
+      2.139837
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 474,
+     "baseline_errors": 442
+    }
+   },
+   "body/all/psp": {
+    "grad": {
+     "errors": 980,
+     "chars": 6903,
+     "cer": 14.197
+    },
+    "refine": {
+     "errors": 796,
+     "chars": 6903,
+     "cer": 11.531
+    },
+    "split": {
+     "errors": 672,
+     "chars": 6903,
+     "cer": 9.735
+    },
+    "split_refine": {
+     "errors": 622,
+     "chars": 6903,
+     "cer": 9.011
+    },
+    "split_refine-refine": {
+     "delta": -2.520643,
+     "units_ci95": [
+      -5.059906,
+      -0.220292
+     ],
+     "vn_ci95": [
+      -7.893342,
+      1.794875
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 622,
+     "baseline_errors": 796
+    },
+    "split-grad": {
+     "delta": -4.461828,
+     "units_ci95": [
+      -7.379053,
+      -1.724608
+     ],
+     "vn_ci95": [
+      -12.361531,
+      1.312972
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 672,
+     "baseline_errors": 980
+    },
+    "refine-grad": {
+     "delta": -2.665508,
+     "units_ci95": [
+      -4.341528,
+      -1.149199
+     ],
+     "vn_ci95": [
+      -5.875512,
+      -0.133601
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 796,
+     "baseline_errors": 980
+    },
+    "split_refine-grad": {
+     "delta": -5.186151,
+     "units_ci95": [
+      -8.19985,
+      -2.369045
+     ],
+     "vn_ci95": [
+      -13.167196,
+      1.003072
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 622,
+     "baseline_errors": 980
+    }
+   },
+   "body/all/pooled": {
+    "grad": {
+     "errors": 1422,
+     "chars": 13905,
+     "cer": 10.227
+    },
+    "refine": {
+     "errors": 1274,
+     "chars": 13905,
+     "cer": 9.162
+    },
+    "split": {
+     "errors": 1121,
+     "chars": 13905,
+     "cer": 8.062
+    },
+    "split_refine": {
+     "errors": 1096,
+     "chars": 13905,
+     "cer": 7.882
+    },
+    "split_refine-refine": {
+     "delta": -1.280115,
+     "units_ci95": [
+      -2.555009,
+      -0.153057
+     ],
+     "vn_ci95": [
+      -4.044977,
+      0.815052
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1096,
+     "baseline_errors": 1274
+    },
+    "split-grad": {
+     "delta": -2.164689,
+     "units_ci95": [
+      -3.673443,
+      -0.821743
+     ],
+     "vn_ci95": [
+      -6.258875,
+      0.635789
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1121,
+     "baseline_errors": 1422
+    },
+    "refine-grad": {
+     "delta": -1.064365,
+     "units_ci95": [
+      -2.040045,
+      -0.199409
+     ],
+     "vn_ci95": [
+      -2.823898,
+      0.485615
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1274,
+     "baseline_errors": 1422
+    },
+    "split_refine-grad": {
+     "delta": -2.34448,
+     "units_ci95": [
+      -3.960053,
+      -0.901352
+     ],
+     "vn_ci95": [
+      -6.510848,
+      0.850911
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1096,
+     "baseline_errors": 1422
+    }
+   },
+   "all/base/vita": {
+    "grad": {
+     "errors": 152,
+     "chars": 2506,
+     "cer": 6.065
+    },
+    "refine": {
+     "errors": 161,
+     "chars": 2506,
+     "cer": 6.425
+    },
+    "split": {
+     "errors": 160,
+     "chars": 2506,
+     "cer": 6.385
+    },
+    "split_refine": {
+     "errors": 165,
+     "chars": 2506,
+     "cer": 6.584
+    },
+    "split_refine-refine": {
+     "delta": 0.159617,
+     "units_ci95": [
+      0.0,
+      0.419292
+     ],
+     "vn_ci95": [
+      0.0,
+      0.354141
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 165,
+     "baseline_errors": 161
+    },
+    "split-grad": {
+     "delta": 0.319234,
+     "units_ci95": [
+      0.0,
+      0.933274
+     ],
+     "vn_ci95": [
+      0.0,
+      0.842466
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 160,
+     "baseline_errors": 152
+    },
+    "refine-grad": {
+     "delta": 0.359138,
+     "units_ci95": [
+      -0.785554,
+      1.89755
+     ],
+     "vn_ci95": [
+      -1.023318,
+      2.332108
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 161,
+     "baseline_errors": 152
+    },
+    "split_refine-grad": {
+     "delta": 0.518755,
+     "units_ci95": [
+      -0.660221,
+      2.090599
+     ],
+     "vn_ci95": [
+      -0.940447,
+      2.481854
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 165,
+     "baseline_errors": 152
+    }
+   },
+   "all/base/psp": {
+    "grad": {
+     "errors": 318,
+     "chars": 2510,
+     "cer": 12.669
+    },
+    "refine": {
+     "errors": 244,
+     "chars": 2510,
+     "cer": 9.721
+    },
+    "split": {
+     "errors": 221,
+     "chars": 2510,
+     "cer": 8.805
+    },
+    "split_refine": {
+     "errors": 212,
+     "chars": 2510,
+     "cer": 8.446
+    },
+    "split_refine-refine": {
+     "delta": -1.2749,
+     "units_ci95": [
+      -4.891218,
+      1.397836
+     ],
+     "vn_ci95": [
+      -5.417809,
+      2.352983
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 212,
+     "baseline_errors": 244
+    },
+    "split-grad": {
+     "delta": -3.864542,
+     "units_ci95": [
+      -8.333411,
+      -0.091895
+     ],
+     "vn_ci95": [
+      -10.594844,
+      1.266492
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 221,
+     "baseline_errors": 318
+    },
+    "refine-grad": {
+     "delta": -2.948207,
+     "units_ci95": [
+      -6.05942,
+      -0.485378
+     ],
+     "vn_ci95": [
+      -6.244623,
+      -0.451465
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 244,
+     "baseline_errors": 318
+    },
+    "split_refine-grad": {
+     "delta": -4.223108,
+     "units_ci95": [
+      -8.765836,
+      -0.337966
+     ],
+     "vn_ci95": [
+      -10.897674,
+      0.780769
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 212,
+     "baseline_errors": 318
+    }
+   },
+   "all/base/pooled": {
+    "grad": {
+     "errors": 470,
+     "chars": 5016,
+     "cer": 9.37
+    },
+    "refine": {
+     "errors": 405,
+     "chars": 5016,
+     "cer": 8.074
+    },
+    "split": {
+     "errors": 381,
+     "chars": 5016,
+     "cer": 7.596
+    },
+    "split_refine": {
+     "errors": 377,
+     "chars": 5016,
+     "cer": 7.516
+    },
+    "split_refine-refine": {
+     "delta": -0.558214,
+     "units_ci95": [
+      -2.414206,
+      0.760525
+     ],
+     "vn_ci95": [
+      -2.673825,
+      1.236122
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 377,
+     "baseline_errors": 405
+    },
+    "split-grad": {
+     "delta": -1.774322,
+     "units_ci95": [
+      -4.088532,
+      0.104372
+     ],
+     "vn_ci95": [
+      -5.327789,
+      0.778966
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 381,
+     "baseline_errors": 470
+    },
+    "refine-grad": {
+     "delta": -1.295853,
+     "units_ci95": [
+      -3.014666,
+      0.19025
+     ],
+     "vn_ci95": [
+      -3.143146,
+      0.340572
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 405,
+     "baseline_errors": 470
+    },
+    "split_refine-grad": {
+     "delta": -1.854067,
+     "units_ci95": [
+      -4.280806,
+      0.217691
+     ],
+     "vn_ci95": [
+      -5.443385,
+      0.881088
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 377,
+     "baseline_errors": 470
+    }
+   },
+   "all/expanded-4/vita": {
+    "grad": {
+     "errors": 180,
+     "chars": 2506,
+     "cer": 7.183
+    },
+    "refine": {
+     "errors": 192,
+     "chars": 2506,
+     "cer": 7.662
+    },
+    "split": {
+     "errors": 189,
+     "chars": 2506,
+     "cer": 7.542
+    },
+    "split_refine": {
+     "errors": 197,
+     "chars": 2506,
+     "cer": 7.861
+    },
+    "split_refine-refine": {
+     "delta": 0.199521,
+     "units_ci95": [
+      0.0,
+      0.480605
+     ],
+     "vn_ci95": [
+      0.0,
+      0.401446
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 197,
+     "baseline_errors": 192
+    },
+    "split-grad": {
+     "delta": 0.359138,
+     "units_ci95": [
+      0.0,
+      0.977219
+     ],
+     "vn_ci95": [
+      0.0,
+      0.885313
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 189,
+     "baseline_errors": 180
+    },
+    "refine-grad": {
+     "delta": 0.478851,
+     "units_ci95": [
+      -0.660452,
+      1.979453
+     ],
+     "vn_ci95": [
+      -0.572544,
+      2.052557
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 192,
+     "baseline_errors": 180
+    },
+    "split_refine-grad": {
+     "delta": 0.678372,
+     "units_ci95": [
+      -0.495055,
+      2.203849
+     ],
+     "vn_ci95": [
+      -0.414962,
+      2.213931
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 197,
+     "baseline_errors": 180
+    }
+   },
+   "all/expanded-4/psp": {
+    "grad": {
+     "errors": 440,
+     "chars": 2510,
+     "cer": 17.53
+    },
+    "refine": {
+     "errors": 335,
+     "chars": 2510,
+     "cer": 13.347
+    },
+    "split": {
+     "errors": 312,
+     "chars": 2510,
+     "cer": 12.43
+    },
+    "split_refine": {
+     "errors": 275,
+     "chars": 2510,
+     "cer": 10.956
+    },
+    "split_refine-refine": {
+     "delta": -2.390438,
+     "units_ci95": [
+      -6.769802,
+      1.128617
+     ],
+     "vn_ci95": [
+      -7.901776,
+      1.818846
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 275,
+     "baseline_errors": 335
+    },
+    "split-grad": {
+     "delta": -5.099602,
+     "units_ci95": [
+      -10.198713,
+      -0.585699
+     ],
+     "vn_ci95": [
+      -13.373944,
+      0.665187
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 312,
+     "baseline_errors": 440
+    },
+    "refine-grad": {
+     "delta": -4.183267,
+     "units_ci95": [
+      -7.463856,
+      -1.637961
+     ],
+     "vn_ci95": [
+      -7.966134,
+      -1.331884
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 335,
+     "baseline_errors": 440
+    },
+    "split_refine-grad": {
+     "delta": -6.573705,
+     "units_ci95": [
+      -11.81471,
+      -1.90033
+     ],
+     "vn_ci95": [
+      -14.95616,
+      -0.446252
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 275,
+     "baseline_errors": 440
+    }
+   },
+   "all/expanded-4/pooled": {
+    "grad": {
+     "errors": 620,
+     "chars": 5016,
+     "cer": 12.36
+    },
+    "refine": {
+     "errors": 527,
+     "chars": 5016,
+     "cer": 10.506
+    },
+    "split": {
+     "errors": 501,
+     "chars": 5016,
+     "cer": 9.988
+    },
+    "split_refine": {
+     "errors": 472,
+     "chars": 5016,
+     "cer": 9.41
+    },
+    "split_refine-refine": {
+     "delta": -1.096491,
+     "units_ci95": [
+      -3.293209,
+      0.653349
+     ],
+     "vn_ci95": [
+      -3.967649,
+      0.989526
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 472,
+     "baseline_errors": 527
+    },
+    "split-grad": {
+     "delta": -2.372408,
+     "units_ci95": [
+      -5.062717,
+      -0.08658
+     ],
+     "vn_ci95": [
+      -6.766098,
+      0.516172
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 501,
+     "baseline_errors": 620
+    },
+    "refine-grad": {
+     "delta": -1.854067,
+     "units_ci95": [
+      -3.663456,
+      -0.306185
+     ],
+     "vn_ci95": [
+      -4.007353,
+      -0.080656
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 527,
+     "baseline_errors": 620
+    },
+    "split_refine-grad": {
+     "delta": -2.950558,
+     "units_ci95": [
+      -5.779553,
+      -0.42312
+     ],
+     "vn_ci95": [
+      -7.452388,
+      0.324746
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 472,
+     "baseline_errors": 620
+    }
+   },
+   "all/expanded-8/vita": {
+    "grad": {
+     "errors": 201,
+     "chars": 2506,
+     "cer": 8.021
+    },
+    "refine": {
+     "errors": 229,
+     "chars": 2506,
+     "cer": 9.138
+    },
+    "split": {
+     "errors": 210,
+     "chars": 2506,
+     "cer": 8.38
+    },
+    "split_refine": {
+     "errors": 232,
+     "chars": 2506,
+     "cer": 9.258
+    },
+    "split_refine-refine": {
+     "delta": 0.119713,
+     "units_ci95": [
+      -0.365101,
+      0.574459
+     ],
+     "vn_ci95": [
+      -0.378796,
+      0.516698
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 232,
+     "baseline_errors": 229
+    },
+    "split-grad": {
+     "delta": 0.359138,
+     "units_ci95": [
+      -0.293153,
+      1.155597
+     ],
+     "vn_ci95": [
+      -0.294993,
+      1.058213
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 210,
+     "baseline_errors": 201
+    },
+    "refine-grad": {
+     "delta": 1.117318,
+     "units_ci95": [
+      0.193405,
+      2.294387
+     ],
+     "vn_ci95": [
+      0.266421,
+      2.395976
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 229,
+     "baseline_errors": 201
+    },
+    "split_refine-grad": {
+     "delta": 1.237031,
+     "units_ci95": [
+      0.167273,
+      2.520683
+     ],
+     "vn_ci95": [
+      0.413682,
+      2.637245
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 232,
+     "baseline_errors": 201
+    }
+   },
+   "all/expanded-8/psp": {
+    "grad": {
+     "errors": 493,
+     "chars": 2510,
+     "cer": 19.641
+    },
+    "refine": {
+     "errors": 419,
+     "chars": 2510,
+     "cer": 16.693
+    },
+    "split": {
+     "errors": 353,
+     "chars": 2510,
+     "cer": 14.064
+    },
+    "split_refine": {
+     "errors": 303,
+     "chars": 2510,
+     "cer": 12.072
+    },
+    "split_refine-refine": {
+     "delta": -4.621514,
+     "units_ci95": [
+      -9.366331,
+      -0.4918
+     ],
+     "vn_ci95": [
+      -11.090144,
+      0.202391
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 303,
+     "baseline_errors": 419
+    },
+    "split-grad": {
+     "delta": -5.577689,
+     "units_ci95": [
+      -10.849788,
+      -0.948365
+     ],
+     "vn_ci95": [
+      -14.085759,
+      0.274251
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 353,
+     "baseline_errors": 493
+    },
+    "refine-grad": {
+     "delta": -2.948207,
+     "units_ci95": [
+      -5.113465,
+      -1.043845
+     ],
+     "vn_ci95": [
+      -5.807594,
+      -0.773049
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 419,
+     "baseline_errors": 493
+    },
+    "split_refine-grad": {
+     "delta": -7.569721,
+     "units_ci95": [
+      -13.102549,
+      -2.616166
+     ],
+     "vn_ci95": [
+      -16.480544,
+      -0.918315
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 303,
+     "baseline_errors": 493
+    }
+   },
+   "all/expanded-8/pooled": {
+    "grad": {
+     "errors": 694,
+     "chars": 5016,
+     "cer": 13.836
+    },
+    "refine": {
+     "errors": 648,
+     "chars": 5016,
+     "cer": 12.919
+    },
+    "split": {
+     "errors": 563,
+     "chars": 5016,
+     "cer": 11.224
+    },
+    "split_refine": {
+     "errors": 535,
+     "chars": 5016,
+     "cer": 10.666
+    },
+    "split_refine-refine": {
+     "delta": -2.252791,
+     "units_ci95": [
+      -4.729799,
+      -0.155173
+     ],
+     "vn_ci95": [
+      -5.651803,
+      0.181191
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 535,
+     "baseline_errors": 648
+    },
+    "split-grad": {
+     "delta": -2.611643,
+     "units_ci95": [
+      -5.357843,
+      -0.212978
+     ],
+     "vn_ci95": [
+      -7.095681,
+      0.371999
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 563,
+     "baseline_errors": 694
+    },
+    "refine-grad": {
+     "delta": -0.917065,
+     "units_ci95": [
+      -2.08542,
+      0.211582
+     ],
+     "vn_ci95": [
+      -2.506013,
+      0.493368
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 648,
+     "baseline_errors": 694
+    },
+    "split_refine-grad": {
+     "delta": -3.169856,
+     "units_ci95": [
+      -6.099627,
+      -0.568764
+     ],
+     "vn_ci95": [
+      -7.921239,
+      0.451272
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 535,
+     "baseline_errors": 694
+    }
+   },
+   "all/all/vita": {
+    "grad": {
+     "errors": 533,
+     "chars": 7518,
+     "cer": 7.09
+    },
+    "refine": {
+     "errors": 582,
+     "chars": 7518,
+     "cer": 7.741
+    },
+    "split": {
+     "errors": 559,
+     "chars": 7518,
+     "cer": 7.435
+    },
+    "split_refine": {
+     "errors": 594,
+     "chars": 7518,
+     "cer": 7.901
+    },
+    "split_refine-refine": {
+     "delta": 0.159617,
+     "units_ci95": [
+      -0.026282,
+      0.346623
+     ],
+     "vn_ci95": [
+      -0.050637,
+      0.373295
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 594,
+     "baseline_errors": 582
+    },
+    "split-grad": {
+     "delta": 0.345837,
+     "units_ci95": [
+      0.049686,
+      0.714576
+     ],
+     "vn_ci95": [
+      -0.04648,
+      0.875818
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 559,
+     "baseline_errors": 533
+    },
+    "refine-grad": {
+     "delta": 0.651769,
+     "units_ci95": [
+      -0.012497,
+      1.443101
+     ],
+     "vn_ci95": [
+      -0.333106,
+      2.176129
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 582,
+     "baseline_errors": 533
+    },
+    "split_refine-grad": {
+     "delta": 0.811386,
+     "units_ci95": [
+      0.118119,
+      1.627841
+     ],
+     "vn_ci95": [
+      -0.256148,
+      2.398488
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 594,
+     "baseline_errors": 533
+    }
+   },
+   "all/all/psp": {
+    "grad": {
+     "errors": 1251,
+     "chars": 7530,
+     "cer": 16.614
+    },
+    "refine": {
+     "errors": 998,
+     "chars": 7530,
+     "cer": 13.254
+    },
+    "split": {
+     "errors": 886,
+     "chars": 7530,
+     "cer": 11.766
+    },
+    "split_refine": {
+     "errors": 790,
+     "chars": 7530,
+     "cer": 10.491
+    },
+    "split_refine-refine": {
+     "delta": -2.762284,
+     "units_ci95": [
+      -5.114631,
+      -0.624552
+     ],
+     "vn_ci95": [
+      -7.967642,
+      1.087532
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 790,
+     "baseline_errors": 998
+    },
+    "split-grad": {
+     "delta": -4.847278,
+     "units_ci95": [
+      -7.617351,
+      -2.260149
+     ],
+     "vn_ci95": [
+      -12.633078,
+      0.593767
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 886,
+     "baseline_errors": 1251
+    },
+    "refine-grad": {
+     "delta": -3.359894,
+     "units_ci95": [
+      -4.931977,
+      -1.919127
+     ],
+     "vn_ci95": [
+      -6.438631,
+      -1.002293
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 998,
+     "baseline_errors": 1251
+    },
+    "split_refine-grad": {
+     "delta": -6.122178,
+     "units_ci95": [
+      -8.982105,
+      -3.419637
+     ],
+     "vn_ci95": [
+      -13.958813,
+      -0.417592
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 790,
+     "baseline_errors": 1251
+    }
+   },
+   "all/all/pooled": {
+    "grad": {
+     "errors": 1784,
+     "chars": 15048,
+     "cer": 11.855
+    },
+    "refine": {
+     "errors": 1580,
+     "chars": 15048,
+     "cer": 10.5
+    },
+    "split": {
+     "errors": 1445,
+     "chars": 15048,
+     "cer": 9.603
+    },
+    "split_refine": {
+     "errors": 1384,
+     "chars": 15048,
+     "cer": 9.197
+    },
+    "split_refine-refine": {
+     "delta": -1.302499,
+     "units_ci95": [
+      -2.499709,
+      -0.248837
+     ],
+     "vn_ci95": [
+      -4.033728,
+      0.615898
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1384,
+     "baseline_errors": 1580
+    },
+    "split-grad": {
+     "delta": -2.252791,
+     "units_ci95": [
+      -3.691097,
+      -0.950789
+     ],
+     "vn_ci95": [
+      -6.373397,
+      0.44277
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1445,
+     "baseline_errors": 1784
+    },
+    "refine-grad": {
+     "delta": -1.355662,
+     "units_ci95": [
+      -2.266499,
+      -0.533895
+     ],
+     "vn_ci95": [
+      -3.106368,
+      0.151219
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1580,
+     "baseline_errors": 1784
+    },
+    "split_refine-grad": {
+     "delta": -2.658161,
+     "units_ci95": [
+      -4.225071,
+      -1.270954
+     ],
+     "vn_ci95": [
+      -6.863246,
+      0.411419
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1384,
+     "baseline_errors": 1784
+    }
+   }
+  },
+  "VOCR5-L": {
+   "body/base/vita": {
+    "grad": {
+     "errors": 100,
+     "chars": 2334,
+     "cer": 4.284
+    },
+    "refine": {
+     "errors": 110,
+     "chars": 2334,
+     "cer": 4.713
+    },
+    "split": {
+     "errors": 101,
+     "chars": 2334,
+     "cer": 4.327
+    },
+    "split_refine": {
+     "errors": 110,
+     "chars": 2334,
+     "cer": 4.713
+    },
+    "split_refine-refine": {
+     "delta": 0.0,
+     "units_ci95": [
+      0.0,
+      0.0
+     ],
+     "vn_ci95": [
+      0.0,
+      0.0
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 110,
+     "baseline_errors": 110
+    },
+    "split-grad": {
+     "delta": 0.042845,
+     "units_ci95": [
+      0.0,
+      0.143885
+     ],
+     "vn_ci95": [
+      0.0,
+      0.141379
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 101,
+     "baseline_errors": 100
+    },
+    "refine-grad": {
+     "delta": 0.428449,
+     "units_ci95": [
+      -0.554461,
+      2.108037
+     ],
+     "vn_ci95": [
+      -0.714934,
+      2.442774
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 110,
+     "baseline_errors": 100
+    },
+    "split_refine-grad": {
+     "delta": 0.428449,
+     "units_ci95": [
+      -0.554461,
+      2.108037
+     ],
+     "vn_ci95": [
+      -0.714934,
+      2.442774
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 110,
+     "baseline_errors": 100
+    }
+   },
+   "body/base/psp": {
+    "grad": {
+     "errors": 228,
+     "chars": 2301,
+     "cer": 9.909
+    },
+    "refine": {
+     "errors": 173,
+     "chars": 2301,
+     "cer": 7.518
+    },
+    "split": {
+     "errors": 138,
+     "chars": 2301,
+     "cer": 5.997
+    },
+    "split_refine": {
+     "errors": 140,
+     "chars": 2301,
+     "cer": 6.084
+    },
+    "split_refine-refine": {
+     "delta": -1.434159,
+     "units_ci95": [
+      -5.224575,
+      1.227255
+     ],
+     "vn_ci95": [
+      -5.45379,
+      1.745049
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 140,
+     "baseline_errors": 173
+    },
+    "split-grad": {
+     "delta": -3.911343,
+     "units_ci95": [
+      -8.484917,
+      -0.130425
+     ],
+     "vn_ci95": [
+      -10.707289,
+      1.054367
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 138,
+     "baseline_errors": 228
+    },
+    "refine-grad": {
+     "delta": -2.390265,
+     "units_ci95": [
+      -5.817051,
+      0.244936
+     ],
+     "vn_ci95": [
+      -6.045754,
+      0.324974
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 173,
+     "baseline_errors": 228
+    },
+    "split_refine-grad": {
+     "delta": -3.824424,
+     "units_ci95": [
+      -8.469193,
+      0.093213
+     ],
+     "vn_ci95": [
+      -10.535697,
+      1.171082
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 140,
+     "baseline_errors": 228
+    }
+   },
+   "body/base/pooled": {
+    "grad": {
+     "errors": 328,
+     "chars": 4635,
+     "cer": 7.077
+    },
+    "refine": {
+     "errors": 283,
+     "chars": 4635,
+     "cer": 6.106
+    },
+    "split": {
+     "errors": 239,
+     "chars": 4635,
+     "cer": 5.156
+    },
+    "split_refine": {
+     "errors": 250,
+     "chars": 4635,
+     "cer": 5.394
+    },
+    "split_refine-refine": {
+     "delta": -0.711974,
+     "units_ci95": [
+      -2.616616,
+      0.596482
+     ],
+     "vn_ci95": [
+      -2.738231,
+      0.855088
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 250,
+     "baseline_errors": 283
+    },
+    "split-grad": {
+     "delta": -1.920173,
+     "units_ci95": [
+      -4.271766,
+      -0.043267
+     ],
+     "vn_ci95": [
+      -5.421555,
+      0.49191
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 239,
+     "baseline_errors": 328
+    },
+    "refine-grad": {
+     "delta": -0.970874,
+     "units_ci95": [
+      -2.833056,
+      0.598815
+     ],
+     "vn_ci95": [
+      -2.988402,
+      0.742533
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 283,
+     "baseline_errors": 328
+    },
+    "split_refine-grad": {
+     "delta": -1.682848,
+     "units_ci95": [
+      -4.147069,
+      0.404725
+     ],
+     "vn_ci95": [
+      -5.271542,
+      0.991396
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 250,
+     "baseline_errors": 328
+    }
+   },
+   "body/expanded-4/vita": {
+    "grad": {
+     "errors": 136,
+     "chars": 2334,
+     "cer": 5.827
+    },
+    "refine": {
+     "errors": 140,
+     "chars": 2334,
+     "cer": 5.998
+    },
+    "split": {
+     "errors": 138,
+     "chars": 2334,
+     "cer": 5.913
+    },
+    "split_refine": {
+     "errors": 141,
+     "chars": 2334,
+     "cer": 6.041
+    },
+    "split_refine-refine": {
+     "delta": 0.042845,
+     "units_ci95": [
+      0.0,
+      0.146129
+     ],
+     "vn_ci95": [
+      0.0,
+      0.148261
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 141,
+     "baseline_errors": 140
+    },
+    "split-grad": {
+     "delta": 0.08569,
+     "units_ci95": [
+      0.0,
+      0.234425
+     ],
+     "vn_ci95": [
+      0.0,
+      0.221366
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 138,
+     "baseline_errors": 136
+    },
+    "refine-grad": {
+     "delta": 0.17138,
+     "units_ci95": [
+      -0.879343,
+      1.793222
+     ],
+     "vn_ci95": [
+      -0.914652,
+      1.870022
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 140,
+     "baseline_errors": 136
+    },
+    "split_refine-grad": {
+     "delta": 0.214225,
+     "units_ci95": [
+      -0.840345,
+      1.834901
+     ],
+     "vn_ci95": [
+      -0.874902,
+      1.926406
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 141,
+     "baseline_errors": 136
+    }
+   },
+   "body/expanded-4/psp": {
+    "grad": {
+     "errors": 329,
+     "chars": 2301,
+     "cer": 14.298
+    },
+    "refine": {
+     "errors": 259,
+     "chars": 2301,
+     "cer": 11.256
+    },
+    "split": {
+     "errors": 232,
+     "chars": 2301,
+     "cer": 10.083
+    },
+    "split_refine": {
+     "errors": 216,
+     "chars": 2301,
+     "cer": 9.387
+    },
+    "split_refine-refine": {
+     "delta": -1.868753,
+     "units_ci95": [
+      -6.89203,
+      2.304164
+     ],
+     "vn_ci95": [
+      -8.069594,
+      3.601268
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 216,
+     "baseline_errors": 259
+    },
+    "split-grad": {
+     "delta": -4.215558,
+     "units_ci95": [
+      -9.859885,
+      0.786966
+     ],
+     "vn_ci95": [
+      -12.60736,
+      2.377184
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 232,
+     "baseline_errors": 329
+    },
+    "refine-grad": {
+     "delta": -3.042156,
+     "units_ci95": [
+      -6.631025,
+      -0.397489
+     ],
+     "vn_ci95": [
+      -6.902676,
+      -0.087964
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 259,
+     "baseline_errors": 329
+    },
+    "split_refine-grad": {
+     "delta": -4.910908,
+     "units_ci95": [
+      -10.727997,
+      0.237582
+     ],
+     "vn_ci95": [
+      -13.720039,
+      2.210333
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 216,
+     "baseline_errors": 329
+    }
+   },
+   "body/expanded-4/pooled": {
+    "grad": {
+     "errors": 465,
+     "chars": 4635,
+     "cer": 10.032
+    },
+    "refine": {
+     "errors": 399,
+     "chars": 4635,
+     "cer": 8.608
+    },
+    "split": {
+     "errors": 370,
+     "chars": 4635,
+     "cer": 7.983
+    },
+    "split_refine": {
+     "errors": 357,
+     "chars": 4635,
+     "cer": 7.702
+    },
+    "split_refine-refine": {
+     "delta": -0.906149,
+     "units_ci95": [
+      -3.348439,
+      1.176243
+     ],
+     "vn_ci95": [
+      -4.115777,
+      1.709138
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 357,
+     "baseline_errors": 399
+    },
+    "split-grad": {
+     "delta": -2.049622,
+     "units_ci95": [
+      -4.908165,
+      0.426043
+     ],
+     "vn_ci95": [
+      -6.334187,
+      1.134478
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 370,
+     "baseline_errors": 465
+    },
+    "refine-grad": {
+     "delta": -1.423948,
+     "units_ci95": [
+      -3.31183,
+      0.156543
+     ],
+     "vn_ci95": [
+      -3.515159,
+      0.309426
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 399,
+     "baseline_errors": 465
+    },
+    "split_refine-grad": {
+     "delta": -2.330097,
+     "units_ci95": [
+      -5.303729,
+      0.425936
+     ],
+     "vn_ci95": [
+      -6.926094,
+      1.22654
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 357,
+     "baseline_errors": 465
+    }
+   },
+   "body/expanded-8/vita": {
+    "grad": {
+     "errors": 151,
+     "chars": 2334,
+     "cer": 6.47
+    },
+    "refine": {
+     "errors": 157,
+     "chars": 2334,
+     "cer": 6.727
+    },
+    "split": {
+     "errors": 154,
+     "chars": 2334,
+     "cer": 6.598
+    },
+    "split_refine": {
+     "errors": 159,
+     "chars": 2334,
+     "cer": 6.812
+    },
+    "split_refine-refine": {
+     "delta": 0.08569,
+     "units_ci95": [
+      -0.125313,
+      0.402703
+     ],
+     "vn_ci95": [
+      -0.121656,
+      0.40323
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 159,
+     "baseline_errors": 157
+    },
+    "split-grad": {
+     "delta": 0.128535,
+     "units_ci95": [
+      -0.08913,
+      0.470813
+     ],
+     "vn_ci95": [
+      -0.095969,
+      0.44866
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 154,
+     "baseline_errors": 151
+    },
+    "refine-grad": {
+     "delta": 0.257069,
+     "units_ci95": [
+      -0.536753,
+      1.377318
+     ],
+     "vn_ci95": [
+      -0.595035,
+      1.723489
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 157,
+     "baseline_errors": 151
+    },
+    "split_refine-grad": {
+     "delta": 0.342759,
+     "units_ci95": [
+      -0.487815,
+      1.513763
+     ],
+     "vn_ci95": [
+      -0.612747,
+      2.105277
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2334,
+     "candidate_errors": 159,
+     "baseline_errors": 151
+    }
+   },
+   "body/expanded-8/psp": {
+    "grad": {
+     "errors": 366,
+     "chars": 2301,
+     "cer": 15.906
+    },
+    "refine": {
+     "errors": 322,
+     "chars": 2301,
+     "cer": 13.994
+    },
+    "split": {
+     "errors": 249,
+     "chars": 2301,
+     "cer": 10.821
+    },
+    "split_refine": {
+     "errors": 223,
+     "chars": 2301,
+     "cer": 9.691
+    },
+    "split_refine-refine": {
+     "delta": -4.302477,
+     "units_ci95": [
+      -9.746448,
+      0.275517
+     ],
+     "vn_ci95": [
+      -11.153423,
+      1.22984
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 223,
+     "baseline_errors": 322
+    },
+    "split-grad": {
+     "delta": -5.084746,
+     "units_ci95": [
+      -10.737074,
+      -0.199455
+     ],
+     "vn_ci95": [
+      -13.632816,
+      1.3067
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 249,
+     "baseline_errors": 366
+    },
+    "refine-grad": {
+     "delta": -1.912212,
+     "units_ci95": [
+      -3.905068,
+      -0.236726
+     ],
+     "vn_ci95": [
+      -4.66947,
+      0.086517
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 322,
+     "baseline_errors": 366
+    },
+    "split_refine-grad": {
+     "delta": -6.214689,
+     "units_ci95": [
+      -12.009439,
+      -1.127952
+     ],
+     "vn_ci95": [
+      -15.292613,
+      0.827303
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2301,
+     "candidate_errors": 223,
+     "baseline_errors": 366
+    }
+   },
+   "body/expanded-8/pooled": {
+    "grad": {
+     "errors": 517,
+     "chars": 4635,
+     "cer": 11.154
+    },
+    "refine": {
+     "errors": 479,
+     "chars": 4635,
+     "cer": 10.334
+    },
+    "split": {
+     "errors": 403,
+     "chars": 4635,
+     "cer": 8.695
+    },
+    "split_refine": {
+     "errors": 382,
+     "chars": 4635,
+     "cer": 8.242
+    },
+    "split_refine-refine": {
+     "delta": -2.092772,
+     "units_ci95": [
+      -4.843588,
+      0.199554
+     ],
+     "vn_ci95": [
+      -5.624735,
+      0.592143
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 382,
+     "baseline_errors": 479
+    },
+    "split-grad": {
+     "delta": -2.459547,
+     "units_ci95": [
+      -5.341674,
+      0.021806
+     ],
+     "vn_ci95": [
+      -6.905919,
+      0.653122
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 403,
+     "baseline_errors": 517
+    },
+    "refine-grad": {
+     "delta": -0.819849,
+     "units_ci95": [
+      -1.913921,
+      0.191285
+     ],
+     "vn_ci95": [
+      -2.243938,
+      0.445143
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 479,
+     "baseline_errors": 517
+    },
+    "split_refine-grad": {
+     "delta": -2.912621,
+     "units_ci95": [
+      -5.903408,
+      -0.293697
+     ],
+     "vn_ci95": [
+      -7.625563,
+      0.715608
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 4635,
+     "candidate_errors": 382,
+     "baseline_errors": 517
+    }
+   },
+   "body/all/vita": {
+    "grad": {
+     "errors": 387,
+     "chars": 7002,
+     "cer": 5.527
+    },
+    "refine": {
+     "errors": 407,
+     "chars": 7002,
+     "cer": 5.813
+    },
+    "split": {
+     "errors": 393,
+     "chars": 7002,
+     "cer": 5.613
+    },
+    "split_refine": {
+     "errors": 410,
+     "chars": 7002,
+     "cer": 5.855
+    },
+    "split_refine-refine": {
+     "delta": 0.042845,
+     "units_ci95": [
+      -0.028998,
+      0.152484
+     ],
+     "vn_ci95": [
+      0.0,
+      0.146682
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 410,
+     "baseline_errors": 407
+    },
+    "split-grad": {
+     "delta": 0.08569,
+     "units_ci95": [
+      0.0,
+      0.206828
+     ],
+     "vn_ci95": [
+      0.0,
+      0.21692
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 393,
+     "baseline_errors": 387
+    },
+    "refine-grad": {
+     "delta": 0.285633,
+     "units_ci95": [
+      -0.350944,
+      1.079303
+     ],
+     "vn_ci95": [
+      -0.671667,
+      1.994172
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 407,
+     "baseline_errors": 387
+    },
+    "split_refine-grad": {
+     "delta": 0.328478,
+     "units_ci95": [
+      -0.316172,
+      1.124596
+     ],
+     "vn_ci95": [
+      -0.671667,
+      2.140221
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7002,
+     "candidate_errors": 410,
+     "baseline_errors": 387
+    }
+   },
+   "body/all/psp": {
+    "grad": {
+     "errors": 923,
+     "chars": 6903,
+     "cer": 13.371
+    },
+    "refine": {
+     "errors": 754,
+     "chars": 6903,
+     "cer": 10.923
+    },
+    "split": {
+     "errors": 619,
+     "chars": 6903,
+     "cer": 8.967
+    },
+    "split_refine": {
+     "errors": 579,
+     "chars": 6903,
+     "cer": 8.388
+    },
+    "split_refine-refine": {
+     "delta": -2.53513,
+     "units_ci95": [
+      -5.153913,
+      -0.14881
+     ],
+     "vn_ci95": [
+      -8.039992,
+      1.809623
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 579,
+     "baseline_errors": 754
+    },
+    "split-grad": {
+     "delta": -4.403882,
+     "units_ci95": [
+      -7.368827,
+      -1.675218
+     ],
+     "vn_ci95": [
+      -12.213965,
+      1.281601
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 619,
+     "baseline_errors": 923
+    },
+    "refine-grad": {
+     "delta": -2.448211,
+     "units_ci95": [
+      -4.139847,
+      -0.945289
+     ],
+     "vn_ci95": [
+      -5.568726,
+      -0.049358
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 754,
+     "baseline_errors": 923
+    },
+    "split_refine-grad": {
+     "delta": -4.983341,
+     "units_ci95": [
+      -8.043477,
+      -2.134572
+     ],
+     "vn_ci95": [
+      -13.045738,
+      1.092877
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 6903,
+     "candidate_errors": 579,
+     "baseline_errors": 923
+    }
+   },
+   "body/all/pooled": {
+    "grad": {
+     "errors": 1310,
+     "chars": 13905,
+     "cer": 9.421
+    },
+    "refine": {
+     "errors": 1161,
+     "chars": 13905,
+     "cer": 8.35
+    },
+    "split": {
+     "errors": 1012,
+     "chars": 13905,
+     "cer": 7.278
+    },
+    "split_refine": {
+     "errors": 989,
+     "chars": 13905,
+     "cer": 7.113
+    },
+    "split_refine-refine": {
+     "delta": -1.236965,
+     "units_ci95": [
+      -2.534817,
+      -0.071579
+     ],
+     "vn_ci95": [
+      -4.057542,
+      0.852375
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 989,
+     "baseline_errors": 1161
+    },
+    "split-grad": {
+     "delta": -2.143114,
+     "units_ci95": [
+      -3.657033,
+      -0.777135
+     ],
+     "vn_ci95": [
+      -6.200829,
+      0.639471
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1012,
+     "baseline_errors": 1310
+    },
+    "refine-grad": {
+     "delta": -1.071557,
+     "units_ci95": [
+      -2.012075,
+      -0.23332
+     ],
+     "vn_ci95": [
+      -2.77339,
+      0.440813
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 1161,
+     "baseline_errors": 1310
+    },
+    "split_refine-grad": {
+     "delta": -2.308522,
+     "units_ci95": [
+      -3.904958,
+      -0.8564
+     ],
+     "vn_ci95": [
+      -6.484079,
+      0.878203
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 13905,
+     "candidate_errors": 989,
+     "baseline_errors": 1310
+    }
+   },
+   "all/base/vita": {
+    "grad": {
+     "errors": 130,
+     "chars": 2506,
+     "cer": 5.188
+    },
+    "refine": {
+     "errors": 144,
+     "chars": 2506,
+     "cer": 5.746
+    },
+    "split": {
+     "errors": 136,
+     "chars": 2506,
+     "cer": 5.427
+    },
+    "split_refine": {
+     "errors": 148,
+     "chars": 2506,
+     "cer": 5.906
+    },
+    "split_refine-refine": {
+     "delta": 0.159617,
+     "units_ci95": [
+      0.0,
+      0.419292
+     ],
+     "vn_ci95": [
+      0.0,
+      0.354141
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 148,
+     "baseline_errors": 144
+    },
+    "split-grad": {
+     "delta": 0.239425,
+     "units_ci95": [
+      0.0,
+      0.662259
+     ],
+     "vn_ci95": [
+      0.0,
+      0.58975
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 136,
+     "baseline_errors": 130
+    },
+    "refine-grad": {
+     "delta": 0.558659,
+     "units_ci95": [
+      -0.385439,
+      2.091236
+     ],
+     "vn_ci95": [
+      -0.574444,
+      2.375976
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 144,
+     "baseline_errors": 130
+    },
+    "split_refine-grad": {
+     "delta": 0.718276,
+     "units_ci95": [
+      -0.281696,
+      2.284948
+     ],
+     "vn_ci95": [
+      -0.498118,
+      2.535288
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 148,
+     "baseline_errors": 130
+    }
+   },
+   "all/base/psp": {
+    "grad": {
+     "errors": 291,
+     "chars": 2510,
+     "cer": 11.594
+    },
+    "refine": {
+     "errors": 227,
+     "chars": 2510,
+     "cer": 9.044
+    },
+    "split": {
+     "errors": 187,
+     "chars": 2510,
+     "cer": 7.45
+    },
+    "split_refine": {
+     "errors": 188,
+     "chars": 2510,
+     "cer": 7.49
+    },
+    "split_refine-refine": {
+     "delta": -1.553785,
+     "units_ci95": [
+      -5.025131,
+      0.902326
+     ],
+     "vn_ci95": [
+      -5.402013,
+      1.336407
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 188,
+     "baseline_errors": 227
+    },
+    "split-grad": {
+     "delta": -4.143426,
+     "units_ci95": [
+      -8.524858,
+      -0.486181
+     ],
+     "vn_ci95": [
+      -10.772132,
+      0.643956
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 187,
+     "baseline_errors": 291
+    },
+    "refine-grad": {
+     "delta": -2.549801,
+     "units_ci95": [
+      -5.73543,
+      -0.039662
+     ],
+     "vn_ci95": [
+      -5.996628,
+      -0.075978
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 227,
+     "baseline_errors": 291
+    },
+    "split_refine-grad": {
+     "delta": -4.103586,
+     "units_ci95": [
+      -8.543654,
+      -0.335567
+     ],
+     "vn_ci95": [
+      -10.705158,
+      0.593055
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 188,
+     "baseline_errors": 291
+    }
+   },
+   "all/base/pooled": {
+    "grad": {
+     "errors": 421,
+     "chars": 5016,
+     "cer": 8.393
+    },
+    "refine": {
+     "errors": 371,
+     "chars": 5016,
+     "cer": 7.396
+    },
+    "split": {
+     "errors": 323,
+     "chars": 5016,
+     "cer": 6.439
+    },
+    "split_refine": {
+     "errors": 336,
+     "chars": 5016,
+     "cer": 6.699
+    },
+    "split_refine-refine": {
+     "delta": -0.697767,
+     "units_ci95": [
+      -2.452509,
+      0.50716
+     ],
+     "vn_ci95": [
+      -2.67703,
+      0.761318
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 336,
+     "baseline_errors": 371
+    },
+    "split-grad": {
+     "delta": -1.953748,
+     "units_ci95": [
+      -4.231347,
+      -0.105439
+     ],
+     "vn_ci95": [
+      -5.45703,
+      0.445186
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 323,
+     "baseline_errors": 421
+    },
+    "refine-grad": {
+     "delta": -0.99681,
+     "units_ci95": [
+      -2.757426,
+      0.515354
+     ],
+     "vn_ci95": [
+      -2.93463,
+      0.607189
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 371,
+     "baseline_errors": 421
+    },
+    "split_refine-grad": {
+     "delta": -1.694577,
+     "units_ci95": [
+      -4.090102,
+      0.341172
+     ],
+     "vn_ci95": [
+      -5.244365,
+      0.880182
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 336,
+     "baseline_errors": 421
+    }
+   },
+   "all/expanded-4/vita": {
+    "grad": {
+     "errors": 168,
+     "chars": 2506,
+     "cer": 6.704
+    },
+    "refine": {
+     "errors": 176,
+     "chars": 2506,
+     "cer": 7.023
+    },
+    "split": {
+     "errors": 175,
+     "chars": 2506,
+     "cer": 6.983
+    },
+    "split_refine": {
+     "errors": 181,
+     "chars": 2506,
+     "cer": 7.223
+    },
+    "split_refine-refine": {
+     "delta": 0.199521,
+     "units_ci95": [
+      0.0,
+      0.480605
+     ],
+     "vn_ci95": [
+      0.0,
+      0.401446
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 181,
+     "baseline_errors": 176
+    },
+    "split-grad": {
+     "delta": 0.27933,
+     "units_ci95": [
+      0.0,
+      0.712428
+     ],
+     "vn_ci95": [
+      0.0,
+      0.6308
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 175,
+     "baseline_errors": 168
+    },
+    "refine-grad": {
+     "delta": 0.319234,
+     "units_ci95": [
+      -0.634801,
+      1.809215
+     ],
+     "vn_ci95": [
+      -0.57804,
+      1.833687
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 176,
+     "baseline_errors": 168
+    },
+    "split_refine-grad": {
+     "delta": 0.518755,
+     "units_ci95": [
+      -0.494677,
+      2.029252
+     ],
+     "vn_ci95": [
+      -0.430665,
+      2.006608
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 181,
+     "baseline_errors": 168
+    }
+   },
+   "all/expanded-4/psp": {
+    "grad": {
+     "errors": 415,
+     "chars": 2510,
+     "cer": 16.534
+    },
+    "refine": {
+     "errors": 323,
+     "chars": 2510,
+     "cer": 12.869
+    },
+    "split": {
+     "errors": 298,
+     "chars": 2510,
+     "cer": 11.873
+    },
+    "split_refine": {
+     "errors": 269,
+     "chars": 2510,
+     "cer": 10.717
+    },
+    "split_refine-refine": {
+     "delta": -2.151394,
+     "units_ci95": [
+      -6.703102,
+      1.628416
+     ],
+     "vn_ci95": [
+      -8.170299,
+      2.789245
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 269,
+     "baseline_errors": 323
+    },
+    "split-grad": {
+     "delta": -4.661355,
+     "units_ci95": [
+      -9.915065,
+      0.000948
+     ],
+     "vn_ci95": [
+      -13.031726,
+      1.564978
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 298,
+     "baseline_errors": 415
+    },
+    "refine-grad": {
+     "delta": -3.665339,
+     "units_ci95": [
+      -6.960405,
+      -1.155839
+     ],
+     "vn_ci95": [
+      -7.310382,
+      -0.900862
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 323,
+     "baseline_errors": 415
+    },
+    "split_refine-grad": {
+     "delta": -5.816733,
+     "units_ci95": [
+      -11.329078,
+      -0.942597
+     ],
+     "vn_ci95": [
+      -14.51651,
+      0.73018
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 269,
+     "baseline_errors": 415
+    }
+   },
+   "all/expanded-4/pooled": {
+    "grad": {
+     "errors": 583,
+     "chars": 5016,
+     "cer": 11.623
+    },
+    "refine": {
+     "errors": 499,
+     "chars": 5016,
+     "cer": 9.948
+    },
+    "split": {
+     "errors": 473,
+     "chars": 5016,
+     "cer": 9.43
+    },
+    "split_refine": {
+     "errors": 450,
+     "chars": 5016,
+     "cer": 8.971
+    },
+    "split_refine-refine": {
+     "delta": -0.976874,
+     "units_ci95": [
+      -3.239727,
+      0.93246
+     ],
+     "vn_ci95": [
+      -4.145318,
+      1.447458
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 450,
+     "baseline_errors": 499
+    },
+    "split-grad": {
+     "delta": -2.192982,
+     "units_ci95": [
+      -4.942528,
+      0.182251
+     ],
+     "vn_ci95": [
+      -6.594272,
+      0.85526
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 473,
+     "baseline_errors": 583
+    },
+    "refine-grad": {
+     "delta": -1.674641,
+     "units_ci95": [
+      -3.479518,
+      -0.179907
+     ],
+     "vn_ci95": [
+      -3.719181,
+      0.018928
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 499,
+     "baseline_errors": 583
+    },
+    "split_refine-grad": {
+     "delta": -2.651515,
+     "units_ci95": [
+      -5.531841,
+      -0.041351
+     ],
+     "vn_ci95": [
+      -7.24787,
+      0.760685
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 450,
+     "baseline_errors": 583
+    }
+   },
+   "all/expanded-8/vita": {
+    "grad": {
+     "errors": 182,
+     "chars": 2506,
+     "cer": 7.263
+    },
+    "refine": {
+     "errors": 193,
+     "chars": 2506,
+     "cer": 7.702
+    },
+    "split": {
+     "errors": 192,
+     "chars": 2506,
+     "cer": 7.662
+    },
+    "split_refine": {
+     "errors": 201,
+     "chars": 2506,
+     "cer": 8.021
+    },
+    "split_refine-refine": {
+     "delta": 0.319234,
+     "units_ci95": [
+      -0.040209,
+      0.872017
+     ],
+     "vn_ci95": [
+      -0.044966,
+      0.784554
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 201,
+     "baseline_errors": 193
+    },
+    "split-grad": {
+     "delta": 0.399042,
+     "units_ci95": [
+      -0.038897,
+      1.02887
+     ],
+     "vn_ci95": [
+      -0.042341,
+      0.93459
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 192,
+     "baseline_errors": 182
+    },
+    "refine-grad": {
+     "delta": 0.438947,
+     "units_ci95": [
+      -0.34072,
+      1.504735
+     ],
+     "vn_ci95": [
+      -0.300401,
+      1.754463
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 193,
+     "baseline_errors": 182
+    },
+    "split_refine-grad": {
+     "delta": 0.75818,
+     "units_ci95": [
+      -0.147079,
+      1.960802
+     ],
+     "vn_ci95": [
+      -0.201291,
+      2.488833
+     ],
+     "units": 82,
+     "vn_clusters": 16,
+     "chars": 2506,
+     "candidate_errors": 201,
+     "baseline_errors": 182
+    }
+   },
+   "all/expanded-8/psp": {
+    "grad": {
+     "errors": 461,
+     "chars": 2510,
+     "cer": 18.367
+    },
+    "refine": {
+     "errors": 398,
+     "chars": 2510,
+     "cer": 15.857
+    },
+    "split": {
+     "errors": 319,
+     "chars": 2510,
+     "cer": 12.709
+    },
+    "split_refine": {
+     "errors": 279,
+     "chars": 2510,
+     "cer": 11.116
+    },
+    "split_refine-refine": {
+     "delta": -4.741036,
+     "units_ci95": [
+      -9.61723,
+      -0.562886
+     ],
+     "vn_ci95": [
+      -11.229991,
+      0.09641
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 279,
+     "baseline_errors": 398
+    },
+    "split-grad": {
+     "delta": -5.657371,
+     "units_ci95": [
+      -10.915547,
+      -1.018582
+     ],
+     "vn_ci95": [
+      -14.172461,
+      0.243752
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 319,
+     "baseline_errors": 461
+    },
+    "refine-grad": {
+     "delta": -2.50996,
+     "units_ci95": [
+      -4.519387,
+      -0.759766
+     ],
+     "vn_ci95": [
+      -5.077187,
+      -0.630014
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 398,
+     "baseline_errors": 461
+    },
+    "split_refine-grad": {
+     "delta": -7.250996,
+     "units_ci95": [
+      -12.653371,
+      -2.411044
+     ],
+     "vn_ci95": [
+      -15.981567,
+      -0.891072
+     ],
+     "units": 93,
+     "vn_clusters": 14,
+     "chars": 2510,
+     "candidate_errors": 279,
+     "baseline_errors": 461
+    }
+   },
+   "all/expanded-8/pooled": {
+    "grad": {
+     "errors": 643,
+     "chars": 5016,
+     "cer": 12.819
+    },
+    "refine": {
+     "errors": 591,
+     "chars": 5016,
+     "cer": 11.782
+    },
+    "split": {
+     "errors": 511,
+     "chars": 5016,
+     "cer": 10.187
+    },
+    "split_refine": {
+     "errors": 480,
+     "chars": 5016,
+     "cer": 9.569
+    },
+    "split_refine-refine": {
+     "delta": -2.212919,
+     "units_ci95": [
+      -4.765726,
+      -0.077554
+     ],
+     "vn_ci95": [
+      -5.623888,
+      0.265749
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 480,
+     "baseline_errors": 591
+    },
+    "split-grad": {
+     "delta": -2.631579,
+     "units_ci95": [
+      -5.384192,
+      -0.237348
+     ],
+     "vn_ci95": [
+      -7.100287,
+      0.369106
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 511,
+     "baseline_errors": 643
+    },
+    "refine-grad": {
+     "delta": -1.036683,
+     "units_ci95": [
+      -2.135336,
+      0.0
+     ],
+     "vn_ci95": [
+      -2.460674,
+      0.193389
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 591,
+     "baseline_errors": 643
+    },
+    "split_refine-grad": {
+     "delta": -3.249601,
+     "units_ci95": [
+      -6.138089,
+      -0.695706
+     ],
+     "vn_ci95": [
+      -7.88151,
+      0.216665
+     ],
+     "units": 175,
+     "vn_clusters": 28,
+     "chars": 5016,
+     "candidate_errors": 480,
+     "baseline_errors": 643
+    }
+   },
+   "all/all/vita": {
+    "grad": {
+     "errors": 480,
+     "chars": 7518,
+     "cer": 6.385
+    },
+    "refine": {
+     "errors": 513,
+     "chars": 7518,
+     "cer": 6.824
+    },
+    "split": {
+     "errors": 503,
+     "chars": 7518,
+     "cer": 6.691
+    },
+    "split_refine": {
+     "errors": 530,
+     "chars": 7518,
+     "cer": 7.05
+    },
+    "split_refine-refine": {
+     "delta": 0.226124,
+     "units_ci95": [
+      0.064884,
+      0.430422
+     ],
+     "vn_ci95": [
+      0.0,
+      0.443379
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 530,
+     "baseline_errors": 513
+    },
+    "split-grad": {
+     "delta": 0.305932,
+     "units_ci95": [
+      0.092874,
+      0.575723
+     ],
+     "vn_ci95": [
+      0.0,
+      0.660686
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 503,
+     "baseline_errors": 480
+    },
+    "refine-grad": {
+     "delta": 0.438947,
+     "units_ci95": [
+      -0.153549,
+      1.177444
+     ],
+     "vn_ci95": [
+      -0.407382,
+      1.980634
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 513,
+     "baseline_errors": 480
+    },
+    "split_refine-grad": {
+     "delta": 0.66507,
+     "units_ci95": [
+      0.027339,
+      1.429369
+     ],
+     "vn_ci95": [
+      -0.324499,
+      2.33232
+     ],
+     "units": 246,
+     "vn_clusters": 16,
+     "chars": 7518,
+     "candidate_errors": 530,
+     "baseline_errors": 480
+    }
+   },
+   "all/all/psp": {
+    "grad": {
+     "errors": 1167,
+     "chars": 7530,
+     "cer": 15.498
+    },
+    "refine": {
+     "errors": 948,
+     "chars": 7530,
+     "cer": 12.59
+    },
+    "split": {
+     "errors": 804,
+     "chars": 7530,
+     "cer": 10.677
+    },
+    "split_refine": {
+     "errors": 736,
+     "chars": 7530,
+     "cer": 9.774
+    },
+    "split_refine-refine": {
+     "delta": -2.815405,
+     "units_ci95": [
+      -5.214212,
+      -0.649308
+     ],
+     "vn_ci95": [
+      -8.07798,
+      1.032121
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 736,
+     "baseline_errors": 948
+    },
+    "split-grad": {
+     "delta": -4.820717,
+     "units_ci95": [
+      -7.627312,
+      -2.233395
+     ],
+     "vn_ci95": [
+      -12.559297,
+      0.540639
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 804,
+     "baseline_errors": 1167
+    },
+    "refine-grad": {
+     "delta": -2.908367,
+     "units_ci95": [
+      -4.524809,
+      -1.45109
+     ],
+     "vn_ci95": [
+      -5.86376,
+      -0.675599
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 948,
+     "baseline_errors": 1167
+    },
+    "split_refine-grad": {
+     "delta": -5.723772,
+     "units_ci95": [
+      -8.635326,
+      -3.024753
+     ],
+     "vn_ci95": [
+      -13.585848,
+      -0.102709
+     ],
+     "units": 279,
+     "vn_clusters": 14,
+     "chars": 7530,
+     "candidate_errors": 736,
+     "baseline_errors": 1167
+    }
+   },
+   "all/all/pooled": {
+    "grad": {
+     "errors": 1647,
+     "chars": 15048,
+     "cer": 10.945
+    },
+    "refine": {
+     "errors": 1461,
+     "chars": 15048,
+     "cer": 9.709
+    },
+    "split": {
+     "errors": 1307,
+     "chars": 15048,
+     "cer": 8.686
+    },
+    "split_refine": {
+     "errors": 1266,
+     "chars": 15048,
+     "cer": 8.413
+    },
+    "split_refine-refine": {
+     "delta": -1.295853,
+     "units_ci95": [
+      -2.513806,
+      -0.221917
+     ],
+     "vn_ci95": [
+      -4.058555,
+      0.596319
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1266,
+     "baseline_errors": 1461
+    },
+    "split-grad": {
+     "delta": -2.259436,
+     "units_ci95": [
+      -3.701273,
+      -0.953945
+     ],
+     "vn_ci95": [
+      -6.333054,
+      0.434819
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1307,
+     "baseline_errors": 1647
+    },
+    "refine-grad": {
+     "delta": -1.236045,
+     "units_ci95": [
+      -2.142327,
+      -0.439338
+     ],
+     "vn_ci95": [
+      -2.902108,
+      0.199674
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1461,
+     "baseline_errors": 1647
+    },
+    "split_refine-grad": {
+     "delta": -2.531898,
+     "units_ci95": [
+      -4.071412,
+      -1.141002
+     ],
+     "vn_ci95": [
+      -6.703689,
+      0.493525
+     ],
+     "units": 525,
+     "vn_clusters": 28,
+     "chars": 15048,
+     "candidate_errors": 1266,
+     "baseline_errors": 1647
+    }
+   }
+  }
+ },
+ "detection": {
+  "grad/vita-test": {
+   "cases": 246,
+   "tp": 472,
+   "fp": 141,
+   "fn": 134,
+   "line_recall": 0.7789,
+   "line_precision": 0.77,
+   "line_f1": 0.7744,
+   "region_exact": 0.5122,
+   "merged": 0,
+   "split": 0,
+   "cut": 17
+  },
+  "grad/psp-test": {
+   "cases": 279,
+   "tp": 436,
+   "fp": 266,
+   "fn": 299,
+   "line_recall": 0.5932,
+   "line_precision": 0.6211,
+   "line_f1": 0.6068,
+   "region_exact": 0.2939,
+   "merged": 37,
+   "split": 5,
+   "cut": 6
+  },
+  "grad/pooled": {
+   "cases": 525,
+   "tp": 908,
+   "fp": 407,
+   "fn": 433,
+   "line_recall": 0.6771,
+   "line_precision": 0.6905,
+   "line_f1": 0.6837,
+   "region_exact": 0.3962,
+   "merged": 37,
+   "split": 5,
+   "cut": 23
+  },
+  "refine/vita-test": {
+   "cases": 246,
+   "tp": 478,
+   "fp": 136,
+   "fn": 128,
+   "line_recall": 0.7888,
+   "line_precision": 0.7785,
+   "line_f1": 0.7836,
+   "region_exact": 0.5366,
+   "merged": 0,
+   "split": 1,
+   "cut": 17
+  },
+  "refine/psp-test": {
+   "cases": 279,
+   "tp": 498,
+   "fp": 224,
+   "fn": 237,
+   "line_recall": 0.6776,
+   "line_precision": 0.6898,
+   "line_f1": 0.6836,
+   "region_exact": 0.3477,
+   "merged": 16,
+   "split": 2,
+   "cut": 6
+  },
+  "refine/pooled": {
+   "cases": 525,
+   "tp": 976,
+   "fp": 360,
+   "fn": 365,
+   "line_recall": 0.7278,
+   "line_precision": 0.7305,
+   "line_f1": 0.7292,
+   "region_exact": 0.4362,
+   "merged": 16,
+   "split": 3,
+   "cut": 23
+  },
+  "split/vita-test": {
+   "cases": 246,
+   "tp": 468,
+   "fp": 157,
+   "fn": 138,
+   "line_recall": 0.7723,
+   "line_precision": 0.7488,
+   "line_f1": 0.7604,
+   "region_exact": 0.4878,
+   "merged": 0,
+   "split": 6,
+   "cut": 17
+  },
+  "split/psp-test": {
+   "cases": 279,
+   "tp": 472,
+   "fp": 277,
+   "fn": 263,
+   "line_recall": 0.6422,
+   "line_precision": 0.6302,
+   "line_f1": 0.6361,
+   "region_exact": 0.2939,
+   "merged": 8,
+   "split": 17,
+   "cut": 6
+  },
+  "split/pooled": {
+   "cases": 525,
+   "tp": 940,
+   "fp": 434,
+   "fn": 401,
+   "line_recall": 0.701,
+   "line_precision": 0.6841,
+   "line_f1": 0.6924,
+   "region_exact": 0.3848,
+   "merged": 8,
+   "split": 23,
+   "cut": 23
+  },
+  "split_refine/vita-test": {
+   "cases": 246,
+   "tp": 477,
+   "fp": 149,
+   "fn": 129,
+   "line_recall": 0.7871,
+   "line_precision": 0.762,
+   "line_f1": 0.7744,
+   "region_exact": 0.5244,
+   "merged": 0,
+   "split": 7,
+   "cut": 17
+  },
+  "split_refine/psp-test": {
+   "cases": 279,
+   "tp": 523,
+   "fp": 236,
+   "fn": 212,
+   "line_recall": 0.7116,
+   "line_precision": 0.6891,
+   "line_f1": 0.7001,
+   "region_exact": 0.3369,
+   "merged": 5,
+   "split": 14,
+   "cut": 6
+  },
+  "split_refine/pooled": {
+   "cases": 525,
+   "tp": 1000,
+   "fp": 385,
+   "fn": 341,
+   "line_recall": 0.7457,
+   "line_precision": 0.722,
+   "line_f1": 0.7337,
+   "region_exact": 0.4248,
+   "merged": 5,
+   "split": 21,
+   "cut": 23
+  }
+ }
+}

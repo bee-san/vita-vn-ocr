@@ -730,7 +730,7 @@ UNCHANGED = ("runtime/vocr_lines.c", "runtime/vocr_lines.h", "runtime/vocr_lines
              "runtime/vocr_lines_refine.c", "runtime/vocr_lines_refine.h", "synth/common.py", "synth/lines_refine.py",
              "runtime/vocr.c", "runtime/vocr.h", "train/general_vn_textbox_guard.py", "eval/finder_tighten.py",
              "eval/textdet.py", "eval/manifests/reserved.json")
-SOURCES = ("runtime/vocr_lines_split.c", "runtime/vocr_lines_split.h", "runtime/vocr_lines_split_test.c",
+FROZEN_SOURCES = ("runtime/vocr_lines_split.c", "runtime/vocr_lines_split.h", "runtime/vocr_lines_split_test.c",
            "synth/lines_split.py", "tests/lines_split_parity.py")
 
 
@@ -777,7 +777,7 @@ def cmd_protocol(args):
                              "before the scores it can affect.",
         "owner_steering": "2026-10-18 06:50Z: do all four workstreams, PRs and issues, auto-merge, issues left open; "
                           "'we need it to run on a ps vita, so smaller == better'",
-        "sources_sha256": {f: sha256(ROOT / f) for f in SOURCES},
+        "sources_sha256": {f: sha256(ROOT / f) for f in FROZEN_SOURCES},
         "harness_sha256_at_freeze": {f: sha256(ROOT / f) for f in ("eval/translucent_box.py",)},
         "harness_note": "eval/translucent_box.py may gain report and protected-set commands after the freeze; the "
                         "classifier, the cohorts (the tag rows' sha256 below) and the score path do not change",
@@ -1430,6 +1430,51 @@ def cmd_clannad(args):
     print("lines added by the split:", boxes_split, "C != twin:", c_diff)
 
 
+def cmd_linefind(args):
+    """Report only: line detection on eval/linefind's sets (vita_dev, psp_dev; the holdouts) in the four modes
+    (the twins; C == twin is checked on every development case by score), all regions and the regions the
+    classifier tags (a region is tagged when one of its text groups is)."""
+    import textdet as TD
+    BG = TD._linefind("build_gt")
+    shots = [str(d) for d in BG.SHOT_DIRS]
+    test_vns = TD.reserved_test_vns()
+    tagged = {}
+    for r in load_rows(args.tags, "linefind"):
+        tagged[r["id"]] = tagged.get(r["id"], False) or r["tagged"]
+
+    class Mode:
+        def __init__(self, mode):
+            self.name = mode
+
+        def __call__(self, grey):
+            b, d, _, _, _ = final_lines(grey, self.name)
+            return b, d
+
+    doc = {"kind": "translucent-box-linefind", "computed": utc_now(), "role": "report only",
+           "matching": "IoU >= 0.5, one to one (eval/linefind/metrics.py)", "sets": {}, "pooled": {}}
+    per_rows = {}
+    for name, role in TD.LINEFIND_SETS.items():
+        rows, dropped = TD.linefind_rows(name, test_vns)
+        greys = [TD.region_grey(r, shots) for r in rows]
+        e = {"role": role, "regions": len(rows), "left_out_test_vn_regions": len(dropped),
+             "tagged_regions": sum(tagged.get(r["id"], False) for r in rows), "modes": {}}
+        for mode in MODES:
+            per = TD.score_linefind(rows, greys, Mode(mode))
+            per_rows.setdefault(name, {})[mode] = per
+            e["modes"][mode] = {"all": TD.summarize(per),
+                                "tagged": TD.summarize([o for o in per if tagged.get(o["id"], False)]),
+                                **{t: TD.summarize([o for o in per if t in o["tags"]]) for t in TD.TAGS}}
+        doc["sets"][name] = e
+        print(name, {m: (e["modes"][m]["all"]["line_f1"], e["modes"][m]["all"]["merged"],
+                         e["modes"][m]["tagged"].get("line_f1")) for m in MODES}, flush=True)
+    for role in ("development", "report"):
+        for mode in MODES:
+            per = [o for n, r in TD.LINEFIND_SETS.items() if r == role for o in per_rows[n][mode]]
+            doc["pooled"].setdefault(role, {})[mode] = {
+                "all": TD.summarize(per), "tagged": TD.summarize([o for o in per if tagged.get(o["id"], False)])}
+    Path(args.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+
+
 def cmd_tag(args):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -1591,6 +1636,9 @@ def main(argv=None):
     p = sub.add_parser("protocol")
     p.add_argument("--tags", required=True)
     p.add_argument("--design", action="append", required=True, help="a design cohorts' record (design.json)")
+    p = sub.add_parser("linefind")
+    p.add_argument("--tags", required=True)
+    p.add_argument("--out", required=True)
     p = sub.add_parser("protected")
     p.add_argument("--data", required=True, help="eval's screenshots (VOCR_EVAL_DATA)")
     p.add_argument("--arm", action="append", required=True, help="NAME=BLOB")
@@ -1616,6 +1664,8 @@ def main(argv=None):
     p.add_argument("--det", default="s8_c24_seed4")
     p.add_argument("--out", required=True)
     args = ap.parse_args(argv)
+    if args.cmd == "linefind":
+        cmd_linefind(args)
     if args.cmd == "protected":
         cmd_protected(args)
     if args.cmd == "protected-summary":

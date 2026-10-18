@@ -1,0 +1,394 @@
+{
+ "kind": "textgate-clannad",
+ "gate": "p8_c8_seed1",
+ "gate_sha256": "a4e73ad78451c75a19f88a479fc0108daac85beaa88d875b73212ed3c09d85d1",
+ "mode": "boxes",
+ "k": 4,
+ "t": -8,
+ "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+ "scored_lines": 3048,
+ "c_equals_twin": true,
+ "native": {
+  "driver": "$HERD/shared/private/textgate/protected/clannad/build/vocr_lines_refine_test",
+  "driver_sha256": "09de18f7e8935202ef79df62e02073de8e374c3afda4de00c843539bd7f5572b",
+  "library": "$HERD/shared/private/textgate/protected/clannad/build/libvocr_scalar.so",
+  "library_sha256": "5a87ea81c0014133cf42ec6b47d9f7f09a7980b108841bc14dd913255c54da80",
+  "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+  "finder_flags": [
+   "-std=c99",
+   "-O2",
+   "-ffp-contract=off",
+   "-DVOCR_NO_NEON",
+   "-Wall",
+   "-Wextra",
+   "-Werror"
+  ],
+  "scalar_flags": [
+   "-std=c99",
+   "-O2",
+   "-ffp-contract=off",
+   "-DVOCR_NO_NEON",
+   "-Wall",
+   "-Wextra",
+   "-Werror",
+   "-Wpedantic",
+   "-Wshadow",
+   "-Wstrict-prototypes",
+   "-Wmissing-prototypes",
+   "-Wcast-align",
+   "-Wpointer-arith",
+   "-fPIC",
+   "-shared"
+  ]
+ },
+ "counts": {
+  "pages": 2177,
+  "pages_stopped": 47,
+  "pages_with_ref": 2044,
+  "pages_with_ref_stopped": 0,
+  "no_text_pages": 133,
+  "no_text_pages_stopped": 47,
+  "refine_lines_on_no_text_pages": 162,
+  "gate_lines_on_no_text_pages": 114,
+  "unmatched": 0
+ },
+ "models": {
+  "VOCR5-S": {
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+  },
+  "VOCR5-N": {
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+  },
+  "VOCR5-L": {
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+  }
+ },
+ "scopes": {
+  "dialogue": {
+   "lines": 2052,
+   "pages": 1867,
+   "systems": {
+    "VOCR5-S/refine": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 480,
+     "exact_lines": 1675,
+     "cer": 1.4335,
+     "cer_ci95": [
+      1.2804,
+      1.5888
+     ],
+     "exact": 81.6277,
+     "exact_ci95": [
+      79.941,
+      83.3816
+     ],
+     "hiragana_errors": 296,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.4752
+    },
+    "VOCR5-S/gate": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 480,
+     "exact_lines": 1675,
+     "cer": 1.4335,
+     "cer_ci95": [
+      1.2804,
+      1.5888
+     ],
+     "exact": 81.6277,
+     "exact_ci95": [
+      79.941,
+      83.3816
+     ],
+     "hiragana_errors": 296,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.4752
+    },
+    "VOCR5-N/refine": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 309,
+     "exact_lines": 1805,
+     "cer": 0.9228,
+     "cer_ci95": [
+      0.8054,
+      1.0434
+     ],
+     "exact": 87.963,
+     "exact_ci95": [
+      86.5245,
+      89.3659
+     ],
+     "hiragana_errors": 228,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.1363
+    },
+    "VOCR5-N/gate": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 309,
+     "exact_lines": 1805,
+     "cer": 0.9228,
+     "cer_ci95": [
+      0.8054,
+      1.0434
+     ],
+     "exact": 87.963,
+     "exact_ci95": [
+      86.5245,
+      89.3659
+     ],
+     "hiragana_errors": 228,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.1363
+    },
+    "VOCR5-L/refine": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 211,
+     "exact_lines": 1875,
+     "cer": 0.6301,
+     "cer_ci95": [
+      0.5303,
+      0.7348
+     ],
+     "exact": 91.3743,
+     "exact_ci95": [
+      90.1325,
+      92.6178
+     ],
+     "hiragana_errors": 138,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 0.6878
+    },
+    "VOCR5-L/gate": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 211,
+     "exact_lines": 1875,
+     "cer": 0.6301,
+     "cer_ci95": [
+      0.5303,
+      0.7348
+     ],
+     "exact": 91.3743,
+     "exact_ci95": [
+      90.1325,
+      92.6178
+     ],
+     "hiragana_errors": 138,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 0.6878
+    }
+   },
+   "pairs": {
+    "VOCR5-S/gate:VOCR5-S/refine": {
+     "cer_delta": 0.0,
+     "cer_ci95": [
+      0.0,
+      0.0
+     ],
+     "candidate_errors": 480,
+     "baseline_errors": 480,
+     "chars": 33485
+    },
+    "VOCR5-N/gate:VOCR5-N/refine": {
+     "cer_delta": 0.0,
+     "cer_ci95": [
+      0.0,
+      0.0
+     ],
+     "candidate_errors": 309,
+     "baseline_errors": 309,
+     "chars": 33485
+    },
+    "VOCR5-L/gate:VOCR5-L/refine": {
+     "cer_delta": 0.0,
+     "cer_ci95": [
+      0.0,
+      0.0
+     ],
+     "candidate_errors": 211,
+     "baseline_errors": 211,
+     "chars": 33485
+    }
+   }
+  },
+  "all": {
+   "lines": 3048,
+   "pages": 2044,
+   "systems": {
+    "VOCR5-S/refine": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 875,
+     "exact_lines": 2474,
+     "cer": 2.4514,
+     "cer_ci95": [
+      2.2195,
+      2.6921
+     ],
+     "exact": 81.168,
+     "exact_ci95": [
+      79.734,
+      82.5856
+     ],
+     "hiragana_errors": 394,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.9583
+    },
+    "VOCR5-S/gate": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 875,
+     "exact_lines": 2474,
+     "cer": 2.4514,
+     "cer_ci95": [
+      2.2195,
+      2.6921
+     ],
+     "exact": 81.168,
+     "exact_ci95": [
+      79.734,
+      82.5856
+     ],
+     "hiragana_errors": 394,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.9583
+    },
+    "VOCR5-N/refine": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 522,
+     "exact_lines": 2635,
+     "cer": 1.4624,
+     "cer_ci95": [
+      1.3124,
+      1.6202
+     ],
+     "exact": 86.4501,
+     "exact_ci95": [
+      85.2071,
+      87.6793
+     ],
+     "hiragana_errors": 275,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.3668
+    },
+    "VOCR5-N/gate": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 522,
+     "exact_lines": 2635,
+     "cer": 1.4624,
+     "cer_ci95": [
+      1.3124,
+      1.6202
+     ],
+     "exact": 86.4501,
+     "exact_ci95": [
+      85.2071,
+      87.6793
+     ],
+     "hiragana_errors": 275,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.3668
+    },
+    "VOCR5-L/refine": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 323,
+     "exact_lines": 2788,
+     "cer": 0.9049,
+     "cer_ci95": [
+      0.7786,
+      1.0321
+     ],
+     "exact": 91.4698,
+     "exact_ci95": [
+      90.4402,
+      92.505
+     ],
+     "hiragana_errors": 148,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 0.7356
+    },
+    "VOCR5-L/gate": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 323,
+     "exact_lines": 2788,
+     "cer": 0.9049,
+     "cer_ci95": [
+      0.7786,
+      1.0321
+     ],
+     "exact": 91.4698,
+     "exact_ci95": [
+      90.4402,
+      92.505
+     ],
+     "hiragana_errors": 148,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 0.7356
+    }
+   },
+   "pairs": {
+    "VOCR5-S/gate:VOCR5-S/refine": {
+     "cer_delta": 0.0,
+     "cer_ci95": [
+      0.0,
+      0.0
+     ],
+     "candidate_errors": 875,
+     "baseline_errors": 875,
+     "chars": 35694
+    },
+    "VOCR5-N/gate:VOCR5-N/refine": {
+     "cer_delta": 0.0,
+     "cer_ci95": [
+      0.0,
+      0.0
+     ],
+     "candidate_errors": 522,
+     "baseline_errors": 522,
+     "chars": 35694
+    },
+    "VOCR5-L/gate:VOCR5-L/refine": {
+     "cer_delta": 0.0,
+     "cer_ci95": [
+      0.0,
+      0.0
+     ],
+     "candidate_errors": 323,
+     "baseline_errors": 323,
+     "chars": 35694
+    }
+   }
+  }
+ },
+ "attempt": {
+  "started": "2026-10-18T09:20:50Z",
+  "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+  "protocol_sha256": "61a803a4f3acb4d8785dbf88a87115ca7c7c31caf1dc689ca7c34bab8141d19b",
+  "gate": "p8_c8_seed1",
+  "gate_sha256": "a4e73ad78451c75a19f88a479fc0108daac85beaa88d875b73212ed3c09d85d1",
+  "mode": "boxes",
+  "k": 4,
+  "t": -8
+ }
+}

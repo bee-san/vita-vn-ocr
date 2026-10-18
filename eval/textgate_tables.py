@@ -54,16 +54,16 @@ def fmt_ci(d):
 def cmd_tables(args):
     cal = json.loads(Path(args.cal).read_text())
     dev = json.loads(Path(args.dev).read_text())
-    print("| candidate | int8 B | mode | τ | k | t | cal_dlg kept | cal_empty with no line | to development |")
-    print("|---|---:|---|---|---:|---:|---:|---:|---|")
-    rows = []
-    for name, c in cal["candidates"].items():
-        for mode, ops in c["modes"].items():
-            for tau, o in ops.items():
-                rows.append((c["bytes"], name, mode, tau, o))
-    for b, name, mode, tau, o in sorted(rows, key=lambda r: (r[0], r[1], r[2], r[3])):
-        print(f"| {name} | {b:,} | {mode} | {tau} | {o['k']} | {o['t']} | {o['recall']:.4f} | {o['empty_rate']:.3f} | "
-              f"{'yes' if o['screen_pass'] else 'no'} |")
+    print("| candidate | int8 B | region, τ 0.998 | boxes, τ 0.998 | region, τ 0.999 | boxes, τ 0.999 |")
+    print("|---|---:|---:|---:|---:|---:|")
+
+    def cell(o):
+        v = f"{o['empty_rate']:.3f}"
+        return f"**{v}**" if o["screen_pass"] else v
+    for name, c in sorted(cal["candidates"].items(), key=lambda kv: (kv[1]["bytes"], kv[0])):
+        m = c["modes"]
+        cells = [cell(m[mode][tau]) if mode in m else "" for tau in ("0.998", "0.999") for mode in ("region", "boxes")]
+        print(f"| {name} | {c['bytes']:,} | " + " | ".join(cells) + " |")
     print()
     print("| operating point | total B (weights + code) | wd cases stopped | gate − refine, S / N / L (VN CI) | "
           "native Vita, N | empty: no line (of 66) | out of the scene pool (of 12) | qualifies |")

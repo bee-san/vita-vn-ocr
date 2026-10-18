@@ -1,0 +1,2326 @@
+{
+ "kind": "textgate-development-report-only",
+ "computed": "2026-10-18T08:16:50Z",
+ "protocol_sha256": "61a803a4f3acb4d8785dbf88a87115ca7c7c31caf1dc689ca7c34bab8141d19b",
+ "decisions_sha256": "184f3d9fc5dce81d16e2c51899df00ee4bf640e754b0766b192aba432f67860d",
+ "sizes": {},
+ "order": [
+  "blank/region/0.999",
+  "rule8/region/0.999",
+  "blank/region/0.998",
+  "rule8/region/0.998",
+  "r97_s8_c24_seed4/region/0.999",
+  "r97_s8_c24_seed4/region/0.998",
+  "r97_s8_c24_seed4/boxes/0.999",
+  "r97_s8_c24_seed4/boxes/0.998"
+ ],
+ "candidates": {
+  "blank/region/0.998": {
+   "models": {
+    "VOCR5-S": {
+     "wd": {
+      "gate": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      },
+      "refine": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      },
+      "refine": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       },
+       "refine": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       },
+       "refine": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       }
+      }
+     },
+     "units_gated": 0
+    },
+    "VOCR5-N": {
+     "wd": {
+      "gate": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      },
+      "refine": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      },
+      "refine": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       },
+       "refine": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       },
+       "refine": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       }
+      }
+     },
+     "units_gated": 0
+    },
+    "VOCR5-L": {
+     "wd": {
+      "gate": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      },
+      "refine": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      },
+      "refine": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       },
+       "refine": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       },
+       "refine": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       }
+      }
+     },
+     "units_gated": 0
+    }
+   },
+   "wd_cases_dropped": 3,
+   "empty_development": {
+    "regions": 66,
+    "none_returned": 5,
+    "rate": 0.0758,
+    "in_scene_pool": [
+     5,
+     54
+    ],
+    "not_in_scene_pool": [
+     0,
+     12
+    ]
+   },
+   "empty_report": {
+    "regions": 25,
+    "none_returned": 1,
+    "rate": 0.04,
+    "in_scene_pool": [
+     1,
+     19
+    ],
+    "not_in_scene_pool": [
+     0,
+     6
+    ]
+   },
+   "name": "blank",
+   "mode": "region",
+   "target": "0.998",
+   "k": 1,
+   "t": 1,
+   "family": "rule",
+   "weight_bytes": 0,
+   "code_bytes": 0,
+   "total_bytes": 0,
+   "blob_sha256": null,
+   "conditions": {
+    "wd_not_resolved_worse": true,
+    "wd_cost_le_cap": true,
+    "native_vita_not_resolved_worse": true,
+    "empty_rate_ge": false
+   },
+   "eligible": true,
+   "qualifies": false
+  },
+  "blank/region/0.999": {
+   "models": {
+    "VOCR5-S": {
+     "wd": {
+      "gate": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      },
+      "refine": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      },
+      "refine": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       },
+       "refine": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       },
+       "refine": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       }
+      }
+     },
+     "units_gated": 0
+    },
+    "VOCR5-N": {
+     "wd": {
+      "gate": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      },
+      "refine": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      },
+      "refine": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       },
+       "refine": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       },
+       "refine": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       }
+      }
+     },
+     "units_gated": 0
+    },
+    "VOCR5-L": {
+     "wd": {
+      "gate": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      },
+      "refine": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      },
+      "refine": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       },
+       "refine": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       },
+       "refine": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       }
+      }
+     },
+     "units_gated": 0
+    }
+   },
+   "wd_cases_dropped": 3,
+   "empty_development": {
+    "regions": 66,
+    "none_returned": 5,
+    "rate": 0.0758,
+    "in_scene_pool": [
+     5,
+     54
+    ],
+    "not_in_scene_pool": [
+     0,
+     12
+    ]
+   },
+   "empty_report": {
+    "regions": 25,
+    "none_returned": 1,
+    "rate": 0.04,
+    "in_scene_pool": [
+     1,
+     19
+    ],
+    "not_in_scene_pool": [
+     0,
+     6
+    ]
+   },
+   "name": "blank",
+   "mode": "region",
+   "target": "0.999",
+   "k": 1,
+   "t": 1,
+   "family": "rule",
+   "weight_bytes": 0,
+   "code_bytes": 0,
+   "total_bytes": 0,
+   "blob_sha256": null,
+   "conditions": {
+    "wd_not_resolved_worse": true,
+    "wd_cost_le_cap": true,
+    "native_vita_not_resolved_worse": true,
+    "empty_rate_ge": false
+   },
+   "eligible": true,
+   "qualifies": false
+  },
+  "rule8/region/0.998": {
+   "models": {
+    "VOCR5-S": {
+     "wd": {
+      "gate": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      },
+      "refine": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      },
+      "refine": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       },
+       "refine": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       },
+       "refine": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       }
+      }
+     },
+     "units_gated": 0
+    },
+    "VOCR5-N": {
+     "wd": {
+      "gate": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      },
+      "refine": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      },
+      "refine": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       },
+       "refine": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       },
+       "refine": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       }
+      }
+     },
+     "units_gated": 0
+    },
+    "VOCR5-L": {
+     "wd": {
+      "gate": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      },
+      "refine": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      },
+      "refine": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       },
+       "refine": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       },
+       "refine": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       }
+      }
+     },
+     "units_gated": 0
+    }
+   },
+   "wd_cases_dropped": 3,
+   "empty_development": {
+    "regions": 66,
+    "none_returned": 5,
+    "rate": 0.0758,
+    "in_scene_pool": [
+     5,
+     54
+    ],
+    "not_in_scene_pool": [
+     0,
+     12
+    ]
+   },
+   "empty_report": {
+    "regions": 25,
+    "none_returned": 2,
+    "rate": 0.08,
+    "in_scene_pool": [
+     1,
+     19
+    ],
+    "not_in_scene_pool": [
+     1,
+     6
+    ]
+   },
+   "name": "rule8",
+   "mode": "region",
+   "target": "0.998",
+   "k": 1,
+   "t": 2,
+   "family": "rule",
+   "weight_bytes": 0,
+   "code_bytes": 0,
+   "total_bytes": 0,
+   "blob_sha256": null,
+   "conditions": {
+    "wd_not_resolved_worse": true,
+    "wd_cost_le_cap": true,
+    "native_vita_not_resolved_worse": true,
+    "empty_rate_ge": false
+   },
+   "eligible": true,
+   "qualifies": false
+  },
+  "rule8/region/0.999": {
+   "models": {
+    "VOCR5-S": {
+     "wd": {
+      "gate": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      },
+      "refine": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      },
+      "refine": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       },
+       "refine": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       },
+       "refine": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       }
+      }
+     },
+     "units_gated": 0
+    },
+    "VOCR5-N": {
+     "wd": {
+      "gate": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      },
+      "refine": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      },
+      "refine": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       },
+       "refine": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       },
+       "refine": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       }
+      }
+     },
+     "units_gated": 0
+    },
+    "VOCR5-L": {
+     "wd": {
+      "gate": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      },
+      "refine": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      },
+      "refine": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       },
+       "refine": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       },
+       "refine": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       }
+      }
+     },
+     "units_gated": 0
+    }
+   },
+   "wd_cases_dropped": 3,
+   "empty_development": {
+    "regions": 66,
+    "none_returned": 5,
+    "rate": 0.0758,
+    "in_scene_pool": [
+     5,
+     54
+    ],
+    "not_in_scene_pool": [
+     0,
+     12
+    ]
+   },
+   "empty_report": {
+    "regions": 25,
+    "none_returned": 2,
+    "rate": 0.08,
+    "in_scene_pool": [
+     1,
+     19
+    ],
+    "not_in_scene_pool": [
+     1,
+     6
+    ]
+   },
+   "name": "rule8",
+   "mode": "region",
+   "target": "0.999",
+   "k": 1,
+   "t": 2,
+   "family": "rule",
+   "weight_bytes": 0,
+   "code_bytes": 0,
+   "total_bytes": 0,
+   "blob_sha256": null,
+   "conditions": {
+    "wd_not_resolved_worse": true,
+    "wd_cost_le_cap": true,
+    "native_vita_not_resolved_worse": true,
+    "empty_rate_ge": false
+   },
+   "eligible": true,
+   "qualifies": false
+  },
+  "r97_s8_c24_seed4/region/0.998": {
+   "models": {
+    "VOCR5-S": {
+     "wd": {
+      "gate": {
+       "errors": 1491,
+       "chars": 25854,
+       "cer": 5.767
+      },
+      "refine": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.5531,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0284,
+       1.4738
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      },
+      "refine": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 470,
+        "chars": 12009,
+        "cer": 3.9137
+       },
+       "refine": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 1021,
+        "chars": 13845,
+        "cer": 7.3745
+       },
+       "refine": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       }
+      }
+     },
+     "units_gated": 13
+    },
+    "VOCR5-N": {
+     "wd": {
+      "gate": {
+       "errors": 1380,
+       "chars": 25854,
+       "cer": 5.3377
+      },
+      "refine": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.557,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0284,
+       1.5006
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      },
+      "refine": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 438,
+        "chars": 12009,
+        "cer": 3.6473
+       },
+       "refine": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 942,
+        "chars": 13845,
+        "cer": 6.8039
+       },
+       "refine": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       }
+      }
+     },
+     "units_gated": 13
+    },
+    "VOCR5-L": {
+     "wd": {
+      "gate": {
+       "errors": 1301,
+       "chars": 25854,
+       "cer": 5.0321
+      },
+      "refine": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.5724,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0284,
+       1.5203
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      },
+      "refine": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 420,
+        "chars": 12009,
+        "cer": 3.4974
+       },
+       "refine": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 881,
+        "chars": 13845,
+        "cer": 6.3633
+       },
+       "refine": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       }
+      }
+     },
+     "units_gated": 13
+    }
+   },
+   "wd_cases_dropped": 16,
+   "empty_development": {
+    "regions": 66,
+    "none_returned": 65,
+    "rate": 0.9848,
+    "in_scene_pool": [
+     53,
+     54
+    ],
+    "not_in_scene_pool": [
+     12,
+     12
+    ]
+   },
+   "empty_report": {
+    "regions": 25,
+    "none_returned": 25,
+    "rate": 1.0,
+    "in_scene_pool": [
+     19,
+     19
+    ],
+    "not_in_scene_pool": [
+     6,
+     6
+    ]
+   },
+   "name": "r97_s8_c24_seed4",
+   "mode": "region",
+   "target": "0.998",
+   "k": 4,
+   "t": 18,
+   "family": "learned",
+   "weight_bytes": 5700,
+   "code_bytes": 0,
+   "total_bytes": 5700,
+   "blob_sha256": "8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179",
+   "conditions": {
+    "wd_not_resolved_worse": false,
+    "wd_cost_le_cap": false,
+    "native_vita_not_resolved_worse": true,
+    "empty_rate_ge": true
+   },
+   "eligible": true,
+   "qualifies": false
+  },
+  "r97_s8_c24_seed4/region/0.999": {
+   "models": {
+    "VOCR5-S": {
+     "wd": {
+      "gate": {
+       "errors": 1378,
+       "chars": 25854,
+       "cer": 5.3299
+      },
+      "refine": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.116,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.3086
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      },
+      "refine": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 463,
+        "chars": 12009,
+        "cer": 3.8554
+       },
+       "refine": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 915,
+        "chars": 13845,
+        "cer": 6.6089
+       },
+       "refine": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       }
+      }
+     },
+     "units_gated": 3
+    },
+    "VOCR5-N": {
+     "wd": {
+      "gate": {
+       "errors": 1265,
+       "chars": 25854,
+       "cer": 4.8929
+      },
+      "refine": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.1122,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.2983
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      },
+      "refine": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 432,
+        "chars": 12009,
+        "cer": 3.5973
+       },
+       "refine": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 833,
+        "chars": 13845,
+        "cer": 6.0166
+       },
+       "refine": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       }
+      }
+     },
+     "units_gated": 3
+    },
+    "VOCR5-L": {
+     "wd": {
+      "gate": {
+       "errors": 1184,
+       "chars": 25854,
+       "cer": 4.5796
+      },
+      "refine": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.1199,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.3187
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      },
+      "refine": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 412,
+        "chars": 12009,
+        "cer": 3.4308
+       },
+       "refine": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 772,
+        "chars": 13845,
+        "cer": 5.576
+       },
+       "refine": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       }
+      }
+     },
+     "units_gated": 3
+    }
+   },
+   "wd_cases_dropped": 6,
+   "empty_development": {
+    "regions": 66,
+    "none_returned": 63,
+    "rate": 0.9545,
+    "in_scene_pool": [
+     52,
+     54
+    ],
+    "not_in_scene_pool": [
+     11,
+     12
+    ]
+   },
+   "empty_report": {
+    "regions": 25,
+    "none_returned": 24,
+    "rate": 0.96,
+    "in_scene_pool": [
+     18,
+     19
+    ],
+    "not_in_scene_pool": [
+     6,
+     6
+    ]
+   },
+   "name": "r97_s8_c24_seed4",
+   "mode": "region",
+   "target": "0.999",
+   "k": 2,
+   "t": 2,
+   "family": "learned",
+   "weight_bytes": 5700,
+   "code_bytes": 0,
+   "total_bytes": 5700,
+   "blob_sha256": "8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179",
+   "conditions": {
+    "wd_not_resolved_worse": true,
+    "wd_cost_le_cap": false,
+    "native_vita_not_resolved_worse": true,
+    "empty_rate_ge": true
+   },
+   "eligible": true,
+   "qualifies": false
+  },
+  "r97_s8_c24_seed4/boxes/0.998": {
+   "models": {
+    "VOCR5-S": {
+     "wd": {
+      "gate": {
+       "errors": 1484,
+       "chars": 25854,
+       "cer": 5.7399
+      },
+      "refine": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.526,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       1.4457
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      },
+      "refine": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 470,
+        "chars": 12009,
+        "cer": 3.9137
+       },
+       "refine": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 1014,
+        "chars": 13845,
+        "cer": 7.3239
+       },
+       "refine": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       }
+      }
+     },
+     "units_gated": 10
+    },
+    "VOCR5-N": {
+     "wd": {
+      "gate": {
+       "errors": 1373,
+       "chars": 25854,
+       "cer": 5.3106
+      },
+      "refine": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.5299,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       1.4733
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      },
+      "refine": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 438,
+        "chars": 12009,
+        "cer": 3.6473
+       },
+       "refine": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 935,
+        "chars": 13845,
+        "cer": 6.7533
+       },
+       "refine": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       }
+      }
+     },
+     "units_gated": 10
+    },
+    "VOCR5-L": {
+     "wd": {
+      "gate": {
+       "errors": 1294,
+       "chars": 25854,
+       "cer": 5.005
+      },
+      "refine": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.5454,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       1.4984
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      },
+      "refine": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 420,
+        "chars": 12009,
+        "cer": 3.4974
+       },
+       "refine": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 874,
+        "chars": 13845,
+        "cer": 6.3127
+       },
+       "refine": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       }
+      }
+     },
+     "units_gated": 10
+    }
+   },
+   "wd_cases_dropped": 13,
+   "empty_development": {
+    "regions": 66,
+    "none_returned": 65,
+    "rate": 0.9848,
+    "in_scene_pool": [
+     53,
+     54
+    ],
+    "not_in_scene_pool": [
+     12,
+     12
+    ]
+   },
+   "empty_report": {
+    "regions": 25,
+    "none_returned": 24,
+    "rate": 0.96,
+    "in_scene_pool": [
+     18,
+     19
+    ],
+    "not_in_scene_pool": [
+     6,
+     6
+    ]
+   },
+   "name": "r97_s8_c24_seed4",
+   "mode": "boxes",
+   "target": "0.998",
+   "k": 1,
+   "t": 29,
+   "family": "learned",
+   "weight_bytes": 5700,
+   "code_bytes": 0,
+   "total_bytes": 5700,
+   "blob_sha256": "8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179",
+   "conditions": {
+    "wd_not_resolved_worse": true,
+    "wd_cost_le_cap": false,
+    "native_vita_not_resolved_worse": true,
+    "empty_rate_ge": true
+   },
+   "eligible": true,
+   "qualifies": false
+  },
+  "r97_s8_c24_seed4/boxes/0.999": {
+   "models": {
+    "VOCR5-S": {
+     "wd": {
+      "gate": {
+       "errors": 1354,
+       "chars": 25854,
+       "cer": 5.2371
+      },
+      "refine": {
+       "errors": 1348,
+       "chars": 25854,
+       "cer": 5.2139
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0232,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0791
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      },
+      "refine": {
+       "errors": 34,
+       "chars": 3738,
+       "cer": 0.9096
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 456,
+        "chars": 12009,
+        "cer": 3.7972
+       },
+       "refine": {
+        "errors": 450,
+        "chars": 12009,
+        "cer": 3.7472
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       },
+       "refine": {
+        "errors": 898,
+        "chars": 13845,
+        "cer": 6.4861
+       }
+      }
+     },
+     "units_gated": 1
+    },
+    "VOCR5-N": {
+     "wd": {
+      "gate": {
+       "errors": 1242,
+       "chars": 25854,
+       "cer": 4.8039
+      },
+      "refine": {
+       "errors": 1236,
+       "chars": 25854,
+       "cer": 4.7807
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0232,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0791
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      },
+      "refine": {
+       "errors": 38,
+       "chars": 3738,
+       "cer": 1.0166
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 425,
+        "chars": 12009,
+        "cer": 3.539
+       },
+       "refine": {
+        "errors": 419,
+        "chars": 12009,
+        "cer": 3.489
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       },
+       "refine": {
+        "errors": 817,
+        "chars": 13845,
+        "cer": 5.901
+       }
+      }
+     },
+     "units_gated": 1
+    },
+    "VOCR5-L": {
+     "wd": {
+      "gate": {
+       "errors": 1160,
+       "chars": 25854,
+       "cer": 4.4867
+      },
+      "refine": {
+       "errors": 1153,
+       "chars": 25854,
+       "cer": 4.4597
+      }
+     },
+     "gate_minus_refine": {
+      "delta": 0.0271,
+      "clusters": 93,
+      "chars": 25854,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0923
+      ]
+     },
+     "native_vita": {
+      "gate": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      },
+      "refine": {
+       "errors": 30,
+       "chars": 3738,
+       "cer": 0.8026
+      }
+     },
+     "native_gate_minus_refine": {
+      "delta": 0.0,
+      "clusters": 9,
+      "chars": 3738,
+      "pairs": 1,
+      "reps": 10000,
+      "seed": 0,
+      "min_clusters": 5,
+      "ci95": [
+       0.0,
+       0.0
+      ]
+     },
+     "per_platform": {
+      "vita": {
+       "gate": {
+        "errors": 404,
+        "chars": 12009,
+        "cer": 3.3641
+       },
+       "refine": {
+        "errors": 397,
+        "chars": 12009,
+        "cer": 3.3059
+       }
+      },
+      "psp": {
+       "gate": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       },
+       "refine": {
+        "errors": 756,
+        "chars": 13845,
+        "cer": 5.4605
+       }
+      }
+     },
+     "units_gated": 1
+    }
+   },
+   "wd_cases_dropped": 4,
+   "empty_development": {
+    "regions": 66,
+    "none_returned": 52,
+    "rate": 0.7879,
+    "in_scene_pool": [
+     43,
+     54
+    ],
+    "not_in_scene_pool": [
+     9,
+     12
+    ]
+   },
+   "empty_report": {
+    "regions": 25,
+    "none_returned": 22,
+    "rate": 0.88,
+    "in_scene_pool": [
+     16,
+     19
+    ],
+    "not_in_scene_pool": [
+     6,
+     6
+    ]
+   },
+   "name": "r97_s8_c24_seed4",
+   "mode": "boxes",
+   "target": "0.999",
+   "k": 4,
+   "t": -54,
+   "family": "learned",
+   "weight_bytes": 5700,
+   "code_bytes": 0,
+   "total_bytes": 5700,
+   "blob_sha256": "8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179",
+   "conditions": {
+    "wd_not_resolved_worse": true,
+    "wd_cost_le_cap": true,
+    "native_vita_not_resolved_worse": true,
+    "empty_rate_ge": false
+   },
+   "eligible": true,
+   "qualifies": false
+  }
+ },
+ "baseline": {
+  "VOCR5-S": {
+   "errors": 1348,
+   "chars": 25854,
+   "cer": 5.2139
+  },
+  "VOCR5-N": {
+   "errors": 1236,
+   "chars": 25854,
+   "cer": 4.7807
+  },
+  "VOCR5-L": {
+   "errors": 1153,
+   "chars": 25854,
+   "cer": 4.4597
+  }
+ },
+ "parity": {},
+ "note": "report only, not candidates of the rule: #97's s8_c24_seed4 (5,700 B) read as a presence gate at its calibrated operating points, and the baselines blank and rule8 (both stopped by the calibration screen); sizes are placeholders here (the rule never reads this file)"
+}

@@ -1,0 +1,2926 @@
+{
+ "kind": "textgate-calibration-record",
+ "computed": "2026-10-18T07:51:31Z",
+ "cohorts": {
+  "cal_dlg": {
+   "cases": 11103,
+   "regions": 3701,
+   "vns": 1810,
+   "by_source": {
+    "realplus": 8580,
+    "teacher": 2463,
+    "owner": 60
+   },
+   "by_kind": {
+    "vita": 10065,
+    "psp": 1038
+   },
+   "lines": 4826,
+   "sha256": "8e4b4e57661f203fee4a6218e4cec4500a87c4b0c2a89751a12246d073640057"
+  },
+  "cal_empty": {
+   "cases": 3344,
+   "regions": 3344,
+   "vns": 1805,
+   "by_source": {
+    "realplus": 2574,
+    "teacher": 750,
+    "owner": 20
+   },
+   "by_kind": {
+    "vita": 3009,
+    "psp": 335
+   },
+   "lines": 0,
+   "sha256": "cd4c2f9bee08e7268f85bd6460256d80de44a6a6669b9ef3b50b5baa23ec684f"
+  },
+  "errors": [],
+  "split": {
+   "salt": "textgate-split:",
+   "calib": "sha256(salt + vn)[:8] % 5 == 0",
+   "caps": {
+    "realplus": 2,
+    "teacher": 10,
+    "owner": 20
+   },
+   "empty": {
+    "w": [
+     300,
+     600
+    ],
+    "h": [
+     60,
+     140
+    ],
+    "top": 0.45,
+    "pad": 10,
+    "tries": 20
+   }
+  }
+ },
+ "targets": [
+  0.998,
+  0.999
+ ],
+ "k_set": [
+  1,
+  2,
+  4
+ ],
+ "screen_empty": 0.85,
+ "cal_empty_finder_none": 248,
+ "cal_dlg_finder_none": 61,
+ "candidates": {
+  "blank": {
+   "family": "rule",
+   "bytes": 0,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 1,
+      "t": 1,
+      "empty_rate": 0.0766,
+      "gate_rejects": 0.0766,
+      "recall": 0.99964,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 1.0,
+       "vita": 0.9996
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99953,
+       "teacher": 1.0
+      },
+      "dropped": 4,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 1,
+      "t": 1,
+      "empty_rate": 0.0766,
+      "gate_rejects": 0.0766,
+      "recall": 0.99964,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 1.0,
+       "vita": 0.9996
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99953,
+       "teacher": 1.0
+      },
+      "dropped": 4,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "rule8": {
+   "family": "rule",
+   "bytes": 0,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 1,
+      "t": 2,
+      "empty_rate": 0.0834,
+      "gate_rejects": 0.0541,
+      "recall": 0.99955,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 1.0,
+       "vita": 0.9995
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99941,
+       "teacher": 1.0
+      },
+      "dropped": 5,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 1,
+      "t": 2,
+      "empty_rate": 0.0834,
+      "gate_rejects": 0.0541,
+      "recall": 0.99955,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 1.0,
+       "vita": 0.9995
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99941,
+       "teacher": 1.0
+      },
+      "dropped": 5,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c4_seed1": {
+   "family": "learned",
+   "blob_sha256": "78dc318db047fb6852e01e5b2e398ae9b4e30242dc010004cc9981c7fde7bde4",
+   "bytes": 1004,
+   "shape": "s4_c4",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 1,
+      "t": -33,
+      "empty_rate": 0.262,
+      "gate_rejects": 0.2539,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99129,
+       "vita": 0.9987
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99389
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 2,
+      "t": -73,
+      "empty_rate": 0.1223,
+      "gate_rejects": 0.1059,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99965,
+       "teacher": 0.99674
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 1,
+      "t": -43,
+      "empty_rate": 0.2318,
+      "gate_rejects": 0.2318,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9985
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.9947
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -80,
+      "empty_rate": 0.1289,
+      "gate_rejects": 0.1289,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99953,
+       "teacher": 0.99715
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c4_seed2": {
+   "family": "learned",
+   "blob_sha256": "daa184d79eb72c8edcaf6502262b975efbdf8f528d924f108ebc33bcfe9f530b",
+   "bytes": 1004,
+   "shape": "s4_c4",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 2,
+      "t": 3,
+      "empty_rate": 0.5975,
+      "gate_rejects": 0.5963,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99032,
+       "vita": 0.9988
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99859,
+       "teacher": 0.99592
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -21,
+      "empty_rate": 0.4453,
+      "gate_rejects": 0.4426,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 2,
+      "t": 3,
+      "empty_rate": 0.6089,
+      "gate_rejects": 0.6089,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99032,
+       "vita": 0.9988
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99859,
+       "teacher": 0.99592
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -28,
+      "empty_rate": 0.398,
+      "gate_rejects": 0.398,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.99918
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4p_c4_seed1": {
+   "family": "learned",
+   "blob_sha256": "0dca6b06d3992d2e883db8b249018eee733df9f8654c8c94e7f94e11281ae970",
+   "bytes": 1100,
+   "shape": "s4p_c4",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -10,
+      "empty_rate": 0.5664,
+      "gate_rejects": 0.5652,
+      "recall": 0.99819,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9987
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99883,
+       "teacher": 0.99592
+      },
+      "dropped": 20,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 2,
+      "t": -20,
+      "empty_rate": 0.4085,
+      "gate_rejects": 0.4055,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9995
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99965,
+       "teacher": 0.99674
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -11,
+      "empty_rate": 0.5697,
+      "gate_rejects": 0.5697,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9985
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99859,
+       "teacher": 0.99592
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -29,
+      "empty_rate": 0.4139,
+      "gate_rejects": 0.4139,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9996
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99953,
+       "teacher": 0.99755
+      },
+      "dropped": 10,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c6_seed1": {
+   "family": "learned",
+   "blob_sha256": "02e54009b01c53ab8c86ede84e1939325a42bc5947d7753642457f80962d5d62",
+   "bytes": 1280,
+   "shape": "s4_c6",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 2,
+      "t": 3,
+      "empty_rate": 0.6184,
+      "gate_rejects": 0.6166,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9986
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99883,
+       "teacher": 0.99511
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -16,
+      "empty_rate": 0.532,
+      "gate_rejects": 0.5296,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9997
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99965,
+       "teacher": 0.99674
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -10,
+      "empty_rate": 0.6026,
+      "gate_rejects": 0.6026,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99129,
+       "vita": 0.9988
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99883,
+       "teacher": 0.99552
+      },
+      "dropped": 21,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 1,
+      "t": -28,
+      "empty_rate": 0.3556,
+      "gate_rejects": 0.3556,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99878
+      },
+      "dropped": 10,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c8_seed1": {
+   "family": "learned",
+   "blob_sha256": "dd39f2610525a8308f035d34313d8fe820f267466c5d37b737b6fc2c14e85a41",
+   "bytes": 1540,
+   "shape": "s4_c8",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -4,
+      "empty_rate": 0.6803,
+      "gate_rejects": 0.6794,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9985
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.9947
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -25,
+      "empty_rate": 0.4949,
+      "gate_rejects": 0.4919,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99837
+      },
+      "dropped": 10,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -9,
+      "empty_rate": 0.6543,
+      "gate_rejects": 0.6543,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9985
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99883,
+       "teacher": 0.99552
+      },
+      "dropped": 21,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 2,
+      "t": -22,
+      "empty_rate": 0.4704,
+      "gate_rejects": 0.4704,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99837
+      },
+      "dropped": 10,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c8_seed2": {
+   "family": "learned",
+   "blob_sha256": "a88e735bb44b4a36b31ba09478a354e4d1b5d1e4b7cc7dbdda6d0c854e26cf9a",
+   "bytes": 1540,
+   "shape": "s4_c8",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -11,
+      "empty_rate": 0.6065,
+      "gate_rejects": 0.605,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9984
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99848,
+       "teacher": 0.99633
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -25,
+      "empty_rate": 0.4737,
+      "gate_rejects": 0.4701,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -13,
+      "empty_rate": 0.6071,
+      "gate_rejects": 0.6071,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9983
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -28,
+      "empty_rate": 0.465,
+      "gate_rejects": 0.465,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99878
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s8_c8_seed1": {
+   "family": "learned",
+   "blob_sha256": "b8114dfb6cf8ea3caafcac7d0bd1851564df114e15431c348ee80f1e8bf3aacf",
+   "bytes": 1884,
+   "shape": "s8_c8",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -11,
+      "empty_rate": 0.8669,
+      "gate_rejects": 0.866,
+      "recall": 0.99819,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9985
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99883,
+       "teacher": 0.99592
+      },
+      "dropped": 20,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -24,
+      "empty_rate": 0.8101,
+      "gate_rejects": 0.8092,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99953,
+       "teacher": 0.99715
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -16,
+      "empty_rate": 0.8514,
+      "gate_rejects": 0.8514,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9983
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99848,
+       "teacher": 0.99633
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 2,
+      "t": -31,
+      "empty_rate": 0.6758,
+      "gate_rejects": 0.6758,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99878
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s8_c8_seed2": {
+   "family": "learned",
+   "blob_sha256": "b1856e01d877762f4a44e8e4bc5019d0799f6567458718c12e9e9aa7a1973fda",
+   "bytes": 1884,
+   "shape": "s8_c8",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 2,
+      "t": -22,
+      "empty_rate": 0.7246,
+      "gate_rejects": 0.7237,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99129,
+       "vita": 0.9987
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99429
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -45,
+      "empty_rate": 0.6376,
+      "gate_rejects": 0.6358,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99941,
+       "teacher": 0.99755
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 1,
+      "t": -18,
+      "empty_rate": 0.706,
+      "gate_rejects": 0.706,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9986
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99871,
+       "teacher": 0.99552
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -50,
+      "empty_rate": 0.6169,
+      "gate_rejects": 0.6169,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s8_c8_seed3": {
+   "family": "learned",
+   "blob_sha256": "5f57d83d6ad7a2fb91693301bd1b6ba599ebe041093d5715ded89b33acb9c966",
+   "bytes": 1884,
+   "shape": "s8_c8",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 2,
+      "t": -20,
+      "empty_rate": 0.7673,
+      "gate_rejects": 0.7667,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9987
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99859,
+       "teacher": 0.99633
+      },
+      "dropped": 21,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 1,
+      "t": -31,
+      "empty_rate": 0.6214,
+      "gate_rejects": 0.6208,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99941,
+       "teacher": 0.99755
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 2,
+      "t": -28,
+      "empty_rate": 0.7264,
+      "gate_rejects": 0.7264,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9986
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99848,
+       "teacher": 0.99633
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -56,
+      "empty_rate": 0.5631,
+      "gate_rejects": 0.5631,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c8n5_seed1": {
+   "family": "learned",
+   "blob_sha256": "6b6d46c166856addaa5c6b160b2676f2d9f85f8d672f72d11e2c3d988aaabd14",
+   "bytes": 2228,
+   "shape": "s4_c8n5",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": 14,
+      "empty_rate": 0.8487,
+      "gate_rejects": 0.8487,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.98838,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99953,
+       "teacher": 0.99307
+      },
+      "dropped": 21,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -6,
+      "empty_rate": 0.7557,
+      "gate_rejects": 0.7551,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9997
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99965,
+       "teacher": 0.99674
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 2,
+      "t": 16,
+      "empty_rate": 0.8278,
+      "gate_rejects": 0.8278,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.98935,
+       "vita": 0.9989
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99389
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -13,
+      "empty_rate": 0.7312,
+      "gate_rejects": 0.7312,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c8n5_seed3": {
+   "family": "learned",
+   "blob_sha256": "bc4e7d89a67a7d59c2c707ae9ad31c390b7c26fe907b94fd38f86830450131da",
+   "bytes": 2228,
+   "shape": "s4_c8n5",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -18,
+      "empty_rate": 0.6806,
+      "gate_rejects": 0.6785,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.98548,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99389
+      },
+      "dropped": 21,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -40,
+      "empty_rate": 0.5215,
+      "gate_rejects": 0.5161,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9996
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99953,
+       "teacher": 0.99715
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 2,
+      "t": -14,
+      "empty_rate": 0.6651,
+      "gate_rejects": 0.6651,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.98838,
+       "vita": 0.999
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99883,
+       "teacher": 0.99511
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -50,
+      "empty_rate": 0.4701,
+      "gate_rejects": 0.4701,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c12_seed1": {
+   "family": "learned",
+   "blob_sha256": "766b1b85055124ba1c5471e5918df7ab8f035109cf74766927258c57bfa2fe92",
+   "bytes": 2276,
+   "shape": "s4_c12",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -2,
+      "empty_rate": 0.744,
+      "gate_rejects": 0.7431,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.98935,
+       "vita": 0.9989
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99389
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -18,
+      "empty_rate": 0.6423,
+      "gate_rejects": 0.6414,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9997
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99965,
+       "teacher": 0.99715
+      },
+      "dropped": 10,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -3,
+      "empty_rate": 0.7503,
+      "gate_rejects": 0.7503,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.98935,
+       "vita": 0.9989
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99429
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -18,
+      "empty_rate": 0.6552,
+      "gate_rejects": 0.6552,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9996
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99953,
+       "teacher": 0.99715
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4p_c8_seed1": {
+   "family": "learned",
+   "blob_sha256": "d15473412710358a2c8980083c73c006d7a5d4a7c1b6669d8fb8c92fb9368697",
+   "bytes": 2700,
+   "shape": "s4p_c8",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": 12,
+      "empty_rate": 0.8263,
+      "gate_rejects": 0.8257,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9981
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99824,
+       "teacher": 0.99715
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 1,
+      "t": 20,
+      "empty_rate": 0.7653,
+      "gate_rejects": 0.7647,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": 10,
+      "empty_rate": 0.8224,
+      "gate_rejects": 0.8224,
+      "recall": 0.99819,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9983
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99848,
+       "teacher": 0.99715
+      },
+      "dropped": 20,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 1,
+      "t": 12,
+      "empty_rate": 0.7312,
+      "gate_rejects": 0.7312,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99903,
+       "vita": 0.999
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c12n4_seed3": {
+   "family": "learned",
+   "blob_sha256": "db6d2317b1460c86674309df2978f789cc5ddf1e8f61433fb0851cc28733309e",
+   "bytes": 2808,
+   "shape": "s4_c12n4",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": 20,
+      "empty_rate": 0.904,
+      "gate_rejects": 0.9037,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99032,
+       "vita": 0.9988
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99859,
+       "teacher": 0.99592
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -16,
+      "empty_rate": 0.7685,
+      "gate_rejects": 0.7667,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -2,
+      "empty_rate": 0.8433,
+      "gate_rejects": 0.8433,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99129,
+       "vita": 0.9987
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99848,
+       "teacher": 0.99633
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -32,
+      "empty_rate": 0.6806,
+      "gate_rejects": 0.6806,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99918
+      },
+      "dropped": 10,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c16_seed1": {
+   "family": "learned",
+   "blob_sha256": "4e61c0e6003cf4f9b63eba7e93d96bfb1fd6a6f45b8201e9387baed3b60959fe",
+   "bytes": 3108,
+   "shape": "s4_c16",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": 10,
+      "empty_rate": 0.8618,
+      "gate_rejects": 0.8612,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9984
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99812,
+       "teacher": 0.99755
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -7,
+      "empty_rate": 0.7826,
+      "gate_rejects": 0.7814,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99918
+      },
+      "dropped": 10,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 2,
+      "t": 11,
+      "empty_rate": 0.826,
+      "gate_rejects": 0.826,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9983
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99801,
+       "teacher": 0.99796
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 2,
+      "t": -14,
+      "empty_rate": 0.7016,
+      "gate_rejects": 0.7016,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.99918
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c16_seed2": {
+   "family": "learned",
+   "blob_sha256": "604ca88c6aa1754d590db6ee8bc2d54c8f5b9eecd1868cfe35e749927b621a78",
+   "bytes": 3108,
+   "shape": "s4_c16",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": 36,
+      "empty_rate": 0.9279,
+      "gate_rejects": 0.9276,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.98935,
+       "vita": 0.9989
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99429
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": 14,
+      "empty_rate": 0.8651,
+      "gate_rejects": 0.8648,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9997
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99965,
+       "teacher": 0.99715
+      },
+      "dropped": 10,
+      "screen_pass": true
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": 25,
+      "empty_rate": 0.9037,
+      "gate_rejects": 0.9037,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99129,
+       "vita": 0.9988
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99859,
+       "teacher": 0.99633
+      },
+      "dropped": 21,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 2,
+      "t": 11,
+      "empty_rate": 0.8137,
+      "gate_rejects": 0.8137,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s8_c16_seed1": {
+   "family": "learned",
+   "blob_sha256": "5b6b1a02810da088aa76c2a0a56e223bbb72f804ce5884043abe939cf4376fa0",
+   "bytes": 3276,
+   "shape": "s8_c16",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 2,
+      "t": 15,
+      "empty_rate": 0.913,
+      "gate_rejects": 0.9127,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9984
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 2,
+      "t": -3,
+      "empty_rate": 0.8597,
+      "gate_rejects": 0.8592,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": true
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 2,
+      "t": 12,
+      "empty_rate": 0.9061,
+      "gate_rejects": 0.9061,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9984
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99824,
+       "teacher": 0.99715
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -38,
+      "empty_rate": 0.7548,
+      "gate_rejects": 0.7548,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.99918
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s8_c16_seed2": {
+   "family": "learned",
+   "blob_sha256": "0c7e8ce11e9e7e1fdb129f81ba128f7344d3ce4bce7fccc02b76968708fb18f6",
+   "bytes": 3276,
+   "shape": "s8_c16",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 2,
+      "t": 7,
+      "empty_rate": 0.8759,
+      "gate_rejects": 0.8753,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9986
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99715
+      },
+      "dropped": 21,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -28,
+      "empty_rate": 0.7904,
+      "gate_rejects": 0.7886,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 2,
+      "t": 1,
+      "empty_rate": 0.8639,
+      "gate_rejects": 0.8639,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9985
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99824,
+       "teacher": 0.99715
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -47,
+      "empty_rate": 0.6737,
+      "gate_rejects": 0.6737,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99878
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s8_c16_seed3": {
+   "family": "learned",
+   "blob_sha256": "c75276bf33d5389825f266806b4e9a32108dbf5fabf490a2ae4e0e38ef986ea5",
+   "bytes": 3276,
+   "shape": "s8_c16",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -16,
+      "empty_rate": 0.8529,
+      "gate_rejects": 0.8514,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9985
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99824,
+       "teacher": 0.99755
+      },
+      "dropped": 21,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -35,
+      "empty_rate": 0.7524,
+      "gate_rejects": 0.7506,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -17,
+      "empty_rate": 0.8556,
+      "gate_rejects": 0.8556,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9984
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99812,
+       "teacher": 0.99755
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -42,
+      "empty_rate": 0.712,
+      "gate_rejects": 0.712,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.99918
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s4_c16n4_seed1": {
+   "family": "learned",
+   "blob_sha256": "7c0bf2a9998b9d8af867823993b0f102a0fa915aafa67915826b73f282e57a6b",
+   "bytes": 3860,
+   "shape": "s4_c16n4",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": 44,
+      "empty_rate": 0.9474,
+      "gate_rejects": 0.9474,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99032,
+       "vita": 0.9988
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99859,
+       "teacher": 0.99592
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": 12,
+      "empty_rate": 0.8825,
+      "gate_rejects": 0.8819,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": true
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": 32,
+      "empty_rate": 0.9309,
+      "gate_rejects": 0.9309,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9986
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": 6,
+      "empty_rate": 0.8762,
+      "gate_rejects": 0.8762,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99878
+      },
+      "dropped": 11,
+      "screen_pass": true
+     }
+    }
+   }
+  },
+  "r97_s4_c16n4_seed3": {
+   "family": "learned",
+   "blob_sha256": "5def1386c8f5f3118a9db4bed96c1eae1e3af9388769a64c55bc5cdba674f140",
+   "bytes": 3860,
+   "shape": "s4_c16n4",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 2,
+      "t": 58,
+      "empty_rate": 0.9587,
+      "gate_rejects": 0.9584,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99129,
+       "vita": 0.9987
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99848,
+       "teacher": 0.99633
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": 22,
+      "empty_rate": 0.9124,
+      "gate_rejects": 0.9118,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": true
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": 31,
+      "empty_rate": 0.9387,
+      "gate_rejects": 0.9387,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9986
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 2,
+      "t": 28,
+      "empty_rate": 0.9043,
+      "gate_rejects": 0.9043,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.99918
+      },
+      "dropped": 11,
+      "screen_pass": true
+     }
+    }
+   }
+  },
+  "r97_s8_c16n4_seed3": {
+   "family": "learned",
+   "blob_sha256": "156b649190c2aa13c0b4d5c874d9d3ee57dabcc7c97d4a42833ebb10b12e9390",
+   "bytes": 4028,
+   "shape": "s8_c16n4",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -16,
+      "empty_rate": 0.8908,
+      "gate_rejects": 0.8894,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99129,
+       "vita": 0.9987
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99848,
+       "teacher": 0.99633
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -33,
+      "empty_rate": 0.8104,
+      "gate_rejects": 0.8083,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 2,
+      "t": -13,
+      "empty_rate": 0.8624,
+      "gate_rejects": 0.8624,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9986
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 2,
+      "t": -33,
+      "empty_rate": 0.7617,
+      "gate_rejects": 0.7617,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99878
+      },
+      "dropped": 10,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "r97_s8_c24_seed4": {
+   "family": "learned",
+   "blob_sha256": "8a13dbddbc7d6305ccfaf8164ad1c4d9030437fde76eeedca68f24ac5cc47179",
+   "bytes": 5700,
+   "shape": "s8_c24",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": 18,
+      "empty_rate": 0.9716,
+      "gate_rejects": 0.9716,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9986
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 2,
+      "t": 2,
+      "empty_rate": 0.9282,
+      "gate_rejects": 0.9279,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": true
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 1,
+      "t": 29,
+      "empty_rate": 0.9572,
+      "gate_rejects": 0.9572,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99322,
+       "vita": 0.9985
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -54,
+      "empty_rate": 0.8122,
+      "gate_rejects": 0.8122,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 1.0,
+       "vita": 0.9989
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99871,
+       "teacher": 1.0
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "p8_c4_seed1": {
+   "family": "learned",
+   "blob_sha256": "6de40ebeeaa3d653c339c4bd503a0e869afed9a09691b6119f7fb17f46f5699d",
+   "bytes": 816,
+   "shape": "p8_c4",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 1,
+      "t": -23,
+      "empty_rate": 0.4205,
+      "gate_rejects": 0.413,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9982
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99824,
+       "teacher": 0.99755
+      },
+      "dropped": 21,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 2,
+      "t": -37,
+      "empty_rate": 0.3245,
+      "gate_rejects": 0.314,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99903,
+       "vita": 0.999
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99883,
+       "teacher": 0.99959
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -38,
+      "empty_rate": 0.4423,
+      "gate_rejects": 0.4423,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9981
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99789,
+       "teacher": 0.99837
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 2,
+      "t": -39,
+      "empty_rate": 0.3298,
+      "gate_rejects": 0.3298,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99903,
+       "vita": 0.999
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99883,
+       "teacher": 0.99959
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "p8_c6_seed1": {
+   "family": "learned",
+   "blob_sha256": "d2f1a2927ec495c43208a62f760514bcf535e5300f70725d7f80831f016f4ea8",
+   "bytes": 1280,
+   "shape": "p8_c6",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 2,
+      "t": -12,
+      "empty_rate": 0.8095,
+      "gate_rejects": 0.808,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9981
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99812,
+       "teacher": 0.99755
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -32,
+      "empty_rate": 0.727,
+      "gate_rejects": 0.7246,
+      "recall": 0.99909,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99903,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.99959
+      },
+      "dropped": 10,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 1,
+      "t": -6,
+      "empty_rate": 0.8074,
+      "gate_rejects": 0.8074,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9982
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99824,
+       "teacher": 0.99715
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 1,
+      "t": -19,
+      "empty_rate": 0.7126,
+      "gate_rejects": 0.7126,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99903,
+       "vita": 0.999
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.99918
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "p8_c6_seed2": {
+   "family": "learned",
+   "blob_sha256": "8ad2f4eee1781e409ce3d024224f8101a30844af4dc0130d386485df9bb09581",
+   "bytes": 1280,
+   "shape": "p8_c6",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -9,
+      "empty_rate": 0.8765,
+      "gate_rejects": 0.8759,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9983
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99812,
+       "teacher": 0.99755
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -17,
+      "empty_rate": 0.8367,
+      "gate_rejects": 0.8355,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -10,
+      "empty_rate": 0.8765,
+      "gate_rejects": 0.8765,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9983
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99801,
+       "teacher": 0.99796
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -25,
+      "empty_rate": 0.7931,
+      "gate_rejects": 0.7931,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99878
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "p4_c4_seed1": {
+   "family": "learned",
+   "blob_sha256": "b7d7be453cda1c08103956c81c1dabb8736660ffd2373a4b4726f1fa68bd6643",
+   "bytes": 816,
+   "shape": "p4_c4",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -31,
+      "empty_rate": 0.3502,
+      "gate_rejects": 0.3409,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9981
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -38,
+      "empty_rate": 0.2706,
+      "gate_rejects": 0.2596,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.99918
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 1,
+      "t": -24,
+      "empty_rate": 0.3439,
+      "gate_rejects": 0.3439,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.998
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99848,
+       "teacher": 0.99633
+      },
+      "dropped": 22,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 2,
+      "t": -35,
+      "empty_rate": 0.2805,
+      "gate_rejects": 0.2805,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99806,
+       "vita": 0.9991
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99894,
+       "teacher": 0.99918
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "p8_c8_seed1": {
+   "family": "learned",
+   "blob_sha256": "a4e73ad78451c75a19f88a479fc0108daac85beaa88d875b73212ed3c09d85d1",
+   "bytes": 1540,
+   "shape": "p8_c8",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -5,
+      "empty_rate": 0.9276,
+      "gate_rejects": 0.927,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99226,
+       "vita": 0.9986
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99848,
+       "teacher": 0.99633
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 2,
+      "t": -7,
+      "empty_rate": 0.8876,
+      "gate_rejects": 0.8867,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.9993,
+       "teacher": 0.99796
+      },
+      "dropped": 11,
+      "screen_pass": true
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -8,
+      "empty_rate": 0.9208,
+      "gate_rejects": 0.9208,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9984
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99824,
+       "teacher": 0.99715
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -19,
+      "empty_rate": 0.8789,
+      "gate_rejects": 0.8789,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": true
+     }
+    }
+   }
+  },
+  "p8_c8_seed2": {
+   "family": "learned",
+   "blob_sha256": "9c8fb87cf5130e400ddcc8189d9f391d3089a591e412031136fa585d521482e0",
+   "bytes": 1540,
+   "shape": "p8_c8",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 1,
+      "t": -4,
+      "empty_rate": 0.8523,
+      "gate_rejects": 0.8502,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9984
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 1,
+      "t": -17,
+      "empty_rate": 0.7575,
+      "gate_rejects": 0.7548,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9994
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99941,
+       "teacher": 0.99755
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 1,
+      "t": -5,
+      "empty_rate": 0.8508,
+      "gate_rejects": 0.8508,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99419,
+       "vita": 0.9984
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99836,
+       "teacher": 0.99674
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 1,
+      "t": -20,
+      "empty_rate": 0.7455,
+      "gate_rejects": 0.7455,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "p8_c12_seed1": {
+   "family": "learned",
+   "blob_sha256": "c74ed9588f5d6f1f8e99f9e24b4e6782e8878654a6d4fc263a36743fb8b39970",
+   "bytes": 2000,
+   "shape": "p8_c12",
+   "stride": 8,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 1,
+      "t": -1,
+      "empty_rate": 0.863,
+      "gate_rejects": 0.8609,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9982
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99801,
+       "teacher": 0.99837
+      },
+      "dropped": 21,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 4,
+      "t": -26,
+      "empty_rate": 0.8035,
+      "gate_rejects": 0.802,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99613,
+       "vita": 0.9993
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99918,
+       "teacher": 0.99837
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -18,
+      "empty_rate": 0.8648,
+      "gate_rejects": 0.8648,
+      "recall": 0.99801,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.99516,
+       "vita": 0.9983
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99812,
+       "teacher": 0.99755
+      },
+      "dropped": 22,
+      "screen_pass": true
+     },
+     "0.999": {
+      "k": 1,
+      "t": -16,
+      "empty_rate": 0.7754,
+      "gate_rejects": 0.7754,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99878
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  },
+  "p4_c8_seed1": {
+   "family": "learned",
+   "blob_sha256": "c15ed03a1ddbee00b5c8c75a6df1e40b7f3c8bbfaa4d0f40ae298cf97f4deeec",
+   "bytes": 1196,
+   "shape": "p4_c8",
+   "stride": 4,
+   "modes": {
+    "region": {
+     "0.998": {
+      "k": 4,
+      "t": -14,
+      "empty_rate": 0.7219,
+      "gate_rejects": 0.7195,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9982
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99789,
+       "teacher": 0.99878
+      },
+      "dropped": 21,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -16,
+      "empty_rate": 0.6989,
+      "gate_rejects": 0.6965,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99878
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    },
+    "boxes": {
+     "0.998": {
+      "k": 4,
+      "t": -15,
+      "empty_rate": 0.7249,
+      "gate_rejects": 0.7249,
+      "recall": 0.9981,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9982
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99789,
+       "teacher": 0.99878
+      },
+      "dropped": 21,
+      "screen_pass": false
+     },
+     "0.999": {
+      "k": 4,
+      "t": -20,
+      "empty_rate": 0.6681,
+      "gate_rejects": 0.6681,
+      "recall": 0.999,
+      "cases": 11042,
+      "recall_by_kind": {
+       "psp": 0.9971,
+       "vita": 0.9992
+      },
+      "recall_by_source": {
+       "owner": 1.0,
+       "realplus": 0.99906,
+       "teacher": 0.99878
+      },
+      "dropped": 11,
+      "screen_pass": false
+     }
+    }
+   }
+  }
+ }
+}

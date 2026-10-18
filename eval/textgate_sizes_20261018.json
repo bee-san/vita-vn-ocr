@@ -1,0 +1,591 @@
+{
+ "kind": "textgate-sizes",
+ "computed": "2026-10-18T09:14:55Z",
+ "code_bytes": {
+  "region": 1892,
+  "boxes": 2072,
+  "finder_region": 2638,
+  "finder_boxes": 2638,
+  "blank": 0
+ },
+ "note": "code_bytes: VitaSDK gcc -Os with Rubi's runtime flags, .text kept by --gc-sections from the gate's object for the option's entry points (vita/textgate_size.py); blank: 0, Rubi's vjo_vocr_ink exists already",
+ "vita": {
+  "compiler": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+  "flags": [
+   "-std=c99",
+   "-ffp-contract=off",
+   "-Wall",
+   "-Wextra",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-mcpu=cortex-a9",
+   "-mfpu=neon",
+   "-mfloat-abi=hard"
+  ],
+  "link": [
+   "-Wl,--gc-sections"
+  ],
+  "levels": {
+   "-Os": {
+    "region": {
+     "text": 1892,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 400,
+      "drain": 376,
+      "kbuf": 30,
+      "next_in": 38,
+      "plan.isra.0": 122,
+      "put": 56,
+      "rd32": 4,
+      "ring_row.isra.0": 50,
+      "vocr_textgate_arena_bytes": 52,
+      "vocr_textgate_begin": 148,
+      "vocr_textgate_load": 508,
+      "vocr_textgate_push": 66,
+      "vocr_textgate_score_region": 42
+     },
+     "other_objects": {},
+     "libgcc": {
+      "_dvmd_tls.o": 4,
+      "_udivsi3.o": 628
+     }
+    },
+    "boxes": {
+     "text": 2072,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 400,
+      "drain": 376,
+      "kbuf": 30,
+      "next_in": 38,
+      "plan.isra.0": 122,
+      "put": 56,
+      "rd32": 4,
+      "ring_row.isra.0": 50,
+      "vocr_textgate_arena_bytes": 52,
+      "vocr_textgate_begin": 148,
+      "vocr_textgate_load": 508,
+      "vocr_textgate_push": 66,
+      "vocr_textgate_score": 222
+     },
+     "other_objects": {},
+     "libgcc": {
+      "_dvmd_tls.o": 4,
+      "_udivsi3.o": 628
+     }
+    },
+    "finder_region": {
+     "text": 2638,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 400,
+      "drain": 376,
+      "gate": 236,
+      "gated": 228,
+      "kbuf": 30,
+      "next_in": 38,
+      "plan.isra.0": 122,
+      "put": 56,
+      "rd32": 4,
+      "ring_row.isra.0": 50,
+      "vocr_find_lines_gated": 58,
+      "vocr_find_lines_gated_rows": 60,
+      "vocr_lines_gated_arena_bytes": 50,
+      "vocr_textgate_arena_bytes": 52,
+      "vocr_textgate_begin": 148,
+      "vocr_textgate_load": 508,
+      "vocr_textgate_score": 222
+     },
+     "other_objects": {
+      "vocr_lines.o": 9010,
+      "vocr_lines_rows.o": 8954
+     },
+     "libgcc": {
+      "_aeabi_uldivmod.o": 48,
+      "_dvmd_tls.o": 4,
+      "_udivmoddi4.o": 284,
+      "_udivsi3.o": 628
+     }
+    },
+    "finder_boxes": {
+     "text": 2638,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 400,
+      "drain": 376,
+      "gate": 236,
+      "gated": 228,
+      "kbuf": 30,
+      "next_in": 38,
+      "plan.isra.0": 122,
+      "put": 56,
+      "rd32": 4,
+      "ring_row.isra.0": 50,
+      "vocr_find_lines_gated": 58,
+      "vocr_find_lines_gated_rows": 60,
+      "vocr_lines_gated_arena_bytes": 50,
+      "vocr_textgate_arena_bytes": 52,
+      "vocr_textgate_begin": 148,
+      "vocr_textgate_load": 508,
+      "vocr_textgate_score": 222
+     },
+     "other_objects": {
+      "vocr_lines.o": 9010,
+      "vocr_lines_rows.o": 8954
+     },
+     "libgcc": {
+      "_aeabi_uldivmod.o": 48,
+      "_dvmd_tls.o": 4,
+      "_udivmoddi4.o": 284,
+      "_udivsi3.o": 628
+     }
+    },
+    "textdet": {
+     "text": 7250,
+     "rodata": 64,
+     "functions": {
+      "chain": 1430,
+      "delivered": 720,
+      "detect": 3004,
+      "grey_px": 36,
+      "plan": 198,
+      "rd32": 4,
+      "ring_row": 58,
+      "row_less": 46,
+      "run_rows": 80,
+      "section_ok": 34,
+      "sort_cands": 110,
+      "sweep": 592,
+      "vert_less": 64,
+      "vocr_textdet_arena_bytes": 64,
+      "vocr_textdet_find_rows": 42,
+      "vocr_textdet_load": 768
+     },
+     "other_objects": {
+      "vocr_lines.o": 600,
+      "vocr_lines_rows.o": 650
+     },
+     "libgcc": {
+      "_aeabi_uldivmod.o": 48,
+      "_divsi3.o": 684,
+      "_dvmd_tls.o": 4,
+      "_udivmoddi4.o": 284,
+      "_udivsi3.o": 628
+     }
+    }
+   },
+   "-O2": {
+    "region": {
+     "text": 2380,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 600,
+      "drain": 544,
+      "plan.isra.0": 140,
+      "put": 68,
+      "vocr_textgate_arena_bytes": 72,
+      "vocr_textgate_begin": 168,
+      "vocr_textgate_load": 584,
+      "vocr_textgate_push": 156,
+      "vocr_textgate_score_region": 48
+     },
+     "other_objects": {},
+     "libgcc": {
+      "_dvmd_tls.o": 4,
+      "_udivsi3.o": 628
+     }
+    },
+    "boxes": {
+     "text": 2636,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 600,
+      "drain": 544,
+      "plan.isra.0": 140,
+      "put": 68,
+      "vocr_textgate_arena_bytes": 72,
+      "vocr_textgate_begin": 168,
+      "vocr_textgate_load": 584,
+      "vocr_textgate_push": 156,
+      "vocr_textgate_score": 304
+     },
+     "other_objects": {},
+     "libgcc": {
+      "_dvmd_tls.o": 4,
+      "_udivsi3.o": 628
+     }
+    },
+    "finder_region": {
+     "text": 3484,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 600,
+      "drain": 544,
+      "gate": 480,
+      "gated": 304,
+      "plan.isra.0": 140,
+      "put": 68,
+      "vocr_find_lines_gated": 64,
+      "vocr_find_lines_gated_rows": 72,
+      "vocr_lines_gated_arena_bytes": 84,
+      "vocr_textgate_arena_bytes": 72,
+      "vocr_textgate_begin": 168,
+      "vocr_textgate_load": 584,
+      "vocr_textgate_score": 304
+     },
+     "other_objects": {
+      "vocr_lines.o": 12456,
+      "vocr_lines_rows.o": 12384
+     },
+     "libgcc": {
+      "_dvmd_tls.o": 4,
+      "_udivsi3.o": 628
+     }
+    },
+    "finder_boxes": {
+     "text": 3484,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 600,
+      "drain": 544,
+      "gate": 480,
+      "gated": 304,
+      "plan.isra.0": 140,
+      "put": 68,
+      "vocr_find_lines_gated": 64,
+      "vocr_find_lines_gated_rows": 72,
+      "vocr_lines_gated_arena_bytes": 84,
+      "vocr_textgate_arena_bytes": 72,
+      "vocr_textgate_begin": 168,
+      "vocr_textgate_load": 584,
+      "vocr_textgate_score": 304
+     },
+     "other_objects": {
+      "vocr_lines.o": 12456,
+      "vocr_lines_rows.o": 12384
+     },
+     "libgcc": {
+      "_dvmd_tls.o": 4,
+      "_udivsi3.o": 628
+     }
+    },
+    "textdet": {
+     "text": 8232,
+     "rodata": 64,
+     "functions": {
+      "chain": 1540,
+      "delivered": 924,
+      "dest_row": 84,
+      "detect": 3492,
+      "plan": 232,
+      "row_less": 48,
+      "sort_cands": 116,
+      "sweep": 624,
+      "vert_less": 72,
+      "vocr_textdet_arena_bytes": 72,
+      "vocr_textdet_find_rows": 104,
+      "vocr_textdet_load": 924
+     },
+     "other_objects": {
+      "vocr_lines.o": 1056,
+      "vocr_lines_rows.o": 1104
+     },
+     "libgcc": {
+      "_divsi3.o": 684,
+      "_dvmd_tls.o": 4,
+      "_udivsi3.o": 628
+     }
+    }
+   }
+  }
+ },
+ "sources_sha256": {
+  "vocr_textgate.c": "bf9b4c85ca7a8293b655674a564bdd77320903200a71d120d7f542efac261f78",
+  "vocr_textgate.h": "aeb8c5bdb810e8ab82bfaa37aadc1d564ec0dec2a80b1e2f80323819853d7258",
+  "vocr_textdet.c": "e5be547e33556bc170e37f3b00a2942ba0a221209b1b1cd9147dd38d69e0cda0",
+  "vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e"
+ },
+ "psp": {
+  "compiler": "psp-gcc (GCC) 15.2.0",
+  "flags": [
+   "-std=c99",
+   "-ffp-contract=off",
+   "-Wall",
+   "-Wextra",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-G0"
+  ],
+  "link": [
+   "-Wl,--gc-sections"
+  ],
+  "levels": {
+   "-Os": {
+    "region": {
+     "text": 3532,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 752,
+      "drain": 608,
+      "kbuf": 68,
+      "next_in": 72,
+      "plan.isra.0": 240,
+      "put": 104,
+      "rd32": 12,
+      "ring_row.isra.0": 100,
+      "vocr_textgate_arena_bytes": 92,
+      "vocr_textgate_begin": 312,
+      "vocr_textgate_load": 948,
+      "vocr_textgate_push": 140,
+      "vocr_textgate_score_region": 84
+     },
+     "other_objects": {},
+     "libgcc": {
+      "_addsub_df.o": 2028,
+      "_ashrdi3.o": 68,
+      "_df_to_sf.o": 96,
+      "_df_to_si.o": 220,
+      "_div_df.o": 508,
+      "_eq_df.o": 120,
+      "_fixdfdi.o": 120,
+      "_fixunsdfdi.o": 152,
+      "_fixunsdfsi.o": 144,
+      "_floatdidf.o": 100,
+      "_fpcmp_parts_df.o": 308,
+      "_ge_df.o": 120,
+      "_gt_df.o": 120,
+      "_le_df.o": 120,
+      "_lt_df.o": 120,
+      "_make_sf.o": 44,
+      "_mul_df.o": 692,
+      "_ne_df.o": 120,
+      "_pack_df.o": 616,
+      "_pack_sf.o": 364,
+      "_si_to_df.o": 168,
+      "_udivdi3.o": 1340,
+      "_umoddi3.o": 1308,
+      "_unord_df.o": 100,
+      "_unpack_df.o": 248,
+      "_usi_to_df.o": 104
+     }
+    },
+    "boxes": {
+     "text": 3864,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 752,
+      "drain": 608,
+      "kbuf": 68,
+      "next_in": 72,
+      "plan.isra.0": 240,
+      "put": 104,
+      "rd32": 12,
+      "ring_row.isra.0": 100,
+      "vocr_textgate_arena_bytes": 92,
+      "vocr_textgate_begin": 312,
+      "vocr_textgate_load": 948,
+      "vocr_textgate_push": 140,
+      "vocr_textgate_score": 416
+     },
+     "other_objects": {},
+     "libgcc": {
+      "_addsub_df.o": 2028,
+      "_ashrdi3.o": 68,
+      "_df_to_sf.o": 96,
+      "_df_to_si.o": 220,
+      "_div_df.o": 508,
+      "_eq_df.o": 120,
+      "_fixdfdi.o": 120,
+      "_fixunsdfdi.o": 152,
+      "_fixunsdfsi.o": 144,
+      "_floatdidf.o": 100,
+      "_fpcmp_parts_df.o": 308,
+      "_ge_df.o": 120,
+      "_gt_df.o": 120,
+      "_le_df.o": 120,
+      "_lt_df.o": 120,
+      "_make_sf.o": 44,
+      "_mul_df.o": 692,
+      "_ne_df.o": 120,
+      "_pack_df.o": 616,
+      "_pack_sf.o": 364,
+      "_si_to_df.o": 168,
+      "_udivdi3.o": 1340,
+      "_umoddi3.o": 1308,
+      "_unord_df.o": 100,
+      "_unpack_df.o": 248,
+      "_usi_to_df.o": 104
+     }
+    },
+    "finder_region": {
+     "text": 4968,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 752,
+      "drain": 608,
+      "gate": 452,
+      "gated": 484,
+      "kbuf": 68,
+      "next_in": 72,
+      "plan.isra.0": 240,
+      "put": 104,
+      "rd32": 12,
+      "ring_row.isra.0": 100,
+      "vocr_find_lines_gated": 100,
+      "vocr_find_lines_gated_rows": 104,
+      "vocr_lines_gated_arena_bytes": 104,
+      "vocr_textgate_arena_bytes": 92,
+      "vocr_textgate_begin": 312,
+      "vocr_textgate_load": 948,
+      "vocr_textgate_score": 416
+     },
+     "other_objects": {
+      "vocr_lines.o": 14820,
+      "vocr_lines_rows.o": 14932
+     },
+     "libgcc": {
+      "_addsub_df.o": 2028,
+      "_ashrdi3.o": 68,
+      "_df_to_sf.o": 96,
+      "_df_to_si.o": 220,
+      "_div_df.o": 508,
+      "_eq_df.o": 120,
+      "_fixdfdi.o": 120,
+      "_fixunsdfdi.o": 152,
+      "_fixunsdfsi.o": 144,
+      "_floatdidf.o": 100,
+      "_fpcmp_parts_df.o": 308,
+      "_ge_df.o": 120,
+      "_gt_df.o": 120,
+      "_le_df.o": 120,
+      "_lt_df.o": 120,
+      "_make_sf.o": 44,
+      "_mul_df.o": 692,
+      "_ne_df.o": 120,
+      "_pack_df.o": 616,
+      "_pack_sf.o": 364,
+      "_si_to_df.o": 168,
+      "_udivdi3.o": 1340,
+      "_umoddi3.o": 1308,
+      "_unord_df.o": 100,
+      "_unpack_df.o": 248,
+      "_usi_to_df.o": 104
+     }
+    },
+    "finder_boxes": {
+     "text": 4968,
+     "rodata": 0,
+     "functions": {
+      "conv_row": 752,
+      "drain": 608,
+      "gate": 452,
+      "gated": 484,
+      "kbuf": 68,
+      "next_in": 72,
+      "plan.isra.0": 240,
+      "put": 104,
+      "rd32": 12,
+      "ring_row.isra.0": 100,
+      "vocr_find_lines_gated": 100,
+      "vocr_find_lines_gated_rows": 104,
+      "vocr_lines_gated_arena_bytes": 104,
+      "vocr_textgate_arena_bytes": 92,
+      "vocr_textgate_begin": 312,
+      "vocr_textgate_load": 948,
+      "vocr_textgate_score": 416
+     },
+     "other_objects": {
+      "vocr_lines.o": 14820,
+      "vocr_lines_rows.o": 14932
+     },
+     "libgcc": {
+      "_addsub_df.o": 2028,
+      "_ashrdi3.o": 68,
+      "_df_to_sf.o": 96,
+      "_df_to_si.o": 220,
+      "_div_df.o": 508,
+      "_eq_df.o": 120,
+      "_fixdfdi.o": 120,
+      "_fixunsdfdi.o": 152,
+      "_fixunsdfsi.o": 144,
+      "_floatdidf.o": 100,
+      "_fpcmp_parts_df.o": 308,
+      "_ge_df.o": 120,
+      "_gt_df.o": 120,
+      "_le_df.o": 120,
+      "_lt_df.o": 120,
+      "_make_sf.o": 44,
+      "_mul_df.o": 692,
+      "_ne_df.o": 120,
+      "_pack_df.o": 616,
+      "_pack_sf.o": 364,
+      "_si_to_df.o": 168,
+      "_udivdi3.o": 1340,
+      "_umoddi3.o": 1308,
+      "_unord_df.o": 100,
+      "_unpack_df.o": 248,
+      "_usi_to_df.o": 104
+     }
+    },
+    "textdet": {
+     "text": 10188,
+     "rodata": 0,
+     "functions": {
+      "chain": 604,
+      "delivered": 1140,
+      "detect": 4408,
+      "grey_px": 88,
+      "plan": 372,
+      "rd32": 12,
+      "ring_row": 112,
+      "row_less": 64,
+      "run_rows": 152,
+      "section_ok": 48,
+      "sort_cands": 212,
+      "store_acc": 524,
+      "sweep": 924,
+      "vert_less": 100,
+      "vocr_textdet_arena_bytes": 116,
+      "vocr_textdet_find_rows": 28,
+      "vocr_textdet_load": 1284
+     },
+     "other_objects": {
+      "vocr_lines.o": 1088,
+      "vocr_lines_rows.o": 1272
+     },
+     "libgcc": {
+      "_addsub_df.o": 2028,
+      "_ashldi3.o": 64,
+      "_ashrdi3.o": 68,
+      "_df_to_sf.o": 96,
+      "_df_to_si.o": 220,
+      "_div_df.o": 508,
+      "_eq_df.o": 120,
+      "_fixdfdi.o": 120,
+      "_fixunsdfdi.o": 152,
+      "_fixunsdfsi.o": 144,
+      "_floatdidf.o": 100,
+      "_fpcmp_parts_df.o": 308,
+      "_ge_df.o": 120,
+      "_gt_df.o": 120,
+      "_le_df.o": 120,
+      "_lt_df.o": 120,
+      "_make_sf.o": 44,
+      "_mul_df.o": 692,
+      "_ne_df.o": 120,
+      "_pack_df.o": 616,
+      "_pack_sf.o": 364,
+      "_si_to_df.o": 168,
+      "_udivdi3.o": 1340,
+      "_umoddi3.o": 1308,
+      "_unord_df.o": 100,
+      "_unpack_df.o": 248,
+      "_usi_to_df.o": 104
+     }
+    }
+   }
+  }
+ }
+}

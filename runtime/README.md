@@ -1,6 +1,6 @@
 # runtime: the recognizer in plain C
 
-`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob. The dialogue line finder that feeds it lives next to it (`vocr_lines.c`, `docs/linefind.md`); the two share nothing but naming. `make check` runs the checks of both. An optional refinement of the finder's boxes (`vocr_lines_refine.c`: `vocr_refine_lines` / `vocr_refine_lines_rows`, called after the finder with its arena; flags 0 leave the lines unchanged) is described with its measurements in `docs/finder-tighten.md`; `make check-lines` runs its self-test and its parity with `synth/lines_refine.py`.
+`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob. The dialogue line finder that feeds it lives next to it (`vocr_lines.c`, `docs/linefind.md`); the two share nothing but naming. `make check` runs the checks of both. An optional refinement of the finder's boxes (`vocr_lines_refine.c`: `vocr_refine_lines` / `vocr_refine_lines_rows`, called after the finder with its arena; flags 0 leave the lines unchanged) is described with its measurements in `docs/finder-tighten.md`; `make check-lines` runs its self-test and its parity with `synth/lines_refine.py`. The learned text detector (`vocr_textdet.c`, issue #96, `docs/textdet.md`) is a finder mode behind a flag; it has its own section below, and `make check-textdet` runs its checks.
 
 - C99. The runtime uses no `malloc` and nothing from libc except `memcpy`, `memset` and `<math.h>` (on 32-bit ARM, also libgcc's integer-division helpers; see the porting notes).
 - The blob is read in place. All working memory comes from one arena that the caller provides, sized exactly by `vocr_arena_bytes()`.
@@ -291,6 +291,95 @@ ARM (Cortex-A9) under qemu-arm, with pinned tools fetched in user space:
 runtime/scripts/fetch_arm_tools.sh                 # Arm GNU 14.2.rel1 + qemu-arm 10.0.13, sha256-checked
 make -C runtime arm parity-arm ARM_CC=$PWD/runtime/scripts/tools/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc
 make -C runtime size ARM_CC=...                    # code size and stack frames
+```
+
+## Text detector (`vocr_textdet.c`)
+
+The learned text detector of issue #96 (`docs/textdet.md`): an int8 network on the grey region whose four maps
+decode into line boxes, a vertical flag per box and, by an empty set, "no text". `train/textdet_export.py` writes
+its blob (`VTDT`); `synth/textdet_twin.py` is the specification, and this runtime computes exactly what it computes
+for every region and every blob its loader accepts.
+
+```c
+#include "vocr_textdet.h"
+
+static vocr_textdet det;                         /* about 1 KB on 32-bit ARM; points into the blob */
+int rc = vocr_textdet_load(&det, blob, bytes);   /* any alignment; VOCR_TEXTDET_E_BLOB if refused */
+size_t need = vocr_textdet_arena_bytes(&det, 960, 544);   /* exact; depends on the width only */
+VocrTextdetSet set;
+rc = vocr_textdet_find(&det, &im, arena, need, &set);          /* or vocr_textdet_find_rows(&det, &src, ...) */
+for (unsigned i = 0; i < set.count; i++) { /* set.lines[i] (x, y, w, h, dark), set.vertical[i] */ }
+
+/* as a finder mode: horizontal lines only, every other finder value is vocr_find_lines unchanged */
+need = vocr_lines_det_arena_bytes(&det, 960, 544);            /* max of the finder's and the detector's */
+rc = vocr_find_lines_det(&im, VOCR_LINES_TEXTDET, &det, arena, need, &lines);    /* or _rows */
+```
+
+- Images are `VOCR_LINES_GREY` or `VOCR_LINES_RGBA` (grey = (77 R + 150 G + 29 B) >> 8), at most
+  `VOCR_TEXTDET_MAX_SIDE` = 2048 px a side, which keeps every sum of the decode in int32 (the proof heads
+  `vocr_textdet.c`). Return codes: `VOCR_LINES_E_ARG` (NULL pointers, an unloaded model, a bad format or stride, a
+  zero or oversized side), `VOCR_LINES_E_ARENA`, `VOCR_LINES_E_SOURCE` (a NULL row), `VOCR_TEXTDET_E_BLOB` (load);
+  the set is empty on any error. At most 16 lines (horizontal ones in rows, then vertical ones right to left) from at
+  most 64 candidates; `truncated` when either cap dropped one. Each line's dark flag is `vocr_line_dark` of its box.
+- The region is read once, top to bottom: every 3x3 layer keeps a ring of the 2d + 1 input rows its kernel spans
+  (3 for the stride-2 layers), channel-planar with zero padding and slack; 1x1 layers run on the 8-pixel blocks
+  their producer just made; the head's map row feeds a streaming 4-connected component decode (union-find over
+  slots, at most the map's width of them live). So the arena depends on the region's width, not its height, and a
+  strip height changes no output.
+- Row-callback form (`vocr_lines_rows.h`): rows are asked once each, in increasing order, in one pass over the
+  region, then each line's box once for its dark flag; a returned row has to stay valid only until the next call;
+  NULL ends the call with `VOCR_LINES_E_SOURCE` and no lines. Same lines as the in-memory form.
+- C99, no allocation, no recursion, no global state, integer arithmetic only (int32 sums; int64 for the
+  requantisation product). NEON kernels behind `__ARM_NEON` (Vita), the same bits as the scalar ones (PSP, hosts;
+  `-DVOCR_NO_NEON` forces them). External symbols: `memset`, `memcpy`, libgcc's `__aeabi_idivmod`, `__aeabi_uidiv`
+  and `__aeabi_uidivmod` on ARM, and `vocr_find_lines`, `vocr_find_lines_rows`, `vocr_line_dark`,
+  `vocr_line_dark_rows`, `vocr_lines_arena_bytes`: link `vocr_lines.c` and `vocr_lines_rows.c`, which stay
+  byte-for-byte as pinned (`tests/test_textdet.py` checks their sha256 against `eval/textdet_protocol.json`).
+- Code: `vocr_textdet.o` is 8,912 B with VitaSDK gcc 15.2, Thumb-2, `-O2` (7,736 B at `-Os`; scalar 8,420 / 6,584 B)
+  and 13,068 B with psp-gcc 15.2 `-O2 -G0` (10,816 B at `-Os`). Stack (gcc `-fcallgraph-info=su`, every frame
+  static): 2,848 B on the Vita build at peak, 2,808 B on the PSP, of which `vocr_line_dark`'s two histograms are
+  about 2 KB; the network and decode alone 904 / 840 B. With another finder, `vocr_find_lines_det` adds its own
+  frame, 72 / 48 B, to GRAD's 3,640 / 3,360 B.
+
+Arena (`vocr_textdet_arena_bytes`, exact) and Cortex-A9 cost per region, for random blobs of every
+`train/textdet_model.SHAPES` shape. The times are **estimates**: the Vita compiler's code under plugin qemu-arm with
+the Vita's caches, priced by `vita/a9_cycles.py`, ms = its high bound x 1.0007 (ocr-speed's console calibration of
+VOCR3-H15, `docs/ocr-speed.md`) at 333 / 444 MHz; `eval/textdet_a9.py`, `eval/textdet_a9_20261018.json` (instruction
+counts, low/high cycles, hashes). Nothing of the detector has run on a console.
+
+| shape | blob | arena 960x544 / 480x272 | MACs 900x150 | 900x150 @333 / @444 | 450x80 @333 / @444 | 960x544 @333 | 480x272 @333 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| s4_c4 | 1,004 | 39,311 / 21,071 | 3.1 M | 30 / 22 ms | 8 / 6 ms | 108 ms | 27 ms |
+| s4_c6 | 1,280 | 48,215 / 25,895 | 4.2 M | 37 / 28 ms | 10 / 7 ms | 135 ms | 33 ms |
+| s4_c8 | 1,540 | 57,111 / 30,711 | 5.6 M | 41 / 31 ms | 11 / 8 ms | 150 ms | 36 ms |
+| s4_c8n5 | 2,228 | 73,799 / 39,719 | 7.9 M | 55 / 42 ms | 15 / 11 ms | 203 ms | 50 ms |
+| s4_c12 | 2,276 | 77,967 / 41,967 | 9.8 M | 63 / 47 ms | 17 / 13 ms | 231 ms | 56 ms |
+| s4_c16 | 3,108 | 98,815 / 53,215 | 14.9 M | 76 / 57 ms | 21 / 16 ms | 283 ms | 70 ms |
+| s4_c16n4 | 3,860 | 111,375 / 60,015 | 18.4 M | 92 / 69 ms | 25 / 19 ms | 338 ms | 85 ms |
+| s4_c24 | 4,412 | 103,103 / 55,583 | 23.0 M | 99 / 75 ms | 27 / 21 ms | 366 ms | 92 ms |
+| s4p_c4 | 1,100 | 38,959 / 20,719 | 6.3 M | 33 / 25 ms | 9 / 7 ms | 121 ms | 30 ms |
+| s4p_c8 | 2,700 | 56,567 / 30,167 | 18.7 M | 70 / 53 ms | 19 / 14 ms | 261 ms | 64 ms |
+| s8_c8 | 1,884 | 41,527 / 23,295 | 3.0 M | 25 / 19 ms | 7 / 5 ms | 89 ms | 23 ms |
+| s8_c16 | 3,276 | 60,807 / 34,415 | 4.9 M | 32 / 24 ms | 9 / 7 ms | 115 ms | 30 ms |
+| s8_c24 | 5,700 | 92,639 / 52,327 | 10.6 M | 53 / 40 ms | 15 / 11 ms | 191 ms | 50 ms |
+| s8_c32 | 7,924 | 111,919 / 63,447 | 14.3 M | 63 / 47 ms | 18 / 13 ms | 227 ms | 60 ms |
+| s8_c32n4 | 9,876 | 116,063 / 65,671 | 17.1 M | 72 / 54 ms | 21 / 16 ms | 260 ms | 69 ms |
+| s8_c48 | 14,188 | 129,855 / 73,703 | 25.7 M | 92 / 69 ms | 26 / 20 ms | 333 ms | 88 ms |
+| s4_c8_ko | 1,540 | 57,111 / 30,711 | 5.6 M | 41 / 31 ms | 11 / 8 ms | 150 ms | 36 ms |
+| s8_c16_ko | 3,276 | 60,807 / 34,415 | 4.9 M | 32 / 24 ms | 9 / 7 ms | 115 ms | 30 ms |
+
+Every shape fits the always-safe arena tier (131,072 B) at 960x544. Checks: `make check-textdet` (strict compile,
+then `tests/textdet_parity.py` through the sanitized driver `vocr_textdet_test.c`: random blobs of every shape,
+probe blobs that drive the decode into its corners, wild requantisation constants, edge sizes and whole screens,
+GREY and RGBA, both forms, against the twin's maps and lines; plus the driver's `--selftest`), `tests/test_textdet.py`
+(the twin on hand-made maps, the loader, the C parity). The Cortex-A9 builds run the same parity under qemu-arm:
+
+```sh
+G=runtime/scripts/tools/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc
+$G -std=c99 -O2 -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -static runtime/vocr_lines.c runtime/vocr_lines_rows.c \
+   runtime/vocr_textdet.c runtime/vocr_textdet_test.c -o vtd_neon          # add -DVOCR_NO_NEON for the scalar build
+printf '#!/bin/sh\nexec runtime/scripts/tools/bin/qemu-arm -cpu cortex-a9 ./vtd_neon "$@"\n' > vtd_qemu && chmod +x vtd_qemu
+python tests/textdet_parity.py --bin ./vtd_qemu --seeds 1 --selftest 3
 ```
 
 ## Porting notes (vita, psp)

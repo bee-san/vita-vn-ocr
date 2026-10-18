@@ -3,7 +3,7 @@
 
   textdet_a9.py measure --out DIR [--shapes s4_c8,...] [--sizes 900x150,450x80,960x544,480x272] [--regions 2]
                         [--seed 1] [--blob SHAPE=FILE ...] [--jobs 5] [--vitasdk DIR] [--arm-cc GCC] [--qemu DIR]
-  textdet_a9.py report DIR [--json eval/textdet_a9_YYYYMMDD.json]
+  textdet_a9.py report DIR [--json eval/textdet_a9_YYYYMMDD.json] [--also DIR2 --also-label TEXT]
 
 eval/finder_tighten.py's a9 method (cmd_a9), for the detector: vocr_textdet.c (and vocr_lines.c / vocr_lines_rows.c,
 whose vocr_line_dark gives the dark flags) compiled by the Vita compiler (arm-vita-eabi-gcc, Thumb-2, -O2, the
@@ -206,8 +206,9 @@ def cmd_measure(args):
     print(f"{len(runs)} batches measured into {out}")
 
 
-def cmd_report(args):
-    d = Path(args.dir)
+def table_of(d):
+    """The per-(shape, size) rows of one measured directory."""
+    d = Path(d)
     meta = json.loads((d / "meta.json").read_text())
     rows = A.parse_dis((d / "driver.dis").read_text())
     funcs = set((d / "functions.txt").read_text().split())
@@ -226,10 +227,20 @@ def cmd_report(args):
                       "low_bound_set_by": max(r["low_parts_per_frame"], key=r["low_parts_per_frame"].get),
                       "top_functions": [[f, round(c)] for f, c in r["top_functions"]],
                       "negative_count_addresses": r["negative_count_addresses"]})
+    return meta, table
+
+
+def cmd_report(args):
+    meta, table = table_of(args.dir)
     res = {k: v for k, v in meta.items() if k != "runs"}
     res["note"] = ("estimates: qemu-arm instruction counts priced by vita/a9_cycles.py's Cortex-A9 model, not a "
                    "console measurement; ms = high bound x 1.0007 at the clock")
     res["table"] = table
+    if args.also:
+        ameta, atable = table_of(args.also)
+        if ameta["sources_sha256"] != meta["sources_sha256"]:
+            raise SystemExit("--also was measured on other sources")
+        res["also"] = {"label": args.also_label, "computed": ameta["computed"], "table": atable}
     print("| shape | region | MACs | insns/region | insns/MAC | cycles/region (low-high, 444 MHz) | est. ms @333 "
           "| est. ms @444 |")
     print("|---|---|---:|---:|---:|---|---:|---:|")
@@ -260,6 +271,8 @@ def main(argv=None):
     r = sub.add_parser("report")
     r.add_argument("dir")
     r.add_argument("--json")
+    r.add_argument("--also", help="a second measured directory (same sources), e.g. trained blobs")
+    r.add_argument("--also-label", default="")
     r.set_defaults(fn=cmd_report)
     args = ap.parse_args(argv)
     args.fn(args)

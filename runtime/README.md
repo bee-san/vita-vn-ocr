@@ -1,6 +1,6 @@
 # runtime: the recognizer in plain C
 
-`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob. The dialogue line finder that feeds it lives next to it (`vocr_lines.c`, `docs/linefind.md`); the two share nothing but naming. `make check` runs the checks of both. An optional refinement of the finder's boxes (`vocr_lines_refine.c`: `vocr_refine_lines` / `vocr_refine_lines_rows`, called after the finder with its arena; flags 0 leave the lines unchanged) is described with its measurements in `docs/finder-tighten.md`; `make check-lines` runs its self-test and its parity with `synth/lines_refine.py`. The learned text detector (`vocr_textdet.c`, issue #96, `docs/textdet.md`) is a finder mode behind a flag; it has its own section below, and `make check-textdet` runs its checks.
+`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob. The dialogue line finder that feeds it lives next to it (`vocr_lines.c`, `docs/linefind.md`); the two share nothing but naming. `make check` runs the checks of both. An optional refinement of the finder's boxes (`vocr_lines_refine.c`: `vocr_refine_lines` / `vocr_refine_lines_rows`, called after the finder with its arena; flags 0 leave the lines unchanged) is described with its measurements in `docs/finder-tighten.md`; `make check-lines` runs its self-test and its parity with `synth/lines_refine.py`. The learned text detector (`vocr_textdet.c`, issue #96, `docs/textdet.md`) is a finder mode behind a flag; it has its own section below, and `make check-textdet` runs its checks. So is the text-presence gate (`vocr_textgate.c`, issue #100, `docs/textgate.md`): `make check-textgate`.
 
 - C99. The runtime uses no `malloc` and nothing from libc except `memcpy`, `memset` and `<math.h>` (on 32-bit ARM, also libgcc's integer-division helpers; see the porting notes).
 - The blob is read in place. All working memory comes from one arena that the caller provides, sized exactly by `vocr_arena_bytes()`.
@@ -386,6 +386,108 @@ det+refine (the protocol's round-2 finder) is the finder mode's lines, then `voc
 `VOCR_REFINE_DEFAULT` in the same arena of max(`vocr_textdet_arena_bytes`, `vocr_refine_arena_bytes`) bytes;
 `vocr_textdet_test --batch` runs it for record flag 2 and `--arena-refine` prints that arena, and the parity checks it
 against `synth/lines_refine.refine_lines` on the twin's horizontal lines.
+
+## Text-presence gate (`vocr_textgate.c`)
+
+The gate of issue #100 (`docs/textgate.md`): does a region hold text at all? It runs a VTDT blob (#97's layout,
+`train/textdet_export.py`) on the region's grey and computes only the head's first map K (a text logit per s x s
+cell, s = 4 or 8). Region mode scores the k-th largest K code of the map, boxes mode the k-th largest over the cells
+whose block meets a finder box (-129 when none does); the region holds text iff score >= t. `eval/textgate.py`
+(`kmap`, `kth`, `box_mask`, `score`, on `synth/textdet_twin.run_net`) is the specification, and this runtime gives
+exactly its scores and K maps for every region and every blob the twin's loader accepts. It is self-contained: link
+`vocr_textgate.c` (plus `vocr_lines.c` / `vocr_lines_rows.c` for the finder mode), not `vocr_textdet.c`.
+
+```c
+#include "vocr_textgate.h"
+
+vocr_textgate_model g;                           /* 4 bytes on 32-bit ARM: the checked blob pointer */
+int rc = vocr_textgate_load(&g, blob, bytes);    /* any alignment; VOCR_TEXTGATE_E_BLOB if refused */
+size_t need = vocr_textgate_arena_bytes(&g, VOCR_TEXTGATE_BOXES, 960, 544);   /* exact */
+
+/* the push form: feed it the grey rows the finder's first pass reads, in order */
+vocr_textgate_state st;                          /* 32 bytes on 32-bit ARM, the caller's */
+rc = vocr_textgate_begin(&st, &g, VOCR_TEXTGATE_BOXES, k, w, h, arena, need);
+for (y = 0; y < h; y++) rc = vocr_textgate_push(&st, grey_row_y);   /* copied: valid during the call only */
+rc = vocr_textgate_score(&st, &lines, &score);   /* region mode: vocr_textgate_score_region(&st, &score) */
+text = !rc && score >= t;
+
+/* one-shot: vocr_textgate_image(&g, mode, k, &im, boxes, arena, need, &score), or _rows over VocrLinesRows */
+/* the finder mode behind a flag: g NULL is vocr_find_lines unchanged */
+need = vocr_lines_gated_arena_bytes(&g, mode, 960, 544);           /* max of the finder's and the gate's */
+rc = vocr_find_lines_gated(&im, VOCR_LINES_GRAD, &g, mode, k, t, arena, need, &lines);   /* or _rows */
+```
+
+- Modes: `VOCR_TEXTGATE_REGION` (the gate first; no text: no lines and the finder never runs) and
+  `VOCR_TEXTGATE_BOXES` (the finder, then the gate on its boxes in the same arena). k is 1..8. Boxes with a zero
+  side meet nothing; any unsigned box is handled exactly (`box_mask`'s semantics, no sum can wrap). The caller
+  refines the lines afterwards as today (`vocr_refine_lines` never adds a line to an empty set).
+- Push form: rows 0..h-1 in order (grey; the one-shot forms also take `VOCR_LINES_RGBA`: grey = (77 R + 150 G +
+  29 B) >> 8); a row is copied into the first layer's ring, so it only has to stay valid during the call. In boxes
+  mode `score` may be asked again with other boxes. Errors of `begin` or `push` stick; `*score` is written only on
+  success. Return codes: `VOCR_LINES_E_ARG` (NULL pointers, an unloaded model, a bad mode or k, a zero side or one
+  over 2048, a row past the last, a score before the last row), `VOCR_LINES_E_ARENA`, `VOCR_LINES_E_SOURCE` (a NULL
+  row from a row source), `VOCR_TEXTGATE_E_BLOB` (load, every check of `synth/textdet_twin.Model`). The finder mode
+  returns the gate's or the finder's error with no lines, and checks its arena against
+  `vocr_lines_gated_arena_bytes` up front.
+- Streaming: every layer keeps a ring of the (k - 1) d + 1 input rows its kernel spans (one row for a 1x1 layer),
+  a pixel's channels side by side, d zero pixels either side; the deepest layer that can produce a row goes first.
+  The arena is 20 bytes per layer, the rings, then the K row (region mode) or the K map (boxes mode), plus 3 bytes of
+  alignment slack: region mode depends on the width only. Exact bytes for the trained presence blobs, 960x544 region
+  / boxes: p8_c4 15,721 / 23,761, p8_c8 27,489 / 35,529, p8_c12 32,873 / 40,913, p4_c8 31,361 / 63,761 (480x272:
+  7,981 / 9,961 for p8_c4). In the finder mode the finder's own arena (83,323 B at 960x544) is the larger for every
+  presence blob (#97's s8_c24 needs 101,145 B in boxes mode).
+- C99, no allocation, no recursion, no global state, integer only (int32 sums; int64 for the requantisation
+  product, formed so that every blob's constants are exact), scalar code built for size. External symbols:
+  `memset`, libgcc's `__aeabi_uidivmod` on ARM (the ring index, a few calls per row), and for the finder mode
+  `vocr_find_lines`, `vocr_find_lines_rows`, `vocr_lines_arena_bytes`. `vocr_lines.c`, `vocr_lines_rows.c`,
+  `vocr_lines_refine.c` and `vocr_textdet.c` are not touched (`tests/test_textgate.py` checks their sha256 against
+  `eval/textgate_protocol.json`).
+- Code (`vita/textgate_size.py`: a program calling one way of using the gate, VitaSDK gcc 15.2 with Rubi's runtime
+  flags, `-Wl,--gc-sections`, the `.text` the link map keeps from `vocr_textgate.o`; no `.rodata`):
+
+  | path | Vita -Os | Vita -O2 | PSP -Os |
+  |---|---:|---:|---:|
+  | region: load, arena_bytes, begin, push, score_region | 1,892 | 2,380 | 3,532 |
+  | boxes: load, arena_bytes, begin, push, score | 2,072 | 2,636 | 3,864 |
+  | the finder mode (gated, gated_rows), without vocr_lines.c | 2,638 | 3,484 | 4,968 |
+  | #97's vocr_textdet path, for comparison | 7,250 | 8,232 | 10,188 |
+
+  Stack (gcc `-fcallgraph-info=su`, every frame static; `psp/stack.py`): `vocr_textgate_push` 264 B at peak on the
+  Vita build at `-Os` (320 B at `-O2`, 208 B on the PSP), the one-shot forms 376 B, the finder mode 464 B plus the
+  finder's own frames.
+- Speed, Cortex-A9 **estimates** (`eval/textgate_a9.py`: the Vita compiler's `-O2` code under plugin qemu-arm with
+  the Vita's caches, priced by `vita/a9_cycles.py`, ms = its high bound x 1.0007 at the clock;
+  `eval/textgate_a9_20261018.json` has all 20 shapes, both modes and the protocol's MAC-rate figures). Scalar code:
+  #97's NEON detector ran s8_c24 at an estimated 53 ms per 900x150 box. Boxes mode adds 0.1-0.6%.
+
+  | shape | blob | 900x150 @333 / @444 | 450x80 @333 | 960x544 @333 | 480x272 @333 |
+  |---|---:|---:|---:|---:|---:|
+  | p8_c4 | 816 | 97 / 73 ms | 26 ms | 372 ms | 94 ms |
+  | p8_c6 | 1,280 | 118 / 89 ms | 31 ms | 453 ms | 114 ms |
+  | p8_c8 | 1,540 | 135 / 101 ms | 36 ms | 516 ms | 129 ms |
+  | p8_c12 | 2,000 | 156 / 117 ms | 41 ms | 597 ms | 149 ms |
+  | p4_c4 | 816 | 135 / 101 ms | 36 ms | 515 ms | 129 ms |
+  | p4_c8 | 1,196 | 204 / 153 ms | 54 ms | 780 ms | 195 ms |
+  | s8_c8 (#97) | 1,884 | 148 / 111 ms | 39 ms | 569 ms | 142 ms |
+
+  The row kernel runs a row channel by channel and 1x1 layers as dot products: 90 B more than the smallest form
+  (pixel by pixel), for about 26% fewer instructions. Nothing of the gate has run on a console.
+
+Checks: `make check-textgate` (in `make check`; strict compiles of `vocr_textgate.c` and its driver
+`vocr_textgate_test.c`, then `tests/textgate_parity.py` through the sanitized driver: random blobs of the presence
+shapes and #97's, wild requantisation, probe and random-chain blobs, edge sizes, GREY and RGBA, the image, rows and
+push forms, both modes with random boxes, k in {1, 2, 4, 8}, the finder mode and the K maps, against the twin; plus
+the driver's `--selftest`), and `tests/test_textgate.py`. `tests/textgate_parity.py --blob NAME=FILE --cohort PKL`
+runs trained blobs on real regions and reports only equal or differ. The Cortex-A9 builds run the same parity under
+qemu-arm:
+
+```sh
+G=runtime/scripts/tools/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc
+$G -std=c99 -O2 -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -static runtime/vocr_lines.c runtime/vocr_lines_rows.c \
+   runtime/vocr_textgate.c runtime/vocr_textgate_test.c -o vtg_arm
+printf '#!/bin/sh\nexec runtime/scripts/tools/bin/qemu-arm -cpu cortex-a9 ./vtg_arm "$@"\n' > vtg_qemu && chmod +x vtg_qemu
+python tests/textgate_parity.py --bin ./vtg_qemu --seeds 1 --regions 3 --selftest 6
+```
 
 ## Porting notes (vita, psp)
 

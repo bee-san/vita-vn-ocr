@@ -1,0 +1,14 @@
+{
+ "started": "2026-10-18T10:50:39Z",
+ "git": "49c08abca3dd0b56c51d8f179746ab7f32736ab3",
+ "inputs": {
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/sets_test/columns_test.jsonl": "731051b95a2bc07a873095d63e202cd82b0ad9d9f800ba90ef7dad951855483f",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/sets_test/regions_test.jsonl": "4ad6df407d5c17015048b5904ae7b32a55523044272eadec0f132b4c569cbc71",
+  "/local/home/skerraut/herd-vita-ocr/shared/private/vertical/sets/columns_test.jsonl": "9289084a915d8863c4f6dada60f41f4778efb24795fd56d0ced27a3a50a5eed7",
+  "/local/home/skerraut/herd-vita-ocr/shared/private/vertical/sets/regions_test.jsonl": "ba9043aa8069ec4f47a1be119d6132274f7c465a8b3baafdcbb3939a63386d5a",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/blobs/VOCR5_V_seed1_w8.vocr": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/blobs/VOCR5_V3500_seed1_w8.vocr": "12240f6933aece455a4404841903d37a67d5bfa01fd8036af0020e2a29519e11",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_N_w8.vocr": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+ },
+ "finished": "2026-10-18T10:51:08Z"
+}

@@ -26,7 +26,15 @@ Nothing here has run on a console.
 - **Speed (estimates):**
   - A typical development VN region is 63 CTC frames at VOCR5-S's per-frame cost, about 0.14 s at 333 MHz on one Cortex-A9 core plus the finder's pass. A manga balloon is 46 frames, about 0.10 s.
   - Per frame: 2.21 ms at 333 MHz, 1.67 ms at 444; VOCR5-S's #85 estimate without prefetch credit, which is calibrated to VOCR3-H15's measured console rate.
-- **Test set** (read once, after the selection was committed): see "The test set, once".
+- **The test set, read once after the selection was committed** (16 VN clusters, *Black Jack ni Yoroshiku* vol. 13):
+
+  | test (measured) | VN | manga |
+  |---|---:|---:|
+  | VOCR5-V, fixed columns | **7.17%** | **0.86%** |
+  | P1 + VOCR5-V, end to end | **11.29%** | **2.45%** |
+  | best code-only arm R\* (a1 + VOCR5-N), fixed columns | 33.71% | 4.03% |
+
+  VOCR5-V − R\* on VN: −26.54 points (−34.93 to −12.60). The owner's Trick x Logic PSP frames read at 1.95%.
 
 ## What NOBORU is, and the census
 
@@ -149,11 +157,57 @@ P1 − P0, end to end on VN: −1.10 points (−2.11 to −0.31), so P1 is selec
 
 ## The smaller head and the second seed
 
-TO COMPLETE
+**VOCR5-V3500** was pre-registered in amendment 2, once seed 1 was adopted.
+- Head: `data/vocab_vn_3500.txt`, the 3,499 most frequent VN characters of `data/vocab_vn_4987.txt` plus `<unk>`.
+- Start: seed 1's last checkpoint with its head re-targeted by `train/remap_head.py` (3,495 rows copied, 5 from `<unk>`).
+- Training: 10,000 steps at lr 5e-4.
+- Size: 657,616 B of int8 weights (−162,176 B, −20%) and 824,736 MACs per frame (−15%).
+
+It reads development VN at 11.21% and manga at 2.70%:
+
+| against seed 1 | difference | interval |
+|---|---:|---|
+| VN | +0.57 points | −0.12 to +1.03 |
+| manga | 0.00 points | −0.18 to +0.20 |
+
+The VN upper bound is over the +0.5-point margin, so it is **not adopted** and the 4,987-class VOCR5-V ships. The test read confirms the direction (report only): VN +0.45 points (+0.05 to +0.90).
+
+**Seed 2** (report only: the spread between seeds): SEED2_RESULT
 
 ## The test set, once
 
-TO COMPLETE
+The selection was committed and pushed first (amendment 4, [49c08ab](https://github.com/bee-san/vita-vn-ocr/commit/49c08ab)). Then `eval/vertical_test_once.py` read the test set once:
+- attempt record `eval/vertical_test_attempt_20261018.json`, 2026-10-18T10:50:39Z to 10:51:08Z;
+- record `eval/vertical_test_20261018.json` (aggregates only; the owner's frames are scored privately);
+- the selection (P1 + VOCR5-V) and, on the same read and report only, R\* and VOCR5-V3500.
+
+The attempt record hashes the local copies of the test manifests, which are the committed rows plus each page's local path.
+
+| test, dialogue CER (measured) | VN | manga |
+|---|---:|---:|
+| **VOCR5-V, fixed columns** | **7.17%** (176/2,453) | **0.86%** (6/694) |
+| **P1 + VOCR5-V, end to end** | **11.29%** | **2.45%** |
+| R\* (a1 + VOCR5-N), fixed columns | 33.71% | 4.03% |
+| R\*, end to end with P1 | 34.04% | 11.96% |
+| VOCR5-V3500, fixed columns | 7.62% | 0.86% |
+
+VOCR5-V − R\* (VN cluster / manga page intervals):
+
+| | VN | manga |
+|---|---|---|
+| fixed columns | −26.54 points (−34.93 to −12.60) | −3.17 (−6.15 to −0.99) |
+| end to end | −22.75 (−31.12 to −8.54) | −9.51 (−12.03 to −7.24) |
+
+VOCR5-V's test VN by platform (fixed columns):
+
+| platform | CER | characters | columns |
+|---|---:|---:|---:|
+| PC pages scaled to the Vita | 8.26% | 1,876 | 115 |
+| PSP (VNDB) | 5.52% | 290 | 34 |
+| the owner's Trick x Logic PSP frames | 1.95% | 257 | 22 |
+| PS Vita (Yunohana SpRING!) | 0.00% | 30 | 2 |
+
+The test VN cohort (16 clusters) reads better than development's (10.64%). Development's errors concentrate in one hard PC cluster (v27023).
 
 ## Runtime (`runtime/vocr_vertical.h`, `.c`)
 

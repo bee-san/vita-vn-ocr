@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Parity of runtime/vocr_vertical.c's column finder with its Python twin, synth/vertical.py find_columns.
+"""Parity of runtime/vocr_vertical.c's column finder with its Python twin, synth/vertical_twin.py find_columns.
 
   vertical_parity.py --bin runtime/build/.../vocr_vertical_test [--cases N] [--seed S] [--regions FILE.jsonl]
 
@@ -22,7 +22,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "synth"))
 import common  # noqa: E402
-import vertical as V  # noqa: E402
+import vertical_twin as V  # noqa: E402
 
 
 def region(rng):

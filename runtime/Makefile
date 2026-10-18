@@ -8,7 +8,7 @@
 #                         parity with synth/textdet_twin.py), the text-presence gate's (check-textgate,
 #                         vocr_textgate.mk: the same against eval/textgate.py), the vertical column finder's
 #                         (check-vertical, vocr_vertical.mk: strict compile, self-test, parity with
-#                         synth/vertical.py), then the
+#                         synth/vertical_twin.py), then the
 #                         recognizer's: C unit tests and the PyTorch parity test through a
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan)
 #   make check-all        check with gcc and clang, plus strict release builds of both

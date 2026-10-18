@@ -1,0 +1,1597 @@
+{
+ "kind": "textdet-a9",
+ "computed": "2026-10-18T02:12:31Z",
+ "method": "textdet_a9.py measure --out DIR [--shapes s4_c8,...] [--sizes 900x150,450x80,960x544,480x272] [--regions 2]                         [--seed 1] [--blob SHAPE=FILE ...] [--jobs 5] [--vitasdk DIR] [--arm-cc GCC] [--qemu DIR]   textdet_a9.py report DIR [--json eval/textdet_a9_YYYYMMDD.json] [--also DIR2 --also-label TEXT]",
+ "sources_sha256": {
+  "runtime/vocr_textdet.c": "e5be547e33556bc170e37f3b00a2942ba0a221209b1b1cd9147dd38d69e0cda0",
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+  "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+  "runtime/vocr_textdet_test.c": "15dfaa46b8e58af8aacac5cd0d17968854fc966aa929bc5d10db2c0fd96eee1d",
+  "runtime/vocr_textdet.h": "65f3fe42ee8e0e7927c382be0db6ebb330f6e337e70a21e8142c83f1764b12d8"
+ },
+ "tools": {
+  "vita_cc": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+  "arm_cc": "arm-none-linux-gnueabihf-gcc (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 14.2.1 20241119",
+  "qemu": "qemu-arm version 10.0.13",
+  "qemu_plugins_sha256": {
+   "libcache.so": "a608e4927a127450edace570319b869e7912f5b91ce53057f2a9516100592151",
+   "libinsn_mix.so": "107d2886b260c2c7a92db4ba19b418c3e8eee2b120757eff2e911bd35e8397ac"
+  },
+  "a9_cycles_sha256": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc"
+ },
+ "flags": [
+  "-std=c99",
+  "-mcpu=cortex-a9",
+  "-mfpu=neon",
+  "-mfloat-abi=hard",
+  "-O2",
+  "(Thumb-2: the VitaSDK default)"
+ ],
+ "cache": "dcachesize=32768,dassoc=4,dblksize=32,icachesize=32768,iassoc=4,iblksize=32,l2=on,l2cachesize=2097152,l2assoc=8,l2blksize=32,limit=10",
+ "vocr_textdet_o_text_bytes": 8912,
+ "calibration": 1.0007,
+ "note": "estimates: qemu-arm instruction counts priced by vita/a9_cycles.py's Cortex-A9 model, not a console measurement; ms = high bound x 1.0007 at the clock",
+ "table": [
+  {
+   "shape": "s4_c12n4",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "5bfab52079700fa48e43f7c1409486b23110e05e6a87bb8c3b2250a8e5d0091b",
+   "blob_bytes": 2808,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 11928600,
+   "insns_per_region": 22041155.0,
+   "cycles_per_region": {
+    "444": [
+     14529509.0,
+     24790118.7
+    ],
+    "333": [
+     14529509.0,
+     24723055.275
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 32.72411936936937,
+     "high": 55.833600675675676,
+     "calibrated": 55.87268419614865
+    },
+    "333": {
+     "low": 43.63215915915916,
+     "high": 74.24340923423424,
+     "calibrated": 74.29537962069818
+    }
+   },
+   "l1d_misses_per_region": 68967.5,
+   "l2_misses_per_region": 5492.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     12262949
+    ],
+    [
+     "chain",
+     9056616
+    ],
+    [
+     "delivered",
+     298626
+    ],
+    [
+     "vocr_line_dark",
+     182394
+    ],
+    [
+     "sweep",
+     104984
+    ],
+    [
+     "__udivsi3",
+     42204
+    ],
+    [
+     "memcpy",
+     32588
+    ],
+    [
+     "memset",
+     29649
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c12n4",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "5bfab52079700fa48e43f7c1409486b23110e05e6a87bb8c3b2250a8e5d0091b",
+   "blob_bytes": 2808,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 3157320,
+   "insns_per_region": 6256671.5,
+   "cycles_per_region": {
+    "444": [
+     3948411.0,
+     6777043.48
+    ],
+    "333": [
+     3948411.0,
+     6760749.235
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 8.892817567567567,
+     "high": 15.263611441441443,
+     "calibrated": 15.27429596945045
+    },
+    "333": {
+     "low": 11.85709009009009,
+     "high": 20.302550255255255,
+     "calibrated": 20.316762040433932
+    }
+   },
+   "l1d_misses_per_region": 11503.0,
+   "l2_misses_per_region": 1334.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     3348060
+    ],
+    [
+     "chain",
+     2469520
+    ],
+    [
+     "vocr_line_dark",
+     239284
+    ],
+    [
+     "delivered",
+     93988
+    ],
+    [
+     "sweep",
+     28915
+    ],
+    [
+     "memset",
+     20560
+    ],
+    [
+     "__udivsi3",
+     19223
+    ],
+    [
+     "memcpy",
+     18548
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c12n4",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "5bfab52079700fa48e43f7c1409486b23110e05e6a87bb8c3b2250a8e5d0091b",
+   "blob_bytes": 2808,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 45630720,
+   "insns_per_region": 81510534.0,
+   "cycles_per_region": {
+    "444": [
+     54139063.0,
+     91487188.36
+    ],
+    "333": [
+     54139063.0,
+     91369923.52
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 121.93482657657658,
+     "high": 206.05222603603605,
+     "calibrated": 206.19646259426125
+    },
+    "333": {
+     "low": 162.57976876876876,
+     "high": 274.3841547147147,
+     "calibrated": 274.576223623015
+    }
+   },
+   "l1d_misses_per_region": 276598.5,
+   "l2_misses_per_region": 9604.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     45949332
+    ],
+    [
+     "chain",
+     33472320
+    ],
+    [
+     "delivered",
+     1216482
+    ],
+    [
+     "sweep",
+     364136
+    ],
+    [
+     "vocr_line_dark",
+     196135
+    ],
+    [
+     "__udivsi3",
+     191901
+    ],
+    [
+     "dest_row",
+     41616
+    ],
+    [
+     "__aeabi_uidivmod",
+     33728
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c12n4",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "5bfab52079700fa48e43f7c1409486b23110e05e6a87bb8c3b2250a8e5d0091b",
+   "blob_bytes": 2808,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 11407680,
+   "insns_per_region": 20645584.5,
+   "cycles_per_region": {
+    "444": [
+     13527818.5,
+     22481473.72
+    ],
+    "333": [
+     13527818.5,
+     22446730.165
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 30.468059684684686,
+     "high": 50.63394981981982,
+     "calibrated": 50.66939358469369
+    },
+    "333": {
+     "low": 40.62407957957958,
+     "high": 67.40759809309309,
+     "calibrated": 67.45478341175826
+    }
+   },
+   "l1d_misses_per_region": 46085.0,
+   "l2_misses_per_region": 2845.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     11550528
+    ],
+    [
+     "chain",
+     8368080
+    ],
+    [
+     "delivered",
+     284029
+    ],
+    [
+     "vocr_line_dark",
+     196423
+    ],
+    [
+     "sweep",
+     85793
+    ],
+    [
+     "__udivsi3",
+     85067
+    ],
+    [
+     "memset",
+     21171
+    ],
+    [
+     "dest_row",
+     20808
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c20n4",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "c976598e846fb2235095726c6ebbbd91d25063a71afa5fbf9e2dadb967cdda20",
+   "blob_bytes": 4732,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 23668200,
+   "insns_per_region": 33642008.5,
+   "cycles_per_region": {
+    "444": [
+     24188100.0,
+     37478080.54
+    ],
+    "333": [
+     24188100.0,
+     37403526.28
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 54.4777027027027,
+     "high": 84.4100913063063,
+     "calibrated": 84.4691783702207
+    },
+    "333": {
+     "low": 72.63693693693693,
+     "high": 112.32290174174175,
+     "calibrated": 112.40152777296096
+    }
+   },
+   "l1d_misses_per_region": 103825.5,
+   "l2_misses_per_region": 6106.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     17464847
+    ],
+    [
+     "chain",
+     15478768
+    ],
+    [
+     "delivered",
+     242235
+    ],
+    [
+     "vocr_line_dark",
+     210836
+    ],
+    [
+     "sweep",
+     87774
+    ],
+    [
+     "memcpy",
+     48548
+    ],
+    [
+     "__udivsi3",
+     42204
+    ],
+    [
+     "memset",
+     40359
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c20n4",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "c976598e846fb2235095726c6ebbbd91d25063a71afa5fbf9e2dadb967cdda20",
+   "blob_bytes": 4732,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 28,
+   "macs": 6261840,
+   "insns_per_region": 9389226.5,
+   "cycles_per_region": {
+    "444": [
+     6572989.5,
+     10317043.94
+    ],
+    "333": [
+     6572989.5,
+     10296702.08
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 14.804030405405406,
+     "high": 23.23658545045045,
+     "calibrated": 23.252851060265762
+    },
+    "333": {
+     "low": 19.738707207207206,
+     "high": 30.921027267267267,
+     "calibrated": 30.942671986354352
+    }
+   },
+   "l1d_misses_per_region": 24313.0,
+   "l2_misses_per_region": 1666.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     4760712
+    ],
+    [
+     "chain",
+     4220000
+    ],
+    [
+     "vocr_line_dark",
+     226204
+    ],
+    [
+     "delivered",
+     72173
+    ],
+    [
+     "memcpy",
+     26588
+    ],
+    [
+     "sweep",
+     25525
+    ],
+    [
+     "memset",
+     24940
+    ],
+    [
+     "__udivsi3",
+     19223
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c20n4",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "c976598e846fb2235095726c6ebbbd91d25063a71afa5fbf9e2dadb967cdda20",
+   "blob_bytes": 4732,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 90478080,
+   "insns_per_region": 124411657.5,
+   "cycles_per_region": {
+    "444": [
+     90030257.5,
+     138183679.02
+    ],
+    "333": [
+     90030257.5,
+     138058489.89
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 202.77085022522522,
+     "high": 311.2245022972973,
+     "calibrated": 311.4423594489054
+    },
+    "333": {
+     "low": 270.36113363363364,
+     "high": 414.59005972972966,
+     "calibrated": 414.88027277154043
+    }
+   },
+   "l1d_misses_per_region": 402456.5,
+   "l2_misses_per_region": 10253.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     65363016
+    ],
+    [
+     "chain",
+     57217920
+    ],
+    [
+     "delivered",
+     922850
+    ],
+    [
+     "sweep",
+     351680
+    ],
+    [
+     "vocr_line_dark",
+     229042
+    ],
+    [
+     "__udivsi3",
+     191901
+    ],
+    [
+     "memset",
+     42276
+    ],
+    [
+     "dest_row",
+     41616
+    ]
+   ],
+   "negative_count_addresses": 171
+  },
+  {
+   "shape": "s4_c20n4",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "c976598e846fb2235095726c6ebbbd91d25063a71afa5fbf9e2dadb967cdda20",
+   "blob_bytes": 4732,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 22619520,
+   "insns_per_region": 31405448.0,
+   "cycles_per_region": {
+    "444": [
+     22498266.0,
+     34910969.48
+    ],
+    "333": [
+     22498266.0,
+     34871934.11
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 50.67177027027027,
+     "high": 78.62830963963964,
+     "calibrated": 78.68334945638738
+    },
+    "333": {
+     "low": 67.56236036036036,
+     "high": 104.72052285285285,
+     "calibrated": 104.79382721884986
+    }
+   },
+   "l1d_misses_per_region": 100903.0,
+   "l2_misses_per_region": 3197.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     16401536
+    ],
+    [
+     "chain",
+     14304480
+    ],
+    [
+     "delivered",
+     261376
+    ],
+    [
+     "vocr_line_dark",
+     177922
+    ],
+    [
+     "sweep",
+     100743
+    ],
+    [
+     "__udivsi3",
+     85067
+    ],
+    [
+     "memset",
+     27156
+    ],
+    [
+     "dest_row",
+     20808
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c24n4",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "b4ed3d69c66b7cc346d35b9f3d4b16a45db866ebaa44a7c8767e0928fca3560b",
+   "blob_bytes": 5700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 29790000,
+   "insns_per_region": 37112769.0,
+   "cycles_per_region": {
+    "444": [
+     27733011.5,
+     41393345.52
+    ],
+    "333": [
+     27733011.5,
+     41320048.89
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 62.461737612612616,
+     "high": 93.22825567567568,
+     "calibrated": 93.29351545464866
+    },
+    "333": {
+     "low": 83.28231681681682,
+     "high": 124.0842309009009,
+     "calibrated": 124.17108986253153
+    }
+   },
+   "l1d_misses_per_region": 118512.0,
+   "l2_misses_per_region": 6003.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     19136979
+    ],
+    [
+     "chain",
+     17210352
+    ],
+    [
+     "delivered",
+     332428
+    ],
+    [
+     "vocr_line_dark",
+     155067
+    ],
+    [
+     "sweep",
+     108254
+    ],
+    [
+     "memcpy",
+     55388
+    ],
+    [
+     "__udivsi3",
+     43012
+    ],
+    [
+     "memset",
+     38307
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c24n4",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "b4ed3d69c66b7cc346d35b9f3d4b16a45db866ebaa44a7c8767e0928fca3560b",
+   "blob_bytes": 5700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 7880000,
+   "insns_per_region": 10335902.5,
+   "cycles_per_region": {
+    "444": [
+     7539523.5,
+     11435777.0
+    ],
+    "333": [
+     7539523.5,
+     11416088.375
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 16.980908783783782,
+     "high": 25.756254504504504,
+     "calibrated": 25.774283882657656
+    },
+    "333": {
+     "low": 22.641211711711712,
+     "high": 34.28254767267267,
+     "calibrated": 34.306545456043544
+    }
+   },
+   "l1d_misses_per_region": 30051.5,
+   "l2_misses_per_region": 1612.5,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     5217833
+    ],
+    [
+     "chain",
+     4692320
+    ],
+    [
+     "vocr_line_dark",
+     199826
+    ],
+    [
+     "delivered",
+     98920
+    ],
+    [
+     "sweep",
+     34222
+    ],
+    [
+     "memcpy",
+     30548
+    ],
+    [
+     "memset",
+     24992
+    ],
+    [
+     "__udivsi3",
+     19671
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s4_c24n4",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "b4ed3d69c66b7cc346d35b9f3d4b16a45db866ebaa44a7c8767e0928fca3560b",
+   "blob_bytes": 5700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 113848320,
+   "insns_per_region": 137143845.5,
+   "cycles_per_region": {
+    "444": [
+     103133015.0,
+     152281803.1
+    ],
+    "333": [
+     103133015.0,
+     152157993.7
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 232.2815653153153,
+     "high": 342.977034009009,
+     "calibrated": 343.21711793281526
+    },
+    "333": {
+     "low": 309.70875375375374,
+     "high": 456.93091201201196,
+     "calibrated": 457.25076365042037
+    }
+   },
+   "l1d_misses_per_region": 447476.0,
+   "l2_misses_per_region": 10140.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     71537457
+    ],
+    [
+     "chain",
+     63615360
+    ],
+    [
+     "delivered",
+     1121605
+    ],
+    [
+     "sweep",
+     365422
+    ],
+    [
+     "__udivsi3",
+     194669
+    ],
+    [
+     "vocr_line_dark",
+     174105
+    ],
+    [
+     "dest_row",
+     41616
+    ],
+    [
+     "memset",
+     40080
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s4_c24n4",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "b4ed3d69c66b7cc346d35b9f3d4b16a45db866ebaa44a7c8767e0928fca3560b",
+   "blob_bytes": 5700,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 28462080,
+   "insns_per_region": 34596016.0,
+   "cycles_per_region": {
+    "444": [
+     25776314.5,
+     38580465.56
+    ],
+    "333": [
+     25776314.5,
+     38542199.42
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 58.054762387387385,
+     "high": 86.89294045045045,
+     "calibrated": 86.95376550876576
+    },
+    "333": {
+     "low": 77.40634984984985,
+     "high": 115.7423406006006,
+     "calibrated": 115.82336023902101
+    }
+   },
+   "l1d_misses_per_region": 116781.5,
+   "l2_misses_per_region": 3134.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     17946693
+    ],
+    [
+     "chain",
+     15903840
+    ],
+    [
+     "delivered",
+     323770
+    ],
+    [
+     "vocr_line_dark",
+     157712
+    ],
+    [
+     "sweep",
+     102926
+    ],
+    [
+     "__udivsi3",
+     86475
+    ],
+    [
+     "memset",
+     25905
+    ],
+    [
+     "dest_row",
+     20808
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c16n4",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "2de46c49e8846cb9575169c486f1fbab2e580ae19c00d6241a029f036bd7a45d",
+   "blob_bytes": 4028,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 5798408,
+   "insns_per_region": 10534040.0,
+   "cycles_per_region": {
+    "444": [
+     6696383.5,
+     11908005.56
+    ],
+    "333": [
+     6696383.5,
+     11843487.92
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 15.08194481981982,
+     "high": 26.819832342342345,
+     "calibrated": 26.83860622498198
+    },
+    "333": {
+     "low": 20.10925975975976,
+     "high": 35.56602978978979,
+     "calibrated": 35.59092601064264
+    }
+   },
+   "l1d_misses_per_region": 28267.5,
+   "l2_misses_per_region": 5284.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     6580105
+    ],
+    [
+     "chain",
+     3593166
+    ],
+    [
+     "vocr_line_dark",
+     140867
+    ],
+    [
+     "delivered",
+     70700
+    ],
+    [
+     "sweep",
+     36378
+    ],
+    [
+     "__udivsi3",
+     34125
+    ],
+    [
+     "memset",
+     27006
+    ],
+    [
+     "memcpy",
+     26888
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c16n4",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "2de46c49e8846cb9575169c486f1fbab2e580ae19c00d6241a029f036bd7a45d",
+   "blob_bytes": 4028,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 1540160,
+   "insns_per_region": 3140621.0,
+   "cycles_per_region": {
+    "444": [
+     1852029.0,
+     3421658.32
+    ],
+    "333": [
+     1852029.0,
+     3406420.24
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 4.171236486486486,
+     "high": 7.706437657657657,
+     "calibrated": 7.711832164018017
+    },
+    "333": {
+     "low": 5.5616486486486485,
+     "high": 10.22949021021021,
+     "calibrated": 10.236650853357357
+    }
+   },
+   "l1d_misses_per_region": 5046.5,
+   "l2_misses_per_region": 1248.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     1822799
+    ],
+    [
+     "chain",
+     1004380
+    ],
+    [
+     "vocr_line_dark",
+     222168
+    ],
+    [
+     "memset",
+     19479
+    ],
+    [
+     "delivered",
+     18804
+    ],
+    [
+     "memcpy",
+     15548
+    ],
+    [
+     "__udivsi3",
+     15436
+    ],
+    [
+     "sweep",
+     9876
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c16n4",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "2de46c49e8846cb9575169c486f1fbab2e580ae19c00d6241a029f036bd7a45d",
+   "blob_bytes": 4028,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 22129920,
+   "insns_per_region": 38200004.0,
+   "cycles_per_region": {
+    "444": [
+     24517934.5,
+     42953911.32
+    ],
+    "333": [
+     24517934.5,
+     42839466.99
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 55.220573198198196,
+     "high": 96.74304351351351,
+     "calibrated": 96.81076364397296
+    },
+    "333": {
+     "low": 73.62743093093093,
+     "high": 128.647048018018,
+     "calibrated": 128.73710095163062
+    }
+   },
+   "l1d_misses_per_region": 120689.0,
+   "l2_misses_per_region": 9373.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     24444601
+    ],
+    [
+     "chain",
+     12921360
+    ],
+    [
+     "delivered",
+     304828
+    ],
+    [
+     "vocr_line_dark",
+     160438
+    ],
+    [
+     "__udivsi3",
+     156475
+    ],
+    [
+     "sweep",
+     107846
+    ],
+    [
+     "dest_row",
+     37128
+    ],
+    [
+     "memset",
+     27933
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c16n4",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "2de46c49e8846cb9575169c486f1fbab2e580ae19c00d6241a029f036bd7a45d",
+   "blob_bytes": 4028,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 5532480,
+   "insns_per_region": 10187537.0,
+   "cycles_per_region": {
+    "444": [
+     6371193.5,
+     11122458.16
+    ],
+    "333": [
+     6371193.5,
+     11088892.87
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 14.34953490990991,
+     "high": 25.05058144144144,
+     "calibrated": 25.068116848450448
+    },
+    "333": {
+     "low": 19.132713213213215,
+     "high": 33.29997858858859,
+     "calibrated": 33.3232885736006
+    }
+   },
+   "l1d_misses_per_region": 20496.0,
+   "l2_misses_per_region": 2749.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     6325916
+    ],
+    [
+     "chain",
+     3410540
+    ],
+    [
+     "vocr_line_dark",
+     182432
+    ],
+    [
+     "delivered",
+     79989
+    ],
+    [
+     "__udivsi3",
+     69178
+    ],
+    [
+     "memcpy",
+     37628
+    ],
+    [
+     "sweep",
+     26290
+    ],
+    [
+     "memset",
+     19968
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c24n4",
+   "size": [
+    900,
+    150
+   ],
+   "regions": 2,
+   "blob_sha256": "c5a20c4f93c31fd12cbf81c76ca9df095aa33937eceb358c960680f642aae0be",
+   "blob_bytes": 6988,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "b2220d3befc7ea6c167cbee1acd788786d09e0f7ceb87d9cec5d416333fbfc15",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 12281424,
+   "insns_per_region": 17744618.5,
+   "cycles_per_region": {
+    "444": [
+     12500245.5,
+     19807028.74
+    ],
+    "333": [
+     12500245.5,
+     19735771.18
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 28.153706081081083,
+     "high": 44.61042509009009,
+     "calibrated": 44.64165238765314
+    },
+    "333": {
+     "low": 37.53827477477478,
+     "high": 59.26658012012012,
+     "calibrated": 59.308066726204196
+    }
+   },
+   "l1d_misses_per_region": 49697.0,
+   "l2_misses_per_region": 5836.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     10662475
+    ],
+    [
+     "chain",
+     6619182
+    ],
+    [
+     "vocr_line_dark",
+     182840
+    ],
+    [
+     "delivered",
+     88634
+    ],
+    [
+     "sweep",
+     49764
+    ],
+    [
+     "memcpy",
+     40568
+    ],
+    [
+     "memset",
+     36465
+    ],
+    [
+     "__udivsi3",
+     34125
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c24n4",
+   "size": [
+    450,
+    80
+   ],
+   "regions": 2,
+   "blob_sha256": "c5a20c4f93c31fd12cbf81c76ca9df095aa33937eceb358c960680f642aae0be",
+   "blob_bytes": 6988,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "538eae073447dc73b1d83afe313e8d6fb9840ee02f749681a7045865d0b92d66",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 3261440,
+   "insns_per_region": 5100881.0,
+   "cycles_per_region": {
+    "444": [
+     3455840.0,
+     5554507.92
+    ],
+    "333": [
+     3455840.0,
+     5535423.69
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 7.783423423423423,
+     "high": 12.510152972972973,
+     "calibrated": 12.518910080054054
+    },
+    "333": {
+     "low": 10.377897897897897,
+     "high": 16.622893963963964,
+     "calibrated": 16.634529989738738
+    }
+   },
+   "l1d_misses_per_region": 9941.0,
+   "l2_misses_per_region": 1563.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     2943548
+    ],
+    [
+     "chain",
+     1849980
+    ],
+    [
+     "vocr_line_dark",
+     189208
+    ],
+    [
+     "delivered",
+     25760
+    ],
+    [
+     "memset",
+     24645
+    ],
+    [
+     "memcpy",
+     22748
+    ],
+    [
+     "__udivsi3",
+     15436
+    ],
+    [
+     "sweep",
+     13388
+    ]
+   ],
+   "negative_count_addresses": 140
+  },
+  {
+   "shape": "s8_c24n4",
+   "size": [
+    960,
+    544
+   ],
+   "regions": 2,
+   "blob_sha256": "c5a20c4f93c31fd12cbf81c76ca9df095aa33937eceb358c960680f642aae0be",
+   "blob_bytes": 6988,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "cc21eef0905b0b5175d982d6b3f85fd8693acf9161048fe266f063f72f93fead",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 46871040,
+   "insns_per_region": 64345622.0,
+   "cycles_per_region": {
+    "444": [
+     45815199.5,
+     71296458.04
+    ],
+    "333": [
+     45815199.5,
+     71174895.28
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 103.18738626126127,
+     "high": 160.57760819819822,
+     "calibrated": 160.69001252393693
+    },
+    "333": {
+     "low": 137.58318168168168,
+     "high": 213.73842426426427,
+     "calibrated": 213.88804116124922
+    }
+   },
+   "l1d_misses_per_region": 192266.5,
+   "l2_misses_per_region": 9956.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     39638588
+    ],
+    [
+     "chain",
+     23806800
+    ],
+    [
+     "delivered",
+     337010
+    ],
+    [
+     "vocr_line_dark",
+     180992
+    ],
+    [
+     "__udivsi3",
+     156475
+    ],
+    [
+     "sweep",
+     113778
+    ],
+    [
+     "memset",
+     37959
+    ],
+    [
+     "dest_row",
+     37128
+    ]
+   ],
+   "negative_count_addresses": 148
+  },
+  {
+   "shape": "s8_c24n4",
+   "size": [
+    480,
+    272
+   ],
+   "regions": 2,
+   "blob_sha256": "c5a20c4f93c31fd12cbf81c76ca9df095aa33937eceb358c960680f642aae0be",
+   "blob_bytes": 6988,
+   "blob": "random_int_layers seed 1",
+   "batch_sha256": "33d8204b3e6382cdcef7bc36e0c12763eff614cb9bc3374963f2061fcf3aa407",
+   "rc": [
+    0
+   ],
+   "lines_out": 32,
+   "macs": 11717760,
+   "insns_per_region": 16960955.5,
+   "cycles_per_region": {
+    "444": [
+     11886196.5,
+     18733240.02
+    ],
+    "333": [
+     11886196.5,
+     18695657.64
+    ]
+   },
+   "ms_per_region": {
+    "444": {
+     "low": 26.770712837837838,
+     "high": 42.191982027027024,
+     "calibrated": 42.221516414445944
+    },
+    "333": {
+     "low": 35.69428378378378,
+     "high": 56.14311603603604,
+     "calibrated": 56.18241621726126
+    }
+   },
+   "l1d_misses_per_region": 47484.5,
+   "l2_misses_per_region": 3078.0,
+   "low_bound_set_by": "neon_vfp_issue",
+   "top_functions": [
+    [
+     "detect",
+     10208657
+    ],
+    [
+     "chain",
+     6281228
+    ],
+    [
+     "vocr_line_dark",
+     148043
+    ],
+    [
+     "delivered",
+     86308
+    ],
+    [
+     "__udivsi3",
+     69178
+    ],
+    [
+     "memcpy",
+     53948
+    ],
+    [
+     "sweep",
+     45969
+    ],
+    [
+     "memset",
+     25404
+    ]
+   ],
+   "negative_count_addresses": 140
+  }
+ ]
+}

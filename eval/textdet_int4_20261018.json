@@ -1,0 +1,33 @@
+{
+ "kind": "textdet-int4-study",
+ "note": "report only: weights limited to +-7 codes (train/textdet_export.py --wbits 4), det+refine, VOCR5-N, development wd; the runtime runs int8",
+ "results": {
+  "s8_c24_seed4": {
+   "int8_wd_cer": 3.3883,
+   "int4_wd_cer": 4.4983,
+   "int4_minus_int8": 1.1101,
+   "ci95": [
+    0.4484,
+    1.9265
+   ]
+  },
+  "s8_c24_seed1": {
+   "int8_wd_cer": 3.0015,
+   "int4_wd_cer": 3.4927,
+   "int4_minus_int8": 0.4912,
+   "ci95": [
+    -0.0728,
+    1.0922
+   ]
+  },
+  "s4_c16n4_seed1": {
+   "int8_wd_cer": 3.6242,
+   "int4_wd_cer": 5.5272,
+   "int4_minus_int8": 1.903,
+   "ci95": [
+    0.4137,
+    3.5773
+   ]
+  }
+ }
+}

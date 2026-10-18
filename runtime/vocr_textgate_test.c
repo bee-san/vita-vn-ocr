@@ -156,6 +156,16 @@ static void draw(unsigned char *p, unsigned w, unsigned h, size_t stride, unsign
     }
 }
 
+static unsigned stride_of(const vocr_textgate_model *m)   /* the output stride: header byte 18 */
+{
+    return m->blob[18];
+}
+
+static unsigned cells_of(unsigned n, const vocr_textgate_model *m)
+{
+    return (n + stride_of(m) - 1u) / stride_of(m);
+}
+
 static unsigned grey_at(const VocrLinesImage *im, unsigned x, unsigned y)
 {
     const unsigned char *p = im->pixels + (size_t)y * im->stride + (size_t)x * im->bpp;
@@ -249,8 +259,8 @@ static int region(const vocr_textgate_model *m, unsigned w, unsigned h, unsigned
     cur_h = h;
     cur_bpp = bpp;
     REQUIRE(px && other && padded && exact && arena && larena && slots && log);
-    REQUIRE(need0 > 3u && need1 > need0 && lneed >= need1 && lneed >= vocr_lines_arena_bytes(w, h));
-    REQUIRE(need1 - need0 == (size_t)((w + (1u << m->shift) - 1u) >> m->shift) * ((h + (1u << m->shift) - 1u) >> m->shift));
+    REQUIRE(need0 > 3u && need1 >= need0 && lneed >= need1 && lneed >= vocr_lines_arena_bytes(w, h));
+    REQUIRE(need1 - need0 == (size_t)cells_of(w, m) * (cells_of(h, m) - 1u));
     draw(px, w, h, stride, bpp);
     im.pixels = px; im.width = w; im.height = h; im.stride = stride; im.bpp = bpp;
     random_boxes(&boxes, w, h);
@@ -353,7 +363,7 @@ static int region(const vocr_textgate_model *m, unsigned w, unsigned h, unsigned
             REQUIRE(vocr_textgate_push(&st, row) == VOCR_LINES_OK);
         }
         km = vocr_textgate_kmap(&st, &wm, &hm);
-        REQUIRE(km && wm == (w + (1u << m->shift) - 1u) >> m->shift && hm == (h + (1u << m->shift) - 1u) >> m->shift);
+        REQUIRE(km && wm == cells_of(w, m) && hm == cells_of(h, m));
         for (k = 1; k <= VOCR_TEXTGATE_MAX_K; k++) {
             REQUIRE(vocr_textgate_image(m, VOCR_TEXTGATE_REGION, k, &im, NULL, exact, need0, &a) == VOCR_LINES_OK);
             REQUIRE(a == kth_of(km, wm * hm, k));
@@ -430,7 +440,7 @@ static int arena_checks(const vocr_textgate_model *m)
         for (h = 2; h <= VOCR_TEXTGATE_MAX_SIDE; h = h * 3u + 1u) {
             REQUIRE(vocr_textgate_arena_bytes(m, VOCR_TEXTGATE_REGION, w, h) == a);
             REQUIRE(vocr_textgate_arena_bytes(m, VOCR_TEXTGATE_BOXES, w, h) ==
-                    a + (size_t)((w + (1u << m->shift) - 1u) >> m->shift) * ((h + (1u << m->shift) - 1u) >> m->shift));
+                    a + (size_t)cells_of(w, m) * (cells_of(h, m) - 1u));
         }
         prev = a;
     }
@@ -516,7 +526,7 @@ static int arg_checks(const vocr_textgate_model *m)
     free(big);
     REQUIRE(vocr_textgate_load(NULL, px, sizeof(px)) == VOCR_LINES_E_ARG);
     REQUIRE(vocr_textgate_load(&bad, NULL, 0) == VOCR_LINES_E_ARG);
-    REQUIRE(vocr_textgate_load(&bad, px, sizeof(px)) == VOCR_TEXTGATE_E_BLOB && !bad.layers && !bad.blob);
+    REQUIRE(vocr_textgate_load(&bad, px, sizeof(px)) == VOCR_TEXTGATE_E_BLOB && !bad.blob);
     return 0;
 }
 
@@ -531,7 +541,7 @@ static int damage_checks(const unsigned char *blob, size_t n)
         size_t at = below((unsigned)n);
         memcpy(c, blob, n);
         c[at] ^= (unsigned char)(1u + below(255));
-        REQUIRE(vocr_textgate_load(&t, c, n) == VOCR_TEXTGATE_E_BLOB && !t.layers);
+        REQUIRE(vocr_textgate_load(&t, c, n) == VOCR_TEXTGATE_E_BLOB && !t.blob);
     }
     memcpy(c, blob, n);
     REQUIRE(vocr_textgate_load(&t, c, n - 1u) == VOCR_TEXTGATE_E_BLOB);
@@ -571,7 +581,7 @@ static int selftest(unsigned cases, int nblobs, char **blobs)
         blob_name = blobs[bi];
         current = 0;
         REQUIRE(blob != NULL);
-        REQUIRE(vocr_textgate_load(&m, blob, n) == VOCR_LINES_OK && m.bytes == n && m.blob == blob);
+        REQUIRE(vocr_textgate_load(&m, blob, n) == VOCR_LINES_OK && m.blob == blob);
         if (arena_checks(&m) || arg_checks(&m) || damage_checks(blob, n)) return 1;
         for (e = 0; e < sizeof(edge) / sizeof(edge[0]) && current < cases; e++, current++)
             if (region(&m, edge[e][0], edge[e][1], below(2) ? 4u : 1u)) return 1;

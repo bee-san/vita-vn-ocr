@@ -12,7 +12,7 @@
  * specification and a bit-exact twin.
  *
  * C99, no allocation, no recursion, no global state, integer arithmetic only, scalar code (built for
- * size); nothing from libc but memset and memcpy. Self-contained: link vocr_textgate.c (and
+ * size); nothing from libc but memset. Self-contained: link vocr_textgate.c (and
  * vocr_lines.c / vocr_lines_rows.c for the finder mode) without vocr_textdet.c. The caller passes an
  * arena of vocr_textgate_arena_bytes(); the region is read once, top to bottom, so in region mode the
  * arena depends on the region's width only.
@@ -37,22 +37,19 @@ extern "C" {
 #define VOCR_TEXTGATE_MAX_K 8u        /* k is 1..8 */
 #define VOCR_TEXTGATE_MAX_SIDE 2048u  /* larger regions are VOCR_LINES_E_ARG (vocr_textgate.c: the ranges) */
 
-/* A loaded blob: 16 bytes on 32-bit ARM. It points into the blob, which must stay alive and unchanged
- * while the model is used; the blob needs no alignment. Read-only after vocr_textgate_load. */
+/* A loaded blob: the blob itself (checked), which must stay alive and unchanged while the model is
+ * used; it needs no alignment. NULL: not loaded. Read-only after vocr_textgate_load. */
 typedef struct {
     const unsigned char *blob;
-    unsigned layers;            /* 2..32; 0: not loaded */
-    unsigned shift;             /* the output stride is 1 << shift: 4 or 8 */
-    unsigned long bytes;
 } vocr_textgate_model;
 
-/* One gate run (the push form): 40 bytes on 32-bit ARM, the caller's; everything else is in the
+/* One gate run (the push form): 32 bytes on 32-bit ARM, the caller's; everything else is in the
  * arena. Fields are private. */
 typedef struct {
-    const vocr_textgate_model *m;
+    const unsigned char *blob;  /* the model's blob */
     unsigned char *base;        /* the arena, 4-byte aligned */
-    unsigned short width, height, wm, hm, rows;
-    unsigned char mode, k, bpp, count;
+    unsigned short width, height, rows;
+    unsigned char n, mode, k, count;
     signed char top[VOCR_TEXTGATE_MAX_K];   /* the k largest codes so far, largest first */
     int rc;                     /* VOCR_LINES_OK while the run is good, else the error */
 } vocr_textgate_state;
@@ -63,11 +60,12 @@ typedef struct {
  * error m is cleared (unusable). */
 int vocr_textgate_load(vocr_textgate_model *m, const void *blob, size_t bytes);
 
-/* Exact arena bytes of a gate run on any region up to max_width x max_height: the row rings of the
- * 3x3 layers ((k - 1) d + 1 input rows each, d zero columns either side) and 12 bytes per layer, plus
- * in boxes mode the K map (ceil(h / s) x ceil(w / s) bytes), plus 3 bytes of alignment slack (the
- * arena needs no alignment). Region mode depends on the width only. 0 for a NULL or unloaded model,
- * a bad mode, a zero side or one over VOCR_TEXTGATE_MAX_SIDE. */
+/* Exact arena bytes of a gate run on any region up to max_width x max_height: 20 bytes per layer, every
+ * layer's ring of input rows ((k - 1) d + 1 rows of cin codes a pixel, with d zero pixels either side for
+ * a 3x3 layer; one row for a 1x1 layer), then the K row (region mode: ceil(w / s) bytes) or the K map
+ * (boxes mode: ceil(h / s) x ceil(w / s) bytes), plus 3 bytes of alignment slack (the arena needs no
+ * alignment). Region mode depends on the width only. 0 for a NULL or unloaded model, a bad mode, a
+ * zero side or one over VOCR_TEXTGATE_MAX_SIDE. */
 size_t vocr_textgate_arena_bytes(const vocr_textgate_model *m, int mode, unsigned max_width,
                                  unsigned max_height);
 
@@ -83,6 +81,10 @@ int vocr_textgate_begin(vocr_textgate_state *st, const vocr_textgate_model *m, i
                         unsigned width, unsigned height, void *arena, size_t arena_bytes);
 int vocr_textgate_push(vocr_textgate_state *st, const unsigned char *grey_row);
 int vocr_textgate_score(vocr_textgate_state *st, const VocrLineSet *boxes, int *score);
+
+/* Region mode only: vocr_textgate_score(st, NULL, score) without the boxes code, so a region-mode
+ * caller links less (VOCR_LINES_E_ARG in boxes mode). */
+int vocr_textgate_score_region(vocr_textgate_state *st, int *score);
 
 /* The same in one call on an image in memory (VOCR_LINES_GREY or VOCR_LINES_RGBA: grey = (77 R +
  * 150 G + 29 B) >> 8), or through a row callback (vocr_lines_rows.h: rows asked once each, in

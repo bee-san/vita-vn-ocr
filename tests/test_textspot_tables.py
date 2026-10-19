@@ -119,7 +119,7 @@ def test_tables_from_the_pinned_records(records):
     rep = TT.report_units([cdir], sel)
     text = TT.render(base, sel, rep)
     tabs = blocks(text)
-    assert len(tabs) == 5
+    assert len(tabs) == 6                                 # baselines, candidates, pareto, rule, parts, classes
     for t in tabs:                                        # every row has its header's columns
         assert len({row.count("|") for row in t}) == 1, t[0]
     cand = [r.split("|")[1].strip().strip("`") for r in tabs[1][2:]]
@@ -132,15 +132,16 @@ def test_tables_from_the_pinned_records(records):
     assert row["small_det"][12] == f"{s:.2f} / {ll:.2f}"
     assert row["slow_det"][9] != "–" and row["slow_det"][10] == "–"               # detection only: no CER
     assert "winner: big_det" in text and "WARNING" not in text
-    assert tabs[2][0].startswith("| `big_det` minus") and len(tabs[2]) == 2 + len(TS.BASELINES)
-    assert all(r.rstrip(" |").endswith("yes") for r in tabs[2][2:])
-    parts = [r.split("|")[1].strip() for r in tabs[3][2:]]
+    assert [r.split("|")[1].strip().strip("`") for r in tabs[2][2:]] == ["small_det", "big_det"]
+    assert tabs[3][0].startswith("| `big_det` minus") and len(tabs[3]) == 2 + len(TS.BASELINES)
+    assert all(r.rstrip(" |").endswith("yes") for r in tabs[3][2:])
+    parts = [r.split("|")[1].strip() for r in tabs[4][2:]]
     assert parts == ["pc", "psp", "vita"] and "Text-free frames (2)" in text
-    assert tabs[4][2].startswith("| `big_det` |") and len(tabs[4]) == 3 + len(TS.BASELINES)
+    assert tabs[5][2].startswith("| `big_det` |") and len(tabs[5]) == 3 + len(TS.BASELINES)
     bs = {a: base["arms"][a]["VOCR5-N"]["summary"] for a in TS.BASELINES}
     f1 = max(TS.BASELINES, key=lambda a: (bs[a]["detection"]["f1"], a))
     ce = min(TS.BASELINES, key=lambda a: (bs[a]["cer_all"]["cer"], a))
-    assert TT.default_part_baselines(base) == [f1, ce] and tabs[3][0].count(" F1 |") == 3
+    assert TT.default_part_baselines(base) == [f1, ce] and tabs[4][0].count(" F1 |") == 3
 
 
 def test_report_units_must_score_the_same_boxes(records):
@@ -182,3 +183,18 @@ def test_baselines_only_and_cli(records, capsys):
              "--eligible-only", "--out", str(tmp / "d.md")])
     text = (tmp / "d.md").read_text()
     assert not any("`slow_det`" in r for r in blocks(text)[1]) and "3 candidates, 3 eligible" in text
+
+
+def test_pareto_front(records):
+    tmp, base, sel, cdir = records
+    # big_det is better on every accuracy key but larger and slower than small_det: both on the front; small_detref
+    # (the same bytes and accuracy as small_det, slower) is dominated; slow_det is not eligible
+    assert [n for n, _ in TT.pareto(sel)] == ["small_det", "big_det"]
+    assert [n for n, _ in TT.pareto(sel, ("cer_all",))] == ["big_det"]
+    text = TT.pareto_table(sel)
+    assert "2 of 3 eligible candidates are on the front" in text and "| `big_det` |" in text
+    tie = json.loads(json.dumps(sel))
+    tie["candidates"]["twin_det"] = dict(tie["candidates"]["big_det"], name="twin_det")
+    assert "twin_det" in [n for n, _ in TT.pareto(tie)]           # equal on every key: neither dominates
+    with pytest.raises(SystemExit):
+        TT.main(["--baseline", str(tmp / "base.json"), "--dev", str(tmp / "sel.json"), "--pareto-keys", "speed"])

@@ -1,0 +1,3558 @@
+{
+ "kind": "textspot-shards",
+ "schema": 1,
+ "generator": "synth/textspot_data.py",
+ "gen_version": 1,
+ "issue": 104,
+ "seed": 20261019,
+ "per_shard": 1000,
+ "code_sha256": {
+  "synth/textspot_data.py": "db4c44fdae6538385cd535f44335df986e57bd96463dafe1a24f37db9634ba84",
+  "synth/textdet_data.py": "359f18a8d97a868381b0e7988806375cc51882ce23c1965de082d1995193b200",
+  "synth/synth3.py": "834c4ad7995d9f62770e0e95223aea5077665b779385a0d6b9ce572d32b14fc9",
+  "synth/render.py": "25733484aa71a76f01f910c5e89b01b8ec349188de7d15f6a815f13912266624",
+  "synth/vertical_render.py": "c40f1cda8633c3aca94213a7553d204ecedc40a98f929db585aff6610b7a605d",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "teacher/geometry.py": "fa001851fad9d405700df467925b99322d40cc0b2897fd0305281db43419def5"
+ },
+ "mix": {
+  "kind": {
+   "vita": 0.35,
+   "psp": 0.25,
+   "adrenaline": 0.15,
+   "pc": 0.1,
+   "empty": 0.15
+  },
+  "empty_size": {
+   "vita": 0.41,
+   "psp": 0.29,
+   "adrenaline": 0.18,
+   "pc": 0.12
+  },
+  "empty_mode": {
+   "scene": 0.35,
+   "box": 0.45,
+   "menu": 0.2
+  },
+  "empty_box_layout": {
+   "adv": 0.5,
+   "nvl": 0.15,
+   "band": 0.1,
+   "balloon": 0.05,
+   "choice": 0.12,
+   "ui": 0.08
+  },
+  "pc_size": {
+   "1280x720": 0.4,
+   "800x600": 0.4,
+   "1024x768": 0.2
+  },
+  "main": {
+   "horizontal": 0.8,
+   "vertical": 0.07,
+   "none": 0.13
+  },
+  "layout": {
+   "adv": 0.55,
+   "band": 0.12,
+   "nvl": 0.12,
+   "balloon": 0.05,
+   "bare": 0.16
+  },
+  "vertical_manga": 0.4,
+  "choice": {
+   "with_main": 0.07,
+   "without_main": 0.55
+  },
+  "menu": {
+   "with_main": 0.03,
+   "without_main": 0.35
+  },
+  "ui_n": [
+   0.25,
+   0.2,
+   0.16,
+   0.12,
+   0.09,
+   0.07,
+   0.05,
+   0.035,
+   0.025
+  ],
+  "ui": {
+   "quick": 0.22,
+   "word": 0.18,
+   "hint": 0.13,
+   "date": 0.12,
+   "chapter": 0.08,
+   "slot": 0.07,
+   "status": 0.12,
+   "place": 0.08
+  },
+  "ui_plate": 0.55,
+  "scene_text": 0.18,
+  "scene_text_n": [
+   1,
+   2
+  ],
+  "scene_text_vertical": 0.3,
+  "scene_text_kind": {
+   "sign": 0.4,
+   "poster": 0.25,
+   "note": 0.2,
+   "phone": 0.15
+  },
+  "vertical_extra": 0.05,
+  "scenes": {
+   "vita": {
+    "vita": 0.3,
+    "hires": 0.6,
+    "psp": 0.05,
+    "synthetic": 0.05
+   },
+   "psp": {
+    "psp": 0.75,
+    "hires": 0.12,
+    "vita": 0.08,
+    "synthetic": 0.05
+   },
+   "pc": {
+    "hires": 0.95,
+    "synthetic": 0.05
+   }
+  },
+  "scene_zoom": [
+   1.0,
+   1.25
+  ],
+  "scene_max_text": 0.4,
+  "scene_text_pad": [
+   0.15,
+   2
+  ]
+ },
+ "capture": {
+  "vita": {
+   "chain": {
+    "clean": 0.25,
+    "vndb2": 0.75
+   },
+   "q420": 0.94
+  },
+  "psp": {
+   "chain": {
+    "clean": 0.25,
+    "q90": 0.63,
+    "vndb2": 0.12
+   },
+   "q420": {
+    "q90": 0.0,
+    "vndb2": 1.0
+   }
+  },
+  "adrenaline": {
+   "chain": {
+    "clean": 0.25,
+    "vndb2": 0.75
+   },
+   "q420": 0.94
+  },
+  "pc": {
+   "chain": {
+    "clean": 0.15,
+    "q90": 0.85
+   },
+   "q420": 0.85
+  },
+  "console_q": [
+   82,
+   95
+  ],
+  "dither565": 0.45,
+  "blur": 0.15,
+  "noise": 0.15
+ },
+ "min_across": 6,
+ "classes": [
+  "dialogue",
+  "name",
+  "choice",
+  "ui",
+  "scene"
+ ],
+ "synth3": "render_region of synth3 version 3 (CFG frames None), region capture off, layout forced",
+ "reserved_sha256": "8ddaace6d1c9be5331bbcf628ff64d1c51365dc61f8a47d343d1bfb202e894cc",
+ "scene_pool": {
+  "synth3": {
+   "vita": 980,
+   "psp": 1382,
+   "hires": 3181
+  },
+  "textgate": {
+   "vita": 120,
+   "psp": 1035,
+   "hires": 3137
+  },
+  "pool": {
+   "vita": 64,
+   "psp": 985,
+   "hires": 3123
+  },
+  "dropped_further": {
+   "vn": 113,
+   "image_id": 5,
+   "vertical_scene": 0,
+   "sha256": 2
+  },
+  "vns": 1117,
+  "sha256": "775b1df6b5383832376ac2a08c1a586282ab94f6d211cb2a58533a5e75595db4",
+  "sha256_rule": "sha256 of the lines '<file name> <file sha256>' of every pool scene, sorted by kind, path"
+ },
+ "real": {
+  "manifest": "data/manifests/textdet_shards_v1.json",
+  "sha256": "84bba8c37b2fcefb14474b35f5a803d76f303fc57bf710a2239e848a09ffef27",
+  "shards": [
+   "devnative/devnative_0000",
+   "owner/owner_0000",
+   "owner/owner_0001",
+   "owner/owner_0002",
+   "owner/owner_0003",
+   "owner/owner_0004",
+   "owner/owner_0005",
+   "realplus/realplus_0000",
+   "realplus/realplus_0001",
+   "realplus/realplus_0002",
+   "realplus/realplus_0003",
+   "realplus/realplus_0004",
+   "realplus/realplus_0005",
+   "realplus/realplus_0006",
+   "realplus/realplus_0007",
+   "realplus/realplus_0008",
+   "realplus/realplus_0009",
+   "realplus/realplus_0010",
+   "realplus/realplus_0011",
+   "realplus/realplus_0012",
+   "realplus/realplus_0013",
+   "realplus/realplus_0014",
+   "realplus/realplus_0015",
+   "realplus/realplus_0016",
+   "realplus/realplus_0017",
+   "realplus/realplus_0018",
+   "realplus/realplus_0019",
+   "realplus/realplus_0020",
+   "realplus/realplus_0021",
+   "realplus/realplus_0022",
+   "realplus/realplus_0023",
+   "realplus/realplus_0024",
+   "realplus/realplus_0025",
+   "realplus/realplus_0026",
+   "realplus/realplus_0027",
+   "realplus/realplus_0028",
+   "realplus/realplus_0029",
+   "realplus/realplus_0030",
+   "realplus/realplus_0031",
+   "realplus/realplus_0032",
+   "realplus/realplus_0033",
+   "realplus/realplus_0034",
+   "realplus/realplus_0035",
+   "realplus/realplus_0036",
+   "realplus/realplus_0037",
+   "realplus/realplus_0038",
+   "realplus/realplus_0039",
+   "teacher/teacher_0000",
+   "teacher/teacher_0001",
+   "teacher/teacher_0002",
+   "teacher/teacher_0003",
+   "teacher/teacher_0004",
+   "teacher/teacher_0005",
+   "teacher/teacher_0006",
+   "teacher/teacher_0007",
+   "teacher/teacher_0008",
+   "teacher/teacher_0009"
+  ],
+  "samples": 28602,
+  "note": "#97's real whole-screenshot canvases (realplus, teacher, devnative; the owner's are private), pinned there; #97's own synthetic shards (dir synth) are not used",
+  "measured": {
+   "kind": "textspot-real-half",
+   "schema": 1,
+   "textdet_manifest": "textdet_shards_v1.json",
+   "textdet_manifest_sha256": "84bba8c37b2fcefb14474b35f5a803d76f303fc57bf710a2239e848a09ffef27",
+   "code_sha256": {
+    "synth/textspot_real_half.py": "33b0eaca35f619627689c09ea9e56e7e93d7892df715c9adab41148b418def14",
+    "synth/textspot_data.py": "db4c44fdae6538385cd535f44335df986e57bd96463dafe1a24f37db9634ba84"
+   },
+   "stats": {
+    "realplus": {
+     "canvases": 19705,
+     "by_size": {
+      "960x540": 3832,
+      "725x544": 13475,
+      "724x544": 176,
+      "870x544": 1050,
+      "727x544": 42,
+      "746x544": 2,
+      "730x544": 11,
+      "777x544": 76,
+      "928x544": 100,
+      "726x544": 52,
+      "688x544": 2,
+      "806x544": 4,
+      "836x544": 1,
+      "749x544": 6,
+      "907x544": 37,
+      "816x544": 337,
+      "960x541": 40,
+      "728x544": 17,
+      "869x544": 40,
+      "721x544": 2,
+      "750x544": 6,
+      "753x544": 3,
+      "754x544": 1,
+      "771x544": 3,
+      "960x542": 18,
+      "960x538": 7,
+      "729x544": 9,
+      "738x544": 5,
+      "960x543": 6,
+      "736x544": 7,
+      "960x537": 4,
+      "789x544": 4,
+      "787x544": 2,
+      "960x539": 18,
+      "696x544": 4,
+      "705x544": 2,
+      "841x544": 1,
+      "890x544": 2,
+      "757x544": 16,
+      "960x544": 13,
+      "798x544": 1,
+      "800x544": 3,
+      "768x544": 1,
+      "818x544": 2,
+      "747x544": 1,
+      "855x544": 2,
+      "723x544": 4,
+      "767x544": 2,
+      "959x544": 2,
+      "819x544": 3,
+      "880x544": 2,
+      "711x544": 67,
+      "732x544": 2,
+      "858x544": 2,
+      "846x544": 2,
+      "710x544": 3,
+      "680x544": 5,
+      "868x544": 2,
+      "762x544": 1,
+      "760x544": 4,
+      "960x525": 3,
+      "960x520": 4,
+      "861x544": 29,
+      "745x544": 2,
+      "865x544": 2,
+      "694x544": 2,
+      "960x530": 2,
+      "722x544": 5,
+      "875x544": 2,
+      "719x544": 1,
+      "842x544": 2,
+      "769x544": 4,
+      "755x544": 6,
+      "714x544": 2,
+      "790x544": 2,
+      "839x544": 30,
+      "739x544": 1,
+      "718x544": 2,
+      "791x544": 5,
+      "735x544": 1,
+      "742x544": 2,
+      "733x544": 6,
+      "734x544": 2,
+      "920x544": 1,
+      "820x544": 3,
+      "943x544": 2,
+      "956x544": 1,
+      "817x544": 4,
+      "731x544": 1,
+      "720x544": 1,
+      "908x544": 1,
+      "960x532": 2,
+      "774x544": 4,
+      "825x544": 4,
+      "779x544": 2,
+      "764x544": 1,
+      "930x544": 1,
+      "828x544": 1,
+      "960x529": 1,
+      "960x533": 2,
+      "815x544": 1,
+      "822x544": 1,
+      "960x534": 1,
+      "854x544": 2,
+      "682x544": 2,
+      "808x544": 1,
+      "945x544": 1,
+      "940x544": 1,
+      "832x544": 1,
+      "796x544": 1
+     },
+     "by_kind": {
+      "vita": 19705
+     },
+     "lines": 109908,
+     "vertical": 2243,
+     "ignore": 5504,
+     "across_lt6": 0,
+     "across_gt72": 0,
+     "lines_hist": {
+      "10": 814,
+      "7": 1351,
+      "2": 3410,
+      "1": 1830,
+      "6": 1324,
+      "3": 2728,
+      "11": 549,
+      "0": 592,
+      "14": 171,
+      "4": 1837,
+      "8": 1143,
+      "9": 1030,
+      "5": 1527,
+      "20+": 373,
+      "12": 382,
+      "19": 33,
+      "17": 66,
+      "16": 80,
+      "13": 278,
+      "15": 126,
+      "18": 61
+     },
+     "whole_frame": 19705,
+     "not_whole": 0,
+     "no_lines": 592,
+     "vns": 10428,
+     "lines_per_canvas": 5.578,
+     "share_lt6": 0.0,
+     "share_gt72": 0.0
+    },
+    "teacher": {
+     "canvases": 6003,
+     "by_size": {
+      "960x540": 1867,
+      "725x544": 1596,
+      "363x272": 507,
+      "728x544": 3,
+      "870x544": 83,
+      "435x272": 35,
+      "480x272": 1091,
+      "362x272": 12,
+      "726x544": 5,
+      "727x544": 8,
+      "480x270": 604,
+      "928x544": 56,
+      "464x272": 9,
+      "724x544": 28,
+      "722x544": 1,
+      "960x544": 38,
+      "960x534": 2,
+      "960x541": 11,
+      "960x539": 9,
+      "696x544": 4,
+      "348x272": 1,
+      "752x544": 3,
+      "376x272": 3,
+      "480x271": 3,
+      "731x544": 2,
+      "723x544": 6,
+      "816x544": 9,
+      "408x272": 2,
+      "861x544": 2,
+      "364x272": 1,
+      "480x267": 1,
+      "361x272": 1
+     },
+     "by_kind": {
+      "vita": 3733,
+      "psp": 2270
+     },
+     "lines": 32378,
+     "vertical": 0,
+     "ignore": 14127,
+     "across_lt6": 0,
+     "across_gt72": 0,
+     "lines_hist": {
+      "9": 240,
+      "20+": 173,
+      "14": 62,
+      "2": 1127,
+      "3": 931,
+      "4": 606,
+      "0": 529,
+      "1": 458,
+      "5": 400,
+      "6": 286,
+      "7": 284,
+      "16": 40,
+      "13": 65,
+      "11": 141,
+      "12": 108,
+      "10": 183,
+      "8": 258,
+      "15": 35,
+      "19": 24,
+      "17": 35,
+      "18": 18
+     },
+     "whole_frame": 6003,
+     "not_whole": 0,
+     "no_lines": 529,
+     "vns": 1255,
+     "lines_per_canvas": 5.394,
+     "share_lt6": 0.0,
+     "share_gt72": 0.0
+    },
+    "devnative": {
+     "canvases": 73,
+     "by_size": {
+      "480x272": 64,
+      "960x544": 9
+     },
+     "by_kind": {
+      "psp": 64,
+      "vita": 9
+     },
+     "lines": 251,
+     "vertical": 11,
+     "ignore": 9,
+     "across_lt6": 0,
+     "across_gt72": 0,
+     "lines_hist": {
+      "2": 10,
+      "1": 5,
+      "0": 13,
+      "3": 17,
+      "4": 13,
+      "8": 1,
+      "5": 7,
+      "11": 1,
+      "6": 2,
+      "17": 2,
+      "9": 1,
+      "14": 1
+     },
+     "whole_frame": 73,
+     "not_whole": 0,
+     "no_lines": 13,
+     "vns": 10,
+     "lines_per_canvas": 3.438,
+     "share_lt6": 0.0,
+     "share_gt72": 0.0
+    },
+    "owner": {
+     "canvases": 2821,
+     "by_size": {
+      "960x544": 1252,
+      "480x272": 1569
+     },
+     "by_kind": {
+      "vita": 1252,
+      "psp": 1569
+     },
+     "lines": 8013,
+     "vertical": 39,
+     "ignore": 91,
+     "across_lt6": 0,
+     "across_gt72": 0,
+     "lines_hist": {
+      "5": 135,
+      "8": 23,
+      "3": 483,
+      "20+": 12,
+      "2": 1009,
+      "4": 312,
+      "1": 640,
+      "6": 95,
+      "9": 37,
+      "12": 2,
+      "7": 25,
+      "10": 18,
+      "11": 2,
+      "0": 17,
+      "16": 4,
+      "14": 5,
+      "13": 1,
+      "15": 1
+     },
+     "whole_frame": 2821,
+     "not_whole": 0,
+     "no_lines": 17,
+     "vns": 69,
+     "lines_per_canvas": 2.84,
+     "share_lt6": 0.0,
+     "share_gt72": 0.0
+    }
+   },
+   "reservation": {
+    "reserved_sha256": "8ddaace6d1c9be5331bbcf628ff64d1c51365dc61f8a47d343d1bfb202e894cc",
+    "reserved_dump": "2026-10-13 08:00:26+00",
+    "textdet_manifest_reserved_sha256": "8ddaace6d1c9be5331bbcf628ff64d1c51365dc61f8a47d343d1bfb202e894cc",
+    "record": {
+     "verdict": "RESERVE_OK",
+     "reservation_dump": "2026-10-13 08:00:26+00",
+     "dev_sample_mode": "block",
+     "rows": {
+      "realplus": 19705,
+      "teacher": 4823,
+      "devnative": 73,
+      "owner": 2821
+     },
+     "blockers": {
+      "realplus": 0,
+      "teacher": 0,
+      "devnative": 0,
+      "owner": 0
+     }
+    },
+    "sources": {
+     "realplus": {
+      "canvases": 19705,
+      "shots": 19705,
+      "vns": 10428,
+      "shard_json_match_pin": "40/40",
+      "shots_without_row": 0,
+      "test_vns": 0,
+      "dev_sample_vns": 0,
+      "test_session_shots": 0
+     },
+     "teacher": {
+      "canvases": 6003,
+      "shots": 4823,
+      "vns": 1255,
+      "shard_json_match_pin": "10/10",
+      "shots_without_row": 0,
+      "test_vns": 0,
+      "dev_sample_vns": 0,
+      "test_session_shots": 0
+     },
+     "devnative": {
+      "canvases": 73,
+      "shots": 73,
+      "vns": 10,
+      "shard_json_match_pin": "1/1",
+      "shots_without_row": 0,
+      "test_vns": 0,
+      "dev_sample_vns": 0,
+      "test_session_shots": 0
+     },
+     "owner": {
+      "canvases": 2821,
+      "shots": 2821,
+      "vns": 69,
+      "shard_json_match_pin": "6/6",
+      "shots_without_row": 0,
+      "test_vns": 0,
+      "dev_sample_vns": 0,
+      "test_session_shots": 0
+     }
+    }
+   },
+   "skip": {
+    "eval_screenshot": {
+     "shots": 77,
+     "canvases": 77,
+     "by_source": {
+      "realplus": 22,
+      "teacher": 54,
+      "devnative": 1,
+      "owner": 0
+     },
+     "lists": [
+      "psp_dev.candidates.jsonl",
+      "psp_holdout.candidates.jsonl",
+      "psp_pool.jsonl",
+      "vertical-dev-columns.jsonl",
+      "vertical-dev-regions.jsonl",
+      "vertical-test-columns.jsonl",
+      "vertical-test-regions.jsonl",
+      "vita_dev.candidates.jsonl",
+      "vita_holdout.candidates.jsonl"
+     ],
+     "skip_shots": [
+      "v10137_102274",
+      "v10186_62603",
+      "v10_97180",
+      "v1107_9409",
+      "v11109_56634",
+      "v11109_56635",
+      "v11309_57502",
+      "v11309_57503",
+      "v11309_57510",
+      "v11795_49546",
+      "v1199_122516",
+      "v12051_104834",
+      "v12456_57455",
+      "v12900_55452",
+      "v12900_55454",
+      "v12991_60545",
+      "v13178_52718",
+      "v13181_52732",
+      "v1341_55645",
+      "v1341_55646",
+      "v1341_55647",
+      "v1360_21507",
+      "v1360_21510",
+      "v15361_69918",
+      "v15361_69919",
+      "v15361_69920",
+      "v15361_69921",
+      "v15773_139474",
+      "v15773_139475",
+      "v16842_108649",
+      "v1751_52747",
+      "v1751_52748",
+      "v1751_52749",
+      "v19851_115941",
+      "v20707_194737",
+      "v21024_148037",
+      "v21024_148038",
+      "v21261_119894",
+      "v22252_120677",
+      "v2347_31226",
+      "v24311_130468",
+      "v24870_162248",
+      "v25743_123848",
+      "v27023_130473",
+      "v30172_145252",
+      "v32588_178764",
+      "v3259_56744",
+      "v3259_56746",
+      "v3259_56750",
+      "v3260_56755",
+      "v3260_56756",
+      "v3260_56758",
+      "v3260_56759",
+      "v3260_56760",
+      "v3261_56762",
+      "v3261_56763",
+      "v3261_56765",
+      "v3261_56768",
+      "v3261_56770",
+      "v3262_56773",
+      "v3262_56776",
+      "v3263_56782",
+      "v33898_171604",
+      "v3430_58090",
+      "v3430_58091",
+      "v40827_205542",
+      "v47012_201496",
+      "v54532_250733",
+      "v63620_243877",
+      "v7366_57371",
+      "v7366_57373",
+      "v7912_57511",
+      "v7912_57518",
+      "v7912_57519",
+      "v8799_56367",
+      "v8799_56368",
+      "v8799_56369"
+     ]
+    },
+    "linefind_list_vn": {
+     "shots": 249,
+     "canvases": 255,
+     "by_source": {
+      "realplus": 0,
+      "teacher": 84,
+      "devnative": 8,
+      "owner": 163
+     },
+     "lists": [
+      "psp_dev.candidates.jsonl",
+      "psp_holdout.candidates.jsonl",
+      "psp_pool.jsonl",
+      "research_a.jsonl",
+      "research_b.jsonl",
+      "vita_dev.candidates.jsonl",
+      "vita_holdout.candidates.jsonl"
+     ],
+     "skip_vns": [
+      "v10",
+      "v11309",
+      "v1199",
+      "v12456",
+      "v12794",
+      "v12900",
+      "v1341",
+      "v1360",
+      "v15080",
+      "v15773",
+      "v16842",
+      "v1751",
+      "v19851",
+      "v20747",
+      "v21024",
+      "v21261",
+      "v3260",
+      "v3263",
+      "v3430",
+      "v56208",
+      "v7366",
+      "v8158",
+      "v8799"
+     ]
+    }
+   }
+  }
+ },
+ "shards": [
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0000",
+   "npy_sha256": "363b40646a2a465bfed31935b3e5e2183f9aef647c21103254768db78a0f4c87",
+   "json_sha256": "8d6749fcb518359e77359a3f35475902841c8c53979b20220244fa66cfde4cef",
+   "npy_bytes": 397703648,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 360,
+    "empty": 163,
+    "psp": 250,
+    "adrenaline": 141,
+    "pc": 86
+   },
+   "by_size": {
+    "960x544": 600,
+    "480x272": 297,
+    "960x540": 40,
+    "725x544": 63
+   },
+   "lines": 6164,
+   "by_class": {
+    "dialogue": 1461,
+    "name": 455,
+    "choice": 375,
+    "ui": 3586,
+    "scene": 287
+   },
+   "by_orientation": {
+    "horizontal": 5703,
+    "vertical": 461
+   },
+   "ignore": 347
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0001",
+   "npy_sha256": "7aa428dbe13ed6a870a844759173142cd156690c0087365a57e030cc1035bfca",
+   "json_sha256": "3ea9197237ef46068569fefa6a98e34c3bb6e0d48b587b29c05980fb9c428c8d",
+   "npy_bytes": 392189888,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 266,
+    "adrenaline": 139,
+    "pc": 98,
+    "vita": 348,
+    "empty": 149
+   },
+   "by_size": {
+    "480x272": 310,
+    "960x544": 574,
+    "960x540": 50,
+    "725x544": 66
+   },
+   "lines": 6300,
+   "by_class": {
+    "dialogue": 1369,
+    "name": 512,
+    "choice": 300,
+    "ui": 3830,
+    "scene": 289
+   },
+   "by_orientation": {
+    "horizontal": 5948,
+    "vertical": 352
+   },
+   "ignore": 210
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0002",
+   "npy_sha256": "146eecf95282f5db84d200da48b8ee27d7ab0e8c9cbbd953d23bda8e3f0b6e5f",
+   "json_sha256": "393eab495468299fc500c7702d9eba164653726d12737b87d8691c15b9c25b7a",
+   "npy_bytes": 391826048,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 333,
+    "psp": 265,
+    "pc": 106,
+    "adrenaline": 148,
+    "empty": 148
+   },
+   "by_size": {
+    "960x544": 572,
+    "480x272": 309,
+    "725x544": 72,
+    "960x540": 47
+   },
+   "lines": 6388,
+   "by_class": {
+    "dialogue": 1435,
+    "name": 468,
+    "choice": 317,
+    "ui": 3817,
+    "scene": 351
+   },
+   "by_orientation": {
+    "horizontal": 5971,
+    "vertical": 417
+   },
+   "ignore": 289
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0003",
+   "npy_sha256": "9a60edcb5f99c6bf6abe0d12ad115355911f7b083a1789c56d597d0b71d29f34",
+   "json_sha256": "2bc9aa3433820b7ddd16bdf548db1061381bfbc790f104839a5711b02c0dbb6c",
+   "npy_bytes": 404194048,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 339,
+    "pc": 115,
+    "psp": 239,
+    "adrenaline": 170,
+    "empty": 137
+   },
+   "by_size": {
+    "960x544": 589,
+    "725x544": 76,
+    "480x272": 276,
+    "960x540": 59
+   },
+   "lines": 6462,
+   "by_class": {
+    "dialogue": 1484,
+    "name": 475,
+    "choice": 352,
+    "ui": 3806,
+    "scene": 345
+   },
+   "by_orientation": {
+    "horizontal": 5983,
+    "vertical": 479
+   },
+   "ignore": 308
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0004",
+   "npy_sha256": "24be2e91df280b10c84a23107eacfcc2a2df7883796a803df46c7d6b810168c6",
+   "json_sha256": "d60884e001c4c17eeb18537f5922d54754ea7b9e0a0bd64d65c8f13e34c57eb1",
+   "npy_bytes": 402642688,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 365,
+    "adrenaline": 147,
+    "pc": 113,
+    "psp": 240,
+    "empty": 135
+   },
+   "by_size": {
+    "960x544": 589,
+    "725x544": 76,
+    "960x540": 55,
+    "480x272": 280
+   },
+   "lines": 6606,
+   "by_class": {
+    "dialogue": 1409,
+    "name": 486,
+    "choice": 336,
+    "ui": 4088,
+    "scene": 287
+   },
+   "by_orientation": {
+    "horizontal": 6166,
+    "vertical": 440
+   },
+   "ignore": 373
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0005",
+   "npy_sha256": "49e6bebb1369755f1367346c0515703f95ed26194a4011c427dfdbe486887cd2",
+   "json_sha256": "05323d354326745faec7dbe2910c60792163ca1b464ce50f65e77429211f121b",
+   "npy_bytes": 396083648,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 338,
+    "adrenaline": 162,
+    "empty": 146,
+    "pc": 101,
+    "psp": 253
+   },
+   "by_size": {
+    "960x544": 578,
+    "725x544": 66,
+    "480x272": 300,
+    "960x540": 56
+   },
+   "lines": 6207,
+   "by_class": {
+    "dialogue": 1495,
+    "name": 516,
+    "choice": 266,
+    "ui": 3633,
+    "scene": 297
+   },
+   "by_orientation": {
+    "horizontal": 5720,
+    "vertical": 487
+   },
+   "ignore": 357
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0006",
+   "npy_sha256": "92bb90a2bd11b7ef8fdc7cf3f5a980a8c0e504e3defcbe54d53ddca268fa32f4",
+   "json_sha256": "9469fdd492cbe7dea3396bd79645bca2e39a41da873eb5608b0ebec69a434132",
+   "npy_bytes": 400442528,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 254,
+    "vita": 348,
+    "empty": 158,
+    "adrenaline": 149,
+    "pc": 91
+   },
+   "by_size": {
+    "480x272": 288,
+    "960x544": 598,
+    "960x540": 45,
+    "725x544": 69
+   },
+   "lines": 6288,
+   "by_class": {
+    "dialogue": 1455,
+    "name": 469,
+    "choice": 303,
+    "ui": 3763,
+    "scene": 298
+   },
+   "by_orientation": {
+    "horizontal": 5829,
+    "vertical": 459
+   },
+   "ignore": 268
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0007",
+   "npy_sha256": "4958eed9c4b8a8d93fea1fc68d0d379849be86e19e254ec3b93bceda65b01fed",
+   "json_sha256": "7f2071ebb37bb7d4c3f15a11d935a8e37acead55faf54e26e9125f67a95237cc",
+   "npy_bytes": 396356128,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 160,
+    "psp": 258,
+    "vita": 323,
+    "empty": 157,
+    "pc": 102
+   },
+   "by_size": {
+    "960x544": 572,
+    "480x272": 297,
+    "960x540": 58,
+    "725x544": 73
+   },
+   "lines": 6399,
+   "by_class": {
+    "dialogue": 1391,
+    "name": 475,
+    "choice": 344,
+    "ui": 3796,
+    "scene": 393
+   },
+   "by_orientation": {
+    "horizontal": 5972,
+    "vertical": 427
+   },
+   "ignore": 320
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0008",
+   "npy_sha256": "d6552dcf2e9ecc0fed5a1f5899c0532b1fb835c2450b01a5d3d8aff59f547395",
+   "json_sha256": "ce64a405233f52f23462c832c4ca26ff0fbff9362fe72cd82447e437a82c3ff3",
+   "npy_bytes": 391562208,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 147,
+    "adrenaline": 162,
+    "vita": 331,
+    "psp": 268,
+    "pc": 92
+   },
+   "by_size": {
+    "960x544": 572,
+    "480x272": 310,
+    "960x540": 47,
+    "725x544": 71
+   },
+   "lines": 6197,
+   "by_class": {
+    "dialogue": 1453,
+    "name": 484,
+    "choice": 331,
+    "ui": 3627,
+    "scene": 302
+   },
+   "by_orientation": {
+    "horizontal": 5744,
+    "vertical": 453
+   },
+   "ignore": 284
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0009",
+   "npy_sha256": "3a3d984100e88957159f7ab8cf3e22f6f8fc835e8889569c6f17c3e8d35ee07d",
+   "json_sha256": "2fd08291729af4a5fccbe9b00588f8d71fcf5169570dddac88df28784a58df24",
+   "npy_bytes": 402154368,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 230,
+    "empty": 153,
+    "vita": 342,
+    "adrenaline": 171,
+    "pc": 104
+   },
+   "by_size": {
+    "480x272": 280,
+    "960x544": 591,
+    "960x540": 49,
+    "725x544": 80
+   },
+   "lines": 6145,
+   "by_class": {
+    "dialogue": 1413,
+    "name": 490,
+    "choice": 281,
+    "ui": 3645,
+    "scene": 316
+   },
+   "by_orientation": {
+    "horizontal": 5716,
+    "vertical": 429
+   },
+   "ignore": 401
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0010",
+   "npy_sha256": "6a2b3e6b721ce9708e27a2051360ea4ace11ee2b6166ba56de6fbbb0c7316261",
+   "json_sha256": "d4b474e302187d66dbff971e3525cbb2ec3c27aa71a4c4e4eadebaf70abc1345",
+   "npy_bytes": 402109248,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 249,
+    "vita": 352,
+    "empty": 128,
+    "adrenaline": 174,
+    "pc": 97
+   },
+   "by_size": {
+    "480x272": 286,
+    "960x544": 604,
+    "725x544": 62,
+    "960x540": 48
+   },
+   "lines": 6502,
+   "by_class": {
+    "dialogue": 1416,
+    "name": 509,
+    "choice": 286,
+    "ui": 3895,
+    "scene": 396
+   },
+   "by_orientation": {
+    "horizontal": 6084,
+    "vertical": 418
+   },
+   "ignore": 275
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0011",
+   "npy_sha256": "32f2ee6d30876e7308d32ec48a19193cdb917b7dd4689fe872ab62ea0ae49822",
+   "json_sha256": "0ca813cf36f109c00c158a30049db6298e903cb03d40a1038bfdea586802cc8f",
+   "npy_bytes": 402203328,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 152,
+    "empty": 146,
+    "vita": 368,
+    "psp": 243,
+    "pc": 91
+   },
+   "by_size": {
+    "960x544": 612,
+    "725x544": 74,
+    "480x272": 282,
+    "960x540": 32
+   },
+   "lines": 6247,
+   "by_class": {
+    "dialogue": 1372,
+    "name": 497,
+    "choice": 310,
+    "ui": 3737,
+    "scene": 331
+   },
+   "by_orientation": {
+    "horizontal": 5835,
+    "vertical": 412
+   },
+   "ignore": 304
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0012",
+   "npy_sha256": "9596069d65eef7947362d554a38e0608d4bbfe858d44de5214e0e081ec3914a9",
+   "json_sha256": "9d7c73388b4d6d2181f998be4a43b690a21e9a06820a7d9308267dd9422121d4",
+   "npy_bytes": 403857568,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 241,
+    "vita": 323,
+    "empty": 146,
+    "adrenaline": 176,
+    "pc": 114
+   },
+   "by_size": {
+    "480x272": 274,
+    "960x544": 590,
+    "725x544": 85,
+    "960x540": 51
+   },
+   "lines": 6345,
+   "by_class": {
+    "dialogue": 1424,
+    "name": 455,
+    "choice": 330,
+    "ui": 3762,
+    "scene": 374
+   },
+   "by_orientation": {
+    "horizontal": 5877,
+    "vertical": 468
+   },
+   "ignore": 230
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0013",
+   "npy_sha256": "b3c8e2fae79734cf03619f6b8b829615c35ea245525c9739ab679684f9bbf4bf",
+   "json_sha256": "e38fb18029322718185122bb7f747f3d16aede445945627c4768ffb9e9a2825a",
+   "npy_bytes": 393798848,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 370,
+    "empty": 148,
+    "adrenaline": 136,
+    "psp": 261,
+    "pc": 85
+   },
+   "by_size": {
+    "960x544": 589,
+    "960x540": 39,
+    "480x272": 306,
+    "725x544": 66
+   },
+   "lines": 6100,
+   "by_class": {
+    "dialogue": 1435,
+    "name": 492,
+    "choice": 276,
+    "ui": 3545,
+    "scene": 352
+   },
+   "by_orientation": {
+    "horizontal": 5693,
+    "vertical": 407
+   },
+   "ignore": 319
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0014",
+   "npy_sha256": "7c7092fbf89e8ff23c24ad0ac7aa5b093e9457fc1088e9c59983ed4a97f7e7bf",
+   "json_sha256": "2f8e1983b2ed06740ea70bdb9160a059df0a57ceb81d89fde1873ba372b7a841",
+   "npy_bytes": 399724608,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 240,
+    "vita": 345,
+    "adrenaline": 145,
+    "pc": 101,
+    "empty": 169
+   },
+   "by_size": {
+    "480x272": 292,
+    "960x544": 589,
+    "725x544": 62,
+    "960x540": 57
+   },
+   "lines": 6192,
+   "by_class": {
+    "dialogue": 1351,
+    "name": 471,
+    "choice": 290,
+    "ui": 3744,
+    "scene": 336
+   },
+   "by_orientation": {
+    "horizontal": 5779,
+    "vertical": 413
+   },
+   "ignore": 241
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0015",
+   "npy_sha256": "4a533c3df3509488d7440cf5173dd7de33640cca7735b686bb82db42678b5e51",
+   "json_sha256": "36f6ac231b873a091d689a409fb123196506136737c2cf599de64ef1aaec66ff",
+   "npy_bytes": 384491808,
+   "frames": 1000,
+   "by_kind": {
+    "pc": 93,
+    "psp": 275,
+    "empty": 163,
+    "vita": 342,
+    "adrenaline": 127
+   },
+   "by_size": {
+    "725x544": 65,
+    "480x272": 330,
+    "960x544": 557,
+    "960x540": 48
+   },
+   "lines": 6156,
+   "by_class": {
+    "dialogue": 1427,
+    "name": 458,
+    "choice": 312,
+    "ui": 3632,
+    "scene": 327
+   },
+   "by_orientation": {
+    "horizontal": 5707,
+    "vertical": 449
+   },
+   "ignore": 274
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0016",
+   "npy_sha256": "2015390ba1f77103d37136c062dcbfc81f541d242e9cfe969f6cdf6fe0d72972",
+   "json_sha256": "f15b9ef327daa374db675df00135ec1185bb0ca80ddcaffdb966d4c52ed97fa6",
+   "npy_bytes": 397924288,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 259,
+    "vita": 350,
+    "empty": 131,
+    "adrenaline": 170,
+    "pc": 90
+   },
+   "by_size": {
+    "480x272": 298,
+    "960x544": 597,
+    "960x540": 47,
+    "725x544": 58
+   },
+   "lines": 6408,
+   "by_class": {
+    "dialogue": 1463,
+    "name": 513,
+    "choice": 312,
+    "ui": 3783,
+    "scene": 337
+   },
+   "by_orientation": {
+    "horizontal": 5942,
+    "vertical": 466
+   },
+   "ignore": 370
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0017",
+   "npy_sha256": "965fbcf7d4980061319fc80ed588dc27176533113e1d9e7fdb1786d188bda014",
+   "json_sha256": "b13475d3ef383da24135351781d950ed127b04d3baa6b988af5da529fc2d2e4b",
+   "npy_bytes": 391462688,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 325,
+    "pc": 107,
+    "empty": 141,
+    "psp": 274,
+    "adrenaline": 153
+   },
+   "by_size": {
+    "960x544": 566,
+    "960x540": 46,
+    "480x272": 307,
+    "725x544": 81
+   },
+   "lines": 6347,
+   "by_class": {
+    "dialogue": 1511,
+    "name": 479,
+    "choice": 277,
+    "ui": 3716,
+    "scene": 364
+   },
+   "by_orientation": {
+    "horizontal": 5895,
+    "vertical": 452
+   },
+   "ignore": 389
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0018",
+   "npy_sha256": "aa115d91f969ec6164884702c59d8ee764da106a8b54a043cec8cb0a4ac3a4ec",
+   "json_sha256": "2797674a67737e9c8176a24f6528aef583080f8d8f64e688986a5693f0bc27d4",
+   "npy_bytes": 395015808,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 146,
+    "vita": 355,
+    "adrenaline": 150,
+    "psp": 254,
+    "pc": 95
+   },
+   "by_size": {
+    "725x544": 56,
+    "960x544": 583,
+    "480x272": 306,
+    "960x540": 55
+   },
+   "lines": 6447,
+   "by_class": {
+    "dialogue": 1446,
+    "name": 485,
+    "choice": 283,
+    "ui": 3875,
+    "scene": 358
+   },
+   "by_orientation": {
+    "horizontal": 6039,
+    "vertical": 408
+   },
+   "ignore": 357
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0019",
+   "npy_sha256": "5802266cc6e899bc74c15b082fe0a1126f3499a2bb7c55815df79d2ee702a5ab",
+   "json_sha256": "bc4d7721ca28dbb30d815e9399e791040153aa5c39fa3a68d4a8fd3888d1f5b2",
+   "npy_bytes": 401075488,
+   "frames": 1000,
+   "by_kind": {
+    "pc": 102,
+    "adrenaline": 136,
+    "vita": 358,
+    "empty": 168,
+    "psp": 236
+   },
+   "by_size": {
+    "960x540": 53,
+    "960x544": 589,
+    "480x272": 285,
+    "725x544": 73
+   },
+   "lines": 6129,
+   "by_class": {
+    "dialogue": 1381,
+    "name": 495,
+    "choice": 284,
+    "ui": 3634,
+    "scene": 335
+   },
+   "by_orientation": {
+    "horizontal": 5757,
+    "vertical": 372
+   },
+   "ignore": 284
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0020",
+   "npy_sha256": "0a852a5beb349865777c078cd4268c13850deba5c56bc66180c7f0ee3a587405",
+   "json_sha256": "545e17a56ce232def250abe3d3736a3404715ced2b59e616ff40e26312f64b5a",
+   "npy_bytes": 398908448,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 136,
+    "psp": 237,
+    "vita": 347,
+    "pc": 109,
+    "empty": 171
+   },
+   "by_size": {
+    "960x544": 586,
+    "480x272": 288,
+    "725x544": 81,
+    "960x540": 45
+   },
+   "lines": 6062,
+   "by_class": {
+    "dialogue": 1355,
+    "name": 480,
+    "choice": 260,
+    "ui": 3608,
+    "scene": 359
+   },
+   "by_orientation": {
+    "horizontal": 5677,
+    "vertical": 385
+   },
+   "ignore": 307
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0021",
+   "npy_sha256": "3ee173d2c54a24c52198f8986d373cc425cd6d9bd48fbc8ffd20b8b0ca56c0da",
+   "json_sha256": "0b2ad5c181d75794cfd8b3c23879868bd08390a73c5b5861f10ffa1a6c0924f6",
+   "npy_bytes": 401678688,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 380,
+    "empty": 132,
+    "pc": 99,
+    "psp": 247,
+    "adrenaline": 142
+   },
+   "by_size": {
+    "960x544": 597,
+    "960x540": 56,
+    "725x544": 59,
+    "480x272": 288
+   },
+   "lines": 6482,
+   "by_class": {
+    "dialogue": 1474,
+    "name": 492,
+    "choice": 294,
+    "ui": 3872,
+    "scene": 350
+   },
+   "by_orientation": {
+    "horizontal": 6066,
+    "vertical": 416
+   },
+   "ignore": 345
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0022",
+   "npy_sha256": "51f692693ec106182824c3cea6f361d28185efd34e1b5d63bdacc79a2a4bd603",
+   "json_sha256": "064c8463ec8618104deb659d130f9efb51cf7ff0054579c5d9ae3cc02cdb59eb",
+   "npy_bytes": 397429728,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 339,
+    "empty": 147,
+    "psp": 256,
+    "adrenaline": 154,
+    "pc": 104
+   },
+   "by_size": {
+    "960x544": 585,
+    "480x272": 295,
+    "960x540": 49,
+    "725x544": 71
+   },
+   "lines": 6185,
+   "by_class": {
+    "dialogue": 1447,
+    "name": 498,
+    "choice": 282,
+    "ui": 3606,
+    "scene": 352
+   },
+   "by_orientation": {
+    "horizontal": 5683,
+    "vertical": 502
+   },
+   "ignore": 346
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0023",
+   "npy_sha256": "0bb9706065fd04acf4c957f44a1edf9f6b63a5d1d39912a02afdc122f4d6ce48",
+   "json_sha256": "9322fbbb262d4a8c9add2b3a9d858a7ea4ad3479b9e93e63386bdae047c7eef1",
+   "npy_bytes": 394562048,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 265,
+    "empty": 150,
+    "vita": 359,
+    "adrenaline": 144,
+    "pc": 82
+   },
+   "by_size": {
+    "480x272": 306,
+    "725x544": 60,
+    "960x544": 594,
+    "960x540": 40
+   },
+   "lines": 6452,
+   "by_class": {
+    "dialogue": 1479,
+    "name": 492,
+    "choice": 273,
+    "ui": 3871,
+    "scene": 337
+   },
+   "by_orientation": {
+    "horizontal": 5954,
+    "vertical": 498
+   },
+   "ignore": 344
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0024",
+   "npy_sha256": "1a0964b393c32d30688f414abcf68eae81f1735de01e9c3dd6d730d478a0ad18",
+   "json_sha256": "ca186706ee687bd96e0326250a86bcf6c6485d25b46325f1660b96f5222b5562",
+   "npy_bytes": 401984288,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 140,
+    "psp": 244,
+    "vita": 346,
+    "empty": 148,
+    "pc": 122
+   },
+   "by_size": {
+    "960x544": 579,
+    "480x272": 280,
+    "960x540": 60,
+    "725x544": 81
+   },
+   "lines": 6166,
+   "by_class": {
+    "dialogue": 1488,
+    "name": 480,
+    "choice": 265,
+    "ui": 3634,
+    "scene": 299
+   },
+   "by_orientation": {
+    "horizontal": 5686,
+    "vertical": 480
+   },
+   "ignore": 232
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0025",
+   "npy_sha256": "931d1b698105e50f3a308ff98400bd78c536ff2b53d3d34750fe07fb4756342e",
+   "json_sha256": "b8164e5b5b0e8519769862741186767d18598b19a3c06250b87d514509a6fa46",
+   "npy_bytes": 386185408,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 345,
+    "empty": 151,
+    "psp": 276,
+    "adrenaline": 145,
+    "pc": 83
+   },
+   "by_size": {
+    "960x544": 570,
+    "480x272": 328,
+    "725x544": 58,
+    "960x540": 44
+   },
+   "lines": 6061,
+   "by_class": {
+    "dialogue": 1432,
+    "name": 485,
+    "choice": 269,
+    "ui": 3532,
+    "scene": 343
+   },
+   "by_orientation": {
+    "horizontal": 5602,
+    "vertical": 459
+   },
+   "ignore": 360
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0026",
+   "npy_sha256": "9558f321265e68571000c47684b9b2e07dcdf0be117cefa2cc6b805678b24fbb",
+   "json_sha256": "dc884e9441ec16e6f77b6af5a47fc22674c980fd8e40c4098a819203697410c6",
+   "npy_bytes": 394699488,
+   "frames": 1000,
+   "by_kind": {
+    "pc": 106,
+    "empty": 150,
+    "psp": 259,
+    "vita": 316,
+    "adrenaline": 169
+   },
+   "by_size": {
+    "725x544": 71,
+    "480x272": 302,
+    "960x544": 581,
+    "960x540": 46
+   },
+   "lines": 6174,
+   "by_class": {
+    "dialogue": 1511,
+    "name": 482,
+    "choice": 330,
+    "ui": 3547,
+    "scene": 304
+   },
+   "by_orientation": {
+    "horizontal": 5701,
+    "vertical": 473
+   },
+   "ignore": 329
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0027",
+   "npy_sha256": "1013e110e7a9ba87bdb362f668dd98e7311d802d7f3ea789e18eb82daa2470a7",
+   "json_sha256": "c74d3d1bc96d2ff8e28a72084539d1cac254c8d42ea4a3c464ef90fa54e9c33e",
+   "npy_bytes": 398433728,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 249,
+    "vita": 348,
+    "adrenaline": 152,
+    "empty": 147,
+    "pc": 104
+   },
+   "by_size": {
+    "480x272": 294,
+    "960x544": 584,
+    "960x540": 56,
+    "725x544": 66
+   },
+   "lines": 6235,
+   "by_class": {
+    "dialogue": 1417,
+    "name": 485,
+    "choice": 314,
+    "ui": 3684,
+    "scene": 335
+   },
+   "by_orientation": {
+    "horizontal": 5851,
+    "vertical": 384
+   },
+   "ignore": 335
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0028",
+   "npy_sha256": "811fe6ad21713fe7d88f8010107606e1f6bafac586ff3db425663a6f14e3fb7d",
+   "json_sha256": "53dc8a91b28fdfa34860537bc55c671e2beba7949ce281f2be21ee7b5470ce7e",
+   "npy_bytes": 410596448,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 226,
+    "pc": 110,
+    "vita": 359,
+    "empty": 146,
+    "adrenaline": 159
+   },
+   "by_size": {
+    "480x272": 260,
+    "960x540": 57,
+    "960x544": 608,
+    "725x544": 75
+   },
+   "lines": 6315,
+   "by_class": {
+    "dialogue": 1352,
+    "name": 474,
+    "choice": 302,
+    "ui": 3896,
+    "scene": 291
+   },
+   "by_orientation": {
+    "horizontal": 5951,
+    "vertical": 364
+   },
+   "ignore": 343
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0029",
+   "npy_sha256": "3df9aad537435d1497bc6df31e7d9b74457e594cfe23abdaba42c1759fd536bd",
+   "json_sha256": "7d2a0b273dbbc6486ed0d52552e83eacb4112c9e3fbacdae7550538f8a7eea95",
+   "npy_bytes": 394704768,
+   "frames": 1000,
+   "by_kind": {
+    "pc": 115,
+    "psp": 248,
+    "vita": 340,
+    "adrenaline": 140,
+    "empty": 157
+   },
+   "by_size": {
+    "725x544": 80,
+    "480x272": 299,
+    "960x544": 570,
+    "960x540": 51
+   },
+   "lines": 6048,
+   "by_class": {
+    "dialogue": 1438,
+    "name": 496,
+    "choice": 265,
+    "ui": 3513,
+    "scene": 336
+   },
+   "by_orientation": {
+    "horizontal": 5589,
+    "vertical": 459
+   },
+   "ignore": 347
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0030",
+   "npy_sha256": "f718f59e5d682921f6d06b5d6232b2ecce77c4095aab42a0a4338bbb538cee12",
+   "json_sha256": "d543c97199d6a840553818064051b60f8654a509b41f42a587bebc55d2f1e55a",
+   "npy_bytes": 398840768,
+   "frames": 1000,
+   "by_kind": {
+    "pc": 92,
+    "empty": 188,
+    "vita": 334,
+    "psp": 251,
+    "adrenaline": 135
+   },
+   "by_size": {
+    "725x544": 66,
+    "960x544": 589,
+    "480x272": 293,
+    "960x540": 52
+   },
+   "lines": 6080,
+   "by_class": {
+    "dialogue": 1380,
+    "name": 437,
+    "choice": 274,
+    "ui": 3643,
+    "scene": 346
+   },
+   "by_orientation": {
+    "horizontal": 5624,
+    "vertical": 456
+   },
+   "ignore": 285
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0031",
+   "npy_sha256": "037de60cdcedc30743cfb9985abd55b0809dd7eee59145accc38df5a4dda40de",
+   "json_sha256": "7627156a8dc9e6bb972514a8b1022f1178f6a1ec2aff3bf700ebd86a630afd4f",
+   "npy_bytes": 397449408,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 162,
+    "psp": 255,
+    "vita": 329,
+    "empty": 154,
+    "pc": 100
+   },
+   "by_size": {
+    "960x544": 586,
+    "480x272": 294,
+    "725x544": 74,
+    "960x540": 46
+   },
+   "lines": 6534,
+   "by_class": {
+    "dialogue": 1425,
+    "name": 462,
+    "choice": 317,
+    "ui": 3991,
+    "scene": 339
+   },
+   "by_orientation": {
+    "horizontal": 6050,
+    "vertical": 484
+   },
+   "ignore": 292
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0032",
+   "npy_sha256": "07e7aa3951b51c533bcd5efb7a6625d3f12508c894f33977bf019393b1b783ee",
+   "json_sha256": "0aceaa44301e1341487143662416982678a3952532968717ec52aa92ea7f57df",
+   "npy_bytes": 395104608,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 258,
+    "vita": 326,
+    "pc": 112,
+    "empty": 167,
+    "adrenaline": 137
+   },
+   "by_size": {
+    "480x272": 297,
+    "960x544": 569,
+    "725x544": 83,
+    "960x540": 51
+   },
+   "lines": 6131,
+   "by_class": {
+    "dialogue": 1366,
+    "name": 460,
+    "choice": 302,
+    "ui": 3713,
+    "scene": 290
+   },
+   "by_orientation": {
+    "horizontal": 5731,
+    "vertical": 400
+   },
+   "ignore": 378
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0033",
+   "npy_sha256": "e6e41a47efb79b439c89ee213adb41e01a0d3bed32d38d834f5240af8a0b5e15",
+   "json_sha256": "b92ac993516fbefda587fe6ce9b2a1759c3026dff7ba394f6575b9585784aa33",
+   "npy_bytes": 403555328,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 241,
+    "vita": 390,
+    "pc": 85,
+    "adrenaline": 145,
+    "empty": 139
+   },
+   "by_size": {
+    "480x272": 283,
+    "960x544": 613,
+    "960x540": 44,
+    "725x544": 60
+   },
+   "lines": 6269,
+   "by_class": {
+    "dialogue": 1464,
+    "name": 499,
+    "choice": 269,
+    "ui": 3649,
+    "scene": 388
+   },
+   "by_orientation": {
+    "horizontal": 5814,
+    "vertical": 455
+   },
+   "ignore": 376
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0034",
+   "npy_sha256": "c80c2e76fa4285a013aacc616c0384cff305e78af239c60df66242e7f6072303",
+   "json_sha256": "261e101d314c9a77a2baf6f15532f5cefa644b202fe78e394cd76fb3f136cae7",
+   "npy_bytes": 392331648,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 259,
+    "vita": 355,
+    "adrenaline": 140,
+    "empty": 168,
+    "pc": 78
+   },
+   "by_size": {
+    "480x272": 313,
+    "960x544": 591,
+    "725x544": 56,
+    "960x540": 40
+   },
+   "lines": 6275,
+   "by_class": {
+    "dialogue": 1433,
+    "name": 468,
+    "choice": 299,
+    "ui": 3745,
+    "scene": 330
+   },
+   "by_orientation": {
+    "horizontal": 5856,
+    "vertical": 419
+   },
+   "ignore": 306
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0035",
+   "npy_sha256": "66832f6601301f6f44de9f59d84b876e9b56796ea8c1419c3404e668353b85c3",
+   "json_sha256": "603eef2bdc87d11398692198f6e5efef390a7e6fb7ace59ea9dce48fce01ca7c",
+   "npy_bytes": 395342528,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 356,
+    "psp": 257,
+    "pc": 100,
+    "empty": 149,
+    "adrenaline": 138
+   },
+   "by_size": {
+    "960x544": 587,
+    "480x272": 302,
+    "960x540": 45,
+    "725x544": 66
+   },
+   "lines": 6152,
+   "by_class": {
+    "dialogue": 1418,
+    "name": 502,
+    "choice": 307,
+    "ui": 3596,
+    "scene": 329
+   },
+   "by_orientation": {
+    "horizontal": 5735,
+    "vertical": 417
+   },
+   "ignore": 312
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0036",
+   "npy_sha256": "a94902ae3e3e77e3841fae99f7f8d105bcffde2e4724067d3132d45a6248ab89",
+   "json_sha256": "91b7d6d07b8b9a139ef1c803927467b0aa85a355040963a761cdba02a6a13de1",
+   "npy_bytes": 402634528,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 175,
+    "pc": 113,
+    "adrenaline": 123,
+    "psp": 237,
+    "vita": 352
+   },
+   "by_size": {
+    "960x544": 591,
+    "725x544": 73,
+    "480x272": 281,
+    "960x540": 55
+   },
+   "lines": 6174,
+   "by_class": {
+    "dialogue": 1455,
+    "name": 455,
+    "choice": 300,
+    "ui": 3637,
+    "scene": 327
+   },
+   "by_orientation": {
+    "horizontal": 5721,
+    "vertical": 453
+   },
+   "ignore": 256
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0037",
+   "npy_sha256": "a9939a7be1bf7fb035280211012c60a06f898ac5596be6d8ce8ef10d024353c2",
+   "json_sha256": "6467b29c1b3eb849afe93a2021e194cb187c10178c58fdf82e62018504db8503",
+   "npy_bytes": 400306528,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 130,
+    "psp": 251,
+    "vita": 363,
+    "adrenaline": 157,
+    "pc": 99
+   },
+   "by_size": {
+    "960x544": 599,
+    "480x272": 289,
+    "725x544": 67,
+    "960x540": 45
+   },
+   "lines": 6539,
+   "by_class": {
+    "dialogue": 1506,
+    "name": 483,
+    "choice": 329,
+    "ui": 3841,
+    "scene": 380
+   },
+   "by_orientation": {
+    "horizontal": 6049,
+    "vertical": 490
+   },
+   "ignore": 282
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0038",
+   "npy_sha256": "f41a9fe88edd9745756171b57bd7fca06c2c7a049a4f10a0ee6a9ac03611bd3e",
+   "json_sha256": "77aaa9018dc38adea4277c438ee076204e5322e9e96f06fa2e7f20f21cf44bd0",
+   "npy_bytes": 392815968,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 159,
+    "psp": 251,
+    "vita": 351,
+    "pc": 105,
+    "adrenaline": 134
+   },
+   "by_size": {
+    "960x544": 579,
+    "480x272": 303,
+    "725x544": 83,
+    "960x540": 35
+   },
+   "lines": 6274,
+   "by_class": {
+    "dialogue": 1482,
+    "name": 505,
+    "choice": 318,
+    "ui": 3625,
+    "scene": 344
+   },
+   "by_orientation": {
+    "horizontal": 5789,
+    "vertical": 485
+   },
+   "ignore": 378
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0039",
+   "npy_sha256": "58a5508941ef5356101e4317a0a8ce96e103cab858be5f8fe9c0477fd7f18d7e",
+   "json_sha256": "ae126d61fd44037cba13c7c335cd472990959f94e0d9f4c4d831e7b1dd87ed54",
+   "npy_bytes": 401465248,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 256,
+    "vita": 355,
+    "pc": 88,
+    "adrenaline": 164,
+    "empty": 137
+   },
+   "by_size": {
+    "480x272": 288,
+    "960x544": 606,
+    "725x544": 61,
+    "960x540": 45
+   },
+   "lines": 6411,
+   "by_class": {
+    "dialogue": 1513,
+    "name": 505,
+    "choice": 340,
+    "ui": 3732,
+    "scene": 321
+   },
+   "by_orientation": {
+    "horizontal": 5925,
+    "vertical": 486
+   },
+   "ignore": 396
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0040",
+   "npy_sha256": "1b52a7f443881aedbc0ebe4de7608db576b36318dde9b39c2ca771db38869474",
+   "json_sha256": "8dd29f75d5b46c079c8b3123c8fb4bdfe3cd3184fbabd327f1442a900b9caa24",
+   "npy_bytes": 399064768,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 161,
+    "pc": 97,
+    "psp": 250,
+    "empty": 147,
+    "vita": 345
+   },
+   "by_size": {
+    "960x544": 591,
+    "960x540": 56,
+    "480x272": 295,
+    "725x544": 58
+   },
+   "lines": 6164,
+   "by_class": {
+    "dialogue": 1380,
+    "name": 496,
+    "choice": 319,
+    "ui": 3620,
+    "scene": 349
+   },
+   "by_orientation": {
+    "horizontal": 5772,
+    "vertical": 392
+   },
+   "ignore": 362
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0041",
+   "npy_sha256": "25545a887432e9cdb3e5c14f8b177414c5efb8f8b5b820682a17246410c14fc4",
+   "json_sha256": "ce3eebf76f7ab9583b8f5bd73cc3b3fc6df4afc5e008e875cc633c49b075b3e7",
+   "npy_bytes": 396786208,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 139,
+    "vita": 368,
+    "psp": 251,
+    "pc": 106,
+    "adrenaline": 136
+   },
+   "by_size": {
+    "960x544": 583,
+    "480x272": 296,
+    "725x544": 73,
+    "960x540": 48
+   },
+   "lines": 6375,
+   "by_class": {
+    "dialogue": 1476,
+    "name": 490,
+    "choice": 332,
+    "ui": 3703,
+    "scene": 374
+   },
+   "by_orientation": {
+    "horizontal": 5955,
+    "vertical": 420
+   },
+   "ignore": 344
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0042",
+   "npy_sha256": "04c9b8dfb27d9ff5a66132df8ab3296b60ce36b401cde6e13d996fd67601aeaa",
+   "json_sha256": "72b689b43e37ef3614e588d3e1d3980dfe6f3d6158f32cb18974aaae64182993",
+   "npy_bytes": 399524128,
+   "frames": 1000,
+   "by_kind": {
+    "pc": 109,
+    "empty": 163,
+    "vita": 331,
+    "psp": 236,
+    "adrenaline": 161
+   },
+   "by_size": {
+    "725x544": 73,
+    "480x272": 289,
+    "960x544": 589,
+    "960x540": 49
+   },
+   "lines": 6203,
+   "by_class": {
+    "dialogue": 1397,
+    "name": 472,
+    "choice": 305,
+    "ui": 3670,
+    "scene": 359
+   },
+   "by_orientation": {
+    "horizontal": 5800,
+    "vertical": 403
+   },
+   "ignore": 308
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0043",
+   "npy_sha256": "1df2eec4196a271b9e6869a008a1b7b50e37a3a3453ac9179ece7d36dd344714",
+   "json_sha256": "5eabe874c92edae85500297997a684d5277ae1e502a5e209c1125f6f52a48b1e",
+   "npy_bytes": 394323168,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 347,
+    "adrenaline": 151,
+    "psp": 263,
+    "empty": 145,
+    "pc": 94
+   },
+   "by_size": {
+    "960x544": 584,
+    "480x272": 303,
+    "960x540": 42,
+    "725x544": 71
+   },
+   "lines": 6610,
+   "by_class": {
+    "dialogue": 1439,
+    "name": 484,
+    "choice": 341,
+    "ui": 4016,
+    "scene": 330
+   },
+   "by_orientation": {
+    "horizontal": 6110,
+    "vertical": 500
+   },
+   "ignore": 385
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0044",
+   "npy_sha256": "046b0600de31844d88c45392adf9db8311f6c204bc8a0cfb98844307181cee8c",
+   "json_sha256": "2fa493a760b58dd0d8c9ac02993860306ab346e3c0dcfaaf859d99fb94c087bc",
+   "npy_bytes": 407366368,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 134,
+    "adrenaline": 162,
+    "vita": 351,
+    "psp": 240,
+    "pc": 113
+   },
+   "by_size": {
+    "960x544": 603,
+    "480x272": 267,
+    "725x544": 79,
+    "960x540": 51
+   },
+   "lines": 6190,
+   "by_class": {
+    "dialogue": 1460,
+    "name": 495,
+    "choice": 336,
+    "ui": 3550,
+    "scene": 349
+   },
+   "by_orientation": {
+    "horizontal": 5768,
+    "vertical": 422
+   },
+   "ignore": 338
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0045",
+   "npy_sha256": "02f775d1533132f4e053bdb9ea2e3c64befeeb2f0c69e49fc1b171655fdb4e4f",
+   "json_sha256": "750fa1bb28d474b0268734dc9d0294710fd5fd310396032c58a94578f3cab67a",
+   "npy_bytes": 399999968,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 254,
+    "pc": 103,
+    "vita": 367,
+    "adrenaline": 138,
+    "empty": 138
+   },
+   "by_size": {
+    "480x272": 291,
+    "725x544": 63,
+    "960x544": 592,
+    "960x540": 54
+   },
+   "lines": 6380,
+   "by_class": {
+    "dialogue": 1390,
+    "name": 483,
+    "choice": 294,
+    "ui": 3849,
+    "scene": 364
+   },
+   "by_orientation": {
+    "horizontal": 5973,
+    "vertical": 407
+   },
+   "ignore": 255
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0046",
+   "npy_sha256": "af529ec5d2e9c0e4d77053ea3f49fea883257f56fd2918686ffa59e4d3991e0a",
+   "json_sha256": "3e7f7abfbf14087c21eadc40ae0c2b29fcb2407f0e6baa3803c0545afbed063c",
+   "npy_bytes": 400378688,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 254,
+    "adrenaline": 153,
+    "vita": 370,
+    "pc": 88,
+    "empty": 135
+   },
+   "by_size": {
+    "480x272": 293,
+    "960x544": 602,
+    "725x544": 54,
+    "960x540": 51
+   },
+   "lines": 6291,
+   "by_class": {
+    "dialogue": 1428,
+    "name": 505,
+    "choice": 266,
+    "ui": 3765,
+    "scene": 327
+   },
+   "by_orientation": {
+    "horizontal": 5860,
+    "vertical": 431
+   },
+   "ignore": 373
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0047",
+   "npy_sha256": "286ed32d40ba42052bde581d8170954ac1b33b37d8e007875fa8f92f63b167e6",
+   "json_sha256": "02abc9eef2ad6a356076df52bce32c9bf3829e05468cbf0c1d5014b4acbf10dd",
+   "npy_bytes": 391414208,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 140,
+    "vita": 350,
+    "adrenaline": 145,
+    "pc": 92,
+    "psp": 273
+   },
+   "by_size": {
+    "960x544": 574,
+    "725x544": 66,
+    "480x272": 312,
+    "960x540": 48
+   },
+   "lines": 6400,
+   "by_class": {
+    "dialogue": 1450,
+    "name": 504,
+    "choice": 272,
+    "ui": 3861,
+    "scene": 313
+   },
+   "by_orientation": {
+    "horizontal": 5983,
+    "vertical": 417
+   },
+   "ignore": 303
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0048",
+   "npy_sha256": "a1ad1dbb0b7a2a5bfd817fecc45dc9191f507cc084ecd4297d470bcd14b1caf2",
+   "json_sha256": "d336600f74d003f579b1e35fbba7d63a13bc6037e390dee00464231aa9fb9363",
+   "npy_bytes": 399201728,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 166,
+    "adrenaline": 147,
+    "psp": 240,
+    "vita": 336,
+    "pc": 111
+   },
+   "by_size": {
+    "480x272": 292,
+    "960x544": 582,
+    "960x540": 60,
+    "725x544": 66
+   },
+   "lines": 6160,
+   "by_class": {
+    "dialogue": 1420,
+    "name": 490,
+    "choice": 284,
+    "ui": 3655,
+    "scene": 311
+   },
+   "by_orientation": {
+    "horizontal": 5743,
+    "vertical": 417
+   },
+   "ignore": 343
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0049",
+   "npy_sha256": "0ae780fd49b8bddcdbb8a9cf48bd4c54963a32e33da72a5ad62c15cb2940a7da",
+   "json_sha256": "f2c32f3232d5e26e59019197f5421af732552b276dd97ba820de13aef19dc7e1",
+   "npy_bytes": 400443008,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 340,
+    "empty": 143,
+    "psp": 244,
+    "adrenaline": 168,
+    "pc": 105
+   },
+   "by_size": {
+    "960x544": 594,
+    "480x272": 287,
+    "960x540": 47,
+    "725x544": 72
+   },
+   "lines": 6444,
+   "by_class": {
+    "dialogue": 1431,
+    "name": 501,
+    "choice": 337,
+    "ui": 3818,
+    "scene": 357
+   },
+   "by_orientation": {
+    "horizontal": 5982,
+    "vertical": 462
+   },
+   "ignore": 353
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0050",
+   "npy_sha256": "937468683dfec2bd4b4863eeb82087f069dc987bd90774a544ed966cf2e2ee4d",
+   "json_sha256": "b195ab391d5efe09f4c5be45e572e8f8bc4a49ef7988e242028ef66052c74cb0",
+   "npy_bytes": 402122688,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 241,
+    "adrenaline": 154,
+    "vita": 345,
+    "pc": 107,
+    "empty": 153
+   },
+   "by_size": {
+    "480x272": 282,
+    "960x544": 591,
+    "960x540": 53,
+    "725x544": 74
+   },
+   "lines": 6402,
+   "by_class": {
+    "dialogue": 1474,
+    "name": 493,
+    "choice": 268,
+    "ui": 3869,
+    "scene": 298
+   },
+   "by_orientation": {
+    "horizontal": 5901,
+    "vertical": 501
+   },
+   "ignore": 295
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0051",
+   "npy_sha256": "6373574912701a7bb3daeb35fcc0cd3b2a9443c79395655a81bf21ccec984da0",
+   "json_sha256": "88f007085757d5ffe1227a10e13521db469eb297947307b21654964e4e3d7e5b",
+   "npy_bytes": 402275488,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 150,
+    "psp": 225,
+    "pc": 120,
+    "empty": 168,
+    "vita": 337
+   },
+   "by_size": {
+    "960x544": 582,
+    "480x272": 278,
+    "725x544": 85,
+    "960x540": 55
+   },
+   "lines": 6180,
+   "by_class": {
+    "dialogue": 1444,
+    "name": 471,
+    "choice": 275,
+    "ui": 3693,
+    "scene": 297
+   },
+   "by_orientation": {
+    "horizontal": 5694,
+    "vertical": 486
+   },
+   "ignore": 308
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0052",
+   "npy_sha256": "465e14ff2d9e6eddecebd6bac1a7a2674fe255c1131fe332fbea353eb406557b",
+   "json_sha256": "b0478784f9d636fb05c8504a195760b0c7786985e7173de600e1a1f4e056e86f",
+   "npy_bytes": 396033088,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 338,
+    "psp": 253,
+    "empty": 161,
+    "adrenaline": 159,
+    "pc": 89
+   },
+   "by_size": {
+    "960x544": 593,
+    "480x272": 299,
+    "725x544": 70,
+    "960x540": 38
+   },
+   "lines": 6282,
+   "by_class": {
+    "dialogue": 1424,
+    "name": 471,
+    "choice": 296,
+    "ui": 3756,
+    "scene": 335
+   },
+   "by_orientation": {
+    "horizontal": 5826,
+    "vertical": 456
+   },
+   "ignore": 263
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0053",
+   "npy_sha256": "3b277fe58cb80ef3314947fe89c68e047abba60301cddf93e756b55a14c80e09",
+   "json_sha256": "6fd72ed160ae68b917df8c67971d0f2b984ce47dc63d28cd9306eb007e90e945",
+   "npy_bytes": 402784928,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 368,
+    "adrenaline": 147,
+    "empty": 152,
+    "psp": 238,
+    "pc": 95
+   },
+   "by_size": {
+    "960x544": 602,
+    "480x272": 282,
+    "960x540": 47,
+    "725x544": 69
+   },
+   "lines": 6399,
+   "by_class": {
+    "dialogue": 1445,
+    "name": 494,
+    "choice": 256,
+    "ui": 3861,
+    "scene": 343
+   },
+   "by_orientation": {
+    "horizontal": 5939,
+    "vertical": 460
+   },
+   "ignore": 299
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0054",
+   "npy_sha256": "341d595b3d8d38584fdd98196b8f33eb8e36d067f0289129cc5ad3040504c287",
+   "json_sha256": "e294a80c86fe289797bd83370b8ae4c9f7d911a39b6cdbe047fb1293d5d55b6d",
+   "npy_bytes": 398200128,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 164,
+    "vita": 352,
+    "psp": 248,
+    "pc": 87,
+    "adrenaline": 149
+   },
+   "by_size": {
+    "960x544": 596,
+    "480x272": 296,
+    "960x540": 46,
+    "725x544": 62
+   },
+   "lines": 6134,
+   "by_class": {
+    "dialogue": 1377,
+    "name": 494,
+    "choice": 308,
+    "ui": 3630,
+    "scene": 325
+   },
+   "by_orientation": {
+    "horizontal": 5717,
+    "vertical": 417
+   },
+   "ignore": 338
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0055",
+   "npy_sha256": "a310dc99f0c52bf670142efd677047f30e4997c1c2e73db45302fad71bbfa57f",
+   "json_sha256": "d7f79a665495b43692ffce1de6b75198cf554ed5fa0602ed007aaacdb3110c21",
+   "npy_bytes": 386473728,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 289,
+    "vita": 336,
+    "pc": 93,
+    "empty": 146,
+    "adrenaline": 136
+   },
+   "by_size": {
+    "480x272": 324,
+    "960x544": 564,
+    "725x544": 68,
+    "960x540": 44
+   },
+   "lines": 6204,
+   "by_class": {
+    "dialogue": 1524,
+    "name": 487,
+    "choice": 277,
+    "ui": 3585,
+    "scene": 331
+   },
+   "by_orientation": {
+    "horizontal": 5721,
+    "vertical": 483
+   },
+   "ignore": 306
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0056",
+   "npy_sha256": "cadeb5bc8f7ef5dba851ca945c6dc0b612272e7f4f816529fb38059b4ca5f084",
+   "json_sha256": "685c0d68a9985b93802ca942bb0bf6566bfe1e56fae14e235e2d8b0276b1cfb3",
+   "npy_bytes": 398261088,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 331,
+    "adrenaline": 153,
+    "empty": 159,
+    "pc": 108,
+    "psp": 249
+   },
+   "by_size": {
+    "960x544": 583,
+    "480x272": 289,
+    "725x544": 83,
+    "960x540": 45
+   },
+   "lines": 6266,
+   "by_class": {
+    "dialogue": 1377,
+    "name": 507,
+    "choice": 303,
+    "ui": 3744,
+    "scene": 335
+   },
+   "by_orientation": {
+    "horizontal": 5858,
+    "vertical": 408
+   },
+   "ignore": 280
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0057",
+   "npy_sha256": "67d94fb39669f0ec76140ba257fa575530be1fbab36290e11e743876f9b7c2e7",
+   "json_sha256": "8e5085aa23b732d1ece9ab3d4e81dfd0f0294db19e52ce8cc16992ffb325c443",
+   "npy_bytes": 405163808,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 142,
+    "vita": 379,
+    "psp": 231,
+    "adrenaline": 142,
+    "pc": 106
+   },
+   "by_size": {
+    "960x544": 599,
+    "480x272": 272,
+    "725x544": 81,
+    "960x540": 48
+   },
+   "lines": 6398,
+   "by_class": {
+    "dialogue": 1500,
+    "name": 480,
+    "choice": 269,
+    "ui": 3813,
+    "scene": 336
+   },
+   "by_orientation": {
+    "horizontal": 5957,
+    "vertical": 441
+   },
+   "ignore": 331
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0058",
+   "npy_sha256": "c2f6a3a6e6c5ddc56c6246f01f9489f57bb4207ce53e7f64026c7d16c0881be1",
+   "json_sha256": "1647028ebb300f8f61f5f3d31ddd1b7e6d7165e35223d09633e92df3234451f4",
+   "npy_bytes": 400555488,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 169,
+    "vita": 337,
+    "psp": 240,
+    "adrenaline": 157,
+    "pc": 97
+   },
+   "by_size": {
+    "480x272": 287,
+    "960x544": 591,
+    "960x540": 51,
+    "725x544": 71
+   },
+   "lines": 5930,
+   "by_class": {
+    "dialogue": 1359,
+    "name": 486,
+    "choice": 315,
+    "ui": 3513,
+    "scene": 257
+   },
+   "by_orientation": {
+    "horizontal": 5558,
+    "vertical": 372
+   },
+   "ignore": 288
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0059",
+   "npy_sha256": "78ee981ba4ab215050de2502988a57abd95b889bb6e8e6b921fcdc9dc3262202",
+   "json_sha256": "b828e3f10845d695658a72b70909b81a192d7f38ae9731cb77c6e5707865a5d4",
+   "npy_bytes": 396659328,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 157,
+    "pc": 80,
+    "vita": 348,
+    "psp": 248,
+    "empty": 167
+   },
+   "by_size": {
+    "960x544": 607,
+    "960x540": 35,
+    "480x272": 302,
+    "725x544": 56
+   },
+   "lines": 6245,
+   "by_class": {
+    "dialogue": 1483,
+    "name": 456,
+    "choice": 336,
+    "ui": 3615,
+    "scene": 355
+   },
+   "by_orientation": {
+    "horizontal": 5717,
+    "vertical": 528
+   },
+   "ignore": 350
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0060",
+   "npy_sha256": "0902f0eadecf45e73cafd085b307eac4bfe5f6317cb50f80e23224776d4b5974",
+   "json_sha256": "d4c43f5c4a777d677991b384906e7c8ff89f2a4f1449b551534dc64ed3a2da0d",
+   "npy_bytes": 401334048,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 352,
+    "adrenaline": 150,
+    "psp": 243,
+    "pc": 97,
+    "empty": 158
+   },
+   "by_size": {
+    "960x544": 600,
+    "480x272": 287,
+    "725x544": 65,
+    "960x540": 48
+   },
+   "lines": 6314,
+   "by_class": {
+    "dialogue": 1496,
+    "name": 469,
+    "choice": 320,
+    "ui": 3705,
+    "scene": 324
+   },
+   "by_orientation": {
+    "horizontal": 5830,
+    "vertical": 484
+   },
+   "ignore": 328
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0061",
+   "npy_sha256": "8ff5dab6b1c58c2c345d90f69d80e46a220d1b6180e24cff7ae750dedd331d63",
+   "json_sha256": "b4a42b76eeebb8766d6258598d7f1da1d1963a555ac9e17b0ed04a4476b9da49",
+   "npy_bytes": 395968288,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 249,
+    "vita": 334,
+    "adrenaline": 138,
+    "empty": 172,
+    "pc": 107
+   },
+   "by_size": {
+    "480x272": 298,
+    "960x544": 572,
+    "725x544": 73,
+    "960x540": 57
+   },
+   "lines": 6098,
+   "by_class": {
+    "dialogue": 1361,
+    "name": 460,
+    "choice": 293,
+    "ui": 3652,
+    "scene": 332
+   },
+   "by_orientation": {
+    "horizontal": 5680,
+    "vertical": 418
+   },
+   "ignore": 339
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0062",
+   "npy_sha256": "3a35c37fc3203f4ac27a739386f3f29b33840eb28c534ea0166c2018c4a1a0a0",
+   "json_sha256": "99487d7917ac79bfdc8ac92b5a9a4a56c4a9cf6f9b9e36c5426d72f3ee1bdb42",
+   "npy_bytes": 400920768,
+   "frames": 1000,
+   "by_kind": {
+    "pc": 110,
+    "psp": 251,
+    "adrenaline": 158,
+    "vita": 344,
+    "empty": 137
+   },
+   "by_size": {
+    "960x540": 60,
+    "480x272": 285,
+    "960x544": 581,
+    "725x544": 74
+   },
+   "lines": 6260,
+   "by_class": {
+    "dialogue": 1511,
+    "name": 472,
+    "choice": 311,
+    "ui": 3607,
+    "scene": 359
+   },
+   "by_orientation": {
+    "horizontal": 5753,
+    "vertical": 507
+   },
+   "ignore": 298
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0063",
+   "npy_sha256": "5c025db0557a5794194045a7b01f4102408a7fa9ede9d67dea48192572996933",
+   "json_sha256": "16f6bf86ad2155aa6f89c517c3900c780537151628137c89986629df7e3a968f",
+   "npy_bytes": 405227808,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 116,
+    "pc": 103,
+    "vita": 388,
+    "psp": 245,
+    "adrenaline": 148
+   },
+   "by_size": {
+    "480x272": 277,
+    "960x540": 54,
+    "960x544": 604,
+    "725x544": 65
+   },
+   "lines": 6345,
+   "by_class": {
+    "dialogue": 1512,
+    "name": 483,
+    "choice": 278,
+    "ui": 3749,
+    "scene": 323
+   },
+   "by_orientation": {
+    "horizontal": 5863,
+    "vertical": 482
+   },
+   "ignore": 344
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0064",
+   "npy_sha256": "8aa0d94db6298af6bfc7b448ff6bd76ff5d2445677cf62925a6202369d368e8b",
+   "json_sha256": "e821c215d9046952d4ca7704e80e0b5159c85d1e9348962dc26b080b11bc7cda",
+   "npy_bytes": 393998688,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 159,
+    "vita": 345,
+    "psp": 256,
+    "adrenaline": 143,
+    "pc": 97
+   },
+   "by_size": {
+    "960x540": 33,
+    "960x544": 584,
+    "480x272": 300,
+    "725x544": 83
+   },
+   "lines": 6119,
+   "by_class": {
+    "dialogue": 1467,
+    "name": 499,
+    "choice": 236,
+    "ui": 3565,
+    "scene": 352
+   },
+   "by_orientation": {
+    "horizontal": 5652,
+    "vertical": 467
+   },
+   "ignore": 356
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0065",
+   "npy_sha256": "8b3692fbb37ec95c67a9f44c1df6d645fd8f9d1b542ffe7a1c4e417bf6152b03",
+   "json_sha256": "36e744f13b113be4f1b13e87141c0c773a8cf6ea183f28e2dee1923fdd3f01d0",
+   "npy_bytes": 403635968,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 171,
+    "psp": 243,
+    "vita": 349,
+    "empty": 130,
+    "pc": 107
+   },
+   "by_size": {
+    "960x544": 601,
+    "480x272": 275,
+    "725x544": 84,
+    "960x540": 40
+   },
+   "lines": 6178,
+   "by_class": {
+    "dialogue": 1351,
+    "name": 511,
+    "choice": 371,
+    "ui": 3597,
+    "scene": 348
+   },
+   "by_orientation": {
+    "horizontal": 5774,
+    "vertical": 404
+   },
+   "ignore": 273
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0066",
+   "npy_sha256": "f0ed9557b54960e1b7f2b6c4fa79a09b144d5a3246211cd8129a70171eaf0efc",
+   "json_sha256": "6579582226afa502829ca438f71b1058a711455801620758fff1e6101931d6b6",
+   "npy_bytes": 391828448,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 344,
+    "psp": 257,
+    "pc": 92,
+    "adrenaline": 162,
+    "empty": 145
+   },
+   "by_size": {
+    "960x544": 585,
+    "480x272": 312,
+    "725x544": 63,
+    "960x540": 40
+   },
+   "lines": 6332,
+   "by_class": {
+    "dialogue": 1375,
+    "name": 477,
+    "choice": 298,
+    "ui": 3838,
+    "scene": 344
+   },
+   "by_orientation": {
+    "horizontal": 5900,
+    "vertical": 432
+   },
+   "ignore": 334
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0067",
+   "npy_sha256": "7c8964bf30d3419f4571b5f7da2142495d518f225b76846ec6fb1635437df846",
+   "json_sha256": "b3249003ace55a520c2bbc30481a9a3589b66debd9fecbbda86404cef2e1fdf4",
+   "npy_bytes": 389900768,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 279,
+    "vita": 332,
+    "pc": 78,
+    "adrenaline": 164,
+    "empty": 147
+   },
+   "by_size": {
+    "480x272": 317,
+    "960x544": 588,
+    "725x544": 63,
+    "960x540": 32
+   },
+   "lines": 6201,
+   "by_class": {
+    "dialogue": 1441,
+    "name": 502,
+    "choice": 304,
+    "ui": 3628,
+    "scene": 326
+   },
+   "by_orientation": {
+    "horizontal": 5772,
+    "vertical": 429
+   },
+   "ignore": 322
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0068",
+   "npy_sha256": "ca0d27f8cae505f7608bc7f978dd06cb3927f36b0b276729d9777572ce49edb9",
+   "json_sha256": "d78617c1075bb8d39b40b5d22d6bd9997dbec71f8f431350af6d8fbe06fc9922",
+   "npy_bytes": 390019968,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 256,
+    "vita": 343,
+    "empty": 170,
+    "adrenaline": 131,
+    "pc": 100
+   },
+   "by_size": {
+    "480x272": 311,
+    "960x544": 562,
+    "725x544": 80,
+    "960x540": 47
+   },
+   "lines": 6271,
+   "by_class": {
+    "dialogue": 1405,
+    "name": 465,
+    "choice": 306,
+    "ui": 3740,
+    "scene": 355
+   },
+   "by_orientation": {
+    "horizontal": 5811,
+    "vertical": 460
+   },
+   "ignore": 311
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0069",
+   "npy_sha256": "6939c7f4e6c9096352192c95cfed04773c0c6483ef9d846e873c576bcca68242",
+   "json_sha256": "ced472cf6aa42db809f79ae393847c1b7a0252ffdf709819b1d03f44ea902fcd",
+   "npy_bytes": 393501408,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 167,
+    "vita": 328,
+    "empty": 126,
+    "pc": 111,
+    "psp": 268
+   },
+   "by_size": {
+    "960x544": 572,
+    "480x272": 305,
+    "725x544": 71,
+    "960x540": 52
+   },
+   "lines": 6707,
+   "by_class": {
+    "dialogue": 1416,
+    "name": 508,
+    "choice": 347,
+    "ui": 4083,
+    "scene": 353
+   },
+   "by_orientation": {
+    "horizontal": 6309,
+    "vertical": 398
+   },
+   "ignore": 299
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0070",
+   "npy_sha256": "41e377d43101cd9e76537c484e050094bfb850a8966aeea69b262556eb3a41f8",
+   "json_sha256": "e6def4d43318e93752897f2f8e13bd1227c4dc300de9a8bbf31c6d5ae1bedfe3",
+   "npy_bytes": 398978208,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 251,
+    "pc": 117,
+    "vita": 346,
+    "adrenaline": 137,
+    "empty": 149
+   },
+   "by_size": {
+    "480x272": 289,
+    "960x540": 58,
+    "960x544": 576,
+    "725x544": 77
+   },
+   "lines": 6155,
+   "by_class": {
+    "dialogue": 1505,
+    "name": 484,
+    "choice": 254,
+    "ui": 3559,
+    "scene": 353
+   },
+   "by_orientation": {
+    "horizontal": 5745,
+    "vertical": 410
+   },
+   "ignore": 301
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0071",
+   "npy_sha256": "6050a4ff13ab0f6799f84c3a42ed0bb01b586a81032134e29350116034c18c40",
+   "json_sha256": "8a2d603448939b122ecd0d1a819bde17fddea2ef28e8a9e27551739d5a1d8e4f",
+   "npy_bytes": 390873568,
+   "frames": 1000,
+   "by_kind": {
+    "empty": 156,
+    "vita": 337,
+    "adrenaline": 147,
+    "psp": 274,
+    "pc": 86
+   },
+   "by_size": {
+    "480x272": 317,
+    "960x544": 583,
+    "960x540": 45,
+    "725x544": 55
+   },
+   "lines": 6241,
+   "by_class": {
+    "dialogue": 1487,
+    "name": 501,
+    "choice": 274,
+    "ui": 3631,
+    "scene": 348
+   },
+   "by_orientation": {
+    "horizontal": 5787,
+    "vertical": 454
+   },
+   "ignore": 272
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0072",
+   "npy_sha256": "d3064c4d417c8ae07328e00cd56c9dcf0e58b9a02c28a2b4ec523b3ffa72d744",
+   "json_sha256": "bc3720b66bd04a4e8d174fa9e620a59f781d293e5898f2b05ed36b19539ea165",
+   "npy_bytes": 391682848,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 258,
+    "empty": 154,
+    "pc": 108,
+    "vita": 329,
+    "adrenaline": 151
+   },
+   "by_size": {
+    "480x272": 309,
+    "960x544": 567,
+    "960x540": 51,
+    "725x544": 73
+   },
+   "lines": 6369,
+   "by_class": {
+    "dialogue": 1444,
+    "name": 470,
+    "choice": 281,
+    "ui": 3862,
+    "scene": 312
+   },
+   "by_orientation": {
+    "horizontal": 5900,
+    "vertical": 469
+   },
+   "ignore": 323
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0073",
+   "npy_sha256": "542173b33645c353495e5afda46a6e0ae6ff7c81e06343c0f23d7abafdad5e2c",
+   "json_sha256": "46e01f5d371b9e485f1be177af15363363ce3c8f025f95d278bbf5f15c11589e",
+   "npy_bytes": 401025888,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 232,
+    "empty": 147,
+    "vita": 368,
+    "adrenaline": 145,
+    "pc": 108
+   },
+   "by_size": {
+    "480x272": 282,
+    "960x544": 596,
+    "725x544": 83,
+    "960x540": 39
+   },
+   "lines": 6347,
+   "by_class": {
+    "dialogue": 1423,
+    "name": 504,
+    "choice": 322,
+    "ui": 3759,
+    "scene": 339
+   },
+   "by_orientation": {
+    "horizontal": 5990,
+    "vertical": 357
+   },
+   "ignore": 340
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0074",
+   "npy_sha256": "3f3abb44d3379a7e57c55b01e5b5b2291564e88517b6a4eda2a8a17a354366d0",
+   "json_sha256": "d69794a93581c9a4ba9937efa331bf739ff2b786feac55358dab5f6f4d5fcdef",
+   "npy_bytes": 398132288,
+   "frames": 1000,
+   "by_kind": {
+    "adrenaline": 155,
+    "vita": 348,
+    "psp": 247,
+    "empty": 150,
+    "pc": 100
+   },
+   "by_size": {
+    "960x544": 590,
+    "480x272": 291,
+    "725x544": 78,
+    "960x540": 41
+   },
+   "lines": 6564,
+   "by_class": {
+    "dialogue": 1478,
+    "name": 502,
+    "choice": 256,
+    "ui": 3923,
+    "scene": 405
+   },
+   "by_orientation": {
+    "horizontal": 6065,
+    "vertical": 499
+   },
+   "ignore": 332
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0075",
+   "npy_sha256": "8c98a1e85cd4254f04d8dc121cc65e24da881ce21ae3b773646ea18c47404866",
+   "json_sha256": "b86061205614c09183c07d486e55a3396a14be1f2879ca0a2132d48270a93332",
+   "npy_bytes": 386730848,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 338,
+    "adrenaline": 138,
+    "psp": 267,
+    "pc": 110,
+    "empty": 147
+   },
+   "by_size": {
+    "960x544": 554,
+    "480x272": 321,
+    "725x544": 75,
+    "960x540": 50
+   },
+   "lines": 6314,
+   "by_class": {
+    "dialogue": 1412,
+    "name": 472,
+    "choice": 318,
+    "ui": 3769,
+    "scene": 343
+   },
+   "by_orientation": {
+    "horizontal": 5926,
+    "vertical": 388
+   },
+   "ignore": 306
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0076",
+   "npy_sha256": "0cda7ca58ce4f89b4f83098580ee2cb4e6c00731b2719cfeea02fb4579110058",
+   "json_sha256": "ab631db5a503f6c4a3c22b3842d7f99aa8274749e07eb3d69d8e9e13aec70b89",
+   "npy_bytes": 400716448,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 252,
+    "pc": 120,
+    "vita": 356,
+    "adrenaline": 135,
+    "empty": 137
+   },
+   "by_size": {
+    "480x272": 282,
+    "960x540": 53,
+    "725x544": 85,
+    "960x544": 580
+   },
+   "lines": 6185,
+   "by_class": {
+    "dialogue": 1413,
+    "name": 511,
+    "choice": 267,
+    "ui": 3720,
+    "scene": 274
+   },
+   "by_orientation": {
+    "horizontal": 5821,
+    "vertical": 364
+   },
+   "ignore": 421
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0077",
+   "npy_sha256": "8020ab3a683a4766eb518d7673c9fa2977824b8cd3afdfe629bfa1670fddd168",
+   "json_sha256": "325881b82cfd78f5e256de2859de4d010ffe285fa394213897b59af976387366",
+   "npy_bytes": 401122048,
+   "frames": 1000,
+   "by_kind": {
+    "psp": 242,
+    "vita": 350,
+    "adrenaline": 145,
+    "empty": 162,
+    "pc": 101
+   },
+   "by_size": {
+    "480x272": 284,
+    "960x544": 597,
+    "725x544": 76,
+    "960x540": 43
+   },
+   "lines": 6234,
+   "by_class": {
+    "dialogue": 1389,
+    "name": 487,
+    "choice": 271,
+    "ui": 3725,
+    "scene": 362
+   },
+   "by_orientation": {
+    "horizontal": 5766,
+    "vertical": 468
+   },
+   "ignore": 390
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0078",
+   "npy_sha256": "f171f967b3a37dffadb27fe78b3794219b1763d159ad191036cf6f715f192a3f",
+   "json_sha256": "1410634a5551a949ce340a6ecb73a4c06a2c301088e507179ec913141815250f",
+   "npy_bytes": 409240128,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 354,
+    "psp": 217,
+    "adrenaline": 169,
+    "empty": 149,
+    "pc": 111
+   },
+   "by_size": {
+    "960x544": 610,
+    "480x272": 260,
+    "725x544": 86,
+    "960x540": 44
+   },
+   "lines": 5976,
+   "by_class": {
+    "dialogue": 1399,
+    "name": 504,
+    "choice": 278,
+    "ui": 3437,
+    "scene": 358
+   },
+   "by_orientation": {
+    "horizontal": 5568,
+    "vertical": 408
+   },
+   "ignore": 349
+  },
+  {
+   "dir": "synth_frames",
+   "name": "synth_frames_0079",
+   "npy_sha256": "e5d9993802487eea06caf0b9f3dd376c18ac7c5da5261736e61357dc71a329da",
+   "json_sha256": "96ad2ee156157059ca01d1f22e3270452806ad963bebea5dc3ca429e364a6a6e",
+   "npy_bytes": 398448608,
+   "frames": 1000,
+   "by_kind": {
+    "vita": 362,
+    "adrenaline": 128,
+    "psp": 231,
+    "pc": 95,
+    "empty": 184
+   },
+   "by_size": {
+    "960x544": 592,
+    "480x272": 295,
+    "725x544": 63,
+    "960x540": 50
+   },
+   "lines": 5972,
+   "by_class": {
+    "dialogue": 1433,
+    "name": 467,
+    "choice": 260,
+    "ui": 3510,
+    "scene": 302
+   },
+   "by_orientation": {
+    "horizontal": 5507,
+    "vertical": 465
+   },
+   "ignore": 329
+  }
+ ],
+ "totals": {
+  "frames": 80000,
+  "by_kind": {
+   "vita": 27828,
+   "empty": 12070,
+   "psp": 20063,
+   "adrenaline": 11992,
+   "pc": 8047
+  },
+  "by_size": {
+   "960x544": 46971,
+   "480x272": 23529,
+   "960x540": 3849,
+   "725x544": 5651
+  },
+  "lines": 501887,
+  "by_class": {
+   "dialogue": 114822,
+   "name": 38831,
+   "choice": 23908,
+   "ui": 297494,
+   "scene": 26832
+  },
+  "by_orientation": {
+   "horizontal": 466667,
+   "vertical": 35220
+  },
+  "ignore": 25738
+ }
+}

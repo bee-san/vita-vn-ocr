@@ -1351,13 +1351,19 @@ def cmd_run(args):
 # ----------------------------------------------------------------------------- eligibility (the runtime's table)
 
 def a9_rows(doc):
-    """The A9 / arena table's rows (eval/textspot_a9_<date>.json "table"), normalised: [{"shape", "half_above",
-    "size": (w, h), "ms_333", "arena"}]. ms_333 is the rule's estimate: the cycle model's high bound x 1.0007 at
-    333 MHz, which the table gives as ms_per_frame["333"] (or {"high", "calibrated"}, or the cycles' high bound);
-    arena is vocr_textspot_arena_bytes for every frame up to the row's size ("arena_bytes")."""
-    rows = doc.get("table") or doc.get("rows") or []
+    """The runtime's A9 / arena table (eval/textspot_a9_<date>.json), normalised: [{"shape", "half_above",
+    "size": (w, h), "ms_333", "arena", "macs", "vtsp_bytes"}]. Its "summary" holds the rule's columns (its
+    "rule_reads"): ms_333_960 (the cycle model's high bound x 1.0007 at 333 MHz, the default call with the dark pass)
+    and arena_up_to_960 (vocr_textspot_arena_bytes(m, 960, 544)); those rows come first. The "table" rows (per size:
+    ms_per_frame["333"] or {"high", "calibrated"} or the cycles' high bound, and arena_bytes) are read too, for
+    tables without a summary and for other sizes."""
     out = []
-    for r in rows:
+    for r in doc.get("summary") or []:
+        ha = r.get("half_above", {"h2": 600, "f1": 0}.get(r.get("scale")))
+        out.append({"shape": r["shape"], "half_above": ha, "size": (960, 544), "ms_333": r["ms_333_960"],
+                    "arena": r["arena_up_to_960"], "macs": r.get("macs_960"), "vtsp_bytes": r.get("vtsp_bytes"),
+                    "from": "summary", "row": r})
+    for r in doc.get("table") or doc.get("rows") or []:
         ha = r.get("half_above")
         if ha is None and "scale" in r:
             ha = {"h2": 600, "f1": 0}[r["scale"]]
@@ -1368,7 +1374,8 @@ def a9_rows(doc):
         if ms is None and (r.get("cycles_per_frame") or {}).get("333"):
             ms = r["cycles_per_frame"]["333"][1] * A9_CAL / 333e3
         out.append({"shape": r["shape"], "half_above": ha, "size": size, "ms_333": ms,
-                    "arena": r.get("arena_bytes", r.get("arena")), "row": r})
+                    "arena": r.get("arena_bytes", r.get("arena")), "macs": r.get("macs"),
+                    "vtsp_bytes": r.get("blob_bytes"), "from": "table", "row": r})
     return out
 
 
@@ -1378,15 +1385,18 @@ def a9_lookup(rows, shape, half_above, size=(960, 544)):
 
 
 def refine_arena(doc, cdir=None):
-    """vocr_refine_arena_bytes(960, 544): from the table's record when it has one, else the refine driver."""
+    """(vocr_refine_arena_bytes(960, 544), its source): the table's record when it has one, else the refinement's
+    driver (runtime/vocr_lines_refine_test --arena 960 544), else (None, None)."""
     for k in ("refine_arena_960x544", "refine_arena_bytes_960x544"):
         if k in doc:
-            return int(doc[k])
+            return int(doc[k]), f"a9:{k}"
     if isinstance(doc.get("refine"), dict) and "arena_960x544" in doc["refine"]:
-        return int(doc["refine"]["arena_960x544"])
-    if cdir is not None and (Path(cdir) / "vocr_lines_refine_test").exists():
-        return int(_run([Path(cdir) / "vocr_lines_refine_test", "--arena", 960, 544])[0].split()[0])
-    return None
+        return int(doc["refine"]["arena_960x544"]), "a9:refine.arena_960x544"
+    drv = Path(cdir) / "vocr_lines_refine_test" if cdir is not None else None
+    if drv is not None and drv.exists():
+        return (int(_run([drv, "--arena", 960, 544])[0].split()[0]),
+                f"vocr_lines_refine_test --arena 960 544 (sha256 {sha256(drv)})")
+    return None, None
 
 
 def input_size(half_above, width=960, height=544):
@@ -1417,12 +1427,19 @@ def eligibility(meta, boxes_doc, rows, ref_arena):
     size), the arena and the A9 high bound from the runtime's table, plus REFINE_MS_PER_BOX per horizontal box at the
     arm's median on the dev Vita frames for det+refine, and c_equal over every frame."""
     r = a9_lookup(rows, meta["shape"], meta["half_above"])
+    macs = macs_960(meta["shape"], meta["half_above"])
+    if r is not None and r.get("macs") is not None and int(r["macs"]) != macs:
+        raise SystemExit(f"{boxes_doc['arm']}: the A9 table's MACs {r['macs']} are not train/textdet_model.cost's "
+                         f"{macs} for {meta['shape']} at half_above {meta['half_above']}")
+    if r is not None and r.get("vtsp_bytes") is not None and int(r["vtsp_bytes"]) != meta["blob_bytes"]:
+        raise SystemExit(f"{boxes_doc['arm']}: VTSP bytes {meta['blob_bytes']} differ from the table's "
+                         f"{r['vtsp_bytes']} for {meta['shape']}")
     fr = boxes_doc["frames"].values()
     ce = [f.get("c_equal") for f in fr]
     out = {"name": boxes_doc["arm"], "decode": meta["decode"], "family": meta.get("family"), "run": meta.get("run"),
            "shape": meta["shape"], "half_above": meta["half_above"], "blob_bytes": meta["blob_bytes"],
-           "blob_sha256": meta["blob_sha256"], "macs_960": macs_960(meta["shape"], meta["half_above"]),
-           "a9_row": r is not None, "arena_spot_960": r["arena"] if r else None,
+           "blob_sha256": meta["blob_sha256"], "macs_960": macs,
+           "a9_row": r["from"] if r is not None else None, "arena_spot_960": r["arena"] if r else None,
            "ms_333_960_spot": round(r["ms_333"], 3) if r and r["ms_333"] is not None else None,
            "c_equal": bool(ce) and all(v is True for v in ce), "c_unchecked_frames": sum(1 for v in ce if v is None),
            "c_unequal_frames": sum(1 for v in ce if v is False)}
@@ -1470,7 +1487,8 @@ def cmd_eligible(args):
     proto = protocol()
     rule = proto["rule"]
     rows = a9_rows(json.loads(Path(args.a9).read_text(encoding="utf-8")))
-    ref_ar = refine_arena(json.loads(Path(args.a9).read_text(encoding="utf-8")), args.cbin or None)
+    ref_ar, ref_src = refine_arena(json.loads(Path(args.a9).read_text(encoding="utf-8")), args.cbin or None)
+    print(f"refinement arena at 960x544: {ref_ar} ({ref_src})")
     cands = load_candidate_dirs(args.units)
     parity = merge_parity(args.parity)
     names = []
@@ -1482,8 +1500,10 @@ def cmd_eligible(args):
         print(f"{arm:40s} {e['blob_bytes']:6d} B  {e['macs_960'] / 1e6:6.1f} M MACs  arena {e['arena_960']}  "
               f"est {e['est_ms_333_960']} ms  C {c}  {'by cost: ELIGIBLE' if ok else 'not eligible'}{why}")
         if ok:
-            names.append(doc["spec_meta"]["spec"])
+            names.append(f"{doc['spec_meta']['spec']}:{doc['spec_meta']['kind']}")
     print("eligible specs:", ",".join(sorted(set(names))))
+    if args.out:
+        Path(args.out).write_text(",".join(sorted(set(names))) + "\n", encoding="utf-8")
 
 
 # ----------------------------------------------------------------------------- baseline
@@ -1561,8 +1581,8 @@ def resolve(path):
 def select(base_doc, cand_dirs, a9_doc, rule, units_dir=None, cdir=None, parity=None):
     baselines = baseline_rule_arms(base_doc, units_dir)
     rows = a9_rows(a9_doc)
-    ref_ar = refine_arena(a9_doc, cdir)
-    cands, report = [], {}
+    ref_ar, ref_src = refine_arena(a9_doc, cdir)
+    cands, report = [], {"_refine_arena": {"bytes_960x544": ref_ar, "source": ref_src}}
     for arm, (doc, units, _) in sorted(load_candidate_dirs(cand_dirs).items()):
         if units is not None and units["meta"]["manifest"]["sha256"] != base_doc["manifest"]["sha256"]:
             raise SystemExit(f"{arm}: scored on another manifest than the baseline")
@@ -1593,10 +1613,11 @@ def cmd_select(args):
     parity = merge_parity(args.parity)
     result, report, extra = select(base_doc, args.units, a9, proto["rule"], args.baseline_units, args.cbin or None,
                                    parity)
+    refine_rec = report.pop("_refine_arena")
     doc = {"kind": "textspot-selection", "computed": utc_now(), "protocol_sha256": sha256(PROTOCOL),
            "baseline_sha256": sha256(args.baseline), "a9_sha256": sha256(args.a9), "a9": rel(args.a9),
            "rule": proto["rule"], "refine_ms_per_box": REFINE_MS_PER_BOX, "code_sha256": code_identity(),
-           "parity_sha256": {rel(f): sha256(f) for f in args.parity},
+           "parity_sha256": {rel(f): sha256(f) for f in args.parity}, "refine_arena": refine_rec,
            "manifest": base_doc["manifest"], "candidates": report, "result": result,
            "report_comparisons": extra,
            "baselines": {a: base_doc["arms"][a][RULE_MODEL]["summary"] for a in BASELINES}}
@@ -1833,6 +1854,7 @@ def main(argv=None):
     p.add_argument("--a9", required=True)
     p.add_argument("--cbin", default="")
     p.add_argument("--parity", action="append", default=[])
+    p.add_argument("--out", default="", help="write the eligible arm specs (for run --arms)")
     p = sub.add_parser("parity")
     p.add_argument("--set", required=True, choices=("dev", "pseudo"))
     p.add_argument("--manifest", default="")

@@ -302,6 +302,7 @@ def test_select_eligibility_inputs_and_rule(tmp_path):
                      "ms_per_frame": {"333": {"high": 48.0, "calibrated": 48.0336}}}]}
     rule = json.loads((ROOT / "eval" / "textspot_protocol.json").read_text())["rule"]
     result, report, extra = TS.select(base_doc, [cdir], a9, rule)
+    assert report.pop("_refine_arena") == {"bytes_960x544": 70000, "source": "a9:refine_arena_960x544"}
     sm = report["small_det"]
     assert sm["macs_960"] == TM.cost(TM.SHAPES["s8_c8"], 480, 272)["macs"]
     assert sm["est_ms_333_960"] == round(20.0 * TS.A9_CAL, 3) and sm["arena_960"] == 50000
@@ -522,3 +523,22 @@ def test_parity_record_overrides_unchecked_frames():
     assert TS.apply_parity(doc, {"arms": {}}) is doc
     with pytest.raises(SystemExit):
         TS.apply_parity(doc, {"arms": {"x_det": dict(rec["arms"]["x_det"], boxes_sha256="t" * 64)}})
+
+
+def test_a9_summary_rows_first_and_cross_checks():
+    doc = {"summary": [{"shape": "s8_c8", "scale": "h2", "half_above": 600, "vtsp_bytes": 1916, "ms_333_960": 31.3,
+                        "arena_up_to_960": 28551, "macs_960": TM.cost(TM.SHAPES["s8_c8"], 480, 272)["macs"]}],
+           "table": [{"shape": "s8_c8", "scale": "h2", "half_above": 600, "size": [960, 544], "arena_bytes": 1,
+                      "ms_per_frame": {"333": 1.0}}]}
+    rows = TS.a9_rows(doc)
+    hit = TS.a9_lookup(rows, "s8_c8", 600)
+    assert (hit["from"], hit["ms_333"], hit["arena"]) == ("summary", 31.3, 28551)
+    meta = {"shape": "s8_c8", "half_above": 600, "blob_bytes": 1916, "blob_sha256": "x" * 64, "decode": "det"}
+    bd = {"arm": "a_det", "frames": {"f": {"c_equal": True, "h_in": None, "part": "vita"}}}
+    e = TS.eligibility(meta, bd, rows, None)
+    assert (e["est_ms_333_960"], e["arena_960"], e["a9_row"]) == (31.3, 28551, "summary")
+    bad = TS.a9_rows({"summary": [dict(doc["summary"][0], macs_960=1)]})
+    with pytest.raises(SystemExit):                       # a table row of another shape or scale
+        TS.eligibility(meta, bd, bad, None)
+    with pytest.raises(SystemExit):
+        TS.eligibility(dict(meta, blob_bytes=2000), bd, rows, None)

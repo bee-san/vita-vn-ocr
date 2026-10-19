@@ -288,7 +288,7 @@ def table_of(d):
 
 def print_table(table, fam):
     print("| shape | family B | scale | frame | net input | MACs | insns/frame | Mcycles @333 (low-high) "
-          "| est. ms @333 | est. ms @444 | arena (frame) | arena (up to) |")
+          "| est. ms @333 | est. ms @444 | arena frame | arena up to (the rule's) |")
     print("|---|---|---|---|---|---:|---:|---|---:|---:|---:|---:|")
     for t in table:
         lo, hi = t["cycles_per_frame"][333]
@@ -299,6 +299,34 @@ def print_table(table, fam):
               f"{t['frame_arena_bytes']:,} | {t['arena_bytes']:,} |")
 
 
+def summary_of(table, nodark, fam, rule):
+    """Per (shape, scale): the rule's inputs (the conductor, 2026-10-19 09:5xZ: the arena the rule reads is the up-to
+    value vocr_textspot_arena_bytes(m, 960, 544), "arena_up_to_960"; the time is the default call's, dark pass
+    included), the frame's own arena and the report-only no-dark time."""
+    by = {(t["shape"], t["scale"], tuple(t["size"]), t["format"]): t for t in table}
+    nd = {(t["shape"], t["scale"], tuple(t["size"]), t["format"]): t for t in nodark}
+    out = []
+    for (shape, scale, size, fmt), t in by.items():
+        if size != (960, 544) or fmt != "grey":
+            continue
+        small = by.get((shape, scale, (480, 272), fmt))
+        n = nd.get((shape, scale, size, fmt))
+        row = {"shape": shape, "scale": scale, "half_above": t["half_above"],
+               "family_b": shape in fam.get(scale, ()), "vtsp_bytes": t["blob_bytes"],
+               "macs_960": t["macs"], "ms_333_960": t["ms_per_frame"]["333"],
+               "ms_444_960": t["ms_per_frame"]["444"],
+               "ms_333_960_nodark": n["ms_per_frame"]["333"] if n else None,
+               "arena_up_to_960": t["arena_bytes"], "arena_frame_960": t["frame_arena_bytes"]}
+        if small:
+            row.update({"ms_333_480": small["ms_per_frame"]["333"],
+                        "ms_444_480": small["ms_per_frame"]["444"],
+                        "arena_up_to_480": small["arena_bytes"], "arena_frame_480": small["frame_arena_bytes"]})
+        row["within_limits"] = row["ms_333_960"] <= rule["ms_max_333_960"] and \
+            row["arena_up_to_960"] <= rule["arena_max"]
+        out.append(row)
+    return out
+
+
 def cmd_report(args):
     meta, table = table_of(args.dir)
     res = {k: v for k, v in meta.items() if k != "runs"}
@@ -306,6 +334,16 @@ def cmd_report(args):
                    "console measurement; est. ms @333 = high bound x 1.0007 / 333 MHz, est. ms @444 = that x 333/444; "
                    "arena bytes are exact (the runtime's functions)")
     res["family_b"] = family_b()
+    protocol = json.loads((ROOT / "eval" / "textspot_protocol.json").read_text(encoding="utf-8"))
+    res["rule_reads"] = {
+        "arena": "arena_up_to_960 = vocr_textspot_arena_bytes(m, 960, 544): every frame up to 960x544 (for h2, the "
+                 "600-px frame read at full size dominates); arena_frame_960 = vocr_textspot_frame_arena_bytes(m, 960, "
+                 "544), the 960x544 frame's own need, is report only (the conductor, 2026-10-19)",
+        "time": "ms_333_960: the default call (flags 0, the dark pass included) on the pinned 960x544 grey frame; "
+                "ms_333_960_nodark (VOCR_TEXTSPOT_NO_DARK) is report only",
+        "limits": {"arena_max": protocol["rule"]["arena_max"], "ms_max_333_960": protocol["rule"]["ms_max_333_960"]},
+        "within_limits": "ms_333_960 <= ms_max_333_960 and arena_up_to_960 <= arena_max (for det; det+refine adds "
+                         "the refinement's arena and 1.4 ms per refined line, eval/textspot_metrics.apply_rule)"}
     res["table"] = table
     res["also"] = []
     for k, d in enumerate(args.also):
@@ -315,12 +353,45 @@ def cmd_report(args):
         label = args.also_label[k] if k < len(args.also_label) else ""
         res["also"].append({"label": label, "computed": ameta["computed"], "flags": ameta["flags"],
                             "vocr_textspot_o_text_bytes": ameta["vocr_textspot_o_text_bytes"], "table": atable})
+    nodark = next((a["table"] for a in res["also"] if all(t["flags"] != "0" for t in a["table"])), [])
+    res["summary"] = summary_of(table, nodark, res["family_b"], protocol["rule"])
+    print("| scale | shape | family B | VTSP B | MACs / 960x544 frame | est. ms 960x544 @333 / @444 (rule) "
+          "| no-dark @333 | est. ms 480x272 @333 | arena_up_to_960 (rule) | arena_frame_960 | within limits |")
+    print("|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|")
+    for r in sorted(res["summary"], key=lambda r: (not r["family_b"], r["scale"] != "h2", r["scale"], r["shape"])):
+        nd = f"{r['ms_333_960_nodark']:.1f}" if r["ms_333_960_nodark"] is not None else "-"
+        print(f"| {r['scale']} | {r['shape']} | {'yes' if r['family_b'] else ''} | {r['vtsp_bytes']:,} | "
+              f"{r['macs_960']:,} | {r['ms_333_960']:.1f} / {r['ms_444_960']:.1f} | {nd} | "
+              f"{r.get('ms_333_480', float('nan')):.1f} | {r['arena_up_to_960']:,} | {r['arena_frame_960']:,} | "
+              f"{'yes' if r['within_limits'] else 'no'} |")
+    print()
     print_table(table, res["family_b"])
     for a in res["also"]:
         print(f"\nalso: {a['label']}")
         print_table(a["table"], res["family_b"])
     if args.json:
-        Path(args.json).write_text(json.dumps(res, indent=1) + "\n")
+        Path(args.json).write_text(dumps(res) + "\n")
+
+
+ALSO_KEYS = ("shape", "scale", "half_above", "size", "format", "flags", "f", "net_input", "macs", "blob_sha256",
+             "frame_sha256", "rc", "boxes", "blocks", "pick", "truncated", "insns_per_frame", "cycles_per_frame",
+             "ms_per_frame", "l1d_misses_per_frame", "l2_misses_per_frame", "low_bound_set_by", "frame_arena_bytes",
+             "arena_bytes", "top_functions")
+
+
+def dumps(res):
+    """The JSON with every table row on one line (the file stays small and diffs row by row)."""
+    def rows(t):
+        return "[\n" + ",\n".join("  " + json.dumps(r, separators=(",", ":")) for r in t) + "\n ]"
+    head = {k: v for k, v in res.items() if k not in ("table", "summary", "also")}
+    out = json.dumps(head, indent=1)[:-2]
+    out += ',\n "summary": ' + rows(res["summary"]) + ',\n "table": ' + rows(res["table"])
+    also = []
+    for a in res["also"]:
+        meta = json.dumps({k: v for k, v in a.items() if k != "table"}, separators=(",", ":"))[:-1]
+        trimmed = [{k: r[k] for k in ALSO_KEYS if k in r} for r in a["table"]]
+        also.append("  " + meta + ',"table":' + rows(trimmed) + "}")
+    return out + ',\n "also": [\n' + ",\n".join(also) + "\n ]\n}"
 
 
 def main(argv=None):

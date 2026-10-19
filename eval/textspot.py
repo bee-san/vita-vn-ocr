@@ -180,17 +180,26 @@ def write_json(path, doc, indent=None):
 
 # ----------------------------------------------------------------------------- the protocol's pins
 
+def _same_file(path, relpath):
+    """True when an amendment's path names the repo file relpath: the same path, './' + it, or any absolute or
+    relative path ending in '/' + it (a clone's own copy)."""
+    a = Path(str(path)).as_posix()
+    a = a[2:] if a.startswith("./") else a
+    return a == relpath or a.endswith("/" + relpath)
+
+
 def pinned_sha(proto, relpath):
-    """The sha256 an amendment pins for relpath (a key equal to the path whose value is a sha256, or an object
-    {"path": relpath, "sha256": ...}), the latest amendment winning; None when no amendment pins it."""
+    """The sha256 an amendment pins for the repo file relpath: eval/textspot_amend.py's "pins" ({NAME: {"path",
+    "sha256", "bytes"}}) or "sources_sha256" ({PATH: sha256}), any object {"path", "sha256"} or a key naming the
+    file with a sha256 value; the latest amendment wins. None when no amendment pins it."""
     found = []
 
     def walk(v):
         if isinstance(v, dict):
-            if v.get("path") == relpath and isinstance(v.get("sha256"), str):
+            if isinstance(v.get("path"), str) and _same_file(v["path"], relpath) and isinstance(v.get("sha256"), str):
                 found.append(v["sha256"])
             for k, x in v.items():
-                if k == relpath and isinstance(x, str) and len(x) == 64:
+                if _same_file(k, relpath) and isinstance(x, str) and len(x) == 64:
                     found.append(x)
                 walk(x)
         elif isinstance(v, list):

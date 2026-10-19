@@ -329,6 +329,14 @@ def test_pinned_sha_reads_amendments():
     assert TS.pinned_sha(p, "eval/manifests/textspot-dev.jsonl") == "b" * 64
     assert TS.pinned_sha(p, "eval/manifests/textspot-test.jsonl") is None
     assert TS.pinned_sha({"amendments": []}, "x") is None
+    # eval/textspot_amend.py --pin NAME=PATH: the path as typed (relative, ./ or a clone's absolute path)
+    for path in ("eval/manifests/textspot-dev.jsonl", "./eval/manifests/textspot-dev.jsonl",
+                 "/somewhere/clones/textspot/eval/manifests/textspot-dev.jsonl"):
+        q = {"amendments": [{"id": 2, "pins": {"dev_manifest": {"path": path, "sha256": "c" * 64, "bytes": 1}}}]}
+        assert TS.pinned_sha(q, "eval/manifests/textspot-dev.jsonl") == "c" * 64
+    bak = {"path": "eval/manifests/textspot-dev.jsonl.bak", "sha256": "d" * 64}
+    q = {"amendments": [{"id": 2, "pins": {"x": bak}}]}
+    assert TS.pinned_sha(q, "eval/manifests/textspot-dev.jsonl") is None
 
 
 # ---------------------------------------------------------------- the protected script (pseudo data only)

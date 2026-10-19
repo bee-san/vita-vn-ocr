@@ -232,6 +232,16 @@ Each amendment is dated in `eval/textspot_protocol.json` and precedes the runs a
    - The harness (`eval/textspot.py`, `eval/textspot_protected.py`) is pinned. The frozen baseline is committed
      before any candidate is scored.
 
+3. **The test set** (before the selection commit; no model of this work has run on a test frame).
+   - `eval/manifests/textspot-test.jsonl`: 259 frames of the 28 test VNs. Every vita-test (74) and psp-test (83)
+     screenshot is a whole frame; there are 19 text-free frames, and psp-test at 2× is report only (83).
+   - Scored: 176 frames, 714 instances (dialogue 312, ui 229, name 122, choice 31, scene 20; 16 vertical) with 6,229
+     characters (dialogue measure: 4,707), and 235 ignore areas.
+   - Eval's lines: 450 of the 451 certain lines are kept with eval's text and class. The last (【全員】) is an undecided
+     ignore area.
+   - Review agreement: 97.05% of the boxes and 97.72% of the texts.
+   - The set tool is re-pinned for its test-assembly fix. The dev manifest re-assembles byte for byte.
+
 ## Results
 
 (none yet)

@@ -350,6 +350,27 @@
     "dev_chars": 6770,
     "dev_dialogue_chars": 3987
    }
+  },
+  {
+   "id": 3,
+   "utc": "2026-10-19T16:13:06Z",
+   "before": "the selection commit and any score of any arm on a textspot test frame (no model of this work has run on one)",
+   "what": [
+    "The test set is eval/manifests/textspot-test.jsonl (pinned below): 259 frames of the 28 test VNs: vita-test's 74 and psp-test's 83 screenshots as whole frames, 19 text-free screenshots of the test games outside eval's screenshots (19 of 33 candidates confirmed by two looks, fewer than the 25 the protocol allows), and, report only, psp-test's 83 frames at 2x (part adrenaline, report_only). Scored: 176 frames, 714 labelled instances (dialogue 312, ui 229, name 122, choice 31, scene 20; 16 vertical) with 6,229 characters after eval/metrics.norm (dialogue and choice: 4,707), and 235 ignore areas. 450 of eval's 451 certain lines are kept with eval's text and eval's class (name when eval tagged the line a name, else dialogue, or choice where the reviewers marked an in-story choice); the 451st (psp-v3542_57751-201-029, 【全員】) is an undecided ignore area; eval's 2 uncertain lines are ignore areas. Review as the protocol says (Claude only): pass 2 approved 889 of 916 boxes (97.05%) and agreed on 257 of 263 texts (97.72%); the helper's spot check of 15 frames found no error. No frame is in both sets (URL and sha256), and no development frame is a test VN's.",
+    "eval/textspot_sets.py is re-pinned (amendment 2 pinned e7f3cb44...): its later commit d0725d5 makes the test assembly keep eval's class for eval's lines (the protocol's 'lines tagged name: class name') and adds review bookkeeping. build_frame (the source-to-frame step eval/textspot.py imports) is byte-identical, and the development manifest re-assembles byte for byte (its sha256 is still 0392a1d3...), so no development frame or score changes."
+   ],
+   "sources_sha256": {
+    "eval/manifests/textspot-test.jsonl": "233b96d80a452e0585c717f4d65ec73758810262663f71e57bed04402b452fb5",
+    "eval/textspot_sets.py": "6cc26c0d0d69735410f7709dc1b7aaf231d97295ad1f34bf43c79f1c95a66daa"
+   },
+   "settings": {
+    "test_manifest_sha256": "233b96d80a452e0585c717f4d65ec73758810262663f71e57bed04402b452fb5",
+    "test_frames": 259,
+    "test_scored_frames": 176,
+    "test_instances": 714,
+    "test_chars": 6229,
+    "test_dialogue_chars": 4707
+   }
   }
  ]
 }

@@ -327,6 +327,29 @@
     "real_canvases_dropped": 337,
     "rule_arena": "vocr_textspot_arena_bytes(m, 960, 544)"
    }
+  },
+  {
+   "id": 2,
+   "utc": "2026-10-19T13:29:17Z",
+   "before": "every score of any arm (baseline or candidate) on a textspot development frame",
+   "what": [
+    "The development set is eval/manifests/textspot-dev.jsonl (pinned below): 188 frames of 81 dev_sample VNs (vita 39 of 10 VNs, psp 64 of 32, adrenaline 20, pc 40, text-free 25 of 19 VNs; 88 capture sessions, none a test session), 885 labelled instances (ui 519, dialogue 249, name 96, choice 15, scene 6; 41 vertical) with 6,770 characters after eval/metrics.norm (dialogue 3,851, choice 136: the dialogue measure's 3,987), and 196 ignore areas (unreadable 44, small 38, logo 35, watermark 29, undecided 24, rotated 23, furigana 3). Reviewed as the protocol says (two looks per box and text, a third on disagreement; pass 2 approved 96.7% of pass 1's boxes and agreed on 97.7% of its texts); the helper's spot check of 20 frames and the conductor's of 2 (one Vita, one PC frame) found no error. Built by eval/textspot_sets.py (pinned below); the PSP frames' 2x Adrenaline copies and the PC frames' fit to 960 x 544 are its scale_frame steps.",
+    "The harness is eval/textspot.py (arms, reading, scoring, the frozen baseline, select) and eval/textspot_protected.py (the single protected read), pinned below; eval/textspot_metrics.py and the twins stay as frozen at ceff220. The frozen baseline (every baseline arm on the development frames, read with VOCR5-N and VOCR5-V for the rule and VOCR5-S and VOCR5-L as report) is committed before any candidate is scored on a development frame."
+   ],
+   "sources_sha256": {
+    "eval/manifests/textspot-dev.jsonl": "0392a1d33efbe732ca97adee7f9dc2f6117e387f9ea3dda5c257a9b4d9f431a9",
+    "eval/textspot_sets.py": "e7f3cb4472ca3f3e135bbf25b9388edcf03de411895cc2f993d3c44b8f0daec2",
+    "eval/textspot.py": "68f391eba4177eab4e61f6a679e2dd39a04dfc90ad00037f40420d4ba221aa7c",
+    "eval/textspot_protected.py": "adc918bc4c73a053cdd5daf5e7d7f4733a0a9efe3f00f3a2b1706bfe78f8a21a"
+   },
+   "settings": {
+    "dev_manifest_sha256": "0392a1d33efbe732ca97adee7f9dc2f6117e387f9ea3dda5c257a9b4d9f431a9",
+    "dev_frames": 188,
+    "dev_vns": 81,
+    "dev_instances": 885,
+    "dev_chars": 6770,
+    "dev_dialogue_chars": 3987
+   }
   }
  ]
 }

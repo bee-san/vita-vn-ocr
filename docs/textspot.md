@@ -223,6 +223,15 @@ Each amendment is dated in `eval/textspot_protocol.json` and precedes the runs a
      960×544). The time is the default call on a grey frame. All 11 family B shapes are eligible: 44.8-136.4 ms and
      ≤ 80,799 B.
 
+2. **The development set and the harness** (before any score on a development frame).
+   - `eval/manifests/textspot-dev.jsonl`: 188 frames of 81 dev_sample VNs.
+     - Parts: vita 39, psp 64, adrenaline 20, pc 40, text-free 25.
+     - 885 instances (ui 519, dialogue 249, name 96, choice 15, scene 6; 41 vertical) with 6,770 characters
+       (dialogue measure: 3,987), and 196 ignore areas.
+     - Review agreement: pass 2 approved 96.7% of the boxes and agreed on 97.7% of the texts.
+   - The harness (`eval/textspot.py`, `eval/textspot_protected.py`) is pinned. The frozen baseline is committed
+     before any candidate is scored.
+
 ## Results
 
 (none yet)

@@ -75,6 +75,7 @@ CAPS = {"vita": 5, "psp": 2, "adrenaline_vns": 20, "pc_vns": 40, "text_free": 25
 TF_MAX_DETS = 1                      # a text-free candidate: MeikiOCR finds at most one box
 STAGES = ("p1b", "p1t", "p2b", "p2t", "p3")
 IMAGE_BUDGET = 48                    # images a reviewer session may claim (+ a few zoom views, under 55)
+MIN_LEFT = 12                        # with fewer images left and no task that fits now, a reviewer stops
 
 
 # ----------------------------------------------------------------------------- small helpers
@@ -1125,6 +1126,15 @@ def review_state(split):
 
 # ----------------------------------------------------------------------------- pass-1 instances
 
+def eval_class(tag, cls):
+    """The class of one of eval's hand-checked lines (task: "class name when tagged name else dialogue; in-story
+    choices that eval kept are choice only when the reviewers mark them so"): a reviewer's other class is not
+    taken."""
+    if tag == "name":
+        return "name"
+    return "choice" if cls == "choice" else "dialogue"
+
+
 def p1_instances(shot, prop, dec, rereads):
     """Pass 1's instances of a frame from its proposals and its p1b decision: [{iid, ink, vertical, cls | ignore,
     src, reads, needs_text}]. Boxes the reviewer drew come refined from `rereads` ({(shot, iid): row}); one not
@@ -1148,12 +1158,15 @@ def p1_instances(shot, prop, dec, rereads):
         if p is None or b["n"] in merged_into:
             continue
         vert = bool(b.get("vertical", p["vertical"]))
-        if b.get("drop"):
+        if b.get("drop") and p["src"] != "eval":
             continue
         base = {"src": p["src"], "n1": p["n"]}
         if p["src"] == "eval":
             base["eid"] = p["eid"]
             base["eval_text"] = p["eval_text"]
+            base["eval_cls"] = p["eval_cls"]
+            b = dict(b, cls=eval_class(p["eval_cls"], b.get("cls")))
+            b.pop("ignore", None)
         if "ignore" in b:
             out.append(dict(base, iid=f"{p['iid']}", ink=list(p["ink"]), vertical=vert, ignore=b["ignore"],
                             reads={}, needs_text=False))
@@ -1494,9 +1507,10 @@ per frame counts).
 EVAL_NOTE = ", green = eval's hand-checked line, grey dashed = a fixed ignore area"
 EVAL_RULES = """
 Test frames: green boxes are eval's hand-checked dialogue / name lines; their TEXT is fixed (in the JSON) and is not
-reviewed again, but their BOX and CLASS are: keep them with their class (eval's guess is in the JSON; an in-story
-choice option is "choice"), or fix the box. Never split or merge an eval line. Grey dashed areas are fixed ignore
-areas (eval's uncertain lines, the furigana of eval's lines): not numbered, nothing to decide.
+reviewed again, but their BOX is: keep each with its class, or fix the box. Their class is eval's (name when eval
+tagged the line a name, otherwise dialogue), except an in-story choice option, which you mark "choice". Never drop,
+ignore, split or merge an eval line. Grey dashed areas are fixed ignore areas (eval's uncertain lines, the furigana
+of eval's lines): not numbered, nothing to decide.
 """
 
 README_TEXT = """# textspot review: {title} ({split}, task {batch}, {n} entries on {sheets} sheets)
@@ -1557,8 +1571,9 @@ One frame per tool call; append the frame's line before viewing the next. `{chec
 """  # noqa: E501
 
 EVAL_RULES_P2 = """
-Test frames: some boxes are eval's hand-checked lines (their text is fixed and not shown); check their box and
-class like any other. Never split or merge them. Grey dashed boxes without a number are fixed ignore areas.
+Test frames: some boxes are eval's hand-checked lines (their text is fixed and not shown; "eval_line" in the JSON):
+check their box like any other. Their class is eval's (name, or dialogue; choice for an in-story choice option);
+never flag them not_text, ignore, split or merge. Grey dashed boxes without a number are fixed ignore areas.
 """
 
 README_P3 = """# textspot review: THIRD LOOK ({split}, task {batch}: {nx} box items, {ns} text sheets)
@@ -1864,6 +1879,12 @@ def validate_p1b(meta, task_dir, decs):
             acts = [k for k in ("drop", "ignore", "split", "merge") if b.get(k)]
             if len(acts) > 1:
                 errs.append(f"{F}: n={n} has more than one of drop / ignore / split / merge")
+            if props[n]["src"] == "eval" and (b.get("drop") or "ignore" in b):
+                errs.append(f"{F}: n={n} is an eval line: keep it with its class (fix its box if needed)")
+                continue
+            if props[n]["src"] == "eval" and b.get("cls") not in (None, "dialogue", "name", "choice"):
+                errs.append(f"{F}: n={n} is an eval line: its class is name (when eval tagged it so), dialogue, "
+                            f"or choice for an in-story choice option")
             if b.get("drop"):
                 continue
             if "ignore" in b:
@@ -1984,6 +2005,8 @@ def validate_p2b(meta, task_dir, decs):
             keys = set(g) - {"n", "note"}
             if not keys:
                 errs.append(f"{F}: flag n={n} says nothing")
+            if q.get("eval_line") and (g.get("not_text") or "ignore" in g):
+                errs.append(f"{F}: n={n} is an eval line: it stays an instance (flag its box or class only)")
             if "cls" in g and not _cls_ok(g["cls"], len(g.get("split", [])) + 1) and g["cls"] not in CLASSES:
                 errs.append(f"{F}: n={n} cls must be in {CLASSES}")
             if "box" in g:
@@ -2149,8 +2172,9 @@ def cmd_claim(args):
             print(f"README: {t}/README.md  decisions: {t}/decisions-{label}.jsonl  images: {meta['images']}"
                   f"  (your images so far: {used + meta['images']} of {IMAGE_BUDGET})")
             return
-        if any(used + metas[(sp, stg, t)]["images"] <= IMAGE_BUDGET for _, _, _, sp, stg, t in free) or (
-                feed_open() and used + 6 <= IMAGE_BUDGET):
+        # a reviewer with fewer than MIN_LEFT images left stops rather than waiting for a small task
+        if IMAGE_BUDGET - used >= MIN_LEFT and (any(
+                used + metas[(sp, stg, t)]["images"] <= IMAGE_BUDGET for _, _, _, sp, stg, t in free) or feed_open()):
             print("WAIT no task for you right now; more are being made. Sleep 120 s and claim again.")
         else:
             print(f"STOP no more tasks for you (images claimed {used} of {IMAGE_BUDGET}, or the review is finished)")
@@ -2343,7 +2367,7 @@ def p2_view(ctx, shot):
             continue
         A = insts[iid]
         vert = bool(g.get("vertical", A["vertical"]))
-        base = {k: A[k] for k in ("src", "eid", "eval_text") if k in A}
+        base = {k: A[k] for k in ("src", "eid", "eval_text", "eval_cls") if k in A}
         if g.get("not_text"):
             B = []
         elif "ignore" in g:
@@ -2374,12 +2398,17 @@ def p2_view(ctx, shot):
                 q["ignore"] = A["ignore"]
             else:
                 q["cls"] = g.get("cls", A.get("cls"))
+                if A.get("src") == "eval":
+                    q["cls"] = eval_class(A.get("eval_cls"), q["cls"])
             if "box" in g:
                 ink, reads = rer(f"{iid}.B", xyxy(g["box"]), vert)
                 q["ink"], q["reads"] = ink, reads
                 if g.get("cuts") and A["src"] != "eval" and "ignore" not in A:
                     q["text2"] = g["text"]
             B = [q]
+            if A.get("src") == "eval" and "box" not in g and (q.get("cls"), bool(q["vertical"])) == (
+                    A.get("cls"), bool(A["vertical"])):
+                continue                     # a flag of an eval line that changes nothing (its class is kept)
         out["flags"][iid] = {"flag": g, "B": B, "members": []}
     for j, m in enumerate(d.get("missed", []) or []):
         iid = f"m2.{j}"
@@ -2891,7 +2920,11 @@ def pin_stats(split, rows, dec, ctx, manifest_path):
     lab = [(r, x) for r, x in refs if not x["ignore"]]
     ign = [(r, x) for r, x in refs if x["ignore"]]
     st = collections.Counter()
-    for f in ctx["frames"]:
+    seen = set()
+    for f in ctx["frames"]:                 # each reviewed shot once (a test Adrenaline frame reuses its PSP shot)
+        if f["shot"] in seen:
+            continue
+        seen.add(f["shot"])
         st.update((dec.get(f["shot"]) or {}).get("stats") or {})
     tf = ctx["st"]["tf"]
     approved, flagged = st["box_approved"], st["box_flagged"]
@@ -2942,6 +2975,36 @@ def pin_stats(split, rows, dec, ctx, manifest_path):
                                     "confirmed": sum(1 for c in ctx["cands"] if tf.get(c["shot"]) == "yes"),
                                     "rejected": sum(1 for c in ctx["cands"] if tf.get(c["shot"]) == "no")},
                       "dropped_not_a_game_screen": sorted(ctx["st"]["drops"])}}
+    scored = [r for r in rows if not r.get("report_only")]
+    if len(scored) != len(rows):
+        s_lab = [x for r in scored for x in r["refs"] if not x["ignore"]]
+        s_ign = [x for r in scored for x in r["refs"] if x["ignore"]]
+        out["scored_without_report_only"] = {
+            "frames": len(scored), "frames_by_part": dict(collections.Counter(r["part"] for r in scored)),
+            "refs_labelled": len(s_lab), "by_class": dict(collections.Counter(x["cls"] for x in s_lab)),
+            "by_orientation": dict(collections.Counter("vertical" if x["vertical"] else "horizontal" for x in s_lab)),
+            "ignore_areas": len(s_ign), "ignore_by_why": dict(collections.Counter(x["why"] for x in s_ign)),
+            "characters": sum(len(norm(x["text"])) for x in s_lab),
+            "characters_by_class": {c: sum(len(norm(x["text"])) for x in s_lab if x["cls"] == c) for c in CLASSES}}
+    if split == "test":
+        # eval's hand-checked lines: each kept with its text (an instance whose box two looks could not agree on is
+        # an 'undecided' ignore area instead)
+        ev = collections.Counter()
+        for r in rows:
+            if r.get("report_only") or r["text_free"]:
+                continue
+            texts = collections.Counter(x["text"] for x in r["refs"] if not x["ignore"])
+            for e in eval_rows("vita-test" if r["part"] == "vita" else "psp-test"):
+                if e["url"] != r["url"]:
+                    continue
+                if e.get("uncertain"):
+                    ev["uncertain_ignore"] += 1
+                elif texts[e["text"]] > 0:
+                    texts[e["text"]] -= 1
+                    ev["kept_with_text"] += 1
+                else:
+                    ev["not_found"] += 1
+        out["eval_lines"] = dict(ev)
     return out
 
 

@@ -304,7 +304,7 @@ only).
   second protected read, so the remedy is this disclosure, not a re-selection.
 - **vita-test + psp-test as whole frames, read once** (176 frames, 28 VNs): F1 **0.694**, all-text CER **20.02%**,
   dialogue CER **3.00%**.
-  - Best baselines: #97's detector 0.572-0.580 / 28.2-30.7% / 5.5-8.9%; GRAD + refine 0.266 / 79.03% / 43.70%.
+  - Best baselines: #97's detector 0.571-0.580 / 28.2-30.7% / 5.5-8.9%; GRAD + refine 0.266 / 79.03% / 43.70%.
   - Every comparison is resolved for the winner except the dialogue CER against `s8c24_spot` with VOCR5-S (+0.02)
     and VOCR5-L (+0.06), whose intervals reach above 0.
   - Recall: 96% of the dialogue lines, 93% of the names, 84% of the choices, 48% of the UI labels and 45% of the
@@ -533,7 +533,7 @@ Recall: dialogue 0.955, name 0.926, choice 0.839, ui 0.485, scene 0.450. Tightne
   one way: 8 of them, in 5 development frames, are class `ui`, while others are `watermark` ignore areas. One name
   keeps a decorative `◆` (`v7321_57909`).
 - **The protocol's decode text** (above, frozen) leaves out two drops that the twin makes: components of fewer
-  cells than the blob's `min_cells`, and boxes under 4 f px across (f = 2 for a halved frame). The twin is the
+  cells than the blob's `min_cells`, and boxes whose far − near is under 4 f px before the pad (f = 2 for a halved frame). The twin is the
   specification and the C runtime matches it.
 - **Vertical text:** the spotter flags vertical boxes (42 on the test frames, 74 on development), but the scored sets
   hold few vertical instances (16 and 41). #103's column finder remains the measured vertical path.

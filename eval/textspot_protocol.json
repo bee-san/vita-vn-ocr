@@ -371,6 +371,37 @@
     "test_chars": 6229,
     "test_dialogue_chars": 4707
    }
+  },
+  {
+   "id": 4,
+   "utc": "2026-10-19T16:18:17Z",
+   "before": "every family C training run and every score of a family C arm; the selection (eval/textspot.py select) runs once over families A, B and C after all are scored",
+   "what": [
+    "Owner (2026-10-19 15:32Z): 'for text detection, continue working on the fastest, smallest japanese text detector'; est. A9 ms per full frame and int8 bytes are the ranking keys among qualifying candidates; push the sweep downward in channels, stride / resolution and strip tiling until accuracy breaks, and report the speed / size Pareto front; the pre-registered rule stands; smaller arms are registered by amendment before they are scored.",
+    "Family C: four more of #97's shapes at h2 (half_above 600), seeds 1 and 2, 8 runs named h2_<shape>_seed<n>: s4_c8n5 (2,260 B, 7.5 M MACs per 960 x 544 frame, est. 64.3 ms at 333 MHz), s4_c12 (2,308 B, 9.4 M, 69.5 ms), s4p_c8 (2,732 B, 17.9 M, 71.9 ms) and s4_c16 (3,140 B, 14.3 M, 84.1 ms) (VTSP bytes; eval/textspot_a9_20261019.json's summary rows, all eligible: arena up to 960 x 544 at most 65,615 B). The recipe, the data, train/textspot_train.py and eval/reproducibility/textspot-20261019/sweep.sh are amendment 1's, unchanged (their sha256 as pinned); the runs go to /shared/artifacts/textspot/runs_c, through the same sweep script, at most 5 at once, every run to its last step.",
+    "Scoring: through the pinned harness (eval/textspot.py, no code change) as det:C_<run>=<final.vtsp> and detref:C_<run>=<final.vtsp> arms (arm names C_<run>_det, C_<run>_detref), with the C drivers, read by VOCR5-N + VOCR5-V (rule) and VOCR5-S / VOCR5-L (report), into /shared/artifacts/textspot/eval/famC. The rule is unchanged: eval/textspot.py select applies textspot_metrics.apply_rule once over every eligible arm of families A, B and C together (size order: VTSP bytes, then MACs, then det before det+refine; the winner, the replacement rule and the no-winner case as registered). The speed / size Pareto front (VTSP bytes, est. ms at 333 / 444 MHz, dev F1, all-text and dialogue CER) of every eligible candidate is reported beside the rule's result.",
+    "Disclosure: these four shapes were chosen after family B's first 20 runs had been scored on the development frames: their point estimates put the size at which accuracy breaks between h2_s4_c8 (1,572 B; dialogue CER 7.0-9.8% against the best baseline's 3.84%) and h2_s4_c12n4 / h2_s4_c16n4 (2,840 / 3,892 B), and the four fill that gap with shapes the runtime and the A9 table already cover. The development intervals of family C are therefore optimistic (a choice informed by the same development set), as rounds 2-3 of #97 were; the test set and CLANNAD, read once after the selection, are the check.",
+    "Not added, and why: smaller channel counts at h2 (s4_c6 at 1,312 B, est. 47.1 ms; s4_c4 at 1,036 B, 41.7 ms) save no time over h2_s4_c8 (46.7 ms; the halving and the stem dominate) below a size whose dialogue reading is already broken; a coarser resolution (stride 8 at h2, 16 frame pixels per cell: h2_s8_c16 / c24 / c32, 44.8-73.6 ms) is already in family B and reads dialogue at 9.0-13.0%, and a quarter-scale input would need a decode the frozen twin does not have; strip tiling changes no output (the runtime streams rows: the arena depends on the frame's width only and a strip's height on nothing the network computes), so it is reported (arena by width), not swept."
+   ],
+   "settings": {
+    "family_c": {
+     "scale": "h2",
+     "half_above": 600,
+     "shapes": [
+      "s4_c8n5",
+      "s4_c12",
+      "s4p_c8",
+      "s4_c16"
+     ],
+     "seeds": [
+      1,
+      2
+     ],
+     "runs_dir": "$HERD/shared/artifacts/textspot/runs_c",
+     "units_dir": "$HERD/shared/artifacts/textspot/eval/famC",
+     "arm_names": "C_<run>_det, C_<run>_detref"
+    }
+   }
   }
  ]
 }

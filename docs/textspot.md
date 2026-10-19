@@ -242,6 +242,27 @@ Each amendment is dated in `eval/textspot_protocol.json` and precedes the runs a
    - Review agreement: 97.05% of the boxes and 97.72% of the texts.
    - The set tool is re-pinned for its test-assembly fix. The dev manifest re-assembles byte for byte.
 
+4. **Family C: the fastest and smallest** (owner, 15:32Z: "continue working on the fastest, smallest japanese text
+   detector"). Registered before any of its runs and scores.
+   - **The arms:** four more of #97's shapes at `h2`, seeds 1 and 2 (8 runs):
+     - `s4_c8n5`: 2,260 B, est. 64.3 ms;
+     - `s4_c12`: 2,308 B, 69.5 ms;
+     - `s4p_c8`: 2,732 B, 71.9 ms;
+     - `s4_c16`: 3,140 B, 84.1 ms.
+   - **Recipe and scoring:** the recipe, data, trainer and sweep script are amendment 1's. Scoring goes through the
+     pinned harness as `det:` / `detref:` arms.
+   - **The rule is unchanged:** one selection over families A, B and C. The speed/size Pareto front is reported
+     beside it.
+   - **Disclosure:** the four shapes were chosen after family B's first 20 runs had been scored on the development
+     frames. They fill the gap where the point estimates put the break: `h2_s4_c8` (1,572 B) reads dialogue at
+     7.0-9.8% CER, while `h2_s4_c12n4` and `h2_s4_c16n4` are 2.8-3.9 KB. Family C's development intervals are
+     therefore optimistic; the test set and CLANNAD are the check.
+   - **Not added:**
+     - fewer channels at `h2`: no time saved (`s4_c6` 47.1 ms, `s4_c8` 46.7 ms);
+     - a coarser resolution: stride 8 at `h2` is already in family B and reads dialogue at 9-13%;
+     - a quarter-scale input: it would need a new decode;
+     - strip tiling: it changes no output (the runtime streams rows), so it is reported, not swept.
+
 ## Results
 
 (none yet)

@@ -32,11 +32,22 @@ that is not given are not read (run.json lists what was read and what was not). 
 against its manifest's npy and json sha256 before training. All five sources of the mix must be present (tests
 pass --allow-missing-sources, and #97's Pool then renormalises the mix over the sources present, as #97's does).
 
+Skip lists: the textspot data pin (data/manifests/textspot_shards_v1.json, synth/textspot_real_half.py) lists the
+real canvases the protocol's exclusions still remove from #97's pinned real half: real.measured.skip's
+eval_screenshot.skip_shots (screenshots that a later eval or eval/linefind list names) and linefind_list_vn.skip_vns
+(VNs of an eval/linefind list). Every real canvas (a sample whose src does not start with "synth") whose shot is in
+skip_shots or whose vn is in skip_vns is dropped while the pool is built, so it is never drawn. Every --manifest
+that carries real.measured.skip contributes its lists; a textspot data pin (kind textspot-shards, or a file named
+textspot_shards_*.json) without both lists is refused. run.json records each list's length and sha256 (of its
+items, each followed by a newline, in the manifest's order) and the canvases dropped per source: by shot, by VN
+alone (shot not listed), the overlap (both, counted once) and the total, beside the counts the pin itself records.
+
 Outputs (the last step is the run's model; nothing is selected inside a run; RUN must not exist or be empty, so a
 crashed run restarts from scratch in a fresh directory):
-  RUN/run.json    started (UTC), the arguments, shape, scale, seed, the recipe, the manifests' sha256, the shards
-                  read, the pool per source, the sha256 of every train/ and synth/ file the process imported, the
-                  protocol's sha256 and the checkout's commit (with any modified tracked file)
+  RUN/run.json    started (UTC), the arguments, shape, scale, seed, the recipe, the manifests' sha256, the skip
+                  lists and the canvases they dropped, the shards read, the pool per source, the sha256 of every
+                  train/ and synth/ file the process imported, the protocol's sha256 and the checkout's commit (with
+                  any modified tracked file)
   RUN/log.jsonl   #97's records: every 200 steps (step, lr, sec, k_bce, dice, o, a) and the QAT record
   RUN/final.pt    #97's quantisation-aware checkpoint (kind textdet-qat)
   RUN/final.vtd   the int8 VTDT blob (train/textdet_export.export_checkpoint)
@@ -141,18 +152,60 @@ def window(rng, canvas, scale):
     return img, ox, oy, w, h, f
 
 
+def list_sha256(items):
+    """sha256 of a list's items, each followed by a newline, in the given order (the skip lists' fingerprint)."""
+    return hashlib.sha256("".join(f"{x}\n" for x in items).encode("utf-8")).hexdigest()
+
+
+def is_data_pin(path, doc):
+    return doc.get("kind") == "textspot-shards" or Path(path).name.startswith("textspot_shards")
+
+
+def skip_lists(manifests):
+    """The real canvases the data pins exclude: (skip_shots, skip_vns, record). Each --manifest with
+    real.measured.skip gives its eval_screenshot.skip_shots and linefind_list_vn.skip_vns; a textspot data pin
+    without both lists is refused. The record per list source: lengths, sha256 (list_sha256) and the canvas
+    counts the pin records (synth/textspot_real_half.py)."""
+    shots, vns, rec = set(), set(), []
+    for man in manifests:
+        doc = json.loads(Path(man).read_text(encoding="utf-8"))
+        skip = ((doc.get("real") or {}).get("measured") or {}).get("skip")
+        if skip is None:
+            if is_data_pin(man, doc):
+                raise SystemExit(f"{man}: a textspot data pin without real.measured.skip")
+            continue
+        try:
+            ev, lf = skip["eval_screenshot"], skip["linefind_list_vn"]
+            s, v = list(ev["skip_shots"]), list(lf["skip_vns"])
+        except (KeyError, TypeError) as e:
+            raise SystemExit(f"{man}: real.measured.skip lacks eval_screenshot.skip_shots or "
+                             f"linefind_list_vn.skip_vns ({e!r})") from None
+        if not all(isinstance(x, str) and x for x in s + v):
+            raise SystemExit(f"{man}: a skip list holds a non-string or empty item")
+        shots.update(s)
+        vns.update(v)
+        rec.append({"manifest": str(man), "skip_shots": len(s), "skip_shots_sha256": list_sha256(s),
+                    "skip_vns": len(v), "skip_vns_sha256": list_sha256(v),
+                    "pin_counts": {"eval_screenshot": {k: ev.get(k) for k in ("shots", "canvases", "by_source")},
+                                   "linefind_list_vn": {k: lf.get(k) for k in ("shots", "canvases", "by_source")}}})
+    return frozenset(shots), frozenset(vns), rec
+
+
 class FramePool(TT.Pool):
     """#97's Pool over several manifests: the shards in the given directories, memory-mapped, grouped by #97's
     sources (synth: src starting with "synth"; realplus, teacher, owner, devnative). verify: check each shard's npy
-    and json against its manifest's sha256 first."""
+    and json against its manifest's sha256 first. skip: (shots, vns): a real canvas whose shot or vn is listed is
+    dropped and counted in self.dropped[source] (by_shot, by_vn_only, both, total)."""
 
-    def __init__(self, manifests, dirs, verify=False):
+    def __init__(self, manifests, dirs, verify=False, skip=(frozenset(), frozenset())):
         roots = {}
         for d in dirs:
             if Path(d).name in roots:
                 raise SystemExit(f"two shard directories named {Path(d).name}")
             roots[Path(d).name] = Path(d)
+        skip_shots, skip_vns = (frozenset(x) for x in skip)
         self.items = {k: [] for k in MIX}
+        self.dropped = {k: {"by_shot": 0, "by_vn_only": 0, "both": 0, "total": 0} for k in MIX if k != "synth"}
         self.data, self.read, self.skipped = [], [], {}
         used = set()
         for man in manifests:
@@ -172,12 +225,24 @@ class FramePool(TT.Pool):
                 d = len(self.data)
                 self.data.append(np.load(npy, mmap_mode="r"))
                 samples = json.loads(js.read_text(encoding="utf-8"))["samples"]
+                kept = 0
                 for smp in samples:
                     src = "synth" if smp["src"].startswith("synth") else smp["src"]
                     if src not in self.items:
                         raise SystemExit(f"{js}: source {smp['src']!r} is not in #97's mix")
+                    if src != "synth":
+                        by_shot, by_vn = smp.get("shot") in skip_shots, smp.get("vn") in skip_vns
+                        if by_shot or by_vn:
+                            c = self.dropped[src]
+                            c["by_shot"] += by_shot
+                            c["by_vn_only"] += by_vn and not by_shot
+                            c["both"] += by_shot and by_vn
+                            c["total"] += 1
+                            continue
                     self.items[src].append((d, smp))
-                self.read.append({"manifest": str(man), "dir": s["dir"], "name": s["name"], "samples": len(samples)})
+                    kept += 1
+                self.read.append({"manifest": str(man), "dir": s["dir"], "name": s["name"], "samples": len(samples),
+                                  "kept": kept})
         unused = sorted(set(roots) - used)
         if unused:
             raise SystemExit(f"no manifest shard lies in {unused}")
@@ -192,7 +257,30 @@ class FramePool(TT.Pool):
                   "vertical": sum(int(ln[4]) for _, s in v for ln in s["lines"]),
                   "ignore": sum(len(s["ignore"]) for _, s in v)} for k, v in self.items.items()}
         return {"by_source": by, "mix_effective": dict(zip(self.keys, (round(float(q), 6) for q in self.p))),
+                "dropped": self.dropped, "dropped_total": sum(c["total"] for c in self.dropped.values()),
                 "shards_read": self.read, "shards_not_read": self.skipped}
+
+
+def skip_record(lists, dropped):
+    """run.json's "skip": the lists, the canvases dropped per source, the pin's own counts and where they differ
+    (by_shot per source against the pin's eval_screenshot canvases, by_vn_only against its linefind_list_vn
+    canvases; pin_differs: {source: {column: [dropped, pin]}})."""
+    want = {}
+    for r in lists:
+        for key, col in (("eval_screenshot", "by_shot"), ("linefind_list_vn", "by_vn_only")):
+            for src, n in ((r["pin_counts"][key] or {}).get("by_source") or {}).items():
+                want.setdefault(src, {"by_shot": 0, "by_vn_only": 0})[col] += int(n)
+    srcs = sorted(set(want) | set(dropped))
+    differs = {src: {col: [dropped.get(src, {}).get(col, 0), want.get(src, {}).get(col, 0)]
+                     for col in ("by_shot", "by_vn_only")
+                     if dropped.get(src, {}).get(col, 0) != want.get(src, {}).get(col, 0)} for src in srcs}
+    differs = {k: v for k, v in differs.items() if v}
+    return {"lists": lists, "how": "a real canvas (src not 'synth...') whose shot is in skip_shots or whose vn is in "
+            "skip_vns is dropped before the pool is built; list sha256 = sha256 of its items each followed by a "
+            "newline, in the manifest's order",
+            "dropped": dropped, "dropped_total": sum(c["total"] for c in dropped.values()),
+            "pin_expects": want, "pin_expects_total": sum(sum(d.values()) for d in want.values()),
+            "matches_pin": bool(lists) and not differs, "pin_differs": differs}
 
 
 def make_batch(pool, rng, s, scale):
@@ -221,13 +309,14 @@ def make_batch(pool, rng, s, scale):
 
 
 class FrameBatches(torch.utils.data.IterableDataset):
-    def __init__(self, manifests, dirs, stride, seed, scale):
+    def __init__(self, manifests, dirs, stride, seed, scale, skip=(frozenset(), frozenset())):
         super().__init__()
         self.manifests, self.dirs = list(manifests), list(dirs)
         self.stride, self.seed, self.scale = stride, seed, scale
+        self.skip = tuple(frozenset(x) for x in skip)
 
     def __iter__(self):
-        pool = FramePool(self.manifests, self.dirs)
+        pool = FramePool(self.manifests, self.dirs, skip=self.skip)
         rng = np.random.default_rng(self.seed)
         while True:
             yield make_batch(pool, rng, self.stride, self.scale)
@@ -293,11 +382,13 @@ def main(argv=None):
     if out.exists() and any(out.iterdir()):
         raise SystemExit(f"{out} is not empty: a run starts from scratch in a fresh directory")
     started = utc()
-    pool = FramePool(args.manifest, args.shards, verify=True)
+    skip_shots, skip_vns, lists = skip_lists(args.manifest)
+    pool = FramePool(args.manifest, args.shards, verify=True, skip=(skip_shots, skip_vns))
     missing = [k for k in MIX if not pool.items[k]]
     if missing and not args.allow_missing_sources:
         raise SystemExit(f"no samples of {missing} (the mix needs all of {list(MIX)})")
     pool_summary = pool.summary()
+    skip = skip_record(lists, pool.dropped)
     del pool
     out.mkdir(parents=True, exist_ok=True)
     torch.set_num_threads(args.threads)
@@ -307,7 +398,8 @@ def main(argv=None):
     half_above = HALF_ABOVE[args.scale]
     model = TM.TextDet(shape)
     opt = torch.optim.AdamW(TT.param_groups(list(model.parameters())), lr=TT.LR)
-    loader = torch.utils.data.DataLoader(FrameBatches(args.manifest, args.shards, s, args.seed, args.scale),
+    loader = torch.utils.data.DataLoader(FrameBatches(args.manifest, args.shards, s, args.seed, args.scale,
+                                                      (skip_shots, skip_vns)),
                                          batch_size=None, num_workers=args.workers,
                                          persistent_workers=args.workers > 0,
                                          prefetch_factor=4 if args.workers > 0 else None)
@@ -325,7 +417,7 @@ def main(argv=None):
                       "windows": "uniformly random offset; a side that fits is whole; no region crops",
                       "positives": "every line of every class; under min_across px across: ignore",
                       "loader_workers": args.workers},
-           "manifests_sha256": {m: TT.sha256(m) for m in args.manifest},
+           "manifests_sha256": {m: TT.sha256(m) for m in args.manifest}, "skip": skip,
            "shards_dirs": [str(Path(d)) for d in args.shards], "shards_verified": True, "pool": pool_summary,
            "code_sha256": code_sha256(),
            "protocol_sha256": TT.sha256(PROTOCOL) if PROTOCOL.exists() else None, "git": git_state(),

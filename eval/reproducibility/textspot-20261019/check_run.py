@@ -6,10 +6,10 @@
 Checks: done.json's sha256 and bytes are the blobs'; final.vtd loads in synth/textdet_twin.Model and final.vtsp in
 synth/textspot_twin.Model with the run's half_above (600 for h2, 0 for f1) and conf_min 1, and its network is the
 VTDT blob; the twin (textspot_twin.spot) runs on two pinned procedural frames (960 x 544 and 480 x 272) and returns
-boxes inside them; run.json's code sha256 equal the files in this checkout and its manifests' sha256 the
-manifests here (a difference is printed, not fatal: the blob checks are what make a run usable). With --finished
-it appends "name vtsp_sha256 vtsp_bytes steps wall_seconds" to FILE unless that line is already there.
-Prints CHECK_OK or exits non-zero.
+boxes inside them; a run that read a textspot data pin recorded its skip lists; run.json's code sha256 equal the
+files in this checkout and its manifests' sha256 the manifests here (a difference is printed, not fatal: the blob
+checks are what make a run usable). With --finished it appends "name vtsp_sha256 vtsp_bytes steps wall_seconds" to
+FILE unless that line is already there. Prints CHECK_OK or exits non-zero.
 """
 import argparse
 import hashlib
@@ -63,6 +63,9 @@ def check(run_dir):
         bad.append("final.vtsp is not pack(final.vtd, half_above, 1)")
     if done["steps"] != info["steps"]:
         bad.append(f"done.json steps {done['steps']} != run.json steps {info['steps']}")
+    sk = info.get("skip") or {}
+    if any(Path(m).name.startswith("textspot_shards") for m in info["manifests_sha256"]) and not sk.get("lists"):
+        bad.append("the run read a textspot data pin but recorded no skip lists")
     boxes = {}
     for seed, (H, W) in ((1, (544, 960)), (2, (272, 480))):
         r = TS.spot(m, procedural_frame(seed, H, W))
@@ -100,7 +103,9 @@ def main():
         if line not in old:
             with open(f, "a", encoding="utf-8") as fh:
                 fh.write(line + "\n")
-    print(f"CHECK_OK {line} boxes {boxes} ({info['started']} -> {done['finished']})")
+    sk = info.get("skip") or {}
+    print(f"CHECK_OK {line} boxes {boxes} skip-dropped {sk.get('dropped_total')} "
+          f"({info['started']} -> {done['finished']})")
 
 
 if __name__ == "__main__":

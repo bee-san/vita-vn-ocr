@@ -262,6 +262,120 @@ def test_a_run_refuses_a_used_directory_and_a_missing_source(tmp_path):
     assert not (tmp_path / "fresh").exists()
 
 
+# ---------------------------------------------------------------- the data pin's skip lists
+
+def canvas_of(src, vn, shot, rng, h=64, w=96):
+    g = rng.integers(0, 60, (h, w)).astype(np.uint8)
+    g[20:36, 10:80] = 230
+    return {"canvas": g, "lines": [[10, 20, 80, 36, 0, "text"]], "ignore": [], "src": src, "kind": "psp", "vn": vn,
+            "shot": shot, "meta": {}}
+
+
+def skip_shards(tmp_path, skip=True, name="textspot_shards_v1.json"):
+    """A textspot data pin (two synthetic canvases, with or without real.measured.skip) and a #97-style manifest
+    of real canvases: listed shots, canvases of listed VNs, one of both (counted once), a shot with two canvases,
+    one shot in two sources, and canvases that stay."""
+    rng = np.random.default_rng(13)
+    sd, rd = tmp_path / "synth_frames", tmp_path / "real"
+    sd.mkdir()
+    rd.mkdir()
+    synth = [canvas_of("synth:vita", None, None, rng), canvas_of("synth:empty", None, None, rng)]
+    real = [canvas_of("realplus", "v1", "v1_10", rng),        # listed shot
+            canvas_of("realplus", "v1", "v1_11", rng),        # stays
+            canvas_of("teacher", "v2", "v2_20", rng),         # listed VN
+            canvas_of("teacher", "v2", "v2_21", rng),         # listed VN, two canvases of one shot
+            canvas_of("teacher", "v2", "v2_21", rng),
+            canvas_of("teacher", "v3", "v3_30", rng),         # listed shot of a listed VN: both, counted once
+            canvas_of("devnative", "v3", "v3_30", rng),       # the same shot in a second source
+            canvas_of("owner", "v4", "v4_p2f0001", rng),      # stays
+            canvas_of("owner", "v2", "v2_p2f0002", rng),      # an owner frame of a listed VN
+            canvas_of("devnative", "v5", "v5_50", rng)]       # stays
+    DATA.write_shard(sd / "synth_frames_0000", synth)
+    DATA.write_shard(rd / "real_0000", real)
+
+    def pin(d, n):
+        return {"dir": d.name, "name": n, "npy_sha256": sha(d / f"{n}.npy"), "json_sha256": sha(d / f"{n}.json")}
+
+    doc = {"kind": "textspot-shards", "shards": [pin(sd, "synth_frames_0000")]}
+    if skip:
+        doc["real"] = {"measured": {"skip": {
+            "eval_screenshot": {"shots": 2, "canvases": 3, "by_source": {"realplus": 1, "teacher": 1, "devnative": 1},
+                                "skip_shots": ["v1_10", "v3_30"]},
+            "linefind_list_vn": {"shots": 3, "canvases": 4, "by_source": {"teacher": 3, "owner": 1},
+                                 "skip_vns": ["v2", "v3"]}}}}
+    man_a = tmp_path / name
+    man_a.write_text(json.dumps(doc))
+    man_b = tmp_path / "textdet_like.json"
+    man_b.write_text(json.dumps({"kind": "textdet-shards", "shards": [pin(rd, "real_0000")]}))
+    return [man_a, man_b], [sd, rd]
+
+
+def test_the_skip_lists_drop_listed_real_canvases_before_the_pool_is_built(tmp_path):
+    mans, dirs = skip_shards(tmp_path)
+    shots, vns, lists = ST.skip_lists(mans)
+    assert shots == {"v1_10", "v3_30"} and vns == {"v2", "v3"}
+    assert lists[0]["skip_shots_sha256"] == hashlib.sha256(b"v1_10\nv3_30\n").hexdigest()
+    assert lists[0]["skip_vns_sha256"] == hashlib.sha256(b"v2\nv3\n").hexdigest()
+    pool = ST.FramePool(mans, dirs, verify=True, skip=(shots, vns))
+    kept = {k: sorted(str(s["shot"]) for _, s in v) for k, v in pool.items.items()}
+    assert kept == {"synth": ["None", "None"], "realplus": ["v1_11"], "teacher": [], "owner": ["v4_p2f0001"],
+                    "devnative": ["v5_50"]}
+    assert pool.dropped == {"realplus": {"by_shot": 1, "by_vn_only": 0, "both": 0, "total": 1},
+                            "teacher": {"by_shot": 1, "by_vn_only": 3, "both": 1, "total": 4},
+                            "owner": {"by_shot": 0, "by_vn_only": 1, "both": 0, "total": 1},
+                            "devnative": {"by_shot": 1, "by_vn_only": 0, "both": 1, "total": 1}}
+    assert pool.keys == ["synth", "realplus", "owner", "devnative"]       # teacher is empty now
+    rec = ST.skip_record(lists, pool.dropped)
+    assert rec["dropped_total"] == 7 and rec["pin_expects_total"] == 7 and rec["matches_pin"]
+    assert rec["pin_differs"] == {}
+    # the same lists without the skip: nothing dropped; a pin whose counts disagree is recorded, not refused
+    assert sum(len(v) for v in ST.FramePool(mans, dirs).items.values()) == 12
+    rec = ST.skip_record(lists, {**pool.dropped, "owner": {"by_shot": 0, "by_vn_only": 2, "both": 0, "total": 2}})
+    assert not rec["matches_pin"] and rec["pin_differs"] == {"owner": {"by_vn_only": [2, 1]}}
+    # the loader's pool drops the same canvases
+    batches = ST.FrameBatches([str(m) for m in mans], [str(d) for d in dirs], 8, 1, "h2", (shots, vns))
+    x = next(iter(batches))[0]
+    assert x.shape == (16, 1, 256, 512)
+
+
+def test_a_data_pin_without_its_skip_lists_is_refused(tmp_path):
+    mans, _ = skip_shards(tmp_path, skip=False)
+    with pytest.raises(SystemExit, match="without real.measured.skip"):
+        ST.skip_lists(mans)
+    other = tmp_path / "other"
+    other.mkdir()
+    mans, _ = skip_shards(other, skip=False, name="any_name.json")             # kind textspot-shards still
+    with pytest.raises(SystemExit, match="without real.measured.skip"):
+        ST.skip_lists(mans)
+    assert ST.skip_lists(mans[1:]) == (frozenset(), frozenset(), [])        # #97's manifest needs none
+    doc = json.loads(mans[0].read_text())
+    doc["real"] = {"measured": {"skip": {"eval_screenshot": {"skip_shots": ["v1_1"]}}}}
+    mans[0].write_text(json.dumps(doc))
+    with pytest.raises(SystemExit, match="lacks"):
+        ST.skip_lists(mans)
+    doc["real"]["measured"]["skip"]["linefind_list_vn"] = {"skip_vns": ["v2", ""]}
+    mans[0].write_text(json.dumps(doc))
+    with pytest.raises(SystemExit, match="non-string or empty"):
+        ST.skip_lists(mans)
+
+
+def test_a_run_records_the_skip(tmp_path):
+    mans, dirs = skip_shards(tmp_path)
+    run = tmp_path / "run"
+    p = subprocess.run([sys.executable, str(ROOT / "train" / "textspot_train.py"), "--shape", "s8_c8", "--scale", "f1",
+                        "--seed", "3", "--manifest", *map(str, mans), "--shards", *map(str, dirs), "--out", str(run),
+                        "--probe", "1", "--threads", "1", "--workers", "0", "--allow-missing-sources"],
+                       capture_output=True, text=True, timeout=900, cwd=ROOT)
+    assert p.returncode == 0, p.stdout[-2000:] + p.stderr[-4000:]
+    assert json.loads((run / "probe.json").read_text())["steps_timed"] == 1
+    info = json.loads((run / "run.json").read_text())
+    sk = info["skip"]
+    assert sk["dropped_total"] == 7 and sk["matches_pin"] and len(sk["lists"]) == 1
+    assert sk["lists"][0]["manifest"] == str(mans[0]) and sk["lists"][0]["skip_shots"] == 2
+    assert info["pool"]["by_source"]["teacher"]["canvases"] == 0 and info["pool"]["dropped_total"] == 7
+    assert info["manifests_sha256"] == {str(m): sha(m) for m in mans}
+
+
 def procedural_frame(rng, H, W):
     g = np.full((H, W), int(rng.integers(0, 256)), np.int32)
     for _ in range(12):

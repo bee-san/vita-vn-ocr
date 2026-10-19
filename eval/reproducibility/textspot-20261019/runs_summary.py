@@ -67,9 +67,13 @@ def summarise(out_dir):
                "restarts": [r for r in restarts if r.get("run") == name]}
         if (d / "run.json").exists():
             info = json.loads((d / "run.json").read_text())
+            sk = info.get("skip") or {}
             row.update(state="running", started=info["started"], steps=info["steps"], qat_start=info["qat_start"],
                        git=info.get("git"), code_sha256=info["code_sha256"],
                        manifests_sha256=info["manifests_sha256"], protocol_sha256=info.get("protocol_sha256"),
+                       skip={"dropped": sk.get("dropped"), "dropped_total": sk.get("dropped_total"),
+                             "lists": [{k: v for k, v in r.items() if k.endswith("sha256") or k.startswith("skip")}
+                                       for r in sk.get("lists") or []]},
                        curve=curve(jsonl(d / "log.jsonl"), info["qat_start"]))
         if (d / "done.json").exists():
             done = json.loads((d / "done.json").read_text())
@@ -79,7 +83,7 @@ def summarise(out_dir):
         rows.append(row)
     fin = [r for r in rows if r["state"] == "finished"]
     same = {}
-    for key in ("code_sha256", "manifests_sha256", "protocol_sha256", "git"):
+    for key in ("code_sha256", "manifests_sha256", "protocol_sha256", "git", "skip"):
         vals = {json.dumps(r.get(key), sort_keys=True) for r in fin}
         same[key] = len(vals) <= 1
     return {"kind": "textspot-train-runs", "runs": rows, "finished": len(fin), "of": len(rows),

@@ -199,6 +199,30 @@ on it, the test one before the selection commit.
 - Sizes are exact: VTSP bytes, the arena, and VitaSDK `-Os` `.text`.
 - Every console figure is a host estimate: nothing runs on a console (hardware work is paused).
 
+### Amendments
+
+Each amendment is dated in `eval/textspot_protocol.json` and precedes the runs and scores it names.
+
+1. **Data and recipe** (2026-10-19T11:33Z, before every family B run and every score).
+   - **Synthetic half:** `data/manifests/textspot_shards_v1.json`, 80,000 whole frames:
+     - by kind: vita 27,828, psp 20,063, adrenaline 11,992, pc 8,047, text-free 12,070;
+     - 501,887 lines: dialogue 114,822, name 38,831, choice 23,908, ui 297,494, scene 26,832; 35,220 of them vertical.
+
+     The QA saw unlabelled scene text twice in 60+ frames; it stays.
+   - **Real half:** #97's 28,602 whole-screenshot canvases, minus 337 the protocol excludes and #97 did not:
+     - screenshots of #103's vertical sets and of eval/linefind's candidate lists and `psp_pool`;
+     - every canvas of the 23 VNs of those lists.
+   - **Recipe:**
+     - per-window synthetic draw p 0.5 (#97's);
+     - 256×512 windows at uniform offsets;
+     - the exact halving for `h2`;
+     - every class a positive;
+     - #97's round-1 targets, losses and schedule.
+   - **Eligibility basis:** the runtime (`runtime/vocr_textspot.c`) and its A9 / arena table
+     (`eval/textspot_a9_20261019.json`). The arena is `vocr_textspot_arena_bytes(m, 960, 544)` (any frame up to
+     960×544). The time is the default call on a grey frame. All 11 family B shapes are eligible: 44.8-136.4 ms and
+     ≤ 80,799 B.
+
 ## Results
 
 (none yet)

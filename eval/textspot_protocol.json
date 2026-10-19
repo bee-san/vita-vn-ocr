@@ -299,5 +299,34 @@
   "mac_rate": "VOCR3-H15's console rate: 1,564,992 MACs per CTC frame at 5.0-5.2 ms at 333 MHz (report)",
   "label": "every console time and memory figure is a host estimate; nothing runs on a console"
  },
- "amendments": []
+ "amendments": [
+  {
+   "id": 1,
+   "utc": "2026-10-19T11:33:07Z",
+   "before": "every family B training run (train/textspot_train.py through eval/reproducibility/textspot-20261019/sweep.sh) and every score of any arm on a textspot frame",
+   "what": [
+    "Synthetic half: data/manifests/textspot_shards_v1.json (pinned below), 80 shards of 1,000 whole frames rendered by synth/textspot_data.py (seed 20261019): vita 27,828, psp 20,063, adrenaline 11,992, pc 8,047 and text-free (src synth:empty) 12,070 frames; 501,887 lines (dialogue 114,822, name 38,831, choice 23,908, ui 297,494, scene 26,832; vertical 35,220) and 25,738 ignore areas, over textgate's clean scene pool cut further (vita 64, psp 985, hires 3,123 scenes of 1,117 VNs: no eval, eval/linefind or CHAOS;CHILD screenshot, no reserved VN). The helper's QA (60+ frames viewed) saw unlabelled scene text the inpainting missed twice; it stays (a small label noise, disclosed).",
+    "Real half: #97's real canvases pinned by data/manifests/textdet_shards_v1.json (realplus 40, teacher 10, devnative 1, owner 6 shards; 28,602 whole screenshots at the console's target size, RESERVE_OK against the current reserved.json; #97's synthetic shards are not read), minus what this protocol's exclusions name and #97's did not: every canvas of a screenshot an eval list holds (textspot_shards_v1.json real.measured.skip.eval_screenshot.skip_shots, 77 shots: #103's vertical sets, eval/linefind's candidate lists and psp_pool) and every canvas of the 23 VNs of eval/linefind lists outside #97's four sets (real.measured.skip.linefind_list_vn.skip_vns). The trainer drops them before the pool is built: 337 canvases measured (realplus 22, teacher 143, owner 163, devnative 9; the pin's own count, 332, misses 5 teacher canvases of v15773 that are also devnative shots, a counting key in synth/textspot_real_half.py; the lists are complete). Pool after the cut: synthetic 80,000, realplus 19,683, teacher 5,860, owner 2,658, devnative 64. #97's real canvases make lines under 8 px or over 72 px across ignore areas (its INK_MIN / INK_MAX); they stay so (no loss on them).",
+    "Recipe details (train/textspot_train.py, pinned below): windows are drawn one at a time, synthetic with probability 0.5 (#97's draw: 8 of 16 per batch on average), real ones from realplus 0.35, teacher 0.35, owner 0.25, devnative 0.05; a window is 256 x 512 at the network's scale at a uniformly random offset (a canvas that fits is used whole and the layers masked to it, as #97); h2 halves a canvas wider than 600 px with textspot_twin.halve and maps boxes start floor(v / 2), end ceil(v / 2); every line of every class is a positive; a line under 4 px across at the network's scale is an ignore area; #97's round-1 kernel rule (not --strict-kernel), losses, AdamW 4e-3 with 500 warm-up steps and cosine to 1e-4, gradient clip 5, int8 fake quantisation from step 24,000, 30,000 steps; the last step is the run's model; RUN/final.vtsp = textspot_twin.pack(final.vtd, 600 for h2 or 0 for f1, conf_min 1). The 22 runs go through eval/reproducibility/textspot-20261019/sweep.sh (pinned below), at most 5 at once; a crashed run restarts from scratch with the same seed.",
+    "The probes (eval/textspot_train_probe_20261019.json: 11 speed probes and 11 300-step smoke runs on #97's shards, 09:3x-09:5xZ, and two 60-step data-path probes on these shards, about 11:30Z, all in scratch directories) are not runs of the sweep; nothing of them is used.",
+    "Eligibility inputs: runtime/vocr_textspot.c / .h (the runtime, bit-exact with synth/textspot_twin.py; pinned below) and eval/textspot_a9_20261019.json (its A9 and arena table, pinned below). The rule's arena is vocr_textspot_arena_bytes(m, 960, 544), the bytes for any frame up to 960 x 544 (for h2 the 600-px full-size frame sets it; the 960 x 544 frame's own need is reported); the rule's time is the default call's (dark pass included) A9 model high bound x 1.0007 on a grey 960 x 544 frame at 333 MHz. Every family B shape is eligible by both: 44.8-136.4 ms and at most 80,799 B. RGBA frames and VOCR_TEXTSPOT_NO_DARK are report only (the console's finders read grey rows)."
+   ],
+   "sources_sha256": {
+    "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+    "synth/textspot_data.py": "db4c44fdae6538385cd535f44335df986e57bd96463dafe1a24f37db9634ba84",
+    "synth/textspot_real_half.py": "33b0eaca35f619627689c09ea9e56e7e93d7892df715c9adab41148b418def14",
+    "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d",
+    "eval/reproducibility/textspot-20261019/sweep.sh": "477ddeb26594bba23d579cf5c16e6d3716b7beea7350e978aa8dbcb39c20faf3",
+    "runtime/vocr_textspot.c": "d2054a2d5ccbda1a31c5aafec0079d4da65cf13bc1d5db991dc8cdda746df331",
+    "runtime/vocr_textspot.h": "a25ef000164af61610a6f5201fb9e345f8a67cf6525d2f16bae44afca712dd57",
+    "eval/textspot_a9_20261019.json": "2ac3e9fa35a8b74e94c08e705435a9a55ed354a062e4ce847436e9f484d5b677"
+   },
+   "settings": {
+    "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+    "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a",
+    "real_canvases_dropped": 337,
+    "rule_arena": "vocr_textspot_arena_bytes(m, 960, 544)"
+   }
+  }
+ ]
 }

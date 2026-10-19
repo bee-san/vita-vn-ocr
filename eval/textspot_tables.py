@@ -17,6 +17,9 @@ Tables:
               model's high bound x 1.0007, plus 1.4 ms per refined line at 333 MHz for det+refine; x 333/444 at 444
               MHz: estimates), C = twin, P / R / F1, CER all and dialogue (N; S / L report), the text-free
               false-alarm share, the pick's hit share, eligible, qualifies (winner / report candidate marked)
+  pareto      amendment 4's speed / size Pareto front: the eligible candidates no other eligible candidate
+              dominates on VTSP bytes, est. ms at 333 MHz (444 MHz is the same order), dev F1 and both CERs (at least
+              as good on every key and better on one; --pareto-keys picks other keys), in the rule's size order
   rule        the winner's (or the report candidate's) comparisons with every baseline: F1, CER all and dialogue
               differences with their VN-cluster 95% intervals, and whether it beats that baseline
   parts       its per-part rows (vita, psp, adrenaline, pc) next to the baselines with the highest F1 and the
@@ -157,6 +160,38 @@ def candidate_table(sel, rep, eligible_only=False, family=None):
     return "\n".join(md)
 
 
+PARETO_KEYS = {"bytes": lambda c, s: c["blob_bytes"], "ms": lambda c, s: c["est_ms_333_960"],
+               "f1": lambda c, s: -s["detection"]["f1"], "cer_all": lambda c, s: s["cer_all"]["cer"],
+               "cer_dialogue": lambda c, s: s["cer_dialogue"]["cer"]}
+PARETO_DEFAULT = ("bytes", "ms", "f1", "cer_all", "cer_dialogue")
+
+
+def pareto(sel, keys=PARETO_DEFAULT):
+    """[(name, candidate)] of the eligible candidates (read by VOCR5-N) that no other dominates on keys (lower is
+    better for each; F1 is negated), in the rule's size order."""
+    pts = [(n, c, tuple(PARETO_KEYS[k](c, c["summary"]) for k in keys)) for n, c in sel["candidates"].items()
+           if c["eligible"] and c.get("summary")]
+    front = [(n, c) for n, c, v in pts
+             if not any(w != v and all(a <= b for a, b in zip(w, v)) for _, _, w in pts)]
+    return sorted(front, key=lambda kv: size_key(kv[1]))
+
+
+def pareto_table(sel, keys=PARETO_DEFAULT):
+    res = sel["result"]
+    front = pareto(sel, keys)
+    md = ["| candidate | decode | VTSP B | est. ms @333 / @444 | F1 | CER all (N) | dialogue (N) | qualifies |",
+          "|---|---|---:|---:|---:|---:|---:|---|"]
+    for name, c in front:
+        s, ms = c["summary"], c["est_ms_333_960"]
+        md.append(f"| `{name}` | {c['decode']} | {c['blob_bytes']:,} | {ms:.1f} / {ms * MHZ:.1f} | "
+                  f"{num(s['detection']['f1'])} | {cer(s, 'cer_all')} | {cer(s, 'cer_dialogue')} | "
+                  f"{mark(name, c, res)} |")
+    n = sum(1 for c in sel["candidates"].values() if c["eligible"] and c.get("summary"))
+    md += ["", f"{len(front)} of {n} eligible candidates are on the front of {', '.join(keys)} (lower bytes, ms and "
+               "CER, higher F1); est. ms are A9 cycle-model estimates."]
+    return "\n".join(md)
+
+
 def focus(sel, name=None):
     res = sel["result"]
     return name or res.get("winner") or res.get("report_candidate")
@@ -227,13 +262,15 @@ def class_table(sel, base, name=None):
     return "\n".join(md)
 
 
-def render(base, sel=None, rep=None, eligible_only=False, family=None, part_arm=None, part_baselines=None):
+def render(base, sel=None, rep=None, eligible_only=False, family=None, part_arm=None, part_baselines=None,
+           pareto_keys=PARETO_DEFAULT):
     out = ["### Baselines (development)", "", baseline_table(base), ""]
     if sel is None:
         return "\n".join(out + ["### Recall by class", "", class_table(None, base), ""])
     if sel["manifest"]["sha256"] != base["manifest"]["sha256"]:
         raise SystemExit("the selection record and the baseline are of different manifests")
     out += ["### Candidates (rule's size order)", "", candidate_table(sel, rep or {}, eligible_only, family), "",
+            "### Speed / size Pareto front (eligible candidates)", "", pareto_table(sel, pareto_keys), "",
             "### The rule's comparisons", "", rule_table(sel, part_arm), "",
             "### Per part", "", part_table(sel, base, part_arm, part_baselines), "",
             "### Recall by class", "", class_table(sel, base, part_arm), ""]
@@ -250,13 +287,17 @@ def main(argv=None):
     ap.add_argument("--part-arm", default=None, help="the candidate of the per-part table (default: the winner, "
                                                      "else the report candidate)")
     ap.add_argument("--part-baselines", default="", help="comma-separated baselines beside it")
+    ap.add_argument("--pareto-keys", default=",".join(PARETO_DEFAULT), help=f"of {sorted(PARETO_KEYS)}")
     ap.add_argument("--out", default="")
     a = ap.parse_args(argv)
     base = json.loads(Path(a.baseline).read_text(encoding="utf-8"))
     sel = json.loads(Path(a.dev).read_text(encoding="utf-8")) if a.dev else None
     rep = report_units(a.units, sel) if sel else None
+    keys = tuple(k for k in a.pareto_keys.split(",") if k)
+    if not keys or any(k not in PARETO_KEYS for k in keys):
+        raise SystemExit(f"--pareto-keys: of {sorted(PARETO_KEYS)}")
     text = render(base, sel, rep, a.eligible_only, a.family, a.part_arm,
-                  [b for b in a.part_baselines.split(",") if b] or None)
+                  [b for b in a.part_baselines.split(",") if b] or None, keys)
     if a.out:
         Path(a.out).write_text(text, encoding="utf-8")
     print(text)

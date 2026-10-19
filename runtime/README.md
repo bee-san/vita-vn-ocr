@@ -436,7 +436,9 @@ for (unsigned k = 0; k < set.block_count; k++)    /* blocks in reading order; se
 - C99, no allocation, no recursion, no global state, integer arithmetic only (int32 sums; int64 for the
   requantisation product). The network and the decode are `vocr_textdet.c`'s, copied, not linked: the spotter is
   self-contained, and `vocr_textdet.c` stays frozen. NEON kernels, halving and input conversion behind
-  `__ARM_NEON` (Vita) give the same bits as the scalar ones (PSP, hosts; `-DVOCR_NO_NEON`). External symbols:
+  `__ARM_NEON` (Vita) give the same bits as the scalar ones (`-DVOCR_NO_NEON`: hosts and the PSP build; the scalar
+  path is parity-checked on hosts and under qemu-arm, and psp-gcc compiles it, but no MIPS build has run). External
+  symbols:
   `memset`, `memcpy`, libgcc's `__aeabi_idiv`, `__aeabi_idivmod`, `__aeabi_uidiv`, `__aeabi_uidivmod` on ARM, and
   `vocr_line_dark` / `vocr_line_dark_rows`: link `vocr_lines.c` and `vocr_lines_rows.c`, byte-for-byte as pinned
   (`tests/test_textspot.py` and `tests/test_textspot_runtime.py` check the protocol's sha256). No data or bss.

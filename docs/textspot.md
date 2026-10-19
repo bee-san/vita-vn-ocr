@@ -295,6 +295,13 @@ only).
   interval −5.52 to −0.38). Dialogue CER (−0.63, −1.92 to +0.60) and F1 (+0.009) are not resolved. The test sets
   were read for the winner only, so the smaller one's test numbers are unknown. Its blob is published beside the
   winner's for A/B tests, labelled so.
+- **Family C changed the winner** (found by the audit, disclosed here). Without amendment 4's family C, which was
+  chosen after family B's development scores, the same rule selects `B_h2_s4_c16n4_seed2` det+refine: 3,892 B, est.
+  104.6 ms. Adding the smaller family C qualifier moved the replacement chain's start, and the chain then jumped
+  past `s4_c16n4` to the larger, slower `s4_c24n4`. The two are not resolved apart on any development metric:
+  `s4_c24n4` minus `s4_c16n4` is F1 +0.021 (−0.011 to +0.051), all-text CER −1.23 (−5.03 to +2.51) and dialogue
+  +0.50 (−1.14 to +2.21). The protected sets were read for `s4_c24n4` only; reading them for `s4_c16n4` would be a
+  second protected read, so the remedy is this disclosure, not a re-selection.
 - **vita-test + psp-test as whole frames, read once** (176 frames, 28 VNs): F1 **0.694**, all-text CER **20.02%**,
   dialogue CER **3.00%**.
   - Best baselines: #97's detector 0.572-0.580 / 28.2-30.7% / 5.5-8.9%; GRAD + refine 0.266 / 79.03% / 43.70%.
@@ -303,7 +310,7 @@ only).
   - Recall: 96% of the dialogue lines, 93% of the names, 84% of the choices, 48% of the UI labels and 45% of the
     scene text.
 - **CLANNAD, whole frames, read once** (2,052 dialogue lines on 1,867 pages): dialogue CER **1.14%** (S 1.44%, L
-  0.94%), against #97's detector 1.41-1.44% (−0.26 to −0.30 points, resolved) and GRAD + refine on the whole frame
+  0.94%), against #97's detector 1.29-1.44% (−0.15 to −0.30 points, resolved) and GRAD + refine on the whole frame
   16.64%.
   - With speaker names it is worse than #97's detector without refinement (+0.45 points, resolved): it finds fewer
     name plates.
@@ -342,6 +349,18 @@ The rule's steps:
    all-text CER.
 3. `B_h2_s4_c24n4_seed2` det+refine is resolved better (−2.88, −5.52 to −0.38), so it replaces it.
 4. No qualifying candidate is larger, so it is the winner.
+
+Without family C (the candidate set before amendment 4) the same rule gives another winner:
+1. The smallest qualifying candidate is `B_h2_s4_c16n4_seed2` det (36.12%).
+2. Its det+refine (33.26%) replaces it: −2.85 (−5.05 to −1.09).
+3. No larger qualifier is then resolved better (`B_h2_s4_c24n4_seed2` det+refine: −1.23, −5.03 to +2.51), so the
+   winner would be **`B_h2_s4_c16n4_seed2` det+refine**: 3,892 B, est. 104.6 ms, arena 73,855 B, F1 0.520, CER 33.26%
+   / 2.51%.
+
+With family C the chain starts at `C_h2_s4p_c8_seed1` det+refine (34.92%), which `s4_c16n4` det+refine is not
+resolved better than (−1.65, −5.73 to +2.42), so it passes to `s4_c24n4`. So the extension, chosen after family B's
+development scores, made the selection 47% larger and 33% slower, the opposite of the owner's "fastest, smallest".
+The two candidates are not resolved apart on any development metric (Answer first).
 
 The winner against each baseline (development, N; VN-cluster 95% intervals; "beats" is all three conditions):
 
@@ -395,7 +414,7 @@ points, in bytes:
 
 What the front shows:
 - **No candidate under 2.7 KB clears the bar.** At 2.3 KB (`s4_c8n5`, `s4_c12`) the best reach F1 0.48-0.50 and
-  dialogue CER 4.0-4.7%. Each misses the resolved F1 or all-text CER margin over one of #97's three arms, and one
+  dialogue CER 4.0-4.7%. Each misses the resolved F1 or all-text CER margin over each of #97's three arms, and one
   `s4_c12` seed is resolved worse on dialogue. Under 2 KB, dialogue CER is 7-36% and F1 under 0.47.
 - **Stride 8 at half scale** (16 frame pixels per cell) is the fastest way to a good F1 (0.46-0.52 at 45-82 ms),
   but it reads dialogue at 8.5-13% CER.
@@ -503,13 +522,19 @@ Recall: dialogue 0.955, name 0.926, choice 0.839, ui 0.485, scene 0.450. Tightne
 ### Limits
 
 - **The development sample** is 81 VNs, and the candidate set was extended once after family B's development
-  scores (amendment 4). Family C's development intervals are optimistic, and so is the rule's choice among seeds:
-  seeds of one shape differ by up to 6.7 points of dialogue CER. The test set and CLANNAD, read once, agree with the
-  development verdict for the winner.
+  scores (amendment 4). That extension changed the winner: without it the rule selects `s4_c16n4` (3,892 B, est.
+  105 ms), not resolved apart from `s4_c24n4` on development ("The rule's steps"). Family C's development intervals
+  are optimistic, and so is the rule's choice among seeds: seeds of one shape differ by up to 6.7 points of dialogue
+  CER. The test set and CLANNAD, read once, agree with the development verdict for the winner.
 - **UI text is the weak class:** about half is found on the test frames, a third on the development frames. Its
   readings (VOCR5 was trained on dialogue) dominate the all-text CER.
 - **Labels:** the training labels of the real half are MeikiOCR's boxes refined to ink, not hand-checked. The
-  synthetic frames hold a little unlabelled scene text.
+  synthetic frames hold a little unlabelled scene text. In the hand-checked sets, copyright lines are not labelled
+  one way: 8 of them, in 5 development frames, are class `ui`, while others are `watermark` ignore areas. One name
+  keeps a decorative `◆` (`v7321_57909`).
+- **The protocol's decode text** (above, frozen) leaves out two drops that the twin makes: components of fewer
+  cells than the blob's `min_cells`, and boxes under 4 f px across (f = 2 for a halved frame). The twin is the
+  specification and the C runtime matches it.
 - **Vertical text:** the spotter flags vertical boxes (42 on the test frames, 74 on development), but the scored sets
   hold few vertical instances (16 and 41). #103's column finder remains the measured vertical path.
 - **Not compared:** the hand-drawn-region pipeline (GRAD + refine on a region the player draws) is not an arm here,
@@ -528,7 +553,8 @@ eval/reproducibility/textspot-20261019/sweep.sh $T/runs                         
 .venv/bin/python eval/textspot.py run --set dev --arms famA,famB,det:C_<run>=...,detref:C_<run>=... --cbin $T/eval/cbuild --out $T/eval/famX
 .venv/bin/python eval/textspot.py select --baseline eval/textspot_baseline_20261019.json --units $T/eval/famA \
     --units $T/eval/famB --units $T/eval/famC --a9 eval/textspot_a9_20261019.json --cbin $T/eval/cbuild \
-    --out eval/textspot_dev_20261019.json                                           # the rule (the record is written compactly)
+    --out eval/textspot_dev_20261019.json                                           # the rule; then compact it (2.8 MB indented, over the repo's 2 MiB):
+python3 -c 'import json,sys; p=sys.argv[1]; d=json.load(open(p)); open(p,"w").write(json.dumps(d,separators=(",",":"),ensure_ascii=False)+"\n")' eval/textspot_dev_20261019.json
 .venv/bin/python eval/textspot_tables.py --baseline eval/textspot_baseline_20261019.json --dev eval/textspot_dev_20261019.json \
     --units $T/eval/famA --units $T/eval/famB --units $T/eval/famC --out tables.md
 .venv/bin/python eval/textspot_protected.py tests|clannad --cand B:h2_s4_c24n4_seed2 --decode det+refine ...   # once (attempt records refuse a second run)

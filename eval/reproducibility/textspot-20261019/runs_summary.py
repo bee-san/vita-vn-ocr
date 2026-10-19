@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Summarise the textspot family B sweep (sweep.sh's OUT directory) for the report.
+"""Summarise a textspot training sweep (sweep.sh's OUT directory) for the report.
 
-  runs_summary.py OUT [--json FILE] [--md FILE]
+  runs_summary.py OUT [--family b|c] [--json FILE] [--md FILE]
 
-Per run of the protocol's 22 (eval/textspot_protocol.json "candidates.family_b"): started and finished (UTC), wall
+Per run of the protocol's family B (22: eval/textspot_protocol.json "candidates.family_b") or family C (8: the
+amendment with settings.family_c, amendment 4): started and finished (UTC), wall
 time, attempts (sweep.sh's moved failed attempts and crashes.jsonl), the loss curve (the logged total, #97's
 k_bce + dice + 0.5 o + a, at steps 200, 2,000, 10,000, 20,000, 24,000 = the last float record, the first record
 after QAT starts, and 30,000; the four parts averaged over the last five records) and the blobs' bytes and sha256.
@@ -19,9 +20,15 @@ PARTS = ("k_bce", "dice", "o", "a")
 AT = (200, 2000, 10000, 20000)
 
 
-def protocol_runs():
-    fb = json.loads((ROOT / "eval" / "textspot_protocol.json").read_text())["candidates"]["family_b"]
-    return [f"{sc}_{sh}_seed{n}" for sc, shapes in fb["shapes"].items() for sh in shapes for n in fb["seeds"]]
+def protocol_runs(family="b"):
+    """The protocol's runs: family B from candidates.family_b (every scale x shape x seed), family C from the
+    amendment that registers settings.family_c (one scale, its shapes and seeds)."""
+    p = json.loads((ROOT / "eval" / "textspot_protocol.json").read_text())
+    if family == "b":
+        fb = p["candidates"]["family_b"]
+        return [f"{sc}_{sh}_seed{n}" for sc, shapes in fb["shapes"].items() for sh in shapes for n in fb["seeds"]]
+    fc = next(a["settings"]["family_c"] for a in p["amendments"] if "family_c" in (a.get("settings") or {}))
+    return [f"{fc['scale']}_{sh}_seed{n}" for sh in fc["shapes"] for n in fc["seeds"]]
 
 
 def total(rec):
@@ -54,12 +61,12 @@ def curve(log, qat_start):
     return out
 
 
-def summarise(out_dir):
+def summarise(out_dir, family="b"):
     out_dir = Path(out_dir)
     crashes = jsonl(out_dir / "crashes.jsonl")
     restarts = jsonl(out_dir / "restarts.jsonl")
     rows = []
-    for name in protocol_runs():
+    for name in protocol_runs(family):
         d = out_dir / name
         failed = sorted(p.name for p in out_dir.glob(f"{name}.failed*") if p.is_dir())
         row = {"run": name, "state": "missing", "failed_attempts": failed,
@@ -86,7 +93,7 @@ def summarise(out_dir):
     for key in ("code_sha256", "manifests_sha256", "protocol_sha256", "git", "skip"):
         vals = {json.dumps(r.get(key), sort_keys=True) for r in fin}
         same[key] = len(vals) <= 1
-    return {"kind": "textspot-train-runs", "runs": rows, "finished": len(fin), "of": len(rows),
+    return {"kind": "textspot-train-runs", "family": family, "runs": rows, "finished": len(fin), "of": len(rows),
             "consistent": same, "crashes": len(crashes), "restarts": len(restarts)}
 
 
@@ -109,10 +116,11 @@ def markdown(doc):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("out")
+    ap.add_argument("--family", choices=("b", "c"), default="b", help="b: candidates.family_b; c: amendment 4")
     ap.add_argument("--json")
     ap.add_argument("--md")
     args = ap.parse_args()
-    doc = summarise(args.out)
+    doc = summarise(args.out, args.family)
     if args.json:
         Path(args.json).write_text(json.dumps(doc, indent=1) + "\n")
     md = markdown(doc)

@@ -103,9 +103,11 @@ def reserved():
 
 def eval_images():
     """URL ids of every screenshot in eval's sets (vita-test, psp-test, linefind); the vertical sets' own manifests
-    (eval/manifests/vertical-*.jsonl, built by this tool) are left out, so a rerun selects the same pages."""
+    (eval/manifests/vertical-*.jsonl, built by this tool) and the textspot sets' (textspot-*.jsonl, built after
+    them) are left out, so a rerun selects the same pages."""
     ids = set()
-    files = [f for f in (ROOT / "eval" / "manifests").glob("*.jsonl") if not f.name.startswith("vertical-")]
+    files = [f for f in (ROOT / "eval" / "manifests").glob("*.jsonl")
+             if not f.name.startswith(("vertical-", "textspot-"))]
     files += list((ROOT / "eval" / "linefind" / "manifests").glob("*.jsonl"))
     for p in files:
         for line in p.read_text(encoding="utf-8").splitlines():

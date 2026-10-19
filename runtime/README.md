@@ -387,6 +387,115 @@ det+refine (the protocol's round-2 finder) is the finder mode's lines, then `voc
 `vocr_textdet_test --batch` runs it for record flag 2 and `--arena-refine` prints that arena, and the parity checks it
 against `synth/lines_refine.refine_lines` on the twin's horizontal lines.
 
+## Full-frame text spotter (`vocr_textspot.c`)
+
+The spotter of issue #104 (`docs/textspot.md`): every text box of a whole frame (Vita 960x544, PSP 480x272,
+Adrenaline's 2x picture, a PC screenshot scaled to the Vita), each with an orientation, a confidence and a dark flag,
+grouped into blocks in reading order, and one block picked as the likely dialogue. A `VTSP` blob is a 32-byte header
+(`half_above`: a frame wider than this is halved by an exact 2x2 mean first; `conf_min`) around #97's `VTDT`
+network, unchanged. `synth/textspot_twin.py` is the specification; this runtime gives `spot()`'s boxes, blocks,
+order, pick and truncated flag for every frame and every blob its loader accepts.
+
+```c
+#include "vocr_textspot.h"
+
+static vocr_textspot ts;                          /* about 1 KB on 32-bit ARM; points into the blob */
+int rc = vocr_textspot_load(&ts, blob, bytes);    /* any alignment; VOCR_TEXTSPOT_E_BLOB if refused */
+size_t need = vocr_textspot_arena_bytes(&ts, 960, 544);   /* exact for every frame up to 960x544 */
+static VocrTextspotSet set;                       /* 1,552 B: up to 64 boxes and 64 blocks */
+rc = vocr_textspot_find(&ts, &im, 0, arena, need, &set);  /* or vocr_textspot_find_rows(&ts, &src, 0, ...) */
+for (unsigned k = 0; k < set.block_count; k++)    /* blocks in reading order; set.pick: the dialogue, -1: none */
+    for (unsigned i = set.blocks[k].first; i < set.blocks[k].first + set.blocks[k].count; i++) {
+        /* set.boxes[i]: x, y, w, h, vertical, conf (1..127), dark, block */
+    }
+```
+
+- Frames are `VOCR_LINES_GREY` or `VOCR_LINES_RGBA` (grey = (77 R + 150 G + 29 B) >> 8), at most
+  `VOCR_TEXTSPOT_MAX_SIDE` = 2048 px a side, which keeps every sum of the decode in int32 (the proof heads
+  `vocr_textspot.c`). Return codes: `VOCR_LINES_E_ARG` (NULL pointers, an unloaded model, a bad format, stride or
+  flag, a zero or oversized side), `VOCR_LINES_E_ARENA`, `VOCR_LINES_E_SOURCE` (a NULL row), `VOCR_TEXTSPOT_E_BLOB`
+  (load); on any error the set is empty (`pick` -1). At most 64 boxes, the most confident first
+  (`VOCR_TEXTSPOT_MAX_BOXES`; `truncated` when more were found).
+- Flags: 0 is the twin exactly. `VOCR_TEXTSPOT_NO_DARK` leaves every dark flag 0 and reads no box: the row-callback
+  form then reads the frame exactly once, top to bottom (Rubi's scan-screen job; the read job computes
+  `vocr_line_dark` itself, the same bit).
+- Arena: `vocr_textspot_arena_bytes(m, W, H)` is exact for every frame up to W x H, and the number the protocol's
+  rule reads. It depends on the width only. For a halving blob (`half_above` h > 0) and W > h it is the larger of the
+  needs of an h-wide frame (read at full size) and a W-wide one (halved). `vocr_textspot_frame_arena_bytes(m, W, H)`
+  is one frame's own need, which is what each call checks.
+- The frame is read once, top to bottom. Halving keeps one row of ceil(W/2) pair sums. Every 3x3 layer keeps a ring
+  of its 2d + 1 input rows, and 1x1 layers run on the 8-pixel blocks their producer just made (both as
+  `vocr_textdet.c`). The head's map row feeds the streaming 4-connected component decode (sums of K, O, A1, A2,
+  rows and columns; at most the map's width of live slots). The 64 best candidates are kept in a list sorted by the
+  twin's cap key. Blocks, reading order and the pick follow the twin's stable sorts over at most 64 boxes, in
+  scratch laid over the network's dead part of the arena.
+- Row-callback form (`vocr_lines_rows.h`): the frame's rows are asked once each, in increasing order, in one pass,
+  then (without `VOCR_TEXTSPOT_NO_DARK`) each box's rows once, boxes in output order, for its dark flag
+  (`vocr_line_dark_rows`). A returned row has to stay valid only until the next call. NULL ends the call with
+  `VOCR_LINES_E_SOURCE` and no boxes. Same set as the in-memory form.
+- C99, no allocation, no recursion, no global state, integer arithmetic only (int32 sums; int64 for the
+  requantisation product). The network and the decode are `vocr_textdet.c`'s, copied, not linked: the spotter is
+  self-contained, and `vocr_textdet.c` stays frozen. NEON kernels, halving and input conversion behind
+  `__ARM_NEON` (Vita) give the same bits as the scalar ones (`-DVOCR_NO_NEON`: hosts and the PSP build; the scalar
+  path is parity-checked on hosts and under qemu-arm, and psp-gcc compiles it, but no MIPS build has run). External
+  symbols:
+  `memset`, `memcpy`, libgcc's `__aeabi_idiv`, `__aeabi_idivmod`, `__aeabi_uidiv`, `__aeabi_uidivmod` on ARM, and
+  `vocr_line_dark` / `vocr_line_dark_rows`: link `vocr_lines.c` and `vocr_lines_rows.c`, byte-for-byte as pinned
+  (`tests/test_textspot.py` and `tests/test_textspot_runtime.py` check the protocol's sha256). No data or bss.
+- Code (`.text` of the spotter's own sections kept by a `--gc-sections` link of a caller of load, both arenas, find
+  and find_rows): 11,440 B with VitaSDK gcc 15.2, Thumb-2, `-O2`, NEON; 9,466 B at `-Os`; 10,396 / 8,058 B scalar
+  (`-DVOCR_NO_NEON`) at `-O2` / `-Os`. psp-gcc 15.2 (mips32 Allegrex) `vocr_textspot.o`: 15,786 B at `-O2 -G0`,
+  12,890 B at `-Os -G0`. `vocr_line_dark` and `vocr_line_dark_rows` add 2,160 B. On the Vita, NEON `-Os` saves 17% of
+  the code for 1-5% more time, and scalar `-Os` (`-Os -DVOCR_NO_NEON`, the smallest build) saves 30% for 2.7-3.8x the
+  time (the JSON's report tables), so no further size-optimised engine is offered. Stack (gcc
+  `-fcallgraph-info=su`, every frame static): 2,880 B at peak on the Vita `-O2` build and 2,832 B on the PSP,
+  of which `vocr_line_dark`'s two histograms are about 2 KB. The network, decode and blocks alone use 880 / 832 B.
+  `vocr_textspot_maps` (a test hook) adds its own 1.5 KB set.
+
+Cortex-A9 estimates per frame of random blobs, for every family B shape of `eval/textspot_protocol.json`
+(`eval/textspot_a9.py`, `eval/textspot_a9_20261019.json`; all 21 shapes of #97's runs at both scales are in the JSON).
+These are **estimates**, made as `eval/textdet_a9.py` makes them: the Vita compiler's `-O2` code runs under plugin
+qemu-arm with the Vita's caches on one pinned procedural grey frame, priced by `vita/a9_cycles.py`. ms @333 is the
+high bound x 1.0007 (ocr-speed's console calibration of VOCR3-H15, `docs/ocr-speed.md`), and ms @444 is that x
+333/444. The time is the default call's, dark pass included. Random blobs fill the 64-box cap, so the dark pass is
+near its largest. The arenas are exact, and the rule reads the up-to one. Nothing of the spotter has run on a
+console.
+
+| scale | shape | VTSP B | MACs / 960x544 frame | 960x544 @333 / @444 | no dark @333 | 480x272 @333 | arena up to 960x544 | arena of the 960x544 frame | arena 480x272 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| h2 | s4_c8 | 1,572 | 5.3 M | 46.7 / 35.0 ms | 41.3 ms | 37.9 ms | 38,311 | 32,535 | 31,575 |
+| h2 | s4_c12n4 | 2,840 | 11.4 M | 82.4 / 61.8 ms | 74.2 ms | 71.2 ms | 58,159 | 48,903 | 47,943 |
+| h2 | s4_c16n4 | 3,892 | 17.6 M | 97.6 / 73.2 ms | 91.5 ms | 88.5 ms | 73,855 | 61,839 | 60,879 |
+| h2 | s4_c24n4 | 5,732 | 28.5 M | 130.7 / 98.0 ms | 122.5 ms | 121.2 ms | 80,799 | 67,583 | 66,623 |
+| h2 | s8_c16 | 3,308 | 4.7 M | 44.8 / 33.6 ms | 34.6 ms | 32.6 ms | 41,711 | 35,999 | 35,039 |
+| h2 | s8_c24 | 5,732 | 10.1 M | 60.9 / 45.7 ms | 55.0 ms | 53.0 ms | 63,103 | 53,911 | 52,951 |
+| h2 | s8_c32 | 7,956 | 13.6 M | 73.6 / 55.2 ms | 65.3 ms | 63.3 ms | 76,263 | 65,031 | 64,071 |
+| f1 | s8_c8 | 1,916 | 11.6 M | 88.8 / 66.6 ms | 86.0 ms | 23.6 ms | 42,391 | 42,391 | 23,919 |
+| f1 | s8_c16 | 3,308 | 18.9 M | 115.8 / 86.9 ms | 112.5 ms | 32.6 ms | 61,671 | 61,671 | 35,039 |
+| f1 | s8_c16n4 | 4,060 | 22.1 M | 131.2 / 98.4 ms | 127.0 ms | 35.6 ms | 72,791 | 72,791 | 41,359 |
+| f1 | s4_c6 | 1,312 | 16.3 M | 136.4 / 102.3 ms | 133.6 ms | 35.8 ms | 49,559 | 49,559 | 26,759 |
+
+Every family B shape is within the protocol's limits at its scale (at most 150 ms at 333 MHz and 131,072 B at
+960x544). A 480x272 frame is never halved at h2 (480 <= 600), so both scales cost the same on it. An RGBA frame
+(report only, in the JSON) adds 18-25 ms at 960x544, mostly the model's DRAM time for 4-byte pixels (about 51,000
+more L2 misses; no prefetch credit). With RGBA, s4_c24n4 h2, s8_c16n4 f1 and s4_c6 f1 pass 150 ms (153, 150 and 157
+ms).
+
+Checks: `make check-textspot` (strict compiles, then `tests/textspot_parity.py` through the sanitized driver
+`vocr_textspot_test.c`). The parity runs random networks of every family B and `SHAPES` shape, wild requantisation
+and probe networks (designed frames of more than 64 candidates), each at `half_above` 0 and 600 and some with
+`conf_min` > 1. It covers whole screens (960x544, 480x272, 725x544, 870x544), edge and odd sizes, GREY and RGBA,
+both forms and `VOCR_TEXTSPOT_NO_DARK`, and compares maps, boxes, blocks, pick and truncated with the twin. It also
+runs the driver's `--selftest`. `tests/test_textspot_runtime.py` covers the loader against the twin, the contracts
+and the arenas. The Cortex-A9 builds run the same parity under qemu-arm (`--bin` takes a prefixed command):
+
+```sh
+G=runtime/scripts/tools/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc
+$G -std=c99 -O2 -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -static runtime/vocr_lines.c runtime/vocr_lines_rows.c \
+   runtime/vocr_textspot.c runtime/vocr_textspot_test.c -o vts_neon          # -DVOCR_NO_NEON: scalar
+python tests/textspot_parity.py --bin "runtime/scripts/tools/bin/qemu-arm -cpu cortex-a9 ./vts_neon" --selftest 4
+```
+
 ## Text-presence gate (`vocr_textgate.c`)
 
 The gate of issue #100 (`docs/textgate.md`): does a region hold text at all? It runs a VTDT blob (#97's layout,

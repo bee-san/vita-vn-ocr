@@ -1,0 +1,1740 @@
+{
+ "kind": "textspot-clannad",
+ "computed": "2026-10-19T19:02:58Z",
+ "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+ "protocol_sha256": "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f",
+ "candidate": {
+  "arm": "B_h2_s4_c24n4_seed2_detref",
+  "spec": "B:h2_s4_c24n4_seed2",
+  "kind": "detref",
+  "baseline": null,
+  "decode": "det+refine",
+  "family": "B",
+  "run": "h2_s4_c24n4_seed2",
+  "blob_sha256": "852506919ba94e54a4efc55e3695f365626d9d4ce6347f420cbf2afe3e8360cf",
+  "blob_bytes": 5732,
+  "shape": "s4_c24n4",
+  "stride": 4,
+  "half_above": 600,
+  "conf_min": 1,
+  "source": "$HERD/shared/artifacts/textspot/runs/h2_s4_c24n4_seed2/final.vtsp"
+ },
+ "models": [
+  "VOCR5-N",
+  "VOCR5-S",
+  "VOCR5-L"
+ ],
+ "recognizers_sha256": {
+  "VOCR5-N": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+  "VOCR5-S": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+  "VOCR5-L": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+  "VOCR5-V": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172"
+ },
+ "reader": {
+  "library_sha256": "5a87ea81c0014133cf42ec6b47d9f7f09a7980b108841bc14dd913255c54da80",
+  "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+  "scalar_flags": [
+   "-std=c99",
+   "-O2",
+   "-ffp-contract=off",
+   "-DVOCR_NO_NEON",
+   "-Wall",
+   "-Wextra",
+   "-Werror",
+   "-Wpedantic",
+   "-Wshadow",
+   "-Wstrict-prototypes",
+   "-Wmissing-prototypes",
+   "-Wcast-align",
+   "-Wpointer-arith",
+   "-fPIC",
+   "-shared"
+  ]
+ },
+ "code_sha256": {
+  "eval/textspot.py": "68f391eba4177eab4e61f6a679e2dd39a04dfc90ad00037f40420d4ba221aa7c",
+  "eval/textspot_metrics.py": "93323b756b12759dbd0e318ffe1c1de28b891ddf6ed33fca8932fd06773c4d17",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "eval/textdet.py": "9046680b50b98abd8a7edb9e27511f554355839d37f843f174510b9285335500",
+  "eval/textgate.py": "f5f99e32aaa62ff7caae1265c3d7f4b63029bfc7ef340e3d717dd21c268ccb95",
+  "eval/finder_tighten.py": "a01ac2e8a8b136b5ea677fbc3f7a7226f158620af6eea7b928e939b5f57148f4",
+  "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+  "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+  "synth/vertical_twin.py": "2816f6486fe76d0716d47471ea620370843ec097ab82811ba8f715b72cdcad3b",
+  "runtime/vocr.c": "3e1756138b2e1d9aff15abdda95b02e0c015a5ba0af99678bdd678377b73f559",
+  "runtime/vocr.h": "30bb32693e634a4c4b4cd5cd3a4da8d33f6882bf00348d0e1d8264ba08376271",
+  "runtime/pyvocr.py": "b32db8a0e5d5e9dc9f3a659c92c2c48b7fa796cc4e7835c4b2d9eedd789f78f8"
+ },
+ "scored_lines": 3048,
+ "counts": {
+  "pages": 2177,
+  "pages_with_ref": 2044,
+  "no_text_pages": 133,
+  "unmatched": 0,
+  "matched": 3048
+ },
+ "arms": {
+  "B_h2_s4_c24n4_seed2_detref": {
+   "boxes": 11494,
+   "vertical": 80,
+   "boxes_on_no_text_pages": 790,
+   "boxes_outside_ref_boxes": 7537,
+   "c_equal_pages": 2177,
+   "c_differ_pages": 0,
+   "c_unchecked_pages": 0
+  },
+  "grad": {
+   "boxes": 8511,
+   "vertical": 0,
+   "boxes_on_no_text_pages": 463,
+   "boxes_outside_ref_boxes": 5998,
+   "c_equal_pages": 2177,
+   "c_differ_pages": 0,
+   "c_unchecked_pages": 0
+  },
+  "grad_refine": {
+   "boxes": 8638,
+   "vertical": 0,
+   "boxes_on_no_text_pages": 471,
+   "boxes_outside_ref_boxes": 6087,
+   "c_equal_pages": 2177,
+   "c_differ_pages": 0,
+   "c_unchecked_pages": 0
+  },
+  "grad_refine_gate": {
+   "boxes": 8616,
+   "vertical": 0,
+   "boxes_on_no_text_pages": 466,
+   "boxes_outside_ref_boxes": 6070,
+   "c_equal_pages": 2177,
+   "c_differ_pages": 0,
+   "c_unchecked_pages": 0
+  },
+  "s8c24_textdet": {
+   "boxes": 14018,
+   "vertical": 1715,
+   "boxes_on_no_text_pages": 877,
+   "boxes_outside_ref_boxes": 9799,
+   "c_equal_pages": 2177,
+   "c_differ_pages": 0,
+   "c_unchecked_pages": 0
+  },
+  "s8c24_textdet_refine": {
+   "boxes": 14117,
+   "vertical": 1715,
+   "boxes_on_no_text_pages": 884,
+   "boxes_outside_ref_boxes": 9885,
+   "c_equal_pages": 2177,
+   "c_differ_pages": 0,
+   "c_unchecked_pages": 0
+  },
+  "s8c24_spot": {
+   "boxes": 14432,
+   "vertical": 2123,
+   "boxes_on_no_text_pages": 952,
+   "boxes_outside_ref_boxes": 10135,
+   "c_equal_pages": 2177,
+   "c_differ_pages": 0,
+   "c_unchecked_pages": 0
+  },
+  "columns": {
+   "boxes": 25763,
+   "vertical": 25763,
+   "boxes_on_no_text_pages": 1326,
+   "boxes_outside_ref_boxes": 20283,
+   "c_equal_pages": 2177,
+   "c_differ_pages": 0,
+   "c_unchecked_pages": 0
+  },
+  "grad_refine_columns": {
+   "boxes": 14803,
+   "vertical": 6165,
+   "boxes_on_no_text_pages": 771,
+   "boxes_outside_ref_boxes": 11675,
+   "c_equal_pages": 2177,
+   "c_differ_pages": 0,
+   "c_unchecked_pages": 0
+  }
+ },
+ "assignment": "a detection goes to the GRAD box (of the page's ROI, in frame pixels) it overlaps most when that box holds at least half its area; a reference line reads its detections joined in the arm's reading order",
+ "scopes": {
+  "dialogue": {
+   "lines": 2052,
+   "pages": 1867,
+   "systems": {
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 383,
+     "exact_lines": 1794,
+     "cer": 1.1438,
+     "cer_ci95": [
+      0.9667,
+      1.3372
+     ],
+     "exact": 87.4269,
+     "exact_ci95": [
+      85.9306,
+      88.8834
+     ],
+     "hiragana_errors": 195,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 0.9718
+    },
+    "grad/VOCR5-N": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 6042,
+     "exact_lines": 1249,
+     "cer": 18.0439,
+     "cer_ci95": [
+      16.4119,
+      19.7568
+     ],
+     "exact": 60.8674,
+     "exact_ci95": [
+      58.7062,
+      63.0382
+     ],
+     "hiragana_errors": 3584,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 17.8619
+    },
+    "grad_refine/VOCR5-N": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5571,
+     "exact_lines": 1453,
+     "cer": 16.6373,
+     "cer_ci95": [
+      15.0074,
+      18.3408
+     ],
+     "exact": 70.809,
+     "exact_ci95": [
+      68.8114,
+      72.7981
+     ],
+     "hiragana_errors": 3331,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 16.601
+    },
+    "grad_refine_gate/VOCR5-N": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5571,
+     "exact_lines": 1453,
+     "cer": 16.6373,
+     "cer_ci95": [
+      15.0074,
+      18.3408
+     ],
+     "exact": 70.809,
+     "exact_ci95": [
+      68.8114,
+      72.7981
+     ],
+     "hiragana_errors": 3331,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 16.601
+    },
+    "s8c24_textdet/VOCR5-N": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 471,
+     "exact_lines": 1748,
+     "cer": 1.4066,
+     "cer_ci95": [
+      1.1771,
+      1.679
+     ],
+     "exact": 85.1852,
+     "exact_ci95": [
+      83.6398,
+      86.7214
+     ],
+     "hiragana_errors": 206,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.0267
+    },
+    "s8c24_textdet_refine/VOCR5-N": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 483,
+     "exact_lines": 1746,
+     "cer": 1.4424,
+     "cer_ci95": [
+      1.2051,
+      1.7238
+     ],
+     "exact": 85.0877,
+     "exact_ci95": [
+      83.5179,
+      86.6305
+     ],
+     "hiragana_errors": 233,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.1612
+    },
+    "s8c24_spot/VOCR5-N": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 433,
+     "exact_lines": 1750,
+     "cer": 1.2931,
+     "cer_ci95": [
+      1.12,
+      1.4761
+     ],
+     "exact": 85.2827,
+     "exact_ci95": [
+      83.7445,
+      86.8164
+     ],
+     "hiragana_errors": 182,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 0.9071
+    },
+    "columns/VOCR5-N": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 32135,
+     "exact_lines": 0,
+     "cer": 95.9683,
+     "cer_ci95": [
+      95.7749,
+      96.1625
+     ],
+     "exact": 0.0,
+     "exact_ci95": [
+      0.0,
+      0.0
+     ],
+     "hiragana_errors": 19166,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 95.5196
+    },
+    "grad_refine_columns/VOCR5-N": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5433,
+     "exact_lines": 1452,
+     "cer": 16.2252,
+     "cer_ci95": [
+      14.641,
+      17.8828
+     ],
+     "exact": 70.7602,
+     "exact_ci95": [
+      68.7651,
+      72.7495
+     ],
+     "hiragana_errors": 3242,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 16.1575
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 481,
+     "exact_lines": 1713,
+     "cer": 1.4365,
+     "cer_ci95": [
+      1.2491,
+      1.6367
+     ],
+     "exact": 83.4795,
+     "exact_ci95": [
+      81.8091,
+      85.1293
+     ],
+     "hiragana_errors": 256,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.2759
+    },
+    "grad/VOCR5-S": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 6140,
+     "exact_lines": 1185,
+     "cer": 18.3366,
+     "cer_ci95": [
+      16.7195,
+      20.0492
+     ],
+     "exact": 57.7485,
+     "exact_ci95": [
+      55.6146,
+      59.8933
+     ],
+     "hiragana_errors": 3624,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 18.0613
+    },
+    "grad_refine/VOCR5-S": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5663,
+     "exact_lines": 1380,
+     "cer": 16.9121,
+     "cer_ci95": [
+      15.3048,
+      18.6226
+     ],
+     "exact": 67.2515,
+     "exact_ci95": [
+      65.2109,
+      69.3056
+     ],
+     "hiragana_errors": 3368,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 16.7854
+    },
+    "grad_refine_gate/VOCR5-S": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5663,
+     "exact_lines": 1380,
+     "cer": 16.9121,
+     "cer_ci95": [
+      15.3048,
+      18.6226
+     ],
+     "exact": 67.2515,
+     "exact_ci95": [
+      65.2109,
+      69.3056
+     ],
+     "hiragana_errors": 3368,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 16.7854
+    },
+    "s8c24_textdet/VOCR5-S": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 518,
+     "exact_lines": 1710,
+     "cer": 1.547,
+     "cer_ci95": [
+      1.3068,
+      1.8274
+     ],
+     "exact": 83.3333,
+     "exact_ci95": [
+      81.6626,
+      84.988
+     ],
+     "hiragana_errors": 233,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.1612
+    },
+    "s8c24_textdet_refine/VOCR5-S": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 613,
+     "exact_lines": 1650,
+     "cer": 1.8307,
+     "cer_ci95": [
+      1.5798,
+      2.1184
+     ],
+     "exact": 80.4094,
+     "exact_ci95": [
+      78.6732,
+      82.1759
+     ],
+     "hiragana_errors": 300,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.4951
+    },
+    "s8c24_spot/VOCR5-S": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 480,
+     "exact_lines": 1712,
+     "cer": 1.4335,
+     "cer_ci95": [
+      1.246,
+      1.6297
+     ],
+     "exact": 83.4308,
+     "exact_ci95": [
+      81.7518,
+      85.071
+     ],
+     "hiragana_errors": 209,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.0416
+    },
+    "columns/VOCR5-S": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 32135,
+     "exact_lines": 0,
+     "cer": 95.9683,
+     "cer_ci95": [
+      95.7749,
+      96.1625
+     ],
+     "exact": 0.0,
+     "exact_ci95": [
+      0.0,
+      0.0
+     ],
+     "hiragana_errors": 19166,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 95.5196
+    },
+    "grad_refine_columns/VOCR5-S": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5525,
+     "exact_lines": 1379,
+     "cer": 16.4999,
+     "cer_ci95": [
+      14.9293,
+      18.1651
+     ],
+     "exact": 67.2027,
+     "exact_ci95": [
+      65.1478,
+      69.257
+     ],
+     "hiragana_errors": 3279,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 16.3419
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 316,
+     "exact_lines": 1856,
+     "cer": 0.9437,
+     "cer_ci95": [
+      0.7691,
+      1.1353
+     ],
+     "exact": 90.4483,
+     "exact_ci95": [
+      89.1325,
+      91.7355
+     ],
+     "hiragana_errors": 155,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 0.7725
+    },
+    "grad/VOCR5-L": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5819,
+     "exact_lines": 1410,
+     "cer": 17.3779,
+     "cer_ci95": [
+      15.7507,
+      19.1025
+     ],
+     "exact": 68.7135,
+     "exact_ci95": [
+      66.6503,
+      70.7557
+     ],
+     "hiragana_errors": 3440,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 17.1443
+    },
+    "grad_refine/VOCR5-L": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5474,
+     "exact_lines": 1530,
+     "cer": 16.3476,
+     "cer_ci95": [
+      14.7274,
+      18.0595
+     ],
+     "exact": 74.5614,
+     "exact_ci95": [
+      72.6173,
+      76.4734
+     ],
+     "hiragana_errors": 3248,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 16.1874
+    },
+    "grad_refine_gate/VOCR5-L": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5474,
+     "exact_lines": 1530,
+     "cer": 16.3476,
+     "cer_ci95": [
+      14.7274,
+      18.0595
+     ],
+     "exact": 74.5614,
+     "exact_ci95": [
+      72.6173,
+      76.4734
+     ],
+     "hiragana_errors": 3248,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 16.1874
+    },
+    "s8c24_textdet/VOCR5-L": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 382,
+     "exact_lines": 1821,
+     "cer": 1.1408,
+     "cer_ci95": [
+      0.9139,
+      1.418
+     ],
+     "exact": 88.7427,
+     "exact_ci95": [
+      87.2931,
+      90.1663
+     ],
+     "hiragana_errors": 151,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 0.7526
+    },
+    "s8c24_textdet_refine/VOCR5-L": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 435,
+     "exact_lines": 1788,
+     "cer": 1.2991,
+     "cer_ci95": [
+      1.0674,
+      1.5784
+     ],
+     "exact": 87.1345,
+     "exact_ci95": [
+      85.6792,
+      88.5645
+     ],
+     "hiragana_errors": 202,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 1.0067
+    },
+    "s8c24_spot/VOCR5-L": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 344,
+     "exact_lines": 1823,
+     "cer": 1.0273,
+     "cer_ci95": [
+      0.8595,
+      1.2103
+     ],
+     "exact": 88.8402,
+     "exact_ci95": [
+      87.4022,
+      90.2547
+     ],
+     "hiragana_errors": 127,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 0.6329
+    },
+    "columns/VOCR5-L": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 32135,
+     "exact_lines": 0,
+     "cer": 95.9683,
+     "cer_ci95": [
+      95.7749,
+      96.1625
+     ],
+     "exact": 0.0,
+     "exact_ci95": [
+      0.0,
+      0.0
+     ],
+     "hiragana_errors": 19166,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 95.5196
+    },
+    "grad_refine_columns/VOCR5-L": {
+     "pages": 1867,
+     "lines": 2052,
+     "chars": 33485,
+     "errors": 5336,
+     "exact_lines": 1529,
+     "cer": 15.9355,
+     "cer_ci95": [
+      14.3569,
+      17.6016
+     ],
+     "exact": 74.5127,
+     "exact_ci95": [
+      72.5986,
+      76.422
+     ],
+     "hiragana_errors": 3159,
+     "hiragana_chars": 20065,
+     "hiragana_cer": 15.7438
+    }
+   },
+   "pairs": {
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:grad/VOCR5-N": {
+     "cer_delta": -16.900105,
+     "cer_ci95": [
+      -18.61134,
+      -15.286085
+     ],
+     "candidate_errors": 383,
+     "baseline_errors": 6042,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:grad_refine/VOCR5-N": {
+     "cer_delta": -15.493505,
+     "cer_ci95": [
+      -17.18706,
+      -13.879772
+     ],
+     "candidate_errors": 383,
+     "baseline_errors": 5571,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:grad_refine_gate/VOCR5-N": {
+     "cer_delta": -15.493505,
+     "cer_ci95": [
+      -17.18706,
+      -13.879772
+     ],
+     "candidate_errors": 383,
+     "baseline_errors": 5571,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:s8c24_textdet/VOCR5-N": {
+     "cer_delta": -0.262804,
+     "cer_ci95": [
+      -0.520724,
+      -0.058767
+     ],
+     "candidate_errors": 383,
+     "baseline_errors": 471,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:s8c24_textdet_refine/VOCR5-N": {
+     "cer_delta": -0.298641,
+     "cer_ci95": [
+      -0.541789,
+      -0.103776
+     ],
+     "candidate_errors": 383,
+     "baseline_errors": 483,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:s8c24_spot/VOCR5-N": {
+     "cer_delta": -0.149321,
+     "cer_ci95": [
+      -0.295369,
+      -0.002958
+     ],
+     "candidate_errors": 383,
+     "baseline_errors": 433,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:columns/VOCR5-N": {
+     "cer_delta": -94.824548,
+     "cer_ci95": [
+      -95.088765,
+      -94.55656
+     ],
+     "candidate_errors": 383,
+     "baseline_errors": 32135,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:grad_refine_columns/VOCR5-N": {
+     "cer_delta": -15.08138,
+     "cer_ci95": [
+      -16.734293,
+      -13.500212
+     ],
+     "candidate_errors": 383,
+     "baseline_errors": 5433,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:grad/VOCR5-S": {
+     "cer_delta": -16.900105,
+     "cer_ci95": [
+      -18.602013,
+      -15.283619
+     ],
+     "candidate_errors": 481,
+     "baseline_errors": 6140,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:grad_refine/VOCR5-S": {
+     "cer_delta": -15.475586,
+     "cer_ci95": [
+      -17.17374,
+      -13.880872
+     ],
+     "candidate_errors": 481,
+     "baseline_errors": 5663,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:grad_refine_gate/VOCR5-S": {
+     "cer_delta": -15.475586,
+     "cer_ci95": [
+      -17.17374,
+      -13.880872
+     ],
+     "candidate_errors": 481,
+     "baseline_errors": 5663,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:s8c24_textdet/VOCR5-S": {
+     "cer_delta": -0.110497,
+     "cer_ci95": [
+      -0.369127,
+      0.101854
+     ],
+     "candidate_errors": 481,
+     "baseline_errors": 518,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:s8c24_textdet_refine/VOCR5-S": {
+     "cer_delta": -0.394206,
+     "cer_ci95": [
+      -0.645762,
+      -0.197952
+     ],
+     "candidate_errors": 481,
+     "baseline_errors": 613,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:s8c24_spot/VOCR5-S": {
+     "cer_delta": 0.002986,
+     "cer_ci95": [
+      -0.159261,
+      0.163498
+     ],
+     "candidate_errors": 481,
+     "baseline_errors": 480,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:columns/VOCR5-S": {
+     "cer_delta": -94.53188,
+     "cer_ci95": [
+      -94.79836,
+      -94.260908
+     ],
+     "candidate_errors": 481,
+     "baseline_errors": 32135,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:grad_refine_columns/VOCR5-S": {
+     "cer_delta": -15.063461,
+     "cer_ci95": [
+      -16.722589,
+      -13.496683
+     ],
+     "candidate_errors": 481,
+     "baseline_errors": 5525,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:grad/VOCR5-L": {
+     "cer_delta": -16.434224,
+     "cer_ci95": [
+      -18.158968,
+      -14.811268
+     ],
+     "candidate_errors": 316,
+     "baseline_errors": 5819,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:grad_refine/VOCR5-L": {
+     "cer_delta": -15.403912,
+     "cer_ci95": [
+      -17.105924,
+      -13.786043
+     ],
+     "candidate_errors": 316,
+     "baseline_errors": 5474,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:grad_refine_gate/VOCR5-L": {
+     "cer_delta": -15.403912,
+     "cer_ci95": [
+      -17.105924,
+      -13.786043
+     ],
+     "candidate_errors": 316,
+     "baseline_errors": 5474,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:s8c24_textdet/VOCR5-L": {
+     "cer_delta": -0.197103,
+     "cer_ci95": [
+      -0.447158,
+      0.003134
+     ],
+     "candidate_errors": 316,
+     "baseline_errors": 382,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:s8c24_textdet_refine/VOCR5-L": {
+     "cer_delta": -0.355383,
+     "cer_ci95": [
+      -0.595425,
+      -0.167947
+     ],
+     "candidate_errors": 316,
+     "baseline_errors": 435,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:s8c24_spot/VOCR5-L": {
+     "cer_delta": -0.08362,
+     "cer_ci95": [
+      -0.221763,
+      0.058531
+     ],
+     "candidate_errors": 316,
+     "baseline_errors": 344,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:columns/VOCR5-L": {
+     "cer_delta": -95.024638,
+     "cer_ci95": [
+      -95.285652,
+      -94.756463
+     ],
+     "candidate_errors": 316,
+     "baseline_errors": 32135,
+     "chars": 33485
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:grad_refine_columns/VOCR5-L": {
+     "cer_delta": -14.991787,
+     "cer_ci95": [
+      -16.659802,
+      -13.418415
+     ],
+     "candidate_errors": 316,
+     "baseline_errors": 5336,
+     "chars": 33485
+    }
+   }
+  },
+  "all": {
+   "lines": 3048,
+   "pages": 2044,
+   "systems": {
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 673,
+     "exact_lines": 2570,
+     "cer": 1.8855,
+     "cer_ci95": [
+      1.6793,
+      2.1066
+     ],
+     "exact": 84.3176,
+     "exact_ci95": [
+      83.0,
+      85.6224
+     ],
+     "hiragana_errors": 202,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.004
+    },
+    "grad/VOCR5-N": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 7361,
+     "exact_lines": 1586,
+     "cer": 20.6225,
+     "cer_ci95": [
+      19.0477,
+      22.2907
+     ],
+     "exact": 52.0341,
+     "exact_ci95": [
+      50.1972,
+      53.8739
+     ],
+     "hiragana_errors": 3657,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 18.1759
+    },
+    "grad_refine/VOCR5-N": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 6867,
+     "exact_lines": 1800,
+     "cer": 19.2385,
+     "cer_ci95": [
+      17.6838,
+      20.9025
+     ],
+     "exact": 59.0551,
+     "exact_ci95": [
+      57.2635,
+      60.8278
+     ],
+     "hiragana_errors": 3399,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 16.8936
+    },
+    "grad_refine_gate/VOCR5-N": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 6867,
+     "exact_lines": 1800,
+     "cer": 19.2385,
+     "cer_ci95": [
+      17.6838,
+      20.9025
+     ],
+     "exact": 59.0551,
+     "exact_ci95": [
+      57.2635,
+      60.8278
+     ],
+     "hiragana_errors": 3399,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 16.8936
+    },
+    "s8c24_textdet/VOCR5-N": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 511,
+     "exact_lines": 2719,
+     "cer": 1.4316,
+     "cer_ci95": [
+      1.2078,
+      1.683
+     ],
+     "exact": 89.206,
+     "exact_ci95": [
+      88.0881,
+      90.29
+     ],
+     "hiragana_errors": 213,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.0586
+    },
+    "s8c24_textdet_refine/VOCR5-N": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 893,
+     "exact_lines": 2479,
+     "cer": 2.5018,
+     "cer_ci95": [
+      2.2249,
+      2.7966
+     ],
+     "exact": 81.332,
+     "exact_ci95": [
+      79.9081,
+      82.7294
+     ],
+     "hiragana_errors": 241,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.1978
+    },
+    "s8c24_spot/VOCR5-N": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 473,
+     "exact_lines": 2721,
+     "cer": 1.3252,
+     "cer_ci95": [
+      1.1548,
+      1.5094
+     ],
+     "exact": 89.2717,
+     "exact_ci95": [
+      88.1622,
+      90.3532
+     ],
+     "hiragana_errors": 189,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 0.9394
+    },
+    "columns/VOCR5-N": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 34554,
+     "exact_lines": 4,
+     "cer": 96.8062,
+     "cer_ci95": [
+      96.5726,
+      97.0451
+     ],
+     "exact": 0.1312,
+     "exact_ci95": [
+      0.0325,
+      0.2657
+     ],
+     "hiragana_errors": 19324,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 96.0437
+    },
+    "grad_refine_columns/VOCR5-N": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 6724,
+     "exact_lines": 1800,
+     "cer": 18.8379,
+     "cer_ci95": [
+      17.3121,
+      20.4579
+     ],
+     "exact": 59.0551,
+     "exact_ci95": [
+      57.2572,
+      60.8353
+     ],
+     "hiragana_errors": 3311,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 16.4563
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 738,
+     "exact_lines": 2479,
+     "cer": 2.0676,
+     "cer_ci95": [
+      1.8592,
+      2.2845
+     ],
+     "exact": 81.332,
+     "exact_ci95": [
+      79.8693,
+      82.7765
+     ],
+     "hiragana_errors": 263,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.3072
+    },
+    "grad/VOCR5-S": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 7377,
+     "exact_lines": 1544,
+     "cer": 20.6673,
+     "cer_ci95": [
+      19.1062,
+      22.3276
+     ],
+     "exact": 50.6562,
+     "exact_ci95": [
+      48.8206,
+      52.4644
+     ],
+     "hiragana_errors": 3658,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 18.1809
+    },
+    "grad_refine/VOCR5-S": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 6905,
+     "exact_lines": 1727,
+     "cer": 19.345,
+     "cer_ci95": [
+      17.7823,
+      20.9812
+     ],
+     "exact": 56.6601,
+     "exact_ci95": [
+      54.8354,
+      58.445
+     ],
+     "hiragana_errors": 3402,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 16.9085
+    },
+    "grad_refine_gate/VOCR5-S": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 6905,
+     "exact_lines": 1727,
+     "cer": 19.345,
+     "cer_ci95": [
+      17.7823,
+      20.9812
+     ],
+     "exact": 56.6601,
+     "exact_ci95": [
+      54.8354,
+      58.445
+     ],
+     "hiragana_errors": 3402,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 16.9085
+    },
+    "s8c24_textdet/VOCR5-S": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 664,
+     "exact_lines": 2598,
+     "cer": 1.8603,
+     "cer_ci95": [
+      1.6221,
+      2.1285
+     ],
+     "exact": 85.2362,
+     "exact_ci95": [
+      83.9102,
+      86.5075
+     ],
+     "hiragana_errors": 240,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.1928
+    },
+    "s8c24_textdet_refine/VOCR5-S": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 878,
+     "exact_lines": 2413,
+     "cer": 2.4598,
+     "cer_ci95": [
+      2.2075,
+      2.7362
+     ],
+     "exact": 79.1667,
+     "exact_ci95": [
+      77.6935,
+      80.625
+     ],
+     "hiragana_errors": 309,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.5358
+    },
+    "s8c24_spot/VOCR5-S": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 626,
+     "exact_lines": 2600,
+     "cer": 1.7538,
+     "cer_ci95": [
+      1.5613,
+      1.9622
+     ],
+     "exact": 85.3018,
+     "exact_ci95": [
+      83.9777,
+      86.5751
+     ],
+     "hiragana_errors": 216,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.0736
+    },
+    "columns/VOCR5-S": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 34554,
+     "exact_lines": 4,
+     "cer": 96.8062,
+     "cer_ci95": [
+      96.5726,
+      97.0451
+     ],
+     "exact": 0.1312,
+     "exact_ci95": [
+      0.0325,
+      0.2657
+     ],
+     "hiragana_errors": 19324,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 96.0437
+    },
+    "grad_refine_columns/VOCR5-S": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 6762,
+     "exact_lines": 1727,
+     "cer": 18.9444,
+     "cer_ci95": [
+      17.4267,
+      20.547
+     ],
+     "exact": 56.6601,
+     "exact_ci95": [
+      54.8376,
+      58.4428
+     ],
+     "hiragana_errors": 3314,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 16.4712
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 539,
+     "exact_lines": 2647,
+     "cer": 1.5101,
+     "cer_ci95": [
+      1.3179,
+      1.7153
+     ],
+     "exact": 86.8438,
+     "exact_ci95": [
+      85.6211,
+      88.0539
+     ],
+     "hiragana_errors": 162,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 0.8052
+    },
+    "grad/VOCR5-L": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 7088,
+     "exact_lines": 1752,
+     "cer": 19.8577,
+     "cer_ci95": [
+      18.2874,
+      21.5375
+     ],
+     "exact": 57.4803,
+     "exact_ci95": [
+      55.6353,
+      59.2982
+     ],
+     "hiragana_errors": 3475,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 17.2714
+    },
+    "grad_refine/VOCR5-L": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 6726,
+     "exact_lines": 1876,
+     "cer": 18.8435,
+     "cer_ci95": [
+      17.2799,
+      20.4964
+     ],
+     "exact": 61.5486,
+     "exact_ci95": [
+      59.784,
+      63.3148
+     ],
+     "hiragana_errors": 3283,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 16.3171
+    },
+    "grad_refine_gate/VOCR5-L": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 6726,
+     "exact_lines": 1876,
+     "cer": 18.8435,
+     "cer_ci95": [
+      17.2799,
+      20.4964
+     ],
+     "exact": 61.5486,
+     "exact_ci95": [
+      59.784,
+      63.3148
+     ],
+     "hiragana_errors": 3283,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 16.3171
+    },
+    "s8c24_textdet/VOCR5-L": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 465,
+     "exact_lines": 2754,
+     "cer": 1.3027,
+     "cer_ci95": [
+      1.0736,
+      1.5584
+     ],
+     "exact": 90.3543,
+     "exact_ci95": [
+      89.2452,
+      91.4369
+     ],
+     "hiragana_errors": 158,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 0.7853
+    },
+    "s8c24_textdet_refine/VOCR5-L": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 756,
+     "exact_lines": 2498,
+     "cer": 2.118,
+     "cer_ci95": [
+      1.8662,
+      2.3967
+     ],
+     "exact": 81.9554,
+     "exact_ci95": [
+      80.5555,
+      83.339
+     ],
+     "hiragana_errors": 209,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 1.0388
+    },
+    "s8c24_spot/VOCR5-L": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 427,
+     "exact_lines": 2756,
+     "cer": 1.1963,
+     "cer_ci95": [
+      1.0227,
+      1.3841
+     ],
+     "exact": 90.4199,
+     "exact_ci95": [
+      89.328,
+      91.4901
+     ],
+     "hiragana_errors": 134,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 0.666
+    },
+    "columns/VOCR5-L": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 34554,
+     "exact_lines": 4,
+     "cer": 96.8062,
+     "cer_ci95": [
+      96.5726,
+      97.0451
+     ],
+     "exact": 0.1312,
+     "exact_ci95": [
+      0.0325,
+      0.2657
+     ],
+     "hiragana_errors": 19324,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 96.0437
+    },
+    "grad_refine_columns/VOCR5-L": {
+     "pages": 2044,
+     "lines": 3048,
+     "chars": 35694,
+     "errors": 6583,
+     "exact_lines": 1876,
+     "cer": 18.4429,
+     "cer_ci95": [
+      16.9252,
+      20.0555
+     ],
+     "exact": 61.5486,
+     "exact_ci95": [
+      59.7945,
+      63.2974
+     ],
+     "hiragana_errors": 3195,
+     "hiragana_chars": 20120,
+     "hiragana_cer": 15.8797
+    }
+   },
+   "pairs": {
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:grad/VOCR5-N": {
+     "cer_delta": -18.737043,
+     "cer_ci95": [
+      -20.385333,
+      -17.165147
+     ],
+     "candidate_errors": 673,
+     "baseline_errors": 7361,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:grad_refine/VOCR5-N": {
+     "cer_delta": -17.353057,
+     "cer_ci95": [
+      -19.003424,
+      -15.78744
+     ],
+     "candidate_errors": 673,
+     "baseline_errors": 6867,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:grad_refine_gate/VOCR5-N": {
+     "cer_delta": -17.353057,
+     "cer_ci95": [
+      -19.003424,
+      -15.78744
+     ],
+     "candidate_errors": 673,
+     "baseline_errors": 6867,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:s8c24_textdet/VOCR5-N": {
+     "cer_delta": 0.453858,
+     "cer_ci95": [
+      0.208341,
+      0.681141
+     ],
+     "candidate_errors": 673,
+     "baseline_errors": 511,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:s8c24_textdet_refine/VOCR5-N": {
+     "cer_delta": -0.61635,
+     "cer_ci95": [
+      -0.851343,
+      -0.416424
+     ],
+     "candidate_errors": 673,
+     "baseline_errors": 893,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:s8c24_spot/VOCR5-N": {
+     "cer_delta": 0.560318,
+     "cer_ci95": [
+      0.390932,
+      0.737545
+     ],
+     "candidate_errors": 673,
+     "baseline_errors": 473,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:columns/VOCR5-N": {
+     "cer_delta": -94.920715,
+     "cer_ci95": [
+      -95.207772,
+      -94.630832
+     ],
+     "candidate_errors": 673,
+     "baseline_errors": 34554,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-N:grad_refine_columns/VOCR5-N": {
+     "cer_delta": -16.952429,
+     "cer_ci95": [
+      -18.562992,
+      -15.436618
+     ],
+     "candidate_errors": 673,
+     "baseline_errors": 6724,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:grad/VOCR5-S": {
+     "cer_delta": -18.599765,
+     "cer_ci95": [
+      -20.231083,
+      -17.044881
+     ],
+     "candidate_errors": 738,
+     "baseline_errors": 7377,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:grad_refine/VOCR5-S": {
+     "cer_delta": -17.277414,
+     "cer_ci95": [
+      -18.888137,
+      -15.748384
+     ],
+     "candidate_errors": 738,
+     "baseline_errors": 6905,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:grad_refine_gate/VOCR5-S": {
+     "cer_delta": -17.277414,
+     "cer_ci95": [
+      -18.888137,
+      -15.748384
+     ],
+     "candidate_errors": 738,
+     "baseline_errors": 6905,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:s8c24_textdet/VOCR5-S": {
+     "cer_delta": 0.207318,
+     "cer_ci95": [
+      -0.038078,
+      0.424384
+     ],
+     "candidate_errors": 738,
+     "baseline_errors": 664,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:s8c24_textdet_refine/VOCR5-S": {
+     "cer_delta": -0.392223,
+     "cer_ci95": [
+      -0.615167,
+      -0.206729
+     ],
+     "candidate_errors": 738,
+     "baseline_errors": 878,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:s8c24_spot/VOCR5-S": {
+     "cer_delta": 0.313778,
+     "cer_ci95": [
+      0.143945,
+      0.483122
+     ],
+     "candidate_errors": 738,
+     "baseline_errors": 626,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:columns/VOCR5-S": {
+     "cer_delta": -94.738612,
+     "cer_ci95": [
+      -95.029077,
+      -94.448365
+     ],
+     "candidate_errors": 738,
+     "baseline_errors": 34554,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-S:grad_refine_columns/VOCR5-S": {
+     "cer_delta": -16.876786,
+     "cer_ci95": [
+      -18.457257,
+      -15.389268
+     ],
+     "candidate_errors": 738,
+     "baseline_errors": 6762,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:grad/VOCR5-L": {
+     "cer_delta": -18.347621,
+     "cer_ci95": [
+      -20.008494,
+      -16.778595
+     ],
+     "candidate_errors": 539,
+     "baseline_errors": 7088,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:grad_refine/VOCR5-L": {
+     "cer_delta": -17.333445,
+     "cer_ci95": [
+      -18.970959,
+      -15.774667
+     ],
+     "candidate_errors": 539,
+     "baseline_errors": 6726,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:grad_refine_gate/VOCR5-L": {
+     "cer_delta": -17.333445,
+     "cer_ci95": [
+      -18.970959,
+      -15.774667
+     ],
+     "candidate_errors": 539,
+     "baseline_errors": 6726,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:s8c24_textdet/VOCR5-L": {
+     "cer_delta": 0.207318,
+     "cer_ci95": [
+      -0.028026,
+      0.42081
+     ],
+     "candidate_errors": 539,
+     "baseline_errors": 465,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:s8c24_textdet_refine/VOCR5-L": {
+     "cer_delta": -0.607945,
+     "cer_ci95": [
+      -0.831762,
+      -0.421751
+     ],
+     "candidate_errors": 539,
+     "baseline_errors": 756,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:s8c24_spot/VOCR5-L": {
+     "cer_delta": 0.313778,
+     "cer_ci95": [
+      0.159352,
+      0.477895
+     ],
+     "candidate_errors": 539,
+     "baseline_errors": 427,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:columns/VOCR5-L": {
+     "cer_delta": -95.296128,
+     "cer_ci95": [
+      -95.579775,
+      -95.008853
+     ],
+     "candidate_errors": 539,
+     "baseline_errors": 34554,
+     "chars": 35694
+    },
+    "B_h2_s4_c24n4_seed2_detref/VOCR5-L:grad_refine_columns/VOCR5-L": {
+     "cer_delta": -16.932818,
+     "cer_ci95": [
+      -18.536009,
+      -15.413451
+     ],
+     "candidate_errors": 539,
+     "baseline_errors": 6583,
+     "chars": 35694
+    }
+   }
+  }
+ }
+}

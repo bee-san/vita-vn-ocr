@@ -221,3 +221,33 @@ Private hand-checked captures use `--set clannad-dev --manifest PATH` (or
 `vn`, `box`, `region` and `text` fields. Image hashes are verified before scoring;
 these manifests cannot replace the shared sets. Keep captures and transcriptions
 outside Git. See [the FL10 workflow](../docs/hiragana.md).
+
+## Full-frame text-spotting sets (`textspot-dev`, `textspot-test`)
+
+The text spotter (issue #104, `docs/textspot.md`) is scored on whole frames with every text instance labelled,
+not on dialogue lines. `eval/textspot_sets.py` builds both sets exactly as `eval/textspot_protocol.json` "sets"
+and "labels" say; `eval/textspot_metrics.py` reads them.
+
+- **textspot-dev** (the only set the spotter's selection reads): native PS Vita and PSP screenshots, PSP ones at 2×
+  (Adrenaline), PC ones scaled to fit 960×544, and text-free frames, of the `dev_sample` VNs.
+- **textspot-test** (read once, after the selection is committed): every vita-test and psp-test screenshot as a full
+  frame, with eval's hand-checked lines as its dialogue and name references (their text unchanged; uncertain lines
+  as ignore areas) and every other text instance labelled as in development; text-free screenshots of the test
+  games; report only, psp-test at 2×.
+
+One row per frame:
+
+| field | meaning |
+|---|---|
+| `id`, `vn`, `part` | frame id (`<vn>_<VNDB screenshot number>`, `_x2` for an Adrenaline frame), VNDB VN, part: `vita`, `psp`, `adrenaline`, `pc` or `text-free` |
+| `session`, `url`, `sha256`, `src_dims` | the VNDB release the screenshot was uploaded under, its URL, the sha256 of its bytes and its size |
+| `scale`, `dims` | how the frame is made from the screenshot: null (native), or `{"method": "cv2.INTER_LINEAR", "factor": 2}` (Adrenaline) / `{"method": "cv2.INTER_AREA", "factor": s}` (PC: `cv2.resize` to `dims`); the frame's size |
+| `text_free` | a frame of the text-free part (two looks saw no text at all) |
+| `refs` | `[{"box": [x, y, w, h], "cls", "vertical", "text", "ignore", "why"}]` in frame pixels: the main-text ink box (fill, outline, shadow; no furigana), class `dialogue`, `name`, `choice`, `ui` or `scene`, the text in eval's convention (Latin as written), or an ignore area with its why (`furigana`, `logo`, `small`, `unreadable`, `watermark`, `script`, `rotated`, `undecided`: two looks did not agree, `uncertain`: eval's uncertain line) |
+| `looks`, `reviewer_kind` | the review passes and sessions that looked at the frame; `assistant` (Claude) |
+
+An Adrenaline frame is labelled at its native 480×272 size: its references are those boxes times 2 exactly.
+Proposals are MeikiOCR's boxes refined to ink with MeikiOCR's and PP-OCRv6 small's readings; every box, class,
+orientation and text is then decided by Claude reviewers (pass 1 boxes and text; pass 2, another session, the boxes
+again and the text blind; a third look for every disagreement). The review files stay in
+`$HERD/shared/artifacts/textspot/sets/`; only URLs, hashes, boxes and labels are committed.

@@ -542,3 +542,10 @@ def test_a9_summary_rows_first_and_cross_checks():
         TS.eligibility(meta, bd, bad, None)
     with pytest.raises(SystemExit):
         TS.eligibility(dict(meta, blob_bytes=2000), bd, rows, None)
+
+
+def test_public_guard():
+    TS.assert_public({"arms": {"grad": {"summary": {"cer_all": {"errors": 1, "chars": 2}}}}, "note": "counts"})
+    for bad in ({"units": [{"text": "あ"}]}, {"x": [{"y": {"label": "x"}}]}, [{"readings": []}]):
+        with pytest.raises(ValueError):
+            TS.assert_public(bad)

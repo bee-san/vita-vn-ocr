@@ -42,7 +42,7 @@ import textspot_metrics as M  # noqa: E402
 
 TEST_MANIFEST = "eval/manifests/textspot-test.jsonl"
 REPORT_PARTS = ("adrenaline",)
-FORBIDDEN = {"text", "pred", "preds", "ref", "reference_text", "texts", "readings", "label"}
+FORBIDDEN = TS.FORBIDDEN
 
 
 def once(path, record):
@@ -54,14 +54,7 @@ def once(path, record):
 
 
 def assert_public(value, where="result"):
-    if isinstance(value, dict):
-        for k, v in value.items():
-            if k in FORBIDDEN:
-                raise ValueError(f"{where}: public output would hold the text field {k!r}")
-            assert_public(v, f"{where}.{k}")
-    elif isinstance(value, (list, tuple)):
-        for i, v in enumerate(value):
-            assert_public(v, f"{where}[{i}]")
+    TS.assert_public(value, where)
 
 
 def arm_specs(cand, decode=None):
@@ -324,7 +317,7 @@ def main(argv=None):
         p.add_argument("--protocol", default=str(TS.PROTOCOL))
         if name == "tests":
             p.add_argument("--manifest", default="")
-            p.add_argument("--data", default="", help="eval's data directory (vita/shots, psp/shots)")
+            p.add_argument("--data", default=str(TS.ART / "eval"), help="eval's data directory (vita/shots, psp/shots)")
             p.add_argument("--shots", action="append", default=[], help="more source directories (text-free shots)")
             p.add_argument("--report-parts", nargs="*", default=list(REPORT_PARTS))
         else:

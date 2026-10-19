@@ -156,6 +156,21 @@ def code_identity(files=CODE):
     return {f: sha256(ROOT / f) for f in files if (ROOT / f).exists()}
 
 
+FORBIDDEN = {"text", "pred", "preds", "ref", "reference_text", "texts", "readings", "label"}
+
+
+def assert_public(value, where="record"):
+    """A record meant to be committed holds no text field (counts, rates, hashes only)."""
+    if isinstance(value, dict):
+        for k, v in value.items():
+            if k in FORBIDDEN:
+                raise ValueError(f"{where}: a public record would hold the text field {k!r}")
+            assert_public(v, f"{where}.{k}")
+    elif isinstance(value, (list, tuple)):
+        for i, v in enumerate(value):
+            assert_public(v, f"{where}[{i}]")
+
+
 def write_json(path, doc, indent=None):
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(str(path) + f".tmp{os.getpid()}")
@@ -1540,6 +1555,7 @@ def cmd_baseline(args):
                    "(the rule's) and VOCR5-S / VOCR5-L (report); vertical boxes by VOCR5-V. Counts, rates and "
                    "hashes only; the units stay under $T",
            "arms": arms}
+    assert_public(doc)
     write_json(args.out, doc, indent=1)
     for arm in BASELINES:
         s = arms[arm][RULE_MODEL]["summary"]
@@ -1621,6 +1637,7 @@ def cmd_select(args):
            "manifest": base_doc["manifest"], "candidates": report, "result": result,
            "report_comparisons": extra,
            "baselines": {a: base_doc["arms"][a][RULE_MODEL]["summary"] for a in BASELINES}}
+    assert_public(doc)
     write_json(args.out, doc, indent=1)
     for name in result["eligible"]:
         r = report[name]

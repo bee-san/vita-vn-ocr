@@ -270,7 +270,8 @@ def write_arm(d, name, meta, units, h_in=None):
     a.mkdir(parents=True)
     frames = {u["unit"]: {"boxes": [], "blocks": [], "pick": -1, "truncated": 0, "h_in": h_in, "c_equal": True,
                           "part": u["part"]} for u in units}
-    (a / "boxes.json").write_text(json.dumps({"arm": name, "spec_meta": meta, "frames": frames}))
+    (a / "boxes.json").write_text(json.dumps({"arm": name, "spec_meta": meta, "frames": frames,
+                                              "manifest": {"sha256": "m" * 64}}))
     doc = {"meta": {"manifest": {"sha256": "m" * 64}}, "units": units, "summary": TS.summarize(units)}
     (a / f"units_{TS.RULE_MODEL}.json").write_text(json.dumps(doc))
     return a / f"units_{TS.RULE_MODEL}.json"
@@ -475,12 +476,49 @@ def test_run_refuses_protected_and_unpinned_sets(tmp_path):
 
 
 def test_scale_frame_steps():
-    rgb = np.random.default_rng(0).integers(0, 256, (272, 480, 3)).astype(np.uint8)
-    row = {"id": "x", "dims": [960, 544], "scale": {"method": "INTER_LINEAR", "factor": 2}}
     import cv2
-    assert np.array_equal(TS.scale_frame(row, rgb), cv2.resize(rgb, (960, 544), interpolation=cv2.INTER_LINEAR))
+    rgb = np.random.default_rng(0).integers(0, 256, (272, 480, 3)).astype(np.uint8)
+    row = {"id": "x", "dims": [960, 544], "scale": {"method": "cv2.INTER_LINEAR", "factor": 2}}
+    want = cv2.resize(rgb, (960, 544), interpolation=cv2.INTER_LINEAR)
+    assert np.array_equal(TS.scale_frame(row, rgb), want)
+    calls = []
+
+    def build(img, dims, scale):                       # the sets' own function, when it exists, does the step
+        calls.append((tuple(dims), scale))
+        return cv2.resize(img, tuple(dims), interpolation=cv2.INTER_LINEAR)
+    assert np.array_equal(TS.scale_frame(row, rgb, build), want) and calls == [((960, 544), row["scale"])]
+    assert TS.scale_frame({"id": "n", "dims": [480, 272], "scale": None}, rgb, lambda i, d, s: i) is not None
     row2 = {"id": "y", "dims": [960, 544], "scale": [{"method": "INTER_AREA", "dims": [240, 136]},
                                                      {"method": "INTER_LINEAR", "dims": [960, 544]}]}
     assert TS.scale_frame(row2, rgb).shape == (544, 960, 3)
     with pytest.raises(ValueError):
         TS.scale_frame({"id": "z", "dims": [100, 100], "scale": None}, rgb)
+
+
+def test_decode_suffix_and_a9_numeric_rows(tmp_path):
+    run = tmp_path / "sweep" / "s8_c8_seed9"
+    run.mkdir(parents=True)
+    (run / "final.vtd").write_bytes(vtdt("s8_c8", 5))
+    fam = {"s8_c8_seed9": run / "final.vtd"}
+    assert [s.name for s in TS.parse_arms("A:s8_c8_seed9@600:detref", fam_a=fam)] == ["A_s8_c8_seed9_h600_detref"]
+    assert [s.name for s in TS.parse_arms("famA:det", fam_a=fam)] == ["A_s8_c8_seed9_h0_det", "A_s8_c8_seed9_h600_det"]
+    # eval/textspot_a9_<date>.json's form: ms_per_frame["333"] is already the high bound x 1.0007 at 333 MHz
+    rows = TS.a9_rows({"table": [{"shape": "s8_c8", "scale": "h2", "half_above": 600, "size": [960, 544],
+                                  "arena_bytes": 28551, "ms_per_frame": {"333": 31.32, "444": 23.49},
+                                  "cycles_per_frame": {"333": [1.0, 2.0]}},
+                                 {"shape": "s8_c8", "scale": "f1", "size": [960, 544], "arena_bytes": 42391,
+                                  "cycles_per_frame": {"333": [5.0e6, 2.95e7]}}]})
+    assert TS.a9_lookup(rows, "s8_c8", 600)["ms_333"] == 31.32 and TS.a9_lookup(rows, "s8_c8", 600)["arena"] == 28551
+    assert TS.a9_lookup(rows, "s8_c8", 0)["ms_333"] == pytest.approx(2.95e7 * 1.0007 / 333e3)
+    assert TS.a9_lookup(rows, "s8_c8", 600, (480, 272)) is None
+
+
+def test_parity_record_overrides_unchecked_frames():
+    doc = {"arm": "x_det", "_sha256": "s" * 64,
+           "frames": {"a": {"c_equal": None}, "b": {"c_equal": True}, "c": {"c_equal": None}}}
+    rec = {"arms": {"x_det": {"boxes_sha256": "s" * 64, "frames": {"a": True, "b": True, "c": False}}}}
+    out = TS.apply_parity(doc, rec)
+    assert [out["frames"][k]["c_equal"] for k in "abc"] == [True, True, False]
+    assert TS.apply_parity(doc, {"arms": {}}) is doc
+    with pytest.raises(SystemExit):
+        TS.apply_parity(doc, {"arms": {"x_det": dict(rec["arms"]["x_det"], boxes_sha256="t" * 64)}})

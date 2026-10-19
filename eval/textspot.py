@@ -10,6 +10,8 @@ the frozen metrics (eval/textspot_metrics.py: match_frame, e2e_frame, arm_summar
   textspot.py select --baseline JSON --units DIR [--units DIR ...] --a9 JSON --out eval/textspot_dev_<date>.json
   textspot.py tables --baseline JSON [--dev JSON]                              markdown for docs/textspot.md
   textspot.py cbuild --out DIR                                                 the C drivers, built from this checkout
+  textspot.py parity --set dev --arms ... --units DIR --scratch DIR --cbin DIR --out JSON
+                                                   C parity of arms already run, as a separate record (--parity)
   textspot.py pseudo --out JSONL [--n 30]                  a training-side pseudo set (harness tests; never a score)
 
 Frames. A row of eval/manifests/textspot-{dev,test}.jsonl (eval/textspot_sets.py writes them) names its source
@@ -35,7 +37,8 @@ Arms (SPEC):
   detref:NAME=VTSP      the same, then its horizontal boxes (in the decode's order) through refine_lines on the
                         frame; its vertical boxes unchanged
   A:RUN@HALF            family A: #97's run RUN (sweep/ or sweep_r3/ final.vtd) packed with half_above HALF and
-                        conf_min 1, as det and det+refine (arms A_<RUN>_h<HALF>_det, A_<RUN>_h<HALF>_detref)
+                        conf_min 1, as det and det+refine (arms A_<RUN>_h<HALF>_det, A_<RUN>_h<HALF>_detref); a
+                        suffix :det or :detref keeps one decode (also on famA, B:RUN, famB)
   famA                  every family A run at half_above 0 and 600
   B:RUN, famB           family B: $T/runs/RUN/final.vtsp (finished runs: done.json), det and det+refine
 Every arm's boxes go through textspot_twin.group_and_order (blocks, reading order, pick); a box without a dark flag
@@ -250,41 +253,46 @@ def source_path(row, dirs):
     raise FileNotFoundError(f"{row['id']}: no file {name} with sha256 {row['sha256'][:12]}... in {len(dirs)} dirs")
 
 
-def _sets_frame_fn():
-    """eval/textspot_sets.py's own source-to-frame function, when that module exists here."""
+def _sets_build_frame():
+    """eval/textspot_sets.build_frame(rgb, dims, scale) (the sets' own source-to-frame step), when importable."""
     try:
-        import textspot_sets as TS
+        import textspot_sets as TSS
     except ImportError:
         return None
-    for name in ("frame_of", "frame_rgb", "make_frame", "apply_scale"):
-        fn = getattr(TS, name, None)
-        if callable(fn):
-            return fn
-    return None
+    fn = getattr(TSS, "build_frame", None)
+    return fn if callable(fn) else None
 
 
 INTERP = {"INTER_LINEAR": "INTER_LINEAR", "LINEAR": "INTER_LINEAR", "BILINEAR": "INTER_LINEAR",
           "INTER_AREA": "INTER_AREA", "AREA": "INTER_AREA"}
 
 
-def scale_frame(row, rgb):
-    """The frame of a row from its source's RGB: as it is (scale null), or resized to the row's dims (one step
-    {"method": INTER_LINEAR | INTER_AREA, ...}, or a list of steps each with its own "dims"). eval/textspot_sets.py's
-    function is used instead when it exists."""
-    fn = _sets_frame_fn()
-    if fn is not None:
-        return np.ascontiguousarray(fn(row, rgb))
+def _resize_steps(rgb, steps, dims):
     import cv2
+    out = rgb
+    for st in steps:
+        method = INTERP[str(st["method"]).upper().replace("CV2.", "")]
+        w, h = st.get("dims") or dims
+        out = cv2.resize(out, (int(w), int(h)), interpolation=getattr(cv2, method))
+    return out
+
+
+def scale_frame(row, rgb, build=None):
+    """The frame of a row from its source's RGB. A row's scale is null (a native frame) or {"method":
+    "cv2.INTER_LINEAR" | "cv2.INTER_AREA", "factor"} (resize to the row's dims): eval/textspot_sets.build_frame
+    applies it when that module is importable (build: an explicit function, for tests), else the same cv2.resize
+    here. A list of steps, each with its own "dims", is the pseudo set's form (resized in turn)."""
     steps = row.get("scale")
-    if not steps:
-        out = rgb
+    if isinstance(steps, list):
+        out = _resize_steps(rgb, steps, row["dims"])
     else:
-        out = rgb
-        steps = steps if isinstance(steps, list) else [dict(steps, dims=row["dims"])]
-        for st in steps:
-            method = INTERP[str(st["method"]).upper().replace("CV2.", "")]
-            w, h = st.get("dims") or row["dims"]
-            out = cv2.resize(out, (int(w), int(h)), interpolation=getattr(cv2, method))
+        build = build if build is not None else _sets_build_frame()
+        if build is not None:
+            out = build(rgb, row["dims"], steps)
+        elif not steps:
+            out = rgb
+        else:
+            out = _resize_steps(rgb, [dict(steps, dims=row["dims"])], row["dims"])
     if [out.shape[1], out.shape[0]] != list(row["dims"]):
         raise ValueError(f"{row['id']}: frame {out.shape[1]}x{out.shape[0]} is not the row's dims {row['dims']}")
     return np.ascontiguousarray(out)
@@ -352,6 +360,14 @@ def candidate_specs(name, blob, path, family=None, run=None, half_above=None, ki
                  text=text) for k in kinds]
 
 
+def _decode_suffix(tok):
+    """'A:RUN@600:det' -> ('A:RUN@600', ('det',)); no suffix: both decodes."""
+    for k in ("detref", "det"):
+        if tok.endswith(":" + k):
+            return tok[:-len(k) - 1], (k,)
+    return tok, ("det", "detref")
+
+
 def parse_arms(text, fam_a=None, fam_b=None):
     """The arm specs of a comma-separated list (see the module docstring), in order, without duplicates."""
     import textspot_twin as S
@@ -373,23 +389,25 @@ def parse_arms(text, fam_a=None, fam_b=None):
             blob = Path(path).read_bytes()
             m = S.Model(blob)
             add([Spec(f"{name}_{kind}", kind, blob=blob, path=path, half_above=m.half_above, text=tok)])
-        elif tok == "famA" or tok.startswith("A:"):
+        elif _decode_suffix(tok)[0] == "famA" or tok.startswith("A:"):
             runs = fam_a if fam_a is not None else family_a_runs()
-            if tok == "famA":
+            body, kinds = _decode_suffix(tok)
+            if body == "famA":
                 items = [(r, h) for r in runs for h in HALF_ABOVE]
             else:
-                run, _, half = tok[2:].partition("@")
+                run, _, half = body[2:].partition("@")
                 items = [(run, int(h)) for h in (half.split("+") if half else map(str, HALF_ABOVE))]
             for run, h in items:
                 vtdt = Path(runs[run]).read_bytes()
-                add(candidate_specs(f"A_{run}_h{h}", S.pack(vtdt, h, 1), runs[run], "A", run, h,
+                add(candidate_specs(f"A_{run}_h{h}", S.pack(vtdt, h, 1), runs[run], "A", run, h, kinds,
                                     text=f"A:{run}@{h}"))
-        elif tok == "famB" or tok.startswith("B:"):
+        elif _decode_suffix(tok)[0] == "famB" or tok.startswith("B:"):
             runs = fam_b if fam_b is not None else family_b_runs()
-            names = list(runs) if tok == "famB" else [tok[2:]]
+            body, kinds = _decode_suffix(tok)
+            names = list(runs) if body == "famB" else [body[2:]]
             for run in names:
                 blob = Path(runs[run]).read_bytes()
-                add(candidate_specs(f"B_{run}", blob, runs[run], "B", run, S.Model(blob).half_above,
+                add(candidate_specs(f"B_{run}", blob, runs[run], "B", run, S.Model(blob).half_above, kinds,
                                     text=f"B:{run}"))
         else:
             raise SystemExit(f"unknown arm {tok!r}")
@@ -617,8 +635,7 @@ DRIVERS = {"vocr_lines_test": ("vocr_lines.c", "vocr_lines_test.c"),
            "vocr_textdet_test": ("vocr_lines.c", "vocr_lines_rows.c", "vocr_lines_refine.c", "vocr_textdet.c",
                                  "vocr_textdet_test.c"),
            "vocr_vertical_test": ("vocr_lines.c", "vocr_lines_rows.c", "vocr_vertical.c", "vocr_vertical_test.c"),
-           "vocr_textspot_test": ("vocr_lines.c", "vocr_lines_rows.c", "vocr_lines_refine.c", "vocr_textspot.c",
-                                  "vocr_textspot_test.c")}
+           "vocr_textspot_test": ("vocr_lines.c", "vocr_lines_rows.c", "vocr_textspot.c", "vocr_textspot_test.c")}
 LIBS = {"libvocr_refine.so": ("vocr_lines.c", "vocr_lines_refine.c")}
 
 
@@ -1130,9 +1147,11 @@ def summarize(units, parts=True):
     out["c_unequal_frames"] = sum(1 for v in ce if v is False)
     out["c_unchecked_frames"] = sum(1 for v in ce if v is None)
     if parts:
-        names = sorted({u["part"] for u in units} | ({"text_free"} if tf else set()))
-        out["per_part"] = {p: summarize([u for u in units if (u["text_free"] if p == "text_free" else u["part"] == p)],
-                                        False) for p in names}
+        names = {u["part"] for u in units}
+        groups = {p: [u for u in units if u["part"] == p] for p in sorted(names)}
+        if tf and not names & {"text-free", "text_free"}:
+            groups["text_free"] = tf          # text-free frames filed under other parts: also a row of their own
+        out["per_part"] = {p: summarize(us, False) for p, us in groups.items()}
     return out
 
 
@@ -1332,9 +1351,10 @@ def cmd_run(args):
 # ----------------------------------------------------------------------------- eligibility (the runtime's table)
 
 def a9_rows(doc):
-    """The A9 / arena table's rows, normalised: [{"shape", "half_above", "size": (w, h), "ms_333_high",
-    "arena"}]. Accepts eval/textspot_a9_<date>.json's "table" (or "rows") with "half_above" or "scale" (h2 / f1)
-    and the cycle model's ms at 333 MHz as {"high", "calibrated"} under "ms_per_frame" or "ms_per_region"."""
+    """The A9 / arena table's rows (eval/textspot_a9_<date>.json "table"), normalised: [{"shape", "half_above",
+    "size": (w, h), "ms_333", "arena"}]. ms_333 is the rule's estimate: the cycle model's high bound x 1.0007 at
+    333 MHz, which the table gives as ms_per_frame["333"] (or {"high", "calibrated"}, or the cycles' high bound);
+    arena is vocr_textspot_arena_bytes for every frame up to the row's size ("arena_bytes")."""
     rows = doc.get("table") or doc.get("rows") or []
     out = []
     for r in rows:
@@ -1342,12 +1362,12 @@ def a9_rows(doc):
         if ha is None and "scale" in r:
             ha = {"h2": 600, "f1": 0}[r["scale"]]
         size = tuple(r.get("size") or r.get("frame") or ())
-        ms = r.get("ms_per_frame") or r.get("ms_per_region") or {}
-        m333 = ms.get("333") or ms.get(333) or {}
-        hi = m333.get("high") if isinstance(m333, dict) else None
-        cal = m333.get("calibrated") if isinstance(m333, dict) else None
-        out.append({"shape": r["shape"], "half_above": ha, "size": size,
-                    "ms_333_high": hi, "ms_333": cal if cal is not None else (hi * A9_CAL if hi is not None else None),
+        ms = (r.get("ms_per_frame") or r.get("ms_per_region") or {}).get("333")
+        if isinstance(ms, dict):
+            ms = ms.get("calibrated", ms["high"] * A9_CAL if ms.get("high") is not None else None)
+        if ms is None and (r.get("cycles_per_frame") or {}).get("333"):
+            ms = r["cycles_per_frame"]["333"][1] * A9_CAL / 333e3
+        out.append({"shape": r["shape"], "half_above": ha, "size": size, "ms_333": ms,
                     "arena": r.get("arena_bytes", r.get("arena")), "row": r})
     return out
 
@@ -1377,6 +1397,19 @@ def macs_960(shape, half_above):
     import textdet_model as TM
     w, h = input_size(half_above)
     return int(TM.cost(TM.SHAPES[shape], w, h)["macs"])
+
+
+def apply_parity(boxes_doc, parity):
+    """boxes_doc with each frame's c_equal from a parity record (textspot.py parity) where the run did not check
+    it; the record's boxes_sha256 must be the boxes'."""
+    rec = (parity or {}).get("arms", {}).get(boxes_doc["arm"])
+    if rec is None:
+        return boxes_doc
+    if rec["boxes_sha256"] != boxes_doc.get("_sha256"):
+        raise SystemExit(f"{boxes_doc['arm']}: the parity record is of other boxes")
+    frames = {k: dict(v, c_equal=v["c_equal"] if v.get("c_equal") is not None else rec["frames"].get(k))
+              for k, v in boxes_doc["frames"].items()}
+    return dict(boxes_doc, frames=frames)
 
 
 def eligibility(meta, boxes_doc, rows, ref_arena):
@@ -1424,8 +1457,11 @@ def load_candidate_dirs(dirs):
             doc = json.loads(b.read_text(encoding="utf-8"))
             if doc["spec_meta"]["kind"] not in ("det", "detref"):
                 continue
+            doc["_sha256"] = sha256(b)
             u = b.parent / f"units_{RULE_MODEL}.json"
             units = json.loads(u.read_text(encoding="utf-8")) if u.exists() else None
+            det = b.parent / "units_detection.json"
+            doc["_detection"] = (json.loads(det.read_text(encoding="utf-8"))["summary"] if det.exists() else None)
             out[doc["arm"]] = (doc, units, b.parent)
     return out
 
@@ -1436,9 +1472,10 @@ def cmd_eligible(args):
     rows = a9_rows(json.loads(Path(args.a9).read_text(encoding="utf-8")))
     ref_ar = refine_arena(json.loads(Path(args.a9).read_text(encoding="utf-8")), args.cbin or None)
     cands = load_candidate_dirs(args.units)
+    parity = merge_parity(args.parity)
     names = []
     for arm, (doc, _, _) in sorted(cands.items()):
-        e = eligibility(doc["spec_meta"], doc, rows, ref_ar)
+        e = eligibility(doc["spec_meta"], apply_parity(doc, parity), rows, ref_ar)
         ok = e["inputs_known"] and e["arena_960"] <= rule["arena_max"] and e["est_ms_333_960"] <= rule["ms_max_333_960"]
         why = "" if ok or e["inputs_known"] else (" (no table row)" if not e["a9_row"] else " (no Vita frame)")
         c = "unchecked" if e["c_unchecked_frames"] else e["c_equal"]
@@ -1521,7 +1558,7 @@ def resolve(path):
     return p if p.is_absolute() else ROOT / p
 
 
-def select(base_doc, cand_dirs, a9_doc, rule, units_dir=None, cdir=None):
+def select(base_doc, cand_dirs, a9_doc, rule, units_dir=None, cdir=None, parity=None):
     baselines = baseline_rule_arms(base_doc, units_dir)
     rows = a9_rows(a9_doc)
     ref_ar = refine_arena(a9_doc, cdir)
@@ -1529,6 +1566,9 @@ def select(base_doc, cand_dirs, a9_doc, rule, units_dir=None, cdir=None):
     for arm, (doc, units, _) in sorted(load_candidate_dirs(cand_dirs).items()):
         if units is not None and units["meta"]["manifest"]["sha256"] != base_doc["manifest"]["sha256"]:
             raise SystemExit(f"{arm}: scored on another manifest than the baseline")
+        if doc["manifest"]["sha256"] != base_doc["manifest"]["sha256"]:
+            raise SystemExit(f"{arm}: detected on another manifest than the baseline")
+        doc = apply_parity(doc, parity)
         e = eligibility(doc["spec_meta"], doc, rows, ref_ar)
         rc = rule_candidate(e, None)
         el = M.eligible(rc, rule)
@@ -1536,7 +1576,8 @@ def select(base_doc, cand_dirs, a9_doc, rule, units_dir=None, cdir=None):
             raise SystemExit(f"{arm} is eligible but has no {RULE_MODEL} units: read it first")
         rc["arm"] = rule_arm(units["units"]) if units is not None else None
         cands.append(rc)
-        report[arm] = dict(e, eligible=el, summary=units["summary"] if units is not None else None)
+        report[arm] = dict(e, eligible=el, summary=units["summary"] if units is not None else None,
+                           detection_summary=doc["_detection"] if units is None else None)
     result = M.apply_rule(cands, baselines, rule)
     extra = {}
     for c in cands:              # ineligible ones (read anyway): their comparisons, for the report only
@@ -1549,10 +1590,13 @@ def cmd_select(args):
     proto = protocol()
     base_doc = json.loads(Path(args.baseline).read_text(encoding="utf-8"))
     a9 = json.loads(Path(args.a9).read_text(encoding="utf-8"))
-    result, report, extra = select(base_doc, args.units, a9, proto["rule"], args.baseline_units, args.cbin or None)
+    parity = merge_parity(args.parity)
+    result, report, extra = select(base_doc, args.units, a9, proto["rule"], args.baseline_units, args.cbin or None,
+                                   parity)
     doc = {"kind": "textspot-selection", "computed": utc_now(), "protocol_sha256": sha256(PROTOCOL),
            "baseline_sha256": sha256(args.baseline), "a9_sha256": sha256(args.a9), "a9": rel(args.a9),
            "rule": proto["rule"], "refine_ms_per_box": REFINE_MS_PER_BOX, "code_sha256": code_identity(),
+           "parity_sha256": {rel(f): sha256(f) for f in args.parity},
            "manifest": base_doc["manifest"], "candidates": report, "result": result,
            "report_comparisons": extra,
            "baselines": {a: base_doc["arms"][a][RULE_MODEL]["summary"] for a in BASELINES}}
@@ -1639,6 +1683,54 @@ def cmd_tables(args):
     if args.out:
         Path(args.out).write_text(text, encoding="utf-8")
     print(text)
+
+
+# ----------------------------------------------------------------------------- C parity after the fact
+
+def merge_parity(paths):
+    out = {"arms": {}}
+    for f in paths or []:
+        out["arms"].update(json.loads(Path(f).read_text(encoding="utf-8"))["arms"])
+    return out
+
+
+def cmd_parity(args):
+    """The C drivers on the frames of arms already run (OUT/<arm>/boxes.json, e.g. a frozen baseline detected
+    before a driver existed): the twins run again into a scratch directory and must give the stored boxes; then
+    each arm's c_equal per frame goes to a separate record (the stored boxes and units are not touched)."""
+    proto = protocol()
+    check_baseline_blobs(proto)
+    rows, manifest = load_set(args, proto)
+    frames = load_frames(rows, [Path(d) for d in args.shots] + list(SHOT_DIRS))
+    specs = parse_arms(args.arms)
+    cdir = Path(args.cbin) if args.cbin != "auto" else Path(args.scratch) / "cbuild"
+    if args.cbin == "auto":
+        cbuild(cdir, args.compiler)
+    scratch = Path(args.scratch)
+    per_frame = run_arms(frames, specs, manifest, scratch, [], cdir=cdir, workers=args.workers, force=True,
+                         log=lambda x: print(x, flush=True), proto=proto)
+    doc = {"kind": "textspot-parity", "computed": utc_now(), "manifest": manifest, "c_build": CDrivers(cdir).record,
+           "code_sha256": code_identity(), "arms": {}}
+    for s in specs:
+        stored = Path(args.units) / s.name / "boxes.json"
+        old = json.loads(stored.read_text(encoding="utf-8"))
+        if old["manifest"]["sha256"] != manifest["sha256"]:
+            raise SystemExit(f"{stored}: another manifest")
+        fr = {}
+        for f, arms in zip(frames, per_frame):
+            a, o = arms[s.name], old["frames"][f.id]
+            same = ([list(b) for b in a["boxes"]], [list(b) for b in a["blocks"]], a["pick"], a["truncated"]) == \
+                (o["boxes"], o["blocks"], o["pick"], o["truncated"])
+            if not same:
+                raise SystemExit(f"{s.name} {f.id}: the twin no longer gives the stored boxes")
+            fr[f.id] = a["c_equal"]
+        doc["arms"][s.name] = {"boxes_sha256": sha256(stored), "frames": fr,
+                               "c_equal": all(v is True for v in fr.values()),
+                               "unchecked": sum(1 for v in fr.values() if v is None),
+                               "differ": sum(1 for v in fr.values() if v is False)}
+        print(f"{s.name}: C == twin {doc['arms'][s.name]['c_equal']} (unchecked {doc['arms'][s.name]['unchecked']}, "
+              f"differ {doc['arms'][s.name]['differ']})", flush=True)
+    write_json(args.out, doc, indent=1)
 
 
 # ----------------------------------------------------------------------------- pseudo frames (harness tests only)
@@ -1740,6 +1832,19 @@ def main(argv=None):
     p.add_argument("--units", action="append", required=True)
     p.add_argument("--a9", required=True)
     p.add_argument("--cbin", default="")
+    p.add_argument("--parity", action="append", default=[])
+    p = sub.add_parser("parity")
+    p.add_argument("--set", required=True, choices=("dev", "pseudo"))
+    p.add_argument("--manifest", default="")
+    p.add_argument("--arms", required=True)
+    p.add_argument("--units", required=True, help="the run directory whose boxes are checked")
+    p.add_argument("--scratch", required=True)
+    p.add_argument("--cbin", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--workers", type=int, default=5)
+    p.add_argument("--shots", action="append", default=[])
+    p.add_argument("--compiler", default="gcc")
+    p.add_argument("--limit", type=int, default=0)
     p = sub.add_parser("baseline")
     p.add_argument("--units", required=True)
     p.add_argument("--out", required=True)
@@ -1749,6 +1854,7 @@ def main(argv=None):
     p.add_argument("--units", action="append", required=True)
     p.add_argument("--a9", required=True)
     p.add_argument("--cbin", default="")
+    p.add_argument("--parity", action="append", default=[])
     p.add_argument("--out", required=True)
     p = sub.add_parser("tables")
     p.add_argument("--baseline", required=True)
@@ -1762,7 +1868,7 @@ def main(argv=None):
     p.add_argument("--n", type=int, default=30)
     args = ap.parse_args(argv)
     {"run": cmd_run, "eligible": cmd_eligible, "baseline": cmd_baseline, "select": cmd_select,
-     "tables": cmd_tables, "cbuild": cmd_cbuild, "pseudo": cmd_pseudo}[args.cmd](args)
+     "tables": cmd_tables, "cbuild": cmd_cbuild, "pseudo": cmd_pseudo, "parity": cmd_parity}[args.cmd](args)
 
 
 if __name__ == "__main__":

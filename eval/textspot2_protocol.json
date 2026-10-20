@@ -607,6 +607,29 @@
     "labels_commit": "7338544",
     "a9_measured_by_sha256": "b930fdf6b7d53bcc676cb3fd964ea5bd7141e2e1e10789ba881d8e1d39f15593"
    }
+  },
+  {
+   "id": 4,
+   "utc": "2026-10-20T10:46:52Z",
+   "before": "every textspot2 training run (no run exists; the trainer's probes, smokes and data-path probe ran in scratch directories and nothing of them is used)",
+   "what": [
+    "The trainer: train/textspot2_train.py (recipes lab, data, ema, cls, long, kd and the d2s path, one file for both stages), merged as b0bc3bd from the train helper's 6c3e77e. Every non-d2s path is identical before and after the d2s path was added (eval/reproducibility/textspot2-20261020/identity_check.py: logs, QAT weights and blobs identical on fixed shards and on the pinned shards). r0 is train/textspot_train.py itself, with textspot's data (textspot amendment 1), unchanged.",
+    "The sweep: eval/reproducibility/textspot2-20261020/sweep.sh with textspot2_plan.py and check_run.py; the stage-1 run list eval/reproducibility/textspot2-20261020/stage1_plan.jsonl (38 runs, longest first, 47.5 slot-hours estimated), exactly docs/textspot2.md's stage 1. At most 6 runs at once (the workstream's cap is 8; the scoring takes the other 2). The sweep runs from a detached git worktree at this amendment's commit ($HERD/shared/artifacts/textspot2/runs/_code), so later commits cannot change a running or queued run's code; every run.json records that head.",
+    "The data-path probe (eval/textspot2_train_datapath_20261020.json): lab reads 137 shards (synth_frames and the 4 lab_<source> directories; the 50 more shards unread), data 187; every shard sha256-verified; the skip lists drop 0 canvases, as expected for textspot2's shards; the data pool per source: realplus 42,339, teacher 6,311, owner 4,071, devnative 64 canvases (plus textspot's 80,000 synthetic frames)."
+   ],
+   "sources_sha256": {
+    "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+    "eval/reproducibility/textspot2-20261020/sweep.sh": "dcef045156ae6a4701c2c15931d4e8de189b11eb56ef7f2b67c5cde2e0d16db4",
+    "eval/reproducibility/textspot2-20261020/textspot2_plan.py": "62c9adefacaa29d2c1eaf9bb5315e5cbfdfc56924f73799f2f4f7618a9c4492b",
+    "eval/reproducibility/textspot2-20261020/check_run.py": "453fc300157bba8b4a8eaded61d89b7cc184405fb21a1111c72704020205bbca",
+    "eval/reproducibility/textspot2-20261020/stage1_plan.jsonl": "75763e023fd1c9839dba3f967937576a47b6f166e2fa9225c937887230220333"
+   },
+   "settings": {
+    "stage1_runs": 38,
+    "max_par": 6,
+    "trainer_commit": "6c3e77e",
+    "merge_commit": "b0bc3bd"
+   }
   }
  ]
 }

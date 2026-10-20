@@ -278,6 +278,12 @@ Each amendment is dated in `eval/textspot2_protocol.json` and precedes the runs 
      - RESERVE_OK, and no leak against vita-test / psp-test.
 
      Known label noise: long thin vertical strips taken as vertical text, mostly at weights 0.53-0.60.
+4. **The trainer and stage 1's run list** (2026-10-20T10:46Z, before any run).
+   - `train/textspot2_train.py` is one file for both stages. Its d2s path changed no other path: logs, weights and
+     blobs are identical before and after it was added.
+   - `eval/reproducibility/textspot2-20261020/stage1_plan.jsonl` lists the 38 stage-1 runs, longest first,
+     47.5 slot-hours estimated. At most 6 run at once, from a detached worktree at this commit.
+   - The data-path probe read every pinned shard; the skip lists drop nothing, as expected.
 
 ## Results
 

@@ -568,6 +568,45 @@
      }
     }
    }
+  },
+  {
+   "id": 3,
+   "utc": "2026-10-20T10:07:35Z",
+   "before": "every score of any textspot2 arm on a development frame (the teacher ceiling included) and every textspot2 training run; no textspot2 arm has read a development frame (the eval helper's WRAPPER_READY ede5398 says so; the units directory $HERD/shared/artifacts/textspot2/eval does not hold any) and no textspot2 run exists",
+   "what": [
+    "The scoring wrapper eval/textspot2.py and the protected-read script eval/textspot2_protected.py (the eval helper's ede5398, merged as 650e277) are the harness of every textspot2 score. They call eval/textspot.py, eval/textspot_metrics.py and eval/textspot2_rule.py unchanged; the reading cache is $HERD/shared/artifacts/textspot2/eval/cache, seeded by copying textspot's development cache (textspot's artifacts are never written). Precisions: (1) the ceiling's raw meiki boxes are clipped to the frame before the pad, for both sizes; (2) a d2s shape's MACs come from train/textspot2_export.costs and are checked against its d2s A9 row; (3) the A9 rows: textspot's table (eval/textspot_a9_20261019.json) for textspot's two shapes, s4p_c8 and s4_c24n4, textspot2's table for the other 'kroa' shapes, the d2s table for the d2s shapes; (4) the refinement's arena is its driver's (--cbin) and must equal the protocol's 72,391 B.",
+    "The eligibility tables: eval/textspot2_a9_20261020.json (the 7 'kroa' shapes at h2 on runtime/vocr_textspot.c; textspot's s4p_c8 and s4_c24n4 rows re-measured in the same batch reproduce textspot's table field for field, 8 of 8) and eval/textspot2_a9_d2s_20261020.json (the d2s shapes on runtime/vocr_textspot2.c; s4_c24n4 as version 1 through the new file 130.71 against 130.69 ms). Both were measured by eval/textspot2_a9.py at sha256 b930fdf6..., whose two imports inside runtime() were re-sorted afterwards (ruff I001, no code change: commit 740a3f4).",
+    "The d2s extension, committed before stage 2 as docs/textspot2.md 'd2s' requires: VTSP version 2 (textspot's header with version 2; the inner network is #97's VTDT layout with 16 outputs at stride 8 and min cells 2, which every version-1 loader refuses), channel 4 (2 dy + dx) + m of a stride-8 cell = map m (K, O, A1, A2) of its sub-cell (dy, dx), read as stride-4 maps cropped to ceil(h / 4) x ceil(w / 4), then textspot's decode at stride 4. Files: synth/textspot2_twin.py (version 1 delegated to synth/textspot_twin.py), train/textspot2_export.py, runtime/vocr_textspot2.c / .h and runtime/vocr_textspot2_test.c (version 1 bit for bit as runtime/vocr_textspot.c, arenas included), the parity tests (tests/textspot2_parity.py: TEXTSPOT2_PARITY_OK on host, ASan/UBSan, qemu-arm Cortex-A9 NEON and scalar, the Vita compiler at -O2 and -Os).",
+    "The data pin: data/manifests/textspot2_shards_v1.json (sha256 b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034), built by synth/textspot2_labels.py under amendment 2: 107 shards, 52,785 canvases (lab 28,265: #97's canvases minus textspot's 337 skipped; more 24,520 new screenshots: realplus 22,656, teacher 451, owner 1,413), 299,986 positives (lab 157,517 = 149,370 kept + 8,147 added; more 142,469), 4,528 vertical, 302,936 ignore areas; by source realplus 42,339, teacher 6,311, owner 4,071, devnative 64 canvases. Hygiene: eval/tools/reserve_check.py --require-hashes --pixels over the lab rows and the new pool RESERVE_OK, 0 reserved-VN samples in any shard, eval/tools/leakcheck.py 0 pairs >= 0.95 against the 157 vita-test and psp-test screenshots. Every colour source rebuilt equals its canvas (28,265 of 28,265). The QA's known label noise: long thin vertical strips (card edges, UI bars) taken as vertical positives, mostly at weight 0.53-0.60 (QA sheets under $HERD/shared/artifacts/textspot2/labels/qa and $HERD/shared/private/textspot2/labels/qa; the conductor viewed one more sheet and agrees).",
+    "train/textspot2_shapes.py (the shapes registry, c47f96c) is pinned with them."
+   ],
+   "sources_sha256": {
+    "eval/textspot2.py": "16ee08dd3074a755f8a72e50f1ac9fadf914a3260ef7ef44ba7efc4a466bbf61",
+    "eval/textspot2_protected.py": "be475701088942c6f1293243b078b85fd57a555ff24a2707f6831e7b51f8bc24",
+    "eval/textspot2_a9.py": "6d71cfa54a7080db57b05aaf30dced7148167da1e7463ce71491cb5233954bb0",
+    "eval/textspot2_a9_20261020.json": "2b18e0a4a77fdeae2e53dfa20c705ee82a4215e5622e6df7c0ea4b2a78d8743b",
+    "eval/textspot2_a9_d2s_20261020.json": "e5bde909a9d9fedce7c0840fe406a853def553b36fc50250fed8526f2cc05911",
+    "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+    "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+    "runtime/vocr_textspot2.c": "359f97c8b628e4086466497d5667f96e83be75ef3b9f2f6173d9f36e9b864ce2",
+    "runtime/vocr_textspot2.h": "2d7429e4799e6a2242c6972762936f40ef672677286bf470b80d88a3f9529ee2",
+    "runtime/vocr_textspot2_test.c": "572fee11dd13de9ff104fe9c55c30d370583edb34c83a29b1a9d11c61771dfe5",
+    "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034",
+    "synth/textspot2_labels.py": "cf8564d80b0004a0781eedc7453cc8219e04daf5e4f5d91d6d75e9e5cea0a011",
+    "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7"
+   },
+   "settings": {
+    "data_manifest_sha256": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034",
+    "canvases": 52785,
+    "lab": 28265,
+    "more": 24520,
+    "positives": 299986,
+    "ignore_areas": 302936,
+    "wrapper_commit": "ede5398",
+    "d2s_commit": "4924ff1",
+    "labels_commit": "7338544",
+    "a9_measured_by_sha256": "b930fdf6b7d53bcc676cb3fd964ea5bd7141e2e1e10789ba881d8e1d39f15593"
+   }
   }
  ]
 }

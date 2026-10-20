@@ -260,7 +260,24 @@ Each amendment is dated in `eval/textspot2_protocol.json` and precedes the runs 
      labelled lines stay. Uncovered ones remain ignore areas: on their sheet (19 text, 17 not, 4 unsure) the score
      does not separate text from non-text.
    - The labels helper's ten readings of the rules (refinement order, caps, hygiene, the skip block) are recorded
-     verbatim in the protocol. Shard directories are named `lab_<source>` / `more_<source>`.
+     in the protocol's amendment 2. Shard directories are named `lab_<source>` / `more_<source>`.
+3. **The scoring harness, the eligibility tables, the d2s extension and the data** (2026-10-20T10:07Z, before any
+   score of a textspot2 arm and any run).
+   - **Scoring**: `eval/textspot2.py` (run, ceiling, select, tables) and `eval/textspot2_protected.py`. They call
+     textspot's harness, metrics and the frozen rule unchanged, with a reading cache of their own.
+   - **Eligibility**: `eval/textspot2_a9_20261020.json` (the seven shapes; textspot's two re-measured, identical) and
+     `eval/textspot2_a9_d2s_20261020.json` (the d2s shapes on the new runtime file). textspot's own table gives its
+     two shapes' rows.
+   - **d2s**: VTSP version 2: the stride-8 trunk's 16 head channels are a cell's four sub-cells, read as stride-4
+     maps, then textspot's decode. `synth/textspot2_twin.py`, `train/textspot2_export.py` and
+     `runtime/vocr_textspot2.c` implement it. A version-1 blob runs bit for bit as before, and parity holds on host,
+     under sanitizers and under qemu.
+   - **Data** (`data/manifests/textspot2_shards_v1.json`): 52,785 real canvases with 299,986 positives:
+     - lab: textspot's 28,265 canvases, relabelled;
+     - more: 24,520 new screenshots, mostly VNDB PC screenshots;
+     - RESERVE_OK, and no leak against vita-test / psp-test.
+
+     Known label noise: long thin vertical strips taken as vertical text, mostly at weights 0.53-0.60.
 
 ## Results
 

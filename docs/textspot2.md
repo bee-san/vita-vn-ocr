@@ -248,6 +248,19 @@ Each amendment is dated in `eval/textspot2_protocol.json` and precedes the runs 
      - the `_detref` arms put their horizontal boxes through the refinement.
    - **Names**: runs `<recipe>_h2_<shape>_seed<n>`, arms `T2_<run>_det` / `_detref`. r0's seeds 1-2 are textspot's
      own runs, and their units are read, not re-run.
+2. **Two label rules, from a look at training canvases** (2026-10-20T09:28Z, before any shard is built, any run and
+   any score; the labels' cache of meiki and winner boxes existed, nothing had been built from it).
+   - **Winner-only boxes** become ignore areas only at a winner confidence ≥ 40 (of 127); below it they stay
+     negatives, as in textspot's labels.
+     - Evidence: the QA sheet of 40 random winner-only boxes on training canvases. The conductor counted 21 text
+       (UI buttons, name plates, choices) and 19 not text (icons, ornaments, patterns).
+     - 19 of the 21 text boxes have confidence ≥ 40, and 15 of the 19 others are below it.
+     - Without the threshold, the winner's own false positives would have lost their negative labels.
+   - **Low-score boxes** (score 0.2-0.5) that the existing positives cover are dropped, so the negatives between
+     labelled lines stay. Uncovered ones remain ignore areas: on their sheet (19 text, 17 not, 4 unsure) the score
+     does not separate text from non-text.
+   - The labels helper's ten readings of the rules (refinement order, caps, hygiene, the skip block) are recorded
+     verbatim in the protocol. Shard directories are named `lab_<source>` / `more_<source>`.
 
 ## Results
 

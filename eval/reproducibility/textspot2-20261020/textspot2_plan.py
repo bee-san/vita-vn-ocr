@@ -93,12 +93,15 @@ def stage2(extras, kd_shape=None, kd_teacher=None, long_shapes=(), d2s_shapes=()
 
 
 def macs(shape):
-    """MACs of one 256 x 512 window (textdet_model.cost on the protocol's shape dict; None for a d2s shape)."""
+    """MACs of one 256 x 512 window: textdet_model.cost on the protocol's shape dict, or textspot2_export.cost
+    for a d2s shape (head kroa_x2)."""
     s = S2.SHAPES[shape]
-    if s["head"] != "kroa":
-        return None
-    return TM.cost({k: s[k] for k in ("name", "stride", "c0", "c1", "c2", "chans", "dil", "block", "head")},
-                   512, 256)["macs"]
+    d = {k: (list(s[k]) if isinstance(s[k], list) else s[k])
+         for k in ("name", "stride", "c0", "c1", "c2", "chans", "dil", "block", "head")}
+    if s["head"] == "kroa_x2":
+        import textspot2_export as X
+        return X.cost(d, 512, 256)["macs"]
+    return TM.cost(d, 512, 256)["macs"]
 
 
 def order(runs, est=None):

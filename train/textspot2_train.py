@@ -37,6 +37,15 @@ What the recipes change (docs/textspot2.md "Recipes", "Data" b):
   where sigmoid(K_t) > 0.5. The teacher's terms carry no line weights.
 - --extras sets the extras of data, long and kd, the recipes stage 2 combines with "the kept extras": data none,
   long ema, kd required (none, ema, cls or ema,cls).
+- d2s (the shapes with head "kroa_x2": s8_c24n4x2, s8_c48n4x2; docs/textspot2.md "d2s"): the stride-8 trunk with a
+  16-channel head of train/textspot2_export.py (TextDetD2S, then QTextDetD2S at the QAT start: K and O at 1/16, A1
+  and A2 at 1/2 px per code, per channel). Its output goes through textspot2_export.to_stride4 (channel
+  4 (2 dy + dx) + m is map m of sub-cell (dy, dx): synth/textspot2_twin.head_to_maps in torch) and the loss reads
+  those stride-4 maps against the stride-4 targets (targets() at s / 2 = 4), so the network learns exactly the maps
+  the version-2 decode reads. The layer masks, calibration, BatchNorm fold and re-estimation, EMA and every recipe
+  but kd are as for a 4-map shape. Export: textspot2_export.export_vtsp (final.vtd: the 16-output network, which only
+  textspot2_twin.Net loads; final.vtsp: VTSP version 2, read back by synth/textspot2_twin.Model). kd's student is a
+  4-map shape (stage 2's fast shape), so kd refuses a d2s shape. Every other shape's path is unchanged.
 
 Data: --manifest and --shards as in textspot_train.py (a shard is read when its manifest's dir is the basename of a
 --shards directory; every shard's npy and json sha256 is checked first; the skip lists of every data pin are applied,
@@ -54,8 +63,8 @@ crashed run restarts from scratch in a fresh directory):
   RUN/log.jsonl   #97's records every 200 steps (step, lr, sec, k_bce, dice, o, a; kd_k, kd_o, kd_a for kd; loss,
                   the total optimised), the EMA's start and swap records and the QAT record
   RUN/final.pt    #97's quantisation-aware checkpoint (kind textdet-qat; with ema, the QAT average)
-  RUN/final.vtd   the int8 VTDT blob (train/textdet_export.export_checkpoint)
-  RUN/final.vtsp  textspot_twin.pack(final.vtd, 600, 1)
+  RUN/final.vtd   the int8 VTDT blob (train/textdet_export.export_checkpoint; d2s: textspot2_export's)
+  RUN/final.vtsp  textspot_twin.pack(final.vtd, 600, 1) (d2s: textspot2_twin.pack(..., version 2))
   RUN/done.json   finished (UTC), steps, wall time, the blobs' bytes and sha256
 """
 import argparse
@@ -78,7 +87,9 @@ for _p in (ROOT / "train", ROOT / "synth"):
 import textdet_export as EX  # noqa: E402
 import textdet_model as TM  # noqa: E402
 import textdet_train as TT  # noqa: E402
+import textspot2_export as X  # noqa: E402
 import textspot2_shapes as S2  # noqa: E402
+import textspot2_twin as TS2  # noqa: E402
 import textspot_train as ST  # noqa: E402
 import textspot_twin as TS  # noqa: E402
 
@@ -124,6 +135,17 @@ def shape_of(name):
     if have is not None and {k: have[k] for k in SHAPE_FIELDS} != s:
         raise ValueError(f"{name}: train/textdet_model.SHAPES defines another shape under this name")
     return s
+
+
+def is_d2s(shape):
+    """A d2s shape: the stride-8 trunk with the 2 x 2 sub-pixel head (head "kroa_x2")."""
+    return X.is_d2s(shape)
+
+
+def target_stride(shape):
+    """The stride of the maps the loss reads: the network's output stride, or 4 for a d2s shape (its 16-channel
+    head read as stride-4 maps by textspot2_export.to_stride4)."""
+    return TS2.D2S_MAP_STRIDE if is_d2s(shape) else shape["stride"]
 
 
 # ----------------------------------------------------------------------------- the schedule
@@ -441,11 +463,12 @@ def skip_per_manifest(manifests, read):
         doc = json.loads(Path(man).read_text(encoding="utf-8"))
         skip = ((doc.get("real") or {}).get("measured") or {}).get("skip")
         t2 = is_textspot2_pin(man, doc)
+        t1 = not t2 and ST.is_data_pin(man, doc)
         p = per.get(str(man), {"shards_read": 0, "samples": 0, "kept": 0})
         rec = {"manifest": str(man), "kind": doc.get("kind"), "textspot2_pin": t2,
                "carries_skip_lists": skip is not None, "shards_read": p["shards_read"],
                "samples_read": p["samples"], "dropped": p["samples"] - p["kept"],
-               "expected_dropped": 0 if t2 else None,
+               "expected_dropped": 0 if t2 or t1 else None,
                "pin_counts": {k: {kk: vv for kk, vv in (skip.get(k) or {}).items()
                                   if kk not in ("skip_shots", "skip_vns")}
                               for k in ("eval_screenshot", "linefind_list_vn")} if skip else None}
@@ -457,9 +480,12 @@ def skip_per_manifest(manifests, read):
             if not rec["as_expected"]:
                 print(f"WARNING {man}: the skip lists dropped {rec['dropped']} canvases of a textspot2 pin's shards "
                       "(expected 0)", flush=True)
+        elif t1:
+            rec["as_expected"] = rec["dropped"] == 0
+            rec["why"] = ("a textspot data pin: its own shards are synthetic frames, which the lists never drop; its "
+                          "lists and counts name canvases of #97's real half (data/manifests/textdet_shards_v1.json)")
         elif skip is not None:
-            rec["why"] = ("a textspot data pin: its lists name canvases of #97's real half "
-                          "(data/manifests/textdet_shards_v1.json), not of its own shards")
+            rec["why"] = "a manifest with skip lists: its counts are its own"
         out.append(rec)
     return out
 
@@ -551,9 +577,8 @@ def parse(argv=None):
                     help="tests: train on whichever of the mix's sources the shards hold")
     args = ap.parse_args(argv)
     r = RECIPES[args.recipe]
-    if args.shape in S2.D2S:
-        ap.error(f"{args.shape}: a d2s shape (head kroa_x2) needs the d2s format (synth/textspot2_twin.py, "
-                 "train/textspot2_export.py), which is not on this branch yet")
+    if args.shape in S2.D2S and args.recipe == "kd":
+        ap.error(f"kd: {args.shape} is a d2s shape; kd's student is a 4-map shape (stage 2's fast shape)")
     try:
         extras = parse_extras(args.extras)
     except ValueError as e:
@@ -608,6 +633,12 @@ def recipe_record(args, qat_start, peak, warmup, teacher):
                        "sigmoid(O_t)) + smooth L1((A1 - A1_t) / 8) + smooth L1((A2 - A2_t) / 8), the last three "
                        "averaged over the cells where sigmoid(K_t) > 0.5; no line weights"}
         if args.recipe == "kd" else None,
+        "d2s": {"head": X.HEAD, "outputs": X.N_OUT, "net_stride": X.STRIDE, "map_stride": TS2.D2S_MAP_STRIDE,
+                "rule": "the 16-channel head (channel 4 (2 dy + dx) + m: map m of sub-cell (dy, dx)) rearranged by "
+                        "textspot2_export.to_stride4 into stride-4 maps, which the loss reads against the stride-4 "
+                        "targets; TextDetD2S, then QTextDetD2S (head scales per channel: K, O 1/16; A1, A2 1/2 px)",
+                "export": "textspot2_export.export_vtsp (VTSP version 2; synth/textspot2_twin.Model reads it)"}
+        if is_d2s(shape_of(args.shape)) else None,
         "loader_workers": args.workers,
     }
 
@@ -621,7 +652,8 @@ def main(argv=None):
     started = ST.utc()
     r = RECIPES[args.recipe]
     shape = shape_of(args.shape)
-    s = shape["stride"]
+    d2s = is_d2s(shape)
+    s = target_stride(shape)
     teacher = t_shape = t_rec = None
     if args.recipe == "kd":
         teacher, t_shape, t_rec = load_teacher(args.teacher, s)
@@ -644,7 +676,7 @@ def main(argv=None):
     torch.manual_seed(args.seed)
     cls, ema_on = "cls" in args.extras_set, "ema" in args.extras_set
     peak, warmup = r["lr"], r["warmup"]
-    model = TM.TextDet(shape)
+    model = X.TextDetD2S(shape) if d2s else TM.TextDet(shape)
     opt = torch.optim.AdamW(TT.param_groups(list(model.parameters())), lr=peak)
     loader = torch.utils.data.DataLoader(FrameBatches(args.manifest, args.shards, s, args.seed, cls,
                                                       (skip_shots, skip_vns)),
@@ -691,7 +723,7 @@ def main(argv=None):
                 act_scale = TT.calibrate(model, it, shape, args.cal_batches)
             model.eval()
             folded = TM.fold(model)
-            model = TM.QTextDet(shape, folded, act_scale)
+            model = (X.QTextDetD2S if d2s else TM.QTextDet)(shape, folded, act_scale)
             opt = torch.optim.AdamW(TT.param_groups(list(model.parameters())),
                                     lr=lr_at(step, args.steps, peak, warmup))
             if ema is not None:
@@ -706,6 +738,8 @@ def main(argv=None):
         masks = TM.layer_masks(shape, vhw.tolist(), WIN_H, WIN_W)
         xin = TT.to_input(x)
         y = model(xin, masks=masks)
+        if d2s:
+            y = X.to_stride4(y, WIN_H, WIN_W)
         loss, parts = loss_of(y, K, O, A1, A2, vm, km, Wt)
         if teacher is not None:
             with torch.no_grad():
@@ -757,17 +791,26 @@ def main(argv=None):
           "w": [w.detach().double() for w in model.w], "b": [b.detach().double() for b in model.b],
           "act_scale": act_scale, "run": run}
     torch.save(ck, out / "final.pt")
-    vtd = EX.export_checkpoint(out / "final.pt")
-    (out / "final.vtd").write_bytes(vtd)
-    vtsp = TS.pack(vtd, HALF_ABOVE, 1)
-    m = TS.Model(vtsp)
-    if (m.half_above, m.conf_min, m.name) != (HALF_ABOVE, 1, shape["name"]):
-        raise SystemExit("the VTSP blob does not read back")
+    if d2s:
+        vtd, vtsp = X.export_vtsp(out / "final.pt", HALF_ABOVE, 1)
+        (out / "final.vtd").write_bytes(vtd)
+        m = TS2.Model(vtsp)
+        if (m.version, m.half_above, m.conf_min, m.name) != (TS2.VERSION_D2S, HALF_ABOVE, 1, shape["name"]):
+            raise SystemExit("the VTSP version-2 blob does not read back")
+    else:
+        vtd = EX.export_checkpoint(out / "final.pt")
+        (out / "final.vtd").write_bytes(vtd)
+        vtsp = TS.pack(vtd, HALF_ABOVE, 1)
+        m = TS.Model(vtsp)
+        if (m.half_above, m.conf_min, m.name) != (HALF_ABOVE, 1, shape["name"]):
+            raise SystemExit("the VTSP blob does not read back")
     (out / "final.vtsp").write_bytes(vtsp)
     done = {"finished": ST.utc(), "name": name, "steps": args.steps, "seconds": round(time.time() - t0, 1),
             "wall_seconds": round(time.time() - t_proc, 1), "pt_sha256": TT.sha256(out / "final.pt"),
             "vtd_bytes": len(vtd), "vtd_sha256": hashlib.sha256(vtd).hexdigest(),
             "vtsp_bytes": len(vtsp), "vtsp_sha256": hashlib.sha256(vtsp).hexdigest()}
+    if d2s:
+        done["vtsp_version"] = TS2.VERSION_D2S
     (out / "done.json").write_text(json.dumps(done, indent=1) + "\n", encoding="utf-8")
     log.close()
     print("TEXTSPOT2_TRAIN_DONE", json.dumps(done), flush=True)

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Check one finished textspot2 run (train/textspot2_train.py, or train/textspot_train.py for r0) and record it.
 
-  check_run.py RUN [--finished FILE]
+  check_run.py RUN [--finished FILE] [--cbin runtime/vocr_textspot2_test]
 
 Checks: run.json names the directory (<recipe>_h2_<shape>_seed<n>; an r0 run is textspot's trainer, whose run.json
 says h2_<shape>_seed<n>); done.json's sha256 and bytes are the blobs'; final.vtd loads in synth/textdet_twin.Model
 and final.vtsp in synth/textspot_twin.Model with half_above 600 and conf_min 1, its network is the VTDT blob and
-named the run's shape; the twin (textspot_twin.spot) runs on two pinned procedural frames (960 x 544 and 480 x 272)
-and returns boxes inside them; done.json's steps are run.json's; a run that read a textspot or textspot2 data pin
+named the run's shape (a d2s run, head kroa_x2: final.vtd in synth/textspot2_twin.Net, final.vtsp a VTSP version 2
+in synth/textspot2_twin.Model, = textspot2_twin.pack(final.vtd, 600, 1, version 2)); the twin (textspot_twin.spot,
+or textspot2_twin.spot for d2s) runs on two pinned procedural frames (960 x 544 and 480 x 272) and returns boxes
+inside them; with --cbin, the C driver (runtime/vocr_textspot2_test, which reads version 1 and 2) gives the twin's
+result line for each frame (--batch); done.json's steps are run.json's; a run that read a textspot or textspot2 data pin
 recorded its skip lists; run.json's code sha256 equal the files in this checkout and its manifests' sha256 the
 manifests here (a difference is printed, not fatal: the blob checks are what make a run usable). With --finished it
 appends "name vtsp_sha256 vtsp_bytes steps wall_seconds" to FILE unless that line is already there. Prints CHECK_OK
@@ -24,9 +27,11 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "synth"))
 import textdet_twin as TD  # noqa: E402
+import textspot2_twin as TS2  # noqa: E402
 import textspot_twin as TS  # noqa: E402
 
 HALF_ABOVE = 600
+FRAMES = ((1, (544, 960)), (2, (272, 480)))
 
 
 def sha(path):
@@ -45,13 +50,42 @@ def procedural_frame(seed, H, W):
     return np.clip(g + rng.integers(-12, 13, g.shape), 0, 255).astype(np.uint8)
 
 
+def twin_line(r):
+    """The C driver's --batch line of a Result (runtime/vocr_textspot2_test.c: rc count block_count pick truncated,
+    then x y w h vertical conf dark block per box, then x y w h vertical first count per block)."""
+    out = [0, len(r.boxes), len(r.blocks), r.pick, r.truncated]
+    for b in r.boxes:
+        out += [b.x, b.y, b.w, b.h, b.vertical, b.conf, b.dark, b.block]
+    for b in r.blocks:
+        out += [b.x, b.y, b.w, b.h, b.vertical, b.first, b.count]
+    return " ".join(map(str, out))
+
+
+def c_lines(cbin, vtsp_path, frames):
+    """The C driver's --batch lines for grey frames (records: <4I w, h, bpp 1, flags 0, then the pixels)."""
+    import struct
+    import subprocess
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        f = Path(d) / "frames.bin"
+        with open(f, "wb") as fh:
+            for g in frames:
+                fh.write(struct.pack("<4I", g.shape[1], g.shape[0], 1, 0))
+                fh.write(np.ascontiguousarray(g).tobytes())
+        p = subprocess.run([str(cbin), "--batch", str(vtsp_path), str(f)], capture_output=True, text=True,
+                           timeout=600, stdin=subprocess.DEVNULL)
+    if p.returncode:
+        raise RuntimeError(f"{cbin} --batch: rc {p.returncode}: {p.stderr[-500:]}")
+    return p.stdout.splitlines()
+
+
 def expected_name(info):
     if info.get("kind") == "textspot-run":                 # r0: textspot's trainer names runs <scale>_<shape>_seed<n>
         return f"r0_{info['name']}"
     return info["name"]
 
 
-def check(run_dir):
+def check(run_dir, cbin=None):
     run_dir = Path(run_dir)
     info = json.loads((run_dir / "run.json").read_text())
     done = json.loads((run_dir / "done.json").read_text())
@@ -68,25 +102,41 @@ def check(run_dir):
             bad.append(f"done.json's {key} sha256 / bytes differ from final.{key}")
     if done["pt_sha256"] != sha(run_dir / "final.pt"):
         bad.append("done.json's pt sha256 differs from final.pt")
-    net = TD.Model(vtd)
-    m = TS.Model(vtsp)
+    d2s = info["shape"].get("head") == "kroa_x2"
     shape = info["shape"]["name"]
+    if d2s:
+        net, m, twin = TS2.Net(vtd), TS2.Model(vtsp), TS2
+        if m.version != TS2.VERSION_D2S or (net.stride, net.outputs, m.stride) != (8, 16, 4):
+            bad.append(f"final.vtsp: version {m.version}, network stride {net.stride} / outputs {net.outputs}")
+        if vtsp[32:] != vtd or TS2.pack(vtd, HALF_ABOVE, 1, version=TS2.VERSION_D2S) != vtsp:
+            bad.append("final.vtsp is not textspot2_twin.pack(final.vtd, 600, 1, version 2)")
+    else:
+        net, m, twin = TD.Model(vtd), TS.Model(vtsp), TS
+        if vtsp[32:] != vtd or TS.pack(vtd, HALF_ABOVE, 1) != vtsp:
+            bad.append("final.vtsp is not pack(final.vtd, 600, 1)")
     if (m.half_above, m.conf_min, m.name, net.name) != (HALF_ABOVE, 1, shape, shape):
         bad.append(f"final.vtsp: half_above {m.half_above}, conf_min {m.conf_min}, name {m.name}")
-    if vtsp[32:] != vtd or TS.pack(vtd, HALF_ABOVE, 1) != vtsp:
-        bad.append("final.vtsp is not pack(final.vtd, 600, 1)")
     if done["steps"] != info["steps"]:
         bad.append(f"done.json steps {done['steps']} != run.json steps {info['steps']}")
     sk = info.get("skip") or {}
     pins = [m_ for m_ in info["manifests_sha256"] if Path(m_).name.startswith(("textspot_shards", "textspot2_shards"))]
     if pins and not sk.get("lists"):
         bad.append("the run read a textspot data pin but recorded no skip lists")
-    boxes = {}
-    for seed, (H, W) in ((1, (544, 960)), (2, (272, 480))):
-        r = TS.spot(m, procedural_frame(seed, H, W))
+    boxes, frames, lines = {}, [], []
+    for seed, (H, W) in FRAMES:
+        g = procedural_frame(seed, H, W)
+        r = twin.spot(m, g)
         if not all(0 <= b.x and 0 <= b.y and b.x + b.w <= W and b.y + b.h <= H for b in r.boxes):
             bad.append(f"a box outside the {W}x{H} frame")
         boxes[f"{W}x{H}"] = len(r.boxes)
+        frames.append(g)
+        lines.append(twin_line(r))
+    if cbin:
+        got = c_lines(cbin, run_dir / "final.vtsp", frames)
+        if got != lines:
+            bad.append(f"the C driver {Path(cbin).name} differs from the twin on the procedural frames")
+        boxes["c_runtime"] = "equal to the twin"
+
     notes = []
     for f, want_sha in info["code_sha256"].items():
         if not (ROOT / f).exists() or sha(ROOT / f) != want_sha:
@@ -102,8 +152,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("run")
     ap.add_argument("--finished")
+    ap.add_argument("--cbin", help="the C driver (runtime/vocr_textspot2_test) to compare with the twin")
     args = ap.parse_args()
-    info, done, bad, notes, boxes = check(args.run)
+    info, done, bad, notes, boxes = check(args.run, args.cbin)
     name = Path(args.run).name
     for n in notes:
         print(f"{name}: NOTE {n}")

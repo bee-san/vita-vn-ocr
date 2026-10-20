@@ -1,12 +1,15 @@
 """Tests of textspot2's trainer (train/textspot2_train.py, issue #106): the weighted targets and loss against #97's at
 weight 1, the class weights, the EMA arithmetic, the BatchNorm re-estimation and the swap at the QAT start, the
-long schedule's LR, the distillation loss on a tiny teacher, the data rule, the refusals, and a 3-step run of every
-recipe on tiny hand-made shards in #97's format (a lab run on weight-1 labels is textspot's run bit for bit). No
-screenshots, fonts or models; no network.
+long schedule's LR, the distillation loss on a tiny teacher, the data rule, the refusals, a 3-step run of every
+recipe on tiny hand-made shards in #97's format (a lab run on weight-1 labels is textspot's run bit for bit), and a
+3-step d2s run (a VTSP version 2 that synth/textspot2_twin.py reads and, with a C compiler, the C driver
+runtime/vocr_textspot2_test runs to the twin's result). No screenshots, fonts or models; no network.
 """
 import hashlib
 import json
 import math
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -23,8 +26,10 @@ import textdet_data as DATA  # noqa: E402
 import textdet_model as TM  # noqa: E402
 import textdet_train as TT  # noqa: E402
 import textdet_twin as TD  # noqa: E402
+import textspot2_export as X  # noqa: E402
 import textspot2_shapes as S2  # noqa: E402
 import textspot2_train as T2  # noqa: E402
+import textspot2_twin as TW2  # noqa: E402
 import textspot_train as ST  # noqa: E402
 import textspot_twin as TS  # noqa: E402
 
@@ -606,15 +611,12 @@ def test_the_data_rule(tmp_path):
 def test_the_refusals(tmp_path):
     mans, dirs = tiny_shards(tmp_path)
     out = tmp_path / "x"
-    for extra, msg in ((["--shape", "s8_c24n4x2"], "d2s"), (["--extras", "cls"], "--extras is for"),
+    for extra, msg in ((["--extras", "cls"], "--extras is for"),
                        (["--teacher", str(tmp_path)], "--teacher is required for kd and only")):
-        args = base_args(mans, dirs, "ema", out)
-        if extra[0] == "--shape":
-            args[args.index("--shape") + 1] = extra[1]
-        else:
-            args += extra
+        args = base_args(mans, dirs, "ema", out) + extra
         with pytest.raises(SystemExit):
             T2.parse(args)
+    assert T2.parse(base_args(mans, dirs, "ema", out, shape="s8_c24n4x2")).shape == "s8_c24n4x2"   # d2s: allowed
     with pytest.raises(SystemExit):
         T2.parse(base_args(mans, dirs, "kd", out) + ["--teacher", str(tmp_path)])            # kd needs --extras
     with pytest.raises(SystemExit):
@@ -817,3 +819,104 @@ def test_the_sweep_scripts_parse():
     for f in ("sweep.sh", "probe.sh"):
         p = subprocess.run(["bash", "-n", str(REPRO / f)], capture_output=True, text=True, timeout=60)
         assert p.returncode == 0, p.stderr
+
+
+# ---------------------------------------------------------------- d2s: the stride-8 trunk with the 2 x 2 sub-pixel head
+
+CC = os.environ.get("CC") or shutil.which("cc") or shutil.which("gcc") or shutil.which("clang")
+
+
+@pytest.fixture(scope="module")
+def cbin(tmp_path_factory):
+    """runtime/vocr_textspot2_test built with the system compiler (skipped without one)."""
+    if CC is None:
+        pytest.skip("no C compiler")
+    out = tmp_path_factory.mktemp("cbuild") / "vocr_textspot2_test"
+    subprocess.run([CC, "-std=c99", "-O2", "-Wall", "-Wextra", "-Werror",
+                    *(str(ROOT / "runtime" / f) for f in ("vocr_lines.c", "vocr_lines_rows.c", "vocr_textspot2.c",
+                                                          "vocr_textspot2_test.c")), "-o", str(out)], check=True)
+    return out
+
+
+def test_d2s_shapes_and_their_targets():
+    for name in S2.D2S:
+        s = T2.shape_of(name)
+        assert T2.is_d2s(s) and s["stride"] == 8 and T2.target_stride(s) == 4
+    for name in S2.VTDT:
+        s = T2.shape_of(name)
+        assert not T2.is_d2s(s) and T2.target_stride(s) == s["stride"] == 4
+    # the loss reads the 16-channel head as stride-4 maps, the shape of the stride-4 targets
+    s = T2.shape_of("s8_c24n4x2")
+    torch.manual_seed(0)
+    model = X.TextDetD2S(s)
+    x = torch.zeros(2, 1, T2.WIN_H, T2.WIN_W)
+    masks = TM.layer_masks(s, [(256, 512), (150, 301)], T2.WIN_H, T2.WIN_W)
+    y = model(x, masks=masks)
+    assert y.shape == (2, 16, 32, 64)
+    z = X.to_stride4(y, T2.WIN_H, T2.WIN_W)
+    K = T2.targets([[10, 10, 200, 26, 0]], [], 0, 0, 301, 150, 4)[0]
+    assert z.shape[1:] == (4, *K.shape) == (4, 64, 128)
+    head = y[1].detach().numpy()
+    assert np.array_equal(z[1].detach().numpy(), TW2.head_to_maps(head, 256, 512))       # the twin's rearrangement
+    assert float(z[1, :, 38:].abs().max()) == 0 and float(z[1, :, :, 76:].abs().max()) == 0  # masked past 150 x 301
+
+
+def test_kd_refuses_a_d2s_student(tmp_path):
+    mans, dirs = tiny_shards(tmp_path)
+    args = base_args(mans, dirs, "kd", tmp_path / "x", shape="s8_c24n4x2") + ["--teacher", str(tmp_path),
+                                                                              "--extras", "none"]
+    with pytest.raises(SystemExit):
+        T2.parse(args)
+
+
+def test_a_three_step_d2s_run(tmp_path, cbin):
+    mans, dirs = tiny_shards(tmp_path)
+    runs = tmp_path / "runs"
+    run = runs / "data_h2_s8_c24n4x2_seed1"
+    T2.main(base_args(mans, dirs, "data", run, shape="s8_c24n4x2") + ["--extras", "ema"])
+    info = json.loads((run / "run.json").read_text())
+    assert info["name"] == "data_h2_s8_c24n4x2_seed1" and info["extras"] == ["ema"]
+    assert info["shape"]["head"] == "kroa_x2" and info["settings"]["d2s"]["map_stride"] == 4
+    assert "train/textspot2_export.py" in info["code_sha256"] and "synth/textspot2_twin.py" in info["code_sha256"]
+    log = log_of(run)
+    assert any(r.get("ema_swap") for r in log) and any(r.get("qat") for r in log)
+    assert all(np.isfinite(r[k]) for r in log if "lr" in r for k in ("k_bce", "dice", "o", "a", "loss"))
+    ck = torch.load(run / "final.pt", map_location="cpu", weights_only=False)
+    assert ck["kind"] == "textdet-qat" and ck["shape"]["head"] == "kroa_x2" and ck["w"][-1].shape[0] == 16
+    done = json.loads((run / "done.json").read_text())
+    vtd, vtsp = (run / "final.vtd").read_bytes(), (run / "final.vtsp").read_bytes()
+    assert done["vtsp_version"] == 2 and done["vtsp_sha256"] == sha(run / "final.vtsp")
+    assert done["vtsp_bytes"] == len(vtsp) == len(vtd) + 32
+    net = TW2.Net(vtd)
+    assert (net.stride, net.outputs, net.min_cells, net.name) == (8, 16, 2, "s8_c24n4x2")
+    with pytest.raises(ValueError):
+        TD.Model(vtd)                                     # never a 4-map network
+    with pytest.raises(ValueError):
+        TS.Model(vtsp)                                    # a version-1 loader refuses version 2
+    m = TW2.Model(vtsp)
+    assert (m.version, m.head, m.half_above, m.conf_min, m.stride) == (2, "kroa_x2", 600, 1, 4)
+    assert TW2.pack(vtd, 600, 1, version=TW2.VERSION_D2S) == vtsp
+    assert (vtd, vtsp) == X.export_vtsp(run / "final.pt", 600, 1)
+    # the run's check, with the C driver: the twin's result on the procedural frames
+    fin = runs / "finished.txt"
+    p = subprocess.run([sys.executable, str(REPRO / "check_run.py"), str(run), "--finished", str(fin), "--cbin",
+                        str(cbin)], capture_output=True, text=True, timeout=600, cwd=ROOT)
+    assert p.returncode == 0 and "CHECK_OK data_h2_s8_c24n4x2_seed1 " in p.stdout, p.stdout + p.stderr
+    assert "'c_runtime': 'equal to the twin'" in p.stdout
+    assert fin.read_text().split()[:3] == ["data_h2_s8_c24n4x2_seed1", done["vtsp_sha256"], str(len(vtsp))]
+
+
+def test_check_run_with_the_c_driver_on_a_version_1_run(tmp_path, cbin):
+    mans, dirs = tiny_shards(tmp_path)
+    run = tmp_path / "runs" / "cls_h2_s4p_c8_seed2"
+    T2.main(base_args(mans, dirs, "cls", run, shape="s4p_c8", seed=2))
+    p = subprocess.run([sys.executable, str(REPRO / "check_run.py"), str(run), "--cbin", str(cbin)],
+                       capture_output=True, text=True, timeout=600, cwd=ROOT)
+    assert p.returncode == 0 and "'c_runtime': 'equal to the twin'" in p.stdout, p.stdout + p.stderr
+
+
+def test_the_d2s_plan_and_its_order():
+    runs = PL.stage2("ema", None, None, [], ["s8_c24n4x2", "s8_c48n4x2"])
+    assert [r["recipe"] for r in runs] == ["data"] * 6 and {r["extras"] for r in runs} == {"ema"}
+    assert PL.macs("s8_c48n4x2") == X.cost(X.shape("s8_c48n4x2"), 512, 256)["macs"] > PL.macs("s8_c24n4x2")
+    assert PL.order(runs)[0]["shape"] == "s8_c48n4x2"

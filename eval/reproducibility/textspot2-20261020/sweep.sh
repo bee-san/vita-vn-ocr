@@ -5,9 +5,11 @@
 # Every run trains to its last step; nothing is selected or stopped early on any score. A run that exits without
 # done.json (a crash or its timeout: 6 h, 12 h for 60,000 steps) is moved to OUT/<run>.failed<k> and restarted from
 # scratch with the same seed, at most 3 attempts; OUT/crashes.jsonl and OUT/restarts.jsonl record it. A finished
-# run is checked by check_run.py (final.vtsp loads in synth/textspot_twin.Model and runs on procedural frames) and
-# appended to OUT/finished.txt (name, sha256 of final.vtsp, bytes, steps, wall seconds). OUT/locks/<run>.lock is
-# held by the run's processes, so a second sweep skips a live run.
+# run is checked by check_run.py (final.vtsp loads in synth/textspot_twin.Model, or synth/textspot2_twin.Model for a
+# d2s run, and runs on procedural frames; the C driver runtime/vocr_textspot2_test, built once into OUT/cbuild from
+# this checkout's sources, gives the twin's result there) and appended to OUT/finished.txt (name, sha256 of
+# final.vtsp, bytes, steps, wall seconds). OUT/locks/<run>.lock is held by the run's processes, so a second sweep
+# skips a live run. Run it from a dedicated worktree at the pinned commit (the conductor, 2026-10-20T10:00Z).
 # Optional: NOTIFY_PANE (a herdr pane: a line at every 5th finished run, at every crash and at the end),
 # STATUS_FILE (one status line, overwritten), STAGE (the label in both, e.g. "stage 1").
 # The tree must be clean (tracked files): every run records the commit it ran from.
@@ -28,6 +30,13 @@ if [ -n "$(cd "$REPO" && git status --porcelain --untracked-files=no)" ] && [ "$
   echo "the checkout has modified tracked files: commit first (the runs record the commit)" >&2; exit 2
 fi
 
+CBIN=$OUT/cbuild/vocr_textspot2_test
+mkdir -p "$OUT/cbuild"
+if ! ( cd "$REPO/runtime" && ${CC:-cc} -std=c99 -O2 -Wall -Wextra -Werror vocr_lines.c vocr_lines_rows.c \
+         vocr_textspot2.c vocr_textspot2_test.c -o "$CBIN.tmp" ); then
+  echo "the C driver runtime/vocr_textspot2_test does not build" >&2; exit 2
+fi
+mv "$CBIN.tmp" "$CBIN"
 ALL=$("$PY" "$HERE/textspot2_plan.py" list "$PLAN")
 if [ $# -gt 0 ]; then RUNS="$*"; else RUNS=$ALL; fi
 N_ALL=$(echo "$ALL" | wc -w)
@@ -89,7 +98,8 @@ one() {            # one run: up to 3 attempts, each from scratch, then the chec
     notify "$STAGE: CRASH $run attempt $attempt exit $rc ($(tail -n 2 "$OUT/logs/$run.log" 2>/dev/null | tr '\n' ' ' | cut -c1-200)); restarting from scratch if attempts remain"
   done
   if [ -e "$OUT/$run/done.json" ]; then
-    ( cd "$REPO" && "$PY" "$HERE/check_run.py" "$OUT/$run" --finished "$OUT/finished.txt" ) >> "$OUT/sweep.log" 2>&1 \
+    ( cd "$REPO" && "$PY" "$HERE/check_run.py" "$OUT/$run" --finished "$OUT/finished.txt" --cbin "$CBIN" ) \
+      >> "$OUT/sweep.log" 2>&1 \
       || { echo "$(utc) $run: CHECK FAILED" >> "$OUT/sweep.log"; notify "$STAGE: CHECK FAILED $run (see $OUT/sweep.log)"; }
     finished "$run"
   else

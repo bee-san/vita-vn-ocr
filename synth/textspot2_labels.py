@@ -1215,18 +1215,63 @@ def totals_of(shards, arm=None):
             "by_src": dict(sorted(by.items()))}
 
 
+def reserved_in_shards(shards):
+    """Samples of a reserved VN (reserved.json test or dev_sample) per shard directory: must be 0 everywhere."""
+    out = collections.Counter()
+    for e in shards:
+        js = shard_dir(e["arm"], e["source"]) / f"{e['name']}.json"
+        for s in json.loads(js.read_text(encoding="utf-8"))["samples"]:
+            out[e["dir"]] += bool(s.get("vn") and common.is_reserved_vn(s["vn"]))
+    return {k: out.get(k, 0) for k in sorted({e["dir"] for e in shards})}
+
+
+def rule_counts(stats):
+    """Every rule's count per arm (summed over the sources): what amendment 2 asks the manifest to record."""
+    out = {}
+    for arm, by in stats.items():
+        c = collections.Counter()
+        for st in by.values():
+            c["canvases"] += st["canvases"]
+            c["positives_kept"] += st["positives"]["kept"]
+            c["positives_added"] += st["positives"]["added"]
+            c["vertical_added"] += st["positives"]["vertical_added"]
+            c["high_score_covered_by_existing_positives"] += st["meiki"]["high_covered_by_existing"]
+            c["low_score_covered_dropped"] += st["meiki"]["low_dropped_covered"]
+            for k, v in st["ignore"]["added"].items():
+                c[f"ignore_added_{k}"] += v
+            c["ignore_existing_kept"] += st["ignore"]["kept"]
+            c["ignore_existing_replaced_iou_0.5"] += st["ignore"]["removed"]
+            c["winner_only_ignore_conf_ge_40"] += st["winner"]["winner_only_ignore_conf_ge_40"]
+            c["winner_only_background_conf_lt_40"] += st["winner"]["winner_only_background_conf_lt_40"]
+            for k, v in st["weights_added"].items():
+                c[f"weight_{k}"] += v
+            c["colour_missing"] += st["colour_source"]["missing"]
+            c["colour_mismatch"] += st["colour_source"]["mismatch"]
+            c["winner_twin_checked"] += st["winner"]["twin_checked"]
+            c["winner_twin_equal"] += st["winner"]["twin_equal"]
+        out[arm] = dict(c)
+    return out
+
+
+def read_json(path):
+    p = Path(path)
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
 def cmd_manifest(args):
     textdet = json.loads(TEXTDET_MANIFEST.read_text(encoding="utf-8"))
     pins = {(s["dir"], s["name"]): s for s in textdet["shards"]}
     shards, stats, builds = [], {a: {} for a in ARMS}, {}
     for arm in ARMS:
         for source in SOURCES:
-            rec_p = cache_dir(arm, source) / "build.json"
-            if not rec_p.exists():
+            rec = read_json(cache_dir(arm, source) / "build.json")
+            if rec is None:
                 continue
-            rec = json.loads(rec_p.read_text(encoding="utf-8"))
             stats[arm][source] = rec["stats"]
-            builds[f"{arm}/{source}"] = {"built": rec["built"], "shards": len(rec["shards"])}
+            builds[f"{arm}/{source}"] = {"built": rec["built"], "shards": len(rec["shards"]), "dir": rec["dir"],
+                                         "rules_amendment": rec["rules"].get("amendment")}
+            if rec["rules"] != RULES:
+                raise SystemExit(f"{arm}/{source} was built with other rules than this file's")
             for name in rec["shards"]:
                 e = shard_entry(arm, source, shard_dir(arm, source) / f"{name}.json")
                 if arm == "lab":
@@ -1235,15 +1280,28 @@ def cmd_manifest(args):
                         raise SystemExit(f"{name}.npy: not #97's canvases")
                     e["textdet_json_sha256"] = pin["json_sha256"]
                 shards.append(e)
+    proto = json.loads(PROTOCOL.read_text(encoding="utf-8"))
+    amends = {a["id"]: a for a in proto.get("amendments", [])}
+    if 2 not in amends:
+        raise SystemExit("eval/textspot2_protocol.json has no amendment 2: rebase onto origin/feat/textspot2")
+    reserved = reserved_in_shards(shards)
+    if any(reserved.values()):
+        raise SystemExit(f"reserved VNs in the shards: {reserved}")
     rc_path = T2 / "labels" / "reserve_check.json"
-    rc = json.loads(rc_path.read_text(encoding="utf-8")) if rc_path.exists() else None
-    leak_path = T2 / "labels" / "more" / "leakcheck.json"
-    cb = json.loads((CBUILD / "build.json").read_text(encoding="utf-8"))
-    pool_rec_p = T2 / "labels" / "more" / "pool_record.json"
+    rc = read_json(rc_path)
+    if rc is None or rc["line"] != "RESERVE_OK":
+        raise SystemExit("run `reserve --pixels` first: no RESERVE_OK")
+    probe = read_json(T2 / "labels" / "probe" / "probe.json")
     doc = {"kind": "textspot2-shards", "schema": 1, "issue": 106, "generator": "synth/textspot2_labels.py",
            "created": utc(),
-           "protocol": {"path": "eval/textspot2_protocol.json", "sha256": sha256(PROTOCOL), "amendment": 1},
+           "protocol": {"path": "eval/textspot2_protocol.json", "sha256": sha256(PROTOCOL),
+                        "amendments": {str(k): {"utc": a["utc"], "settings": a.get("settings")}
+                                       for k, a in sorted(amends.items()) if k in (1, 2)},
+                        "built_under": "amendment 2 (a0a08a1, tag textspot2-amend2-a0a08a1)"},
            "code_sha256": {f: sha256(ROOT / f) for f in CODE},
+           "cache_stage_code": {"lab": read_json(T2 / "labels" / "cache_code_lab.json"),
+                                "more": read_json(T2 / "labels" / "cache_code_more.json")},
+           "build_stage_code": read_json(T2 / "labels" / "build_code.json"),
            "inputs": {"textdet_manifest": {"path": "data/manifests/textdet_shards_v1.json",
                                            "sha256": sha256(TEXTDET_MANIFEST)},
                       "textspot_manifest": {"path": "data/manifests/textspot_shards_v1.json",
@@ -1253,19 +1311,36 @@ def cmd_manifest(args):
            "winner": {"blob": "v0.3.3-textspot.1/textspot_s4_c24n4_w8.vtsp", "sha256": sha256(WINNER),
                       "decode": "det (the textspot decode, no refinement)", "on": "the grey canvas",
                       "driver": "runtime/vocr_textspot_test --batch, built by eval/textspot.py cbuild",
-                      "cbuild": cb, "twin_check": f"one canvas in {RULES['winner_twin_check_every']} (by key hash) "
-                                                  "through synth/textspot_twin.spot too"},
+                      "cbuild": read_json(CBUILD / "build.json"),
+                      "twin_check": f"one canvas in {RULES['winner_twin_check_every']} (by key hash) also through "
+                                    "synth/textspot_twin.spot; equal on every one checked (rule_counts)"},
            "rules": RULES, "caps_more": CAPS_MORE, "pool_order": f"sha256('{POOL_SALT}' + shot) within a VN",
            "shard_dirs": {f"{a}/{s}": herd_rel(shard_dir(a, s)) for a in ARMS for s in SOURCES},
            "real": {"measured": {"skip": skip_block(shards)}},
-           "pool": json.loads(pool_rec_p.read_text(encoding="utf-8")) if pool_rec_p.exists() else None,
-           "reserve_check": None if rc is None else {**rc, "summary": herd_rel(rc_path),
-                                                     "summary_sha256": sha256(rc_path)},
-           "leakcheck": json.loads(leak_path.read_text(encoding="utf-8")) if leak_path.exists() else None,
-           "builds": builds, "stats": stats, "shards": shards,
+           "pool": read_json(T2 / "labels" / "more" / "pool_record.json"),
+           "reserve_check": {**rc, "summary": herd_rel(rc_path), "summary_sha256": sha256(rc_path)},
+           "reserved_vn_samples": reserved,
+           "leakcheck": read_json(T2 / "labels" / "more" / "leakcheck.json"),
+           "probe": None if probe is None else {k: probe[k] for k in ("made", "canvases", "workers", "wall_cache_s",
+                                                                     "wall_per_canvas_ms", "cpu_ms_per_canvas",
+                                                                     "build_ms_per_canvas")},
+           "qa": {"prebuild": {"sheets": "$HERD/shared/private/textspot2/labels/qa/qa_{a_winner_only,b_low_uncovered,"
+                                         "c_new}.png", "notes": "$HERD/shared/artifacts/textspot2/labels/"
+                                                                "qa_prebuild_counts.md",
+                               "counts_text_not_unsure": amends[2]["settings"]["qa_sheets"]},
+                  "postbuild": {"sheets": ["$HERD/shared/artifacts/textspot2/labels/qa/lab_sheet1_realplus.png",
+                                           "$HERD/shared/artifacts/textspot2/labels/qa/lab_sheet2_teacher.png",
+                                           "$HERD/shared/private/textspot2/labels/qa/lab_sheet3_owner_devnative.png",
+                                           "$HERD/shared/artifacts/textspot2/labels/qa/lab_sheet4_vertical_furigana.png",
+                                           "$HERD/shared/artifacts/textspot2/labels/qa/more_sheet1_realplus.png",
+                                           "$HERD/shared/private/textspot2/labels/qa/more_sheet2_teacher_owner.png"],
+                                "notes": "$HERD/shared/artifacts/textspot2/labels/qa_postbuild.md",
+                                "reviewer_kind": "assistant"}},
+           "builds": builds, "rule_counts": rule_counts(stats), "stats": stats, "shards": shards,
            "totals": {"lab": totals_of(shards, "lab"), "more": totals_of(shards, "more"), "all": totals_of(shards)}}
     Path(args.out).write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"{args.out}: {len(shards)} shards, {json.dumps(doc['totals']['all'])}", flush=True)
+    print(f"sha256 {sha256(args.out)}", flush=True)
 
 
 # ----------------------------------------------------------------------------- reserve and thumbnail checks
@@ -1375,8 +1450,9 @@ def cmd_leak(args):
 
 # ----------------------------------------------------------------------------- QA contact sheets
 
-def sheet_items(arm, sources, sheet, n=40):
-    """n canvases of one sheet: a deterministic draw (by key hash) over the given sources' shards."""
+def sheet_items(arm, sources, sheet, n=40, filt="none"):
+    """n canvases of one sheet: a deterministic draw (by key hash) over the given sources' shards; filt
+    "vertical_or_furigana" keeps the canvases with an added vertical positive or a furigana ignore area."""
     pool = []
     for s in sources:
         d = shard_dir(arm, s)
@@ -1384,6 +1460,12 @@ def sheet_items(arm, sources, sheet, n=40):
             if js.name.endswith(".tmp"):
                 continue
             for i, smp in enumerate(json.loads(js.read_text(encoding="utf-8"))["samples"]):
+                if filt == "vertical_or_furigana":
+                    t2 = (smp.get("meta") or {}).get("t2", {})
+                    n_ex = len(smp["lines"]) - t2.get("added", 0)
+                    furi = any(k.startswith("furigana") for k in t2.get("ignore_added", {}))
+                    if not furi and not any(int(ln[4]) for ln in smp["lines"][n_ex:]):
+                        continue
                 key = f"{arm}:{js.stem}:{i}"
                 pool.append((hashlib.sha256(f"textspot2-sheet:{key}".encode()).hexdigest(), js, smp))
     pool.sort(key=lambda t: t[0])
@@ -1396,7 +1478,7 @@ def cmd_sheet(args):
     orange (the build's ignore order: kept, then the IGNORE_KINDS)."""
     from PIL import Image, ImageDraw, ImageFont
     sources = args.sources.split(",")
-    items = sheet_items(args.arm, sources, args.sheet, args.n)
+    items = sheet_items(args.arm, sources, args.sheet, args.n, args.filter)
     cols, tw, th, cap = 5, 256, 145, 12
     rows = (len(items) + cols - 1) // cols
     head = 22
@@ -1406,8 +1488,9 @@ def cmd_sheet(args):
         font = ImageFont.truetype("DejaVuSans.ttf", 9)
     except OSError:
         font = ImageFont.load_default()
-    dr.text((4, 4), f"{args.arm} sheet {args.sheet} ({','.join(sources)}): green existing, blue new meiki (weight), "
-                    "grey hatch ignore, orange furigana ignore, inner frame vertical", fill=(255, 255, 255), font=font)
+    dr.text((4, 4), f"{args.arm} sheet {args.sheet} ({','.join(sources)}; {args.filter}): green existing, "
+                    "blue new meiki (weight), grey hatch ignore, orange furigana ignore, inner frame vertical",
+            fill=(255, 255, 255), font=font)
     index = []
     for k, (_, js, smp) in enumerate(items):
         data = np.load(js.with_suffix(".npy"), mmap_mode="r")
@@ -1712,6 +1795,7 @@ def main():
     p.add_argument("--arm", required=True, choices=ARMS)
     p.add_argument("--sheet", type=int, required=True)
     p.add_argument("--sources", default="realplus,teacher,devnative")
+    p.add_argument("--filter", default="none", choices=("none", "vertical_or_furigana"))
     p.add_argument("--n", type=int, default=40)
     p.add_argument("--out", required=True)
     p = sub.add_parser("probe")

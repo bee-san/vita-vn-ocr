@@ -442,3 +442,41 @@ def test_the_manifest_skip_block_is_read_by_the_trainer(tmp_path, monkeypatch):
     assert lists[0]["skip_shots_sha256"] == block["eval_screenshot"]["skip_shots_sha256"]
     assert block["eval_screenshot"]["canvases"] == 0 and block["linefind_list_vn"]["by_source"]["realplus"] == 0
     assert block["eval_screenshot"]["textspot_counts"]["canvases"] == skip["eval_screenshot"]["canvases"]
+
+
+def test_an_arm_c_shard_is_built_from_its_cache(tmp_path):
+    """_build_more_shard: the canvas rebuilt from the record (checked against the grey meiki read), the labels by
+    build_labels (meiki positives only, no existing ones), the canvas written in #97's format."""
+    p = write_png(tmp_path / "v3_33.png", 600, 800, seed=7)
+    r = {"shot": "v3_33", "vn": "v3", "kind": "vita", "dims": [725, 544], "path": str(p),
+         "lines": [{"ink": [10, 20, 100, 40], "furi": [[400, 100, 440, 112]]}]}
+    rgb, k, plan = L.colour_source(r, "realplus", "vita")
+    grey = to_gray(rgb)
+    line = {"key": "v3_33", "status": "ok", "w": 725, "h": 544, "k": k,
+            "grey_sha256": hashlib.sha256(np.ascontiguousarray(grey).tobytes()).hexdigest(),
+            "meiki": [mk([100, 300, 400, 324], 0.95), mk([400, 100, 440, 112], 0.9), mk([50, 50, 90, 60], 0.3)],
+            "winner": [[100, 300, 300, 24, 0, 80], [600, 400, 60, 20, 0, 20]]}
+    cdir, out = tmp_path / "cache", tmp_path / "more_realplus"
+    cdir.mkdir()
+    out.mkdir()
+    (cdir / "more_realplus_0000.jsonl").write_text(json.dumps(line) + "\n")
+    name, c, w = L._build_more_shard(("realplus", "more_realplus_0000",
+                                      [{"key": "v3_33", "record": r, "target": "vita"}], str(cdir), str(out)))
+    assert name == "more_realplus_0000" and c["canvases"] == 1 and c["positives_added"] == 1
+    assert c["ignore_furigana_record"] == 1 and c["ignore_low"] == 1 and c["winner_only_background"] == 1
+    data, samples = DATA.load_shard(out / name)
+    s = samples[0]
+    assert np.array_equal(DATA.canvas(data, s), grey) and (s["src"], s["kind"], s["vn"]) == ("realplus", "vita", "v3")
+    assert s["lines"] == [[100, 300, 400, 324, 0, "text", 1.0]] and s["meta"]["src_size"] == [800, 600]
+    assert s["ignore"] == [[50, 50, 90, 60], [400, 100, 440, 112]]
+    assert s["meta"]["t2"]["ignore_added"] == {"low": 1, "furigana_record": 1}
+    bad = dict(line, grey_sha256="0" * 64)
+    (cdir / "more_realplus_0000.jsonl").write_text(json.dumps(bad) + "\n")
+    with pytest.raises(SystemExit, match="not the one meiki read"):
+        L._build_more_shard(("realplus", "more_realplus_0000", [{"key": "v3_33", "record": r, "target": "vita"}],
+                             str(cdir), str(out)))
+
+
+def test_the_ignore_kinds_of_a_built_sample_follow_the_build_order():
+    smp = {"ignore": [[0, 0, 1, 1]] * 5, "meta": {"t2": {"ignore_added": {"low": 2, "furigana_geometry": 1}}}}
+    assert L.ign_kinds_of(smp) == ["kept", "kept", "low", "low", "furigana_geometry"]

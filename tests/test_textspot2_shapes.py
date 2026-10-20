@@ -29,6 +29,7 @@ def test_costs_of_textspot_shapes_are_textspots():
 
 
 def test_every_layer_chain_is_valid():
+    S2.register()
     for name in S2.VTDT:
         layers = TM.layers(TM.SHAPES[name])
         assert layers[0]["cin"] == 1 and layers[-1]["cout"] == TM.N_OUT and layers[-1]["head"]

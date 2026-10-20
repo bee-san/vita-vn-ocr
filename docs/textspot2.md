@@ -226,6 +226,29 @@ VitaSDK `-Os` code sizes. Every console time is a host estimate: nothing runs on
 
 Each amendment is dated in `eval/textspot2_protocol.json` and precedes the runs and scores it names.
 
+1. **Label, data and ceiling precisions** (2026-10-20T08:38Z, before any label or data job, run or score).
+   - **Coverage**: "covered (≥ 50%)" means at least half the box lies inside the *union* of the named boxes, so a
+     line meiki splits in two still counts as covered.
+   - **Furigana**: a meiki box is an ignore area, never a positive, when either:
+     - the source record's furigana boxes cover half of it; or
+     - it is furigana of a bigger box by `teacher/geometry.is_furigana`'s geometry, without its kana test (meiki's
+       detector reads no text).
+   - **Refinement**: a vertical box is refined to ink on the transposed crop; the 6-96 px gates read the refined
+     box.
+   - **The teacher call**: `teacher/engines.Meiki`'s detector, BGR input as `teacher/label.py` feeds it, threshold
+     0.2, no recognition.
+   - **Shards**: #97's format, lines `[x0, y0, x1, y1, vertical, class, weight]`. A lab shard's canvases may be
+     symlinks to #97's. textspot's skip lists are applied at build time and carried in the manifest. Owner
+     canvases stay private.
+   - **New screenshots (c)**: those no #97 canvas holds. Every development and test frame's source is excluded, and
+     the new pool must pass `reserve_check`.
+   - **The ceiling (a)**: four report-only arms, `meiki960_det` / `_detref` and `meiki320_det` / `_detref`:
+     - boxes of score ≥ 0.5, vertical when taller than wide (MeikiOCR's rule);
+     - padded by the spotter's pad rule;
+     - the `_detref` arms put their horizontal boxes through the refinement.
+   - **Names**: runs `<recipe>_h2_<shape>_seed<n>`, arms `T2_<run>_det` / `_detref`. r0's seeds 1-2 are textspot's
+     own runs, and their units are read, not re-run.
+
 ## Results
 
 Nothing is measured yet.

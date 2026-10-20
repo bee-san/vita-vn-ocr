@@ -491,5 +491,36 @@
   "private": "$HERD/shared/private/textspot2",
   "names": "runs <recipe>_h2_<shape>_seed<n>; harness arms T2_<run>_det, T2_<run>_detref"
  },
- "amendments": []
+ "amendments": [
+  {
+   "id": 1,
+   "utc": "2026-10-20T08:38:14Z",
+   "before": "every textspot2 label or data job, every training run and every score (no textspot2 label, run or score exists yet); written while the helpers' prompts were drafted",
+   "what": [
+    "Coverage. Wherever the labels (b) say a box is covered (>= 50%), at least 50% of its area lies inside the UNION of the named boxes (existing positives; meiki boxes of score >= 0.2, raw; the textspot winner's boxes), so a line split into two boxes still counts as covered.",
+    "Furigana. A meiki box is an ignore area, never a positive, when the source record's furigana boxes ('furi' of its lines, teacher/geometry.attach_furigana) cover >= 50% of it, or when it is furigana of a bigger meiki box or positive by teacher/geometry.is_furigana's geometry without its kana test (its height at most 0.65 x the host's, inside the host's horizontal extent +- 4 px, its centre above the host's top third, its bottom at most half the host's height above the host's top): meiki's detector reads no text, and the development and test labels make furigana an ignore area.",
+    "Refinement. teacher/geometry.refine is horizontal: a vertical box (refined height >= 1.5 x width, else its raw box's) is refined on the transposed crop; a box refine returns unchanged keeps its raw extent; the size gates (6-96 px across) read the refined box at the canvas's scale.",
+    "The teacher call. teacher/engines.Meiki's detector with MeikiOCR's preprocessing and BGR input (as teacher/label.py feeds it), det_thr 0.2, no recognition, on the canvas's colour source at the canvas's size.",
+    "Shards. #97's format (synth/textdet_data.py: one npy of canvases + one json of samples per shard); lines [x0, y0, x1, y1, vertical, class, weight] (class 'text' on real canvases), ignore [[x0, y0, x1, y1]]; a lab shard's npy may be a symlink to #97's canvas file (the same bytes; the manifest pins both sha256). Canvases on textspot's skip lists (textspot amendment 1: eval_screenshot.skip_shots, linefind_list_vn.skip_vns) are dropped when the shards are built, and the manifest carries the same lists (real.measured.skip) so the trainer drops them as well. Owner canvases stay under $HERD/shared/private/textspot2.",
+    "More data (c). A screenshot is new when no #97 real canvas holds its shot id; its canvases have no existing positives (positives are meiki's, weighted by the rule). Every textspot development and test frame's source screenshot (by shot id and by sha256) is excluded, with every reserved VN; eval/tools/reserve_check.py must print RESERVE_OK on the new pool's list.",
+    "Teacher ceiling (a). Four report-only arms on the development frames: meiki960_det and meiki320_det (the v0.1 960x544 and 320x192 detectors, the latter run as the repository's inference.v0.1.320x192.py at the pinned revision does; boxes of score >= 0.5, vertical when height > width as MeikiOCR decides, each padded by the spotter's pad rule max(2, (across x 18 + 50) / 100) on every side and clipped to the frame), and meiki960_detref and meiki320_detref (the same with their horizontal boxes through VOCR_REFINE_DEFAULT, as textspot's det+refine). Read and scored exactly as candidates are (eval/textspot.py's reading, frame_unit and summarize). Never a candidate, never compared by the rule.",
+    "Names. Runs <recipe>_h2_<shape>_seed<n> under $HERD/shared/artifacts/textspot2/runs; harness arms T2_<run>_det and T2_<run>_detref; r0's seeds 1 and 2 are textspot's runs (B_h2_s4_c24n4_seed1/2, C_h2_s4p_c8_seed1/2), scored as textspot scored them (their units are read, not re-run)."
+   ],
+   "settings": {
+    "coverage": "union",
+    "furigana": "teacher/geometry.is_furigana geometry without kana_only, or >= 50% inside the record's furi boxes -> ignore",
+    "meiki": {
+     "det_thr": 0.2,
+     "input": "BGR",
+     "recognition": false
+    },
+    "ceiling_arms": [
+     "meiki960_det",
+     "meiki960_detref",
+     "meiki320_det",
+     "meiki320_detref"
+    ]
+   }
+  }
+ ]
 }

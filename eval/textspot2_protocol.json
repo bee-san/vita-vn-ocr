@@ -521,6 +521,53 @@
      "meiki320_detref"
     ]
    }
+  },
+  {
+   "id": 2,
+   "utc": "2026-10-20T09:28:44Z",
+   "before": "the build of any textspot2 shard (lab or more), every training run and every score; the labels helper's rule-independent cache (colour, meiki, refinements, winner boxes) of the 28,265 lab canvases exists, nothing is built from it yet",
+   "what": [
+    "Winner-only boxes. A textspot winner box that no positive and no meiki box > 0.2 covers (>= 50%, union) becomes an ignore area only when the winner's confidence (the box's mean K code, 1..127) is >= 40; below 40 it is left as textspot's labels leave it (background, a negative). Evidence, training canvases only: the helper's pre-build QA sheet of 40 random winner-only boxes ($HERD/shared/private/textspot2/labels/qa/qa_a_winner_only.png, seed 20261020, viewed once by the helper and once by the conductor): the conductor counted 21 text (UI buttons, name plates, choices, a date, a map label) and 19 not text (icons, ornaments, patterns, a gap); 19 of the 21 text boxes have confidence >= 40 and 15 of the 19 others below 40. Making every winner-only box an ignore area would have removed the hard negatives of the winner's own false positives (about half the boxes).",
+    "Low-score boxes. A meiki box of score in (0.2, 0.5) that the existing positives cover (>= 50%, union) is dropped (neither positive nor ignore), so the negatives between labelled lines stay; an uncovered one is an ignore area as registered (the QA sheet of 40 uncovered low-score boxes: 19 text, 17 not, 4 unsure by the helper; meiki's score does not separate them in the conductor's look, so no threshold is added).",
+    "The labels helper's readings, binding as written in $HERD/shared/artifacts/textspot2/labels/questions_20261020T0920.md: (1) refine as geometry.refine does, vertical iff that box (the raw box when refine returned it unchanged) is >= 1.5x as tall as wide, then a vertical box is re-refined on the transposed crop; (2) 'no existing positive covers it' is tested on the meiki box's refined box; (4) the ignore area of a low-score, furigana or size-gated meiki box is its refined box (raw boxes only where amendment 1 says raw); (5) furigana candidates are horizontal; hosts are every other horizontal meiki box (refined, score > 0.2) and every horizontal existing positive; (6) 'score >= 0.2' is meiki's score > 0.2, candidates [0.5, 1]; (7) arm c's caps count screenshots per VN, existing lab screenshots included: pc (realplus and the teacher's PC shots) 8, native (the teacher's Vita / PSP and devnative) 12, owner 200; a shot in two sources' records joins the first of realplus, teacher, devnative, owner; (8) arm c also leaves out realplus(-v3)'s thumbnail-leak shots and any row whose sha256 is not its file's; hygiene as #97 ran it (eval/tools/reserve_check.py --require-hashes --pixels and eval/tools/leakcheck.py); (9) lab keeps #97's owner canvases of the three owner -TEST folders that reserved.json does not reserve (v10, v17863, v18334: textspot's real half); arm c leaves every -TEST folder out; (10) the manifest's skip block copies textspot's two lists with their list sha256, its counts are what textspot2's shards still hold (0) and textspot's counts are kept beside them.",
+    "Shard directories have distinct basenames (the manifest's dir): lab_<source> and more_<source> (owner under $HERD/shared/private/textspot2), samples keep src = the source; a run never reads #97's real shard directories."
+   ],
+   "settings": {
+    "winner_only_ignore_conf_min": 40,
+    "low_score_covered": "dropped",
+    "qa_sheets": {
+     "a_winner_only": {
+      "helper": [
+       21,
+       15,
+       4
+      ],
+      "conductor": [
+       21,
+       19,
+       0
+      ],
+      "conf_ge_40": {
+       "text": 19,
+       "not_text": 4
+      }
+     },
+     "b_low_uncovered": {
+      "helper": [
+       19,
+       17,
+       4
+      ]
+     },
+     "c_new": {
+      "helper": [
+       35,
+       2,
+       3
+      ]
+     }
+    }
+   }
   }
  ]
 }

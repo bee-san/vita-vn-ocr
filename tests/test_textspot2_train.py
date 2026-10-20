@@ -1078,3 +1078,20 @@ def test_the_runs_record_of_a_stage(tmp_path):
     assert json.loads(text) == doc
     assert "/x/" not in text and "/y/" not in text                       # no path of the sweep log's plan lines
     assert all(s["out"].startswith("$HERD/") for s in doc["sweeps"].values())
+
+
+def test_the_committed_stage2_plan_is_the_planners_output_for_the_committed_choices(monkeypatch):
+    """eval/reproducibility/textspot2-20261020/stage2_plan.jsonl (amendment 5) is textspot2_plan.py stage2 --choices
+    stage2_choices.json: the same runs, extras, teacher and order. The teacher's final.pt is not in CI, so its sha256
+    is taken from the plan (the planner checks it against the file when the plan is made, and every kd command line
+    checks it again)."""
+    got = PL.load(REPRO / "stage2_plan.jsonl")
+    choices = PL.read_choices(REPRO / "stage2_choices.json")
+    shas = {r["teacher_pt_sha256"] for r in got if r["recipe"] == "kd"}
+    assert len(shas) == 1 and len(next(iter(shas))) == 64
+    monkeypatch.setattr(PL, "teacher_record", lambda name, runs_dir: next(iter(shas)))
+    runs = PL.stage2_from_choices(choices, "/nonexistent")
+    want = PL.order(runs, PL.stage2_estimates(runs))
+    assert got == [json.loads(json.dumps(r, sort_keys=True)) for r in want]
+    assert len(got) == 12 and {r["teacher_run"] for r in got if r["recipe"] == "kd"} == {choices["kd_teacher_run"]}
+    assert not {r["run"] for r in got} & {r["run"] for r in PL.stage1()}

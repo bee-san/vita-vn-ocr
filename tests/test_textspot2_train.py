@@ -931,3 +931,116 @@ def test_the_committed_stage1_plan_is_reproducible():
     assert got == [json.loads(json.dumps(r, sort_keys=True)) for r in want] and len(got) == 38
     assert [r["est_s"] for r in got] == sorted((r["est_s"] for r in got), reverse=True)
     assert set(est) == {r["run"] for r in got}
+
+
+# ---------------------------------------------------------------- stage 2 from the conductor's choices
+
+SAMPLE_CHOICES = {"ema_kept": True, "cls_kept": False, "fast_shape": "s4p_c6n4", "main_shape": "s4p_c12",
+                  "kd_teacher_run": "data_h2_s4p_c12_seed2", "long_on": ["s4p_c12", "s4p_c6n4"], "d2s": True}
+
+
+def fake_teacher(runs_dir, name, payload=b"a teacher checkpoint"):
+    d = Path(runs_dir) / name
+    d.mkdir(parents=True)
+    (d / "final.pt").write_bytes(payload)
+    (d / "done.json").write_text(json.dumps({"pt_sha256": hashlib.sha256(payload).hexdigest()}))
+    return hashlib.sha256(payload).hexdigest()
+
+
+def test_stage2_from_a_sample_choices_file(tmp_path):
+    runs_dir = tmp_path / "runs"
+    sha_t = fake_teacher(runs_dir, "data_h2_s4p_c12_seed2")
+    choices = tmp_path / "choices.json"
+    choices.write_text(json.dumps(SAMPLE_CHOICES))
+    plan = tmp_path / "stage2_plan.jsonl"
+    PL.main(["stage2", "--choices", str(choices), "--runs-dir", str(runs_dir), "--out", str(plan)])
+    got = PL.load(plan)
+    by = {r["run"]: r for r in got}
+    assert len(got) == len(by) == 3 + 6 + 6
+    kd = [r for r in got if r["recipe"] == "kd"]
+    assert [r["run"] for r in sorted(kd, key=lambda r: r["seed"])] == [f"kd_h2_s4p_c6n4_seed{n}" for n in (1, 2, 3)]
+    assert all(r["extras"] == "ema" and r["teacher"] == "$HERD/shared/artifacts/textspot2/runs/data_h2_s4p_c12_seed2"
+               and r["teacher_run"] == "data_h2_s4p_c12_seed2" and r["teacher_pt_sha256"] == sha_t for r in kd)
+    longs = [r for r in got if r["recipe"] == "long"]
+    assert sorted(r["run"] for r in longs) == sorted(f"long_h2_{s}_seed{n}" for s in ("s4p_c12", "s4p_c6n4")
+                                                       for n in (1, 2, 3))
+    assert all(r["extras"] == "ema" and r["steps"] == 60000 and r["timeout_s"] == 43200 for r in longs)
+    d2s = [r for r in got if r["shape"] in S2.D2S]
+    assert sorted(r["run"] for r in d2s) == sorted(f"data_h2_{s}_seed{n}" for s in S2.D2S for n in (1, 2, 3))
+    assert all(r["recipe"] == "data" and r["extras"] == "ema" for r in d2s)
+    assert not {r["run"] for r in got} & {r["run"] for r in PL.stage1()}
+    # longest first by the committed probe records (estimates; seconds)
+    est = [r["est_s"] for r in got]
+    assert all(isinstance(e, int) and e > 0 for e in est) and est == sorted(est, reverse=True)
+    assert got[0]["recipe"] == "long"
+    stage1_est = PL.read_est(ROOT / "eval" / "textspot2_train_probe_20261020.json")
+    assert by["kd_h2_s4p_c6n4_seed1"]["est_s"] > stage1_est["data_h2_s4p_c6n4_seed1"] + 1000    # + the teacher
+    # the command lines: the teacher expanded under $HERD and checked against the plan's sha256
+    herd, repo, t2, p2 = fake_herd(tmp_path)
+    teacher = herd / "shared" / "artifacts" / "textspot2" / "runs" / "data_h2_s4p_c12_seed2"
+    teacher.parent.mkdir(parents=True)
+    (runs_dir / "data_h2_s4p_c12_seed2").rename(teacher)
+    a = PL.argv(by["kd_h2_s4p_c6n4_seed3"], "/o", repo, herd)
+    assert a[a.index("--teacher") + 1] == str(teacher) and a[a.index("--extras") + 1] == "ema"
+    assert a[:7] == ["train/textspot2_train.py", "--recipe", "kd", "--shape", "s4p_c6n4", "--seed", "3"]
+    (teacher / "final.pt").write_bytes(b"another checkpoint")
+    with pytest.raises(SystemExit, match="not the plan's teacher"):
+        PL.argv(by["kd_h2_s4p_c6n4_seed3"], "/o", repo, herd)
+    d = PL.argv(by["data_h2_s8_c48n4x2_seed2"], "/o", repo, herd)
+    assert d[d.index("--extras") + 1] == "ema" and d[d.index("--shape") + 1] == "s8_c48n4x2"
+
+
+def test_stage2_choices_follow_the_kept_extras_and_the_long_rule(tmp_path):
+    runs_dir = tmp_path / "runs"
+    fake_teacher(runs_dir, "long_h2_s4_c24n4_seed1")
+    base = {**SAMPLE_CHOICES, "kd_teacher_run": "long_h2_s4_c24n4_seed1"}
+    runs = PL.stage2_from_choices({**base, "ema_kept": False, "cls_kept": True}, runs_dir)
+    assert {r["extras"] for r in runs if r["recipe"] == "kd"} == {"cls"}
+    assert {r["extras"] for r in runs if r["recipe"] == "long"} == {"ema,cls"}            # long always has ema
+    assert {r["extras"] for r in runs if r["shape"] in S2.D2S} == {"cls"}
+    runs = PL.stage2_from_choices({**base, "ema_kept": False, "cls_kept": False, "d2s": False}, runs_dir)
+    assert {r["extras"] for r in runs if r["recipe"] == "kd"} == {"none"} and not any(r["shape"] in S2.D2S
+                                                                                    for r in runs)
+    assert {r["extras"] for r in runs if r["recipe"] == "long"} == {"ema"}
+    # stage 1 ran long on s4_c24n4 and s4p_c8: no long run of them in stage 2
+    runs = PL.stage2_from_choices({**base, "main_shape": "s4_c24n4", "fast_shape": "s4p_c8", "long_on": []}, runs_dir)
+    assert not [r for r in runs if r["recipe"] == "long"] and len(runs) == 3 + 6
+    runs = PL.stage2_from_choices({**base, "main_shape": "s4_c24n4", "long_on": ["s4p_c6n4"]}, runs_dir)
+    assert sorted({r["shape"] for r in runs if r["recipe"] == "long"}) == ["s4p_c6n4"]
+
+
+@pytest.mark.parametrize("change, msg", [
+    ({"d2s": "yes"}, "must be a bool"), ({"long_on": "s4p_c12"}, "must be a list"),
+    ({"fast_shape": "s8_c24n4x2"}, "not a shape of stage 1's data arms"),
+    ({"main_shape": "s4_c16"}, "not a shape of stage 1's data arms"),
+    ({"long_on": ["s4p_c12"]}, "is not the protocol's"),
+    ({"long_on": ["s4p_c12", "s4p_c6n4", "s4_c24n4"]}, "is not the protocol's"),
+    ({"long_on": ["s4p_c12", "s4p_c12"]}, "distinct"),
+    ({"kd_teacher_run": "r0_h2_s4_c24n4_seed3"}, "not a stage-1 candidate"),
+    ({"kd_teacher_run": "data_h2_s4p_c12_seed4"}, "not a stage-1 candidate"),
+    ({"kd_teacher_run": "data_h2_s4p_c8_seed1"}, "has not finished"),
+])
+def test_stage2_choices_refusals(tmp_path, change, msg):
+    runs_dir = tmp_path / "runs"
+    fake_teacher(runs_dir, "data_h2_s4p_c12_seed2")
+    with pytest.raises(SystemExit, match=msg):
+        PL.stage2_from_choices({**SAMPLE_CHOICES, **change}, runs_dir)
+
+
+def test_stage2_choices_keys_and_teacher_record(tmp_path):
+    runs_dir = tmp_path / "runs"
+    fake_teacher(runs_dir, "data_h2_s4p_c12_seed2")
+    with pytest.raises(SystemExit, match="missing"):
+        PL.stage2_from_choices({k: v for k, v in SAMPLE_CHOICES.items() if k != "d2s"}, runs_dir)
+    with pytest.raises(SystemExit, match="unknown"):
+        PL.stage2_from_choices({**SAMPLE_CHOICES, "kd_shape": "s4p_c8"}, runs_dir)
+    (runs_dir / "data_h2_s4p_c12_seed2" / "done.json").write_text(json.dumps({"pt_sha256": "0" * 64}))
+    with pytest.raises(SystemExit, match="pt_sha256 is not final.pt's"):
+        PL.stage2_from_choices(SAMPLE_CHOICES, runs_dir)
+    choices = tmp_path / "c.json"
+    choices.write_text(json.dumps(SAMPLE_CHOICES))
+    with pytest.raises(SystemExit, match="not both"):
+        PL.main(["stage2", "--choices", str(choices), "--extras", "ema", "--out", str(tmp_path / "p.jsonl")])
+    assert PL.parse_run("kd_h2_s4p_c6n4_seed3") == ("kd", "s4p_c6n4", 3)
+    with pytest.raises(ValueError):
+        PL.parse_run("h2_s4p_c8_seed1x")

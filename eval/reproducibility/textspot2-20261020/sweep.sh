@@ -10,8 +10,9 @@
 # this checkout's sources, gives the twin's result there) and appended to OUT/finished.txt (name, sha256 of
 # final.vtsp, bytes, steps, wall seconds). OUT/locks/<run>.lock is held by the run's processes, so a second sweep
 # skips a live run. Run it from a dedicated worktree at the pinned commit (the conductor, 2026-10-20T10:00Z).
-# Optional: NOTIFY_PANE (a herdr pane: a line at every 5th finished run, at every crash and at the end),
-# STATUS_FILE (one status line, overwritten), STAGE (the label in both, e.g. "stage 1").
+# Optional: NOTIFY_PANE (a herdr pane: a line at every 5th finished run of the plan, at every crash and at the end),
+# STATUS_FILE (one status line, overwritten), STAGE (the label in both, e.g. "stage 1"). Finished runs and crashes
+# are counted per plan, so a second stage can share OUT with the first.
 # The tree must be clean (tracked files): every run records the commit it ran from.
 set -euo pipefail
 HERD=${HERD:-/local/home/skerraut/herd-vita-ocr}
@@ -38,6 +39,7 @@ if ! ( cd "$REPO/runtime" && ${CC:-cc} -std=c99 -O2 -Wall -Wextra -Werror vocr_l
 fi
 mv "$CBIN.tmp" "$CBIN"
 ALL=$("$PY" "$HERE/textspot2_plan.py" list "$PLAN")
+NOTIFIED=$OUT/locks/notified-$(basename "$PLAN" .jsonl)
 if [ $# -gt 0 ]; then RUNS="$*"; else RUNS=$ALL; fi
 N_ALL=$(echo "$ALL" | wc -w)
 
@@ -47,26 +49,28 @@ notify() {         # one line to the conductor's pane, if NOTIFY_PANE is set (ne
   timeout 30 herdr pane send-keys "$NOTIFY_PANE" Enter < /dev/null > /dev/null 2>&1 || true
 }
 
-status() {         # "STAGE: d/N done, r running, c crashes" to STATUS_FILE (and back to the caller)
-  local done running crashes r
-  done=0; running=0
+status() {         # "STAGE: d/N done, r running, c crashes" (this plan's runs) to STATUS_FILE and the caller
+  local done running crashes r c
+  done=0; running=0; crashes=0
   for r in $ALL; do
     if [ -e "$OUT/$r/done.json" ]; then done=$((done + 1)); elif [ -e "$OUT/$r/run.json" ]; then running=$((running + 1)); fi
+    if [ -e "$OUT/crashes.jsonl" ]; then
+      c=$(grep -c "\"run\": \"$r\"," "$OUT/crashes.jsonl" || true); crashes=$((crashes + ${c:-0}))
+    fi
   done
-  crashes=0; [ -e "$OUT/crashes.jsonl" ] && crashes=$(wc -l < "$OUT/crashes.jsonl")
   local line="$STAGE: $done/$N_ALL done, $running running, $crashes crashes ($(utc))"
   [ -n "${STATUS_FILE:-}" ] && echo "textspot2-train $line" > "$STATUS_FILE"
   echo "$line"
 }
 
-finished() {       # after a run's check: the status, and the conductor's line at every 5th finished run
-  local run=$1 line n
+finished() {       # after a run's check: the status, and the conductor's line at every 5th finished run of the plan
+  local run=$1 line n r
   exec 8>"$OUT/locks/notify.lock"
   flock 8
   line=$(status)
-  n=$( [ -e "$OUT/finished.txt" ] && wc -l < "$OUT/finished.txt" || echo 0)
-  if [ $((n % 5)) -eq 0 ] && [ "$n" -gt 0 ] && ! grep -qx "$n" "$OUT/locks/notified" 2>/dev/null; then
-    echo "$n" >> "$OUT/locks/notified"
+  n=0; for r in $ALL; do [ -e "$OUT/$r/done.json" ] && n=$((n + 1)); done
+  if [ $((n % 5)) -eq 0 ] && [ "$n" -gt 0 ] && ! grep -qx "$n" "$NOTIFIED" 2>/dev/null; then
+    echo "$n" >> "$NOTIFIED"
     notify "$line; last: $run ($(tail -n 1 "$OUT/finished.txt" | cut -d' ' -f2 | cut -c1-12)..., $(tail -n 1 "$OUT/finished.txt" | cut -d' ' -f3) B)"
   fi
   flock -u 8

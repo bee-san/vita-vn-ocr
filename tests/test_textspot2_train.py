@@ -920,3 +920,14 @@ def test_the_d2s_plan_and_its_order():
     assert [r["recipe"] for r in runs] == ["data"] * 6 and {r["extras"] for r in runs} == {"ema"}
     assert PL.macs("s8_c48n4x2") == X.cost(X.shape("s8_c48n4x2"), 512, 256)["macs"] > PL.macs("s8_c24n4x2")
     assert PL.order(runs)[0]["shape"] == "s8_c48n4x2"
+
+
+def test_the_committed_stage1_plan_is_reproducible():
+    """eval/reproducibility/textspot2-20261020/stage1_plan.jsonl: textspot2_plan.py stage1 --est
+    eval/textspot2_train_probe_20261020.json, the sweep's run list and order (longest first by the probe's estimate)."""
+    est = PL.read_est(ROOT / "eval" / "textspot2_train_probe_20261020.json")
+    want = PL.order(PL.stage1(), est)
+    got = PL.load(REPRO / "stage1_plan.jsonl")
+    assert got == [json.loads(json.dumps(r, sort_keys=True)) for r in want] and len(got) == 38
+    assert [r["est_s"] for r in got] == sorted((r["est_s"] for r in got), reverse=True)
+    assert set(est) == {r["run"] for r in got}

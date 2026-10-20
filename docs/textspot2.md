@@ -284,6 +284,16 @@ Each amendment is dated in `eval/textspot2_protocol.json` and precedes the runs 
    - `eval/reproducibility/textspot2-20261020/stage1_plan.jsonl` lists the 38 stage-1 runs, longest first,
      47.5 slot-hours estimated. At most 6 run at once, from a detached worktree at this commit.
    - The data-path probe read every pinned shard; the skip lists drop nothing, as expected.
+5. **Stage 2's choices** (2026-10-20T20:07Z, after all 38 stage-1 runs were trained and scored, before any stage-2
+   run and before the selection). The fixed rules, applied to stage 1's median seeds (point estimates):
+   - **ema is kept** (det+refine all-text CER on `s4_c24n4`: 34.74 against `data`'s 35.33); **cls is not** (35.86).
+   - **The fast shape is `s4p_c6n4`**: its det+refine (est. 73.1 ms) reads all text at 40.61%, against `s4p_c8`
+     det's 40.86%. `s4p_c8` det+refine is est. 81.7 ms, so over 80 ms.
+   - **The main shape is `s4_c24n4`** (`data` det+refine 35.33%, the lowest at ≤ 150 ms).
+   - **The kd teacher** is `lab_h2_s4_c24n4_seed1` (`lab` det+refine, 34.36%, the lowest of any recipe).
+   - **Runs**: `long` on `s4p_c6n4`, plus the two d2s shapes under `data` + ema. 12 runs in all, at most 7 at once,
+     from a new worktree at this commit.
+   - Disclosed: no stage-1 median seed reads all text below the reference's 32.04% (the closest is 34.36%).
 
 ## Results
 

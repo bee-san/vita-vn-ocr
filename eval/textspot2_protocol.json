@@ -630,6 +630,46 @@
     "trainer_commit": "6c3e77e",
     "merge_commit": "b0bc3bd"
    }
+  },
+  {
+   "id": 5,
+   "utc": "2026-10-20T20:07:57Z",
+   "before": "every stage-2 run (none exists); after every stage-1 run was trained (38/38, SWEEP_DONE 2026-10-20T20:01:10Z, 0 crashes) and scored on the development frames (STAGE1_SCORED: 76 arms, C == twin on 188/188 frames for every arm); the selection (eval/textspot2.py select) has not been run",
+   "what": [
+    "Stage 2's choices, by the protocol's fixed rules (docs/textspot2.md 'Arms and stages'), read off the stage-1 median-seed representatives (development, VOCR5-N; point estimates, as the rules say; $HERD/shared/artifacts/textspot2/eval/headline_stage1.md, sha256 8e805b8cde0613d3...):",
+    "Kept extras: ema is kept: its det+refine all-text CER on s4_c24n4 is 34.74 against data's 35.33. cls is not kept: its 35.86 is not below data's 35.33 (and its dialogue CER, 5.24, is more than 0.5 points above data's 2.46).",
+    "The fast shape: among the stage-1 data arms, the candidates eligible at <= 80 ms are s4p_c6n4 det (66.1 ms, CER all 43.31), s4p_c6n4 det+refine (73.1 ms, 40.61) and s4p_c8 det (71.9 ms, 40.86); s4p_c8 det+refine is 81.7 ms (its median seed's median of 7 refined boxes on the development Vita frames), so not eligible. The lowest all-text CER is s4p_c6n4 det+refine's: the fast shape is s4p_c6n4.",
+    "The main shape: among the stage-1 data arms eligible at <= 150 ms, the lowest all-text CER is s4_c24n4 det+refine's 35.33 (s4_c32n3 det+refine 36.22, s4p_c10n4 det+refine 36.57, s4p_c12 det+refine 36.82): the main shape is s4_c24n4.",
+    "The kd teacher: the eligible stage-1 candidate (r0 excluded) with the lowest median-seed all-text CER is lab_h2_s4_c24n4 det+refine (34.36; ema det+refine 34.74 next): its median seed's run, lab_h2_s4_c24n4_seed1, final.pt.",
+    "long: on the main and fast shapes that are not s4_c24n4 / s4p_c8: s4p_c6n4 only, with the kept extras (ema, which long has anyway).",
+    "The stage-2 runs (eval/reproducibility/textspot2-20261020/stage2_plan.jsonl, 12 runs, from stage2_choices.json by textspot2_plan.py stage2): kd_h2_s4p_c6n4_seed1-3 (data + ema, teacher lab_h2_s4_c24n4_seed1, its pt sha256 recorded and re-checked by every kd command), long_h2_s4p_c6n4_seed1-3, data_h2_s8_c24n4x2_seed1-3 and data_h2_s8_c48n4x2_seed1-3 (d2s: data + ema; the extension was committed before stage 2, amendment 3). They run from a new detached worktree at this amendment's commit ($HERD/shared/artifacts/textspot2/runs/_code2), at most 7 at once (the scoring takes at most 1 slot: the workstream's cap of 8).",
+    "The planner and the sweep are re-pinned: textspot2_plan.py gains the stage-2 planner (its stage-1 output is stage1_plan.jsonl byte for byte), sweep.sh counts finished runs, notices and crashes per plan (its run command is unchanged); train/textspot2_train.py and check_run.py are unchanged (9824aeca..., 453fc300...). The stage-1 runs record eval/textspot2_train_runs_20261020.json is added.",
+    "Seen while the choices were read, and disclosed: no stage-1 representative's point all-text CER is below the reference's 32.04 (the closest: lab det+refine 34.36; the best single seed, ema seed 2 det+refine, 32.19). As registered, stage 2's development intervals are optimistic (its choices read the development scores)."
+   ],
+   "sources_sha256": {
+    "eval/reproducibility/textspot2-20261020/textspot2_plan.py": "8255afc4640cdc22f5946fbf1f76be492cbd740607eced3b4ea05391caef0dc9",
+    "eval/reproducibility/textspot2-20261020/sweep.sh": "670a0dddcef423cb54473456450e5b3cb940cf6a73a0d9fa651c24fb931911d5",
+    "eval/reproducibility/textspot2-20261020/runs_summary.py": "2cfe5ebb1654c08d5a415f70442a195d54cd4de644ceacb4ee32f7c1ed297bfe",
+    "eval/reproducibility/textspot2-20261020/stage2_choices.json": "502510f7cb13ae15ca778178db39ca096879b2277162760211b10018f59bc4c8",
+    "eval/reproducibility/textspot2-20261020/stage2_plan.jsonl": "5d7edcc96c7eed0bbbb5c741db88f3043ccf9ba9df1bbf0a5945f5d6e8cedabe",
+    "eval/textspot2_train_runs_20261020.json": "a36427cc4a1e92bbffbedb294e522e7a26df93e79a6b8aa8df8e2de1bd9c4255"
+   },
+   "settings": {
+    "stage2": {
+     "ema_kept": true,
+     "cls_kept": false,
+     "fast_shape": "s4p_c6n4",
+     "main_shape": "s4_c24n4",
+     "kd_teacher_run": "lab_h2_s4_c24n4_seed1",
+     "long_on": [
+      "s4p_c6n4"
+     ],
+     "d2s": true,
+     "runs": 12,
+     "max_par": 7
+    },
+    "headline_stage1_sha256": "8e805b8cde0613d3"
+   }
   }
  ]
 }

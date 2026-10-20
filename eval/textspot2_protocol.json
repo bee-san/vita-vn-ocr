@@ -670,6 +670,18 @@
     },
     "headline_stage1_sha256": "8e805b8cde0613d3"
    }
+  },
+  {
+   "id": 6,
+   "utc": "2026-10-20T23:49:35Z",
+   "before": "the PR; after the selection commit (180cfaa, tag textspot2-selection-180cfaa: no main pick, no fast pick). It changes no score, no rule and no selection",
+   "what": [
+    "Merge scope of the d2s runtime, a deviation from docs/textspot2.md 'd2s' ('The runtime change is merged only if a selected model needs it'), disclosed here: no model was selected, yet runtime/vocr_textspot2.c / .h, runtime/vocr_textspot2_test.c, runtime/vocr_textspot2.mk and their tests stay in the PR, as a host and research tool, for three reasons. (1) The committed selection record's d2s rows rest on them: the C parity on all 188 development frames (an eligibility input) and the d2s A9 rows were measured with them, and the pinned harness (eval/textspot2.py cbuild, eval/textspot2_a9.py --runtime v2) builds them; without them the record could not be reproduced from the merged tree. (2) Nothing on a console changes: runtime/vocr_textspot.c and every file textspot's protocol pins are byte for byte unchanged, no console build (vita/, psp/) and no Rubi build links the new file, and no release ships a version-2 blob. (3) The d2s direction gave the largest dialogue gain of this work (development, report only), so a follow-up would start from this code.",
+    "runtime/README.md says the file is research-only: not used by any console build or by Rubi."
+   ],
+   "settings": {
+    "d2s_runtime": "kept as a host/research tool; not a console runtime change; disclosed deviation"
+   }
   }
  ]
 }

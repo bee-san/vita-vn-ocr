@@ -498,6 +498,10 @@ python tests/textspot_parity.py --bin "runtime/scripts/tools/bin/qemu-arm -cpu c
 
 ## Spotter for VTSP versions 1 and 2 (`vocr_textspot2.c`, d2s)
 
+**Research only.** No console build (`vita/`, `psp/`) and no Rubi build links this file, and no release ships a
+version-2 blob. textspot2 selected no model (`docs/textspot2.md`, amendment 6); the file stays so that its
+recorded d2s results reproduce. The console spotter is `vocr_textspot.c`, unchanged.
+
 textspot2's spotter (issue #106, `docs/textspot2.md` "d2s"): the full-frame spotter above for VTSP version 1 blobs,
 and for version 2 blobs, whose network is a stride-8 trunk with a 2 x 2 sub-pixel head. `synth/textspot2_twin.py`
 specifies the format (its docstring) and is the bit-exact twin of both versions; `train/textspot2_export.py` writes

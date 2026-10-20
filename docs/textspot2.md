@@ -294,7 +294,176 @@ Each amendment is dated in `eval/textspot2_protocol.json` and precedes the runs 
    - **Runs**: `long` on `s4p_c6n4`, plus the two d2s shapes under `data` + ema. 12 runs in all, at most 7 at once,
      from a new worktree at this commit.
    - Disclosed: no stage-1 median seed reads all text below the reference's 32.04% (the closest is 34.36%).
+6. **Merge scope of the d2s runtime** (2026-10-20T23:49Z, after the selection commit; it changes no score, rule or
+   selection). A disclosed deviation from "d2s" above: no model was selected, yet `runtime/vocr_textspot2.c` and its
+   driver, make target and tests stay, as a host and research tool.
+   - The committed selection's d2s rows (C parity on every development frame, the A9 rows) were measured with them,
+     and the pinned harness builds them.
+   - Nothing on a console changes: `runtime/vocr_textspot.c` is unchanged, and no console build, no Rubi build and
+     no release uses the new file (`runtime/README.md` says so).
+   - The d2s direction gave this work's largest dialogue gain, so a follow-up would start from it.
 
 ## Results
 
-Nothing is measured yet.
+Every number here is a host measurement on the development set, unless it says otherwise:
+- 188 frames of 81 VNs, read by the C runtimes;
+- horizontal boxes read by VOCR5-N, vertical ones by VOCR5-V;
+- textspot's frozen metrics, with VN-cluster 95% intervals.
+
+Every time is an estimate from the A9 cycle model; nothing of this work has run on a console.
+
+### Answer first
+
+- **The verdict is negative on both picks: textspot's winner stands.** That is `B_h2_s4_c24n4_seed2` det+refine:
+  5,732 B, est. 139 ms per 960×544 frame at 333 MHz, F1 0.542, CER all 32.04%, dialogue 3.01%.
+  - The selection (`eval/textspot2_dev_20261020.json`, commit `180cfaa`) found 32 candidates, all eligible. 9 of
+    them clear textspot's bar against its eight baselines.
+  - No candidate is better than the winner on the primary metrics, so there is no main pick.
+  - No candidate at est. ≤ 80 ms is better than the winner, nor than textspot's fastest qualifier
+    (`C_h2_s4p_c8_seed1`, 2,732 B, est. 80 ms), so there is no fast pick.
+  - As registered, nothing was read on vita-test, psp-test or CLANNAD, nothing was released, and Rubi is not
+    changed.
+- **Why: all-text CER got worse, not better.** Every candidate's median seed reads all text at 34.36-43.83%,
+  against the winner's 32.04%, and 29 of the 32 are resolved worse.
+  - F1 is level: within ±0.02 for most.
+  - The best F1 is `s8_c48n4x2` det+refine at 0.583, +0.042 (−0.001 to +0.088), not resolved.
+- **What did improve is dialogue** (report only; the rule reads all-text CER and F1 first). Three candidates are
+  resolved better than the winner on dialogue CER:
+
+  | candidate | VTSP B | est. ms @333 | F1 | CER all | dialogue (vs winner) |
+  |---|---:|---:|---:|---:|---|
+  | d2s `s8_c24n4x2` det+refine | 7,416 | 80.2 | 0.539 | 35.75 | **1.13%** (−1.88, −3.36 to −0.77) |
+  | d2s `s8_c48n4x2` det+refine | 18,568 | 129.5 | 0.583 | 36.34 | 1.53% (−1.48, −2.93 to −0.35) |
+  | `s4p_c10n4` det+refine (plain 3×3, 4 blocks) | 4,888 | 132.0 | 0.535 | 36.57 | 1.76% (−1.25, −2.74 to −0.16) |
+
+  The d2s head (a stride-8 trunk whose 16 output channels are the maps of each cell's four stride-4 sub-cells) is
+  this work's clearest gain. `s8_c24n4x2` reads dialogue at 1.13% against the winner's 3.01%, in about 58% of its
+  estimated time. It misses the fast budget by 0.2 ms with refinement, and with or without refinement it is not
+  resolved better than either reference on the primary metrics.
+- **Where the all-text errors are** (character errors in the development references, by class, plus readings of
+  boxes that match no reference):
+
+  | arm | dialogue | name | choice | UI | scene | unmatched readings | total |
+  |---|---:|---:|---:|---:|---:|---:|---:|
+  | textspot's winner | 114 | 74 | 6 | 1,557 | 22 | 396 | 2,169 |
+  | `lab` `s4_c24n4` | 98 | 72 | 5 | 1,522 | 24 | 605 | 2,326 |
+  | `data` `s4_c24n4` | 90 | 66 | 8 | 1,590 | 21 | 617 | 2,392 |
+  | d2s `s8_c24n4x2` | 41 | 79 | 4 | 1,637 | 27 | 632 | 2,420 |
+
+  Reference characters: dialogue 3,851, name 298, choice 136, UI 2,455, scene 30.
+  - UI text is 72% of the winner's errors, and none of the new arms reads it better.
+  - The new arms read dialogue better, but read 50-60% more characters from boxes that match no reference.
+  - The meiki-labelled real half added many small UI and non-dialogue positives, which the spotters now fire on.
+    The readings of those extra boxes cost more than the dialogue gains save.
+- **The teacher's ceiling is far away.** meiki.text.detect v0.1 at 960×544 (14 MB, report only, never a candidate)
+  scores F1 0.899, CER all 14.39%, dialogue 1.18%, and finds 78% of UI labels against the winner's 32%.
+  - Caveat: the development references started from MeikiOCR's boxes (docs/textspot.md), so this ceiling is
+    favoured by construction.
+  - The 320×192 file: F1 0.759, 24.52%, 2.21%.
+
+### What each arm bought (paired development differences, median seeds, det+refine)
+
+| what | F1 Δ | CER all Δ, points | dialogue Δ, points |
+|---|---:|---:|---:|
+| `lab` − textspot's recipe (r0, `s4_c24n4`) | +0.004 (−0.019 to +0.025) | −0.24 (−2.42 to +1.81) | **−1.61 (−3.62 to −0.13)** |
+| `data` − `lab` (24,520 more real screenshots) | +0.005 (−0.023 to +0.036) | +0.97 (−1.31 to +3.31) | −0.13 (−1.17 to +0.81) |
+| `ema` − `data` | −0.003 (−0.028 to +0.022) | −0.59 (−3.15 to +1.88) | +1.35 (−0.10 to +3.08) |
+| `cls` − `data` (class weights 2 on dialogue / name / choice) | −0.018 (−0.038 to +0.001) | +0.53 (−1.81 to +3.30) | **+2.78 (+0.25 to +6.77)** worse |
+| `long` − `ema` (60,000 steps) | +0.012 (−0.012 to +0.034) | +0.61 (−2.04 to +3.56) | −0.08 (−2.44 to +3.32) |
+| `s4p_c10n4` − `s4_c24n4` (`data`) | −0.009 (−0.038 to +0.022) | +1.24 (−1.12 to +3.72) | **−0.70 (−1.49 to −0.05)** |
+| `s4p_c6n4` − `s4_c24n4` (`data`) | −0.017 (−0.046 to +0.011) | **+5.27 (+2.66 to +8.18)** worse | +0.00 (−0.77 to +0.70) |
+| `s4p_c8` − `s4_c24n4` (`data`) | **−0.061 (−0.089 to −0.032)** worse | **+2.33 (+0.23 to +4.56)** worse | +1.20 (−0.08 to +2.83) |
+| `kd` `s4p_c6n4` − `long` `s4p_c6n4` (its best other arm) | −0.011 (−0.031 to +0.008) | −0.43 (−3.24 to +2.12) | −1.35 (−5.18 to +0.86) |
+| d2s `s8_c24n4x2` − `s4_c24n4` (`data`) | −0.005 (−0.028 to +0.022) | +0.41 (−2.79 to +3.54) | **−1.33 (−2.34 to −0.54)** |
+| d2s `s8_c48n4x2` − `s4_c24n4` (`data`) | **+0.040 (+0.003 to +0.080)** | +1.00 (−1.68 to +3.80) | **−0.93 (−1.98 to −0.03)** |
+
+In short:
+- The new labels bought dialogue accuracy. With refinement, more real data, EMA, the long schedule and distillation
+  bought nothing resolved (without it, the long schedule bought F1 +0.022, +0.002 to +0.041). Class weighting made
+  dialogue worse.
+- Plain 3×3 trunks at 6-8 channels lose all-text CER.
+- The d2s head buys dialogue at either size, and F1 at 48 channels.
+- `s4p_c12` and `s4_c32n3` resolved nothing against `s4_c24n4`. Every arm's other decode is in the record.
+
+### Seeds
+
+Seeds of one arm still differ by several points. The rule read the median seed, never the best:
+- `ema` det+refine: 32.19 / 34.74 / 35.98% all-text CER (median 34.74);
+- `lab` det+refine: 33.65 / 34.36 / 36.32;
+- d2s `s8_c24n4x2` det+refine: 34.20 / 35.75 / 38.49, with dialogue 1.13-1.66%.
+
+The winner is itself the better of textspot's two seeds of its shape; the other reads 34.59%. A third seed of
+textspot's recipe (r0) reads 36.28%.
+
+### The speed / size front (development; est. ms at 333 MHz)
+
+24 of the 34 points (the eligible candidates and both references) are on the front of est. ms, VTSP bytes,
+arena, F1, all-text CER and dialogue CER. The main ones:
+
+| arm | VTSP B | est. ms @333 / @444 | arena B | F1 | CER all | dialogue |
+|---|---:|---:|---:|---:|---:|---:|
+| `data` `s4p_c6n4` det | 2,244 | 66.1 / 49.5 | 49,895 | 0.493 | 43.31 | 4.21 |
+| `data` `s4p_c6n4` det+refine | 2,244 | 73.1 / 54.8 | 72,391 | 0.527 | 40.61 | 2.46 |
+| d2s `s8_c24n4x2` det | 7,416 | 73.2 / 54.9 | 79,647 | 0.537 | 39.76 | 1.93 |
+| d2s `s8_c24n4x2` det+refine | 7,416 | 80.2 / 60.1 | 79,647 | 0.539 | 35.75 | 1.13 |
+| textspot's fastest qualifier (`fast_ref`) | 2,732 | 80.3 / 60.2 | 72,391 | 0.533 | 34.92 | 3.64 |
+| d2s `s8_c48n4x2` det+refine | 18,568 | 129.5 / 97.1 | 125,983 | 0.583 | 36.34 | 1.53 |
+| `data` `s4p_c10n4` det+refine | 4,888 | 132.0 / 99.0 | 73,279 | 0.535 | 36.57 | 1.76 |
+| `lab` `s4_c24n4` det+refine | 5,732 | 139.1 / 104.3 | 80,799 | 0.538 | 34.36 | 2.58 |
+| **textspot's winner (`ref`)** | **5,732** | **139.1 / 104.3** | **80,799** | **0.542** | **32.04** | **3.01** |
+
+- Time binds long before weights: the largest blob, 18,568 B, is 7% of the 256 KB weight budget, at est. 130 ms.
+- Every arena is within the always-safe 131,072 B.
+- Code: the d2s runtime's own `.text` is 280-408 B larger than `vocr_textspot.c`'s (VitaSDK; `reports/textspot2-runtime.md`).
+
+### Training and scoring
+
+- **Labels and data** (`synth/textspot2_labels.py`, `data/manifests/textspot2_shards_v1.json`): meiki boxes on
+  52,785 real canvases (amendments 2-3).
+  - On textspot's 28,265 canvases it added 8,147 positives to the 149,370 kept.
+  - The 24,520 new screenshots brought 142,469 positives.
+  - Low-score, furigana and winner-only boxes became ignore areas.
+- **Runs**: 38 in stage 1 (10:51-20:01Z, 6 at once) and 12 in stage 2 (20:11-23:34Z, 7 at once), every one to its
+  last step, with 0 crashes and 0 restarts. Every run records its pinned commit (`1163bf2` / `b1d7cc0`) with no
+  modified file (`eval/textspot2_train_runs_20261020.json`, `eval/textspot2_train_runs_stage2_20261020.json`).
+- **Scoring**: all 50 runs, both decodes. The C runtime equals the twin on all 188 frames for every arm,
+  including the d2s blobs through `runtime/vocr_textspot2.c`.
+- **A box problem, without effect on any result**: by about 22:45Z the box's `/tmp` had no free inodes (another
+  workload's files).
+  - Two scoring rounds stopped in the reader build, before writing anything. Their three arms were re-scored with
+    `TMPDIR` on the main disk, and an integrity check over all 104 arm directories passed.
+  - The local CI ran with `TMPDIR` there too.
+
+### Measured and estimated
+
+- **Measured on the host**: every F1, CER, interval, recall and count above (C runtimes, frozen metrics), and blob
+  and arena sizes (exact).
+- **Estimated**: every console time (the A9 cycle model's high bound × 1.0007 at 333 MHz, plus 1.4 ms per refined
+  line; 444 MHz is that × 333/444).
+- **Not measured**: nothing has run on a console, and the protected sets were not read.
+
+### Limits
+
+- **One development set** of 81 VNs, built from MeikiOCR's boxes; UI is 59% of its references (519 of 885).
+  A spotter that drops UI text gains little on this set.
+- **Stage 2's development intervals are optimistic**: its choices read stage 1's development scores (amendment
+  5). The d2s dialogue gain has no test-set check, because nothing was selected.
+- **Label noise**: in the meiki-labelled real half, long thin vertical strips (card edges, UI bars) were taken as
+  vertical text, mostly at reduced weight.
+- **Primary metrics**: the protocol keeps textspot's UI-inclusive metrics primary. A spotter for dialogue first
+  (Rubi's scan screen starts on the dialogue block) would be chosen by another rule. That would need a new
+  pre-registered protocol and the protected sets read for it.
+
+### Reproduce
+
+```sh
+H=$HERD; T2=$H/shared/artifacts/textspot2
+.venv/bin/python synth/textspot2_labels.py ...                      # the labels and shards (data/manifests/textspot2_shards_v1.json)
+MAX_PAR=6 eval/reproducibility/textspot2-20261020/sweep.sh $T2/runs eval/reproducibility/textspot2-20261020/stage1_plan.jsonl
+MAX_PAR=7 eval/reproducibility/textspot2-20261020/sweep.sh $T2/runs eval/reproducibility/textspot2-20261020/stage2_plan.jsonl
+.venv/bin/python eval/textspot2.py ceiling --out $T2/eval/ceiling
+.venv/bin/python eval/textspot2.py run --runs $T2/runs --out $T2/eval/units --cbin $T2/eval/cbuild --models N
+.venv/bin/python eval/textspot2.py select --units $T2/eval/units --a9 eval/textspot2_a9_20261020.json \
+    --a9-d2s eval/textspot2_a9_d2s_20261020.json --cbin $T2/eval/cbuild --out eval/textspot2_dev_20261020.json
+.venv/bin/python eval/textspot2.py tables --dev eval/textspot2_dev_20261020.json
+```

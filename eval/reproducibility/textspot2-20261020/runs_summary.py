@@ -2,17 +2,24 @@
 """Summarise a textspot2 training sweep (sweep.sh's OUT directory) for the report.
 
   runs_summary.py OUT PLAN.jsonl [--json FILE] [--md FILE]
+  runs_summary.py OUT PLAN.jsonl --record FILE --stage NAME [--md FILE]
+                  add (or replace) one stage in the committed runs record FILE (eval/textspot2_train_runs_*.json):
+                  the stage's sweep (OUT as "$HERD/...", the commit, MAX_PAR, the plan and its sha256, started and
+                  SWEEP_DONE, all read from OUT/sweep.log) and this summary of its runs
 
 Per run of the plan (textspot2_plan.py stage1 or stage2): started and finished (UTC), wall time, attempts
 (sweep.sh's moved failed attempts and crashes.jsonl), the loss curve (the logged total: the trainer's "loss", the
 total it optimised, or #97's k_bce + dice + 0.5 o + a for an r0 run; at steps 200, 2,000, 10,000, 20,000, the last
 float record, the first record after QAT starts and the last; the parts averaged over the last five records) and
-the blobs' bytes and sha256. Across the finished runs it checks that every run recorded the same code (the
-trainer's files), manifests per data kind, protocol and commit, and lists what differs. Reads only the runs' own
-files; scores nothing.
+the blobs' bytes and sha256. Across the finished runs it checks that every run recorded the same commit, and per
+data kind (r0, lab, data) the same code (the trainer's files), manifests, skip record and protocol (r0 runs record
+textspot's). Reads only the runs' own files; scores nothing.
 """
 import argparse
+import hashlib
 import json
+import os
+import re
 import sys
 from pathlib import Path
 
@@ -20,6 +27,9 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import textspot2_plan as PL  # noqa: E402
 
+HERD = os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr")
+START = re.compile(r"^(\S+) sweep start: (.*), MAX_PAR (\d+), head ([0-9a-f]{40}), plan (\S+) \(([0-9a-f]{64})\)")
+DONE = re.compile(r"^(\S+) SWEEP_DONE ")
 PARTS = ("k_bce", "dice", "o", "a")
 KD_PARTS = ("kd_k", "kd_o", "kd_a")
 AT = (200, 2000, 10000, 20000)
@@ -94,14 +104,66 @@ def summarise(out_dir, plan):
         rows.append(row)
     fin = [r for r in rows if r["state"] == "finished"]
     same = {}
-    for key in ("git", "protocol_sha256"):
-        same[key] = len({json.dumps(r.get(key), sort_keys=True) for r in fin}) <= 1
-    for kind in sorted({r["data"] for r in fin}):
+    same["git"] = len({json.dumps(r.get("git"), sort_keys=True) for r in fin}) <= 1
+    for kind in sorted({r["data"] for r in fin}):             # r0 is textspot's trainer: textspot's protocol
         part = [r for r in fin if r["data"] == kind]
-        for key in ("code_sha256", "manifests_sha256", "skip"):
+        for key in ("code_sha256", "manifests_sha256", "skip", "protocol_sha256"):
             same[f"{key}[{kind}]"] = len({json.dumps(r.get(key), sort_keys=True) for r in part}) <= 1
     return {"kind": "textspot2-train-runs", "plan": str(plan), "runs": rows, "finished": len(fin), "of": len(rows),
             "consistent": same, "crashes": len(crashes), "restarts": len(restarts)}
+
+
+def placeholder(path, herd=HERD):
+    """A path under $HERD written as "$HERD/..." (no host paths in a committed record)."""
+    path, herd = str(path), str(herd).rstrip("/")
+    return "$HERD" + path[len(herd):] if path == herd or path.startswith(herd + "/") else path
+
+
+def sweep_record(out_dir, plan, herd=HERD):
+    """The sweeps of this plan in OUT/sweep.log: every start line naming the plan's file (its UTC, stage label,
+    MAX_PAR, head and plan sha256) and the SWEEP_DONE lines that followed each, before the next start."""
+    log = Path(out_dir) / "sweep.log"
+    starts, current = [], None
+    for line in (log.read_text().splitlines() if log.exists() else []):
+        m = START.match(line)
+        if m:
+            current = None
+            if Path(m.group(5)).name == Path(plan).name:
+                current = {"started": m.group(1), "stage": m.group(2), "max_par": int(m.group(3)),
+                           "commit": m.group(4), "plan_sha256": m.group(6), "sweep_done": None}
+                starts.append(current)
+            continue
+        d = DONE.match(line)
+        if d and current is not None:
+            current["sweep_done"] = d.group(1)
+    if not starts:
+        return {"out": placeholder(Path(out_dir).resolve(), herd), "launches": []}
+    first, last = starts[0], starts[-1]
+    return {"out": placeholder(Path(out_dir).resolve(), herd), "stage": first["stage"], "commit": first["commit"],
+            "commits": sorted({s["commit"] for s in starts}), "max_par": first["max_par"],
+            "plan": f"eval/reproducibility/textspot2-20261020/{Path(plan).name}",
+            "plan_sha256": hashlib.sha256(Path(plan).read_bytes()).hexdigest(),
+            "plan_sha256_at_start": first["plan_sha256"], "started": first["started"],
+            "sweep_done": last["sweep_done"], "launches": starts}
+
+
+def record(path, stage, out_dir, plan, herd=HERD):
+    """Add or replace one stage in the runs record at path (created when missing)."""
+    p = Path(path)
+    doc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {
+        "kind": "textspot2-train-runs", "schema": 1, "issue": "https://github.com/bee-san/vita-vn-ocr/issues/106",
+        "what": "the stage-1 and stage-2 training runs of docs/textspot2.md (train/textspot2_train.py; r0: "
+                "train/textspot_train.py) through eval/reproducibility/textspot2-20261020/sweep.sh, summarised by "
+                "runs_summary.py from each run's own run.json, log.jsonl and done.json: started, finished, wall "
+                "time, attempts, the training-loss curve and the blobs' bytes and sha256. Training losses only: "
+                "nothing here is a score, and no run was selected or stopped on any figure",
+        "sweeps": {}, "stages": {}}
+    s = summarise(out_dir, plan)
+    s["plan"] = f"eval/reproducibility/textspot2-20261020/{Path(plan).name}"
+    doc["sweeps"][stage] = sweep_record(out_dir, plan, herd)
+    doc["stages"][stage] = s
+    p.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+    return doc
 
 
 def markdown(doc):
@@ -128,7 +190,13 @@ def main():
     ap.add_argument("plan")
     ap.add_argument("--json")
     ap.add_argument("--md")
+    ap.add_argument("--record", help="the committed runs record to add this stage to")
+    ap.add_argument("--stage", help="--record: the stage's key (stage1, stage2)")
     args = ap.parse_args()
+    if args.record and not args.stage:
+        ap.error("--record needs --stage")
+    if args.record:
+        record(args.record, args.stage, args.out, args.plan)
     doc = summarise(args.out, args.plan)
     if args.json:
         Path(args.json).write_text(json.dumps(doc, indent=1) + "\n")

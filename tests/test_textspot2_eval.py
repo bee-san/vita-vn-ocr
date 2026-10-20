@@ -35,6 +35,16 @@ import textspot_twin as S  # noqa: E402
 _BLOBS = {}
 
 
+@pytest.fixture(autouse=True)
+def _model_shapes_restored():
+    """train/textdet_model.SHAPES as it was: registering textspot2's shapes stays inside a test (#97's tests compare
+    that registry with its own sweep)."""
+    saved = dict(TM.SHAPES)
+    yield
+    TM.SHAPES.clear()
+    TM.SHAPES.update(saved)
+
+
 def vtdt(shape="s8_c8", seed=1):
     if (shape, seed) not in _BLOBS:
         S2.register()
@@ -179,6 +189,44 @@ def test_v2_needs_the_runtime_twin(monkeypatch, tmp_path):
     with pytest.raises(SystemExit):
         T2E.model_of(as_v2(vtsp()))
     assert T2E.model_of(vtsp()).name == "s4p_c8"
+
+
+def test_a_d2s_run_through_the_runtime_twin_and_its_driver(tmp_path):
+    """A random VTSP version-2 blob (train/textspot2_export) as a finished run: scored through synth/textspot2_twin
+    and checked against runtime/vocr_textspot2_test (textspot's batch protocol) on every frame."""
+    import shutil
+    import subprocess
+
+    import textspot2_export as X
+    import textspot2_twin as TT
+    if shutil.which("gcc") is None:
+        pytest.skip("no gcc")
+    blob, _ = X.random_blob("s8_c24n4x2", 3)
+    runs = tmp_path / "runs"
+    runs.mkdir()
+    write_run(runs, "data_h2_s8_c24n4x2_seed1", blob)
+    found, _ = T2E.finished_runs(runs)
+    assert found["data_h2_s8_c24n4x2_seed1"]["version"] == 2
+    cdir = tmp_path / "cbuild"
+    cdir.mkdir()
+    subprocess.run(["gcc", *TS.C_FLAGS, "-o", str(cdir / T2E.DRIVER2), *T2E.DRIVER2_SOURCE_SETS[0]], check=True,
+                   cwd=ROOT / "runtime")
+    frames = [frame_of(synthetic_frame(seed=40 + i), fid=f"f{i}", vn=f"v90020{i}") for i in range(3)]
+    manifest = {"set": "pseudo", "path": "x", "sha256": "p" * 64, "frames": 3, "vns": 3}
+    out = tmp_path / "units"
+    todo = T2E.pending(out, found, manifest, [f.id for f in frames], ["VOCR5-N"], True)
+    T2E.score_runs(frames, manifest, found, todo, out, ["VOCR5-N"], fake_readers(tmp_path), TS.Cache(tmp_path / "c"),
+                   cdir, 1, log=lambda s: None)
+    bd = json.loads((out / "T2_data_h2_s8_c24n4x2_seed1_det" / "boxes.json").read_text())
+    for f in frames:
+        r = TT.spot(TT.Model(blob), f.grey)
+        assert bd["frames"][f.id]["boxes"] == [[b.x, b.y, b.w, b.h, b.vertical, b.conf, b.dark, b.block]
+                                               for b in r.boxes]
+        assert bd["frames"][f.id]["c_equal"] is True                          # the C driver gave the twin's boxes
+    assert bd["spec_meta"]["shape"] == "s8_c24n4x2" and bd["spec_meta"]["stride"] == 4
+    side = json.loads((out / "T2_data_h2_s8_c24n4x2_seed1_det" / "textspot2.json").read_text())
+    assert side["blob_version"] == 2 and side["driver2_sha256"] == TS.sha256(cdir / T2E.DRIVER2)
+    assert sys.modules["textspot_twin"] is S                                    # the dispatch is undone
 
 
 # ----------------------------------------------------------------------------- the cache seed
@@ -389,14 +437,15 @@ def test_median_seed_grouping_with_r0_textspot_seeds(tmp_path):
 # ----------------------------------------------------------------------------- eligibility
 
 def test_eligibility_of_a_new_shape():
+    S2.register()
     shape = "s4p_c10n4"
     macs = TM.cost(TM.SHAPES[shape], 480, 272)["macs"]
     t2 = {"summary": [{"shape": shape, "scale": "h2", "half_above": 600, "vtsp_bytes": 4700, "macs_960": macs,
                        "ms_333_960": 110.0, "arena_up_to_960": 50000, "ms_333_480": 101.0},
                       {"shape": "s4p_c8", "scale": "h2", "half_above": 600, "ms_333_960": 72.5,
                        "arena_up_to_960": 37767}]}
-    d2s = {"summary": [{"shape": "s8_c24n4x2", "scale": "h2", "half_above": 600, "macs_960": 123456,
-                        "ms_333_960": 70.0, "arena_up_to_960": 60000}]}
+    d2s = {"summary": [{"shape": "s8_c24n4x2", "scale": "h2", "half_above": 600,
+                        "macs_960": T2E.d2s_macs("s8_c24n4x2", 600), "ms_333_960": 70.0, "arena_up_to_960": 60000}]}
     rows = T2E.a9_rows_all(t2, d2s, TS_A9_FAKE)
     frames = {f"f{i}": {"c_equal": True, "h_in": 4 + i % 3, "part": "vita" if i < 5 else "psp"} for i in range(8)}
     bd = {"arm": "x", "frames": frames}
@@ -411,8 +460,11 @@ def test_eligibility_of_a_new_shape():
     p = T2E.eligibility2(dict(meta, shape="s4p_c8", blob_bytes=2732, decode="det"), bd, rows, 72391)
     assert p["est_ms_333_960"] == 71.854                                         # textspot's table for its shapes
     v = T2E.eligibility2(dict(meta, shape="s8_c24n4x2", blob_bytes=9000, decode="det"), bd, rows, 72391)
-    assert (v["macs_960"], v["macs_source"], v["est_ms_333_960"]) == (123456, "the d2s A9 row", 70.0)
+    assert (v["macs_960"], v["macs_source"], v["est_ms_333_960"]) == (12305280, "train/textspot2_export.costs", 70.0)
     assert TS.macs_960 is not None and TS.macs_960(shape, 600) == macs           # the harness is restored
+    off = T2E.a9_rows_all(t2, {"summary": [dict(d2s["summary"][0], macs_960=123456)]}, TS_A9_FAKE)
+    with pytest.raises(SystemExit):                                              # the d2s row's MACs are checked
+        T2E.eligibility2(dict(meta, shape="s8_c24n4x2", blob_bytes=9000, decode="det"), bd, off, 72391)
     bad = T2E.a9_rows_all({"summary": [dict(t2["summary"][0], macs_960=macs + 1)]}, None, TS_A9_FAKE)
     with pytest.raises(SystemExit):
         T2E.eligibility2(meta, bd, bad, 72391)
@@ -586,6 +638,16 @@ def test_select_calls_rule2_on_synthetic_units(tmp_path):
         T2E.write_compact(tmp_path / "big.json", doc, limit=1000)
     md = T2E.render(json.loads((tmp_path / "dev.json").read_text()))
     assert f"**{p24}_det**" in md and "not run" in md and "`meiki960_det`" in md
+    s_units = json.loads((units / f"{p24}_det" / "units_VOCR5-N.json").read_text())
+    s_units["summary"]["cer_all"]["cer"] = 1.5
+    (units / f"{p24}_det" / "units_VOCR5-S.json").write_text(json.dumps(s_units))
+    sl = T2E.report_sl(doc, [units])
+    assert list(sl) == [f"{p24}_det"] and sl[f"{p24}_det"]["VOCR5-S"]["cer_all"]["cer"] == 1.5
+    assert "| VOCR5-S | " in T2E.render(doc, sl=sl)
+    s_units["meta"]["boxes_sha256"] = "z" * 64
+    (units / f"{p24}_det" / "units_VOCR5-S.json").write_text(json.dumps(s_units))
+    with pytest.raises(SystemExit):                                       # S / L units of other boxes
+        T2E.report_sl(doc, [units])
     seeds, _, _ = T2E.gather([units], proto2, rows, shas, cache, None, None, TS_A9_FAKE, t_dir=t_dir, ts_dev=ts_dev)
     hl = T2E.headline_md(seeds, RULE)
     assert f"`{p8}_det`" in hl and "Stage 1: 8 of 38 runs scored" in hl     # r0 seed 3 twice, data x 2 x 3

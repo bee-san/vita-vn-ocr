@@ -70,8 +70,6 @@ import textspot_metrics as M  # noqa: E402
 
 import textspot2_shapes as S2  # noqa: E402
 
-S2.register()                      # the protocol's shapes resolve in train/textdet_model.SHAPES (idempotent)
-
 HERD = TS.HERD
 T = TS.T                           # textspot's artifacts: read only
 P = TS.P                           # textspot's private files: read only
@@ -941,17 +939,25 @@ def refine_arena2(t2_doc, cdir, proto2):
     return got, src
 
 
+def d2s_macs(shape, half_above):
+    """MACs per 960x544 frame of a d2s shape at its network input (train/textspot2_export.costs: textdet_model's
+    cost cannot read a kroa_x2 head)."""
+    import textspot2_export as X
+    return int(X.costs(shape, sizes=((960, 544),), half_above=half_above)["macs"]["960x544"])
+
+
 def eligibility2(meta, boxes_doc, rows, ref_arena):
-    """eval/textspot.py eligibility. A d2s shape (head kroa_x2, which train/textdet_model cannot cost) takes its MACs
-    per 960x544 frame from its A9 row."""
+    """eval/textspot.py eligibility, with train/textspot2_shapes.register() called first (the protocol's new shapes
+    resolve in train/textdet_model.SHAPES). For a d2s shape (head kroa_x2) the MACs it computes and checks against
+    the A9 row are train/textspot2_export.costs' (d2s_macs), everything else unchanged."""
+    S2.register()
     if meta.get("shape") not in S2.D2S:
         return TS.eligibility(meta, boxes_doc, rows, ref_arena)
-    r = TS.a9_lookup(rows, meta["shape"], meta["half_above"])
-    macs = int(r["macs"]) if r is not None and r.get("macs") is not None else None
+    macs = d2s_macs(meta["shape"], meta["half_above"])
     saved = TS.macs_960
     TS.macs_960 = lambda shape, half_above: macs
     try:
-        return dict(TS.eligibility(meta, boxes_doc, rows, ref_arena), macs_source="the d2s A9 row")
+        return dict(TS.eligibility(meta, boxes_doc, rows, ref_arena), macs_source="train/textspot2_export.costs")
     finally:
         TS.macs_960 = saved
 
@@ -1461,16 +1467,48 @@ def parts_md(doc, name=None):
     return "\n".join(md)
 
 
-def render(doc, part_arm=None):
+def report_sl(doc, units_dirs, names=None):
+    """{arm: {model: summary}} of the report recognizers (VOCR5-S, VOCR5-L) of the picks (or names), from the units
+    directories (textspot2.py run --names RUN --models S,L); each file must score the boxes the record scored."""
+    res = doc["result"]
+    names = names or [n for n in (res["main"]["winner"], res["fast"]["winner"]) if n]
+    seeds = {s["name"]: s for s in doc["seeds"]}
+    out = {}
+    for n in dict.fromkeys(names):
+        for d in units_dirs or []:
+            for m in ("VOCR5-S", "VOCR5-L"):
+                f = Path(d) / n / f"units_{m}.json"
+                if f.exists():
+                    u = json.loads(f.read_text(encoding="utf-8"))
+                    if u["meta"]["boxes_sha256"] != seeds[n]["boxes_sha256"]:
+                        raise SystemExit(f"{f}: the units of other boxes than the record's")
+                    out.setdefault(n, {})[m] = u["summary"]
+    return out
+
+
+def sl_md(sl):
+    if not sl:
+        return "No VOCR5-S / VOCR5-L units of the picks yet (textspot2.py run --names RUN --models S,L)."
+    md = ["| pick | recognizer | F1 | CER all | dialogue |", "|---|---|---:|---:|---:|"]
+    for n, by in sl.items():
+        for m, s in sorted(by.items()):
+            md.append(f"| `{n}` | {m} | {TS.fmt(s['detection']['f1'], 3)} | {_cer(s['cer_all'])} | "
+                      f"{_cer(s['cer_dialogue'])} |")
+    return "\n".join(md)
+
+
+def render(doc, part_arm=None, sl=None):
     return "\n".join(["### The selection", "", selection_md(doc), "", "### Candidates and controls (median seeds, cost "
                       "order)", "", candidates_md(doc), "", "### Pareto front", "", pareto_md(doc), "",
                       "### What each arm bought", "", bought_md(doc), "", "### The teacher ceiling (report only)", "",
                       ceiling_md(doc), "", "### Per part and per class", "", parts_md(doc, part_arm), "",
+                      "### The picks read by VOCR5-S and VOCR5-L (report)", "", sl_md(sl), "",
                       "### Every seed", "", seeds_md(doc), ""])
 
 
 def cmd_tables(args):
-    text = render(load_json(args.dev), args.part_arm or None)
+    doc = load_json(args.dev)
+    text = render(doc, args.part_arm or None, report_sl(doc, args.units))
     if args.out:
         Path(args.out).write_text(text, encoding="utf-8")
     print(text)
@@ -1542,9 +1580,11 @@ def main(argv=None):
             p.add_argument("--indent-copy", default="")
     p = sub.add_parser("tables")
     p.add_argument("--dev", required=True)
+    p.add_argument("--units", action="append", default=[], help="unit directories with the picks' S / L units")
     p.add_argument("--part-arm", default="")
     p.add_argument("--out", default="")
     args = ap.parse_args(argv)
+    S2.register()                  # the protocol's shapes resolve in train/textdet_model.SHAPES (idempotent)
     if getattr(args, "units", "x") is None:
         args.units = [str(DEFAULT["units"])]
     {"cbuild": cmd_cbuild, "seed-cache": cmd_seed_cache, "fetch-teacher": cmd_fetch_teacher, "run": cmd_run,

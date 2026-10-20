@@ -1064,46 +1064,70 @@ def build_lab(source, cdir=None, out=None, limit=0):
             "rules": RULES, "built": utc()}
 
 
-def build_more(source, cdir=None, out=None, limit=0):
-    """Arm c's shards of one source from its cache: the canvases written (npy) with their labels."""
+def _build_more_shard(job):
+    """One arm c shard: (name or None, stats counters, weight counters). Writes the shard's npy and json."""
+    from PIL import Image
+    source, name, rows, cdir, out = job
+    stats = Stats()
+    cache = {ln["key"]: ln for ln in jsonl(Path(cdir) / f"{name}.jsonl")}
+    samples = []
+    for it in rows:
+        r = it["record"]
+        ln = cache.get(it["key"])
+        if ln is None:
+            raise SystemExit(f"more/{source} {r['shot']}: not cached")
+        if ln["status"] == "missing":
+            stats.c["colour_missing"] += 1
+            continue
+        rgb, k, plan = colour_source(r, source, it["target"])
+        grey = common.to_gray(rgb)
+        if hashlib.sha256(np.ascontiguousarray(grey).tobytes()).hexdigest() != ln["grey_sha256"]:
+            raise SystemExit(f"more/{source} {r['shot']}: the canvas is not the one meiki read")
+        H, W = grey.shape
+        lines, ignore, st = build_labels(W, H, [], [], record_furi(r, k, W, H), to_meiki(ln), winner_xyxy(ln))
+        stats.add(st, ln, len(lines), len(ignore))
+        with Image.open(r["path"]) as im:
+            sw, sh = im.size
+        meta = {"target": plan[0], "scale": round(W / sw, 4), "src_size": [sw, sh],
+                "t2": {"colour": "ok", "added": st["counts"].get("positives_added", 0),
+                       "ignore_added": {kk: v for kk, v in st["ignore_kinds"].items() if v}}}
+        samples.append({"canvas": grey, "lines": lines, "ignore": ignore, "meta": meta, "src": source,
+                        "kind": plan[0], "vn": r["vn"], "shot": r["shot"]})
+    if not samples:
+        return None, stats.c, stats.w
+    TD.write_shard(Path(out) / name, samples)
+    return name, stats.c, stats.w
+
+
+def _init_build():
+    import cv2
+    cv2.setNumThreads(1)
+
+
+def build_more(source, cdir=None, out=None, limit=0, workers=1):
+    """Arm c's shards of one source from its cache: the canvases written (npy) with their labels; `workers` shards
+    at a time."""
     stats = Stats()
     cdir = Path(cdir) if cdir else cache_dir("more", source)
     out = Path(out) if out else shard_dir("more", source)
     out.mkdir(parents=True, exist_ok=True)
+    jobs = [(source, name, rows, str(cdir), str(out)) for name, rows in cache_shards("more", source, limit)]
     written = []
-    for name, rows in cache_shards("more", source, limit):
-        cache = {ln["key"]: ln for ln in jsonl(cdir / f"{name}.jsonl")}
-        samples = []
-        for it in rows:
-            r = it["record"]
-            ln = cache.get(it["key"])
-            if ln is None:
-                raise SystemExit(f"more/{source} {r['shot']}: not cached")
-            if ln["status"] == "missing":
-                stats.c["colour_missing"] += 1
-                continue
-            rgb, k, plan = colour_source(r, source, it["target"])
-            grey = common.to_gray(rgb)
-            if hashlib.sha256(np.ascontiguousarray(grey).tobytes()).hexdigest() != ln["grey_sha256"]:
-                raise SystemExit(f"more/{source} {r['shot']}: the canvas is not the one meiki read")
-            H, W = grey.shape
-            lines, ignore, st = build_labels(W, H, [], [], record_furi(r, k, W, H), to_meiki(ln), winner_xyxy(ln))
-            stats.add(st, ln, len(lines), len(ignore))
-            src = read_rgb(r["path"])
-            meta = {"target": plan[0], "scale": round(W / src.shape[1], 4), "src_size": [src.shape[1], src.shape[0]],
-                    "t2": {"colour": "ok", "added": st["counts"].get("positives_added", 0),
-                           "ignore_added": {kk: v for kk, v in st["ignore_kinds"].items() if v}}}
-            samples.append({"canvas": grey, "lines": lines, "ignore": ignore, "meta": meta, "src": source,
-                            "kind": plan[0], "vn": r["vn"], "shot": r["shot"]})
-        if samples:
-            TD.write_shard(out / name, samples)
-            written.append(name)
+    with mp.get_context("fork").Pool(max(1, workers), initializer=_init_build) as pool:
+        for name, c, w in pool.imap(_build_more_shard, jobs):
+            stats.c.update(c)
+            stats.w.update(w)
+            if name:
+                written.append(name)
     return {"arm": "more", "source": source, "dir": out.name, "shards": written, "stats": stats.as_dict(),
             "rules": RULES, "built": utc()}
 
 
 def cmd_build(args):
-    rec = (build_lab if args.arm == "lab" else build_more)(args.source)
+    if args.arm == "lab":
+        rec = build_lab(args.source)
+    else:
+        rec = build_more(args.source, workers=args.workers)
     jdump(rec, cache_dir(args.arm, args.source) / "build.json", indent=1)
     print(json.dumps(rec["stats"], indent=1), flush=True)
     print(f"TEXTSPOT2_BUILD_DONE {args.arm}/{args.source} {len(rec['shards'])} shards", flush=True)
@@ -1677,6 +1701,7 @@ def main():
     p = sub.add_parser("build")
     p.add_argument("--arm", required=True, choices=ARMS)
     p.add_argument("--source", required=True, choices=SOURCES)
+    p.add_argument("--workers", type=int, default=workers)
     sub.add_parser("pool")
     p = sub.add_parser("reserve")
     p.add_argument("--pixels", action="store_true")

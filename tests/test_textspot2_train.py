@@ -1044,3 +1044,37 @@ def test_stage2_choices_keys_and_teacher_record(tmp_path):
     assert PL.parse_run("kd_h2_s4p_c6n4_seed3") == ("kd", "s4p_c6n4", 3)
     with pytest.raises(ValueError):
         PL.parse_run("h2_s4p_c8_seed1x")
+
+
+def test_the_runs_record_of_a_stage(tmp_path):
+    import runs_summary as RS
+    mans, dirs = tiny_shards(tmp_path)
+    runs = tmp_path / "herd" / "shared" / "artifacts" / "textspot2" / "runs"
+    T2.main(base_args(mans, dirs, "data", runs / "data_h2_s4p_c6n4_seed1"))
+    plan = tmp_path / "stage1_plan.jsonl"
+    PL.write([PL.spec("data", "s4p_c6n4", 1), PL.spec("data", "s4p_c6n4", 2)], plan)
+    other = tmp_path / "stage2_plan.jsonl"
+    PL.write([PL.spec("data", "s4p_c8", 1)], other)
+    sha_p, sha_o = sha(plan), sha(other)
+    a, b = "a" * 40, "b" * 40
+    (runs / "sweep.log").write_text(
+        f"2026-10-20T10:51:15Z sweep start: stage 1, MAX_PAR 6, head {a}, plan /x/{plan.name} ({sha_p}), runs r\n"
+        "2026-10-20T11:00:00Z data_h2_s4p_c6n4_seed1: attempt 1 exit 0\n"
+        "2026-10-20T12:00:00Z SWEEP_DONE stage 1: 1/2 done, 0 running, 0 crashes (x)\n"
+        f"2026-10-20T13:00:00Z sweep start: stage 2, MAX_PAR 6, head {b}, plan /y/{other.name} ({sha_o}), runs r\n"
+        "2026-10-20T14:00:00Z SWEEP_DONE stage 2: 0/1 done, 0 running, 0 crashes (x)\n")
+    rec = tmp_path / "runs_record.json"
+    doc = RS.record(rec, "stage1", runs, plan, herd=tmp_path / "herd")
+    sw = doc["sweeps"]["stage1"]
+    assert (sw["out"], sw["commit"], sw["max_par"], sw["started"], sw["sweep_done"]) == \
+        ("$HERD/shared/artifacts/textspot2/runs", "a" * 40, 6, "2026-10-20T10:51:15Z", "2026-10-20T12:00:00Z")
+    assert sw["plan"] == "eval/reproducibility/textspot2-20261020/stage1_plan.jsonl" and sw["plan_sha256"] == sha_p
+    st = doc["stages"]["stage1"]
+    assert (st["finished"], st["of"]) == (1, 2) and st["plan"] == sw["plan"]
+    doc = RS.record(rec, "stage2", runs, other, herd=tmp_path / "herd")
+    assert set(doc["stages"]) == {"stage1", "stage2"} and doc["sweeps"]["stage2"]["commit"] == "b" * 40
+    assert doc["sweeps"]["stage2"]["sweep_done"] == "2026-10-20T14:00:00Z"
+    text = rec.read_text()
+    assert json.loads(text) == doc
+    assert "/x/" not in text and "/y/" not in text                       # no path of the sweep log's plan lines
+    assert all(s["out"].startswith("$HERD/") for s in doc["sweeps"].values())

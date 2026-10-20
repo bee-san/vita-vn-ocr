@@ -1,0 +1,495 @@
+{
+ "kind": "vita-vn-ocr-textspot2-protocol",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/106",
+ "frozen_utc": "2026-10-20T08:30:55Z",
+ "frozen_before": "every textspot2 training run, label or data job, and every score of any textspot2 arm (candidate or teacher ceiling) on a textspot development frame; no model of this work has run on a development or test frame",
+ "doc": "docs/textspot2.md",
+ "follows": {
+  "issue": "https://github.com/bee-san/vita-vn-ocr/issues/104",
+  "pr": "https://github.com/bee-san/vita-vn-ocr/pull/105",
+  "merge_commit": "7a6dce0",
+  "protocol": "eval/textspot_protocol.json",
+  "selection": "eval/textspot_dev_20261019.json"
+ },
+ "owner": [
+  "2026-10-20 07:53Z: how can we improve the 2.7kb model?",
+  "2026-10-20 07:5xZ: https://huggingface.co/rtr46/meiki.text.detect.v0 can we use this as the teacher?",
+  "2026-10-20 07:56Z: okay, queue agents to improve it",
+  "2026-10-20 07:58Z: we can maybe make it bigger too, i think 2.7kb is crazy small for this :P"
+ ],
+ "sources_sha256": {
+  "eval/textspot2_rule.py": "3aa17ebf39adf50ea674d1c2412e28f6e2a27b46a9cea7b65e1faac785b8621f",
+  "eval/textspot_metrics.py": "93323b756b12759dbd0e318ffe1c1de28b891ddf6ed33fca8932fd06773c4d17",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "eval/textspot.py": "68f391eba4177eab4e61f6a679e2dd39a04dfc90ad00037f40420d4ba221aa7c",
+  "eval/textspot_protected.py": "adc918bc4c73a053cdd5daf5e7d7f4733a0a9efe3f00f3a2b1706bfe78f8a21a",
+  "eval/textspot_protocol.json": "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f",
+  "eval/textspot_baseline_20261019.json": "7090ac84cd2ac0804af0bb30bcd93badc3badca8e8b1adfe3d4c91a0c38cf4b2",
+  "eval/textspot_dev_20261019.json": "3189d294c5e4c4dc8c3c729db980daf20a3fe9d0eb3343ad3d77fe3ec75f4e2f",
+  "eval/textspot_a9_20261019.json": "2ac3e9fa35a8b74e94c08e705435a9a55ed354a062e4ce847436e9f484d5b677",
+  "eval/textspot_a9.py": "b04e6c6a53c55080354114b0abc6d49be09fe1b2bc1a927eeec17ebdac8a17d0",
+  "eval/manifests/textspot-dev.jsonl": "0392a1d33efbe732ca97adee7f9dc2f6117e387f9ea3dda5c257a9b4d9f431a9",
+  "eval/manifests/textspot-test.jsonl": "233b96d80a452e0585c717f4d65ec73758810262663f71e57bed04402b452fb5",
+  "eval/manifests/reserved.json": "8ddaace6d1c9be5331bbcf628ff64d1c51365dc61f8a47d343d1bfb202e894cc",
+  "eval/manifests/test_games.json": "c24d67e7697da2a8ebbcc940449ded4ccc839c25acc2bae3a5ef85eec4fcce9b",
+  "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+  "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+  "synth/textdet_data.py": "359f18a8d97a868381b0e7988806375cc51882ce23c1965de082d1995193b200",
+  "synth/textspot_real_half.py": "33b0eaca35f619627689c09ea9e56e7e93d7892df715c9adab41148b418def14",
+  "runtime/vocr_textspot.c": "d2054a2d5ccbda1a31c5aafec0079d4da65cf13bc1d5db991dc8cdda746df331",
+  "runtime/vocr_textspot.h": "a25ef000164af61610a6f5201fb9e345f8a67cf6525d2f16bae44afca712dd57",
+  "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d",
+  "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+  "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+  "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+  "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+  "data/manifests/textdet_shards_v1.json": "84bba8c37b2fcefb14474b35f5a803d76f303fc57bf710a2239e848a09ffef27",
+  "teacher/engines.py": "e447547601f51733d786df0701412b3992cf4dc4a71dc82d6f0dee4e965d469d",
+  "teacher/geometry.py": "fa001851fad9d405700df467925b99322d40cc0b2897fd0305281db43419def5",
+  "eval/tools/reserve_check.py": "9b27304a1dbafa8381040bb1ff3d42e2faa8a231b7c1a35aac83ab4928cdea69"
+ },
+ "reused": {
+  "dev_manifest": {
+   "path": "eval/manifests/textspot-dev.jsonl",
+   "sha256": "0392a1d33efbe732ca97adee7f9dc2f6117e387f9ea3dda5c257a9b4d9f431a9",
+   "frames": 188,
+   "vns": 81,
+   "instances": 885
+  },
+  "test_manifest": {
+   "path": "eval/manifests/textspot-test.jsonl",
+   "sha256": "233b96d80a452e0585c717f4d65ec73758810262663f71e57bed04402b452fb5",
+   "pinned_by": "textspot amendment 3"
+  },
+  "metrics": "eval/textspot_metrics.py (match_frame, e2e_frame, compare, beats, vn_diff, f1_diff; BOOT 10,000 resamples, seed 0)",
+  "harness": "eval/textspot.py (det: / detref: arms, the reading, C parity with --cbin, eligibility inputs: textspot.eligibility)",
+  "baseline": {
+   "path": "eval/textspot_baseline_20261019.json",
+   "units_dir": "$HERD/shared/artifacts/textspot/baseline/units",
+   "arms": [
+    "grad",
+    "grad_refine",
+    "grad_refine_gate",
+    "s8c24_textdet",
+    "s8c24_textdet_refine",
+    "s8c24_spot",
+    "columns",
+    "grad_refine_columns"
+   ]
+  },
+  "recognizers": {
+   "VOCR5-S": {
+    "asset": "v0.3.0/VOCR5_S_w8.vocr",
+    "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+   },
+   "VOCR5-N": {
+    "asset": "v0.3.0/VOCR5_N_w8.vocr",
+    "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+   },
+   "VOCR5-L": {
+    "asset": "v0.3.0/VOCR5_L_w8.vocr",
+    "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+   },
+   "VOCR5-V": {
+    "asset": "v0.3.2-vertical.1/VOCR5_V_w8.vocr",
+    "sha256": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172"
+   }
+  },
+  "reading": {
+   "rule_models": {
+    "horizontal": "VOCR5-N",
+    "vertical": "VOCR5-V"
+   },
+   "report_models": {
+    "horizontal": [
+     "VOCR5-S",
+     "VOCR5-L"
+    ]
+   },
+   "how": "every detection's box (frame pixels, as the arm returns it) is cut from the frame, turned to grey ((77 R + 150 G + 29 B) >> 8) and read by the C runtime in W8I with greedy CTC decoding, with VOCR_INVERT when the box's dark flag (vocr_line_dark on the frame) is 1; a vertical box is turned 90 degrees anticlockwise first (vocr_column_rotate) and read by VOCR5-V"
+  },
+  "a9": {
+   "path": "eval/textspot_a9_20261019.json",
+   "method": "vita/a9_cycles.py's model on the Vita compiler's code under the plugin qemu-arm, as #97 (eval/textdet_a9.py), on a pinned procedural 960x544 and 480x272 frame; high bound x 1.0007 at 333 MHz, x 333/444 at 444 MHz",
+   "calibration": 1.0007,
+   "refine_ms_per_box": 1.4,
+   "refine_arena_960x544": 72391
+  },
+  "protected": "eval/textspot_protected.py (tests, clannad), through eval/textspot2_protected.py with attempt records of its own under $HERD/shared/private/textspot2"
+ },
+ "references": {
+  "ref": {
+   "name": "B_h2_s4_c24n4_seed2_detref",
+   "role": "the textspot winner: the main pick's comparator and the fast pick's tier-1 comparator",
+   "blob": "v0.3.3-textspot.1/textspot_s4_c24n4_w8.vtsp",
+   "blob_sha256": "852506919ba94e54a4efc55e3695f365626d9d4ce6347f420cbf2afe3e8360cf",
+   "blob_bytes": 5732,
+   "est_ms_333_960": 139.09,
+   "arena_960": 80799,
+   "dev": {
+    "f1": 0.5416,
+    "cer_all": 32.0384,
+    "cer_dialogue": 3.0098
+   },
+   "units": "$HERD/shared/artifacts/textspot/eval/famB/B_h2_s4_c24n4_seed2_detref/units_VOCR5-N.json",
+   "units_sha256": "e5170f2e871dc90f452c7330194bc6bde2e1198775c51c9a1529acc3994cb38f",
+   "boxes": "$HERD/shared/artifacts/textspot/eval/famB/B_h2_s4_c24n4_seed2_detref/boxes.json",
+   "boxes_sha256": "5d7776219f52bc6eb28fb52c1ac0fe50e3cfa85128a3096d360f3ad13352f0cc"
+  },
+  "fast_ref": {
+   "name": "C_h2_s4p_c8_seed1_detref",
+   "role": "textspot's fastest qualifier: the fast pick's tier-2 comparator",
+   "blob": "v0.3.3-textspot.1/textspot_s4p_c8_w8.vtsp",
+   "blob_sha256": "d4dd598f6ddb1575ebc1a957cb1dae29f03aa41f7533bbb7d5fe25210161b185",
+   "blob_bytes": 2732,
+   "est_ms_333_960": 80.254,
+   "arena_960": 72391,
+   "dev": {
+    "f1": 0.5327,
+    "cer_all": 34.9188,
+    "cer_dialogue": 3.6368
+   },
+   "units": "$HERD/shared/artifacts/textspot/eval/famC/C_h2_s4p_c8_seed1_detref/units_VOCR5-N.json",
+   "units_sha256": "e8d95e5ca1e2a90b19d5aac74d4d1d200938d11b4d2d49c0a7d47e2fec2902c1",
+   "boxes": "$HERD/shared/artifacts/textspot/eval/famC/C_h2_s4p_c8_seed1_detref/boxes.json",
+   "boxes_sha256": "ee115670e89e6f5fcf49ee414f40bc1281fb9a72e292610cc9f8d7bf8df80965"
+  }
+ },
+ "budget": {
+  "ms_max_333_960": 150,
+  "fast_ms_max_333_960": 80,
+  "arena_max": 131072,
+  "vtsp_max": 262144,
+  "time": "the A9 cycle model's high bound x 1.0007 at 333 MHz for the shape and scale on the runtime (default call, dark pass included), plus 1.4 ms per horizontal box at the arm's median on the development Vita frames for det+refine (textspot.eligibility)",
+  "arena": "vocr_textspot_arena_bytes(m, 960, 544); for det+refine the larger of it and the refinement's 72,391 B",
+  "report": "444 MHz (x 333/444), the PSP's 480x272, VitaSDK -Os code sizes"
+ },
+ "metrics": {
+  "primary": [
+   "F1 over every class (IoU >= 0.5, one to one)",
+   "end-to-end all-text CER (every class, plus unassigned readings)"
+  ],
+  "guard": "dialogue CER (classes dialogue and choice, without unassigned readings)",
+  "secondary": "CER over dialogue, name and choice references, without unassigned readings (textspot2_rule.dnc_units; report only)",
+  "report": [
+   "recall per class",
+   "tightness",
+   "text-free frames with a box",
+   "the dialogue pick",
+   "per part",
+   "VOCR5-S and VOCR5-L readings of the selected models"
+  ]
+ },
+ "seeds": {
+  "per_arm": [
+   1,
+   2,
+   3
+  ],
+  "report": "every seed",
+  "representative": "per decode, the median seed by development all-text CER (textspot2_rule.median_seed: sorted by all-text CER, dialogue CER, -F1, seed; index n // 2, the worse middle one when n is even); eligibility is checked on that seed with no substitution; never the best seed",
+  "crashes": "a crashed run restarts from scratch with the same seed, at most 3 attempts; an arm with fewer finished seeds uses median_index of what finished"
+ },
+ "rule": {
+  "vtsp_max": 262144,
+  "arena_max": 131072,
+  "ms_max_333_960": 150,
+  "fast_ms_max_333_960": 80,
+  "eligible": "VTSP bytes <= vtsp_max, arena <= arena_max, est. ms <= ms_max_333_960, the C runtime equal to the twin on every development frame",
+  "bar": "textspot's: textspot_metrics.beats against every one of the eight frozen baselines (VOCR5-N)",
+  "better": "against X on the paired development frames (VN-cluster 95% intervals): all-text CER resolved below 0 or F1 resolved above 0, and none of all-text CER, F1, dialogue CER resolved worse (textspot2_rule.better)",
+  "cost_order": "est. ms at 333 MHz, then VTSP bytes, then arena, then det before det+refine, then the name",
+  "main": "among the eligible candidates that clear the bar and are better than ref: the cheapest; a costlier one replaces it when it is better than it (the cheapest such, repeated until none is)",
+  "fast": "the same among the eligible candidates at est. <= fast_ms_max_333_960 (tier 1); when none of them is better than ref, the same with fast_ref as the comparator (tier 2, labelled so); else no fast pick",
+  "no_main": "the verdict is negative; textspot's winner stands",
+  "candidates": "the median-seed candidates of every textspot2 arm except r0 (controls) and the teacher ceiling (report only)",
+  "protected": "after the selection commit, each selected model once on vita-test + psp-test as whole frames and on CLANNAD (eval/textspot2_protected.py), with paired comparisons against ref's own protected units (read, not re-run); nothing is read when nothing is selected",
+  "code": "eval/textspot2_rule.apply_rule2"
+ },
+ "teacher": {
+  "repo": "rtr46/meiki.text.detect.v0",
+  "revision": "a9cffa4f60cbf72ddb87edf19c6f98a01cd042e6",
+  "license": "LGPL-3.0",
+  "files": {
+   "meiki.text.detect.v0.1.960x544.onnx": "40b6a016667745cae7d3055929ae3b8b1e7716aac795f5904cd3c2c7c3b8404b",
+   "meiki.text.detect.v0.1.320x192.onnx": "8cdc5daa5c13a5f93adb40ee2e53ad1a3d2f7e372584c5c665b038adeb74ae6d"
+  },
+  "use": "its boxes and scores only (a D-FINE box detector): training labels and the report-only ceiling; no feature or map distillation; its weights are never shipped"
+ },
+ "data": {
+  "exclusions": "every reserved.json test and dev_sample VN (and release partners) and test session; every eval and eval/linefind screenshot and every linefind VN; CHAOS;CHILD (v14018); every textspot development and test frame's screenshot; eval/tools/reserve_check.py RESERVE_OK on every new pool",
+  "synthetic": "data/manifests/textspot_shards_v1.json (80,000 whole frames), unchanged",
+  "labels_b": [
+   "the canvas's colour source at the canvas's size, made as #97 made the canvas (synth/textdet_data.real_canvases), checked: its grey equals the canvas; a canvas without its source is read as its grey in three channels (counted)",
+   "meiki v0.1.960x544 (MeikiOCR's preprocessing, as teacher/engines.Meiki) boxes and scores at score >= 0.2, each refined to ink by teacher/geometry.refine",
+   "positives: the canvas's existing positives, plus every meiki box of score >= 0.5 that no existing positive covers (>= 50% of its area); vertical when its refined height >= 1.5 x its width; 6-96 px across at the canvas's scale, else an ignore area",
+   "ignore areas: meiki boxes of score 0.2-0.5; the textspot winner's boxes (det decode, C runtime) that no meiki box >= 0.2 and no positive covers (>= 50% of the box); the canvas's existing ignore areas except one that a new positive's raw meiki box overlaps at IoU >= 0.5",
+   "weights: 1 for existing positives and for a meiki positive with >= 50% of its box inside a winner box; else 0.5 + 0.5 min(1, (score - 0.5) / 0.3)",
+   "a positive's weight multiplies the K BCE, O and A losses of its kernel cells; every other valid cell weighs 1; dice and the normalisations are #97's"
+  ],
+  "more_c": [
+   "VNDB PC screenshots (realplus's and the teacher's) at the Vita target as #97 made its realplus canvases: up to 8 per VN, existing canvases included",
+   "native Vita and PSP VNDB screenshots (the teacher's and devnative's) at their own size: up to 12 per VN",
+   "the owner's training captures: up to 200 per VN (no -TEST folder, no reserved VN)",
+   "within a VN in sha256('textspot2-pool:' + shot) order; new canvases join their source's pool, so textspot's mix per source stays (synth 0.5, realplus 0.175, teacher 0.175, owner 0.125, devnative 0.025)"
+  ],
+  "pin": "the shards and their manifest are pinned by an amendment before any run reads them"
+ },
+ "recipes": {
+  "r0": {
+   "arm": "control",
+   "what": "textspot's recipe, data and trainer (train/textspot_train.py, textspot amendment 1), unchanged: seed 3 of s4_c24n4 and s4p_c8 (seeds 1-2 are textspot's runs B_h2_s4_c24n4_seed1/2, C_h2_s4p_c8_seed1/2); report only, never a candidate"
+  },
+  "lab": {
+   "arm": "b",
+   "what": "r0 with the real half's labels replaced by labels_b (the same canvases)"
+  },
+  "data": {
+   "arm": "c",
+   "what": "lab plus the enlarged real pool (more_c)"
+  },
+  "ema": {
+   "arm": "e",
+   "what": "data + an exponential moving average of the weights: decay 0.999 from step 1,000; at the QAT start the averaged weights replace the live ones and BatchNorm statistics are re-estimated on 32 batches; during QAT an average (0.999) of the QAT weights, which is the run's model"
+  },
+  "cls": {
+   "arm": "f",
+   "what": "data + class weights: 2 on the lines of class dialogue, name and choice (synthetic frames; the real half has no classes), 1 otherwise (multiplied with labels_b's weights)"
+  },
+  "long": {
+   "arm": "e",
+   "what": "data + ema + 60,000 steps, peak LR 2e-3 (1,000 warm-up steps, cosine to 1e-4), QAT from step 48,000"
+  },
+  "kd": {
+   "arm": "e",
+   "what": "data + the kept extras + distillation from the teacher spotter: loss = the label loss + BCE(K, sigmoid(K_t)) over valid cells + 0.5 BCE(O, sigmoid(O_t)) + smooth L1((A1 - A1_t) / 8) + smooth L1((A2 - A2_t) / 8) on cells where sigmoid(K_t) > 0.5; the teacher's maps on the same window at the same scale"
+  },
+  "common": "textspot's recipe otherwise: 16 windows of 256 x 512 at the network's scale, h2 (half_above 600), AdamW 4e-3 (except long), 500 warm-up steps, cosine to 1e-4, QAT from 80% of the steps, 30,000 steps (except long), the last step is the run's model; trainer train/textspot2_train.py (textspot's trainer imported; its pinned files unchanged)"
+ },
+ "shapes": {
+  "s4p_c8": {
+   "stride": 4,
+   "c0": 4,
+   "c1": 8,
+   "c2": null,
+   "chans": [
+    8,
+    8,
+    8
+   ],
+   "dil": [
+    1,
+    2,
+    4
+   ],
+   "block": "plain",
+   "head": "kroa",
+   "note": "textspot's (train/textdet_model.SHAPES)"
+  },
+  "s4p_c6n4": {
+   "stride": 4,
+   "c0": 4,
+   "c1": 6,
+   "c2": null,
+   "chans": [
+    6,
+    6,
+    6,
+    6
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    8
+   ],
+   "block": "plain",
+   "head": "kroa"
+  },
+  "s4p_c8n4": {
+   "stride": 4,
+   "c0": 4,
+   "c1": 8,
+   "c2": null,
+   "chans": [
+    8,
+    8,
+    8,
+    8
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    8
+   ],
+   "block": "plain",
+   "head": "kroa"
+  },
+  "s4p_c10n4": {
+   "stride": 4,
+   "c0": 4,
+   "c1": 10,
+   "c2": null,
+   "chans": [
+    10,
+    10,
+    10,
+    10
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    8
+   ],
+   "block": "plain",
+   "head": "kroa"
+  },
+  "s4p_c12": {
+   "stride": 4,
+   "c0": 6,
+   "c1": 12,
+   "c2": null,
+   "chans": [
+    12,
+    12,
+    12
+   ],
+   "dil": [
+    1,
+    2,
+    4
+   ],
+   "block": "plain",
+   "head": "kroa"
+  },
+  "s4_c24n4": {
+   "stride": 4,
+   "c0": 8,
+   "c1": 16,
+   "c2": null,
+   "chans": [
+    24,
+    24,
+    24,
+    24
+   ],
+   "dil": [
+    1,
+    2,
+    2,
+    1
+   ],
+   "block": "sep",
+   "head": "kroa",
+   "note": "textspot's (train/textdet_model.SHAPES)"
+  },
+  "s4_c32n3": {
+   "stride": 4,
+   "c0": 8,
+   "c1": 16,
+   "c2": null,
+   "chans": [
+    32,
+    32,
+    32
+   ],
+   "dil": [
+    1,
+    2,
+    4
+   ],
+   "block": "sep",
+   "head": "kroa"
+  },
+  "s8_c24n4x2": {
+   "stride": 8,
+   "c0": 8,
+   "c1": 16,
+   "c2": 24,
+   "chans": [
+    24,
+    24,
+    24,
+    24
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    2
+   ],
+   "block": "sep",
+   "head": "kroa_x2",
+   "contingent": "d2s"
+  },
+  "s8_c48n4x2": {
+   "stride": 8,
+   "c0": 8,
+   "c1": 24,
+   "c2": 48,
+   "chans": [
+    48,
+    48,
+    48,
+    48
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    1
+   ],
+   "block": "sep",
+   "head": "kroa_x2",
+   "contingent": "d2s"
+  },
+  "grammar": "train/textdet_model.layers: stem 3x3 stride 2 (1 -> c0), down (sep: dw 3x3 stride 2 + 1x1; plain: 3x3 stride 2) to c1, for stride 8 down8 to c2, the blocks (sep: dw 3x3 dilation d + 1x1; plain: 3x3 dilation d), head 1x1 -> 4 maps (kroa) or 16 (kroa_x2: 4 maps for each of a cell's 2 x 2 sub-cells)",
+  "scale": "h2 (half_above 600) for every shape"
+ },
+ "d2s": {
+  "what": "a 2 x 2 sub-pixel head: the head's 16 channels are K, O, A1, A2 for each of a cell's four sub-cells (dy, dx); the decode reads them as a map at half the network's stride (cell (2i + dy, 2j + dx)), cropped to ceil(H / (s / 2)) x ceil(W / (s / 2)), and is otherwise the textspot decode",
+  "format": "a VTSP version 2 that says so; a version-1 blob runs bit for bit as before in the twin and the runtime, and a runtime without the extension refuses version 2",
+  "condition": "the d2s arms run only if the extension (twin, runtime, export, trainer), its parity tests and its A9 rows are committed on feat/textspot2 before stage 2 starts; else they are reported as not run. The runtime change is merged only if a selected model needs it"
+ },
+ "stages": {
+  "1": [
+   "after the data amendment",
+   "the ladder on s4_c24n4: lab, data, ema, cls (seeds 1-3 each) and r0 seed 3",
+   "long on s4_c24n4 and s4p_c8 (seeds 1-3 each)",
+   "data on s4p_c8, s4p_c6n4, s4p_c8n4, s4p_c10n4, s4p_c12, s4_c32n3 (seeds 1-3 each) and r0 seed 3 of s4p_c8"
+  ],
+  "2": [
+   "after every stage-1 run is scored, by fixed rules that read the development scores (disclosed: stage 2's intervals are optimistic)",
+   "kept extras: ema when its median seed's det+refine all-text CER is below data's on s4_c24n4; cls when its is below data's and its dialogue CER at most 0.5 points above data's",
+   "the fast shape: among the stage-1 data arms, the shape whose median-seed candidate (det or det+refine) has the lowest all-text CER among those eligible at <= 80 ms (s4p_c8 when none is); the main shape: the same among those eligible at <= 150 ms",
+   "kd: the fast shape with data + the kept extras, distilled from the teacher spotter = the eligible stage-1 candidate with the lowest median-seed all-text CER (any recipe and decode; stride-4 maps), its median seed's final model (seeds 1-3)",
+   "long on the main shape and on the fast shape when they are not s4_c24n4 / s4p_c8, with the kept extras (seeds 1-3)",
+   "d2s: s8_c24n4x2 and s8_c48n4x2 under data + the kept extras (seeds 1-3), when the extension is ready",
+   "every stage-2 choice is recorded by an amendment before its runs, with the figures it read"
+  ]
+ },
+ "ceiling_a": {
+  "what": "report only, host only, never a candidate: meiki v0.1 960x544 and 320x192 on the development frames through the same reading and metrics: boxes at score >= 0.5 as they are, padded by the spotter's pad rule, and padded with det+refine"
+ },
+ "bought": "report: paired development differences of median seeds (det+refine and det): lab - r0, data - lab, ema - data, cls - data, long - ema (s4_c24n4), each shape's data - data s4_c24n4, kd - its shape's best non-kd arm, d2s - data s4_c24n4, and every pick and the ceiling against ref",
+ "disclosures": [
+  "textspot's development references started from MeikiOCR's boxes refined to ink (reviewed by two looks; 96.7% of boxes approved), and so did its test set outside eval's hand-checked lines: meiki's ceiling and spotters trained on meiki's boxes are favoured by that construction; the test set's dialogue lines (eval's) and CLANNAD's references are independent of it",
+  "the development set has 81 VNs; with about 30 candidates, intervals near 0 can still be chance"
+ ],
+ "estimates": {
+  "binding": "the A9 cycle model as textspot (eval/textspot_a9.py on the shapes textspot2's trainer registers; eval/textspot2_a9_<date>.json, pinned by an amendment before any score)",
+  "report": "444 MHz, the PSP's 480x272, VitaSDK -Os code sizes",
+  "label": "every console time and memory figure is a host estimate; nothing runs on a console"
+ },
+ "paths": {
+  "artifacts": "$HERD/shared/artifacts/textspot2 (runs/, shards/, eval/: units, cache, cbuild)",
+  "private": "$HERD/shared/private/textspot2",
+  "names": "runs <recipe>_h2_<shape>_seed<n>; harness arms T2_<run>_det, T2_<run>_detref"
+ },
+ "amendments": []
+}

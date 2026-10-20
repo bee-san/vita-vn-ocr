@@ -123,9 +123,8 @@ def runtime(kind):
     if kind == "v1":
         yield
         return
-    import textspot2_export as X
-
     import textdet_model as TM
+    import textspot2_export as X
     saved = (A9.SOURCES, A9.build, A9.blob_for, TM.cost)
     added = [k for k in S2.D2S if k not in TM.SHAPES]
     orig_cost = TM.cost

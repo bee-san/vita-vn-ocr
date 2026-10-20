@@ -4,12 +4,15 @@
   probe_summary.py OUT [--out JSON] [--par 5 6]
 
 Per probe (seed 1): ms per step over 200 steps after one warm-up step (mean, median, p90; the time spent waiting for
-the loader) and the startup. Per smoke run (300 steps on s4_c24n4, QAT from step 240): its wall time, ms per step
-before and after QAT (its log, every 20 steps), its final losses, the blob's bytes and check_run.py's verdict.
+the loader) and the startup, for every pass probe.sh ran (OUT/probe, then OUT/probe2, ... with PASS=2, ...; the
+record of 2026-10-20 has one pass); the estimate uses the mean over the passes of each pass's mean ms per step.
+Per smoke run (300 steps on s4_c24n4, QAT from step 240): its wall time, ms per step before and after QAT (its log,
+every 20 steps), its final losses, the blob's bytes and check_run.py's verdict.
 
 A stage-1 run's estimate: overhead + steps x ms, with ms = the probe's mean ms per step for its shape and recipe
 (lab and r0: data's probe of the shape; long on s4p_c8: data's s4p_c8 plus the ema - data difference on
-s4_c24n4), the last 20 % of the steps (QAT) at the smoke run's QAT / float ratio of its recipe, and overhead = the
+s4_c24n4), the last 20 % of the steps (QAT) at the median QAT / float step ratio of the smoke runs other than kd's
+(kd: its own; one smoke's QAT window can fall on a load spike of the shared box), and overhead = the
 recipe's smoke wall time minus its own 300 steps (240 float and 60 QAT steps at its logged ms per step): startup,
 the shard sha256 checks, calibration, BatchNorm re-estimation, export. The stage's wall time is the list schedule
 sweep.sh runs (textspot2_plan.py's order: longest first; the next run starts when one of --par slots frees).
@@ -65,12 +68,24 @@ def main():
     args = ap.parse_args()
     out = Path(args.out)
     probes, smokes = {}, {}
+    pass_dirs = ["probe"] + sorted((d.name for d in out.glob("probe[0-9]*") if d.is_dir()),
+                                   key=lambda n: int(n[5:]))
+    keys = ("ms_per_step", "ms_per_step_median", "ms_per_step_p90", "ms_waiting_for_data", "warmup_ms", "startup_s")
     for recipe, shape in PROBES:
-        p = json.loads((out / "probe" / run_name(recipe, shape) / "probe.json").read_text())
+        passes = []
+        for pd in pass_dirs:
+            f = out / pd / run_name(recipe, shape) / "probe.json"
+            if f.exists():
+                p = json.loads(f.read_text())
+                passes.append({"pass": pd, "finished": p["finished"], **{k: p[k] for k in keys}})
+        if not passes or passes[0]["pass"] != "probe":
+            raise SystemExit(f"{run_name(recipe, shape)}: no first-pass probe")
+        mean = sum(q["ms_per_step"] for q in passes) / len(passes)
         probes[(recipe, shape)] = {"run": run_name(recipe, shape), "recipe": recipe, "shape": shape,
-                                   "macs_window_256x512": PL.macs(shape), **{k: p[k] for k in (
-                                       "ms_per_step", "ms_per_step_median", "ms_per_step_p90",
-                                       "ms_waiting_for_data", "warmup_ms", "startup_s", "extras")}}
+                                   "macs_window_256x512": PL.macs(shape), "ms_per_step": round(mean, 2),
+                                   "passes": passes, "n_passes": len(passes),
+                                   "ms_per_step_range": [min(q["ms_per_step"] for q in passes),
+                                                         max(q["ms_per_step"] for q in passes)]}
     log_text = (out / "probe.log").read_text() if (out / "probe.log").exists() else ""
     for recipe, shape in SMOKES:
         name = run_name(recipe, shape)
@@ -92,6 +107,9 @@ def main():
                           "vtsp_bytes": done["vtsp_bytes"], "vtsp_sha256": done["vtsp_sha256"],
                           "check_ok": f"CHECK_OK {name} " in log_text}
     ema_extra = probes[("ema", "s4_c24n4")]["ms_per_step"] - probes[("data", "s4_c24n4")]["ms_per_step"]
+    ratios = sorted(s["qat_ratio"] for k, s in smokes.items() if k != "kd" and s["qat_ratio"])
+    median_ratio = (ratios[len(ratios) // 2] if len(ratios) % 2 else
+                    (ratios[len(ratios) // 2 - 1] + ratios[len(ratios) // 2]) / 2) if ratios else 1.0
 
     def ms_of(r):
         rec, shape = r["recipe"], r["shape"]
@@ -107,7 +125,7 @@ def main():
     for r in runs:
         sm = smokes[r["recipe"] if r["recipe"] in smokes else "data"]
         ms = ms_of(r)
-        ratio = sm["qat_ratio"] or 1.0
+        ratio = round((sm["qat_ratio"] or 1.0) if r["recipe"] == "kd" else median_ratio, 3)
         overhead = sm["overhead_s"]
         t = overhead + r["steps"] * ms / 1000 * (QAT_FRAC + (1 - QAT_FRAC) * ratio)
         est[r["run"]] = t
@@ -123,20 +141,23 @@ def main():
                    "under ema, cls, long and kd, and 300-step smoke runs of every recipe on s4_c24n4 (r0 included), "
                    "seed 1 (r0: 3), on textspot's shards (data/manifests/textspot_shards_v1.json + "
                    "textdet_shards_v1.json; the textspot2 shards were not pinned yet); not runs of the sweep",
-           "threads": 5, "concurrency": 1, "probes": list(probes.values()), "smokes": smokes,
+           "threads": 5, "concurrency": 1, "passes": pass_dirs, "probes": list(probes.values()), "smokes": smokes,
            "stage1_estimate": {"runs": len(runs), "order": order, "rows": rows,
+                               "qat_ratio_median": round(median_ratio, 3),
                                "est_run_s": {k: round(v) for k, v in est.items()},
                                "slot_hours": round(sum(est.values()) / 3600, 2), "schedule": sched},
            "label": "estimates: measured ms per step x steps on a shared 64-core box, one probe at a time; QAT at the "
-                    "smoke runs' QAT / float ratio; 5-6 runs at once may run slower per step (textspot's sweep: "
-                    "4.79 h measured against 4.52 h estimated, x 1.06)"}
+                    "smoke runs' median QAT / float step ratio (kd: its own); 5-6 runs at once may run slower per "
+                    "step (textspot's sweep: 4.79 h measured against 4.52 h estimated, x 1.06)"}
     text = json.dumps(doc, indent=1) + "\n"
     if args.json_out:
         Path(args.json_out).write_text(text)
     for p in probes.values():
-        print(f"probe {p['run']:24s} {p['ms_per_step']:7.1f} ms/step (median {p['ms_per_step_median']:7.1f}, "
-              f"p90 {p['ms_per_step_p90']:7.1f}, data wait {p['ms_waiting_for_data']:5.1f}; startup "
-              f"{p['startup_s']:5.1f} s)")
+        q = p["passes"][0]
+        print(f"probe {p['run']:24s} {p['ms_per_step']:7.1f} ms/step over {p['n_passes']} pass(es) "
+              f"{[x['ms_per_step'] for x in p['passes']]} (pass 1: median {q['ms_per_step_median']:7.1f}, "
+              f"p90 {q['ms_per_step_p90']:7.1f}, data wait {q['ms_waiting_for_data']:5.1f}; startup "
+              f"{q['startup_s']:5.1f} s)")
     for k, s in smokes.items():
         print(f"smoke {s['run']:24s} wall {s['wall_s']:6.1f} s (startup {s['startup_s']:5.1f}; float "
               f"{s['ms_float_20_240']}, qat {s['ms_qat_260_300']} ms/step) {s['vtsp_bytes']} B check "

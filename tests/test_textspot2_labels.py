@@ -58,6 +58,10 @@ def test_the_rules_are_the_protocols():
     assert R["across"] == [6, 96] and R["replace_iou"] == 0.5
     assert L.CAPS_MORE == {"pc": 8, "native": 12, "owner": 200} and L.POOL_SALT == "textspot2-pool:"
     assert L.WINNER_SHA256 == p["references"]["ref"]["blob_sha256"]
+    a2 = next(a for a in p["amendments"] if a["id"] == 2)["settings"]
+    assert R["winner_only_conf_min"] == a2["winner_only_ignore_conf_min"] == 40
+    assert a2["low_score_covered"] == "dropped" and R["low_covered"] == "drop"
+    assert (R["refine"], R["cover_box"], R["amendment"]) == ("P1", "refined", 2)
 
 
 # ----------------------------------------------------------------------------- coverage by the union
@@ -120,16 +124,22 @@ def test_existing_positives_weigh_one_and_keep_their_orientation():
 
 # ----------------------------------------------------------------------------- ignore areas
 
-def test_winner_boxes_nothing_covers_become_ignore_areas():
+def test_winner_boxes_nothing_covers_become_ignore_areas_from_confidence_40():
     ex = [[100, 100, 400, 124, 0, "text"]]
     m = [mk([100, 300, 300, 324], 0.3), mk([500, 300, 600, 324], 0.3), mk([600, 300, 700, 324], 0.3)]
-    winner = [[95, 96, 405, 128],        # an existing positive
-              [98, 298, 302, 326],       # a raw meiki box of a low score
-              [500, 298, 700, 326],      # the union of two raw meiki boxes
-              [700, 450, 900, 480]]      # nothing: text meiki missed
+    winner = [[95, 96, 405, 128, 90],        # an existing positive
+              [98, 298, 302, 326, 90],       # a raw meiki box of a low score
+              [500, 298, 700, 326, 90],      # the union of two raw meiki boxes
+              [700, 450, 900, 480, 40],      # nothing: text meiki missed, confident -> ignore area
+              [700, 500, 900, 530, 39]]      # nothing, not confident: left as background (amendment 2)
     lines, ignore, st = build(existing=ex, meiki=m, winner=winner)
     assert st["counts"]["ignore_winner_only"] == 1 and [700, 450, 900, 480] in ignore
+    assert st["counts"]["winner_only_background"] == 1 and [700, 500, 900, 530] not in ignore
     assert [95, 96, 405, 128] not in ignore and [500, 298, 700, 326] not in ignore
+    # a box without its confidence: amendment 1's letter (an ignore area)
+    assert build(winner=[[700, 500, 900, 530]])[1] == [[700, 500, 900, 530]]
+    # the winner boxes' cached form carries the confidence
+    assert L.winner_xyxy({"winner": [[700, 500, 200, 30, 0, 39]]}) == [[700, 500, 900, 530, 39]]
 
 
 def test_a_winner_box_a_new_positive_covers_is_not_ignored():
@@ -148,11 +158,12 @@ def test_existing_ignore_areas_a_new_positive_replaces_at_iou_half():
     assert len(lines) == 2
 
 
-def test_a_low_box_over_an_existing_positive_is_an_ignore_area_unless_the_rule_drops_it():
-    ex = [[100, 100, 400, 124, 0, "text"]]
-    m = [mk([100, 100, 400, 124], 0.3)]
-    assert build(existing=ex, meiki=m)[1] == [[100, 100, 400, 124]]
-    assert build(existing=ex, meiki=m, low_covered="drop")[1] == []
+def test_a_low_box_over_an_existing_positive_is_dropped():
+    ex = [[100, 100, 400, 124, 0, "text"], [100, 130, 400, 154, 0, "text"]]
+    m = [mk([100, 100, 400, 154], 0.3), mk([100, 300, 400, 324], 0.3)]   # two lines' union; one uncovered
+    lines, ignore, st = build(existing=ex, meiki=m)
+    assert ignore == [[100, 300, 400, 324]] and st["counts"]["low_dropped_covered"] == 1
+    assert build(existing=ex, meiki=m, low_covered="ignore")[1] == [[100, 100, 400, 154], [100, 300, 400, 324]]
 
 
 @pytest.mark.parametrize("h,kind", [(5, "size_small"), (6, None), (96, None), (97, "size_large")])

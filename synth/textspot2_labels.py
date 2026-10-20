@@ -106,9 +106,13 @@ RULES = {
     "vertical_ratio": 1.5,      # vertical: refined height >= 1.5 x width
     "across": [6, 96],          # a new positive's size across (height, or width when vertical) at canvas scale
     "replace_iou": 0.5,         # an existing ignore area that a new positive's raw meiki box meets at IoU >= 0.5
-    "refine": "P1",             # refined_of
-    "cover_box": "refined",     # the box of a meiki candidate that the existing positives must cover
-    "low_covered": "ignore",    # a low-score box the existing positives cover: an ignore area ("ignore") or not
+    "refine": "P1",             # refined_of (amendment 2, reading 1)
+    "cover_box": "refined",     # the box of a meiki candidate that the existing positives must cover (reading 2)
+    "low_covered": "drop",      # a low-score box the existing positives cover: dropped (amendment 2); "ignore" was
+                                # amendment 1's letter
+    "winner_only_conf_min": 40,  # a winner-only box is an ignore area only at confidence (mean K code) >= 40;
+                                 # below, it stays background (amendment 2)
+    "amendment": 2,
     "box": "every meiki-made label (positive or ignore area) is the refined box; the raw box only where the "
            "protocol says raw (the union a winner box must lie in, the IoU that removes an existing ignore area)",
     "furigana_hosts": "every other horizontal meiki box (refined, score > det_thr) and every horizontal existing "
@@ -290,20 +294,24 @@ def weight_bin(w, agrees):
 
 
 def build_labels(width, height, existing, existing_ignore, furi, meiki, winner, rules=None):
-    """The textspot2 labels of one canvas (docs/textspot2.md "Data" b with amendment 1). Pure: boxes in, boxes out.
+    """The textspot2 labels of one canvas (docs/textspot2.md "Data" b with amendments 1 and 2). Pure: boxes in,
+    boxes out.
 
     existing         the canvas's existing positives [[x0, y0, x1, y1, vertical, ...]] (arm b: #97's lines; arm c: [])
     existing_ignore  its existing ignore areas [[x0, y0, x1, y1]] (arm b: #97's; arm c: [])
     furi             the source record's furigana boxes at the canvas's scale
     meiki            the cached meiki boxes [{"raw", "score", "ref_h", "ref_t"}] (score > det_thr)
-    winner           the winner's boxes [[x0, y0, x1, y1]] (det decode)
+    winner           the winner's boxes [[x0, y0, x1, y1, conf]] (det decode; conf the box's mean K code)
 
     1. every meiki box: its refined box and orientation (refined_of), clipped to the canvas;
-    2. score < 0.5: an ignore area (low); score >= 0.5: nothing when the existing positives cover it; else an
-       ignore area when it is furigana (the record's furigana boxes cover it, or the geometry against a bigger
-       horizontal meiki box or existing positive) or outside 6-96 px across; else a new positive, weight 1 when the
-       winner boxes cover it, else 0.5 + 0.5 min(1, (score - 0.5) / 0.3);
-    3. every winner box that the raw meiki boxes and the positives (existing and new) do not cover: an ignore area;
+    2. score < 0.5: dropped when the existing positives cover it (amendment 2), else an ignore area (low);
+       score >= 0.5: nothing when the existing positives cover it; else an ignore area when it is furigana (the
+       record's furigana boxes cover it, or the geometry against a bigger horizontal meiki box or existing
+       positive) or outside 6-96 px across; else a new positive, weight 1 when the winner boxes cover it, else
+       0.5 + 0.5 min(1, (score - 0.5) / 0.3);
+    3. every winner box that the raw meiki boxes and the positives (existing and new) do not cover: an ignore area
+       when its confidence is >= 40, else nothing (background; amendment 2; a box without a confidence is an
+       ignore area, amendment 1's letter);
     4. the existing ignore areas, less those a new positive's raw meiki box meets at IoU >= 0.5.
     Returns (lines [[x0, y0, x1, y1, vertical, "text", weight]], ignore [[x0, y0, x1, y1]], stats)."""
     R = dict(RULES, **(rules or {}))
@@ -356,9 +364,13 @@ def build_labels(width, height, existing, existing_ignore, furi, meiki, winner, 
     positives = ex_boxes + [p["box"] for p in new]
     raw_all = [x["raw"] for x in ms]
     for wb in winner:
+        conf = int(wb[4]) if len(wb) > 4 else None
         wb = [int(v) for v in wb[:4]]
         if area(wb) > 0 and not covered(wb, raw_all + positives):
-            ign["winner_only"].append(wb)
+            if conf is not None and conf < R["winner_only_conf_min"]:
+                st["winner_only_background"] += 1          # amendment 2: left as background (a negative)
+            else:
+                ign["winner_only"].append(wb)
     kept_ignore, removed = [], 0
     for b in existing_ignore:
         if any(iou(p["raw"], b) >= R["replace_iou"] for p in new):
@@ -990,7 +1002,8 @@ class Stats:
                           "high_covered_by_existing": c["high_covered"], "empty_after_clip": c["meiki_empty"],
                           "low_dropped_covered": c["low_dropped_covered"]},
                 "winner": {"boxes": c["winner_boxes"], "twin_checked": c["twin_checked"],
-                           "twin_equal": c["twin_equal"]},
+                           "twin_equal": c["twin_equal"], "winner_only_ignore_conf_ge_40": c["ignore_winner_only"],
+                           "winner_only_background_conf_lt_40": c["winner_only_background"]},
                 "lines": c["lines"]}
 
 
@@ -999,7 +1012,8 @@ def to_meiki(line):
 
 
 def winner_xyxy(line):
-    return [[b[0], b[1], b[0] + b[2], b[1] + b[3]] for b in line.get("winner") or []]
+    """The cached winner boxes (x, y, w, h, vertical, conf) as [x0, y0, x1, y1, conf]."""
+    return [[b[0], b[1], b[0] + b[2], b[1] + b[3], b[5]] for b in line.get("winner") or []]
 
 
 def link_npy(link, target):
@@ -1311,15 +1325,26 @@ def cmd_leak(args):
            "--data", str(ART / "eval")]
     p = subprocess.run(cmd, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=7200)
     out = p.stdout.strip().splitlines()
-    print("\n".join(herd_rel(x) for x in out[-30:]), p.stderr[-2000:], flush=True)
+    owner_dir = str(cache_dir("more", "owner") / "leak_links")
+
+    def public(x):
+        x = x.strip()
+        if owner_dir in x:                     # owner frame keys stay private: the VN only
+            head, _, tail = x.partition(owner_dir + "/")
+            x = f"{head}<owner frame of {tail.split('_')[0]}>"
+        return herd_rel(x)
+    print("\n".join(public(x) for x in out[-30:]), p.stderr[-2000:], flush=True)
     summary = None
     for x in reversed(out):
         if x.startswith("{"):
             summary = json.loads(x)
             break
-    pairs = [herd_rel(x.strip()) for x in out if " ~ " in x]
-    jdump({"tool": "eval/tools/leakcheck.py", "min_corr": 0.95, "rc": p.returncode, "summary": summary,
-           "pairs": pairs, "spread": [x for x in out if x.startswith("best pool correlation")]},
+    pairs = [public(x) for x in out if " ~ " in x]
+    jdump({"tool": "eval/tools/leakcheck.py", "argv": ["eval/tools/leakcheck.py", "<arm c screenshots, one "
+                                                       "directory of links per source>", "--min-corr", "0.95",
+                                                       "--data", "$HERD/shared/artifacts/eval"],
+           "min_corr": 0.95, "rc": p.returncode, "summary": summary, "pairs": pairs,
+           "lines": [public(x) for x in out if not x.startswith("  ")]},
           T2 / "labels" / "more" / "leakcheck.json", indent=1)
     return p.returncode
 

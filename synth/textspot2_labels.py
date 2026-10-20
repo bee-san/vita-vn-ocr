@@ -352,7 +352,7 @@ def build_labels(width, height, existing, existing_ignore, furi, meiki, winner, 
             continue
         agrees = covered(box, winner)
         new.append({"box": box, "vertical": x["vertical"], "w": weight_of(x["score"], agrees), "raw": x["raw"],
-                    "agrees": agrees})
+                    "agrees": agrees, "score": x["score"]})
     positives = ex_boxes + [p["box"] for p in new]
     raw_all = [x["raw"] for x in ms]
     for wb in winner:
@@ -376,8 +376,11 @@ def build_labels(width, height, existing, existing_ignore, furi, meiki, winner, 
                "vertical_added": sum(int(p["vertical"]) for p in new),
                "ignore_kept": len(kept_ignore), "ignore_removed": removed,
                **{f"ignore_{k}": len(v) for k, v in ign.items()}})
+    detail = {"new": [{k: p[k] for k in ("box", "raw", "w", "agrees", "vertical", "score")} for p in new],
+              "low": [(x["box"], x["score"]) for x in ms if x["score"] < R["pos_min"] and x["box"] in ign["low"]],
+              "winner_only": [wb for wb in ign["winner_only"]]}
     return lines, ignore, {"counts": dict(st), "weights": dict(wh), "n_existing": len(existing),
-                           "ignore_kinds": {k: len(v) for k, v in ign.items()}}
+                           "ignore_kinds": {k: len(v) for k, v in ign.items()}, "detail": detail}
 
 
 # ----------------------------------------------------------------------------- records and colour sources
@@ -748,6 +751,23 @@ def lab_existing():
     return existing, held
 
 
+def cap_select(cand, existing, caps=None):
+    """The caps of arm c: cand {(group, vn): {shot: anything}} (the new screenshots), existing {(group, vn): {shot}}
+    (the lab screenshots) -> ([(group, vn, shot)] chosen, {group: counts}). Per VN and group, at most caps[group]
+    screenshots, the existing ones included; the new ones in pool_rank order (sha256('textspot2-pool:' + shot))."""
+    caps = CAPS_MORE if caps is None else caps
+    picked, groups = [], collections.defaultdict(collections.Counter)
+    for (g, vn), d in sorted(cand.items()):
+        room = max(0, caps[g] - len(existing.get((g, vn), ())))
+        order = sorted(d, key=pool_rank)
+        picked += [(g, vn, shot) for shot in order[:room]]
+        groups[g]["vns_with_candidates"] += 1
+        groups[g]["candidates"] += len(order)
+        groups[g]["new"] += min(room, len(order))
+        groups[g]["capped_out"] += max(0, len(order) - room)
+    return picked, groups
+
+
 def more_pool():
     """Arm c's new screenshots: ({source: [record]} in shot order, the selection's record).
 
@@ -794,16 +814,11 @@ def more_pool():
                 else:
                     seen.add(shot)
                     cand[(group_of(source, r), r["vn"])][shot] = (source, dict(r, file_sha256=fsha))
-    chosen, groups = collections.defaultdict(list), collections.defaultdict(collections.Counter)
-    for (g, vn), d in sorted(cand.items()):
-        room = max(0, CAPS_MORE[g] - len(existing.get((g, vn), ())))
-        order = sorted(d, key=pool_rank)
-        for shot in order[:room]:
-            chosen[d[shot][0]].append(d[shot][1])
-        groups[g]["vns_with_candidates"] += 1
-        groups[g]["candidates"] += len(order)
-        groups[g]["new"] += min(room, len(order))
-        groups[g]["capped_out"] += max(0, len(order) - room)
+    chosen = collections.defaultdict(list)
+    picked, groups = cap_select(cand, existing)
+    for g, vn, shot in picked:
+        source, r = cand[(g, vn)][shot]
+        chosen[source].append(r)
     for g in groups:
         groups[g]["lab_vns"] = len({vn for (gg, vn) in existing if gg == g})
         groups[g]["lab_screenshots"] = sum(len(v) for (gg, _), v in existing.items() if gg == g)
@@ -1182,7 +1197,7 @@ def cmd_manifest(args):
                         raise SystemExit(f"{name}.npy: not #97's canvases")
                     e["textdet_json_sha256"] = pin["json_sha256"]
                 shards.append(e)
-    rc_path = T2 / "labels" / "more" / "reserve_check.json"
+    rc_path = T2 / "labels" / "reserve_check.json"
     rc = json.loads(rc_path.read_text(encoding="utf-8")) if rc_path.exists() else None
     leak_path = T2 / "labels" / "more" / "leakcheck.json"
     cb = json.loads((CBUILD / "build.json").read_text(encoding="utf-8"))
@@ -1206,11 +1221,8 @@ def cmd_manifest(args):
            "shard_dirs": {f"{a}/{s}": herd_rel(shard_dir(a, s)) for a in ARMS for s in SOURCES},
            "real": {"measured": {"skip": skip_block(shards)}},
            "pool": json.loads(pool_rec_p.read_text(encoding="utf-8")) if pool_rec_p.exists() else None,
-           "reserve_check": None if rc is None else {
-               "line": rc["verdict"], "record": herd_rel(rc_path), "record_sha256": sha256(rc_path),
-               "dev_sample_mode": rc["dev_sample_mode"], "pixels": rc.get("pixels"),
-               "pools": {k: {"rows": v["rows"], "vns": v["vns"], "hash_coverage": v["hash_coverage"],
-                             "blockers": v["blockers"]} for k, v in rc["pools"].items()}},
+           "reserve_check": None if rc is None else {**rc, "summary": herd_rel(rc_path),
+                                                     "summary_sha256": sha256(rc_path)},
            "leakcheck": json.loads(leak_path.read_text(encoding="utf-8")) if leak_path.exists() else None,
            "builds": builds, "stats": stats, "shards": shards,
            "totals": {"lab": totals_of(shards, "lab"), "more": totals_of(shards, "more"), "all": totals_of(shards)}}
@@ -1220,26 +1232,59 @@ def cmd_manifest(args):
 
 # ----------------------------------------------------------------------------- reserve and thumbnail checks
 
+def lab_rows(source):
+    """The lab canvases' screenshots of a source (distinct shots, #97's order) with their record's identity fields and
+    their file's sha256 (computed now): the rows reserve_check reads for arm b."""
+    by = {r["shot"]: r for r in record_rows(source)[0]}
+    seen, out = set(), []
+    for _, _, kept in lab_items(source)[0]:
+        for _, smp in kept:
+            if smp["shot"] in seen:
+                continue
+            seen.add(smp["shot"])
+            r = by.get(smp["shot"]) or {"shot": smp["shot"], "vn": smp["vn"]}
+            row = {k: r.get(k) for k in POOL_FIELDS if k != "file_sha256"}
+            row["file_sha256"] = sha256(r["path"]) if r.get("path") and Path(r["path"]).exists() else None
+            row["source"] = source
+            out.append(row)
+    return out
+
+
 def cmd_reserve(args):
-    """eval/tools/reserve_check.py over the new pool's lists (one pool per source), --require-hashes (every row has
-    its file's sha256) and --pixels as #97's hygiene ran it; the record under $T2/labels/more/."""
+    """eval/tools/reserve_check.py over the lab canvases' screenshots (conductor 09:30Z) and arm c's new pool, one
+    pool per arm and source, with --require-hashes (every row carries its file's sha256) and --pixels as #97's
+    hygiene ran it; the record under $T2/labels/reserve_check.json (counts, verdicts; owner keys stay in $P2)."""
     pools = []
-    for s in SOURCES:
-        p = pool_path(s)
-        if p.exists() and p.stat().st_size:
-            rows = list(jsonl(p))
-            q = p.with_name("pool_check.jsonl")
+    for arm in ARMS:
+        for s in SOURCES:
+            rows = lab_rows(s) if arm == "lab" else list(jsonl(pool_path(s)))
+            if not rows:
+                continue
+            q = cache_dir(arm, s) / "reserve_rows.jsonl"
+            q.parent.mkdir(parents=True, exist_ok=True)
             with open(q, "w", encoding="utf-8") as f:
                 for r in rows:
-                    f.write(json.dumps({**r, "sha256": r["file_sha256"]}, ensure_ascii=False) + "\n")
-            pools.append(f"more_{s}={q}")
-    out = T2 / "labels" / "more" / "reserve_check.json"
+                    f.write(json.dumps({**r, "sha256": r["file_sha256"] or r.get("sha256")}, ensure_ascii=False)
+                            + "\n")
+            pools.append(f"{arm}_{s}={q}")
+    out = P2 / "labels" / "reserve_check.json"
     cmd = [sys.executable, str(ROOT / "eval" / "tools" / "reserve_check.py"), *pools, "--require-hashes",
            "--out", str(out)] + (["--pixels"] if args.pixels else [])
     print(" ".join(herd_rel(c) for c in cmd), flush=True)
     p = subprocess.run(cmd, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=7200)
     print(p.stdout, p.stderr[-3000:], flush=True)
     last = (p.stdout.strip().splitlines() or [""])[-1]
+    rc = json.loads(out.read_text(encoding="utf-8"))
+    public = {"verdict": rc["verdict"], "line": last, "pixels": rc.get("pixels"),
+              "dev_sample_mode": rc["dev_sample_mode"], "reservation_dump": rc.get("reservation_dump"),
+              "argv": ["eval/tools/reserve_check.py", *[x.split("=")[0] + "=<rows>" for x in pools],
+                       "--require-hashes"] + (["--pixels"] if args.pixels else []),
+              "record_private": herd_rel(out), "record_sha256": sha256(out),
+              "pools": {k: {"rows": v["rows"], "vns": v["vns"], "hash_coverage": v["hash_coverage"],
+                            "blockers": v["blockers"],
+                            "info": {c: x["rows"] for c, x in v["checks"].items() if c.startswith("info")}}
+                        for k, v in rc["pools"].items()}}
+    jdump(public, T2 / "labels" / "reserve_check.json", indent=1)
     print(f"reserve_check: {last}", flush=True)
     return 0 if last == "RESERVE_OK" else 1
 
@@ -1368,6 +1413,105 @@ def ign_kinds_of(smp):
 
 
 # ----------------------------------------------------------------------------- probe
+
+def qa_population(rules=None):
+    """Over every lab canvas (the cache, built in memory with `rules`): (a) the winner-only boxes, (b) the low-score
+    boxes the existing positives do not cover, (c) the new meiki positives: {kind: [(source, shard, npy, index,
+    sample, box, info)]}."""
+    rules = dict({"low_covered": "drop"}, **(rules or {}))
+    pop = {"winner_only": [], "low_uncovered": [], "new": []}
+    for source in SOURCES:
+        by = {r["shot"]: r for r in record_rows(source)[0]}
+        for name, npy, kept in lab_items(source)[0]:
+            cache = {ln["key"]: ln for ln in jsonl(cache_path("lab", source, name))}
+            for i, smp in kept:
+                ln = cache[lab_key(name, i)]
+                r = by.get(smp["shot"])
+                furi = record_furi(r, ln["k"], smp["w"], smp["h"]) if ln.get("k") is not None else []
+                _, _, st = build_labels(smp["w"], smp["h"], smp["lines"], smp["ignore"], furi, to_meiki(ln),
+                                        winner_xyxy(ln), rules)
+                d = st["detail"]
+                conf = {(b[0], b[1], b[0] + b[2], b[1] + b[3]): b[5] for b in ln["winner"]}
+                ref = (source, name, npy, i, smp)
+                pop["winner_only"] += [(*ref, wb, {"conf": conf.get(tuple(wb))}) for wb in d["winner_only"]]
+                pop["low_uncovered"] += [(*ref, b, {"score": s}) for b, s in d["low"]]
+                pop["new"] += [(*ref, p["box"], {k: p[k] for k in ("score", "w", "agrees", "vertical")})
+                               for p in d["new"]]
+    return pop
+
+
+def crop_tile(rgb, box, vertical, tw, th, up=3.0):
+    """The box with about one line of context around it, scaled to fit tw x th (at most `up` x), its box drawn."""
+    from PIL import Image, ImageDraw
+    H, W = rgb.shape[:2]
+    x0, y0, x1, y1 = (int(v) for v in box)
+    a = max(8, (x1 - x0) if vertical else (y1 - y0))
+    cx0, cy0, cx1, cy1 = max(0, x0 - a), max(0, y0 - a), min(W, x1 + a), min(H, y1 + a)
+    im = Image.fromarray(np.ascontiguousarray(rgb[cy0:cy1, cx0:cx1]))
+    s = min(tw / im.width, th / im.height, up)
+    im = im.resize((max(1, int(im.width * s)), max(1, int(im.height * s))), Image.BILINEAR)
+    d = ImageDraw.Draw(im)
+    d.rectangle((int((x0 - cx0) * s) - 1, int((y0 - cy0) * s) - 1, int((x1 - cx0) * s), int((y1 - cy0) * s)),
+                outline=(255, 0, 0))
+    return im
+
+
+def cmd_qa(args):
+    """Three pre-build QA sheets (the conductor's 09:30Z request): 40 random (a) winner-only boxes, (b) uncovered
+    low-score boxes, (c) new meiki positives with their weight, drawn over every lab canvas (seed --seed); each crop
+    the box (red) with about one line of context, in colour. Written under $P2/labels/qa/ (owner crops can be in
+    them), with an index json per sheet."""
+    from PIL import Image, ImageDraw, ImageFont
+    pop = qa_population()
+    out = P2 / "labels" / "qa"
+    out.mkdir(parents=True, exist_ok=True)
+    try:
+        font = ImageFont.truetype("DejaVuSans.ttf", 10)
+    except OSError:
+        font = ImageFont.load_default()
+    rows_by = {s: {r["shot"]: r for r in record_rows(s)[0]} for s in SOURCES}
+    counts = {k: len(v) for k, v in pop.items()}
+    for kind, letter in (("winner_only", "a"), ("low_uncovered", "b"), ("new", "c")):
+        items = pop[kind]
+        rng = np.random.default_rng(args.seed)
+        pick = sorted(rng.choice(len(items), size=min(args.n, len(items)), replace=False).tolist())
+        cols, tw, th, cap, head = 4, 320, 104, 13, 20
+        nrow = (len(pick) + cols - 1) // cols
+        sheet = Image.new("RGB", (cols * tw, head + nrow * (th + cap)), (25, 25, 25))
+        dr = ImageDraw.Draw(sheet)
+        dr.text((4, 4), f"({letter}) {kind}: {len(pick)} of {len(items)} lab boxes (seed {args.seed}); red = the box",
+                fill=(255, 255, 255), font=font)
+        index = []
+        for k, j in enumerate(pick):
+            source, name, npy, i, smp, box, info = items[j]
+            r = rows_by[source].get(smp["shot"])
+            rgb = colour_source(r, source, (smp.get("meta") or {}).get("target") or smp["kind"])[0]
+            if rgb is None or rgb.shape[:2] != (smp["h"], smp["w"]):
+                data = np.load(npy, mmap_mode="r")
+                rgb = grey3(np.asarray(data[smp["off"]:smp["off"] + smp["h"] * smp["w"]]).reshape(smp["h"],
+                                                                                                    smp["w"]))
+            vertical = bool(info.get("vertical")) or tall(box)
+            tile = crop_tile(rgb, box, vertical, tw - 4, th - 2)
+            x, y = (k % cols) * tw, head + (k // cols) * (th + cap)
+            sheet.paste(tile, (x + 2, y + 1))
+            label = f"{k} {source[:4]} {box[2] - box[0]}x{box[3] - box[1]}"
+            if "score" in info:
+                label += f" s{info['score']:.2f}"
+            if "w" in info:
+                label += f" w{info['w']:.2f}{'*' if info['agrees'] else ''}{' V' if info['vertical'] else ''}"
+            if "conf" in info:
+                label += f" c{info['conf']}"
+            dr.text((x + 2, y + th), label, fill=(230, 230, 230), font=font)
+            index.append({"tile": k, "source": source, "shard": name, "index": i, "vn": smp["vn"],
+                          "shot": smp["shot"] if source != "owner" else None, "box": box, **info})
+        sheet.thumbnail((1280, 1280))
+        path = out / f"qa_{letter}_{kind}.png"
+        sheet.save(path)
+        jdump({"kind": kind, "population": len(items), "seed": args.seed, "tiles": index},
+              path.with_suffix(".json"), indent=1)
+        print(path, sheet.size, flush=True)
+    print(json.dumps({"population": counts}), flush=True)
+
 
 def probe_items(n):
     """n lab canvases spread over the sources (realplus 0.4, teacher 0.3, owner 0.2, devnative 0.1), drawn by key
@@ -1523,6 +1667,9 @@ def main():
     p = sub.add_parser("probe")
     p.add_argument("--n", type=int, default=200)
     p.add_argument("--workers", type=int, default=workers)
+    p = sub.add_parser("qa")
+    p.add_argument("--n", type=int, default=40)
+    p.add_argument("--seed", type=int, default=20261020)
     args = ap.parse_args()
     if args.cmd == "cache":
         print("cores", pin_to_slot(), flush=True)
@@ -1550,6 +1697,8 @@ def main():
         cmd_sheet(args)
     elif args.cmd == "probe":
         cmd_probe(args)
+    elif args.cmd == "qa":
+        cmd_qa(args)
 
 
 if __name__ == "__main__":

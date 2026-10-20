@@ -1,0 +1,702 @@
+{
+ "kind": "textspot-a9",
+ "computed": "2026-10-20T09:24:23Z",
+ "method": "textspot_a9.py measure --out DIR [--shapes s4_c8,...] [--scales h2,f1] [--sizes 960x544,480x272]                          [--formats grey] [--nodark] [--cflags \"-O2\"] [--seed 1] [--jobs 5] [--vitasdk DIR]                          [--arm-cc GCC] [--qemu DIR]   textspot_a9.py report DIR [--json eval/textspot_a9_YYYYMMDD.json] [--also DIR2 --also-label TEXT ...]",
+ "sources_sha256": {
+  "runtime/vocr_textspot2.c": "359f97c8b628e4086466497d5667f96e83be75ef3b9f2f6173d9f36e9b864ce2",
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+  "runtime/vocr_textspot2_test.c": "572fee11dd13de9ff104fe9c55c30d370583edb34c83a29b1a9d11c61771dfe5",
+  "runtime/vocr_textspot2.h": "2d7429e4799e6a2242c6972762936f40ef672677286bf470b80d88a3f9529ee2"
+ },
+ "tools": {
+  "vita_cc": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+  "arm_cc": "arm-none-linux-gnueabihf-gcc (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 14.2.1 20241119",
+  "qemu": "qemu-arm version 10.0.13",
+  "qemu_plugins_sha256": {
+   "libcache.so": "a608e4927a127450edace570319b869e7912f5b91ce53057f2a9516100592151",
+   "libinsn_mix.so": "107d2886b260c2c7a92db4ba19b418c3e8eee2b120757eff2e911bd35e8397ac"
+  },
+  "a9_cycles_sha256": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc",
+  "textspot_twin_sha256": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+  "textdet_export_sha256": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576"
+ },
+ "flags": [
+  "-std=c99",
+  "-mcpu=cortex-a9",
+  "-mfpu=neon",
+  "-mfloat-abi=hard",
+  "-O2",
+  "(Thumb-2: the VitaSDK default; vocr_lines*.c at -O2)"
+ ],
+ "cache": "dcachesize=32768,dassoc=4,dblksize=32,icachesize=32768,iassoc=4,iblksize=32,l2=on,l2cachesize=2097152,l2assoc=8,l2blksize=32,limit=10",
+ "vocr_textspot_o_text_bytes": 12080,
+ "calibration": 1.0007,
+ "seed": 1,
+ "textspot2": {
+  "protocol": {
+   "path": "eval/textspot2_protocol.json",
+   "sha256": "bb18f0e532b4aa0e8bbdbe1d94fac53546ccb494e5426fd8651d0e49d999c92f",
+   "estimates": "the A9 cycle model as textspot (eval/textspot_a9.py on the shapes textspot2's trainer registers; eval/textspot2_a9_<date>.json, pinned by an amendment before any score)"
+  },
+  "title": "the d2s shapes (eval/textspot2_protocol.json, head kroa_x2) and s4_c24n4 (version 1) at h2 on runtime/vocr_textspot2.c",
+  "runtime": "v2",
+  "runtime_files": "runtime/vocr_textspot2.c (VTSP versions 1 and 2; driver runtime/vocr_textspot2_test.c)",
+  "code_sha256": {
+   "runtime/vocr_textspot2.c": "359f97c8b628e4086466497d5667f96e83be75ef3b9f2f6173d9f36e9b864ce2",
+   "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+   "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+   "runtime/vocr_textspot2_test.c": "572fee11dd13de9ff104fe9c55c30d370583edb34c83a29b1a9d11c61771dfe5",
+   "runtime/vocr_textspot2.h": "2d7429e4799e6a2242c6972762936f40ef672677286bf470b80d88a3f9529ee2",
+   "eval/textspot2_a9.py": "b930fdf6b7d53bcc676cb3fd964ea5bd7141e2e1e10789ba881d8e1d39f15593",
+   "eval/textspot_a9.py": "b04e6c6a53c55080354114b0abc6d49be09fe1b2bc1a927eeec17ebdac8a17d0",
+   "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+   "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+   "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+   "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+   "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+   "vita/a9_cycles.py": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc",
+   "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+   "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7"
+  },
+  "shapes": {
+   "s4_c24n4": {
+    "stride": 4,
+    "c0": 8,
+    "c1": 16,
+    "c2": null,
+    "chans": [
+     24,
+     24,
+     24,
+     24
+    ],
+    "dil": [
+     1,
+     2,
+     2,
+     1
+    ],
+    "block": "sep",
+    "head": "kroa",
+    "macs": {
+     "960x544": 28462080,
+     "480x272": 28462080
+    },
+    "params": 3492,
+    "weights_int8": 3272,
+    "receptive_field": 55
+   },
+   "s8_c24n4x2": {
+    "stride": 8,
+    "c0": 8,
+    "c1": 16,
+    "c2": 24,
+    "chans": [
+     24,
+     24,
+     24,
+     24
+    ],
+    "dil": [
+     1,
+     2,
+     4,
+     2
+    ],
+    "block": "sep",
+    "head": "kroa_x2",
+    "macs": {
+     "960x544": 12305280,
+     "480x272": 12305280
+    },
+    "params": 4632,
+    "weights_int8": 4352,
+    "receptive_field": 159
+   },
+   "s8_c48n4x2": {
+    "stride": 8,
+    "c0": 8,
+    "c1": 24,
+    "c2": 48,
+    "chans": [
+     48,
+     48,
+     48,
+     48
+    ],
+    "dil": [
+     1,
+     2,
+     4,
+     1
+    ],
+    "block": "sep",
+    "head": "kroa_x2",
+    "macs": {
+     "960x544": 31187520,
+     "480x272": 31187520
+    },
+    "params": 13928,
+    "weights_int8": 13416,
+    "receptive_field": 143
+   }
+  },
+  "measured": {
+   "main": [
+    "measure",
+    "--runtime",
+    "v2",
+    "--shapes",
+    "s8_c24n4x2,s8_c48n4x2,s4_c24n4",
+    "--out",
+    "$HERD/shared/artifacts/textspot2/a9/main_v2",
+    "--jobs",
+    "5",
+    "--vitasdk",
+    "$HERD/shared/artifacts/vita/vitasdk"
+   ],
+   "also": [
+    [
+     "measure",
+     "--runtime",
+     "v2",
+     "--shapes",
+     "s8_c24n4x2,s8_c48n4x2,s4_c24n4",
+     "--out",
+     "$HERD/shared/artifacts/textspot2/a9/nodark_v2",
+     "--nodark",
+     "--jobs",
+     "5",
+     "--vitasdk",
+     "$HERD/shared/artifacts/vita/vitasdk"
+    ]
+   ]
+  },
+  "reproduces": {
+   "against": "eval/textspot2_a9_20261020.json",
+   "sha256": "2b18e0a4a77fdeae2e53dfa20c705ee82a4215e5622e6df7c0ea4b2a78d8743b",
+   "rows": [
+    {
+     "table": "main",
+     "shape": "s4_c24n4",
+     "scale": "h2",
+     "size": [
+      960,
+      544
+     ],
+     "format": "grey",
+     "flags": "0",
+     "identical": false,
+     "diffs": {
+      "insns_per_frame": [
+       37794464.0,
+       37796348.0
+      ],
+      "cycles_per_frame": [
+       {
+        "444": [
+         26031825.0,
+         43724541.4
+        ],
+        "333": [
+         26031825.0,
+         43495787.05
+        ]
+       },
+       {
+        "444": [
+         26031819.0,
+         43717807.0
+        ],
+        "333": [
+         26031819.0,
+         43489174.75
+        ]
+       }
+      ],
+      "ms_per_frame": [
+       {
+        "333": 130.70941171451952,
+        "444": 98.03205878588963,
+        "model_444_high": 98.54763193463964
+       },
+       {
+        "333": 130.68954105803303,
+        "444": 98.01715579352478,
+        "model_444_high": 98.53245374977476
+       }
+      ],
+      "l1d_misses_per_frame": [
+       140153.0,
+       139892.0
+      ],
+      "l2_misses_per_frame": [
+       18735.0,
+       18725.0
+      ]
+     }
+    },
+    {
+     "table": "main",
+     "shape": "s4_c24n4",
+     "scale": "h2",
+     "size": [
+      480,
+      272
+     ],
+     "format": "grey",
+     "flags": "0",
+     "identical": false,
+     "diffs": {
+      "insns_per_frame": [
+       36069923.0,
+       36070438.0
+      ],
+      "cycles_per_frame": [
+       {
+        "444": [
+         25767160.0,
+         40407441.72
+        ],
+        "333": [
+         25767160.0,
+         40329200.04
+        ]
+       },
+       {
+        "444": [
+         25767154.0,
+         40398538.32
+        ],
+        "333": [
+         25767154.0,
+         40320418.74
+        ]
+       }
+      ],
+      "ms_per_frame": [
+       {
+        "333": 121.193484925009,
+        "444": 90.89511369375676,
+        "model_444_high": 91.07145704775674
+       },
+       {
+        "333": 121.16709619554956,
+        "444": 90.87532214666217,
+        "model_444_high": 91.05139030816217
+       }
+      ],
+      "l1d_misses_per_frame": [
+       119258.0,
+       118971.0
+      ],
+      "l2_misses_per_frame": [
+       6408.0,
+       6398.0
+      ]
+     }
+    },
+    {
+     "table": "VOCR_TEXTSPOT_NO_DARK (report only): the same blobs and frames, no dark pass (Rubi's scan-screen read)",
+     "shape": "s4_c24n4",
+     "scale": "h2",
+     "size": [
+      960,
+      544
+     ],
+     "format": "grey",
+     "flags": "VOCR_TEXTSPOT_NO_DARK",
+     "identical": false,
+     "diffs": {
+      "insns_per_frame": [
+       35290154.0,
+       35292038.0
+      ],
+      "cycles_per_frame": [
+       {
+        "444": [
+         26031825.0,
+         41009478.4
+        ],
+        "333": [
+         26031825.0,
+         40781639.8
+        ]
+       },
+       {
+        "444": [
+         26031819.0,
+         41002635.16
+        ],
+        "333": [
+         26031819.0,
+         40774930.87
+        ]
+       }
+      ],
+      "ms_per_frame": [
+       {
+        "333": 122.55311395753752,
+        "444": 91.91483546815313,
+        "model_444_high": 92.42834467315315
+       },
+       {
+        "333": 122.53295291774474,
+        "444": 91.89971468830855,
+        "model_444_high": 92.41292118155854
+       }
+      ],
+      "l1d_misses_per_frame": [
+       133325.0,
+       133063.0
+      ],
+      "l2_misses_per_frame": [
+       18660.0,
+       18649.0
+      ]
+     }
+    },
+    {
+     "table": "VOCR_TEXTSPOT_NO_DARK (report only): the same blobs and frames, no dark pass (Rubi's scan-screen read)",
+     "shape": "s4_c24n4",
+     "scale": "h2",
+     "size": [
+      480,
+      272
+     ],
+     "format": "grey",
+     "flags": "VOCR_TEXTSPOT_NO_DARK",
+     "identical": false,
+     "diffs": {
+      "insns_per_frame": [
+       35016487.0,
+       35017002.0
+      ],
+      "cycles_per_frame": [
+       {
+        "444": [
+         25767160.0,
+         39283142.72
+        ],
+        "333": [
+         25767160.0,
+         39205816.79
+        ]
+       },
+       {
+        "444": [
+         25767154.0,
+         39274220.48
+        ],
+        "333": [
+         25767154.0,
+         39197028.86
+        ]
+       }
+      ],
+      "ms_per_frame": [
+       {
+        "333": 117.81760018544443,
+        "444": 88.36320013908333,
+        "model_444_high": 88.53747954933331
+       },
+       {
+        "333": 117.79119153213811,
+        "444": 88.34339364910358,
+        "model_444_high": 88.51737034760359
+       }
+      ],
+      "l1d_misses_per_frame": [
+       117093.0,
+       116808.0
+      ],
+      "l2_misses_per_frame": [
+       6333.0,
+       6322.0
+      ]
+     }
+    }
+   ],
+   "all_identical": false
+  },
+  "code_size": {
+   "kind": "textspot2-code-size",
+   "runtime": "v2",
+   "source": "runtime/vocr_textspot2.c",
+   "computed": "2026-10-20T09:20:56Z",
+   "how": "the .text of the spotter's own sections kept by a --gc-sections link (-Wl,-Map) of a caller of load, both arena functions, find and find_rows; vita/textgate_size.py's flags (Rubi's runtime flags) and map parser; vocr_lines*.c and libgcc listed apart, not counted",
+   "sources_sha256": {
+    "runtime/vocr_textspot2.c": "359f97c8b628e4086466497d5667f96e83be75ef3b9f2f6173d9f36e9b864ce2",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot2_test.c": "572fee11dd13de9ff104fe9c55c30d370583edb34c83a29b1a9d11c61771dfe5",
+    "runtime/vocr_textspot2.h": "2d7429e4799e6a2242c6972762936f40ef672677286bf470b80d88a3f9529ee2",
+    "eval/textspot2_a9.py": "b930fdf6b7d53bcc676cb3fd964ea5bd7141e2e1e10789ba881d8e1d39f15593",
+    "eval/textspot_a9.py": "b04e6c6a53c55080354114b0abc6d49be09fe1b2bc1a927eeec17ebdac8a17d0",
+    "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+    "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+    "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+    "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+    "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+    "vita/a9_cycles.py": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc",
+    "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+    "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7"
+   },
+   "vita": {
+    "compiler": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+    "builds": {
+     "-O2": {
+      "text": 11844,
+      "rodata": 106,
+      "functions": {
+       "chain": 1540,
+       "decode_row": 920,
+       "delivered": 232,
+       "dest_row": 84,
+       "isort": 248,
+       "pair_sums": 564,
+       "plan": 384,
+       "spot": 5556,
+       "sweep": 740,
+       "vocr_textspot2_arena_bytes": 104,
+       "vocr_textspot2_find": 120,
+       "vocr_textspot2_find_rows": 96,
+       "vocr_textspot2_frame_arena_bytes": 80,
+       "vocr_textspot2_load": 1176
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 12080,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2"
+      ]
+     },
+     "-Os": {
+      "text": 9746,
+      "rodata": 106,
+      "functions": {
+       "cap_less": 78,
+       "chain": 1430,
+       "crc32_ieee": 48,
+       "decode_row": 664,
+       "delivered": 218,
+       "field": 48,
+       "find_root": 18,
+       "grey_px": 36,
+       "image_ok": 36,
+       "isort": 124,
+       "pair_sums": 344,
+       "plan": 328,
+       "rd32": 4,
+       "ring_row": 58,
+       "section_ok": 34,
+       "spot": 4420,
+       "sweep": 596,
+       "vocr_textspot2_arena_bytes": 44,
+       "vocr_textspot2_find": 88,
+       "vocr_textspot2_find_rows": 78,
+       "vocr_textspot2_frame_arena_bytes": 64,
+       "vocr_textspot2_load": 988
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 9930,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os"
+      ]
+     },
+     "-O2 -DVOCR_NO_NEON": {
+      "text": 10804,
+      "rodata": 42,
+      "functions": {
+       "chain": 1028,
+       "decode_row": 920,
+       "delivered": 232,
+       "dest_row": 84,
+       "isort": 248,
+       "pair_sums": 312,
+       "plan": 384,
+       "spot": 4988,
+       "store_acc": 292,
+       "sweep": 740,
+       "vocr_textspot2_arena_bytes": 104,
+       "vocr_textspot2_find": 120,
+       "vocr_textspot2_find_rows": 96,
+       "vocr_textspot2_frame_arena_bytes": 80,
+       "vocr_textspot2_load": 1176
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 10978,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2",
+       "-DVOCR_NO_NEON"
+      ]
+     },
+     "-Os -DVOCR_NO_NEON": {
+      "text": 8338,
+      "rodata": 42,
+      "functions": {
+       "cap_less": 78,
+       "chain": 324,
+       "crc32_ieee": 48,
+       "decode_row": 664,
+       "delivered": 218,
+       "field": 48,
+       "find_root": 18,
+       "grey_px": 36,
+       "image_ok": 36,
+       "isort": 124,
+       "pair_sums": 190,
+       "plan": 328,
+       "rd32": 4,
+       "ring_row": 58,
+       "section_ok": 34,
+       "spot": 4000,
+       "store_acc": 272,
+       "sweep": 596,
+       "vocr_textspot2_arena_bytes": 44,
+       "vocr_textspot2_find": 88,
+       "vocr_textspot2_find_rows": 78,
+       "vocr_textspot2_frame_arena_bytes": 64,
+       "vocr_textspot2_load": 988
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 8458,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os",
+       "-DVOCR_NO_NEON"
+      ]
+     }
+    }
+   },
+   "psp": {
+    "compiler": "psp-gcc (GCC) 15.2.0",
+    "object_text": {
+     "-O2 -G0": 16530,
+     "-Os -G0": 13482
+    }
+   }
+  }
+ },
+ "note": "estimates: qemu-arm instruction counts priced by vita/a9_cycles.py's Cortex-A9 model, not a console measurement; est. ms @333 = high bound x 1.0007 / 333 MHz, est. ms @444 = that x 333/444; arena bytes are exact (the runtime's functions)",
+ "family_b": {
+  "h2": [
+   "s4_c8",
+   "s4_c12n4",
+   "s4_c16n4",
+   "s4_c24n4",
+   "s8_c16",
+   "s8_c24",
+   "s8_c32"
+  ],
+  "f1": [
+   "s8_c8",
+   "s8_c16",
+   "s8_c16n4",
+   "s4_c6"
+  ]
+ },
+ "rule_reads": {
+  "arena": "arena_up_to_960 = vocr_textspot_arena_bytes(m, 960, 544): every frame up to 960x544 (for h2, the 600-px frame read at full size dominates); arena_frame_960 = vocr_textspot_frame_arena_bytes(m, 960, 544), the 960x544 frame's own need, is report only (the conductor, 2026-10-19)",
+  "time": "ms_333_960: the default call (flags 0, the dark pass included) on the pinned 960x544 grey frame; ms_333_960_nodark (VOCR_TEXTSPOT_NO_DARK) is report only",
+  "limits": {
+   "arena_max": 131072,
+   "ms_max_333_960": 150
+  },
+  "within_limits": "ms_333_960 <= ms_max_333_960 and arena_up_to_960 <= arena_max (for det; det+refine adds the refinement's arena and 1.4 ms per refined line, eval/textspot_metrics.apply_rule)"
+ },
+ "summary": [
+  {"shape":"s8_c24n4x2","scale":"h2","half_above":600,"family_b":false,"vtsp_bytes":7416,"macs_960":12305280,"ms_333_960":73.19050144668768,"ms_444_960":54.89287608501576,"ms_333_960_nodark":65.80546992514114,"arena_up_to_960":79647,"arena_frame_960":67631,"ms_333_480":63.588418504171166,"ms_444_480":47.691313878128376,"arena_up_to_480":66671,"arena_frame_480":66671,"within_limits":true},
+  {"shape":"s8_c48n4x2","scale":"h2","half_above":600,"family_b":false,"vtsp_bytes":18568,"macs_960":31187520,"ms_333_960":122.50861805742042,"ms_444_960":91.88146354306531,"ms_333_960_nodark":115.75449332716515,"arena_up_to_960":125983,"arena_frame_960":106767,"ms_333_480":113.2894273664084,"ms_444_480":84.9670705248063,"arena_up_to_480":105807,"arena_frame_480":105807,"within_limits":true},
+  {"shape":"s4_c24n4","scale":"h2","half_above":600,"family_b":true,"vtsp_bytes":5732,"macs_960":28462080,"ms_333_960":130.70941171451952,"ms_444_960":98.03205878588963,"ms_333_960_nodark":122.55311395753752,"arena_up_to_960":80799,"arena_frame_960":67583,"ms_333_480":121.193484925009,"ms_444_480":90.89511369375676,"arena_up_to_480":66623,"arena_frame_480":66623,"within_limits":true}
+ ],
+ "table": [
+  {"shape":"s8_c24n4x2","scale":"h2","half_above":600,"size":[960,544],"format":"grey","flags":"0","frames":1,"blob_sha256":"9e30ae3a06009102fc7d988d66f58971578513dc8640875931b2634f4440d359","blob_bytes":7416,"blob":"textspot2_export.random_int_layers seed 1, textspot2_twin.pack(half_above 600, conf_min 1, version 2)","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","batch_sha256":"99464d7d20f8b903123cc520e69d73444d598b4ef642ab9fd2504d67557ade9a","rc":0,"boxes":64,"blocks":26,"pick":0,"truncated":1,"frame_arena_bytes":67631,"arena_bytes":79647,"f":2,"net_input":[480,272],"macs":12305280,"insns_per_frame":20661463.0,"cycles_per_frame":{"444":[12563419.0,24584533.28],"333":[12563419.0,24355388.21]},"ms_per_frame":{"333":73.19050144668768,"444":54.89287608501576,"model_444_high":55.40932984976576},"l1d_misses_per_frame":76138.0,"l2_misses_per_frame":18767.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["spot",10292607],["chain",6754508],["vocr_line_dark",2205601],["decode_row",482518],["pair_sums",324768],["delivered",177344],["sweep",146214],["memcpy",78075]],"negative_count_addresses":113},
+  {"shape":"s8_c24n4x2","scale":"h2","half_above":600,"size":[480,272],"format":"grey","flags":"0","frames":1,"blob_sha256":"9e30ae3a06009102fc7d988d66f58971578513dc8640875931b2634f4440d359","blob_bytes":7416,"blob":"textspot2_export.random_int_layers seed 1, textspot2_twin.pack(half_above 600, conf_min 1, version 2)","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","batch_sha256":"de56147acd4a2269d0f3f6db3d04f2328557ebcaf7528bf11cb808190dbbb157","rc":0,"boxes":64,"blocks":19,"pick":5,"truncated":1,"frame_arena_bytes":66671,"arena_bytes":66671,"f":1,"net_input":[480,272],"macs":12305280,"insns_per_frame":18941251.0,"cycles_per_frame":{"444":[12294292.0,21238629.36],"333":[12294292.0,21160131.27]},"ms_per_frame":{"333":63.588418504171166,"444":47.691313878128376,"model_444_high":47.868235136378374},"l1d_misses_per_frame":54515.0,"l2_misses_per_frame":6429.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["spot",10195781],["chain",6754508],["vocr_line_dark",876674],["decode_row",484188],["delivered",177344],["sweep",174778],["memcpy",76605],["__udivsi3",69994]],"negative_count_addresses":113},
+  {"shape":"s8_c48n4x2","scale":"h2","half_above":600,"size":[960,544],"format":"grey","flags":"0","frames":1,"blob_sha256":"66360d6f1cce511ac8701cb51ddffd534a7aaf56aaf15562f96f61e27c230ba0","blob_bytes":18568,"blob":"textspot2_export.random_int_layers seed 1, textspot2_twin.pack(half_above 600, conf_min 1, version 2)","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","batch_sha256":"99464d7d20f8b903123cc520e69d73444d598b4ef642ab9fd2504d67557ade9a","rc":0,"boxes":64,"blocks":25,"pick":0,"truncated":1,"frame_arena_bytes":106767,"arena_bytes":125983,"f":2,"net_input":[480,272],"macs":31187520,"insns_per_frame":35346281.0,"cycles_per_frame":{"444":[25637016.0,41010801.04],"333":[25637016.0,40766833.03]},"ms_per_frame":{"333":122.50861805742042,"444":91.88146354306531,"model_444_high":92.43132567731531},"l1d_misses_per_frame":131034.0,"l2_misses_per_frame":19981.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["chain",17855372],["spot",14008869],["vocr_line_dark",2019626],["decode_row",460585],["pair_sums",324768],["delivered",177344],["sweep",164611],["memcpy",126825]],"negative_count_addresses":113},
+  {"shape":"s8_c48n4x2","scale":"h2","half_above":600,"size":[480,272],"format":"grey","flags":"0","frames":1,"blob_sha256":"66360d6f1cce511ac8701cb51ddffd534a7aaf56aaf15562f96f61e27c230ba0","blob_bytes":18568,"blob":"textspot2_export.random_int_layers seed 1, textspot2_twin.pack(half_above 600, conf_min 1, version 2)","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","batch_sha256":"de56147acd4a2269d0f3f6db3d04f2328557ebcaf7528bf11cb808190dbbb157","rc":0,"boxes":64,"blocks":26,"pick":2,"truncated":1,"frame_arena_bytes":105807,"arena_bytes":105807,"f":1,"net_input":[480,272],"macs":31187520,"insns_per_frame":33709394.0,"cycles_per_frame":{"444":[25368769.0,37792445.36],"333":[25368769.0,37698990.02]},"ms_per_frame":{"333":113.2894273664084,"444":84.9670705248063,"model_444_high":85.1777028643063},"l1d_misses_per_frame":110767.0,"l2_misses_per_frame":7654.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["chain",17855372],["spot",13930763],["vocr_line_dark",734762],["decode_row",484536],["sweep",191290],["delivered",177344],["memcpy",127035],["__udivsi3",70698]],"negative_count_addresses":113},
+  {"shape":"s4_c24n4","scale":"h2","half_above":600,"size":[960,544],"format":"grey","flags":"0","frames":1,"blob_sha256":"d06e52bd5b0ca14b927348002de9b2cad22c943bc23199b070d99b451abb8722","blob_bytes":5732,"blob":"random_int_layers seed 1, pack(half_above 600, conf_min 1)","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","batch_sha256":"99464d7d20f8b903123cc520e69d73444d598b4ef642ab9fd2504d67557ade9a","rc":0,"boxes":64,"blocks":16,"pick":0,"truncated":1,"frame_arena_bytes":67583,"arena_bytes":80799,"f":2,"net_input":[480,272],"macs":28462080,"insns_per_frame":37794464.0,"cycles_per_frame":{"444":[26031825.0,43724541.4],"333":[26031825.0,43495787.05]},"ms_per_frame":{"333":130.70941171451952,"444":98.03205878588963,"model_444_high":98.54763193463964},"l1d_misses_per_frame":140153.0,"l2_misses_per_frame":18735.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["spot",18411846],["chain",15903840],["vocr_line_dark",2462193],["pair_sums",324768],["decode_row",316569],["sweep",118137],["__udivsi3",89737],["memset",56529]],"negative_count_addresses":113},
+  {"shape":"s4_c24n4","scale":"h2","half_above":600,"size":[480,272],"format":"grey","flags":"0","frames":1,"blob_sha256":"d06e52bd5b0ca14b927348002de9b2cad22c943bc23199b070d99b451abb8722","blob_bytes":5732,"blob":"random_int_layers seed 1, pack(half_above 600, conf_min 1)","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","batch_sha256":"de56147acd4a2269d0f3f6db3d04f2328557ebcaf7528bf11cb808190dbbb157","rc":0,"boxes":64,"blocks":12,"pick":0,"truncated":1,"frame_arena_bytes":66623,"arena_bytes":66623,"f":1,"net_input":[480,272],"macs":28462080,"insns_per_frame":36069923.0,"cycles_per_frame":{"444":[25767160.0,40407441.72],"333":[25767160.0,40329200.04]},"ms_per_frame":{"333":121.193484925009,"444":90.89511369375676,"model_444_high":91.07145704775674},"l1d_misses_per_frame":119258.0,"l2_misses_per_frame":6408.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["spot",18333736],["chain",15903840],["vocr_line_dark",1011319],["decode_row",404338],["sweep",159601],["__udivsi3",87291],["memset",56529],["isort",44625]],"negative_count_addresses":113}
+ ],
+ "also": [
+  {"label":"VOCR_TEXTSPOT_NO_DARK (report only): the same blobs and frames, no dark pass (Rubi's scan-screen read)","computed":"2026-10-20T09:24:38Z","flags":["-std=c99","-mcpu=cortex-a9","-mfpu=neon","-mfloat-abi=hard","-O2","(Thumb-2: the VitaSDK default; vocr_lines*.c at -O2)"],"vocr_textspot_o_text_bytes":12080,"table":[
+  {"shape":"s8_c24n4x2","scale":"h2","half_above":600,"size":[960,544],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":2,"net_input":[480,272],"macs":12305280,"blob_sha256":"9e30ae3a06009102fc7d988d66f58971578513dc8640875931b2634f4440d359","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","rc":0,"boxes":64,"blocks":26,"pick":0,"truncated":1,"insns_per_frame":18413745.0,"cycles_per_frame":{"444":[12563419.0,22126122.28],"333":[12563419.0,21897892.96]},"ms_per_frame":{"333":65.80546992514114,"444":49.35410244385586,"model_444_high":49.86849226485585},"l1d_misses_per_frame":69312.0,"l2_misses_per_frame":18692.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":67631,"arena_bytes":79647,"top_functions":[["spot",10291322],["chain",6754508],["decode_row",482518],["pair_sums",324768],["delivered",177344],["sweep",146214],["memcpy",78075],["__udivsi3",72440]]},
+  {"shape":"s8_c24n4x2","scale":"h2","half_above":600,"size":[480,272],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":1,"net_input":[480,272],"macs":12305280,"blob_sha256":"9e30ae3a06009102fc7d988d66f58971578513dc8640875931b2634f4440d359","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","rc":0,"boxes":64,"blocks":19,"pick":5,"truncated":1,"insns_per_frame":18022460.0,"cycles_per_frame":{"444":[12294292.0,20245135.36],"333":[12294292.0,20167553.02]},"ms_per_frame":{"333":60.605616537879875,"444":45.45421240340991,"model_444_high":45.62906971790991},"l1d_misses_per_frame":52222.0,"l2_misses_per_frame":6354.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":66671,"arena_bytes":66671,"top_functions":[["spot",10194496],["chain",6754508],["decode_row",484188],["delivered",177344],["sweep",174778],["memcpy",76605],["__udivsi3",69994],["isort",39331]]},
+  {"shape":"s8_c48n4x2","scale":"h2","half_above":600,"size":[960,544],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":2,"net_input":[480,272],"macs":31187520,"blob_sha256":"66360d6f1cce511ac8701cb51ddffd534a7aaf56aaf15562f96f61e27c230ba0","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","rc":0,"boxes":64,"blocks":25,"pick":0,"truncated":1,"insns_per_frame":33284538.0,"cycles_per_frame":{"444":[25637016.0,38762335.04],"333":[25637016.0,38519282.78]},"ms_per_frame":{"333":115.75449332716515,"444":86.81586999537386,"model_444_high":87.36366818587386},"l1d_misses_per_frame":125007.0,"l2_misses_per_frame":19906.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":106767,"arena_bytes":125983,"top_functions":[["chain",17855372],["spot",14007584],["decode_row",460585],["pair_sums",324768],["delivered",177344],["sweep",164611],["memcpy",126825],["__udivsi3",73144]]},
+  {"shape":"s8_c48n4x2","scale":"h2","half_above":600,"size":[480,272],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":1,"net_input":[480,272],"macs":31187520,"blob_sha256":"66360d6f1cce511ac8701cb51ddffd534a7aaf56aaf15562f96f61e27c230ba0","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","rc":0,"boxes":64,"blocks":26,"pick":2,"truncated":1,"insns_per_frame":32932515.0,"cycles_per_frame":{"444":[25368769.0,36958353.36],"333":[25368769.0,36865813.77]},"ms_per_frame":{"333":110.78564516408109,"444":83.08923387306082,"model_444_high":83.2978022688108},"l1d_misses_per_frame":109057.0,"l2_misses_per_frame":7579.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":105807,"arena_bytes":105807,"top_functions":[["chain",17855372],["spot",13929478],["decode_row",484536],["sweep",191290],["delivered",177344],["memcpy",127035],["__udivsi3",70698],["isort",34611]]},
+  {"shape":"s4_c24n4","scale":"h2","half_above":600,"size":[960,544],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":2,"net_input":[480,272],"macs":28462080,"blob_sha256":"d06e52bd5b0ca14b927348002de9b2cad22c943bc23199b070d99b451abb8722","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","rc":0,"boxes":64,"blocks":16,"pick":0,"truncated":1,"insns_per_frame":35290154.0,"cycles_per_frame":{"444":[26031825.0,41009478.4],"333":[26031825.0,40781639.8]},"ms_per_frame":{"333":122.55311395753752,"444":91.91483546815313,"model_444_high":92.42834467315315},"l1d_misses_per_frame":133325.0,"l2_misses_per_frame":18660.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":67583,"arena_bytes":80799,"top_functions":[["spot",18410561],["chain",15903840],["pair_sums",324768],["decode_row",316569],["sweep",118137],["__udivsi3",89737],["isort",42891],["dest_row",20808]]},
+  {"shape":"s4_c24n4","scale":"h2","half_above":600,"size":[480,272],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":1,"net_input":[480,272],"macs":28462080,"blob_sha256":"d06e52bd5b0ca14b927348002de9b2cad22c943bc23199b070d99b451abb8722","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","rc":0,"boxes":64,"blocks":12,"pick":0,"truncated":1,"insns_per_frame":35016487.0,"cycles_per_frame":{"444":[25767160.0,39283142.72],"333":[25767160.0,39205816.79]},"ms_per_frame":{"333":117.81760018544443,"444":88.36320013908333,"model_444_high":88.53747954933331},"l1d_misses_per_frame":117093.0,"l2_misses_per_frame":6333.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":66623,"arena_bytes":66623,"top_functions":[["spot",18332451],["chain",15903840],["decode_row",404338],["sweep",159601],["__udivsi3",87291],["isort",44625],["dest_row",20808],["memcpy",18015]]}
+ ]}
+ ]
+}

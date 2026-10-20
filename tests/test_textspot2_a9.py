@@ -1,6 +1,7 @@
 """textspot2's A9 table (eval/textspot2_a9.py, eval/textspot2_a9_20261020.json): the wrapper's helpers, and the
 committed table covers every "kroa" shape of eval/textspot2_protocol.json as the protocol's estimates require, with
 textspot's own shapes reproducing eval/textspot_a9_20261019.json row for row. No toolchain, qemu or data needed."""
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -90,5 +91,62 @@ def test_code_size_and_no_local_paths(table):
     cs = table["textspot2"]["code_size"]["vita"]["builds"]
     assert {k: v["text"] for k, v in cs.items()} == {"-O2": 11440, "-Os": 9466, "-O2 -DVOCR_NO_NEON": 10396,
                                                       "-Os -DVOCR_NO_NEON": 8058}   # textspot's figures
-    raw = TABLE.read_text(encoding="utf-8")
-    assert "/home/" not in raw and "/local/" not in raw
+    for path in (TABLE, D2S):
+        raw = path.read_text(encoding="utf-8")
+        assert "/home/" not in raw and "/local/" not in raw
+
+
+# ----------------------------------------------------------------------------- the d2s table (runtime v2)
+
+D2S = ROOT / "eval" / "textspot2_a9_d2s_20261020.json"
+OUTPUT_FIELDS = ("blob_sha256", "blob_bytes", "frame_sha256", "batch_sha256", "rc", "boxes", "blocks", "pick",
+                 "truncated", "frame_arena_bytes", "arena_bytes", "macs", "net_input")
+
+
+@pytest.fixture(scope="module")
+def d2s():
+    return json.loads(D2S.read_text(encoding="utf-8"))
+
+
+def test_d2s_table_covers_the_d2s_shapes_on_the_new_runtime(d2s):
+    import textspot2_export as X
+    b = d2s["textspot2"]
+    assert b["runtime"] == "v2" and set(d2s["sources_sha256"]) == {
+        "runtime/vocr_textspot2.c", "runtime/vocr_lines.c", "runtime/vocr_lines_rows.c",
+        "runtime/vocr_textspot2_test.c", "runtime/vocr_textspot2.h"}
+    shapes = [*W.protocol_shapes("kroa_x2"), "s4_c24n4"]
+    summ = {r["shape"]: r for r in d2s["summary"]}
+    assert set(summ) == set(shapes)
+    for name in shapes:
+        r = summ[name]
+        assert all(k in r and r[k] is not None for k in RULE_KEYS), name
+        want = X.costs(name) if name in S2.D2S else S2.costs(name)
+        assert r["macs_960"] == want["macs"]["960x544"]
+        assert r["within_limits"] == (r["ms_333_960"] <= 150 and r["arena_up_to_960"] <= 131072)
+    for t in d2s["table"]:
+        if t["shape"] in S2.D2S:
+            blob, src = X.random_blob(t["shape"], 1, half_above=600)
+            assert t["blob_sha256"] == hashlib.sha256(blob).hexdigest() and t["blob_bytes"] == len(blob)
+            assert t["blob"] == src
+    nd = [a for a in d2s["also"] if all(t["flags"] == "VOCR_TEXTSPOT_NO_DARK" for t in a["table"])]
+    assert len(nd) == 1 and len(nd[0]["table"]) == len(d2s["table"]) == 2 * len(shapes)
+
+
+def test_version_1_through_the_new_runtime_costs_what_textspot_costs(d2s, table):
+    """s4_c24n4 (version 1) through runtime/vocr_textspot2.c: the same blob, frames, boxes, blocks, pick and arenas
+    as through runtime/vocr_textspot.c (eval/textspot2_a9_20261020.json), and the estimate within 0.1% (the extra
+    d2s code moves the code's layout, not its work)."""
+    rep = d2s["textspot2"]["reproduces"]
+    assert rep["sha256"] == W.sha256(TABLE) and len(rep["rows"]) == 4
+    for r in rep["rows"]:
+        assert r["shape"] == "s4_c24n4" and not set(r["diffs"]) & set(OUTPUT_FIELDS), r["diffs"]
+    ours = {(t["shape"], tuple(t["size"]), t["flags"]): t for t in d2s["table"] + next(
+        a for a in d2s["also"] if a["table"][0]["flags"] != "0")["table"]}
+    theirs = {(t["shape"], tuple(t["size"]), t["flags"]): t for t in table["table"] + next(
+        a for a in table["also"] if a["table"][0]["flags"] != "0")["table"]}
+    for k, t in ours.items():
+        if k[0] != "s4_c24n4":
+            continue
+        o = theirs[k]
+        assert all(t[f] == o[f] for f in OUTPUT_FIELDS if f in t)
+        assert abs(t["ms_per_frame"]["333"] - o["ms_per_frame"]["333"]) < 1e-3 * o["ms_per_frame"]["333"]

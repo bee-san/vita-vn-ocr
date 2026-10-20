@@ -11,9 +11,9 @@ Per run of the plan (textspot2_plan.py stage1 or stage2): started and finished (
 (sweep.sh's moved failed attempts and crashes.jsonl), the loss curve (the logged total: the trainer's "loss", the
 total it optimised, or #97's k_bce + dice + 0.5 o + a for an r0 run; at steps 200, 2,000, 10,000, 20,000, the last
 float record, the first record after QAT starts and the last; the parts averaged over the last five records) and
-the blobs' bytes and sha256. Across the finished runs it checks that every run recorded the same code (the
-trainer's files), manifests per data kind, protocol and commit, and lists what differs. Reads only the runs' own
-files; scores nothing.
+the blobs' bytes and sha256. Across the finished runs it checks that every run recorded the same commit, and per
+data kind (r0, lab, data) the same code (the trainer's files), manifests, skip record and protocol (r0 runs record
+textspot's). Reads only the runs' own files; scores nothing.
 """
 import argparse
 import hashlib
@@ -104,11 +104,10 @@ def summarise(out_dir, plan):
         rows.append(row)
     fin = [r for r in rows if r["state"] == "finished"]
     same = {}
-    for key in ("git", "protocol_sha256"):
-        same[key] = len({json.dumps(r.get(key), sort_keys=True) for r in fin}) <= 1
-    for kind in sorted({r["data"] for r in fin}):
+    same["git"] = len({json.dumps(r.get("git"), sort_keys=True) for r in fin}) <= 1
+    for kind in sorted({r["data"] for r in fin}):             # r0 is textspot's trainer: textspot's protocol
         part = [r for r in fin if r["data"] == kind]
-        for key in ("code_sha256", "manifests_sha256", "skip"):
+        for key in ("code_sha256", "manifests_sha256", "skip", "protocol_sha256"):
             same[f"{key}[{kind}]"] = len({json.dumps(r.get(key), sort_keys=True) for r in part}) <= 1
     return {"kind": "textspot2-train-runs", "plan": str(plan), "runs": rows, "finished": len(fin), "of": len(rows),
             "consistent": same, "crashes": len(crashes), "restarts": len(restarts)}

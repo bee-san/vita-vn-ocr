@@ -1,0 +1,283 @@
+{
+ "kind": "vita-vn-ocr-textspot3-protocol",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/108",
+ "frozen_utc": "2026-10-21T09:14:48Z",
+ "frozen_before": "every textspot3 training run and data job, and every score of any textspot3 arm on a textspot development frame; no model of this work exists yet",
+ "doc": "docs/textspot3.md",
+ "follows": {
+  "textspot": {
+   "issue": "https://github.com/bee-san/vita-vn-ocr/issues/104",
+   "merge_commit": "7a6dce0"
+  },
+  "textspot2": {
+   "issue": "https://github.com/bee-san/vita-vn-ocr/issues/106",
+   "merge_commit": "5af7741"
+  }
+ },
+ "owner": [
+  "2026-10-21 08:48Z: Textspotter is good, but let's go even more. Can we build a 500kb model or less? to get better accuracy",
+  "2026-10-14 13:57Z: DIALOGUE CER is the primary metric"
+ ],
+ "sources_sha256": {
+  "eval/textspot3_rule.py": "45c98d54a189fef281f7909e21a53cc6ad674dabe4ea973e73ec3a31d6714af3",
+  "eval/textspot_metrics.py": "93323b756b12759dbd0e318ffe1c1de28b891ddf6ed33fca8932fd06773c4d17",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "eval/textspot.py": "68f391eba4177eab4e61f6a679e2dd39a04dfc90ad00037f40420d4ba221aa7c",
+  "eval/textspot2.py": "16ee08dd3074a755f8a72e50f1ac9fadf914a3260ef7ef44ba7efc4a466bbf61",
+  "eval/textspot2_rule.py": "3aa17ebf39adf50ea674d1c2412e28f6e2a27b46a9cea7b65e1faac785b8621f",
+  "eval/textspot_protected.py": "adc918bc4c73a053cdd5daf5e7d7f4733a0a9efe3f00f3a2b1706bfe78f8a21a",
+  "eval/textspot2_protected.py": "be475701088942c6f1293243b078b85fd57a555ff24a2707f6831e7b51f8bc24",
+  "eval/textspot_protocol.json": "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f",
+  "eval/textspot2_protocol.json": "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+  "eval/textspot_baseline_20261019.json": "7090ac84cd2ac0804af0bb30bcd93badc3badca8e8b1adfe3d4c91a0c38cf4b2",
+  "eval/textspot_dev_20261019.json": "3189d294c5e4c4dc8c3c729db980daf20a3fe9d0eb3343ad3d77fe3ec75f4e2f",
+  "eval/textspot2_dev_20261020.json": "16380089915f5a4eae9100fefcf0d102aea8524a93191252ca82dd521d200cc3",
+  "eval/textspot_a9_20261019.json": "2ac3e9fa35a8b74e94c08e705435a9a55ed354a062e4ce847436e9f484d5b677",
+  "eval/textspot2_a9_20261020.json": "2b18e0a4a77fdeae2e53dfa20c705ee82a4215e5622e6df7c0ea4b2a78d8743b",
+  "eval/textspot2_a9_d2s_20261020.json": "e5bde909a9d9fedce7c0840fe406a853def553b36fc50250fed8526f2cc05911",
+  "eval/textspot_a9.py": "b04e6c6a53c55080354114b0abc6d49be09fe1b2bc1a927eeec17ebdac8a17d0",
+  "eval/textspot2_a9.py": "6d71cfa54a7080db57b05aaf30dced7148167da1e7463ce71491cb5233954bb0",
+  "eval/manifests/textspot-dev.jsonl": "0392a1d33efbe732ca97adee7f9dc2f6117e387f9ea3dda5c257a9b4d9f431a9",
+  "eval/manifests/textspot-test.jsonl": "233b96d80a452e0585c717f4d65ec73758810262663f71e57bed04402b452fb5",
+  "eval/manifests/reserved.json": "8ddaace6d1c9be5331bbcf628ff64d1c51365dc61f8a47d343d1bfb202e894cc",
+  "eval/manifests/test_games.json": "c24d67e7697da2a8ebbcc940449ded4ccc839c25acc2bae3a5ef85eec4fcce9b",
+  "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+  "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+  "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+  "runtime/vocr_textspot.c": "d2054a2d5ccbda1a31c5aafec0079d4da65cf13bc1d5db991dc8cdda746df331",
+  "runtime/vocr_textspot.h": "a25ef000164af61610a6f5201fb9e345f8a67cf6525d2f16bae44afca712dd57",
+  "runtime/vocr_textspot2.c": "359f97c8b628e4086466497d5667f96e83be75ef3b9f2f6173d9f36e9b864ce2",
+  "runtime/vocr_textspot2.h": "2d7429e4799e6a2242c6972762936f40ef672677286bf470b80d88a3f9529ee2",
+  "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+  "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+  "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+  "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d",
+  "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+  "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+  "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+  "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+  "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034",
+  "vita/a9_cycles.py": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc",
+  "eval/tools/reserve_check.py": "9b27304a1dbafa8381040bb1ff3d42e2faa8a231b7c1a35aac83ab4928cdea69"
+ },
+ "reused": {
+  "dev_manifest": {
+   "path": "eval/manifests/textspot-dev.jsonl",
+   "sha256": "0392a1d33efbe732ca97adee7f9dc2f6117e387f9ea3dda5c257a9b4d9f431a9",
+   "frames": 188,
+   "vns": 81,
+   "instances": 885
+  },
+  "test_manifest": {
+   "path": "eval/manifests/textspot-test.jsonl",
+   "sha256": "233b96d80a452e0585c717f4d65ec73758810262663f71e57bed04402b452fb5",
+   "pinned_by": "textspot amendment 3"
+  },
+  "metrics": "eval/textspot_metrics.py (match_frame, e2e_frame, compare, beats, vn_diff, f1_diff; BOOT 10,000 resamples, seed 0)",
+  "harness": "eval/textspot.py (det: / detref: arms, the reading, C parity with --cbin, textspot.eligibility) through textspot2's wrapper eval/textspot2.py (reading cache, VTSP version dispatch), extended for version 3",
+  "baseline": {
+   "path": "eval/textspot_baseline_20261019.json",
+   "units_dir": "$HERD/shared/artifacts/textspot/baseline/units",
+   "arms": [
+    "grad",
+    "grad_refine",
+    "grad_refine_gate",
+    "s8c24_textdet",
+    "s8c24_textdet_refine",
+    "s8c24_spot",
+    "columns",
+    "grad_refine_columns"
+   ],
+   "role": "report only (textspot's bar)"
+  },
+  "recognizers": {
+   "VOCR5-S": {
+    "asset": "v0.3.0/VOCR5_S_w8.vocr",
+    "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+   },
+   "VOCR5-N": {
+    "asset": "v0.3.0/VOCR5_N_w8.vocr",
+    "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+   },
+   "VOCR5-L": {
+    "asset": "v0.3.0/VOCR5_L_w8.vocr",
+    "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+   },
+   "VOCR5-V": {
+    "asset": "v0.3.2-vertical.1/VOCR5_V_w8.vocr",
+    "sha256": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172"
+   }
+  },
+  "reading": {
+   "rule_models": {
+    "horizontal": "VOCR5-N",
+    "vertical": "VOCR5-V"
+   },
+   "report_models": {
+    "horizontal": [
+     "VOCR5-S",
+     "VOCR5-L"
+    ]
+   },
+   "how": "every detection's box (frame pixels, as the arm returns it) is cut from the frame, turned to grey ((77 R + 150 G + 29 B) >> 8) and read by the C runtime in W8I with greedy CTC decoding, with VOCR_INVERT when the box's dark flag (vocr_line_dark on the frame) is 1; a vertical box is turned 90 degrees anticlockwise first (vocr_column_rotate) and read by VOCR5-V"
+  },
+  "data": {
+   "synthetic": "data/manifests/textspot_shards_v1.json (80,000 whole frames)",
+   "real": "data/manifests/textspot2_shards_v1.json (52,785 canvases: lab 28,265 + more 24,520; meiki labels b, RESERVE_OK)",
+   "mix": "textspot's per source (synthetic 0.5; realplus 0.175, teacher 0.175, owner 0.125, devnative 0.025)"
+  },
+  "formats": {
+   "v1": "synth/textspot_twin.py, runtime/vocr_textspot.c",
+   "v2": "synth/textspot2_twin.py, train/textspot2_export.py, runtime/vocr_textspot2.c"
+  },
+  "trainer": "train/textspot2_train.py and what it imports, unchanged",
+  "a9": {
+   "method": "vita/a9_cycles.py's model on the Vita compiler's code under the plugin qemu-arm, as #97 (eval/textdet_a9.py), on a pinned procedural 960x544 and 480x272 frame; high bound x 1.0007 at 333 MHz, x 333/444 at 444 MHz",
+   "calibration": 1.0007,
+   "refine_ms_per_box": 1.4,
+   "refine_arena_960x544": 72391
+  },
+  "protected": "eval/textspot_protected.py's tests and clannad, through eval/textspot3_protected.py with attempt records of its own under $HERD/shared/private/textspot3",
+  "ceiling": "meiki.text.detect v0.1 on the development frames (docs/textspot2.md, eval/textspot2_dev_20261020.json): report only, not re-run"
+ },
+ "references": {
+  "ref": {
+   "name": "B_h2_s4_c24n4_seed2_detref",
+   "blob": "v0.3.3-textspot.1/textspot_s4_c24n4_w8.vtsp",
+   "blob_sha256": "852506919ba94e54a4efc55e3695f365626d9d4ce6347f420cbf2afe3e8360cf",
+   "blob_bytes": 5732,
+   "est_ms_333_960": 139.09,
+   "arena_960": 80799,
+   "dev": {
+    "f1": 0.5416,
+    "cer_all": 32.0384,
+    "cer_dialogue": 3.0098
+   },
+   "role": "the textspot winner: the rule's comparator",
+   "note": "the best of its recipe's three seeds (all-text CER 32.04 / 34.59 / 36.28)",
+   "units": "$HERD/shared/artifacts/textspot/eval/famB/B_h2_s4_c24n4_seed2_detref/units_VOCR5-N.json",
+   "units_sha256": "e5170f2e871dc90f452c7330194bc6bde2e1198775c51c9a1529acc3994cb38f",
+   "boxes": "$HERD/shared/artifacts/textspot/eval/famB/B_h2_s4_c24n4_seed2_detref/boxes.json",
+   "boxes_sha256": "5d7776219f52bc6eb28fb52c1ac0fe50e3cfa85128a3096d360f3ad13352f0cc"
+  }
+ },
+ "budget": {
+  "vtsp_max": 512000,
+  "ms_max_333_960": 300,
+  "arena_max": 262144,
+  "bytes": "the whole VTSP file (int8 weights, int32 biases, requantisation constants, headers); the int8 weight count is reported",
+  "time": "the A9 cycle model's high bound x 1.0007 at 333 MHz for the shape and scale on the runtime of the blob's version (default call, dark pass included), plus 1.4 ms per horizontal box at the arm's median on the development Vita frames for det+refine",
+  "arena": "the runtime's *_arena_bytes(m, 960, 544) (any frame up to 960 x 544); for det+refine the larger of it and the refinement's 72,391 B",
+  "parity": "the C runtime gives the twin's boxes on every development frame",
+  "report": "444 MHz (x 333/444), the PSP's 480x272, VitaSDK -Os code sizes, the stack peak"
+ },
+ "metrics": {
+  "primary": "dialogue CER (classes dialogue and choice, without unassigned readings)",
+  "guards": [
+   "end-to-end all-text CER (every class, plus unassigned readings)",
+   "F1 over every class (IoU >= 0.5, one to one)"
+  ],
+  "report": [
+   "recall per class (UI/menu recall should rise with capacity; the results say so if it does not)",
+   "tightness",
+   "text-free frames with a box",
+   "the dialogue pick",
+   "per part",
+   "textspot's bar against its eight baselines",
+   "VOCR5-S and VOCR5-L readings of the pick"
+  ]
+ },
+ "seeds": {
+  "per_arm": [
+   1,
+   2,
+   3
+  ],
+  "report": "every seed",
+  "representative": "per decode, the median seed by development dialogue CER (textspot3_rule.median_seed: sorted by dialogue CER, all-text CER, -F1, seed; index n // 2, the worse middle one when n is even); eligibility is checked on that seed with no substitution; never the best seed",
+  "crashes": "a crashed run restarts from scratch with the same seed, at most 3 attempts"
+ },
+ "rule": {
+  "vtsp_max": 512000,
+  "arena_max": 262144,
+  "ms_max_333_960": 300,
+  "eligible": "VTSP bytes <= vtsp_max, arena <= arena_max, est. ms <= ms_max_333_960, the C runtime equal to the twin on every development frame",
+  "qualifies": "against ref on the paired development frames (VN-cluster 95% intervals): dialogue CER resolved below 0, all-text CER not resolved above 0, F1 not resolved below 0 (textspot3_rule.qualifies)",
+  "cost_order": "VTSP bytes, then est. ms at 333 MHz, then arena, then det before det+refine, then the name",
+  "pick": "the cheapest qualifier; a costlier qualifier replaces it when, against it, all-text CER is resolved below 0 and neither dialogue CER is resolved above 0 nor F1 below 0 (textspot3_rule.replaces; the cheapest such, repeated until none does)",
+  "no_pick": "the verdict is negative; textspot's winner stands",
+  "candidates": "the median-seed representatives (per decode) of every textspot3 arm",
+  "report_only": "textspot's bar against its eight baselines; per-class recall; the Pareto front; what each arm bought",
+  "protected": "after the selection commit, the pick once on vita-test + psp-test as whole frames and on CLANNAD (eval/textspot3_protected.py), paired against ref's own protected units (read, not re-run); nothing is read when nothing is selected",
+  "code": "eval/textspot3_rule.apply_rule3"
+ },
+ "families": {
+  "T": {
+   "what": "the d2s trunk scaled up: train/textdet_model.layers' grammar (stem 3x3 stride 2, down, down8, separable blocks with dilations) at stride 8 with up to 64 channels and a 1x1 head to 16 channels (2 x 2 sub-pixel, read as stride-4 maps)",
+   "format": "VTSP version 2 (synth/textspot2_twin.py, train/textspot2_export.py, runtime/vocr_textspot2.c as merged; no runtime change)",
+   "shapes": "registered by an amendment with their A9 rows, before their runs"
+  },
+  "M": {
+   "what": "multi-scale: a stride-8 trunk streamed by rows (version 1's), then layers on whole maps (3x3 depthwise with stride 1 or 2 and a dilation; 1x1 over the concatenation of up to three earlier maps, each through a nearest upsampling by 2^u, u <= 3, the sources of one 1x1 sharing one activation scale): stride-16 / 32 / 64 stages and an FPN-style top-down neck to a 16-channel d2s head at stride 8 (version 2's channel order, read as stride-4 maps; textspot's decode unchanged)",
+   "format": "VTSP version 3: synth/textspot3_twin.py (the specification), train/textspot3_model.py and its exporter, runtime/vocr_textspot3.c; version-1 and version-2 blobs bit for bit as before; frozen files untouched; pinned by an amendment before any M run",
+   "input": "grey (77 R + 150 G + 29 B) >> 8, halved by textspot's exact 2 x 2 mean when the frame is wider than 480 px or taller than 272 px (network input at most 480 x 272 for any frame up to 960 x 544), x - 128",
+   "arithmetic": "version 1's: int8 weights per output channel, int32 bias, the fixed-point requantisation, ReLU or none",
+   "shapes": "three size points S, M, L (about 100, 250 and <= 500 KB; each est. <= 300 ms with a margin; most parameters at strides 16-64), chosen by an amendment after the runtime's A9 rows of probe shapes, before any M run"
+  }
+ },
+ "half_above": {
+  "T": 480,
+  "M": "w > 480 or h > 272",
+  "why": "on every development and test frame (widths 960, 728, 725, 480; heights 544, 540, 538, 272) it halves exactly the frames textspot's half_above 600 halves, and it bounds the up-to arena by a 480 x 272 network input"
+ },
+ "recipes": {
+  "base": "textspot2's data + ema (textspot2's labels b on the 52,785 real canvases with textspot's synthetic half; EMA decay 0.999 from step 1,000, at the QAT start the average replaces the live weights and BatchNorm statistics are re-estimated on 32 batches, during QAT an average of the QAT weights is the run's model); 30,000 steps of 16 windows of 256 x 512 at the network's scale, AdamW 4e-3, 500 warm-up steps, cosine to 1e-4, QAT from step 24,000, the last step is the run's model",
+  "size": "base + every positive line's kernel cells weighted by clamp(sqrt(64 / n), 1, 4), n = its kernel cell count at the map's stride, multiplied with its label weight (UI/menu emphasis); dice and the normalisations unchanged",
+  "clean": "base + at load time on the real half: a positive of label weight < 1 (a meiki box of score < 0.8 that neither a reading-pipeline line nor a textspot winner box agrees with) becomes an ignore area; a vertical positive longer than 16 x its width or narrower than 6 px at the canvas's scale becomes an ignore area",
+  "long": "base at 60,000 steps, peak LR 2e-3, 1,000 warm-up steps, cosine to 1e-4, QAT from step 48,000",
+  "kd": "stage 2: base + the kept extras + textspot2's distillation from a teacher spotter on the stride-4 maps: label loss + BCE(K, sigmoid(K_t)) over valid cells + 0.5 BCE(O, sigmoid(O_t)) + smooth L1((A1 - A1_t) / 8) + smooth L1((A2 - A2_t) / 8) on cells where sigmoid(K_t) > 0.5",
+  "trainer": "train/textspot3_train.py (new; textspot2's trainer imported, its pinned files unchanged), pinned by an amendment before any run"
+ },
+ "stages": {
+  "1": [
+   "after the amendments that pin the data, the trainer, the shapes and their A9 rows",
+   "T: base on each registered T shape (seeds 1-3)",
+   "M: base on S, M and L; size, clean and long on M (seeds 1-3 each)"
+  ],
+  "2": [
+   "after every stage-1 run is scored, by fixed rules on stage 1's median seeds; every choice recorded by an amendment, with the figures it read, before its runs (stage 2's intervals are optimistic, disclosed)",
+   "kept extras: size when on M its det+refine all-text CER is below base's and its dialogue CER at most 0.25 points above base's; clean when its det+refine dialogue CER is below base's and its all-text CER at most 1.0 point above base's",
+   "kd teacher: the eligible stage-1 candidate of the largest M shape that has one, with the lowest all-text CER (any recipe or decode); its median seed's final model",
+   "kd students: the two smallest shapes (VTSP bytes; T or M) other than the teacher's whose stage-1 base candidate qualifies against ref (the smallest eligible shapes make up two); base + the kept extras + kd, seeds 1-3",
+   "base + the kept extras on L (seeds 1-3) when an extra is kept"
+  ]
+ },
+ "data": {
+  "exclusions": "every reserved.json test and dev_sample VN (and release partners) and test session; every eval and eval/linefind screenshot and every linefind VN; CHAOS;CHILD (v14018); every textspot development and test frame's screenshot; eval/tools/reserve_check.py RESERVE_OK on every new pool",
+  "pools": "textspot's and textspot2's shards unchanged; no new pool"
+ },
+ "estimates": {
+  "binding": "the A9 cycle model as textspot: the Vita compiler's code of the runtime of the blob's version (vocr_textspot2.c for T, vocr_textspot3.c for M), random blobs of each shape, textspot's pinned procedural frames at 960x544 and 480x272, vita/a9_cycles.py; tables pinned by an amendment before any score",
+  "report": "444 MHz, the PSP's 480x272, VitaSDK -Os code sizes, the stack peak; exact MACs and bytes",
+  "label": "every console time and memory figure is a host estimate; nothing runs on a console"
+ },
+ "release": {
+  "pick": "a pre-release with the blob, SHA256SUMS, ATTRIBUTION.md and a model card (meiki.text.detect, LGPL-3.0: training labels only, its weights never shipped)",
+  "rubi": "a DRAFT Rubi_for_vita PR on top of draft #228's branch pinning the pick (the bigger blob loaded only while scan screen runs); never merged by the fleet"
+ },
+ "disclosures": [
+  "textspot's development references started from MeikiOCR's boxes refined to ink: spotters trained on meiki's boxes are favoured by that construction; the test set's dialogue lines (eval's) and CLANNAD's references are independent of it",
+  "the arms were chosen after reading textspot's and textspot2's development errors by class and by text height (issue #108): 235 of the 519 UI references are under 8 px tall at the network's scale (215 on the scaled PC frames); the spotters find 32-42 of them, meiki 960x544 201, meiki 320x192 113",
+  "ref is the best of its recipe's three seeds",
+  "the development set has 81 VNs; with about 30 candidates, intervals near 0 can still be chance"
+ ],
+ "paths": {
+  "artifacts": "$HERD/shared/artifacts/textspot3 (runs/, eval/: units, cache, cbuild)",
+  "private": "$HERD/shared/private/textspot3",
+  "names": "runs <recipe>_<family-shape>_seed<n>; harness arms T3_<run>_det, T3_<run>_detref"
+ },
+ "amendments": []
+}

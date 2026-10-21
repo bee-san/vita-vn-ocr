@@ -512,6 +512,65 @@
      }
     }
    }
+  },
+  {
+   "id": 7,
+   "utc": "2026-10-21T20:58:27Z",
+   "before": "every stage-2 run (none exists) and the selection",
+   "what": [
+    "Stage 2's choices, by the protocol's fixed rules applied to stage 1's median seeds (development, VOCR5-N; all 27 stage-1 runs finished and scored, 54 arms, C == twin on 188 of 188 frames each; the conductor re-derived every figure from the stored units, and the eval helper's headline gives the same): size is not kept (on qM4 det+refine its all-text CER 36.45 is not below base's 35.80); clean is not kept (its dialogue CER 1.45 is not below base's 1.33); the kd teacher is base_qL5_seed2 (qL5 det+refine, all-text CER 34.58: the largest M shape's lowest, its det representative reading 36.48); the kd students are t64n8c16 and qS4, the two smallest shapes whose stage-1 base candidate qualifies against ref (t64n4c16 and t48n8c16d8 do not: their det+refine representatives are resolved worse on all-text CER, lower bounds +0.26 and +0.61). Disclosed: qS4 det+refine's all-text interval against ref has a lower bound of exactly 0.0000 at textspot_metrics.vn_diff's four-decimal rounding, so as the rule reads it (ci[0] > 0) it is not resolved worse and qualifies: a knife edge. No base + extras on L (no extra kept).",
+    "The stage-2 plan: eval/reproducibility/textspot3-20261021/stage2_plan.jsonl, 6 runs kd_t64n8c16_seed1-3 and kd_qS4_seed1-3 (base + kd, no extras), from the pinned planner on stage2_choices.json; every record carries the teacher run and its final.pt sha256 a40a6269b56b... (equal to its done.json), which every command line re-checks. Estimates from kd probes with that teacher (eval/textspot3_train_probe_stage2_20261021.json): 326.4 and 280.4 ms per step, 15.3 slot-hours. tests/test_textspot3_train_stage2.py checks the plan reproduces.",
+    "The sweep's two bookkeeping fixes, re-pinned for stage 2 (stage 1 ran amendment 3's file): sweep.sh sends every 5-run notice once, also when two runs finish within one check; runs_summary.py finds each sweep's end by its stage label (two sweeps shared one log). The run command, the checks and the counts are unchanged; tests/test_textspot3_sweep.py fails on the old files and passes on the new. The stage-1 runs record eval/textspot3_train_runs_20261021.json (T: 9 runs, M: 18 runs, 0 crashes, 0 restarts) is pinned with them.",
+    "Stage 2 runs from a new detached worktree at this amendment's commit, at most 7 at once; the trainer, planner and check_run.py are amendment 3's."
+   ],
+   "sources_sha256": {
+    "eval/reproducibility/textspot3-20261021/stage2_choices.json": "870f63a5d433ddb193a98fe9f6f58e6495bbb11bbac934564a7427522235e89b",
+    "eval/reproducibility/textspot3-20261021/stage2_plan.jsonl": "ac68be5a340c8182dfa87e69ae8e7bcd9055f27d4feace2f4e2c26c27a93177e",
+    "eval/textspot3_train_probe_stage2_20261021.json": "304bf2e3aee087c7c1107485f7d66a147bc9240dbbbdf773369f3987a5408f7a",
+    "tests/test_textspot3_train_stage2.py": "eb11bced25a8a29808555ee14303d76aa6b209a137d32db3f45a03798c08ba5f",
+    "eval/reproducibility/textspot3-20261021/sweep.sh": "79b00b374578d82bdd36fc5ea3c526534f2f58778102409cf79a5f451a679bea",
+    "eval/reproducibility/textspot3-20261021/runs_summary.py": "e254e81dc8baef499b989a6fa411026ade999b80dabedbb60f53e341a6a2e541",
+    "tests/test_textspot3_sweep.py": "147ee3bcabe0b42eb0593a8ba43debf980d54650d4b443bfa964dc9cc00088f7",
+    "eval/textspot3_train_runs_20261021.json": "5347ba0a13837b0e7022722f2bfcb36d50da54374cd928bac588655863eaa6b2"
+   },
+   "settings": {
+    "size_kept": false,
+    "clean_kept": false,
+    "kd_teacher_run": "base_qL5_seed2",
+    "kd_teacher_pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473",
+    "kd_students": [
+     "t64n8c16",
+     "qS4"
+    ],
+    "stage2_runs": 6,
+    "max_par": 7,
+    "train_commit": "7987c66",
+    "read": {
+     "base_qM4_detref": {
+      "seed": 3,
+      "cer_all": 35.805,
+      "cer_dialogue": 1.3293
+     },
+     "size_qM4_detref": {
+      "seed": 3,
+      "cer_all": 36.4549,
+      "cer_dialogue": 1.2039
+     },
+     "clean_qM4_detref": {
+      "seed": 3,
+      "cer_all": 36.3368,
+      "cer_dialogue": 1.4547
+     },
+     "base_qL5_detref": {
+      "seed": 2,
+      "cer_all": 34.579
+     },
+     "base_qL5_det": {
+      "seed": 2,
+      "cer_all": 36.48
+     }
+    }
+   }
   }
  ],
  "shapes": {

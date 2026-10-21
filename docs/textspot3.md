@@ -355,3 +355,18 @@ Each amendment is dated in `eval/textspot3_protocol.json` and precedes the runs 
      They replace amendment 4's probe rows. Family T keeps `eval/textspot3_a9_t_20261021.json` (re-measured: 20 of
      20 rows identical).
    - Code (VitaSDK `--gc-sections` `.text`): 23,880 B at -O2 NEON and 19,452 B at -Os. The stack peak is 2,712 B.
+7. **Stage 2** (2026-10-21T20:58Z, after all 27 stage-1 runs were trained and scored, before every stage-2 run and the
+   selection). The fixed rules, applied to stage 1's median seeds:
+   - `size` is not kept: on `qM4` det+refine its all-text CER is 36.45, not below `base`'s 35.80.
+   - `clean` is not kept: its dialogue CER is 1.45, not below `base`'s 1.33.
+   - The kd teacher is `base_qL5_seed2`: `qL5` det+refine, all-text CER 34.58, the lowest of the largest M shape.
+   - The kd students are `t64n8c16` and `qS4`, the two smallest shapes whose `base` candidate qualifies against
+     `ref`. `t64n4c16` and `t48n8c16d8` do not qualify: their all-text CER is resolved worse, with lower bounds
+     +0.26 and +0.61.
+   - Disclosed: `qS4`'s all-text interval against `ref` has a lower bound of exactly 0.0000 after the metrics'
+     four-decimal rounding. As the rule reads it, that is not resolved worse, so it qualifies: a knife edge.
+   - No `base` + extras on L, since no extra is kept.
+   - The runs: `stage2_plan.jsonl` has 6 runs, `kd_t64n8c16_seed1-3` and `kd_qS4_seed1-3`. Every record carries
+     the teacher's `final.pt` sha256, and every command line re-checks it. The plan is about 15.3 slot-hours.
+   - The sweep's two bookkeeping fixes (the 5-run notice, the end of each sweep in a shared log) are re-pinned for
+     stage 2. The run command and the checks are unchanged. The stage-1 runs record is pinned with them.

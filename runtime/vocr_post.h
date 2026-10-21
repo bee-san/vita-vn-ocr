@@ -1,8 +1,8 @@
 /* vocr_post.h - post-processing of recognized text for counters: 九ヶ月, 三ヶ所, 五ヶ年 (issue #109).
  *
  * Plain C99 like vocr.h: no malloc, no libm, no system calls, no global state; the re-decode's stack frame is
- * under 1 KiB (896 B on the Vita at -O2). Each step runs only when its caller calls it, so a pipeline that does not call one is bit for bit
- * what it was. eval/vocr_post.py is the Python twin of both (tests/post_parity.py checks them against each
+ * about 1 KiB (896 B on the Vita at -O2, 1,024 B with x86-64 gcc -O2). Each step runs only when its caller calls
+ * it, so a pipeline that does not call one is bit for bit what it was. eval/vocr_post.py is the Python twin of both (tests/post_parity.py checks them against each
  * other), and docs/counters.md has the corpus counts behind every context.
  *
  * 1. vocr_post_counters(text): a text rule for the small ke ヶ (U+30F6) the recognizer reads as the small
@@ -31,9 +31,12 @@
  *    vocr_post_greedy(m, ex) gives the edited greedy text, and vocr_lm_decode() reads the edited extras as
  *    the frames' top-1. o->tau = o->open = 0 changes nothing (the extras are only checked). The blank counts
  *    where it is in a frame's top-K: the re-decode does not read vocr_extra.blank_logit, and an edit does not
- *    change it. vocr_lm_decode() reads blank_logit only for a frame whose blank is outside its candidates
- *    within the gate, so with tau and open no larger than the LM's gate (vita-vn-ocr's choice: 6 and 4 nats
- *    against a gate of 8) a blank an edit moves down stays among them; keep them so.
+ *    change it. vocr_lm_decode() reads blank_logit only for a frame whose blank is outside its candidates:
+ *    the top-K slots it scans, min(its topk, ex->topk), whose cost is below its gate. An edit moves a frame's
+ *    old top-1 (the blank, say) to the slot of the class it took, at a cost of at most tau (or open). So keep
+ *    tau and open strictly below the LM's gate, and the LM's topk at least ex->topk: then that blank stays a
+ *    candidate and blank_logit (still the old top-1's logit) is never read for it. vita-vn-ocr's choice, as
+ *    Rubi runs it: tau 6 and open 4 nats against a gate of 8, both topk 8.
  *
  * In a pipeline:
  *    vocr_run(&ctx, &img, text, cap, &ex);               // ex.topk >= 1

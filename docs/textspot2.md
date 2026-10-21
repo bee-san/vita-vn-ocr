@@ -325,13 +325,18 @@ Every time is an estimate from the A9 cycle model; nothing of this work has run 
     changed.
 - **Why: no median seed reaches the winner's all-text CER.** Every candidate's median seed reads all text at
   34.36-43.83%, against the winner's 32.04%, and 29 of the 32 are resolved worse.
-  - **Most of that gap is the reference's seed.** The winner is the best of its recipe's three seeds. That recipe,
-    r0, reads all text at 32.04 / 34.59 / 36.28% over seeds 2, 1 and 3, so its median seed is itself 2.55 points
-    behind the winner.
+  - **For the closest candidates, most of that gap is the reference's seed.** The winner is the best of its
+    recipe's three seeds. That recipe, r0, reads all text at 32.04 / 34.59 / 36.28% over seeds 2, 1 and 3, so its
+    median seed is itself 2.56 points behind the winner (paired +2.56, −0.11 to +5.09).
+    - That is more than half the gap of the 10 det+refine candidates with at least 10 channels (34.36-36.82%).
+    - The other 22, every det decode and every 6-8-channel trunk, are 5.13-11.79 points behind, mostly on their own
+      account (the seed is 22-50% of their gaps).
+    - That includes the whole fast pool. Against its own comparator, `fast_ref` (itself the best of its recipe's three
+      seeds, 34.92 / 36.71 / 38.66%), the fast pool is 3.93-8.91 points behind, all resolved worse.
   - **Against the matched control, the new labels are level on all-text CER and better on dialogue.** `lab` minus
     r0, both median seeds, is −0.24 points (−2.42 to +1.81) on all-text CER and −1.61 (−3.62 to −0.13) on dialogue.
     `lab`'s 2.32-point gap to the winner is smaller than that seed gap. For `data` and d2s `s8_c24n4x2`, the arm's
-    own share of its gap is 0.74 of 3.29 and 1.16 of 3.71 points.
+    own share of its gap is 0.74 of 3.29 and 1.15 of 3.71 points.
   - **F1 is level or worse**: within ±0.02 for 20 of the 32, 8 resolved worse (−0.025 to −0.069), none better. The
     best F1 is `s8_c48n4x2` det+refine at 0.583, +0.042 (−0.001 to +0.088), not resolved.
 - **What did improve is dialogue** (report only; the rule reads all-text CER and F1 first). Three candidates are
@@ -360,15 +365,21 @@ Every time is an estimate from the A9 cycle model; nothing of this work has run 
   | d2s `s8_c24n4x2` | 41 | 79 | 4 | 1,637 | 27 | 632 | 2,420 | 35.75 |
 
   Reference characters: dialogue 3,851, name 298, choice 136, UI 2,455, scene 30.
-  - UI text is 72% of the winner's errors. The new arms make 1,522-1,637 UI errors, against r0's 1,551-1,579 and
-    the winner's 1,557. `lab` is the only one below the winner, and its UI recall is 0.364 against 0.324.
-  - The new arms read dialogue better and read more characters from boxes that match no reference:
+  - UI text is 72% of the winner's errors. These three arms make 1,522-1,637 UI errors, against r0's 1,551-1,579 and
+    the winner's 1,557. Of the three, only `lab` is below the winner, and its UI recall is 0.364 against 0.324.
+  - These three read dialogue better and read more characters from boxes that match no reference:
     - 605-632 of them, 50-60% more than the winner's 396;
     - 17-22% more than r0's median seed's 518.
 
-    So the meiki labels add unmatched readings, but most of the gap to the winner is its own seed.
-  - Against the winner, those extra readings cost more than the dialogue gains save. Against r0's median that holds
-    for `data` and d2s (2,392 and 2,420 errors against 2,342), not for `lab` (2,326).
+    So the meiki labels add unmatched readings, but most of these three arms' gap to the winner is its own seed.
+  - **Extra readings against the dialogue gain**:
+    - Against the winner they cost more than the dialogue gains save: `lab` +209 against −16, `data` +221 against
+      −24, d2s +236 against −73.
+    - Against r0's median they outweigh the dialogue gain for `lab` (+87 against −63) and `data` (+99 against −71),
+      not for d2s (+114 against −120).
+    - In total errors `lab` is 16 below r0's median, because its UI and name errors fell too. `data` and d2s are 50
+      and 78 above it, d2s mostly through UI (+86): against its matched control, d2s's problem is missed UI text,
+      not stray readings.
 - **The teacher's ceiling is far away.** meiki.text.detect v0.1 at 960×544 (14 MB, report only, never a candidate)
   scores F1 0.899, CER all 14.39%, dialogue 1.18%, and finds 78% of UI labels against the winner's 32%.
   - Caveat: the development references started from MeikiOCR's boxes (docs/textspot.md), so this ceiling is
@@ -479,11 +490,12 @@ arena, F1, all-text CER and dialogue CER. The main ones:
 ```sh
 H=$HERD; T2=$H/shared/artifacts/textspot2
 # labels and shards (arms b and c); every source of each arm, then the manifest
+.venv/bin/python eval/textspot.py cbuild --out $T2/labels/cbuild                 # the C drivers cache needs (the winner's boxes)
 .venv/bin/python synth/textspot2_labels.py cache --arm lab --source realplus      # and teacher, devnative, owner
 .venv/bin/python synth/textspot2_labels.py build --arm lab --source realplus      # the same sources
 .venv/bin/python synth/textspot2_labels.py pool                                   # arm c's new screenshots
 .venv/bin/python synth/textspot2_labels.py cache --arm more --source realplus     # and teacher, owner; then build
-.venv/bin/python synth/textspot2_labels.py reserve                                # reserve_check --require-hashes --pixels
+.venv/bin/python synth/textspot2_labels.py reserve --pixels                       # reserve_check --require-hashes --pixels
 .venv/bin/python synth/textspot2_labels.py leak
 .venv/bin/python synth/textspot2_labels.py manifest                               # data/manifests/textspot2_shards_v1.json
 # training, from detached worktrees at 1163bf2 (stage 1) and b1d7cc0 (stage 2)

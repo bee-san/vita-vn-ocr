@@ -437,6 +437,36 @@
     "qM4",
     "qS4"
    ]
+  },
+  {
+   "id": 5,
+   "utc": "2026-10-21T12:28:14Z",
+   "before": "every family-M training run and every score of any family-M arm (family T's 9 runs are training; none has been scored)",
+   "what": [
+    "Stage 1's family-M plan: eval/reproducibility/textspot3-20261021/stage1_M_plan.jsonl (18 runs: base on qS4, qM4, qL5; size, clean and long on qM4; seeds 1-3; longest first), from the pinned planner and the probe record eval/textspot3_train_probe_stage1m_20261021.json (base ms/step qS4 242.5, qM4 252.3, qL5 294.6; size / clean / long on qM4 257.0 / 249.7 / 238.5; est. 46.7 slot-hours). tests/test_textspot3_train_m.py checks that the plan reproduces. The trainer, sweep, planner, check_run.py and runs_summary.py are amendment 3's, byte for byte.",
+    "The M sweep runs from a new detached worktree at this amendment's commit and shares the runs directory with the T sweep; slot locks cap both sweeps together at MAX_PAR 7 (the workstream's cap of 10 heavy runs, with scoring at 2 and the runtime's measurements at 1).",
+    "The version-3 runtime runtime/vocr_textspot3.c / .h / _test.c / .mk and tests/textspot3_parity.py (textspot3-runtime's 4acee6a: TEXTSPOT3_PARITY_OK 640 runs under ASan + UBSan, 44 version-3 blobs) are pinned here for the training sweep's run checks only (each finished run's blob through the C driver equal to the twin on two procedural frames). The scoring (C parity on every development frame), the code sizes and the A9 rows of record use the runtime that the RUNTIME_READY amendment pins, before any family-M score.",
+    "The scoring wrapper's version-3 path is re-pinned (eval/textspot3.py and tests/test_textspot3_eval.py, the eval helper's 4e84e1f): its real-v3 test reads train/textspot3_model.PROBES (the pinned model has no SHAPES), and finished_runs refuses a family-M blob that does not halve at 480 x 272. Its version-2 path is unchanged; eval/textspot3_protected.py is unchanged. tests/test_textspot3_eval.py passes 25 of 25 with the real vocr_textspot3_test."
+   ],
+   "sources_sha256": {
+    "eval/reproducibility/textspot3-20261021/stage1_M_plan.jsonl": "5f02f3d29180e281fa3dbe8141c79a6b752405777f6bbc6ba8ef1074a79ab4e7",
+    "eval/textspot3_train_probe_stage1m_20261021.json": "af29c73f8b9643ff630eaebec65e5fd315c7386cbd910a563bbc46e543e3ce4a",
+    "tests/test_textspot3_train_m.py": "505bc68a3b993d962db6c46f6d6c16a55816b622dd0e1a8ab3433c86f306fa9b",
+    "eval/textspot3.py": "22b2480207a6dfae3b7f07c1ef079613c93eb7f19c8206f7b85586bec53aafbd",
+    "tests/test_textspot3_eval.py": "0e2b6e6bf3f4bc84c7cc8009040659ed66249923eb3fd9bb8a832d2513863582",
+    "runtime/vocr_textspot3.c": "c82f0dfbd62f3e92d573814f081f4fc77e038db837657ac9d6dd3c4ae0370b93",
+    "runtime/vocr_textspot3.h": "d04d58c29bee724ea4bf9e898f76e6c8832e9bfe0164bc01edc55095f928d7e8",
+    "runtime/vocr_textspot3_test.c": "2489fff3b45e4ddfe607c478371012c82399c3f4ff1b1e2f27661d853e5f0fc5",
+    "runtime/vocr_textspot3.mk": "40f11b1342f4581e5d624fa9367bebc771d67220f245a8502b718e30daf203a0",
+    "tests/textspot3_parity.py": "8befb119b5c9d3e2b33d56dcb7901d95f0dee8876114df17477e30a8aa0ab63a"
+   },
+   "settings": {
+    "stage1_M_runs": 18,
+    "max_par": 7,
+    "train_commit": "dbe2ef7",
+    "eval_commit": "4e84e1f",
+    "runtime_commit": "4acee6a"
+   }
   }
  ],
  "shapes": {

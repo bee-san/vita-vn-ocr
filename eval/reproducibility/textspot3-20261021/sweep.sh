@@ -16,7 +16,8 @@
 # EXTRA_ARGS (scratch sweeps only, never a stage's sweep): arguments appended to every run's trainer command line, e.g.
 # "--steps 300 --ema-start 100 --log-every 20"; they are written in the start line, and the plan-record check is
 # skipped (the runs are not the plan's). SWEEP_POLL: seconds between slot polls (15).
-# Optional: NOTIFY_PANE (a herdr pane: a line at every 5th finished run of the plan, at every crash and at the end),
+# Optional: NOTIFY_PANE (a herdr pane: a line at every multiple of 5 finished runs of the plan, each once, at every
+# crash and at the end),
 # STATUS_FILE (one status line, overwritten), STAGE (the label in both, e.g. "stage 1 T"), SWEEP_TMPDIR (TMPDIR for
 # the runs and checks, default /local/home/skerraut/kt/t3s: short, because the loader's AF_UNIX sockets live under it).
 # Finished runs and crashes are counted per plan, so several plans can share OUT.
@@ -89,16 +90,18 @@ status() {         # "STAGE: d/N done, r running, c crashes" (this plan's runs) 
   echo "$line"
 }
 
-finished() {       # after a run's check: the status, and the conductor's line at every 5th finished run of the plan
-  local run=$1 line n r
+finished() {       # after a run's check: the status, and the conductor's line at every multiple of 5 finished runs
+  local run=$1 line n r k  # of the plan, each once (two runs can finish within one check: the count goes 4 -> 6)
   exec 8>"$OUT/locks/notify.lock"
   flock 8
   line=$(status)
   n=0; for r in $ALL; do [ -e "$OUT/$r/done.json" ] && n=$((n + 1)); done
-  if [ $((n % 5)) -eq 0 ] && [ "$n" -gt 0 ] && ! grep -qx "$n" "$NOTIFIED" 2>/dev/null; then
-    echo "$n" >> "$NOTIFIED"
-    notify "$line; last: $run ($(tail -n 1 "$OUT/finished.txt" | cut -d' ' -f2 | cut -c1-12)..., $(tail -n 1 "$OUT/finished.txt" | cut -d' ' -f3) B)"
-  fi
+  for k in $(seq 5 5 "$n"); do
+    if ! grep -qx "$k" "$NOTIFIED" 2>/dev/null; then
+      echo "$k" >> "$NOTIFIED"
+      notify "$line ($k-run notice); last: $run ($(tail -n 1 "$OUT/finished.txt" | cut -d' ' -f2 | cut -c1-12)..., $(tail -n 1 "$OUT/finished.txt" | cut -d' ' -f3) B)"
+    fi
+  done
   flock -u 8
 }
 

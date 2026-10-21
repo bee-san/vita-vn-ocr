@@ -34,7 +34,12 @@ if [ ! -x "$CBIN2" ]; then
   ( cd "$REPO/runtime" && ${CC:-cc} -std=c99 -O2 -Wall -Wextra -Werror vocr_lines.c vocr_lines_rows.c \
       vocr_textspot2.c vocr_textspot2_test.c -o "$CBIN2" )
 fi
-PLAN=$OUT/probe_plan.jsonl
+CBIN3=$OUT/cbuild/vocr_textspot3_test
+if [ ! -x "$CBIN3" ] && [ -e "$REPO/runtime/vocr_textspot3.c" ] && [ -e "$REPO/runtime/vocr_textspot3_test.c" ]; then
+  ( cd "$REPO/runtime" && ${CC:-cc} -std=c99 -O2 -Wall -Wextra -Werror vocr_lines.c vocr_lines_rows.c \
+      vocr_textspot3.c vocr_textspot3_test.c -o "$CBIN3" ) || rm -f "$CBIN3"
+fi
+PLAN=$OUT/probe_plan$([ -n "${PLAN_TAG:-}" ] && echo "_$PLAN_TAG").jsonl
 "$PY" "$HERE/probe_summary.py" plan --out "$PLAN" --teacher "$TEACHER" $PROBES $SMOKES $KD > /dev/null
 
 job() {            # job probe|smoke RECIPE SHAPE
@@ -44,7 +49,7 @@ job() {            # job probe|smoke RECIPE SHAPE
   if [ -e "$dir/probe.json" ] || [ -e "$dir/done.json" ]; then return 0; fi
   if [ -e "$dir" ]; then mv "$dir" "$dir.failed.$(date -u +%H%M%S)"; fi
   local -a ARGV=()
-  mapfile -d '' -t ARGV < <("$PY" "$HERE/textspot3_plan.py" args "$PLAN" "$name" --out-dir "$(dirname "$dir")")
+  mapfile -d '' -t ARGV < <("$PY" "$HERE/probe_summary.py" argv "$PLAN" "$name" --out-dir "$(dirname "$dir")")
   if [ "$kind" = probe ]; then extra=(--probe 200 --ema-start 1); else extra=(--steps 300 --log-every 20 --ema-start 100); fi
   echo "$(utc) $kind $name start (load $(cut -d' ' -f1-3 /proc/loadavg)): ${ARGV[*]} ${extra[*]}" >> "$OUT/probe.log"
   rc=0
@@ -52,7 +57,8 @@ job() {            # job probe|smoke RECIPE SHAPE
       < /dev/null > "$OUT/logs/$([ "$kind" = probe ] && echo "$PDIR" || echo "$kind")-$name.log" 2>&1 ) || rc=$?
   echo "$(utc) $kind $name exit $rc (load $(cut -d' ' -f1-3 /proc/loadavg))" >> "$OUT/probe.log"
   if [ "$kind" = smoke ] && [ -e "$dir/done.json" ]; then
-    ( cd "$REPO" && "$PY" "$HERE/check_run.py" "$dir" --cbin2 "$CBIN2" ) >> "$OUT/probe.log" 2>&1 \
+    local -a C=(--cbin2 "$CBIN2"); [ -x "$CBIN3" ] && C+=(--cbin3 "$CBIN3")
+    ( cd "$REPO" && "$PY" "$HERE/check_run.py" "$dir" "${C[@]}" ) >> "$OUT/probe.log" 2>&1 \
       || echo "$(utc) smoke $name: CHECK FAILED" >> "$OUT/probe.log"
   fi
 }

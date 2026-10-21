@@ -11,8 +11,8 @@
  *                                                 rows in output order; with VOCR_TEXTSPOT_NO_DARK the frame's
  *                                                 rows only), GREY equals RGBA of the same grey, padded strides,
  *                                                 every arena alignment and a junk-filled arena (determinism),
- *                                                 the exact arena malloc'd to size (one byte less:
- *                                                 VOCR_LINES_E_ARENA), NULL rows, the flag, a well-formed set
+ *                                                 the exact arena malloc'd to size at every alignment
+ *                                                 of its start (one byte less: VOCR_LINES_E_ARENA), NULL rows, the flag, a well-formed set
  *                                                 (boxes in the frame, blocks partitioning them in order, the pick
  *                                                 the twin's rule), edge sizes 1x1 .. 2048 and odd sizes,
  *                                                 damaged blobs, argument errors; the arena functions (version 3:
@@ -272,8 +272,16 @@ static int frame(const vocr_textspot3 *m, unsigned w, unsigned h, unsigned bpp)
     draw(px, w, h, stride, bpp);
     im.pixels = px; im.width = w; im.height = h; im.stride = stride; im.bpp = bpp;
 
-    /* the exact arena, malloc'd to its size (ASan sees any byte past it) */
+    /* the exact arena, malloc'd to its size (ASan sees any byte past it), at every alignment of its start: the
+     * arena's bytes need no alignment, and the aligned base the runtime takes must stay inside them */
     REQUIRE(vocr_textspot3_find(m, &im, 0, exact, need, &a) == VOCR_LINES_OK && well_formed(&a, w, h, 0));
+    for (off = 1; off < 8u; off++) {
+        unsigned char *ex = xmalloc(need + off);
+        REQUIRE(ex != NULL);
+        memset(ex, (int)(0x5Au + 29u * off), need + off);
+        REQUIRE(vocr_textspot3_find(m, &im, 0, ex + off, need, &b) == VOCR_LINES_OK && same_set(&a, &b, 1));
+        free(ex);
+    }
     /* determinism: again, on an arena full of junk, at every alignment, and with the arena for every frame up to
      * this size */
     for (off = 0; off < 8u; off++) {

@@ -2,8 +2,12 @@
 """probe.sh's plan, and the summary of its speed probes and smoke runs with the estimate of a stage's wall time.
 
   probe_summary.py plan --out PLAN.jsonl [--teacher DIR] RECIPE:SHAPE ...
-          the probe and smoke runs as textspot3_plan.py records (seed 1; kd with --extras none and the teacher DIR),
-          so probe.sh gets the sweep's own command lines from textspot3_plan.py args
+          the probe and smoke runs as textspot3_plan.py records (seed 1; kd with --extras none and the teacher DIR);
+          a shape is a registered one or one of textspot3_model.PROBES (family M probe shapes, not registered: the
+          record carries the shape as "shape_json")
+  probe_summary.py argv PLAN.jsonl RUN --out-dir D
+          the run's command line: textspot3_plan.py's (the sweep's own) plus --shape-json for a probe shape,
+          NUL-separated
   probe_summary.py summary OUT [--out JSON] [--par 8] [--family T] [--protocol P]
           the record of OUT's probes and smokes and the estimate of the family's stage-1 runs (textspot3_plan.py
           stage1) at --par runs at once
@@ -12,7 +16,8 @@ Per probe (seed 1): ms per step over 200 steps after one warm-up step (mean, med
 the loader) and the startup, for every pass probe.sh ran (OUT/probe, then OUT/probe2, ...); the estimate uses the
 mean over the passes of each pass's mean ms per step. Per smoke run (300 steps, QAT from step 240): its wall time, ms
 per step before and after QAT (its log, every 20 steps), its final losses, clean's counts, the blob's bytes and
-check_run.py's verdict (the C driver equal to the twin).
+check_run.py's verdict (the C driver equal to the twin); "smoke_runs" has every smoke by its run name, "smokes" the
+last of each recipe (the estimate reads base's).
 
 A stage-1 run's estimate: overhead + steps x ms, with ms = the probe's mean ms per step for its shape under base
 (size, clean and long on the same shape: base's, plus size's or clean's measured difference on the probed shape;
@@ -69,19 +74,39 @@ def schedule(order, est, par):
     return (max(e for _, _, e in out) if out else 0), out
 
 
+def m_probes():
+    """textspot3_model.PROBES ({} without the M modules)."""
+    try:
+        import textspot3_model as M3
+    except ImportError:
+        return {}
+    return M3.PROBES
+
+
 def probe_plan(items, teacher, reg):
     runs, seen = [], set()
+    probes = m_probes()
     for item in items:
         recipe, _, shape = item.partition(":")
-        if recipe not in ("base", "size", "clean", "long", "kd") or shape not in reg:
-            raise SystemExit(f"{item!r}: recipe:shape with a textspot3 recipe and a registered shape")
-        r = PL.spec(recipe, reg[shape]["family"], shape, 1, "none" if recipe == "kd" else None,
-                    teacher if recipe == "kd" else None)
+        if recipe not in ("base", "size", "clean", "long", "kd") or (shape not in reg and shape not in probes):
+            raise SystemExit(f"{item!r}: recipe:shape with a textspot3 recipe and a registered or probe shape")
+        fam = reg[shape]["family"] if shape in reg else "M"
+        r = PL.spec(recipe, fam, shape, 1, "none" if recipe == "kd" else None, teacher if recipe == "kd" else None)
+        if shape not in reg:
+            r["shape_json"] = json.dumps(probes[shape], sort_keys=True)
         if r["run"] not in seen:
             seen.add(r["run"])
             r["timeout_s"] = 5400
             runs.append(r)
     return runs
+
+
+def macs_of(reg, shape):
+    """MACs of one 256 x 512 window of a registered or probe shape."""
+    if shape in reg:
+        return PL.macs(reg, shape)
+    import textspot3_model as M3
+    return M3.cost(m_probes()[shape], 512, 256)["macs"]
 
 
 def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
@@ -104,11 +129,12 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
         mean = sum(q["ms_per_step"] for q in passes) / len(passes)
         probes[(p0["recipe"], p0["shape"])] = {
             "run": name, "recipe": p0["recipe"], "family": p0["family"], "shape": p0["shape"],
-            "extras": p0["extras"], "macs_window_256x512": PL.macs(reg, p0["shape"]), "ms_per_step": round(mean, 2),
+            "extras": p0["extras"], "macs_window_256x512": macs_of(reg, p0["shape"]), "ms_per_step": round(mean, 2),
+            "registered": p0["shape"] in reg,
             "passes": passes, "n_passes": len(passes),
             "ms_per_step_range": [min(q["ms_per_step"] for q in passes), max(q["ms_per_step"] for q in passes)]}
     log_text = (out / "probe.log").read_text() if (out / "probe.log").exists() else ""
-    smokes = {}
+    smokes, smoke_runs = {}, {}
     for d in sorted((out / "smoke").iterdir()):
         if not (d / "done.json").exists():
             continue
@@ -123,7 +149,7 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
         clean = (info.get("settings") or {}).get("clean")
         teacher = ((info.get("settings") or {}).get("kd") or {}).get("teacher")
         check = [ln for ln in log_text.splitlines() if ln.startswith(f"CHECK_OK {d.name} ")]
-        smokes[info["recipe"]] = {
+        smokes[info["recipe"]] = smoke_runs[d.name] = {
             "run": d.name, "shape": info["shape"]["name"], "family": info["family"], "extras": info["extras"],
             "wall_s": done["wall_seconds"], "train_s": done["seconds"],
             "startup_s": round(done["wall_seconds"] - done["seconds"], 1), "ms_float_20_240": fl,
@@ -143,7 +169,7 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
     base_smoke = smokes.get("base")
     runs = PL.stage1(family, reg) if any(v["family"] == family for v in reg.values()) else []
     est, rows = {}, []
-    if base_smoke and runs:
+    if base_smoke and runs and all(("base", r["shape"]) in probes for r in runs):
         ref_shape = base_smoke["shape"]
         ref_ms = probes[("base", ref_shape)]["ms_per_step"]
         extra = {x: probes[(x, ref_shape)]["ms_per_step"] - ref_ms for x in ("size", "clean")
@@ -172,7 +198,7 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
                     "(textspot3_plan.py args), seed 1; not runs of the sweep, never used",
             "head": starts[0].split(" head ")[1].split(",")[0] if starts else None, "threads": 5,
             "concurrency": "at most 2 of these jobs at once (probe.sh MAX_PAR 2), on a shared 64-core box",
-            "passes": pass_dirs, "probes": list(probes.values()), "smokes": smokes,
+            "passes": pass_dirs, "probes": list(probes.values()), "smokes": smokes, "smoke_runs": smoke_runs,
             "estimate": {"family": family, "runs": len(runs), "order": order, "rows": rows,
                          "qat_ratio_median": round(median_ratio, 3), "est_run_s": {k: round(v) for k, v in est.items()},
                          "slot_hours": round(sum(est.values()) / 3600, 2), "schedule": sched},
@@ -189,6 +215,10 @@ def main(argv=None):
     a1.add_argument("--teacher")
     a1.add_argument("--protocol", default=str(PL.PROTOCOL))
     a1.add_argument("items", nargs="+")
+    a3 = sub.add_parser("argv")
+    a3.add_argument("plan")
+    a3.add_argument("run")
+    a3.add_argument("--out-dir", required=True)
     a2 = sub.add_parser("summary")
     a2.add_argument("out")
     a2.add_argument("--out", dest="json_out")
@@ -200,6 +230,13 @@ def main(argv=None):
         runs = probe_plan(args.items, args.teacher, PL.shapes(args.protocol))
         PL.write(runs, args.out)
         print(f"{len(runs)} probe runs -> {args.out}")
+        return
+    if args.cmd == "argv":
+        rec = {r["run"]: r for r in PL.load(args.plan)}[args.run]
+        a = PL.argv(rec, args.out_dir)
+        if rec.get("shape_json"):
+            a += ["--shape-json", rec["shape_json"]]
+        sys.stdout.write("\0".join(a) + "\0")
         return
     doc = summary(args.out, args.par, args.family, args.protocol)
     if args.json_out:

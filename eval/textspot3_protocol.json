@@ -467,6 +467,51 @@
     "eval_commit": "4e84e1f",
     "runtime_commit": "4acee6a"
    }
+  },
+  {
+   "id": 6,
+   "utc": "2026-10-21T13:58:08Z",
+   "before": "every score of any family-M arm (no family-M run has finished; family T's scored arms do not use version 3)",
+   "what": [
+    "The version-3 runtime of record: runtime/vocr_textspot3.c (textspot3-runtime's speed pass 50f1116: fewer instructions in the map part, bit for bit the same outputs; parity re-checked) and runtime/vocr_textspot3_test.c (6ef69b5: the self-test checks the exact arena at every alignment of its start), at d75b721; runtime/vocr_textspot3.h, vocr_textspot3.mk and tests/textspot3_parity.py are amendment 5's. Checks on that runtime: ci/runtime.sh gcc and clang RUNTIME_CHECK_OK (TEXTSPOT3_PARITY_OK 686 runs in each); ASan + UBSan large parity, gcc 4,574 runs (190 version-3 blobs; 1,255 version-1/2 runs equal to vocr_textspot2_test), clang 3,961; qemu-arm Cortex-A9 parity of the Vita compiler's own objects (-O2 / -Os, NEON and scalar) and of Arm GNU's builds, 846 runs each; strict VitaSDK and psp-gcc builds clean; an independent read-only audit AUDIT_OK (no blocker or major finding). This runtime gives every scoring of family M (C parity on every development frame) and the code sizes; the training sweep's run checks keep amendment 5's (the same outputs).",
+    "The A9 rows of record of family M: eval/textspot3_a9_20261021.json (eval/textspot3_a9r.py's record; the M rows measured with the pinned eval/textspot3_a9m.py on this runtime; random version-3 blobs, textspot's procedural frames): qS4 117,184 B, est. 195.1 ms @333 (146.3 @444), qM4 247,392 B, 216.6 ms (162.4), qL5 447,392 B, 231.8 ms (173.8); arena up to 960 x 544 256,247 B for all three. They replace amendment 4's probe rows (203.96 / 228.72 / 245.96 ms) as the eligibility source; family T's rows stay eval/textspot3_a9_t_20261021.json (re-measured on the unchanged vocr_textspot2.c: 20 of 20 rows identical). select reads --a9 eval/textspot3_a9_t_20261021.json --a9 eval/textspot3_a9_20261021.json and not the probe table.",
+    "Reported (VitaSDK --gc-sections .text of the spotter's own sections): NEON -O2 23,880 B, -Os 19,452 B; scalar -O2 20,252 B, -Os 16,054 B; psp-gcc objects 31,618 / 26,706 B (-O2 / -Os -G0). Stack peak of find: 2,712 B (Vita -O2), 1,960 B without the dark pass. Every time is a host estimate; nothing ran on a console."
+   ],
+   "sources_sha256": {
+    "runtime/vocr_textspot3.c": "b2d174f561e9a058e0cc2595c3f3f515ea38602629779176a4ee0d8baf3dfa5d",
+    "runtime/vocr_textspot3_test.c": "9474b7eb113f6a99e763e9cdafd12a2ae6811f33be2c368a5f8bd22adb0abf45",
+    "eval/textspot3_a9_20261021.json": "6fcaa81e11431a8b4d7b9311ec4f386e1a75768fb4cdce2451f70e1d211cb500",
+    "eval/textspot3_a9r.py": "7dcb2a3a9602f2f8ebeae917d9a9657c3d98acedc6905ecf2e5579ae76499343",
+    "tests/test_textspot3_runtime.py": "72f5ab4fa73ff91798e3202e80fec20109ae537c2298c91e7ac198a444fbfde4",
+    "tests/test_textspot3_a9_record.py": "39126a063c382674d584233c32a8dd4e426342e962ac7a2e8a4aec208bde576b"
+   },
+   "settings": {
+    "runtime_commit": "d75b721",
+    "a9_rows_of_record": {
+     "T": "eval/textspot3_a9_t_20261021.json",
+     "M": "eval/textspot3_a9_20261021.json"
+    },
+    "m_rows": {
+     "qS4": {
+      "vtsp_bytes": 117184,
+      "ms_333_960": 195.111,
+      "ms_444_960": 146.334,
+      "arena_up_to_960": 256247
+     },
+     "qM4": {
+      "vtsp_bytes": 247392,
+      "ms_333_960": 216.598,
+      "ms_444_960": 162.449,
+      "arena_up_to_960": 256247
+     },
+     "qL5": {
+      "vtsp_bytes": 447392,
+      "ms_333_960": 231.772,
+      "ms_444_960": 173.829,
+      "arena_up_to_960": 256247
+     }
+    }
+   }
   }
  ],
  "shapes": {

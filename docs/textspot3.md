@@ -335,3 +335,23 @@ Each amendment is dated in `eval/textspot3_protocol.json` and precedes the runs 
    - The scoring wrapper's version-3 path is re-pinned (`eval/textspot3.py`, `tests/test_textspot3_eval.py`): its
      real-v3 test now reads `PROBES`, and a family-M blob that does not halve at 480 × 272 is refused. Its
      version-2 path is unchanged.
+6. **The version-3 runtime of record and family M's A9 rows** (2026-10-21T13:58Z, before any family-M score).
+   - `runtime/vocr_textspot3.c` at `d75b721`, after a speed pass (fewer instructions in the map part, bit for bit
+     the same outputs), and its driver.
+   - Checks on it:
+     - `ci/runtime.sh` with gcc and clang;
+     - large ASan + UBSan parity runs: 4,574 and 3,961 runs, with every version-1/2 run equal to `vocr_textspot2_test`;
+     - qemu-arm Cortex-A9 parity of the Vita compiler's own objects;
+     - strict VitaSDK and psp-gcc builds;
+     - an independent audit (AUDIT_OK).
+   - The rows of record for family M, `eval/textspot3_a9_20261021.json`:
+
+     | shape | est. ms @333 / @444 | arena B |
+     |---|---:|---:|
+     | `qS4` | 195.1 / 146.3 | 256,247 |
+     | `qM4` | 216.6 / 162.4 | 256,247 |
+     | `qL5` | 231.8 / 173.8 | 256,247 |
+
+     They replace amendment 4's probe rows. Family T keeps `eval/textspot3_a9_t_20261021.json` (re-measured: 20 of
+     20 rows identical).
+   - Code (VitaSDK `--gc-sections` `.text`): 23,880 B at -O2 NEON and 19,452 B at -Os. The stack peak is 2,712 B.

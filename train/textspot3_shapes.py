@@ -147,8 +147,9 @@ def vtdt_bytes(layers):
 
 def costs(name, sizes=SIZES):
     """Exact figures of a shape: MACs per frame at the network's input (a T frame wider than half_above is halved;
-    an M frame by version 3's rule), parameters, int8 weights, the VTSP bytes and the receptive field (input px)."""
-    s = SHAPES[name]
+    an M frame by version 3's rule), parameters, int8 weights, the VTSP bytes and the receptive field (input px).
+    A name the protocol does not register is looked up among the T_ROWS candidates."""
+    s = SHAPES[name] if name in SHAPES else CANDIDATES[name]
     if s["family"] == "T":
         import textdet_model as TM
         import textspot2_export as X

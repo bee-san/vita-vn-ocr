@@ -1,0 +1,2013 @@
+{
+ "kind": "textspot-a9",
+ "computed": "2026-10-21T13:11:07Z",
+ "method": "textspot_a9.py measure --out DIR [--shapes s4_c8,...] [--scales h2,f1] [--sizes 960x544,480x272]                          [--formats grey] [--nodark] [--cflags \"-O2\"] [--seed 1] [--jobs 5] [--vitasdk DIR]                          [--arm-cc GCC] [--qemu DIR]   textspot_a9.py report DIR [--json eval/textspot_a9_YYYYMMDD.json] [--also DIR2 --also-label TEXT ...]",
+ "sources_sha256": {
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+  "runtime/vocr_textspot3.c": "b2d174f561e9a058e0cc2595c3f3f515ea38602629779176a4ee0d8baf3dfa5d",
+  "runtime/vocr_textspot3.h": "d04d58c29bee724ea4bf9e898f76e6c8832e9bfe0164bc01edc55095f928d7e8",
+  "runtime/vocr_textspot3_test.c": "9474b7eb113f6a99e763e9cdafd12a2ae6811f33be2c368a5f8bd22adb0abf45"
+ },
+ "tools": {
+  "vita_cc": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+  "arm_cc": "arm-none-linux-gnueabihf-gcc (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 14.2.1 20241119",
+  "qemu": "qemu-arm version 10.0.13",
+  "qemu_plugins_sha256": {
+   "libcache.so": "a608e4927a127450edace570319b869e7912f5b91ce53057f2a9516100592151",
+   "libinsn_mix.so": "107d2886b260c2c7a92db4ba19b418c3e8eee2b120757eff2e911bd35e8397ac"
+  },
+  "a9_cycles_sha256": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc",
+  "textspot_twin_sha256": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+  "textdet_export_sha256": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576"
+ },
+ "flags": [
+  "-std=c99",
+  "-mcpu=cortex-a9",
+  "-mfpu=neon",
+  "-mfloat-abi=hard",
+  "-O2",
+  "(Thumb-2: the VitaSDK default; vocr_lines*.c at -O2)"
+ ],
+ "cache": "dcachesize=32768,dassoc=4,dblksize=32,icachesize=32768,iassoc=4,iblksize=32,l2=on,l2cachesize=2097152,l2assoc=8,l2blksize=32,limit=10",
+ "vocr_textspot_o_text_bytes": 24104,
+ "calibration": 1.0007,
+ "seed": 1,
+ "textspot3": {
+  "protocol": {
+   "path": "eval/textspot3_protocol.json",
+   "sha256": "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+   "budget": {
+    "vtsp_max": 512000,
+    "ms_max_333_960": 300,
+    "arena_max": 262144,
+    "bytes": "the whole VTSP file (int8 weights, int32 biases, requantisation constants, headers); the int8 weight count is reported",
+    "time": "the A9 cycle model's high bound x 1.0007 at 333 MHz for the shape and scale on the runtime of the blob's version (default call, dark pass included), plus 1.4 ms per horizontal box at the arm's median on the development Vita frames for det+refine",
+    "arena": "the runtime's *_arena_bytes(m, 960, 544) (any frame up to 960 x 544); for det+refine the larger of it and the refinement's 72,391 B",
+    "parity": "the C runtime gives the twin's boxes on every development frame",
+    "report": "444 MHz (x 333/444), the PSP's 480x272, VitaSDK -Os code sizes, the stack peak"
+   },
+   "estimates": "the A9 cycle model as textspot: the Vita compiler's code of the runtime of the blob's version (vocr_textspot2.c for T, vocr_textspot3.c for M), random blobs of each shape, textspot's pinned procedural frames at 960x544 and 480x272, vita/a9_cycles.py; tables pinned by an amendment before any score"
+  },
+  "title": "textspot3: the A9 table of record of the registered shapes (family M on runtime/vocr_textspot3.c; family T and textspot2's d2s shapes on runtime/vocr_textspot2.c)",
+  "runtime": "v3",
+  "runtime_files": "runtime/vocr_textspot3.c (VTSP versions 1, 2 and 3; driver runtime/vocr_textspot3_test.c)",
+  "code_sha256": {
+   "eval/textspot2_a9.py": "6d71cfa54a7080db57b05aaf30dced7148167da1e7463ce71491cb5233954bb0",
+   "eval/textspot3_a9m.py": "c96e25e1395bd904f2058466e5d83b69a668c61dd0ab96ba9a1317e94dfefc3f",
+   "eval/textspot_a9.py": "b04e6c6a53c55080354114b0abc6d49be09fe1b2bc1a927eeec17ebdac8a17d0",
+   "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+   "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+   "runtime/vocr_textspot3.c": "b2d174f561e9a058e0cc2595c3f3f515ea38602629779176a4ee0d8baf3dfa5d",
+   "runtime/vocr_textspot3.h": "d04d58c29bee724ea4bf9e898f76e6c8832e9bfe0164bc01edc55095f928d7e8",
+   "runtime/vocr_textspot3_test.c": "9474b7eb113f6a99e763e9cdafd12a2ae6811f33be2c368a5f8bd22adb0abf45",
+   "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+   "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+   "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+   "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+   "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+   "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+   "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+   "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+   "vita/a9_cycles.py": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc"
+  },
+  "shapes": {
+   "qL5": {
+    "shape": {
+     "name": "qL5",
+     "family": "M",
+     "stride": 8,
+     "c0": 8,
+     "c1": 16,
+     "c2": 64,
+     "chans": [
+      64,
+      64,
+      64,
+      64
+     ],
+     "dil": [
+      1,
+      2,
+      4,
+      1
+     ],
+     "block": "sep",
+     "stages": [
+      {
+       "c": 96,
+       "n": 1,
+       "dil": [
+        1
+       ]
+      },
+      {
+       "c": 192,
+       "n": 1,
+       "dil": [
+        1
+       ]
+      },
+      {
+       "c": 384,
+       "n": 1,
+       "dil": [
+        1
+       ]
+      }
+     ],
+     "neck": {
+      "t": 96,
+      "t8": 48,
+      "smooth": 1
+     },
+     "head": "ms_x2",
+     "point": "L"
+    },
+    "family": "M",
+    "macs": {
+     "960x544": 107348640,
+     "480x272": 107348640
+    },
+    "macs_by_part_480x272": {
+     "stream": 44488320,
+     "s16": 17968320,
+     "s32": 11547360,
+     "s64": 10529280,
+     "s8": 21248640,
+     "head": 1566720
+    },
+    "params": 418752,
+    "weights_int8": 415312,
+    "weights_by_part": {
+     "stream": 20128,
+     "s16": 35232,
+     "s32": 85536,
+     "s64": 263232,
+     "s8": 10416,
+     "head": 768
+    },
+    "vtsp_bytes": 447392,
+    "receptive_field": 495,
+    "layers": 32,
+    "ops": 19,
+    "half_above": 480,
+    "half_above_h": 272
+   },
+   "qM4": {
+    "shape": {
+     "name": "qM4",
+     "family": "M",
+     "stride": 8,
+     "c0": 8,
+     "c1": 16,
+     "c2": 64,
+     "chans": [
+      64,
+      64,
+      64,
+      64
+     ],
+     "dil": [
+      1,
+      2,
+      4,
+      1
+     ],
+     "block": "sep",
+     "stages": [
+      {
+       "c": 96,
+       "n": 1,
+       "dil": [
+        1
+       ]
+      },
+      {
+       "c": 192,
+       "n": 0,
+       "dil": []
+      },
+      {
+       "c": 384,
+       "n": 0,
+       "dil": []
+      }
+     ],
+     "neck": {
+      "t": 96,
+      "t8": 48,
+      "smooth": 1
+     },
+     "head": "ms_x2",
+     "point": "M"
+    },
+    "family": "M",
+    "macs": {
+     "960x544": 96102240,
+     "480x272": 96102240
+    },
+    "macs_by_part_480x272": {
+     "stream": 44488320,
+     "s16": 17968320,
+     "s32": 6337440,
+     "s64": 4492800,
+     "s8": 21248640,
+     "head": 1566720
+    },
+    "params": 228096,
+    "weights_int8": 225808,
+    "weights_by_part": {
+     "stream": 20128,
+     "s16": 35232,
+     "s32": 46944,
+     "s64": 112320,
+     "s8": 10416,
+     "head": 768
+    },
+    "vtsp_bytes": 247392,
+    "receptive_field": 303,
+    "layers": 28,
+    "ops": 15,
+    "half_above": 480,
+    "half_above_h": 272
+   },
+   "qS4": {
+    "shape": {
+     "name": "qS4",
+     "family": "M",
+     "stride": 8,
+     "c0": 8,
+     "c1": 16,
+     "c2": 64,
+     "chans": [
+      64,
+      64,
+      64,
+      64
+     ],
+     "dil": [
+      1,
+      2,
+      4,
+      1
+     ],
+     "block": "sep",
+     "stages": [
+      {
+       "c": 64,
+       "n": 0,
+       "dil": []
+      },
+      {
+       "c": 128,
+       "n": 0,
+       "dil": []
+      },
+      {
+       "c": 192,
+       "n": 0,
+       "dil": []
+      }
+     ],
+     "neck": {
+      "t": 64,
+      "t8": 48,
+      "smooth": 1
+     },
+     "head": "ms_x2",
+     "point": "S"
+    },
+    "family": "M",
+    "macs": {
+     "960x544": 75094080,
+     "480x272": 75094080
+    },
+    "macs_by_part_480x272": {
+     "stream": 44488320,
+     "s16": 6560640,
+     "s32": 2842560,
+     "s64": 1520640,
+     "s8": 18115200,
+     "head": 1566720
+    },
+    "params": 103328,
+    "weights_int8": 101712,
+    "weights_by_part": {
+     "stream": 20128,
+     "s16": 12864,
+     "s32": 21056,
+     "s64": 38016,
+     "s8": 8880,
+     "head": 768
+    },
+    "vtsp_bytes": 117184,
+    "receptive_field": 271,
+    "layers": 26,
+    "ops": 13,
+    "half_above": 480,
+    "half_above_h": 272
+   }
+  },
+  "split_parts": {
+   "stream": [
+    "feed",
+    "chain",
+    "delivered",
+    "dest_row",
+    "to_f8",
+    "pair_sums",
+    "input_codes",
+    "setup3",
+    "produce",
+    "drain",
+    "k3_block_s1",
+    "k3_block_s2",
+    "k1_block",
+    "grey8",
+    "memset"
+   ],
+   "map": [
+    "run_pw",
+    "run_dw",
+    "dw_row",
+    "pw_cells",
+    "pw_tile",
+    "pw_offsets",
+    "pw_segs",
+    "op_params",
+    "rq4v",
+    "rq4v.part.0",
+    "copy_cells",
+    "map_ref",
+    "hsum4",
+    "memcpy",
+    "dw_border",
+    "pw_sums",
+    "pw_store",
+    "pw_block_run",
+    "pw_gather",
+    "pw_gathers"
+   ],
+   "decode": [
+    "run_head",
+    "sub_row3",
+    "decode_row",
+    "sweep",
+    "finish",
+    "keep",
+    "group",
+    "isort",
+    "rows_of",
+    "joins",
+    "find_root",
+    "root_of",
+    "unite",
+    "cap_less",
+    "key_less",
+    "field",
+    "same_row"
+   ]
+  },
+  "measured": {
+   "main": [
+    "measure",
+    "--shapes",
+    "qS4,qM4,qL5",
+    "--out",
+    "$HERD/shared/artifacts/textspot3/a9/rec_m_main",
+    "--jobs",
+    "5",
+    "--vitasdk",
+    "$HERD/shared/artifacts/vita/vitasdk"
+   ],
+   "also": [
+    [
+     "measure",
+     "--shapes",
+     "qS4,qM4,qL5",
+     "--out",
+     "$HERD/shared/artifacts/textspot3/a9/rec_m_nodark",
+     "--nodark",
+     "--jobs",
+     "5",
+     "--vitasdk",
+     "$HERD/shared/artifacts/vita/vitasdk"
+    ]
+   ]
+  },
+  "code_size": {
+   "kind": "textspot3-code-size",
+   "runtime": "v3",
+   "source": "runtime/vocr_textspot3.c",
+   "computed": "2026-10-21T13:11:32Z",
+   "how": "eval/textspot2_a9.py codesize's: the .text of the spotter's own sections kept by a --gc-sections link (-Wl,-Map) of a caller of load, both arena functions, find and find_rows; vita/textgate_size.py's flags and map parser; vocr_lines*.c and libgcc listed apart",
+   "sources_sha256": {
+    "eval/textspot2_a9.py": "6d71cfa54a7080db57b05aaf30dced7148167da1e7463ce71491cb5233954bb0",
+    "eval/textspot3_a9m.py": "c96e25e1395bd904f2058466e5d83b69a668c61dd0ab96ba9a1317e94dfefc3f",
+    "eval/textspot_a9.py": "b04e6c6a53c55080354114b0abc6d49be09fe1b2bc1a927eeec17ebdac8a17d0",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot3.c": "b2d174f561e9a058e0cc2595c3f3f515ea38602629779176a4ee0d8baf3dfa5d",
+    "runtime/vocr_textspot3.h": "d04d58c29bee724ea4bf9e898f76e6c8832e9bfe0164bc01edc55095f928d7e8",
+    "runtime/vocr_textspot3_test.c": "9474b7eb113f6a99e763e9cdafd12a2ae6811f33be2c368a5f8bd22adb0abf45",
+    "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+    "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+    "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+    "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+    "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+    "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+    "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+    "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+    "vita/a9_cycles.py": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc"
+   },
+   "vita": {
+    "compiler": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+    "builds": {
+     "-O2": {
+      "text": 23880,
+      "rodata": 106,
+      "functions": {
+       "chain": 1540,
+       "decode_row": 920,
+       "delivered": 248,
+       "dest_row": 84,
+       "dw_border": 156,
+       "dw_row.isra.0": 1436,
+       "feed": 2916,
+       "frame3": 124,
+       "group": 1644,
+       "head_lay": 488,
+       "isort": 248,
+       "op_end": 336,
+       "op_lay": 596,
+       "op_params": 172,
+       "pair_sums": 564,
+       "plan": 384,
+       "pw_block_run": 484,
+       "pw_cells": 1272,
+       "pw_segs": 168,
+       "requant_ok": 44,
+       "run_dw": 556,
+       "run_head": 484,
+       "run_pw": 264,
+       "setup3": 580,
+       "spot": 1152,
+       "spot3": 740,
+       "stack_peak": 480,
+       "stream_lay": 320,
+       "sweep": 740,
+       "to_f8": 512,
+       "vocr_textspot3_arena_bytes": 236,
+       "vocr_textspot3_find": 120,
+       "vocr_textspot3_find_rows": 96,
+       "vocr_textspot3_frame_arena_bytes": 108,
+       "vocr_textspot3_load": 3668
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 24104,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2"
+      ]
+     },
+     "-Os": {
+      "text": 19452,
+      "rodata": 106,
+      "functions": {
+       "cap_less": 78,
+       "chain": 1430,
+       "crc32_ieee": 48,
+       "decode_row": 664,
+       "delivered": 236,
+       "dest_row": 44,
+       "dw_border": 150,
+       "dw_row": 980,
+       "feed": 2320,
+       "field": 48,
+       "find_root": 18,
+       "frame3": 26,
+       "grey_px": 36,
+       "group": 1262,
+       "head_lay": 412,
+       "image_ok": 36,
+       "isort": 124,
+       "loaded": 36,
+       "map_ref": 86,
+       "op_end": 228,
+       "op_lay": 438,
+       "op_params": 154,
+       "pair_sums": 344,
+       "plan": 328,
+       "plan3": 132,
+       "pw_block": 96,
+       "pw_block_run": 404,
+       "pw_cells": 1030,
+       "pw_segs": 110,
+       "rd32": 4,
+       "requant_ok": 44,
+       "ring_row": 58,
+       "rq4v": 168,
+       "run_dw": 364,
+       "run_head": 460,
+       "run_pw": 182,
+       "section_ok": 34,
+       "setup3": 448,
+       "side_ok": 26,
+       "slot_bytes": 62,
+       "spot": 870,
+       "spot3": 468,
+       "stack_peak": 352,
+       "stream_lay": 286,
+       "sweep": 596,
+       "to_f8": 454,
+       "vocr_textspot3_arena_bytes": 182,
+       "vocr_textspot3_find": 88,
+       "vocr_textspot3_find_rows": 78,
+       "vocr_textspot3_frame_arena_bytes": 66,
+       "vocr_textspot3_load": 2864
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 19650,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os"
+      ]
+     },
+     "-O2 -DVOCR_NO_NEON": {
+      "text": 20252,
+      "rodata": 42,
+      "functions": {
+       "chain": 1028,
+       "decode_row": 920,
+       "delivered": 248,
+       "dest_row": 84,
+       "dw_row.isra.0": 540,
+       "feed": 2176,
+       "frame3": 124,
+       "group": 1644,
+       "head_lay": 488,
+       "isort": 248,
+       "op_end": 336,
+       "op_lay": 596,
+       "op_params": 172,
+       "pair_sums": 312,
+       "plan": 384,
+       "pw_block_run.isra.0": 456,
+       "pw_cells.isra.0": 416,
+       "pw_segs": 168,
+       "requant_ok": 44,
+       "run_dw": 540,
+       "run_head": 460,
+       "run_pw": 244,
+       "setup3": 580,
+       "spot": 1152,
+       "spot3": 740,
+       "stack_peak": 480,
+       "store_acc": 292,
+       "stream_lay": 320,
+       "sweep": 740,
+       "to_f8": 92,
+       "vocr_textspot3_arena_bytes": 236,
+       "vocr_textspot3_find": 120,
+       "vocr_textspot3_find_rows": 96,
+       "vocr_textspot3_frame_arena_bytes": 108,
+       "vocr_textspot3_load": 3668
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 20418,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2",
+       "-DVOCR_NO_NEON"
+      ]
+     },
+     "-Os -DVOCR_NO_NEON": {
+      "text": 16054,
+      "rodata": 42,
+      "functions": {
+       "cap_less": 78,
+       "chain": 324,
+       "crc32_ieee": 48,
+       "decode_row": 664,
+       "delivered": 236,
+       "dest_row": 44,
+       "dw_row.isra.0": 466,
+       "feed": 1928,
+       "field": 48,
+       "find_root": 18,
+       "frame3": 26,
+       "grey_px": 36,
+       "group": 1262,
+       "head_lay": 412,
+       "image_ok": 36,
+       "isort": 124,
+       "loaded": 36,
+       "map_ref": 86,
+       "op_end": 228,
+       "op_lay": 438,
+       "op_params": 154,
+       "pair_sums": 190,
+       "plan": 328,
+       "plan3": 132,
+       "pw_block": 96,
+       "pw_block_run.isra.0": 378,
+       "pw_cells.isra.0": 294,
+       "pw_segs": 110,
+       "rd32": 4,
+       "requant_ok": 44,
+       "ring_row": 58,
+       "run_dw": 346,
+       "run_head": 450,
+       "run_pw": 166,
+       "section_ok": 34,
+       "setup3": 448,
+       "side_ok": 26,
+       "slot_bytes": 62,
+       "spot": 870,
+       "spot3": 468,
+       "stack_peak": 352,
+       "store_acc": 272,
+       "stream_lay": 286,
+       "sweep": 596,
+       "to_f8": 74,
+       "vocr_textspot3_arena_bytes": 182,
+       "vocr_textspot3_find": 88,
+       "vocr_textspot3_find_rows": 78,
+       "vocr_textspot3_frame_arena_bytes": 66,
+       "vocr_textspot3_load": 2864
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 16186,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os",
+       "-DVOCR_NO_NEON"
+      ]
+     }
+    }
+   },
+   "psp": {
+    "compiler": "psp-gcc (GCC) 15.2.0",
+    "object_text": {
+     "-O2 -G0": 31618,
+     "-Os -G0": 26706
+    }
+   }
+  },
+  "rows": [
+   {
+    "shape": "qS4",
+    "point": "S",
+    "vtsp_bytes": 117184,
+    "weights_int8": 101712,
+    "params": 103328,
+    "receptive_field": 271,
+    "macs_960": 75094080,
+    "macs_480": 75094080,
+    "macs_by_part_480x272": {
+     "stream": 44488320,
+     "s16": 6560640,
+     "s32": 2842560,
+     "s64": 1520640,
+     "s8": 18115200,
+     "head": 1566720
+    },
+    "weights_by_part": {
+     "stream": 20128,
+     "s16": 12864,
+     "s32": 21056,
+     "s64": 38016,
+     "s8": 8880,
+     "head": 768
+    },
+    "ms_333_960": 195.1113941499099,
+    "ms_444_960": 146.33354561243243,
+    "arena_up_to_960": 256247,
+    "arena_frame_960": 256247,
+    "boxes_960": 64,
+    "truncated_960": 1,
+    "split_960": {
+     "stream": {
+      "insns_per_frame": 40732564,
+      "neon_issue_per_frame": 33877219,
+      "cycles_high_per_frame": 40732564,
+      "ms_333": 122.40563602042042
+     },
+     "map": {
+      "insns_per_frame": 12804772,
+      "neon_issue_per_frame": 10919133,
+      "cycles_high_per_frame": 12804772,
+      "ms_333": 38.479685706906906
+     },
+     "decode": {
+      "insns_per_frame": 889855,
+      "neon_issue_per_frame": 13465,
+      "cycles_high_per_frame": 891835,
+      "ms_333": 2.6800579114114114
+     },
+     "dark": {
+      "insns_per_frame": 2445000,
+      "neon_issue_per_frame": 0,
+      "cycles_high_per_frame": 2445000,
+      "ms_333": 7.347481981981982
+     },
+     "other": {
+      "insns_per_frame": 110578,
+      "neon_issue_per_frame": 8,
+      "cycles_high_per_frame": 110578,
+      "ms_333": 0.3322985123123123
+     },
+     "cache": {
+      "l1d_misses_per_frame": 204144,
+      "l2_misses_per_frame": 24820,
+      "cycles_high_per_frame": 7778077,
+      "ms_333": 23.373937698558553
+     }
+    },
+    "ms_333_480": 184.78132506665165,
+    "ms_444_480": 138.58599379998873,
+    "arena_up_to_480": 255287,
+    "arena_frame_480": 255287,
+    "boxes_480": 64,
+    "truncated_480": 1,
+    "split_480": {
+     "stream": {
+      "insns_per_frame": 40320484,
+      "neon_issue_per_frame": 33607939,
+      "cycles_high_per_frame": 40320484,
+      "ms_333": 121.16729230870871
+     },
+     "map": {
+      "insns_per_frame": 12804772,
+      "neon_issue_per_frame": 10919133,
+      "cycles_high_per_frame": 12804772,
+      "ms_333": 38.479685706906906
+     },
+     "decode": {
+      "insns_per_frame": 924422,
+      "neon_issue_per_frame": 13907,
+      "cycles_high_per_frame": 926402,
+      "ms_333": 2.7839353795795794
+     },
+     "dark": {
+      "insns_per_frame": 796584,
+      "neon_issue_per_frame": 0,
+      "cycles_high_per_frame": 796584,
+      "ms_333": 2.393818645045045
+     },
+     "other": {
+      "insns_per_frame": 106425,
+      "neon_issue_per_frame": 8,
+      "cycles_high_per_frame": 106425,
+      "ms_333": 0.3198183108108108
+     },
+     "cache": {
+      "l1d_misses_per_frame": 184913,
+      "l2_misses_per_frame": 12495,
+      "cycles_high_per_frame": 6379932,
+      "ms_333": 19.172365772657656
+     }
+    },
+    "ms_333_960_nodark": 186.99458037875073,
+    "ms_444_960_nodark": 140.24593528406305,
+    "ms_333_480_nodark": 182.0625395243213,
+    "ms_444_480_nodark": 136.54690464324096,
+    "within_budget": true
+   },
+   {
+    "shape": "qM4",
+    "point": "M",
+    "vtsp_bytes": 247392,
+    "weights_int8": 225808,
+    "params": 228096,
+    "receptive_field": 303,
+    "macs_960": 96102240,
+    "macs_480": 96102240,
+    "macs_by_part_480x272": {
+     "stream": 44488320,
+     "s16": 17968320,
+     "s32": 6337440,
+     "s64": 4492800,
+     "s8": 21248640,
+     "head": 1566720
+    },
+    "weights_by_part": {
+     "stream": 20128,
+     "s16": 35232,
+     "s32": 46944,
+     "s64": 112320,
+     "s8": 10416,
+     "head": 768
+    },
+    "ms_333_960": 216.5982854435946,
+    "ms_444_960": 162.44871408269594,
+    "arena_up_to_960": 256247,
+    "arena_frame_960": 256247,
+    "boxes_960": 64,
+    "truncated_960": 1,
+    "split_960": {
+     "stream": {
+      "insns_per_frame": 40732564,
+      "neon_issue_per_frame": 33877219,
+      "cycles_high_per_frame": 40732564,
+      "ms_333": 122.40563602042042
+     },
+     "map": {
+      "insns_per_frame": 19752837,
+      "neon_issue_per_frame": 17439814,
+      "cycles_high_per_frame": 19752837,
+      "ms_333": 59.35935130900901
+     },
+     "decode": {
+      "insns_per_frame": 980970,
+      "neon_issue_per_frame": 15977,
+      "cycles_high_per_frame": 983258,
+      "ms_333": 2.9547936354354354
+     },
+     "dark": {
+      "insns_per_frame": 1584530,
+      "neon_issue_per_frame": 0,
+      "cycles_high_per_frame": 1584530,
+      "ms_333": 4.761679192192192
+     },
+     "other": {
+      "insns_per_frame": 114757,
+      "neon_issue_per_frame": 8,
+      "cycles_high_per_frame": 114757,
+      "ms_333": 0.3448568465465465
+     },
+     "cache": {
+      "l1d_misses_per_frame": 236010,
+      "l2_misses_per_frame": 24837,
+      "cycles_high_per_frame": 8735189,
+      "ms_333": 26.250161989540537
+     }
+    },
+    "ms_333_480": 208.41785206475674,
+    "ms_444_480": 156.31338904856756,
+    "arena_up_to_480": 255287,
+    "arena_frame_480": 255287,
+    "boxes_480": 64,
+    "truncated_480": 1,
+    "split_480": {
+     "stream": {
+      "insns_per_frame": 40320484,
+      "neon_issue_per_frame": 33607939,
+      "cycles_high_per_frame": 40320484,
+      "ms_333": 121.16729230870871
+     },
+     "map": {
+      "insns_per_frame": 19751787,
+      "neon_issue_per_frame": 17439814,
+      "cycles_high_per_frame": 19751787,
+      "ms_333": 59.35619594864865
+     },
+     "decode": {
+      "insns_per_frame": 994339,
+      "neon_issue_per_frame": 15407,
+      "cycles_high_per_frame": 996517,
+      "ms_333": 2.9946383240240237
+     },
+     "dark": {
+      "insns_per_frame": 637479,
+      "neon_issue_per_frame": 0,
+      "cycles_high_per_frame": 637479,
+      "ms_333": 1.915691397297297
+     },
+     "other": {
+      "insns_per_frame": 110478,
+      "neon_issue_per_frame": 8,
+      "cycles_high_per_frame": 110478,
+      "ms_333": 0.3319980018018018
+     },
+     "cache": {
+      "l1d_misses_per_frame": 218051,
+      "l2_misses_per_frame": 12504,
+      "cycles_high_per_frame": 7374672,
+      "ms_333": 22.16166303322522
+     }
+    },
+    "ms_333_960_nodark": 211.25506348024322,
+    "ms_444_960_nodark": 158.44129761018243,
+    "ms_333_480_nodark": 206.23552286026424,
+    "ms_444_480_nodark": 154.67664214519817,
+    "within_budget": true
+   },
+   {
+    "shape": "qL5",
+    "point": "L",
+    "vtsp_bytes": 447392,
+    "weights_int8": 415312,
+    "params": 418752,
+    "receptive_field": 495,
+    "macs_960": 107348640,
+    "macs_480": 107348640,
+    "macs_by_part_480x272": {
+     "stream": 44488320,
+     "s16": 17968320,
+     "s32": 11547360,
+     "s64": 10529280,
+     "s8": 21248640,
+     "head": 1566720
+    },
+    "weights_by_part": {
+     "stream": 20128,
+     "s16": 35232,
+     "s32": 85536,
+     "s64": 263232,
+     "s8": 10416,
+     "head": 768
+    },
+    "ms_333_960": 231.77161126386184,
+    "ms_444_960": 173.8287084478964,
+    "arena_up_to_960": 256247,
+    "arena_frame_960": 256247,
+    "boxes_960": 64,
+    "truncated_960": 1,
+    "split_960": {
+     "stream": {
+      "insns_per_frame": 40732564,
+      "neon_issue_per_frame": 33877219,
+      "cycles_high_per_frame": 40732564,
+      "ms_333": 122.40563602042042
+     },
+     "map": {
+      "insns_per_frame": 23545606,
+      "neon_issue_per_frame": 20935452,
+      "cycles_high_per_frame": 23545606,
+      "ms_333": 70.7570207933934
+     },
+     "decode": {
+      "insns_per_frame": 948938,
+      "neon_issue_per_frame": 15667,
+      "cycles_high_per_frame": 950984,
+      "ms_333": 2.857806873273273
+     },
+     "dark": {
+      "insns_per_frame": 1903739,
+      "neon_issue_per_frame": 0,
+      "cycles_high_per_frame": 1903739,
+      "ms_333": 5.720935787687687
+     },
+     "other": {
+      "insns_per_frame": 116519,
+      "neon_issue_per_frame": 8,
+      "cycles_high_per_frame": 116519,
+      "ms_333": 0.35015184174174174
+     },
+     "cache": {
+      "l1d_misses_per_frame": 268369,
+      "l2_misses_per_frame": 24826,
+      "cycles_high_per_frame": 9705226,
+      "ms_333": 29.165225340738736
+     }
+    },
+    "ms_333_480": 222.89392261021018,
+    "ms_444_480": 167.17044195765763,
+    "arena_up_to_480": 255287,
+    "arena_frame_480": 255287,
+    "boxes_480": 64,
+    "truncated_480": 1,
+    "split_480": {
+     "stream": {
+      "insns_per_frame": 40320484,
+      "neon_issue_per_frame": 33607939,
+      "cycles_high_per_frame": 40320484,
+      "ms_333": 121.16729230870871
+     },
+     "map": {
+      "insns_per_frame": 23546236,
+      "neon_issue_per_frame": 20935452,
+      "cycles_high_per_frame": 23546236,
+      "ms_333": 70.7589140096096
+     },
+     "decode": {
+      "insns_per_frame": 925891,
+      "neon_issue_per_frame": 14593,
+      "cycles_high_per_frame": 928003,
+      "ms_333": 2.7887465528528526
+     },
+     "dark": {
+      "insns_per_frame": 805754,
+      "neon_issue_per_frame": 0,
+      "cycles_high_per_frame": 805754,
+      "ms_333": 2.4213754588588587
+     },
+     "other": {
+      "insns_per_frame": 111394,
+      "neon_issue_per_frame": 8,
+      "cycles_high_per_frame": 111394,
+      "ms_333": 0.334750678078078
+     },
+     "cache": {
+      "l1d_misses_per_frame": 248959,
+      "l2_misses_per_frame": 12500,
+      "cycles_high_per_frame": 8301645,
+      "ms_333": 24.94731577027027
+     }
+    },
+    "ms_333_960_nodark": 225.26069861492488,
+    "ms_444_960_nodark": 168.94552396119366,
+    "ms_333_480_nodark": 220.13144283965164,
+    "ms_444_480_nodark": 165.09858212973873,
+    "within_budget": true
+   }
+  ],
+  "tools": {
+   "m": "eval/textspot3_a9m.py (amendment 4)",
+   "t": "eval/textspot3_a9.py (amendment 1)",
+   "record": "eval/textspot3_a9r.py",
+   "record_sha256": "7dcb2a3a9602f2f8ebeae917d9a9657c3d98acedc6905ecf2e5579ae76499343"
+  },
+  "t": {
+   "how": "family T's registered shapes (VTSP version 2, half_above 480) and textspot2's s8_c24n4x2 and s8_c48n4x2 (half_above 600) measured again by eval/textspot3_a9.py on runtime/vocr_textspot2.c as merged, every row compared field by field with the pinned tables (eval/textspot2_a9.compare_rows)",
+   "runtime": "v2",
+   "runtime_files": "runtime/vocr_textspot2.c as merged (VTSP versions 1 and 2; driver runtime/vocr_textspot2_test.c)",
+   "code_sha256": {
+    "eval/textspot2_a9.py": "6d71cfa54a7080db57b05aaf30dced7148167da1e7463ce71491cb5233954bb0",
+    "eval/textspot3_a9.py": "3ec5f478898a585839c97f7f00e37727ef101772d8631fb8b1cffecde8736c45",
+    "eval/textspot_a9.py": "b04e6c6a53c55080354114b0abc6d49be09fe1b2bc1a927eeec17ebdac8a17d0",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot2.c": "359f97c8b628e4086466497d5667f96e83be75ef3b9f2f6173d9f36e9b864ce2",
+    "runtime/vocr_textspot2.h": "2d7429e4799e6a2242c6972762936f40ef672677286bf470b80d88a3f9529ee2",
+    "runtime/vocr_textspot2_test.c": "572fee11dd13de9ff104fe9c55c30d370583edb34c83a29b1a9d11c61771dfe5",
+    "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+    "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+    "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+    "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+    "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+    "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+    "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+    "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+    "vita/a9_cycles.py": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc"
+   },
+   "sources_sha256": {
+    "runtime/vocr_textspot2.c": "359f97c8b628e4086466497d5667f96e83be75ef3b9f2f6173d9f36e9b864ce2",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot2_test.c": "572fee11dd13de9ff104fe9c55c30d370583edb34c83a29b1a9d11c61771dfe5",
+    "runtime/vocr_textspot2.h": "2d7429e4799e6a2242c6972762936f40ef672677286bf470b80d88a3f9529ee2"
+   },
+   "rows": [
+    {
+     "shape": "t64n4c16",
+     "half_above": 480,
+     "family": "T",
+     "vtsp_bytes": 27456,
+     "weights_int8": 21152,
+     "params": 21792,
+     "receptive_field": 143,
+     "macs_960": 46577280,
+     "macs_480": 46577280,
+     "ms_333_960": 157.73215262950748,
+     "ms_444_960": 118.29911447213061,
+     "arena_up_to_960": 129311,
+     "arena_frame_960": 129311,
+     "boxes_960": 64,
+     "truncated_960": 1,
+     "ms_333_480": 148.7510834619189,
+     "ms_444_480": 111.56331259643918,
+     "arena_up_to_480": 128351,
+     "arena_frame_480": 128351,
+     "boxes_480": 64,
+     "truncated_480": 1,
+     "ms_333_960_nodark": 150.83879837462763,
+     "ms_444_960_nodark": 113.12909878097072,
+     "ms_333_480_nodark": 146.36089723766966,
+     "ms_444_480_nodark": 109.77067292825225,
+     "within_budget": true
+    },
+    {
+     "shape": "t48n8c16d8",
+     "half_above": 480,
+     "family": "T",
+     "vtsp_bytes": 32560,
+     "weights_int8": 23840,
+     "params": 24720,
+     "receptive_field": 383,
+     "macs_960": 52060800,
+     "macs_480": 52060800,
+     "ms_333_960": 182.76949870423422,
+     "ms_444_960": 137.07712402817566,
+     "arena_up_to_960": 238271,
+     "arena_frame_960": 238271,
+     "boxes_960": 64,
+     "truncated_960": 1,
+     "ms_333_480": 175.07358064527025,
+     "ms_444_480": 131.3051854839527,
+     "arena_up_to_480": 237311,
+     "arena_frame_480": 237311,
+     "boxes_480": 64,
+     "truncated_480": 1,
+     "ms_333_960_nodark": 178.0241605223273,
+     "ms_444_960_nodark": 133.51812039174547,
+     "ms_333_480_nodark": 172.9814227147147,
+     "ms_444_480_nodark": 129.73606703603602,
+     "within_budget": true
+    },
+    {
+     "shape": "t64n8c16",
+     "half_above": 480,
+     "family": "T",
+     "vtsp_bytes": 51008,
+     "weights_int8": 39840,
+     "params": 40992,
+     "receptive_field": 287,
+     "macs_960": 84700800,
+     "macs_480": 84700800,
+     "ms_333_960": 260.84093940339636,
+     "ms_444_960": 195.63070455254726,
+     "arena_up_to_960": 240991,
+     "arena_frame_960": 240991,
+     "boxes_960": 64,
+     "truncated_960": 1,
+     "ms_333_480": 253.03369220728828,
+     "ms_444_480": 189.7752691554662,
+     "arena_up_to_480": 240031,
+     "arena_frame_480": 240031,
+     "boxes_480": 64,
+     "truncated_480": 1,
+     "ms_333_960_nodark": 255.73611251818616,
+     "ms_444_960_nodark": 191.80208438863963,
+     "ms_333_480_nodark": 250.69031350015615,
+     "ms_444_480_nodark": 188.01773512511713,
+     "within_budget": true
+    },
+    {
+     "shape": "s8_c24n4x2",
+     "half_above": 600,
+     "family": "textspot2 d2s",
+     "vtsp_bytes": 7416,
+     "weights_int8": 4352,
+     "params": 4632,
+     "receptive_field": 159,
+     "macs_960": 12305280,
+     "macs_480": 12305280,
+     "ms_333_960": 73.19050144668768,
+     "ms_444_960": 54.89287608501576,
+     "arena_up_to_960": 79647,
+     "arena_frame_960": 67631,
+     "boxes_960": 64,
+     "truncated_960": 1,
+     "ms_333_480": 63.588418504171166,
+     "ms_444_480": 47.691313878128376,
+     "arena_up_to_480": 66671,
+     "arena_frame_480": 66671,
+     "boxes_480": 64,
+     "truncated_480": 1,
+     "ms_333_960_nodark": 65.80546992514114,
+     "ms_444_960_nodark": 49.35410244385586,
+     "ms_333_480_nodark": 60.605616537879875,
+     "ms_444_480_nodark": 45.45421240340991,
+     "within_budget": true
+    },
+    {
+     "shape": "s8_c48n4x2",
+     "half_above": 600,
+     "family": "textspot2 d2s",
+     "vtsp_bytes": 18568,
+     "weights_int8": 13416,
+     "params": 13928,
+     "receptive_field": 143,
+     "macs_960": 31187520,
+     "macs_480": 31187520,
+     "ms_333_960": 122.50861805742042,
+     "ms_444_960": 91.88146354306531,
+     "arena_up_to_960": 125983,
+     "arena_frame_960": 106767,
+     "boxes_960": 64,
+     "truncated_960": 1,
+     "ms_333_480": 113.2894273664084,
+     "ms_444_480": 84.9670705248063,
+     "arena_up_to_480": 105807,
+     "arena_frame_480": 105807,
+     "boxes_480": 64,
+     "truncated_480": 1,
+     "ms_333_960_nodark": 115.75449332716515,
+     "ms_444_960_nodark": 86.81586999537386,
+     "ms_333_480_nodark": 110.78564516408109,
+     "ms_444_480_nodark": 83.08923387306082,
+     "within_budget": true
+    }
+   ],
+   "reproduces": [
+    {
+     "against": "eval/textspot3_a9_t_20261021.json",
+     "sha256": "ec1d27a535352df68ea091a3b9b4c3e04c528a6de49eba4a5c54515ad528701d",
+     "all_identical": true,
+     "rows": 20,
+     "identical": 20,
+     "differ": []
+    },
+    {
+     "against": "eval/textspot2_a9_d2s_20261020.json",
+     "sha256": "e5bde909a9d9fedce7c0840fe406a853def553b36fc50250fed8526f2cc05911",
+     "all_identical": true,
+     "rows": 8,
+     "identical": 8,
+     "differ": []
+    }
+   ],
+   "measured": {
+    "main": [
+     "measure",
+     "--runtime",
+     "v2",
+     "--half-above",
+     "480",
+     "--out",
+     "$HERD/shared/artifacts/textspot3/a9/rec_t_main",
+     "--jobs",
+     "5",
+     "--vitasdk",
+     "$HERD/shared/artifacts/vita/vitasdk"
+    ],
+    "also": [
+     [
+      "measure",
+      "--runtime",
+      "v2",
+      "--half-above",
+      "480",
+      "--out",
+      "$HERD/shared/artifacts/textspot3/a9/rec_t_nodark",
+      "--nodark",
+      "--jobs",
+      "5",
+      "--vitasdk",
+      "$HERD/shared/artifacts/vita/vitasdk"
+     ],
+     [
+      "measure",
+      "--runtime",
+      "v2",
+      "--shapes",
+      "s8_c24n4x2,s8_c48n4x2",
+      "--half-above",
+      "600",
+      "--out",
+      "$HERD/shared/artifacts/textspot3/a9/rec_t2_main",
+      "--jobs",
+      "5",
+      "--vitasdk",
+      "$HERD/shared/artifacts/vita/vitasdk"
+     ],
+     [
+      "measure",
+      "--runtime",
+      "v2",
+      "--shapes",
+      "s8_c24n4x2,s8_c48n4x2",
+      "--half-above",
+      "600",
+      "--out",
+      "$HERD/shared/artifacts/textspot3/a9/rec_t2_nodark",
+      "--nodark",
+      "--jobs",
+      "5",
+      "--vitasdk",
+      "$HERD/shared/artifacts/vita/vitasdk"
+     ]
+    ]
+   },
+   "markdown": "Family T (registered) and textspot2's d2s shapes, measured again for the table of record\n\nEstimates (the A9 cycle model on the Vita compiler's code under qemu-arm; nothing ran on a console). Arenas exact (the runtime's functions under qemu-arm). Runtime: runtime/vocr_textspot2.c as merged (VTSP versions 1 and 2; driver runtime/vocr_textspot2_test.c). Shapes registered: yes.\n\n| shape | half_above | VTSP B | int8 weights | MACs / 960x544 | RF px | est. ms 960x544 @333 / @444 (rule) | no dark @333 / @444 | 480x272 @333 / @444 | 480x272 no dark @333 / @444 | arena up to 960x544 (rule) | arena 960x544 frame | arena 480x272 | within budget |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|\n| t64n4c16 | 480 | 27,456 | 21,152 | 46,577,280 | 143 | 157.7 / 118.3 | 150.8 / 113.1 | 148.8 / 111.6 | 146.4 / 109.8 | 129,311 | 129,311 | 128,351 | yes |\n| t48n8c16d8 | 480 | 32,560 | 23,840 | 52,060,800 | 383 | 182.8 / 137.1 | 178.0 / 133.5 | 175.1 / 131.3 | 173.0 / 129.7 | 238,271 | 238,271 | 237,311 | yes |\n| t64n8c16 | 480 | 51,008 | 39,840 | 84,700,800 | 287 | 260.8 / 195.6 | 255.7 / 191.8 | 253.0 / 189.8 | 250.7 / 188.0 | 240,991 | 240,991 | 240,031 | yes |\n| s8_c24n4x2 | 600 | 7,416 | 4,352 | 12,305,280 | 159 | 73.2 / 54.9 | 65.8 / 49.4 | 63.6 / 47.7 | 60.6 / 45.5 | 79,647 | 67,631 | 66,671 | yes |\n| s8_c48n4x2 | 600 | 18,568 | 13,416 | 31,187,520 | 143 | 122.5 / 91.9 | 115.8 / 86.8 | 113.3 / 85.0 | 110.8 / 83.1 | 125,983 | 106,767 | 105,807 | yes |\n\nRows of shapes eval/textspot3_a9_t_20261021.json measured: 20 of 20 identical (every field: counts, cycles, ms, misses, boxes, arenas, blob and frame sha256).\n\nRows of shapes eval/textspot2_a9_d2s_20261020.json measured: 8 of 8 identical (every field: counts, cycles, ms, misses, boxes, arenas, blob and frame sha256)."
+  },
+  "stack": {
+   "kind": "textspot3-stack",
+   "computed": "2026-10-21T13:12:46Z",
+   "how": "stack: the peak stack of each public function of runtime/vocr_textspot3.c, and for reference of the frozen runtime/vocr_textspot2.c, from gcc -fcallgraph-info=su over the spotter and vocr_lines.c / vocr_lines_rows.c (whose vocr_line_dark gives the dark flags): VitaSDK gcc -O2 and -Os (Thumb-2, NEON), psp-gcc -O2 -G0 and -Os -G0. Every frame must be static; the peak is the heaviest path through the call graph across the three files (psp/stack.py's parser); calls outside them (memcpy, memset, libgcc) are listed, their frames not counted.",
+   "sources_sha256": {
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot2.c": "359f97c8b628e4086466497d5667f96e83be75ef3b9f2f6173d9f36e9b864ce2",
+    "runtime/vocr_textspot3.c": "b2d174f561e9a058e0cc2595c3f3f515ea38602629779176a4ee0d8baf3dfa5d"
+   },
+   "compilers": {
+    "vita": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+    "psp": "psp-gcc (GCC) 15.2.0"
+   },
+   "builds": {
+    "Vita -O2": {
+     "flags": [
+      "-mcpu=cortex-a9",
+      "-mthumb",
+      "-mfpu=neon",
+      "-mfloat-abi=hard",
+      "-O2"
+     ],
+     "peaks": {
+      "vocr_textspot3_find": {
+       "bytes": 2712,
+       "chain": [
+        "vocr_textspot3_find 56",
+        "spot 480",
+        "vocr_line_dark_rows 64",
+        "pix_dark 2112",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot3_find_rows": {
+       "bytes": 2704,
+       "chain": [
+        "vocr_textspot3_find_rows 48",
+        "spot 480",
+        "vocr_line_dark_rows 64",
+        "pix_dark 2112",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot3_load": {
+       "bytes": 160,
+       "chain": [
+        "vocr_textspot3_load 160",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot3_maps": {
+       "bytes": 4272,
+       "chain": [
+        "vocr_textspot3_maps 1616",
+        "spot 480",
+        "vocr_line_dark_rows 64",
+        "pix_dark 2112",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot3_arena_bytes": {
+       "bytes": 1112,
+       "chain": [
+        "vocr_textspot3_arena_bytes 120",
+        "vocr_textspot3_frame_arena_bytes 96",
+        "frame3 64",
+        "stack_peak 744",
+        "op_lay 88",
+        "__aeabi_uidiv (extern)"
+       ]
+      },
+      "vocr_textspot3_frame_arena_bytes": {
+       "bytes": 992,
+       "chain": [
+        "vocr_textspot3_frame_arena_bytes 96",
+        "frame3 64",
+        "stack_peak 744",
+        "op_lay 88",
+        "__aeabi_uidiv (extern)"
+       ]
+      },
+      "vocr_textspot2_find": {
+       "bytes": 2904,
+       "chain": [
+        "vocr_textspot2_find 56",
+        "spot 672",
+        "vocr_line_dark_rows 64",
+        "pix_dark 2112",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot2_find_rows": {
+       "bytes": 2896,
+       "chain": [
+        "vocr_textspot2_find_rows 48",
+        "spot 672",
+        "vocr_line_dark_rows 64",
+        "pix_dark 2112",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot2_load": {
+       "bytes": 112,
+       "chain": [
+        "vocr_textspot2_load 112",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot2_maps": {
+       "bytes": 4464,
+       "chain": [
+        "vocr_textspot2_maps 1616",
+        "spot 672",
+        "vocr_line_dark_rows 64",
+        "pix_dark 2112",
+        "memset (extern)"
+       ]
+      }
+     },
+     "no_dark": {
+      "vocr_textspot3_find without the dark pass": {
+       "bytes": 1960,
+       "chain": [
+        "vocr_textspot3_find 56",
+        "spot 480",
+        "spot3 592",
+        "stack_peak 744",
+        "op_lay 88",
+        "__aeabi_uidiv (extern)"
+       ]
+      },
+      "vocr_textspot2_find without the dark pass": {
+       "bytes": 960,
+       "chain": [
+        "vocr_textspot2_find 56",
+        "spot 672",
+        "chain 232",
+        "memcpy (extern)"
+       ]
+      }
+     },
+     "externs": {
+      "v3": [
+       "__aeabi_idiv",
+       "__aeabi_idivmod",
+       "__aeabi_uidiv",
+       "__aeabi_uidivmod",
+       "__indirect_call",
+       "memcpy",
+       "memset"
+      ],
+      "v2": [
+       "__aeabi_idiv",
+       "__aeabi_idivmod",
+       "__aeabi_uidiv",
+       "__aeabi_uidivmod",
+       "__indirect_call",
+       "memcpy",
+       "memset"
+      ]
+     }
+    },
+    "Vita -Os": {
+     "flags": [
+      "-mcpu=cortex-a9",
+      "-mthumb",
+      "-mfpu=neon",
+      "-mfloat-abi=hard",
+      "-Os"
+     ],
+     "peaks": {
+      "vocr_textspot3_find": {
+       "bytes": 2688,
+       "chain": [
+        "vocr_textspot3_find 64",
+        "spot 456",
+        "vocr_line_dark_rows 56",
+        "pix_dark 2104",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot3_find_rows": {
+       "bytes": 2680,
+       "chain": [
+        "vocr_textspot3_find_rows 56",
+        "spot 456",
+        "vocr_line_dark_rows 56",
+        "pix_dark 2104",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot3_load": {
+       "bytes": 124,
+       "chain": [
+        "vocr_textspot3_load 112",
+        "crc32_ieee 12"
+       ]
+      },
+      "vocr_textspot3_maps": {
+       "bytes": 4240,
+       "chain": [
+        "vocr_textspot3_maps 1616",
+        "spot 456",
+        "vocr_line_dark_rows 56",
+        "pix_dark 2104",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot3_arena_bytes": {
+       "bytes": 1008,
+       "chain": [
+        "vocr_textspot3_arena_bytes 32",
+        "vocr_textspot3_frame_arena_bytes 96",
+        "frame3 48",
+        "plan3 32",
+        "stack_peak 720",
+        "op_lay 56",
+        "pw_block 24",
+        "__aeabi_uidiv (extern)"
+       ]
+      },
+      "vocr_textspot3_frame_arena_bytes": {
+       "bytes": 976,
+       "chain": [
+        "vocr_textspot3_frame_arena_bytes 96",
+        "frame3 48",
+        "plan3 32",
+        "stack_peak 720",
+        "op_lay 56",
+        "pw_block 24",
+        "__aeabi_uidiv (extern)"
+       ]
+      },
+      "vocr_textspot2_find": {
+       "bytes": 2832,
+       "chain": [
+        "vocr_textspot2_find 64",
+        "spot 600",
+        "vocr_line_dark_rows 56",
+        "pix_dark 2104",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot2_find_rows": {
+       "bytes": 2824,
+       "chain": [
+        "vocr_textspot2_find_rows 56",
+        "spot 600",
+        "vocr_line_dark_rows 56",
+        "pix_dark 2104",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot2_load": {
+       "bytes": 108,
+       "chain": [
+        "vocr_textspot2_load 96",
+        "crc32_ieee 12"
+       ]
+      },
+      "vocr_textspot2_maps": {
+       "bytes": 4384,
+       "chain": [
+        "vocr_textspot2_maps 1616",
+        "spot 600",
+        "vocr_line_dark_rows 56",
+        "pix_dark 2104",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      }
+     },
+     "no_dark": {
+      "vocr_textspot3_find without the dark pass": {
+       "bytes": 1920,
+       "chain": [
+        "vocr_textspot3_find 64",
+        "spot 456",
+        "spot3 568",
+        "plan3 32",
+        "stack_peak 720",
+        "op_lay 56",
+        "pw_block 24",
+        "__aeabi_uidiv (extern)"
+       ]
+      },
+      "vocr_textspot2_find without the dark pass": {
+       "bytes": 888,
+       "chain": [
+        "vocr_textspot2_find 64",
+        "spot 600",
+        "chain 224",
+        "memcpy (extern)"
+       ]
+      }
+     },
+     "externs": {
+      "v3": [
+       "__aeabi_idiv",
+       "__aeabi_idivmod",
+       "__aeabi_ldivmod",
+       "__aeabi_uidiv",
+       "__aeabi_uidivmod",
+       "__aeabi_uldivmod",
+       "__indirect_call",
+       "memcpy",
+       "memset"
+      ],
+      "v2": [
+       "__aeabi_idiv",
+       "__aeabi_idivmod",
+       "__aeabi_ldivmod",
+       "__aeabi_uidiv",
+       "__aeabi_uidivmod",
+       "__aeabi_uldivmod",
+       "__indirect_call",
+       "memcpy",
+       "memset"
+      ]
+     }
+    },
+    "PSP -O2 -G0": {
+     "flags": [
+      "-O2",
+      "-G0"
+     ],
+     "peaks": {
+      "vocr_textspot3_find": {
+       "bytes": 2616,
+       "chain": [
+        "vocr_textspot3_find 32",
+        "spot 456",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot3_find_rows": {
+       "bytes": 2616,
+       "chain": [
+        "vocr_textspot3_find_rows 32",
+        "spot 456",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot3_load": {
+       "bytes": 64,
+       "chain": [
+        "vocr_textspot3_load 64",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot3_maps": {
+       "bytes": 4168,
+       "chain": [
+        "vocr_textspot3_maps 1584",
+        "spot 456",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot3_arena_bytes": {
+       "bytes": 872,
+       "chain": [
+        "vocr_textspot3_arena_bytes 24",
+        "vocr_textspot3_frame_arena_bytes 96",
+        "plan3 16",
+        "stack_peak 712",
+        "stream_lay 24"
+       ]
+      },
+      "vocr_textspot3_frame_arena_bytes": {
+       "bytes": 848,
+       "chain": [
+        "vocr_textspot3_frame_arena_bytes 96",
+        "plan3 16",
+        "stack_peak 712",
+        "stream_lay 24"
+       ]
+      },
+      "vocr_textspot2_find": {
+       "bytes": 2848,
+       "chain": [
+        "vocr_textspot2_find 32",
+        "spot 688",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot2_find_rows": {
+       "bytes": 2848,
+       "chain": [
+        "vocr_textspot2_find_rows 32",
+        "spot 688",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot2_load": {
+       "bytes": 56,
+       "chain": [
+        "vocr_textspot2_load 56",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot2_maps": {
+       "bytes": 4400,
+       "chain": [
+        "vocr_textspot2_maps 1584",
+        "spot 688",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "memset (extern)"
+       ]
+      }
+     },
+     "no_dark": {
+      "vocr_textspot3_find without the dark pass": {
+       "bytes": 1800,
+       "chain": [
+        "vocr_textspot3_find 32",
+        "spot 456",
+        "spot3 560",
+        "plan3 16",
+        "stack_peak 712",
+        "stream_lay 24"
+       ]
+      },
+      "vocr_textspot2_find without the dark pass": {
+       "bytes": 880,
+       "chain": [
+        "vocr_textspot2_find 32",
+        "spot 688",
+        "chain 120",
+        "store_acc 40"
+       ]
+      }
+     },
+     "externs": {
+      "v3": [
+       "__indirect_call",
+       "memcpy",
+       "memset"
+      ],
+      "v2": [
+       "__indirect_call",
+       "memset"
+      ]
+     }
+    },
+    "PSP -Os -G0": {
+     "flags": [
+      "-Os",
+      "-G0"
+     ],
+     "peaks": {
+      "vocr_textspot3_find": {
+       "bytes": 2624,
+       "chain": [
+        "vocr_textspot3_find 32",
+        "spot 456",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot3_find_rows": {
+       "bytes": 2624,
+       "chain": [
+        "vocr_textspot3_find_rows 32",
+        "spot 456",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot3_load": {
+       "bytes": 72,
+       "chain": [
+        "vocr_textspot3_load 64",
+        "requant_ok 8",
+        "rd32 0"
+       ]
+      },
+      "vocr_textspot3_maps": {
+       "bytes": 4176,
+       "chain": [
+        "vocr_textspot3_maps 1584",
+        "spot 456",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot3_arena_bytes": {
+       "bytes": 896,
+       "chain": [
+        "vocr_textspot3_arena_bytes 32",
+        "vocr_textspot3_frame_arena_bytes 88",
+        "frame3 48",
+        "plan3 16",
+        "stack_peak 696",
+        "stream_lay 16"
+       ]
+      },
+      "vocr_textspot3_frame_arena_bytes": {
+       "bytes": 864,
+       "chain": [
+        "vocr_textspot3_frame_arena_bytes 88",
+        "frame3 48",
+        "plan3 16",
+        "stack_peak 696",
+        "stream_lay 16"
+       ]
+      },
+      "vocr_textspot2_find": {
+       "bytes": 2768,
+       "chain": [
+        "vocr_textspot2_find 32",
+        "spot 600",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot2_find_rows": {
+       "bytes": 2768,
+       "chain": [
+        "vocr_textspot2_find_rows 32",
+        "spot 600",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      },
+      "vocr_textspot2_load": {
+       "bytes": 56,
+       "chain": [
+        "vocr_textspot2_load 56",
+        "memset (extern)"
+       ]
+      },
+      "vocr_textspot2_maps": {
+       "bytes": 4320,
+       "chain": [
+        "vocr_textspot2_maps 1584",
+        "spot 600",
+        "vocr_line_dark_rows 32",
+        "pix_dark 2096",
+        "pix_row 8",
+        "__indirect_call (extern)"
+       ]
+      }
+     },
+     "no_dark": {
+      "vocr_textspot3_find without the dark pass": {
+       "bytes": 1768,
+       "chain": [
+        "vocr_textspot3_find 32",
+        "spot 456",
+        "spot3 552",
+        "plan3 16",
+        "stack_peak 696",
+        "stream_lay 16"
+       ]
+      },
+      "vocr_textspot2_find without the dark pass": {
+       "bytes": 824,
+       "chain": [
+        "vocr_textspot2_find 32",
+        "spot 600",
+        "chain 112",
+        "store_acc 80",
+        "memcpy (extern)"
+       ]
+      }
+     },
+     "externs": {
+      "v3": [
+       "__ashldi3",
+       "__ashrdi3",
+       "__divdi3",
+       "__indirect_call",
+       "__udivdi3",
+       "memcpy",
+       "memset"
+      ],
+      "v2": [
+       "__ashldi3",
+       "__ashrdi3",
+       "__divdi3",
+       "__indirect_call",
+       "__udivdi3",
+       "memcpy",
+       "memset"
+      ]
+     }
+    }
+   }
+  }
+ },
+ "note": "estimates: qemu-arm instruction counts priced by vita/a9_cycles.py's Cortex-A9 model, not a console measurement; est. ms @333 = high bound x 1.0007 / 333 MHz, est. ms @444 = that x 333/444; arena bytes are exact (the runtime's functions)",
+ "family_b": {
+  "h2": [
+   "s4_c8",
+   "s4_c12n4",
+   "s4_c16n4",
+   "s4_c24n4",
+   "s8_c16",
+   "s8_c24",
+   "s8_c32"
+  ],
+  "f1": [
+   "s8_c8",
+   "s8_c16",
+   "s8_c16n4",
+   "s4_c6"
+  ]
+ },
+ "rule_reads": {
+  "arena": "arena_up_to_960 = vocr_textspot_arena_bytes(m, 960, 544): every frame up to 960x544 (for h2, the 600-px frame read at full size dominates); arena_frame_960 = vocr_textspot_frame_arena_bytes(m, 960, 544), the 960x544 frame's own need, is report only (the conductor, 2026-10-19)",
+  "time": "ms_333_960: the default call (flags 0, the dark pass included) on the pinned 960x544 grey frame; ms_333_960_nodark (VOCR_TEXTSPOT_NO_DARK) is report only",
+  "limits": {
+   "vtsp_max": 512000,
+   "ms_max_333_960": 300.0,
+   "arena_max": 262144
+  },
+  "within_limits": "textspot3's budget, for det: vtsp_bytes <= vtsp_max, ms_333_960 <= ms_max_333_960 and arena_up_to_960 <= arena_max; det+refine adds 1.4 ms per refined horizontal box and the refinement's 72,391-B arena"
+ },
+ "summary": [
+  {"shape":"qS4","scale":"m","half_above":480,"family_b":false,"vtsp_bytes":117184,"macs_960":75094080,"ms_333_960":195.1113941499099,"ms_444_960":146.33354561243243,"ms_333_960_nodark":186.99458037875073,"arena_up_to_960":256247,"arena_frame_960":256247,"ms_333_480":184.78132506665165,"ms_444_480":138.58599379998873,"arena_up_to_480":255287,"arena_frame_480":255287,"within_limits":true,"weights_int8":101712,"receptive_field":271},
+  {"shape":"qM4","scale":"m","half_above":480,"family_b":false,"vtsp_bytes":247392,"macs_960":96102240,"ms_333_960":216.5982854435946,"ms_444_960":162.44871408269594,"ms_333_960_nodark":211.25506348024322,"arena_up_to_960":256247,"arena_frame_960":256247,"ms_333_480":208.41785206475674,"ms_444_480":156.31338904856756,"arena_up_to_480":255287,"arena_frame_480":255287,"within_limits":true,"weights_int8":225808,"receptive_field":303},
+  {"shape":"qL5","scale":"m","half_above":480,"family_b":false,"vtsp_bytes":447392,"macs_960":107348640,"ms_333_960":231.77161126386184,"ms_444_960":173.8287084478964,"ms_333_960_nodark":225.26069861492488,"arena_up_to_960":256247,"arena_frame_960":256247,"ms_333_480":222.89392261021018,"ms_444_480":167.17044195765763,"arena_up_to_480":255287,"arena_frame_480":255287,"within_limits":true,"weights_int8":415312,"receptive_field":495}
+ ],
+ "table": [
+  {"shape":"qS4","scale":"m","half_above":480,"size":[960,544],"format":"grey","flags":"0","frames":1,"blob_sha256":"f37fb341648a7c6aaf4020cd42492b0d6398e5c57e74b00c667b7164b59480fd","blob_bytes":117184,"blob":"textspot3_model.random_int_layers seed 1, textspot3_model.pack(half_above 480, conf_min 1, half_above_h 272)","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","batch_sha256":"99464d7d20f8b903123cc520e69d73444d598b4ef642ab9fd2504d67557ade9a","rc":0,"boxes":64,"blocks":26,"pick":5,"truncated":1,"frame_arena_bytes":256247,"arena_bytes":256247,"f":2,"net_input":[480,272],"macs":75094080,"insns_per_frame":56982769.0,"cycles_per_frame":{"444":[45013941.0,65229697.8],"333":[45013941.0,64926645.6]},"ms_per_frame":{"333":195.1113941499099,"444":146.33354561243243,"model_444_high":147.0165733974324},"l1d_misses_per_frame":204144.0,"l2_misses_per_frame":24820.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["chain",24900444],["feed",15233599],["pw_cells",10687847],["vocr_line_dark",2445000],["dw_row.isra.0",1186050],["memcpy",505215],["decode_row",438173],["pair_sums",324768]],"negative_count_addresses":113,"split":{"stream":{"insns_per_frame":40732564,"neon_issue_per_frame":33877219,"cycles_high_per_frame":40732564,"ms_333":122.40563602042042},"map":{"insns_per_frame":12804772,"neon_issue_per_frame":10919133,"cycles_high_per_frame":12804772,"ms_333":38.479685706906906},"decode":{"insns_per_frame":889855,"neon_issue_per_frame":13465,"cycles_high_per_frame":891835,"ms_333":2.6800579114114114},"dark":{"insns_per_frame":2445000,"neon_issue_per_frame":0,"cycles_high_per_frame":2445000,"ms_333":7.347481981981982},"other":{"insns_per_frame":110578,"neon_issue_per_frame":8,"cycles_high_per_frame":110578,"ms_333":0.3322985123123123},"cache":{"l1d_misses_per_frame":204144,"l2_misses_per_frame":24820,"cycles_high_per_frame":7778077,"ms_333":23.373937698558553}}},
+  {"shape":"qS4","scale":"m","half_above":480,"size":[480,272],"format":"grey","flags":"0","frames":1,"blob_sha256":"f37fb341648a7c6aaf4020cd42492b0d6398e5c57e74b00c667b7164b59480fd","blob_bytes":117184,"blob":"textspot3_model.random_int_layers seed 1, textspot3_model.pack(half_above 480, conf_min 1, half_above_h 272)","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","batch_sha256":"de56147acd4a2269d0f3f6db3d04f2328557ebcaf7528bf11cb808190dbbb157","rc":0,"boxes":64,"blocks":26,"pick":20,"truncated":1,"frame_arena_bytes":255287,"arena_bytes":255287,"f":1,"net_input":[480,272],"macs":75094080,"insns_per_frame":54952687.0,"cycles_per_frame":{"444":[44743007.0,61641702.8],"333":[44743007.0,61489138.85]},"ms_per_frame":{"333":184.78132506665165,"444":138.58599379998873,"model_444_high":138.9298468287387},"l1d_misses_per_frame":184913.0,"l2_misses_per_frame":12495.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["chain",24900444],["feed",15146287],["pw_cells",10687847],["dw_row.isra.0",1186050],["vocr_line_dark",796584],["memcpy",505215],["decode_row",444283],["pw_block_run",229738]],"negative_count_addresses":113,"split":{"stream":{"insns_per_frame":40320484,"neon_issue_per_frame":33607939,"cycles_high_per_frame":40320484,"ms_333":121.16729230870871},"map":{"insns_per_frame":12804772,"neon_issue_per_frame":10919133,"cycles_high_per_frame":12804772,"ms_333":38.479685706906906},"decode":{"insns_per_frame":924422,"neon_issue_per_frame":13907,"cycles_high_per_frame":926402,"ms_333":2.7839353795795794},"dark":{"insns_per_frame":796584,"neon_issue_per_frame":0,"cycles_high_per_frame":796584,"ms_333":2.393818645045045},"other":{"insns_per_frame":106425,"neon_issue_per_frame":8,"cycles_high_per_frame":106425,"ms_333":0.3198183108108108},"cache":{"l1d_misses_per_frame":184913,"l2_misses_per_frame":12495,"cycles_high_per_frame":6379932,"ms_333":19.172365772657656}}},
+  {"shape":"qM4","scale":"m","half_above":480,"size":[960,544],"format":"grey","flags":"0","frames":1,"blob_sha256":"7b08f1f64aebef3e22a820470bc8008ba9cb5ae985a4496fe215dd7066137f48","blob_bytes":247392,"blob":"textspot3_model.random_int_layers seed 1, textspot3_model.pack(half_above 480, conf_min 1, half_above_h 272)","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","batch_sha256":"99464d7d20f8b903123cc520e69d73444d598b4ef642ab9fd2504d67557ade9a","rc":0,"boxes":64,"blocks":40,"pick":28,"truncated":1,"frame_arena_bytes":256247,"arena_bytes":256247,"f":2,"net_input":[480,272],"macs":96102240,"insns_per_frame":63165658.0,"cycles_per_frame":{"444":[51599519.0,72380035.08],"333":[51599519.0,72076775.31]},"ms_per_frame":{"333":216.5982854435946,"444":162.44871408269594,"model_444_high":163.13220969494594},"l1d_misses_per_frame":236010.0,"l2_misses_per_frame":24837.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["chain",24900444],["pw_cells",16931453],["feed",15233599],["dw_row.isra.0",1649284],["vocr_line_dark",1584530],["memcpy",615184],["decode_row",500475],["pair_sums",324768]],"negative_count_addresses":113,"split":{"stream":{"insns_per_frame":40732564,"neon_issue_per_frame":33877219,"cycles_high_per_frame":40732564,"ms_333":122.40563602042042},"map":{"insns_per_frame":19752837,"neon_issue_per_frame":17439814,"cycles_high_per_frame":19752837,"ms_333":59.35935130900901},"decode":{"insns_per_frame":980970,"neon_issue_per_frame":15977,"cycles_high_per_frame":983258,"ms_333":2.9547936354354354},"dark":{"insns_per_frame":1584530,"neon_issue_per_frame":0,"cycles_high_per_frame":1584530,"ms_333":4.761679192192192},"other":{"insns_per_frame":114757,"neon_issue_per_frame":8,"cycles_high_per_frame":114757,"ms_333":0.3448568465465465},"cache":{"l1d_misses_per_frame":236010,"l2_misses_per_frame":24837,"cycles_high_per_frame":8735189,"ms_333":26.250161989540537}}},
+  {"shape":"qM4","scale":"m","half_above":480,"size":[480,272],"format":"grey","flags":"0","frames":1,"blob_sha256":"7b08f1f64aebef3e22a820470bc8008ba9cb5ae985a4496fe215dd7066137f48","blob_bytes":247392,"blob":"textspot3_model.random_int_layers seed 1, textspot3_model.pack(half_above 480, conf_min 1, half_above_h 272)","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","batch_sha256":"de56147acd4a2269d0f3f6db3d04f2328557ebcaf7528bf11cb808190dbbb157","rc":0,"boxes":64,"blocks":35,"pick":23,"truncated":1,"frame_arena_bytes":255287,"arena_bytes":255287,"f":1,"net_input":[480,272],"macs":96102240,"insns_per_frame":61814567.0,"cycles_per_frame":{"444":[51327524.0,69507270.36],"333":[51327524.0,69354596.52]},"ms_per_frame":{"333":208.41785206475674,"444":156.31338904856756,"model_444_high":156.65748975056755},"l1d_misses_per_frame":218051.0,"l2_misses_per_frame":12504.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["chain",24900444],["pw_cells",16931453],["feed",15146287],["dw_row.isra.0",1649284],["vocr_line_dark",637479],["memcpy",614134],["decode_row",497139],["dw_border",249300]],"negative_count_addresses":113,"split":{"stream":{"insns_per_frame":40320484,"neon_issue_per_frame":33607939,"cycles_high_per_frame":40320484,"ms_333":121.16729230870871},"map":{"insns_per_frame":19751787,"neon_issue_per_frame":17439814,"cycles_high_per_frame":19751787,"ms_333":59.35619594864865},"decode":{"insns_per_frame":994339,"neon_issue_per_frame":15407,"cycles_high_per_frame":996517,"ms_333":2.9946383240240237},"dark":{"insns_per_frame":637479,"neon_issue_per_frame":0,"cycles_high_per_frame":637479,"ms_333":1.915691397297297},"other":{"insns_per_frame":110478,"neon_issue_per_frame":8,"cycles_high_per_frame":110478,"ms_333":0.3319980018018018},"cache":{"l1d_misses_per_frame":218051,"l2_misses_per_frame":12504,"cycles_high_per_frame":7374672,"ms_333":22.16166303322522}}},
+  {"shape":"qL5","scale":"m","half_above":480,"size":[960,544],"format":"grey","flags":"0","frames":1,"blob_sha256":"a79f0e9af64856bfc1f62c05041df9ee877fe0423b1ba6bef39951884c2addfb","blob_bytes":447392,"blob":"textspot3_model.random_int_layers seed 1, textspot3_model.pack(half_above 480, conf_min 1, half_above_h 272)","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","batch_sha256":"99464d7d20f8b903123cc520e69d73444d598b4ef642ab9fd2504d67557ade9a","rc":0,"boxes":64,"blocks":29,"pick":1,"truncated":1,"frame_arena_bytes":256247,"arena_bytes":256247,"f":2,"net_input":[480,272],"macs":107348640,"insns_per_frame":67247366.0,"cycles_per_frame":{"444":[55115999.0,77429083.84],"333":[55115999.0,77125958.38]},"ms_per_frame":{"333":231.77161126386184,"444":173.8287084478964,"model_444_high":174.5119013483964},"l1d_misses_per_frame":268369.0,"l2_misses_per_frame":24826.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["chain",24900444],["pw_cells",20115496],["feed",15233599],["dw_row.isra.0",2009104],["vocr_line_dark",1903739],["memcpy",635934],["decode_row",489490],["dw_border",417324]],"negative_count_addresses":113,"split":{"stream":{"insns_per_frame":40732564,"neon_issue_per_frame":33877219,"cycles_high_per_frame":40732564,"ms_333":122.40563602042042},"map":{"insns_per_frame":23545606,"neon_issue_per_frame":20935452,"cycles_high_per_frame":23545606,"ms_333":70.7570207933934},"decode":{"insns_per_frame":948938,"neon_issue_per_frame":15667,"cycles_high_per_frame":950984,"ms_333":2.857806873273273},"dark":{"insns_per_frame":1903739,"neon_issue_per_frame":0,"cycles_high_per_frame":1903739,"ms_333":5.720935787687687},"other":{"insns_per_frame":116519,"neon_issue_per_frame":8,"cycles_high_per_frame":116519,"ms_333":0.35015184174174174},"cache":{"l1d_misses_per_frame":268369,"l2_misses_per_frame":24826,"cycles_high_per_frame":9705226,"ms_333":29.165225340738736}}},
+  {"shape":"qL5","scale":"m","half_above":480,"size":[480,272],"format":"grey","flags":"0","frames":1,"blob_sha256":"a79f0e9af64856bfc1f62c05041df9ee877fe0423b1ba6bef39951884c2addfb","blob_bytes":447392,"blob":"textspot3_model.random_int_layers seed 1, textspot3_model.pack(half_above 480, conf_min 1, half_above_h 272)","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","batch_sha256":"de56147acd4a2269d0f3f6db3d04f2328557ebcaf7528bf11cb808190dbbb157","rc":0,"boxes":64,"blocks":32,"pick":1,"truncated":1,"frame_arena_bytes":255287,"arena_bytes":255287,"f":1,"net_input":[480,272],"macs":107348640,"insns_per_frame":65709759.0,"cycles_per_frame":{"444":[54843353.0,74324381.0],"333":[54843353.0,74171756.0]},"ms_per_frame":{"333":222.89392261021018,"444":167.17044195765763,"model_444_high":167.51443258265766},"l1d_misses_per_frame":248959.0,"l2_misses_per_frame":12500.0,"low_bound_set_by":"neon_vfp_issue","top_functions":[["chain",24900444],["pw_cells",20115496],["feed",15146287],["dw_row.isra.0",2009104],["vocr_line_dark",805754],["memcpy",636564],["decode_row",465233],["dw_border",417324]],"negative_count_addresses":113,"split":{"stream":{"insns_per_frame":40320484,"neon_issue_per_frame":33607939,"cycles_high_per_frame":40320484,"ms_333":121.16729230870871},"map":{"insns_per_frame":23546236,"neon_issue_per_frame":20935452,"cycles_high_per_frame":23546236,"ms_333":70.7589140096096},"decode":{"insns_per_frame":925891,"neon_issue_per_frame":14593,"cycles_high_per_frame":928003,"ms_333":2.7887465528528526},"dark":{"insns_per_frame":805754,"neon_issue_per_frame":0,"cycles_high_per_frame":805754,"ms_333":2.4213754588588587},"other":{"insns_per_frame":111394,"neon_issue_per_frame":8,"cycles_high_per_frame":111394,"ms_333":0.334750678078078},"cache":{"l1d_misses_per_frame":248959,"l2_misses_per_frame":12500,"cycles_high_per_frame":8301645,"ms_333":24.94731577027027}}}
+ ],
+ "also": [
+  {"label":"VOCR_TEXTSPOT_NO_DARK (report only)","computed":"2026-10-21T13:11:30Z","flags":["-std=c99","-mcpu=cortex-a9","-mfpu=neon","-mfloat-abi=hard","-O2","(Thumb-2: the VitaSDK default; vocr_lines*.c at -O2)"],"vocr_textspot_o_text_bytes":24104,"table":[
+  {"shape":"qS4","scale":"m","half_above":480,"size":[960,544],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":2,"net_input":[480,272],"macs":75094080,"blob_sha256":"f37fb341648a7c6aaf4020cd42492b0d6398e5c57e74b00c667b7164b59480fd","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","rc":0,"boxes":64,"blocks":26,"pick":5,"truncated":1,"insns_per_frame":54495522.0,"cycles_per_frame":{"444":[45013941.0,62528005.76],"333":[45013941.0,62225637.32]},"ms_per_frame":{"333":186.99458037875073,"444":140.24593528406305,"model_444_high":140.92742199106306},"l1d_misses_per_frame":197143.0,"l2_misses_per_frame":24764.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":256247,"arena_bytes":256247,"top_functions":[["chain",24900444],["feed",15233599],["pw_cells",10687847],["dw_row.isra.0",1186050],["memcpy",505215],["decode_row",438173],["pair_sums",324768],["pw_block_run",229738]]},
+  {"shape":"qS4","scale":"m","half_above":480,"size":[480,272],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":1,"net_input":[480,272],"macs":75094080,"blob_sha256":"f37fb341648a7c6aaf4020cd42492b0d6398e5c57e74b00c667b7164b59480fd","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","rc":0,"boxes":64,"blocks":26,"pick":20,"truncated":1,"insns_per_frame":54113856.0,"cycles_per_frame":{"444":[44743007.0,60736296.76],"333":[44743007.0,60584416.57]},"ms_per_frame":{"333":182.0625395243213,"444":136.54690464324096,"model_444_high":136.88921659399097},"l1d_misses_per_frame":182841.0,"l2_misses_per_frame":12439.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":255287,"arena_bytes":255287,"top_functions":[["chain",24900444],["feed",15146287],["pw_cells",10687847],["dw_row.isra.0",1186050],["memcpy",505215],["decode_row",444283],["pw_block_run",229738],["sweep",189313]]},
+  {"shape":"qM4","scale":"m","half_above":480,"size":[960,544],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":2,"net_input":[480,272],"macs":96102240,"blob_sha256":"7b08f1f64aebef3e22a820470bc8008ba9cb5ae985a4496fe215dd7066137f48","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","rc":0,"boxes":64,"blocks":40,"pick":28,"truncated":1,"insns_per_frame":61538881.0,"cycles_per_frame":{"444":[51599519.0,70601303.03999999],"333":[51599519.0,70298727.03]},"ms_per_frame":{"333":211.25506348024322,"444":158.44129761018243,"model_444_high":159.12325214443243},"l1d_misses_per_frame":231092.0,"l2_misses_per_frame":24781.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":256247,"arena_bytes":256247,"top_functions":[["chain",24900444],["pw_cells",16931453],["feed",15233599],["dw_row.isra.0",1649284],["memcpy",615184],["decode_row",500475],["pair_sums",324768],["dw_border",249300]]},
+  {"shape":"qM4","scale":"m","half_above":480,"size":[480,272],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":1,"net_input":[480,272],"macs":96102240,"blob_sha256":"7b08f1f64aebef3e22a820470bc8008ba9cb5ae985a4496fe215dd7066137f48","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","rc":0,"boxes":64,"blocks":35,"pick":23,"truncated":1,"insns_per_frame":61134841.0,"cycles_per_frame":{"444":[51327524.0,68780379.32],"333":[51327524.0,68628389.24]},"ms_per_frame":{"333":206.23552286026424,"444":154.67664214519817,"model_444_high":155.0192017691982},"l1d_misses_per_frame":216626.0,"l2_misses_per_frame":12448.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":255287,"arena_bytes":255287,"top_functions":[["chain",24900444],["pw_cells",16931453],["feed",15146287],["dw_row.isra.0",1649284],["memcpy",614134],["decode_row",497139],["dw_border",249300],["pw_block_run",232077]]},
+  {"shape":"qL5","scale":"m","half_above":480,"size":[960,544],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":2,"net_input":[480,272],"macs":107348640,"blob_sha256":"a79f0e9af64856bfc1f62c05041df9ee877fe0423b1ba6bef39951884c2addfb","frame_sha256":"e0210f87d87446abddf3da350a19a911443a2bb4b06d768dad310d2ec64c5b65","rc":0,"boxes":64,"blocks":29,"pick":1,"truncated":1,"insns_per_frame":65301380.0,"cycles_per_frame":{"444":[55115999.0,75261782.8],"333":[55115999.0,74959341.1]},"ms_per_frame":{"333":225.26069861492488,"444":168.94552396119366,"model_444_high":169.6271757836937},"l1d_misses_per_frame":261139.0,"l2_misses_per_frame":24770.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":256247,"arena_bytes":256247,"top_functions":[["chain",24900444],["pw_cells",20115496],["feed",15233599],["dw_row.isra.0",2009104],["memcpy",635934],["decode_row",489490],["dw_border",417324],["pair_sums",324768]]},
+  {"shape":"qL5","scale":"m","half_above":480,"size":[480,272],"format":"grey","flags":"VOCR_TEXTSPOT_NO_DARK","f":1,"net_input":[480,272],"macs":107348640,"blob_sha256":"a79f0e9af64856bfc1f62c05041df9ee877fe0423b1ba6bef39951884c2addfb","frame_sha256":"186d112126b2a575803e9b05c82d63b11c4cca5170820fb12fead0e5b25ebe76","rc":0,"boxes":64,"blocks":32,"pick":1,"truncated":1,"insns_per_frame":64861758.0,"cycles_per_frame":{"444":[54843353.0,73404434.96],"333":[54843353.0,73252493.72]},"ms_per_frame":{"333":220.13144283965164,"444":165.09858212973873,"model_444_high":165.4410316767387},"l1d_misses_per_frame":246708.0,"l2_misses_per_frame":12444.0,"low_bound_set_by":"neon_vfp_issue","frame_arena_bytes":255287,"arena_bytes":255287,"top_functions":[["chain",24900444],["pw_cells",20115496],["feed",15146287],["dw_row.isra.0",2009104],["memcpy",636564],["decode_row",465233],["dw_border",417324],["pw_block_run",232715]]}
+ ]}
+ ]
+}

@@ -65,3 +65,47 @@ def test_jumps_and_repeats(tmp_path, counts, want):
 def test_the_script_parses():
     p = subprocess.run(["bash", "-n", str(SWEEP)], capture_output=True, text=True, timeout=60)
     assert p.returncode == 0, p.stderr
+
+
+def test_runs_summary_finds_each_sweeps_done_line_in_a_shared_log(tmp_path):
+    """Stage 1's T and M sweeps ran side by side and wrote one sweep.log: each plan's SWEEP_DONE line is the one of
+    its own stage label, wherever the other sweep's lines fall."""
+    import importlib.util
+    import json
+    import sys
+    repro = SWEEP.parent
+    for name, file in (("textspot3_plan", "textspot3_plan.py"), ("textspot3_runs_summary", "runs_summary.py")):
+        if name not in sys.modules:
+            spec = importlib.util.spec_from_file_location(name, repro / file)
+            mod = importlib.util.module_from_spec(spec)
+            sys.modules[name] = mod
+            spec.loader.exec_module(mod)
+    RS = sys.modules["textspot3_runs_summary"]
+    out = tmp_path / "runs"
+    out.mkdir()
+    plans = {}
+    for tag in ("T", "M"):
+        plans[tag] = tmp_path / f"stage1_{tag}_plan.jsonl"
+        plans[tag].write_text(json.dumps({"run": f"base_x{tag}_seed1"}) + "\n")
+    a, b = "a" * 40, "b" * 40
+    sha = {k: __import__("hashlib").sha256(v.read_bytes()).hexdigest() for k, v in plans.items()}
+    (out / "sweep.log").write_text(
+        f"2026-10-21T11:02:54Z sweep start: stage 1 T, MAX_PAR 6, head {a}, plan /x/{plans['T'].name} ({sha['T']}), r\n"
+        "2026-10-21T11:03:00Z base_xT_seed1: attempt 1 (timeout 43200s, slot 1): train/textspot3_train.py\n"
+        f"2026-10-21T12:46:14Z sweep start: stage 1 M, MAX_PAR 7, head {b}, plan /y/{plans['M'].name} ({sha['M']}), r\n"
+        "2026-10-21T14:38:02Z SWEEP_DONE stage 1 T: 9/9 done, 0 running, 0 crashes (2026-10-21T14:38:02Z)\n"
+        "2026-10-21T21:00:00Z SWEEP_DONE stage 1 M: 18/18 done, 0 running, 0 crashes (2026-10-21T21:00:00Z)\n")
+    t = RS.sweep_record(out, plans["T"], herd=tmp_path)
+    m = RS.sweep_record(out, plans["M"], herd=tmp_path)
+    assert (t["stage"], t["commit"], t["max_par"], t["started"], t["sweep_done"]) == \
+        ("stage 1 T", a, 6, "2026-10-21T11:02:54Z", "2026-10-21T14:38:02Z")
+    assert (m["stage"], m["commit"], m["max_par"], m["started"], m["sweep_done"]) == \
+        ("stage 1 M", b, 7, "2026-10-21T12:46:14Z", "2026-10-21T21:00:00Z")
+    assert t["plan_sha256_at_start"] == sha["T"] and m["plan_sha256_at_start"] == sha["M"]
+    # a relaunch of the same stage: its own SWEEP_DONE (the first launch's stays its own)
+    with open(out / "sweep.log", "a") as f:
+        f.write(f"2026-10-21T22:00:00Z sweep start: stage 1 T, MAX_PAR 6, head {a}, plan /x/{plans['T'].name} "
+                f"({sha['T']}), r\n2026-10-21T22:05:00Z SWEEP_DONE stage 1 T: 9/9 done, 0 running, 0 crashes (x)\n")
+    t = RS.sweep_record(out, plans["T"], herd=tmp_path)
+    assert [x["sweep_done"] for x in t["launches"]] == ["2026-10-21T14:38:02Z", "2026-10-21T22:05:00Z"]
+    assert t["sweep_done"] == "2026-10-21T22:05:00Z" and t["started"] == "2026-10-21T11:02:54Z"

@@ -42,7 +42,7 @@ PL = _plan()
 
 HERD = os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr")
 START = re.compile(r"^(\S+) sweep start: (.*), MAX_PAR (\d+), head ([0-9a-f]{40}), plan (\S+) \(([0-9a-f]{64})\)")
-DONE = re.compile(r"^(\S+) SWEEP_DONE ")
+DONE = re.compile(r"^(\S+) SWEEP_DONE (.*?): \d+/\d+ done")
 PARTS = ("k_bce", "dice", "o", "a")
 KD_PARTS = ("kd_k", "kd_o", "kd_a")
 AT = (200, 2000, 10000, 20000)
@@ -139,21 +139,22 @@ def placeholder(path, herd=HERD):
 
 def sweep_record(out_dir, plan, herd=HERD):
     """The sweeps of this plan in OUT/sweep.log: every start line naming the plan's file (its UTC, stage label,
-    MAX_PAR, head and plan sha256) and the SWEEP_DONE lines that followed each, before the next start."""
+    MAX_PAR, head and plan sha256) and its SWEEP_DONE line: the next SWEEP_DONE line of the same stage label (sweeps
+    of two plans can run side by side and share the log, as stage 1's T and M sweeps did)."""
     log = Path(out_dir) / "sweep.log"
-    starts, current = [], None
+    starts, latest = [], {}
     for line in (log.read_text().splitlines() if log.exists() else []):
         m = START.match(line)
         if m:
-            current = None
+            rec = {"started": m.group(1), "stage": m.group(2), "max_par": int(m.group(3)), "commit": m.group(4),
+                   "plan_sha256": m.group(6), "sweep_done": None}
+            latest[m.group(2)] = rec
             if Path(m.group(5)).name == Path(plan).name:
-                current = {"started": m.group(1), "stage": m.group(2), "max_par": int(m.group(3)),
-                           "commit": m.group(4), "plan_sha256": m.group(6), "sweep_done": None}
-                starts.append(current)
+                starts.append(rec)
             continue
         d = DONE.match(line)
-        if d and current is not None:
-            current["sweep_done"] = d.group(1)
+        if d and d.group(2) in latest and latest[d.group(2)]["sweep_done"] is None:
+            latest[d.group(2)]["sweep_done"] = d.group(1)
     if not starts:
         return {"out": placeholder(Path(out_dir).resolve(), herd), "launches": []}
     first, last = starts[0], starts[-1]

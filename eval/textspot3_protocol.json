@@ -383,6 +383,60 @@
     "trainer_commit": "9d9c02b",
     "format_commit": "2d42f9a"
    }
+  },
+  {
+   "id": 4,
+   "utc": "2026-10-21T11:46:48Z",
+   "before": "every family-M training run and every score of any family-M arm (the family-T runs of amendment 3 are training; none has finished or been scored)",
+   "what": [
+    "Family M's size points, chosen from the A9 rows of 18 probe shapes on runtime/vocr_textspot3.c (eval/textspot3_a9_m_probe_20261021.json, random version-3 blobs on textspot's procedural frames; no development frame or score was read): S = qS4 (117,184 B, est. 204.0 ms @333, arena 256,247 B), M = qM4 (247,392 B, 228.7 ms, 256,247 B), L = qL5 (447,392 B, 246.0 ms, 256,247 B). All three keep family T's t64n4c16 trunk (64 channels, 4 stride-8 blocks) and add the multi-scale part: stages of 64 / 128 / 192 channels without blocks (S), 96 with a block / 192 / 384 (M), 96 / 192 / 384 each with a block (L), and an FPN neck (T 64 or 96, T8 48, one smoothing block) to the d2s head. Most of the added weights sit at strides 32 and 64 (L: 263 KB at stride 64). So M minus t64n4c16 measures what the multi-scale part buys at a fixed trunk, and S -> M -> L adds parameters at low resolution for little compute (75.1 / 96.1 / 107.3 M MACs per frame).",
+    "Not chosen: the probes with a 2-block stride-8 trunk (pS*, pM*, pL*: 113-260 ms) would change the trunk and the deep part at once against family T; qL9 (467,552 B, 254.0 ms) differs from qL5 only by a wider stride-16 stage; over the budget: pL4 (arena 265,575 B) and qL5n6 (arena 327,255 B, est. 297.0 ms).",
+    "These probe rows are upper bounds for eligibility: the runtime's kernels may still get faster, bit for bit (textspot3-runtime's speed pass). The rows of record for family M are the table the RUNTIME_READY amendment pins (the registered shapes measured on the final runtime/vocr_textspot3.c), before any family-M score; if no such amendment comes, these rows are the eligibility source.",
+    "The shape dicts are registered exactly as measured ($HERD/shared/artifacts/textspot3/a9/extra_probes.json, sha256 028919f83532...), with their size point."
+   ],
+   "sources_sha256": {
+    "eval/textspot3_a9_m_probe_20261021.json": "565675a49aebca4b3c5eafc019d03b65792aa84bd44e3305a62dc71a161f2d97",
+    "eval/textspot3_a9m.py": "c96e25e1395bd904f2058466e5d83b69a668c61dd0ab96ba9a1317e94dfefc3f"
+   },
+   "settings": {
+    "m_points": {
+     "qS4": "S",
+     "qM4": "M",
+     "qL5": "L"
+    },
+    "a9_rows": {
+     "qS4": {
+      "vtsp_bytes": 117184,
+      "macs_960": 75094080,
+      "ms_333_960": 203.9603608804474,
+      "ms_444_960": 152.97027066033556,
+      "arena_up_to_960": 256247,
+      "ms_333_480": 193.63000141388287
+     },
+     "qM4": {
+      "vtsp_bytes": 247392,
+      "macs_960": 96102240,
+      "ms_333_960": 228.71555339965767,
+      "ms_444_960": 171.53666504974325,
+      "arena_up_to_960": 256247,
+      "ms_333_480": 220.53627208796394
+     },
+     "qL5": {
+      "vtsp_bytes": 447392,
+      "macs_960": 107348640,
+      "ms_333_960": 245.95722094124622,
+      "ms_444_960": 184.46791570593464,
+      "arena_up_to_960": 256247,
+      "ms_333_480": 237.0792419042883
+     }
+    },
+    "runtime_commit": "4acee6a"
+   },
+   "shapes": [
+    "qL5",
+    "qM4",
+    "qS4"
+   ]
   }
  ],
  "shapes": {
@@ -470,6 +524,149 @@
    "block": "sep",
    "head": "kroa_x2",
    "half_above": 480
+  },
+  "qS4": {
+   "name": "qS4",
+   "family": "M",
+   "stride": 8,
+   "c0": 8,
+   "c1": 16,
+   "c2": 64,
+   "chans": [
+    64,
+    64,
+    64,
+    64
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    1
+   ],
+   "block": "sep",
+   "stages": [
+    {
+     "c": 64,
+     "n": 0,
+     "dil": []
+    },
+    {
+     "c": 128,
+     "n": 0,
+     "dil": []
+    },
+    {
+     "c": 192,
+     "n": 0,
+     "dil": []
+    }
+   ],
+   "neck": {
+    "t": 64,
+    "t8": 48,
+    "smooth": 1
+   },
+   "head": "ms_x2",
+   "point": "S"
+  },
+  "qM4": {
+   "name": "qM4",
+   "family": "M",
+   "stride": 8,
+   "c0": 8,
+   "c1": 16,
+   "c2": 64,
+   "chans": [
+    64,
+    64,
+    64,
+    64
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    1
+   ],
+   "block": "sep",
+   "stages": [
+    {
+     "c": 96,
+     "n": 1,
+     "dil": [
+      1
+     ]
+    },
+    {
+     "c": 192,
+     "n": 0,
+     "dil": []
+    },
+    {
+     "c": 384,
+     "n": 0,
+     "dil": []
+    }
+   ],
+   "neck": {
+    "t": 96,
+    "t8": 48,
+    "smooth": 1
+   },
+   "head": "ms_x2",
+   "point": "M"
+  },
+  "qL5": {
+   "name": "qL5",
+   "family": "M",
+   "stride": 8,
+   "c0": 8,
+   "c1": 16,
+   "c2": 64,
+   "chans": [
+    64,
+    64,
+    64,
+    64
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    1
+   ],
+   "block": "sep",
+   "stages": [
+    {
+     "c": 96,
+     "n": 1,
+     "dil": [
+      1
+     ]
+    },
+    {
+     "c": 192,
+     "n": 1,
+     "dil": [
+      1
+     ]
+    },
+    {
+     "c": 384,
+     "n": 1,
+     "dil": [
+      1
+     ]
+    }
+   ],
+   "neck": {
+    "t": 96,
+    "t8": 48,
+    "smooth": 1
+   },
+   "head": "ms_x2",
+   "point": "L"
   }
  }
 }

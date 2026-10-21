@@ -299,3 +299,25 @@ Each amendment is dated in `eval/textspot3_protocol.json` and precedes the runs 
        it at about 14.8 slot-hours, with `base` at 137.6 / 193.6 / 242.7 ms per step.
      - It runs at most 6 at once for now.
    - Family M's stage-1 plan comes with the amendment that registers S, M and L.
+4. **Family M's size points** (2026-10-21T11:46Z, before every family-M run and every family-M score).
+   - Chosen from the A9 rows of 18 probe shapes on `runtime/vocr_textspot3.c`
+     (`eval/textspot3_a9_m_probe_20261021.json`: random version-3 blobs on textspot's procedural frames; no
+     development frame or score was read):
+
+     | point | shape | multi-scale part on T's `t64n4c16` trunk | VTSP B | MACs / frame | est. ms @333 | arena B |
+     |---|---|---|---:|---:|---:|---:|
+     | S | `qS4` | stages 64 / 128 / 192, no blocks; neck T 64, T8 48, 1 smoothing block | 117,184 | 75.1 M | 204.0 | 256,247 |
+     | M | `qM4` | stages 96 (1 block) / 192 / 384; neck T 96, T8 48 | 247,392 | 96.1 M | 228.7 | 256,247 |
+     | L | `qL5` | stages 96 / 192 / 384, one block each; neck T 96, T8 48 | 447,392 | 107.3 M | 246.0 | 256,247 |
+
+   - All three keep family T's `t64n4c16` trunk (64 channels, 4 stride-8 blocks), so `qS4` minus `t64n4c16` measures
+     what the multi-scale part buys at a fixed trunk. From S to L, most of the added weights sit at strides 32 and
+     64 (L: 263 KB at stride 64), for little extra compute.
+   - Not chosen:
+     - the probes with a 2-block stride-8 trunk (113-260 ms), which would change the trunk and the deep part at once
+       against family T;
+     - `qL9`, which only widens L's stride-16 stage;
+     - `pL4` and `qL5n6`, which are over the budget (arenas 265,575 and 327,255 B).
+   - These rows are upper bounds: the runtime's kernels may still get faster, bit for bit. The rows of record for
+     family M are the ones the RUNTIME_READY amendment pins, before any family-M score. If no such amendment comes,
+     these rows are the eligibility source.

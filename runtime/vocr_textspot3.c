@@ -89,16 +89,20 @@
  * last time when it can do so in place (a 1x1 op over a source it reads at u = 0, a stride-1 depthwise op over its
  * source), else into a new slot. Slots live on a stack in the arena: a new slot goes on top; a slot whose map has
  * been read for the last time is marked dead, and dead slots are popped from the top (an FPN's top-down neck frees
- * its stages last in, first out). An op's scratch (its requantisation constants, its cells' source offsets, the
- * in-place block, the depthwise weights by tap and the lag ring) lies on top of the stack while it runs, over the
- * stream's dead rings. Every term of the plan is a sum or a maximum of buffer sizes that grow with the network
- * input's width and height, so every arena size is non-decreasing in both (vocr_textspot3_arena_bytes relies on
- * it).
+ * its stages last in, first out). An op's scratch (its requantisation constants, a block's sums, its cells' source
+ * offsets and gathered codes or its in-place block, the depthwise weights by tap, a row's sums and the lag ring) lies
+ * on top of the stack while it runs, over the stream's dead rings. Every term of the plan is a sum or a maximum of
+ * buffer sizes that grow with the network input's width and height, so every arena size is non-decreasing in both
+ * (vocr_textspot3_arena_bytes relies on it).
  *  - A 1x1 op (out[c] = requant(bias[c] + sum_q w[c][q] x[q]), x the concatenation of its sources' channels, source
  *    cell (i >> u, j >> u) for output cell (i, j)) runs on blocks of cells in raster order (pw_block: a block's
- *    inputs about 12 KB, so they stay in the L1 cache while the weights of each 4 output channels pass once). In
- *    place, a block's outputs go to a scratch block first and over the block's cells once every channel is done (an
- *    output cell reads its own source cell only).
+ *    inputs about 12 KB, so they stay in the L1 cache while the weights of each 4 output channels pass once). An op
+ *    of one source read at u = 0 reads a block's codes where they lie (its cells are contiguous in the source's
+ *    slot); any other op first gathers the block's concatenated codes (pw_gather: cin bytes per cell, at most about
+ *    8 KB). In place, a gathered block's outputs go straight over their own source cells (the block's codes are all
+ *    gathered by then, and no other block reads them); an op that reads its codes in place writes a block's outputs
+ *    to a scratch block first and over the block's cells once every channel is done (an output cell reads its own
+ *    source cell only).
  *  - A 3x3 depthwise op runs row by row; in place, output row r waits in a ring of d + 1 rows and is written back
  *    once row r + d is done (no later output row reads source row r).
  *  - The head (the last op) runs row by row, each row of 16 channels going straight to the decode, two stride-4
@@ -106,12 +110,18 @@
  *    order, pick and dark flags are version 2's.
  *
  * Kernels (NEON on the Vita; the scalar code gives the same bits). A 1x1 op's microkernel (pw_sums) computes 4
- * output channels for 2 cells: per 16 input channels VMULL.S8 + VMLAL.S8 put two products of int8 codes in each
- * int16 lane and VPADAL.S16 folds them into int32 lanes; each weight row is read once per block of cells. A
- * depthwise op (dw_row): 8 channels per pass, two taps' products per int16 lane, VADDW.S16 into int32, the 9 taps'
- * weights in registers. The requantisation (rq4v), per 4 channels: when every channel's bias fits the int32 form
- * and its shift is >= 32, VQDMULH.S32 then VRSHL.S32 by -(shift - 31); when every bias fits, VMULL.S32 and
- * VRSHL.S64 by -shift; else the int64 constant bias * mult + 2^(shift - 1), VMLAL.S32 and VSHL.S64 (a floor).
+ * output channels for 2 cells: per 16 input channels 6 loads (each weight row and each cell once, every pointer
+ * post-incremented), VMULL.S8 + VMLAL.S8 put two products of int8 codes in each int16 lane and VPADAL.S16 folds
+ * them into int32 lanes (the first 16 channels by VPADDL, so the sums need no clearing): 32 instructions per 128
+ * multiply-adds; each weight row is read once per block of cells; the sums of a block's pairs of cells go to a
+ * scratch row and are requantised in a pass of their own (pw_store), so no NEON register spills to the stack (an
+ * extension-register load or store between NEON instructions costs the A9 a pipeline switch). A depthwise op
+ * (dw_row): 8 channels per pass, two passes per row: the sums of the cells whose taps lie inside the map with the 9
+ * taps' weights in registers (two taps' products per int16 lane, VADDW.S16 into int32; a source row outside the map
+ * read as the centre row with its weights 0), the border cells tap by tap (dw_border), then the requantisation of
+ * the row's sums. The requantisation (rq4v), per 4 channels: when every channel's bias fits the int32 form and its
+ * shift is >= 32, VQDMULH.S32 then VRSHL.S32 by -(shift - 31); when every bias fits, VMULL.S32 and VRSHL.S64 by
+ * -shift; else the int64 constant bias * mult + 2^(shift - 1), VMLAL.S32 and VSHL.S64 (a floor).
  *
  * Integer ranges, version 3 (every weight is in -127..127: the loader refuses -128; every code is in -128..127):
  *  - one product |w x| <= 127 * 128 = 16,256, two of them <= 32,512 < 2^15: the kernels' int16 lanes hold them
@@ -639,13 +649,14 @@ typedef struct {
 } StreamLay;
 
 typedef struct {
-    uint64_t mode, xp, sums, tmp, wt, ring, end;   /* an op's scratch: constants at 0, modes, offsets, sums, block,
-                                                    * taps, ring */
-    uint32_t pb;                             /* a 1x1 op's cells per block */
+    uint64_t mode, sums, xp, tmp;   /* a 1x1 op's scratch after its constants: modes, sums, offsets, block */
+    uint64_t wt, acc, ring;         /* a depthwise op's: taps, row sums, ring */
+    uint64_t end;
+    uint32_t pb;                    /* a 1x1 op's cells per block */
 } OpLay;
 
 typedef struct {
-    uint64_t mode, xp, sums, hwc, drow, comp, freel, prev, cur, end;   /* the head's scratch, the decode's state */
+    uint64_t mode, sums, xp, gat, hwc, drow, comp, freel, prev, cur, end;   /* the head's scratch, the decode's state */
     uint32_t pb, wn, wm, nc, nr;
 } HeadLay;
 
@@ -710,12 +721,21 @@ static void stream_lay(const vocr_textspot3 *m, unsigned win, unsigned f, Stream
     L->end = L->psum + up8x(f == 2u ? (uint64_t)win * sizeof(uint16_t) : 0u);
 }
 
-/* A 1x1 op's cells per block: its inputs about 12 KB (they stay in the L1 cache while the weights of every 4 output
- * channels pass), at most 4 KB of outputs when it writes in place, even, 2..128, at most the cells. */
+/* A 1x1 op reads a block's codes where they lie (one source at u = 0: the block's cells are contiguous in its slot)
+ * or gathers them first into a block of cin bytes per cell (several sources, or an upsampled one). */
+static int pw_gathers(const vocr_textspot3_op *op)
+{
+    return op->nsrc > 1u || op->up[0] != 0u;
+}
+
+/* A 1x1 op's cells per block: its inputs about 12 KB (8 KB when gathered; they stay in the L1 cache while the weights
+ * of every 4 output channels pass), at most 4 KB of outputs when it writes in place through a block, even, 2..128, at
+ * most the cells. */
 static uint32_t pw_block(const vocr_textspot3_op *op, uint64_t cells)
 {
-    uint32_t pb = 12288u / op->cin;
-    if (op->inplace && pb > 4096u / op->cout) pb = 4096u / op->cout;
+    int g = pw_gathers(op);
+    uint32_t pb = (g ? 8192u : 12288u) / op->cin;
+    if (op->inplace && !g && pb > 4096u / op->cout) pb = 4096u / op->cout;
     pb &= ~1u;
     if (pb < 2u) pb = 2u;
     if (pb > 128u) pb = 128u;
@@ -723,42 +743,49 @@ static uint32_t pw_block(const vocr_textspot3_op *op, uint64_t cells)
     return pb;
 }
 
-/* Op k's scratch: 3 cout int32 constants, a mode per 4 channels, then a 1x1 op's source offsets per cell of a
- * block (and its block of outputs when in place) or a depthwise op's weights by tap (and its ring when in place). */
+/* Op k's scratch: 3 cout int32 constants, a mode per 4 channels, then for a 1x1 op the sums of a block's pairs of
+ * cells for 4 channels, and when it gathers its cells' source offsets and the gathered block (cin bytes per cell),
+ * else when it writes in place its block of outputs; for a depthwise op its weights by tap, a row's sums for 8
+ * channels, and when it writes in place its ring of d + 1 rows. */
 static void op_lay(const vocr_textspot3 *m, unsigned k, unsigned win, unsigned hin, OpLay *L)
 {
     const vocr_textspot3_op *op = &m->ops[k];
     L->mode = up8x((uint64_t)12u * op->cout);
-    L->xp = L->wt = L->mode + up8x(op->cout / 4u);
     L->pb = 0;
     if (op->kind == OP_PW) {
+        int g = pw_gathers(op);
         L->pb = pw_block(op, cells_of(op->out_stride, win, hin));
-        L->sums = L->xp + up8x((uint64_t)L->pb * op->nsrc * sizeof(uint32_t));
-        L->tmp = L->sums + up8x((uint64_t)(L->pb + 1u) * 4u * sizeof(int32_t));
-        L->end = L->tmp + (op->inplace ? up8x((uint64_t)L->pb * op->cout) : 0u);
-        L->ring = L->end;
+        L->sums = L->mode + up8x(op->cout / 4u);
+        L->xp = L->sums + up8x((uint64_t)(L->pb + 1u) * 4u * sizeof(int32_t));
+        L->tmp = L->xp + (g ? up8x((uint64_t)L->pb * op->nsrc * sizeof(uint32_t)) : 0u);
+        L->end = L->tmp + (g ? up8x((uint64_t)L->pb * op->cin) : op->inplace ? up8x((uint64_t)L->pb * op->cout) : 0u);
+        L->wt = L->acc = L->ring = L->end;
     } else {
-        L->sums = L->wt;
-        L->ring = L->wt + up8x((uint64_t)9u * op->cout);
+        L->wt = L->mode + up8x(op->cout / 4u);
+        L->acc = L->wt + up8x((uint64_t)9u * op->cout);
+        L->ring = L->acc + up8x((uint64_t)cdiv(win, op->out_stride) * 8u * sizeof(int32_t));
         L->end = L->ring + (op->inplace ? up8x((uint64_t)(op->dil + 1u) * cdiv(win, op->out_stride) *
                                                m->slot_cap[op->slot]) : 0u);
-        L->tmp = L->end;
+        L->sums = L->xp = L->tmp = L->end;
     }
 }
 
-/* The head's scratch (constants, modes, offsets, its HWC row of 16 channels) and the decode's state. */
+/* The head's scratch (constants, modes, sums, and when it gathers its cells' offsets and gathered block; its HWC row
+ * of 16 channels) and the decode's state. */
 static void head_lay(const vocr_textspot3 *m, unsigned win, HeadLay *L)
 {
     const vocr_textspot3_op *op = &m->ops[m->n_ops - 1u];
+    int g = pw_gathers(op);
     L->wn = cdiv(win, D2S_STRIDE);
     L->wm = cdiv(win, D2S_STRIDE / 2u);
     L->nc = L->wm;
     L->nr = (L->wm + 1u) / 2u;
     L->pb = pw_block(op, L->wn);
     L->mode = up8x((uint64_t)12u * op->cout);
-    L->xp = L->mode + up8x(op->cout / 4u);
-    L->sums = L->xp + up8x((uint64_t)L->pb * op->nsrc * sizeof(uint32_t));
-    L->hwc = L->sums + up8x((uint64_t)(L->pb + 1u) * 4u * sizeof(int32_t));
+    L->sums = L->mode + up8x(op->cout / 4u);
+    L->xp = L->sums + up8x((uint64_t)(L->pb + 1u) * 4u * sizeof(int32_t));
+    L->gat = L->xp + (g ? up8x((uint64_t)L->pb * op->nsrc * sizeof(uint32_t)) : 0u);
+    L->hwc = L->gat + (g ? up8x((uint64_t)L->pb * op->cin) : 0u);
     L->drow = L->hwc + up8x((uint64_t)L->wn * D2S_OUT);
     L->comp = L->drow + up8x((uint64_t)MAPS * L->wm);
     L->freel = L->comp + up8x((uint64_t)L->nc * sizeof(Comp));
@@ -2091,125 +2118,102 @@ static int32x4_t hsum4(int32x4_t a, int32x4_t b, int32x4_t c, int32x4_t d)
  * cell's channels may say so (VLD1 with :64). */
 #define CELL8(p) ((const int8_t *)__builtin_assume_aligned((const void *)(p), 8))
 
-/* The microkernel's core (the module comment's "Kernels"): 4 output channels (weight rows wq, wq + cin, wq + 2 cin,
- * wq + 3 cin, read through one pointer: wq += cin three times, then wq += back = 16 - 3 cin) for two cells (codes
- * P0, P1), Q blocks of 16 channels, adding into the 8 int32x4 sums a<channel><cell>. */
-#define PW_LOOP(P0, P1, Q) do { \
+/* The 1x1 microkernel (the module comment's "Kernels"): 4 output channels (weight rows W0, W0 + cin, W0 + 2 cin,
+ * W0 + 3 cin) for two cells (codes X0, X1) over the LEN channels of a source (a multiple of 8), adding into the
+ * 8 int32x4 sums a<channel><cell>: per 16 channels 6 loads (each weight row and each cell once) and 24 multiply-adds,
+ * every pointer post-incremented. */
+#define PW_SRC(X0, X1, W0, LEN) do { \
+        const int8_t *x0_ = (X0), *x1_ = (X1), *w0_ = (W0); \
+        const int8_t *w1_ = w0_ + cin, *w2_ = w1_ + cin, *w3_ = w2_ + cin; \
         uint32_t q_; \
-        for (q_ = (Q); q_; q_--) { \
-            int8x16_t xa = vld1q_s8(P0), xb = vld1q_s8(P1), wv; \
-            (P0) += 16; \
-            (P1) += 16; \
-            wv = vld1q_s8(wq); \
-            wq += cin; \
+        for (q_ = (LEN) >> 4; q_ != 0u; q_--) { \
+            int8x16_t xa = vld1q_s8(x0_), xb = vld1q_s8(x1_), wv; \
+            x0_ += 16; \
+            x1_ += 16; \
+            wv = vld1q_s8(w0_); \
+            w0_ += 16; \
             PW2(a00, wv, xa); \
             PW2(a01, wv, xb); \
-            wv = vld1q_s8(wq); \
-            wq += cin; \
+            wv = vld1q_s8(w1_); \
+            w1_ += 16; \
             PW2(a10, wv, xa); \
             PW2(a11, wv, xb); \
-            wv = vld1q_s8(wq); \
-            wq += cin; \
+            wv = vld1q_s8(w2_); \
+            w2_ += 16; \
             PW2(a20, wv, xa); \
             PW2(a21, wv, xb); \
-            wv = vld1q_s8(wq); \
-            wq += back; \
+            wv = vld1q_s8(w3_); \
+            w3_ += 16; \
             PW2(a30, wv, xa); \
             PW2(a31, wv, xb); \
         } \
-    } while (0)
-
-/* The last 8 channels of a source, adding (PW1) */
-#define PW_TAIL8(P0, P1) do { \
-        int8x8_t xa = vld1_s8(P0), xb = vld1_s8(P1), wv; \
-        wv = vld1_s8(wq); \
-        PW1(a00, wv, xa); \
-        PW1(a01, wv, xb); \
-        wv = vld1_s8(wq + cin); \
-        PW1(a10, wv, xa); \
-        PW1(a11, wv, xb); \
-        wv = vld1_s8(wq + 2u * cin); \
-        PW1(a20, wv, xa); \
-        PW1(a21, wv, xb); \
-        wv = vld1_s8(wq + 3u * cin); \
-        PW1(a30, wv, xa); \
-        PW1(a31, wv, xb); \
-    } while (0)
-
-/* The first 16 (or, when the source has 8 channels only, 8) channels: the sums start from their products */
-#define PW_FIRST(P0, P1) do { \
-        if (len >= 16u) { \
-            int8x16_t xa = vld1q_s8(P0), xb = vld1q_s8(P1), wv; \
-            int16x8_t t_; \
-            (P0) += 16; \
-            (P1) += 16; \
-            wv = vld1q_s8(wq); \
-            t_ = vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xa)), vget_high_s8(wv), vget_high_s8(xa)); \
-            a00 = vpaddlq_s16(t_); \
-            t_ = vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xb)), vget_high_s8(wv), vget_high_s8(xb)); \
-            a01 = vpaddlq_s16(t_); \
-            wv = vld1q_s8(wq + cin); \
-            t_ = vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xa)), vget_high_s8(wv), vget_high_s8(xa)); \
-            a10 = vpaddlq_s16(t_); \
-            t_ = vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xb)), vget_high_s8(wv), vget_high_s8(xb)); \
-            a11 = vpaddlq_s16(t_); \
-            wv = vld1q_s8(wq + 2u * cin); \
-            t_ = vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xa)), vget_high_s8(wv), vget_high_s8(xa)); \
-            a20 = vpaddlq_s16(t_); \
-            t_ = vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xb)), vget_high_s8(wv), vget_high_s8(xb)); \
-            a21 = vpaddlq_s16(t_); \
-            wv = vld1q_s8(wq + 3u * cin); \
-            t_ = vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xa)), vget_high_s8(wv), vget_high_s8(xa)); \
-            a30 = vpaddlq_s16(t_); \
-            t_ = vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xb)), vget_high_s8(wv), vget_high_s8(xb)); \
-            a31 = vpaddlq_s16(t_); \
-            wq += 16; \
-        } else { \
-            int8x8_t xa = vld1_s8(P0), xb = vld1_s8(P1), wv; \
-            wv = vld1_s8(wq); \
-            a00 = vpaddlq_s16(vmull_s8(wv, xa)); \
-            a01 = vpaddlq_s16(vmull_s8(wv, xb)); \
-            wv = vld1_s8(wq + cin); \
-            a10 = vpaddlq_s16(vmull_s8(wv, xa)); \
-            a11 = vpaddlq_s16(vmull_s8(wv, xb)); \
-            wv = vld1_s8(wq + 2u * cin); \
-            a20 = vpaddlq_s16(vmull_s8(wv, xa)); \
-            a21 = vpaddlq_s16(vmull_s8(wv, xb)); \
-            wv = vld1_s8(wq + 3u * cin); \
-            a30 = vpaddlq_s16(vmull_s8(wv, xa)); \
-            a31 = vpaddlq_s16(vmull_s8(wv, xb)); \
+        if ((LEN) & 8u) {                   /* the source's last 8 channels */ \
+            int8x8_t xa = vld1_s8(x0_), xb = vld1_s8(x1_), wv; \
+            wv = vld1_s8(w0_); \
+            PW1(a00, wv, xa); \
+            PW1(a01, wv, xb); \
+            wv = vld1_s8(w1_); \
+            PW1(a10, wv, xa); \
+            PW1(a11, wv, xb); \
+            wv = vld1_s8(w2_); \
+            PW1(a20, wv, xa); \
+            PW1(a21, wv, xb); \
+            wv = vld1_s8(w3_); \
+            PW1(a30, wv, xa); \
+            PW1(a31, wv, xb); \
         } \
     } while (0)
 
-/* The sums of 4 output channels (weight rows wc, wc + cin, ...) for the n cells of a block, cells in pairs (an odd
- * last cell twice), into sums[4 p .. 4 p + 4). One source: its cells' offsets xp[p]; several: xp[p ns + s]. */
-static void pw_sums(const unsigned char *base, const int8_t *wc, uint32_t cin, const PwSeg *seg, unsigned ns,
-                    const uint32_t *xp, uint32_t n, int32_t *sums)
+/* The first 16 (cin >= 16) or 8 (cin == 8) channels start the sums: the products' pairs' sums (VPADDL), so the 8
+ * sums need no clearing. */
+#define PW_FIRST16(X0, X1, W0) do { \
+        int8x16_t xa = vld1q_s8(X0), xb = vld1q_s8(X1), wv; \
+        const int8_t *w_ = (W0); \
+        wv = vld1q_s8(w_); \
+        a00 = vpaddlq_s16(vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xa)), vget_high_s8(wv), vget_high_s8(xa))); \
+        a01 = vpaddlq_s16(vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xb)), vget_high_s8(wv), vget_high_s8(xb))); \
+        wv = vld1q_s8(w_ + cin); \
+        a10 = vpaddlq_s16(vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xa)), vget_high_s8(wv), vget_high_s8(xa))); \
+        a11 = vpaddlq_s16(vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xb)), vget_high_s8(wv), vget_high_s8(xb))); \
+        wv = vld1q_s8(w_ + 2u * cin); \
+        a20 = vpaddlq_s16(vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xa)), vget_high_s8(wv), vget_high_s8(xa))); \
+        a21 = vpaddlq_s16(vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xb)), vget_high_s8(wv), vget_high_s8(xb))); \
+        wv = vld1q_s8(w_ + 3u * cin); \
+        a30 = vpaddlq_s16(vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xa)), vget_high_s8(wv), vget_high_s8(xa))); \
+        a31 = vpaddlq_s16(vmlal_s8(vmull_s8(vget_low_s8(wv), vget_low_s8(xb)), vget_high_s8(wv), vget_high_s8(xb))); \
+    } while (0)
+#define PW_FIRST8(X0, X1, W0) do { \
+        int8x8_t xa = vld1_s8(X0), xb = vld1_s8(X1), wv; \
+        const int8_t *w_ = (W0); \
+        wv = vld1_s8(w_); \
+        a00 = vpaddlq_s16(vmull_s8(wv, xa)); \
+        a01 = vpaddlq_s16(vmull_s8(wv, xb)); \
+        wv = vld1_s8(w_ + cin); \
+        a10 = vpaddlq_s16(vmull_s8(wv, xa)); \
+        a11 = vpaddlq_s16(vmull_s8(wv, xb)); \
+        wv = vld1_s8(w_ + 2u * cin); \
+        a20 = vpaddlq_s16(vmull_s8(wv, xa)); \
+        a21 = vpaddlq_s16(vmull_s8(wv, xb)); \
+        wv = vld1_s8(w_ + 3u * cin); \
+        a30 = vpaddlq_s16(vmull_s8(wv, xa)); \
+        a31 = vpaddlq_s16(vmull_s8(wv, xb)); \
+    } while (0)
+
+/* The sums of 4 output channels (weight rows wc, wc + cin, ...) for n cells whose cin codes lie at x, x + xcap, ...,
+ * cells in pairs (an odd last cell twice), into sums[4 p .. 4 p + 4). No NEON value lives across the pairs but the
+ * sums themselves, so nothing spills to the stack (an extension-register load or store between NEON instructions
+ * costs a pipeline switch on the A9). */
+static void pw_sums(const int8_t *x, uint32_t xcap, const int8_t *wc, uint32_t cin, uint32_t n, int32_t *sums)
 {
-    const ptrdiff_t back = 16 - 3 * (ptrdiff_t)cin;
     uint32_t p;
-    if (ns == 1u) {                         /* every 1x1 op of one source: its first segment is all of cin */
-        uint32_t len = cin, nq = len >= 16u ? (len - 16u) >> 4 : 0u;
-        for (p = 0; p < n; p += 2u, xp += 2, sums += 8) {
-            int32x4_t a00, a01, a10, a11, a20, a21, a30, a31;
-            const int8_t *p0 = CELL8(base + xp[0]), *p1 = CELL8(base + xp[p + 1u < n ? 1 : 0]), *wq = wc;
-            PW_FIRST(p0, p1);
-            PW_LOOP(p0, p1, nq);
-            if (len >= 16u && (len & 8u)) PW_TAIL8(p0, p1);
-            vst1q_s32(sums, hsum4(a00, a10, a20, a30));
-            vst1q_s32(sums + 4, hsum4(a01, a11, a21, a31));
-        }
-        return;
-    }
-    for (p = 0; p < n; p += 2u, xp += 2u * ns, sums += 8) {
-        int32x4_t a00 = vdupq_n_s32(0), a01 = a00, a10 = a00, a11 = a00, a20 = a00, a21 = a00, a30 = a00, a31 = a00;
-        const uint32_t *x1 = p + 1u < n ? xp + ns : xp;
-        unsigned s;
-        for (s = 0; s < ns; s++) {
-            const int8_t *p0 = CELL8(base + xp[s]), *p1 = CELL8(base + x1[s]), *wq = wc + seg[s].woff;
-            uint32_t len = seg[s].len;
-            PW_LOOP(p0, p1, len >> 4);
-            if (len & 8u) PW_TAIL8(p0, p1);
+    for (p = 0; p < n; p += 2u, x += 2u * xcap, sums += 8) {
+        const int8_t *x0 = CELL8(x), *x1 = CELL8(p + 1u < n ? x + xcap : x);
+        int32x4_t a00, a01, a10, a11, a20, a21, a30, a31;
+        if (cin >= 16u) {
+            PW_FIRST16(x0, x1, wc);
+            PW_SRC(x0 + 16, x1 + 16, wc + 16, cin - 16u);
+        } else {
+            PW_FIRST8(x0, x1, wc);
         }
         vst1q_s32(sums, hsum4(a00, a10, a20, a30));
         vst1q_s32(sums + 4, hsum4(a01, a11, a21, a31));
@@ -2244,89 +2248,115 @@ static void pw_store(const int32_t *sums, uint32_t n, const int32_t *pb, const i
     }
 }
 
-/* A 1x1 op on n cells: xp their sources' offsets (pw_offsets), cell p's output at dst + p ds, sums 4 (n + 1) int32
+/* A 1x1 op on n cells whose cin codes lie at x, x + xcap, ...: cell p's output at dst + p ds; sums 4 (n + 1) int32
  * of scratch. Channels in blocks of 4: their weights are read once per block of cells. */
-static void pw_cells(const unsigned char *base, const vocr_textspot3_op *op, const PwSeg *seg, const uint32_t *xp,
-                     uint32_t n, const int32_t *par, const uint8_t *mode, int32_t *sums, int8_t *dst, uint32_t ds)
+static void pw_cells(const vocr_textspot3_op *op, const int8_t *x, uint32_t xcap, uint32_t n, const int32_t *par,
+                     const uint8_t *mode, int32_t *sums, int8_t *dst, uint32_t ds)
 {
     const int8_t *w = (const int8_t *)(const void *)op->w;
     uint32_t cout = op->cout, cin = op->cin, c;
     for (c = 0; c < cout; c += 4u) {
-        pw_sums(base, w + (size_t)c * cin, cin, seg, op->nsrc, xp, n, sums);
+        pw_sums(x, xcap, w + (size_t)c * cin, cin, n, sums);
         pw_store(sums, n, par + c, par + cout + c, par + 2u * cout + c, mode[c / 4u], op->relu ? 0 : -128, dst + c,
                  ds);
     }
 }
 
-/* Output row i of a depthwise op (cols cells to dst, ds bytes apart) from the map src; wt its weights by tap
- * ([9][cout]). Cells whose 9 taps all lie inside the map run with the taps' weights in registers. */
-NOINLINE static void dw_row(const vocr_textspot3_op *op, const MapRef *src, uint32_t i, uint32_t cols, const int8_t *wt,
-                   const int32_t *par, const uint8_t *mode, int8_t *dst, uint32_t ds)
+/* The int32 sums of one cell's 8 channels from the taps whose source lies inside the map (a cell at the left or
+ * right border, or every cell of a narrow map): wt the weights by tap, row[ky] the source rows (vr[ky]: inside). */
+static void dw_border(const int8_t *const *row, const unsigned *vr, const int8_t *wt, uint32_t cout, uint32_t c,
+                      uint32_t j, uint32_t s, uint32_t d, uint32_t cols, uint32_t cap, int32_t *a)
 {
-    uint32_t s = op->stride, d = op->dil, cout = op->cout, cap = src->cap, c, j, ky, kx, jlo, jend;
+    int32x4_t lo = vdupq_n_s32(0), hi = lo;
+    uint32_t ky, kx;
+    for (ky = 0; ky < 3u; ky++) {
+        if (!vr[ky]) continue;
+        for (kx = 0; kx < 3u; kx++) {
+            uint32_t xx = j * s + kx * d;
+            int16x8_t t;
+            if (xx < d || xx - d >= cols) continue;
+            t = vmull_s8(vld1_s8(wt + (size_t)(3u * ky + kx) * cout + c), vld1_s8(row[ky] + (size_t)(xx - d) * cap + c));
+            lo = vaddw_s16(lo, vget_low_s16(t));
+            hi = vaddw_s16(hi, vget_high_s16(t));
+        }
+    }
+    vst1q_s32(a, lo);
+    vst1q_s32(a + 4, hi);
+}
+
+/* Output row i of a depthwise op (cols cells to dst, ds bytes apart) from the map src; wt its weights by tap
+ * ([9][cout]); acc a row's sums (8 int32 per cell). Per 8 channels, two passes: the sums of every cell (the cells
+ * whose taps lie inside the map with the 9 taps' weights in registers, two products per int16 lane, a source row
+ * outside the map read as the centre row with its weights 0), then their requantisation (constants in registers). */
+NOINLINE static void dw_row(const vocr_textspot3_op *op, const MapRef *src, uint32_t i, uint32_t cols, const int8_t *wt,
+                            const int32_t *par, const uint8_t *mode, int32_t *acc, int8_t *dst, uint32_t ds)
+{
+    uint32_t s = op->stride, d = op->dil, cout = op->cout, cap = src->cap, c, j, ky, jlo, jend;
+    size_t rowb = (size_t)src->cols * cap, step = (size_t)s * cap, st = (size_t)d * cap;
     const int8_t *row[3];
-    unsigned vr[3], all = 1;
-    for (ky = 0; ky < 3u; ky++) {           /* source row i s + (ky - 1) d */
+    unsigned vr[3];
+    int8x8_t floor8 = vdup_n_s8((int8_t)(op->relu ? 0 : -128));
+    for (ky = 0; ky < 3u; ky++) {           /* source row i s + (ky - 1) d; the centre one always exists */
         uint32_t yy = i * s + ky * d;
         vr[ky] = yy >= d && yy - d < src->rows ? 1u : 0u;
-        row[ky] = src->base + (vr[ky] ? (size_t)(yy - d) * src->cols * cap : 0u);
-        all &= vr[ky];
+        row[ky] = src->base + (vr[ky] ? (size_t)(yy - d) : (size_t)i * s) * rowb;
     }
     jlo = (d + s - 1u) / s;                                              /* j s >= d */
-    jend = all && src->cols > d ? (src->cols - 1u - d) / s + 1u : 0u;    /* j s + d < src->cols */
+    jend = src->cols > d ? (src->cols - 1u - d) / s + 1u : 0u;           /* j s + d < src->cols */
     if (jend > cols) jend = cols;
     if (jlo > jend) jlo = jend;
     for (c = 0; c < cout; c += 8u) {
-        int32x4_t b0 = vld1q_s32(par + c), b1 = vld1q_s32(par + c + 4u);
-        int32x4_t m0 = vld1q_s32(par + cout + c), m1 = vld1q_s32(par + cout + c + 4u);
-        int32x4_t s0 = vld1q_s32(par + 2u * cout + c), s1 = vld1q_s32(par + 2u * cout + c + 4u);
-        unsigned md0 = mode[c / 4u], md1 = mode[c / 4u + 1u];
-        int8x8_t w0 = vld1_s8(wt + c), w1 = vld1_s8(wt + cout + c), w2 = vld1_s8(wt + 2u * cout + c);
-        int8x8_t w3 = vld1_s8(wt + 3u * cout + c), w4 = vld1_s8(wt + 4u * cout + c), w5 = vld1_s8(wt + 5u * cout + c);
-        int8x8_t w6 = vld1_s8(wt + 6u * cout + c), w7 = vld1_s8(wt + 7u * cout + c), w8 = vld1_s8(wt + 8u * cout + c);
-        for (j = 0; j < cols; j++) {
-            int32x4_t lo, hi;
-            int8x8_t v;
-            if (j >= jlo && j < jend) {
-                size_t st = (size_t)d * cap, x = (size_t)(j * s - d) * cap + c;
-                const int8_t *r0 = row[0] + x, *r1 = row[1] + x, *r2 = row[2] + x;
-                int16x8_t t = vmull_s8(w0, vld1_s8(r0));
-                t = vmlal_s8(t, w1, vld1_s8(r0 + st));
-                lo = vmovl_s16(vget_low_s16(t));
-                hi = vmovl_s16(vget_high_s16(t));
-                t = vmull_s8(w2, vld1_s8(r0 + 2u * st));
-                t = vmlal_s8(t, w3, vld1_s8(r1));
+        const int8x8_t z = vdup_n_s8(0);
+        for (j = 0; j < jlo; j++) dw_border(row, vr, wt, cout, c, j, s, d, src->cols, cap, acc + 8u * j);
+        if (jlo < jend) {
+            int8x8_t w0 = vr[0] ? vld1_s8(wt + c) : z, w1 = vr[0] ? vld1_s8(wt + cout + c) : z;
+            int8x8_t w2 = vr[0] ? vld1_s8(wt + 2u * cout + c) : z, w3 = vr[1] ? vld1_s8(wt + 3u * cout + c) : z;
+            int8x8_t w4 = vr[1] ? vld1_s8(wt + 4u * cout + c) : z, w5 = vr[1] ? vld1_s8(wt + 5u * cout + c) : z;
+            int8x8_t w6 = vr[2] ? vld1_s8(wt + 6u * cout + c) : z, w7 = vr[2] ? vld1_s8(wt + 7u * cout + c) : z;
+            int8x8_t w8 = vr[2] ? vld1_s8(wt + 8u * cout + c) : z;
+            size_t x = (size_t)(jlo * s - d) * cap + c;
+            const int8_t *r0 = row[0] + x, *r1 = row[1] + x, *r2 = row[2] + x;
+            int32_t *a = acc + 8u * jlo;
+            for (j = jlo; j < jend; j++, r0 += step, r1 += step, r2 += step, a += 8) {
+                int16x8_t t = vmlal_s8(vmull_s8(w0, vld1_s8(r0)), w1, vld1_s8(r0 + st));
+                int32x4_t lo = vmovl_s16(vget_low_s16(t)), hi = vmovl_s16(vget_high_s16(t));
+                t = vmlal_s8(vmull_s8(w2, vld1_s8(r0 + 2u * st)), w3, vld1_s8(r1));
                 lo = vaddw_s16(lo, vget_low_s16(t));
                 hi = vaddw_s16(hi, vget_high_s16(t));
-                t = vmull_s8(w4, vld1_s8(r1 + st));
-                t = vmlal_s8(t, w5, vld1_s8(r1 + 2u * st));
+                t = vmlal_s8(vmull_s8(w4, vld1_s8(r1 + st)), w5, vld1_s8(r1 + 2u * st));
                 lo = vaddw_s16(lo, vget_low_s16(t));
                 hi = vaddw_s16(hi, vget_high_s16(t));
-                t = vmull_s8(w6, vld1_s8(r2));
-                t = vmlal_s8(t, w7, vld1_s8(r2 + st));
+                t = vmlal_s8(vmull_s8(w6, vld1_s8(r2)), w7, vld1_s8(r2 + st));
                 lo = vaddw_s16(lo, vget_low_s16(t));
                 hi = vaddw_s16(hi, vget_high_s16(t));
                 t = vmull_s8(w8, vld1_s8(r2 + 2u * st));
-                lo = vaddw_s16(lo, vget_low_s16(t));
-                hi = vaddw_s16(hi, vget_high_s16(t));
-            } else {                        /* a cell at the border: the taps inside the map */
-                lo = hi = vdupq_n_s32(0);
-                for (ky = 0; ky < 3u; ky++) {
-                    if (!vr[ky]) continue;
-                    for (kx = 0; kx < 3u; kx++) {
-                        uint32_t xx = j * s + kx * d;
-                        int16x8_t t;
-                        if (xx < d || xx - d >= src->cols) continue;
-                        t = vmull_s8(vld1_s8(wt + (size_t)(3u * ky + kx) * cout + c),
-                                     vld1_s8(row[ky] + (size_t)(xx - d) * cap + c));
-                        lo = vaddw_s16(lo, vget_low_s16(t));
-                        hi = vaddw_s16(hi, vget_high_s16(t));
-                    }
+                vst1q_s32(a, vaddw_s16(lo, vget_low_s16(t)));
+                vst1q_s32(a + 4, vaddw_s16(hi, vget_high_s16(t)));
+            }
+        }
+        for (j = jend > jlo ? jend : jlo; j < cols; j++)
+            dw_border(row, vr, wt, cout, c, j, s, d, src->cols, cap, acc + 8u * j);
+        {
+            int32x4_t b0 = vld1q_s32(par + c), b1 = vld1q_s32(par + c + 4u);
+            int32x4_t m0 = vld1q_s32(par + cout + c), m1 = vld1q_s32(par + cout + c + 4u);
+            int32x4_t s0 = vld1q_s32(par + 2u * cout + c), s1 = vld1q_s32(par + 2u * cout + c + 4u);
+            unsigned md0 = mode[c / 4u], md1 = mode[c / 4u + 1u];
+            const int32_t *a = acc;
+            int8_t *o = dst + c;
+            if (md0 == 0u && md1 == 0u) {   /* the usual form: VQDMULH, VRSHL by 31 - shift */
+                int32x4_t k0 = vsubq_s32(vdupq_n_s32(31), s0), k1 = vsubq_s32(vdupq_n_s32(31), s1);
+                for (j = 0; j < cols; j++, a += 8, o += ds) {
+                    int32x4_t v0 = vrshlq_s32(vqdmulhq_s32(vaddq_s32(vld1q_s32(a), b0), m0), k0);
+                    int32x4_t v1 = vrshlq_s32(vqdmulhq_s32(vaddq_s32(vld1q_s32(a + 4), b1), m1), k1);
+                    vst1_s8(o, vmax_s8(vqmovn_s16(vcombine_s16(vqmovn_s32(v0), vqmovn_s32(v1))), floor8));
+                }
+            } else {
+                for (j = 0; j < cols; j++, a += 8, o += ds) {
+                    int8x8_t v = vqmovn_s16(vcombine_s16(vqmovn_s32(rq4v(vld1q_s32(a), b0, m0, s0, md0)),
+                                                         vqmovn_s32(rq4v(vld1q_s32(a + 4), b1, m1, s1, md1))));
+                    vst1_s8(o, vmax_s8(v, floor8));
                 }
             }
-            v = vqmovn_s16(vcombine_s16(vqmovn_s32(rq4v(lo, b0, m0, s0, md0)), vqmovn_s32(rq4v(hi, b1, m1, s1, md1))));
-            if (op->relu) v = vmax_s8(v, vdup_n_s8(0));
-            vst1_s8(dst + (size_t)j * ds + c, v);
         }
     }
 }
@@ -2338,37 +2368,35 @@ static int8_t rq1(int32_t acc, int32_t b, int32_t mult, int32_t sh, int32_t lo)
     return (int8_t)(r < lo ? lo : r > 127 ? 127 : r);
 }
 
-static void pw_cells(const unsigned char *base, const vocr_textspot3_op *op, const PwSeg *seg, const uint32_t *xp,
-                     uint32_t n, const int32_t *par, const uint8_t *mode, int32_t *sums, int8_t *dst, uint32_t ds)
+static void pw_cells(const vocr_textspot3_op *op, const int8_t *x, uint32_t xcap, uint32_t n, const int32_t *par,
+                     const uint8_t *mode, int32_t *sums, int8_t *dst, uint32_t ds)
 {
     const int8_t *w = (const int8_t *)(const void *)op->w;
     uint32_t cout = op->cout, cin = op->cin, c, p, q;
-    unsigned ns = op->nsrc, s;
     int32_t lo = op->relu ? 0 : -128;
     (void)mode;
     (void)sums;
     for (p = 0; p < n; p++) {
+        const int8_t *xc = x + (size_t)p * xcap;
         int8_t *o = dst + (size_t)p * ds;
         for (c = 0; c < cout; c++) {
             const int8_t *wc = w + (size_t)c * cin;
             int32_t acc = 0;
-            for (s = 0; s < ns; s++) {
-                const int8_t *x = (const int8_t *)(const void *)(base + xp[p * ns + s]), *ww = wc + seg[s].woff;
-                for (q = 0; q < seg[s].len; q++) acc += ww[q] * x[q];
-            }
+            for (q = 0; q < cin; q++) acc += wc[q] * xc[q];
             o[c] = rq1(acc, par[c], par[cout + c], par[2u * cout + c], lo);
         }
     }
 }
 
 NOINLINE static void dw_row(const vocr_textspot3_op *op, const MapRef *src, uint32_t i, uint32_t cols, const int8_t *wt,
-                   const int32_t *par, const uint8_t *mode, int8_t *dst, uint32_t ds)
+                            const int32_t *par, const uint8_t *mode, int32_t *accs, int8_t *dst, uint32_t ds)
 {
     uint32_t s = op->stride, d = op->dil, cout = op->cout, cap = src->cap, c, j, ky, kx;
     const int8_t *row[3];
     unsigned vr[3];
     int32_t lo = op->relu ? 0 : -128;
     (void)mode;
+    (void)accs;
     for (ky = 0; ky < 3u; ky++) {
         uint32_t yy = i * s + ky * d;
         vr[ky] = yy >= d && yy - d < src->rows ? 1u : 0u;
@@ -2403,7 +2431,41 @@ static void copy_cells(int8_t *dst, uint32_t dcap, const int8_t *src, uint32_t s
     for (p = 0; p < n; p++) memcpy(dst + (size_t)p * dcap, src + (size_t)p * scap, scap);
 }
 
-/* Op k, a 1x1 op, with its scratch at sc: blocks of pw_block cells in raster order (in place: through the block). */
+/* The n cells' codes of a 1x1 op's sources (xp: their offsets, pw_offsets), concatenated in source order, into blk
+ * (cin bytes per cell). */
+static void pw_gather(const unsigned char *base, const PwSeg *seg, unsigned ns, const uint32_t *xp, uint32_t n,
+                      int8_t *blk, uint32_t cin)
+{
+    uint32_t p;
+    unsigned s;
+    for (p = 0; p < n; p++, xp += ns, blk += cin)
+        for (s = 0; s < ns; s++) memcpy(blk + seg[s].woff, base + xp[s], seg[s].len);
+}
+
+/* A block of n cells of a 1x1 op from cell k0 (cols cells per row of its output) to dst (ds bytes per cell): from
+ * its source's slot where its codes lie, or from the gathered block. A gathered block holds every code the block's
+ * outputs read, so the outputs may overwrite their own source cells (in place); otherwise an op in place writes
+ * through its block of outputs (tmp). */
+static void pw_block_run(const Net *t, const vocr_textspot3_op *op, const PwSeg *seg, uint32_t k0, uint32_t n,
+                         uint32_t cols, const int32_t *par, const uint8_t *mode, int32_t *sums, uint32_t *xp, int8_t *tmp,
+                         int8_t *dst, uint32_t ds)
+{
+    if (pw_gathers(op)) {
+        pw_offsets(seg, op->nsrc, k0, n, cols, xp);
+        pw_gather(t->base, seg, op->nsrc, xp, n, tmp, op->cin);
+        pw_cells(op, tmp, op->cin, n, par, mode, sums, dst, ds);
+    } else {
+        const int8_t *x = (const int8_t *)(const void *)(t->base + seg[0].at) + (size_t)k0 * seg[0].cap;
+        if (op->inplace) {
+            pw_cells(op, x, seg[0].cap, n, par, mode, sums, tmp, op->cout);
+            copy_cells(dst, ds, tmp, op->cout, n);
+        } else {
+            pw_cells(op, x, seg[0].cap, n, par, mode, sums, dst, ds);
+        }
+    }
+}
+
+/* Op k, a 1x1 op, with its scratch at sc: blocks of pw_block cells in raster order. */
 NOINLINE static void run_pw(const Net *t, unsigned k, unsigned char *sc)
 {
     const vocr_textspot3 *m = t->m;
@@ -2415,23 +2477,17 @@ NOINLINE static void run_pw(const Net *t, unsigned k, unsigned char *sc)
     uint8_t *mode;
     uint32_t *xp, cells = o.rows * o.cols, k0;
     int32_t *sums;
-    int8_t *blk;
+    int8_t *tmp;
     op_lay(m, k, t->width, t->height, &L);
     mode = sc + (size_t)L.mode;
-    xp = (uint32_t *)(void *)(sc + (size_t)L.xp);
     sums = (int32_t *)(void *)(sc + (size_t)L.sums);
-    blk = (int8_t *)(void *)(sc + (size_t)L.tmp);
+    xp = (uint32_t *)(void *)(sc + (size_t)L.xp);
+    tmp = (int8_t *)(void *)(sc + (size_t)L.tmp);
     op_params(op, par, mode);
     pw_segs(t, op, seg);
     for (k0 = 0; k0 < cells; k0 += L.pb) {
         uint32_t n = min_u(L.pb, cells - k0);
-        pw_offsets(seg, op->nsrc, k0, n, o.cols, xp);
-        if (op->inplace) {
-            pw_cells(t->base, op, seg, xp, n, par, mode, sums, blk, op->cout);
-            copy_cells(o.base + (size_t)k0 * o.cap, o.cap, blk, op->cout, n);
-        } else {
-            pw_cells(t->base, op, seg, xp, n, par, mode, sums, o.base + (size_t)k0 * o.cap, o.cap);
-        }
+        pw_block_run(t, op, seg, k0, n, o.cols, par, mode, sums, xp, tmp, o.base + (size_t)k0 * o.cap, o.cap);
     }
 }
 
@@ -2446,18 +2502,20 @@ NOINLINE static void run_dw(const Net *t, unsigned k, unsigned char *sc)
     int32_t *par = (int32_t *)(void *)sc;
     uint8_t *mode;
     int8_t *wt, *ring;
+    int32_t *acc;
     uint32_t c, tap, i, d = op->dil, cout = op->cout;
     size_t rowb = (size_t)o.cols * o.cap;
     op_lay(m, k, t->width, t->height, &L);
     mode = sc + (size_t)L.mode;
     wt = (int8_t *)(void *)(sc + (size_t)L.wt);
+    acc = (int32_t *)(void *)(sc + (size_t)L.acc);
     ring = (int8_t *)(void *)(sc + (size_t)L.ring);
     op_params(op, par, mode);
     for (c = 0; c < cout; c++)
         for (tap = 0; tap < 9u; tap++) wt[(size_t)tap * cout + c] = w[(size_t)c * 9u + tap];
     for (i = 0; i < o.rows; i++) {
         int8_t *dst = op->inplace ? ring + (size_t)(i % (d + 1u)) * rowb : o.base + (size_t)i * rowb;
-        dw_row(op, &src, i, o.cols, wt, par, mode, dst, o.cap);
+        dw_row(op, &src, i, o.cols, wt, par, mode, acc, dst, o.cap);
         if (op->inplace && i >= d)          /* no later row reads source row i - d */
             memcpy(o.base + (size_t)(i - d) * rowb, ring + (size_t)((i - d) % (d + 1u)) * rowb, rowb);
     }
@@ -2493,11 +2551,12 @@ NOINLINE static void run_head(Net *t, unsigned char *sc)
     uint8_t *mode;
     uint32_t *xp, i, j0, s, dy;
     int32_t *sums;
-    int8_t *hwc;
+    int8_t *hwc, *gat;
     head_lay(m, t->width, &L);
     mode = sc + (size_t)L.mode;
     xp = (uint32_t *)(void *)(sc + (size_t)L.xp);
     sums = (int32_t *)(void *)(sc + (size_t)L.sums);
+    gat = (int8_t *)(void *)(sc + (size_t)L.gat);
     hwc = (int8_t *)(void *)(sc + (size_t)L.hwc);
     t->drow = (int8_t *)(void *)(sc + (size_t)L.drow);
     t->comp = (Comp *)(void *)(sc + (size_t)L.comp);
@@ -2520,8 +2579,8 @@ NOINLINE static void run_head(Net *t, unsigned char *sc)
     for (i = 0; i < t->hn; i++) {
         for (j0 = 0; j0 < t->wn; j0 += L.pb) {
             uint32_t n = min_u(L.pb, t->wn - j0);
-            pw_offsets(seg, op->nsrc, i * t->wn + j0, n, t->wn, xp);
-            pw_cells(t->base, op, seg, xp, n, par, mode, sums, hwc + (size_t)j0 * D2S_OUT, D2S_OUT);
+            pw_block_run(t, op, seg, i * t->wn + j0, n, t->wn, par, mode, sums, xp, gat, hwc + (size_t)j0 * D2S_OUT,
+                         D2S_OUT);
         }
         for (dy = 0; dy < 2u && 2u * i + dy < t->hm; dy++) {   /* two map rows, the second inside the maps */
             sub_row3(t, hwc, dy);

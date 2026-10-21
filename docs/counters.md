@@ -102,7 +102,7 @@ Through Rubi's own pipeline (`vjo-ocr`: grey, TEXTBOX_RECOVERY finder, the refin
 
 Over the 15 left-edge positions (−6 to +22 px), the exact readings with the LM are S 4 / 4 / 9 / 9, N 4 / 4 / 9 / 9 and L 5 / 5 / 10 / 10 for rule only / + re-decode / + continuation / all three. The continuation does not fire when the edge lies inside 九: the edge columns' range is under its threshold, so the 「 there stays lost. The re-decode turns the cut 九's ル or し back into 九, except Normal at 22 px, which picks 1. On the console string itself, the rule turns `ルッ月です」` into `ルヶ月です」`.
 
-So the likely cause of the console's reading is a region drawn tight against or into the line. **To test on the console** (hardware work is paused): the same page with the region's left edge 10 px before the 「, with the counter rule and the re-decode on; and with the edge continuation on and a region drawn against the text.
+So the likely cause of the console's reading is a region drawn tight against or into the line. The follow-up for Rubi is #110: capture a margin around the region, then continue the cut lines or pad them. **To test on the console** (hardware work is paused): the same page with the region's left edge 10 px before the 「, with the counter rule and the re-decode on; and with the edge continuation on and a region drawn against the text.
 
 ## Using it
 

@@ -33,7 +33,7 @@ Checked against the protocol: kd_teacher_run is a stage-1 run of an M shape that
 (default $HERD/shared/artifacts/textspot3/runs): its final.pt and done.json exist and agree, and the plan records its
 sha256; kd_students are two distinct registered shapes other than the teacher's. A kd record's teacher is written as
 "$HERD/shared/artifacts/textspot3/runs/<run>" and expanded at the command line. Base + the kept extras on L is the
-recipe size (size kept), clean (clean kept) or base --extras size,clean (both: named size+clean_<L>_seed<n>).
+recipe size (size kept), clean (clean kept) or base --extras size,clean (both: named sizeclean_<L>_seed<n>).
 """
 import argparse
 import hashlib
@@ -59,7 +59,7 @@ SYNTH_MANIFEST = "data/manifests/textspot_shards_v1.json"
 T2_MANIFEST = "data/manifests/textspot2_shards_v1.json"
 CHOICE_KEYS = {"size_kept": bool, "clean_kept": bool, "kd_teacher_run": str, "kd_students": list}
 TEACHER_RUNS = "$HERD/shared/artifacts/textspot3/runs"
-NAME_RECIPE = {(): "base", ("size",): "size", ("clean",): "clean", ("size", "clean"): "size+clean"}
+NAME_RECIPE = {(): "base", ("size",): "size", ("clean",): "clean", ("size", "clean"): "sizeclean"}
 
 
 def paths(herd=HERD):
@@ -78,16 +78,16 @@ def file_sha256(path):
 # ----------------------------------------------------------------------------- the protocol's shapes
 
 def shapes(protocol=PROTOCOL):
-    """The registered shapes: {name: dict with "family"} from the protocol's "shapes" (non-dict entries, such as a
-    grammar note, are skipped)."""
+    """The registered shapes, {name: dict with "family"}: train/textspot3_shapes.py's reading of the protocol (its
+    "shapes" and every amendment's "shapes" object, later ones winning), the registry the trainer reads. A dict entry
+    without family T or M is refused; non-dict entries (a grammar note, an amendment's list of names) are skipped."""
+    import textspot3_shapes as S3
     doc = json.loads(Path(protocol).read_text(encoding="utf-8"))
-    out = {}
-    for name, s in (doc.get("shapes") or {}).items():
-        if isinstance(s, dict):
-            if s.get("family") not in ("T", "M"):
+    for block in [doc.get("shapes")] + [a.get("shapes") for a in doc.get("amendments", []) if isinstance(a, dict)]:
+        for name, s in (block.items() if isinstance(block, dict) else ()):
+            if isinstance(s, dict) and s.get("family") not in ("T", "M"):
                 raise SystemExit(f"{protocol}: shape {name} has no family T or M")
-            out[name] = {"name": name, **s}
-    return out
+    return S3._from_protocol(protocol)
 
 
 def m_points(reg, given=None):

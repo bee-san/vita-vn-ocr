@@ -2,6 +2,7 @@
 """Check one finished textspot3 run (train/textspot3_train.py) and record it.
 
   check_run.py RUN [--finished FILE] [--cbin2 runtime/vocr_textspot2_test] [--cbin3 runtime/vocr_textspot3_test]
+               [--plan PLAN.jsonl]
 
 Checks: run.json is a textspot3 run that names the directory (<recipe>_<shape>_seed<n>, a moved failed attempt's
 .failed<k> suffix aside) with its family's scale (T: half_above 480; M: wider than 480 or taller than 272);
@@ -15,8 +16,10 @@ data pin recorded its skip lists.
 - Family M: final.vtsp loads in synth/textspot3_twin.Model as VTSP version 3 with conf_min 1, named the run's shape;
   textspot3_twin.spot runs on the same frames, boxes inside them; with --cbin3, runtime/vocr_textspot3_test gives the
   twin's line for each frame.
-run.json's code sha256 equal the files in this checkout and its manifests' sha256 the manifests here (a difference is
-printed, not fatal: the blob checks are what make a run usable). With --finished it appends
+With --plan, the run is the plan's record of its name: the same recipe, family, shape, seed, steps and extras, and
+for kd the plan's teacher (run.json's teacher final.pt sha256 is the plan's). run.json's code sha256 equal the files in
+this checkout and its manifests' sha256 the manifests here (a difference is printed, not fatal: the blob checks are
+what make a run usable). With --finished it appends
 "name vtsp_sha256 vtsp_bytes steps wall_seconds" to FILE unless that line is already there. Prints CHECK_OK or exits
 non-zero.
 """
@@ -87,7 +90,26 @@ def c_lines(cbin, vtsp_path, frames):
     return p.stdout.splitlines()
 
 
-def check(run_dir, cbin2=None, cbin3=None):
+def plan_differences(info, rec):
+    """Where run.json differs from its plan record (textspot3_plan.py's): [] when it is the plan's run."""
+    want_ex = [x for x in ("size", "clean") if x in (rec.get("extras") or "").split(",")] \
+        if rec.get("extras") is not None else {"size": ["size"], "clean": ["clean"]}.get(rec["recipe"], [])
+    bad = []
+    for key, have, want in (("recipe", info.get("recipe"), rec["recipe"]),
+                            ("family", info.get("family"), rec["family"]),
+                            ("shape", info["shape"]["name"], rec["shape"]), ("seed", info.get("seed"), rec["seed"]),
+                            ("steps", info.get("steps"), rec["steps"]), ("extras", info.get("extras"), want_ex)):
+        if have != want:
+            bad.append(f"run.json {key} {have!r}, the plan's {want!r}")
+    teacher = ((info.get("settings") or {}).get("kd") or {}).get("teacher")
+    if rec.get("teacher_pt_sha256") and (teacher or {}).get("pt_sha256") != rec["teacher_pt_sha256"]:
+        bad.append("run.json's teacher final.pt sha256 is not the plan's")
+    if rec["recipe"] != "kd" and teacher is not None:
+        bad.append("a teacher in a run the plan has without one")
+    return bad
+
+
+def check(run_dir, cbin2=None, cbin3=None, plan=None):
     run_dir = Path(run_dir)
     info = json.loads((run_dir / "run.json").read_text())
     done = json.loads((run_dir / "done.json").read_text())
@@ -132,6 +154,13 @@ def check(run_dir, cbin2=None, cbin3=None):
             bad.append(f"final.vtsp: version {m.version}, conf_min {m.conf_min}, name {m.name}")
     if done["steps"] != info["steps"]:
         bad.append(f"done.json steps {done['steps']} != run.json steps {info['steps']}")
+    if plan is not None:
+        recs = {json.loads(x)["run"]: json.loads(x) for x in Path(plan).read_text().splitlines() if x.strip()}
+        rec = recs.get(info["name"])
+        if rec is None:
+            bad.append(f"{info['name']} is not a run of {Path(plan).name}")
+        else:
+            bad += plan_differences(info, rec)
     sk = info.get("skip") or {}
     pins = [m_ for m_ in info["manifests_sha256"] if Path(m_).name.startswith(("textspot_shards", "textspot2_shards"))]
     if pins and not sk.get("lists"):
@@ -167,8 +196,10 @@ def main(argv=None):
     ap.add_argument("--finished")
     ap.add_argument("--cbin2", help="runtime/vocr_textspot2_test: family T's C driver, compared with the twin")
     ap.add_argument("--cbin3", help="runtime/vocr_textspot3_test: family M's C driver, compared with the twin")
+    ap.add_argument("--plan", help="the sweep's plan: the run must be its record (recipe, family, shape, seed, steps, "
+                                   "extras, teacher)")
     args = ap.parse_args(argv)
-    info, done, bad, notes, boxes = check(args.run, args.cbin2, args.cbin3)
+    info, done, bad, notes, boxes = check(args.run, args.cbin2, args.cbin3, args.plan)
     name = Path(args.run).name
     for n in notes:
         print(f"{name}: NOTE {n}")

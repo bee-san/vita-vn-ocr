@@ -54,7 +54,7 @@ What the other recipes change:
   they disagree on refuses the run), so its maps come from the same window at the same scale.
 - **--extras** (size, clean, or none) adds stage 2's "kept extras" to base or kd; kd needs it. A base run with
   extras is named after them: base + size is the size recipe (named size_...), base + clean the clean recipe, base
-  + size + clean is named size+clean_... (stage 2's "base + the kept extras on L"; a stage-1 base run keeps its name).
+  + size + clean is named sizeclean_... (stage 2's "base + the kept extras on L"; a stage-1 base run keeps its name).
 
 **Family T** (VTSP version 2, textspot2's d2s format): the registered T shapes (train/textspot3_shapes.py, which reads
 eval/textspot3_protocol.json "shapes"): textdet_model.layers' grammar at stride 8 (stem, down, down8, separable
@@ -151,11 +151,14 @@ T_FIELDS = T2.SHAPE_FIELDS              # name, stride, c0, c1, c2, chans, dil, 
 # ----------------------------------------------------------------------------- shapes and families
 
 def registry():
-    """The registered textspot3 shapes: train/textspot3_shapes.SHAPES (textspot3-runtime's registry of
-    eval/textspot3_protocol.json "shapes"), {} while that module does not exist."""
+    """The registered textspot3 shapes: train/textspot3_shapes.SHAPES once it says REGISTERED (the shapes of
+    eval/textspot3_protocol.json, registered by an amendment); {} before that (its SHAPES are then the T_ROWS
+    candidates, which no run may train) and while that module does not exist."""
     try:
         import textspot3_shapes as S3
     except ImportError:
+        return {}
+    if not getattr(S3, "REGISTERED", False):
         return {}
     return {k: dict(v) for k, v in S3.SHAPES.items()}
 
@@ -174,7 +177,10 @@ def family_of(shape):
 
 def t_shape(s):
     """A T shape as textdet_model's and textspot2_export's functions take it: exactly textspot2's shape fields
-    (a d2s checkpoint of textspot2's form), checked: stride 8, head kroa_x2, separable blocks, at most 64 channels."""
+    (a d2s checkpoint of textspot2's form), checked: stride 8, head kroa_x2, separable blocks, at most 64 channels,
+    the family's half_above (480) when the shape names one."""
+    if s.get("half_above", HALF_ABOVE_T) != HALF_ABOVE_T:
+        raise ValueError(f"{s.get('name')}: half_above {s.get('half_above')}, family T's is {HALF_ABOVE_T}")
     out = {k: s[k] for k in T_FIELDS}
     out["chans"], out["dil"] = list(out["chans"]), list(out["dil"])
     if out["stride"] != NET_STRIDE or out["head"] != X.HEAD or out["block"] != "sep":
@@ -679,10 +685,10 @@ def parse_extras(text):
 
 def name_recipe(recipe, extras):
     """The recipe part of a run's name: kd and long by their recipe; base, size and clean by their extras (base with
-    none, size, clean, or size+clean for base + both)."""
+    none, size, clean, or sizeclean for base + both)."""
     if recipe in ("kd", "long"):
         return recipe
-    return "+".join(extras) if extras else "base"
+    return "".join(x for x in EXTRAS if x in extras) if extras else "base"
 
 
 def run_name(recipe, shape, seed, extras=None):

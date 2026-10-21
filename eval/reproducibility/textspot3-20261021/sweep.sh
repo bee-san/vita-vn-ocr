@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # textspot3's training sweep (docs/textspot3.md "Arms and stages"; issue #108): every run of a plan (textspot3_plan.py
-# stage1 --family T|M, or stage2) through heavy.sh, 5 threads, at most MAX_PAR runs at once, in the plan's order
-# (longest first).
+# stage1 --family T|M, or stage2) through heavy.sh, 5 threads, in the plan's order (longest first), at most MAX_PAR
+# runs at once across every sweep that shares OUT (slot locks OUT/locks/slot-<k>.lock, k = 1..MAX_PAR: a T and an M
+# sweep of stage 1 running side by side hold MAX_PAR runs between them).
 #   sweep.sh OUT PLAN [RUN ...]          RUN: names of the plan (default: all of them)
 # Every run trains to its last step; nothing is selected or stopped early on any score. A run that exits without
 # done.json (a crash or its timeout, the plan's hang guard) is moved to OUT/<run>.failed<k> and restarted from scratch
@@ -9,8 +10,12 @@
 # checked by check_run.py (its blob in the twin of its VTSP version on procedural frames, and the C driver of that
 # version, built once into OUT/cbuild from this checkout's sources, giving the twin's result: runtime/vocr_textspot2_test
 # for family T, runtime/vocr_textspot3_test for family M) and appended to OUT/finished.txt (name, sha256 of final.vtsp,
-# bytes, steps, wall seconds). OUT/locks/<run>.lock is held by the run's processes, so a second sweep skips a live run.
+# bytes, steps, wall seconds); the check also holds the run to its plan record (recipe, family, shape, seed, steps,
+# extras, teacher). OUT/locks/<run>.lock is held by the run's processes, so a second sweep skips a live run.
 # Run it from a detached worktree at the pinned commit (the conductor's GO).
+# EXTRA_ARGS (scratch sweeps only, never a stage's sweep): arguments appended to every run's trainer command line, e.g.
+# "--steps 300 --ema-start 100 --log-every 20"; they are written in the start line, and the plan-record check is
+# skipped (the runs are not the plan's). SWEEP_POLL: seconds between slot polls (15).
 # Optional: NOTIFY_PANE (a herdr pane: a line at every 5th finished run of the plan, at every crash and at the end),
 # STATUS_FILE (one status line, overwritten), STAGE (the label in both, e.g. "stage 1 T"), SWEEP_TMPDIR (TMPDIR for
 # the runs and checks, default /local/home/skerraut/kt/t3s: short, because the loader's AF_UNIX sockets live under it).
@@ -25,6 +30,8 @@ OUT=$(mkdir -p "$OUT" && cd "$OUT" && pwd)
 PLAN=$(cd "$(dirname "$PLAN")" && pwd)/$(basename "$PLAN")
 MAX_PAR=${MAX_PAR:-8}
 STAGE=${STAGE:-sweep}
+POLL=${SWEEP_POLL:-15}
+read -r -a EXTRA <<< "${EXTRA_ARGS:-}"
 PY="$REPO/.venv-ci/bin/python"
 TMPDIR=${SWEEP_TMPDIR:-/local/home/skerraut/kt/t3s}
 if [ "${#TMPDIR}" -gt 60 ]; then echo "SWEEP_TMPDIR $TMPDIR: over 60 characters" >&2; exit 2; fi
@@ -47,6 +54,7 @@ if ! ( cd "$REPO/runtime" && ${CC:-cc} -std=c99 -O2 -Wall -Wextra -Werror vocr_l
 fi
 mv "$CBIN2.tmp" "$CBIN2"
 CHECK_C="--cbin2 $CBIN2"
+if [ "${#EXTRA[@]}" -eq 0 ]; then CHECK_C="$CHECK_C --plan $PLAN"; fi
 if [ -e "$REPO/runtime/vocr_textspot3.c" ] && [ -e "$REPO/runtime/vocr_textspot3_test.c" ]; then
   if ! ( cd "$REPO/runtime" && ${CC:-cc} -std=c99 -O2 -Wall -Wextra -Werror vocr_lines.c vocr_lines_rows.c \
            vocr_textspot3.c vocr_textspot3_test.c -o "$CBIN3.tmp" ); then
@@ -110,7 +118,8 @@ one() {            # one run: up to 3 attempts, each from scratch, then the chec
     local -a ARGV=()
     mapfile -d '' -t ARGV < <("$PY" "$HERE/textspot3_plan.py" args "$PLAN" "$run" --out-dir "$OUT")
     if [ "${#ARGV[@]}" -lt 4 ]; then echo "$(utc) $run: no command line from textspot3_plan.py" >> "$OUT/sweep.log"; rc=97; break; fi
-    echo "$(utc) $run: attempt $attempt (timeout ${secs}s): ${ARGV[*]}" >> "$OUT/sweep.log"
+    ARGV+=("${EXTRA[@]}")
+    echo "$(utc) $run: attempt $attempt (timeout ${secs}s, slot $SLOTK): ${ARGV[*]}" >> "$OUT/sweep.log"
     rc=0
     ( cd "$REPO" && HEAVY_SLOTS=12 "$HERD/heavy.sh" timeout "$secs" .venv/bin/python "${ARGV[@]}" \
         < /dev/null > "$OUT/logs/$run.log" 2>&1 ) || rc=$?
@@ -132,11 +141,23 @@ one() {            # one run: up to 3 attempts, each from scratch, then the chec
   fi
 }
 
-echo "$(utc) sweep start: $STAGE, MAX_PAR $MAX_PAR, head $(cd "$REPO" && git rev-parse HEAD), plan $PLAN ($(sha256sum "$PLAN" | cut -c1-64)), runs $RUNS" >> "$OUT/sweep.log"
+take_slot() {      # a free slot of MAX_PAR, shared by every sweep of OUT: its descriptor in SLOTFD, its number in SLOTK
+  local k fd
+  for k in $(seq 1 "$MAX_PAR"); do
+    exec {fd}>"$OUT/locks/slot-$k.lock"
+    if flock -n "$fd"; then SLOTFD=$fd; SLOTK=$k; return 0; fi
+    exec {fd}>&-
+  done
+  return 1
+}
+
+echo "$(utc) sweep start: $STAGE, MAX_PAR $MAX_PAR, head $(cd "$REPO" && git rev-parse HEAD), plan $PLAN ($(sha256sum "$PLAN" | cut -c1-64)), runs $RUNS${EXTRA_ARGS:+, extra args $EXTRA_ARGS}" >> "$OUT/sweep.log"
 status > /dev/null
+SLOTFD=; SLOTK=
 for run in $RUNS; do
-  while [ "$(jobs -rp | wc -l)" -ge "$MAX_PAR" ]; do sleep 15; done
-  one "$run" &
+  until take_slot; do sleep "$POLL"; done
+  one "$run" &              # the run inherits the slot's descriptor and holds the slot until it ends
+  exec {SLOTFD}>&-
   sleep 2
 done
 wait

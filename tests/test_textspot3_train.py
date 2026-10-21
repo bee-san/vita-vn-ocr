@@ -90,7 +90,7 @@ def test_run_names_and_extras():
     assert T3.run_name("long", "m_m", 1) == "long_m_m_seed1"
     assert T3.run_name("kd", "t_s", 1, ("size", "clean")) == "kd_t_s_seed1" == T3.run_name("kd", "t_s", 1, ())
     # base + the kept extras (stage 2): named after them; base + one extra is that extra's recipe
-    assert T3.run_name("base", "m_l", 1, ("size", "clean")) == "size+clean_m_l_seed1"
+    assert T3.run_name("base", "m_l", 1, ("size", "clean")) == "sizeclean_m_l_seed1"
     assert T3.run_name("base", "m_l", 1, ("size",)) == T3.run_name("size", "m_l", 1) == "size_m_l_seed1"
     assert T3.run_name("base", "m_l", 1, ()) == "base_m_l_seed1"
     assert T3.parse_extras("clean,size") == ("size", "clean") and T3.parse_extras("none") == ()
@@ -473,7 +473,7 @@ def test_a_three_step_run_of_every_recipe(tmp_path, cbin2):
     out = runs / "kd_t_tiny_seed1"
     T3.main(args3(mans, dirs, "kd", out, more=["--teacher", str(made["base"]), "--extras", "size,clean"]))
     made["kd"] = out
-    out = runs / "size+clean_t_tiny_seed1"                        # stage 2's "base + the kept extras"
+    out = runs / "sizeclean_t_tiny_seed1"                        # stage 2's "base + the kept extras"
     T3.main(args3(mans, dirs, "base", out, more=["--extras", "size,clean"]))
     made["base+"] = out
     extras = {"base": [], "size": ["size"], "clean": ["clean"], "long": [], "kd": ["size", "clean"],
@@ -600,7 +600,7 @@ def test_the_refusals(tmp_path):
     assert (a.steps, a.extras_set, a.ema_start, a.bn_batches, a.cal_batches, a.threads) == (60000, (), 1000, 32, 32, 5)
     assert a.name == "long_x_seed1" and a.shape_spec is None
     assert T3.parse(args3(mans, dirs, "base", out, more=["--extras", "clean,size"])).name == \
-        "size+clean_t_tiny_seed1"
+        "sizeclean_t_tiny_seed1"
     # family, shape and registry
     with pytest.raises(SystemExit, match="is a family T shape"):
         T3.main(args3(mans, dirs, "base", tmp_path / "a", family="M"))
@@ -811,7 +811,7 @@ def test_stage2_from_choices(tmp_path):
                and r["teacher"] == "$HERD/shared/artifacts/textspot3/runs/base_m_l_seed2" for r in kd)
     assert [r["family"] for r in kd] == ["T"] * 3 + ["M"] * 3
     both = PL.stage2_from_choices({**CHOICES, "clean_kept": True}, reg, runs_dir)
-    assert [r["run"] for r in both][-3:] == [f"size+clean_m_l_seed{n}" for n in (1, 2, 3)]
+    assert [r["run"] for r in both][-3:] == [f"sizeclean_m_l_seed{n}" for n in (1, 2, 3)]
     assert {r["extras"] for r in both} == {"size,clean"} and both[-1]["recipe"] == "base"
     clean = PL.stage2_from_choices({**CHOICES, "size_kept": False, "clean_kept": True}, reg, runs_dir)
     assert [r["run"] for r in clean][-3:] == [f"clean_m_l_seed{n}" for n in (1, 2, 3)]
@@ -842,7 +842,7 @@ def test_stage2_from_choices(tmp_path):
     got = PL.load(plan)
     assert len(got) == 9 and all(r["protocol_sha256"] == sha(proto) for r in got)
     assert [r["est_s"] for r in got] == sorted((r["est_s"] for r in got), reverse=True)
-    assert PL.parse_run("size+clean_m_l_seed3") == ("size+clean", "m_l", 3)
+    assert PL.parse_run("sizeclean_m_l_seed3") == ("sizeclean", "m_l", 3)
     assert PL.parse_run("kd_t_a_seed1") == ("kd", "t_a", 1)
 
 
@@ -906,4 +906,140 @@ def test_the_plan_cli_and_check_run_and_runs_summary(tmp_path):
 
 def test_the_sweep_script_parses():
     p = subprocess.run(["bash", "-n", str(REPRO / "sweep.sh")], capture_output=True, text=True, timeout=60)
+    assert p.returncode == 0, p.stderr
+
+
+# ---------------------------------------------------------------- the registered shapes (amendment 1 on)
+
+def test_the_registered_t_shapes_resolve_and_candidates_never_train(monkeypatch):
+    import textspot3_shapes as S3
+    reg = T3.registry()
+    assert S3.REGISTERED and set(reg) == set(S3.SHAPES)
+    assert {k for k, v in reg.items() if v["family"] == "T"} >= {"t64n4c16", "t48n8c16d8", "t64n8c16"}
+    for name in ("t64n4c16", "t48n8c16d8", "t64n8c16"):
+        s, fam, src = T3.resolve_shape(name)
+        assert fam == "T" and src.startswith("train/textspot3_shapes.SHAPES")
+        assert s == {k: (list(v) if isinstance(v, list) else v) for k, v in reg[name].items() if k in T3.T_FIELDS}
+        assert X.layers(s)[-1]["cout"] == 16 and max(s["chans"]) <= 64
+        assert X.cost(s, 512, 256)["macs"] == PL.macs(PL.shapes(), name)
+    monkeypatch.setattr(S3, "REGISTERED", False)                 # candidates only: no shape may train
+    with pytest.raises(SystemExit, match="none registered yet"):
+        T3.resolve_shape("t64n4c16")
+    monkeypatch.setattr(S3, "REGISTERED", True)
+    with pytest.raises(SystemExit):
+        T3.resolve_shape("t64n8c16d8")                           # a candidate the amendment did not register
+    with pytest.raises(SystemExit, match="half_above"):
+        T3.resolve_shape("x", {**T_TINY, "name": "x", "half_above": 600})
+
+
+def test_a_three_step_run_of_a_registered_shape(tmp_path):
+    mans, dirs = tiny_shards(tmp_path)
+    run = tmp_path / "runs" / "base_t64n4c16_seed1"
+    a = [x for x in args3(mans, dirs, "base", run) if x not in ("--shape-json", json.dumps(T_TINY))]
+    a[a.index("--shape") + 1] = "t64n4c16"
+    T3.main(a)
+    info = json.loads((run / "run.json").read_text())
+    assert info["shape_source"].startswith("train/textspot3_shapes.SHAPES") and info["shape"]["name"] == "t64n4c16"
+    assert "train/textspot3_shapes.py" in info["code_sha256"]
+    check_t_blobs(run, "t64n4c16")
+    plan = tmp_path / "plan.jsonl"
+    rec = {**PL.spec("base", "T", "t64n4c16", 1), "steps": 3}
+    PL.write([rec], plan)
+    assert CR.check(run, plan=plan)[2] == []
+    for change, msg in (({"seed": 2}, "seed"), ({"steps": 30000}, "steps"), ({"extras": "size"}, "extras"),
+                        ({"recipe": "long"}, "recipe"), ({"family": "M"}, "family"), ({"run": "other"}, "not a run")):
+        PL.write([{**rec, **change}], plan)
+        assert any(msg in b for b in CR.check(run, plan=plan)[2]), change
+
+
+def test_the_planner_reads_shapes_from_amendments_too(tmp_path):
+    doc = {**PROTOCOL, "shapes": {"t_a": {**{k: v for k, v in T_TINY.items() if k != "name"}, "family": "T"}},
+           "amendments": [*PROTOCOL.get("amendments", []),
+                          {"id": 99, "shapes": {n: {"family": "M", "head": "ms_x2", "stride": 8, "point": p}
+                                                for n, p in (("m_s", "S"), ("m_m", "M"), ("m_l", "L"))}}]}
+    p = tmp_path / "protocol.json"
+    p.write_text(json.dumps(doc))
+    reg = PL.shapes(p)
+    assert sorted(reg) == ["m_l", "m_m", "m_s", "t_a"] and PL.m_points(reg) == {"S": "m_s", "M": "m_m", "L": "m_l"}
+    doc["shapes"]["bad"] = {"stride": 8}
+    p.write_text(json.dumps(doc))
+    with pytest.raises(SystemExit, match="no family"):
+        PL.shapes(p)
+    real = PL.shapes()
+    assert {k for k, v in real.items() if v["family"] == "T"} == {"t64n4c16", "t48n8c16d8", "t64n8c16"}
+    t = PL.stage1("T", real)
+    assert sorted(r["run"] for r in t) == sorted(f"base_{s}_seed{n}" for s in ("t64n4c16", "t48n8c16d8", "t64n8c16")
+                                                 for n in (1, 2, 3))
+
+
+def test_the_probe_plan_and_summary(tmp_path):
+    PS = script("textspot3_probe_summary", "probe_summary.py")
+    reg = PL.shapes()
+    runs = PS.probe_plan(["base:t64n4c16", "size:t64n4c16", "kd:t64n4c16", "base:t64n4c16"], "/t/base", reg)
+    assert [r["run"] for r in runs] == ["base_t64n4c16_seed1", "size_t64n4c16_seed1", "kd_t64n4c16_seed1"]
+    assert runs[2]["extras"] == "none" and runs[2]["teacher"] == "/t/base" and runs[0]["teacher"] is None
+    with pytest.raises(SystemExit):
+        PS.probe_plan(["ema:t64n4c16"], None, reg)
+    with pytest.raises(SystemExit):
+        PS.probe_plan(["base:t64n8c16d8"], None, reg)
+    # a fake probe directory: three probes, two smokes (300 steps logged every 20)
+    out = tmp_path / "probes"
+    ms = {"t64n4c16": 300.0, "t48n8c16d8": 400.0, "t64n8c16": 500.0}
+    for shape, v in ms.items():
+        d = out / "probe" / f"base_{shape}_seed1"
+        d.mkdir(parents=True)
+        d.joinpath("probe.json").write_text(json.dumps({
+            "finished": "x", "recipe": "base", "family": "T", "shape": shape, "extras": [], "ms_per_step": v,
+            "ms_per_step_median": v, "ms_per_step_p90": v, "ms_waiting_for_data": 1.0, "warmup_ms": 900.0,
+            "startup_s": 40.0}))
+    d = out / "probe" / "size_t64n4c16_seed1"
+    d.mkdir(parents=True)
+    d.joinpath("probe.json").write_text(json.dumps({
+        "finished": "x", "recipe": "size", "family": "T", "shape": "t64n4c16", "extras": ["size"],
+        "ms_per_step": 310.0, "ms_per_step_median": 310.0, "ms_per_step_p90": 310.0, "ms_waiting_for_data": 1.0,
+        "warmup_ms": 900.0, "startup_s": 40.0}))
+    for recipe, per in (("base", 0.3), ("size", 0.31)):
+        d = out / "smoke" / f"{recipe}_t64n4c16_seed1"
+        d.mkdir(parents=True)
+        log = [{"step": s, "lr": 1e-3, "sec": round(s * per if s <= 240 else 240 * per + (s - 240) * per * 1.1, 3),
+                "loss": 1.0, "k_bce": 0.1, "dice": 0.2, "o": 0.1, "a": 0.1} for s in range(20, 301, 20)]
+        log.insert(12, {"step": 240, "ema_swap": True, "ema_steps": 141, "bn_layers": 13, "bn_batches": 32})
+        log.append({"step": 300, "qat_average": "the run's model", "qat_average_steps": 61})
+        d.joinpath("log.jsonl").write_text("".join(json.dumps(r) + "\n" for r in log))
+        d.joinpath("done.json").write_text(json.dumps({"wall_seconds": 200.0, "seconds": 150.0, "vtsp_bytes": 27456,
+                                                       "vtsp_sha256": "0" * 64, "vtsp_version": 2}))
+        d.joinpath("run.json").write_text(json.dumps({"recipe": recipe, "shape": {"name": "t64n4c16"}, "family": "T",
+                                                      "extras": [] if recipe == "base" else ["size"],
+                                                      "settings": {"clean": None, "kd": None}}))
+    (out / "probe.log").write_text(
+        "2026-10-21T10:00:00Z probe start: MAX_PAR 2, pass 1, head " + "a" * 40 + ", teacher x\n"
+        "CHECK_OK base_t64n4c16_seed1 h 27456 300 200.0 family T boxes {'c_runtime': 'equal to the twin'}\n")
+    doc = PS.summary(out, (8, 3))
+    assert doc["head"] == "a" * 40 and len(doc["probes"]) == 4 and set(doc["smokes"]) == {"base", "size"}
+    sm = doc["smokes"]["base"]
+    assert (sm["ms_float_20_240"], sm["ms_qat_260_300"], sm["qat_ratio"]) == (300.0, 330.0, 1.1)
+    assert sm["check_ok"] and sm["c_runtime_equal"] and not doc["smokes"]["size"]["check_ok"]
+    assert sm["startup_s"] == 50.0 and sm["overhead_s"] == pytest.approx(200 - (240 * 0.3 + 60 * 0.33), abs=0.1)
+    e = doc["estimate"]
+    assert e["runs"] == 9 and set(e["est_run_s"]) == {f"base_{s}_seed{n}" for s in ms for n in (1, 2, 3)}
+    rest = sm["overhead_s"] - 50.0
+    for shape, v in ms.items():
+        want = 50.0 + rest * v / 300.0 + 30000 * v / 1000 * (0.8 + 0.2 * 1.1)
+        assert e["est_run_s"][f"base_{shape}_seed1"] == round(want)
+    assert e["order"][:3] == [f"base_t64n8c16_seed{n}" for n in (1, 2, 3)]
+    # 9 runs at 8 at once: the ninth (a shortest) starts when the first shortest ends
+    t = e["est_run_s"]
+    assert abs(e["schedule"]["8"]["makespan_s"] - max(max(t.values()), 2 * t["base_t64n4c16_seed1"])) <= 1
+    assert e["schedule"]["3"]["makespan_s"] >= e["schedule"]["8"]["makespan_s"]
+    # read back by the planner as the order's estimates
+    f = tmp_path / "probe.json"
+    f.write_text(json.dumps(doc))
+    assert PL.read_est(f) == e["est_run_s"]
+    o = PL.order(PL.stage1("T", PL.shapes()), PL.shapes(), PL.read_est(f))
+    assert [r["run"] for r in o] == e["order"]
+    assert all(r["timeout_s"] == max(43200, 3600 * math.ceil(4 * t[r["run"]] / 3600)) for r in o)
+
+
+def test_the_probe_script_parses():
+    p = subprocess.run(["bash", "-n", str(REPRO / "probe.sh")], capture_output=True, text=True, timeout=60)
     assert p.returncode == 0, p.stderr

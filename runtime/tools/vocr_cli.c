@@ -21,6 +21,10 @@
  *                          beam text. --beam N (8), --alpha A, --beta B, --gate G (1/1000 nat; defaults 0),
  *                          --lm-flags F (1 <s>, 2 </s>), --bracket C (1/1000 nat); --topk defaults to 8.
  *                          --lm none: beam search without an LM (alpha must be 0)
+ *       --redecode T,O     the counter-context re-decode (vocr_post.h) over the top-K before the text and the
+ *                          LM: T the numeral's threshold, O the opening bracket's (1/1000 nat; 0 off);
+ *                          --topk defaults to 8
+ *       --post             the counter text rule on every printed line (vocr_post_counters: ッ月 -> ヶ月 ...)
  *       --repeat N         run every line N times (timing)
  *       --arena W[,W...]   print arena bytes for these max widths and exit
  *       --crc              verify the blob CRC first
@@ -31,6 +35,7 @@
 #define _POSIX_C_SOURCE 200112L
 #include "../vocr.h"
 #include "../vocr_lm.h"
+#include "../vocr_post.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +47,9 @@ static unsigned topk_n;  /* --topk */
 static int conf_flag;    /* --conf */
 static FILE *topk_out;   /* --topk-out */
 static vocr_lm_ctx *lm_dec; /* --lm: the beam decoder, or NULL */
+static int post_flag;       /* --post */
+static vocr_post_opts redecode_o; /* --redecode */
+static int redecode_on;
 
 static double now(void)
 {
@@ -168,6 +176,11 @@ static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px,
         double t0 = now();
         vocr_extra *e = r == 0 ? &ex : &ex2;
         rc = vocr_run(ctx, &img, text, sizeof text, (r == 0 || topk_n) ? e : NULL);
+        if (redecode_on && (!rc || rc == VOCR_E_TEXT)) {
+            int n = vocr_post_redecode(m, e, &redecode_o, NULL);
+            if (n < 0) rc = n;
+            else if (n > 0 && !lm_dec) rc = vocr_post_greedy(m, e, text, sizeof text, NULL);
+        }
         if (lm_dec && (!rc || rc == VOCR_E_TEXT)) rc = vocr_lm_decode(lm_dec, e, beam_text, sizeof beam_text, NULL);
         if (r > 0 || repeat <= 0) *t_total += now() - t0;
         if (rc && rc != VOCR_E_TEXT) break;
@@ -181,6 +194,7 @@ static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px,
         free(bl);
         return rc;
     }
+    if (post_flag) vocr_post_counters(lm_dec ? beam_text : text);
     printf("%s\n", lm_dec ? beam_text : text);
     if (conf_flag) fprintf(stderr, "conf %.6f %.6f\n", (double)ex.conf_min, (double)ex.conf_mean);
     if (topk_out && topk_n) {
@@ -343,6 +357,18 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--crc")) crc = 1;
         else if (!strcmp(a, "--stdin")) use_stdin = 1;
         else if (!strcmp(a, "--invert")) invert_flag = VOCR_INVERT;
+        else if (!strcmp(a, "--post")) post_flag = 1;
+        else if (!strcmp(a, "--redecode") && has) {
+            char *end;
+            redecode_o.tau = (int)strtol(argv[++i], &end, 10);
+            redecode_o.open = *end == ',' ? (int)strtol(end + 1, &end, 10) : 0;
+            redecode_on = 1;
+            if (*end || redecode_o.tau < 0 || redecode_o.tau > VOCR_POST_MAX_TAU || redecode_o.open < 0 ||
+                redecode_o.open > VOCR_POST_MAX_TAU) {
+                fprintf(stderr, "--redecode TAU[,OPEN]: 0..%d each\n", VOCR_POST_MAX_TAU);
+                return 2;
+            }
+        }
         else if (a[0] == '-' && a[1] == '-') {
             fprintf(stderr, "unknown option or missing value: %s\n", a);
             return 2;
@@ -404,6 +430,7 @@ int main(int argc, char **argv)
                 "bracket %d\n", (unsigned long)lm_n, (unsigned long)ws_n, lo.beam, lo.topk, lo.alpha, lo.beta,
                 lo.gate, lo.flags, lo.bracket);
     }
+    if (redecode_on && !topk_n) topk_n = 8;
     if (topk_n > VOCR_TOPK_MAX || ((conf_flag || topk_path) && !topk_n)) {
         fprintf(stderr, "--topk must be 1..%d (and --conf and --topk-out need it)\n", VOCR_TOPK_MAX);
         goto done;
@@ -436,7 +463,9 @@ int main(int argc, char **argv)
     if (pack && run_pack(&ctx, &m, pack, repeat, lf, inf, &t_total, &frames, &lines)) goto done;
     for (i = 2; i < argc; i++) {
         const char *a = argv[i];
-        if (!strcmp(a, "--crc") || !strcmp(a, "--stdin") || !strcmp(a, "--invert") || !strcmp(a, "--conf")) continue;
+        if (!strcmp(a, "--crc") || !strcmp(a, "--stdin") || !strcmp(a, "--invert") || !strcmp(a, "--conf") ||
+            !strcmp(a, "--post"))
+            continue;
         if (a[0] == '-' && a[1] == '-') {
             i++; /* option value */
             continue;

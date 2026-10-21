@@ -221,6 +221,16 @@ rc = vocr_lm_decode(&dec, &ex, text, sizeof text, &chars);     /* the beam + LM 
 
 From Python: `Vocr.run_topk(crop, k)` returns the greedy text, `topv`, `topc`, `blank`, `conf_min` and `conf_mean`; `VocrLM(vocr, lm_path, beam=8, topk=8, alpha=..., beta=..., gate=..., flags=..., bracket=...)` wraps the decoder (`.decode(topv, topc, blank)`). `pyvocr` loads `$VOCR_LIB` as is when it is set (a frozen build for long runs). The CLI takes `--topk K`, `--conf` (conf_min and conf_mean per line on stderr) and `--lm LM.vlm --beam N --alpha A --beta B --gate G --lm-flags F --bracket C` (prints the beam text; `--lm none` runs the beam without an LM).
 
+### Counters and cut lines (`vocr_post.h`, `vocr_lines_widen.h`)
+
+Three optional steps for counter contexts and for lines a tight region cuts (issue #109; [docs/counters.md](../docs/counters.md) has the corpus counts and the development measurements). None runs unless its caller calls it, so a pipeline without them is bit for bit as before.
+
+- `vocr_post_counters(text)`: in place, the text never grows. ッ becomes ヶ before 月 and 年, before 国 and 条 after a numeral or 何数幾, and before 所 after one of those other than 一. ッ月 and ッ年 occur nowhere in the 700 M characters of training-side text counted. Returns the changes.
+- `vocr_post_redecode(model, extra, opts, stats)`: on a `vocr_run()`'s top-K extras. At X + ッ/ヶ/ヵ + 月/所/年/国/条, where X is a letter and not a numeral, the cheapest numeral within `opts.tau` nats replaces X; when the line lacks its opening 「 or 『 before X, that bracket is inserted within `opts.open`. A change is written into the extras as a class swap with the frame's top-1, so `vocr_post_greedy(model, extra, text, cap, chars)` gives the edited greedy text and `vocr_lm_decode()` reads it. The development choice is `{6000, 4000}` (1/1000 nat): 0 real development lines changed, and the synthetic counter set got 0 lines worse.
+- `vocr_line_widen(strip, rx, rw, &x, &w)`: continues a found line's box past the region's edge through the ink the edge cuts, into a margin of the frame around the region, when that ink ends inside the margin. Not adopted as a default (docs/counters.md): a large gain when regions are drawn into the text, a small, unresolved loss on regions with a margin.
+
+Code (VitaSDK gcc 15.2, Thumb-2; -O2 as `vita/CMakeLists.txt` builds it / -Os with `-ffunction-sections` as Rubi builds its control code): `vocr_post.o` 3,964 / 2,598 B, with an 896 / 832 B stack frame for the re-decode; `vocr_lines_widen.o` 756 / 560 B. No arena, no weights. Twins: `eval/vocr_post.py` and `synth/lines_widen.py`, checked by `make check-post` and `check-widen`. CLI: `--post`, `--redecode TAU[,OPEN]`. Python: `pyvocr.post_counters(text)`, `Vocr.redecode(out, tau, open)`.
+
 ## Modes and exactness
 
 | mode | weights | pointwise and head arithmetic |

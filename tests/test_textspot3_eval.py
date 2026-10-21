@@ -191,6 +191,7 @@ def fake_twin3(calls):
             self.inner = S.Model(as_version(blob, 1))
             for k in ("name", "stride", "half_above", "conf_min", "min_cells", "blob_bytes", "net"):
                 setattr(self, k, getattr(self.inner, k))
+            self.half_above_h = 272 if self.half_above == 480 else 0
 
     def spot(model, img):
         calls.append(model.inner.name)
@@ -431,10 +432,15 @@ def test_score_runs_v2_and_v3_on_synthetic_frames(tmp_path, proto3_file, twin3, 
     runs = tmp_path / "runs"
     runs.mkdir()
     tb = d2s_blob(1)
+    write_run(runs, "base_s4p_c8_seed2", as_version(vtsp("s4p_c8", 2), 3))             # M at half_above 600
+    with pytest.raises(SystemExit):                                                 # family M's scale is 480 x 272
+        T3E.finished_runs(runs)
+    shutil.rmtree(runs / "base_s4p_c8_seed2")
+    (runs / "finished.txt").unlink()
     write_run(runs, f"base_{T_SHAPE}_seed1", tb)
-    write_run(runs, "base_s4p_c8_seed1", as_version(vtsp("s4p_c8", 1), 3))
+    write_run(runs, "base_s4p_c8_seed1", as_version(vtsp("s4p_c8", 1, half_above=480), 3))
     found, _ = T3E.finished_runs(runs)
-    assert {r["version"] for r in found.values()} == {2, 3}
+    assert {r["version"] for r in found.values()} == {2, 3} and found["base_s4p_c8_seed1"]["half_above"] == 480
     frames = [frame_of(synthetic_frame(seed=i), fid=f"f{i}", vn=f"v90000{i}") for i in range(3)]
     manifest = {"set": "pseudo", "path": "x", "sha256": "p" * 64, "frames": 3, "vns": 3}
     out, ids = tmp_path / "units", [f.id for f in frames]
@@ -1064,8 +1070,9 @@ def test_a_v3_run_through_the_real_twin_and_driver(tmp_path, monkeypatch):
     import textspot3_twin as TT3
     if shutil.which("gcc") is None:
         pytest.skip("no gcc")
-    name = next(iter(TM3.SHAPES))
-    shape = TM3.SHAPES[name]
+    probes = TM3.PROBES                                     # the runtime's probe shapes (not registered)
+    name = min(probes, key=lambda n: (TM3.costs(probes[n])["macs"]["960x544"], n))      # the cheapest
+    shape = probes[name]
     doc = json.loads(json.dumps(PROTO3))
     doc["shapes"] = {name: dict(shape, family="M")}
     p = tmp_path / "proto3.json"

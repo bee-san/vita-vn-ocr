@@ -321,3 +321,17 @@ Each amendment is dated in `eval/textspot3_protocol.json` and precedes the runs 
    - These rows are upper bounds: the runtime's kernels may still get faster, bit for bit. The rows of record for
      family M are the ones the RUNTIME_READY amendment pins, before any family-M score. If no such amendment comes,
      these rows are the eligibility source.
+5. **Stage 1's family-M plan** (2026-10-21T12:28Z, before every family-M run and score).
+   - `stage1_M_plan.jsonl` has 18 runs: `base` on `qS4`, `qM4` and `qL5`, and `size`, `clean` and `long` on
+     `qM4`, seeds 1-3 each. It comes from the pinned planner and the probe record
+     `eval/textspot3_train_probe_stage1m_20261021.json`:
+     - `base` runs at 242.5 / 252.3 / 294.6 ms per step on S / M / L;
+     - the plan is about 46.7 slot-hours in all.
+
+     The trainer and sweep are amendment 3's.
+   - Both sweeps share the runs directory and are capped together at 7 runs at once.
+   - The version-3 runtime of `4acee6a` is pinned here for the training sweep's run checks only. The scoring, the
+     code sizes and the A9 rows of record use the runtime the RUNTIME_READY amendment pins, before any family-M score.
+   - The scoring wrapper's version-3 path is re-pinned (`eval/textspot3.py`, `tests/test_textspot3_eval.py`): its
+     real-v3 test now reads `PROBES`, and a family-M blob that does not halve at 480 × 272 is refused. Its
+     version-2 path is unchanged.

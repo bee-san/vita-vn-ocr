@@ -531,9 +531,12 @@ def finished_runs(runs_dir, names=None, reg=None):
         if settings.pop("run_family") not in (None, info["family"]):
             raise SystemExit(f"{name}: run.json names another family than the registered shape's")
         m = model_of(blob)
-        want_half = reg[info["shape"]]["half_above"] if info["family"] == "T" else m.half_above
+        want_half = reg[info["shape"]]["half_above"] if info["family"] == "T" else M_HALF[0]
         if (m.name, m.half_above, m.conf_min) != (info["shape"], want_half, 1):
             raise SystemExit(f"{name}: the blob is {m.name} at half_above {m.half_above}, conf_min {m.conf_min}")
+        if info["family"] == "M" and getattr(m, "half_above_h", None) != M_HALF[1]:
+            raise SystemExit(f"{name}: a family-M blob halves frames taller than {getattr(m, 'half_above_h', None)} "
+                             f"px, not {M_HALF[1]}")
         out[name] = dict(info, path=path, blob=blob, sha256=sha, bytes=len(blob), version=v,
                          half_above=m.half_above, steps=done.get("steps"), **settings)
     return out, skipped

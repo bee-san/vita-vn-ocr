@@ -1,0 +1,1 @@
+{"ema_kept": true, "cls_kept": false, "fast_shape": "s4p_c6n4", "main_shape": "s4_c24n4", "kd_teacher_run": "lab_h2_s4_c24n4_seed1", "long_on": ["s4p_c6n4"], "d2s": true}

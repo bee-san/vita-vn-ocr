@@ -10,7 +10,9 @@
 #                         (check-vertical, vocr_vertical.mk: strict compile, self-test, parity with
 #                         synth/vertical_twin.py), the full-frame text spotter's (check-textspot,
 #                         vocr_textspot.mk: strict compile, its C self-test and its parity with
-#                         synth/textspot_twin.py), then the
+#                         synth/textspot_twin.py), the spotter of VTSP version 1 and 2 (d2s) blobs'
+#                         (check-textspot2, vocr_textspot2.mk: strict compile, its C self-test, its parity
+#                         with synth/textspot2_twin.py and, for version 1, with vocr_textspot.c), then the
 #                         recognizer's: C unit tests and the PyTorch parity test through a
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan)
 #   make check-all        check with gcc and clang, plus strict release builds of both
@@ -85,7 +87,8 @@ $(OUT)/test_vocr_lm_check: $(SRC) tests/test_vocr_lm.c $(FLAGS_STAMP) | $(OUT)
 $(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) $(CLI) $(LDFLAGS) $(LDLIBS)
 
-check: check-lines check-split check-textdet check-textgate check-vertical check-textspot check-vocr
+check: check-lines check-split check-textdet check-textgate check-vertical check-textspot check-textspot2 \
+       check-vocr
 
 include vocr_lines.mk
 include vocr_lines_split.mk
@@ -93,6 +96,7 @@ include vocr_textdet.mk
 include vocr_textgate.mk
 include vocr_vertical.mk
 include vocr_textspot.mk
+include vocr_textspot2.mk
 
 check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_check

@@ -1,0 +1,1520 @@
+{
+ "kind": "textspot2-train-datapath-probe",
+ "what": "the sweep's own command lines (textspot2_plan.py args) on the pinned textspot2 shards, each with --probe 200 (lab and data on s4_c24n4; data on both d2s shapes), and a 300-step d2s smoke run (data + ema on s8_c24n4x2) checked with the C driver; one at a time on the shared box; not runs of the sweep, nothing used",
+ "rows": [
+  {
+   "run": "data_h2_s4_c24n4_seed1",
+   "recipe": "data",
+   "shape": "s4_c24n4",
+   "head": "kroa",
+   "extras": [],
+   "git": {
+    "head": "54e07553ea3b9fc17cec96f1a7657efd709410fa",
+    "modified": [
+     "tests/test_textspot2_train.py"
+    ]
+   },
+   "manifests_sha256": {
+    "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+    "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+   },
+   "shards_dirs": [
+    "synth_frames",
+    "lab_devnative",
+    "lab_owner",
+    "lab_realplus",
+    "lab_teacher",
+    "more_owner",
+    "more_realplus",
+    "more_teacher"
+   ],
+   "shards_verified": true,
+   "data_rule": {
+    "rule": "lab: synth_frames + lab_<source> (only more_<source> unread); other recipes: synth_frames + lab_<source> + more_<source>, every manifest shard read; never #97's real directories",
+    "dirs": [
+     "synth_frames",
+     "lab_devnative",
+     "lab_owner",
+     "lab_realplus",
+     "lab_teacher",
+     "more_owner",
+     "more_realplus",
+     "more_teacher"
+    ],
+    "unread": {},
+    "manifests": [
+     "data/manifests/textspot_shards_v1.json",
+     "data/manifests/textspot2_shards_v1.json"
+    ]
+   },
+   "shards_read": 187,
+   "shards_not_read": {},
+   "skip": {
+    "dropped_total": 0,
+    "per_manifest": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "kind": "textspot-shards",
+      "textspot2_pin": false,
+      "carries_skip_lists": true,
+      "shards_read": 80,
+      "samples_read": 80000,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "shots": 77,
+        "canvases": 77,
+        "by_source": {
+         "realplus": 22,
+         "teacher": 54,
+         "devnative": 1,
+         "owner": 0
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       },
+       "linefind_list_vn": {
+        "shots": 249,
+        "canvases": 255,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 84,
+         "devnative": 8,
+         "owner": 163
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot data pin: its own shards are synthetic frames, which the lists never drop; its lists and counts name canvases of #97's real half (data/manifests/textdet_shards_v1.json)"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "kind": "textspot2-shards",
+      "textspot2_pin": true,
+      "carries_skip_lists": true,
+      "shards_read": 107,
+      "samples_read": 52785,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 77,
+         "canvases": 77,
+         "by_source": {
+          "realplus": 22,
+          "teacher": 54,
+          "devnative": 1,
+          "owner": 0
+         }
+        }
+       },
+       "linefind_list_vn": {
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 249,
+         "canvases": 255,
+         "by_source": {
+          "realplus": 0,
+          "teacher": 84,
+          "devnative": 8,
+          "owner": 163
+         }
+        }
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot2 pin's shards were built without the canvases its skip lists name (amendment 1), so the trainer drops none of them; the lists are applied again here all the same, and the pin's counts are textspot's (#97's real half), kept for reference"
+     }
+    ],
+    "matches_pin": false,
+    "pin_differs": {
+     "devnative": {
+      "by_shot": [
+       0,
+       1
+      ],
+      "by_vn_only": [
+       0,
+       8
+      ]
+     },
+     "owner": {
+      "by_vn_only": [
+       0,
+       163
+      ]
+     },
+     "realplus": {
+      "by_shot": [
+       0,
+       22
+      ]
+     },
+     "teacher": {
+      "by_shot": [
+       0,
+       54
+      ],
+      "by_vn_only": [
+       0,
+       84
+      ]
+     }
+    },
+    "lists": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     }
+    ]
+   },
+   "pool": {
+    "synth": {
+     "canvases": 80000,
+     "lines": 501887,
+     "vertical": 35220,
+     "ignore": 25738,
+     "weighted": 0,
+     "weight_sum": 501887.0,
+     "weight_min": 1.0,
+     "cls_lines": 177561
+    },
+    "realplus": {
+     "canvases": 42339,
+     "lines": 251650,
+     "vertical": 4120,
+     "ignore": 243897,
+     "weighted": 23880,
+     "weight_sum": 246107.803,
+     "weight_min": 0.5,
+     "cls_lines": 0
+    },
+    "teacher": {
+     "canvases": 6311,
+     "lines": 36794,
+     "vertical": 350,
+     "ignore": 49683,
+     "weighted": 1198,
+     "weight_sum": 36460.132,
+     "weight_min": 0.5001,
+     "cls_lines": 0
+    },
+    "owner": {
+     "canvases": 4071,
+     "lines": 11325,
+     "vertical": 47,
+     "ignore": 9088,
+     "weighted": 130,
+     "weight_sum": 11292.866,
+     "weight_min": 0.5011,
+     "cls_lines": 0
+    },
+    "devnative": {
+     "canvases": 64,
+     "lines": 217,
+     "vertical": 11,
+     "ignore": 268,
+     "weighted": 2,
+     "weight_sum": 216.036,
+     "weight_min": 0.5017,
+     "cls_lines": 0
+    }
+   },
+   "mix_effective": {
+    "synth": 0.5,
+    "realplus": 0.175,
+    "teacher": 0.175,
+    "owner": 0.125,
+    "devnative": 0.025
+   },
+   "ms_per_step": 173.03,
+   "ms_per_step_median": 171.98,
+   "ms_per_step_p90": 182.32,
+   "ms_waiting_for_data": 4.03,
+   "warmup_ms": 5770.9,
+   "startup_s": 39.4,
+   "steps_timed": 200
+  },
+  {
+   "run": "data_h2_s8_c24n4x2_seed1",
+   "recipe": "data",
+   "shape": "s8_c24n4x2",
+   "head": "kroa_x2",
+   "extras": [],
+   "git": {
+    "head": "54e07553ea3b9fc17cec96f1a7657efd709410fa",
+    "modified": [
+     "tests/test_textspot2_train.py"
+    ]
+   },
+   "manifests_sha256": {
+    "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+    "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+   },
+   "shards_dirs": [
+    "synth_frames",
+    "lab_devnative",
+    "lab_owner",
+    "lab_realplus",
+    "lab_teacher",
+    "more_owner",
+    "more_realplus",
+    "more_teacher"
+   ],
+   "shards_verified": true,
+   "data_rule": {
+    "rule": "lab: synth_frames + lab_<source> (only more_<source> unread); other recipes: synth_frames + lab_<source> + more_<source>, every manifest shard read; never #97's real directories",
+    "dirs": [
+     "synth_frames",
+     "lab_devnative",
+     "lab_owner",
+     "lab_realplus",
+     "lab_teacher",
+     "more_owner",
+     "more_realplus",
+     "more_teacher"
+    ],
+    "unread": {},
+    "manifests": [
+     "data/manifests/textspot_shards_v1.json",
+     "data/manifests/textspot2_shards_v1.json"
+    ]
+   },
+   "shards_read": 187,
+   "shards_not_read": {},
+   "skip": {
+    "dropped_total": 0,
+    "per_manifest": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "kind": "textspot-shards",
+      "textspot2_pin": false,
+      "carries_skip_lists": true,
+      "shards_read": 80,
+      "samples_read": 80000,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "shots": 77,
+        "canvases": 77,
+        "by_source": {
+         "realplus": 22,
+         "teacher": 54,
+         "devnative": 1,
+         "owner": 0
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       },
+       "linefind_list_vn": {
+        "shots": 249,
+        "canvases": 255,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 84,
+         "devnative": 8,
+         "owner": 163
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot data pin: its own shards are synthetic frames, which the lists never drop; its lists and counts name canvases of #97's real half (data/manifests/textdet_shards_v1.json)"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "kind": "textspot2-shards",
+      "textspot2_pin": true,
+      "carries_skip_lists": true,
+      "shards_read": 107,
+      "samples_read": 52785,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 77,
+         "canvases": 77,
+         "by_source": {
+          "realplus": 22,
+          "teacher": 54,
+          "devnative": 1,
+          "owner": 0
+         }
+        }
+       },
+       "linefind_list_vn": {
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 249,
+         "canvases": 255,
+         "by_source": {
+          "realplus": 0,
+          "teacher": 84,
+          "devnative": 8,
+          "owner": 163
+         }
+        }
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot2 pin's shards were built without the canvases its skip lists name (amendment 1), so the trainer drops none of them; the lists are applied again here all the same, and the pin's counts are textspot's (#97's real half), kept for reference"
+     }
+    ],
+    "matches_pin": false,
+    "pin_differs": {
+     "devnative": {
+      "by_shot": [
+       0,
+       1
+      ],
+      "by_vn_only": [
+       0,
+       8
+      ]
+     },
+     "owner": {
+      "by_vn_only": [
+       0,
+       163
+      ]
+     },
+     "realplus": {
+      "by_shot": [
+       0,
+       22
+      ]
+     },
+     "teacher": {
+      "by_shot": [
+       0,
+       54
+      ],
+      "by_vn_only": [
+       0,
+       84
+      ]
+     }
+    },
+    "lists": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     }
+    ]
+   },
+   "pool": {
+    "synth": {
+     "canvases": 80000,
+     "lines": 501887,
+     "vertical": 35220,
+     "ignore": 25738,
+     "weighted": 0,
+     "weight_sum": 501887.0,
+     "weight_min": 1.0,
+     "cls_lines": 177561
+    },
+    "realplus": {
+     "canvases": 42339,
+     "lines": 251650,
+     "vertical": 4120,
+     "ignore": 243897,
+     "weighted": 23880,
+     "weight_sum": 246107.803,
+     "weight_min": 0.5,
+     "cls_lines": 0
+    },
+    "teacher": {
+     "canvases": 6311,
+     "lines": 36794,
+     "vertical": 350,
+     "ignore": 49683,
+     "weighted": 1198,
+     "weight_sum": 36460.132,
+     "weight_min": 0.5001,
+     "cls_lines": 0
+    },
+    "owner": {
+     "canvases": 4071,
+     "lines": 11325,
+     "vertical": 47,
+     "ignore": 9088,
+     "weighted": 130,
+     "weight_sum": 11292.866,
+     "weight_min": 0.5011,
+     "cls_lines": 0
+    },
+    "devnative": {
+     "canvases": 64,
+     "lines": 217,
+     "vertical": 11,
+     "ignore": 268,
+     "weighted": 2,
+     "weight_sum": 216.036,
+     "weight_min": 0.5017,
+     "cls_lines": 0
+    }
+   },
+   "mix_effective": {
+    "synth": 0.5,
+    "realplus": 0.175,
+    "teacher": 0.175,
+    "owner": 0.125,
+    "devnative": 0.025
+   },
+   "ms_per_step": 163.04,
+   "ms_per_step_median": 153.95,
+   "ms_per_step_p90": 206.39,
+   "ms_waiting_for_data": 4.99,
+   "warmup_ms": 6774.8,
+   "startup_s": 41.3,
+   "steps_timed": 200
+  },
+  {
+   "run": "data_h2_s8_c48n4x2_seed1",
+   "recipe": "data",
+   "shape": "s8_c48n4x2",
+   "head": "kroa_x2",
+   "extras": [],
+   "git": {
+    "head": "54e07553ea3b9fc17cec96f1a7657efd709410fa",
+    "modified": [
+     "tests/test_textspot2_train.py"
+    ]
+   },
+   "manifests_sha256": {
+    "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+    "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+   },
+   "shards_dirs": [
+    "synth_frames",
+    "lab_devnative",
+    "lab_owner",
+    "lab_realplus",
+    "lab_teacher",
+    "more_owner",
+    "more_realplus",
+    "more_teacher"
+   ],
+   "shards_verified": true,
+   "data_rule": {
+    "rule": "lab: synth_frames + lab_<source> (only more_<source> unread); other recipes: synth_frames + lab_<source> + more_<source>, every manifest shard read; never #97's real directories",
+    "dirs": [
+     "synth_frames",
+     "lab_devnative",
+     "lab_owner",
+     "lab_realplus",
+     "lab_teacher",
+     "more_owner",
+     "more_realplus",
+     "more_teacher"
+    ],
+    "unread": {},
+    "manifests": [
+     "data/manifests/textspot_shards_v1.json",
+     "data/manifests/textspot2_shards_v1.json"
+    ]
+   },
+   "shards_read": 187,
+   "shards_not_read": {},
+   "skip": {
+    "dropped_total": 0,
+    "per_manifest": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "kind": "textspot-shards",
+      "textspot2_pin": false,
+      "carries_skip_lists": true,
+      "shards_read": 80,
+      "samples_read": 80000,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "shots": 77,
+        "canvases": 77,
+        "by_source": {
+         "realplus": 22,
+         "teacher": 54,
+         "devnative": 1,
+         "owner": 0
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       },
+       "linefind_list_vn": {
+        "shots": 249,
+        "canvases": 255,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 84,
+         "devnative": 8,
+         "owner": 163
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot data pin: its own shards are synthetic frames, which the lists never drop; its lists and counts name canvases of #97's real half (data/manifests/textdet_shards_v1.json)"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "kind": "textspot2-shards",
+      "textspot2_pin": true,
+      "carries_skip_lists": true,
+      "shards_read": 107,
+      "samples_read": 52785,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 77,
+         "canvases": 77,
+         "by_source": {
+          "realplus": 22,
+          "teacher": 54,
+          "devnative": 1,
+          "owner": 0
+         }
+        }
+       },
+       "linefind_list_vn": {
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 249,
+         "canvases": 255,
+         "by_source": {
+          "realplus": 0,
+          "teacher": 84,
+          "devnative": 8,
+          "owner": 163
+         }
+        }
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot2 pin's shards were built without the canvases its skip lists name (amendment 1), so the trainer drops none of them; the lists are applied again here all the same, and the pin's counts are textspot's (#97's real half), kept for reference"
+     }
+    ],
+    "matches_pin": false,
+    "pin_differs": {
+     "devnative": {
+      "by_shot": [
+       0,
+       1
+      ],
+      "by_vn_only": [
+       0,
+       8
+      ]
+     },
+     "owner": {
+      "by_vn_only": [
+       0,
+       163
+      ]
+     },
+     "realplus": {
+      "by_shot": [
+       0,
+       22
+      ]
+     },
+     "teacher": {
+      "by_shot": [
+       0,
+       54
+      ],
+      "by_vn_only": [
+       0,
+       84
+      ]
+     }
+    },
+    "lists": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     }
+    ]
+   },
+   "pool": {
+    "synth": {
+     "canvases": 80000,
+     "lines": 501887,
+     "vertical": 35220,
+     "ignore": 25738,
+     "weighted": 0,
+     "weight_sum": 501887.0,
+     "weight_min": 1.0,
+     "cls_lines": 177561
+    },
+    "realplus": {
+     "canvases": 42339,
+     "lines": 251650,
+     "vertical": 4120,
+     "ignore": 243897,
+     "weighted": 23880,
+     "weight_sum": 246107.803,
+     "weight_min": 0.5,
+     "cls_lines": 0
+    },
+    "teacher": {
+     "canvases": 6311,
+     "lines": 36794,
+     "vertical": 350,
+     "ignore": 49683,
+     "weighted": 1198,
+     "weight_sum": 36460.132,
+     "weight_min": 0.5001,
+     "cls_lines": 0
+    },
+    "owner": {
+     "canvases": 4071,
+     "lines": 11325,
+     "vertical": 47,
+     "ignore": 9088,
+     "weighted": 130,
+     "weight_sum": 11292.866,
+     "weight_min": 0.5011,
+     "cls_lines": 0
+    },
+    "devnative": {
+     "canvases": 64,
+     "lines": 217,
+     "vertical": 11,
+     "ignore": 268,
+     "weighted": 2,
+     "weight_sum": 216.036,
+     "weight_min": 0.5017,
+     "cls_lines": 0
+    }
+   },
+   "mix_effective": {
+    "synth": 0.5,
+    "realplus": 0.175,
+    "teacher": 0.175,
+    "owner": 0.125,
+    "devnative": 0.025
+   },
+   "ms_per_step": 139.66,
+   "ms_per_step_median": 138.48,
+   "ms_per_step_p90": 158.88,
+   "ms_waiting_for_data": 4.32,
+   "warmup_ms": 5880.3,
+   "startup_s": 43.4,
+   "steps_timed": 200
+  },
+  {
+   "run": "lab_h2_s4_c24n4_seed1",
+   "recipe": "lab",
+   "shape": "s4_c24n4",
+   "head": "kroa",
+   "extras": [],
+   "git": {
+    "head": "54e07553ea3b9fc17cec96f1a7657efd709410fa",
+    "modified": []
+   },
+   "manifests_sha256": {
+    "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+    "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+   },
+   "shards_dirs": [
+    "synth_frames",
+    "lab_devnative",
+    "lab_owner",
+    "lab_realplus",
+    "lab_teacher"
+   ],
+   "shards_verified": true,
+   "data_rule": {
+    "rule": "lab: synth_frames + lab_<source> (only more_<source> unread); other recipes: synth_frames + lab_<source> + more_<source>, every manifest shard read; never #97's real directories",
+    "dirs": [
+     "synth_frames",
+     "lab_devnative",
+     "lab_owner",
+     "lab_realplus",
+     "lab_teacher"
+    ],
+    "unread": {
+     "more_realplus": 46,
+     "more_teacher": 1,
+     "more_owner": 3
+    },
+    "manifests": [
+     "data/manifests/textspot_shards_v1.json",
+     "data/manifests/textspot2_shards_v1.json"
+    ]
+   },
+   "shards_read": 137,
+   "shards_not_read": {
+    "data/manifests/textspot2_shards_v1.json:more_realplus": 46,
+    "data/manifests/textspot2_shards_v1.json:more_teacher": 1,
+    "data/manifests/textspot2_shards_v1.json:more_owner": 3
+   },
+   "skip": {
+    "dropped_total": 0,
+    "per_manifest": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "kind": "textspot-shards",
+      "textspot2_pin": false,
+      "carries_skip_lists": true,
+      "shards_read": 80,
+      "samples_read": 80000,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "shots": 77,
+        "canvases": 77,
+        "by_source": {
+         "realplus": 22,
+         "teacher": 54,
+         "devnative": 1,
+         "owner": 0
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       },
+       "linefind_list_vn": {
+        "shots": 249,
+        "canvases": 255,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 84,
+         "devnative": 8,
+         "owner": 163
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot data pin: its own shards are synthetic frames, which the lists never drop; its lists and counts name canvases of #97's real half (data/manifests/textdet_shards_v1.json)"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "kind": "textspot2-shards",
+      "textspot2_pin": true,
+      "carries_skip_lists": true,
+      "shards_read": 57,
+      "samples_read": 28265,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 77,
+         "canvases": 77,
+         "by_source": {
+          "realplus": 22,
+          "teacher": 54,
+          "devnative": 1,
+          "owner": 0
+         }
+        }
+       },
+       "linefind_list_vn": {
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 249,
+         "canvases": 255,
+         "by_source": {
+          "realplus": 0,
+          "teacher": 84,
+          "devnative": 8,
+          "owner": 163
+         }
+        }
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot2 pin's shards were built without the canvases its skip lists name (amendment 1), so the trainer drops none of them; the lists are applied again here all the same, and the pin's counts are textspot's (#97's real half), kept for reference"
+     }
+    ],
+    "matches_pin": false,
+    "pin_differs": {
+     "devnative": {
+      "by_shot": [
+       0,
+       1
+      ],
+      "by_vn_only": [
+       0,
+       8
+      ]
+     },
+     "owner": {
+      "by_vn_only": [
+       0,
+       163
+      ]
+     },
+     "realplus": {
+      "by_shot": [
+       0,
+       22
+      ]
+     },
+     "teacher": {
+      "by_shot": [
+       0,
+       54
+      ],
+      "by_vn_only": [
+       0,
+       84
+      ]
+     }
+    },
+    "lists": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     }
+    ]
+   },
+   "pool": {
+    "synth": {
+     "canvases": 80000,
+     "lines": 501887,
+     "vertical": 35220,
+     "ignore": 25738,
+     "weighted": 0,
+     "weight_sum": 501887.0,
+     "weight_min": 1.0,
+     "cls_lines": 177561
+    },
+    "realplus": {
+     "canvases": 19683,
+     "lines": 114232,
+     "vertical": 2077,
+     "ignore": 103916,
+     "weighted": 1582,
+     "weight_sum": 113895.935,
+     "weight_min": 0.5012,
+     "cls_lines": 0
+    },
+    "teacher": {
+     "canvases": 5860,
+     "lines": 35336,
+     "vertical": 334,
+     "ignore": 48102,
+     "weighted": 1106,
+     "weight_sum": 35025.16,
+     "weight_min": 0.5001,
+     "cls_lines": 0
+    },
+    "owner": {
+     "canvases": 2658,
+     "lines": 7732,
+     "vertical": 39,
+     "ignore": 6157,
+     "weighted": 25,
+     "weight_sum": 7727.052,
+     "weight_min": 0.5136,
+     "cls_lines": 0
+    },
+    "devnative": {
+     "canvases": 64,
+     "lines": 217,
+     "vertical": 11,
+     "ignore": 268,
+     "weighted": 2,
+     "weight_sum": 216.036,
+     "weight_min": 0.5017,
+     "cls_lines": 0
+    }
+   },
+   "mix_effective": {
+    "synth": 0.5,
+    "realplus": 0.175,
+    "teacher": 0.175,
+    "owner": 0.125,
+    "devnative": 0.025
+   },
+   "ms_per_step": 185.14,
+   "ms_per_step_median": 183.92,
+   "ms_per_step_p90": 199.28,
+   "ms_waiting_for_data": 4.06,
+   "warmup_ms": 4687.5,
+   "startup_s": 32.1,
+   "steps_timed": 200
+  },
+  {
+   "run": "data_h2_s8_c24n4x2_seed1",
+   "recipe": "data",
+   "shape": "s8_c24n4x2",
+   "head": "kroa_x2",
+   "extras": [
+    "ema"
+   ],
+   "git": {
+    "head": "54e07553ea3b9fc17cec96f1a7657efd709410fa",
+    "modified": [
+     "tests/test_textspot2_train.py"
+    ]
+   },
+   "manifests_sha256": {
+    "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+    "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+   },
+   "shards_dirs": [
+    "synth_frames",
+    "lab_devnative",
+    "lab_owner",
+    "lab_realplus",
+    "lab_teacher",
+    "more_owner",
+    "more_realplus",
+    "more_teacher"
+   ],
+   "shards_verified": true,
+   "data_rule": {
+    "rule": "lab: synth_frames + lab_<source> (only more_<source> unread); other recipes: synth_frames + lab_<source> + more_<source>, every manifest shard read; never #97's real directories",
+    "dirs": [
+     "synth_frames",
+     "lab_devnative",
+     "lab_owner",
+     "lab_realplus",
+     "lab_teacher",
+     "more_owner",
+     "more_realplus",
+     "more_teacher"
+    ],
+    "unread": {},
+    "manifests": [
+     "data/manifests/textspot_shards_v1.json",
+     "data/manifests/textspot2_shards_v1.json"
+    ]
+   },
+   "shards_read": 187,
+   "shards_not_read": {},
+   "skip": {
+    "dropped_total": 0,
+    "per_manifest": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "kind": "textspot-shards",
+      "textspot2_pin": false,
+      "carries_skip_lists": true,
+      "shards_read": 80,
+      "samples_read": 80000,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "shots": 77,
+        "canvases": 77,
+        "by_source": {
+         "realplus": 22,
+         "teacher": 54,
+         "devnative": 1,
+         "owner": 0
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       },
+       "linefind_list_vn": {
+        "shots": 249,
+        "canvases": 255,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 84,
+         "devnative": 8,
+         "owner": 163
+        },
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ]
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot data pin: its own shards are synthetic frames, which the lists never drop; its lists and counts name canvases of #97's real half (data/manifests/textdet_shards_v1.json)"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "kind": "textspot2-shards",
+      "textspot2_pin": true,
+      "carries_skip_lists": true,
+      "shards_read": 107,
+      "samples_read": 52785,
+      "dropped": 0,
+      "expected_dropped": 0,
+      "pin_counts": {
+       "eval_screenshot": {
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "vertical-dev-columns.jsonl",
+         "vertical-dev-regions.jsonl",
+         "vertical-test-columns.jsonl",
+         "vertical-test-regions.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 77,
+         "canvases": 77,
+         "by_source": {
+          "realplus": 22,
+          "teacher": 54,
+          "devnative": 1,
+          "owner": 0
+         }
+        }
+       },
+       "linefind_list_vn": {
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a",
+        "lists": [
+         "psp_dev.candidates.jsonl",
+         "psp_holdout.candidates.jsonl",
+         "psp_pool.jsonl",
+         "research_a.jsonl",
+         "research_b.jsonl",
+         "vita_dev.candidates.jsonl",
+         "vita_holdout.candidates.jsonl"
+        ],
+        "shots": 0,
+        "canvases": 0,
+        "by_source": {
+         "realplus": 0,
+         "teacher": 0,
+         "devnative": 0,
+         "owner": 0
+        },
+        "textspot_counts": {
+         "shots": 249,
+         "canvases": 255,
+         "by_source": {
+          "realplus": 0,
+          "teacher": 84,
+          "devnative": 8,
+          "owner": 163
+         }
+        }
+       }
+      },
+      "as_expected": true,
+      "why": "a textspot2 pin's shards were built without the canvases its skip lists name (amendment 1), so the trainer drops none of them; the lists are applied again here all the same, and the pin's counts are textspot's (#97's real half), kept for reference"
+     }
+    ],
+    "matches_pin": false,
+    "pin_differs": {
+     "devnative": {
+      "by_shot": [
+       0,
+       1
+      ],
+      "by_vn_only": [
+       0,
+       8
+      ]
+     },
+     "owner": {
+      "by_vn_only": [
+       0,
+       163
+      ]
+     },
+     "realplus": {
+      "by_shot": [
+       0,
+       22
+      ]
+     },
+     "teacher": {
+      "by_shot": [
+       0,
+       54
+      ],
+      "by_vn_only": [
+       0,
+       84
+      ]
+     }
+    },
+    "lists": [
+     {
+      "manifest": "data/manifests/textspot_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     },
+     {
+      "manifest": "data/manifests/textspot2_shards_v1.json",
+      "skip_shots": 77,
+      "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+      "skip_vns": 23,
+      "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+     }
+    ]
+   },
+   "pool": {
+    "synth": {
+     "canvases": 80000,
+     "lines": 501887,
+     "vertical": 35220,
+     "ignore": 25738,
+     "weighted": 0,
+     "weight_sum": 501887.0,
+     "weight_min": 1.0,
+     "cls_lines": 177561
+    },
+    "realplus": {
+     "canvases": 42339,
+     "lines": 251650,
+     "vertical": 4120,
+     "ignore": 243897,
+     "weighted": 23880,
+     "weight_sum": 246107.803,
+     "weight_min": 0.5,
+     "cls_lines": 0
+    },
+    "teacher": {
+     "canvases": 6311,
+     "lines": 36794,
+     "vertical": 350,
+     "ignore": 49683,
+     "weighted": 1198,
+     "weight_sum": 36460.132,
+     "weight_min": 0.5001,
+     "cls_lines": 0
+    },
+    "owner": {
+     "canvases": 4071,
+     "lines": 11325,
+     "vertical": 47,
+     "ignore": 9088,
+     "weighted": 130,
+     "weight_sum": 11292.866,
+     "weight_min": 0.5011,
+     "cls_lines": 0
+    },
+    "devnative": {
+     "canvases": 64,
+     "lines": 217,
+     "vertical": 11,
+     "ignore": 268,
+     "weighted": 2,
+     "weight_sum": 216.036,
+     "weight_min": 0.5017,
+     "cls_lines": 0
+    }
+   },
+   "mix_effective": {
+    "synth": 0.5,
+    "realplus": 0.175,
+    "teacher": 0.175,
+    "owner": 0.125,
+    "devnative": 0.025
+   },
+   "smoke": {
+    "wall_s": 97.0,
+    "steps": 300,
+    "vtsp_bytes": 7416,
+    "vtsp_sha256": "d9af5aa5745e3040ce02684a33699cb50ae116dd8d488a775b4c28558b54ddc3",
+    "vtsp_version": 2,
+    "final": {
+     "k_bce": 0.09573,
+     "dice": 0.48505,
+     "o": 0.13937,
+     "a": 0.13143,
+     "loss": 0.78188
+    },
+    "ema_swap": true,
+    "qat": true,
+    "check_ok": true,
+    "check_line": "CHECK_OK data_h2_s8_c24n4x2_seed1 d9af5aa5745e3040ce02684a33699cb50ae116dd8d488a775b4c28558b54ddc3 7416 300 97.0 boxes {'960x544': 0, '480x272': 14, 'c_runtime': 'equal to the twin'} skip-dropped 0 (2026-10-20T10:29:25Z -> 2026-10-20T10:31:02Z)"
+   }
+  }
+ ],
+ "label": "measured on a shared 64-core box, 5 threads, one job at a time; times are host times"
+}

@@ -354,6 +354,35 @@
    "settings": {
     "eval_commit": "c0ae7b8"
    }
+  },
+  {
+   "id": 3,
+   "utc": "2026-10-21T10:58:33Z",
+   "before": "every textspot3 training run (no run exists; the trainer's probes, smokes and identity checks ran in scratch directories and nothing of them is used) and every score",
+   "what": [
+    "The trainer: train/textspot3_train.py (recipes base, size, clean, long, kd; families T and M), merged from the train helper's 9d9c02b. base equals textspot2's data + ema step for step on tiny shards (logs, QAT checkpoint, int8 network). Family T exports VTSP version 2 at half_above 480; family M (train/textspot3_model.py, FORMAT_READY 2d42f9a) exports VTSP version 3 at 480 / 272. The T path at 9d9c02b equals the probed ce35cba trainer: 10 of 10 identity checks IDENTICAL (9 tiny cases covering every recipe, extra and kd, plus base_t64n4c16 on the pinned shards for 20 steps).",
+    "clean over the pinned pool (eval/textspot3_train_probe_20261021.json clean_counts): 26,097 of 299,986 real positives become ignore areas (25,210 of weight < 1; 887 by the vertical length rule; 0 narrower than 6 px, since textspot2's labels already gate 6-96 px), on 10,050 of 52,785 canvases.",
+    "The sweep: eval/reproducibility/textspot3-20261021/sweep.sh with textspot3_plan.py, check_run.py and runs_summary.py; stage 1's T plan stage1_T_plan.jsonl (9 runs: base on t64n4c16, t48n8c16d8, t64n8c16, seeds 1-3, longest first; est. 14.8 slot-hours from the probe: base ms/step t64n4c16 137.6, t48n8c16d8 193.6, t64n8c16 242.7). It runs from a detached git worktree at this amendment's commit, so later commits cannot change a running or queued run's code; every run.json records that head. MAX_PAR 6 for now (the workstream's cap is 10 heavy runs, with scoring, probes and A9 measurements beside it); slot locks cap every sweep sharing the runs directory together.",
+    "Family M's stage-1 plan follows by the amendment that registers S, M and L with their A9 rows; it reuses this trainer and sweep unchanged unless that amendment says otherwise."
+   ],
+   "sources_sha256": {
+    "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+    "eval/reproducibility/textspot3-20261021/sweep.sh": "38c600bfe83acd1d41a4c75ef75f9977a7737f23e14f57a772f3fc0383a93dc2",
+    "eval/reproducibility/textspot3-20261021/textspot3_plan.py": "a536b88031257b2bc6bba91ca9d705a95175535b9182ff7804d9fcb9ca1796f7",
+    "eval/reproducibility/textspot3-20261021/check_run.py": "6df1ffef367a63060122087175ecefb7c451fa4d5609de2f57dd5d5e652081f6",
+    "eval/reproducibility/textspot3-20261021/runs_summary.py": "2aa8a684e5422d93c1e8e60ce726dda9dd65e50d584b057566eeedee2741fe87",
+    "eval/reproducibility/textspot3-20261021/stage1_T_plan.jsonl": "9682ec260d5db14678cfa7f300c94855403a68b2725776bf24554d1c90335168",
+    "eval/textspot3_train_probe_20261021.json": "3951e12a98ffac68112b63467f59521b0a4716aa6e01c1d22044c34538ef1839",
+    "tests/test_textspot3_train.py": "562759cdd2451e7e122d5dc7e19634eff9e83f54c401ddb2e0fe892749c46ab3",
+    "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+    "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6"
+   },
+   "settings": {
+    "stage1_T_runs": 9,
+    "max_par": 6,
+    "trainer_commit": "9d9c02b",
+    "format_commit": "2d42f9a"
+   }
   }
  ],
  "shapes": {

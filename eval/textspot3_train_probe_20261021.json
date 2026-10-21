@@ -1,0 +1,789 @@
+{
+ "kind": "textspot3-train-probe",
+ "family": "T",
+ "what": "speed probes (200 steps after one warm-up step) and 300-step smoke runs (QAT from step 240, export, VTSP, check_run.py with the C driver) on the pinned shards (data/manifests/textspot_shards_v1.json + textspot2_shards_v1.json) with the sweep's own command lines (textspot3_plan.py args), seed 1; not runs of the sweep, never used",
+ "head": "ce35cbafe455b7a00e07d71630adc04f1f356920",
+ "threads": 5,
+ "concurrency": "at most 2 of these jobs at once (probe.sh MAX_PAR 2), on a shared 64-core box",
+ "passes": [
+  "probe",
+  "probe2"
+ ],
+ "probes": [
+  {
+   "run": "base_t48n8c16d8_seed1",
+   "recipe": "base",
+   "family": "T",
+   "shape": "t48n8c16d8",
+   "extras": [],
+   "macs_window_256x512": 52264960,
+   "ms_per_step": 193.64,
+   "passes": [
+    {
+     "pass": "probe",
+     "finished": "2026-10-21T10:00:29Z",
+     "ms_per_step": 193.3,
+     "ms_per_step_median": 188.0,
+     "ms_per_step_p90": 215.77,
+     "ms_waiting_for_data": 4.24,
+     "warmup_ms": 5451.8,
+     "startup_s": 42.1
+    },
+    {
+     "pass": "probe2",
+     "finished": "2026-10-21T10:37:52Z",
+     "ms_per_step": 193.98,
+     "ms_per_step_median": 189.04,
+     "ms_per_step_p90": 210.02,
+     "ms_waiting_for_data": 4.16,
+     "warmup_ms": 5943.9,
+     "startup_s": 222.2
+    }
+   ],
+   "n_passes": 2,
+   "ms_per_step_range": [
+    193.3,
+    193.98
+   ]
+  },
+  {
+   "run": "base_t64n4c16_seed1",
+   "recipe": "base",
+   "family": "T",
+   "shape": "t64n4c16",
+   "extras": [],
+   "macs_window_256x512": 46759936,
+   "ms_per_step": 137.61,
+   "passes": [
+    {
+     "pass": "probe",
+     "finished": "2026-10-21T09:58:59Z",
+     "ms_per_step": 139.38,
+     "ms_per_step_median": 134.07,
+     "ms_per_step_p90": 154.17,
+     "ms_waiting_for_data": 4.28,
+     "warmup_ms": 5670.5,
+     "startup_s": 100.0
+    },
+    {
+     "pass": "probe2",
+     "finished": "2026-10-21T10:37:40Z",
+     "ms_per_step": 135.84,
+     "ms_per_step_median": 132.46,
+     "ms_per_step_p90": 147.26,
+     "ms_waiting_for_data": 4.18,
+     "warmup_ms": 5962.2,
+     "startup_s": 222.2
+    }
+   ],
+   "n_passes": 2,
+   "ms_per_step_range": [
+    135.84,
+    139.38
+   ]
+  },
+  {
+   "run": "base_t64n8c16_seed1",
+   "recipe": "base",
+   "family": "T",
+   "shape": "t64n8c16",
+   "extras": [],
+   "macs_window_256x512": 85032960,
+   "ms_per_step": 242.74,
+   "passes": [
+    {
+     "pass": "probe",
+     "finished": "2026-10-21T10:01:08Z",
+     "ms_per_step": 228.37,
+     "ms_per_step_median": 225.7,
+     "ms_per_step_p90": 235.47,
+     "ms_waiting_for_data": 4.04,
+     "warmup_ms": 6131.8,
+     "startup_s": 41.1
+    },
+    {
+     "pass": "probe2",
+     "finished": "2026-10-21T10:39:25Z",
+     "ms_per_step": 257.11,
+     "ms_per_step_median": 240.07,
+     "ms_per_step_p90": 307.01,
+     "ms_waiting_for_data": 4.46,
+     "warmup_ms": 6195.6,
+     "startup_s": 41.4
+    }
+   ],
+   "n_passes": 2,
+   "ms_per_step_range": [
+    228.37,
+    257.11
+   ]
+  },
+  {
+   "run": "clean_t64n4c16_seed1",
+   "recipe": "clean",
+   "family": "T",
+   "shape": "t64n4c16",
+   "extras": [
+    "clean"
+   ],
+   "macs_window_256x512": 46759936,
+   "ms_per_step": 136.64,
+   "passes": [
+    {
+     "pass": "probe",
+     "finished": "2026-10-21T10:02:27Z",
+     "ms_per_step": 134.16,
+     "ms_per_step_median": 130.89,
+     "ms_per_step_p90": 147.69,
+     "ms_waiting_for_data": 3.84,
+     "warmup_ms": 5536.0,
+     "startup_s": 40.6
+    },
+    {
+     "pass": "probe2",
+     "finished": "2026-10-21T10:40:38Z",
+     "ms_per_step": 139.13,
+     "ms_per_step_median": 136.61,
+     "ms_per_step_p90": 152.19,
+     "ms_waiting_for_data": 4.17,
+     "warmup_ms": 7553.2,
+     "startup_s": 41.7
+    }
+   ],
+   "n_passes": 2,
+   "ms_per_step_range": [
+    134.16,
+    139.13
+   ]
+  },
+  {
+   "run": "kd_t64n4c16_seed1",
+   "recipe": "kd",
+   "family": "T",
+   "shape": "t64n4c16",
+   "extras": [],
+   "macs_window_256x512": 46759936,
+   "ms_per_step": 203.82,
+   "passes": [
+    {
+     "pass": "probe",
+     "finished": "2026-10-21T10:11:07Z",
+     "ms_per_step": 195.32,
+     "ms_per_step_median": 187.43,
+     "ms_per_step_p90": 227.58,
+     "ms_waiting_for_data": 3.96,
+     "warmup_ms": 5569.1,
+     "startup_s": 327.0
+    },
+    {
+     "pass": "probe2",
+     "finished": "2026-10-21T10:41:04Z",
+     "ms_per_step": 212.32,
+     "ms_per_step_median": 205.43,
+     "ms_per_step_p90": 248.78,
+     "ms_waiting_for_data": 4.38,
+     "warmup_ms": 6583.1,
+     "startup_s": 42.6
+    }
+   ],
+   "n_passes": 2,
+   "ms_per_step_range": [
+    195.32,
+    212.32
+   ]
+  },
+  {
+   "run": "long_t64n4c16_seed1",
+   "recipe": "long",
+   "family": "T",
+   "shape": "t64n4c16",
+   "extras": [],
+   "macs_window_256x512": 46759936,
+   "ms_per_step": 134.68,
+   "passes": [
+    {
+     "pass": "probe",
+     "finished": "2026-10-21T10:02:59Z",
+     "ms_per_step": 134.68,
+     "ms_per_step_median": 131.98,
+     "ms_per_step_p90": 145.19,
+     "ms_waiting_for_data": 3.91,
+     "warmup_ms": 5654.0,
+     "startup_s": 40.3
+    }
+   ],
+   "n_passes": 1,
+   "ms_per_step_range": [
+    134.68,
+    134.68
+   ]
+  },
+  {
+   "run": "size_t64n4c16_seed1",
+   "recipe": "size",
+   "family": "T",
+   "shape": "t64n4c16",
+   "extras": [
+    "size"
+   ],
+   "macs_window_256x512": 46759936,
+   "ms_per_step": 143.62,
+   "passes": [
+    {
+     "pass": "probe",
+     "finished": "2026-10-21T10:01:44Z",
+     "ms_per_step": 128.74,
+     "ms_per_step_median": 127.49,
+     "ms_per_step_p90": 135.67,
+     "ms_waiting_for_data": 3.85,
+     "warmup_ms": 5256.8,
+     "startup_s": 40.7
+    },
+    {
+     "pass": "probe2",
+     "finished": "2026-10-21T10:39:18Z",
+     "ms_per_step": 158.49,
+     "ms_per_step_median": 144.12,
+     "ms_per_step_p90": 203.68,
+     "ms_waiting_for_data": 5.22,
+     "warmup_ms": 5761.0,
+     "startup_s": 41.7
+    }
+   ],
+   "n_passes": 2,
+   "ms_per_step_range": [
+    128.74,
+    158.49
+   ]
+  }
+ ],
+ "smokes": {
+  "base": {
+   "run": "base_t64n4c16_seed1",
+   "shape": "t64n4c16",
+   "family": "T",
+   "extras": [],
+   "wall_s": 165.5,
+   "train_s": 65.2,
+   "startup_s": 100.3,
+   "ms_float_20_240": 140.9,
+   "ms_qat_260_300": 150.0,
+   "qat_ratio": 1.065,
+   "overhead_s": 122.7,
+   "final": {
+    "k_bce": 0.06709,
+    "dice": 0.34942,
+    "o": 0.09926,
+    "a": 0.08216,
+    "loss": 0.5483
+   },
+   "ema_swap": [
+    {
+     "step": 240,
+     "ema_steps": 141,
+     "bn_layers": 13
+    }
+   ],
+   "qat": true,
+   "qat_average_updates": 61,
+   "teacher": null,
+   "clean": null,
+   "vtsp_bytes": 27456,
+   "vtsp_sha256": "32d08595d7a0dd2ce35e4af986d5975a7b99ece9b9e56d2ce609076918ae856d",
+   "vtsp_version": 2,
+   "check_ok": true,
+   "c_runtime_equal": true
+  },
+  "clean": {
+   "run": "clean_t64n4c16_seed1",
+   "shape": "t64n4c16",
+   "family": "T",
+   "extras": [
+    "clean"
+   ],
+   "wall_s": 101.6,
+   "train_s": 60.4,
+   "startup_s": 41.2,
+   "ms_float_20_240": 129.5,
+   "ms_qat_260_300": 135.0,
+   "qat_ratio": 1.042,
+   "overhead_s": 62.4,
+   "final": {
+    "k_bce": 0.06621,
+    "dice": 0.34571,
+    "o": 0.09729,
+    "a": 0.07634,
+    "loss": 0.5369
+   },
+   "ema_swap": [
+    {
+     "step": 240,
+     "ema_steps": 141,
+     "bn_layers": 13
+    }
+   ],
+   "qat": true,
+   "qat_average_updates": 61,
+   "teacher": null,
+   "clean": {
+    "canvases": 52785,
+    "canvases_changed": 10050,
+    "lines": 299986,
+    "vertical": 4528,
+    "removed": 26097,
+    "removed_vertical": 1740,
+    "kept": 273889,
+    "removed_by_vertical_rules_only": 887,
+    "hits": {
+     "weight": 25210,
+     "vertical_long": 898,
+     "vertical_narrow": 0
+    }
+   },
+   "vtsp_bytes": 27456,
+   "vtsp_sha256": "a323e587ac69e503781f9b0aea2fcbb6a665c2aea9dd14c86640acd402f38673",
+   "vtsp_version": 2,
+   "check_ok": true,
+   "c_runtime_equal": true
+  },
+  "kd": {
+   "run": "kd_t64n4c16_seed1",
+   "shape": "t64n4c16",
+   "family": "T",
+   "extras": [],
+   "wall_s": 1072.0,
+   "train_s": 733.3,
+   "startup_s": 338.7,
+   "ms_float_20_240": 2675.0,
+   "ms_qat_260_300": 205.0,
+   "qat_ratio": 0.077,
+   "overhead_s": 417.7,
+   "final": {
+    "k_bce": 0.088,
+    "dice": 0.65751,
+    "o": 0.10355,
+    "a": 0.09513,
+    "kd_k": 0.73454,
+    "kd_o": 0.12473,
+    "kd_a": 0.02366,
+    "loss": 1.71299
+   },
+   "ema_swap": [
+    {
+     "step": 240,
+     "ema_steps": 141,
+     "bn_layers": 13
+    }
+   ],
+   "qat": true,
+   "qat_average_updates": 61,
+   "teacher": {
+    "name": "base_t64n4c16_seed1",
+    "family": "T",
+    "shape": "t64n4c16",
+    "pt_sha256": "cfe2304f6cd105026ef32d3020488187465128716aa7d3e66a0a99f60837c4be"
+   },
+   "clean": null,
+   "vtsp_bytes": 27456,
+   "vtsp_sha256": "044a7674c20f401e6bd81486321e6d246713dd462420467a87c00a3b4d895f9b",
+   "vtsp_version": 2,
+   "check_ok": true,
+   "c_runtime_equal": true
+  },
+  "long": {
+   "run": "long_t64n4c16_seed1",
+   "shape": "t64n4c16",
+   "family": "T",
+   "extras": [],
+   "wall_s": 397.0,
+   "train_s": 61.2,
+   "startup_s": 335.8,
+   "ms_float_20_240": 131.8,
+   "ms_qat_260_300": 135.0,
+   "qat_ratio": 1.024,
+   "overhead_s": 357.3,
+   "final": {
+    "k_bce": 0.13592,
+    "dice": 0.90999,
+    "o": 0.18029,
+    "a": 0.14975,
+    "loss": 1.28581
+   },
+   "ema_swap": [
+    {
+     "step": 240,
+     "ema_steps": 141,
+     "bn_layers": 13
+    }
+   ],
+   "qat": true,
+   "qat_average_updates": 61,
+   "teacher": null,
+   "clean": null,
+   "vtsp_bytes": 27456,
+   "vtsp_sha256": "1f3efcc97aa51f44057cad3fa3e2ed9913af8d9cc0382dff74f791dbd149580f",
+   "vtsp_version": 2,
+   "check_ok": true,
+   "c_runtime_equal": true
+  },
+  "size": {
+   "run": "size_t64n4c16_seed1",
+   "shape": "t64n4c16",
+   "family": "T",
+   "extras": [
+    "size"
+   ],
+   "wall_s": 100.5,
+   "train_s": 59.5,
+   "startup_s": 41.0,
+   "ms_float_20_240": 131.8,
+   "ms_qat_260_300": 135.0,
+   "qat_ratio": 1.024,
+   "overhead_s": 60.8,
+   "final": {
+    "k_bce": 0.08418,
+    "dice": 0.355,
+    "o": 0.13037,
+    "a": 0.10381,
+    "loss": 0.60817
+   },
+   "ema_swap": [
+    {
+     "step": 240,
+     "ema_steps": 141,
+     "bn_layers": 13
+    }
+   ],
+   "qat": true,
+   "qat_average_updates": 61,
+   "teacher": null,
+   "clean": null,
+   "vtsp_bytes": 27456,
+   "vtsp_sha256": "d5d975f3417e5e6e30834991b9a565da74370230064fb7c2f4e108cd4b613246",
+   "vtsp_version": 2,
+   "check_ok": true,
+   "c_runtime_equal": true
+  }
+ },
+ "estimate": {
+  "family": "T",
+  "runs": 9,
+  "order": [
+   "base_t64n8c16_seed1",
+   "base_t64n8c16_seed2",
+   "base_t64n8c16_seed3",
+   "base_t48n8c16d8_seed1",
+   "base_t48n8c16d8_seed2",
+   "base_t48n8c16d8_seed3",
+   "base_t64n4c16_seed1",
+   "base_t64n4c16_seed2",
+   "base_t64n4c16_seed3"
+  ],
+  "rows": [
+   {
+    "run": "base_t48n8c16d8_seed1",
+    "steps": 30000,
+    "ms_per_step": 193.64,
+    "qat_ratio": 1.033,
+    "overhead_s": 131.8,
+    "est_s": 5979,
+    "est_h": 1.66
+   },
+   {
+    "run": "base_t48n8c16d8_seed2",
+    "steps": 30000,
+    "ms_per_step": 193.64,
+    "qat_ratio": 1.033,
+    "overhead_s": 131.8,
+    "est_s": 5979,
+    "est_h": 1.66
+   },
+   {
+    "run": "base_t48n8c16d8_seed3",
+    "steps": 30000,
+    "ms_per_step": 193.64,
+    "qat_ratio": 1.033,
+    "overhead_s": 131.8,
+    "est_s": 5979,
+    "est_h": 1.66
+   },
+   {
+    "run": "base_t64n4c16_seed1",
+    "steps": 30000,
+    "ms_per_step": 137.61,
+    "qat_ratio": 1.033,
+    "overhead_s": 122.7,
+    "est_s": 4278,
+    "est_h": 1.19
+   },
+   {
+    "run": "base_t64n4c16_seed2",
+    "steps": 30000,
+    "ms_per_step": 137.61,
+    "qat_ratio": 1.033,
+    "overhead_s": 122.7,
+    "est_s": 4278,
+    "est_h": 1.19
+   },
+   {
+    "run": "base_t64n4c16_seed3",
+    "steps": 30000,
+    "ms_per_step": 137.61,
+    "qat_ratio": 1.033,
+    "overhead_s": 122.7,
+    "est_s": 4278,
+    "est_h": 1.19
+   },
+   {
+    "run": "base_t64n8c16_seed1",
+    "steps": 30000,
+    "ms_per_step": 242.74,
+    "qat_ratio": 1.033,
+    "overhead_s": 139.8,
+    "est_s": 7470,
+    "est_h": 2.08
+   },
+   {
+    "run": "base_t64n8c16_seed2",
+    "steps": 30000,
+    "ms_per_step": 242.74,
+    "qat_ratio": 1.033,
+    "overhead_s": 139.8,
+    "est_s": 7470,
+    "est_h": 2.08
+   },
+   {
+    "run": "base_t64n8c16_seed3",
+    "steps": 30000,
+    "ms_per_step": 242.74,
+    "qat_ratio": 1.033,
+    "overhead_s": 139.8,
+    "est_s": 7470,
+    "est_h": 2.08
+   }
+  ],
+  "qat_ratio_median": 1.033,
+  "est_run_s": {
+   "base_t48n8c16d8_seed1": 5979,
+   "base_t48n8c16d8_seed2": 5979,
+   "base_t48n8c16d8_seed3": 5979,
+   "base_t64n4c16_seed1": 4278,
+   "base_t64n4c16_seed2": 4278,
+   "base_t64n4c16_seed3": 4278,
+   "base_t64n8c16_seed1": 7470,
+   "base_t64n8c16_seed2": 7470,
+   "base_t64n8c16_seed3": 7470
+  },
+  "slot_hours": 14.77,
+  "schedule": {
+   "8": {
+    "makespan_s": 8556,
+    "makespan_h": 2.38,
+    "plan": [
+     [
+      "base_t64n8c16_seed1",
+      0,
+      7470
+     ],
+     [
+      "base_t64n8c16_seed2",
+      0,
+      7470
+     ],
+     [
+      "base_t64n8c16_seed3",
+      0,
+      7470
+     ],
+     [
+      "base_t48n8c16d8_seed1",
+      0,
+      5979
+     ],
+     [
+      "base_t48n8c16d8_seed2",
+      0,
+      5979
+     ],
+     [
+      "base_t48n8c16d8_seed3",
+      0,
+      5979
+     ],
+     [
+      "base_t64n4c16_seed1",
+      0,
+      4278
+     ],
+     [
+      "base_t64n4c16_seed2",
+      0,
+      4278
+     ],
+     [
+      "base_t64n4c16_seed3",
+      4278,
+      8556
+     ]
+    ]
+   },
+   "6": {
+    "makespan_s": 10258,
+    "makespan_h": 2.85,
+    "plan": [
+     [
+      "base_t64n8c16_seed1",
+      0,
+      7470
+     ],
+     [
+      "base_t64n8c16_seed2",
+      0,
+      7470
+     ],
+     [
+      "base_t64n8c16_seed3",
+      0,
+      7470
+     ],
+     [
+      "base_t48n8c16d8_seed1",
+      0,
+      5979
+     ],
+     [
+      "base_t48n8c16d8_seed2",
+      0,
+      5979
+     ],
+     [
+      "base_t48n8c16d8_seed3",
+      0,
+      5979
+     ],
+     [
+      "base_t64n4c16_seed1",
+      5979,
+      10258
+     ],
+     [
+      "base_t64n4c16_seed2",
+      5979,
+      10258
+     ],
+     [
+      "base_t64n4c16_seed3",
+      5979,
+      10258
+     ]
+    ]
+   }
+  }
+ },
+ "label": "estimates: measured ms per step x steps; QAT at the smoke runs' median QAT / float step ratio; 8 runs at once may run slower per step than probes run two at a time (textspot2's stage 1 at 6 at once: 1.10x its estimate on average, 0.95-1.30x per run)",
+ "out": "$HERD/shared/artifacts/textspot3/train/probe1",
+ "trainer": {
+  "probed_commit": "ce35cba",
+  "probed_sha256": "f5da62fe7170b793442f97d80d6dfae2b6be63dad3881c4d12f1cbf797791cda",
+  "sha256_at_this_record": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+  "why_two": "family M wired into the trainer after the probes (FORMAT_READY, e4bbc07): the T path is unchanged, shown by identity_check.py (old = ce35cba's trainer, new = this record's commit): the logged losses and LRs of every step, the QAT checkpoint and the int8 network identical",
+  "identity": [
+   "IDENTICAL tiny_base: 10 log records (6 step records), 10 layers, final.vtd 1744 B",
+   "IDENTICAL tiny_size: 10 log records (6 step records), 10 layers, final.vtd 1744 B",
+   "IDENTICAL tiny_clean: 10 log records (6 step records), 10 layers, final.vtd 1744 B",
+   "IDENTICAL tiny_long: 10 log records (6 step records), 10 layers, final.vtd 1744 B",
+   "IDENTICAL tiny_base_--extras_size_clean: 10 log records (6 step records), 10 layers, final.vtd 1744 B",
+   "IDENTICAL tiny_base_--extras_none: 10 log records (6 step records), 10 layers, final.vtd 1744 B",
+   "IDENTICAL tiny_kd_--extras_size_clean: 10 log records (6 step records), 10 layers, final.vtd 1744 B",
+   "IDENTICAL tiny_kd_--extras_none: 10 log records (6 step records), 10 layers, final.vtd 1744 B",
+   "IDENTICAL tiny_registered_t64n4c16: 10 log records (6 step records), 14 layers, final.vtd 27424 B",
+   "IDENTICAL pinned_base_t64n4c16_20: 24 log records (20 step records), 14 layers, final.vtd 27424 B"
+  ],
+  "identity_cases": "tiny hand-made shards (tests/test_textspot3_train.tiny_shards, mid=True), 6 steps (QAT from 4, EMA from 1): base, size, clean, long, base --extras size,clean, base --extras none, kd --extras size,clean and none (a T teacher), base on the registered t64n4c16; the pinned shards with the sweep's own command line of base_t64n4c16_seed1 plus --steps 20 --ema-start 5 --log-every 1"
+ },
+ "clean_counts": {
+  "by_source": {
+   "realplus": {
+    "canvases": 42339,
+    "canvases_changed": 9224,
+    "lines": 251650,
+    "vertical": 4120,
+    "removed": 24710,
+    "removed_vertical": 1564,
+    "kept": 226940,
+    "hits": {
+     "weight": 23880,
+     "vertical_long": 840,
+     "vertical_narrow": 0
+    },
+    "removed_by_vertical_rules_only": 830
+   },
+   "teacher": {
+    "canvases": 6311,
+    "canvases_changed": 730,
+    "lines": 36794,
+    "vertical": 350,
+    "removed": 1255,
+    "removed_vertical": 176,
+    "kept": 35539,
+    "hits": {
+     "weight": 1198,
+     "vertical_long": 58,
+     "vertical_narrow": 0
+    },
+    "removed_by_vertical_rules_only": 57
+   },
+   "owner": {
+    "canvases": 4071,
+    "canvases_changed": 94,
+    "lines": 11325,
+    "vertical": 47,
+    "removed": 130,
+    "removed_vertical": 0,
+    "kept": 11195,
+    "hits": {
+     "weight": 130,
+     "vertical_long": 0,
+     "vertical_narrow": 0
+    },
+    "removed_by_vertical_rules_only": 0
+   },
+   "devnative": {
+    "canvases": 64,
+    "canvases_changed": 2,
+    "lines": 217,
+    "vertical": 11,
+    "removed": 2,
+    "removed_vertical": 0,
+    "kept": 215,
+    "hits": {
+     "weight": 2,
+     "vertical_long": 0,
+     "vertical_narrow": 0
+    },
+    "removed_by_vertical_rules_only": 0
+   }
+  },
+  "total": {
+   "canvases": 52785,
+   "canvases_changed": 10050,
+   "lines": 299986,
+   "vertical": 4528,
+   "removed": 26097,
+   "removed_vertical": 1740,
+   "kept": 273889,
+   "removed_by_vertical_rules_only": 887,
+   "hits": {
+    "weight": 25210,
+    "vertical_long": 898,
+    "vertical_narrow": 0
+   }
+  },
+  "rules": {
+   "weight": "label weight < 1 (index 6)",
+   "vertical_long": "vertical and y1 - y0 > 16 (x1 - x0)",
+   "vertical_narrow": "vertical and x1 - x0 < 6 px"
+  },
+  "how": "at load time, on every real canvas of the pool (src not 'synth...'), in the shard's coordinates (the canvas's scale): a positive that breaks a rule becomes an ignore area (its box appended to the canvas's ignore areas); the canvases stay"
+ }
+}

@@ -664,20 +664,123 @@ def test_the_refusals(tmp_path):
         T3.clean_rule([0, 0, 50, 20, 0, "text", -0.5])
 
 
-def test_family_m_waits_for_its_modules(tmp_path):
-    """Until textspot3-runtime's train/textspot3_model.py and synth/textspot3_twin.py exist, an M run refuses with
-    a message that names them; family T needs neither."""
-    try:
-        import textspot3_model  # noqa: F401
-        import textspot3_twin  # noqa: F401
-        pytest.skip("the M modules exist: the M tests run instead")
-    except ImportError:
-        pass
+import textspot3_model as M3  # noqa: E402
+import textspot3_twin as TW3  # noqa: E402
+
+# a tiny M shape of textspot3_model's grammar (the stream, stride-16 and -32 stages, the neck, one smoothing block)
+M_TINY = M3.m_shape("m_tiny", 4, 8, 8, [8], [1], [(16, []), (16, [1])], 16, 8, 1)
+
+
+def check_m_blobs(run, shape):
+    done = json.loads((run / "done.json").read_text())
+    net, vtsp = (run / "final.vtm").read_bytes(), (run / "final.vtsp").read_bytes()
+    assert not (run / "final.vtd").exists() and done["vtm_sha256"] == sha(run / "final.vtm")
+    assert done["vtsp_sha256"] == sha(run / "final.vtsp") and done["vtm_bytes"] == len(net)
+    assert done["vtsp_bytes"] == len(vtsp) == len(net) + 32 and done["pt_sha256"] == sha(run / "final.pt")
+    assert done["vtsp_version"] == 3 and done["family"] == "M"
+    m = TW3.Model(vtsp)
+    assert (m.version, m.head, m.half_above, m.half_above_h, m.conf_min, m.stride, m.name) == \
+        (3, "ms_x2", 480, 272, 1, 4, shape)
+    assert TW3.pack(net, 480, 1, 272, version=3) == vtsp and (net, vtsp) == M3.export_vtsp(run / "final.pt", 1)
+    assert len(vtsp) == M3.vtsp_bytes(json.loads((run / "run.json").read_text())["shape"])
+    return done
+
+
+def test_three_step_family_m_runs_of_every_recipe(tmp_path):
     mans, dirs = tiny_shards(tmp_path)
-    m_shape = {"name": "m_tiny", "family": "M", "head": "ms_x2", "stride": 8}
-    with pytest.raises(SystemExit, match="textspot3_model"):
-        T3.main(args3(mans, dirs, "base", tmp_path / "m", shape=m_shape, family="M"))
-    assert "textspot3_model" not in sys.modules
+    runs = tmp_path / "runs"
+    made = {}
+    for recipe in ("base", "size", "clean", "long"):
+        out = runs / T3.run_name(recipe, "m_tiny", 1)
+        T3.main(args3(mans, dirs, recipe, out, shape=M_TINY, family="M"))
+        made[recipe] = out
+    out = runs / "kd_m_tiny_seed2"                                   # an M student, an M teacher
+    T3.main(args3(mans, dirs, "kd", out, shape=M_TINY, family="M", seed=2,
+                  more=["--teacher", str(made["base"]), "--extras", "size"]))
+    made["kd"] = out
+    out = runs / "kd_t_tiny_seed1"                                   # a T student, an M teacher
+    T3.main(args3(mans, dirs, "kd", out, more=["--teacher", str(made["base"]), "--extras", "none"]))
+    made["kdT"] = out
+    for key, run in made.items():
+        info = json.loads((run / "run.json").read_text())
+        log = log_of(run)
+        steps = [r for r in log if "lr" in r]
+        assert [r["step"] for r in steps] == [1, 2, 3] and all(np.isfinite(r["loss"]) for r in steps)
+        assert len([r for r in log if r.get("ema_swap")]) == 1 and any(r.get("qat") for r in log)
+        if key == "kdT":
+            assert info["family"] == "T" and info["settings"]["kd"]["teacher"]["family"] == "M"
+            assert info["settings"]["kd"]["teacher"]["scale_disagreements"] == {}
+            check_t_blobs(run, "t_tiny")
+            continue
+        assert info["family"] == "M" and info["scale"] == T3.scale_record("M") and info["shape"] == M_TINY
+        assert info["settings"]["network"]["family"] == "M" and "train/textspot3_model.py" in info["code_sha256"]
+        assert "synth/textspot3_twin.py" in info["code_sha256"]
+        ck = torch.load(run / "final.pt", map_location="cpu", weights_only=False)
+        assert ck["kind"] == "textspot3-qat" and len(ck["w"]) == len(M3.layers(M_TINY)) == len(ck["act_scale"])
+        check_m_blobs(run, "m_tiny")
+        p = subprocess.run([sys.executable, str(REPRO / "check_run.py"), str(run)], capture_output=True, text=True,
+                           timeout=600, cwd=ROOT)
+        assert p.returncode == 0 and f"CHECK_OK {run.name} " in p.stdout and "family M" in p.stdout, \
+            p.stdout + p.stderr
+        if key == "kd":
+            t = info["settings"]["kd"]["teacher"]
+            assert t["family"] == "M" and t["pt_sha256"] == sha(made["base"] / "final.pt")
+            assert all("kd_k" in r for r in steps)
+    # the M teacher: QTextSpot3 in fake quantisation, frozen; its maps through to_stride4
+    teacher, fam, rec = T3.load_teacher(made["base"])
+    assert isinstance(fam, T3.FamilyM) and not teacher.training and teacher.quant
+    assert all(not q.requires_grad for q in teacher.parameters())
+    g = torch.Generator().manual_seed(1)
+    x = TT.to_input(torch.randint(0, 256, (2, 1, 256, 512), generator=g, dtype=torch.uint8))
+    y = fam.maps(teacher(x, masks=fam.masks([(256, 512), (100, 200)])))
+    # masked at the head's stride 8: a 100 x 200 region has 13 x 25 head cells, 26 x 50 stride-4 cells
+    assert y.shape == (2, 4, 64, 128) and float(y[1, :, 26:].abs().max()) == 0
+    assert float(y[1, :, :, 50:].abs().max()) == 0 and float(y[1, :, :26, :50].abs().max()) > 0
+    # the QAT network's scales: every group of concatenated maps shares one
+    sc = [float(teacher.scale(i).flatten()[0]) for i in range(len(teacher.spec))]
+    groups = M3.scale_groups(M_TINY)
+    shared = 0
+    for gi in set(groups):
+        members = [i for i, gg in enumerate(groups) if gg == gi and not teacher.spec[i]["head"]]
+        if members:
+            assert len({sc[i] for i in members}) == 1
+            shared += len(members) > 1
+    assert shared >= 1                                              # the neck's concatenations
+
+
+def test_family_m_scale_and_the_refusals(tmp_path):
+    """M halves a canvas taller than 272 px that T keeps; a kd teacher of a family whose scale halves a canvas of
+    the pool differently is refused; an M shape that the grammar refuses is refused."""
+    mans, dirs = tiny_shards(tmp_path)
+    tall = canvas(np.random.default_rng(5), 300, 400, [[20, 30, 380, 60]])
+    DATA.write_shard(dirs["more_realplus"] / "more_realplus_0001", [{
+        "canvas": tall, "lines": [[20, 30, 380, 60, 0, "text", 1.0]], "ignore": [], "src": "realplus", "kind": "psp",
+        "vn": "v4", "shot": "v4_1"}])
+    doc = json.loads(mans[1].read_text())
+    d = dirs["more_realplus"]
+    doc["shards"].append({"dir": d.name, "name": "more_realplus_0001", "npy_sha256": sha(d / "more_realplus_0001.npy"),
+                          "json_sha256": sha(d / "more_realplus_0001.json")})
+    mans[1].write_text(json.dumps(doc))
+    assert (T3.half_t(400, 300), T3.half_m(400, 300)) == (1, 2)
+    g = np.random.default_rng(0)
+    img, ox, oy, w, h, f = T3.window(g, tall, T3.half_m)
+    assert (f, h, w) == (2, 150, 200) and np.array_equal(img, TS2_halve(tall))
+    m_run = tmp_path / "runs" / "base_m_tiny_seed1"
+    T3.main(args3(mans, dirs, "base", m_run, shape=M_TINY, family="M"))
+    with pytest.raises(SystemExit, match="halve .* differently"):
+        T3.main(args3(mans, dirs, "kd", tmp_path / "k", more=["--teacher", str(m_run), "--extras", "none"]))
+    for bad in ({**M_TINY, "neck": {"t": 12, "t8": 8, "smooth": 1}}, {**M_TINY, "stages": []},
+                {**M_TINY, "head": "kroa_x2", "family": "M"}):
+        with pytest.raises(SystemExit):
+            T3.main(args3(mans, dirs, "base", tmp_path / "bad", shape=bad, family="M"))
+    with pytest.raises(SystemExit, match="is a family M shape"):
+        T3.main(args3(mans, dirs, "base", tmp_path / "bad", shape=M_TINY, family="T"))
+    assert not (tmp_path / "bad").exists()
+
+
+def TS2_halve(g):
+    import textspot_twin as TS
+    return TS.halve(g)
 
 
 def test_a_speed_probe_writes_no_model_and_the_cli(tmp_path):
@@ -1043,3 +1146,27 @@ def test_the_probe_plan_and_summary(tmp_path):
 def test_the_probe_script_parses():
     p = subprocess.run(["bash", "-n", str(REPRO / "probe.sh")], capture_output=True, text=True, timeout=60)
     assert p.returncode == 0, p.stderr
+
+
+PROBE_RECORD = ROOT / "eval" / "textspot3_train_probe_20261021.json"
+T_PLAN = REPRO / "stage1_T_plan.jsonl"
+
+
+@pytest.mark.skipif(not T_PLAN.exists(), reason="the stage-1 T plan is not committed yet")
+def test_the_committed_stage1_T_plan_is_reproducible():
+    """eval/reproducibility/textspot3-20261021/stage1_T_plan.jsonl is textspot3_plan.py stage1 --family T --est
+    eval/textspot3_train_probe_20261021.json on the protocol at the plan's protocol sha256: the 9 base runs on the
+    registered T shapes, longest first by the probe's estimates, their timeouts and command lines."""
+    got = PL.load(T_PLAN)
+    reg = PL.shapes()
+    want = PL.order(PL.stage1("T", reg), reg, PL.read_est(PROBE_RECORD))
+    shas = {r.pop("protocol_sha256") for r in got}
+    assert len(shas) == 1 and len(next(iter(shas))) == 64
+    assert got == [json.loads(json.dumps(r, sort_keys=True)) for r in want] and len(got) == 9
+    assert {(r["recipe"], r["family"], r["steps"], r["extras"], r["teacher"]) for r in got} == \
+        {("base", "T", 30000, None, None)}
+    assert sorted({r["shape"] for r in got}) == ["t48n8c16d8", "t64n4c16", "t64n8c16"]
+    assert [r["est_s"] for r in got] == sorted((r["est_s"] for r in got), reverse=True)
+    doc = json.loads(PROBE_RECORD.read_text())
+    assert doc["kind"] == "textspot3-train-probe" and doc["estimate"]["family"] == "T"
+    assert set(doc["estimate"]["est_run_s"]) == {r["run"] for r in got} and "8" in doc["estimate"]["schedule"]

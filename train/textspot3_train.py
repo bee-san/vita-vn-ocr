@@ -85,10 +85,12 @@ crashed run restarts from scratch in a fresh directory):
   RUN/log.jsonl   #97's records every 200 steps (step, lr, sec, k_bce, dice, o, a; kd_k, kd_o, kd_a, kd_cells for kd;
                   loss, the total optimised), the EMA's start and swap records and the QAT record
   RUN/final.pt    the quantisation-aware checkpoint (T: kind textdet-qat, M: textspot3-qat), the QAT average
-  RUN/final.vtd   T: the int8 VTDT network (textspot2_export); M: whatever textspot3_model's export writes beside
-                  the VTSP, if anything
-  RUN/final.vtsp  T: VTSP version 2 (half_above 480, conf_min 1); M: VTSP version 3 (conf_min 1)
-  RUN/done.json   finished (UTC), steps, wall time, the blobs' bytes and sha256, the VTSP version
+  RUN/final.vtd   T: the int8 VTDT network (textspot2_export.export_vtsp's first part)
+  RUN/final.vtm   M: the int8 VTMS network section (textspot3_model.export_vtsp's first part)
+  RUN/final.vtsp  T: VTSP version 2 (half_above 480, conf_min 1); M: VTSP version 3 (half_above 480, half_above_h
+                  272, conf_min 1)
+  RUN/done.json   finished (UTC), steps, wall time, the blobs' bytes and sha256 (vtd_* for T, vtm_* for M), the
+                  VTSP version
 """
 import argparse
 import hashlib
@@ -211,11 +213,15 @@ def resolve_shape(name, spec=None):
     fam = family_of(s)
     if fam is None:
         raise SystemExit(f"{name}: neither a T (head {X.HEAD}) nor an M shape")
-    if fam == "T":
-        try:
+    try:
+        if fam == "T":
             s = t_shape(s)
-        except (KeyError, ValueError) as e:
-            raise SystemExit(f"{name}: {e}") from None
+        else:
+            M3, _ = m_modules()
+            s = M3.check_shape(json.loads(json.dumps(s)))
+            M3.layers(s)
+    except (KeyError, ValueError) as e:
+        raise SystemExit(f"{name}: {e}") from None
     return s, fam, src
 
 
@@ -253,7 +259,7 @@ def m_modules():
 
 class FamilyT:
     """Family T: textspot2's d2s network (textdet_model's trunk, textspot2_export's 16-channel head), VTSP version 2."""
-    name, kind, vtsp_version = "T", T_KIND, TS2.VERSION_D2S
+    name, kind, vtsp_version, net_file = "T", T_KIND, TS2.VERSION_D2S, "vtd"
 
     def __init__(self, shape):
         self.shape = shape
@@ -304,7 +310,7 @@ class FamilyT:
 
 class FamilyM:
     """Family M: textspot3-runtime's multi-scale network (train/textspot3_model.py), VTSP version 3."""
-    name, kind = "M", M_KIND
+    name, kind, net_file = "M", M_KIND, "vtm"
 
     def __init__(self, shape):
         self.M3, self.TW3 = m_modules()
@@ -338,19 +344,24 @@ class FamilyM:
                 "act_scale": act_scale, "run": run}
 
     def export(self, pt):
-        out = self.M3.export_vtsp(pt, conf_min=1)
-        vtd, vtsp = out if isinstance(out, tuple) else (None, out)
+        """-> (VTMS section bytes, VTSP version 3 bytes), read back: version 3, half_above 480 and half_above_h 272,
+        conf_min 1, the shape."""
+        net, vtsp = self.M3.export_vtsp(pt, conf_min=1)
         m = self.TW3.Model(vtsp)
-        if (m.version, m.conf_min, m.name) != (self.vtsp_version, 1, self.shape["name"]):
+        if (m.version, m.half_above, m.half_above_h, m.conf_min, m.name) != \
+                (self.vtsp_version, *HALF_ABOVE_M, 1, self.shape["name"]):
             raise SystemExit("the VTSP version-3 blob does not read back")
-        return vtd, vtsp
+        return net, vtsp
 
     def record(self):
         return {"family": "M", "head": self.shape.get("head"), "outputs": N_HEAD, "net_stride": NET_STRIDE,
                 "map_stride": MAP_STRIDE,
                 "network": "train/textspot3_model.TextSpot3, then QTextSpot3 at the QAT start",
                 "maps": "textspot3_model.to_stride4 against the stride-4 targets",
-                "export": "textspot3_model.export_vtsp(final.pt, conf_min=1): VTSP version 3"}
+                "export": "textspot3_model.export_vtsp(final.pt, conf_min=1): VTSP version 3 (half_above 480, "
+                          "half_above_h 272)",
+                "scales": "textspot3_model.shared_scales: the layers whose maps one 1x1 op concatenates share the "
+                          "largest of their calibrated scales (QTextSpot3 and the export)"}
 
 
 def family(name, shape):
@@ -968,15 +979,14 @@ def main(argv=None):
         qema.copy_to(model.parameters())
         write({"step": n_steps, "qat_average": "the run's model", "qat_average_steps": qema.steps})
     torch.save(fam.checkpoint(model, act_scale, args.seed, args.steps, run), out / "final.pt")
-    vtd, vtsp = fam.export(out / "final.pt")
-    if vtd is not None:
-        (out / "final.vtd").write_bytes(vtd)
+    net, vtsp = fam.export(out / "final.pt")
+    nf = fam.net_file                               # vtd (T) or vtm (M)
+    (out / f"final.{nf}").write_bytes(net)
     (out / "final.vtsp").write_bytes(vtsp)
     done = {"finished": ST.utc(), "name": args.name, "family": fam.name, "steps": args.steps,
             "seconds": round(time.time() - t0, 1), "wall_seconds": round(time.time() - t_proc, 1),
             "pt_sha256": TT.sha256(out / "final.pt"),
-            "vtd_bytes": len(vtd) if vtd is not None else None,
-            "vtd_sha256": hashlib.sha256(vtd).hexdigest() if vtd is not None else None,
+            f"{nf}_bytes": len(net), f"{nf}_sha256": hashlib.sha256(net).hexdigest(),
             "vtsp_bytes": len(vtsp), "vtsp_sha256": hashlib.sha256(vtsp).hexdigest(),
             "vtsp_version": fam.vtsp_version}
     (out / "done.json").write_text(json.dumps(done, indent=1) + "\n", encoding="utf-8")

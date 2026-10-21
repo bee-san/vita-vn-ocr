@@ -13,9 +13,10 @@ data pin recorded its skip lists.
   textspot2_twin.pack(final.vtd, 480, 1, version 2); the twin (textspot2_twin.spot) runs on two pinned procedural
   frames (960 x 544 and 480 x 272) and returns boxes inside them; with --cbin2, the C driver
   runtime/vocr_textspot2_test gives the twin's --batch line for each frame.
-- Family M: final.vtsp loads in synth/textspot3_twin.Model as VTSP version 3 with conf_min 1, named the run's shape;
-  textspot3_twin.spot runs on the same frames, boxes inside them; with --cbin3, runtime/vocr_textspot3_test gives the
-  twin's line for each frame.
+- Family M: final.vtm loads in synth/textspot3_twin.Net and final.vtsp in synth/textspot3_twin.Model as VTSP version 3
+  with half_above 480, half_above_h 272 and conf_min 1, named the run's shape, equal to textspot3_twin.pack(final.vtm,
+  480, 1, 272, version 3); textspot3_twin.spot runs on the same frames, boxes inside them; with --cbin3,
+  runtime/vocr_textspot3_test gives the twin's line for each frame.
 With --plan, the run is the plan's record of its name: the same recipe, family, shape, seed, steps and extras, and
 for kd the plan's teacher (run.json's teacher final.pt sha256 is the plan's). run.json's code sha256 equal the files in
 this checkout and its manifests' sha256 the manifests here (a difference is printed, not fatal: the blob checks are
@@ -114,17 +115,19 @@ def check(run_dir, cbin2=None, cbin3=None, plan=None):
     info = json.loads((run_dir / "run.json").read_text())
     done = json.loads((run_dir / "done.json").read_text())
     vtsp = (run_dir / "final.vtsp").read_bytes()
-    vtd = (run_dir / "final.vtd").read_bytes() if (run_dir / "final.vtd").exists() else None
     bad = []
     fam = info.get("family")
     if info.get("kind") != "textspot3-run" or fam not in SCALES:
         bad.append(f"run.json kind {info.get('kind')!r}, family {fam!r}")
         return info, done, bad, [], {}
+    nf = "vtd" if fam == "T" else "vtm"
+    net_bytes = (run_dir / f"final.{nf}").read_bytes() if (run_dir / f"final.{nf}").exists() else None
+    vtd = net_bytes if fam == "T" else None
     if info["name"] != run_dir.name.split(".failed")[0]:
         bad.append(f"run.json names {info['name']}, the directory is {run_dir.name}")
     if info.get("scale") != SCALES[fam]:
         bad.append(f"run.json: scale {info.get('scale')} is not family {fam}'s")
-    for key, data in (("vtd", vtd), ("vtsp", vtsp)):
+    for key, data in ((nf, net_bytes), ("vtsp", vtsp)):
         want = (done.get(f"{key}_sha256"), done.get(f"{key}_bytes"))
         have = (hashlib.sha256(data).hexdigest(), len(data)) if data is not None else (None, None)
         if want != have:
@@ -149,9 +152,16 @@ def check(run_dir, cbin2=None, cbin3=None, plan=None):
     else:
         import textspot3_twin as TW3
         twin, cbin = TW3, cbin3
-        m = TW3.Model(vtsp)
-        if (m.version, m.conf_min, m.name) != (done.get("vtsp_version"), 1, shape) or m.version < 3:
-            bad.append(f"final.vtsp: version {m.version}, conf_min {m.conf_min}, name {m.name}")
+        if net_bytes is None:
+            bad.append("a family M run without final.vtm")
+            return info, done, bad, [], {}
+        net, m = TW3.Net(net_bytes), TW3.Model(vtsp)
+        if (m.version, done.get("vtsp_version"), m.half_above, m.half_above_h, m.conf_min, m.name, net.name) != \
+                (TW3.VERSION_MS, TW3.VERSION_MS, 480, 272, 1, shape, shape):
+            bad.append(f"final.vtsp: version {m.version}, half_above {m.half_above} / {m.half_above_h}, conf_min "
+                       f"{m.conf_min}, name {m.name}")
+        if vtsp[32:] != net_bytes or TW3.pack(net_bytes, 480, 1, 272, version=TW3.VERSION_MS) != vtsp:
+            bad.append("final.vtsp is not textspot3_twin.pack(final.vtm, 480, 1, 272, version 3)")
     if done["steps"] != info["steps"]:
         bad.append(f"done.json steps {done['steps']} != run.json steps {info['steps']}")
     if plan is not None:

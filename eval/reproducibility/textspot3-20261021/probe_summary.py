@@ -16,7 +16,8 @@ Per probe (seed 1): ms per step over 200 steps after one warm-up step (mean, med
 the loader) and the startup, for every pass probe.sh ran (OUT/probe, then OUT/probe2, ...); the estimate uses the
 mean over the passes of each pass's mean ms per step. Per smoke run (300 steps, QAT from step 240): its wall time, ms
 per step before and after QAT (its log, every 20 steps), its final losses, clean's counts, the blob's bytes and
-check_run.py's verdict (the C driver equal to the twin).
+check_run.py's verdict (the C driver equal to the twin); "smoke_runs" has every smoke by its run name, "smokes" the
+last of each recipe (the estimate reads base's).
 
 A stage-1 run's estimate: overhead + steps x ms, with ms = the probe's mean ms per step for its shape under base
 (size, clean and long on the same shape: base's, plus size's or clean's measured difference on the probed shape;
@@ -133,7 +134,7 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
             "passes": passes, "n_passes": len(passes),
             "ms_per_step_range": [min(q["ms_per_step"] for q in passes), max(q["ms_per_step"] for q in passes)]}
     log_text = (out / "probe.log").read_text() if (out / "probe.log").exists() else ""
-    smokes = {}
+    smokes, smoke_runs = {}, {}
     for d in sorted((out / "smoke").iterdir()):
         if not (d / "done.json").exists():
             continue
@@ -148,7 +149,7 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
         clean = (info.get("settings") or {}).get("clean")
         teacher = ((info.get("settings") or {}).get("kd") or {}).get("teacher")
         check = [ln for ln in log_text.splitlines() if ln.startswith(f"CHECK_OK {d.name} ")]
-        smokes[info["recipe"]] = {
+        smokes[info["recipe"]] = smoke_runs[d.name] = {
             "run": d.name, "shape": info["shape"]["name"], "family": info["family"], "extras": info["extras"],
             "wall_s": done["wall_seconds"], "train_s": done["seconds"],
             "startup_s": round(done["wall_seconds"] - done["seconds"], 1), "ms_float_20_240": fl,
@@ -197,7 +198,7 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
                     "(textspot3_plan.py args), seed 1; not runs of the sweep, never used",
             "head": starts[0].split(" head ")[1].split(",")[0] if starts else None, "threads": 5,
             "concurrency": "at most 2 of these jobs at once (probe.sh MAX_PAR 2), on a shared 64-core box",
-            "passes": pass_dirs, "probes": list(probes.values()), "smokes": smokes,
+            "passes": pass_dirs, "probes": list(probes.values()), "smokes": smokes, "smoke_runs": smoke_runs,
             "estimate": {"family": family, "runs": len(runs), "order": order, "rows": rows,
                          "qat_ratio_median": round(median_ratio, 3), "est_run_s": {k: round(v) for k, v in est.items()},
                          "slot_hours": round(sum(est.values()) / 3600, 2), "schedule": sched},

@@ -279,5 +279,150 @@
   "private": "$HERD/shared/private/textspot3",
   "names": "runs <recipe>_<family-shape>_seed<n>; harness arms T3_<run>_det, T3_<run>_detref"
  },
- "amendments": []
+ "amendments": [
+  {
+   "id": 1,
+   "utc": "2026-10-21T09:47:53Z",
+   "before": "every textspot3 training run and every score of any textspot3 arm (no run, probe or score exists; the A9 rows below are random-blob measurements on textspot's procedural frames)",
+   "what": [
+    "Family T's shapes (docs/textspot3.md 'Two families'): three of the T_ROWS grid (train/textspot3_shapes.CANDIDATES; eval/textspot3_a9_t_20261021.json, the A9 cycle model on runtime/vocr_textspot2.c as merged, half_above 480, random blobs, textspot's pinned procedural frames): t64n4c16 (width: 64 channels at textspot2's depth of 4 blocks; 27,456 B, est. 157.7 ms @333, arena 129,311 B), t48n8c16d8 (depth and a larger receptive field: 8 blocks of 48 channels with a dilation of 8, RF 383 px; 32,560 B, est. 182.8 ms, arena 238,271 B) and t64n8c16 (width and depth: 8 blocks of 64 channels; 51,008 B, est. 260.8 ms, arena 240,991 B). c1 16 everywhere (c1 24 costs 1.7-5.5 ms and 0.7 KB more for one stride-4 layer).",
+    "Not registered: the 64-channel trunks with a dilation of 8 are over the arena budget (309,343 and 312,911 B: a 17-row ring of 64 planes); the other grid points lie between the registered ones.",
+    "The T rows' tooling is pinned as measured: train/textspot3_shapes.py (the registry), eval/textspot3_a9.py (a thin wrapper over eval/textspot2_a9.py's measure and eval/textspot_a9.py's report, half_above a parameter), eval/textspot3_a9_t_20261021.json (14 candidates at half_above 480, and textspot2's s8_c24n4x2 and s8_c48n4x2 at half_above 600, 8 of 8 rows identical to eval/textspot2_a9_d2s_20261020.json). These rows are the T shapes' eligibility source unless a later amendment pins a re-measurement on the same runtime.",
+    "Every figure here is a host estimate of console time or an exact byte count; nothing ran on a console."
+   ],
+   "sources_sha256": {
+    "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+    "eval/textspot3_a9.py": "3ec5f478898a585839c97f7f00e37727ef101772d8631fb8b1cffecde8736c45",
+    "eval/textspot3_a9_t_20261021.json": "ec1d27a535352df68ea091a3b9b4c3e04c528a6de49eba4a5c54515ad528701d",
+    "tests/test_textspot3_a9.py": "9cdf154d2143b24782e15c0f437109e2290e0a6faa9087960e92ed5d2d17d9f9",
+    "tests/test_textspot3_shapes.py": "9c973c2ebe4dba08c45f6ef65fcdcd9241ccc1ac40da4c46104ef96c911656fe"
+   },
+   "settings": {
+    "t_shapes": [
+     "t64n4c16",
+     "t48n8c16d8",
+     "t64n8c16"
+    ],
+    "a9_rows": {
+     "t64n4c16": {
+      "vtsp_bytes": 27456,
+      "macs_960": 46577280,
+      "ms_333_960": 157.73215262950748,
+      "ms_444_960": 118.29911447213061,
+      "arena_up_to_960": 129311,
+      "ms_333_480": 148.7510834619189
+     },
+     "t48n8c16d8": {
+      "vtsp_bytes": 32560,
+      "macs_960": 52060800,
+      "ms_333_960": 182.76949870423422,
+      "ms_444_960": 137.07712402817566,
+      "arena_up_to_960": 238271,
+      "ms_333_480": 175.07358064527025
+     },
+     "t64n8c16": {
+      "vtsp_bytes": 51008,
+      "macs_960": 84700800,
+      "ms_333_960": 260.84093940339636,
+      "ms_444_960": 195.63070455254726,
+      "arena_up_to_960": 240991,
+      "ms_333_480": 253.03369220728828
+     }
+    },
+    "runtime_commit": "c8b0af9"
+   },
+   "shapes": [
+    "t48n8c16d8",
+    "t64n4c16",
+    "t64n8c16"
+   ]
+  }
+ ],
+ "shapes": {
+  "t64n4c16": {
+   "name": "t64n4c16",
+   "family": "T",
+   "stride": 8,
+   "c0": 8,
+   "c1": 16,
+   "c2": 64,
+   "chans": [
+    64,
+    64,
+    64,
+    64
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    1
+   ],
+   "block": "sep",
+   "head": "kroa_x2",
+   "half_above": 480
+  },
+  "t48n8c16d8": {
+   "name": "t48n8c16d8",
+   "family": "T",
+   "stride": 8,
+   "c0": 8,
+   "c1": 16,
+   "c2": 48,
+   "chans": [
+    48,
+    48,
+    48,
+    48,
+    48,
+    48,
+    48,
+    48
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    8,
+    1,
+    2,
+    4,
+    1
+   ],
+   "block": "sep",
+   "head": "kroa_x2",
+   "half_above": 480
+  },
+  "t64n8c16": {
+   "name": "t64n8c16",
+   "family": "T",
+   "stride": 8,
+   "c0": 8,
+   "c1": 16,
+   "c2": 64,
+   "chans": [
+    64,
+    64,
+    64,
+    64,
+    64,
+    64,
+    64,
+    64
+   ],
+   "dil": [
+    1,
+    2,
+    4,
+    1,
+    2,
+    4,
+    1,
+    2
+   ],
+   "block": "sep",
+   "head": "kroa_x2",
+   "half_above": 480
+  }
+ }
 }

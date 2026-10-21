@@ -23,7 +23,7 @@ KD_SHAPE=${KD_SHAPE:-t64n4c16}
 TEACHER=${TEACHER:-$OUT/smoke/base_${KD_SHAPE}_seed1}
 PROBES=${PROBES:-"base:t64n4c16 base:t48n8c16d8 base:t64n8c16 size:t64n4c16 clean:t64n4c16 long:t64n4c16"}
 SMOKES=${SMOKES:-"base:t64n4c16 size:t64n4c16 clean:t64n4c16 long:t64n4c16"}
-KD=${KD:-"kd:$KD_SHAPE"}
+KD=${KD-"kd:$KD_SHAPE"}                   # KD="" probes no kd
 PY="$REPO/.venv-ci/bin/python"
 export TMPDIR=${PROBE_TMPDIR:-/local/home/skerraut/kt/t3p}
 mkdir -p "$TMPDIR" "$OUT/logs" "$OUT/$PDIR" "$OUT/smoke" "$OUT/cbuild"
@@ -39,7 +39,7 @@ if [ ! -x "$CBIN3" ] && [ -e "$REPO/runtime/vocr_textspot3.c" ] && [ -e "$REPO/r
   ( cd "$REPO/runtime" && ${CC:-cc} -std=c99 -O2 -Wall -Wextra -Werror vocr_lines.c vocr_lines_rows.c \
       vocr_textspot3.c vocr_textspot3_test.c -o "$CBIN3" ) || rm -f "$CBIN3"
 fi
-PLAN=$OUT/probe_plan$([ -n "${PLAN_TAG:-}" ] && echo "_$PLAN_TAG").jsonl
+PLAN=$OUT/probe_plan${PLAN_TAG:+_$PLAN_TAG}.jsonl
 "$PY" "$HERE/probe_summary.py" plan --out "$PLAN" --teacher "$TEACHER" $PROBES $SMOKES $KD > /dev/null
 
 job() {            # job probe|smoke RECIPE SHAPE

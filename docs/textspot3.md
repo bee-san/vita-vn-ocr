@@ -281,3 +281,21 @@ Each amendment is dated in `eval/textspot3_protocol.json` and precedes the runs 
      only from tables this protocol pins. A seed without a row, or a finished run that is not scored, is refused.
    - The reading cache `$HERD/shared/artifacts/textspot3/eval/cache` is seeded once by a byte-for-byte copy of
      textspot2's development cache.
+3. **The trainer, the sweep and stage 1's T plan** (2026-10-21T10:58Z, before every textspot3 run).
+   - `train/textspot3_train.py` (recipes `base`, `size`, `clean`, `long`, `kd`; families T and M), merged from
+     the train helper's `9d9c02b`.
+     - `base` equals textspot2's `data` + `ema` step for step on tiny shards (logs, QAT checkpoint, int8 network).
+     - Family T exports VTSP version 2 at `half_above` 480. Family M (`train/textspot3_model.py`, the version-3
+       format of `2d42f9a`, pinned here with `synth/textspot3_twin.py`) exports VTSP version 3 at 480 / 272.
+     - The T path equals the probed trainer: 10 of 10 identity checks are identical.
+   - `clean` over the pinned pool turns 26,097 of 299,986 real positives into ignore areas, on 10,050 of 52,785
+     canvases:
+     - 25,210 of label weight below 1;
+     - 887 by the vertical length rule;
+     - none by the 6 px width rule, since textspot2's labels already keep 6-96 px.
+   - The sweep is `eval/reproducibility/textspot3-20261021/` (`sweep.sh`, `textspot3_plan.py`, `check_run.py`,
+     `runs_summary.py`), run from a detached worktree at this amendment's commit.
+     - Stage 1's T plan `stage1_T_plan.jsonl` has 9 runs: `base` on the three T shapes, seeds 1-3. The probe puts
+       it at about 14.8 slot-hours, with `base` at 137.6 / 193.6 / 242.7 ms per step.
+     - It runs at most 6 at once for now.
+   - Family M's stage-1 plan comes with the amendment that registers S, M and L.

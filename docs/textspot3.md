@@ -249,3 +249,22 @@ screenshot. The shards are textspot's and textspot2's, unchanged and already che
 ### Amendments
 
 Each amendment is dated in `eval/textspot3_protocol.json` and precedes the runs and scores it names.
+
+1. **Family T's shapes** (2026-10-21T09:47Z, before every textspot3 run and score).
+   - Three shapes of the T_ROWS grid (`train/textspot3_shapes.CANDIDATES`, measured in
+     `eval/textspot3_a9_t_20261021.json` on `runtime/vocr_textspot2.c` as merged, at `half_above` 480, all with c1 16):
+
+     | shape | what it scales | VTSP B | est. ms @333 | arena B |
+     |---|---|---:|---:|---:|
+     | `t64n4c16` | width: 64 channels at textspot2's depth of 4 blocks | 27,456 | 157.7 | 129,311 |
+     | `t48n8c16d8` | depth and receptive field: 8 blocks of 48 channels, a dilation of 8, RF 383 px | 32,560 | 182.8 | 238,271 |
+     | `t64n8c16` | width and depth: 8 blocks of 64 channels | 51,008 | 260.8 | 240,991 |
+
+   - Not registered: the 64-channel trunks with a dilation of 8, which are over the arena budget (309,343 and
+     312,911 B, for a 17-row ring of 64 planes). The other grid points lie between the registered ones.
+   - Pinned as measured: `train/textspot3_shapes.py` (the registry), `eval/textspot3_a9.py` (a thin wrapper over
+     `eval/textspot2_a9.py`'s measure and `eval/textspot_a9.py`'s report, with `half_above` as a parameter) and the
+     table. The table also holds textspot2's `s8_c24n4x2` and `s8_c48n4x2` at `half_above` 600, all 8 rows identical
+     to `eval/textspot2_a9_d2s_20261020.json`.
+   - These rows are the T shapes' eligibility source, unless a later amendment pins a re-measurement on the same
+     runtime. Every time is a host estimate.

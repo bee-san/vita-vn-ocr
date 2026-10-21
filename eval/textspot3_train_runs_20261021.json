@@ -27,6 +27,30 @@
      "sweep_done": "2026-10-21T14:38:02Z"
     }
    ]
+  },
+  "stage1_M": {
+   "out": "$HERD/shared/artifacts/textspot3/runs",
+   "stage": "stage 1 M",
+   "commit": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+   "commits": [
+    "9bcdf51cf4ea9f1f915b78183db34895418f00ec"
+   ],
+   "max_par": 7,
+   "plan": "eval/reproducibility/textspot3-20261021/stage1_M_plan.jsonl",
+   "plan_sha256": "5f02f3d29180e281fa3dbe8141c79a6b752405777f6bbc6ba8ef1074a79ab4e7",
+   "plan_sha256_at_start": "5f02f3d29180e281fa3dbe8141c79a6b752405777f6bbc6ba8ef1074a79ab4e7",
+   "started": "2026-10-21T12:46:14Z",
+   "sweep_done": "2026-10-21T20:17:51Z",
+   "launches": [
+    {
+     "started": "2026-10-21T12:46:14Z",
+     "stage": "stage 1 M",
+     "max_par": 7,
+     "commit": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+     "plan_sha256": "5f02f3d29180e281fa3dbe8141c79a6b752405777f6bbc6ba8ef1074a79ab4e7",
+     "sweep_done": "2026-10-21T20:17:51Z"
+    }
+   ]
   }
  },
  "stages": {
@@ -862,6 +886,1754 @@
     "manifests_sha256[T]": true,
     "skip[T]": true,
     "protocols_sha256[T]": true
+   },
+   "crashes": 0,
+   "restarts": 0
+  },
+  "stage1_M": {
+   "kind": "textspot3-train-runs",
+   "plan": "eval/reproducibility/textspot3-20261021/stage1_M_plan.jsonl",
+   "runs": [
+    {
+     "run": "long_qM4_seed1",
+     "recipe": "long",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 1,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T12:46:15Z",
+     "steps": 60000,
+     "qat_start": 48000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 2.4193,
+      "total_2000": 0.2647,
+      "total_10000": 0.202,
+      "total_20000": 0.1654,
+      "total_last_float": 0.1399,
+      "step_last_float": 48000,
+      "total_first_qat": 0.1435,
+      "step_first_qat": 48200,
+      "total_final": 0.1392,
+      "step_final": 60000,
+      "parts_last5": {
+       "k_bce": 0.01926,
+       "dice": 0.10062,
+       "o": 0.00221,
+       "a": 0.02022
+      },
+      "ms_per_step": 239.6,
+      "ema_swap_step": 48000,
+      "ema_swap_updates": 47001,
+      "qat_average_updates": 12001
+     },
+     "finished": "2026-10-21T16:46:37Z",
+     "wall_seconds": 14421.7,
+     "train_seconds": 14375.6,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "0940a85a2a199b4fcd8ccc627318a43d80fb76f1cc85803828420a3cbac6c5fe",
+     "vtsp_version": 3,
+     "pt_sha256": "1aab3b1903976891c748251289f351f962af287c4bd431a4102f63af553f995e"
+    },
+    {
+     "run": "long_qM4_seed2",
+     "recipe": "long",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 2,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T12:58:03Z",
+     "steps": 60000,
+     "qat_start": 48000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 2.391,
+      "total_2000": 0.2755,
+      "total_10000": 0.1835,
+      "total_20000": 0.1604,
+      "total_last_float": 0.1376,
+      "step_last_float": 48000,
+      "total_first_qat": 0.1485,
+      "step_first_qat": 48200,
+      "total_final": 0.1475,
+      "step_final": 60000,
+      "parts_last5": {
+       "k_bce": 0.01928,
+       "dice": 0.1011,
+       "o": 0.00228,
+       "a": 0.01987
+      },
+      "ms_per_step": 235.8,
+      "ema_swap_step": 48000,
+      "ema_swap_updates": 47001,
+      "qat_average_updates": 12001
+     },
+     "finished": "2026-10-21T16:54:39Z",
+     "wall_seconds": 14195.2,
+     "train_seconds": 14149.1,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "a2ea0fbeecc172db530e2884442abc9685c411a570d5cd35c6958ce685612bdd",
+     "vtsp_version": 3,
+     "pt_sha256": "9ac54c73e2e001657310e2c5f617bc4dd82ff009f51e5468d9bc99fbb3b79ece"
+    },
+    {
+     "run": "long_qM4_seed3",
+     "recipe": "long",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 3,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T13:21:22Z",
+     "steps": 60000,
+     "qat_start": 48000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 2.3267,
+      "total_2000": 0.2701,
+      "total_10000": 0.1895,
+      "total_20000": 0.1776,
+      "total_last_float": 0.1404,
+      "step_last_float": 48000,
+      "total_first_qat": 0.1503,
+      "step_first_qat": 48200,
+      "total_final": 0.1403,
+      "step_final": 60000,
+      "parts_last5": {
+       "k_bce": 0.0193,
+       "dice": 0.10108,
+       "o": 0.00207,
+       "a": 0.01968
+      },
+      "ms_per_step": 240.3,
+      "ema_swap_step": 48000,
+      "ema_swap_updates": 47001,
+      "qat_average_updates": 12001
+     },
+     "finished": "2026-10-21T17:22:24Z",
+     "wall_seconds": 14462.1,
+     "train_seconds": 14416.7,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "a41c04f2479759a5a69cd6655d5f3c0e8c2d96dddc470074d65e26ef51e0ea27",
+     "vtsp_version": 3,
+     "pt_sha256": "f41324a21f793f2d961cf58c982f6fbbb76dfd4d98d26a64918ffbc45bb2ad5d"
+    },
+    {
+     "run": "base_qL5_seed1",
+     "recipe": "base",
+     "family": "M",
+     "shape": "qL5",
+     "seed": 1,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T13:21:24Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.8275,
+      "total_2000": 0.2469,
+      "total_10000": 0.1978,
+      "total_20000": 0.1545,
+      "total_last_float": 0.1449,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1657,
+      "step_first_qat": 24200,
+      "total_final": 0.1499,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01995,
+       "dice": 0.10512,
+       "o": 0.00222,
+       "a": 0.02146
+      },
+      "ms_per_step": 236.4,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T15:20:22Z",
+     "wall_seconds": 7138.2,
+     "train_seconds": 7093.1,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 447392,
+     "vtsp_sha256": "c86b14f30f6956aa45c7d03e176307147ec048fb002318df1fd13a9405314c87",
+     "vtsp_version": 3,
+     "pt_sha256": "d5ed166ea8d71687e6960bbb4aeb02ad0393834b6776194c162e89d8c44e8bab"
+    },
+    {
+     "run": "base_qL5_seed2",
+     "recipe": "base",
+     "family": "M",
+     "shape": "qL5",
+     "seed": 2,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T14:14:15Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.8885,
+      "total_2000": 0.266,
+      "total_10000": 0.1752,
+      "total_20000": 0.1469,
+      "total_last_float": 0.1409,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1596,
+      "step_first_qat": 24200,
+      "total_final": 0.1429,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01905,
+       "dice": 0.10119,
+       "o": 0.0026,
+       "a": 0.02148
+      },
+      "ms_per_step": 253.6,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T16:21:50Z",
+     "wall_seconds": 7655.5,
+     "train_seconds": 7607.9,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 447392,
+     "vtsp_sha256": "6808bef93b642540e0fe6f78ac01f7d2e0f9796c21b0bcdf81d5aca5d6be00dd",
+     "vtsp_version": 3,
+     "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473"
+    },
+    {
+     "run": "base_qL5_seed3",
+     "recipe": "base",
+     "family": "M",
+     "shape": "qL5",
+     "seed": 3,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T14:16:02Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.9041,
+      "total_2000": 0.2547,
+      "total_10000": 0.1839,
+      "total_20000": 0.1659,
+      "total_last_float": 0.148,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1611,
+      "step_first_qat": 24200,
+      "total_final": 0.1541,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01962,
+       "dice": 0.10427,
+       "o": 0.0033,
+       "a": 0.02193
+      },
+      "ms_per_step": 253.9,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T16:23:45Z",
+     "wall_seconds": 7663.1,
+     "train_seconds": 7616.5,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 447392,
+     "vtsp_sha256": "0e756a3623f2af9ab092196a176ed6b1e4dc2f3c9872e98da195dcceeb0ab2be",
+     "vtsp_version": 3,
+     "pt_sha256": "4c547cfa92b3ba848cdc44f6a09a864a9b5b19888916b1f92391094d50142741"
+    },
+    {
+     "run": "size_qM4_seed1",
+     "recipe": "size",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 1,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T14:38:06Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [
+      "size"
+     ],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 2.0152,
+      "total_2000": 0.2737,
+      "total_10000": 0.215,
+      "total_20000": 0.1675,
+      "total_last_float": 0.1606,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1819,
+      "step_first_qat": 24200,
+      "total_final": 0.1626,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.02405,
+       "dice": 0.10723,
+       "o": 0.00421,
+       "a": 0.02816
+      },
+      "ms_per_step": 250.5,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T16:44:11Z",
+     "wall_seconds": 7564.8,
+     "train_seconds": 7515.7,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "0d701bd7408d4ff4910e3cefac0be461e540ca96234e36f84e851a3a1fa8829c",
+     "vtsp_version": 3,
+     "pt_sha256": "b748cb745cd44da03131b2884d197d45f34b22d8198d9f6b4218de541c1a75e3"
+    },
+    {
+     "run": "size_qM4_seed2",
+     "recipe": "size",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 2,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T15:20:41Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [
+      "size"
+     ],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 2.033,
+      "total_2000": 0.2886,
+      "total_10000": 0.1955,
+      "total_20000": 0.1639,
+      "total_last_float": 0.1551,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1796,
+      "step_first_qat": 24200,
+      "total_final": 0.1605,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.02366,
+       "dice": 0.10558,
+       "o": 0.00442,
+       "a": 0.02815
+      },
+      "ms_per_step": 252.5,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T17:27:45Z",
+     "wall_seconds": 7624.5,
+     "train_seconds": 7575.6,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "92ca496502c880228606d5da735f07ddb657badf42c6305891a905ae7330ddcb",
+     "vtsp_version": 3,
+     "pt_sha256": "865dacff30cdac4c5992dc7f35d5f14d2005d1cc539b887cbb4e18ede23fa95d"
+    },
+    {
+     "run": "size_qM4_seed3",
+     "recipe": "size",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 3,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T16:22:04Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [
+      "size"
+     ],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.9803,
+      "total_2000": 0.2735,
+      "total_10000": 0.1982,
+      "total_20000": 0.1796,
+      "total_last_float": 0.1622,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1716,
+      "step_first_qat": 24200,
+      "total_final": 0.1678,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.02372,
+       "dice": 0.10642,
+       "o": 0.00591,
+       "a": 0.0284
+      },
+      "ms_per_step": 249.1,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T18:27:25Z",
+     "wall_seconds": 7520.9,
+     "train_seconds": 7473.1,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "6eb417afad5f8cbfafad49d4fa9ed84da522d2280ff18b6d62de08849ef63da8",
+     "vtsp_version": 3,
+     "pt_sha256": "b7df40e33ca2ccdbb4623b83a7d226cf46db711ff9613f290d825edfd248b6bf"
+    },
+    {
+     "run": "base_qM4_seed1",
+     "recipe": "base",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 1,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T16:23:51Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.8719,
+      "total_2000": 0.251,
+      "total_10000": 0.1956,
+      "total_20000": 0.1559,
+      "total_last_float": 0.1471,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1682,
+      "step_first_qat": 24200,
+      "total_final": 0.1511,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.0201,
+       "dice": 0.10582,
+       "o": 0.00246,
+       "a": 0.02211
+      },
+      "ms_per_step": 233.2,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T18:21:15Z",
+     "wall_seconds": 7044.4,
+     "train_seconds": 6995.1,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "b33e34d53f50585400dc2f1941c36f07be85528b616dbc4ae0e46c133af01126",
+     "vtsp_version": 3,
+     "pt_sha256": "69e8b6ca21fdaf0f7815a6fa1c13b639bbdb6924c3d72451922ade21de63ede6"
+    },
+    {
+     "run": "base_qM4_seed2",
+     "recipe": "base",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 2,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T16:44:25Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.8907,
+      "total_2000": 0.2607,
+      "total_10000": 0.1779,
+      "total_20000": 0.1505,
+      "total_last_float": 0.1452,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1629,
+      "step_first_qat": 24200,
+      "total_final": 0.1474,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01977,
+       "dice": 0.10421,
+       "o": 0.00272,
+       "a": 0.02251
+      },
+      "ms_per_step": 230.8,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T18:40:38Z",
+     "wall_seconds": 6973.0,
+     "train_seconds": 6924.8,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "64797dc817c3b700639e7f5ce307a8dbdac009458790de463a7794d177d0a2b7",
+     "vtsp_version": 3,
+     "pt_sha256": "647ed2f6d0cc1cf639c225ff68dea3115c58868913aeacffe6bab598374d7939"
+    },
+    {
+     "run": "base_qM4_seed3",
+     "recipe": "base",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 3,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T16:46:42Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.8325,
+      "total_2000": 0.2567,
+      "total_10000": 0.1848,
+      "total_20000": 0.17,
+      "total_last_float": 0.1532,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1603,
+      "step_first_qat": 24200,
+      "total_final": 0.158,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.02032,
+       "dice": 0.10652,
+       "o": 0.0037,
+       "a": 0.02311
+      },
+      "ms_per_step": 225.9,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T18:40:27Z",
+     "wall_seconds": 6825.0,
+     "train_seconds": 6777.7,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "f39a06f2e82576ad11273f7b9b55d81d1869c45af1dfafac48194afb591ecc91",
+     "vtsp_version": 3,
+     "pt_sha256": "5eabd7e50a58889811a54c113b9bc6f42b11454198fb3f0f01c31ae17faa9e6f"
+    },
+    {
+     "run": "clean_qM4_seed1",
+     "recipe": "clean",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 1,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T16:54:45Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [
+      "clean"
+     ],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.8555,
+      "total_2000": 0.2332,
+      "total_10000": 0.1867,
+      "total_20000": 0.1496,
+      "total_last_float": 0.1427,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1544,
+      "step_first_qat": 24200,
+      "total_final": 0.1475,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.0196,
+       "dice": 0.10375,
+       "o": 0.00198,
+       "a": 0.02027
+      },
+      "ms_per_step": 227.6,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "clean": {
+      "canvases": 52785,
+      "canvases_changed": 10050,
+      "lines": 299986,
+      "vertical": 4528,
+      "removed": 26097,
+      "removed_vertical": 1740,
+      "kept": 273889,
+      "removed_by_vertical_rules_only": 887,
+      "hits": {
+       "weight": 25210,
+       "vertical_long": 898,
+       "vertical_narrow": 0
+      }
+     },
+     "finished": "2026-10-21T18:49:21Z",
+     "wall_seconds": 6876.3,
+     "train_seconds": 6828.7,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "85d1ee9fe92d07195ef127b6d250fa56a13a5bddb6c3ef32a860b44748a28cfa",
+     "vtsp_version": 3,
+     "pt_sha256": "f3146628126e216944827c01b44a96162047c5e164158abd30459c53e1a8cf01"
+    },
+    {
+     "run": "clean_qM4_seed2",
+     "recipe": "clean",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 2,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T17:22:34Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [
+      "clean"
+     ],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.8775,
+      "total_2000": 0.2481,
+      "total_10000": 0.1644,
+      "total_20000": 0.1424,
+      "total_last_float": 0.1389,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1515,
+      "step_first_qat": 24200,
+      "total_final": 0.1409,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01911,
+       "dice": 0.10128,
+       "o": 0.00196,
+       "a": 0.01986
+      },
+      "ms_per_step": 222.2,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "clean": {
+      "canvases": 52785,
+      "canvases_changed": 10050,
+      "lines": 299986,
+      "vertical": 4528,
+      "removed": 26097,
+      "removed_vertical": 1740,
+      "kept": 273889,
+      "removed_by_vertical_rules_only": 887,
+      "hits": {
+       "weight": 25210,
+       "vertical_long": 898,
+       "vertical_narrow": 0
+      }
+     },
+     "finished": "2026-10-21T19:14:26Z",
+     "wall_seconds": 6712.4,
+     "train_seconds": 6665.1,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "172530668241cbdcf39585bad3f2dbfda653a4278261d489e72fcc60fd3109a3",
+     "vtsp_version": 3,
+     "pt_sha256": "dba97204e611914626a8e4e2ee4ae861097098fe94e472d4035c8991858be07c"
+    },
+    {
+     "run": "clean_qM4_seed3",
+     "recipe": "clean",
+     "family": "M",
+     "shape": "qM4",
+     "seed": 3,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T17:27:51Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [
+      "clean"
+     ],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.819,
+      "total_2000": 0.2398,
+      "total_10000": 0.1752,
+      "total_20000": 0.1583,
+      "total_last_float": 0.1429,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1537,
+      "step_first_qat": 24200,
+      "total_final": 0.1536,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01928,
+       "dice": 0.10163,
+       "o": 0.00293,
+       "a": 0.02045
+      },
+      "ms_per_step": 223.5,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "clean": {
+      "canvases": 52785,
+      "canvases_changed": 10050,
+      "lines": 299986,
+      "vertical": 4528,
+      "removed": 26097,
+      "removed_vertical": 1740,
+      "kept": 273889,
+      "removed_by_vertical_rules_only": 887,
+      "hits": {
+       "weight": 25210,
+       "vertical_long": 898,
+       "vertical_narrow": 0
+      }
+     },
+     "finished": "2026-10-21T19:20:23Z",
+     "wall_seconds": 6751.3,
+     "train_seconds": 6703.9,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 247392,
+     "vtsp_sha256": "57d10738157391740110632b501485d67a522e352efd92298a0cc60ead299a8b",
+     "vtsp_version": 3,
+     "pt_sha256": "a5bd9c710064cd80f4dc45d10e6c2802f97a24caf400b3f9124850bf92682dc2"
+    },
+    {
+     "run": "base_qS4_seed1",
+     "recipe": "base",
+     "family": "M",
+     "shape": "qS4",
+     "seed": 1,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T18:21:27Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.8359,
+      "total_2000": 0.2506,
+      "total_10000": 0.2024,
+      "total_20000": 0.1627,
+      "total_last_float": 0.1537,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1723,
+      "step_first_qat": 24200,
+      "total_final": 0.1571,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.02087,
+       "dice": 0.10915,
+       "o": 0.00293,
+       "a": 0.02367
+      },
+      "ms_per_step": 195.7,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T20:00:05Z",
+     "wall_seconds": 5918.0,
+     "train_seconds": 5870.9,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 117184,
+     "vtsp_sha256": "260fc275a3e8a0b8542b028c94696e84694bba77e1d16e901ddaa98bf6885a73",
+     "vtsp_version": 3,
+     "pt_sha256": "71f5524755e223ed1af4cf8e17505fffefa2a0b480acb996916154c649a68bf7"
+    },
+    {
+     "run": "base_qS4_seed2",
+     "recipe": "base",
+     "family": "M",
+     "shape": "qS4",
+     "seed": 2,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T18:27:30Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.8636,
+      "total_2000": 0.2649,
+      "total_10000": 0.188,
+      "total_20000": 0.1609,
+      "total_last_float": 0.155,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1764,
+      "step_first_qat": 24200,
+      "total_final": 0.1599,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.02129,
+       "dice": 0.11139,
+       "o": 0.00371,
+       "a": 0.02441
+      },
+      "ms_per_step": 197.0,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T20:06:46Z",
+     "wall_seconds": 5956.1,
+     "train_seconds": 5909.2,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 117184,
+     "vtsp_sha256": "2c8ad957011e07f7b582533f180492c4d4c00391aba8e3a4b3228abde77bed62",
+     "vtsp_version": 3,
+     "pt_sha256": "2d7fdd0f2fe690d12f484604ef03a562244343f73e7d7516f98b26437d1a392b"
+    },
+    {
+     "run": "base_qS4_seed3",
+     "recipe": "base",
+     "family": "M",
+     "shape": "qS4",
+     "seed": 3,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T18:40:33Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "9bcdf51cf4ea9f1f915b78183db34895418f00ec",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "a5fce6b63fb4044ab43e30c675cb4915345cec1d0abbfc655bab27f8914952ec",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": null,
+     "curve": {
+      "total_200": 1.9648,
+      "total_2000": 0.2516,
+      "total_10000": 0.1871,
+      "total_20000": 0.17,
+      "total_last_float": 0.1532,
+      "step_last_float": 24000,
+      "total_first_qat": 0.161,
+      "step_first_qat": 24200,
+      "total_final": 0.1606,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.02042,
+       "dice": 0.10751,
+       "o": 0.00381,
+       "a": 0.02326
+      },
+      "ms_per_step": 193.0,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T20:17:49Z",
+     "wall_seconds": 5836.4,
+     "train_seconds": 5790.4,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 117184,
+     "vtsp_sha256": "124df42553c93b002c7241825f8dca38b05e0070604c788b17f99e82cb2cf1b8",
+     "vtsp_version": 3,
+     "pt_sha256": "7e28f5df11ef60e06d243341fec5dc14d64fa5bbf33fc1d1b1e0e5f43592e64d"
+    }
+   ],
+   "finished": 18,
+   "of": 18,
+   "consistent": {
+    "git": true,
+    "code_sha256[M]": true,
+    "manifests_sha256[M]": true,
+    "skip[M]": true,
+    "protocols_sha256[M]": true
    },
    "crashes": 0,
    "restarts": 0

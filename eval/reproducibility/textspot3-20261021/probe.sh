@@ -21,8 +21,8 @@ PASS=${PASS:-1}
 PDIR=probe; [ "$PASS" -gt 1 ] && PDIR=probe$PASS
 KD_SHAPE=${KD_SHAPE:-t64n4c16}
 TEACHER=${TEACHER:-$OUT/smoke/base_${KD_SHAPE}_seed1}
-PROBES=${PROBES:-"base:t64n4c16 base:t48n8c16d8 base:t64n8c16 size:t64n4c16 clean:t64n4c16 long:t64n4c16"}
-SMOKES=${SMOKES:-"base:t64n4c16 size:t64n4c16 clean:t64n4c16 long:t64n4c16"}
+PROBES=${PROBES-"base:t64n4c16 base:t48n8c16d8 base:t64n8c16 size:t64n4c16 clean:t64n4c16 long:t64n4c16"}  # "": none
+SMOKES=${SMOKES-"base:t64n4c16 size:t64n4c16 clean:t64n4c16 long:t64n4c16"}                                # "": none
 KD=${KD-"kd:$KD_SHAPE"}                   # KD="" probes no kd
 PY="$REPO/.venv-ci/bin/python"
 export TMPDIR=${PROBE_TMPDIR:-/local/home/skerraut/kt/t3p}
@@ -40,7 +40,9 @@ if [ ! -x "$CBIN3" ] && [ -e "$REPO/runtime/vocr_textspot3.c" ] && [ -e "$REPO/r
       vocr_textspot3.c vocr_textspot3_test.c -o "$CBIN3" ) || rm -f "$CBIN3"
 fi
 PLAN=$OUT/probe_plan${PLAN_TAG:+_$PLAN_TAG}.jsonl
-"$PY" "$HERE/probe_summary.py" plan --out "$PLAN" --teacher "$TEACHER" $PROBES $SMOKES $KD > /dev/null
+STANDIN=; [ -e "$TEACHER/done.json" ] || STANDIN="base:$KD_SHAPE"     # kd's stand-in teacher, unless TEACHER is done
+# shellcheck disable=SC2086
+"$PY" "$HERE/probe_summary.py" plan --out "$PLAN" --teacher "$TEACHER" $STANDIN $PROBES $SMOKES $KD > /dev/null
 
 job() {            # job probe|smoke RECIPE SHAPE
   local kind=$1 recipe=$2 shape=$3 name dir rc extra
@@ -76,10 +78,12 @@ echo "$(utc) probe start: MAX_PAR $MAX_PAR, pass $PASS, head $(cd "$REPO" && git
 if [ "$PASS" -gt 1 ]; then
   launch probe "$PROBES"
 else
-  # the base smoke of KD_SHAPE first (kd's stand-in teacher), the probes beside it, then the other smokes, then kd
-  launch smoke "base:$KD_SHAPE"
+  # the base smoke of KD_SHAPE first (kd's stand-in teacher; not when TEACHER has finished already), the probes
+  # beside it, then the other smokes, then kd
+  [ -n "$STANDIN" ] && launch smoke "$STANDIN"
   launch probe "$PROBES"
-  launch smoke "$(echo "$SMOKES" | tr ' ' '\n' | { grep -vx "base:$KD_SHAPE" || true; } | tr '\n' ' ')"
+  launch smoke "$(echo "$SMOKES" | tr ' ' '\n' | { if [ -n "$STANDIN" ]; then grep -vx "$STANDIN" || true; else cat; fi; } \
+                 | tr '\n' ' ')"
   while [ ! -e "$TEACHER/done.json" ] && [ -n "$(jobs -rp)" ]; do sleep 5; done
   if [ -e "$TEACHER/done.json" ]; then
     launch probe "$KD"

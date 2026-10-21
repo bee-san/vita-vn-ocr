@@ -8,9 +8,9 @@
   probe_summary.py argv PLAN.jsonl RUN --out-dir D
           the run's command line: textspot3_plan.py's (the sweep's own) plus --shape-json for a probe shape,
           NUL-separated
-  probe_summary.py summary OUT [--out JSON] [--par 8] [--family T] [--protocol P]
+  probe_summary.py summary OUT [--out JSON] [--par 8] [--family T] [--protocol P] [--plan PLAN.jsonl]
           the record of OUT's probes and smokes and the estimate of the family's stage-1 runs (textspot3_plan.py
-          stage1) at --par runs at once
+          stage1), or with --plan of that plan's runs (stage 2's), at --par runs at once
 
 Per probe (seed 1): ms per step over 200 steps after one warm-up step (mean, median, p90; the time spent waiting for
 the loader) and the startup, for every pass probe.sh ran (OUT/probe, then OUT/probe2, ...); the estimate uses the
@@ -24,7 +24,9 @@ A stage-1 run's estimate: overhead + steps x ms, with ms = the probe's mean ms p
 long's step is base's), the last 20 % of the steps (QAT) at the median QAT / float step ratio of the smoke runs other
 than kd's, and overhead = the startup (the shard sha256 checks and the pool) plus the rest of the base smoke's
 overhead (calibration, BatchNorm re-estimation, export: forward passes), scaled by the shape's step time against the
-smoke's shape. The stage's wall time is the list schedule sweep.sh runs (textspot3_plan.py's order: longest first;
+smoke's shape. With --plan, each run of the plan needs a probe of its recipe and shape (kd: with the plan's
+teacher): ms = that probe's, and the QAT ratio and overhead are that recipe and shape's smoke's (else the median ratio
+and no overhead). The stage's wall time is the list schedule sweep.sh runs (textspot3_plan.py's order: longest first;
 the next run starts when one of --par slots frees). Estimates, from probes run at most two at a time on a shared box.
 """
 import argparse
@@ -109,7 +111,26 @@ def macs_of(reg, shape):
     return M3.cost(m_probes()[shape], 512, 256)["macs"]
 
 
-def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
+def plan_estimate(runs, probes, smoke_runs, median_ratio):
+    """{run: estimated seconds} and the rows of a plan's runs (--plan): every run's recipe and shape probed."""
+    est, rows = {}, []
+    for r in runs:
+        key = (r["recipe"], r["shape"])
+        if key not in probes:
+            raise SystemExit(f"{r['run']}: no probe of {key[0]} on {key[1]} in this directory")
+        ms = probes[key]["ms_per_step"]
+        sm = smoke_runs.get(f"{r['recipe']}_{r['shape']}_seed1")
+        ratio = sm["qat_ratio"] if sm and sm["qat_ratio"] else median_ratio
+        over = sm["overhead_s"] if sm else 0.0
+        t = over + r["steps"] * ms / 1000 * (QAT_FRAC + (1 - QAT_FRAC) * ratio)
+        est[r["run"]] = t
+        rows.append({"run": r["run"], "steps": r["steps"], "ms_per_step": round(ms, 2), "qat_ratio": round(ratio, 3),
+                     "overhead_s": round(over, 1), "est_s": round(t), "est_h": round(t / 3600, 2),
+                     "from": f"probe {probes[key]['run']}" + (f", smoke {sm['run']}" if sm else "")})
+    return est, rows
+
+
+def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL, plan=None):
     out = Path(out)
     reg = PL.shapes(protocol)
     pass_dirs = ["probe"] + sorted((d.name for d in out.glob("probe[0-9]*") if d.is_dir()), key=lambda n: int(n[5:]))
@@ -167,9 +188,13 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
     median_ratio = (ratios[len(ratios) // 2] if len(ratios) % 2 else
                     (ratios[len(ratios) // 2 - 1] + ratios[len(ratios) // 2]) / 2) if ratios else 1.0
     base_smoke = smokes.get("base")
-    runs = PL.stage1(family, reg) if any(v["family"] == family for v in reg.values()) else []
-    est, rows = {}, []
-    if base_smoke and runs and all(("base", r["shape"]) in probes for r in runs):
+    if plan is not None:
+        runs = PL.load(plan)
+        est, rows = plan_estimate(runs, probes, smoke_runs, median_ratio)
+    else:
+        runs = PL.stage1(family, reg) if any(v["family"] == family for v in reg.values()) else []
+        est, rows = {}, []
+    if plan is None and base_smoke and runs and all(("base", r["shape"]) in probes for r in runs):
         ref_shape = base_smoke["shape"]
         ref_ms = probes[("base", ref_shape)]["ms_per_step"]
         extra = {x: probes[(x, ref_shape)]["ms_per_step"] - ref_ms for x in ("size", "clean")
@@ -184,12 +209,12 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
             rows.append({"run": r["run"], "steps": r["steps"], "ms_per_step": round(ms, 2),
                          "qat_ratio": round(median_ratio, 3), "overhead_s": round(over, 1), "est_s": round(t),
                          "est_h": round(t / 3600, 2)})
-    order = [r["run"] for r in PL.order(runs, reg, est)] if est else []
+    order = [r["run"] for r in PL.order([dict(r) for r in runs], reg, est)] if est else []
     sched = {}
     for p in par:
         if order:
-            span, plan = schedule(order, est, p)
-            sched[str(p)] = {"makespan_s": round(span), "makespan_h": round(span / 3600, 2), "plan": plan}
+            span, slots = schedule(order, est, p)
+            sched[str(p)] = {"makespan_s": round(span), "makespan_h": round(span / 3600, 2), "plan": slots}
     starts = [ln for ln in log_text.splitlines() if " probe start: " in ln]
     return {"kind": "textspot3-train-probe", "family": family,
             "what": "speed probes (200 steps after one warm-up step) and 300-step smoke runs (QAT from step 240, "
@@ -199,7 +224,8 @@ def summary(out, par=(8,), family="T", protocol=PL.PROTOCOL):
             "head": starts[0].split(" head ")[1].split(",")[0] if starts else None, "threads": 5,
             "concurrency": "at most 2 of these jobs at once (probe.sh MAX_PAR 2), on a shared 64-core box",
             "passes": pass_dirs, "probes": list(probes.values()), "smokes": smokes, "smoke_runs": smoke_runs,
-            "estimate": {"family": family, "runs": len(runs), "order": order, "rows": rows,
+            "estimate": {"family": family, "plan": Path(plan).name if plan else None, "runs": len(runs),
+                         "order": order, "rows": rows,
                          "qat_ratio_median": round(median_ratio, 3), "est_run_s": {k: round(v) for k, v in est.items()},
                          "slot_hours": round(sum(est.values()) / 3600, 2), "schedule": sched},
             "label": "estimates: measured ms per step x steps; QAT at the smoke runs' median QAT / float step ratio; "
@@ -225,6 +251,7 @@ def main(argv=None):
     a2.add_argument("--par", type=int, nargs="+", default=[8])
     a2.add_argument("--family", default="T", choices=("T", "M"))
     a2.add_argument("--protocol", default=str(PL.PROTOCOL))
+    a2.add_argument("--plan", help="estimate this plan's runs (e.g. stage 2's) instead of the family's stage 1")
     args = ap.parse_args(argv)
     if args.cmd == "plan":
         runs = probe_plan(args.items, args.teacher, PL.shapes(args.protocol))
@@ -238,7 +265,7 @@ def main(argv=None):
             a += ["--shape-json", rec["shape_json"]]
         sys.stdout.write("\0".join(a) + "\0")
         return
-    doc = summary(args.out, args.par, args.family, args.protocol)
+    doc = summary(args.out, args.par, args.family, args.protocol, args.plan)
     if args.json_out:
         Path(args.json_out).write_text(json.dumps(doc, indent=1) + "\n")
     for p in doc["probes"]:
@@ -252,7 +279,7 @@ def main(argv=None):
               f"{'OK' if s['check_ok'] else 'MISSING'} C {'=' if s['c_runtime_equal'] else '?'} final {s['final']}")
     e = doc["estimate"]
     for par, s in e["schedule"].items():
-        print(f"stage 1 {e['family']}: {e['runs']} runs, {par} at once: {s['makespan_h']:.2f} h "
+        print(f"{e['plan'] or 'stage 1 ' + e['family']}: {e['runs']} runs, {par} at once: {s['makespan_h']:.2f} h "
               f"({e['slot_hours']:.1f} slot-hours)")
 
 

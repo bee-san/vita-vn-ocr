@@ -268,3 +268,16 @@ Each amendment is dated in `eval/textspot3_protocol.json` and precedes the runs 
      to `eval/textspot2_a9_d2s_20261020.json`.
    - These rows are the T shapes' eligibility source, unless a later amendment pins a re-measurement on the same
      runtime. Every time is a host estimate.
+2. **The scoring wrapper** (2026-10-21T10:15Z, before any score of a textspot3 arm).
+   - `eval/textspot3.py` (`cbuild`, `seed-cache`, `run`, `read-pick`, `headline`, `select`, `tables`) and
+     `eval/textspot3_protected.py` (`tests`, `clannad`: the pick only, once per command, with attempt records under
+     `$HERD/shared/private/textspot3`).
+   - They import `eval/textspot.py`, `eval/textspot_metrics.py`, `eval/textspot2.py` and `eval/textspot3_rule.py`
+     unchanged.
+   - Family T's version-2 blobs go through textspot2's path exactly. Family M's version-3 blobs go through
+     `synth/textspot3_twin.py` and `runtime/vocr_textspot3_test` once those are merged. If the wrapper's version-3
+     path has to change, a later amendment re-pins it, before any family-M score.
+   - Eligibility is `eval/textspot.py`'s, with each shape's own exact MACs checked against its A9 row. A9 rows come
+     only from tables this protocol pins. A seed without a row, or a finished run that is not scored, is refused.
+   - The reading cache `$HERD/shared/artifacts/textspot3/eval/cache` is seeded once by a byte-for-byte copy of
+     textspot2's development cache.

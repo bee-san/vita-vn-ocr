@@ -336,6 +336,24 @@
     "t64n4c16",
     "t64n8c16"
    ]
+  },
+  {
+   "id": 2,
+   "utc": "2026-10-21T10:15:38Z",
+   "before": "every score of any textspot3 arm on a development frame (no run exists yet; the wrapper's tests use synthetic units and pseudo frames only)",
+   "what": [
+    "The scoring wrapper: eval/textspot3.py (cbuild, seed-cache, run, read-pick, headline, select, tables) and the protected-read script eval/textspot3_protected.py (tests, clannad; the pick only, once per command, attempt records under $HERD/shared/private/textspot3), from the eval helper's c0ae7b8. They import eval/textspot.py, eval/textspot_metrics.py, eval/textspot2.py and eval/textspot3_rule.py unchanged. Family T's version-2 blobs go through textspot2's path exactly (eval/textspot2.py v2_dispatch, synth/textspot2_twin.py, runtime/vocr_textspot2_test); family M's version-3 blobs through synth/textspot3_twin.py and runtime/vocr_textspot3_test once they are merged (a later amendment re-pins the wrapper if its version-3 path has to change, before any family-M score).",
+    "Eligibility: eval/textspot.py's eligibility with each shape's own exact MACs (textspot3_shapes.costs for T, textspot3_model's cost for M) checked against the A9 row; the A9 rows only from tables this protocol pins; a seed without a row or a finished run not scored is refused.",
+    "The reading cache $HERD/shared/artifacts/textspot3/eval/cache is seeded once by a byte-for-byte copy of textspot2's development cache; textspot's and textspot2's artifacts are read, never written."
+   ],
+   "sources_sha256": {
+    "eval/textspot3.py": "cbba82330a000688c23ba8ea85a67cd20182050288b3db2617f88dd91b25947f",
+    "eval/textspot3_protected.py": "01b85a80bb5c2e0f2a09f0585be0e47ecc0fc5188d0c69d3b1d59cbe693da16f",
+    "tests/test_textspot3_eval.py": "c88e8203a8a85fdad4453fb0266b5ba1958c36de834c1d1f9c6d8cd2197dfa0c"
+   },
+   "settings": {
+    "eval_commit": "c0ae7b8"
+   }
   }
  ],
  "shapes": {

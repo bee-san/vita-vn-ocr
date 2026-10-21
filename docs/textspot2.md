@@ -323,10 +323,17 @@ Every time is an estimate from the A9 cycle model; nothing of this work has run 
     (`C_h2_s4p_c8_seed1`, 2,732 B, est. 80 ms), so there is no fast pick.
   - As registered, nothing was read on vita-test, psp-test or CLANNAD, nothing was released, and Rubi is not
     changed.
-- **Why: all-text CER got worse, not better.** Every candidate's median seed reads all text at 34.36-43.83%,
-  against the winner's 32.04%, and 29 of the 32 are resolved worse.
-  - F1 is level: within ±0.02 for most.
-  - The best F1 is `s8_c48n4x2` det+refine at 0.583, +0.042 (−0.001 to +0.088), not resolved.
+- **Why: no median seed reaches the winner's all-text CER.** Every candidate's median seed reads all text at
+  34.36-43.83%, against the winner's 32.04%, and 29 of the 32 are resolved worse.
+  - **Most of that gap is the reference's seed.** The winner is the best of its recipe's three seeds. That recipe,
+    r0, reads all text at 32.04 / 34.59 / 36.28% over seeds 2, 1 and 3, so its median seed is itself 2.55 points
+    behind the winner.
+  - **Against the matched control, the new labels are level on all-text CER and better on dialogue.** `lab` minus
+    r0, both median seeds, is −0.24 points (−2.42 to +1.81) on all-text CER and −1.61 (−3.62 to −0.13) on dialogue.
+    `lab`'s 2.32-point gap to the winner is smaller than that seed gap. For `data` and d2s `s8_c24n4x2`, the arm's
+    own share of its gap is 0.74 of 3.29 and 1.16 of 3.71 points.
+  - **F1 is level or worse**: within ±0.02 for 20 of the 32, 8 resolved worse (−0.025 to −0.069), none better. The
+    best F1 is `s8_c48n4x2` det+refine at 0.583, +0.042 (−0.001 to +0.088), not resolved.
 - **What did improve is dialogue** (report only; the rule reads all-text CER and F1 first). Three candidates are
   resolved better than the winner on dialogue CER:
 
@@ -343,18 +350,25 @@ Every time is an estimate from the A9 cycle model; nothing of this work has run 
 - **Where the all-text errors are** (character errors in the development references, by class, plus readings of
   boxes that match no reference):
 
-  | arm | dialogue | name | choice | UI | scene | unmatched readings | total |
-  |---|---:|---:|---:|---:|---:|---:|---:|
-  | textspot's winner | 114 | 74 | 6 | 1,557 | 22 | 396 | 2,169 |
-  | `lab` `s4_c24n4` | 98 | 72 | 5 | 1,522 | 24 | 605 | 2,326 |
-  | `data` `s4_c24n4` | 90 | 66 | 8 | 1,590 | 21 | 617 | 2,392 |
-  | d2s `s8_c24n4x2` | 41 | 79 | 4 | 1,637 | 27 | 632 | 2,420 |
+  | arm (det+refine, median seed unless named) | dialogue | name | choice | UI | scene | unmatched readings | total | CER all |
+  |---|---:|---:|---:|---:|---:|---:|---:|---:|
+  | textspot's winner (r0's recipe, seed 2) | 114 | 74 | 6 | 1,557 | 22 | 396 | 2,169 | 32.04 |
+  | r0's recipe, seed 1 (r0's median) | 161 | 83 | 6 | 1,551 | 23 | 518 | 2,342 | 34.59 |
+  | r0's recipe, seed 3 | 211 | 85 | 5 | 1,579 | 22 | 554 | 2,456 | 36.28 |
+  | `lab` `s4_c24n4` | 98 | 72 | 5 | 1,522 | 24 | 605 | 2,326 | 34.36 |
+  | `data` `s4_c24n4` | 90 | 66 | 8 | 1,590 | 21 | 617 | 2,392 | 35.33 |
+  | d2s `s8_c24n4x2` | 41 | 79 | 4 | 1,637 | 27 | 632 | 2,420 | 35.75 |
 
   Reference characters: dialogue 3,851, name 298, choice 136, UI 2,455, scene 30.
-  - UI text is 72% of the winner's errors, and none of the new arms reads it better.
-  - The new arms read dialogue better, but read 50-60% more characters from boxes that match no reference.
-  - The meiki-labelled real half added many small UI and non-dialogue positives, which the spotters now fire on.
-    The readings of those extra boxes cost more than the dialogue gains save.
+  - UI text is 72% of the winner's errors. The new arms make 1,522-1,637 UI errors, against r0's 1,551-1,579 and
+    the winner's 1,557. `lab` is the only one below the winner, and its UI recall is 0.364 against 0.324.
+  - The new arms read dialogue better and read more characters from boxes that match no reference:
+    - 605-632 of them, 50-60% more than the winner's 396;
+    - 17-22% more than r0's median seed's 518.
+
+    So the meiki labels add unmatched readings, but most of the gap to the winner is its own seed.
+  - Against the winner, those extra readings cost more than the dialogue gains save. Against r0's median that holds
+    for `data` and d2s (2,392 and 2,420 errors against 2,342), not for `lab` (2,326).
 - **The teacher's ceiling is far away.** meiki.text.detect v0.1 at 960×544 (14 MB, report only, never a candidate)
   scores F1 0.899, CER all 14.39%, dialogue 1.18%, and finds 78% of UI labels against the winner's 32%.
   - Caveat: the development references started from MeikiOCR's boxes (docs/textspot.md), so this ceiling is
@@ -367,11 +381,11 @@ Every time is an estimate from the A9 cycle model; nothing of this work has run 
 |---|---:|---:|---:|
 | `lab` − textspot's recipe (r0, `s4_c24n4`) | +0.004 (−0.019 to +0.025) | −0.24 (−2.42 to +1.81) | **−1.61 (−3.62 to −0.13)** |
 | `data` − `lab` (24,520 more real screenshots) | +0.005 (−0.023 to +0.036) | +0.97 (−1.31 to +3.31) | −0.13 (−1.17 to +0.81) |
-| `ema` − `data` | −0.003 (−0.028 to +0.022) | −0.59 (−3.15 to +1.88) | +1.35 (−0.10 to +3.08) |
+| `ema` − `data` | −0.002 (−0.028 to +0.022) | −0.59 (−3.15 to +1.88) | +1.35 (−0.10 to +3.08) |
 | `cls` − `data` (class weights 2 on dialogue / name / choice) | −0.018 (−0.038 to +0.001) | +0.53 (−1.81 to +3.30) | **+2.78 (+0.25 to +6.77)** worse |
 | `long` − `ema` (60,000 steps) | +0.012 (−0.012 to +0.034) | +0.61 (−2.04 to +3.56) | −0.08 (−2.44 to +3.32) |
 | `s4p_c10n4` − `s4_c24n4` (`data`) | −0.009 (−0.038 to +0.022) | +1.24 (−1.12 to +3.72) | **−0.70 (−1.49 to −0.05)** |
-| `s4p_c6n4` − `s4_c24n4` (`data`) | −0.017 (−0.046 to +0.011) | **+5.27 (+2.66 to +8.18)** worse | +0.00 (−0.77 to +0.70) |
+| `s4p_c6n4` − `s4_c24n4` (`data`) | −0.017 (−0.045 to +0.011) | **+5.27 (+2.66 to +8.18)** worse | +0.00 (−0.77 to +0.70) |
 | `s4p_c8` − `s4_c24n4` (`data`) | **−0.061 (−0.089 to −0.032)** worse | **+2.33 (+0.23 to +4.56)** worse | +1.20 (−0.08 to +2.83) |
 | `kd` `s4p_c6n4` − `long` `s4p_c6n4` (its best other arm) | −0.011 (−0.031 to +0.008) | −0.43 (−3.24 to +2.12) | −1.35 (−5.18 to +0.86) |
 | d2s `s8_c24n4x2` − `s4_c24n4` (`data`) | −0.005 (−0.028 to +0.022) | +0.41 (−2.79 to +3.54) | **−1.33 (−2.34 to −0.54)** |
@@ -430,9 +444,15 @@ arena, F1, all-text CER and dialogue CER. The main ones:
   including the d2s blobs through `runtime/vocr_textspot2.c`.
 - **A box problem, without effect on any result**: by about 22:45Z the box's `/tmp` had no free inodes (another
   workload's files).
-  - Two scoring rounds stopped in the reader build, before writing anything. Their three arms were re-scored with
-    `TMPDIR` on the main disk, and an integrity check over all 104 arm directories passed.
-  - The local CI ran with `TMPDIR` there too.
+  - Three scoring rounds (22:51, 22:57 and 23:39Z) stopped in the reader build, before writing anything: the
+    pinned build functions give gcc a fixed environment without `TMPDIR`. Later rounds scored their four runs, and
+    an integrity check over all 104 arm directories passed.
+  - The local CI ran inside a private tmpfs `/tmp` (`unshare -Urm`). With `TMPDIR` alone, gcc in
+    `eval/vocr3_report.py`'s fixed build environment still used the shared `/tmp`, and 12 unrelated tests failed.
+- **Arm c's pool was drawn before amendment 2.** The pool was made at 09:27Z and its cache jobs started at 09:28:35Z;
+  amendment 2 is dated 09:28:44Z. Both steps are rule-independent and read no development frame. The pool's rules
+  (caps, hygiene, the `-TEST` folders) are the labels helper's readings 7-9, written at 09:15Z and adopted unchanged
+  by amendment 2.
 
 ### Measured and estimated
 
@@ -458,10 +478,21 @@ arena, F1, all-text CER and dialogue CER. The main ones:
 
 ```sh
 H=$HERD; T2=$H/shared/artifacts/textspot2
-.venv/bin/python synth/textspot2_labels.py ...                      # the labels and shards (data/manifests/textspot2_shards_v1.json)
+# labels and shards (arms b and c); every source of each arm, then the manifest
+.venv/bin/python synth/textspot2_labels.py cache --arm lab --source realplus      # and teacher, devnative, owner
+.venv/bin/python synth/textspot2_labels.py build --arm lab --source realplus      # the same sources
+.venv/bin/python synth/textspot2_labels.py pool                                   # arm c's new screenshots
+.venv/bin/python synth/textspot2_labels.py cache --arm more --source realplus     # and teacher, owner; then build
+.venv/bin/python synth/textspot2_labels.py reserve                                # reserve_check --require-hashes --pixels
+.venv/bin/python synth/textspot2_labels.py leak
+.venv/bin/python synth/textspot2_labels.py manifest                               # data/manifests/textspot2_shards_v1.json
+# training, from detached worktrees at 1163bf2 (stage 1) and b1d7cc0 (stage 2)
 MAX_PAR=6 eval/reproducibility/textspot2-20261020/sweep.sh $T2/runs eval/reproducibility/textspot2-20261020/stage1_plan.jsonl
 MAX_PAR=7 eval/reproducibility/textspot2-20261020/sweep.sh $T2/runs eval/reproducibility/textspot2-20261020/stage2_plan.jsonl
-.venv/bin/python eval/textspot2.py ceiling --out $T2/eval/ceiling
+# scoring (the reading cache is seeded inside run)
+.venv/bin/python eval/textspot2.py cbuild --out $T2/eval/cbuild
+.venv/bin/python eval/textspot2.py fetch-teacher                                  # the 320x192 file, sha256-checked
+.venv/bin/python eval/textspot2.py ceiling --out $T2/eval/ceiling --cbin $T2/eval/cbuild
 .venv/bin/python eval/textspot2.py run --runs $T2/runs --out $T2/eval/units --cbin $T2/eval/cbuild --models N
 .venv/bin/python eval/textspot2.py select --units $T2/eval/units --a9 eval/textspot2_a9_20261020.json \
     --a9-d2s eval/textspot2_a9_d2s_20261020.json --cbin $T2/eval/cbuild --out eval/textspot2_dev_20261020.json

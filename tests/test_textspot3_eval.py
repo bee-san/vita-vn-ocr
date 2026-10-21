@@ -83,7 +83,17 @@ def proto3_file(tmp_path, monkeypatch):
 
 
 class FakeModel3:
-    """The cost function train/textspot3_model.py will give (exact MACs, VTSP bytes) for the fake M shapes."""
+    """The cost functions train/textspot3_model.py gives (exact MACs per frame size, VTSP bytes; textspot3_shapes
+    .costs calls costs(shape, sizes)) for the fake M shapes: the MACs of the 480 x 272 network input."""
+
+    @staticmethod
+    def costs(shape, sizes):
+        assert all(w <= 960 and h <= 544 for w, h in sizes)
+        return {"macs": {f"{w}x{h}": M_MACS[shape["name"]] for w, h in sizes}, "vtsp_bytes": NBYTES[shape["name"]]}
+
+
+class FakeModel3Cost:
+    """Only cost(shape, w, h) at the network's input."""
 
     @staticmethod
     def cost(shape, w, h):
@@ -225,7 +235,30 @@ def test_run_names_and_registry(proto3_file, monkeypatch):
     bad["shapes"]["odd"] = {"head": "kroa"}
     with pytest.raises(SystemExit):
         T3E.registry(bad)
-    assert T3E.registry(PROTO3) == {} or all(s["family"] in "TM" for s in T3E.registry(PROTO3).values())
+    am = json.loads(proto3_file.read_text())                      # an amendment's own shapes object; a list: names
+    am["amendments"] = [{"shapes": {"mX": {"family": "M", "head": "ms_x2"}}}, {"shapes": ["mX"]},
+                        {"shapes": {"tX": dict(t_entry(), half_above=None) | {"half_above": 480}}}]
+    reg2 = T3E.registry(am)
+    assert reg2["mX"]["family"] == "M" and reg2["tX"]["half_above"] == 480 and set(reg) < set(reg2)
+    no_half = {k: v for k, v in t_entry().items() if k != "half_above"}
+    assert T3E.registry({"shapes": {"tY": no_half}})["tY"]["half_above"] == 480
+
+
+def test_the_registered_t_shapes_cost_as_their_pinned_rows():
+    """Every T shape the real protocol registers: the wrapper's MACs are train/textspot3_shapes.costs' and the
+    pinned A9 table's (eval/textspot3_a9_t_20261021.json, amendment 1), and the table is the pinned file."""
+    import textspot3_shapes as S3
+    reg = T3E.registry(PROTO3)
+    t = {n: s for n, s in reg.items() if s["family"] == "T"}
+    if not t:
+        pytest.skip("no T shape registered")
+    table = ROOT / "eval" / "textspot3_a9_t_20261021.json"
+    T3E.check_pinned(table, PROTO3)
+    rows = {r["shape"]: r for r in json.loads(table.read_text())["summary"] if r["half_above"] == 480}
+    for n, s in t.items():
+        assert s["half_above"] == 480
+        assert T3E.macs_of(n, reg)[0] == S3.costs(n)["macs"]["960x544"] == rows[n]["macs_960"]
+        assert S3.costs(n)["vtsp_bytes"] == rows[n]["vtsp_bytes"]
 
 
 def test_m_input_and_macs(proto3_file, monkeypatch):
@@ -235,7 +268,12 @@ def test_m_input_and_macs(proto3_file, monkeypatch):
     macs, src = T3E.macs_of(T_SHAPE, reg)
     assert (macs, src) == (T2E.d2s_macs(T_SHAPE, 600), "train/textspot2_export.cost")   # 960 x 544 -> 480 x 272
     monkeypatch.setattr(T3E, "m_model", lambda: FakeModel3)
+    assert T3E.macs_of("mL", reg) == (M_MACS["mL"], "train/textspot3_model.costs")
+    assert T3E.m_vtsp_bytes(reg["mM"]) == 250000
+    monkeypatch.setattr(T3E, "m_model", lambda: FakeModel3Cost)
     assert T3E.macs_of("mL", reg) == (M_MACS["mL"], "train/textspot3_model.cost")
+    plain = {k: {kk: vv for kk, vv in v.items() if kk != "point"} for k, v in reg.items()}
+    assert T3E.size_points(plain) == ({"S": "mS", "M": "mM", "L": "mL"}, "VTSP-byte order")
 
 
 # ----------------------------------------------------------------------------- the version dispatch
@@ -362,6 +400,11 @@ def test_finished_runs_and_specs(tmp_path, proto3_file, twin3):
     with pytest.raises(SystemExit):
         T3E.finished_runs(runs)
     shutil.rmtree(runs / f"base_{T_SHAPE}_seed3")
+    d = write_run(runs, f"base_{T_SHAPE}_seed4", d2s_blob(4), listed=False)
+    (d / "run.json").write_text(json.dumps({"family": "M", "extras": []}))         # run.json: another family
+    with pytest.raises(SystemExit):
+        T3E.finished_runs(runs)
+    shutil.rmtree(d)
     found, _ = T3E.finished_runs(runs)
     assert sorted(found) == [f"base_{T_SHAPE}_seed1", f"base_{T_SHAPE}_seed2"]
     (runs / f"base_{T_SHAPE}_seed1" / "final.vtsp").write_bytes(d2s_blob(7))        # not done.json's blob
@@ -370,13 +413,13 @@ def test_finished_runs_and_specs(tmp_path, proto3_file, twin3):
 
 
 def test_run_settings(tmp_path):
-    assert T3E.run_settings(tmp_path) == {"extras": []}
-    (tmp_path / "run.json").write_text(json.dumps({"extras": "size,clean"}))
-    assert T3E.run_settings(tmp_path) == {"extras": ["clean", "size"]}
+    assert T3E.run_settings(tmp_path) == {"extras": [], "run_family": None}
+    (tmp_path / "run.json").write_text(json.dumps({"extras": "size,clean", "family": "M"}))
+    assert T3E.run_settings(tmp_path) == {"extras": ["clean", "size"], "run_family": "M"}
     (tmp_path / "run.json").write_text(json.dumps({"settings": {"extras": ["size"]}}))
-    assert T3E.run_settings(tmp_path) == {"extras": ["size"]}
+    assert T3E.run_settings(tmp_path)["extras"] == ["size"]
     (tmp_path / "run.json").write_text(json.dumps({"extras": "none"}))
-    assert T3E.run_settings(tmp_path) == {"extras": []}
+    assert T3E.run_settings(tmp_path)["extras"] == []
 
 
 def test_score_runs_v2_and_v3_on_synthetic_frames(tmp_path, proto3_file, twin3, monkeypatch):
@@ -501,7 +544,7 @@ def t3_arms(units, run, quality, rows, shas, cache, extras=()):
 
 PLAN = {f"base_{T_SHAPE}": ("two", "one", "perfect"), "base_mS": ("perfect",) * 3, "base_mM": ("perfect",) * 3,
         "base_mL": ("perfect",) * 3, "size_mM": ("one",) * 3, "clean_mM": ("perfect",) * 3,
-        f"kd_{T_SHAPE}": ("perfect",) * 3, "basex_mL": ("perfect",) * 3}
+        f"kd_{T_SHAPE}": ("perfect",) * 3, "size+clean_mL": ("perfect",) * 3}
 
 
 def select_world(tmp_path, plan=PLAN):
@@ -510,7 +553,8 @@ def select_world(tmp_path, plan=PLAN):
     units = tmp_path / "units"
     for aid, qs in plan.items():
         for seed, q in enumerate(qs, 1):
-            t3_arms(units, f"{aid}_seed{seed}", q, rows, shas, cache, ("size",) if aid == "basex_mL" else ())
+            t3_arms(units, f"{aid}_seed{seed}", q, rows, shas, cache,
+                    ("clean", "size") if aid.startswith("size+clean") else ())
     base_doc = {"manifest": {"sha256": MAN}, "arms": {}}
     for b in TS.BASELINES:
         a = make_arm(tmp_path / "baseline", b, {"kind": "baseline", "arm": b}, rows, shas, cache, "base")
@@ -630,7 +674,7 @@ def test_select_calls_rule3_on_synthetic_units(tmp_path, monkeypatch):
     assert len(doc["candidates"]) == 16 and len(doc["seeds"]) == 48
     assert res["comparator"] == proto3["references"]["ref"]["name"]
     # mL's det+refine (299 + 4.2 ms) is over the budget; everything else is eligible, in cost order
-    assert res["ineligible"] == ["T3_base_mL_seed2_detref", "T3_basex_mL_seed2_detref"]
+    assert res["ineligible"] == ["T3_base_mL_seed2_detref", "T3_size+clean_mL_seed2_detref"]
     assert res["eligible"][:4] == [f"{t}_det", f"T3_kd_{T_SHAPE}_seed2_det", f"{t}_detref",
                                    f"T3_kd_{T_SHAPE}_seed2_detref"]          # bytes, then est. ms
     # every candidate's dialogue is better than ref's: all qualify; the cheapest (T base, 1 error a frame) is
@@ -662,7 +706,7 @@ def test_select_calls_rule3_on_synthetic_units(tmp_path, monkeypatch):
     assert rows_["base M - base S", "det+refine"]["comparison"]["cer_all"]["delta"] == 0.0
     assert rows_[f"base S - base T {T_SHAPE}", "det"]["comparison"]["cer_all"]["delta"] == round(-100 / 15, 4)
     assert rows_[f"kd {T_SHAPE} - base {T_SHAPE}", "det"]["comparison"]["cer_dialogue"]["delta"] == 0.0
-    assert rows_["basex L - base L (the kept extras)", "det"]["minuend"] == "T3_basex_mL_seed2_det"
+    assert rows_["size+clean L - base L (the kept extras)", "det"]["minuend"] == "T3_size+clean_mL_seed2_det"
     assert rows_["clean_mM - ref", "det"]["comparison"]["cer_dialogue"]["delta"] == -20.0
     assert rows_["pick - ref", "det"]["minuend"] == res["winner"]
     st = doc["stage2_inputs"]
@@ -690,10 +734,19 @@ def test_select_calls_rule3_on_synthetic_units(tmp_path, monkeypatch):
     hl = T3E.headline_md(seeds, RULE, reg, T2E.reference(proto3, "ref")["arm"])
     assert f"`{t}_det`" in hl and "Stage 1: 18 of 21 runs scored; not yet: long_mM_seed1" in hl
     assert "Stage-2 inputs" in hl
+    seeds2 = [x for x in seeds if x["shape"] != "mS"]                     # a table without a seed's row: refused
+    with pytest.raises(SystemExit):
+        T3E.select([units], {"summary": [r for r in A9["summary"] if r["shape"] != "mS"]}, proto3, base_doc,
+                   log=lambda s: None)
+    assert seeds2 and T3E.a9_rows3([A9, None, {"summary": []}]) == T3E.a9_rows3(A9)
     f = Path(proto3["references"]["ref"]["units"])
     f.write_text(f.read_text() + "\n")
     with pytest.raises(SystemExit):                                       # the protocol's sha256 of ref's units
         T3E.select([units], A9, proto3, base_doc, log=lambda s: None)
+    other = tmp_path / "a9.json"
+    other.write_text(json.dumps(A9))
+    with pytest.raises(SystemExit):                                       # an A9 table the protocol does not pin
+        T3E.check_pinned(other, PROTO3)
 
 
 def test_select_no_pick_and_ui_trend(tmp_path, monkeypatch):

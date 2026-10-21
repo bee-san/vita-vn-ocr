@@ -19,12 +19,13 @@ imported and used unchanged; nothing here re-implements a metric or the rule.
   textspot3.py read-pick --names RUN [--dev JSON] [--models S,L]
       the pick's VOCR5-S and VOCR5-L development readings (report only): its stored boxes (never re-detected) read
       by the report recognizers, units_VOCR5-S.json and units_VOCR5-L.json beside its VOCR5-N units
-  textspot3.py headline --units DIR [--a9 JSON] [--out MD]
+  textspot3.py headline --units DIR [--a9 JSON ...] [--out MD]
       every seed's F1, CER all, dialogue, UI recall and est. ms, the representatives (median seed), stage 1's count
       and the stage-2 inputs read off them, as markdown for the conductor
-  textspot3.py select --units DIR --a9 eval/textspot3_a9_<date>.json --out eval/textspot3_dev_<date>.json
+  textspot3.py select --units DIR --a9 eval/textspot3_a9_<date>.json [--a9 ...] --out eval/textspot3_dev_<date>.json
       (1) every finished run's eligibility inputs through eval/textspot.py's eligibility (VTSP bytes, arena at
-      960 x 544, est. ms with the refine term, C parity; the A9 rows of the conductor-pinned table); (2) per arm
+      960 x 544, est. ms with the refine term, C parity; the A9 rows of the conductor-pinned tables, each checked
+      against the protocol's pin, a seed without a row refused; every finished run must be scored); (2) per arm
       (recipe, shape) and decode, every seed's summary and the representative by textspot3_rule.median_seed;
       (3) textspot3_rule.apply_rule3 once over every arm's representatives against ref (its units and boxes checked
       against the protocol's sha256), with textspot's eight baselines (their units sha256-checked as textspot's
@@ -136,17 +137,25 @@ def family_of(shape):
 
 
 def registry(proto3=None):
-    """{name: shape dict with "name" and "family"} of every shape eval/textspot3_protocol.json registers (its
-    "shapes", which the conductor's amendments add to); a shape of no known family is an error."""
+    """{name: shape dict with "name" and "family"} of every shape eval/textspot3_protocol.json registers: its
+    "shapes" (which the conductor's amendments add to) and any amendment's own "shapes" object, later ones winning,
+    as train/textspot3_shapes reads them; a shape of no known family is an error. A T shape's half_above defaults to
+    480."""
     doc = proto3 if proto3 is not None else protocol3()
     out = {}
-    for name, s in (doc.get("shapes") or {}).items():
-        if not isinstance(s, dict):
+    blocks = [doc.get("shapes")] + [a.get("shapes") for a in doc.get("amendments", []) if isinstance(a, dict)]
+    for block in blocks:
+        if not isinstance(block, dict):
             continue
-        fam = family_of(s)
-        if fam is None:
-            raise SystemExit(f"{name}: a registered shape of no known family (T or M)")
-        out[name] = dict(s, name=name, family=fam)
+        for name, s in block.items():
+            if not isinstance(s, dict):
+                continue
+            fam = family_of(s)
+            if fam is None:
+                raise SystemExit(f"{name}: a registered shape of no known family (T or M)")
+            out[name] = dict(s, name=name, family=fam)
+            if fam == "T":
+                out[name].setdefault("half_above", HALF_ABOVE_T)
     return out
 
 
@@ -180,16 +189,26 @@ def m_input(width=960, height=544):
 
 
 def macs_of(shape, reg, width=960, height=544):
-    """(exact MACs per width x height frame at the network's input, their source) of a registered shape: family T
-    through train/textspot2_export.cost (the d2s trunk at half_above 480), family M through
-    train/textspot3_model.cost."""
+    """(exact MACs per width x height frame at the network's input, their source) of a registered shape, as
+    train/textspot3_shapes.costs computes them (the A9 tables' macs_960): family T through
+    train/textspot2_export.cost on the d2s trunk at the shape's half_above (480), family M through
+    train/textspot3_model.costs (its cost at version 3's input when it has no costs)."""
     s = reg[shape]
     if s["family"] == "T":
         import textspot2_export as X
-        w, h = TS.input_size(HALF_ABOVE_T, width, height)
+        w, h = TS.input_size(s.get("half_above", HALF_ABOVE_T), width, height)
         return int(X.cost(t_shape(s), w, h)["macs"]), "train/textspot2_export.cost"
-    w, h = m_input(width, height)
-    return int(m_model().cost(s, w, h)["macs"]), "train/textspot3_model.cost"
+    mod = m_model()
+    if hasattr(mod, "costs"):
+        return int(mod.costs(s, ((width, height),))["macs"][f"{width}x{height}"]), "train/textspot3_model.costs"
+    return int(mod.cost(s, *m_input(width, height))["macs"]), "train/textspot3_model.cost"
+
+
+def m_vtsp_bytes(s):
+    """The exact VTSP bytes of a family-M shape (train/textspot3_model.costs, else its cost)."""
+    mod = m_model()
+    c = mod.costs(s, (M_HALF,)) if hasattr(mod, "costs") else mod.cost(s, *M_HALF)
+    return int(c["vtsp_bytes"])
 
 
 def t_shape(s):
@@ -211,9 +230,8 @@ def size_points(reg, nbytes=None):
     nb = dict(nbytes or {})
     if not all(n in nb for n in ms):
         try:
-            mod = m_model()
             for n in ms:
-                nb.setdefault(n, int(mod.cost(reg[n], *M_HALF)["vtsp_bytes"]))
+                nb.setdefault(n, m_vtsp_bytes(reg[n]))
         except (SystemExit, KeyError, TypeError, ValueError, AttributeError):
             pass
     if len(ms) != 3 or not all(n in nb for n in ms):
@@ -462,12 +480,12 @@ def run_settings(d):
     a list or a comma-separated string; none when absent)."""
     f = Path(d) / "run.json"
     if not f.exists():
-        return {"extras": []}
+        return {"extras": [], "run_family": None}
     doc = json.loads(f.read_text(encoding="utf-8"))
     ex = doc.get("extras", (doc.get("settings") or {}).get("extras"))
     if isinstance(ex, str):
         ex = [] if ex in ("", "none") else [x for x in ex.split(",") if x]
-    return {"extras": sorted(ex or [])}
+    return {"extras": sorted(ex or []), "run_family": doc.get("family")}
 
 
 def finished_runs(runs_dir, names=None, reg=None):
@@ -509,12 +527,15 @@ def finished_runs(runs_dir, names=None, reg=None):
         v = blob_version(blob)
         if v != FAMILY_VERSION[info["family"]]:
             raise SystemExit(f"{name}: a family-{info['family']} run with a VTSP version-{v} blob")
+        settings = run_settings(d)
+        if settings.pop("run_family") not in (None, info["family"]):
+            raise SystemExit(f"{name}: run.json names another family than the registered shape's")
         m = model_of(blob)
-        want_half = HALF_ABOVE_T if info["family"] == "T" else m.half_above
+        want_half = reg[info["shape"]]["half_above"] if info["family"] == "T" else m.half_above
         if (m.name, m.half_above, m.conf_min) != (info["shape"], want_half, 1):
             raise SystemExit(f"{name}: the blob is {m.name} at half_above {m.half_above}, conf_min {m.conf_min}")
         out[name] = dict(info, path=path, blob=blob, sha256=sha, bytes=len(blob), version=v,
-                         half_above=m.half_above, steps=done.get("steps"), **run_settings(d))
+                         half_above=m.half_above, steps=done.get("steps"), **settings)
     return out, skipped
 
 
@@ -683,10 +704,40 @@ def t3_seeds(units_dirs, runs_dir=None, reg=None):
     return out
 
 
-def a9_rows3(doc):
-    """The A9 rows eligibility reads: the conductor-pinned textspot3 table (eval/textspot3_a9_<date>.json),
-    normalised by eval/textspot.py's a9_rows."""
-    return TS.a9_rows(doc or {})
+def a9_docs(docs):
+    """A list of A9 tables from one table, a list of them or None."""
+    if docs is None:
+        return []
+    return [docs] if isinstance(docs, dict) else [d for d in docs if d]
+
+
+def a9_rows3(docs):
+    """The A9 rows eligibility reads: the conductor-pinned textspot3 tables (eval/textspot3_a9_*.json; family T's
+    and, once it exists, the version-3 runtime's), normalised by eval/textspot.py's a9_rows, in the order given
+    (first match wins)."""
+    rows = []
+    for d in a9_docs(docs):
+        rows += TS.a9_rows(d)
+    return rows
+
+
+def refine_arena3(docs, cdir, proto3):
+    """eval/textspot2.py refine_arena2 on the first table that records the refinement's arena (else the
+    refinement driver's, else the protocol's 72,391 B; any other figure is refused)."""
+    ds = a9_docs(docs)
+    doc = next((d for d in ds if TS.refine_arena(d, None)[0] is not None), None)
+    return T2E.refine_arena2(doc, cdir, proto3)
+
+
+def check_pinned(path, proto3):
+    """An A9 table of the record is a file the protocol pins (its sources or an amendment's), byte for byte."""
+    rel = TS.rel(path)
+    want = TS.pinned_sha(proto3, rel) or proto3["sources_sha256"].get(rel)
+    if want is None:
+        raise SystemExit(f"{path}: not pinned by textspot3's protocol (the A9 tables are the conductor-pinned ones)")
+    if TS.sha256(path) != want:
+        raise SystemExit(f"{path}: not the table textspot3's protocol pins ({want[:12]}...)")
+    return want
 
 
 def eligibility3(meta, boxes_doc, rows, ref_arena, reg):
@@ -745,18 +796,24 @@ def light(e):
             "c_equal": e["c_equal"]}
 
 
-def gather(units_dirs, proto3, a9_doc=None, cdir=None, runs_dir=None, reg=None):
-    """Every seed with its eligibility inputs -> (seeds, A9 rows, (refine arena, its source))."""
+def gather(units_dirs, proto3, a9_doc=None, cdir=None, runs_dir=None, reg=None, need_rows=False):
+    """Every seed with its eligibility inputs -> (seeds, A9 rows, (refine arena, its source)). a9_doc: one A9
+    table or a list of them. need_rows: a seed whose shape and scale have no row in the tables is an error (the
+    tables are pinned before any score, so a missing row means another table)."""
     reg = registry(proto3) if reg is None else reg
     man = proto3["reused"]["dev_manifest"]["sha256"]
     rows_a9 = a9_rows3(a9_doc)
-    ref_ar = T2E.refine_arena2(a9_doc, cdir, proto3)
+    ref_ar = refine_arena3(a9_doc, cdir, proto3)
     seeds = t3_seeds(units_dirs, runs_dir, reg)
     for s in seeds:
         if {s["boxes"]["manifest"]["sha256"], s["units"]["meta"]["manifest"]["sha256"]} != {man}:
             raise SystemExit(f"{s['name']}: scored on another manifest than the protocol's development set")
         s["elig"] = eligibility3(s["boxes"]["spec_meta"], s["boxes"], rows_a9, ref_ar[0], reg)
         s["elig"].update(report_costs(s["elig"], rows_a9))
+    if need_rows:
+        miss = sorted({(s["shape"], s["elig"]["half_above"]) for s in seeds if s["elig"]["a9_row"] is None})
+        if miss:
+            raise SystemExit(f"no A9 row at 960x544 in the tables for (shape, half_above) {miss}")
     return seeds, rows_a9, ref_ar
 
 
@@ -764,7 +821,8 @@ def gather(units_dirs, proto3, a9_doc=None, cdir=None, runs_dir=None, reg=None):
 
 PARETO = (("blob_bytes", 1), ("est_ms_333_960", 1), ("est_ms_444_960", 1), ("arena_960", 1), ("f1", -1),
           ("cer_all", 1), ("cer_dialogue", 1), ("ui_recall", -1))
-EXTRAS_EXCLUDE = STAGE1_RECIPES + ("kd",)
+NOT_EXTRAS_ON_L = ("base", "kd")       # on L every other recipe is base + the kept extras (size_, clean_,
+                                       # size+clean_: train/textspot3_train.py's names)
 
 
 def seed_row(s, rule):
@@ -876,7 +934,7 @@ def bought(reps, ref, points, reg, winner=None):
     pairs += [(f"kd {shape[a]} - base {shape[a]}", a, f"base_{shape[a]}") for a in ids if recipe[a] == "kd"]
     if "L" in points:
         pairs += [(f"{recipe[a]} L - base L (the kept extras)", a, f"base_{points['L']}") for a in ids
-                  if shape[a] == points["L"] and recipe[a] not in EXTRAS_EXCLUDE]
+                  if shape[a] == points["L"] and recipe[a] not in NOT_EXTRAS_ON_L]
     out = []
     for what, a_id, b_id in pairs:
         for dec in DECODES:
@@ -1006,7 +1064,7 @@ def select(units_dirs, a9_doc, proto3, base_doc, cdir=None, runs_dir=None, basel
     man = proto3["reused"]["dev_manifest"]["sha256"]
     if base_doc["manifest"]["sha256"] != man:
         raise SystemExit("the frozen baseline is of another manifest")
-    seeds, rows_a9, (ref_ar, ref_src) = gather(units_dirs, proto3, a9_doc, cdir, runs_dir, reg)
+    seeds, rows_a9, (ref_ar, ref_src) = gather(units_dirs, proto3, a9_doc, cdir, runs_dir, reg, need_rows=True)
     if not seeds:
         raise SystemExit("no scored textspot3 arm under the unit directories")
     missing = unscored_runs(runs_dir, seeds, reg) if runs_dir else []
@@ -1096,11 +1154,13 @@ def check_baseline_pin(path, proto3):
 def cmd_select(args):
     proto3 = protocol3()
     check_baseline_pin(args.baseline, proto3)
+    for a in args.a9:
+        check_pinned(a, proto3)
     base_doc = load_json(args.baseline)
-    doc = select(args.units, load_json(args.a9), proto3, base_doc, Path(args.cbin) if args.cbin else None, args.runs,
-                 log=log_line)
+    doc = select(args.units, [load_json(a) for a in args.a9], proto3, base_doc,
+                 Path(args.cbin) if args.cbin else None, args.runs, log=log_line)
     doc["inputs"] = {"protocol3_sha256": TS.sha256(PROTOCOL3), "baseline_sha256": TS.sha256(args.baseline),
-                     "a9": {"path": TS.rel(args.a9), "sha256": TS.sha256(args.a9)},
+                     "a9": [{"path": TS.rel(a), "sha256": TS.sha256(a)} for a in args.a9],
                      "units_dirs": [TS.rel(u) for u in args.units]}
     TS.assert_public(doc)
     n = write_compact(args.out, doc)
@@ -1161,8 +1221,8 @@ def headline_md(seeds, rule, reg, ref_arm=None, stage1=None):
 def cmd_headline(args):
     proto3 = protocol3()
     reg = registry(proto3)
-    seeds, _, _ = gather(args.units, proto3, load_json(args.a9), Path(args.cbin) if args.cbin else None, args.runs,
-                         reg)
+    seeds, _, _ = gather(args.units, proto3, [load_json(a) for a in args.a9], Path(args.cbin) if args.cbin else None,
+                         args.runs, reg)
     ref = T2E.reference(proto3, "ref")
     stage1 = json.loads(Path(args.stage1).read_text(encoding="utf-8")) if args.stage1 else None
     text = headline_md(seeds, proto3["rule"], reg, ref["arm"], stage1)
@@ -1428,7 +1488,8 @@ def main(argv=None):
     for name in ("headline", "select"):
         p = sub.add_parser(name)
         p.add_argument("--units", action="append", default=None)
-        p.add_argument("--a9", required=name == "select", default="", help="eval/textspot3_a9_<date>.json")
+        p.add_argument("--a9", action="append", required=name == "select", default=[],
+                       help="a pinned A9 table (eval/textspot3_a9_*.json); repeat for T's and M's, first match wins")
         p.add_argument("--cbin", default="", help="a cbuild directory (the refinement's arena from its driver)")
         p.add_argument("--runs", default=str(DEFAULT["runs"]))
         p.add_argument("--out", required=name == "select", default="")

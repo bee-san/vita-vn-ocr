@@ -1,7 +1,7 @@
 /* vocr_post.h - post-processing of recognized text for counters: 九ヶ月, 三ヶ所, 五ヶ年 (issue #109).
  *
- * Plain C99 like vocr.h: no malloc, no libm, no system calls, no global state, a few hundred bytes of
- * stack. Each step runs only when its caller calls it, so a pipeline that does not call one is bit for bit
+ * Plain C99 like vocr.h: no malloc, no libm, no system calls, no global state; the re-decode's stack frame is
+ * under 1 KiB (896 B on the Vita at -O2). Each step runs only when its caller calls it, so a pipeline that does not call one is bit for bit
  * what it was. eval/vocr_post.py is the Python twin of both (tests/post_parity.py checks them against each
  * other), and docs/counters.md has the corpus counts behind every context.
  *
@@ -29,7 +29,11 @@
  *    An accepted change is written into ex itself: the chosen class trades places with the top-1 class in
  *    that frame's top-K (classes only; the logits stay where they are, so every list stays sorted). So
  *    vocr_post_greedy(m, ex) gives the edited greedy text, and vocr_lm_decode() reads the edited extras as
- *    the frames' top-1. o->tau = o->open = 0 changes nothing.
+ *    the frames' top-1. o->tau = o->open = 0 changes nothing (the extras are only checked). The blank counts
+ *    where it is in a frame's top-K: the re-decode does not read vocr_extra.blank_logit, and an edit does not
+ *    change it. vocr_lm_decode() reads blank_logit only for a frame whose blank is outside its candidates
+ *    within the gate, so with tau and open no larger than the LM's gate (vita-vn-ocr's choice: 6 and 4 nats
+ *    against a gate of 8) a blank an edit moves down stays among them; keep them so.
  *
  * In a pipeline:
  *    vocr_run(&ctx, &img, text, cap, &ex);               // ex.topk >= 1

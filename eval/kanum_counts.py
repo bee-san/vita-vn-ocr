@@ -8,7 +8,7 @@ pools (teacher, realdata, realplus v3, native-frames, owner pool v2) with every 
 dev_sample VN (eval/manifests/reserved.json) removed. No eval set, no Jiten list.
 
     kanum_counts.py sources                      the inputs it would read
-    kanum_counts.py count OUT.json [--procs 5]   (heavy: about 2 minutes in 5 processes)
+    kanum_counts.py count OUT.json [--procs 5]   (heavy: about 15 seconds in 5 processes)
 
 The output stays local (it holds text contexts); docs/counters.md has the counts.
 """

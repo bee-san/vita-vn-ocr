@@ -7,7 +7,8 @@ and with Rubi's beam + LM, every changed line listed.
     kanum_dev.py cache --out DIR --blob S=VOCR5_S_w8.vocr [--synth DIR/synth.npz]   (heavy: top-8 of every crop)
     kanum_dev.py score --cache DIR --blob S=... --lm vocr_lm_o3_1000k.vlm --out scores.json [--taus 500,...]
     kanum_dev.py summary --counts counts.json --grid S=scores2_S.json ... --final S=scores3_S.json ...
-                         --widen S=widen3_S.json ... --out eval/counters_dev_20261021.json   (numbers only)
+                         --widen S=widen3_S.json ... [--widen-first S=widen2_S.json ...]
+                         --out eval/counters_dev_20261021.json   (numbers only)
 
 The cohorts are VOCR5's (eval/vocr5_protocol.json "cohorts"): teacher_val's and devnative's development files
 in both views (rv: console polarity as stored, rvn: screen polarity) and the whole-dialogue cohorts tv_dlg and
@@ -263,7 +264,7 @@ def cmd_score(a):
                 part = pickle.load(fh)
             if part["meta"]["sha256"] != sha256(blobs[name]):
                 raise SystemExit(f"{f}: the cache was made with another blob")
-            c["meta"] = part["meta"]
+            c["meta"] = dict(part["meta"], items=len(c["items"]) + len(part["items"]))
             c["items"] += part["items"]
         rt = Vocr(blobs[name], mode="w8i", max_width=1024)
         lm = VocrLM(rt, a.lm, **LM_OPTS)
@@ -368,15 +369,11 @@ def cmd_score(a):
 
 def select(grid, kind):
     """The pre-registered rule (issue #109): the largest threshold of the grid with no line worse on any cohort,
-    for every tier and both decodings; None if even the smallest makes one worse."""
-    ok = []
-    for t in grid["taus"]:
-        if all(v["worse"] == 0 for m in grid["models"].values() for dec in ("G", "L")
-               for v in m[kind][str(t)][dec].values()):
-            ok.append(t)
-        else:
-            break
-    return ok[-1] if ok else None
+    for every tier and both decodings; None if every one makes a line worse."""
+    ok = [t for t in grid["taus"]
+          if all(v["worse"] == 0 for m in grid["models"].values() for dec in ("G", "L")
+                 for v in m[kind][str(t)][dec].values())]
+    return max(ok) if ok else None
 
 
 def widen_adopted(widen):
@@ -424,14 +421,21 @@ def cmd_summary(a):
                     for arm in r["arms"] if arm in ("G", "L", "G+R", "L+R") or
                     (arm.split("+")[1].startswith("A") and "B" in arm.split("+")[1])}
         final[m]["triggers"] = r["triggers"]
-    widen = {}
+        final[m]["blob"] = {"file": r["blob"]["blob"], "sha256": r["blob"]["sha256"]}
+    widen, first = {}, {}
+    for m, rep in pairs(a.widen_first or []).items():     # the variant without the end-in-margin condition
+        r = rep["models"][m]
+        first[m] = {"standard": r["sets"]["standard"], "counts": r["counts"],
+                    "blob": {"file": r["blob"], "sha256": r["sha256"]}}
     for m, rep in pairs(a.widen).items():
         r = rep["models"][m]
-        widen[m] = {k: {kk: vv for kk, vv in v.items()} for k, v in r["sets"].items()} | {"counts": r["counts"]}
+        widen[m] = {k: {kk: vv for kk, vv in v.items()} for k, v in r["sets"].items()} | {"counts": r["counts"]} | \
+            {"blob": {"file": r["blob"], "sha256": r["sha256"]}}
     out = {"kind": "counters-dev", "issue": 109, "lm": next(iter(pairs(a.final).values()))["lm"],
            "corpus": {"chars": chars, "table": tab},
            "grid": grid, "selection": {"tau": select(grid, "A"), "open": select(grid, "B")},
-           "final": final, "widen": widen, "widen_adopted": widen_adopted(widen)}
+           "final": final, "widen": widen, "widen_adopted": widen_adopted(widen),
+           "widen_first_variant": first}
     Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(out["selection"], "widen adopted:", out["widen_adopted"])
 
@@ -459,6 +463,7 @@ def main():
     p.add_argument("--grid", action="append", required=True)
     p.add_argument("--final", action="append", required=True)
     p.add_argument("--widen", action="append", required=True)
+    p.add_argument("--widen-first", action="append")
     p.add_argument("--out", required=True)
     a = ap.parse_args()
     {"cache": cmd_cache, "score": cmd_score, "render": cmd_render, "summary": cmd_summary}[a.cmd](a)

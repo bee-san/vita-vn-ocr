@@ -189,8 +189,8 @@ def redecode(vocab, topv, topc, tau=0, open=0):
     tv = np.asarray(topv, np.float32)
     tc = np.array(topc, np.uint16, copy=True)
     st = {"edits": 0, "contexts": 0, "numerals": 0, "brackets": 0}
-    if not (0 <= tau <= MAX_TAU and 0 <= open <= MAX_TAU) or tc.ndim != 2 or tc.shape[1] < 1:
-        raise ValueError("bad options or top-K")
+    if not (0 <= tau <= MAX_TAU and 0 <= open <= MAX_TAU) or tc.ndim != 2 or not 1 <= tc.shape[1] <= 16:
+        raise ValueError("bad options or top-K")                 # VOCR_TOPK_MAX = 16, as the C code checks
     if tc.shape[0] > MAX_FRAMES:
         raise ValueError("too many frames")
     if tc.size and int(tc.max()) >= len(vocab):

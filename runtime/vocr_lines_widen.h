@@ -3,7 +3,8 @@
  * A region drawn tight against its text cuts the first or last character of a line, and the recognizer then
  * reads what is left of it: on the owner's console, CLANNAD's 「九ヶ月です」 lost its 「 and its 九 became ル.
  * The finder (vocr_lines.h) and the refinement only see the region, so they cannot give back what the region's
- * edge cut off; the caller usually can, as the region is a piece of a larger frame. vocr_line_widen() takes a
+ * edge cut off; a caller that holds the frame around the region can (Rubi's capture reads the region alone:
+ * vita-vn-ocr #110). vocr_line_widen() takes a
  * found line's rows over the region and a margin on each side, and continues its box past the region's edge
  * through the ink that the edge cuts: a box that starts at the region's first column (or ends at its last) with
  * ink in the edge's two columns is extended column by column while there is ink, across gaps of fewer than

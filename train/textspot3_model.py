@@ -4,7 +4,7 @@ exact costs, window masks, the float and fake-quantised torch networks, the expo
 (synth/textspot3_twin.py, the specification) and random version-3 blobs for the runtime's tests and A9 tables.
 
   textspot3_model.py --ckpt RUN/final.pt --out spot.vtsp [--net RUN/final.vtm] [--conf-min 1]
-  textspot3_model.py --random SHAPE --seed N --out spot.vtsp            (a SHAPES name or a JSON shape file)
+  textspot3_model.py --random SHAPE --seed N --out spot.vtsp            (a PROBES name or a JSON shape file)
   textspot3_model.py --info spot.vtsp | --cost SHAPE
 
 The shape grammar (one dict; layers(shape) expands it into the stream layers and the map ops):
@@ -687,17 +687,14 @@ def _probes():
 
 
 PROBES = _probes()
-# The M shapes this module knows by name: the probe grid (not registered; train/textspot3_shapes.M holds the shapes
-# eval/textspot3_protocol.json registers, and shape_of reads both). A caller may add shapes here.
-SHAPES = dict(PROBES)
 
 
 def shape_of(s):
     """A shape dict from a dict, a PROBES name, train/textspot3_shapes' registered M names, or a JSON file."""
     if isinstance(s, dict):
         return check_shape(s)
-    if s in SHAPES:
-        return check_shape(SHAPES[s])
+    if s in PROBES:
+        return PROBES[s]
     import textspot3_shapes as S3
     if s in S3.SHAPES and S3.SHAPES[s]["family"] == FAMILY:
         return check_shape(S3.SHAPES[s])

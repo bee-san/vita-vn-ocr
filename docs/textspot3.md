@@ -370,3 +370,331 @@ Each amendment is dated in `eval/textspot3_protocol.json` and precedes the runs 
      the teacher's `final.pt` sha256, and every command line re-checks it. The plan is about 15.3 slot-hours.
    - The sweep's two bookkeeping fixes (the 5-run notice, the end of each sweep in a shared log) are re-pinned for
      stage 2. The run command and the checks are unchanged. The stage-1 runs record is pinned with them.
+
+## Results
+
+Every number here is a host measurement on the development set unless it says otherwise:
+- 188 frames of 81 VNs, read by the C runtimes;
+- horizontal boxes read by VOCR5-N and vertical ones by VOCR5-V;
+- textspot's frozen metrics, with VN-cluster 95% intervals.
+
+Every console time is an estimate from the A9 cycle model. Nothing of this work has run on a console.
+
+### Answer first
+
+- **The rule has a pick: `kd_t64n8c16_seed3` with det+refine.** It is family T's widest and deepest trunk: 8
+  separable blocks of 64 channels at stride 8 with the d2s head, in VTSP version 2, distilled from the 447 KB
+  multi-scale `qL5`.
+  - Its blob, `textspot3_t64n8c16_kd_w8.vtsp`, is **51,008 B** (39,840 int8 weights, sha256 `20c3f7cc…`).
+  - Est. **267.8 ms** per 960×544 frame on one A9 core at 333 MHz, and 200.9 ms at 444 MHz. That is the spotter's
+    260.8 ms plus the refinement of 5 lines.
+  - Arena: **240,991 B** for any frame up to 960×544.
+- **Development** (`eval/textspot3_dev_20261022.json`; the selection ran once):
+
+  | | F1 | CER all | dialogue | UI recall |
+  |---|---:|---:|---:|---:|
+  | textspot's winner (`ref`, 5,732 B, est. 139.1 ms) | 0.542 | 32.04 | 3.01 | 0.324 |
+  | **the pick** | **0.661** | **32.51** | **1.15** | **0.389** |
+  | pick − `ref` (95% interval) | +0.119 (+0.073 to +0.168) | +0.47 (−4.39 to +5.19) | −1.86 (−3.31 to −0.77) | |
+
+  - Dialogue CER and F1 are resolved better; all-text CER is level.
+  - It also clears textspot's bar against all eight of its baselines (report only).
+- **How the rule got there.** All 22 candidates are eligible, and 7 of them qualify (dialogue resolved better, no
+  guard resolved worse). The chain runs as follows:
+  1. The cheapest qualifier is `base_t64n8c16` with det+refine (51,008 B, est. 267.8 ms; all-text CER 36.10%).
+  2. Its distilled twin, `kd_t64n8c16`, replaces it: all-text −3.59 (−6.12 to −1.21), with dialogue
+     (−0.25, −0.94 to +0.26) and F1 (+0.036) not worse.
+  3. No bigger qualifier is resolved better than the pick on all-text CER: `qS4` +4.28 / +2.62 (base / kd),
+     `qM4` +3.29, `qM4` long +0.12, `qL5` +2.07.
+
+  So the 117-447 KB multi-scale models qualify but do not earn their size. The largest one's gain reaches the pick
+  through distillation.
+- **The protected sets, read once** (after the selection commit `9b1b737`, 00:34:14Z):
+  - **vita-test + psp-test** as whole frames (176 frames of 28 VNs):
+    - F1 **0.776** against the winner's 0.694 (+0.082, +0.039 to +0.132);
+    - all-text CER **20.57%** against 20.02% (+0.55, −2.59 to +4.19, level);
+    - dialogue CER **2.29%** against 3.00% (−0.70, −1.44 to −0.05, resolved better);
+    - VOCR5-S and VOCR5-L give 2.53% and 2.23% dialogue, both resolved better than the winner read the same way.
+  - **CLANNAD whole frames** (2,052 dialogue lines on 1,867 pages): dialogue CER **0.99%** against the winner's
+    1.14% (−0.16, −0.23 to −0.09); S 1.34% against 1.44%, L 0.80% against 0.94%, each resolved better.
+- **What it does not do well:**
+  - **UI labels.** Recall is 0.389 on development, but 0.371 on the test frames against the winner's 0.485.
+  - **Merged lines.** The textspot3 spotters merge neighbouring lines or labels into one box more often than the
+    winner does: 45-53 such boxes in the arms checked, against its 34. The readings of those boxes count as junk.
+    That is the main reason all-text CER did not fall with the gains in dialogue and F1.
+  - **Vita frames.** On development Vita frames all-text CER is 29.54% against 18.76%. On vita-test it is 23.42%
+    against 20.95%, and dialogue 2.00% against 1.83%. The gains come from the PSP and Adrenaline frames.
+- **The representative is the arm's luckiest seed on all-text CER.** The rule's median seed is taken by dialogue
+  CER, and for `kd_t64n8c16` that seed is also its best on all-text CER (32.51% against 35.55% and 35.66%). The chain
+  step above compares it with `base_t64n8c16`'s middle seed. The protected sets agree with the development verdict
+  on dialogue and F1, and show all-text level.
+
+### The selection (`eval/textspot3_dev_20261022.json`)
+
+- **The arms:**
+  - stage 1: 27 runs, 9 of family T and 18 of family M;
+  - stage 2: 6 kd runs;
+  - two decodes each, 66 seeds in all.
+
+  Each arm and decode is represented by its median seed by dialogue CER: 22 candidates.
+- **Eligibility:** all 22 are eligible, at est. 157.7-267.8 ms, arenas of 129,311-256,247 B and blobs of
+  27,456-447,392 B. The C runtime equals the twin on all 188 frames for all 66 arms.
+- **Qualifiers:** 7, all of them det+refine:
+  - `base_t64n8c16`, `kd_t64n8c16`;
+  - `qS4` base and kd;
+  - `qM4` base and long;
+  - `qL5`.
+
+  No det decode qualifies: their dialogue CER is not resolved better.
+
+| arm (median seed, det+refine) | VTSP B | est. ms @333 / @444 | arena B | F1 | CER all | dialogue | UI recall | qualifies |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `base_t64n4c16` (seed 1) | 27,456 | 164.7 / 123.5 | 129,311 | 0.599 | 35.83 | 1.76 | 0.329 | no: all-text +3.80 (+0.26 to +7.26) |
+| `base_t48n8c16d8` (seed 2) | 32,560 | 189.8 / 142.3 | 238,271 | 0.614 | 36.06 | 1.53 | 0.314 | no: all-text +4.02 (+0.61 to +7.48) |
+| `base_t64n8c16` (seed 2) | 51,008 | 267.8 / 200.9 | 240,991 | 0.625 | 36.10 | 1.40 | 0.335 | yes |
+| **`kd_t64n8c16` (seed 3): the pick** | **51,008** | **267.8 / 200.9** | **240,991** | **0.661** | **32.51** | **1.15** | **0.389** | **yes** |
+| `base_qS4` (S; seed 3) | 117,184 | 202.1 / 151.6 | 256,247 | 0.634 | 36.79 | 1.73 | 0.335 | yes (all-text lower bound 0.00) |
+| `kd_qS4` (seed 1) | 117,184 | 202.1 / 151.6 | 256,247 | 0.606 | 35.13 | 1.20 | 0.326 | yes |
+| `base_qM4` (M; seed 3) | 247,392 | 223.6 / 167.7 | 256,247 | 0.638 | 35.80 | 1.33 | 0.339 | yes |
+| `size_qM4` (seed 3) | 247,392 | 223.6 / 167.7 | 256,247 | 0.619 | 36.45 | 1.20 | 0.335 | no: all-text +4.42 (+0.09 to +9.03) |
+| `clean_qM4` (seed 3) | 247,392 | 223.6 / 167.7 | 256,247 | 0.614 | 36.34 | 1.45 | 0.306 | no: all-text +4.30 (+0.25 to +8.79) |
+| `long_qM4` (seed 2) | 247,392 | 223.6 / 167.7 | 256,247 | 0.653 | 32.63 | 1.15 | 0.370 | yes |
+| `base_qL5` (L; seed 2) | 447,392 | 237.4 / 178.0 | 256,247 | 0.636 | 34.58 | 1.50 | 0.368 | yes |
+
+The det decodes, every seed and every comparison are in the record and in `eval/textspot3.py tables`' output.
+
+### Recall per class: does UI recall rise with capacity?
+
+| det+refine, median seed | dialogue (249) | name (96) | choice (15) | UI (519) | scene (6) |
+|---|---:|---:|---:|---:|---:|
+| `ref` | 0.944 | 0.688 | 0.867 | 0.324 | 0.500 |
+| T `t64n4c16` / `t48n8c16d8` / `t64n8c16` | 0.984 / 0.996 / 0.992 | 0.708 / 0.698 / 0.750 | 0.933 | 0.330 / 0.314 / 0.335 | 0.167 / 0.000 / 0.167 |
+| M `qS4` / `qM4` / `qL5` | 0.984 / 0.996 / 0.984 | 0.812 / 0.781 / 0.771 | 1.000 / 1.000 / 0.933 | 0.335 / 0.339 / 0.368 | 0.333 / 0.000 / 0.000 |
+| `long_qM4` | 0.996 | 0.802 | 0.933 | 0.370 | 0.000 |
+| **the pick** | **0.988** | **0.823** | **0.933** | **0.389** | **0.167** |
+| meiki.text.detect 960×544 (textspot2's teacher ceiling, report only) | 0.992 | 0.875 | 1.000 | 0.780 | 0.333 |
+
+- **UI recall rises with capacity, but only a little.**
+  - The Spearman correlation with VTSP bytes over the 11 arms is 0.31 (det+refine) and 0.39 (det).
+  - Along the M ladder, S → M → L gives 0.335 → 0.339 → 0.368.
+  - The pick's 0.389 comes from distillation, not size.
+  - The teacher's 0.78 stays far away.
+- **Names gain too**: from 0.69 to 0.70-0.82.
+- **Dialogue recall is near saturation everywhere**: 0.98-1.00.
+
+### Where the all-text errors are
+
+These are character errors in the development references by class, plus readings of boxes that match no reference
+(det+refine, median seeds unless named). The reference characters are: dialogue 3,851, name 298, choice 136, UI
+2,455, scene 30.
+
+| arm | dialogue | name | choice | UI | scene | unmatched readings | total | CER all | unmatched boxes |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `ref` | 114 | 74 | 6 | 1,557 | 22 | 396 | 2,169 | 32.04 | 421 |
+| `base_t64n4c16` | 65 | 70 | 5 | 1,547 | 24 | 715 | 2,426 | 35.83 | 281 |
+| `base_t64n8c16` | 51 | 69 | 5 | 1,550 | 26 | 743 | 2,444 | 36.10 | 233 |
+| `base_qM4` | 52 | 50 | 1 | 1,550 | 28 | 743 | 2,424 | 35.81 | 213 |
+| `long_qM4` | 42 | 55 | 4 | 1,505 | 30 | 573 | 2,209 | 32.63 | 210 |
+| `base_qL5` | 55 | 56 | 5 | 1,513 | 28 | 684 | 2,341 | 34.58 | 238 |
+| **the pick** (`kd_t64n8c16`) | **41** | **49** | **5** | **1,414** | **28** | **664** | **2,201** | **32.51** | **214** |
+
+- **Every textspot3 arm cuts the dialogue errors by 40-63%** (114 → 42-68) and leaves 33-50% fewer boxes unmatched
+  (421 → 210-281). UI errors are level (1,505-1,606 against 1,557), except the pick's 1,414.
+- **They read 45-98% more characters from unmatched boxes** (573-783 against 396). Most of those are boxes that
+  overlap two or more references: neighbouring lines or UI labels merged into one box.
+  - `ref` has 34 such boxes reading 251 characters.
+  - `base_t64n8c16` has 53 reading 576, `long_qM4` 48 reading 470, `qL5` 52 reading 550, and the pick 47 reading 530.
+
+  A merged box matches neither reference, so both are missed and the box's reading counts as junk. The stride-8
+  trunk with the d2s head merges more than textspot's stride-4 trunk. A follow-up would start there, with a
+  stride-4 level in the head or a decode that splits merged components.
+- `size` weights small instances up and `clean` drops low-agreement labels. Neither changed the UI errors (`size`
+  1,548, `clean` 1,606).
+
+### What each arm bought (paired development differences, median seeds, det+refine)
+
+| what | F1 Δ | CER all Δ, points | dialogue Δ, points |
+|---|---:|---:|---:|
+| multi-scale part at a fixed trunk: `qS4` − `t64n4c16` | +0.034 (−0.005 to +0.075) | +0.96 (−2.13 to +4.17) | −0.03 (−0.41 to +0.40) |
+| `qM4` − `qS4` (117 → 247 KB) | +0.004 (−0.024 to +0.033) | −0.99 (−2.87 to +0.81) | −0.40 (−0.97 to +0.00) |
+| `qL5` − `qM4` (247 → 447 KB) | −0.001 (−0.024 to +0.021) | −1.23 (−3.13 to +0.56) | +0.18 (−0.28 to +0.74) |
+| width and depth: `t64n8c16` − `t64n4c16` (conductor's report, the same compare) | +0.025 (−0.006 to +0.058) | +0.27 (−2.82 to +3.49) | **−0.35 (−0.77 to −0.02)** |
+| `size` − `base` (`qM4`) | −0.019 (−0.040 to +0.002) | +0.65 (−2.08 to +3.18) | −0.13 (−0.80 to +0.38) |
+| `clean` − `base` (`qM4`) | −0.024 (−0.050 to +0.002) | +0.53 (−1.85 to +2.87) | +0.13 (−0.19 to +0.57) |
+| `long` − `base` (`qM4`, 60,000 steps) | +0.015 (−0.013 to +0.045) | **−3.18 (−6.28 to −0.42)** | −0.18 (−0.97 to +0.34) |
+| `kd` − `base` (`t64n8c16`, teacher `qL5`) | **+0.036 (+0.014 to +0.060)** | **−3.59 (−6.12 to −1.21)** | −0.25 (−0.94 to +0.26) |
+| `kd` − `base` (`qS4`) | −0.028 (−0.058 to +0.001) | −1.67 (−4.47 to +0.84) | −0.53 (−1.36 to +0.06) |
+
+In short:
+- **Distillation from the largest model and the longer schedule bought all-text CER.** These are the only two
+  resolved all-text gains.
+- **Parameters at low resolution bought small, unresolved steps.** From S to L, all-text CER falls 2.2 points in two
+  steps, and none of them is resolved. Width and depth in the trunk bought dialogue (−0.35, resolved), not all-text CER.
+- **The size-balanced UI loss and the agreement-filtered labels bought nothing.**
+- Against `ref`, every arm buys dialogue (−1.25 to −1.86 points) and F1 (+0.06 to +0.12).
+
+### Seeds
+
+Seeds of one arm still differ by several points. These are det+refine, all-text CER and then dialogue:
+- `kd_t64n8c16`: 32.51 / 35.55 / 35.66% and 1.15 / 0.95 / 1.43%;
+- `long_qM4`: 34.25 / 32.63 / 34.12% and 1.03 / 1.15 / 1.30%;
+- `base_qM4`: 38.40 / 34.49 / 35.80%.
+
+The rule reads the median seed by dialogue CER and never the best. For `kd_t64n8c16` and `long_qM4`, that seed happens
+to be the arm's best on all-text CER (see "Answer first").
+
+### The speed / size front (development)
+
+13 of the 22 eligible representatives are on the front of VTSP bytes, est. ms at 333 and 444 MHz, arena, F1, CER
+all, dialogue CER and UI recall. The main points:
+
+| arm | VTSP B | est. ms @333 / @444 | arena B | F1 | CER all | dialogue |
+|---|---:|---:|---:|---:|---:|---:|
+| `ref` | 5,732 | 139.1 / 104.3 | 80,799 | 0.542 | 32.04 | 3.01 |
+| `base_t64n4c16` det+refine | 27,456 | 164.7 / 123.5 | 129,311 | 0.599 | 35.83 | 1.76 |
+| `base_t48n8c16d8` det+refine | 32,560 | 189.8 / 142.3 | 238,271 | 0.614 | 36.06 | 1.53 |
+| **`kd_t64n8c16` det+refine (pick)** | **51,008** | **267.8 / 200.9** | **240,991** | **0.661** | **32.51** | **1.15** |
+| `kd_qS4` det+refine | 117,184 | 202.1 / 151.6 | 256,247 | 0.606 | 35.13 | 1.20 |
+| `long_qM4` det+refine | 247,392 | 223.6 / 167.7 | 256,247 | 0.653 | 32.63 | 1.15 |
+
+- **Time binds before weights.** The pick uses 10% of the byte budget and 89% of the time budget.
+- **Parameter-heavy shapes are fast but not better.** The multi-scale models add 90-420 KB, mostly at strides 32-64,
+  for 37-73 ms over their trunk. `long_qM4` comes close to the pick's accuracy in 44 ms less, but the rule prefers the
+  smaller blob unless the bigger one is resolved better on all-text CER.
+
+### Per part (development, the pick against `ref`)
+
+| part | frames | pick F1 / CER all / dialogue | `ref` F1 / CER all / dialogue |
+|---|---:|---|---|
+| vita | 39 | 0.686 / 29.54 / 1.24 | 0.623 / 18.76 / 1.50 |
+| psp | 64 | 0.778 / 16.04 / 0.80 | 0.601 / 20.20 / 4.06 |
+| adrenaline | 20 | 0.797 / 15.77 / 2.10 | 0.652 / 17.95 / 1.87 |
+| pc | 40 | 0.504 / 56.13 / 1.14 | 0.385 / 58.16 / 3.71 |
+| text-free | 25 | 0 frames with a box | 5 frames with a box |
+
+The dialogue pick lands on 81 of 126 frames with dialogue, against the winner's 86 (report only).
+
+### The protected sets, once (`eval/textspot3_protected_20261022.json`, `eval/textspot3_clannad_20261022.json`)
+
+- The selection was committed and pushed first (`9b1b737`, 2026-10-22T00:34:14Z; tag
+  `textspot3-selection-9b1b737`).
+- The pick was then read once on each set; the attempt records are dated 00:34:42Z and 00:35:37Z.
+- The C runtime equals the twin on all 259 test frames and all 2,177 CLANNAD pages.
+- The comparisons use the winner's stored protected units (textspot's record, sha256-checked and reproduced
+  before the attempts).
+
+**vita-test + psp-test as whole frames** (176 scored frames of 28 VNs; 714 instances, 6,229 characters, dialogue
+4,707):
+
+| | P | R | F1 | CER all (N) | dialogue (N / S / L) | text-free frames with a box |
+|---|---:|---:|---:|---:|---:|---:|
+| **the pick** | 0.801 | 0.754 | **0.776** | 20.57 | **2.29** / 2.53 / 2.23 | 2 / 19 |
+| textspot's winner | 0.625 | 0.780 | 0.694 | 20.02 | 3.00 / 3.38 / 3.00 | 6 / 19 |
+
+- **Against the winner** (VOCR5-N):
+  - F1 +0.082 (+0.039 to +0.132);
+  - all-text CER +0.55 (−2.59 to +4.19), level;
+  - dialogue −0.70 (−1.44 to −0.05), resolved better.
+
+  With VOCR5-S and VOCR5-L, dialogue is −0.85 (−1.66 to −0.13) and −0.76 (−1.53 to −0.06).
+- The pick beats each of the eight baselines as textspot's bar asks.
+- **Per part:**
+  - vita-test: F1 0.764, CER 23.42% / 2.00%, against the winner's 0.692 / 20.95% / 1.83%;
+  - psp-test: 0.795 / 17.38% / 2.60%, against 0.705 / 18.99% / 4.21%;
+  - report only, psp-test at 2× (Adrenaline): 0.795 / 17.05% / 2.78%, against 0.633 / 20.85% / 6.98%.
+- **Recall:** dialogue 0.984 (winner 0.955), names 0.918 (0.926), choices 0.839 (0.839), UI 0.371 (0.485), scene
+  0.40 (0.45).
+- **Tightness:** mean IoU 0.844, ink coverage 0.980.
+- **The dialogue pick** lands on the dialogue block on 65% of test frames with dialogue (the winner: 62%).
+
+**CLANNAD long run** (owner-drive-ingest's frozen references, `refs_sha256` `35411688…`; whole frames; a reference
+line reads the detections that lie mostly inside its GRAD box):
+
+| | dialogue (2,052 lines) N / S / L | all 3,048 lines N / S / L |
+|---|---:|---:|
+| **the pick** | **0.99 / 1.34 / 0.80** | 1.73 / 2.03 / 1.38 |
+| textspot's winner | 1.14 / 1.44 / 0.94 | 1.89 / 2.07 / 1.51 |
+| #97's detector run on whole frames (`s8c24_spot`) | 1.29 / 1.43 / 1.03 | 1.33 / 1.75 / 1.20 |
+
+- **Dialogue:**
+  - against the winner: −0.16 (−0.23 to −0.09) with N, −0.10 (−0.17 to −0.03) with S, −0.14 (−0.22 to −0.07)
+    with L;
+  - against `s8c24_spot`: −0.30 (−0.45 to −0.16) with N.
+- **All lines with speaker names:**
+  - better than the winner: −0.16 (−0.23 to −0.09);
+  - worse than #97's detector: +0.29 (+0.05 to +0.52) against `s8c24_textdet` and +0.40 (+0.23 to +0.58) against
+    `s8c24_spot`. Like the winner, it finds fewer name plates.
+- **The 133 pages without reference text:** the pick returns 504 boxes there, the winner 790.
+- **For scale, not a paired comparison:** GRAD + refine on the hand-drawn dialogue region reads the same lines at
+  0.92% (VOCR5-N, #97's record).
+- **Training disclosure:** the real half includes the owner's planetarian PSP frames (Key / Prototype, like
+  CLANNAD's Vita port). No CLANNAD-family frame is in any training pool.
+
+### Console time and memory (host estimates)
+
+| the pick (`t64n8c16`, VTSP v2, det+refine) | 960×544 frame | 480×272 frame |
+|---|---:|---:|
+| MACs (network) | 84.7 M | 84.7 M (a PSP frame is read as it is) |
+| A9 cycle model, high bound × 1.0007, @333 / @444 MHz | 260.8 / 195.6 ms | 253.0 / 189.8 ms |
+| + refinement (1.4 ms × 5 lines @333) | +7.0 ms | +7.0 ms |
+| arena (any frame up to 960×544; the refinement's 72,391 B fits in it) | 240,991 B | 240,031 B |
+
+- **Weights:** 51,008 B, 8.9× the winner's 5,732 B. The arena is 3.0× the winner's 80,799 B, because of the
+  rings of 8 dilated 64-channel blocks.
+- **Code:** the version-2 runtime `runtime/vocr_textspot2.c`, the merged d2s runtime of #106:
+  - VitaSDK gcc 15.2 `.text` 11,844 B at -O2 NEON and 9,746 B at -Os;
+  - 280-408 B more than `vocr_textspot.c`;
+  - stack peak 2,904 B.
+
+  Rubi's scan screen, which pins `vocr_textspot.c` and a version-1 blob, needs that file instead.
+- **Every time above is an estimate**: nothing ran on a console.
+
+### Measured and estimated
+
+- **Measured on the host:**
+  - every P / R / F1, CER, interval, recall and count above (the C runtimes, the frozen metrics);
+  - blob, arena and code sizes and stack frames, which are exact.
+- **Estimated:** every console time. The method is the A9 cycle model on the Vita compiler's code under qemu,
+  the binding one; 444 MHz is that time × 333/444.
+- **Not measured:** nothing has run on a console.
+
+### Limits
+
+- **One development set** of 81 VNs, built from MeikiOCR's boxes. Its 519 UI references are 59% of all references.
+- **Stage 2's development intervals are optimistic.** Its choices read stage 1's development scores (amendment 7),
+  and the pick comes from stage 2. The protected sets, read once, agree on dialogue and F1, and show all-text CER
+  level with the winner.
+- **The design read earlier development errors** (the disclosure registered in advance). The arms were chosen
+  after reading textspot's and textspot2's development errors by class and text height.
+- **Seed luck:** see "Seeds". The winner is itself the best of its recipe's three seeds.
+- **The knife edge:** `qS4`'s base candidate qualified with an all-text lower bound of exactly 0.00 after rounding.
+  It made `qS4` a kd student, but it is not the pick.
+- **UI text, merged lines and Vita frames** are the weak spots ("Answer first", "Where the all-text errors are").
+- **The multi-scale runtime** `runtime/vocr_textspot3.c` (VTSP version 3) is merged as a host and research tool.
+  The pick does not need it: it is a version-2 blob. Nothing on a console uses version 3.
+
+### Reproduce
+
+```sh
+H=$HERD; T3=$H/shared/artifacts/textspot3; P3=$H/shared/private/textspot3
+# A9 rows (estimates): T on vocr_textspot2.c, M on vocr_textspot3.c
+.venv/bin/python eval/textspot3_a9.py measure --runtime v2 --half-above 480 --out $T3/a9/t_main --jobs 5 --vitasdk $H/shared/artifacts/vita/vitasdk
+.venv/bin/python eval/textspot3_a9r.py ...                                        # the M rows of record (runtime/README.md)
+# training, from detached worktrees at 6f2bff0 (stage 1 T), 9bcdf51 (stage 1 M) and 8a0f8d2 (stage 2)
+MAX_PAR=6 eval/reproducibility/textspot3-20261021/sweep.sh $T3/runs eval/reproducibility/textspot3-20261021/stage1_T_plan.jsonl
+MAX_PAR=7 eval/reproducibility/textspot3-20261021/sweep.sh $T3/runs eval/reproducibility/textspot3-20261021/stage1_M_plan.jsonl
+MAX_PAR=7 eval/reproducibility/textspot3-20261021/sweep.sh $T3/runs eval/reproducibility/textspot3-20261021/stage2_plan.jsonl
+# scoring (private tmpfs for every gcc step), the selection once, the tables
+.venv/bin/python eval/textspot3.py cbuild --out $T3/eval/cbuild
+.venv/bin/python eval/textspot3.py run --runs $T3/runs --out $T3/eval/units --cbin $T3/eval/cbuild --models N
+.venv/bin/python eval/textspot3.py select --units $T3/eval/units --a9 eval/textspot3_a9_t_20261021.json \
+    --a9 eval/textspot3_a9_20261021.json --cbin $T3/eval/cbuild --runs $T3/runs --out eval/textspot3_dev_20261022.json
+.venv/bin/python eval/textspot3.py read-pick --names kd_t64n8c16_seed3 --dev eval/textspot3_dev_20261022.json --models S,L
+.venv/bin/python eval/textspot3.py tables --dev eval/textspot3_dev_20261022.json --units $T3/eval/units
+# protected reads, once each (attempt records refuse a second run)
+.venv/bin/python eval/textspot3_protected.py tests --cand T3:kd_t64n8c16_seed3 --decode det+refine \
+    --dev eval/textspot3_dev_20261022.json --out $P3/protected/kd_t64n8c16_seed3_detref/tests --cbin $T3/eval/cbuild
+.venv/bin/python eval/textspot3_protected.py clannad --cand T3:kd_t64n8c16_seed3 --decode det+refine \
+    --dev eval/textspot3_dev_20261022.json --work $H/shared/private/owner-drive-20261013/clannad-compare \
+    --out $P3/protected/kd_t64n8c16_seed3_detref/clannad --cbin $T3/eval/cbuild
+```

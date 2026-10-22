@@ -399,12 +399,13 @@ Every console time is an estimate from the A9 cycle model. Nothing of this work 
 
   - Dialogue CER and F1 are resolved better; all-text CER is level.
   - It also clears textspot's bar against all eight of its baselines (report only).
+  - Read by VOCR5-S and VOCR5-L (report only): F1 0.661 for both, CER all 33.21% / 32.82%, dialogue 1.61% / 1.05%.
 - **How the rule got there.** All 22 candidates are eligible, and 7 of them qualify (dialogue resolved better, no
   guard resolved worse). The chain runs as follows:
   1. The cheapest qualifier is `base_t64n8c16` with det+refine (51,008 B, est. 267.8 ms; all-text CER 36.10%).
   2. Its distilled twin, `kd_t64n8c16`, replaces it: all-text −3.59 (−6.12 to −1.21), with dialogue
      (−0.25, −0.94 to +0.26) and F1 (+0.036) not worse.
-  3. No bigger qualifier is resolved better than the pick on all-text CER: `qS4` +4.28 / +2.62 (base / kd),
+  3. No bigger qualifier is resolved better than the pick on all-text CER: `qS4` +4.28 / +2.61 (base / kd),
      `qM4` +3.29, `qM4` long +0.12, `qL5` +2.07.
 
   So the 117-447 KB multi-scale models qualify but do not earn their size. The largest one's gain reaches the pick
@@ -455,7 +456,7 @@ Every console time is an estimate from the A9 cycle model. Nothing of this work 
 | **`kd_t64n8c16` (seed 3): the pick** | **51,008** | **267.8 / 200.9** | **240,991** | **0.661** | **32.51** | **1.15** | **0.389** | **yes** |
 | `base_qS4` (S; seed 3) | 117,184 | 202.1 / 151.6 | 256,247 | 0.634 | 36.79 | 1.73 | 0.335 | yes (all-text lower bound 0.00) |
 | `kd_qS4` (seed 1) | 117,184 | 202.1 / 151.6 | 256,247 | 0.606 | 35.13 | 1.20 | 0.326 | yes |
-| `base_qM4` (M; seed 3) | 247,392 | 223.6 / 167.7 | 256,247 | 0.638 | 35.80 | 1.33 | 0.339 | yes |
+| `base_qM4` (M; seed 3) | 247,392 | 223.6 / 167.7 | 256,247 | 0.638 | 35.81 | 1.33 | 0.339 | yes |
 | `size_qM4` (seed 3) | 247,392 | 223.6 / 167.7 | 256,247 | 0.619 | 36.45 | 1.20 | 0.335 | no: all-text +4.42 (+0.09 to +9.03) |
 | `clean_qM4` (seed 3) | 247,392 | 223.6 / 167.7 | 256,247 | 0.614 | 36.34 | 1.45 | 0.306 | no: all-text +4.30 (+0.25 to +8.79) |
 | `long_qM4` (seed 2) | 247,392 | 223.6 / 167.7 | 256,247 | 0.653 | 32.63 | 1.15 | 0.370 | yes |
@@ -468,11 +469,11 @@ The det decodes, every seed and every comparison are in the record and in `eval/
 | det+refine, median seed | dialogue (249) | name (96) | choice (15) | UI (519) | scene (6) |
 |---|---:|---:|---:|---:|---:|
 | `ref` | 0.944 | 0.688 | 0.867 | 0.324 | 0.500 |
-| T `t64n4c16` / `t48n8c16d8` / `t64n8c16` | 0.984 / 0.996 / 0.992 | 0.708 / 0.698 / 0.750 | 0.933 | 0.330 / 0.314 / 0.335 | 0.167 / 0.000 / 0.167 |
+| T `t64n4c16` / `t48n8c16d8` / `t64n8c16` | 0.984 / 0.996 / 0.992 | 0.708 / 0.698 / 0.750 | 0.933 | 0.329 / 0.314 / 0.335 | 0.167 / 0.000 / 0.167 |
 | M `qS4` / `qM4` / `qL5` | 0.984 / 0.996 / 0.984 | 0.812 / 0.781 / 0.771 | 1.000 / 1.000 / 0.933 | 0.335 / 0.339 / 0.368 | 0.333 / 0.000 / 0.000 |
 | `long_qM4` | 0.996 | 0.802 | 0.933 | 0.370 | 0.000 |
 | **the pick** | **0.988** | **0.823** | **0.933** | **0.389** | **0.167** |
-| meiki.text.detect 960×544 (textspot2's teacher ceiling, report only) | 0.992 | 0.875 | 1.000 | 0.780 | 0.333 |
+| meiki.text.detect 960×544, det (textspot2's teacher ceiling, report only) | 0.992 | 0.875 | 1.000 | 0.780 | 0.333 |
 
 - **UI recall rises with capacity, but only a little.**
   - The Spearman correlation with VTSP bytes over the 11 arms is 0.31 (det+refine) and 0.39 (det).
@@ -520,7 +521,7 @@ These are character errors in the development references by class, plus readings
 | `qL5` − `qM4` (247 → 447 KB) | −0.001 (−0.024 to +0.021) | −1.23 (−3.13 to +0.56) | +0.18 (−0.28 to +0.74) |
 | width and depth: `t64n8c16` − `t64n4c16` (conductor's report, the same compare) | +0.025 (−0.006 to +0.058) | +0.27 (−2.82 to +3.49) | **−0.35 (−0.77 to −0.02)** |
 | `size` − `base` (`qM4`) | −0.019 (−0.040 to +0.002) | +0.65 (−2.08 to +3.18) | −0.13 (−0.80 to +0.38) |
-| `clean` − `base` (`qM4`) | −0.024 (−0.050 to +0.002) | +0.53 (−1.85 to +2.87) | +0.13 (−0.19 to +0.57) |
+| `clean` − `base` (`qM4`) | −0.023 (−0.050 to +0.002) | +0.53 (−1.85 to +2.87) | +0.13 (−0.19 to +0.57) |
 | `long` − `base` (`qM4`, 60,000 steps) | +0.015 (−0.013 to +0.045) | **−3.18 (−6.28 to −0.42)** | −0.18 (−0.97 to +0.34) |
 | `kd` − `base` (`t64n8c16`, teacher `qL5`) | **+0.036 (+0.014 to +0.060)** | **−3.59 (−6.12 to −1.21)** | −0.25 (−0.94 to +0.26) |
 | `kd` − `base` (`qS4`) | −0.028 (−0.058 to +0.001) | −1.67 (−4.47 to +0.84) | −0.53 (−1.36 to +0.06) |
@@ -538,7 +539,7 @@ In short:
 Seeds of one arm still differ by several points. These are det+refine, all-text CER and then dialogue:
 - `kd_t64n8c16`: 32.51 / 35.55 / 35.66% and 1.15 / 0.95 / 1.43%;
 - `long_qM4`: 34.25 / 32.63 / 34.12% and 1.03 / 1.15 / 1.30%;
-- `base_qM4`: 38.40 / 34.49 / 35.80%.
+- `base_qM4`: 38.40 / 34.49 / 35.81%.
 
 The rule reads the median seed by dialogue CER and never the best. For `kd_t64n8c16` and `long_qM4`, that seed happens
 to be the arm's best on all-text CER (see "Answer first").
@@ -667,9 +668,30 @@ line reads the detections that lie mostly inside its GRAD box):
 - **The design read earlier development errors** (the disclosure registered in advance). The arms were chosen
   after reading textspot's and textspot2's development errors by class and text height.
 - **Seed luck:** see "Seeds". The winner is itself the best of its recipe's three seeds.
-- **The knife edge:** `qS4`'s base candidate qualified with an all-text lower bound of exactly 0.00 after rounding.
+- **The knife edge:** `qS4`'s base candidate qualified with an all-text lower bound of exactly 0. That is not a
+  rounding effect: the resamples around the 2.5th percentile differ by exactly 0, so the rule's `ci[0] > 0` reads it
+  as registered.
   It made `qS4` a kd student, but it is not the pick.
 - **UI text, merged lines and Vita frames** are the weak spots ("Answer first", "Where the all-text errors are").
+- **Notes from the audit of #113**:
+  - **Text above "Results" is frozen** and keeps three slips:
+    - amendment 7 gives `base_qM4`'s all-text CER as 35.80; it is 35.81 (2,424 / 6,770);
+    - amendment 7 gives `qS4`'s lower bound as 0.0000 "after the metrics' four-decimal rounding"; it is exactly 0
+      before rounding too (see the knife edge above);
+    - amendment 3's "887 by the vertical length rule" counts that rule alone: 898 positives break it, 11 of them
+      also of weight below 1.
+  - **Torch against blob**: on trained checkpoints each layer of the fake-quantised torch network agrees with the
+    integer blob within one code. Through 22-26 layers, though, 59-61% of the head codes are equal end to end.
+    Nothing reported depends on that: every score and the shipped blob are the integer network (C == twin).
+  - **Small recipe details**:
+    - `size` counts a line's kernel cells inside the training window;
+    - kd's O and A terms can include one stride-4 row or column past an odd-sized region.
+
+    Neither changed a choice: `size` was not kept, and the kd effect is negligible.
+  - **`runtime/vocr_textspot3.c`'s NEON 1×1 loop** forms, after an odd last cell, a pointer one cell beyond
+    one-past-the-end. It is never dereferenced, but forming it is undefined in C99. The audit also lists four
+    comment and portability nits in the same files. The files are pinned as the runtime of record of the family-M
+    scores, and no console build uses them, so they are left as they are; a follow-up fixes them under a re-pin.
 - **The multi-scale runtime** `runtime/vocr_textspot3.c` (VTSP version 3) is merged as a host and research tool.
   The pick does not need it: it is a version-2 blob. Nothing on a console uses version 3.
 
@@ -679,7 +701,10 @@ line reads the detections that lie mostly inside its GRAD box):
 H=$HERD; T3=$H/shared/artifacts/textspot3; P3=$H/shared/private/textspot3
 # A9 rows (estimates): T on vocr_textspot2.c, M on vocr_textspot3.c
 .venv/bin/python eval/textspot3_a9.py measure --runtime v2 --half-above 480 --out $T3/a9/t_main --jobs 5 --vitasdk $H/shared/artifacts/vita/vitasdk
-.venv/bin/python eval/textspot3_a9r.py ...                                        # the M rows of record (runtime/README.md)
+.venv/bin/python eval/textspot3_a9m.py measure --shapes qS4,qM4,qL5 --out $T3/a9/rec_m --jobs 5 --vitasdk $H/shared/artifacts/vita/vitasdk
+.venv/bin/python eval/textspot3_a9m.py measure --shapes qS4,qM4,qL5 --nodark --out $T3/a9/rec_m_nodark --jobs 5 --vitasdk $H/shared/artifacts/vita/vitasdk
+.venv/bin/python eval/textspot3_a9r.py report $T3/a9/rec_m --also $T3/a9/rec_m_nodark --also-label VOCR_TEXTSPOT_NO_DARK \
+    --t-json <the T report> --code-size <codesize JSON> --stack <stack JSON> --json eval/textspot3_a9_20261021.json   # the M rows of record
 # training, from detached worktrees at 6f2bff0 (stage 1 T), 9bcdf51 (stage 1 M) and 8a0f8d2 (stage 2)
 MAX_PAR=6 eval/reproducibility/textspot3-20261021/sweep.sh $T3/runs eval/reproducibility/textspot3-20261021/stage1_T_plan.jsonl
 MAX_PAR=7 eval/reproducibility/textspot3-20261021/sweep.sh $T3/runs eval/reproducibility/textspot3-20261021/stage1_M_plan.jsonl

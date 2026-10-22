@@ -1,0 +1,3288 @@
+{
+ "kind": "textspot3-protected-tests",
+ "computed": "2026-10-22T00:35:10Z",
+ "manifest": {
+  "set": "test",
+  "path": "eval/manifests/textspot-test.jsonl",
+  "sha256": "233b96d80a452e0585c717f4d65ec73758810262663f71e57bed04402b452fb5",
+  "frames": 259,
+  "vns": 28
+ },
+ "protocol_sha256": "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f",
+ "protocol3_sha256": "e64398488862a685d2ec230586ca2f3e92ff939007604c07834da9650cb70cee",
+ "candidate": {
+  "arm": "T3_kd_t64n8c16_seed3_detref",
+  "spec": "T3:kd_t64n8c16_seed3",
+  "kind": "detref",
+  "baseline": null,
+  "decode": "det+refine",
+  "family": "T3",
+  "run": "kd_t64n8c16_seed3",
+  "blob_sha256": "20c3f7cc4f07b443741bbb45fe4270f6fa8c74ce29045a796a5ed8887a3fb26a",
+  "blob_bytes": 51008,
+  "shape": "t64n8c16",
+  "stride": 4,
+  "half_above": 480,
+  "conf_min": 1,
+  "source": "$HERD/shared/artifacts/textspot3/runs/kd_t64n8c16_seed3/final.vtsp"
+ },
+ "blob_version": 2,
+ "pick": {
+  "record": "eval/textspot3_dev_20261022.json",
+  "sha256": "43c7c90c9a9d2c665ed2ece6b8c20ec4335ea1c55a1f90024bee7d386d27b790",
+  "winner": "T3_kd_t64n8c16_seed3_detref"
+ },
+ "report_parts": [
+  "adrenaline"
+ ],
+ "report_only_frames": 83,
+ "scored_frames": 176,
+ "models": [
+  "VOCR5-N",
+  "VOCR5-S",
+  "VOCR5-L"
+ ],
+ "bootstrap": {
+  "reps": 10000,
+  "seed": 0,
+  "min_clusters": 5
+ },
+ "recognizers_sha256": {
+  "VOCR5-N": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+  "VOCR5-S": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+  "VOCR5-L": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+  "VOCR5-V": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172"
+ },
+ "reader": {
+  "library_sha256": "5a87ea81c0014133cf42ec6b47d9f7f09a7980b108841bc14dd913255c54da80",
+  "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+  "scalar_flags": [
+   "-std=c99",
+   "-O2",
+   "-ffp-contract=off",
+   "-DVOCR_NO_NEON",
+   "-Wall",
+   "-Wextra",
+   "-Werror",
+   "-Wpedantic",
+   "-Wshadow",
+   "-Wstrict-prototypes",
+   "-Wmissing-prototypes",
+   "-Wcast-align",
+   "-Wpointer-arith",
+   "-fPIC",
+   "-shared"
+  ]
+ },
+ "code_sha256": {
+  "eval/textspot.py": "68f391eba4177eab4e61f6a679e2dd39a04dfc90ad00037f40420d4ba221aa7c",
+  "eval/textspot_metrics.py": "93323b756b12759dbd0e318ffe1c1de28b891ddf6ed33fca8932fd06773c4d17",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "eval/textdet.py": "9046680b50b98abd8a7edb9e27511f554355839d37f843f174510b9285335500",
+  "eval/textgate.py": "f5f99e32aaa62ff7caae1265c3d7f4b63029bfc7ef340e3d717dd21c268ccb95",
+  "eval/finder_tighten.py": "a01ac2e8a8b136b5ea677fbc3f7a7226f158620af6eea7b928e939b5f57148f4",
+  "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+  "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "synth/lines_refine.py": "423d5ca33aa9e0178aa0d3461dadea14d95987f74085f36ad0deab8465bbca98",
+  "synth/vertical_twin.py": "2816f6486fe76d0716d47471ea620370843ec097ab82811ba8f715b72cdcad3b",
+  "runtime/vocr.c": "3e1756138b2e1d9aff15abdda95b02e0c015a5ba0af99678bdd678377b73f559",
+  "runtime/vocr.h": "30bb32693e634a4c4b4cd5cd3a4da8d33f6882bf00348d0e1d8264ba08376271",
+  "runtime/pyvocr.py": "b32db8a0e5d5e9dc9f3a659c92c2c48b7fa796cc4e7835c4b2d9eedd789f78f8",
+  "eval/textspot2.py": "16ee08dd3074a755f8a72e50f1ac9fadf914a3260ef7ef44ba7efc4a466bbf61",
+  "eval/textspot2_protected.py": "be475701088942c6f1293243b078b85fd57a555ff24a2707f6831e7b51f8bc24",
+  "eval/textspot2_rule.py": "3aa17ebf39adf50ea674d1c2412e28f6e2a27b46a9cea7b65e1faac785b8621f",
+  "eval/textspot2_protocol.json": "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+  "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+  "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+  "runtime/vocr_textspot2.c": "359f97c8b628e4086466497d5667f96e83be75ef3b9f2f6173d9f36e9b864ce2",
+  "eval/textspot3.py": "22b2480207a6dfae3b7f07c1ef079613c93eb7f19c8206f7b85586bec53aafbd",
+  "eval/textspot3_protected.py": "01b85a80bb5c2e0f2a09f0585be0e47ecc0fc5188d0c69d3b1d59cbe693da16f",
+  "eval/textspot3_rule.py": "45c98d54a189fef281f7909e21a53cc6ad674dabe4ea973e73ec3a31d6714af3",
+  "eval/textspot3_protocol.json": "e64398488862a685d2ec230586ca2f3e92ff939007604c07834da9650cb70cee",
+  "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+  "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+  "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+  "runtime/vocr_textspot3.c": "b2d174f561e9a058e0cc2595c3f3f515ea38602629779176a4ee0d8baf3dfa5d",
+  "runtime/vocr_textspot3.h": "d04d58c29bee724ea4bf9e898f76e6c8832e9bfe0164bc01edc55095f928d7e8",
+  "runtime/vocr_textspot3_test.c": "9474b7eb113f6a99e763e9cdafd12a2ae6811f33be2c368a5f8bd22adb0abf45",
+  "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7"
+ },
+ "cache_seed": {
+  "kind": "textspot3-private-cache-seed",
+  "seeded": "2026-10-22T00:34:42Z",
+  "from": "$HERD/shared/private/textspot/cache",
+  "files": {
+   "20261019T184648-1802344.jsonl": {
+    "sha256": "31c49141188867ee568ff35f8ef1c567871ce92c9ff9795f22b6c834f077c220",
+    "bytes": 3723469
+   },
+   "20261019T184743-1802640.jsonl": {
+    "sha256": "bc0ade6fe0afc73105c8d3148b91d2ab93355a398b6f7bcdbdf8e27a52f8fe1a",
+    "bytes": 28599126
+   }
+  }
+ },
+ "stored": {
+  "dir": "$HERD/shared/private/textspot/protected/tests/private",
+  "record": "eval/textspot_protected_20261019.json",
+  "record_sha256": "c379474e561b7a6db71460b22c18e96e2721996e4cf85c7a622a5735136d5142",
+  "sha256": {
+   "B_h2_s4_c24n4_seed2_detref": {
+    "boxes": "a7b8a12baa6fa690a78c6d24516a8667dbd0bd9fbd33ff469f5e88c72682164e",
+    "VOCR5-N": "cb889859195449a42fb170032bd8463031d8d9e4f361c70d580964941fc14723",
+    "VOCR5-S": "eda721c82968c96fa2473af952b1fe94499b9d6239f435d7bf6202ce52212688",
+    "VOCR5-L": "44070d8fc5f21c1cfa9cda897c0cb847f8af5bbe8cc9410bb7ff4e2e22786b96"
+   },
+   "grad": {
+    "boxes": "f4002306b5d2eac9126b2a0491c58aedabfe8daf1d27c9834dfb0a517b01d806",
+    "VOCR5-N": "b8da7340fa687b412a96fdac80669bcd0de1a4f1b1c9bc4b4b09cd0dc021a138",
+    "VOCR5-S": "c621ed2e4ff0092645d02328155e211bf3afe9532dc6e1124bf0215fa6600721",
+    "VOCR5-L": "e2d921e56ed69cb241c966c20b3171cd6376ff1360559e23fb0ca4dd3c49a0a8"
+   },
+   "grad_refine": {
+    "boxes": "b552f63da3f03907057295b89619ef9a606e0dda8a537296fe272a24f93dd46c",
+    "VOCR5-N": "d275a69aac5a8df3dfce042d27b548ea4ede22201f0f47d02e1fb5f9ad86e978",
+    "VOCR5-S": "51fc37086333d6d144c9c0681f23c14fa2abe9f4c20fa78ea4f55c76842b8ecb",
+    "VOCR5-L": "b90015012b4acbdac1a041ff19c6bcd8d3011c2b455abfde26db83e509cc0715"
+   },
+   "grad_refine_gate": {
+    "boxes": "2dc08f65edf1491bf1edb6dcdc25b8d5f82751a45dbfd10c370539fe47239aa6",
+    "VOCR5-N": "c88c1b6d078142b8399ee344d5374e9a7ee052ef89862edd85d98aa14065965e",
+    "VOCR5-S": "b835d9bbae0411467fbb55effc4ad39fe2d942dc02c8c127a9e789c3d3e29881",
+    "VOCR5-L": "c83918e44e8f6581d01420721a1c0d41d154a2f22b4c42f1796ae2440b944c90"
+   },
+   "s8c24_textdet": {
+    "boxes": "056f3047a5206e63a3346a8079cab00a66db742386c1cdbdf99cf1fb50a2cc77",
+    "VOCR5-N": "531b8bb6cb8690638f3ac8ed2157b195a62e1c80fab99a91f632fc7e851f41bf",
+    "VOCR5-S": "df16efe41af57d4161778e9b96bc7d50dba11c2b7c8a27a7af30d7dc64bec27f",
+    "VOCR5-L": "c995816dcac24a87aab7e6c19fceb41a92fef36c87108592a7e5c980d1375375"
+   },
+   "s8c24_textdet_refine": {
+    "boxes": "dd6275256a2a2d946c4894426246b8262b3b8bb6bcf3ded0370901382572f112",
+    "VOCR5-N": "a9323ce2aa7320e5e60672c57c39e767b39272a51c85b41dc4e5f3b1865f312d",
+    "VOCR5-S": "5d72f48a8a44adb67020b60474b29b1ba7081b3d33568db9eff7cbabfd68a302",
+    "VOCR5-L": "8b99b01e46458f4c5ab5b7841789be4b2c7127bb67f351ecedaaaa25fedf7c17"
+   },
+   "s8c24_spot": {
+    "boxes": "579d1995b8618b4a991ded00a5c1c92028c273fe494fc03ec7184d94540bf76a",
+    "VOCR5-N": "577328acf5f80696a8ff9aef5559fb1577ec3cee5c80cfd3d671958d33f499e5",
+    "VOCR5-S": "7c857e922d3bff7df499767267ae64dd61169d6ddf187b57d54cd0c6cb5237d9",
+    "VOCR5-L": "94d7ac0612453c9d43d26e5d550d303a638a7dc0e43427f5c92bf0d553e307ed"
+   },
+   "columns": {
+    "boxes": "82c12d51d41bc5f56a5e0ae7fc7b27a316c3bac94c68620e60b22706af2a9556",
+    "VOCR5-N": "15ce45d5e9f1a481edf3d1963ec9ec84893ba776ac8e014c631a18ebf4b7b19c",
+    "VOCR5-S": "dd3b92219463a6c4b386188f1109940457e1113471ff29f878f38b0d8436fa36",
+    "VOCR5-L": "c44536b8f83cb5d2957330615bc633568f55e79f2d78dac4556af38331f3af59"
+   },
+   "grad_refine_columns": {
+    "boxes": "8b6181df526bf6f93cba891074a973be3fe35b7a7f167125b30e2ddbfdc15602",
+    "VOCR5-N": "10b866527cb16894f43b6e651e7d11ceb75920e0adca4e7de1b2a0607206bba6",
+    "VOCR5-S": "388d61f32328082c7debd13c622f8f17172375e84949b6fed39a324dde18629b",
+    "VOCR5-L": "3daa8976cb55bf95b5dbb626e536dbe72e5fd42c92ef69d9af7225adbace57a0"
+   }
+  },
+  "reproduces_record": true
+ },
+ "arms": {
+  "T3_kd_t64n8c16_seed3_detref": {
+   "VOCR5-N": {
+    "frames": 176,
+    "vns": 28,
+    "boxes": 752,
+    "vertical_boxes": 11,
+    "truncated_frames": 0,
+    "detection": {
+     "tp": 538,
+     "fp": 134,
+     "fn": 176,
+     "precision": 0.8005952380952381,
+     "recall": 0.7535014005602241,
+     "f1": 0.7763347763347763
+    },
+    "recall_by_class": {
+     "dialogue": {
+      "refs": 312,
+      "tp": 307,
+      "recall": 0.983974
+     },
+     "name": {
+      "refs": 122,
+      "tp": 112,
+      "recall": 0.918033
+     },
+     "choice": {
+      "refs": 31,
+      "tp": 26,
+      "recall": 0.83871
+     },
+     "ui": {
+      "refs": 229,
+      "tp": 85,
+      "recall": 0.371179
+     },
+     "scene": {
+      "refs": 20,
+      "tp": 8,
+      "recall": 0.4
+     }
+    },
+    "tightness": {
+     "pairs": 538,
+     "mean_iou": 0.8439288116930468,
+     "mean_ink_coverage": 0.9798381359761521
+    },
+    "cer_all": {
+     "errors": 1281,
+     "chars": 6229,
+     "cer": 20.5651
+    },
+    "cer_dialogue": {
+     "errors": 108,
+     "chars": 4707,
+     "cer": 2.2945
+    },
+    "junk_chars": 417,
+    "text_free": {
+     "frames": 19,
+     "with_any_box": 2,
+     "share_with_any_box": 0.105263,
+     "boxes_per_frame": 0.315789,
+     "with_scored_box": 2,
+     "share_with_scored_box": 0.105263,
+     "scored_boxes_per_frame": 0.315789
+    },
+    "pick": {
+     "frames_with_dialogue": 157,
+     "hits": 102,
+     "hit_share": 0.649682,
+     "cer": {
+      "errors": 977,
+      "chars": 4707,
+      "cer": 20.7563
+     }
+    },
+    "c_equal": true,
+    "c_unequal_frames": 0,
+    "c_unchecked_frames": 0,
+    "per_part": {
+     "psp": {
+      "frames": 83,
+      "vns": 14,
+      "boxes": 383,
+      "vertical_boxes": 6,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 279,
+       "fp": 70,
+       "fn": 74,
+       "precision": 0.7994269340974212,
+       "recall": 0.7903682719546742,
+       "f1": 0.7948717948717948
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 169,
+        "tp": 165,
+        "recall": 0.976331
+       },
+       "name": {
+        "refs": 65,
+        "tp": 59,
+        "recall": 0.907692
+       },
+       "choice": {
+        "refs": 15,
+        "tp": 15,
+        "recall": 1.0
+       },
+       "ui": {
+        "refs": 100,
+        "tp": 38,
+        "recall": 0.38
+       },
+       "scene": {
+        "refs": 4,
+        "tp": 2,
+        "recall": 0.5
+       }
+      },
+      "tightness": {
+       "pairs": 279,
+       "mean_iou": 0.8405868090370303,
+       "mean_ink_coverage": 0.980239636594261
+      },
+      "cer_all": {
+       "errors": 521,
+       "chars": 2997,
+       "cer": 17.3841
+      },
+      "cer_dialogue": {
+       "errors": 60,
+       "chars": 2305,
+       "cer": 2.603
+      },
+      "junk_chars": 140,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 83,
+       "hits": 56,
+       "hit_share": 0.674699,
+       "cer": {
+        "errors": 499,
+        "chars": 2305,
+        "cer": 21.6486
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "text-free": {
+      "frames": 19,
+      "vns": 8,
+      "boxes": 6,
+      "vertical_boxes": 0,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 0,
+       "fp": 6,
+       "fn": 0,
+       "precision": 0.0,
+       "recall": null,
+       "f1": 0.0
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "name": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "choice": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "ui": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "scene": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       }
+      },
+      "tightness": {
+       "pairs": 0,
+       "mean_iou": null,
+       "mean_ink_coverage": null
+      },
+      "cer_all": {
+       "errors": 3,
+       "chars": 0,
+       "cer": null
+      },
+      "cer_dialogue": {
+       "errors": 0,
+       "chars": 0,
+       "cer": null
+      },
+      "junk_chars": 3,
+      "text_free": {
+       "frames": 19,
+       "with_any_box": 2,
+       "share_with_any_box": 0.105263,
+       "boxes_per_frame": 0.315789,
+       "with_scored_box": 2,
+       "share_with_scored_box": 0.105263,
+       "scored_boxes_per_frame": 0.315789
+      },
+      "pick": {
+       "frames_with_dialogue": 0,
+       "hits": 0,
+       "hit_share": null
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "vita": {
+      "frames": 74,
+      "vns": 16,
+      "boxes": 363,
+      "vertical_boxes": 5,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 259,
+       "fp": 58,
+       "fn": 102,
+       "precision": 0.8170347003154574,
+       "recall": 0.7174515235457064,
+       "f1": 0.7640117994100295
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 143,
+        "tp": 142,
+        "recall": 0.993007
+       },
+       "name": {
+        "refs": 57,
+        "tp": 53,
+        "recall": 0.929825
+       },
+       "choice": {
+        "refs": 16,
+        "tp": 11,
+        "recall": 0.6875
+       },
+       "ui": {
+        "refs": 129,
+        "tp": 47,
+        "recall": 0.364341
+       },
+       "scene": {
+        "refs": 16,
+        "tp": 6,
+        "recall": 0.375
+       }
+      },
+      "tightness": {
+       "pairs": 259,
+       "mean_iou": 0.8475288840522307,
+       "mean_ink_coverage": 0.9794056314493089
+      },
+      "cer_all": {
+       "errors": 757,
+       "chars": 3232,
+       "cer": 23.422
+      },
+      "cer_dialogue": {
+       "errors": 48,
+       "chars": 2402,
+       "cer": 1.9983
+      },
+      "junk_chars": 274,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 74,
+       "hits": 46,
+       "hit_share": 0.621622,
+       "cer": {
+        "errors": 478,
+        "chars": 2402,
+        "cer": 19.9001
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     }
+    },
+    "all_frames_per_part": {
+     "adrenaline": {
+      "frames": 83,
+      "vns": 14,
+      "boxes": 347,
+      "vertical_boxes": 4,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 267,
+       "fp": 52,
+       "fn": 86,
+       "precision": 0.8369905956112853,
+       "recall": 0.7563739376770539,
+       "f1": 0.7946428571428571
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 169,
+        "tp": 166,
+        "recall": 0.982249
+       },
+       "name": {
+        "refs": 65,
+        "tp": 58,
+        "recall": 0.892308
+       },
+       "choice": {
+        "refs": 15,
+        "tp": 14,
+        "recall": 0.933333
+       },
+       "ui": {
+        "refs": 100,
+        "tp": 29,
+        "recall": 0.29
+       },
+       "scene": {
+        "refs": 4,
+        "tp": 0,
+        "recall": 0.0
+       }
+      },
+      "tightness": {
+       "pairs": 267,
+       "mean_iou": 0.8455434416219738,
+       "mean_ink_coverage": 0.9764298783854334
+      },
+      "cer_all": {
+       "errors": 511,
+       "chars": 2997,
+       "cer": 17.0504
+      },
+      "cer_dialogue": {
+       "errors": 64,
+       "chars": 2305,
+       "cer": 2.7766
+      },
+      "junk_chars": 110,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 83,
+       "hits": 60,
+       "hit_share": 0.722892,
+       "cer": {
+        "errors": 461,
+        "chars": 2305,
+        "cer": 20.0
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "psp": {
+      "frames": 83,
+      "vns": 14,
+      "boxes": 383,
+      "vertical_boxes": 6,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 279,
+       "fp": 70,
+       "fn": 74,
+       "precision": 0.7994269340974212,
+       "recall": 0.7903682719546742,
+       "f1": 0.7948717948717948
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 169,
+        "tp": 165,
+        "recall": 0.976331
+       },
+       "name": {
+        "refs": 65,
+        "tp": 59,
+        "recall": 0.907692
+       },
+       "choice": {
+        "refs": 15,
+        "tp": 15,
+        "recall": 1.0
+       },
+       "ui": {
+        "refs": 100,
+        "tp": 38,
+        "recall": 0.38
+       },
+       "scene": {
+        "refs": 4,
+        "tp": 2,
+        "recall": 0.5
+       }
+      },
+      "tightness": {
+       "pairs": 279,
+       "mean_iou": 0.8405868090370303,
+       "mean_ink_coverage": 0.980239636594261
+      },
+      "cer_all": {
+       "errors": 521,
+       "chars": 2997,
+       "cer": 17.3841
+      },
+      "cer_dialogue": {
+       "errors": 60,
+       "chars": 2305,
+       "cer": 2.603
+      },
+      "junk_chars": 140,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 83,
+       "hits": 56,
+       "hit_share": 0.674699,
+       "cer": {
+        "errors": 499,
+        "chars": 2305,
+        "cer": 21.6486
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "text-free": {
+      "frames": 19,
+      "vns": 8,
+      "boxes": 6,
+      "vertical_boxes": 0,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 0,
+       "fp": 6,
+       "fn": 0,
+       "precision": 0.0,
+       "recall": null,
+       "f1": 0.0
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "name": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "choice": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "ui": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "scene": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       }
+      },
+      "tightness": {
+       "pairs": 0,
+       "mean_iou": null,
+       "mean_ink_coverage": null
+      },
+      "cer_all": {
+       "errors": 3,
+       "chars": 0,
+       "cer": null
+      },
+      "cer_dialogue": {
+       "errors": 0,
+       "chars": 0,
+       "cer": null
+      },
+      "junk_chars": 3,
+      "text_free": {
+       "frames": 19,
+       "with_any_box": 2,
+       "share_with_any_box": 0.105263,
+       "boxes_per_frame": 0.315789,
+       "with_scored_box": 2,
+       "share_with_scored_box": 0.105263,
+       "scored_boxes_per_frame": 0.315789
+      },
+      "pick": {
+       "frames_with_dialogue": 0,
+       "hits": 0,
+       "hit_share": null
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "vita": {
+      "frames": 74,
+      "vns": 16,
+      "boxes": 363,
+      "vertical_boxes": 5,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 259,
+       "fp": 58,
+       "fn": 102,
+       "precision": 0.8170347003154574,
+       "recall": 0.7174515235457064,
+       "f1": 0.7640117994100295
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 143,
+        "tp": 142,
+        "recall": 0.993007
+       },
+       "name": {
+        "refs": 57,
+        "tp": 53,
+        "recall": 0.929825
+       },
+       "choice": {
+        "refs": 16,
+        "tp": 11,
+        "recall": 0.6875
+       },
+       "ui": {
+        "refs": 129,
+        "tp": 47,
+        "recall": 0.364341
+       },
+       "scene": {
+        "refs": 16,
+        "tp": 6,
+        "recall": 0.375
+       }
+      },
+      "tightness": {
+       "pairs": 259,
+       "mean_iou": 0.8475288840522307,
+       "mean_ink_coverage": 0.9794056314493089
+      },
+      "cer_all": {
+       "errors": 757,
+       "chars": 3232,
+       "cer": 23.422
+      },
+      "cer_dialogue": {
+       "errors": 48,
+       "chars": 2402,
+       "cer": 1.9983
+      },
+      "junk_chars": 274,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 74,
+       "hits": 46,
+       "hit_share": 0.621622,
+       "cer": {
+        "errors": 478,
+        "chars": 2402,
+        "cer": 19.9001
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     }
+    }
+   },
+   "VOCR5-S": {
+    "frames": 176,
+    "vns": 28,
+    "boxes": 752,
+    "vertical_boxes": 11,
+    "truncated_frames": 0,
+    "detection": {
+     "tp": 538,
+     "fp": 134,
+     "fn": 176,
+     "precision": 0.8005952380952381,
+     "recall": 0.7535014005602241,
+     "f1": 0.7763347763347763
+    },
+    "recall_by_class": {
+     "dialogue": {
+      "refs": 312,
+      "tp": 307,
+      "recall": 0.983974
+     },
+     "name": {
+      "refs": 122,
+      "tp": 112,
+      "recall": 0.918033
+     },
+     "choice": {
+      "refs": 31,
+      "tp": 26,
+      "recall": 0.83871
+     },
+     "ui": {
+      "refs": 229,
+      "tp": 85,
+      "recall": 0.371179
+     },
+     "scene": {
+      "refs": 20,
+      "tp": 8,
+      "recall": 0.4
+     }
+    },
+    "tightness": {
+     "pairs": 538,
+     "mean_iou": 0.8439288116930468,
+     "mean_ink_coverage": 0.9798381359761521
+    },
+    "cer_all": {
+     "errors": 1277,
+     "chars": 6229,
+     "cer": 20.5009
+    },
+    "cer_dialogue": {
+     "errors": 119,
+     "chars": 4707,
+     "cer": 2.5281
+    },
+    "junk_chars": 406,
+    "text_free": {
+     "frames": 19,
+     "with_any_box": 2,
+     "share_with_any_box": 0.105263,
+     "boxes_per_frame": 0.315789,
+     "with_scored_box": 2,
+     "share_with_scored_box": 0.105263,
+     "scored_boxes_per_frame": 0.315789
+    },
+    "pick": {
+     "frames_with_dialogue": 157,
+     "hits": 102,
+     "hit_share": 0.649682,
+     "cer": {
+      "errors": 998,
+      "chars": 4707,
+      "cer": 21.2025
+     }
+    },
+    "c_equal": true,
+    "c_unequal_frames": 0,
+    "c_unchecked_frames": 0,
+    "per_part": {
+     "psp": {
+      "frames": 83,
+      "vns": 14,
+      "boxes": 383,
+      "vertical_boxes": 6,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 279,
+       "fp": 70,
+       "fn": 74,
+       "precision": 0.7994269340974212,
+       "recall": 0.7903682719546742,
+       "f1": 0.7948717948717948
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 169,
+        "tp": 165,
+        "recall": 0.976331
+       },
+       "name": {
+        "refs": 65,
+        "tp": 59,
+        "recall": 0.907692
+       },
+       "choice": {
+        "refs": 15,
+        "tp": 15,
+        "recall": 1.0
+       },
+       "ui": {
+        "refs": 100,
+        "tp": 38,
+        "recall": 0.38
+       },
+       "scene": {
+        "refs": 4,
+        "tp": 2,
+        "recall": 0.5
+       }
+      },
+      "tightness": {
+       "pairs": 279,
+       "mean_iou": 0.8405868090370303,
+       "mean_ink_coverage": 0.980239636594261
+      },
+      "cer_all": {
+       "errors": 531,
+       "chars": 2997,
+       "cer": 17.7177
+      },
+      "cer_dialogue": {
+       "errors": 67,
+       "chars": 2305,
+       "cer": 2.9067
+      },
+      "junk_chars": 147,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 83,
+       "hits": 56,
+       "hit_share": 0.674699,
+       "cer": {
+        "errors": 513,
+        "chars": 2305,
+        "cer": 22.256
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "text-free": {
+      "frames": 19,
+      "vns": 8,
+      "boxes": 6,
+      "vertical_boxes": 0,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 0,
+       "fp": 6,
+       "fn": 0,
+       "precision": 0.0,
+       "recall": null,
+       "f1": 0.0
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "name": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "choice": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "ui": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "scene": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       }
+      },
+      "tightness": {
+       "pairs": 0,
+       "mean_iou": null,
+       "mean_ink_coverage": null
+      },
+      "cer_all": {
+       "errors": 1,
+       "chars": 0,
+       "cer": null
+      },
+      "cer_dialogue": {
+       "errors": 0,
+       "chars": 0,
+       "cer": null
+      },
+      "junk_chars": 1,
+      "text_free": {
+       "frames": 19,
+       "with_any_box": 2,
+       "share_with_any_box": 0.105263,
+       "boxes_per_frame": 0.315789,
+       "with_scored_box": 2,
+       "share_with_scored_box": 0.105263,
+       "scored_boxes_per_frame": 0.315789
+      },
+      "pick": {
+       "frames_with_dialogue": 0,
+       "hits": 0,
+       "hit_share": null
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "vita": {
+      "frames": 74,
+      "vns": 16,
+      "boxes": 363,
+      "vertical_boxes": 5,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 259,
+       "fp": 58,
+       "fn": 102,
+       "precision": 0.8170347003154574,
+       "recall": 0.7174515235457064,
+       "f1": 0.7640117994100295
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 143,
+        "tp": 142,
+        "recall": 0.993007
+       },
+       "name": {
+        "refs": 57,
+        "tp": 53,
+        "recall": 0.929825
+       },
+       "choice": {
+        "refs": 16,
+        "tp": 11,
+        "recall": 0.6875
+       },
+       "ui": {
+        "refs": 129,
+        "tp": 47,
+        "recall": 0.364341
+       },
+       "scene": {
+        "refs": 16,
+        "tp": 6,
+        "recall": 0.375
+       }
+      },
+      "tightness": {
+       "pairs": 259,
+       "mean_iou": 0.8475288840522307,
+       "mean_ink_coverage": 0.9794056314493089
+      },
+      "cer_all": {
+       "errors": 745,
+       "chars": 3232,
+       "cer": 23.0507
+      },
+      "cer_dialogue": {
+       "errors": 52,
+       "chars": 2402,
+       "cer": 2.1649
+      },
+      "junk_chars": 258,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 74,
+       "hits": 46,
+       "hit_share": 0.621622,
+       "cer": {
+        "errors": 485,
+        "chars": 2402,
+        "cer": 20.1915
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     }
+    },
+    "all_frames_per_part": {
+     "adrenaline": {
+      "frames": 83,
+      "vns": 14,
+      "boxes": 347,
+      "vertical_boxes": 4,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 267,
+       "fp": 52,
+       "fn": 86,
+       "precision": 0.8369905956112853,
+       "recall": 0.7563739376770539,
+       "f1": 0.7946428571428571
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 169,
+        "tp": 166,
+        "recall": 0.982249
+       },
+       "name": {
+        "refs": 65,
+        "tp": 58,
+        "recall": 0.892308
+       },
+       "choice": {
+        "refs": 15,
+        "tp": 14,
+        "recall": 0.933333
+       },
+       "ui": {
+        "refs": 100,
+        "tp": 29,
+        "recall": 0.29
+       },
+       "scene": {
+        "refs": 4,
+        "tp": 0,
+        "recall": 0.0
+       }
+      },
+      "tightness": {
+       "pairs": 267,
+       "mean_iou": 0.8455434416219738,
+       "mean_ink_coverage": 0.9764298783854334
+      },
+      "cer_all": {
+       "errors": 528,
+       "chars": 2997,
+       "cer": 17.6176
+      },
+      "cer_dialogue": {
+       "errors": 77,
+       "chars": 2305,
+       "cer": 3.3406
+      },
+      "junk_chars": 114,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 83,
+       "hits": 60,
+       "hit_share": 0.722892,
+       "cer": {
+        "errors": 482,
+        "chars": 2305,
+        "cer": 20.9111
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "psp": {
+      "frames": 83,
+      "vns": 14,
+      "boxes": 383,
+      "vertical_boxes": 6,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 279,
+       "fp": 70,
+       "fn": 74,
+       "precision": 0.7994269340974212,
+       "recall": 0.7903682719546742,
+       "f1": 0.7948717948717948
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 169,
+        "tp": 165,
+        "recall": 0.976331
+       },
+       "name": {
+        "refs": 65,
+        "tp": 59,
+        "recall": 0.907692
+       },
+       "choice": {
+        "refs": 15,
+        "tp": 15,
+        "recall": 1.0
+       },
+       "ui": {
+        "refs": 100,
+        "tp": 38,
+        "recall": 0.38
+       },
+       "scene": {
+        "refs": 4,
+        "tp": 2,
+        "recall": 0.5
+       }
+      },
+      "tightness": {
+       "pairs": 279,
+       "mean_iou": 0.8405868090370303,
+       "mean_ink_coverage": 0.980239636594261
+      },
+      "cer_all": {
+       "errors": 531,
+       "chars": 2997,
+       "cer": 17.7177
+      },
+      "cer_dialogue": {
+       "errors": 67,
+       "chars": 2305,
+       "cer": 2.9067
+      },
+      "junk_chars": 147,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 83,
+       "hits": 56,
+       "hit_share": 0.674699,
+       "cer": {
+        "errors": 513,
+        "chars": 2305,
+        "cer": 22.256
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "text-free": {
+      "frames": 19,
+      "vns": 8,
+      "boxes": 6,
+      "vertical_boxes": 0,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 0,
+       "fp": 6,
+       "fn": 0,
+       "precision": 0.0,
+       "recall": null,
+       "f1": 0.0
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "name": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "choice": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "ui": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "scene": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       }
+      },
+      "tightness": {
+       "pairs": 0,
+       "mean_iou": null,
+       "mean_ink_coverage": null
+      },
+      "cer_all": {
+       "errors": 1,
+       "chars": 0,
+       "cer": null
+      },
+      "cer_dialogue": {
+       "errors": 0,
+       "chars": 0,
+       "cer": null
+      },
+      "junk_chars": 1,
+      "text_free": {
+       "frames": 19,
+       "with_any_box": 2,
+       "share_with_any_box": 0.105263,
+       "boxes_per_frame": 0.315789,
+       "with_scored_box": 2,
+       "share_with_scored_box": 0.105263,
+       "scored_boxes_per_frame": 0.315789
+      },
+      "pick": {
+       "frames_with_dialogue": 0,
+       "hits": 0,
+       "hit_share": null
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "vita": {
+      "frames": 74,
+      "vns": 16,
+      "boxes": 363,
+      "vertical_boxes": 5,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 259,
+       "fp": 58,
+       "fn": 102,
+       "precision": 0.8170347003154574,
+       "recall": 0.7174515235457064,
+       "f1": 0.7640117994100295
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 143,
+        "tp": 142,
+        "recall": 0.993007
+       },
+       "name": {
+        "refs": 57,
+        "tp": 53,
+        "recall": 0.929825
+       },
+       "choice": {
+        "refs": 16,
+        "tp": 11,
+        "recall": 0.6875
+       },
+       "ui": {
+        "refs": 129,
+        "tp": 47,
+        "recall": 0.364341
+       },
+       "scene": {
+        "refs": 16,
+        "tp": 6,
+        "recall": 0.375
+       }
+      },
+      "tightness": {
+       "pairs": 259,
+       "mean_iou": 0.8475288840522307,
+       "mean_ink_coverage": 0.9794056314493089
+      },
+      "cer_all": {
+       "errors": 745,
+       "chars": 3232,
+       "cer": 23.0507
+      },
+      "cer_dialogue": {
+       "errors": 52,
+       "chars": 2402,
+       "cer": 2.1649
+      },
+      "junk_chars": 258,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 74,
+       "hits": 46,
+       "hit_share": 0.621622,
+       "cer": {
+        "errors": 485,
+        "chars": 2402,
+        "cer": 20.1915
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     }
+    }
+   },
+   "VOCR5-L": {
+    "frames": 176,
+    "vns": 28,
+    "boxes": 752,
+    "vertical_boxes": 11,
+    "truncated_frames": 0,
+    "detection": {
+     "tp": 538,
+     "fp": 134,
+     "fn": 176,
+     "precision": 0.8005952380952381,
+     "recall": 0.7535014005602241,
+     "f1": 0.7763347763347763
+    },
+    "recall_by_class": {
+     "dialogue": {
+      "refs": 312,
+      "tp": 307,
+      "recall": 0.983974
+     },
+     "name": {
+      "refs": 122,
+      "tp": 112,
+      "recall": 0.918033
+     },
+     "choice": {
+      "refs": 31,
+      "tp": 26,
+      "recall": 0.83871
+     },
+     "ui": {
+      "refs": 229,
+      "tp": 85,
+      "recall": 0.371179
+     },
+     "scene": {
+      "refs": 20,
+      "tp": 8,
+      "recall": 0.4
+     }
+    },
+    "tightness": {
+     "pairs": 538,
+     "mean_iou": 0.8439288116930468,
+     "mean_ink_coverage": 0.9798381359761521
+    },
+    "cer_all": {
+     "errors": 1253,
+     "chars": 6229,
+     "cer": 20.1156
+    },
+    "cer_dialogue": {
+     "errors": 105,
+     "chars": 4707,
+     "cer": 2.2307
+    },
+    "junk_chars": 434,
+    "text_free": {
+     "frames": 19,
+     "with_any_box": 2,
+     "share_with_any_box": 0.105263,
+     "boxes_per_frame": 0.315789,
+     "with_scored_box": 2,
+     "share_with_scored_box": 0.105263,
+     "scored_boxes_per_frame": 0.315789
+    },
+    "pick": {
+     "frames_with_dialogue": 157,
+     "hits": 102,
+     "hit_share": 0.649682,
+     "cer": {
+      "errors": 1000,
+      "chars": 4707,
+      "cer": 21.245
+     }
+    },
+    "c_equal": true,
+    "c_unequal_frames": 0,
+    "c_unchecked_frames": 0,
+    "per_part": {
+     "psp": {
+      "frames": 83,
+      "vns": 14,
+      "boxes": 383,
+      "vertical_boxes": 6,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 279,
+       "fp": 70,
+       "fn": 74,
+       "precision": 0.7994269340974212,
+       "recall": 0.7903682719546742,
+       "f1": 0.7948717948717948
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 169,
+        "tp": 165,
+        "recall": 0.976331
+       },
+       "name": {
+        "refs": 65,
+        "tp": 59,
+        "recall": 0.907692
+       },
+       "choice": {
+        "refs": 15,
+        "tp": 15,
+        "recall": 1.0
+       },
+       "ui": {
+        "refs": 100,
+        "tp": 38,
+        "recall": 0.38
+       },
+       "scene": {
+        "refs": 4,
+        "tp": 2,
+        "recall": 0.5
+       }
+      },
+      "tightness": {
+       "pairs": 279,
+       "mean_iou": 0.8405868090370303,
+       "mean_ink_coverage": 0.980239636594261
+      },
+      "cer_all": {
+       "errors": 512,
+       "chars": 2997,
+       "cer": 17.0838
+      },
+      "cer_dialogue": {
+       "errors": 57,
+       "chars": 2305,
+       "cer": 2.4729
+      },
+      "junk_chars": 152,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 83,
+       "hits": 56,
+       "hit_share": 0.674699,
+       "cer": {
+        "errors": 515,
+        "chars": 2305,
+        "cer": 22.3427
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "text-free": {
+      "frames": 19,
+      "vns": 8,
+      "boxes": 6,
+      "vertical_boxes": 0,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 0,
+       "fp": 6,
+       "fn": 0,
+       "precision": 0.0,
+       "recall": null,
+       "f1": 0.0
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "name": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "choice": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "ui": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "scene": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       }
+      },
+      "tightness": {
+       "pairs": 0,
+       "mean_iou": null,
+       "mean_ink_coverage": null
+      },
+      "cer_all": {
+       "errors": 1,
+       "chars": 0,
+       "cer": null
+      },
+      "cer_dialogue": {
+       "errors": 0,
+       "chars": 0,
+       "cer": null
+      },
+      "junk_chars": 1,
+      "text_free": {
+       "frames": 19,
+       "with_any_box": 2,
+       "share_with_any_box": 0.105263,
+       "boxes_per_frame": 0.315789,
+       "with_scored_box": 2,
+       "share_with_scored_box": 0.105263,
+       "scored_boxes_per_frame": 0.315789
+      },
+      "pick": {
+       "frames_with_dialogue": 0,
+       "hits": 0,
+       "hit_share": null
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "vita": {
+      "frames": 74,
+      "vns": 16,
+      "boxes": 363,
+      "vertical_boxes": 5,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 259,
+       "fp": 58,
+       "fn": 102,
+       "precision": 0.8170347003154574,
+       "recall": 0.7174515235457064,
+       "f1": 0.7640117994100295
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 143,
+        "tp": 142,
+        "recall": 0.993007
+       },
+       "name": {
+        "refs": 57,
+        "tp": 53,
+        "recall": 0.929825
+       },
+       "choice": {
+        "refs": 16,
+        "tp": 11,
+        "recall": 0.6875
+       },
+       "ui": {
+        "refs": 129,
+        "tp": 47,
+        "recall": 0.364341
+       },
+       "scene": {
+        "refs": 16,
+        "tp": 6,
+        "recall": 0.375
+       }
+      },
+      "tightness": {
+       "pairs": 259,
+       "mean_iou": 0.8475288840522307,
+       "mean_ink_coverage": 0.9794056314493089
+      },
+      "cer_all": {
+       "errors": 740,
+       "chars": 3232,
+       "cer": 22.896
+      },
+      "cer_dialogue": {
+       "errors": 48,
+       "chars": 2402,
+       "cer": 1.9983
+      },
+      "junk_chars": 281,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 74,
+       "hits": 46,
+       "hit_share": 0.621622,
+       "cer": {
+        "errors": 485,
+        "chars": 2402,
+        "cer": 20.1915
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     }
+    },
+    "all_frames_per_part": {
+     "adrenaline": {
+      "frames": 83,
+      "vns": 14,
+      "boxes": 347,
+      "vertical_boxes": 4,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 267,
+       "fp": 52,
+       "fn": 86,
+       "precision": 0.8369905956112853,
+       "recall": 0.7563739376770539,
+       "f1": 0.7946428571428571
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 169,
+        "tp": 166,
+        "recall": 0.982249
+       },
+       "name": {
+        "refs": 65,
+        "tp": 58,
+        "recall": 0.892308
+       },
+       "choice": {
+        "refs": 15,
+        "tp": 14,
+        "recall": 0.933333
+       },
+       "ui": {
+        "refs": 100,
+        "tp": 29,
+        "recall": 0.29
+       },
+       "scene": {
+        "refs": 4,
+        "tp": 0,
+        "recall": 0.0
+       }
+      },
+      "tightness": {
+       "pairs": 267,
+       "mean_iou": 0.8455434416219738,
+       "mean_ink_coverage": 0.9764298783854334
+      },
+      "cer_all": {
+       "errors": 508,
+       "chars": 2997,
+       "cer": 16.9503
+      },
+      "cer_dialogue": {
+       "errors": 61,
+       "chars": 2305,
+       "cer": 2.6464
+      },
+      "junk_chars": 123,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 83,
+       "hits": 60,
+       "hit_share": 0.722892,
+       "cer": {
+        "errors": 476,
+        "chars": 2305,
+        "cer": 20.6508
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "psp": {
+      "frames": 83,
+      "vns": 14,
+      "boxes": 383,
+      "vertical_boxes": 6,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 279,
+       "fp": 70,
+       "fn": 74,
+       "precision": 0.7994269340974212,
+       "recall": 0.7903682719546742,
+       "f1": 0.7948717948717948
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 169,
+        "tp": 165,
+        "recall": 0.976331
+       },
+       "name": {
+        "refs": 65,
+        "tp": 59,
+        "recall": 0.907692
+       },
+       "choice": {
+        "refs": 15,
+        "tp": 15,
+        "recall": 1.0
+       },
+       "ui": {
+        "refs": 100,
+        "tp": 38,
+        "recall": 0.38
+       },
+       "scene": {
+        "refs": 4,
+        "tp": 2,
+        "recall": 0.5
+       }
+      },
+      "tightness": {
+       "pairs": 279,
+       "mean_iou": 0.8405868090370303,
+       "mean_ink_coverage": 0.980239636594261
+      },
+      "cer_all": {
+       "errors": 512,
+       "chars": 2997,
+       "cer": 17.0838
+      },
+      "cer_dialogue": {
+       "errors": 57,
+       "chars": 2305,
+       "cer": 2.4729
+      },
+      "junk_chars": 152,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 83,
+       "hits": 56,
+       "hit_share": 0.674699,
+       "cer": {
+        "errors": 515,
+        "chars": 2305,
+        "cer": 22.3427
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "text-free": {
+      "frames": 19,
+      "vns": 8,
+      "boxes": 6,
+      "vertical_boxes": 0,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 0,
+       "fp": 6,
+       "fn": 0,
+       "precision": 0.0,
+       "recall": null,
+       "f1": 0.0
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "name": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "choice": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "ui": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       },
+       "scene": {
+        "refs": 0,
+        "tp": 0,
+        "recall": null
+       }
+      },
+      "tightness": {
+       "pairs": 0,
+       "mean_iou": null,
+       "mean_ink_coverage": null
+      },
+      "cer_all": {
+       "errors": 1,
+       "chars": 0,
+       "cer": null
+      },
+      "cer_dialogue": {
+       "errors": 0,
+       "chars": 0,
+       "cer": null
+      },
+      "junk_chars": 1,
+      "text_free": {
+       "frames": 19,
+       "with_any_box": 2,
+       "share_with_any_box": 0.105263,
+       "boxes_per_frame": 0.315789,
+       "with_scored_box": 2,
+       "share_with_scored_box": 0.105263,
+       "scored_boxes_per_frame": 0.315789
+      },
+      "pick": {
+       "frames_with_dialogue": 0,
+       "hits": 0,
+       "hit_share": null
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     },
+     "vita": {
+      "frames": 74,
+      "vns": 16,
+      "boxes": 363,
+      "vertical_boxes": 5,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 259,
+       "fp": 58,
+       "fn": 102,
+       "precision": 0.8170347003154574,
+       "recall": 0.7174515235457064,
+       "f1": 0.7640117994100295
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 143,
+        "tp": 142,
+        "recall": 0.993007
+       },
+       "name": {
+        "refs": 57,
+        "tp": 53,
+        "recall": 0.929825
+       },
+       "choice": {
+        "refs": 16,
+        "tp": 11,
+        "recall": 0.6875
+       },
+       "ui": {
+        "refs": 129,
+        "tp": 47,
+        "recall": 0.364341
+       },
+       "scene": {
+        "refs": 16,
+        "tp": 6,
+        "recall": 0.375
+       }
+      },
+      "tightness": {
+       "pairs": 259,
+       "mean_iou": 0.8475288840522307,
+       "mean_ink_coverage": 0.9794056314493089
+      },
+      "cer_all": {
+       "errors": 740,
+       "chars": 3232,
+       "cer": 22.896
+      },
+      "cer_dialogue": {
+       "errors": 48,
+       "chars": 2402,
+       "cer": 1.9983
+      },
+      "junk_chars": 281,
+      "text_free": {
+       "frames": 0,
+       "with_any_box": 0,
+       "share_with_any_box": null,
+       "boxes_per_frame": null,
+       "with_scored_box": 0,
+       "share_with_scored_box": null,
+       "scored_boxes_per_frame": null
+      },
+      "pick": {
+       "frames_with_dialogue": 74,
+       "hits": 46,
+       "hit_share": 0.621622,
+       "cer": {
+        "errors": 485,
+        "chars": 2402,
+        "cer": 20.1915
+       }
+      },
+      "c_equal": true,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 0
+     }
+    }
+   }
+  }
+ },
+ "recall_by_class": {
+  "VOCR5-N": {
+   "T3_kd_t64n8c16_seed3_detref": {
+    "dialogue": {
+     "tp": 307,
+     "n": 312,
+     "recall": 0.984
+    },
+    "name": {
+     "tp": 112,
+     "n": 122,
+     "recall": 0.918
+    },
+    "choice": {
+     "tp": 26,
+     "n": 31,
+     "recall": 0.8387
+    },
+    "ui": {
+     "tp": 85,
+     "n": 229,
+     "recall": 0.3712
+    },
+    "scene": {
+     "tp": 8,
+     "n": 20,
+     "recall": 0.4
+    }
+   },
+   "B_h2_s4_c24n4_seed2_detref": {
+    "dialogue": {
+     "tp": 298,
+     "n": 312,
+     "recall": 0.9551
+    },
+    "name": {
+     "tp": 113,
+     "n": 122,
+     "recall": 0.9262
+    },
+    "choice": {
+     "tp": 26,
+     "n": 31,
+     "recall": 0.8387
+    },
+    "ui": {
+     "tp": 111,
+     "n": 229,
+     "recall": 0.4847
+    },
+    "scene": {
+     "tp": 9,
+     "n": 20,
+     "recall": 0.45
+    }
+   }
+  },
+  "VOCR5-S": {
+   "T3_kd_t64n8c16_seed3_detref": {
+    "dialogue": {
+     "tp": 307,
+     "n": 312,
+     "recall": 0.984
+    },
+    "name": {
+     "tp": 112,
+     "n": 122,
+     "recall": 0.918
+    },
+    "choice": {
+     "tp": 26,
+     "n": 31,
+     "recall": 0.8387
+    },
+    "ui": {
+     "tp": 85,
+     "n": 229,
+     "recall": 0.3712
+    },
+    "scene": {
+     "tp": 8,
+     "n": 20,
+     "recall": 0.4
+    }
+   },
+   "B_h2_s4_c24n4_seed2_detref": {
+    "dialogue": {
+     "tp": 298,
+     "n": 312,
+     "recall": 0.9551
+    },
+    "name": {
+     "tp": 113,
+     "n": 122,
+     "recall": 0.9262
+    },
+    "choice": {
+     "tp": 26,
+     "n": 31,
+     "recall": 0.8387
+    },
+    "ui": {
+     "tp": 111,
+     "n": 229,
+     "recall": 0.4847
+    },
+    "scene": {
+     "tp": 9,
+     "n": 20,
+     "recall": 0.45
+    }
+   }
+  },
+  "VOCR5-L": {
+   "T3_kd_t64n8c16_seed3_detref": {
+    "dialogue": {
+     "tp": 307,
+     "n": 312,
+     "recall": 0.984
+    },
+    "name": {
+     "tp": 112,
+     "n": 122,
+     "recall": 0.918
+    },
+    "choice": {
+     "tp": 26,
+     "n": 31,
+     "recall": 0.8387
+    },
+    "ui": {
+     "tp": 85,
+     "n": 229,
+     "recall": 0.3712
+    },
+    "scene": {
+     "tp": 8,
+     "n": 20,
+     "recall": 0.4
+    }
+   },
+   "B_h2_s4_c24n4_seed2_detref": {
+    "dialogue": {
+     "tp": 298,
+     "n": 312,
+     "recall": 0.9551
+    },
+    "name": {
+     "tp": 113,
+     "n": 122,
+     "recall": 0.9262
+    },
+    "choice": {
+     "tp": 26,
+     "n": 31,
+     "recall": 0.8387
+    },
+    "ui": {
+     "tp": 111,
+     "n": 229,
+     "recall": 0.4847
+    },
+    "scene": {
+     "tp": 9,
+     "n": 20,
+     "recall": 0.45
+    }
+   }
+  }
+ },
+ "comparisons": {
+  "VOCR5-N": {
+   "B_h2_s4_c24n4_seed2_detref": {
+    "f1": {
+     "delta": 0.082254,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.039024,
+      0.131616
+     ]
+    },
+    "cer_all": {
+     "delta": 0.5458,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -2.5867,
+      4.1855
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -0.7011,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -1.4365,
+      -0.046
+     ]
+    }
+   },
+   "grad": {
+    "f1": {
+     "delta": 0.511959,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.441569,
+      0.585479
+     ]
+    },
+    "cer_all": {
+     "delta": -60.2183,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -73.3257,
+      -46.599
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -42.7448,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -55.9059,
+      -30.519
+     ]
+    }
+   },
+   "grad_refine": {
+    "f1": {
+     "delta": 0.510016,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.441739,
+      0.581612
+     ]
+    },
+    "cer_all": {
+     "delta": -58.4685,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -71.7434,
+      -44.9627
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -41.4064,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -54.6006,
+      -29.1786
+     ]
+    }
+   },
+   "grad_refine_gate": {
+    "f1": {
+     "delta": 0.502693,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.433604,
+      0.573784
+     ]
+    },
+    "cer_all": {
+     "delta": -58.0511,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -71.246,
+      -44.6236
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -41.4064,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -54.6006,
+      -29.1786
+     ]
+    }
+   },
+   "s8c24_textdet": {
+    "f1": {
+     "delta": 0.204046,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.152578,
+      0.252219
+     ]
+    },
+    "cer_all": {
+     "delta": -10.114,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -15.5177,
+      -5.2026
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -6.5859,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -13.6195,
+      -1.3519
+     ]
+    }
+   },
+   "s8c24_textdet_refine": {
+    "f1": {
+     "delta": 0.205761,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.153673,
+      0.255297
+     ]
+    },
+    "cer_all": {
+     "delta": -8.4604,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -13.7331,
+      -3.8748
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -6.246,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -13.2024,
+      -1.3725
+     ]
+    }
+   },
+   "s8c24_spot": {
+    "f1": {
+     "delta": 0.196146,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.146611,
+      0.246321
+     ]
+    },
+    "cer_all": {
+     "delta": -7.6577,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -11.3151,
+      -4.5936
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -3.2505,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -6.2926,
+      -0.8239
+     ]
+    }
+   },
+   "columns": {
+    "f1": {
+     "delta": 0.773763,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.718241,
+      0.830448
+     ]
+    },
+    "cer_all": {
+     "delta": -138.2886,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -154.4827,
+      -122.8556
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -94.88,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -96.415,
+      -93.1482
+     ]
+    }
+   },
+   "grad_refine_columns": {
+    "f1": {
+     "delta": 0.591484,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.531741,
+      0.650249
+     ]
+    },
+    "cer_all": {
+     "delta": -90.8974,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -100.5241,
+      -80.3906
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -41.7251,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -54.7724,
+      -29.6271
+     ]
+    }
+   }
+  },
+  "VOCR5-S": {
+   "B_h2_s4_c24n4_seed2_detref": {
+    "f1": {
+     "delta": 0.082254,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.039024,
+      0.131616
+     ]
+    },
+    "cer_all": {
+     "delta": 0.0,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -2.5548,
+      3.0673
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -0.8498,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -1.6581,
+      -0.1315
+     ]
+    }
+   },
+   "grad": {
+    "f1": {
+     "delta": 0.511959,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.441569,
+      0.585479
+     ]
+    },
+    "cer_all": {
+     "delta": -56.7346,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -69.516,
+      -43.295
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -42.8086,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -55.8895,
+      -30.5726
+     ]
+    }
+   },
+   "grad_refine": {
+    "f1": {
+     "delta": 0.510016,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.441739,
+      0.581612
+     ]
+    },
+    "cer_all": {
+     "delta": -55.4182,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -68.1194,
+      -42.4348
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -41.0453,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -54.2359,
+      -28.8675
+     ]
+    }
+   },
+   "grad_refine_gate": {
+    "f1": {
+     "delta": 0.502693,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.433604,
+      0.573784
+     ]
+    },
+    "cer_all": {
+     "delta": -55.1292,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -67.7351,
+      -42.1651
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -41.0453,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -54.2359,
+      -28.8675
+     ]
+    }
+   },
+   "s8c24_textdet": {
+    "f1": {
+     "delta": 0.204046,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.152578,
+      0.252219
+     ]
+    },
+    "cer_all": {
+     "delta": -9.9374,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -15.0908,
+      -5.2873
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -6.7134,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -13.8974,
+      -1.3135
+     ]
+    }
+   },
+   "s8c24_textdet_refine": {
+    "f1": {
+     "delta": 0.205761,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.153673,
+      0.255297
+     ]
+    },
+    "cer_all": {
+     "delta": -9.0384,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -14.0728,
+      -4.709
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -6.5434,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -13.5104,
+      -1.614
+     ]
+    }
+   },
+   "s8c24_spot": {
+    "f1": {
+     "delta": 0.196146,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.146611,
+      0.246321
+     ]
+    },
+    "cer_all": {
+     "delta": -7.433,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -10.9056,
+      -4.4599
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -3.3142,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -6.5273,
+      -0.7035
+     ]
+    }
+   },
+   "columns": {
+    "f1": {
+     "delta": 0.773763,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.718241,
+      0.830448
+     ]
+    },
+    "cer_all": {
+     "delta": -138.3529,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -154.3141,
+      -123.1803
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -94.6463,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -96.1924,
+      -92.9023
+     ]
+    }
+   },
+   "grad_refine_columns": {
+    "f1": {
+     "delta": 0.591484,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.531741,
+      0.650249
+     ]
+    },
+    "cer_all": {
+     "delta": -87.8472,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -96.9821,
+      -77.8398
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -41.3639,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -54.4283,
+      -29.312
+     ]
+    }
+   }
+  },
+  "VOCR5-L": {
+   "B_h2_s4_c24n4_seed2_detref": {
+    "f1": {
+     "delta": 0.082254,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.039024,
+      0.131616
+     ]
+    },
+    "cer_all": {
+     "delta": 1.2201,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -1.261,
+      4.6537
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -0.7648,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -1.5323,
+      -0.0648
+     ]
+    }
+   },
+   "grad": {
+    "f1": {
+     "delta": 0.511959,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.441569,
+      0.585479
+     ]
+    },
+    "cer_all": {
+     "delta": -59.9133,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -73.6709,
+      -45.6419
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -42.5749,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -55.7064,
+      -30.3643
+     ]
+    }
+   },
+   "grad_refine": {
+    "f1": {
+     "delta": 0.510016,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.441739,
+      0.581612
+     ]
+    },
+    "cer_all": {
+     "delta": -58.5166,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -72.1795,
+      -44.6697
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -41.0665,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -54.2805,
+      -28.8962
+     ]
+    }
+   },
+   "grad_refine_gate": {
+    "f1": {
+     "delta": 0.502693,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.433604,
+      0.573784
+     ]
+    },
+    "cer_all": {
+     "delta": -58.2758,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -71.8408,
+      -44.4502
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -41.0665,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -54.2805,
+      -28.8962
+     ]
+    }
+   },
+   "s8c24_textdet": {
+    "f1": {
+     "delta": 0.204046,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.152578,
+      0.252219
+     ]
+    },
+    "cer_all": {
+     "delta": -9.0384,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -14.2948,
+      -4.273
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -6.3735,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -13.3029,
+      -1.1927
+     ]
+    }
+   },
+   "s8c24_textdet_refine": {
+    "f1": {
+     "delta": 0.205761,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.153673,
+      0.255297
+     ]
+    },
+    "cer_all": {
+     "delta": -8.3802,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -13.388,
+      -4.0845
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -6.0123,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -12.8184,
+      -1.3645
+     ]
+    }
+   },
+   "s8c24_spot": {
+    "f1": {
+     "delta": 0.196146,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.146611,
+      0.246321
+     ]
+    },
+    "cer_all": {
+     "delta": -6.5179,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -10.2089,
+      -3.4202
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -2.953,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -5.9588,
+      -0.5515
+     ]
+    }
+   },
+   "columns": {
+    "f1": {
+     "delta": 0.773763,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.718241,
+      0.830448
+     ]
+    },
+    "cer_all": {
+     "delta": -138.7382,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -155.0982,
+      -122.9191
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -94.9437,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -96.4912,
+      -93.1828
+     ]
+    }
+   },
+   "grad_refine_columns": {
+    "f1": {
+     "delta": 0.591484,
+     "clusters": 28,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      0.531741,
+      0.650249
+     ]
+    },
+    "cer_all": {
+     "delta": -90.9456,
+     "clusters": 28,
+     "chars": 6229,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -100.8136,
+      -80.2336
+     ]
+    },
+    "cer_dialogue": {
+     "delta": -41.3852,
+     "clusters": 28,
+     "chars": 4707,
+     "reps": 10000,
+     "seed": 0,
+     "min_clusters": 5,
+     "ci95": [
+      -54.4393,
+      -29.3457
+     ]
+    }
+   }
+  }
+ },
+ "vs_ref": {
+  "VOCR5-N": {
+   "comparison": "B_h2_s4_c24n4_seed2_detref",
+   "dialogue_resolved_better_and_guards_hold": true,
+   "bar": true
+  },
+  "VOCR5-S": {
+   "comparison": "B_h2_s4_c24n4_seed2_detref",
+   "dialogue_resolved_better_and_guards_hold": true,
+   "bar": true
+  },
+  "VOCR5-L": {
+   "comparison": "B_h2_s4_c24n4_seed2_detref",
+   "dialogue_resolved_better_and_guards_hold": true,
+   "bar": true
+  }
+ }
+}

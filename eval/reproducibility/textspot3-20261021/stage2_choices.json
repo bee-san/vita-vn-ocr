@@ -1,0 +1,6 @@
+{
+ "size_kept": false,
+ "clean_kept": false,
+ "kd_teacher_run": "base_qL5_seed2",
+ "kd_students": ["t64n8c16", "qS4"]
+}

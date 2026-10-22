@@ -581,6 +581,92 @@ $G -std=c99 -O2 -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -static runtime/vocr
 python tests/textspot2_parity.py --bin "runtime/scripts/tools/bin/qemu-arm -cpu cortex-a9 ./vts2_neon" --selftest 4
 ```
 
+## Spotter for VTSP versions 1, 2 and 3 (`vocr_textspot3.c`, multi-scale)
+
+**Research only, for now.** No console build (`vita/`, `psp/`) and no Rubi build links this file, and no release
+ships a version-3 blob. It is textspot3's runtime (issue #108, `docs/textspot3.md`): family M's networks run on it,
+and it would only reach a console if a family-M model is selected. The console spotter is `vocr_textspot.c`.
+
+`vocr_textspot2.c` copied (not linked) with VTSP version 3 added. `synth/textspot3_twin.py` specifies the format (its
+docstring) and is the bit-exact twin of all three versions; `train/textspot3_model.py` writes version-3 blobs (from
+the trainer's checkpoint, or random ones for tests and the A9 rows).
+
+- **Versions 1 and 2** run exactly as `vocr_textspot2.c`: the same boxes, blocks, order, pick, truncated and dark
+  flags, and the same arena sizes (the parity runs both drivers on every version-1 and version-2 batch).
+- **Version 3** (family M): a VTSP header with `half_above` and `half_above_h` (a frame wider than 480 or taller
+  than 272 px is halved, so the network reads at most 480 x 272), then a VTMS network:
+  - a stride-8 stream of version 1's layers, run row by row on version 1's kernels into a whole stride-8 map;
+  - then generic map ops on whole maps: 3x3 depthwise (stride 1 or 2, dilation 1..8) and 1x1 over up to three
+    earlier maps, each read through a nearest upsampling by 2^u (u <= 3), up to 1,024 channels;
+  - the last op is version 2's 16-channel d2s head, whose rows feed textspot's decode at stride 4.
+
+  Weights are int8 in -127..127 (the loader refuses -128), with version 1's int32 bias and fixed-point
+  requantisation. Earlier runtimes (`vocr_textspot.c`, `vocr_textspot2.c` and their twins) refuse version 3.
+
+```c
+#include "vocr_textspot3.h"
+
+static vocr_textspot3 ts;                          /* points into the blob; .version 1, 2 or 3 */
+int rc = vocr_textspot3_load(&ts, blob, bytes);    /* VOCR_TEXTSPOT_E_BLOB if refused */
+size_t need = vocr_textspot3_arena_bytes(&ts, 960, 544);   /* every frame up to 960 x 544 */
+static VocrTextspotSet set;                        /* vocr_textspot.h's result, flags and limits */
+rc = vocr_textspot3_find(&ts, &im, 0, arena, need, &set);   /* or vocr_textspot3_find_rows(&ts, &src, 0, ...) */
+```
+
+- The calls, flags (`VOCR_TEXTSPOT_NO_DARK`), return codes, row-callback contract and limits are `vocr_textspot.h`'s;
+  only the names carry a 3. C99, no allocation, no recursion, no global state, integer only; NEON and scalar give
+  the same bits.
+- Arena, version 3: the stream's state over a whole stride-8 map while the frame is read, then the maps in slots on
+  a stack (in-place 1x1 and depthwise ops where a source dies, an FPN neck freeing its stages last in, first out),
+  each op's scratch on top. It depends on both sides of the frame (`vocr_textspot3_arena_bytes(m, w, h)` is the most
+  any frame up to w x h needs).
+- Speed (version 3's map part, NEON):
+  - 1x1 ops: VMULL.S8 + VMLAL.S8 put two int8 products in each int16 lane, VPADAL.S16 folds them into int32, 4
+    output channels x 2 cells per pass: 32 instructions per 128 multiply-adds;
+  - depthwise rows: two passes, with the 9 taps' weights in registers;
+  - no NEON register spills (the A9 pays for extension-register loads between NEON instructions).
+- Stack (gcc `-fcallgraph-info=su`, every frame static; `eval/textspot3_a9r.py stack`):
+
+  | build | find | find_rows | find without the dark pass | load | `_maps` (test hook) |
+  |---|---:|---:|---:|---:|---:|
+  | Vita `-O2` | 2,712 | 2,704 | 1,960 | 160 | 4,272 |
+  | Vita `-Os` | 2,688 | 2,680 | 1,920 | 124 | 4,240 |
+  | PSP `-O2 -G0` | 2,616 | 2,616 | 1,800 | 64 | 4,168 |
+  | PSP `-Os -G0` | 2,624 | 2,624 | 1,768 | 72 | 4,176 |
+
+  The peak runs through `vocr_line_dark`'s histograms, as in textspot; `vocr_textspot2.c`, counted the same way, is
+  2,904 / 960 B (Vita `-O2`).
+- Code (`.text` of the spotter's own sections kept by a `--gc-sections` link of a caller of load, both arenas, find
+  and find_rows; `eval/textspot3_a9m.py codesize`):
+  - VitaSDK gcc 15.2, Thumb-2, NEON: 23,880 B at `-O2` and 19,452 B at `-Os`;
+  - scalar (`-DVOCR_NO_NEON`): 20,252 B at `-O2` and 16,054 B at `-Os`;
+  - psp-gcc 15.2, `vocr_textspot3.o`: 31,618 B at `-O2 -G0` and 26,706 B at `-Os -G0`;
+  - `vocr_textspot2.c` is 11,844 / 9,746 B on the Vita; version 3 adds the map ops, their NEON kernels and the plan.
+
+Cortex-A9 estimates of the registered family-M shapes (`eval/textspot3_a9_20261021.json`):
+- the method is textspot's, on this file's Vita `-O2` code: random version-3 blobs and the pinned frames;
+- ms @333 = high bound x 1.0007; ms @444 = that x 333/444; the default call (dark pass included);
+- these are **estimates**: nothing of it has run on a console.
+
+| shape (point) | VTSP B | MACs / frame | 960x544 @333 / @444 | no dark @333 | 480x272 @333 / @444 | arena up to 960x544 | split @333: stream / map / decode / dark / cache |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `qS4` (S) | 117,184 | 75.1 M | 195.1 / 146.3 ms | 187.0 ms | 184.8 / 138.6 ms | 256,247 | 122.4 / 38.5 / 2.7 / 7.3 / 23.4 |
+| `qM4` (M) | 247,392 | 96.1 M | 216.6 / 162.4 ms | 211.3 ms | 208.4 / 156.3 ms | 256,247 | 122.4 / 59.4 / 3.0 / 4.8 / 26.3 |
+| `qL5` (L) | 447,392 | 107.3 M | 231.8 / 173.8 ms | 225.3 ms | 222.9 / 167.2 ms | 256,247 | 122.4 / 70.8 / 2.9 / 5.7 / 29.2 |
+
+All three keep family T's `t64n4c16` trunk, whose stream costs the same 122.4 ms in each, and whose state sets the
+arena (5,897 B under the 262,144 B tier).
+
+Checks: `make check-textspot3` (in `make check`, so in `ci/runtime.sh gcc|clang` with ASan + UBSan):
+- strict compiles (also `-DVOCR_NO_NEON`);
+- `tests/textspot3_parity.py` through the sanitized driver (`TEXTSPOT3_PARITY_OK ...`), on:
+  - random, graph, wild and probe version-3 networks; the probe must give #97's stride-4 probe's result;
+  - version-1 and version-2 blobs, against `vocr_textspot2_test`;
+- the C loader against the twin's refusals;
+- the driver's self-test.
+
+`tests/test_textspot3_runtime.py` adds the arenas and the `--batch` contract.
+
 ## Text-presence gate (`vocr_textgate.c`)
 
 The gate of issue #100 (`docs/textgate.md`): does a region hold text at all? It runs a VTDT blob (#97's layout,

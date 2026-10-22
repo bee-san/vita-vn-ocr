@@ -1,0 +1,745 @@
+{
+ "kind": "textspot3-train-runs",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/108",
+ "what": "the training runs of docs/textspot3.md (train/textspot3_train.py) through eval/reproducibility/textspot3-20261021/sweep.sh, summarised by runs_summary.py from each run's own run.json, log.jsonl and done.json: started, finished, wall time, attempts, the training-loss curve and the blobs' bytes and sha256. Training losses only: nothing here is a score, and no run was selected or stopped on any figure",
+ "sweeps": {
+  "stage2": {
+   "out": "$HERD/shared/artifacts/textspot3/runs",
+   "stage": "stage 2",
+   "commit": "8a0f8d2cfe52577d4ffdf4cc5a51fbcfdce3dafd",
+   "commits": [
+    "8a0f8d2cfe52577d4ffdf4cc5a51fbcfdce3dafd"
+   ],
+   "max_par": 7,
+   "plan": "eval/reproducibility/textspot3-20261021/stage2_plan.jsonl",
+   "plan_sha256": "ac68be5a340c8182dfa87e69ae8e7bcd9055f27d4feace2f4e2c26c27a93177e",
+   "plan_sha256_at_start": "ac68be5a340c8182dfa87e69ae8e7bcd9055f27d4feace2f4e2c26c27a93177e",
+   "started": "2026-10-21T20:59:23Z",
+   "sweep_done": "2026-10-22T00:02:38Z",
+   "launches": [
+    {
+     "started": "2026-10-21T20:59:23Z",
+     "stage": "stage 2",
+     "max_par": 7,
+     "commit": "8a0f8d2cfe52577d4ffdf4cc5a51fbcfdce3dafd",
+     "plan_sha256": "ac68be5a340c8182dfa87e69ae8e7bcd9055f27d4feace2f4e2c26c27a93177e",
+     "sweep_done": "2026-10-22T00:02:38Z"
+    }
+   ]
+  }
+ },
+ "stages": {
+  "stage2": {
+   "kind": "textspot3-train-runs",
+   "plan": "eval/reproducibility/textspot3-20261021/stage2_plan.jsonl",
+   "runs": [
+    {
+     "run": "kd_t64n8c16_seed1",
+     "recipe": "kd",
+     "family": "T",
+     "shape": "t64n8c16",
+     "seed": 1,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T20:59:25Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "8a0f8d2cfe52577d4ffdf4cc5a51fbcfdce3dafd",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "e64398488862a685d2ec230586ca2f3e92ff939007604c07834da9650cb70cee",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": {
+      "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/textspot3/runs/base_qL5_seed2",
+      "name": "base_qL5_seed2",
+      "kind": "textspot3-run",
+      "recipe": "base",
+      "family": "M",
+      "shape": "qL5",
+      "scale": {
+       "rule": "wider or taller",
+       "half_above": 480,
+       "half_above_h": 272,
+       "what": "a canvas wider than 480 px or taller than 272 px is halved (textspot_twin.halve)"
+      },
+      "steps": 30000,
+      "seed": 2,
+      "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473",
+      "vtsp_sha256": "6808bef93b642540e0fe6f78ac01f7d2e0f9796c21b0bcdf81d5aca5d6be00dd",
+      "how": "final.pt as the family's quantisation-aware network (fake quantisation on), eval mode, no gradient, on the student's window with its own layer masks; its 16-channel head through to_stride4",
+      "scale_disagreements": {}
+     },
+     "curve": {
+      "total_200": 2.7179,
+      "total_2000": 0.3248,
+      "total_10000": 0.2339,
+      "total_20000": 0.1843,
+      "total_last_float": 0.1744,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1934,
+      "step_first_qat": 24200,
+      "total_final": 0.1746,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01931,
+       "dice": 0.1101,
+       "o": 0.00264,
+       "a": 0.02162,
+       "kd_k": 0.01179,
+       "kd_o": 0.00421,
+       "kd_a": 0.00728
+      },
+      "ms_per_step": 362.8,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-22T00:01:31Z",
+     "wall_seconds": 10926.8,
+     "train_seconds": 10883.4,
+     "vtd_bytes": 50976,
+     "vtd_sha256": "e8a218faa1ebecdcfdb70daf0f9f8012d92fc136c8a203140e6e4cb2f6206f49",
+     "vtsp_bytes": 51008,
+     "vtsp_sha256": "b0197ae7a9abfe88585966bdf1b0c656ba065cac5e655313f216cccf20ebab26",
+     "vtsp_version": 2,
+     "pt_sha256": "17d62eb8def76a76983845dadbb11a9a9b8d36821e8402381bd83fdac552ce8a"
+    },
+    {
+     "run": "kd_t64n8c16_seed2",
+     "recipe": "kd",
+     "family": "T",
+     "shape": "t64n8c16",
+     "seed": 2,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T20:59:27Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "8a0f8d2cfe52577d4ffdf4cc5a51fbcfdce3dafd",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "e64398488862a685d2ec230586ca2f3e92ff939007604c07834da9650cb70cee",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": {
+      "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/textspot3/runs/base_qL5_seed2",
+      "name": "base_qL5_seed2",
+      "kind": "textspot3-run",
+      "recipe": "base",
+      "family": "M",
+      "shape": "qL5",
+      "scale": {
+       "rule": "wider or taller",
+       "half_above": 480,
+       "half_above_h": 272,
+       "what": "a canvas wider than 480 px or taller than 272 px is halved (textspot_twin.halve)"
+      },
+      "steps": 30000,
+      "seed": 2,
+      "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473",
+      "vtsp_sha256": "6808bef93b642540e0fe6f78ac01f7d2e0f9796c21b0bcdf81d5aca5d6be00dd",
+      "how": "final.pt as the family's quantisation-aware network (fake quantisation on), eval mode, no gradient, on the student's window with its own layer masks; its 16-channel head through to_stride4",
+      "scale_disagreements": {}
+     },
+     "curve": {
+      "total_200": 2.6746,
+      "total_2000": 0.3305,
+      "total_10000": 0.2213,
+      "total_20000": 0.1769,
+      "total_last_float": 0.1706,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1883,
+      "step_first_qat": 24200,
+      "total_final": 0.1724,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.0192,
+       "dice": 0.10819,
+       "o": 0.00316,
+       "a": 0.02188,
+       "kd_k": 0.01111,
+       "kd_o": 0.00438,
+       "kd_a": 0.00751
+      },
+      "ms_per_step": 364.8,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-22T00:02:35Z",
+     "wall_seconds": 10987.9,
+     "train_seconds": 10944.4,
+     "vtd_bytes": 50976,
+     "vtd_sha256": "4882aca1b84891dd1a2f88b38345134e21d631d607b8cdf3af0374d13d2ce890",
+     "vtsp_bytes": 51008,
+     "vtsp_sha256": "3e4d5c0ecb0c7286c27e53131cea5d25d4498dba79f44d94963209f03d6ad181",
+     "vtsp_version": 2,
+     "pt_sha256": "701692dca9493e09ee83b1f2ee23a222a84f0ca9ccf7e2c85e113725f266cc60"
+    },
+    {
+     "run": "kd_t64n8c16_seed3",
+     "recipe": "kd",
+     "family": "T",
+     "shape": "t64n8c16",
+     "seed": 3,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T20:59:29Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "8a0f8d2cfe52577d4ffdf4cc5a51fbcfdce3dafd",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "e64398488862a685d2ec230586ca2f3e92ff939007604c07834da9650cb70cee",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": {
+      "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/textspot3/runs/base_qL5_seed2",
+      "name": "base_qL5_seed2",
+      "kind": "textspot3-run",
+      "recipe": "base",
+      "family": "M",
+      "shape": "qL5",
+      "scale": {
+       "rule": "wider or taller",
+       "half_above": 480,
+       "half_above_h": 272,
+       "what": "a canvas wider than 480 px or taller than 272 px is halved (textspot_twin.halve)"
+      },
+      "steps": 30000,
+      "seed": 2,
+      "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473",
+      "vtsp_sha256": "6808bef93b642540e0fe6f78ac01f7d2e0f9796c21b0bcdf81d5aca5d6be00dd",
+      "how": "final.pt as the family's quantisation-aware network (fake quantisation on), eval mode, no gradient, on the student's window with its own layer masks; its 16-channel head through to_stride4",
+      "scale_disagreements": {}
+     },
+     "curve": {
+      "total_200": 2.7421,
+      "total_2000": 0.3262,
+      "total_10000": 0.2166,
+      "total_20000": 0.1951,
+      "total_last_float": 0.1738,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1842,
+      "step_first_qat": 24200,
+      "total_final": 0.1797,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01924,
+       "dice": 0.1086,
+       "o": 0.00403,
+       "a": 0.02212,
+       "kd_k": 0.01126,
+       "kd_o": 0.00456,
+       "kd_a": 0.00683
+      },
+      "ms_per_step": 360.4,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-22T00:00:24Z",
+     "wall_seconds": 10855.3,
+     "train_seconds": 10812.3,
+     "vtd_bytes": 50976,
+     "vtd_sha256": "23596977d2aa7d56bbb5c9d108f044e816750d379e95b9e50386eee4498c4dee",
+     "vtsp_bytes": 51008,
+     "vtsp_sha256": "20c3f7cc4f07b443741bbb45fe4270f6fa8c74ce29045a796a5ed8887a3fb26a",
+     "vtsp_version": 2,
+     "pt_sha256": "576c171da77c74b69e54557b5133b243a891778d1809f4e1a9990895c381c77a"
+    },
+    {
+     "run": "kd_qS4_seed1",
+     "recipe": "kd",
+     "family": "M",
+     "shape": "qS4",
+     "seed": 1,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T20:59:31Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "8a0f8d2cfe52577d4ffdf4cc5a51fbcfdce3dafd",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "e64398488862a685d2ec230586ca2f3e92ff939007604c07834da9650cb70cee",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": {
+      "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/textspot3/runs/base_qL5_seed2",
+      "name": "base_qL5_seed2",
+      "kind": "textspot3-run",
+      "recipe": "base",
+      "family": "M",
+      "shape": "qL5",
+      "scale": {
+       "rule": "wider or taller",
+       "half_above": 480,
+       "half_above_h": 272,
+       "what": "a canvas wider than 480 px or taller than 272 px is halved (textspot_twin.halve)"
+      },
+      "steps": 30000,
+      "seed": 2,
+      "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473",
+      "vtsp_sha256": "6808bef93b642540e0fe6f78ac01f7d2e0f9796c21b0bcdf81d5aca5d6be00dd",
+      "how": "final.pt as the family's quantisation-aware network (fake quantisation on), eval mode, no gradient, on the student's window with its own layer masks; its 16-channel head through to_stride4",
+      "scale_disagreements": {}
+     },
+     "curve": {
+      "total_200": 2.8107,
+      "total_2000": 0.318,
+      "total_10000": 0.2339,
+      "total_20000": 0.1861,
+      "total_last_float": 0.1738,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1946,
+      "step_first_qat": 24200,
+      "total_final": 0.1756,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01943,
+       "dice": 0.11028,
+       "o": 0.00288,
+       "a": 0.02257,
+       "kd_k": 0.01155,
+       "kd_o": 0.00431,
+       "kd_a": 0.00704
+      },
+      "ms_per_step": 316.3,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T23:38:23Z",
+     "wall_seconds": 9532.5,
+     "train_seconds": 9489.4,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 117184,
+     "vtsp_sha256": "420276317876b6f4fb4ee4fd5f4ea53572d84cb167f4f549b456a6d7493af4f7",
+     "vtsp_version": 3,
+     "pt_sha256": "f52eda90bab277425e1e866a04cfceac22c6bea6e15326e2bcff14abbd792aa5"
+    },
+    {
+     "run": "kd_qS4_seed2",
+     "recipe": "kd",
+     "family": "M",
+     "shape": "qS4",
+     "seed": 2,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T20:59:33Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "8a0f8d2cfe52577d4ffdf4cc5a51fbcfdce3dafd",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "e64398488862a685d2ec230586ca2f3e92ff939007604c07834da9650cb70cee",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": {
+      "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/textspot3/runs/base_qL5_seed2",
+      "name": "base_qL5_seed2",
+      "kind": "textspot3-run",
+      "recipe": "base",
+      "family": "M",
+      "shape": "qL5",
+      "scale": {
+       "rule": "wider or taller",
+       "half_above": 480,
+       "half_above_h": 272,
+       "what": "a canvas wider than 480 px or taller than 272 px is halved (textspot_twin.halve)"
+      },
+      "steps": 30000,
+      "seed": 2,
+      "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473",
+      "vtsp_sha256": "6808bef93b642540e0fe6f78ac01f7d2e0f9796c21b0bcdf81d5aca5d6be00dd",
+      "how": "final.pt as the family's quantisation-aware network (fake quantisation on), eval mode, no gradient, on the student's window with its own layer masks; its 16-channel head through to_stride4",
+      "scale_disagreements": {}
+     },
+     "curve": {
+      "total_200": 2.8474,
+      "total_2000": 0.3254,
+      "total_10000": 0.2149,
+      "total_20000": 0.1777,
+      "total_last_float": 0.1692,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1886,
+      "step_first_qat": 24200,
+      "total_final": 0.1725,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01953,
+       "dice": 0.10905,
+       "o": 0.00305,
+       "a": 0.02301,
+       "kd_k": 0.01067,
+       "kd_o": 0.00428,
+       "kd_a": 0.00746
+      },
+      "ms_per_step": 316.8,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T23:38:39Z",
+     "wall_seconds": 9546.8,
+     "train_seconds": 9503.4,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 117184,
+     "vtsp_sha256": "f7a038db0d58b5945288199549977c59e2719469775610ed5396a0c87c1dd70d",
+     "vtsp_version": 3,
+     "pt_sha256": "f7616a23b5db08f776dd29beb183fc02c3c3b822657ee3c8e395bdcd58ac6df2"
+    },
+    {
+     "run": "kd_qS4_seed3",
+     "recipe": "kd",
+     "family": "M",
+     "shape": "qS4",
+     "seed": 3,
+     "state": "finished",
+     "failed_attempts": [],
+     "crashes": [],
+     "restarts": [],
+     "started": "2026-10-21T20:59:35Z",
+     "steps": 30000,
+     "qat_start": 24000,
+     "extras": [],
+     "git": {
+      "head": "8a0f8d2cfe52577d4ffdf4cc5a51fbcfdce3dafd",
+      "modified": []
+     },
+     "code_sha256": {
+      "synth/textdet_twin.py": "85760479bd3efa5f2cdf20b520b12506116ff27f05980f75a35fd83c6efcbf12",
+      "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+      "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+      "synth/textspot_twin.py": "0f694dc09bf3aa7ede83fd771bca81ae89e05ed716d8d1fb2e7a42eee91723fc",
+      "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+      "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+      "train/textdet_train.py": "6eb73798fae80e9216d2e72be1dc66fc21de5670499e90bd78d6369f7c6f36a2",
+      "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+      "train/textspot2_shapes.py": "b55a587429e387e8e8eaee957f51acd148ef7d70e1606200c848c4450a4731a7",
+      "train/textspot2_train.py": "9824aeca78987ba15b8031e526a8955798ea1ebf6426399827354b517d246b52",
+      "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+      "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+      "train/textspot3_train.py": "a51392fc6a43dcbe00f4293ee6eaeac629cfab04c912fd89984e45190ff23cbe",
+      "train/textspot_train.py": "90d1d8fe0dd7e52e1dee6a364f508b7f36cc0936feed9755e21c56f26c90334d"
+     },
+     "manifests_sha256": {
+      "data/manifests/textspot_shards_v1.json": "7f22e5c25974e9279a955bbc0131de1efca96f258c1984d5157edc4e8ba33d2f",
+      "data/manifests/textspot2_shards_v1.json": "b9ef3567aeadc976e03155ff0d4c178d559e81535e67ca23abf546832394b034"
+     },
+     "protocols_sha256": [
+      "e64398488862a685d2ec230586ca2f3e92ff939007604c07834da9650cb70cee",
+      "ac1c816b7d8201b4d042cc6fba593cde093e043ee5550c02b77dd53016efbc81",
+      "18173fbcdfbaf2c9de24c0c29f523f208021294d1d8b4992212d71038727ca5f"
+     ],
+     "skip": {
+      "dropped_total": 0,
+      "lists": [
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       },
+       {
+        "skip_shots": 77,
+        "skip_shots_sha256": "62be0a35992dc8572d21cffd8e0cab470f1c352d9bc87fd75f6d3ad2cc7249b8",
+        "skip_vns": 23,
+        "skip_vns_sha256": "b58da090960455d9d42e29e4e03e7e450bbe768343d91fe8b95a2a0304cd857a"
+       }
+      ]
+     },
+     "teacher": {
+      "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/textspot3/runs/base_qL5_seed2",
+      "name": "base_qL5_seed2",
+      "kind": "textspot3-run",
+      "recipe": "base",
+      "family": "M",
+      "shape": "qL5",
+      "scale": {
+       "rule": "wider or taller",
+       "half_above": 480,
+       "half_above_h": 272,
+       "what": "a canvas wider than 480 px or taller than 272 px is halved (textspot_twin.halve)"
+      },
+      "steps": 30000,
+      "seed": 2,
+      "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473",
+      "vtsp_sha256": "6808bef93b642540e0fe6f78ac01f7d2e0f9796c21b0bcdf81d5aca5d6be00dd",
+      "how": "final.pt as the family's quantisation-aware network (fake quantisation on), eval mode, no gradient, on the student's window with its own layer masks; its 16-channel head through to_stride4",
+      "scale_disagreements": {}
+     },
+     "curve": {
+      "total_200": 3.0331,
+      "total_2000": 0.316,
+      "total_10000": 0.2137,
+      "total_20000": 0.1963,
+      "total_last_float": 0.1767,
+      "step_last_float": 24000,
+      "total_first_qat": 0.1868,
+      "step_first_qat": 24200,
+      "total_final": 0.1829,
+      "step_final": 30000,
+      "parts_last5": {
+       "k_bce": 0.01941,
+       "dice": 0.10954,
+       "o": 0.00388,
+       "a": 0.02261,
+       "kd_k": 0.01112,
+       "kd_o": 0.00436,
+       "kd_a": 0.00668
+      },
+      "ms_per_step": 317.1,
+      "ema_swap_step": 24000,
+      "ema_swap_updates": 23001,
+      "qat_average_updates": 6001
+     },
+     "finished": "2026-10-21T23:38:51Z",
+     "wall_seconds": 9556.1,
+     "train_seconds": 9512.7,
+     "vtd_bytes": null,
+     "vtd_sha256": null,
+     "vtsp_bytes": 117184,
+     "vtsp_sha256": "74d8cbfa99b9facd1a0ded8867332ed528e0eb35f3e823bb15de44f1ff1a65ee",
+     "vtsp_version": 3,
+     "pt_sha256": "fc62ae5aac6c45fe45dd42dbec45cecd2b3d98505daeaaa3c877c8491c10adfd"
+    }
+   ],
+   "finished": 6,
+   "of": 6,
+   "consistent": {
+    "git": true,
+    "code_sha256[M]": true,
+    "manifests_sha256[M]": true,
+    "skip[M]": true,
+    "protocols_sha256[M]": true,
+    "code_sha256[T]": true,
+    "manifests_sha256[T]": true,
+    "skip[T]": true,
+    "protocols_sha256[T]": true
+   },
+   "crashes": 0,
+   "restarts": 0
+  }
+ }
+}

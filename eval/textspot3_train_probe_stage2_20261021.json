@@ -1,0 +1,390 @@
+{
+ "kind": "textspot3-train-probe",
+ "family": "T and M",
+ "what": "stage 2's kd runs (eval/reproducibility/textspot3-20261021/stage2_choices.json: the teacher base_qL5_seed2's final.pt, the students t64n8c16 and qS4, no extra kept): speed probes (200 steps after one warm-up step; 2 passes) and 300-step smoke runs (QAT from step 240, export, check_run.py with the C drivers) of kd on both students with that teacher, seed 1, on the pinned shards with the sweep's own command lines; not runs of the sweep, never used",
+ "head": "f0a7e8d1ac31f7d995baecc98a5a358497f16dd3",
+ "threads": 5,
+ "concurrency": "at most 2 of these jobs at once, after stage 1 had finished (load 16-37 on 64 cores)",
+ "passes": [
+  "probe",
+  "probe2"
+ ],
+ "probes": [
+  {
+   "run": "kd_qS4_seed1",
+   "recipe": "kd",
+   "family": "M",
+   "shape": "qS4",
+   "extras": [],
+   "macs_window_256x512": 74919936,
+   "ms_per_step": 280.39,
+   "registered": true,
+   "passes": [
+    {
+     "pass": "probe",
+     "finished": "2026-10-21T20:44:46Z",
+     "ms_per_step": 279.78,
+     "ms_per_step_median": 276.71,
+     "ms_per_step_p90": 303.21,
+     "ms_waiting_for_data": 4.17,
+     "warmup_ms": 6033.8,
+     "startup_s": 60.8
+    },
+    {
+     "pass": "probe2",
+     "finished": "2026-10-21T20:49:55Z",
+     "ms_per_step": 281.01,
+     "ms_per_step_median": 278.66,
+     "ms_per_step_p90": 316.91,
+     "ms_waiting_for_data": 4.15,
+     "warmup_ms": 6240.9,
+     "startup_s": 42.5
+    }
+   ],
+   "n_passes": 2,
+   "ms_per_step_range": [
+    279.78,
+    281.01
+   ]
+  },
+  {
+   "run": "kd_t64n8c16_seed1",
+   "recipe": "kd",
+   "family": "T",
+   "shape": "t64n8c16",
+   "extras": [],
+   "macs_window_256x512": 85032960,
+   "ms_per_step": 326.45,
+   "registered": true,
+   "passes": [
+    {
+     "pass": "probe",
+     "finished": "2026-10-21T20:44:56Z",
+     "ms_per_step": 331.32,
+     "ms_per_step_median": 330.47,
+     "ms_per_step_p90": 369.01,
+     "ms_waiting_for_data": 4.22,
+     "warmup_ms": 6028.3,
+     "startup_s": 62.8
+    },
+    {
+     "pass": "probe2",
+     "finished": "2026-10-21T20:50:01Z",
+     "ms_per_step": 321.58,
+     "ms_per_step_median": 321.77,
+     "ms_per_step_p90": 350.22,
+     "ms_waiting_for_data": 4.07,
+     "warmup_ms": 6318.9,
+     "startup_s": 43.0
+    }
+   ],
+   "n_passes": 2,
+   "ms_per_step_range": [
+    321.58,
+    331.32
+   ]
+  }
+ ],
+ "smokes": {
+  "kd": {
+   "run": "kd_t64n8c16_seed1",
+   "shape": "t64n8c16",
+   "family": "T",
+   "extras": [],
+   "wall_s": 165.9,
+   "train_s": 123.2,
+   "startup_s": 42.7,
+   "ms_float_20_240": 324.5,
+   "ms_qat_260_300": 340.0,
+   "qat_ratio": 1.048,
+   "overhead_s": 67.6,
+   "final": {
+    "k_bce": 0.06294,
+    "dice": 0.38449,
+    "o": 0.10141,
+    "a": 0.07997,
+    "kd_k": 0.06268,
+    "kd_o": 0.09592,
+    "kd_a": 0.10422,
+    "loss": 0.79296
+   },
+   "ema_swap": [
+    {
+     "step": 240,
+     "ema_steps": 141,
+     "bn_layers": 21
+    }
+   ],
+   "qat": true,
+   "qat_average_updates": 61,
+   "teacher": {
+    "name": "base_qL5_seed2",
+    "family": "M",
+    "shape": "qL5",
+    "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473"
+   },
+   "clean": null,
+   "vtsp_bytes": 51008,
+   "vtsp_sha256": "f5c15daad9bb0b1ef23c31786d8a71f413fa1e32a9834956fba8901895068951",
+   "vtsp_version": 2,
+   "check_ok": true,
+   "c_runtime_equal": true
+  }
+ },
+ "smoke_runs": {
+  "kd_qS4_seed1": {
+   "run": "kd_qS4_seed1",
+   "shape": "qS4",
+   "family": "M",
+   "extras": [],
+   "wall_s": 155.8,
+   "train_s": 113.3,
+   "startup_s": 42.5,
+   "ms_float_20_240": 280.0,
+   "ms_qat_260_300": 270.0,
+   "qat_ratio": 0.964,
+   "overhead_s": 72.4,
+   "final": {
+    "k_bce": 0.05969,
+    "dice": 0.37904,
+    "o": 0.10002,
+    "a": 0.07949,
+    "kd_k": 0.05935,
+    "kd_o": 0.09514,
+    "kd_a": 0.10394,
+    "loss": 0.77909
+   },
+   "ema_swap": [
+    {
+     "step": 240,
+     "ema_steps": 141,
+     "bn_layers": 25
+    }
+   ],
+   "qat": true,
+   "qat_average_updates": 61,
+   "teacher": {
+    "name": "base_qL5_seed2",
+    "family": "M",
+    "shape": "qL5",
+    "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473"
+   },
+   "clean": null,
+   "vtsp_bytes": 117184,
+   "vtsp_sha256": "ba27fa78e03384a2e32fbe5635b0c76759a9570b6498f123dc803a176186873b",
+   "vtsp_version": 3,
+   "check_ok": true,
+   "c_runtime_equal": true
+  },
+  "kd_t64n8c16_seed1": {
+   "run": "kd_t64n8c16_seed1",
+   "shape": "t64n8c16",
+   "family": "T",
+   "extras": [],
+   "wall_s": 165.9,
+   "train_s": 123.2,
+   "startup_s": 42.7,
+   "ms_float_20_240": 324.5,
+   "ms_qat_260_300": 340.0,
+   "qat_ratio": 1.048,
+   "overhead_s": 67.6,
+   "final": {
+    "k_bce": 0.06294,
+    "dice": 0.38449,
+    "o": 0.10141,
+    "a": 0.07997,
+    "kd_k": 0.06268,
+    "kd_o": 0.09592,
+    "kd_a": 0.10422,
+    "loss": 0.79296
+   },
+   "ema_swap": [
+    {
+     "step": 240,
+     "ema_steps": 141,
+     "bn_layers": 21
+    }
+   ],
+   "qat": true,
+   "qat_average_updates": 61,
+   "teacher": {
+    "name": "base_qL5_seed2",
+    "family": "M",
+    "shape": "qL5",
+    "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473"
+   },
+   "clean": null,
+   "vtsp_bytes": 51008,
+   "vtsp_sha256": "f5c15daad9bb0b1ef23c31786d8a71f413fa1e32a9834956fba8901895068951",
+   "vtsp_version": 2,
+   "check_ok": true,
+   "c_runtime_equal": true
+  }
+ },
+ "estimate": {
+  "family": "T and M",
+  "plan": "stage2_plan.jsonl",
+  "runs": 6,
+  "order": [
+   "kd_t64n8c16_seed1",
+   "kd_t64n8c16_seed2",
+   "kd_t64n8c16_seed3",
+   "kd_qS4_seed1",
+   "kd_qS4_seed2",
+   "kd_qS4_seed3"
+  ],
+  "rows": [
+   {
+    "run": "kd_t64n8c16_seed1",
+    "steps": 30000,
+    "ms_per_step": 326.45,
+    "qat_ratio": 1.048,
+    "overhead_s": 67.6,
+    "est_s": 9955,
+    "est_h": 2.77,
+    "from": "probe kd_t64n8c16_seed1, smoke kd_t64n8c16_seed1"
+   },
+   {
+    "run": "kd_t64n8c16_seed2",
+    "steps": 30000,
+    "ms_per_step": 326.45,
+    "qat_ratio": 1.048,
+    "overhead_s": 67.6,
+    "est_s": 9955,
+    "est_h": 2.77,
+    "from": "probe kd_t64n8c16_seed1, smoke kd_t64n8c16_seed1"
+   },
+   {
+    "run": "kd_t64n8c16_seed3",
+    "steps": 30000,
+    "ms_per_step": 326.45,
+    "qat_ratio": 1.048,
+    "overhead_s": 67.6,
+    "est_s": 9955,
+    "est_h": 2.77,
+    "from": "probe kd_t64n8c16_seed1, smoke kd_t64n8c16_seed1"
+   },
+   {
+    "run": "kd_qS4_seed1",
+    "steps": 30000,
+    "ms_per_step": 280.39,
+    "qat_ratio": 0.964,
+    "overhead_s": 72.4,
+    "est_s": 8424,
+    "est_h": 2.34,
+    "from": "probe kd_qS4_seed1, smoke kd_qS4_seed1"
+   },
+   {
+    "run": "kd_qS4_seed2",
+    "steps": 30000,
+    "ms_per_step": 280.39,
+    "qat_ratio": 0.964,
+    "overhead_s": 72.4,
+    "est_s": 8424,
+    "est_h": 2.34,
+    "from": "probe kd_qS4_seed1, smoke kd_qS4_seed1"
+   },
+   {
+    "run": "kd_qS4_seed3",
+    "steps": 30000,
+    "ms_per_step": 280.39,
+    "qat_ratio": 0.964,
+    "overhead_s": 72.4,
+    "est_s": 8424,
+    "est_h": 2.34,
+    "from": "probe kd_qS4_seed1, smoke kd_qS4_seed1"
+   }
+  ],
+  "qat_ratio_median": 1.0,
+  "est_run_s": {
+   "kd_t64n8c16_seed1": 9955,
+   "kd_t64n8c16_seed2": 9955,
+   "kd_t64n8c16_seed3": 9955,
+   "kd_qS4_seed1": 8424,
+   "kd_qS4_seed2": 8424,
+   "kd_qS4_seed3": 8424
+  },
+  "slot_hours": 15.32,
+  "schedule": {
+   "7": {
+    "makespan_s": 9955,
+    "makespan_h": 2.77,
+    "plan": [
+     [
+      "kd_t64n8c16_seed1",
+      0,
+      9955
+     ],
+     [
+      "kd_t64n8c16_seed2",
+      0,
+      9955
+     ],
+     [
+      "kd_t64n8c16_seed3",
+      0,
+      9955
+     ],
+     [
+      "kd_qS4_seed1",
+      0,
+      8424
+     ],
+     [
+      "kd_qS4_seed2",
+      0,
+      8424
+     ],
+     [
+      "kd_qS4_seed3",
+      0,
+      8424
+     ]
+    ]
+   },
+   "6": {
+    "makespan_s": 9955,
+    "makespan_h": 2.77,
+    "plan": [
+     [
+      "kd_t64n8c16_seed1",
+      0,
+      9955
+     ],
+     [
+      "kd_t64n8c16_seed2",
+      0,
+      9955
+     ],
+     [
+      "kd_t64n8c16_seed3",
+      0,
+      9955
+     ],
+     [
+      "kd_qS4_seed1",
+      0,
+      8424
+     ],
+     [
+      "kd_qS4_seed2",
+      0,
+      8424
+     ],
+     [
+      "kd_qS4_seed3",
+      0,
+      8424
+     ]
+    ]
+   }
+  }
+ },
+ "label": "estimates: measured ms per step (the mean of two passes) x steps, QAT at each kd smoke's own QAT / float step ratio, plus that smoke's overhead (startup, calibration, BatchNorm re-estimation, export); the probes ran two at a time on a quiet box, so 6 runs at once may run slower per step (stage 1: 0.77-1.15x its estimates)",
+ "out": "$HERD/shared/artifacts/textspot3/train/probe_s2",
+ "teacher": {
+  "run": "base_qL5_seed2",
+  "pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473",
+  "done_pt_sha256": "a40a6269b56b32ec19cb51b11bb949ab07866410d6fac086ca7e511cba29e473"
+ }
+}

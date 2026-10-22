@@ -5,8 +5,9 @@
 #   cmake --build build/vita
 #
 # Builds, with arm-vita-eabi-gcc:
-#   libvocr.a       runtime/vocr.c + runtime/vocr_lm.c + runtime/vocr_lines.c (+ vocr_lines_rows.c and the vertical
-#                   column finder vocr_vertical.c, at -O2 with the strict warnings), NEON, the runtime's own -Werror flags
+#   libvocr.a       runtime/vocr.c + runtime/vocr_lm.c + runtime/vocr_lines.c (+ vocr_lines_rows.c, the vertical
+#                   column finder vocr_vertical.c, the counter post-processing vocr_post.c and the edge continuation
+#                   vocr_lines_widen.c, at -O2 with the strict warnings), NEON, the runtime's own -Werror flags
 #   vocr_test       the test app (app/main.c, app/screen.c) -> eboot.bin -> vocr_test.vpk
 # Nothing built here is committed: the VPK is a build product (vita/README.md).
 cmake_minimum_required(VERSION 3.16)
@@ -32,10 +33,12 @@ set(VOCR_ARCH -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard)
 set(VOCR_WARN -std=c99 -ffp-contract=off -Wall -Wextra -Werror -Wpedantic -Wshadow
     -Wstrict-prototypes -Wmissing-prototypes -Wcast-align -Wpointer-arith)
 
-add_library(vocr STATIC ${RT}/vocr.c ${RT}/vocr_lm.c ${RT}/vocr_lines.c ${RT}/vocr_lines_rows.c ${RT}/vocr_vertical.c)
+add_library(vocr STATIC ${RT}/vocr.c ${RT}/vocr_lm.c ${RT}/vocr_lines.c ${RT}/vocr_lines_rows.c ${RT}/vocr_vertical.c
+  ${RT}/vocr_post.c ${RT}/vocr_lines_widen.c)
 target_compile_options(vocr PRIVATE ${VOCR_ARCH} -O2 ${VOCR_WARN})
 # runtime/vocr_lines.mk compiles the line finder with these on top
-set_source_files_properties(${RT}/vocr_lines.c ${RT}/vocr_lines_rows.c ${RT}/vocr_vertical.c PROPERTIES COMPILE_OPTIONS "-Wconversion;-Wsign-conversion")
+set_source_files_properties(${RT}/vocr_lines.c ${RT}/vocr_lines_rows.c ${RT}/vocr_vertical.c ${RT}/vocr_post.c
+  ${RT}/vocr_lines_widen.c PROPERTIES COMPILE_OPTIONS "-Wconversion;-Wsign-conversion")
 
 execute_process(COMMAND git rev-parse --short=12 HEAD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 OUTPUT_VARIABLE VOCR_GIT OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET RESULT_VARIABLE git_rc)

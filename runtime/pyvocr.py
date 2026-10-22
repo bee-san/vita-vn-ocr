@@ -9,6 +9,8 @@
     out = r.run_topk(crop, 8)                    # greedy text + per-frame top-8 + confidence
     lm = VocrLM(r, "lm.vlm", beam=8, topk=8, alpha=300, beta=0, gate=3000)   # runtime/vocr_lm.h
     text = lm.decode(out["topv"], out["topc"], out["blank"])                  # beam + LM text
+    out2, st = r.redecode(out, tau=2000, open=2000)  # runtime/vocr_post.h: counter re-decode (edited copy)
+    text, n = post_counters(text, r.lib)             # the counter rule: ッ月 -> ヶ月 ...
 
 Not part of the console build: the runtime itself is dependency-free C.
 """
@@ -43,6 +45,14 @@ class _Extra(C.Structure):
                 ("conf_min", C.c_float), ("conf_mean", C.c_float)]
 
 
+class _PostOpts(C.Structure):
+    _fields_ = [("tau", C.c_int), ("open", C.c_int)]
+
+
+class _PostStats(C.Structure):
+    _fields_ = [("contexts", C.c_uint), ("numerals", C.c_uint), ("brackets", C.c_uint)]
+
+
 class _LMOpts(C.Structure):
     _fields_ = [("beam", C.c_uint), ("topk", C.c_uint), ("max_frames", C.c_uint), ("alpha", C.c_int),
                 ("beta", C.c_int), ("gate", C.c_int), ("flags", C.c_uint), ("bracket", C.c_int)]
@@ -59,7 +69,8 @@ def _stale(lib):
     if not lib.exists():
         return True
     built = lib.stat().st_mtime
-    return any((HERE / src).stat().st_mtime > built for src in ("vocr.c", "vocr.h", "vocr_lm.c", "vocr_lm.h"))
+    return any((HERE / src).stat().st_mtime > built
+               for src in ("vocr.c", "vocr.h", "vocr_lm.c", "vocr_lm.h", "vocr_post.c", "vocr_post.h"))
 
 
 def load_lib(path=None):
@@ -84,6 +95,11 @@ def load_lib(path=None):
     lib.vocr_sizes.argtypes = [C.POINTER(sz), C.POINTER(sz)]
     lib.vocr_class_text.argtypes = [vp, u, C.POINTER(u)]
     lib.vocr_class_text.restype = vp
+    if hasattr(lib, "vocr_post_counters"):   # runtime/vocr_post.c (issue #109)
+        lib.vocr_post_counters.argtypes = [C.c_char_p]
+        lib.vocr_post_counters.restype = u
+        lib.vocr_post_redecode.argtypes = [vp, C.POINTER(_Extra), C.POINTER(_PostOpts), C.POINTER(_PostStats)]
+        lib.vocr_post_greedy.argtypes = [vp, C.POINTER(_Extra), C.c_char_p, sz, C.POINTER(u)]
     if not hasattr(lib, "vocr_lm_load"):     # a library built from vocr.c alone (eval/vocr3_report.py): no decoder
         return lib
     lib.vocr_lm_check_crc.argtypes = [vp, sz]
@@ -223,6 +239,44 @@ class Vocr:
         return {"text": self._text.value.decode("utf-8"), "topv": topv[:n], "topc": topc[:n],
                 "blank": bl[:n] if blank else None, "conf_min": ex.conf_min, "conf_mean": ex.conf_mean,
                 "frames": n, "chars": ex.chars}
+
+    def redecode(self, out, tau=0, open=0):
+        """runtime/vocr_post.h's counter-context re-decode on run_topk()'s output (tau, open in 1/1000 nat):
+        (a copy of out with the edited topc and its greedy "text", {"edits", "contexts", "numerals",
+        "brackets"}). out itself is not changed."""
+        ex, topv, topc, blank = _redecode_extra(out)
+        st = _PostStats()
+        rc = self.lib.vocr_post_redecode(self._model, C.byref(ex), C.byref(_PostOpts(tau, open)), C.byref(st))
+        if rc < 0:
+            raise VocrError(self.lib, rc, "vocr_post_redecode")
+        res = dict(out, topc=topc)
+        if rc:
+            n = C.c_uint()
+            self._check(self.lib.vocr_post_greedy(self._model, C.byref(ex), self._text, len(self._text), C.byref(n)),
+                        "vocr_post_greedy")
+            res["text"] = self._text.value.decode("utf-8")
+        return res, {"edits": rc, "contexts": st.contexts, "numerals": st.numerals, "brackets": st.brackets}
+
+
+def post_counters(text, lib=None):
+    """runtime/vocr_post.h's counter rule through the C library: (text, changes)."""
+    lib = lib if lib is not None else load_lib()
+    buf = C.create_string_buffer(text.encode("utf-8"))
+    n = lib.vocr_post_counters(buf)
+    return buf.value.decode("utf-8"), n
+
+
+def _redecode_extra(out):
+    topv = np.ascontiguousarray(out["topv"], np.float32)
+    topc = np.array(out["topc"], np.uint16, copy=True)
+    ex = _Extra()
+    ex.frames, ex.cap_frames, ex.topk = topv.shape[0], topv.shape[0], topv.shape[1]
+    ex.topk_logit, ex.topk_class = topv.ctypes.data, topc.ctypes.data
+    blank = None
+    if out.get("blank") is not None:
+        blank = np.ascontiguousarray(out["blank"], np.float32)
+        ex.blank_logit = blank.ctypes.data
+    return ex, topv, topc, blank
 
 
 class VocrLM:

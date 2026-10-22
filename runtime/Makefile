@@ -1,6 +1,6 @@
 # runtime/Makefile - host builds, tests and ARM cross builds of the vocr runtime.
 #
-#   make                  build/vocr_cli and build/libvocr.so (release flags; vocr.c + vocr_lm.c)
+#   make                  build/vocr_cli and build/libvocr.so (release flags; vocr.c + vocr_lm.c + vocr_post.c)
 #   make check            the line finder's checks (check-lines, vocr_lines.mk), the stroke split's
 #                         (check-split, vocr_lines_split.mk: strict compile, its C self-test and its
 #                         parity with synth/lines_split.py), the text detector's
@@ -15,7 +15,11 @@
 #                         with synth/textspot2_twin.py and, for version 1, with vocr_textspot.c), the
 #                         spotter of VTSP version 1, 2 and 3 (multi-scale) blobs' (check-textspot3,
 #                         vocr_textspot3.mk: strict compile, its C self-test, its parity with
-#                         synth/textspot3_twin.py and, for versions 1 and 2, with vocr_textspot2.c), then the
+#                         synth/textspot3_twin.py and, for versions 1 and 2, with vocr_textspot2.c), the counter
+#                         post-processing's (check-post, vocr_post.mk: strict compile, its C self-test and its
+#                         parity with eval/vocr_post.py), the edge continuation's (check-widen,
+#                         vocr_lines_widen.mk: strict compile, its C self-test and its parity with
+#                         synth/lines_widen.py), then the
 #                         recognizer's: C unit tests and the PyTorch parity test through a
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan)
 #   make check-all        check with gcc and clang, plus strict release builds of both
@@ -57,8 +61,8 @@ ARM_FLAGS = -O2 -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard
 TOOLS ?= $(abspath scripts/tools)
 QEMU ?= $(TOOLS)/bin/qemu-arm
 
-SRC = vocr.c vocr.h vocr_lm.c vocr_lm.h
-LIBSRC = vocr.c vocr_lm.c
+SRC = vocr.c vocr.h vocr_lm.c vocr_lm.h vocr_post.c vocr_post.h
+LIBSRC = vocr.c vocr_lm.c vocr_post.c
 CLI = tools/vocr_cli.c
 
 .PHONY: all check check-vocr check-all arm check-arm size parity-arm clean
@@ -91,7 +95,7 @@ $(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) $(CLI) $(LDFLAGS) $(LDLIBS)
 
 check: check-lines check-split check-textdet check-textgate check-vertical check-textspot check-textspot2 \
-       check-textspot3 check-vocr
+       check-textspot3 check-post check-widen check-vocr
 
 include vocr_lines.mk
 include vocr_lines_split.mk
@@ -101,6 +105,8 @@ include vocr_vertical.mk
 include vocr_textspot.mk
 include vocr_textspot2.mk
 include vocr_textspot3.mk
+include vocr_post.mk
+include vocr_lines_widen.mk
 
 check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_check
@@ -145,10 +151,12 @@ parity-arm: arm
 size: | $(OUT)
 	$(ARM_CC) $(WARN) $(ARM_FLAGS) -fstack-usage -c -o $(OUT)/arm/vocr_neon.o vocr.c
 	$(ARM_CC) $(WARN) $(ARM_FLAGS) -fstack-usage -c -o $(OUT)/arm/vocr_lm.o vocr_lm.c
+	$(ARM_CC) $(WARN) $(ARM_FLAGS) -fstack-usage -c -o $(OUT)/arm/vocr_post.o vocr_post.c
 	$(ARM_CC) $(WARN) $(ARM_FLAGS) -fstack-usage -DVOCR_NO_NEON -c -o $(OUT)/arm/vocr_scalar.o vocr.c
-	$(ARM_CC:gcc=size) $(OUT)/arm/vocr_neon.o $(OUT)/arm/vocr_scalar.o $(OUT)/arm/vocr_lm.o
+	$(ARM_CC:gcc=size) $(OUT)/arm/vocr_neon.o $(OUT)/arm/vocr_scalar.o $(OUT)/arm/vocr_lm.o $(OUT)/arm/vocr_post.o
 	sort -t'	' -k2 -n -r $(OUT)/arm/vocr_neon.su | head -5
 	sort -t'	' -k2 -n -r $(OUT)/arm/vocr_lm.su | head -5
+	sort -t'	' -k2 -n -r $(OUT)/arm/vocr_post.su | head -5
 
 clean:
 	rm -rf $(OUT)

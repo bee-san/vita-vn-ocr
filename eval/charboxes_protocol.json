@@ -1,0 +1,321 @@
+{
+ "kind": "charboxes-protocol",
+ "schema": 1,
+ "issue": 114,
+ "doc": "docs/char-boxes.md",
+ "written_before": "any development, synthetic-development or protected score of any arm",
+ "code_sha256": {
+  "eval/charbox.py": "b2ebd046939602d78c3fd1e0a90f135b072edee2964faae9a2777bdd7ebebb23",
+  "eval/charbox_sets.py": "539491e3fd9ef0ecf528ea63779b628f28c285d3527e85f22aec77f95462ef95",
+  "eval/charbox_eval.py": "fbd99e813cdbc841346c664825e747a6ed021df67b392b8f3d0c877effaeaa94",
+  "eval/charbox_hand.py": "223ea1b83e42f3940613f2c35f2380374b6943d5db42c419f5f75fd569c4fe1d",
+  "eval/charboxes_cal.json": "b050283ae7b75df41e98a4760d189d48b4d9b462973d324b8ef2d87042d1de10"
+ },
+ "models": {
+  "S": {
+   "file": "VOCR5_S_w8.vocr",
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+  },
+  "N": {
+   "file": "VOCR5_N_w8.vocr",
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+  },
+  "L": {
+   "file": "VOCR5_L_w8.vocr",
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+  },
+  "V": {
+   "file": "VOCR5_V_w8.vocr",
+   "sha256": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172"
+  }
+ },
+ "spotters": {
+  "ts1": {
+   "file": "textspot_s4_c24n4_w8.vtsp",
+   "sha256": "852506919ba94e54a4efc55e3695f365626d9d4ce6347f420cbf2afe3e8360cf"
+  },
+  "ts3": {
+   "file": "textspot3_t64n8c16_kd_w8.vtsp",
+   "sha256": "20c3f7cc4f07b443741bbb45fe4270f6fa8c74ce29045a796a5ed8887a3fb26a"
+  }
+ },
+ "calibration": {
+  "S": [
+   -110,
+   0,
+   32,
+   72,
+   39,
+   -11,
+   -1,
+   0,
+   18
+  ],
+  "N": [
+   0,
+   0,
+   -45,
+   -32,
+   48,
+   -23,
+   -4,
+   0,
+   -6
+  ],
+  "L": [
+   -36,
+   0,
+   -12,
+   4,
+   38,
+   -16,
+   -10,
+   0,
+   8
+  ],
+  "V": [
+   -104,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "calibration_rule": "training-side lines only (no dev_sample, test or CLANNAD VN): teacher_train's crops with\n              MeikiOCR's character boxes (VOCR5-S/N/L), and vertical training columns read by MeikiOCR's\n              vertical recognizer (VOCR5-V). For each model: shift = the median, over the characters of\n              group 0, of MeikiOCR's box centre minus the frame centre (resized px), and per group the median\n              of the same difference minus the shift (groups with fewer than CAL_MIN characters: 0), on lines\n              the model reads exactly as MeikiOCR does (VOCR5-V: the equal characters of an alignment, on\n              columns MeikiOCR reads within charbox_sets.MAX_GT_CER_V of VOCR5-V; its vertical recognizer\n              rarely reads a whole column exactly). Writes eval/charboxes_cal.json.",
+ "groups": [
+  "other",
+  "close",
+  "open",
+  "dots",
+  "small",
+  "long",
+  "mark",
+  "half"
+ ],
+ "method_of_record": {
+  "arm": "cal+ink",
+  "flags": "INK (4) with the model's calibration",
+  "chosen_on": "training-side lines only (eval/charbox_eval.py train-check, the lines after the calibration's in its seeded order); exploration before it on other training-side lines (issue #114)",
+  "train_check": {
+   "S": {
+    "cal+ink|psp": [
+     0.9932,
+     4262
+    ],
+    "cal+ink|vita": [
+     0.9952,
+     7699
+    ],
+    "cal+pitch+ink|psp": [
+     0.9925,
+     4262
+    ],
+    "cal+pitch+ink|vita": [
+     0.9948,
+     7699
+    ],
+    "cal|psp": [
+     0.988,
+     4262
+    ],
+    "cal|vita": [
+     0.9871,
+     7699
+    ],
+    "ink|psp": [
+     0.9749,
+     4262
+    ],
+    "ink|vita": [
+     0.9627,
+     7699
+    ],
+    "raw|psp": [
+     0.9043,
+     4262
+    ],
+    "raw|vita": [
+     0.8769,
+     7699
+    ]
+   },
+   "N": {
+    "cal+ink|psp": [
+     0.9947,
+     4565
+    ],
+    "cal+ink|vita": [
+     0.9946,
+     8012
+    ],
+    "cal+pitch+ink|psp": [
+     0.9947,
+     4565
+    ],
+    "cal+pitch+ink|vita": [
+     0.9945,
+     8012
+    ],
+    "cal|psp": [
+     0.988,
+     4565
+    ],
+    "cal|vita": [
+     0.9865,
+     8012
+    ],
+    "ink|psp": [
+     0.9921,
+     4565
+    ],
+    "ink|vita": [
+     0.9891,
+     8012
+    ],
+    "raw|psp": [
+     0.9742,
+     4565
+    ],
+    "raw|vita": [
+     0.9703,
+     8012
+    ]
+   },
+   "L": {
+    "cal+ink|psp": [
+     0.9954,
+     4794
+    ],
+    "cal+ink|vita": [
+     0.9938,
+     8251
+    ],
+    "cal+pitch+ink|psp": [
+     0.9954,
+     4794
+    ],
+    "cal+pitch+ink|vita": [
+     0.9939,
+     8251
+    ],
+    "cal|psp": [
+     0.9896,
+     4794
+    ],
+    "cal|vita": [
+     0.9864,
+     8251
+    ],
+    "ink|psp": [
+     0.9923,
+     4794
+    ],
+    "ink|vita": [
+     0.9886,
+     8251
+    ],
+    "raw|psp": [
+     0.9729,
+     4794
+    ],
+    "raw|vita": [
+     0.9676,
+     8251
+    ]
+   }
+  }
+ },
+ "arms": {
+  "raw": {
+   "flags": 0,
+   "cal": false
+  },
+  "cal": {
+   "flags": 0,
+   "cal": true
+  },
+  "ink": {
+   "flags": 4,
+   "cal": false
+  },
+  "cal+ink": {
+   "flags": 4,
+   "cal": true
+  },
+  "cal+pitch+ink": {
+   "flags": 6,
+   "cal": true
+  }
+ },
+ "constants": {
+  "Q": 16,
+  "stride": 8,
+  "pitch_min": 4,
+  "pitch_tol": 4,
+  "ink_frac": 4,
+  "max_chars": 256
+ },
+ "sets": {
+  "units": {
+   "file": "$HERD/shared/artifacts/overlay-boxes/sets/units_dev.jsonl",
+   "sha256": "67987d27de1ee884ef1dcfdac7464ea1bc03dd8f91b93f895dc74d985fc41e21",
+   "rule": "eval/charbox_sets.py units: textspot-dev references (dev_sample VNs), devnative's dev_sample lines (+ every PSP line on its frame at 2x, cv2.INTER_LINEAR: adrenaline), the vertical study's development columns; no test VN"
+  },
+  "meiki": {
+   "file": "$HERD/shared/artifacts/overlay-boxes/sets/meiki_dev.jsonl",
+   "sha256": "ac82a48e85e03d6838f53c61cf67dc760d64d277cbc5da56b35776d7436030b0",
+   "rule": "MeikiOCR (teacher/engines.Meiki, pinned files) on each unit's view; reference box = the aligned equal MeikiOCR character, lines within MAX_GT_CER (0.2; columns 0.6)"
+  },
+  "hand": {
+   "file": "$HERD/shared/artifacts/overlay-boxes/hand/hand_dev.jsonl",
+   "sha256": "0a107a14a47e6e1a91b3695e6f2c5230556534ae6ba60c7ce76d027af09d7d80",
+   "rule": "eval/charbox_hand.py sheets (seed 20261023, 48 Vita + 48 PSP native dialogue lines), every MeikiOCR box checked by eye before any score (reviewer_kind assistant); the hand-checked subset scores only the accepted boxes"
+  },
+  "synthetic": "report only: the synth4 renderer's development split with exact glyph boxes (helper overlay-boxes-synth), when it is ready; never a gate"
+ },
+ "line_sources": {
+  "fixed": "the unit's ink box plus the console pad (4 px; PSP 2), dark text with VOCR_INVERT",
+  "finder": "GRAD + refine (DEFAULT) on the unit's region; columns: vertical_twin.find_columns variant 1; one-to-one matching (eval's rule)",
+  "ts1": "textspot v0.3.3 det+refine on the whole textspot-dev frame",
+  "ts3": "textspot3 v0.3.4 det+refine on the whole textspot-dev frame"
+ },
+ "metrics": {
+  "cursor_hit": "estimated centre inside the reference box along the reading direction and, across it, inside the reference line's ink box plus the pad; over aligned pairs (hit_all: every reference character with a box, missing reads as misses)",
+  "iou": "1-D along the reading direction, the cell and the ink box against the reference box",
+  "ci": "VN-cluster bootstrap of the hit ratio, 10,000 resamples, numpy seed 0"
+ },
+ "bar": {
+  "model": "N",
+  "arm": "cal+ink",
+  "class": "dialogue (horizontal)",
+  "reference": "MeikiOCR",
+  "parts": [
+   "vita",
+   "psp",
+   "adrenaline"
+  ],
+  "line_sources": [
+   "fixed",
+   "finder"
+  ],
+  "rule": "cursor-hit >= 0.970 in every one of the six (part, line source) cells",
+  "pass": "the C module runtime/vocr_charbox.c with twin parity, then Rubi's overlay mode",
+  "fail": "the other arms, then a report of the model change needed; no runtime change"
+ },
+ "report_only": [
+  "VOCR5-S/L",
+  "VOCR5-V on columns",
+  "ts1/ts3 lines",
+  "names, choices, UI, scene text",
+  "PC scaled frames",
+  "hit_all",
+  "IoU",
+  "the hand-checked subset",
+  "the synthetic set"
+ ],
+ "protected": "vita-test and psp-test, fixed and finder lines, VOCR5-N, cal+ink, reference boxes made the same way; read once at the end as a check, after the development results are committed; never used to choose anything"
+}

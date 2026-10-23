@@ -315,11 +315,12 @@ def macs_per_frame(blob):
 
 # ---------------------------------------------------------------- arena plan (mirror of C)
 
-def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0):
+def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0, two_level=None):
     """Exact arena bytes vocr_arena_bytes() returns. tile/head in frames (0 = defaults 4
     and 16; tile >= max_width / 8 = whole line); mode 0 = the blob's default (f32 for
     float blobs, w8f for int8); head_gate as vocr_opts.head_gate (0 off, 1 on, 2 score: w8i and a
-    blob with a gate)."""
+    blob with a gate); two_level: None, or the blob's VOC2 trailer as train/head2level.read_trailer
+    returns it (vocr_opts.two_level = 1, W8I)."""
     ops, S, H0 = blob["ops"], blob["stride"], blob["height"]
     if mode == 0:
         mode = MODE_W8F if blob["int8"] else MODE_F32
@@ -372,6 +373,13 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0):
     persistent += _align(acc_frames * k_head * 4) + _align(acc_frames * 4) * 2
     if head_gate == 1:                       # the accumulated frames' line indices (uint16)
         persistent += _align(acc_frames * 2)
+    if two_level is not None:                # runtime/vocr.c plan(): nbv, b0, hidden units, fired frames
+        if mode != MODE_W8I:
+            raise ValueError("the two-level head runs in W8I only")
+        hid, rk = two_level["hidden"], two_level["rare_k"]
+        persistent += _align(acc_frames * 4) * 3 + _align(acc_frames * hid * 4)
+        if rk:                               # the projection's outputs, their int16 copy and scales
+            persistent += _align(acc_frames * rk * 4) + _align(acc_frames * rk * 2) + _align(acc_frames * 4)
     trans = []                               # transient bytes in and out of each op
     for i, op in enumerate(ops):
         tin = n_tile[i - 1] * ops[i - 1]["h_out"] * ops[i - 1]["cout"] * 4 \

@@ -97,6 +97,23 @@ typedef struct {             /* a blob's head gate; hidden = 0: the blob has non
     unsigned k, hidden;      /* input width (the head's K) and hidden units (8..VOCR_GATE_MAX_HIDDEN, x8) */
     uint32_t bytes;          /* bytes of the gate section */
 } vocr_gate;
+/* The two-level output head (vita-vn-ocr #117 item 2; eval/head2level_protocol.json): an optional 'VOC2' trailer
+ * after the version-1 blob. The blob's head rows are in frequency order (class 0 the blank, then the most frequent
+ * classes); level 1 is the head's first l1_blocks 8-row blocks, computed on every frame, with an escape that says
+ * whether the frame needs the other (rare) rows. Absent: l1_blocks == 0. */
+typedef struct {
+    unsigned l1_blocks;          /* level 1 = head blocks [0, l1_blocks); 0: no trailer */
+    unsigned hidden;             /* escape hidden units (a multiple of 8) */
+    unsigned rare_k;             /* 0: the rare rows are the head's own (96 wide); else their projection's width */
+    float t, e_b2;               /* the escape fires iff its score > t; layer 2's bias */
+    const int8_t *e_q;           /* escape layer 1: int8 [hidden / 8][K][8] on the head's quantised input */
+    const float *e_scale, *e_bias, *e_wl1, *e_wb0, *e_w2;   /* [hidden] each */
+    const int8_t *p_q;           /* rare_k: the projection, int8 [rare_k / 8][K][8] */
+    const float *p_scale, *p_bias;   /* [rare_k] */
+    const int8_t *r_q;           /* rare_k: the rare rows, int8 [r_blocks][rare_k][8] */
+    const float *r_scale, *r_bias;   /* [r_blocks * 8] */
+    unsigned r_blocks;           /* the head's blocks [l1_blocks, cout_pad / 8): the rare rows */
+} vocr_2level;
 
 typedef struct {             /* a parsed blob; points into it, so keep the blob alive */
     const unsigned char *blob;
@@ -106,6 +123,7 @@ typedef struct {             /* a parsed blob; points into it, so keep the blob 
     const char *vocab;           /* UTF-8; class c is vocab[off[c] .. off[c+1]) */
     vocr_op op[VOCR_MAX_OPS];
     vocr_gate gate;              /* the head gate, if the blob has one (gate.hidden != 0) */
+    vocr_2level two;             /* the 'VOC2' trailer's two-level head, if the blob has one */
 } vocr_model;
 
 /* vocr_opts.head_gate */
@@ -123,6 +141,8 @@ typedef struct {
     int mode;                /* VOCR_MODE_*; AUTO = F32 for float blobs, W8F for int8 */
     unsigned head_gate;      /* VOCR_HEAD_GATE_*: ON and SCORE need VOCR_MODE_W8I and a blob with a gate
                                 (else VOCR_E_MODE); ON skips nothing in a run that asks for the logits */
+    unsigned two_level;      /* 1: the two-level head (VOCR_MODE_W8I and a blob with a 'VOC2' trailer, else
+                                VOCR_E_MODE); 0: the full head (default) */
 } vocr_opts;
 /* A zeroed vocr_opts gives the defaults. Larger tiles and head batches trade arena
  * bytes for speed; the output does not change. With head_gate ON the head's batches hold
@@ -168,7 +188,12 @@ typedef struct {             /* optional per-line extras for vocr_run() */
     unsigned gated;          /* out: frames whose head the gate skipped (0 unless head_gate ON); such a frame's
                                 best is 0 and its top-K is [its blank logit, -inf, ...] with classes 0 */
     unsigned ungated;        /* in: nonzero reads this line without skipping, as head_gate OFF does (e.g. again
-                                for vocr_post_redecode, whose look-back reads blank frames' top-K) */
+                                for vocr_post_redecode, whose look-back reads blank frames' top-K), and with
+                                the full head when two_level is on: the line as the default options read it */
+    /* The two-level head (docs/head2level.md). Analysis outputs, which change nothing (NULL: none): */
+    float *esc_score;        /* in: cap_frames floats: each frame's two-level escape score (two_level on; a
+                                frame the gate skipped gets none) */
+    unsigned escaped;        /* out: frames the two-level escape fired on (0 with the full head) */
 } vocr_extra;
 
 typedef struct {             /* per-op plan; private */
@@ -186,6 +211,8 @@ typedef struct {             /* a planned arena; private apart from the first fi
     uint32_t rows_off, ring_off, ring_end, acc_off, bestv_off, besti_off;
     unsigned gate;           /* VOCR_HEAD_GATE_* of the plan */
     uint32_t fidx_off;       /* head_gate ON: each accumulated frame's index in the line (uint16) */
+    unsigned two_level;      /* the two-level head is on (vocr_opts.two_level) */
+    uint32_t nbv_off, b0_off, hid_off, fmap_off, y48_off, q48_off, s48_off;   /* its arena (two_level only) */
     vocr_plan_op op[VOCR_MAX_OPS];
 } vocr_ctx;
 

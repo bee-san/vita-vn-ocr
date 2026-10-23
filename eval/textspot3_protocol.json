@@ -583,6 +583,18 @@
     "runtime/vocr.c": "ad1bfa89797bab4447c150bca71c2d9f146787bf96f32a365d4549992440fb70",
     "runtime/vocr.h": "35fc6e921c27f7f787263fa8786b4fa8d95a7e77e0eb6ea8e11c92c69c45a4a7"
    }
+  },
+  {
+   "id": 9,
+   "utc": "2026-10-23T17:49:22Z",
+   "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
+   "what": [
+    "A harness file re-pinned, not a textspot3 change: runtime/vocr.c and runtime/vocr.h gained #117's two-level output head (docs/head2level.md) on top of amendment 8's head gate. With it off (vocr_opts.two_level = 0, every textspot path) every output is bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes and runtime/tests/parity.py's bit-exact model are unchanged."
+   ],
+   "sources_sha256": {
+    "runtime/vocr.c": "8a895c42e4ddf46e94b59696cec1d2db1e71e3ed0f883e814c08a2b48d95bbab",
+    "runtime/vocr.h": "24cf968d1ac5ec385bcc865efa2d5c85d6e904c3a36b96318a13f1c0fda6bf47"
+   }
   }
  ],
  "shapes": {

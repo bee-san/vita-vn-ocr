@@ -259,6 +259,28 @@ share is over the frames level 1 runs on (the gate skips about 60% before it).
 | L | 2L_Kalt_r48 | 4.59% (169) | 3.28% (140) | 3.01% (33) | 689 |
 | L | 2Lg_Kalt_r48 | 4.60% (174) | 3.33% (168) | 3.03% (49) | 688 |
 
+## Protected sets (once, after the verdict; report only)
+
+Read once on 2026-10-23 (attempt records 17:48Z, after the verdict was pushed at `c5f7dae`), for the adopted arms only:
+N and L, today (the release blob) against `2Lg_Kalt_r96` (the gate and the two-level head). They decide nothing.
+Records: `eval/head2level_protected_20261023.json` (tests) and `eval/head2level_clannad_20261023.json` (counts, rates
+and hashes only).
+
+| set (dialogue) | decode | N: today → gate + two-level (lines changed) | the gate alone | L: today → gate + two-level | the gate alone |
+|---|---|---|---|---|---|
+| vita-test + psp-test (451 lines, console polarity) | greedy | 1.129% → 1.129% (0) | 1.129% (0) | 0.788% → 0.788% (0) | 0.788% (0) |
+| | rubi | 0.725% → 0.682% (2) | 0.682% (2) | 0.533% → 0.511% (1) | 0.511% (1) |
+| | rubi_cascade | 0.618% → 0.575% (2) | 0.575% (2) | 0.533% → 0.511% (1) | 0.511% (1) |
+| CLANNAD (3,048 lines, 33,485 characters, page bootstrap) | greedy | 0.923% → 0.923% (0) | 0.923% (0) | 0.630% → 0.639% (3) | 0.630% (0) |
+| | rubi | 0.765% → 0.768% (1) | 0.768% (1) | 0.547% → 0.559% (5), +0.012 [+0.003, +0.024] | 0.550% (1) |
+| | rubi with the re-read | 0.765% → 0.768% (1) | 0.768% (1) | 0.547% → 0.553% (3), +0.006 [0.000, +0.015] | 0.550% (1) |
+| | rubi_cascade | 0.654% → 0.663% (3) | 0.660% (2) | 0.547% → 0.559% (5) | 0.550% (1) |
+
+On the test sets the two-level head changes no line beyond the gate's. On CLANNAD it changes none for N and adds 3-4
+characters for L (3 to 5 dialogue lines; 2 with the re-read), +0.003 to +0.009 points beyond the gate's; the gate
+itself improves CLANNAD's whole text (names included) a lot (N rubi 2.379% → 1.799%), which the two-level head leaves
+as it is (N) or nearly (L 1.804% against the gate's 1.796%).
+
 ## Limits
 
 - **Estimates.** Times are qemu instruction counts with a cache model, calibrated on one model (H15) in one game at an

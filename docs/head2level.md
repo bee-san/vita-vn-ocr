@@ -333,7 +333,7 @@ python eval/head2level_fit.py escapes --tier $T --train train_$T.npz --blob VOCR
 python eval/head2level_fit.py build --tier $T --blob VOCR5_${T}_perm.vocr --fit fit_$T.json --K 500 \
     --out VOCR5_${T}_2L_K500_r96.vocr
 python eval/head2level_fit.py compose --two VOCR5_${T}_2L_K500_r96.vocr --gated VOCR5_${T}_w8g.vocr \
-    --out VOCR5_${T}_2Lg_K500_r96.vocr            # VOCR5_T_w8g.vocr: head-gate's blob (to be released as v0.3.5-headgate.1)
+    --out VOCR5_${T}_2Lg_K500_r96.vocr            # VOCR5_T_w8g.vocr: head-gate's blob (pre-release v0.3.5-headgate.1)
 # development: the finder's lines once, then reads per tier and arm, scores, timing, the rule
 python eval/head2level_dev.py lines --cache DEV
 python eval/head2level_dev.py read --tier $T --arm "2Lg_Kalt_r96=VOCR5_${T}_2Lg_K500_r96.vocr:two_level:gate" --cache DEV

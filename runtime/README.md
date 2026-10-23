@@ -262,6 +262,48 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.gated: frames whose he
   CLI: `vocr_cli --head-gate on|score|off`; Python: `Vocr(blob, mode="w8i", head_gate="on")`, `run_topk(...,
   gate_score=True, ungated=False)`.
 
+### The two-level output head (`vocr_opts.two_level`)
+
+Issue #117 item 2 ([docs/head2level.md](../docs/head2level.md)): VN dialogue uses few characters, so most frames need
+only the head's most frequent rows. A two-level blob's head rows and vocab are in frequency order (an ordinary
+version-1 blob: every class's logit is the same, its class number changes), and a `VOC2` trailer of 1,984 B
+(`train/head2level.py write_trailer`, after head-gate's `VOCG` section when there is one) holds level 1's block count
+and an escape: a 98 → 16 (ReLU) → 1 network on the head's quantised input (layer 1 int8 through `mm_i16`) plus level
+1's largest non-blank logit and its blank logit. Level 2 is the head's own rows: a trailer with the trial's 48-wide
+rare block (`rare_k` and its offsets non-zero; rejected, docs/head2level.md) is refused (`VOCR_E_FORMAT`).
+
+```c
+opts.mode = VOCR_MODE_W8I;
+opts.head_gate = vocr_has_gate(&model) ? VOCR_HEAD_GATE_ON : VOCR_HEAD_GATE_OFF;
+opts.two_level = (unsigned)vocr_has_two_level(&model);   /* needs W8I and a trailer, else VOCR_E_MODE */
+size_t need = vocr_arena_bytes(&model, &opts);      /* + 1,456 B for VOCR5 at the default tile and batch */
+rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that also ran level 2 */
+```
+
+- Level 1 (the head's first `two.l1_blocks` 8-row blocks: the blank and the most frequent classes) runs on every
+  frame the gate does not skip; the escape decides which of them also run level 2, the other rows, packed into one
+  batch. A frame that fires gets today's logits, argmax and top-K bit for bit; one that does not gets them over the
+  level-1 classes. A block whose 8 logits cannot change a frame's state is not scanned per class.
+- `two_level = 0` (a zeroed `vocr_opts`) runs the full head on the permuted rows: today's output. A run that asks for
+  the logits, or sets `vocr_extra.ungated`, runs the full head too (and the gate skips nothing). A caller should read
+  a line again with `ungated = 1` when its reading holds a full-size カ or ケ before 月 所 年 国 条, where the escape may
+  have missed the small ヵ / ヶ, as it does for the gate's counter contexts (docs/head2level.md, "Counter-context set").
+- `vocr_extra.esc_score` returns each frame's escape score; class texts never change, so `vocr_lm.c`, `vocr_post.c`
+  and `vocr_charbox.c` read a permuted blob as they read today's, except where two classes tie exactly (the first
+  maximum, the top-K and the decoders' ties follow class numbers).
+- A runtime without two-level support reads the blob as its version-1 part (the permuted full head) and ignores the
+  trailer. `vocr_load` rejects a damaged trailer's structure, `vocr_check_crc` its content; `head2level.py info`
+  prints it. The arena mirror is `train/export.plan_arena(..., two_level=read_trailer(blob))`.
+- Cost (VitaSDK gcc 15.2 `-O2`; times are estimates from qemu instruction counts calibrated to VOCR3-H15's console
+  rate): `vocr.o` grows from 20,159 to 23,259 B with NEON (scalar, `-DVOCR_NO_NEON`: 15,159 to 18,283 B; psp-gcc
+  `-O2 -G0` 22,959 to 27,979 B); no malloc.
+  VOCR5-N with the gate: est. 2.74 ms per frame against the gate's 2.88 (24 development lines, 333 MHz, no prefetch
+  credit).
+- Twin and tests: `train/head2level.py twolevel_exact` is bit-exact; `tests/test_head2level.py` checks it against the
+  C library (with the gate, several tilings; a rare-block trailer refused); `tests/test_vocr.c` (ASan/UBSan, Cortex-A9 NEON and scalar
+  under qemu) checks the trailer's validation and the runs against its own reference. CLI: `vocr_cli --two-level`;
+  Python: `Vocr(blob, mode="w8i", two_level=1)`, `run_topk(..., esc=True)`.
+
 ### Counters and cut lines (`vocr_post.h`, `vocr_lines_widen.h`)
 
 Three optional steps for counter contexts and for lines a tight region cuts (issue #109; [docs/counters.md](../docs/counters.md) has the corpus counts and the development measurements). None runs unless its caller calls it, so a pipeline without them is bit for bit as before.

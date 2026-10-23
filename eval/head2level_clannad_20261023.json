@@ -1,0 +1,1084 @@
+{
+ "kind": "head2level-protected-clannad",
+ "created": "2026-10-23T18:02:05Z",
+ "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+ "pages": 2177,
+ "scored_lines": 3048,
+ "unmatched": 0,
+ "reads": 3050,
+ "flags": 31,
+ "models": {
+  "N": {
+   "today": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+   "gated": "f0c8e52c9c1d9f2a714d5ca3ecfba9c0b031ee7ac51a522a2c29fd558d51761b"
+  },
+  "L": {
+   "today": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+   "gated": "41c3543ff8dddd45dc953a6a5f5d579ef9ca779f0e43196406be59c1d985c5b5"
+  }
+ },
+ "lm_sha256": "993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9",
+ "bootstrap": {
+  "reps": 10000,
+  "seed": 0,
+  "unit": "page"
+ },
+ "tiers": {
+  "N": {
+   "skip": {
+    "frames": 140644,
+    "skipped": 91602
+   },
+   "decodes": {
+    "greedy": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 309,
+       "exact_lines": 1805,
+       "cer": 0.9228,
+       "cer_ci95": [
+        0.8054,
+        1.0434
+       ],
+       "exact": 87.963,
+       "exact_ci95": [
+        86.5245,
+        89.3659
+       ],
+       "hiragana_errors": 228,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 1.1363
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 309,
+       "exact_lines": 1805,
+       "cer": 0.9228,
+       "cer_ci95": [
+        0.8054,
+        1.0434
+       ],
+       "exact": 87.963,
+       "exact_ci95": [
+        86.5245,
+        89.3659
+       ],
+       "hiragana_errors": 228,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 1.1363
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.0,
+       "cer_ci95": [
+        0.0,
+        0.0
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 0
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 522,
+       "exact_lines": 2635,
+       "cer": 1.4624,
+       "cer_ci95": [
+        1.3124,
+        1.6202
+       ],
+       "exact": 86.4501,
+       "exact_ci95": [
+        85.2071,
+        87.6793
+       ],
+       "hiragana_errors": 275,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.3668
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 484,
+       "exact_lines": 2653,
+       "cer": 1.356,
+       "cer_ci95": [
+        1.2135,
+        1.5007
+       ],
+       "exact": 87.0407,
+       "exact_ci95": [
+        85.8355,
+        88.2468
+       ],
+       "hiragana_errors": 267,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.327
+      },
+      "gated_minus_today": {
+       "cer_delta": -0.10646,
+       "cer_ci95": [
+        -0.144864,
+        -0.070681
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 34
+     }
+    },
+    "rubi": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 256,
+       "exact_lines": 1848,
+       "cer": 0.7645,
+       "cer_ci95": [
+        0.654,
+        0.879
+       ],
+       "exact": 90.0585,
+       "exact_ci95": [
+        88.7542,
+        91.3401
+       ],
+       "hiragana_errors": 185,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.922
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 257,
+       "exact_lines": 1847,
+       "cer": 0.7675,
+       "cer_ci95": [
+        0.6575,
+        0.8815
+       ],
+       "exact": 90.0097,
+       "exact_ci95": [
+        88.7057,
+        91.2873
+       ],
+       "hiragana_errors": 185,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.922
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.002986,
+       "cer_ci95": [
+        0.0,
+        0.009082
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 1
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 849,
+       "exact_lines": 2492,
+       "cer": 2.3786,
+       "cer_ci95": [
+        2.1488,
+        2.6205
+       ],
+       "exact": 81.7585,
+       "exact_ci95": [
+        80.4326,
+        83.1216
+       ],
+       "hiragana_errors": 391,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.9433
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 642,
+       "exact_lines": 2572,
+       "cer": 1.7986,
+       "cer_ci95": [
+        1.6189,
+        1.9809
+       ],
+       "exact": 84.3832,
+       "exact_ci95": [
+        83.1126,
+        85.6628
+       ],
+       "hiragana_errors": 315,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.5656
+      },
+      "gated_minus_today": {
+       "cer_delta": -0.579929,
+       "cer_ci95": [
+        -0.69036,
+        -0.476994
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 175
+     }
+    },
+    "rubi_cascade": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 219,
+       "exact_lines": 1878,
+       "cer": 0.654,
+       "cer_ci95": [
+        0.5479,
+        0.7648
+       ],
+       "exact": 91.5205,
+       "exact_ci95": [
+        90.2764,
+        92.7317
+       ],
+       "hiragana_errors": 152,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.7575
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 222,
+       "exact_lines": 1876,
+       "cer": 0.663,
+       "cer_ci95": [
+        0.5555,
+        0.7756
+       ],
+       "exact": 91.423,
+       "exact_ci95": [
+        90.1855,
+        92.6449
+       ],
+       "hiragana_errors": 152,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.7575
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.008959,
+       "cer_ci95": [
+        0.0,
+        0.020839
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 3
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 752,
+       "exact_lines": 2539,
+       "cer": 2.1068,
+       "cer_ci95": [
+        1.8954,
+        2.3258
+       ],
+       "exact": 83.3005,
+       "exact_ci95": [
+        82.017,
+        84.5976
+       ],
+       "hiragana_errors": 341,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.6948
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 607,
+       "exact_lines": 2616,
+       "cer": 1.7006,
+       "cer_ci95": [
+        1.5157,
+        1.8958
+       ],
+       "exact": 85.8268,
+       "exact_ci95": [
+        84.6154,
+        87.0611
+       ],
+       "hiragana_errors": 291,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.4463
+      },
+      "gated_minus_today": {
+       "cer_delta": -0.406231,
+       "cer_ci95": [
+        -0.49655,
+        -0.320896
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 137
+     }
+    },
+    "rubi_reread": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 256,
+       "exact_lines": 1848,
+       "cer": 0.7645,
+       "cer_ci95": [
+        0.654,
+        0.879
+       ],
+       "exact": 90.0585,
+       "exact_ci95": [
+        88.7542,
+        91.3401
+       ],
+       "hiragana_errors": 185,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.922
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 257,
+       "exact_lines": 1847,
+       "cer": 0.7675,
+       "cer_ci95": [
+        0.6575,
+        0.8815
+       ],
+       "exact": 90.0097,
+       "exact_ci95": [
+        88.7057,
+        91.2873
+       ],
+       "hiragana_errors": 185,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.922
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.002986,
+       "cer_ci95": [
+        0.0,
+        0.009082
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 1
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 849,
+       "exact_lines": 2492,
+       "cer": 2.3786,
+       "cer_ci95": [
+        2.1488,
+        2.6205
+       ],
+       "exact": 81.7585,
+       "exact_ci95": [
+        80.4326,
+        83.1216
+       ],
+       "hiragana_errors": 391,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.9433
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 642,
+       "exact_lines": 2572,
+       "cer": 1.7986,
+       "cer_ci95": [
+        1.6189,
+        1.9809
+       ],
+       "exact": 84.3832,
+       "exact_ci95": [
+        83.1126,
+        85.6628
+       ],
+       "hiragana_errors": 315,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.5656
+      },
+      "gated_minus_today": {
+       "cer_delta": -0.579929,
+       "cer_ci95": [
+        -0.69036,
+        -0.476994
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 175
+     }
+    },
+    "rubi_cascade_reread": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 219,
+       "exact_lines": 1878,
+       "cer": 0.654,
+       "cer_ci95": [
+        0.5479,
+        0.7648
+       ],
+       "exact": 91.5205,
+       "exact_ci95": [
+        90.2764,
+        92.7317
+       ],
+       "hiragana_errors": 152,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.7575
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 221,
+       "exact_lines": 1877,
+       "cer": 0.66,
+       "cer_ci95": [
+        0.5536,
+        0.7712
+       ],
+       "exact": 91.4717,
+       "exact_ci95": [
+        90.2343,
+        92.6925
+       ],
+       "hiragana_errors": 152,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.7575
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.005973,
+       "cer_ci95": [
+        0.0,
+        0.01507
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 2
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 752,
+       "exact_lines": 2539,
+       "cer": 2.1068,
+       "cer_ci95": [
+        1.8954,
+        2.3258
+       ],
+       "exact": 83.3005,
+       "exact_ci95": [
+        82.017,
+        84.5976
+       ],
+       "hiragana_errors": 341,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.6948
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 606,
+       "exact_lines": 2617,
+       "cer": 1.6978,
+       "cer_ci95": [
+        1.5134,
+        1.8932
+       ],
+       "exact": 85.8596,
+       "exact_ci95": [
+        84.6383,
+        87.0936
+       ],
+       "hiragana_errors": 291,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.4463
+      },
+      "gated_minus_today": {
+       "cer_delta": -0.409032,
+       "cer_ci95": [
+        -0.498537,
+        -0.323579
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 136
+     }
+    }
+   }
+  },
+  "L": {
+   "skip": {
+    "frames": 140644,
+    "skipped": 85315
+   },
+   "decodes": {
+    "greedy": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 211,
+       "exact_lines": 1875,
+       "cer": 0.6301,
+       "cer_ci95": [
+        0.5303,
+        0.7348
+       ],
+       "exact": 91.3743,
+       "exact_ci95": [
+        90.1325,
+        92.6178
+       ],
+       "hiragana_errors": 138,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.6878
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 214,
+       "exact_lines": 1872,
+       "cer": 0.6391,
+       "cer_ci95": [
+        0.5388,
+        0.7443
+       ],
+       "exact": 91.2281,
+       "exact_ci95": [
+        89.9853,
+        92.4831
+       ],
+       "hiragana_errors": 139,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.6927
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.008959,
+       "cer_ci95": [
+        0.0,
+        0.020812
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 3
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 323,
+       "exact_lines": 2788,
+       "cer": 0.9049,
+       "cer_ci95": [
+        0.7786,
+        1.0321
+       ],
+       "exact": 91.4698,
+       "exact_ci95": [
+        90.4402,
+        92.505
+       ],
+       "hiragana_errors": 148,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 0.7356
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 324,
+       "exact_lines": 2785,
+       "cer": 0.9077,
+       "cer_ci95": [
+        0.7835,
+        1.0345
+       ],
+       "exact": 91.3714,
+       "exact_ci95": [
+        90.3386,
+        92.4067
+       ],
+       "hiragana_errors": 149,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 0.7406
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.002802,
+       "cer_ci95": [
+        -0.008515,
+        0.016306
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 5
+     }
+    },
+    "rubi": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 183,
+       "exact_lines": 1903,
+       "cer": 0.5465,
+       "cer_ci95": [
+        0.4478,
+        0.6501
+       ],
+       "exact": 92.7388,
+       "exact_ci95": [
+        91.5727,
+        93.8895
+       ],
+       "hiragana_errors": 122,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.608
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 187,
+       "exact_lines": 1900,
+       "cer": 0.5585,
+       "cer_ci95": [
+        0.4584,
+        0.6629
+       ],
+       "exact": 92.5926,
+       "exact_ci95": [
+        91.4257,
+        93.7623
+       ],
+       "hiragana_errors": 122,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.608
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.011946,
+       "cer_ci95": [
+        0.002937,
+        0.024174
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 5
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 740,
+       "exact_lines": 2586,
+       "cer": 2.0732,
+       "cer_ci95": [
+        1.8496,
+        2.3098
+       ],
+       "exact": 84.8425,
+       "exact_ci95": [
+        83.5791,
+        86.0912
+       ],
+       "hiragana_errors": 261,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.2972
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 644,
+       "exact_lines": 2629,
+       "cer": 1.8042,
+       "cer_ci95": [
+        1.6018,
+        2.0197
+       ],
+       "exact": 86.2533,
+       "exact_ci95": [
+        85.0477,
+        87.4514
+       ],
+       "hiragana_errors": 239,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.1879
+      },
+      "gated_minus_today": {
+       "cer_delta": -0.268953,
+       "cer_ci95": [
+        -0.342705,
+        -0.198711
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 107
+     }
+    },
+    "rubi_cascade": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 183,
+       "exact_lines": 1903,
+       "cer": 0.5465,
+       "cer_ci95": [
+        0.4478,
+        0.6501
+       ],
+       "exact": 92.7388,
+       "exact_ci95": [
+        91.5727,
+        93.8895
+       ],
+       "hiragana_errors": 122,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.608
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 187,
+       "exact_lines": 1900,
+       "cer": 0.5585,
+       "cer_ci95": [
+        0.4584,
+        0.6629
+       ],
+       "exact": 92.5926,
+       "exact_ci95": [
+        91.4257,
+        93.7623
+       ],
+       "hiragana_errors": 122,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.608
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.011946,
+       "cer_ci95": [
+        0.002937,
+        0.024174
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 5
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 740,
+       "exact_lines": 2586,
+       "cer": 2.0732,
+       "cer_ci95": [
+        1.8496,
+        2.3098
+       ],
+       "exact": 84.8425,
+       "exact_ci95": [
+        83.5791,
+        86.0912
+       ],
+       "hiragana_errors": 261,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.2972
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 644,
+       "exact_lines": 2629,
+       "cer": 1.8042,
+       "cer_ci95": [
+        1.6018,
+        2.0197
+       ],
+       "exact": 86.2533,
+       "exact_ci95": [
+        85.0477,
+        87.4514
+       ],
+       "hiragana_errors": 239,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.1879
+      },
+      "gated_minus_today": {
+       "cer_delta": -0.268953,
+       "cer_ci95": [
+        -0.342705,
+        -0.198711
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 107
+     }
+    },
+    "rubi_reread": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 183,
+       "exact_lines": 1903,
+       "cer": 0.5465,
+       "cer_ci95": [
+        0.4478,
+        0.6501
+       ],
+       "exact": 92.7388,
+       "exact_ci95": [
+        91.5727,
+        93.8895
+       ],
+       "hiragana_errors": 122,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.608
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 185,
+       "exact_lines": 1902,
+       "cer": 0.5525,
+       "cer_ci95": [
+        0.453,
+        0.6568
+       ],
+       "exact": 92.6901,
+       "exact_ci95": [
+        91.5254,
+        93.8409
+       ],
+       "hiragana_errors": 122,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.608
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.005973,
+       "cer_ci95": [
+        0.0,
+        0.015096
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 3
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 740,
+       "exact_lines": 2586,
+       "cer": 2.0732,
+       "cer_ci95": [
+        1.8496,
+        2.3098
+       ],
+       "exact": 84.8425,
+       "exact_ci95": [
+        83.5791,
+        86.0912
+       ],
+       "hiragana_errors": 261,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.2972
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 642,
+       "exact_lines": 2631,
+       "cer": 1.7986,
+       "cer_ci95": [
+        1.597,
+        2.0142
+       ],
+       "exact": 86.3189,
+       "exact_ci95": [
+        85.1202,
+        87.5125
+       ],
+       "hiragana_errors": 239,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.1879
+      },
+      "gated_minus_today": {
+       "cer_delta": -0.274556,
+       "cer_ci95": [
+        -0.347837,
+        -0.204719
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 105
+     }
+    },
+    "rubi_cascade_reread": {
+     "dialogue": {
+      "today": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 183,
+       "exact_lines": 1903,
+       "cer": 0.5465,
+       "cer_ci95": [
+        0.4478,
+        0.6501
+       ],
+       "exact": 92.7388,
+       "exact_ci95": [
+        91.5727,
+        93.8895
+       ],
+       "hiragana_errors": 122,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.608
+      },
+      "gated": {
+       "pages": 1867,
+       "lines": 2052,
+       "chars": 33485,
+       "errors": 185,
+       "exact_lines": 1902,
+       "cer": 0.5525,
+       "cer_ci95": [
+        0.453,
+        0.6568
+       ],
+       "exact": 92.6901,
+       "exact_ci95": [
+        91.5254,
+        93.8409
+       ],
+       "hiragana_errors": 122,
+       "hiragana_chars": 20065,
+       "hiragana_cer": 0.608
+      },
+      "gated_minus_today": {
+       "cer_delta": 0.005973,
+       "cer_ci95": [
+        0.0,
+        0.015096
+       ],
+       "chars": 33485
+      },
+      "lines_changed": 3
+     },
+     "all": {
+      "today": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 740,
+       "exact_lines": 2586,
+       "cer": 2.0732,
+       "cer_ci95": [
+        1.8496,
+        2.3098
+       ],
+       "exact": 84.8425,
+       "exact_ci95": [
+        83.5791,
+        86.0912
+       ],
+       "hiragana_errors": 261,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.2972
+      },
+      "gated": {
+       "pages": 2044,
+       "lines": 3048,
+       "chars": 35694,
+       "errors": 642,
+       "exact_lines": 2631,
+       "cer": 1.7986,
+       "cer_ci95": [
+        1.597,
+        2.0142
+       ],
+       "exact": 86.3189,
+       "exact_ci95": [
+        85.1202,
+        87.5125
+       ],
+       "hiragana_errors": 239,
+       "hiragana_chars": 20120,
+       "hiragana_cer": 1.1879
+      },
+      "gated_minus_today": {
+       "cer_delta": -0.274556,
+       "cer_ci95": [
+        -0.347837,
+        -0.204719
+       ],
+       "chars": 35694
+      },
+      "lines_changed": 105
+     }
+    }
+   }
+  }
+ }
+}

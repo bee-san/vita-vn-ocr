@@ -418,6 +418,11 @@ int vocr_has_gate(const vocr_model *m)
     return m && m->blob && m->gate.hidden ? 1 : 0;
 }
 
+int vocr_has_two_level(const vocr_model *m)
+{
+    return m && m->blob && m->two.l1_blocks ? 1 : 0;
+}
+
 const char *vocr_class_text(const vocr_model *m, unsigned c, unsigned *len)
 {
     if (!m || !m->vocab_off || c >= m->n_classes) {

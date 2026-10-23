@@ -220,6 +220,8 @@ int vocr_load(vocr_model *m, const void *blob, size_t bytes);
 int vocr_check_crc(const void *blob, size_t bytes);
 /* 1 if the loaded blob has a head gate (vocr_opts.head_gate can be ON), else 0. */
 int vocr_has_gate(const vocr_model *m);
+/* 1 if the loaded blob has a two-level head (a VOC2 trailer: vocr_opts.two_level can be 1), else 0. */
+int vocr_has_two_level(const vocr_model *m);
 /* Exact arena bytes for lines up to o->max_width (0 if the options are invalid). */
 size_t vocr_arena_bytes(const vocr_model *m, const vocr_opts *o);
 /* Plan the arena. bytes must be >= vocr_arena_bytes(m, o). */

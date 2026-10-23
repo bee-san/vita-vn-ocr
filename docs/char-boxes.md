@@ -148,7 +148,7 @@ read:
 - The metric measures where the highlight goes (the character's centre). Whether a point on the glyph falls in that
   character's **cell**, a touch's hit-test, was **not** part of the protocol ("Hit-test", below, report only).
 - **IoU** along the reading direction of the estimated cell and of the ink box with the reference box (and 2-D on
-  the synthetic set).
+  the synthetic set; as scored there it is 1-D too: across the line the method's boxes are only the crop's height).
 - Per platform (Vita native, PSP native, Adrenaline 2x; PC scaled as a column), class (dialogue, name, choice, UI),
   line source and model. 95% intervals: VN-cluster bootstrap of the hit ratio, 10,000 resamples, seed 0.
 
@@ -263,7 +263,8 @@ in `eval/charboxes_synth_20261023.json`), read by `eval/charbox_eval.py synth`: 
 glyph's ink inside it: 6,778 / 6,887 / 6,834 lines), each model in W8I, every arm; per glyph of an equal aligned
 character, the centre inside the exact ink along the line and inside the exact cell, the 1-D IoU of the method's
 cell and ink box with the exact ones, and the centre's offset from the ink centre (in line ink heights; negative is
-left). Nothing was chosen on it: the method of record was fixed before these renders were read.
+left). Nothing was chosen on it: the method of record was fixed before these renders were read. The scorer was
+written after the protocol's tag and run once (07:33:45Z) before amendment 2 pinned it (08:21Z); it gates nothing.
 
 Dialogue lines (dialogue, narration, name + dialogue), cal + INK against raw frame centres:
 
@@ -282,15 +283,18 @@ Dialogue lines (dialogue, narration, name + dialogue), cal + INK against raw fra
   the line 99.0-99.3%, inside the 2-D ink box 94.6-94.7% (78-83% of those misses are 、 or 。: its boxes span the
   crop's full height, so the cursor-hit test's across-line check uses the line's ink box instead).
 - The calibration is fitted to MeikiOCR's boxes, so it inherits their left bias: the helper measured MeikiOCR's
-  centres 0.05-0.06 ink heights left of the exact ink centre, and the calibrated centres sit 0.014-0.020 left of
-  it. For VOCR5-N and L the raw frame centres are already in the exact cell more often (99.8-99.9% against
+  centres 0.05-0.06 ink heights left of the exact ink centre (0.07-0.09 before correcting its half-pixel
+  truncation), and the `cal` arm's centres sit 0.055-0.070 left of it. Under cal + INK the centres sit
+  0.014-0.020 left, which is mostly INK's own placement (INK alone: VOCR5-N 0.014-0.015). For VOCR5-N and L the raw frame centres are already in the exact cell more often (99.8-99.9% against
   99.6%) and cal + INK gains 0.8-1.1 points on the ink; for VOCR5-S, which fires about 0.2 ink heights right,
   the calibration is what puts its centres on the glyphs (88.9-90.2% → 98.1-98.4% ink).
-- The misses are narrow punctuation, as on development: VOCR5-N cal + INK, ink / cell, Vita / PSP / psp2x: an
+- The misses are narrow punctuation, as on development: VOCR5-N cal + INK, ink / cell, Vita / PSP / psp2x, every
+  line kind (the group rows are not split by kind): an
   opening bracket 81.9 / 84.7 / 85.4% / 98.7-99.2%, closing marks (、。」) 91.5-93.8% / 97.3-98.4%, ！？ 94.4-96.5% /
   99.4-99.8%, dots 94.6-95.7% / 97.0-98.2%; small kana 98.2-99.3% / 99.7-99.9%; the other characters (kana, kanji)
   99.4-99.6% / 99.8-99.9%.
-- PITCH changes nothing here either (within 0.08 points of cal + INK everywhere).
+- PITCH changes nothing here either on all and dialogue lines (within 0.08 points of cal + INK; UI 0.11); by group it
+  moves narrow punctuation by up to 0.95 points either way.
 
 ## Protected check (read once; measured)
 

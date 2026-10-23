@@ -1,0 +1,93 @@
+{
+ "kind": "head2level-protocol",
+ "issue": 117,
+ "item": 2,
+ "schema": 1,
+ "frozen": "2026-10-23T14:20:00Z",
+ "written_at_head": "6f24967d311d6984c138b2e8477c650801e2f2df",
+ "builds_on": "eval/headgate_protocol.json of branch feat/head-gate at 8fb6a20a40649aa700301921dcd58cdb7485f258 (the blank-frame head gate, #117 item 1): its gate, runtime switch, cohorts, decodes, bootstrap and timing method",
+ "rule_of_this_file": "Frozen before any two-level head, escape detector or 48-wide rare block of this protocol is fit and before any development score of one. Changes only by a dated amendment appended to 'amendments', made before the scores it could affect.",
+ "owner": "2026-10-23 13:34Z: \"Let's queue agents to skip output layer, make a pr. Trial the two level output. And retrain for a coarser frame step\"",
+ "problem": "The output head (96 -> 4,987 / 5,631 classes) is 29-40% of Small's and Normal's per-frame time and 15% of Large's (text-stats cost model). VN dialogue uses few characters: the 1,500 most frequent classes cover 98.6-98.9% of native dialogue characters (text-stats-charset). A two-level head computes the blank, the frequent rows and an escape on every frame the gate does not skip, and the other (rare) rows only where the escape fires.",
+ "known_before_freezing": [
+  "text-stats-gate (#117; $HERD/shared/artifacts/text-stats-gate/section.md and results.json 'step5_twolevel'): on the development sample's tv + dn crops (stored view; Adrenaline twins), with K = 1,500 (a PC-label frequency ranking) and a float 98 -> 16 -> 1 MLP escape (head input + level 1's largest kept logit + blank logit) fit on 281,180 training-side GRAD-crop frames (owner, native, devnative; target: W8I argmax outside the top K) and thresholded at recall 0.999 on a training-side calibration split, the escape fired on 14.6 / 18.5 / 13.2% of dev dialogue frames (S / N / L) with greedy and Rubi-LM dialogue CER free (0-1 lines changed). K, the detector shape, its inputs and the recall were picked after seeing those tv + dn results (exploratory), so tv + dn here are partly a confirmation on the same data. Linear detectors and K = 1,000 / 2,000 were also seen there; K >= 2,500 had too few training-side positives.",
+  "text-stats-charset: rare characters (outside a top-1,500) are 1.38% (Vita) / 1.07% (PSP) of native dialogue characters; with an oracle escape 0.50% of N's dev frames need the rare rows (2.84% to keep every LM candidate).",
+  "Not seen by anyone yet: this protocol's ranking (training labels of the VOCR5 pools), its detector training set (console-cut crops plus an rp3 sample), its int8 detector and exact threshold, K_alt, the 48-wide rare block (r48), the whole-dialogue cohort wd, the VOCR5 development score, Rubi's counter re-decode and confidence cascade on two-level top-K, the composition with head-gate's int8 gate, and any timing of a two-level runtime."
+ ],
+ "models": {
+  "what": "the released VOCR5 recognizers (v0.3.0), frozen: backbone, bottleneck and every level-1 row unchanged",
+  "S": {"file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_S_w8.vocr", "bytes": 819792, "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d", "vocab": "data/vocab_4987_proof.txt"},
+  "N": {"file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_N_w8.vocr", "bytes": 1185632, "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc", "vocab": "data/vocab_vn_5631.txt"},
+  "L": {"file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_L_w8.vocr", "bytes": 2473696, "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3", "vocab": "data/vocab_vn_5631.txt"}
+ },
+ "two_level_head": {
+  "permutation": "the head's rows (int8 weights, scale, bias) and the vocab are permuted together into the ranking's order: class 0 stays the blank, then the ranked classes. Class texts are unchanged, class numbers change; runtime/vocr_lm.c, vocr_post.c and vocr_charbox.c map classes by text. The permuted rows are byte-identical to the released ones, so every class's logit is today's bit for bit; the permuted blob is a valid version-1 blob any runtime reads as the full head",
+  "level1": "the first ceil((K + 1) / 8) 8-row blocks: the blank and the ceil((K + 1) / 8) x 8 - 1 most frequent classes (K = 1,500: 1,504 rows, 1,503 frequent classes), on every frame the gate does not skip",
+  "escape": "a 98 -> 16 (ReLU) -> 1 MLP on the head's input as the W8I head sees it (vocr.c quant16: int16 grid, scale max|x| / 32767), level 1's largest non-blank logit l1 and its blank logit b0. Layer 1: the 96 head-input weights int8 per hidden unit (train/export.quantize_rows) through vocr.c's mm_i16 on the head's own quantised input (with the bias: a = S x (scale x sx) + bias), then a = a + w_l1 x l1, a = a + w_b0 x b0 (float32, each product and sum rounded), ReLU; layer 2 float32: s = b2, then s = s + w2[j] x h[j], j = 0..15. The escape fires iff s > t (float32 t)",
+  "level2": "on the frames where the escape fires, packed per head batch: every other row. A fired frame's logits, argmax and top-K are today's bit for bit (r96); a frame that does not fire gets its argmax and top-K over the level-1 classes only (its first maximum and its top-K order rules unchanged)",
+  "rare_variants": {
+   "r96": "the released rare rows (no training)",
+   "r48": "the rare rows on a 48-wide projection: P (96 -> 48, int8 per row, float32 bias), its 48 outputs quantised by quant16, then the rare rows over 48 inputs (int8 per row, float32 scale and bias), all through mm_i16. The blob then holds no 96-wide rare rows (-162 KB S, -193 KB N / L of weights at K = 1,500), so old runtimes must refuse it (a new header flag bit); with the escape off the runtime computes both levels on every frame"
+  },
+  "storage": "a versioned 'VOC2' trailer at al16(end of the previous part) after the blob and after head-gate's 'VOCG' trailer when one is present: its own version, size and CRC-32, bound to the base blob's byte count and CRC like VOCG; it holds K's block count, the escape (int8 layer 1, float32 rest, t) and, for r48, P and the 48-wide rows",
+  "runtime_switch": "vocr_opts.two_level (0 = off, the default: the full head, today's arithmetic on the permuted rows; r48 blobs then compute both levels on every frame); 1 needs VOCR_MODE_W8I and a blob with the trailer, else VOCR_E_MODE. It composes with vocr_opts.head_gate (a gated frame skips both levels). A run that asks for full logits (vocr_extra.logits) computes every row of every frame",
+  "kernels": "no malloc; NEON and scalar give the same bits; the fired frames' quantised head inputs are copied into an arena buffer of acc_frames rows (exact bytes reported)"
+ },
+ "ranking": {
+  "data": "the labels of VOCR5's fine-tune pools' real sources (eval/vocr5_ft_sources.json 'real', pinned in eval/vocr5_pools.sha256): tt, tvt, rd, rvt, rp3_ink, rp3_grad, rp3_ref, own_ink, own_m4, own_m8, own_grad, own_ref, nat_*, dntv_*, dnst_*; every distinct line once (key: pool group from vocr5_ft_sources 'group' and the row's meta id), dialogue and names; whitespace removed",
+  "count": "a class's count = occurrences of its text among those lines' characters (a class of several characters, e.g. <unk>, counts 0)",
+  "order": "decreasing count; ties and unseen classes in data/vocab_vn_6459.txt order (sha256 0dbc1a62fdccc430e84a5b3028732010f268304c43978f3b37ce6d9c2b2faaca), then any class outside it in vocab order; one ranking per tier vocab",
+  "hygiene": "no development or test data: the pools exclude every reserved.json VN (asserted again before counting)"
+ },
+ "frequent_set": {
+  "K": 1500,
+  "K_alt": "per tier, chosen on training-side frames only: for K in [500, 750, 1000, 1250, 1750, 2000, 2500], fit and threshold that K's r96 escape exactly as 'escape_training' below; W(K) = L1 + 16.5 + f_cal x (V_pad - L1) head rows per frame, with L1 = ceil((K + 1) / 8) x 8, V_pad = ceil(V / 8) x 8, 16.5 the escape's MACs over a head row's 96, f_cal the share of calibration-split frames the escape fires on; K_alt = argmin W (ties: the larger K). A K is eligible only with >= 200 fit-split and >= 50 calibration-split positives. K = 1,500's W is reported beside it"
+ },
+ "escape_training": {
+  "data": "training-side frames: every row of head-gate's eight console-cut files (own_grad, own_ref, nat_grad, nat_ref, dntv_grad, dntv_ref, dnst_grad, dnst_ref; sha256 in eval/vocr5_pools.sha256) plus 40,000 rows of rp3_grad.npz (sha256 88ba60a4...; numpy default_rng(20261023).choice(rows, 40000, replace=False), sorted), as stored (console polarity), every row (dialogue and names)",
+  "hygiene": "no row of a VN in eval/manifests/reserved.json 'test' or 'dev_sample' (asserted before any feature is extracted); no text label is used",
+  "features": "per frame from the C runtime (W8I, the release blob): the head's input (96 floats, as the head reads it), level 1's l1 and b0, and the label y = the frame's W8I argmax lies outside level 1 (r48: the r48 head's argmax, exact twin)",
+  "split": "by VN: sha1(vn) % 5 == 0 is the calibration split (thresholds), the rest the fit split",
+  "fit": "PyTorch (requirements.lock), float32, inputs standardised with the fit split's mean and standard deviation; Linear(98, 16), ReLU, Linear(16, 1); BCEWithLogits on y with pos_weight = min(100, negatives / positives of the fit split); Adam lr 3e-3, cosine schedule over 12 epochs of batches of 4,096, seed 0; one fit per tier, K and rare variant, nothing chosen among fits",
+  "export": "the standardisation folded into layer 1 (w / sd, b - w . (mu / sd)); layer 1's 96 head-input weights quantised to int8 per hidden unit; its two level-1 weights, the biases and layer 2 float32",
+  "threshold": "on the calibration split, the exact scores of the exported escape (the Python twin, equal to the C runtime bit for bit) over its n positive frames: t = the largest float32 below the (floor(0.001 n) + 1)-th smallest positive score, so at most floor(0.001 n) positives do not fire (recall >= 0.999)",
+  "fallback": "if an arm fails the development rule below, the same fit thresholded at recall 0.9999 (at most floor(0.0001 n) positives missed) is exported and scored once for that arm, reported as the fallback; no other setting is tried"
+ },
+ "r48_fine_tune": {
+  "what": "a short head-only fine-tune per tier and K (6 runs, through heavy.sh, 5 threads each, at most 6 at once): the backbone, bottleneck and level-1 rows frozen; trainable: P (48 x 96, bias 48) and the rare rows (R x 48) with their biases",
+  "init": "the rank-48 factorisation of the released rare rows A_R (dequantised int8) in the metric of the fit split's head inputs: M = A_R S^(1/2) with S the inputs' second-moment matrix, M ~ U_48 D_48 V_48^T (SVD), rows = U_48 D_48^(1/2), P = D_48^(1/2) V_48^T S^(-1/2), P's bias 0, the rare biases kept",
+  "data": "cached head inputs (W8I, as quantised and dequantised by quant16) of the escape's fit-split frames plus every frame of the first 10,000 crops of each of render/s4v5631/shards/synth4_00097.npz (sha256 c31c6f7b...), synth4_00098.npz (fe61282d...), synth4_00099.npz (1821662f...), as stored",
+  "loss": "frame-level KD to the released full head: mean over frames of KL(p_full || p_2L), p = softmax over all V classes, tau = 1; p_full from the W8I logits of the released head, p_2L from the frozen level-1 logits and the float r48 rare logits",
+  "optimiser": "AdamW (weight decay 0), lr 1e-3, cosine to 5% over 4 epochs of shuffled batches of 4,096 frames, seed 0",
+  "export": "P and the rare rows int8 per row (train/export.quantize_rows), biases and scales float32; reported: the calibration split's mean KL and argmax agreement with the full head, float and exact W8I"
+ },
+ "arms": {
+  "per_tier": "for K in [1500, K_alt] and rare variant in [r96, r48]: '2L' (vocr_opts.two_level = 1, head gate off) and '2L+gate' (two_level = 1 and head_gate = 1 with head-gate's gate of that tier, its adopted threshold); C runtime W8I, max width 1024, default tile 4 and head batch 16",
+  "references": "'today' (the released blob, no gate) for every arm; 'gate' (head-gate's gated configuration of that tier, two_level off) also for the 2L+gate arms"
+ },
+ "development": {
+  "cohorts": "exactly eval/headgate_protocol.json 'development' 'cohorts' (VOCR5's fixed development sample: tv = teacher_val_dev.npz both views, dn = devnative's four *_dev.npz both views, wd = tv_dlg + dn_dlg whole-dialogue regions at base, +4 and +8 px through the C GRAD finder and with the C refinement, each line read with its dark flag as VOCR_INVERT), the same file hashes",
+  "score": "VOCR5's development score, dialogue only: 0.25 tv + 0.25 dn + 0.5 wd in CER points (eval/vocr5_select.py); names a secondary column",
+  "decodes": "exactly eval/headgate_protocol.json 'decodes': greedy; rubi (top-8, vocr_post_redecode {6000, 4000}, vocr_lm_decode with vocr_lm_o3_1000k.vlm sha256 993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9: beam 8, top-K 8, alpha 500, beta 3500, gate 8000, VOCR_LM_EOS, bracket 8000, an empty line staying empty, then vocr_post_counters); rubi_cascade (a line with confidence round(conf_min x 1000 + 0.5) < 700 read again by the next tier up with the same steps; S -> N, N -> L; the next tier runs the same arm: its own K of the same kind, the same rare variant and gate setting)",
+  "bootstrap": "eval/vocr5_select.py's VN-cluster bootstrap, 10,000 resamples, tv / dn / wd resampled independently with seeds 0 / 1 / 2, a replicate's score difference 0.25 tv + 0.25 dn + 0.5 wd; arm - reference in points",
+  "rare_recall": "a dialogue reference character (eval.metrics.norm) is rare for an arm when no level-1 class emits it (norm of the class text) and some class of the tier's vocab does (characters no class emits are left out). It is recalled when a minimum-edit Levenshtein alignment of norm(prediction) to norm(reference) matches it to the same character (backtrace preference: match or substitution, then deletion, then insertion). tv and dn: per row (both views); wd: per unit, the finder lines' predictions joined in finder order against the unit's reference lines joined in order. Recall per component = recalled / rare; combined 0.25 tv + 0.25 dn + 0.5 wd; loss = reference - arm in points, with the same VN-cluster bootstrap (ratio of sums per replicate)",
+  "escape_rate": "the share of frames the escape fires on among the frames level 1 runs on (all, dialogue, wd's finder-cut lines, per platform and component), the share of frames whose full-head argmax lies outside level 1 (oracle), and head rows computed per frame",
+  "rule": {
+   "per_tier": "an arm of a tier is ADOPTABLE iff, for each of the three decodes, against 'today' and, for a 2L+gate arm, also against 'gate': (a) not resolved worse: the dev-score difference's 95% interval does not lie entirely above 0, and no component's (tv, dn, wd) interval lies entirely above 0; (b) non-inferiority: the dev-score interval's upper bound is at most +0.05 points; (c) rare characters: the combined rare-recall loss is at most 1.0 point and its 95% interval's upper bound at most 2.0 points; and (d) the estimated saving against its reference ('today' for 2L, 'gate' for 2L+gate) is at least 3% of the tier's nominal box (estimates below, safe basis). An arm failing (a) is REJECTED; one passing (a) but failing (b), (c) or (d) is NOT ADOPTED (reported).",
+   "selection": "per tier: if head-gate adopts that tier's gate (recommended on), only 2L+gate arms are candidates, else only 2L arms; among the adoptable candidates, r48 before r96 (memory first), then the lower estimated ms per nominal box at 333 MHz (ties: K = 1,500). The selected arm is ADOPTED: recommended on in Rubi. A tier with no adoptable candidate keeps today's head",
+   "outcome": "any tier adopted: the two-level head is productionised (runtime, export, twin parity, tests, docs, PR, audit, release blobs, a DRAFT Rubi pin). No tier adopted: a docs-only PR records the trial",
+   "reported_beside": "per component, view, platform and cohort; names; lines changed; escape rate and oracle share; non-fired frames whose top-8 lost a candidate within the LM gate; the counter-context synthetic set of #109 (eval/kanum_dev.py, report only), as head-gate's 'counter_check'"
+  }
+ },
+ "estimates": {
+  "method": "eval/headgate_protocol.json 'estimates' with the two-level C prototype: vita/a9_layers.py measure (VitaSDK gcc, the Vita flags, qemu-arm instruction counts with the plugin's cache model) on ocr-speed's 24 development lines (pack $HERD/shared/artifacts/ocr-speed-resume/packs/sub24.bin, sha256 3162151aaf3013f434c5ad7996d04ca2308fe2d3896ce06de14909878906c8b7), --topk 8, each arm's blob and switches, --no-pld (the safe basis) and with the PLD model; a9_layers.py report --scale 1.000676 (VOCR3-H15's measured 4,942 us per frame, 'the 5.0-5.2 ms per CTC frame', at an assumed 333 MHz); 444 MHz by the clock ratio",
+  "box": "est. ms saved per nominal 3-line box (240 frames + 0.1 s finder) and per real box (89 frames, text-stats-boxes), from (i) the pack's own measured per-frame times and (ii) projected to the development escape and skip rates on wd's finder-cut lines: the measured cost of a level-1 frame, of the escape and of a fired frame's level 2",
+  "sizes": "blob bytes, VOCG and VOC2 trailer bytes exact; W8I arena exact with and without the switches (vocr_arena_bytes == train/export.plan_arena); code bytes of vocr.o (VitaSDK -O2 NEON, psp-gcc scalar); all times are estimates, nothing runs on a console"
+ },
+ "protected": {
+  "when": "once, after the development verdict of every tier is committed and pushed, for adopted arms only",
+  "what": "eval/headgate_protocol.json 'protected': vita-test and psp-test fixed lines (console polarity, dialogue = no 'name' style) and CLANNAD (owner-drive-ingest's frozen references through GRAD + refine inside each GRAD box), each adopted tier today vs its adopted arm, decodes greedy, rubi and rubi_cascade; line / VN-cluster (tests) and page (CLANNAD) bootstraps",
+  "use": "report only: it decides and tunes nothing; an attempt record refuses a second run; public outputs hold counts, rates and hashes only"
+ },
+ "amendments": []
+}

@@ -32,7 +32,7 @@ GREY8, RGBA8, INVERT = 1, 4, 0x100
 
 class _Opts(C.Structure):
     _fields_ = [("tile_frames", C.c_uint), ("head_frames", C.c_uint), ("max_width", C.c_uint),
-                ("mode", C.c_int), ("head_gate", C.c_uint)]
+                ("mode", C.c_int), ("head_gate", C.c_uint), ("two_level", C.c_uint)]
 
 
 class _Image(C.Structure):
@@ -46,7 +46,8 @@ class _Extra(C.Structure):
                 ("frames", C.c_uint), ("chars", C.c_uint), ("topk", C.c_uint),
                 ("topk_logit", C.c_void_p), ("topk_class", C.c_void_p), ("blank_logit", C.c_void_p),
                 ("conf_min", C.c_float), ("conf_mean", C.c_float),
-                ("head_in", C.c_void_p), ("gate_score", C.c_void_p), ("gated", C.c_uint), ("ungated", C.c_uint)]
+                ("head_in", C.c_void_p), ("gate_score", C.c_void_p), ("gated", C.c_uint), ("ungated", C.c_uint),
+                ("esc_score", C.c_void_p), ("escaped", C.c_uint)]
 
 
 class _PostOpts(C.Structure):
@@ -143,9 +144,11 @@ class Vocr:
                                     source_sha=hashlib.sha256(Path(ckpt).read_bytes()).digest())
         return cls(blob, **kw)
 
-    def __init__(self, blob, mode="auto", tile=0, head=0, max_width=0, lib=None, check_crc=True, head_gate="off"):
+    def __init__(self, blob, mode="auto", tile=0, head=0, max_width=0, lib=None, check_crc=True, head_gate="off",
+                 two_level=0):
         """head_gate: "off", "on" (skip the head on the frames the blob's gate calls blank) or "score" (compute
-        the gate's scores only); "on" and "score" need mode w8i and a blob with a gate (docs/headgate.md)."""
+        the gate's scores only); "on" and "score" need mode w8i and a blob with a gate (docs/headgate.md).
+        two_level: 1 runs the two-level head of a blob with a VOC2 trailer (mode w8i; docs/head2level.md)."""
         self.lib = lib if lib is not None else load_lib()
         data = Path(blob).read_bytes() if isinstance(blob, (str, Path)) else bytes(blob)
         self._blob = _aligned(len(data))
@@ -158,10 +161,10 @@ class Vocr:
             self._check(self.lib.vocr_check_crc(self._blob.ctypes.data, len(data)), "vocr_check_crc")
         self._check(self.lib.vocr_load(self._model, self._blob.ctypes.data, len(data)), "vocr_load")
         self.opts = _Opts(tile, head, max_width, MODES[mode] if isinstance(mode, str) else mode,
-                          HEAD_GATE[head_gate] if isinstance(head_gate, str) else head_gate)
+                          HEAD_GATE[head_gate] if isinstance(head_gate, str) else head_gate, int(two_level))
         self.arena_bytes = self.lib.vocr_arena_bytes(self._model, C.byref(self.opts))
         if not self.arena_bytes:
-            raise ValueError(f"invalid options {mode=} {tile=} {head=} {max_width=} for this blob")
+            raise ValueError(f"invalid options {mode=} {tile=} {head=} {max_width=} {two_level=} for this blob")
         self._arena = _aligned(self.arena_bytes)
         self._check(self.lib.vocr_init(self._ctx, self._model, C.byref(self.opts),
                                        self._arena.ctypes.data, self.arena_bytes), "vocr_init")
@@ -171,6 +174,7 @@ class Vocr:
         self.has_gate = bool(self.lib.vocr_has_gate(self._model)) if hasattr(self.lib, "vocr_has_gate") else False
         self.head_k = self._head_k(data)
         self._text = C.create_string_buffer(1 << 16)
+        self.last_escaped = 0
 
     @staticmethod
     def _head_k(data):
@@ -247,6 +251,7 @@ class Vocr:
         text = self._text.value.decode("utf-8")
         self.last_best = best[:ex.frames]
         self.last_gated = ex.gated
+        self.last_escaped = ex.escaped
         self.last_head_in = hi[:ex.frames] if hi is not None else None
         self.last_gate_score = gs[:ex.frames] if gs is not None else None
         return (text, out[:ex.frames]) if logits else text
@@ -254,11 +259,14 @@ class Vocr:
     def text(self, img, invert=False):
         return self.run(img, invert=invert)
 
-    def run_topk(self, img, k, invert=False, blank=True, head_in=False, gate_score=False, ungated=False):
+    def run_topk(self, img, k, invert=False, blank=True, head_in=False, gate_score=False, ungated=False,
+                 esc=False):
         """vocr_run with vocr_extra.topk = k: the greedy text, per frame the k largest logits (topv,
         decreasing) and their classes (topc), the blank's logit, and conf_min / conf_mean; "best" (each
         frame's argmax), "gated" (frames the head gate skipped) and, if asked, "head_in" / "gate_score".
-        ungated=True: this line without skipping (vocr_extra.ungated), as head_gate off reads it."""
+        ungated=True: this line without skipping (vocr_extra.ungated), as head_gate off reads it.
+        esc=True: the two-level escape's per-frame score ("esc"; NaN where it did not run); "escaped" counts
+        the frames it fired on (docs/head2level.md)."""
         keep, im = self._image(img, invert)
         cap = self.resized_width(im.width, im.height) // self.stride + 1
         topv = np.zeros((cap, k), np.float32)
@@ -271,17 +279,25 @@ class Vocr:
         ex.blank_logit = bl.ctypes.data if blank else None
         ex.ungated = 1 if ungated else 0
         hi, gs = self._gate_buffers(ex, cap, head_in, gate_score)
+        es = None
+        if esc:
+            es = np.full(cap, np.nan, np.float32)
+            ex.esc_score = es.ctypes.data
         self._check(self.lib.vocr_run(self._ctx, C.byref(im), self._text, len(self._text), C.byref(ex)), "vocr_run")
         del keep
         n = ex.frames
         self.last_best = best[:n]
+        self.last_escaped = ex.escaped
         out = {"text": self._text.value.decode("utf-8"), "topv": topv[:n], "topc": topc[:n],
                "blank": bl[:n] if blank else None, "conf_min": ex.conf_min, "conf_mean": ex.conf_mean,
-               "frames": n, "chars": ex.chars, "best": best[:n], "gated": ex.gated}
+               "frames": n, "chars": ex.chars, "best": best[:n], "gated": ex.gated,
+               "escaped": ex.escaped}
         if hi is not None:
             out["head_in"] = hi[:n]
         if gs is not None:
             out["gate_score"] = gs[:n]
+        if esc:
+            out["esc"] = es[:n]
         return out
 
     def redecode(self, out, tau=0, open=0):

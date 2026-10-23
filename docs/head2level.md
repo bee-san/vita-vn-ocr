@@ -77,8 +77,8 @@ Every 48-wide rare block (r48) is rejected.
 - **Bytes.** The VOC2 trailer is 1,984 B per blob (after head-gate's 1,792 B VOCG section); no weight changes: N
   1,189,408 B and L 2,477,472 B. The W8I arena grows by 1,456 B over the gate's (N 184,448 B against the gate's
   182,992 B and today's 182,944 B; L 262,528 B against 261,072 B and 261,024 B). `vocr.o` grows from head-gate's
-  20,159 to 23,235 B (+3,076 B; VitaSDK gcc 15.2 `-O2`, NEON; scalar `-DVOCR_NO_NEON` 15,159 to 18,263 B; psp-gcc
-  `-O2 -G0` 22,959 to 27,959 B).
+  20,159 to 23,259 B (+3,100 B; VitaSDK gcc 15.2 `-O2`, NEON; scalar `-DVOCR_NO_NEON` 15,159 to 18,283 B; psp-gcc
+  `-O2 -G0` 22,959 to 27,979 B).
 - **Why not Small.** K = 500 is resolved worse than today on greedy dialogue (+0.020 points [+0.003, +0.038]: the
   gate's own +0.016 [0.000, +0.033] plus the escape's +0.004). K = 1,500 passes (a) but not (b) on the cascade
   (+0.014 [−0.020, +0.051] against today) and not (d): the pack's measured saving over the gate is 2.7% of the box

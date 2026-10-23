@@ -295,8 +295,8 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that a
   trailer. `vocr_load` rejects a damaged trailer's structure, `vocr_check_crc` its content; `head2level.py info`
   prints it. The arena mirror is `train/export.plan_arena(..., two_level=read_trailer(blob))`.
 - Cost (VitaSDK gcc 15.2 `-O2`; times are estimates from qemu instruction counts calibrated to VOCR3-H15's console
-  rate): `vocr.o` grows from 20,159 to 23,235 B with NEON (scalar, `-DVOCR_NO_NEON`: 15,159 to 18,263 B; psp-gcc
-  `-O2 -G0` 22,959 to 27,959 B); no malloc.
+  rate): `vocr.o` grows from 20,159 to 23,259 B with NEON (scalar, `-DVOCR_NO_NEON`: 15,159 to 18,283 B; psp-gcc
+  `-O2 -G0` 22,959 to 27,979 B); no malloc.
   VOCR5-N with the gate: est. 2.74 ms per frame against the gate's 2.88 (24 development lines, 333 MHz, no prefetch
   credit).
 - Twin and tests: `train/head2level.py twolevel_exact` is bit-exact; `tests/test_head2level.py` checks it against the

@@ -69,6 +69,12 @@ def main():
     dev = json.loads(Path(a.dev).read_text())
     out = {"kind": "head2level-timing", "mhz": MHZ, "boxes": {"nominal_frames": NOMINAL, "real_frames": REAL,
                                                               "finder_ms": FINDER_MS}, "tiers": {}}
+    # the runtime each measurement compiled (vita/a9_layers.py's meta): {vocr.c sha256: runs}
+    hashes = {}
+    for r in sorted(d.glob("*/report.json")):
+        h = json.loads(r.read_text())["meta"].get("vocr_c_sha256", "?")
+        hashes[h] = hashes.get(h, 0) + 1
+    out["a9_vocr_c_sha256"] = hashes
     for t in ("S", "N", "L"):
         if not (d / f"nopld_{t}_today" / "report.json").exists():
             continue

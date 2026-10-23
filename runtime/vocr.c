@@ -177,7 +177,7 @@ static int parse_two(vocr_model *m, const unsigned char *b, size_t bytes, uint32
     memcpy(&tw->e_b2, p + 36, 4);
     for (i = 0; i < 6; i++) o[i] = rd32(p + 40 + 4 * i);
     if (!m->int8 || rd16(p + 28) || tw->l1_blocks < 1 || tw->l1_blocks >= NB || tw->hidden < 8 ||
-        tw->hidden > 64 || (tw->hidden & 7u) || !(tw->t == tw->t))
+        tw->hidden > 64 || (tw->hidden & 7u) || !(tw->t == tw->t) || !(tw->e_b2 == tw->e_b2))
         return VOCR_E_FORMAT;
     if (!in_trailer(size, o[0], (size_t)tw->hidden * K))
         return VOCR_E_FORMAT;

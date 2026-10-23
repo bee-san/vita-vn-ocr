@@ -20,7 +20,10 @@ console.
 - **Permuted blobs.** `train/head2level.py permute` reorders the head's rows (int8 weights, scales, biases) and the
   vocab together into the frequency order: class 0 stays the blank. Every class's logit is today's bit for bit
   (checked on every frame of real crops), and the blob is an ordinary version-1 blob. Class numbers change, class
-  texts do not; the LM decoder, the counter re-decode and the character boxes map classes by text.
+  texts do not; the LM decoder, the counter re-decode and the character boxes map classes by text. Only where two
+  classes tie exactly can a permuted blob order them otherwise (the first maximum, the top-K and the decoders' ties
+  follow class numbers); on the development sample the permuted blobs read today's text and confidence on every crop
+  ("final_code" in `eval/head2level_dev_20261023.json`).
 - **The VOC2 trailer** (`runtime/vocr.c` `parse_two`, `train/head2level.py write_trailer`): a versioned section after
   the blob (and after head-gate's `VOCG` section when there is one), with its own CRC-32, bound to the base blob's
   byte count and CRC. It holds level 1's block count and the escape (the trial's r48 arms also stored their 48-wide
@@ -37,8 +40,9 @@ console.
 - **Runtime switch** `vocr_opts.two_level` (W8I only; 0 = the full head, today's output). Asking for full logits
   computes every row. `vocr_extra.esc_score` and `escaped` report the escape per frame and per line.
 - **The exact twin** (`train/head2level.py twolevel_exact`) reproduces the C escape scores, fired frames, argmax and
-  top-K bit for bit (`tests/test_head2level.py` on a random-init model; on every frame of 104 real console-cut crops
-  per tier and arm).
+  top-K bit for bit (`tests/test_head2level.py` on a random-init model; on every frame of 1,030 development crops
+  per tier, 42,288 frames, for S, N and L at K = 500 and K = 1,500: `eval/head2level_dev.py twin`, "twin" in
+  `eval/head2level_dev_20261023.json`).
 
 ## How the escape and r48 were trained (training data only)
 
@@ -80,22 +84,25 @@ Every 48-wide rare block (r48) is rejected.
   (+0.014 [−0.020, +0.051] against today) and not (d): the pack's measured saving over the gate is 2.7% of the box
   (projected 6.7%).
 - **Why not K = 1,500 for N and L.** Not (d): the measured savings over the gate are 2.95% (N) and 2.1% (L) of the
-  box. The projected savings clear 3%; amendment 2 made the smaller of the two decide, before any 2L + gate number
-  existed.
+  box. The projected savings clear 3%; amendment 2 made the smaller of the two decide. It was made before any 2L +
+  gate number was read or computed: the A9 files of six 2L + gate arms (S's four and N's two at K = 1,500) had just
+  been written, unread, as the protocol's correction records.
 - **Why not r48.** On frames that need a rare row, the 48-wide approximation picks another class often enough to
   cost rare characters: recall losses of 0.6-2.5 points and dev scores resolved worse (for example N `2L_K1500_r48`
   +0.036 [+0.005, +0.073] on rubi), although it agrees with the full head's argmax on 99.85-99.96% of all frames.
-- **Counter contexts (#109; report only).** On the synthetic counter set the escape sometimes misses the small ヵ or
-  ヶ and level 1 reads the full-size カ or ケ (S K = 1,500: 250 of 3,969 lines worse; L K = 500: 158). A Rubi line
-  whose reading holds a full-size カ or ケ before 月 所 年 国 条, or whose re-decode finds a counter context, is read
-  again with the full head (`vocr_extra.ungated`). With that re-read the adopted arms add 3 (N) and 1 (L) lines
-  beyond the gate's own (the gate with it: 76 and 18 lines worse than today; the two-level head alone: 3 and 1).
+- **Counter contexts (#109; report only).** The re-read below was designed after the counter set's first results
+  (greedy and rubi only), as the remedy for what they showed; the rule reads neither the set nor the re-read. On the
+  synthetic counter set the escape sometimes misses the small ヵ or ヶ and level 1 reads the full-size カ or ケ (S K =
+  1,500: 250 of 3,969 lines worse; L K = 500: 158). A Rubi line whose reading holds a full-size カ or ケ before 月 所 年 国
+  条, or whose re-decode finds a counter context, is read again with the full head (`vocr_extra.ungated`). With that
+  re-read the adopted arms add 3 (N) and 1 (L) lines beyond the gate's own (the gate with it: 76 and 18 lines worse
+  than today; the two-level head alone: 3 and 1).
 
 - **The runtime as merged has no r48 code.** Every r48 arm was rejected, so `parse_two` refuses a trailer with a rare
   block (`rare_k` or its offsets non-zero) and `run_head2` keeps only the head's own rows: 876 B less code (NEON;
   892 B scalar) than the build the verdict measured (`head2level-verdict-c5f7dae`), which read the r48 arms. The
   branch was then rebased onto head-gate's audit fixes (its F1: the frames of a head right after the stem; a C test
-  here checks the two-level head on that topology). Checked on the final code (`vocr.c` sha256 8ad4c4a0…):
+  here checks the two-level head on that topology). Checked on the final code (`vocr.c` sha256 9e3ec20c…):
   - the adopted arms' 8,233 development reads per tier (N, L) are bit for bit the verdict's: every argmax frame,
     escape count, confidence, greedy and LM text;
   - the permuted blobs with the two-level head off read today's text and confidence on every development crop (S, N, L);
@@ -124,7 +131,10 @@ runtime build and of the integrated one (head-gate's runtime with run_head2) are
 
 Arms per tier: 2L (two-level, no gate) and 2Lg (two-level and head-gate's gate), K = 1,500 and K_alt = 500, r96 and
 r48; references today and, for 2Lg, the gate. Verdicts: "rejected" fails (a), "not adopted" fails (b), (c) or (d),
-"adoptable" passes all. Head-gate adopted every tier's gate, so only the 2Lg arms are candidates. The escape's fire
+"adoptable" passes all. Head-gate adopted every tier's gate, so only the 2Lg arms are candidates. Small's verdict
+rests on that: had head-gate's rule dropped Small's gate, the same rule would compare the 2L arms with today and adopt
+`2L_Kalt_r96` for Small (adoptable against today in all three decodes, (d) 17.4%); head-gate's corrected score
+(audit-head-gate B1) still adopts Small's gate. The escape's fire
 share is over the frames level 1 runs on (the gate skips about 60% before it).
 
 ### Escapes (training-side calibration split)
@@ -296,7 +306,7 @@ and hashes only).
 | vita-test + psp-test (451 lines, console polarity) | greedy | 1.129% → 1.129% (0) | 1.129% (0) | 0.788% → 0.788% (0) | 0.788% (0) |
 | | rubi | 0.725% → 0.682% (2) | 0.682% (2) | 0.533% → 0.511% (1) | 0.511% (1) |
 | | rubi_cascade | 0.618% → 0.575% (2) | 0.575% (2) | 0.533% → 0.511% (1) | 0.511% (1) |
-| CLANNAD (3,048 lines, 33,485 characters, page bootstrap) | greedy | 0.923% → 0.923% (0) | 0.923% (0) | 0.630% → 0.639% (3) | 0.630% (0) |
+| CLANNAD (2,052 dialogue lines of 3,048, 33,485 characters, page bootstrap) | greedy | 0.923% → 0.923% (0) | 0.923% (0) | 0.630% → 0.639% (3) | 0.630% (0) |
 | | rubi | 0.765% → 0.768% (1) | 0.768% (1) | 0.547% → 0.559% (5), +0.012 [+0.003, +0.024] | 0.550% (1) |
 | | rubi with the re-read | 0.765% → 0.768% (1) | 0.768% (1) | 0.547% → 0.553% (3), +0.006 [0.000, +0.015] | 0.550% (1) |
 | | rubi_cascade | 0.654% → 0.663% (3) | 0.660% (2) | 0.547% → 0.559% (5) | 0.550% (1) |
@@ -323,7 +333,7 @@ python eval/head2level_fit.py escapes --tier $T --train train_$T.npz --blob VOCR
 python eval/head2level_fit.py build --tier $T --blob VOCR5_${T}_perm.vocr --fit fit_$T.json --K 500 \
     --out VOCR5_${T}_2L_K500_r96.vocr
 python eval/head2level_fit.py compose --two VOCR5_${T}_2L_K500_r96.vocr --gated VOCR5_${T}_w8g.vocr \
-    --out VOCR5_${T}_2Lg_K500_r96.vocr            # VOCR5_T_w8g.vocr: head-gate's blob (v0.3.5-headgate.1)
+    --out VOCR5_${T}_2Lg_K500_r96.vocr            # VOCR5_T_w8g.vocr: head-gate's blob (to be released as v0.3.5-headgate.1)
 # development: the finder's lines once, then reads per tier and arm, scores, timing, the rule
 python eval/head2level_dev.py lines --cache DEV
 python eval/head2level_dev.py read --tier $T --arm "2Lg_Kalt_r96=VOCR5_${T}_2Lg_K500_r96.vocr:two_level:gate" --cache DEV
@@ -351,3 +361,10 @@ The r48 arms' blobs read only with the runtime at `head2level-verdict-c5f7dae`.
 - **The escape's training frames** are VOCR5's own fine-tune pools (console-cut crops and a realplus sample), 2.0 M
   frames of 12,220 VNs; the development check is the guard against their being easier than unseen games.
 - **The counter set** is synthetic (fonts over noisy boxes); no development line holds a counter context.
+- **tv + dn were seen before the protocol.** text-stats-gate's exploratory check (#117; the protocol's
+  `known_before_freezing`) read the development sample's tv + dn crops with K = 1,500 and this escape's shape, inputs
+  and 0.999 recall, all picked after seeing those results; so tv + dn are partly a confirmation on the same data.
+  wd, the ranking, the int8 escape and its threshold, K_alt, r48, the development score and every timing were not seen.
+- **The selection's estimate.** Among adoptable arms `decide` takes the one with the lower measured ms per nominal box
+  on the pack (the protocol says "the lower estimated ms" without naming the estimate). It decides nothing here: each
+  tier has one adoptable arm.

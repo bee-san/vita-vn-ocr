@@ -44,7 +44,7 @@ ROOT = HERE.parent
 sys.path[:0] = [str(HERE), str(ROOT / "train")]
 import a9_cycles as A9  # noqa: E402
 
-PROF_RUN, PROF_SRC = 100, 101
+PROF_RUN, PROF_SRC, PROF_GATE = 100, 101, 102
 NAMES = {1: "CONV", 2: "DW", 3: "PW", 4: "HEAD"}
 
 
@@ -68,10 +68,18 @@ def build(out, vitasdk, arm_cc, runtime, prof):
     lm_c = runtime / "vocr_lm.c" if (runtime / "vocr_lm.c").exists() else ROOT / "runtime/vocr_lm.c"
     subprocess.run([str(vcc), *A9.WARN, *A9.ARCH, "-O2", "-I", str(ROOT / "runtime"), "-c", "-o", str(lm_obj),
                     str(lm_c)], check=True)
+    # and the counter post-processing (vocr_post.c, #109), which this checkout's vocr_cli.c links since then; like
+    # the decoder it runs only with its options (--redecode, --post), never in a profiled run here
+    post_obj = out / f"vocr_post_vita_{tag}.o"
+    post_c = runtime / "vocr_post.c" if (runtime / "vocr_post.c").exists() else ROOT / "runtime/vocr_post.c"
+    subprocess.run([str(vcc), *A9.WARN, *A9.ARCH, "-O2", "-I", str(ROOT / "runtime"), "-c", "-o", str(post_obj),
+                    str(post_c)], check=True)
     extra = [str(HERE / "qemu/prof_mark.c")] if prof else []
-    subprocess.run([arm_cc, *A9.WARN, *A9.ARCH, "-O2", "-static", "-Wl,--no-enum-size-warning", "-o", str(cli),
-                    str(obj), str(lm_obj), *extra, str(ROOT / "runtime/tools/vocr_cli.c"), "-lm"], check=True,
-                   capture_output=True)
+    p = subprocess.run([arm_cc, *A9.WARN, *A9.ARCH, "-O2", "-static", "-Wl,--no-enum-size-warning", "-o", str(cli),
+                        str(obj), str(lm_obj), str(post_obj), *extra, str(ROOT / "runtime/tools/vocr_cli.c"), "-lm"],
+                       capture_output=True, text=True)
+    if p.returncode:
+        raise SystemExit(f"linking {cli.name} failed:\n{p.stderr[-3000:]}")
     objdump = arm_cc[:-3] + "objdump" if arm_cc.endswith("gcc") else "objdump"
     dis = subprocess.run([objdump, "-d", "--no-show-raw-insn", str(cli)], check=True, capture_output=True,
                          text=True).stdout
@@ -239,6 +247,10 @@ def describe(blob_path):
         rows[i] = {"shape": shape, "macs_per_frame": macs}
     rows[PROF_SRC] = {"shape": "input columns (resize, normalise)", "macs_per_frame": 0}
     rows[PROF_RUN] = {"shape": "vocr_run setup, tile loop, cancel", "macs_per_frame": 0}
+    if b.get("gate"):                    # docs/headgate.md: the per-tile gate step (skipped frames' blank logit too)
+        g = b["gate"]
+        rows[PROF_GATE] = {"shape": f"head gate {g['k']}->{g['hidden']}->1 (int8 layer 1)",
+                           "macs_per_frame": g["k"] * g["hidden"] + g["hidden"]}
     return rows
 
 

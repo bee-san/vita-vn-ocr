@@ -1,0 +1,488 @@
+{
+ "kind": "headgate-a9",
+ "schema": 1,
+ "created": "2026-10-23T15:59:54Z",
+ "scale": 1.000676,
+ "mhz": 333,
+ "pack": {
+  "source": "dev_res.bin",
+  "sha256": "3162151aaf3013f434c5ad7996d04ca2308fe2d3896ce06de14909878906c8b7",
+  "lines": 24
+ },
+ "box": {
+  "nominal_frames": 240,
+  "finder_ms": 100.0,
+  "real_frames": {
+   "vita": 89,
+   "psp": 93,
+   "adrenaline": 95
+  }
+ },
+ "tiers": {
+  "S": {
+   "blob": "VOCR5_S_w8g.vocr",
+   "blob_sha256": "76a1bc5de5cd0419a7edad31bc198af8016bda5592a7e595de75697671d3e928",
+   "pack_frames": 1609,
+   "pack_skip_share": 0.54755,
+   "dev_wd_skip_share": 0.6144,
+   "runs": {
+    "pld0": {
+     "phases": {
+      "main": {
+       "ms_per_frame": 2.1973,
+       "head_ms": 0.8719,
+       "gate_ms": 0.0,
+       "insns_per_frame": 530599.8484,
+       "head_insns_per_frame": 241580.4089,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 1.3253
+      },
+      "off": {
+       "ms_per_frame": 2.1917,
+       "head_ms": 0.8667,
+       "gate_ms": 0.0,
+       "insns_per_frame": 528818.7968,
+       "head_insns_per_frame": 239827.0783,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 1.3251
+      },
+      "score": {
+       "ms_per_frame": 2.1971,
+       "head_ms": 0.8666,
+       "gate_ms": 0.0053,
+       "insns_per_frame": 530037.4332,
+       "head_insns_per_frame": 239827.0783,
+       "gate_insns_per_frame": 1220.2076,
+       "other_ms": 1.3251
+      },
+      "on": {
+       "ms_per_frame": 1.7423,
+       "head_ms": 0.41,
+       "gate_ms": 0.0074,
+       "insns_per_frame": 402358.3741,
+       "head_insns_per_frame": 111763.8838,
+       "gate_insns_per_frame": 1604.097,
+       "other_ms": 1.3249
+      }
+     },
+     "texts_main_off_score_equal": true,
+     "kappa": 1.0455,
+     "blank_logit_ms_per_skipped": 0.00381,
+     "measured_saving_ms_per_frame": 0.4495,
+     "off_vs_main_ms_per_frame": -0.0055,
+     "box_ms_off": 626.0,
+     "box_ms_on_pack": 518.1,
+     "saving": {
+      "pack": {
+       "skip_share": 0.54755,
+       "ms_per_frame": 0.4493,
+       "nominal_box_ms": 107.8,
+       "nominal_box_ms_444": 80.9,
+       "nominal_share": 0.17225,
+       "real_box_ms": {
+        "vita": 40.0,
+        "psp": 41.8,
+        "adrenaline": 42.7
+       }
+      },
+      "dev_wd": {
+       "skip_share": 0.6144,
+       "ms_per_frame": 0.5096,
+       "nominal_box_ms": 122.3,
+       "nominal_box_ms_444": 91.7,
+       "nominal_share": 0.19537,
+       "real_box_ms": {
+        "vita": 45.4,
+        "psp": 47.4,
+        "adrenaline": 48.4
+       }
+      }
+     }
+    },
+    "pld1": {
+     "phases": {
+      "main": {
+       "ms_per_frame": 1.9364,
+       "head_ms": 0.7786,
+       "gate_ms": 0.0,
+       "insns_per_frame": 530599.9708,
+       "head_insns_per_frame": 241580.4089,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 1.1578
+      },
+      "off": {
+       "ms_per_frame": 1.931,
+       "head_ms": 0.7734,
+       "gate_ms": 0.0,
+       "insns_per_frame": 528818.8856,
+       "head_insns_per_frame": 239827.0783,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 1.1576
+      },
+      "score": {
+       "ms_per_frame": 1.9353,
+       "head_ms": 0.7733,
+       "gate_ms": 0.0043,
+       "insns_per_frame": 530037.3965,
+       "head_insns_per_frame": 239827.0783,
+       "gate_insns_per_frame": 1220.2076,
+       "other_ms": 1.1577
+      },
+      "on": {
+       "ms_per_frame": 1.5246,
+       "head_ms": 0.3612,
+       "gate_ms": 0.006,
+       "insns_per_frame": 402358.2548,
+       "head_insns_per_frame": 111763.8838,
+       "gate_insns_per_frame": 1604.097,
+       "other_ms": 1.1574
+      }
+     },
+     "texts_main_off_score_equal": true,
+     "kappa": 1.0322,
+     "blank_logit_ms_per_skipped": 0.00304,
+     "measured_saving_ms_per_frame": 0.4064,
+     "off_vs_main_ms_per_frame": -0.0054,
+     "box_ms_off": 563.4,
+     "box_ms_on_pack": 465.9,
+     "saving": {
+      "pack": {
+       "skip_share": 0.54755,
+       "ms_per_frame": 0.4062,
+       "nominal_box_ms": 97.5,
+       "nominal_box_ms_444": 73.1,
+       "nominal_share": 0.17303,
+       "real_box_ms": {
+        "vita": 36.2,
+        "psp": 37.8,
+        "adrenaline": 38.6
+       }
+      },
+      "dev_wd": {
+       "skip_share": 0.6144,
+       "ms_per_frame": 0.4594,
+       "nominal_box_ms": 110.3,
+       "nominal_box_ms_444": 82.7,
+       "nominal_share": 0.19568,
+       "real_box_ms": {
+        "vita": 40.9,
+        "psp": 42.7,
+        "adrenaline": 43.6
+       }
+      }
+     }
+    }
+   }
+  },
+  "N": {
+   "blob": "VOCR5_N_w8g.vocr",
+   "blob_sha256": "18ddf93f7065b1cb9d00bd46afe389a644be15586c7942fb146b9baf139ad510",
+   "pack_frames": 1609,
+   "pack_skip_share": 0.57054,
+   "dev_wd_skip_share": 0.6099,
+   "runs": {
+    "pld0": {
+     "phases": {
+      "main": {
+       "ms_per_frame": 3.4129,
+       "head_ms": 0.984,
+       "gate_ms": 0.0,
+       "insns_per_frame": 803167.3083,
+       "head_insns_per_frame": 272789.7756,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 2.4289
+      },
+      "off": {
+       "ms_per_frame": 3.4063,
+       "head_ms": 0.9781,
+       "gate_ms": 0.0,
+       "insns_per_frame": 801157.1417,
+       "head_insns_per_frame": 270807.284,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 2.4282
+      },
+      "score": {
+       "ms_per_frame": 3.4116,
+       "head_ms": 0.9781,
+       "gate_ms": 0.0054,
+       "insns_per_frame": 802375.6892,
+       "head_insns_per_frame": 270807.284,
+       "gate_insns_per_frame": 1220.2076,
+       "other_ms": 2.4281
+      },
+      "on": {
+       "ms_per_frame": 2.875,
+       "head_ms": 0.4392,
+       "gate_ms": 0.0076,
+       "insns_per_frame": 652108.5736,
+       "head_insns_per_frame": 120138.1112,
+       "gate_insns_per_frame": 1621.9857,
+       "other_ms": 2.4283
+      }
+     },
+     "texts_main_off_score_equal": true,
+     "kappa": 1.0455,
+     "blank_logit_ms_per_skipped": 0.00382,
+     "measured_saving_ms_per_frame": 0.5313,
+     "off_vs_main_ms_per_frame": -0.0066,
+     "box_ms_off": 917.5,
+     "box_ms_on_pack": 790.0,
+     "saving": {
+      "pack": {
+       "skip_share": 0.57054,
+       "ms_per_frame": 0.5314,
+       "nominal_box_ms": 127.5,
+       "nominal_box_ms_444": 95.6,
+       "nominal_share": 0.139,
+       "real_box_ms": {
+        "vita": 47.3,
+        "psp": 49.4,
+        "adrenaline": 50.5
+       }
+      },
+      "dev_wd": {
+       "skip_share": 0.6099,
+       "ms_per_frame": 0.5715,
+       "nominal_box_ms": 137.2,
+       "nominal_box_ms_444": 102.9,
+       "nominal_share": 0.14949,
+       "real_box_ms": {
+        "vita": 50.9,
+        "psp": 53.1,
+        "adrenaline": 54.3
+       }
+      }
+     }
+    },
+    "pld1": {
+     "phases": {
+      "main": {
+       "ms_per_frame": 2.9396,
+       "head_ms": 0.8787,
+       "gate_ms": 0.0,
+       "insns_per_frame": 803167.3387,
+       "head_insns_per_frame": 272789.7756,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 2.0609
+      },
+      "off": {
+       "ms_per_frame": 2.933,
+       "head_ms": 0.8729,
+       "gate_ms": 0.0,
+       "insns_per_frame": 801157.1324,
+       "head_insns_per_frame": 270807.284,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 2.0601
+      },
+      "score": {
+       "ms_per_frame": 2.9372,
+       "head_ms": 0.8728,
+       "gate_ms": 0.0043,
+       "insns_per_frame": 802375.7626,
+       "head_insns_per_frame": 270807.284,
+       "gate_insns_per_frame": 1220.2076,
+       "other_ms": 2.0601
+      },
+      "on": {
+       "ms_per_frame": 2.4542,
+       "head_ms": 0.3879,
+       "gate_ms": 0.0061,
+       "insns_per_frame": 652108.5643,
+       "head_insns_per_frame": 120138.1112,
+       "gate_insns_per_frame": 1621.9857,
+       "other_ms": 2.0602
+      }
+     },
+     "texts_main_off_score_equal": true,
+     "kappa": 1.0349,
+     "blank_logit_ms_per_skipped": 0.00305,
+     "measured_saving_ms_per_frame": 0.4788,
+     "off_vs_main_ms_per_frame": -0.0066,
+     "box_ms_off": 803.9,
+     "box_ms_on_pack": 689.0,
+     "saving": {
+      "pack": {
+       "skip_share": 0.57054,
+       "ms_per_frame": 0.4789,
+       "nominal_box_ms": 114.9,
+       "nominal_box_ms_444": 86.2,
+       "nominal_share": 0.14296,
+       "real_box_ms": {
+        "vita": 42.6,
+        "psp": 44.5,
+        "adrenaline": 45.5
+       }
+      },
+      "dev_wd": {
+       "skip_share": 0.6099,
+       "ms_per_frame": 0.5143,
+       "nominal_box_ms": 123.4,
+       "nominal_box_ms_444": 92.6,
+       "nominal_share": 0.15354,
+       "real_box_ms": {
+        "vita": 45.8,
+        "psp": 47.8,
+        "adrenaline": 48.9
+       }
+      }
+     }
+    }
+   }
+  },
+  "L": {
+   "blob": "VOCR5_L_w8g.vocr",
+   "blob_sha256": "ee76e93512d02de3a4f9afda82ddf8d50b9ffdeef4bc15691e21164f0c7a9700",
+   "pack_frames": 1609,
+   "pack_skip_share": 0.4885,
+   "dev_wd_skip_share": 0.57922,
+   "runs": {
+    "pld0": {
+     "phases": {
+      "main": {
+       "ms_per_frame": 8.2216,
+       "head_ms": 1.231,
+       "gate_ms": 0.0,
+       "insns_per_frame": 1504658.4133,
+       "head_insns_per_frame": 272859.9646,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 6.9906
+      },
+      "off": {
+       "ms_per_frame": 8.2164,
+       "head_ms": 1.2252,
+       "gate_ms": 0.0,
+       "insns_per_frame": 1502648.2101,
+       "head_insns_per_frame": 270877.473,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 6.9913
+      },
+      "score": {
+       "ms_per_frame": 8.2391,
+       "head_ms": 1.225,
+       "gate_ms": 0.0088,
+       "insns_per_frame": 1503866.8738,
+       "head_insns_per_frame": 270877.473,
+       "gate_insns_per_frame": 1220.2076,
+       "other_ms": 7.0054
+      },
+      "on": {
+       "ms_per_frame": 7.3083,
+       "head_ms": 0.6493,
+       "gate_ms": 0.0123,
+       "insns_per_frame": 1376733.0137,
+       "head_insns_per_frame": 143394.4475,
+       "gate_insns_per_frame": 1569.1461,
+       "other_ms": 6.6467
+      }
+     },
+     "texts_main_off_score_equal": true,
+     "kappa": 1.0362,
+     "blank_logit_ms_per_skipped": 0.00726,
+     "measured_saving_ms_per_frame": 0.9081,
+     "off_vs_main_ms_per_frame": -0.0052,
+     "box_ms_off": 2071.9,
+     "box_ms_on_pack": 1854.0,
+     "saving": {
+      "pack": {
+       "skip_share": 0.4885,
+       "ms_per_frame": 0.5635,
+       "nominal_box_ms": 135.2,
+       "nominal_box_ms_444": 101.4,
+       "nominal_share": 0.06527,
+       "real_box_ms": {
+        "vita": 50.2,
+        "psp": 52.4,
+        "adrenaline": 53.5
+       }
+      },
+      "dev_wd": {
+       "skip_share": 0.57922,
+       "ms_per_frame": 0.678,
+       "nominal_box_ms": 162.7,
+       "nominal_box_ms_444": 122.0,
+       "nominal_share": 0.07854,
+       "real_box_ms": {
+        "vita": 60.3,
+        "psp": 63.1,
+        "adrenaline": 64.4
+       }
+      }
+     }
+    },
+    "pld1": {
+     "phases": {
+      "main": {
+       "ms_per_frame": 5.6707,
+       "head_ms": 0.8989,
+       "gate_ms": 0.0,
+       "insns_per_frame": 1504658.3735,
+       "head_insns_per_frame": 272859.9646,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 4.7718
+      },
+      "off": {
+       "ms_per_frame": 5.6648,
+       "head_ms": 0.893,
+       "gate_ms": 0.0,
+       "insns_per_frame": 1502648.0845,
+       "head_insns_per_frame": 270877.473,
+       "gate_insns_per_frame": 0.0,
+       "other_ms": 4.7718
+      },
+      "score": {
+       "ms_per_frame": 5.6705,
+       "head_ms": 0.8928,
+       "gate_ms": 0.0055,
+       "insns_per_frame": 1503866.9043,
+       "head_insns_per_frame": 270877.473,
+       "gate_insns_per_frame": 1220.2076,
+       "other_ms": 4.7722
+      },
+      "on": {
+       "ms_per_frame": 5.195,
+       "head_ms": 0.4729,
+       "gate_ms": 0.0078,
+       "insns_per_frame": 1376733.0137,
+       "head_insns_per_frame": 143394.4475,
+       "gate_insns_per_frame": 1569.1461,
+       "other_ms": 4.7143
+      }
+     },
+     "texts_main_off_score_equal": true,
+     "kappa": 1.0354,
+     "blank_logit_ms_per_skipped": 0.00474,
+     "measured_saving_ms_per_frame": 0.4698,
+     "off_vs_main_ms_per_frame": -0.0059,
+     "box_ms_off": 1459.6,
+     "box_ms_on_pack": 1346.8,
+     "saving": {
+      "pack": {
+       "skip_share": 0.4885,
+       "ms_per_frame": 0.4122,
+       "nominal_box_ms": 98.9,
+       "nominal_box_ms_444": 74.2,
+       "nominal_share": 0.06779,
+       "real_box_ms": {
+        "vita": 36.7,
+        "psp": 38.3,
+        "adrenaline": 39.2
+       }
+      },
+      "dev_wd": {
+       "skip_share": 0.57922,
+       "ms_per_frame": 0.4957,
+       "nominal_box_ms": 119.0,
+       "nominal_box_ms_444": 89.2,
+       "nominal_share": 0.08151,
+       "real_box_ms": {
+        "vita": 44.1,
+        "psp": 46.1,
+        "adrenaline": 47.1
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

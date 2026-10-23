@@ -21,15 +21,16 @@
 
 /* Phase markers for the per-layer cycle profile (vita/a9_layers.py): built with
  * -DVOCR_PROF=name, vocr_run() calls name(id) as each phase starts: id = the op's index for its
- * step (the head's for run_head), VOCR_PROF_SRC for the input columns, VOCR_PROF_RUN for the
- * rest. Without VOCR_PROF they compile to nothing, so the console build has none. */
+ * step (the head's for run_head), VOCR_PROF_SRC for the input columns, VOCR_PROF_GATE for the head
+ * gate's per-tile step, VOCR_PROF_RUN for the rest. Without VOCR_PROF they compile to nothing, so
+ * the console build has none. */
 #ifdef VOCR_PROF
 void VOCR_PROF(unsigned id);
 #define VOCR_MARK(id) VOCR_PROF(id)
 #else
 #define VOCR_MARK(id) ((void)0)
 #endif
-enum { VOCR_PROF_RUN = 100, VOCR_PROF_SRC = 101 };
+enum { VOCR_PROF_RUN = 100, VOCR_PROF_SRC = 101, VOCR_PROF_GATE = 102 };
 
 enum { T_CONV = 1, T_DW = 2, T_PW = 3, T_HEAD = 4 };
 /* VOCR_PREFETCH(p): a cache hint for the line at p (PLD on ARM), which never changes a result:
@@ -77,6 +78,12 @@ static int is_magic(const unsigned char *b)
 {
     return b[0] == 'V' && b[1] == 'O' && b[2] == 'C' && b[3] == 'R';
 }
+/* the head gate section (vocr.h, train/headgate.py): 64-byte header, then its arrays */
+#define GATE_HEADER_BYTES 64u
+static int is_gate_magic(const unsigned char *b)
+{
+    return b[0] == 'V' && b[1] == 'O' && b[2] == 'C' && b[3] == 'G';
+}
 static unsigned umin(unsigned a, unsigned b) { return a < b ? a : b; }
 
 static uint32_t crc32_ieee(const unsigned char *p, size_t n)
@@ -94,11 +101,22 @@ int vocr_check_crc(const void *blob, size_t bytes)
 {
     const unsigned char *b = (const unsigned char *)blob;
     uint32_t total;
+    size_t g_off;
     if (!b || bytes < HEADER_BYTES || !is_magic(b)) return VOCR_E_FORMAT;
     total = rd32(b + 8);
     if (total < HEADER_BYTES || total > bytes) return VOCR_E_FORMAT;
-    return crc32_ieee(b + HEADER_BYTES, total - HEADER_BYTES) == rd32(b + 40) ? VOCR_OK
-                                                                               : VOCR_E_FORMAT;
+    if (crc32_ieee(b + HEADER_BYTES, total - HEADER_BYTES) != rd32(b + 40)) return VOCR_E_FORMAT;
+    g_off = al16(total); /* a gate section after the blob: its own CRC-32 too */
+    if (g_off <= bytes && bytes - g_off >= 4 && is_gate_magic(b + g_off)) {
+        const unsigned char *g = b + g_off;
+        uint32_t n;
+        if (bytes - g_off < GATE_HEADER_BYTES) return VOCR_E_FORMAT;
+        n = rd32(g + 8);
+        if (n < GATE_HEADER_BYTES || n > bytes - g_off ||
+            crc32_ieee(g + GATE_HEADER_BYTES, n - GATE_HEADER_BYTES) != rd32(g + 52))
+            return VOCR_E_FORMAT;
+    }
+    return VOCR_OK;
 }
 
 /* [off, off + n) lies inside the blob and off is 16-byte aligned */
@@ -186,6 +204,55 @@ static int parse_op(vocr_model *m, unsigned i, const unsigned char *r, unsigned 
     return VOCR_OK;
 }
 
+/* The head gate section at g (avail bytes from it to the end of the buffer), after a parsed version-1
+ * blob (m complete). Layout (little-endian, train/headgate.py gate_section):
+ *    0 char[4] "VOCG"     4 u16 version (1)     6 u16 header bytes (64)    8 u32 section bytes (x16)
+ *   12 u32 flags (0)     16 u16 k (the head's K) 18 u16 hidden (x8, <= 64)
+ *   20 u32 the blob's bytes (header field 8)    24 u32 the blob's CRC-32 (header field 40)
+ *   28 f32 t (threshold)  32 f32 b2 (layer 2 bias)
+ *   36 u32 w1 offset: int8 [hidden/8][k][8]      40 u32 s1 offset: f32 [hidden] (layer 1 scales)
+ *   44 u32 b1 offset: f32 [hidden]               48 u32 w2 offset: f32 [hidden]
+ *   52 u32 CRC-32 of the section's bytes [64, section bytes)    56..63 zero
+ * Offsets are from the section's start, 16-byte aligned, inside the section. */
+static int parse_gate(vocr_model *m, const unsigned char *g, size_t avail)
+{
+    vocr_gate *gt = &m->gate;
+    const vocr_op *head = &m->op[m->n_ops - 1];
+    uint32_t n, w1, s1, b1, w2;
+    unsigned k, hid, j;
+    float t, b2;
+    if (avail < GATE_HEADER_BYTES || rd16(g + 4) != VOCR_GATE_VERSION || rd16(g + 6) != GATE_HEADER_BYTES)
+        return VOCR_E_FORMAT;
+    n = rd32(g + 8);
+    if (n < GATE_HEADER_BYTES || (n & 15u) || n > avail || rd32(g + 12)) return VOCR_E_FORMAT;
+    for (j = 56; j < GATE_HEADER_BYTES; j++)
+        if (g[j]) return VOCR_E_FORMAT;
+    k = rd16(g + 16);
+    hid = rd16(g + 18);
+    if (k != head->k || !hid || hid > VOCR_GATE_MAX_HIDDEN || (hid & 7u)) return VOCR_E_FORMAT;
+    if (rd32(g + 20) != m->bytes || rd32(g + 24) != rd32(m->blob + 40)) return VOCR_E_FORMAT;
+    memcpy(&t, g + 28, sizeof t);
+    memcpy(&b2, g + 32, sizeof b2);
+    if (t != t || b2 != b2) return VOCR_E_FORMAT; /* NaN */
+    w1 = rd32(g + 36);
+    s1 = rd32(g + 40);
+    b1 = rd32(g + 44);
+    w2 = rd32(g + 48);
+    if (!in_blob(n, w1, hid * k) || !in_blob(n, s1, 4u * hid) || !in_blob(n, b1, 4u * hid) ||
+        !in_blob(n, w2, 4u * hid))
+        return VOCR_E_FORMAT;
+    gt->q = (const int8_t *)(const void *)(g + w1);
+    gt->scale = (const float *)(const void *)(g + s1);
+    gt->bias = (const float *)(const void *)(g + b1);
+    gt->w2 = (const float *)(const void *)(g + w2);
+    gt->b2 = b2;
+    gt->t = t;
+    gt->k = k;
+    gt->hidden = hid;
+    gt->bytes = n;
+    return VOCR_OK;
+}
+
 int vocr_load(vocr_model *m, const void *blob, size_t bytes)
 {
     const unsigned char *b = (const unsigned char *)blob;
@@ -241,7 +308,22 @@ int vocr_load(vocr_model *m, const void *blob, size_t bytes)
         return VOCR_E_FORMAT;
     for (i = 0; i < m->n_classes; i++)
         if (m->vocab_off[i] > m->vocab_off[i + 1]) return VOCR_E_FORMAT;
+    {
+        const size_t g_off = al16(total);
+        if (g_off <= bytes && bytes - g_off >= 4 && is_gate_magic(b + g_off)) {
+            rc = parse_gate(m, b + g_off, bytes - g_off);
+            if (rc) {
+                memset(&m->gate, 0, sizeof m->gate);
+                return rc;
+            }
+        }
+    }
     return VOCR_OK;
+}
+
+int vocr_has_gate(const vocr_model *m)
+{
+    return m && m->blob && m->gate.hidden ? 1 : 0;
 }
 
 const char *vocr_class_text(const vocr_model *m, unsigned c, unsigned *len)
@@ -303,7 +385,7 @@ static size_t op_scratch(const vocr_ctx *c, const vocr_op *op, unsigned n_tile)
 
 static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
 {
-    static const vocr_opts defaults = {0, 0, 0, VOCR_MODE_AUTO};
+    static const vocr_opts defaults = {0, 0, 0, VOCR_MODE_AUTO, VOCR_HEAD_GATE_OFF};
     unsigned L, S, i, f, t_max, F, hb, s = 1, s_out[VOCR_MAX_OPS];
     size_t off, base, R = 0, tin[VOCR_MAX_OPS], tout[VOCR_MAX_OPS], scr[VOCR_MAX_OPS];
     int prev = 0, mode, in_top = 0;
@@ -314,8 +396,11 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     S = m->stride;
     mode = resolve_mode(m, o->mode);
     if (mode < 0) return mode;
+    if (o->head_gate > VOCR_HEAD_GATE_SCORE) return VOCR_E_ARG;
+    if (o->head_gate && (mode != VOCR_MODE_W8I || !m->gate.hidden)) return VOCR_E_MODE;
     c->model = m;
     c->mode = mode;
+    c->gate = o->head_gate;
     c->max_width = o->max_width && o->max_width < m->max_width ? o->max_width : m->max_width;
     c->max_width = (c->max_width + S - 1) / S * S;
     t_max = c->max_width / S;
@@ -373,6 +458,10 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     off += al16((size_t)c->acc_frames * sizeof(float));
     c->besti_off = (uint32_t)off;
     off += al16((size_t)c->acc_frames * sizeof(uint32_t));
+    if (c->gate == VOCR_HEAD_GATE_ON) { /* the line index of each accumulated frame */
+        c->fidx_off = (uint32_t)off;
+        off += al16((size_t)c->acc_frames * sizeof(uint16_t));
+    }
     base = off;
     for (i = 0; i < L; i++) {
         const vocr_op *op = &m->op[i];
@@ -382,6 +471,13 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
         scr[i] = op_scratch(c, op, c->op[i].n_tile);
         sum = tin[i] + tout[i] + scr[i];
         if (sum > R) R = sum;
+    }
+    /* the gate runs between a tile's last layer and the head, in the head's scratch (at base): a tile's
+     * new frames as int16 with their scales, and their hidden units */
+    if (c->gate) {
+        const size_t g = al16((size_t)F * m->op[L - 1].k * 2u) + al16((size_t)F * sizeof(float)) +
+                         al16((size_t)F * m->gate.hidden * sizeof(float));
+        if (g > R) R = g;
     }
     /* transients alternate between the bottom and the top of the region, scratch
      * sits above the bottom one */
@@ -1333,6 +1429,9 @@ typedef struct {
     unsigned topk;           /* ex->topk, or 0 */
     unsigned conf_n;         /* characters whose confidence is in conf_min / conf_sum */
     float conf_min, conf_sum;
+    const uint16_t *fidx;    /* the run skips frames (head_gate ON, no logits): the accumulated frames' line
+                                indices, else NULL */
+    unsigned gated, headed;  /* frames the gate skipped; frames the head ran on */
 } out_t;
 
 static float *at(const vocr_ctx *c, uint32_t off) { return (float *)(void *)(c->arena + off); }
@@ -1477,7 +1576,8 @@ static void lanes_argmax(const vocr_lane_i32 *lk, const vocr_lane_u32 *li, unsig
  *    while the classes are inserted in order, and the argmax is never below it (it is [0]), so a
  *    block with none above it is one the per-class loop would leave as it is.
  * A last block of fewer than 8 classes goes through the per-class loop after the full ones. The
- * builds without NEON compile to main's exact machine code. */
+ * head gate (o->fidx) changes only which frames the batch holds: frame f of the batch is the line's frame
+ * o->fidx[f] (else o->frame + f), and a frame the gate skipped between two of them reads as a blank. */
 static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
 {
     const vocr_model *m = c->model;
@@ -1497,7 +1597,10 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     float *wf = (float *)(void *)scr;
     vocr_extra *ex = o->ex;
     const unsigned TK = o->topk;
+    const uint16_t *fx = o->fidx;
     unsigned f, nb, f0, q, j;
+/* the line's frame of the batch's frame I */
+#define VOCR_FRAME(I) (fx ? (unsigned)fx[I] : o->frame + (I))
 #ifdef VOCR_NEON
     /* frames per mm_* call: 4, or VOCR_HEAD_CHUNK on the NEON W8I paths (one call per block); the
      * blocks below n_lanes (no top-K) or n_tk (top-K) take those paths */
@@ -1505,6 +1608,7 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     float tmp[VOCR_HEAD_CHUNK * 8];
     vocr_lane_i32 *lk = (vocr_lane_i32 *)(void *)x;              /* nf x 8 lane maxima (keys) ... */
     vocr_lane_u32 *li = (vocr_lane_u32 *)(void *)(x + (size_t)nf * 8u); /* ... and blocks: 16 nf <= K nf */
+    vocr_lane_u32 *ro = (vocr_lane_u32 *)(void *)x; /* top-K: each frame's row in the caller's buffers */
 #endif
     for (f = 0; f < nf; f++) {
         bestv[f] = -INFINITY;
@@ -1512,8 +1616,8 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     }
     if (TK)
         for (f = 0; f < nf; f++) {
-            float *tv = ex->topk_logit + (size_t)(o->frame + f) * TK;
-            uint16_t *tc = ex->topk_class + (size_t)(o->frame + f) * TK;
+            float *tv = ex->topk_logit + (size_t)VOCR_FRAME(f) * TK;
+            uint16_t *tc = ex->topk_class + (size_t)VOCR_FRAME(f) * TK;
             for (j = 0; j < TK; j++) {
                 tv[j] = -INFINITY;
                 tc[j] = 0;
@@ -1525,6 +1629,7 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
         step = VOCR_HEAD_CHUNK;
         if (TK) {
             n_tk = N / 8u;
+            for (f = 0; f < nf; f++) ro[f] = (uint32_t)VOCR_FRAME(f) * TK; /* once per batch, not per block */
         } else {
             n_lanes = N / 8u;
             for (f = 0; f < nf * 8u; f++) {
@@ -1569,7 +1674,7 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
                 }
                 if (ex && ex->logits)
                     for (q = 0; q < pn; q++) {
-                        const unsigned frame = o->frame + f0 + q;
+                        const unsigned frame = VOCR_FRAME(f0 + q);
                         if (frame < ex->cap_frames)
                             memcpy(ex->logits + (size_t)frame * N + nb * 8, tmp + q * 8, 8 * sizeof(float));
                     }
@@ -1577,16 +1682,16 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
             }
             if (nb < n_tk) {
                 for (q = 0; q < pn; q++) {
-                    const unsigned frame = o->frame + f0 + q;
-                    float *tv = ex->topk_logit + (size_t)frame * TK;
-                    uint16_t *tc = ex->topk_class + (size_t)frame * TK;
+                    float *tv = ex->topk_logit + ro[f0 + q];
+                    uint16_t *tc = ex->topk_class + ro[f0 + q];
                     const int32x4_t kt = fkey(vld1q_dup_f32(tv + TK - 1));
                     const uint32x4_t gt = vorrq_u32(vcgtq_s32(fkey(vld1q_f32(tmp + q * 8)), kt),
                                                     vcgtq_s32(fkey(vld1q_f32(tmp + q * 8 + 4)), kt));
                     const uint32x2_t g2 = vorr_u32(vget_low_u32(gt), vget_high_u32(gt));
-                    if (ex->logits && frame < ex->cap_frames)
-                        memcpy(ex->logits + (size_t)frame * N + nb * 8, tmp + q * 8, 8 * sizeof(float));
-                    if (!nb && ex->blank_logit) ex->blank_logit[frame] = tmp[q * 8];
+                    if (ex->logits && VOCR_FRAME(f0 + q) < ex->cap_frames)
+                        memcpy(ex->logits + (size_t)VOCR_FRAME(f0 + q) * N + nb * 8, tmp + q * 8,
+                               8 * sizeof(float));
+                    if (!nb && ex->blank_logit) ex->blank_logit[VOCR_FRAME(f0 + q)] = tmp[q * 8];
                     if (!vget_lane_u32(vpmax_u32(g2, g2), 0)) continue;
                     for (j = 0; j < 8; j++) { /* the per-class loop below, for this frame */
                         const float v = tmp[q * 8 + j];
@@ -1611,7 +1716,7 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
 #endif
             if (TK) {
                 for (q = 0; q < pn; q++) {
-                    const unsigned frame = o->frame + f0 + q;
+                    const unsigned frame = VOCR_FRAME(f0 + q);
                     float *tv = ex->topk_logit + (size_t)frame * TK;
                     uint16_t *tc = ex->topk_class + (size_t)frame * TK;
                     for (j = 0; j < 8 && nb * 8 + j < N; j++) {
@@ -1637,7 +1742,7 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
                 }
             } else {
                 for (q = 0; q < pn; q++) {
-                    const unsigned frame = o->frame + f0 + q;
+                    const unsigned frame = VOCR_FRAME(f0 + q);
                     for (j = 0; j < 8 && nb * 8 + j < N; j++) {
                         const float v = tmp[q * 8 + j];
                         if (ex && ex->logits && frame < ex->cap_frames)
@@ -1655,6 +1760,10 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     if (n_lanes && n_lanes == op->cout_pad / 8u) lanes_argmax(lk, li, nf, bestv, besti);
 #endif
     for (f = 0; f < nf; f++, o->frame++) {
+        if (fx && fx[f] != o->frame) { /* frames the gate skipped since the last one: blanks */
+            o->frame = fx[f];
+            o->last = 0;
+        }
         if (ex && ex->best && o->frame < ex->cap_frames) ex->best[o->frame] = (uint16_t)besti[f];
         if (TK && besti[f] && besti[f] != o->last) {
             const float p = topk_conf(ex->topk_logit + (size_t)o->frame * TK, TK);
@@ -1664,8 +1773,71 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
         }
         ctc_push(m, o, besti[f]);
     }
+    o->headed += nf;
 }
+#undef VOCR_FRAME
 #undef VOCR_HEAD_STEP
+
+/* The head gate's step, after a tile's last layer appended frames [s0, s1) to the accumulator, the line's
+ * frames a0, a0 + 1, ...: their head input to ex->head_in, and with the gate planned, their scores (to
+ * ex->gate_score). When the run skips (o->fidx), a frame scoring above t leaves the accumulator and reads
+ * as the blank: best 0, its blank logit as the head computes class 0 (its first block, mm_i16 on the same
+ * int16 input), its top-K [blank logit, -inf, ...] with classes 0. The frames that stay move down in order,
+ * their line indices in fidx. Returns the accumulator's new fill. The scratch is the head's (free between
+ * a tile's layers and the head), sized for a tile of frames in plan(). */
+static unsigned gate_tile(const vocr_ctx *c, out_t *o, unsigned s0, unsigned s1, unsigned a0)
+{
+    const vocr_model *m = c->model;
+    const vocr_op *head = &m->op[m->n_ops - 1];
+    const vocr_gate *g = &m->gate;
+    const unsigned K = head->k, H = g->hidden, n = s1 - s0, TK = o->topk;
+    vocr_extra *ex = o->ex;
+    float *acc = at(c, c->acc_off);
+    unsigned char *scr = c->arena + c->op[m->n_ops - 1].scr_off;
+    int16_t *qx = (int16_t *)(void *)scr;
+    float *sx = (float *)(void *)(scr + al16((size_t)c->tile * K * 2u));
+    float *hid = (float *)(void *)(scr + al16((size_t)c->tile * K * 2u) + al16((size_t)c->tile * sizeof(float)));
+    uint16_t *fidx = (uint16_t *)(void *)(c->arena + c->fidx_off);
+    unsigned i, j, nb, w = s0;
+    if (ex && ex->head_in)
+        for (i = 0; i < n; i++)
+            if (a0 + i < ex->cap_frames)
+                memcpy(ex->head_in + (size_t)(a0 + i) * K, acc + (size_t)(s0 + i) * K, K * sizeof(float));
+    if (!c->gate || !n) return s1;
+    quant16(acc + (size_t)s0 * K, K, K, n, qx, sx);
+    for (nb = 0; nb < H / 8u; nb++)
+        mm_i16(g->q + (size_t)nb * K * 8u, g->scale + nb * 8u, g->bias + nb * 8u, qx, sx, K, n, hid + nb * 8u, H,
+               NULL, 0, 1);
+    for (i = 0; i < n; i++) {
+        const unsigned a = a0 + i;
+        const float *h = hid + (size_t)i * H;
+        float s = g->b2;
+        for (j = 0; j < H; j++) s = s + g->w2[j] * h[j];
+        if (ex && ex->gate_score && a < ex->cap_frames) ex->gate_score[a] = s;
+        if (!o->fidx) continue;
+        if (s > g->t) {
+            float b8[8];
+            mm_i16(head->q, head->scale, head->bias, qx + (size_t)i * K, sx + i, K, 1, b8, 8, NULL, 0, 0);
+            if (ex && ex->best && a < ex->cap_frames) ex->best[a] = 0;
+            if (TK) { /* the caller's buffers hold every frame of the line (checked in vocr_run) */
+                float *tv = ex->topk_logit + (size_t)a * TK;
+                uint16_t *tc = ex->topk_class + (size_t)a * TK;
+                tv[0] = b8[0];
+                tc[0] = 0;
+                for (j = 1; j < TK; j++) {
+                    tv[j] = -INFINITY;
+                    tc[j] = 0;
+                }
+                if (ex->blank_logit) ex->blank_logit[a] = b8[0];
+            }
+            o->gated++;
+        } else {
+            if (w != s0 + i) memcpy(acc + (size_t)w * K, acc + (size_t)(s0 + i) * K, K * sizeof(float));
+            fidx[w++] = (uint16_t)a;
+        }
+    }
+    return o->fidx ? w : s1;
+}
 
 /* Keep the last `halo` columns of a ring as its first ones. The ranges can overlap
  * (fewer new columns than halo), so copy forwards: the destination is below the source. */
@@ -1734,9 +1906,9 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
     const vocr_model *m;
     line_t ln;
     out_t o;
-    unsigned L, S, f, i, u, T, wout[VOCR_MAX_OPS], acc_fill = 0, n_front;
+    unsigned L, S, f, i, u, T, wout[VOCR_MAX_OPS], acc_fill = 0, n_front, produced = 0;
     long k, ntiles;
-    int rc;
+    int rc, hook;
     if (!c || !c->arena || !c->model || !text || !text_cap) return VOCR_E_ARG;
     text[0] = 0;
     rc = check_image(img);
@@ -1756,6 +1928,7 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         ex->width = ln.nw;
         ex->frames = T;
         ex->chars = 0;
+        ex->gated = 0;
         if (ex->topk) {
             if (ex->topk > VOCR_TOPK_MAX || ex->topk > m->n_classes || !ex->topk_logit ||
                 !ex->topk_class || ex->cap_frames < T)
@@ -1764,6 +1937,11 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
             ex->conf_min = ex->conf_mean = 1.0f;
         }
     }
+    /* the head gate: skip frames unless the run asks for every logit or for no skipping; its step runs per
+     * tile when the gate is planned or the head's input is asked for */
+    if (c->gate == VOCR_HEAD_GATE_ON && !(ex && (ex->logits || ex->ungated)))
+        o.fidx = (const uint16_t *)(const void *)(c->arena + c->fidx_off);
+    hook = c->gate || (ex && ex->head_in);
     for (i = 0, u = ln.padded; i < L; i++) wout[i] = u /= m->op[i].sw;
     VOCR_MARK(VOCR_PROF_RUN);
     memset(c->arena + c->ring_off, 0, c->ring_end - c->ring_off);
@@ -1787,10 +1965,18 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
                         i == f ? u : 0u, &acc_fill);
             }
         }
-        for (i = f + 1; i + 1 < L; i++) {
-            VOCR_MARK(i);
-            step_op(c, i, k * (long)c->op[i].n_tile - c->op[i].lag, c->op[i].n_tile, wout[i], 0u,
-                    &acc_fill);
+        {
+            const unsigned s0 = acc_fill, a0 = produced;
+            for (i = f + 1; i + 1 < L; i++) {
+                VOCR_MARK(i);
+                step_op(c, i, k * (long)c->op[i].n_tile - c->op[i].lag, c->op[i].n_tile, wout[i], 0u,
+                        &acc_fill);
+            }
+            produced += acc_fill - s0;
+            if (hook && acc_fill > s0) {
+                VOCR_MARK(VOCR_PROF_GATE);
+                acc_fill = gate_tile(c, &o, s0, acc_fill, a0);
+            }
         }
         if (acc_fill >= c->head) {
             VOCR_MARK(L - 1);
@@ -1804,14 +1990,19 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         run_head(c, acc_fill, &o);
         VOCR_MARK(VOCR_PROF_RUN);
     }
+    if (o.fidx && o.frame < produced) { /* the line ends in frames the gate skipped */
+        o.frame = produced;
+        o.last = 0;
+    }
     if (ex) {
         ex->chars = o.chars;
+        ex->gated = o.gated;
         if (o.conf_n) {
             ex->conf_min = o.conf_min;
             ex->conf_mean = o.conf_sum / (float)o.conf_n;
         }
     }
-    if (o.frame != T) {
+    if (o.frame != T || produced != T || o.headed + o.gated != T) {
         text[0] = 0;
         return VOCR_E_FORMAT; /* cannot happen for a validated blob */
     }

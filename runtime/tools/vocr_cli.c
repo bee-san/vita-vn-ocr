@@ -25,6 +25,9 @@
  *                          LM: T the numeral's threshold, O the opening bracket's (1/1000 nat; 0 off);
  *                          --topk defaults to 8
  *       --post             the counter text rule on every printed line (vocr_post_counters: ッ月 -> ヶ月 ...)
+ *       --head-gate on|score|off  vocr_opts.head_gate (docs/headgate.md): skip the head on the frames the blob's
+ *                          gate calls blank (on), only compute the gate (score), or neither (off, the default);
+ *                          the summary line then also counts the skipped frames
  *       --repeat N         run every line N times (timing)
  *       --arena W[,W...]   print arena bytes for these max widths and exit
  *       --crc              verify the blob CRC first
@@ -50,6 +53,7 @@ static vocr_lm_ctx *lm_dec; /* --lm: the beam decoder, or NULL */
 static int post_flag;       /* --post */
 static vocr_post_opts redecode_o; /* --redecode */
 static int redecode_on;
+static unsigned long gated_total; /* frames the head gate skipped */
 
 static double now(void)
 {
@@ -186,6 +190,7 @@ static int run_line(vocr_ctx *ctx, const vocr_model *m, const unsigned char *px,
         if (rc && rc != VOCR_E_TEXT) break;
     }
     *frames += ex.frames;
+    gated_total += ex.gated;
     if (rc && rc != VOCR_E_TEXT) {
         fprintf(stderr, "vocr_run: %s\n", vocr_strerror(rc));
         free(logits);
@@ -358,6 +363,15 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--stdin")) use_stdin = 1;
         else if (!strcmp(a, "--invert")) invert_flag = VOCR_INVERT;
         else if (!strcmp(a, "--post")) post_flag = 1;
+        else if (!strcmp(a, "--head-gate") && has) {
+            const char *v = argv[++i];
+            o.head_gate = !strcmp(v, "on") ? VOCR_HEAD_GATE_ON : !strcmp(v, "score") ? VOCR_HEAD_GATE_SCORE
+                        : !strcmp(v, "off") ? VOCR_HEAD_GATE_OFF : 99u;
+            if (o.head_gate == 99u) {
+                fprintf(stderr, "--head-gate on|score|off, not %s\n", v);
+                return 2;
+            }
+        }
         else if (!strcmp(a, "--redecode") && has) {
             char *end;
             redecode_o.tau = (int)strtol(argv[++i], &end, 10);
@@ -448,6 +462,9 @@ int main(int argc, char **argv)
     }
     fprintf(stderr, "blob %lu bytes, arena %lu bytes, mode %d, tile %u, head %u\n",
             (unsigned long)m.bytes, (unsigned long)need, ctx.mode, ctx.tile, ctx.head);
+    if (vocr_has_gate(&m))
+        fprintf(stderr, "head gate %u bytes, %u hidden, t %.9g, %s\n", (unsigned)m.gate.bytes, m.gate.hidden,
+                (double)m.gate.t, o.head_gate == VOCR_HEAD_GATE_ON ? "on" : o.head_gate ? "score" : "off");
     if (logits_path && !(lf = fopen(logits_path, "wb"))) {
         fprintf(stderr, "cannot write %s\n", logits_path);
         goto done;
@@ -478,6 +495,8 @@ int main(int argc, char **argv)
                 1e3 * t_total / (double)lines / (repeat > 0 ? repeat : 1),
                 1e6 * t_total / (double)(frames ? frames : 1) / (repeat > 0 ? repeat : 1),
                 repeat > 0 ? " (after warm-up)" : "");
+    if (lines && o.head_gate == VOCR_HEAD_GATE_ON)
+        fprintf(stderr, "head gate: %lu of %lu frames skipped\n", gated_total, frames);
     status = 0;
 done:
     if (lf && fclose(lf)) status = 1;

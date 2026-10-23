@@ -571,6 +571,18 @@
      }
     }
    }
+  },
+  {
+   "id": 8,
+   "utc": "2026-10-23T15:55:49Z",
+   "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
+   "what": [
+    "A harness file re-pinned, not a textspot3 change: runtime/vocr.c and runtime/vocr.h, the recognizer the scores read text with (pinned through eval/textspot_protocol.json, which textspot2 and textspot3 pin in turn), gained #117's head gate (docs/headgate.md). With the gate off (vocr_opts.head_gate = 0, every textspot path) every output is bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes and runtime/tests/parity.py's bit-exact model are unchanged."
+   ],
+   "sources_sha256": {
+    "runtime/vocr.c": "2ca32648c6ee014b4ca99f9da06ca814d579a1832a9337c5e72d6837dacf2980",
+    "runtime/vocr.h": "a5c191a0648eb161f92fe3920836fd820f252cda2dab8cadb680bd83e41636a7"
+   }
   }
  ],
  "shapes": {

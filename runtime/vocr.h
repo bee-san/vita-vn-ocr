@@ -74,14 +74,43 @@ typedef struct {
     const float *scale;      /* per-output-channel scales of q */
 } vocr_op;
 
+/* The head gate (docs/headgate.md, issue #117): an optional section after the version-1 blob, at its
+ * 16-byte aligned end ("VOCG", train/headgate.py writes it), with a tiny network on the head's input:
+ *   h = relu(int8 layer 1 on the W8I head's int16 input, exactly as a W8I pointwise layer computes it)
+ *   score = b2 + w2[0] h[0] + w2[1] h[1] + ...   (float, in this order)
+ * and a threshold t: with vocr_opts.head_gate = VOCR_HEAD_GATE_ON a frame whose score > t skips the output
+ * head and reads as the blank (its blank logit computed as the head computes it, every other class -inf).
+ * A blob without the section loads and runs as before; a runtime without gate support ignores it. */
+#define VOCR_GATE_VERSION 1
+#define VOCR_GATE_MAX_HIDDEN 64
+
+typedef struct {             /* a blob's head gate; hidden = 0: the blob has none */
+    const int8_t *q;         /* layer 1: [hidden / 8][k][8] int8, packed like a pointwise layer */
+    const float *scale;      /* layer 1: hidden per-unit scales */
+    const float *bias;       /* layer 1: hidden biases */
+    const float *w2;         /* layer 2: hidden weights */
+    float b2;                /* layer 2: bias */
+    float t;                 /* threshold: skip iff score > t */
+    unsigned k, hidden;      /* input width (the head's K) and hidden units (8..VOCR_GATE_MAX_HIDDEN, x8) */
+    uint32_t bytes;          /* bytes of the gate section */
+} vocr_gate;
+
 typedef struct {             /* a parsed blob; points into it, so keep the blob alive */
     const unsigned char *blob;
-    size_t bytes;
+    size_t bytes;            /* the version-1 blob's bytes (without a gate section) */
     unsigned height, max_width, stride, n_ops, n_classes, int8, params;
     const uint16_t *vocab_off;   /* n_classes + 1 offsets into vocab */
     const char *vocab;           /* UTF-8; class c is vocab[off[c] .. off[c+1]) */
     vocr_op op[VOCR_MAX_OPS];
+    vocr_gate gate;              /* the head gate, if the blob has one (gate.hidden != 0) */
 } vocr_model;
+
+/* vocr_opts.head_gate */
+enum {
+    VOCR_HEAD_GATE_OFF = 0,  /* no gate: today's run, arena and output exactly */
+    VOCR_HEAD_GATE_ON = 1,   /* skip the head on the frames the gate calls blank */
+    VOCR_HEAD_GATE_SCORE = 2 /* compute the gate's score (vocr_extra.gate_score) but skip nothing */
+};
 
 typedef struct {
     unsigned tile_frames;    /* CTC frames per tile (0: default 4); >= max_width / 8 runs
@@ -89,9 +118,13 @@ typedef struct {
     unsigned head_frames;    /* frames per output-head batch (0: default 16) */
     unsigned max_width;      /* widest resized line in pixels (0: the model's clamp) */
     int mode;                /* VOCR_MODE_*; AUTO = F32 for float blobs, W8F for int8 */
+    unsigned head_gate;      /* VOCR_HEAD_GATE_*: ON and SCORE need VOCR_MODE_W8I and a blob with a gate
+                                (else VOCR_E_MODE); ON skips nothing in a run that asks for the logits */
 } vocr_opts;
 /* A zeroed vocr_opts gives the defaults. Larger tiles and head batches trade arena
- * bytes for speed; the output does not change. */
+ * bytes for speed; the output does not change. With head_gate ON the head's batches hold
+ * only the frames it runs on, so they stay full; the output does not depend on the tile or
+ * batch size either. */
 
 typedef struct {
     const unsigned char *pixels;   /* top-left pixel of the line crop */
@@ -126,6 +159,13 @@ typedef struct {             /* optional per-line extras for vocr_run() */
                                 top-K logits (an upper bound of the full softmax's, equal to it when
                                 the classes outside the top K carry no mass); 1 with no character */
     float conf_mean;         /* out (topk >= 1): the mean of the same per-character probabilities */
+    /* The head gate (docs/headgate.md). Analysis outputs, which change nothing (NULL: none): */
+    float *head_in;          /* in: cap_frames x K floats (K = the head's input width), each frame's head input */
+    float *gate_score;       /* in: cap_frames floats, each frame's gate score (head_gate ON or SCORE) */
+    unsigned gated;          /* out: frames whose head the gate skipped (0 unless head_gate ON); such a frame's
+                                best is 0 and its top-K is [its blank logit, -inf, ...] with classes 0 */
+    unsigned ungated;        /* in: nonzero reads this line without skipping, as head_gate OFF does (e.g. again
+                                for vocr_post_redecode, whose look-back reads blank frames' top-K) */
 } vocr_extra;
 
 typedef struct {             /* per-op plan; private */
@@ -141,13 +181,18 @@ typedef struct {             /* a planned arena; private apart from the first fi
     unsigned tile, head, max_width;
     unsigned front, n_src, acc_frames;
     uint32_t rows_off, ring_off, ring_end, acc_off, bestv_off, besti_off;
+    unsigned gate;           /* VOCR_HEAD_GATE_* of the plan */
+    uint32_t fidx_off;       /* head_gate ON: each accumulated frame's index in the line (uint16) */
     vocr_plan_op op[VOCR_MAX_OPS];
 } vocr_ctx;
 
-/* Parse and validate a blob already in memory. Nothing is copied. */
+/* Parse and validate a blob already in memory. Nothing is copied. A head gate section
+ * (VOCG) at the version-1 blob's aligned end is parsed too, when bytes covers it. */
 int vocr_load(vocr_model *m, const void *blob, size_t bytes);
-/* Check the blob's CRC-32 (optional; vocr_load checks structure, not content). */
+/* Check the blob's CRC-32, and the gate section's (optional; vocr_load checks structure, not content). */
 int vocr_check_crc(const void *blob, size_t bytes);
+/* 1 if the loaded blob has a head gate (vocr_opts.head_gate can be ON), else 0. */
+int vocr_has_gate(const vocr_model *m);
 /* Exact arena bytes for lines up to o->max_width (0 if the options are invalid). */
 size_t vocr_arena_bytes(const vocr_model *m, const vocr_opts *o);
 /* Plan the arena. bytes must be >= vocr_arena_bytes(m, o). */

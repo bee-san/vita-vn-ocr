@@ -3,8 +3,10 @@
  * Builds a tiny valid blob in memory (stem, depthwise, pointwise, 2x1 collapse,
  * 1x5 temporal depthwise with a residual pointwise, head), then checks loading and
  * validation, arena sizing, tile invariance, text overflow, cancellation and error
- * paths, and the head's argmax on ties, signed zeros, NaN and -inf (a 21-class head:
- * two full 8-class blocks and a partial one). Run under ASan/UBSan by `make check`, and
+ * paths, the head's argmax on ties, signed zeros, NaN and -inf (a 21-class head:
+ * two full 8-class blocks and a partial one), and the head gate (docs/headgate.md): its
+ * section's validation and CRC, and its runs against an independent reference of its
+ * score and of the skipped frames, at every tiling. Run under ASan/UBSan by `make check`, and
  * as Cortex-A9 NEON and scalar builds under qemu-arm by `make check-arm`.
  */
 #include "../vocr.h"
@@ -838,6 +840,359 @@ static void test_head_argmax(void)
         }
 }
 
+/* ------------------------------------------------------------ the head gate (docs/headgate.md) */
+
+/* Appends a VOCG section with random int8 layer-1 weights (hid x 16, the test head's K) to the int8 blob
+ * of n bytes in blob_buf; returns the gated blob's bytes. */
+static size_t append_gate(size_t n, unsigned hid, float t, float b2)
+{
+    const unsigned k = 16, s_w1 = 64, s_s1 = (64 + hid * k + 15u) & ~15u, s_b1 = s_s1 + ((4 * hid + 15u) & ~15u),
+                   s_w2 = s_b1 + ((4 * hid + 15u) & ~15u), total = s_w2 + ((4 * hid + 15u) & ~15u);
+    unsigned char *g = blob_buf + n;
+    unsigned j;
+    room(total);
+    memset(g, 0, total);
+    for (j = 0; j < hid * k; j++) g[s_w1 + j] = (unsigned char)(signed char)(int)(frand() * 127.0f);
+    for (j = 0; j < hid; j++) {
+        const float sc = 0.002f + 0.0005f * (float)(j % 7), b = frand() * 0.2f, w = frand();
+        memcpy(g + s_s1 + 4 * j, &sc, 4);
+        memcpy(g + s_b1 + 4 * j, &b, 4);
+        memcpy(g + s_w2 + 4 * j, &w, 4);
+    }
+    memcpy(g, "VOCG", 4);
+    wr16(g + 4, 1);
+    wr16(g + 6, 64);
+    wr32(g + 8, total);
+    wr16(g + 16, k);
+    wr16(g + 18, hid);
+    wr32(g + 20, (uint32_t)n);
+    memcpy(g + 24, blob_buf + 40, 4);
+    memcpy(g + 28, &t, 4);
+    memcpy(g + 32, &b2, 4);
+    wr32(g + 36, s_w1);
+    wr32(g + 40, s_s1);
+    wr32(g + 44, s_b1);
+    wr32(g + 48, s_w2);
+    wr32(g + 52, crc32_ref(g + 64, total - 64));
+    blob_pos = n + total;
+    return n + total;
+}
+
+/* The gate's score of one frame's head input x (16 floats), written independently of vocr.c: quant16's
+ * int16 grid, exact integer sums, then its float steps in order. */
+static float gate_ref(const vocr_model *m, const float *x)
+{
+    const vocr_gate *g = &m->gate;
+    const unsigned K = g->k;
+    float mx = 0.0f, inv, sx, s = g->b2;
+    int qx[64];
+    unsigned j, k;
+    for (k = 0; k < K; k++)
+        if (fabsf(x[k]) > mx) mx = fabsf(x[k]);
+    inv = mx > 0.0f ? 32767.0f / mx : 0.0f;
+    sx = mx > 0.0f ? mx / 32767.0f : 0.0f;
+    for (k = 0; k < K; k++) {
+        const float t = x[k] * inv;
+        int v = (int)(t + (signbit(t) ? -0.5f : 0.5f));
+        qx[k] = v > 32767 ? 32767 : v < -32767 ? -32767 : v;
+    }
+    for (j = 0; j < g->hidden; j++) {
+        const int8_t *w = g->q + (size_t)(j / 8u) * K * 8u + j % 8u;
+        int32_t acc = 0;
+        float h;
+        for (k = 0; k < K; k++) acc += (int32_t)w[(size_t)k * 8u] * qx[k];
+        h = (float)acc * (g->scale[j] * sx) + g->bias[j];
+        if (!(h > 0.0f)) h = 0.0f;
+        s = s + g->w2[j] * h;
+    }
+    return s;
+}
+
+static float g_logits[80 * CLASSES], g_hin[80 * 16], g_score[80], g_tv[80 * CLASSES], g_bl[80];
+static uint16_t g_tc[80 * CLASSES], g_best[80];
+
+/* One W8I run of the blob in blob_buf (n bytes) with head_gate hg and these tiles; topk k (0: none). */
+static int gate_run(size_t n, unsigned hg, unsigned tile, unsigned head, unsigned w, unsigned h, unsigned k,
+                    int logits, char *text, size_t cap, vocr_extra *out)
+{
+    vocr_model m;
+    vocr_opts o;
+    vocr_ctx c;
+    vocr_image im;
+    vocr_extra ex;
+    size_t need;
+    int rc = vocr_load(&m, blob_buf, n);
+    if (rc) return rc;
+    memset(&o, 0, sizeof o);
+    o.mode = VOCR_MODE_W8I;
+    o.tile_frames = tile;
+    o.head_frames = head;
+    o.head_gate = hg;
+    need = vocr_arena_bytes(&m, &o);
+    if (!need) return VOCR_E_MODE;
+    rc = vocr_init(&c, &m, &o, arena_a, need);
+    if (rc) return rc;
+    im.pixels = img_px;
+    im.width = w;
+    im.height = h;
+    im.stride = w;
+    im.format = VOCR_GREY8;
+    memset(&ex, 0, sizeof ex);
+    ex.cap_frames = 80;
+    ex.best = g_best;
+    ex.logits = logits ? g_logits : NULL;
+    ex.head_in = g_hin;
+    ex.gate_score = hg ? g_score : NULL;
+    if (k) {
+        ex.topk = k;
+        ex.topk_logit = g_tv;
+        ex.topk_class = g_tc;
+        ex.blank_logit = g_bl;
+    }
+    rc = vocr_run(&c, &im, text, cap, &ex);
+    if (out) *out = ex;
+    return rc;
+}
+
+static void test_gate_load(void)
+{
+    vocr_model m;
+    const size_t n = build_blob(1), gn = append_gate(n, 8, 0.25f, 0.5f);
+    const unsigned char save8 = blob_buf[n + 8];
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_OK && vocr_has_gate(&m) == 1);
+    CHECK(m.bytes == n && m.gate.bytes == gn - n && m.gate.k == 16 && m.gate.hidden == 8);
+    CHECK(m.gate.t == 0.25f && m.gate.b2 == 0.5f);
+    CHECK(vocr_check_crc(blob_buf, gn) == VOCR_OK);
+    CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK && vocr_has_gate(&m) == 0); /* the base alone: no gate */
+    CHECK(vocr_has_gate(NULL) == 0);
+    CHECK(vocr_load(&m, blob_buf, gn - 16) == VOCR_E_FORMAT);             /* a cut section */
+    CHECK(vocr_check_crc(blob_buf, gn - 16) == VOCR_E_FORMAT);
+    blob_buf[n + 100] ^= 1u;                                                 /* content: only the CRC sees it */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_OK);
+    CHECK(vocr_check_crc(blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 100] ^= 1u;
+    blob_buf[n + 3] = 'X';                                                   /* not a gate: ignored, as before */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_OK && !vocr_has_gate(&m));
+    CHECK(vocr_check_crc(blob_buf, gn) == VOCR_OK);
+    blob_buf[n + 3] = 'G';
+    blob_buf[n + 4] = 2;                                                     /* version */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 4] = 1;
+    blob_buf[n + 16] = 15;                                                   /* k != the head's K */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 16] = 16;
+    blob_buf[n + 18] = 12;                                                   /* hidden not a multiple of 8 */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 18] = 72;                                                   /* hidden above 64 */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 18] = 8;
+    blob_buf[n + 20] ^= 16u;                                                 /* the base blob's bytes */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 20] ^= 16u;
+    blob_buf[n + 24] ^= 1u;                                                  /* the base blob's CRC */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 24] ^= 1u;
+    blob_buf[n + 8] = (unsigned char)(save8 + 8u);                           /* not a multiple of 16 */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 8] = save8;
+    blob_buf[n + 37] = 0x40;                                                 /* w1 outside the section */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 37] = 0;
+    blob_buf[n + 36] = 72;                                                   /* w1 misaligned */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 36] = 64;
+    blob_buf[n + 60] = 1;                                                    /* reserved byte */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 60] = 0;
+    blob_buf[n + 12] = 1;                                                    /* flags */
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+    blob_buf[n + 12] = 0;
+    {
+        const float nan_ = NAN;
+        float t;
+        memcpy(&t, blob_buf + n + 28, 4);
+        memcpy(blob_buf + n + 28, &nan_, 4);                                 /* a NaN threshold */
+        CHECK(vocr_load(&m, blob_buf, gn) == VOCR_E_FORMAT);
+        memcpy(blob_buf + n + 28, &t, 4);
+    }
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_OK && vocr_has_gate(&m));
+    CHECK(vocr_check_crc(blob_buf, gn) == VOCR_OK);
+}
+
+/* head_gate OFF on a gated blob is the blob without the section exactly; SCORE computes the reference's scores
+ * and changes nothing; ON gives what the ungated run gives with the skipped frames (score > t) read as blanks,
+ * at every tiling; options and modes it needs. */
+static void test_gate_run(void)
+{
+    const unsigned w = 257, hgt = 10, tiles[6][2] = {{0, 0}, {1, 1}, {2, 3}, {3, 1}, {5, 7}, {64, 64}};
+    const unsigned ks[3] = {0, 1, 3};
+    char ref[256], text[256], want[256];
+    vocr_extra ex, e0;
+    vocr_model m;
+    float logits0[80 * CLASSES], hin0[80 * 16], tv0[80 * CLASSES], bl0[80];
+    uint16_t tc0[80 * CLASSES], best0[80];
+    size_t n, gn;
+    unsigned f, j, ti, ki, frames, skipped = 0;
+    float t;
+    make_image(w, hgt, 0);
+    n = build_blob(1);
+    /* the base blob, W8I, top-3: the reference */
+    CHECK(gate_run(n, 0, 0, 0, w, hgt, 3, 1, ref, sizeof ref, &e0) == VOCR_OK);
+    frames = e0.frames;
+    memcpy(logits0, g_logits, sizeof logits0);
+    memcpy(hin0, g_hin, sizeof hin0);
+    memcpy(tv0, g_tv, sizeof tv0);
+    memcpy(tc0, g_tc, sizeof tc0);
+    memcpy(bl0, g_bl, sizeof bl0);
+    memcpy(best0, g_best, sizeof best0);
+    CHECK(frames > 40 && frames <= 80);
+    CHECK(gate_run(n, VOCR_HEAD_GATE_ON, 0, 0, w, hgt, 0, 0, text, sizeof text, NULL) == VOCR_E_MODE);
+    gn = append_gate(n, 16, 0.0f, 0.1f);
+    CHECK(vocr_load(&m, blob_buf, gn) == VOCR_OK && vocr_has_gate(&m));
+    /* the threshold: the median score, so about half the frames are skipped */
+    CHECK(gate_run(gn, VOCR_HEAD_GATE_SCORE, 0, 0, w, hgt, 3, 1, text, sizeof text, &ex) == VOCR_OK);
+    CHECK(strcmp(text, ref) == 0 && ex.gated == 0);
+    CHECK(memcmp(g_logits, logits0, sizeof logits0) == 0 && memcmp(g_tv, tv0, sizeof tv0) == 0);
+    CHECK(memcmp(g_hin, hin0, (size_t)frames * 16 * sizeof(float)) == 0);
+    for (f = 0; f < frames; f++) {
+        const float r = gate_ref(&m, hin0 + f * 16);
+        CHECK(memcmp(&r, &g_score[f], sizeof r) == 0);
+    }
+    {
+        float sorted[80];
+        memcpy(sorted, g_score, frames * sizeof(float));
+        for (f = 1; f < frames; f++) /* insertion sort */
+            for (j = f; j > 0 && sorted[j - 1] > sorted[j]; j--) {
+                const float tmp = sorted[j];
+                sorted[j] = sorted[j - 1];
+                sorted[j - 1] = tmp;
+            }
+        t = sorted[frames / 2];
+    }
+    memcpy(blob_buf + n + 28, &t, 4);
+    wr32(blob_buf + n + 52, crc32_ref(blob_buf + n + 64, (uint32_t)(gn - n - 64)));
+    CHECK(vocr_check_crc(blob_buf, gn) == VOCR_OK);
+    /* OFF: the base exactly, arena too */
+    {
+        vocr_model mb, mg;
+        vocr_opts oo;
+        size_t base_w8i;
+        CHECK(vocr_load(&mb, blob_buf, n) == VOCR_OK && vocr_load(&mg, blob_buf, gn) == VOCR_OK);
+        memset(&oo, 0, sizeof oo);
+        oo.mode = VOCR_MODE_W8I;
+        base_w8i = vocr_arena_bytes(&mb, &oo);
+        CHECK(base_w8i > 0 && vocr_arena_bytes(&mg, &oo) == base_w8i);
+        oo.head_gate = VOCR_HEAD_GATE_SCORE;
+        CHECK(vocr_arena_bytes(&mg, &oo) >= base_w8i);
+        CHECK(vocr_arena_bytes(&mb, &oo) == 0); /* no gate in the blob */
+        oo.head_gate = 3;
+        CHECK(vocr_arena_bytes(&mg, &oo) == 0);
+        oo.head_gate = VOCR_HEAD_GATE_ON;
+        oo.mode = VOCR_MODE_W8F;
+        CHECK(vocr_arena_bytes(&mg, &oo) == 0);
+        oo.mode = VOCR_MODE_W8I;
+        CHECK(vocr_arena_bytes(&mg, &oo) > base_w8i); /* the frame indices */
+    }
+    CHECK(gate_run(gn, VOCR_HEAD_GATE_OFF, 0, 0, w, hgt, 3, 1, text, sizeof text, &ex) == VOCR_OK);
+    CHECK(strcmp(text, ref) == 0 && ex.gated == 0 && memcmp(g_logits, logits0, sizeof logits0) == 0);
+    CHECK(memcmp(g_tv, tv0, sizeof tv0) == 0 && memcmp(g_tc, tc0, sizeof tc0) == 0);
+    /* the expected gated output, from the reference run and the reference scores */
+    {
+        unsigned last = 0, used = 0;
+        want[0] = 0;
+        for (f = 0; f < frames; f++) {
+            const unsigned c = gate_ref(&m, hin0 + f * 16) > t ? 0u : best0[f];
+            skipped += gate_ref(&m, hin0 + f * 16) > t;
+            if (c && c != last) {
+                unsigned len;
+                const char *s = vocr_class_text(&m, c, &len);
+                memcpy(want + used, s, len);
+                used += len;
+                want[used] = 0;
+            }
+            last = c;
+        }
+    }
+    CHECK(skipped > frames / 4 && skipped < frames);
+    for (ti = 0; ti < 6; ti++)
+        for (ki = 0; ki < 3; ki++) {
+            const unsigned k = ks[ki];
+            memset(g_tv, 0x7F, sizeof g_tv);
+            memset(g_tc, 0x7F, sizeof g_tc);
+            memset(g_bl, 0x7F, sizeof g_bl);
+            memset(g_best, 0x7F, sizeof g_best);
+            CHECK(gate_run(gn, VOCR_HEAD_GATE_ON, tiles[ti][0], tiles[ti][1], w, hgt, k, 0, text, sizeof text, &ex) ==
+                  VOCR_OK);
+            CHECK(strcmp(text, want) == 0);
+            CHECK(ex.gated == skipped && ex.frames == frames);
+            for (f = 0; f < frames; f++) {
+                const int skip = gate_ref(&m, hin0 + f * 16) > t;
+                CHECK(g_best[f] == (skip ? 0 : best0[f]));
+                if (!k) continue;
+                CHECK(memcmp(&g_bl[f], &bl0[f], sizeof(float)) == 0); /* the head's own class-0 logit */
+                for (j = 0; j < k; j++) {
+                    if (skip) {
+                        CHECK(g_tc[f * k + j] == 0);
+                        if (j) CHECK(g_tv[f * k + j] == -INFINITY);
+                        else CHECK(memcmp(&g_tv[f * k], &bl0[f], sizeof(float)) == 0);
+                    } else { /* the reference's top-k (its top-3's first k) */
+                        CHECK(g_tc[f * k + j] == tc0[f * 3 + j]);
+                        CHECK(memcmp(&g_tv[f * k + j], &tv0[f * 3 + j], sizeof(float)) == 0);
+                    }
+                }
+            }
+        }
+    /* the logits asked for: nothing skipped, the base exactly */
+    CHECK(gate_run(gn, VOCR_HEAD_GATE_ON, 0, 0, w, hgt, 3, 1, text, sizeof text, &ex) == VOCR_OK);
+    CHECK(strcmp(text, ref) == 0 && ex.gated == 0 && memcmp(g_logits, logits0, sizeof logits0) == 0);
+    /* thresholds: +inf skips nothing (the base's text), -inf every frame (no text, every best 0) */
+    t = INFINITY;
+    memcpy(blob_buf + n + 28, &t, 4);
+    CHECK(gate_run(gn, VOCR_HEAD_GATE_ON, 0, 0, w, hgt, 3, 0, text, sizeof text, &ex) == VOCR_OK);
+    CHECK(strcmp(text, ref) == 0 && ex.gated == 0 && memcmp(g_tv, tv0, (size_t)frames * 3 * sizeof(float)) == 0);
+    t = -INFINITY;
+    memcpy(blob_buf + n + 28, &t, 4);
+    CHECK(gate_run(gn, VOCR_HEAD_GATE_ON, 2, 3, w, hgt, 3, 0, text, sizeof text, &ex) == VOCR_OK);
+    CHECK(text[0] == 0 && ex.gated == frames && ex.chars == 0 && ex.conf_min == 1.0f);
+    for (f = 0; f < frames; f++) CHECK(g_best[f] == 0 && g_tc[f * 3] == 0 && g_tv[f * 3 + 2] == -INFINITY);
+    /* a gated run with no extras at all, and one cancelled */
+    {
+        vocr_model mg;
+        vocr_opts oo;
+        vocr_ctx c;
+        vocr_image im;
+        int calls = 0;
+        CHECK(vocr_load(&mg, blob_buf, gn) == VOCR_OK);
+        memset(&oo, 0, sizeof oo);
+        oo.mode = VOCR_MODE_W8I;
+        oo.head_gate = VOCR_HEAD_GATE_ON;
+        CHECK(vocr_init(&c, &mg, &oo, arena_a, vocr_arena_bytes(&mg, &oo)) == VOCR_OK);
+        im.pixels = img_px;
+        im.width = w;
+        im.height = hgt;
+        im.stride = w;
+        im.format = VOCR_GREY8;
+        CHECK(vocr_run(&c, &im, text, sizeof text, NULL) == VOCR_OK && text[0] == 0);
+        /* ungated: this line as head_gate OFF reads it, with the gate on (t = -inf would skip every frame) */
+        memset(&ex, 0, sizeof ex);
+        ex.ungated = 1;
+        ex.cap_frames = 80;
+        ex.best = g_best;
+        ex.topk = 3;
+        ex.topk_logit = g_tv;
+        ex.topk_class = g_tc;
+        ex.blank_logit = g_bl;
+        CHECK(vocr_run(&c, &im, text, sizeof text, &ex) == VOCR_OK && strcmp(text, ref) == 0 && ex.gated == 0);
+        CHECK(memcmp(g_tv, tv0, (size_t)frames * 3 * sizeof(float)) == 0);
+        CHECK(memcmp(g_tc, tc0, (size_t)frames * 3 * sizeof(uint16_t)) == 0);
+        CHECK(memcmp(g_best, best0, (size_t)frames * sizeof(uint16_t)) == 0);
+        memset(&ex, 0, sizeof ex);
+        ex.cancel = stop_now;
+        ex.user = &calls;
+        CHECK(vocr_run(&c, &im, text, sizeof text, &ex) == VOCR_E_CANCELLED && text[0] == 0);
+    }
+}
+
 int main(void)
 {
     test_load(0);
@@ -856,6 +1211,8 @@ int main(void)
     test_invert();
     test_limits();
     test_head_argmax();
+    test_gate_load();
+    test_gate_run();
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

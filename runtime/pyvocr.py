@@ -11,6 +11,8 @@
     text = lm.decode(out["topv"], out["topc"], out["blank"])                  # beam + LM text
     out2, st = r.redecode(out, tau=2000, open=2000)  # runtime/vocr_post.h: counter re-decode (edited copy)
     text, n = post_counters(text, r.lib)             # the counter rule: ッ月 -> ヶ月 ...
+    g = Vocr("VOCR5_N_gated.vocr", mode="w8i", head_gate="on")   # docs/headgate.md: skip the head on blank frames
+    out = g.run_topk(crop, 8, gate_score=True)       # ... out["gated"] frames skipped, out["gate_score"] per frame
 
 Not part of the console build: the runtime itself is dependency-free C.
 """
@@ -24,12 +26,13 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 LIB = HERE / "build" / "libvocr.so"
 MODES = {"auto": 0, "f32": 1, "w8f": 2, "w8i": 3}
+HEAD_GATE = {"off": 0, "on": 1, "score": 2}
 GREY8, RGBA8, INVERT = 1, 4, 0x100
 
 
 class _Opts(C.Structure):
     _fields_ = [("tile_frames", C.c_uint), ("head_frames", C.c_uint), ("max_width", C.c_uint),
-                ("mode", C.c_int)]
+                ("mode", C.c_int), ("head_gate", C.c_uint)]
 
 
 class _Image(C.Structure):
@@ -42,7 +45,8 @@ class _Extra(C.Structure):
                 ("cancel", C.c_void_p), ("user", C.c_void_p), ("width", C.c_uint),
                 ("frames", C.c_uint), ("chars", C.c_uint), ("topk", C.c_uint),
                 ("topk_logit", C.c_void_p), ("topk_class", C.c_void_p), ("blank_logit", C.c_void_p),
-                ("conf_min", C.c_float), ("conf_mean", C.c_float)]
+                ("conf_min", C.c_float), ("conf_mean", C.c_float),
+                ("head_in", C.c_void_p), ("gate_score", C.c_void_p), ("gated", C.c_uint), ("ungated", C.c_uint)]
 
 
 class _PostOpts(C.Structure):
@@ -95,6 +99,8 @@ def load_lib(path=None):
     lib.vocr_sizes.argtypes = [C.POINTER(sz), C.POINTER(sz)]
     lib.vocr_class_text.argtypes = [vp, u, C.POINTER(u)]
     lib.vocr_class_text.restype = vp
+    if hasattr(lib, "vocr_has_gate"):        # the head gate (docs/headgate.md, issue #117)
+        lib.vocr_has_gate.argtypes = [vp]
     if hasattr(lib, "vocr_post_counters"):   # runtime/vocr_post.c (issue #109)
         lib.vocr_post_counters.argtypes = [C.c_char_p]
         lib.vocr_post_counters.restype = u
@@ -137,7 +143,9 @@ class Vocr:
                                     source_sha=hashlib.sha256(Path(ckpt).read_bytes()).digest())
         return cls(blob, **kw)
 
-    def __init__(self, blob, mode="auto", tile=0, head=0, max_width=0, lib=None, check_crc=True):
+    def __init__(self, blob, mode="auto", tile=0, head=0, max_width=0, lib=None, check_crc=True, head_gate="off"):
+        """head_gate: "off", "on" (skip the head on the frames the blob's gate calls blank) or "score" (compute
+        the gate's scores only); "on" and "score" need mode w8i and a blob with a gate (docs/headgate.md)."""
         self.lib = lib if lib is not None else load_lib()
         data = Path(blob).read_bytes() if isinstance(blob, (str, Path)) else bytes(blob)
         self._blob = _aligned(len(data))
@@ -149,7 +157,8 @@ class Vocr:
         if check_crc:
             self._check(self.lib.vocr_check_crc(self._blob.ctypes.data, len(data)), "vocr_check_crc")
         self._check(self.lib.vocr_load(self._model, self._blob.ctypes.data, len(data)), "vocr_load")
-        self.opts = _Opts(tile, head, max_width, MODES[mode] if isinstance(mode, str) else mode)
+        self.opts = _Opts(tile, head, max_width, MODES[mode] if isinstance(mode, str) else mode,
+                          HEAD_GATE[head_gate] if isinstance(head_gate, str) else head_gate)
         self.arena_bytes = self.lib.vocr_arena_bytes(self._model, C.byref(self.opts))
         if not self.arena_bytes:
             raise ValueError(f"invalid options {mode=} {tile=} {head=} {max_width=} for this blob")
@@ -159,7 +168,17 @@ class Vocr:
         self.blob_bytes = len(data)
         self.n_classes = int.from_bytes(data[24:28], "little")
         self.stride = int.from_bytes(data[20:22], "little")
+        self.has_gate = bool(self.lib.vocr_has_gate(self._model)) if hasattr(self.lib, "vocr_has_gate") else False
+        self.head_k = self._head_k(data)
         self._text = C.create_string_buffer(1 << 16)
+
+    @staticmethod
+    def _head_k(data):
+        """The head's input width K (the last op record's field 32)."""
+        n_ops = int.from_bytes(data[22:24], "little")
+        ops = int.from_bytes(data[28:32], "little")
+        rec = ops + 64 * (n_ops - 1)
+        return int.from_bytes(data[rec + 32:rec + 34], "little")
 
     def _check(self, rc, what):
         if rc:
@@ -198,8 +217,20 @@ class Vocr:
                                               C.byref(w), C.byref(pw)), "vocr_preprocess")
         return out, w.value
 
-    def run(self, img, logits=False, invert=False):
-        """invert=True reads the crop as 255 - grey (VOCR_INVERT), for dark text."""
+    def _gate_buffers(self, ex, cap, head_in, gate_score):
+        hi = gs = None
+        if head_in:
+            hi = np.zeros((cap, self.head_k), np.float32)
+            ex.head_in = hi.ctypes.data
+        if gate_score:
+            gs = np.full(cap, np.nan, np.float32)
+            ex.gate_score = gs.ctypes.data
+        return hi, gs
+
+    def run(self, img, logits=False, invert=False, head_in=False, gate_score=False):
+        """invert=True reads the crop as 255 - grey (VOCR_INVERT), for dark text. head_in / gate_score: keep each
+        frame's head input (frames x K) / gate score in self.last_head_in / self.last_gate_score (docs/headgate.md);
+        self.last_gated counts the frames the head gate skipped (none when the logits are asked for)."""
         keep, im = self._image(img, invert)
         ex = _Extra()
         out = best = None
@@ -209,19 +240,25 @@ class Vocr:
         if logits:
             out = np.zeros((cap, self.n_classes), np.float32)
             ex.logits = out.ctypes.data
+        hi, gs = self._gate_buffers(ex, cap, head_in, gate_score)
         rc = self.lib.vocr_run(self._ctx, C.byref(im), self._text, len(self._text), C.byref(ex))
         self._check(rc, "vocr_run")
         del keep
         text = self._text.value.decode("utf-8")
         self.last_best = best[:ex.frames]
+        self.last_gated = ex.gated
+        self.last_head_in = hi[:ex.frames] if hi is not None else None
+        self.last_gate_score = gs[:ex.frames] if gs is not None else None
         return (text, out[:ex.frames]) if logits else text
 
     def text(self, img, invert=False):
         return self.run(img, invert=invert)
 
-    def run_topk(self, img, k, invert=False, blank=True):
+    def run_topk(self, img, k, invert=False, blank=True, head_in=False, gate_score=False, ungated=False):
         """vocr_run with vocr_extra.topk = k: the greedy text, per frame the k largest logits (topv,
-        decreasing) and their classes (topc), the blank's logit, and conf_min / conf_mean."""
+        decreasing) and their classes (topc), the blank's logit, and conf_min / conf_mean; "best" (each
+        frame's argmax), "gated" (frames the head gate skipped) and, if asked, "head_in" / "gate_score".
+        ungated=True: this line without skipping (vocr_extra.ungated), as head_gate off reads it."""
         keep, im = self._image(img, invert)
         cap = self.resized_width(im.width, im.height) // self.stride + 1
         topv = np.zeros((cap, k), np.float32)
@@ -232,13 +269,20 @@ class Vocr:
         ex.best, ex.cap_frames, ex.topk = best.ctypes.data, cap, k
         ex.topk_logit, ex.topk_class = topv.ctypes.data, topc.ctypes.data
         ex.blank_logit = bl.ctypes.data if blank else None
+        ex.ungated = 1 if ungated else 0
+        hi, gs = self._gate_buffers(ex, cap, head_in, gate_score)
         self._check(self.lib.vocr_run(self._ctx, C.byref(im), self._text, len(self._text), C.byref(ex)), "vocr_run")
         del keep
         n = ex.frames
         self.last_best = best[:n]
-        return {"text": self._text.value.decode("utf-8"), "topv": topv[:n], "topc": topc[:n],
-                "blank": bl[:n] if blank else None, "conf_min": ex.conf_min, "conf_mean": ex.conf_mean,
-                "frames": n, "chars": ex.chars}
+        out = {"text": self._text.value.decode("utf-8"), "topv": topv[:n], "topc": topc[:n],
+               "blank": bl[:n] if blank else None, "conf_min": ex.conf_min, "conf_mean": ex.conf_mean,
+               "frames": n, "chars": ex.chars, "best": best[:n], "gated": ex.gated}
+        if hi is not None:
+            out["head_in"] = hi[:n]
+        if gs is not None:
+            out["gate_score"] = gs[:n]
+        return out
 
     def redecode(self, out, tau=0, open=0):
         """runtime/vocr_post.h's counter-context re-decode on run_topk()'s output (tau, open in 1/1000 nat):

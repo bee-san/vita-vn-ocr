@@ -1,0 +1,98 @@
+{
+ "kind": "headgate-protocol",
+ "issue": 117,
+ "item": 1,
+ "schema": 1,
+ "frozen": "2026-10-23T13:54:00Z",
+ "written_at_head": "6f24967d311d6984c138b2e8477c650801e2f2df",
+ "rule_of_this_file": "Frozen before any gate of this protocol is trained and before any development score of one. Changes only by a dated amendment appended to 'amendments', made before the scores it could affect.",
+ "owner": "2026-10-23 13:34Z: \"Let's queue agents to skip output layer, make a pr. Trial the two level output. And retrain for a coarser frame step\"",
+ "problem": "62-66% of the VOCR5 models' CTC frames are blank on development dialogue, and the output head (96 -> 4,987 / 5,631 classes) is 29-40% of Small's and Normal's per-frame time (text-stats, #117 item 1). A tiny gate on the head's 96-wide input can say 'blank' before the head runs, so the head is skipped there.",
+ "known_before_freezing": [
+  "text-stats-gate (#117; $HERD/shared/artifacts/text-stats-gate/section.md, results.json): on the development sample's tv + dn crops, a float 96 -> 16 -> 1 MLP fit on training-side GRAD-crop frames, target W8I argmax == blank, threshold eps = 1e-3 on a training-side calibration split, skipped 59.6 / 56.8 / 55.8% of dialogue frames (S / N / L) with greedy and Rubi-LM dialogue CER free (CI upper bound <= +0.05 points). That operating point (MLP, m = 0, eps = 1e-3) was picked by text-stats-gate after seeing those tv + dn results, so tv + dn here are a confirmation on the same data (optimistic).",
+  "Not seen by anyone yet: the int8 gate of this protocol, its exact (C-equal) threshold, the whole-dialogue cohort wd, the VOCR5 development score as a whole, Rubi's counter re-decode on gated top-K, Rubi's confidence cascade with gated models, the synthetic counter set with the gate, and any timing of a gated runtime."
+ ],
+ "models": {
+  "what": "the released VOCR5 recognizers (v0.3.0), frozen; only a gate is added",
+  "S": {
+   "file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_S_w8.vocr",
+   "bytes": 819792,
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+  },
+  "N": {
+   "file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_N_w8.vocr",
+   "bytes": 1185632,
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+  },
+  "L": {
+   "file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_L_w8.vocr",
+   "bytes": 2473696,
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+  }
+ },
+ "gate": {
+  "shape": "per tier: 96 -> 16 (ReLU) -> 1 on the head's input as the W8I head sees it (each frame's 96 floats quantised to int16 by vocr.c's quant16, scale max|x| / 32767)",
+  "layer1": "int8 weights with one float32 scale per hidden unit (symmetric max-abs, train/export.quantize_rows), float32 bias, through vocr.c's mm_i16 (exact int32 sums), ReLU",
+  "layer2": "float32: s = b2, then s = s + w2[j] * h[j] for j = 0..15 in order, each product and sum rounded (-ffp-contract=off)",
+  "decision": "a frame's head is skipped iff s > t (float32 t, stored with the gate)",
+  "skipped_frame": "argmax 0 (blank), its blank logit computed exactly as the head computes class 0 (the head's first 8-class block through mm_i16), top-K [blank logit, -inf, ...] (classes 0); the frame never emits a character",
+  "storage": "a versioned section appended to the unchanged version-1 blob (magic VOCG, its own version, size and CRC-32, bound to the base blob's byte count and CRC); a runtime without gate support reads the blob as before, and a blob without the section runs exactly as today",
+  "runtime_switch": "vocr_opts.head_gate (0 = off, the default: bit for bit today's output, arena and code path); 1 needs VOCR_MODE_W8I and a blob with the section; a run that asks for full logits (vocr_extra.logits) is never gated"
+ },
+ "training": {
+  "data": "the console-cut crops of VOCR5's own fine-tune pools (eval/vocr5_ft_sources.json 'owg' and 'ntg', pinned in eval/vocr5_pools.sha256): GRAD crops and their refined copies, as stored (console polarity), every row (dialogue and names)",
+  "files": {
+   "$HERD/shared/private/vocr5-train/pools/v3/own_grad.npz": "a42db74342c459c732e1720e436869f2387efa2a132be75c8afaed29d28d343e",
+   "$HERD/shared/private/vocr5-train/pools/v3/own_ref.npz": "2c72aa1bc9e61d4335e7b83aad905be601dd9cb4b178f8587bfadbc292609d1e",
+   "$HERD/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz": "2cf40190bdf61f2cb5e6e0b2246f27c9521cdd4ef0bdc3ad81c8164673e86366",
+   "$HERD/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz": "19149b480a82a3d1c3e9f06738f70903b9980219fed65f70148ca8cf563a6189",
+   "$HERD/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz": "f789db1e742643662e94cff8c19081373d7cd8d1324d84f872c46c2da2a19e20",
+   "$HERD/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz": "cdc4bf7f70d9cd7eac3cd2e3f664600bf7e587fdd759bf4d972f6214cd004975",
+   "$HERD/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz": "ea89bed96eda2498a55ee66c33385645e77616145aeca354dfdb7decefbae2e6",
+   "$HERD/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz": "fc693251c8caf89dcc76410a98e20d53aac4469558cb919d9984d46f8e48c163"
+  },
+  "hygiene": "no row of a VN in eval/manifests/reserved.json 'test' or 'dev_sample' (asserted before any feature is extracted); the frames are the frozen model's own, so no text label is used",
+  "features": "per frame, the head's input from the C runtime (vocr_extra.head_in, W8I), and the label y = (the W8I argmax is the blank), from the same run",
+  "split": "by VN: sha1(vn) % 5 == 0 is the calibration split (the threshold), the rest the fit split",
+  "fit": "PyTorch (requirements.lock), float32, inputs standardised with the fit split's mean and standard deviation; Linear(96, 16), ReLU, Linear(16, 1); BCEWithLogits on y; Adam lr 3e-3, cosine schedule over 12 epochs of batches of 4,096, seed 0; one fit per tier, nothing chosen among fits",
+  "export": "the standardisation folded into layer 1 (w / sd, b - w . (mu / sd)), layer 1 quantised to int8 per hidden unit; layer 2 and the biases float32",
+  "threshold": "on the calibration split, the exact scores of the exported gate (the Python twin, equal to the C runtime bit for bit) over the frames whose W8I argmax is not the blank: with n such frames and eps = 1e-3, t = the (floor(eps n) + 1)-th largest of their scores, so at most floor(eps n) of them are skipped",
+  "fallback": "if a tier's gate fails the development rule below at eps = 1e-3, the same fit with eps = 1e-4 is exported and scored once for that tier, reported as the fallback; no other setting is tried"
+ },
+ "development": {
+  "cohorts": "exactly eval/vocr5_protocol.json 'cohorts' (the fixed development sample): tv = teacher_val_dev.npz (both views: rv as stored, console polarity; rvn screen polarity), dn = devnative's four *_dev.npz files (both views), wd = tv_dlg + dn_dlg whole-dialogue regions at base, +4 and +8 px through the C GRAD finder (flags 0) and with the C refinement (VOCR_REFINE_DEFAULT), each line read with its dark flag as VOCR_INVERT",
+  "files": {
+   "teacher_val_dev.npz": "e2f0300fd9f417b6c3c01e1dab36641bfd72749e2cac5db896226ef0d29b65dd",
+   "devnative_tv_native_ink_dev.npz": "c198c9ea147620e2f75b929dbb676eda30cd10137b2b3c14eae17f28204bc0c4",
+   "devnative_tv_native_grad_dev.npz": "4bda0139ae52f6d472513e96d2f79d30cc25be96dbc2d2316b3bce22f5e4702a",
+   "devnative_strict_ink_dev.npz": "ad4207cdfc6f3e667ffe776a80ac3f97fe58fc3e27dab6285a621e35e24c7645",
+   "devnative_strict_grad_dev.npz": "5e5b147254f9e65ccd9d904d79db68224b8fd26e902a0b167dff005b725891a1",
+   "tv_dlg.pkl": "f1007ab4e943012330b229cc2630f3fc9d33aa94d6dac03130bc5ea5126c1af3",
+   "dn_dlg.pkl": "c6dfd35293e7716bc3772fffc88c8d8aeba62c8fa20f97c0d5041b4f1dbc1e1f"
+  },
+  "score": "eval/vocr5_protocol.json 'score', dialogue only: dev score = 0.25 tv + 0.25 dn + 0.5 wd in CER points (eval/vocr5_select.py); names a secondary column",
+  "arms": "per tier: 'today' (no gate) and 'gated' (vocr_opts.head_gate = 1 on the gated blob), C runtime W8I, max width 1024, default tile 4 and head batch 16",
+  "decodes": {
+   "greedy": "vocr_run's text",
+   "rubi": "Rubi's line path (core/vocr_ocr.c finish_line, game_ocr/main.c policy): top-8 extras; vocr_post_redecode with {tau 6000, open 4000}; vocr_lm_decode with vocr_lm_o3_1000k.vlm (sha256 993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9; beam 8, top-K 8, alpha 500, beta 3500, gate 8000, VOCR_LM_EOS, bracket 8000), a line read as empty staying empty; then the counter rule vocr_post_counters (Rubi's core/textnorm.c mirrors it)",
+   "rubi_cascade": "as rubi, and a line whose confidence (round(conf_min x 1000 + 0.5), 1000 for an empty greedy line) is below 700 (VJO_VOCR_CASCADE_CONF) is read again by the next tier up (S -> N, N -> L; Large has none, so its rubi_cascade is its rubi) with the same steps, and that reading replaces it; the cascade's time ceiling is not modelled (every such line is read again). In the gated arm the cascade's model runs gated too"
+  },
+  "bootstrap": "eval/vocr5_select.py compare: VN-cluster bootstrap, 10,000 resamples, tv / dn / wd resampled independently with seeds 0 / 1 / 2, a replicate's score difference 0.25 tv + 0.25 dn + 0.5 wd; gated - today in points",
+  "rule": {
+   "per_tier": "the gate of a tier is ADOPTED (recommended on in Rubi) iff, for each of the three decodes, (a) the dev-score difference gated - today is not resolved worse: its 95% interval does not lie entirely above 0, and no component's (tv, dn, wd) interval lies entirely above 0; (b) the non-inferiority margin: the dev-score interval's upper bound is at most +0.05 points; and (c) the estimated saving is at least 5% of the tier's nominal box (estimates below, safe basis). (a) holding but (b) or (c) failing: UNRESOLVED / NOT WORTH IT, shipped behind the switch, off by default. (a) failing: REJECTED for that tier.",
+   "reported_beside": "per component, view, platform and cohort; names; lines changed; the skip rate (share of frames gated: all, dialogue, wd's finder-cut lines, dn's GRAD crops, per platform); non-blank frames gated; candidate counts of the LM decode"
+  }
+ },
+ "counter_check": "report only, deciding nothing: eval/kanum_dev.py's synthetic counter-context set (#109; private renders, the development pool texts) through each tier, today vs gated, greedy and rubi: CER and lines changed. If the gate makes any line of it worse under rubi, the Rubi draft re-reads a line ungated when its greedy text holds a counter context (vocr_post's re-decode looks at blank frames' top-K, which a skipped frame does not offer)",
+ "estimates": {
+  "method": "vita/a9_layers.py measure (VitaSDK gcc 15.2, the Vita flags, qemu-arm instruction counts with the plugin's cache model) on ocr-speed's 24 development lines of 60-100 frames (pack $HERD/shared/artifacts/ocr-speed-resume/packs/sub24.bin, sha256 3162151aaf3013f434c5ad7996d04ca2308fe2d3896ce06de14909878906c8b7), --topk 8, each tier's gated blob without and with --gate, --no-pld (the safe basis the tiers are sized on) and with the PLD model; a9_layers.py report --scale 1.000676 (VOCR3-H15's measured 4,942 us per frame, 'the 5.0-5.2 ms per CTC frame', at an assumed 333 MHz); 444 MHz by the clock ratio",
+  "box": "est. ms saved per nominal 3-line box (240 frames + 0.1 s finder) and per real box (89 frames, text-stats-boxes), from (i) the pack's own measured per-frame times, and (ii) projected to the development skip rate on console-cut lines (wd) as skip x the measured head cost per frame minus the measured gate cost per frame",
+  "sizes": "blob bytes and gate section bytes exact; W8I arena exact with and without the gate (vocr_arena_bytes == train/export.plan_arena); code bytes of vocr.o (VitaSDK -O2 NEON, psp-gcc scalar); all times are estimates, nothing runs on a console"
+ },
+ "protected": {
+  "when": "once, after the development verdict of every tier is committed and pushed",
+  "what": "vita-test and psp-test fixed lines (eval's hand-checked lines, not uncertain, box + pad, console polarity; dialogue = no 'name' style) and CLANNAD (owner-drive-ingest's frozen references, $HERD/shared/private/owner-drive-20261013/clannad-compare, each reference line read through GRAD + refine inside its GRAD box, as eval/textgate_protected.py), each tier today vs gated, decodes greedy, rubi and rubi_cascade; line / VN-cluster (tests) and page (CLANNAD) bootstraps",
+  "use": "report only: it decides and tunes nothing; an attempt record refuses a second run; public outputs hold counts, rates and hashes only"
+ },
+ "amendments": []
+}

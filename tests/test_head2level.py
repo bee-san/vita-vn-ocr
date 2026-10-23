@@ -110,7 +110,8 @@ def test_c_equals_twin(base, l1_blocks, rk, t):
     assert rt.arena_bytes == export.plan_arena(b, 1024, 0, 0, 3, two_level=two)
     fired = frames = 0
     for g in crops(25, l1_blocks):
-        _, x = full.run(g, head_in=True)
+        full.run(g, head_in=True)
+        x = full.last_head_in
         tw = H2.twolevel_exact(x, head, two, topk=8)
         out = rt.run_topk(g, 8, esc=True)
         assert np.array_equal(out["esc"], tw["score"])
@@ -191,3 +192,52 @@ def test_threshold_rule():
     assert m == 1 and (s <= t).sum() <= 1 and t < 0 + 1e-6 and (s > t).sum() >= len(s) - 100
     t, m = H2.threshold_for(np.arange(20000, dtype=F32), 0.999)
     assert m == 20 and (np.arange(20000) <= t).sum() == 20
+
+
+@pytest.mark.parametrize("rk,tile,head", [(0, 0, 0), (0, 1, 3), (16, 0, 0), (16, 8, 5)])
+def test_gate_and_two_level(base, rk, tile, head):
+    """head_gate ON with two_level: a frame the gate skips reads as the blank (headgate.simulate of the two-level
+    run), every other frame is the two-level head's, at several tilings; the escape runs on those frames only."""
+    from pyvocr import Vocr
+
+    import headgate as HG
+    _, pblob, _ = base
+    rng = np.random.default_rng(31 + rk + tile)
+    head_ = H2.head_arrays(pblob)
+    K = head_["K"]
+    gp = HG.quantise(rng.normal(0, 0.3, size=(16, K)), rng.normal(0, 0.5, 16), rng.normal(0, 0.5, 16), 0.0)
+    l1b = 4
+    rare = random_r48(rng, K, head_["P"] - 8 * l1b, rk) if rk else None
+    esc = random_escape(rng, K)
+    # thresholds at the median gate score and the 70th percentile escape score of these crops' frames
+    x = np.concatenate([(lambda r: (r.run(g, head_in=True), r.last_head_in)[1])(Vocr(pblob, mode="w8i"))
+                        for g in crops(15, 40 + rk)])
+    gt = np.float32(np.median(HG.gate_scores(gp, x)))
+    q, sx = H2.quant16_exact(x)
+    lg1 = H2.mm_exact(q, sx, head_["q"][:8 * l1b], head_["scale"][:8 * l1b], head_["bias"][:8 * l1b])
+    l1, b0 = H2.level1_inputs(lg1, 8 * l1b)
+    esc["t"] = np.float32(np.quantile(H2.escape_score(q, sx, l1, b0, esc), 0.7))
+    gated = HG.append_gate(pblob, gp, gt)
+    blob = H2.attach(gated, H2.write_trailer(pblob, l1b, esc, rare))
+    assert HG.read_gate(blob) is not None and H2.read_trailer(blob)["l1_blocks"] == l1b
+    two = Vocr(blob, mode="w8i", tile=tile, head=head, two_level=1)
+    both = Vocr(blob, mode="w8i", tile=tile, head=head, two_level=1, head_gate="on")
+    vocab = [both.class_text(c) for c in range(both.n_classes)]
+    skipped = escaped = 0
+    for g in crops(15, 40 + rk):
+        o2 = two.run_topk(g, 8, head_in=True, esc=True)
+        skip = HG.gate_scores(gp, o2["head_in"]) > gt
+        want = HG.simulate(o2, skip, vocab)
+        ob = both.run_topk(g, 8, esc=True)
+        for k in ("text", "topv", "topc", "blank", "best", "conf_min", "conf_mean"):
+            assert np.array_equal(np.asarray(want[k]), np.asarray(ob[k])), k
+        assert ob["gated"] == int(skip.sum())
+        assert np.array_equal(np.isnan(ob["esc"]), skip)              # no escape on a skipped frame
+        assert np.array_equal(ob["esc"][~skip], o2["esc"][~skip])
+        assert ob["escaped"] == int((o2["esc"][~skip] > esc["t"]).sum())
+        u = both.run_topk(g, 8, ungated=True)                         # ungated: the full head, no skipping
+        full = Vocr(pblob, mode="w8i").run_topk(g, 8)
+        assert u["text"] == full["text"] and np.array_equal(u["topc"], full["topc"]) and u["gated"] == 0
+        skipped += int(skip.sum())
+        escaped += ob["escaped"]
+    assert skipped and escaped

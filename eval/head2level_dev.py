@@ -24,6 +24,7 @@ import json
 import multiprocessing as mp
 import os
 import pickle
+import re
 import sys
 import time
 from pathlib import Path
@@ -54,6 +55,9 @@ DN_FILES = ["devnative_tv_native_ink_dev", "devnative_tv_native_grad_dev", "devn
 RUBI_LM = dict(beam=8, topk=8, alpha=500, beta=3500, gate=8000, flags=2, bracket=8000)
 COUNTER = dict(tau=6000, open=4000)
 CASCADE_CONF = 700
+# the counter check's mitigation (report only): a full-size カ / ケ before a counter character, where the full head
+# may read the small ヵ / ヶ that a two-level head's escape missed (docs/head2level.md, "Counter contexts")
+REREAD_RE = re.compile("[カケ][月所年国条]")
 NEXT = {"S": "N", "N": "L", "L": None}
 DECODES = ("greedy", "rubi", "rubi_cascade")
 SEEDS = {"tv": 0, "dn": 1, "wd": 2}
@@ -171,7 +175,7 @@ def _read(job):
     if g:
         o2, _ = rt.redecode(out, tau=COUNTER["tau"], open=COUNTER["open"])
         t = lm.decode(o2["topv"], o2["topc"], o2["blank"])
-    return i, g, t, conf, int(out["frames"]), int(out["escaped"]), out["best"].astype(np.uint16)
+    return i, g, t, conf, int(out["frames"]), int(out["escaped"]), out["best"].astype(np.uint16), int(out["gated"])
 
 
 def cmd_read(a):
@@ -194,7 +198,7 @@ def cmd_read(a):
     off[1:] = np.cumsum([len(r[6]) for r in res])
     np.savez_compressed(out_dir / f"{name}.npz", off=off, best=np.concatenate([r[6] for r in res]),
                         frames=np.array([r[4] for r in res]), escaped=np.array([r[5] for r in res]),
-                        conf=np.array([r[3] for r in res]))
+                        conf=np.array([r[3] for r in res]), gated=np.array([r[7] for r in res]))
     from pyvocr import Vocr
     kw = {"two_level": 1} if two else {}
     if gate:
@@ -214,7 +218,8 @@ def load_reads(cache, tier, arm):
     d = Path(cache) / "reads" / tier
     meta = json.loads((d / f"{arm}.json").read_text(encoding="utf-8"))
     z = np.load(d / f"{arm}.npz")
-    meta.update(off=z["off"], best=z["best"], frames=z["frames"], escaped=z["escaped"], conf=z["conf"])
+    meta.update(off=z["off"], best=z["best"], frames=z["frames"], escaped=z["escaped"], conf=z["conf"],
+                gated=z["gated"] if "gated" in z.files else np.zeros_like(z["frames"]))
     meta["index"] = {k: i for i, k in enumerate(meta["keys"])}
     return meta
 
@@ -481,8 +486,11 @@ def escape_stats(reads, groups, today=None, ranks=None, L1=None, Vpad=None):
     out = {}
     for gname, idx in groups.items():
         F = int(frames[idx].sum())
-        e = {"crops": int(len(idx)), "frames": F, "escaped": int(esc[idx].sum()),
-             "fire_share": round(float(esc[idx].sum() / max(1, F)), 5)}
+        G = int(reads["gated"][idx].sum())
+        e = {"crops": int(len(idx)), "frames": F, "escaped": int(esc[idx].sum()), "gated": G,
+             "gated_share": round(G / max(1, F), 5),
+             "fire_share_all_frames": round(float(esc[idx].sum() / max(1, F)), 5),
+             "fire_share": round(float(esc[idx].sum() / max(1, F - G)), 5)}
         if L1 is not None and Vpad is not None:
             e["head_rows_per_frame"] = round(L1 + e["fire_share"] * (Vpad - L1), 1)
         if today is not None and ranks is not None:
@@ -597,21 +605,30 @@ def cmd_counter(a):
             kw["head_gate"] = 1
         rt = Vocr(blob, mode="w8i", max_width=1024, **kw)
         lm = VocrLM(rt, str(LM_FILE), **RUBI_LM)
-        g, r = [], []
+        g, r, rr, n_re = [], [], [], 0
+
+        def rubi_of(o):
+            if not o["text"]:
+                return ""
+            o2, _ = rt.redecode(o, tau=COUNTER["tau"], open=COUNTER["open"])
+            return norm(post_counters(lm.decode(o2["topv"], o2["topc"], o2["blank"]), rt.lib)[0])
         for row in rows:
             o = rt.run_topk(row["img"], 8)
             g.append(norm(o["text"]))
-            if not o["text"]:
-                r.append("")
-                continue
-            o2, _ = rt.redecode(o, tau=COUNTER["tau"], open=COUNTER["open"])
-            r.append(norm(post_counters(lm.decode(o2["topv"], o2["topc"], o2["blank"]), rt.lib)[0]))
-        texts[name] = {"greedy": g, "rubi": r}
+            r.append(rubi_of(o))
+            # the mitigation (report only): a line whose reading holds a full-size カ or ケ before a counter is
+            # read again with the full head and no skipping (vocr_extra.ungated), as today reads it
+            if (two or gate) and REREAD_RE.search(o["text"]):
+                n_re += 1
+                rr.append(rubi_of(rt.run_topk(row["img"], 8, ungated=True)))
+            else:
+                rr.append(r[-1])
+        texts[name] = {"greedy": g, "rubi": r, "rubi_reread": rr, "reread_lines": n_re}
     ref = parse_arm(a.ref)[0]
     chars = sum(len(row["ref"]) for row in rows)
     for name in texts:
-        rep = {}
-        for d in ("greedy", "rubi"):
+        rep = {"reread_lines": texts[name]["reread_lines"]}
+        for d in ("greedy", "rubi", "rubi_reread"):
             e0 = [lev(p, row["ref"]) for p, row in zip(texts[ref][d], rows)]
             e1 = [lev(p, row["ref"]) for p, row in zip(texts[name][d], rows)]
             rep[d] = {"cer_ref_pct": round(100 * sum(e0) / chars, 4), "cer_pct": round(100 * sum(e1) / chars, 4),
@@ -623,9 +640,67 @@ def cmd_counter(a):
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n")
 
 
+def cmd_decide(a):
+    """The protocol's rule ("development" "rule"): per arm (a) not resolved worse, (b) non-inferior by 0.05 points,
+    (c) rare-character recall, each for every decode against every reference, and (d) the estimated saving >= 3% of
+    the nominal box (the smaller of the measured and projected safe-basis savings); the candidates (2L+gate when
+    head-gate adopted the tier's gate, else 2L) and the selection (r48 before r96, then the lower est. ms per
+    nominal box at 333 MHz, safe basis, ties K = 1,500)."""
+    dev = json.loads(Path(a.dev).read_text())
+    tim = json.loads(Path(a.timing).read_text())
+    gate_adopted = {t: v == "adopted" for t, v in (x.split("=") for x in a.gate_verdict)}
+    out = {"kind": "head2level-decision", "protocol_sha256": dev["protocol_sha256"], "gate_verdict": gate_adopted,
+           "tiers": {}}
+    for t, tier in dev["tiers"].items():
+        rows = {}
+        for arm, info in tier["arms"].items():
+            if arm in ("today", "gate"):
+                continue
+            tm = tim["tiers"].get(t, {}).get("arms", {}).get(arm.replace("_Kalt_", f"_K{info['K']}_"))
+            checks, fails = {}, []
+            for ref, cm in info["vs"].items():
+                for d in DECODES:
+                    if d not in cm:
+                        fails.append(f"{ref}/{d}: not scored")
+                        continue
+                    r = cm[d]["rule"]
+                    checks[f"{ref}/{d}"] = r
+                    for k, ok in r.items():
+                        if not ok:
+                            fails.append(f"{ref}/{d}: {k}")
+            if arm.startswith("2Lg") and "gate" not in info["vs"]:
+                fails.append("gate reference missing")
+            d_ok = bool(tm and tm["d_saving_at_least_3pct"])
+            if not d_ok:
+                fails.append("d_saving_at_least_3pct")
+            a_ok = all(r["a_not_resolved_worse"] for r in checks.values())
+            verdict = "adoptable" if not fails else "rejected" if not a_ok else "not adopted"
+            ms = (tm or {}).get("measured", {}).get("nopld", {}).get("ms_per_frame")
+            rows[arm] = {"verdict": verdict, "fails": fails, "K": info["K"], "rare_variant": info["rare_variant"],
+                         "two_level_and_gate": arm.startswith("2Lg"), "ms_per_frame_nopld": ms,
+                         "nominal_box_ms_nopld": round(240 * ms + 100, 1) if ms is not None else None,
+                         "saved_pct_nominal_box_safe_min": (tm or {}).get("saved_pct_nominal_box_safe_min")}
+        cands = [arm for arm, r in rows.items() if r["two_level_and_gate"] == gate_adopted.get(t, False)]
+        ok = [arm for arm in cands if rows[arm]["verdict"] == "adoptable"]
+        key = lambda arm: (rows[arm]["rare_variant"] != "r48", rows[arm]["nominal_box_ms_nopld"],  # noqa: E731
+                           rows[arm]["K"] != 1500)
+        sel = min(ok, key=key) if ok else None
+        out["tiers"][t] = {"arms": rows, "candidates": cands, "adoptable": ok, "selected": sel,
+                           "adopted": sel is not None}
+        print(f"{t}: candidates {cands}; adoptable {ok}; selected {sel}", flush=True)
+        for arm, r in rows.items():
+            print(f"   {arm}: {r['verdict']} {r['fails'][:4]}", flush=True)
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("decide")
+    p.add_argument("--dev", required=True)
+    p.add_argument("--timing", required=True)
+    p.add_argument("--gate-verdict", nargs="+", required=True, help="TIER=adopted|... (head-gate's dev verdict)")
+    p.add_argument("--out", required=True)
     p = sub.add_parser("counter")
     p.add_argument("--synth", required=True)
     p.add_argument("--ref", required=True)
@@ -645,7 +720,7 @@ def main():
     p.add_argument("--timing", default="")
     p.add_argument("--out", required=True)
     a = ap.parse_args()
-    {"lines": cmd_lines, "read": cmd_read, "score": cmd_score, "counter": cmd_counter}[a.cmd](a)
+    {"lines": cmd_lines, "read": cmd_read, "score": cmd_score, "counter": cmd_counter, "decide": cmd_decide}[a.cmd](a)
 
 
 if __name__ == "__main__":

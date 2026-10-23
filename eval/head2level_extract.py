@@ -89,7 +89,8 @@ def _work(job):
     rt = W["rt"]
     if img.shape[0] < 2 or img.shape[1] < 2:
         return i, None
-    text, lg, x = rt.run(img, logits=True, head_in=True)
+    text, lg = rt.run(img, logits=True, head_in=True)
+    x = rt.last_head_in
     am = lg.argmax(1)
     assert np.array_equal(am, rt.last_best), "argmax differs from vocr_run's"
     b0 = lg[:, 0].astype(np.float32)
@@ -128,7 +129,8 @@ def cmd_train(a):
 
 def _work_x(job):
     i, img = job
-    _, x = W["rt"].run(img, head_in=True)
+    W["rt"].run(img, head_in=True)
+    x = W["rt"].last_head_in
     return i, x.astype(np.float32)
 
 

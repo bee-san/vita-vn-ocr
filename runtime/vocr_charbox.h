@@ -61,7 +61,7 @@ typedef struct {               /* a model's calibration (eval/charboxes_cal.json
 
 typedef struct {               /* one greedy character of a line */
     uint16_t cls;              /* its class (vocr_class_text) */
-    uint16_t f0, f1;           /* the frames of its run */
+    uint16_t f0, f1;           /* the frames of its run (frames above 65535 do not fit: vocr_run gives at most 129) */
     uint16_t group;            /* VOCR_CHARBOX_G_* */
     int32_t c, x0, x1, i0, i1; /* crop px x VOCR_CHARBOX_Q along the reading direction */
 } vocr_charbox;
@@ -90,7 +90,7 @@ int vocr_charbox_find(const vocr_model *m, const uint16_t *cls, unsigned cls_str
 
 /* Another text's characters placed on a line's characters: dst[j] gets the index of the src character it is
  * aligned to, or -1 (an inserted character, which has no box of its own). src and dst are code points, n and m
- * of them (at most 65535 each). Equal characters align; at a difference the shortest skip of at most
+ * of them (at most 32767 each: the map is int16). Equal characters align; at a difference the shortest skip of at most
  * VOCR_CHARBOX_SYNC characters on either side after which two characters agree (or a text ends) is taken,
  * substitutions first, else the two characters are taken as a substitution (eval/charbox.py align_map).
  * Returns 0, or VOCR_E_ARG. */

@@ -349,6 +349,22 @@
     "runtime/vocr_charbox.h": "5f1ec601242dd57756368c7b8c04871da8ea0914ecc3debcf3f4661a2f6690fb",
     "eval/charbox_synth.py": "bff997cac8d09d00d146df8899c8a85c8ce8d879d425ac80c9b5f3b753b1c571"
    }
+  },
+  {
+   "n": 3,
+   "utc": "2026-10-23T08:57:10Z",
+   "what": "runtime/vocr_charbox.h: comments only (vocr_charbox_align's limit is 32767 characters a text, as its int16 map requires; f0/f1 hold at most 65535 frames)",
+   "why": "the independent audit's nits N1 and N2: the header said 65535 for align and nothing about the frame limit; no code, scored record or parity changes",
+   "code_sha256": {
+    "eval/charbox.py": "f05fc14a5ef56fe2ce2930162c37faab2f74d0f75b60f1b2f9d55cf2bed58d98",
+    "eval/charbox_sets.py": "539491e3fd9ef0ecf528ea63779b628f28c285d3527e85f22aec77f95462ef95",
+    "eval/charbox_eval.py": "a406a2697e0ca97da8207958043a88b4998a3d0c61d9d7594d3c3dd547009fca",
+    "eval/charbox_hand.py": "223ea1b83e42f3940613f2c35f2380374b6943d5db42c419f5f75fd569c4fe1d",
+    "eval/charboxes_cal.json": "b050283ae7b75df41e98a4760d189d48b4d9b462973d324b8ef2d87042d1de10",
+    "runtime/vocr_charbox.c": "0e338f516a59529507ce9451198b692acd26a26267105e9efba2d58a18750018",
+    "runtime/vocr_charbox.h": "da5209e372dbdf4efff3e5da3c05a424becbb860b23ebe64bab984af534ff5c9",
+    "eval/charbox_synth.py": "bff997cac8d09d00d146df8899c8a85c8ce8d879d425ac80c9b5f3b753b1c571"
+   }
   }
  ]
 }

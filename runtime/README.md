@@ -260,6 +260,10 @@ rc = vocr_charbox_find(&model, best, 1, ex.frames, img.width, img.height, VOCR_C
   `VOCR_CHARBOX_INK` moves each cut to the emptiest columns between two centres and shrinks each ink box to its
   cell's ink; `VOCR_CHARBOX_PITCH` (no gain measured) snaps a regular line to a grid; `VOCR_CHARBOX_RUN` centres
   on the whole run.
+- For a touch, hit-test the cells of a find **without** `VOCR_CHARBOX_INK` (the calibration only; no crop or
+  profile needed): inside 「……」 INK's cuts fall in the gaps between the dots, and its cells pick a wrong character
+  for 0.75% of taps against 0.14% (development, report only: `docs/char-boxes.md`, "Hit-test"). INK's centres and
+  ink boxes are for drawing on the glyph.
 - `vocr_charbox_align(src, n, dst, m, map)`: the characters of another text (the beam + LM text, the normalised
   text, a native hook's line) mapped onto a line's characters by their code points: `map[j]` is a character of
   `src` or -1 (an inserted character, with no box of its own). Bounded: at most `VOCR_CHARBOX_SYNC` (8) characters

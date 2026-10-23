@@ -28,8 +28,8 @@ gives every greedy character:
 - **centre**: the centre of the first frame of its run, 8 f0 + 4 resized px, plus the model's calibration, mapped to
   the crop and clipped to it;
 - **cell**: the line cut between neighbouring centres (midpoints); the first and last cells reach half a pitch (the
-  median spacing of the centres) beyond their centres. The cells tile the line: a cursor or a touch picks the cell
-  that holds the point;
+  median spacing of the centres) beyond their centres. The cells tile the line, so a point on the line picks one
+  character (which cells to hit-test a touch with: "Hit-test", below);
 - **ink box**: the cell, or with INK the columns of the cell that hold ink.
 
 Refinements (flags):
@@ -38,7 +38,11 @@ Refinements (flags):
   character and an offset for each of seven groups of characters that sit at one side of their cell or are narrow
   (`close` 、。」』）…, `open` 「『（…, `dots` …‥・, `small` small kana, `long` ー―～, `mark` ！？♪…, `half`
   half-width), in resized px. They are medians of MeikiOCR's box centre minus the frame centre, on **training-side**
-  lines the model reads exactly as MeikiOCR does (`eval/charbox_eval.py calibrate`, `eval/charboxes_cal.json`);
+  lines the model reads exactly as MeikiOCR does (`eval/charbox_eval.py calibrate`, `eval/charboxes_cal.json`).
+  `mark` got **no** calibration: teacher_train's MeikiOCR characters write ASCII `!` `?` (and `~` `(` `)`) where
+  VOCR5 writes ！ ？ (～ （ ）), and the exact-read filter compares the raw strings, so every line holding one was left
+  out of the calibration and of train-check (286 / 289 / 305 of the 3,000 calibration lines for S / N / L for ！？
+  alone): `mark` has 0 training characters and offset 0 for every model (found by the independent audit, F2);
 - **INK**: the cuts between characters move to the emptiest run of columns between their centres (an ink-column
   gap; the ink profile is each crop column's vertical gradient energy, Σ |g(y + 1) − g(y)|, which needs no polarity),
   each ink box shrinks to its cell's columns above a quarter of the line's peak, and the centre moves to the middle
@@ -51,10 +55,18 @@ strip's left), so the same positions along the strip are positions down the colu
 
 ### What was decided before this protocol, and on what
 
-All on **training-side** data only: teacher_train's crops with MeikiOCR's character boxes, lines VOCR5 reads exactly
-as MeikiOCR, no dev_sample, test or CLANNAD VN. An exploration on other training lines (issue #114) chose the arms;
-the calibration (`calibrate`, the first 3,000 lines of a seeded order) and then `train-check` (the next 1,500 lines,
-`eval/charboxes_protocol.json` "method_of_record") measured them. Centre inside MeikiOCR's box:
+The evidence of record is on **training-side** data only: teacher_train's crops with MeikiOCR's character boxes,
+lines VOCR5 reads exactly as MeikiOCR, with no line of a dev_sample or test VN (`excluded_vns()`; CLANNAD and its
+family are test-reserved) and no screenshot shared with a development unit. An informal exploration before it
+(scripts outside the repo; issue #114's first numbers) chose the arms. **It sampled teacher_train without the
+reservation filter**: 45 of its 7,261 lines were on 8 test-reserved VNs, the exposure `docs/reservations.md` lists
+for teacher_train (v1267 12 lines, Little Busters! 9, Kanon 8, v11706 5, CLANNAD Side Stories 5, AIR 3, CLANNAD 2,
+Tomoyo After 1; v1267 and v11706 share a release with psp-test games), and VOCR5-N read 37 of them as MeikiOCR did, so
+they entered its statistics. None is a vita-test or psp-test screenshot. The calibration (`calibrate`, the first
+3,000 lines of a seeded order) and then `train-check` (the next 1,500 lines, `eval/charboxes_protocol.json`
+"method_of_record") exclude them, and give the same choice (cal + INK 99.3-99.5%; cal or INK alone at most 99.2%;
+PITCH adds nothing). Explorations from now on sample `pools/teacher_train_train.npz` or apply `excluded_vns()` (found by the
+independent audit, F1). Centre inside MeikiOCR's box (lines with ！？～（） left out, as above):
 
 | arm | VOCR5-S Vita / PSP | VOCR5-N Vita / PSP | VOCR5-L Vita / PSP | N: 、。」 etc. (close) | N: cell IoU |
 |---|---:|---:|---:|---:|---:|
@@ -87,11 +99,22 @@ frame: the ink box plus the console pad across the line and half a line height a
 vertical recognizer. A reference character's box is the MeikiOCR character it is aligned to (Levenshtein on
 `metrics.norm` of each character) when the two are equal, on a line MeikiOCR reads within 20% CER of the reference
 (60% for a column: MeikiOCR's vertical recognizer reads PSP and scaled PC columns poorly, #99). Horizontal dialogue:
-97-99% of the reference characters get a box.
+97-99% of the reference characters get a box. The column threshold was raised from 20% to 60% after MeikiOCR had
+read the development columns and before any score; the stored `meiki_dev.jsonl` keeps `ref_boxes` made at 20% for
+296 vertical rows, which nothing reads (the scorer makes the boxes again from MeikiOCR's characters).
 
 **Hand-checked set.** 96 dialogue lines (48 Vita native, 48 PSP native, seed 20261023; `eval/charbox_hand.py`) with
 MeikiOCR's boxes drawn on contact sheets, checked by eye (Claude, reviewer_kind assistant) before any score: every
-box of all 96 lines sits on its glyph. Its score is reported as the subset whose every box was checked.
+box of all 96 lines sits on its glyph. Its score is reported as the subset whose every box was checked. Seven of
+the 96 are the same line twice (next paragraph): 89 distinct lines.
+
+**Overlap between the sources** (found by the independent audit, F4). textspot-dev and devnative take lines from the
+same 82 screenshots: 169 lines (127 of them dialogue) are in both with the same frame, scale and box, and the
+counts below count them twice. VOCR5-N dialogue characters on fixed lines: Vita 2,612 (1,733-1,771 distinct,
+depending on which copy is kept), PSP 5,175 (4,302-4,355), Adrenaline 4,284 (4,065-4,073). Deduplicated, every bar
+rate moves by at most 0.24 points: fixed 99.0 / 99.3 / 99.4%, finder 99.0 / 97.95-98.0 / 99.2% (PSP's VN interval
+95.9-99.2%), all at least 97.0%. On the spotters' lines the two copies of a shared line compete for one detection,
+so one of them is always recorded as missed (112 and 125 copies for textspot and textspot3).
 
 **Synthetic exact boxes** (helper overlay-boxes-synth): the synth4 renderer's development split (held-out text and
 scenes) at Vita, PSP and psp2x (Adrenaline), each glyph's exact ink box and advance cell through every geometric step
@@ -119,7 +142,11 @@ read:
 - **cursor-hit**: the estimated centre lies inside the reference box along the reading direction, and across it
   within the reference line's ink box plus the pad. The rate is over aligned pairs (the read's character may be a
   misreading: its position is what is scored); `hit_all` also counts reference characters the read has no character
-  for (a missed line, a deleted character) as misses.
+  for (a missed line, a deleted character) as misses. As scored, a line that a finder or a spotter does not return is
+  recorded apart (tier `-`) and the reported `hit_all` leaves it out: it counts the deleted characters of the lines
+  returned (found by the independent audit, F3; the missed lines are given with the results).
+- The metric measures where the highlight goes (the character's centre). Whether a point on the glyph falls in that
+  character's **cell**, a touch's hit-test, was **not** part of the protocol ("Hit-test", below, report only).
 - **IoU** along the reading direction of the estimated cell and of the ink box with the reference box (and 2-D on
   the synthetic set).
 - Per platform (Vita native, PSP native, Adrenaline 2x; PC scaled as a column), class (dialogue, name, choice, UI),
@@ -142,7 +169,7 @@ development results are committed.
 
 ## Results (development; measured)
 
-Scored 2026-10-23 06:49-06:52Z at the protocol's tag, `eval/charbox_eval.py score` and `report --boot`
+Scored 2026-10-23 06:48:20-06:50:31Z at the protocol's tag, `eval/charbox_eval.py score` and `report --boot`
 (`eval/charboxes_dev_20261023.json`: every table below, counts and rates only). Host, the C runtime in W8I.
 
 **The bar is met.** VOCR5-N, cal + INK, horizontal dialogue, cursor-hit with VN-cluster 95% intervals:
@@ -154,8 +181,10 @@ Scored 2026-10-23 06:49-06:52Z at the protocol's tag, `eval/charbox_eval.py scor
 | characters (pairs), VNs | 2,612 / 2,556, 10 | 5,175 / 4,808, 30 | 4,284 / 4,185, 29 | 946 / 891, 33 |
 
 Every one of the six cells is at least 97.0% (the smallest, PSP finder lines, 98.2%). Vita native rests on 10 VNs
-(its interval is the widest). `hit_all`, which also counts a reference character the read has no character for
-(a missed line, a deleted character) as a miss: fixed 98.9 / 99.0 / 99.1%, finder 98.1 / 97.5 / 97.8%.
+(its interval is the widest). `hit_all` (a reference character the read has no character for, within the lines a
+source returns, counts as a miss): fixed 98.9 / 99.0 / 99.1%, finder 98.1 / 97.5 / 97.8%. The finder returns no line
+for 35 / 349 / 52 reference characters (PC 14; fixed lines miss none); with those counted as misses too, the finder's
+`hit_all` is 96.8 / 91.0 / 96.6% (PC 92.1%).
 
 Every model and line source (cal + INK; Vita / PSP / Adrenaline / PC):
 
@@ -167,8 +196,9 @@ Every model and line source (cal + INK; Vita / PSP / Adrenaline / PC):
 | textspot3 (`ts3`) | 98.6 / 99.0 / 99.5 / 98.0% | 98.9 / 99.2 / 99.3 / 98.0% | 99.2 / 99.0 / 99.5 / 98.2% |
 
 The spotters' lines cover textspot-dev's frames only (1,134-1,345 Vita and PSP characters, 394-406 Adrenaline);
-textspot misses more lines than textspot3 (its `hit_all` on PSP 82.4% against 97.9%), which the position does not
-see: a line that is found is placed as well as a fixed one.
+within the lines they return, textspot's reads lack more reference characters than textspot3's (`hit_all` on PSP
+82.4% against 97.9%), which the position does not see: a line that is found is placed as well as a fixed one. Their
+whole-line misses are not comparable as recorded (the shared lines, above).
 
 What each refinement buys (VOCR5-N, fixed lines; finder lines alike):
 
@@ -186,7 +216,10 @@ nothing, as on the training lines: the frame quantisation it would average out i
 **Where the misses are** (VOCR5-N, cal + INK, fixed lines, Vita / PSP / Adrenaline): kana and kanji (group `other`)
 99.6 / 99.95 / 100%, small kana 100%; `close` (、。」』）…) 96.1 / 94.6 / 94.3%; `mark` (！？…) 76.5 / 89.4 / 96.7%
 (34, 104 and 90 characters); `dots` 94.2 / 97.8 / 96.2%. The narrow punctuation at one side of its cell is what is
-left; a word lookup starts on kana or kanji.
+left; a word lookup starts on kana or kanji. Part of the `mark` misses is its missing calibration: with ！？ compared
+as full-width on the training side, the offsets would be S +34, N −42, L +1 (the other groups move by at most 8), and
+VOCR5-N's deduplicated development `mark` 85.0 / 93.3 / 100% instead of 75.0 / 89.9 / 96.3% (20, 89 and 82
+characters; the independent audit's what-if, report only; adopting it would be a registered amendment).
 
 **Hand-checked subset** (the 96 lines whose every MeikiOCR box was checked by eye), VOCR5-N, cal + INK: fixed
 98.8% (97.5-99.8) Vita, 99.2% (98.3-99.9) PSP; finder 98.9% (97.9-99.8), 98.7% (97.4-99.6) (721 / 663 and
@@ -200,10 +233,27 @@ the manga cohort (Vita views, 1,188 characters of one book: no interval), 98.5% 
 (95.5-98.6) on scaled PC pages; the column finder's columns 97.6%, 98.9% (97.1-100), 95.7% (91.7-97.9). Raw frame
 centres: 90.0, 83.5, 83.9%: VOCR5-V fires about 0.8 frames late, which its calibration removes.
 
-**Box IoU** along the line against MeikiOCR's boxes (VOCR5-N, cal + INK): cells 0.74-0.76 (raw cells 0.78-0.80),
-ink boxes 0.70-0.74. INK moves the cuts into the gaps between glyphs, where MeikiOCR's boxes of kana and kanji often
-reach; the centres move onto the glyphs. The synthetic set's exact boxes measure the ink boxes without MeikiOCR's
-convention (next section).
+**Box IoU** along the line against MeikiOCR's boxes (VOCR5-N, cal + INK): cells 0.74-0.76 on fixed Vita, PSP and
+Adrenaline lines, 0.73-0.76 over every line source and PC (raw cells 0.76-0.80); ink boxes 0.70-0.74 (PC 0.69-0.70).
+INK moves the cuts into the gaps between glyphs, where MeikiOCR's boxes of kana and kanji often reach; the centres
+move onto the glyphs. The synthetic set's exact boxes measure the ink boxes without MeikiOCR's convention (next
+section).
+
+**Hit-test** (report only; not part of the protocol; the independent audit's measurement, F5). A tap at the middle of
+MeikiOCR's box of a character, VOCR5-N, fixed dialogue lines, deduplicated, 11,145 taps over Vita / PSP / Adrenaline
+/ PC; a tap succeeds when it falls in the cell of the character aligned to that reference character:
+
+| cells of | all taps | ellipses (……) | kana and kanji | wrong cell or none |
+|---|---:|---:|---:|---:|
+| raw frame centres | 99.58-99.88% | | | |
+| cal | 99.58-99.89% | 96.8-100% | 100% | 16 (0.14%): 15 line-end punctuation past the last cell |
+| cal + INK | 98.84-99.47% | 83.6-91.0% | 99.73-100% | 84 (0.75%): 23 the other … of a ……, the same 15, 46 another character |
+
+INK cuts at the emptiest columns between two centres; inside a …… those are the gaps between its own dots, so a
+cell can hold half the glyph (`dn:v16770_154901_1`: MeikiOCR's box of the first … 401-425, its cal + INK cell
+403.5-412.5, its cal cell 401.5-424.6). Of the 46 cal + INK taps that pick another character, 34 pick a kana or
+kanji, and 19 are taps on a kana or kanji (0.21% of 9,116); with cal's cells, none. So the record arm places the
+centres best, and a find without INK (cal's cells) hit-tests best ("What Rubi needs").
 
 ## Synthetic exact boxes (report only; measured)
 
@@ -255,7 +305,9 @@ development (2,498 of vita-test's 2,564 reference characters get one, 2,262 of p
 | psp-test (14 VNs) | 99.5% (99.0-99.9), 2,135 | 98.5% (97.0-99.5), 2,042 |
 
 Names: 100% / 96.6% (vita-test fixed / finder), 98.4% / 91.3% (psp-test). The protected sets agree with
-development; nothing was chosen on them.
+development; nothing was chosen on them. The JSON's `protocol_pins` are the tag's; the code that ran had amendment 1's
+pins (`eval/charbox.py` `f05fc14a…`, `eval/charbox_eval.py` `9e013d43…`; `"amendments": 1`), which changed no scored
+record.
 
 ## The C module
 
@@ -266,16 +318,21 @@ px; `vocr_charbox_align()` maps another text's characters (the beam + LM text, t
 onto them. It is a new file: `vocr.c` and every other runtime file are unchanged, so a caller that does not call it
 gets exactly what it got before. No allocation, bounded by `VOCR_CHARBOX_MAX` (256) characters a line, integer
 arithmetic; 3,186 B of Thumb-2 at `-Os` (5,032 B at `-O2`); est. 1.6 ms per 900 × 36 line with INK at 333 MHz
-(instruction count under qemu-arm, one instruction a cycle; recognizing such a line takes roughly 0.3-0.5 s).
+(instruction count under qemu-arm, one instruction a cycle; `vita/a9_cycles.py`'s Cortex-A9 model, which prices
+`vocr.c`, was not run on it; recognizing such a line takes roughly 0.3-0.5 s).
 Parity with the twin: random lines and text pairs on gcc and clang (ASan + UBSan), real development lines of every
 model, and Cortex-A9 builds under qemu-arm, every number equal.
 
 ## What Rubi needs
 
-- In the game worker, per recognized line: `vocr_extra.best` (or the top-K it already keeps for the beam + LM),
-  the crop's profile (4 B a column) and the model's calibration (16 B, `eval/charboxes_cal.json`), then
-  `vocr_charbox_find()`; the boxes plus the line's crop rectangle give screen boxes. A frame shown at 2x (a PSP game
-  in Adrenaline) is just another crop size: the boxes are in the frame's pixels.
+- In the game worker, per recognized line: `vocr_extra.best` (or the top-K it already keeps for the beam + LM) and
+  the model's calibration (18 B, `eval/charboxes_cal.json`), then `vocr_charbox_find()`; the boxes plus the line's
+  crop rectangle give screen boxes. A frame shown at 2x (a PSP game in Adrenaline) is just another crop size: the
+  boxes are in the frame's pixels.
+- Which boxes for what: a touch's hit-test and a highlight that spans a word take the **cells of a find without
+  INK** (cal only: 0.14% of taps pick a wrong cell or none, against 0.75% with INK's cells; "Hit-test" above), which
+  needs no crop and costs about 10-27 K instructions a line. INK's centres and ink boxes (with the crop's profile,
+  4 B a column, about 0.5 M instructions a line) are the record arm's, for marking the glyph itself.
 - The beam + LM text (Rubi's default) and the normalised text: `vocr_charbox_align()` from the greedy characters;
   an inserted character takes its neighbours' cells. A native hook's line: the same alignment against the OCR'd
   characters of the job, when OCR ran.
@@ -286,8 +343,14 @@ model, and Cortex-A9 builds under qemu-arm, every number equal.
 
 - The reference is MeikiOCR's character boxes: checked by eye on 96 lines, not on all; its boxes of narrow
   punctuation are tight while its kana and kanji boxes reach into the gaps, which is why the cells' IoU is a
-  moderate 0.74-0.76 and the record arm's misses are punctuation.
+  moderate 0.73-0.76 and the record arm's misses are punctuation.
 - Vita native development data is 10 VNs; the protected check (16 VNs) agrees.
+- The `mark` group (！？♪…) has no calibration (the method, above): its centres are the frame centres plus the model's shift,
+  and it is the worst group on development (VOCR5-N 76.5 / 89.4 / 96.7%).
+- INK's cells hit-test worse than cal's (the Hit-test table): inside a …… a cell can hold one dot.
+- Adrenaline 2x is modelled as an `INTER_LINEAR` 2x copy of the PSP frame only; Adrenaline can also show the PSP
+  picture nearest-neighbour (`docs/finder-tighten.md`), which these sets do not hold (the synthetic psp2x set does:
+  it renders bilinear, nearest and 1.995x upscales).
 - Vertical columns are calibrated on 619 characters of 173 training columns (no group offsets); MeikiOCR's vertical
   recognizer misreads many columns, so the vertical reference covers 27-81% of the characters (scaled PC pages the least).
 - Host measurements only; nothing of it has run on a console. The time is an estimate.

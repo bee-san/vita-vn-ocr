@@ -92,15 +92,36 @@ def cmd_write(args):
     print(f"-> {PROTOCOL}")
 
 
+def pins(doc):
+    """The code pins in force: the protocol's, as the last amendment that re-pinned them left them."""
+    out = dict(doc["code_sha256"])
+    for a in doc.get("amendments", []):
+        out.update(a.get("code_sha256", {}))
+    return out
+
+
 def check():
-    """[(file, pinned, actual)] for every committed file whose sha256 differs from the protocol's pin."""
+    """[(file, pinned, actual)] for every committed file whose sha256 differs from the pins in force."""
     doc = json.loads(PROTOCOL.read_text(encoding="utf-8"))
     bad = []
-    for p, want in doc["code_sha256"].items():
+    for p, want in pins(doc).items():
         got = sha256(ROOT / p)
         if got != want:
             bad.append((p, want, got))
     return bad
+
+
+def cmd_amend(args):
+    """Append an amendment: what changed, why, and the current pins of the protocol's files plus any new file."""
+    import datetime
+    doc = json.loads(PROTOCOL.read_text(encoding="utf-8"))
+    files = list(dict.fromkeys(list(pins(doc)) + list(args.add or [])))
+    am = {"n": len(doc.get("amendments", [])) + 1,
+          "utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+          "what": args.what, "why": args.why, "code_sha256": {p: sha256(ROOT / p) for p in files}}
+    doc.setdefault("amendments", []).append(am)
+    PROTOCOL.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"amendment {am['n']} -> {PROTOCOL}")
 
 
 def main():
@@ -111,10 +132,16 @@ def main():
     a.add_argument("--meiki", required=True)
     a.add_argument("--hand", required=True)
     a.add_argument("--train-check", required=True)
+    a = sub.add_parser("amend")
+    a.add_argument("--what", required=True)
+    a.add_argument("--why", required=True)
+    a.add_argument("--add", nargs="*", help="files to pin from now on as well")
     sub.add_parser("check")
     args = ap.parse_args()
     if args.cmd == "write":
         cmd_write(args)
+    elif args.cmd == "amend":
+        cmd_amend(args)
     else:
         bad = check()
         for b in bad:

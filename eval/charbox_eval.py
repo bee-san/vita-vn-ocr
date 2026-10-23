@@ -510,6 +510,22 @@ def cmd_report(args):
                                                  "v" if r["vertical"] else "h"), boot=args.boot)
     doc = {"kind": "charboxes-report", "scores": str(args.scores), "tables": {"|".join(map(str, k)): v
                                                                              for k, v in tabs["by_part"].items()}}
+    if args.units:
+        # the record arm's dialogue characters by calibration group: where the misses are
+        units = {u["uid"]: u for u in CS.jsonl(args.units)}
+        grp = defaultdict(lambda: [0, 0])
+        for r in recs:
+            if r["arm"] != RECORD_ARM or r["cls"] != "dialogue" or r["vertical"]:
+                continue
+            text = units[r["uid"]]["text"]
+            for c in r["chars"]:
+                if c["est"] is None:
+                    continue
+                g = CB.GROUP_NAMES[CB.group(text[c["i"]])]
+                k = "|".join((r["lines"], r["tier"], r["part"], g))
+                grp[k][0] += c["hit"]
+                grp[k][1] += 1
+        doc["by_group"] = {k: {"hit": round(v[0] / max(1, v[1]), 4), "pairs": v[1]} for k, v in sorted(grp.items())}
     Path(args.out).write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     for k, v in sorted(tabs["by_part"].items(), key=str):
         if k[2] in (RECORD_ARM, "raw") and k[3] == "dialogue":
@@ -584,6 +600,7 @@ def main():
     a = sub.add_parser("report")
     a.add_argument("--scores", required=True)
     a.add_argument("--boot", action="store_true")
+    a.add_argument("--units", help="the units the scores read: adds the record arm's table by group")
     a.add_argument("--out", required=True)
     args = ap.parse_args()
     {"calibrate": cmd_calibrate, "train-check": cmd_train_check, "score": cmd_score,

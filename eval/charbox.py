@@ -102,6 +102,15 @@ def _div_round(a, b):
     return (a + b // 2) // b if a >= 0 else -((-a + b // 2) // b)
 
 
+def resized_width(w, h, height=32, max_width=1024, min_width=8):
+    """vocr_resized_width(): round(w * height / h), half to even, clamped to [min_width, max_width]."""
+    num = w * height
+    q = (2 * num + h) // (2 * h)
+    if (2 * num + h) % (2 * h) == 0 and q & 1:
+        q -= 1
+    return max(min_width, min(max_width, q))
+
+
 def ink_profile(grey):
     """Column ink of a line crop (uint8 H x W, grey as the recognizer reads it, either polarity): per column
     the sum over its rows of |g(y + 1, x) - g(y, x)|, the vertical gradient energy. int64 array of W."""
@@ -111,12 +120,12 @@ def ink_profile(grey):
     return np.abs(np.diff(g, axis=0)).sum(axis=0)
 
 
-def positions(best, w, h, nw, flags=0, profile=None, cal=None, groups=None, stride=STRIDE):
+def positions(best, w, h, nw, flags=0, profile=None, cal=None, groups=None, stride=STRIDE, cap=MAX_CHARS):
     """[{"cls", "f0", "f1", "c", "x0", "x1", "i0", "i1"}] for the greedy characters of one line crop of w x h
-    px read at resized width nw; c, x0, x1, i0, i1 in 1/16 crop px (divide by Q).
+    px read at resized width nw (the first `cap` of them); c, x0, x1, i0, i1 in 1/16 crop px (divide by Q).
     profile: ink_profile(crop), used with INK. cal: N_GROUPS + 1 ints, resized px x 16: [shift, offset of
     group 0, ..., group 7] (None: zeros). groups: class -> group (a sequence or dict), needed with cal."""
-    sp = spans(best)[:MAX_CHARS]
+    sp = spans(best)[:cap]
     n = len(sp)
     if not n or not w or not nw:
         return []
@@ -201,6 +210,57 @@ def class_groups(vocr):
     for k in range(1, vocr.n_classes):
         t = vocr.class_text(k)
         out[k] = group(t) if len(t) == 1 else G_OTHER
+    return out
+
+
+SYNC = 8                    # vocr_charbox.h VOCR_CHARBOX_SYNC
+
+
+def align_map(src, dst, sync=SYNC):
+    """dst[j] -> the index of the src character it is aligned to, or -1 (inserted): another text's characters
+    (the beam + LM text, the normalised text, a hook's text) placed on a line's greedy characters. src, dst:
+    sequences of code points (or one-character strings). Equal characters align; at a difference, the shortest
+    skip (di on src, dj on dst; di + dj = s for s = 1 .. 2 sync, each at most sync) after which two
+    characters agree (or a text ends right after the first) is taken, the most balanced first (|di - dj|,
+    then dj); its first min(di, dj) characters are substitutions, the rest of dst's insertions and the rest
+    of src's dropped. With no such skip the two characters are a substitution. runtime/vocr_charbox.c
+    vocr_charbox_align computes the same map."""
+    src = [ord(c) if isinstance(c, str) else int(c) for c in src]
+    dst = [ord(c) if isinstance(c, str) else int(c) for c in dst]
+    n, m = len(src), len(dst)
+    out = [-1] * m
+    i = j = 0
+    while i < n and j < m:
+        if src[i] == dst[j]:
+            out[j] = i
+            i += 1
+            j += 1
+            continue
+        found = None
+        for s in range(1, 2 * sync + 1):
+            best = None
+            for di in range(max(0, s - sync), min(s, sync) + 1):
+                dj = s - di
+                if i + di >= n or j + dj >= m or src[i + di] != dst[j + dj]:
+                    continue
+                if not (i + di + 1 >= n or j + dj + 1 >= m or src[i + di + 1] == dst[j + dj + 1]):
+                    continue
+                key = abs(di - dj) * 64 + dj
+                if best is None or key < best[0]:
+                    best = (key, di, dj)
+            if best is not None:
+                found = best[1:]
+                break
+        if found is None:
+            out[j] = i
+            i += 1
+            j += 1
+            continue
+        di, dj = found
+        for t in range(min(di, dj)):
+            out[j + t] = i + t
+        i += di
+        j += dj
     return out
 
 

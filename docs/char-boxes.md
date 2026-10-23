@@ -139,3 +139,68 @@ Everything else is reported, not gated: VOCR5-S/L, VOCR5-V on columns, the spott
 `hit_all`, IoU, the hand-checked subset and the synthetic set. Protected sets (vita-test and psp-test, fixed and
 finder lines, VOCR5-N, cal + INK, reference boxes made the same way) are read once at the end as a check, after the
 development results are committed.
+
+## Results (development; measured)
+
+Scored 2026-10-23 06:49-06:52Z at the protocol's tag, `eval/charbox_eval.py score` and `report --boot`
+(`eval/charboxes_dev_20261023.json`: every table below, counts and rates only). Host, the C runtime in W8I.
+
+**The bar is met.** VOCR5-N, cal + INK, horizontal dialogue, cursor-hit with VN-cluster 95% intervals:
+
+| lines | Vita native | PSP native | Adrenaline 2x | PC scaled (report) |
+|---|---:|---:|---:|---:|
+| fixed | **98.9%** (98.1-99.6) | **99.3%** (98.8-99.7) | **99.4%** (99.1-99.7) | 98.5% (97.6-99.4) |
+| finder (GRAD + refine) | **98.9%** (98.0-99.6) | **98.2%** (96.4-99.2) | **99.2%** (98.6-99.6) | 97.8% (96.8-98.7) |
+| characters (pairs), VNs | 2,612 / 2,556, 10 | 5,175 / 4,808, 30 | 4,284 / 4,185, 29 | 946 / 891, 33 |
+
+Every one of the six cells is at least 97.0% (the smallest, PSP finder lines, 98.2%). Vita native rests on 10 VNs
+(its interval is the widest). `hit_all`, which also counts a reference character the read has no character for
+(a missed line, a deleted character) as a miss: fixed 98.9 / 99.0 / 99.1%, finder 98.1 / 97.5 / 97.8%.
+
+Every model and line source (cal + INK; Vita / PSP / Adrenaline / PC):
+
+| lines | VOCR5-S | VOCR5-N | VOCR5-L |
+|---|---|---|---|
+| fixed | 98.9 / 99.3 / 99.4 / 98.8% | 98.9 / 99.3 / 99.4 / 98.5% | 99.1 / 99.3 / 99.5 / 98.4% |
+| finder | 98.9 / 98.3 / 99.0 / 98.5% | 98.9 / 98.2 / 99.2 / 97.8% | 99.2 / 98.6 / 99.1 / 98.3% |
+| textspot (`ts1`) | 98.6 / 98.3 / 99.0 / 97.9% | 98.8 / 98.0 / 99.0 / 98.3% | 98.9 / 98.0 / 99.0 / 98.0% |
+| textspot3 (`ts3`) | 98.6 / 99.0 / 99.5 / 98.0% | 98.9 / 99.2 / 99.3 / 98.0% | 99.2 / 99.0 / 99.5 / 98.2% |
+
+The spotters' lines cover textspot-dev's frames only (1,134-1,345 Vita and PSP characters, 394-406 Adrenaline);
+textspot misses more lines than textspot3 (its `hit_all` on PSP 82.4% against 97.9%), which the position does not
+see: a line that is found is placed as well as a fixed one.
+
+What each refinement buys (VOCR5-N, fixed lines; finder lines alike):
+
+| arm | Vita | PSP | Adrenaline | PC |
+|---|---:|---:|---:|---:|
+| raw frame centres | 95.6% | 96.2% | 96.8% | 94.3% |
+| cal | 98.3% | 98.7% | 98.9% | 96.8% |
+| INK | 97.5% | 98.6% | 98.7% | 97.5% |
+| **cal + INK** | **98.9%** | **99.3%** | **99.4%** | **98.5%** |
+| cal + PITCH + INK | 98.9% | 99.3% | 99.4% | 98.5% |
+
+VOCR5-S's raw centres are at 88.4-90.4% (it fires late); its calibration brings it to VOCR5-N's level. PITCH changes
+nothing, as on the training lines: the frame quantisation it would average out is already within a glyph.
+
+**Where the misses are** (VOCR5-N, cal + INK, fixed lines, Vita / PSP / Adrenaline): kana and kanji (group `other`)
+99.6 / 99.95 / 100%, small kana 100%; `close` (、。」』）…) 96.1 / 94.6 / 94.3%; `mark` (！？…) 76.5 / 89.4 / 96.7%
+(34, 104 and 90 characters); `dots` 94.2 / 97.8 / 96.2%. The narrow punctuation at one side of its cell is what is
+left; a word lookup starts on kana or kanji.
+
+**Hand-checked subset** (the 96 lines whose every MeikiOCR box was checked by eye), VOCR5-N, cal + INK: fixed
+98.8% (97.5-99.8) Vita, 99.2% (98.3-99.9) PSP; finder 98.9% (97.9-99.8), 98.7% (97.4-99.6) (721 / 663 and
+710 / 595 characters). The same as the whole set, within its intervals.
+
+**Other classes** (VOCR5-N, fixed, cal + INK): names 99.4-100% (797 characters), choices 98.7-100% (118), UI 95.6%
+(Vita), 94.7% (PSP), 98.2% (Adrenaline), 86.3% (PC: small labels scaled down).
+
+**Vertical text** (VOCR5-V, cal + INK, columns; development columns of the vertical study): fixed columns 97.6% on
+the manga cohort (Vita views, 1,188 characters of one book: no interval), 98.5% (96.3-99.6) on PSP VN columns, 97.1%
+(95.5-98.6) on scaled PC pages; the column finder's columns 97.6%, 98.9% (97.1-100), 95.7% (91.7-97.9). Raw frame
+centres: 90.0, 83.5, 83.9%: VOCR5-V fires about 0.8 frames late, which its calibration removes.
+
+**Box IoU** along the line against MeikiOCR's boxes (VOCR5-N, cal + INK): cells 0.74-0.76 (raw cells 0.78-0.80),
+ink boxes 0.70-0.74. INK moves the cuts into the gaps between glyphs, where MeikiOCR's boxes of kana and kanji often
+reach; the centres move onto the glyphs. The synthetic set's exact boxes measure the ink boxes without MeikiOCR's
+convention (below, when it is in).

@@ -1,0 +1,193 @@
+"""The two-level output head (runtime/vocr.c run_head2, its twin train/head2level.py; vita-vn-ocr #117 item 2) on
+generated data only: a random-init model with a 210-class vocab, its head permuted, random escapes (r96 and r48) in a
+VOC2 trailer. The C runtime must equal the exact twin bit for bit (escape scores, fired frames, argmax, top-K, the
+greedy text), the full logits and two_level = 0 must be today's head, and broken trailers must be refused. No
+development, test or private data is read here.
+"""
+import struct
+import sys
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+for p in (ROOT / "runtime", ROOT / "train", ROOT / "runtime" / "tests"):
+    if str(p) not in sys.path:
+        sys.path.insert(0, str(p))
+
+import head2level as H2  # noqa: E402
+
+F32 = np.float32
+VOCAB = [chr(0x4E00 + i) for i in range(205)] + list("「」…、。")   # 210 classes + the blank
+
+
+@pytest.fixture(scope="module")
+def base(tmp_path_factory):
+    import torch
+    from torch import nn
+
+    import export
+    from model import TinyVNOCR
+    torch.manual_seed(5)
+    m = TinyVNOCR(len(VOCAB) + 1, width=0.25).eval()
+    with torch.no_grad():
+        for mod in m.modules():
+            if isinstance(mod, nn.BatchNorm2d):
+                mod.running_var.uniform_(0.5, 2.0)
+                mod.running_mean.uniform_(-0.2, 0.2)
+                mod.weight.uniform_(0.5, 1.5)
+                mod.bias.uniform_(-0.5, 0.5)
+            if isinstance(mod, nn.Conv2d):
+                nn.init.normal_(mod.weight, 0, (2.0 / mod.weight[0].numel()) ** 0.5)
+        m.head.bias.normal_(0, 1.0)
+        m.head.bias[0] += 2.0                        # blank-heavy, like a trained head
+    blob, _ = export.build_blob(export.model_ops(m, 32), VOCAB, 32, True, 1024, b"")
+    rng = np.random.default_rng(1)
+    perm = np.concatenate([[0], 1 + rng.permutation(len(VOCAB))])
+    return blob, H2.permute_blob(blob, perm), perm
+
+
+def crops(n, seed=0):
+    rng = np.random.default_rng(seed)
+    out = []
+    for _ in range(n):
+        h, w = int(rng.integers(20, 40)), int(rng.integers(30, 400))
+        g = rng.integers(0, 255, size=(h, w)).astype(np.uint8)
+        g[:, : w // 3] //= 3
+        out.append(g)
+    return out
+
+
+def random_escape(rng, K, H=16, t=0.0):
+    w1 = rng.normal(0, 0.3, size=(H, K + 2))
+    q, scale = __import__("export").quantize_rows(w1[:, :K])
+    return dict(q=q, scale=scale.astype(F32), bias=rng.normal(0, 0.5, H).astype(F32),
+                wl1=rng.normal(0, 0.05, H).astype(F32), wb0=rng.normal(0, 0.05, H).astype(F32),
+                w2=rng.normal(0, 0.5, H).astype(F32), b2=F32(rng.normal(0, 0.5)), t=F32(t))
+
+
+def random_r48(rng, K, R, RK=16):
+    import export
+    pq, ps = export.quantize_rows(rng.normal(0, 0.3, size=(RK, K)))
+    rq, rs = export.quantize_rows(rng.normal(0, 0.3, size=(R, RK)))
+    return dict(p_q=pq, p_scale=ps.astype(F32), p_bias=rng.normal(0, 0.1, RK).astype(F32), r_q=rq,
+                r_scale=rs.astype(F32), r_bias=rng.normal(0, 0.5, R).astype(F32))
+
+
+def make(base_blob, l1_blocks, esc, rare=None):
+    return H2.attach(base_blob, H2.write_trailer(base_blob, l1_blocks, esc, rare))
+
+
+def test_permuted_blob_same_logits(base):
+    from pyvocr import Vocr
+    blob, pblob, perm = base
+    r0, r1 = Vocr(blob, mode="w8i"), Vocr(pblob, mode="w8i")
+    for g in crops(12, 3):
+        t0, l0 = r0.run(g, logits=True)
+        t1, l1 = r1.run(g, logits=True)
+        assert np.array_equal(l0[:, perm], l1)
+        assert r0.class_text(int(perm[5])) == r1.class_text(5)
+
+
+@pytest.mark.parametrize("l1_blocks,rk,t", [(3, 0, -1.0), (3, 0, 1e9), (10, 0, 0.5), (1, 0, -1e9), (5, 16, 0.0),
+                                            (2, 24, -0.5)])
+def test_c_equals_twin(base, l1_blocks, rk, t):
+    from pyvocr import Vocr
+    _, pblob, _ = base
+    rng = np.random.default_rng(l1_blocks * 7 + rk)
+    head = H2.head_arrays(pblob)
+    K = head["K"]
+    esc = random_escape(rng, K, t=t)
+    rare = random_r48(rng, K, head["P"] - 8 * l1_blocks, rk) if rk else None
+    blob = make(pblob, l1_blocks, esc, rare)
+    two = H2.read_trailer(blob)
+    assert two["l1_blocks"] == l1_blocks and two["rare_k"] == rk
+    full = Vocr(pblob, mode="w8i")
+    rt = Vocr(blob, mode="w8i", two_level=1)
+    import export
+    b = export.read_blob(blob)
+    assert rt.arena_bytes == export.plan_arena(b, 1024, 0, 0, 3, two_level=two)
+    fired = frames = 0
+    for g in crops(25, l1_blocks):
+        _, x = full.run(g, head_in=True)
+        tw = H2.twolevel_exact(x, head, two, topk=8)
+        out = rt.run_topk(g, 8, esc=True)
+        assert np.array_equal(out["esc"], tw["score"])
+        assert out["escaped"] == int(tw["fire"].sum())
+        assert np.array_equal(out["best"], tw["best"])
+        assert np.array_equal(out["topc"], tw["topc"]) and np.array_equal(out["topv"], tw["topv"])
+        assert np.array_equal(out["blank"], tw["blank"])
+        greedy = "".join(rt.class_text(int(c)) for i, c in enumerate(tw["best"])
+                         if c and (i == 0 or c != tw["best"][i - 1]))
+        assert out["text"] == greedy
+        assert rt.text(g) == greedy                  # the no-top-K path: the same argmax
+        fired += int(tw["fire"].sum())
+        frames += len(x)
+        if rk == 0:                                  # a fired frame's top-K is today's
+            o0 = full.run_topk(g, 8)
+            f = tw["fire"]
+            assert np.array_equal(o0["topc"][f], out["topc"][f]) and np.array_equal(o0["topv"][f], out["topv"][f])
+    if t <= -1e8:
+        assert fired == frames
+    if t >= 1e8:
+        assert fired == 0
+
+
+def test_all_fired_is_today(base):
+    """With every frame fired (t = -inf) the two-level head is the full head: same text, top-K, confidence."""
+    from pyvocr import Vocr
+    _, pblob, _ = base
+    rng = np.random.default_rng(9)
+    blob = make(pblob, 4, random_escape(rng, H2.head_arrays(pblob)["K"], t=-np.inf))
+    full, rt = Vocr(pblob, mode="w8i"), Vocr(blob, mode="w8i", two_level=1)
+    for g in crops(10, 11):
+        a, b = full.run_topk(g, 8), rt.run_topk(g, 8)
+        for k in ("text", "topv", "topc", "blank", "conf_min", "conf_mean"):
+            assert np.array_equal(a[k], b[k]), k
+
+
+def test_off_and_full_logits_are_today(base):
+    from pyvocr import Vocr
+    _, pblob, _ = base
+    rng = np.random.default_rng(4)
+    blob = make(pblob, 2, random_escape(rng, H2.head_arrays(pblob)["K"], t=1e9))
+    full, off, on = Vocr(pblob, mode="w8i"), Vocr(blob, mode="w8i"), Vocr(blob, mode="w8i", two_level=1)
+    assert off.arena_bytes == full.arena_bytes < on.arena_bytes
+    for g in crops(6, 2):
+        assert off.text(g) == full.text(g)
+        t0, l0 = full.run(g, logits=True)
+        t1, l1 = on.run(g, logits=True)              # logits asked for: every row of every frame
+        assert t0 == t1 and np.array_equal(l0, l1) and on.last_escaped == 0
+
+
+def test_mode_and_trailer_checks(base):
+    from pyvocr import Vocr, VocrError
+    _, pblob, _ = base
+    rng = np.random.default_rng(6)
+    esc = random_escape(rng, H2.head_arrays(pblob)["K"])
+    blob = make(pblob, 3, esc)
+    with pytest.raises((VocrError, ValueError)):     # vocr_arena_bytes() == 0: invalid options
+        Vocr(blob, mode="w8f", two_level=1)          # W8I only
+    with pytest.raises((VocrError, ValueError)):
+        Vocr(pblob, mode="w8i", two_level=1)         # no trailer
+    bad = bytearray(blob)
+    bad[-1] ^= 1                                     # trailer CRC
+    with pytest.raises(VocrError):
+        Vocr(bytes(bad), mode="w8i")
+    Vocr(bytes(bad), mode="w8i", check_crc=False)    # structure only: still loads
+    off = H2._al16(len(pblob))
+    for field, val in ((24, 0), (24, 200), (26, 12), (28, 4), (16, 7)):
+        bad = bytearray(blob)
+        struct.pack_into("<H" if field != 16 else "<I", bad, off + field, val)
+        struct.pack_into("<I", bad, off + 12, __import__("zlib").crc32(bytes(bad[off + 16:])) & 0xFFFFFFFF)
+        with pytest.raises(VocrError):
+            Vocr(bytes(bad), mode="w8i")
+
+
+def test_threshold_rule():
+    s = np.array([5, 1, 3, 2, 4, 9, 7, 6, 8, 0] * 100, F32)
+    t, m = H2.threshold_for(s, 0.999)
+    assert m == 1 and (s <= t).sum() <= 1 and t < 0 + 1e-6 and (s > t).sum() >= len(s) - 100
+    t, m = H2.threshold_for(np.arange(20000, dtype=F32), 0.999)
+    assert m == 20 and (np.arange(20000) <= t).sum() == 20

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The two-level head's protected sets, once, after every tier's development verdict is pushed
 (eval/head2level_protocol.json "protected"; docs/head2level.md). Report only: it decides and tunes nothing. A copy of
-eval/headgate_protected.py with the adopted two-level arm in place of the gated blob.
+eval/headgate_protected.py with the two-level arm in place of the gated blob.
 
   head2level_protected.py tests --data EVAL_DATA --release DIR --arm TIER=BLOB ... --lm LM --out DIR
       vita-test and psp-test fixed lines (eval's hand-checked lines, not uncertain, box + pad as eval/sets.py cuts
@@ -11,11 +11,11 @@ eval/headgate_protected.py with the adopted two-level arm in place of the gated 
       from its frame, a reference line a GRAD box of it, read as GRAD + refine inside that box (the refined lines
       from it, each with its dark flag, joined), as eval/textgate_protected.py does.
 
-Each tier with an adopted arm, today (the release blob) against it ("gated" below: its blob with two_level on, and
-head_gate on when it holds a gate), decodes greedy, rubi and rubi_cascade (eval/headgate_eval.py; the cascade reads the
-next tier's arm of the same kind, given by --arm too) and the re-read variants: head-gate's counter-context re-read
-and the two-level head's (a line whose reading holds a full-size カ or ケ before a counter character is read again with
-the full head; eval/head2level_dev.py REREAD_RE). Dialogue (no 'name' style / not a
+Each tier, today (the release blob) against its two-level arm ("gated" below: the --arm blob with two_level on, and
+head_gate on when it holds a gate; for a tier without an adopted arm, the arm its lower tier's cascade reads), decodes
+greedy, rubi and rubi_cascade (eval/headgate_eval.py) and the re-read variants: head-gate's counter-context re-read and
+the two-level head's (a line whose reading holds a full-size カ or ケ before a counter character is read again with the
+full head and no skipping; eval/head2level_dev.py REREAD_RE). Dialogue (no 'name' style / not a
 name reference) primary, names a column; CER with paired line and VN-cluster bootstraps (tests) or page bootstraps
 (CLANNAD, one title). Each command's attempt record (OUT/<cmd>.attempt.json) is created exclusively and refuses a
 second run. Public outputs hold counts, rates and hashes; per-line records go to OUT/private/.
@@ -58,7 +58,7 @@ def runtimes(a):
         ARM_BLOBS[t] = path
     for t in TIERS:
         if t not in ARM_BLOBS:
-            raise SystemExit(f"--arm {t}=BLOB is needed (an adopted tier's arm, or the next tier's for the cascade)")
+            raise SystemExit(f"--arm {t}=BLOB is needed for every tier")
         gate = HG.read_gate(Path(ARM_BLOBS[t]).read_bytes()) is not None
         out[t] = {"today": Vocr(rel / f"VOCR5_{t}_w8.vocr", mode="w8i", max_width=1024),
                   "gated": Vocr(ARM_BLOBS[t], mode="w8i", max_width=1024, two_level=1,
@@ -116,9 +116,7 @@ def decode_all(res, decoders):
 
 
 def cmd_tests(a):
-    import finder_tighten as FT
     import sets
-    import vocr3_report as V
 
     from common import line_polarity, to_gray
     out = Path(a.out)
@@ -131,6 +129,14 @@ def cmd_tests(a):
             g = np.ascontiguousarray(to_gray(ln.crop_rgb))
             rows.append({"set": name, "id": ln.id, "vn": ln.vn, "ref": norm(ln.text), "name": "name" in ln.styles})
             crops.append((g, bool(line_polarity(g))))
+    score_tests(a, rows, crops, out)
+
+
+def score_tests(a, rows, crops, out, sets_=("vita-test", "psp-test")):
+    """The fixed-line read and its scores (rows: set, id, vn, ref (normalised), name; crops: (grey, invert))."""
+    import finder_tighten as FT
+    import vocr3_report as V
+    out.mkdir(parents=True, exist_ok=True)
     rts = runtimes(a)
     res = read_all(rts, crops)
     decs = {t: {"today": E.Decoder(Path(a.release) / f"VOCR5_{t}_w8.vocr", a.lm),
@@ -151,7 +157,7 @@ def cmd_tests(a):
                                  "n": len(r["ref"])} for i, r in enumerate(rows)]
             ent = {}
             for scope in ("dialogue", "names"):
-                for part in ("vita-test", "psp-test", "pooled"):
+                for part in (*sets_, "pooled"):
                     idx = [i for i, r in enumerate(rows) if (r["name"] == (scope == "names"))
                            and (part == "pooled" or r["set"] == part)]
                     ga = {f"{rows[i]['set']}:{rows[i]['id']}": (e["gated"][i], len(rows[i]["ref"])) for i in idx}
@@ -177,6 +183,17 @@ def cmd_tests(a):
 
 
 def cmd_clannad(a):
+    out, work = Path(a.out), Path(a.work)
+    freeze = json.loads((work / "refs.freeze.json").read_text(encoding="utf-8"))
+    if E.sha256(work / "refs.jsonl") != freeze["refs_sha256"]:
+        raise SystemExit("refs.jsonl differs from its freeze record")
+    once(out / "clannad.attempt.json", {"started": E.utc_now(), "refs_sha256": freeze["refs_sha256"],
+                                        "protocol_sha256": E.sha256(ROOT / "eval" / "head2level_protocol.json")})
+    score_clannad(a, work, freeze, out)
+
+
+def score_clannad(a, work, freeze, out):
+    """The CLANNAD read and its scores from a clannad_refs work directory (lines, refs, the session's frames)."""
     import clannad_refs as C
     import finder_tighten as FT
     import vocr3_report as V
@@ -184,12 +201,7 @@ def cmd_clannad(a):
 
     import lines_refine as LR
     from common import to_gray
-    out, work = Path(a.out), Path(a.work)
-    freeze = json.loads((work / "refs.freeze.json").read_text(encoding="utf-8"))
-    if E.sha256(work / "refs.jsonl") != freeze["refs_sha256"]:
-        raise SystemExit("refs.jsonl differs from its freeze record")
-    once(out / "clannad.attempt.json", {"started": E.utc_now(), "refs_sha256": freeze["refs_sha256"],
-                                        "protocol_sha256": E.sha256(ROOT / "eval" / "head2level_protocol.json")})
+    out.mkdir(parents=True, exist_ok=True)
     rows, meta = C.load_lines(work)
     session = Path(meta["session"])
     refs = {x["id"]: x for x in C.read_jsonl(work / "refs.jsonl")}
@@ -277,7 +289,8 @@ def main():
     for name in ("tests", "clannad"):
         p = sub.add_parser(name)
         p.add_argument("--release", required=True)
-        p.add_argument("--arm", action="append", required=True, help="TIER=BLOB, every tier")
+        p.add_argument("--arm", action="append", required=True, help="TIER=BLOB, every tier of --tiers")
+        p.add_argument("--tiers", default="S,N,L", help="the tiers with an adopted arm (and their cascades' tiers)")
         p.add_argument("--lm", required=True)
         p.add_argument("--out", required=True)
         if name == "tests":
@@ -285,6 +298,11 @@ def main():
         else:
             p.add_argument("--work", required=True)
     a = ap.parse_args()
+    global TIERS
+    TIERS = tuple(t for t in a.tiers.split(",") if t)
+    for t in TIERS:
+        if E.CASCADE[t] is not None and E.CASCADE[t] not in TIERS:
+            raise SystemExit(f"{t}'s cascade reads {E.CASCADE[t]}: add it to --tiers")
     {"tests": cmd_tests, "clannad": cmd_clannad}[a.cmd](a)
 
 

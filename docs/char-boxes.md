@@ -204,3 +204,53 @@ centres: 90.0, 83.5, 83.9%: VOCR5-V fires about 0.8 frames late, which its calib
 ink boxes 0.70-0.74. INK moves the cuts into the gaps between glyphs, where MeikiOCR's boxes of kana and kanji often
 reach; the centres move onto the glyphs. The synthetic set's exact boxes measure the ink boxes without MeikiOCR's
 convention (below, when it is in).
+
+## Protected check (read once; measured)
+
+vita-test and psp-test, read once on 2026-10-23 07:07:24-07:07:54Z after the development results were committed
+(`eval/charbox_protected.py`, which refuses a second run; `eval/charboxes_protected_20261023.json`, counts and rates
+only). VOCR5-N, cal + INK, eval's hand-checked lines (eval's box and region), MeikiOCR's reference boxes made as on
+development (2,498 of vita-test's 2,564 reference characters get one, 2,262 of psp-test's 2,510):
+
+| set, dialogue | fixed lines | finder lines (GRAD + refine on eval's region) |
+|---|---:|---:|
+| vita-test (16 VNs) | 98.9% (98.2-99.4), 2,349 characters | 98.8% (98.1-99.4), 2,280 |
+| psp-test (14 VNs) | 99.5% (99.0-99.9), 2,135 | 98.5% (97.0-99.5), 2,042 |
+
+Names: 100% / 96.6% (vita-test fixed / finder), 98.4% / 91.3% (psp-test). The protected sets agree with
+development; nothing was chosen on them.
+
+## The C module
+
+`runtime/vocr_charbox.c` / `.h` (runtime/README.md "Per-character positions" has the API, sizes and checks):
+`vocr_charbox_find()` gives every greedy character its class, frames, group, centre, cell and ink box from
+`vocr_extra.best` (or the top-K's top-1) and the crop's column profile (`vocr_charbox_profile()`), in 1/16 crop
+px; `vocr_charbox_align()` maps another text's characters (the beam + LM text, the normalised text, a hook's line)
+onto them. It is a new file: `vocr.c` and every other runtime file are unchanged, so a caller that does not call it
+gets exactly what it got before. No allocation, bounded by `VOCR_CHARBOX_MAX` (256) characters a line, integer
+arithmetic; 3,186 B of Thumb-2 at `-Os` (5,032 B at `-O2`); est. 1.6 ms per 900 × 36 line with INK at 333 MHz
+(instruction count under qemu-arm, one instruction a cycle; recognizing such a line takes roughly 0.3-0.5 s).
+Parity with the twin: random lines and text pairs on gcc and clang (ASan + UBSan), real development lines of every
+model, and Cortex-A9 builds under qemu-arm, every number equal.
+
+## What Rubi needs
+
+- In the game worker, per recognized line: `vocr_extra.best` (or the top-K it already keeps for the beam + LM),
+  the crop's profile (4 B a column) and the model's calibration (16 B, `eval/charboxes_cal.json`), then
+  `vocr_charbox_find()`; the boxes plus the line's crop rectangle give screen boxes. A frame shown at 2x (a PSP game
+  in Adrenaline) is just another crop size: the boxes are in the frame's pixels.
+- The beam + LM text (Rubi's default) and the normalised text: `vocr_charbox_align()` from the greedy characters;
+  an inserted character takes its neighbours' cells. A native hook's line: the same alignment against the OCR'd
+  characters of the job, when OCR ran.
+- What the Shell needs per character is small: the line, and the cell's and the ink's start and end along it (the
+  line's rows are shared).
+
+## Limits
+
+- The reference is MeikiOCR's character boxes: checked by eye on 96 lines, not on all; its boxes of narrow
+  punctuation are tight while its kana and kanji boxes reach into the gaps, which is why the cells' IoU is a
+  moderate 0.74-0.76 and the record arm's misses are punctuation.
+- Vita native development data is 10 VNs; the protected check (16 VNs) agrees.
+- Vertical columns are calibrated on 619 characters of 173 training columns (no group offsets); MeikiOCR's vertical
+  recognizer misreads many columns, so the vertical reference covers 27-81% of the characters (scaled PC pages the least).
+- Host measurements only; nothing of it has run on a console. The time is an estimate.

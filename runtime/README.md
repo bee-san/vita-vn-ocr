@@ -231,6 +231,57 @@ Three optional steps for counter contexts and for lines a tight region cuts (iss
 
 Code (VitaSDK gcc 15.2, Thumb-2; -O2 as `vita/CMakeLists.txt` builds it / -Os with `-ffunction-sections -fdata-sections` as Rubi's runtime library builds it): `vocr_post.o` 3,964 / 2,598 B, with an 896 / 832 B stack frame for the re-decode; `vocr_lines_widen.o` 756 / 560 B. No arena, no weights. Twins: `eval/vocr_post.py` and `synth/lines_widen.py`, checked by `make check-post` and `check-widen`. CLI: `--post`, `--redecode TAU[,OPEN]`. Python: `pyvocr.post_counters(text)`, `Vocr.redecode(out, tau, open)`.
 
+### Per-character positions (`vocr_charbox.h`)
+
+Issue #114 ([docs/char-boxes.md](../docs/char-boxes.md)): a box on the line for every character `vocr_run()` emits,
+for an overlay drawn on the game's own text. It reads only what a run already returns (the per-frame classes) and,
+optionally, the crop; it changes nothing in `vocr.c`, so a caller that never calls it is bit for bit as before.
+
+```c
+#include "vocr_charbox.h"
+
+static const vocr_charbox_cal cal_n = {0, {0, -45, -32, 48, -23, -4, 0, -6}};   /* eval/charboxes_cal.json, N */
+uint16_t best[129];                          /* vocr_extra.best (or topk_class with stride vocr_extra.topk) */
+uint32_t prof[1024];                         /* the crop's column profile, w entries */
+vocr_charbox box[VOCR_CHARBOX_MAX];
+unsigned n;
+ex.best = best; ex.cap_frames = 129;
+rc = vocr_run(&ctx, &img, text, sizeof text, &ex);
+rc = vocr_charbox_profile(&img, prof);       /* once per line: sum over rows of |g(y + 1) - g(y)| */
+rc = vocr_charbox_find(&model, best, 1, ex.frames, img.width, img.height, VOCR_CHARBOX_INK, &cal_n,
+                       NULL, prof, box, VOCR_CHARBOX_MAX, &n);
+/* box[i].c, .x0/.x1 (cell), .i0/.i1 (ink): crop px x 16 along the line; screen x = crop x + v / 16.0,
+   y = the crop's rows. A column read turned 90 degrees anticlockwise: positions down the column. */
+```
+
+- A character's centre is its run's first frame, `8 f0 + 4` resized px, plus the model's calibration (a shift and
+  an offset per character group, `eval/charboxes_cal.json`), times `w / nw`. The cells tile the line (cut between
+  neighbouring centres; the ends half a pitch out), so a point on the line picks one character.
+  `VOCR_CHARBOX_INK` moves each cut to the emptiest columns between two centres and shrinks each ink box to its
+  cell's ink; `VOCR_CHARBOX_PITCH` (no gain measured) snaps a regular line to a grid; `VOCR_CHARBOX_RUN` centres
+  on the whole run.
+- `vocr_charbox_align(src, n, dst, m, map)`: the characters of another text (the beam + LM text, the normalised
+  text, a native hook's line) mapped onto a line's characters by their code points: `map[j]` is a character of
+  `src` or -1 (an inserted character, with no box of its own). Bounded: at most `VOCR_CHARBOX_SYNC` (8) characters
+  are skipped on either side to resynchronise.
+- C99, no allocation, no recursion, no global state, integer arithmetic (int64 where a product needs it). The only
+  memory is the caller's: the output (28 B a character) and, optionally, the profile (4 B a column;
+  without it the profile is recomputed column by column, about 3.4x the instructions). External symbols:
+  `vocr_class_text`, `vocr_resized_width`, `memset` and libgcc's `__aeabi_ldivmod` on ARM.
+- Code: `vocr_charbox.o` 5,032 B with VitaSDK gcc 15.2, Thumb-2, `-O2`, 3,186 B at `-Os`; psp-gcc 15.2
+  `-G0`: 8,038 / 5,722 B. Stack: at most 104 B a frame (`vocr_charbox_align`; `-O2`).
+- Cost, an **estimate**: qemu-arm instruction counts of the `-O2` Thumb-2 code for a 900 × 36 grey line: 0.52 M
+  instructions for the profile and INK (almost all of it the profile, about 16 a pixel), 10 K without INK; at one
+  instruction a cycle, 1.6 ms at 333 MHz, against roughly 0.3-0.5 s to recognize such a line. Nothing of it has run
+  on a console.
+- Checks: `make check-charbox` (in `make check`, so in `ci/runtime.sh gcc|clang` with ASan + UBSan): strict
+  compiles, the driver's self-test, then `tests/charbox_parity.py`: random lines (greedy runs with blanks and
+  repeats over `data/vocab.txt`, every flag, calibrations to the int16 extremes, caps, profiles with ties, zeros
+  and spikes, GREY8 and RGBA8 crops) and random text pairs against the twin `eval/charbox.py`, every number equal.
+  Also run: 4,000 + 4,000 cases on a gcc build and 1,500 + 1,500 on clang (sanitized), 400 real development lines per
+  model, each with four flag sets (VOCR5-S/N/L/V's own `best` arrays and crops, `--real-units`), and the Cortex-A9 NEON, scalar and Thumb-2 builds under qemu-arm
+  (Arm GNU 14.2, 4,500 + 3,000 cases): no difference.
+
 ## Modes and exactness
 
 | mode | weights | pointwise and head arithmetic |

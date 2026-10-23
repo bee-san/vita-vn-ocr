@@ -97,10 +97,13 @@ static uint32_t crc32_ieee(const unsigned char *p, size_t n)
     return ~c;
 }
 
+#define TWO_HEADER_BYTES 128u
+static uint32_t find_trailer(const unsigned char *b, size_t bytes, uint32_t total, const char *magic);
+
 int vocr_check_crc(const void *blob, size_t bytes)
 {
     const unsigned char *b = (const unsigned char *)blob;
-    uint32_t total;
+    uint32_t total, t2;
     size_t g_off;
     if (!b || bytes < HEADER_BYTES || !is_magic(b)) return VOCR_E_FORMAT;
     total = rd32(b + 8);
@@ -115,6 +118,93 @@ int vocr_check_crc(const void *blob, size_t bytes)
         if (n < GATE_HEADER_BYTES || n > bytes - g_off ||
             crc32_ieee(g + GATE_HEADER_BYTES, n - GATE_HEADER_BYTES) != rd32(g + 52))
             return VOCR_E_FORMAT;
+    }
+    t2 = find_trailer(b, bytes, total, "VOC2");
+    if (t2) {
+        const uint32_t n = rd32(b + t2 + 8);
+        if (n < TWO_HEADER_BYTES || n > bytes - t2 || crc32_ieee(b + t2 + 16, n - 16) != rd32(b + t2 + 12))
+            return VOCR_E_FORMAT;
+    }
+    return VOCR_OK;
+}
+
+/* Offset of the trailer with this 4-byte magic after the blob, or 0. Trailers sit one after another from
+ * al16(total), each starting with its magic and, at +8, its u32 size (a multiple of 16); a trailer of another
+ * kind is skipped by its size. */
+static uint32_t find_trailer(const unsigned char *b, size_t bytes, uint32_t total, const char *magic)
+{
+    size_t off = al16(total);
+    while (off + 16u <= bytes) {
+        const uint32_t n = rd32(b + off + 8);
+        if (!memcmp(b + off, magic, 4)) return (uint32_t)off;
+        if (n < 16u || (n & 15u) || n > bytes - off) break;
+        off += n;
+    }
+    return 0;
+}
+
+/* [off, off + n) inside a trailer of `size` bytes, off 16-byte aligned (and the pointer then too) */
+static int in_trailer(uint32_t size, uint32_t off, size_t n)
+{
+    return off >= TWO_HEADER_BYTES && !(off & 15u) && off <= size && n <= size - off;
+}
+
+/* The 'VOC2' trailer: the two-level head (vocr.h vocr_2level, train/head2level.py write_trailer).
+ *   0 "VOC2"  4 u16 version (1)  6 u16 header bytes (128)  8 u32 trailer bytes  12 u32 CRC-32 of [16, end)
+ *  16 u32 base blob bytes  20 u32 base blob CRC  24 u16 l1_blocks  26 u16 hidden  28 u16 rare_k  30 u16 0
+ *  32 f32 t  36 f32 e_b2  40.. u32 offsets from the trailer's start: e_q e_scale e_bias e_wl1 e_wb0 e_w2
+ *  (40-60), p_q p_scale p_bias r_q r_scale r_bias (64-84; 0 when rare_k == 0), zeros to 128. */
+static int parse_two(vocr_model *m, const unsigned char *b, size_t bytes, uint32_t total)
+{
+    vocr_2level *tw = &m->two;
+    const vocr_op *hd = &m->op[m->n_ops - 1];
+    const uint32_t t2 = find_trailer(b, bytes, total, "VOC2");
+    const unsigned char *p;
+    uint32_t size, o[12];
+    unsigned i, K = hd->k, NB = hd->cout_pad / 8u;
+    if (!t2) return VOCR_OK;
+    p = b + t2;
+    size = rd32(p + 8);
+    if (rd16(p + 4) != 1 || rd16(p + 6) != TWO_HEADER_BYTES || size < TWO_HEADER_BYTES || (size & 15u) ||
+        size > bytes - t2 || rd32(p + 16) != total || rd32(p + 20) != rd32(b + 40) || rd16(p + 30))
+        return VOCR_E_FORMAT;
+    for (i = 88; i < TWO_HEADER_BYTES; i++)
+        if (p[i]) return VOCR_E_FORMAT;
+    tw->l1_blocks = rd16(p + 24);
+    tw->hidden = rd16(p + 26);
+    tw->rare_k = rd16(p + 28);
+    memcpy(&tw->t, p + 32, 4);
+    memcpy(&tw->e_b2, p + 36, 4);
+    for (i = 0; i < 12; i++) o[i] = rd32(p + 40 + 4 * i);
+    if (!m->int8 || tw->l1_blocks < 1 || tw->l1_blocks >= NB || tw->hidden < 8 || tw->hidden > 64 ||
+        (tw->hidden & 7u) || (tw->rare_k & 7u) || tw->rare_k > K || !(tw->t == tw->t))
+        return VOCR_E_FORMAT;
+    tw->r_blocks = NB - tw->l1_blocks;
+    if (!in_trailer(size, o[0], (size_t)tw->hidden * K))
+        return VOCR_E_FORMAT;
+    for (i = 1; i < 6; i++)
+        if (!in_trailer(size, o[i], 4u * tw->hidden)) return VOCR_E_FORMAT;
+    tw->e_q = (const int8_t *)(const void *)(p + o[0]);
+    tw->e_scale = (const float *)(const void *)(p + o[1]);
+    tw->e_bias = (const float *)(const void *)(p + o[2]);
+    tw->e_wl1 = (const float *)(const void *)(p + o[3]);
+    tw->e_wb0 = (const float *)(const void *)(p + o[4]);
+    tw->e_w2 = (const float *)(const void *)(p + o[5]);
+    if (tw->rare_k) {
+        const size_t R = (size_t)tw->r_blocks * 8u;
+        if (!in_trailer(size, o[6], (size_t)tw->rare_k * K) || !in_trailer(size, o[7], 4u * tw->rare_k) ||
+            !in_trailer(size, o[8], 4u * tw->rare_k) || !in_trailer(size, o[9], R * tw->rare_k) ||
+            !in_trailer(size, o[10], 4u * R) || !in_trailer(size, o[11], 4u * R))
+            return VOCR_E_FORMAT;
+        tw->p_q = (const int8_t *)(const void *)(p + o[6]);
+        tw->p_scale = (const float *)(const void *)(p + o[7]);
+        tw->p_bias = (const float *)(const void *)(p + o[8]);
+        tw->r_q = (const int8_t *)(const void *)(p + o[9]);
+        tw->r_scale = (const float *)(const void *)(p + o[10]);
+        tw->r_bias = (const float *)(const void *)(p + o[11]);
+    } else {
+        for (i = 6; i < 12; i++)
+            if (o[i]) return VOCR_E_FORMAT;
     }
     return VOCR_OK;
 }
@@ -318,7 +408,9 @@ int vocr_load(vocr_model *m, const void *blob, size_t bytes)
             }
         }
     }
-    return VOCR_OK;
+    rc = parse_two(m, b, bytes, total);
+    if (rc) memset(&m->two, 0, sizeof m->two);
+    return rc;
 }
 
 int vocr_has_gate(const vocr_model *m)
@@ -385,7 +477,7 @@ static size_t op_scratch(const vocr_ctx *c, const vocr_op *op, unsigned n_tile)
 
 static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
 {
-    static const vocr_opts defaults = {0, 0, 0, VOCR_MODE_AUTO, VOCR_HEAD_GATE_OFF};
+    static const vocr_opts defaults = {0, 0, 0, VOCR_MODE_AUTO, VOCR_HEAD_GATE_OFF, 0};
     unsigned L, S, i, f, t_max, F, hb, s = 1, s_out[VOCR_MAX_OPS];
     size_t off, base, R = 0, tin[VOCR_MAX_OPS], tout[VOCR_MAX_OPS], scr[VOCR_MAX_OPS];
     int prev = 0, mode, in_top = 0;
@@ -398,6 +490,8 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     if (mode < 0) return mode;
     if (o->head_gate > VOCR_HEAD_GATE_SCORE) return VOCR_E_ARG;
     if (o->head_gate && (mode != VOCR_MODE_W8I || !m->gate.hidden)) return VOCR_E_MODE;
+    if (o->two_level && (mode != VOCR_MODE_W8I || !m->two.l1_blocks)) return VOCR_E_MODE;
+    c->two_level = o->two_level ? 1u : 0u;
     c->model = m;
     c->mode = mode;
     c->gate = o->head_gate;
@@ -461,6 +555,25 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     if (c->gate == VOCR_HEAD_GATE_ON) { /* the line index of each accumulated frame */
         c->fidx_off = (uint32_t)off;
         off += al16((size_t)c->acc_frames * sizeof(uint16_t));
+    }
+    if (c->two_level) { /* level 1's non-blank maxima and blank logits, the escape's hidden units, the fired frames */
+        const size_t A = c->acc_frames, RK = m->two.rare_k;
+        c->nbv_off = (uint32_t)off;
+        off += al16(A * sizeof(float));
+        c->b0_off = (uint32_t)off;
+        off += al16(A * sizeof(float));
+        c->hid_off = (uint32_t)off;
+        off += al16(A * m->two.hidden * sizeof(float));
+        c->fmap_off = (uint32_t)off;
+        off += al16(A * sizeof(uint32_t));
+        if (RK) { /* the projection's outputs and their int16 quantisation */
+            c->y48_off = (uint32_t)off;
+            off += al16(A * RK * sizeof(float));
+            c->q48_off = (uint32_t)off;
+            off += al16(A * RK * sizeof(int16_t));
+            c->s48_off = (uint32_t)off;
+            off += al16(A * sizeof(float));
+        }
     }
     base = off;
     for (i = 0; i < L; i++) {
@@ -1432,6 +1545,7 @@ typedef struct {
     const uint16_t *fidx;    /* the run skips frames (head_gate ON, no logits): the accumulated frames' line
                                 indices, else NULL */
     unsigned gated, headed;  /* frames the gate skipped; frames the head ran on */
+    unsigned escaped;        /* frames the two-level escape fired on */
 } out_t;
 
 static float *at(const vocr_ctx *c, uint32_t off) { return (float *)(void *)(c->arena + off); }
@@ -1839,6 +1953,203 @@ static unsigned gate_tile(const vocr_ctx *c, out_t *o, unsigned s0, unsigned s1,
     return o->fidx ? w : s1;
 }
 
+/* ---------------------------------------------------------------- the two-level head (VOC2 trailer)
+ *
+ * W8I only (vocr_opts.two_level). Level 1, the head's blocks [0, l1_blocks), runs on every frame: the blank and
+ * the most frequent classes. The escape (a small MLP on the head's quantised input, level 1's largest non-blank
+ * logit and its blank logit) then says which frames also need level 2, the other blocks (the head's own rows, or
+ * with rare_k the rows of a rare_k-wide projection). Those frames' quantised inputs are packed to the front and
+ * level 2 runs on them as one batch. A frame's state (first maximum, top-K, the blank's logit) is updated block
+ * by block in class order, so a fired frame gets today's argmax and top-K bit for bit (rare_k 0) and the others
+ * the same over the level-1 classes. A block whose 8 logits are none above the frame's threshold (below which no
+ * logit can change its state: the non-blank maximum in level 1, the first maximum in level 2, and the top-K's
+ * last value) is skipped without the per-class loop, as run_head's NEON top-K path does. */
+#ifdef VOCR_NEON
+#define H2_STEP VOCR_HEAD_CHUNK
+#else
+#define H2_STEP 4u
+#endif
+
+/* any of the 8 values above thr (a NaN never is) */
+static int block_above(const float *v8, float thr)
+{
+#ifdef VOCR_NEON
+    const int32x4_t kt = fkey(vdupq_n_f32(thr));
+    const uint32x4_t gt = vorrq_u32(vcgtq_s32(fkey(vld1q_f32(v8)), kt), vcgtq_s32(fkey(vld1q_f32(v8 + 4)), kt));
+    const uint32x2_t g2 = vorr_u32(vget_low_u32(gt), vget_high_u32(gt));
+    return vget_lane_u32(vpmax_u32(g2, g2), 0) != 0;
+#else
+    unsigned j;
+    for (j = 0; j < 8; j++)
+        if (v8[j] > thr) return 1;
+    return 0;
+#endif
+}
+
+/* One block's 8 logits v (classes cls0 + j < N) into a frame's state: its first maximum (bestv, besti), in
+ * level 1 its largest non-blank logit (nbv; NULL in level 2) and the top-K (tv, tc; TK = 0: none). */
+static void h2_update(const float *v, unsigned cls0, unsigned N, float *bestv, uint32_t *besti, float *nbv,
+                      float *tv, uint16_t *tc, unsigned TK)
+{
+    unsigned j;
+    float thr = nbv ? *nbv : *bestv;
+    if (TK && tv[TK - 1] < thr) thr = tv[TK - 1];
+    if (!block_above(v, thr)) return;
+    for (j = 0; j < 8 && cls0 + j < N; j++) {
+        const float x = v[j];
+        if (x > *bestv) {
+            *bestv = x;
+            *besti = cls0 + j;
+        }
+        if (nbv && cls0 + j && x > *nbv) *nbv = x;
+        if (TK && x > tv[TK - 1]) {
+            unsigned p = TK - 1;
+            while (p && x > tv[p - 1]) {
+                tv[p] = tv[p - 1];
+                tc[p] = tc[p - 1];
+                p--;
+            }
+            tv[p] = x;
+            tc[p] = (uint16_t)(cls0 + j);
+        }
+    }
+}
+
+static void run_head2(const vocr_ctx *c, unsigned nf, out_t *o)
+{
+    const vocr_model *m = c->model;
+    const vocr_2level *tw = &m->two;
+    const unsigned L = m->n_ops, N = m->n_classes;
+    const vocr_op *op = &m->op[L - 1];
+    const unsigned K = op->k, B1 = tw->l1_blocks, NB = op->cout_pad / 8u, H = tw->hidden, RK = tw->rare_k;
+    const float *x = at(c, c->acc_off);
+    float *bestv = at(c, c->bestv_off), *nbv = at(c, c->nbv_off), *b0v = at(c, c->b0_off);
+    float *hid = at(c, c->hid_off);
+    uint32_t *besti = (uint32_t *)(void *)(c->arena + c->besti_off);
+    uint32_t *fm = (uint32_t *)(void *)(c->arena + c->fmap_off);
+    unsigned char *scr = c->arena + c->op[L - 1].scr_off;
+    int16_t *qx = (int16_t *)(void *)scr;
+    float *sx = (float *)(void *)(scr + al16((size_t)nf * K * 2u));
+    vocr_extra *ex = o->ex;
+    const unsigned TK = o->topk;
+    const uint16_t *fx = o->fidx;
+    unsigned f, nb, f0, q, j, nfire = 0;
+    float tmp[H2_STEP * 8];
+/* the line's frame of the batch's frame I (the head gate removes the frames it skips from the batch) */
+#define H2_FRAME(I) (fx ? (unsigned)fx[I] : o->frame + (I))
+    for (f = 0; f < nf; f++) {
+        bestv[f] = -INFINITY;
+        besti[f] = 0;
+        nbv[f] = -INFINITY;
+    }
+    if (TK)
+        for (f = 0; f < nf; f++) {
+            float *tv = ex->topk_logit + (size_t)H2_FRAME(f) * TK;
+            uint16_t *tc = ex->topk_class + (size_t)H2_FRAME(f) * TK;
+            for (j = 0; j < TK; j++) {
+                tv[j] = -INFINITY;
+                tc[j] = 0;
+            }
+        }
+    quant16(x, K, K, nf, qx, sx);
+    /* level 1: every frame */
+    for (nb = 0; nb < B1; nb++) {
+        const float *b = op->bias ? op->bias + nb * 8 : NULL;
+        for (f0 = 0; f0 < nf; f0 += H2_STEP) {
+            const unsigned pn = umin(H2_STEP, nf - f0);
+            mm_i16(op->q + (size_t)nb * K * 8, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn, tmp, 8,
+                   NULL, 0, 0);
+            for (q = 0; q < pn; q++) {
+                const unsigned fr = f0 + q, frame = H2_FRAME(fr);
+                float *tv = TK ? ex->topk_logit + (size_t)frame * TK : NULL;
+                uint16_t *tc = TK ? ex->topk_class + (size_t)frame * TK : NULL;
+                if (!nb) {
+                    b0v[fr] = tmp[q * 8];
+                    if (TK && ex->blank_logit) ex->blank_logit[frame] = tmp[q * 8];
+                }
+                h2_update(tmp + q * 8, nb * 8, N, bestv + fr, besti + fr, nbv + fr, tv, tc, TK);
+            }
+        }
+    }
+    /* the escape: layer 1 through the head's integer kernel, then its two level-1 inputs, ReLU and layer 2 */
+    for (nb = 0; nb < H / 8u; nb++)
+        mm_i16(tw->e_q + (size_t)nb * K * 8, tw->e_scale + nb * 8, tw->e_bias + nb * 8, qx, sx, K, nf, hid + nb * 8,
+               H, NULL, 0, 0);
+    for (f = 0; f < nf; f++) {
+        const float *h = hid + (size_t)f * H;
+        float s = tw->e_b2;
+        for (j = 0; j < H; j++) {
+            float a = h[j];
+            a = a + tw->e_wl1[j] * nbv[f];
+            a = a + tw->e_wb0[j] * b0v[f];
+            s = s + tw->e_w2[j] * relu_f(a);
+        }
+        if (ex && ex->esc_score && H2_FRAME(f) < ex->cap_frames) ex->esc_score[H2_FRAME(f)] = s;
+        if (s > tw->t) fm[nfire++] = f;
+    }
+    o->escaped += nfire;
+    /* level 2: the fired frames, packed to the front of the quantised input (forwards: fm[j] >= j) */
+    if (nfire) {
+        for (j = 0; j < nfire; j++)
+            if (fm[j] != j) {
+                memcpy(qx + (size_t)j * K, qx + (size_t)fm[j] * K, K * sizeof(int16_t));
+                sx[j] = sx[fm[j]];
+            }
+        if (RK) {
+            float *y = at(c, c->y48_off), *s48 = at(c, c->s48_off);
+            int16_t *q48 = (int16_t *)(void *)(c->arena + c->q48_off);
+            for (nb = 0; nb < RK / 8u; nb++)
+                mm_i16(tw->p_q + (size_t)nb * K * 8, tw->p_scale + nb * 8, tw->p_bias + nb * 8, qx, sx, K, nfire,
+                       y + nb * 8, RK, NULL, 0, 0);
+            quant16(y, RK, RK, nfire, q48, s48);
+            for (nb = 0; nb < tw->r_blocks; nb++)
+                for (f0 = 0; f0 < nfire; f0 += H2_STEP) {
+                    const unsigned pn = umin(H2_STEP, nfire - f0);
+                    mm_i16(tw->r_q + (size_t)nb * RK * 8, tw->r_scale + nb * 8, tw->r_bias + nb * 8,
+                           q48 + (size_t)f0 * RK, s48 + f0, RK, pn, tmp, 8, NULL, 0, 0);
+                    for (q = 0; q < pn; q++) {
+                        const unsigned fr = fm[f0 + q], frame = H2_FRAME(fr);
+                        h2_update(tmp + q * 8, (B1 + nb) * 8, N, bestv + fr, besti + fr, NULL,
+                                  TK ? ex->topk_logit + (size_t)frame * TK : NULL,
+                                  TK ? ex->topk_class + (size_t)frame * TK : NULL, TK);
+                    }
+                }
+        } else {
+            for (nb = B1; nb < NB; nb++) {
+                const float *b = op->bias ? op->bias + nb * 8 : NULL;
+                for (f0 = 0; f0 < nfire; f0 += H2_STEP) {
+                    const unsigned pn = umin(H2_STEP, nfire - f0);
+                    mm_i16(op->q + (size_t)nb * K * 8, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn,
+                           tmp, 8, NULL, 0, 0);
+                    for (q = 0; q < pn; q++) {
+                        const unsigned fr = fm[f0 + q], frame = H2_FRAME(fr);
+                        h2_update(tmp + q * 8, nb * 8, N, bestv + fr, besti + fr, NULL,
+                                  TK ? ex->topk_logit + (size_t)frame * TK : NULL,
+                                  TK ? ex->topk_class + (size_t)frame * TK : NULL, TK);
+                    }
+                }
+            }
+        }
+    }
+    for (f = 0; f < nf; f++, o->frame++) {
+        if (fx && fx[f] != o->frame) { /* frames the gate skipped since the last one: blanks */
+            o->frame = fx[f];
+            o->last = 0;
+        }
+        if (ex && ex->best && o->frame < ex->cap_frames) ex->best[o->frame] = (uint16_t)besti[f];
+        if (TK && besti[f] && besti[f] != o->last) {
+            const float p = topk_conf(ex->topk_logit + (size_t)o->frame * TK, TK);
+            if (!o->conf_n || p < o->conf_min) o->conf_min = p;
+            o->conf_sum += p;
+            o->conf_n++;
+        }
+        ctc_push(m, o, besti[f]);
+    }
+    o->headed += nf;
+#undef H2_FRAME
+}
+#undef H2_STEP
+
 /* Keep the last `halo` columns of a ring as its first ones. The ranges can overlap
  * (fewer new columns than halo), so copy forwards: the destination is below the source. */
 static void ring_shift(float *ring, unsigned cap, unsigned halo, unsigned col)
@@ -1908,12 +2219,14 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
     out_t o;
     unsigned L, S, f, i, u, T, wout[VOCR_MAX_OPS], acc_fill = 0, n_front, produced = 0;
     long k, ntiles;
-    int rc, hook;
+    int rc, hook, two;
     if (!c || !c->arena || !c->model || !text || !text_cap) return VOCR_E_ARG;
     text[0] = 0;
     rc = check_image(img);
     if (rc) return rc;
     m = c->model;
+    /* the two-level head, unless the caller wants every logit of every frame or a full read (ungated) */
+    two = c->two_level && !(ex && (ex->logits || ex->ungated));
     L = m->n_ops;
     S = m->stride;
     f = c->front;
@@ -1929,6 +2242,7 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         ex->frames = T;
         ex->chars = 0;
         ex->gated = 0;
+        ex->escaped = 0;
         if (ex->topk) {
             if (ex->topk > VOCR_TOPK_MAX || ex->topk > m->n_classes || !ex->topk_logit ||
                 !ex->topk_class || ex->cap_frames < T)
@@ -1980,14 +2294,16 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         }
         if (acc_fill >= c->head) {
             VOCR_MARK(L - 1);
-            run_head(c, acc_fill, &o);
+            if (two) run_head2(c, acc_fill, &o);
+            else run_head(c, acc_fill, &o);
             acc_fill = 0;
         }
         VOCR_MARK(VOCR_PROF_RUN);
     }
     if (acc_fill) {
         VOCR_MARK(L - 1);
-        run_head(c, acc_fill, &o);
+        if (two) run_head2(c, acc_fill, &o);
+        else run_head(c, acc_fill, &o);
         VOCR_MARK(VOCR_PROF_RUN);
     }
     if (o.fidx && o.frame < produced) { /* the line ends in frames the gate skipped */
@@ -1997,6 +2313,7 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
     if (ex) {
         ex->chars = o.chars;
         ex->gated = o.gated;
+        ex->escaped = o.escaped;
         if (o.conf_n) {
             ex->conf_min = o.conf_min;
             ex->conf_mean = o.conf_sum / (float)o.conf_n;

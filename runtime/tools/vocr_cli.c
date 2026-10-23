@@ -483,7 +483,7 @@ int main(int argc, char **argv)
     for (i = 2; i < argc; i++) {
         const char *a = argv[i];
         if (!strcmp(a, "--crc") || !strcmp(a, "--stdin") || !strcmp(a, "--invert") || !strcmp(a, "--conf") ||
-            !strcmp(a, "--post"))
+            !strcmp(a, "--post") || !strcmp(a, "--two-level"))
             continue;
         if (a[0] == '-' && a[1] == '-') {
             i++; /* option value */

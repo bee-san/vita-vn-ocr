@@ -16,9 +16,24 @@
  ],
  "models": {
   "what": "the released VOCR5 recognizers (v0.3.0), frozen: backbone, bottleneck and every level-1 row unchanged",
-  "S": {"file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_S_w8.vocr", "bytes": 819792, "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d", "vocab": "data/vocab_4987_proof.txt"},
-  "N": {"file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_N_w8.vocr", "bytes": 1185632, "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc", "vocab": "data/vocab_vn_5631.txt"},
-  "L": {"file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_L_w8.vocr", "bytes": 2473696, "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3", "vocab": "data/vocab_vn_5631.txt"}
+  "S": {
+   "file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_S_w8.vocr",
+   "bytes": 819792,
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+   "vocab": "data/vocab_4987_proof.txt"
+  },
+  "N": {
+   "file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_N_w8.vocr",
+   "bytes": 1185632,
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+   "vocab": "data/vocab_vn_5631.txt"
+  },
+  "L": {
+   "file": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_L_w8.vocr",
+   "bytes": 2473696,
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+   "vocab": "data/vocab_vn_5631.txt"
+  }
  },
  "two_level_head": {
   "permutation": "the head's rows (int8 weights, scale, bias) and the vocab are permuted together into the ranking's order: class 0 stays the blank, then the ranked classes. Class texts are unchanged, class numbers change; runtime/vocr_lm.c, vocr_post.c and vocr_charbox.c map classes by text. The permuted rows are byte-identical to the released ones, so every class's logit is today's bit for bit; the permuted blob is a valid version-1 blob any runtime reads as the full head",
@@ -89,5 +104,11 @@
   "what": "eval/headgate_protocol.json 'protected': vita-test and psp-test fixed lines (console polarity, dialogue = no 'name' style) and CLANNAD (owner-drive-ingest's frozen references through GRAD + refine inside each GRAD box), each adopted tier today vs its adopted arm, decodes greedy, rubi and rubi_cascade; line / VN-cluster (tests) and page (CLANNAD) bootstraps",
   "use": "report only: it decides and tunes nothing; an attempt record refuses a second run; public outputs hold counts, rates and hashes only"
  },
- "amendments": []
+ "amendments": [
+  {
+   "date": "2026-10-23T14:40:32Z",
+   "what": "The 'frozen' field reads 2026-10-23T14:20:00Z, written before the commit; the protocol was frozen by commit e1db2cd at 2026-10-23T14:06:29Z, which is its freeze time. Nothing else changes. At both times no escape had been fit and no development score of this protocol existed; at this amendment the escapes, K_alt (500 for S, N and L) and the r96 blobs exist (training-side data only) and no development score has been computed.",
+   "affects": "nothing"
+  }
+ ]
 }

@@ -376,10 +376,9 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0, two_level
     if two_level is not None:                # runtime/vocr.c plan(): nbv, b0, hidden units, fired frames
         if mode != MODE_W8I:
             raise ValueError("the two-level head runs in W8I only")
-        hid, rk = two_level["hidden"], two_level["rare_k"]
-        persistent += _align(acc_frames * 4) * 3 + _align(acc_frames * hid * 4)
-        if rk:                               # the projection's outputs, their int16 copy and scales
-            persistent += _align(acc_frames * rk * 4) + _align(acc_frames * rk * 2) + _align(acc_frames * 4)
+        if two_level["rare_k"]:
+            raise ValueError("the runtime reads no rare block (rare_k must be 0; docs/head2level.md)")
+        persistent += _align(acc_frames * 4) * 3 + _align(acc_frames * two_level["hidden"] * 4)
     trans = []                               # transient bytes in and out of each op
     for i, op in enumerate(ops):
         tin = n_tile[i - 1] * ops[i - 1]["h_out"] * ops[i - 1]["cout"] * 4 \

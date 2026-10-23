@@ -95,7 +95,10 @@ def main():
     print("\n### Selection\n")
     for t, d in dec["tiers"].items():
         print(f"- {t}: candidates {', '.join(d['candidates'])}; adoptable {', '.join(d['adoptable']) or 'none'}; "
-              f"selected **{d['selected'] or 'none (today)'}**")
+              f"selected **{d['selected'] or 'none'}**"
+              + ("" if d["selected"] else
+                 f" ({dict(S='Small', N='Normal', L='Large')[t]} keeps the gate alone)" if dec["gate_verdict"].get(t)
+                 else " (today)"))
     if a.counter:
         print("\n### Counter-context set (#109, synthetic, report only)\n")
         print("| tier | arm | greedy CER (lines worse) | rubi CER (lines worse) | with the re-read (lines worse) | "

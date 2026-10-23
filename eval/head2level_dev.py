@@ -745,9 +745,84 @@ def cmd_record(a):
         out["counter_check"] = {t: json.loads(Path(p).read_text()) for t, p in (x.split("=", 1) for x in a.counter)}
         for c in out["counter_check"].values():
             c["file"] = Path(c["file"]).name
+    if a.final_check:
+        out["final_code"] = json.loads(Path(a.final_check).read_text())
+    if a.mixed:
+        out["mixed_cascade"] = json.loads(Path(a.mixed).read_text())
     Path(a.out_fit).write_text(json.dumps(fit, indent=1) + "\n")
     Path(a.out_dev).write_text(json.dumps(out, indent=1) + "\n")
     print(json.dumps({"fit": a.out_fit, "dev": a.out_dev, "blobs": len(blobs)}))
+
+
+def cmd_recheck(a):
+    """After the verdict the runtime changed (the r48 path removed, head-gate's later fixes): the adopted arms' reads
+    again on the final code against the verdict's (every array and text, bit for bit), every A9 run that the final code
+    can read re-measured (instructions, texts), and the rule re-run on those timings against the verdict's decision."""
+    out = {"kind": "head2level-final-code-check", "vocr_c_sha256": sha256(ROOT / "runtime" / "vocr.c"),
+           "vocr_h_sha256": sha256(ROOT / "runtime" / "vocr.h"), "reads": {}, "a9": {}, "decision": {}}
+    for spec in a.reads:
+        t, arm = spec.split(":")
+        r0, r1 = load_reads(a.reads_verdict, t, arm), load_reads(a.reads_final, t, arm)
+        out["reads"][f"{t}/{arm}"] = {"crops": len(r1["keys"]), "keys": r0["keys"] == r1["keys"],
+                                      "greedy": r0["greedy"] == r1["greedy"], "lm": r0["lm"] == r1["lm"],
+                                      **{k: bool(np.array_equal(r0[k], r1[k]))
+                                         for k in ("off", "best", "frames", "escaped", "conf", "gated")},
+                                      "arena_w8i": [r0["arena_w8i"], r1["arena_w8i"]]}
+    for d in sorted(Path(a.a9_final).iterdir()):
+        r0 = json.loads((Path(a.a9_verdict) / d.name / "report.json").read_text())
+        r1 = json.loads((d / "report.json").read_text())
+        i0, i1 = (sum(v["insns"] for v in r["phases"].values()) for r in (r0, r1))
+        out["a9"][d.name] = {"insns": [i0, i1], "change_pct": round((i1 - i0) / i0 * 100, 4),
+                             "texts_equal": r0["meta"]["runs"]["prof"]["texts_sha256"] ==
+                             r1["meta"]["runs"]["prof"]["texts_sha256"],
+                             "vocr_c_sha256": [r0["meta"]["vocr_c_sha256"], r1["meta"]["vocr_c_sha256"]]}
+    d0, d1 = (json.loads(Path(f).read_text()) for f in (a.decision_verdict, a.decision_final))
+    for t in d0["tiers"]:
+        arms = {}
+        for arm, v in d1["tiers"][t]["arms"].items():
+            v0 = d0["tiers"][t]["arms"][arm]
+            arms[arm] = {"verdict": [v0["verdict"], v["verdict"]],
+                         "saved_pct_nominal_box_safe_min": [v0["saved_pct_nominal_box_safe_min"],
+                                                            v["saved_pct_nominal_box_safe_min"]]}
+        out["decision"][t] = {"selected": [d0["tiers"][t]["selected"], d1["tiers"][t]["selected"]], "arms": arms}
+    out["all_reads_equal"] = all(all(v for k, v in r.items() if k not in ("crops", "arena_w8i")) and
+                                 r["arena_w8i"][0] == r["arena_w8i"][1] for r in out["reads"].values())
+    out["all_texts_equal"] = all(r["texts_equal"] for r in out["a9"].values())
+    out["same_selection"] = all(v["selected"][0] == v["selected"][1] and
+                                all(x["verdict"][0] == x["verdict"][1] for x in v["arms"].values())
+                                for v in out["decision"].values())
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n")
+    print(json.dumps({k: out[k] for k in ("all_reads_equal", "all_texts_equal", "same_selection")}))
+
+
+def cmd_mixed(a):
+    """Report only, after the verdict: Rubi's cascade as it would ship mixes kinds. Small keeps the gate alone and
+    re-reads a line under 700 confidence with Normal, which runs its adopted arm; no pair of arms the rule scored is
+    that mix (each cascade ran the next tier's arm of the same kind). Scores Small's rubi_cascade with Small's gate
+    reads and Normal's adopted-arm reads, against today (S, N today) and the gate alone (S, N gate)."""
+    import vocr5_select as VS
+    from pyvocr import load_lib
+    lib = load_lib()
+    cache, out = Path(a.cache), Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    if not (out / "wd_lines.pkl").exists():
+        (out / "wd_lines.pkl").symlink_to((cache / "wd_lines.pkl").resolve())
+    s = {arm: load_reads(cache, "S", arm) for arm in ("today", "gate")}
+    n = {arm: load_reads(cache, "N", arm) for arm in ("today", "gate", a.n_arm)}
+    combos = {"today": ("today", "today"), "gate": ("gate", "gate"), "shipped": ("gate", a.n_arm)}
+    paths, cascaded = {}, {}
+    for name, (sa, na) in combos.items():
+        dec = decoded(s[sa], n[na], lib)
+        cascaded[name] = dec["cascaded"]
+        paths[f"{name}__rubi_cascade"] = write_scores(out, "S", f"{name}__rubi_cascade", s[sa], dec["rubi_cascade"])
+    comps = comps_for(paths)
+    res = {"kind": "head2level-mixed-cascade", "report_only": True, "small": "gate", "normal": a.n_arm,
+           "cascaded_lines": cascaded,
+           "scores": {k: round(VS.score_of(comps, f"{k}__rubi_cascade"), 5) for k in combos},
+           "shipped_vs": {ref: VS.compare(comps, [f"{ref}__rubi_cascade"], ["shipped__rubi_cascade"])
+                          for ref in ("today", "gate")}}
+    (out / "mixed.json").write_text(json.dumps(res, indent=1) + "\n")
+    print(json.dumps({"scores": res["scores"], "vs": {r: c["score"] for r, c in res["shipped_vs"].items()}}))
 
 
 def main():
@@ -759,6 +834,8 @@ def main():
     p.add_argument("--timing", required=True)
     p.add_argument("--decision", required=True)
     p.add_argument("--counter", nargs="*", default=[])
+    p.add_argument("--final-check", default="")
+    p.add_argument("--mixed", default="")
     p.add_argument("--out-fit", required=True)
     p.add_argument("--out-dev", required=True)
     p = sub.add_parser("decide")
@@ -780,6 +857,19 @@ def main():
     p.add_argument("--cache", required=True)
     p.add_argument("--procs", type=int, default=5)
     p.add_argument("--limit", type=int, default=0)
+    p = sub.add_parser("recheck")
+    p.add_argument("--reads", nargs="+", required=True, help="TIER:ARM ...")
+    p.add_argument("--reads-verdict", required=True)
+    p.add_argument("--reads-final", required=True)
+    p.add_argument("--a9-verdict", required=True)
+    p.add_argument("--a9-final", required=True)
+    p.add_argument("--decision-verdict", required=True)
+    p.add_argument("--decision-final", required=True)
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("mixed")
+    p.add_argument("--cache", required=True)
+    p.add_argument("--n-arm", default="2Lg_Kalt_r96")
+    p.add_argument("--out", required=True)
     p = sub.add_parser("score")
     p.add_argument("--cache", required=True)
     p.add_argument("--fits", nargs="+", required=True, help="TIER=fit_TIER.json")
@@ -787,7 +877,7 @@ def main():
     p.add_argument("--out", required=True)
     a = ap.parse_args()
     {"lines": cmd_lines, "read": cmd_read, "score": cmd_score, "counter": cmd_counter, "decide": cmd_decide,
-     "record": cmd_record}[a.cmd](a)
+     "record": cmd_record, "mixed": cmd_mixed, "recheck": cmd_recheck}[a.cmd](a)
 
 
 if __name__ == "__main__":

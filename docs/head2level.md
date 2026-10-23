@@ -8,7 +8,10 @@ blank, those frequent rows and a small **escape** on every frame, and the other 
 the escape fires.
 
 This document records the trial: its pre-registered protocol (`eval/head2level_protocol.json`, frozen by commit
-`e1db2cd` at 2026-10-23T14:06:29Z, amendment 1 at 14:40Z), what was built, the development results and the verdict.
+`e1db2cd` at 2026-10-23T14:06:29Z; amendment 1 at 14:40Z; amendment 2, rule (d) reads both time estimates, at 16:35Z,
+before any score of a two-level arm with the gate), what was built, the development results and the verdict. The
+original commits are kept at tags `head2level-protocol-e1db2cd`, `head2level-amend1-ab4f3af`,
+`head2level-amend2-dc338b6` and `head2level-verdict-c5f7dae` (the branch was later rebased onto head-gate's).
 Every millisecond is an estimate calibrated to VOCR3-H15's measured 5.0-5.2 ms per CTC frame; nothing ran on a
 console.
 
@@ -20,8 +23,9 @@ console.
   texts do not; the LM decoder, the counter re-decode and the character boxes map classes by text.
 - **The VOC2 trailer** (`runtime/vocr.c` `parse_two`, `train/head2level.py write_trailer`): a versioned section after
   the blob (and after head-gate's `VOCG` section when there is one), with its own CRC-32, bound to the base blob's
-  byte count and CRC. It holds level 1's block count, the escape, and for the r48 variant the 48-wide rare block.
-  A runtime without two-level support ignores it.
+  byte count and CRC. It holds level 1's block count and the escape (the trial's r48 arms also stored their 48-wide
+  rare block there; the merged runtime refuses such a trailer, below). A runtime without two-level support ignores
+  it.
 - **Level 1**: the head's first ceil((K + 1) / 8) 8-row blocks (K = 1,500: 1,504 rows, the blank and 1,503 classes).
 - **The escape**: a 98 → 16 (ReLU) → 1 MLP on the head's input as the W8I head sees it (vocr.c `quant16`), plus level
   1's largest non-blank logit and its blank logit. Layer 1's 96 head-input weights are int8 through the head's own
@@ -66,14 +70,15 @@ Every 48-wide rare block (r48) is rejected.
 | N | `2Lg_Kalt_r96` | **−32 / −62 ms** (3.5 / 6.8%); real box −12 / −23 ms | −160 ms (17.4%) | +0.000 [+0.000, +0.000] | +0.06 [0.00, 0.15] points |
 | L | `2Lg_Kalt_r96` | **−66 / −94 ms** (3.2 / 4.5%); real box −25 / −35 ms | −284 ms (13.7%) | +0.006 [−0.006, +0.022] | +0.09 [0.00, 0.24] points |
 
-- **Bytes.** The VOC2 trailer is 1,984 B per blob (after head-gate's 1,792 B VOCG section); no weight changes. The W8I
-  arena grows by 1,456 B (N: 184,448 B with the gate, against 182,944 B today). `vocr.o` grows from 20,187 to 24,115 B (VitaSDK gcc `-O2`, NEON; scalar
-  15,195 to 19,151 B).
+- **Bytes.** The VOC2 trailer is 1,984 B per blob (after head-gate's 1,792 B VOCG section); no weight changes: N
+  1,189,408 B and L 2,477,472 B. The W8I arena grows by 1,456 B over the gate's (N 184,448 B against the gate's
+  182,992 B and today's 182,944 B; L 262,528 B against 261,072 B and 261,024 B). `vocr.o` grows from 20,187 to
+  23,263 B (+3,076 B; VitaSDK gcc 15.2 `-O2`, NEON; scalar `-DVOCR_NO_NEON` 15,195 to 18,283 B).
 - **Why not Small.** K = 500 is resolved worse than today on greedy dialogue (+0.020 points [+0.003, +0.038]: the
   gate's own +0.016 [0.000, +0.033] plus the escape's +0.004). K = 1,500 passes (a) but not (b) on the cascade
   (+0.014 [−0.020, +0.051] against today) and not (d): the pack's measured saving over the gate is 2.7% of the box
   (projected 6.7%).
-- **Why not K = 1,500 for N and L.** Not (d): the measured savings over the gate are 3.0% (N) and 2.1% (L) of the
+- **Why not K = 1,500 for N and L.** Not (d): the measured savings over the gate are 2.95% (N) and 2.1% (L) of the
   box. The projected savings clear 3%; amendment 2 made the smaller of the two decide, before any 2L + gate number
   existed.
 - **Why not r48.** On frames that need a rare row, the 48-wide approximation picks another class often enough to
@@ -84,6 +89,20 @@ Every 48-wide rare block (r48) is rejected.
   whose reading holds a full-size カ or ケ before 月 所 年 国 条, or whose re-decode finds a counter context, is read
   again with the full head (`vocr_extra.ungated`). With that re-read the adopted arms add 3 (N) and 1 (L) lines
   beyond the gate's own (the gate with it: 76 and 18 lines worse than today; the two-level head alone: 3 and 1).
+
+- **The runtime as merged has no r48 code.** Every r48 arm was rejected, so `parse_two` refuses a trailer with a rare
+  block (`rare_k` or its offsets non-zero) and `run_head2` keeps only the head's own rows: 876 B less code (NEON;
+  892 B scalar) than the build the verdict measured (`head2level-verdict-c5f7dae`), which read the r48 arms. Checked
+  after the change: the adopted arms' 8,233 development reads per tier (N, L) are bit for bit the verdict's (every
+  argmax frame, escape count, confidence, greedy and LM text), and the 48 r96, gate and today A9 runs re-measured on
+  the final code read the same texts with 0.13-0.24% fewer instructions; the rule re-run on them selects the same arms
+  (N 3.50%, L 3.20% measured saving over the gate; every verdict unchanged). `eval/head2level_dev_20261023.json`
+  "final_code" holds that check.
+- **Small's cascade into Normal (report only, after the verdict).** Rubi re-reads a Small line under 700 confidence
+  with Normal; as shipped that is Small's gate alone falling back to Normal's adopted arm, a mix no compared pair of
+  arms held (each cascade read the next tier's arm of the same kind). From the stored reads (`eval/head2level_dev.py
+  mixed`): Small's rubi_cascade dev score is 3.09637 either way, the same as with the gate alone in both tiers
+  (+0.000 [+0.000, +0.000]; against today +0.013 [−0.022, +0.050], the gate's own).
 
 Nothing here ran on a console. Every millisecond is an estimate: `vita/a9_layers.py` instruction counts of the VitaSDK
 build under qemu, on ocr-speed's 24 development lines (pack `sub24.bin`, 1,609 frames), ×1.000676 to VOCR3-H15's
@@ -220,7 +239,7 @@ share is over the frames level 1 runs on (the gate skips about 60% before it).
 
 ### Selection
 
-- S: candidates 2Lg_K1500_r48, 2Lg_K1500_r96, 2Lg_Kalt_r48, 2Lg_Kalt_r96; adoptable none; selected **none (today)**
+- S: candidates 2Lg_K1500_r48, 2Lg_K1500_r96, 2Lg_Kalt_r48, 2Lg_Kalt_r96; adoptable none; selected **none** (Small keeps the gate alone)
 - N: candidates 2Lg_K1500_r48, 2Lg_K1500_r96, 2Lg_Kalt_r48, 2Lg_Kalt_r96; adoptable 2Lg_Kalt_r96; selected **2Lg_Kalt_r96**
 - L: candidates 2Lg_K1500_r48, 2Lg_K1500_r96, 2Lg_Kalt_r48, 2Lg_Kalt_r96; adoptable 2Lg_Kalt_r96; selected **2Lg_Kalt_r96**
 
@@ -276,10 +295,45 @@ and hashes only).
 | | rubi with the re-read | 0.765% → 0.768% (1) | 0.768% (1) | 0.547% → 0.553% (3), +0.006 [0.000, +0.015] | 0.550% (1) |
 | | rubi_cascade | 0.654% → 0.663% (3) | 0.660% (2) | 0.547% → 0.559% (5) | 0.550% (1) |
 
-On the test sets the two-level head changes no line beyond the gate's. On CLANNAD it changes none for N and adds 3-4
-characters for L (3 to 5 dialogue lines; 2 with the re-read), +0.003 to +0.009 points beyond the gate's; the gate
-itself improves CLANNAD's whole text (names included) a lot (N rubi 2.379% → 1.799%), which the two-level head leaves
-as it is (N) or nearly (L 1.804% against the gate's 1.796%).
+On the test sets the two-level head changes no line beyond the gate's. On CLANNAD's dialogue, N's changes the same
+lines as the gate alone except one more on the cascade (+0.003 points; none with the re-read), and L's changes 3-5
+lines against today's where the gate alone changes 0-1: +0.003 to +0.009 points beyond the gate's, about 1-3 of
+33,485 characters (with the re-read 3 lines, +0.003). The gate itself improves CLANNAD's whole text (names included)
+a lot (N rubi 2.379% → 1.799%), which the two-level head leaves as it is (N) or nearly (L 1.804% against the gate's
+1.796%).
+
+## Reproducing
+
+Every step runs from this repository on the development and training-side data paths of `eval/vocr5_protocol.json`
+and `eval/vocr5_ft_sources.json` (local; not redistributed); heavy steps through the host's job slots.
+
+```sh
+REL=<v0.3.0 release dir>; T=N                     # and S, L; K_alt = 500 (fit_N.json "K_alt")
+# training side: ranking, the permuted blob, its frames, one escape per K, K_alt, the blobs
+python train/head2level.py rank --out rank.json
+python train/head2level.py permute --blob $REL/VOCR5_${T}_w8.vocr --rank rank.json --out VOCR5_${T}_perm.vocr
+python eval/head2level_extract.py train --tier $T --blob VOCR5_${T}_perm.vocr --out train_$T.npz
+python eval/head2level_fit.py escapes --tier $T --train train_$T.npz --blob VOCR5_${T}_perm.vocr --out fit_$T.json
+python eval/head2level_fit.py build --tier $T --blob VOCR5_${T}_perm.vocr --fit fit_$T.json --K 500 \
+    --out VOCR5_${T}_2L_K500_r96.vocr
+python eval/head2level_fit.py compose --two VOCR5_${T}_2L_K500_r96.vocr --gated VOCR5_${T}_w8g.vocr \
+    --out VOCR5_${T}_2Lg_K500_r96.vocr            # VOCR5_T_w8g.vocr: head-gate's blob (v0.3.5-headgate.1)
+# development: the finder's lines once, then reads per tier and arm, scores, timing, the rule
+python eval/head2level_dev.py lines --cache DEV
+python eval/head2level_dev.py read --tier $T --arm "2Lg_Kalt_r96=VOCR5_${T}_2Lg_K500_r96.vocr:two_level:gate" --cache DEV
+python eval/head2level_dev.py score --cache DEV --fits S=fit_S.json N=fit_N.json L=fit_L.json --out dev.json
+python vita/a9_layers.py measure --blob VOCR5_${T}_2Lg_K500_r96.vocr --pack sub24.bin --out A9/nopld_${T}_2Lg_K500_r96 \
+    --mode w8i --min-frames 60 --max-frames 100 --limit 24 --cli-opts "--topk 8 --two-level --head-gate on" --no-pld
+python vita/a9_layers.py report A9/nopld_${T}_2Lg_K500_r96 --json A9/nopld_${T}_2Lg_K500_r96/report.json --scale 1.000676
+python eval/head2level_time.py --a9 A9 --dev dev.json --out timing.json
+python eval/head2level_dev.py decide --dev dev.json --timing timing.json --gate-verdict S=adopted N=adopted L=adopted \
+    --out decision.json
+python eval/head2level_dev.py counter --synth synth.npz --ref today=$REL/VOCR5_${T}_w8.vocr \
+    --arm "2Lg_Kalt_r96=VOCR5_${T}_2Lg_K500_r96.vocr:two_level:gate" --out counter_$T.json
+python eval/head2level_dev.py mixed --cache DEV --out MIXED
+```
+
+The r48 arms' blobs read only with the runtime at `head2level-verdict-c5f7dae`.
 
 ## Limits
 

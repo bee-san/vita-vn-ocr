@@ -8,7 +8,7 @@ head there. It is fit on each VOCR5 model's own frozen frames; nothing is retrai
 gate for all three tiers.
 
 - **Skip rate.** The gate skips 61.4% / 61.0% / 57.9% of the frames of the finder-cut development lines (S / N / L).
-  It skips 0.16-0.18% of the frames whose argmax is not the blank.
+  It skips 0.16-0.19% of the frames whose argmax is not the blank.
 - **Accuracy.** No decode is resolved worse on the development score: greedy, Rubi's beam + 1 MB LM with the counter
   re-decode, or that with Rubi's confidence cascade. Every 95% upper bound is at most +0.050 points, the margin. Normal
   and Large pass with room; Small passes at the rule's edges (its greedy lower bound is exactly 0.000 and its cascade
@@ -126,10 +126,15 @@ Large has no larger tier, so its cascade is its rubi. Every row meets (a) and (b
 (19.5% / 14.9% / 7.9% of the nominal box), so the verdict is **adopted** for S, N and L. Normal and Large have room on
 both conditions. Small passes at the rule's edges:
 
-- (a), greedy: the score interval's lower bound is exactly 0.000 (2.5% of the replicates fall below 0, 0.3% at 0), so
-  "not entirely above 0" holds with no slack;
+- (a), greedy: the score interval's lower bound is exactly 0.000: 2.49% of the replicates fall below 0 and 0.34% at 0,
+  so the 2.5th percentile is 0 and "not entirely above 0" holds with no slack;
 - (b), cascade: the upper bound is +0.050, the margin itself (+0.0504 before `vocr5_select.compare` rounds the interval
   to 3 decimals; the rule reads the rounded interval, as VOCR5's own rule does).
+
+tv's interval has a lower bound of exactly 0.000 in six of the nine rows (S greedy and cascade, N greedy, L's three).
+There only one or two VNs change, all for the worse, so 13-38% of tv's replicates are exactly 0 and none is below 0:
+"not entirely above 0" with all the room a component that only got worse can have. Small's greedy score interval,
+which pools tv with dn and wd, has 2.83% of its replicates at or below 0, against the 2.5% the condition needs.
 
 **Correction (after audit-head-gate, 2026-10-23).** The first record of this verdict (`a95994f`) keyed each fixed read
 by (cohort, file, line id, view). teacher_val holds 129 PC lines twice, scaled once to Vita size and once to PSP size,
@@ -153,7 +158,7 @@ gate and the runtime had not been scored by anyone.
 
 | tier | all reads | dialogue | finder-cut lines (wd) | wd GRAD only | wd refined | dn GRAD crops | Vita / PSP / PC fixed dialogue | names | non-blank frames skipped |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| S | 61.9% | 61.6% | 61.4% | 57.3% | 64.9% | 57.3% | 63.5 / 62.2 / 59.5% | 67.2% | 0.18% |
+| S | 61.9% | 61.6% | 61.4% | 57.3% | 64.9% | 57.3% | 63.5 / 62.2 / 59.5% | 67.2% | 0.19% |
 | N | 61.4% | 61.1% | 61.0% | 57.1% | 64.2% | 56.8% | 62.6 / 61.6 / 59.1% | 68.4% | 0.16% |
 | L | 58.5% | 58.2% | 57.9% | 54.4% | 60.9% | 53.9% | 60.8 / 58.6 / 57.1% | 64.0% | 0.17% |
 
@@ -339,17 +344,30 @@ for T in S N L; do
   HEAVY_SLOTS=12 $HERD/heavy.sh .venv/bin/python eval/headgate_eval.py cache --tier $T \
     --base $R/VOCR5_${T}_w8.vocr --gated $B/VOCR5_${T}_w8g.vocr --out $P/dev
 done
-for T in S N L; do for C in off on score; do for D in 0 1; do        # and main's runtime (a9 "main")
-  HEAVY_SLOTS=12 $HERD/heavy.sh eval/reproducibility/headgate-20261023/a9.sh $T $C $D $H/head-gate/a9
+O=$H/head-gate/a9-repro; SV=$H/head-gate/savings-repro.json      # a fresh directory: a9.sh skips a finished one
+for T in S N L; do for C in off on score; do for D in 0 1; do
+  HEAVY_SLOTS=12 $HERD/heavy.sh eval/reproducibility/headgate-20261023/a9.sh $T $C $D $O
 done; done; done
-.venv/bin/python eval/headgate_eval.py a9 --dir $H/head-gate/a9 --blobs $B --cache $P/dev \
-  --out eval/headgate_a9_20261023.json --savings $H/head-gate/savings.json
+# main's runtime on the same gated blobs (it ignores the section): a worktree of 6f24967 with this branch's
+# vita/a9_layers.py (main's cannot link vocr_cli since #109), the same measurement without --head-gate
+W=$H/head-gate/mainwt; git worktree add $W 6f24967 && cp vita/a9_layers.py $W/vita/
+. $HERD/shared/artifacts/ocr-speed/env.sh                          # VITASDK, ARM_CC, VOCR_A9_PLUGINS, A
+for T in S N L; do for D in 0 1; do X=(); [ $D = 0 ] && X=(--no-pld)
+  (cd $W && HEAVY_SLOTS=12 $HERD/heavy.sh .venv-ci/bin/python vita/a9_layers.py measure \
+    --blob $B/VOCR5_${T}_w8g.vocr --pack $A/packs/dev_res.bin --out $O/${T}_main_pld$D --mode w8i \
+    --min-frames 60 --max-frames 100 --limit 24 --cli-opts "--topk 8" "${X[@]}")
+done; done
+.venv/bin/python eval/headgate_eval.py a9 --dir $O --blobs $B --cache $P/dev \
+  --out eval/headgate_a9_20261023.json --savings $SV
 HEAVY_SLOTS=12 $HERD/heavy.sh .venv/bin/python eval/headgate_eval.py score --cache $P/dev \
   --blob S=$R/VOCR5_S_w8.vocr --blob N=$R/VOCR5_N_w8.vocr --blob L=$R/VOCR5_L_w8.vocr \
   --gated-blob S=$B/VOCR5_S_w8g.vocr --gated-blob N=$B/VOCR5_N_w8g.vocr --gated-blob L=$B/VOCR5_L_w8g.vocr \
-  --lm $R/vocr_lm_o3_1000k.vlm --savings $H/head-gate/savings.json --synth $H/kanum-fix/synth/synth.npz \
+  --lm $R/vocr_lm_o3_1000k.vlm --savings $SV --synth $H/kanum-fix/synth/synth.npz \
   --out eval/headgate_dev_20261023.json
 ```
+
+The committed records were made this way with `O = $H/head-gate/a9v3`, whose six main runs are the first measurement's
+(`a9/`, made the same way), and `SV = $H/head-gate/savings_v3.json` (sha256 `6c241a31…`, which the development record names).
 
 ## Limits
 

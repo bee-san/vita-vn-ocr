@@ -595,6 +595,18 @@
     "runtime/vocr.c": "9e3ec20c064391f4a3137b6637749760f48ce27abab257358bcb177d2376c1d5",
     "runtime/vocr.h": "f2e8a97c41cdda36f3c767f2df9a2c3b5986755600560570016838eb8be88c19"
    }
+  },
+  {
+   "id": 10,
+   "utc": "2026-10-24T10:43:46Z",
+   "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
+   "what": [
+    "A harness file re-pinned, not a textspot3 change (as amendments 8 and 9): runtime/vocr.c and runtime/vocr.h, the recognizer the scores read text with, gained stride16's coarser frame steps (#118, docs/stride16.md) on top of amendment 9's two-level head: parse_op accepts op width strides up to 3 (a stride-12 recognizer), and the default tile (vocr_opts.tile_frames = 0) stays 4 frames for strides up to 8 and is the whole frames nearest 32 input columns above that (3 at 12, 2 at 16); vocr.h changes comments only. Every stride-8 blob, which is every blob these protocols read, runs bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes and runtime/tests/parity.py's bit-exact model are unchanged"
+   ],
+   "sources_sha256": {
+    "runtime/vocr.c": "451967f9de0530ada268402a6b9b878935ede9e6c146d7c03919b807b64eb608",
+    "runtime/vocr.h": "a2fbed39216433dff01a44dd8b3ed0838c613f2aee4afe16a652dd2d3429297e"
+   }
   }
  ],
  "shapes": {

@@ -29,7 +29,9 @@ def test_candidate_blobs_have_the_expected_sizes(name, blob, arena, stride, heig
     assert info["arena"]["t4h16"]["w8i"] == arena
     assert meta["stride"] == stride
     assert info["height"] == height
-    assert export.plan_arena(export.read_blob(data), mode=export.MODE_W8I) == arena
+    # the documented arenas are at a 4-frame tile (t4h16): the runtime's default tile is smaller for a stride
+    # over 8 since stride16 (#118), so the plan is compared at that tile explicitly
+    assert export.plan_arena(export.read_blob(data), tile=4, head=16, mode=export.MODE_W8I) == arena
 
 
 def test_frame_stride_16_halves_the_frames():

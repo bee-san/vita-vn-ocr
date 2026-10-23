@@ -14,7 +14,12 @@ Each tier (S, N, L), today (the release blob) against gated (the gated blob, hea
 rubi_cascade (eval/headgate_eval.py) and their counter-context re-read variants. Dialogue (no 'name' style / not a
 name reference) primary, names a column; CER with paired line and VN-cluster bootstraps (tests) or page bootstraps
 (CLANNAD, one title). Each command's attempt record (OUT/<cmd>.attempt.json) is created exclusively and refuses a
-second run. Public outputs hold counts, rates and hashes; per-line records go to OUT/private/.
+second run; score_tests and score_clannad, the reads themselves, run only with the record once() wrote for them.
+Public outputs hold counts, rates and hashes; per-line records go to OUT/private/.
+
+The read of 2026-10-23 (attempt records 16:04:24Z) ran a95994f's version of this script, where cmd_tests and
+cmd_clannad held these steps inline; f7554c2 split each into its loading and its read (score_*) without changing a
+step, and the attempt token was added after audit-head-gate (N6). Neither set is to be read again.
 """
 import argparse
 import json
@@ -34,11 +39,24 @@ TIERS = ("S", "N", "L")
 DECODES = ("greedy", "rubi", "rubi_cascade", "rubi_reread", "rubi_cascade_reread")
 
 
+class Attempt:
+    """once()'s proof that this process wrote a command's attempt record (the protected reads require it)."""
+
+    def __init__(self, path):
+        self.path = Path(path)
+
+
 def once(path, record):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x", encoding="utf-8") as f:            # exclusive: a second attempt fails here
         f.write(json.dumps(record, indent=1) + "\n")
+    return Attempt(path)
+
+
+def _require(attempt, path):
+    if not isinstance(attempt, Attempt) or attempt.path != Path(path) or not attempt.path.exists():
+        raise SystemExit(f"a protected read runs only once, through its command (no attempt record {path})")
 
 
 def runtimes(a):
@@ -104,8 +122,8 @@ def cmd_tests(a):
 
     from common import line_polarity, to_gray
     out = Path(a.out)
-    once(out / "tests.attempt.json", {"started": E.utc_now(), "protocol_sha256": E.sha256(ROOT / "eval" /
-                                                                                      "headgate_protocol.json")})
+    attempt = once(out / "tests.attempt.json", {"started": E.utc_now(), "protocol_sha256": E.sha256(
+        ROOT / "eval" / "headgate_protocol.json")})
     rows, crops = [], []
     for name in ("vita-test", "psp-test"):
         lines, _ = sets.load_real(name, a.data)
@@ -113,13 +131,15 @@ def cmd_tests(a):
             g = np.ascontiguousarray(to_gray(ln.crop_rgb))
             rows.append({"set": name, "id": ln.id, "vn": ln.vn, "ref": norm(ln.text), "name": "name" in ln.styles})
             crops.append((g, bool(line_polarity(g))))
-    score_tests(a, rows, crops, out)
+    score_tests(a, attempt, rows, crops, out)
 
 
-def score_tests(a, rows, crops, out, sets_=("vita-test", "psp-test")):
-    """The fixed-line read and its scores (rows: set, id, vn, ref (normalised), name; crops: (grey, invert))."""
+def score_tests(a, attempt, rows, crops, out, sets_=("vita-test", "psp-test")):
+    """The fixed-line read and its scores (rows: set, id, vn, ref (normalised), name; crops: (grey, invert)), with
+    cmd_tests's attempt record (once())."""
     import finder_tighten as FT
     import vocr3_report as V
+    _require(attempt, out / "tests.attempt.json")
     out.mkdir(parents=True, exist_ok=True)
     rts = runtimes(a)
     res = read_all(rts, crops)
@@ -170,14 +190,17 @@ def cmd_clannad(a):
     freeze = json.loads((work / "refs.freeze.json").read_text(encoding="utf-8"))
     if E.sha256(work / "refs.jsonl") != freeze["refs_sha256"]:
         raise SystemExit("refs.jsonl differs from its freeze record")
-    once(out / "clannad.attempt.json", {"started": E.utc_now(), "refs_sha256": freeze["refs_sha256"],
-                                        "protocol_sha256": E.sha256(ROOT / "eval" / "headgate_protocol.json")})
-    score_clannad(a, work, freeze, out)
+    attempt = once(out / "clannad.attempt.json", {
+        "started": E.utc_now(), "refs_sha256": freeze["refs_sha256"],
+        "protocol_sha256": E.sha256(ROOT / "eval" / "headgate_protocol.json")})
+    score_clannad(a, attempt, work, freeze, out)
 
 
-def score_clannad(a, work, freeze, out):
-    """The CLANNAD read and its scores from a clannad_refs work directory (lines, refs, the session's frames)."""
+def score_clannad(a, attempt, work, freeze, out):
+    """The CLANNAD read and its scores from a clannad_refs work directory (lines, refs, the session's frames), with
+    cmd_clannad's attempt record (once())."""
     import clannad_refs as C
+    _require(attempt, out / "clannad.attempt.json")
     import finder_tighten as FT
     import vocr3_report as V
     from PIL import Image

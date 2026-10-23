@@ -10,11 +10,13 @@ gate for all three tiers.
 - **Skip rate.** The gate skips 61.4% / 61.0% / 57.9% of the frames of the finder-cut development lines (S / N / L).
   It skips 0.16-0.18% of the frames whose argmax is not the blank.
 - **Accuracy.** No decode is resolved worse on the development score: greedy, Rubi's beam + 1 MB LM with the counter
-  re-decode, or that with Rubi's confidence cascade. Every 95% upper bound is at most +0.046 points.
+  re-decode, or that with Rubi's confidence cascade. Every 95% upper bound is at most +0.050 points, the margin. Normal
+  and Large pass with room; Small passes at the rule's edges (its greedy lower bound is exactly 0.000 and its cascade
+  upper bound +0.050). These are the corrected numbers ("Development", "Correction").
 - **Time saved (estimates).** About −122 / −137 / −163 ms per nominal 3-line box at 333 MHz on one Cortex-A9 core,
   without prefetch credit (−19.5% / −14.9% / −7.9%). On a real Vita box (89 frames) that is −45 / −51 / −60 ms.
 - **Bytes.** Each blob grows by 1,792 B (`VOCR5_{S,N,L}_w8g.vocr`), the W8I arena by 48 B, and `vocr.o` by
-  1,968 B (VitaSDK `-O2`, NEON).
+  1,940 B (VitaSDK `-O2`, NEON).
 
 Nothing ran on a console: every millisecond is an estimate from qemu instruction counts, calibrated to VOCR3-H15's
 measured 5.0-5.2 ms per CTC frame.
@@ -52,7 +54,7 @@ the layout).
 - A runtime without gate support reads a gated blob as the plain version-1 blob. A blob without the section runs as
   before.
 - `vocr_opts.head_gate` is `VOCR_HEAD_GATE_OFF` by default: today's output, arena and code path. The gate-off
-  instruction count on the Vita build is 0.1-0.3% below main's (the top-K rows' offsets are now computed once per
+  instruction count on the Vita build is 0.13-0.34% below main's (the top-K rows' offsets are now computed once per
   batch, not per class block).
 - `VOCR_HEAD_GATE_ON` needs W8I and a gated blob, else `VOCR_E_MODE`. `VOCR_HEAD_GATE_SCORE` computes the scores
   only. A run that asks for the logits, or sets `vocr_extra.ungated`, skips nothing.
@@ -108,21 +110,37 @@ gated − today has `eval/vocr5_select.py`'s VN-cluster bootstrap. The rule adop
 - the gated blob with the gate off equals today bit for bit;
 - the gated read equals `train/headgate.simulate` applied to today's read.
 
-| tier | decode | dev score today → gated | gated − today, points [95% CI] | tv | dn | wd | lines changed (fixed / wd) |
+| tier | decode | dev score today → gated | gated − today, points [95% CI] | tv | dn | wd | rows changed (fixed) / lines (wd) |
 |---|---|---:|---:|---:|---:|---:|---:|
-| S | greedy | 3.9227 → 3.9355 | +0.013 [−0.002, +0.029] | 1.925 → 1.938% | 1.110 → 1.110% | 6.328 → 6.347% | 17 / 31 |
-| S | rubi | 3.5055 → 3.4975 | −0.008 [−0.063, +0.035] | 1.181 → 1.188% | 0.978 → 0.924% | 5.931 → 5.939% | 37 / 50 |
-| S | rubi + cascade | 3.1550 → 3.1620 | +0.007 [−0.030, +0.046] | 0.981 → 0.975% | 0.762 → 0.750% | 5.438 → 5.461% | 44 / 67 |
-| N | greedy | 3.4263 → 3.4446 | +0.018 [−0.001, +0.046] | 1.075 → 1.125% | 0.984 → 0.984% | 5.823 → 5.835% | 20 / 26 |
-| N | rubi | 3.1527 → 3.1402 | −0.012 [−0.045, +0.021] | 0.950 → 0.912% | 0.672 → 0.648% | 5.494 → 5.500% | 32 / 69 |
-| N | rubi + cascade | 2.9262 → 2.9206 | −0.006 [−0.027, +0.017] | 0.700 → 0.713% | 0.600 → 0.600% | 5.202 → 5.185% | 16 / 39 |
-| L | greedy | 3.0308 → 3.0384 | +0.008 [−0.003, +0.023] | 0.781 → 0.806% | 0.678 → 0.672% | 5.332 → 5.338% | 6 / 13 |
-| L | rubi | 2.8759 → 2.8773 | +0.001 [−0.016, +0.021] | 0.631 → 0.656% | 0.576 → 0.576% | 5.148 → 5.138% | 10 / 29 |
-| L | rubi + cascade | 2.8759 → 2.8773 | +0.001 [−0.016, +0.021] | 0.631 → 0.656% | 0.576 → 0.576% | 5.148 → 5.138% | 10 / 29 |
+| S | greedy | 3.7821 → 3.7980 | +0.016 [0.000, +0.033] | 1.363 → 1.387% | 1.110 → 1.110% | 6.328 → 6.347% | 10 / 31 |
+| S | rubi | 3.4149 → 3.4068 | −0.008 [−0.063, +0.035] | 0.819 → 0.825% | 0.978 → 0.924% | 5.931 → 5.939% | 17 / 50 |
+| S | rubi + cascade | 3.0831 → 3.0964 | +0.013 [−0.022, +0.050] | 0.694 → 0.713% | 0.762 → 0.750% | 5.438 → 5.461% | 21 / 67 |
+| N | greedy | 3.3420 → 3.3571 | +0.015 [−0.001, +0.037] | 0.737 → 0.775% | 0.984 → 0.984% | 5.823 → 5.835% | 9 / 26 |
+| N | rubi | 3.0839 → 3.0746 | −0.009 [−0.040, +0.023] | 0.675 → 0.650% | 0.672 → 0.648% | 5.494 → 5.500% | 16 / 69 |
+| N | rubi + cascade | 2.8777 → 2.8659 | −0.012 [−0.032, +0.008] | 0.506 → 0.494% | 0.600 → 0.600% | 5.202 → 5.185% | 8 / 39 |
+| L | greedy | 2.9589 → 2.9634 | +0.005 [−0.003, +0.014] | 0.494 → 0.506% | 0.678 → 0.672% | 5.332 → 5.338% | 3 / 13 |
+| L | rubi | 2.8337 → 2.8320 | −0.002 [−0.017, +0.012] | 0.462 → 0.475% | 0.576 → 0.576% | 5.148 → 5.138% | 4 / 29 |
+| L | rubi + cascade | 2.8337 → 2.8320 | −0.002 [−0.017, +0.012] | 0.462 → 0.475% | 0.576 → 0.576% | 5.148 → 5.138% | 4 / 29 |
 
 Large has no larger tier, so its cascade is its rubi. Every row meets (a) and (b). (c) is met by all three tiers
-(19.5% / 14.9% / 7.9% of the nominal box), so the verdict is **adopted** for S, N and L. Small's cascade row and
-Normal's greedy row are the closest to the margin (upper bound +0.046 each).
+(19.5% / 14.9% / 7.9% of the nominal box), so the verdict is **adopted** for S, N and L. Normal and Large have room on
+both conditions. Small passes at the rule's edges:
+
+- (a), greedy: the score interval's lower bound is exactly 0.000 (2.5% of the replicates fall below 0, 0.3% at 0), so
+  "not entirely above 0" holds with no slack;
+- (b), cascade: the upper bound is +0.050, the margin itself (+0.0504 before `vocr5_select.compare` rounds the interval
+  to 3 decimals; the rule reads the rounded interval, as VOCR5's own rule does).
+
+**Correction (after audit-head-gate, 2026-10-23).** The first record of this verdict (`a95994f`) keyed each fixed read
+by (cohort, file, line id, view). teacher_val holds 129 PC lines twice, scaled once to Vita size and once to PSP size,
+with the same id and different crops, so both rows of each pair were scored with the PSP-scaled crop's reading and
+tv's component was not VOCR5's. The score now keys each read by its row (`eval/headgate_eval.py` `row_keys`), and
+today's greedy scores equal VOCR5's recorded scores of the same blobs to the last digit (3.7821 / 3.3420 / 2.9589;
+`tests/test_headgate.py` checks it). The corrected record was re-scored from the stored reads, after the protected
+read; the key is its only change, and the rule's code, the reads, the fits and the protected read are unchanged. The
+first record gave every upper bound at most +0.046 points and the same verdict (S greedy +0.013 [−0.002, +0.029], S
+cascade +0.007 [−0.030, +0.046], N greedy +0.018 [−0.001, +0.046]); its dn, wd, skip-rate, LM-candidate and counter
+numbers are the corrected record's. The column of changed fixed lines now counts rows (two reads each), not reads.
 
 **Names** (secondary). Name CER moves by −0.31 to +0.16 points across tiers, decodes and the tv / dn name lines
 (`eval/headgate_dev_20261023.json` `names_cer_pct`).
@@ -196,23 +214,32 @@ development share on finder-cut lines (61.4% / 61.0% / 57.9%) as:
 
 - the head's measured cost × the share skipped, scaled by the measured batch efficiency (1.03-1.05: a gated batch of
   16 kept frames costs a few percent more per frame than an ungated one);
-- minus the gate's measured cost (0.004-0.009 ms a frame);
-- minus each skipped frame's blank logit (0.003-0.007 ms).
+- minus the gate's measured cost (0.005-0.009 ms a frame);
+- minus each skipped frame's blank logit (0.004-0.007 ms).
 
 | tier | ms per frame: main / gate off / gate on (these lines) | head: off → on | gate | est. saving per frame at the dev share | nominal 3-line box (240 frames + 0.1 s) at 333 MHz | at 444 MHz | real box: Vita 89 / PSP 93 / Adrenaline 95 frames | with prefetch credit, nominal box |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| S | 2.197 / 2.192 / 1.742 | 0.867 → 0.410 | 0.007 | 0.510 ms | 626 → 504 ms (−122.3 ms, −19.5%) | −91.7 ms | −45.4 / −47.4 / −48.4 ms | −110.3 ms |
-| N | 3.413 / 3.406 / 2.875 | 0.978 → 0.439 | 0.008 | 0.572 ms | 918 → 780 ms (−137.2 ms, −14.9%) | −102.9 ms | −50.9 / −53.1 / −54.3 ms | −123.4 ms |
-| L | 8.222 / 8.216 / 7.308 | 1.225 → 0.649 | 0.012 | 0.678 ms | 2,072 → 1,909 ms (−162.7 ms, −7.9%) | −122.0 ms | −60.3 / −63.1 / −64.4 ms | −119.0 ms |
+| S | 2.197 / 2.192 / 1.743 | 0.867 → 0.410 | 0.007 | 0.510 ms | 626 → 504 ms (−122.3 ms, −19.5%) | −91.7 ms | −45.4 / −47.4 / −48.4 ms | −110.3 ms |
+| N | 3.413 / 3.407 / 2.876 | 0.978 → 0.439 | 0.007 | 0.572 ms | 918 → 780 ms (−137.2 ms, −14.9%) | −102.9 ms | −50.9 / −53.1 / −54.3 ms | −123.4 ms |
+| L | 8.222 / 8.217 / 7.309 | 1.225 → 0.649 | 0.012 | 0.678 ms | 2,072 → 1,909 ms (−162.7 ms, −7.9%) | −122.0 ms | −60.3 / −63.1 / −64.4 ms | −119.0 ms |
 
 text-stats-gate's float gate was estimated at −116 / −123 / −151 ms. Its estimate assumed 54.5% / 51.9% / 50.8% of
 frames skipped; the int8 gate skips more.
 
 In instructions per frame (gate off → on, these lines' skip shares):
 
-- **Head:** 239,827 → 111,764 (S), 270,807 → 120,138 (N), 270,877 → 143,394 (L).
-- **Gate:** 1,569-1,622.
-- **Main against gate off:** the gate-off build is 1,781-2,010 instructions a frame below main.
+- **Head:** 239,827 → 111,764 (S), 270,807 → 120,138 (N), 270,878 → 143,394 (L).
+- **Gate:** 1,573-1,626.
+- **Main against gate off:** the gate-off build is 1,782-2,011 instructions a frame below main (0.34 / 0.25 / 0.13%).
+
+Large's measured saving on these lines (0.908 ms a frame at their 48.9% skip share) is larger than its projection at
+the development share (0.678 ms at 57.9%). With the gate on, Large's other phases also get cheaper in the cache model
+(6.992 → 6.648 ms a frame: the head's weights are streamed less often and evict less), and the projection counts only
+the head and the gate. Small's and Normal's other phases do not move. Large's estimate is therefore conservative.
+
+The measurements are of the committed runtime (`vocr.c` `ad1bfa89…`, recorded in `eval/headgate_a9_20261023.json`),
+re-measured after audit-head-gate's fixes; the first ones (`3f05dee2…`) gave the same savings at the reported
+precision.
 
 In a real job the recognizer is about a fifth of the latency (text-stats). The saving is per CTC frame, so a real box
 gains about 0.37 of the nominal figure. Nothing of this has run on a console.
@@ -226,8 +253,8 @@ gains about 0.37 of the nominal figure. Nothing of this has run on a console.
 
 - **Arena.** With the gate on it grows by `al16(2 × (batch + tile − 1))` bytes. The gate's scratch (a tile of
   frames' int16 input, scales and hidden units) fits inside the head's.
-- **Code.** `vocr.o` grows from 18,219 to 20,187 B (VitaSDK gcc 15.2, Cortex-A9 NEON, `-O2`, `vita/scripts/build.sh`'s
-  size step). The scalar build grows from 13,403 to 15,195 B, and psp-gcc `-O2 -G0` from 19,795 to 22,923 B.
+- **Code.** `vocr.o` grows from 18,219 to 20,159 B (VitaSDK gcc 15.2, Cortex-A9 NEON, `-O2`, `make -C runtime size`).
+  The scalar build grows from 13,403 to 15,159 B, and psp-gcc `-O2 -G0` (`make -C psp size`) from 19,795 to 22,959 B.
 - **Stack.** The deepest `vocr_run` → `run_head` → `mm_i16` chain grows from 2,392 to 2,528 B (`-fstack-usage`).
 - **Rubi's weights block** (page-rounded). Large's crosses a page: 604 → 605 pages, +4,096 B. Small and Normal stay
   at 201 and 290 pages.
@@ -284,7 +311,11 @@ under qemu-arm):
 - score-only scores equal an independent reference of the arithmetic;
 - the gated run equals the reference's skips, at six tilings and K = 0 / 1 / 3;
 - *t* = +∞ skips nothing and *t* = −∞ skips every frame;
-- `ungated` and asking for the logits each give today's read.
+- `ungated` and asking for the logits each give today's read;
+- all of it again on a blob whose head follows the stem directly (no frame-row layer between them, so the front's
+  last layer appends the frames): gate off gives main's known answer, gate on the reference's skips
+  (audit-head-gate F1: before the fix that blob failed with the gate off and wrote out of bounds with it on; no
+  released model has that shape).
 
 **Twin** (`tests/test_headgate.py`): on a random-init model, the C runtime equals `train/headgate.py` bit for bit.
 This covers gate scores, skipped frames, top-K, blank logits, best, text, confidence and character count, at six
@@ -323,7 +354,8 @@ HEAVY_SLOTS=12 $HERD/heavy.sh .venv/bin/python eval/headgate_eval.py score --cac
 ## Limits
 
 - **Estimates.** Every console time is an estimate: qemu instruction counts with a cache model, calibrated on one
-  model (H15) in one game at an assumed 333 MHz. The gated runtime has not run on a console; Rubi's draft lists the
+  model (H15) in one game at an assumed 333 MHz. The gated runtime has not run on a console. Rubi's draft PR, to be
+  opened after this merge, will pin these blobs, turn the gate on in its jobs with the counter re-read, and list the
   console test.
 - **Training data.** The gate's training frames are 91% the owner's captures, and the frozen model's frames there may
   be more confident than on unseen games. The development check is the guard.

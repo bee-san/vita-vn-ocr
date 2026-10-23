@@ -1948,6 +1948,9 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
     n_front = c->op[f].n_tile;
     ntiles = ((long)T + c->op[L - 1].lag + (long)c->tile - 1) / (long)c->tile;
     for (k = 0; k < ntiles; k++) {
+        /* the frames this tile appends, from its first op on: a head right after the front's last op (no
+         * frame-row layer between them) has the front append them (audit-head-gate F1) */
+        const unsigned s0 = acc_fill, a0 = produced;
         if (ex && ex->cancel && ex->cancel(ex->user)) {
             text[0] = 0;
             return VOCR_E_CANCELLED;
@@ -1965,18 +1968,14 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
                         i == f ? u : 0u, &acc_fill);
             }
         }
-        {
-            const unsigned s0 = acc_fill, a0 = produced;
-            for (i = f + 1; i + 1 < L; i++) {
-                VOCR_MARK(i);
-                step_op(c, i, k * (long)c->op[i].n_tile - c->op[i].lag, c->op[i].n_tile, wout[i], 0u,
-                        &acc_fill);
-            }
-            produced += acc_fill - s0;
-            if (hook && acc_fill > s0) {
-                VOCR_MARK(VOCR_PROF_GATE);
-                acc_fill = gate_tile(c, &o, s0, acc_fill, a0);
-            }
+        for (i = f + 1; i + 1 < L; i++) {
+            VOCR_MARK(i);
+            step_op(c, i, k * (long)c->op[i].n_tile - c->op[i].lag, c->op[i].n_tile, wout[i], 0u, &acc_fill);
+        }
+        produced += acc_fill - s0;
+        if (hook && acc_fill > s0) {
+            VOCR_MARK(VOCR_PROF_GATE);
+            acc_fill = gate_tile(c, &o, s0, acc_fill, a0);
         }
         if (acc_fill >= c->head) {
             VOCR_MARK(L - 1);

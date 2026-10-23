@@ -574,14 +574,14 @@
   },
   {
    "id": 8,
-   "utc": "2026-10-23T15:55:49Z",
+   "utc": "2026-10-23T18:32:41Z",
    "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
    "what": [
-    "A harness file re-pinned, not a textspot3 change: runtime/vocr.c and runtime/vocr.h, the recognizer the scores read text with (pinned through eval/textspot_protocol.json, which textspot2 and textspot3 pin in turn), gained #117's head gate (docs/headgate.md). With the gate off (vocr_opts.head_gate = 0, every textspot path) every output is bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes and runtime/tests/parity.py's bit-exact model are unchanged."
+    "A harness file re-pinned, not a textspot3 change: runtime/vocr.c and runtime/vocr.h, the recognizer the scores read text with (pinned through eval/textspot_protocol.json, which textspot2 and textspot3 pin in turn), gained #117's head gate (docs/headgate.md). With the gate off (vocr_opts.head_gate = 0, every textspot path) every output is bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes and runtime/tests/parity.py's bit-exact model are unchanged. Re-pinned after audit-head-gate: its F1 fix (the frames of a head right after the stem, a topology no pinned model has) and a comment in vocr.h change no output of any pinned model."
    ],
    "sources_sha256": {
-    "runtime/vocr.c": "2ca32648c6ee014b4ca99f9da06ca814d579a1832a9337c5e72d6837dacf2980",
-    "runtime/vocr.h": "a5c191a0648eb161f92fe3920836fd820f252cda2dab8cadb680bd83e41636a7"
+    "runtime/vocr.c": "ad1bfa89797bab4447c150bca71c2d9f146787bf96f32a365d4549992440fb70",
+    "runtime/vocr.h": "35fc6e921c27f7f787263fa8786b4fa8d95a7e77e0eb6ea8e11c92c69c45a4a7"
    }
   }
  ],

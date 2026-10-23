@@ -15,6 +15,8 @@ A gate is a 96 -> 16 (ReLU) -> 1 network on the output head's input, as the W8I 
    28 f32 t   32 f32 b2   36 u32 w1 offset   40 u32 s1 offset   44 u32 b1 offset   48 u32 w2 offset
    52 u32 CRC-32 of the section's bytes [64, end)   56..63 zero
     w1 int8 [hidden/8][k][8] (a pointwise layer's packing), s1 / b1 / w2 float32 [hidden]
+  The CRC covers the arrays, not the header: t and b2 are content outside it, as the base blob's header fields are
+  outside its CRC; vocr_load checks the header's structure (and rejects a NaN t or b2), not their values.
 
 A runtime without gate support reads the version-1 blob as before (it reads the header's byte count only);
 a blob without the section runs exactly as before in this one.

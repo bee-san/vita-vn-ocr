@@ -263,8 +263,27 @@ def load_cache(d, tier):
     return c
 
 
+def row_keys(keys, fixed):
+    """The cache's read keys with each fixed read's line id replaced by its row's position in fixed_rows(): a tv
+    file holds the same id twice (129 PC lines, scaled once to Vita and once to PSP size, with different crops),
+    so (cohort, file, id, view) does not name one read (audit-head-gate B1). The cache holds the fixed rows' two
+    reads (rv, rvn) first, in fixed_rows() order (reads()); this checks it."""
+    out = list(keys)
+    for i, (coh, f, r) in enumerate(fixed):
+        for j, v in enumerate(("rv", "rvn")):
+            if keys[2 * i + j] != (coh, f, r["id"], v):
+                raise SystemExit(f"the cache's read {2 * i + j} is {keys[2 * i + j]}, not row {i}'s {v}")
+            out[2 * i + j] = (coh, f, i, v)
+    if any(k[0] in ("tv", "dn") for k in keys[2 * len(fixed):]):
+        raise SystemExit("the cache holds fixed reads after the fixed rows")
+    if len(set(out)) != len(out):
+        raise SystemExit("the read keys are not unique")
+    return out
+
+
 def comps_for(fixed, wdc, texts):
-    """vocr5_select Components (tv, dn, wd) from {model: {key: normalised text}}."""
+    """vocr5_select Components (tv, dn, wd) from {model: {key: normalised text}}, the fixed reads keyed by
+    row_keys() (each row scored with its own two reads, as vocr5_select.load_fixed scores them)."""
     import vocr5_select as V
 
     from general_vn_textbox_guard import transcript_score
@@ -272,11 +291,11 @@ def comps_for(fixed, wdc, texts):
     tv_shots = {c["shot"] for c in wdc["tv_dlg"]}
     for model, tx in texts.items():
         for coh in ("tv", "dn"):
-            rows = [(f, r) for c, f, r in fixed if c == coh]
-            rows.sort(key=lambda fr: fr[0])        # vocr5_select.load_fixed pools the files in sorted order
-            e = [sum(lev(tx[(coh, f, r["id"], v)], r["ref"]) for v in ("rv", "rvn")) for f, r in rows]
-            out[coh].add(model, e, [2 * len(r["ref"]) for _, r in rows], [r["vn"] for _, r in rows],
-                         [r["name"] for _, r in rows], {})
+            rows = [(f, r, i) for i, (c, f, r) in enumerate(fixed) if c == coh]
+            rows.sort(key=lambda fr: fr[0])        # vocr5_select.load_fixed pools the files in sorted order (stable)
+            e = [sum(lev(tx[(coh, f, i, v)], r["ref"]) for v in ("rv", "rvn")) for f, r, i in rows]
+            out[coh].add(model, e, [2 * len(r["ref"]) for _, r, _ in rows], [r["vn"] for _, r, _ in rows],
+                         [r["name"] for _, r, _ in rows], {})
         rows = []
         for coh in WD:
             for mode in ("grad", "refine"):
@@ -324,8 +343,12 @@ def cmd_score(a):
     for t, c in caches.items():
         if c["keys"] != keys:
             raise SystemExit(f"{t}: the cache holds other reads")
+    keys = row_keys(keys, fixed)
     blobs = dict(s.partition("=")[::2] for s in a.blob)
     savings = json.loads(Path(a.savings).read_text()) if a.savings else {}
+    savings_rec = ({"file": Path(a.savings).name, "sha256": sha256(a.savings),
+                    "nominal_share": {t: savings.get(t, {}).get("nominal_share") for t in ("S", "N", "L")}}
+                   if a.savings else None)
     texts = {}            # (tier, arm, decode) -> {key: text}
     confs = {}            # (tier, arm) -> {key: conf}
     rereads = {}
@@ -367,7 +390,8 @@ def cmd_score(a):
               "protocol_sha256": sha256(ROOT / "eval" / "headgate_protocol.json"),
               "lm": {"file": Path(a.lm).name, "sha256": sha256(a.lm), **LM_OPTS, "counter": COUNTER,
                      "cascade_conf": CASCADE_CONF, "cascade": CASCADE},
-              "caches": {t: c["meta"] for t, c in caches.items()}, "tiers": {}}
+              "caches": {t: c["meta"] for t, c in caches.items()}, "savings": savings_rec,
+              "fixed_keys": "row", "tiers": {}}
     for meta in report["caches"].values():
         meta.pop("native", None)
     for tier in ("S", "N", "L"):
@@ -392,10 +416,10 @@ def cmd_score(a):
                 tx[arm] = m
             comps = comps_for(fixed, wdc, tx)
             cmp = V.compare(comps, ["today"], ["gated"])
-            changed = {"fixed_lines": sum(texts[(tier, "today", d)][k] != texts[(tier, "gated", d)][k]
-                                          for k in keys if k[0] in ("tv", "dn")),
-                       "wd_lines": sum(texts[(tier, "today", d)][k] != texts[(tier, "gated", d)][k]
-                                       for k in keys if k[0] in WD)}
+            diff = {k for k in keys if texts[(tier, "today", d)][k] != texts[(tier, "gated", d)][k]}
+            changed = {"fixed_reads": sum(k[0] in ("tv", "dn") for k in diff),      # two views a row
+                       "fixed_rows": len({k[:3] for k in diff if k[0] in ("tv", "dn")}),
+                       "wd_lines": sum(k[0] in WD for k in diff)}
             names = {arm: {c: round(100 * comps[c].rate([arm], "name"), 4) for c in ("tv", "dn")} for arm in ARMS}
             sv = savings.get(tier, {}).get("nominal_share")
             entry = {"compare": cmp, "score_today": round(V.score_of(comps, "today"), 4),
@@ -426,7 +450,7 @@ def verdict(r):
 
 def skip_stats(keys, res, fixed, wdc):
     """Shares of frames the gate skipped, over every read and by part; non-blank argmax frames skipped."""
-    info = {(c, f, r["id"]): r for c, f, r in fixed}
+    info = {(c, f, i): r for i, (c, f, r) in enumerate(fixed)}          # keys: row_keys()
     groups = {}
 
     def add(g, fr, sk, nb_sk, nb):
@@ -526,8 +550,10 @@ def cmd_a9(a):
     if not pack.exists():
         AL.subset_pack(src, pack, 60, 100, 24)
     lines = read_pack(pack)
+    here = sha256(ROOT / "runtime" / "vocr.c")
     out = {"kind": "headgate-a9", "schema": 1, "created": utc_now(), "scale": scale, "mhz": mhz,
            "pack": {"source": src.name, "sha256": sha256(pack), "lines": len(lines)},
+           "runtime_vocr_c_sha256": here, "main_vocr_c_sha256": None,
            "box": {"nominal_frames": 240, "finder_ms": 100.0, "real_frames": {"vita": 89, "psp": 93, "adrenaline": 95}},
            "tiers": {}}
     savings = {}
@@ -558,6 +584,12 @@ def cmd_a9(a):
                 meta, frames, res = AL.analyse(d, mhz)
                 if frames != fr:
                     raise SystemExit(f"{d}: {frames} frames, the pack has {fr}")
+                if cfg == "main":
+                    out["main_vocr_c_sha256"] = out["main_vocr_c_sha256"] or meta["vocr_c_sha256"]
+                    if meta["vocr_c_sha256"] != out["main_vocr_c_sha256"]:
+                        raise SystemExit(f"{d}: main's runs measured two runtimes")
+                elif meta["vocr_c_sha256"] != here:        # audit-head-gate N1: the runtime measured is this one
+                    raise SystemExit(f"{d}: measured vocr.c {meta['vocr_c_sha256'][:12]}, this is {here[:12]}")
                 ms = {i: r["high"] * scale / frames / (mhz * 1000) for i, r in res.items()}
                 ph[cfg] = {"ms_per_frame": sum(ms.values()), "head_ms": ms.get(head_id, 0.0),
                            "gate_ms": ms.get(AL.PROF_GATE, 0.0),

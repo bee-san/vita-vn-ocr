@@ -229,9 +229,10 @@ def test_protocol_is_frozen():
 
 
 def _signed(x, nd=3):
-    """+0.013 / −0.002 (U+2212), as docs/headgate.md writes a difference."""
-    s = f"{x:+.{nd}f}"
-    return s.replace("-", "\u2212")
+    """+0.013 / −0.002 (U+2212) / 0.000, as docs/headgate.md writes a difference."""
+    if x == 0:
+        return f"{0:.{nd}f}"
+    return f"{x:+.{nd}f}".replace("-", "\u2212")
 
 
 DEV = sorted((ROOT / "eval").glob("headgate_dev_*.json"))
@@ -239,24 +240,71 @@ A9 = sorted((ROOT / "eval").glob("headgate_a9_*.json"))
 FIT = sorted((ROOT / "eval").glob("headgate_fit_*.json"))
 
 
+def test_row_keys_name_each_read():
+    """A tv file holds some line ids twice (a PC line scaled to Vita and to PSP size, two crops): the score keys
+    each fixed read by its row's position, not by its id (audit-head-gate B1)."""
+    import headgate_eval as E
+    fixed = [("tv", "a.npz", {"id": "x"}), ("tv", "a.npz", {"id": "x"}), ("dn", "b.npz", {"id": "x"})]
+    keys = [k for c, f, r in fixed for k in ((c, f, r["id"], "rv"), (c, f, r["id"], "rvn"))]
+    keys += [("tv_dlg", "grad", 0, 0), ("tv_dlg", "refine", 0, 0)]
+    assert len(set(keys)) == 6                                   # the tv rows' id keys collide
+    rk = E.row_keys(keys, fixed)
+    assert len(set(rk)) == len(rk) == 8
+    assert rk[:4] == [("tv", "a.npz", 0, "rv"), ("tv", "a.npz", 0, "rvn"), ("tv", "a.npz", 1, "rv"),
+                      ("tv", "a.npz", 1, "rvn")] and rk[6:] == keys[6:]
+    with pytest.raises(SystemExit):
+        E.row_keys(keys[1:] + keys[:1], fixed)                   # a cache in another order
+
+
+def _rule(e, share):
+    """eval/headgate_eval.py rule() recomputed from a decode's recorded intervals and the recorded saving share."""
+    c = e["compare"]
+    a = not c["score"]["ci95"][0] > 0 and all(not c[k]["ci95"][0] > 0 for k in ("tv", "dn", "wd"))
+    return {"not_resolved_worse": a, "upper_within_margin": c["score"]["ci95"][1] <= 0.05,
+            "saving_at_least_5pct": share is not None and share >= 0.05}
+
+
+@pytest.mark.skipif(not DEV, reason="the development record is not committed yet")
+def test_dev_today_is_vocr5s_score():
+    """The development score of today's blobs is VOCR5's own recorded score of those blobs (eval/vocr5_scores_*):
+    the same cohorts, rows and score, so no row is scored with another's read (audit-head-gate B1)."""
+    dev = json.loads(DEV[-1].read_text(encoding="utf-8"))
+    assert dev["fixed_keys"] == "row"
+    for t, name in (("S", "Small"), ("N", "Normal"), ("L", "Large")):
+        runs = json.loads((ROOT / "eval" / f"vocr5_scores_{name}_20261016.json").read_text(encoding="utf-8"))["runs"]
+        run = [r for r in runs if r.get("blob_sha256") == dev["caches"][t]["base_sha256"]]
+        assert len(run) == 1, t
+        assert abs(dev["tiers"][t]["decodes"]["greedy"]["score_today"] - run[0]["score"]) <= 5e-5, t
+
+
 @pytest.mark.skipif(not (DEV and A9 and FIT), reason="the development records are not committed yet")
 def test_doc_numbers_are_the_records():
-    """docs/headgate.md's development, time and training tables are the committed records' numbers."""
+    """docs/headgate.md's development, time and training tables are the committed records' numbers, and each
+    verdict is what the rule gives on the record (whatever it is: audit-head-gate N7)."""
     doc = (ROOT / "docs" / "headgate.md").read_text(encoding="utf-8")
     dev = json.loads(DEV[-1].read_text(encoding="utf-8"))
+    a9 = json.loads(A9[-1].read_text(encoding="utf-8"))
     names = {"greedy": "greedy", "rubi": "rubi", "rubi_cascade": "rubi + cascade"}
+    order = {"rejected": 0, "behind_the_switch": 1, "adopted": 2}
     for t, tr in dev["tiers"].items():
-        assert tr["verdict"] == "adopted"
+        share = dev["savings"]["nominal_share"][t]
+        assert share == a9["tiers"][t]["runs"]["pld0"]["saving"]["dev_wd"]["nominal_share"]   # the rule's input
         for d, label in names.items():
             e = tr["decodes"][d]
             c = e["compare"]["score"]
             cell = f"| {t} | {label} | {e['score_today']:.4f} → {e['score_gated']:.4f} | " \
                    f"{_signed(c['delta_points'])} [{_signed(c['ci95'][0])}, {_signed(c['ci95'][1])}] |"
             assert cell in doc, cell
-            assert e["rule"] == {"not_resolved_worse": True, "upper_within_margin": True,
-                                 "saving_at_least_5pct": True}
+            assert e["rule"] == _rule(e, share), (t, d)
+            r = e["rule"]
+            assert e["verdict"] == ("rejected" if not r["not_resolved_worse"] else "adopted"
+                                    if r["upper_within_margin"] and r["saving_at_least_5pct"] else "behind_the_switch")
+        assert tr["verdict"] == min((tr["decodes"][d]["verdict"] for d in names), key=order.get)
         sk = tr["skip"]["wd_finder_lines"]["skip_share"]
         assert f"{100 * sk:.1f}%" in doc
+    verdicts = {tr["verdict"] for tr in dev["tiers"].values()}
+    if len(verdicts) == 1:
+        assert f"the verdict is **{verdicts.pop().replace('_', ' ')}** for S, N and L" in doc
     a9 = json.loads(A9[-1].read_text(encoding="utf-8"))
     for t, tr in a9["tiers"].items():
         s = tr["runs"]["pld0"]["saving"]["dev_wd"]

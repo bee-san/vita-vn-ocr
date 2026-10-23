@@ -6,7 +6,7 @@
  * paths, the head's argmax on ties, signed zeros, NaN and -inf (a 21-class head:
  * two full 8-class blocks and a partial one), and the head gate (docs/headgate.md): its
  * section's validation and CRC, and its runs against an independent reference of its
- * score and of the skipped frames, at every tiling. Run under ASan/UBSan by `make check`, and
+ * score and of the skipped frames, at every tiling, on that blob and on one whose head follows the stem. Run under ASan/UBSan by `make check`, and
  * as Cortex-A9 NEON and scalar builds under qemu-arm by `make check-arm`.
  */
 #include "../vocr.h"
@@ -191,6 +191,47 @@ static size_t build_blob_sc(int int8, unsigned s, unsigned c1)
     wr16(blob_buf + 16, 8);
     wr16(blob_buf + 18, 256);
     wr16(blob_buf + 20, 4);
+    wr16(blob_buf + 22, n_ops);
+    wr32(blob_buf + 24, CLASSES);
+    wr32(blob_buf + 28, 64);
+    wr32(blob_buf + 32, off);
+    wr32(blob_buf + 36, pos);
+    wr32(blob_buf + 40, crc32_ref(blob_buf + 64, blob_pos - 64));
+    return blob_pos;
+}
+
+/* The head right after the stem, no frame-row layer between them (audit-head-gate F1): height 4, a 4x3 conv
+ * of stride 2 (1->16 channels, 4->1 rows), head 16->6. The front's last op appends the frames to the head's
+ * accumulator itself. */
+static size_t build_stem_head_blob(int int8)
+{
+    unsigned char vocab[64];
+    const char *chars[CLASSES - 1] = {"a", "\xe3\x81\x82", "b", "\xe3\x83\xbc", "!"};
+    unsigned i, pos = 0, n_ops = 2;
+    uint32_t off;
+    memset(blob_buf, 0, sizeof blob_buf);
+    blob_pos = 64 + 64 * n_ops;
+    lcg = 4242u;
+    off = put_floats(12 * 16, 0.6f);
+    op_rec(0, 1, 1 | 4, 4, 3, 1, 2, 0, 1, 1, 16, 4, 1, off, 12 * 16 * 4, put_floats(16, 0.1f), 0, 12, 16);
+    mat_op(1, 4, 4, 1, 16, CLASSES, 1, 1, int8);
+    wr16(vocab, 0);
+    wr16(vocab + 2, 0);
+    for (i = 0; i < CLASSES - 1; i++) {
+        size_t n = strlen(chars[i]);
+        memcpy(vocab + 2 * (CLASSES + 1) + pos, chars[i], n);
+        pos += (unsigned)n;
+        wr16(vocab + 2 * (i + 2), pos);
+    }
+    off = put(vocab, 2 * (CLASSES + 1) + pos);
+    memcpy(blob_buf, "VOCR", 4);
+    wr16(blob_buf + 4, 1);
+    wr16(blob_buf + 6, 64);
+    wr32(blob_buf + 8, (uint32_t)blob_pos);
+    wr32(blob_buf + 12, int8 ? 1u : 0u);
+    wr16(blob_buf + 16, 4);
+    wr16(blob_buf + 18, 256);
+    wr16(blob_buf + 20, 2);
     wr16(blob_buf + 22, n_ops);
     wr32(blob_buf + 24, CLASSES);
     wr32(blob_buf + 28, 64);
@@ -1021,8 +1062,9 @@ static void test_gate_load(void)
 
 /* head_gate OFF on a gated blob is the blob without the section exactly; SCORE computes the reference's scores
  * and changes nothing; ON gives what the ungated run gives with the skipped frames (score > t) read as blanks,
- * at every tiling; options and modes it needs. */
-static void test_gate_run(void)
+ * at every tiling; options and modes it needs. build: the base blob (int8); want: the known answer of its W8I
+ * run without the gate, the FNV-1a 64 of its logits and text as main's runtime computes them (0: not checked). */
+static void test_gate_run_on(size_t (*build)(int), uint64_t want_hash)
 {
     const unsigned w = 257, hgt = 10, tiles[6][2] = {{0, 0}, {1, 1}, {2, 3}, {3, 1}, {5, 7}, {64, 64}};
     const unsigned ks[3] = {0, 1, 3};
@@ -1035,10 +1077,19 @@ static void test_gate_run(void)
     unsigned f, j, ti, ki, frames, skipped = 0;
     float t;
     make_image(w, hgt, 0);
-    n = build_blob(1);
+    n = build(1);
     /* the base blob, W8I, top-3: the reference */
     CHECK(gate_run(n, 0, 0, 0, w, hgt, 3, 1, ref, sizeof ref, &e0) == VOCR_OK);
     frames = e0.frames;
+    if (want_hash) {
+        uint64_t kh = fnv64(0xcbf29ce484222325ull, g_logits, (size_t)frames * CLASSES * sizeof(float));
+        kh = fnv64(kh, ref, strlen(ref) + 1);
+        if (kh != want_hash) {
+            fprintf(stderr, "test_gate_run_on: logits hash %016llx, want %016llx\n", (unsigned long long)kh,
+                    (unsigned long long)want_hash);
+            failures++;
+        }
+    }
     memcpy(logits0, g_logits, sizeof logits0);
     memcpy(hin0, g_hin, sizeof hin0);
     memcpy(tv0, g_tv, sizeof tv0);
@@ -1191,6 +1242,16 @@ static void test_gate_run(void)
         ex.user = &calls;
         CHECK(vocr_run(&c, &im, text, sizeof text, &ex) == VOCR_E_CANCELLED && text[0] == 0);
     }
+}
+
+/* the full model shape; and the head right after the stem (audit-head-gate F1: its frames come from the front's
+ * last op, so they must be counted and gated there too). The stem-head blob's known answer is main 6f24967's
+ * (host gcc and clang give the same); before the fix this branch read that blob as VOCR_E_FORMAT. */
+#define STEM_HEAD_W8I_HASH 0x3be72ad7e834d8caull
+static void test_gate_run(void)
+{
+    test_gate_run_on(build_blob, 0);
+    test_gate_run_on(build_stem_head_blob, STEM_HEAD_W8I_HASH);
 }
 
 int main(void)

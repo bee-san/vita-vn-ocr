@@ -80,7 +80,10 @@ typedef struct {
  *   score = b2 + w2[0] h[0] + w2[1] h[1] + ...   (float, in this order)
  * and a threshold t: with vocr_opts.head_gate = VOCR_HEAD_GATE_ON a frame whose score > t skips the output
  * head and reads as the blank (its blank logit computed as the head computes it, every other class -inf).
- * A blob without the section loads and runs as before; a runtime without gate support ignores it. */
+ * A blob without the section loads and runs as before; a runtime without gate support ignores it.
+ * vocr_check_crc checks the section's CRC, which covers its arrays but not its 64-byte header: t and b2 are
+ * content outside it, as the base blob's header is outside the base CRC (vocr_load rejects a NaN in either;
+ * another changed value is not detected; audit-head-gate N5). */
 #define VOCR_GATE_VERSION 1
 #define VOCR_GATE_MAX_HIDDEN 64
 

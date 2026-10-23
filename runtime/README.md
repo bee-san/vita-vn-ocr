@@ -253,8 +253,8 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.gated: frames whose he
   content; `export.py --info` and `headgate.py info` print it.
 - Cost (VitaSDK gcc 15.2, Cortex-A9, estimates from qemu instruction counts calibrated to VOCR3-H15's console rate,
   docs/headgate.md): the gate is about 1,600 instructions a frame; VOCR5-N's head goes from 270,807 to 120,138
-  instructions a frame at the measured lines' 57% skip share. `vocr.o` grows from 18,219 to 20,103 B at `-O2` with NEON
-  (scalar 13,403 to 15,183 B; psp-gcc `-O2 -G0` 19,795 to 22,907 B). No malloc; the arena grows by 2 B per accumulated
+  instructions a frame at the measured lines' 57% skip share. `vocr.o` grows from 18,219 to 20,159 B at `-O2` with NEON
+  (scalar 13,403 to 15,159 B; psp-gcc `-O2 -G0` 19,795 to 22,959 B). No malloc; the arena grows by 2 B per accumulated
   frame (the frames' line indices), and the gate's scratch fits the head's.
 - Twin and tests: `train/headgate.py` (`gate_scores`, `simulate`: a gated run from an ungated one) is bit-exact;
   `tests/test_headgate.py` checks it against the C library at several tilings, and `tests/test_vocr.c` (ASan/UBSan,

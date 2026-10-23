@@ -312,9 +312,34 @@ def cmd_retarget(a):
     print(json.dumps({"out": a.out, "sha256": H2.sha256(a.out), "t": float(esc["t"])}))
 
 
+def cmd_compose(a):
+    """The two-level blob with head-gate's gate: its VOC2 blob's base (the permuted blob), the VOCG section of a
+    head-gate blob of the same tier (its parameters and threshold, bound again to the permuted base), then the VOC2
+    trailer unchanged (bound to the same base)."""
+    import headgate as HG
+    two = Path(a.two).read_bytes()
+    tr = H2.read_trailer(two)
+    base = HG.base_of(two)
+    g = HG.read_gate(Path(a.gated).read_bytes())
+    if g is None or HG.read_gate(two) is not None:
+        raise SystemExit("--gated needs a VOCG section and --two none")
+    params = {k: g[k] for k in ("q", "scale", "bias", "w2", "b2")}
+    gated = HG.append_gate(base, params, g["t"])
+    out = H2.attach(gated, two[tr["offset"]:tr["offset"] + tr["bytes"]])
+    rt = H2.read_trailer(out)
+    assert rt["l1_blocks"] == tr["l1_blocks"] and HG.read_gate(out)["t"] == g["t"]
+    Path(a.out).write_bytes(out)
+    print(json.dumps({"out": a.out, "sha256": H2.sha256(a.out), "bytes": len(out), "gate_bytes": g["bytes"],
+                      "gate_t": float(g["t"]), "gated_from": a.gated, "gated_sha256": H2.sha256(a.gated)}))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("compose")
+    p.add_argument("--two", required=True)
+    p.add_argument("--gated", required=True)
+    p.add_argument("--out", required=True)
     p = sub.add_parser("retarget")
     p.add_argument("--blob", required=True)
     p.add_argument("--t", required=True)
@@ -343,7 +368,8 @@ def main():
     p.add_argument("--recall", default="r0.999", choices=("r0.999", "r0.9999"))
     p.add_argument("--out", required=True)
     a = ap.parse_args()
-    {"escapes": cmd_escapes, "build": cmd_build, "r48": cmd_r48, "retarget": cmd_retarget}[a.cmd](a)
+    {"escapes": cmd_escapes, "build": cmd_build, "r48": cmd_r48, "retarget": cmd_retarget,
+     "compose": cmd_compose}[a.cmd](a)
 
 
 if __name__ == "__main__":

@@ -120,7 +120,7 @@ def load_fixed(paths, comp, devnative):
             chars = [len(x["ref"]) * len(VIEWS) for x in lines]
             vns = [x["vn"] for x in lines]
             is_name = [names[x["id"]] if devnative else "namelike" in x.get("tags", []) for x in lines]
-            keys = [f"{Path(f).name}|{x['id']}" for x in lines]
+            keys = [f"{Path(f).name}|{k}|{x['id']}" for k, x in enumerate(lines)]   # a row is its position
             for model, m in s["models"].items():
                 e = sum(np.asarray(m["errors"][v], float) for v in VIEWS)
                 by_model.setdefault(model, []).append((f, e, chars, vns, is_name, keys,
@@ -162,8 +162,8 @@ def load(args):
     load_fixed(args.tv, tv, devnative=False)
     load_fixed(args.dn, dn, devnative=True)
     load_wd(args.wd, wd)
-    tv.attach_floor({f"teacher_val_dev.npz|{k}": v for k, v in floor["tv"].items()})
-    dn.attach_floor({f"{f}|{k}": v for f, rows in floor["dn"].items() for k, v in rows.items()})
+    tv.attach_floor({f"teacher_val_dev.npz|{k}|{v['id']}": v for k, v in enumerate(floor["tv"])})
+    dn.attach_floor({f"{f}|{k}|{v['id']}": v for f, rows in floor["dn"].items() for k, v in enumerate(rows)})
     wd.attach_floor(floor["wd"])
     return {"tv": tv, "dn": dn, "wd": wd}, floor
 

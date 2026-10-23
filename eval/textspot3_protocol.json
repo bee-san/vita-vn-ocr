@@ -586,14 +586,14 @@
   },
   {
    "id": 9,
-   "utc": "2026-10-23T18:39:22Z",
+   "utc": "2026-10-23T19:30:34Z",
    "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
    "what": [
-    "A harness file re-pinned, not a textspot3 change: runtime/vocr.c and runtime/vocr.h gained #117's two-level output head (docs/head2level.md) on top of amendment 8's head gate. With it off (vocr_opts.two_level = 0, every textspot path) every output is bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes and runtime/tests/parity.py's bit-exact model are unchanged."
+    "A harness file re-pinned, not a textspot3 change: runtime/vocr.c and runtime/vocr.h gained #117's two-level output head (docs/head2level.md) on top of amendment 8's head gate (with its audit fixes). With it off (vocr_opts.two_level = 0, every textspot path) every output is bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes and runtime/tests/parity.py's bit-exact model are unchanged."
    ],
    "sources_sha256": {
-    "runtime/vocr.c": "3bba510619f4a49b1c94044a34a237fa0200ce019719be812d3adde5b935b834",
-    "runtime/vocr.h": "90b5476ba334e5daa21e3d81f14cf9ad89ea31906fa203b89db293feec87501c"
+    "runtime/vocr.c": "8ad4c4a0dfb68b1d8981bbe3666ec8f5f3058af335e781e6b5184493064d5809",
+    "runtime/vocr.h": "f2e8a97c41cdda36f3c767f2df9a2c3b5986755600560570016838eb8be88c19"
    }
   }
  ],

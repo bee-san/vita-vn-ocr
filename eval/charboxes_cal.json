@@ -1,0 +1,114 @@
+{
+ "kind": "charboxes-calibration",
+ "schema": 1,
+ "what": "per model [shift, offset of group 0..7] in resized px x 16 (eval/charbox.py positions(cal=)); groups: 0 other, 1 close, 2 open, 3 dots, 4 small, 5 long, 6 mark, 7 half",
+ "rule": "training-side lines only (no dev_sample, test or CLANNAD VN): teacher_train's crops with\n              MeikiOCR's character boxes (VOCR5-S/N/L), and vertical training columns read by MeikiOCR's\n              vertical recognizer (VOCR5-V). For each model: shift = the median, over the characters of\n              group 0, of MeikiOCR's box centre minus the frame centre (resized px), and per group the median\n              of the same difference minus the shift (groups with fewer than CAL_MIN characters: 0), on lines\n              the model reads exactly as MeikiOCR does (VOCR5-V: the equal characters of an alignment, on\n              columns MeikiOCR reads within charbox_sets.MAX_GT_CER_V of VOCR5-V; its vertical recognizer\n              rarely reads a whole column exactly). Writes eval/charboxes_cal.json.",
+ "seed": 20261023,
+ "lines": 3000,
+ "min_per_group": 50,
+ "models": {
+  "S": {
+   "blob": "VOCR5_S_w8.vocr",
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+   "cal": [
+    -110,
+    0,
+    32,
+    72,
+    39,
+    -11,
+    -1,
+    0,
+    18
+   ],
+   "lines_read": 3000,
+   "characters": 23154,
+   "per_group": {
+    "other": 20217,
+    "close": 1484,
+    "open": 291,
+    "dots": 171,
+    "small": 675,
+    "long": 188,
+    "half": 128
+   }
+  },
+  "N": {
+   "blob": "VOCR5_N_w8.vocr",
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+   "cal": [
+    0,
+    0,
+    -45,
+    -32,
+    48,
+    -23,
+    -4,
+    0,
+    -6
+   ],
+   "lines_read": 3000,
+   "characters": 24307,
+   "per_group": {
+    "other": 21200,
+    "close": 1558,
+    "open": 302,
+    "dots": 184,
+    "small": 711,
+    "long": 200,
+    "half": 152
+   }
+  },
+  "L": {
+   "blob": "VOCR5_L_w8.vocr",
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+   "cal": [
+    -36,
+    0,
+    -12,
+    4,
+    38,
+    -16,
+    -10,
+    0,
+    8
+   ],
+   "lines_read": 3000,
+   "characters": 25056,
+   "per_group": {
+    "other": 21818,
+    "close": 1612,
+    "open": 319,
+    "dots": 182,
+    "small": 736,
+    "long": 220,
+    "half": 169
+   }
+  },
+  "V": {
+   "blob": "VOCR5_V_w8.vocr",
+   "sha256": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172",
+   "cal": [
+    -104,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "columns_read": 173,
+   "characters": 619,
+   "per_group": {
+    "other": 575,
+    "open": 1,
+    "dots": 2,
+    "small": 26,
+    "long": 12,
+    "half": 3
+   }
+  }
+ }
+}

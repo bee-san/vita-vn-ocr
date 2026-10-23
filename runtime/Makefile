@@ -19,7 +19,9 @@
 #                         post-processing's (check-post, vocr_post.mk: strict compile, its C self-test and its
 #                         parity with eval/vocr_post.py), the edge continuation's (check-widen,
 #                         vocr_lines_widen.mk: strict compile, its C self-test and its parity with
-#                         synth/lines_widen.py), then the
+#                         synth/lines_widen.py), the per-character positions' (check-charbox,
+#                         vocr_charbox.mk: strict compile, its C self-test and its parity with
+#                         eval/charbox.py), then the
 #                         recognizer's: C unit tests and the PyTorch parity test through a
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan)
 #   make check-all        check with gcc and clang, plus strict release builds of both
@@ -95,7 +97,7 @@ $(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) $(CLI) $(LDFLAGS) $(LDLIBS)
 
 check: check-lines check-split check-textdet check-textgate check-vertical check-textspot check-textspot2 \
-       check-textspot3 check-post check-widen check-vocr
+       check-textspot3 check-post check-widen check-charbox check-vocr
 
 include vocr_lines.mk
 include vocr_lines_split.mk
@@ -107,6 +109,7 @@ include vocr_textspot2.mk
 include vocr_textspot3.mk
 include vocr_post.mk
 include vocr_lines_widen.mk
+include vocr_charbox.mk
 
 check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_check

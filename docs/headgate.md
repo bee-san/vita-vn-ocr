@@ -17,8 +17,11 @@ gate for all three tiers.
   1,968 B (VitaSDK `-O2`, NEON).
 
 Nothing ran on a console: every millisecond is an estimate from qemu instruction counts, calibrated to VOCR3-H15's
-measured 5.0-5.2 ms per CTC frame. The protected sets (vita-test, psp-test, CLANNAD) were read once, after this
-verdict was pushed ("Protected sets").
+measured 5.0-5.2 ms per CTC frame.
+
+The protected sets were read once, after this verdict was pushed ("Protected sets"). Greedy text is unchanged on every
+vita-test and psp-test dialogue line. Dialogue CER changes by −0.043 to +0.006 points on them and on CLANNAD, with
+0-3 lines changed per tier.
 
 ## How it works
 
@@ -155,10 +158,27 @@ the re-decode finds a counter context in its gated top-K. That re-read recovers 
 gated read still shows the context (655 / 645 / 613 lines of the set). Lines whose context the gate itself removed stay
 worse:
 
-COUNTER_TABLE
+| tier | decode | CER today → gated (all 3,969 crops) | lines worse / better | cut +3 px (the finder's margin) | cut 0 | cut −2 px | cut −4 px | cut −6 px | cut −8 px | cut −10 px |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| S | greedy | 4.81 → 4.82% | 5 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 1 / 0 | 0 / 0 | 4 / 0 | 0 / 0 |
+| S | rubi | 3.45 → 3.47% | 14 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 2 / 0 | 5 / 0 | 7 / 0 | 0 / 0 |
+| S | rubi + re-read | 3.45 → 3.47% | 14 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 2 / 0 | 5 / 0 | 7 / 0 | 0 / 0 |
+| N | greedy | 5.18 → 5.23% | 27 / 3 | 0 / 0 | 0 / 2 | 6 / 0 | 7 / 0 | 8 / 1 | 6 / 0 | 0 / 0 |
+| N | rubi | 3.60 → 3.78% | 96 / 5 | 0 / 0 | 0 / 2 | 9 / 0 | 32 / 0 | 24 / 2 | 25 / 1 | 6 / 0 |
+| N | rubi + re-read | 3.60 → 3.74% | 76 / 5 | 0 / 0 | 0 / 2 | 5 / 0 | 19 / 0 | 21 / 2 | 25 / 1 | 6 / 0 |
+| L | greedy | 4.29 → 4.30% | 5 / 1 | 0 / 0 | 1 / 0 | 1 / 1 | 0 / 0 | 2 / 0 | 1 / 0 | 0 / 0 |
+| L | rubi | 2.98 → 3.03% | 32 / 4 | 0 / 0 | 2 / 1 | 0 / 2 | 7 / 1 | 10 / 0 | 10 / 0 | 3 / 0 |
+| L | rubi + re-read | 2.98 → 3.00% | 18 / 4 | 0 / 0 | 2 / 1 | 0 / 2 | 3 / 1 | 6 / 0 | 6 / 0 | 1 / 0 |
 
-On real text this costs one more recognizer run for a line with a counter context. There were 0 such lines in 8,233
-development reads per tier; in CLANNAD the re-read fires on COUNTER_CLANNAD.
+(Lines worse / better, gated against today; `eval/headgate_counters_20261023.json`.)
+
+On real text the re-read costs one more recognizer run for a line with a counter context. There were 0 such lines in
+8,233 development reads per tier, and the re-read changes no line of the protected sets.
+
+The losses that remain are on lines cut 2-10 px into their first character, a region drawn into the text: the gate
+skips a few low-confidence frames at the cut. Lines with the finder's 3 px margin lose nothing, and lines cut at the
+ink edge lose at most 2. That is the case #109's edge continuation addresses, and it is not adopted as a default
+there either. A caller that expects such regions can keep the gate off.
 
 ## Time (estimates)
 
@@ -214,7 +234,44 @@ gains about 0.37 of the nominal figure. Nothing of this has run on a console.
 
 ## Protected sets
 
-PROTECTED
+Read once, after the verdict was pushed (`a95994f`, 2026-10-23T16:00:57Z; attempt records from
+2026-10-23T16:04:24Z), by `eval/headgate_protected.py`. This is report only: it decides and tunes nothing. The public
+records hold counts, rates and hashes (`eval/headgate_protected_20261023.json`, `eval/headgate_clannad_20261023.json`).
+
+**vita-test + psp-test** fixed lines: 336 dialogue lines in console polarity, pooled. Dialogue CER today → gated, with
+lines changed and gated − today in points [95% VN-cluster CI]:
+
+| tier | greedy | rubi | rubi + cascade | frames skipped |
+|---|---:|---:|---:|---:|
+| S | 1.598 → 1.598% (0 lines) | 1.151 → 1.151% (0 lines) | 0.810 → 0.788% (1 line; −0.021 [−0.069, 0.000]) | 62.5% |
+| N | 1.129 → 1.129% (0 lines) | 0.725 → 0.682% (2 lines; −0.043 [−0.110, 0.000]) | 0.618 → 0.575% (2 lines; −0.043 [−0.110, 0.000]) | 61.4% |
+| L | 0.788 → 0.788% (0 lines) | 0.533 → 0.511% (1 line; −0.021 [−0.069, 0.000]) | 0.533 → 0.511% (1 line; −0.021 [−0.069, 0.000]) | 58.7% |
+
+**CLANNAD**: 3,048 reference lines on 2,177 pages, of which 2,052 are dialogue, each read through GRAD + refine inside
+its GRAD box. Dialogue CER today → gated, with lines changed and gated − today in points [95% page CI]:
+
+| tier | greedy | rubi | rubi + cascade | frames skipped |
+|---|---:|---:|---:|---:|
+| S | 1.433 → 1.431% (1 line; −0.003 [−0.009, 0.000]) | 0.959 → 0.956% (3 lines; −0.003 [−0.012, +0.006]) | 0.839 → 0.842% (3 lines; +0.003 [−0.006, +0.015]) | 65.7% |
+| N | 0.923 → 0.923% (0 lines) | 0.764 → 0.767% (1 line; +0.003 [0.000, +0.009]) | 0.654 → 0.660% (2 lines; +0.006 [0.000, +0.015]) | 65.1% |
+| L | 0.630 → 0.630% (0 lines) | 0.546 → 0.549% (1 line; +0.003 [0.000, +0.009]) | 0.546 → 0.549% (1 line; +0.003 [0.000, +0.009]) | 60.7% |
+
+Greedy text is unchanged on every vita-test and psp-test dialogue line for all three tiers, and on every CLANNAD
+dialogue line for N and L (one line changes for S). Rubi's path changes 0-3 lines per set and tier. Every interval
+lies within ±0.15 points.
+
+Over all CLANNAD lines (names included, a secondary column) the gate lowers CER:
+
+| tier | greedy | rubi | rubi + cascade |
+|---|---:|---:|---:|
+| S | 2.45 → 2.43% | 2.72 → 2.68% | 1.98 → 1.68% |
+| N | 1.46 → 1.36% | 2.38 → 1.80% | 2.11 → 1.70% |
+| L | 0.90 → 0.90% | 2.07 → 1.80% | 2.07 → 1.80% |
+
+On CLANNAD's name lines Rubi's beam + LM scores worse than greedy, and gated blank frames leave it fewer non-blank
+candidates. That is the measured effect; its cause was not analysed further.
+
+Nothing above changes the verdict, which was fixed on development data.
 
 ## Checks
 

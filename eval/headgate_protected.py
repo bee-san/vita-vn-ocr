@@ -100,9 +100,7 @@ def decode_all(res, decoders):
 
 
 def cmd_tests(a):
-    import finder_tighten as FT
     import sets
-    import vocr3_report as V
 
     from common import line_polarity, to_gray
     out = Path(a.out)
@@ -115,6 +113,14 @@ def cmd_tests(a):
             g = np.ascontiguousarray(to_gray(ln.crop_rgb))
             rows.append({"set": name, "id": ln.id, "vn": ln.vn, "ref": norm(ln.text), "name": "name" in ln.styles})
             crops.append((g, bool(line_polarity(g))))
+    score_tests(a, rows, crops, out)
+
+
+def score_tests(a, rows, crops, out, sets_=("vita-test", "psp-test")):
+    """The fixed-line read and its scores (rows: set, id, vn, ref (normalised), name; crops: (grey, invert))."""
+    import finder_tighten as FT
+    import vocr3_report as V
+    out.mkdir(parents=True, exist_ok=True)
     rts = runtimes(a)
     res = read_all(rts, crops)
     decs = {t: E.Decoder(Path(a.release) / f"VOCR5_{t}_w8.vocr", a.lm) for t in TIERS}
@@ -134,7 +140,7 @@ def cmd_tests(a):
                                  "n": len(r["ref"])} for i, r in enumerate(rows)]
             ent = {}
             for scope in ("dialogue", "names"):
-                for part in ("vita-test", "psp-test", "pooled"):
+                for part in (*sets_, "pooled"):
                     idx = [i for i, r in enumerate(rows) if (r["name"] == (scope == "names"))
                            and (part == "pooled" or r["set"] == part)]
                     ga = {f"{rows[i]['set']}:{rows[i]['id']}": (e["gated"][i], len(rows[i]["ref"])) for i in idx}
@@ -160,6 +166,17 @@ def cmd_tests(a):
 
 
 def cmd_clannad(a):
+    out, work = Path(a.out), Path(a.work)
+    freeze = json.loads((work / "refs.freeze.json").read_text(encoding="utf-8"))
+    if E.sha256(work / "refs.jsonl") != freeze["refs_sha256"]:
+        raise SystemExit("refs.jsonl differs from its freeze record")
+    once(out / "clannad.attempt.json", {"started": E.utc_now(), "refs_sha256": freeze["refs_sha256"],
+                                        "protocol_sha256": E.sha256(ROOT / "eval" / "headgate_protocol.json")})
+    score_clannad(a, work, freeze, out)
+
+
+def score_clannad(a, work, freeze, out):
+    """The CLANNAD read and its scores from a clannad_refs work directory (lines, refs, the session's frames)."""
     import clannad_refs as C
     import finder_tighten as FT
     import vocr3_report as V
@@ -167,12 +184,7 @@ def cmd_clannad(a):
 
     import lines_refine as LR
     from common import to_gray
-    out, work = Path(a.out), Path(a.work)
-    freeze = json.loads((work / "refs.freeze.json").read_text(encoding="utf-8"))
-    if E.sha256(work / "refs.jsonl") != freeze["refs_sha256"]:
-        raise SystemExit("refs.jsonl differs from its freeze record")
-    once(out / "clannad.attempt.json", {"started": E.utc_now(), "refs_sha256": freeze["refs_sha256"],
-                                        "protocol_sha256": E.sha256(ROOT / "eval" / "headgate_protocol.json")})
+    out.mkdir(parents=True, exist_ok=True)
     rows, meta = C.load_lines(work)
     session = Path(meta["session"])
     refs = {x["id"]: x for x in C.read_jsonl(work / "refs.jsonl")}

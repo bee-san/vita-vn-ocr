@@ -3,6 +3,7 @@
 top-K, text, confidence) on a random-init model at several tilings, head_gate off on a gated blob equal to the
 blob without it, and the arena plan's mirror (train/export.plan_arena). No development, test or private data.
 """
+import hashlib
 import json
 import struct
 import sys
@@ -269,3 +270,20 @@ def test_doc_numbers_are_the_records():
             in doc, t
         assert rec["c_equals_twin"] == {"lines": 3108, "scores_bitwise": True, "score_mode_best_unchanged": True,
                                         "on_mode_skipped_counts": True, "on_mode_skipped_frames_blank": True}
+
+
+@pytest.mark.skipif(not (ROOT / "eval" / "headgate_protected_20261023.json").exists(), reason="not read yet")
+def test_doc_protected_numbers_are_the_records():
+    """The protected tables are the once-read records, which were read after the development verdict was pushed."""
+    doc = (ROOT / "docs" / "headgate.md").read_text(encoding="utf-8")
+    t = json.loads((ROOT / "eval" / "headgate_protected_20261023.json").read_text(encoding="utf-8"))
+    c = json.loads((ROOT / "eval" / "headgate_clannad_20261023.json").read_text(encoding="utf-8"))
+    for rec in (t, c):
+        assert rec["attempt"]["started"] > rec["after_dev_verdict"]["pushed"] == "2026-10-23T16:00:57Z"
+        assert rec["attempt"]["protocol_sha256"] == hashlib.sha256((ROOT / "eval" / "headgate_protocol.json")
+                                                                    .read_bytes()).hexdigest()
+    for tier in "SNL":
+        k = t["tiers"][tier]["decodes"]["greedy"]["dialogue/pooled"]
+        assert k["lines_changed"] == 0 and f"| {tier} | {k['cer_today']:.3f} → {k['cer_gated']:.3f}% (0 lines) |" in doc
+        k = c["tiers"][tier]["decodes"]["rubi"]["dialogue"]
+        assert f"{k['today']['cer']:.3f} → {k['gated']['cer']:.3f}%" in doc

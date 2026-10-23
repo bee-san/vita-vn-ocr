@@ -289,7 +289,8 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that a
   a line again with `ungated = 1` when its reading holds a full-size カ or ケ before 月 所 年 国 条, where the escape may
   have missed the small ヵ / ヶ, as it does for the gate's counter contexts (docs/head2level.md, "Counter-context set").
 - `vocr_extra.esc_score` returns each frame's escape score; class texts never change, so `vocr_lm.c`, `vocr_post.c`
-  and `vocr_charbox.c` read a permuted blob as they read today's.
+  and `vocr_charbox.c` read a permuted blob as they read today's, except where two classes tie exactly (the first
+  maximum, the top-K and the decoders' ties follow class numbers).
 - A runtime without two-level support reads the blob as its version-1 part (the permuted full head) and ignores the
   trailer. `vocr_load` rejects a damaged trailer's structure, `vocr_check_crc` its content; `head2level.py info`
   prints it. The arena mirror is `train/export.plan_arena(..., two_level=read_trailer(blob))`.

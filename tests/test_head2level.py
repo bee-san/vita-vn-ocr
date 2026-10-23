@@ -192,6 +192,12 @@ def test_mode_and_trailer_checks(base):
         struct.pack_into("<I", bad, off + 12, __import__("zlib").crc32(bytes(bad[off + 16:])) & 0xFFFFFFFF)
         with pytest.raises(VocrError):
             Vocr(bytes(bad), mode="w8i")
+    for field in (32, 36):                           # a NaN threshold or layer-2 bias
+        bad = bytearray(blob)
+        struct.pack_into("<f", bad, off + field, float("nan"))
+        struct.pack_into("<I", bad, off + 12, __import__("zlib").crc32(bytes(bad[off + 16:])) & 0xFFFFFFFF)
+        with pytest.raises(VocrError):
+            Vocr(bytes(bad), mode="w8i")
 
 
 def test_threshold_rule():

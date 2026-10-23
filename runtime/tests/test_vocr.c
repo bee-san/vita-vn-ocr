@@ -1477,23 +1477,43 @@ static void test_two_load(void)
         wr32(blob_buf + at + 12, crc32_ref(blob_buf + at + 16, (uint32_t)(tn - at - 16)));
         CHECK(vocr_load(&m, blob_buf, tn) == VOCR_OK);
     }
+    {   /* a NaN threshold or layer-2 bias (each with a fresh CRC) */
+        const unsigned offs[2] = {32, 36};
+        const float nan = NAN;
+        unsigned i;
+        for (i = 0; i < 2; i++) {
+            unsigned char save[4];
+            memcpy(save, blob_buf + at + offs[i], 4);
+            memcpy(blob_buf + at + offs[i], &nan, 4);
+            wr32(blob_buf + at + 12, crc32_ref(blob_buf + at + 16, (uint32_t)(tn - at - 16)));
+            CHECK(vocr_load(&m, blob_buf, tn) == VOCR_E_FORMAT);
+            memcpy(blob_buf + at + offs[i], save, 4);
+        }
+        wr32(blob_buf + at + 12, crc32_ref(blob_buf + at + 16, (uint32_t)(tn - at - 16)));
+        CHECK(vocr_load(&m, blob_buf, tn) == VOCR_OK);
+    }
 }
 
 /* run_head2 against a reference built from the full head's logits and head inputs: each frame's escape score,
  * then its argmax and top-K over every class (fired) or level 1's (not); at several tilings and thresholds. */
-static void test_two_run(void)
+static size_t build_stem_head_blob_2l(void);
+
+/* the two-level runs of build's model against the C reference (the full head's logits and head inputs, esc_ref,
+ * topk_ref): escape scores, fired frames, argmax, top-K and the blank logit per frame, at several tilings and
+ * thresholds; then the logits and ungated paths and a refused rare block */
+static void test_two_run_on(size_t (*build)(void), unsigned w, unsigned hgt)
 {
     static float full[80 * TCLASSES], hin[80 * 16];
     char ref[256], text[256];
     vocr_extra e0, ex;
     vocr_model m;
-    const unsigned w = 260, hgt = 21, k = 4;
+    const unsigned k = 4;
     const unsigned tiles[3][2] = {{0, 0}, {1, 1}, {5, 7}};
     const float ts[4] = {-INFINITY, -0.2f, 0.3f, INFINITY};
     size_t n, tn;
     unsigned ti, i, f, c, fired_total = 0, frames_total = 0;
     make_image(w, hgt, 0);
-    n = build_blob_2l();
+    n = build();
     CHECK(two_run(n, 0, 0, 0, 0, w, hgt, k, 1, ref, sizeof ref, &e0) == VOCR_OK);
     memcpy(full, t_logits, sizeof full);
     memcpy(hin, t_hin, sizeof hin);
@@ -1537,6 +1557,12 @@ static void test_two_run(void)
     /* a trailer with the trial's 48-wide rare block (rare_k 8 and its arrays) is refused: this runtime reads none */
     tn = append_two(n, n, 1, 0.3f, 8, 5u);
     CHECK(vocr_check_crc(blob_buf, tn) == VOCR_OK && vocr_load(&m, blob_buf, tn) == VOCR_E_FORMAT);
+}
+
+static void test_two_run(void)
+{
+    test_two_run_on(build_blob_2l, 260, 21);
+    test_two_run_on(build_stem_head_blob_2l, 257, 10); /* the head right after the stem (audit-head-gate F1) */
 }
 
 /* build_stem_head_blob's topology (audit-head-gate F1: the head right after the stem, its frames appended by the

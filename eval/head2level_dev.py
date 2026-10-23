@@ -749,6 +749,8 @@ def cmd_record(a):
         out["final_code"] = json.loads(Path(a.final_check).read_text())
     if a.mixed:
         out["mixed_cascade"] = json.loads(Path(a.mixed).read_text())
+    if a.twin:
+        out["twin"] = json.loads(Path(a.twin).read_text())
     Path(a.out_fit).write_text(json.dumps(fit, indent=1) + "\n")
     Path(a.out_dev).write_text(json.dumps(out, indent=1) + "\n")
     print(json.dumps({"fit": a.out_fit, "dev": a.out_dev, "blobs": len(blobs)}))
@@ -806,6 +808,45 @@ def cmd_recheck(a):
                                           "permuted_reads_today")}))
 
 
+def cmd_twin(a):
+    """The exact twin (train/head2level.py twolevel_exact) against the C runtime on development crops (every
+    --every-th of the dev reads' crops): per frame the escape score, the fired flag, the argmax, the top-8 classes and
+    values and the blank logit, and per crop the greedy text. Counts only."""
+    sys.path.insert(0, str(ROOT / "train"))
+    from pyvocr import Vocr
+
+    import head2level as H2
+    crops = all_crops(a.cache)[::a.every]
+    out = {"kind": "head2level-twin-check", "vocr_c_sha256": sha256(ROOT / "runtime" / "vocr.c"),
+           "crops": len(crops), "every": a.every, "arms": {}}
+    for spec in a.arm:
+        name, blob = spec.split("=", 1)
+        data = Path(blob).read_bytes()
+        head, two = H2.head_arrays(data), H2.read_trailer(data)
+        full, rt = Vocr(blob, mode="w8i", max_width=1024), Vocr(blob, mode="w8i", max_width=1024, two_level=1)
+        diff = {k: 0 for k in ("esc", "fired", "best", "topc", "topv", "blank", "text", "escaped")}
+        frames = fired = 0
+        for _, img, inv in crops:
+            full.run(img, head_in=True, invert=inv)
+            x = full.last_head_in
+            tw = H2.twolevel_exact(x, head, two, topk=8)
+            o = rt.run_topk(img, 8, invert=inv, esc=True)
+            diff["esc"] += int((o["esc"] != tw["score"]).sum())
+            diff["fired"] += int(o["escaped"] != int(tw["fire"].sum()))
+            diff["best"] += int((o["best"] != tw["best"]).sum())
+            diff["topc"] += int((o["topc"] != tw["topc"]).any(axis=1).sum())
+            diff["topv"] += int((o["topv"] != tw["topv"]).any(axis=1).sum())
+            diff["blank"] += int((o["blank"] != tw["blank"]).sum())
+            greedy = "".join(rt.class_text(int(c)) for i, c in enumerate(tw["best"])
+                             if c and (i == 0 or c != tw["best"][i - 1]))
+            diff["text"] += int(o["text"] != greedy)
+            frames += len(x)
+            fired += int(tw["fire"].sum())
+        out["arms"][name] = {"blob_sha256": sha256(blob), "frames": frames, "fired": fired, "differences": diff}
+        print(name, frames, fired, diff, flush=True)
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n")
+
+
 def cmd_mixed(a):
     """Report only, after the verdict: Rubi's cascade as it would ship mixes kinds. Small keeps the gate alone and
     re-reads a line under 700 confidence with Normal, which runs its adopted arm; no pair of arms the rule scored is
@@ -847,6 +888,7 @@ def main():
     p.add_argument("--counter", nargs="*", default=[])
     p.add_argument("--final-check", default="")
     p.add_argument("--mixed", default="")
+    p.add_argument("--twin", default="")
     p.add_argument("--out-fit", required=True)
     p.add_argument("--out-dev", required=True)
     p = sub.add_parser("decide")
@@ -868,6 +910,11 @@ def main():
     p.add_argument("--cache", required=True)
     p.add_argument("--procs", type=int, default=5)
     p.add_argument("--limit", type=int, default=0)
+    p = sub.add_parser("twin")
+    p.add_argument("--cache", required=True)
+    p.add_argument("--arm", action="append", required=True, help="NAME=BLOB (a two-level blob without a gate)")
+    p.add_argument("--every", type=int, default=8)
+    p.add_argument("--out", required=True)
     p = sub.add_parser("recheck")
     p.add_argument("--reads", nargs="+", required=True, help="TIER:ARM ...")
     p.add_argument("--perm", nargs="*", default=[], help="TIER ... (reads-final 'perm' vs reads-verdict 'today')")
@@ -889,7 +936,7 @@ def main():
     p.add_argument("--out", required=True)
     a = ap.parse_args()
     {"lines": cmd_lines, "read": cmd_read, "score": cmd_score, "counter": cmd_counter, "decide": cmd_decide,
-     "record": cmd_record, "mixed": cmd_mixed, "recheck": cmd_recheck}[a.cmd](a)
+     "record": cmd_record, "mixed": cmd_mixed, "recheck": cmd_recheck, "twin": cmd_twin}[a.cmd](a)
 
 
 if __name__ == "__main__":

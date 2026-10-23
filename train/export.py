@@ -38,6 +38,9 @@ Blob format, version 1 (little-endian; every section 16-byte aligned):
 A residual PW adds the input of the depthwise op right before it. The runtime's
 activation layout is [column][row][channel] with channels innermost.
 
+An optional head gate section (VOCG) may follow the blob at its 16-byte aligned end; train/headgate.py writes
+and documents it (docs/headgate.md). read_blob() reports it as "gate" (None without one).
+
 plan_arena() mirrors vocr_arena_bytes() in runtime/vocr.c exactly (tested by
 runtime/tests/parity.py), so the arena size can be computed without building C.
 """
@@ -281,8 +284,10 @@ def read_blob(data):
     offs = np.frombuffer(data, "<u2", n_classes + 1, v_off).astype(np.int64)
     raw = data[v_off + 2 * (n_classes + 1):v_off + 2 * (n_classes + 1) + v_bytes]
     vocab = [raw[offs[c]:offs[c + 1]].decode("utf-8") for c in range(n_classes)]
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from headgate import read_gate
     return dict(bytes=total, int8=bool(flags & 1), height=height, max_width=max_w, stride=stride,
-                n_classes=n_classes, params=n_params, sha=sha.hex(), ops=ops, vocab=vocab)
+                n_classes=n_classes, params=n_params, sha=sha.hex(), ops=ops, vocab=vocab, gate=read_gate(data))
 
 
 def dequant(op):
@@ -310,10 +315,11 @@ def macs_per_frame(blob):
 
 # ---------------------------------------------------------------- arena plan (mirror of C)
 
-def plan_arena(blob, max_width=0, tile=0, head=0, mode=0):
+def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0):
     """Exact arena bytes vocr_arena_bytes() returns. tile/head in frames (0 = defaults 4
     and 16; tile >= max_width / 8 = whole line); mode 0 = the blob's default (f32 for
-    float blobs, w8f for int8)."""
+    float blobs, w8f for int8); head_gate as vocr_opts.head_gate (0 off, 1 on, 2 score: w8i and a
+    blob with a gate)."""
     ops, S, H0 = blob["ops"], blob["stride"], blob["height"]
     if mode == 0:
         mode = MODE_W8F if blob["int8"] else MODE_F32
@@ -321,6 +327,10 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0):
         raise ValueError("int8 modes need an int8 blob")
     if mode == MODE_F32 and blob["int8"]:
         raise ValueError("an int8 blob has no float32 weights")
+    if head_gate not in (0, 1, 2):
+        raise ValueError("head_gate: 0, 1 or 2")
+    if head_gate and (mode != MODE_W8I or not blob.get("gate")):
+        raise ValueError("the head gate needs w8i and a blob with a gate")
     if not max_width or max_width > blob["max_width"]:
         max_width = blob["max_width"]
     max_width = _align(max_width, S)
@@ -360,6 +370,8 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0):
     k_head = ops[-1]["k"]
     acc_frames = hb + F - 1
     persistent += _align(acc_frames * k_head * 4) + _align(acc_frames * 4) * 2
+    if head_gate == 1:                       # the accumulated frames' line indices (uint16)
+        persistent += _align(acc_frames * 2)
     trans = []                               # transient bytes in and out of each op
     for i, op in enumerate(ops):
         tin = n_tile[i - 1] * ops[i - 1]["h_out"] * ops[i - 1]["cout"] * 4 \
@@ -375,6 +387,8 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0):
             elif mode == MODE_W8I:
                 scratch = _align(pos * op["k"] * 2) + _align(pos * 4)
         trans.append(_align(tin) + _align(tout) + _align(scratch))
+    if head_gate:                            # the gate's scratch: a tile's frames in int16, scales, hidden units
+        trans.append(_align(F * k_head * 2) + _align(F * 4) + _align(F * blob["gate"]["hidden"] * 4))
     return persistent + max(trans)
 
 
@@ -404,8 +418,13 @@ def main():
         modes = [MODE_W8F, MODE_W8I] if b["int8"] else [MODE_F32]
         rows = {MODE_NAME[m]: {w: plan_arena(b, w, args.tile, args.head, m)
                                for w in map(int, args.widths.split(","))} for m in modes}
+        if b["gate"]:
+            rows["w8i+head_gate"] = {w: plan_arena(b, w, args.tile, args.head, MODE_W8I, 1)
+                                     for w in map(int, args.widths.split(","))}
         macs, head = macs_per_frame(b)
-        print(json.dumps({"blob": str(args.info), "bytes": b["bytes"], "params": b["params"],
+        g = b["gate"]
+        gate = None if not g else {"bytes": g["bytes"], "hidden": g["hidden"], "t": float(g["t"])}
+        print(json.dumps({"blob": str(args.info), "bytes": b["bytes"], "params": b["params"], "gate": gate,
                           "classes": b["n_classes"], "height": b["height"], "ops": len(b["ops"]),
                           "macs_per_frame": macs, "head_macs_per_frame": head,
                           "macs_per_line": {w: macs * -(-w // b["stride"])

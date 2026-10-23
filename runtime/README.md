@@ -221,6 +221,47 @@ rc = vocr_lm_decode(&dec, &ex, text, sizeof text, &chars);     /* the beam + LM 
 
 From Python: `Vocr.run_topk(crop, k)` returns the greedy text, `topv`, `topc`, `blank`, `conf_min` and `conf_mean`; `VocrLM(vocr, lm_path, beam=8, topk=8, alpha=..., beta=..., gate=..., flags=..., bracket=...)` wraps the decoder (`.decode(topv, topc, blank)`). `pyvocr` loads `$VOCR_LIB` as is when it is set (a frozen build for long runs). The CLI takes `--topk K`, `--conf` (conf_min and conf_mean per line on stderr) and `--lm LM.vlm --beam N --alpha A --beta B --gate G --lm-flags F --bracket C` (prints the beam text; `--lm none` runs the beam without an LM).
 
+### Skipping the output head on blank frames (`vocr_opts.head_gate`)
+
+Issue #117 ([docs/headgate.md](../docs/headgate.md)): about three CTC frames in five are blank, and the output head
+(96 → 4,987 or 5,631 classes) is 15-40% of a frame's time. A gated blob (`VOCR5_{S,N,L}_w8g.vocr`) carries a tiny
+network after the unchanged version-1 blob, a `VOCG` section of 1,792 B (`train/headgate.py` writes it): a 96 → 16
+(ReLU) → 1 layer on the head's input, its first layer int8 through the head's own integer kernel (`mm_i16`), and a
+threshold. With the gate on, a frame scoring above the threshold skips the head and reads as the blank.
+
+```c
+opts.mode = VOCR_MODE_W8I;
+opts.head_gate = vocr_has_gate(&model) ? VOCR_HEAD_GATE_ON : VOCR_HEAD_GATE_OFF;   /* ON needs W8I and a gate */
+size_t need = vocr_arena_bytes(&model, &opts);      /* + 48 B for VOCR5 at the default tile and batch */
+rc = vocr_init(&ctx, &model, &opts, arena, need);
+rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.gated: frames whose head was skipped */
+```
+
+- A skipped frame's argmax is 0, its `blank_logit` is the head's own class-0 logit (its first 8-class block on the
+  same int16 input, bit for bit), and its top-K is `[blank logit, -inf, ...]` with classes 0. The other frames' logits,
+  top-K and confidence are exactly the ungated run's; the text is the CTC collapse of the result. The head's batches
+  hold only the frames it runs on, so they stay full, and the output is the same for every tile and batch size.
+- `VOCR_HEAD_GATE_OFF` (0, a zeroed `vocr_opts`) is today's run: the same output, arena and code path (on a gated
+  blob too: the section is only parsed). `VOCR_HEAD_GATE_SCORE` computes the gate (`vocr_extra.gate_score`) and skips
+  nothing. A run that asks for the logits, or sets `vocr_extra.ungated`, skips nothing. A caller of
+  `vocr_post_redecode` should read a line again with `ungated = 1` when the re-decode finds a counter context in its
+  gated top-K (`vocr_post_stats.contexts`): the re-decode looks at blank frames' top-K, which a skipped frame does not
+  offer (docs/headgate.md, "Counters").
+- `vocr_extra.head_in` (frames × K floats) returns the head's input per frame, for fitting a gate.
+- A blob without the section loads as before; an older runtime reads a gated blob as the plain version-1 blob (it
+  reads only the header's byte count). `vocr_load` rejects a damaged section's structure, `vocr_check_crc` its
+  content; `export.py --info` and `headgate.py info` print it.
+- Cost (VitaSDK gcc 15.2, Cortex-A9, estimates from qemu instruction counts calibrated to VOCR3-H15's console rate,
+  docs/headgate.md): the gate is about 1,600 instructions a frame; VOCR5-N's head goes from 270,807 to 120,138
+  instructions a frame at the measured lines' 57% skip share. `vocr.o` grows from 18,219 to 20,159 B at `-O2` with NEON
+  (scalar 13,403 to 15,159 B; psp-gcc `-O2 -G0` 19,795 to 22,959 B). No malloc; the arena grows by 2 B per accumulated
+  frame (the frames' line indices), and the gate's scratch fits the head's.
+- Twin and tests: `train/headgate.py` (`gate_scores`, `simulate`: a gated run from an ungated one) is bit-exact;
+  `tests/test_headgate.py` checks it against the C library at several tilings, and `tests/test_vocr.c` (ASan/UBSan,
+  Cortex-A9 NEON and scalar under qemu) checks the section's validation and the runs against its own reference.
+  CLI: `vocr_cli --head-gate on|score|off`; Python: `Vocr(blob, mode="w8i", head_gate="on")`, `run_topk(...,
+  gate_score=True, ungated=False)`.
+
 ### Counters and cut lines (`vocr_post.h`, `vocr_lines_widen.h`)
 
 Three optional steps for counter contexts and for lines a tight region cuts (issue #109; [docs/counters.md](../docs/counters.md) has the corpus counts and the development measurements). None runs unless its caller calls it, so a pipeline without them is bit for bit as before.
@@ -324,6 +365,8 @@ The blob is version 1:
 - the vocabulary as UTF-8 with 16-bit offsets.
 
 The full layout is in the docstring of `train/export.py`. `vocr_load()` rejects anything it doesn't run: any other version, layer, residual or shape. A model change that adds an op therefore fails at load time and in CI's op-set test.
+
+An optional head-gate section (`VOCG`, its own version and CRC-32, bound to the blob's byte count and CRC) may follow the blob at its 16-byte aligned end; `train/headgate.py` documents and writes it, and "Skipping the output head on blank frames" above says what it does. The version-1 bytes before it are unchanged, so the blob's own CRC and every older runtime read it as before.
 
 ## Build and test
 

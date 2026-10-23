@@ -589,44 +589,57 @@ def cmd_score(a):
     Path(a.out).write_text(json.dumps(res, indent=1) + "\n")
 
 
+_CROWS = {}
+
+
+def _counter_arm(spec):
+    """One arm's texts on the counter set: greedy, rubi, and rubi with the re-read (what Rubi would ship): a line whose
+    re-decode finds a counter context (head-gate's re-read) or whose reading holds a full-size カ / ケ before a counter
+    character (the two-level head's) is read again with the full head and no skipping (vocr_extra.ungated)."""
+    from metrics import norm
+    from pyvocr import Vocr, VocrLM, post_counters
+    name, blob, two, gate = parse_arm(spec)
+    kw = {"two_level": 1} if two else {}
+    if gate:
+        kw["head_gate"] = 1
+    rt = Vocr(blob, mode="w8i", max_width=1024, **kw)
+    lm = VocrLM(rt, str(LM_FILE), **RUBI_LM)
+
+    def rubi_of(o):
+        if not o["text"]:
+            return "", 0
+        o2, st = rt.redecode(o, tau=COUNTER["tau"], open=COUNTER["open"])
+        return norm(post_counters(lm.decode(o2["topv"], o2["topc"], o2["blank"]), rt.lib)[0]), st["contexts"]
+    g, r, rr, n_re = [], [], [], 0
+    for row in _CROWS["rows"]:
+        o = rt.run_topk(row["img"], 8)
+        g.append(norm(o["text"]))
+        t, ctx = rubi_of(o)
+        r.append(t)
+        if (two or gate) and (ctx or REREAD_RE.search(o["text"])):
+            n_re += 1
+            rr.append(rubi_of(rt.run_topk(row["img"], 8, ungated=True))[0])
+        else:
+            rr.append(t)
+    return name, {"greedy": g, "rubi": r, "rubi_reread": rr, "reread_lines": n_re}
+
+
 def cmd_counter(a):
     """#109's synthetic counter-context set (eval/kanum_dev.py render), as stored: CER and lines changed, the
-    reference arm against each arm, greedy and rubi (re-decode + LM + the counter rule). Report only."""
+    reference arm against each arm, greedy, rubi (re-decode + LM + the counter rule) and rubi with the re-read.
+    Report only. The arms run in parallel (--procs)."""
     import kanum_dev as KD
-    from metrics import lev, norm
-    from pyvocr import Vocr, VocrLM, post_counters
-    rows = KD.sy_rows(a.synth)
+    from metrics import lev
+    _CROWS["rows"] = KD.sy_rows(a.synth)
+    rows = _CROWS["rows"]
     out = {"file": str(a.synth), "file_sha256": sha256(a.synth), "lines": len(rows), "arms": {}}
-    texts = {}
-    for spec in [a.ref] + a.arm:
-        name, blob, two, gate = parse_arm(spec)
-        kw = {"two_level": 1} if two else {}
-        if gate:
-            kw["head_gate"] = 1
-        rt = Vocr(blob, mode="w8i", max_width=1024, **kw)
-        lm = VocrLM(rt, str(LM_FILE), **RUBI_LM)
-        g, r, rr, n_re = [], [], [], 0
-
-        def rubi_of(o):
-            if not o["text"]:
-                return ""
-            o2, _ = rt.redecode(o, tau=COUNTER["tau"], open=COUNTER["open"])
-            return norm(post_counters(lm.decode(o2["topv"], o2["topc"], o2["blank"]), rt.lib)[0])
-        for row in rows:
-            o = rt.run_topk(row["img"], 8)
-            g.append(norm(o["text"]))
-            r.append(rubi_of(o))
-            # the mitigation (report only): a line whose reading holds a full-size カ or ケ before a counter is
-            # read again with the full head and no skipping (vocr_extra.ungated), as today reads it
-            if (two or gate) and REREAD_RE.search(o["text"]):
-                n_re += 1
-                rr.append(rubi_of(rt.run_topk(row["img"], 8, ungated=True)))
-            else:
-                rr.append(r[-1])
-        texts[name] = {"greedy": g, "rubi": r, "rubi_reread": rr, "reread_lines": n_re}
+    specs = [a.ref] + a.arm
+    with mp.get_context("fork").Pool(min(a.procs, len(specs))) as pool:
+        texts = dict(pool.map(_counter_arm, specs, chunksize=1))
     ref = parse_arm(a.ref)[0]
     chars = sum(len(row["ref"]) for row in rows)
-    for name in texts:
+    for spec in specs:
+        name = parse_arm(spec)[0]
         rep = {"reread_lines": texts[name]["reread_lines"]}
         for d in ("greedy", "rubi", "rubi_reread"):
             e0 = [lev(p, row["ref"]) for p, row in zip(texts[ref][d], rows)]
@@ -693,9 +706,61 @@ def cmd_decide(a):
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n")
 
 
+def cmd_record(a):
+    """The committed records (numbers and hashes only): eval/head2level_fit_<date>.json (the ranking's hash, every
+    escape's training-side statistics and threshold, W and K_alt, the r48 reports, every arm's blob), and
+    eval/head2level_dev_<date>.json (the development results, the timing and the decision)."""
+    A2 = Path(a.artifacts)
+    rank = A2 / "rank.json"
+    fit = {"kind": "head2level-fit", "protocol_sha256": sha256(ROOT / "eval" / "head2level_protocol.json"),
+           "rank": {"sha256": sha256(rank), **{k: v for k, v in json.loads(rank.read_text()).items()
+                                                if k in ("rows", "distinct_lines", "vns", "characters",
+                                                         "distinct_characters", "vocab_6459_sha256")}},
+           "tiers": {}}
+    blobs = {}
+    for t in ("S", "N", "L"):
+        f = json.loads((A2 / f"fit_{t}.json").read_text())
+        fits = {K: {k: v for k, v in o.items() if k != "esc"} for K, o in f["fits"].items()}
+        r48 = {}
+        for K in (1500, f["K_alt"]):
+            p = A2 / f"r48_{t}_K{K}.npz.json"
+            if p.exists():
+                r = json.loads(p.read_text())
+                r["escape"] = {k: v for k, v in r["escape"].items() if k != "esc"}
+                r48[str(K)] = r
+        fit["tiers"][t] = {"train_sha256": f["train_sha256"], "frames": f["frames"], "cal_frames": f["cal_frames"],
+                           "permuted_blob_sha256": f["blob_sha256"], "classes": f["classes"], "K_alt": f["K_alt"],
+                           "W_K1500": f["W_K1500"], "escapes_r96": fits, "r48": r48}
+        for p in sorted((A2 / "blobs").glob(f"VOCR5_{t}_*.vocr")):
+            blobs[p.name] = {"sha256": sha256(p), "bytes": p.stat().st_size}
+    fit["blobs"] = blobs
+    dev = json.loads(Path(a.dev).read_text())
+    for tier in dev["tiers"].values():
+        for info in tier["arms"].values():
+            info["blob"] = Path(info["blob"]).name
+    out = {"kind": "head2level-dev", "protocol_sha256": dev["protocol_sha256"],
+           "development": dev, "timing": json.loads(Path(a.timing).read_text()),
+           "decision": json.loads(Path(a.decision).read_text())}
+    if a.counter:
+        out["counter_check"] = {t: json.loads(Path(p).read_text()) for t, p in (x.split("=", 1) for x in a.counter)}
+        for c in out["counter_check"].values():
+            c["file"] = Path(c["file"]).name
+    Path(a.out_fit).write_text(json.dumps(fit, indent=1) + "\n")
+    Path(a.out_dev).write_text(json.dumps(out, indent=1) + "\n")
+    print(json.dumps({"fit": a.out_fit, "dev": a.out_dev, "blobs": len(blobs)}))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("record")
+    p.add_argument("--artifacts", required=True)
+    p.add_argument("--dev", required=True)
+    p.add_argument("--timing", required=True)
+    p.add_argument("--decision", required=True)
+    p.add_argument("--counter", nargs="*", default=[])
+    p.add_argument("--out-fit", required=True)
+    p.add_argument("--out-dev", required=True)
     p = sub.add_parser("decide")
     p.add_argument("--dev", required=True)
     p.add_argument("--timing", required=True)
@@ -705,6 +770,7 @@ def main():
     p.add_argument("--synth", required=True)
     p.add_argument("--ref", required=True)
     p.add_argument("--arm", action="append", required=True)
+    p.add_argument("--procs", type=int, default=5)
     p.add_argument("--out", required=True)
     p = sub.add_parser("lines")
     p.add_argument("--cache", required=True)
@@ -720,7 +786,8 @@ def main():
     p.add_argument("--timing", default="")
     p.add_argument("--out", required=True)
     a = ap.parse_args()
-    {"lines": cmd_lines, "read": cmd_read, "score": cmd_score, "counter": cmd_counter, "decide": cmd_decide}[a.cmd](a)
+    {"lines": cmd_lines, "read": cmd_read, "score": cmd_score, "counter": cmd_counter, "decide": cmd_decide,
+     "record": cmd_record}[a.cmd](a)
 
 
 if __name__ == "__main__":

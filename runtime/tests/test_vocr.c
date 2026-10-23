@@ -1448,7 +1448,8 @@ static void test_two_load(void)
     const size_t at = (n + 15u) & ~(size_t)15u;
     CHECK(vocr_check_crc(blob_buf, tn) == VOCR_OK && vocr_load(&m, blob_buf, tn) == VOCR_OK);
     CHECK(m.bytes == n && m.two.l1_blocks == 1 && m.two.hidden == 8 && m.two.rare_k == 0 && m.two.r_blocks == 2);
-    CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK && m.two.l1_blocks == 0); /* the base alone: none */
+    CHECK(vocr_has_two_level(&m) == 1 && vocr_has_two_level(NULL) == 0);
+    CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK && m.two.l1_blocks == 0 && !vocr_has_two_level(&m)); /* none */
     memset(&o, 0, sizeof o);
     o.mode = VOCR_MODE_W8I;
     o.two_level = 1;

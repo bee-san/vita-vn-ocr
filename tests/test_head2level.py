@@ -187,11 +187,15 @@ def test_mode_and_trailer_checks(base):
 
 
 def test_threshold_rule():
-    s = np.array([5, 1, 3, 2, 4, 9, 7, 6, 8, 0] * 100, F32)
+    """At most floor(0.001 n) positives score <= t (no denormal in play: another test may set flush-to-zero)."""
+    s = np.array([5, 1, 3, 2, 4, 9, 7, 6, 8, 0.5] * 100, F32)
     t, m = H2.threshold_for(s, 0.999)
-    assert m == 1 and (s <= t).sum() <= 1 and t < 0 + 1e-6 and (s > t).sum() >= len(s) - 100
-    t, m = H2.threshold_for(np.arange(20000, dtype=F32), 0.999)
-    assert m == 20 and (np.arange(20000) <= t).sum() == 20
+    assert m == 1 and (s <= t).sum() <= 1 and t < 0.5 and (s > t).sum() == len(s)
+    v = np.arange(1, 20001, dtype=F32)
+    t, m = H2.threshold_for(v, 0.999)
+    assert m == 20 and (v <= t).sum() == 20
+    t, m = H2.threshold_for(v, 0.9999)
+    assert m == 2 and (v <= t).sum() == 2
 
 
 @pytest.mark.parametrize("rk,tile,head", [(0, 0, 0), (0, 1, 3), (16, 0, 0), (16, 8, 5)])

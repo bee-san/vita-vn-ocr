@@ -72,8 +72,9 @@ Every 48-wide rare block (r48) is rejected.
 
 - **Bytes.** The VOC2 trailer is 1,984 B per blob (after head-gate's 1,792 B VOCG section); no weight changes: N
   1,189,408 B and L 2,477,472 B. The W8I arena grows by 1,456 B over the gate's (N 184,448 B against the gate's
-  182,992 B and today's 182,944 B; L 262,528 B against 261,072 B and 261,024 B). `vocr.o` grows from 20,187 to
-  23,263 B (+3,076 B; VitaSDK gcc 15.2 `-O2`, NEON; scalar `-DVOCR_NO_NEON` 15,195 to 18,283 B).
+  182,992 B and today's 182,944 B; L 262,528 B against 261,072 B and 261,024 B). `vocr.o` grows from head-gate's
+  20,159 to 23,235 B (+3,076 B; VitaSDK gcc 15.2 `-O2`, NEON; scalar `-DVOCR_NO_NEON` 15,159 to 18,263 B; psp-gcc
+  `-O2 -G0` 22,959 to 27,959 B).
 - **Why not Small.** K = 500 is resolved worse than today on greedy dialogue (+0.020 points [+0.003, +0.038]: the
   gate's own +0.016 [0.000, +0.033] plus the escape's +0.004). K = 1,500 passes (a) but not (b) on the cascade
   (+0.014 [−0.020, +0.051] against today) and not (d): the pack's measured saving over the gate is 2.7% of the box
@@ -92,12 +93,17 @@ Every 48-wide rare block (r48) is rejected.
 
 - **The runtime as merged has no r48 code.** Every r48 arm was rejected, so `parse_two` refuses a trailer with a rare
   block (`rare_k` or its offsets non-zero) and `run_head2` keeps only the head's own rows: 876 B less code (NEON;
-  892 B scalar) than the build the verdict measured (`head2level-verdict-c5f7dae`), which read the r48 arms. Checked
-  after the change: the adopted arms' 8,233 development reads per tier (N, L) are bit for bit the verdict's (every
-  argmax frame, escape count, confidence, greedy and LM text), and the 48 r96, gate and today A9 runs re-measured on
-  the final code read the same texts with 0.13-0.24% fewer instructions; the rule re-run on them selects the same arms
-  (N 3.50%, L 3.20% measured saving over the gate; every verdict unchanged). `eval/head2level_dev_20261023.json`
-  "final_code" holds that check.
+  892 B scalar) than the build the verdict measured (`head2level-verdict-c5f7dae`), which read the r48 arms. The
+  branch was then rebased onto head-gate's audit fixes (its F1: the frames of a head right after the stem; a C test
+  here checks the two-level head on that topology). Checked on the final code (`vocr.c` sha256 8ad4c4a0…):
+  - the adopted arms' 8,233 development reads per tier (N, L) are bit for bit the verdict's: every argmax frame,
+    escape count, confidence, greedy and LM text;
+  - the permuted blobs with the two-level head off read today's text and confidence on every development crop (S, N, L);
+  - the 48 r96, gate and today A9 runs re-measured read the same texts with 0.13-0.24% fewer instructions;
+  - the rule re-run on them selects the same arms (N 3.50%, L 3.20% measured saving over the gate; every verdict
+    unchanged).
+
+  `eval/head2level_dev_20261023.json` "final_code" holds that check.
 - **Small's cascade into Normal (report only, after the verdict).** Rubi re-reads a Small line under 700 confidence
   with Normal; as shipped that is Small's gate alone falling back to Normal's adopted arm, a mix no compared pair of
   arms held (each cascade read the next tier's arm of the same kind). From the stored reads (`eval/head2level_dev.py

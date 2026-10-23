@@ -16,8 +16,8 @@ Blob format, version 1 (little-endian; every section 16-byte aligned):
   header, 64 bytes
     0  char[4] "VOCR"         4  u16 version (1)         6  u16 header bytes (64)
     8  u32 file bytes        12  u32 flags (bit 0: int8 matrices present)
-   16  u16 input height      18  u16 max resized width (training clamp, 1024)
-   20  u16 width stride (8)  22  u16 number of ops
+   16  u16 input height      18  u16 max resized width (training clamp, 1024; 1020 at stride 12)
+   20  u16 width stride (8; 12 or 16 for train2 --stride)  22  u16 number of ops
    24  u32 classes (incl. blank)                        28  u32 op table offset
    32  u32 vocab offset      36  u32 vocab UTF-8 bytes  40  u32 CRC-32 of bytes [64, end)
    44  u32 parameter count   48  u8[16] first 16 bytes of the checkpoint's SHA-256
@@ -153,6 +153,8 @@ def load_checkpoint(path, height=None):
     arch = {k: int(ck[k]) for k in ("depth", "ctx", "ctx_k") if ck.get(k) is not None}
     if ck.get("chans"):                     # explicit per-stage channel counts (train2.py --chans)
         arch["chans"] = tuple(int(c) for c in ck["chans"])
+    if ck.get("stride"):                    # the CTC frame step (train2.py --stride; absent = 8)
+        arch["stride"] = int(ck["stride"])
     model = TinyVNOCR(n_classes, width=float(ck.get("width", 1.0)), bottleneck=bottleneck, **arch)
     model.load_state_dict(sd)
     model.eval()
@@ -181,7 +183,22 @@ def quantize_rows(w):
     return q, scale
 
 
-def build_blob(ops, vocab, height, int8=False, max_width=1024, source_sha=b""):
+def default_max_width(stride, limit=1024):
+    """The width clamp of a blob: the largest multiple of its stride up to `limit` (1,024 at
+    strides 8 and 16, 1,020 at 12), since the runtime needs max_width % stride == 0."""
+    return limit // stride * stride
+
+
+def build_blob(ops, vocab, height, int8=False, max_width=None, source_sha=b""):
+    """The blob of `ops`. max_width None = default_max_width(the ops' stride): 1,024 for every
+    stride-8 or stride-16 model; a max_width that is not a multiple of the stride is refused."""
+    total_stride = 1
+    for op in ops:
+        total_stride *= op["sw"]
+    if max_width is None:
+        max_width = default_max_width(total_stride)
+    if max_width % total_stride:
+        raise ValueError(f"max_width {max_width} is not a multiple of the stride {total_stride}")
     sections = []                       # (offset, bytes)
     pos = [HEADER_BYTES + _align(OP_BYTES * len(ops))]
 
@@ -298,8 +315,8 @@ def dequant(op):
 
 
 def macs_per_frame(blob):
-    """Multiply-accumulates the runtime does per CTC frame (8 input columns): a line of
-    width W costs ceil(W / 8) times this. Returns (total, head)."""
+    """Multiply-accumulates the runtime does per CTC frame (the blob's stride of input columns):
+    a line of width W costs ceil(W / stride) times this. Returns (total, head)."""
     S, s, tot, head = blob["stride"], 1, 0, 0
     for op in blob["ops"]:
         s *= op["sw"]
@@ -315,11 +332,17 @@ def macs_per_frame(blob):
 
 # ---------------------------------------------------------------- arena plan (mirror of C)
 
+def default_tile(stride):
+    """The runtime's default tile in CTC frames (vocr.c plan()): 4, or for a stride over 8 the
+    whole frames nearest 32 input columns, at least 1: 3 at stride 12, 2 at 16."""
+    return 4 if stride <= 8 else 1 if stride >= 64 else (32 + stride // 2) // stride
+
+
 def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0):
-    """Exact arena bytes vocr_arena_bytes() returns. tile/head in frames (0 = defaults 4
-    and 16; tile >= max_width / 8 = whole line); mode 0 = the blob's default (f32 for
-    float blobs, w8f for int8); head_gate as vocr_opts.head_gate (0 off, 1 on, 2 score: w8i and a
-    blob with a gate)."""
+    """Exact arena bytes vocr_arena_bytes() returns. tile/head in frames (0 = defaults
+    default_tile(stride) and 16; tile >= max_width / stride = whole line); mode 0 = the blob's
+    default (f32 for float blobs, w8f for int8); head_gate as vocr_opts.head_gate (0 off, 1 on,
+    2 score: w8i and a blob with a gate)."""
     ops, S, H0 = blob["ops"], blob["stride"], blob["height"]
     if mode == 0:
         mode = MODE_W8F if blob["int8"] else MODE_F32
@@ -335,7 +358,7 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0):
         max_width = blob["max_width"]
     max_width = _align(max_width, S)
     t_max = max_width // S
-    tile, head = tile or 4, head or 16
+    tile, head = tile or default_tile(S), head or 16
     F = min(tile, t_max)
     hb = min(head, t_max)
     L = len(ops)
@@ -400,16 +423,17 @@ def main():
     ap.add_argument("--out")
     ap.add_argument("--int8", action="store_true")
     ap.add_argument("--height", type=int, default=0, help="input height (default: ckpt or 32)")
-    ap.add_argument("--max-width", type=int, default=1024)
+    ap.add_argument("--max-width", type=int, default=0,
+                    help="width clamp (default: the largest multiple of the stride up to 1024)")
     ap.add_argument("--info", help="print a blob's sizes and arena bytes")
     ap.add_argument("--widths", default="256,640,1024")
-    ap.add_argument("--tile", type=int, default=4)
+    ap.add_argument("--tile", type=int, default=0, help="tile frames (0: the runtime's default_tile(stride))")
     ap.add_argument("--head", type=int, default=16)
     args = ap.parse_args()
     if args.ckpt:
         model, vocab, height = load_checkpoint(args.ckpt, args.height)
         sha = hashlib.sha256(Path(args.ckpt).read_bytes()).digest()
-        blob, meta = build_blob(model_ops(model, height), vocab, height, args.int8, args.max_width, sha)
+        blob, meta = build_blob(model_ops(model, height), vocab, height, args.int8, args.max_width or None, sha)
         Path(args.out).write_bytes(blob)
         print(json.dumps({"out": args.out, "bytes": len(blob), "int8": args.int8, **meta}))
         args.info = args.info or args.out
@@ -429,7 +453,8 @@ def main():
                           "macs_per_frame": macs, "head_macs_per_frame": head,
                           "macs_per_line": {w: macs * -(-w // b["stride"])
                                             for w in map(int, args.widths.split(","))},
-                          "tile": args.tile, "head": args.head, "arena": rows}))
+                          "tile": args.tile or default_tile(b["stride"]), "head": args.head or 16,
+                          "arena": rows}))
 
 
 if __name__ == "__main__":

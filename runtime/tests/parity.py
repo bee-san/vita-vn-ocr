@@ -2,6 +2,7 @@
 """Parity of the C runtime against PyTorch.
 
   parity.py --fixture                         # random-init model, random crops, no data
+  parity.py --fixture --stride 16             # the same at a coarser CTC frame step (12 or 16)
   parity.py --ckpt CKPT [--shard SHARD.npz]   # default shard: the last synth shard (val)
   parity.py --ckpt CKPT --set real            # data/real crops, through the RGBA path
   parity.py --ckpt CKPT --set vita-test       # eval's hand-checked sets (also psp-test), RGBA
@@ -55,7 +56,16 @@ import vocr_ref  # noqa: E402
 
 import export as E  # noqa: E402
 
-H, MAX_W, STRIDE = 32, 1024, 8
+H, MAX_W, STRIDE = 32, 1024, 8          # STRIDE / MAX_W: set_geometry(), from the model under test
+
+
+def set_geometry(stride):
+    """The model's CTC frame step and its width clamp (export.default_max_width: 1020 at stride 12),
+    which prep() pads and clamps to as the runtime does."""
+    global STRIDE, MAX_W
+    STRIDE, MAX_W = int(stride), E.default_max_width(int(stride))
+
+
 TOL = {"f32": 1e-3, "w8f": 1e-3, "w8i": 5e-3}
 TILES = {"lib": [(1, 1), (2, 5), (3, 7), (7, 3), (16, 16), (128, 128)],   # (tile, head) frames
          "cli": [(1, 1), (3, 7), (128, 128)]}
@@ -212,10 +222,10 @@ def blob_forward(blob, x, mode):
     return t[0, :, 0, :].T.contiguous().numpy()
 
 
-def fixture_model(seed=0, width=0.5):
+def fixture_model(seed=0, width=0.5, stride=8):
     """Random-init TinyVNOCR whose BatchNorm statistics are measured on fixture crops (so
     activations vary along the line like a trained net's) with random BN scales and shifts,
-    so the exporter's folding is exercised."""
+    so the exporter's folding is exercised. stride: the CTC frame step (8, 12 or 16)."""
     import torch
     import torch.nn as nn
 
@@ -223,7 +233,7 @@ def fixture_model(seed=0, width=0.5):
     from model import TinyVNOCR
     torch.manual_seed(seed)
     vocab = load_vocab(ROOT / "data" / "vocab.txt")
-    m = TinyVNOCR(len(vocab) + 1, width=width)
+    m = TinyVNOCR(len(vocab) + 1, width=width, stride=stride)
     bns = [mod for mod in m.modules() if isinstance(mod, nn.BatchNorm2d)]
     xs = [prep(img)[2] for _, img, _ in fixture_lines(16, seed + 1)]
     W = max(x.shape[1] for x in xs)
@@ -337,10 +347,11 @@ def make_backend(cfg, mode, tile=0, head=0):
 
 def worker_init(cfg):
     import torch
+    set_geometry(cfg["stride"])
     torch.set_num_threads(int(cfg.get("threads", 1)))
     torch.set_flush_denormal(False)      # keep IEEE denormals, as the C code and numpy do
     if cfg["fixture"]:
-        model, vocab = fixture_model(cfg["seed"], cfg["width"])
+        model, vocab = fixture_model(cfg["seed"], cfg["width"], cfg["stride"])
     else:
         model, vocab, _ = E.load_checkpoint(cfg["ckpt"])
     model.eval()
@@ -494,6 +505,8 @@ def main():
     ap.add_argument("--tol-scale", type=float, default=1.0)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--width", type=float, default=0.5, help="fixture model width multiplier")
+    ap.add_argument("--stride", type=int, default=8, choices=(8, 12, 16),
+                    help="fixture model CTC frame step (a checkpoint's own stride is used with --ckpt)")
     ap.add_argument("--report", type=Path, help="summary JSON (CI's VOCR_REPORT contract)")
     ap.add_argument("--out", type=Path, help="summary and per-line results as JSON")
     args = ap.parse_args()
@@ -503,11 +516,13 @@ def main():
     t0 = time.time()
     tmp = tempfile.TemporaryDirectory()
     if args.fixture:
-        model, vocab = fixture_model(args.seed, args.width)
+        set_geometry(args.stride)
+        model, vocab = fixture_model(args.seed, args.width, args.stride)
         height, sha = H, b"fixture"
     else:
         import hashlib
         model, vocab, height = E.load_checkpoint(args.ckpt)
+        set_geometry(model.stride)
         sha = hashlib.sha256(Path(args.ckpt).read_bytes()).digest()
     ops = E.model_ops(model, height)
     blobs = {}
@@ -525,7 +540,7 @@ def main():
         lines = load_eval(args.set, args.n, args.eval_data)
     else:
         lines = load_synth(args.data, args.n)
-    cfg = {"fixture": args.fixture, "seed": args.seed, "width": args.width, "ckpt": args.ckpt,
+    cfg = {"fixture": args.fixture, "seed": args.seed, "width": args.width, "stride": STRIDE, "ckpt": args.ckpt,
            "blobs": blobs, "modes": modes, "cli": args.cli, "tile_lines": args.tile_lines,
            "tol_scale": args.tol_scale}
     arena_ok, arena = arena_checks(cfg)
@@ -545,7 +560,7 @@ def main():
             recs += check_batch(b)
     s = summarize(recs, modes)
     bad = failures(s, modes) + ([] if arena_ok else ["arena plan"])
-    s.update(ckpt=args.ckpt or "fixture", shard=args.shard, set=None if args.shard else
+    s.update(ckpt=args.ckpt or "fixture", stride=STRIDE, max_width=MAX_W, shard=args.shard, set=None if args.shard else
              ("fixture" if args.fixture else args.set), cli=args.cli, arena_ok=arena_ok, arena=arena,
              blob_bytes={k: Path(p).stat().st_size for k, p in blobs.items()}, tol=TOL,
              seconds=round(time.time() - t0, 1), failed=bad)

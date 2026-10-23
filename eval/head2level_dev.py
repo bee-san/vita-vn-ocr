@@ -768,6 +768,14 @@ def cmd_recheck(a):
                                       **{k: bool(np.array_equal(r0[k], r1[k]))
                                          for k in ("off", "best", "frames", "escaped", "conf", "gated")},
                                       "arena_w8i": [r0["arena_w8i"], r1["arena_w8i"]]}
+    out["permuted"] = {}
+    for t in a.perm:                                  # the permuted blob, a full head: today's text and confidence
+        r0, r1 = load_reads(a.reads_verdict, t, "today"), load_reads(a.reads_final, t, "perm")
+        out["permuted"][t] = {"crops": len(r1["keys"]), "keys": r0["keys"] == r1["keys"],
+                              "greedy": r0["greedy"] == r1["greedy"], "lm": r0["lm"] == r1["lm"],
+                              "conf": bool(np.array_equal(r0["conf"], r1["conf"])),
+                              "frames": bool(np.array_equal(r0["frames"], r1["frames"])),
+                              "arena_w8i": [r0["arena_w8i"], r1["arena_w8i"]]}
     for d in sorted(Path(a.a9_final).iterdir()):
         r0 = json.loads((Path(a.a9_verdict) / d.name / "report.json").read_text())
         r1 = json.loads((d / "report.json").read_text())
@@ -788,11 +796,14 @@ def cmd_recheck(a):
     out["all_reads_equal"] = all(all(v for k, v in r.items() if k not in ("crops", "arena_w8i")) and
                                  r["arena_w8i"][0] == r["arena_w8i"][1] for r in out["reads"].values())
     out["all_texts_equal"] = all(r["texts_equal"] for r in out["a9"].values())
+    out["permuted_reads_today"] = all(all(v for k, v in r.items() if k not in ("crops", "arena_w8i")) and
+                                      r["arena_w8i"][0] == r["arena_w8i"][1] for r in out["permuted"].values())
     out["same_selection"] = all(v["selected"][0] == v["selected"][1] and
                                 all(x["verdict"][0] == x["verdict"][1] for x in v["arms"].values())
                                 for v in out["decision"].values())
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n")
-    print(json.dumps({k: out[k] for k in ("all_reads_equal", "all_texts_equal", "same_selection")}))
+    print(json.dumps({k: out[k] for k in ("all_reads_equal", "all_texts_equal", "same_selection",
+                                          "permuted_reads_today")}))
 
 
 def cmd_mixed(a):
@@ -859,6 +870,7 @@ def main():
     p.add_argument("--limit", type=int, default=0)
     p = sub.add_parser("recheck")
     p.add_argument("--reads", nargs="+", required=True, help="TIER:ARM ...")
+    p.add_argument("--perm", nargs="*", default=[], help="TIER ... (reads-final 'perm' vs reads-verdict 'today')")
     p.add_argument("--reads-verdict", required=True)
     p.add_argument("--reads-final", required=True)
     p.add_argument("--a9-verdict", required=True)

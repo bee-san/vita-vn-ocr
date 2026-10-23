@@ -670,5 +670,89 @@
   "in-run evaluations (teacher_val_dev, logged) select nothing; the final checkpoint is the run",
   "the owner's frames and every CLANNAD reading stay under shared/private; committed files hold counts, ids and hashes only"
  ],
- "amendments": []
+ "amendments": [
+  {
+   "id": 1,
+   "utc": "2026-10-23T19:43:19Z",
+   "before": "every score of any stride16 candidate (the eight pretrains are training; no fine-tune exists; only the incumbents VOCR5-S / N / L have development scores, which match VOCR5's records and do not depend on the floor file)",
+   "change": "floor: the frame-budget file keys every fixed development row by its position in eval/synth3_ablation.py's row order (with its id as a check), not by its line id. eval/stride16_floor.py fixed_rows() returns a list in row order; eval/stride16_select.py keys a fixed row as file|position|id. The file was rebuilt (eval/stride16_floor_dev_20261023.json, model-independent, its wd units unchanged)",
+   "why": "teacher_val_dev.npz holds 129 line ids that two different crops share (959 labelled rows, 830 distinct ids; every such pair differs in crop size or label), so an id-keyed frame budget gave 129 rows another crop's frames. head-gate found the same collision in its own scorer (audit-head-gate B1, 2026-10-23); devnative's files and the protected manifests have unique ids (the protected step now refuses a repeated id)",
+   "floor_sha256": "3e31b24edac76a7b1c04fe537e8ac70f7f98fcaeceaa81c807e961e625183347",
+   "counts": {
+    "fixed_s8": {
+     "rows": 1724,
+     "below_floor": 0,
+     "tight": 0,
+     "tight_share": 0.0
+    },
+    "fixed_s8_psp": {
+     "rows": 1081,
+     "below_floor": 0,
+     "tight": 0,
+     "tight_share": 0.0
+    },
+    "fixed_s8_vita": {
+     "rows": 643,
+     "below_floor": 0,
+     "tight": 0,
+     "tight_share": 0.0
+    },
+    "wd_s8": {
+     "rows": 3030,
+     "below_floor": 36,
+     "tight": 40,
+     "tight_share": 0.0132
+    },
+    "fixed_s12": {
+     "rows": 1724,
+     "below_floor": 1,
+     "tight": 4,
+     "tight_share": 0.00232
+    },
+    "fixed_s12_psp": {
+     "rows": 1081,
+     "below_floor": 1,
+     "tight": 4,
+     "tight_share": 0.0037
+    },
+    "fixed_s12_vita": {
+     "rows": 643,
+     "below_floor": 0,
+     "tight": 0,
+     "tight_share": 0.0
+    },
+    "wd_s12": {
+     "rows": 3030,
+     "below_floor": 52,
+     "tight": 125,
+     "tight_share": 0.04125
+    },
+    "fixed_s16": {
+     "rows": 1724,
+     "below_floor": 4,
+     "tight": 93,
+     "tight_share": 0.05394
+    },
+    "fixed_s16_psp": {
+     "rows": 1081,
+     "below_floor": 4,
+     "tight": 62,
+     "tight_share": 0.05735
+    },
+    "fixed_s16_vita": {
+     "rows": 643,
+     "below_floor": 0,
+     "tight": 31,
+     "tight_share": 0.04821
+    },
+    "wd_s16": {
+     "rows": 3030,
+     "below_floor": 140,
+     "tight": 474,
+     "tight_share": 0.15644
+    }
+   },
+   "effect": "fixed rows 1,595 -> 1,724 (the 129 Vita rows of teacher_val_dev that shared an id now count); at stride 16 the fixed-line tight rows 81 -> 93 (Vita 19 -> 31), below the floor 4 (unchanged); stride 12 and the whole-dialogue units unchanged. No rule, threshold, arm or run changes"
+  }
+ ]
 }

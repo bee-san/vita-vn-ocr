@@ -98,9 +98,11 @@ VOCR5's probe for comparison: 254 / 179 / 138 lines/s (S / N / L).
 | rows (dialogue and names) | stride 8: below / tight | stride 12 | stride 16 |
 |---|---|---|---|
 | fixed lines, PSP (1,081) | 0 / 0 | 1 / 4 | 4 / 62 |
-| fixed lines, Vita (514) | 0 / 0 | 0 / 0 | 0 / 19 |
+| fixed lines, Vita (643) | 0 / 0 | 0 / 0 | 0 / 31 |
 | whole-dialogue units, GRAD (1,515) | 20 / 24 | 31 / 90 | 101 / 362 |
 | whole-dialogue units, GRAD + refine (1,515) | 16 / 16 | 21 / 35 | 39 / 112 |
+
+**Amendment 1** (before any candidate score): the file first keyed the fixed rows by line id. teacher_val_dev holds 129 ids that two different crops share, so those rows got another crop's frames. The file now keys a row by its position in the scorer's row order, with the id as a check. That raised the Vita fixed rows from 514 to 643 and the stride-16 tight rows from 19 to 31; nothing else changed. head-gate's audit found the same collision in its scorer.
 
 A unit's ratio is a proxy: a region is read line by line, but its reference is the whole region's. A unit whose finder misses or merges a line also looks short of frames, which is why 36 units are below the floor already at stride 8.
 

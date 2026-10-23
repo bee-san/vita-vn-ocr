@@ -239,3 +239,59 @@ def test_protocol_is_consistent():
     assert p["selection"]["order"] == {"Small": ["S16"], "Normal": ["N16", "N12"], "Large": ["L16"]}
     for t in p["tiers"].values():
         assert t["limits"]["weights_eq"] == t["incumbent"]["blob_bytes"]
+
+
+def test_protected_floor_strata(tmp_path, monkeypatch):
+    """The report-only strata of the protected fixed lines: a line counts as tight / below the floor at a stride from
+    its crop size and its reference, and each arm's errors are summed over those lines (names out of dialogue)."""
+    import types
+
+    import sets
+    import stride16_floor as F
+    lines = [types.SimpleNamespace(id="a", text="あいうえお", crop_rgb=np.zeros((32, 60, 3), np.uint8)),   # 4 frames
+             types.SimpleNamespace(id="b", text="あい", crop_rgb=np.zeros((32, 400, 3), np.uint8)),        # 25 frames
+             types.SimpleNamespace(id="c", text="なまえ", crop_rgb=np.zeros((32, 40, 3), np.uint8))]       # 3 frames
+    monkeypatch.setattr(sets, "load", lambda name, data: (lines if name == "vita-test" else [], None))
+    rec = [{"id": "a", "n": 5, "errors": 2, "styles": []}, {"id": "b", "n": 2, "errors": 0, "styles": []},
+           {"id": "c", "n": 3, "errors": 1, "styles": ["name"]}]
+    report = {"shared": {"fixed_line": {"console": {"X": {"lines": {"vita-test": rec, "psp-test": []}}}}}}
+    (tmp_path / "r.json").write_text(json.dumps(report))
+    F.main(["protected", "--report", str(tmp_path / "r.json"), "--data", "x", "--out", str(tmp_path / "o.json")])
+    d = json.loads((tmp_path / "o.json").read_text())
+    assert d["strata"]["s16_floor_vita-test"] == 1 and d["strata"]["s16_tight_vita-test"] == 2
+    x = d["arms"]["X"]
+    assert x["s16_floor_dialogue"] == {"lines": 1, "chars": 5, "errors": 2, "cer": 40.0}
+    assert x["s16_tight_all"]["lines"] == 2 and x["s16_tight_all"]["errors"] == 3
+
+
+def test_report_spec_uses_each_arms_best_run(tmp_path):
+    import stride16_make_spec as M
+    blobs = {}
+    for name in ("VOCR5_S_w8.vocr", "VOCR5_N_w8.vocr", "VOCR5_L_w8.vocr", "r1.vocr", "r2.vocr", "r3.vocr", "r4.vocr",
+                 "r5.vocr", "r6.vocr", "r7.vocr", "r8.vocr"):
+        (tmp_path / name).write_bytes(name.encode())
+        blobs[name] = M.sha256(tmp_path / name)
+    proto = {"tiers": {t: {"incumbent": {"sha256": blobs[f"VOCR5_{t[0]}_w8.vocr"]}}
+                       for t in ("Small", "Normal", "Large")},
+             "arms": {"S16": {"tier": "Small", "stride": 16}, "N16": {"tier": "Normal", "stride": 16},
+                      "L16": {"tier": "Large", "stride": 16}, "N12": {"tier": "Normal", "stride": 12}}}
+    v5 = {"arms": [{"name": f"VOCR5_{t}", "file": f"VOCR5_{t}_w8.vocr", "sha256": blobs[f"VOCR5_{t}_w8.vocr"]}
+                   for t in "SNL"]}
+
+    def run(r, arm, score, k):
+        return {"run": r, "arm": arm, "score": score, "blob": str(tmp_path / f"r{k}.vocr"),
+                "blob_sha256": blobs[f"r{k}.vocr"]}
+    sels = {"Small": {"kind": "stride16-selection", "tier": "Small", "adopted_arm": "S16",
+                      "runs": [run("s16f_S_seed1", "S16", 3.5, 1), run("s16f_S_seed2", "S16", 3.4, 2)]},
+            "Normal": {"kind": "stride16-selection", "tier": "Normal", "adopted_arm": None,
+                       "runs": [run("s16f_N_seed1", "N16", 3.3, 3), run("s16f_N_seed2", "N16", 3.3, 4),
+                                run("s12f_N_seed1", "N12", 3.2, 5), run("s12f_N_seed2", "N12", 3.1, 6)]},
+            "Large": {"kind": "stride16-selection", "tier": "Large", "adopted_arm": "L16",
+                      "runs": [run("s16f_L_seed1", "L16", 2.9, 7), run("s16f_L_seed2", "L16", 3.0, 8)]}}
+    spec, runs = M.build(proto, sels, v5, [tmp_path], tmp_path / "out")
+    assert runs["S16"] == {"run": "s16f_S_seed2", "adopted": True, "dev_score": 3.4}
+    assert runs["N16"]["run"] == "s16f_N_seed1" and not runs["N16"]["adopted"]          # tie -> the lower seed
+    assert runs["N12"]["run"] == "s12f_N_seed2" and runs["L16"]["run"] == "s16f_L_seed1"
+    assert {(p["candidate"], p["baseline"]) for p in spec["pairs"]} == {
+        ("S16", "VOCR5_S"), ("N16", "VOCR5_N"), ("N12", "VOCR5_N"), ("L16", "VOCR5_L"), ("N16", "N12")}
+    assert (tmp_path / "out" / "N12_w8.vocr").read_bytes() == b"r6.vocr" and spec["gates"] == []

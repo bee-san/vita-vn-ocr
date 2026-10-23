@@ -157,6 +157,47 @@ def cmd_summary(args):
     print(json.dumps(summarize(json.loads(Path(args.floor).read_text(encoding="utf-8"))), indent=1))
 
 
+def cmd_protected(args):
+    """Report only (protocol locked_report.also), run once inside the locked report: the protected fixed lines'
+    frame budget (vita-test, psp-test: eval/sets.py's crops, the line box plus the set's pad, as the report reads
+    them) and each report arm's CER on the tight (T_s < 1.25 NR) and floor (T_s < NR) strata at strides 12 and 16,
+    console polarity, dialogue (no 'name' style) and all text. Counts only."""
+    import sets
+    rep = json.loads(Path(args.report).read_text(encoding="utf-8"))
+    fl = rep["shared"]["fixed_line"]["console"]
+    rows = {}
+    for s in ("vita-test", "psp-test"):
+        lines, _ = sets.load(s, args.data)
+        for ln in lines:
+            h, w = ln.crop_rgb.shape[:2]
+            rows[(s, ln.id)] = {"T": frames(w, h), "nr": need(ln.text)}
+    doc = {"kind": "stride16-floor-protected", "schema": 1, "tight_ratio": TIGHT,
+           "lines": {s: sum(k[0] == s for k in rows) for s in ("vita-test", "psp-test")}, "strata": {}, "arms": {}}
+    for st in (8, 12, 16):
+        for which, lim in (("tight", TIGHT), ("floor", 1.0)):
+            for s in ("vita-test", "psp-test"):
+                doc["strata"][f"s{st}_{which}_{s}"] = sum(v["T"][str(st)] < lim * v["nr"]
+                                                          for k, v in rows.items() if k[0] == s)
+    for arm, a in fl.items():
+        rec = {}
+        for st in (12, 16):
+            for which, lim in (("tight", TIGHT), ("floor", 1.0)):
+                for part in ("dialogue", "all"):
+                    e = c = n = 0
+                    for s in ("vita-test", "psp-test"):
+                        for x in a["lines"][s]:
+                            r = rows[(s, x["id"])]
+                            if r["T"][str(st)] >= lim * r["nr"] or (part == "dialogue" and "name" in x["styles"]):
+                                continue
+                            e, c, n = e + x["errors"], c + x["n"], n + 1
+                    rec[f"s{st}_{which}_{part}"] = {"lines": n, "chars": c, "errors": e,
+                                                    "cer": round(100 * e / c, 3) if c else None}
+        doc["arms"][arm] = rec
+    Path(args.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"strata": doc["strata"], "arms": {k: v["s16_tight_dialogue"] for k, v in doc["arms"].items()}},
+                     indent=1))
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -166,8 +207,12 @@ def main(argv=None):
     b.add_argument("--dev-dir", default=str(DEV_DIR))
     s = sub.add_parser("summary")
     s.add_argument("floor")
+    pr = sub.add_parser("protected")
+    pr.add_argument("--report", required=True, help="the locked report's report.json (eval/vocr3_report.py render)")
+    pr.add_argument("--data", required=True, help="eval's screenshot directory")
+    pr.add_argument("--out", required=True)
     args = ap.parse_args(argv)
-    {"build": cmd_build, "summary": cmd_summary}[args.cmd](args)
+    {"build": cmd_build, "summary": cmd_summary, "protected": cmd_protected}[args.cmd](args)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,4758 @@
+{
+ "command": "eval/charbox_eval.py synth --platforms vita psp psp2x --tiers S N L",
+ "data": "eval/charbox_synth.py renders of synth4 dev split (local pickles, sha256 per platform)",
+ "kind": "charboxes-synth",
+ "note": "report only: nothing was chosen on it (docs/char-boxes.md, Synthetic exact boxes)",
+ "platforms": {
+  "psp": {
+   "exact_lines": {
+    "L|cal": 5431,
+    "L|cal+ink": 5431,
+    "L|cal+pitch+ink": 5431,
+    "L|ink": 5431,
+    "L|raw": 5431,
+    "N|cal": 5148,
+    "N|cal+ink": 5148,
+    "N|cal+pitch+ink": 5148,
+    "N|ink": 5148,
+    "N|raw": 5148,
+    "S|cal": 4484,
+    "S|cal+ink": 4484,
+    "S|cal+pitch+ink": 4484,
+    "S|ink": 4484,
+    "S|raw": 4484
+   },
+   "lines": 6887,
+   "pickle_sha256": "83fe90b68293a255d547ff56a04b9442a7aa3a1f5399c39700507fadbc7519f7",
+   "rows": {
+    "L|cal+ink|all": {
+     "dx": -0.0171,
+     "glyphs": 58958,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.9852,
+     "iou_cell": 0.8209,
+     "iou_ink": 0.7909
+    },
+    "L|cal+ink|choice": {
+     "dx": -0.016,
+     "glyphs": 5336,
+     "hit_cell": 0.9979,
+     "hit_ink": 0.9946,
+     "iou_cell": 0.8437,
+     "iou_ink": 0.8041
+    },
+    "L|cal+ink|dialogue": {
+     "dx": -0.0184,
+     "glyphs": 44647,
+     "hit_cell": 0.996,
+     "hit_ink": 0.983,
+     "iou_cell": 0.8161,
+     "iou_ink": 0.78
+    },
+    "L|cal+ink|g:close": {
+     "dx": -0.0202,
+     "glyphs": 3989,
+     "hit_cell": 0.9769,
+     "hit_ink": 0.9351,
+     "iou_cell": 0.5859,
+     "iou_ink": 0.6303
+    },
+    "L|cal+ink|g:dots": {
+     "dx": -0.0547,
+     "glyphs": 1368,
+     "hit_cell": 0.9759,
+     "hit_ink": 0.9496,
+     "iou_cell": 0.627,
+     "iou_ink": 0.5468
+    },
+    "L|cal+ink|g:half": {
+     "dx": -0.0234,
+     "glyphs": 279,
+     "hit_cell": 0.9642,
+     "hit_ink": 0.9606,
+     "iou_cell": 0.7992,
+     "iou_ink": 0.7645
+    },
+    "L|cal+ink|g:long": {
+     "dx": -0.0266,
+     "glyphs": 525,
+     "hit_cell": 0.9962,
+     "hit_ink": 0.9867,
+     "iou_cell": 0.8596,
+     "iou_ink": 0.8009
+    },
+    "L|cal+ink|g:mark": {
+     "dx": -0.0205,
+     "glyphs": 1114,
+     "hit_cell": 0.9955,
+     "hit_ink": 0.9632,
+     "iou_cell": 0.713,
+     "iou_ink": 0.723
+    },
+    "L|cal+ink|g:open": {
+     "dx": -0.0374,
+     "glyphs": 1489,
+     "hit_cell": 0.9859,
+     "hit_ink": 0.8281,
+     "iou_cell": 0.5482,
+     "iou_ink": 0.6353
+    },
+    "L|cal+ink|g:other": {
+     "dx": -0.0154,
+     "glyphs": 48402,
+     "hit_cell": 0.999,
+     "hit_ink": 0.9956,
+     "iou_cell": 0.8553,
+     "iou_ink": 0.8181
+    },
+    "L|cal+ink|g:small": {
+     "dx": -0.0036,
+     "glyphs": 1792,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9911,
+     "iou_cell": 0.8482,
+     "iou_ink": 0.7743
+    },
+    "L|cal+ink|name": {
+     "dx": -0.0101,
+     "glyphs": 7068,
+     "hit_cell": 0.9977,
+     "hit_ink": 0.9921,
+     "iou_cell": 0.831,
+     "iou_ink": 0.8404
+    },
+    "L|cal+ink|ui": {
+     "dx": -0.015,
+     "glyphs": 1907,
+     "hit_cell": 0.9958,
+     "hit_ink": 0.9869,
+     "iou_cell": 0.8295,
+     "iou_ink": 0.8266
+    },
+    "L|cal+pitch+ink|all": {
+     "dx": -0.017,
+     "glyphs": 58958,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.9851,
+     "iou_cell": 0.8209,
+     "iou_ink": 0.7909
+    },
+    "L|cal+pitch+ink|choice": {
+     "dx": -0.0162,
+     "glyphs": 5336,
+     "hit_cell": 0.9979,
+     "hit_ink": 0.9946,
+     "iou_cell": 0.844,
+     "iou_ink": 0.8043
+    },
+    "L|cal+pitch+ink|dialogue": {
+     "dx": -0.0183,
+     "glyphs": 44647,
+     "hit_cell": 0.996,
+     "hit_ink": 0.9828,
+     "iou_cell": 0.8162,
+     "iou_ink": 0.7799
+    },
+    "L|cal+pitch+ink|g:close": {
+     "dx": -0.02,
+     "glyphs": 3989,
+     "hit_cell": 0.9767,
+     "hit_ink": 0.9341,
+     "iou_cell": 0.5855,
+     "iou_ink": 0.6297
+    },
+    "L|cal+pitch+ink|g:dots": {
+     "dx": -0.0551,
+     "glyphs": 1368,
+     "hit_cell": 0.9766,
+     "hit_ink": 0.9503,
+     "iou_cell": 0.6287,
+     "iou_ink": 0.5493
+    },
+    "L|cal+pitch+ink|g:half": {
+     "dx": -0.0234,
+     "glyphs": 279,
+     "hit_cell": 0.9642,
+     "hit_ink": 0.9606,
+     "iou_cell": 0.7992,
+     "iou_ink": 0.7645
+    },
+    "L|cal+pitch+ink|g:long": {
+     "dx": -0.0263,
+     "glyphs": 525,
+     "hit_cell": 0.9962,
+     "hit_ink": 0.9867,
+     "iou_cell": 0.8596,
+     "iou_ink": 0.8008
+    },
+    "L|cal+pitch+ink|g:mark": {
+     "dx": -0.0207,
+     "glyphs": 1114,
+     "hit_cell": 0.9955,
+     "hit_ink": 0.9623,
+     "iou_cell": 0.7128,
+     "iou_ink": 0.722
+    },
+    "L|cal+pitch+ink|g:open": {
+     "dx": -0.0377,
+     "glyphs": 1489,
+     "hit_cell": 0.9859,
+     "hit_ink": 0.8274,
+     "iou_cell": 0.5475,
+     "iou_ink": 0.6338
+    },
+    "L|cal+pitch+ink|g:other": {
+     "dx": -0.0154,
+     "glyphs": 48402,
+     "hit_cell": 0.999,
+     "hit_ink": 0.9956,
+     "iou_cell": 0.8554,
+     "iou_ink": 0.8181
+    },
+    "L|cal+pitch+ink|g:small": {
+     "dx": -0.003,
+     "glyphs": 1792,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9905,
+     "iou_cell": 0.8481,
+     "iou_ink": 0.7737
+    },
+    "L|cal+pitch+ink|name": {
+     "dx": -0.0101,
+     "glyphs": 7068,
+     "hit_cell": 0.9977,
+     "hit_ink": 0.9924,
+     "iou_cell": 0.8313,
+     "iou_ink": 0.8407
+    },
+    "L|cal+pitch+ink|ui": {
+     "dx": -0.0151,
+     "glyphs": 1907,
+     "hit_cell": 0.9958,
+     "hit_ink": 0.9869,
+     "iou_cell": 0.8295,
+     "iou_ink": 0.8266
+    },
+    "L|cal|all": {
+     "dx": -0.0643,
+     "glyphs": 58958,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.97,
+     "iou_cell": 0.809,
+     "iou_ink": 0.7302
+    },
+    "L|cal|choice": {
+     "dx": -0.0662,
+     "glyphs": 5336,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9858,
+     "iou_cell": 0.845,
+     "iou_ink": 0.755
+    },
+    "L|cal|dialogue": {
+     "dx": -0.0664,
+     "glyphs": 44647,
+     "hit_cell": 0.9969,
+     "hit_ink": 0.967,
+     "iou_cell": 0.8024,
+     "iou_ink": 0.7242
+    },
+    "L|cal|g:close": {
+     "dx": -0.0395,
+     "glyphs": 3989,
+     "hit_cell": 0.9742,
+     "hit_ink": 0.8646,
+     "iou_cell": 0.5741,
+     "iou_ink": 0.4443
+    },
+    "L|cal|g:dots": {
+     "dx": -0.0679,
+     "glyphs": 1368,
+     "hit_cell": 0.9927,
+     "hit_ink": 0.9613,
+     "iou_cell": 0.8146,
+     "iou_ink": 0.7023
+    },
+    "L|cal|g:half": {
+     "dx": -0.0355,
+     "glyphs": 279,
+     "hit_cell": 0.9606,
+     "hit_ink": 0.9211,
+     "iou_cell": 0.7376,
+     "iou_ink": 0.6417
+    },
+    "L|cal|g:long": {
+     "dx": -0.0916,
+     "glyphs": 525,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9924,
+     "iou_cell": 0.818,
+     "iou_ink": 0.7642
+    },
+    "L|cal|g:mark": {
+     "dx": -0.0798,
+     "glyphs": 1114,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.8393,
+     "iou_cell": 0.7491,
+     "iou_ink": 0.4645
+    },
+    "L|cal|g:open": {
+     "dx": -0.0767,
+     "glyphs": 1489,
+     "hit_cell": 0.9946,
+     "hit_ink": 0.5762,
+     "iou_cell": 0.5761,
+     "iou_ink": 0.5608
+    },
+    "L|cal|g:other": {
+     "dx": -0.0645,
+     "glyphs": 48402,
+     "hit_cell": 0.9996,
+     "hit_ink": 0.9936,
+     "iou_cell": 0.8363,
+     "iou_ink": 0.7676
+    },
+    "L|cal|g:small": {
+     "dx": -0.0882,
+     "glyphs": 1792,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9849,
+     "iou_cell": 0.8307,
+     "iou_ink": 0.6887
+    },
+    "L|cal|name": {
+     "dx": -0.0509,
+     "glyphs": 7068,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9774,
+     "iou_cell": 0.8221,
+     "iou_ink": 0.7512
+    },
+    "L|cal|ui": {
+     "dx": -0.0594,
+     "glyphs": 1907,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9701,
+     "iou_cell": 0.8153,
+     "iou_ink": 0.7236
+    },
+    "L|ink|all": {
+     "dx": -0.0039,
+     "glyphs": 58958,
+     "hit_cell": 0.997,
+     "hit_ink": 0.9852,
+     "iou_cell": 0.8191,
+     "iou_ink": 0.7887
+    },
+    "L|ink|choice": {
+     "dx": -0.0076,
+     "glyphs": 5336,
+     "hit_cell": 0.9985,
+     "hit_ink": 0.9936,
+     "iou_cell": 0.8439,
+     "iou_ink": 0.8036
+    },
+    "L|ink|dialogue": {
+     "dx": -0.0054,
+     "glyphs": 44647,
+     "hit_cell": 0.9968,
+     "hit_ink": 0.9829,
+     "iou_cell": 0.8146,
+     "iou_ink": 0.7777
+    },
+    "L|ink|g:close": {
+     "dx": 0.0158,
+     "glyphs": 3989,
+     "hit_cell": 0.9882,
+     "hit_ink": 0.8819,
+     "iou_cell": 0.5733,
+     "iou_ink": 0.5942
+    },
+    "L|ink|g:dots": {
+     "dx": -0.0563,
+     "glyphs": 1368,
+     "hit_cell": 0.9766,
+     "hit_ink": 0.9518,
+     "iou_cell": 0.6238,
+     "iou_ink": 0.5444
+    },
+    "L|ink|g:half": {
+     "dx": -0.0067,
+     "glyphs": 279,
+     "hit_cell": 0.9642,
+     "hit_ink": 0.9642,
+     "iou_cell": 0.7948,
+     "iou_ink": 0.7596
+    },
+    "L|ink|g:long": {
+     "dx": -0.0044,
+     "glyphs": 525,
+     "hit_cell": 0.9962,
+     "hit_ink": 0.9886,
+     "iou_cell": 0.8636,
+     "iou_ink": 0.806
+    },
+    "L|ink|g:mark": {
+     "dx": -0.0102,
+     "glyphs": 1114,
+     "hit_cell": 0.9946,
+     "hit_ink": 0.9605,
+     "iou_cell": 0.7219,
+     "iou_ink": 0.7247
+    },
+    "L|ink|g:open": {
+     "dx": -0.0074,
+     "glyphs": 1489,
+     "hit_cell": 0.9805,
+     "hit_ink": 0.9543,
+     "iou_cell": 0.5659,
+     "iou_ink": 0.6768
+    },
+    "L|ink|g:other": {
+     "dx": -0.004,
+     "glyphs": 48402,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9961,
+     "iou_cell": 0.8533,
+     "iou_ink": 0.817
+    },
+    "L|ink|g:small": {
+     "dx": 0.0014,
+     "glyphs": 1792,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9922,
+     "iou_cell": 0.8537,
+     "iou_ink": 0.777
+    },
+    "L|ink|name": {
+     "dx": 0.0076,
+     "glyphs": 7068,
+     "hit_cell": 0.997,
+     "hit_ink": 0.9926,
+     "iou_cell": 0.8269,
+     "iou_ink": 0.8372
+    },
+    "L|ink|ui": {
+     "dx": -0.0012,
+     "glyphs": 1907,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.9895,
+     "iou_cell": 0.8275,
+     "iou_ink": 0.8263
+    },
+    "L|raw|all": {
+     "dx": 0.029,
+     "glyphs": 58958,
+     "hit_cell": 0.9987,
+     "hit_ink": 0.9751,
+     "iou_cell": 0.8248,
+     "iou_ink": 0.7457
+    },
+    "L|raw|choice": {
+     "dx": 0.0214,
+     "glyphs": 5336,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9867,
+     "iou_cell": 0.847,
+     "iou_ink": 0.7701
+    },
+    "L|raw|dialogue": {
+     "dx": 0.0279,
+     "glyphs": 44647,
+     "hit_cell": 0.9986,
+     "hit_ink": 0.9723,
+     "iou_cell": 0.8242,
+     "iou_ink": 0.7431
+    },
+    "L|raw|g:close": {
+     "dx": 0.0837,
+     "glyphs": 3989,
+     "hit_cell": 0.9962,
+     "hit_ink": 0.7736,
+     "iou_cell": 0.6682,
+     "iou_ink": 0.4708
+    },
+    "L|raw|g:dots": {
+     "dx": -0.0731,
+     "glyphs": 1368,
+     "hit_cell": 0.9927,
+     "hit_ink": 0.9598,
+     "iou_cell": 0.8274,
+     "iou_ink": 0.7158
+    },
+    "L|raw|g:half": {
+     "dx": 0.0351,
+     "glyphs": 279,
+     "hit_cell": 0.9677,
+     "hit_ink": 0.9211,
+     "iou_cell": 0.7139,
+     "iou_ink": 0.6287
+    },
+    "L|raw|g:long": {
+     "dx": 0.0257,
+     "glyphs": 525,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9924,
+     "iou_cell": 0.8622,
+     "iou_ink": 0.8097
+    },
+    "L|raw|g:mark": {
+     "dx": 0.0124,
+     "glyphs": 1114,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.8411,
+     "iou_cell": 0.7949,
+     "iou_ink": 0.4887
+    },
+    "L|raw|g:open": {
+     "dx": 0.0052,
+     "glyphs": 1489,
+     "hit_cell": 0.9805,
+     "hit_ink": 0.9134,
+     "iou_cell": 0.5348,
+     "iou_ink": 0.5238
+    },
+    "L|raw|g:other": {
+     "dx": 0.0279,
+     "glyphs": 48402,
+     "hit_cell": 0.9998,
+     "hit_ink": 0.9966,
+     "iou_cell": 0.8463,
+     "iou_ink": 0.7833
+    },
+    "L|raw|g:small": {
+     "dx": 0.0449,
+     "glyphs": 1792,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9911,
+     "iou_cell": 0.8546,
+     "iou_ink": 0.7068
+    },
+    "L|raw|name": {
+     "dx": 0.0409,
+     "glyphs": 7068,
+     "hit_cell": 0.9986,
+     "hit_ink": 0.9813,
+     "iou_cell": 0.8162,
+     "iou_ink": 0.7492
+    },
+    "L|raw|ui": {
+     "dx": 0.031,
+     "glyphs": 1907,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9832,
+     "iou_cell": 0.807,
+     "iou_ink": 0.7248
+    },
+    "N|cal+ink|all": {
+     "dx": -0.0166,
+     "glyphs": 58322,
+     "hit_cell": 0.996,
+     "hit_ink": 0.9856,
+     "iou_cell": 0.8219,
+     "iou_ink": 0.793
+    },
+    "N|cal+ink|choice": {
+     "dx": -0.0154,
+     "glyphs": 5312,
+     "hit_cell": 0.9979,
+     "hit_ink": 0.9938,
+     "iou_cell": 0.8463,
+     "iou_ink": 0.8057
+    },
+    "N|cal+ink|dialogue": {
+     "dx": -0.0169,
+     "glyphs": 44162,
+     "hit_cell": 0.9955,
+     "hit_ink": 0.9837,
+     "iou_cell": 0.8163,
+     "iou_ink": 0.7809
+    },
+    "N|cal+ink|g:close": {
+     "dx": -0.019,
+     "glyphs": 3967,
+     "hit_cell": 0.9748,
+     "hit_ink": 0.9327,
+     "iou_cell": 0.5858,
+     "iou_ink": 0.63
+    },
+    "N|cal+ink|g:dots": {
+     "dx": -0.0372,
+     "glyphs": 1374,
+     "hit_cell": 0.9702,
+     "hit_ink": 0.9461,
+     "iou_cell": 0.6165,
+     "iou_ink": 0.5317
+    },
+    "N|cal+ink|g:half": {
+     "dx": -0.0089,
+     "glyphs": 263,
+     "hit_cell": 0.962,
+     "hit_ink": 0.9544,
+     "iou_cell": 0.804,
+     "iou_ink": 0.7678
+    },
+    "N|cal+ink|g:long": {
+     "dx": -0.0232,
+     "glyphs": 517,
+     "hit_cell": 0.9961,
+     "hit_ink": 0.9884,
+     "iou_cell": 0.8626,
+     "iou_ink": 0.8043
+    },
+    "N|cal+ink|g:mark": {
+     "dx": -0.0103,
+     "glyphs": 1110,
+     "hit_cell": 0.9937,
+     "hit_ink": 0.9523,
+     "iou_cell": 0.7218,
+     "iou_ink": 0.7195
+    },
+    "N|cal+ink|g:open": {
+     "dx": -0.0323,
+     "glyphs": 1483,
+     "hit_cell": 0.9865,
+     "hit_ink": 0.8469,
+     "iou_cell": 0.5516,
+     "iou_ink": 0.6432
+    },
+    "N|cal+ink|g:other": {
+     "dx": -0.016,
+     "glyphs": 47844,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9961,
+     "iou_cell": 0.8567,
+     "iou_ink": 0.821
+    },
+    "N|cal+ink|g:small": {
+     "dx": -0.0019,
+     "glyphs": 1764,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9915,
+     "iou_cell": 0.8498,
+     "iou_ink": 0.7763
+    },
+    "N|cal+ink|name": {
+     "dx": -0.0151,
+     "glyphs": 6954,
+     "hit_cell": 0.9971,
+     "hit_ink": 0.9909,
+     "iou_cell": 0.8345,
+     "iou_ink": 0.8476
+    },
+    "N|cal+ink|ui": {
+     "dx": -0.0179,
+     "glyphs": 1894,
+     "hit_cell": 0.9963,
+     "hit_ink": 0.9884,
+     "iou_cell": 0.8379,
+     "iou_ink": 0.8369
+    },
+    "N|cal+pitch+ink|all": {
+     "dx": -0.0166,
+     "glyphs": 58322,
+     "hit_cell": 0.996,
+     "hit_ink": 0.9853,
+     "iou_cell": 0.8217,
+     "iou_ink": 0.7927
+    },
+    "N|cal+pitch+ink|choice": {
+     "dx": -0.0151,
+     "glyphs": 5312,
+     "hit_cell": 0.9979,
+     "hit_ink": 0.9936,
+     "iou_cell": 0.846,
+     "iou_ink": 0.8056
+    },
+    "N|cal+pitch+ink|dialogue": {
+     "dx": -0.0169,
+     "glyphs": 44162,
+     "hit_cell": 0.9955,
+     "hit_ink": 0.9833,
+     "iou_cell": 0.8161,
+     "iou_ink": 0.7806
+    },
+    "N|cal+pitch+ink|g:close": {
+     "dx": -0.0179,
+     "glyphs": 3967,
+     "hit_cell": 0.9748,
+     "hit_ink": 0.9284,
+     "iou_cell": 0.5847,
+     "iou_ink": 0.6278
+    },
+    "N|cal+pitch+ink|g:dots": {
+     "dx": -0.0374,
+     "glyphs": 1374,
+     "hit_cell": 0.9702,
+     "hit_ink": 0.9469,
+     "iou_cell": 0.6175,
+     "iou_ink": 0.5336
+    },
+    "N|cal+pitch+ink|g:half": {
+     "dx": -0.0089,
+     "glyphs": 263,
+     "hit_cell": 0.962,
+     "hit_ink": 0.9544,
+     "iou_cell": 0.804,
+     "iou_ink": 0.7678
+    },
+    "N|cal+pitch+ink|g:long": {
+     "dx": -0.0228,
+     "glyphs": 517,
+     "hit_cell": 0.9961,
+     "hit_ink": 0.9884,
+     "iou_cell": 0.863,
+     "iou_ink": 0.805
+    },
+    "N|cal+pitch+ink|g:mark": {
+     "dx": -0.0105,
+     "glyphs": 1110,
+     "hit_cell": 0.9937,
+     "hit_ink": 0.9532,
+     "iou_cell": 0.7221,
+     "iou_ink": 0.7204
+    },
+    "N|cal+pitch+ink|g:open": {
+     "dx": -0.0343,
+     "glyphs": 1483,
+     "hit_cell": 0.9865,
+     "hit_ink": 0.8436,
+     "iou_cell": 0.5486,
+     "iou_ink": 0.6391
+    },
+    "N|cal+pitch+ink|g:other": {
+     "dx": -0.016,
+     "glyphs": 47844,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9961,
+     "iou_cell": 0.8566,
+     "iou_ink": 0.8209
+    },
+    "N|cal+pitch+ink|g:small": {
+     "dx": -0.0019,
+     "glyphs": 1764,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9915,
+     "iou_cell": 0.8499,
+     "iou_ink": 0.7764
+    },
+    "N|cal+pitch+ink|name": {
+     "dx": -0.0149,
+     "glyphs": 6954,
+     "hit_cell": 0.9971,
+     "hit_ink": 0.9908,
+     "iou_cell": 0.8348,
+     "iou_ink": 0.8477
+    },
+    "N|cal+pitch+ink|ui": {
+     "dx": -0.0185,
+     "glyphs": 1894,
+     "hit_cell": 0.9963,
+     "hit_ink": 0.9873,
+     "iou_cell": 0.8371,
+     "iou_ink": 0.836
+    },
+    "N|cal|all": {
+     "dx": -0.0618,
+     "glyphs": 58322,
+     "hit_cell": 0.9968,
+     "hit_ink": 0.9717,
+     "iou_cell": 0.8122,
+     "iou_ink": 0.7311
+    },
+    "N|cal|choice": {
+     "dx": -0.0735,
+     "glyphs": 5312,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9876,
+     "iou_cell": 0.8438,
+     "iou_ink": 0.7484
+    },
+    "N|cal|dialogue": {
+     "dx": -0.0585,
+     "glyphs": 44162,
+     "hit_cell": 0.9962,
+     "hit_ink": 0.9687,
+     "iou_cell": 0.807,
+     "iou_ink": 0.7274
+    },
+    "N|cal|g:close": {
+     "dx": -0.0439,
+     "glyphs": 3967,
+     "hit_cell": 0.9665,
+     "hit_ink": 0.8518,
+     "iou_cell": 0.5783,
+     "iou_ink": 0.4487
+    },
+    "N|cal|g:dots": {
+     "dx": -0.0488,
+     "glyphs": 1374,
+     "hit_cell": 0.9825,
+     "hit_ink": 0.9243,
+     "iou_cell": 0.8105,
+     "iou_ink": 0.7054
+    },
+    "N|cal|g:half": {
+     "dx": 0.004,
+     "glyphs": 263,
+     "hit_cell": 0.9772,
+     "hit_ink": 0.9354,
+     "iou_cell": 0.7294,
+     "iou_ink": 0.6491
+    },
+    "N|cal|g:long": {
+     "dx": -0.0951,
+     "glyphs": 517,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9942,
+     "iou_cell": 0.8205,
+     "iou_ink": 0.7687
+    },
+    "N|cal|g:mark": {
+     "dx": 0.0381,
+     "glyphs": 1110,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.8243,
+     "iou_cell": 0.7886,
+     "iou_ink": 0.481
+    },
+    "N|cal|g:open": {
+     "dx": -0.0632,
+     "glyphs": 1483,
+     "hit_cell": 0.996,
+     "hit_ink": 0.6163,
+     "iou_cell": 0.5744,
+     "iou_ink": 0.5588
+    },
+    "N|cal|g:other": {
+     "dx": -0.0648,
+     "glyphs": 47844,
+     "hit_cell": 0.9998,
+     "hit_ink": 0.9967,
+     "iou_cell": 0.8392,
+     "iou_ink": 0.7681
+    },
+    "N|cal|g:small": {
+     "dx": -0.0922,
+     "glyphs": 1764,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9892,
+     "iou_cell": 0.8334,
+     "iou_ink": 0.686
+    },
+    "N|cal|name": {
+     "dx": -0.0719,
+     "glyphs": 6954,
+     "hit_cell": 0.9988,
+     "hit_ink": 0.977,
+     "iou_cell": 0.8183,
+     "iou_ink": 0.744
+    },
+    "N|cal|ui": {
+     "dx": -0.0697,
+     "glyphs": 1894,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9768,
+     "iou_cell": 0.8223,
+     "iou_ink": 0.721
+    },
+    "N|ink|all": {
+     "dx": -0.0153,
+     "glyphs": 58322,
+     "hit_cell": 0.9963,
+     "hit_ink": 0.985,
+     "iou_cell": 0.8214,
+     "iou_ink": 0.7915
+    },
+    "N|ink|choice": {
+     "dx": -0.0192,
+     "glyphs": 5312,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.9921,
+     "iou_cell": 0.8464,
+     "iou_ink": 0.8057
+    },
+    "N|ink|dialogue": {
+     "dx": -0.0149,
+     "glyphs": 44162,
+     "hit_cell": 0.9958,
+     "hit_ink": 0.9828,
+     "iou_cell": 0.8155,
+     "iou_ink": 0.7789
+    },
+    "N|ink|g:close": {
+     "dx": 0.0101,
+     "glyphs": 3967,
+     "hit_cell": 0.9819,
+     "hit_ink": 0.8866,
+     "iou_cell": 0.5731,
+     "iou_ink": 0.5967
+    },
+    "N|ink|g:dots": {
+     "dx": -0.1225,
+     "glyphs": 1374,
+     "hit_cell": 0.9665,
+     "hit_ink": 0.9338,
+     "iou_cell": 0.6119,
+     "iou_ink": 0.5255
+    },
+    "N|ink|g:half": {
+     "dx": -0.0089,
+     "glyphs": 263,
+     "hit_cell": 0.9582,
+     "hit_ink": 0.9506,
+     "iou_cell": 0.8038,
+     "iou_ink": 0.7671
+    },
+    "N|ink|g:long": {
+     "dx": -0.0206,
+     "glyphs": 517,
+     "hit_cell": 0.9961,
+     "hit_ink": 0.9884,
+     "iou_cell": 0.8626,
+     "iou_ink": 0.8057
+    },
+    "N|ink|g:mark": {
+     "dx": -0.0104,
+     "glyphs": 1110,
+     "hit_cell": 0.991,
+     "hit_ink": 0.9495,
+     "iou_cell": 0.7211,
+     "iou_ink": 0.7178
+    },
+    "N|ink|g:open": {
+     "dx": -0.0063,
+     "glyphs": 1483,
+     "hit_cell": 0.9852,
+     "hit_ink": 0.9629,
+     "iou_cell": 0.5692,
+     "iou_ink": 0.6807
+    },
+    "N|ink|g:other": {
+     "dx": -0.0153,
+     "glyphs": 47844,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.996,
+     "iou_cell": 0.8567,
+     "iou_ink": 0.8209
+    },
+    "N|ink|g:small": {
+     "dx": -0.0007,
+     "glyphs": 1764,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9915,
+     "iou_cell": 0.8521,
+     "iou_ink": 0.7776
+    },
+    "N|ink|name": {
+     "dx": -0.0145,
+     "glyphs": 6954,
+     "hit_cell": 0.998,
+     "hit_ink": 0.9928,
+     "iou_cell": 0.8353,
+     "iou_ink": 0.8487
+    },
+    "N|ink|ui": {
+     "dx": -0.0166,
+     "glyphs": 1894,
+     "hit_cell": 0.9968,
+     "hit_ink": 0.9873,
+     "iou_cell": 0.8381,
+     "iou_ink": 0.8363
+    },
+    "N|raw|all": {
+     "dx": -0.0528,
+     "glyphs": 58322,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9759,
+     "iou_cell": 0.8177,
+     "iou_ink": 0.7326
+    },
+    "N|raw|choice": {
+     "dx": -0.0737,
+     "glyphs": 5312,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9855,
+     "iou_cell": 0.8437,
+     "iou_ink": 0.7469
+    },
+    "N|raw|dialogue": {
+     "dx": -0.0477,
+     "glyphs": 44162,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.974,
+     "iou_cell": 0.8137,
+     "iou_ink": 0.7293
+    },
+    "N|raw|g:close": {
+     "dx": 0.0715,
+     "glyphs": 3967,
+     "hit_cell": 0.9957,
+     "hit_ink": 0.7988,
+     "iou_cell": 0.6378,
+     "iou_ink": 0.4603
+    },
+    "N|raw|g:dots": {
+     "dx": -0.171,
+     "glyphs": 1374,
+     "hit_cell": 0.9876,
+     "hit_ink": 0.941,
+     "iou_cell": 0.7396,
+     "iou_ink": 0.6442
+    },
+    "N|raw|g:half": {
+     "dx": 0.0187,
+     "glyphs": 263,
+     "hit_cell": 0.9772,
+     "hit_ink": 0.9202,
+     "iou_cell": 0.7236,
+     "iou_ink": 0.6438
+    },
+    "N|raw|g:long": {
+     "dx": -0.0851,
+     "glyphs": 517,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9942,
+     "iou_cell": 0.832,
+     "iou_ink": 0.7791
+    },
+    "N|raw|g:mark": {
+     "dx": 0.0383,
+     "glyphs": 1110,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.8252,
+     "iou_cell": 0.8032,
+     "iou_ink": 0.4739
+    },
+    "N|raw|g:open": {
+     "dx": 0.0184,
+     "glyphs": 1483,
+     "hit_cell": 0.973,
+     "hit_ink": 0.9036,
+     "iou_cell": 0.553,
+     "iou_ink": 0.5448
+    },
+    "N|raw|g:other": {
+     "dx": -0.0648,
+     "glyphs": 47844,
+     "hit_cell": 0.9998,
+     "hit_ink": 0.9967,
+     "iou_cell": 0.8423,
+     "iou_ink": 0.7707
+    },
+    "N|raw|g:small": {
+     "dx": -0.0336,
+     "glyphs": 1764,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9932,
+     "iou_cell": 0.857,
+     "iou_ink": 0.6988
+    },
+    "N|raw|name": {
+     "dx": -0.0668,
+     "glyphs": 6954,
+     "hit_cell": 0.9978,
+     "hit_ink": 0.9793,
+     "iou_cell": 0.8213,
+     "iou_ink": 0.745
+    },
+    "N|raw|ui": {
+     "dx": -0.061,
+     "glyphs": 1894,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9799,
+     "iou_cell": 0.8227,
+     "iou_ink": 0.7223
+    },
+    "S|cal+ink|all": {
+     "dx": -0.0142,
+     "glyphs": 57022,
+     "hit_cell": 0.9946,
+     "hit_ink": 0.9863,
+     "iou_cell": 0.8237,
+     "iou_ink": 0.7939
+    },
+    "S|cal+ink|choice": {
+     "dx": -0.0124,
+     "glyphs": 5204,
+     "hit_cell": 0.9977,
+     "hit_ink": 0.9946,
+     "iou_cell": 0.8478,
+     "iou_ink": 0.8052
+    },
+    "S|cal+ink|dialogue": {
+     "dx": -0.0148,
+     "glyphs": 43228,
+     "hit_cell": 0.9938,
+     "hit_ink": 0.9844,
+     "iou_cell": 0.8178,
+     "iou_ink": 0.782
+    },
+    "S|cal+ink|g:close": {
+     "dx": -0.022,
+     "glyphs": 3916,
+     "hit_cell": 0.9711,
+     "hit_ink": 0.9367,
+     "iou_cell": 0.5857,
+     "iou_ink": 0.6283
+    },
+    "S|cal+ink|g:dots": {
+     "dx": -0.0341,
+     "glyphs": 1334,
+     "hit_cell": 0.973,
+     "hit_ink": 0.9535,
+     "iou_cell": 0.6266,
+     "iou_ink": 0.5492
+    },
+    "S|cal+ink|g:half": {
+     "dx": -0.0286,
+     "glyphs": 259,
+     "hit_cell": 0.9691,
+     "hit_ink": 0.9575,
+     "iou_cell": 0.7949,
+     "iou_ink": 0.7688
+    },
+    "S|cal+ink|g:long": {
+     "dx": -0.0159,
+     "glyphs": 510,
+     "hit_cell": 0.9882,
+     "hit_ink": 0.9843,
+     "iou_cell": 0.8615,
+     "iou_ink": 0.8034
+    },
+    "S|cal+ink|g:mark": {
+     "dx": -0.0296,
+     "glyphs": 1089,
+     "hit_cell": 0.9908,
+     "hit_ink": 0.9486,
+     "iou_cell": 0.7151,
+     "iou_ink": 0.7169
+    },
+    "S|cal+ink|g:open": {
+     "dx": -0.0024,
+     "glyphs": 1460,
+     "hit_cell": 0.9801,
+     "hit_ink": 0.9212,
+     "iou_cell": 0.5666,
+     "iou_ink": 0.6706
+    },
+    "S|cal+ink|g:other": {
+     "dx": -0.0134,
+     "glyphs": 46706,
+     "hit_cell": 0.9978,
+     "hit_ink": 0.9943,
+     "iou_cell": 0.8585,
+     "iou_ink": 0.8211
+    },
+    "S|cal+ink|g:small": {
+     "dx": -0.002,
+     "glyphs": 1748,
+     "hit_cell": 1.0,
+     "hit_ink": 0.992,
+     "iou_cell": 0.8525,
+     "iou_ink": 0.7761
+    },
+    "S|cal+ink|name": {
+     "dx": -0.0117,
+     "glyphs": 6725,
+     "hit_cell": 0.9969,
+     "hit_ink": 0.992,
+     "iou_cell": 0.8381,
+     "iou_ink": 0.8489
+    },
+    "S|cal+ink|ui": {
+     "dx": -0.0153,
+     "glyphs": 1865,
+     "hit_cell": 0.9968,
+     "hit_ink": 0.9871,
+     "iou_cell": 0.8404,
+     "iou_ink": 0.8391
+    },
+    "S|cal+pitch+ink|all": {
+     "dx": -0.0141,
+     "glyphs": 57022,
+     "hit_cell": 0.9946,
+     "hit_ink": 0.9858,
+     "iou_cell": 0.8235,
+     "iou_ink": 0.7934
+    },
+    "S|cal+pitch+ink|choice": {
+     "dx": -0.0129,
+     "glyphs": 5204,
+     "hit_cell": 0.9977,
+     "hit_ink": 0.9946,
+     "iou_cell": 0.8475,
+     "iou_ink": 0.8048
+    },
+    "S|cal+pitch+ink|dialogue": {
+     "dx": -0.0146,
+     "glyphs": 43228,
+     "hit_cell": 0.9938,
+     "hit_ink": 0.9838,
+     "iou_cell": 0.8176,
+     "iou_ink": 0.7815
+    },
+    "S|cal+pitch+ink|g:close": {
+     "dx": -0.0199,
+     "glyphs": 3916,
+     "hit_cell": 0.9711,
+     "hit_ink": 0.93,
+     "iou_cell": 0.5845,
+     "iou_ink": 0.6247
+    },
+    "S|cal+pitch+ink|g:dots": {
+     "dx": -0.0344,
+     "glyphs": 1334,
+     "hit_cell": 0.973,
+     "hit_ink": 0.9543,
+     "iou_cell": 0.6263,
+     "iou_ink": 0.5491
+    },
+    "S|cal+pitch+ink|g:half": {
+     "dx": -0.0286,
+     "glyphs": 259,
+     "hit_cell": 0.9691,
+     "hit_ink": 0.9575,
+     "iou_cell": 0.7949,
+     "iou_ink": 0.7688
+    },
+    "S|cal+pitch+ink|g:long": {
+     "dx": -0.0161,
+     "glyphs": 510,
+     "hit_cell": 0.9882,
+     "hit_ink": 0.9843,
+     "iou_cell": 0.8617,
+     "iou_ink": 0.804
+    },
+    "S|cal+pitch+ink|g:mark": {
+     "dx": -0.0296,
+     "glyphs": 1089,
+     "hit_cell": 0.9908,
+     "hit_ink": 0.9486,
+     "iou_cell": 0.7149,
+     "iou_ink": 0.7166
+    },
+    "S|cal+pitch+ink|g:open": {
+     "dx": -0.0033,
+     "glyphs": 1460,
+     "hit_cell": 0.9801,
+     "hit_ink": 0.9205,
+     "iou_cell": 0.566,
+     "iou_ink": 0.669
+    },
+    "S|cal+pitch+ink|g:other": {
+     "dx": -0.0134,
+     "glyphs": 46706,
+     "hit_cell": 0.9978,
+     "hit_ink": 0.9943,
+     "iou_cell": 0.8584,
+     "iou_ink": 0.8209
+    },
+    "S|cal+pitch+ink|g:small": {
+     "dx": -0.0019,
+     "glyphs": 1748,
+     "hit_cell": 1.0,
+     "hit_ink": 0.992,
+     "iou_cell": 0.8526,
+     "iou_ink": 0.7761
+    },
+    "S|cal+pitch+ink|name": {
+     "dx": -0.0116,
+     "glyphs": 6725,
+     "hit_cell": 0.9969,
+     "hit_ink": 0.9921,
+     "iou_cell": 0.8381,
+     "iou_ink": 0.8489
+    },
+    "S|cal+pitch+ink|ui": {
+     "dx": -0.0156,
+     "glyphs": 1865,
+     "hit_cell": 0.9968,
+     "hit_ink": 0.9866,
+     "iou_cell": 0.8402,
+     "iou_ink": 0.8385
+    },
+    "S|cal|all": {
+     "dx": -0.0572,
+     "glyphs": 57022,
+     "hit_cell": 0.9958,
+     "hit_ink": 0.9738,
+     "iou_cell": 0.813,
+     "iou_ink": 0.7335
+    },
+    "S|cal|choice": {
+     "dx": -0.0634,
+     "glyphs": 5204,
+     "hit_cell": 0.9983,
+     "hit_ink": 0.9829,
+     "iou_cell": 0.8545,
+     "iou_ink": 0.7599
+    },
+    "S|cal|dialogue": {
+     "dx": -0.0564,
+     "glyphs": 43228,
+     "hit_cell": 0.9951,
+     "hit_ink": 0.9718,
+     "iou_cell": 0.805,
+     "iou_ink": 0.7272
+    },
+    "S|cal|g:close": {
+     "dx": -0.0445,
+     "glyphs": 3916,
+     "hit_cell": 0.9622,
+     "hit_ink": 0.8672,
+     "iou_cell": 0.5729,
+     "iou_ink": 0.4445
+    },
+    "S|cal|g:dots": {
+     "dx": -0.0363,
+     "glyphs": 1334,
+     "hit_cell": 0.9828,
+     "hit_ink": 0.9303,
+     "iou_cell": 0.8198,
+     "iou_ink": 0.7061
+    },
+    "S|cal|g:half": {
+     "dx": -0.0976,
+     "glyphs": 259,
+     "hit_cell": 0.9614,
+     "hit_ink": 0.9151,
+     "iou_cell": 0.7058,
+     "iou_ink": 0.6209
+    },
+    "S|cal|g:long": {
+     "dx": -0.065,
+     "glyphs": 510,
+     "hit_cell": 0.9882,
+     "hit_ink": 0.9863,
+     "iou_cell": 0.8314,
+     "iou_ink": 0.777
+    },
+    "S|cal|g:mark": {
+     "dx": -0.1293,
+     "glyphs": 1089,
+     "hit_cell": 0.9936,
+     "hit_ink": 0.7475,
+     "iou_cell": 0.7256,
+     "iou_ink": 0.4569
+    },
+    "S|cal|g:open": {
+     "dx": 0.0176,
+     "glyphs": 1460,
+     "hit_cell": 0.9863,
+     "hit_ink": 0.8418,
+     "iou_cell": 0.5556,
+     "iou_ink": 0.5411
+    },
+    "S|cal|g:other": {
+     "dx": -0.0575,
+     "glyphs": 46706,
+     "hit_cell": 0.9995,
+     "hit_ink": 0.9934,
+     "iou_cell": 0.8431,
+     "iou_ink": 0.7729
+    },
+    "S|cal|g:small": {
+     "dx": -0.1004,
+     "glyphs": 1748,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9794,
+     "iou_cell": 0.8242,
+     "iou_ink": 0.6854
+    },
+    "S|cal|name": {
+     "dx": -0.0561,
+     "glyphs": 6725,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9814,
+     "iou_cell": 0.8281,
+     "iou_ink": 0.7536
+    },
+    "S|cal|ui": {
+     "dx": -0.0606,
+     "glyphs": 1865,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9678,
+     "iou_cell": 0.8289,
+     "iou_ink": 0.7317
+    },
+    "S|ink|all": {
+     "dx": 0.0347,
+     "glyphs": 57022,
+     "hit_cell": 0.9794,
+     "hit_ink": 0.9546,
+     "iou_cell": 0.7868,
+     "iou_ink": 0.7578
+    },
+    "S|ink|choice": {
+     "dx": 0.0195,
+     "glyphs": 5204,
+     "hit_cell": 0.9942,
+     "hit_ink": 0.9864,
+     "iou_cell": 0.8255,
+     "iou_ink": 0.7873
+    },
+    "S|ink|dialogue": {
+     "dx": 0.0376,
+     "glyphs": 43228,
+     "hit_cell": 0.9752,
+     "hit_ink": 0.9461,
+     "iou_cell": 0.7793,
+     "iou_ink": 0.7434
+    },
+    "S|ink|g:close": {
+     "dx": 0.0622,
+     "glyphs": 3916,
+     "hit_cell": 0.9839,
+     "hit_ink": 0.7722,
+     "iou_cell": 0.5316,
+     "iou_ink": 0.5251
+    },
+    "S|ink|g:dots": {
+     "dx": 0.0955,
+     "glyphs": 1334,
+     "hit_cell": 0.937,
+     "hit_ink": 0.8988,
+     "iou_cell": 0.6047,
+     "iou_ink": 0.5223
+    },
+    "S|ink|g:half": {
+     "dx": 0.0374,
+     "glyphs": 259,
+     "hit_cell": 0.888,
+     "hit_ink": 0.8726,
+     "iou_cell": 0.7238,
+     "iou_ink": 0.6995
+    },
+    "S|ink|g:long": {
+     "dx": 0.038,
+     "glyphs": 510,
+     "hit_cell": 0.9863,
+     "hit_ink": 0.9765,
+     "iou_cell": 0.8499,
+     "iou_ink": 0.7956
+    },
+    "S|ink|g:mark": {
+     "dx": 0.0119,
+     "glyphs": 1089,
+     "hit_cell": 0.9862,
+     "hit_ink": 0.9183,
+     "iou_cell": 0.7086,
+     "iou_ink": 0.6944
+    },
+    "S|ink|g:open": {
+     "dx": 0.0402,
+     "glyphs": 1460,
+     "hit_cell": 0.911,
+     "hit_ink": 0.8801,
+     "iou_cell": 0.5428,
+     "iou_ink": 0.657
+    },
+    "S|ink|g:other": {
+     "dx": 0.0313,
+     "glyphs": 46706,
+     "hit_cell": 0.9825,
+     "hit_ink": 0.9746,
+     "iou_cell": 0.8207,
+     "iou_ink": 0.7887
+    },
+    "S|ink|g:small": {
+     "dx": 0.0246,
+     "glyphs": 1748,
+     "hit_cell": 0.9817,
+     "hit_ink": 0.96,
+     "iou_cell": 0.8347,
+     "iou_ink": 0.7565
+    },
+    "S|ink|name": {
+     "dx": 0.0309,
+     "glyphs": 6725,
+     "hit_cell": 0.9912,
+     "hit_ink": 0.9781,
+     "iou_cell": 0.802,
+     "iou_ink": 0.815
+    },
+    "S|ink|ui": {
+     "dx": 0.0221,
+     "glyphs": 1865,
+     "hit_cell": 0.9914,
+     "hit_ink": 0.9759,
+     "iou_cell": 0.7967,
+     "iou_ink": 0.8046
+    },
+    "S|raw|all": {
+     "dx": 0.2128,
+     "glyphs": 57022,
+     "hit_cell": 0.9749,
+     "hit_ink": 0.9002,
+     "iou_cell": 0.628,
+     "iou_ink": 0.5939
+    },
+    "S|raw|choice": {
+     "dx": 0.2049,
+     "glyphs": 5204,
+     "hit_cell": 0.9921,
+     "hit_ink": 0.9535,
+     "iou_cell": 0.6442,
+     "iou_ink": 0.6275
+    },
+    "S|raw|dialogue": {
+     "dx": 0.2139,
+     "glyphs": 43228,
+     "hit_cell": 0.9699,
+     "hit_ink": 0.8888,
+     "iou_cell": 0.6242,
+     "iou_ink": 0.5858
+    },
+    "S|raw|g:close": {
+     "dx": 0.1543,
+     "glyphs": 3916,
+     "hit_cell": 0.988,
+     "hit_ink": 0.5748,
+     "iou_cell": 0.6625,
+     "iou_ink": 0.4525
+    },
+    "S|raw|g:dots": {
+     "dx": 0.1442,
+     "glyphs": 1334,
+     "hit_cell": 0.9535,
+     "hit_ink": 0.8741,
+     "iou_cell": 0.7158,
+     "iou_ink": 0.6498
+    },
+    "S|raw|g:half": {
+     "dx": 0.132,
+     "glyphs": 259,
+     "hit_cell": 0.8958,
+     "hit_ink": 0.7799,
+     "iou_cell": 0.5933,
+     "iou_ink": 0.5285
+    },
+    "S|raw|g:long": {
+     "dx": 0.2179,
+     "glyphs": 510,
+     "hit_cell": 0.9863,
+     "hit_ink": 0.9647,
+     "iou_cell": 0.653,
+     "iou_ink": 0.6372
+    },
+    "S|raw|g:mark": {
+     "dx": 0.1513,
+     "glyphs": 1089,
+     "hit_cell": 0.9899,
+     "hit_ink": 0.6749,
+     "iou_cell": 0.6789,
+     "iou_ink": 0.4905
+    },
+    "S|raw|g:open": {
+     "dx": 0.1148,
+     "glyphs": 1460,
+     "hit_cell": 0.8699,
+     "hit_ink": 0.7459,
+     "iou_cell": 0.4478,
+     "iou_ink": 0.441
+    },
+    "S|raw|g:other": {
+     "dx": 0.2246,
+     "glyphs": 46706,
+     "hit_cell": 0.9776,
+     "hit_ink": 0.9392,
+     "iou_cell": 0.6264,
+     "iou_ink": 0.6117
+    },
+    "S|raw|g:small": {
+     "dx": 0.2092,
+     "glyphs": 1748,
+     "hit_cell": 0.9777,
+     "hit_ink": 0.8741,
+     "iou_cell": 0.6404,
+     "iou_ink": 0.5828
+    },
+    "S|raw|name": {
+     "dx": 0.2143,
+     "glyphs": 6725,
+     "hit_cell": 0.9894,
+     "hit_ink": 0.9261,
+     "iou_cell": 0.6345,
+     "iou_ink": 0.6135
+    },
+    "S|raw|ui": {
+     "dx": 0.203,
+     "glyphs": 1865,
+     "hit_cell": 0.9925,
+     "hit_ink": 0.9217,
+     "iou_cell": 0.6471,
+     "iou_ink": 0.6178
+    }
+   }
+  },
+  "psp2x": {
+   "exact_lines": {
+    "L|cal": 5410,
+    "L|cal+ink": 5410,
+    "L|cal+pitch+ink": 5410,
+    "L|ink": 5410,
+    "L|raw": 5410,
+    "N|cal": 5079,
+    "N|cal+ink": 5079,
+    "N|cal+pitch+ink": 5079,
+    "N|ink": 5079,
+    "N|raw": 5079,
+    "S|cal": 4400,
+    "S|cal+ink": 4400,
+    "S|cal+pitch+ink": 4400,
+    "S|ink": 4400,
+    "S|raw": 4400
+   },
+   "lines": 6834,
+   "pickle_sha256": "e8d0e63e941651e9d02ce6a4b23112940c5696e1bed8acbb17c4fd3e19d6d4aa",
+   "rows": {
+    "L|cal+ink|all": {
+     "dx": -0.0168,
+     "glyphs": 60286,
+     "hit_cell": 0.9961,
+     "hit_ink": 0.9832,
+     "iou_cell": 0.8245,
+     "iou_ink": 0.7929
+    },
+    "L|cal+ink|choice": {
+     "dx": -0.0145,
+     "glyphs": 5452,
+     "hit_cell": 0.9987,
+     "hit_ink": 0.9928,
+     "iou_cell": 0.8468,
+     "iou_ink": 0.8099
+    },
+    "L|cal+ink|dialogue": {
+     "dx": -0.018,
+     "glyphs": 45953,
+     "hit_cell": 0.9956,
+     "hit_ink": 0.981,
+     "iou_cell": 0.819,
+     "iou_ink": 0.7828
+    },
+    "L|cal+ink|g:close": {
+     "dx": -0.0142,
+     "glyphs": 4075,
+     "hit_cell": 0.9806,
+     "hit_ink": 0.931,
+     "iou_cell": 0.5923,
+     "iou_ink": 0.6151
+    },
+    "L|cal+ink|g:dots": {
+     "dx": -0.0553,
+     "glyphs": 1399,
+     "hit_cell": 0.9743,
+     "hit_ink": 0.9428,
+     "iou_cell": 0.6373,
+     "iou_ink": 0.564
+    },
+    "L|cal+ink|g:half": {
+     "dx": -0.0187,
+     "glyphs": 322,
+     "hit_cell": 0.9783,
+     "hit_ink": 0.972,
+     "iou_cell": 0.8286,
+     "iou_ink": 0.7809
+    },
+    "L|cal+ink|g:long": {
+     "dx": -0.0214,
+     "glyphs": 586,
+     "hit_cell": 0.9949,
+     "hit_ink": 0.9949,
+     "iou_cell": 0.8624,
+     "iou_ink": 0.8012
+    },
+    "L|cal+ink|g:mark": {
+     "dx": -0.0254,
+     "glyphs": 1121,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.95,
+     "iou_cell": 0.713,
+     "iou_ink": 0.726
+    },
+    "L|cal+ink|g:open": {
+     "dx": -0.0437,
+     "glyphs": 1472,
+     "hit_cell": 0.9885,
+     "hit_ink": 0.8254,
+     "iou_cell": 0.5349,
+     "iou_ink": 0.6016
+    },
+    "L|cal+ink|g:other": {
+     "dx": -0.0153,
+     "glyphs": 49369,
+     "hit_cell": 0.9983,
+     "hit_ink": 0.9939,
+     "iou_cell": 0.8585,
+     "iou_ink": 0.8214
+    },
+    "L|cal+ink|g:small": {
+     "dx": -0.0052,
+     "glyphs": 1942,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.9871,
+     "iou_cell": 0.8551,
+     "iou_ink": 0.7881
+    },
+    "L|cal+ink|name": {
+     "dx": -0.0114,
+     "glyphs": 7188,
+     "hit_cell": 0.9975,
+     "hit_ink": 0.9873,
+     "iou_cell": 0.841,
+     "iou_ink": 0.8319
+    },
+    "L|cal+ink|ui": {
+     "dx": -0.0126,
+     "glyphs": 1693,
+     "hit_cell": 0.9976,
+     "hit_ink": 0.9941,
+     "iou_cell": 0.8337,
+     "iou_ink": 0.8439
+    },
+    "L|cal+pitch+ink|all": {
+     "dx": -0.0167,
+     "glyphs": 60286,
+     "hit_cell": 0.9962,
+     "hit_ink": 0.9833,
+     "iou_cell": 0.8246,
+     "iou_ink": 0.7929
+    },
+    "L|cal+pitch+ink|choice": {
+     "dx": -0.0145,
+     "glyphs": 5452,
+     "hit_cell": 0.9987,
+     "hit_ink": 0.9925,
+     "iou_cell": 0.8466,
+     "iou_ink": 0.8096
+    },
+    "L|cal+pitch+ink|dialogue": {
+     "dx": -0.018,
+     "glyphs": 45953,
+     "hit_cell": 0.9956,
+     "hit_ink": 0.9811,
+     "iou_cell": 0.819,
+     "iou_ink": 0.7829
+    },
+    "L|cal+pitch+ink|g:close": {
+     "dx": -0.0139,
+     "glyphs": 4075,
+     "hit_cell": 0.9806,
+     "hit_ink": 0.9306,
+     "iou_cell": 0.592,
+     "iou_ink": 0.6148
+    },
+    "L|cal+pitch+ink|g:dots": {
+     "dx": -0.0556,
+     "glyphs": 1399,
+     "hit_cell": 0.9757,
+     "hit_ink": 0.945,
+     "iou_cell": 0.6379,
+     "iou_ink": 0.5655
+    },
+    "L|cal+pitch+ink|g:half": {
+     "dx": -0.0187,
+     "glyphs": 322,
+     "hit_cell": 0.9783,
+     "hit_ink": 0.972,
+     "iou_cell": 0.8286,
+     "iou_ink": 0.7809
+    },
+    "L|cal+pitch+ink|g:long": {
+     "dx": -0.0215,
+     "glyphs": 586,
+     "hit_cell": 0.9949,
+     "hit_ink": 0.9949,
+     "iou_cell": 0.8627,
+     "iou_ink": 0.801
+    },
+    "L|cal+pitch+ink|g:mark": {
+     "dx": -0.0254,
+     "glyphs": 1121,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.95,
+     "iou_cell": 0.7129,
+     "iou_ink": 0.726
+    },
+    "L|cal+pitch+ink|g:open": {
+     "dx": -0.043,
+     "glyphs": 1472,
+     "hit_cell": 0.9885,
+     "hit_ink": 0.8281,
+     "iou_cell": 0.5358,
+     "iou_ink": 0.6036
+    },
+    "L|cal+pitch+ink|g:other": {
+     "dx": -0.0153,
+     "glyphs": 49369,
+     "hit_cell": 0.9983,
+     "hit_ink": 0.9939,
+     "iou_cell": 0.8585,
+     "iou_ink": 0.8214
+    },
+    "L|cal+pitch+ink|g:small": {
+     "dx": -0.005,
+     "glyphs": 1942,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.9866,
+     "iou_cell": 0.8549,
+     "iou_ink": 0.7881
+    },
+    "L|cal+pitch+ink|name": {
+     "dx": -0.0113,
+     "glyphs": 7188,
+     "hit_cell": 0.9975,
+     "hit_ink": 0.9876,
+     "iou_cell": 0.8415,
+     "iou_ink": 0.8325
+    },
+    "L|cal+pitch+ink|ui": {
+     "dx": -0.0127,
+     "glyphs": 1693,
+     "hit_cell": 0.9976,
+     "hit_ink": 0.9941,
+     "iou_cell": 0.8337,
+     "iou_ink": 0.8438
+    },
+    "L|cal|all": {
+     "dx": -0.0622,
+     "glyphs": 60286,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9722,
+     "iou_cell": 0.8146,
+     "iou_ink": 0.7307
+    },
+    "L|cal|choice": {
+     "dx": -0.0646,
+     "glyphs": 5452,
+     "hit_cell": 0.9993,
+     "hit_ink": 0.9859,
+     "iou_cell": 0.8479,
+     "iou_ink": 0.7461
+    },
+    "L|cal|dialogue": {
+     "dx": -0.0646,
+     "glyphs": 45953,
+     "hit_cell": 0.9979,
+     "hit_ink": 0.9699,
+     "iou_cell": 0.8078,
+     "iou_ink": 0.7241
+    },
+    "L|cal|g:close": {
+     "dx": -0.0396,
+     "glyphs": 4075,
+     "hit_cell": 0.9845,
+     "hit_ink": 0.8788,
+     "iou_cell": 0.5792,
+     "iou_ink": 0.4379
+    },
+    "L|cal|g:dots": {
+     "dx": -0.0697,
+     "glyphs": 1399,
+     "hit_cell": 0.99,
+     "hit_ink": 0.9492,
+     "iou_cell": 0.8104,
+     "iou_ink": 0.6935
+    },
+    "L|cal|g:half": {
+     "dx": -0.0351,
+     "glyphs": 322,
+     "hit_cell": 0.9752,
+     "hit_ink": 0.913,
+     "iou_cell": 0.7472,
+     "iou_ink": 0.6484
+    },
+    "L|cal|g:long": {
+     "dx": -0.093,
+     "glyphs": 586,
+     "hit_cell": 0.9983,
+     "hit_ink": 0.9966,
+     "iou_cell": 0.8319,
+     "iou_ink": 0.7774
+    },
+    "L|cal|g:mark": {
+     "dx": -0.0816,
+     "glyphs": 1121,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.8091,
+     "iou_cell": 0.7537,
+     "iou_ink": 0.4602
+    },
+    "L|cal|g:open": {
+     "dx": -0.0613,
+     "glyphs": 1472,
+     "hit_cell": 0.9959,
+     "hit_ink": 0.6535,
+     "iou_cell": 0.5829,
+     "iou_ink": 0.5547
+    },
+    "L|cal|g:other": {
+     "dx": -0.0621,
+     "glyphs": 49369,
+     "hit_cell": 0.9997,
+     "hit_ink": 0.9935,
+     "iou_cell": 0.842,
+     "iou_ink": 0.7693
+    },
+    "L|cal|g:small": {
+     "dx": -0.0912,
+     "glyphs": 1942,
+     "hit_cell": 1.0,
+     "hit_ink": 0.982,
+     "iou_cell": 0.8328,
+     "iou_ink": 0.6793
+    },
+    "L|cal|name": {
+     "dx": -0.0491,
+     "glyphs": 7188,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9766,
+     "iou_cell": 0.8308,
+     "iou_ink": 0.7593
+    },
+    "L|cal|ui": {
+     "dx": -0.0456,
+     "glyphs": 1693,
+     "hit_cell": 0.997,
+     "hit_ink": 0.9711,
+     "iou_cell": 0.8241,
+     "iou_ink": 0.7392
+    },
+    "L|ink|all": {
+     "dx": -0.0033,
+     "glyphs": 60286,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.9829,
+     "iou_cell": 0.8223,
+     "iou_ink": 0.7903
+    },
+    "L|ink|choice": {
+     "dx": -0.007,
+     "glyphs": 5452,
+     "hit_cell": 0.9985,
+     "hit_ink": 0.9914,
+     "iou_cell": 0.8434,
+     "iou_ink": 0.8063
+    },
+    "L|ink|dialogue": {
+     "dx": -0.0046,
+     "glyphs": 45953,
+     "hit_cell": 0.996,
+     "hit_ink": 0.9807,
+     "iou_cell": 0.8172,
+     "iou_ink": 0.7808
+    },
+    "L|ink|g:close": {
+     "dx": 0.0176,
+     "glyphs": 4075,
+     "hit_cell": 0.9855,
+     "hit_ink": 0.879,
+     "iou_cell": 0.5742,
+     "iou_ink": 0.5748
+    },
+    "L|ink|g:dots": {
+     "dx": -0.0561,
+     "glyphs": 1399,
+     "hit_cell": 0.9757,
+     "hit_ink": 0.9457,
+     "iou_cell": 0.637,
+     "iou_ink": 0.5646
+    },
+    "L|ink|g:half": {
+     "dx": -0.0114,
+     "glyphs": 322,
+     "hit_cell": 0.9876,
+     "hit_ink": 0.9814,
+     "iou_cell": 0.8324,
+     "iou_ink": 0.7876
+    },
+    "L|ink|g:long": {
+     "dx": -0.0018,
+     "glyphs": 586,
+     "hit_cell": 0.9932,
+     "hit_ink": 0.9932,
+     "iou_cell": 0.8645,
+     "iou_ink": 0.8051
+    },
+    "L|ink|g:mark": {
+     "dx": -0.0144,
+     "glyphs": 1121,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.9465,
+     "iou_cell": 0.7144,
+     "iou_ink": 0.7226
+    },
+    "L|ink|g:open": {
+     "dx": -0.0082,
+     "glyphs": 1472,
+     "hit_cell": 0.9789,
+     "hit_ink": 0.9423,
+     "iou_cell": 0.5702,
+     "iou_ink": 0.6674
+    },
+    "L|ink|g:other": {
+     "dx": -0.0032,
+     "glyphs": 49369,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9944,
+     "iou_cell": 0.856,
+     "iou_ink": 0.8197
+    },
+    "L|ink|g:small": {
+     "dx": 0.0005,
+     "glyphs": 1942,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.9851,
+     "iou_cell": 0.8581,
+     "iou_ink": 0.7878
+    },
+    "L|ink|name": {
+     "dx": 0.0065,
+     "glyphs": 7188,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.988,
+     "iou_cell": 0.8369,
+     "iou_ink": 0.8277
+    },
+    "L|ink|ui": {
+     "dx": 0.0025,
+     "glyphs": 1693,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9959,
+     "iou_cell": 0.8295,
+     "iou_ink": 0.8401
+    },
+    "L|raw|all": {
+     "dx": 0.0288,
+     "glyphs": 60286,
+     "hit_cell": 0.9986,
+     "hit_ink": 0.9755,
+     "iou_cell": 0.8315,
+     "iou_ink": 0.7444
+    },
+    "L|raw|choice": {
+     "dx": 0.0213,
+     "glyphs": 5452,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9848,
+     "iou_cell": 0.8522,
+     "iou_ink": 0.7589
+    },
+    "L|raw|dialogue": {
+     "dx": 0.0272,
+     "glyphs": 45953,
+     "hit_cell": 0.9986,
+     "hit_ink": 0.9735,
+     "iou_cell": 0.8315,
+     "iou_ink": 0.7419
+    },
+    "L|raw|g:close": {
+     "dx": 0.0799,
+     "glyphs": 4075,
+     "hit_cell": 0.9966,
+     "hit_ink": 0.7936,
+     "iou_cell": 0.6717,
+     "iou_ink": 0.4648
+    },
+    "L|raw|g:dots": {
+     "dx": -0.0747,
+     "glyphs": 1399,
+     "hit_cell": 0.9907,
+     "hit_ink": 0.9521,
+     "iou_cell": 0.8245,
+     "iou_ink": 0.7078
+    },
+    "L|raw|g:half": {
+     "dx": 0.0344,
+     "glyphs": 322,
+     "hit_cell": 0.9783,
+     "hit_ink": 0.9286,
+     "iou_cell": 0.727,
+     "iou_ink": 0.6338
+    },
+    "L|raw|g:long": {
+     "dx": 0.0213,
+     "glyphs": 586,
+     "hit_cell": 0.9983,
+     "hit_ink": 0.9966,
+     "iou_cell": 0.8597,
+     "iou_ink": 0.8089
+    },
+    "L|raw|g:mark": {
+     "dx": 0.0087,
+     "glyphs": 1121,
+     "hit_cell": 0.9955,
+     "hit_ink": 0.8573,
+     "iou_cell": 0.8023,
+     "iou_ink": 0.4842
+    },
+    "L|raw|g:open": {
+     "dx": 0.0185,
+     "glyphs": 1472,
+     "hit_cell": 0.9783,
+     "hit_ink": 0.8947,
+     "iou_cell": 0.5419,
+     "iou_ink": 0.5134
+    },
+    "L|raw|g:other": {
+     "dx": 0.0279,
+     "glyphs": 49369,
+     "hit_cell": 0.9998,
+     "hit_ink": 0.9956,
+     "iou_cell": 0.8532,
+     "iou_ink": 0.7831
+    },
+    "L|raw|g:small": {
+     "dx": 0.0394,
+     "glyphs": 1942,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9918,
+     "iou_cell": 0.8653,
+     "iou_ink": 0.6998
+    },
+    "L|raw|name": {
+     "dx": 0.0416,
+     "glyphs": 7188,
+     "hit_cell": 0.9979,
+     "hit_ink": 0.9794,
+     "iou_cell": 0.8221,
+     "iou_ink": 0.7528
+    },
+    "L|raw|ui": {
+     "dx": 0.0419,
+     "glyphs": 1693,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9817,
+     "iou_cell": 0.8056,
+     "iou_ink": 0.7306
+    },
+    "N|cal+ink|all": {
+     "dx": -0.0164,
+     "glyphs": 59502,
+     "hit_cell": 0.9963,
+     "hit_ink": 0.9842,
+     "iou_cell": 0.8263,
+     "iou_ink": 0.7954
+    },
+    "N|cal+ink|choice": {
+     "dx": -0.0141,
+     "glyphs": 5420,
+     "hit_cell": 0.9982,
+     "hit_ink": 0.9932,
+     "iou_cell": 0.8496,
+     "iou_ink": 0.8118
+    },
+    "N|cal+ink|dialogue": {
+     "dx": -0.0164,
+     "glyphs": 45345,
+     "hit_cell": 0.9957,
+     "hit_ink": 0.9821,
+     "iou_cell": 0.8202,
+     "iou_ink": 0.7847
+    },
+    "N|cal+ink|g:close": {
+     "dx": -0.0132,
+     "glyphs": 4008,
+     "hit_cell": 0.9843,
+     "hit_ink": 0.9381,
+     "iou_cell": 0.5941,
+     "iou_ink": 0.6192
+    },
+    "N|cal+ink|g:dots": {
+     "dx": -0.0372,
+     "glyphs": 1395,
+     "hit_cell": 0.9728,
+     "hit_ink": 0.9477,
+     "iou_cell": 0.634,
+     "iou_ink": 0.5572
+    },
+    "N|cal+ink|g:half": {
+     "dx": -0.0033,
+     "glyphs": 318,
+     "hit_cell": 0.978,
+     "hit_ink": 0.9717,
+     "iou_cell": 0.8308,
+     "iou_ink": 0.7844
+    },
+    "N|cal+ink|g:long": {
+     "dx": -0.0249,
+     "glyphs": 578,
+     "hit_cell": 0.9948,
+     "hit_ink": 0.9931,
+     "iou_cell": 0.8641,
+     "iou_ink": 0.8059
+    },
+    "N|cal+ink|g:mark": {
+     "dx": -0.0113,
+     "glyphs": 1111,
+     "hit_cell": 0.9982,
+     "hit_ink": 0.9442,
+     "iou_cell": 0.7204,
+     "iou_ink": 0.7216
+    },
+    "N|cal+ink|g:open": {
+     "dx": -0.0362,
+     "glyphs": 1465,
+     "hit_cell": 0.9918,
+     "hit_ink": 0.8539,
+     "iou_cell": 0.5498,
+     "iou_ink": 0.6237
+    },
+    "N|cal+ink|g:other": {
+     "dx": -0.0161,
+     "glyphs": 48712,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9939,
+     "iou_cell": 0.8601,
+     "iou_ink": 0.8239
+    },
+    "N|cal+ink|g:small": {
+     "dx": -0.0015,
+     "glyphs": 1915,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.9822,
+     "iou_cell": 0.8553,
+     "iou_ink": 0.7877
+    },
+    "N|cal+ink|name": {
+     "dx": -0.0179,
+     "glyphs": 7066,
+     "hit_cell": 0.9976,
+     "hit_ink": 0.988,
+     "iou_cell": 0.8445,
+     "iou_ink": 0.8388
+    },
+    "N|cal+ink|ui": {
+     "dx": -0.0154,
+     "glyphs": 1671,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9952,
+     "iou_cell": 0.8407,
+     "iou_ink": 0.8505
+    },
+    "N|cal+pitch+ink|all": {
+     "dx": -0.0162,
+     "glyphs": 59502,
+     "hit_cell": 0.9963,
+     "hit_ink": 0.9841,
+     "iou_cell": 0.8262,
+     "iou_ink": 0.7954
+    },
+    "N|cal+pitch+ink|choice": {
+     "dx": -0.0137,
+     "glyphs": 5420,
+     "hit_cell": 0.9983,
+     "hit_ink": 0.9932,
+     "iou_cell": 0.8495,
+     "iou_ink": 0.8117
+    },
+    "N|cal+pitch+ink|dialogue": {
+     "dx": -0.0163,
+     "glyphs": 45345,
+     "hit_cell": 0.9957,
+     "hit_ink": 0.9821,
+     "iou_cell": 0.8201,
+     "iou_ink": 0.7847
+    },
+    "N|cal+pitch+ink|g:close": {
+     "dx": -0.0126,
+     "glyphs": 4008,
+     "hit_cell": 0.9845,
+     "hit_ink": 0.9376,
+     "iou_cell": 0.5936,
+     "iou_ink": 0.6182
+    },
+    "N|cal+pitch+ink|g:dots": {
+     "dx": -0.0355,
+     "glyphs": 1395,
+     "hit_cell": 0.9728,
+     "hit_ink": 0.9484,
+     "iou_cell": 0.6342,
+     "iou_ink": 0.5575
+    },
+    "N|cal+pitch+ink|g:half": {
+     "dx": -0.0033,
+     "glyphs": 318,
+     "hit_cell": 0.978,
+     "hit_ink": 0.9717,
+     "iou_cell": 0.8308,
+     "iou_ink": 0.7844
+    },
+    "N|cal+pitch+ink|g:long": {
+     "dx": -0.0242,
+     "glyphs": 578,
+     "hit_cell": 0.9948,
+     "hit_ink": 0.9931,
+     "iou_cell": 0.8644,
+     "iou_ink": 0.8058
+    },
+    "N|cal+pitch+ink|g:mark": {
+     "dx": -0.0111,
+     "glyphs": 1111,
+     "hit_cell": 0.9982,
+     "hit_ink": 0.9442,
+     "iou_cell": 0.7201,
+     "iou_ink": 0.7214
+    },
+    "N|cal+pitch+ink|g:open": {
+     "dx": -0.0372,
+     "glyphs": 1465,
+     "hit_cell": 0.9911,
+     "hit_ink": 0.8519,
+     "iou_cell": 0.5486,
+     "iou_ink": 0.623
+    },
+    "N|cal+pitch+ink|g:other": {
+     "dx": -0.016,
+     "glyphs": 48712,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9939,
+     "iou_cell": 0.86,
+     "iou_ink": 0.8239
+    },
+    "N|cal+pitch+ink|g:small": {
+     "dx": -0.0011,
+     "glyphs": 1915,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.9817,
+     "iou_cell": 0.8553,
+     "iou_ink": 0.7876
+    },
+    "N|cal+pitch+ink|name": {
+     "dx": -0.0181,
+     "glyphs": 7066,
+     "hit_cell": 0.9976,
+     "hit_ink": 0.9875,
+     "iou_cell": 0.8441,
+     "iou_ink": 0.8386
+    },
+    "N|cal+pitch+ink|ui": {
+     "dx": -0.0154,
+     "glyphs": 1671,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9952,
+     "iou_cell": 0.8408,
+     "iou_ink": 0.8506
+    },
+    "N|cal|all": {
+     "dx": -0.0636,
+     "glyphs": 59502,
+     "hit_cell": 0.9976,
+     "hit_ink": 0.9749,
+     "iou_cell": 0.8146,
+     "iou_ink": 0.7279
+    },
+    "N|cal|choice": {
+     "dx": -0.0692,
+     "glyphs": 5420,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9878,
+     "iou_cell": 0.8465,
+     "iou_ink": 0.74
+    },
+    "N|cal|dialogue": {
+     "dx": -0.061,
+     "glyphs": 45345,
+     "hit_cell": 0.9972,
+     "hit_ink": 0.9729,
+     "iou_cell": 0.8103,
+     "iou_ink": 0.7247
+    },
+    "N|cal|g:close": {
+     "dx": -0.0424,
+     "glyphs": 4008,
+     "hit_cell": 0.9768,
+     "hit_ink": 0.8705,
+     "iou_cell": 0.5806,
+     "iou_ink": 0.4454
+    },
+    "N|cal|g:dots": {
+     "dx": -0.051,
+     "glyphs": 1395,
+     "hit_cell": 0.9878,
+     "hit_ink": 0.9391,
+     "iou_cell": 0.8161,
+     "iou_ink": 0.7018
+    },
+    "N|cal|g:half": {
+     "dx": 0.0066,
+     "glyphs": 318,
+     "hit_cell": 0.9717,
+     "hit_ink": 0.9277,
+     "iou_cell": 0.7424,
+     "iou_ink": 0.652
+    },
+    "N|cal|g:long": {
+     "dx": -0.1057,
+     "glyphs": 578,
+     "hit_cell": 0.9965,
+     "hit_ink": 0.9965,
+     "iou_cell": 0.8192,
+     "iou_ink": 0.7654
+    },
+    "N|cal|g:mark": {
+     "dx": 0.0371,
+     "glyphs": 1111,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.8398,
+     "iou_cell": 0.796,
+     "iou_ink": 0.479
+    },
+    "N|cal|g:open": {
+     "dx": -0.045,
+     "glyphs": 1465,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.6935,
+     "iou_cell": 0.5817,
+     "iou_ink": 0.5496
+    },
+    "N|cal|g:other": {
+     "dx": -0.0675,
+     "glyphs": 48712,
+     "hit_cell": 0.9997,
+     "hit_ink": 0.9956,
+     "iou_cell": 0.8408,
+     "iou_ink": 0.765
+    },
+    "N|cal|g:small": {
+     "dx": -0.0881,
+     "glyphs": 1915,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9869,
+     "iou_cell": 0.8368,
+     "iou_ink": 0.6781
+    },
+    "N|cal|name": {
+     "dx": -0.0744,
+     "glyphs": 7066,
+     "hit_cell": 0.9993,
+     "hit_ink": 0.9781,
+     "iou_cell": 0.8166,
+     "iou_ink": 0.7414
+    },
+    "N|cal|ui": {
+     "dx": -0.069,
+     "glyphs": 1671,
+     "hit_cell": 0.9976,
+     "hit_ink": 0.9731,
+     "iou_cell": 0.8174,
+     "iou_ink": 0.7209
+    },
+    "N|ink|all": {
+     "dx": -0.0149,
+     "glyphs": 59502,
+     "hit_cell": 0.9959,
+     "hit_ink": 0.9828,
+     "iou_cell": 0.8254,
+     "iou_ink": 0.7937
+    },
+    "N|ink|choice": {
+     "dx": -0.0172,
+     "glyphs": 5420,
+     "hit_cell": 0.9982,
+     "hit_ink": 0.9904,
+     "iou_cell": 0.8483,
+     "iou_ink": 0.8102
+    },
+    "N|ink|dialogue": {
+     "dx": -0.0143,
+     "glyphs": 45345,
+     "hit_cell": 0.9953,
+     "hit_ink": 0.9805,
+     "iou_cell": 0.8193,
+     "iou_ink": 0.7828
+    },
+    "N|ink|g:close": {
+     "dx": 0.0116,
+     "glyphs": 4008,
+     "hit_cell": 0.982,
+     "hit_ink": 0.8862,
+     "iou_cell": 0.5782,
+     "iou_ink": 0.5801
+    },
+    "N|ink|g:dots": {
+     "dx": -0.1065,
+     "glyphs": 1395,
+     "hit_cell": 0.9699,
+     "hit_ink": 0.9319,
+     "iou_cell": 0.6266,
+     "iou_ink": 0.5511
+    },
+    "N|ink|g:half": {
+     "dx": -0.0002,
+     "glyphs": 318,
+     "hit_cell": 0.978,
+     "hit_ink": 0.9686,
+     "iou_cell": 0.8244,
+     "iou_ink": 0.7825
+    },
+    "N|ink|g:long": {
+     "dx": -0.0224,
+     "glyphs": 578,
+     "hit_cell": 0.9931,
+     "hit_ink": 0.9931,
+     "iou_cell": 0.8638,
+     "iou_ink": 0.8063
+    },
+    "N|ink|g:mark": {
+     "dx": -0.0104,
+     "glyphs": 1111,
+     "hit_cell": 0.9982,
+     "hit_ink": 0.9406,
+     "iou_cell": 0.7176,
+     "iou_ink": 0.72
+    },
+    "N|ink|g:open": {
+     "dx": -0.0115,
+     "glyphs": 1465,
+     "hit_cell": 0.9863,
+     "hit_ink": 0.9515,
+     "iou_cell": 0.5754,
+     "iou_ink": 0.6723
+    },
+    "N|ink|g:other": {
+     "dx": -0.0153,
+     "glyphs": 48712,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.994,
+     "iou_cell": 0.8597,
+     "iou_ink": 0.8237
+    },
+    "N|ink|g:small": {
+     "dx": -0.0005,
+     "glyphs": 1915,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9833,
+     "iou_cell": 0.8584,
+     "iou_ink": 0.7899
+    },
+    "N|ink|name": {
+     "dx": -0.0172,
+     "glyphs": 7066,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9881,
+     "iou_cell": 0.8438,
+     "iou_ink": 0.8381
+    },
+    "N|ink|ui": {
+     "dx": -0.0137,
+     "glyphs": 1671,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9964,
+     "iou_cell": 0.8399,
+     "iou_ink": 0.8497
+    },
+    "N|raw|all": {
+     "dx": -0.0548,
+     "glyphs": 59502,
+     "hit_cell": 0.9982,
+     "hit_ink": 0.9754,
+     "iou_cell": 0.82,
+     "iou_ink": 0.7292
+    },
+    "N|raw|choice": {
+     "dx": -0.069,
+     "glyphs": 5420,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9843,
+     "iou_cell": 0.8467,
+     "iou_ink": 0.7389
+    },
+    "N|raw|dialogue": {
+     "dx": -0.0507,
+     "glyphs": 45345,
+     "hit_cell": 0.9983,
+     "hit_ink": 0.9742,
+     "iou_cell": 0.817,
+     "iou_ink": 0.7263
+    },
+    "N|raw|g:close": {
+     "dx": 0.0694,
+     "glyphs": 4008,
+     "hit_cell": 0.996,
+     "hit_ink": 0.8114,
+     "iou_cell": 0.6411,
+     "iou_ink": 0.4574
+    },
+    "N|raw|g:dots": {
+     "dx": -0.1703,
+     "glyphs": 1395,
+     "hit_cell": 0.9907,
+     "hit_ink": 0.9319,
+     "iou_cell": 0.7417,
+     "iou_ink": 0.6419
+    },
+    "N|raw|g:half": {
+     "dx": 0.0212,
+     "glyphs": 318,
+     "hit_cell": 0.9717,
+     "hit_ink": 0.9245,
+     "iou_cell": 0.7347,
+     "iou_ink": 0.6479
+    },
+    "N|raw|g:long": {
+     "dx": -0.0958,
+     "glyphs": 578,
+     "hit_cell": 0.9965,
+     "hit_ink": 0.9965,
+     "iou_cell": 0.8282,
+     "iou_ink": 0.7739
+    },
+    "N|raw|g:mark": {
+     "dx": 0.0373,
+     "glyphs": 1111,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.8398,
+     "iou_cell": 0.8104,
+     "iou_ink": 0.4717
+    },
+    "N|raw|g:open": {
+     "dx": 0.0344,
+     "glyphs": 1465,
+     "hit_cell": 0.9672,
+     "hit_ink": 0.8812,
+     "iou_cell": 0.5601,
+     "iou_ink": 0.5336
+    },
+    "N|raw|g:other": {
+     "dx": -0.0675,
+     "glyphs": 48712,
+     "hit_cell": 0.9997,
+     "hit_ink": 0.9956,
+     "iou_cell": 0.8438,
+     "iou_ink": 0.7674
+    },
+    "N|raw|g:small": {
+     "dx": -0.0304,
+     "glyphs": 1915,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9911,
+     "iou_cell": 0.862,
+     "iou_ink": 0.6901
+    },
+    "N|raw|name": {
+     "dx": -0.0691,
+     "glyphs": 7066,
+     "hit_cell": 0.9967,
+     "hit_ink": 0.9754,
+     "iou_cell": 0.819,
+     "iou_ink": 0.7424
+    },
+    "N|raw|ui": {
+     "dx": -0.06,
+     "glyphs": 1671,
+     "hit_cell": 1.0,
+     "hit_ink": 0.9797,
+     "iou_cell": 0.8169,
+     "iou_ink": 0.7223
+    },
+    "S|cal+ink|all": {
+     "dx": -0.0137,
+     "glyphs": 58237,
+     "hit_cell": 0.9945,
+     "hit_ink": 0.9839,
+     "iou_cell": 0.8272,
+     "iou_ink": 0.7961
+    },
+    "S|cal+ink|choice": {
+     "dx": -0.0123,
+     "glyphs": 5297,
+     "hit_cell": 0.9972,
+     "hit_ink": 0.9923,
+     "iou_cell": 0.8489,
+     "iou_ink": 0.8114
+    },
+    "S|cal+ink|dialogue": {
+     "dx": -0.014,
+     "glyphs": 44496,
+     "hit_cell": 0.9935,
+     "hit_ink": 0.9812,
+     "iou_cell": 0.8209,
+     "iou_ink": 0.7854
+    },
+    "S|cal+ink|g:close": {
+     "dx": -0.0169,
+     "glyphs": 3956,
+     "hit_cell": 0.9742,
+     "hit_ink": 0.9234,
+     "iou_cell": 0.5914,
+     "iou_ink": 0.6143
+    },
+    "S|cal+ink|g:dots": {
+     "dx": -0.0381,
+     "glyphs": 1335,
+     "hit_cell": 0.967,
+     "hit_ink": 0.9476,
+     "iou_cell": 0.6378,
+     "iou_ink": 0.5677
+    },
+    "S|cal+ink|g:half": {
+     "dx": -0.022,
+     "glyphs": 310,
+     "hit_cell": 0.9871,
+     "hit_ink": 0.9774,
+     "iou_cell": 0.8215,
+     "iou_ink": 0.7778
+    },
+    "S|cal+ink|g:long": {
+     "dx": -0.0231,
+     "glyphs": 567,
+     "hit_cell": 0.9894,
+     "hit_ink": 0.9894,
+     "iou_cell": 0.8612,
+     "iou_ink": 0.8046
+    },
+    "S|cal+ink|g:mark": {
+     "dx": -0.0291,
+     "glyphs": 1096,
+     "hit_cell": 0.9954,
+     "hit_ink": 0.938,
+     "iou_cell": 0.7031,
+     "iou_ink": 0.7179
+    },
+    "S|cal+ink|g:open": {
+     "dx": -0.0106,
+     "glyphs": 1443,
+     "hit_cell": 0.9854,
+     "hit_ink": 0.9286,
+     "iou_cell": 0.5664,
+     "iou_ink": 0.6609
+    },
+    "S|cal+ink|g:other": {
+     "dx": -0.0126,
+     "glyphs": 47647,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9927,
+     "iou_cell": 0.8614,
+     "iou_ink": 0.8239
+    },
+    "S|cal+ink|g:small": {
+     "dx": -0.006,
+     "glyphs": 1883,
+     "hit_cell": 0.9952,
+     "hit_ink": 0.9814,
+     "iou_cell": 0.8557,
+     "iou_ink": 0.7862
+    },
+    "S|cal+ink|name": {
+     "dx": -0.0127,
+     "glyphs": 6780,
+     "hit_cell": 0.9979,
+     "hit_ink": 0.992,
+     "iou_cell": 0.8485,
+     "iou_ink": 0.8419
+    },
+    "S|cal+ink|ui": {
+     "dx": -0.0119,
+     "glyphs": 1664,
+     "hit_cell": 0.9988,
+     "hit_ink": 0.9946,
+     "iou_cell": 0.8398,
+     "iou_ink": 0.8471
+    },
+    "S|cal+pitch+ink|all": {
+     "dx": -0.0136,
+     "glyphs": 58237,
+     "hit_cell": 0.9944,
+     "hit_ink": 0.9835,
+     "iou_cell": 0.8271,
+     "iou_ink": 0.7958
+    },
+    "S|cal+pitch+ink|choice": {
+     "dx": -0.0125,
+     "glyphs": 5297,
+     "hit_cell": 0.997,
+     "hit_ink": 0.9921,
+     "iou_cell": 0.8489,
+     "iou_ink": 0.8115
+    },
+    "S|cal+pitch+ink|dialogue": {
+     "dx": -0.0139,
+     "glyphs": 44496,
+     "hit_cell": 0.9934,
+     "hit_ink": 0.9808,
+     "iou_cell": 0.8207,
+     "iou_ink": 0.7851
+    },
+    "S|cal+pitch+ink|g:close": {
+     "dx": -0.0154,
+     "glyphs": 3956,
+     "hit_cell": 0.9737,
+     "hit_ink": 0.9181,
+     "iou_cell": 0.5899,
+     "iou_ink": 0.6111
+    },
+    "S|cal+pitch+ink|g:dots": {
+     "dx": -0.0383,
+     "glyphs": 1335,
+     "hit_cell": 0.967,
+     "hit_ink": 0.9468,
+     "iou_cell": 0.6371,
+     "iou_ink": 0.5668
+    },
+    "S|cal+pitch+ink|g:half": {
+     "dx": -0.022,
+     "glyphs": 310,
+     "hit_cell": 0.9871,
+     "hit_ink": 0.9774,
+     "iou_cell": 0.8215,
+     "iou_ink": 0.7778
+    },
+    "S|cal+pitch+ink|g:long": {
+     "dx": -0.0226,
+     "glyphs": 567,
+     "hit_cell": 0.9894,
+     "hit_ink": 0.9894,
+     "iou_cell": 0.8614,
+     "iou_ink": 0.8039
+    },
+    "S|cal+pitch+ink|g:mark": {
+     "dx": -0.0289,
+     "glyphs": 1096,
+     "hit_cell": 0.9954,
+     "hit_ink": 0.938,
+     "iou_cell": 0.7028,
+     "iou_ink": 0.7175
+    },
+    "S|cal+pitch+ink|g:open": {
+     "dx": -0.0109,
+     "glyphs": 1443,
+     "hit_cell": 0.9854,
+     "hit_ink": 0.9272,
+     "iou_cell": 0.5661,
+     "iou_ink": 0.6608
+    },
+    "S|cal+pitch+ink|g:other": {
+     "dx": -0.0127,
+     "glyphs": 47647,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9927,
+     "iou_cell": 0.8614,
+     "iou_ink": 0.8239
+    },
+    "S|cal+pitch+ink|g:small": {
+     "dx": -0.0059,
+     "glyphs": 1883,
+     "hit_cell": 0.9952,
+     "hit_ink": 0.9814,
+     "iou_cell": 0.8558,
+     "iou_ink": 0.7864
+    },
+    "S|cal+pitch+ink|name": {
+     "dx": -0.0128,
+     "glyphs": 6780,
+     "hit_cell": 0.9979,
+     "hit_ink": 0.9917,
+     "iou_cell": 0.8487,
+     "iou_ink": 0.8417
+    },
+    "S|cal+pitch+ink|ui": {
+     "dx": -0.0122,
+     "glyphs": 1664,
+     "hit_cell": 0.9988,
+     "hit_ink": 0.994,
+     "iou_cell": 0.8394,
+     "iou_ink": 0.8467
+    },
+    "S|cal|all": {
+     "dx": -0.0546,
+     "glyphs": 58237,
+     "hit_cell": 0.9968,
+     "hit_ink": 0.9753,
+     "iou_cell": 0.819,
+     "iou_ink": 0.7336
+    },
+    "S|cal|choice": {
+     "dx": -0.0571,
+     "glyphs": 5297,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9841,
+     "iou_cell": 0.8526,
+     "iou_ink": 0.7504
+    },
+    "S|cal|dialogue": {
+     "dx": -0.0547,
+     "glyphs": 44496,
+     "hit_cell": 0.9961,
+     "hit_ink": 0.9729,
+     "iou_cell": 0.8126,
+     "iou_ink": 0.7281
+    },
+    "S|cal|g:close": {
+     "dx": -0.0459,
+     "glyphs": 3956,
+     "hit_cell": 0.9709,
+     "hit_ink": 0.8683,
+     "iou_cell": 0.5761,
+     "iou_ink": 0.4388
+    },
+    "S|cal|g:dots": {
+     "dx": -0.0344,
+     "glyphs": 1335,
+     "hit_cell": 0.9813,
+     "hit_ink": 0.9476,
+     "iou_cell": 0.8187,
+     "iou_ink": 0.7013
+    },
+    "S|cal|g:half": {
+     "dx": -0.085,
+     "glyphs": 310,
+     "hit_cell": 0.9839,
+     "hit_ink": 0.929,
+     "iou_cell": 0.7316,
+     "iou_ink": 0.6314
+    },
+    "S|cal|g:long": {
+     "dx": -0.079,
+     "glyphs": 567,
+     "hit_cell": 0.9947,
+     "hit_ink": 0.9894,
+     "iou_cell": 0.8376,
+     "iou_ink": 0.7783
+    },
+    "S|cal|g:mark": {
+     "dx": -0.1261,
+     "glyphs": 1096,
+     "hit_cell": 0.9954,
+     "hit_ink": 0.781,
+     "iou_cell": 0.7295,
+     "iou_ink": 0.4585
+    },
+    "S|cal|g:open": {
+     "dx": 0.0172,
+     "glyphs": 1443,
+     "hit_cell": 0.9917,
+     "hit_ink": 0.8559,
+     "iou_cell": 0.5601,
+     "iou_ink": 0.5286
+    },
+    "S|cal|g:other": {
+     "dx": -0.0542,
+     "glyphs": 47647,
+     "hit_cell": 0.9995,
+     "hit_ink": 0.9931,
+     "iou_cell": 0.849,
+     "iou_ink": 0.7739
+    },
+    "S|cal|g:small": {
+     "dx": -0.0967,
+     "glyphs": 1883,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9782,
+     "iou_cell": 0.8282,
+     "iou_ink": 0.678
+    },
+    "S|cal|name": {
+     "dx": -0.0527,
+     "glyphs": 6780,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9845,
+     "iou_cell": 0.8323,
+     "iou_ink": 0.7561
+    },
+    "S|cal|ui": {
+     "dx": -0.0519,
+     "glyphs": 1664,
+     "hit_cell": 0.9982,
+     "hit_ink": 0.9748,
+     "iou_cell": 0.8285,
+     "iou_ink": 0.7354
+    },
+    "S|ink|all": {
+     "dx": 0.0341,
+     "glyphs": 58237,
+     "hit_cell": 0.9812,
+     "hit_ink": 0.9542,
+     "iou_cell": 0.7941,
+     "iou_ink": 0.7637
+    },
+    "S|ink|choice": {
+     "dx": 0.0231,
+     "glyphs": 5297,
+     "hit_cell": 0.9921,
+     "hit_ink": 0.9809,
+     "iou_cell": 0.8242,
+     "iou_ink": 0.7904
+    },
+    "S|ink|dialogue": {
+     "dx": 0.036,
+     "glyphs": 44496,
+     "hit_cell": 0.9779,
+     "hit_ink": 0.9468,
+     "iou_cell": 0.7873,
+     "iou_ink": 0.7515
+    },
+    "S|ink|g:close": {
+     "dx": 0.0655,
+     "glyphs": 3956,
+     "hit_cell": 0.9851,
+     "hit_ink": 0.7679,
+     "iou_cell": 0.5313,
+     "iou_ink": 0.5072
+    },
+    "S|ink|g:dots": {
+     "dx": 0.0751,
+     "glyphs": 1335,
+     "hit_cell": 0.9371,
+     "hit_ink": 0.8989,
+     "iou_cell": 0.6178,
+     "iou_ink": 0.5417
+    },
+    "S|ink|g:half": {
+     "dx": 0.0216,
+     "glyphs": 310,
+     "hit_cell": 0.9484,
+     "hit_ink": 0.9323,
+     "iou_cell": 0.7887,
+     "iou_ink": 0.7495
+    },
+    "S|ink|g:long": {
+     "dx": 0.024,
+     "glyphs": 567,
+     "hit_cell": 0.9806,
+     "hit_ink": 0.9753,
+     "iou_cell": 0.8535,
+     "iou_ink": 0.7949
+    },
+    "S|ink|g:mark": {
+     "dx": 0.0227,
+     "glyphs": 1096,
+     "hit_cell": 0.9891,
+     "hit_ink": 0.8887,
+     "iou_cell": 0.6944,
+     "iou_ink": 0.6866
+    },
+    "S|ink|g:open": {
+     "dx": 0.0304,
+     "glyphs": 1443,
+     "hit_cell": 0.9217,
+     "hit_ink": 0.8836,
+     "iou_cell": 0.5486,
+     "iou_ink": 0.6506
+    },
+    "S|ink|g:other": {
+     "dx": 0.0314,
+     "glyphs": 47647,
+     "hit_cell": 0.9838,
+     "hit_ink": 0.9748,
+     "iou_cell": 0.8283,
+     "iou_ink": 0.7961
+    },
+    "S|ink|g:small": {
+     "dx": 0.0229,
+     "glyphs": 1883,
+     "hit_cell": 0.9851,
+     "hit_ink": 0.9554,
+     "iou_cell": 0.8371,
+     "iou_ink": 0.7649
+    },
+    "S|ink|name": {
+     "dx": 0.0321,
+     "glyphs": 6780,
+     "hit_cell": 0.9914,
+     "hit_ink": 0.9745,
+     "iou_cell": 0.8139,
+     "iou_ink": 0.8101
+    },
+    "S|ink|ui": {
+     "dx": 0.0268,
+     "glyphs": 1664,
+     "hit_cell": 0.9934,
+     "hit_ink": 0.9856,
+     "iou_cell": 0.7996,
+     "iou_ink": 0.8175
+    },
+    "S|raw|all": {
+     "dx": 0.2087,
+     "glyphs": 58237,
+     "hit_cell": 0.9811,
+     "hit_ink": 0.9099,
+     "iou_cell": 0.6395,
+     "iou_ink": 0.6002
+    },
+    "S|raw|choice": {
+     "dx": 0.2052,
+     "glyphs": 5297,
+     "hit_cell": 0.9919,
+     "hit_ink": 0.9462,
+     "iou_cell": 0.648,
+     "iou_ink": 0.6205
+    },
+    "S|raw|dialogue": {
+     "dx": 0.2084,
+     "glyphs": 44496,
+     "hit_cell": 0.9777,
+     "hit_ink": 0.9016,
+     "iou_cell": 0.6378,
+     "iou_ink": 0.5942
+    },
+    "S|raw|g:close": {
+     "dx": 0.1474,
+     "glyphs": 3956,
+     "hit_cell": 0.9881,
+     "hit_ink": 0.6016,
+     "iou_cell": 0.6732,
+     "iou_ink": 0.4546
+    },
+    "S|raw|g:dots": {
+     "dx": 0.1419,
+     "glyphs": 1335,
+     "hit_cell": 0.9536,
+     "hit_ink": 0.8727,
+     "iou_cell": 0.7174,
+     "iou_ink": 0.6447
+    },
+    "S|raw|g:half": {
+     "dx": 0.144,
+     "glyphs": 310,
+     "hit_cell": 0.9194,
+     "hit_ink": 0.8065,
+     "iou_cell": 0.6102,
+     "iou_ink": 0.5416
+    },
+    "S|raw|g:long": {
+     "dx": 0.1973,
+     "glyphs": 567,
+     "hit_cell": 0.9859,
+     "hit_ink": 0.9683,
+     "iou_cell": 0.6612,
+     "iou_ink": 0.647
+    },
+    "S|raw|g:mark": {
+     "dx": 0.1473,
+     "glyphs": 1096,
+     "hit_cell": 0.9909,
+     "hit_ink": 0.6797,
+     "iou_cell": 0.6937,
+     "iou_ink": 0.5013
+    },
+    "S|raw|g:open": {
+     "dx": 0.1123,
+     "glyphs": 1443,
+     "hit_cell": 0.8898,
+     "hit_ink": 0.7429,
+     "iou_cell": 0.4566,
+     "iou_ink": 0.4313
+    },
+    "S|raw|g:other": {
+     "dx": 0.2206,
+     "glyphs": 47647,
+     "hit_cell": 0.9839,
+     "hit_ink": 0.9484,
+     "iou_cell": 0.6382,
+     "iou_ink": 0.6188
+    },
+    "S|raw|g:small": {
+     "dx": 0.2065,
+     "glyphs": 1883,
+     "hit_cell": 0.9894,
+     "hit_ink": 0.872,
+     "iou_cell": 0.6525,
+     "iou_ink": 0.5861
+    },
+    "S|raw|name": {
+     "dx": 0.2143,
+     "glyphs": 6780,
+     "hit_cell": 0.9919,
+     "hit_ink": 0.9308,
+     "iou_cell": 0.6419,
+     "iou_ink": 0.6184
+    },
+    "S|raw|ui": {
+     "dx": 0.2045,
+     "glyphs": 1664,
+     "hit_cell": 0.9934,
+     "hit_ink": 0.9315,
+     "iou_cell": 0.6482,
+     "iou_ink": 0.6214
+    }
+   }
+  },
+  "vita": {
+   "exact_lines": {
+    "L|cal": 5725,
+    "L|cal+ink": 5725,
+    "L|cal+pitch+ink": 5725,
+    "L|ink": 5725,
+    "L|raw": 5725,
+    "N|cal": 5473,
+    "N|cal+ink": 5473,
+    "N|cal+pitch+ink": 5473,
+    "N|ink": 5473,
+    "N|raw": 5473,
+    "S|cal": 4840,
+    "S|cal+ink": 4840,
+    "S|cal+pitch+ink": 4840,
+    "S|ink": 4840,
+    "S|raw": 4840
+   },
+   "lines": 6778,
+   "pickle_sha256": "03493f46057fa2140623154b351d4da7fa4a0fd64f872532afd33bc81f163618",
+   "rows": {
+    "L|cal+ink|all": {
+     "dx": -0.0185,
+     "glyphs": 66427,
+     "hit_cell": 0.9966,
+     "hit_ink": 0.9833,
+     "iou_cell": 0.8312,
+     "iou_ink": 0.7713
+    },
+    "L|cal+ink|choice": {
+     "dx": -0.017,
+     "glyphs": 5285,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9945,
+     "iou_cell": 0.8509,
+     "iou_ink": 0.7965
+    },
+    "L|cal+ink|dialogue": {
+     "dx": -0.0201,
+     "glyphs": 51815,
+     "hit_cell": 0.9958,
+     "hit_ink": 0.9804,
+     "iou_cell": 0.8269,
+     "iou_ink": 0.7566
+    },
+    "L|cal+ink|g:close": {
+     "dx": -0.0232,
+     "glyphs": 4582,
+     "hit_cell": 0.974,
+     "hit_ink": 0.9162,
+     "iou_cell": 0.5987,
+     "iou_ink": 0.5932
+    },
+    "L|cal+ink|g:dots": {
+     "dx": -0.0506,
+     "glyphs": 1461,
+     "hit_cell": 0.9836,
+     "hit_ink": 0.9644,
+     "iou_cell": 0.636,
+     "iou_ink": 0.5655
+    },
+    "L|cal+ink|g:half": {
+     "dx": -0.0185,
+     "glyphs": 278,
+     "hit_cell": 0.9748,
+     "hit_ink": 0.964,
+     "iou_cell": 0.8115,
+     "iou_ink": 0.7816
+    },
+    "L|cal+ink|g:long": {
+     "dx": -0.0405,
+     "glyphs": 630,
+     "hit_cell": 0.9937,
+     "hit_ink": 0.9921,
+     "iou_cell": 0.8632,
+     "iou_ink": 0.7863
+    },
+    "L|cal+ink|g:mark": {
+     "dx": -0.0108,
+     "glyphs": 1174,
+     "hit_cell": 0.9966,
+     "hit_ink": 0.9676,
+     "iou_cell": 0.7274,
+     "iou_ink": 0.6935
+    },
+    "L|cal+ink|g:open": {
+     "dx": -0.0565,
+     "glyphs": 1575,
+     "hit_cell": 0.9886,
+     "hit_ink": 0.753,
+     "iou_cell": 0.5356,
+     "iou_ink": 0.5628
+    },
+    "L|cal+ink|g:other": {
+     "dx": -0.0169,
+     "glyphs": 54584,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9961,
+     "iou_cell": 0.8656,
+     "iou_ink": 0.8003
+    },
+    "L|cal+ink|g:small": {
+     "dx": 0.0029,
+     "glyphs": 2143,
+     "hit_cell": 0.9977,
+     "hit_ink": 0.9925,
+     "iou_cell": 0.8538,
+     "iou_ink": 0.7439
+    },
+    "L|cal+ink|name": {
+     "dx": -0.0099,
+     "glyphs": 7471,
+     "hit_cell": 0.9995,
+     "hit_ink": 0.9932,
+     "iou_cell": 0.8448,
+     "iou_ink": 0.8386
+    },
+    "L|cal+ink|ui": {
+     "dx": -0.0112,
+     "glyphs": 1856,
+     "hit_cell": 0.9978,
+     "hit_ink": 0.9935,
+     "iou_cell": 0.8426,
+     "iou_ink": 0.8387
+    },
+    "L|cal+pitch+ink|all": {
+     "dx": -0.0185,
+     "glyphs": 66427,
+     "hit_cell": 0.9966,
+     "hit_ink": 0.9833,
+     "iou_cell": 0.8312,
+     "iou_ink": 0.7712
+    },
+    "L|cal+pitch+ink|choice": {
+     "dx": -0.017,
+     "glyphs": 5285,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9943,
+     "iou_cell": 0.8513,
+     "iou_ink": 0.7968
+    },
+    "L|cal+pitch+ink|dialogue": {
+     "dx": -0.0201,
+     "glyphs": 51815,
+     "hit_cell": 0.9959,
+     "hit_ink": 0.9804,
+     "iou_cell": 0.8268,
+     "iou_ink": 0.7565
+    },
+    "L|cal+pitch+ink|g:close": {
+     "dx": -0.0229,
+     "glyphs": 4582,
+     "hit_cell": 0.974,
+     "hit_ink": 0.9158,
+     "iou_cell": 0.5985,
+     "iou_ink": 0.5926
+    },
+    "L|cal+pitch+ink|g:dots": {
+     "dx": -0.051,
+     "glyphs": 1461,
+     "hit_cell": 0.9843,
+     "hit_ink": 0.9658,
+     "iou_cell": 0.6364,
+     "iou_ink": 0.5668
+    },
+    "L|cal+pitch+ink|g:half": {
+     "dx": -0.0186,
+     "glyphs": 278,
+     "hit_cell": 0.9748,
+     "hit_ink": 0.964,
+     "iou_cell": 0.8115,
+     "iou_ink": 0.7816
+    },
+    "L|cal+pitch+ink|g:long": {
+     "dx": -0.0403,
+     "glyphs": 630,
+     "hit_cell": 0.9937,
+     "hit_ink": 0.9921,
+     "iou_cell": 0.8633,
+     "iou_ink": 0.7864
+    },
+    "L|cal+pitch+ink|g:mark": {
+     "dx": -0.0113,
+     "glyphs": 1174,
+     "hit_cell": 0.9966,
+     "hit_ink": 0.9668,
+     "iou_cell": 0.7272,
+     "iou_ink": 0.693
+    },
+    "L|cal+pitch+ink|g:open": {
+     "dx": -0.0565,
+     "glyphs": 1575,
+     "hit_cell": 0.9886,
+     "hit_ink": 0.753,
+     "iou_cell": 0.5352,
+     "iou_ink": 0.5622
+    },
+    "L|cal+pitch+ink|g:other": {
+     "dx": -0.0169,
+     "glyphs": 54584,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9961,
+     "iou_cell": 0.8656,
+     "iou_ink": 0.8003
+    },
+    "L|cal+pitch+ink|g:small": {
+     "dx": 0.0029,
+     "glyphs": 2143,
+     "hit_cell": 0.9977,
+     "hit_ink": 0.9925,
+     "iou_cell": 0.8538,
+     "iou_ink": 0.7439
+    },
+    "L|cal+pitch+ink|name": {
+     "dx": -0.01,
+     "glyphs": 7471,
+     "hit_cell": 0.9995,
+     "hit_ink": 0.9932,
+     "iou_cell": 0.845,
+     "iou_ink": 0.8386
+    },
+    "L|cal+pitch+ink|ui": {
+     "dx": -0.0112,
+     "glyphs": 1856,
+     "hit_cell": 0.9978,
+     "hit_ink": 0.9935,
+     "iou_cell": 0.8427,
+     "iou_ink": 0.8385
+    },
+    "L|cal|all": {
+     "dx": -0.066,
+     "glyphs": 66427,
+     "hit_cell": 0.9977,
+     "hit_ink": 0.9722,
+     "iou_cell": 0.8076,
+     "iou_ink": 0.7281
+    },
+    "L|cal|choice": {
+     "dx": -0.0689,
+     "glyphs": 5285,
+     "hit_cell": 0.9994,
+     "hit_ink": 0.9879,
+     "iou_cell": 0.8336,
+     "iou_ink": 0.7475
+    },
+    "L|cal|dialogue": {
+     "dx": -0.0697,
+     "glyphs": 51815,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9689,
+     "iou_cell": 0.8022,
+     "iou_ink": 0.7218
+    },
+    "L|cal|g:close": {
+     "dx": -0.0384,
+     "glyphs": 4582,
+     "hit_cell": 0.974,
+     "hit_ink": 0.8616,
+     "iou_cell": 0.5838,
+     "iou_ink": 0.43
+    },
+    "L|cal|g:dots": {
+     "dx": -0.0643,
+     "glyphs": 1461,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9651,
+     "iou_cell": 0.8222,
+     "iou_ink": 0.703
+    },
+    "L|cal|g:half": {
+     "dx": -0.0418,
+     "glyphs": 278,
+     "hit_cell": 0.9784,
+     "hit_ink": 0.946,
+     "iou_cell": 0.7186,
+     "iou_ink": 0.6451
+    },
+    "L|cal|g:long": {
+     "dx": -0.0939,
+     "glyphs": 630,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9984,
+     "iou_cell": 0.8179,
+     "iou_ink": 0.7717
+    },
+    "L|cal|g:mark": {
+     "dx": -0.0756,
+     "glyphs": 1174,
+     "hit_cell": 0.9983,
+     "hit_ink": 0.8254,
+     "iou_cell": 0.7616,
+     "iou_ink": 0.4558
+    },
+    "L|cal|g:open": {
+     "dx": -0.0815,
+     "glyphs": 1575,
+     "hit_cell": 0.9956,
+     "hit_ink": 0.6178,
+     "iou_cell": 0.5902,
+     "iou_ink": 0.5464
+    },
+    "L|cal|g:other": {
+     "dx": -0.0664,
+     "glyphs": 54584,
+     "hit_cell": 0.9998,
+     "hit_ink": 0.9942,
+     "iou_cell": 0.8331,
+     "iou_ink": 0.7665
+    },
+    "L|cal|g:small": {
+     "dx": -0.0938,
+     "glyphs": 2143,
+     "hit_cell": 0.9986,
+     "hit_ink": 0.9874,
+     "iou_cell": 0.8212,
+     "iou_ink": 0.6872
+    },
+    "L|cal|name": {
+     "dx": -0.0445,
+     "glyphs": 7471,
+     "hit_cell": 0.9992,
+     "hit_ink": 0.9842,
+     "iou_cell": 0.8239,
+     "iou_ink": 0.7569
+    },
+    "L|cal|ui": {
+     "dx": -0.0411,
+     "glyphs": 1856,
+     "hit_cell": 0.9978,
+     "hit_ink": 0.9714,
+     "iou_cell": 0.8197,
+     "iou_ink": 0.7334
+    },
+    "L|ink|all": {
+     "dx": -0.0035,
+     "glyphs": 66427,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.9832,
+     "iou_cell": 0.8288,
+     "iou_ink": 0.7685
+    },
+    "L|ink|choice": {
+     "dx": -0.0073,
+     "glyphs": 5285,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.993,
+     "iou_cell": 0.8482,
+     "iou_ink": 0.7922
+    },
+    "L|ink|dialogue": {
+     "dx": -0.005,
+     "glyphs": 51815,
+     "hit_cell": 0.9969,
+     "hit_ink": 0.9802,
+     "iou_cell": 0.8252,
+     "iou_ink": 0.7545
+    },
+    "L|ink|g:close": {
+     "dx": 0.0283,
+     "glyphs": 4582,
+     "hit_cell": 0.9889,
+     "hit_ink": 0.8481,
+     "iou_cell": 0.578,
+     "iou_ink": 0.5444
+    },
+    "L|ink|g:dots": {
+     "dx": -0.0505,
+     "glyphs": 1461,
+     "hit_cell": 0.9856,
+     "hit_ink": 0.9651,
+     "iou_cell": 0.6346,
+     "iou_ink": 0.5649
+    },
+    "L|ink|g:half": {
+     "dx": 0.0006,
+     "glyphs": 278,
+     "hit_cell": 0.9748,
+     "hit_ink": 0.9532,
+     "iou_cell": 0.8074,
+     "iou_ink": 0.7681
+    },
+    "L|ink|g:long": {
+     "dx": -0.0002,
+     "glyphs": 630,
+     "hit_cell": 0.9905,
+     "hit_ink": 0.9921,
+     "iou_cell": 0.8659,
+     "iou_ink": 0.7867
+    },
+    "L|ink|g:mark": {
+     "dx": -0.001,
+     "glyphs": 1174,
+     "hit_cell": 0.9932,
+     "hit_ink": 0.9608,
+     "iou_cell": 0.7322,
+     "iou_ink": 0.6899
+    },
+    "L|ink|g:open": {
+     "dx": -0.0076,
+     "glyphs": 1575,
+     "hit_cell": 0.9854,
+     "hit_ink": 0.9429,
+     "iou_cell": 0.5892,
+     "iou_ink": 0.6606
+    },
+    "L|ink|g:other": {
+     "dx": -0.0054,
+     "glyphs": 54584,
+     "hit_cell": 0.999,
+     "hit_ink": 0.9963,
+     "iou_cell": 0.8626,
+     "iou_ink": 0.7983
+    },
+    "L|ink|g:small": {
+     "dx": 0.0094,
+     "glyphs": 2143,
+     "hit_cell": 0.9986,
+     "hit_ink": 0.9944,
+     "iou_cell": 0.8574,
+     "iou_ink": 0.7453
+    },
+    "L|ink|name": {
+     "dx": 0.008,
+     "glyphs": 7471,
+     "hit_cell": 0.9991,
+     "hit_ink": 0.9938,
+     "iou_cell": 0.8384,
+     "iou_ink": 0.8328
+    },
+    "L|ink|ui": {
+     "dx": 0.0035,
+     "glyphs": 1856,
+     "hit_cell": 0.9995,
+     "hit_ink": 0.9973,
+     "iou_cell": 0.8362,
+     "iou_ink": 0.8345
+    },
+    "L|raw|all": {
+     "dx": 0.03,
+     "glyphs": 66427,
+     "hit_cell": 0.9992,
+     "hit_ink": 0.9721,
+     "iou_cell": 0.828,
+     "iou_ink": 0.7443
+    },
+    "L|raw|choice": {
+     "dx": 0.0223,
+     "glyphs": 5285,
+     "hit_cell": 0.9996,
+     "hit_ink": 0.9879,
+     "iou_cell": 0.8531,
+     "iou_ink": 0.7616
+    },
+    "L|raw|dialogue": {
+     "dx": 0.0269,
+     "glyphs": 51815,
+     "hit_cell": 0.9992,
+     "hit_ink": 0.9692,
+     "iou_cell": 0.8294,
+     "iou_ink": 0.7432
+    },
+    "L|raw|g:close": {
+     "dx": 0.0879,
+     "glyphs": 4582,
+     "hit_cell": 0.998,
+     "hit_ink": 0.7564,
+     "iou_cell": 0.6847,
+     "iou_ink": 0.4507
+    },
+    "L|raw|g:dots": {
+     "dx": -0.0696,
+     "glyphs": 1461,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9624,
+     "iou_cell": 0.837,
+     "iou_ink": 0.7167
+    },
+    "L|raw|g:half": {
+     "dx": 0.0303,
+     "glyphs": 278,
+     "hit_cell": 0.9712,
+     "hit_ink": 0.9353,
+     "iou_cell": 0.7175,
+     "iou_ink": 0.6471
+    },
+    "L|raw|g:long": {
+     "dx": 0.0259,
+     "glyphs": 630,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9984,
+     "iou_cell": 0.8546,
+     "iou_ink": 0.8098
+    },
+    "L|raw|g:mark": {
+     "dx": 0.0189,
+     "glyphs": 1174,
+     "hit_cell": 0.9983,
+     "hit_ink": 0.856,
+     "iou_cell": 0.8099,
+     "iou_ink": 0.4771
+    },
+    "L|raw|g:open": {
+     "dx": 0.0027,
+     "glyphs": 1575,
+     "hit_cell": 0.9873,
+     "hit_ink": 0.8121,
+     "iou_cell": 0.5488,
+     "iou_ink": 0.5138
+    },
+    "L|raw|g:other": {
+     "dx": 0.0284,
+     "glyphs": 54584,
+     "hit_cell": 0.9999,
+     "hit_ink": 0.9966,
+     "iou_cell": 0.8473,
+     "iou_ink": 0.7832
+    },
+    "L|raw|g:small": {
+     "dx": 0.0425,
+     "glyphs": 2143,
+     "hit_cell": 0.9995,
+     "hit_ink": 0.9935,
+     "iou_cell": 0.8561,
+     "iou_ink": 0.7075
+    },
+    "L|raw|name": {
+     "dx": 0.0513,
+     "glyphs": 7471,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9786,
+     "iou_cell": 0.8088,
+     "iou_ink": 0.7457
+    },
+    "L|raw|ui": {
+     "dx": 0.0505,
+     "glyphs": 1856,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9795,
+     "iou_cell": 0.7939,
+     "iou_ink": 0.7173
+    },
+    "N|cal+ink|all": {
+     "dx": -0.0175,
+     "glyphs": 65824,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.9845,
+     "iou_cell": 0.8314,
+     "iou_ink": 0.7731
+    },
+    "N|cal+ink|choice": {
+     "dx": -0.0169,
+     "glyphs": 5239,
+     "hit_cell": 0.9987,
+     "hit_ink": 0.9927,
+     "iou_cell": 0.8507,
+     "iou_ink": 0.7963
+    },
+    "N|cal+ink|dialogue": {
+     "dx": -0.0182,
+     "glyphs": 51372,
+     "hit_cell": 0.9956,
+     "hit_ink": 0.982,
+     "iou_cell": 0.8273,
+     "iou_ink": 0.7582
+    },
+    "N|cal+ink|g:close": {
+     "dx": -0.0244,
+     "glyphs": 4564,
+     "hit_cell": 0.9726,
+     "hit_ink": 0.9148,
+     "iou_cell": 0.598,
+     "iou_ink": 0.5936
+    },
+    "N|cal+ink|g:dots": {
+     "dx": -0.0425,
+     "glyphs": 1452,
+     "hit_cell": 0.9821,
+     "hit_ink": 0.9566,
+     "iou_cell": 0.6268,
+     "iou_ink": 0.5521
+    },
+    "N|cal+ink|g:half": {
+     "dx": -0.0072,
+     "glyphs": 265,
+     "hit_cell": 0.9811,
+     "hit_ink": 0.966,
+     "iou_cell": 0.8213,
+     "iou_ink": 0.7808
+    },
+    "N|cal+ink|g:long": {
+     "dx": -0.0372,
+     "glyphs": 611,
+     "hit_cell": 0.9918,
+     "hit_ink": 0.9885,
+     "iou_cell": 0.8697,
+     "iou_ink": 0.7921
+    },
+    "N|cal+ink|g:mark": {
+     "dx": -0.003,
+     "glyphs": 1166,
+     "hit_cell": 0.9957,
+     "hit_ink": 0.9648,
+     "iou_cell": 0.7347,
+     "iou_ink": 0.6885
+    },
+    "N|cal+ink|g:open": {
+     "dx": -0.0355,
+     "glyphs": 1559,
+     "hit_cell": 0.9917,
+     "hit_ink": 0.8191,
+     "iou_cell": 0.5607,
+     "iou_ink": 0.5978
+    },
+    "N|cal+ink|g:other": {
+     "dx": -0.0168,
+     "glyphs": 54084,
+     "hit_cell": 0.999,
+     "hit_ink": 0.996,
+     "iou_cell": 0.8651,
+     "iou_ink": 0.8018
+    },
+    "N|cal+ink|g:small": {
+     "dx": 0.0038,
+     "glyphs": 2123,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9934,
+     "iou_cell": 0.8551,
+     "iou_ink": 0.7463
+    },
+    "N|cal+ink|name": {
+     "dx": -0.0143,
+     "glyphs": 7361,
+     "hit_cell": 0.9993,
+     "hit_ink": 0.9929,
+     "iou_cell": 0.8432,
+     "iou_ink": 0.843
+    },
+    "N|cal+ink|ui": {
+     "dx": -0.0144,
+     "glyphs": 1852,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9951,
+     "iou_cell": 0.8433,
+     "iou_ink": 0.8437
+    },
+    "N|cal+pitch+ink|all": {
+     "dx": -0.0174,
+     "glyphs": 65824,
+     "hit_cell": 0.9964,
+     "hit_ink": 0.9844,
+     "iou_cell": 0.8313,
+     "iou_ink": 0.773
+    },
+    "N|cal+pitch+ink|choice": {
+     "dx": -0.0166,
+     "glyphs": 5239,
+     "hit_cell": 0.9987,
+     "hit_ink": 0.9926,
+     "iou_cell": 0.8507,
+     "iou_ink": 0.7961
+    },
+    "N|cal+pitch+ink|dialogue": {
+     "dx": -0.018,
+     "glyphs": 51372,
+     "hit_cell": 0.9956,
+     "hit_ink": 0.982,
+     "iou_cell": 0.8271,
+     "iou_ink": 0.758
+    },
+    "N|cal+pitch+ink|g:close": {
+     "dx": -0.023,
+     "glyphs": 4564,
+     "hit_cell": 0.9728,
+     "hit_ink": 0.9115,
+     "iou_cell": 0.5967,
+     "iou_ink": 0.5915
+    },
+    "N|cal+pitch+ink|g:dots": {
+     "dx": -0.0429,
+     "glyphs": 1452,
+     "hit_cell": 0.9821,
+     "hit_ink": 0.9566,
+     "iou_cell": 0.6266,
+     "iou_ink": 0.5521
+    },
+    "N|cal+pitch+ink|g:half": {
+     "dx": -0.0072,
+     "glyphs": 265,
+     "hit_cell": 0.9811,
+     "hit_ink": 0.966,
+     "iou_cell": 0.8213,
+     "iou_ink": 0.7808
+    },
+    "N|cal+pitch+ink|g:long": {
+     "dx": -0.0372,
+     "glyphs": 611,
+     "hit_cell": 0.9918,
+     "hit_ink": 0.9885,
+     "iou_cell": 0.8689,
+     "iou_ink": 0.7916
+    },
+    "N|cal+pitch+ink|g:mark": {
+     "dx": -0.0031,
+     "glyphs": 1166,
+     "hit_cell": 0.9957,
+     "hit_ink": 0.9648,
+     "iou_cell": 0.7342,
+     "iou_ink": 0.6885
+    },
+    "N|cal+pitch+ink|g:open": {
+     "dx": -0.036,
+     "glyphs": 1559,
+     "hit_cell": 0.991,
+     "hit_ink": 0.8262,
+     "iou_cell": 0.5606,
+     "iou_ink": 0.598
+    },
+    "N|cal+pitch+ink|g:other": {
+     "dx": -0.0167,
+     "glyphs": 54084,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.996,
+     "iou_cell": 0.8651,
+     "iou_ink": 0.8019
+    },
+    "N|cal+pitch+ink|g:small": {
+     "dx": 0.004,
+     "glyphs": 2123,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9934,
+     "iou_cell": 0.8549,
+     "iou_ink": 0.746
+    },
+    "N|cal+pitch+ink|name": {
+     "dx": -0.0144,
+     "glyphs": 7361,
+     "hit_cell": 0.9992,
+     "hit_ink": 0.9927,
+     "iou_cell": 0.8432,
+     "iou_ink": 0.843
+    },
+    "N|cal+pitch+ink|ui": {
+     "dx": -0.0144,
+     "glyphs": 1852,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9951,
+     "iou_cell": 0.8432,
+     "iou_ink": 0.8437
+    },
+    "N|cal|all": {
+     "dx": -0.0627,
+     "glyphs": 65824,
+     "hit_cell": 0.9972,
+     "hit_ink": 0.9757,
+     "iou_cell": 0.8107,
+     "iou_ink": 0.7278
+    },
+    "N|cal|choice": {
+     "dx": -0.069,
+     "glyphs": 5239,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9901,
+     "iou_cell": 0.8397,
+     "iou_ink": 0.7455
+    },
+    "N|cal|dialogue": {
+     "dx": -0.0604,
+     "glyphs": 51372,
+     "hit_cell": 0.9965,
+     "hit_ink": 0.9727,
+     "iou_cell": 0.808,
+     "iou_ink": 0.7251
+    },
+    "N|cal|g:close": {
+     "dx": -0.0425,
+     "glyphs": 4564,
+     "hit_cell": 0.966,
+     "hit_ink": 0.8523,
+     "iou_cell": 0.5863,
+     "iou_ink": 0.4365
+    },
+    "N|cal|g:dots": {
+     "dx": -0.0499,
+     "glyphs": 1452,
+     "hit_cell": 0.9917,
+     "hit_ink": 0.9449,
+     "iou_cell": 0.8209,
+     "iou_ink": 0.709
+    },
+    "N|cal|g:half": {
+     "dx": -0.0081,
+     "glyphs": 265,
+     "hit_cell": 0.9811,
+     "hit_ink": 0.9472,
+     "iou_cell": 0.7321,
+     "iou_ink": 0.6566
+    },
+    "N|cal|g:long": {
+     "dx": -0.1067,
+     "glyphs": 611,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9984,
+     "iou_cell": 0.8162,
+     "iou_ink": 0.7687
+    },
+    "N|cal|g:mark": {
+     "dx": 0.0455,
+     "glyphs": 1166,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.831,
+     "iou_cell": 0.8042,
+     "iou_ink": 0.4705
+    },
+    "N|cal|g:open": {
+     "dx": -0.0482,
+     "glyphs": 1559,
+     "hit_cell": 0.9974,
+     "hit_ink": 0.7107,
+     "iou_cell": 0.5856,
+     "iou_ink": 0.5397
+    },
+    "N|cal|g:other": {
+     "dx": -0.0663,
+     "glyphs": 54084,
+     "hit_cell": 0.9999,
+     "hit_ink": 0.9968,
+     "iou_cell": 0.8356,
+     "iou_ink": 0.7653
+    },
+    "N|cal|g:small": {
+     "dx": -0.0896,
+     "glyphs": 2123,
+     "hit_cell": 0.9995,
+     "hit_ink": 0.9958,
+     "iou_cell": 0.8302,
+     "iou_ink": 0.6882
+    },
+    "N|cal|name": {
+     "dx": -0.0732,
+     "glyphs": 7361,
+     "hit_cell": 0.9999,
+     "hit_ink": 0.9856,
+     "iou_cell": 0.812,
+     "iou_ink": 0.739
+    },
+    "N|cal|ui": {
+     "dx": -0.069,
+     "glyphs": 1852,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9784,
+     "iou_cell": 0.8001,
+     "iou_ink": 0.7075
+    },
+    "N|ink|all": {
+     "dx": -0.0143,
+     "glyphs": 65824,
+     "hit_cell": 0.9967,
+     "hit_ink": 0.9832,
+     "iou_cell": 0.8305,
+     "iou_ink": 0.7713
+    },
+    "N|ink|choice": {
+     "dx": -0.0194,
+     "glyphs": 5239,
+     "hit_cell": 0.9987,
+     "hit_ink": 0.9905,
+     "iou_cell": 0.8501,
+     "iou_ink": 0.7948
+    },
+    "N|ink|dialogue": {
+     "dx": -0.0141,
+     "glyphs": 51372,
+     "hit_cell": 0.9962,
+     "hit_ink": 0.9807,
+     "iou_cell": 0.8264,
+     "iou_ink": 0.7561
+    },
+    "N|ink|g:close": {
+     "dx": 0.0203,
+     "glyphs": 4564,
+     "hit_cell": 0.9833,
+     "hit_ink": 0.8604,
+     "iou_cell": 0.5798,
+     "iou_ink": 0.549
+    },
+    "N|ink|g:dots": {
+     "dx": -0.1263,
+     "glyphs": 1452,
+     "hit_cell": 0.9752,
+     "hit_ink": 0.9435,
+     "iou_cell": 0.6221,
+     "iou_ink": 0.5494
+    },
+    "N|ink|g:half": {
+     "dx": -0.001,
+     "glyphs": 265,
+     "hit_cell": 0.9811,
+     "hit_ink": 0.9585,
+     "iou_cell": 0.8145,
+     "iou_ink": 0.7761
+    },
+    "N|ink|g:long": {
+     "dx": -0.0292,
+     "glyphs": 611,
+     "hit_cell": 0.9869,
+     "hit_ink": 0.9853,
+     "iou_cell": 0.8672,
+     "iou_ink": 0.7879
+    },
+    "N|ink|g:mark": {
+     "dx": -0.0023,
+     "glyphs": 1166,
+     "hit_cell": 0.994,
+     "hit_ink": 0.9571,
+     "iou_cell": 0.7311,
+     "iou_ink": 0.6838
+    },
+    "N|ink|g:open": {
+     "dx": 0.0044,
+     "glyphs": 1559,
+     "hit_cell": 0.9878,
+     "hit_ink": 0.9474,
+     "iou_cell": 0.5925,
+     "iou_ink": 0.6628
+    },
+    "N|ink|g:other": {
+     "dx": -0.0157,
+     "glyphs": 54084,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.996,
+     "iou_cell": 0.8648,
+     "iou_ink": 0.8017
+    },
+    "N|ink|g:small": {
+     "dx": 0.0052,
+     "glyphs": 2123,
+     "hit_cell": 0.9981,
+     "hit_ink": 0.9929,
+     "iou_cell": 0.8571,
+     "iou_ink": 0.7471
+    },
+    "N|ink|name": {
+     "dx": -0.0129,
+     "glyphs": 7361,
+     "hit_cell": 0.999,
+     "hit_ink": 0.9929,
+     "iou_cell": 0.8423,
+     "iou_ink": 0.8421
+    },
+    "N|ink|ui": {
+     "dx": -0.0112,
+     "glyphs": 1852,
+     "hit_cell": 0.9968,
+     "hit_ink": 0.9941,
+     "iou_cell": 0.8419,
+     "iou_ink": 0.8421
+    },
+    "N|raw|all": {
+     "dx": -0.0532,
+     "glyphs": 65824,
+     "hit_cell": 0.9987,
+     "hit_ink": 0.973,
+     "iou_cell": 0.8169,
+     "iou_ink": 0.7293
+    },
+    "N|raw|choice": {
+     "dx": -0.0684,
+     "glyphs": 5239,
+     "hit_cell": 0.999,
+     "hit_ink": 0.9855,
+     "iou_cell": 0.8391,
+     "iou_ink": 0.7437
+    },
+    "N|raw|dialogue": {
+     "dx": -0.0493,
+     "glyphs": 51372,
+     "hit_cell": 0.9989,
+     "hit_ink": 0.9709,
+     "iou_cell": 0.8156,
+     "iou_ink": 0.727
+    },
+    "N|raw|g:close": {
+     "dx": 0.0757,
+     "glyphs": 4564,
+     "hit_cell": 0.9976,
+     "hit_ink": 0.7831,
+     "iou_cell": 0.6504,
+     "iou_ink": 0.4447
+    },
+    "N|raw|g:dots": {
+     "dx": -0.1763,
+     "glyphs": 1452,
+     "hit_cell": 0.9938,
+     "hit_ink": 0.9339,
+     "iou_cell": 0.7451,
+     "iou_ink": 0.6457
+    },
+    "N|raw|g:half": {
+     "dx": 0.0072,
+     "glyphs": 265,
+     "hit_cell": 0.9811,
+     "hit_ink": 0.9321,
+     "iou_cell": 0.728,
+     "iou_ink": 0.6585
+    },
+    "N|raw|g:long": {
+     "dx": -0.0963,
+     "glyphs": 611,
+     "hit_cell": 0.9984,
+     "hit_ink": 0.9984,
+     "iou_cell": 0.8268,
+     "iou_ink": 0.7772
+    },
+    "N|raw|g:mark": {
+     "dx": 0.0456,
+     "glyphs": 1166,
+     "hit_cell": 0.9966,
+     "hit_ink": 0.831,
+     "iou_cell": 0.819,
+     "iou_ink": 0.4632
+    },
+    "N|raw|g:open": {
+     "dx": 0.0358,
+     "glyphs": 1559,
+     "hit_cell": 0.9699,
+     "hit_ink": 0.8133,
+     "iou_cell": 0.5611,
+     "iou_ink": 0.5293
+    },
+    "N|raw|g:other": {
+     "dx": -0.0662,
+     "glyphs": 54084,
+     "hit_cell": 0.9999,
+     "hit_ink": 0.9968,
+     "iou_cell": 0.839,
+     "iou_ink": 0.768
+    },
+    "N|raw|g:small": {
+     "dx": -0.0294,
+     "glyphs": 2123,
+     "hit_cell": 0.9995,
+     "hit_ink": 0.9958,
+     "iou_cell": 0.8549,
+     "iou_ink": 0.7005
+    },
+    "N|raw|name": {
+     "dx": -0.0679,
+     "glyphs": 7361,
+     "hit_cell": 0.9978,
+     "hit_ink": 0.978,
+     "iou_cell": 0.8145,
+     "iou_ink": 0.7402
+    },
+    "N|raw|ui": {
+     "dx": -0.0588,
+     "glyphs": 1852,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9757,
+     "iou_cell": 0.8003,
+     "iou_ink": 0.7096
+    },
+    "S|cal+ink|all": {
+     "dx": -0.0155,
+     "glyphs": 64679,
+     "hit_cell": 0.9945,
+     "hit_ink": 0.9855,
+     "iou_cell": 0.8329,
+     "iou_ink": 0.7731
+    },
+    "S|cal+ink|choice": {
+     "dx": -0.0141,
+     "glyphs": 5139,
+     "hit_cell": 0.9977,
+     "hit_ink": 0.991,
+     "iou_cell": 0.8509,
+     "iou_ink": 0.795
+    },
+    "S|cal+ink|dialogue": {
+     "dx": -0.0164,
+     "glyphs": 50555,
+     "hit_cell": 0.9936,
+     "hit_ink": 0.9833,
+     "iou_cell": 0.8287,
+     "iou_ink": 0.7584
+    },
+    "S|cal+ink|g:close": {
+     "dx": -0.0303,
+     "glyphs": 4526,
+     "hit_cell": 0.9596,
+     "hit_ink": 0.911,
+     "iou_cell": 0.5959,
+     "iou_ink": 0.5891
+    },
+    "S|cal+ink|g:dots": {
+     "dx": -0.0317,
+     "glyphs": 1432,
+     "hit_cell": 0.9811,
+     "hit_ink": 0.9602,
+     "iou_cell": 0.6347,
+     "iou_ink": 0.5614
+    },
+    "S|cal+ink|g:half": {
+     "dx": -0.0305,
+     "glyphs": 257,
+     "hit_cell": 0.9494,
+     "hit_ink": 0.9377,
+     "iou_cell": 0.7907,
+     "iou_ink": 0.764
+    },
+    "S|cal+ink|g:long": {
+     "dx": -0.0269,
+     "glyphs": 600,
+     "hit_cell": 0.99,
+     "hit_ink": 0.9883,
+     "iou_cell": 0.8667,
+     "iou_ink": 0.7904
+    },
+    "S|cal+ink|g:mark": {
+     "dx": -0.0223,
+     "glyphs": 1155,
+     "hit_cell": 0.9939,
+     "hit_ink": 0.9437,
+     "iou_cell": 0.7128,
+     "iou_ink": 0.6739
+    },
+    "S|cal+ink|g:open": {
+     "dx": 0.0019,
+     "glyphs": 1558,
+     "hit_cell": 0.9852,
+     "hit_ink": 0.932,
+     "iou_cell": 0.5908,
+     "iou_ink": 0.6479
+    },
+    "S|cal+ink|g:other": {
+     "dx": -0.0147,
+     "glyphs": 53062,
+     "hit_cell": 0.9982,
+     "hit_ink": 0.995,
+     "iou_cell": 0.867,
+     "iou_ink": 0.8012
+    },
+    "S|cal+ink|g:small": {
+     "dx": 0.0037,
+     "glyphs": 2089,
+     "hit_cell": 0.9986,
+     "hit_ink": 0.9923,
+     "iou_cell": 0.8576,
+     "iou_ink": 0.7479
+    },
+    "S|cal+ink|name": {
+     "dx": -0.0108,
+     "glyphs": 7151,
+     "hit_cell": 0.9976,
+     "hit_ink": 0.9948,
+     "iou_cell": 0.8461,
+     "iou_ink": 0.8437
+    },
+    "S|cal+ink|ui": {
+     "dx": -0.012,
+     "glyphs": 1834,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9945,
+     "iou_cell": 0.8451,
+     "iou_ink": 0.8422
+    },
+    "S|cal+pitch+ink|all": {
+     "dx": -0.0152,
+     "glyphs": 64679,
+     "hit_cell": 0.9945,
+     "hit_ink": 0.9848,
+     "iou_cell": 0.8326,
+     "iou_ink": 0.7728
+    },
+    "S|cal+pitch+ink|choice": {
+     "dx": -0.0137,
+     "glyphs": 5139,
+     "hit_cell": 0.9979,
+     "hit_ink": 0.9912,
+     "iou_cell": 0.8509,
+     "iou_ink": 0.7949
+    },
+    "S|cal+pitch+ink|dialogue": {
+     "dx": -0.0161,
+     "glyphs": 50555,
+     "hit_cell": 0.9936,
+     "hit_ink": 0.9825,
+     "iou_cell": 0.8284,
+     "iou_ink": 0.758
+    },
+    "S|cal+pitch+ink|g:close": {
+     "dx": -0.0269,
+     "glyphs": 4526,
+     "hit_cell": 0.96,
+     "hit_ink": 0.9015,
+     "iou_cell": 0.5931,
+     "iou_ink": 0.5846
+    },
+    "S|cal+pitch+ink|g:dots": {
+     "dx": -0.0318,
+     "glyphs": 1432,
+     "hit_cell": 0.9811,
+     "hit_ink": 0.9616,
+     "iou_cell": 0.6342,
+     "iou_ink": 0.5608
+    },
+    "S|cal+pitch+ink|g:half": {
+     "dx": -0.0305,
+     "glyphs": 257,
+     "hit_cell": 0.9494,
+     "hit_ink": 0.9377,
+     "iou_cell": 0.7907,
+     "iou_ink": 0.764
+    },
+    "S|cal+pitch+ink|g:long": {
+     "dx": -0.0267,
+     "glyphs": 600,
+     "hit_cell": 0.99,
+     "hit_ink": 0.9883,
+     "iou_cell": 0.8664,
+     "iou_ink": 0.7901
+    },
+    "S|cal+pitch+ink|g:mark": {
+     "dx": -0.022,
+     "glyphs": 1155,
+     "hit_cell": 0.9939,
+     "hit_ink": 0.9437,
+     "iou_cell": 0.7129,
+     "iou_ink": 0.6737
+    },
+    "S|cal+pitch+ink|g:open": {
+     "dx": 0.0001,
+     "glyphs": 1558,
+     "hit_cell": 0.9852,
+     "hit_ink": 0.9307,
+     "iou_cell": 0.59,
+     "iou_ink": 0.6469
+    },
+    "S|cal+pitch+ink|g:other": {
+     "dx": -0.0146,
+     "glyphs": 53062,
+     "hit_cell": 0.9982,
+     "hit_ink": 0.995,
+     "iou_cell": 0.8669,
+     "iou_ink": 0.8012
+    },
+    "S|cal+pitch+ink|g:small": {
+     "dx": 0.0043,
+     "glyphs": 2089,
+     "hit_cell": 0.9986,
+     "hit_ink": 0.9923,
+     "iou_cell": 0.8576,
+     "iou_ink": 0.7477
+    },
+    "S|cal+pitch+ink|name": {
+     "dx": -0.0106,
+     "glyphs": 7151,
+     "hit_cell": 0.9976,
+     "hit_ink": 0.995,
+     "iou_cell": 0.8463,
+     "iou_ink": 0.8437
+    },
+    "S|cal+pitch+ink|ui": {
+     "dx": -0.0128,
+     "glyphs": 1834,
+     "hit_cell": 0.9973,
+     "hit_ink": 0.9935,
+     "iou_cell": 0.8443,
+     "iou_ink": 0.841
+    },
+    "S|cal|all": {
+     "dx": -0.059,
+     "glyphs": 64679,
+     "hit_cell": 0.9959,
+     "hit_ink": 0.9752,
+     "iou_cell": 0.8126,
+     "iou_ink": 0.7302
+    },
+    "S|cal|choice": {
+     "dx": -0.0618,
+     "glyphs": 5139,
+     "hit_cell": 0.999,
+     "hit_ink": 0.9823,
+     "iou_cell": 0.8448,
+     "iou_ink": 0.7525
+    },
+    "S|cal|dialogue": {
+     "dx": -0.0588,
+     "glyphs": 50555,
+     "hit_cell": 0.995,
+     "hit_ink": 0.9727,
+     "iou_cell": 0.8078,
+     "iou_ink": 0.7255
+    },
+    "S|cal|g:close": {
+     "dx": -0.0451,
+     "glyphs": 4526,
+     "hit_cell": 0.9576,
+     "hit_ink": 0.8498,
+     "iou_cell": 0.5799,
+     "iou_ink": 0.4283
+    },
+    "S|cal|g:dots": {
+     "dx": -0.0307,
+     "glyphs": 1432,
+     "hit_cell": 0.9923,
+     "hit_ink": 0.9525,
+     "iou_cell": 0.8286,
+     "iou_ink": 0.7097
+    },
+    "S|cal|g:half": {
+     "dx": -0.1044,
+     "glyphs": 257,
+     "hit_cell": 0.9455,
+     "hit_ink": 0.9027,
+     "iou_cell": 0.6955,
+     "iou_ink": 0.6228
+    },
+    "S|cal|g:long": {
+     "dx": -0.0804,
+     "glyphs": 600,
+     "hit_cell": 0.995,
+     "hit_ink": 0.995,
+     "iou_cell": 0.8252,
+     "iou_ink": 0.7715
+    },
+    "S|cal|g:mark": {
+     "dx": -0.1343,
+     "glyphs": 1155,
+     "hit_cell": 0.9922,
+     "hit_ink": 0.7281,
+     "iou_cell": 0.7309,
+     "iou_ink": 0.4484
+    },
+    "S|cal|g:open": {
+     "dx": 0.0155,
+     "glyphs": 1558,
+     "hit_cell": 0.9917,
+     "hit_ink": 0.9114,
+     "iou_cell": 0.5713,
+     "iou_ink": 0.5222
+    },
+    "S|cal|g:other": {
+     "dx": -0.0596,
+     "glyphs": 53062,
+     "hit_cell": 0.9995,
+     "hit_ink": 0.9933,
+     "iou_cell": 0.841,
+     "iou_ink": 0.7704
+    },
+    "S|cal|g:small": {
+     "dx": -0.0964,
+     "glyphs": 2089,
+     "hit_cell": 1.0,
+     "hit_ink": 0.989,
+     "iou_cell": 0.822,
+     "iou_ink": 0.6877
+    },
+    "S|cal|name": {
+     "dx": -0.0581,
+     "glyphs": 7151,
+     "hit_cell": 0.9996,
+     "hit_ink": 0.9864,
+     "iou_cell": 0.8242,
+     "iou_ink": 0.7505
+    },
+    "S|cal|ui": {
+     "dx": -0.0591,
+     "glyphs": 1834,
+     "hit_cell": 0.9962,
+     "hit_ink": 0.9787,
+     "iou_cell": 0.8112,
+     "iou_ink": 0.7173
+    },
+    "S|ink|all": {
+     "dx": 0.0361,
+     "glyphs": 64679,
+     "hit_cell": 0.9806,
+     "hit_ink": 0.9506,
+     "iou_cell": 0.7963,
+     "iou_ink": 0.7385
+    },
+    "S|ink|choice": {
+     "dx": 0.0234,
+     "glyphs": 5139,
+     "hit_cell": 0.9928,
+     "hit_ink": 0.9798,
+     "iou_cell": 0.8281,
+     "iou_ink": 0.7743
+    },
+    "S|ink|dialogue": {
+     "dx": 0.0383,
+     "glyphs": 50555,
+     "hit_cell": 0.9773,
+     "hit_ink": 0.9424,
+     "iou_cell": 0.791,
+     "iou_ink": 0.722
+    },
+    "S|ink|g:close": {
+     "dx": 0.0847,
+     "glyphs": 4526,
+     "hit_cell": 0.9837,
+     "hit_ink": 0.7141,
+     "iou_cell": 0.5281,
+     "iou_ink": 0.4699
+    },
+    "S|ink|g:dots": {
+     "dx": 0.1042,
+     "glyphs": 1432,
+     "hit_cell": 0.9504,
+     "hit_ink": 0.9148,
+     "iou_cell": 0.6113,
+     "iou_ink": 0.5323
+    },
+    "S|ink|g:half": {
+     "dx": 0.0291,
+     "glyphs": 257,
+     "hit_cell": 0.9455,
+     "hit_ink": 0.8949,
+     "iou_cell": 0.7754,
+     "iou_ink": 0.7311
+    },
+    "S|ink|g:long": {
+     "dx": 0.0677,
+     "glyphs": 600,
+     "hit_cell": 0.98,
+     "hit_ink": 0.9717,
+     "iou_cell": 0.8491,
+     "iou_ink": 0.7716
+    },
+    "S|ink|g:mark": {
+     "dx": 0.0234,
+     "glyphs": 1155,
+     "hit_cell": 0.987,
+     "hit_ink": 0.9255,
+     "iou_cell": 0.7124,
+     "iou_ink": 0.6623
+    },
+    "S|ink|g:open": {
+     "dx": 0.0504,
+     "glyphs": 1558,
+     "hit_cell": 0.9255,
+     "hit_ink": 0.8748,
+     "iou_cell": 0.5724,
+     "iou_ink": 0.642
+    },
+    "S|ink|g:other": {
+     "dx": 0.0298,
+     "glyphs": 53062,
+     "hit_cell": 0.9828,
+     "hit_ink": 0.9741,
+     "iou_cell": 0.8307,
+     "iou_ink": 0.7718
+    },
+    "S|ink|g:small": {
+     "dx": 0.0319,
+     "glyphs": 2089,
+     "hit_cell": 0.9813,
+     "hit_ink": 0.9617,
+     "iou_cell": 0.8323,
+     "iou_ink": 0.7209
+    },
+    "S|ink|name": {
+     "dx": 0.0314,
+     "glyphs": 7151,
+     "hit_cell": 0.9924,
+     "hit_ink": 0.9808,
+     "iou_cell": 0.8099,
+     "iou_ink": 0.8119
+    },
+    "S|ink|ui": {
+     "dx": 0.0266,
+     "glyphs": 1834,
+     "hit_cell": 0.9918,
+     "hit_ink": 0.9755,
+     "iou_cell": 0.8015,
+     "iou_ink": 0.8051
+    },
+    "S|raw|all": {
+     "dx": 0.2182,
+     "glyphs": 64679,
+     "hit_cell": 0.9791,
+     "hit_ink": 0.9004,
+     "iou_cell": 0.6297,
+     "iou_ink": 0.5905
+    },
+    "S|raw|choice": {
+     "dx": 0.2156,
+     "glyphs": 5139,
+     "hit_cell": 0.9944,
+     "hit_ink": 0.941,
+     "iou_cell": 0.6505,
+     "iou_ink": 0.614
+    },
+    "S|raw|dialogue": {
+     "dx": 0.2179,
+     "glyphs": 50555,
+     "hit_cell": 0.9758,
+     "hit_ink": 0.8917,
+     "iou_cell": 0.6273,
+     "iou_ink": 0.585
+    },
+    "S|raw|g:close": {
+     "dx": 0.1597,
+     "glyphs": 4526,
+     "hit_cell": 0.9903,
+     "hit_ink": 0.5572,
+     "iou_cell": 0.681,
+     "iou_ink": 0.4281
+    },
+    "S|raw|g:dots": {
+     "dx": 0.1561,
+     "glyphs": 1432,
+     "hit_cell": 0.9693,
+     "hit_ink": 0.8827,
+     "iou_cell": 0.7201,
+     "iou_ink": 0.6524
+    },
+    "S|raw|g:half": {
+     "dx": 0.1326,
+     "glyphs": 257,
+     "hit_cell": 0.9144,
+     "hit_ink": 0.8054,
+     "iou_cell": 0.5935,
+     "iou_ink": 0.5402
+    },
+    "S|raw|g:long": {
+     "dx": 0.2078,
+     "glyphs": 600,
+     "hit_cell": 0.985,
+     "hit_ink": 0.97,
+     "iou_cell": 0.658,
+     "iou_ink": 0.6461
+    },
+    "S|raw|g:mark": {
+     "dx": 0.1532,
+     "glyphs": 1155,
+     "hit_cell": 0.9922,
+     "hit_ink": 0.6918,
+     "iou_cell": 0.6871,
+     "iou_ink": 0.4844
+    },
+    "S|raw|g:open": {
+     "dx": 0.1163,
+     "glyphs": 1558,
+     "hit_cell": 0.8947,
+     "hit_ink": 0.7163,
+     "iou_cell": 0.4611,
+     "iou_ink": 0.4328
+    },
+    "S|raw|g:other": {
+     "dx": 0.2297,
+     "glyphs": 53062,
+     "hit_cell": 0.9809,
+     "hit_ink": 0.9416,
+     "iou_cell": 0.6262,
+     "iou_ink": 0.6097
+    },
+    "S|raw|g:small": {
+     "dx": 0.2203,
+     "glyphs": 2089,
+     "hit_cell": 0.9789,
+     "hit_ink": 0.8526,
+     "iou_cell": 0.6361,
+     "iou_ink": 0.5777
+    },
+    "S|raw|name": {
+     "dx": 0.2249,
+     "glyphs": 7151,
+     "hit_cell": 0.9891,
+     "hit_ink": 0.9291,
+     "iou_cell": 0.6279,
+     "iou_ink": 0.6075
+    },
+    "S|raw|ui": {
+     "dx": 0.2073,
+     "glyphs": 1834,
+     "hit_cell": 0.9869,
+     "hit_ink": 0.9138,
+     "iou_cell": 0.644,
+     "iou_ink": 0.609
+    }
+   }
+  }
+ },
+ "schema": 1
+}

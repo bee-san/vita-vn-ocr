@@ -532,6 +532,102 @@ def cmd_report(args):
             print(k, v)
 
 
+# ----------------------------------------------------------------------------- the synthetic exact boxes
+
+_SY = {}
+
+
+def _synth_line(job):
+    """Records of one synthetic line (eval/charbox_synth.py's pickle) for every model and arm."""
+    ri, li = job
+    reg = _SY["regions"][ri]
+    ln = reg["lines"][li]
+    x, y, w, h = ln["gt_box"]
+    grey = to_gray(reg["rgb"])
+    crop = np.ascontiguousarray(grey[y:y + h, x:x + w])
+    prof = CB.ink_profile(crop)
+    ref = [norm(g["ch"]) for g in ln["glyphs"]]
+    ih = (ln["ink"][3] - ln["ink"][1]) if ln.get("ink") else h
+    out = []
+    for tier, r in _SY["readers"].items():
+        text, best, nw = r.read(crop, invert=bool(ln.get("dark")))
+        for arm, (flags, use_cal) in ARMS.items():
+            bx = CB.positions(best, w, h, nw, flags, prof, _SY["cal"][tier] if use_cal else None, r.groups)
+            keys = class_keys(r, bx)
+            pairs, _ = CS.align(ref, keys)
+            recs = []
+            for i, j in pairs:
+                if i is None or j is None or ref[i] != keys[j]:
+                    continue
+                g = ln["glyphs"][i]
+                if g.get("ink") is None or g.get("clipped"):
+                    continue
+                o = bx[j]
+                c = x + o["c"] / CB.Q
+                a, b = x + o["x0"] / CB.Q, x + o["x1"] / CB.Q
+                i0, i1 = x + o["i0"] / CB.Q, x + o["i1"] / CB.Q
+                gx0, gx1 = g["ink"][0], g["ink"][2]
+                cx0, cx1 = g["cell"]
+                recs.append((CB.group(g["ch"]), int(gx0 <= c < gx1), int(cx0 <= c < cx1), iou1((a, b), (cx0, cx1)),
+                             iou1((i0, i1), (gx0, gx1)), (c - (gx0 + gx1) / 2) / ih))
+            out.append((tier, arm, text == ln["label"], len(ref), recs))
+    return ri, li, ln["kind"], out
+
+
+def cmd_synth(args):
+    """The method against the exact glyph boxes of eval/charbox_synth.py's renders (report only): every clean line
+    (gt crop, CTC-feasible, every glyph's ink inside the crop), read by each model in W8I, every arm; per glyph
+    of an equal aligned character: the centre inside the exact ink along the line (hit_ink), inside the exact
+    advance cell (hit_cell), the 1-D IoU of the cell with the exact cell and of the ink box with the exact ink,
+    and the centre's offset from the ink centre in line ink heights."""
+    import pickle
+    cal = load_cal(args.cal)
+    out = {"kind": "charboxes-synth", "schema": 1, "data": str(args.dir), "platforms": {}}
+    for p in args.platforms:
+        path = Path(args.dir) / f"{p}.pkl"
+        with open(path, "rb") as f:
+            d = pickle.load(f)
+        jobs = [(ri, li) for ri, reg in enumerate(d["regions"]) for li, ln in enumerate(reg["lines"])
+                if ln.get("gt_box") and ln.get("ctc_ok") and not ln.get("gt_cuts")]
+        if args.limit:
+            jobs = jobs[:args.limit]
+        _SY.update(regions=d["regions"], cal=cal, readers=None)
+        import multiprocessing as mp
+
+        def init():
+            _SY["readers"] = {t: Reader(t) for t in args.tiers}
+
+        acc = defaultdict(lambda: defaultdict(list))
+        lines = defaultdict(lambda: [0, 0])
+        with mp.get_context("fork").Pool(args.workers, initializer=init) as pool:
+            for ri, li, kind, res in pool.imap_unordered(_synth_line, jobs, chunksize=32):
+                for tier, arm, exact, n_ref, recs in res:
+                    lines[(tier, arm)][0] += 1
+                    lines[(tier, arm)][1] += exact
+                    cls = "dialogue" if kind in ("dialogue", "narration", "name+dialogue") else kind
+                    for grp, hi, hc, ic, ii, dx in recs:
+                        gname = CB.GROUP_NAMES[grp]
+                        for key in (f"{tier}|{arm}|all", f"{tier}|{arm}|{cls}", f"{tier}|{arm}|g:{gname}"):
+                            a = acc[key]
+                            a["hit_ink"].append(hi)
+                            a["hit_cell"].append(hc)
+                            a["iou_cell"].append(ic)
+                            a["iou_ink"].append(ii)
+                            a["dx"].append(dx)
+        rows = {}
+        for key, a in sorted(acc.items()):
+            rows[key] = {"glyphs": len(a["hit_ink"]), **{k: round(float(np.mean(v)), 4) for k, v in a.items()}}
+        out["platforms"][p] = {"pickle_sha256": sha256(path), "lines": len(jobs),
+                               "exact_lines": {f"{t}|{a}": v[1] for (t, a), v in sorted(lines.items())},
+                               "rows": rows}
+        for key, v in rows.items():
+            if key.endswith(("|all", "|dialogue")) and ("|cal+ink|" in key or "|raw|" in key):
+                print(p, key, v, flush=True)
+        del d
+    Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"-> {args.out}")
+
+
 def cmd_train_check(args):
     """The arms on training-side lines the calibration did not read (the next TRAIN_CHECK lines of its seeded
     order): the evidence the method of record was chosen on, before any development line was read."""
@@ -589,6 +685,14 @@ def main():
     a.add_argument("--cal", default=str(CAL_FILE))
     a.add_argument("--lines", type=int, default=1500)
     a.add_argument("--out", required=True)
+    a = sub.add_parser("synth")
+    a.add_argument("--dir", required=True, help="eval/charbox_synth.py render's output directory")
+    a.add_argument("--platforms", nargs="+", default=["vita", "psp", "psp2x"])
+    a.add_argument("--tiers", nargs="+", default=["S", "N", "L"])
+    a.add_argument("--cal", default=str(CAL_FILE))
+    a.add_argument("--workers", type=int, default=5)
+    a.add_argument("--limit", type=int, default=0)
+    a.add_argument("--out", required=True)
     a = sub.add_parser("score")
     a.add_argument("--units", required=True)
     a.add_argument("--meiki", required=True)
@@ -603,7 +707,7 @@ def main():
     a.add_argument("--units", help="the units the scores read: adds the record arm's table by group")
     a.add_argument("--out", required=True)
     args = ap.parse_args()
-    {"calibrate": cmd_calibrate, "train-check": cmd_train_check, "score": cmd_score,
+    {"calibrate": cmd_calibrate, "train-check": cmd_train_check, "synth": cmd_synth, "score": cmd_score,
      "report": cmd_report}[args.cmd](args)
 
 

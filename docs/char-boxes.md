@@ -203,7 +203,44 @@ centres: 90.0, 83.5, 83.9%: VOCR5-V fires about 0.8 frames late, which its calib
 **Box IoU** along the line against MeikiOCR's boxes (VOCR5-N, cal + INK): cells 0.74-0.76 (raw cells 0.78-0.80),
 ink boxes 0.70-0.74. INK moves the cuts into the gaps between glyphs, where MeikiOCR's boxes of kana and kanji often
 reach; the centres move onto the glyphs. The synthetic set's exact boxes measure the ink boxes without MeikiOCR's
-convention (below, when it is in).
+convention (next section).
+
+## Synthetic exact boxes (report only; measured)
+
+The helper's renders (overlay-boxes-synth; `eval/charbox_synth.py`, 3,000 development-split regions per platform from
+synth4 as VOCR5 was rendered, every glyph's exact ink box and advance cell; the pickles stay local, their sha256 are
+in `eval/charboxes_synth_20261023.json`), read by `eval/charbox_eval.py synth`: every clean line (a gt crop, every
+glyph's ink inside it: 6,778 / 6,887 / 6,834 lines), each model in W8I, every arm; per glyph of an equal aligned
+character, the centre inside the exact ink along the line and inside the exact cell, the 1-D IoU of the method's
+cell and ink box with the exact ones, and the centre's offset from the ink centre (in line ink heights; negative is
+left). Nothing was chosen on it: the method of record was fixed before these renders were read.
+
+Dialogue lines (dialogue, narration, name + dialogue), cal + INK against raw frame centres:
+
+| VOCR5 | platform | glyphs | inside exact ink | inside exact cell | cell IoU | ink IoU | offset (ink h) | raw: ink / cell / offset |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| N | Vita | 51,372 | 98.20% | 99.56% | 0.827 | 0.758 | −0.018 | 97.09% / 99.89% / −0.049 |
+| N | PSP | 44,162 | 98.37% | 99.55% | 0.816 | 0.781 | −0.017 | 97.40% / 99.84% / −0.048 |
+| N | psp2x | 45,345 | 98.21% | 99.57% | 0.820 | 0.785 | −0.016 | 97.42% / 99.83% / −0.051 |
+| S | Vita / PSP / psp2x | | 98.33 / 98.44 / 98.12% | 99.36 / 99.38 / 99.35% | 0.82-0.83 | 0.76-0.79 | −0.014 to −0.016 | 88.9-90.2% / 97.0-97.8% / +0.21 |
+| L | Vita / PSP / psp2x | | 98.04 / 98.30 / 98.10% | 99.58 / 99.60 / 99.56% | 0.82-0.83 | 0.76-0.78 | −0.018 to −0.020 | 96.9-97.4% / 99.86-99.92% / +0.03 |
+
+- Every tier lands 98.0-98.4% of its centres on the exact glyph ink and 99.35-99.60% in the exact cell. Names, choices
+  and UI lines are higher (VOCR5-N 98.8-99.5% ink).
+- MeikiOCR's boxes, the development reference, against the same exact boxes (the helper's measurement, on the lines
+  MeikiOCR reads exactly): centre inside the exact cell 99.99% on all three platforms, inside the glyph's ink along
+  the line 99.0-99.3%, inside the 2-D ink box 94.6-94.7% (78-83% of those misses are 、 or 。: its boxes span the
+  crop's full height, so the cursor-hit test's across-line check uses the line's ink box instead).
+- The calibration is fitted to MeikiOCR's boxes, so it inherits their left bias: the helper measured MeikiOCR's
+  centres 0.05-0.06 ink heights left of the exact ink centre, and the calibrated centres sit 0.014-0.020 left of
+  it. For VOCR5-N and L the raw frame centres are already in the exact cell more often (99.8-99.9% against
+  99.6%) and cal + INK gains 0.8-1.1 points on the ink; for VOCR5-S, which fires about 0.2 ink heights right,
+  the calibration is what puts its centres on the glyphs (88.9-90.2% → 98.1-98.4% ink).
+- The misses are narrow punctuation, as on development: VOCR5-N cal + INK, ink / cell, Vita / PSP / psp2x: an
+  opening bracket 81.9 / 84.7 / 85.4% / 98.7-99.2%, closing marks (、。」) 91.5-93.8% / 97.3-98.4%, ！？ 94.4-96.5% /
+  99.4-99.8%, dots 94.6-95.7% / 97.0-98.2%; small kana 98.2-99.3% / 99.7-99.9%; the other characters (kana, kanji)
+  99.4-99.6% / 99.8-99.9%.
+- PITCH changes nothing here either (within 0.08 points of cal + INK everywhere).
 
 ## Protected check (read once; measured)
 

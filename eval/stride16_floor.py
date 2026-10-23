@@ -11,8 +11,10 @@ floor train/train.py ctc_ok applies). A row with T_s < NR cannot be read exactly
 protocol's tight stratum is T_s < 1.25 NR.
 
   fixed lines (tv: teacher_val_dev.npz, dn: devnative's four development files; eval/synth3_ablation.py's rows,
-      labelled lines in file order): the stored crop (h, w) is what the runtime resizes, so q = round(w * 32 / h)
-      (half to even, runtime/vocr.c vocr_resized_width) clamped to [8, 1024 // s * s], and T_s = ceil(q / s);
+      labelled lines in file order, kept as a list in that order with each row's id: teacher_val_dev holds 129 ids
+      that two different crops share, so a row is its position, never its id): the stored crop (h, w) is what the
+      runtime resizes, so q = round(w * 32 / h) (half to even, runtime/vocr.c vocr_resized_width) clamped to
+      [8, 1024 // s * s], and T_s = ceil(q / s);
   whole dialogue (tv_dlg, dn_dlg; eval/finder_tighten.py's units): each case's C finder lines in both finder modes
       (GRAD with flags 0, and the refinement with VOCR_REFINE_DEFAULT; finder_tighten.lines_of, C == its Python
       twin on every case) give T_s = the sum over the unit's lines of ceil(q_line / s), and NR = the sum over the
@@ -78,18 +80,18 @@ def need(text):
 
 
 def fixed_rows(path):
-    """{line id: {T: {s: frames}, nr, platform}} for the labelled lines of a development npz (synth3_ablation's
-    rows: an empty label is skipped)."""
+    """[{id, T: {s: frames}, nr, platform}] for the labelled lines of a development npz, in synth3_ablation's row
+    order (an empty label is skipped). A list, because ids are not unique (teacher_val_dev: 129 shared ids)."""
     z = np.load(path)
     shapes = z["shapes"]
     labels = json.loads(str(z["labels"]))
     meta = json.loads(str(z["meta"]))
-    out = {}
+    out = []
     for i, (lab, m) in enumerate(zip(labels, meta)):
         if not lab:
             continue
         h, w = (int(v) for v in shapes[i])
-        out[m["id"]] = {"T": frames(w, h), "nr": need(lab), "platform": m.get("target") or m.get("kind")}
+        out.append({"id": m["id"], "T": frames(w, h), "nr": need(lab), "platform": m.get("target") or m.get("kind")})
     return out
 
 
@@ -144,7 +146,7 @@ def _strata(rows, s):
 
 def summarize(doc):
     out = {}
-    fixed = list(doc["tv"].values()) + [v for f in doc["dn"].values() for v in f.values()]
+    fixed = list(doc["tv"]) + [v for rows in doc["dn"].values() for v in rows]
     for s in STRIDES:
         out[f"fixed_s{s}"] = _strata(fixed, s)
         for plat in sorted({v["platform"] for v in fixed}):
@@ -169,6 +171,8 @@ def cmd_protected(args):
     for s in ("vita-test", "psp-test"):
         lines, _ = sets.load(s, args.data)
         for ln in lines:
+            if (s, ln.id) in rows:
+                raise SystemExit(f"{s}: line id {ln.id} is not unique")
             h, w = ln.crop_rgb.shape[:2]
             rows[(s, ln.id)] = {"T": frames(w, h), "nr": need(ln.text)}
     doc = {"kind": "stride16-floor-protected", "schema": 1, "tight_ratio": TIGHT,

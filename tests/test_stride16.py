@@ -295,3 +295,32 @@ def test_report_spec_uses_each_arms_best_run(tmp_path):
     assert {(p["candidate"], p["baseline"]) for p in spec["pairs"]} == {
         ("S16", "VOCR5_S"), ("N16", "VOCR5_N"), ("N12", "VOCR5_N"), ("L16", "VOCR5_L"), ("N16", "N12")}
     assert (tmp_path / "out" / "N12_w8.vocr").read_bytes() == b"r6.vocr" and spec["gates"] == []
+
+
+def test_fixed_rows_are_keyed_by_position_not_id(tmp_path):
+    """teacher_val_dev holds ids that two different crops share (amendment 1): the frame budget of a row is its own,
+    found by its position in the score file's line order."""
+    import stride16_floor as F
+    import stride16_select as S
+    crops = [np.zeros((32, 60), np.uint8), np.zeros((32, 400), np.uint8), np.zeros((16, 400), np.uint8)]
+    data = np.concatenate([c.ravel() for c in crops])
+    offs = np.cumsum([0] + [c.size for c in crops])
+    labels = ["あいうえお", "あい", "かきくけこさし"]
+    meta = [{"id": "dup", "vn": "v1", "target": "vita"}, {"id": "dup", "vn": "v1", "target": "vita"},
+            {"id": "u", "vn": "v2", "target": "psp"}]
+    npz = tmp_path / "teacher_val_dev.npz"
+    np.savez(npz, data=data, offsets=offs, shapes=np.array([c.shape for c in crops]), labels=json.dumps(labels),
+             meta=json.dumps(meta))
+    rows = F.fixed_rows(npz)
+    assert [r["id"] for r in rows] == ["dup", "dup", "u"]
+    assert [r["T"]["16"] for r in rows] == [4, 25, 50] and [r["nr"] for r in rows] == [5, 2, 7]
+    score = {"dev": {"file": str(npz)}, "lines": [{"id": m["id"], "vn": m["vn"], "ref": lab, "tags": []}
+                                                  for m, lab in zip(meta, labels)],
+             "models": {"X": {"errors": {"rv": [1, 0, 0], "rvn": [1, 0, 0]}, "blob": "b", "blob_sha256": "s",
+                              "blob_bytes": 1, "arena_bytes": 1}}}
+    (tmp_path / "tv.json").write_text(json.dumps(score))
+    c = S.Component("tv")
+    S.load_fixed([tmp_path / "tv.json"], c, devnative=False)
+    c.attach_floor({f"teacher_val_dev.npz|{k}|{v['id']}": v for k, v in enumerate(rows)})
+    assert c.frames[16].tolist() == [4, 25, 50]
+    assert (c.ratio(16) < 1.25).tolist() == [True, False, False]

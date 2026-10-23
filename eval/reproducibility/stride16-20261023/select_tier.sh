@@ -27,8 +27,11 @@ read -r INC INC_BLOB INC_SHA < <($PY -c "
 import json, os; i = json.load(open('eval/stride16_protocol.json'))['tiers']['$TIER']['incumbent']
 print(i['name'], os.path.expandvars(i['blob']), i['sha256'])")
 ALL=("${RUNS[@]}" "$INC")
-[ "$(sha256sum "$FLOOR" | cut -c1-64)" = "$($PY -c "import json; print(json.load(open('eval/stride16_protocol.json'))['floor']['sha256'])")" ] \
-  || { echo "$FLOOR differs from the protocol"; exit 4; }
+# the floor file's pin: the latest amendment that re-pins it (amendment 1: rows keyed by position), else floor.sha256
+WANT_FLOOR=$($PY -c "
+import json; p = json.load(open('eval/stride16_protocol.json'))
+print(([a['floor_sha256'] for a in p['amendments'] if a.get('floor_sha256')] or [p['floor']['sha256']])[-1])")
+[ "$(sha256sum "$FLOOR" | cut -c1-64)" = "$WANT_FLOOR" ] || { echo "$FLOOR differs from the protocol"; exit 4; }
 case $STEP in
 export)
   [ "$(sha256sum "$INC_BLOB" | cut -c1-64)" = "$INC_SHA" ] || { echo "$INC_BLOB differs from the protocol"; exit 4; }

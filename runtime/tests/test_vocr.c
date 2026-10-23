@@ -1539,6 +1539,104 @@ static void test_two_run(void)
     CHECK(vocr_check_crc(blob_buf, tn) == VOCR_OK && vocr_load(&m, blob_buf, tn) == VOCR_E_FORMAT);
 }
 
+/* build_stem_head_blob's topology (audit-head-gate F1: the head right after the stem, its frames appended by the
+ * front's last op) with a TCLASSES-class head, so a VOC2 trailer can split it into two levels */
+static size_t build_stem_head_blob_2l(void)
+{
+    unsigned char vocab[2 * (TCLASSES + 1) + TCLASSES];
+    unsigned i, pos = 0, n_ops = 2;
+    uint32_t off;
+    memset(blob_buf, 0, sizeof blob_buf);
+    blob_pos = 64 + 64 * n_ops;
+    lcg = 4243u;
+    off = put_floats(12 * 16, 0.6f);
+    op_rec(0, 1, 1 | 4, 4, 3, 1, 2, 0, 1, 1, 16, 4, 1, off, 12 * 16 * 4, put_floats(16, 0.1f), 0, 12, 16);
+    mat_op(1, 4, 4, 1, 16, TCLASSES, 1, 1, 1);
+    wr16(vocab, 0);
+    wr16(vocab + 2, 0);
+    for (i = 1; i < TCLASSES; i++) {
+        vocab[2 * (TCLASSES + 1) + pos++] = (unsigned char)('A' + i - 1);
+        wr16(vocab + 2 * (i + 1), pos);
+    }
+    off = put(vocab, 2 * (TCLASSES + 1) + pos);
+    memcpy(blob_buf, "VOCR", 4);
+    wr16(blob_buf + 4, 1);
+    wr16(blob_buf + 6, 64);
+    wr32(blob_buf + 8, (uint32_t)blob_pos);
+    wr32(blob_buf + 12, 1u);
+    wr16(blob_buf + 16, 4);
+    wr16(blob_buf + 18, 256);
+    wr16(blob_buf + 20, 2);
+    wr16(blob_buf + 22, n_ops);
+    wr32(blob_buf + 24, TCLASSES);
+    wr32(blob_buf + 28, 64);
+    wr32(blob_buf + 32, off);
+    wr32(blob_buf + 36, pos);
+    wr32(blob_buf + 40, crc32_ref(blob_buf + 64, blob_pos - 64));
+    return blob_pos;
+}
+
+/* The two-level head on that topology: every frame counted (rc OK, frames = the line's), every frame fired = the
+ * full head bit for bit, and with the gate a skipped frame reads as the blank and the others as two_level alone */
+static void test_two_stem_head(void)
+{
+    static float tv0[80 * TCLASSES], es2[80], bl2[80], tv2[80 * TCLASSES];
+    static uint16_t tc0[80 * TCLASSES], b0[80], tc2[80 * TCLASSES], b2[80];
+    char ref[256], text[256];
+    vocr_extra e0, ex;
+    vocr_model m;
+    const unsigned w = 257, hgt = 10, k = 4;
+    const unsigned tiles[3][2] = {{0, 0}, {1, 1}, {5, 7}};
+    size_t n, gn, tn;
+    unsigned f, j, ti, skipped = 0;
+    make_image(w, hgt, 0);
+    n = build_stem_head_blob_2l();
+    tn = append_two(n, n, 1, -INFINITY, 0, 41u);
+    CHECK(vocr_load(&m, blob_buf, tn) == VOCR_OK && m.two.l1_blocks == 1);
+    CHECK(two_run(tn, 0, 0, 0, 0, w, hgt, k, 0, ref, sizeof ref, &e0) == VOCR_OK && e0.frames > 0);
+    memcpy(tv0, t_tv, sizeof tv0);
+    memcpy(tc0, t_tc, sizeof tc0);
+    memcpy(b0, t_best, sizeof b0);
+    for (ti = 0; ti < 3; ti++) { /* every frame fired: the full head */
+        CHECK(two_run(tn, 1, 0, tiles[ti][0], tiles[ti][1], w, hgt, k, 0, text, sizeof text, &ex) == VOCR_OK);
+        CHECK(!strcmp(text, ref) && ex.frames == e0.frames && ex.escaped == ex.frames && ex.gated == 0);
+        CHECK(!memcmp(tv0, t_tv, (size_t)ex.frames * k * 4) && !memcmp(tc0, t_tc, (size_t)ex.frames * k * 2) &&
+              !memcmp(b0, t_best, (size_t)ex.frames * 2));
+    }
+    tn = append_two(n, n, 1, INFINITY, 0, 41u); /* none fired: level 1 only, every frame still counted */
+    CHECK(two_run(tn, 1, 0, 0, 0, w, hgt, k, 0, text, sizeof text, &ex) == VOCR_OK);
+    CHECK(ex.frames == e0.frames && ex.escaped == 0);
+    for (f = 0; f < ex.frames; f++) CHECK(t_best[f] < 8u);
+    gn = append_gate(n, 8, 0.0f, 0.1f); /* with the gate */
+    tn = append_two(n, gn, 1, 0.0f, 0, 78u);
+    CHECK(vocr_load(&m, blob_buf, tn) == VOCR_OK && vocr_has_gate(&m) && m.two.l1_blocks == 1);
+    CHECK(two_run(tn, 1, 0, 0, 0, w, hgt, k, 0, text, sizeof text, &e0) == VOCR_OK);
+    memcpy(tv2, t_tv, sizeof tv2);
+    memcpy(tc2, t_tc, sizeof tc2);
+    memcpy(es2, t_esc, sizeof es2);
+    memcpy(bl2, t_bl, sizeof bl2);
+    memcpy(b2, t_best, sizeof b2);
+    for (ti = 0; ti < 3; ti++) {
+        skipped = 0;
+        CHECK(two_run(tn, 1, VOCR_HEAD_GATE_ON, tiles[ti][0], tiles[ti][1], w, hgt, k, 0, text, sizeof text, &ex) ==
+              VOCR_OK);
+        CHECK(ex.frames == e0.frames);
+        for (f = 0; f < ex.frames; f++) {
+            const int skip = gate_ref(&m, t_hin + (size_t)f * 16) > m.gate.t;
+            skipped += (unsigned)skip;
+            if (skip) {
+                CHECK(t_best[f] == 0 && t_tc[f * k] == 0 && same_float(t_tv[f * k], bl2[f]) && isnan(t_esc[f]));
+                for (j = 1; j < k; j++) CHECK(t_tv[f * k + j] == -INFINITY);
+            } else {
+                CHECK(t_best[f] == b2[f] && same_float(t_esc[f], es2[f]));
+                for (j = 0; j < k; j++)
+                    CHECK(same_float(t_tv[f * k + j], tv2[f * k + j]) && t_tc[f * k + j] == tc2[f * k + j]);
+            }
+        }
+        CHECK(ex.gated == skipped && skipped > 0 && skipped < ex.frames);
+    }
+}
+
 /* head_gate ON with two_level: a frame the gate skips reads as the blank, the others as two_level alone */
 static void test_two_gate(void)
 {
@@ -1599,6 +1697,7 @@ int main(void)
     test_two_load();
     test_two_run();
     test_two_gate();
+    test_two_stem_head();
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

@@ -100,19 +100,13 @@ typedef struct {             /* a blob's head gate; hidden = 0: the blob has non
 /* The two-level output head (vita-vn-ocr #117 item 2; eval/head2level_protocol.json): an optional 'VOC2' trailer
  * after the version-1 blob. The blob's head rows are in frequency order (class 0 the blank, then the most frequent
  * classes); level 1 is the head's first l1_blocks 8-row blocks, computed on every frame, with an escape that says
- * whether the frame needs the other (rare) rows. Absent: l1_blocks == 0. */
+ * whether the frame needs the other (rare) rows, which then run as the head's own. Absent: l1_blocks == 0. */
 typedef struct {
     unsigned l1_blocks;          /* level 1 = head blocks [0, l1_blocks); 0: no trailer */
     unsigned hidden;             /* escape hidden units (a multiple of 8) */
-    unsigned rare_k;             /* 0: the rare rows are the head's own (96 wide); else their projection's width */
     float t, e_b2;               /* the escape fires iff its score > t; layer 2's bias */
     const int8_t *e_q;           /* escape layer 1: int8 [hidden / 8][K][8] on the head's quantised input */
     const float *e_scale, *e_bias, *e_wl1, *e_wb0, *e_w2;   /* [hidden] each */
-    const int8_t *p_q;           /* rare_k: the projection, int8 [rare_k / 8][K][8] */
-    const float *p_scale, *p_bias;   /* [rare_k] */
-    const int8_t *r_q;           /* rare_k: the rare rows, int8 [r_blocks][rare_k][8] */
-    const float *r_scale, *r_bias;   /* [r_blocks * 8] */
-    unsigned r_blocks;           /* the head's blocks [l1_blocks, cout_pad / 8): the rare rows */
 } vocr_2level;
 
 typedef struct {             /* a parsed blob; points into it, so keep the blob alive */
@@ -212,7 +206,7 @@ typedef struct {             /* a planned arena; private apart from the first fi
     unsigned gate;           /* VOCR_HEAD_GATE_* of the plan */
     uint32_t fidx_off;       /* head_gate ON: each accumulated frame's index in the line (uint16) */
     unsigned two_level;      /* the two-level head is on (vocr_opts.two_level) */
-    uint32_t nbv_off, b0_off, hid_off, fmap_off, y48_off, q48_off, s48_off;   /* its arena (two_level only) */
+    uint32_t nbv_off, b0_off, hid_off, fmap_off;   /* its arena (two_level only) */
     vocr_plan_op op[VOCR_MAX_OPS];
 } vocr_ctx;
 

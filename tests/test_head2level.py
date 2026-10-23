@@ -1,5 +1,5 @@
 """The two-level output head (runtime/vocr.c run_head2, its twin train/head2level.py; vita-vn-ocr #117 item 2) on
-generated data only: a random-init model with a 210-class vocab, its head permuted, random escapes (r96 and r48) in a
+generated data only: a random-init model with a 210-class vocab, its head permuted, random escapes in a
 VOC2 trailer. The C runtime must equal the exact twin bit for bit (escape scores, fired frames, argmax, top-K, the
 greedy text), the full logits and two_level = 0 must be today's head, and broken trailers must be refused. No
 development, test or private data is read here.
@@ -90,8 +90,8 @@ def test_permuted_blob_same_logits(base):
         assert r0.class_text(int(perm[5])) == r1.class_text(5)
 
 
-@pytest.mark.parametrize("l1_blocks,rk,t", [(3, 0, -1.0), (3, 0, 1e9), (10, 0, 0.5), (1, 0, -1e9), (5, 16, 0.0),
-                                            (2, 24, -0.5)])
+@pytest.mark.parametrize("l1_blocks,rk,t", [(3, 0, -1.0), (3, 0, 1e9), (10, 0, 0.5), (1, 0, -1e9), (5, 0, 0.0),
+                                            (2, 0, -0.5)])
 def test_c_equals_twin(base, l1_blocks, rk, t):
     from pyvocr import Vocr
     _, pblob, _ = base
@@ -172,6 +172,14 @@ def test_mode_and_trailer_checks(base):
         Vocr(blob, mode="w8f", two_level=1)          # W8I only
     with pytest.raises((VocrError, ValueError)):
         Vocr(pblob, mode="w8i", two_level=1)         # no trailer
+    K = H2.head_arrays(pblob)["K"]                   # the trial's 48-wide rare block: the runtime reads none
+    r48 = make(pblob, 3, esc, random_r48(rng, K, H2.head_arrays(pblob)["P"] - 24, 16))
+    assert H2.read_trailer(r48)["rare_k"] == 16
+    with pytest.raises(VocrError):
+        Vocr(r48, mode="w8i")
+    with pytest.raises(ValueError):
+        __import__("export").plan_arena(__import__("export").read_blob(r48), 1024, 0, 0, 3,
+                                        two_level=H2.read_trailer(r48))
     bad = bytearray(blob)
     bad[-1] ^= 1                                     # trailer CRC
     with pytest.raises(VocrError):
@@ -198,7 +206,7 @@ def test_threshold_rule():
     assert m == 2 and (v <= t).sum() == 2
 
 
-@pytest.mark.parametrize("rk,tile,head", [(0, 0, 0), (0, 1, 3), (16, 0, 0), (16, 8, 5)])
+@pytest.mark.parametrize("rk,tile,head", [(0, 0, 0), (0, 1, 3), (0, 2, 1), (0, 8, 5)])
 def test_gate_and_two_level(base, rk, tile, head):
     """head_gate ON with two_level: a frame the gate skips reads as the blank (headgate.simulate of the two-level
     run), every other frame is the two-level head's, at several tilings; the escape runs on those frames only."""
@@ -215,7 +223,7 @@ def test_gate_and_two_level(base, rk, tile, head):
     esc = random_escape(rng, K)
     # thresholds at the median gate score and the 70th percentile escape score of these crops' frames
     x = np.concatenate([(lambda r: (r.run(g, head_in=True), r.last_head_in)[1])(Vocr(pblob, mode="w8i"))
-                        for g in crops(15, 40 + rk)])
+                        for g in crops(15, 40 + tile)])
     gt = np.float32(np.median(HG.gate_scores(gp, x)))
     q, sx = H2.quant16_exact(x)
     lg1 = H2.mm_exact(q, sx, head_["q"][:8 * l1b], head_["scale"][:8 * l1b], head_["bias"][:8 * l1b])
@@ -228,7 +236,7 @@ def test_gate_and_two_level(base, rk, tile, head):
     both = Vocr(blob, mode="w8i", tile=tile, head=head, two_level=1, head_gate="on")
     vocab = [both.class_text(c) for c in range(both.n_classes)]
     skipped = escaped = 0
-    for g in crops(15, 40 + rk):
+    for g in crops(15, 40 + tile):
         o2 = two.run_topk(g, 8, head_in=True, esc=True)
         skip = HG.gate_scores(gp, o2["head_in"]) > gt
         want = HG.simulate(o2, skip, vocab)

@@ -269,7 +269,8 @@ only the head's most frequent rows. A two-level blob's head rows and vocab are i
 version-1 blob: every class's logit is the same, its class number changes), and a `VOC2` trailer of 1,984 B
 (`train/head2level.py write_trailer`, after head-gate's `VOCG` section when there is one) holds level 1's block count
 and an escape: a 98 → 16 (ReLU) → 1 network on the head's quantised input (layer 1 int8 through `mm_i16`) plus level
-1's largest non-blank logit and its blank logit.
+1's largest non-blank logit and its blank logit. Level 2 is the head's own rows: a trailer with the trial's 48-wide
+rare block (`rare_k` and its offsets non-zero; rejected, docs/head2level.md) is refused (`VOCR_E_FORMAT`).
 
 ```c
 opts.mode = VOCR_MODE_W8I;
@@ -286,17 +287,18 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that a
 - `two_level = 0` (a zeroed `vocr_opts`) runs the full head on the permuted rows: today's output. A run that asks for
   the logits, or sets `vocr_extra.ungated`, runs the full head too (and the gate skips nothing). A caller should read
   a line again with `ungated = 1` when its reading holds a full-size カ or ケ before 月 所 年 国 条, where the escape may
-  have missed the small ヵ / ヶ, as it does for the gate's counter contexts (docs/head2level.md, "Counter contexts").
+  have missed the small ヵ / ヶ, as it does for the gate's counter contexts (docs/head2level.md, "Counter-context set").
 - `vocr_extra.esc_score` returns each frame's escape score; class texts never change, so `vocr_lm.c`, `vocr_post.c`
   and `vocr_charbox.c` read a permuted blob as they read today's.
 - A runtime without two-level support reads the blob as its version-1 part (the permuted full head) and ignores the
   trailer. `vocr_load` rejects a damaged trailer's structure, `vocr_check_crc` its content; `head2level.py info`
   prints it. The arena mirror is `train/export.plan_arena(..., two_level=read_trailer(blob))`.
-- Cost (VitaSDK gcc `-O2`, estimates from qemu instruction counts calibrated to VOCR3-H15's console rate): `vocr.o`
-  grows from 20,187 to 24,115 B with NEON (scalar 15,195 to 19,151 B); no malloc. VOCR5-N with the gate: est. 2.743 ms
-  per frame against the gate's 2.878 (24 development lines, 333 MHz, no prefetch credit).
+- Cost (VitaSDK gcc 15.2 `-O2`; times are estimates from qemu instruction counts calibrated to VOCR3-H15's console
+  rate): `vocr.o` grows from 20,187 to 23,263 B with NEON (scalar, `-DVOCR_NO_NEON`: 15,195 to 18,283 B); no malloc.
+  VOCR5-N with the gate: est. 2.74 ms per frame against the gate's 2.88 (24 development lines, 333 MHz, no prefetch
+  credit).
 - Twin and tests: `train/head2level.py twolevel_exact` is bit-exact; `tests/test_head2level.py` checks it against the
-  C library (r96, r48, with the gate, several tilings); `tests/test_vocr.c` (ASan/UBSan, Cortex-A9 NEON and scalar
+  C library (with the gate, several tilings; a rare-block trailer refused); `tests/test_vocr.c` (ASan/UBSan, Cortex-A9 NEON and scalar
   under qemu) checks the trailer's validation and the runs against its own reference. CLI: `vocr_cli --two-level`;
   Python: `Vocr(blob, mode="w8i", two_level=1)`, `run_topk(..., esc=True)`.
 

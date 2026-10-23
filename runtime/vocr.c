@@ -151,16 +151,17 @@ static int in_trailer(uint32_t size, uint32_t off, size_t n)
 
 /* The 'VOC2' trailer: the two-level head (vocr.h vocr_2level, train/head2level.py write_trailer).
  *   0 "VOC2"  4 u16 version (1)  6 u16 header bytes (128)  8 u32 trailer bytes  12 u32 CRC-32 of [16, end)
- *  16 u32 base blob bytes  20 u32 base blob CRC  24 u16 l1_blocks  26 u16 hidden  28 u16 rare_k  30 u16 0
+ *  16 u32 base blob bytes  20 u32 base blob CRC  24 u16 l1_blocks  26 u16 hidden  28 u16 rare_k (0)  30 u16 0
  *  32 f32 t  36 f32 e_b2  40.. u32 offsets from the trailer's start: e_q e_scale e_bias e_wl1 e_wb0 e_w2
- *  (40-60), p_q p_scale p_bias r_q r_scale r_bias (64-84; 0 when rare_k == 0), zeros to 128. */
+ *  (40-60), zeros to 128. Level 2 is the head's own rows: rare_k and the offsets at 64-84 are the trial's
+ *  48-wide rare block (docs/head2level.md, rejected), which this runtime does not read, so they must be 0. */
 static int parse_two(vocr_model *m, const unsigned char *b, size_t bytes, uint32_t total)
 {
     vocr_2level *tw = &m->two;
     const vocr_op *hd = &m->op[m->n_ops - 1];
     const uint32_t t2 = find_trailer(b, bytes, total, "VOC2");
     const unsigned char *p;
-    uint32_t size, o[12];
+    uint32_t size, o[6];
     unsigned i, K = hd->k, NB = hd->cout_pad / 8u;
     if (!t2) return VOCR_OK;
     p = b + t2;
@@ -168,18 +169,16 @@ static int parse_two(vocr_model *m, const unsigned char *b, size_t bytes, uint32
     if (rd16(p + 4) != 1 || rd16(p + 6) != TWO_HEADER_BYTES || size < TWO_HEADER_BYTES || (size & 15u) ||
         size > bytes - t2 || rd32(p + 16) != total || rd32(p + 20) != rd32(b + 40) || rd16(p + 30))
         return VOCR_E_FORMAT;
-    for (i = 88; i < TWO_HEADER_BYTES; i++)
+    for (i = 64; i < TWO_HEADER_BYTES; i++) /* the rare block's offsets (64-84) and the reserved bytes */
         if (p[i]) return VOCR_E_FORMAT;
     tw->l1_blocks = rd16(p + 24);
     tw->hidden = rd16(p + 26);
-    tw->rare_k = rd16(p + 28);
     memcpy(&tw->t, p + 32, 4);
     memcpy(&tw->e_b2, p + 36, 4);
-    for (i = 0; i < 12; i++) o[i] = rd32(p + 40 + 4 * i);
-    if (!m->int8 || tw->l1_blocks < 1 || tw->l1_blocks >= NB || tw->hidden < 8 || tw->hidden > 64 ||
-        (tw->hidden & 7u) || (tw->rare_k & 7u) || tw->rare_k > K || !(tw->t == tw->t))
+    for (i = 0; i < 6; i++) o[i] = rd32(p + 40 + 4 * i);
+    if (!m->int8 || rd16(p + 28) || tw->l1_blocks < 1 || tw->l1_blocks >= NB || tw->hidden < 8 ||
+        tw->hidden > 64 || (tw->hidden & 7u) || !(tw->t == tw->t))
         return VOCR_E_FORMAT;
-    tw->r_blocks = NB - tw->l1_blocks;
     if (!in_trailer(size, o[0], (size_t)tw->hidden * K))
         return VOCR_E_FORMAT;
     for (i = 1; i < 6; i++)
@@ -190,22 +189,6 @@ static int parse_two(vocr_model *m, const unsigned char *b, size_t bytes, uint32
     tw->e_wl1 = (const float *)(const void *)(p + o[3]);
     tw->e_wb0 = (const float *)(const void *)(p + o[4]);
     tw->e_w2 = (const float *)(const void *)(p + o[5]);
-    if (tw->rare_k) {
-        const size_t R = (size_t)tw->r_blocks * 8u;
-        if (!in_trailer(size, o[6], (size_t)tw->rare_k * K) || !in_trailer(size, o[7], 4u * tw->rare_k) ||
-            !in_trailer(size, o[8], 4u * tw->rare_k) || !in_trailer(size, o[9], R * tw->rare_k) ||
-            !in_trailer(size, o[10], 4u * R) || !in_trailer(size, o[11], 4u * R))
-            return VOCR_E_FORMAT;
-        tw->p_q = (const int8_t *)(const void *)(p + o[6]);
-        tw->p_scale = (const float *)(const void *)(p + o[7]);
-        tw->p_bias = (const float *)(const void *)(p + o[8]);
-        tw->r_q = (const int8_t *)(const void *)(p + o[9]);
-        tw->r_scale = (const float *)(const void *)(p + o[10]);
-        tw->r_bias = (const float *)(const void *)(p + o[11]);
-    } else {
-        for (i = 6; i < 12; i++)
-            if (o[i]) return VOCR_E_FORMAT;
-    }
     return VOCR_OK;
 }
 
@@ -562,7 +545,7 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
         off += al16((size_t)c->acc_frames * sizeof(uint16_t));
     }
     if (c->two_level) { /* level 1's non-blank maxima and blank logits, the escape's hidden units, the fired frames */
-        const size_t A = c->acc_frames, RK = m->two.rare_k;
+        const size_t A = c->acc_frames;
         c->nbv_off = (uint32_t)off;
         off += al16(A * sizeof(float));
         c->b0_off = (uint32_t)off;
@@ -571,14 +554,6 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
         off += al16(A * m->two.hidden * sizeof(float));
         c->fmap_off = (uint32_t)off;
         off += al16(A * sizeof(uint32_t));
-        if (RK) { /* the projection's outputs and their int16 quantisation */
-            c->y48_off = (uint32_t)off;
-            off += al16(A * RK * sizeof(float));
-            c->q48_off = (uint32_t)off;
-            off += al16(A * RK * sizeof(int16_t));
-            c->s48_off = (uint32_t)off;
-            off += al16(A * sizeof(float));
-        }
     }
     base = off;
     for (i = 0; i < L; i++) {
@@ -1962,10 +1937,10 @@ static unsigned gate_tile(const vocr_ctx *c, out_t *o, unsigned s0, unsigned s1,
  *
  * W8I only (vocr_opts.two_level). Level 1, the head's blocks [0, l1_blocks), runs on every frame: the blank and
  * the most frequent classes. The escape (a small MLP on the head's quantised input, level 1's largest non-blank
- * logit and its blank logit) then says which frames also need level 2, the other blocks (the head's own rows, or
- * with rare_k the rows of a rare_k-wide projection). Those frames' quantised inputs are packed to the front and
- * level 2 runs on them as one batch. A frame's state (first maximum, top-K, the blank's logit) is updated block
- * by block in class order, so a fired frame gets today's argmax and top-K bit for bit (rare_k 0) and the others
+ * logit and its blank logit) then says which frames also need level 2, the head's other blocks. Those frames'
+ * quantised inputs are packed to the front and level 2 runs on them as one batch. A frame's state (first
+ * maximum, top-K, the blank's logit) is updated block by block in class order, so a fired frame gets today's
+ * argmax and top-K bit for bit and the others
  * the same over the level-1 classes. A block whose 8 logits are none above the frame's threshold (below which no
  * logit can change its state: the non-blank maximum in level 1, the first maximum in level 2, and the top-K's
  * last value) is skipped without the per-class loop, as run_head's NEON top-K path does. */
@@ -2026,7 +2001,7 @@ static void run_head2(const vocr_ctx *c, unsigned nf, out_t *o)
     const vocr_2level *tw = &m->two;
     const unsigned L = m->n_ops, N = m->n_classes;
     const vocr_op *op = &m->op[L - 1];
-    const unsigned K = op->k, B1 = tw->l1_blocks, NB = op->cout_pad / 8u, H = tw->hidden, RK = tw->rare_k;
+    const unsigned K = op->k, B1 = tw->l1_blocks, NB = op->cout_pad / 8u, H = tw->hidden;
     const float *x = at(c, c->acc_off);
     float *bestv = at(c, c->bestv_off), *nbv = at(c, c->nbv_off), *b0v = at(c, c->b0_off);
     float *hid = at(c, c->hid_off);
@@ -2100,38 +2075,17 @@ static void run_head2(const vocr_ctx *c, unsigned nf, out_t *o)
                 memcpy(qx + (size_t)j * K, qx + (size_t)fm[j] * K, K * sizeof(int16_t));
                 sx[j] = sx[fm[j]];
             }
-        if (RK) {
-            float *y = at(c, c->y48_off), *s48 = at(c, c->s48_off);
-            int16_t *q48 = (int16_t *)(void *)(c->arena + c->q48_off);
-            for (nb = 0; nb < RK / 8u; nb++)
-                mm_i16(tw->p_q + (size_t)nb * K * 8, tw->p_scale + nb * 8, tw->p_bias + nb * 8, qx, sx, K, nfire,
-                       y + nb * 8, RK, NULL, 0, 0);
-            quant16(y, RK, RK, nfire, q48, s48);
-            for (nb = 0; nb < tw->r_blocks; nb++)
-                for (f0 = 0; f0 < nfire; f0 += H2_STEP) {
-                    const unsigned pn = umin(H2_STEP, nfire - f0);
-                    mm_i16(tw->r_q + (size_t)nb * RK * 8, tw->r_scale + nb * 8, tw->r_bias + nb * 8,
-                           q48 + (size_t)f0 * RK, s48 + f0, RK, pn, tmp, 8, NULL, 0, 0);
-                    for (q = 0; q < pn; q++) {
-                        const unsigned fr = fm[f0 + q], frame = H2_FRAME(fr);
-                        h2_update(tmp + q * 8, (B1 + nb) * 8, N, bestv + fr, besti + fr, NULL,
-                                  TK ? ex->topk_logit + (size_t)frame * TK : NULL,
-                                  TK ? ex->topk_class + (size_t)frame * TK : NULL, TK);
-                    }
-                }
-        } else {
-            for (nb = B1; nb < NB; nb++) {
-                const float *b = op->bias ? op->bias + nb * 8 : NULL;
-                for (f0 = 0; f0 < nfire; f0 += H2_STEP) {
-                    const unsigned pn = umin(H2_STEP, nfire - f0);
-                    mm_i16(op->q + (size_t)nb * K * 8, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn,
-                           tmp, 8, NULL, 0, 0);
-                    for (q = 0; q < pn; q++) {
-                        const unsigned fr = fm[f0 + q], frame = H2_FRAME(fr);
-                        h2_update(tmp + q * 8, nb * 8, N, bestv + fr, besti + fr, NULL,
-                                  TK ? ex->topk_logit + (size_t)frame * TK : NULL,
-                                  TK ? ex->topk_class + (size_t)frame * TK : NULL, TK);
-                    }
+        for (nb = B1; nb < NB; nb++) {
+            const float *b = op->bias ? op->bias + nb * 8 : NULL;
+            for (f0 = 0; f0 < nfire; f0 += H2_STEP) {
+                const unsigned pn = umin(H2_STEP, nfire - f0);
+                mm_i16(op->q + (size_t)nb * K * 8, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn,
+                       tmp, 8, NULL, 0, 0);
+                for (q = 0; q < pn; q++) {
+                    const unsigned fr = fm[f0 + q], frame = H2_FRAME(fr);
+                    h2_update(tmp + q * 8, nb * 8, N, bestv + fr, besti + fr, NULL,
+                              TK ? ex->topk_logit + (size_t)frame * TK : NULL,
+                              TK ? ex->topk_class + (size_t)frame * TK : NULL, TK);
                 }
             }
         }

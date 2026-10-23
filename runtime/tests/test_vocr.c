@@ -1447,7 +1447,7 @@ static void test_two_load(void)
     const size_t n = build_blob_2l(), tn = append_two(n, n, 1, 0.0f, 0, 7u);
     const size_t at = (n + 15u) & ~(size_t)15u;
     CHECK(vocr_check_crc(blob_buf, tn) == VOCR_OK && vocr_load(&m, blob_buf, tn) == VOCR_OK);
-    CHECK(m.bytes == n && m.two.l1_blocks == 1 && m.two.hidden == 8 && m.two.rare_k == 0 && m.two.r_blocks == 2);
+    CHECK(m.bytes == n && m.two.l1_blocks == 1 && m.two.hidden == 8);
     CHECK(vocr_has_two_level(&m) == 1 && vocr_has_two_level(NULL) == 0);
     CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK && m.two.l1_blocks == 0 && !vocr_has_two_level(&m)); /* none */
     memset(&o, 0, sizeof o);
@@ -1461,14 +1461,14 @@ static void test_two_load(void)
     CHECK(vocr_check_crc(blob_buf, tn) == VOCR_E_FORMAT && vocr_load(&m, blob_buf, tn) == VOCR_OK);
     blob_buf[tn - 1] ^= 1u;
     {   /* fields the loader refuses (each with a fresh CRC) */
-        const unsigned offs[6] = {24, 24, 26, 28, 16, 88};
-        const unsigned vals[6] = {0, 3, 12, 4, 7, 1};
+        const unsigned offs[7] = {24, 24, 26, 28, 16, 64, 88};    /* 28, 64: a rare block (rare_k, its offset) */
+        const unsigned vals[7] = {0, 3, 12, 8, 7, 1, 1};
         unsigned i;
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < 7; i++) {
             unsigned char save[4];
             memcpy(save, blob_buf + at + offs[i], 4);
             if (offs[i] == 16) wr32(blob_buf + at + offs[i], vals[i]);
-            else if (offs[i] == 88) blob_buf[at + 88] = (unsigned char)vals[i];
+            else if (offs[i] >= 64) blob_buf[at + offs[i]] = (unsigned char)vals[i];
             else wr16(blob_buf + at + offs[i], vals[i]);
             wr32(blob_buf + at + 12, crc32_ref(blob_buf + at + 16, (uint32_t)(tn - at - 16)));
             CHECK(vocr_load(&m, blob_buf, tn) == VOCR_E_FORMAT);
@@ -1534,32 +1534,9 @@ static void test_two_run(void)
     tn = append_two(n, n, 1, 0.3f, 0, 99u);
     CHECK(two_run(tn, 1, 0, 0, 0, w, hgt, k, 1, text, sizeof text, &ex) == VOCR_OK);
     CHECK(!strcmp(text, ref) && ex.escaped == 0 && !memcmp(t_logits, full, (size_t)ex.frames * TCLASSES * 4));
-    /* r48: with nothing fired the rare variant changes nothing (level 1 and the escape are the same) */
-    {
-        static float tv0[80 * TCLASSES], es0[80];
-        static uint16_t tc0[80 * TCLASSES];
-        size_t rn = append_two(n, n, 1, INFINITY, 0, 5u);
-        CHECK(two_run(rn, 1, 0, 0, 0, w, hgt, k, 0, ref, sizeof ref, &e0) == VOCR_OK);
-        memcpy(tv0, t_tv, sizeof tv0);
-        memcpy(tc0, t_tc, sizeof tc0);
-        memcpy(es0, t_esc, sizeof es0);
-        rn = append_two(n, n, 1, INFINITY, 8, 5u);
-        CHECK(vocr_load(&m, blob_buf, rn) == VOCR_OK && m.two.rare_k == 8);
-        CHECK(two_run(rn, 1, 0, 0, 0, w, hgt, k, 0, text, sizeof text, &ex) == VOCR_OK);
-        CHECK(!strcmp(text, ref) && !memcmp(tv0, t_tv, (size_t)ex.frames * k * 4) &&
-              !memcmp(tc0, t_tc, (size_t)ex.frames * k * 2) && !memcmp(es0, t_esc, (size_t)ex.frames * 4));
-        for (ti = 0; ti < 3; ti++) { /* and fired: it runs (sanitizers), the same at every tiling */
-            rn = append_two(n, n, 2, -0.2f, 8, 5u);
-            CHECK(two_run(rn, 1, 0, tiles[ti][0], tiles[ti][1], w, hgt, k, 0, text, sizeof text, &ex) == VOCR_OK);
-            if (!ti) {
-                memcpy(tv0, t_tv, sizeof tv0);
-                strcpy(ref, text);
-            } else {
-                CHECK(!strcmp(text, ref) && !memcmp(tv0, t_tv, (size_t)ex.frames * k * 4));
-            }
-            CHECK(ex.escaped > 0);
-        }
-    }
+    /* a trailer with the trial's 48-wide rare block (rare_k 8 and its arrays) is refused: this runtime reads none */
+    tn = append_two(n, n, 1, 0.3f, 8, 5u);
+    CHECK(vocr_check_crc(blob_buf, tn) == VOCR_OK && vocr_load(&m, blob_buf, tn) == VOCR_E_FORMAT);
 }
 
 /* head_gate ON with two_level: a frame the gate skips reads as the blank, the others as two_level alone */

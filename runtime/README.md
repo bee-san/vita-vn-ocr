@@ -4,7 +4,7 @@
 
 - C99. The runtime uses no `malloc` and nothing from libc except `memcpy`, `memset` and `<math.h>` (on 32-bit ARM, also libgcc's integer-division helpers; see the porting notes).
 - The blob is read in place. All working memory comes from one arena that the caller provides, sized exactly by `vocr_arena_bytes()`.
-- The line is processed in tiles of a few CTC frames (8 input columns each). Every layer keeps its left context between tiles, so the arena stays the same size for any line width, and the output doesn't depend on the tile size (checked bit for bit).
+- The line is processed in tiles of a few CTC frames (8 input columns each; 12 or 16 for the coarser-frame models of `train2.py --stride`, which `docs/stride16.md` trains). Every layer keeps its left context between tiles, so the arena stays the same size for any line width, and the output doesn't depend on the tile size (checked bit for bit).
 - NEON kernels sit behind `__ARM_NEON` (Vita). The scalar fallback gives the same bits; it's the PSP path, and `-DVOCR_NO_NEON` forces it.
 
 ## Numbers (v1 checkpoint)
@@ -143,7 +143,8 @@ static vocr_ctx ctx;       /* about 2 KB */
 
 /* blob: the .vocr file in memory, 16-byte aligned, kept alive while in use */
 int rc = vocr_load(&model, blob, blob_bytes);
-vocr_opts opts = {0};                       /* defaults: tile 4, head 16, max width 1024,
+vocr_opts opts = {0};                       /* defaults: tile 4 frames (about 32 input columns
+                                               at stride 12 or 16: 3 or 2), head 16, max width 1024,
                                                AUTO mode (f32 or w8f, from the blob) */
 opts.mode = VOCR_MODE_W8I;                  /* int8 blob, int32 sums */
 size_t need = vocr_arena_bytes(&model, &opts);

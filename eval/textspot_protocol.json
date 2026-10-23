@@ -402,6 +402,19 @@
      "arm_names": "C_<run>_det, C_<run>_detref"
     }
    }
+  },
+  {
+   "id": 5,
+   "utc": "2026-10-23T14:26:04Z",
+   "before": "nothing of textspot: its selection, report and release are done. A later PR (stride16, #118) changed two shared runtime files that this protocol pins, and re-pins them here, as the pin test asks",
+   "what": [
+    "runtime/vocr.c (stride16, #118): parse_op accepts op width strides up to 3 (a stride-12 recognizer), and plan()'s default tile (vocr_opts.tile_frames = 0) stays 4 frames for strides up to 8 but is the whole frames nearest 32 input columns for a stride over 8 (3 at 12, 2 at 16). Every stride-8 blob runs bit for bit as before (no kernel changed; runtime/tests/test_vocr.c's known answers and runtime/tests/parity.py --fixture pass unchanged), and no file of the spotter (vocr_textspot*.c) or its finders changed, so no textspot figure changes",
+    "runtime/vocr.h (stride16, #118): comments only (the tile's columns per frame, the width clamp, the default tile for strides over 8); no declaration, type or constant changed"
+   ],
+   "sources_sha256": {
+    "runtime/vocr.c": "c845ffde81143afdb42cc003c5aa5ede9a2f51d2afa3dfbbdeacd022249ce81e",
+    "runtime/vocr.h": "565806202c25a3a67927f3e3575cb14ef30ca2f30b21832dc16f8ff2153ea523"
+   }
   }
  ]
 }

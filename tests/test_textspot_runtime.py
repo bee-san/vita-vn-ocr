@@ -212,7 +212,9 @@ def test_c_batch_contract(driver, tmp_path):
 def test_frozen_runtime_sources_are_unchanged():
     """The spotter is a file of its own: the finders, #97's detector, the gate, the column finder and every header the
     protocol pins are byte for byte as frozen."""
-    pins = PROTOCOL["sources_sha256"]
+    pins = dict(PROTOCOL["sources_sha256"])
+    for amend in PROTOCOL.get("amendments", []):      # an amendment re-pins a source (tests/test_textspot.py)
+        pins.update(amend.get("sources_sha256", {}))
     frozen = [f for f in pins if f.startswith("runtime/")]
     assert {"runtime/vocr_textdet.c", "runtime/vocr_textgate.c", "runtime/vocr_vertical.c",
             "runtime/vocr_lines.c", "runtime/vocr_lines_rows.c"} <= set(frozen)

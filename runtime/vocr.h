@@ -10,14 +10,16 @@
  *   vocr_init(&c, &m, &o, arena, need);                      // arena 16-byte aligned
  *   vocr_run(&c, &img, text, sizeof text, NULL);             // one line crop -> UTF-8
  *
- * The line is processed in tiles of `tile_frames` CTC frames (8 input columns each),
+ * The line is processed in tiles of `tile_frames` CTC frames (`stride` input columns each:
+ * 8, or 12 / 16 for the coarser-frame models of train2.py --stride),
  * carrying each layer's left context between tiles, so the arena does not grow with
  * the line width and the output is bit-identical for every tile size.
  *
  * Preprocessing matches train/train.py exactly: grey = (77 R + 150 G + 29 B) >> 8
  * (then 255 - grey with VOCR_INVERT, as synth/common.line_crops does for dark text),
  * OpenCV INTER_LINEAR resize to the model height with width round(w * H / h) clamped
- * to [8, 1024], right-pad to a multiple of 8 by repeating the last column, then
+ * to [8, max_width] (1024; 1020 at stride 12), right-pad to a multiple of the stride by
+ * repeating the last column, then
  * x / 127.5 - 1. Greedy CTC (blank 0) gives the text.
  *
  * Results are bit-identical across the scalar and NEON paths and across platforms
@@ -84,8 +86,9 @@ typedef struct {             /* a parsed blob; points into it, so keep the blob 
 } vocr_model;
 
 typedef struct {
-    unsigned tile_frames;    /* CTC frames per tile (0: default 4); >= max_width / 8 runs
-                                the whole line as one tile, i.e. without streaming */
+    unsigned tile_frames;    /* CTC frames per tile (0: default 4; for a stride over 8 the
+                                frames nearest 32 input columns: 3 at 12, 2 at 16);
+                                >= max_width / stride runs the whole line as one tile */
     unsigned head_frames;    /* frames per output-head batch (0: default 16) */
     unsigned max_width;      /* widest resized line in pixels (0: the model's clamp) */
     int mode;                /* VOCR_MODE_*; AUTO = F32 for float blobs, W8F for int8 */

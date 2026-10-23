@@ -39,9 +39,9 @@ H, MAX_W, STRIDE = 32, 1024, 8
 UNK = "〓"   # GETA MARK: the <unk> class of a reduced vocab, always its last entry
 
 
-def resize_h(g, height=H):
+def resize_h(g, height=H, max_w=MAX_W):
     h, w = g.shape
-    nw = max(8, min(MAX_W, int(round(w * height / h))))
+    nw = max(8, min(max_w, int(round(w * height / h))))
     return cv2.resize(g, (nw, height), interpolation=cv2.INTER_LINEAR)
 
 
@@ -49,9 +49,11 @@ def resize32(g):
     return resize_h(g, 32)
 
 
-def ctc_ok(ids, width):
+def ctc_ok(ids, width, stride=STRIDE):
+    """True when a label fits the frames of a width-px line: characters plus a blank between
+    adjacent repeats (CTC's floor), at `stride` input columns per frame."""
     repeats = sum(1 for a, b in zip(ids, ids[1:]) if a == b)
-    return len(ids) + repeats <= math.ceil(width / STRIDE)
+    return len(ids) + repeats <= math.ceil(width / stride)
 
 
 def encoder(vocab):

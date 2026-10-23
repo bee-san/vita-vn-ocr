@@ -682,6 +682,17 @@
    "settings": {
     "d2s_runtime": "kept as a host/research tool; not a console runtime change; disclosed deviation"
    }
+  },
+  {
+   "id": 7,
+   "utc": "2026-10-23T14:27:55Z",
+   "before": "nothing of textspot2: its selection, PR and verdict are done. stride16 (#118) re-pins eval/textspot_protocol.json, which this protocol pins, after that protocol's amendment 5 re-pinned two shared runtime files stride16 changed",
+   "what": [
+    "eval/textspot_protocol.json: amendment 5 appended (stride16, #118: runtime/vocr.c takes op stride 3 and a smaller default tile for strides over 8, every stride-8 blob bit for bit as before; runtime/vocr.h comments only); nothing above its amendments list changed, and no textspot2 figure changes"
+   ],
+   "sources_sha256": {
+    "eval/textspot_protocol.json": "a963bb40ae1dc83bb47d1e85961cc7684b713e49f96be27bc24243f0d729d6bb"
+   }
   }
  ]
 }

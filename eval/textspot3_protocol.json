@@ -571,6 +571,18 @@
      }
     }
    }
+  },
+  {
+   "id": 8,
+   "utc": "2026-10-23T14:27:55Z",
+   "before": "nothing of textspot3: its selection, PR, release and verdict are done. stride16 (#118) re-pins eval/textspot_protocol.json and eval/textspot2_protocol.json, which this protocol pins, after their amendments 5 and 7 re-pinned two shared runtime files stride16 changed",
+   "what": [
+    "eval/textspot_protocol.json (amendment 5) and eval/textspot2_protocol.json (amendment 7): appended by stride16 (#118) to re-pin runtime/vocr.c (op stride 3; a smaller default tile for strides over 8; every stride-8 blob bit for bit as before) and runtime/vocr.h (comments only); nothing above either protocol's amendments list changed, and no textspot3 figure changes (its spotter runtime, vocr_textspot*.c, is untouched)"
+   ],
+   "sources_sha256": {
+    "eval/textspot_protocol.json": "a963bb40ae1dc83bb47d1e85961cc7684b713e49f96be27bc24243f0d729d6bb",
+    "eval/textspot2_protocol.json": "f7ac8f2d9ed40bcf18a96d169f5e3f7d4a524e0ee1a7b8eb5c1f34dd2149786b"
+   }
   }
  ],
  "shapes": {

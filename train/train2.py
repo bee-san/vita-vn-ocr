@@ -49,6 +49,11 @@ EMA weights are what is evaluated and saved as "model" (the raw ones as "model_r
 stem and the depthwise convs train with RepCBR's extra branches (train/model.py); every
 evaluation and every checkpoint's "model" is the fused plain model, so export, eval and the
 runtime see an ordinary TinyVNOCR; "model_rep" / "model_raw" keep the branched weights.
+--stride 16 (or 12) trains the coarser-frame shape of train/model.py stage_strides(): one CTC
+frame per 16 (12) input columns. The CTC input lengths, the filter that drops a line whose label
+does not fit its frames (characters plus a blank between repeats), the augmentation's minimum
+width and the width clamp (1,020 px at 12, a multiple of the stride) follow it; checkpoints record
+"stride" and "max_width". Teacher frame targets (kd=) are stride-8 only.
 --guide nrtr adds a training-only Transformer-decoder guidance loss (GTC; train/guide.py) on the
 frame-row features; the decoder is saved as "guide" and never exported.
 
@@ -100,6 +105,17 @@ from source_policy import sha256 as file_sha256  # noqa: E402
 from train import UNK, ctc_ok, default_threads, encoder, resize_h  # noqa: E402
 
 H, MAX_W, STRIDE = 32, 1024, 8
+
+
+def set_geometry(stride):
+    """The run's CTC frame step (--stride: 8, 12 or 16) and the width clamp it implies (the largest
+    multiple of the stride up to 1,024: 1,020 at stride 12), as the module globals every batch,
+    resize, frame count and checkpoint below reads. Stride 8 is the released geometry exactly."""
+    global STRIDE, MAX_W
+    if stride not in (8, 12, 16):
+        raise SystemExit(f"--stride must be 8, 12 or 16, not {stride}")
+    STRIDE, MAX_W = stride, 1024 // stride * stride
+    return STRIDE, MAX_W
 # Teacher targets index data/vocab.txt's classes. With another --vocab, KD_REMAP maps each of
 # those classes to the training vocab's (a reduced vocab's <unk> takes the ones it lacks).
 KD_REMAP = None
@@ -182,11 +198,11 @@ def load_shard(path, encode, opts, vocab_key, provenance=None):
             stats["dropped"] += 1
             continue
         h, w = (int(v) for v in shapes[i])
-        g = resize_h(data[offs[i]:offs[i + 1]].reshape(h, w), H)
+        g = resize_h(data[offs[i]:offs[i + 1]].reshape(h, w), H, MAX_W)
         ids = None
         if not use_kd_only:
             ids = encode(lab)
-            if not ids or -1 in ids or not ctc_ok(ids, g.shape[1]):
+            if not ids or -1 in ids or not ctc_ok(ids, g.shape[1], STRIDE):
                 stats["dropped"] += 1
                 continue
             ids = np.asarray(ids, np.int64)
@@ -631,7 +647,7 @@ class ValSet:
             g = data[offs[i]:offs[i + 1]].reshape(h, w)
             if native and meta[i].get("inverted"):
                 g = 255 - g
-            self.imgs.append(resize_h(g, height))
+            self.imgs.append(resize_h(g, height, MAX_W))
             self.refs.append(norm(labels[i]))
         groups = {}
         for i, g in enumerate(self.imgs):
@@ -724,6 +740,11 @@ def main(argv=None, *, execution_context=None):
     ap.add_argument("--rep", type=int, default=0,
                     help="train the stem and depthwise convs with RepCBR's extra branches (N parallel "
                          "k x k + 1x1 + identity); checkpoints hold the fused plain model as 'model'")
+    ap.add_argument("--stride", type=int, default=8, choices=(8, 12, 16),
+                    help="CTC frame step in input columns (train/model.py stage_strides: 16 runs the 2-row "
+                         "stage's DS at stride (2, 2), 12 the 4-row stage's at (2, 3)); sets the CTC input "
+                         "lengths, the label-fits-frames filter, the augmentation's minimum width and the "
+                         "width clamp (1,020 px at 12); checkpoints record it")
     ap.add_argument("--guide", choices=("none", "nrtr"), default="none",
                     help="nrtr: add a training-only Transformer-decoder guidance loss on the frame-row "
                          "features (GTC); never exported, kept as the checkpoint's 'guide'")
@@ -752,6 +773,10 @@ def main(argv=None, *, execution_context=None):
         raise ValueError("--source-policy does not accept --val/--select; evaluate retained checkpoints with the "
                          "separately frozen general-VN selector")
     args.freeze_bn_stats |= args.train_scope == "head"
+    set_geometry(args.stride)
+    if args.stride != 8 and any(parse_opts(s.split(":", 3)[3] if s.count(":") >= 3 else "").get(key, "0") != "0"
+                                for s in args.src for key in ("kd", "kdonly")):
+        raise SystemExit("teacher frame targets are on the stride-8 grid: kd=/kdonly= need --stride 8")
     torch.set_num_threads(args.threads)
     torch.set_flush_denormal(True)
     torch.manual_seed(args.seed)
@@ -806,12 +831,13 @@ def main(argv=None, *, execution_context=None):
 
     chans = tuple(int(c) for c in args.chans.split(",")) if args.chans else None
     arch = dict(width=args.width, bottleneck=args.bottleneck, depth=args.depth, ctx=args.ctx,
-                ctx_k=args.ctx_k, chans=chans)
+                ctx_k=args.ctx_k, chans=chans, stride=args.stride)
     model = TinyVNOCR(len(vocab) + 1, **arch, rep=args.rep)
     model = model.to(memory_format=torch.channels_last)
     train_scope(model, args.train_scope)
     print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M, classes {len(vocab) + 1}, "
-          f"threads {args.threads}" + (f", rep {args.rep} (trained form)" if args.rep else ""), flush=True)
+          f"threads {args.threads}, stride {STRIDE} (width clamp {MAX_W})"
+          + (f", rep {args.rep} (trained form)" if args.rep else ""), flush=True)
     guide = None
     if args.guide == "nrtr":
         if args.train_scope != "all":
@@ -858,6 +884,8 @@ def main(argv=None, *, execution_context=None):
         args.freeze_bn_stats |= ck.get("freeze_bn_stats", False)
         if int(ck.get("rep") or 0) != args.rep or list(ck.get("chans") or []) != list(chans or []):
             raise ValueError("resume --rep/--chans differ from checkpoint")
+        if int(ck.get("stride") or 8) != args.stride:
+            raise ValueError("resume --stride differs from checkpoint")
         if (guide is not None) != ("guide" in ck):
             raise ValueError("resume cannot add or remove --guide")
         if guide is not None:
@@ -883,6 +911,9 @@ def main(argv=None, *, execution_context=None):
         args.freeze_bn_stats |= ck.get("freeze_bn_stats", False)
         if list(ck.get("chans") or []) != list(chans or []):
             raise ValueError("init checkpoint --chans differ")
+        if int(ck.get("stride") or 8) != args.stride:          # same parameters, another frame step
+            print(f"init from a stride-{int(ck.get('stride') or 8)} checkpoint into stride {args.stride}",
+                  flush=True)
         if guide is not None and "guide" in ck:
             guide.load_state_dict(ck["guide"])              # continue a guided pretrain's decoder
         if args.rep and int(ck.get("rep") or 0) == args.rep and "model_rep" in ck:
@@ -1024,6 +1055,7 @@ def main(argv=None, *, execution_context=None):
                   "vocab": vocab, "width": args.width, "bottleneck": args.bottleneck,
                   "depth": args.depth, "ctx": args.ctx, "ctx_k": args.ctx_k, "height": H, "unk": unk,
                   "chans": list(chans) if chans else None, "rep": args.rep,
+                  "stride": STRIDE, "max_width": MAX_W,
                   "freeze_bn_stats": args.freeze_bn_stats,
                   "qat": {"bits": 8, "from_step": qat_from} if qat_from is not None else None,
                   "args": cfg, "val": {k: list(v) for k, v in res.items()}}

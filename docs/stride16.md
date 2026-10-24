@@ -375,7 +375,9 @@ None of these times was measured on a console.
 | 08:25-09:57Z | the development scores, decisions and selections, each committed in order |
 | 09:57-10:20Z | the locked report and CLANNAD, once |
 
-The rebase left the original commits at the tags `stride16-history-20261023a`, `stride16-runner-eeb91d1` and `stride16-runner-2813e7f`, and author dates keep the times above. The rebase also replaced this branch's first re-pin of the shared runtime files. head-gate makes the textspot pin tests skip `runtime/vocr.c` and `vocr.h` and re-pins them in textspot3's amendment 8; this branch re-pins them in textspot3's amendment 9.
+The branch was rebased twice: onto `868bc91` (head-gate, #120) on 2026-10-23 at 21:51Z, and onto `fb63532` (head-2level, #122) on 2026-10-24 after the locked report. The original commits are kept at the tags `stride16-history-20261023a` and `stride16-history-20261024a`, and the runner tags `stride16-runner-eeb91d1`, `stride16-runner-2813e7f` and `stride16-report-b5ade5a` hold the trees the runs, scores and report used. Author dates keep the times above.
+
+The first rebase replaced this branch's first re-pin of the shared runtime files. head-gate makes the textspot pin tests skip `runtime/vocr.c` and `vocr.h`, and re-pins them in textspot3's amendment 8; head-2level's amendment 9 does the same for its own change; this branch's amendment 10 re-pins the files with stride16's changes on top. The second rebase changes no file a score read: head-2level's runtime additions are off by default (`vocr_opts.two_level = 0`), and the scoring and report runners are the tagged trees.
 
 Hygiene:
 

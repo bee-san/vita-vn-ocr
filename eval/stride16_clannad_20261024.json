@@ -1,0 +1,2833 @@
+{
+ "arms": {
+  "F20": {
+   "bytes": 1558016,
+   "file": "F20_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "F20",
+   "sha256": "f8c1abe4743a71a742e718523f4206f992d3bd4fb69de321997b2bd6f16779c0"
+  },
+  "VOCR1": {
+   "bytes": 657664,
+   "file": "FL10_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "VOCR1",
+   "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84"
+  },
+  "VOCR2": {
+   "bytes": 657664,
+   "file": "VOCR2_FL10_w8.vocr",
+   "finder": "textbox",
+   "finder_mode": 2,
+   "name": "VOCR2",
+   "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766"
+  },
+  "VOCR3_FL10": {
+   "bytes": 657664,
+   "file": "VOCR3_FL10_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "VOCR3_FL10",
+   "sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154"
+  },
+  "VOCR3_H15": {
+   "bytes": 1155968,
+   "file": "VOCR3_H15_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "VOCR3_H15",
+   "sha256": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c"
+  },
+  "VOCR3_W20": {
+   "bytes": 1558016,
+   "file": "VOCR3_W20_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "VOCR3_W20",
+   "sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19"
+  },
+  "VOCR_H15": {
+   "bytes": 1155968,
+   "file": "H15_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "VOCR_H15",
+   "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd"
+  },
+  "v1": {
+   "bytes": 859904,
+   "file": "v1_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "v1",
+   "sha256": "23da2a2aaf844b1f9a622f9d16a5b587cd75b76e680a253eaed4f922b3d64914"
+  }
+ },
+ "arms_sha256": "9da4a029ef21920d2d2b77ecb67f16f8c8ec50a3652175e412106b92ffe7dcfe",
+ "cache_check": {
+  "arm": "VOCR1",
+  "identical_to_cached_fl10": 4271,
+  "lines": 4271
+ },
+ "code_sha256": {
+  "eval/backends.py": "3b84786e3dd5d98720f3e3ba7a431f98f0c21ffbf67682852dd0fc1cec6788d3",
+  "eval/clannad_longrun.py": "6ba8a7efb1f34c953338d43744bfe4de21276133994d52a5a03a4da5f1b4beec",
+  "eval/clannad_refs.py": "925e717e91033156550d612578eddc8e684454bdc9532747274090929628882d",
+  "eval/group_metrics.py": "d4d7f5c16f7e64edfbbb427cc66792654394004d958690838d99535eb91923e7",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "eval/run.py": "9312d3e667a072b306aba2878ddad437877eecf67f2eb86b9e75214511425a67",
+  "eval/sets.py": "a65154a114c922e8a2bacf621dc96289f2fc74706e1705ab297a5014edb09bce",
+  "eval/vocr3_clannad.py": "e5fe23254a1c19b20804ae5b2f18f271fd590456aa1d2690fe1ca1339f9edc59",
+  "eval/vocr3_report.py": "51697d970b79064be78e86b5f637c62db0d65c381817cd0b2a8274aa73dee149",
+  "requirements-ci.lock": "529385fa711e896b05aaba1130e81d0ac3334ae8ddea40b253c8546cbaae9539",
+  "runtime/pyvocr.py": "49cd9bf0ac474728f5aae9df9c7a7b7656a57db85f1eec75ec3ba7829b427376",
+  "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+  "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+  "runtime/vocr_lines_test.c": "c1af9976ce7ccc51b1804417b5cb42959fda4b231da0cc1f0e04e2b049eb9c45",
+  "synth/common.py": "6b8ca608c4e1ec60c87dd3bc6fa44a03fbb84fe0387ccc77a4c8aefbdc0c13ca",
+  "train/export.py": "f6ae07854e96b5cad0f6cb74871df8f9f5c6db5f7368fdcbf19f549d70411e8a",
+  "train/general_vn_textbox_guard.py": "637fbe5a3cb06dcfd83399218c1558c6d3c69d4ebba44ab0ca0742f2b89b254e",
+  "vita/a9_cycles.py": "083abbabe94a740b3c1a7479568496d4e83dfea64e0b7eaefe5848cd7d321a91"
+ },
+ "created": "2026-10-24T10:20:16Z",
+ "environment": {
+  "libc": [
+   "glibc",
+   "2.34"
+  ],
+  "machine": "x86_64",
+  "packages": {
+   "Pillow": "12.3.0",
+   "numpy": "2.4.6",
+   "opencv-python-headless": "5.0.0.93",
+   "torch": "2.5.1+cpu"
+  },
+  "python": "3.11.15",
+  "system": "Linux"
+ },
+ "extra_arms": {
+  "L16": {
+   "bytes": 2473696,
+   "file": "L16_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "L16",
+   "sha256": "0f7edbc9c9e4374ecadcde27db12d130add7093c3dc18a5982306aa254288ae8"
+  },
+  "N12": {
+   "bytes": 1185632,
+   "file": "N12_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "N12",
+   "sha256": "a2ba301af25f266f022d5f93903c19306bae6aa94864a0c330ebd6be0d4385b4"
+  },
+  "N16": {
+   "bytes": 1185632,
+   "file": "N16_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "N16",
+   "sha256": "7bf4b3e0a2f55524ddc96383e1564d26113566aa3649a36b4f4687b492050de1"
+  },
+  "S16": {
+   "bytes": 819792,
+   "file": "S16_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "S16",
+   "sha256": "2a4bdf7e070f237d274f8e1e351304e57d8206fc0d5f6723d2dedc5c2ff82bb8"
+  },
+  "VOCR5_L": {
+   "bytes": 2473696,
+   "file": "VOCR5_L_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "VOCR5_L",
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+  },
+  "VOCR5_N": {
+   "bytes": 1185632,
+   "file": "VOCR5_N_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "VOCR5_N",
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+  },
+  "VOCR5_S": {
+   "bytes": 819792,
+   "file": "VOCR5_S_w8.vocr",
+   "finder": "grad",
+   "finder_mode": 0,
+   "name": "VOCR5_S",
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+  }
+ },
+ "extra_arms_sha256": "16b0d6ed69d0c3674cb507110f7eed62cb7c1691c6b04891487481eca986eff8",
+ "extra_code_sha256": {
+  "eval/backends.py": "3b84786e3dd5d98720f3e3ba7a431f98f0c21ffbf67682852dd0fc1cec6788d3",
+  "eval/clannad_refs.py": "a7bdf56cf49a9211e62627ab474da6d2f0368f5f59e71e212b5b9331e4b5fd67",
+  "eval/group_metrics.py": "d4d7f5c16f7e64edfbbb427cc66792654394004d958690838d99535eb91923e7",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "eval/run.py": "3b812da6670ca577ca98494e094daddc29e0aa6aa73b570ed7652c5b14e2ca96",
+  "eval/sets.py": "a65154a114c922e8a2bacf621dc96289f2fc74706e1705ab297a5014edb09bce",
+  "eval/vocr3_report.py": "9247949aa2146bb4ede037748c4f9640f84b2ff1d4afb64af604060dba776238",
+  "requirements-ci.lock": "529385fa711e896b05aaba1130e81d0ac3334ae8ddea40b253c8546cbaae9539",
+  "runtime/pyvocr.py": "eb3fff830d91bc56f8fff483d460c5f1ec6de30bb70718967cd0345a00014ae3",
+  "runtime/vocr.c": "c399a74b60479bab851e55b53d148941bb576915111b6f0e8ea8cd85b4c3ce7c",
+  "runtime/vocr.h": "55774d8e183ab294bd5e78848742f2b1fc2d31f6622b62bb4d38c40995452a1e",
+  "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+  "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+  "runtime/vocr_lines_test.c": "c1af9976ce7ccc51b1804417b5cb42959fda4b231da0cc1f0e04e2b049eb9c45",
+  "synth/common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e",
+  "train/export.py": "77db52677957da5ff03ba6d9e9138087ddd8b59b652f6c4ced23c7f75db82c45",
+  "train/general_vn_textbox_guard.py": "637fbe5a3cb06dcfd83399218c1558c6d3c69d4ebba44ab0ca0742f2b89b254e",
+  "vita/a9_cycles.py": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc"
+ },
+ "extra_native": {
+  "compiler": {
+   "executable": "/usr/bin/gcc",
+   "sha256": "8bffae62fd101725fa713a76b6a5d24efe1dea5d6ab24b902aa2e58e7976eaec",
+   "version": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)"
+  },
+  "finder": {
+   "argv": [
+    "/usr/bin/gcc",
+    "-std=c99",
+    "-O2",
+    "-ffp-contract=off",
+    "-DVOCR_NO_NEON",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "runtime/vocr_lines.c",
+    "runtime/vocr_lines_test.c",
+    "-o",
+    "vocr_lines_driver"
+   ],
+   "name": "vocr_lines_driver",
+   "sha256": "9a81c224564787a7c771fc06d05b9eb64ab9794e866b0752a2cd73651e26aca1"
+  },
+  "library": {
+   "argv": [
+    "/usr/bin/gcc",
+    "-std=c99",
+    "-O2",
+    "-ffp-contract=off",
+    "-DVOCR_NO_NEON",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Wpedantic",
+    "-Wshadow",
+    "-Wstrict-prototypes",
+    "-Wmissing-prototypes",
+    "-Wcast-align",
+    "-Wpointer-arith",
+    "-fPIC",
+    "-shared",
+    "-o",
+    "libvocr_scalar.so",
+    "runtime/vocr.c",
+    "-lm"
+   ],
+   "name": "libvocr_scalar.so",
+   "sha256": "adce59baa25b8f75cf4a98b7a0a7fed19d1106980386456165f76d0621a2efcb"
+  },
+  "sources": {
+   "runtime/vocr.c": "c399a74b60479bab851e55b53d148941bb576915111b6f0e8ea8cd85b4c3ce7c",
+   "runtime/vocr.h": "55774d8e183ab294bd5e78848742f2b1fc2d31f6622b62bb4d38c40995452a1e",
+   "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+   "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+   "runtime/vocr_lines_test.c": "c1af9976ce7ccc51b1804417b5cb42959fda4b231da0cc1f0e04e2b049eb9c45"
+  }
+ },
+ "extra_resources": {
+  "L16": {
+   "arena_w8f": 228256,
+   "arena_w8i": 239264,
+   "blob_bytes": 2473696,
+   "classes": 5631,
+   "finder": "grad",
+   "head_macs_per_frame": 540576,
+   "height": 32,
+   "macs_640px_line": 170699520,
+   "macs_per_frame": 4267488,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 2318303,
+   "sha256": "0f7edbc9c9e4374ecadcde27db12d130add7093c3dc18a5982306aa254288ae8",
+   "stride": 16
+  },
+  "N12": {
+   "arena_w8f": 165792,
+   "arena_w8i": 176832,
+   "blob_bytes": 1185632,
+   "classes": 5631,
+   "finder": "grad",
+   "head_macs_per_frame": 540576,
+   "height": 32,
+   "macs_640px_line": 91492416,
+   "macs_per_frame": 1726272,
+   "max_width": 1020,
+   "ops": 20,
+   "params": 1065279,
+   "sha256": "a2ba301af25f266f022d5f93903c19306bae6aa94864a0c330ebd6be0d4385b4",
+   "stride": 12
+  },
+  "N16": {
+   "arena_w8f": 161184,
+   "arena_w8i": 170656,
+   "blob_bytes": 1185632,
+   "classes": 5631,
+   "finder": "grad",
+   "head_macs_per_frame": 540576,
+   "height": 32,
+   "macs_640px_line": 83704320,
+   "macs_per_frame": 2092608,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 1065279,
+   "sha256": "7bf4b3e0a2f55524ddc96383e1564d26113566aa3649a36b4f4687b492050de1",
+   "stride": 16
+  },
+  "S16": {
+   "arena_w8f": 109984,
+   "arena_w8i": 116384,
+   "blob_bytes": 819792,
+   "classes": 4987,
+   "finder": "grad",
+   "head_macs_per_frame": 478752,
+   "height": 32,
+   "macs_640px_line": 48126720,
+   "macs_per_frame": 1203168,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 723803,
+   "sha256": "2a4bdf7e070f237d274f8e1e351304e57d8206fc0d5f6723d2dedc5c2ff82bb8",
+   "stride": 16
+  },
+  "VOCR5_L": {
+   "arena_w8f": 257696,
+   "arena_w8i": 261024,
+   "blob_bytes": 2473696,
+   "classes": 5631,
+   "finder": "grad",
+   "head_macs_per_frame": 540576,
+   "height": 32,
+   "macs_640px_line": 272217600,
+   "macs_per_frame": 3402720,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 2318303,
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+   "stride": 8
+  },
+  "VOCR5_N": {
+   "arena_w8f": 173472,
+   "arena_w8i": 182944,
+   "blob_bytes": 1185632,
+   "classes": 5631,
+   "finder": "grad",
+   "head_macs_per_frame": 540576,
+   "height": 32,
+   "macs_640px_line": 127319040,
+   "macs_per_frame": 1591488,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 1065279,
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+   "stride": 8
+  },
+  "VOCR5_S": {
+   "arena_w8f": 118432,
+   "arena_w8i": 124832,
+   "blob_bytes": 819792,
+   "classes": 4987,
+   "finder": "grad",
+   "head_macs_per_frame": 478752,
+   "height": 32,
+   "macs_640px_line": 77391360,
+   "macs_per_frame": 967392,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 723803,
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+   "stride": 8
+  }
+ },
+ "kind": "clannad-refs-extra-result",
+ "lens_proxy": {
+  "all_lines": {
+   "F20": {
+    "disagreement_rate": 6.2116,
+    "edit_disagreements": 2293,
+    "identical_lines": 2896,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "L16": {
+    "disagreement_rate": 4.6133,
+    "edit_disagreements": 1703,
+    "identical_lines": 3466,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "N12": {
+    "disagreement_rate": 5.835,
+    "edit_disagreements": 2154,
+    "identical_lines": 3280,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "N16": {
+    "disagreement_rate": 5.5641,
+    "edit_disagreements": 2054,
+    "identical_lines": 3214,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "S16": {
+    "disagreement_rate": 6.0599,
+    "edit_disagreements": 2237,
+    "identical_lines": 3123,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "VOCR1": {
+    "disagreement_rate": 8.6035,
+    "edit_disagreements": 3176,
+    "identical_lines": 2487,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "VOCR2": {
+    "disagreement_rate": 8.3137,
+    "edit_disagreements": 3069,
+    "identical_lines": 2567,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "VOCR3_FL10": {
+    "disagreement_rate": 10.3941,
+    "edit_disagreements": 3837,
+    "identical_lines": 2568,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "VOCR3_H15": {
+    "disagreement_rate": 8.59,
+    "edit_disagreements": 3171,
+    "identical_lines": 2763,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "VOCR3_W20": {
+    "disagreement_rate": 7.9344,
+    "edit_disagreements": 2929,
+    "identical_lines": 2949,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "VOCR5_L": {
+    "disagreement_rate": 5.128,
+    "edit_disagreements": 1893,
+    "identical_lines": 3435,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "VOCR5_N": {
+    "disagreement_rate": 5.7592,
+    "edit_disagreements": 2126,
+    "identical_lines": 3261,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "VOCR5_S": {
+    "disagreement_rate": 7.073,
+    "edit_disagreements": 2611,
+    "identical_lines": 3145,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "VOCR_H15": {
+    "disagreement_rate": 6.6558,
+    "edit_disagreements": 2457,
+    "identical_lines": 2896,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "cached": {
+    "disagreement_rate": 8.6035,
+    "edit_disagreements": 3176,
+    "identical_lines": 2487,
+    "lines": 4271,
+    "reference_chars": 36915
+   },
+   "v1": {
+    "disagreement_rate": 36.6328,
+    "edit_disagreements": 13523,
+    "identical_lines": 1786,
+    "lines": 4271,
+    "reference_chars": 36915
+   }
+  },
+  "scored_lines": {
+   "F20": {
+    "disagreement_rate": 3.9155,
+    "edit_disagreements": 1409,
+    "identical_lines": 2252,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "L16": {
+    "disagreement_rate": 2.7373,
+    "edit_disagreements": 985,
+    "identical_lines": 2608,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "N12": {
+    "disagreement_rate": 2.7678,
+    "edit_disagreements": 996,
+    "identical_lines": 2589,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "N16": {
+    "disagreement_rate": 3.0735,
+    "edit_disagreements": 1106,
+    "identical_lines": 2498,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "S16": {
+    "disagreement_rate": 3.3319,
+    "edit_disagreements": 1199,
+    "identical_lines": 2447,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "VOCR1": {
+    "disagreement_rate": 5.6829,
+    "edit_disagreements": 2045,
+    "identical_lines": 1914,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "VOCR2": {
+    "disagreement_rate": 5.255,
+    "edit_disagreements": 1891,
+    "identical_lines": 2007,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "VOCR3_FL10": {
+    "disagreement_rate": 4.3713,
+    "edit_disagreements": 1573,
+    "identical_lines": 2279,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "VOCR3_H15": {
+    "disagreement_rate": 4.4129,
+    "edit_disagreements": 1588,
+    "identical_lines": 2337,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "VOCR3_W20": {
+    "disagreement_rate": 3.5265,
+    "edit_disagreements": 1269,
+    "identical_lines": 2444,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "VOCR5_L": {
+    "disagreement_rate": 2.2537,
+    "edit_disagreements": 811,
+    "identical_lines": 2735,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "VOCR5_N": {
+    "disagreement_rate": 2.6845,
+    "edit_disagreements": 966,
+    "identical_lines": 2626,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "VOCR5_S": {
+    "disagreement_rate": 3.268,
+    "edit_disagreements": 1176,
+    "identical_lines": 2499,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "VOCR_H15": {
+    "disagreement_rate": 3.9294,
+    "edit_disagreements": 1414,
+    "identical_lines": 2284,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "cached": {
+    "disagreement_rate": 5.6829,
+    "edit_disagreements": 2045,
+    "identical_lines": 1914,
+    "lines": 3048,
+    "reference_chars": 35985
+   },
+   "v1": {
+    "disagreement_rate": 14.6533,
+    "edit_disagreements": 5273,
+    "identical_lines": 1764,
+    "lines": 3048,
+    "reference_chars": 35985
+   }
+  }
+ },
+ "lines_sha256": "a6be0300b651a2cdf3ae58f9705b6f100263b66b7030365b119e6a0a2323ffd1",
+ "native": {
+  "compiler": {
+   "executable": "/usr/bin/gcc",
+   "sha256": "8bffae62fd101725fa713a76b6a5d24efe1dea5d6ab24b902aa2e58e7976eaec",
+   "version": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)"
+  },
+  "finder": {
+   "argv": [
+    "/usr/bin/gcc",
+    "-std=c99",
+    "-O2",
+    "-ffp-contract=off",
+    "-DVOCR_NO_NEON",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "runtime/vocr_lines.c",
+    "runtime/vocr_lines_test.c",
+    "-o",
+    "vocr_lines_driver"
+   ],
+   "name": "vocr_lines_driver",
+   "sha256": "9a81c224564787a7c771fc06d05b9eb64ab9794e866b0752a2cd73651e26aca1"
+  },
+  "library": {
+   "argv": [
+    "/usr/bin/gcc",
+    "-std=c99",
+    "-O2",
+    "-ffp-contract=off",
+    "-DVOCR_NO_NEON",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Wpedantic",
+    "-Wshadow",
+    "-Wstrict-prototypes",
+    "-Wmissing-prototypes",
+    "-Wcast-align",
+    "-Wpointer-arith",
+    "-fPIC",
+    "-shared",
+    "-o",
+    "libvocr_scalar.so",
+    "runtime/vocr.c",
+    "-lm"
+   ],
+   "name": "libvocr_scalar.so",
+   "sha256": "0e033bd8ecc926a3e9e0bbca96ca6f6744f6d58a474cc5e573286fac3f540f90"
+  },
+  "sources": {
+   "runtime/vocr.c": "d1fe1f7be4b479ec96d5ca0c1c44c4c3cb7edcf66dcf7abced332601fdcdeb33",
+   "runtime/vocr.h": "c4948a25be4063cd1e22c2011a24c21d95c6a06c2360348452876a24288e09dd",
+   "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+   "runtime/vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+   "runtime/vocr_lines_test.c": "c1af9976ce7ccc51b1804417b5cb42959fda4b231da0cc1f0e04e2b049eb9c45"
+  }
+ },
+ "notext_output": {
+  "F20": {
+   "lines": 904,
+   "lines_with_output": 284,
+   "output_chars": 335
+  },
+  "L16": {
+   "lines": 904,
+   "lines_with_output": 191,
+   "output_chars": 287
+  },
+  "Lens": {
+   "lines": 904,
+   "lines_with_output": 19,
+   "output_chars": 20
+  },
+  "N12": {
+   "lines": 904,
+   "lines_with_output": 362,
+   "output_chars": 751
+  },
+  "N16": {
+   "lines": 904,
+   "lines_with_output": 239,
+   "output_chars": 316
+  },
+  "S16": {
+   "lines": 904,
+   "lines_with_output": 289,
+   "output_chars": 413
+  },
+  "VOCR1": {
+   "lines": 904,
+   "lines_with_output": 350,
+   "output_chars": 550
+  },
+  "VOCR2": {
+   "lines": 904,
+   "lines_with_output": 377,
+   "output_chars": 604
+  },
+  "VOCR3_FL10": {
+   "lines": 904,
+   "lines_with_output": 637,
+   "output_chars": 1625
+  },
+  "VOCR3_H15": {
+   "lines": 904,
+   "lines_with_output": 552,
+   "output_chars": 1073
+  },
+  "VOCR3_W20": {
+   "lines": 904,
+   "lines_with_output": 450,
+   "output_chars": 1033
+  },
+  "VOCR5_L": {
+   "lines": 904,
+   "lines_with_output": 340,
+   "output_chars": 645
+  },
+  "VOCR5_N": {
+   "lines": 904,
+   "lines_with_output": 320,
+   "output_chars": 621
+  },
+  "VOCR5_S": {
+   "lines": 904,
+   "lines_with_output": 348,
+   "output_chars": 981
+  },
+  "VOCR_H15": {
+   "lines": 904,
+   "lines_with_output": 296,
+   "output_chars": 370
+  },
+  "cached": {
+   "lines": 904,
+   "lines_with_output": 350,
+   "output_chars": 550
+  },
+  "v1": {
+   "lines": 904,
+   "lines_with_output": 891,
+   "output_chars": 7170
+  }
+ },
+ "pairs_requested": [
+  "S16:VOCR5_S",
+  "N16:VOCR5_N",
+  "N12:VOCR5_N",
+  "L16:VOCR5_L",
+  "N16:N12"
+ ],
+ "protocol_sha256": "3b86ca54b6cf88099950c89cbae1e9bd9eca8e5333316d6729fd62ca2be8d5a0",
+ "references": {
+  "agreement": {
+   "r1_decisions": {
+    "pick": 2772,
+    "skip:bad": 1,
+    "skip:cut": 225,
+    "skip:multi": 16,
+    "skip:notext": 904,
+    "skip:ui": 7,
+    "typed": 314,
+    "unsure": 32
+   },
+   "r1_lines": 4271,
+   "r1_text_r2_text": 3025,
+   "r2_decisions": {
+    "pick": 3039,
+    "skip:cut": 265,
+    "skip:multi": 16,
+    "skip:notext": 906,
+    "skip:ui": 2,
+    "typed": 10,
+    "unsure": 33
+   },
+   "same_key": 3006
+  },
+  "flags": {
+   "by_rule": {
+    "no two reads agree": 10,
+    "r1,r2 skip:bad+skip:notext": 1,
+    "r1,r2 skip:cut": 213,
+    "r1,r2 skip:cut+skip:notext": 1,
+    "r1,r2 skip:cut+skip:ui": 1,
+    "r1,r2 skip:cut+unsure": 12,
+    "r1,r2 skip:multi": 13,
+    "r1,r2 skip:notext": 904,
+    "r1,r2 skip:ui": 2,
+    "r1,r2 skip:ui+unsure": 1,
+    "r1,r2 unsure": 13,
+    "r1=r2": 3006,
+    "two of three": 42,
+    "two of three non-text": 52
+   },
+   "excluded_lines": 1223,
+   "lens_agree": 2972,
+   "lens_disagree": 76,
+   "lens_disagree_r1_had_lens_reading": 0,
+   "scored_lines": 3048
+  },
+  "freeze": {
+   "counts": {
+    "no two reads agree": 10,
+    "r1,r2 skip:bad+skip:notext": 1,
+    "r1,r2 skip:cut": 213,
+    "r1,r2 skip:cut+skip:notext": 1,
+    "r1,r2 skip:cut+skip:ui": 1,
+    "r1,r2 skip:cut+unsure": 12,
+    "r1,r2 skip:multi": 13,
+    "r1,r2 skip:notext": 904,
+    "r1,r2 skip:ui": 2,
+    "r1,r2 skip:ui+unsure": 1,
+    "r1,r2 unsure": 13,
+    "r1=r2": 3006,
+    "two of three": 42,
+    "two of three non-text": 52
+   },
+   "frozen": "2026-10-14T03:04:39Z",
+   "lines_sha256": "a6be0300b651a2cdf3ae58f9705b6f100263b66b7030365b119e6a0a2323ffd1",
+   "protocol_sha256": "3b86ca54b6cf88099950c89cbae1e9bd9eca8e5333316d6729fd62ca2be8d5a0",
+   "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+   "scored_lines": 3048
+  },
+  "reviewer_kind": "assistant",
+  "rounds": {
+   "r1": {
+    "decision_files_sha256": {
+     "b01": "537fc9f67d38afb74ca24e1ba4d283abd647f02cec9230d4280a7df42e767bbc",
+     "b02": "845af77df79d6eb0d4016b511e794bab2a44649d9fbda64a9122c6495832eda8",
+     "b03": "e39ba64fc4d35b6743be5c20e298806681275b117f012d6f58f212d8ee4f03b1",
+     "b04": "0fd813c59864319ae3353fe4a5fa5b846a19610c117c304b24ee913ef58a093b",
+     "b05": "08445bda6edf745ea933d03bd9674e82600c3af091919f03989cbc87a9336a09",
+     "b06": "40c55f45e91b6fc5a6b3cdad8bb298da5ccc163d4cccf97e6c7d6dd6bf01e79e",
+     "b07": "cf8a3eabcbc0ee5e36143afedab9a53bcf96c86dcc37e31fdb8ff61174c72ca5",
+     "b08": "944321125422e48d891b9b08246a744b92a4190ec53357a6b6813e7c785dfb86",
+     "b09": "2f508c9ca653788b42237df23c20f88ffa6c61b414074ebe6dfc94fda1594208",
+     "b10": "b60fe31cf62d09e4ff1f023a09c5c0fae31bd4812ba534a74fdae597eb5fa43c",
+     "b11": "6e85c444514fbb248154916986b11821bd69d19c2f09fb9de1420f37bda50a7e",
+     "b12": "d3c19e762377a47eddce4523ece3bc8b6c8f5536ec6e846fed0ac1804c189770"
+    },
+    "lines": 4271,
+    "sha256": "74829b59390a145562259eab7209f4746a2be0d708b955f2df4ab589d852e8df"
+   },
+   "r2": {
+    "decision_files_sha256": {
+     "b01": "32290b9a9aac0b686ec457b0f01fdc52809332cb3da103c6bfafd830219edab6",
+     "b02": "1bb7b3456042871b7e30ac61036178e8a9e571d4f76cfeb0c9d0956f2a387730",
+     "b03": "8743e5dd8fdf98dae2d12b179a3e73c5e2682115b553ec15170d13c168014a2d",
+     "b04": "0bc0423953c1beffed8904795a713806f3ed26f8c13af7a95f2c67e9d8c53ed5",
+     "b05": "3a942b990aaa825c6a0b14e8f7f829e8e0a8c9684fc6be595cbdb1d94c6246e6",
+     "b06": "d22668f6b896a819c82f56927e988c6daf516f8aaac76da14da06e288464f85c",
+     "b07": "8a63d2b6ab24f401d443ebb0b9438719cf79c7321f3455ebd23b59dd708c2039",
+     "b08": "06620f9f4be8ec1d618f5982b5b690c104b24ad1c39d56a4ce19f87cb1b5f8c8",
+     "b09": "baf3370c321345fb33941f8d24a670f8fc8075d61051e3facdc72ebd5e0e7a1a",
+     "b10": "354ef5340530df1b9937d22904fe64848d87a6531ef268ca053abd70de85eae2",
+     "b11": "2a3e238a6709db61c4d64ba4a47a86236f3713000df9d0705b00c6149dc1fdfd",
+     "b12": "6dfa5529780b41dc42bd69f14db77b7c0e79c963d0d801bb9d1621767f24a90b"
+    },
+    "lines": 4271,
+    "sha256": "58bcff66b5db05a7f197cda3241c1c344e1503df1c64e2248112b872307b4b34"
+   },
+   "r3": {
+    "decision_files_sha256": {
+     "b01": "db81a44cf1ee7fe0f3418b793680b3c7d0b62aaf7cf7699d11fb05d750a0d465"
+    },
+    "lines": 104,
+    "sha256": "2968e5873e6e4257c9fe7c20160d429b31d177bd477c4211096f1cc17c5ae2fb"
+   }
+  }
+ },
+ "resources": {
+  "F20": {
+   "arena_w8f": 228512,
+   "arena_w8i": 241056,
+   "blob_bytes": 1558016,
+   "classes": 5355,
+   "finder": "grad",
+   "head_macs_per_frame": 514080,
+   "height": 32,
+   "macs_640px_line": 187138560,
+   "macs_per_frame": 2339232,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 1423499,
+   "sha256": "f8c1abe4743a71a742e718523f4206f992d3bd4fb69de321997b2bd6f16779c0",
+   "stride": 8
+  },
+  "VOCR1": {
+   "arena_w8f": 118432,
+   "arena_w8i": 124832,
+   "blob_bytes": 657664,
+   "classes": 3501,
+   "finder": "grad",
+   "head_macs_per_frame": 336096,
+   "height": 32,
+   "macs_640px_line": 65978880,
+   "macs_per_frame": 824736,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 579661,
+   "sha256": "500e0b842e5f0cb326f55e7d991a52ab66dd24977ccc89bd188228aedc825e84",
+   "stride": 8
+  },
+  "VOCR2": {
+   "arena_w8f": 118432,
+   "arena_w8i": 124832,
+   "blob_bytes": 657664,
+   "classes": 3501,
+   "finder": "textbox",
+   "head_macs_per_frame": 336096,
+   "height": 32,
+   "macs_640px_line": 65978880,
+   "macs_per_frame": 824736,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 579661,
+   "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766",
+   "stride": 8
+  },
+  "VOCR3_FL10": {
+   "arena_w8f": 118432,
+   "arena_w8i": 124832,
+   "blob_bytes": 657664,
+   "classes": 3501,
+   "finder": "grad",
+   "head_macs_per_frame": 336096,
+   "height": 32,
+   "macs_640px_line": 65978880,
+   "macs_per_frame": 824736,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 579661,
+   "sha256": "87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154",
+   "stride": 8
+  },
+  "VOCR3_H15": {
+   "arena_w8f": 173472,
+   "arena_w8i": 182944,
+   "blob_bytes": 1155968,
+   "classes": 5355,
+   "finder": "grad",
+   "head_macs_per_frame": 514080,
+   "height": 32,
+   "macs_640px_line": 125199360,
+   "macs_per_frame": 1564992,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 1038507,
+   "sha256": "cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c",
+   "stride": 8
+  },
+  "VOCR3_W20": {
+   "arena_w8f": 228512,
+   "arena_w8i": 241056,
+   "blob_bytes": 1558016,
+   "classes": 5355,
+   "finder": "grad",
+   "head_macs_per_frame": 514080,
+   "height": 32,
+   "macs_640px_line": 187138560,
+   "macs_per_frame": 2339232,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 1423499,
+   "sha256": "2cedeb01989463dc7a07af5f872578a3a4038068e7d6aa69aeb7d6c35f81aa19",
+   "stride": 8
+  },
+  "VOCR_H15": {
+   "arena_w8f": 173472,
+   "arena_w8i": 182944,
+   "blob_bytes": 1155968,
+   "classes": 5355,
+   "finder": "grad",
+   "head_macs_per_frame": 514080,
+   "height": 32,
+   "macs_640px_line": 125199360,
+   "macs_per_frame": 1564992,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 1038507,
+   "sha256": "316ebc377ec34520440991c5085199d8e74031f01a867938be90a60c1e3f03cd",
+   "stride": 8
+  },
+  "v1": {
+   "arena_w8f": 118432,
+   "arena_w8i": 124832,
+   "blob_bytes": 859904,
+   "classes": 5355,
+   "finder": "grad",
+   "head_macs_per_frame": 514080,
+   "height": 32,
+   "macs_640px_line": 80217600,
+   "macs_per_frame": 1002720,
+   "max_width": 1024,
+   "ops": 20,
+   "params": 759499,
+   "sha256": "23da2a2aaf844b1f9a622f9d16a5b587cd75b76e680a253eaed4f922b3d64914",
+   "stride": 8
+  }
+ },
+ "schema": 1,
+ "scores": {
+  "bootstrap": {
+   "pages": 2044,
+   "reps": 10000,
+   "seed": 0,
+   "unit": "page"
+  },
+  "pairs": {
+   "L16:VOCR5_L": {
+    "baseline_errors": 349,
+    "candidate_errors": 520,
+    "cer_ci95": [
+     0.344243,
+     0.614932
+    ],
+    "cer_delta": 0.479072,
+    "chars": 35694,
+    "exact_ci95": [
+     -5.6815,
+     -3.2587
+    ],
+    "exact_delta": -4.4619,
+    "pages": 2044
+   },
+   "N12:VOCR5_N": {
+    "baseline_errors": 518,
+    "candidate_errors": 547,
+    "cer_ci95": [
+     -0.061021,
+     0.223646
+    ],
+    "cer_delta": 0.081246,
+    "chars": 35694,
+    "exact_ci95": [
+     -2.4231,
+     0.194
+    ],
+    "exact_delta": -1.1155,
+    "pages": 2044
+   },
+   "N16:N12": {
+    "baseline_errors": 547,
+    "candidate_errors": 634,
+    "cer_ci95": [
+     0.099564,
+     0.389311
+    ],
+    "cer_delta": 0.243738,
+    "chars": 35694,
+    "exact_ci95": [
+     -4.164,
+     -1.6129
+    ],
+    "exact_delta": -2.8871,
+    "pages": 2044
+   },
+   "N16:VOCR5_N": {
+    "baseline_errors": 518,
+    "candidate_errors": 634,
+    "cer_ci95": [
+     0.159326,
+     0.497049
+    ],
+    "cer_delta": 0.324985,
+    "chars": 35694,
+    "exact_ci95": [
+     -5.4642,
+     -2.6006
+    ],
+    "exact_delta": -4.0026,
+    "pages": 2044
+   },
+   "S16:VOCR5_S": {
+    "baseline_errors": 738,
+    "candidate_errors": 768,
+    "cer_ci95": [
+     -0.121441,
+     0.288294
+    ],
+    "cer_delta": 0.084048,
+    "chars": 35694,
+    "exact_ci95": [
+     -3.4774,
+     -0.4554
+    ],
+    "exact_delta": -1.9685,
+    "pages": 2044
+   }
+  },
+  "systems": {
+   "F20": {
+    "all": {
+     "cer": 2.7484,
+     "cer_ci95": [
+      2.5554,
+      2.9428
+     ],
+     "chars": 35694,
+     "errors": 981,
+     "exact": 74.6719,
+     "exact_ci95": [
+      73.1372,
+      76.1905
+     ],
+     "exact_lines": 2276,
+     "hiragana_cer": 2.7386,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 551,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 3.2609,
+     "cer_ci95": [
+      0.0,
+      4.8
+     ],
+     "chars": 92,
+     "errors": 3,
+     "exact": 87.5,
+     "exact_ci95": [
+      77.7778,
+      100.0
+     ],
+     "exact_lines": 21,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 12.947,
+     "cer_ci95": [
+      11.3913,
+      14.5708
+     ],
+     "chars": 2209,
+     "errors": 286,
+     "exact": 75.0,
+     "exact_ci95": [
+      72.2892,
+      77.6104
+     ],
+     "exact_lines": 747,
+     "hiragana_cer": 89.0909,
+     "hiragana_chars": 55,
+     "hiragana_errors": 49,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 2.747,
+     "cer_ci95": [
+      2.556,
+      2.943
+     ],
+     "chars": 35602,
+     "errors": 978,
+     "exact": 74.5701,
+     "exact_ci95": [
+      73.0538,
+      76.0899
+     ],
+     "exact_lines": 2255,
+     "hiragana_cer": 2.7386,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 551,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 2.0756,
+     "cer_ci95": [
+      1.9008,
+      2.2554
+     ],
+     "chars": 33485,
+     "errors": 695,
+     "exact": 74.5127,
+     "exact_ci95": [
+      72.5901,
+      76.3815
+     ],
+     "exact_lines": 1529,
+     "hiragana_cer": 2.5019,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 502,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "L16": {
+    "all": {
+     "cer": 1.4568,
+     "cer_ci95": [
+      1.3035,
+      1.6134
+     ],
+     "chars": 35694,
+     "errors": 520,
+     "exact": 86.4501,
+     "exact_ci95": [
+      85.2085,
+      87.6628
+     ],
+     "exact_lines": 2635,
+     "hiragana_cer": 1.2227,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 246,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 2.1739,
+     "cer_ci95": [
+      0.0,
+      5.9406
+     ],
+     "chars": 92,
+     "errors": 2,
+     "exact": 95.8333,
+     "exact_ci95": [
+      88.0,
+      100.0
+     ],
+     "exact_lines": 23,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 10.1403,
+     "cer_ci95": [
+      8.5284,
+      11.7967
+     ],
+     "chars": 2209,
+     "errors": 224,
+     "exact": 83.8353,
+     "exact_ci95": [
+      81.5261,
+      86.0442
+     ],
+     "exact_lines": 835,
+     "hiragana_cer": 58.1818,
+     "hiragana_chars": 55,
+     "hiragana_errors": 32,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 1.455,
+     "cer_ci95": [
+      1.3056,
+      1.6106
+     ],
+     "chars": 35602,
+     "errors": 518,
+     "exact": 86.3757,
+     "exact_ci95": [
+      85.1455,
+      87.5871
+     ],
+     "exact_lines": 2612,
+     "hiragana_cer": 1.2227,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 246,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 0.884,
+     "cer_ci95": [
+      0.7691,
+      1.0036
+     ],
+     "chars": 33485,
+     "errors": 296,
+     "exact": 87.7193,
+     "exact_ci95": [
+      86.2706,
+      89.1368
+     ],
+     "exact_lines": 1800,
+     "hiragana_cer": 1.0665,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 214,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "Lens": {
+    "all": {
+     "cer": 1.4736,
+     "cer_ci95": [
+      0.8774,
+      2.1367
+     ],
+     "chars": 35694,
+     "errors": 526,
+     "exact": 97.4738,
+     "exact_ci95": [
+      96.9055,
+      98.0237
+     ],
+     "exact_lines": 2971,
+     "hiragana_cer": 0.5219,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 105,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 0.0,
+     "cer_ci95": [
+      0.0,
+      0.0
+     ],
+     "chars": 92,
+     "errors": 0,
+     "exact": 100.0,
+     "exact_ci95": [
+      100.0,
+      100.0
+     ],
+     "exact_lines": 24,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 0.679,
+     "cer_ci95": [
+      0.1335,
+      1.4432
+     ],
+     "chars": 2209,
+     "errors": 15,
+     "exact": 99.3976,
+     "exact_ci95": [
+      98.8956,
+      99.7992
+     ],
+     "exact_lines": 990,
+     "hiragana_cer": 9.0909,
+     "hiragana_chars": 55,
+     "hiragana_errors": 5,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 1.4774,
+     "cer_ci95": [
+      0.8818,
+      2.1592
+     ],
+     "chars": 35602,
+     "errors": 526,
+     "exact": 97.4537,
+     "exact_ci95": [
+      96.8792,
+      97.9901
+     ],
+     "exact_lines": 2947,
+     "hiragana_cer": 0.5219,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 105,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 1.5261,
+     "cer_ci95": [
+      0.897,
+      2.2547
+     ],
+     "chars": 33485,
+     "errors": 511,
+     "exact": 96.54,
+     "exact_ci95": [
+      95.7143,
+      97.3184
+     ],
+     "exact_lines": 1981,
+     "hiragana_cer": 0.4984,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 100,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "N12": {
+    "all": {
+     "cer": 1.5325,
+     "cer_ci95": [
+      1.3778,
+      1.6909
+     ],
+     "chars": 35694,
+     "errors": 547,
+     "exact": 85.9252,
+     "exact_ci95": [
+      84.6782,
+      87.1429
+     ],
+     "exact_lines": 2619,
+     "hiragana_cer": 1.3817,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 278,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 2.1739,
+     "cer_ci95": [
+      0.0,
+      4.1237
+     ],
+     "chars": 92,
+     "errors": 2,
+     "exact": 91.6667,
+     "exact_ci95": [
+      80.7692,
+      100.0
+     ],
+     "exact_lines": 22,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 8.239,
+     "cer_ci95": [
+      6.8161,
+      9.7572
+     ],
+     "chars": 2209,
+     "errors": 182,
+     "exact": 86.4458,
+     "exact_ci95": [
+      84.3373,
+      88.5542
+     ],
+     "exact_lines": 861,
+     "hiragana_cer": 58.1818,
+     "hiragana_chars": 55,
+     "hiragana_errors": 32,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 1.5308,
+     "cer_ci95": [
+      1.3757,
+      1.6891
+     ],
+     "chars": 35602,
+     "errors": 545,
+     "exact": 85.8796,
+     "exact_ci95": [
+      84.6532,
+      87.116
+     ],
+     "exact_lines": 2597,
+     "hiragana_cer": 1.3817,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 278,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 1.09,
+     "cer_ci95": [
+      0.9573,
+      1.2257
+     ],
+     "chars": 33485,
+     "errors": 365,
+     "exact": 85.6725,
+     "exact_ci95": [
+      84.1481,
+      87.1907
+     ],
+     "exact_lines": 1758,
+     "hiragana_cer": 1.226,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 246,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "N16": {
+    "all": {
+     "cer": 1.7762,
+     "cer_ci95": [
+      1.6146,
+      1.9461
+     ],
+     "chars": 35694,
+     "errors": 634,
+     "exact": 83.0381,
+     "exact_ci95": [
+      81.6887,
+      84.3944
+     ],
+     "exact_lines": 2531,
+     "hiragana_cer": 1.4463,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 291,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 5.4348,
+     "cer_ci95": [
+      0.0,
+      8.547
+     ],
+     "chars": 92,
+     "errors": 5,
+     "exact": 79.1667,
+     "exact_ci95": [
+      59.2593,
+      100.0
+     ],
+     "exact_lines": 19,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 10.0045,
+     "cer_ci95": [
+      8.5817,
+      11.4725
+     ],
+     "chars": 2209,
+     "errors": 221,
+     "exact": 82.1285,
+     "exact_ci95": [
+      79.7189,
+      84.4403
+     ],
+     "exact_lines": 818,
+     "hiragana_cer": 14.5455,
+     "hiragana_chars": 55,
+     "hiragana_errors": 8,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 1.7668,
+     "cer_ci95": [
+      1.6078,
+      1.9321
+     ],
+     "chars": 35602,
+     "errors": 629,
+     "exact": 83.0688,
+     "exact_ci95": [
+      81.7077,
+      84.3792
+     ],
+     "exact_lines": 2512,
+     "hiragana_cer": 1.4463,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 291,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 1.2334,
+     "cer_ci95": [
+      1.0971,
+      1.3723
+     ],
+     "chars": 33485,
+     "errors": 413,
+     "exact": 83.4795,
+     "exact_ci95": [
+      81.8534,
+      85.0878
+     ],
+     "exact_lines": 1713,
+     "hiragana_cer": 1.4104,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 283,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "S16": {
+    "all": {
+     "cer": 2.1516,
+     "cer_ci95": [
+      1.9608,
+      2.3461
+     ],
+     "chars": 35694,
+     "errors": 768,
+     "exact": 81.0039,
+     "exact_ci95": [
+      79.5891,
+      82.3971
+     ],
+     "exact_lines": 2469,
+     "hiragana_cer": 1.5755,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 317,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 16.3043,
+     "cer_ci95": [
+      11.6279,
+      23.2153
+     ],
+     "chars": 92,
+     "errors": 15,
+     "exact": 37.5,
+     "exact_ci95": [
+      18.5185,
+      58.3333
+     ],
+     "exact_lines": 9,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 11.77,
+     "cer_ci95": [
+      10.1123,
+      13.4903
+     ],
+     "chars": 2209,
+     "errors": 260,
+     "exact": 80.9237,
+     "exact_ci95": [
+      78.5141,
+      83.3333
+     ],
+     "exact_lines": 806,
+     "hiragana_cer": 1.8182,
+     "hiragana_chars": 55,
+     "hiragana_errors": 1,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 2.115,
+     "cer_ci95": [
+      1.9272,
+      2.311
+     ],
+     "chars": 35602,
+     "errors": 753,
+     "exact": 81.3492,
+     "exact_ci95": [
+      79.9201,
+      82.707
+     ],
+     "exact_lines": 2460,
+     "hiragana_cer": 1.5755,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 317,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 1.5171,
+     "cer_ci95": [
+      1.3531,
+      1.6867
+     ],
+     "chars": 33485,
+     "errors": 508,
+     "exact": 81.0429,
+     "exact_ci95": [
+      79.3288,
+      82.7416
+     ],
+     "exact_lines": 1663,
+     "hiragana_cer": 1.5749,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 316,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "VOCR1": {
+    "all": {
+     "cer": 4.5582,
+     "cer_ci95": [
+      4.2941,
+      4.8322
+     ],
+     "chars": 35694,
+     "errors": 1627,
+     "exact": 63.2546,
+     "exact_ci95": [
+      61.5307,
+      64.9364
+     ],
+     "exact_lines": 1928,
+     "hiragana_cer": 3.6581,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 736,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 9.7826,
+     "cer_ci95": [
+      4.7059,
+      18.3333
+     ],
+     "chars": 92,
+     "errors": 9,
+     "exact": 66.6667,
+     "exact_ci95": [
+      50.0,
+      82.6087
+     ],
+     "exact_lines": 16,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 4,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 26.6636,
+     "cer_ci95": [
+      23.9838,
+      29.4305
+     ],
+     "chars": 2209,
+     "errors": 589,
+     "exact": 62.4498,
+     "exact_ci95": [
+      59.4378,
+      65.4618
+     ],
+     "exact_lines": 622,
+     "hiragana_cer": 127.2727,
+     "hiragana_chars": 55,
+     "hiragana_errors": 70,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 4.5447,
+     "cer_ci95": [
+      4.2797,
+      4.8191
+     ],
+     "chars": 35602,
+     "errors": 1618,
+     "exact": 63.2275,
+     "exact_ci95": [
+      61.5359,
+      64.9368
+     ],
+     "exact_lines": 1912,
+     "hiragana_cer": 3.6382,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 732,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 3.0999,
+     "cer_ci95": [
+      2.8853,
+      3.3156
+     ],
+     "chars": 33485,
+     "errors": 1038,
+     "exact": 63.6452,
+     "exact_ci95": [
+      61.5385,
+      65.7225
+     ],
+     "exact_lines": 1306,
+     "hiragana_cer": 3.3192,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 666,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "VOCR2": {
+    "all": {
+     "cer": 4.1436,
+     "cer_ci95": [
+      3.8915,
+      4.4093
+     ],
+     "chars": 35694,
+     "errors": 1479,
+     "exact": 66.2402,
+     "exact_ci95": [
+      64.6009,
+      67.877
+     ],
+     "exact_lines": 2019,
+     "hiragana_cer": 3.2406,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 652,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 9.7826,
+     "cer_ci95": [
+      3.6347,
+      14.1026
+     ],
+     "chars": 92,
+     "errors": 9,
+     "exact": 66.6667,
+     "exact_ci95": [
+      44.4444,
+      90.9091
+     ],
+     "exact_lines": 16,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 2,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 25.5319,
+     "cer_ci95": [
+      22.925,
+      28.2145
+     ],
+     "chars": 2209,
+     "errors": 564,
+     "exact": 63.755,
+     "exact_ci95": [
+      60.743,
+      66.7671
+     ],
+     "exact_lines": 635,
+     "hiragana_cer": 114.5455,
+     "hiragana_chars": 55,
+     "hiragana_errors": 63,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 4.129,
+     "cer_ci95": [
+      3.871,
+      4.3933
+     ],
+     "chars": 35602,
+     "errors": 1470,
+     "exact": 66.2368,
+     "exact_ci95": [
+      64.5917,
+      67.856
+     ],
+     "exact_lines": 2003,
+     "hiragana_cer": 3.2306,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 650,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 2.7326,
+     "cer_ci95": [
+      2.5258,
+      2.9383
+     ],
+     "chars": 33485,
+     "errors": 915,
+     "exact": 67.4464,
+     "exact_ci95": [
+      65.3808,
+      69.4661
+     ],
+     "exact_lines": 1384,
+     "hiragana_cer": 2.9355,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 589,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "VOCR3_FL10": {
+    "all": {
+     "cer": 3.2358,
+     "cer_ci95": [
+      2.9646,
+      3.5124
+     ],
+     "chars": 35694,
+     "errors": 1155,
+     "exact": 75.0984,
+     "exact_ci95": [
+      73.5564,
+      76.5881
+     ],
+     "exact_lines": 2289,
+     "hiragana_cer": 2.3708,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 477,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 3.2609,
+     "cer_ci95": [
+      0.0,
+      7.6923
+     ],
+     "chars": 92,
+     "errors": 3,
+     "exact": 87.5,
+     "exact_ci95": [
+      73.913,
+      100.0
+     ],
+     "exact_lines": 21,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 2,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 30.1947,
+     "cer_ci95": [
+      26.8401,
+      33.6871
+     ],
+     "chars": 2209,
+     "errors": 667,
+     "exact": 62.6506,
+     "exact_ci95": [
+      59.6386,
+      65.5622
+     ],
+     "exact_lines": 624,
+     "hiragana_cer": 276.3636,
+     "hiragana_chars": 55,
+     "hiragana_errors": 152,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 3.2358,
+     "cer_ci95": [
+      2.9711,
+      3.5181
+     ],
+     "chars": 35602,
+     "errors": 1152,
+     "exact": 75.0,
+     "exact_ci95": [
+      73.4646,
+      76.5157
+     ],
+     "exact_lines": 2268,
+     "hiragana_cer": 2.3608,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 475,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 1.4574,
+     "cer_ci95": [
+      1.3034,
+      1.6105
+     ],
+     "chars": 33485,
+     "errors": 488,
+     "exact": 81.1404,
+     "exact_ci95": [
+      79.4896,
+      82.8587
+     ],
+     "exact_lines": 1665,
+     "hiragana_cer": 1.6197,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 325,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "VOCR3_H15": {
+    "all": {
+     "cer": 3.2358,
+     "cer_ci95": [
+      2.9574,
+      3.5218
+     ],
+     "chars": 35694,
+     "errors": 1155,
+     "exact": 77.3622,
+     "exact_ci95": [
+      75.9132,
+      78.7701
+     ],
+     "exact_lines": 2358,
+     "hiragana_cer": 1.8638,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 375,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 25.0,
+     "cer_ci95": [
+      15.9291,
+      42.5926
+     ],
+     "chars": 92,
+     "errors": 23,
+     "exact": 25.0,
+     "exact_ci95": [
+      9.0909,
+      40.0
+     ],
+     "exact_lines": 6,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 33.0014,
+     "cer_ci95": [
+      29.3935,
+      36.6867
+     ],
+     "chars": 2209,
+     "errors": 729,
+     "exact": 64.5582,
+     "exact_ci95": [
+      61.5462,
+      67.4699
+     ],
+     "exact_lines": 643,
+     "hiragana_cer": 165.4545,
+     "hiragana_chars": 55,
+     "hiragana_errors": 91,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 3.1796,
+     "cer_ci95": [
+      2.9015,
+      3.4564
+     ],
+     "chars": 35602,
+     "errors": 1132,
+     "exact": 77.7778,
+     "exact_ci95": [
+      76.3009,
+      79.2403
+     ],
+     "exact_lines": 2352,
+     "hiragana_cer": 1.8638,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 375,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 1.2722,
+     "cer_ci95": [
+      1.1343,
+      1.4165
+     ],
+     "chars": 33485,
+     "errors": 426,
+     "exact": 83.577,
+     "exact_ci95": [
+      81.9458,
+      85.1763
+     ],
+     "exact_lines": 1715,
+     "hiragana_cer": 1.4154,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 284,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "VOCR3_W20": {
+    "all": {
+     "cer": 2.3365,
+     "cer_ci95": [
+      2.1278,
+      2.5518
+     ],
+     "chars": 35694,
+     "errors": 834,
+     "exact": 80.8399,
+     "exact_ci95": [
+      79.4333,
+      82.243
+     ],
+     "exact_lines": 2464,
+     "hiragana_cer": 1.4861,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 299,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 3.2609,
+     "cer_ci95": [
+      0.0,
+      7.7778
+     ],
+     "chars": 92,
+     "errors": 3,
+     "exact": 91.6667,
+     "exact_ci95": [
+      80.0,
+      100.0
+     ],
+     "exact_lines": 22,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 20.0091,
+     "cer_ci95": [
+      17.6043,
+      22.5359
+     ],
+     "chars": 2209,
+     "errors": 442,
+     "exact": 71.6867,
+     "exact_ci95": [
+      68.8755,
+      74.3976
+     ],
+     "exact_lines": 714,
+     "hiragana_cer": 65.4545,
+     "hiragana_chars": 55,
+     "hiragana_errors": 36,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 2.3341,
+     "cer_ci95": [
+      2.1266,
+      2.5509
+     ],
+     "chars": 35602,
+     "errors": 831,
+     "exact": 80.754,
+     "exact_ci95": [
+      79.3194,
+      82.1559
+     ],
+     "exact_lines": 2442,
+     "hiragana_cer": 1.4861,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 299,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 1.1707,
+     "cer_ci95": [
+      1.0337,
+      1.3146
+     ],
+     "chars": 33485,
+     "errors": 392,
+     "exact": 85.2827,
+     "exact_ci95": [
+      83.7358,
+      86.7861
+     ],
+     "exact_lines": 1750,
+     "hiragana_cer": 1.3107,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 263,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "VOCR5_L": {
+    "all": {
+     "cer": 0.9778,
+     "cer_ci95": [
+      0.853,
+      1.1073
+     ],
+     "chars": 35694,
+     "errors": 349,
+     "exact": 90.9121,
+     "exact_ci95": [
+      89.8704,
+      91.9492
+     ],
+     "exact_lines": 2771,
+     "hiragana_cer": 0.8748,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 176,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 1.087,
+     "cer_ci95": [
+      0.0,
+      2.9703
+     ],
+     "chars": 92,
+     "errors": 1,
+     "exact": 95.8333,
+     "exact_ci95": [
+      88.0,
+      100.0
+     ],
+     "exact_lines": 23,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 4.6627,
+     "cer_ci95": [
+      3.4868,
+      5.8984
+     ],
+     "chars": 2209,
+     "errors": 103,
+     "exact": 92.9719,
+     "exact_ci95": [
+      91.3655,
+      94.5783
+     ],
+     "exact_lines": 926,
+     "hiragana_cer": 16.3636,
+     "hiragana_chars": 55,
+     "hiragana_errors": 9,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 0.9775,
+     "cer_ci95": [
+      0.8547,
+      1.1058
+     ],
+     "chars": 35602,
+     "errors": 348,
+     "exact": 90.873,
+     "exact_ci95": [
+      89.8283,
+      91.9
+     ],
+     "exact_lines": 2748,
+     "hiragana_cer": 0.8748,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 176,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 0.7347,
+     "cer_ci95": [
+      0.629,
+      0.846
+     ],
+     "chars": 33485,
+     "errors": 246,
+     "exact": 89.9123,
+     "exact_ci95": [
+      88.5922,
+      91.2023
+     ],
+     "exact_lines": 1845,
+     "hiragana_cer": 0.8323,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 167,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "VOCR5_N": {
+    "all": {
+     "cer": 1.4512,
+     "cer_ci95": [
+      1.2978,
+      1.6127
+     ],
+     "chars": 35694,
+     "errors": 518,
+     "exact": 87.0407,
+     "exact_ci95": [
+      85.8322,
+      88.2488
+     ],
+     "exact_lines": 2653,
+     "hiragana_cer": 1.337,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 269,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 10.8696,
+     "cer_ci95": [
+      5.7143,
+      16.9231
+     ],
+     "chars": 92,
+     "errors": 10,
+     "exact": 58.3333,
+     "exact_ci95": [
+      38.4615,
+      80.9524
+     ],
+     "exact_lines": 14,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 8.8728,
+     "cer_ci95": [
+      7.2711,
+      10.543
+     ],
+     "chars": 2209,
+     "errors": 196,
+     "exact": 86.3454,
+     "exact_ci95": [
+      84.2369,
+      88.3534
+     ],
+     "exact_lines": 860,
+     "hiragana_cer": 65.4545,
+     "hiragana_chars": 55,
+     "hiragana_errors": 36,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 1.4269,
+     "cer_ci95": [
+      1.2766,
+      1.5856
+     ],
+     "chars": 35602,
+     "errors": 508,
+     "exact": 87.2685,
+     "exact_ci95": [
+      86.0518,
+      88.4385
+     ],
+     "exact_lines": 2639,
+     "hiragana_cer": 1.337,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 269,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 0.9616,
+     "cer_ci95": [
+      0.8432,
+      1.0846
+     ],
+     "chars": 33485,
+     "errors": 322,
+     "exact": 87.3782,
+     "exact_ci95": [
+      85.9079,
+      88.8297
+     ],
+     "exact_lines": 1793,
+     "hiragana_cer": 1.1612,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 233,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "VOCR5_S": {
+    "all": {
+     "cer": 2.0676,
+     "cer_ci95": [
+      1.8704,
+      2.2715
+     ],
+     "chars": 35694,
+     "errors": 738,
+     "exact": 82.9724,
+     "exact_ci95": [
+      81.6195,
+      84.3112
+     ],
+     "exact_lines": 2529,
+     "hiragana_cer": 1.8439,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 371,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 1.087,
+     "cer_ci95": [
+      0.0,
+      2.9703
+     ],
+     "chars": 92,
+     "errors": 1,
+     "exact": 95.8333,
+     "exact_ci95": [
+      88.0,
+      100.0
+     ],
+     "exact_lines": 23,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 12.4491,
+     "cer_ci95": [
+      10.464,
+      14.5422
+     ],
+     "chars": 2209,
+     "errors": 275,
+     "exact": 84.0361,
+     "exact_ci95": [
+      81.6265,
+      86.245
+     ],
+     "exact_lines": 837,
+     "hiragana_cer": 121.8182,
+     "hiragana_chars": 55,
+     "hiragana_errors": 67,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 2.0701,
+     "cer_ci95": [
+      1.87,
+      2.2737
+     ],
+     "chars": 35602,
+     "errors": 737,
+     "exact": 82.8704,
+     "exact_ci95": [
+      81.4507,
+      84.2383
+     ],
+     "exact_lines": 2506,
+     "hiragana_cer": 1.8439,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 371,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 1.3827,
+     "cer_ci95": [
+      1.2334,
+      1.5359
+     ],
+     "chars": 33485,
+     "errors": 463,
+     "exact": 82.4561,
+     "exact_ci95": [
+      80.7711,
+      84.1065
+     ],
+     "exact_lines": 1692,
+     "hiragana_cer": 1.5151,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 304,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "VOCR_H15": {
+    "all": {
+     "cer": 2.8184,
+     "cer_ci95": [
+      2.6085,
+      3.0404
+     ],
+     "chars": 35694,
+     "errors": 1006,
+     "exact": 75.4593,
+     "exact_ci95": [
+      73.9657,
+      76.9306
+     ],
+     "exact_lines": 2300,
+     "hiragana_cer": 2.3559,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 474,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 5.4348,
+     "cer_ci95": [
+      0.0,
+      8.5938
+     ],
+     "chars": 92,
+     "errors": 5,
+     "exact": 87.5,
+     "exact_ci95": [
+      77.7778,
+      100.0
+     ],
+     "exact_lines": 21,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 16.8855,
+     "cer_ci95": [
+      14.8546,
+      19.0565
+     ],
+     "chars": 2209,
+     "errors": 373,
+     "exact": 73.2932,
+     "exact_ci95": [
+      70.5823,
+      76.004
+     ],
+     "exact_lines": 730,
+     "hiragana_cer": 49.0909,
+     "hiragana_chars": 55,
+     "hiragana_errors": 27,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 2.8116,
+     "cer_ci95": [
+      2.5996,
+      3.0295
+     ],
+     "chars": 35602,
+     "errors": 1001,
+     "exact": 75.3638,
+     "exact_ci95": [
+      73.8747,
+      76.8699
+     ],
+     "exact_lines": 2279,
+     "hiragana_cer": 2.3559,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 474,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 1.8904,
+     "cer_ci95": [
+      1.7171,
+      2.0706
+     ],
+     "chars": 33485,
+     "errors": 633,
+     "exact": 76.5107,
+     "exact_ci95": [
+      74.6232,
+      78.339
+     ],
+     "exact_lines": 1570,
+     "hiragana_cer": 2.2278,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 447,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "cached": {
+    "all": {
+     "cer": 4.5582,
+     "cer_ci95": [
+      4.2941,
+      4.8322
+     ],
+     "chars": 35694,
+     "errors": 1627,
+     "exact": 63.2546,
+     "exact_ci95": [
+      61.5307,
+      64.9364
+     ],
+     "exact_lines": 1928,
+     "hiragana_cer": 3.6581,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 736,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 9.7826,
+     "cer_ci95": [
+      4.7059,
+      18.3333
+     ],
+     "chars": 92,
+     "errors": 9,
+     "exact": 66.6667,
+     "exact_ci95": [
+      50.0,
+      82.6087
+     ],
+     "exact_lines": 16,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 4,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 26.6636,
+     "cer_ci95": [
+      23.9838,
+      29.4305
+     ],
+     "chars": 2209,
+     "errors": 589,
+     "exact": 62.4498,
+     "exact_ci95": [
+      59.4378,
+      65.4618
+     ],
+     "exact_lines": 622,
+     "hiragana_cer": 127.2727,
+     "hiragana_chars": 55,
+     "hiragana_errors": 70,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 4.5447,
+     "cer_ci95": [
+      4.2797,
+      4.8191
+     ],
+     "chars": 35602,
+     "errors": 1618,
+     "exact": 63.2275,
+     "exact_ci95": [
+      61.5359,
+      64.9368
+     ],
+     "exact_lines": 1912,
+     "hiragana_cer": 3.6382,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 732,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 3.0999,
+     "cer_ci95": [
+      2.8853,
+      3.3156
+     ],
+     "chars": 33485,
+     "errors": 1038,
+     "exact": 63.6452,
+     "exact_ci95": [
+      61.5385,
+      65.7225
+     ],
+     "exact_lines": 1306,
+     "hiragana_cer": 3.3192,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 666,
+     "lines": 2052,
+     "pages": 1867
+    }
+   },
+   "v1": {
+    "all": {
+     "cer": 13.6746,
+     "cer_ci95": [
+      12.6865,
+      14.7039
+     ],
+     "chars": 35694,
+     "errors": 4881,
+     "exact": 58.1037,
+     "exact_ci95": [
+      56.3993,
+      59.8262
+     ],
+     "exact_lines": 1771,
+     "hiragana_cer": 6.4761,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 1303,
+     "lines": 3048,
+     "pages": 2044
+    },
+    "inverted": {
+     "cer": 81.5217,
+     "cer_ci95": [
+      41.7897,
+      156.9027
+     ],
+     "chars": 92,
+     "errors": 75,
+     "exact": 37.5,
+     "exact_ci95": [
+      13.6364,
+      59.2593
+     ],
+     "exact_lines": 9,
+     "hiragana_cer": null,
+     "hiragana_chars": 0,
+     "hiragana_errors": 0,
+     "lines": 24,
+     "pages": 21
+    },
+    "name": {
+     "cer": 169.8053,
+     "cer_ci95": [
+      155.7048,
+      184.3467
+     ],
+     "chars": 2209,
+     "errors": 3751,
+     "exact": 50.7028,
+     "exact_ci95": [
+      47.5904,
+      53.8153
+     ],
+     "exact_lines": 505,
+     "hiragana_cer": 680.0,
+     "hiragana_chars": 55,
+     "hiragana_errors": 374,
+     "lines": 996,
+     "pages": 996
+    },
+    "not_inverted": {
+     "cer": 13.4992,
+     "cer_ci95": [
+      12.5346,
+      14.5074
+     ],
+     "chars": 35602,
+     "errors": 4806,
+     "exact": 58.2672,
+     "exact_ci95": [
+      56.5653,
+      59.9737
+     ],
+     "exact_lines": 1762,
+     "hiragana_cer": 6.4761,
+     "hiragana_chars": 20120,
+     "hiragana_errors": 1303,
+     "lines": 3024,
+     "pages": 2038
+    },
+    "not_name": {
+     "cer": 3.3746,
+     "cer_ci95": [
+      3.1465,
+      3.6159
+     ],
+     "chars": 33485,
+     "errors": 1130,
+     "exact": 61.6959,
+     "exact_ci95": [
+      59.5703,
+      63.794
+     ],
+     "exact_lines": 1266,
+     "hiragana_cer": 4.63,
+     "hiragana_chars": 20065,
+     "hiragana_errors": 929,
+     "lines": 2052,
+     "pages": 1867
+    }
+   }
+  }
+ },
+ "session": {
+  "captures_sha256": "b6cd582c582d22af883710f202f60f9c44848be23c4a8fe2f726799c7f8f81ed",
+  "comparisons_sha256": "f2754897c8b69f555706b93a3cd4f709b8066c4a7578c03baf828458db584cd9",
+  "excluded_pages": 27,
+  "lines": 4271,
+  "lock_sha256": "14ba9297269b1cc741a9993425b3f901a1086bed74be4eaad274381a83ac6425",
+  "pages": 2177
+ },
+ "suffix": "stride16",
+ "training_or_selection_use": false
+}

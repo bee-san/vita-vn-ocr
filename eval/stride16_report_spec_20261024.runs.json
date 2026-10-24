@@ -1,0 +1,25 @@
+{
+ "kind": "stride16-report-spec-runs",
+ "arms": {
+  "S16": {
+   "run": "s16f_S_seed1",
+   "adopted": false,
+   "dev_score": 5.35588
+  },
+  "N16": {
+   "run": "s16f_N_seed2",
+   "adopted": false,
+   "dev_score": 4.63362
+  },
+  "L16": {
+   "run": "s16f_L_seed2",
+   "adopted": false,
+   "dev_score": 4.11578
+  },
+  "N12": {
+   "run": "s12f_N_seed2",
+   "adopted": false,
+   "dev_score": 3.72057
+  }
+ }
+}

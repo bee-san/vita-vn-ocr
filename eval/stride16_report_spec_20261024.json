@@ -1,0 +1,93 @@
+{
+ "schema": 1,
+ "kind": "vocr3-report-spec",
+ "arms": [
+  {
+   "name": "VOCR5_S",
+   "file": "VOCR5_S_w8.vocr",
+   "finder": "grad",
+   "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+   "role": "incumbent Small: VOCR5's selection"
+  },
+  {
+   "name": "VOCR5_N",
+   "file": "VOCR5_N_w8.vocr",
+   "finder": "grad",
+   "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+   "role": "incumbent Normal: VOCR5's selection"
+  },
+  {
+   "name": "VOCR5_L",
+   "file": "VOCR5_L_w8.vocr",
+   "finder": "grad",
+   "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+   "role": "incumbent Large: VOCR5's selection"
+  },
+  {
+   "name": "S16",
+   "file": "S16_w8.vocr",
+   "finder": "grad",
+   "sha256": "2a4bdf7e070f237d274f8e1e351304e57d8206fc0d5f6723d2dedc5c2ff82bb8",
+   "role": "Small stride 16: s16f_S_seed1 (not adopted: report only)"
+  },
+  {
+   "name": "N16",
+   "file": "N16_w8.vocr",
+   "finder": "grad",
+   "sha256": "7bf4b3e0a2f55524ddc96383e1564d26113566aa3649a36b4f4687b492050de1",
+   "role": "Normal stride 16: s16f_N_seed2 (not adopted: report only)"
+  },
+  {
+   "name": "L16",
+   "file": "L16_w8.vocr",
+   "finder": "grad",
+   "sha256": "0f7edbc9c9e4374ecadcde27db12d130add7093c3dc18a5982306aa254288ae8",
+   "role": "Large stride 16: s16f_L_seed2 (not adopted: report only)"
+  },
+  {
+   "name": "N12",
+   "file": "N12_w8.vocr",
+   "finder": "grad",
+   "sha256": "a2ba301af25f266f022d5f93903c19306bae6aa94864a0c330ebd6be0d4385b4",
+   "role": "Normal stride 12: s12f_N_seed2 (not adopted: report only)"
+  }
+ ],
+ "pairs": [
+  {
+   "candidate": "S16",
+   "baseline": "VOCR5_S"
+  },
+  {
+   "candidate": "N16",
+   "baseline": "VOCR5_N"
+  },
+  {
+   "candidate": "L16",
+   "baseline": "VOCR5_L"
+  },
+  {
+   "candidate": "N12",
+   "baseline": "VOCR5_N"
+  },
+  {
+   "candidate": "N16",
+   "baseline": "N12"
+  }
+ ],
+ "gates": [],
+ "sets": [
+  "vita-test",
+  "psp-test"
+ ],
+ "polarities": [
+  "console",
+  "native"
+ ],
+ "primary_polarity": "console",
+ "bootstrap": {
+  "reps": 10000,
+  "seed": 0,
+  "min_clusters": 5
+ },
+ "dialogue": true
+}

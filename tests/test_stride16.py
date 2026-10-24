@@ -324,3 +324,23 @@ def test_fixed_rows_are_keyed_by_position_not_id(tmp_path):
     c.attach_floor({f"teacher_val_dev.npz|{k}|{v['id']}": v for k, v in enumerate(rows)})
     assert c.frames[16].tolist() == [4, 25, 50]
     assert (c.ratio(16) < 1.25).tolist() == [True, False, False]
+
+
+def test_clannad_dialogue_pairs_skip_name_lines(tmp_path):
+    """The CLANNAD dialogue pairs count only reference lines that are not a speaker name, per page."""
+    import stride16_clannad_dialogue as C
+    refs = [{"id": "a", "status": "ref", "name": False, "text": "あいう", "page": "p1"},
+            {"id": "b", "status": "ref", "name": True, "text": "なまえ", "page": "p1"},
+            {"id": "c", "status": "ref", "name": False, "text": "かきくけ", "page": "p2"},
+            {"id": "d", "status": "excluded", "name": False, "text": "x", "page": "p2"}]
+    (tmp_path / "refs.jsonl").write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in refs) + "\n")
+    rows = [{"id": "a", "page": "p1", "ref": "あいう", "errors": {"X": 1, "Y": 0}},
+            {"id": "b", "page": "p1", "ref": "なまえ", "errors": {"X": 3, "Y": 3}},
+            {"id": "c", "page": "p2", "ref": "かきくけ", "errors": {"X": 0, "Y": 2}}]
+    (tmp_path / "p.jsonl").write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n")
+    C.main(["--work", str(tmp_path), "--private", str(tmp_path / "p.jsonl"), "--pair", "X:Y",
+            "--out", str(tmp_path / "o.json")])
+    d = json.loads((tmp_path / "o.json").read_text())
+    p = d["pairs"]["X:Y"]
+    assert d["lines"] == 2 and p["chars"] == 7 and p["candidate_errors"] == 1 and p["baseline_errors"] == 2
+    assert abs(p["cer_delta"] - 100 * (1 - 2) / 7) < 1e-4

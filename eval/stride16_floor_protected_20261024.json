@@ -1,0 +1,375 @@
+{
+ "kind": "stride16-floor-protected",
+ "schema": 1,
+ "tight_ratio": 1.25,
+ "lines": {
+  "vita-test": 206,
+  "psp-test": 245
+ },
+ "strata": {
+  "s8_tight_vita-test": 0,
+  "s8_tight_psp-test": 0,
+  "s8_floor_vita-test": 0,
+  "s8_floor_psp-test": 0,
+  "s12_tight_vita-test": 2,
+  "s12_tight_psp-test": 2,
+  "s12_floor_vita-test": 0,
+  "s12_floor_psp-test": 0,
+  "s16_tight_vita-test": 10,
+  "s16_tight_psp-test": 21,
+  "s16_floor_vita-test": 3,
+  "s16_floor_psp-test": 1
+ },
+ "arms": {
+  "L16": {
+   "s12_tight_dialogue": {
+    "lines": 3,
+    "chars": 35,
+    "errors": 14,
+    "cer": 40.0
+   },
+   "s12_tight_all": {
+    "lines": 4,
+    "chars": 40,
+    "errors": 15,
+    "cer": 37.5
+   },
+   "s12_floor_dialogue": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s12_floor_all": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s16_tight_dialogue": {
+    "lines": 28,
+    "chars": 352,
+    "errors": 38,
+    "cer": 10.795
+   },
+   "s16_tight_all": {
+    "lines": 31,
+    "chars": 370,
+    "errors": 43,
+    "cer": 11.622
+   },
+   "s16_floor_dialogue": {
+    "lines": 3,
+    "chars": 43,
+    "errors": 13,
+    "cer": 30.233
+   },
+   "s16_floor_all": {
+    "lines": 4,
+    "chars": 48,
+    "errors": 14,
+    "cer": 29.167
+   }
+  },
+  "N12": {
+   "s12_tight_dialogue": {
+    "lines": 3,
+    "chars": 35,
+    "errors": 11,
+    "cer": 31.429
+   },
+   "s12_tight_all": {
+    "lines": 4,
+    "chars": 40,
+    "errors": 11,
+    "cer": 27.5
+   },
+   "s12_floor_dialogue": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s12_floor_all": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s16_tight_dialogue": {
+    "lines": 28,
+    "chars": 352,
+    "errors": 30,
+    "cer": 8.523
+   },
+   "s16_tight_all": {
+    "lines": 31,
+    "chars": 370,
+    "errors": 34,
+    "cer": 9.189
+   },
+   "s16_floor_dialogue": {
+    "lines": 3,
+    "chars": 43,
+    "errors": 8,
+    "cer": 18.605
+   },
+   "s16_floor_all": {
+    "lines": 4,
+    "chars": 48,
+    "errors": 8,
+    "cer": 16.667
+   }
+  },
+  "N16": {
+   "s12_tight_dialogue": {
+    "lines": 3,
+    "chars": 35,
+    "errors": 15,
+    "cer": 42.857
+   },
+   "s12_tight_all": {
+    "lines": 4,
+    "chars": 40,
+    "errors": 16,
+    "cer": 40.0
+   },
+   "s12_floor_dialogue": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s12_floor_all": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s16_tight_dialogue": {
+    "lines": 28,
+    "chars": 352,
+    "errors": 44,
+    "cer": 12.5
+   },
+   "s16_tight_all": {
+    "lines": 31,
+    "chars": 370,
+    "errors": 49,
+    "cer": 13.243
+   },
+   "s16_floor_dialogue": {
+    "lines": 3,
+    "chars": 43,
+    "errors": 14,
+    "cer": 32.558
+   },
+   "s16_floor_all": {
+    "lines": 4,
+    "chars": 48,
+    "errors": 15,
+    "cer": 31.25
+   }
+  },
+  "S16": {
+   "s12_tight_dialogue": {
+    "lines": 3,
+    "chars": 35,
+    "errors": 15,
+    "cer": 42.857
+   },
+   "s12_tight_all": {
+    "lines": 4,
+    "chars": 40,
+    "errors": 16,
+    "cer": 40.0
+   },
+   "s12_floor_dialogue": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s12_floor_all": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s16_tight_dialogue": {
+    "lines": 28,
+    "chars": 352,
+    "errors": 63,
+    "cer": 17.898
+   },
+   "s16_tight_all": {
+    "lines": 31,
+    "chars": 370,
+    "errors": 71,
+    "cer": 19.189
+   },
+   "s16_floor_dialogue": {
+    "lines": 3,
+    "chars": 43,
+    "errors": 12,
+    "cer": 27.907
+   },
+   "s16_floor_all": {
+    "lines": 4,
+    "chars": 48,
+    "errors": 13,
+    "cer": 27.083
+   }
+  },
+  "VOCR5_L": {
+   "s12_tight_dialogue": {
+    "lines": 3,
+    "chars": 35,
+    "errors": 6,
+    "cer": 17.143
+   },
+   "s12_tight_all": {
+    "lines": 4,
+    "chars": 40,
+    "errors": 6,
+    "cer": 15.0
+   },
+   "s12_floor_dialogue": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s12_floor_all": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s16_tight_dialogue": {
+    "lines": 28,
+    "chars": 352,
+    "errors": 15,
+    "cer": 4.261
+   },
+   "s16_tight_all": {
+    "lines": 31,
+    "chars": 370,
+    "errors": 16,
+    "cer": 4.324
+   },
+   "s16_floor_dialogue": {
+    "lines": 3,
+    "chars": 43,
+    "errors": 3,
+    "cer": 6.977
+   },
+   "s16_floor_all": {
+    "lines": 4,
+    "chars": 48,
+    "errors": 3,
+    "cer": 6.25
+   }
+  },
+  "VOCR5_N": {
+   "s12_tight_dialogue": {
+    "lines": 3,
+    "chars": 35,
+    "errors": 7,
+    "cer": 20.0
+   },
+   "s12_tight_all": {
+    "lines": 4,
+    "chars": 40,
+    "errors": 7,
+    "cer": 17.5
+   },
+   "s12_floor_dialogue": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s12_floor_all": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s16_tight_dialogue": {
+    "lines": 28,
+    "chars": 352,
+    "errors": 19,
+    "cer": 5.398
+   },
+   "s16_tight_all": {
+    "lines": 31,
+    "chars": 370,
+    "errors": 23,
+    "cer": 6.216
+   },
+   "s16_floor_dialogue": {
+    "lines": 3,
+    "chars": 43,
+    "errors": 2,
+    "cer": 4.651
+   },
+   "s16_floor_all": {
+    "lines": 4,
+    "chars": 48,
+    "errors": 2,
+    "cer": 4.167
+   }
+  },
+  "VOCR5_S": {
+   "s12_tight_dialogue": {
+    "lines": 3,
+    "chars": 35,
+    "errors": 8,
+    "cer": 22.857
+   },
+   "s12_tight_all": {
+    "lines": 4,
+    "chars": 40,
+    "errors": 8,
+    "cer": 20.0
+   },
+   "s12_floor_dialogue": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s12_floor_all": {
+    "lines": 0,
+    "chars": 0,
+    "errors": 0,
+    "cer": null
+   },
+   "s16_tight_dialogue": {
+    "lines": 28,
+    "chars": 352,
+    "errors": 26,
+    "cer": 7.386
+   },
+   "s16_tight_all": {
+    "lines": 31,
+    "chars": 370,
+    "errors": 28,
+    "cer": 7.568
+   },
+   "s16_floor_dialogue": {
+    "lines": 3,
+    "chars": 43,
+    "errors": 3,
+    "cer": 6.977
+   },
+   "s16_floor_all": {
+    "lines": 4,
+    "chars": 48,
+    "errors": 3,
+    "cer": 6.25
+   }
+  }
+ }
+}

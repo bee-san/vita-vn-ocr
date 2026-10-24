@@ -344,3 +344,21 @@ def test_clannad_dialogue_pairs_skip_name_lines(tmp_path):
     p = d["pairs"]["X:Y"]
     assert d["lines"] == 2 and p["chars"] == 7 and p["candidate_errors"] == 1 and p["baseline_errors"] == 2
     assert abs(p["cer_delta"] - 100 * (1 - 2) / 7) < 1e-4
+
+
+def test_a_strided_op_narrower_than_its_stride_is_refused():
+    """audit-stride16 F1: vocr_load refuses an op with kw < sw (runtime/tests/test_vocr.c test_kw_sw); the exporter
+    never writes one and plan_arena refuses one, as the C planner would."""
+    ops = E.model_ops(_model(12), 32)
+    k = next(i for i, op in enumerate(ops) if op["sw"] == 3)
+    assert ops[k]["type"] == E.T_DW and ops[k]["kw"] == 3
+    bad = [dict(op) for op in ops]
+    w = np.asarray(bad[k]["w"]).reshape(bad[k]["cout"], bad[k]["kh"], 3)
+    bad[k].update(kw=1, pw=0, w=np.ascontiguousarray(w[:, :, 1]))
+    with pytest.raises(ValueError, match="kw < sw"):
+        E.build_blob(bad, VOCAB, 32, int8=True)
+    b = _parse(E.build_blob(ops, VOCAB, 32, int8=True)[0])
+    assert E.plan_arena(b, 0, 0, 0, E.MODE_W8I) > 0
+    b["ops"][k]["kw"], b["ops"][k]["pw"] = 1, 0
+    with pytest.raises(ValueError, match="kw < sw"):
+        E.plan_arena(b, 0, 0, 0, E.MODE_W8I)

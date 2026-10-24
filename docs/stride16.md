@@ -17,12 +17,12 @@ Every console time below is an estimate. Nothing of stride16 has run on a consol
   | L16 | +1.18 [+0.83, +1.60] | +1.75 |
   | N12 | +0.40 [+0.27, +0.54] | +0.55 [+0.32, +0.80] |
 
-- **Not only the lines short of frames.** On rows with frames to spare (≥ 1.25 per character + repeat), the stride-16 models still lose 0.2-0.8 points. PSP loses more than Vita.
+- **Not only the lines short of frames.** On rows with frames to spare (≥ 1.25 per character + repeat), the stride-16 models still lose 0.2-0.8 points, every interval above 0. PSP loses more than Vita.
 - **The protected sets, read once afterwards, agree** (report only).
   - vita-test + psp-test dialogue: S16 +1.02, N16 +0.66, L16 +0.64 points, all VN intervals above 0; N12 +0.21 (−0.27 to +0.62).
-  - CLANNAD dialogue: +0.13 to +0.27 points.
+  - CLANNAD dialogue: +0.13 to +0.27 points (S16's interval includes 0).
   - The incumbents reproduce VOCR5's locked numbers exactly, so the changed runtime reads every stride-8 model bit for bit as before.
-- **The saving would have been real** (estimates, nominal 3-line box, 333 MHz, #85 without prefetch credit):
+- **The estimated saving** (nominal 3-line box, 333 MHz, #85 without prefetch credit):
 
   | tier | s per box | saving |
   |---|---|---:|
@@ -34,7 +34,8 @@ Every console time below is an estimate. Nothing of stride16 has run on a consol
 - **What stays.** The code that trains, exports and runs a stride-12 or stride-16 recognizer stays:
   - `train2.py --stride`;
   - the stride-aware export;
-  - op stride 3 and a stride-aware default tile in `runtime/vocr.c`, where stride-8 blobs run bit for bit as before.
+  - op stride 3 and a stride-aware default tile in `runtime/vocr.c`, where stride-8 blobs run bit for bit as before;
+  - the loader's refusal of an op narrower than its stride (`kw < sw`), whose column ring could overflow (audit-stride16 F1).
 - **Nothing to publish or pin.** There is no pre-release and no Rubi pin. head-gate (#120, merged) remains the speed path for VOCR5, and its gate composes with no stride16 model because none was adopted.
 
 ## Protocol (frozen before any run: `eval/stride16_protocol.json`)
@@ -101,11 +102,15 @@ VOCR5's probe for comparison: 254 / 179 / 138 lines/s (S / N / L).
   - `plan_arena` mirrors the runtime's new default tile.
 - **`runtime/vocr.c`.**
   - Op width strides up to 3 (stride 12).
+  - A CONV or DW op narrower than its stride (`kw < sw`) is refused at load, and the planner refuses a negative column-ring carry-over. Such an op leaves input columns that no window reads, and its carry-over could go negative and overflow the ring. This was added after audit-stride16's F1, after every run and score; no exported op has `kw < sw`, so nothing depends on it.
   - The default tile (`vocr_opts.tile_frames = 0`) is still 4 frames at stride 8. For a stride over 8 it is the whole frames nearest 32 input columns: 3 at stride 12, 2 at stride 16. Rubi's zeroed options therefore give a coarser model a smaller arena, where a 4-frame tile would grow it by 72-144 KB.
   - Every stride-8 blob runs bit for bit as before.
 - **Tests.**
   - `tests/test_stride16.py`.
   - `make check` also runs `runtime/tests/parity.py --fixture --stride 16` and `--stride 12`. Each checks bit-exact logits against `vocr_ref`, the PyTorch tolerance, tile invariance, `VOCR_INVERT`, and that the arena equals `plan_arena`.
+  - `runtime/tests/test_vocr.c` `test_kw_sw` (added with F1): ops of kernel width 1 at strides 2 and 3, and of width 2 at stride 3, are refused; widths 2 and 3 at stride 2, and 3 at stride 3, load and run with one frame per 2 sw input columns.
+
+**Erratum** (noted after the report; it changes no decision). `eval/stride16_protocol.json` describes the default tile above stride 8 as "2 at 12 and 16" (`code.runtime`, `estimates.rule`). The code, already at the frozen runner `stride16-runner-eeb91d1`, gives 3 at 12 and 2 at 16, as this document says, and the protocol's own `estimates.table` N12 row is at tile 3. Rule (d) passes at either tile: N12's arena is 176,832 B at tile 3 or 133,728 B at tile 2, against 182,944 B, and its box is 0.786 or 0.824 s, against 2 s. The protocol file stays as frozen, because the decision records hold its sha256.
 
 ### Selection (development sample only)
 
@@ -138,6 +143,8 @@ VOCR5's probe for comparison: 254 / 179 / 138 lines/s (S / N / L).
 A unit's ratio is a proxy: a region is read line by line, but its reference is the whole region's. A unit whose finder misses or merges a line also looks short of frames, which is why 36 units are below the floor already at stride 8.
 
 The refinement, which tightens the GRAD crop's rows, leaves a third as many tight units as GRAD alone at stride 16.
+
+The decisions' whole-dialogue tight stratum counts only the rows the wd component scores. VOCR5's pooling drops the 708 `dn_dlg` units whose frames `tv_dlg` holds, which leaves 2,322 of the 3,030 units: 398 of the 474 tight ones at stride 16, 110 of the 125 at 12.
 
 **Rule.** Candidate − incumbent is the mean over the arm's two seeds. Every interval comes from a paired, stratified VN-cluster bootstrap with 10,000 resamples:
 
@@ -276,7 +283,16 @@ The incumbents' scores, read by this round's runner, equal VOCR5's records to th
 | L16 | tv / dn / wd | 0.30 → 0.72% / 0.52 → 0.72% / 1.61 → 2.00% | 2.83 → 5.06% / 2.29 → 7.76% / 23.78 → 32.22% | +0.76 / +0.86 / +2.39 | +0.38 / +0.00 / +1.01 |
 | N12 | tv / dn / wd | 0.74 → 1.04% / 0.82 → 1.00% / 2.28 → 2.69% | (12-stride tight: 0 / 4 / 110 rows) | +0.53 / +0.27 / +0.72 | +0.11 / −0.11 / +0.35 |
 
-The rows short of frames lose the most: 2-9 points on 8-17% of the dialogue rows. But the rows with room lose 0.2-0.8 points as well, so a frame budget is not the whole story. Half the frame row also halves the temporal resolution and context the frame row and the head see. PSP text, smaller on screen, loses about twice or more what Vita's does.
+The rows short of frames lose the most: 2-9 points on 8-17% of the dialogue rows. But the rows with room lose 0.2-0.8 points as well, and every one of those intervals lies above 0 (the selection's VN-cluster bootstrap on the dialogue rows with room, mean of the seeds; `$HERD/shared/artifacts/stride16/room_ci.json`):
+
+| arm | tv | dn | wd |
+|---|---|---|---|
+| S16 | +0.49 [+0.08, +0.95] | +0.76 [+0.52, +1.04] | +0.77 [+0.52, +1.04] |
+| N16 | +0.75 [+0.38, +1.17] | +0.35 [+0.17, +0.56] | +0.49 [+0.24, +0.79] |
+| N12 | +0.31 [+0.15, +0.47] | +0.17 [+0.02, +0.36] | +0.41 [+0.22, +0.63] |
+| L16 | +0.42 [+0.08, +0.92] | +0.20 [+0.04, +0.38] | +0.39 [+0.17, +0.71] |
+
+So a frame budget is not the whole story. Half the frame row also halves the temporal resolution and context the frame row and the head see. PSP text, smaller on screen, loses more than Vita's in every component (point estimates; at stride 16, 1.4-2.0× on tv, 1.9-2.4× on wd, more on dn).
 
 ### Locked report (once, after the selections; report only)
 
@@ -329,6 +345,7 @@ Notes on the locked report:
 - **The frame budget of the protected lines** (report only, `eval/stride16_floor_protected_20261024.json`):
   - At stride 16, 31 of 451 protected lines are tight and 4 are below the floor.
   - On their 28 dialogue lines (352 characters): VOCR5-S 7.4% → S16 17.9%, VOCR5-N 5.4% → N16 12.5% (N12 8.5%), VOCR5-L 4.3% → L16 10.8%.
+- **The CLANNAD dialogue pairs.** `eval/stride16_clannad_dialogue.py` was written after the read: its output is from 10:21:45Z, and the one attempt finished at 10:20:16Z. `clannad_refs.py score` pairs all lines only, and the protocol makes dialogue primary, so the tool re-aggregates the attempt's stored per-line error counts over the dialogue lines with the same page bootstrap. It reads nothing again, and its counts equal clannad_refs' own `not_name` rows.
 - **Disclosures.** VOCR5's disclosures apply unchanged, because the training data is VOCR5's: planetarian's PSP port among the owner's captures, CLANNAD's cast names in synth3 v2 (Small), and the reserved speaker names in the synthetic renders. The 1 MB LM's word list includes CLANNAD's and other test titles' scripts.
 
 ### Estimates (A9, per nominal 3-line box)
@@ -352,6 +369,8 @@ Sizes:
 
 None of these times was measured on a console.
 
+The locked report's `macs_640px_line` for N12 (91,492,416, i.e. 53 frames) comes from `eval/vocr3_report.py`'s `640 // stride`. The runtime runs ⌈640 / 12⌉ = 54 frames, which is 93,218,688 MACs (`export.py --info`). No figure in this document uses that field.
+
 ### Head gate, V16, release
 
 - **Head gate.** head-gate (#120) merged before the selections. The protocol trains a gate only for an adopted model, and none was adopted, so nothing was composed. The gate's own estimate for VOCR5 stands: −122 / −137 / −163 ms per nominal box, `docs/headgate.md`.
@@ -365,14 +384,14 @@ None of these times was measured on a console.
 | 2026-10-23 13:50-13:58Z | two 20-step `train2` smokes (stride 16 and 12, random init, `/tmp`, deleted) |
 | 13:58-14:08Z | the 1,000-step speed probes (8 at once; checkpoints deleted, no development evaluation) |
 | 14:42:49Z | protocol commit (`eeb91d1` on the original history), tag `stride16-runner-eeb91d1` |
-| 14:43:05-14:45:25Z | the 8 pretrains start |
+| 14:43:05-14:51:25Z | the 8 pretrains start (queued 14:43:05-14:45:25Z; `pre16_S_seed2` waited for a heavy slot until 14:51:25Z) |
 | 14:5xZ-15:08Z | the incumbents scored on development data (they equal VOCR5's records) |
 | 16:33-18:00Z | Small pretrains paused at step 24,000 to share slots, then resumed |
 | 19:44Z | amendment 1 (rows keyed by position; before any candidate score), tag `stride16-runner-2813e7f`, the scoring runner |
 | 21:51Z | the branch rebased onto main `868bc91` (head-gate, #120) |
 | 2026-10-24 06:21-08:20Z | the pretrains end |
 | 06:22-09:54Z | the fine-tunes |
-| 08:25-09:57Z | the development scores, decisions and selections, each committed in order |
+| 07:59-09:57Z | the candidates' development scores (from 07:59Z), then the decisions (from 08:25Z) and selections, each committed in order |
 | 09:57-10:20Z | the locked report and CLANNAD, once |
 
 The branch was rebased twice: onto `868bc91` (head-gate, #120) on 2026-10-23 at 21:51Z, and onto `fb63532` (head-2level, #122) on 2026-10-24 after the locked report. The original commits are kept at the tags `stride16-history-20261023a` and `stride16-history-20261024a`, and the runner tags `stride16-runner-eeb91d1`, `stride16-runner-2813e7f` and `stride16-report-b5ade5a` hold the trees the runs, scores and report used. Author dates keep the times above.

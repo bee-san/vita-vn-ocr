@@ -228,6 +228,10 @@ static int parse_op(vocr_model *m, unsigned i, const unsigned char *r, unsigned 
     if (op->kh < 1 || op->kh > 7 || op->kw < 1 || op->kw > 7 || op->sh < 1 || op->sh > 2 ||
         op->sw < 1 || op->sw > 3 || op->ph >= op->kh || op->pw >= op->kw)
         return VOCR_E_FORMAT;
+    /* every input column must fall in some window (kw >= sw): plan()'s column ring carries
+     * lag * sw + pw - (the previous op's lag) columns from step to step, which is at least kw - sw,
+     * so a kernel narrower than its stride could make it negative and the ring overflow */
+    if (op->kw < op->sw) return VOCR_E_FORMAT;
     if (op->h_in != *rows || op->h_in + 2u * op->ph < op->kh ||
         op->h_out != (op->h_in + 2u * op->ph - op->kh) / op->sh + 1u)
         return VOCR_E_FORMAT;
@@ -529,9 +533,12 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
         const vocr_op *op = &m->op[i];
         vocr_plan_op *p = &c->op[i];
         unsigned n_prev;
+        int halo;
         if (op->type != T_CONV && op->type != T_DW) continue;
         n_prev = i == 0 ? c->n_src : i <= f ? c->op[i - 1].n_step : c->op[i - 1].n_tile;
-        p->halo = (uint32_t)(p->lag * (int)op->sw + (int)op->pw - (i ? c->op[i - 1].lag : 0));
+        halo = p->lag * (int)op->sw + (int)op->pw - (i ? c->op[i - 1].lag : 0);
+        if (halo < 0) return VOCR_E_FORMAT; /* kw >= sw (parse_op) keeps it >= kw - sw >= 0 */
+        p->halo = (uint32_t)halo;
         p->cap = n_prev + p->halo;
         p->in_off = (uint32_t)off;
         off += al16((size_t)p->cap * p->in_col * sizeof(float));

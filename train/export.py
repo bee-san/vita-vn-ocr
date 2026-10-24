@@ -195,6 +195,8 @@ def build_blob(ops, vocab, height, int8=False, max_width=None, source_sha=b""):
     total_stride = 1
     for op in ops:
         total_stride *= op["sw"]
+        if op["kw"] < op["sw"]:            # vocr_load refuses it: no window reads some input columns
+            raise ValueError(f"an op of kernel width {op['kw']} at width stride {op['sw']}: kw < sw")
     if max_width is None:
         max_width = default_max_width(total_stride)
     if max_width % total_stride:
@@ -345,6 +347,8 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0, two_level
     2 score: w8i and a blob with a gate); two_level: None, or the blob's VOC2 trailer as
     train/head2level.read_trailer returns it (vocr_opts.two_level = 1, W8I)."""
     ops, S, H0 = blob["ops"], blob["stride"], blob["height"]
+    if any(op["kw"] < op["sw"] for op in ops):     # vocr_load refuses such a blob (kw >= sw)
+        raise ValueError("an op narrower than its width stride (kw < sw)")
     if mode == 0:
         mode = MODE_W8F if blob["int8"] else MODE_F32
     if mode != MODE_F32 and not blob["int8"]:

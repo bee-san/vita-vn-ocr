@@ -241,6 +241,51 @@ static size_t build_stem_head_blob(int int8)
     return blob_pos;
 }
 
+/* A strided op's kernel width against its stride (audit-stride16 F1): height 8, stem 3x3/2 (1->8 channels,
+ * 8->4 rows), a depthwise 3 x kw of stride (2, sw) (4->2 rows, pad (1, (kw - 1) / 2)), a 2x1 collapse (8->16),
+ * head 16->6; total stride 2 sw, max width 252 (a multiple of 4 and of 6). */
+static size_t build_kw_sw_blob(unsigned kw, unsigned sw)
+{
+    unsigned char vocab[64];
+    const char *chars[CLASSES - 1] = {"a", "\xe3\x81\x82", "b", "\xe3\x83\xbc", "!"};
+    unsigned i, pos = 0, n_ops = 4;
+    uint32_t off;
+    memset(blob_buf, 0, sizeof blob_buf);
+    blob_pos = 64 + 64 * n_ops;
+    lcg = 777u;
+    off = put_floats(9 * 8, 0.6f);
+    op_rec(0, 1, 1 | 4, 3, 3, 2, 2, 1, 1, 1, 8, 8, 4, off, 9 * 8 * 4, put_floats(8, 0.1f), 0, 9, 8);
+    off = put_floats(3 * kw * 8, 0.6f);
+    op_rec(1, 2, 1 | 4, 3, kw, 2, sw, 1, (kw - 1) / 2, 8, 8, 4, 2, off, 3 * kw * 8 * 4, put_floats(8, 0.1f), 0,
+           3 * kw, 8);
+    mat_op(2, 3, 1 | 4 | 16, 2, 8, 16, 2, 1, 0);
+    mat_op(3, 4, 4, 1, 16, CLASSES, 1, 1, 0);
+    wr16(vocab, 0);
+    wr16(vocab + 2, 0);
+    for (i = 0; i < CLASSES - 1; i++) {
+        size_t n = strlen(chars[i]);
+        memcpy(vocab + 2 * (CLASSES + 1) + pos, chars[i], n);
+        pos += (unsigned)n;
+        wr16(vocab + 2 * (i + 2), pos);
+    }
+    off = put(vocab, 2 * (CLASSES + 1) + pos);
+    memcpy(blob_buf, "VOCR", 4);
+    wr16(blob_buf + 4, 1);
+    wr16(blob_buf + 6, 64);
+    wr32(blob_buf + 8, (uint32_t)blob_pos);
+    wr32(blob_buf + 12, 0u);
+    wr16(blob_buf + 16, 8);
+    wr16(blob_buf + 18, 252);
+    wr16(blob_buf + 20, 2 * sw);
+    wr16(blob_buf + 22, n_ops);
+    wr32(blob_buf + 24, CLASSES);
+    wr32(blob_buf + 28, 64);
+    wr32(blob_buf + 32, off);
+    wr32(blob_buf + 36, pos);
+    wr32(blob_buf + 40, crc32_ref(blob_buf + 64, blob_pos - 64));
+    return blob_pos;
+}
+
 /* ------------------------------------------------------------ helpers */
 
 static unsigned char arena_a[1 << 20] __attribute__((aligned(16)));
@@ -410,6 +455,35 @@ static void test_load(int int8)
     blob_buf[64 + 64 * 2 + 1] &= (unsigned char)~2u;
     CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK);
     CHECK(vocr_check_crc(blob_buf, n) == VOCR_OK);
+}
+
+/* audit-stride16 F1: a strided op narrower than its stride (kw < sw) leaves input columns no window reads, and
+ * its column ring's carry-over could go negative; vocr_load refuses it. The same shape at kw >= sw loads and runs
+ * (sw 3: a stride-12 model's downsampling), with one CTC frame per 2 sw input columns. */
+static void test_kw_sw(void)
+{
+    static const unsigned cases[][3] = {{1, 2, 0}, {1, 3, 0}, {2, 3, 0}, {2, 2, 1}, {3, 2, 1}, {3, 3, 1}};
+    const unsigned w = 300, h = 40;
+    char text[256];
+    unsigned c;
+    make_image(w, h, 0);
+    for (c = 0; c < sizeof cases / sizeof cases[0]; c++) {
+        const unsigned kw = cases[c][0], sw = cases[c][1];
+        vocr_model m;
+        vocr_opts o;
+        vocr_extra ex;
+        size_t n = build_kw_sw_blob(kw, sw);
+        int rc = vocr_load(&m, blob_buf, n);
+        if (!cases[c][2]) {
+            CHECK(rc == VOCR_E_FORMAT);
+            continue;
+        }
+        CHECK(rc == VOCR_OK && m.stride == 2 * sw);
+        if (rc != VOCR_OK) continue;
+        memset(&o, 0, sizeof o);
+        CHECK(run_once(&m, o, arena_a, w, h, VOCR_GREY8, text, sizeof text, NULL, 0, &ex) == VOCR_OK);
+        CHECK(ex.frames == (vocr_resized_width(&m, w, h) + 2 * sw - 1) / (2 * sw));
+    }
 }
 
 /* FNV-1a 64 over bytes */
@@ -1704,6 +1778,7 @@ int main(void)
 {
     test_load(0);
     test_load(1);
+    test_kw_sw();
     /* known answers: main a540027's scalar code (host gcc and clang, Cortex-A9 NEON and scalar agree) */
     test_run(0, 16, 0x119943e1dc1cc516ull);
     test_run(1, 16, 0x807bd1f142cf0a33ull);

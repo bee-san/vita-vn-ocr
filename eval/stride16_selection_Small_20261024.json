@@ -1,0 +1,197 @@
+{
+ "kind": "stride16-selection",
+ "tier": "Small",
+ "considered": [
+  "S16"
+ ],
+ "adopted_arm": null,
+ "replaces": false,
+ "runs": [
+  {
+   "run": "s16f_S_seed1",
+   "arm": "S16",
+   "stride": 16,
+   "score": 5.35588,
+   "tv_cer": 0.021937,
+   "dn_cer": 0.024664,
+   "wd_cer": 0.083817,
+   "tv_names_cer": 0.07839,
+   "dn_names_cer": 0.140845,
+   "platform": {
+    "tv": {
+     "psp": 0.030733,
+     "vita": 0.013952
+    },
+    "dn": {
+     "psp": 0.029584,
+     "vita": 0.007123
+    },
+    "wd": {
+     "psp": 0.112712,
+     "vita": 0.050504
+    }
+   },
+   "strata": {
+    "s12_tight": {
+     "tv": null,
+     "dn": 0.7317073170731707,
+     "wd": 0.8027571580063627
+    },
+    "s12_floor": {
+     "tv": null,
+     "dn": 0.9230769230769231,
+     "wd": 0.9266304347826086
+    },
+    "s16_tight": {
+     "tv": 0.08980582524271845,
+     "dn": 0.11470985155195682,
+     "wd": 0.3624122453677063
+    },
+    "s16_floor": {
+     "tv": null,
+     "dn": 0.7317073170731707,
+     "wd": 0.7411484677179411
+    }
+   },
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/blobs/s16f_S_seed1_w8.vocr",
+   "blob_sha256": "2a4bdf7e070f237d274f8e1e351304e57d8206fc0d5f6723d2dedc5c2ff82bb8",
+   "blob_bytes": 819792,
+   "arena_w8i": 116384,
+   "within_limits": true
+  },
+  {
+   "run": "s16f_S_seed2",
+   "arm": "S16",
+   "stride": 16,
+   "score": 5.37522,
+   "tv_cer": 0.020625,
+   "dn_cer": 0.024004,
+   "wd_cer": 0.08519,
+   "tv_names_cer": 0.077331,
+   "dn_names_cer": 0.151017,
+   "platform": {
+    "tv": {
+     "psp": 0.030733,
+     "vita": 0.011448
+    },
+    "dn": {
+     "psp": 0.028431,
+     "vita": 0.008219
+    },
+    "wd": {
+     "psp": 0.11506,
+     "vita": 0.050754
+    }
+   },
+   "strata": {
+    "s12_tight": {
+     "tv": null,
+     "dn": 0.6585365853658537,
+     "wd": 0.8094733121244256
+    },
+    "s12_floor": {
+     "tv": null,
+     "dn": 0.6923076923076923,
+     "wd": 0.9293478260869565
+    },
+    "s16_tight": {
+     "tv": 0.08818770226537216,
+     "dn": 0.10256410256410256,
+     "wd": 0.37426631373000346
+    },
+    "s16_floor": {
+     "tv": null,
+     "dn": 0.6585365853658537,
+     "wd": 0.7479916691460875
+    }
+   },
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/blobs/s16f_S_seed2_w8.vocr",
+   "blob_sha256": "bfe653acdd7a017db19f4143dc197ceb6c5530e2682cebebaa659d0e924a244c",
+   "blob_bytes": 819792,
+   "arena_w8i": 116384,
+   "within_limits": true
+  },
+  {
+   "run": "VOCR5-S",
+   "arm": "incumbent",
+   "stride": 8,
+   "score": 3.78209,
+   "tv_cer": 0.013625,
+   "dn_cer": 0.011102,
+   "wd_cer": 0.063278,
+   "tv_names_cer": 0.058616,
+   "dn_names_cer": 0.102504,
+   "platform": {
+    "tv": {
+     "psp": 0.021802,
+     "vita": 0.006201
+    },
+    "dn": {
+     "psp": 0.013063,
+     "vita": 0.00411
+    },
+    "wd": {
+     "psp": 0.086602,
+     "vita": 0.036389
+    }
+   },
+   "strata": {
+    "s12_tight": {
+     "tv": null,
+     "dn": 0.34146341463414637,
+     "wd": 0.704135737009544
+    },
+    "s12_floor": {
+     "tv": null,
+     "dn": 0.46153846153846156,
+     "wd": 0.9081521739130435
+    },
+    "s16_tight": {
+     "tv": 0.04854368932038835,
+     "dn": 0.037786774628879895,
+     "wd": 0.2800092070433882
+    },
+    "s16_floor": {
+     "tv": null,
+     "dn": 0.34146341463414637,
+     "wd": 0.6364177328176138
+    }
+   },
+   "blob": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/blobs/VOCR5-S_w8.vocr",
+   "blob_sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+   "blob_bytes": 819792,
+   "arena_w8i": 124832,
+   "within_limits": null
+  }
+ ],
+ "selected": "VOCR5-S",
+ "selected_blob": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_S_w8.vocr",
+ "selected_blob_sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+ "protocol_sha256": "05935c08cf98d777c9176b6805a57d085d9c67c889906802b5c8ec16f0920730",
+ "computed": "2026-10-24T08:27:37Z",
+ "inputs": {
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/tv_s16f_S_seed1.json": "602e9e1fcd8917f29556320408eea943d283496ca9c8be502b94d8ca6c046108",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/tv_s16f_S_seed2.json": "84610be74525304a2281b89c5bd5d28503c96f075e6b4a40ba535230b119464b",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/tv_VOCR5-S.json": "6abad8da99691c146721f843655f5e314123ce2e48949b3d56d11e51eb955525",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_tv_native_ink_dev_s16f_S_seed1.json": "69b43a9779d6f0f311b530615c2dc7e1970501d38eae2544665775c3b6bedc92",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_tv_native_grad_dev_s16f_S_seed1.json": "b2605ea8030b0170bb14e6304eda7b5ba9ef2a57be4072639cdbd3c81a4f0e22",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_strict_ink_dev_s16f_S_seed1.json": "9cbf78b71a9b9e55a04ea652c210a4a65477ff09363c0424df18f3f77847b0c3",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_strict_grad_dev_s16f_S_seed1.json": "43e4c58fe6175438019a6af3ba793c1f3f1e6e2d2eb9fd976083b10dce7b11d9",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_tv_native_ink_dev_s16f_S_seed2.json": "04c49fe20d70ba6870ebd86508f495f67f86c6daf2ea6f36855e562b8ed6d02d",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_tv_native_grad_dev_s16f_S_seed2.json": "46907c78cd01347d45e5830711cc140598f5c0050a13185a6586f7fab47864ea",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_strict_ink_dev_s16f_S_seed2.json": "5f10bbf274ba6b38c33ff77dbc1612b501400f823488617aba99d57516b0c812",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_strict_grad_dev_s16f_S_seed2.json": "5bbde5d4389a64ccae40d6aa52475ca5692c7d52349a44988339061ca45efdd7",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_tv_native_ink_dev_VOCR5-S.json": "af8e3e28311a74893201e61d96b271ebb0c5db66a1b1cb42240e78f8b56b35ff",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_tv_native_grad_dev_VOCR5-S.json": "618c118d36d60386bb5a74a8c4e6350f739f55e0c6921d2d2177f8ee61bffd49",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_strict_ink_dev_VOCR5-S.json": "1f19aed318ea3bc48162c51a9ca909105bd1bf5c9c792f7a6e34458ddf591959",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/scores/dn_devnative_strict_grad_dev_VOCR5-S.json": "99daaee1a3180dff3f10dcdeaf2d513be3c74266020850e2680d6a922776096d",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/wd/s16f_S_seed1/meta.json": "b6bc8dd85e4d18a2237a8f8e15139044a4da5c56ada4c50bb2df7e1297bc758e",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/wd/s16f_S_seed2/meta.json": "d49825b22018f210d3a4bf6ba7bfad621cb278948354d4aac113446f8ec256ad",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/wd/VOCR5-S/meta.json": "2ec88904bdf6e3be741f120c6f9ce894b93470c30b0ae47bf6c05e5e67bb586e",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/wd/s16f_S_seed1/units_s16f_S_seed1.json": "b77f819442f0ab8b900927761db87d25e52785f750908bbe3bb975fa39086e3f",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/wd/s16f_S_seed2/units_s16f_S_seed2.json": "01bdf43247461229f1bc9a9408d9fc7c81467cbd76c9d0cbd7226f606ecb02ae",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/wd/VOCR5-S/units_VOCR5-S.json": "a8b0e13e93ad0b57407f7adfb6b1b3c8bcb8b675d988113979825430e3255ebe",
+  "/local/home/skerraut/herd-synth3/clones/stride16-runner-2813e7f/eval/stride16_floor_dev_20261023.json": "3e31b24edac76a7b1c04fe537e8ac70f7f98fcaeceaa81c807e961e625183347",
+  "/local/home/skerraut/herd-vita-ocr/shared/artifacts/stride16/select/Small/decision_S16.json": "e86f24f7a4ae81bced0d2093fffb095063ae76f0eb4cace750f95ade33c4961c"
+ }
+}

@@ -224,9 +224,14 @@ static int parse_op(vocr_model *m, unsigned i, const unsigned char *r, unsigned 
         if (r[j]) return VOCR_E_FORMAT;
     if (op->type < T_CONV || op->type > T_HEAD || (op->flags & ~31u)) return VOCR_E_FORMAT;
     if ((op->type == T_HEAD) != (int)last) return VOCR_E_FORMAT;
+    /* width strides up to 3: a stride-12 model (train/model.py stage_strides) downsamples once by 3 */
     if (op->kh < 1 || op->kh > 7 || op->kw < 1 || op->kw > 7 || op->sh < 1 || op->sh > 2 ||
-        op->sw < 1 || op->sw > 2 || op->ph >= op->kh || op->pw >= op->kw)
+        op->sw < 1 || op->sw > 3 || op->ph >= op->kh || op->pw >= op->kw)
         return VOCR_E_FORMAT;
+    /* every input column must fall in some window (kw >= sw): plan()'s column ring carries
+     * lag * sw + pw - (the previous op's lag) columns from step to step, which is at least kw - sw,
+     * so a kernel narrower than its stride could make it negative and the ring overflow */
+    if (op->kw < op->sw) return VOCR_E_FORMAT;
     if (op->h_in != *rows || op->h_in + 2u * op->ph < op->kh ||
         op->h_out != (op->h_in + 2u * op->ph - op->kh) / op->sh + 1u)
         return VOCR_E_FORMAT;
@@ -486,7 +491,10 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     c->max_width = o->max_width && o->max_width < m->max_width ? o->max_width : m->max_width;
     c->max_width = (c->max_width + S - 1) / S * S;
     t_max = c->max_width / S;
-    F = umin(o->tile_frames ? o->tile_frames : 4u, t_max);
+    /* default tile: 4 frames, or for a stride over 8 the whole frames nearest 32 input columns (3 at
+     * stride 12, 2 at 16), so a coarser-stride model's zeroed options keep about a 32-column tile's
+     * arena instead of growing with the stride */
+    F = umin(o->tile_frames ? o->tile_frames : S <= 8u ? 4u : S >= 64u ? 1u : (32u + S / 2u) / S, t_max);
     hb = umin(o->head_frames ? o->head_frames : 16u, t_max);
     c->tile = F;
     c->head = hb;
@@ -525,9 +533,12 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
         const vocr_op *op = &m->op[i];
         vocr_plan_op *p = &c->op[i];
         unsigned n_prev;
+        int halo;
         if (op->type != T_CONV && op->type != T_DW) continue;
         n_prev = i == 0 ? c->n_src : i <= f ? c->op[i - 1].n_step : c->op[i - 1].n_tile;
-        p->halo = (uint32_t)(p->lag * (int)op->sw + (int)op->pw - (i ? c->op[i - 1].lag : 0));
+        halo = p->lag * (int)op->sw + (int)op->pw - (i ? c->op[i - 1].lag : 0);
+        if (halo < 0) return VOCR_E_FORMAT; /* kw >= sw (parse_op) keeps it >= kw - sw >= 0 */
+        p->halo = (uint32_t)halo;
         p->cap = n_prev + p->halo;
         p->in_off = (uint32_t)off;
         off += al16((size_t)p->cap * p->in_col * sizeof(float));

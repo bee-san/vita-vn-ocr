@@ -1,0 +1,758 @@
+{
+ "kind": "stride16-protocol",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/118 (item 3 of #117)",
+ "frozen": "2026-10-23 (commit time in git), before any stride16 run started and before any stride16 model was scored on any development or test set. The 1,000-step speed probes (13:58-14:08Z, 8 at once, $HERD/shared/artifacts/stride16/probe, checkpoints deleted, no development evaluation) and the 20-step train2 smokes (13:50-13:58Z, /tmp, deleted) and the A9 estimate runs (random-init blobs of the shapes) are not stride16 runs: no checkpoint of theirs was kept, exported for a score or scored (the smokes' in-run read of 50 teacher_val_dev lines by a random-init 20-step model was logged and not used).",
+ "rule_of_this_file": "frozen before any run; changes only by a dated amendment appended to 'amendments', made before the scores it could affect",
+ "goal": "retrain VOCR5's three recognizers with a coarser CTC frame step (one frame per 16 input columns instead of 8; Normal also at 12), with VOCR5's recipe, data and vocabs, and adopt a tier's coarser model only if it reads development dialogue no worse (not resolved worse) than VOCR5's, including the lines a coarser step leaves short of frames: the recognizer then runs fewer frames per line (est. −20 to −25% per box), with the same weights and a smaller arena",
+ "instructions": {
+  "task": "/local/home/skerraut/herd-synth3/prompts/stride16.md (VOCR5 protocol style; VOCR5's pools, cohorts and tools copied to new names, not changed)",
+  "owner_2026-10-23_13:34Z": "\"Let's queue agents to skip output layer, make a pr. Trial the two level output. And retrain for a coarser frame step\"",
+  "rule_from_the_task": "adopt a tier's stride-16 model only if dev whole-dialogue CER is not resolved worse than the incumbent and the lines below the CTC floor are handled (measure them); report est. ms per box at 333/444 MHz, arena and weights per candidate; compose with head-gate if it has landed (gate trained on the new models)",
+  "owner_2026-10-14_13:57Z": "dialogue CER is the primary metric; names a secondary column",
+  "owner_2026-10-14_13:25Z": "the only test sets are vita-test, psp-test and the CLANNAD family; selection on the fixed development sample (reserved.json dev_sample)"
+ },
+ "known_before_freezing": [
+  "text-stats (#117; reports/text-stats.md and $HERD/shared/artifacts/text-stats-frames/section.md): 3.14 (Vita) / 2.88 (PSP) CTC frames per character at stride 8 (median, the console's crop); at stride 16, 0.26% / 0.73% of dialogue lines fall below the CTC floor (fewer frames than characters + adjacent repeats) and 5.4% / 14.9% run under 1.25 frames per character + repeat; at stride 12, 0 / 0.18% and 0.14% / 0.68%",
+  "text-stats-frames: today's models pooled to stride 16 lose +16 to +48 points (pre-registered poolings), +0.9 to +1.0 with a post hoc frame selection; a retrained coarser-stride model's accuracy is unmeasured; no earlier round trained another horizontal stride",
+  "text-stats-frames: ds22 exports and loads in the frozen runtime (W/16 frames, parity, ASan/UBSan clean, the Vita-flag ARM builds' text equal to the host's); stride 12 needs op strides up to 3 and a 1,020-px width clamp (its prototype runtime passed the same checks)",
+  "VOCR5 (docs/vocr5.md): selections v5f_S_seed2, v5f_N_seed3, v5f_L_seed2 (release v0.3.0); development scores 3.782 / 3.342 / 2.959 (tv 1.36 / 0.74 / 0.49%, dn 1.11 / 0.98 / 0.68%, wd 6.33 / 5.82 / 5.33%); arm F beat P at every tier",
+  "the speed probes (eval/stride16_protocol.json 'probe'): at VOCR5's step counts the pretrains take about 14-16 h at 8 at once (VOCR5's took about 22.5 h), so VOCR5's lengths are kept",
+  "the development rows' frame budget (eval/stride16_floor.py, model-independent: no recognizer read anything) is in 'floor.counts'",
+  "head-gate (#117 item 1) froze its protocol on feat/head-gate (8fb6a20) at 13:54Z and has not landed; head-2level (item 2) is drafting"
+ ],
+ "tiers": {
+  "Small": {
+   "incumbent": {
+    "name": "VOCR5-S",
+    "run": "v5f_S_seed2",
+    "blob": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_S_w8.vocr",
+    "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+    "blob_bytes": 819792,
+    "arena_w8i": 124832
+   },
+   "limits": {
+    "weights_eq": 819792,
+    "arena_w8i_le": 124832,
+    "box_s_le": 1.0,
+    "why": "the stride changes no parameter, so a candidate's weights equal its incumbent's byte for byte in size; its W8I arena at the runtime's default tile must not exceed the incumbent's; its shape's box estimate (#85 without prefetch credit, 333 and 444 MHz) must stay under the tier's time ceiling (Small < 1 s, Normal < 2 s, Large < 3 s)"
+   }
+  },
+  "Normal": {
+   "incumbent": {
+    "name": "VOCR5-N",
+    "run": "v5f_N_seed3",
+    "blob": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_N_w8.vocr",
+    "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+    "blob_bytes": 1185632,
+    "arena_w8i": 182944
+   },
+   "limits": {
+    "weights_eq": 1185632,
+    "arena_w8i_le": 182944,
+    "box_s_le": 2.0,
+    "why": "the stride changes no parameter, so a candidate's weights equal its incumbent's byte for byte in size; its W8I arena at the runtime's default tile must not exceed the incumbent's; its shape's box estimate (#85 without prefetch credit, 333 and 444 MHz) must stay under the tier's time ceiling (Small < 1 s, Normal < 2 s, Large < 3 s)"
+   }
+  },
+  "Large": {
+   "incumbent": {
+    "name": "VOCR5-L",
+    "run": "v5f_L_seed2",
+    "blob": "$HERD/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_L_w8.vocr",
+    "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3",
+    "blob_bytes": 2473696,
+    "arena_w8i": 261024
+   },
+   "limits": {
+    "weights_eq": 2473696,
+    "arena_w8i_le": 261024,
+    "box_s_le": 3.0,
+    "why": "the stride changes no parameter, so a candidate's weights equal its incumbent's byte for byte in size; its W8I arena at the runtime's default tile must not exceed the incumbent's; its shape's box estimate (#85 without prefetch credit, 333 and 444 MHz) must stay under the tier's time ceiling (Small < 1 s, Normal < 2 s, Large < 3 s)"
+   }
+  }
+ },
+ "arms": {
+  "S16": {
+   "tier": "Small",
+   "stride": 16,
+   "shape": "s_w100v4987 with ds22 (train/model.py stage_strides(16): the 2-row stage's DS block at stride (2, 2))",
+   "train2_args": "--width 1.0 --stride 16",
+   "vocab": "data/vocab_4987_proof.txt",
+   "vocab_sha256": "4a1e7cb77c627a217ae57c7ed427f0695c732dfb85158c674ec4d14994a4e04c",
+   "recipe": "C",
+   "pretrain_steps": 216000,
+   "seeds": [
+    1,
+    2
+   ],
+   "runs": {
+    "pretrains": [
+     "pre16_S_seed1",
+     "pre16_S_seed2"
+    ],
+    "fine_tunes": [
+     "s16f_S_seed1",
+     "s16f_S_seed2"
+    ]
+   }
+  },
+  "N16": {
+   "tier": "Normal",
+   "stride": 16,
+   "shape": "n_w150v5631 with ds22",
+   "train2_args": "--width 1.5 --stride 16",
+   "vocab": "data/vocab_vn_5631.txt",
+   "vocab_sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+   "recipe": "M",
+   "pretrain_steps": 150000,
+   "seeds": [
+    1,
+    2
+   ],
+   "runs": {
+    "pretrains": [
+     "pre16_N_seed1",
+     "pre16_N_seed2"
+    ],
+    "fine_tunes": [
+     "s16f_N_seed1",
+     "s16f_N_seed2"
+    ]
+   }
+  },
+  "L16": {
+   "tier": "Large",
+   "stride": 16,
+   "shape": "l_lw300v5631 with ds22",
+   "train2_args": "--width 2.0 --chans 64,128,256,480,576 --stride 16",
+   "vocab": "data/vocab_vn_5631.txt",
+   "vocab_sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+   "recipe": "M",
+   "pretrain_steps": 108000,
+   "seeds": [
+    1,
+    2
+   ],
+   "runs": {
+    "pretrains": [
+     "pre16_L_seed1",
+     "pre16_L_seed2"
+    ],
+    "fine_tunes": [
+     "s16f_L_seed1",
+     "s16f_L_seed2"
+    ]
+   }
+  },
+  "N12": {
+   "tier": "Normal",
+   "stride": 12,
+   "shape": "n_w150v5631 with ds3w3 (stage_strides(12): the 4-row stage's DS block at stride (2, 3); max width 1,020)",
+   "train2_args": "--width 1.5 --stride 12",
+   "vocab": "data/vocab_vn_5631.txt",
+   "vocab_sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+   "recipe": "M",
+   "pretrain_steps": 150000,
+   "seeds": [
+    1,
+    2
+   ],
+   "runs": {
+    "pretrains": [
+     "pre12_N_seed1",
+     "pre12_N_seed2"
+    ],
+    "fine_tunes": [
+     "s12f_N_seed1",
+     "s12f_N_seed2"
+    ]
+   }
+  }
+ },
+ "probe": {
+  "what": "1,000 steps of each pretrain configuration (2 seeds each, 8 at once through heavy.sh, 5 threads), eval/stride16_run.sh TIER STRIDE pre SEED with STRIDE16_PROBE=1 (no development evaluation)",
+  "rates": {
+   "L16_s1": {
+    "lines_per_s_steps_400_1000": 189.0,
+    "s_per_step": 0.508,
+    "points": 6,
+    "lines_per_s_steps_200_600": 175.0,
+    "projected_h_at_protocol_steps": 15.2
+   },
+   "L16_s2": {
+    "lines_per_s_steps_400_1000": 189.8,
+    "s_per_step": 0.506,
+    "points": 6,
+    "lines_per_s_steps_200_600": 176.8,
+    "projected_h_at_protocol_steps": 15.2
+   },
+   "N12_s1": {
+    "lines_per_s_steps_400_1000": 251.3,
+    "s_per_step": 0.382,
+    "points": 7,
+    "lines_per_s_steps_200_600": 234.2,
+    "projected_h_at_protocol_steps": 15.9
+   },
+   "N12_s2": {
+    "lines_per_s_steps_400_1000": 248.7,
+    "s_per_step": 0.386,
+    "points": 7,
+    "lines_per_s_steps_200_600": 227.8,
+    "projected_h_at_protocol_steps": 16.1
+   },
+   "N16_s1": {
+    "lines_per_s_steps_400_1000": 268.1,
+    "s_per_step": 0.358,
+    "points": 7,
+    "lines_per_s_steps_200_600": 261.4,
+    "projected_h_at_protocol_steps": 14.9
+   },
+   "N16_s2": {
+    "lines_per_s_steps_400_1000": 266.1,
+    "s_per_step": 0.361,
+    "points": 7,
+    "lines_per_s_steps_200_600": 250.4,
+    "projected_h_at_protocol_steps": 15.0
+   },
+   "S16_s1": {
+    "lines_per_s_steps_400_1000": 398.4,
+    "s_per_step": 0.241,
+    "points": 7,
+    "lines_per_s_steps_200_600": 398.4,
+    "projected_h_at_protocol_steps": 14.5
+   },
+   "S16_s2": {
+    "lines_per_s_steps_400_1000": 404.1,
+    "s_per_step": 0.238,
+    "points": 7,
+    "lines_per_s_steps_200_600": 379.2,
+    "projected_h_at_protocol_steps": 14.3
+   }
+  },
+  "vocr5_probe": "Small 0.38, Normal 0.54, Large 0.75 s per step (VOCR5's probe, 8 at once)",
+  "decision": "VOCR5's lengths are kept: the probe projects 14-16 h per pretrain"
+ },
+ "code": {
+  "model": "train/model.py TinyVNOCR(stride=8|12|16) via stage_strides(): 16 runs the 2-row stage's downsampling DS block at stride (2, 2), 12 the 4-row stage's at (2, 3); the state_dict is a stride-8 model's; checkpoints record 'stride' and 'max_width' (absent = 8, 1024)",
+  "train2": "--stride sets the CTC input lengths (ceil(w / s)), the label-fits-frames filter (train/train.py ctc_ok at the stride: a line whose characters + adjacent repeats exceed its frames is dropped at load, as at stride 8 today), the augmentation's minimum width ((frames - 1) * s + 1), the width clamp (1,024; 1,020 at 12) and the batch padding; kd= sources are refused at strides other than 8",
+  "export": "build_blob's max width defaults to the largest multiple of the stride up to 1,024 (export.py default_max_width); a max width that is not a multiple of the stride is refused",
+  "runtime": "runtime/vocr.c: op width strides up to 3 (a stride-12 model); the default tile (vocr_opts.tile_frames = 0) is 4 frames, or for a stride over 8 the frames within 32 input columns (2 at 12 and 16), so Rubi's zeroed options give a coarser model the smaller arena (export.plan_arena mirrors it); every stride-8 blob runs bit for bit as before",
+  "tests": "tests/test_stride16.py; runtime/tests/parity.py --fixture --stride 16 / 12 in make check (bit-exact against vocr_ref, PyTorch tolerance, tile invariance, VOCR_INVERT, arena = plan_arena)"
+ },
+ "data": {
+  "rule": "exactly VOCR5's (eval/vocr5_protocol.json 'data'), read through its pins, unchanged",
+  "pins": {
+   "data/manifests/synth3_shards_v2.json": "02800738dc36544ff66ed4b700f94b6787ffb7572add6f205f73d624e47fa28f",
+   "data/manifests/synth3_shards_v3.json": "5f747d59b008e0e006d99e162950e725e9917305e20757b66b34f0553a4c0b71",
+   "data/manifests/synth4_shards_v5631.json": "660c36f43b1007ed9327e8d2222d67e47309ee4e6f0273bd737a5ba32e8949b4",
+   "eval/vocr5_pools.sha256": "eda699bce5a3e78673331d340377968049d35c8fc530cc5603978414c1eb5f3c",
+   "eval/vocr5_ft_sources.json": "a542c66b933ae742bd1599e1ea7051fe1ec43ce209cbaed5ec023e1d98b1a8eb",
+   "eval/vocr5_protocol.json": "7b21cd065a61ea682fb0b241473b10a21f4b0dcc50266e9014a0bb465af79177"
+  },
+  "checked": "eval/stride16_run.sh checks the vocab's sha256, every synthetic shard against its manifest and every pool against eval/vocr5_pools.sha256 before a run (sha256sum -c printed OK at freezing)"
+ },
+ "recipe": {
+  "pretrain": "VOCR5's (eval/vocr5_protocol.json recipe.pretrain) plus --stride: from scratch, batch 96, lr 2e-3, warmup 1,000, cosine to 0.05, wd 0.01, EMA 0.999, the arm's steps, seed S, 5 threads, eval every 4,000 (logged only), --keep-evals; recipe C for Small (nv 0.5 + s2 0.25 + s3 0.25), M for Normal and Large (nv 0.45 + s2 0.225 + s3v3 0.225 + s4v5631 0.1); the final EMA checkpoint is the pretrain",
+  "fine_tune": "VOCR5's arm F (the arm VOCR5 adopted at every tier) plus --stride: 15,000 steps, batch 96, lr 1.2e-3, warmup 500, cosine to 0.05, wd 0.01, EMA 0.999, kd 0, from the arm's pretrain of the same seed, eval every 2,500 (logged only), --keep-evals; synthetic half 0.5 (the recipe's sources at half weight, fa=0.15 on nv and s2), real half 0.5 from VOCR5's pinned pools with eval/vocr5_ft_sources.json's weights, fa=0.3 on the ink sources and every GRAD source with its refined copies; the final EMA checkpoint (ckpt_step15000.pt) is the run. VOCR5's arm P is not run (F was resolved better at every tier)",
+  "script": "eval/stride16_run.sh TIER STRIDE pre|F SEED through HEAVY_SLOTS=12 $HERD/heavy.sh (5 threads), from a detached runner worktree tagged stride16-runner-<sha>; outputs $HERD/shared/artifacts/stride16/runs/",
+  "order": "the slowest first: the 8 pretrains at once (Large, Normal 16, Normal 12, Small), at most 8 stride16 runs at once (fewer if head-gate or head-2level need slots: they share the box); each pair of fine-tunes when its pretrains are done",
+  "failures": "a pretrain that dies after its first checkpoint resumes from ckpt_last.pt (train2's resume reseeds the batch stream; recorded); any other run that dies is deleted and restarted from scratch with the same arguments; every restart or resume is reported"
+ },
+ "estimates": {
+  "rule": "every A9 figure is an estimate and labelled one; sizes and arenas are exact (train/export.py, the C runtime). The method is VOCR5's (eval/vocr5_protocol.json estimates.rule (a)): vita/a9_layers.py measure at ocr-speed's 8d21908 on ocr-speed's 24 development lines of 60-100 stride-8 frames (pack dev_res.bin), --topk 8, random-init blobs of the exact shapes, the runtime copies of main before #85 ('main') and of #85 ('#85'; with --no-pld for '#85 no-PLD', the basis the tiers are sized on), every phase's high bound scaled by 1.000676 (VOCR3-H15's console rate, 4,941.7 us per frame at an assumed 333 MHz, the owner's 5.0-5.2 ms per CTC frame), 444 MHz by a9_layers' analyse at 444; per stride-8 frame = the 24 lines' total over their 1,609 stride-8 frames; a nominal 3-line box = 240 stride-8 frames + 0.1 s for the finder; a real box = 89 stride-8 frames (text-stats-boxes, the owner's Vita captures through Rubi's finder); the stride-12 shape runs on copies of the same runtimes with op strides up to 3; the tile is the runtime's default (2 frames for stride 12 and 16, 4 for the stride-8 incumbents)",
+  "table": {
+   "VOCR5-S": {
+    "main": {
+     "333": [
+      3.4981,
+      0.94
+     ],
+     "444": [
+      2.6244,
+      0.73
+     ]
+    },
+    "#85": {
+     "333": [
+      1.9524,
+      0.569
+     ],
+     "444": [
+      1.4647,
+      0.452
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      2.213,
+      0.631
+     ],
+     "444": [
+      1.6605,
+      0.499
+     ]
+    },
+    "real_box_ms_#85_no-PLD_333": 197.0
+   },
+   "VOCR5-N": {
+    "main": {
+     "333": [
+      5.161,
+      1.339
+     ],
+     "444": [
+      3.8718,
+      1.029
+     ]
+    },
+    "#85": {
+     "333": [
+      2.9495,
+      0.808
+     ],
+     "444": [
+      2.2126,
+      0.631
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      3.4228,
+      0.921
+     ],
+     "444": [
+      2.5681,
+      0.716
+     ]
+    },
+    "real_box_ms_#85_no-PLD_333": 304.6
+   },
+   "VOCR5-L": {
+    "main": {
+     "333": [
+      10.7494,
+      2.68
+     ],
+     "444": [
+      8.2471,
+      2.079
+     ]
+    },
+    "#85": {
+     "333": [
+      5.6881,
+      1.465
+     ],
+     "444": [
+      4.2891,
+      1.129
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      8.2391,
+      2.077
+     ],
+     "444": [
+      6.3643,
+      1.627
+     ]
+    },
+    "real_box_ms_#85_no-PLD_333": 733.3
+   },
+   "S16": {
+    "main": {
+     "333": [
+      2.6977,
+      0.747
+     ],
+     "444": [
+      2.0241,
+      0.586
+     ]
+    },
+    "#85": {
+     "333": [
+      1.434,
+      0.444
+     ],
+     "444": [
+      1.0759,
+      0.358
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      1.6534,
+      0.497
+     ],
+     "444": [
+      1.2409,
+      0.398
+     ]
+    },
+    "real_box_ms_#85_no-PLD_333": 147.2
+   },
+   "N16": {
+    "main": {
+     "333": [
+      4.2616,
+      1.123
+     ],
+     "444": [
+      3.1972,
+      0.867
+     ]
+    },
+    "#85": {
+     "333": [
+      2.2544,
+      0.641
+     ],
+     "444": [
+      1.6912,
+      0.506
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      2.6801,
+      0.743
+     ],
+     "444": [
+      2.0111,
+      0.583
+     ]
+    },
+    "real_box_ms_#85_no-PLD_333": 238.5
+   },
+   "L16": {
+    "main": {
+     "333": [
+      9.4894,
+      2.377
+     ],
+     "444": [
+      7.2261,
+      1.834
+     ]
+    },
+    "#85": {
+     "333": [
+      4.2352,
+      1.116
+     ],
+     "444": [
+      3.1894,
+      0.865
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      6.2496,
+      1.6
+     ],
+     "444": [
+      4.7957,
+      1.251
+     ]
+    },
+    "real_box_ms_#85_no-PLD_333": 556.2
+   },
+   "N12": {
+    "main": {
+     "333": [
+      4.853,
+      1.265
+     ],
+     "444": [
+      3.6407,
+      0.974
+     ]
+    },
+    "#85": {
+     "333": [
+      2.4557,
+      0.689
+     ],
+     "444": [
+      1.8422,
+      0.542
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      2.8572,
+      0.786
+     ],
+     "444": [
+      2.1439,
+      0.615
+     ]
+    },
+    "real_box_ms_#85_no-PLD_333": 254.3
+   },
+   "N12_tile2": {
+    "main": {
+     "333": [
+      4.8815,
+      1.272
+     ],
+     "444": [
+      3.6621,
+      0.979
+     ]
+    },
+    "#85": {
+     "333": [
+      2.4502,
+      0.688
+     ],
+     "444": [
+      1.8381,
+      0.541
+     ]
+    },
+    "#85 no-PLD": {
+     "333": [
+      3.0165,
+      0.824
+     ],
+     "444": [
+      2.2633,
+      0.643
+     ]
+    },
+    "real_box_ms_#85_no-PLD_333": 268.5
+   }
+  }
+ },
+ "cohorts": {
+  "rule": "exactly VOCR5's (eval/vocr5_protocol.json 'cohorts'): tv = teacher_val_dev.npz (959 lines, 101 VNs), dn = devnative's four *_dev.npz files (765 crops, 34 VNs), wd = the whole-dialogue regions of $HERD/shared/artifacts/vocr5-train/cohorts/{tv_dlg,dn_dlg}.pkl at base, +4 and +8 px, every file checked against VOCR5's sha256 before a score"
+ },
+ "score": {
+  "rule": "exactly VOCR5's (eval/vocr5_protocol.json 'score'): the C runtime W8I; tv and dn by eval/synth3_ablation.py score (views rv and rvn), wd by eval/finder_tighten.py score --cohorts $HERD/shared/artifacts/vocr5-train/cohorts --cohort tv_dlg --cohort dn_dlg --flags default (the C GRAD finder with flags 0 and with the refinement); dialogue only (names a secondary column); dev score = 0.25 tv + 0.25 dn + 0.5 wd in CER points (eval/stride16_select.py, a copy of eval/vocr5_select.py's scoring)",
+  "incumbents": "VOCR5-S / N / L are scored once with the same runner on the same cohorts, under their protocol names"
+ },
+ "floor": {
+  "definition": "for a row (a fixed development line, or a whole-dialogue unit: a region read in one finder mode at one variant) NR = the reference's characters + adjacent repeated characters (eval/metrics.norm; a unit sums its reference lines), T_s = its CTC frames at stride s as the runtime cuts them (a fixed line: ceil(q / s) with q the runtime's resized width of the stored crop; a unit: the sum over the C finder's lines of the same); a row is BELOW THE FLOOR at s when T_s < NR (no model can read it exactly) and TIGHT when T_s < 1.25 NR",
+  "tool": "eval/stride16_floor.py build (model-independent; the C finder and its twin agree on every case)",
+  "file": "eval/stride16_floor_dev_20261023.json (a copy of $HERD/shared/artifacts/stride16/floor/floor_dev.json: ids, frame counts and hashes only)",
+  "sha256": "91584fc72990f2e7f9aef9472502c033aa66601cdedebd1dfb83ec5d0c6ceff0",
+  "counts": {
+   "fixed_s8": {
+    "rows": 1595,
+    "below_floor": 0,
+    "tight": 0,
+    "tight_share": 0.0
+   },
+   "fixed_s8_psp": {
+    "rows": 1081,
+    "below_floor": 0,
+    "tight": 0,
+    "tight_share": 0.0
+   },
+   "fixed_s8_vita": {
+    "rows": 514,
+    "below_floor": 0,
+    "tight": 0,
+    "tight_share": 0.0
+   },
+   "wd_s8": {
+    "rows": 3030,
+    "below_floor": 36,
+    "tight": 40,
+    "tight_share": 0.0132
+   },
+   "fixed_s12": {
+    "rows": 1595,
+    "below_floor": 1,
+    "tight": 4,
+    "tight_share": 0.00251
+   },
+   "fixed_s12_psp": {
+    "rows": 1081,
+    "below_floor": 1,
+    "tight": 4,
+    "tight_share": 0.0037
+   },
+   "fixed_s12_vita": {
+    "rows": 514,
+    "below_floor": 0,
+    "tight": 0,
+    "tight_share": 0.0
+   },
+   "wd_s12": {
+    "rows": 3030,
+    "below_floor": 52,
+    "tight": 125,
+    "tight_share": 0.04125
+   },
+   "fixed_s16": {
+    "rows": 1595,
+    "below_floor": 4,
+    "tight": 81,
+    "tight_share": 0.05078
+   },
+   "fixed_s16_psp": {
+    "rows": 1081,
+    "below_floor": 4,
+    "tight": 62,
+    "tight_share": 0.05735
+   },
+   "fixed_s16_vita": {
+    "rows": 514,
+    "below_floor": 0,
+    "tight": 19,
+    "tight_share": 0.03696
+   },
+   "wd_s16": {
+    "rows": 3030,
+    "below_floor": 140,
+    "tight": 474,
+    "tight_share": 0.15644
+   }
+  },
+  "unit_caveat": "a whole-dialogue unit's ratio is a proxy (its lines are recognised one by one, but their reference is the region's): a unit whose finder misses or merges lines also looks short of frames (36 units are below the floor already at stride 8)",
+  "training": "train2 drops a training line whose label does not fit its frames at the run's stride (ctc_ok), as at stride 8; the counts per pool are reported"
+ },
+ "decisions": {
+  "bootstrap": "paired, stratified VN-cluster: 10,000 resamples (numpy default_rng); tv, dn and wd resampled independently with seeds 0, 1, 2 as in VOCR5; the fixed-line tight stratum (tv's and dn's tight dialogue lines pooled, one cluster per VN) seed 3, the whole-dialogue tight stratum seed 4; the difference is the mean over the arm's two seeds of (candidate - incumbent), in points",
+  "rule": "an arm is adopted iff (a) wd: the interval does not lie entirely above 0; (b) tv and dn: neither interval lies entirely above 0; (c) the lines below the CTC floor are handled: neither tight stratum's interval (at the arm's stride) lies entirely above 0 (a stratum of fewer than 5 VN clusters cannot be resolved and passes, flagged), and the floor rows' counts and CERs are reported; (d) both runs are within the tier's limits",
+  "normal": "Normal decides N16 first; N12 is decided only if N16 is not adopted (both are trained and reported)",
+  "commit": "each decision file is committed and pushed before its tier's selection",
+  "tool": "eval/stride16_select.py decide"
+ },
+ "selection": {
+  "rule": "per tier, the adopted arm's run with the lowest dev score (ties at 5 decimals to the lower seed); otherwise the incumbent stays",
+  "order": {
+   "Small": [
+    "S16"
+   ],
+   "Normal": [
+    "N16",
+    "N12"
+   ],
+   "Large": [
+    "L16"
+   ]
+  },
+  "reported": "every run with every component, the names column, the floor strata, per-platform rates, bytes, arena and the estimates",
+  "commit": "the three selections are committed and pushed before the locked report"
+ },
+ "vertical": {
+  "V16": "run only if S16 is adopted (VOCR5-V started from VOCR5-S's selection): VOCR5-V's recipe (eval/vertical_protocol.json 'VOCR5-V'.recipe and data, unchanged) with --stride 16 and --init the selected S16 run's ckpt_step15000.pt, seeds 1 and 2; the run is its last checkpoint",
+  "score": "eval/vertical.py columns on the vertical development set (eval/vertical_protocol.json 'sets' dev, amendment 1's pins): VN dialogue CER on fixed column crops (primary) and manga, C runtime W8I greedy; series-cluster bootstrap (manga: page) as eval/vertical.py diff, 10,000 resamples, seed 0",
+  "rule": "V16 replaces VOCR5-V (v0.3.2-vertical.1) iff the VN interval of the mean over seeds of (V16 - VOCR5-V) does not lie entirely above 0, manga's does not either, and the tight columns (T_16 < 1.25 NR on the fixed column crop) are not resolved worse; the seed with the lower VN CER is selected"
+ },
+ "head_gate": "if head-gate's gate (#117 item 1, feat/head-gate) is on main when the selections are committed, a gate is trained for each adopted model with head-gate's own training script and recipe (its protocol's 'training' data and threshold rule), and the composition is reported on the development cohorts (CER change, skip rate, est. ms per box); it changes no stride16 selection. If the gate has not landed, this is left to head-gate and stated",
+ "locked_report": {
+  "when": "once, after the three selections are committed and pushed",
+  "arms": "VOCR5-S / N / L (the incumbents) and each tier's best run of every arm by development score (S16, N16, N12, L16; an arm that was not adopted is report only)",
+  "sets": {
+   "fixed lines": "vita-test and psp-test through the scalar C W8I runtime, console polarity primary, native also; dialogue (no 'name' style) primary, all text and names also",
+   "whole dialogue": "each region at base, +4 and +8 px with the C GRAD finder and its refinement",
+   "CLANNAD": "owner-drive-ingest's frozen references through eval/clannad_refs.py's extra-arms path (suffix stride16, one attempt), dialogue primary, page bootstraps",
+   "deployed decode (report only)": "beam 8 + the overlay's 1 MB LM at docs/ctc-lm-decode.json's settings"
+  },
+  "statistics": "candidate - incumbent per tier, paired bootstraps (10,000 resamples, seed 0) over lines and VN clusters (pages for CLANNAD)",
+  "also": [
+   "blob bytes, W8I arena at the default tile",
+   "est. ms per nominal and per real box at 333 and 444 MHz (estimates)",
+   "the floor strata of the protected lines (report only)"
+  ],
+  "rule": "it decides, tunes and drops nothing; an attempt record refuses a second read"
+ },
+ "publication": "branch feat/stride16: docs/stride16.md, this protocol, the floor file's counts, the decisions, the selections and the report (counts, rates and hashes only); the adopted blobs as a PRE-RELEASE with SHA256SUMS and the NVIDIA OCR-Synthetic-Multilingual-v1 attribution (CC BY 4.0; Jiten CC BY-SA 4.0 for the VN-ordered vocabs); a normal PR to main, audited by audit-stride16, merged on its MERGE_OK with the full local CI; then a DRAFT Rubi_for_vita PR pinning the adopted blobs and the runtime (the owner merges it)",
+ "hygiene": [
+  "no arm, run, recipe, step count, checkpoint, threshold, pool or vocab is chosen, tuned, dropped or changed on vita-test, psp-test or CLANNAD; the locked report runs once and cannot change a selection",
+  "the training data is VOCR5's pinned data unchanged: no dev_sample or test VN trains",
+  "in-run evaluations (teacher_val_dev, logged) select nothing; the final checkpoint is the run",
+  "the owner's frames and every CLANNAD reading stay under shared/private; committed files hold counts, ids and hashes only"
+ ],
+ "amendments": [
+  {
+   "id": 1,
+   "utc": "2026-10-23T19:43:19Z",
+   "before": "every score of any stride16 candidate (the eight pretrains are training; no fine-tune exists; only the incumbents VOCR5-S / N / L have development scores, which match VOCR5's records and do not depend on the floor file)",
+   "change": "floor: the frame-budget file keys every fixed development row by its position in eval/synth3_ablation.py's row order (with its id as a check), not by its line id. eval/stride16_floor.py fixed_rows() returns a list in row order; eval/stride16_select.py keys a fixed row as file|position|id. The file was rebuilt (eval/stride16_floor_dev_20261023.json, model-independent, its wd units unchanged)",
+   "why": "teacher_val_dev.npz holds 129 line ids that two different crops share (959 labelled rows, 830 distinct ids; every such pair differs in crop size or label), so an id-keyed frame budget gave 129 rows another crop's frames. head-gate found the same collision in its own scorer (audit-head-gate B1, 2026-10-23); devnative's files and the protected manifests have unique ids (the protected step now refuses a repeated id)",
+   "floor_sha256": "3e31b24edac76a7b1c04fe537e8ac70f7f98fcaeceaa81c807e961e625183347",
+   "counts": {
+    "fixed_s8": {
+     "rows": 1724,
+     "below_floor": 0,
+     "tight": 0,
+     "tight_share": 0.0
+    },
+    "fixed_s8_psp": {
+     "rows": 1081,
+     "below_floor": 0,
+     "tight": 0,
+     "tight_share": 0.0
+    },
+    "fixed_s8_vita": {
+     "rows": 643,
+     "below_floor": 0,
+     "tight": 0,
+     "tight_share": 0.0
+    },
+    "wd_s8": {
+     "rows": 3030,
+     "below_floor": 36,
+     "tight": 40,
+     "tight_share": 0.0132
+    },
+    "fixed_s12": {
+     "rows": 1724,
+     "below_floor": 1,
+     "tight": 4,
+     "tight_share": 0.00232
+    },
+    "fixed_s12_psp": {
+     "rows": 1081,
+     "below_floor": 1,
+     "tight": 4,
+     "tight_share": 0.0037
+    },
+    "fixed_s12_vita": {
+     "rows": 643,
+     "below_floor": 0,
+     "tight": 0,
+     "tight_share": 0.0
+    },
+    "wd_s12": {
+     "rows": 3030,
+     "below_floor": 52,
+     "tight": 125,
+     "tight_share": 0.04125
+    },
+    "fixed_s16": {
+     "rows": 1724,
+     "below_floor": 4,
+     "tight": 93,
+     "tight_share": 0.05394
+    },
+    "fixed_s16_psp": {
+     "rows": 1081,
+     "below_floor": 4,
+     "tight": 62,
+     "tight_share": 0.05735
+    },
+    "fixed_s16_vita": {
+     "rows": 643,
+     "below_floor": 0,
+     "tight": 31,
+     "tight_share": 0.04821
+    },
+    "wd_s16": {
+     "rows": 3030,
+     "below_floor": 140,
+     "tight": 474,
+     "tight_share": 0.15644
+    }
+   },
+   "effect": "fixed rows 1,595 -> 1,724 (the 129 Vita rows of teacher_val_dev that shared an id now count); at stride 16 the fixed-line tight rows 81 -> 93 (Vita 19 -> 31), below the floor 4 (unchanged); stride 12 and the whole-dialogue units unchanged. No rule, threshold, arm or run changes"
+  }
+ ]
+}

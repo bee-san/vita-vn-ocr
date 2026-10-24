@@ -1,7 +1,9 @@
 """Tiny CTC line recognizer for Vita VN dialogue.
 
 Grey input, height 32 (or 24), any width W (multiple of 8). Output: W/8 frames of
-class logits (class 0 = CTC blank). Only Conv2d, BatchNorm (folded at export), ReLU
+class logits (class 0 = CTC blank). With stride=16 (or 12) one DS block downsamples the
+width once more (stage_strides()), so W (a multiple of 16 or 12) gives W/16 (W/12) frames
+from the same parameters. Only Conv2d, BatchNorm (folded at export), ReLU
 and residual adds, so the Vita runtime is a handful of plain C kernels: 3x3 stem,
 3x3 depthwise, 1x1 pointwise, a 2x1 height collapse and 1x5 temporal depthwise.
 Height 24 uses exactly the same layers: 24 -> 12 -> 6 -> 3 -> 2 -> 1.
@@ -183,6 +185,20 @@ def channels(width):
     return [c(n) for n in (32, 64, 128, 160, 192)]
 
 
+STRIDES = (8, 12, 16)
+
+
+def stage_strides(stride):
+    """(4-row stage's, 2-row stage's) downsampling DS strides for a horizontal frame step of 8, 12
+    or 16 input columns. 8: (2, (2, 1)), the released shape. 16 ('ds22'): the 2-row stage's DS at
+    (2, 2), so the 2-row stage and the frame row run at W/16. 12 ('ds3w3'): the 4-row stage's DS at
+    (2, 3), so everything from the 4-row stage on runs at W/12 (the runtime takes op strides up to 3).
+    Neither changes a parameter: a stride-12 or stride-16 model has a stride-8 model's state_dict."""
+    if stride not in STRIDES:
+        raise ValueError(f"stride must be one of {STRIDES}, got {stride}")
+    return ((2, 3) if stride == 12 else 2), ((2, 2) if stride == 16 else (2, 1))
+
+
 class TinyVNOCR(nn.Module):
     """width scales every channel count; depth is the number of stride-1 DS blocks after
     each of the three downsampling DS blocks (v1: 1); ctx is the number of temporal Ctx
@@ -191,26 +207,30 @@ class TinyVNOCR(nn.Module):
     8-row, 4-row, 2-row stages and the frame row; multiples of 8), e.g. a late-wide shape.
     rep >= 1 trains the stem and every depthwise conv with RepCBR's extra branches (rep
     parallel k x k branches); fuse_rep() turns such a model into the plain one it equals.
+    stride is the CTC frame step in input columns (8, 12 or 16; stage_strides()).
     The defaults build v1 exactly (same layers, same state_dict keys)."""
 
-    def __init__(self, n_classes, width=1.0, bottleneck=96, depth=1, ctx=2, ctx_k=5, chans=None, rep=0):
+    def __init__(self, n_classes, width=1.0, bottleneck=96, depth=1, ctx=2, ctx_k=5, chans=None, rep=0,
+                 stride=8):
         super().__init__()
         if chans is not None:
             chans = tuple(int(c) for c in chans)
             if len(chans) != 5 or any(c < 8 or c % 8 for c in chans):
                 raise ValueError(f"chans must be five multiples of 8, got {chans}")
+        s4, s2 = stage_strides(int(stride))
         c32, c64, c128, c160, c192 = chans or channels(width)
+        self.stride = int(stride)
         self.arch = dict(width=width, bottleneck=bottleneck, depth=depth, ctx=ctx, ctx_k=ctx_k,
-                         chans=chans, rep=rep)
+                         chans=chans, rep=rep, stride=self.stride)
         self.features = nn.Sequential(
             conv_bn(1, c32, 3, 2, rep=rep),              # 16 x W/2  (12 at height 24)
             DS(c32, c64, 2, rep),                        # 8 x W/4
             *[DS(c64, c64, 1, rep) for _ in range(depth)],
-            DS(c64, c128, 2, rep),                       # 4 x W/8
+            DS(c64, c128, s4, rep),                      # 4 x W/8 (W/12 at stride 12)
             *[DS(c128, c128, 1, rep) for _ in range(depth)],
-            DS(c128, c160, (2, 1), rep),                 # 2 x W/8
+            DS(c128, c160, s2, rep),                     # 2 x W/8 (W/12, W/16)
             *[DS(c160, c160, 1, rep) for _ in range(depth)],
-            cbr(c160, c192, (2, 1), pad=(0, 0)),         # 1 x W/8
+            cbr(c160, c192, (2, 1), pad=(0, 0)),         # 1 x W/8 (W/12, W/16)
             *[Ctx(c192, ctx_k, rep) for _ in range(ctx)],
         )
         self.drop = nn.Dropout(0.1)
@@ -288,13 +308,14 @@ def load_plain_into_rep(model, plain_sd):
 
 def from_checkpoint(ck):
     """Rebuild the model a train.py checkpoint (dict or path) describes, v1 included.
-    Returns (model in eval mode, meta) with meta = {vocab, height, unk} plus ARCH_KEYS
-    (and chans, when the checkpoint records explicit channel counts)."""
+    Returns (model in eval mode, meta) with meta = {vocab, height, unk, stride} plus ARCH_KEYS
+    (and chans, when the checkpoint records explicit channel counts). A checkpoint without a
+    stride (every one before train2's --stride) is stride 8."""
     if not isinstance(ck, dict):
         ck = torch.load(ck, map_location="cpu", weights_only=False)
     meta = {"vocab": ck["vocab"], "height": ck.get("height", 32), "unk": ck.get("unk"),
-            **{k: ck.get(k, v) for k, v in ARCH_KEYS.items()}}
-    extra = {}
+            "stride": int(ck.get("stride") or 8), **{k: ck.get(k, v) for k, v in ARCH_KEYS.items()}}
+    extra = {"stride": meta["stride"]}
     if ck.get("chans"):
         meta["chans"] = extra["chans"] = tuple(int(c) for c in ck["chans"])
     model = TinyVNOCR(len(meta["vocab"]) + 1, **{k: meta[k] for k in ARCH_KEYS}, **extra)

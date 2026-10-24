@@ -1,0 +1,67 @@
+{
+ "kind": "stride16-clannad-dialogue",
+ "lines": 2052,
+ "pages": 1867,
+ "bootstrap": {
+  "unit": "page",
+  "reps": 10000,
+  "seed": 0
+ },
+ "pairs": {
+  "S16:VOCR5_S": {
+   "cer_delta": 0.134389,
+   "cer_ci95": [
+    -0.012109,
+    0.282896
+   ],
+   "candidate_errors": 508,
+   "baseline_errors": 463,
+   "chars": 33485,
+   "pages": 1867
+  },
+  "N16:VOCR5_N": {
+   "cer_delta": 0.271763,
+   "cer_ci95": [
+    0.142311,
+    0.403616
+   ],
+   "candidate_errors": 413,
+   "baseline_errors": 322,
+   "chars": 33485,
+   "pages": 1867
+  },
+  "N12:VOCR5_N": {
+   "cer_delta": 0.128416,
+   "cer_ci95": [
+    0.009033,
+    0.248705
+   ],
+   "candidate_errors": 365,
+   "baseline_errors": 322,
+   "chars": 33485,
+   "pages": 1867
+  },
+  "L16:VOCR5_L": {
+   "cer_delta": 0.149321,
+   "cer_ci95": [
+    0.044417,
+    0.252626
+   ],
+   "candidate_errors": 296,
+   "baseline_errors": 246,
+   "chars": 33485,
+   "pages": 1867
+  },
+  "N16:N12": {
+   "cer_delta": 0.143348,
+   "cer_ci95": [
+    0.024032,
+    0.260152
+   ],
+   "candidate_errors": 413,
+   "baseline_errors": 365,
+   "chars": 33485,
+   "pages": 1867
+  }
+ }
+}

@@ -9,7 +9,7 @@ A run is named by its score file (score_<RUN>.json under one of the --scores dir
 by position (seed pairs). Each component's difference is mean(Y) - mean(X) of the per-row errors (runs averaged within
 an arm), over the component's reference characters, in CER points:
 
-  hval_page   the complete hval pages' whole-dialogue regions (base, +4, +8 px) through the C finder, over the units
+  hval_page   every trusted hval page's whole-dialogue regions (base, +4, +8 px) through the C finder, over the units
               whose finder output has no junk box (one covering no reference line) and that hold no line whose
               duplicate cluster has a train copy (SEEN_UNITS; stage 1 amendment 3): the decision metric; clusters
               = titles
@@ -63,11 +63,22 @@ def seen_units():
     return _SEEN["units"]
 
 
+# hval plans whose region units carry the ids SEEN_UNITS (and the exposed list) were built on: v1 and v2 hold the
+# same 6,327 units in the same order (amendment 5); a score read on any other plan is refused
+KNOWN_PLANS = {"dfefdd96c0f4c6596f964189a996dd719e35f7dde941fabc61f15cf0e743c8ff": "hval_plan_v1",
+               "3a6f80e1dfe4e4f5cf61d2b56aef4253e2039939a76231d344e17a4d351d97ba": "hval_plan_v2"}
+
+
 def find_score(dirs, run):
     for d in dirs:
         p = Path(d) / f"score_{run}.json"
         if p.exists():
-            return json.loads(p.read_text(encoding="utf-8"))
+            doc = json.loads(p.read_text(encoding="utf-8"))
+            sha = doc.get("hval_plan_sha256")
+            if sha and sha not in KNOWN_PLANS and os.environ.get("VOCR6_ANY_PLAN") != "1":
+                raise SystemExit(f"{p} was read on an unknown hval plan {sha[:12]}: its unit ids may not be the "
+                                 f"seen list's (set VOCR6_ANY_PLAN=1 to override)")
+            return doc
     raise SystemExit(f"no score_{run}.json in {dirs}")
 
 

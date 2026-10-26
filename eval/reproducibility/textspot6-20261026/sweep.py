@@ -2,8 +2,13 @@
 """textspot6's training sweep (issue #128, docs/textspot6.md "Model, recipe, seeds"): every run of a plan through
 heavy.sh (5 threads each), at most MAX_PAR at once, in the plan's order.
 
-  sweep.py OUT PLAN [--max-par 2] [--runs NAME,...] [--extra "--steps 300"]
+  sweep.py OUT PLAN [--max-par 2 | --cap-file FILE] [--runs NAME,...] [--extra "--steps 300"]
   sweep.py plan --stage 1 --out PLAN.jsonl            the stage-1 plan of eval/textspot6_protocol.json
+  sweep.py plan --stage 1b --out PLAN.jsonl           amendment 4: stage 1's remaining runs with seed 3 added
+
+--cap-file: the number of runs at once is read from FILE (one integer) before each launch, so the label's slot share
+(vocr6/slots.txt) can be kept as it changes; a run never stops early when the cap drops. HEAVY_SLOTS (env, default
+15: heavy.sh's slots since 2026-10-26T10:20Z) is passed to heavy.sh.
 
 Each run trains to its last step (nothing is selected or stopped early on a score). A run that exits without
 done.json (a crash or its timeout) is moved to OUT/<run>.failed<k> and restarted from scratch with the same seed, at
@@ -36,6 +41,7 @@ SHARD_DIRS = [A / "textspot" / "shards" / "synth_frames",
               A / "textspot2" / "shards" / "more" / "more_teacher",
               PV / "textspot2" / "shards" / "more" / "more_owner"]
 TIMEOUT_S = 43200
+HEAVY_SLOTS = os.environ.get("HEAVY_SLOTS", "15")
 TMP = "/local/home/skerraut/kt/t6s"
 
 
@@ -80,6 +86,26 @@ def plan_stage1():
                                                   "nohook_t64n8c16"].index(r["arm"])))
 
 
+def plan_stage1b(done=("base_t64n8c16_seed1",)):
+    """Amendment 4: stage 1 with seed 3 for every arm; the runs not yet started, seed by seed."""
+    out = []
+    arms = (("base_t64n8c16", "base", "t64n8c16"), ("base_qL5", "base", "qL5"), ("base_qS4", "base", "qS4"),
+            ("nohook_t64n8c16", "nohook", "t64n8c16"))
+    for seed in (1, 2, 3):
+        for arm, recipe, shape in arms:
+            name = f"{arm}_seed{seed}"
+            if name not in done:
+                out.append({"run": name, "arm": arm, "recipe": recipe, "shape": shape, "seed": seed, "stage": 1})
+    return out
+
+
+def read_cap(path, default):
+    try:
+        return max(0, int(Path(path).read_text().split()[0]))
+    except (OSError, ValueError, IndexError):
+        return default
+
+
 def run_one(r, out_root, extra):
     out = out_root / r["run"]
     for attempt in range(1, 4):
@@ -91,7 +117,8 @@ def run_one(r, out_root, extra):
                 k += 1
             shutil.move(str(out), str(out_root / f"{r['run']}.failed{k}"))
         log = out_root / "logs" / f"{r['run']}.attempt{attempt}.log"
-        cmd = ["env", "HEAVY_SLOTS=12", str(HERD / "heavy.sh"), "timeout", str(TIMEOUT_S), *command(r, out), *extra]
+        cmd = ["env", f"HEAVY_SLOTS={HEAVY_SLOTS}", str(HERD / "heavy.sh"), "timeout", str(TIMEOUT_S), *command(r, out),
+               *extra]
         explog({"kind": "run_start", "arm": r["arm"], "run": r["run"], "seed": r["seed"], "stage": r["stage"],
                 "attempt": attempt, "commit": git_head(), "cmd": " ".join(cmd[3:])})
         t0 = time.time()
@@ -117,10 +144,10 @@ def main(argv=None):
     if argv and argv[0] == "plan":
         ap = argparse.ArgumentParser()
         ap.add_argument("cmd")
-        ap.add_argument("--stage", type=int, required=True)
+        ap.add_argument("--stage", required=True, choices=("1", "1b"))
         ap.add_argument("--out", required=True)
         a = ap.parse_args(argv)
-        rows = plan_stage1() if a.stage == 1 else []
+        rows = plan_stage1() if a.stage == "1" else plan_stage1b() if a.stage == "1b" else []
         Path(a.out).write_text("".join(json.dumps(r) + "\n" for r in rows))
         print(f"{a.out}: {len(rows)} runs")
         return
@@ -128,6 +155,7 @@ def main(argv=None):
     ap.add_argument("out")
     ap.add_argument("plan")
     ap.add_argument("--max-par", type=int, default=2)
+    ap.add_argument("--cap-file", help="read the number of runs at once from this file before each launch")
     ap.add_argument("--runs")
     ap.add_argument("--extra", default="")
     ap.add_argument("--allow-dirty", action="store_true")
@@ -144,9 +172,27 @@ def main(argv=None):
         want = set(a.runs.split(","))
         rows = [r for r in rows if r["run"] in want]
     extra = a.extra.split() if a.extra else []
-    from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(a.max_par) as ex:
-        results = list(ex.map(lambda r: (r["run"], run_one(r, out_root, extra)), rows))
+    import threading
+    results, threads, lock = [], [], threading.Lock()
+
+    def work(r):
+        ok = run_one(r, out_root, extra)
+        with lock:
+            results.append((r["run"], ok))
+
+    for r in rows:
+        while True:
+            cap = read_cap(a.cap_file, a.max_par) if a.cap_file else a.max_par
+            threads = [t for t in threads if t.is_alive()]
+            if len(threads) < cap:
+                break
+            time.sleep(30)
+        t = threading.Thread(target=work, args=(r,), daemon=False)
+        t.start()
+        threads.append(t)
+        time.sleep(5)
+    for t in threads:
+        t.join()
     for name, ok in results:
         print(name, "OK" if ok else "FAILED")
     print("TEXTSPOT6_SWEEP_DONE", sum(ok for _, ok in results), "of", len(results))

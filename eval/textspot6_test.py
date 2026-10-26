@@ -91,8 +91,9 @@ def paired(rows_a, rows_b, key="cluster"):
     n = sum(v[1] for v in pa.values())
     d = 100 * (sum(v[0] for v in pa.values()) - sum(v[0] for v in pb.values())) / n if n else None
     out = VR.cluster_bootstrap(pa, pb, cl)
-    return {"delta": round(d, 4) if d is not None else None, "a_cer": round(100 * sum(v[0] for v in pa.values()) / n, 4),
-            "b_cer": round(100 * sum(v[0] for v in pb.values()) / n, 4), "chars": n, **out}
+    ea, eb = sum(v[0] for v in pa.values()), sum(v[0] for v in pb.values())
+    return {"delta": round(d, 4) if d is not None else None, "a_cer": round(100 * ea / n, 4) if n else None,
+            "b_cer": round(100 * eb / n, 4) if n else None, "chars": n, **out}
 
 
 # ----------------------------------------------------------------------------- the test title
@@ -189,7 +190,7 @@ def cmd_clannad(a):
     pkl = priv / "units.pkl"
     with open(pkl, "wb") as f:
         pickle.dump({"units": units}, f)
-    base = pagepath_run(a.pagepath, pkl, priv / "grad_refine", ["--finder", "rubi"])
+    pagepath_run(a.pagepath, pkl, priv / "grad_refine", ["--finder", "rubi"])
     import textspot6_twin as T6
     m = T6.Model(Path(a.blob).read_bytes())
     k = "detref" if a.decode.endswith("refine") else "det"
@@ -201,7 +202,7 @@ def cmd_clannad(a):
                 bx = [[*b[:7], -1, b[7], 0] for b in E6.refined(bx, u["image"])]
             f.write(json.dumps({"unit": f"dev:{i}:{u['unit']}:{u['variant']}",
                                 "boxes": [[b[0], b[1], b[2], b[3], b[6]] for b in bx if not b[4]]}) + "\n")
-    arm = pagepath_run(a.pagepath, pkl, priv / "spotter", ["--boxes", str(priv / f"boxes_{a.decode}.jsonl")])
+    pagepath_run(a.pagepath, pkl, priv / "spotter", ["--boxes", str(priv / f"boxes_{a.decode}.jsonl")])
     rows = {"grad_refine": {r["uid"]: r for r in E6.read_jsonl(priv / "grad_refine.rows.jsonl")},
             "spotter": {r["uid"]: r for r in E6.read_jsonl(priv / "spotter.rows.jsonl")}}
     preds = {s: {} for s in rows}
@@ -252,6 +253,7 @@ def cmd_clannad(a):
 def cmd_tests(a):
     import textspot as TSE
     import textspot_metrics as M
+
     import textspot6_twin as T6
     sel, blob_sha = check_selection(a.selection, a.blob)
     proto = json.loads((ROOT / "eval" / "textspot_protocol.json").read_text(encoding="utf-8"))

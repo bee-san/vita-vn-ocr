@@ -97,18 +97,21 @@
    "rule": "kd_t64n8c16 distilled from the stage-1 M arm (base_qS4 or base_qL5) with the lower unseen-dev page-path dialogue CER (its representative's det or det+refine, whichever is lower; ties: the smaller shape); the teacher is that representative seed's final.pt",
    "seeds": [
     1,
-    2
+    2,
+    3
    ]
   }
  },
  "seeds": {
   "per_arm": [
    1,
-   2
+   2,
+   3
   ],
   "report": "every seed",
   "representative": "per decode, the median seed by unseen-dev page-path dialogue CER (sorted by that CER, then hval page-path CER, then seed; index n // 2: with 2 seeds the worse one); never the best seed",
-  "crashes": "restart from scratch with the same seed, at most 3 attempts"
+  "crashes": "restart from scratch with the same seed, at most 3 attempts",
+  "note": "amendment 4: 3 seeds per arm (stage 1 and stage 2)"
  },
  "metrics": {
   "primary": "page-path dialogue CER through eval/pagepath.py (#129; pinned by an amendment before any score): Rubi's read (VOCR5-N W8I top 8, counter re-decode, beam 8 + the 1 MB LM, cascade N -> L below 0.7, textnorm, the non-Japanese line filter)",
@@ -129,7 +132,7 @@
   "cost_order": "VTSP bytes, est. ms @333 per 960 x 544 frame, arena, decode (crop, crop+refine, det, det+refine), then the name (amendment 2)",
   "pick": "the cheapest qualifier; a costlier qualifier replaces it when, against it, unseen-dev page-path CER is resolved below 0 and hval is not resolved above 0; repeated until none does",
   "no_qualifier": "negative verdict; the eligible candidate with the lowest unseen-dev page-path CER is released as a research pre-release; no Rubi PR",
-  "with_pick": "retrain the pick on train + guard + hval (same recipe and seed) -> release, test sets once, Rubi DRAFT PR (never merged by the fleet)"
+  "with_pick": "retrain the pick on train + guard + hval (same recipe and seed) -> release, test sets once, a normal Rubi PR merged after CI + memory ledger + audit MERGE_OK, a Rubi test pre-release and test issue, an off-switch defaulting to the measured best (amendment 4)"
  },
  "test": {
   "read_once_after": "the selection commit",
@@ -224,6 +227,22 @@
    "pins": {
     "synth/textspot6_twin.py": "e913963d810ea81ca438b7ee0cd0f035742ef0a95325b3d96201ea108b1782f5",
     "eval/textspot6.py": "a57a30ce7cd43f90a4fee1f2cb998974eac6ece0fb7964c7d65efcc86c08fab8"
+   }
+  },
+  {
+   "id": 4,
+   "utc": "2026-10-26T10:21:12Z",
+   "before": "every score of a textspot6 arm (stage 1's first run is training; nothing is scored)",
+   "what": [
+    "Owner directive 2026-10-26T10:17Z (prompts/vocr6-common.md, last section) replaces 'Rubi DRAFT PR, never merged': with an adopted pick, the Rubi_for_vita PR that wires it is a normal PR, merged by this workstream after GitHub CI (package e2e included), the memory ledger and an independent audit's MERGE_OK, with a Rubi test pre-release (v0.9.x-test.N, debug + normal) and a test issue assigned to bee-san for the console checks. The new console path keeps a setting to turn it off; its default is the measured-best choice.",
+    "3 seeds per arm (vocr6-common: '>= 3 seeds for any adoption claim'): every stage-1 arm is trained with seeds 1, 2 and 3 (12 runs) and stage 2's kd arm with seeds 1-3; the representative is the median seed (index n // 2 = 1 of 3, sorted as registered). Nothing else in the rule changes.",
+    "Slots (vocr6/slots.txt, 2026-10-26T10:20Z): the label has 3; heavy.sh has 15. The sweep v2 (sweep.py --cap-file) reads the number of training runs at once from a file before each launch; the third slot scores (eval/pagepath.py runs) and runs the runtime helper's checks. The running base_t64n8c16_seed1 (started 10:06Z by sweep v1 at 648aa07) continues; stage1b_plan.jsonl holds the other 11 runs.",
+    "The test reads are eval/textspot6_test.py (title, clannad, tests), each once with an exclusive attempt record, after the selection record is committed."
+   ],
+   "pins": {
+    "eval/textspot6_test.py": "f2f67eefbbb765ac2a7954587b9f156849e3c6649c8c85c05fa2167ce981052d",
+    "eval/reproducibility/textspot6-20261026/sweep.py": "7da4757ec11ed5e4f873522cd0a161f6bfec5e39db11ca797c659533c240a3ea",
+    "eval/reproducibility/textspot6-20261026/stage1b_plan.jsonl": "72e28e8ecb3d3ab64218bacbd3e9f49e4fb931d72fcdddcbe2c29730aaf34e50"
    }
   }
  ],

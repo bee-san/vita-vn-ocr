@@ -87,8 +87,8 @@ hooked pages buy.
   #97's calibration; the last step is the run's model.
 - **Recipe `kd`** (stage 2) adds textspot2's distillation loss on K/O/A from a teacher run and the KL divergence of
   the tag softmax.
-- **Seeds:** at least 2 per arm (1 and 2), every seed reported. An arm's representative is its median seed by
-  unseen-dev page-path dialogue CER (with 2 seeds, the worse one), never the best.
+- **Seeds:** at least 2 per arm (1 and 2; 1-3 since amendment 4), every seed reported. An arm's representative is
+  its median seed by unseen-dev page-path dialogue CER (with 2 seeds, the worse one), never the best.
 
 **Stage 1 arms** (`base` unless named):
 
@@ -203,6 +203,15 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
    - Every console frame is 960×544, so a half-scale blob reads every console region halved, as it reads the whole
      frame.
    - Read at its own size, a region narrower than 480 px would show the network text twice the size it trained on.
+4. **Owner directive, 3 seeds, 3 slots** (2026-10-26, before any score).
+   - The owner's 10:17Z directive replaces "a Rubi DRAFT PR, never merged". With an adopted pick, the Rubi_for_vita
+     PR is a normal PR, merged after GitHub CI (package e2e included), the memory ledger and an independent audit's
+     MERGE_OK. It comes with a Rubi test pre-release and a test issue for the console checks.
+   - The new console path keeps a setting to turn it off. Its default is the measured-best choice.
+   - Every arm is trained with seeds 1-3 (vocr6-common: at least 3 seeds for an adoption claim). The representative
+     is the median seed.
+   - The label has 3 slots. `sweep.py --cap-file` holds the number of training runs, and the third slot scores.
+   - The test reads are `eval/textspot6_test.py` (`title`, `clannad`, `tests`), once each.
 
 ## Results
 
